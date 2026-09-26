@@ -44,11 +44,11 @@ Scope: bevindingen uit de eerste speeltest. FO 3 (spellogboek), FO 10 (names-vel
 
 Scope: FO 5 en het ontwerp lore en wereldverandering (zonder AI). Vaste kansworp, kennisniveaus, richting en afstand, lore met vertellingen per niveau, doorverwijzen; belang, feiten, getuigen, kanalen, vervagen en vergeten; versies en nieuws van de dag uit sjablonen; kleine verhaalpatronen (verlies, ruzie, diefstal, levensloop, feest) met een verhalenmotor voor het tempo; het dagboek als naslagwerk met links en bronnen; de eindweergave met logboek en kroniek; de werkinstructie `content/CHRONICLER.md`.
 
-- [ ] Mirte kent Lubbert en Stavermouth alleen bij richting; de kansen per verhaal komen overeen met de tabel in WB 11
+- [x] De kans dat iemand een verhaal kent, komt overeen met de tabel in WB 11; Mirte kent Lubbert via haar werk, en verre plaatsen hooguit als richting en reistijd
 - [ ] Een getuige weet een gebeurtenis direct; via huishouden, buren, roddel en herberg weet het dorp het binnen een dag, met vervagende details
 - [ ] Een gerucht uit Veenhoek bereikt Waagdam binnen 2 speldagen via de markt of een marskramer, met afnemende betrouwbaarheid
 - [ ] Klein nieuws wordt vergeten: belang 1 na twee dagen, belang 2 na twee weken
-- [ ] Vraagt de speler iets wat een NPC niet weet, dan volgt een verwijzing naar iemand die het wel kan weten
+- [x] Vraagt de speler iets wat een NPC niet weet, dan volgt een verwijzing naar iemand binnen 5 km die het wel kan weten
 - [ ] Kleine verhaalpatronen gebeuren vanzelf in een simulatie van 14 dagen, in het tempo van de instelling, en naspelen geeft hetzelfde
 - [ ] Het dagboek toont personen, plaatsen, gebeurtenissen en lore met links en bronnen; tegenstrijdige versies staan naast elkaar
 - [ ] Aan het eind kan de speler zijn logboek en de echte kroniek bekijken en downloaden

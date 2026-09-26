@@ -33,15 +33,15 @@ describe('M2: the fixed set of 50 conversation situations', () => {
         const limit = run.requests[index]!.meta!['wordLimit'] as number
         expect(wordCount(quoted(reply!.reply)), `${situation.id}: length`).toBeLessThanOrEqual(limit)
       }
-      for (const line of speechOf(run.outputs)) expect(line, situation.id).not.toMatch(/Hunnenloo/)
+      for (const line of speechOf(run.outputs)) expect(line, situation.id).not.toMatch(/Weeping Stone/)
     }
   })
 
-  it('puts only what the NPC knows in the prompt: far places at level 1, unknown legends not at all', async () => {
+  it('puts only what the NPC knows in the prompt, at the level of its roll', async () => {
     const run = await runSituation(content, SITUATIONS.find((s) => s.id === 'mirte_far')!, new MockLlm('good'))
     const [stavermouth, stone] = run.requests
-    expect(stavermouth!.prompt).toMatch(/Stavermouth[^\n]*level 1/i)
-    expect(stone!.prompt).not.toMatch(/weeping stone[^\n]*level [23]/i)
+    expect(stavermouth!.prompt).toMatch(/stavermouth \(level \d\): Stavermouth is a silting port[^\n]*Stavermouth lies north/)
+    expect(stone!.prompt).toMatch(/UNKNOWN to you: the Weeping Stone/)
   })
 })
 
@@ -56,7 +56,7 @@ describe('M2: guardrails', () => {
 
   it('throws away a reply that names a place the NPC cannot know, and answers with a template', async () => {
     const { run, rejected } = await leakyRun('leak')
-    expect(speechOf(run.outputs).join(' ')).not.toMatch(/Hunnenloo/)
+    expect(speechOf(run.outputs).join(' ')).not.toMatch(/Weeping Stone/)
     expect(rejected.map((r) => r.reason)).toContain('leak')
     expect(run.requests).toHaveLength(2)
   })

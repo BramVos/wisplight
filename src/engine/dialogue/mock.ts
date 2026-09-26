@@ -22,7 +22,7 @@ export class MockLlm implements LlmClient {
 
   constructor(
     public mode: MockMode = 'good',
-    private readonly leakName = 'Hunnenloo',
+    private readonly leakName = 'the Weeping Stone',
   ) {}
 
   async complete(request: LlmRequest): Promise<LlmResponse> {
@@ -45,12 +45,12 @@ export class MockLlm implements LlmClient {
     else if (meta.act === 'Greet') speech = 'Evening to you.'
     else speech = 'Mm. That so?'
 
-    if (this.mode === 'leak') speech = `${speech} My cousin in ${this.leakName} says the same.`
+    if (this.mode === 'leak') speech = `My cousin swears ${this.leakName} wept for it. ${speech}`
     if (this.mode === 'long') speech = Array.from({ length: 12 }, () => speech).join(' ')
     if (this.mode === 'anachronism') speech = `Okay, ${speech}`
     if (this.mode === 'invent') speech = `${speech} Father Oswin would know more.`
-    if (this.mode === 'far') speech = `${speech} Salt comes dear from the Amber Coast these days.`
-    if (this.mode === 'twofar') speech = `${speech} Salt comes from the Amber Coast and tin from Kessmoor.`
+    if (this.mode === 'far') speech = `Salt comes dear from the Amber Coast these days. ${speech}`
+    if (this.mode === 'twofar') speech = `Salt comes from the Amber Coast and tin from Kessmoor. ${speech}`
     const words = speech.split(/\s+/)
     if (this.mode === 'good' && words.length > meta.wordLimit) speech = words.slice(0, meta.wordLimit).join(' ').replace(/[,;:]?$/, '.')
 

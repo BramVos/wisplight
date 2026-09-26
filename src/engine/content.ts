@@ -153,6 +153,8 @@ export const LocationSchema = z.object({
 })
 export type Location = z.infer<typeof LocationSchema>
 
+const Position = z.tuple([z.number(), z.number()])
+
 export const AreaSchema = z.object({
   id: z.string().regex(/^[a-z0-9_]+$/),
   name: z.string(),
@@ -160,6 +162,8 @@ export const AreaSchema = z.object({
   aliases: z.array(z.string()).default([]),
   summary: z.string(),
   fame: z.number().int().min(0).max(5).default(1),
+  /** Position on the map of the land, in km (Wereldboek, chapter 2). */
+  pos: Position.optional(),
 })
 export type Area = z.infer<typeof AreaSchema>
 
@@ -241,12 +245,56 @@ export const TopicSchema = z.object({
   /** Whose telling the story is, when it is told in the first person. */
   teller: z.string().optional(),
   origin: z.string().optional(),
+  /** Where the topic belongs on the map, when it is not an area of the content. */
+  pos: Position.optional(),
+  /** Known the same everywhere, like a custom of the whole countryside. */
+  everywhere: z.boolean().default(false),
+  /** Extra chance for some listeners: profession ids, quirks or "child". */
+  audience: z.partialRecord(z.string(), z.number()).default({}),
   fame: z.number().int().min(0).max(5).default(2),
   known_by: z.array(z.string()).default([]),
 })
 export type Topic = z.infer<typeof TopicSchema>
 
 // ---------------------------------------------------------------- world
+
+// The chance that someone knows a topic, by fame and distance (FO, chapter 5). The designer can tune it per world.
+const KnowledgeModifierSchema = z.object({
+  profession: z.array(z.string()).optional(),
+  quirk: z.array(z.string()).optional(),
+  min_age: z.number().int().optional(),
+  kinds: z.array(z.enum(['person', 'place', 'area', 'lore', 'fact'])).optional(),
+  topics: z.array(z.string()).optional(),
+  /** Only for people who sell one of these items. */
+  sells: z.array(z.string()).optional(),
+  /** Treat the topic as this much more famous. */
+  fame: z.number().int().default(0),
+  factor: z.number().positive().default(1),
+  /** Raise the highest level the distance allows. */
+  level: z.number().int().default(0),
+  /** Know it at least this well. */
+  min_level: z.number().int().min(0).max(3).default(0),
+})
+export type KnowledgeModifier = z.infer<typeof KnowledgeModifierSchema>
+
+const FO_CHANCES = [
+  [0.1, 0, 0, 0, 0],
+  [0.9, 0.4, 0.05, 0, 0],
+  [1, 0.9, 0.7, 0.1, 0],
+  [1, 0.95, 0.85, 0.6, 0.25],
+  [1, 1, 0.95, 0.85, 0.6],
+  [1, 1, 1, 1, 0.95],
+]
+
+export const KnowledgeRulesSchema = z.object({
+  /** Per fame 0 to 5: same settlement, up to 10 km, 30 km, 100 km, farther. */
+  chance: z.array(z.array(z.number().min(0).max(1)).length(5)).length(6).default(FO_CHANCES),
+  bands_km: z.tuple([z.number(), z.number(), z.number()]).default([10, 30, 100]),
+  /** The highest level per distance band. */
+  max_level: z.array(z.number().int().min(0).max(3)).length(5).default([3, 3, 2, 2, 1]),
+  modifiers: z.array(KnowledgeModifierSchema).default([]),
+})
+export type KnowledgeRules = z.infer<typeof KnowledgeRulesSchema>
 
 export const WorldSchema = z.object({
   id: z.string(),
@@ -261,6 +309,7 @@ export const WorldSchema = z.object({
     minute: z.number().int().min(0).max(59).default(0),
   }),
   player: z.object({ money: z.number().int().nonnegative(), inventory: ItemCounts }),
+  knowledge: KnowledgeRulesSchema.default(KnowledgeRulesSchema.parse({})),
 })
 export type WorldDef = z.infer<typeof WorldSchema>
 

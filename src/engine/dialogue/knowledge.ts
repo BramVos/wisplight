@@ -4,8 +4,9 @@ import type { World } from '../world'
 import type { TopicRegistry } from './topics'
 
 // What an NPC knows about a topic, and therefore what the model may say
-// (FO, chapter 5). M2 uses a fixed rule: own area, known areas, fame and
-// named keepers of a secret. M3 replaces it with the chance model.
+// (FO, chapter 5): certain knowledge of the own village and the places the NPC
+// goes to, and for everything else a fixed roll against a chance that depends
+// on fame, distance, profession and audience.
 
 export type Level = 0 | 1 | 2 | 3
 
@@ -63,40 +64,134 @@ export class Knowledge {
         if (entry.ref === npcId) return 3
         const other = entry.ref ? content.npcs.get(entry.ref) : undefined
         if (other) {
+          // Certain knowledge: the own village. Places one goes to regularly: at least the name and face.
           const area = this.areaOf(other.home)!
           if (own.has(area)) return 3
-          if (known.has(area)) return 2
-          return other.fame >= 3 ? 1 : 0
+          const chance = this.chanceLevel(npcId, topicId, 'person', other.fame, this.areaPos(area), false, { sells: this.goodsOf(other.id) })
+          return Math.max(known.has(area) ? 2 : 0, chance) as Level
         }
-        return this.topicLevel(npcId, topicId, known)
+        return this.topicLevel(npcId, topicId)
       }
       case 'place': {
         const location = entry.ref ? content.locations.get(entry.ref) : undefined
-        if (location) return own.has(location.area) ? 3 : known.has(location.area) ? 2 : 0
-        return this.topicLevel(npcId, topicId, known)
+        if (location) {
+          // Whoever has been there knows it well (FO, chapter 5).
+          if (own.has(location.area) || known.has(location.area)) return 3
+          const area = content.areas.get(location.area)
+          return this.chanceLevel(npcId, topicId, 'place', area?.fame ?? 0, area?.pos, false)
+        }
+        return this.topicLevel(npcId, topicId)
       }
       case 'area': {
         const area = content.areas.get(entry.ref ?? '')
         if (!area) return 0
-        if (own.has(area.id)) return 3
-        if (known.has(area.id)) return 2
-        return area.fame >= 3 ? 1 : 0
+        if (own.has(area.id) || known.has(area.id)) return 3
+        return this.chanceLevel(npcId, topicId, 'area', area.fame, area.pos, false)
       }
       case 'item':
         return this.sellers(npcId, entry.ref ?? '').length > 0 ? 2 : 1
       default:
-        return this.topicLevel(npcId, topicId, known)
+        return this.topicLevel(npcId, topicId)
     }
   }
 
-  private topicLevel(npcId: string, topicId: string, known: Set<string>): Level {
+  private topicLevel(npcId: string, topicId: string): Level {
     const topic = this.world.content.topics.get(topicId)
     if (!topic) return 0
     if (topic.known_by.includes(npcId)) return 3
     const origin = this.areaOf(topic.origin)
-    if (origin && known.has(origin)) return 2
-    if (topic.fame >= 5) return 2
-    return topic.fame >= 3 ? 1 : 0
+    const sameArea = origin !== undefined && this.ownAreas(npcId).has(origin)
+    const pos = topic.pos ?? (origin ? this.areaPos(origin) : undefined)
+    const kind = topic.kind === 'person' ? 'person' : topic.kind === 'place' ? 'place' : topic.kind
+    return this.chanceLevel(npcId, topicId, kind, topic.fame, pos, sameArea || topic.everywhere, { audience: topic.audience })
+  }
+
+  /** The chance that this NPC knows the topic, before the roll, and the distance band it falls in (FO, chapter 5). */
+  chance(npcId: string, topicId: string): { chance: number; band: number } | undefined {
+    const topic = this.world.content.topics.get(topicId)
+    if (!topic) return undefined
+    const origin = this.areaOf(topic.origin)
+    const sameArea = origin !== undefined && this.ownAreas(npcId).has(origin)
+    const pos = topic.pos ?? (origin ? this.areaPos(origin) : undefined)
+    const kind = topic.kind === 'person' ? 'person' : topic.kind === 'place' ? 'place' : topic.kind
+    return this.odds(npcId, topicId, kind, topic.fame, pos, sameArea || topic.everywhere, { audience: topic.audience })
+  }
+
+  private odds(
+    npcId: string,
+    topicId: string,
+    kind: 'person' | 'place' | 'area' | 'lore' | 'fact',
+    fame: number,
+    pos: readonly [number, number] | undefined,
+    sameSettlement: boolean,
+    extra: { sells?: string[]; audience?: Partial<Record<string, number>> } = {},
+  ): { chance: number; band: number; cap: number; floor: number } {
+    const rules = this.world.content.world.knowledge
+    const npc = this.world.npc(npcId)
+    const band = sameSettlement ? 0 : this.band(npcId, pos)
+    let fameBonus = 0
+    let factor = 1
+    let cap = rules.max_level[band] ?? 1
+    let floor = 0
+    for (const m of rules.modifiers) {
+      if (m.profession && !m.profession.includes(npc.profession)) continue
+      if (m.quirk && !m.quirk.some((q) => npc.quirks.includes(q))) continue
+      if (m.min_age !== undefined && npc.age < m.min_age) continue
+      if (m.kinds && !m.kinds.includes(kind)) continue
+      if (m.topics && !m.topics.includes(topicId)) continue
+      if (m.sells && !m.sells.some((item) => extra.sells?.includes(item))) continue
+      fameBonus += m.fame
+      factor *= m.factor
+      cap += m.level
+      floor = Math.max(floor, m.min_level)
+    }
+    const row = rules.chance[Math.max(0, Math.min(5, fame + fameBonus))]!
+    let chance = (row[band] ?? 0) * factor
+    for (const [who, bonus] of Object.entries(extra.audience ?? {})) {
+      if (who === npc.profession || npc.quirks.includes(who) || (who === 'child' && npc.child)) chance += bonus ?? 0
+    }
+    return { chance: Math.max(0, Math.min(1, chance)), band, cap: Math.max(0, Math.min(3, cap)), floor }
+  }
+
+  /**
+   * The fixed roll: the same NPC and topic always give the same result in a game.
+   * How far under the chance the roll lands sets the level, capped by distance.
+   */
+  private chanceLevel(...args: Parameters<Knowledge['odds']>): Level {
+    const [npcId, topicId] = args
+    const { chance, cap, floor } = this.odds(...args)
+    const roll = this.roll(npcId, topicId)
+    if (roll >= chance) return floor as Level
+    const margin = (chance - roll) / chance
+    const level = margin >= 2 / 3 ? 3 : margin >= 1 / 3 ? 2 : 1
+    return Math.max(floor, Math.min(cap, level)) as Level
+  }
+
+  /** A number from 0 to 1 from the game seed, the NPC and the topic (FNV-1a). */
+  private roll(npcId: string, topicId: string): number {
+    let hash = 0x811c9dc5
+    for (const char of `${this.world.state.seed}|${npcId}|${topicId}`) {
+      hash ^= char.charCodeAt(0)
+      hash = Math.imul(hash, 0x01000193) >>> 0
+    }
+    return hash / 2 ** 32
+  }
+
+  /** The distance band from the NPC's home to a place: 1 up to 10 km, 2 up to 30, 3 up to 100, 4 farther. */
+  private band(npcId: string, pos: readonly [number, number] | undefined): number {
+    const home = this.areaPos(this.world.location(this.world.npc(npcId).home).area)
+    if (!pos || !home) return 1
+    const km = Math.hypot(pos[0] - home[0], pos[1] - home[1])
+    const [a, b, c] = this.world.content.world.knowledge.bands_km
+    return km <= a ? 1 : km <= b ? 2 : km <= c ? 3 : 4
+  }
+
+  private areaPos(area: string | undefined): readonly [number, number] | undefined {
+    return area ? this.world.content.areas.get(area)?.pos : undefined
+  }
+
+  private goodsOf(npcId: string): string[] {
+    return [...this.world.content.locations.values()].flatMap((l) => l.services.filter((s) => s.provider === npcId).flatMap((s) => Object.keys(s.sells)))
   }
 
   /** Every topic the NPC knows at all: the basis of the leak check. */
@@ -152,6 +247,8 @@ export class Knowledge {
           break
         }
         facts.push(...this.topicFacts(topicId, level))
+        const topic = content.topics.get(topicId)
+        if (topic?.pos) facts.push(this.farDirections(npcId, topic.pos, level, entry.name))
         break
       }
       case 'area': {
@@ -225,10 +322,33 @@ export class Knowledge {
     return `${name} is ${time} from here: ${legs.join(', then ')}${route.nodes.length > 4 ? ', and on from there' : ''}.`
   }
 
-  /** Someone the NPC knows who probably knows more about the topic. */
+  /**
+   * For places beyond the NPC's own surroundings: the direction on eight winds and the
+   * time on foot, worked out from the map, never the route (FO, chapter 5).
+   */
+  private farDirections(npcId: string, pos: readonly [number, number], level: Level, name: string): string {
+    const home = this.areaPos(this.world.location(this.world.npc(npcId).home).area)
+    if (!home) return ''
+    const dx = pos[0] - home[0]
+    const dy = pos[1] - home[1]
+    const winds = ['east', 'north-east', 'north', 'north-west', 'west', 'south-west', 'south', 'south-east']
+    const wind = winds[(Math.round(Math.atan2(dy, dx) / (Math.PI / 4)) + 8) % 8]!
+    if (level < 2) return `${name} lies somewhere to the ${wind}.`
+    const km = Math.hypot(dx, dy)
+    const days = Math.round((km / 40) * 2) / 2
+    const time = km < 30 ? `about ${Math.max(1, Math.round(km / 5))} hours on foot` : days <= 1 ? 'about a day on foot' : `about ${days % 1 ? `${Math.floor(days)} and a half` : days} days on foot`
+    return `${name} lies ${wind}, ${time}.`
+  }
+
+  /** Someone within 5 km whom the NPC knows, and who probably knows more about the topic (FO, chapter 5). */
   private referral(npcId: string, topicId: string): Packet['referral'] {
+    const here = this.areaPos(this.world.location(this.world.npc(npcId).home).area)
+    const near = (id: string) => {
+      const there = this.areaPos(this.world.location(this.world.npc(id).home).area)
+      return !here || !there || Math.hypot(there[0] - here[0], there[1] - here[1]) <= 5
+    }
     const candidates = [...this.world.content.npcs.keys()]
-      .filter((id) => id !== npcId && this.level(npcId, id) >= 2)
+      .filter((id) => id !== npcId && near(id) && this.level(npcId, id) >= 2)
       .map((id) => ({ id, level: this.level(id, topicId), curiosity: this.world.npc(id).personality.curiosity }))
       .filter((c) => c.level >= 2)
       .sort((a, b) => b.level - a.level || b.curiosity - a.curiosity || a.id.localeCompare(b.id))

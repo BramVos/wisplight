@@ -1,0 +1,96 @@
+import { describe, expect, it } from 'vitest'
+import { Engine } from '../src/engine'
+import type { Knowledge } from '../src/engine/dialogue/knowledge'
+import { content } from './helpers'
+
+// Milestone M3 (docs/ROADMAP.md): knowledge, rumours and the journal.
+
+const knowledge = (seed = 1): Knowledge => (new Engine(content, { seed }).dialogue as unknown as { knowledge: Knowledge }).knowledge
+
+describe('M3: the fixed chance roll (FO, chapter 5)', () => {
+  it('gives a villager of Veenhoek the chances of the lore table in the world book (chapter 11)', () => {
+    const k = knowledge()
+    // Mirte has no profession or age bonus for these stories.
+    const table: Record<string, number> = { water_wolf: 1, saint_brand: 1, last_sheaf: 1, witches_scale: 0.95, haakman: 0.9, cat_widow: 0.7, weeping_stone: 0 }
+    for (const [topic, chance] of Object.entries(table)) expect(k.chance('npc_mirte', topic)!.chance, topic).toBeCloseTo(chance, 5)
+  })
+
+  it('adds the audience of a story: peat-cutters and children know the Cat-Widow better', () => {
+    const k = knowledge()
+    expect(k.chance('npc_gerrit', 'cat_widow')!.chance).toBeCloseTo(0.9, 5)
+    expect(k.chance('npc_pim', 'cat_widow')!.chance).toBeCloseTo(0.9, 5)
+    expect(k.chance('npc_wouter', 'haakman')!.chance).toBeCloseTo(1, 5)
+  })
+
+  it('rolls the same for the same game, and differently for another game', () => {
+    const topics = ['haakman', 'cat_widow', 'stavermouth', 'graafhaven', 'the_count', 'hunnenloo']
+    const levels = (seed: number) => ['npc_mirte', 'npc_gerrit', 'npc_trijntje', 'npc_lubbert'].flatMap((npc) => topics.map((t) => knowledge(seed).level(npc, t)))
+    expect(levels(5)).toEqual(levels(5))
+    expect(Array.from({ length: 8 }, (_, i) => levels(i + 1).join()).some((row, _, all) => row !== all[0])).toBe(true)
+  })
+
+  it('makes the chances come true over many games', () => {
+    let haakman = 0
+    let widow = 0
+    const games = 400
+    for (let seed = 1; seed <= games; seed++) {
+      const k = knowledge(seed)
+      if (k.level('npc_mirte', 'haakman') > 0) haakman++
+      if (k.level('npc_mirte', 'cat_widow') > 0) widow++
+    }
+    expect(haakman / games).toBeGreaterThan(0.85)
+    expect(haakman / games).toBeLessThan(0.95)
+    expect(widow / games).toBeGreaterThan(0.63)
+    expect(widow / games).toBeLessThan(0.77)
+  })
+
+  it('caps the level by distance: far places at most by name and direction', () => {
+    for (let seed = 1; seed <= 40; seed++) {
+      const k = knowledge(seed)
+      for (const npc of content.npcs.keys()) {
+        expect(k.level(npc, 'hunnenloo'), `${npc} ${seed}`).toBeLessThanOrEqual(1)
+        expect(k.level(npc, 'stavermouth'), `${npc} ${seed}`).toBeLessThanOrEqual(2)
+      }
+    }
+  })
+
+  it('knows the own village for certain, and the places one goes to', () => {
+    const k = knowledge()
+    expect(k.level('npc_mirte', 'npc_gerrit')).toBe(3)
+    expect(k.level('npc_mirte', 'loc_waagdam_graanhandel')).toBe(3)
+    expect(k.level('npc_mirte', 'npc_lubbert')).toBeGreaterThanOrEqual(2)
+  })
+
+  it('gives direction and days on foot for far places, never a route', () => {
+    for (let seed = 1; seed <= 30; seed++) {
+      const k = knowledge(seed)
+      const packet = k.packet('npc_lubbert', ['stavermouth'])
+      const known = packet.known[0]
+      if (!known) continue
+      const line = known.facts.join(' ')
+      if (known.level === 1) expect(line).toMatch(/Stavermouth lies somewhere to the north\./)
+      else expect(line).toMatch(/Stavermouth lies north, about 2 days on foot\./)
+      expect(line).not.toMatch(/then/)
+      return
+    }
+    throw new Error('Lubbert never knew Stavermouth in 30 games')
+  })
+
+  it('lets an innkeeper hear about more people', () => {
+    const k = knowledge()
+    expect(k.chance('npc_trijntje', 'the_count')!.chance).toBeGreaterThan(k.chance('npc_wouter', 'the_count')!.chance)
+  })
+
+  it('points to someone nearby who may know, when the NPC does not', () => {
+    for (let seed = 1; seed <= 60; seed++) {
+      const k = knowledge(seed)
+      if (k.level('npc_mirte', 'cat_widow') > 0) continue
+      const packet = k.packet('npc_mirte', ['cat_widow'])
+      expect(packet.referral).toBeDefined()
+      expect(k.level(packet.referral!.npc, 'cat_widow')).toBeGreaterThanOrEqual(2)
+      expect(packet.referral!.npc).not.toBe('npc_lubbert')
+      return
+    }
+    throw new Error('Mirte knew the Cat-Widow in every game')
+  })
+})

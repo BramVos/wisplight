@@ -92,7 +92,7 @@ export class Dialogue {
     if (fresh.length === 0) return undefined
     if (fresh.length > 1) return 'you named more than one new place. Name at most one.'
     const name = fresh[0]!.text.trim()
-    if (!/^\p{Lu}[\p{L}'’-]*(\s[\p{L}'’-]+){0,3}$/u.test(name) || !reply.includes(name)) return `"${name}" is not a proper place name in your reply.`
+    if (!/^\p{Lu}[\p{L}'’-]*(\s[\p{L}'’-]+){0,3}$/u.test(name)) return `"${name}" is not a proper place name.`
     const far = this.world.state.lore?.far ?? []
     const today = far.filter((f) => f.by === npcId && this.world.now - f.t < 24 * 60).length
     if (today >= 2 || far.length >= MAX_FAR) return `you may not name new places now. Use only names you were given.`
@@ -336,7 +336,7 @@ export class Dialogue {
 
     // 5. New far-away places become part of this game's lore.
     for (const name of reply?.names ?? []) {
-      if (name.new_kind !== 'none' && !this.topics.find(name.text)) this.registerFar(npcId, name.text, name.new_kind, replyText)
+      if (name.new_kind !== 'none' && !this.topics.find(name.text) && replyText.includes(name.text.trim())) this.registerFar(npcId, name.text.trim(), name.new_kind, replyText)
     }
 
     // 6. Journal and memory.
@@ -445,7 +445,8 @@ export class Dialogue {
         continue
       }
       const said = `${fitted} ${reply.memory_note}`
-      const fresh = reply.names.filter((n) => n.new_kind !== 'none' && !this.topics.find(n.text))
+      // A name cut off with a reply that ran too long does not count.
+      const fresh = reply.names.filter((n) => n.new_kind !== 'none' && !this.topics.find(n.text) && fitted.includes(n.text.trim()))
       const farProblem = this.checkFar(npcId, fresh, fitted)
       if (farProblem) {
         llm.report?.({ reason: 'invented' })

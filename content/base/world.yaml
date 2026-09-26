@@ -27,3 +27,20 @@ world:
     watches you, very still, the way cats don't usually watch people.
 
     Type LOOK to look around. Type HELP if you are lost. You probably are.
+
+  # Who knows what (FO, chapter 5). The chance table and distance bands use the
+  # defaults from the FO; these modifiers are the professions and traits it names.
+  knowledge:
+    modifiers:
+      # An innkeeper hears about everyone.
+      - { profession: [innkeeper, barmaid], kinds: [person], factor: 1.3 }
+      # Traders and travellers know places as if they were more famous.
+      - { profession: [grain_merchant, pedlar, boatman, soldier], kinds: [place, area], fame: 1 }
+      # A baker knows everyone who sells grain or flour.
+      - { profession: [baker], kinds: [person], sells: [rye_grain, flour], min_level: 2 }
+      # A sister of the Lantern knows the saints and their stories well.
+      - { profession: [sister], topics: [saint_brand], level: 1, factor: 1.2 }
+      # Old people know old stories.
+      - { min_age: 60, kinds: [lore], factor: 1.2 }
+      # Gossips hear more about people.
+      - { quirk: [gossip], kinds: [person, fact], factor: 1.2 }

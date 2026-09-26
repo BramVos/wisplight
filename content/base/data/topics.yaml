@@ -1,7 +1,7 @@
 # Lore and facts people can talk about (Wereldboek, chapters 3, 10 and 11).
-# Who knows what (M2 rule, refined in M3): known_by knows everything; people
-# who know the origin area know the details; fame 3 or more means everyone
-# has at least heard the summary.
+# Who knows what (FO, chapter 5): known_by knows everything; everyone else
+# rolls against the chance for the topic's fame and the distance to where it
+# belongs (origin area or pos, in km on the map of the land), plus audience.
 
 topics:
   - id: the_storm
@@ -36,8 +36,8 @@ topics:
     name: the Kattenbroek
     kind: place
     aliases: [kattenbroek, the kattenbroek, cat marsh, the fen to the south-east]
-    origin: veenhoek
     fame: 2
+    pos: [123.5, 99]
     summary: The Kattenbroek is a fen about three or four hours' walk south-east of Veenhoek, all reeds and black pools.
     details: Nobody goes there if they can help it. The peat-cutters lost a man there in 208, and they say a widow lives out in it.
 
@@ -45,8 +45,9 @@ topics:
     name: the Cat-Widow of the Kattenbroek
     kind: lore
     aliases: [the widow, widow, cat-widow, cat widow, the witch, witch, kaatje, widow kaatje, weduwe, heks, kattenweduwe]
-    origin: veenhoek
     fame: 2
+    pos: [123.5, 99]
+    audience: { peat_cutter: 0.2, child: 0.2 }
     summary: Folk say a widow out in the Kattenbroek turns thieves into cats.
     details: Her name is Kaatje. Her husband was an eel-fisher who drowned, and she keeps the fen as if it were his grave. Take from it without asking and you come home on four legs, if at all.
     story: |
@@ -57,8 +58,9 @@ topics:
     name: the Haakman
     kind: lore
     aliases: [haakman, the haakman, hook-man, hookman, water spirit, blackmere spirit]
-    origin: veenhoek
     fame: 2
+    pos: [114, 97]
+    audience: { eel_fisher: 0.2, child: 0.1 }
     summary: The Haakman lives in the Blackmere and drags down anyone who insults the water.
     details: He is grey as a heron, with teeth like water-weed and a long hook. Old women hammer iron nails into their doorsteps to keep him out.
     teller: npc_wouter
@@ -71,6 +73,7 @@ topics:
     kind: lore
     aliases: [water wolf, the water wolf, night of the water wolf, the flood, waterwolf, de waterwolf, de vloed]
     fame: 5
+    everywhere: true
     summary: Two hundred and eleven years ago the sea broke the Great Dyke in one night and drowned seventy-two villages.
     details: The old folk called the flood the Water Wolf, because it came hungry and took everything, the rich city of Saeftinge too. The years are counted from that night.
     story: |
@@ -81,6 +84,7 @@ topics:
     kind: lore
     aliases: [saint brand, brand, sint brand, the lantern, the church of the lantern]
     fame: 5
+    pos: [40, 110]
     summary: Saint Brand lit a lantern on the Great Dyke on the Night of the Water Wolf and led the drowning to dry land. The Church of the Lantern keeps his light.
     known_by: [npc_wendela]
 
@@ -89,6 +93,7 @@ topics:
     kind: lore
     aliases: [last sheaf, the last sheaf, grey rider, the grey rider, wild hunt, laatste schoof, grijze ruiter]
     fame: 4
+    everywhere: true
     summary: At harvest you leave the last sheaf standing for the Grey Rider's horse, or he takes something else.
     story: |
       At harvest you leave the last sheaf standing in the field, tied with a red thread. That one's for the Grey Rider's horse. Priests say it's superstition. Fine. Old Dirk Hoeve cut his last sheaf in 203. That winter the Rider came through in a storm, and Dirk's barn went up like tinder. You leave the sheaf.
@@ -125,6 +130,7 @@ topics:
     kind: place
     aliases: [graafhaven, the capital, the city]
     fame: 5
+    pos: [40, 110]
     summary: Graafhaven is the capital, a day west by barge along the Graafse Vaart, where the Count lives and the Brandaris burns every night.
 
   - id: zwolderkamp
@@ -132,6 +138,7 @@ topics:
     kind: place
     aliases: [zwolderkamp]
     fame: 4
+    pos: [185, 115]
     summary: Zwolderkamp is the merchant city of the Cog League, two days east by road. The Count owes them money.
 
   - id: the_count
@@ -139,6 +146,7 @@ topics:
     kind: person
     aliases: [the count, count, count aelbrecht, aelbrecht, de graaf, graaf]
     fame: 4
+    pos: [40, 110]
     summary: Count Aelbrecht III rules the Nethermarch from Graafhaven. He wants land out of water, and money out of land.
 
   - id: stavermouth
@@ -146,6 +154,7 @@ topics:
     kind: place
     aliases: [stavermouth]
     fame: 3
+    pos: [125, 193]
     summary: Stavermouth is a silting port far up north, past the Zuyder Mere.
 
   - id: weeping_stone
@@ -153,11 +162,13 @@ topics:
     kind: lore
     aliases: [weeping stone, the weeping stone, wenende steen]
     fame: 1
+    pos: [200, 160]
     summary: A giant-bed near Hunnenloo, far away on the heath, that weeps salt when someone in the village is about to die.
 
   - id: hunnenloo
     name: Hunnenloo
     kind: place
     aliases: [hunnenloo]
-    fame: 1
-    summary: Hunnenloo is a village far away on the heath, among the giant-beds.
+    fame: 3
+    pos: [200, 160]
+    summary: Hunnenloo is a town far away on the heath, among the giant-beds and the sheep.
