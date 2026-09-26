@@ -3,7 +3,7 @@ import { callName, type Affordance, type Direction, type Npc, type ObjectInstanc
 import { add, formatMoney, hasAll, itemName, listItems, matchItem, withArticle } from './items'
 import { applyEffect } from './dialogue/relations'
 import { recordFact } from './news'
-import { giveBack } from './stories'
+import { giveBack, stories, type Tempo } from './stories'
 import { isNight, qtyName, wakeNpc } from './npc/execute'
 import { parseDirection, splitQuantity, type Command } from './parser'
 import type { World } from './world'
@@ -30,6 +30,7 @@ const HELP = [
   'Things: inventory (i), take, drop, give <thing> to <person>, use <object>, eat <food>.',
   'Trade: list (what is for sale here), buy <thing> [amount], sell <thing> [amount], rent a room.',
   'Time: time, wait [minutes], sleep. At night: knock (on a door), wake <person>.',
+  'Pace: tempo calm, tempo normal or tempo dramatic (how much happens in the world).',
   "Talking: talk <person>, ask <person> about <topic>, say <text> or 'text.",
   'Game: save, load, continue (exactly where you stopped), log [lines], log export, help.',
   'Dutch works too: kijk, pak, koop, praat met, vraag ... over ...',
@@ -80,6 +81,8 @@ export function runCommand(host: CommandHost, command: Command): Output[] {
     }
     case 'time':
       return [text(`It is ${clockText(world)}.`)]
+    case 'tempo':
+      return tempo(world, command.args[0])
     case 'wake':
       return wake(host, command.args)
     case 'knock':
@@ -449,6 +452,29 @@ function cannotUse(world: World, here: string, instance: ObjectInstance, afforda
 }
 
 // ---------------------------------------------------------------- helpers
+
+const TEMPOS: Record<string, Tempo> = { calm: 'calm', rustig: 'calm', normal: 'normal', gewoon: 'normal', dramatic: 'dramatic', dramatisch: 'dramatic' }
+const TEMPO_WORDS: Record<Tempo, string> = { calm: 'calm: little happens', normal: 'normal', dramatic: 'dramatic: a lot happens' }
+
+/** How much happens in the world (design: lore and world change, "Tempo en toeval"). */
+function tempo(world: World, word: string | undefined): Output[] {
+  const state = stories(world)
+  const chosen = word ? TEMPOS[word.toLowerCase()] : undefined
+  if (word && !chosen) return [error('Tempo is calm, normal or dramatic.')]
+  if (chosen) state.tempo = chosen
+  return [{ kind: 'system', text: `The pace of events is ${TEMPO_WORDS[state.tempo]}.${chosen ? '' : ' Type TEMPO CALM, TEMPO NORMAL or TEMPO DRAMATIC to change it.'}` }]
+}
+
+/** Anyone in the world by name, wherever they are: for the world builder. */
+export function findNpcAnywhere(world: World, words: string): string | undefined {
+  const wanted = words.trim().toLowerCase().replace(/^(the|de|het)\s+/, '')
+  if (!wanted) return undefined
+  const all = [...world.content.npcs.keys()].sort()
+  return (
+    all.find((id) => namesOf(world.npc(id)).some((name) => name === wanted)) ??
+    all.find((id) => namesOf(world.npc(id)).some((name) => name.startsWith(wanted) || name.includes(` ${wanted}`)))
+  )
+}
 
 export function findNpcHere(world: World, words: string): string | undefined {
   const wanted = words.trim().toLowerCase().replace(/^(the|de|het)\s+/, '')

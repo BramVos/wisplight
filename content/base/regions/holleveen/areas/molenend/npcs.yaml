@@ -22,3 +22,13 @@ npcs:
     money: 800
     inventory: { rye_grain: 3 }
     knows_areas: [veenhoek, molenend, drowned_goose, waagdam, roads]
+    relations:
+      - to: npc_mirte
+        role: debtor
+        bond: 0
+        private: true
+        note: She owes you three guilders.
+      - to: npc_aaltje
+        role: neighbour
+        bond: -1
+        note: Her field borders yours.

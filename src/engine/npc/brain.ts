@@ -2,6 +2,7 @@ import { minuteOfDay, nextOpening, parseHours, startOfDay, weekdayOf } from '../
 import type { DailyGoal, ScheduleBlock } from '../content'
 import type { Goal, Step } from '../state'
 import type { World } from '../world'
+import { griefSince } from '../people'
 import { feastFor } from '../stories'
 import { executeStep, resolvePending } from './execute'
 import { isFailure, Planner } from './planner'
@@ -74,7 +75,12 @@ function choose(world: World, npcId: string): boolean {
   if (npc.sickUntil !== undefined && world.now < npc.sickUntil) {
     return setPlan(world, npcId, [...goHome(world, npcId), { kind: 'spend', minutes: 60, activity: 'idle', label: 'ill in bed' }])
   }
-  const feast = feastFor(world, npcId)
+  // Fresh grief keeps people at home for a day, and away from feasts for a week.
+  const grief = griefSince(world, npcId)
+  if (grief !== undefined && world.now - grief < 24 * 60 && npc.needs.rest >= 10) {
+    return setPlan(world, npcId, [...goHome(world, npcId), { kind: 'spend', minutes: 60, activity: 'idle', label: 'mourning at home' }])
+  }
+  const feast = grief !== undefined && world.now - grief < 7 * 24 * 60 ? undefined : feastFor(world, npcId)
   if (feast && !def.child) {
     return setPlan(world, npcId, [...goTo(world, npcId, feast.place), { kind: 'spend', minutes: Math.max(10, feast.until - world.now), activity: 'socialize' }])
   }

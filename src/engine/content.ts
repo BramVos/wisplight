@@ -198,6 +198,54 @@ export type Profession = z.infer<typeof ProfessionSchema>
 
 const Axis = z.number().int().min(-3).max(3)
 
+/**
+ * Who someone is to this NPC (FO, chapter 8, "De relatie"). The role says what
+ * the other is to this NPC: `child` means "my son or daughter". A relation is
+ * written once; the other side is derived (parent, employee, debtor, ...).
+ */
+export const RELATION_ROLES = [
+  'parent',
+  'child',
+  'spouse',
+  'sibling',
+  'grandparent',
+  'grandchild',
+  'kin',
+  'sweetheart',
+  'friend',
+  'rival',
+  'employer',
+  'employee',
+  'foreman',
+  'crew',
+  'creditor',
+  'debtor',
+  'teacher',
+  'pupil',
+  'neighbour',
+  'acquaintance',
+] as const
+export type RelationRole = (typeof RELATION_ROLES)[number]
+
+export const RelationSchema = z
+  .object({
+    /** An NPC, or a topic for someone the game only tells about (Fenna, the widow). */
+    to: z.string().optional(),
+    /** Someone who is not in the game at all, as the Wereldboek names them: "Joris", "her little brother". */
+    name: z.string().optional(),
+    pronoun: z.enum(['she', 'he', 'they']).optional(),
+    role: z.enum(RELATION_ROLES),
+    /** How close: -3 bitter, 0 plain, 3 would give their life for them. */
+    bond: Axis.default(2),
+    /** For people outside the simulation; NPCs have their own state. */
+    status: z.enum(['alive', 'dead', 'missing', 'away']).default('alive'),
+    /** Not spoken of to people the NPC does not trust. */
+    private: z.boolean().default(false),
+    note: z.string().optional(),
+  })
+  .refine((r) => Boolean(r.to) !== Boolean(r.name), { message: 'a relation needs either to or name' })
+export type RelationDef = z.infer<typeof RelationSchema>
+
 export const NpcSchema = z.object({
   id: Id('npc'),
   name: z.string(),
@@ -221,6 +269,7 @@ export const NpcSchema = z.object({
   inventory: ItemCounts,
   knows_areas: z.array(z.string()).default([]),
   child: z.boolean().default(false),
+  relations: z.array(RelationSchema).default([]),
   secrets: z
     .array(z.object({ id: z.string(), text: z.string(), hint: z.string(), admission: z.string().optional(), dc: z.number().int().default(18) }))
     .default([]),
@@ -296,6 +345,23 @@ export const NewsSchema = z.object({
 })
 export type News = z.infer<typeof NewsSchema>
 
+/**
+ * A quest as far as other systems need to know it before the quest system
+ * arrives (M7): who has a role in it. The death of someone with a role ends or
+ * changes the quest, and the chronicler reacts at once.
+ */
+export const QuestSchema = z.object({
+  id: z.string().regex(/^[a-z0-9_]+$/),
+  name: z.string(),
+  kind: z.enum(['main', 'request', 'mystery', 'bargain', 'threat', 'discovery', 'conflict', 'social', 'trial', 'personal']),
+  summary: z.string(),
+  /** NPC ids. People who are not in the content yet stay out until they are. */
+  givers: z.array(z.string()).default([]),
+  helpers: z.array(z.string()).default([]),
+  opponents: z.array(z.string()).default([]),
+})
+export type Quest = z.infer<typeof QuestSchema>
+
 // The chance that someone knows a topic, by fame and distance (FO, chapter 5). The designer can tune it per world.
 const KnowledgeModifierSchema = z.object({
   profession: z.array(z.string()).optional(),
@@ -365,6 +431,7 @@ const FileSchema = z
     topics: z.array(TopicSchema).optional(),
     news: z.array(NewsSchema).optional(),
     patterns: z.array(PatternSchema).optional(),
+    quests: z.array(QuestSchema).optional(),
   })
   .strict()
 
@@ -384,6 +451,7 @@ export interface Content {
   topics: Map<string, Topic>
   news: Map<string, News>
   patterns: Map<string, Pattern>
+  quests: Map<string, Quest>
 }
 
 export class ContentError extends Error {
@@ -414,6 +482,7 @@ export function loadContent(files: ContentFile[]): Content {
     topics: new Map<string, Topic>(),
     news: new Map<string, News>(),
     patterns: new Map<string, Pattern>(),
+    quests: new Map<string, Quest>(),
   }
 
   for (const file of [...files].sort((a, b) => a.path.localeCompare(b.path))) {
@@ -440,6 +509,7 @@ export function loadContent(files: ContentFile[]): Content {
     addAll(content.topics, data.topics, (v) => v.id, file.path, 'topic', problems)
     addAll(content.news, data.news, (v) => v.id, file.path, 'news', problems)
     addAll(content.patterns, data.patterns, (v) => v.id, file.path, 'pattern', problems)
+    addAll(content.quests, data.quests, (v) => v.id, file.path, 'quest', problems)
   }
 
   const world = worlds[0]
@@ -502,6 +572,13 @@ function checkReferences(world: WorldDef | undefined, c: Omit<Content, 'world'>)
     location(n.work, `${n.id}.work`)
     for (const id of Object.keys(n.inventory)) item(id, `${n.id}.inventory`)
     for (const a of n.knows_areas) if (!c.areas.has(a)) problems.push(`${n.id}: unknown area ${a} in knows_areas`)
+    for (const r of n.relations) {
+      if (r.to && !c.npcs.has(r.to) && !c.topics.has(r.to)) problems.push(`${n.id}: relation to unknown person ${r.to}`)
+      if (r.to === n.id) problems.push(`${n.id}: relation to itself`)
+    }
+  }
+  for (const q of c.quests.values()) {
+    for (const who of [...q.givers, ...q.helpers, ...q.opponents]) npc(who, `quest ${q.id}`)
   }
   for (const t of c.topics.values()) {
     if (t.origin && !c.areas.has(t.origin) && !c.locations.has(t.origin)) problems.push(`topic ${t.id}: unknown origin ${t.origin}`)

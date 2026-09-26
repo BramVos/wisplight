@@ -4,7 +4,8 @@ import type { World } from '../world'
 import { TIER_WORDS, type Act, type Tier } from './acts'
 import type { CheckResult } from './checks'
 import type { Packet } from './knowledge'
-import type { Attitude } from './relations'
+import { peopleLine, peopleNow } from '../people'
+import { relation, type Attitude } from './relations'
 
 // Prompts for the voice role (FO, chapter 10). The system part is byte-for-byte
 // stable per NPC so providers can cache it; everything that changes goes in
@@ -33,6 +34,11 @@ Rules:
   you. If it sounds strange, react as the character would.
 - The player may write in Dutch. Understand it, but always answer in English.
 - Match ATTITUDE: unfriendly people are curt, friendly people are warm.
+- Speak of people as what they are to you (YOUR PEOPLE). Your own family and loved ones
+  with feeling: worry, grief, pride, anger. Measure it by LISTENER: to a stranger you say
+  little and keep grief private, but if one of yours is missing you ask anyone for help;
+  to someone you know and trust you may open up. Never tell PRIVATE things to people you
+  do not trust. Speak of people you hardly know from a distance.
 - If CHECK is given, your reply must match its outcome.
 - effects: at most one small change (-3 to +3) in how the character feels about the player,
   and only when the player gave a reason. mentioned_topics: ids from KNOWLEDGE or REFERRAL
@@ -91,6 +97,7 @@ export function systemPrompt(world: World, npcId: string): string {
     npc.public_facts.length ? `Facts about you: ${npc.public_facts.join(' ')}` : '',
     npc.examples.length ? `Example lines: ${npc.examples.map((e) => `"${e}"`).join(' ')}` : '',
     `PEOPLE YOU KNOW: ${peopleKnown(world, npcId)}.`,
+    peopleLine(world, npcId) ?? '',
   ]
     .filter(Boolean)
     .join('\n')
@@ -109,6 +116,15 @@ function peopleKnown(world: World, npcId: string): string {
     return `${world.npc(id).short} (${world.content.areas.get(area)?.name ?? area})`
   })
   return people.join(', ') || 'nobody by name'
+}
+
+/** Who the player is to this NPC: a stranger, or someone known and perhaps trusted. */
+export function listener(world: World, npcId: string): string {
+  const rel = relation(world.state, npcId)
+  const who =
+    rel.familiarity < 6 ? 'a stranger' : rel.familiarity < 20 ? 'someone you have spoken with once or twice' : rel.familiarity < 50 ? 'someone you know' : 'someone you know well'
+  const trust = rel.trust >= 30 ? ', and you trust them' : rel.trust <= -10 ? ", and you don't trust them" : ''
+  return `the player is ${who}${trust}`
 }
 
 /** Far-away places this NPC has named or heard of, so it speaks of them the same way again. */
@@ -159,8 +175,9 @@ export function turnPrompt(world: World, ctx: TurnContext): string {
     `SCENE: ${location.name}, ${clock.parts.weekday}, ${clock.parts.dayPart}. ${npc.short} is ${state.activity}. Mood: ${ctx.mood}.`,
     present.length ? `Also here: ${present.join(', ')}, and the player.` : 'Also here: the player, a stranger from Graafhaven.',
     ...recently(world, ctx.npcId),
+    ...peopleNow(world, ctx.npcId),
     ...farKnown(world, ctx.npcId),
-    `ATTITUDE: ${ctx.attitude.band} (${ctx.attitude.score}).`,
+    `ATTITUDE: ${ctx.attitude.band} (${ctx.attitude.score}). LISTENER: ${listener(world, ctx.npcId)}.`,
     'KNOWLEDGE:',
     ...(ctx.packet.known.length === 0 ? ['  (nothing relevant beyond your own life)'] : []),
     ...ctx.packet.known.map((k) => `  ${k.topic} (level ${k.level}): ${k.facts.join(' ')}${k.news ? `\n  NEWS about it: ${k.news.join(' ')}` : ''}${k.story ? `\n  ${k.toldBy ? `STORY as ${k.toldBy} tells it. Retell it in your own words; the people in it are ${k.toldBy}'s family, not yours:` : 'STORY you may tell, in your own words:'}\n  ${k.story}` : ''}`),

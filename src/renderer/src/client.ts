@@ -75,7 +75,7 @@ export async function createClient(): Promise<EngineClient> {
   const mock = new URLSearchParams(window.location.search).has('mock')
   const demo = mock ? await import('./demo') : undefined
   const llm = mock ? demo!.slowMock(new MockLlm('good')) : undefined
-  const engine = new Engine(content, { seed: 1, llm })
+  const engine = new Engine(content, { seed: 1, llm, builder: true })
   const bridge = demo?.demoBridge(content)
   // The clock starts with the player's first keystroke, not while the opening is being read.
   let lastInput = -Infinity

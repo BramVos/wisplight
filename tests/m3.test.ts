@@ -121,14 +121,15 @@ describe('M3: news goes from person to person', () => {
 
   it('usually reaches Waagdam within two days, with less certainty', () => {
     let reached = 0
-    for (let seed = 1; seed <= 6; seed++) {
+    for (let seed = 1; seed <= 12; seed++) {
       const { engine, fact, heard } = start(seed, 16)
       engine.tick(48 * 60)
       const town = people('waagdam').filter((npc) => heard()[npc]?.[fact.id])
       if (town.length > 0) reached++
       for (const npc of town) expect(heard()[npc]![fact.id]!.reliability).toBeLessThan(1)
     }
-    expect(reached).toBeGreaterThanOrEqual(4)
+    // Two out of three start days is "usually".
+    expect(reached).toBeGreaterThanOrEqual(8)
   })
 
   it('forgets small news: belang 1 after two days, belang 2 after two weeks', () => {
@@ -248,7 +249,7 @@ describe('M3: small stories happen by themselves', () => {
     const atQuay = veenhoek.filter((id) => engine.state.npcs[id]!.location === 'loc_veenhoek_quay')
     expect(atQuay.length).toBeGreaterThanOrEqual(3)
     engine.tick(30)
-    expect(engine.state.news!.facts.some((f) => f.kind === 'appeldag')).toBe(true)
+    expect(engine.state.news!.facts.some((f) => f.pattern === 'appeldag')).toBe(true)
   })
 })
 

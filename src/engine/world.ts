@@ -18,6 +18,8 @@ export class World {
   readonly rng: Rng
   private readonly routes = new Map<string, Route | undefined>()
   private readonly known = new Map<string, Set<string>>()
+  /** Relations between people, built once from the content (see people.ts). */
+  readonly tieCache = new Map<string, unknown>()
 
   constructor(
     readonly content: Content,
@@ -70,16 +72,21 @@ export class World {
     return this.state.services[key].stock
   }
 
+  /** The living people here. */
   npcsAt(locationId: string): string[] {
     return Object.keys(this.state.npcs)
-      .filter((id) => this.state.npcs[id]!.location === locationId)
+      .filter((id) => this.state.npcs[id]!.location === locationId && !this.state.npcs[id]!.dead)
       .sort()
+  }
+
+  alive(id: string): boolean {
+    return !!this.state.npcs[id] && !this.state.npcs[id]!.dead
   }
 
   /** Someone who can serve is on the premises (the location itself or listed rooms). */
   staffed(locationId: string, provider: string, staff: string[] = [], premises: string[] = []): boolean {
     const places = new Set([locationId, ...premises])
-    return [provider, ...staff].some((id) => places.has(this.state.npcs[id]?.location ?? ''))
+    return [provider, ...staff].some((id) => this.alive(id) && places.has(this.state.npcs[id]!.location))
   }
 
   serviceOpen(locationId: string, service: Service, at = this.now): boolean {

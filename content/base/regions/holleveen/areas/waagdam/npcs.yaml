@@ -65,6 +65,13 @@ npcs:
       - "The scale is honest. People are merely heavier or lighter than they fear."
     money: 400
     knows_areas: [waagdam, drowned_goose, roads, veenhoek, molenend]
+    relations:
+      - to: cat_widow
+        pronoun: she
+        role: debtor
+        bond: 1
+        private: true
+        note: Forty years ago you signed her certificate although she weighed too light.
 
   - id: npc_hendrik
     name: Hendrik Smid

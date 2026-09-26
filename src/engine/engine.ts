@@ -1,5 +1,5 @@
 import { GameClock } from './clock'
-import { describeRoom, findNpcHere, runCommand, type CommandHost, type Output } from './commands'
+import { describeRoom, findNpcAnywhere, findNpcHere, runCommand, type CommandHost, type Output } from './commands'
 import { callName, type Content } from './content'
 import { Dialogue, QUICK_OPTIONS } from './dialogue/conversation'
 import { Knowledge } from './dialogue/knowledge'
@@ -9,6 +9,7 @@ import { TopicRegistry } from './dialogue/topics'
 import { formatMoney } from './items'
 import { chronicleText } from './chronicle'
 import { journalPage, type JournalPage } from './journal'
+import { die } from './life'
 import { recordFact, seedNews } from './news'
 import { parseCommand, parseDirection } from './parser'
 import { advance } from './simulation'
@@ -64,6 +65,8 @@ export interface EngineOptions {
   state?: GameState
   log?: LogEntry[]
   llm?: LlmClient
+  /** The world builder's @ commands (FO, chapter 15), for playtesting in a development build. */
+  builder?: boolean
 }
 
 // In a conversation these words are commands; everything else is speech.
@@ -96,6 +99,10 @@ export class Engine {
   private llm?: LlmClient
   private readonly listeners = new Set<(line: GameLogLine) => void>()
   private eventMark: number
+  /** The world builder's @ commands are on (a development build). */
+  builder: boolean
+  /** True while a log is played back: build commands in it ran once, so they run again. */
+  private replaying = false
 
   constructor(
     readonly content: Content,
@@ -104,6 +111,7 @@ export class Engine {
     const state = options.state ?? createInitialState(content, options.seed ?? 1)
     this.world = new World(content, state)
     this.log = options.log ? [...options.log] : []
+    this.builder = options.builder ?? false
     this.host = { world: this.world, pass: (minutes) => this.pass(minutes) }
     this.topics = new TopicRegistry(content)
     for (const far of state.lore?.far ?? []) this.topics.addDuringPlay({ id: far.id, kind: 'place', name: far.name, aliases: [far.name] })
@@ -216,7 +224,11 @@ export class Engine {
 
   start(): Output[] {
     const intro = this.content.world.intro?.trim()
-    return [...(intro ? [{ kind: 'text' as const, text: intro }] : []), describeRoom(this.world)]
+    return [
+      ...(intro ? [{ kind: 'text' as const, text: intro }] : []),
+      describeRoom(this.world),
+      { kind: 'system', text: 'The pace of events is normal. Type TEMPO CALM or TEMPO DRAMATIC for less or more happening in the world.' },
+    ]
   }
 
   async handle(input: string): Promise<Output[]> {
@@ -233,6 +245,7 @@ export class Engine {
   }
 
   private async route(text: string): Promise<Output[]> {
+    if (text.startsWith('@')) return this.build(text.slice(1))
     const talk = this.state.talk
     const command = parseCommand(text.replace(/^\//, ''))
     const talking = talk && !text.startsWith('/')
@@ -411,10 +424,49 @@ export class Engine {
       },
     }
     this.llm = modelOn ? recorded : undefined
-    for (const entry of entries) {
-      if (entry.k === 'cmd') await this.handle(entry.v)
-      else if (entry.k === 'tick') this.tick(entry.v)
-      else if (entry.k === 'llm') this.setLlm(entry.v === 'on' ? recorded : undefined)
+    this.replaying = true
+    try {
+      for (const entry of entries) {
+        if (entry.k === 'cmd') await this.handle(entry.v)
+        else if (entry.k === 'tick') this.tick(entry.v)
+        else if (entry.k === 'llm') this.setLlm(entry.v === 'on' ? recorded : undefined)
+      }
+    } finally {
+      this.replaying = false
+    }
+  }
+
+  /** Build commands (FO, chapter 15, "Bouwcommando's in het spel"), for playtesting. */
+  private build(text: string): Output[] {
+    if (!this.builder && !this.replaying) return [{ kind: 'error', text: 'Build commands only work in the world builder (npm run dev).' }]
+    const [verb = '', ...rest] = text.trim().split(/\s+/)
+    switch (verb.toLowerCase()) {
+      case 'kill': {
+        // @kill harmen drowned in the Blackmere
+        const words = rest.join(' ')
+        const npcId = [...Array(rest.length).keys()]
+          .map((n) => rest.length - n)
+          .map((n) => ({ id: findNpcAnywhere(this.world, rest.slice(0, n).join(' ')), n }))
+          .find((x) => x.id)
+        if (!npcId?.id) return [{ kind: 'error', text: `@kill whom? Nobody called "${words}".` }]
+        const cause = rest.slice(npcId.n).join(' ') || 'died suddenly'
+        const fact = die(this.world, npcId.id, { cause })
+        if (!fact) return [{ kind: 'error', text: `${this.world.npc(npcId.id).name} is already dead.` }]
+        return [{ kind: 'system', text: `[build] ${fact.text.precise} Belang ${fact.belang}.` }, ...this.pass(0)]
+      }
+      case 'who-knows': {
+        // @who-knows haakman: every NPC with the chance and the level (FO, chapter 15).
+        const topic = this.topics.find(rest.join(' '))
+        if (!topic) return [{ kind: 'error', text: `@who-knows what? No topic "${rest.join(' ')}".` }]
+        const knowledge = new Knowledge(this.world, this.topics)
+        const rows = [...this.content.npcs.keys()].sort().map((id) => {
+          const odds = knowledge.chance(id, topic)
+          return `${callName(this.world.npc(id)).padEnd(10)} level ${knowledge.level(id, topic)}${odds ? `  chance ${Math.round(odds.chance * 100)}%` : ''}`
+        })
+        return [{ kind: 'system', text: [`[build] Who knows ${this.topics.name(topic)}:`, ...rows].join('\n') }]
+      }
+      default:
+        return [{ kind: 'error', text: 'Build commands: @kill <person> [how], @who-knows <topic>.' }]
     }
   }
 

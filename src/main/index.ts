@@ -98,6 +98,8 @@ function journal(): GameLog {
 function follow(next: Engine, where: Session): void {
   unfollow?.()
   engine = next
+  // The world builder's @ commands are for playtesting in a development build.
+  next.builder = !app.isPackaged
   session = where
   unfollow = next.onLog((line) => journal().write(where, line))
 }
@@ -125,7 +127,7 @@ ipcMain.handle('engine:start', async () => {
   await setup()
   unfollow?.()
   session = undefined
-  engine = new Engine(content!, { seed: Math.floor(Math.random() * 2 ** 31), llm: ai!.client() })
+  engine = new Engine(content!, { seed: Math.floor(Math.random() * 2 ** 31), llm: ai!.client(), builder: !app.isPackaged })
   // The clock starts with the player's first keystroke, not while the opening is being read.
   lastInput = -Infinity
   const outputs = engine.start()

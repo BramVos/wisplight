@@ -4,7 +4,8 @@ import { callName } from '../content'
 import type { World } from '../world'
 import type { Act } from './acts'
 import type { Packet } from './knowledge'
-import type { Attitude } from './relations'
+import { isNear, noun, tieTo } from '../people'
+import { relation, type Attitude } from './relations'
 
 // Without a model, or when a reply fails the checks, NPCs still answer from
 // designer text: the facts in their knowledge packet and these templates
@@ -54,6 +55,14 @@ export function fallbackReply(world: World, npcId: string, act: Act, packet: Pac
       return `${name} laughs. ${quote("Me? I've work to do, and you're a stranger.")}`
     case 'Trade':
       return `${name} points at the goods. ${quote('Have a look. Ask what you like.')}`
+  }
+
+  // Grief is not for strangers: a dead husband or child is not something to tell a passer-by.
+  const tie = known ? tieTo(world, npcId, known.topic) : undefined
+  const rel = relation(world.state, npcId)
+  if (tie && isNear(tie) && tie.status === 'dead' && rel.familiarity < 20 && rel.trust < 30) {
+    const them = tie.pronoun === 'she' ? 'her' : tie.pronoun === 'he' ? 'him' : 'them'
+    return `${name} looks away. ${quote(`My ${noun(tie)}. I'd rather not speak of ${them} to a stranger.`)}`
   }
 
   if (known) {

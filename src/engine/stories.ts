@@ -2,6 +2,7 @@ import { GameClock, minuteOfDay, startOfDay } from './clock'
 import { callName, type Npc, type Pattern } from './content'
 import { applyEffect } from './dialogue/relations'
 import { add, itemName, withArticle } from './items'
+import { belangOf } from './life'
 import { recordFact } from './news'
 import { remember } from './npc/execute'
 import type { World } from './world'
@@ -167,7 +168,7 @@ function searchLost(world: World, story: Story, pattern: Pattern): void {
   const ground = world.state.ground[place] ?? {}
   story.next = world.now + 60
   if ((ground[thing] ?? 0) > 0) {
-    const here = Object.keys(world.state.npcs).filter((id) => world.state.npcs[id]!.location === place && world.state.npcs[id]!.activity !== 'asleep').sort()
+    const here = world.npcsAt(place).filter((id) => world.state.npcs[id]!.activity !== 'asleep')
     // It takes a while: the owner looks in the wrong places, others walk past it.
     const finder = here.includes(owner) && world.rng.next('stories') < 0.25 ? owner : here.filter((id) => id !== owner).find(() => world.rng.next('stories') < 0.04)
     if (finder) {
@@ -230,7 +231,7 @@ function playQuarrel(world: World, story: Story, pattern: Pattern): void {
   const byPlace = new Map<string, string[]>()
   for (const id of Object.keys(world.state.npcs).sort()) {
     const npc = world.state.npcs[id]!
-    if (npc.activity === 'asleep' || world.npc(id).child || !world.location(npc.location).tags.includes('social')) continue
+    if (npc.dead || npc.activity === 'asleep' || world.npc(id).child || !world.location(npc.location).tags.includes('social')) continue
     byPlace.set(npc.location, [...(byPlace.get(npc.location) ?? []), id])
   }
   let best: { place: string; a: string; b: string; heat: number } | undefined
@@ -329,10 +330,11 @@ export function feastFor(world: World, npcId: string): { place: string; until: n
 
 function record(world: World, pattern: Pattern, place: string, about: string[], vars: Record<string, string>, subject?: Npc, loud = false): string {
   return recordFact(world, {
-    kind: pattern.id,
+    kind: pattern.kind,
+    pattern: pattern.id,
     about,
     place,
-    belang: pattern.belang,
+    belang: belangOf(world, pattern.belang, about),
     loud,
     title: fill(pattern.text.title, vars, subject),
     text: { precise: fill(pattern.text.precise, vars, subject), village: fill(pattern.text.village, vars, subject), far: fill(pattern.text.far, vars, subject) },
@@ -350,7 +352,7 @@ function fill(template: string, vars: Record<string, string>, subject?: Npc): st
 
 function adults(world: World): string[] {
   return Object.keys(world.state.npcs)
-    .filter((id) => !world.npc(id).child && !(world.state.stories?.active ?? []).some((s) => Object.values(s.roles).includes(id)))
+    .filter((id) => world.alive(id) && !world.npc(id).child && !(world.state.stories?.active ?? []).some((s) => Object.values(s.roles).includes(id)))
     .sort()
 }
 

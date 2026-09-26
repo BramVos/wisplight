@@ -31,6 +31,17 @@ npcs:
     money: 368
     inventory: { peat: 4 }
     knows_areas: [veenhoek, molenend, drowned_goose, waagdam, roads]
+    relations:
+      - name: Joris
+        pronoun: he
+        role: spouse
+        status: away
+        note: Your husband. He works on the tow barge and is often away for days.
+      - to: npc_harmen
+        role: creditor
+        bond: 0
+        private: true
+        note: You owe him three guilders.
 
   - id: npc_gerrit
     name: Gerrit Turfsteker
@@ -55,6 +66,11 @@ npcs:
       - "The Count can keep his polder."
     money: 120
     knows_areas: [veenhoek, molenend, drowned_goose, waagdam, roads]
+    relations:
+      - to: npc_everhard
+        role: rival
+        bond: -1
+        note: The Count's man. He would see the fen drained.
 
   - id: npc_aaltje
     name: Aaltje Hendriks
@@ -80,6 +96,21 @@ npcs:
     money: 200
     inventory: { herbs: 2 }
     knows_areas: [veenhoek, molenend, drowned_goose, waagdam, roads]
+    relations:
+      - to: npc_harmen
+        role: neighbour
+        bond: -1
+        note: His field borders yours, and the will-o'-the-wisps dance over it at night.
+      - to: npc_wendela
+        role: acquaintance
+        bond: -1
+        note: The sister thinks your herbs are the Old Powers' work.
+      - to: cat_widow
+        pronoun: she
+        role: teacher
+        bond: 1
+        private: true
+        note: You were her apprentice once. You parted badly and want to make peace before you die.
 
   - id: npc_wouter
     name: Wouter Aalman
@@ -104,6 +135,20 @@ npcs:
     money: 90
     inventory: { eel: 2 }
     knows_areas: [veenhoek, molenend, drowned_goose, waagdam, roads]
+    relations:
+      - to: npc_geesje
+        role: sweetheart
+        bond: 3
+        note: You want to marry her once you have a boat of your own.
+      - name: your grandmother
+        pronoun: she
+        role: grandparent
+        status: dead
+        note: She knew the old fen songs.
+      - to: npc_trijntje
+        role: acquaintance
+        bond: 0
+        note: Geesje's mother. She wants better for Geesje than an eel-fisher.
 
   - id: npc_wendela
     name: Wendela
@@ -133,6 +178,18 @@ npcs:
       - "Every soul is a lantern, child. Some of us need a new wick."
     money: 60
     knows_areas: [veenhoek, drowned_goose, waagdam, roads]
+    relations:
+      - name: your little brother
+        pronoun: he
+        role: sibling
+        bond: 3
+        status: dead
+        private: true
+        note: He drowned in the Blackmere when you were both children.
+      - to: npc_aaltje
+        role: acquaintance
+        bond: -1
+        note: You distrust her herbs and her old customs.
 
   - id: npc_everhard
     name: Everhard van Lienden
@@ -155,6 +212,12 @@ npcs:
       - "The Count's peace is kept here, whatever the peat-cutters think."
     money: 480
     knows_areas: [veenhoek, molenend, drowned_goose, waagdam, roads]
+    relations:
+      - name: your wife
+        pronoun: she
+        role: spouse
+        private: true
+        note: As a girl she was weighed at the Waag. You dread any talk of witches.
 
   - id: npc_jan_visser
     name: Jan Visser
@@ -176,6 +239,21 @@ npcs:
       - Jan Visser cuts peat and has a daughter, Fenna, who is missing.
     money: 70
     knows_areas: [veenhoek, molenend, drowned_goose, waagdam, roads]
+    relations:
+      - to: npc_grietje_visser
+        role: spouse
+      - to: npc_pim
+        role: child
+        bond: 3
+      - to: fenna
+        pronoun: she
+        role: child
+        bond: 3
+        status: missing
+        note: She went out on the evening of 10 Herfstmaand and never came home.
+      - to: npc_gerrit
+        role: foreman
+        bond: 1
 
   - id: npc_grietje_visser
     name: Grietje Visser
@@ -198,6 +276,19 @@ npcs:
     money: 40
     inventory: { wool: 6 }
     knows_areas: [veenhoek, molenend, drowned_goose]
+    relations:
+      - to: npc_jan_visser
+        role: spouse
+        note: He has hardly slept since Fenna vanished.
+      - to: npc_pim
+        role: child
+        bond: 3
+      - to: fenna
+        pronoun: she
+        role: child
+        bond: 3
+        status: missing
+        note: Missing since the evening of 10 Herfstmaand.
 
   - id: npc_pim
     name: Pim Visser
@@ -220,3 +311,10 @@ npcs:
     money: 3
     inventory: { apple: 1 }
     knows_areas: [veenhoek, molenend]
+    relations:
+      - to: fenna
+        pronoun: she
+        role: sibling
+        bond: 3
+        status: missing
+        note: Your big sister. You miss her.

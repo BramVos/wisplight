@@ -41,7 +41,8 @@ describe('engine', () => {
   it('starts on the quay with the intro', () => {
     const outputs = newEngine().start()
     expect(outputs[0]?.text).toContain('The barge from Graafhaven')
-    expect(outputs.at(-1)?.text).toContain('Canal Quay')
+    expect(outputs[1]?.text).toContain('Canal Quay')
+    expect(outputs.at(-1)?.text).toContain('TEMPO CALM')
   })
 
   it('moves between locations and lets time pass', async () => {

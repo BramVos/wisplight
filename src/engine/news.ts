@@ -1,4 +1,5 @@
 import { minuteOfDay } from './clock'
+import { isFamilyNews, nearOf, tieTo } from './people'
 import type { Fact, Heard } from './state'
 import type { World } from './world'
 
@@ -9,6 +10,7 @@ import type { World } from './world'
 
 export interface FactInput {
   kind: string
+  pattern?: string
   about: string[]
   place: string
   belang: number
@@ -42,6 +44,7 @@ export function recordFact(world: World, input: FactInput): Fact {
   const fact: Fact = {
     id: `fact_${++store.seq}`,
     kind: input.kind,
+    ...(input.pattern ? { pattern: input.pattern } : {}),
     about: input.about,
     place: input.place,
     t: world.now,
@@ -109,10 +112,11 @@ export function spreadNews(world: World): void {
   const store = world.state.news
   if (!store || store.facts.length === 0) return
   if (minuteOfDay(world.now) % 60 === 0) forget(world)
+  tellTheFamily(world)
   const byPlace = new Map<string, string[]>()
   for (const id of Object.keys(world.state.npcs).sort()) {
     const npc = world.state.npcs[id]!
-    if (npc.activity === 'asleep') continue
+    if (npc.activity === 'asleep' || npc.dead) continue
     const list = byPlace.get(npc.location) ?? []
     list.push(id)
     byPlace.set(npc.location, list)
@@ -138,10 +142,37 @@ function chanceToTell(world: World, place: string, teller: string, listener: str
   let chance = a.home === b.home && place === a.home ? 0.9 : location.tags.includes('social') || world.npcState(teller).activity === 'chatting' ? 0.5 : 0.2
   if (a.quirks.includes('gossip')) chance *= 1.6
   chance *= 1 + 0.1 * b.personality.curiosity
+  // People talk more with those they are close to, and little with those they cannot stand.
+  const tie = tieTo(world, teller, listener)
+  if (tie) chance *= 1 + 0.15 * (tie.bond - 1)
   // Night hours at home are for sleeping, not talking.
   const hour = Math.floor(minuteOfDay(world.now) / 60)
   if (hour >= 23 || hour < 5) chance *= 0.3
   return Math.min(0.95, chance)
+}
+
+/**
+ * Bad news about someone goes to their family first: someone runs to tell
+ * them, wherever they are, within an hour or two (design, "Voorbeeld: Harmen
+ * verdrinkt": Wouter bangs on the neighbours' door).
+ */
+function tellTheFamily(world: World): void {
+  const store = world.state.news!
+  for (const fact of store.facts) {
+    if (!isFamilyNews(fact) || world.now - fact.t > 12 * 60) continue
+    const knowers = Object.keys(store.heard)
+      .filter((who) => who !== 'player' && store.heard[who]![fact.id] && world.alive(who))
+      .sort()
+    if (knowers.length === 0) continue
+    for (const person of fact.about.filter((id) => world.content.npcs.has(id))) {
+      for (const near of nearOf(world, person)) {
+        if (heardBy(world, near)[fact.id] || world.rng.next('news') >= 0.35) continue
+        const teller = knowers.find((k) => k !== near)
+        if (!teller) continue
+        heardBy(world, near)[fact.id] = { level: 3, reliability: 1, from: teller, t: world.now }
+      }
+    }
+  }
 }
 
 /** A short meeting, such as buying something at a counter: both may pass on news. */

@@ -81,6 +81,8 @@ export interface NpcState {
   noticedPlayerAt?: number
   /** Ill until then: stays home in bed. */
   sickUntil?: number
+  /** Dead: out of the simulation for good. The fact tells how. */
+  dead?: { t: number; fact: string }
 }
 
 export interface MemoryRecord {
@@ -130,6 +132,8 @@ export interface ServiceState {
 export interface Fact {
   id: string
   kind: string
+  /** The story pattern it came from, if any. */
+  pattern?: string
   /** Topic ids the fact is about: people, places, items. */
   about: string[]
   place: string

@@ -19,7 +19,7 @@ export function advance(world: World, minutes: number): void {
     if (minuteOfDay(world.now) % 60 === 0) hourly(world)
     if (minuteOfDay(world.now) % 15 === 0) spreadNews(world)
     // Someone in a conversation with the player stays put until it ends.
-    for (const id of ids) if (world.state.talk?.npc !== id) think(world, id)
+    for (const id of ids) if (world.state.talk?.npc !== id && !world.state.npcs[id]!.dead) think(world, id)
   }
 }
 
@@ -36,6 +36,7 @@ function decayNeeds(world: World): void {
   const workday = weekdayOf(world.now) !== 'Rustdag'
   for (const id of Object.keys(world.state.npcs).sort()) {
     const npc = world.state.npcs[id]!
+    if (npc.dead) continue
     const def = world.npc(id)
     const asleep = npc.activity === 'asleep'
     for (const need of Object.keys(DECAY) as Need[]) {

@@ -3,6 +3,7 @@ import { callName } from './content'
 import type { TopicRegistry } from './dialogue/topics'
 import { itemName } from './items'
 import { factById, versionOf } from './news'
+import { isNear, noun, ties } from './people'
 import type { World } from './world'
 
 // The journal as a reference book (design: lore and world change, "Wat de
@@ -54,9 +55,22 @@ export function journalPage(world: World, topics: TopicRegistry, id: string): Jo
     page.links.push(...link(npc.home, 'lives at'))
     if (npc.work && npc.work !== npc.home) page.links.push(...link(npc.work, 'works at'))
     page.links.push(...link(`area_${world.location(npc.home).area}`, 'from'))
-    for (const other of content.npcs.values()) {
-      if (other.id !== npc.id && npc.household && other.household === npc.household) page.links.push(...link(other.id, 'family'))
+    // Who they are to others is village knowledge, once you have met them; private ties stay private.
+    const shown = new Set<string>()
+    if (met) {
+      for (const tie of ties(world, npc.id).filter((t) => !t.private && t.kind !== 'known')) {
+        const label = `${noun(tie)}${tie.status === 'alive' ? '' : `, ${tie.status}`}`
+        const linked = tie.id ? link(tie.id, label) : []
+        if (linked.length) page.links.push(...linked)
+        else if (isNear(tie)) page.lines.push(`${callName(npc)}'s ${label}: ${tie.name}.`)
+        if (tie.id) shown.add(tie.id)
+      }
     }
+    for (const other of content.npcs.values()) {
+      if (other.id !== npc.id && !shown.has(other.id) && npc.household && other.household === npc.household) page.links.push(...link(other.id, 'family'))
+    }
+    const death = world.state.npcs[npc.id]?.dead
+    if (death && heard[death.fact]) page.lines.push(`Dead since ${day(death.t)}.`)
   } else if (entry.kind === 'place' && entry.ref) {
     page.kind = 'place'
     const location = content.locations.get(entry.ref)!

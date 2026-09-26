@@ -11,7 +11,7 @@ import { SaveStore } from '../node/savegame'
 const contentDir = resolve(import.meta.dirname, '../../content')
 const content = await loadContentFromDir(contentDir)
 const saves = new SaveStore(resolve(import.meta.dirname, '../../saves/cli.sqlite'))
-let engine = new Engine(content, { seed: Number(process.env['WISPLIGHT_SEED'] ?? 1) })
+let engine = new Engine(content, { seed: Number(process.env['WISPLIGHT_SEED'] ?? 1), builder: true })
 
 const print = (outputs: Output[]) => {
   for (const output of outputs) stdout.write(`\n${output.text}\n`)

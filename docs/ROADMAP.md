@@ -55,7 +55,10 @@ Scope: FO 5 en het ontwerp lore en wereldverandering (zonder AI). Vaste kansworp
 
 ## M3.1 De kroniekschrijver
 
-Scope: ontwerp lore en wereldverandering, FO 7 en 16. De kroniekschrijver als derde AI-rol met advies en proefrit; het schrift met verhaallijnen; het overzicht in vaste notatie; opzoeken met gereedschappen; de nachtelijke run en directe runs; lore met versies per afstand; nieuws van de dag; AI-doelkeuze van het brein met catalogus, validator, triggers en budget.
+Scope: ontwerp lore en wereldverandering, FO 7, 8 en 16. De kroniekschrijver als derde AI-rol met advies en proefrit; het schrift met verhaallijnen; het overzicht in vaste notatie; opzoeken met gereedschappen; de nachtelijke run en directe runs; lore met versies per afstand; nieuws van de dag; AI-doelkeuze van het brein met catalogus, validator, triggers en budget. Op verzoek van Bram naar voren gehaald uit M6: wie mensen voor elkaar zijn (familie, liefde, werk, schuld, dorp), de dood van een NPC en rouw; en uit het ontwerp het tempo kiezen.
+
+- [x] Familie en dorp: een NPC spreekt over zijn eigen mensen anders dan over anderen, en tegen een vreemde anders dan tegen iemand die hij kent en vertrouwt; slecht nieuws over iemand bereikt zijn familie eerst, en wie rouwt, blijft thuis en gaat niet naar het feest
+- [x] De speler kiest het tempo (rustig, gewoon, dramatisch); standaard gewoon
 
 - [ ] Een gebeurtenis met belang 3 of meer wordt 's nachts lore met versies per afstand, zonder feiten buiten de gebeurtenissen
 - [ ] Een gewone nachtelijke run kost minder dan 3 dollarcent en valt zonder AI terug op sjablonen

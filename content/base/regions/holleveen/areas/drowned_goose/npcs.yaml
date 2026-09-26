@@ -22,6 +22,20 @@ npcs:
       - "Beer's a duit, stew's four, and gossip's free if you're buying."
     money: 600
     knows_areas: [veenhoek, molenend, drowned_goose, waagdam, roads]
+    relations:
+      - to: npc_geesje
+        role: child
+        bond: 3
+        note: She serves in your inn and talks of Graafhaven. You want to keep her home.
+      - name: your late husband
+        pronoun: he
+        role: spouse
+        status: dead
+        note: Since he died you have run the Goose alone.
+      - to: npc_wouter
+        role: acquaintance
+        bond: -1
+        note: He is sweet on Geesje. An eel-fisher's hut is no life for her.
 
   - id: npc_geesje
     name: Geesje Kroes
@@ -45,6 +59,19 @@ npcs:
       - "Graafhaven? Tell me everything. No, start with the boats."
     money: 50
     knows_areas: [veenhoek, molenend, drowned_goose, waagdam, roads]
+    relations:
+      - to: npc_trijntje
+        role: parent
+        bond: 2
+        note: She will not hear of you going to Graafhaven.
+      - name: your late father
+        pronoun: he
+        role: parent
+        status: dead
+      - to: npc_wouter
+        role: sweetheart
+        bond: 2
+        note: You love him, but you will not marry into the eel smoke.
 
   # Kobus the pedlar (Wereldboek, chapter 9). He sleeps by the fire in the common room.
   - id: npc_kobus
@@ -75,3 +102,9 @@ npcs:
         dc: 18
     money: 150
     knows_areas: [veenhoek, molenend, drowned_goose, waagdam, roads]
+    relations:
+      - to: npc_lubbert
+        role: employer
+        bond: 0
+        private: true
+        note: He pays you to tell people the mill won't turn before winter.

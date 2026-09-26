@@ -1,3 +1,4 @@
+import { missing, mourning } from '../people'
 import type { GameState } from '../state'
 import type { World } from '../world'
 
@@ -45,6 +46,10 @@ export function moodOf(world: World, npcId: string): string {
   if (state.wokenAt !== undefined && world.now - state.wokenAt < 60) return 'just woken, groggy and cross'
   if (needs.hunger < 25) return 'hungry and short-tempered'
   if (needs.rest < 25) return 'tired'
+  const lost = mourning(world, npcId)
+  if (lost) return `grieving for ${lost.name}`
+  const gone = missing(world, npcId)
+  if (gone) return `worried sick about ${gone.name}`
   if (needs.social < 20) return 'lonely'
   if (world.npc(npcId).quirks.includes('grieving')) return 'grieving, worried sick'
   return needs.social > 70 ? 'cheerful' : 'calm'

@@ -41,7 +41,7 @@ for (let day = 1; day <= days; day++) {
       const seen = lastMove.get(id)
       const key = { location: npc.location, activity: npc.activity }
       if (!seen || seen.location !== key.location || seen.activity !== key.activity) lastMove.set(id, { ...key, since: world.now })
-      else if (world.now - seen.since > 16 * 60 && npc.activity !== 'asleep' && npc.activity !== 'ill in bed') problems.push(`${id} stuck at ${npc.location} (${npc.activity}) since ${new GameClock(seen.since).format()}`)
+      else if (world.now - seen.since > 16 * 60 && npc.activity !== 'asleep' && npc.activity !== 'ill in bed' && npc.activity !== 'mourning at home' && !npc.dead) problems.push(`${id} stuck at ${npc.location} (${npc.activity}) since ${new GameClock(seen.since).format()}`)
     }
     const fresh: WorldEvent[] = world.state.events.filter((e) => e.seq > lastSeq)
     lastSeq = world.state.eventSeq

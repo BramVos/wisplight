@@ -82,7 +82,8 @@ describe('M2: guardrails', () => {
 
   it('knows made-up names from names of the world', () => {
     const vocabulary = vocabularyOf(content, WORLD_FRAME, MONTHS, WEEKDAYS)
-    expect(unknownNames('Wendela nods. "The vicar is Father Oswin. A good man."', vocabulary)).toEqual(['Father', 'Oswin'])
+    // "father" is a word of the world (Geesje's late father); the made-up name is not.
+    expect(unknownNames('Wendela nods. "The vicar is Father Oswin. A good man."', vocabulary)).toEqual(['Oswin'])
     expect(unknownNames('She smiles. "Saint Brand keep you. Ask Mirte, or the Old Powers, or Lubbert in Waagdam on Maandag."', vocabulary)).toEqual([])
     expect(unknownNames('"I\'ll tell you. Aye, it was Herfstmaand when I\'d heard it."', vocabulary)).toEqual([])
     // A name the player used may come back: "I know no Oswin."

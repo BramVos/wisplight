@@ -1,0 +1,113 @@
+# Quests (Wereldboek, chapter 14), as far as the other systems need them
+# before the quest system arrives in M7: who has a role in them. The death of
+# someone with a role ends or changes the quest, and the chronicler reacts at
+# once. People who are not in the content yet (Klaas, Cornelis, Zwarte Mathijs,
+# Pieter Pen, Aleid Vos) are left out until they are.
+
+quests:
+  - id: grey_cat_on_the_doorstep
+    name: The Grey Cat on the Doorstep
+    kind: main
+    summary: The grey cat on the Vissers' doorstep is Fenna, cursed by the widow.
+    givers: [npc_grietje_visser, npc_pim]
+    helpers: [npc_aaltje, npc_wouter]
+    opponents: [npc_jan_visser, npc_wendela]
+
+  - id: flour_for_veenhoek
+    name: Flour for Veenhoek
+    kind: request
+    summary: The mill stands still and Veenhoek has no flour.
+    givers: [npc_mirte]
+    helpers: [npc_harmen]
+    opponents: [npc_lubbert]
+
+  - id: the_surveyors_lights
+    name: The Surveyor's Lights
+    kind: mystery
+    summary: Will-o'-the-wisps dance over Harmen's field, where he moved the boundary stone.
+    givers: [npc_aaltje]
+    opponents: [npc_harmen]
+
+  - id: what_the_haakman_wants
+    name: What the Haakman Wants
+    kind: bargain
+    summary: The mill pumps the Blackmere empty, and the Haakman takes revenge.
+    givers: [npc_wouter]
+    helpers: [npc_hendrik]
+    opponents: [npc_harmen]
+
+  - id: milk_for_the_kabouters
+    name: Milk for the Kabouters
+    kind: bargain
+    summary: Things go missing and milk turns sour, because Pim spied on the kabouters.
+    givers: [npc_grietje_visser, npc_mirte]
+    helpers: [npc_aaltje, npc_pim]
+
+  - id: the_goat_riders_toll
+    name: The Goat-Riders' Toll
+    kind: threat
+    summary: The Goat-Riders levy a toll on the Vaart, and Cornelis pays them.
+    givers: [npc_trijntje]
+    helpers: [npc_wouter, npc_gerrit]
+
+  - id: the_white_womens_riddle
+    name: The White Women's Riddle
+    kind: discovery
+    summary: In the mist at Reuzenrust the White Women ask a riddle about the dead of the Water Wolf.
+    givers: [npc_aaltje]
+
+  - id: the_drainage_question
+    name: The Drainage Question
+    kind: conflict
+    summary: Will the Holleveen be drained?
+    givers: [npc_gerrit, npc_everhard]
+
+  - id: a_stall_at_the_market
+    name: A Stall at the Market
+    kind: social
+    summary: Mirte wants a stall in Waagdam, but the bakers' guild keeps outsiders out.
+    givers: [npc_mirte]
+    helpers: [npc_trijntje]
+    opponents: [npc_lubbert]
+
+  - id: the_honest_scale
+    name: The Honest Scale
+    kind: trial
+    summary: An envoy of the Lantern wants to take over the weighing, and Wendela accuses Aaltje.
+    givers: [npc_dirck]
+    helpers: [npc_aaltje]
+    opponents: [npc_wendela]
+
+  # Personal quests of the companions.
+  - id: the_brotherhoods_charter
+    name: The Brotherhood's Charter
+    kind: personal
+    summary: Find the Fen Charter and have it recognised, without bloodshed if possible.
+    givers: [npc_gerrit]
+
+  - id: the_apprentices_debt
+    name: The Apprentice's Debt
+    kind: personal
+    summary: Bring Aaltje to the widow for a last conversation.
+    givers: [npc_aaltje]
+
+  - id: a_boat_and_a_bride
+    name: A Boat and a Bride
+    kind: personal
+    summary: Money for a boat, and Trijntje to be won over.
+    givers: [npc_wouter]
+    helpers: [npc_geesje]
+    opponents: [npc_trijntje]
+
+  - id: the_bell_of_kloosterveen
+    name: The Bell of Kloosterveen
+    kind: personal
+    summary: A bell that rings by itself at the Blackmere, and Wendela's fear of the water.
+    givers: [npc_wendela]
+
+  - id: the_road_to_graafhaven
+    name: The Road to Graafhaven
+    kind: personal
+    summary: To the city, with or against her mother.
+    givers: [npc_geesje]
+    opponents: [npc_trijntje]
