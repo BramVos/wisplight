@@ -251,3 +251,53 @@ describe('M3: small stories happen by themselves', () => {
     expect(engine.state.news!.facts.some((f) => f.kind === 'appeldag')).toBe(true)
   })
 })
+
+describe('M3: the journal as a reference book', () => {
+  async function talkedToMirte() {
+    const engine = new Engine(content, { seed: 3, llm: new MockLlm('good') })
+    for (const command of ['north', 'east', 'talk mirte', 'What happened to the mill?', 'bye']) await engine.handle(command)
+    return engine
+  }
+
+  it('gives a page for what the player learned, with the source, and nothing for the rest', async () => {
+    const engine = await talkedToMirte()
+    const mill = engine.page('loc_molenend_mill')!
+    expect(mill.lines.join(' ')).toMatch(/You haven't been there yourself\./)
+    expect(mill.sources.join(' ')).toMatch(/Mirte, Dinsdag 14/)
+    expect(engine.page('loc_kattenbroek_hut')).toBeUndefined()
+    expect(engine.page('weeping_stone')).toBeUndefined()
+  })
+
+  it('links people, places and their families', async () => {
+    const engine = await talkedToMirte()
+    const mirte = engine.page('npc_mirte')!
+    expect(mirte.lines[0]).toBe('Mirte the baker.')
+    expect(mirte.links).toContainEqual({ id: 'loc_veenhoek_bakery', name: 'The Bakery', label: 'lives at' })
+    const bakery = engine.page('loc_veenhoek_bakery')!
+    expect(bakery.lines.join(' ')).toMatch(/Mirte sells .*rye bread.* here\./)
+    expect(bakery.links).toContainEqual({ id: 'npc_mirte', name: 'Mirte Bakker', label: 'lives here' })
+  })
+
+  it('puts two stories about the same thing side by side', async () => {
+    const engine = await talkedToMirte()
+    const heard = engine.state.news!.heard
+    heard['player'] = { ...(heard['player'] ?? {}), fact_mill_before_winter: { level: 2, reliability: 0.81, from: 'npc_kobus', t: engine.world.now } }
+    engine.state.player.journal!['fact_mill_before_winter'] = engine.world.now
+    engine.state.player.location = 'loc_molenend_mill'
+    recordFact(engine.world, { kind: 'repaired', about: ['loc_molenend_mill', 'npc_harmen'], place: 'loc_molenend_mill', belang: 3, title: 'De Zwaan working again', text: { precise: 'Harmen has mended De Zwaan; it works again.', village: 'De Zwaan works again.', far: 'x' } })
+    const rumour = engine.page('fact_mill_before_winter')!
+    expect(rumour.lines[0]).toMatch(/won't turn again before winter/)
+    expect(rumour.lines.join(' ')).toMatch(/Also heard: Harmen has mended De Zwaan; it works again\./)
+    expect(rumour.sources.join(' ')).toMatch(/Kobus/)
+    expect(engine.status().journal.events.map((e) => e.name)).toContain('De Zwaan working again')
+  })
+  it('shows the true chronicle at the end: what happened, what was not true, and who knew', () => {
+    const engine = new Engine(content, { seed: 4 })
+    engine.tick(3 * 24 * 60)
+    const text = engine.chronicle()
+    expect(text).toMatch(/^THE CHRONICLE\n/)
+    expect(text).toMatch(/Lubbert's Grain Store: The mill not turning before winter \(not true\)/)
+    expect(text).toMatch(/Known to Lubbert, Kobus/)
+    expect(text).toMatch(/Canal Quay: The stranger in Veenhoek\n  A stranger from Graafhaven came to Veenhoek/)
+  })
+})

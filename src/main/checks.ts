@@ -45,6 +45,11 @@ export const LOG_CHECK_SCRIPT = `(async () => {
     out.push('> ' + command, ...reply.outputs.map((o) => '  ' + o.text.split('\\n').join('\\n  ')))
   }
   for (const command of ['north', 'save', 'east', 'talk mirte', 'bye', 'load', 'log 12', 'west', 'continue', 'log 5', 'Save me!']) await run(command)
+  // The journal and the end view go over the same bridge.
+  const page = await window.wisplight.page('loc_veenhoek_quay')
+  out.push('page: ' + (page ? page.name + ', ' + page.lines.length + ' lines' : 'NONE'))
+  const end = await window.wisplight.end()
+  out.push('end: log ' + (end.log ? end.log.split('\\n').length + ' lines' : 'NONE') + '; ' + end.chronicle.split('\\n').slice(0, 4).join(' | '))
   return out.join('\\n')
 })()`
 

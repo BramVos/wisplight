@@ -194,6 +194,26 @@ body {
   margin: 0;
 }
 
+.journal-page h3 {
+  color: var(--speech);
+  font-size: 14px;
+  margin: 8px 0 4px;
+}
+
+.journal-page p {
+  margin: 0 0 6px;
+}
+
+.journal-links {
+  list-style: none;
+  margin: 6px 0 8px;
+  padding: 0;
+}
+
+.journal-links li {
+  margin: 2px 0;
+}
+
 .journal-group .entry {
   white-space: nowrap;
 }
@@ -401,6 +421,16 @@ body {
 
 .bar-chart {
   color: var(--topic);
+}
+
+.end-text {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  font-size: 13px;
+  max-height: 60vh;
+  overflow: auto;
+  padding: 10px 12px;
+  white-space: pre-wrap;
 }
 
 .log-detail pre {

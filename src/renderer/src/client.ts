@@ -1,10 +1,10 @@
-import type { Output, Status } from '../../engine'
+import type { JournalPage, Output, Status } from '../../engine'
 import type { Advice, TrialResult } from '../../node/ai/advisor'
 import type { AiLogEntry } from '../../node/ai/log'
 import type { ModelInfo, ProviderId } from '../../node/ai/providers'
 import type { AiOverview } from '../../node/ai/service'
 
-export type { Advice, AiLogEntry, AiOverview, ModelInfo, ProviderId, TrialResult }
+export type { Advice, AiLogEntry, AiOverview, JournalPage, ModelInfo, ProviderId, TrialResult }
 
 /** What the status bar shows about the AI: cost so far and whether calls go through. */
 export interface AiStatus {
@@ -42,6 +42,10 @@ export interface AiBridge {
 export interface EngineClient {
   start(): Promise<Reply>
   command(input: string): Promise<Reply>
+  /** A page of the journal, or undefined for something the player does not know. */
+  page(id: string): Promise<JournalPage | undefined>
+  /** The player's own log (desktop only) and the true chronicle, for the end of a game. */
+  end(): Promise<{ log?: string; chronicle: string }>
   activity(): void
   /** Stops the real-time clock while a menu is open. */
   hold(on: boolean): void
@@ -95,6 +99,8 @@ export async function createClient(): Promise<EngineClient> {
       }
       return { outputs: await engine.handle(input), status: status() }
     },
+    page: async (id) => engine.page(id),
+    end: async () => ({ chronicle: engine.chronicle() }),
     activity: () => {
       lastInput = Date.now()
     },

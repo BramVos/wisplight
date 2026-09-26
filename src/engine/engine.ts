@@ -7,6 +7,8 @@ import { LlmError, type LlmClient, type LlmRequest, type LlmResponse } from './d
 import { attitude } from './dialogue/relations'
 import { TopicRegistry } from './dialogue/topics'
 import { formatMoney } from './items'
+import { chronicleText } from './chronicle'
+import { journalPage, type JournalPage } from './journal'
 import { recordFact, seedNews } from './news'
 import { parseCommand, parseDirection } from './parser'
 import { advance } from './simulation'
@@ -54,7 +56,7 @@ export interface Status {
   money: string
   paused: boolean
   talk?: { npc: string; name: string; call: string; attitude: string; turnsLeft: number; options: string[] }
-  journal: { people: JournalEntry[]; places: JournalEntry[]; lore: JournalEntry[]; things: JournalEntry[] }
+  journal: { people: JournalEntry[]; places: JournalEntry[]; events: JournalEntry[]; lore: JournalEntry[]; things: JournalEntry[] }
 }
 
 export interface EngineOptions {
@@ -119,6 +121,12 @@ export class Engine {
     return this.world.state
   }
 
+  /** When the game began: the start of the world. */
+  private get startMinute(): number {
+    const s = this.content.world.start
+    return GameClock.from(s.year, s.month, s.day, s.hour, s.minute).minutes
+  }
+
   get clock(): GameClock {
     return new GameClock(this.world.now)
   }
@@ -126,6 +134,8 @@ export class Engine {
   /** The first time the player comes to an area, the people there have something to talk about. */
   private arrive(): void {
     const location = this.world.location(this.state.player.location)
+    const seen = (this.state.player.seen ??= [])
+    if (!seen.includes(location.id)) seen.push(location.id)
     const visited = (this.state.player.visited ??= [])
     if (visited.includes(location.area)) return
     visited.push(location.area)
@@ -145,6 +155,17 @@ export class Engine {
         far: `A stranger has come to the Holleveen, they say.`,
       },
     })
+  }
+
+  /** Everything that really happened, for the end of a game. */
+  chronicle(): string {
+    return chronicleText(this.world, this.startMinute)
+  }
+
+  /** A page of the journal: what the player knows about a topic, with sources and links. */
+  page(id: string): JournalPage | undefined {
+    this.dialogue.syncNews()
+    return journalPage(this.world, this.topics, id)
   }
 
   /** Follows everything that happens, for the game log. Returns a function that stops following. */
@@ -319,9 +340,14 @@ export class Engine {
   status(): Status {
     const location = this.world.location(this.state.player.location)
     const talk = this.state.talk
-    const journal: Status['journal'] = { people: [], places: [], lore: [], things: [] }
+    this.dialogue.syncNews()
+    const journal: Status['journal'] = { people: [], places: [], events: [], lore: [], things: [] }
     for (const id of Object.keys(this.state.player.journal ?? {}).sort()) {
       const kind = this.topics.kind(id)
+      if (id.startsWith('fact_')) {
+        journal.events.push({ id, name: this.topics.name(id) })
+        continue
+      }
       const entry = { id, name: id.startsWith('far_') ? `${this.topics.name(id)} (heard of)` : this.topics.name(id) }
       if (kind === 'person') journal.people.push(entry)
       else if (kind === 'place' || kind === 'area') journal.places.push(entry)

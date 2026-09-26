@@ -193,6 +193,9 @@ ipcMain.handle('engine:command', async (_event, input: unknown) => {
   return reply(await engine.handle(text))
 })
 
+ipcMain.handle('engine:page', (_event, id: unknown) => engine?.page(String(id)))
+ipcMain.handle('engine:end', () => ({ log: session ? journal().text(session) : undefined, chronicle: engine?.chronicle() ?? '' }))
+
 ipcMain.on('engine:activity', () => {
   lastInput = Date.now()
 })

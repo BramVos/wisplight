@@ -113,6 +113,10 @@ export interface PlayerState {
   journal?: Record<string, number>
   /** Areas the player has been to, for the news of a stranger arriving. */
   visited?: string[]
+  /** Locations the player has stood in. */
+  seen?: string[]
+  /** Who told the player about a topic, and when (for the journal). */
+  sources?: Record<string, { from: string; t: number; level: number }[]>
 }
 
 export interface ServiceState {

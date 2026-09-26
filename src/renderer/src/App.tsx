@@ -1,6 +1,7 @@
 import { Fragment, useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import type { Output } from '../../engine'
-import { createClient, type AiStatus, type EngineClient, type Reply } from './client'
+import { createClient, type AiStatus, type EngineClient, type JournalPage, type Reply } from './client'
+import { EndView } from './EndView'
 import { Settings, usd, type SettingsTab } from './Settings'
 
 type Line = (Output & { id: number }) | { id: number; kind: 'input'; text: string }
@@ -35,6 +36,7 @@ function aiLabel(ai: AiStatus): { text: string; tone: '' | 'warn' | 'over' } {
 const JOURNAL: { key: keyof Status['journal']; title: string }[] = [
   { key: 'people', title: 'People' },
   { key: 'places', title: 'Places' },
+  { key: 'events', title: 'Events' },
   { key: 'lore', title: 'Lore' },
   { key: 'things', title: 'Things' },
 ]
@@ -49,6 +51,8 @@ export function App() {
   const [error, setError] = useState<string>()
   const [waiting, setWaiting] = useState(false)
   const [settings, setSettings] = useState<SettingsTab>()
+  const [page, setPage] = useState<JournalPage>()
+  const [ending, setEnding] = useState(false)
   const logRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -82,8 +86,8 @@ export function App() {
 
   // Menus stop the clock (FO, chapter 3).
   useEffect(() => {
-    client?.hold(Boolean(settings))
-  }, [client, settings])
+    client?.hold(Boolean(settings) || ending)
+  }, [client, settings, ending])
 
   const send = useCallback(
     async (text: string) => {
@@ -126,10 +130,16 @@ export function App() {
   }
 
   const talk = status?.talk
-  // A topic from the text or the journal: ask about it in a conversation, otherwise put it in the prompt.
+  const openPage = async (id: string) => setPage((await client?.page(id)) ?? undefined)
+  // A topic in the text: ask about it in a conversation; otherwise open its journal page, if known.
   const onTopic = (topic: string) => {
     if (talk) {
       void send(`ask about ${topic}`)
+      return
+    }
+    const known = status ? JOURNAL.flatMap(({ key }) => status.journal[key]).find((e) => e.name.toLowerCase() === topic.toLowerCase()) : undefined
+    if (known) {
+      void openPage(known.id)
       return
     }
     setInput(`ask about ${topic}`)
@@ -162,8 +172,38 @@ export function App() {
         </section>
         <section>
           <h2>Journal</h2>
-          {journalCount === 0 && <p className="muted">Topics you learn appear here.</p>}
-          {status &&
+          {page && (
+            <div className="journal-page">
+              <button type="button" className="link" onClick={() => setPage(undefined)}>
+                [Back]
+              </button>
+              <h3>{page.name}</h3>
+              {page.lines.map((line, index) => (
+                <p key={index}>{line}</p>
+              ))}
+              {page.sources.length > 0 && <p className="muted small">Heard from: {page.sources.join('; ')}</p>}
+              {page.links.length > 0 && (
+                <ul className="journal-links">
+                  {page.links.map((l) => (
+                    <li key={l.id}>
+                      <span className="muted">{l.label}: </span>
+                      <button type="button" className="topic" onClick={() => void openPage(l.id)}>
+                        {l.name}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {talk && (
+                <button type="button" className="link" onClick={() => void send(`ask about ${page.name}`)}>
+                  [Ask {talk.call} about this]
+                </button>
+              )}
+            </div>
+          )}
+          {!page && journalCount === 0 && <p className="muted">Topics you learn appear here.</p>}
+          {!page &&
+            status &&
             JOURNAL.filter(({ key }) => status.journal[key].length > 0).map(({ key, title }) => (
               <div key={key} className="journal-group">
                 <h3>{title}</h3>
@@ -171,7 +211,7 @@ export function App() {
                   {status.journal[key].map((entry, index, all) => (
                     <Fragment key={entry.id}>
                       <span className="entry">
-                        <button type="button" className="topic" onClick={() => onTopic(entry.name)} title={talk ? `Ask about ${entry.name}` : undefined}>
+                        <button type="button" className="topic" onClick={() => void openPage(entry.id)}>
                           {entry.name}
                         </button>
                         {index < all.length - 1 && ','}
@@ -185,6 +225,9 @@ export function App() {
         <section>
           <button type="button" className="link" onClick={() => setSettings('ai')}>
             [Settings]
+          </button>{' '}
+          <button type="button" className="link" onClick={() => setEnding(true)}>
+            [Look back]
           </button>
         </section>
       </aside>
@@ -230,6 +273,7 @@ export function App() {
         </label>
       </footer>
 
+      {ending && client && <EndView client={client} onClose={() => setEnding(false)} />}
       {settings && <Settings bridge={client?.ai} tab={settings} onTab={setSettings} onClose={() => setSettings(undefined)} />}
     </div>
   )

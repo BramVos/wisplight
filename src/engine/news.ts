@@ -55,9 +55,14 @@ export function recordFact(world: World, input: FactInput): Fact {
   if (input.loud) for (const exit of Object.values(world.location(input.place).exits)) places.add(exit.to)
   for (const id of Object.keys(world.state.npcs).sort()) {
     const npc = world.state.npcs[id]!
-    if (places.has(npc.location) && npc.activity !== 'asleep') heardBy(world, id)[fact.id] = { level: 3, reliability: 1, from: 'witness', t: world.now }
+    // Whoever it is about knows it, even when their activity still says asleep.
+    const concerned = input.about.includes(id)
+    if (places.has(npc.location) && (npc.activity !== 'asleep' || concerned)) heardBy(world, id)[fact.id] = { level: 3, reliability: 1, from: 'witness', t: world.now }
   }
-  if (places.has(world.state.player.location)) heardBy(world, 'player')[fact.id] = { level: 3, reliability: 1, from: 'witness', t: world.now }
+  if (places.has(world.state.player.location)) {
+    heardBy(world, 'player')[fact.id] = { level: 3, reliability: 1, from: 'witness', t: world.now }
+    ;(world.state.player.journal ??= {})[fact.id] = world.now
+  }
   return fact
 }
 

@@ -279,7 +279,7 @@ export class Dialogue {
   }
 
   /** Facts are topics too, so they can be asked about, mentioned and put in the journal. */
-  private syncNews(): void {
+  syncNews(): void {
     for (const fact of this.world.state.news?.facts ?? []) {
       if (!this.topics.entries.has(fact.id)) this.topics.addDuringPlay({ id: fact.id, kind: 'fact', name: fact.title, aliases: [] })
     }
@@ -294,6 +294,17 @@ export class Dialogue {
       const mine = heardBy(this.world, 'player')
       if (mine[id]) continue
       mine[id] = { level: heard.level, reliability: Math.round(heard.reliability * 0.9 * 100) / 100, from: npcId, t: this.world.now, grown: heard.grown }
+    }
+  }
+
+  /** Remembers who told the player about what, for the journal. */
+  private noteSources(npcId: string, topics: { topic: string; level: number }[]): void {
+    const sources = (this.world.state.player.sources ??= {})
+    for (const { topic, level } of topics) {
+      const list = (sources[topic] ??= [])
+      const existing = list.find((s) => s.from === npcId)
+      if (existing) existing.level = Math.max(existing.level, level)
+      else list.push({ from: npcId, t: this.world.now, level })
     }
   }
 
@@ -371,6 +382,7 @@ export class Dialogue {
     // 6. Journal and memory.
     const allowed = new Set([...packet.known.map((k) => k.topic), ...(packet.referral ? [packet.referral.npc] : [])])
     const mentioned = (reply?.mentioned_topics ?? []).filter((t) => allowed.has(t))
+    this.noteSources(npcId, packet.known.map((k) => ({ topic: k.topic, level: k.level })))
     const told = packet.known.flatMap((k) => [k.topic, ...(k.news ? newsAbout(world, npcId, [k.topic]).map(({ fact }) => fact.id) : [])]).filter((id) => id.startsWith('fact_'))
     this.hearFrom(npcId, told)
     this.learn(...told, ...packet.known.map((k) => k.topic), ...mentioned, ...(packet.referral && replyText.includes(packet.referral.call) ? [packet.referral.npc] : []))

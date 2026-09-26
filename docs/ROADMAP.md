@@ -40,7 +40,7 @@ Scope: bevindingen uit de eerste speeltest. FO 3 (spellogboek), FO 10 (names-vel
 - [x] Een slapende NPC moet eerst gewekt worden, wat houding kost; 's nachts zit de deur van een huis dicht
 - [x] Een NPC die langs de speler komt, blijft staan als hij nieuwsgierig is of iets met de speler te doen heeft; wie ergens aankomt blijft er een tijdje; een passant geeft één regel
 
-## M3 Kennis, geruchten en het dagboek
+## M3 Kennis, geruchten en het dagboek (af)
 
 Scope: FO 5 en het ontwerp lore en wereldverandering (zonder AI). Vaste kansworp, kennisniveaus, richting en afstand, lore met vertellingen per niveau, doorverwijzen; belang, feiten, getuigen, kanalen, vervagen en vergeten; versies en nieuws van de dag uit sjablonen; kleine verhaalpatronen (verlies, ruzie, diefstal, levensloop, feest) met een verhalenmotor voor het tempo; het dagboek als naslagwerk met links en bronnen; de eindweergave met logboek en kroniek; de werkinstructie `content/CHRONICLER.md`.
 
@@ -50,8 +50,8 @@ Scope: FO 5 en het ontwerp lore en wereldverandering (zonder AI). Vaste kansworp
 - [x] Klein nieuws wordt vergeten: belang 1 na twee dagen, belang 2 na twee weken
 - [x] Vraagt de speler iets wat een NPC niet weet, dan volgt een verwijzing naar iemand binnen 5 km die het wel kan weten
 - [x] Kleine verhaalpatronen gebeuren vanzelf in een simulatie van 14 dagen, in het tempo van de instelling, en naspelen geeft hetzelfde
-- [ ] Het dagboek toont personen, plaatsen, gebeurtenissen en lore met links en bronnen; tegenstrijdige versies staan naast elkaar
-- [ ] Aan het eind kan de speler zijn logboek en de echte kroniek bekijken en downloaden
+- [x] Het dagboek toont personen, plaatsen, gebeurtenissen en lore met links en bronnen; tegenstrijdige versies staan naast elkaar
+- [x] Aan het eind kan de speler zijn logboek en de echte kroniek bekijken en downloaden
 
 ## M3.1 De kroniekschrijver
 
