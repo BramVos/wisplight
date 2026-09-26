@@ -2,6 +2,7 @@ import { minuteOfDay, nextOpening, parseHours, startOfDay, weekdayOf } from '../
 import type { DailyGoal, ScheduleBlock } from '../content'
 import type { Goal, Step } from '../state'
 import type { World } from '../world'
+import { feastFor } from '../stories'
 import { executeStep, resolvePending } from './execute'
 import { isFailure, Planner } from './planner'
 
@@ -69,6 +70,14 @@ function choose(world: World, npcId: string): boolean {
   const def = world.npc(npcId)
 
   if (npc.needs.hunger < 15) return setPlan(world, npcId, eatPlan(world, npcId))
+  // A fever keeps you in bed; a feast day brings the village together.
+  if (npc.sickUntil !== undefined && world.now < npc.sickUntil) {
+    return setPlan(world, npcId, [...goHome(world, npcId), { kind: 'spend', minutes: 60, activity: 'idle', label: 'ill in bed' }])
+  }
+  const feast = feastFor(world, npcId)
+  if (feast && !def.child) {
+    return setPlan(world, npcId, [...goTo(world, npcId, feast.place), { kind: 'spend', minutes: Math.max(10, feast.until - world.now), activity: 'socialize' }])
+  }
   if (npc.needs.rest < 10) return setPlan(world, npcId, [...goHome(world, npcId), { kind: 'sleep', until: world.now + 6 * 60 }])
 
   const block = currentBlock(world, npcId)

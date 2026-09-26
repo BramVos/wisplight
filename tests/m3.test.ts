@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { Engine, GameClock, MockLlm } from '../src/engine'
 import { recordFact } from '../src/engine/news'
+import { startStory, type Tempo } from '../src/engine/stories'
 import type { Knowledge } from '../src/engine/dialogue/knowledge'
 import { content } from './helpers'
 
@@ -169,5 +170,84 @@ describe('M3: news goes from person to person', () => {
     expect(prompt).toMatch(/\(You heard it from [A-Z][a-z]+\./)
     expect(engine.state.news!.heard['player']!['fact_mill_before_winter']).toMatchObject({ from: npc })
     expect(engine.state.player.journal!['fact_mill_before_winter']).toBeDefined()
+  })
+})
+
+describe('M3: small stories happen by themselves', () => {
+  const run = (seed: number, days: number, tempo: Tempo = 'normal') => {
+    const engine = new Engine(content, { seed })
+    engine.state.stories = { seq: 0, tempo, lastIncident: engine.world.now, active: [], done: [] }
+    engine.tick(days * 24 * 60)
+    return engine
+  }
+  const all = (engine: Engine) => [...engine.state.stories!.active, ...engine.state.stories!.done]
+
+  it('starts several kinds of story in two weeks, and a replay gives the same', async () => {
+    const engine = run(4, 14)
+    const kinds = new Set(all(engine).map((s) => s.kind))
+    expect(all(engine).length).toBeGreaterThanOrEqual(5)
+    expect(kinds.size).toBeGreaterThanOrEqual(3)
+    const replayed = await Engine.replay(content, 4, engine.save().log)
+    // The replay starts with the default pacing, which is "normal" too.
+    expect(replayed.state.stories).toEqual(engine.state.stories)
+    expect(replayed.state.news).toEqual(engine.state.news)
+  })
+
+  it('follows the tempo: calm has fewer stories than dramatic', () => {
+    const count = (tempo: Tempo) => [1, 2, 3, 4].reduce((sum, seed) => sum + all(run(seed, 14, tempo)).filter((s) => s.kind !== 'feast').length, 0)
+    const calm = count('calm')
+    const dramatic = count('dramatic')
+    expect(calm).toBeLessThan(dramatic)
+    expect(count('normal')).toBeGreaterThan(calm)
+  })
+
+  it('lets the player find a lost thing and give it back', async () => {
+    const engine = new Engine(content, { seed: 6 })
+    engine.tick(GameClock.from(211, 9, 15, 10).minutes - engine.world.now)
+    expect(startStory(engine.world, 'lost_thing')).toBe(true)
+    const story = engine.state.stories!.active.find((s) => s.kind === 'lost_thing')!
+    const owner = story.roles['owner']!
+    const thing = String(story.data['thing'])
+    const place = String(story.data['place'])
+    expect(engine.state.ground[place]![thing]).toBe(1)
+    engine.state.player.location = place
+    await engine.handle(`take ${thing}`)
+    engine.state.player.location = engine.state.npcs[owner]!.location
+    const affinity = engine.state.relations?.[owner]?.affinity ?? 0
+    const out = await engine.handle(`give ${thing} to ${content.npcs.get(owner)!.name.split(' ')[0]}`)
+    expect(out.map((o) => o.text).join(' ')).toMatch(/Where did you find it\?/)
+    expect(engine.state.relations![owner]!.affinity).toBe(affinity + 3)
+    expect(story.done).toBe(true)
+    expect(engine.state.requests.filter((r) => r.npc === owner && r.item === thing && r.status === 'open')).toHaveLength(0)
+    expect(engine.state.news!.facts.at(-1)!.kind).toBe('returned')
+  })
+
+  it('sends someone with a fever home to bed', () => {
+    const engine = new Engine(content, { seed: 7 })
+    engine.tick(GameClock.from(211, 9, 15, 10).minutes - engine.world.now)
+    expect(startStory(engine.world, 'fever')).toBe(true)
+    const who = engine.state.stories!.active.find((s) => s.kind === 'sickness')!.roles['name']!
+    engine.tick(120)
+    expect(engine.state.npcs[who]).toMatchObject({ location: content.npcs.get(who)!.home, activity: 'ill in bed' })
+  })
+
+  it('lets two people at a social place fall out, loud enough to hear next door', () => {
+    const engine = new Engine(content, { seed: 8 })
+    engine.tick(GameClock.from(211, 9, 15, 19).minutes - engine.world.now)
+    expect(startStory(engine.world, 'quarrel')).toBe(true)
+    engine.tick(120)
+    const fact = engine.state.news!.facts.find((f) => f.kind === 'quarrel')!
+    expect(fact.text.precise).toMatch(/fell out over .* it came to shouting\./)
+    expect(Object.values(engine.state.news!.heard).filter((h) => h[fact.id]).length).toBeGreaterThanOrEqual(2)
+  })
+
+  it('keeps Appeldag at the quay on 10 Wijnmaand', () => {
+    const engine = new Engine(content, { seed: 9 })
+    engine.tick(GameClock.from(211, 10, 10, 9, 45).minutes - engine.world.now)
+    const veenhoek = [...content.npcs.keys()].filter((id) => content.locations.get(content.npcs.get(id)!.home)!.area === 'veenhoek' && !content.npcs.get(id)!.child)
+    const atQuay = veenhoek.filter((id) => engine.state.npcs[id]!.location === 'loc_veenhoek_quay')
+    expect(atQuay.length).toBeGreaterThanOrEqual(3)
+    engine.tick(30)
+    expect(engine.state.news!.facts.some((f) => f.kind === 'appeldag')).toBe(true)
   })
 })

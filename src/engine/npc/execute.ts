@@ -217,7 +217,7 @@ export function executeStep(world: World, npcId: string, step: Step): StepResult
       }
       npc.pending = { satisfies: gain }
       npc.busyUntil = now + step.minutes
-      npc.activity = { work: 'at work', socialize: 'chatting', play: 'playing', pray: 'praying', idle: 'taking it easy' }[step.activity]
+      npc.activity = step.label ?? { work: 'at work', socialize: 'chatting', play: 'playing', pray: 'praying', idle: 'taking it easy' }[step.activity]
       return 'done'
     }
 

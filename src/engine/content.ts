@@ -258,6 +258,30 @@ export type Topic = z.infer<typeof TopicSchema>
 
 // ---------------------------------------------------------------- world
 
+/**
+ * A story pattern (design: lore and world change, "Soorten verhalen"): the kind
+ * says which piece of the motor plays it, the rest is data for that kind.
+ */
+export const PatternSchema = z.object({
+  id: z.string().regex(/^[a-z0-9_]+$/),
+  kind: z.enum(['lost_thing', 'quarrel', 'theft', 'sickness', 'feast']),
+  belang: z.number().int().min(0).max(5),
+  /** How often the pacing engine picks it, against the other patterns. */
+  weight: z.number().nonnegative().default(1),
+  /** lost_thing: what can go missing. theft: what can be stolen. */
+  items: z.array(z.string()).default([]),
+  /** quarrel: what people fall out about. */
+  reasons: z.array(z.string()).default([]),
+  /** feast: the day it falls on, and where people gather. */
+  date: z.object({ month: z.number().int().min(1).max(13), day: z.number().int().min(1).max(30) }).optional(),
+  place: z.string().optional(),
+  /** Texts with {owner}, {thing}, {place}, {a}, {b}, {reason}, {victim}, {goods}, {name}. */
+  text: z.object({ title: z.string(), precise: z.string(), village: z.string(), far: z.string() }),
+  /** A line the player sees when it happens in front of them. */
+  scene: z.string().optional(),
+})
+export type Pattern = z.infer<typeof PatternSchema>
+
 /** Rumours that are already going round when a game starts, true or not (design: lore and world change). */
 export const NewsSchema = z.object({
   id: z.string().regex(/^[a-z0-9_]+$/),
@@ -340,6 +364,7 @@ const FileSchema = z
     npcs: z.array(NpcSchema).optional(),
     topics: z.array(TopicSchema).optional(),
     news: z.array(NewsSchema).optional(),
+    patterns: z.array(PatternSchema).optional(),
   })
   .strict()
 
@@ -358,6 +383,7 @@ export interface Content {
   npcs: Map<string, Npc>
   topics: Map<string, Topic>
   news: Map<string, News>
+  patterns: Map<string, Pattern>
 }
 
 export class ContentError extends Error {
@@ -387,6 +413,7 @@ export function loadContent(files: ContentFile[]): Content {
     npcs: new Map<string, Npc>(),
     topics: new Map<string, Topic>(),
     news: new Map<string, News>(),
+    patterns: new Map<string, Pattern>(),
   }
 
   for (const file of [...files].sort((a, b) => a.path.localeCompare(b.path))) {
@@ -412,6 +439,7 @@ export function loadContent(files: ContentFile[]): Content {
     addAll(content.npcs, data.npcs, (v) => v.id, file.path, 'NPC', problems)
     addAll(content.topics, data.topics, (v) => v.id, file.path, 'topic', problems)
     addAll(content.news, data.news, (v) => v.id, file.path, 'news', problems)
+    addAll(content.patterns, data.patterns, (v) => v.id, file.path, 'pattern', problems)
   }
 
   const world = worlds[0]
@@ -479,6 +507,11 @@ function checkReferences(world: WorldDef | undefined, c: Omit<Content, 'world'>)
     if (t.origin && !c.areas.has(t.origin) && !c.locations.has(t.origin)) problems.push(`topic ${t.id}: unknown origin ${t.origin}`)
     for (const n of t.known_by) npc(n, `topic ${t.id}.known_by`)
     if (t.teller) npc(t.teller, `topic ${t.id}.teller`)
+  }
+  for (const p of c.patterns.values()) {
+    for (const i of p.items) item(i, `pattern ${p.id}.items`)
+    location(p.place, `pattern ${p.id}.place`)
+    if (p.kind === 'feast' && (!p.date || !p.place)) problems.push(`pattern ${p.id}: a feast needs a date and a place`)
   }
   for (const n of c.news.values()) {
     location(n.place, `news ${n.id}.place`)

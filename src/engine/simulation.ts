@@ -2,6 +2,7 @@ import { isOpenAt, MINUTES_PER_DAY, minuteOfDay, weekdayOf } from './clock'
 import type { Need } from './content'
 import { add } from './items'
 import { spreadNews } from './news'
+import { storyHour } from './stories'
 import { clamp } from './npc/execute'
 import { think } from './npc/brain'
 import type { World } from './world'
@@ -26,6 +27,7 @@ function hourly(world: World): void {
   decayNeeds(world)
   supply(world)
   demand(world)
+  storyHour(world)
   const lodging = world.state.player.lodging
   if (lodging && world.now >= lodging.until) world.state.player.lodging = undefined
 }

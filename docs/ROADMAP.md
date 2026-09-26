@@ -49,7 +49,7 @@ Scope: FO 5 en het ontwerp lore en wereldverandering (zonder AI). Vaste kansworp
 - [x] Een gerucht uit Veenhoek bereikt Waagdam meestal binnen 2 speldagen, via de toonbank, de markt of Kobus de marskramer, met afnemende betrouwbaarheid
 - [x] Klein nieuws wordt vergeten: belang 1 na twee dagen, belang 2 na twee weken
 - [x] Vraagt de speler iets wat een NPC niet weet, dan volgt een verwijzing naar iemand binnen 5 km die het wel kan weten
-- [ ] Kleine verhaalpatronen gebeuren vanzelf in een simulatie van 14 dagen, in het tempo van de instelling, en naspelen geeft hetzelfde
+- [x] Kleine verhaalpatronen gebeuren vanzelf in een simulatie van 14 dagen, in het tempo van de instelling, en naspelen geeft hetzelfde
 - [ ] Het dagboek toont personen, plaatsen, gebeurtenissen en lore met links en bronnen; tegenstrijdige versies staan naast elkaar
 - [ ] Aan het eind kan de speler zijn logboek en de echte kroniek bekijken en downloaden
 

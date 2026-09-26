@@ -41,7 +41,7 @@ for (let day = 1; day <= days; day++) {
       const seen = lastMove.get(id)
       const key = { location: npc.location, activity: npc.activity }
       if (!seen || seen.location !== key.location || seen.activity !== key.activity) lastMove.set(id, { ...key, since: world.now })
-      else if (world.now - seen.since > 16 * 60 && npc.activity !== 'asleep') problems.push(`${id} stuck at ${npc.location} (${npc.activity}) since ${new GameClock(seen.since).format()}`)
+      else if (world.now - seen.since > 16 * 60 && npc.activity !== 'asleep' && npc.activity !== 'ill in bed') problems.push(`${id} stuck at ${npc.location} (${npc.activity}) since ${new GameClock(seen.since).format()}`)
     }
     const fresh: WorldEvent[] = world.state.events.filter((e) => e.seq > lastSeq)
     lastSeq = world.state.eventSeq
@@ -61,6 +61,8 @@ for (let day = 1; day <= days; day++) {
   print(`  bakery: ${bakery['rye_bread'] ?? 0} loaves; peat sheds: ${world.stock('loc_peat_sheds', 'peat_store')['peat'] ?? 0} baskets; eel stall: ${world.stock('loc_veenhoek_quay', 'eel_stall')['eel'] ?? 0}`)
   const requests = world.state.requests.filter((r) => r.status === 'open').map((r) => `${r.npc} wants ${r.qty} ${r.item}`)
   if (requests.length) print(`  requests: ${requests.join('; ')}`)
+  const today = (world.state.news?.facts ?? []).filter((f) => f.t > world.now - MINUTES_PER_DAY && f.t <= world.now)
+  if (today.length) print(`  news: ${today.map((f) => `${f.title} (belang ${f.belang}, ${Object.values(world.state.news!.heard).filter((h) => h[f.id]).length} know)`).join('; ')}`)
   const low = Object.entries(world.state.npcs)
     .filter(([, n]) => Object.values(n.needs).some((v) => v < 15))
     .map(([id, n]) => `${id} ${JSON.stringify(n.needs)}`)

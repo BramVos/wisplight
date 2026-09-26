@@ -1,0 +1,63 @@
+# Story patterns (design: lore and world change, "Soorten verhalen"). The kind
+# says which piece of the motor plays it; weight is how often the pacing engine
+# picks it. Texts: {owner} {thing} {place} {area} {a} {b} {reason} {victim}
+# {goods} {name}, and {their} {they} {them} for the main person.
+
+patterns:
+  - id: lost_thing
+    kind: lost_thing
+    belang: 1
+    weight: 3
+    items: [knife, lantern, rope]
+    text:
+      title: "{owner}'s lost {thing}"
+      precise: "{owner} lost {their} {thing} somewhere near {place} and is looking everywhere for it."
+      village: "{owner} has lost {their} {thing}."
+      far: "Someone in {area} lost a {thing}, they say."
+    scene: "{owner} pats {their} pockets, then turns out {their} bag. \"My {thing}. Where's my {thing}?\""
+
+  - id: quarrel
+    kind: quarrel
+    belang: 1
+    weight: 2
+    reasons: [the price of peat, the drainage, an old debt, the surveyor and his stakes, whose turn it is to pay]
+    text:
+      title: "the quarrel between {a} and {b}"
+      precise: "{a} and {b} fell out over {reason} at {place}; it came to shouting."
+      village: "{a} and {b} had words at {place}."
+      far: "There was a fight at {place}, they say."
+    scene: "Voices rise. {a} and {b} are on their feet, shouting about {reason}."
+
+  - id: theft
+    kind: theft
+    belang: 2
+    weight: 1
+    items: [rye_bread, flour, eel, smoked_eel, herbs]
+    text:
+      title: "the theft from {victim}"
+      precise: "Someone took {goods} from {victim}'s stock at {place} in the night. Nobody saw who."
+      village: "There's been a thief at {victim}'s."
+      far: "There are thieves about in {area}, they say."
+
+  - id: fever
+    kind: sickness
+    belang: 1
+    weight: 1
+    text:
+      title: "{name}'s fever"
+      precise: "{name} is down with a fever and keeps to {their} bed."
+      village: "{name} is ill."
+      far: "There's sickness in {area}, they say."
+
+  # Appeldag (Wereldboek, chapter 13): apples at the old stones on the quays, for Nehalennia.
+  - id: appeldag
+    kind: feast
+    belang: 2
+    date: { month: 10, day: 10 }
+    place: loc_veenhoek_quay
+    text:
+      title: "Appeldag at the quay"
+      precise: "On Appeldag the village brought apples to the old stone on the quay, for Nehalennia."
+      village: "Appeldag was kept at the quay, as always."
+      far: "They kept Appeldag in Veenhoek, they say."
+    scene: "One by one the villagers lay apples on the old dog-stone, and nobody says much."

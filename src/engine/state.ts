@@ -1,5 +1,6 @@
 import { GameClock } from './clock'
 import { NEEDS, type Content, type Need } from './content'
+import type { StoriesState } from './stories'
 
 // Everything that changes during play lives in GameState. It is plain JSON:
 // a savegame is this object, and a replay rebuilds it from the input log.
@@ -31,7 +32,7 @@ export type Step =
   | { kind: 'repair'; location: string; object: string; consumes: Counts }
   | { kind: 'eat' }
   | { kind: 'sleep'; until: number; ready?: boolean }
-  | { kind: 'spend'; minutes: number; activity: 'work' | 'socialize' | 'pray' | 'idle' | 'play' }
+  | { kind: 'spend'; minutes: number; activity: 'work' | 'socialize' | 'pray' | 'idle' | 'play'; label?: string }
   | { kind: 'askHelp'; item: string; qty: number }
 
 export interface Pending {
@@ -78,6 +79,8 @@ export interface NpcState {
   wokenAt?: number
   /** Last time the NPC stopped to look at the player. */
   noticedPlayerAt?: number
+  /** Ill until then: stays home in bed. */
+  sickUntil?: number
 }
 
 export interface MemoryRecord {
@@ -187,6 +190,8 @@ export interface GameState {
   talk?: TalkState
   /** The lore layer of this game, on top of the base lore from the content. */
   lore?: { far: FarName[] }
+  /** Story patterns in play, and the pacing (design: lore and world change). */
+  stories?: StoriesState
   /** Facts and who heard them; "player" is the player. */
   news?: { seq: number; facts: Fact[]; heard: Record<string, Record<string, Heard>> }
 }
