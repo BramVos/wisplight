@@ -8,7 +8,7 @@ import { advicePrompt, askAdvice, pickAdvisor, preferSnapshot, validateAdvice } 
 import { Gateway } from '../src/node/ai/gateway'
 import { AiLog } from '../src/node/ai/log'
 import { costUsd, priceOf } from '../src/node/ai/pricing'
-import { BusyError, rateLimitOf, type ModelInfo, type Provider, type ProviderId, type ProviderResponse } from '../src/node/ai/providers'
+import { BusyError, mapError, rateLimitOf, type ModelInfo, type Provider, type ProviderId, type ProviderResponse } from '../src/node/ai/providers'
 import { AiService } from '../src/node/ai/service'
 import { mask, SettingsStore, type Cipher } from '../src/node/ai/settings'
 import { UsageStore } from '../src/node/ai/usage'
@@ -200,6 +200,30 @@ describe('gateway', () => {
     expect(log.recent()[0]).toMatchObject({ ok: true, prompt: 'What happened to the mill?', inputTokens: 1000, cachedTokens: 600 })
     expect(usage.summary().session).toMatchObject({ calls: 1, rejected: 1 })
     expect(allText(dir)).not.toMatch(/sk-/)
+  })
+})
+
+describe('provider errors', () => {
+  it('tells "no credit" apart from "too fast"', () => {
+    expect(mapError(Object.assign(new Error('429 You exceeded your current quota'), { status: 429, code: 'insufficient_quota' }))).toMatchObject({ kind: 'config', message: /no credit left/ })
+    expect(mapError(Object.assign(new Error('400 Your credit balance is too low to access the Anthropic API.'), { status: 400 }))).toMatchObject({ kind: 'config', message: /no credit left/ })
+    expect(mapError(Object.assign(new Error('429 You have no credits remaining. Add credits to continue using the API.'), { status: 429 }))).toMatchObject({ kind: 'config', message: /no credit left/ })
+    expect(mapError(Object.assign(new Error('429 Rate limit reached'), { status: 429, headers: new Headers({ 'retry-after': '7' }) }))).toMatchObject({ kind: 'busy', retryAfterMs: 7000 })
+  })
+
+  it('keeps one provider going while the other is down', async () => {
+    const down = fakeProvider('openai', [], async () => {
+      throw new LlmError('network', 'down')
+    })
+    const up = fakeProvider('anthropic', [], async () => reply('{}', 'claude-haiku-4-5'))
+    const dir = temp()
+    let voice: { provider: ProviderId; model: string } = { provider: 'openai', model: 'gpt-4.1-mini' }
+    const gateway = new Gateway({ role: () => voice, provider: (id) => (id === 'openai' ? down : up), budgetUsdPerHour: () => 1, log: new AiLog(), usage: new UsageStore(join(dir, 'u.json')) })
+    for (let i = 0; i < 3; i++) await expect(gateway.complete(voiceRequest)).rejects.toMatchObject({ kind: 'network' })
+    expect(gateway.status().coolingDown).toBe(true)
+    voice = { provider: 'anthropic', model: 'claude-haiku-4-5' }
+    await expect(gateway.complete(voiceRequest)).resolves.toMatchObject({ text: '{}' })
+    expect(gateway.status().coolingDown).toBe(false)
   })
 })
 

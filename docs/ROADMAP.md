@@ -24,7 +24,7 @@ Scope: FO 3, 4, 6 en 7. Objecten met affordances, voorwerpen en inventaris, hand
 Scope: FO 9, 10 en 16. LLM-gateway met OpenAI, Anthropic en een mock; instellingen met versleutelde sleutel, modellenlijst, adviesprompt, proefrit en exacte model-id; gespreksmodus met snelvragen, ask en tell, vrije tekst, gespreksacts, proeven voor woorden, lengteniveaus, guardrails, terugvalteksten en Nederlands typen; dagboek met klikbare onderwerpen; kostenteller in de statusbalk en verbruiksoverzicht per sessie, dag, maand en model met uur- en maandbudget en een zelf opgegeven tegoed; AI-log in de ontwikkelmodus.
 
 - [x] Met de mock slaagt een testset van 50 gesprekssituaties: geldig schema, geen kennislek, juiste lengte
-- [ ] Met een echte sleutel geeft het modeladvies alleen bestaande model-id's, en de gekozen id wordt exact opgeslagen
+- [x] Met een echte sleutel geeft het modeladvies alleen bestaande model-id's, en de gekozen id wordt exact opgeslagen
 - [x] Een injectiepoging krijgt een sjabloonantwoord zonder AI-aanroep
 - [x] Zonder verbinding blijft het spel speelbaar met terugvalteksten
 - [x] De sleutel staat nergens leesbaar op schijf of in logs

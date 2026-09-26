@@ -77,7 +77,9 @@ export async function keyCheck(app: App, ai: AiService, content: Content): Promi
 
 export async function aiCheck(ai: AiService, content: Content): Promise<boolean> {
   const summary = ai.settings.summary()
-  const providers = (['openai', 'anthropic'] as const).filter((p) => summary.providers[p].configured)
+  // WISPLIGHT_AI_CHECK=openai or =anthropic checks one provider only.
+  const only = process.env['WISPLIGHT_AI_CHECK']
+  const providers = (['openai', 'anthropic'] as const).filter((p) => summary.providers[p].configured && (only === p || !['openai', 'anthropic'].includes(only ?? '')))
   if (!providers.length) {
     console.log('[ai-check] no API key in the settings yet. Enter one under Settings > AI, then run this again.')
     return false
@@ -85,42 +87,62 @@ export async function aiCheck(ai: AiService, content: Content): Promise<boolean>
   let ok = true
   const before = ai.settings.role('voice')
   for (const provider of providers) {
-    console.log(`[ai-check] ${provider}: key ${summary.providers[provider].masked}`)
-    const models = await ai.listModels(provider, true)
-    const ids = models.map((m) => m.id)
-    console.log(`[ai-check] ${provider}: ${ids.length} chat models: ${ids.slice(0, 40).join(', ')}${ids.length > 40 ? ', ...' : ''}`)
-    const advice = await ai.advise(provider)
-    const named = [advice.voice.recommended, advice.voice.cheaper, advice.brain.recommended, advice.brain.cheaper]
-    console.log(`[ai-check] ${provider}: advice by ${advice.advisorModel}`)
-    for (const [label, choice] of [['voice', advice.voice.recommended], ['voice, cheaper', advice.voice.cheaper], ['brain', advice.brain.recommended], ['brain, cheaper', advice.brain.cheaper]] as const) {
-      console.log(`[ai-check]   ${label.padEnd(15)} ${choice.model}  ${ids.includes(choice.model) ? 'exists' : 'NOT IN LIST'}  "${choice.reason}"`)
+    try {
+      if (!(await checkProvider(ai, content, provider))) ok = false
+    } catch (error) {
+      console.log(`[ai-check] ${provider}: stopped: ${error instanceof Error ? error.message : String(error)}`)
+      ok = false
     }
-    if (!named.every((c) => ids.includes(c.model))) ok = false
-    for (const [role, model] of [['voice', advice.voice.recommended.model], ['brain', advice.brain.recommended.model]] as const) {
-      const t = await ai.trial(provider, model, role)
-      console.log(`[ai-check]   trial ${role} ${model}: ${t.valid}/${t.runs} valid, ${t.averageLatencyMs} ms, ${t.inputTokens} in / ${t.outputTokens} out, ${t.costPerHourUsd === undefined ? 'price unknown' : `~$${t.costPerHourUsd.toFixed(3)} per hour`}${t.errors.length ? `; problems: ${t.errors.slice(0, 3).join(' | ')}` : ''}`)
-    }
-    const stored = await ai.choose('voice', provider, advice.voice.recommended.model)
-    const exact = stored === advice.voice.recommended.model && ai.settings.role('voice')?.model === stored
-    console.log(`[ai-check]   stored voice model: ${stored} (${exact ? 'exact match' : 'MISMATCH'})`)
-    if (!exact) ok = false
-    for (const situation of SITUATIONS.filter((s) => ['mirte_local', 'aaltje_story', 'lubbert_far'].includes(s.id))) {
-      const run = await runSituation(content, situation, ai.gateway)
-      const said = run.outputs.filter((o) => o.kind === 'speech' || o.kind === 'check').slice(1, -1).map((o) => o.text)
-      console.log(`[ai-check]   ${situation.id}: ${situation.lines.join(' / ')}`)
-      for (const line of said) console.log(`[ai-check]     ${line}`)
-    }
-    const injection = await runSituation(content, SITUATIONS.find((s) => s.noCall)!, new MockLlm('good'))
-    console.log(`[ai-check]   injection attempt made ${injection.requests.length} model calls`)
   }
+  ok = (await finish(ai, content, before)) && ok
+  console.log(`[ai-check] ${ok ? 'PASS' : 'FAIL'}`)
+  return ok
+}
+
+async function checkProvider(ai: AiService, content: Content, provider: ProviderId): Promise<boolean> {
+  let ok = true
+  const summary = ai.settings.summary()
+  console.log(`[ai-check] ${provider}: key ${summary.providers[provider].masked}`)
+  const models = await ai.listModels(provider, true)
+  const ids = models.map((m) => m.id)
+  console.log(`[ai-check] ${provider}: ${ids.length} chat models: ${ids.slice(0, 40).join(', ')}${ids.length > 40 ? ', ...' : ''}`)
+  const advice = await ai.advise(provider)
+  const named = [advice.voice.recommended, advice.voice.cheaper, advice.brain.recommended, advice.brain.cheaper]
+  console.log(`[ai-check] ${provider}: advice by ${advice.advisorModel}`)
+  for (const [label, choice] of [['voice', advice.voice.recommended], ['voice, cheaper', advice.voice.cheaper], ['brain', advice.brain.recommended], ['brain, cheaper', advice.brain.cheaper]] as const) {
+    console.log(`[ai-check]   ${label.padEnd(15)} ${choice.model}  ${ids.includes(choice.model) ? 'exists' : 'NOT IN LIST'}  "${choice.reason}"`)
+  }
+  if (!named.every((c) => ids.includes(c.model))) ok = false
+  for (const [role, model] of [['voice', advice.voice.recommended.model], ['brain', advice.brain.recommended.model]] as const) {
+    const t = await ai.trial(provider, model, role)
+    console.log(`[ai-check]   trial ${role} ${model}: ${t.valid}/${t.runs} valid, ${t.averageLatencyMs} ms, ${t.inputTokens} in / ${t.outputTokens} out, ${t.costPerHourUsd === undefined ? 'price unknown' : `~$${t.costPerHourUsd.toFixed(3)} per hour`}${t.errors.length ? `; problems: ${t.errors.slice(0, 3).join(' | ')}` : ''}`)
+  }
+  const stored = await ai.choose('voice', provider, advice.voice.recommended.model)
+  const exact = stored === advice.voice.recommended.model && ai.settings.role('voice')?.model === stored
+  console.log(`[ai-check]   stored voice model: ${stored} (${exact ? 'exact match' : 'MISMATCH'})`)
+  if (!exact) ok = false
+  for (const situation of SITUATIONS.filter((s) => ['mirte_local', 'aaltje_story', 'wendela_recruit'].includes(s.id))) {
+    const run = await runSituation(content, situation, ai.gateway)
+    const said = run.outputs.filter((o) => o.kind === 'speech' || o.kind === 'check').slice(1, -1).map((o) => o.text)
+    console.log(`[ai-check]   ${situation.id}: ${situation.lines.join(' / ')}`)
+    for (const line of said) console.log(`[ai-check]     ${line}`)
+  }
+  const injection = await runSituation(content, SITUATIONS.find((s) => s.noCall)!, new MockLlm('good'))
+  console.log(`[ai-check]   injection attempt made ${injection.requests.length} model calls`)
+  return ok
+}
+
+async function finish(ai: AiService, content: Content, before: ReturnType<AiService['settings']['role']>): Promise<boolean> {
   if (before) {
     ai.settings.setRole('voice', before)
     console.log(`[ai-check] put back the voice model you had chosen: ${before.model}`)
+    const run = await runSituation(content, SITUATIONS.find((s) => s.id === 'wendela_recruit')!, ai.gateway)
+    console.log(`[ai-check]   wendela_recruit with ${before.model}: ${run.situation.lines.join(' / ')}`)
+    for (const line of run.outputs.filter((o) => o.kind === 'speech').slice(1, -1)) console.log(`[ai-check]     ${line.text}`)
   }
   const usage = ai.usage.summary()
   console.log(`[ai-check] this run: ${usage.session.calls} calls, ${usage.session.inputTokens} tokens in (${usage.session.cachedTokens} cached), ${usage.session.outputTokens} out, $${usage.session.costUsd.toFixed(4)}`)
-  console.log(`[ai-check] ${ok ? 'PASS' : 'FAIL'}`)
-  return ok
+  return true
 }
 
 function walk(dir: string): string[] {

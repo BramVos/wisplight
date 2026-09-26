@@ -41,7 +41,19 @@ const CHECKS: Situation[] = [
   { id: 'trijntje_persuade', npc: 'npc_trijntje', lines: ['Good day.', 'persuade trijntje to give me a room for less'] },
 ]
 
-export const SITUATIONS: Situation[] = [...NPCS.flatMap((npc) => TURNS.map((turn) => ({ id: `${npc.slice(4)}_${turn.id}`, npc, lines: turn.lines }))), ...CHECKS, ...INJECTIONS]
+// Asking someone to come along, and for a name they cannot know (playtest, 26 September 2026).
+const RECRUIT: Situation = {
+  id: 'wendela_recruit',
+  npc: 'npc_wendela',
+  lines: ['Will you come with me into the fen to look for Fenna?', 'Who would mind the chapel while you are gone? What is the name of the priest?'],
+}
+
+export const SITUATIONS: Situation[] = [
+  ...NPCS.flatMap((npc) => TURNS.map((turn) => ({ id: `${npc.slice(4)}_${turn.id}`, npc, lines: turn.lines }))).filter((s) => s.id !== 'wendela_dutch'),
+  RECRUIT,
+  ...CHECKS,
+  ...INJECTIONS,
+]
 
 // Late morning on the second day: everyone is up and about.
 const TALK_AT = { day: 15, hour: 11 }
@@ -102,5 +114,5 @@ export function brainRequests(): LlmRequest[] {
     'NPC: Harmen the miller. Needs: hunger 40, rest 55, work 20. Money: 3 stuivers. His mill is broken and needs 2 sailcloth. He owes Mirte 6 stuivers. Time: Woensdag 09:00.',
     'NPC: Lubbert the grain merchant. Needs: hunger 80, rest 60, social 25. Stock: rye grain 12 (target 40). The weekly barge comes on Maandag. Time: Donderdag 17:40.',
   ]
-  return situations.map((prompt) => ({ role: 'brain' as const, system, prompt, schemaName: 'npc_goals', schema: goalJsonSchema(goalTypes, ids), maxTokens: 300 }))
+  return situations.map((prompt) => ({ role: 'brain' as const, system, prompt, schemaName: 'npc_goals', schema: goalJsonSchema(goalTypes, ids), maxTokens: 500 }))
 }

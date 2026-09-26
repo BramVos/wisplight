@@ -34,10 +34,15 @@ export interface GatewayStatus {
   monthBudgetSpent: boolean
 }
 
+interface ProviderHealth {
+  failures: number
+  coolingUntil: number
+  busyUntil: number
+}
+
 export class Gateway implements LlmClient {
-  private failures = 0
-  private coolingUntil = 0
-  private busyUntil = 0
+  // Per provider: a rate limit or an outage at one should not stop the other.
+  private readonly health = new Map<ProviderId, ProviderHealth>()
   private last?: RoleChoice
 
   constructor(private readonly options: GatewayOptions) {}
@@ -46,10 +51,19 @@ export class Gateway implements LlmClient {
     return this.options.now?.() ?? Date.now()
   }
 
+  private healthOf(provider: ProviderId): ProviderHealth {
+    let health = this.health.get(provider)
+    if (!health) this.health.set(provider, (health = { failures: 0, coolingUntil: 0, busyUntil: 0 }))
+    return health
+  }
+
+  /** Busy and cooling down refer to the provider of the dialogue model. */
   status(): GatewayStatus {
+    const voice = this.options.role('voice')
+    const health = voice ? this.healthOf(voice.provider) : { failures: 0, coolingUntil: 0, busyUntil: 0 }
     return {
-      busy: this.now() < this.busyUntil,
-      coolingDown: this.now() < this.coolingUntil,
+      busy: this.now() < health.busyUntil,
+      coolingDown: this.now() < health.coolingUntil,
       hourSpentUsd: this.options.log.spentLastHour(this.now()),
       hourBudgetUsd: this.options.budgetUsdPerHour(),
       monthBudgetSpent: this.options.usage.monthBudgetSpent(),
@@ -61,9 +75,10 @@ export class Gateway implements LlmClient {
     if (!choice) throw new LlmError('config', `no model chosen for ${request.role}`)
     const provider = this.options.provider(choice.provider)
     if (!provider) throw new LlmError('config', `no API key for ${choice.provider}`)
+    const health = this.healthOf(choice.provider)
     if (!override) {
-      if (this.now() < this.busyUntil) throw new LlmError('busy', 'waiting for the rate limit to reset')
-      if (this.now() < this.coolingUntil) throw new LlmError('network', 'cooling down after repeated failures')
+      if (this.now() < health.busyUntil) throw new LlmError('busy', 'waiting for the rate limit to reset')
+      if (this.now() < health.coolingUntil) throw new LlmError('network', 'cooling down after repeated failures')
     }
     if (request.role !== 'advisor') {
       if (this.options.log.spentLastHour(this.now()) >= this.options.budgetUsdPerHour()) throw new LlmError('budget', 'the hourly budget is used up')
@@ -75,9 +90,9 @@ export class Gateway implements LlmClient {
     const started = this.now()
     try {
       const response = await provider.complete(choice.model, request, controller.signal)
-      this.failures = 0
+      health.failures = 0
       this.last = choice
-      this.watch(response.rateLimit)
+      this.watch(health, response.rateLimit)
       const costUsd = this.options.usage.record(choice.provider, choice.model, response.usage, true)
       this.options.log.add({
         time: new Date(this.now()).toISOString(),
@@ -101,10 +116,10 @@ export class Gateway implements LlmClient {
           : new LlmError('network', String(error))
       if (failure instanceof BusyError) {
         // A full rate limit is about pace, not a broken connection: wait, do not count it.
-        this.busyUntil = this.now() + failure.retryAfterMs
-      } else if (!override && ++this.failures >= FAILURES_BEFORE_COOLDOWN) {
-        this.coolingUntil = this.now() + COOLDOWN_MS
-        this.failures = 0
+        health.busyUntil = this.now() + failure.retryAfterMs
+      } else if (!override && ++health.failures >= FAILURES_BEFORE_COOLDOWN) {
+        health.coolingUntil = this.now() + COOLDOWN_MS
+        health.failures = 0
       }
       this.options.usage.record(choice.provider, choice.model, undefined, false)
       this.options.log.add({
@@ -132,9 +147,9 @@ export class Gateway implements LlmClient {
   }
 
   /** Pauses calls when the rate-limit window is empty or nearly so. */
-  private watch(limit: RateLimit | undefined): void {
+  private watch(health: ProviderHealth, limit: RateLimit | undefined): void {
     if (!limit) return
     const empty = limit.requestsRemaining === 0 || (limit.tokensRemaining !== undefined && limit.tokensRemaining < LOW_TOKENS)
-    if (empty) this.busyUntil = Math.max(this.busyUntil, limit.resetAt ?? this.now() + 10_000)
+    if (empty) health.busyUntil = Math.max(health.busyUntil, limit.resetAt ?? this.now() + 10_000)
   }
 }

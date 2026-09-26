@@ -61,6 +61,7 @@ topics:
     fame: 2
     summary: The Haakman lives in the Blackmere and drags down anyone who insults the water.
     details: He is grey as a heron, with teeth like water-weed and a long hook. Old women hammer iron nails into their doorsteps to keep him out.
+    teller: npc_wouter
     story: |
       My gran fished the Blackmere seventy years. She said the Haakman is grey as a heron, with teeth like water-weed and a long hook, and he drags down anyone who spits in his water or takes more eels than they need. She had a song for him. I only have the start of it: Haakman, Haakman, cold and grey, iron at the door keeps you away, iron in the hand and bread on the stone. There was more. Something about his name. She took the rest with her.
     known_by: [npc_wouter, npc_aaltje]

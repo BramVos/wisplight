@@ -4,13 +4,13 @@ import { LlmError, type LlmClient, type LlmRequest, type LlmResponse } from './l
 // knowledge packet in request.meta and can misbehave on purpose, so tests can
 // prove that the guardrails catch it.
 
-export type MockMode = 'good' | 'leak' | 'long' | 'invalid' | 'throw' | 'anachronism' | 'topics'
+export type MockMode = 'good' | 'leak' | 'long' | 'invalid' | 'throw' | 'anachronism' | 'topics' | 'invent'
 
 export interface MockMeta {
   npcName: string
   act: string
   wordLimit: number
-  known: { topic: string; facts: string[]; story?: string }[]
+  known: { topic: string; facts: string[]; story?: string; toldBy?: string }[]
   unknown: { topic: string; name: string }[]
   referral?: { npc: string; name: string; call: string }
   check?: string
@@ -39,7 +39,7 @@ export class MockLlm implements LlmClient {
     const known = meta.known[0]
     if (meta.secret) speech = meta.secret
     else if (meta.check && /failure/.test(meta.check)) speech = "I don't think so."
-    else if (meta.act === 'AskStory' && known?.story) speech = known.story
+    else if (meta.act === 'AskStory' && known?.story && !known.toldBy) speech = known.story
     else if (known) speech = known.facts.slice(0, 2).join(' ')
     else if (meta.unknown.length) speech = `Can't say I know.${meta.referral ? ` Ask ${meta.referral.call}.` : ''}`
     else if (meta.act === 'Greet') speech = 'Evening to you.'
@@ -48,6 +48,7 @@ export class MockLlm implements LlmClient {
     if (this.mode === 'leak') speech = `${speech} My cousin in ${this.leakName} says the same.`
     if (this.mode === 'long') speech = Array.from({ length: 12 }, () => speech).join(' ')
     if (this.mode === 'anachronism') speech = `Okay, ${speech}`
+    if (this.mode === 'invent') speech = `${speech} Father Oswin would know more.`
     const words = speech.split(/\s+/)
     if (this.mode === 'good' && words.length > meta.wordLimit) speech = words.slice(0, meta.wordLimit).join(' ').replace(/[,;:]?$/, '.')
 

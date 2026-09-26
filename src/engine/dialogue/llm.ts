@@ -37,7 +37,7 @@ export interface LlmResponse {
 
 /** A reply the engine threw away after validation, so the usage overview can count it. */
 export interface LlmRejection {
-  reason: 'schema' | 'anachronism' | 'leak'
+  reason: 'schema' | 'anachronism' | 'leak' | 'invented'
 }
 
 export interface LlmClient {

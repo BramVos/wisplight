@@ -173,21 +173,30 @@ function resetTime(value: string | null, now = Date.now()): number | undefined {
 
 /** An LlmError for a 429, with how long to wait. */
 export class BusyError extends LlmError {
-  constructor(readonly retryAfterMs: number) {
-    super('busy', 'rate limited, waiting for the provider')
+  constructor(
+    readonly retryAfterMs: number,
+    detail = '',
+  ) {
+    super('busy', `rate limited, waiting for the provider${detail ? ` (${detail})` : ''}`)
   }
 }
 
-function mapError(error: unknown): LlmError {
+const NO_CREDIT = 'the account has no credit left. Add credit on the billing page of the provider.'
+
+export function mapError(error: unknown): LlmError {
   if (error instanceof LlmError) return error
-  const e = error as { name?: string; status?: number; message?: string; headers?: Headers }
+  const e = error as { name?: string; status?: number; message?: string; headers?: Headers; code?: string | null; error?: { code?: string; type?: string } }
+  // OpenAI answers 429 both for "too fast" and for "no credit"; Anthropic answers 400 for no credit.
+  if (e?.code === 'insufficient_quota' || e?.error?.code === 'insufficient_quota' || /insufficient_quota|exceeded your current quota|no credits remaining|credit balance is too low/i.test(e?.message ?? '')) {
+    return new LlmError('config', NO_CREDIT)
+  }
   if (e?.name === 'AbortError' || /abort/i.test(e?.message ?? '')) return new LlmError('timeout', 'the model took too long')
   if (e?.status === 401 || e?.status === 403) return new LlmError('config', 'the API key was refused')
   if (e?.status === 404) return new LlmError('config', 'that model does not exist for this key')
   if (e?.status === 400) return new LlmError('invalid', `the request was refused: ${(e.message ?? '').slice(0, 200)}`)
   if (e?.status === 429) {
     const seconds = Number(e.headers?.get?.('retry-after'))
-    return new BusyError(Number.isFinite(seconds) && seconds > 0 ? Math.min(seconds, 120) * 1000 : 20_000)
+    return new BusyError(Number.isFinite(seconds) && seconds > 0 ? Math.min(seconds, 120) * 1000 : 20_000, (e.message ?? '').slice(0, 300))
   }
   return new LlmError('network', (e?.message ?? 'network error').slice(0, 200))
 }

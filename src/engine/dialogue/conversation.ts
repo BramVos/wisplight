@@ -1,16 +1,17 @@
 import type { Output } from '../commands'
 import { formatMoney, GUILDER, STUIVER } from '../items'
+import { MONTHS, WEEKDAYS } from '../clock'
 import { callName } from '../content'
 import type { TalkState } from '../state'
 import type { World } from '../world'
 import { classify, tierFor, TIER_TOKENS, TIER_WORDS, type Act, type Tier } from './acts'
 import { check, dcFor, describeCheck, succeeded, type CheckResult } from './checks'
 import { closingLine, fallbackReply } from './fallback'
-import { fitLength, hasAnachronism, leakedNames, looksLikeInjection } from './guard'
+import { fitLength, hasAnachronism, leakedNames, looksLikeInjection, unknownNames, vocabularyOf } from './guard'
 import type { Knowledge, Packet } from './knowledge'
 import type { LlmClient } from './llm'
-import { systemPrompt, turnPrompt } from './prompt'
-import { attitude, applyEffect, moodOf, relation } from './relations'
+import { peopleIds, systemPrompt, turnPrompt, WORLD_FRAME } from './prompt'
+import { attitude, applyEffect, moodOf, relation, type Attitude } from './relations'
 import { parseReply, replyJsonSchema, type Reply } from './schema'
 import type { TopicRegistry } from './topics'
 
@@ -49,7 +50,15 @@ export class Dialogue {
     private readonly llm: () => LlmClient | undefined,
   ) {}
 
-  get talk(): TalkState | undefined {
+  private words?: Set<string>
+
+  /** Every word the world's content uses, for spotting names the model made up. */
+  private vocabulary(): Set<string> {
+    this.words ??= vocabularyOf(this.world.content, WORLD_FRAME, MONTHS, WEEKDAYS)
+    return this.words
+  }
+
+    get talk(): TalkState | undefined {
     return this.world.state.talk
   }
 
@@ -265,7 +274,8 @@ export class Dialogue {
 
     // 3. The model, or the designer's templates.
     const memories = (world.npcState(npcId).memory ?? []).slice(-5).map((m) => m.note)
-    const reply = await this.callModel(npcId, text, { act, tier, packet, band, memories, check: options.check, secret: options.secret, spokenTopics: this.topics.recognise(text) })
+    const decision = act === 'Recruit' ? recruitDecision(world, npcId, band.band) : undefined
+    const reply = await this.callModel(npcId, text, { act, tier, packet, band, memories, check: options.check, secret: options.secret, decision, spokenTopics: this.topics.recognise(text) })
     const replyText = reply
       ? reply.reply
       : options.secret
@@ -328,6 +338,7 @@ export class Dialogue {
       memories: string[]
       check?: CheckResult & { about: string }
       secret?: string
+      decision?: string
       spokenTopics: string[]
     },
   ): Promise<Reply | undefined> {
@@ -339,7 +350,7 @@ export class Dialogue {
     const location = world.location(world.state.player.location)
     const allowedTopics = [...new Set([...ctx.packet.known.map((k) => k.topic), ...(ctx.packet.referral ? [ctx.packet.referral.npc] : []), ...present])]
     // Names the NPC may say: what it knows, who is here, where it is, and whatever the player just said.
-    const allowedNames = new Set([...this.knowledge.knownTopics(npcId), ...present, location.id, `area_${location.area}`, ...ctx.spokenTopics, ...allowedTopics])
+    const allowedNames = new Set([...this.knowledge.knownTopics(npcId), ...peopleIds(world, npcId), ...present, location.id, `area_${location.area}`, ...ctx.spokenTopics, ...allowedTopics])
 
     let prompt = turnPrompt(world, {
       npcId,
@@ -350,6 +361,7 @@ export class Dialogue {
       packet: ctx.packet,
       check: ctx.check,
       secret: ctx.secret,
+      decision: ctx.decision,
       memories: ctx.memories,
       history: talk?.history ?? [],
       playerText: text,
@@ -392,10 +404,17 @@ export class Dialogue {
         prompt += '\nNOTE: your last reply used words that do not exist in this world. Answer again without them.'
         continue
       }
-      const leaks = leakedNames(fitted, this.topics.properNames(), allowedNames)
+      const said = `${fitted} ${reply.memory_note}`
+      const leaks = leakedNames(said, this.topics.properNames(), allowedNames)
       if (leaks.length > 0) {
         llm.report?.({ reason: 'leak' })
         prompt += `\nNOTE: you mentioned ${leaks.join(', ')}, which you know nothing about. Answer again without them.`
+        continue
+      }
+      const invented = unknownNames(said, this.vocabulary(), vocabularyOf(text, ...(talk?.history ?? []).filter((h) => h.speaker === 'player').map((h) => h.text)))
+      if (invented.length > 0) {
+        llm.report?.({ reason: 'invented' })
+        prompt += `\nNOTE: you used ${invented.join(', ')}, which ${invented.length === 1 ? 'does' : 'do'} not exist in this world. Never make up names. Use only names from PEOPLE YOU KNOW, KNOWLEDGE and SCENE, or say you don't know.`
         continue
       }
       return { ...reply, reply: fitted }
@@ -407,6 +426,17 @@ export class Dialogue {
     const ids = Object.keys(this.world.state.player.journal ?? {})
     return ids.length ? ids.slice(-limit).map((id) => this.topics.name(id)).join(', ') : 'nothing yet'
   }
+}
+
+// Whether someone joins the player is the game's call, not the model's (FO, chapter 13).
+// Companions arrive in M6; until then everyone declines, for reasons the game can name.
+function recruitDecision(world: World, npcId: string, band: Attitude): string {
+  const npc = world.npc(npcId)
+  const reasons: string[] = []
+  if (band !== 'Warm' && band !== 'Devoted') reasons.push('you hardly know this stranger and do not trust them enough')
+  if (npc.work) reasons.push(`your work at ${world.location(npc.work).name} needs you`)
+  if (npc.quirks.includes('afraid_of_deep_water')) reasons.push('the fen and its deep water frighten you')
+  return `You will not come along. Say no in your own way and give one or two of these reasons: ${reasons.join('; ') || 'you have your own life to see to'}.`
 }
 
 /** The topic words without closing punctuation, so the echo does not end in "?." or "..". */

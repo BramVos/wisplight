@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { Engine, MockLlm, parseReply, runSituation, SITUATIONS, soundsLikeSpeech, timeGreeting, wordCount, type LlmClient, type LlmRejection, type MockMode } from '../src/engine'
+import { Engine, MockLlm, MONTHS, parseReply, runSituation, SITUATIONS, soundsLikeSpeech, timeGreeting, unknownNames, vocabularyOf, WEEKDAYS, wordCount, WORLD_FRAME, type LlmClient, type LlmRejection, type MockMode } from '../src/engine'
 import { content, newEngine } from './helpers'
 
 // Milestone M2 (docs/ROADMAP.md): talking with NPCs, with the mock model only.
@@ -73,6 +73,22 @@ describe('M2: guardrails', () => {
     expect(rejected.map((r) => r.reason)).toEqual(['schema', 'schema'])
   })
 
+  it('throws away a reply that makes up a person', async () => {
+    const { run, rejected } = await leakyRun('invent')
+    expect(speechOf(run.outputs).join(' ')).not.toMatch(/Oswin/)
+    expect(rejected.map((r) => r.reason)).toEqual(['invented', 'invented'])
+    expect(run.requests[1]!.prompt).toMatch(/NOTE: you used Oswin, which does not exist/)
+  })
+
+  it('knows made-up names from names of the world', () => {
+    const vocabulary = vocabularyOf(content, WORLD_FRAME, MONTHS, WEEKDAYS)
+    expect(unknownNames('Wendela nods. "The vicar is Father Oswin. A good man."', vocabulary)).toEqual(['Father', 'Oswin'])
+    expect(unknownNames('She smiles. "Saint Brand keep you. Ask Mirte, or the Old Powers, or Lubbert in Waagdam on Maandag."', vocabulary)).toEqual([])
+    expect(unknownNames('"I\'ll tell you. Aye, it was Herfstmaand when I\'d heard it."', vocabulary)).toEqual([])
+    // A name the player used may come back: "I know no Oswin."
+    expect(unknownNames('She frowns. "I know no Oswin."', vocabulary, vocabularyOf('Do you know Oswin?'))).toEqual([])
+  })
+
   it('trims a reply that runs too long', async () => {
     const { run } = await leakyRun('long')
     const answer = speechOf(run.outputs)[1]!
@@ -121,6 +137,34 @@ describe('M2: talking', () => {
     expect(soundsLikeSpeech('where', 'where is waagdam')).toBe(false)
     expect(soundsLikeSpeech('where', 'waar is de molen?')).toBe(false)
     expect(soundsLikeSpeech('wait', 'wait')).toBe(false)
+  })
+
+  it('lets the game, not the model, decide whether someone comes along', async () => {
+    const run = await runSituation(content, SITUATIONS.find((s) => s.id === 'wendela_recruit')!, new MockLlm('good'))
+    const [recruit, name] = run.requests
+    expect(recruit!.meta!['act']).toBe('Recruit')
+    expect(recruit!.prompt).toMatch(/DECISION \(made by the game, follow it\): You will not come along\./)
+    expect(recruit!.prompt).toMatch(/hardly know this stranger/)
+    expect(recruit!.prompt).toMatch(/deep water frighten you/)
+    expect(name!.prompt).not.toMatch(/DECISION/)
+    expect(recruit!.system).toMatch(/Never agree to come along/)
+  })
+
+  it('tells the model everyone the NPC knows by name, so it has no need to make people up', async () => {
+    const run = await runSituation(content, SITUATIONS.find((s) => s.id === 'wendela_recruit')!, new MockLlm('good'))
+    const people = run.requests[0]!.system.split('\n').find((line) => line.startsWith('PEOPLE YOU KNOW:'))!
+    expect(people).toContain('Mirte the baker (Veenhoek)')
+    expect(people).toContain('Lubbert the grain merchant (Waagdam)')
+    expect(people).not.toContain('Sister Wendela')
+    expect(run.requests[0]!.system).toContain('Veenhoek has no priest of its own')
+  })
+
+  it("lets only Wouter tell his gran's story as his own; others retell it", async () => {
+    const aaltje = await runSituation(content, SITUATIONS.find((s) => s.id === 'aaltje_story')!, new MockLlm('good'))
+    expect(aaltje.requests[0]!.prompt).toMatch(/STORY as Wouter the eel-fisher tells it\. Retell it in your own words; the people in it are Wouter the eel-fisher's family, not yours:/)
+    expect(speechOf(aaltje.outputs).join(' ')).not.toMatch(/My gran/)
+    const wouter = await runSituation(content, SITUATIONS.find((s) => s.id === 'wouter_story')!, new MockLlm('good'))
+    expect(wouter.requests[0]!.prompt).toMatch(/STORY you may tell, in your own words:\n  My gran fished the Blackmere/)
   })
 
   it('asks for the story when the player says "Tell me the story of ..."', async () => {

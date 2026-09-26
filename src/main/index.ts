@@ -208,7 +208,10 @@ function createWindow(): void {
 void app.whenReady().then(async () => {
   if (checking) {
     await setup()
-    const ok = process.env['WISPLIGHT_KEY_CHECK'] ? await keyCheck(app, ai!, content!) : await aiCheck(ai!, content!)
+    const ok = await (process.env['WISPLIGHT_KEY_CHECK'] ? keyCheck(app, ai!, content!) : aiCheck(ai!, content!)).catch((error: unknown) => {
+      console.log(`[check] stopped: ${error instanceof Error ? error.message : String(error)}`)
+      return false
+    })
     app.exit(ok ? 0 : 1)
     return
   }

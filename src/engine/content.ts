@@ -238,6 +238,8 @@ export const TopicSchema = z.object({
   summary: z.string(),
   details: z.string().optional(),
   story: z.string().optional(),
+  /** Whose telling the story is, when it is told in the first person. */
+  teller: z.string().optional(),
   origin: z.string().optional(),
   fame: z.number().int().min(0).max(5).default(2),
   known_by: z.array(z.string()).default([]),
@@ -409,6 +411,7 @@ function checkReferences(world: WorldDef | undefined, c: Omit<Content, 'world'>)
   for (const t of c.topics.values()) {
     if (t.origin && !c.areas.has(t.origin) && !c.locations.has(t.origin)) problems.push(`topic ${t.id}: unknown origin ${t.origin}`)
     for (const n of t.known_by) npc(n, `topic ${t.id}.known_by`)
+    if (t.teller) npc(t.teller, `topic ${t.id}.teller`)
   }
   for (const p of c.professions.values()) {
     for (const g of p.daily_goals) if (g.item) item(g.item, `profession ${p.id}.daily_goals`)

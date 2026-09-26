@@ -59,3 +59,53 @@ export function leakedNames(text: string, names: { id: string; name: string }[],
   }
   return [...new Set(leaks)]
 }
+
+// Words a reply may capitalise in the middle of a sentence without naming anything.
+const COMMON_CAPITALS = new Set(['i', "i'm", "i'll", "i've", "i'd", 'god', 'lord', 'heaven', 'hell', 'sir', 'madam', 'master', 'mistress'])
+
+const WORDS = /[\p{L}'’]+/gu
+
+/** Every word in the given texts and data, lower-cased: the vocabulary of the world. */
+export function vocabularyOf(...sources: unknown[]): Set<string> {
+  const words = new Set<string>()
+  const visit = (value: unknown): void => {
+    if (typeof value === 'string') {
+      for (const [word] of value.matchAll(WORDS)) words.add(normalise(word))
+    } else if (value instanceof Map) {
+      for (const item of value.values()) visit(item)
+    } else if (Array.isArray(value)) {
+      for (const item of value) visit(item)
+    } else if (value && typeof value === 'object') {
+      for (const item of Object.values(value)) visit(item)
+    }
+  }
+  for (const source of sources) visit(source)
+  return words
+}
+
+function normalise(word: string): string {
+  return word
+    .toLowerCase()
+    .replace(/’/g, "'")
+    .replace(/'s$/, '')
+    .replace(/^'+|'+$/g, '')
+}
+
+/**
+ * Capitalised words in the middle of a sentence that the world does not know,
+ * such as a priest the model made up. Words at the start of a sentence or of
+ * speech are skipped; so are words the player used.
+ */
+export function unknownNames(text: string, vocabulary: Set<string>, playerWords: Set<string> = new Set()): string[] {
+  const found: string[] = []
+  for (const match of text.matchAll(/\p{Lu}[\p{L}'’]*/gu)) {
+    const index = match.index ?? 0
+    if (index > 0 && /[\p{L}'’]/u.test(text[index - 1]!)) continue
+    const before = text.slice(0, index).trimEnd()
+    if (before === '' || /[.!?"“:;(]$/.test(before)) continue
+    const word = normalise(match[0])
+    if (word.length < 2 || COMMON_CAPITALS.has(word) || vocabulary.has(word) || playerWords.has(word)) continue
+    found.push(match[0].replace(/['’]s$/, ''))
+  }
+  return [...new Set(found)]
+}

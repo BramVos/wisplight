@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react'
+import { Fragment, useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import type { Output } from '../../engine'
 import { createClient, type AiStatus, type EngineClient, type Reply } from './client'
 import { Settings, usd, type SettingsTab } from './Settings'
@@ -129,10 +129,10 @@ export function App() {
   // A topic from the text or the journal: ask about it in a conversation, otherwise put it in the prompt.
   const onTopic = (topic: string) => {
     if (talk) {
-      void send(`ask about ${topic.toLowerCase()}`)
+      void send(`ask about ${topic}`)
       return
     }
-    setInput(`ask about ${topic.toLowerCase()}`)
+    setInput(`ask about ${topic}`)
     inputRef.current?.focus()
   }
 
@@ -169,12 +169,14 @@ export function App() {
                 <h3>{title}</h3>
                 <p>
                   {status.journal[key].map((entry, index, all) => (
-                    <span key={entry.id} className="entry">
-                      <button type="button" className="topic" onClick={() => onTopic(entry.name)} title={talk ? `Ask about ${entry.name}` : undefined}>
-                        {entry.name}
-                      </button>
-                      {index < all.length - 1 && ','}{' '}
-                    </span>
+                    <Fragment key={entry.id}>
+                      <span className="entry">
+                        <button type="button" className="topic" onClick={() => onTopic(entry.name)} title={talk ? `Ask about ${entry.name}` : undefined}>
+                          {entry.name}
+                        </button>
+                        {index < all.length - 1 && ','}
+                      </span>{' '}
+                    </Fragment>
                   ))}
                 </p>
               </div>

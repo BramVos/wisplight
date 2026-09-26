@@ -51,7 +51,8 @@ export function fallbackReply(world: World, npcId: string, act: Act, packet: Pac
   }
 
   if (known) {
-    const fact = act === 'AskStory' && known.story ? known.story.split(/(?<=[.!?])\s+/).slice(0, 3).join(' ') : known.facts.slice(0, 2).join(' ')
+    // Someone else's first-person story cannot be read out as one's own; fall back to the plain facts.
+    const fact = act === 'AskStory' && known.story && !known.toldBy ? known.story.split(/(?<=[.!?])\s+/).slice(0, 3).join(' ') : known.facts.slice(0, 2).join(' ')
     return `${name} ${pick(world, ['thinks a moment.', 'nods slowly.', 'scratches an ear.'])} ${quote(fact)}`
   }
   if (packet.unknown.length > 0) {

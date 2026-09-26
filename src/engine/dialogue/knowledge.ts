@@ -15,6 +15,8 @@ export interface KnownTopic {
   level: Level
   facts: string[]
   story?: string
+  /** Set when the story is someone else's first-person telling: their name, e.g. "Wouter the eel-fisher". */
+  toldBy?: string
 }
 
 export interface Packet {
@@ -118,7 +120,7 @@ export class Knowledge {
     return packet
   }
 
-  private facts(npcId: string, topicId: string, level: Level, wantsStory: boolean): { facts: string[]; story?: string } {
+  private facts(npcId: string, topicId: string, level: Level, wantsStory: boolean): { facts: string[]; story?: string; toldBy?: string } {
     const entry = this.topics.entries.get(topicId)!
     const { content } = this.world
     const facts: string[] = []
@@ -166,8 +168,10 @@ export class Knowledge {
       default:
         facts.push(...this.topicFacts(topicId, level))
     }
-    const story = wantsStory && level >= 2 ? content.topics.get(topicId)?.story?.trim() : undefined
-    return { facts: facts.filter(Boolean), story }
+    const topic = content.topics.get(topicId)
+    const story = wantsStory && level >= 2 ? topic?.story?.trim() : undefined
+    const toldBy = story && topic?.teller && topic.teller !== npcId ? content.npcs.get(topic.teller)?.short : undefined
+    return { facts: facts.filter(Boolean), story, toldBy }
   }
 
   private topicFacts(topicId: string, level: Level): string[] {

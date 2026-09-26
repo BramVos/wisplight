@@ -122,6 +122,13 @@ npcs:
     aliases: [wendela, sister, zuster]
     public_facts:
       - Sister Wendela keeps the Chapel of the Lantern in Veenhoek.
+      - She keeps the chapel alone. Veenhoek has no priest of its own, and she hopes one day for a real church.
+    secrets:
+      - id: drowned_brother
+        text: Her little brother drowned in the Blackmere when they were children. She has been afraid of deep water ever since.
+        hint: She keeps away from the water's edge and changes the subject when the Blackmere comes up.
+        admission: I had a little brother once. The Blackmere took him. I don't go near deep water.
+        dc: 16
     examples:
       - "Every soul is a lantern, child. Some of us need a new wick."
     money: 60
