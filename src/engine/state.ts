@@ -30,7 +30,7 @@ export type Step =
   | { kind: 'stock'; location: string; service: string; item: string; qty: number }
   | { kind: 'repair'; location: string; object: string; consumes: Counts }
   | { kind: 'eat' }
-  | { kind: 'sleep'; until: number }
+  | { kind: 'sleep'; until: number; ready?: boolean }
   | { kind: 'spend'; minutes: number; activity: 'work' | 'socialize' | 'pray' | 'idle' | 'play' }
   | { kind: 'askHelp'; item: string; qty: number }
 
@@ -68,6 +68,16 @@ export interface NpcState {
   dailyDone: Record<string, number>
   lastAskHelp: Record<string, number>
   memory?: MemoryRecord[]
+  /** What the NPC did lately, newest last, for the RECENTLY line in the prompt. */
+  recent?: { t: number; text: string }[]
+  /** Where the current journey started. */
+  travelFrom?: string
+  /** True while the NPC is only passing through its current location. */
+  passing?: boolean
+  sleepSince?: number
+  wokenAt?: number
+  /** Last time the NPC stopped to look at the player. */
+  noticedPlayerAt?: number
 }
 
 export interface MemoryRecord {
@@ -104,6 +114,18 @@ export interface ServiceState {
   stock: Counts
 }
 
+/** A far-away place a model named in conversation, fixed in the savegame (design: lore and world change). */
+export interface FarName {
+  id: string
+  name: string
+  kind: 'city' | 'land' | 'sea' | 'river' | 'lake'
+  /** The sentence it was first named in. */
+  line: string
+  by: string
+  t: number
+  known_by: string[]
+}
+
 export interface WorldEvent {
   t: number
   seq: number
@@ -130,6 +152,8 @@ export interface GameState {
   goalSeq: number
   relations?: Record<string, RelationState>
   talk?: TalkState
+  /** The lore layer of this game, on top of the base lore from the content. */
+  lore?: { far: FarName[] }
 }
 
 export const objectKey = (location: string, object: string) => `${location}/${object}`

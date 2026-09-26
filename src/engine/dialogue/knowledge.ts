@@ -53,6 +53,7 @@ export class Knowledge {
   level(npcId: string, topicId: string): Level {
     const entry = this.topics.entries.get(topicId)
     if (!entry) return 0
+    if (topicId.startsWith('far_')) return this.far(topicId)?.known_by.includes(npcId) ? 2 : 0
     const own = this.ownAreas(npcId)
     const known = this.knownAreas(npcId)
     const { content } = this.world
@@ -174,7 +175,18 @@ export class Knowledge {
     return { facts: facts.filter(Boolean), story, toldBy }
   }
 
+  /** Forgets what was worked out about an NPC's knowledge, after it learned something new. */
+  forget(npcId: string): void {
+    this.allKnown.delete(npcId)
+  }
+
+  private far(topicId: string) {
+    return this.world.state.lore?.far.find((f) => f.id === topicId)
+  }
+
   private topicFacts(topicId: string, level: Level): string[] {
+    const far = this.far(topicId)
+    if (far) return [`${far.name} is a ${far.kind} far away, beyond the Nethermarch.`, `What was said of it: "${far.line}"`]
     const topic = this.world.content.topics.get(topicId)
     if (!topic) return []
     return level >= 2 && topic.details ? [topic.summary, topic.details] : [topic.summary]

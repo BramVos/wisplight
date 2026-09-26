@@ -1,13 +1,16 @@
-import { app, BrowserWindow, ipcMain, safeStorage, shell } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain, safeStorage, shell } from 'electron'
+import { randomUUID } from 'node:crypto'
+import { rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { Engine, type Content, type Output } from '../engine'
+import { Engine, type Content, type Output, type SaveData } from '../engine'
 import type { ProviderId } from '../node/ai/providers'
 import { AiService } from '../node/ai/service'
 import type { Cipher } from '../node/ai/settings'
 import { loadContentFromDir } from '../node/content'
+import { format, GameLog, type Session } from '../node/gamelog'
 import { SaveStore } from '../node/savegame'
-import { aiCheck, keyCheck, prepareKeyCheck } from './checks'
+import { aiCheck, keyCheck, LOG_CHECK_SCRIPT, prepareKeyCheck, prepareLogCheck } from './checks'
 
 // The engine runs in the main process for now; the design moves it to a
 // utility process once the simulation grows (FO, chapter 3).
@@ -30,6 +33,7 @@ let minutesSinceSave = 0
 const smoke = Boolean(process.env['WISPLIGHT_SMOKE'])
 const checking = Boolean(process.env['WISPLIGHT_AI_CHECK'] || process.env['WISPLIGHT_KEY_CHECK'])
 if (process.env['WISPLIGHT_KEY_CHECK']) prepareKeyCheck(app)
+const logCheck = process.env['WISPLIGHT_LOG_CHECK'] ? prepareLogCheck(app) : undefined
 
 // API keys are encrypted with the operating system's key store before they reach the disk.
 const cipher: Cipher = {
@@ -80,14 +84,53 @@ function store(): SaveStore {
   return saves
 }
 
+let gamelog: GameLog | undefined
+let session: Session | undefined
+let unfollow: (() => void) | undefined
+let opening: Output[] = []
+
+function journal(): GameLog {
+  gamelog ??= new GameLog(join(app.getPath('userData'), 'saves', 'gamelog.sqlite'))
+  return gamelog
+}
+
+/** Makes `next` the running game and writes everything it does to the game log. */
+function follow(next: Engine, where: Session): void {
+  unfollow?.()
+  engine = next
+  session = where
+  unfollow = next.onLog((line) => journal().write(where, line))
+}
+
+/** A new game gets its log at the first input, so a quick CONTINUE leaves no empty game behind. */
+function ensureSession(): Session {
+  if (session) return session
+  const where = journal().start(randomUUID())
+  const now = engine!.world.now
+  journal().append(where, now, 'meta', JSON.stringify({ seed: engine!.state.seed, world: content!.world.id }))
+  journal().append(where, now, 'note', `New game, ${new Date().toLocaleString('en-GB')}`)
+  for (const output of opening) journal().append(where, now, 'out', output.text)
+  follow(engine!, where)
+  return where
+}
+
+function snapshot(): SaveData {
+  const where = ensureSession()
+  return { ...engine!.save(), session: { ...where, logId: journal().position(where) } }
+}
+
+const system = (text: string): Output => ({ kind: 'system', text })
+
 ipcMain.handle('engine:start', async () => {
   await setup()
+  unfollow?.()
+  session = undefined
   engine = new Engine(content!, { seed: Math.floor(Math.random() * 2 ** 31), llm: ai!.client() })
-  lastInput = Date.now()
+  // The clock starts with the player's first keystroke, not while the opening is being read.
+  lastInput = -Infinity
   const outputs = engine.start()
-  if (store().load('manual') || store().load('auto')) {
-    outputs.push({ kind: 'system', text: 'There is a saved game. Type LOAD to continue it, or just start playing.' })
-  }
+  opening = [...outputs]
+  if (store().latest()) outputs.push(system('There is a saved game. Type CONTINUE to carry on exactly where you left off, or LOAD for your last save.'))
   return reply(outputs)
 })
 
@@ -95,17 +138,58 @@ ipcMain.handle('engine:command', async (_event, input: unknown) => {
   if (!engine || !content) throw new Error('Engine not started')
   lastInput = Date.now()
   const text = String(input).trim().slice(0, 500)
-  const verb = text.split(/\s+/)[0]?.toLowerCase()
+  // Only the bare command: "Save me!" in a conversation is something to say, not a menu action.
+  const command = /^(save|bewaar|continue|verder|load|laad|log|logboek)(?:\s+(\d+|export))?$/i.exec(text)
+  const verb = command?.[1]?.toLowerCase()
+  const args = command?.[2] ? [command[2].toLowerCase()] : []
   if (verb === 'save' || verb === 'bewaar') {
-    store().save('manual', engine.save())
-    return reply([{ kind: 'system', text: 'Game saved.' }])
+    journal().append(ensureSession(), engine.world.now, 'note', 'Game saved')
+    store().save('manual', snapshot())
+    return reply([system('Game saved.')])
+  }
+  if (verb === 'continue' || verb === 'verder') {
+    const data = store().latest()
+    if (!data) return reply([{ kind: 'error', text: 'There is no saved game yet.' }])
+    if (!data.session) {
+      follow(Engine.fromSave(content, data, ai?.client()), journal().start(randomUUID()))
+    } else {
+      // The last save plus everything the log recorded after it: exactly where the game stopped.
+      const tail = journal().tail(data.session, data.session.logId)
+      const where = { game: data.session.game, branch: data.session.branch }
+      follow(await Engine.resume(content, data, tail, ai?.client()), where)
+      journal().append(where, engine.world.now, 'note', 'Continued')
+    }
+    return reply([system('You pick up where you left off.'), ...(await engine.handle('look'))])
   }
   if (verb === 'load' || verb === 'laad') {
     const data = store().load('manual') ?? store().load('auto')
     if (!data) return reply([{ kind: 'error', text: 'There is no saved game yet.' }])
-    engine = Engine.fromSave(content, data, ai?.client())
-    return reply([{ kind: 'system', text: 'Game loaded.' }, ...(await engine.handle('look'))])
+    const loaded = Engine.fromSave(content, data, ai?.client())
+    if (!data.session) {
+      follow(loaded, journal().start(randomUUID()))
+    } else {
+      const from = { game: data.session.game, branch: data.session.branch }
+      // Anything that happened after this save stays in the log, on its own branch.
+      const where = journal().position(from) > data.session.logId ? journal().fork(from, data.session.logId) : from
+      follow(loaded, where)
+      journal().append(where, loaded.world.now, 'note', `Loaded the save of ${new Date((data as { createdAt?: string }).createdAt ?? Date.now()).toLocaleString('en-GB')}. What happened after it stays in the log.`)
+      if (where !== from) store().save('auto', snapshot())
+    }
+    return reply([system('Game loaded.'), ...(await engine.handle('look'))])
   }
+  if (verb === 'log' || verb === 'logboek') {
+    const where = ensureSession()
+    if (args[0] === 'export') {
+      const stamp = new Date().toISOString().slice(0, 16).replace(/[-:T]/g, '')
+      const result = await dialog.showSaveDialog(window!, { title: 'Save the game log', defaultPath: join(app.getPath('documents'), `wisplight-log-${stamp}.txt`) })
+      if (result.canceled || !result.filePath) return reply([system('Not saved.')])
+      writeFileSync(result.filePath, `${journal().text(where)}\n`)
+      return reply([system(`The log is saved as ${result.filePath}.`)])
+    }
+    const lines = journal().recent(where, Math.min(500, Number(args[0]) || 30))
+    return reply([system(lines.length ? lines.map(format).join('\n') : 'The log is empty.')])
+  }
+  ensureSession()
   return reply(await engine.handle(text))
 })
 
@@ -114,8 +198,9 @@ ipcMain.on('engine:activity', () => {
 })
 
 ipcMain.on('engine:hold', (_event, on: unknown) => {
+  // Closing a menu counts as activity; the first "no menu" at start-up does not start the clock.
+  if (held && !on) lastInput = Date.now()
   held = Boolean(on)
-  lastInput = Date.now()
 })
 
 // Settings > AI. Keys go in, never out: the window only ever sees them masked.
@@ -167,7 +252,7 @@ setInterval(() => {
   window.webContents.send('engine:tick', reply(outputs))
   if (!smoke && ++minutesSinceSave >= AUTOSAVE_EVERY) {
     minutesSinceSave = 0
-    store().save('auto', engine.save())
+    store().save('auto', snapshot())
   }
 }, 1000)
 
@@ -179,7 +264,7 @@ function createWindow(): void {
     minHeight: 600,
     title: 'Wisplight',
     backgroundColor: '#12140f',
-    show: !smoke,
+    show: !smoke && !logCheck,
     webPreferences: {
       preload: fileURLToPath(new URL('../preload/index.mjs', import.meta.url)),
       contextIsolation: true,
@@ -196,6 +281,20 @@ function createWindow(): void {
         )
         console.log(`[smoke] ${room.split('\n')[0]}`)
         app.quit()
+      }, 1500)
+    })
+  }
+
+  if (logCheck) {
+    window.webContents.once('did-finish-load', () => {
+      setTimeout(async () => {
+        const result: string = await window!.webContents.executeJavaScript(LOG_CHECK_SCRIPT)
+        console.log(`[log-check]\n${result}`)
+        unfollow?.()
+        gamelog?.close()
+        saves?.close()
+        rmSync(logCheck, { recursive: true, force: true })
+        app.exit(0)
       }, 1500)
     })
   }
@@ -222,6 +321,6 @@ void app.whenReady().then(async () => {
 })
 
 app.on('window-all-closed', () => {
-  if (engine && !smoke) store().save('auto', engine.save())
+  if (engine && session && !smoke) store().save('auto', snapshot())
   if (process.platform !== 'darwin') app.quit()
 })

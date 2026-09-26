@@ -28,6 +28,26 @@ export function prepareKeyCheck(app: App): void {
   app.setPath('userData', keyCheckDir)
 }
 
+// WISPLIGHT_LOG_CHECK=1: plays save, load, continue and log through the real
+// window and main process, in a throwaway user data folder.
+export function prepareLogCheck(app: App): string {
+  // Chromium writes a few profile files as the app closes, after our own clean-up; remove old ones first.
+  for (const name of readdirSync(tmpdir())) if (name.startsWith('wisplight-logcheck-')) rmSync(join(tmpdir(), name), { recursive: true, force: true })
+  const dir = mkdtempSync(join(tmpdir(), 'wisplight-logcheck-'))
+  app.setPath('userData', dir)
+  return dir
+}
+
+export const LOG_CHECK_SCRIPT = `(async () => {
+  const out = []
+  const run = async (command) => {
+    const reply = await window.wisplight.command(command)
+    out.push('> ' + command, ...reply.outputs.map((o) => '  ' + o.text.split('\\n').join('\\n  ')))
+  }
+  for (const command of ['north', 'save', 'east', 'talk mirte', 'bye', 'load', 'log 12', 'west', 'continue', 'log 5', 'Save me!']) await run(command)
+  return out.join('\\n')
+})()`
+
 export async function keyCheck(app: App, ai: AiService, content: Content): Promise<boolean> {
   const dir = app.getPath('userData')
   if (!keyCheckDir || dir !== keyCheckDir) {

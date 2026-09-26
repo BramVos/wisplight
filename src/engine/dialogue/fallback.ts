@@ -1,4 +1,5 @@
 import { minuteOfDay } from '../clock'
+import { isNight } from '../npc/execute'
 import { callName } from '../content'
 import type { World } from '../world'
 import type { Act } from './acts'
@@ -23,6 +24,11 @@ export function fallbackReply(world: World, npcId: string, act: Act, packet: Pac
   const cold = COLD.includes(attitude)
   const quote = (text: string) => `"${text}"`
   const known = packet.known[0]
+
+  const woken = world.npcState(npcId).wokenAt
+  if (act === 'Greet' && woken !== undefined && world.now - woken < 60) {
+    return `${name} rubs ${npc.pronoun === 'she' ? 'her' : npc.pronoun === 'he' ? 'his' : 'their'} eyes. ${quote(isNight(world.now) ? "What is it? It's the middle of the night." : 'What is it?')}`
+  }
 
   switch (act) {
     case 'Greet':
@@ -64,6 +70,8 @@ export function fallbackReply(world: World, npcId: string, act: Act, packet: Pac
 }
 
 export function closingLine(world: World, npcId: string): string {
+  const woken = world.npcState(npcId).wokenAt
+  if (woken !== undefined && world.now - woken < 60) return world.say(`{name} yawns. "That's enough. Let me get back to my bed."`, npcId)
   return world.say(`{name} turns back to {their} own business. "That's enough talk for now. I've things to do."`, npcId)
 }
 

@@ -30,6 +30,16 @@ Scope: FO 9, 10 en 16. LLM-gateway met OpenAI, Anthropic en een mock; instelling
 - [x] De sleutel staat nergens leesbaar op schijf of in logs
 - [x] De kosten per sessie, dag en maand kloppen met de tokens uit de antwoorden en de prijstabel, en het percentage van het maandbudget en het opgegeven tegoed telt mee af
 
+## M2.1 Samenhang
+
+Scope: bevindingen uit de eerste speeltest. FO 3 (spellogboek), FO 10 (names-veld), ontwerp lore en wereldverandering (verre namen), FO 6 en 7 (bewustzijn, aandacht en blijftijd van NPC's).
+
+- [x] Het spellogboek wordt na elke beurt weggeschreven, loopt door na SAVE, en na LOAD van een oudere save blijft de latere geschiedenis bewaard als tak; `log` toont het terug en het is te exporteren
+- [x] Elk antwoord geeft zijn eigennamen op in `names`; een niet opgegeven of onbekende naam wordt afgekeurd, een verre nieuwe naam wordt vastgelegd in de savegame-lore en daarna door iedereen hetzelfde gebruikt
+- [x] Een NPC weet wat hij net deed: de prompt bevat een RECENTLY-regel, en een NPC die net thuiskwam zegt niet dat hij er de hele nacht was
+- [x] Een slapende NPC moet eerst gewekt worden, wat houding kost; 's nachts zit de deur van een huis dicht
+- [x] Een NPC die langs de speler komt, blijft staan als hij nieuwsgierig is of iets met de speler te doen heeft; wie ergens aankomt blijft er een tijdje; een passant geeft één regel
+
 ## M3 Kennis, geruchten en doelen
 
 Scope: FO 5 en 7. Vaste kansworp, kennisniveaus, richting en afstand, lore met vertellingen per niveau, geruchten die reizen met marskramers, doorverwijzen, AI-doelkeuze met catalogus, validator, triggers en budget.

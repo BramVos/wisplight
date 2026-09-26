@@ -4,7 +4,7 @@ import { LlmError, type LlmClient, type LlmRequest, type LlmResponse } from './l
 // knowledge packet in request.meta and can misbehave on purpose, so tests can
 // prove that the guardrails catch it.
 
-export type MockMode = 'good' | 'leak' | 'long' | 'invalid' | 'throw' | 'anachronism' | 'topics' | 'invent'
+export type MockMode = 'good' | 'leak' | 'long' | 'invalid' | 'throw' | 'anachronism' | 'topics' | 'invent' | 'far' | 'twofar'
 
 export interface MockMeta {
   npcName: string
@@ -49,6 +49,8 @@ export class MockLlm implements LlmClient {
     if (this.mode === 'long') speech = Array.from({ length: 12 }, () => speech).join(' ')
     if (this.mode === 'anachronism') speech = `Okay, ${speech}`
     if (this.mode === 'invent') speech = `${speech} Father Oswin would know more.`
+    if (this.mode === 'far') speech = `${speech} Salt comes dear from the Amber Coast these days.`
+    if (this.mode === 'twofar') speech = `${speech} Salt comes from the Amber Coast and tin from Kessmoor.`
     const words = speech.split(/\s+/)
     if (this.mode === 'good' && words.length > meta.wordLimit) speech = words.slice(0, meta.wordLimit).join(' ').replace(/[,;:]?$/, '.')
 
@@ -56,6 +58,7 @@ export class MockLlm implements LlmClient {
     return JSON.stringify({
       act: meta.act,
       reply: `${name} looks up. "${speech}"`,
+      names: this.mode === 'far' ? [{ text: 'Amber Coast', new_kind: 'land' }] : this.mode === 'twofar' ? [{ text: 'Amber Coast', new_kind: 'land' }, { text: 'Kessmoor', new_kind: 'city' }] : [],
       mentioned_topics: topics,
       effects: this.mode === 'good' && known ? [{ type: 'affinity', delta: 1, reason: 'a friendly question' }] : [],
       memory_note: known ? `The stranger asked me about ${known.topic}.` : 'The stranger talked to me.',

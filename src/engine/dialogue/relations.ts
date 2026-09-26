@@ -40,7 +40,9 @@ export function band(score: number): Attitude {
 }
 
 export function moodOf(world: World, npcId: string): string {
-  const needs = world.npcState(npcId).needs
+  const state = world.npcState(npcId)
+  const needs = state.needs
+  if (state.wokenAt !== undefined && world.now - state.wokenAt < 60) return 'just woken, groggy and cross'
   if (needs.hunger < 25) return 'hungry and short-tempered'
   if (needs.rest < 25) return 'tired'
   if (needs.social < 20) return 'lonely'

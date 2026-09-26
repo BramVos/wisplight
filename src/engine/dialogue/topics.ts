@@ -43,6 +43,13 @@ export class TopicRegistry {
     this.patterns.sort((a, b) => b.alias.length - a.alias.length || a.id.localeCompare(b.id))
   }
 
+  /** Adds a topic that appeared during play, such as a far-away place a model named. */
+  addDuringPlay(entry: TopicEntry): void {
+    if (this.entries.has(entry.id)) return
+    this.add(entry)
+    this.patterns.sort((a, b) => b.alias.length - a.alias.length || a.id.localeCompare(b.id))
+  }
+
   private add(entry: TopicEntry): void {
     this.entries.set(entry.id, entry)
     for (const raw of new Set(entry.aliases.map((a) => a.toLowerCase().trim()).filter(Boolean))) {

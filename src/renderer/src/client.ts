@@ -73,7 +73,8 @@ export async function createClient(): Promise<EngineClient> {
   const llm = mock ? demo!.slowMock(new MockLlm('good')) : undefined
   const engine = new Engine(content, { seed: 1, llm })
   const bridge = demo?.demoBridge(content)
-  let lastInput = Date.now()
+  // The clock starts with the player's first keystroke, not while the opening is being read.
+  let lastInput = -Infinity
   let held = false
   const listeners = new Set<(reply: Reply) => void>()
   const paused = () => held || Boolean(engine.state.talk) || Date.now() - lastInput > IDLE_PAUSE_MS
@@ -89,8 +90,8 @@ export async function createClient(): Promise<EngineClient> {
     start: async () => ({ outputs: engine.start(), status: status() }),
     command: async (input) => {
       lastInput = Date.now()
-      if (/^(save|load|bewaar|laad)\b/i.test(input.trim())) {
-        return { outputs: [{ kind: 'system', text: 'Saving and loading work in the desktop app.' }], status: status() }
+      if (/^(save|load|bewaar|laad|continue|verder|log|logboek)(\s+(\d+|export))?$/i.test(input.trim())) {
+        return { outputs: [{ kind: 'system', text: 'Saving, loading and the game log work in the desktop app.' }], status: status() }
       }
       return { outputs: await engine.handle(input), status: status() }
     },
@@ -98,8 +99,9 @@ export async function createClient(): Promise<EngineClient> {
       lastInput = Date.now()
     },
     hold: (on) => {
+      // Closing a menu counts as activity; the first "no menu" at start-up does not start the clock.
+      if (held && !on) lastInput = Date.now()
       held = on
-      lastInput = Date.now()
     },
     onTick: (listener) => {
       listeners.add(listener)

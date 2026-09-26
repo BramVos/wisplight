@@ -1,7 +1,8 @@
 import { GameClock, isOpenAt, MINUTES_PER_DAY, parseHours, startOfDay } from './clock'
 import { callName, type Affordance, type Direction, type Npc, type ObjectInstance, type ObjectType, type Service } from './content'
 import { add, formatMoney, hasAll, itemName, listItems, matchItem, withArticle } from './items'
-import { qtyName } from './npc/execute'
+import { applyEffect } from './dialogue/relations'
+import { isNight, qtyName, wakeNpc } from './npc/execute'
 import { parseDirection, splitQuantity, type Command } from './parser'
 import type { World } from './world'
 
@@ -26,9 +27,10 @@ const HELP = [
   'Looking: look (l), examine <thing or person> (x).',
   'Things: inventory (i), take, drop, give <thing> to <person>, use <object>, eat <food>.',
   'Trade: list (what is for sale here), buy <thing> [amount], sell <thing> [amount], rent a room.',
-  'Time: time, wait [minutes], sleep.',
+  'Time: time, wait [minutes], sleep. At night: knock (on a door), wake <person>.',
   "Talking: talk <person>, ask <person> about <topic>, say <text> or 'text.",
-  'Game: save, load, help. Dutch works too: kijk, pak, koop, praat met, vraag ... over ...',
+  'Game: save, load, continue (exactly where you stopped), log [lines], log export, help.',
+  'Dutch works too: kijk, pak, koop, praat met, vraag ... over ...',
 ].join('\n')
 
 const text = (value: string): Output => ({ kind: 'text', text: value })
@@ -76,6 +78,10 @@ export function runCommand(host: CommandHost, command: Command): Output[] {
     }
     case 'time':
       return [text(`It is ${clockText(world)}.`)]
+    case 'wake':
+      return wake(host, command.args)
+    case 'knock':
+      return knock(host, command.args)
     case 'help':
       return [{ kind: 'system', text: HELP }]
     default:
@@ -154,9 +160,60 @@ function go(host: CommandHost, args: string[]): Output[] {
   if (!direction) return [error('Go where? Try a direction such as north, or the name of a place you can see.')]
   const exit = location.exits[direction]
   if (!exit) return [error(`You can't go ${direction} from here.`)]
+  if (shutForNight(world, exit.to)) return [text(`The door of ${world.location(exit.to).name} is shut for the night. KNOCK to wake whoever lives there.`)]
   player.location = exit.to
   const seen = host.pass(exit.minutes)
   return [describeRoom(world), ...seen]
+}
+
+// ---------------------------------------------------------------- doors and sleepers
+
+function owners(world: World, location: string): string[] {
+  return [...world.content.npcs.values()].filter((npc) => npc.home === location).map((npc) => npc.id)
+}
+
+/** Private homes are shut at night, except where the player has a room. */
+export function shutForNight(world: World, location: string): boolean {
+  const place = world.location(location)
+  if (!place.tags.includes('private') || owners(world, location).length === 0) return false
+  if (world.state.player.lodging?.location === location) return false
+  return isNight(world.now)
+}
+
+function wake(host: CommandHost, args: string[]): Output[] {
+  const { world } = host
+  const npcId = findNpcHere(world, args.join(' '))
+  if (!npcId) return [error(args.length ? `There is nobody called "${args.join(' ')}" here.` : 'Wake whom?')]
+  if (world.npcState(npcId).activity !== 'asleep') return [text(`${callName(world.npc(npcId))} is awake.`)]
+  wakeNpc(world, npcId)
+  host.pass(1)
+  return [{ kind: 'narration', text: world.say('You shake {name} by the shoulder. {name} wakes with a start and glares at you, bleary-eyed.', npcId) }]
+}
+
+function knock(host: CommandHost, args: string[]): Output[] {
+  const { world } = host
+  const here = world.location(world.state.player.location)
+  const doors = (Object.entries(here.exits) as [Direction, { to: string }][]).filter(([, exit]) => world.location(exit.to).tags.includes('private') && owners(world, exit.to).length > 0)
+  const wanted = args.join(' ').toLowerCase().replace(/^(on|at|the|door|of)\s+/g, '')
+  const door = wanted ? doors.find(([dir, exit]) => dir === parseDirection(wanted) || world.location(exit.to).name.toLowerCase().includes(wanted)) : doors.length === 1 ? doors[0] : undefined
+  if (!door) return [error(doors.length === 0 ? "There's no door to knock on here." : `Knock on which door? ${doors.map(([dir, exit]) => `${world.location(exit.to).name} (${dir})`).join(', ')}.`)]
+  const home = door[1].to
+  const inside = owners(world, home).filter((id) => world.npcState(id).location === home && !world.npc(id).child)
+  host.pass(2)
+  if (inside.length === 0) return [text(`You knock on the door of ${world.location(home).name}. Nobody answers.`)]
+  const npcId = inside.sort()[0]!
+  const npc = world.npcState(npcId)
+  const asleep = npc.activity === 'asleep'
+  if (asleep) wakeNpc(world, npcId)
+  else if (isNight(world.now)) applyEffect(world, npcId, 'affinity', -1)
+  // The one who answers stands in the doorway, on the player's side of it.
+  npc.location = here.id
+  npc.plan = []
+  npc.busyUntil = world.now + 20
+  npc.activity = 'standing in the doorway'
+  npc.passing = false
+  const line = asleep ? '{name} opens the door a crack after a long while, blinking at you.' : '{name} opens the door and looks out at you.'
+  return [text(`You knock on the door of ${world.location(home).name}.`), { kind: 'narration', text: world.say(line, npcId) }]
 }
 
 // ---------------------------------------------------------------- things

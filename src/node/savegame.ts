@@ -13,6 +13,15 @@ export interface SaveSummary {
   gameMinutes: number
 }
 
+interface SaveRow {
+  world: string
+  version: number
+  state: string
+  log: string
+  session: string | null
+  created_at: string
+}
+
 export class SaveStore {
   private readonly db: DatabaseSync
 
@@ -43,14 +52,17 @@ export class SaveStore {
       );
       CREATE INDEX IF NOT EXISTS saves_by_slot ON saves (slot, id);
     `)
+    // Saves from before the game log have no place in it.
+    const columns = this.db.prepare('PRAGMA table_info(saves)').all() as { name: string }[]
+    if (!columns.some((c) => c.name === 'session')) this.db.exec('ALTER TABLE saves ADD COLUMN session TEXT')
   }
 
   save(slot: string, data: SaveData, keep = 5): number {
     this.db.exec('BEGIN')
     try {
       const result = this.db
-        .prepare('INSERT INTO saves (slot, created_at, world, version, game_minutes, seed, state, log) VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
-        .run(slot, new Date().toISOString(), data.world, data.version, data.state.minutes, data.state.seed, JSON.stringify(data.state), JSON.stringify(data.log))
+        .prepare('INSERT INTO saves (slot, created_at, world, version, game_minutes, seed, state, log, session) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)')
+        .run(slot, new Date().toISOString(), data.world, data.version, data.state.minutes, data.state.seed, JSON.stringify(data.state), JSON.stringify(data.log), data.session ? JSON.stringify(data.session) : null)
       const id = Number(result.lastInsertRowid)
       const insert = this.db.prepare('INSERT INTO events (save_id, seq, t, kind, location, actor, text) VALUES (?, ?, ?, ?, ?, ?, ?)')
       for (const e of data.state.events) insert.run(id, e.seq, e.t, e.kind, e.location, e.actor ?? null, e.text)
@@ -69,11 +81,24 @@ export class SaveStore {
   }
 
   load(slot: string): SaveData | undefined {
-    const row = this.db.prepare('SELECT world, version, state, log FROM saves WHERE slot = ? ORDER BY id DESC LIMIT 1').get(slot) as
-      | { world: string; version: number; state: string; log: string }
-      | undefined
+    return this.read(this.db.prepare('SELECT world, version, state, log, session, created_at FROM saves WHERE slot = ? ORDER BY id DESC LIMIT 1').get(slot) as SaveRow | undefined)
+  }
+
+  /** The most recent save in any slot. */
+  latest(): SaveData | undefined {
+    return this.read(this.db.prepare('SELECT world, version, state, log, session, created_at FROM saves ORDER BY id DESC LIMIT 1').get() as SaveRow | undefined)
+  }
+
+  private read(row: SaveRow | undefined): (SaveData & { createdAt: string }) | undefined {
     if (!row) return undefined
-    return { version: row.version as 1, world: row.world, state: JSON.parse(row.state), log: JSON.parse(row.log) }
+    return {
+      version: row.version as 1,
+      world: row.world,
+      state: JSON.parse(row.state),
+      log: JSON.parse(row.log),
+      ...(row.session ? { session: JSON.parse(row.session) } : {}),
+      createdAt: row.created_at,
+    }
   }
 
   list(): SaveSummary[] {

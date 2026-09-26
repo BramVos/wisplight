@@ -176,7 +176,7 @@ export class World {
     return event
   }
 
-  /** Fills {name}, {Name}, {they}, {their} and {them} for an NPC. */
+  /** Fills {name}, {short}, {they}, {their} and {them} for an NPC. */
   say(template: string, npcId: string): string {
     const npc = this.npc(npcId)
     const forms = {

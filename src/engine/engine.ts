@@ -9,7 +9,7 @@ import { TopicRegistry } from './dialogue/topics'
 import { formatMoney } from './items'
 import { parseCommand, parseDirection } from './parser'
 import { advance } from './simulation'
-import { createInitialState, type GameState } from './state'
+import { createInitialState, type GameState, type WorldEvent } from './state'
 import { World } from './world'
 
 export type { Output, OutputKind } from './commands'
@@ -18,14 +18,28 @@ export type { Output, OutputKind } from './commands'
 // written to a log, so a run can be rebuilt exactly: same content, same seed,
 // same log, same world.
 
-export type LogEntry = { t: number; k: 'cmd'; v: string } | { t: number; k: 'tick'; v: number } | { t: number; k: 'ai'; v: string | null }
+export type LogEntry =
+  | { t: number; k: 'cmd'; v: string }
+  | { t: number; k: 'tick'; v: number }
+  | { t: number; k: 'ai'; v: string | null }
+  // Whether a model was connected from this point on, so a replay makes the same calls.
+  | { t: number; k: 'llm'; v: 'on' | 'off' }
 
 export interface SaveData {
   version: 1
   world: string
   state: GameState
   log: LogEntry[]
+  /** Where this save sits in the game log (FO, chapter 3): which game, which branch, which line. */
+  session?: { game: string; branch: number; logId: number }
 }
+
+/** Everything the game log records, as it happens: input, output, world events and what a replay needs. */
+export type GameLogLine =
+  | { kind: 'in'; t: number; text: string }
+  | { kind: 'out'; t: number; output: Output }
+  | { kind: 'event'; t: number; event: WorldEvent }
+  | { kind: 'replay'; t: number; entry: LogEntry }
 
 export interface JournalEntry {
   id: string
@@ -77,6 +91,8 @@ export class Engine {
   private readonly log: LogEntry[]
   private readonly host: CommandHost
   private llm?: LlmClient
+  private readonly listeners = new Set<(line: GameLogLine) => void>()
+  private eventMark: number
 
   constructor(
     readonly content: Content,
@@ -87,8 +103,10 @@ export class Engine {
     this.log = options.log ? [...options.log] : []
     this.host = { world: this.world, pass: (minutes) => this.pass(minutes) }
     this.topics = new TopicRegistry(content)
+    for (const far of state.lore?.far ?? []) this.topics.addDuringPlay({ id: far.id, kind: 'place', name: far.name, aliases: [far.name] })
     this.dialogue = new Dialogue(this.world, this.topics, new Knowledge(this.world, this.topics), () => this.recorder)
-    this.llm = options.llm
+    this.eventMark = state.eventSeq
+    this.setLlm(options.llm)
     this.dialogue.learn(state.player.location, `area_${this.world.location(state.player.location).area}`)
   }
 
@@ -100,8 +118,30 @@ export class Engine {
     return new GameClock(this.world.now)
   }
 
+  /** Follows everything that happens, for the game log. Returns a function that stops following. */
+  onLog(listener: (line: GameLogLine) => void): () => void {
+    this.listeners.add(listener)
+    return () => this.listeners.delete(listener)
+  }
+
+  private record(entry: LogEntry): void {
+    this.log.push(entry)
+    for (const listener of this.listeners) listener({ kind: 'replay', t: entry.t, entry })
+  }
+
+  private shown(outputs: Output[]): Output[] {
+    const t = this.world.now
+    for (const listener of this.listeners) {
+      for (const output of outputs) listener({ kind: 'out', t, output })
+      for (const event of this.state.events) if (event.seq > this.eventMark) listener({ kind: 'event', t: event.t, event })
+    }
+    this.eventMark = this.state.eventSeq
+    return outputs
+  }
+
   /** Swap the model at runtime, for instance after the player picks one in the settings. */
   setLlm(llm: LlmClient | undefined): void {
+    if (Boolean(llm) !== Boolean(this.llm)) this.record({ t: this.world.now, k: 'llm', v: llm ? 'on' : 'off' })
     this.llm = llm
   }
 
@@ -113,10 +153,10 @@ export class Engine {
       complete: async (request: LlmRequest): Promise<LlmResponse> => {
         try {
           const response = await llm.complete(request)
-          this.log.push({ t: this.world.now, k: 'ai', v: response.text })
+          this.record({ t: this.world.now, k: 'ai', v: response.text })
           return response
         } catch (error) {
-          this.log.push({ t: this.world.now, k: 'ai', v: null })
+          this.record({ t: this.world.now, k: 'ai', v: null })
           throw error
         }
       },
@@ -132,12 +172,13 @@ export class Engine {
   async handle(input: string): Promise<Output[]> {
     const text = input.trim().slice(0, 500)
     if (!text) return []
-    this.log.push({ t: this.world.now, k: 'cmd', v: text })
+    this.record({ t: this.world.now, k: 'cmd', v: text })
+    for (const listener of this.listeners) listener({ kind: 'in', t: this.world.now, text })
     const outputs = await this.route(text)
     const talk = this.state.talk
     if (talk && this.state.npcs[talk.npc]?.location !== this.state.player.location) this.state.talk = undefined
     this.dialogue.learn(this.state.player.location, `area_${this.world.location(this.state.player.location).area}`)
-    return outputs
+    return this.shown(outputs)
   }
 
   private async route(text: string): Promise<Output[]> {
@@ -239,7 +280,8 @@ export class Engine {
     const last = this.log.at(-1)
     if (last?.k === 'tick') last.v += minutes
     else this.log.push({ t: this.world.now, k: 'tick', v: minutes })
-    return this.pass(minutes)
+    for (const listener of this.listeners) listener({ kind: 'replay', t: this.world.now, entry: { t: this.world.now, k: 'tick', v: minutes } })
+    return this.shown(this.pass(minutes))
   }
 
   status(): Status {
@@ -248,7 +290,7 @@ export class Engine {
     const journal: Status['journal'] = { people: [], places: [], lore: [], things: [] }
     for (const id of Object.keys(this.state.player.journal ?? {}).sort()) {
       const kind = this.topics.kind(id)
-      const entry = { id, name: this.topics.name(id) }
+      const entry = { id, name: id.startsWith('far_') ? `${this.topics.name(id)} (heard of)` : this.topics.name(id) }
       if (kind === 'person') journal.people.push(entry)
       else if (kind === 'place' || kind === 'area') journal.places.push(entry)
       else if (kind === 'lore' || kind === 'fact') journal.lore.push(entry)
@@ -279,23 +321,43 @@ export class Engine {
 
   /** Rebuilds a game from its seed and log, feeding recorded model replies back in. */
   static async replay(content: Content, seed: number, log: LogEntry[]): Promise<Engine> {
-    const replies = log.filter((e): e is Extract<LogEntry, { k: 'ai' }> => e.k === 'ai').map((e) => e.v)
-    const llm: LlmClient | undefined =
-      replies.length > 0
-        ? {
-            complete: async () => {
-              const text = replies.shift()
-              if (text === undefined || text === null) throw new LlmError('network', 'recorded failure')
-              return { text, provider: 'replay', model: 'replay', usage: { inputTokens: 0, outputTokens: 0, cachedTokens: 0 }, latencyMs: 0 }
-            },
-          }
-        : undefined
-    const engine = new Engine(content, { seed, llm })
-    for (const entry of log) {
-      if (entry.k === 'cmd') await engine.handle(entry.v)
-      else if (entry.k === 'tick') engine.tick(entry.v)
-    }
+    const engine = new Engine(content, { seed })
+    await engine.apply(log)
     return engine
+  }
+
+  /**
+   * Picks up a game exactly where its log ends: the last snapshot plus everything
+   * recorded after it, with the recorded model replies. Then hands over to the live model.
+   */
+  static async resume(content: Content, save: SaveData, tail: LogEntry[], llm?: LlmClient): Promise<Engine> {
+    const engine = Engine.fromSave(content, save)
+    const last = save.log.findLast((e) => e.k === 'llm')
+    await engine.apply(tail, llm, last?.v === 'on')
+    engine.setLlm(llm)
+    return engine
+  }
+
+  /** Plays log entries in order; model calls get the recorded replies first, then the live model. */
+  private async apply(entries: LogEntry[], live?: LlmClient, modelOn = false): Promise<void> {
+    const replies = entries.filter((e): e is Extract<LogEntry, { k: 'ai' }> => e.k === 'ai').map((e) => e.v)
+    const recorded: LlmClient = {
+      complete: async (request) => {
+        if (replies.length === 0) {
+          if (!live) throw new LlmError('config', 'no model')
+          return live.complete(request)
+        }
+        const text = replies.shift()
+        if (text === undefined || text === null) throw new LlmError('network', 'recorded failure')
+        return { text, provider: 'replay', model: 'replay', usage: { inputTokens: 0, outputTokens: 0, cachedTokens: 0 }, latencyMs: 0 }
+      },
+    }
+    this.llm = modelOn ? recorded : undefined
+    for (const entry of entries) {
+      if (entry.k === 'cmd') await this.handle(entry.v)
+      else if (entry.k === 'tick') this.tick(entry.v)
+      else if (entry.k === 'llm') this.setLlm(entry.v === 'on' ? recorded : undefined)
+    }
   }
 
   /** Runs the world for some minutes and returns the events the player could see. */

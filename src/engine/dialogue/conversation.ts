@@ -2,7 +2,7 @@ import type { Output } from '../commands'
 import { formatMoney, GUILDER, STUIVER } from '../items'
 import { MONTHS, WEEKDAYS } from '../clock'
 import { callName } from '../content'
-import type { TalkState } from '../state'
+import type { FarName, TalkState } from '../state'
 import type { World } from '../world'
 import { classify, tierFor, TIER_TOKENS, TIER_WORDS, type Act, type Tier } from './acts'
 import { check, dcFor, describeCheck, succeeded, type CheckResult } from './checks'
@@ -31,6 +31,7 @@ export const QUICK_OPTIONS = [
 ]
 
 const RUMOUR_TOPICS = ['fenna', 'grey_cat', 'the_storm', 'drainage', 'surveyor', 'kattenbroek']
+const MAX_FAR = 50
 const MAX_TALK_EFFECT = 5
 
 interface TurnOptions {
@@ -54,7 +55,7 @@ export class Dialogue {
 
   /** Every word the world's content uses, for spotting names the model made up. */
   private vocabulary(): Set<string> {
-    this.words ??= vocabularyOf(this.world.content, WORLD_FRAME, MONTHS, WEEKDAYS)
+    this.words ??= vocabularyOf(this.world.content, WORLD_FRAME, MONTHS, WEEKDAYS, (this.world.state.lore?.far ?? []).map((f) => f.name))
     return this.words
   }
 
@@ -67,6 +68,7 @@ export class Dialogue {
   start(npcId: string, silent = false): Output[] {
     const world = this.world
     const npc = world.npc(npcId)
+    if (world.npcState(npcId).activity === 'asleep') return [this.asleep(npcId)]
     const rel = relation(world.state, npcId)
     const band = attitude(world, npcId).band
     let turns = 6
@@ -83,6 +85,35 @@ export class Dialogue {
       { kind: 'speech', text: greeting },
       this.options(),
     ]
+  }
+
+  /** Why a newly named far-away place cannot stand, or undefined when it can. */
+  private checkFar(npcId: string, fresh: Reply['names'], reply: string): string | undefined {
+    if (fresh.length === 0) return undefined
+    if (fresh.length > 1) return 'you named more than one new place. Name at most one.'
+    const name = fresh[0]!.text.trim()
+    if (!/^\p{Lu}[\p{L}'’-]*(\s[\p{L}'’-]+){0,3}$/u.test(name) || !reply.includes(name)) return `"${name}" is not a proper place name in your reply.`
+    const far = this.world.state.lore?.far ?? []
+    const today = far.filter((f) => f.by === npcId && this.world.now - f.t < 24 * 60).length
+    if (today >= 2 || far.length >= MAX_FAR) return `you may not name new places now. Use only names you were given.`
+    return undefined
+  }
+
+  private registerFar(npcId: string, name: string, kind: FarName['kind'], replyText: string): void {
+    const lore = (this.world.state.lore ??= { far: [] })
+    const base = `far_${name.toLowerCase().replace(/[^\p{L}]+/gu, '_').replace(/^_|_$/g, '')}`
+    let id = base
+    for (let n = 2; this.topics.entries.has(id); n++) id = `${base}_${n}`
+    const line = replyText.split(/(?<=[.!?])\s+/).find((s) => s.includes(name)) ?? replyText
+    lore.far.push({ id, name, kind, line: line.replace(/["“”]/g, '').trim().slice(0, 200), by: npcId, t: this.world.now, known_by: [npcId] })
+    this.topics.addDuringPlay({ id, kind: 'place', name, aliases: [name] })
+    this.knowledge.forget(npcId)
+    for (const word of vocabularyOf(name)) this.vocabulary().add(word)
+    this.learn(id)
+  }
+
+  private asleep(npcId: string): Output {
+    return { kind: 'narration', text: this.world.say(`{name} is asleep. WAKE ${callName(this.world.npc(npcId)).toUpperCase()} if you must.`, npcId) }
   }
 
   end(farewell = true): Output[] {
@@ -253,6 +284,10 @@ export class Dialogue {
       world.state.talk = undefined
       return [{ kind: 'error', text: `${npc.short} isn't here any more.` }]
     }
+    if (world.npcState(npcId).activity === 'asleep') {
+      world.state.talk = undefined
+      return [this.asleep(npcId)]
+    }
     if (!this.talk || this.talk.npc !== npcId) this.start(npcId, true)
     const talk = this.talk!
     const echo: Output[] = options.echo ? [{ kind: 'text', text: `You: "${text}"` }] : []
@@ -299,7 +334,12 @@ export class Dialogue {
     const rel = relation(world.state, npcId)
     rel.familiarity = Math.min(100, rel.familiarity + 2)
 
-    // 5. Journal and memory.
+    // 5. New far-away places become part of this game's lore.
+    for (const name of reply?.names ?? []) {
+      if (name.new_kind !== 'none' && !this.topics.find(name.text)) this.registerFar(npcId, name.text, name.new_kind, replyText)
+    }
+
+    // 6. Journal and memory.
     const allowed = new Set([...packet.known.map((k) => k.topic), ...(packet.referral ? [packet.referral.npc] : [])])
     const mentioned = (reply?.mentioned_topics ?? []).filter((t) => allowed.has(t))
     this.learn(...packet.known.map((k) => k.topic), ...mentioned, ...(packet.referral && replyText.includes(packet.referral.call) ? [packet.referral.npc] : []))
@@ -405,13 +445,20 @@ export class Dialogue {
         continue
       }
       const said = `${fitted} ${reply.memory_note}`
+      const fresh = reply.names.filter((n) => n.new_kind !== 'none' && !this.topics.find(n.text))
+      const farProblem = this.checkFar(npcId, fresh, fitted)
+      if (farProblem) {
+        llm.report?.({ reason: 'invented' })
+        prompt += `\nNOTE: ${farProblem} Answer again.`
+        continue
+      }
       const leaks = leakedNames(said, this.topics.properNames(), allowedNames)
       if (leaks.length > 0) {
         llm.report?.({ reason: 'leak' })
         prompt += `\nNOTE: you mentioned ${leaks.join(', ')}, which you know nothing about. Answer again without them.`
         continue
       }
-      const invented = unknownNames(said, this.vocabulary(), vocabularyOf(text, ...(talk?.history ?? []).filter((h) => h.speaker === 'player').map((h) => h.text)))
+      const invented = unknownNames(said, this.vocabulary(), vocabularyOf(text, ...fresh.map((n) => n.text), ...(talk?.history ?? []).filter((h) => h.speaker === 'player').map((h) => h.text)))
       if (invented.length > 0) {
         llm.report?.({ reason: 'invented' })
         prompt += `\nNOTE: you used ${invented.join(', ')}, which ${invented.length === 1 ? 'does' : 'do'} not exist in this world. Never make up names. Use only names from PEOPLE YOU KNOW, KNOWLEDGE and SCENE, or say you don't know.`

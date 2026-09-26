@@ -5,9 +5,13 @@ import type { JsonSchema } from './llm'
 // The reply schema is built per call: mentioned_topics may only hold topics
 // the NPC was allowed to talk about (FO, chapter 10).
 
+export const FAR_KINDS = ['city', 'land', 'sea', 'river', 'lake'] as const
+
 export const ReplySchema = z.object({
   act: z.enum(ACTS),
   reply: z.string().min(1),
+  // Older recorded replies have no names; they still replay.
+  names: z.array(z.object({ text: z.string(), new_kind: z.enum(['none', ...FAR_KINDS]) })).default([]),
   mentioned_topics: z.array(z.string()),
   effects: z.array(z.object({ type: z.enum(['affinity', 'trust', 'fear']), delta: z.number().int(), reason: z.string() })),
   memory_note: z.string(),
@@ -19,10 +23,20 @@ export function replyJsonSchema(allowedTopics: string[]): JsonSchema {
   return {
     type: 'object',
     additionalProperties: false,
-    required: ['act', 'reply', 'mentioned_topics', 'effects', 'memory_note', 'ends_conversation'],
+    required: ['act', 'reply', 'names', 'mentioned_topics', 'effects', 'memory_note', 'ends_conversation'],
     properties: {
       act: { type: 'string', enum: [...ACTS] },
       reply: { type: 'string', description: 'What the player sees: an optional short action, then speech in double quotes.' },
+      names: {
+        type: 'array',
+        description: 'Every name of a person, place or thing in reply, as written.',
+        items: {
+          type: 'object',
+          additionalProperties: false,
+          required: ['text', 'new_kind'],
+          properties: { text: { type: 'string' }, new_kind: { type: 'string', enum: ['none', ...FAR_KINDS] } },
+        },
+      },
       mentioned_topics: { type: 'array', items: { type: 'string', enum: allowedTopics.length ? allowedTopics : ['none'] } },
       effects: {
         type: 'array',
