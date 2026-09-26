@@ -1,0 +1,47 @@
+npcs:
+  - id: npc_trijntje
+    name: Trijntje Kroes
+    short: Trijntje the innkeeper
+    pronoun: she
+    age: 49
+    profession: innkeeper
+    home: loc_goose_kitchen
+    work: loc_goose_common
+    household: hh_kroes
+    fame: 2
+    appearance: A broad, red-cheeked woman with sleeves rolled up and ears that miss nothing.
+    personality: { warmth: 1, courage: 0, honesty: 0, temper: 1, curiosity: 3, diligence: 2 }
+    values: { family: 3, wealth: 2 }
+    quirks: [gossip]
+    speech: "Loud, shrewd, friendly for a price. Knows every rumour in the Holleveen."
+    aliases: [innkeeper, waardin, trijntje]
+    public_facts:
+      - Trijntje Kroes runs the Drowned Goose.
+      - Her daughter Geesje works the taproom.
+    examples:
+      - "Beer's a duit, stew's four, and gossip's free if you're buying."
+    money: 600
+    knows_areas: [veenhoek, molenend, drowned_goose, waagdam, roads]
+
+  - id: npc_geesje
+    name: Geesje Kroes
+    short: Geesje
+    pronoun: she
+    age: 19
+    profession: barmaid
+    home: loc_goose_kitchen
+    work: loc_goose_common
+    household: hh_kroes
+    fame: 1
+    appearance: A young woman with a quick grin, a tray on her hip and her eyes always on the door.
+    personality: { warmth: 1, courage: 2, honesty: -1, temper: 1, curiosity: 3, diligence: -1 }
+    values: { freedom: 3 }
+    quirks: [restless]
+    speech: "Quick, teasing, curious about anywhere that isn't here."
+    aliases: [barmaid, geesje]
+    public_facts:
+      - Geesje is Trijntje's daughter and works in the taproom of the Drowned Goose.
+    examples:
+      - "Graafhaven? Tell me everything. No, start with the boats."
+    money: 50
+    knows_areas: [veenhoek, molenend, drowned_goose, waagdam, roads]

@@ -1,0 +1,95 @@
+locations:
+  - id: loc_goose_crossroads
+    name: The Crossroads at the Drowned Goose
+    area: drowned_goose
+    tags: [public, landmark]
+    aliases: [crossroads, kruispunt]
+    description:
+      day: |
+        Two raised roads cross here above the wet fields, and the inn sits in
+        the corner between them like a hen on her nest. A painted sign creaks
+        overhead: a goose, upside down, feet in the air. You smell woodsmoke
+        and stew. The door is in; the road runs west to Veenhoek and east to
+        [Waagdam], and the stable yard is south.
+    exits:
+      in: { to: loc_goose_common }
+      west: { to: loc_peat_road, minutes: 25 }
+      east: { to: loc_goose_road, minutes: 25 }
+      south: { to: loc_goose_yard }
+
+  - id: loc_goose_common
+    name: The Drowned Goose, Common Room
+    area: drowned_goose
+    tags: [public, social]
+    aliases: [common room, taproom, gelagkamer, inn, drowned goose]
+    summary: The common room of the Drowned Goose inn, where Trijntje serves beer and stew and hears everything.
+    description:
+      day: |
+        A low room of black beams and scrubbed tables, warm from a peat fire
+        that never quite goes out. Voices and pipe smoke hang under the
+        ceiling. A counter runs along the back wall, the kitchen door is north,
+        and narrow stairs go up to the rooms. The door out is behind you.
+    exits:
+      out: { to: loc_goose_crossroads }
+      north: { to: loc_goose_kitchen }
+      up: { to: loc_goose_rooms }
+    objects:
+      - { id: bench, type: bench }
+    services:
+      - id: taproom
+        provider: npc_trijntje
+        staff: [npc_geesje]
+        premises: [loc_goose_kitchen, loc_goose_rooms]
+        hours: "07-23"
+        sells:
+          beer: { stock: 40, target: 40 }
+          hot_meal: { stock: 12, target: 12 }
+        buys: [eel]
+        lodging: 8
+        supply:
+          - { item: beer, amount: 40, every: day, at: 6 }
+          - { item: hot_meal, amount: 12, every: day, at: 11 }
+        demand:
+          - { item: beer, amount: 12, from: 12, to: 23 }
+          - { item: hot_meal, amount: 6, from: 12, to: 21 }
+
+  - id: loc_goose_kitchen
+    name: The Kitchen of the Goose
+    area: drowned_goose
+    tags: [private]
+    aliases: [kitchen, keuken]
+    description:
+      day: |
+        A big pot of eel stew bubbles over the hearth, and the air is thick
+        with steam and onions. Strings of garlic and dried fish hang from the
+        rafters. The common room is south.
+    exits:
+      south: { to: loc_goose_common }
+
+  - id: loc_goose_rooms
+    name: Upstairs at the Goose
+    area: drowned_goose
+    tags: [private]
+    aliases: [rooms, upstairs, kamers]
+    description:
+      day: |
+        A creaking corridor under the thatch with four doors. One of them has
+        a brass plate: CORNELIS DE WIT, LANDMETER. Behind another, somebody
+        snores. The stairs lead down.
+    exits:
+      down: { to: loc_goose_common }
+
+  - id: loc_goose_yard
+    name: The Stable Yard
+    area: drowned_goose
+    tags: [public]
+    aliases: [yard, stable, stable yard, stal]
+    description:
+      day: |
+        A cobbled yard with a stable, a pump and a notice board nailed to the
+        wall. A mule looks out over its door with deep suspicion. It smells of
+        hay and dung. The crossroads is north.
+    exits:
+      north: { to: loc_goose_crossroads }
+    objects:
+      - { id: notice_board, type: notice_board }

@@ -1,0 +1,148 @@
+# Prices are in duiten: 1 stuiver = 8 duiten, 1 guilder = 20 stuivers.
+
+items:
+  - id: rye_grain
+    name: sack of rye
+    plural: sacks of rye
+    aliases: [rye, grain, graan, rogge]
+    description: A coarse sack of rye grain, heavy as a sleeping child.
+    tags: [grain, trade]
+    value: 24
+
+  - id: flour
+    name: sack of flour
+    plural: sacks of flour
+    aliases: [flour, meel]
+    description: Rye flour, grey and fine, in a sack that leaves white on your sleeve.
+    tags: [trade]
+    value: 36
+
+  - id: rye_bread
+    name: loaf of rye bread
+    plural: loaves of rye bread
+    aliases: [bread, loaf, rye bread, brood, roggebrood]
+    description: A dense, dark loaf with a crust you could knock on.
+    tags: [food, bread]
+    value: 2
+    food: 35
+
+  - id: peat
+    name: basket of peat
+    plural: baskets of peat
+    aliases: [peat, turf]
+    description: Dried blocks of peat, brown and fibrous. They burn slow and smell of the fen.
+    tags: [fuel, trade]
+    value: 2
+
+  - id: eel
+    name: eel
+    aliases: [paling]
+    description: A fresh eel from the fen, still glistening.
+    tags: [food, fish]
+    value: 1
+    food: 15
+
+  - id: smoked_eel
+    name: smoked eel
+    plural: smoked eels
+    aliases: [gerookte paling]
+    description: A smoked eel, golden and oily, wrapped in a dock leaf.
+    tags: [food, fish]
+    value: 2
+    food: 25
+
+  - id: beer
+    name: mug of beer
+    plural: mugs of beer
+    aliases: [beer, ale, bier]
+    description: Thin brown beer from the priory brewery. It tastes of bread and smoke.
+    tags: [drink]
+    value: 1
+    food: 5
+
+  - id: hot_meal
+    name: bowl of stew
+    plural: bowls of stew
+    aliases: [stew, meal, hot meal, stoofpot, maaltijd]
+    description: Eel and barley stew, thick enough to stand a spoon in.
+    tags: [food]
+    value: 4
+    food: 60
+
+  - id: apple
+    name: apple
+    aliases: [appel]
+    description: A small, sour apple.
+    tags: [food]
+    value: 1
+    food: 10
+
+  - id: herbs
+    name: bundle of herbs
+    plural: bundles of herbs
+    aliases: [herbs, kruiden]
+    description: Fen mint, yarrow and something grey-leaved, tied with a strip of linen.
+    tags: [medicine, trade]
+    value: 16
+
+  - id: wool
+    name: fleece
+    plural: fleeces
+    aliases: [wool, wol]
+    description: A greasy fleece from the heath sheep.
+    tags: [trade]
+    value: 16
+
+  - id: yarn
+    name: skein of yarn
+    plural: skeins of yarn
+    aliases: [yarn, garen]
+    description: Grey woollen yarn, spun tight and even.
+    tags: [trade]
+    value: 24
+
+  - id: sailcloth
+    name: bolt of sailcloth
+    plural: bolts of sailcloth
+    aliases: [sailcloth, canvas, zeildoek]
+    description: Heavy canvas, rolled tight. Good for sails and not much else.
+    tags: [material, trade]
+    value: 80
+
+  - id: lantern
+    name: lantern
+    aliases: [lamp, lantaarn]
+    description: A tin lantern with horn panes. Without oil it is just a tin box.
+    tags: [tool, light]
+    value: 160
+
+  - id: lamp_oil
+    name: jug of lamp oil
+    plural: jugs of lamp oil
+    aliases: [oil, lamp oil, lampolie]
+    description: A stoppered jug of rapeseed oil for lamps.
+    tags: [fuel]
+    value: 24
+
+  - id: knife
+    name: knife
+    aliases: [mes]
+    description: A plain working knife with a horn handle.
+    tags: [tool, weapon]
+    value: 48
+
+  - id: iron_nails
+    name: handful of iron nails
+    plural: handfuls of iron nails
+    aliases: [nails, nail, iron nails, spijkers]
+    description: Square iron nails, still dark from the forge. Old women hammer them into doorsteps against the Haakman.
+    tags: [material, iron]
+    value: 8
+
+  - id: rope
+    name: coil of rope
+    plural: coils of rope
+    aliases: [rope, touw]
+    description: Hemp rope, about ten ells of it.
+    tags: [tool]
+    value: 12

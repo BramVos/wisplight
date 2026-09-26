@@ -9,6 +9,8 @@
   --input: #a9b89a;
   --system: #9aa6b8;
   --error: #d98a74;
+  --narration: #b9b39c;
+  --speech: #e6dfc8;
   --font: ui-monospace, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
   color-scheme: dark;
 }
@@ -64,6 +66,21 @@ body {
 
 .line.error {
   color: var(--error);
+}
+
+.line.narration {
+  color: var(--narration);
+  margin-bottom: 6px;
+}
+
+.line.speech {
+  color: var(--speech);
+}
+
+.line.check {
+  color: var(--muted);
+  font-size: 13px;
+  margin-bottom: 4px;
 }
 
 .topic {

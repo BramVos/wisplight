@@ -1,0 +1,241 @@
+import type { Direction, Need } from '../content'
+import { add, hasAll, itemName, withArticle } from '../items'
+import { objectKey, type Step } from '../state'
+import type { World } from '../world'
+
+// Carries out one plan step. A step either finishes now ('done'), keeps the
+// NPC busy for a while ('busy', the same step is looked at again later), or
+// cannot be done ('failed', the brain replans).
+
+export type StepResult = 'done' | 'busy' | 'failed'
+
+const FROM: Record<Direction, string> = {
+  north: 'the south',
+  south: 'the north',
+  east: 'the west',
+  west: 'the east',
+  northeast: 'the southwest',
+  northwest: 'the southeast',
+  southeast: 'the northwest',
+  southwest: 'the northeast',
+  up: 'below',
+  down: 'above',
+  in: 'outside',
+  out: 'inside',
+}
+
+const MAX_WAIT = 3 * 60
+
+export function executeStep(world: World, npcId: string, step: Step): StepResult {
+  const npc = world.npcState(npcId)
+  const now = world.now
+
+  switch (step.kind) {
+    case 'move': {
+      if (npc.location === step.to) return 'done'
+      const route = world.route(npc.location, step.to)
+      const direction = route?.directions[0]
+      const exit = direction && world.location(npc.location).exits[direction]
+      if (!route || !direction || !exit) return 'failed'
+      world.emit('depart', npc.location, world.say(`{name} ${leaving(direction)}.`, npcId), npcId)
+      npc.location = exit.to
+      world.emit('arrive', exit.to, world.say(`{name} arrives from ${FROM[direction]}.`, npcId), npcId)
+      npc.busyUntil = now + exit.minutes
+      npc.activity = `on the way to ${world.location(step.to).name}`
+      return 'busy'
+    }
+
+    case 'waitOpen': {
+      const location = step.location
+      const service = step.service ? world.service(location, step.service) : undefined
+      const object = step.object ? world.object(location, step.object)?.instance : undefined
+      const open = service ? world.serviceOpen(location, service) : object ? world.objectOpen(location, object) : true
+      if (open) {
+        npc.waitSince = undefined
+        return 'done'
+      }
+      npc.waitSince ??= now
+      if (now - npc.waitSince > MAX_WAIT) {
+        npc.waitSince = undefined
+        return 'failed'
+      }
+      npc.busyUntil = now + 5
+      npc.activity = 'waiting for the doors to open'
+      return 'busy'
+    }
+
+    case 'buy': {
+      const service = world.service(step.location, step.service)
+      if (!service || npc.location !== step.location || !world.serviceOpen(step.location, service)) return 'failed'
+      const stock = world.stock(step.location, step.service)
+      const price = world.price(step.location, service, step.item)
+      const qty = Math.min(step.qty, stock[step.item] ?? 0, Math.floor(npc.money / price))
+      if (qty <= 0) return 'failed'
+      npc.money -= qty * price
+      world.npcState(service.provider).money += qty * price
+      add(stock, step.item, -qty)
+      add(npc.inventory, step.item, qty)
+      const seller = world.npc(service.provider).short.split(' ')[0]
+      world.emit('trade', step.location, world.say(`{name} buys ${qtyName(world, step.item, qty)} from ${seller}.`, npcId), npcId)
+      npc.busyUntil = now + 5
+      npc.activity = 'buying'
+      return qty < step.qty ? 'failed' : 'done'
+    }
+
+    case 'use': {
+      const found = world.object(step.location, step.object)
+      const affordance = found?.type.affordances.find((a) => a.id === step.affordance)
+      if (!found || !affordance || npc.location !== step.location) return 'failed'
+      const state = world.objectState(step.location, step.object)
+      if (!Object.entries(affordance.requires_state).every(([k, v]) => state[k] === v)) return 'failed'
+      if (found.instance.provider && !world.objectOpen(step.location, found.instance)) return 'failed'
+      if (!hasAll(npc.inventory, affordance.consumes, step.times)) return 'failed'
+      const fee = affordance.fee * step.times
+      if (fee > npc.money) return 'failed'
+      if (fee > 0 && found.instance.provider) {
+        npc.money -= fee
+        world.npcState(found.instance.provider).money += fee
+      }
+      for (const [item, qty] of Object.entries(affordance.consumes)) add(npc.inventory, item, -qty * step.times)
+      npc.pending = {
+        produces: Object.fromEntries(Object.entries(affordance.produces).map(([item, qty]) => [item, qty * step.times])),
+        satisfies: scale(affordance.satisfies, step.times),
+        narrate: affordance.narrate_end && world.say(affordance.narrate_end, npcId),
+        location: step.location,
+      }
+      if (affordance.narrate_start) world.emit('work', step.location, world.say(affordance.narrate_start, npcId), npcId)
+      npc.busyUntil = now + affordance.duration * step.times
+      npc.activity = affordance.label
+      return 'done'
+    }
+
+    case 'stock': {
+      const qty = Math.min(step.qty, npc.inventory[step.item] ?? 0)
+      if (npc.location !== step.location) return 'failed'
+      if (qty > 0) {
+        add(npc.inventory, step.item, -qty)
+        add(world.stock(step.location, step.service), step.item, qty)
+        world.emit('stock', step.location, world.say(`{name} sets out ${qtyName(world, step.item, qty)} for sale.`, npcId), npcId)
+      }
+      npc.busyUntil = now + 5
+      npc.activity = 'arranging the goods for sale'
+      return 'done'
+    }
+
+    case 'repair': {
+      const found = world.object(step.location, step.object)
+      const repair = found?.type.repair
+      if (!found || !repair || npc.location !== step.location || !hasAll(npc.inventory, step.consumes)) return 'failed'
+      for (const [item, qty] of Object.entries(step.consumes)) add(npc.inventory, item, -qty)
+      npc.pending = {
+        setState: repair.sets,
+        objectKey: objectKey(step.location, step.object),
+        narrate: repair.narrate_end && world.say(repair.narrate_end, npcId),
+        location: step.location,
+        satisfies: { work: 30 },
+      }
+      npc.busyUntil = now + repair.duration
+      npc.activity = `repairing the ${found.instance.name ?? found.type.name}`
+      return 'done'
+    }
+
+    case 'eat': {
+      const food = Object.keys(npc.inventory)
+        .map((item) => ({ item, food: world.content.items.get(item)?.food ?? 0 }))
+        .filter((f) => f.food > 0)
+        .sort((a, b) => b.food - a.food || a.item.localeCompare(b.item))[0]
+      let gain = 0
+      if (food) {
+        add(npc.inventory, food.item, -1)
+        gain = food.food
+      } else if (npc.location === world.npc(npcId).home) {
+        gain = 50
+      } else {
+        return 'failed'
+      }
+      npc.pending = { satisfies: { hunger: gain } }
+      npc.busyUntil = now + 30
+      npc.activity = 'eating'
+      return 'done'
+    }
+
+    case 'sleep': {
+      const minutes = Math.max(30, step.until - now)
+      npc.pending = { satisfies: { rest: Math.round((minutes / 60) * 12) } }
+      npc.busyUntil = now + minutes
+      npc.activity = 'asleep'
+      return 'done'
+    }
+
+    case 'spend': {
+      const gains: Record<typeof step.activity, Partial<Record<Need, number>>> = {
+        work: { work: Math.round(step.minutes / 4) },
+        socialize: { social: Math.round(step.minutes / 2) },
+        play: { social: Math.round(step.minutes / 2) },
+        pray: { faith: Math.round(step.minutes * 0.6) },
+        idle: {},
+      }
+      const gain = { ...gains[step.activity] }
+      // Time spent where people gather counts as company, whatever you came for.
+      if (world.location(npc.location).tags.includes('social') && step.activity !== 'socialize') {
+        gain.social = (gain.social ?? 0) + Math.round(step.minutes / 4)
+      }
+      npc.pending = { satisfies: gain }
+      npc.busyUntil = now + step.minutes
+      npc.activity = { work: 'at work', socialize: 'chatting', play: 'playing', pray: 'praying', idle: 'taking it easy' }[step.activity]
+      return 'done'
+    }
+
+    case 'askHelp': {
+      const open = world.state.requests.find((r) => r.npc === npcId && r.item === step.item && r.status === 'open')
+      if (!open) {
+        world.state.requests.push({ id: `req_${world.state.requests.length + 1}`, npc: npcId, item: step.item, qty: step.qty, created: now, status: 'open' })
+      }
+      npc.lastAskHelp[step.item] = now
+      world.emit(
+        'ask',
+        npc.location,
+        world.say(`{name} sighs that {they} could do with ${qtyName(world, step.item, step.qty)}, if only {they} knew where to get it.`, npcId),
+        npcId,
+      )
+      return 'done'
+    }
+  }
+}
+
+/** Applies what a finished activity yields. */
+export function resolvePending(world: World, npcId: string): void {
+  const npc = world.npcState(npcId)
+  const pending = npc.pending
+  if (!pending) return
+  npc.pending = undefined
+  for (const [item, qty] of Object.entries(pending.produces ?? {})) add(npc.inventory, item, qty)
+  for (const [need, gain] of Object.entries(pending.satisfies ?? {})) {
+    const key = need as Need
+    npc.needs[key] = clamp(npc.needs[key] + (gain ?? 0))
+  }
+  if (pending.setState && pending.objectKey) {
+    world.state.objects[pending.objectKey] = { ...world.state.objects[pending.objectKey], ...pending.setState }
+  }
+  if (pending.narrate && pending.location) world.emit('work', pending.location, pending.narrate, npcId)
+}
+
+export function clamp(value: number): number {
+  return Math.max(0, Math.min(100, Math.round(value * 10) / 10))
+}
+
+function scale(values: Partial<Record<Need, number>>, times: number): Partial<Record<Need, number>> {
+  return Object.fromEntries(Object.entries(values).map(([k, v]) => [k, (v ?? 0) * times]))
+}
+
+function leaving(direction: Direction): string {
+  if (direction === 'in') return 'goes inside'
+  if (direction === 'out') return 'goes outside'
+  if (direction === 'up') return 'goes upstairs'
+  if (direction === 'down') return 'goes downstairs'
+  return `leaves ${direction}`
+}
+
+export function qtyName(world: World, item: string, qty: number): string {
+  return qty === 1 ? withArticle(itemName(world.content, item)) : itemName(world.content, item, qty)
+}

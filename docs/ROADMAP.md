@@ -9,15 +9,15 @@ Elke mijlpaal eindigt met een speelbare versie, een blok in `docs/CHANGELOG.md` 
 - [x] Commando's met Nederlandse aliassen; Veenhoek met zeven locaties en Mirte
 - [x] Terminalclient, browserversie, unittests en rooktest
 
-## M1 Wereld en simulatie
+## M1 Wereld en simulatie (af)
 
 Scope: FO 3, 4, 6 en 7. Objecten met affordances, voorwerpen en inventaris, handel en prijzen, hybride klok, NPC-kaarten met behoeften, schema's en stemming, nutsfunctie, planner (HTN met GOAP-terugval) die alleen met eigen kennis plant, savegame in SQLite met gebeurtenissenlog. Content: Veenhoek, Molenend, The Drowned Goose en Waagdam met 12 NPC's.
 
-- [ ] De streek draait 7 speldagen zonder speler zonder fouten of vastgelopen NPC's
-- [ ] Staat de molen stil, dan koopt Mirte graan bij Lubbert, laat het malen in de rosmolen en bakt; zonder bekende bron wordt het doel Ask_help
-- [ ] Prijzen reageren op voorraad (meel wordt duurder na de storm)
-- [ ] Opslaan en laden geven exact dezelfde staat; een savegame is na te spelen met het log
-- [ ] Commando's take, drop, give, use, examine, buy, sell, eat, wait en sleep werken
+- [x] De streek draait 7 speldagen zonder speler zonder fouten of vastgelopen NPC's
+- [x] Staat de molen stil, dan koopt Mirte graan bij Lubbert, laat het malen in de rosmolen en bakt; zonder bekende bron wordt het doel Ask_help
+- [x] Prijzen reageren op voorraad (meel wordt duurder na de storm)
+- [x] Opslaan en laden geven exact dezelfde staat; een savegame is na te spelen met het log
+- [x] Commando's take, drop, give, use, examine, buy, sell, eat, wait en sleep werken
 
 ## M2 Praten met NPC's
 

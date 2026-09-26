@@ -48,6 +48,14 @@ export function App() {
   }, [])
 
   useEffect(() => {
+    if (!client) return
+    return client.onTick((reply) => {
+      setStatus(reply.status)
+      if (reply.outputs.length > 0) setLines((previous) => [...previous, ...reply.outputs.map(withId)].slice(-400))
+    })
+  }, [client])
+
+  useEffect(() => {
     logRef.current?.scrollTo({ top: logRef.current.scrollHeight })
   }, [lines])
 
@@ -58,11 +66,12 @@ export function App() {
     setHistory((previous) => [text, ...previous].slice(0, 100))
     setHistoryIndex(-1)
     const reply = await client.command(text)
-    setLines((previous) => [...previous, { id: nextId++, kind: 'input', text }, ...reply.outputs.map(withId)])
+    setLines((previous) => [...previous, { id: nextId++, kind: 'input' as const, text }, ...reply.outputs.map(withId)].slice(-400))
     setStatus(reply.status)
   }
 
   const onKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    client?.activity()
     if (event.key === 'Enter') {
       void submit()
     } else if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
@@ -106,7 +115,7 @@ export function App() {
 
       <footer className="bar">
         <span className="status">
-          {status ? `${status.location}  |  ${status.time}` : 'Loading the Nethermarch'}
+          {status ? `${status.location}  |  ${status.time}  |  ${status.money}${status.paused ? '  |  time paused' : ''}` : 'Loading the Nethermarch'}
         </span>
         <label className="prompt">
           <span aria-hidden="true">&gt;</span>

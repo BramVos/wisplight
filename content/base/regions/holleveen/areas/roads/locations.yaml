@@ -1,0 +1,34 @@
+locations:
+  - id: loc_towpath_mid
+    name: Tow Path, halfway to Waagdam
+    area: roads
+    tags: [route]
+    aliases: [tow path, jaagpad]
+    description:
+      day: |
+        Halfway between Veenhoek and Waagdam the tow path runs through
+        nothing at all: water on one side, reeds on the other, and a sky that
+        goes on for ever. A heron stands in the shallows and does not bother to
+        fly off. The wind hisses in the reeds. Veenhoek lies west, Waagdam east.
+      night: |
+        In the dark the tow path is only a paler line between black water and
+        black reeds. Something splashes, then nothing. Veenhoek lies west,
+        Waagdam east.
+    exits:
+      west: { to: loc_towpath_e, minutes: 35 }
+      east: { to: loc_waagdam_west_gate, minutes: 35 }
+
+  - id: loc_goose_road
+    name: The Waagdam Road
+    area: roads
+    tags: [route]
+    aliases: [road, waagdam road]
+    description:
+      day: |
+        The road from the crossroads to Waagdam runs on a dyke above sodden
+        pasture. Cows stand up to their knees in the wet. A cart has left deep
+        ruts that shine with water. The Drowned Goose is west; Waagdam's gate
+        is east.
+    exits:
+      west: { to: loc_goose_crossroads, minutes: 25 }
+      east: { to: loc_waagdam_west_gate, minutes: 25 }

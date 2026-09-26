@@ -1,0 +1,90 @@
+npcs:
+  - id: npc_lubbert
+    name: Lubbert Graanhandel
+    short: Lubbert the grain merchant
+    pronoun: he
+    age: 45
+    profession: grain_merchant
+    home: loc_waagdam_graanhandel
+    work: loc_waagdam_graanhandel
+    fame: 1
+    appearance: A soft-handed man in a good coat with flour dust on the shoulders and a ledger under his arm.
+    personality: { warmth: -1, courage: -1, honesty: -2, temper: 0, curiosity: 0, diligence: 1 }
+    values: { wealth: 3 }
+    quirks: [greedy]
+    speech: "Smooth, calculating, always talking about prices and shortages."
+    aliases: [lubbert, grain merchant, graanhandelaar]
+    public_facts:
+      - Lubbert sells rye and flour from his grain store in Waagdam.
+      - He raised his flour prices after the storm.
+    examples:
+      - "Flour's dear since the storm, friend. Supply and demand."
+    money: 1600
+    knows_areas: [waagdam, drowned_goose, roads, veenhoek]
+
+  - id: npc_teunis
+    name: Teunis Ros
+    short: Teunis the horse-miller
+    pronoun: he
+    age: 58
+    profession: horse_miller
+    home: loc_waagdam_horse_mill
+    work: loc_waagdam_horse_mill
+    fame: 1
+    appearance: A slow, stooped man who walks a little like his horse, with a kind face under a flour-white cap.
+    personality: { warmth: 1, courage: 0, honesty: 2, temper: -2, curiosity: 0, diligence: 2 }
+    values: { craft: 2 }
+    quirks: [talks_to_his_horse]
+    speech: "Slow and friendly, talks as much to the horse as to you."
+    aliases: [teunis, horse-miller, rosmolenaar]
+    public_facts:
+      - Teunis Ros runs the horse mill in Waagdam and grinds grain for a stuiver a sack.
+    examples:
+      - "Easy, Bles. We're not in a hurry. Nobody is, in Waagdam."
+    money: 150
+    knows_areas: [waagdam, drowned_goose, roads, veenhoek]
+
+  - id: npc_dirck
+    name: Dirck Schaal
+    short: Weighmaster Dirck
+    pronoun: he
+    age: 60
+    profession: weighmaster
+    home: loc_waagdam_dirck_house
+    work: loc_waagdam_waag
+    fame: 3
+    appearance: A neat, silver-haired man with a black ribbon at his throat and hands that never fidget.
+    personality: { warmth: 1, courage: 1, honesty: 3, temper: -1, curiosity: 1, diligence: 3 }
+    values: { justice: 3, knowledge: 1 }
+    quirks: [precise]
+    speech: "Measured, courteous, exact. Chooses every word like a weight."
+    aliases: [weighmaster, dirck, waagmeester]
+    public_facts:
+      - Dirck Schaal is the weighmaster of Waagdam. His certificates are honoured throughout the land.
+    examples:
+      - "The scale is honest. People are merely heavier or lighter than they fear."
+    money: 400
+    knows_areas: [waagdam, drowned_goose, roads, veenhoek]
+
+  - id: npc_hendrik
+    name: Hendrik Smid
+    short: Hendrik the smith
+    pronoun: he
+    age: 40
+    profession: smith
+    home: loc_waagdam_smithy
+    work: loc_waagdam_smithy
+    fame: 1
+    appearance: A big, soot-streaked man with a leather apron and burn scars like freckles up both forearms.
+    personality: { warmth: 1, courage: 1, honesty: 1, temper: 1, curiosity: 0, diligence: 2 }
+    values: { craft: 3 }
+    quirks: [old_customs]
+    speech: "Hearty, plain, proud of his work."
+    aliases: [smith, hendrik, smid]
+    public_facts:
+      - Hendrik Smid is the smith of Waagdam.
+      - He forges the iron nails that wise women hammer into doorsteps.
+    examples:
+      - "Iron keeps more than doors shut, if you ask the old women."
+    money: 300
+    knows_areas: [waagdam, drowned_goose, roads, veenhoek]

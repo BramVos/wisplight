@@ -1,0 +1,186 @@
+# Objects publish what they let people do (FO, chapter 4: affordances).
+# Templates: {name} is the NPC's first name, {they}/{their}/{them} pronouns.
+
+object_types:
+  - id: bread_oven
+    name: bread oven
+    aliases: [oven, bakoven]
+    description: A brick oven shaped like a beehive, black at the mouth. It holds warmth long after the fire is out.
+    affordances:
+      - id: bake_bread
+        verb: bake
+        label: baking bread
+        actors: [npc]
+        access: owner
+        consumes: { flour: 1, peat: 1 }
+        produces: { rye_bread: 6 }
+        duration: 90
+        satisfies: { work: 25 }
+        narrate_start: "{name} rakes the embers and slides a tray of loaves into the oven."
+        narrate_end: "{name} pulls a row of dark loaves from the oven. The smell of warm rye fills the air."
+
+  - id: windmill
+    name: windmill
+    aliases: [mill, molen, de zwaan]
+    description: A tall wooden post mill with four sails. It grinds grain and, through a scoop wheel below, pumps the polder dry.
+    affordances:
+      - id: grind
+        verb: grind
+        label: grinding rye
+        actors: [npc, player]
+        access: public
+        consumes: { rye_grain: 1 }
+        produces: { flour: 1 }
+        duration: 20
+        fee: 4
+        requires_state: { broken: false }
+        broken_text: The sails hang in shreds. This mill won't turn until someone brings new sailcloth.
+        player_text: The millstones rumble. A while later you have a sack of flour.
+    repair:
+      consumes: { sailcloth: 2 }
+      duration: 240
+      sets: { broken: false }
+      narrate_end: "{name} steps back as the new sails catch the wind. De Zwaan turns again."
+
+  - id: horse_mill
+    name: horse mill
+    aliases: [rosmolen, mill]
+    description: A millstone turned by an old grey horse walking a patient circle under a thatched roof.
+    affordances:
+      - id: grind
+        verb: grind
+        label: having rye ground
+        actors: [npc, player]
+        access: public
+        consumes: { rye_grain: 1 }
+        produces: { flour: 1 }
+        duration: 30
+        fee: 8
+        narrate_start: "{name} heaves a sack of rye onto the horse mill, and the grey horse plods off round its circle."
+        player_text: The grey horse walks its circle. Half an hour later you have a sack of flour.
+
+  - id: peat_bank
+    name: peat bank
+    aliases: [peat, cuttings, turfwand]
+    description: A wall of wet black peat, cut in straight steps. Water seeps from every cut.
+    affordances:
+      - id: cut_peat
+        verb: cut
+        label: cutting peat
+        actors: [npc]
+        access: staff
+        produces: { peat: 6 }
+        duration: 60
+        satisfies: { work: 25 }
+        narrate_start: "{name} spits on {their} hands and drives the spade into the peat."
+        narrate_end: "{name} stacks the new blocks of peat to dry."
+
+  - id: eel_traps
+    name: eel traps
+    aliases: [traps, fuiken]
+    description: Long willow traps, some whole, some waiting to be mended.
+    affordances:
+      - id: check_traps
+        verb: check
+        label: seeing to the eel traps
+        actors: [npc]
+        access: owner
+        produces: { eel: 4 }
+        duration: 120
+        satisfies: { work: 25 }
+        narrate_start: "{name} shoulders a bundle of willow traps and heads for the water's edge."
+        narrate_end: "{name} comes back with a dripping bucket of eels."
+
+  - id: spinning_wheel
+    name: spinning wheel
+    aliases: [wheel, spinnewiel]
+    description: A spinning wheel, worn smooth where hands and feet have touched it for years.
+    affordances:
+      - id: spin
+        verb: spin
+        label: spinning
+        actors: [npc]
+        access: household
+        consumes: { wool: 1 }
+        produces: { yarn: 1 }
+        duration: 120
+        satisfies: { work: 25 }
+        narrate_start: "{name} sits down at the wheel, and it begins to hum."
+
+  - id: well
+    name: well
+    aliases: [put]
+    description: A round stone well with a wooden lid. Someone has scratched a spindle into the top stone. People drop pins in it for Mother Holle.
+    affordances:
+      - id: drink
+        verb: drink
+        label: drinking
+        actors: [player, npc]
+        access: public
+        duration: 2
+        player_text: The water is cold and tastes faintly of iron.
+
+  - id: altar
+    name: altar
+    aliases: [lantern, lantaarn]
+    description: A plain altar under a lantern with three panes. The flame never goes out; someone makes sure of it.
+    affordances:
+      - id: pray
+        verb: pray
+        label: praying
+        actors: [player, npc]
+        access: public
+        duration: 15
+        satisfies: { faith: 20 }
+        player_text: You stand a while in the lantern light. It is quiet, and that helps.
+
+  - id: dog_stone
+    name: old stone
+    aliases: [stone, dog stone, steen]
+    description: A worn stone, waist-high, with a dog carved on one side. There are apple cores in the moss around it, and one whole apple on top.
+    affordances:
+      - id: offer
+        verb: offer
+        label: making an offering
+        actors: [player]
+        access: public
+        consumes: { apple: 1 }
+        duration: 2
+        player_text: You leave an apple on the stone. Somewhere across the water a dog barks once.
+
+  - id: bench
+    name: bench
+    aliases: [benches, table, bank, tafel]
+    description: A long bench, polished by years of backsides.
+    affordances:
+      - id: rest
+        verb: rest
+        label: resting
+        actors: [player]
+        access: public
+        duration: 30
+        player_text: You sit a while and let your feet recover.
+
+  - id: forge
+    name: forge
+    aliases: [anvil, smithy, smidse]
+    description: A forge glowing under a hood of soot. The anvil beside it is older than the smith.
+    affordances: []
+
+  - id: scale
+    name: great scale
+    aliases: [scale, heksenwaag, waag, weegschaal]
+    description: The great beam scale of Waagdam, black oak and iron, with a seat hanging from one side. People are weighed here to prove they are no witch.
+    affordances: []
+
+  - id: counter
+    name: counter
+    aliases: [counter, toonbank]
+    description: A scrubbed wooden counter with a slate for prices.
+    affordances: []
+
+  - id: notice_board
+    name: notice board
+    aliases: [board, notices, prikbord]
+    description: A board on the stable wall, stuck with notes and a nail or two. Most of the notes are about lost goats.
+    affordances: []

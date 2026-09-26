@@ -1,0 +1,165 @@
+# Schedules are the default behaviour (FO, chapter 6). The first block that
+# matches the time and weekday wins, so day-specific blocks come first.
+# Activities: sleep, work, eat, socialize, pray, free, home.
+
+professions:
+  - id: baker
+    name: baker
+    daily_goals:
+      - { type: Produce, item: rye_bread, service: bakery_counter, days: [Maandag, Dinsdag, Woensdag, Donderdag, Vrijdag, Zaterdag] }
+    schedule:
+      - { from: "09:00", to: "10:30", activity: pray, at: loc_veenhoek_chapel, days: [Rustdag] }
+      - { from: "04:00", to: "04:30", activity: eat }
+      - { from: "04:30", to: "12:00", activity: work, days: [Maandag, Dinsdag, Woensdag, Donderdag, Vrijdag, Zaterdag] }
+      - { from: "12:00", to: "13:00", activity: eat }
+      - { from: "17:00", to: "18:00", activity: eat }
+      - { from: "19:00", to: "21:00", activity: socialize }
+      - { from: "21:30", to: "04:00", activity: sleep }
+
+  - id: miller
+    name: miller
+    daily_goals:
+      - { type: Repair, object: loc_molenend_mill/de_zwaan }
+    schedule:
+      - { from: "06:00", to: "12:00", activity: work, days: [Maandag, Dinsdag, Woensdag, Donderdag, Vrijdag, Zaterdag] }
+      - { from: "12:00", to: "13:00", activity: eat }
+      - { from: "13:00", to: "18:00", activity: work, days: [Maandag, Dinsdag, Woensdag, Donderdag, Vrijdag, Zaterdag] }
+      - { from: "18:00", to: "19:00", activity: eat }
+      - { from: "19:00", to: "22:00", activity: home }
+      - { from: "22:00", to: "06:00", activity: sleep }
+
+  - id: peat_cutter
+    name: peat-cutter
+    daily_goals:
+      - { type: Produce, item: peat, service: peat_store, days: [Maandag, Dinsdag, Woensdag, Donderdag, Vrijdag, Zaterdag] }
+    schedule:
+      - { from: "06:00", to: "12:00", activity: work, days: [Maandag, Dinsdag, Woensdag, Donderdag, Vrijdag, Zaterdag] }
+      - { from: "12:00", to: "13:00", activity: eat }
+      - { from: "13:00", to: "16:30", activity: work, days: [Maandag, Dinsdag, Woensdag, Donderdag, Vrijdag, Zaterdag] }
+      - { from: "17:00", to: "18:00", activity: eat }
+      - { from: "18:00", to: "21:30", activity: socialize }
+      - { from: "22:00", to: "05:30", activity: sleep }
+
+  - id: herbalist
+    name: herbalist
+    schedule:
+      - { from: "07:00", to: "08:00", activity: eat }
+      - { from: "08:00", to: "12:00", activity: work }
+      - { from: "12:00", to: "13:00", activity: eat }
+      - { from: "13:00", to: "18:00", activity: work }
+      - { from: "18:00", to: "19:00", activity: eat }
+      - { from: "21:00", to: "07:00", activity: sleep }
+
+  - id: eel_fisher
+    name: eel-fisher
+    daily_goals:
+      - { type: Produce, item: eel, service: eel_stall, days: [Maandag, Dinsdag, Woensdag, Donderdag, Vrijdag, Zaterdag] }
+    schedule:
+      - { from: "05:00", to: "10:00", activity: work, days: [Maandag, Dinsdag, Woensdag, Donderdag, Vrijdag, Zaterdag] }
+      - { from: "10:00", to: "13:00", activity: work, at: loc_veenhoek_quay, days: [Maandag, Dinsdag, Woensdag, Donderdag, Vrijdag, Zaterdag] }
+      - { from: "13:00", to: "14:00", activity: eat }
+      - { from: "18:00", to: "19:00", activity: eat }
+      - { from: "20:00", to: "22:00", activity: socialize }
+      - { from: "22:00", to: "05:00", activity: sleep }
+
+  - id: sister
+    name: sister of the Lantern
+    schedule:
+      - { from: "09:00", to: "11:00", activity: pray, at: loc_veenhoek_chapel, days: [Rustdag] }
+      - { from: "06:00", to: "07:00", activity: pray, at: loc_veenhoek_chapel }
+      - { from: "07:00", to: "08:00", activity: eat }
+      - { from: "08:00", to: "12:00", activity: work }
+      - { from: "12:00", to: "13:00", activity: eat }
+      - { from: "17:00", to: "18:00", activity: eat }
+      - { from: "18:00", to: "19:00", activity: pray, at: loc_veenhoek_chapel }
+      - { from: "21:00", to: "06:00", activity: sleep }
+
+  - id: schout
+    name: schout
+    schedule:
+      - { from: "07:00", to: "08:00", activity: eat }
+      - { from: "08:00", to: "12:00", activity: work, days: [Maandag, Dinsdag, Woensdag, Donderdag, Vrijdag, Zaterdag] }
+      - { from: "12:00", to: "13:00", activity: eat }
+      - { from: "13:00", to: "14:00", activity: work, at: loc_veenhoek_green, days: [Maandag, Dinsdag, Woensdag, Donderdag, Vrijdag, Zaterdag] }
+      - { from: "14:00", to: "15:00", activity: work, at: loc_veenhoek_quay, days: [Maandag, Dinsdag, Woensdag, Donderdag, Vrijdag, Zaterdag] }
+      - { from: "18:00", to: "19:00", activity: eat }
+      - { from: "19:00", to: "21:00", activity: socialize }
+      - { from: "22:00", to: "07:00", activity: sleep }
+
+  - id: spinner
+    name: spinner
+    daily_goals:
+      - { type: Produce, item: yarn, qty: 2, days: [Maandag, Dinsdag, Woensdag, Donderdag, Vrijdag, Zaterdag] }
+    schedule:
+      - { from: "07:00", to: "08:00", activity: eat }
+      - { from: "08:00", to: "12:00", activity: work }
+      - { from: "12:00", to: "13:00", activity: eat }
+      - { from: "13:00", to: "17:00", activity: work }
+      - { from: "18:00", to: "19:00", activity: eat }
+      - { from: "19:00", to: "21:30", activity: home }
+      - { from: "21:30", to: "07:00", activity: sleep }
+
+  - id: child
+    name: child
+    schedule:
+      - { from: "07:00", to: "08:00", activity: eat }
+      - { from: "12:00", to: "13:00", activity: eat }
+      - { from: "18:00", to: "19:00", activity: eat }
+      - { from: "19:00", to: "20:00", activity: home }
+      - { from: "20:00", to: "07:00", activity: sleep }
+
+  - id: innkeeper
+    name: innkeeper
+    schedule:
+      - { from: "06:30", to: "07:00", activity: eat }
+      - { from: "12:30", to: "13:00", activity: eat }
+      - { from: "18:30", to: "19:00", activity: eat }
+      - { from: "07:00", to: "23:00", activity: work }
+      - { from: "23:00", to: "06:30", activity: sleep }
+
+  - id: barmaid
+    name: barmaid
+    schedule:
+      - { from: "08:00", to: "09:00", activity: eat }
+      - { from: "13:00", to: "13:30", activity: eat }
+      - { from: "19:00", to: "19:30", activity: eat }
+      - { from: "11:00", to: "23:00", activity: work }
+      - { from: "23:00", to: "07:30", activity: sleep }
+
+  - id: grain_merchant
+    name: grain merchant
+    schedule:
+      - { from: "06:00", to: "07:00", activity: eat }
+      - { from: "07:00", to: "18:00", activity: work, days: [Maandag, Dinsdag, Woensdag, Donderdag, Vrijdag, Zaterdag] }
+      - { from: "18:00", to: "19:00", activity: eat }
+      - { from: "19:00", to: "21:00", activity: socialize }
+      - { from: "22:00", to: "06:00", activity: sleep }
+
+  - id: horse_miller
+    name: horse-miller
+    schedule:
+      - { from: "06:00", to: "07:00", activity: eat }
+      - { from: "07:00", to: "17:00", activity: work, days: [Maandag, Dinsdag, Woensdag, Donderdag, Vrijdag, Zaterdag] }
+      - { from: "17:00", to: "18:00", activity: eat }
+      - { from: "21:00", to: "06:00", activity: sleep }
+
+  - id: weighmaster
+    name: weighmaster
+    schedule:
+      - { from: "07:00", to: "08:00", activity: eat }
+      - { from: "09:00", to: "16:00", activity: work, days: [Maandag, Dinsdag, Woensdag, Donderdag, Vrijdag, Zaterdag] }
+      - { from: "12:00", to: "13:00", activity: eat }
+      - { from: "18:00", to: "19:00", activity: eat }
+      - { from: "19:00", to: "21:00", activity: socialize }
+      - { from: "22:00", to: "07:00", activity: sleep }
+
+  - id: smith
+    name: smith
+    schedule:
+      - { from: "06:00", to: "07:00", activity: eat }
+      - { from: "07:00", to: "12:00", activity: work, days: [Maandag, Dinsdag, Woensdag, Donderdag, Vrijdag, Zaterdag] }
+      - { from: "12:00", to: "13:00", activity: eat }
+      - { from: "13:00", to: "18:00", activity: work, days: [Maandag, Dinsdag, Woensdag, Donderdag, Vrijdag, Zaterdag] }
+      - { from: "18:00", to: "19:00", activity: eat }
+      - { from: "19:00", to: "21:00", activity: socialize }
+      - { from: "21:30", to: "06:00", activity: sleep }

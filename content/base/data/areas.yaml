@@ -1,0 +1,35 @@
+areas:
+  - id: veenhoek
+    name: Veenhoek
+    kind: village
+    aliases: [the village]
+    fame: 1
+    summary: A peat-cutters' village of about 180 souls on the Graafse Vaart, with a bakery, a chapel and the peat sheds.
+
+  - id: molenend
+    name: Molenend
+    kind: hamlet
+    aliases: [the mill, de zwaan]
+    fame: 1
+    summary: A hamlet a short walk north-east of Veenhoek, around the windmill De Zwaan that grinds grain and pumps the polder dry.
+
+  - id: drowned_goose
+    name: The Drowned Goose
+    kind: inn
+    aliases: [the goose, drowned goose, the inn, de verdronken gans]
+    fame: 2
+    summary: The inn at the crossroads between Veenhoek and Waagdam, run by Trijntje Kroes. Everyone's news passes through it.
+
+  - id: waagdam
+    name: Waagdam
+    kind: town
+    aliases: [the town]
+    fame: 2
+    summary: The market town of the Holleveen, an hour and a quarter east along the Vaart, famous for its Witches' Scale. Market day is Woensdag.
+
+  - id: roads
+    name: the roads of the Holleveen
+    kind: route
+    aliases: [the tow path, the vaart, graafse vaart, the road]
+    fame: 1
+    summary: The tow path along the Graafse Vaart and the road past the Drowned Goose, both leading from Veenhoek to Waagdam.

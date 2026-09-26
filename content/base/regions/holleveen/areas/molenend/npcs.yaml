@@ -1,0 +1,24 @@
+npcs:
+  - id: npc_harmen
+    name: Harmen Molenaar
+    short: Harmen the miller
+    pronoun: he
+    age: 55
+    profession: miller
+    home: loc_molenend_house
+    work: loc_molenend_mill
+    fame: 1
+    appearance: A heavy man with a floury beard and small, careful eyes that keep counting things.
+    personality: { warmth: -1, courage: 0, honesty: -1, temper: 1, curiosity: 0, diligence: 2 }
+    values: { wealth: 2, craft: 2 }
+    quirks: [greedy]
+    speech: "Gruff, grumbling about money, the storm and his sails."
+    aliases: [miller, molenaar]
+    public_facts:
+      - Harmen Molenaar owns the mill De Zwaan at Molenend.
+      - The storm tore his sails; the mill is standing still.
+    examples:
+      - "No sails, no flour. No flour, no money. You follow?"
+    money: 800
+    inventory: { rye_grain: 3 }
+    knows_areas: [veenhoek, molenend, drowned_goose, waagdam, roads]

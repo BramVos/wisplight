@@ -40,6 +40,51 @@ export function dayPartOf(hour: number): DayPart {
   return 'evening'
 }
 
+export const MINUTES_PER_HOUR = 60
+export { MINUTES_PER_DAY }
+
+export function weekdayOf(minutes: number): (typeof WEEKDAYS)[number] {
+  return WEEKDAYS[(Math.floor(minutes / MINUTES_PER_DAY) + WEEKDAY_OFFSET) % 7]!
+}
+
+export function minuteOfDay(minutes: number): number {
+  return minutes - Math.floor(minutes / MINUTES_PER_DAY) * MINUTES_PER_DAY
+}
+
+export function startOfDay(minutes: number): number {
+  return Math.floor(minutes / MINUTES_PER_DAY) * MINUTES_PER_DAY
+}
+
+/** "07-18" or "04:30-12:00" to minutes after midnight. */
+export function parseHours(hours: string): [number, number] {
+  const [from = '0', to = '24'] = hours.split('-')
+  const toMinutes = (value: string) => {
+    const [h = '0', m = '0'] = value.split(':')
+    return Number(h) * 60 + Number(m)
+  }
+  return [toMinutes(from), toMinutes(to)]
+}
+
+export function isOpenAt(minutes: number, hours: string | undefined, days?: readonly string[]): boolean {
+  if (!hours) return true
+  if (days && !days.includes(weekdayOf(minutes))) return false
+  const [from, to] = parseHours(hours)
+  const now = minuteOfDay(minutes)
+  return from <= to ? now >= from && now < to : now >= from || now < to
+}
+
+/** The first minute at or after `minutes` when the hours allow it, within a week. */
+export function nextOpening(minutes: number, hours: string | undefined, days?: readonly string[]): number | undefined {
+  if (isOpenAt(minutes, hours, days)) return minutes
+  if (!hours) return minutes
+  const [from] = parseHours(hours)
+  for (let d = 0; d <= 7; d++) {
+    const candidate = startOfDay(minutes) + d * MINUTES_PER_DAY + from
+    if (candidate >= minutes && isOpenAt(candidate, hours, days)) return candidate
+  }
+  return undefined
+}
+
 export class GameClock {
   constructor(public minutes: number) {}
 

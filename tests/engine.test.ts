@@ -1,20 +1,27 @@
-import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { ContentError, Engine, GameClock, loadContent, parseCommand } from '../src/engine'
-import { loadContentFromDir } from '../src/node/content'
-
-const content = await loadContentFromDir(resolve(import.meta.dirname, '../content'))
+import { ContentError, GameClock, loadContent, parseCommand, splitQuantity } from '../src/engine'
+import { newEngine } from './helpers'
 
 describe('parser', () => {
   it('understands English and Dutch directions', () => {
     expect(parseCommand('n')).toMatchObject({ verb: 'go', args: ['north'] })
     expect(parseCommand('go east')).toMatchObject({ verb: 'go', args: ['east'] })
     expect(parseCommand('ga zuid')).toMatchObject({ verb: 'go', args: ['south'] })
+    expect(parseCommand('in')).toMatchObject({ verb: 'go', args: ['in'] })
   })
 
-  it('maps verb aliases and speech', () => {
+  it('maps verb aliases, speech and phrasings', () => {
     expect(parseCommand('kijk').verb).toBe('look')
+    expect(parseCommand('look at the oven')).toMatchObject({ verb: 'examine', args: ['the', 'oven'] })
+    expect(parseCommand('pick up knife')).toMatchObject({ verb: 'take', args: ['knife'] })
+    expect(parseCommand('koop brood')).toMatchObject({ verb: 'buy', args: ['brood'] })
     expect(parseCommand("'Good evening")).toMatchObject({ verb: 'say', args: ['Good evening'] })
+  })
+
+  it('splits quantities', () => {
+    expect(splitQuantity(['2', 'loaves', 'of', 'bread'])).toEqual({ qty: 2, text: 'bread' })
+    expect(splitQuantity(['bread', '3'])).toEqual({ qty: 3, text: 'bread' })
+    expect(splitQuantity(['all', 'peat'])).toEqual({ qty: 'all', text: 'peat' })
   })
 })
 
@@ -31,41 +38,48 @@ describe('clock', () => {
 })
 
 describe('engine', () => {
-  it('starts on the green with the intro', () => {
-    const engine = new Engine(content)
-    const outputs = engine.start()
+  it('starts on the quay with the intro', () => {
+    const outputs = newEngine().start()
     expect(outputs[0]?.text).toContain('The barge from Graafhaven')
-    expect(outputs.at(-1)?.text).toContain('Veenhoek, the Green')
+    expect(outputs.at(-1)?.text).toContain('Canal Quay')
   })
 
-  it('moves between locations and lets time pass', () => {
-    const engine = new Engine(content)
-    const before = engine.clock.minutes
-    const [room] = engine.handle('e')
-    expect(room?.text).toContain('The Bakery')
-    expect(engine.clock.minutes).toBe(before + 1)
+  it('moves between locations and lets time pass', async () => {
+    const engine = newEngine()
+    const before = engine.world.now
+    const [room] = await engine.handle('n')
+    expect(room?.text).toContain('Veenhoek, the Green')
+    expect(engine.world.now).toBe(before + 1)
   })
 
-  it('shows who is present', () => {
-    const engine = new Engine(content)
-    expect(engine.handle('east')[0]?.text).toContain('Here: Mirte the baker.')
-  })
-
-  it('refuses exits that do not exist', () => {
-    const engine = new Engine(content)
-    expect(engine.handle('ne')[0]).toMatchObject({ kind: 'error' })
+  it('refuses exits that do not exist', async () => {
+    const engine = newEngine()
+    expect((await engine.handle('ne'))[0]).toMatchObject({ kind: 'error' })
   })
 })
 
 describe('content validation', () => {
+  const world = 'world: { id: t, name: T, start: { location: loc_a, year: 1, month: 1, day: 1, hour: 8 }, player: { money: 0 } }'
+  const area = 'areas: [{ id: a, name: A, kind: village, summary: A. }]'
+
   it('rejects an exit to a missing location', () => {
     const files = [
-      { path: 'world.yaml', text: 'world: test\nname: Test\nstart: { location: loc_a, year: 1, month: 1, day: 1, hour: 8 }' },
-      {
-        path: 'locations.yaml',
-        text: '- id: loc_a\n  name: A\n  area: test\n  description: { day: A place. }\n  exits:\n    north: { to: loc_missing }',
-      },
+      { path: 'world.yaml', text: world },
+      { path: 'areas.yaml', text: area },
+      { path: 'locations.yaml', text: 'locations:\n  - id: loc_a\n    name: A\n    area: a\n    description: { day: A place. }\n    exits:\n      north: { to: loc_missing }' },
     ]
     expect(() => loadContent(files)).toThrow(ContentError)
+  })
+
+  it('rejects an exit without a way back', () => {
+    const files = [
+      { path: 'world.yaml', text: world },
+      { path: 'areas.yaml', text: area },
+      {
+        path: 'locations.yaml',
+        text: 'locations:\n  - { id: loc_a, name: A, area: a, description: { day: A. }, exits: { north: { to: loc_b } } }\n  - { id: loc_b, name: B, area: a, description: { day: B. } }',
+      },
+    ]
+    expect(() => loadContent(files)).toThrow(/no way back/)
   })
 })

@@ -1,106 +1,308 @@
-# Veenhoek, the starting village. See the Wereldboek, chapter 8.
+# Veenhoek, the starting village (Wereldboek, chapter 8).
 # Words in [brackets] are topics the interface shows as clickable.
 
-- id: loc_veenhoek_green
-  name: Veenhoek, the Green
-  area: veenhoek
-  tags: [public, landmark, fame:1]
-  description:
-    day: |
-      The village green is a patch of trampled grass around a stone well.
-      Peat smoke hangs low over the roofs, and the ground gives a little
-      underfoot, the way it does everywhere in the Holleveen. East, the
-      [Bakery] door stands open. A lane runs north to the [Chapel]; south,
-      the canal glints between the houses.
-    night: |
-      At night the green is a dark pool between darker houses. Someone has
-      left a lantern on the edge of the well. Far off, over the fen, small
-      lights move where no one should be walking.
-  exits:
-    north: { to: loc_chapel_lane }
-    east: { to: loc_veenhoek_bakery }
-    south: { to: loc_veenhoek_quay }
-    west: { to: loc_visser_house }
+locations:
+  - id: loc_veenhoek_green
+    name: Veenhoek, the Green
+    area: veenhoek
+    tags: [public, landmark]
+    aliases: [green, the green, brink]
+    summary: The village green of Veenhoek, with the old well.
+    description:
+      day: |
+        The village green is a patch of trampled grass around a stone well.
+        Peat smoke hangs low over the roofs, and the ground gives a little
+        underfoot, the way it does everywhere in the Holleveen. East, the
+        [Bakery] door stands open. A lane runs north to the [Chapel]; south,
+        the canal glints between the houses, and a track leaves north-east.
+      night: |
+        At night the green is a dark pool between darker houses. Someone has
+        left a lantern on the edge of the well. Far off, over the fen, small
+        lights move where no one should be walking.
+    exits:
+      north: { to: loc_chapel_lane }
+      east: { to: loc_veenhoek_bakery }
+      south: { to: loc_veenhoek_quay }
+      west: { to: loc_visser_house }
+      northeast: { to: loc_peat_road }
+    objects:
+      - { id: well, type: well }
 
-- id: loc_chapel_lane
-  name: Chapel Lane
-  area: veenhoek
-  tags: [public]
-  description:
-    day: |
-      A muddy lane between two rows of low houses, their doors painted
-      green against the damp. North, the lane ends at the
-      [Chapel of the Lantern]; south lies the green.
-  exits:
-    north: { to: loc_veenhoek_chapel }
-    south: { to: loc_veenhoek_green }
+  - id: loc_chapel_lane
+    name: Chapel Lane
+    area: veenhoek
+    tags: [public]
+    aliases: [lane, chapel lane]
+    description:
+      day: |
+        A muddy lane between two rows of low houses, their doors painted
+        green against the damp. It smells of wet thatch. North, the lane ends
+        at the [Chapel of the Lantern]; the schout's brick house stands to the
+        east and a cottage hung with drying herbs to the west.
+    exits:
+      north: { to: loc_veenhoek_chapel }
+      south: { to: loc_veenhoek_green }
+      east: { to: loc_schout_house }
+      west: { to: loc_aaltje_cottage }
 
-- id: loc_veenhoek_chapel
-  name: Chapel of the Lantern
-  area: veenhoek
-  tags: [holy, public]
-  description:
-    day: |
-      A small brick chapel that smells of candle smoke and wet wool. Above
-      the altar hangs a lantern with three panes, lit day and night. The
-      door stands open to the lane.
-  exits:
-    south: { to: loc_chapel_lane }
+  - id: loc_veenhoek_chapel
+    name: Chapel of the Lantern
+    area: veenhoek
+    tags: [holy, public]
+    aliases: [chapel, kapel]
+    summary: The small brick chapel of Veenhoek, where Sister Wendela keeps the lantern burning.
+    description:
+      day: |
+        A small brick chapel that smells of candle smoke and wet wool. Above
+        the altar hangs a lantern with three panes, lit day and night. Rain
+        ticks on the roof tiles. The door stands open to the lane.
+    exits:
+      south: { to: loc_chapel_lane }
+    objects:
+      - { id: altar, type: altar }
 
-- id: loc_veenhoek_bakery
-  name: The Bakery
-  area: veenhoek
-  tags: [shop, "hours:05-12"]
-  description:
-    day: |
-      Warm, low and white with flour. Loaves cool on racks along the wall,
-      and a slate by the counter says RYE 2 D in chalk, underlined twice.
-      Through the back door you can see the glow of the oven in the yard.
-    night: |
-      The bakery is dark and smells of yesterday's bread. The embers in the
-      oven out back tick as they cool.
-  exits:
-    west: { to: loc_veenhoek_green }
-    east: { to: loc_bakery_yard }
+  - id: loc_schout_house
+    name: The Schout's House
+    area: veenhoek
+    tags: [private, law]
+    aliases: [schout's house, schoutshuis]
+    description:
+      day: |
+        The only brick house in Veenhoek with glass in every window. Inside,
+        a clerk's desk faces the door, stacked with ledgers, and a barred cell
+        takes up one corner. It smells of ink and floor wax. The lane is back
+        to the west.
+    exits:
+      west: { to: loc_chapel_lane }
 
-- id: loc_bakery_yard
-  name: Bakery Yard
-  area: veenhoek
-  tags: [private, workshop]
-  description:
-    day: |
-      A cramped yard behind the bakery. The bread oven squats against the
-      back wall like a brick beehive, still warm to the touch. Peat is
-      stacked under a lean-to.
-  exits:
-    west: { to: loc_veenhoek_bakery }
+  - id: loc_aaltje_cottage
+    name: Aaltje's Cottage
+    area: veenhoek
+    tags: [shop, private]
+    aliases: [cottage, herb cottage, aaltje's]
+    summary: The herb-hung cottage of Old Aaltje, the wise woman of Veenhoek.
+    description:
+      day: |
+        Bunches of herbs hang from every beam, so you have to stoop. It
+        smells of mint, smoke and something older. On the wall, in a frame of
+        black wood, hangs a yellowed paper with a red seal: a certificate from
+        the Waag of Waagdam, stating that one Aaltje Hendriks weighed as much
+        as an honest woman should. The door opens east onto the lane.
+    exits:
+      east: { to: loc_chapel_lane }
+    services:
+      - id: herb_shelves
+        provider: npc_aaltje
+        hours: "08-18"
+        sells: { herbs: { stock: 6, target: 8 } }
+        supply: [{ item: herbs, amount: 2, every: day, at: 7 }]
+        demand: [{ item: herbs, amount: 1, from: 9, to: 17 }]
 
-- id: loc_veenhoek_quay
-  name: Canal Quay
-  area: veenhoek
-  tags: [public, "ferry:maandag,donderdag"]
-  description:
-    day: |
-      Grey water slaps against the planks of the quay. A barge rope lies
-      coiled by the mooring posts, and beside them stands a worn stone,
-      waist-high, with a dog carved into it. Someone has put an apple on
-      top. The [Graafse Vaart] runs east and west; north is the green.
-    night: |
-      Grey water, grey mist, grey planks slick with it. A barge is tied up
-      at the far end, or the ghost of one. The old stone with the dog on it
-      is only a shape in the dark.
-  exits:
-    north: { to: loc_veenhoek_green }
+  - id: loc_visser_house
+    name: Visser House, the doorstep
+    area: veenhoek
+    tags: [private]
+    aliases: [visser house, vissers]
+    description:
+      day: |
+        A narrow house with a green door. On the doorstep sits a grey cat
+        with one white paw, very upright, watching the lane. When you come
+        close it doesn't run. It looks at you as if it is waiting for you to
+        say something. Inside, a spinning wheel hums. The green is east.
+    exits:
+      east: { to: loc_veenhoek_green }
+    objects:
+      - { id: spinning_wheel, type: spinning_wheel, household: hh_visser }
 
-- id: loc_visser_house
-  name: Visser House, the doorstep
-  area: veenhoek
-  tags: [private, "household:visser"]
-  description:
-    day: |
-      A narrow house with a green door. On the doorstep sits a grey cat
-      with one white paw, very upright, watching the lane. When you come
-      close it doesn't run. It looks at you as if it is waiting for you to
-      say something.
-  exits:
-    east: { to: loc_veenhoek_green }
+  - id: loc_veenhoek_bakery
+    name: The Bakery
+    area: veenhoek
+    tags: [shop]
+    aliases: [bakery, bakkerij]
+    summary: Mirte Bakker's bakery on the green of Veenhoek.
+    description:
+      day: |
+        Warm, low and white with flour. Loaves cool on racks along the wall,
+        and a slate by the counter says RYE 2 D in chalk, underlined twice.
+        Through the back door, east, you can see the glow of the oven in the
+        yard.
+      night: |
+        The bakery is dark and smells of yesterday's bread. The embers in the
+        oven out back tick as they cool.
+    exits:
+      west: { to: loc_veenhoek_green }
+      east: { to: loc_bakery_yard }
+    objects:
+      - { id: counter, type: counter }
+    services:
+      - id: bakery_counter
+        provider: npc_mirte
+        premises: [loc_bakery_yard]
+        hours: "05-12"
+        days: [Maandag, Dinsdag, Woensdag, Donderdag, Vrijdag, Zaterdag]
+        sells: { rye_bread: { stock: 4, target: 16 } }
+        demand: [{ item: rye_bread, amount: 10, from: 7, to: 12, days: [Maandag, Dinsdag, Woensdag, Donderdag, Vrijdag, Zaterdag] }]
+
+  - id: loc_bakery_yard
+    name: Bakery Yard
+    area: veenhoek
+    tags: [private, workshop]
+    aliases: [yard, bakery yard]
+    description:
+      day: |
+        A cramped yard behind the bakery. The bread oven squats against the
+        back wall like a brick beehive, still warm to the touch. Peat is
+        stacked under a lean-to. The back door leads west into the bakery.
+    exits:
+      west: { to: loc_veenhoek_bakery }
+    objects:
+      - { id: oven, type: bread_oven, owner: npc_mirte }
+
+  - id: loc_peat_road
+    name: The Peat Road
+    area: veenhoek
+    tags: [route]
+    aliases: [peat road, track]
+    description:
+      day: |
+        A raised track of packed peat and gravel leaves the village here.
+        Ditches on both sides are full of black water and duckweed, and a frog
+        plops out of sight as you pass. North-east it bends towards the sails
+        of [Molenend]; east it runs on to the crossroads and the
+        [Drowned Goose]. The green lies back to the south-west.
+    exits:
+      southwest: { to: loc_veenhoek_green }
+      northeast: { to: loc_molenend_lane, minutes: 18 }
+      east: { to: loc_goose_crossroads, minutes: 25 }
+
+  - id: loc_veenhoek_quay
+    name: Canal Quay
+    area: veenhoek
+    tags: [public, landmark]
+    aliases: [quay, kade, canal]
+    summary: The landing stage of Veenhoek on the Graafse Vaart.
+    description:
+      day: |
+        Grey water slaps against the planks of the quay. A barge rope lies
+        coiled by the mooring posts, and beside them stands a worn stone,
+        waist-high, with a dog carved into it. Someone has put an apple on
+        top. The [Graafse Vaart] runs east and west; the green is north and
+        the peat sheds are south.
+      night: |
+        Grey water, grey mist, grey planks slick with it. A barge is tied up
+        at the far end, or the ghost of one. The old stone with the dog on it
+        is only a shape in the dark. The green is north.
+    exits:
+      north: { to: loc_veenhoek_green }
+      east: { to: loc_gerrit_house }
+      west: { to: loc_towpath_w }
+      south: { to: loc_peat_sheds }
+    objects:
+      - { id: dog_stone, type: dog_stone }
+    services:
+      - id: eel_stall
+        provider: npc_wouter
+        hours: "10-13"
+        days: [Maandag, Dinsdag, Woensdag, Donderdag, Vrijdag, Zaterdag]
+        sells: { eel: { stock: 2, target: 8 } }
+        demand: [{ item: eel, amount: 4, from: 10, to: 13 }]
+
+  - id: loc_gerrit_house
+    name: Gerrit's House
+    area: veenhoek
+    tags: [private]
+    aliases: [gerrit's house]
+    description:
+      day: |
+        A low house at the water's edge, its walls hung with peat spades
+        worn to the shape of their owner's grip. A heavy chest with the mark of
+        the Brotherhood of Peat-cutters stands by the hearth. It smells of
+        tobacco and wet boots. The quay is west; the tow path starts east.
+    exits:
+      west: { to: loc_veenhoek_quay }
+      east: { to: loc_towpath_e }
+
+  - id: loc_towpath_w
+    name: Tow Path, west of Veenhoek
+    area: veenhoek
+    tags: [route]
+    aliases: [west tow path]
+    description:
+      day: |
+        The tow path runs west along the Vaart between reeds and water. The
+        towing horses have worn it to a hard groove, and the reeds whisper on
+        either side. Somewhere far west lies the old sluice and, beyond it,
+        [Graafhaven]; today the path is empty. Veenhoek's quay is back east.
+    exits:
+      east: { to: loc_veenhoek_quay }
+
+  - id: loc_towpath_e
+    name: Tow Path, east of Veenhoek
+    area: veenhoek
+    tags: [route]
+    aliases: [east tow path]
+    description:
+      day: |
+        The tow path heads east along the Graafse Vaart, straight as a ruled
+        line, towards [Waagdam]. Moorhens scold from the water. Behind you, to
+        the west, is Gerrit's house at the edge of the village.
+    exits:
+      west: { to: loc_gerrit_house }
+      east: { to: loc_towpath_mid, minutes: 35 }
+
+  - id: loc_peat_sheds
+    name: The Peat Sheds
+    area: veenhoek
+    tags: [workshop, public]
+    aliases: [sheds, peat sheds, turfschuren]
+    summary: The drying sheds of the Brotherhood of Peat-cutters, where Veenhoek buys its peat.
+    description:
+      day: |
+        Long open sheds where blocks of peat are stacked in airy walls to dry.
+        Everything smells of earth and smoke, and your boots stick to the
+        floor. The quay is north; west, the ground drops away to the cuttings.
+    exits:
+      north: { to: loc_veenhoek_quay }
+      west: { to: loc_peat_cuttings }
+    services:
+      - id: peat_store
+        provider: npc_gerrit
+        staff: [npc_jan_visser]
+        premises: [loc_peat_cuttings]
+        hours: "07-17"
+        days: [Maandag, Dinsdag, Woensdag, Donderdag, Vrijdag, Zaterdag]
+        sells: { peat: { stock: 12, target: 30 } }
+        demand: [{ item: peat, amount: 8, from: 8, to: 17 }]
+
+  - id: loc_peat_cuttings
+    name: The Peat Cuttings
+    area: veenhoek
+    tags: [wilderness, "hazard:bog"]
+    aliases: [cuttings, peat cuttings]
+    description:
+      day: |
+        Here the land has been cut away in black steps, and water fills the
+        old pits to the brim. The air is cold and smells of iron and rot. Each
+        step you take squelches. The sheds are east; a path runs south to a
+        hut at the fen's edge.
+    exits:
+      east: { to: loc_peat_sheds }
+      south: { to: loc_wouter_hut }
+    objects:
+      - { id: peat_bank, type: peat_bank, owner: npc_gerrit, staff: [npc_jan_visser] }
+
+  - id: loc_wouter_hut
+    name: Wouter's Hut
+    area: veenhoek
+    tags: [private]
+    aliases: [hut, wouter's hut]
+    description:
+      day: |
+        A reed-thatched hut on stilts where the village gives up and the fen
+        begins. Willow eel traps hang from the eaves, and a smoking barrel
+        breathes out the smell of hot fish. Beyond it there is only reed and
+        water. The cuttings are north.
+    exits:
+      north: { to: loc_peat_cuttings }
+    objects:
+      - { id: eel_traps, type: eel_traps, owner: npc_wouter }

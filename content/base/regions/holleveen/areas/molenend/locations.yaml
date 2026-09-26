@@ -1,0 +1,72 @@
+locations:
+  - id: loc_molenend_lane
+    name: Molenend, the Lane
+    area: molenend
+    tags: [public]
+    aliases: [molenend, lane]
+    summary: The single lane of Molenend, between the mill and the miller's house.
+    description:
+      day: |
+        A handful of houses huddle along a single lane at the foot of the
+        mill. Chickens scratch in the ruts and the wind carries the creak of
+        timber from above. North rises the mill [De Zwaan]; the miller's house
+        is east and his field west. The peat road leads back south-west.
+    exits:
+      southwest: { to: loc_peat_road, minutes: 18 }
+      north: { to: loc_molenend_mill }
+      east: { to: loc_molenend_house }
+      west: { to: loc_molenend_field }
+
+  - id: loc_molenend_mill
+    name: The Mill De Zwaan
+    area: molenend
+    tags: [workshop, landmark]
+    aliases: [mill, de zwaan, windmill, molen]
+    summary: De Zwaan, Harmen Molenaar's windmill, which grinds grain and pumps the polder dry. The storm of 8 Herfstmaand tore its sails.
+    description:
+      day: |
+        De Zwaan stands on its post like a heron on one leg. Inside, the
+        millstones sit silent under a coat of flour, and the whole mill
+        smells of dust and tar. Through the door you can see the sails, torn
+        to rags by the storm. The lane is south.
+    exits:
+      south: { to: loc_molenend_lane }
+    objects:
+      - id: de_zwaan
+        type: windmill
+        name: De Zwaan
+        provider: npc_harmen
+        hours: "06-18"
+        days: [Maandag, Dinsdag, Woensdag, Donderdag, Vrijdag, Zaterdag]
+        state: { broken: true }
+        state_text: { "broken=true": "The sails hang in ragged strips. It won't turn until someone fits new sailcloth." }
+
+  - id: loc_molenend_house
+    name: The Miller's House
+    area: molenend
+    tags: [private]
+    aliases: [miller's house, harmen's house]
+    description:
+      day: |
+        A solid house with a slate roof, the best in Molenend by a long way.
+        A money chest sits under the window where the miller can see it from
+        his chair. The house smells of pipe smoke and beeswax. The lane is
+        west.
+    exits:
+      west: { to: loc_molenend_lane }
+
+  - id: loc_molenend_field
+    name: Harmen's Field
+    area: molenend
+    tags: [wilderness]
+    aliases: [field, harmen's field]
+    description:
+      day: |
+        A long rye stubble field running down to the ditch. Halfway along,
+        a boundary stone leans a little, as if it had been set in a hurry.
+        Crows lift off the furrows as you come near. The lane is east.
+      night: |
+        The stubble field is black and still. Above it, low over the furrows,
+        two small lights drift and hover and drift again. The lane is east.
+    exits:
+      east: { to: loc_molenend_lane }

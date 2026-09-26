@@ -3,6 +3,13 @@
 // in tests, and in the browser preview.
 
 export * from './clock'
+export * from './commands'
 export * from './content'
 export * from './engine'
+export * from './items'
 export * from './parser'
+export * from './rng'
+export * from './state'
+export * from './world'
+export { Planner, isFailure } from './npc/planner'
+export { advance } from './simulation'

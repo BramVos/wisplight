@@ -1,0 +1,326 @@
+# Waagdam, the market town of the Holleveen (Wereldboek, chapter 7).
+
+locations:
+  - id: loc_waagdam_west_gate
+    name: Waagdam, the West Gate
+    area: waagdam
+    tags: [public, landmark]
+    aliases: [west gate, gate, waagdam]
+    summary: The west gate of Waagdam, where the tow path and the road from the Drowned Goose come in.
+    description:
+      day: |
+        A squat brick gate with the town's arms over the arch: a pair of
+        scales above three fish. The gatekeeper's bench is empty, but the
+        smell of the town reaches you anyway: smoke, dung and fresh bread.
+        The tow path runs west, the road to the Goose north-west, and Gate
+        Street leads east into town.
+    exits:
+      west: { to: loc_towpath_mid, minutes: 35 }
+      northwest: { to: loc_goose_road, minutes: 25 }
+      east: { to: loc_waagdam_gate_street }
+
+  - id: loc_waagdam_gate_street
+    name: Gate Street
+    area: waagdam
+    tags: [public]
+    aliases: [gate street]
+    description:
+      day: |
+        A cobbled street of narrow gabled houses leaning together over your
+        head. You hear a hammer ringing from the smithy to the north. East the
+        street opens onto the market square; south are the harbour steps, and
+        the West Gate is behind you.
+    exits:
+      west: { to: loc_waagdam_west_gate }
+      east: { to: loc_waagdam_market }
+      south: { to: loc_waagdam_harbour }
+      north: { to: loc_waagdam_smithy }
+
+  - id: loc_waagdam_harbour
+    name: The Harbour
+    area: waagdam
+    tags: [public]
+    aliases: [harbour, haven]
+    description:
+      day: |
+        The Graafse Vaart widens here into a basin crowded with flat barges.
+        Men shout and swear as sacks go up and down the planks, and the water
+        smells of tar and rotting weed. Gate Street is up the steps to the
+        north.
+    exits:
+      north: { to: loc_waagdam_gate_street }
+
+  - id: loc_waagdam_smithy
+    name: Hendrik's Smithy
+    area: waagdam
+    tags: [shop, workshop]
+    aliases: [smithy, smith, smidse]
+    summary: Hendrik Smid's smithy in Waagdam, selling tools, lanterns and iron nails.
+    description:
+      day: |
+        Heat hits you in the doorway. The forge glows under a hood of soot,
+        and the anvil rings under the smith's hammer. Lanterns, knives and
+        coils of rope hang for sale along one wall. Gate Street is south.
+    exits:
+      south: { to: loc_waagdam_gate_street }
+    objects:
+      - { id: forge, type: forge }
+    services:
+      - id: smithy_goods
+        provider: npc_hendrik
+        hours: "07-18"
+        days: [Maandag, Dinsdag, Woensdag, Donderdag, Vrijdag, Zaterdag]
+        sells:
+          lantern: { stock: 2, target: 2 }
+          lamp_oil: { stock: 6, target: 6 }
+          knife: { stock: 3, target: 3 }
+          iron_nails: { stock: 10, target: 10 }
+          rope: { stock: 4, target: 4 }
+        supply:
+          - { item: iron_nails, amount: 4, every: day, at: 7 }
+          - { item: lamp_oil, amount: 2, every: day, at: 7 }
+          - { item: lantern, amount: 1, every: week, weekday: Maandag, at: 7 }
+          - { item: knife, amount: 1, every: week, weekday: Maandag, at: 7 }
+          - { item: rope, amount: 2, every: week, weekday: Maandag, at: 7 }
+        demand:
+          - { item: iron_nails, amount: 3, from: 8, to: 17 }
+          - { item: lamp_oil, amount: 2, from: 8, to: 17 }
+
+  - id: loc_waagdam_market
+    name: The Market Square
+    area: waagdam
+    tags: [public, landmark]
+    aliases: [market, square, markt]
+    summary: The market square of Waagdam, busy on Woensdag, overlooked by the Waag.
+    description:
+      day: |
+        A wide square of uneven cobbles, big enough for the Woensdag market
+        and the arguments that come with it. On the north side stands the
+        [Waag] with its stepped gable; the church is south, the town hall
+        north-east, and Canal Street leads east. Pigeons squabble over spilled
+        grain.
+    exits:
+      west: { to: loc_waagdam_gate_street }
+      north: { to: loc_waagdam_waag }
+      east: { to: loc_waagdam_canal_street }
+      south: { to: loc_waagdam_church }
+      northeast: { to: loc_waagdam_town_hall }
+
+  - id: loc_waagdam_waag
+    name: The Waag
+    area: waagdam
+    tags: [public, landmark]
+    aliases: [waag, weigh house, weighhouse]
+    summary: The weigh house of Waagdam, home of the famous Witches' Scale.
+    description:
+      day: |
+        The ground floor of the weigh house is a great echoing hall where
+        merchants' goods are weighed and taxed. It smells of sacking and cold
+        stone. A steep stair goes up to the Weighing Room; the weighmaster's
+        house adjoins it to the east, and the square is south.
+    exits:
+      south: { to: loc_waagdam_market }
+      up: { to: loc_waagdam_weighing_room }
+      east: { to: loc_waagdam_dirck_house }
+
+  - id: loc_waagdam_weighing_room
+    name: The Weighing Room
+    area: waagdam
+    tags: [public, landmark]
+    aliases: [weighing room, heksenwaag, witches' scale]
+    summary: The room above the Waag where the Witches' Scale hangs.
+    description:
+      day: |
+        Under the rafters hangs the great scale: a beam of black oak and
+        iron with a wooden seat on one side and a stack of weights on the
+        other. The floorboards creak when you shift your weight. A framed list
+        of the weighed hangs on the wall, some names crossed out. The stair
+        leads down.
+    exits:
+      down: { to: loc_waagdam_waag }
+    objects:
+      - { id: great_scale, type: scale }
+
+  - id: loc_waagdam_dirck_house
+    name: The Weighmaster's House
+    area: waagdam
+    tags: [private]
+    aliases: [weighmaster's house, dirck's house]
+    description:
+      day: |
+        A tidy, narrow house joined to the Waag by a door in the wall. Every
+        surface is clean and every book is straight. A clock ticks on the
+        mantel, the only one you have heard in the Holleveen. The Waag is west.
+    exits:
+      west: { to: loc_waagdam_waag }
+
+  - id: loc_waagdam_church
+    name: The Church of the Lantern
+    area: waagdam
+    tags: [holy, public]
+    aliases: [church, kerk]
+    description:
+      day: |
+        A tall brick church with a lantern of real glass hanging above the
+        door. Inside it is cold and smells of lime-wash and old incense. The
+        market square is north; west, a narrow alley leads to the inn De
+        Schaal.
+    exits:
+      north: { to: loc_waagdam_market }
+      west: { to: loc_waagdam_de_schaal }
+    objects:
+      - { id: altar, type: altar }
+
+  - id: loc_waagdam_de_schaal
+    name: De Schaal
+    area: waagdam
+    tags: [public, social]
+    aliases: [de schaal, inn, tavern]
+    summary: The town inn of Waagdam, behind the church.
+    description:
+      day: |
+        A dim, panelled tavern where the townsfolk of Waagdam drink out of
+        sight of the church. Pipe smoke, wet wool and spilled beer. The tap is
+        unattended; the landlord seems to be away. The church alley is east.
+    exits:
+      east: { to: loc_waagdam_church }
+    objects:
+      - { id: bench, type: bench }
+
+  - id: loc_waagdam_town_hall
+    name: The Town Hall
+    area: waagdam
+    tags: [public, law]
+    aliases: [town hall, stadhuis]
+    description:
+      day: |
+        A handsome building with a flight of steps and a bell in a little
+        tower. Clerks hurry in and out with papers under their arms, smelling
+        of ink. The notary's office is east, the heath road leaves north, and
+        the square is south-west.
+    exits:
+      southwest: { to: loc_waagdam_market }
+      east: { to: loc_waagdam_notary }
+      north: { to: loc_waagdam_heath_road }
+
+  - id: loc_waagdam_notary
+    name: The Notary's Office
+    area: waagdam
+    tags: [private, law]
+    aliases: [notary, notaris, office]
+    description:
+      day: |
+        A room lined floor to ceiling with deed boxes, each labelled in a
+        small precise hand. It smells of dust, wax and candle smoke. A desk by
+        the window holds a half-written chronicle. The town hall is west.
+    exits:
+      west: { to: loc_waagdam_town_hall }
+
+  - id: loc_waagdam_heath_road
+    name: The Heath Road
+    area: waagdam
+    tags: [route]
+    aliases: [heath road]
+    description:
+      day: |
+        North of the town hall the houses stop and a sandy road climbs gently
+        towards the heath, where the ground is higher and drier. Larks sing
+        somewhere overhead. It is a long road to Reuzenrust and beyond; for now
+        the town hall is south.
+    exits:
+      south: { to: loc_waagdam_town_hall }
+
+  - id: loc_waagdam_canal_street
+    name: Canal Street
+    area: waagdam
+    tags: [public]
+    aliases: [canal street]
+    description:
+      day: |
+        A street along a narrow canal, with warehouses on one side and the
+        water on the other. The guild house is north, the grain store south,
+        and at the east end you hear the plod of a horse going round and
+        round. The market square is west.
+    exits:
+      west: { to: loc_waagdam_market }
+      north: { to: loc_waagdam_guild_house }
+      south: { to: loc_waagdam_graanhandel }
+      east: { to: loc_waagdam_horse_mill }
+
+  - id: loc_waagdam_guild_house
+    name: The Guild House
+    area: waagdam
+    tags: [private]
+    aliases: [guild house, gildehuis]
+    description:
+      day: |
+        The meeting house of the Waagdam guilds, with the bakers' wheatsheaf
+        and the brewers' barrel carved over the door. Inside, long tables and
+        a smell of beeswax and old arguments. Canal Street is south.
+    exits:
+      south: { to: loc_waagdam_canal_street }
+
+  - id: loc_waagdam_graanhandel
+    name: Lubbert's Grain Store
+    area: waagdam
+    tags: [shop]
+    aliases: [grain store, graanhandel, lubbert's]
+    summary: Lubbert's grain store in Waagdam, the only place in the Holleveen that sells rye and flour.
+    description:
+      day: |
+        Sacks of grain are stacked to the ceiling, and a fine dust hangs in
+        the air and tickles your nose. A slate by the door lists today's
+        prices; the flour price has been rubbed out and written again, higher.
+        Canal Street is north.
+    exits:
+      north: { to: loc_waagdam_canal_street }
+    services:
+      - id: grain_store
+        provider: npc_lubbert
+        hours: "07-18"
+        days: [Maandag, Dinsdag, Woensdag, Donderdag, Vrijdag, Zaterdag]
+        sells:
+          rye_grain: { stock: 30, target: 40 }
+          flour: { stock: 5, target: 20 }
+        supply:
+          - { item: rye_grain, amount: 30, every: week, weekday: Maandag, at: 6 }
+          - { item: flour, amount: 6, every: day, at: 6, requires: { object: loc_molenend_mill/de_zwaan, state: { broken: false } } }
+        demand:
+          - { item: rye_grain, amount: 3, from: 8, to: 17 }
+          - { item: flour, amount: 4, from: 8, to: 17 }
+
+  - id: loc_waagdam_horse_mill
+    name: The Horse Mill
+    area: waagdam
+    tags: [workshop]
+    aliases: [horse mill, rosmolen]
+    summary: The horse mill of Waagdam, where Teunis Ros grinds grain for a stuiver a sack.
+    description:
+      day: |
+        Under a thatched roof an old grey horse walks a patient circle,
+        turning a millstone that grumbles like a sleeping dog. The air is warm
+        and smells of horse and flour. Canal Street is west; the East Gate is
+        east.
+    exits:
+      west: { to: loc_waagdam_canal_street }
+      east: { to: loc_waagdam_east_gate }
+    objects:
+      - id: horse_mill
+        type: horse_mill
+        provider: npc_teunis
+        hours: "07-17"
+        days: [Maandag, Dinsdag, Woensdag, Donderdag, Vrijdag, Zaterdag]
+
+  - id: loc_waagdam_east_gate
+    name: The East Gate
+    area: waagdam
+    tags: [public]
+    aliases: [east gate]
+    description:
+      day: |
+        The east gate opens onto a straight road across the fields towards
+        Zwolderkamp, two days away. Carts wait here to pay the toll, and the
+        tollkeeper's brazier smells of hot coals. That journey waits for
+        another day; the horse mill is back west.
+    exits:
+      west: { to: loc_waagdam_horse_mill }

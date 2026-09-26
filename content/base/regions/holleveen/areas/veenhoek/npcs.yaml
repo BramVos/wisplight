@@ -1,0 +1,209 @@
+# The people of Veenhoek (Wereldboek, chapter 9).
+
+npcs:
+  - id: npc_mirte
+    name: Mirte Bakker
+    short: Mirte the baker
+    pronoun: she
+    age: 42
+    profession: baker
+    home: loc_veenhoek_bakery
+    work: loc_veenhoek_bakery
+    fame: 1
+    appearance: A round, quick woman with flour to the elbows and a shawl knotted twice against the damp.
+    personality: { warmth: 2, courage: -1, honesty: 1, temper: 0, curiosity: 2, diligence: 2 }
+    values: { family: 2, craft: 2, faith: 1, law: 1 }
+    quirks: [gossip, counts_every_duit, afraid_of_deep_water]
+    speech: "Warm, quick, practical. Calls people 'lamb'. Swears by Saint Brand."
+    aliases: [baker, bakker]
+    public_facts:
+      - Mirte is the baker of Veenhoek.
+      - Her rye bread is the best this side of Waagdam.
+    examples:
+      - "Rye's two duiten, lamb, and don't squeeze it."
+      - "Saint Brand keep us, what a storm that was."
+    money: 368
+    inventory: { peat: 4 }
+    knows_areas: [veenhoek, molenend, drowned_goose, waagdam, roads]
+
+  - id: npc_gerrit
+    name: Gerrit Turfsteker
+    short: Gerrit the peat-cutter
+    pronoun: he
+    age: 38
+    profession: peat_cutter
+    home: loc_gerrit_house
+    work: loc_peat_cuttings
+    fame: 1
+    appearance: A broad man with black peat worked into every crease of his hands and a jaw like a spade.
+    personality: { warmth: 0, courage: 2, honesty: 2, temper: 2, curiosity: 0, diligence: 1 }
+    values: { freedom: 3, tradition: 2, law: -1 }
+    quirks: [drinker, hates_the_count]
+    speech: "Short and blunt. Says what he thinks and stops."
+    aliases: [turfsteker, foreman]
+    public_facts:
+      - Gerrit is the foreman of the peat-cutters of Veenhoek.
+      - He sells peat from the sheds by the quay.
+    examples:
+      - "You dig or you drown. Pick one."
+      - "The Count can keep his polder."
+    money: 120
+    knows_areas: [veenhoek, molenend, drowned_goose, waagdam, roads]
+
+  - id: npc_aaltje
+    name: Aaltje Hendriks
+    short: Old Aaltje
+    pronoun: she
+    age: 71
+    profession: herbalist
+    home: loc_aaltje_cottage
+    work: loc_aaltje_cottage
+    fame: 2
+    appearance: A small, bent woman with sharp black eyes and fingers stained green from her herbs.
+    personality: { warmth: 1, courage: 1, honesty: 1, temper: -1, curiosity: 3, diligence: 1 }
+    values: { nature: 3, knowledge: 2, tradition: 2 }
+    quirks: [old_customs, keeps_secrets]
+    speech: "Slow, dry, knowing. Answers a question with a question when she likes."
+    aliases: [aaltje, wise woman, herbalist, kruidenvrouw]
+    public_facts:
+      - Old Aaltje is the herb woman of Veenhoek.
+      - She was weighed at the Waag and found honest; the certificate hangs on her wall.
+    examples:
+      - "Mint for the belly, yarrow for the blood, and sense for everything else."
+      - "Ask the fen nicely and it might answer."
+    money: 200
+    inventory: { herbs: 2 }
+    knows_areas: [veenhoek, molenend, drowned_goose, waagdam, roads]
+
+  - id: npc_wouter
+    name: Wouter Aalman
+    short: Wouter the eel-fisher
+    pronoun: he
+    age: 29
+    profession: eel_fisher
+    home: loc_wouter_hut
+    work: loc_wouter_hut
+    fame: 1
+    appearance: A lean, weathered man with a fisherman's squint and a willow trap always half-mended in his hands.
+    personality: { warmth: -1, courage: 1, honesty: 1, temper: 0, curiosity: 1, diligence: 1 }
+    values: { freedom: 2, nature: 2, wealth: 1 }
+    quirks: [loner]
+    speech: "Few words, dry humour, talks about the fen as if it can hear."
+    aliases: [eel-fisher, eel fisher, palingvisser]
+    public_facts:
+      - Wouter catches and sells eels at the Veenhoek quay.
+      - He knows the fen better than anyone in the village.
+    examples:
+      - "The fen gives. The fen takes. Mostly it takes."
+    money: 90
+    inventory: { eel: 2 }
+    knows_areas: [veenhoek, molenend, drowned_goose, waagdam, roads]
+
+  - id: npc_wendela
+    name: Wendela
+    short: Sister Wendela
+    pronoun: she
+    age: 34
+    profession: sister
+    home: loc_veenhoek_chapel
+    work: loc_veenhoek_chapel
+    fame: 1
+    appearance: A tall woman in the grey habit of the Lantern, with a small lantern pin at her throat and a calm, tired face.
+    personality: { warmth: 2, courage: 1, honesty: 2, temper: 0, curiosity: 1, diligence: 2 }
+    values: { faith: 3, law: 1, family: 1 }
+    quirks: [pious, afraid_of_deep_water]
+    speech: "Gentle, earnest, uses images of light and harbour."
+    aliases: [wendela, sister, zuster]
+    public_facts:
+      - Sister Wendela keeps the Chapel of the Lantern in Veenhoek.
+    examples:
+      - "Every soul is a lantern, child. Some of us need a new wick."
+    money: 60
+    knows_areas: [veenhoek, drowned_goose, waagdam, roads]
+
+  - id: npc_everhard
+    name: Everhard van Lienden
+    short: Schout Everhard
+    pronoun: he
+    age: 50
+    profession: schout
+    home: loc_schout_house
+    work: loc_schout_house
+    fame: 2
+    appearance: A stiff, grey-bearded man in a good black coat, with the Count's brass badge on his chest.
+    personality: { warmth: -1, courage: 1, honesty: 0, temper: 1, curiosity: -1, diligence: 3 }
+    values: { law: 3, order: 2 }
+    quirks: [hates_disorder]
+    speech: "Formal, clipped, speaks of the law and the Count."
+    aliases: [schout, everhard, bailiff]
+    public_facts:
+      - Everhard van Lienden is the Count's schout in Veenhoek.
+    examples:
+      - "The Count's peace is kept here, whatever the peat-cutters think."
+    money: 480
+    knows_areas: [veenhoek, molenend, drowned_goose, waagdam, roads]
+
+  - id: npc_jan_visser
+    name: Jan Visser
+    short: Jan Visser
+    pronoun: he
+    age: 44
+    profession: peat_cutter
+    home: loc_visser_house
+    work: loc_peat_cuttings
+    household: hh_visser
+    fame: 0
+    appearance: A red-eyed man who hasn't slept properly in days, his shoulders set like he is carrying something.
+    personality: { warmth: 0, courage: 1, honesty: 1, temper: 2, curiosity: 0, diligence: 1 }
+    values: { family: 3 }
+    quirks: [grieving]
+    speech: "Terse and angry since his daughter vanished."
+    aliases: [jan, visser]
+    public_facts:
+      - Jan Visser cuts peat and has a daughter, Fenna, who is missing.
+    money: 70
+    knows_areas: [veenhoek, molenend, drowned_goose, waagdam, roads]
+
+  - id: npc_grietje_visser
+    name: Grietje Visser
+    short: Grietje Visser
+    pronoun: she
+    age: 40
+    profession: spinner
+    home: loc_visser_house
+    work: loc_visser_house
+    household: hh_visser
+    fame: 0
+    appearance: A thin woman at her spinning wheel, working as if the thread were the only thing holding her together.
+    personality: { warmth: 2, courage: 0, honesty: 1, temper: -1, curiosity: 1, diligence: 2 }
+    values: { family: 3, faith: 1 }
+    quirks: [old_customs, grieving]
+    speech: "Quiet, polite, keeps drifting back to Fenna."
+    aliases: [grietje]
+    public_facts:
+      - Grietje Visser spins yarn at home. Her daughter Fenna is missing.
+    money: 40
+    inventory: { wool: 6 }
+    knows_areas: [veenhoek, molenend, drowned_goose]
+
+  - id: npc_pim
+    name: Pim Visser
+    short: Pim
+    pronoun: he
+    age: 9
+    profession: child
+    home: loc_visser_house
+    household: hh_visser
+    child: true
+    fame: 0
+    appearance: A skinny boy with scabbed knees and his sister's grey eyes, who watches everything.
+    personality: { warmth: 2, courage: 1, honesty: 1, temper: 0, curiosity: 3, diligence: 0 }
+    values: { family: 3 }
+    quirks: [knows_hidden_paths]
+    speech: "A child. Direct, superstitious, knows more than grown-ups think."
+    aliases: [pim, boy]
+    public_facts:
+      - Pim is the Vissers' youngest. His sister Fenna is missing.
+    money: 3
+    inventory: { apple: 1 }
+    knows_areas: [veenhoek, molenend]
