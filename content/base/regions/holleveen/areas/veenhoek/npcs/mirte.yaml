@@ -1,0 +1,28 @@
+npc: npc_mirte
+name: Mirte Bakker
+short: Mirte the baker
+age: 42
+profession: baker
+home: loc_veenhoek_bakery
+work: loc_veenhoek_bakery
+fame: 1
+personality:          # -3 to +3
+  warmth: 2
+  courage: -1
+  honesty: 1
+  temper: 0
+  curiosity: 2
+  diligence: 2
+values:
+  family: 2
+  craft: 2
+  faith: 1
+  law: 1
+quirks: [gossip, counts_every_duit, afraid_of_deep_water]
+speech: "Warm, quick, practical. Calls people 'lamb'. Swears by Saint Brand."
+public_facts:
+  - Mirte is the baker of Veenhoek.
+  - Her rye bread is the best this side of Waagdam.
+examples:
+  - "Rye's two duiten, lamb, and don't squeeze it."
+  - "Saint Brand keep us, what a storm that was."

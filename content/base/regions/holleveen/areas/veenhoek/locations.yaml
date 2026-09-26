@@ -1,0 +1,106 @@
+# Veenhoek, the starting village. See the Wereldboek, chapter 8.
+# Words in [brackets] are topics the interface shows as clickable.
+
+- id: loc_veenhoek_green
+  name: Veenhoek, the Green
+  area: veenhoek
+  tags: [public, landmark, fame:1]
+  description:
+    day: |
+      The village green is a patch of trampled grass around a stone well.
+      Peat smoke hangs low over the roofs, and the ground gives a little
+      underfoot, the way it does everywhere in the Holleveen. East, the
+      [Bakery] door stands open. A lane runs north to the [Chapel]; south,
+      the canal glints between the houses.
+    night: |
+      At night the green is a dark pool between darker houses. Someone has
+      left a lantern on the edge of the well. Far off, over the fen, small
+      lights move where no one should be walking.
+  exits:
+    north: { to: loc_chapel_lane }
+    east: { to: loc_veenhoek_bakery }
+    south: { to: loc_veenhoek_quay }
+    west: { to: loc_visser_house }
+
+- id: loc_chapel_lane
+  name: Chapel Lane
+  area: veenhoek
+  tags: [public]
+  description:
+    day: |
+      A muddy lane between two rows of low houses, their doors painted
+      green against the damp. North, the lane ends at the
+      [Chapel of the Lantern]; south lies the green.
+  exits:
+    north: { to: loc_veenhoek_chapel }
+    south: { to: loc_veenhoek_green }
+
+- id: loc_veenhoek_chapel
+  name: Chapel of the Lantern
+  area: veenhoek
+  tags: [holy, public]
+  description:
+    day: |
+      A small brick chapel that smells of candle smoke and wet wool. Above
+      the altar hangs a lantern with three panes, lit day and night. The
+      door stands open to the lane.
+  exits:
+    south: { to: loc_chapel_lane }
+
+- id: loc_veenhoek_bakery
+  name: The Bakery
+  area: veenhoek
+  tags: [shop, "hours:05-12"]
+  description:
+    day: |
+      Warm, low and white with flour. Loaves cool on racks along the wall,
+      and a slate by the counter says RYE 2 D in chalk, underlined twice.
+      Through the back door you can see the glow of the oven in the yard.
+    night: |
+      The bakery is dark and smells of yesterday's bread. The embers in the
+      oven out back tick as they cool.
+  exits:
+    west: { to: loc_veenhoek_green }
+    east: { to: loc_bakery_yard }
+
+- id: loc_bakery_yard
+  name: Bakery Yard
+  area: veenhoek
+  tags: [private, workshop]
+  description:
+    day: |
+      A cramped yard behind the bakery. The bread oven squats against the
+      back wall like a brick beehive, still warm to the touch. Peat is
+      stacked under a lean-to.
+  exits:
+    west: { to: loc_veenhoek_bakery }
+
+- id: loc_veenhoek_quay
+  name: Canal Quay
+  area: veenhoek
+  tags: [public, "ferry:maandag,donderdag"]
+  description:
+    day: |
+      Grey water slaps against the planks of the quay. A barge rope lies
+      coiled by the mooring posts, and beside them stands a worn stone,
+      waist-high, with a dog carved into it. Someone has put an apple on
+      top. The [Graafse Vaart] runs east and west; north is the green.
+    night: |
+      Grey water, grey mist, grey planks slick with it. A barge is tied up
+      at the far end, or the ghost of one. The old stone with the dog on it
+      is only a shape in the dark.
+  exits:
+    north: { to: loc_veenhoek_green }
+
+- id: loc_visser_house
+  name: Visser House, the doorstep
+  area: veenhoek
+  tags: [private, "household:visser"]
+  description:
+    day: |
+      A narrow house with a green door. On the doorstep sits a grey cat
+      with one white paw, very upright, watching the lane. When you come
+      close it doesn't run. It looks at you as if it is waiting for you to
+      say something.
+  exits:
+    east: { to: loc_veenhoek_green }

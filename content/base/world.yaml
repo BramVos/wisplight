@@ -1,0 +1,23 @@
+world: nethermarch
+name: The Nethermarch
+start:
+  location: loc_veenhoek_green
+  year: 211
+  month: 9      # Herfstmaand
+  day: 14
+  hour: 16
+  minute: 30
+intro: |
+  The barge from Graafhaven leaves you at the Veenhoek quay just as the
+  light goes. The bargeman won't tie up. "Not after dark, not out here,"
+  he says, and poles away into the mist, taking his lantern with him.
+
+  This is the Holleveen: peat and reed and black water, mile upon mile
+  of it between the Great Dyke and the heath. The villages sit on the
+  few dry places like cats on a fence. Peat smoke. A windmill turning
+  slowly against a sky the colour of pewter.
+
+  Somewhere a dog barks. On the doorstep of the nearest house a grey cat
+  watches you, very still, the way cats don't usually watch people.
+
+  Type LOOK to look around. Type HELP if you are lost. You probably are.
