@@ -1,0 +1,430 @@
+import type { Output } from '../commands'
+import { formatMoney, GUILDER, STUIVER } from '../items'
+import { callName } from '../content'
+import type { TalkState } from '../state'
+import type { World } from '../world'
+import { classify, tierFor, TIER_TOKENS, TIER_WORDS, type Act, type Tier } from './acts'
+import { check, dcFor, describeCheck, succeeded, type CheckResult } from './checks'
+import { closingLine, fallbackReply } from './fallback'
+import { fitLength, hasAnachronism, leakedNames, looksLikeInjection } from './guard'
+import type { Knowledge, Packet } from './knowledge'
+import type { LlmClient } from './llm'
+import { systemPrompt, turnPrompt } from './prompt'
+import { attitude, applyEffect, moodOf, relation } from './relations'
+import { parseReply, replyJsonSchema, type Reply } from './schema'
+import type { TopicRegistry } from './topics'
+
+// One conversation turn, end to end (FO, chapters 9 and 10):
+//   words -> injection filter -> topics and act (rules) -> check (dice)
+//   -> knowledge packet -> model (or template) -> validation -> effects.
+
+export const QUICK_OPTIONS = [
+  'Who are you?',
+  "What's new around here?",
+  'What do you do here?',
+  'What do you know about ...',
+  'Where can I find ...',
+  'Can you help me with ...',
+  'Trade',
+  'Will you come with me?',
+]
+
+const RUMOUR_TOPICS = ['fenna', 'grey_cat', 'the_storm', 'drainage', 'surveyor', 'kattenbroek']
+const MAX_TALK_EFFECT = 5
+
+interface TurnOptions {
+  act?: Act
+  topics?: string[]
+  check?: CheckResult & { about: string }
+  secret?: string
+  admission?: string
+  echo?: boolean
+}
+
+export class Dialogue {
+  constructor(
+    private readonly world: World,
+    private readonly topics: TopicRegistry,
+    private readonly knowledge: Knowledge,
+    private readonly llm: () => LlmClient | undefined,
+  ) {}
+
+  get talk(): TalkState | undefined {
+    return this.world.state.talk
+  }
+
+  // ------------------------------------------------------------ entry points
+
+  start(npcId: string, silent = false): Output[] {
+    const world = this.world
+    const npc = world.npc(npcId)
+    const rel = relation(world.state, npcId)
+    const band = attitude(world, npcId).band
+    let turns = 6
+    if (band === 'Warm' || band === 'Devoted') turns += 2
+    if (band === 'Wary' || band === 'Unfriendly' || band === 'Hostile') turns -= 3
+    if (/at work|baking|cutting|grinding|seeing to|spinning/.test(world.npcState(npcId).activity)) turns -= 2
+    world.state.talk = { npc: npcId, turnsLeft: Math.max(2, turns), history: [], effects: 0, revealed: [] }
+    rel.familiarity = Math.min(100, rel.familiarity + 1)
+    this.learn(npcId)
+    if (silent) return []
+    const greeting = fallbackReply(world, npcId, 'Greet', { known: [], unknown: [] }, band)
+    return [
+      { kind: 'system', text: `You are talking with ${npc.short}. Type what you want to say, pick a number, or BYE to stop.` },
+      { kind: 'speech', text: greeting },
+      this.options(),
+    ]
+  }
+
+  end(farewell = true): Output[] {
+    const talk = this.talk
+    if (!talk) return [{ kind: 'error', text: "You aren't talking to anyone." }]
+    this.world.state.talk = undefined
+    if (!farewell) return []
+    const band = attitude(this.world, talk.npc).band
+    return [{ kind: 'speech', text: fallbackReply(this.world, talk.npc, 'Farewell', { known: [], unknown: [] }, band) }]
+  }
+
+  options(): Output {
+    return { kind: 'system', text: QUICK_OPTIONS.map((q, i) => `${i + 1} ${q}`).join('   ') }
+  }
+
+  async quick(n: number): Promise<Output[]> {
+    const talk = this.talk
+    if (!talk) return [{ kind: 'error', text: "You aren't talking to anyone." }]
+    switch (n) {
+      case 1:
+        return this.turn(talk.npc, 'Who are you?', { act: 'AskAboutSelf', topics: [talk.npc], echo: true })
+      case 2: {
+        const known = RUMOUR_TOPICS.filter((t) => this.knowledge.level(talk.npc, t) >= 2).slice(0, 2)
+        return this.turn(talk.npc, "What's new around here?", { act: 'AskRumors', topics: known, echo: true })
+      }
+      case 3: {
+        const work = this.world.npc(talk.npc).work
+        return this.turn(talk.npc, 'What do you do here?', { act: 'AskWork', topics: work ? [work] : [], echo: true })
+      }
+      case 4:
+        return [{ kind: 'system', text: `Type ASK ABOUT <topic>. You know about: ${this.journalNames(8)}.` }]
+      case 5:
+        return [{ kind: 'system', text: 'Type WHERE IS <place or person>.' }]
+      case 6:
+        return this.turn(talk.npc, 'Can you help me?', { act: 'Request', echo: true })
+      case 7:
+        return [{ kind: 'system', text: 'Type LIST to see what is for sale here, then BUY or SELL.' }]
+      case 8:
+        return this.turn(talk.npc, 'Will you come with me?', { act: 'Recruit', echo: true })
+      default:
+        return [this.options()]
+    }
+  }
+
+  async ask(npcId: string, question: string): Promise<Output[]> {
+    const about = bare(question)
+    const topic = this.topics.find(about)
+    const story = /\b(story|legend|tale|verhaal|legende)\b/i.test(about)
+    const act: Act = story ? 'AskStory' : 'AskAbout'
+    return this.turn(npcId, `What do you know about ${about}?`, { act, topics: topic ? [topic] : [], echo: true })
+  }
+
+  async where(npcId: string, place: string): Promise<Output[]> {
+    const about = bare(place)
+    const topic = this.topics.find(about)
+    return this.turn(npcId, `Where can I find ${about}?`, { act: 'AskDirections', topics: topic ? [topic] : [], echo: true })
+  }
+
+  async tell(npcId: string, subject: string): Promise<Output[]> {
+    const about = bare(subject)
+    const topic = this.topics.find(about)
+    return this.turn(npcId, `Let me tell you about ${about}.`, { act: 'Tell', topics: topic ? [topic] : [], echo: true })
+  }
+
+  async say(npcId: string, text: string): Promise<Output[]> {
+    return this.turn(npcId, text, {})
+  }
+
+  insight(npcId: string): Output[] {
+    const npc = this.world.npc(npcId)
+    if (!this.talk || this.talk.npc !== npcId) this.start(npcId, true)
+    if (this.talk!.revealed.includes('tried:insight')) return [{ kind: 'error', text: `You have already tried to read ${callName(npc)} this conversation.` }]
+    this.talk!.revealed.push('tried:insight')
+    const secret = npc.secrets.find((s) => !this.talk?.revealed.includes(`hint:${s.id}`))
+    const result = check(this.world.rng, 'insight', secret?.dc ?? 15)
+    const lines: Output[] = [{ kind: 'check', text: describeCheck(result) }]
+    if (secret && succeeded(result)) {
+      this.talk?.revealed.push(`hint:${secret.id}`)
+      lines.push({ kind: 'narration', text: secret.hint })
+    } else {
+      lines.push({ kind: 'narration', text: `You can't read anything behind ${callName(npc)}'s face.` })
+    }
+    return lines
+  }
+
+  async influence(kind: 'persuade' | 'deceive' | 'intimidate' | 'bribe', npcId: string, text: string): Promise<Output[]> {
+    const world = this.world
+    const npc = world.npc(npcId)
+    const band = attitude(world, npcId).band
+    const lines: Output[] = []
+    let result: CheckResult
+    let about: string
+
+    if (kind === 'bribe') {
+      const amount = parseMoney(text)
+      if (!amount) return [{ kind: 'error', text: 'Bribe with how much? For example: BRIBE LUBBERT 2 STUIVERS.' }]
+      if (amount > world.state.player.money) return [{ kind: 'error', text: `You only have ${formatMoney(world.state.player.money)}.` }]
+      result = check(world.rng, 'persuasion', dcFor(18 - Math.floor(amount / STUIVER), band, npc.personality.honesty * 2))
+      about = `bribe them with ${formatMoney(amount)}`
+      if (succeeded(result)) {
+        world.state.player.money -= amount
+        world.npcState(npcId).money += amount
+      }
+    } else {
+      const skill = { persuade: 'persuasion', deceive: 'deception', intimidate: 'intimidation' }[kind]
+      const extra = kind === 'intimidate' ? npc.personality.courage * 2 : kind === 'deceive' ? npc.personality.curiosity : 0
+      result = check(world.rng, skill, dcFor(15, band, extra))
+      about = `${kind} them${text ? ` ${text.replace(/^to\s+/i, 'to ')}` : ''}`
+    }
+    lines.push({ kind: 'check', text: describeCheck(result) })
+
+    const win = succeeded(result)
+    if (kind === 'intimidate') {
+      applyEffect(world, npcId, 'fear', win ? 10 : 2)
+      applyEffect(world, npcId, 'affinity', -5)
+    } else if (kind === 'deceive' && !win) {
+      applyEffect(world, npcId, 'trust', result.degree === 'critical failure' ? -15 : -8)
+    } else if (kind === 'persuade' && result.degree === 'critical failure') {
+      applyEffect(world, npcId, 'trust', -3)
+    }
+
+    // A persuaded NPC may admit a secret the player has noticed, or asked about.
+    let secret: string | undefined
+    let admission: string | undefined
+    if (win && kind !== 'deceive') {
+      const mentioned = new Set(this.topics.recognise(text))
+      const found = npc.secrets.find((s) => this.talk?.revealed.includes(`hint:${s.id}`) || [...mentioned].some((t) => s.text.toLowerCase().includes(this.topics.name(t).toLowerCase().split(' ')[0]!)))
+      if (found) {
+        secret = found.text
+        admission = found.admission
+        this.talk?.revealed.push(found.id)
+      }
+    }
+    const words = kind === 'bribe' ? `Here, for your trouble.` : text || `(tries to ${kind} ${callName(npc)})`
+    lines.push(...(await this.turn(npcId, words, { act: kind === 'bribe' ? 'Bribe' : (capitalise(kind) as Act), check: { ...result, about }, secret, admission })))
+    return lines
+  }
+
+  journal(): Output {
+    const journal = this.world.state.player.journal ?? {}
+    const groups: Record<string, string[]> = { People: [], Places: [], Lore: [], Things: [] }
+    for (const id of Object.keys(journal).sort()) {
+      const kind = this.topics.kind(id)
+      const name = this.topics.name(id)
+      if (kind === 'person') groups['People']!.push(name)
+      else if (kind === 'place' || kind === 'area') groups['Places']!.push(name)
+      else if (kind === 'lore' || kind === 'fact') groups['Lore']!.push(name)
+      else if (kind === 'item') groups['Things']!.push(name)
+    }
+    const lines = Object.entries(groups)
+      .filter(([, names]) => names.length > 0)
+      .map(([group, names]) => `${group}: ${names.join(', ')}.`)
+    return { kind: 'system', text: lines.length ? lines.join('\n') : 'Your journal is still empty.' }
+  }
+
+  /** Adds topics to the player's journal. */
+  learn(...ids: string[]): void {
+    const journal = (this.world.state.player.journal ??= {})
+    for (const id of ids) if (this.topics.entries.has(id) && journal[id] === undefined) journal[id] = this.world.now
+  }
+
+  // ------------------------------------------------------------ one turn
+
+  private async turn(npcId: string, text: string, options: TurnOptions): Promise<Output[]> {
+    const world = this.world
+    const npc = world.npc(npcId)
+    if (world.npcState(npcId).location !== world.state.player.location) {
+      world.state.talk = undefined
+      return [{ kind: 'error', text: `${npc.short} isn't here any more.` }]
+    }
+    if (!this.talk || this.talk.npc !== npcId) this.start(npcId, true)
+    const talk = this.talk!
+    const echo: Output[] = options.echo ? [{ kind: 'text', text: `You: "${text}"` }] : []
+    const band = attitude(world, npcId)
+
+    // 1. Injection and meta talk never reach the model.
+    if (looksLikeInjection(text)) {
+      talk.turnsLeft--
+      return [...echo, { kind: 'speech', text: fallbackReply(world, npcId, 'OffTopic', { known: [], unknown: [] }, band.band) }, ...this.maybeClose()]
+    }
+
+    // 2. Topics and act by rules.
+    const topics = options.topics ?? this.topics.recognise(text)
+    const act = options.act ?? classify(text, topics.length)
+    const packet = this.knowledge.packet(npcId, topics, act === 'AskStory' || act === 'AskAbout')
+    let tier: Tier = tierFor(act)
+    if ((act === 'AskStory' || /\b(story|legend|tale|verhaal)\b/i.test(text)) && packet.known.some((k) => k.story)) tier = 'story'
+    if (tier !== 'story') for (const k of packet.known) delete k.story
+
+    // 3. The model, or the designer's templates.
+    const memories = (world.npcState(npcId).memory ?? []).slice(-5).map((m) => m.note)
+    const reply = await this.callModel(npcId, text, { act, tier, packet, band, memories, check: options.check, secret: options.secret, spokenTopics: this.topics.recognise(text) })
+    const replyText = reply
+      ? reply.reply
+      : options.secret
+        ? world.say(`{name} glances at the door and lowers {their} voice. "${options.admission ?? 'All right. But it stays between us.'}"`, npcId)
+        : options.check && !succeeded(options.check)
+          ? world.say(`{name} shakes {their} head. "I don't think so."`, npcId)
+          : fallbackReply(world, npcId, act, packet, band.band)
+
+    // 4. Effects, bounded by the system.
+    if (reply) {
+      for (const effect of reply.effects.slice(0, 1)) {
+        const delta = Math.max(-3, Math.min(3, effect.delta))
+        const room = MAX_TALK_EFFECT - Math.abs(talk.effects)
+        const applied = Math.sign(delta) * Math.min(Math.abs(delta), Math.max(0, room))
+        if (applied !== 0) {
+          applyEffect(world, npcId, effect.type, applied)
+          talk.effects += applied
+        }
+      }
+    }
+    const rel = relation(world.state, npcId)
+    rel.familiarity = Math.min(100, rel.familiarity + 2)
+
+    // 5. Journal and memory.
+    const allowed = new Set([...packet.known.map((k) => k.topic), ...(packet.referral ? [packet.referral.npc] : [])])
+    const mentioned = (reply?.mentioned_topics ?? []).filter((t) => allowed.has(t))
+    this.learn(...packet.known.map((k) => k.topic), ...mentioned, ...(packet.referral && replyText.includes(packet.referral.call) ? [packet.referral.npc] : []))
+    const memory = (world.npcState(npcId).memory ??= [])
+    memory.push({ t: world.now, note: reply?.memory_note || `The stranger talked to me${topics[0] ? ` about ${this.topics.name(topics[0])}` : ''}.`, topics, valence: 0 })
+    if (memory.length > 30) memory.splice(0, memory.length - 30)
+
+    talk.history.push({ speaker: 'player', text }, { speaker: 'npc', text: replyText })
+    if (talk.history.length > 12) talk.history.splice(0, talk.history.length - 12)
+    talk.turnsLeft--
+    const ends = reply?.ends_conversation === true
+    return [...echo, { kind: 'speech', text: replyText }, ...(ends ? this.closeNow() : this.maybeClose())]
+  }
+
+  private maybeClose(): Output[] {
+    const talk = this.talk
+    if (!talk || talk.turnsLeft > 0) return []
+    return this.closeNow()
+  }
+
+  private closeNow(): Output[] {
+    const talk = this.talk
+    if (!talk) return []
+    this.world.state.talk = undefined
+    return [{ kind: 'narration', text: closingLine(this.world, talk.npc) }]
+  }
+
+  private async callModel(
+    npcId: string,
+    text: string,
+    ctx: {
+      act: Act
+      tier: Tier
+      packet: Packet
+      band: ReturnType<typeof attitude>
+      memories: string[]
+      check?: CheckResult & { about: string }
+      secret?: string
+      spokenTopics: string[]
+    },
+  ): Promise<Reply | undefined> {
+    const llm = this.llm()
+    if (!llm) return undefined
+    const world = this.world
+    const talk = this.talk
+    const present = world.npcsAt(world.state.player.location)
+    const location = world.location(world.state.player.location)
+    const allowedTopics = [...new Set([...ctx.packet.known.map((k) => k.topic), ...(ctx.packet.referral ? [ctx.packet.referral.npc] : []), ...present])]
+    // Names the NPC may say: what it knows, who is here, where it is, and whatever the player just said.
+    const allowedNames = new Set([...this.knowledge.knownTopics(npcId), ...present, location.id, `area_${location.area}`, ...ctx.spokenTopics, ...allowedTopics])
+
+    let prompt = turnPrompt(world, {
+      npcId,
+      act: ctx.act,
+      tier: ctx.tier,
+      attitude: ctx.band,
+      mood: moodOf(world, npcId),
+      packet: ctx.packet,
+      check: ctx.check,
+      secret: ctx.secret,
+      memories: ctx.memories,
+      history: talk?.history ?? [],
+      playerText: text,
+    })
+
+    for (let attempt = 0; attempt < 2; attempt++) {
+      let raw: string
+      try {
+        raw = (
+          await llm.complete({
+            role: 'voice',
+            system: systemPrompt(world, npcId),
+            prompt,
+            schemaName: 'npc_reply',
+            schema: replyJsonSchema(allowedTopics),
+            maxTokens: TIER_TOKENS[ctx.tier],
+            meta: {
+              npcName: callName(world.npc(npcId)),
+              act: ctx.act,
+              wordLimit: TIER_WORDS[ctx.tier],
+              known: ctx.packet.known,
+              unknown: ctx.packet.unknown,
+              referral: ctx.packet.referral,
+              check: ctx.check?.degree,
+              secret: ctx.secret,
+            },
+          })
+        ).text
+      } catch {
+        return undefined
+      }
+      const reply = parseReply(raw)
+      if (!reply) {
+        llm.report?.({ reason: 'schema' })
+        continue
+      }
+      const fitted = fitLength(reply.reply, ctx.tier)
+      if (hasAnachronism(fitted)) {
+        llm.report?.({ reason: 'anachronism' })
+        prompt += '\nNOTE: your last reply used words that do not exist in this world. Answer again without them.'
+        continue
+      }
+      const leaks = leakedNames(fitted, this.topics.properNames(), allowedNames)
+      if (leaks.length > 0) {
+        llm.report?.({ reason: 'leak' })
+        prompt += `\nNOTE: you mentioned ${leaks.join(', ')}, which you know nothing about. Answer again without them.`
+        continue
+      }
+      return { ...reply, reply: fitted }
+    }
+    return undefined
+  }
+
+  private journalNames(limit: number): string {
+    const ids = Object.keys(this.world.state.player.journal ?? {})
+    return ids.length ? ids.slice(-limit).map((id) => this.topics.name(id)).join(', ') : 'nothing yet'
+  }
+}
+
+/** The topic words without closing punctuation, so the echo does not end in "?." or "..". */
+function bare(words: string): string {
+  return words.trim().replace(/[\s.?!,;:]+$/, '')
+}
+
+function capitalise(value: string): string {
+  return value.charAt(0).toUpperCase() + value.slice(1)
+}
+
+/** "2 stuivers", "10 duiten", "1 guilder", "3 st" to duiten. */
+export function parseMoney(text: string): number | undefined {
+  const match = text.match(/(\d+)\s*(gl|guilders?|gulden|st|stuivers?|d|duiten|duit)?/i)
+  if (!match) return undefined
+  const amount = Number(match[1])
+  const unit = (match[2] ?? 'st').toLowerCase()
+  if (unit.startsWith('g')) return amount * GUILDER
+  if (unit.startsWith('s')) return amount * STUIVER
+  return amount
+}

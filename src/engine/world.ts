@@ -1,5 +1,5 @@
 import { isOpenAt } from './clock'
-import type { Content, Direction, Location, Npc, ObjectInstance, ObjectType, Service } from './content'
+import { callName, type Content, type Direction, type Location, type Npc, type ObjectInstance, type ObjectType, type Service } from './content'
 import { Rng } from './rng'
 import { objectKey, serviceKey, type GameState, type NpcState, type WorldEvent } from './state'
 
@@ -184,7 +184,7 @@ export class World {
       he: { they: 'he', their: 'his', them: 'him' },
       they: { they: 'they', their: 'their', them: 'them' },
     }[npc.pronoun]
-    const first = npc.short.split(' ')[0] ?? npc.short
+    const first = callName(npc)
     return template
       .replaceAll('{name}', first)
       .replaceAll('{short}', npc.short)

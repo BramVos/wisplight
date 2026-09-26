@@ -1,5 +1,5 @@
 import { GameClock, isOpenAt, MINUTES_PER_DAY, parseHours, startOfDay } from './clock'
-import type { Affordance, Direction, Npc, ObjectInstance, ObjectType, Service } from './content'
+import { callName, type Affordance, type Direction, type Npc, type ObjectInstance, type ObjectType, type Service } from './content'
 import { add, formatMoney, hasAll, itemName, listItems, matchItem, withArticle } from './items'
 import { qtyName } from './npc/execute'
 import { parseDirection, splitQuantity, type Command } from './parser'
@@ -202,7 +202,7 @@ function give(host: CommandHost, args: string[]): Output[] {
   const amount = qty === 'all' ? inventory[item]! : Math.min(qty, inventory[item]!)
   add(inventory, item, -amount)
   add(world.npcState(npcId).inventory, item, amount)
-  world.emit('gift', world.state.player.location, `You give ${qtyName(world, item, amount)} to ${world.npc(npcId).short.split(' ')[0]}.`)
+  world.emit('gift', world.state.player.location, `You give ${qtyName(world, item, amount)} to ${callName(world.npc(npcId))}.`)
   world.state.seenSeq = world.state.eventSeq
   return [text(`You give ${qtyName(world, item, amount)} to ${firstName(world.npc(npcId))}.`), { kind: 'narration', text: world.say('{name} takes it and nods {their} thanks.', npcId) }]
 }
@@ -415,7 +415,7 @@ function label(instance: ObjectInstance, type: ObjectType): string {
 }
 
 function firstName(npc: Npc): string {
-  return npc.short.split(' ')[0] ?? npc.short
+  return callName(npc)
 }
 
 function capital(value: string): string {

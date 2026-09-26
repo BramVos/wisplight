@@ -9,7 +9,7 @@ areas:
   - id: molenend
     name: Molenend
     kind: hamlet
-    aliases: [the mill, de zwaan]
+    aliases: []
     fame: 1
     summary: A hamlet a short walk north-east of Veenhoek, around the windmill De Zwaan that grinds grain and pumps the polder dry.
 

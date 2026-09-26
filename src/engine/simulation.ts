@@ -15,7 +15,8 @@ export function advance(world: World, minutes: number): void {
   for (let i = 0; i < minutes; i++) {
     world.state.minutes++
     if (minuteOfDay(world.now) % 60 === 0) hourly(world)
-    for (const id of ids) think(world, id)
+    // Someone in a conversation with the player stays put until it ends.
+    for (const id of ids) if (world.state.talk?.npc !== id) think(world, id)
   }
 }
 

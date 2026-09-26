@@ -20,7 +20,7 @@ npcs:
     examples:
       - "Flour's dear since the storm, friend. Supply and demand."
     money: 1600
-    knows_areas: [waagdam, drowned_goose, roads, veenhoek]
+    knows_areas: [waagdam, drowned_goose, roads, veenhoek, molenend]
 
   - id: npc_teunis
     name: Teunis Ros
@@ -42,7 +42,7 @@ npcs:
     examples:
       - "Easy, Bles. We're not in a hurry. Nobody is, in Waagdam."
     money: 150
-    knows_areas: [waagdam, drowned_goose, roads, veenhoek]
+    knows_areas: [waagdam, drowned_goose, roads, veenhoek, molenend]
 
   - id: npc_dirck
     name: Dirck Schaal
@@ -64,7 +64,7 @@ npcs:
     examples:
       - "The scale is honest. People are merely heavier or lighter than they fear."
     money: 400
-    knows_areas: [waagdam, drowned_goose, roads, veenhoek]
+    knows_areas: [waagdam, drowned_goose, roads, veenhoek, molenend]
 
   - id: npc_hendrik
     name: Hendrik Smid
@@ -87,4 +87,4 @@ npcs:
     examples:
       - "Iron keeps more than doors shut, if you ask the old women."
     money: 300
-    knows_areas: [waagdam, drowned_goose, roads, veenhoek]
+    knows_areas: [waagdam, drowned_goose, roads, veenhoek, molenend]

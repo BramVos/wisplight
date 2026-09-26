@@ -22,6 +22,12 @@ npcs:
     examples:
       - "Rye's two duiten, lamb, and don't squeeze it."
       - "Saint Brand keep us, what a storm that was."
+    secrets:
+      - id: owes_harmen
+        text: She owes Harmen the miller three guilders, since the wet spring.
+        hint: She tenses up whenever Harmen's name comes up.
+        admission: Three guilders. Since the wet spring. Don't you dare tell the whole Goose.
+        dc: 18
     money: 368
     inventory: { peat: 4 }
     knows_areas: [veenhoek, molenend, drowned_goose, waagdam, roads]

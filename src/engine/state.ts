@@ -67,6 +67,29 @@ export interface NpcState {
   waitSince?: number
   dailyDone: Record<string, number>
   lastAskHelp: Record<string, number>
+  memory?: MemoryRecord[]
+}
+
+export interface MemoryRecord {
+  t: number
+  note: string
+  topics: string[]
+  valence: number
+}
+
+export interface TalkState {
+  npc: string
+  turnsLeft: number
+  history: { speaker: 'player' | 'npc'; text: string }[]
+  effects: number
+  revealed: string[]
+}
+
+export interface RelationState {
+  affinity: number
+  trust: number
+  fear: number
+  familiarity: number
 }
 
 export interface PlayerState {
@@ -74,6 +97,7 @@ export interface PlayerState {
   money: number
   inventory: Counts
   lodging?: { location: string; until: number }
+  journal?: Record<string, number>
 }
 
 export interface ServiceState {
@@ -104,6 +128,8 @@ export interface GameState {
   eventSeq: number
   seenSeq: number
   goalSeq: number
+  relations?: Record<string, RelationState>
+  talk?: TalkState
 }
 
 export const objectKey = (location: string, object: string) => `${location}/${object}`

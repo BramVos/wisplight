@@ -21,13 +21,14 @@ Scope: FO 3, 4, 6 en 7. Objecten met affordances, voorwerpen en inventaris, hand
 
 ## M2 Praten met NPC's
 
-Scope: FO 9, 10 en 16. LLM-gateway met OpenAI, Anthropic en een mock; instellingen met versleutelde sleutel, modellenlijst, adviesprompt, proefrit en exacte model-id; gespreksmodus met snelvragen, ask en tell, vrije tekst, gespreksacts, proeven voor woorden, lengteniveaus, guardrails, terugvalteksten en Nederlands typen; dagboek met klikbare onderwerpen; AI-log in de ontwikkelmodus.
+Scope: FO 9, 10 en 16. LLM-gateway met OpenAI, Anthropic en een mock; instellingen met versleutelde sleutel, modellenlijst, adviesprompt, proefrit en exacte model-id; gespreksmodus met snelvragen, ask en tell, vrije tekst, gespreksacts, proeven voor woorden, lengteniveaus, guardrails, terugvalteksten en Nederlands typen; dagboek met klikbare onderwerpen; kostenteller in de statusbalk en verbruiksoverzicht per sessie, dag, maand en model met uur- en maandbudget en een zelf opgegeven tegoed; AI-log in de ontwikkelmodus.
 
-- [ ] Met de mock slaagt een testset van 50 gesprekssituaties: geldig schema, geen kennislek, juiste lengte
+- [x] Met de mock slaagt een testset van 50 gesprekssituaties: geldig schema, geen kennislek, juiste lengte
 - [ ] Met een echte sleutel geeft het modeladvies alleen bestaande model-id's, en de gekozen id wordt exact opgeslagen
-- [ ] Een injectiepoging krijgt een sjabloonantwoord zonder AI-aanroep
-- [ ] Zonder verbinding blijft het spel speelbaar met terugvalteksten
-- [ ] De sleutel staat nergens leesbaar op schijf of in logs
+- [x] Een injectiepoging krijgt een sjabloonantwoord zonder AI-aanroep
+- [x] Zonder verbinding blijft het spel speelbaar met terugvalteksten
+- [x] De sleutel staat nergens leesbaar op schijf of in logs
+- [x] De kosten per sessie, dag en maand kloppen met de tokens uit de antwoorden en de prijstabel, en het percentage van het maandbudget en het opgegeven tegoed telt mee af
 
 ## M3 Kennis, geruchten en doelen
 

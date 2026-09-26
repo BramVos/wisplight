@@ -1,4 +1,4 @@
-import type { Direction, Need } from '../content'
+import { callName, type Direction, type Need } from '../content'
 import { add, hasAll, itemName, withArticle } from '../items'
 import { objectKey, type Step } from '../state'
 import type { World } from '../world'
@@ -75,7 +75,7 @@ export function executeStep(world: World, npcId: string, step: Step): StepResult
       world.npcState(service.provider).money += qty * price
       add(stock, step.item, -qty)
       add(npc.inventory, step.item, qty)
-      const seller = world.npc(service.provider).short.split(' ')[0]
+      const seller = callName(world.npc(service.provider))
       world.emit('trade', step.location, world.say(`{name} buys ${qtyName(world, step.item, qty)} from ${seller}.`, npcId), npcId)
       npc.busyUntil = now + 5
       npc.activity = 'buying'

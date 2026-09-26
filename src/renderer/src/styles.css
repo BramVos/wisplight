@@ -11,6 +11,9 @@
   --error: #d98a74;
   --narration: #b9b39c;
   --speech: #e6dfc8;
+  --ok: #9cc48a;
+  --warn: #e0b35c;
+  --over: #d98a74;
   --font: ui-monospace, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
   color-scheme: dark;
 }
@@ -155,11 +158,282 @@ body {
   color: var(--muted);
 }
 
+.line.thinking {
+  color: var(--muted);
+  font-style: italic;
+}
+
+.link {
+  all: unset;
+  color: var(--topic);
+  cursor: pointer;
+}
+
+.link:hover:not(:disabled) {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.link:focus-visible {
+  outline: 1px solid var(--topic);
+}
+
+.link:disabled {
+  color: var(--muted);
+  cursor: default;
+}
+
+.journal-group h3 {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: normal;
+  margin: 8px 0 2px;
+}
+
+.journal-group p {
+  margin: 0;
+}
+
+.journal-group .entry {
+  white-space: nowrap;
+}
+
+.talkbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  font-size: 13px;
+}
+
+.talking {
+  color: var(--room);
+}
+
+.statusline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 24px;
+  justify-content: space-between;
+}
+
+.link.ai {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.link.ai.warn {
+  color: var(--warn);
+}
+
+.link.ai.over {
+  color: var(--over);
+}
+
+.overlay {
+  align-items: flex-start;
+  background: rgb(0 0 0 / 55%);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  overflow-y: auto;
+  padding: 48px 16px;
+  position: fixed;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  max-width: 100%;
+  padding: 16px 20px 20px;
+  width: 920px;
+}
+
+.panel-head {
+  align-items: baseline;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  gap: 24px;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+}
+
+.panel-head h2 {
+  color: var(--room);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.tabs {
+  display: flex;
+  flex: 1;
+  gap: 16px;
+}
+
+.tabs button {
+  all: unset;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.tabs button.active {
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.settings-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.row {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+}
+
+.label {
+  color: var(--muted);
+  min-width: 15ch;
+}
+
+.mono {
+  white-space: pre;
+}
+
+.settings input[type='password'],
+.settings input.amount,
+.settings select {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  color: var(--text);
+  font: inherit;
+  padding: 2px 6px;
+}
+
+.settings input[type='password'] {
+  flex: 1;
+  min-width: 24ch;
+}
+
+.settings input.amount {
+  width: 8ch;
+}
+
+.warn {
+  color: var(--warn);
+  margin: 0;
+}
+
+.ok {
+  color: var(--ok);
+  margin: 0;
+}
+
+.small {
+  font-size: 13px;
+}
+
+.advice fieldset {
+  border: 1px solid var(--line);
+  margin: 0 0 10px;
+  padding: 8px 12px;
+}
+
+.advice legend {
+  color: var(--room);
+  padding: 0 6px;
+}
+
+.choice {
+  display: grid;
+  gap: 0 10px;
+  grid-template-columns: auto minmax(26ch, max-content) 1fr;
+  margin: 4px 0;
+}
+
+.choice .reason {
+  color: var(--muted);
+  grid-column: 2 / -1;
+}
+
+.choice.other {
+  grid-template-columns: auto 1fr;
+}
+
+.trial {
+  color: var(--system);
+}
+
+.usage {
+  border-collapse: collapse;
+  font-size: 14px;
+  width: 100%;
+}
+
+.usage th,
+.usage td {
+  border-bottom: 1px solid var(--line);
+  font-weight: normal;
+  padding: 3px 10px 3px 0;
+  text-align: left;
+}
+
+.usage thead th {
+  color: var(--muted);
+}
+
+.usage .num {
+  text-align: right;
+}
+
+.usage tr.clickable {
+  cursor: pointer;
+}
+
+.usage tr.clickable:hover td {
+  color: var(--speech);
+}
+
+.bar-chart {
+  color: var(--topic);
+}
+
+.log-detail pre {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  font-size: 12px;
+  max-height: 240px;
+  overflow: auto;
+  padding: 8px;
+  white-space: pre-wrap;
+}
+
+.log-detail h3 {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: normal;
+  margin: 10px 0 4px;
+}
+
 @media (max-width: 760px) {
   .shell {
     grid-template-columns: 1fr;
   }
   .side {
     display: none;
+  }
+  .panel {
+    padding: 12px;
+  }
+  .choice {
+    grid-template-columns: auto 1fr;
+  }
+  .choice .trial {
+    grid-column: 2;
   }
 }

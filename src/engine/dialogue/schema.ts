@@ -1,0 +1,89 @@
+import { z } from 'zod'
+import { ACTS } from './acts'
+import type { JsonSchema } from './llm'
+
+// The reply schema is built per call: mentioned_topics may only hold topics
+// the NPC was allowed to talk about (FO, chapter 10).
+
+export const ReplySchema = z.object({
+  act: z.enum(ACTS),
+  reply: z.string().min(1),
+  mentioned_topics: z.array(z.string()),
+  effects: z.array(z.object({ type: z.enum(['affinity', 'trust', 'fear']), delta: z.number().int(), reason: z.string() })),
+  memory_note: z.string(),
+  ends_conversation: z.boolean(),
+})
+export type Reply = z.infer<typeof ReplySchema>
+
+export function replyJsonSchema(allowedTopics: string[]): JsonSchema {
+  return {
+    type: 'object',
+    additionalProperties: false,
+    required: ['act', 'reply', 'mentioned_topics', 'effects', 'memory_note', 'ends_conversation'],
+    properties: {
+      act: { type: 'string', enum: [...ACTS] },
+      reply: { type: 'string', description: 'What the player sees: an optional short action, then speech in double quotes.' },
+      mentioned_topics: { type: 'array', items: { type: 'string', enum: allowedTopics.length ? allowedTopics : ['none'] } },
+      effects: {
+        type: 'array',
+        items: {
+          type: 'object',
+          additionalProperties: false,
+          required: ['type', 'delta', 'reason'],
+          properties: {
+            type: { type: 'string', enum: ['affinity', 'trust', 'fear'] },
+            delta: { type: 'integer' },
+            reason: { type: 'string' },
+          },
+        },
+      },
+      memory_note: { type: 'string', description: 'One short sentence the character will remember, in the first person.' },
+      ends_conversation: { type: 'boolean' },
+    },
+  }
+}
+
+/** Parses a reply, tolerating a code fence around the JSON. */
+export function parseReply(text: string): Reply | undefined {
+  const cleaned = text.trim().replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '')
+  try {
+    const result = ReplySchema.safeParse(JSON.parse(cleaned))
+    return result.success ? result.data : undefined
+  } catch {
+    return undefined
+  }
+}
+
+// The brain role picks goals (used from M3). Defined now so the model advice
+// can test it.
+export function goalJsonSchema(goalTypes: string[], ids: string[]): JsonSchema {
+  return {
+    type: 'object',
+    additionalProperties: false,
+    required: ['goals', 'mood', 'note'],
+    properties: {
+      goals: {
+        type: 'array',
+        items: {
+          type: 'object',
+          additionalProperties: false,
+          required: ['type', 'target', 'priority', 'why'],
+          properties: {
+            type: { type: 'string', enum: goalTypes },
+            target: { type: 'string', enum: ids.length ? ids : ['none'] },
+            priority: { type: 'number' },
+            why: { type: 'string' },
+          },
+        },
+      },
+      mood: { type: 'string' },
+      note: { type: 'string' },
+    },
+  }
+}
+
+export const GoalReplySchema = z.object({
+  goals: z.array(z.object({ type: z.string(), target: z.string(), priority: z.number(), why: z.string() })).max(5),
+  mood: z.string(),
+  note: z.string(),
+})

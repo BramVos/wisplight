@@ -217,8 +217,32 @@ export const NpcSchema = z.object({
   inventory: ItemCounts,
   knows_areas: z.array(z.string()).default([]),
   child: z.boolean().default(false),
+  secrets: z
+    .array(z.object({ id: z.string(), text: z.string(), hint: z.string(), admission: z.string().optional(), dc: z.number().int().default(18) }))
+    .default([]),
 })
 export type Npc = z.infer<typeof NpcSchema>
+
+/** How others call an NPC in running text: the first name, so "Old Aaltje" becomes "Aaltje". */
+export function callName(npc: Pick<Npc, 'name'>): string {
+  return npc.name.split(' ')[0] ?? npc.name
+}
+
+// ---------------------------------------------------------------- topics (lore and facts)
+
+export const TopicSchema = z.object({
+  id: z.string().regex(/^[a-z0-9_]+$/),
+  name: z.string(),
+  kind: z.enum(['lore', 'fact', 'place', 'person']),
+  aliases: z.array(z.string()).default([]),
+  summary: z.string(),
+  details: z.string().optional(),
+  story: z.string().optional(),
+  origin: z.string().optional(),
+  fame: z.number().int().min(0).max(5).default(2),
+  known_by: z.array(z.string()).default([]),
+})
+export type Topic = z.infer<typeof TopicSchema>
 
 // ---------------------------------------------------------------- world
 
@@ -249,6 +273,7 @@ const FileSchema = z
     areas: z.array(AreaSchema).optional(),
     locations: z.array(LocationSchema).optional(),
     npcs: z.array(NpcSchema).optional(),
+    topics: z.array(TopicSchema).optional(),
   })
   .strict()
 
@@ -265,6 +290,7 @@ export interface Content {
   areas: Map<string, Area>
   locations: Map<string, Location>
   npcs: Map<string, Npc>
+  topics: Map<string, Topic>
 }
 
 export class ContentError extends Error {
@@ -292,6 +318,7 @@ export function loadContent(files: ContentFile[]): Content {
     areas: new Map<string, Area>(),
     locations: new Map<string, Location>(),
     npcs: new Map<string, Npc>(),
+    topics: new Map<string, Topic>(),
   }
 
   for (const file of [...files].sort((a, b) => a.path.localeCompare(b.path))) {
@@ -315,6 +342,7 @@ export function loadContent(files: ContentFile[]): Content {
     addAll(content.areas, data.areas, (v) => v.id, file.path, 'area', problems)
     addAll(content.locations, data.locations, (v) => v.id, file.path, 'location', problems)
     addAll(content.npcs, data.npcs, (v) => v.id, file.path, 'NPC', problems)
+    addAll(content.topics, data.topics, (v) => v.id, file.path, 'topic', problems)
   }
 
   const world = worlds[0]
@@ -377,6 +405,10 @@ function checkReferences(world: WorldDef | undefined, c: Omit<Content, 'world'>)
     location(n.work, `${n.id}.work`)
     for (const id of Object.keys(n.inventory)) item(id, `${n.id}.inventory`)
     for (const a of n.knows_areas) if (!c.areas.has(a)) problems.push(`${n.id}: unknown area ${a} in knows_areas`)
+  }
+  for (const t of c.topics.values()) {
+    if (t.origin && !c.areas.has(t.origin) && !c.locations.has(t.origin)) problems.push(`topic ${t.id}: unknown origin ${t.origin}`)
+    for (const n of t.known_by) npc(n, `topic ${t.id}.known_by`)
   }
   for (const p of c.professions.values()) {
     for (const g of p.daily_goals) if (g.item) item(g.item, `profession ${p.id}.daily_goals`)
