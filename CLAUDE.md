@@ -9,6 +9,7 @@ Claude builds Wisplight for Bram, milestone by milestone. Bram playtests and mak
 - Design for lore and world change (Dutch, Claude Docs, agreed with Bram; basis for M3, M3.1 and parts of M4, M6, M7 and M8): https://claude.ai/artifact/MC1NwywtuFyJrxpAJPgtAd (docs project `a3803018-9656-4c30-9f74-57255da68632`).
 - Read these through the Claude Docs connector, never by web fetch. Read only the chapters the current task needs.
 - `docs/design-atlas.html` is a visual snapshot of the functional design for people, dated 26 September 2026. It is not the spec: never implement from it, and when it disagrees with the design doc, the design doc wins.
+- `docs/chronicler-atlas.html` is the same kind of snapshot for the lore and world-change design (the chronicler), dated 27 September 2026. The same rule applies: the design doc in Claude Docs wins.
 - `docs/ROADMAP.md` lists the milestones with acceptance criteria. Work on the first unfinished milestone unless Bram says otherwise, and tick criteria off in that file as they pass.
 - When the implementation has to deviate from the design, update the design doc in the same session and say so in the milestone report.
 

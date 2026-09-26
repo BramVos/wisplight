@@ -1,0 +1,1282 @@
+<!doctype html>
+<!-- Visual snapshot of the lore and world-change design ("Ontwerp: lore en wereldverandering") as of 27 September 2026. The design doc in Claude Docs is the spec; this file is a reading aid for people and may be out of date. Published copy: https://claude.ai/artifact/TeLamcxUmHHGnh1z3LZ2Ao -->
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>De Kroniekschrijver</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;0,800;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --paper:#E9ECE3; --sheet:#F4F5EF; --ink:#18231F; --ink-2:#4A5A52; --ink-3:#7C8A82;
+  --rule:#C5CCC0; --rule-strong:#18231F;
+  --water:#2C5A86; --water-soft:#D5E1EC;
+  --wisp:#C99A12; --wisp-hi:#F3D466; --wisp-soft:#F6E7B0;
+  --peat:#6A4B30; --peat-soft:#E6DCCF;
+  --reed:#6E7F3A; --reed-soft:#E0E6CC;
+  --danger:#A63D2A; --danger-soft:#F1D9D2;
+  --screen:#16201C; --screen-ink:#CFD8CF; --screen-dim:#7F9187; --screen-topic:#F0CD5C; --screen-cmd:#9CC3E6;
+  --shadow:0 1px 0 rgba(24,35,31,.06), 0 10px 30px -18px rgba(24,35,31,.35);
+  --f-display:"IM Fell English", "Iowan Old Style", Georgia, serif;
+  --f-sc:"IM Fell English SC", "IM Fell English", Georgia, serif;
+  --f-body:"Alegreya Sans", "Gill Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --paper:#0C1311; --sheet:#121B18; --ink:#DCE3DA; --ink-2:#A7B4AB; --ink-3:#74847A;
+    --rule:#2A3833; --rule-strong:#DCE3DA;
+    --water:#86B0D8; --water-soft:#1B2C3A;
+    --wisp:#F0C94A; --wisp-hi:#F6DB7A; --wisp-soft:#3A3217;
+    --peat:#C9A27E; --peat-soft:#2E251C;
+    --reed:#AEC06C; --reed-soft:#232C18;
+    --danger:#E28068; --danger-soft:#3A1F19;
+    --screen:#070B0A; --screen-ink:#CFD8CF; --screen-dim:#6F8177; --screen-topic:#F0CD5C; --screen-cmd:#9CC3E6;
+    --shadow:0 1px 0 rgba(0,0,0,.3), 0 14px 30px -18px rgba(0,0,0,.8);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --paper:#0C1311; --sheet:#121B18; --ink:#DCE3DA; --ink-2:#A7B4AB; --ink-3:#74847A;
+  --rule:#2A3833; --rule-strong:#DCE3DA;
+  --water:#86B0D8; --water-soft:#1B2C3A;
+  --wisp:#F0C94A; --wisp-hi:#F6DB7A; --wisp-soft:#3A3217;
+  --peat:#C9A27E; --peat-soft:#2E251C;
+  --reed:#AEC06C; --reed-soft:#232C18;
+  --danger:#E28068; --danger-soft:#3A1F19;
+  --screen:#070B0A; --screen-ink:#CFD8CF; --screen-dim:#6F8177; --screen-topic:#F0CD5C; --screen-cmd:#9CC3E6;
+  --shadow:0 1px 0 rgba(0,0,0,.3), 0 14px 30px -18px rgba(0,0,0,.8);
+}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45;margin:0}
+.wrap{max-width:1440px;margin:0 auto;padding-inline:clamp(16px,3vw,40px);padding-block:0 64px}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--wisp);outline-offset:2px}
+
+/* index bar */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:10;background:color-mix(in srgb,var(--paper) 92%,transparent);backdrop-filter:blur(6px);border-bottom:1px solid var(--rule)}
+.bar-in{max-width:1440px;margin:0 auto;padding:8px clamp(16px,3vw,40px);display:flex;gap:14px;align-items:center}
+.bar-name{font-family:var(--f-sc);font-size:18px;white-space:nowrap;letter-spacing:.02em}
+.bar nav{display:flex;gap:4px;overflow-x:auto;scrollbar-width:thin;padding-bottom:2px}
+.bar nav a{font-size:12.5px;text-decoration:none;white-space:nowrap;padding:3px 8px;border-radius:3px;color:var(--ink-2);border:1px solid transparent}
+.bar nav a b{font-family:var(--f-mono);font-weight:500;color:var(--ink-3);margin-right:4px;font-size:11px}
+.bar nav a:hover{border-color:var(--rule);color:var(--ink)}
+
+/* sheet */
+.sheet{background:var(--sheet);margin-top:40px;box-shadow:var(--shadow);border:1px solid var(--rule);position:relative;scroll-margin-top:64px}
+.sheet-head{display:grid;grid-template-columns:auto 1fr auto;gap:8px 28px;align-items:end;padding:22px 28px 16px;border-bottom:2px solid var(--rule-strong)}
+.folio{font-family:var(--f-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);line-height:1.3}
+.folio strong{display:block;font-family:var(--f-display);font-size:44px;letter-spacing:0;color:var(--wisp);font-weight:400;line-height:.9;margin-top:2px}
+.sheet-head h2{font-family:var(--f-display);font-weight:400;font-size:clamp(28px,3.2vw,42px);line-height:1.02;margin:0;text-wrap:balance}
+.sheet-head .thesis{margin:6px 0 0;max-width:78ch;color:var(--ink-2);font-size:16px;text-wrap:pretty}
+.ref{font-family:var(--f-mono);font-size:11px;color:var(--ink-3);text-align:right;line-height:1.5;text-transform:uppercase;letter-spacing:.1em}
+.grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:0;padding:0}
+.p{padding:18px 24px 22px;border-right:1px solid var(--rule);border-bottom:1px solid var(--rule);min-width:0}
+.c2{grid-column:span 2}.c3{grid-column:span 3}.c4{grid-column:span 4}.c5{grid-column:span 5}.c6{grid-column:span 6}.c7{grid-column:span 7}.c8{grid-column:span 8}.c9{grid-column:span 9}.c12{grid-column:span 12}
+.p.end{border-right:0}
+.p h3{font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);margin:0 0 10px;display:flex;gap:8px;align-items:baseline}
+.p h3 .n{color:var(--wisp);font-weight:500}
+.p h4{font-family:var(--f-display);font-weight:400;font-size:22px;line-height:1.1;margin:0 0 8px;text-wrap:balance}
+.p p{margin:0 0 8px;max-width:68ch;text-wrap:pretty}
+.p p:last-child{margin-bottom:0}
+.small{font-size:13px;color:var(--ink-2)}
+.tiny{font-size:12px;color:var(--ink-3)}
+.foot{display:flex;flex-wrap:wrap;gap:8px 28px;padding:12px 28px;font-size:13px;color:var(--ink-2);background:var(--paper);border-top:1px solid var(--rule)}
+.foot b{font-family:var(--f-mono);font-weight:500;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin-right:6px}
+mark{background:linear-gradient(transparent 55%,var(--wisp-soft) 55%);color:inherit;padding:0 1px}
+.big{font-family:var(--f-display);font-size:40px;line-height:1;color:var(--ink)}
+.num{font-variant-numeric:tabular-nums}
+code,.mono{font-family:var(--f-mono);font-size:.86em}
+code{background:var(--paper);border:1px solid var(--rule);padding:0 4px;border-radius:2px;white-space:nowrap}
+
+/* lists */
+ul.ticks,ol.steps{margin:0;padding:0;list-style:none;display:grid;gap:6px}
+ul.ticks li{padding-left:16px;position:relative}
+ul.ticks li::before{content:"";position:absolute;left:0;top:.62em;width:7px;height:7px;background:var(--wisp);border-radius:50%;box-shadow:0 0 0 3px var(--wisp-soft)}
+ul.ticks.no li::before{background:var(--ink-3);box-shadow:none;border-radius:0;height:2px;top:.72em}
+ol.steps{counter-reset:s}
+ol.steps li{counter-increment:s;padding-left:30px;position:relative;min-height:22px}
+ol.steps li::before{content:counter(s);position:absolute;left:0;top:0;width:21px;height:21px;border-radius:50%;border:1.5px solid var(--ink);font-family:var(--f-mono);font-size:11px;display:grid;place-items:center}
+
+/* tables */
+.tw{overflow-x:auto}
+table.t{border-collapse:collapse;width:100%;font-size:13.5px}
+table.t th{font-family:var(--f-mono);font-weight:500;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);text-align:left;padding:4px 8px 6px;border-bottom:1.5px solid var(--rule-strong);vertical-align:bottom}
+table.t td{padding:5px 8px;border-bottom:1px solid var(--rule);vertical-align:top}
+table.t td:first-child,table.t th:first-child{padding-left:0}
+table.t tr:last-child td{border-bottom:0}
+table.t td.k{font-weight:700;white-space:nowrap}
+table.t .r{text-align:right;font-variant-numeric:tabular-nums}
+
+/* pins */
+.pin{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--wisp);color:#1b1606;font-family:var(--f-mono);font-size:11.5px;font-weight:500;flex:none;box-shadow:0 0 0 3px var(--wisp-soft)}
+.pinlist{display:grid;gap:10px;margin:0;padding:0;list-style:none}
+.pinlist li{display:grid;grid-template-columns:22px 1fr;gap:10px;align-items:start}
+
+/* terminal mockups */
+.screen{background:var(--screen);color:var(--screen-ink);font-family:var(--f-mono);font-size:12.5px;line-height:1.55;padding:14px 16px;border-radius:4px;overflow-x:auto;white-space:pre;margin:0}
+.screen .t{color:var(--screen-topic)}
+.screen .c{color:var(--screen-cmd)}
+.screen .d{color:var(--screen-dim)}
+.screen .pn{display:inline-block;background:var(--wisp);color:#1b1606;border-radius:50%;width:17px;height:17px;text-align:center;line-height:17px;font-size:10.5px}
+
+/* chips */
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:12.5px;padding:2px 9px;border:1px solid var(--rule);border-radius:999px;background:var(--sheet);white-space:nowrap}
+.chip.w{border-color:var(--wisp);background:var(--wisp-soft)}
+.chip.b{border-color:var(--water);color:var(--water);background:var(--water-soft)}
+.chip.r{border-color:var(--danger);color:var(--danger);background:var(--danger-soft)}
+.chip.g{border-color:var(--reed);color:var(--reed);background:var(--reed-soft)}
+
+/* svg */
+svg{display:block;max-width:100%;height:auto}
+.svgw{overflow-x:auto}
+svg text{font-family:var(--f-body);fill:var(--ink)}
+svg .mono{font-family:var(--f-mono)}
+svg .dim{fill:var(--ink-3)}
+svg .mid{fill:var(--ink-2)}
+svg .ln{stroke:var(--ink);fill:none}
+svg .lnd{stroke:var(--ink-3);fill:none}
+svg .box{fill:var(--sheet);stroke:var(--ink)}
+svg .boxs{fill:var(--paper);stroke:var(--rule)}
+svg .ai{fill:var(--wisp-soft);stroke:var(--wisp)}
+svg .sys{fill:var(--water-soft);stroke:var(--water)}
+svg .reed{fill:var(--reed-soft);stroke:var(--reed)}
+svg .peat{fill:var(--peat-soft);stroke:var(--peat)}
+svg .red{fill:var(--danger-soft);stroke:var(--danger)}
+svg .wispf{fill:var(--wisp)}
+svg .waterf{fill:var(--water)}
+svg .inkf{fill:var(--ink)}
+svg .redf{fill:var(--danger)}
+svg .reedf{fill:var(--reed)}
+svg .peatf{fill:var(--peat)}
+svg .paperf{fill:var(--paper)}
+svg .sheetf{fill:var(--sheet)}
+svg .rulef{fill:var(--rule)}
+
+/* formula */
+.formula{font-family:var(--f-display);font-size:19px;line-height:1.5;padding:10px 14px;background:var(--paper);border-left:3px solid var(--wisp);margin:6px 0 10px;overflow-x:auto}
+.formula i{font-style:italic}
+.formula .op{color:var(--ink-3);padding:0 3px}
+
+/* bars */
+.hbars{display:grid;gap:5px}
+.hbar{display:grid;grid-template-columns:minmax(120px,190px) 1fr 58px;gap:10px;align-items:center;font-size:13px}
+.hbar .track{height:14px;background:var(--paper);border-radius:2px;position:relative}
+.hbar .fill{position:absolute;left:0;top:0;bottom:0;background:var(--water);border-radius:2px}
+.hbar .fill.w{background:var(--wisp)}
+.hbar .v{text-align:right;font-family:var(--f-mono);font-size:12px;font-variant-numeric:tabular-nums}
+
+/* axis bars for personality */
+.axis{display:grid;grid-template-columns:110px 1fr 28px;gap:8px;align-items:center;font-size:13px;margin-bottom:4px}
+.axis .trk{height:12px;position:relative;background:repeating-linear-gradient(90deg,var(--rule) 0 1px,transparent 1px calc(100%/6));border-block:1px solid var(--rule)}
+.axis .trk::after{content:"";position:absolute;left:50%;top:-3px;bottom:-3px;width:1.5px;background:var(--ink)}
+.axis .f{position:absolute;top:1px;bottom:1px;background:var(--wisp)}
+.axis .f.neg{background:var(--water)}
+.axis .v{font-family:var(--f-mono);font-size:12px;text-align:right}
+
+/* cards grid inside panel */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.card{border:1px solid var(--rule);padding:10px 12px;background:var(--sheet)}
+.card h5{margin:0 0 2px;font-family:var(--f-display);font-weight:400;font-size:19px}
+.card .sub{font-size:12px;color:var(--ink-3);font-family:var(--f-mono);margin-bottom:6px}
+.card p{font-size:13px;margin:0 0 4px}
+
+.kv{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;font-size:13.5px;margin:0}
+.kv dt{font-weight:700}
+.kv dd{margin:0;color:var(--ink-2)}
+
+.stat{display:flex;flex-direction:column;gap:2px}
+.stat .big{color:var(--ink)}
+.statrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:14px 18px}
+
+/* cover */
+.cover{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);border-bottom:1px solid var(--rule)}
+.cover-l{padding:34px 32px 28px;border-right:1px solid var(--rule);display:flex;flex-direction:column;gap:18px}
+.cover h1{font-family:var(--f-display);font-weight:400;font-size:clamp(56px,8vw,112px);line-height:.85;margin:0;letter-spacing:-.01em}
+.cover h1 span{color:var(--wisp);text-shadow:0 0 22px var(--wisp-soft)}
+.cover .lede{font-size:18px;line-height:1.45;max-width:46ch;color:var(--ink);margin:0}
+.cover-r{position:relative;min-height:340px;background:var(--paper)}
+#hexmap{position:absolute;inset:0;width:100%;height:100%;display:block}
+.maplegend{position:absolute;left:14px;bottom:12px;display:flex;flex-wrap:wrap;gap:6px 12px;font-size:12px;color:var(--ink-2);background:color-mix(in srgb,var(--sheet) 86%,transparent);padding:6px 10px;border:1px solid var(--rule);max-width:calc(100% - 28px)}
+.maplegend i{display:inline-block;width:10px;height:10px;margin-right:5px;vertical-align:-1px;border-radius:2px}
+.index{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:0;border-top:1px solid var(--rule)}
+.index a{display:grid;grid-template-columns:34px 1fr;gap:4px 8px;padding:12px 16px;text-decoration:none;border-right:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+.index a:hover{background:var(--paper)}
+.index a b{font-family:var(--f-display);font-weight:400;font-size:24px;color:var(--wisp);line-height:1;grid-row:span 2}
+.index a span{font-weight:700;font-size:14px;line-height:1.2}
+.index a em{font-style:normal;font-size:12px;color:var(--ink-3);line-height:1.25}
+
+.split{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.row{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+.note{font-size:12.5px;color:var(--ink-3);font-style:italic;margin-top:8px}
+.quote{font-family:var(--f-display);font-style:italic;font-size:17px;line-height:1.35;color:var(--ink);border-left:2px solid var(--rule);padding-left:10px;margin:6px 0}
+
+@media (max-width:1100px){
+  .c2,.c3{grid-column:span 6}.c4,.c5{grid-column:span 6}.c7,.c8,.c9{grid-column:span 12}.c6{grid-column:span 6}
+}
+@media (max-width:760px){
+  .grid{grid-template-columns:minmax(0,1fr)}
+  .c2,.c3,.c4,.c5,.c6,.c7,.c8,.c9,.c12{grid-column:1/-1}
+  .p{border-right:0;padding:16px 16px 18px}
+  .sheet-head{grid-template-columns:1fr;padding:18px 16px 14px}
+  .ref{text-align:left}
+  .cover{grid-template-columns:1fr}
+  .cover-l{border-right:0;padding:24px 16px}
+  .foot{padding:12px 16px}
+  .split{grid-template-columns:1fr}
+  .hbar{grid-template-columns:110px 1fr 50px}
+  .bar-name{display:none}
+}
+@media (prefers-reduced-motion:no-preference){
+  .wisp-dot{animation:flick 3.2s ease-in-out infinite}
+  @keyframes flick{0%,100%{opacity:1}45%{opacity:.55}60%{opacity:.9}}
+}
+</style>
+</head>
+<body>
+
+
+<style>
+.cover-r.ripple{display:grid;place-items:center;padding:12px}
+.ladder{display:grid;gap:4px}
+.ladder .lv{display:grid;grid-template-columns:34px 130px 1fr;gap:10px;align-items:center;font-size:13px}
+.ladder .lv b.n{font-family:var(--f-display);font-size:26px;font-weight:400;color:var(--wisp);line-height:1}
+.ladder .reach{height:22px;background:var(--paper);position:relative}
+.ladder .reach i{position:absolute;left:0;top:0;bottom:0;background:var(--water);opacity:.8}
+.ladder .reach span{position:absolute;left:8px;top:2px;font-size:12px;color:var(--ink)}
+.ladder .lv.lore .reach i{background:var(--wisp);opacity:1}
+.threshold{border-top:2px dashed var(--wisp);margin:4px 0 2px;font-family:var(--f-mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--wisp);padding-top:3px}
+.range{display:grid;grid-template-columns:repeat(6,1fr);gap:2px;height:10px;margin:4px 0 6px}
+.range i{background:var(--paper);border:1px solid var(--rule)}
+.range i.on{background:var(--wisp);border-color:var(--wisp)}
+.pat .card h5{font-size:18px}
+.pat .card .row3{display:grid;gap:3px;font-size:12.5px;margin-top:4px}
+.pat .card .row3 span b{font-family:var(--f-mono);font-weight:500;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);margin-right:5px}
+</style>
+
+<header class="bar">
+  <div class="bar-in">
+    <div class="bar-name">Kroniekschrijver</div>
+    <nav aria-label="Bladen">
+      <a href="#k-01"><b>01</b>Gebeurtenis → lore</a>
+      <a href="#k-02"><b>02</b>Wie weet wat</a>
+      <a href="#k-03"><b>03</b>Soorten verhalen</a>
+      <a href="#k-04"><b>04</b>De kroniekschrijver</a>
+      <a href="#k-05"><b>05</b>Hoe hij kijkt</a>
+      <a href="#k-06"><b>06</b>Nieuwe namen</a>
+      <a href="#k-07"><b>07</b>Buiten de kaart</a>
+      <a href="#k-08"><b>08</b>Grote gebeurtenissen</a>
+      <a href="#k-09"><b>09</b>Detail naar afstand</a>
+      <a href="#k-10"><b>10</b>Wat de speler ziet</a>
+      <a href="#k-11"><b>11</b>Sparren</a>
+      <a href="#k-12"><b>12</b>Opslag</a>
+      <a href="#k-13"><b>13</b>Harmen verdrinkt</a>
+      <a href="#k-14"><b>14</b>Kosten en volgorde</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+
+<!-- ============ COVER ============ -->
+<section class="sheet" id="k-00" aria-label="Titelblad">
+  <div class="cover">
+    <div class="cover-l">
+      <div class="folio">Ontwerp: lore en wereldverandering · in bladen · 27 september 2026 · Bram Vos</div>
+      <h1 style="font-size:clamp(48px,6.4vw,92px)">De Kroniek&shy;<span>schrijver</span></h1>
+      <p class="lede">Hoe de wereld onthoudt wat er gebeurt. <mark>De motor kent de feiten, het systeem beslist wie wat weet, en de kroniekschrijver vertelt.</mark> Hij maakt van grote gebeurtenissen lore met versies per afstand, plant de gevolgen van oorlog en rampen, en schrijft de wereld buiten de kaart als de speler erheen gaat.</p>
+      <ul class="ticks small">
+        <li><b>De motor kent de feiten.</b> Wat er echt gebeurde, staat in het spellogboek. De AI verzint geen feiten.</li>
+        <li><b>Het systeem beslist wie wat weet.</b> Verspreiding is rekenwerk op vaste regels: goedkoop, voorspelbaar, na te spelen.</li>
+        <li><b>De AI vertelt.</b> De kroniekschrijver maakt van een groep feiten een verhaal met versies per kennisniveau.</li>
+        <li><b>Zelden, maar gestructureerd.</b> Nul tot twee keer per speluur, met een vast formaat in en uit.</li>
+        <li><b>De basiswereld blijft onaangeroerd.</b> Alles wat in een spel ontstaat, staat in de lorelaag van die savegame.</li>
+      </ul>
+      <p class="tiny">Verdiept FO hoofdstuk 5. Het ontwerp in Claude Docs is leidend; dit is een momentopname.</p>
+    </div>
+    <div class="cover-r ripple">
+      <svg viewBox="0 0 700 440" role="img" aria-label="Hoe het nieuws van Harmens verdrinking zich verspreidt, van getuige tot Graafhaven, en onderweg verandert">
+        <g fill="none">
+          <circle cx="470" cy="220" r="300" style="stroke:var(--wisp)" stroke-opacity=".25" stroke-dasharray="2 5"/>
+          <circle cx="470" cy="220" r="185" style="stroke:var(--wisp)" stroke-opacity=".45" stroke-dasharray="4 4"/>
+          <circle cx="470" cy="220" r="100" style="stroke:var(--wisp)" stroke-opacity=".7"/>
+          <circle cx="470" cy="220" r="38" style="stroke:var(--wisp);fill:var(--wisp-soft)" stroke-width="2"/>
+        </g>
+        <circle cx="470" cy="220" r="6" class="wispf wisp-dot"/>
+        <text x="470" y="258" text-anchor="middle" font-size="11" class="mid">Blackmere · Di 21:10</text>
+        <g font-size="12">
+          <circle cx="438" cy="196" r="4" class="inkf"/><text x="430" y="186" text-anchor="end" font-weight="700">Wouter</text><text x="430" y="172" text-anchor="end" font-size="10.5" class="mid">getuige · niveau 3</text>
+          <circle cx="398" cy="290" r="4" class="inkf"/><text x="390" y="300" text-anchor="end" font-weight="700">The Drowned Goose</text><text x="390" y="314" text-anchor="end" font-size="10.5" class="mid">Di 22:00 · niveau 2</text>
+          <circle cx="405" cy="143" r="4" class="inkf"/><text x="398" y="138" text-anchor="end" font-weight="700">Veenhoek</text><text x="398" y="124" text-anchor="end" font-size="10.5" class="mid">Wo 07:00 · niveau 2</text>
+          <circle cx="620" cy="110" r="5" class="inkf"/><text x="612" y="100" text-anchor="end" font-weight="700">Waagdam</text><text x="612" y="86" text-anchor="end" font-size="10.5" class="mid">Wo 12:00 · niveau 2</text>
+          <circle cx="178" cy="150" r="5" class="inkf"/><text x="178" y="136" text-anchor="middle" font-weight="700">Graafhaven</text><text x="178" y="122" text-anchor="middle" font-size="10.5" class="mid">maandag · niveau 1</text>
+        </g>
+        <path d="M455 205 L405 143" class="lnd" stroke-dasharray="3 3"/>
+        <path d="M480 205 L620 110" class="lnd" stroke-dasharray="3 3"/>
+        <path d="M398 290 C 300 330 220 260 178 150" class="lnd" stroke-dasharray="3 3" marker-end="url(#ahd)"/>
+        <text x="236" y="296" font-size="10.5" class="dim">per schuit</text>
+        <g font-size="12.5" font-style="italic" style="font-family:var(--f-display)">
+          <rect x="16" y="340" width="330" height="86" class="sheetf" style="stroke:var(--rule)"/>
+          <text x="28" y="362" class="inkf">precies: "I saw him go in, I did."</text>
+          <text x="28" y="384" class="inkf">dorp: "Harmen went into the Blackmere</text>
+          <text x="28" y="400" class="inkf">      and never came up."</text>
+          <text x="28" y="420" style="fill:var(--danger)">ver weg: "The miller fell in drunk, they say."</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+  <div class="grid">
+    <div class="p c12 end" style="padding-bottom:10px"><h3><span class="n">§</span> Acht begrippen die steeds terugkomen</h3></div>
+    <div class="p c3"><h4>Gebeurtenis</h4><p class="small">Iets wat gebeurt, met tijd, plek, betrokkenen en getuigen. Staat in het spellogboek.</p><p class="tiny">Harmen valt om 21:10 in de Blackmere; Wouter ziet het.</p></div>
+    <div class="p c3"><h4>Feit</h4><p class="small">Een losse bewering die uit gebeurtenissen volgt en die een NPC kan weten. Heeft een id.</p><p class="tiny mono">harmen_dead</p></div>
+    <div class="p c3"><h4>Gerucht</h4><p class="small">Een feit dat van mond tot mond gaat, met bron en hoe vaak het is doorverteld.</p><p class="tiny">"Grietje zegt dat Wouter zegt dat…"</p></div>
+    <div class="p c3 end"><h4>Versie</h4><p class="small">Hoe een feit klinkt op een afstand van de bron: precies, vaag of vervormd.</p><p class="tiny">"fell in drunk"</p></div>
+    <div class="p c3"><h4>Loreonderwerp</h4><p class="small">Een verhaal met een naam dat NPC's per kennisniveau kennen, zoals de Haakman.</p><p class="tiny">"The Drowning of Harmen Molenaar"</p></div>
+    <div class="p c3"><h4>Kroniek</h4><p class="small">De loreonderwerpen die tijdens een spel zijn ontstaan. Deel van de savegame.</p></div>
+    <div class="p c3"><h4>Basislore</h4><p class="small">De lore uit de content, dus uit het wereldboek. Verandert niet door spelen.</p><p class="tiny">De Haakman, de Waterwolf</p></div>
+    <div class="p c3 end"><h4>Savegame-lore</h4><p class="small">De lorelaag van één spel: kroniek, feiten, geruchten en nieuwe verre namen. Ligt over de basislore heen.</p></div>
+  </div>
+  <nav class="index" aria-label="Inhoud">
+    <a href="#k-01"><b>01</b><span>Van gebeurtenis naar lore</span><em>Zes stappen, één drempel, belang 0–5</em></a>
+    <a href="#k-02"><b>02</b><span>Wie weet wat</span><em>Getuigen, kanalen, vervagen, vergeten</em></a>
+    <a href="#k-03"><b>03</b><span>Soorten verhalen</span><em>Tien patronen en de verhalenmotor</em></a>
+    <a href="#k-04"><b>04</b><span>De kroniekschrijver</span><em>Wanneer, wat erin, wat eruit, controle</em></a>
+    <a href="#k-05"><b>05</b><span>Hoe hij de wereld ziet</span><em>Verhaallijnen, notatie, bulk</em></a>
+    <a href="#k-06"><b>06</b><span>Nieuwe namen</span><em>Alleen ver weg, en daarna vast</em></a>
+    <a href="#k-07"><b>07</b><span>De wereld buiten de kaart</span><em>Vier niveaus, landen en spanning</em></a>
+    <a href="#k-08"><b>08</b><span>Grote gebeurtenissen</span><em>Effectplan, fases, grenzen</em></a>
+    <a href="#k-09"><b>09</b><span>Detail naar afstand</span><em>Volledig, grof, notitie</em></a>
+    <a href="#k-10"><b>10</b><span>Wat de speler ziet</span><em>Dagboek, logboek, kroniek</em></a>
+    <a href="#k-11"><b>11</b><span>Sparren in de bouwer</span><em>CHRONICLER.md en voorstellen</em></a>
+    <a href="#k-12"><b>12</b><span>Opslag en meenemen</span><em>Lagen, ids, een volgend spel</em></a>
+    <a href="#k-13"><b>13</b><span>Harmen verdrinkt</span><em>Het hele systeem in één voorbeeld</em></a>
+    <a href="#k-14"><b>14</b><span>Kosten, besluiten, volgorde</span><em>M3, M3.1 en verder</em></a>
+  </nav>
+</section>
+
+<!-- ============ 01 ============ -->
+<section class="sheet" id="k-01">
+  <div class="sheet-head">
+    <div class="folio">Blad<strong>01</strong></div>
+    <div><h2>Alleen het verhaal komt van de AI</h2><p class="thesis">Elke gebeurtenis loopt dezelfde weg. Kleine gebeurtenissen blijven geruchten. Vanaf belang 3 maakt de kroniekschrijver er een loreonderwerp van, dat daarna werkt als de lore uit het wereldboek. Alleen die stap kost tokens.</p></div>
+    <div class="ref">Ontwerp lore<br>Van gebeurtenis naar lore</div>
+  </div>
+  <div class="grid">
+    <div class="p c8">
+      <h3>Zes stappen, één drempel</h3>
+      <div class="svgw">
+      <svg viewBox="0 0 780 290" role="img" aria-label="Gebeurtenis, belang en getuigen, verspreiding, in gesprek; vanaf belang 3 via de kroniekschrijver naar een loreonderwerp">
+        <g font-size="13" text-anchor="middle">
+          <rect x="10" y="190" width="160" height="72" rx="4" class="sys"/><text x="90" y="216" font-weight="700">1 Gebeurtenis</text><text x="90" y="234" font-size="11.5" class="mid">vastgelegd door de</text><text x="90" y="249" font-size="11.5" class="mid">motor in het logboek</text>
+          <rect x="206" y="190" width="160" height="72" rx="4" class="sys"/><text x="286" y="216" font-weight="700">2 Belang, getuigen</text><text x="286" y="234" font-size="11.5" class="mid">score 0 tot 5;</text><text x="286" y="249" font-size="11.5" class="mid">getuigen weten het</text>
+          <rect x="402" y="190" width="160" height="72" rx="4" class="sys"/><text x="482" y="216" font-weight="700">3 Verspreiding</text><text x="482" y="234" font-size="11.5" class="mid">roddel, herberg,</text><text x="482" y="249" font-size="11.5" class="mid">markt en schuit</text>
+          <rect x="598" y="190" width="170" height="72" rx="4" class="sys"/><text x="683" y="216" font-weight="700">6 In gesprek</text><text x="683" y="234" font-size="11.5" class="mid">feit of versie in</text><text x="683" y="249" font-size="11.5" class="mid">het kennispakket</text>
+          <rect x="402" y="40" width="160" height="72" rx="4" class="ai" stroke-width="2.5"/><text x="482" y="66" font-weight="700">4 Kroniekschrijver</text><text x="482" y="84" font-size="11.5">AI, eens per nacht</text><text x="482" y="99" font-size="11.5">of bij een drempel</text>
+          <rect x="598" y="40" width="170" height="72" rx="4" class="reed"/><text x="683" y="66" font-weight="700">5 Loreonderwerp</text><text x="683" y="84" font-size="11.5" class="mid">verhaal, versies</text><text x="683" y="99" font-size="11.5" class="mid">per kennisniveau</text>
+        </g>
+        <g class="ln" stroke-width="1.4">
+          <path d="M170 226 H202" marker-end="url(#ah)"/><path d="M366 226 H398" marker-end="url(#ah)"/><path d="M562 226 H594" marker-end="url(#ah)"/>
+          <path d="M562 76 H594" marker-end="url(#ah)"/><path d="M683 112 V186" marker-end="url(#ah)"/>
+        </g>
+        <path d="M286 190 V76 H398" style="stroke:var(--wisp)" fill="none" stroke-width="2.5" marker-end="url(#ahw)"/>
+        <text x="296" y="68" font-size="12" font-weight="700" style="fill:var(--wisp)">belang 3 of meer</text>
+        <text x="10" y="286" font-size="11.5" class="dim">Blauw: motor en regels, nul tokens. Geel: de enige stap met AI.</text>
+      </svg>
+      </div>
+    </div>
+    <div class="p c4 end">
+      <h3>Hoe het belang ontstaat</h3>
+      <p class="small">Vaste regels, geen AI: een basisscore per soort gebeurtenis, plus toeslagen.</p>
+      <div class="tw"><table class="t">
+        <tr><td>NPC met bekendheid ≥ 2 betrokken</td><td class="r"><b>+1</b></td></tr>
+        <tr><td>Er is een dode</td><td class="r"><b>+1</b></td></tr>
+        <tr><td>De speler is al bekend in de streek</td><td class="r"><b>+1</b></td></tr>
+        <tr><td>Maximum</td><td class="r"><b>5</b></td></tr>
+      </table></div>
+      <p class="small" style="margin-top:8px">De ontwerper kan per gebeurtenis een vaste score zetten, bijvoorbeeld voor een questmoment.</p>
+      <div class="formula" style="font-size:16px">dood van een NPC: 3 <span class="op">+</span> 1 (dode) <span class="op">=</span> <b>4</b></div>
+      <p class="note">Belang gebruikt dezelfde schaal als bekendheid (FO hoofdstuk 5). Een verhaal dat lore wordt, weet dus meteen hoe ver het reikt.</p>
+    </div>
+
+    <div class="p c12 end">
+      <h3>Belang 0 tot 5: wat het is en hoe ver het reikt</h3>
+      <div class="ladder">
+        <div class="lv"><b class="n">0</b><span><b>Alledaags</b><br><span class="tiny">brood gekocht</span></span><span class="reach"><i style="width:8%"></i><span>alleen getuigen, een dag lang</span></span></div>
+        <div class="lv"><b class="n">1</b><span><b>Klein nieuws</b><br><span class="tiny">vreemdeling op de kade</span></span><span class="reach"><i style="width:18%"></i><span>de plek en huisgenoten van getuigen, twee dagen</span></span></div>
+        <div class="lv"><b class="n">2</b><span><b>Dorpsnieuws</b><br><span class="tiny">diefstal, meel twee keer zo duur</span></span><span class="reach"><i style="width:34%"></i><span>het hele dorp binnen een dag, buurdorpen vaag</span></span></div>
+        <div class="threshold">vanaf hier wordt het lore</div>
+        <div class="lv lore"><b class="n">3</b><span><b>Streeknieuws</b><br><span class="tiny">de molen draait weer, Fenna gevonden</span></span><span class="reach"><i style="width:55%"></i><span>de hele Holleveen in twee à drie dagen</span></span></div>
+        <div class="lv lore"><b class="n">4</b><span><b>Groot nieuws</b><br><span class="tiny">bekende NPC dood, brand, landmeter verjaagd</span></span><span class="reach"><i style="width:78%"></i><span>streek binnen een dag, buurstreken binnen een week, hoofdstad vaag</span></span></div>
+        <div class="lv lore"><b class="n">5</b><span><b>Historisch</b><br><span class="tiny">dijkdoorbraak, de graaf vermoord</span></span><span class="reach"><i style="width:100%"></i><span>vroeg of laat iedereen</span></span></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span><b>Tot hij klaar is</b>vertellen NPC's het kale feit met een sjabloonzin. Het spel wacht nooit op de kroniekschrijver.</span></div>
+</section>
+
+<!-- ============ 02 ============ -->
+<section class="sheet" id="k-02">
+  <div class="sheet-head">
+    <div class="folio">Blad<strong>02</strong></div>
+    <div><h2>Wie weet wat: nieuws is rekenwerk</h2><p class="thesis">Getuigen weten het meteen. Daarna gaat nieuws van mens tot mens langs vaste kanalen, en het belang bepaalt hoe ver het komt. Bij elk doorvertellen gaat er precisie af, en ver weg kan een verhaal ook vervormen.</p></div>
+    <div class="ref">Ontwerp lore<br>Wie weet wat</div>
+  </div>
+  <div class="grid">
+    <div class="p c4">
+      <h3>Getuigen</h3>
+      <p class="small">Iedereen op dezelfde plek, en bij lawaai (brand, gevecht, geschreeuw) ook op de plekken ernaast. Ze kennen het feit <b>precies, op niveau 3</b>, en weten dat ze het zelf zagen.</p>
+      <h3 style="margin-top:14px">De regel bij elke ontmoeting</h3>
+      <p class="small">Komen twee NPC's elkaar tegen, dan kan elk feit dat de een weet en de ander niet, worden doorverteld. De kans hangt af van kanaal, belang en ouderdom.</p>
+      <div class="formula" style="font-size:16px"><i>niveau</i><sub>hoorder</sub> <span class="op">=</span> max(1, <i>niveau</i><sub>verteller</sub> <span class="op">−</span> 1)</div>
+      <p class="note">De worp is geseed per paar, feit en dag. Een spel speelt altijd hetzelfde na.</p>
+    </div>
+    <div class="p c8 end">
+      <h3>Zes kanalen</h3>
+      <div class="tw"><table class="t">
+        <tr><th>Kanaal</th><th>Wie</th><th>Wanneer</th><th>Kans per ontmoeting</th></tr>
+        <tr><td class="k">Huishouden</td><td>Huisgenoten en familie</td><td>De eerste keer weer thuis</td><td><span class="chip w">altijd</span></td></tr>
+        <tr><td class="k">Buren en werk</td><td>Zelfde plek wonen of werken</td><td>Bij elke ontmoeting</td><td><span class="chip w">hoog</span></td></tr>
+        <tr><td class="k">Roddel</td><td>NPC's met <code>gossip</code></td><td>Elke ontmoeting, ook met de speler</td><td><span class="chip w">hoog</span> en ze maken het groter</td></tr>
+        <tr><td class="k">Herberg en kapel</td><td>Iedereen op een plek met <code>social</code></td><td>'s Avonds en op Rustdag</td><td><span class="chip">middel</span></td></tr>
+        <tr><td class="k">Markt en waag</td><td>Handelaren en klanten in Waagdam</td><td>Op marktdag</td><td><span class="chip">middel</span>, handelaren nemen het mee</td></tr>
+        <tr><td class="k">Schuit en weg</td><td>Schippers en reizigers</td><td>Per rit</td><td><span class="chip b">alleen belang ≥ 3</span> naar andere streken</td></tr>
+      </table></div>
+    </div>
+
+    <div class="p c5">
+      <h3>Vervagen: precisie per niveau</h3>
+      <div class="svgw">
+      <svg viewBox="0 0 470 170" role="img" aria-label="Op niveau 3 weet je wie, waar en wanneer; op niveau 2 de kern; op niveau 1 alleen dat er iets was">
+        <g font-size="12.5">
+          <rect x="10" y="12" width="450" height="40" class="ai"/><text x="22" y="37" font-weight="700">Niveau 3</text><text x="110" y="37">wie, waar en wanneer: "Harmen, Blackmere noordoever, dinsdag 21:10"</text>
+          <rect x="10" y="62" width="300" height="40" style="fill:var(--wisp);stroke:var(--wisp)" opacity=".35"/><text x="22" y="87" font-weight="700">Niveau 2</text><text x="110" y="87">de kern: "Harmen is verdronken"</text>
+          <rect x="10" y="112" width="150" height="40" class="boxs"/><text x="22" y="137" font-weight="700">Niveau 1</text><text x="110" y="137">"er is iets met de molenaar"</text>
+        </g>
+      </svg>
+      </div>
+    </div>
+    <div class="p c3">
+      <h3>Vergeten</h3>
+      <div class="hbars">
+        <div class="hbar" style="grid-template-columns:70px 1fr 64px"><span>Belang 1</span><span class="track"><span class="fill" style="width:12%"></span></span><span class="v">2 dagen</span></div>
+        <div class="hbar" style="grid-template-columns:70px 1fr 64px"><span>Belang 2</span><span class="track"><span class="fill" style="width:55%"></span></span><span class="v">2 weken</span></div>
+        <div class="hbar" style="grid-template-columns:70px 1fr 64px"><span>Belang ≥ 3</span><span class="track"><span class="fill w" style="width:100%"></span></span><span class="v">blijft</span></div>
+      </div>
+      <p class="small" style="margin-top:8px">Vanaf belang 3 blijft het, want dan is het lore.</p>
+    </div>
+    <div class="p c4 end">
+      <h3>Drie versies, en fouten mogen</h3>
+      <dl class="kv small">
+        <dt>Precies</dt><dd>"I saw him go in, I did. By the reeds at the north bank…"</dd>
+        <dt>Dorp</dt><dd>"Harmen went into the Blackmere and never came up."</dd>
+        <dt style="color:var(--danger)">Ver weg</dt><dd>"The miller at Molenend fell in drunk, they say."</dd>
+      </dl>
+      <p class="small" style="margin-top:8px">Een roddelaar vertelt de grotere versie door, een eerlijk iemand de kalere. <mark>Uitzoeken wat er echt gebeurde wordt zelf spel.</mark></p>
+    </div>
+  </div>
+  <div class="foot"><span><b>Schaal</b>Voor bereik boven het dorp rekent het spel per gebied uit wanneer het nieuws aankomt. Vanaf dan kennen de mensen daar het op het niveau dat bij de afstand hoort. Alleen wat afwijkt van de vaste kennisregel wordt opgeslagen.</span></div>
+</section>
+
+<!-- ============ 03 ============ -->
+<section class="sheet" id="k-03">
+  <div class="sheet-head">
+    <div class="folio">Blad<strong>03</strong></div>
+    <div><h2>Soorten verhalen, van een kat tot een oorlog</h2><p class="thesis">Een verhalenschrijver denkt in verhaallijnen van een bekend soort. Het spel doet hetzelfde: elke gebeurtenis hoort bij een verhaalpatroon, en het patroon bepaalt wat de motor doet, wat de kroniekschrijver toevoegt en wat de speler ermee kan.</p></div>
+    <div class="ref">Ontwerp lore<br>Soorten verhalen · tempo</div>
+  </div>
+  <div class="grid">
+    <div class="p c12 end pat">
+      <h3>Tien patronen · het balkje toont het belang, 0 tot 5</h3>
+      <div class="cards" style="grid-template-columns:repeat(auto-fit,minmax(250px,1fr))">
+        <div class="card"><h5>Verlies en zoektocht</h5><div class="sub">Henk is zijn kat kwijt · 0–1</div><div class="range"><i class="on"></i><i class="on"></i><i></i><i></i><i></i><i></i></div><div class="row3"><span><b>motor</b>De kat is een wezen met een plek; Henk vraagt rond</span><span><b>kroniek</b>Niets, tenzij het raakt aan lore, zoals de grijze kat</span><span><b>speler</b>Een klein verzoek, dank in natura</span></div></div>
+        <div class="card"><h5>Ruzie en vechtpartij</h5><div class="sub">Turfstekers slaan elkaar · 1–2</div><div class="range"><i></i><i class="on"></i><i class="on"></i><i></i><i></i><i></i></div><div class="row3"><span><b>motor</b>Temperament, drank, wrok; de schout komt</span><span><b>kroniek</b>Een regel nieuws; de wrok blijft als relatie</span><span><b>speler</b>Kant kiezen, sussen, getuigen</span></div></div>
+        <div class="card"><h5>Misdaad</h5><div class="sub">Diefstal uit de Waag, een moord · 2–4</div><div class="range"><i></i><i></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div><div class="row3"><span><b>motor</b>Kent de waarheid, getuigen en sporen</span><span><b>kroniek</b>Versies per afstand, verdachten in geruchten</span><span><b>speler</b>Onderzoeken wat er echt gebeurde</span></div></div>
+        <div class="card"><h5>Levensloop</h5><div class="sub">Geboorte, bruiloft, ziekte, dood · 1–3</div><div class="range"><i></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></div><div class="row3"><span><b>motor</b>Regels voor leeftijd en ziekte; feest of begrafenis</span><span><b>kroniek</b>Het verhaal bij een dood of bruiloft</span><span><b>speler</b>Aanwezig zijn, een gift, rouw</span></div></div>
+        <div class="card"><h5>Vondst en hebzucht</h5><div class="sub">Een schat in het veen · 2–3</div><div class="range"><i></i><i></i><i class="on"></i><i class="on"></i><i></i><i></i></div><div class="row3"><span><b>motor</b>Het voorwerp; wie ervan weet, wil het</span><span><b>kroniek</b>Een legende eromheen</span><span><b>speler</b>Kopen, stelen, beschermen</span></div></div>
+        <div class="card"><h5>Het bovennatuurlijke</h5><div class="sub">De Haakman neemt iemand · 2–4</div><div class="range"><i></i><i></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div><div class="row3"><span><b>motor</b>Regels uit de lore: voorwaarden en tekens</span><span><b>kroniek</b>Het verband met de legende</span><span><b>speler</b>Tekens lezen, offeren, bewijzen</span></div></div>
+        <div class="card"><h5>Intrige en list</h5><div class="sub">Twee kasteelheren, dezelfde nacht · 3–4</div><div class="range"><i></i><i></i><i></i><i class="on"></i><i class="on"></i><i></i></div><div class="row3"><span><b>motor</b>Beide plannen lopen echt, tot beide kastelen leeg blijken</span><span><b>kroniek</b>Het verhaal van de dubbele list, met de ironie</span><span><b>speler</b>Waarschuwen, verraden, profiteren</span></div></div>
+        <div class="card"><h5>Ramp</h5><div class="sub">Dijkdoorbraak, brand, ziekte · 4–5</div><div class="range"><i></i><i></i><i></i><i></i><i class="on"></i><i class="on"></i></div><div class="row3"><span><b>motor</b>Toestand van plekken, vlucht, prijzen, doden</span><span><b>kroniek</b>Effectplan en verhaal</span><span><b>speler</b>Redden, helpen, plunderen</span></div></div>
+        <div class="card"><h5>Oorlog en opstand</h5><div class="sub">Flemmark valt aan · 4–5</div><div class="range"><i></i><i></i><i></i><i></i><i class="on"></i><i class="on"></i></div><div class="row3"><span><b>motor</b>Spanning over de grens</span><span><b>kroniek</b>Effectplan in fases</span><span><b>speler</b>Kiezen, vluchten, vechten</span></div></div>
+        <div class="card"><h5>Feest en markt</h5><div class="sub">Kermis, jaarmarkt in Waagdam · 1–2</div><div class="range"><i></i><i class="on"></i><i class="on"></i><i></i><i></i><i></i></div><div class="row3"><span><b>motor</b>Kalender; mensen van heinde en ver</span><span><b>kroniek</b>Nieuws van de dag</span><span><b>speler</b>Handel, ontmoetingen, wedstrijden</span></div></div>
+      </div>
+    </div>
+
+    <div class="p c4">
+      <h3>Een patroon is data, net als een recept</h3>
+<pre class="screen" style="font-size:11.5px">pattern: <span class="t">lost_pet</span>
+scale: personal
+belang: 1
+roles:
+  owner: { npc: { has: pet } }
+  pet: { of: owner }
+trigger: { chance_per_day: 0.02,
+           when: [pet_outside_at_night] }
+beats:
+  - the pet wanders to a nearby place
+  - the owner searches and asks around
+  - someone brings it back, or it comes
+    home after 2 to 5 days
+effects: [owner_mood: worried,
+          request: find_pet]
+news: "{owner} has lost {their} {pet}."
+chronicler: <span class="t">only_if_linked_to_lore</span></pre>
+    </div>
+    <div class="p c4">
+      <h3>Samenloop herkennen</h3>
+      <p class="small">De list van de twee kasteelheren laat zien waarom de motor plannen letterlijk uitvoert: <mark>de ironie ontstaat doordat twee plannen elkaar kruisen, niet doordat iemand het bedenkt.</mark></p>
+      <p class="small">De motor herkent zo'n samenloop met eenvoudige regels en markeert hem:</p>
+      <ul class="ticks small">
+        <li>twee vijandige groepen op dezelfde weg</li>
+        <li>een doel dat onbewaakt achterblijft</li>
+        <li>iemand komt aan waar de gezochte net vertrok</li>
+      </ul>
+      <p class="small">Daarna maakt de kroniekschrijver er het verhaal van.</p>
+    </div>
+    <div class="p c4 end">
+      <h3>Tempo: de verhalenmotor</h3>
+      <p class="small">Zoals de vertellers in RimWorld: hij bepaalt hoe vaak en hoe zwaar er iets gebeurt, niet wat.</p>
+      <div class="row small" style="margin:6px 0 8px"><span class="chip">rustig</span><span class="chip w">gewoon</span><span class="chip r">dramatisch</span></div>
+      <ul class="ticks small">
+        <li>Elke speldag een budget aan voorvallen, naar instelling en hoe lang het al stil is.</li>
+        <li>Een geseede worp kiest uit de patronen waarvan de voorwaarden kloppen.</li>
+        <li>Nooit twee zware voorvallen vlak na elkaar; na een ramp volgt rust.</li>
+        <li>De meeste gebeurtenissen komen uit de simulatie zelf. De motor vult alleen aan waar het te stil is.</li>
+      </ul>
+      <p class="note">De kroniekschrijver heeft geen invloed op het tempo. De ontwerper wel, met de instelling en de gewichten per patroon.</p>
+    </div>
+  </div>
+  <div class="foot"><span><b>Principe</b>De wereld heeft regels waardoor dingen gebeuren; de kroniekschrijver vult aan en bepaalt hoe het verteld wordt. Zo is een oorlog een gevolg van regels: spanning die over de grens loopt.</span></div>
+</section>
+
+<!-- ============ 04 ============ -->
+<section class="sheet" id="k-04">
+  <div class="sheet-head">
+    <div class="folio">Blad<strong>04</strong></div>
+    <div><h2>De kroniekschrijver schrijft, maar beslist niet</h2><p class="thesis">Een duurder model dat af en toe grote gebeurtenissen in één keer verwerkt tot gestructureerde lore. Hij bepaalt niet wat er gebeurde of wie het weet; dat doen de motor en de verspreidingsregels. Hij schrijft het verhaal en legt de verbanden.</p></div>
+    <div class="ref">Ontwerp lore<br>De kroniekschrijver</div>
+  </div>
+  <div class="grid">
+    <div class="p c4">
+      <h3>Wanneer hij schrijft</h3>
+      <div class="svgw">
+      <svg viewBox="0 0 340 176" role="img" aria-label="Een speldag met de nachtelijke run om 04:00 en een directe run bij belang 4">
+        <path d="M14 70 H326" class="ln" stroke-width="1.5"/>
+        <g font-size="10" class="mono dim" text-anchor="middle"><text x="14" y="90">00</text><text x="92" y="90">06</text><text x="170" y="90">12</text><text x="248" y="90">18</text><text x="326" y="90">24</text></g>
+        <rect x="14" y="58" width="78" height="24" style="fill:var(--screen)" opacity=".15"/>
+        <circle cx="66" cy="70" r="7" class="wispf"/><text x="66" y="44" text-anchor="middle" font-size="11.5" font-weight="700">04:00</text><text x="66" y="30" text-anchor="middle" font-size="10.5" class="mid">nachtelijke run</text>
+        <path d="M274 58 V40" class="ln"/><circle cx="274" cy="70" r="7" class="redf"/><text x="274" y="30" text-anchor="middle" font-size="11.5" font-weight="700" style="fill:var(--danger)">belang 4 of 5</text><text x="274" y="16" text-anchor="middle" font-size="10.5" class="mid">direct, op de achtergrond</text>
+        <g font-size="11" class="mid"><text x="14" y="120">Ook op een rustig moment: de speler slaapt,</text><text x="14" y="136">wacht lang, of slaat op.</text><text x="14" y="160" font-weight="700" class="inkf">Nul tot twee keer per speluur.</text></g>
+      </svg>
+      </div>
+      <p class="small">Hij draait alleen als er sinds de vorige keer iets van belang 3 of meer gebeurde. Op een rustige avond in de herberg draait hij niet.</p>
+    </div>
+    <div class="p c4">
+      <h3>Wat erin gaat · 1.500–3.000 tokens</h3>
+      <ol class="steps small">
+        <li>De nieuwe gebeurtenissen met belang ≥ 3 als regels (tijd, plek, wie, wat, getuigen), plus kleinere gebeurtenissen van de laatste dagen met dezelfde mensen of plek.</li>
+        <li>Van de betrokken mensen en plekken een kaart van één regel.</li>
+        <li>Titels en samenvattingen van bestaande lore die erbij kan horen, uit basislore en kroniek.</li>
+        <li>Vaste regels: geen feiten buiten de gebeurtenissen, alleen namen uit de lijsten, nieuwe namen alleen volgens blad 06.</li>
+      </ol>
+    </div>
+    <div class="p c4 end">
+      <h3>Controle voor het de savegame in gaat</h3>
+      <ul class="ticks small">
+        <li>Het schema klopt en elke id bestaat.</li>
+        <li><code>fame</code> is niet hoger dan het belang uit de regels.</li>
+        <li>De teksten gaan door dezelfde naamcontrole als gesprekken.</li>
+        <li>Mensen, plekken en tijden in het verhaal staan in de gebeurtenissen.</li>
+      </ul>
+      <p class="small" style="margin-top:8px"><mark>Een afgekeurd onderdeel valt terug op het sjabloon; de rest van het antwoord blijft staan.</mark></p>
+    </div>
+
+    <div class="p c7">
+      <h3>Wat eruit komt: JSON volgens een vast schema</h3>
+<pre class="screen" style="font-size:11.5px">{ "entries": [{
+    "events": [4812, 4815],
+    "title": "The Drowning of Harmen Molenaar",
+    "summary": "The miller of Molenend drowned in the Blackmere.",
+    "details": "He went out alone after dark; Wouter saw him go under.",
+    "story": "I saw him go in, I did. By the reeds at the north bank...",
+    "teller": "npc_wouter",                                         <span class="pn">1</span>
+    "versions": {
+      "village": "Harmen went into the Blackmere and never came up.",
+      "far": "The miller at Molenend fell in drunk, they say." },   <span class="pn">2</span>
+    "links": [<span class="t">"haakman", "the_storm"</span>],                       <span class="pn">3</span>
+    "fame": 4,                                                     <span class="pn">4</span>
+    "proposals": [{ "type": "mood", "npc": "npc_mirte",
+                    "note": "grieving" }] }],                      <span class="pn">5</span>
+  "news": { "molenend": "The mill stands still; nobody grinds
+             since Harmen drowned." } }                            <span class="pn">6</span></pre>
+    </div>
+    <div class="p c5 end">
+      <h3>Wat elk veld doet</h3>
+      <ul class="pinlist small">
+        <li><span class="pin">1</span><span><b>Verteller.</b> Wie het verhaal op niveau 3 vertelt: de getuige.</span></li>
+        <li><span class="pin">2</span><span><b>Versies</b> voor het dorp en voor ver weg. In de verre versie mag een fout zitten.</span></li>
+        <li><span class="pin">3</span><span><b>Links</b> naar bestaande lore. <mark>Het creatieve deel waar een sterker model echt iets toevoegt.</mark></span></li>
+        <li><span class="pin">4</span><span><b>Bekendheid</b>, begrensd door het belang uit de regels.</span></li>
+        <li><span class="pin">5</span><span><b>Voorstellen, geen besluiten.</b> Het systeem past ze begrensd toe of laat ze liggen.</span></li>
+        <li><span class="pin">6</span><span><b>Nieuws van de dag</b>, één regel per gebied, voor "What's new around here?"</span></li>
+      </ul>
+    </div>
+  </div>
+  <div class="foot"><span><b>Model</b>Een derde rol in Settings › AI, naast stem en brein, met hetzelfde advies en dezelfde proefrit; iets als Sonnet of GPT-5.4.</span><span><b>Zonder AI</b>of met het budget op maakt het spel het onderwerp uit sjablonen: samenvatting en detailregel, zonder versies of verhaal. Het blijft kloppen, alleen minder rijk verteld.</span></div>
+</section>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--ink)"/></marker>
+    <marker id="ahw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--wisp)"/></marker>
+    <marker id="ahd" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--ink-3)"/></marker>
+    <marker id="ahr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--danger)"/></marker>
+  </defs>
+</svg>
+
+<!-- ============ 05 ============ -->
+<section class="sheet" id="k-05">
+  <div class="sheet-head">
+    <div class="folio">Blad<strong>05</strong></div>
+    <div><h2>Hoe de kroniekschrijver de wereld ziet</h2><p class="thesis">Hij krijgt nooit het logboek of de spelstand. Hij krijgt een kort overzicht in een vaste notatie en houdt een eigen schrift bij met verhaallijnen. Zo verwerkt hij in één aanroep veel, met weinig tokens.</p></div>
+    <div class="ref">Ontwerp lore<br>Hoe hij de wereld ziet</div>
+  </div>
+  <div class="grid">
+    <div class="p c4">
+      <h3>Het schrift met verhaallijnen</h3>
+      <p class="small">De motor groepeert gebeurtenissen die samenhangen tot een verhaallijn: dezelfde mensen, dezelfde plek, hetzelfde patroon, of oorzaak en gevolg.</p>
+      <div class="card" style="margin-top:8px;background:var(--paper)">
+        <h5>L7 · The mill that stood still</h5>
+        <div class="sub">open lijn</div>
+        <dl class="kv small">
+          <dt>Samenvatting</dt><dd>Hooguit drie regels</dd>
+          <dt>Rollen</dt><dd>Harmen, Wouter, Mirte</dd>
+          <dt>Open haakjes</dt><dd>De storm scheurde de wieken; Harmen kan geen zeildoek betalen</dd>
+          <dt>Kan volgen</dt><dd>Wat hij denkt dat er komt</dd>
+        </dl>
+      </div>
+      <p class="note">Dat is zijn geheugen: kort en altijd bij de hand, zoals het notitieboek van een schrijver.</p>
+    </div>
+    <div class="p c8 end">
+      <h3>Het overzicht: ~300 tokens in plaats van duizenden</h3>
+<pre class="screen" style="font-size:12px"><span class="t">CAST </span> H=npc_harmen "Harmen, miller of Molenend"  W=npc_wouter "Wouter, eel-fisher"
+       M=npc_mirte "Mirte, baker, owes H 3 gl"
+<span class="t">PLACE</span> bm=loc_blackmere_north "north bank of the Blackmere"
+<span class="t">LINE </span> L7 "The mill that stood still" open: storm tore De Zwaan's sails;
+       H cannot pay for sailcloth
+<span class="t">NEW  </span> L7 E4812 Di 21:10 @bm H drowned (fell) wit W | E4815 Di 21:40 W told Jan, Grietje
+<span class="t">ASK  </span> L7 belang 4: lore entry with versions, news, effects</pre>
+      <div class="cards" style="margin-top:10px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
+        <div class="card"><h5>CAST</h5><p>Korte sleutels met één regel uitleg, alleen voor wie in dit overzicht voorkomt.</p></div>
+        <div class="card"><h5>PLACE</h5><p>Plekken, op dezelfde manier.</p></div>
+        <div class="card"><h5>LINE</h5><p>Alleen de lijnen die veranderden, met hun samenvatting.</p></div>
+        <div class="card"><h5>NEW</h5><p>De nieuwe gebeurtenissen, compact genoteerd.</p></div>
+        <div class="card"><h5>ASK</h5><p>Wat er van hem gevraagd wordt.</p></div>
+      </div>
+    </div>
+
+    <div class="p c4">
+      <h3>Opzoeken en antwoorden</h3>
+      <p class="small"><b>Gereedschap in dezelfde aanroep:</b> een persoon, plek, patroon of oudere verhaallijn opvragen, <b>hooguit drie keer per run</b>. Het overzicht blijft klein.</p>
+      <p class="small"><b>Antwoorden als operaties</b> in een vaste woordenschat:</p>
+      <div class="chips"><span class="chip w">lore schrijven</span><span class="chip">lijn bijwerken</span><span class="chip">lijn sluiten</span><span class="chip">effect voorstellen</span><span class="chip">nieuws van de dag</span></div>
+      <p class="note">Alleen de verhalen zelf zijn lopende tekst.</p>
+    </div>
+    <div class="p c4">
+      <h3>Alles in bulk</h3>
+      <ul class="ticks small">
+        <li>Eén run per nacht verwerkt alle veranderde lijnen, op volgorde van belang, tot een maximum aan tokens. Wat niet past, schuift een nacht door.</li>
+        <li><b>Belang 0 en 1 gaan nooit naar de AI</b>, alleen naar sjablonen.</li>
+        <li>Direct: belang 4 of 5, en de dood van iemand met een questrol, want dan eindigt of verandert die quest.</li>
+        <li>Notities ver weg verversen hoeft niet binnen minuten; later via de batch-API, voor ongeveer de helft van de prijs.</li>
+      </ul>
+    </div>
+    <div class="p c4 end">
+      <h3>Een run, met Sonnet 5</h3>
+      <div class="svgw">
+      <svg viewBox="0 0 330 120" role="img" aria-label="Opbouw van een run: 4000 tokens vast en gecachet, 500 tot 2000 overzicht, 800 tot 2000 antwoord">
+        <rect x="10" y="20" width="150" height="30" style="fill:var(--wisp)" opacity=".8"/>
+        <rect x="160" y="20" width="38" height="30" class="waterf" opacity=".45"/><rect x="198" y="20" width="37" height="30" class="waterf" opacity=".2"/>
+        <rect x="235" y="20" width="45" height="30" class="redf" opacity=".6"/><rect x="280" y="20" width="40" height="30" class="redf" opacity=".25"/>
+        <g font-size="11"><text x="16" y="40" style="fill:#1b1606" font-weight="700">vast, gecachet · 4.000</text><text x="10" y="70" class="mid">overzicht 500–2.000</text><text x="200" y="70" class="mid">antwoord 800–2.000</text></g>
+        <text x="10" y="100" font-size="12" font-weight="700">Een gewone nacht: 1 tot 3 dollarcent</text>
+        <text x="10" y="116" font-size="10.5" class="dim">ongeacht hoeveel kleine dingen er gebeurden</text>
+      </svg>
+      </div>
+      <div class="tw"><table class="t small">
+        <tr><td>Vast deel, gecachet</td><td class="r">$0,001</td></tr>
+        <tr><td>Overzicht</td><td class="r">$0,001–0,004</td></tr>
+        <tr><td>Antwoord</td><td class="r">$0,008–0,02</td></tr>
+      </table></div>
+    </div>
+  </div>
+  <div class="foot"><span><b>Gecachet</b>Regels, woordenschat, een schets van de wereld en de patronen staan in het vaste deel van de prompt. Alleen het overzicht is per run nieuw.</span></div>
+</section>
+
+<!-- ============ 06 ============ -->
+<section class="sheet" id="k-06">
+  <div class="sheet-head">
+    <div class="folio">Blad<strong>06</strong></div>
+    <div><h2>Nieuwe namen: alleen ver weg, en daarna vast</h2><p class="thesis">Het model mag alleen iets nieuws noemen dat ver buiten de bekende kaart ligt. Wat het noemt, ligt daarna vast in de savegame. Noemt een andere NPC het later, dan is het dezelfde kust.</p></div>
+    <div class="ref">Ontwerp lore<br>Nieuwe namen van het model</div>
+  </div>
+  <div class="grid">
+    <div class="p c4">
+      <h3>Een verplicht veld in het antwoord van de stem</h3>
+<pre class="screen" style="font-size:12px">"names": [
+  { "text": "Lubbert",
+    "id": "<span class="t">npc_lubbert</span>" },
+  { "text": "Amber Coast",
+    "new": "<span class="t">land</span>" }
+]</pre>
+      <p class="small" style="margin-top:8px">Elke eigennaam in het antwoord staat erin, met een id uit de lijsten of met <code>new</code> en een soort.</p>
+    </div>
+    <div class="p c8 end">
+      <h3>De controle, zonder AI, in milliseconden</h3>
+      <div class="svgw">
+      <svg viewBox="0 0 780 200" role="img" aria-label="Controle van eigennamen: onbekend woord met hoofdletter moet als nieuwe verre plaats in names staan; bekende namen gaan door de kenniscontrole">
+        <rect x="10" y="70" width="150" height="60" rx="4" class="box"/><text x="85" y="96" text-anchor="middle" font-size="13" font-weight="700">Woord met</text><text x="85" y="114" text-anchor="middle" font-size="13" font-weight="700">hoofdletter</text>
+        <path d="M160 100 H196" class="ln" marker-end="url(#ah)"/>
+        <polygon points="270,50 350,100 270,150 190,100" class="sys"/>
+        <text x="270" y="96" text-anchor="middle" font-size="12.5" font-weight="700">kent de</text><text x="270" y="112" text-anchor="middle" font-size="12.5" font-weight="700">wereld het?</text>
+        <path d="M270 50 V26 H400" class="ln" marker-end="url(#ah)"/><text x="280" y="20" font-size="11" class="mid">ja</text>
+        <rect x="404" y="6" width="364" height="40" rx="4" class="box"/><text x="416" y="31" font-size="12.5">Id bestaat en <b>deze NPC mag hem kennen</b>? Anders kennislek.</text>
+        <path d="M350 100 H400" class="ln" marker-end="url(#ah)"/><text x="360" y="92" font-size="11" class="mid">nee</text>
+        <polygon points="480,56 560,100 480,144 400,100" class="ai"/>
+        <text x="480" y="96" text-anchor="middle" font-size="12" font-weight="700">in names als</text><text x="480" y="112" text-anchor="middle" font-size="12" font-weight="700">nieuw en ver?</text>
+        <path d="M560 100 H600" style="stroke:var(--reed)" fill="none" stroke-width="1.5" marker-end="url(#ah)"/><text x="568" y="92" font-size="11" class="mid">ja</text>
+        <rect x="604" y="74" width="164" height="52" rx="4" class="reed"/><text x="614" y="96" font-size="12.5" font-weight="700">Nieuw onderwerp</text><text x="614" y="114" font-size="11" class="mono mid">far_amber_coast</text>
+        <path d="M480 144 V170 H600" style="stroke:var(--danger)" fill="none" stroke-width="1.5" marker-end="url(#ahr)"/><text x="490" y="164" font-size="11" class="mid">nee</text>
+        <rect x="604" y="150" width="164" height="40" rx="4" class="red"/><text x="614" y="175" font-size="12.5" font-weight="700">Antwoord afgekeurd</text>
+      </svg>
+      </div>
+    </div>
+
+    <div class="p c4">
+      <h3>Wat nieuw mag</h3>
+      <div class="chips"><span class="chip g">een verre stad</span><span class="chip g">een land</span><span class="chip g">een zee</span><span class="chip g">een verre rivier</span><span class="chip g">een meer</span><span class="chip g">een naamloze oma</span><span class="chip g">"a cousin up north"</span></div>
+      <h3 style="margin-top:14px">Wat nooit nieuw mag</h3>
+      <div class="chips"><span class="chip r">mensen</span><span class="chip r">plekken in de Holleveen</span><span class="chip r">plekken in buurstreken</span><span class="chip r">goden</span><span class="chip r">facties</span><span class="chip r">voorwerpen</span><span class="chip r">prijzen</span></div>
+    </div>
+    <div class="p c4">
+      <h3>Grenzen</h3>
+      <div class="statrow">
+        <div class="stat"><span class="big num">1</span><span class="small">nieuwe naam per antwoord</span></div>
+        <div class="stat"><span class="big num">2</span><span class="small">per NPC per speldag</span></div>
+        <div class="stat"><span class="big num">50</span><span class="small">per savegame</span></div>
+      </div>
+    </div>
+    <div class="p c4 end">
+      <h3>Daarna is het een bestaande naam</h3>
+      <dl class="kv small">
+        <dt>id</dt><dd class="mono">far_amber_coast</dd>
+        <dt>vast</dt><dd>soort, de regel waarin hij viel, wie hem als eerste noemde en wanneer</dd>
+        <dt>bekendheid</dt><dd>1; verspreidt zich als klein nieuws</dd>
+        <dt>dagboek</dt><dd>Onder Places, gemarkeerd als "heard of"</dd>
+      </dl>
+      <p class="note">In de volledige wereldbouwer (M8) ziet de ontwerper alle nieuwe namen per savegame: overnemen in de basiscontent, of verbieden voor volgende spellen.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 07 ============ -->
+<section class="sheet" id="k-07">
+  <div class="sheet-head">
+    <div class="folio">Blad<strong>07</strong></div>
+    <div><h2>De wereld buiten de kaart groeit als je dichterbij komt</h2><p class="thesis">Niet alles vooraf uitwerken, maar genereren wanneer het spel het nodig heeft. Twee regels: het wereldboek gaat altijd voor, en wat eenmaal gegenereerd is, ligt vast in de savegame.</p></div>
+    <div class="ref">Ontwerp lore<br>De wereld buiten de kaart</div>
+  </div>
+  <div class="grid">
+    <div class="p c8">
+      <h3>Vier niveaus van detail</h3>
+      <div class="svgw">
+      <svg viewBox="0 0 780 250" role="img" aria-label="Vier niveaus: naam, schets, omtrek, speelbaar, met oplopende kosten">
+        <g>
+          <rect x="10" y="150" width="180" height="60" class="boxs"/>
+          <rect x="200" y="110" width="180" height="100" style="fill:var(--wisp)" opacity=".2"/>
+          <rect x="390" y="70" width="180" height="140" style="fill:var(--wisp)" opacity=".45"/>
+          <rect x="580" y="20" width="190" height="190" style="fill:var(--wisp)" opacity=".8"/>
+        </g>
+        <g font-size="13">
+          <text x="22" y="174" font-weight="700">0 Naam</text><text x="22" y="192" font-size="11" class="mid">naam, soort, richting</text>
+          <text x="212" y="134" font-weight="700">1 Schets</text><text x="212" y="152" font-size="11" class="mid">vijf feiten: heerser,</text><text x="212" y="166" font-size="11" class="mid">afstand, sfeer, verhouding,</text><text x="212" y="180" font-size="11" class="mid">één verhaal</text>
+          <text x="402" y="94" font-weight="700">2 Omtrek</text><text x="402" y="112" font-size="11" class="mid">gebieden, 3–8 plaatsen,</text><text x="402" y="126" font-size="11" class="mid">routes, mensen als rol,</text><text x="402" y="140" font-size="11" class="mid">gevaren, lokale lore</text>
+          <text x="592" y="44" font-weight="700" style="fill:#1b1606">3 Speelbaar</text><text x="592" y="62" font-size="11" style="fill:#1b1606">locaties, NPC-kaarten,</text><text x="592" y="76" font-size="11" style="fill:#1b1606">diensten en objecten, in het</text><text x="592" y="90" font-size="11" style="fill:#1b1606">formaat van de content</text>
+        </g>
+        <g font-size="11.5" class="mono">
+          <text x="22" y="232">gratis</text><text x="212" y="232">≈ $0,01</text><text x="402" y="232">≈ $0,05</text><text x="592" y="232">≈ $0,10–0,30 per gebied</text>
+        </g>
+        <path d="M10 214 H770" class="lnd"/>
+      </svg>
+      </div>
+      <div class="tw"><table class="t small">
+        <tr><th>Niveau</th><th>Wanneer</th><th>Wie maakt het</th></tr>
+        <tr><td class="k">0 Naam</td><td>Iemand noemt het, of het staat als naam in het wereldboek</td><td>De stem in een gesprek, of de content</td></tr>
+        <tr><td class="k">1 Schets</td><td>Vaker genoemd, of speelt mee in een gebeurtenis</td><td>Kroniekschrijver; voor de elf plekken staat het al in het wereldboek</td></tr>
+        <tr><td class="k">2 Omtrek</td><td>Een quest wijst ernaar, of de speler gaat op weg</td><td>Kroniekschrijver met een sterker model</td></tr>
+        <tr><td class="k">3 Speelbaar</td><td>De speler is binnen een dagreis</td><td>Kroniekschrijver per gebied</td></tr>
+      </table></div>
+    </div>
+    <div class="p c4 end">
+      <h3>Het wereldboek eerst</h3>
+      <p class="small">Het wereldboek beschrijft buiten de Holleveen al <b>elf streken en steden</b> als kennis, met onder elke plek hoe hij speelbaar kan worden, en buurlanden als Flemmark en Rijkland. Genereren vult alleen gaten en spreekt het wereldboek nooit tegen.</p>
+      <p class="small"><b>Niveau 3 is gewone content</b> in een eigen laag van de savegame: dezelfde schema's, dezelfde validatie. De wereldbouwer (M8) kan het later overnemen in de basiscontent.</p>
+      <h3 style="margin-top:14px">Landen en hun verhoudingen</h3>
+      <p class="small">Per land of machtsblok: heerser, hoofdstad, en de verhouding tot elk ander blok, met een spanning van 0 tot 100.</p>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:2px;font-size:11.5px;text-align:center;margin:8px 0">
+        <div style="background:var(--reed-soft);padding:6px 2px">bondgenoot</div><div style="background:var(--paper);padding:6px 2px">neutraal</div><div style="background:var(--wisp-soft);padding:6px 2px">gespannen</div><div style="background:var(--danger);color:#fff;padding:6px 2px">oorlog</div>
+      </div>
+      <p class="small">Beginwaarden uit het wereldboek. Gebeurtenissen verschuiven de spanning volgens vaste regels; de kroniekschrijver mag een verschuiving voorstellen, het systeem begrenst. <mark>Over de grens naar oorlog is een gebeurtenis met belang 5.</mark></p>
+    </div>
+  </div>
+  <div class="foot"><span><b>Voorbeeld</b>"Werk Hunnenloo uit tot omtrek, passend bij wat het wereldboek erover zegt." (zie blad 11)</span></div>
+</section>
+
+<!-- ============ 08 ============ -->
+<section class="sheet" id="k-08">
+  <div class="sheet-head">
+    <div class="folio">Blad<strong>08</strong></div>
+    <div><h2>De AI plant de gevolgen, het systeem voert ze uit</h2><p class="thesis">Een oorlog moet direct gevolgen hebben, ook voor de quest waar je mee bezig bent. De kroniekschrijver plant die gevolgen in één keer als effectplan; het systeem controleert het en voert het in fases uit.</p></div>
+    <div class="ref">Ontwerp lore<br>Oorlog, vlucht, verwoesting</div>
+  </div>
+  <div class="grid">
+    <div class="p c7">
+      <h3>Een grote gebeurtenis verwerken</h3>
+      <div class="svgw">
+      <svg viewBox="0 0 760 300" role="img" aria-label="Aanleiding, wereldgebeurtenis, effectplan, controle; daarna ver weg, dichtbij, quests en nieuws">
+        <g font-size="13" text-anchor="middle">
+          <rect x="10" y="30" width="160" height="72" rx="4" class="box"/><text x="90" y="56" font-weight="700">Aanleiding</text><text x="90" y="74" font-size="11.5" class="mid">quest of ontwerper,</text><text x="90" y="89" font-size="11.5" class="mid">of landenspanning</text>
+          <rect x="200" y="30" width="160" height="72" rx="4" class="sys"/><text x="280" y="56" font-weight="700">Wereldgebeurtenis</text><text x="280" y="74" font-size="11.5" class="mid">belang 5, feiten</text><text x="280" y="89" font-size="11.5" class="mid">door de motor</text>
+          <rect x="390" y="30" width="160" height="72" rx="4" class="ai" stroke-width="2.5"/><text x="470" y="56" font-weight="700">Effectplan</text><text x="470" y="74" font-size="11.5">kroniekschrijver:</text><text x="470" y="89" font-size="11.5">wie, wat, wanneer</text>
+          <rect x="580" y="30" width="170" height="72" rx="4" class="sys"/><text x="665" y="56" font-weight="700">Controle</text><text x="665" y="74" font-size="11.5" class="mid">systeem: vaste</text><text x="665" y="89" font-size="11.5" class="mid">woorden en grenzen</text>
+          <rect x="580" y="180" width="170" height="72" rx="4" class="boxs"/><text x="665" y="206" font-weight="700">Ver weg</text><text x="665" y="224" font-size="11.5" class="mid">notities en groepen,</text><text x="665" y="239" font-size="11.5" class="mid">ververst naar onrust</text>
+          <rect x="390" y="180" width="160" height="72" rx="4" class="red"/><text x="470" y="206" font-weight="700">Dichtbij</text><text x="470" y="224" font-size="11.5" class="mid">NPC's lopen echt,</text><text x="470" y="239" font-size="11.5" class="mid">plekken veranderen</text>
+          <rect x="200" y="180" width="160" height="72" rx="4" class="reed"/><text x="280" y="206" font-weight="700">Quests en nieuws</text><text x="280" y="224" font-size="11.5" class="mid">quests reageren,</text><text x="280" y="239" font-size="11.5" class="mid">nieuws verspreidt</text>
+        </g>
+        <g class="ln" stroke-width="1.4">
+          <path d="M170 66 H196" marker-end="url(#ah)"/><path d="M360 66 H386" marker-end="url(#ah)"/><path d="M550 66 H576" marker-end="url(#ah)"/>
+          <path d="M665 102 V176" marker-end="url(#ah)"/><path d="M665 140 H470 V176" marker-end="url(#ah)"/>
+          <path d="M390 216 H364" marker-end="url(#ah)"/><path d="M665 252 V274 H280 V256" marker-end="url(#ah)"/>
+        </g>
+      </svg>
+      </div>
+      <h3 style="margin-top:6px">Fases in de tijd</h3>
+      <div style="display:grid;grid-template-columns:1fr 2fr 3fr;gap:3px;font-size:12.5px">
+        <div style="background:var(--danger);color:#fff;padding:8px"><b>Dag 1</b><br>het alarm</div>
+        <div style="background:var(--danger-soft);padding:8px"><b>Dag 2 en 3</b><br>de vlucht</div>
+        <div style="background:var(--paper);border:1px solid var(--rule);padding:8px"><b>Na een week</b><br>de bezetting</div>
+      </div>
+      <p class="small" style="margin-top:8px">Dichtbij de speler gebeurt alles in detail: NPC's pakken hun spullen en lopen echt weg, en je ziet de rook boven Veenhoek. Ver weg worden het notities (blad 09).</p>
+    </div>
+    <div class="p c5 end">
+      <h3>De woordenschat van een effectplan</h3>
+      <div class="tw"><table class="t small">
+        <tr><th>Effect</th><th>Voorbeeld</th><th>Grens</th></tr>
+        <tr><td class="k">Groep verplaatsen</td><td>De Vissers vluchten naar Waagdam</td><td>Alleen naar bestaande of gegenereerde plekken</td></tr>
+        <tr><td class="k">Bezetten</td><td>Soldaten uit Flemmark bezetten de Waag</td><td>Toestand bezet, eigen beschrijving, groep bezetters</td></tr>
+        <tr><td class="k">Beschadigen, verwoesten</td><td>De Zwaan brandt af</td><td>Toestand van plek en objecten</td></tr>
+        <tr><td class="k">Route sluiten</td><td>Het jaagpad is afgesloten</td><td>Dicht of gevaarlijk, met een reden</td></tr>
+        <tr><td class="k">Verhouding</td><td>De Nethermarch en Flemmark in oorlog</td><td>Binnen de spanningsregels</td></tr>
+        <tr><td class="k">Markt</td><td>Graan wordt schaars</td><td>Via voorraad en aanvoer; prijzen volgen vanzelf</td></tr>
+        <tr><td class="k">Nieuws</td><td>Nieuws van de dag</td><td>Eén regel per gebied</td></tr>
+      </table></div>
+      <h3 style="margin-top:14px">Harde grenzen</h3>
+      <ul class="ticks no small">
+        <li>Het plan doodt nooit gezellen of mensen met een questrol, tenzij een quest dat zegt.</li>
+        <li>Doden van andere NPC's alleen via vaste regels met kansen van de ontwerper, nooit omdat de AI het wil.</li>
+        <li>Een maximum aantal effecten per plan; elk effect verwijst naar de gebeurtenis die het veroorzaakte.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="foot"><span><b>Quests</b>reageren op de toestand van de wereld, niet op tekst. Is de plek van een stadium verwoest of een benodigde NPC gevlucht, dan faalt het stadium, krijgt het een alternatief, of ontstaat er een nieuwe opdracht: de Vissers veilig naar Waagdam brengen.</span></div>
+</section>
+
+<!-- ============ 09 ============ -->
+<section class="sheet" id="k-09">
+  <div class="sheet-head">
+    <div class="folio">Blad<strong>09</strong></div>
+    <div><h2>Wie waar is: hoe verder weg, hoe grover</h2><p class="thesis">Niet elke NPC hoeft elke minuut gesimuleerd te worden. Ver weg is een NPC een notitie die op tijd wordt ververst, vaker naarmate zijn leven onrustiger is. Voor de speler lijkt het alsof iedereen gewoon doorleeft.</p></div>
+    <div class="ref">Ontwerp lore<br>Detail naar afstand</div>
+  </div>
+  <div class="grid">
+    <div class="p c5">
+      <h3>Drie lagen</h3>
+      <svg viewBox="0 0 440 250" role="img" aria-label="Volledig rond de speler, grof in de gesimuleerde streken, notitie ver weg">
+        <circle cx="130" cy="125" r="118" class="boxs" stroke-dasharray="4 4"/>
+        <circle cx="130" cy="125" r="78" class="sys"/>
+        <circle cx="130" cy="125" r="38" class="ai" stroke-width="2"/>
+        <text x="130" y="122" text-anchor="middle" font-size="12" font-weight="700">Volledig</text><text x="130" y="136" text-anchor="middle" font-size="10" class="mid">elke minuut</text>
+        <text x="130" y="68" text-anchor="middle" font-size="12" font-weight="700">Grof</text><text x="130" y="30" text-anchor="middle" font-size="12" font-weight="700">Notitie</text>
+        <g font-size="11" class="mid">
+          <text x="262" y="60" font-weight="700" class="inkf">Volledig</text><text x="262" y="74">gebied van de speler en ernaast:</text><text x="262" y="88">behoeften, plannen, handel</text>
+          <text x="262" y="122" font-weight="700" class="inkf">Grof · elk speluur</text><text x="262" y="136">waar het dagritme hen zet;</text><text x="262" y="150">behoeften per uur, geen plannen</text>
+          <text x="262" y="184" font-weight="700" class="inkf">Notitie · naar onrust</text><text x="262" y="198">ver weg, op reis of op de vlucht:</text><text x="262" y="212">van elke 6 uur tot eens per jaar</text>
+        </g>
+      </svg>
+    </div>
+    <div class="p c3">
+      <h3>Een notitie</h3>
+<pre class="screen" style="font-size:11px;white-space:pre-wrap">{ "who": "npc_wouter",
+  "where": "loc_waagdam_church",
+  "doing": "sheltering with other
+            people from Veenhoek",
+  "since": "Maandag 20 Herfstmaand",
+  "unrest": "<span class="t">fleeing</span>",
+  "next_update": "in 6 hours",
+  "intends": "go back to Veenhoek
+              once it is safe" }</pre>
+    </div>
+    <div class="p c4 end">
+      <h3>Verversen naar onrust</h3>
+      <div class="tw"><table class="t small">
+        <tr><th>Onrust</th><th>Verversen</th><th>Door</th></tr>
+        <tr><td class="k">Vast</td><td>Eens per seizoen</td><td>Regels</td></tr>
+        <tr><td class="k">Reizend</td><td>Per etappe van de route</td><td>Regels</td></tr>
+        <tr><td class="k" style="color:var(--danger)">Op de vlucht</td><td>Elke 6 speluren, tot onderdak</td><td>Regels; keuzes in bulk door de kroniekschrijver</td></tr>
+        <tr><td class="k">Veldtocht</td><td>Elke speldag</td><td>Regels uit het effectplan</td></tr>
+      </table></div>
+      <p class="small" style="margin-top:8px">Regels waar het kan: een route aflopen, naar de dichtstbijzijnde veilige plek met ruimte, na een tijd terugkeren. Alleen wat regels niet kunnen, gaat in bulk: <i>"waar gaan deze twaalf mensen uit Veenhoek heen, en wie blijft achter"</i>. Eén aanroep voor een hele groep.</p>
+    </div>
+
+    <div class="p c7">
+      <h3>Materialiseren: van notitie terug naar volledig</h3>
+      <div class="svgw">
+      <svg viewBox="0 0 720 120" role="img" aria-label="Speler komt dichtbij: NPC wordt volledig op de plek uit de notitie; speler vertrekt: grof, na een dag notitie">
+        <g font-size="12.5" text-anchor="middle">
+          <rect x="10" y="30" width="170" height="54" rx="4" class="boxs"/><text x="95" y="54" font-weight="700">Notitie</text><text x="95" y="71" font-size="11" class="mid">ver weg</text>
+          <rect x="275" y="30" width="170" height="54" rx="4" class="sys"/><text x="360" y="54" font-weight="700">Grof</text><text x="360" y="71" font-size="11" class="mid">elk speluur</text>
+          <rect x="540" y="30" width="170" height="54" rx="4" class="ai"/><text x="625" y="54" font-weight="700">Volledig</text><text x="625" y="71" font-size="11" class="mid">elke spelminuut</text>
+        </g>
+        <path d="M180 44 C 330 0 430 0 536 44" style="stroke:var(--wisp)" fill="none" stroke-width="2" marker-end="url(#ahw)"/>
+        <text x="360" y="14" text-anchor="middle" font-size="11">speler komt in de buurt: op de plek uit de notitie, met een RECENTLY-regel</text>
+        <path d="M540 76 H449" class="ln" marker-end="url(#ah)"/><text x="494" y="100" text-anchor="middle" font-size="11" class="mid">speler vertrekt</text>
+        <path d="M275 76 H184" class="ln" marker-end="url(#ah)"/><text x="230" y="100" text-anchor="middle" font-size="11" class="mid">na een dag</text>
+      </svg>
+      </div>
+      <p class="quote">RECENTLY: "fled from Veenhoek three days ago"</p>
+    </div>
+    <div class="p c5 end">
+      <h3>Wouter, twee levens</h3>
+      <p class="small"><b>Gewoon:</b> Wouter blijft zijn hele leven rond Veenhoek, dus volledig of grof. De AI hoeft nooit iets voor hem te verversen.</p>
+      <p class="small"><b>Bij oorlog:</b> hij wordt een notitie met onrust "op de vlucht", tot hij in Waagdam onderdak vindt. Daarna zakt de onrust en wordt verversen weer zeldzaam.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 10 ============ -->
+<section class="sheet" id="k-10">
+  <div class="sheet-head">
+    <div class="folio">Blad<strong>10</strong></div>
+    <div><h2>Het dagboek wordt een naslagwerk</h2><p class="thesis">Het dagboek toont wat de speler weet, met links tussen mensen, plaatsen, streken, gebeurtenissen en lore. Het komt uit data, zonder AI, en lekt niets. De echte kroniek ziet de speler pas aan het eind, naast zijn eigen logboek.</p></div>
+    <div class="ref">Ontwerp lore<br>Dagboek, logboek, kroniek</div>
+  </div>
+  <div class="grid">
+    <div class="p c5">
+      <h3>Zes soorten pagina's, alles gelinkt</h3>
+      <svg viewBox="0 0 440 290" role="img" aria-label="Pagina's voor persoon, plaats, streek of land, gebeurtenis, lore en ding, onderling gelinkt">
+        <g style="stroke:var(--ink-3)" stroke-width="1" fill="none">
+          <path d="M120 60 L320 60"/><path d="M120 60 L80 160"/><path d="M120 60 L220 150"/><path d="M320 60 L220 150"/><path d="M320 60 L360 160"/><path d="M80 160 L220 150"/><path d="M360 160 L220 150"/><path d="M80 160 L150 250"/><path d="M220 150 L300 250"/><path d="M320 60 L300 250"/>
+        </g>
+        <g font-size="12.5" text-anchor="middle">
+          <rect x="60" y="40" width="120" height="40" rx="3" class="ai"/><text x="120" y="65" font-weight="700">Persoon</text>
+          <rect x="260" y="40" width="120" height="40" rx="3" class="sys"/><text x="320" y="65" font-weight="700">Plaats</text>
+          <rect x="20" y="140" width="120" height="40" rx="3" class="box"/><text x="80" y="165" font-weight="700">Gebeurtenis</text>
+          <rect x="160" y="130" width="120" height="40" rx="3" class="reed"/><text x="220" y="155" font-weight="700">Lore</text>
+          <rect x="300" y="140" width="120" height="40" rx="3" class="sys"/><text x="360" y="165" font-weight="700">Streek of land</text>
+          <rect x="90" y="230" width="120" height="40" rx="3" class="box"/><text x="150" y="255" font-weight="700">Ding</text>
+          <rect x="240" y="230" width="120" height="40" rx="3" class="boxs" stroke-dasharray="4 3"/><text x="300" y="255" class="mid">Kaart (M4)</text>
+        </g>
+      </svg>
+    </div>
+    <div class="p c4">
+      <h3>Doorklikken</h3>
+<pre class="screen" style="font-size:12px;white-space:pre-wrap"><span class="t">Wouter</span> the eel-fisher.
+Lives at Wouter's Hut in <span class="t">[Veenhoek]</span>.
+Told you the story of the <span class="t">[Haakman]</span>.
+
+<span class="d">— Mirte, 15 Herfstmaand</span></pre>
+      <p class="small" style="margin-top:8px">Er staat alleen in wat de speler zelf leerde, <b>met de bron erbij</b>. Een klik op Veenhoek geeft de korte beschrijving, de plek op de kaart die hij kent, en de bewoners die hij kent, elk weer als link.</p>
+    </div>
+    <div class="p c3 end">
+      <h3>Tegenstrijdige versies</h3>
+      <p class="quote">"Mirte says Harmen drowned. In Waagdam they say he fell in drunk."</p>
+      <p class="small">Hoort de speler twee versies, dan staan ze naast elkaar op de pagina van de gebeurtenis.</p>
+    </div>
+
+    <div class="p c6">
+      <h3>Aan het eind: logboek en kroniek naast elkaar</h3>
+      <div class="split">
+        <div class="card"><h5>Jouw logboek</h5><div class="sub">wat jij deed en hoorde</div><p>"You heard from Mirte that Harmen drowned. In Waagdam they said he was drunk."</p></div>
+        <div class="card" style="border-color:var(--wisp);background:var(--wisp-soft)"><h5>De echte kroniek</h5><div class="sub">alle loreonderwerpen, met de ware feiten</div><p>Wat er gebeurde waar je niet bij was, en wie wat wist.</p></div>
+      </div>
+      <p class="small" style="margin-top:8px">Te zien bij afsluiten of aan het eind van een verhaal. Beide zijn te downloaden als tekstbestand, later ook als pagina met links. <mark>Tijdens het spelen blijft de kroniek verborgen.</mark></p>
+    </div>
+    <div class="p c6 end">
+      <h3>Wat elke pagina toont</h3>
+      <div class="tw"><table class="t small">
+        <tr><th>Pagina</th><th>Wat erop staat</th><th>Links naar</th></tr>
+        <tr><td class="k">Persoon</td><td>Wie, beroep, wat je hoorde en van wie</td><td>Woonplaats, werk, familie, gebeurtenissen</td></tr>
+        <tr><td class="k">Plaats</td><td>Beschrijving, waar op jouw kaart, diensten</td><td>Streek, bewoners, gebeurtenissen</td></tr>
+        <tr><td class="k">Streek of land</td><td>De schets, heerser, verhouding</td><td>Plaatsen, machten, gebeurtenissen</td></tr>
+        <tr><td class="k">Gebeurtenis</td><td>Wat, wanneer, van wie; versies naast elkaar</td><td>Betrokkenen, plek, gevolgen</td></tr>
+        <tr><td class="k">Lore</td><td>Het verhaal op jouw niveau en wie het vertelde</td><td>Plekken en wezens</td></tr>
+        <tr><td class="k">Ding</td><td>Waar te koop en wat het kost</td><td>Verkopers</td></tr>
+      </table></div>
+    </div>
+  </div>
+  <div class="foot"><span><b>Planning</b>Pagina's met links en de eindweergave horen bij M3; de koppeling met de kaart komt in M4.</span></div>
+</section>
+
+<!-- ============ 11 ============ -->
+<section class="sheet" id="k-11">
+  <div class="sheet-head">
+    <div class="folio">Blad<strong>11</strong></div>
+    <div><h2>Sparren met de kroniekschrijver</h2><p class="thesis">In de wereldbouwer kan de ontwerper met de kroniekschrijver praten over een verhaal of een stuk wereld, en hem dingen laten invullen of aanpassen. Alles wat hij voorstelt, is een wijziging die de ontwerper eerst ziet.</p></div>
+    <div class="ref">Ontwerp lore<br>Sparren in de wereldbouwer</div>
+  </div>
+  <div class="grid">
+    <div class="p c8">
+      <h3>De werkwijze is altijd dezelfde</h3>
+      <div class="svgw">
+      <svg viewBox="0 0 780 170" role="img" aria-label="Vraag, voorstel als YAML-wijziging, automatische validatie, dan overnemen, aanpassen of verwerpen">
+        <g font-size="13" text-anchor="middle">
+          <rect x="10" y="50" width="140" height="60" rx="4" class="box"/><text x="80" y="76" font-weight="700">Vraag</text><text x="80" y="94" font-size="11" class="mid">in het chatpaneel</text>
+          <rect x="180" y="50" width="160" height="60" rx="4" class="ai" stroke-width="2"/><text x="260" y="76" font-weight="700">Voorstel</text><text x="260" y="94" font-size="11" class="mid">als wijziging in de YAML</text>
+          <rect x="370" y="50" width="150" height="60" rx="4" class="sys"/><text x="445" y="76" font-weight="700">Validatie</text><text x="445" y="94" font-size="11" class="mid">automatisch</text>
+          <rect x="580" y="6" width="190" height="40" rx="4" class="reed"/><text x="675" y="31" font-weight="700">overnemen</text>
+          <rect x="580" y="60" width="190" height="40" rx="4" class="box"/><text x="675" y="85" font-weight="700">aanpassen</text>
+          <rect x="580" y="114" width="190" height="40" rx="4" class="red"/><text x="675" y="139" font-weight="700">verwerpen</text>
+        </g>
+        <g class="ln" stroke-width="1.3"><path d="M150 80 H176" marker-end="url(#ah)"/><path d="M340 80 H366" marker-end="url(#ah)"/><path d="M520 80 C 550 80 550 26 576 26" marker-end="url(#ah)"/><path d="M520 80 H576" marker-end="url(#ah)"/><path d="M520 80 C 550 80 550 134 576 134" marker-end="url(#ah)"/></g>
+        <text x="548" y="166" text-anchor="middle" font-size="11" class="dim">de ontwerper beslist</text>
+      </svg>
+      </div>
+      <p class="small"><mark>Niets gaat ongezien de basiscontent in.</mark> Het chatpaneel staat naast wat je bewerkt: een streek, een NPC, een patroon, of een verhaallijn uit een savegame. De AI krijgt dat stuk mee, plus de werkinstructie.</p>
+    </div>
+    <div class="p c4 end">
+      <h3>content/CHRONICLER.md</h3>
+      <p class="small">Een vast document in de content, in het Engels. Het beschrijft:</p>
+      <ul class="ticks small">
+        <li>waar alles staat, de schema's, ids en naamgeving</li>
+        <li>de patronen en verhaallijnen</li>
+        <li>de regels uit het wereldboek</li>
+        <li>hoe een wijziging eruitziet</li>
+      </ul>
+      <p class="small" style="margin-top:8px">Het staat ook leesbaar in de editor: de ontwerper weet wat de AI weet en kan het bijschaven. <i>Het is voor de kroniekschrijver wat CLAUDE.md in de repository voor Claude is.</i></p>
+    </div>
+
+    <div class="p c8">
+      <h3>Voorbeelden van wat je kunt vragen</h3>
+      <div class="cards" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
+        <div class="card"><p class="quote" style="margin:0">"Werk Hunnenloo uit tot omtrek, passend bij wat het wereldboek erover zegt."</p></div>
+        <div class="card"><p class="quote" style="margin:0">"Geef Henk een kat, en een reden om hem kwijt te raken."</p></div>
+        <div class="card"><p class="quote" style="margin:0">"Wat doet Mirte als Harmen verdrinkt? Denk aan haar schuld."</p></div>
+        <div class="card"><p class="quote" style="margin:0">"Schrijf de legende van de Wenende Steen per kennisniveau."</p></div>
+        <div class="card"><p class="quote" style="margin:0">"Controleer of deze streek klopt met het wereldboek."</p></div>
+      </div>
+    </div>
+    <div class="p c4 end">
+      <h3>In een lopend spel</h3>
+      <p class="small">Gegenereerde content geldt direct; je speelt immers al. In de wereldbouwer is die content <b>gemarkeerd</b>, zodat je hem later kunt nakijken en overnemen in de basiscontent.</p>
+      <div class="row small" style="margin-top:8px"><span class="chip w">werkinstructie: M3</span><span class="chip">chatpaneel: M8</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 12 ============ -->
+<section class="sheet" id="k-12">
+  <div class="sheet-head">
+    <div class="folio">Blad<strong>12</strong></div>
+    <div><h2>De lorelaag ligt over de basiswereld heen</h2><p class="thesis">De lorelaag hoort bij de spelstand van één spel en zit in elke momentopname. De basislore uit de content blijft ongewijzigd en ligt eronder. Antwoorden van de kroniekschrijver staan in het spellogboek, dus naspelen geeft precies dezelfde kroniek zonder het model opnieuw aan te roepen.</p></div>
+    <div class="ref">Ontwerp lore<br>Opslag · meenemen</div>
+  </div>
+  <div class="grid">
+    <div class="p c5">
+      <h3>De lagen</h3>
+      <svg viewBox="0 0 440 300" role="img" aria-label="Basiscontent onderaan, daarboven de lagen van de savegame">
+        <g font-size="12.5">
+          <rect x="30" y="250" width="380" height="40" class="sys"/><text x="44" y="275" font-weight="700">Basiscontent en basislore</text><text x="396" y="275" text-anchor="end" font-size="11" class="mid">wereldboek · onveranderd</text>
+          <rect x="40" y="208" width="360" height="36" class="boxs"/><text x="54" y="231">Gegenereerde content, niveau 1–3</text><text x="386" y="231" text-anchor="end" font-size="11" class="mid">eigen laag</text>
+          <rect x="50" y="168" width="340" height="34" class="ai"/><text x="64" y="190">Kroniek · verre namen · nieuws van de dag</text>
+          <rect x="60" y="128" width="320" height="34" class="ai" opacity=".75"/><text x="74" y="150">Feiten · kennis (alleen afwijkingen)</text>
+          <rect x="70" y="88" width="300" height="34" class="box"/><text x="84" y="110">Staatkunde · toestand van plekken</text>
+          <rect x="80" y="48" width="280" height="34" class="box"/><text x="94" y="70">Notities van NPC's ver weg</text>
+          <rect x="90" y="8" width="260" height="34" class="peat"/><text x="104" y="30" font-weight="700">Spellogboek</text><text x="336" y="30" text-anchor="end" font-size="11" class="mid">nooit opgeruimd</text>
+        </g>
+      </svg>
+    </div>
+    <div class="p c7 end">
+      <h3>Wat er waar staat</h3>
+      <div class="tw"><table class="t small">
+        <tr><th>Deel</th><th>Inhoud</th></tr>
+        <tr><td class="k">Spellogboek</td><td>Alles wat er gebeurde, doorlopend, met takken na het laden van een oudere save. Eigen tabel.</td></tr>
+        <tr><td class="k">Feiten</td><td>Per feit de gebeurtenis, het belang, wanneer het ontstond en wanneer het vergeten wordt</td></tr>
+        <tr><td class="k">Kennis</td><td>Per NPC en feit het niveau, de bron en wanneer hij het hoorde; alleen wat afwijkt van de vaste regel</td></tr>
+        <tr><td class="k">Kroniek</td><td>De loreonderwerpen van dit spel, met versies, verteller en links</td></tr>
+        <tr><td class="k">Verre namen</td><td>Nieuwe namen met soort, eerste noemer en datum</td></tr>
+        <tr><td class="k">Nieuws van de dag</td><td>Per gebied één regel</td></tr>
+        <tr><td class="k">Staatkunde</td><td>Machtsblokken met heerser, hoofdstad, verhouding en spanning</td></tr>
+        <tr><td class="k">Toestand van plekken</td><td>Bezet, beschadigd, verwoest of verlaten, met de oorzaak; gesloten routes</td></tr>
+        <tr><td class="k">Notities</td><td>Waar NPC's en groepen ver weg zijn, met onrust en volgende verversing</td></tr>
+        <tr><td class="k">Gegenereerde content</td><td>Streken en plaatsen op niveau 1 tot 3, in het formaat van de content</td></tr>
+      </table></div>
+      <p class="small" style="margin-top:8px">Ids zijn per spel vast en worden nooit hergebruikt: <code>chr_12_harmen_drowned</code>, <code>far_amber_coast</code>.</p>
+    </div>
+
+    <div class="p c12 end">
+      <h3>Lore meenemen naar een volgend spel</h3>
+      <div class="cards" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr))">
+        <div class="card"><h5>Nieuwe wereld</h5><div class="sub">bestaat al</div><p>Het spel begint zoals het wereldboek het beschrijft. Er gaat niets mee.</p></div>
+        <div class="card" style="border-color:var(--wisp)"><h5>Zelfde wereld, nieuw personage</h5><div class="sub">moeilijkheid: middel · advies: na M3</div><p>De wereld loopt door vanaf de gekozen save. De mensen onthouden "de vreemdeling uit Graafhaven". Spelstand, kroniek, verre namen en kennis gaan mee; relaties met het oude personage worden herinneringen.</p></div>
+        <div class="card"><h5>Jaren later, als legende</h5><div class="sub">moeilijkheid: groot · later</div><p>De kroniek wordt oude lore. De kroniekschrijver herschrijft de verhalen tot legendes over "de vreemdeling", zonder namen van mensen die in het nieuwe spel nog leven. Een dode Harmen past niet naast een levende.</p></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span><b>Open</b>Welke variant het wordt, is nog niet besloten. Meenemen mag.</span></div>
+</section>
+
+<!-- ============ 13 ============ -->
+<section class="sheet" id="k-13">
+  <div class="sheet-head">
+    <div class="folio">Blad<strong>13</strong></div>
+    <div><h2>Voorbeeld: Harmen verdrinkt</h2><p class="thesis">Harmen de molenaar verdrinkt op dinsdagavond in de Blackmere, en Wouter ziet het vanaf zijn fuiken. De dood van een NPC is basis 3, met +1 voor de dode: belang 4. Een verzonnen voorbeeld om het hele systeem te toetsen.</p></div>
+    <div class="ref">Ontwerp lore<br>Voorbeeld</div>
+  </div>
+  <div class="grid">
+    <div class="p c8">
+      <h3>Wie weet het, wanneer, en hoe precies</h3>
+      <div class="svgw">
+      <svg viewBox="0 0 780 300" role="img" aria-label="Tijdlijn van het nieuws over Harmen, van dinsdagavond tot maandag in Graafhaven">
+        <path d="M20 150 H760" class="ln" stroke-width="1.5"/>
+        <g font-size="10.5" class="mono dim" text-anchor="middle"><text x="60" y="172">Di 21:10</text><text x="160" y="172">Di 21:40</text><text x="260" y="172">Di 22:00</text><text x="370" y="172">Wo 04:00</text><text x="480" y="172">Wo 07:00</text><text x="590" y="172">Wo 12:00</text><text x="720" y="172">Ma</text></g>
+        <g>
+          <circle cx="60" cy="150" r="9" class="wispf"/><circle cx="160" cy="150" r="9" class="wispf"/><circle cx="260" cy="150" r="7" style="fill:var(--wisp)" opacity=".6"/>
+          <rect x="360" y="140" width="20" height="20" transform="rotate(45 370 150)" class="ai" stroke-width="2"/>
+          <circle cx="480" cy="150" r="7" style="fill:var(--wisp)" opacity=".6"/><circle cx="590" cy="150" r="7" style="fill:var(--wisp)" opacity=".6"/><circle cx="720" cy="150" r="5" style="fill:var(--danger)"/>
+        </g>
+        <g font-size="12">
+          <text x="60" y="118" text-anchor="middle" font-weight="700">Wouter</text><text x="60" y="102" text-anchor="middle" font-size="10.5" class="mid">getuige · 3</text>
+          <text x="160" y="118" text-anchor="middle" font-weight="700">Jan, Grietje</text><text x="160" y="102" text-anchor="middle" font-size="10.5" class="mid">bonkt op de deur · 3</text>
+          <text x="260" y="118" text-anchor="middle" font-weight="700">The Goose</text><text x="260" y="102" text-anchor="middle" font-size="10.5" class="mid">Jan in de herberg · 2</text>
+          <text x="370" y="60" text-anchor="middle" font-weight="700" style="fill:var(--wisp)">Kroniekschrijver</text><text x="370" y="76" text-anchor="middle" font-size="10.5" class="mid">"The Drowning of Harmen</text><text x="370" y="90" text-anchor="middle" font-size="10.5" class="mid">Molenaar", 3 versies, link Haakman</text>
+          <text x="480" y="210" text-anchor="middle" font-weight="700">Heel Veenhoek</text><text x="480" y="226" text-anchor="middle" font-size="10.5" class="mid">Mirte in de bakkerij · 2</text>
+          <text x="590" y="118" text-anchor="middle" font-weight="700">Waagdam</text><text x="590" y="102" text-anchor="middle" font-size="10.5" class="mid">Lubbert, van een klant · 2</text>
+          <text x="720" y="210" text-anchor="middle" font-weight="700" style="fill:var(--danger)">Graafhaven</text><text x="720" y="226" text-anchor="middle" font-size="10.5" class="mid">per schuit · 1</text>
+          <text x="720" y="244" text-anchor="middle" font-size="10.5" font-style="italic" class="mid">"fell in drunk, they say"</text>
+        </g>
+        <text x="20" y="290" font-size="11" class="dim">Het getal is het kennisniveau. Tijden zijn speltijd. De afstanden op de lijn zijn niet op schaal.</text>
+      </svg>
+      </div>
+    </div>
+    <div class="p c4 end">
+      <h3>Wat de speler merkt</h3>
+      <ul class="pinlist small">
+        <li><span class="pin">1</span><span>Woensdagochtend <code>ask mirte</code> "What's new?": de stem krijgt de <b>dorpsversie</b> in het kennispakket en het nieuws van de dag voor Veenhoek.</span></li>
+        <li><span class="pin">2</span><span>Wouter vertelt <b>zijn eigen verhaal</b>, op niveau 3.</span></li>
+        <li><span class="pin">3</span><span>In Waagdam hoort de speler 's middags een <b>kalere</b> versie.</span></li>
+        <li><span class="pin">4</span><span>In Graafhaven later een <b>foute</b>.</span></li>
+      </ul>
+    </div>
+
+    <div class="p c6">
+      <h3>De motor doet de rest, zonder AI</h3>
+      <div class="svgw">
+      <svg viewBox="0 0 560 90" role="img" aria-label="De Zwaan heeft geen molenaar, dus het meel wordt duurder">
+        <g font-size="12.5" text-anchor="middle">
+          <rect x="4" y="20" width="160" height="48" rx="3" class="red"/><text x="84" y="49" font-weight="700">Harmen dood</text>
+          <rect x="200" y="20" width="160" height="48" rx="3" class="box"/><text x="280" y="41" font-weight="700">De Zwaan</text><text x="280" y="58" font-size="11" class="mid">geen molenaar</text>
+          <rect x="396" y="20" width="160" height="48" rx="3" class="box"/><text x="476" y="41" font-weight="700">Meel duurder</text><text x="476" y="58" font-size="11" class="mid">voorraad daalt</text>
+        </g>
+        <g class="ln"><path d="M164 44 H196" marker-end="url(#ah)"/><path d="M360 44 H392" marker-end="url(#ah)"/></g>
+      </svg>
+      </div>
+    </div>
+    <div class="p c6 end">
+      <h3>Een verband dat het spel zelf niet ziet</h3>
+      <p class="small">Mirte was Harmen <b>drie gulden</b> schuldig, en nu is er niemand meer om aan terug te betalen. De kroniekschrijver legt dat verband en stelt voor dat haar stemming verandert.</p>
+      <p class="small"><mark>Het systeem beslist of dat gebeurt.</mark></p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 14 ============ -->
+<section class="sheet" id="k-14">
+  <div class="sheet-head">
+    <div class="folio">Blad<strong>14</strong></div>
+    <div><h2>Een paar dollarcent per speluur</h2><p class="thesis">Alleen de kroniekschrijver gebruikt tokens. Verspreiding, vervagen en vergeten zijn rekenwerk. De kroniekschrijver telt mee voor het uurbudget, met lagere voorrang dan gesprekken; is het budget op, dan maakt hij het onderwerp uit sjablonen.</p></div>
+    <div class="ref">Ontwerp lore<br>Kosten, besluiten, volgorde</div>
+  </div>
+  <div class="grid">
+    <div class="p c6">
+      <h3>Kosten per speluur</h3>
+      <div class="hbars">
+        <div class="hbar"><span>Verspreiding, vervagen, vergeten</span><span class="track"></span><span class="v">$0</span></div>
+        <div class="hbar"><span>Extra in gesprekken (~70 tokens)</span><span class="track"><span class="fill" style="width:10%"></span></span><span class="v">~$0,003</span></div>
+        <div class="hbar"><span>Kroniekschrijver per keer, Haiku 4.5</span><span class="track"><span class="fill" style="width:26.7%"></span></span><span class="v">$0,008</span></div>
+        <div class="hbar"><span>Kroniekschrijver per keer, Sonnet 5</span><span class="track"><span class="fill w" style="width:50%"></span></span><span class="v">$0,015</span></div>
+        <div class="hbar"><span><b>Kroniekschrijver, 0–2× per uur</b></span><span class="track"><span class="fill w" style="width:100%"></span></span><span class="v">≤ $0,03</span></div>
+      </div>
+      <h3 style="margin-top:16px">Eenmalig</h3>
+      <div class="tw"><table class="t small">
+        <tr><td>Effectplan voor een grote gebeurtenis (4.000 in, 2.000 uit)</td><td class="r">~$0,03</td></tr>
+        <tr><td>Keuzes in bulk voor een groep</td><td class="r">~$0,01</td></tr>
+        <tr><td>Wereld buiten de kaart: schets · omtrek · per speelbaar gebied</td><td class="r">$0,01 · $0,05 · $0,10–0,30</td></tr>
+      </table></div>
+      <p class="note">Prijzen uit de prijstabel van september 2026. De savegame blijft klein: klein nieuws wordt vergeten, kennis alleen opgeslagen als ze afwijkt, hooguit vijftig verre namen.</p>
+    </div>
+    <div class="p c6 end">
+      <h3>Besluiten van 27 september 2026</h3>
+      <div class="tw"><table class="t small">
+        <tr><td class="k">Eigen rol</td><td>Ja, met een eigen model; ook effectplannen en de wereld buiten de kaart</td></tr>
+        <tr><td class="k">Fouten ver weg</td><td>Ja; doorvertellen maakt verhalen anders</td></tr>
+        <tr><td class="k">Wat de speler ziet</td><td>Tijdens het spel het dagboek; aan het eind logboek en echte kroniek, te downloaden</td></tr>
+        <tr><td class="k">Buiten de streek</td><td>In M3 als gerucht; een groot event heeft direct gevolgen via het effectplan, ook voor lopende quests</td></tr>
+        <tr><td class="k">Buiten de kaart</td><td>Genereren op aanvraag, wereldboek eerst, in vier niveaus</td></tr>
+        <tr><td class="k">Wie begint een oorlog</td><td>De spelregels: spanning loopt over de grens</td></tr>
+        <tr><td class="k">Doden</td><td>Mag, ook met een questrol; de quest eindigt of verandert</td></tr>
+        <tr><td class="k">Gegenereerde content</td><td>Geldt direct; gemarkeerd in de wereldbouwer</td></tr>
+        <tr><td class="k">Lore meenemen</td><td>Mag; de variant staat nog open</td></tr>
+      </table></div>
+    </div>
+
+    <div class="p c12 end">
+      <h3>Bouwvolgorde</h3>
+      <div class="svgw">
+      <svg viewBox="0 0 1000 200" role="img" aria-label="Bouwvolgorde: M3, M3.1, M4, M6, M7, M8, daarna meenemen van lore">
+        <path d="M20 60 H980" class="ln" stroke-width="2"/>
+        <g>
+          <circle cx="60" cy="60" r="12" class="wispf"/><circle cx="200" cy="60" r="12" class="ai" stroke-width="2"/><circle cx="340" cy="60" r="10" class="box" stroke-width="1.5"/><circle cx="480" cy="60" r="10" class="box" stroke-width="1.5"/><circle cx="620" cy="60" r="10" class="box" stroke-width="1.5"/><circle cx="760" cy="60" r="10" class="box" stroke-width="1.5"/><circle cx="920" cy="60" r="8" class="boxs" stroke-width="1.5"/>
+        </g>
+        <g font-size="14" font-weight="700" text-anchor="middle"><text x="60" y="36">M3</text><text x="200" y="36">M3.1</text><text x="340" y="36">M4</text><text x="480" y="36">M6</text><text x="620" y="36">M7</text><text x="760" y="36">M8</text><text x="920" y="36" class="mid">na M7</text></g>
+        <g font-size="11" class="mid">
+          <text x="10" y="92">kennis, geruchten, dagboek</text><text x="10" y="106">versies uit sjablonen</text><text x="10" y="120">kleine patronen + tempo</text><text x="10" y="134">eindweergave, CHRONICLER.md</text>
+          <text x="148" y="92" class="inkf" font-weight="700">de kroniekschrijver</text><text x="148" y="106">verhaallijnen, notatie</text><text x="148" y="120">nacht- en directe runs</text><text x="148" y="134">AI-doelkeuze van het brein</text>
+          <text x="296" y="92">detail naar afstand</text><text x="296" y="106">kaart in het dagboek</text><text x="296" y="120">genereren tot omtrek</text>
+          <text x="436" y="92">staatkunde, spanning</text><text x="436" y="106">misdaad en intrige</text>
+          <text x="572" y="92">rampen, oorlog</text><text x="572" y="106">effectplannen, groepen</text><text x="572" y="120">genereren tot speelbaar</text><text x="572" y="134">quests reageren</text>
+          <text x="716" y="92">sparren met de</text><text x="716" y="106">kroniekschrijver</text>
+          <text x="872" y="92">lore van een andere</text><text x="872" y="106">savegame</text>
+        </g>
+        <text x="20" y="180" font-size="11" class="dim">M3 zonder AI, zodat je eerder kunt spelen en testen; M3.1 voegt de kroniekschrijver toe.</text>
+      </svg>
+      </div>
+    </div>
+    <div class="p c12 end">
+      <h3>Nog open, met advies</h3>
+      <div class="cards" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr))">
+        <div class="card"><h5>Tempo kiezen bij een nieuw spel?</h5><p>Rustig, gewoon of dramatisch. Advies: ja, standaard gewoon.</p></div>
+        <div class="card"><h5>M3 splitsen in M3 en M3.1?</h5><p>Advies: ja, dan kun je eerder spelen en testen. De roadmap werkt al zo.</p></div>
+        <div class="card"><h5>Welke variant van lore meenemen?</h5><p>Zelfde wereld met een nieuw personage, of jaren later als legende. Advies: de eerste na M3, de tweede later.</p></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span><b>Bron</b>Ontwerp: lore en wereldverandering (Claude Docs), 27 september 2026. Dit ontwerp is verwerkt in FO hoofdstuk 5 en de roadmap. Het ontwerp is leidend; deze bladen zijn een momentopname.</span></div>
+</section>
+
+</div>
+
+</body>
+</html>
