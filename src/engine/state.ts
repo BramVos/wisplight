@@ -108,10 +108,43 @@ export interface PlayerState {
   inventory: Counts
   lodging?: { location: string; until: number }
   journal?: Record<string, number>
+  /** Areas the player has been to, for the news of a stranger arriving. */
+  visited?: string[]
 }
 
 export interface ServiceState {
   stock: Counts
+}
+
+/**
+ * Something that happened and that people can talk about (design: lore and world
+ * change). The motor writes it; the versions are what people say at each level.
+ */
+export interface Fact {
+  id: string
+  kind: string
+  /** Topic ids the fact is about: people, places, items. */
+  about: string[]
+  place: string
+  t: number
+  /** 0 to 5: how far it will travel and how long it is remembered. */
+  belang: number
+  /** How juicy it is to retell, 0 to 1, fading with the days. */
+  juice: number
+  title: string
+  /** False for a rumour that is simply not true. */
+  truth?: boolean
+  /** Level 3, 2 and 1: precise, as the village tells it, as it sounds far away. */
+  text: { precise: string; village: string; far: string }
+}
+
+/** How someone heard of a fact: level, how sure, from whom, and whether it grew in the telling. */
+export interface Heard {
+  level: 1 | 2 | 3
+  reliability: number
+  from: string
+  t: number
+  grown?: boolean
 }
 
 /** A far-away place a model named in conversation, fixed in the savegame (design: lore and world change). */
@@ -154,6 +187,8 @@ export interface GameState {
   talk?: TalkState
   /** The lore layer of this game, on top of the base lore from the content. */
   lore?: { far: FarName[] }
+  /** Facts and who heard them; "player" is the player. */
+  news?: { seq: number; facts: Fact[]; heard: Record<string, Record<string, Heard>> }
 }
 
 export const objectKey = (location: string, object: string) => `${location}/${object}`

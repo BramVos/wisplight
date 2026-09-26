@@ -92,7 +92,7 @@ describe('M2.1: sleep, doors and what an NPC just did', () => {
     await engine.handle('What are you doing now?')
     const prompt = mock.calls.at(-1)!.prompt
     expect(prompt).toMatch(/Mood: just woken, groggy and cross/)
-    expect(prompt).toMatch(/RECENTLY: .*you walked from The Drowned Goose, Common Room to Wouter's Hut; .*you went to bed; (just now|\d+ minutes ago) you were woken by the stranger\./)
+    expect(prompt).toMatch(/RECENTLY: .*you walked from [^;]+ to Wouter's Hut; .*you went to bed; (just now|\d+ minutes ago) you were woken by the stranger\./)
   })
 
   it('makes you wake a sleeping NPC before you can talk', async () => {
@@ -107,8 +107,15 @@ describe('M2.1: sleep, doors and what an NPC just did', () => {
 
   it('gives someone who goes to bed a few minutes before the lamp goes out', () => {
     const engine = new Engine(content, { seed: 1 })
-    at(engine, 14, 22, 35)
-    expect(engine.state.npcs['npc_wouter']).toMatchObject({ location: 'loc_wouter_hut', activity: 'getting ready for bed' })
+    at(engine, 14, 21, 0)
+    const wouter = engine.state.npcs['npc_wouter']!
+    let ready = 0
+    for (let minute = 0; minute < 240 && wouter.activity !== 'asleep'; minute++) {
+      engine.tick(1)
+      if (wouter.activity === 'getting ready for bed') ready++
+    }
+    expect(wouter).toMatchObject({ location: 'loc_wouter_hut', activity: 'asleep' })
+    expect(ready).toBeGreaterThanOrEqual(9)
   })
 })
 
@@ -116,7 +123,7 @@ describe('M2.1: people notice the stranger', () => {
   it('lets a curious passer-by stop for a while instead of rushing through', () => {
     const engine = new Engine(content, { seed: 1 })
     const lines = texts(engine.tick(1))
-    expect(lines).toMatch(/Gerrit comes from the east, on his way to The Drowned Goose, Common Room\./)
+    expect(lines).toMatch(/Gerrit comes from the east, on his way to [^.]+\./)
     expect(lines).toMatch(/Gerrit stops and looks you over\./)
     engine.tick(12)
     expect(engine.state.npcs['npc_gerrit']).toMatchObject({ location: 'loc_veenhoek_quay', activity: 'stopping to look at the stranger' })

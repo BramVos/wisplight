@@ -7,6 +7,7 @@ import { LlmError, type LlmClient, type LlmRequest, type LlmResponse } from './d
 import { attitude } from './dialogue/relations'
 import { TopicRegistry } from './dialogue/topics'
 import { formatMoney } from './items'
+import { recordFact, seedNews } from './news'
 import { parseCommand, parseDirection } from './parser'
 import { advance } from './simulation'
 import { createInitialState, type GameState, type WorldEvent } from './state'
@@ -107,6 +108,10 @@ export class Engine {
     this.dialogue = new Dialogue(this.world, this.topics, new Knowledge(this.world, this.topics), () => this.recorder)
     this.eventMark = state.eventSeq
     this.setLlm(options.llm)
+    if (!options.state) {
+      seedNews(this.world)
+      this.arrive()
+    }
     this.dialogue.learn(state.player.location, `area_${this.world.location(state.player.location).area}`)
   }
 
@@ -116,6 +121,30 @@ export class Engine {
 
   get clock(): GameClock {
     return new GameClock(this.world.now)
+  }
+
+  /** The first time the player comes to an area, the people there have something to talk about. */
+  private arrive(): void {
+    const location = this.world.location(this.state.player.location)
+    const visited = (this.state.player.visited ??= [])
+    if (visited.includes(location.area)) return
+    visited.push(location.area)
+    const area = this.content.areas.get(location.area)
+    if (!area || area.kind === 'route') return
+    const clock = new GameClock(this.world.now).parts
+    recordFact(this.world, {
+      kind: 'stranger',
+      about: [`area_${area.id}`],
+      place: location.id,
+      belang: 1,
+      juice: 0.7,
+      title: `the stranger in ${area.name}`,
+      text: {
+        precise: `A stranger from Graafhaven came to ${area.name} on ${clock.weekday}, in the ${clock.dayPart}.`,
+        village: `There's a stranger about in ${area.name}, come from Graafhaven.`,
+        far: `A stranger has come to the Holleveen, they say.`,
+      },
+    })
   }
 
   /** Follows everything that happens, for the game log. Returns a function that stops following. */
@@ -178,6 +207,7 @@ export class Engine {
     const talk = this.state.talk
     if (talk && this.state.npcs[talk.npc]?.location !== this.state.player.location) this.state.talk = undefined
     this.dialogue.learn(this.state.player.location, `area_${this.world.location(this.state.player.location).area}`)
+    this.arrive()
     return this.shown(outputs)
   }
 
@@ -198,8 +228,10 @@ export class Engine {
       case 'talk': {
         const npc = findNpcHere(this.world, command.args.join(' '))
         if (!npc) return [{ kind: 'error', text: command.args.length ? `There is nobody called "${command.args.join(' ')}" here.` : 'Talk to whom?' }]
+        // Start the conversation first, so the NPC stays put during the minute it takes.
+        const opening = this.dialogue.start(npc)
         this.pass(1)
-        return this.dialogue.start(npc)
+        return opening
       }
       case 'bye':
         return this.dialogue.end()

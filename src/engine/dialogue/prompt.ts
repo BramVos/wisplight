@@ -163,7 +163,7 @@ export function turnPrompt(world: World, ctx: TurnContext): string {
     `ATTITUDE: ${ctx.attitude.band} (${ctx.attitude.score}).`,
     'KNOWLEDGE:',
     ...(ctx.packet.known.length === 0 ? ['  (nothing relevant beyond your own life)'] : []),
-    ...ctx.packet.known.map((k) => `  ${k.topic} (level ${k.level}): ${k.facts.join(' ')}${k.story ? `\n  ${k.toldBy ? `STORY as ${k.toldBy} tells it. Retell it in your own words; the people in it are ${k.toldBy}'s family, not yours:` : 'STORY you may tell, in your own words:'}\n  ${k.story}` : ''}`),
+    ...ctx.packet.known.map((k) => `  ${k.topic} (level ${k.level}): ${k.facts.join(' ')}${k.news ? `\n  NEWS about it: ${k.news.join(' ')}` : ''}${k.story ? `\n  ${k.toldBy ? `STORY as ${k.toldBy} tells it. Retell it in your own words; the people in it are ${k.toldBy}'s family, not yours:` : 'STORY you may tell, in your own words:'}\n  ${k.story}` : ''}`),
     ...(ctx.packet.unknown.length ? [`UNKNOWN to you: ${ctx.packet.unknown.map((u) => u.name).join(', ')}.`] : []),
     ...(ctx.packet.referral ? [`REFERRAL: ${ctx.packet.referral.npc} (${ctx.packet.referral.name}) may know more.`] : []),
     ...(ctx.secret ? [`SECRET you now admit, reluctantly: ${ctx.secret}`] : []),

@@ -45,3 +45,33 @@ npcs:
       - "Graafhaven? Tell me everything. No, start with the boats."
     money: 50
     knows_areas: [veenhoek, molenend, drowned_goose, waagdam, roads]
+
+  # Kobus the pedlar (Wereldboek, chapter 9). He sleeps by the fire in the common room.
+  - id: npc_kobus
+    name: Kobus
+    short: Kobus the pedlar
+    pronoun: he
+    age: 60
+    profession: pedlar
+    home: loc_goose_common
+    work: loc_goose_common
+    fame: 2
+    appearance: A wiry old man under a pack twice his width, hung with ribbons, pans and little bells that announce him a street away.
+    personality: { warmth: 1, courage: 0, honesty: -1, temper: -1, curiosity: 3, diligence: 0 }
+    values: { wealth: 2, freedom: 2 }
+    quirks: [gossip]
+    speech: "Quick, flattering, always selling. Tells every story a little better than it happened."
+    aliases: [pedlar, marskramer, kobus]
+    public_facts:
+      - Kobus is a pedlar who walks a fixed round through the Holleveen with his pack.
+      - He is in Veenhoek on Dinsdag and at the market in Waagdam on Woensdag and Zaterdag.
+    examples:
+      - "Needles, ribbons, news from three villages. The news is free, the ribbons are not."
+    secrets:
+      - id: paid_rumour
+        text: Lubbert pays him to tell everyone that the mill will not turn again before winter, and he sells false weighing certificates.
+        hint: He talks about the mill a great deal for a man with no flour to sell.
+        admission: Lubbert pays well, and a man has to eat. The mill? For all I know it turns tomorrow.
+        dc: 18
+    money: 150
+    knows_areas: [veenhoek, molenend, drowned_goose, waagdam, roads]

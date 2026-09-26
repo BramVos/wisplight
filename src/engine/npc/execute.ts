@@ -2,6 +2,7 @@ import { minuteOfDay } from '../clock'
 import { callName, type Direction, type Need } from '../content'
 import { applyEffect, relation } from '../dialogue/relations'
 import { add, hasAll, itemName, withArticle } from '../items'
+import { meet, recordFact } from '../news'
 import { objectKey, type Step } from '../state'
 import type { World } from '../world'
 
@@ -97,6 +98,7 @@ export function executeStep(world: World, npcId: string, step: Step): StepResult
       add(npc.inventory, step.item, qty)
       const seller = callName(world.npc(service.provider))
       remember(world, npcId, `bought ${qtyName(world, step.item, qty)} from ${seller}`)
+      meet(world, npcId, service.provider)
       world.emit('trade', step.location, world.say(`{name} buys ${qtyName(world, step.item, qty)} from ${seller}.`, npcId), npcId)
       npc.busyUntil = now + 5
       npc.activity = 'buying'
@@ -223,6 +225,21 @@ export function executeStep(world: World, npcId: string, step: Step): StepResult
       const open = world.state.requests.find((r) => r.npc === npcId && r.item === step.item && r.status === 'open')
       if (!open) {
         world.state.requests.push({ id: `req_${world.state.requests.length + 1}`, npc: npcId, item: step.item, qty: step.qty, created: now, status: 'open' })
+        const name = callName(world.npc(npcId))
+        const goods = itemName(world.content, step.item, 2).replace(/^2 /, '')
+        const area = world.content.areas.get(world.location(npc.location).area)?.name ?? 'the village'
+        recordFact(world, {
+          kind: 'needs',
+          about: [npcId, `item_${step.item}`],
+          place: npc.location,
+          belang: 1,
+          title: `${name} needing ${goods}`,
+          text: {
+            precise: `${name} needs ${qtyName(world, step.item, step.qty)} and doesn't know where to get ${step.qty === 1 ? 'it' : 'them'}.`,
+            village: `${name} is looking for ${goods}.`,
+            far: `Someone in ${area} is looking for ${goods}, they say.`,
+          },
+        })
       }
       npc.lastAskHelp[step.item] = now
       world.emit(
@@ -248,7 +265,9 @@ export function resolvePending(world: World, npcId: string): void {
     npc.needs[key] = clamp(npc.needs[key] + (gain ?? 0))
   }
   if (pending.setState && pending.objectKey) {
+    const wasBroken = world.state.objects[pending.objectKey]?.['broken'] === true
     world.state.objects[pending.objectKey] = { ...world.state.objects[pending.objectKey], ...pending.setState }
+    if (wasBroken && pending.setState['broken'] === false) repairedNews(world, npcId, pending.objectKey)
   }
   if (pending.narrate && pending.location) world.emit('work', pending.location, pending.narrate, npcId)
 }
@@ -307,6 +326,29 @@ export function attention(world: World, npcId: string): number {
   if (goingToWork) score -= 1
   if (score < 2) return 0
   return score >= 3.5 ? 30 : 15
+}
+
+/** A repair people will talk about: the mill turning again is news for the whole streek. */
+function repairedNews(world: World, npcId: string, key: string): void {
+  const [location, objectId] = key.split('/') as [string, string]
+  const found = world.object(location, objectId)
+  if (!found) return
+  const thing = found.instance.name ?? `the ${found.type.name}`
+  const place = world.location(location)
+  const area = world.content.areas.get(place.area)?.name ?? place.name
+  const name = callName(world.npc(npcId))
+  recordFact(world, {
+    kind: 'repaired',
+    about: [location, npcId, `area_${place.area}`],
+    place: location,
+    belang: found.type.id === 'windmill' ? 3 : 2,
+    title: `${thing} working again`,
+    text: {
+      precise: `${name} has mended ${thing} at ${area}; it works again.`,
+      village: `${thing} at ${area} works again.`,
+      far: `They say ${thing} at ${area} is working again.`,
+    },
+  })
 }
 
 export function clamp(value: number): number {

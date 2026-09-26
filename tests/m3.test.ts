@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { Engine } from '../src/engine'
+import { Engine, GameClock, MockLlm } from '../src/engine'
+import { recordFact } from '../src/engine/news'
 import type { Knowledge } from '../src/engine/dialogue/knowledge'
 import { content } from './helpers'
 
@@ -92,5 +93,81 @@ describe('M3: the fixed chance roll (FO, chapter 5)', () => {
       return
     }
     throw new Error('Mirte knew the Cat-Widow in every game')
+  })
+})
+
+describe('M3: news goes from person to person', () => {
+  const areaOf = (npc: string) => content.locations.get(content.npcs.get(npc)!.home)!.area
+  const people = (area: string) => [...content.npcs.keys()].filter((npc) => areaOf(npc) === area)
+
+  function start(seed: number, day: number, belang = 2) {
+    const engine = new Engine(content, { seed })
+    engine.tick(GameClock.from(211, 9, day, 10).minutes - engine.world.now)
+    const place = engine.state.npcs['npc_mirte']!.location
+    const fact = recordFact(engine.world, { kind: 'test', about: ['area_veenhoek'], place, belang, title: 'the test', text: { precise: 'p', village: 'v', far: 'f' } })
+    return { engine, fact, heard: () => engine.state.news!.heard }
+  }
+
+  it('reaches the witness at once and the whole village within a day, less precisely', () => {
+    const { engine, fact, heard } = start(1, 16)
+    expect(heard()['npc_mirte']![fact.id]).toMatchObject({ level: 3, reliability: 1, from: 'witness' })
+    engine.tick(24 * 60)
+    const village = people('veenhoek').filter((npc) => heard()[npc]?.[fact.id])
+    expect(village.length).toBeGreaterThanOrEqual(6)
+    const secondHand = village.filter((npc) => heard()[npc]![fact.id]!.from !== 'witness')
+    expect(secondHand.every((npc) => heard()[npc]![fact.id]!.level < 3 && heard()[npc]![fact.id]!.reliability < 1)).toBe(true)
+  })
+
+  it('usually reaches Waagdam within two days, with less certainty', () => {
+    let reached = 0
+    for (let seed = 1; seed <= 6; seed++) {
+      const { engine, fact, heard } = start(seed, 16)
+      engine.tick(48 * 60)
+      const town = people('waagdam').filter((npc) => heard()[npc]?.[fact.id])
+      if (town.length > 0) reached++
+      for (const npc of town) expect(heard()[npc]![fact.id]!.reliability).toBeLessThan(1)
+    }
+    expect(reached).toBeGreaterThanOrEqual(4)
+  })
+
+  it('forgets small news: belang 1 after two days, belang 2 after two weeks', () => {
+    const small = start(2, 16, 1)
+    small.engine.tick(49 * 60)
+    expect(Object.values(small.heard()).filter((h) => h[small.fact.id]).length).toBe(0)
+
+    const village = start(2, 16, 2)
+    village.engine.tick(3 * 24 * 60)
+    const npcs = () => Object.entries(village.heard()).filter(([who, h]) => who !== 'player' && h[village.fact.id]).length
+    expect(npcs()).toBeGreaterThan(0)
+    village.engine.tick(12 * 24 * 60)
+    expect(npcs()).toBe(0)
+    // The fact itself stays in the chronicle.
+    expect(village.engine.state.news!.facts.some((f) => f.id === village.fact.id)).toBe(true)
+  })
+
+  it("starts with Lubbert's paid rumour about the mill, which Kobus spreads", () => {
+    const engine = new Engine(content, { seed: 3 })
+    const heard = () => engine.state.news!.heard
+    expect(heard()['npc_kobus']!['fact_mill_before_winter']).toMatchObject({ from: 'npc_lubbert', level: 3 })
+    expect(engine.state.news!.facts.find((f) => f.id === 'fact_mill_before_winter')!.truth).toBe(false)
+    engine.tick(3 * 24 * 60)
+    const knowers = Object.entries(heard()).filter(([, h]) => h['fact_mill_before_winter']).map(([who]) => who)
+    expect(knowers.length).toBeGreaterThanOrEqual(4)
+  })
+
+  it('answers "What\'s new around here?" with the news the NPC heard, and the player learns where it came from', async () => {
+    const mock = new MockLlm('good')
+    const engine = new Engine(content, { seed: 3, llm: mock })
+    engine.tick(3 * 24 * 60)
+    const heard = engine.state.news!.heard
+    const npc = Object.keys(heard).find((who) => who !== 'player' && who !== 'npc_kobus' && who !== 'npc_lubbert' && heard[who]!['fact_mill_before_winter'] && engine.state.npcs[who]!.activity !== 'asleep')!
+    engine.state.player.location = engine.state.npcs[npc]!.location
+    await engine.handle(`talk ${content.npcs.get(npc)!.name.split(' ')[0]}`)
+    await engine.handle("What's new around here?")
+    const prompt = mock.calls.at(-1)!.prompt
+    expect(prompt).toMatch(/fact_mill_before_winter \(level [12]\): .*(won't turn again before winter|is finished)/)
+    expect(prompt).toMatch(/\(You heard it from [A-Z][a-z]+\./)
+    expect(engine.state.news!.heard['player']!['fact_mill_before_winter']).toMatchObject({ from: npc })
+    expect(engine.state.player.journal!['fact_mill_before_winter']).toBeDefined()
   })
 })

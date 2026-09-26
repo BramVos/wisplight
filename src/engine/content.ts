@@ -258,6 +258,20 @@ export type Topic = z.infer<typeof TopicSchema>
 
 // ---------------------------------------------------------------- world
 
+/** Rumours that are already going round when a game starts, true or not (design: lore and world change). */
+export const NewsSchema = z.object({
+  id: z.string().regex(/^[a-z0-9_]+$/),
+  title: z.string(),
+  about: z.array(z.string()).default([]),
+  place: z.string(),
+  belang: z.number().int().min(0).max(5),
+  truth: z.boolean().default(true),
+  /** Who knows it at the start, and from whom: an NPC id or "witness". */
+  known_by: z.partialRecord(z.string(), z.string()).default({}),
+  text: z.object({ precise: z.string(), village: z.string(), far: z.string() }),
+})
+export type News = z.infer<typeof NewsSchema>
+
 // The chance that someone knows a topic, by fame and distance (FO, chapter 5). The designer can tune it per world.
 const KnowledgeModifierSchema = z.object({
   profession: z.array(z.string()).optional(),
@@ -325,6 +339,7 @@ const FileSchema = z
     locations: z.array(LocationSchema).optional(),
     npcs: z.array(NpcSchema).optional(),
     topics: z.array(TopicSchema).optional(),
+    news: z.array(NewsSchema).optional(),
   })
   .strict()
 
@@ -342,6 +357,7 @@ export interface Content {
   locations: Map<string, Location>
   npcs: Map<string, Npc>
   topics: Map<string, Topic>
+  news: Map<string, News>
 }
 
 export class ContentError extends Error {
@@ -370,6 +386,7 @@ export function loadContent(files: ContentFile[]): Content {
     locations: new Map<string, Location>(),
     npcs: new Map<string, Npc>(),
     topics: new Map<string, Topic>(),
+    news: new Map<string, News>(),
   }
 
   for (const file of [...files].sort((a, b) => a.path.localeCompare(b.path))) {
@@ -394,6 +411,7 @@ export function loadContent(files: ContentFile[]): Content {
     addAll(content.locations, data.locations, (v) => v.id, file.path, 'location', problems)
     addAll(content.npcs, data.npcs, (v) => v.id, file.path, 'NPC', problems)
     addAll(content.topics, data.topics, (v) => v.id, file.path, 'topic', problems)
+    addAll(content.news, data.news, (v) => v.id, file.path, 'news', problems)
   }
 
   const world = worlds[0]
@@ -461,6 +479,13 @@ function checkReferences(world: WorldDef | undefined, c: Omit<Content, 'world'>)
     if (t.origin && !c.areas.has(t.origin) && !c.locations.has(t.origin)) problems.push(`topic ${t.id}: unknown origin ${t.origin}`)
     for (const n of t.known_by) npc(n, `topic ${t.id}.known_by`)
     if (t.teller) npc(t.teller, `topic ${t.id}.teller`)
+  }
+  for (const n of c.news.values()) {
+    location(n.place, `news ${n.id}.place`)
+    for (const [who, from] of Object.entries(n.known_by)) {
+      npc(who, `news ${n.id}.known_by`)
+      if (from !== 'witness') npc(from, `news ${n.id}.known_by.${who}`)
+    }
   }
   for (const p of c.professions.values()) {
     for (const g of p.daily_goals) if (g.item) item(g.item, `profession ${p.id}.daily_goals`)

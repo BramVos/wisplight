@@ -1,6 +1,7 @@
 import { isOpenAt, MINUTES_PER_DAY, minuteOfDay, weekdayOf } from './clock'
 import type { Need } from './content'
 import { add } from './items'
+import { spreadNews } from './news'
 import { clamp } from './npc/execute'
 import { think } from './npc/brain'
 import type { World } from './world'
@@ -15,6 +16,7 @@ export function advance(world: World, minutes: number): void {
   for (let i = 0; i < minutes; i++) {
     world.state.minutes++
     if (minuteOfDay(world.now) % 60 === 0) hourly(world)
+    if (minuteOfDay(world.now) % 15 === 0) spreadNews(world)
     // Someone in a conversation with the player stays put until it ends.
     for (const id of ids) if (world.state.talk?.npc !== id) think(world, id)
   }

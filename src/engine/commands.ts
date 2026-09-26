@@ -2,6 +2,7 @@ import { GameClock, isOpenAt, MINUTES_PER_DAY, parseHours, startOfDay } from './
 import { callName, type Affordance, type Direction, type Npc, type ObjectInstance, type ObjectType, type Service } from './content'
 import { add, formatMoney, hasAll, itemName, listItems, matchItem, withArticle } from './items'
 import { applyEffect } from './dialogue/relations'
+import { recordFact } from './news'
 import { isNight, qtyName, wakeNpc } from './npc/execute'
 import { parseDirection, splitQuantity, type Command } from './parser'
 import type { World } from './world'
@@ -261,6 +262,19 @@ function give(host: CommandHost, args: string[]): Output[] {
   add(world.npcState(npcId).inventory, item, amount)
   world.emit('gift', world.state.player.location, `You give ${qtyName(world, item, amount)} to ${callName(world.npc(npcId))}.`)
   world.state.seenSeq = world.state.eventSeq
+  const receiver = callName(world.npc(npcId))
+  recordFact(world, {
+    kind: 'gift',
+    about: [npcId],
+    place: world.state.player.location,
+    belang: 1,
+    title: `the stranger's gift to ${receiver}`,
+    text: {
+      precise: `The stranger gave ${receiver} ${qtyName(world, item, amount)}.`,
+      village: `The stranger has been giving things to ${receiver}.`,
+      far: `That stranger hands out gifts, they say.`,
+    },
+  })
   return [text(`You give ${qtyName(world, item, amount)} to ${firstName(world.npc(npcId))}.`), { kind: 'narration', text: world.say('{name} takes it and nods {their} thanks.', npcId) }]
 }
 

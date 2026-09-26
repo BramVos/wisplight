@@ -2,6 +2,7 @@ import type { Output } from '../commands'
 import { formatMoney, GUILDER, STUIVER } from '../items'
 import { MONTHS, WEEKDAYS } from '../clock'
 import { callName } from '../content'
+import { heardBy, newsAbout } from '../news'
 import type { FarName, TalkState } from '../state'
 import type { World } from '../world'
 import { classify, tierFor, TIER_TOKENS, TIER_WORDS, type Act, type Tier } from './acts'
@@ -136,8 +137,7 @@ export class Dialogue {
       case 1:
         return this.turn(talk.npc, 'Who are you?', { act: 'AskAboutSelf', topics: [talk.npc], echo: true })
       case 2: {
-        const known = RUMOUR_TOPICS.filter((t) => this.knowledge.level(talk.npc, t) >= 2).slice(0, 2)
-        return this.turn(talk.npc, "What's new around here?", { act: 'AskRumors', topics: known, echo: true })
+        return this.turn(talk.npc, "What's new around here?", { act: 'AskRumors', topics: this.rumours(talk.npc), echo: true })
       }
       case 3: {
         const work = this.world.npc(talk.npc).work
@@ -270,6 +270,33 @@ export class Dialogue {
   }
 
   /** Adds topics to the player's journal. */
+  /** Fresh news first, then the standing talk of the village. */
+  private rumours(npcId: string): string[] {
+    this.syncNews()
+    const fresh = newsAbout(this.world, npcId, [], 2).map(({ fact }) => fact.id)
+    const standing = RUMOUR_TOPICS.filter((t) => this.knowledge.level(npcId, t) >= 2)
+    return [...fresh, ...standing].slice(0, 2)
+  }
+
+  /** Facts are topics too, so they can be asked about, mentioned and put in the journal. */
+  private syncNews(): void {
+    for (const fact of this.world.state.news?.facts ?? []) {
+      if (!this.topics.entries.has(fact.id)) this.topics.addDuringPlay({ id: fact.id, kind: 'fact', name: fact.title, aliases: [] })
+    }
+  }
+
+  /** The player hears the news the NPC passed on, one step less sure. */
+  private hearFrom(npcId: string, factIds: string[]): void {
+    const npcHeard = this.world.state.news?.heard[npcId] ?? {}
+    for (const id of factIds) {
+      const heard = npcHeard[id]
+      if (!heard) continue
+      const mine = heardBy(this.world, 'player')
+      if (mine[id]) continue
+      mine[id] = { level: heard.level, reliability: Math.round(heard.reliability * 0.9 * 100) / 100, from: npcId, t: this.world.now, grown: heard.grown }
+    }
+  }
+
   learn(...ids: string[]): void {
     const journal = (this.world.state.player.journal ??= {})
     for (const id of ids) if (this.topics.entries.has(id) && journal[id] === undefined) journal[id] = this.world.now
@@ -300,8 +327,10 @@ export class Dialogue {
     }
 
     // 2. Topics and act by rules.
-    const topics = options.topics ?? this.topics.recognise(text)
+    this.syncNews()
+    let topics = options.topics ?? this.topics.recognise(text)
     const act = options.act ?? classify(text, topics.length)
+    if (act === 'AskRumors' && topics.length === 0) topics = this.rumours(npcId)
     const packet = this.knowledge.packet(npcId, topics, act === 'AskStory' || act === 'AskAbout')
     let tier: Tier = tierFor(act)
     if ((act === 'AskStory' || /\b(story|legend|tale|verhaal)\b/i.test(text)) && packet.known.some((k) => k.story)) tier = 'story'
@@ -342,7 +371,9 @@ export class Dialogue {
     // 6. Journal and memory.
     const allowed = new Set([...packet.known.map((k) => k.topic), ...(packet.referral ? [packet.referral.npc] : [])])
     const mentioned = (reply?.mentioned_topics ?? []).filter((t) => allowed.has(t))
-    this.learn(...packet.known.map((k) => k.topic), ...mentioned, ...(packet.referral && replyText.includes(packet.referral.call) ? [packet.referral.npc] : []))
+    const told = packet.known.flatMap((k) => [k.topic, ...(k.news ? newsAbout(world, npcId, [k.topic]).map(({ fact }) => fact.id) : [])]).filter((id) => id.startsWith('fact_'))
+    this.hearFrom(npcId, told)
+    this.learn(...told, ...packet.known.map((k) => k.topic), ...mentioned, ...(packet.referral && replyText.includes(packet.referral.call) ? [packet.referral.npc] : []))
     const memory = (world.npcState(npcId).memory ??= [])
     memory.push({ t: world.now, note: reply?.memory_note || `The stranger talked to me${topics[0] ? ` about ${this.topics.name(topics[0])}` : ''}.`, topics, valence: 0 })
     if (memory.length > 30) memory.splice(0, memory.length - 30)

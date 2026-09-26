@@ -89,7 +89,7 @@ locations:
   - id: loc_waagdam_market
     name: The Market Square
     area: waagdam
-    tags: [public, landmark]
+    tags: [public, landmark, social]
     aliases: [market, square, markt]
     summary: The market square of Waagdam, busy on Woensdag, overlooked by the Waag.
     description:

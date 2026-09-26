@@ -1,0 +1,16 @@
+# Rumours that are already going round when a game starts (design: lore and
+# world change). known_by: who knows it, and from whom ("witness" = saw it).
+
+news:
+  # Lubbert pays Kobus to spread it (Wereldboek, chapter 9). It is not true.
+  - id: mill_before_winter
+    title: the mill not turning before winter
+    about: [loc_molenend_mill, npc_harmen, area_molenend]
+    place: loc_waagdam_graanhandel
+    belang: 2
+    truth: false
+    known_by: { npc_lubbert: witness, npc_kobus: npc_lubbert }
+    text:
+      precise: De Zwaan won't turn again before winter. Harmen can't pay for new sailcloth, and nobody will lend it him.
+      village: The mill won't turn again before winter, they say.
+      far: The mill at Molenend is finished, they say.

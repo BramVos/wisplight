@@ -1,5 +1,7 @@
 import { callName } from '../content'
 import { itemName } from '../items'
+import { factById, newsAbout, versionOf } from '../news'
+import type { Heard } from '../state'
 import type { World } from '../world'
 import type { TopicRegistry } from './topics'
 
@@ -18,6 +20,8 @@ export interface KnownTopic {
   story?: string
   /** Set when the story is someone else's first-person telling: their name, e.g. "Wouter the eel-fisher". */
   toldBy?: string
+  /** News the NPC heard about this topic, with where it came from. */
+  news?: string[]
 }
 
 export interface Packet {
@@ -55,6 +59,7 @@ export class Knowledge {
     const entry = this.topics.entries.get(topicId)
     if (!entry) return 0
     if (topicId.startsWith('far_')) return this.far(topicId)?.known_by.includes(npcId) ? 2 : 0
+    if (topicId.startsWith('fact_')) return this.world.state.news?.heard[npcId]?.[topicId]?.level ?? 0
     const own = this.ownAreas(npcId)
     const known = this.knownAreas(npcId)
     const { content } = this.world
@@ -209,7 +214,10 @@ export class Knowledge {
       const level = this.level(npcId, topic)
       const name = this.topics.name(topic)
       if (level === 0) packet.unknown.push({ topic, name })
-      else packet.known.push({ topic, name, level, ...this.facts(npcId, topic, level, wantsStory) })
+      else {
+        const news = topic.startsWith('fact_') ? [] : newsAbout(this.world, npcId, [topic]).map(({ fact, heard }) => `${versionOf(fact, heard)} ${this.source(heard)}`)
+        packet.known.push({ topic, name, level, ...this.facts(npcId, topic, level, wantsStory), ...(news.length ? { news } : {}) })
+      }
     }
     const missing = packet.unknown[0]
     if (missing) packet.referral = this.referral(npcId, missing.topic)
@@ -231,7 +239,7 @@ export class Knowledge {
           }
           break
         }
-        facts.push(...this.topicFacts(topicId, level))
+        facts.push(...this.topicFacts(npcId, topicId, level))
         break
       }
       case 'place': {
@@ -246,7 +254,7 @@ export class Knowledge {
           }
           break
         }
-        facts.push(...this.topicFacts(topicId, level))
+        facts.push(...this.topicFacts(npcId, topicId, level))
         const topic = content.topics.get(topicId)
         if (topic?.pos) facts.push(this.farDirections(npcId, topic.pos, level, entry.name))
         break
@@ -264,7 +272,7 @@ export class Knowledge {
         break
       }
       default:
-        facts.push(...this.topicFacts(topicId, level))
+        facts.push(...this.topicFacts(npcId, topicId, level))
     }
     const topic = content.topics.get(topicId)
     const story = wantsStory && level >= 2 ? topic?.story?.trim() : undefined
@@ -281,7 +289,19 @@ export class Knowledge {
     return this.world.state.lore?.far.find((f) => f.id === topicId)
   }
 
-  private topicFacts(topicId: string, level: Level): string[] {
+  /** Where the NPC has it from, and how sure it is, in words for the prompt. */
+  source(heard: Heard): string {
+    const from = heard.from === 'witness' ? 'You saw it yourself.' : heard.from === 'player' ? 'The stranger told you.' : `You heard it from ${callName(this.world.npc(heard.from))}.`
+    const sure = heard.reliability >= 0.9 ? '' : heard.reliability >= 0.7 ? ' You are fairly sure.' : ' You are not sure it is true.'
+    return `(${from}${sure}${heard.grown ? ' The way you heard it, it was bigger than this.' : ''})`
+  }
+
+  private topicFacts(npcId: string, topicId: string, level: Level): string[] {
+    const fact = topicId.startsWith('fact_') ? factById(this.world, topicId) : undefined
+    if (fact) {
+      const heard = this.world.state.news?.heard[npcId]?.[topicId]
+      return heard ? [`${versionOf(fact, heard)} ${this.source(heard)}`] : [fact.text.far]
+    }
     const far = this.far(topicId)
     if (far) return [`${far.name} is a ${far.kind} far away, beyond the Nethermarch.`, `What was said of it: "${far.line}"`]
     const topic = this.world.content.topics.get(topicId)
