@@ -333,3 +333,19 @@ Commando's en interface:
 - [ ] Een tab Transcript in de instellingen: aan of uit, en een map. Staat hij aan, dan schrijft het spel alles wat je op het scherm ziet (jouw invoer als `> ...`, spraak als citaat, systeemregels cursief, een kop per speeldag en per plek) als Markdown naar `<wereld>-<spel>-<datum>.md`, één bestand per spel en per echte dag, alleen bijschrijvend
 - [ ] Het transcript vertraagt het spel niet: de regels gaan gebufferd en asynchroon naar schijf via de schrijver van het spellogboek, met een flush aan het eind van elke beurt; boven een paar megabyte gaat het verder in een vervolgbestand (`-2.md`), en een fout bij het schrijven zet het transcript uit met één melding
 - [ ] Alles wat er al was, speelt hetzelfde: het hele testpakket, de simulaties, de uitspeelscripts van beide werelden, en oude saves
+
+## M10.3 Gesprekken die de wereld raken
+
+Scope: besluit 27 september 2026, na M10.2. Een gesprek werkt door in de tijd en in andere mensen, langs de validators en de werkwoordentabel die brein en kroniekschrijver al gebruiken. Zie FO hoofdstuk 10, "Gepland (M10.3)". Wat er nu ontbreekt: wat de speler vertelt wordt geen bewering, een gesprek is geen gebeurtenis en geen signaal, niemand zoekt de speler op, en een belofte heeft geen gevolg.
+
+- [ ] Wat de speler zegt wordt een bewering (onderwerp, sleutel, waarde, alleen uit de woordenschat van de wereld) die de NPC hoort "van de vreemde": hij gelooft, twijfelt of verwerpt naar vertrouwen en wat hij al weet, vraagt na bij een handelaar, en vertelt door. Vertel Mirte dat de molen weer draait terwijl dat niet zo is, en zij loopt voor niets naar Molenend; wie het navraagt, weet daarna wat jouw woord waard is
+- [ ] `Deceive` is echt liegen: een bewering die niet klopt, met de speler als bron; komt het uit, dan zakt het vertrouwen en gaat het rond
+- [ ] Een gesprek met een onderwerp van belang is een feit van belang 1 of 2 met getuigen ("de vreemde vroeg Pip naar zijn vader"), dat door het nieuws loopt; hooguit een paar per dag. Brannoc weet de volgende dag dat je naar hem vroeg
+- [ ] Na het gesprek doet de NPC zelf iets: de stem geeft één doel uit de catalogus met een doelwit terug, gecontroleerd met dezelfde validator als de keuzes van het brein, hooguit één per gesprek, vervalt na een dag, in het logboek voor naspelen. "Ik vertel het vanavond mijn vader" wordt `carry_word`; "ik ga kijken bij de dijk" wordt Investigate
+- [ ] Een afspraak van de NPC is een planstap met een tijd en een voorwaarde, en een belofte van de speler een verwachting bij de NPC (zoals `expect_home`); een wachter `broken_promise` laat vertrouwen zakken, zet een herinnering en een feit dat rondgaat, en een gehouden belofte doet het omgekeerde
+- [ ] Wie nieuws, een verzoek, dank of een grief over de speler heeft en binnen bereik is, zoekt de speler op (voornemen `seek_player` in de content, met Visit en Talk) en opent het gesprek met een regel die de stem verwoordt
+- [ ] Wat een NPC tekortkomt (brein, grootboek, open verzoek) wordt een aanbieding waarin hij de speler iets vraagt: halen, brengen, meelopen; de aanvaarding is een verzoek in het dagboek
+- [ ] De scène krijgt tijdsfeiten uit de schema's mee (Brannoc is om zes uur terug), zodat een afspraak klopt; een stemming uit een gesprek werkt een dag door (beledigd: geen dienst vandaag); een vakman kan leren tegen een prijs of een gunst (`teach`)
+- [ ] De grenzen: geen dood, geen geld uit het niets, hooguit één nawerking en een paar feiten per gesprek, alles in het logboek; zonder model kiezen de regels
+- [ ] De scène in één stuk speelt: je vraagt Pip naar zijn vader, hij loopt mee naar het strand, vertelt het 's avonds thuis, Brannoc zoekt je de volgende ochtend op, je belooft hem touw, en breng je dat niet, dan weet de Hythe het
+- [ ] Alles wat er al was, speelt hetzelfde: het hele testpakket, de simulaties, de uitspeelscripts van beide werelden, en oude saves
