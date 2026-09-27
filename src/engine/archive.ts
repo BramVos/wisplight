@@ -1,5 +1,6 @@
 import type { PlanState } from './quests/plans'
 import type { Fact, Signal, Storyline } from './state'
+import { lineStatus } from './storylines'
 import type { World } from './world'
 
 // The archive (M9.1; design: signalen en nasleep, "Later", review point 9).
@@ -13,6 +14,12 @@ import type { World } from './world'
 // storyline that has taken nothing new for a month is over (it closes after
 // two weeks), and goes with its facts when nobody knows them any more. A plan
 // from the content keeps its record, so what may run once runs once.
+//
+// Since M10.2 archiving weighs where a line stands: only a closed line goes.
+// An active or dormant line stays as its record (people, open questions,
+// cause), while its old facts that nobody knows may go; the game log keeps
+// them, and a lookup finds them there. What a line follows and what it came
+// from stay with it: the arc keeps its beginning.
 
 const DAY = 24 * 60
 /** Over for this long, it goes to the archive. */
@@ -47,17 +54,18 @@ export function archiveDay(world: World): Archived | undefined {
   const old = facts.filter((f) => f.t < before && !known.has(f.id))
   const chronicle = state.chronicle
   // A storyline that is over, all its news old and told to the chronicler, and none of it known.
-  const over = (l: Storyline) => l.changed < before && l.facts.every((id) => !known.has(id) && (byId.get(id)?.t ?? 0) < before && ((byId.get(id)?.belang ?? 0) < 3 || l.reported.includes(id)))
+  const over = (l: Storyline) => lineStatus(l) === 'closed' && l.changed < before && l.facts.every((id) => !known.has(id) && (byId.get(id)?.t ?? 0) < before && ((byId.get(id)?.belang ?? 0) < 3 || l.reported.includes(id)))
   let lines = old.length ? (chronicle?.lines ?? []).filter(over) : []
   let pointed = new Set<string>()
   if (old.length) {
     const lineSet = new Set(lines)
-    const rest = { ...state, news: undefined, plans: keptPlans, signals: state.signals ? { ...state.signals, log: keptSignals } : undefined, chronicle: chronicle ? { ...chronicle, lines: chronicle.lines.filter((l) => !lineSet.has(l)).map(({ follows: _f, cause: _c, ...l }) => l) } : undefined }
+    // The facts of a line that stays are its own business (below), not a reason to keep them all.
+    const rest = { ...state, news: undefined, plans: keptPlans, signals: state.signals ? { ...state.signals, log: keptSignals } : undefined, chronicle: chronicle ? { ...chronicle, lines: chronicle.lines.filter((l) => !lineSet.has(l)).map(({ facts: _f, reported: _r, ...l }) => l) } : undefined }
     pointed = new Set(JSON.stringify(rest).match(/\b(?:fact|line)_\d+\b/g) ?? [])
-    // A line in lore, a request or a waiting run stays, and so do its facts. What a line follows or came from does not
-    // keep the older one (M9.2): the arc simply begins where the archive ends.
+    // A line in lore, a request or a waiting run stays, and so does what a kept line follows or came from (M10.2).
     lines = lines.filter((l) => !pointed.has(l.id))
-    for (const l of chronicle?.lines ?? []) if (!lines.includes(l)) for (const id of l.facts) pointed.add(id)
+    // An active line keeps its facts; a dormant one keeps its record, and its old facts nobody knows may go.
+    for (const l of chronicle?.lines ?? []) if (!lines.includes(l) && lineStatus(l) === 'active') for (const id of l.facts) pointed.add(id)
   }
   const gone = old.filter((f) => !pointed.has(f.id))
   if (!plans.length && !signals.length && !gone.length && !lines.length) return undefined

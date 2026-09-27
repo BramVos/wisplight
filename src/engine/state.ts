@@ -117,6 +117,17 @@ export interface Storyline {
   follows?: string
   /** What caused it: the causes of its first fact, carried over when it splits. */
   cause?: string[]
+  /**
+   * Active, dormant or closed (M10.2). A line closes only by an outcome: the
+   * chronicler's closed phase, or no open question left. Without change it
+   * goes dormant and keeps what brings it back. Old saves have none: open is
+   * active, a closed phase or no open question is closed, else dormant.
+   */
+  status?: 'active' | 'dormant' | 'closed'
+  /** Since when it sleeps (M10.2). */
+  dormantSince?: number
+  /** When it woke again, and by which fact (M10.2). */
+  resumed?: { t: number; by: string }[]
 }
 
 /** A lore topic that came into being in this game (design, "Opslag": de kroniek). */

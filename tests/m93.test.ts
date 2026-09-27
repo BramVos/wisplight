@@ -213,8 +213,10 @@ describe('M9.3: indexes, and work before people', () => {
       const spread = performance.now() - t
       return { find, spread }
     }
-    const small = timed(1_000)
-    const large = timed(100_000)
+    // The best of three: a busy machine running the other tests should not decide it.
+    const best = (facts: number) => [timed(facts), timed(facts), timed(facts)].reduce((a, b) => ({ find: Math.min(a.find, b.find), spread: Math.min(a.spread, b.spread) }))
+    const small = best(1_000)
+    const large = best(100_000)
     // Constant time: a hundred times the facts, not a hundred times the work (and some room for a busy machine).
     expect(large.find).toBeLessThan(small.find * 5 + 20)
     expect(large.spread).toBeLessThan(small.spread * 5 + 50)

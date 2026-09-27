@@ -58,6 +58,15 @@ export function factById(world: World, id: string): Fact | undefined {
   return byId.get(id)
 }
 
+/**
+ * A fact from the save, or else from the archive (M10.2): the lookups and the
+ * chronicler find what went there. Only the save's facts are in anyone's head,
+ * so what comes from the archive is for whoever sees the world, not for an NPC.
+ */
+export function factOrArchived(world: World, id: string): Fact | undefined {
+  return factById(world, id) ?? world.archive?.fact(id)
+}
+
 /** Records a fact and tells the witnesses. */
 export function recordFact(world: World, input: FactInput): Fact {
   const store = news(world)

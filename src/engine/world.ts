@@ -6,7 +6,7 @@ import { DEFAULT_MONEY, formatMoney, type MoneyUnit } from './items'
 import { mergeNpc, staffOf } from './layer'
 import { hexLocation, isHexId } from './map/travel'
 import { Rng } from './rng'
-import { objectKey, serviceKey, type GameState, type NpcState, type WorldEvent } from './state'
+import { objectKey, serviceKey, type Fact, type GameState, type NpcState, type WorldEvent } from './state'
 
 // World wraps content (fixed) and state (changing) with the lookups every
 // system needs: presence, opening hours, prices, routes and knowledge.
@@ -67,6 +67,12 @@ export class World {
   causing: string[] = []
   /** What went to the archive since the engine last looked, for the game log (M9.1; not saved). */
   archived: Archived[] = []
+  /**
+   * The archive to read back from (M10.2): the game log of this game, set by
+   * whoever keeps it (the desktop app). Without it, what went to the archive
+   * is simply not there. Not saved.
+   */
+  archive?: { fact(id: string): Fact | undefined }
 
   /** The content of this game: the world's own, with what the game added (M8.5, growth). */
   content: Content

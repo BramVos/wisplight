@@ -146,6 +146,8 @@ function follow(next: Engine, where: Session): void {
   next.builder = !app.isPackaged
   session = where
   unfollow = next.onLog((line) => journal().write(where, line))
+  // What went to the archive is read back from this game's log (M10.2): the lookups and the chronicler find it there.
+  next.world.archive = { fact: (id) => journal().archivedFact(where, id) }
 }
 
 /** A new game gets its log at the first input, so a quick CONTINUE leaves no empty game behind. */

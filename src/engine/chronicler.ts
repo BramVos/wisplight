@@ -7,13 +7,13 @@ import { leakedNames, unknownNames, vocabularyOf } from './dialogue/guard'
 import { worldFrame } from './dialogue/prompt'
 import { itemName, remedyItem } from './items'
 import { questsOf } from './life'
-import { factById } from './news'
+import { factById, factOrArchived } from './news'
 import { isNear, noun, ties } from './people'
 import { askLine, openRequest, openRequestsOf, requestName } from './requests'
 import type { ChronicleRun, ChronicleState, Claim, Fact, LoreEntry, Offered, Storyline } from './state'
 import { judged, judgeRequest, loreProblem } from './truth'
 import { answerLookup, lookupFromId } from './lookups'
-import { chronicleState, unreported } from './storylines'
+import { chronicleState, setLineStatus, unreported } from './storylines'
 import { chroniclerVerbs, extraCards, signalCards, startChroniclePlan, stepsFromOp, unplanned } from './planning'
 import { withoutReference } from './quests/reference'
 import { tradeLine } from './economy/ledger'
@@ -75,14 +75,15 @@ function eventOf(world: World, fact: Fact): ChronicleEvent {
     .map(([id]) => id)
     .sort()
     .slice(0, 4)
-  const because = (fact.cause ?? []).map((id) => factById(world, id)?.title).filter((t): t is string => Boolean(t))
+  const because = (fact.cause ?? []).map((id) => factOrArchived(world, id)?.title).filter((t): t is string => Boolean(t))
   return { id: fact.id, when: when(world, fact.t), place: fact.place, who, witnesses, belang: fact.belang, text: fact.text.precise, ...(fact.truth === false ? { untrue: true } : {}), ...(because.length ? { because } : {}) }
 }
 
 export function buildInput(world: World, run: ChronicleRun): ChronicleInput {
   const state = chronicleState(world)
   const lines = run.lines.map((id) => state.lines.find((l) => l.id === id)).filter((l): l is Storyline => Boolean(l))
-  const facts = (line: Storyline) => line.facts.map((id) => factById(world, id)).filter((f): f is Fact => Boolean(f))
+  // A line that woke from sleep finds its earlier events in the archive (M10.2).
+  const facts = (line: Storyline) => line.facts.map((id) => factOrArchived(world, id)).filter((f): f is Fact => Boolean(f))
   const chronicleLines: ChronicleLine[] = lines.map((line) => ({
     id: line.id,
     title: line.title,
@@ -427,8 +428,8 @@ export function applyOutput(world: World, run: ChronicleRun, output: ChronicleOu
       line.phase = op.phase
     }
     if (op.close) {
-      line.open = false
       line.phase = 'closed'
+      setLineStatus(world, line, 'closed')
     }
     noted.add(line.id)
   }

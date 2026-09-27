@@ -15,6 +15,7 @@ import type { World } from './world'
 // with a quest role.
 
 const DAY = 24 * 60
+/** A line that takes nothing new for this long goes dormant, or closes when nothing is left open (M10.2). */
 const OPEN_DAYS = 14
 /** A line takes no more facts than this; after it, the story goes on on a new line. */
 const MAX_FACTS = 12
@@ -45,11 +46,56 @@ export function lineOf(world: World, factId: string): Storyline | undefined {
   return idx.byFact.get(factId)
 }
 
+/** Where a line stands (M10.2); a line from an old save gets it from what it has. */
+export function lineStatus(line: Storyline): 'active' | 'dormant' | 'closed' {
+  if (line.status) return line.status
+  if (line.open) return 'active'
+  return line.phase === 'closed' || line.hooks.length === 0 ? 'closed' : 'dormant'
+}
+
+/** Sets where a line stands, and keeps `open` (what older code reads) in step. */
+export function setLineStatus(world: World, line: Storyline, status: 'active' | 'dormant' | 'closed'): void {
+  line.status = status
+  line.open = status === 'active'
+  if (status === 'dormant') line.dormantSince ??= world.now
+  else delete line.dormantSince
+}
+
+/**
+ * Lines that took nothing new for two weeks (M10.2): dormant while a question
+ * is still open, closed when none is. Never closed by time alone.
+ */
+export function settleLines(world: World): void {
+  for (const line of world.state.chronicle?.lines ?? []) {
+    if (lineStatus(line) !== 'active' || world.now - line.changed <= OPEN_DAYS * DAY) continue
+    setLineStatus(world, line, line.hooks.length > 0 && line.phase !== 'closed' ? 'dormant' : 'closed')
+  }
+}
+
+/**
+ * What wakes a dormant line for one of its people (M10.2): a coming back, a
+ * death or what is left behind, a home or a household or a tie that changes.
+ * Not everything big: someone rising in the world is no reason to take up an
+ * old quarrel.
+ */
+const WAKES = /^(death|wedding|return|arrival|inheritance|inherit|homecoming)$|:(return|inherit|move_home|join_household|leave_household|set_tie|end_tie|expect_home)$/
+
+/**
+ * A dormant line wakes (M10.2) when two of its people are in a new fact
+ * together (they meet again, they quarrel again), or when a return, a death,
+ * an inheritance or a change of home or tie comes to one of them. It wakes
+ * with its cause and its open questions.
+ */
+function wakes(line: Storyline, fact: Fact, people: string[]): boolean {
+  const shared = people.filter((p) => line.people.includes(p)).length
+  return shared >= 2 || (shared >= 1 && WAKES.test(fact.kind))
+}
+
 /** Every new fact goes on a storyline; big news asks the chronicler to write at once. */
 export function onFact(world: World, fact: Fact): void {
   if (QUIET.has(fact.kind) || fact.belang < 1) return
   const state = chronicleState(world)
-  for (const line of state.lines) if (line.open && world.now - line.changed > OPEN_DAYS * DAY) line.open = false
+  settleLines(world)
   const people = fact.about.filter((id) => world.content.npcs.has(id))
   const places = [...new Set([fact.place, ...fact.about.filter((id) => world.content.locations.has(id))])]
   const pattern = fact.pattern ?? fact.kind
@@ -60,8 +106,20 @@ export function onFact(world: World, fact: Fact): void {
     .filter((l) => l.open && l.facts.length < MAX_FACTS)
     .sort(newest)
     .find(fits)
+  // Else a dormant line it wakes, the one asleep longest first: the old quarrel before the newer one.
+  const sleeping = line
+    ? undefined
+    : state.lines
+        .filter((l) => lineStatus(l) === 'dormant' && l.facts.length < MAX_FACTS && wakes(l, fact, people))
+        .sort((a, b) => (a.dormantSince ?? a.changed) - (b.dormantSince ?? b.changed) || a.id.localeCompare(b.id))[0]
+  if (sleeping) {
+    setLineStatus(world, sleeping, 'active')
+    ;(sleeping.resumed ??= []).push({ t: world.now, by: fact.id })
+  }
   let target: Storyline
-  if (line) {
+  const onto = line ?? sleeping
+  if (onto) {
+    const line = onto
     // A line is called after the biggest thing that happened on it.
     const biggest = Math.max(0, ...line.facts.map((id) => factById(world, id)?.belang ?? 0))
     if (fact.belang > biggest) line.title = fact.title
@@ -87,13 +145,15 @@ export function onFact(world: World, fact: Fact): void {
       hooks: full ? [...full.hooks] : [],
       next: full?.next ?? '',
       open: true,
+      status: 'active',
       changed: world.now,
       reported: [],
       ...(full ? { follows: full.id } : causeLine ? { follows: causeLine.id } : {}),
       ...((full?.cause ?? fact.cause)?.length ? { cause: [...(full?.cause ?? fact.cause)!] } : {}),
       ...(full?.phase && full.phase !== 'closed' ? { phase: full.phase } : {}),
     }
-    if (full) full.open = false
+    // The full line goes on as this one: it is done, and this one carries its questions.
+    if (full) setLineStatus(world, full, 'closed')
     state.lines.push(target)
   }
   // The death of someone with a quest role ends or changes that quest: the chronicler writes now.

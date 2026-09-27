@@ -322,13 +322,17 @@ describe('M9.1: the archive', () => {
     expect(archived.flatMap((a) => a.plans).length).toBeGreaterThan(20)
     expect(archived.flatMap((a) => a.signals).length).toBeGreaterThan(20)
     expect(archived.flatMap((a) => a.lines ?? []).length).toBeGreaterThan(10)
-    // Nobody knew what went, and nothing that stays points to it.
+    // Nobody knew what went, and nothing that stays points to it, except the record of a line that is not active
+    // (M10.2): a dormant line, or an old one a kept line follows. It keeps its facts by id, and they are in the archive.
     const heard = engine.state.news!.heard
-    const left = JSON.stringify({ ...engine.state, news: { ...engine.state.news, facts: [] } })
+    const dormant = (engine.state.chronicle?.lines ?? []).filter((l) => !l.open)
+    const left = JSON.stringify({ ...engine.state, news: { ...engine.state.news, facts: [] }, chronicle: engine.state.chronicle ? { ...engine.state.chronicle, lines: engine.state.chronicle.lines.map((l) => (dormant.includes(l) ? { ...l, facts: [], reported: [] } : l)) } : undefined })
+    const archivedIds = new Set(facts.map((f) => f.id))
     for (const f of facts) {
       expect(Object.values(heard).some((h) => h[f.id])).toBe(false)
       expect(left).not.toMatch(new RegExp(`\\b${f.id}\\b`))
     }
+    for (const l of dormant) for (const id of l.facts) expect(engine.state.news!.facts.some((f) => f.id === id) || archivedIds.has(id), id).toBe(true)
     // Nothing a content plan ran is lost: what may run once, runs once.
     expect(archived.flatMap((a) => a.plans).every((p) => p.source !== 'content' && p.ended !== undefined)).toBe(true)
     // After four months the save is hardly bigger than after one.

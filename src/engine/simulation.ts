@@ -8,7 +8,7 @@ import type { Need } from './content'
 import { add } from './items'
 import { pickSome, spreadNews } from './news'
 import { storyHour } from './stories'
-import { nightly } from './storylines'
+import { nightly, settleLines } from './storylines'
 import { weatherHour } from './weather'
 import { settleRuns } from './chronicler'
 import { settleNotes, thinksNow } from './lod'
@@ -74,6 +74,8 @@ function hourly(world: World): void {
   companionsHour(world)
   // What has been over for a month leaves the save for the game log (M9.1).
   if (minuteOfDay(world.now) === 4 * 60) {
+    // Lines that took nothing new for two weeks sleep, or close when nothing is left open (M10.2).
+    settleLines(world)
     const archived = archiveDay(world)
     if (archived) world.archived.push(archived)
   }
