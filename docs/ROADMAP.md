@@ -261,7 +261,7 @@ Scope: de review van 27 september 2026 op prestaties en kosten (na M8.5), in dez
 - [x] Een verhaalbewerking heeft een totaalbudget over al haar opzoekrondes, naast de grens per aanroep
 - [x] Feiten, mensen, plekken, onderwerpen en open lijnen hebben een index; `factById` en de nieuwsverspreiding zoeken niet meer lineair (test: honderdduizend feiten, opzoeken in constante tijd)
 - [x] De simulatie kiest werk voordat ze mensen doorloopt: een index van mensen per plek, een wachtrij met het volgende moment per persoon en plan, begrensde en geseede gesprekscontacten, en verspreiding per gebied voor wie ver weg is; naspelen geeft dezelfde wereld
-- [ ] Opslaan kopieert niet meer twee keer: een save is een checkpoint plus de gebeurtenissen sindsdien, met contentversie, seed, modelantwoorden en vertakkingen, en naspelen blijft exact
+- [x] Opslaan kopieert niet meer twee keer: een save is een checkpoint plus de gebeurtenissen sindsdien, met contentversie, seed, modelantwoorden en vertakkingen, en naspelen blijft exact
 - [ ] De interface hapert niet bij een autosave, een reis of een dagwissel (gemeten); pas als dat na de andere stappen nog zo is, draait de motor in een eigen proces
 - [ ] De modelproef beoordeelt op kosten per bruikbaar, gevalideerd antwoord (inclusief herhalingen en terugval), kennislekken, feitelijke fouten, karaktervastheid en reactietijd, en het advies kiest daarop
 - [ ] Alles wat er al was, speelt hetzelfde: het hele testpakket, de simulaties, de uitspeelscripts van beide werelden, en oude saves

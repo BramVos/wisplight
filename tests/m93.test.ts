@@ -2,7 +2,7 @@ import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterAll, describe, expect, it } from 'vitest'
-import { Engine, factById, MockLlm, recordFact, type Content, type LlmRequest } from '../src/engine'
+import { CHECKPOINT_MINUTES, contentVersion, Engine, factById, MockLlm, recordFact, type Content, type LlmRequest, type SaveData } from '../src/engine'
 import { performance } from 'node:perf_hooks'
 import { chronicle, type ChroniclerRequest } from '../src/chronicler'
 import { buildInput, lookupCards } from '../src/engine/chronicler'
@@ -15,6 +15,8 @@ import { AiLog } from '../src/node/ai/log'
 import { costUsd } from '../src/node/ai/pricing'
 import type { Provider, ProviderResponse } from '../src/node/ai/providers'
 import { UsageStore } from '../src/node/ai/usage'
+import { GameLog } from '../src/node/gamelog'
+import { SaveStore } from '../src/node/savegame'
 import { content } from './helpers'
 
 // Milestone M9.3 (docs/ROADMAP.md): scale. Costs first: the hourly budget
@@ -230,4 +232,105 @@ describe('M9.3: indexes, and work before people', () => {
     const replayed = await Engine.replay(big, 161, engine.save().log)
     expect(replayed.state).toEqual(engine.state)
   }, 120_000)
+})
+
+describe('M9.3: checkpoints', () => {
+  const play = async (engine: Engine, commands: string[]) => {
+    for (const command of commands) await engine.handle(command)
+  }
+  const plain = (engine: Engine) => JSON.parse(JSON.stringify(engine.state))
+
+  it('a save is a checkpoint plus the log since, the checkpoint written once, and loading gives exactly the same world', async () => {
+    const store = new SaveStore(':memory:')
+    const engine = new Engine(content, { seed: 170, llm: new MockLlm('good') })
+    await play(engine, ['north', 'east'])
+    engine.tick(20)
+    const first = engine.saved()
+    store.save('auto', first)
+    // After it: a conversation with model replies, walking and time.
+    await play(engine, ['talk mirte', 'What happened to the mill?', '1', 'bye', 'west', 'north'])
+    engine.tick(45)
+    const second = engine.saved()
+    // The same checkpoint: the state was not turned into text again, and the store adds only the tail.
+    expect(second.checkpoint).toBe(first.checkpoint)
+    expect(second.tail.some((e) => e.k === 'ai')).toBe(true)
+    store.save('auto', second)
+    const sizes = store.sizes()
+    expect(sizes.checkpoints).toBe(1)
+    expect(sizes.saveBytes).toBeLessThan(sizes.checkpointBytes / 10)
+    const data = store.latest()!
+    expect(data.version).toBe(2)
+    expect(data.content).toBe(contentVersion(content))
+    expect(() => Engine.fromSave(content, data)).toThrow(/restore/)
+    const restored = await Engine.restore(content, data, new MockLlm('good'))
+    expect(plain(restored)).toEqual(plain(engine))
+    // And it plays on as the original does.
+    await play(engine, ['look'])
+    await play(restored, ['look'])
+    engine.tick(30)
+    restored.tick(30)
+    expect(plain(restored)).toEqual(plain(engine))
+  })
+
+  it('takes a new checkpoint after a game day, and forgets a checkpoint no save stands on', async () => {
+    const store = new SaveStore(':memory:')
+    const engine = new Engine(content, { seed: 171 })
+    store.save('auto', engine.saved(), 2)
+    engine.tick(CHECKPOINT_MINUTES / 2)
+    store.save('auto', engine.saved(), 2)
+    expect(store.sizes().checkpoints).toBe(1)
+    engine.tick(CHECKPOINT_MINUTES)
+    const later = engine.saved()
+    expect(later.tail).toEqual([])
+    store.save('auto', later, 2)
+    expect(store.sizes().checkpoints).toBe(2)
+    engine.tick(60)
+    store.save('auto', engine.saved(), 2)
+    // Only the last two saves are kept; both stand on the second checkpoint.
+    expect(store.sizes().checkpoints).toBe(1)
+    const restored = await Engine.restore(content, store.latest()!)
+    expect(plain(restored)).toEqual(plain(engine))
+  })
+
+  it('a tick split by a checkpoint is not added to after it, so the tail stays whole', async () => {
+    const engine = new Engine(content, { seed: 172 })
+    engine.tick(10)
+    const first = engine.saved()
+    engine.tick(10)
+    const second = engine.saved()
+    expect(second.tail).toEqual([expect.objectContaining({ k: 'tick', v: 10 })])
+    const restored = await Engine.restore(content, { version: 2, world: second.world, state: JSON.parse(first.checkpoint.state), log: JSON.parse(first.checkpoint.log), tail: second.tail })
+    expect(plain(restored)).toEqual(plain(engine))
+  })
+
+  it('an old save, whole, still loads as before; CONTINUE plays a checkpointed save and the game log after it', async () => {
+    const store = new SaveStore(':memory:')
+    const engine = new Engine(content, { seed: 173, llm: new MockLlm('good') })
+    await play(engine, ['north'])
+    store.save('manual', engine.save())
+    const old = store.load('manual')!
+    expect(old.version).toBe(1)
+    expect(plain(Engine.fromSave(content, old))).toEqual(plain(engine))
+    // Continue: the save's own tail, then what the game log recorded after the save.
+    const log = new GameLog(':memory:')
+    const session = log.start('game-173')
+    engine.onLog((line) => log.write(session, line))
+    engine.saved()
+    await play(engine, ['east', 'talk mirte', 'What happened to the mill?'])
+    store.save('auto', { ...engine.saved(), session: { ...session, logId: log.position(session) } })
+    await play(engine, ['1', 'bye', 'west'])
+    engine.tick(15)
+    const data = store.load('auto') as SaveData
+    const resumed = await Engine.resume(content, data, log.tail(session, data.session!.logId), new MockLlm('good'))
+    expect(plain(resumed)).toEqual(plain(engine))
+  })
+
+  it('the content version is the same for the same content and changes with it', () => {
+    expect(contentVersion(content)).toMatch(/^[0-9a-f]{16}$/)
+    const npcs = new Map(content.npcs)
+    npcs.set('npc_mirte', { ...npcs.get('npc_mirte')!, name: 'Mirte the Other' })
+    const changed = { ...content, npcs } as Content
+    expect(contentVersion(changed)).not.toBe(contentVersion(content))
+    expect(contentVersion({ ...content } as Content)).toBe(contentVersion(content))
+  })
 })

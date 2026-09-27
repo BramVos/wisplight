@@ -27,11 +27,11 @@ for await (const line of rl) {
   if (/^(quit|exit|stop)$/i.test(line.trim())) break
   const verb = line.trim().split(/\s+/)[0]?.toLowerCase()
   if (verb === 'save' || verb === 'bewaar') {
-    saves.save('cli', engine.save())
+    saves.save('cli', engine.saved())
     print([{ kind: 'system', text: 'Game saved.' }])
   } else if (verb === 'load' || verb === 'laad') {
     const data = saves.load('cli')
-    if (data) engine = Engine.fromSave(content, data)
+    if (data) engine = await Engine.restore(content, data)
     print(data ? [{ kind: 'system', text: 'Game loaded.' }, ...(await engine.handle('look'))] : [{ kind: 'error', text: 'There is no saved game yet.' }])
   } else {
     print(await engine.handle(line))

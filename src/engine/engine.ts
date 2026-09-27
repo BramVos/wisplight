@@ -1,4 +1,5 @@
 import type { Archived } from './archive'
+import { CHECKPOINT_ENTRIES, CHECKPOINT_MINUTES, contentVersion, type Checkpoint, type CheckpointedSave } from './checkpoint'
 import { applyFarPlace, farPlaceOf, farRequest, farWords, wantFarPlace, type FarWords } from './growth/far'
 import { crowdHere, nameOne } from './growth/crowds'
 import { applyLegendWords, legendRequest, legendsOf } from './legend'
@@ -110,10 +111,15 @@ export type LogEntry =
   | { t: number; k: 'names'; v: NameBook }
 
 export interface SaveData {
-  version: 1
+  /** 1: the state and the whole log at the save. 2 (M9.3): the state and the log at a checkpoint, and the tail since. */
+  version: 1 | 2
   world: string
   state: GameState
   log: LogEntry[]
+  /** What the log recorded after the checkpoint (M9.3): played again on loading, with the recorded model replies. */
+  tail?: LogEntry[]
+  /** The version of the content it was saved with (M9.3). */
+  content?: string
   /** Where this save sits in the game log (FO, chapter 3): which game, which branch, which line. */
   session?: { game: string; branch: number; logId: number }
 }
@@ -214,6 +220,8 @@ export class Engine {
   private outlining = false
   /** The content the topics were last brought in step with (M8.5). */
   private grownFor?: Content
+  /** The last checkpoint (M9.3): an autosave after it writes only the log since. */
+  private base?: Checkpoint
 
   constructor(
     source: Content,
@@ -915,7 +923,8 @@ export class Engine {
     // The clock stands still while the player chooses in a fight (FO, chapter 12).
     if (minutes <= 0 || this.state.combat) return []
     const last = this.log.at(-1)
-    if (last?.k === 'tick') last.v += minutes
+    // A tick that a checkpoint has already written down stays as it was (M9.3).
+    if (last?.k === 'tick' && this.log.length > (this.base?.at ?? 0)) last.v += minutes
     else this.log.push({ t: this.world.now, k: 'tick', v: minutes })
     for (const listener of this.listeners) listener({ kind: 'replay', t: this.world.now, entry: { t: this.world.now, k: 'tick', v: minutes } })
     const passed = this.pass(minutes)
@@ -1052,12 +1061,35 @@ export class Engine {
     return { rows: view.rows.map((row) => row.map((c) => c.ch).join('')), classes: view.rows.map((row) => row.map((c) => MAP_CODES[c.cls] ?? 'u').join('')) }
   }
 
+  /** The whole game as it is now, as a copy: for a new character, a legend, live reloading and tests. */
   save(): SaveData {
     return JSON.parse(JSON.stringify({ version: 1, world: this.content.world.id, state: this.state, log: this.log })) as SaveData
   }
 
+  /**
+   * A save for the store (M9.3): the last checkpoint and the log since. A new
+   * checkpoint is taken, turning the state and the log into text once, when
+   * there is none yet, when the log since grew long, or a game day went by.
+   */
+  saved(): CheckpointedSave {
+    const version = contentVersion(this.world.base)
+    const base = this.base
+    if (!base || base.content !== version || this.log.length - base.at > CHECKPOINT_ENTRIES || this.world.now - base.minutes >= CHECKPOINT_MINUTES) {
+      this.base = { world: this.content.world.id, content: version, seed: this.state.seed, minutes: this.world.now, at: this.log.length, state: JSON.stringify(this.state), log: JSON.stringify(this.log) }
+    }
+    const checkpoint = this.base!
+    return { version: 2, world: checkpoint.world, content: version, seed: this.state.seed, minutes: this.world.now, checkpoint, tail: this.log.slice(checkpoint.at), events: this.state.events }
+  }
+
+  /** Any save: a whole one at once, one with a tail by playing the tail again on its checkpoint (M9.3). */
+  static async restore(content: Content, save: SaveData, llm?: LlmClient): Promise<Engine> {
+    return save.tail?.length ? Engine.resume(content, save, [], llm) : Engine.fromSave(content, save, llm)
+  }
+
   static fromSave(content: Content, save: SaveData, llm?: LlmClient): Engine {
     if (save.world !== content.world.id) throw new Error(`This save belongs to world "${save.world}"`)
+    // A save with a tail is only whole once the tail is played: Engine.restore does that.
+    if (save.tail?.length) throw new Error('This save ends in a log to play again: restore it')
     const copy = JSON.parse(JSON.stringify(save)) as SaveData
     // What went from the world since, the save follows by its tombstones (M9.1).
     copy.state = followTombstones(content, copy.state)
@@ -1140,9 +1172,11 @@ export class Engine {
   static async resume(content: Content, save: SaveData, tail: LogEntry[], llm?: LlmClient): Promise<Engine> {
     // The tail is played with the names the game began with, as in replay (M9.1).
     const book = save.log.find((e): e is Extract<LogEntry, { k: 'names' }> => e.k === 'names')?.v
-    const played = Engine.fromSave(book ? withNames(content, book) : content, save)
+    const { tail: since = [], ...checkpoint } = save
+    const played = Engine.fromSave(book ? withNames(content, book) : content, checkpoint)
     const last = save.log.findLast((e) => e.k === 'llm')
-    await played.apply(followTombstonesInLog(content, tail), llm, last?.v === 'on')
+    // A save's own tail (M9.3) comes first, then what the game log recorded after the save.
+    await played.apply(followTombstonesInLog(content, [...since, ...tail]), llm, last?.v === 'on')
     const engine = book ? played.withContent(content) : played
     engine.setLlm(llm)
     return engine

@@ -1,9 +1,10 @@
 import { app, BrowserWindow, dialog, ipcMain, safeStorage, shell } from 'electron'
 import { randomUUID } from 'node:crypto'
-import { existsSync, readdirSync, readFileSync, rmSync, watch } from 'node:fs'
+import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, watch } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { ContentError, draftRequest, Engine, ENTITY_KINDS, lineDiff, readDraft, type Content, type Edit, type EntityKind, type FileChange, type Output, type SaveData } from '../engine'
+import { ContentError, draftRequest, Engine, ENTITY_KINDS, lineDiff, readDraft, type Content, type Edit, type EntityKind, type FileChange, type CheckpointedSave, type Output, type SaveData } from '../engine'
 import { ContentEditor } from '../node/editor'
 import type { ProviderId } from '../node/ai/providers'
 import { AiService } from '../node/ai/service'
@@ -124,9 +125,15 @@ function ensureSession(): Session {
   return where
 }
 
-function snapshot(): SaveData {
+/** A save for the store: the last checkpoint and the log since (M9.3), and where it sits in the game log. */
+function snapshot(): CheckpointedSave {
   const where = ensureSession()
-  return { ...engine!.save(), session: { ...where, logId: journal().position(where) } }
+  return { ...engine!.saved(), session: { ...where, logId: journal().position(where) } }
+}
+
+/** A save as a whole, its tail played (M9.3): a new stranger or a legend starts from the world as it was. */
+async function whole(data: SaveData): Promise<SaveData> {
+  return data.tail?.length ? (await Engine.restore(content!, data)).save() : data
 }
 
 const system = (text: string): Output => ({ kind: 'system', text })
@@ -167,7 +174,7 @@ ipcMain.handle('engine:start', async (_event, world: unknown) => {
   lastInput = -Infinity
   const outputs = engine.start()
   opening = [...outputs]
-  if (store().latest()) outputs.push(system('There is a saved game. Type CONTINUE to carry on exactly where you left off, LOAD for your last save, or NEW STRANGER to start a new character in that world (big events stay, small news is forgotten).'))
+  if (store().any()) outputs.push(system('There is a saved game. Type CONTINUE to carry on exactly where you left off, LOAD for your last save, or NEW STRANGER to start a new character in that world (big events stay, small news is forgotten).'))
   return reply(outputs)
 })
 
@@ -190,7 +197,7 @@ ipcMain.handle('engine:command', async (_event, input: unknown) => {
     const gone = await useWorldOf(data)
     if (gone) return reply([{ kind: 'error', text: gone }])
     if (!data.session) {
-      follow(Engine.fromSave(content, data, ai?.client()), journal().start(randomUUID()))
+      follow(await Engine.restore(content, data, ai?.client()), journal().start(randomUUID()))
     } else {
       // The last save plus everything the log recorded after it: exactly where the game stopped.
       const tail = journal().tail(data.session, data.session.logId)
@@ -206,7 +213,7 @@ ipcMain.handle('engine:command', async (_event, input: unknown) => {
     if (!data) return reply([{ kind: 'error', text: 'There is no saved world to tell legends of.' }])
     const gone = await useWorldOf(data)
     if (gone) return reply([{ kind: 'error', text: gone }])
-    const { engine: next, outputs } = await Engine.legend(content, data, Math.floor(Math.random() * 2 ** 31), ai?.client())
+    const { engine: next, outputs } = await Engine.legend(content, await whole(data), Math.floor(Math.random() * 2 ** 31), ai?.client())
     next.builder = !app.isPackaged
     follow(next, journal().start(randomUUID()))
     return reply(outputs)
@@ -217,7 +224,7 @@ ipcMain.handle('engine:command', async (_event, input: unknown) => {
     if (!data) return reply([{ kind: 'error', text: 'There is no saved world to carry on in.' }])
     const gone = await useWorldOf(data)
     if (gone) return reply([{ kind: 'error', text: gone }])
-    const { engine: next, outputs } = Engine.carryOn(content, data, Math.floor(Math.random() * 2 ** 31), ai?.client())
+    const { engine: next, outputs } = Engine.carryOn(content, await whole(data), Math.floor(Math.random() * 2 ** 31), ai?.client())
     next.builder = !app.isPackaged
     follow(next, journal().start(randomUUID()))
     return reply(outputs)
@@ -227,7 +234,7 @@ ipcMain.handle('engine:command', async (_event, input: unknown) => {
     if (!data) return reply([{ kind: 'error', text: 'There is no saved game yet.' }])
     const gone = await useWorldOf(data)
     if (gone) return reply([{ kind: 'error', text: gone }])
-    const loaded = Engine.fromSave(content, data, ai?.client())
+    const loaded = await Engine.restore(content, data, ai?.client())
     if (!data.session) {
       follow(loaded, journal().start(randomUUID()))
     } else {
@@ -573,6 +580,22 @@ function createWindow(): void {
           })()`,
         )
         console.log(`[smoke] ${room.split('\n')[0]}`)
+        // Saving (M9.3): a checkpoint and a tail, in a store of its own, load as exactly the same world.
+        if (engine && content) {
+          const dir = mkdtempSync(join(tmpdir(), 'wisplight-smoke-'))
+          try {
+            const trial = new SaveStore(join(dir, 'saves.sqlite'))
+            trial.save('smoke', engine.saved())
+            engine.tick(30)
+            trial.save('smoke', engine.saved())
+            const back = await Engine.restore(content, trial.load('smoke')!)
+            const same = JSON.stringify(back.state) === JSON.stringify(engine.state)
+            console.log(`[smoke] save and load ${same ? 'exact' : 'DIFFERENT'} (${trial.sizes().checkpoints} checkpoint)`)
+            trial.close()
+          } finally {
+            rmSync(dir, { recursive: true, force: true })
+          }
+        }
         // Under the bonnet (M10.1): a production build has no dev menu, no bridge to it, and no trace of it in its files.
         if (!import.meta.env.DEV) {
           const opened: boolean = await window!.webContents.executeJavaScript(
