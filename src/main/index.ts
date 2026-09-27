@@ -57,7 +57,13 @@ if (smokeData) {
   // Chromium's own storage keeps its key in the keychain too; the smoke check uses a stand-in.
   app.commandLine.appendSwitch('use-mock-keychain')
   app.setPath('userData', smokeData)
-  app.on('will-quit', () => rmSync(smokeData, { recursive: true, force: true }))
+  app.on('will-quit', () => {
+    try {
+      rmSync(smokeData, { recursive: true, force: true })
+    } catch {
+      // Windows keeps Chromium's files open until the very end: the temporary folder stays, and the app still quits.
+    }
+  })
 }
 
 // API keys are encrypted with the operating system's key store before they reach the disk.
