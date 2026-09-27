@@ -29,11 +29,26 @@ export async function listWorlds(root: string): Promise<WorldInfo[]> {
  * builder can write them back). Without a folder: a single world at the root,
  * or the Nethermarch.
  */
+/**
+ * Every file under a folder, as paths with forward slashes (M9.4). Not
+ * readdir's own recursive walk: the installed app reads its content from an
+ * archive that does not support it, and on Windows it gives backslashes.
+ */
+async function walk(dir: string, prefix = ''): Promise<string[]> {
+  const found: string[] = []
+  for (const entry of await readdir(dir, { withFileTypes: true })) {
+    const path = `${prefix}${entry.name}`
+    if (entry.isDirectory()) found.push(...(await walk(join(dir, entry.name), `${path}/`)))
+    else found.push(path)
+  }
+  return found
+}
+
 export async function readContentFiles(root: string, folder: string = DEFAULT_WORLD): Promise<ContentFile[]> {
   const single = existsSync(join(root, 'world.yaml'))
   const world = single ? '' : folder
   if (!/^[a-z0-9_-]*$/.test(world) || (world && !existsSync(join(root, world, 'world.yaml')))) throw new Error(`There is no world called "${folder}".`)
-  const entries = await readdir(join(root, world), { recursive: true })
+  const entries = await walk(join(root, world))
   const prefix = world ? `${world}/` : ''
   const paths = entries.filter((entry) => /\.ya?ml$/.test(entry) || /(^|\/)CHRONICLER\.md$/.test(entry) || /(^|\/)ids\.lock$/.test(entry)).sort()
   const files = await Promise.all(paths.map(async (path) => ({ path: `${prefix}${path}`, text: await readFile(join(root, world, path), 'utf8') })))

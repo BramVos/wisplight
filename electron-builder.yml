@@ -1,0 +1,44 @@
+# Installers for Mac and Windows (M9.4, FO chapter 18). `npm run dist:mac` or
+# `npm run dist:win` after `npm run build`; the files land in dist/.
+#
+# Unsigned for now (decision of 27 September 2026): macOS asks to confirm the
+# first start (System Settings > Privacy & Security > Open Anyway), Windows
+# SmartScreen asks too (More info > Run anyway). Signing needs only the
+# environment: CSC_LINK and CSC_KEY_PASSWORD for the certificate, and for
+# notarising APPLE_ID, APPLE_APP_SPECIFIC_PASSWORD and APPLE_TEAM_ID. Never
+# put those in this file.
+
+appId: io.github.bramvos.wisplight
+productName: Wisplight
+copyright: Copyright © 2026 Bram Vos
+directories:
+  output: dist
+  buildResources: build
+files:
+  - out/**
+  - content/**
+  - package.json
+  - '!out/**/*.map'
+asar: true
+mac:
+  category: public.app-category.role-playing-games
+  minimumSystemVersion: '13.0'
+  target:
+    - target: dmg
+      arch: [arm64, x64]
+  # Without a Developer ID: an ad-hoc signature, which Apple Silicon needs to start the app at all.
+  # The hardened runtime comes with notarising; with an ad-hoc signature it would stop the app loading its own libraries.
+  identity: '-'
+  hardenedRuntime: false
+  notarize: false
+dmg:
+  artifactName: Wisplight-${version}-mac-${arch}.dmg
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  artifactName: Wisplight-${version}-windows-setup.exe

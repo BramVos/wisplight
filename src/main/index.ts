@@ -1,6 +1,6 @@
 import { app, BrowserWindow, dialog, ipcMain, safeStorage, shell } from 'electron'
 import { randomUUID } from 'node:crypto'
-import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, watch } from 'node:fs'
+import { appendFileSync, existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, watch } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -43,12 +43,39 @@ if (process.env['WISPLIGHT_KEY_CHECK']) prepareKeyCheck(app)
 const logCheck = process.env['WISPLIGHT_LOG_CHECK'] ? prepareLogCheck(app) : undefined
 const builderCheck = process.env['WISPLIGHT_BUILDER_CHECK'] ? prepareBuilderCheck(app) : undefined
 
-// API keys are encrypted with the operating system's key store before they reach the disk.
-const cipher: Cipher = {
-  available: () => safeStorage.isEncryptionAvailable(),
-  encrypt: (plain) => safeStorage.encryptString(plain).toString('base64'),
-  decrypt: (encoded) => safeStorage.decryptString(Buffer.from(encoded, 'base64')),
+/** A line of the smoke check: on the console, and in a file when WISPLIGHT_SMOKE_OUT names one (an installed app on Windows has no console). */
+function smokeSay(line: string): void {
+  console.log(line)
+  const out = process.env['WISPLIGHT_SMOKE_OUT']
+  if (out) appendFileSync(out, `${line}\n`)
 }
+
+// The smoke check plays in a folder of its own and never touches the keychain (M9.4): it must not
+// read the player's settings or saves, and a test build with another signature makes macOS ask for the key store.
+const smokeData = smoke ? mkdtempSync(join(tmpdir(), 'wisplight-smoke-data-')) : undefined
+if (smokeData) {
+  // Chromium's own storage keeps its key in the keychain too; the smoke check uses a stand-in.
+  app.commandLine.appendSwitch('use-mock-keychain')
+  app.setPath('userData', smokeData)
+  app.on('will-quit', () => rmSync(smokeData, { recursive: true, force: true }))
+}
+
+// API keys are encrypted with the operating system's key store before they reach the disk.
+const cipher: Cipher = smoke
+  ? {
+      available: () => false,
+      encrypt: () => {
+        throw new Error('No key store in the smoke check')
+      },
+      decrypt: () => {
+        throw new Error('No key store in the smoke check')
+      },
+    }
+  : {
+      available: () => safeStorage.isEncryptionAvailable(),
+      encrypt: (plain) => safeStorage.encryptString(plain).toString('base64'),
+      decrypt: (encoded) => safeStorage.decryptString(Buffer.from(encoded, 'base64')),
+    }
 
 const BILLING: Record<ProviderId, string> = {
   openai: 'https://platform.openai.com/settings/organization/billing/overview',
@@ -429,7 +456,7 @@ function openEditor(): void {
             return head + ' | ' + (place ? place.file : 'NO ENTITY')
           })()`,
         )
-        console.log(`[smoke-editor] ${seen}`)
+        smokeSay(`[smoke-editor] ${seen}`)
         app.quit()
       }, 1500)
     })
@@ -583,14 +610,15 @@ function createWindow(): void {
         const room: string = await window!.webContents.executeJavaScript(
           `(async () => {
             const pick = document.querySelector('.worlds [data-world="${world}"]')
-            if (pick) {
-              pick.click()
-              await new Promise((r) => setTimeout(r, 1000))
-            }
-            return document.querySelector('.line.room')?.textContent ?? 'NO ROOM RENDERED'
+            if (pick) pick.click()
+            // Up to ten seconds for the first room: the installed app reads its world from an archive.
+            const started = Date.now()
+            while (!document.querySelector('.line.room') && Date.now() - started < 10000) await new Promise((r) => setTimeout(r, 100))
+            const room = document.querySelector('.line.room')?.textContent ?? 'NO ROOM RENDERED: ' + document.body.innerText.replace(/\\s+/g, ' ').slice(0, 300)
+            return room.split('\\n')[0] + ' (after ' + (Date.now() - started) + ' ms)'
           })()`,
         )
-        console.log(`[smoke] ${room.split('\n')[0]}`)
+        smokeSay(`[smoke] ${room}`)
         // Saving (M9.3): a checkpoint and a tail, in a store of its own, load as exactly the same world.
         if (engine && content) {
           const dir = mkdtempSync(join(tmpdir(), 'wisplight-smoke-'))
@@ -601,7 +629,7 @@ function createWindow(): void {
             trial.save('smoke', engine.saved())
             const back = await Engine.restore(content, trial.load('smoke')!)
             const same = JSON.stringify(back.state) === JSON.stringify(engine.state)
-            console.log(`[smoke] save and load ${same ? 'exact' : 'DIFFERENT'} (${trial.sizes().checkpoints} checkpoint)`)
+            smokeSay(`[smoke] save and load ${same ? 'exact' : 'DIFFERENT'} (${trial.sizes().checkpoints} checkpoint)`)
             trial.close()
           } finally {
             rmSync(dir, { recursive: true, force: true })
@@ -624,7 +652,7 @@ function createWindow(): void {
           )
           const assets = join(app.getAppPath(), 'out', 'renderer', 'assets')
           const traces = existsSync(assets) ? readdirSync(assets).filter((f) => readFileSync(join(assets, f), 'utf8').includes('data-dev-menu')) : []
-          console.log(`[smoke] dev menu ${opened || traces.length ? `PRESENT${traces.length ? ` in ${traces.join(', ')}` : ''}` : 'absent'}`)
+          smokeSay(`[smoke] dev menu ${opened || traces.length ? `PRESENT${traces.length ? ` in ${traces.join(', ')}` : ''}` : 'absent'}`)
         }
         app.quit()
       }, 1500)

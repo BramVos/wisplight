@@ -10,6 +10,8 @@
     "editor": "electron-vite dev",
     "build": "electron-vite build",
     "start": "electron-vite preview",
+    "dist:mac": "electron-vite build && electron-builder --mac",
+    "dist:win": "electron-vite build && electron-builder --win",
     "web": "vite --config vite.web.config.ts",
     "play": "tsx src/cli/play.ts",
     "test": "vitest run",
@@ -35,6 +37,7 @@
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "~5.2.0",
     "electron": "^44.4.5",
+    "electron-builder": "^26.15.3",
     "electron-vite": "^5.0.0",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2",
@@ -45,5 +48,6 @@
     "esbuild@0.25.12": true,
     "esbuild@0.28.2": true,
     "fsevents@2.3.3": true
-  }
+  },
+  "author": "Bram Vos"
 }

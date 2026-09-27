@@ -1,0 +1,91 @@
+# Installers on clean machines (M9.4, FO chapter 18). Builds the Mac and
+# Windows installers on fresh GitHub machines, installs them, starts the
+# installed game hidden in both worlds (the smoke check), and keeps the
+# installers as a download of the run. Started by hand (Actions > Installers >
+# Run workflow) or by a version tag. Free for a public repository.
+
+name: Installers
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+
+jobs:
+  mac:
+    runs-on: macos-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 26
+          cache: npm
+      - run: npm ci
+      - name: Build the installers (unsigned)
+        run: npm run dist:mac
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      - name: Install from the disk image and start it in both worlds
+        run: |
+          set -e
+          for arch in arm64 x64; do
+            dmg="$(ls dist/Wisplight-*-mac-$arch.dmg)"
+            mount="$(mktemp -d)"
+            hdiutil attach "$dmg" -nobrowse -mountpoint "$mount"
+            rm -rf "$RUNNER_TEMP/$arch" && mkdir -p "$RUNNER_TEMP/$arch"
+            cp -R "$mount/Wisplight.app" "$RUNNER_TEMP/$arch/"
+            hdiutil detach "$mount"
+            app="$RUNNER_TEMP/$arch/Wisplight.app/Contents/MacOS/Wisplight"
+            # The Intel build runs under Rosetta on an Apple Silicon machine.
+            run="$app"; [ "$arch" = x64 ] && run="arch -x86_64 $app"
+            for world in 1 isle; do
+              out="$RUNNER_TEMP/smoke-$arch-$world.txt"
+              WISPLIGHT_SMOKE=$world WISPLIGHT_SMOKE_OUT="$out" $run || true
+              cat "$out"
+              grep -q 'save and load exact' "$out"
+              grep -q 'dev menu absent' "$out"
+              if grep -q 'NO ROOM RENDERED' "$out"; then exit 1; fi
+            done
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wisplight-mac
+          path: dist/*.dmg
+          retention-days: 14
+
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 26
+          cache: npm
+      - run: npm ci
+      - name: Build the installer (unsigned)
+        run: npm run dist:win
+      - name: Install silently and start it in both worlds
+        shell: pwsh
+        run: |
+          $setup = Get-ChildItem dist\Wisplight-*-windows-setup.exe | Select-Object -First 1
+          Start-Process -FilePath $setup.FullName -ArgumentList '/S' -Wait
+          $game = Join-Path $env:LOCALAPPDATA 'Programs\Wisplight\Wisplight.exe'
+          if (-not (Test-Path $game)) { throw "Not installed at $game" }
+          foreach ($world in @('1', 'isle')) {
+            $out = Join-Path $env:RUNNER_TEMP "smoke-$world.txt"
+            $env:WISPLIGHT_SMOKE = $world
+            $env:WISPLIGHT_SMOKE_OUT = $out
+            Start-Process -FilePath $game -Wait
+            Get-Content $out
+            $text = Get-Content $out -Raw
+            if ($text -notmatch 'save and load exact') { throw 'The game did not save and load' }
+            if ($text -notmatch 'dev menu absent') { throw 'The dev menu is in the installed game' }
+            if ($text -match 'NO ROOM RENDERED') { throw 'No room was shown' }
+          }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wisplight-windows
+          path: dist/*-setup.exe
+          retention-days: 14
