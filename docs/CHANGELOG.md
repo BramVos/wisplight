@@ -1,5 +1,25 @@
 # Changelog
 
+## M7.2 Open punten uit M1 tot en met M7, 27 september 2026
+
+Nieuw, alles wat eerder onder "Nog niet" bleef staan:
+- **NPC-doelen:** de hele doelcatalogus uit het FO, met de poorten. NPC's verkopen, bezorgen, helpen, volgen, bewaken, mijden, verspreiden nieuws, maken het hof, vieren, onderzoeken, geven aan, confronteren, vragen hulp, stelen, saboteren, doen iemand iets aan of vluchten. Een dorpeling die steelt kan gezien, besproken, aangegeven en een dag opgesloten worden.
+- **Diefstal die niemand zag:** wordt later ontdekt. Het gerucht noemt een verdachte (wie er gezien werd, of iemand die het slachtoffer niet mag) en kan dus fout zijn. De schout gaat kijken.
+- **Gevaren buiten gevechten:** wegzakken in het veen (`struggle`), Veenkoorts na een nacht buiten (`use herbs`), een vloek (weg met een `rite` op een heilige plek), even een kat zijn (de weduwe kan dat), een punter huren bij Wouter (`hire punt`).
+- **Zegeningen** die alleen tekst waren, werken nu, en de Grijze Ruiter vraagt zijn prijs: de laatste schoof op een kruispunt (`leave the rye`).
+- **Gezellen:** vanaf band 1 een gezamenlijke slag (`together wouter`).
+- **Huwelijk:** een huis (dat van je partner), schoonfamilie en verwachtingen.
+- **Kroniekschrijver:** stelt na grote gebeurtenissen een kleine verschuiving tussen landen voor en schrijft een effectplan als er geen vast plan is, beide begrensd en gecontroleerd.
+- **Quest-acties in gewone woorden:** in het gespreksvenster herkent de stem wat je bedoelt, dus je hoeft de vaste zin niet meer te kennen.
+- **Lore meenemen:** `new stranger` begint in de desktopapp een nieuw personage in de wereld van de laatste save. Grote gebeurtenissen blijven, klein nieuws is vergeten, en de mensen herinneren zich de vreemdeling van vóór jou.
+- **Kleine dingen:** De Schaal heeft een waardin (Neeltje Kuiper), en het tempo kies je bij een nieuw personage.
+
+Testen: `npm run dev`, nieuw spel, kies een tempo. Loop 's nachts het veen in en blijf buiten slapen; loop over slappe grond. Praat met Aaltje in gewone woorden over de kat. Steel brood als niemand kijkt en wacht een paar uur. Huur een punter bij Wouter. Bewaar, sluit af en typ bij de start `new stranger`. Controles: `npm test` (309 tests).
+
+Nog niet: genereren tot speelbaar (komt met de eerste nieuwe streek), Busy Hands (wacht op ambachtswerk), de legende-variant van lore meenemen.
+
+Ontwerp: FO hoofdstuk 7, 8, 12, 13 en 14 hebben een stand na M7.2, het ontwerpdocument "Zo is het in M7.2 gebouwd". In het wereldboek staan de waardin van De Schaal, de punters en de prijs van de Ruiter bij de ingevulde details. Keuzes die ik maakte: Veenkoorts neemt elke dag een punt Might, een vloek kost 2 op elke worp, de gezamenlijke slag kost twee acties met +2 voor beiden, en de kroniekschrijver mag de spanning hooguit 5 punten verschuiven.
+
 ## M7.1 Moderne interface, 27 september 2026
 
 Nieuw na je playtest:

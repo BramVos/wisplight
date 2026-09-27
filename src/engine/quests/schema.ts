@@ -147,6 +147,8 @@ export const QuestActionSchema = z
     id: Id,
     /** What the player types: regular expressions, matched against the whole command. */
     say: z.array(z.string()).min(1),
+    /** What the player does, in plain words, for the voice to recognise in free speech (M7.2). */
+    intent: z.string().optional(),
     /** Where it can be done: location or area ids; empty means anywhere. */
     at: z.array(z.string()).default([]),
     /** Someone who must be there. */

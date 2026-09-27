@@ -31,6 +31,16 @@ const { output, problems, usage } = await chronicle(input, model, (ids) => cards
 ```
 
 `output` is in your own ids: `lore`, `lines`, `quests`, `thoughts` and `news`.
+Two parts are optional, and only asked for when the input offers them:
+
+- `realms` (cards of kind `realm`) lets the chronicler propose one small shift
+  between two realms, at most 5 either way, with a reason: `tensions`.
+- `mayPlan` (storyline ids) marks events big enough for consequences: the
+  chronicler may write a `plans` entry for them, in up to three phases, from a
+  fixed vocabulary (a place's state, news for an area, a market factor between
+  0.5 and 1.5, an area's people fleeing to a place for up to 14 days), at most
+  ten effects. Anything outside it is dropped with a problem.
+
 `problems` says what was dropped and why. Checks that need the world itself
 (names the world does not know, who may know what) are the caller's; in
 Wisplight they live in `src/engine/chronicler.ts`.

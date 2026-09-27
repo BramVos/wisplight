@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import type { Keys } from './prompt'
-import type { ChronicleInput, ChronicleOutput, Limits, LineOp, LoreOp, NewsOp, QuestOp, ThoughtOp } from './types'
+import type { ChronicleInput, ChronicleOutput, Limits, LineOp, LoreOp, NewsOp, PlanEffectOp, PlanOp, QuestOp, ThoughtOp } from './types'
 
 // Reading the reply: the shape must match, every key must be one of this
 // overview, and texts must stay within their length. A part that fails is
@@ -31,7 +31,20 @@ const ReplySchema = z.object({
     .default([]),
   thoughts: z.array(z.object({ who: z.string(), text: z.string() })).default([]),
   news: z.array(z.object({ area: z.string(), text: z.string() })).default([]),
+  tensions: z.array(z.object({ between: z.array(z.string()), delta: z.number(), why: z.string() })).default([]),
+  plans: z
+    .array(
+      z.object({
+        line: z.string(),
+        name: z.string(),
+        phases: z.array(z.object({ after: z.number(), effects: z.array(z.record(z.string(), z.union([z.string(), z.number()]))) })),
+      }),
+    )
+    .default([]),
 })
+
+const STATES = ['flooded', 'damaged', 'destroyed', 'abandoned', 'occupied', 'normal'] as const
+const MAX_PLAN_EFFECTS = 10
 
 export interface ReadReply {
   output: ChronicleOutput
@@ -167,5 +180,64 @@ export function readReply(text: string, keys: Keys, input: ChronicleInput, limit
     else if (!output.news.some((n) => n.area === area)) output.news.push({ area, text: said } satisfies NewsOp)
   }
 
+  // Realms: one small shift at most, only when realms were given.
+  for (const t of reply.tensions.slice(0, 1)) {
+    const [a, b] = t.between.map((k) => as(k, 'realm'))
+    const why = within(t.why, limits.textWords)
+    if (!input.realms?.length || !a || !b || a === b || !why) problems.push('tension: needs two different realms and a reason')
+    else (output.tensions ??= []).push({ between: [a, b], delta: Math.max(-5, Math.min(5, Math.round(t.delta))), why })
+  }
+  if (reply.tensions.length > 1) problems.push('tensions: one per run')
+
+  // Plans: only for storylines marked PLAN, in the fixed vocabulary, within bounds.
+  for (const plan of reply.plans) {
+    const line = as(plan.line, 'line')
+    const where = `plan "${plan.name}"`
+    if (!line || !input.mayPlan?.includes(line)) {
+      problems.push(`${where}: not a storyline to plan for`)
+      continue
+    }
+    let count = 0
+    const phases: PlanOp['phases'] = []
+    for (const phase of plan.phases.slice(0, 3)) {
+      const effects: PlanEffectOp[] = []
+      for (const e of phase.effects) {
+        if (count >= MAX_PLAN_EFFECTS) break
+        const effect = planEffect(e)
+        if (effect) {
+          effects.push(effect)
+          count++
+        } else problems.push(`${where}: an effect outside the vocabulary: ${JSON.stringify(e)}`)
+      }
+      if (effects.length) phases.push({ after: Math.max(0, Math.min(240, Math.round(phase.after))), effects })
+    }
+    if (phases.length && plan.name.trim()) (output.plans ??= []).push({ line, name: plan.name.trim(), phases })
+  }
+
   return { output, lookups: [], problems }
+
+  function planEffect(e: Record<string, string | number>): PlanEffectOp | undefined {
+    if (typeof e['place'] === 'string') {
+      const place = as(e['place'], 'place')
+      const state = STATES.find((s) => s === e['state'])
+      return place && state ? { place, state } : undefined
+    }
+    if (typeof e['news'] === 'string') {
+      const area = as(String(e['area'] ?? ''), 'area')
+      const said = within(e['news'], limits.textWords)
+      return area && said ? { news: said, area } : undefined
+    }
+    if (typeof e['market'] === 'string') {
+      const item = as(e['market'], 'item')
+      const factor = Number(e['factor'])
+      return item && factor >= 0.5 && factor <= 1.5 ? { market: item, factor } : undefined
+    }
+    if (typeof e['flee'] === 'string') {
+      const area = as(e['flee'], 'area')
+      const to = as(String(e['to'] ?? ''), 'place')
+      const days = Math.max(1, Math.min(14, Math.round(Number(e['days']) || 1)))
+      return area && to ? { flee: area, to, days } : undefined
+    }
+    return undefined
+  }
 }

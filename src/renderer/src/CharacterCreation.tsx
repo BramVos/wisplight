@@ -26,16 +26,20 @@ import {
 const signed = (n: number) => (n >= 0 ? `+${n}` : `${n}`)
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 
-export function CharacterCreation({ data, onCreate, onSkip }: { data: CreationData; onCreate: (command: string) => void; onSkip: () => void }) {
+export type Tempo = 'calm' | 'normal' | 'dramatic'
+
+export function CharacterCreation({ data, onCreate, onSkip }: { data: CreationData; onCreate: (command: string, tempo: Tempo) => void; onSkip: (tempo: Tempo) => void }) {
+  // How much happens in the world by itself (FO, chapter 3; chosen at a new game since M7.2).
+  const [tempo, setTempo] = useState<Tempo>('normal')
   const content = useMemo(() => contentFor(data), [data])
   const rules = data.rules
   const [choice, setChoice] = useState<CreationChoice>(() => suggestChoice(content, rules.classes[0]!.id, ''))
 
   useEffect(() => {
-    const onKey = (event: KeyboardEvent) => event.key === 'Escape' && onSkip()
+    const onKey = (event: KeyboardEvent) => event.key === 'Escape' && onSkip(tempo)
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [onSkip])
+  }, [onSkip, tempo])
 
   // A new class starts again from its suggestion; a new ancestry or background from the class's, keeping the other.
   const pick = (patch: Partial<Pick<CreationChoice, 'class' | 'ancestry' | 'background'>>) => {
@@ -78,7 +82,7 @@ export function CharacterCreation({ data, onCreate, onSkip }: { data: CreationDa
         <header className="panel-head">
           <h2>Who are you?</h2>
           <span className="muted small">Everything starts from a suggestion; change what you like.</span>
-          <button type="button" className="link" onClick={onSkip}>
+          <button type="button" className="link" onClick={() => onSkip(tempo)}>
             [Play the ready-made traveller]
           </button>
         </header>
@@ -94,6 +98,14 @@ export function CharacterCreation({ data, onCreate, onSkip }: { data: CreationDa
                 <option value="she">she</option>
                 <option value="he">he</option>
                 <option value="they">they</option>
+              </select>
+            </label>
+            <label className="field">
+              <span>How much happens</span>
+              <select value={tempo} onChange={(e) => setTempo(e.target.value as Tempo)} aria-label="Pace of events">
+                <option value="calm">calm: a quiet life, few stories</option>
+                <option value="normal">normal</option>
+                <option value="dramatic">dramatic: more happens, more often</option>
               </select>
             </label>
           </div>
@@ -203,7 +215,7 @@ export function CharacterCreation({ data, onCreate, onSkip }: { data: CreationDa
           )}
           {problems.length > 0 && <p className="error small">{problems.join(' ')}</p>}
           <div className="row">
-            <button type="button" className="link" disabled={problems.length > 0} onClick={() => onCreate(creationCommand({ ...choice, name: choice.name.trim() }))}>
+            <button type="button" className="link" disabled={problems.length > 0} onClick={() => onCreate(creationCommand({ ...choice, name: choice.name.trim() }), tempo)}>
               [Begin as {choice.name.trim() || '...'}]
             </button>
           </div>

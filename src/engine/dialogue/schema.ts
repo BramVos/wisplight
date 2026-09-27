@@ -16,15 +16,18 @@ export const ReplySchema = z.object({
   effects: z.array(z.object({ type: z.enum(['affinity', 'trust', 'fear']), delta: z.number().int(), reason: z.string() })),
   memory_note: z.string(),
   ends_conversation: z.boolean(),
+  // A quest action the player's words meant (M7.2); older recorded replies have none.
+  quest_action: z.string().default('none'),
 })
 export type Reply = z.infer<typeof ReplySchema>
 
-export function replyJsonSchema(allowedTopics: string[]): JsonSchema {
+export function replyJsonSchema(allowedTopics: string[], questActions: string[] = []): JsonSchema {
   return {
     type: 'object',
     additionalProperties: false,
-    required: ['act', 'reply', 'names', 'mentioned_topics', 'effects', 'memory_note', 'ends_conversation'],
+    required: ['act', 'reply', 'names', 'mentioned_topics', 'effects', 'memory_note', 'ends_conversation', ...(questActions.length ? ['quest_action'] : [])],
     properties: {
+      ...(questActions.length ? { quest_action: { type: 'string', enum: ['none', ...questActions] } } : {}),
       act: { type: 'string', enum: [...ACTS] },
       reply: { type: 'string', description: 'What the player sees: an optional short action, then speech in double quotes.' },
       names: {

@@ -399,6 +399,8 @@ export interface GameState {
   /** Effect plans in progress (design: grote gebeurtenissen), and plans waiting to start. */
   plans?: PlanState[]
   pendingPlans?: string[]
+  /** Plans the chronicler wrote for big events without a fixed plan (M7.2), checked like the fixed ones. */
+  dynamicPlans?: Record<string, import('./quests/plans').Plan>
   /** Routes closed by an event: exits that cannot be used, with the reason. */
   closed?: Record<string, string>
   /** Scarcity: what comes in of a thing, as a share of what came before. */

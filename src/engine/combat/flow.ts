@@ -237,7 +237,7 @@ function orderInFight(combat: Combat, words: string): Line[] {
 }
 
 export const FIGHT_HELP =
-  'In a fight: STRIKE [foe], ADVANCE / STEP BACK, RAISE SHIELD, TAKE COVER, USE <herbs>, RECALL [foe], TALK (demand surrender), GRAPPLE / SHOVE / TRIP <foe>, BREAK FREE, STAND, your abilities by name, FLEE (2 actions), SURRENDER, SUBDUE (fight not to kill), END (end your turn).'
+  'In a fight: STRIKE [foe], ADVANCE / STEP BACK, RAISE SHIELD, TAKE COVER, USE <herbs>, RECALL [foe], TALK (demand surrender), GRAPPLE / SHOVE / TRIP <foe>, BREAK FREE, STAND, your abilities by name, TOGETHER <companion> [ON <foe>] (a joint strike, 2 actions, from band 1), FLEE (2 actions), SURRENDER, SUBDUE (fight not to kill), END (end your turn).'
 
 export interface PlayerResult {
   lines: Line[]
@@ -313,6 +313,35 @@ export function playerCommand(arena: Arena, combat: Combat, text: string, fleeDc
   }
 
   if (/^(help|\?)$/.test(verb)) return { lines: [{ kind: 'system', text: FIGHT_HELP }] }
+  // TOGETHER <companion> [on <foe>]: a joint strike, once a fight per companion from band 1 (FO, chapter 13).
+  if (verb === 'together' || words.startsWith('with ')) {
+    const [who = '', on = ''] = rest.replace(/^with\s+/, '').split(/\s+(?:on|at|against)\s+/)
+    const mate = combat.fighters.find((f) => f.side === 'party' && f.id !== 'player' && f.name.toLowerCase().startsWith(who.trim().split(' ')[0] ?? ''))
+    if (!mate || !who.trim()) lines.push({ kind: 'system', text: 'Together with whom? TOGETHER <companion> [ON <foe>].' })
+    else if ((arena.bonds?.[mate.id] ?? 0) < 1) lines.push({ kind: 'system', text: `You and ${mate.name} are not that close yet: a joint action needs band 1.` })
+    else if ((combat.joint ?? []).includes(mate.id)) lines.push({ kind: 'system', text: `You and ${mate.name} have done that once this fight.` })
+    else if (mate.state !== 'up') lines.push({ kind: 'system', text: `${cap(mate.name)} cannot.` })
+    else {
+      const target = findFoe(combat, on)
+      const reach = (f: Fighter) => (f.attacks[0]?.kind === 'melee' ? distance(f, target!) === 0 : true)
+      if (!target) lines.push({ kind: 'system', text: 'Against whom?' })
+      else if (!reach(player) || !reach(mate)) lines.push({ kind: 'system', text: `You both need to reach ${target.name}.` })
+      else if (spend(2)) {
+        ;(combat.joint ??= []).push(mate.id)
+        combat.playerTarget = target.id
+        lines.push({ kind: 'narration', text: `You catch ${mate.name}'s eye, and you go in together.` })
+        for (const f of [player, mate]) f.buffs.push({ to: 'attack', value: 2, rounds: 1 })
+        lines.push(...strike(arena, combat, player, target))
+        if (target.state === 'up' && mate.state === 'up') lines.push(...strike(arena, combat, mate, target))
+      }
+    }
+    if (!settle(combat) && combat.actions <= 0) {
+      endTurn(arena, combat, player, lines)
+      nextTurn(arena, combat, lines)
+      lines.push(...runOthers(arena, combat))
+    } else if (combat.over === 'lost') lines.push(...downed(arena, combat))
+    return { lines }
+  }
   if (verb === 'order') return { lines: orderInFight(combat, rest) }
   if (/^(subdue|lethal|nonlethal)$/.test(verb)) {
     combat.subdue = verb === 'lethal' ? false : !(rest === 'off')

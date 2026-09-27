@@ -110,11 +110,13 @@ Scope: Brams bevindingen van 27 september. Gesprekken in een eigen venster, het 
 - [x] Een NPC weet waar een bekende rond deze tijd meestal is, met een foutmarge naar hoe goed hij die kent, en hoe die eruitziet; iets dat hij zelf zag, gaat voor
 - [x] Plaatjes van plekken en mensen zijn optioneel (een beeldmodel van OpenAI), worden eenmalig gemaakt en bewaard, en tellen mee in het AI-budget
 
-## M7.2 Open punten uit M1 tot en met M7
+## M7.2 Open punten uit M1 tot en met M7 (af)
 
 Scope: wat in de milestone-rapporten onder "Nog niet" bleef staan en niet bij M8 of M9 hoort.
 
-- [ ] Elk punt uit de lijst in de changelog is gebouwd, of staat met reden bij een latere milestone
+- [x] Elk punt uit de lijst in de changelog is gebouwd, of staat met reden bij een latere milestone
+
+Blijft liggen, met reden: genereren tot speelbaar (niveau 3) komt met de eerste nieuwe streek, want pas dan gaan er wegen de streek uit; Busy Hands wacht op ambachtswerk voor de speler; de legende-variant van lore meenemen is een latere extra keuze (besluit 27 september).
 
 ## M8 Volledige wereldbouwer
 

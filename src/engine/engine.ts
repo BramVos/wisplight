@@ -39,12 +39,13 @@ import { deed, noticeCarried, seedBonds } from './social/deeds'
 import { factionLines, factionPage, join, rankOf, repute } from './social/factions'
 import { fightsBack, mayAttackFirst, mayLend } from './social/gates'
 import { flirt, marry } from './social/romance'
-import { evaluate, expireConditions, questAction, questlog, questPage, questsOnDeath, setPlaceState, startQuest, triggers, type QuestHost } from './quests/engine'
+import { conversationActions, evaluate, expireConditions, questAction, questlog, questPage, questsOnDeath, runQuestAction, setPlaceState, startQuest, triggers, type QuestHost } from './quests/engine'
 import { PlaceState } from './quests/schema'
 import { antagonists } from './quests/antagonists'
 import { plansDue, startPlan } from './quests/plans'
 import { realmLines, realmPage } from './social/realms'
 import { kmFromPlayer, posOf } from './nearby'
+import { carryOver } from './legacy'
 import {
   character,
   clockLine,
@@ -198,6 +199,7 @@ export class Engine {
     this.topics = new TopicRegistry(content)
     for (const far of state.lore?.far ?? []) this.topics.addDuringPlay({ id: far.id, kind: 'place', name: far.name, aliases: [far.name] })
     this.dialogue = new Dialogue(this.world, this.topics, new Knowledge(this.world, this.topics), () => this.recorder)
+    this.dialogue.questOptions = (npc) => conversationActions(this.world, npc)
     this.dialogue.syncNews()
     this.eventMark = state.eventSeq
     this.setLlm(options.llm)
@@ -736,6 +738,9 @@ export class Engine {
   private async inConversation(turn: () => Promise<Output[]>): Promise<Output[]> {
     const seen = this.pass(1)
     const outputs = await turn()
+    // The voice heard a quest action in the player's words (M7.2): it happens now.
+    const key = this.dialogue.takeChosen()
+    if (key) outputs.push(...(runQuestAction(this.world, this.questHost, key) ?? []))
     return [...outputs, ...seen]
   }
 
@@ -911,6 +916,24 @@ export class Engine {
     const copy = JSON.parse(JSON.stringify(save)) as SaveData
     fitStateToContent(content, copy.state)
     return new Engine(content, { state: copy.state, log: copy.log, llm })
+  }
+
+  /**
+   * The same world with a new character (M7.2): the world of a save goes on,
+   * the old stranger has left, big events stay and small news is forgotten.
+   */
+  static carryOn(content: Content, save: SaveData, seed: number, llm?: LlmClient): { engine: Engine; outputs: Output[] } {
+    if (save.world !== content.world.id) throw new Error(`This save belongs to world "${save.world}"`)
+    const copy = JSON.parse(JSON.stringify(save)) as SaveData
+    fitStateToContent(content, copy.state)
+    const notes = carryOver(content, copy.state)
+    const engine = new Engine(content, { state: copy.state, seed, llm })
+    const outputs: Output[] = [
+      { kind: 'text', text: `Another stranger arrives in ${content.world.name}. The one who came before has gone, but people here have not forgotten them.` },
+      { kind: 'system', text: notes.join(' ') },
+      describeRoom(engine.world),
+    ]
+    return { engine, outputs }
   }
 
   /** The same game on changed content: what the world builder saves is in play at once (FO, chapter 15, "Live herladen"). */
@@ -1210,6 +1233,7 @@ export class Engine {
       content: this.content,
       rng: this.world.rng,
       now: this.world.now,
+      bonds: Object.fromEntries(companions(this.world).map((m) => [m.npc, m.bond])),
       character: character(this.world)!,
       items: {
         count: (id) => inventory[id] ?? 0,

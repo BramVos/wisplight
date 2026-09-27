@@ -232,3 +232,93 @@ describe('M7.2: a theft nobody saw', () => {
     expect(engine.state.wanted?.count?.fine).toBeGreaterThan(0)
   })
 })
+
+describe('M7.2: quest actions in free speech', () => {
+  it('the voice recognises what the player means, and the quest action happens', async () => {
+    const { MockLlm } = await import('../src/engine')
+    const mock = new MockLlm('good')
+    const engine = new Engine(content, { seed: 3, llm: mock, builder: true })
+    await say(engine, '@goto loc_visser_house', '@like aaltje 30 30', '@bring aaltje', 'talk aaltje')
+    const out = await say(engine, '"Tell me honestly, what is going on with that grey cat on the step?')
+    const prompt = mock.calls.filter((c) => c.role === 'voice').at(-1)!.prompt
+    expect(prompt).toMatch(/grey_cat_on_the_doorstep:ask_aaltje_cat: the player wants to ask Aaltje what she knows about the grey cat/)
+    expect(out).toMatch(/Aaltje sits down heavily/)
+    expect(engine.state.flags?.['cat_is_fenna']).toBe(true)
+  })
+
+  it('offers only what can be done here and now, with this person', async () => {
+    const { conversationActions } = await import('../src/engine/quests/engine')
+    const engine = new Engine(content, { seed: 3, builder: true })
+    await say(engine, '@goto loc_visser_house')
+    // Aaltje is not here: nothing to do with her.
+    expect(conversationActions(engine.world, 'npc_aaltje').map((a) => a.key)).not.toContain('grey_cat_on_the_doorstep:ask_aaltje_cat')
+    await say(engine, '@like aaltje 30 30', '@bring aaltje')
+    expect(conversationActions(engine.world, 'npc_aaltje').map((a) => a.key)).toContain('grey_cat_on_the_doorstep:ask_aaltje_cat')
+    expect(conversationActions(engine.world, 'npc_aaltje').map((a) => a.key)).not.toContain('grey_cat_on_the_doorstep:tell_widow_truth')
+  })
+})
+
+describe('M7.2: a joint action with a companion', () => {
+  it('TOGETHER strikes with a companion from band 1, once a fight', async () => {
+    const engine = await player()
+    await say(engine, '@goto loc_wouter_hut', '@bring wouter', '@like wouter 90 70')
+    const { recruit } = await import('../src/engine/social/companions')
+    recruit(engine.world, 'npc_wouter')
+    const mate = engine.state.companions!.find((m) => m.npc === 'npc_wouter')!
+    mate.bond = 0
+    await say(engine, '@fight feral_dog')
+    for (let i = 0; i < 3 && engine.state.combat?.parley; i++) await say(engine, 'refuse')
+    expect(await say(engine, 'together wouter')).toMatch(/not that close yet/)
+    mate.bond = 1
+    // The bond counts when the arena is made for the next command.
+    const out = await say(engine, 'advance', 'together wouter')
+    expect(out).toMatch(/you go in together|need to reach|done that once/)
+  })
+})
+
+describe('M7.2: the chronicler shifts realms and plans consequences', () => {
+  it('a big event gets a checked plan of consequences, and a bounded shift between realms', async () => {
+    const { MockLlm } = await import('../src/engine')
+    const mock = new MockLlm('plan')
+    const engine = new Engine(content, { seed: 3, llm: mock, builder: true })
+    const before = { ...(engine.state.tension ?? {}) }
+    await say(engine, '@kill harmen drowned in the Blackmere')
+    const [run] = await engine.runChronicler()
+    const request = mock.calls.filter((c) => c.role === 'chronicler').at(-1)!
+    expect(request.prompt).toMatch(/REALMS/)
+    expect(request.prompt).toMatch(/ PLAN/)
+    // The market effect had an unknown item: the whole plan is refused? No: the reader drops that effect, the rest stands.
+    expect(run!.problems.join(' ')).toMatch(/outside the vocabulary/)
+    const plans = Object.values(engine.state.dynamicPlans ?? {})
+    expect(plans).toHaveLength(1)
+    expect(plans[0]!.phases[0]!.effects.some((e) => 'place' in e && 'state' in e && e.state === 'damaged')).toBe(true)
+    engine.tick(60)
+    expect(Object.values(engine.state.places ?? {}).some((p) => p.state === 'damaged')).toBe(true)
+    // A shift of 9 asked for, 5 allowed.
+    const { tensionOf } = await import('../src/engine/social/realms')
+    const [a, b] = [...content.realms.keys()]
+    const start = before[[a, b].sort().join('|')] ?? content.tensions.find((t) => t.between.includes(a!) && t.between.includes(b!))?.tension ?? 35
+    expect(Math.abs(tensionOf(engine.world, a!, b!) - start)).toBeLessThanOrEqual(5)
+  })
+})
+
+describe('M7.2: the same world with a new character', () => {
+  it('keeps big events, forgets small news, and people remember the stranger before', async () => {
+    const engine = await player()
+    await say(engine, '@goto loc_visser_house', '@like grietje 50 30', '@kill harmen drowned in the Blackmere')
+    engine.tick(60)
+    const small = engine.state.news!.facts.filter((f) => f.belang < 4).length
+    expect(small).toBeGreaterThan(0)
+    const big = engine.state.news!.facts.filter((f) => f.belang >= 4).map((f) => f.id)
+    expect(big.length).toBeGreaterThan(0)
+    const { engine: next, outputs } = Engine.carryOn(content, engine.save(), 11)
+    expect(outputs.map((o) => o.text).join(' ')).toMatch(/Another stranger arrives/)
+    expect(next.state.news!.facts.map((f) => f.id)).toEqual(big)
+    expect(next.state.npcs['npc_harmen']!.dead).toBeTruthy()
+    expect(next.state.player.character?.made ?? false).toBe(false)
+    expect(next.state.player.location).toBe(content.world.start.location)
+    expect(next.state.npcs['npc_grietje_visser']!.memory!.at(-1)!.note).toMatch(/I remember the stranger/)
+    expect(next.state.questlog?.['grey_cat_on_the_doorstep']).toBeUndefined()
+    expect(next.world.now).toBe(engine.world.now)
+  })
+})

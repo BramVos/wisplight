@@ -137,7 +137,7 @@ ipcMain.handle('engine:start', async () => {
   lastInput = -Infinity
   const outputs = engine.start()
   opening = [...outputs]
-  if (store().latest()) outputs.push(system('There is a saved game. Type CONTINUE to carry on exactly where you left off, or LOAD for your last save.'))
+  if (store().latest()) outputs.push(system('There is a saved game. Type CONTINUE to carry on exactly where you left off, LOAD for your last save, or NEW STRANGER to start a new character in that world (big events stay, small news is forgotten).'))
   return reply(outputs)
 })
 
@@ -167,6 +167,15 @@ ipcMain.handle('engine:command', async (_event, input: unknown) => {
       journal().append(where, engine.world.now, 'note', 'Continued')
     }
     return reply([system('You pick up where you left off.'), ...(await engine.handle('look'))])
+  }
+  if (/^(new stranger|carry on|nieuwe vreemdeling)$/i.test(text)) {
+    // The same world with a new character (M7.2).
+    const data = store().latest()
+    if (!data) return reply([{ kind: 'error', text: 'There is no saved world to carry on in.' }])
+    const { engine: next, outputs } = Engine.carryOn(content, data, Math.floor(Math.random() * 2 ** 31), ai?.client())
+    next.builder = !app.isPackaged
+    follow(next, journal().start(randomUUID()))
+    return reply(outputs)
   }
   if (verb === 'load' || verb === 'laad') {
     const data = store().load('manual') ?? store().load('auto')

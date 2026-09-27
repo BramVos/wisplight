@@ -5,7 +5,7 @@
 /** Ids are the caller's own. The chronicler shows the model short keys instead and maps them back. */
 export type Id = string
 
-export type CardKind = 'person' | 'place' | 'area' | 'lore' | 'request' | 'item'
+export type CardKind = 'person' | 'place' | 'area' | 'lore' | 'request' | 'item' | 'realm'
 
 /** One line about someone or something that occurs in the overview. */
 export interface Card {
@@ -99,6 +99,10 @@ export interface ChronicleInput {
   /** Older lines the model may look up, by title only. */
   older?: { id: Id; title: string }[]
   limits?: Partial<Limits>
+  /** Lands and powers whose relations may shift, a little, after what happened (design: "Staatkunde"). */
+  realms?: Card[]
+  /** Storylines with an event so big that its consequences may be planned (design: "Grote gebeurtenissen"). */
+  mayPlan?: Id[]
 }
 
 // ---------------------------------------------------------------- what comes back, in the caller's ids
@@ -154,12 +158,35 @@ export interface NewsOp {
   text: string
 }
 
+/** A small shift in how two realms stand, with its reason: bounded by the chronicler and again by the caller. */
+export interface TensionOp {
+  between: [Id, Id]
+  delta: number
+  why: string
+}
+
+/** One consequence of a big event, from a fixed vocabulary the caller can check and carry out. */
+export type PlanEffectOp =
+  | { place: Id; state: 'flooded' | 'damaged' | 'destroyed' | 'abandoned' | 'occupied' | 'normal' }
+  | { news: string; area: Id }
+  | { market: Id; factor: number }
+  | { flee: Id; to: Id; days: number }
+
+/** The consequences of a big event in phases (design: "Effectplan in fases"). */
+export interface PlanOp {
+  line: Id
+  name: string
+  phases: { after: number; effects: PlanEffectOp[] }[]
+}
+
 export interface ChronicleOutput {
   lore: LoreOp[]
   lines: LineOp[]
   quests: QuestOp[]
   thoughts: ThoughtOp[]
   news: NewsOp[]
+  tensions?: TensionOp[]
+  plans?: PlanOp[]
 }
 
 // ---------------------------------------------------------------- the model

@@ -107,6 +107,8 @@ export interface Combat {
   started_by?: 'player' | 'npc'
   /** The last foe the player struck, for companions who follow the player's target. */
   playerTarget?: string
+  /** Companions who already joined the player in a joint action this fight (band 1, FO chapter 13). */
+  joint?: string[]
   started: number
   xp: number
 }

@@ -32,6 +32,8 @@ export interface Arena {
   where?: { fen?: boolean; outdoors?: boolean; night?: boolean }
   /** The time, for blessings that come back once a day or a week. */
   now?: number
+  /** The band with each companion (FO, chapter 13): from band 1 a joint action in a fight. */
+  bonds?: Record<string, number>
 }
 
 const STREAM = 'combat'

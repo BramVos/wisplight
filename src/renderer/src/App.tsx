@@ -126,6 +126,8 @@ export function App() {
         const reply = await client.command(text)
         setLines((previous) => [...previous, ...reply.outputs.map(withId)].slice(-400))
         setStatus(reply.status)
+        // A new stranger in the same world makes their character first (M7.2).
+        if (/^(new stranger|carry on|nieuwe vreemdeling)$/i.test(text) && reply.status.character && !reply.status.character.made) setCreation(await client.creation())
       } catch (reason) {
         setLines((previous) => [...previous, withId({ kind: 'error', text: String(reason) })])
       } finally {
@@ -392,10 +394,13 @@ export function App() {
       {creation && (
         <CharacterCreation
           data={creation}
-          onSkip={() => setCreation(undefined)}
-          onCreate={(command) => {
+          onSkip={(tempo) => {
             setCreation(undefined)
-            void send(command)
+            if (tempo !== 'normal') void send(`tempo ${tempo}`)
+          }}
+          onCreate={(command, tempo) => {
+            setCreation(undefined)
+            void send(command).then(() => (tempo !== 'normal' ? send(`tempo ${tempo}`) : undefined))
           }}
         />
       )}

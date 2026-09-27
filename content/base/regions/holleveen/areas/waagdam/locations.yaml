@@ -180,12 +180,27 @@ locations:
     description:
       day: |
         A dim, panelled tavern where the townsfolk of Waagdam drink out of
-        sight of the church. Pipe smoke, wet wool and spilled beer. The tap is
-        unattended; the landlord seems to be away. The church alley is east.
+        sight of the church. Pipe smoke, wet wool and spilled beer. Behind the
+        tap a small, sharp-eyed woman keeps count of every tankard. The church
+        alley is east.
     exits:
       east: { to: loc_waagdam_church }
     objects:
       - { id: bench, type: bench }
+    services:
+      - id: schaal_tap
+        provider: npc_neeltje
+        hours: "10-23"
+        sells:
+          beer: { stock: 30, target: 30 }
+          hot_meal: { stock: 8, target: 8 }
+        lodging: 10
+        supply:
+          - { item: beer, amount: 30, every: day, at: 7 }
+          - { item: hot_meal, amount: 8, every: day, at: 11 }
+        demand:
+          - { item: beer, amount: 10, from: 12, to: 23 }
+          - { item: hot_meal, amount: 4, from: 12, to: 20 }
 
   - id: loc_waagdam_town_hall
     name: The Town Hall

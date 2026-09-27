@@ -5,7 +5,7 @@ import { LlmError, type LlmClient, type LlmRequest, type LlmResponse } from './l
 // knowledge packet in request.meta and can misbehave on purpose, so tests can
 // prove that the guardrails catch it.
 
-export type MockMode = 'good' | 'leak' | 'long' | 'invalid' | 'throw' | 'anachronism' | 'topics' | 'invent' | 'far' | 'twofar' | 'lookup' | 'quest'
+export type MockMode = 'good' | 'leak' | 'long' | 'invalid' | 'throw' | 'anachronism' | 'topics' | 'invent' | 'far' | 'twofar' | 'lookup' | 'quest' | 'plan'
 
 export interface MockMeta {
   npcName: string
@@ -16,6 +16,21 @@ export interface MockMeta {
   referral?: { npc: string; name: string; call: string }
   check?: string
   secret?: string
+  questActions?: { key: string; intent: string }[]
+  playerText?: string
+}
+
+const COMMON = new Set(['about', 'what', 'with', 'that', 'this', 'from', 'your', 'have', 'there', 'they', 'them', 'will', 'would', 'could', 'know', 'want', 'wants'])
+
+/** The mock recognises a quest action when the player's words share its main words. */
+function recognised(meta: MockMeta): string | undefined {
+  const words = (text: string) => new Set(text.toLowerCase().split(/[^a-z']+/).filter((w) => w.length >= 3 && !COMMON.has(w)))
+  const said = words(meta.playerText ?? '')
+  return meta.questActions?.find((a) => {
+    const wanted = [...words(a.intent)]
+    const shared = wanted.filter((w) => said.has(w) || said.has(`${w}s`) || said.has(w.replace(/s$/, ''))).length
+    return wanted.length > 0 && shared >= Math.min(2, wanted.length)
+  })?.key
 }
 
 export class MockLlm implements LlmClient {
@@ -79,6 +94,7 @@ export class MockLlm implements LlmClient {
       effects: this.mode === 'good' && known ? [{ type: 'affinity', delta: 1, reason: 'a friendly question' }] : [],
       memory_note: known ? `The stranger asked me about ${known.topic}.` : 'The stranger talked to me.',
       ends_conversation: false,
+      ...(meta.questActions?.length ? { quest_action: this.mode === 'good' ? (recognised(meta) ?? 'none') : 'none' } : {}),
     })
   }
 
@@ -113,6 +129,17 @@ export class MockLlm implements LlmClient {
     }
     const area = meta.cards.find((c) => c.kind === 'area')
     if (area && meta.lines[0]) reply.news.push({ area: area.key, text: meta.lines[0].text })
+    // 'plan': a small shift between two realms, and consequences for a storyline marked PLAN (M7.2).
+    if (this.mode === 'plan') {
+      const realms = meta.cards.filter((c) => c.kind === 'realm')
+      const planned = meta.lines.find((l) => new RegExp(`${l.key} ".*" ?.*PLAN`).test(prompt))
+      const place = meta.cards.find((c) => c.kind === 'place')
+      return JSON.stringify({
+        ...reply,
+        tensions: realms.length >= 2 ? [{ between: [realms[0]!.key, realms[1]!.key], delta: 9, why: 'what happened in the fen' }] : [],
+        plans: planned && place && area ? [{ line: planned.key, name: 'After the burning', phases: [{ after: 0, effects: [{ place: place.key, state: 'damaged' }, { news: 'Nobody goes near the place now.', area: area.key }] }, { after: 48, effects: [{ place: place.key, state: 'normal' }, { market: 'i99', factor: 3 }] }] }] : [],
+      })
+    }
     return JSON.stringify(reply)
   }
 

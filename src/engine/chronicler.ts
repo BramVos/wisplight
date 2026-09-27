@@ -1,4 +1,6 @@
-import { chronicle, emptyOutput, type Card, type ChronicleEvent, type ChronicleInput, type ChronicleLine, type ChronicleOutput, type ChroniclerModel, type QuestTemplate } from '../chronicler'
+import { chronicle, emptyOutput, type Card, type ChronicleEvent, type ChronicleInput, type ChronicleLine, type ChronicleOutput, type ChroniclerModel, type PlanOp, type QuestTemplate } from '../chronicler'
+import { PlanSchema, type Plan } from './quests/plans'
+import { shiftTension } from './social/realms'
 import { GameClock, MONTHS, WEEKDAYS } from './clock'
 import { callName } from './content'
 import { leakedNames, unknownNames, vocabularyOf } from './dialogue/guard'
@@ -93,6 +95,10 @@ export function buildInput(world: World, run: ChronicleRun): ChronicleInput {
 
   const cast = new Set<string>()
   const places = new Set<string>()
+  const big = lines.filter((line) => unreported(world, line).some((f) => f.belang >= 4))
+  // A big event may get a plan of consequences, unless a plan was started lately (a fixed one covers it).
+  const lately = (world.state.plans ?? []).some((p) => world.now - p.started < 24 * 60)
+  const plannable = lately ? [] : big.map((l) => l.id)
   const items = new Set<string>()
   for (const line of chronicleLines) {
     for (const event of [...line.events, ...line.earlier]) {
@@ -135,7 +141,32 @@ export function buildInput(world: World, run: ChronicleRun): ChronicleInput {
     areas: areas.map((id) => ({ id, kind: 'area', name: world.content.areas.get(id)?.name ?? id, text: world.content.areas.get(id)?.summary ?? '' })),
     templates: QUEST_TEMPLATES,
     older,
+    // Big events only (M7.2): the lands, whose relations may shift, and the storylines whose consequences may be planned.
+    ...(big.length ? { realms: [...world.content.realms.values()].map((r) => ({ id: r.id, kind: 'realm' as const, name: r.name, text: `Ruled by ${r.ruler}, from ${r.capital}.` })) } : {}),
+    ...(plannable.length ? { mayPlan: plannable } : {}),
   }
+}
+
+/** A plan of the chronicler's is a plan like the fixed ones, with an id of its own (M7.2). */
+function toPlan(world: World, op: PlanOp, id: string): Plan | undefined {
+  const groups: Plan['groups'] = {}
+  const phases = op.phases.map((phase) => ({
+    after: phase.after,
+    effects: phase.effects.map((e) => {
+      if ('place' in e) return { place: e.place, state: e.state }
+      if ('news' in e) return { news: e.news, area: e.area }
+      if ('market' in e) return { market: e.market, factor: e.factor }
+      groups[e.flee] = { areas: [e.flee], npcs: [], except: [] }
+      return { flee: e.flee, to: e.to, days: e.days }
+    }),
+  }))
+  const parsed = PlanSchema.safeParse({ id, name: op.name, groups, phases, max_effects: 10 })
+  if (!parsed.success) return undefined
+  // Only places and things of this world.
+  const ok = parsed.data.phases.every((p) =>
+    p.effects.every((e) => ('place' in e && 'state' in e ? world.content.locations.has(e.place) : 'area' in e ? world.content.areas.has(e.area) : 'market' in e ? world.content.items.has(e.market) : 'flee' in e ? world.content.locations.has(e.to) : true)),
+  )
+  return ok ? parsed.data : undefined
 }
 
 function catalogue(world: World): string {
@@ -324,6 +355,29 @@ export function applyOutput(world: World, run: ChronicleRun, output: ChronicleOu
   for (const op of out.news) {
     if (!world.content.areas.has(op.area) || !fits(`news for ${op.area}`, op.text)) continue
     state.news[op.area] = { text: op.text, t: world.now }
+  }
+
+  // Realms and plans (M7.2): bounded again here, and only what this run was offered.
+  for (const op of (out.tensions ?? []).slice(0, 1)) {
+    if (!input.realms?.length || !world.content.realms.has(op.between[0]) || !world.content.realms.has(op.between[1])) {
+      problems.push('tension: not offered')
+      continue
+    }
+    shiftTension(world, op.between[0], op.between[1], Math.max(-5, Math.min(5, op.delta)), op.why)
+  }
+  for (const op of out.plans ?? []) {
+    if (!input.mayPlan?.includes(op.line)) {
+      problems.push(`plan "${op.name}": not offered`)
+      continue
+    }
+    const id = `chronicle_${state.runs + 1}_${(world.state.dynamicPlans ? Object.keys(world.state.dynamicPlans).length : 0) + 1}`
+    const plan = toPlan(world, op, id)
+    if (!plan) {
+      problems.push(`plan "${op.name}": does not fit this world`)
+      continue
+    }
+    ;(world.state.dynamicPlans ??= {})[id] = plan
+    ;(world.state.pendingPlans ??= []).push(id)
   }
 
   // What the chronicler left out, the templates fill in.

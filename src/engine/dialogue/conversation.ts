@@ -59,6 +59,18 @@ export class Dialogue {
 
   private words?: Set<string>
 
+  /** The quest actions possible now with someone (quests/engine.ts), set by the engine (M7.2). */
+  questOptions?: (npcId: string) => { key: string; intent: string }[]
+  /** A quest action the voice recognised in the player's words, for the engine to carry out. */
+  private chosen?: string
+
+  /** Takes the quest action the voice recognised in the last turn, if any. */
+  takeChosen(): string | undefined {
+    const key = this.chosen
+    this.chosen = undefined
+    return key
+  }
+
   /** Every word the world's content uses, for spotting names the model made up. */
   private vocabulary(): Set<string> {
     // The chronicler's instruction is not the world: its examples are no names of it.
@@ -420,7 +432,14 @@ export class Dialogue {
     // 3. The model, or the designer's templates.
     const memories = (world.npcState(npcId).memory ?? []).slice(-5).map((m) => m.note)
     const decision = act === 'Recruit' ? recruitDecision(world, npcId, band.band) : undefined
-    const reply = await this.callModel(npcId, text, { act, tier, packet, band, memories, check: options.check, secret: options.secret, decision, spokenTopics: this.topics.recognise(text) })
+    const offered = options.echo || options.check ? [] : (this.questOptions?.(npcId) ?? [])
+    const reply = await this.callModel(npcId, text, { act, tier, packet, band, memories, check: options.check, secret: options.secret, decision, spokenTopics: this.topics.recognise(text), offered })
+    // The player's words meant a quest action: the engine carries it out, and its text is the answer.
+    if (reply?.quest_action && offered.some((o) => o.key === reply.quest_action)) {
+      this.chosen = reply.quest_action
+      talk.history.push({ speaker: 'player', text })
+      return echo
+    }
     const replyText = reply
       ? reply.reply
       : options.secret
@@ -493,6 +512,7 @@ export class Dialogue {
       secret?: string
       decision?: string
       spokenTopics: string[]
+      offered?: { key: string; intent: string }[]
     },
   ): Promise<Reply | undefined> {
     const llm = this.llm()
@@ -519,6 +539,10 @@ export class Dialogue {
       history: talk?.history ?? [],
       playerText: text,
     })
+    const offered = ctx.offered ?? []
+    if (offered.length) {
+      prompt += `\nQUEST ACTIONS: if the player's words clearly mean one of these, put its key in quest_action and the game carries it out; otherwise quest_action is "none".\n${offered.map((o) => `  ${o.key}: the player wants to ${o.intent}`).join('\n')}`
+    }
 
     for (let attempt = 0; attempt < 2; attempt++) {
       let raw: string
@@ -529,7 +553,7 @@ export class Dialogue {
             system: systemPrompt(world, npcId),
             prompt,
             schemaName: 'npc_reply',
-            schema: replyJsonSchema(allowedTopics),
+            schema: replyJsonSchema(allowedTopics, offered.map((o) => o.key)),
             maxTokens: TIER_TOKENS[ctx.tier],
             meta: {
               npcName: callName(world.npc(npcId)),
@@ -540,6 +564,8 @@ export class Dialogue {
               referral: ctx.packet.referral,
               check: ctx.check?.degree,
               secret: ctx.secret,
+              questActions: offered,
+              playerText: text,
             },
           })
         ).text

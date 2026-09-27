@@ -5,7 +5,7 @@ import type { Card, CardKind, ChronicleEvent, ChronicleInput, ChroniclerRequest,
 // catalogue, how to answer) comes first and never changes between runs, so
 // the providers cache it. People and places get short keys: p1, l1, ...
 
-const PREFIX: Record<CardKind | 'line', string> = { person: 'p', place: 'l', area: 'a', lore: 't', request: 'q', item: 'i', line: 's' }
+const PREFIX: Record<CardKind | 'line', string> = { person: 'p', place: 'l', area: 'a', lore: 't', request: 'q', item: 'i', realm: 'r', line: 's' }
 
 export class Keys {
   private readonly toKey = new Map<Id, string>()
@@ -62,7 +62,7 @@ export function assignKeys(input: ChronicleInput): Keys {
   const keys = new Keys()
   for (const line of input.lines) keys.add(line.id, 'line')
   for (const line of input.older ?? []) keys.add(line.id, 'line')
-  for (const card of [...input.cards, ...input.lore, ...input.requests, ...input.areas]) keys.add(card.id, card.kind)
+  for (const card of [...input.cards, ...input.lore, ...input.requests, ...input.areas, ...(input.realms ?? [])]) keys.add(card.id, card.kind)
   return keys
 }
 
@@ -85,6 +85,8 @@ export function systemPrompt(input: ChronicleInput, limits: Limits): string {
     `- quests: at most ${limits.quests}. Turn an open thread into a request for the player, using one of the TEMPLATES and a giver from that storyline, or reword an open request (give its key). name; ask (what the giver says, in their own voice, one or two sentences); stakes (why it matters, one sentence).`,
     `- thoughts: at most ${limits.thoughts}. Something that stays on one person's mind, one sentence addressed to them: "You still owe Harmen three guilders."`,
     '- news: one line per area where something happened, as people there would say it.',
+    '- tensions: at most one, and only when what happened would really change how two REALMS stand: between (two realm keys), delta (-5 to 5, positive is worse), why (a short clause).',
+    '- plans: only for storylines marked PLAN, and only when the event has consequences the world should feel: a name and up to 3 phases (after: hours from now, 0 to 240), each with effects: {place, state} for places of the storyline (flooded, damaged, destroyed, abandoned, occupied, normal), {news, area}, {market (an item key), factor 0.5 to 1.5}, {flee (an area key), to (a place key), days 1 to 14}. At most 10 effects in all. Leave plans empty when nothing lasting follows.',
     'Rules: only facts from the overview; never invent what happened, who was there or when. Use only names from the overview. A rumour marked untrue stays a rumour. Things marked PRIVATE may go into thoughts, never into lore or news. Plain words, the tone of the world.',
   ].join('\n')
 }
@@ -109,6 +111,7 @@ export function userPrompt(input: ChronicleInput, keys: Keys, lookedUp: Card[], 
   section('PLACES', byKind('place'))
   section('THINGS', byKind('item'))
   section('AREAS', input.areas.map((c) => cardLine(c, keys)))
+  section('REALMS', (input.realms ?? []).map((c) => cardLine(c, keys)))
   section('LORE THAT MAY RELATE', input.lore.map((c) => cardLine(c, keys)))
   section('OPEN REQUESTS', input.requests.map((c) => cardLine(c, keys)))
   section(
@@ -118,7 +121,7 @@ export function userPrompt(input: ChronicleInput, keys: Keys, lookedUp: Card[], 
   if (input.older?.length) section('OLDER STORYLINES, to look up', input.older.map((o) => `${keys.key(o.id, 'line')} ${o.title}`))
   lines.push('STORYLINES')
   for (const line of input.lines) {
-    lines.push(`  ${keys.key(line.id, 'line')} "${line.title}"${line.pattern ? ` [${line.pattern}]` : ''}`)
+    lines.push(`  ${keys.key(line.id, 'line')} "${line.title}"${line.pattern ? ` [${line.pattern}]` : ''}${input.mayPlan?.includes(line.id) ? ' PLAN' : ''}`)
     if (line.roles.length) lines.push(`    roles: ${line.roles.map((r) => `${r.role}=${keys.any(r.who) ?? r.who}`).join(', ')}`)
     if (line.summary.length) lines.push(`    so far: ${line.summary.join(' / ')}`)
     if (line.hooks.length) lines.push(`    open threads: ${line.hooks.join(' / ')}`)
@@ -174,6 +177,35 @@ export function replySchema(input: ChronicleInput, keys: Keys, lookupsLeft: numb
     },
     thoughts: { type: 'array', items: object({ who: keysOf(people), text }) },
     news: { type: 'array', items: object({ area: keysOf(keys.of('area')), text }) },
+    ...(input.realms?.length ? { tensions: { type: 'array', items: object({ between: { type: 'array', items: keysOf(keys.of('realm')) }, delta: { type: 'integer' }, why: text }) } } : {}),
+    ...(input.mayPlan?.length
+      ? {
+          plans: {
+            type: 'array',
+            items: object({
+              line: keysOf(input.mayPlan.map((id) => keys.key(id, 'line')!).filter(Boolean)),
+              name: text,
+              phases: {
+                type: 'array',
+                items: object({
+                  after: { type: 'integer' },
+                  effects: {
+                    type: 'array',
+                    items: {
+                      anyOf: [
+                        object({ place: keysOf(keys.of('place')), state: { type: 'string', enum: ['flooded', 'damaged', 'destroyed', 'abandoned', 'occupied', 'normal'] } }),
+                        object({ news: text, area: keysOf(keys.of('area')) }),
+                        object({ market: keysOf(keys.of('item')), factor: { type: 'number' } }),
+                        object({ flee: keysOf(keys.of('area')), to: keysOf(keys.of('place')), days: { type: 'integer' } }),
+                      ],
+                    },
+                  },
+                }),
+              },
+            }),
+          },
+        }
+      : {}),
   })
 }
 

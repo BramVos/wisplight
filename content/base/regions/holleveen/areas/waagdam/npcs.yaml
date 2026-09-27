@@ -160,3 +160,29 @@ npcs:
         admission: "There is a register entry, from before the Wolf. The Fen Charter was given into the keeping of the priory. Kloosterveen, if it still exists."
         dc: 16
         about: [drainage, fen_charter]
+
+  # The landlady of De Schaal (M7.2): the world book names the inn but not who keeps it.
+  - id: npc_neeltje
+    name: Neeltje Kuiper
+    short: Neeltje the landlady
+    pronoun: she
+    age: 44
+    profession: innkeeper
+    home: loc_waagdam_de_schaal
+    work: loc_waagdam_de_schaal
+    fame: 1
+    appearance: A small, sharp-eyed woman with a cooper's daughter's forearms and a slate of debts behind the tap.
+    personality: { warmth: 0, courage: 1, honesty: 1, temper: 0, curiosity: 2, diligence: 2 }
+    values: { wealth: 2, law: 1 }
+    quirks: [counts_every_duit]
+    patron: nehalennia
+    speech: "Dry and quick; a townswoman who counts in stuivers and remembers every slate."
+    aliases: [landlady, neeltje, waardin van de schaal]
+    public_facts:
+      - Neeltje Kuiper keeps De Schaal, the town inn of Waagdam behind the church.
+      - The burghers drink at her tap where the prior's men cannot see them.
+    examples:
+      - "Tankard's a duit. Your slate's full, burgher, and so is my patience."
+    money: 400
+    knows_areas: [waagdam, drowned_goose, veenhoek, roads]
+

@@ -379,29 +379,73 @@ export function questAction(world: World, host: QuestHost, input: string): Outpu
         if (refusal) return [{ kind: 'narration', text: refusal }]
         continue
       }
-      const out: Output[] = []
-      let success = true
-      if (action.check) {
-        // Oath-bound (Baduhenna): +2 on checks that serve a word you gave; a quest you took on is one.
-        const oath = blessed(world.content, world.state.player.character, 'Oath-bound') ? 2 : 0
-        const result = playerCheck(world, action.check.skill, action.check.dc - oath)
-        out.push({ kind: 'check', text: `(${cap(action.check.skill)} ${result.total} vs DC ${action.check.dc}: ${result.degree})` })
-        success = result.degree === 'success' || result.degree === 'critical success'
-      }
-      if (success) {
-        q.done.push(action.id)
-        out.push({ kind: 'narration', text: action.text })
-        applyEffects(world, host, quest.id, action.effects, out)
-      } else {
-        out.push({ kind: 'narration', text: action.fail_text ?? 'It does not work.' })
-        applyEffects(world, host, quest.id, action.fail, out)
-      }
-      if (action.minutes) out.push(...host.pass(action.minutes))
-      out.push(...evaluate(world, host))
-      return out
+      return perform(world, host, quest.id, q, action)
     }
   }
   return undefined
+}
+
+/** Carries out a quest action: the check, the text and the effects, the time it takes, and what follows. */
+function perform(world: World, host: QuestHost, questId: string, q: QuestState, action: QuestAction): Output[] {
+  const out: Output[] = []
+  let success = true
+  if (action.check) {
+    // Oath-bound (Baduhenna): +2 on checks that serve a word you gave; a quest you took on is one.
+    const oath = blessed(world.content, world.state.player.character, 'Oath-bound') ? 2 : 0
+    const result = playerCheck(world, action.check.skill, action.check.dc - oath)
+    out.push({ kind: 'check', text: `(${cap(action.check.skill)} ${result.total} vs DC ${action.check.dc}: ${result.degree})` })
+    success = result.degree === 'success' || result.degree === 'critical success'
+  }
+  if (success) {
+    q.done.push(action.id)
+    out.push({ kind: 'narration', text: action.text })
+    applyEffects(world, host, questId, action.effects, out)
+  } else {
+    out.push({ kind: 'narration', text: action.fail_text ?? 'It does not work.' })
+    applyEffects(world, host, questId, action.fail, out)
+  }
+  if (action.minutes) out.push(...host.pass(action.minutes))
+  out.push(...evaluate(world, host))
+  return out
+}
+
+/**
+ * The quest actions that can be done here and now with someone (M7.2): the
+ * voice gets them, so that free speech in a conversation can mean one of
+ * them, even in other words than the fixed phrases.
+ */
+export function conversationActions(world: World, npcId: string): { key: string; intent: string }[] {
+  const here = world.state.player.location
+  const area = world.content.locations.get(here)?.area
+  const list: { key: string; intent: string }[] = []
+  for (const [quest, q] of active(world)) {
+    for (const action of quest.actions ?? []) {
+      if (action.once && q.done.includes(action.id)) continue
+      const withThem = action.with === npcId
+      const hereOnly = !action.with && (action.at.length === 0 || action.at.includes(here) || (area !== undefined && action.at.includes(area)))
+      if (!withThem && !hereOnly) continue
+      if (actionBlocked(world, quest.id, action) !== undefined) continue
+      list.push({ key: `${quest.id}:${action.id}`, intent: action.intent ?? plainWords(action.say[0]!) })
+    }
+  }
+  return list.slice(0, 12)
+}
+
+/** A quest action by its key, when the voice recognised it in what the player said. */
+export function runQuestAction(world: World, host: QuestHost, key: string): Output[] | undefined {
+  const [questId, actionId] = key.split(':')
+  const q = questlog(world)[questId ?? '']
+  const action = world.content.quests.get(questId ?? '')?.actions?.find((a) => a.id === actionId)
+  if (!q || q.ended || !action || (action.once && q.done.includes(action.id)) || actionBlocked(world, questId!, action) !== undefined) return undefined
+  return perform(world, host, questId!, q, action)
+}
+
+/** A pattern read as words: optional parts left out, the first of each choice kept. */
+export function plainWords(pattern: string): string {
+  let text = pattern
+  for (let i = 0; i < 5; i++) text = text.replace(/\(\?:[^()]*\)\?/g, '')
+  for (let i = 0; i < 5; i++) text = text.replace(/\(\?:([^|()]*)(?:\|[^()]*)?\)/g, '$1')
+  return text.replace(/ \?/g, ' ').replace(/\.\?|\.\*|\\s|\\b|[\\^$?]/g, '').replace(/\s+/g, ' ').trim()
 }
 
 /** Why an action cannot be done now: a text to say, '' to try other actions, undefined when it can. */

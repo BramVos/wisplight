@@ -59,6 +59,7 @@ quests:
         fail: [{ set: studied_cat }]
       - id: ask_aaltje_cat
         say: ['ask (?:old )?aaltje about (?:the )?(?:grey )?(?:cat|fenna)', 'ask (?:old )?aaltje about (?:the )?(?:widow|curse)', 'tell (?:old )?aaltje about (?:the )?(?:grey )?cat']
+        intent: ask Aaltje what she knows about the grey cat, Fenna or the widow
         with: npc_aaltje
         when: [{ attitude: npc_aaltje, at_least: Neutral }]
         not_yet: Aaltje purses her lips and says nothing about cats. She doesn't know you well enough yet.
@@ -67,6 +68,7 @@ quests:
       # Talking to the cat: a charm, Aaltje's draught.
       - id: ask_draught
         say: ['ask (?:old )?aaltje for (?:a |the |her )?(?:cat ?)?(?:draught|potion|brew)', 'ask (?:old )?aaltje (?:how )?(?:to |for help to )?(?:talk|speak) (?:to|with) (?:the )?cat']
+        intent: ask Aaltje for a draught that lets you talk to cats
         with: npc_aaltje
         when: [{ flag: cat_is_fenna }]
         text: "Aaltje takes a small bottle from the rafters and wipes the dust off. \"Valerian, cat's-ear and river mud. Drink it on the doorstep. It won't last long, and you'll want to chase birds for a day after.\""
@@ -93,6 +95,7 @@ quests:
         effects: [{ set: fenna_confessed }, { learn: fenna }]
       - id: become_a_cat
         say: ['ask (?:the )?(?:widow|kaatje) to (?:make me|turn me into) a cat(?: .*)?', 'ask (?:the )?(?:widow|kaatje) (?:if i can|to let me) (?:talk|speak) (?:to|with) (?:the )?cat(?: .*)?']
+        intent: ask the widow to turn you into a cat for a while, to talk to Fenna
         with: npc_kaatje
         when: [{ flag: cat_is_fenna }, { attitude: npc_kaatje, at_least: Neutral }]
         not_yet: The widow looks at you as if you had asked for her last egg.
@@ -101,6 +104,7 @@ quests:
         effects: [{ player_condition: catform, hours: 2 }, { stamp: cat_speech }]
       - id: tell_widow_truth
         say: ['tell (?:the )?(?:widow|kaatje) (?:the truth|that fenna is sorry|fenna is sorry|about fenna)', '(?:give|bring) (?:the )?(?:widow|kaatje) fenna.?s (?:apology|message|word)', 'apologi[sz]e (?:to (?:the )?(?:widow|kaatje) )?for fenna']
+        intent: tell the widow that Fenna is sorry and will work off her debt
         with: npc_kaatje
         when: [{ flag: fenna_confessed }]
         not_yet: You have nothing to tell her yet that she doesn't know.
@@ -118,6 +122,7 @@ quests:
         effects: [{ seize: measuring_chest, from: npc_cornelis }]
       - id: buy_chest
         say: ['buy (?:the |jacob.?s |that )?(?:measuring |old )?chest(?: .*)?', 'ask (?:master )?cornelis (?:for|about) (?:the |jacob.?s )?(?:measuring |old )?chest']
+        intent: "buy Jacob van Dam's old measuring chest from Cornelis"
         with: npc_cornelis
         when: [{ flag: widow_price_known }, { money: 120 }]
         not_yet: Cornelis won't talk about Jacob's things for small coin. You'd need fifteen stuivers at least.
@@ -127,6 +132,7 @@ quests:
         effects: [{ pay: -120 }, { seize: measuring_chest, from: npc_cornelis }]
       - id: give_chest
         say: ['(?:give|hand|bring|offer) (?:the |jacob.?s )?(?:measuring |old )?chest to (?:the )?(?:widow|kaatje)', 'pay (?:the )?(?:widow|kaatje)(?: with (?:the )?chest)?']
+        intent: "give the widow Jacob van Dam's measuring chest as her price"
         with: npc_kaatje
         when: [{ has: measuring_chest }]
         not_yet: You have nothing she asked for.
@@ -159,6 +165,7 @@ quests:
       # Burning the witch, with Jan.
       - id: join_jan
         say: ['(?:help|join) jan(?: visser)?(?: .*)?', 'tell jan(?: visser)? (?:the cat is fenna|about (?:the )?(?:cat|widow|witch))', 'agree to burn (?:the )?(?:witch|widow)']
+        intent: tell Jan that the widow cursed Fenna, and join him against the witch
         with: npc_jan_visser
         when: [{ flag: cat_is_fenna }]
         text: "Jan's face goes white, then red. \"The witch. I knew it.\" He takes the peat-spade from the wall. \"Tonight. You and me and a pot of fire. Sister Wendela will say the words over the ashes.\""
@@ -345,6 +352,7 @@ quests:
         effects: [{ hand: rye_grain, to: npc_mirte, qty: 3 }, { pay: 60 }, { set: flour_brought }]
       - id: confront_kobus
         say: ['(?:confront|press|question|lean on) kobus(?: .*)?', 'ask kobus (?:about|who paid (?:him )?for) (?:the )?(?:rumou?r|rye|no rye|lubbert)(?: .*)?']
+        intent: press Kobus about who paid him to say there is no rye
         with: npc_kobus
         check: { skill: persuasion, dc: 15 }
         text: "Kobus squirms, then laughs. \"All right, all right. Lubbert gave me a guilder to say there's no rye to be had. There's rye. His loft's full of it. A man's got to eat.\""
@@ -423,17 +431,20 @@ quests:
         effects: [{ set: knows_stone_moved }]
       - id: ask_pen
         say: ['ask (?:master )?pen about (?:the )?(?:boundary(?: stone)?|stone|harmen.?s (?:field|land|stone)|land register|register|harmen)(?: .*)?']
+        intent: "ask Master Pen about the boundary stone or Harmen's field in the land register"
         with: npc_pen
         text: "Pen pulls out the land register and runs a finger down it. \"Molenend, the miller's field: from the mill lane to the old ditch. The ditch, mind. If his stone stands past the ditch, it's walked.\""
         effects: [{ set: knows_stone_moved }, { set: pen_register }]
       - id: report_harmen
         say: ['(?:report|denounce|accuse) harmen(?: .*)?', 'tell (?:the )?schout about (?:harmen|the (?:boundary )?stone)(?: .*)?']
+        intent: report Harmen to the schout for moving the boundary stone
         with: npc_everhard
         when: [{ flag: knows_stone_moved }]
         text: Schout Everhard writes it all down. "A moved stone. That's a fine of three guilders and the stone back where it was, at his own cost." He almost smiles.
         effects: [{ set: harmen_reported }]
       - id: blackmail_harmen
         say: ['blackmail harmen(?: .*)?', '(?:threaten|squeeze) harmen(?: .*)?', 'make harmen pay(?: .*)?']
+        intent: make Harmen pay for your silence about the moved stone
         with: npc_harmen
         when: [{ flag: knows_stone_moved }]
         check: { skill: intimidation, dc: 14 }
@@ -443,6 +454,7 @@ quests:
         fail: [{ grievance: npc_harmen, line: "You tried to squeeze me. Don't think I've forgotten." }]
       - id: persuade_harmen
         say: ['(?:tell|ask|persuade|convince) harmen to (?:put|move|carry) (?:the )?stone back(?: .*)?', 'talk to harmen about (?:the )?(?:stone|lights)(?: .*)?']
+        intent: persuade Harmen to put the boundary stone back
         with: npc_harmen
         when: [{ flag: knows_stone_moved }]
         check: { skill: persuasion, dc: 15 }
@@ -510,6 +522,7 @@ quests:
         effects: [{ take: rye_bread }, { take: beer }, { set: haakman_terms }]
       - id: harmen_new_moon
         say: ['(?:tell|ask|persuade|convince) harmen (?:not to pump|to stop pumping|to rest the mill)(?: .*)?', 'tell harmen (?:about )?(?:the )?(?:bargain|haakman|terms)(?: .*)?']
+        intent: persuade Harmen not to pump at the new moon, as the Haakman asked
         with: npc_harmen
         when: [{ flag: haakman_terms }]
         not_yet: You don't know yet what the Haakman would settle for.
@@ -578,6 +591,7 @@ quests:
     actions:
       - id: pim_confesses
         say: ['ask pim about (?:the )?(?:kabouters?|kabouterberg|little people|milk)', 'ask pim what he (?:did|saw)(?: .*)?']
+        intent: ask Pim what he did at the Kabouterberg
         with: npc_pim
         text: "Pim goes red to the ears. \"I only looked! They were dancing round the old oak with little lanterns, and I hid in the bracken, and one of them saw me and put his finger to his nose like this.\" He sniffs. \"I didn't tell anyone. Until now.\""
         effects: [{ set: pim_confessed }]
@@ -591,6 +605,7 @@ quests:
         effects: [{ take: milk }, { count: milk_nights }, { stamp: milk_left }]
       - id: pim_carries
         say: ['ask pim to (?:leave|bring|take|carry) (?:the )?milk(?: .*)?', 'give pim (?:the )?milk(?: .*)?']
+        intent: ask Pim to take the milk to the kabouters every night himself
         with: npc_pim
         when: [{ flag: pim_confessed }, { has: milk, qty: 7 }]
         not_yet: Pim would need to own up first, and he'd need milk for seven nights.
@@ -598,6 +613,7 @@ quests:
         effects: [{ hand: milk, to: npc_pim, qty: 7 }, { set: pim_brings_milk }, { stamp: pim_milk_start }]
       - id: aaltje_apology
         say: ['ask (?:old )?aaltje to (?:apologi[sz]e|say sorry|speak to the kabouters|go to the kabouterberg)(?: .*)?', 'ask (?:old )?aaltje (?:about|for help with) (?:the )?kabouters(?: .*)?']
+        intent: ask Aaltje to go and apologise to the kabouters for Pim
         with: npc_aaltje
         when: [{ flag: pim_confessed }]
         not_yet: '"Apologise for what, dear? Find out what the boy did first."'
@@ -670,6 +686,7 @@ quests:
         effects: [{ set: goat_trick_exposed }]
       - id: letter_from_pen
         say: ['ask (?:master )?pen (?:for|to (?:write|draw up)) (?:a )?(?:toll ?letter|toll charter|letter for mathijs)(?: .*)?']
+        intent: ask Master Pen to write a lawful toll letter for the Goat-Riders
         with: npc_pen
         when: [{ money: 40 }]
         not_yet: '"A toll letter is five stuivers, sealed and witnessed," Pen says. "I don''t do charity."'
@@ -677,6 +694,7 @@ quests:
         effects: [{ pay: -40 }, { give: toll_letter }]
       - id: letter_from_aleid
         say: ['ask (?:aleid|the burgomaster|the mayor) (?:for|to sign|about) (?:a |the )?(?:toll ?letter|toll)(?: .*)?']
+        intent: ask the burgomaster to sign a lawful toll letter
         with: npc_aleid
         when: [{ any: [{ has: toll_letter }, { flag: "secret:npc_aleid:town_broke" }] }]
         not_yet: '"A toll for robbers? Bring me something in writing, and a reason the town should care."'
@@ -686,6 +704,7 @@ quests:
         effects: [{ set: toll_letter_signed }, { give: toll_letter }]
       - id: give_letter
         say: ['(?:give|offer|hand|show) (?:the )?(?:toll ?)?letter to (?:black )?mathijs', 'offer (?:black )?mathijs a (?:lawful|legal) toll(?: .*)?']
+        intent: offer Black Mathijs a lawful toll letter
         with: npc_mathijs
         when: [{ has: toll_letter }, { flag: toll_letter_signed }]
         not_yet: A letter without the town's seal is worth nothing to a man like Mathijs.
@@ -693,6 +712,7 @@ quests:
         effects: [{ hand: toll_letter, to: npc_mathijs }, { set: toll_legal }]
       - id: join_riders
         say: ['join (?:the )?(?:goat-?riders|riders|you|your band)(?: .*)?', 'ask (?:black )?mathijs (?:if i can|to let me) join(?: .*)?']
+        intent: ask Black Mathijs to let you join the Goat-Riders
         with: npc_mathijs
         check: { skill: intimidation, dc: 14 }
         text: "Mathijs looks you up and down. \"You'll do. You ride with us, you wear the skin, you keep your mouth shut. And the surveyor's money is ours too.\""
@@ -795,6 +815,7 @@ quests:
       # The polder comes: helping Cornelis.
       - id: help_cornelis
         say: ['help (?:master )?cornelis(?: .*)?', '(?:carry|hold) (?:the |his )?chains?(?: .*)?', 'offer to help (?:with )?(?:the )?survey(?: .*)?']
+        intent: offer to help Cornelis with his survey
         with: npc_cornelis
         when: [{ since: helped_cornelis_at, hours: 20 }]
         not_yet: You've helped him today already.
@@ -816,6 +837,7 @@ quests:
         effects: [{ give: fen_charter_deed }]
       - id: ask_ansfried
         say: ['ask (?:prior |the prior )?(?:ansfried)? ?(?:for|about) (?:the )?(?:fen )?charter(?: .*)?', 'ask (?:the )?prior (?:for|about) (?:the )?(?:fen )?charter(?: .*)?']
+        intent: ask the prior for the Fen Charter
         with: npc_ansfried
         when: [{ any: [{ attitude: npc_ansfried, at_least: Friendly }, { flag: "secret:npc_ansfried:charter_valid" }] }, { not: { has: fen_charter_deed } }]
         not_yet: The prior smiles and talks about the weather. He doesn't know you well enough to talk about charters.
@@ -823,12 +845,14 @@ quests:
         effects: [{ give: fen_charter_deed }]
       - id: pen_reads
         say: ['(?:ask (?:master )?pen to |have (?:master )?pen )?read (?:the )?charter(?: .*)?', '(?:give|show) (?:the )?(?:fen )?charter to (?:master )?pen']
+        intent: ask Master Pen to read the Fen Charter
         with: npc_pen
         when: [{ has: fen_charter_deed }]
         text: "Pen reads it three times with his glasses on and once with them off. \"Genuine. And never revoked. The fen cannot be drained without the consent of the villages that cut it.\" He looks up. \"Take this to the council and the dyke reeve, and you'll have made yourself a powerful enemy.\""
         effects: [{ set: charter_read }]
       - id: charter_to_council
         say: ['(?:present|show|lay|put|bring|give) (?:the )?(?:fen )?charter (?:before|to) (?:the )?(?:council|aleid|burgomaster|mayor)(?: .*)?']
+        intent: show the Fen Charter to the burgomaster and the council
         with: npc_aleid
         when: [{ has: fen_charter_deed }, { flag: charter_read }]
         not_yet: The council won't look at old parchment without a notary's word on it.
@@ -836,6 +860,7 @@ quests:
         effects: [{ set: charter_council }]
       - id: charter_to_sijbrand
         say: ['(?:present|show|lay|put|bring|give) (?:the )?(?:fen )?charter (?:before|to) (?:the )?(?:heemraad|sijbrand|dyke ?reeve|dijkgraaf)(?: .*)?']
+        intent: show the Fen Charter to the dyke reeve Sijbrand
         with: npc_sijbrand
         when: [{ has: fen_charter_deed }, { flag: charter_read }]
         not_yet: Sijbrand won't take old parchment on your word alone.
@@ -861,6 +886,7 @@ quests:
         effects: [{ set: knows_jacob_cat }]
       - id: jacob_testifies
         say: ['(?:ask|bring|take) jacob (?:to testify|to (?:sijbrand|the heemraad|the dyke ?reeve|oude zijl))(?: .*)?', 'ask jacob (?:about|to tell) the (?:survey|truth)(?: .*)?']
+        intent: ask Jacob van Dam to tell the dyke reeve what drained peat does
         with: npc_jacob
         when: [{ flag: jacob_free }]
         text: "Jacob nods, and keeps nodding. \"Drained peat shrinks. It sinks below the Vaart. I measured it; I have it in my chest. I'll say it to the dyke reeve's face.\""
@@ -886,6 +912,7 @@ quests:
         effects: [{ seize: surveyors_chain, from: npc_cornelis }, { count: sabotage }]
       - id: scare_cornelis
         say: ['(?:scare|threaten|frighten|warn) (?:master )?cornelis(?: .*)?', 'tell (?:master )?cornelis to (?:leave|go)(?: .*)?', 'chase (?:master )?cornelis (?:off|away)(?: .*)?']
+        intent: threaten Cornelis until he leaves the Holleveen
         with: npc_cornelis
         when: [{ count: sabotage, at_least: 2 }]
         not_yet: Cornelis isn't a man to frighten with words alone. He'd need to see his work come to nothing first.
@@ -896,6 +923,7 @@ quests:
       # A settlement.
       - id: settle_cornelis
         say: ['(?:propose|suggest|offer) (?:a )?(?:settlement|compromise|deal)(?: .*)?', '(?:propose|suggest) (?:to )?drain(?:ing)? only (?:the fields )?north(?: .*)?']
+        intent: propose to Cornelis that only the fields north of the Vaart are drained
         with: npc_cornelis
         when: [{ any: [{ flag: "secret:npc_cornelis:old_survey" }, { flag: jacob_free }, { knows: drainage }] }]
         check: { skill: persuasion, dc: 17 }
@@ -904,6 +932,7 @@ quests:
         effects: [{ set: cornelis_agrees }]
       - id: settle_gerrit
         say: ['(?:propose|suggest|offer) (?:a )?(?:settlement|compromise|deal)(?: .*)?', '(?:propose|suggest) (?:to )?drain(?:ing)? only (?:the fields )?north(?: .*)?']
+        intent: propose to Gerrit that only the fields north of the Vaart are drained
         with: npc_gerrit
         check: { skill: persuasion, dc: 15 }
         text: Gerrit chews on it. "The north fields were never ours to cut anyway. If the fen stays, and the Kattenbroek, and the Blackmere..." He spits in his hand and holds it out. "Get it in writing."
@@ -989,6 +1018,7 @@ quests:
     actions:
       - id: convince_council
         say: ['(?:ask|persuade|convince) (?:aleid|the burgomaster|the mayor|the council)(?: .*)?', 'speak (?:up )?for mirte(?: .*)?']
+        intent: persuade the burgomaster to give Mirte a market stall
         with: npc_aleid
         check: { skill: persuasion, dc: 17 }
         text: "Aleid taps her quill against her teeth. \"A stall fee is a stall fee, and the town chest isn't what it was. The guild can grumble.\" She writes out a licence for Mirte Bakker."
@@ -1046,6 +1076,7 @@ quests:
     actions:
       - id: ask_aaltje_weighed
         say: ['ask (?:old )?aaltje to (?:be weighed|come to the waag|come to waagdam|clear her name)(?: .*)?']
+        intent: ask Aaltje to come to the Waag and be weighed
         with: npc_aaltje
         check: { skill: persuasion, dc: 14 }
         text: "Aaltje laughs, which you didn't expect. \"Weighed! At my age.\" Then she's quiet. \"Yes. Better than hiding. I'll be at the Waag.\""
@@ -1075,6 +1106,7 @@ quests:
         effects: [{ set: envoy_discredited }]
       - id: dirck_secret_from_widow
         say: ['ask (?:the )?(?:widow|kaatje) about (?:dirck|the waag|the scale|her certificate)(?: .*)?']
+        intent: ask the widow about Dirck and her certificate from the Waag
         with: npc_kaatje
         when: [{ attitude: npc_kaatje, at_least: Neutral }]
         not_yet: The widow looks at you as if you were a slug on her step.
@@ -1082,6 +1114,7 @@ quests:
         effects: [{ set: knows_dirck_secret }]
       - id: dirck_secret_from_dirck
         say: ['ask dirck about (?:the )?(?:widow|kaatje|certificate|false certificate)(?: .*)?']
+        intent: "ask Dirck about the widow's old certificate"
         with: npc_dirck
         check: { skill: insight, dc: 16 }
         text: Dirck goes very still. "The envoy found the entry," he says. "The widow's weighing, thirty years ago. I signed it. She was too light. He'll use it to say the Waag was never honest."
@@ -1098,6 +1131,7 @@ quests:
         effects: [{ set: secret_protected }]
       - id: use_secret
         say: ['(?:threaten|blackmail|pressure) dirck(?: .*)?', 'use (?:the |dirck.?s )?secret(?: .*)?']
+        intent: threaten Dirck with his false certificate for the widow
         with: npc_dirck
         when: [{ flag: knows_dirck_secret }]
         check: { skill: intimidation, dc: 13 }
@@ -1147,6 +1181,7 @@ quests:
     actions:
       - id: give_charter_gerrit
         say: ['(?:give|hand|show) (?:the )?(?:fen )?charter to gerrit', 'give gerrit (?:the )?(?:fen )?charter']
+        intent: give the Fen Charter to Gerrit
         with: npc_gerrit
         when: [{ has: fen_charter_deed }]
         text: Gerrit holds it as if it might break. "The Brotherhood will keep it now. In the pit-house, under the floor. Let the Count come and ask for it."
@@ -1182,6 +1217,7 @@ quests:
     actions:
       - id: speak_for_aaltje
         say: ['(?:speak|put in a (?:good )?word) (?:to the widow |to kaatje )?for aaltje(?: .*)?', 'ask (?:the )?(?:widow|kaatje) to (?:see|forgive|talk to) aaltje(?: .*)?']
+        intent: ask the widow to see Aaltje and forgive her
         with: npc_kaatje
         check: { skill: persuasion, dc: 16 }
         text: "The widow is quiet a long time. \"She took my knife,\" she says at last. \"I suppose I'd like it back.\""
@@ -1189,6 +1225,7 @@ quests:
         effects: [{ set: widow_softened }]
       - id: bring_aaltje
         say: ['let (?:them|aaltje) talk(?: .*)?', 'introduce aaltje(?: .*)?', 'bring aaltje to (?:the )?(?:widow|kaatje)(?: .*)?']
+        intent: let Aaltje and the widow talk
         at: [loc_kattenbroek_hut, kattenbroek]
         with: npc_aaltje
         when: [{ here: npc_kaatje }]
@@ -1198,11 +1235,13 @@ quests:
         effects: [{ set: aaltje_saw_widow }]
       - id: carry_letter
         say: ['ask (?:old )?aaltje to write (?:a |her )?letter(?: .*)?', 'offer to (?:take|carry) (?:a |her )?letter(?: .*)?']
+        intent: ask Aaltje to write a letter to the widow
         with: npc_aaltje
         text: Aaltje writes for a long time in her careful, round hand, and folds it small. "Give it to her. Don't read it."
         effects: [{ give: aaltje_letter }]
       - id: give_letter_widow
         say: ['(?:give|hand) (?:the |aaltje.?s )?letter to (?:the )?(?:widow|kaatje)']
+        intent: "give the widow Aaltje's letter"
         with: npc_kaatje
         when: [{ has: aaltje_letter }]
         text: The widow reads it standing up, then sits down to read it again. She says nothing at all, but she keeps it.
@@ -1244,6 +1283,7 @@ quests:
     actions:
       - id: pay_boat
         say: ['(?:give|lend) wouter (?:the )?(?:money|thirty stuivers|30 stuivers)(?: .*)?', 'pay for (?:the |wouter.?s )?boat(?: .*)?', 'buy (?:wouter )?(?:the |a )?boat(?: for wouter)?']
+        intent: "pay for Wouter's boat"
         with: npc_wouter
         when: [{ money: 240 }]
         not_yet: Thirty stuivers. You haven't got it.
@@ -1251,6 +1291,7 @@ quests:
         effects: [{ pay: -240 }, { set: boat_bought }]
       - id: persuade_trijntje
         say: ['(?:ask|persuade|convince|tell) trijntje (?:to let|about|for) (?:wouter|geesje|the wedding|them marry)(?: .*)?', 'speak (?:to trijntje )?for wouter(?: .*)?']
+        intent: persuade Trijntje to let Wouter marry Geesje
         with: npc_trijntje
         when: [{ flag: boat_bought }]
         not_yet: '"An eel-fisher without a boat?" Trijntje says. "My girl deserves better."'
@@ -1260,6 +1301,7 @@ quests:
         effects: [{ set: trijntje_blesses }]
       - id: geesje_asks
         say: ['ask geesje to (?:talk|speak) to (?:her mother|trijntje)(?: .*)?', 'ask geesje about wouter(?: .*)?']
+        intent: ask Geesje to talk her mother round about Wouter
         with: npc_geesje
         when: [{ flag: boat_bought }, { attitude: npc_geesje, at_least: Friendly }]
         not_yet: Geesje shakes her head. "Not while he hasn't even got a boat. Mother would laugh."
@@ -1267,6 +1309,7 @@ quests:
         effects: [{ set: geesje_spoke }]
       - id: elope
         say: ['(?:tell|help) wouter (?:to )?(?:elope|run away|take geesje)(?: .*)?']
+        intent: tell Wouter to take Geesje away in his boat
         with: npc_wouter
         when: [{ flag: boat_bought }]
         text: "Wouter's eyes go wide. \"In the boat. Tonight. Down the Vaart to Graafhaven.\" He grins. \"She'll come. She's been wanting to go for years.\""
@@ -1317,6 +1360,7 @@ quests:
         effects: [{ set: bell_raised }]
       - id: face_water
         say: ['(?:hold wendela.?s hand|stay with wendela|help wendela face the water|take wendela.?s hand)(?: .*)?']
+        intent: stay with Wendela by the water until she can face it
         at: [blackmere]
         with: npc_wendela
         check: { skill: persuasion, dc: 15 }
@@ -1325,6 +1369,7 @@ quests:
         effects: [{ set: wendela_faced_water }]
       - id: ask_mass
         say: ['ask (?:the )?prior (?:to|for) (?:say|hold|a) (?:a )?mass(?: .*)?', 'ask ansfried (?:to|for) (?:say|hold|bless|a mass)(?: .*)?']
+        intent: ask the prior to say a mass for the drowned
         with: npc_ansfried
         when: [{ money: 40 }]
         not_yet: A mass for the drowned asks a gift for the poor box. Five stuivers, the prior says gently.
@@ -1361,6 +1406,7 @@ quests:
     actions:
       - id: persuade_mother
         say: ['(?:ask|persuade|convince|tell) trijntje (?:to let geesje go|about graafhaven|about geesje)(?: .*)?', 'speak (?:to trijntje )?for geesje(?: .*)?']
+        intent: persuade Trijntje to let Geesje go to Graafhaven
         with: npc_trijntje
         check: { skill: persuasion, dc: 17 }
         text: "Trijntje sits down on the bench, which you have never seen her do. \"I went to Graafhaven at her age,\" she says. \"I came back. She'll come back.\" She doesn't sound sure."
@@ -1374,6 +1420,7 @@ quests:
         effects: [{ set: geesje_ran }, { vanish: npc_geesje }]
       - id: find_place
         say: ['(?:find|ask for|arrange) (?:a )?(?:place|position|job|work) for geesje(?: .*)?', 'ask dirck (?:to take|about) geesje(?: .*)?']
+        intent: ask Dirck to find a place for Geesje at the Waag
         with: npc_dirck
         check: { skill: persuasion, dc: 14 }
         text: "Dirck scratches his chin. \"A clerk who can count and isn't afraid of skippers? At the Waag? Why not.\" Waagdam isn't Graafhaven, but it's a start, and a road runs from it."

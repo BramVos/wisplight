@@ -48,8 +48,13 @@ export interface PlanState {
   groups: Record<string, string[]>
 }
 
+/** A fixed plan of the content, or one the chronicler wrote for this game. */
+export function planOf(world: World, id: string): Plan | undefined {
+  return world.content.plans.get(id) ?? world.state.dynamicPlans?.[id]
+}
+
 export function startPlan(world: World, host: QuestHost, planId: string, cause: string): Output[] {
-  const plan = world.content.plans.get(planId)
+  const plan = planOf(world, planId)
   if (!plan) return []
   const plans = (world.state.plans ??= [])
   if (plans.some((p) => p.plan === planId && p.phase < plan.phases.length)) return []
@@ -72,7 +77,7 @@ export function startPlan(world: World, host: QuestHost, planId: string, cause: 
 export function plansDue(world: World, host: QuestHost): Output[] {
   const out: Output[] = []
   for (const p of world.state.plans ?? []) {
-    const plan = world.content.plans.get(p.plan)
+    const plan = planOf(world, p.plan)
     if (!plan) continue
     while (p.phase < plan.phases.length && world.now >= p.started + plan.phases[p.phase]!.after * 60) {
       for (const e of plan.phases[p.phase]!.effects.slice(0, plan.max_effects)) runEffect(world, host, p, e, out)
