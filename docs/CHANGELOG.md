@@ -1,5 +1,45 @@
 # Changelog
 
+## M9.4 Afwerking en release, 27 september 2026
+
+Nieuw:
+- **Installers.** `npm run dist:mac` maakt schijfkopieën voor Apple Silicon en Intel, `npm run dist:win` een installer voor Windows. Ongetekend, zoals besloten: macOS vraagt bij de eerste start om bevestiging (Systeeminstellingen > Privacy en beveiliging > Toch openen), Windows ook (Meer info > Toch uitvoeren). Ondertekenen vraagt later alleen omgevingsvariabelen, geen code. De workflow Installers op GitHub bouwt ze op een schone Mac en een schone Windows-machine, installeert ze en start het spel in beide werelden; de bestanden staan veertien dagen bij de run. Eerste kamer na 0,4 s op een Mac, 0,6 s op Windows. De Intel-versie draaide onder Rosetta (de eerste start duurt daar een halve minuut, omdat hij vertaald wordt); een echte Intel-Mac heb ik niet gehad. De geïnstalleerde app kon eerst zijn werelden niet lezen; dat is gerepareerd.
+- **Weergave.** Instellingen > Display: lettergrootte in vijf stappen en hoog contrast, bewaard op deze computer. Beschrijvingen en verhalen lopen nu als gewone tekst door, in plaats van met de regeleinden uit de YAML.
+- **De interface in tekstbestanden.** Alle woorden van de interface staan in `src/renderer/src/locales/en/` (393 sleutels in tien bestanden), met Engels als terugval. Een test bewaakt dat er geen Engels meer in die onderdelen staat. De editor en het dev-menu blijven zoals ze zijn; de meldingen van de motor volgen later, zoals afgesproken.
+- **Een antwoord binnen zes seconden.** De stem krijgt zes seconden voor beide pogingen samen, dan een vaste zin. De regel "X thinks it over." staat er meteen, als eerste tekst.
+- **Opslaan na een reis.** Een commando dat een uur of meer laat verstrijken, slaat meteen op.
+- **Het speeltestprotocol.** `npm run playtest` speelt een verhaallijn als nieuwe speler, met en zonder ingrijpen; het protocol en de uitkomsten staan in `docs/PLAYTEST.md`, de transcripten in `docs/playtest/`.
+- **Wat de speeltest repareerde.** Mensen en plaatsen die een quest noemt komen in het dagboek. In een gesprek bereikt "ask about the cat" de quest van wie je spreekt. WAIT stopt als iemand komt die een quest nodig heeft, en WAIT FOR wacht op iemand. De speler kan doorgeven wat hij hoorde ("tell sijbrand about the dyke"), en de ander gelooft het naar zijn vertrouwen in de vreemdeling. Nieuws voor een streek werd opgeschreven maar nooit getoond; nu hoort de speler het, en ziet hij het water komen waar hij staat. Het lek bij Oude Zijl had geen vinder, dus niemand wist ervan; nu vindt Teunis het. Verder: TAKE ALL, "What's new" zonder de eigen komst van de speler, de dood eerst als je naar een dode vraagt, gestolen goed dat herkend wordt, en "I am sorry" als zin in plaats van inventaris.
+
+De speeltest per lijn (herkennen, invloed, afloop):
+- Meel voor Veenhoek: ja, ja met wrijving, ja.
+- Het verdwenen meisje: ja, ja (na reparaties), ja; zonder speler blijft de lijn staan.
+- De dijk bij Oude Zijl: met moeite, beperkt, ja. Een vreemdeling wordt niet geloofd; zie de vragen hieronder.
+- Weg van Skerrow: ja, ja, ja.
+- Een verdrinking op Skerrow: ja, nee, nee. Skerrow heeft geen nasleep.
+- De speler als dief op Skerrow: ja, ja, klein.
+
+De eisen uit FO hoofdstuk 18, gemeten (`npm run stutter`, `npm run longrun`, op een Mac met M3 Max):
+- Commando onder 50 ms: gehaald, hoogste 4,4 ms.
+- Antwoord van een NPC: eerste tekst meteen, terugval na 6 s: gehaald. Volledig binnen 4 s hangt af van het model; de modelproef keurt een stem af die gemiddeld trager is.
+- 100 NPC's op 60 keer speelsnelheid: gehaald, 131 mensen, een minuut p99 2,6 ms en hoogste 20 ms. Een laptop van vijf jaar oud heb ik niet gehad; er is ruim marge. De rest van het land zit als inwonertallen in de grootboeken (zo'n 1.700 in de Nethermarch), en dat kost per uur hetzelfde, hoeveel mensen het ook zijn.
+- Opslaan elke 10 spelminuten en bij reizen, onder 1 s: gehaald, een autosave kost 1 tot 5 ms.
+- Offline, privacy, reproduceerbaar, testbaar: gehaald; de hele speeltest liep zonder model.
+- Platforms: macOS 13 of nieuwer en Windows 10 en 11, gebouwd en getest; ongetekend en niet genotariseerd, zoals besloten.
+- Toegankelijkheid: lettergrootte en contrast instelbaar, alles met het toetsenbord, de klok staat stil tijdens typen, gevechten en vensters. De tekst wordt voorgelezen via live-regio's; met VoiceOver zelf heb ik niet getest.
+- Vertaalbaar: de interface wel, de meldingen van de motor nog niet (later, zoals afgesproken).
+
+Testen: Instellingen > Display voor lettergrootte en contrast. `npm run playtest` voor de zes lijnen, `docs/PLAYTEST.md` voor het protocol om zelf met een model te spelen. De installers: op GitHub bij Actions > Installers > Run workflow, en dan de bestanden onderaan de run. Controles: `npm test` (475 tests).
+
+Vragen voor jou:
+- De dijk: moet een vreemdeling met een waarschuwing iemand kunnen overtuigen, met een worp, door de getuige mee te nemen of door het lek te laten zien? Nu kan een nieuwe speler de dijk niet redden.
+- Skerrow heeft geen nasleep: na een verdrinking gebeurt er niets meer. Een eigen mijlpaal met nasleep voor Skerrow?
+- Moet het verdwenen meisje zonder speler verder gaan (de weduwe geeft het op, Grietje haalt de kat binnen)?
+- De opening noemt "A windmill turning slowly", terwijl De Zwaan stilstaat. Een andere molen, of aanpassen?
+- Ondertekenen: met een Apple Developer-account blijft "Toch openen" en de sleutelbosvraag na een update weg. Wil je dat voor een release?
+
+Ontwerp en tests: het FO is bijgewerkt (stand na M9.4, hoofdstuk 18 met de besluiten over ondertekenen en vertalen), en het ontwerp voor signalen en nasleep heeft "Zo is het in M9.4 gebouwd". Nieuw in content: `witnesses` bij `tell`, bruikbaar voor elke gebeurtenis; Garrick heeft een tweede antwoord met olie in de lamp, de landtong een beschrijving met brandende lamp. Een M5-test sprak per ongeluk de enige persoon op het Green aan toen hij iemand noemde die er niet was; die spreekt nu iemand aan die er is.
+
 ## M9.3 Maat: geschiedenis, opslag, prompts en kosten, 27 september 2026
 
 Nieuw:

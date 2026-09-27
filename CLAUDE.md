@@ -26,6 +26,9 @@ npm test
 npm run typecheck
 npm run build
 WISPLIGHT_SMOKE=1 npx electron .   # after build: hidden end-to-end check (WISPLIGHT_SMOKE=isle for Skerrow, add --editor for the editor)
+npm run dist:mac   # installers in dist/ (unsigned); npm run dist:win for Windows; the Installers workflow on GitHub tries both on clean machines
+npm run playtest   # the storylines played as a new player, with and without acting; transcripts in docs/playtest/ (protocol: docs/PLAYTEST.md)
+npm run stutter    # the longest waits of the interface as the app plays (-- --extra 100, -- --model, -- --world isle)
 ```
 
 ## Architecture rules

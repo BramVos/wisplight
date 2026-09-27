@@ -270,10 +270,10 @@ Scope: de review van 27 september 2026 op prestaties en kosten (na M8.5), in dez
 
 Scope: FO 18. Balans, toegankelijkheid, prestaties, installers voor Mac en Windows. Tot 27 september 2026 was dit M9, daarna kort M9.2.
 
-- [ ] Een speeltestprotocol per verhaallijn: kon de speler het probleem herkennen, er invloed op uitoefenen en de afloop begrijpen; drie lijnen per wereld getest, met de uitkomst in de changelog
+- [x] Een speeltestprotocol per verhaallijn: kon de speler het probleem herkennen, er invloed op uitoefenen en de afloop begrijpen; drie lijnen per wereld getest, met de uitkomst in de changelog
 
-- [ ] Alle niet-functionele eisen uit FO 18 zijn gemeten en gehaald
-- [ ] Installers voor Mac en Windows werken op een schone machine
+- [x] Alle niet-functionele eisen uit FO 18 zijn gemeten en gehaald
+- [x] Installers voor Mac en Windows werken op een schone machine
 
 ## M10 De kaart in kleur en lagen
 
