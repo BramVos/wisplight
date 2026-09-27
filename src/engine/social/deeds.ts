@@ -1,5 +1,6 @@
 import { callName } from '../content'
 import { applyEffect, attitude, relation, type Attitude } from '../dialogue/relations'
+import { openAgreements, settle } from '../agreements'
 import { remember } from '../npc/execute'
 import type { World } from '../world'
 
@@ -211,7 +212,10 @@ export function debtsDue(world: World): void {
   for (const d of world.state.ledger ?? []) {
     if (d.from !== 'player' || d.due === undefined || world.now < d.due || d.note === 'overdue') continue
     d.note = 'overdue'
-    deed(world, d.to, 'promise_broken')
+    // The player's word in the register (M10.2): missed, and the creditor judges it; an old save's debt as before.
+    const word = openAgreements(world, 'player').find((a) => a.kind === 'give' && a.to === d.to && a.terms.debt === d.id)
+    if (word) settle(world, word, 'missed', `the stranger did not pay ${callName(world.npc(d.to))} back within the week`, { fault: 'by', quiet: true })
+    else deed(world, d.to, 'promise_broken')
     const s = world.npcState(d.to)
     s.grievance = { reason: 'debt', t: world.now, line: `"You owe me ${d.amount} duiten, and the week is up."` }
   }

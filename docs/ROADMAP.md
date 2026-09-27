@@ -288,6 +288,9 @@ Ook in M10, de vier fouten uit de tests van de ontwikkelaarskit (27 september 20
 - [x] `@who-knows` toont de korte naam in plaats van het eerste woord van de volledige naam (nu "the" voor de Haakman en "Black" en "Ouwe" voor bijnamen)
 - [x] `@where` en de andere bouwcommando's vinden een NPC ook op id (nu alleen op naam, roepnaam, beroep of alias)
 - [x] `npm run sim` meldt geen mens als vastgelopen die dat niet is: wezens zonder schema (de kat, de Haakman, de witte wieven) en wie ver weg is tellen niet mee, met dezelfde regel als de speeltest in de editor, en de exitcode is alleen 1 bij een echte fout
+Ook in M10, uit de speeltest van 28 september 2026, in de code bevestigd: in mist gooide het spel bij elke stap een proef tegen 15, zodat een speler zonder Survival een plek in de mist niet haalde; en wie op de plek stond die de vertellers noemden, hoorde "You are already at" terwijl er niets te zien was.
+- [x] In mist is er één Survival-proef per wandeling om je richting te houden; bij falen dwaal je binnen de eerste stappen één stap af en stop je (FO hoofdstuk 12), en een plek in de mist is door door te lopen te bereiken (een test)
+- [x] Wie staat waar men zei dat een plek lag en een herkenningspunt ervan ziet, loopt erop af; ziet hij niets, dan zegt het spel dat, in plaats van dat hij er al is
 - [ ] Een voorstelpagina toont palet, de geshade Holleveen, dag, nacht en mist, een lichte papierversie en de zwart-witoptie, en Bram keurt hem goed voordat er gebouwd wordt
 - [ ] Elk terrein heeft drie tot vier gedempte tinten uit een geseede variatie per hex, drassige grond donkerder, droge ruggen lichter, water in twee tonen (open water en geul), wegen en paden in warm perkament
 - [ ] Kenmerken (poel, petgat, wilg, ruïne, bult) hebben een eigen glyph en tint; wat je lang geleden zag is vager dan wat je pas zag; nacht en mist leggen een waas over het paneel
@@ -318,18 +321,18 @@ Wat er nu mis is, in de code bevestigd: een verhaallijn sluit na veertien dagen 
 - [x] Een verhaallijn is actief, sluimerend of afgerond; ze sluit alleen door een inhoudelijke afloop (een uitkomst, de fase closed van de kroniekschrijver, of geen open kwestie meer), nooit doordat een termijn verstrijkt; zonder verandering wordt ze sluimerend en houdt ze een compacte registratie: betrokkenen, open kwesties, oorzaken en voorwaarden voor hervatting
 - [x] Een sluimerend verhaal (een familieruzie) wordt na honderd dagen door een passende gebeurtenis hervat (een terugkeer, een erfenis, een ontmoeting), met de oorspronkelijke oorzaak erbij, zonder dat er dagelijks een model voor draait
 - [x] Archiveren is een aparte opslagkeuze: het weegt open kwesties en status mee, `follows` en `cause` beschermen wat ze aanwijzen, en wat naar het archief gaat is gericht terug te halen langs de opzoekfuncties (`archivedFact` sluit aan op de opzoekroute), binnen de kennisrechten van wie vraagt
-- [ ] Afspraken staan gestructureerd in het register: een vaste id, betrokkenen, wat, wanneer, voorwaarden, status (open, nagekomen, gemist, afgezegd, onmogelijk) en uitkomst; een aanbieding die doorgaat (M10.2), een voornemen na een gesprek en een belofte van de speler zijn alle drie zo'n afspraak, nooit alleen een memory_note of een verhaalsamenvatting
-- [ ] Per soort uitspraak legt de motor het juiste vast: voorgaan (wie, waar het personage die persoon denkt te vinden, bestemming, wachtgedrag, wat als zij er niet is), meegaan (duur of bestemming, vergoeding, grenzen aan gevaar, reden om te vertrekken), een boodschap (welke, aan wie, wanneer, onder welke voorwaarden; pas na bezorging weet de ander het), een aanval (een intentie met doelwit; het gevechtssysteem bepaalt bereik, reactie, treffen en gevolgen)
-- [ ] Wereldwaarheid, eigen kennis en verwachting blijven uit elkaar: "ik breng je naar haar huis" mag ook als moeder er nu niet is, en bluffen of liegen is een vastgelegde misleiding, geen toevallig verschil tussen tekst en gedrag
-- [ ] Een gemiste afspraak is geen verraad: de motor legt de feitelijke uitkomst vast (de brug weg, de NPC gewond, op tijd afgezegd) en het oordeel volgt uit wat de ander ervan weet
-- [ ] Een belofte vervalt niet stilzwijgend: een gespreksdoel vervalt na een dag, een aanvaarde afspraak voor volgende week overleeft opslaan, herstarten en archiveren
-- [ ] Onderbreking heeft een expliciete afloop: vluchten voor gevaar pauzeert, verlegt of beëindigt een begeleiding, en daarna staat vast of het personage terugkomt
-- [ ] Eén gekozen actie mag meerdere noodzakelijke gevolgen hebben (plan, dagboekaantekening, verwachting): de grens van één nawerking geldt voor het aantal keuzes per gesprek, niet voor wat een keuze vastlegt
-- [ ] Aanvallen is een eigen criterium: een gevalideerde aanvalsintentie gaat door het gevechtssysteem, en "geen dood" betekent dat een gesprek nooit rechtstreeks een dood voorschrijft
-- [ ] Zuinig: bij een gesprek haalt de motor eerst de relevante afspraken, banden en lijnen uit het register, alleen ontbrekende details komen gericht uit het archief, bewaken en vervaltermijnen en gevolgen lopen zonder AI, en bij een op budget voeren mensen hun afspraken uit langs de sjabloonroute
+- [x] Afspraken staan gestructureerd in het register: een vaste id, betrokkenen, wat, wanneer, voorwaarden, status (open, nagekomen, gemist, afgezegd, onmogelijk) en uitkomst; een aanbieding die doorgaat (M10.2), een voornemen na een gesprek en een belofte van de speler zijn alle drie zo'n afspraak, nooit alleen een memory_note of een verhaalsamenvatting
+- [x] Per soort uitspraak legt de motor het juiste vast: voorgaan (wie, waar het personage die persoon denkt te vinden, bestemming, wachtgedrag, wat als zij er niet is), meegaan (duur of bestemming, vergoeding, grenzen aan gevaar, reden om te vertrekken), een boodschap (welke, aan wie, wanneer, onder welke voorwaarden; pas na bezorging weet de ander het), een aanval (een intentie met doelwit; het gevechtssysteem bepaalt bereik, reactie, treffen en gevolgen)
+- [x] Wereldwaarheid, eigen kennis en verwachting blijven uit elkaar: "ik breng je naar haar huis" mag ook als moeder er nu niet is, en bluffen of liegen is een vastgelegde misleiding, geen toevallig verschil tussen tekst en gedrag
+- [x] Een gemiste afspraak is geen verraad: de motor legt de feitelijke uitkomst vast (de brug weg, de NPC gewond, op tijd afgezegd) en het oordeel volgt uit wat de ander ervan weet
+- [x] Een belofte vervalt niet stilzwijgend: een gespreksdoel vervalt na een dag, een aanvaarde afspraak voor volgende week overleeft opslaan, herstarten en archiveren
+- [x] Onderbreking heeft een expliciete afloop: vluchten voor gevaar pauzeert, verlegt of beëindigt een begeleiding, en daarna staat vast of het personage terugkomt
+- [x] Eén gekozen actie mag meerdere noodzakelijke gevolgen hebben (plan, dagboekaantekening, verwachting): de grens van één nawerking geldt voor het aantal keuzes per gesprek, niet voor wat een keuze vastlegt
+- [x] Aanvallen is een eigen criterium: een gevalideerde aanvalsintentie gaat door het gevechtssysteem, en "geen dood" betekent dat een gesprek nooit rechtstreeks een dood voorschrijft
+- [x] Zuinig: bij een gesprek haalt de motor eerst de relevante afspraken, banden en lijnen uit het register, alleen ontbrekende details komen gericht uit het archief, bewaken en vervaltermijnen en gevolgen lopen zonder AI, en bij een op budget voeren mensen hun afspraken uit langs de sjabloonroute
 
-- [ ] Een afspraak voor volgende week overleeft opslaan, herstarten en archiveren, en dezelfde afspraken en gevolgen werken zonder model en worden bij naspelen niet dubbel uitgevoerd
-- [ ] Alles wat er al was, speelt hetzelfde: het hele testpakket, de simulaties, de uitspeelscripts van beide werelden, en oude saves
+- [x] Een afspraak voor volgende week overleeft opslaan, herstarten en archiveren, en dezelfde afspraken en gevolgen werken zonder model en worden bij naspelen niet dubbel uitgevoerd
+- [x] Alles wat er al was, speelt hetzelfde: het hele testpakket, de simulaties, de uitspeelscripts van beide werelden, en oude saves
 
 ## M10.3 Levende gesprekken
 
@@ -359,12 +362,12 @@ Gesprekken die de wereld raken:
 - [ ] Alles wat er al was, speelt hetzelfde: het hele testpakket, de simulaties, de uitspeelscripts van beide werelden, en oude saves
 
 Scenario's die slagen vóór M10.3 af is (de eerste, derde en zesde al in M10.2):
-- [ ] Een sluimerend verhaal wordt na honderd dagen door een passende gebeurtenis hervat, met de oorspronkelijke oorzaak
+- [x] Een sluimerend verhaal wordt na honderd dagen door een passende gebeurtenis hervat, met de oorspronkelijke oorzaak
 - [ ] Een begeleiding wordt onderbroken door gevaar en krijgt een begrijpelijke voortzetting of beëindiging
-- [ ] Een afspraak voor volgende week overleeft opslaan, herstarten en archiveren
+- [x] Een afspraak voor volgende week overleeft opslaan, herstarten en archiveren
 - [ ] Een onmogelijke belofte verschijnt niet als toegezegde actie in de tekst
 - [ ] Een aanval doorloopt werkelijk de gevechtsregels
-- [ ] Dezelfde afspraken en gevolgen werken zonder model en worden bij naspelen niet dubbel uitgevoerd
+- [x] Dezelfde afspraken en gevolgen werken zonder model en worden bij naspelen niet dubbel uitgevoerd
 
 ## M10.4 Kleine verbeteringen
 

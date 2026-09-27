@@ -1,3 +1,4 @@
+import { forgetPlayerAgreements } from './agreements'
 import type { Content } from './content'
 import { callName } from './content'
 import type { GameState } from './state'
@@ -47,6 +48,7 @@ export function carryOver(content: Content, state: GameState): string[] {
   delete state.talk
   delete state.combat
   state.companions = []
+  forgetPlayerAgreements(state)
   state.romance = {}
   // Ties to the old stranger and a spouse who waited for them go with them too (M8.1).
   forgetPlayer(state)

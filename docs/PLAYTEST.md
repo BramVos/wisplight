@@ -27,7 +27,7 @@ Zelf spelen met een model, in de app: kies een lijn, begin een nieuw spel, en no
 **Meel voor Veenhoek** (`flour`, seed 7)
 
 - Herkennen: ja. Mirte begint er bij het eerste gesprek zelf over, en de quest staat in het dagboek. Het bord in de bakkerij hint al.
-- Invloed: ja, met wrijving. Rogge kopen bij Lubbert in Waagdam en brengen werkt. Onderweg: Waagdam en Lubbert stonden niet in het dagboek (gerepareerd), 's avonds is de graanhandel dicht, en op woensdag is Mirte zelf naar de markt in Waagdam; de speler zag haar daar zelfs langslopen.
+- Invloed: ja, met wrijving. Rogge kopen bij Lubbert in Waagdam en brengen werkt. Onderweg: Waagdam en Lubbert stonden niet in het dagboek (gerepareerd), 's avonds is de graanhandel dicht, en op woensdag is Mirte zelf naar de markt in Waagdam; de speler zag haar daar zelfs langslopen. Op 28 september bleek dat het script om kwart voor zeven al wilde kopen, voor de winkel open was, zodat de speler in het transcript met lege handen bij Mirte stond; nu wacht het tot zeven uur.
 - Afloop: ja. "Veenhoek has bread on market day." Zonder speler: "Market day came and went without flour."
 
 **Het verdwenen meisje** (`cat`, seed 7)
@@ -35,6 +35,7 @@ Zelf spelen met een model, in de app: kies een lijn, begin een nieuw spel, en no
 - Herkennen: ja, na een reparatie. Het Green noemde elke richting behalve het westen, waar de kat zit; nu niet meer. Grietje vertelt het zelf, en de kat bekijken wijst naar Aaltje.
 - Invloed: ja, na twee reparaties. In het gesprek met Aaltje bereikte "ask about the cat" de quest niet (die kende alleen "ask aaltje about the cat"). En wachten bij de hut liep door terwijl de weduwe thuiskwam, keek en weer vertrok. De eerlijke route leidt nu tot de afloop.
 - Afloop: ja. "Honest. Fenna is home." Eén dag per week werkt ze de winter in het Kattenbroek haar schuld af. Zonder speler blijft de quest staan; de wereld beweegt hier niet zonder de speler.
+- Na de kaartreparatie van M10 (28 september) haalde de speler het Kattenbroek niet meer. In de mist gooide het spel bij elke stap een proef tegen 15, dus zonder Survival raakte je na een stap of twee steeds de weg kwijt. Nu is het één proef per wandeling, zoals het FO het bedoelt: bij falen dwaal je een stap af. En wie staat waar men zei dat een plek lag, hoorde "You are already at the Kattenbroek" terwijl er niets te zien was; nu loop je op een herkenningspunt af als je dat ziet, en anders zegt het spel dat je hier niets ziet.
 
 **De dijk bij Oude Zijl** (`dyke`, seed 1)
 

@@ -4,6 +4,7 @@ import type { Output } from '../commands'
 import { areaTopicId, callName } from '../content'
 import { attitude } from '../dialogue/relations'
 import { recordFact } from '../news'
+import { agree, agreementById, interrupt, resume, settle } from '../agreements'
 import { autoLevelChoice, createCharacter, levelUp, maxHp, skillBonus, suggestChoice, xpForLevel, type Character } from '../rules/character'
 import { gainXp, readyMade } from '../rules/player'
 import type { World } from '../world'
@@ -35,8 +36,10 @@ export interface Companion {
   character: Character
   lastCampfire?: number
   told: number
-  /** Away on an order: scouting, waiting somewhere, gone to meet the player. */
-  away?: { kind: 'scout' | 'wait' | 'meet'; where: string; until?: number; report?: string[] }
+  /** Away on an order: scouting, waiting somewhere, gone to meet the player; or stopped short of a place, or gone home to mend. */
+  away?: { kind: 'scout' | 'wait' | 'meet'; where: string; until?: number; report?: string[]; agreement?: string; rejoin?: boolean }
+  /** The agreement in the register (M10.2): the terms as agreed, and how it ended. */
+  agreement?: string
   lastOrder?: { text: string; t: number }
   lastShared?: number
   betrayal?: number
@@ -179,6 +182,17 @@ export function recruit(world: World, npcId: string, destination?: string): Outp
     ...(o.terms.untilPlace ? [`as far as ${world.content.locations.get(o.terms.untilPlace)?.name ?? 'there'}`] : []),
     ...o.terms.limits.map((l) => (l === 'haunted' ? 'not into haunted places' : `not into ${world.content.locations.get(l)?.name ?? world.content.areas.get(l)?.name ?? l}`)),
   ]
+  // The offer went through: an agreement in the register, with what makes them go (FO, chapter 13).
+  const made = agree(world, {
+    kind: 'accompany',
+    by: npcId,
+    to: 'player',
+    source: 'offer',
+    what: `travel with the stranger (${terms.join('; ')})`,
+    ...(o.terms.until !== undefined ? { due: o.terms.until } : {}),
+    terms: { ...(o.terms.until !== undefined ? { until: o.terms.until } : {}), ...(o.terms.untilPlace ? { untilPlace: o.terms.untilPlace } : {}), wage: o.terms.wage, limits: o.terms.limits, leaves: LEAVES },
+  })
+  if ('id' in made) c.agreement = made.id
   const line = o.decision === 'join' ? `"All right. I'm with you."` : `"I'll come. ${capitalise(terms.join(', '))}. That's my price."`
   return [{ kind: 'speech', text: `${name}: ${line}` }, { kind: 'system', text: `${name} travels with you now (loyalty ${c.loyalty}). Terms: ${terms.join('; ')}.` }]
 }
@@ -193,12 +207,26 @@ function follow(world: World, npcId: string): void {
   delete state.note
 }
 
-/** A companion goes: home to its own life. */
-export function leave(world: World, npcId: string, why: string): Output[] {
+/** What makes a companion go, as the register records it with the terms. */
+const LEAVES = ['loyalty below 20', 'two days unpaid', 'the days agreed are up', 'the place agreed is reached', 'bad news from home', 'a limit they named']
+
+/** How a companion's going ends the agreement: kept, called off, missed, or impossible, and whose doing it was. */
+export interface Parting {
+  status: 'kept' | 'missed' | 'cancelled' | 'impossible'
+  fault?: 'by' | 'to' | 'world'
+  fact?: string
+  told?: boolean
+  text?: string
+}
+
+/** A companion goes: home to its own life. The agreement ends with what happened (M10.2). */
+export function leave(world: World, npcId: string, why: string, parting: Parting = { status: 'cancelled', fault: 'by', told: true }): Output[] {
   const list = companions(world)
   const c = list.find((x) => x.npc === npcId)
   if (!c) return []
   world.state.companions = list.filter((x) => x !== c)
+  const agreement = agreementById(world, c.agreement)
+  if (agreement) settle(world, agreement, parting.status, parting.text ?? `${callName(world.npc(npcId))} ${why.replace(/[.!]$/, '')}`, { ...(parting.fault ? { fault: parting.fault } : {}), ...(parting.fact ? { fact: parting.fact } : {}), ...(parting.told ? { told: true } : {}), quiet: true })
   const state = world.npcState(npcId)
   state.following = false
   state.activity = 'going home'
@@ -211,11 +239,26 @@ export function leave(world: World, npcId: string, why: string): Output[] {
 
 /** Companions go where the player goes; the simulation leaves them be meanwhile. */
 export function keepUp(world: World): void {
+  const here = world.state.player.location
   for (const c of companions(world)) {
     const state = world.npcState(c.npc)
     if (c.away) {
       if (c.away.until !== undefined && world.now >= c.away.until) comeBack(world, c)
+      // Stopped short of a place: back with the player when the player comes back (M10.2).
+      else if (c.away.rejoin && c.away.until === undefined && here === c.away.where) comeBack(world, c)
       continue
+    }
+    // A place they said they would not go, or too dangerous for their loyalty: they stop and wait (M10.2, an interruption with an end).
+    if (state.location !== here && !world.state.combat && world.content.locations.has(here)) {
+      const refusal = refuses(world, c, here, 'place')
+      if (refusal && world.content.locations.has(state.location)) {
+        const name = callName(world.npc(c.npc))
+        c.away = { kind: 'wait', where: state.location, rejoin: true }
+        state.activity = 'waiting for you'
+        interrupt(world, agreementById(world, c.agreement), `would not go into ${world.location(here).name}`, 'pause', true)
+        world.notices.push(`${name} stays behind at ${world.location(state.location).name}: "${refusal} I'll wait for you here."`)
+        continue
+      }
     }
     state.location = world.state.player.location
     state.following = true
@@ -236,12 +279,61 @@ export function companionsHour(world: World): void {
     payWages(world)
     if (state.needs.hunger < 20) adjust(world, c, -3, `${callName(npc)} is hungry and it shows.`)
     const name = callName(npc)
-    if (c.loyalty < 20) world.notices.push(...leave(world, c.npc, 'has had enough, and goes home without a word.').map((o) => o.text))
-    else if (c.unpaid >= 2) world.notices.push(...leave(world, c.npc, 'has not been paid for two days, and goes home.').map((o) => o.text))
-    else if (c.conditions.until !== undefined && world.now >= c.conditions.until) world.notices.push(...leave(world, c.npc, 'says the days you agreed are up, and goes home. Ask again if you want them along.').map((o) => o.text))
-    else if (homeTrouble(world, c.npc)) world.notices.push(...leave(world, c.npc, 'hears bad news from home and goes, at once.').map((o) => o.text))
-    else betrayal(world, c, name)
+    if (c.loyalty < 20) world.notices.push(...leave(world, c.npc, 'has had enough, and goes home without a word.', { status: 'cancelled', fault: 'by', text: `${name} had had enough and went home` }).map((o) => o.text))
+    // The stranger did not keep their side: the wage (M10.2: a missed agreement, the stranger's doing).
+    else if (c.unpaid >= 2) world.notices.push(...leave(world, c.npc, 'has not been paid for two days, and goes home.', { status: 'missed', fault: 'to', text: `the stranger did not pay ${name} for two days` }).map((o) => o.text))
+    else if (c.conditions.until !== undefined && world.now >= c.conditions.until) world.notices.push(...leave(world, c.npc, 'says the days you agreed are up, and goes home. Ask again if you want them along.', { status: 'kept', text: `${name} travelled with the stranger for the days agreed` }).map((o) => o.text))
+    else {
+      const trouble = homeTrouble(world, c.npc)
+      if (trouble) world.notices.push(...leave(world, c.npc, 'hears bad news from home and goes, at once.', { status: 'cancelled', fault: 'world', told: true, fact: trouble, text: `${name} heard bad news from home and went` }).map((o) => o.text))
+      else betrayal(world, c, name)
+    }
   }
+}
+
+/**
+ * The party ran from a fight (M10.2, an interruption with an end): whoever is
+ * faint of heart or hardly loyal keeps running, home, and does not come back;
+ * the others run with the stranger and the journey goes on another way.
+ */
+export function fleeWith(world: World, where: string): Output[] {
+  const out: Output[] = []
+  for (const c of [...withPlayer(world)]) {
+    const npc = world.npc(c.npc)
+    const agreement = agreementById(world, c.agreement)
+    if (npc.personality.courage <= -1 || c.loyalty < 30) {
+      interrupt(world, agreement, `ran from the fight at ${where}`, 'end', false)
+      out.push(...leave(world, c.npc, 'keeps running, all the way home, and will not come back.', { status: 'cancelled', fault: 'world', told: true, text: `${callName(npc)} ran from the fight at ${where} and went home` }))
+    } else {
+      interrupt(world, agreement, `ran from the fight at ${where} with the stranger`, 'reroute', true)
+      resume(world, agreement)
+    }
+  }
+  return out
+}
+
+/**
+ * Badly hurt after a fight: a companion of little loyalty goes home to mend.
+ * Loyal enough, they find the player again in two days; otherwise the
+ * journey ends there (M10.2: an interruption, and whether they come back).
+ */
+export function mend(world: World, npcId: string): Output[] {
+  const c = companionOf(world, npcId)
+  if (!c || c.away || c.character.hp > maxHp(world.content, c.character) / 4 || c.loyalty >= 60) return []
+  const npc = world.npc(npcId)
+  const name = callName(npc)
+  const agreement = agreementById(world, c.agreement)
+  if (c.loyalty < 30) {
+    interrupt(world, agreement, 'badly hurt in a fight', 'end', false)
+    return leave(world, npcId, 'is badly hurt, and goes home to mend. That is the end of it.', { status: 'cancelled', fault: 'world', told: true, text: `${name} was badly hurt and went home` })
+  }
+  interrupt(world, agreement, 'badly hurt in a fight', 'pause', true)
+  c.away = { kind: 'wait', where: npc.home, until: world.now + 2 * DAY, rejoin: true }
+  const state = world.npcState(npcId)
+  state.location = npc.home
+  state.following = false
+  state.activity = 'mending'
+  return [{ kind: 'narration', text: `${name} is badly hurt, and goes home to mend. "Two days. Then I'll find you."` }]
 }
 
 /** Arriving where the terms end: the companion asks to go home. */
@@ -250,14 +342,15 @@ export function arrived(world: World): void {
   const area = world.content.locations.get(here)?.area
   for (const c of [...companions(world)]) {
     if (c.conditions.untilPlace && (c.conditions.untilPlace === here || c.conditions.untilPlace === area)) {
-      world.notices.push(...leave(world, c.npc, `asks if they may go home now; you said as far as here. They go.`).map((o) => o.text))
+      world.notices.push(...leave(world, c.npc, `asks if they may go home now; you said as far as here. They go.`, { status: 'kept', text: `${callName(world.npc(c.npc))} came as far as ${world.location(here).name}, as agreed` }).map((o) => o.text))
     }
   }
 }
 
-function homeTrouble(world: World, npcId: string): boolean {
+/** Bad news from home: the fact of it, if there is one. */
+function homeTrouble(world: World, npcId: string): string | undefined {
   const heard = world.state.news?.heard[npcId] ?? {}
-  return (world.state.news?.facts ?? []).some((f) => (f.kind === 'death' || f.kind === 'missing') && heard[f.id] && world.now - f.t < DAY && world.npc(npcId).relations.some((r) => r.to && f.about.includes(r.to) && ['parent', 'child', 'spouse', 'sibling', 'sweetheart'].includes(r.role)))
+  return (world.state.news?.facts ?? []).find((f) => (f.kind === 'death' || f.kind === 'missing') && heard[f.id] && world.now - f.t < DAY && world.npc(npcId).relations.some((r) => r.to && f.about.includes(r.to) && ['parent', 'child', 'spouse', 'sibling', 'sweetheart'].includes(r.role)))?.id
 }
 
 function payWages(world: World): void {
@@ -312,6 +405,9 @@ function betrayal(world: World, c: Companion, name: string): void {
   const offered = Boolean(world.state.player.encounters?.['goat_riders_toll'])
   if (c.betrayal === undefined && c.loyalty < 10 && npc.personality.honesty <= -1 && offered) {
     c.betrayal = world.now + DAY
+    // From now on the word they gave is a lie, recorded as one (M10.2).
+    const agreement = agreementById(world, c.agreement)
+    if (agreement) agreement.deceit = { said: 'I\'m with you', knew: `${name} means to rob the stranger and go` }
     world.npcState(c.npc).mood = { value: -3, until: world.now + DAY, reason: 'counting coins they did not have yesterday' }
     return
   }
@@ -319,7 +415,7 @@ function betrayal(world: World, c: Companion, name: string): void {
     const taken = Math.floor(world.state.player.money / 3)
     world.state.player.money -= taken
     world.npcState(c.npc).money += taken
-    world.notices.push(...leave(world, c.npc, `is gone in the night, and so is ${world.money(taken)} of your money.`).map((o) => o.text))
+    world.notices.push(...leave(world, c.npc, `is gone in the night, and so is ${world.money(taken)} of your money.`, { status: 'missed', fault: 'by', text: `${name} ran off in the night with ${world.money(taken)} of the stranger's money` }).map((o) => o.text))
     recordFact(world, { kind: 'betrayal', about: [c.npc], place: world.state.player.location, belang: 2, title: `${name} robbed the stranger`, text: { precise: `${name} left the stranger in the night with ${world.money(taken)} of their money.`, village: `${name} ran off with the stranger's money, they say.`, far: `A companion robbed a traveller in ${world.words.region}.` } })
   }
 }
@@ -417,17 +513,19 @@ export function order(world: World, npcId: string, what: string): Output[] {
   c.lastOrder = { text: w, t: world.now }
   if (pointless) approve(world, 'pointless_order', [npcId])
   if (/^(wait|stay|hold)( here)?$/.test(w) || w.startsWith('guard')) {
-    c.away = { kind: 'wait', where: world.state.player.location }
+    c.away = { kind: 'wait', where: world.state.player.location, ...partOf(world, c, 'wait', world.state.player.location) }
     world.npcState(npcId).activity = 'waiting for you'
     return [{ kind: 'speech', text: `${name}: "I'll be here."` }]
   }
   if (/^(follow|come)( me)?$/.test(w)) {
     if (c.away && c.away.where !== world.state.player.location) return [{ kind: 'error', text: `${name} is not here to follow you.` }]
+    const part = agreementById(world, c.away?.agreement)
+    if (part) settle(world, part, 'kept', `${name} waited, and came on with the stranger`, { quiet: true })
     delete c.away
     follow(world, npcId)
     return [{ kind: 'speech', text: `${name}: "Right behind you."` }]
   }
-  if (/^(go home|leave|dismiss)/.test(w)) return leave(world, npcId, 'nods and goes home.')
+  if (/^(go home|leave|dismiss)/.test(w)) return leave(world, npcId, 'nods and goes home.', { status: 'cancelled', fault: 'to', told: true, text: `the stranger sent ${name} home` })
   const place = /^(?:meet me at|meet me in|scout|explore|go to)\s+(.+)$/.exec(w)
   if (place) {
     const target = findPlace(world, place[1]!)
@@ -437,7 +535,7 @@ export function order(world: World, npcId: string, what: string): Output[] {
     const route = world.route(world.state.player.location, target)
     const minutes = route ? route.minutes : 90
     if (w.startsWith('meet')) {
-      c.away = { kind: 'meet', where: target }
+      c.away = { kind: 'meet', where: target, ...partOf(world, c, 'meet', target) }
       world.npcState(npcId).location = target
       world.npcState(npcId).activity = 'waiting for you'
       return [{ kind: 'speech', text: `${name}: "At ${world.location(target).name}, then."` }]
@@ -460,6 +558,12 @@ export function order(world: World, npcId: string, what: string): Output[] {
     return [{ kind: 'system', text: `${name} is willing. (For now you do the stealing yourself: STEAL <thing>; ${name} can distract someone first.)` }]
   }
   return [{ kind: 'error', text: `Order ${name} to what? wait here, follow me, go home, meet me at <place>, scout <place>, distract <person>.` }]
+}
+
+/** An order to wait or meet is a part of the agreement to travel together (M10.2). */
+function partOf(world: World, c: Companion, kind: 'wait' | 'meet', place: string): { agreement?: string } {
+  const made = agree(world, { kind, by: c.npc, to: 'player', source: 'player', what: kind === 'wait' ? `wait at ${world.location(place).name}` : `meet the stranger at ${world.location(place).name}`, terms: { place }, ...(c.agreement ? { part: c.agreement } : {}) })
+  return 'id' in made ? { agreement: made.id } : {}
 }
 
 /** Why a companion will not do it, or nothing. */
@@ -507,6 +611,12 @@ function scout(world: World, c: Companion, target: string): string[] {
 
 function comeBack(world: World, c: Companion): void {
   const report = c.away?.report ?? []
+  const part = agreementById(world, c.away?.agreement)
+  if (part) settle(world, part, 'kept', `${callName(world.npc(c.npc))} came back to the stranger`, { quiet: true })
+  if (c.away?.rejoin) {
+    resume(world, agreementById(world, c.agreement))
+    report.push(`${callName(world.npc(c.npc))} ${c.away.until !== undefined ? 'finds you again' : 'falls in beside you again'}.`)
+  }
   delete c.away
   follow(world, c.npc)
   world.notices.push(...report)

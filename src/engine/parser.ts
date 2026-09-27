@@ -185,6 +185,8 @@ const VERB_ALIASES: Record<string, string> = {
   stance: 'stance',
   party: 'party',
   group: 'party',
+  promises: 'promises',
+  agreements: 'promises',
   camp: 'camp',
   campfire: 'camp',
   join: 'join',

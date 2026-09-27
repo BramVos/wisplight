@@ -27,6 +27,7 @@ const yours = () => [
   { id: 'sheet', name: t('journal.you.sheet') },
   { id: 'map', name: t('journal.you.map') },
   { id: 'party', name: t('journal.you.party') },
+  { id: 'promises', name: t('journal.you.promises') },
   { id: 'lands', name: t('journal.you.lands') },
 ]
 

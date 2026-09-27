@@ -1,5 +1,25 @@
 # Changelog
 
+## M10.2 Het verhaal- en afsprakenregister, 28 september 2026
+
+Nieuw:
+- **Verhalen die sluimeren en weer wakker worden.** Een verhaallijn is actief, sluimerend of afgerond. Ze sluit alleen nog door een afloop: de fase closed van de kroniekschrijver, of geen open vraag meer. Na twee weken zonder nieuws wordt een lijn met een open vraag sluimerend in plaats van dicht. Komen twee van haar mensen samen in een nieuw feit, of keert er een terug, sterft er een, trouwt of erft er een, dan wordt ze wakker, met haar oorzaak en haar vragen erbij, zonder dat er intussen een model voor draait.
+- **Een archief dat terug te lezen is.** Alleen een afgeronde lijn gaat naar het archief. Van een sluimerende lijn mogen oude feiten die niemand meer kent weg; de lijn zelf, en waar ze uit voortkwam, blijft. Vraagt de kroniekschrijver waarom een lijn loopt zoals ze loopt, dan vindt hij de oorzaak ook als die al in het archief staat.
+- **Het afsprakenregister.** Wie iets heeft toegezegd, aan wie, wat, wanneer, onder welke voorwaarden, en hoe het afliep: een afspraak heeft een vaste id en een status (open, nagekomen, gemist, afgezegd, onmogelijk). Werven, een bevel aan een metgezel om te wachten of af te spreken, lenen, een boodschap die iemand overbrengt (de dijk) en een aanval uit een grief staan er nu in. Voorgaan en een voornemen na een gesprek zijn er als soort; de stem gaat ze maken in M10.3. In het dagboek staat een pagina "Your word and theirs", en PROMISES laat hetzelfde zien.
+- **Gemist is geen verraad.** Een afspraak die niet doorging krijgt een uitkomst met de echte reden: wie niet kwam, of die ziek of gewond was, en het nieuws dat erover gaat. De ander oordeelt naar wat hij daarvan weet. Hoorde Sijbrand dat Teunis gewond was, dan begrijpt hij het; wist hij het niet, dan voelt hij zich in de steek gelaten. Waar iemand denkt dat een ander is, staat los van waar die werkelijk is: "ik breng je naar haar huis" mag ook als ze niet thuis is, en wie je willens naar de verkeerde plek brengt, staat als leugen in het register.
+- **Metgezellen met een afloop.** Een metgezel loopt niet mee een plek in die hij uitsloot of die te gevaarlijk is voor zijn trouw; hij wacht aan de rand en komt terug als jij terugkomt. Rent de groep uit een gevecht, dan rent wie bang van aard is of weinig trouw heeft door naar huis. Zwaargewond gaat een metgezel naar huis om te herstellen en vindt je na twee dagen terug, tenzij zijn trouw te laag is.
+- **Een aanval loopt door het gevecht.** Wie met een grief op je afkomt en de poort doorkomt, heeft een aanvalsintentie in het register; het gevechtssysteem beslist de rest, en de afloop is de uitkomst. Een gesprek kan nooit een dood afspreken.
+
+Ook:
+- **De kaart (M10, eerste deel).** De trekking per hex was scheef: 59 procent van het veen had een poel, nu ongeveer een op tien. Wie de droge rug kent, ziet hem op de kaart als pad. TALK TO AALTJE ABOUT THE GREY CAT werkt, @who-knows en @where tonen korte namen en vinden iemand op id, en `npm run sim` meldt wezens en afwezigen niet meer als vastgelopen.
+- **Mist.** Na die reparatie haalde de speeltest het Kattenbroek niet meer: in de mist was er een proef per stap, zodat je na een stap of twee steeds de weg kwijt was. Nu is het een proef per wandeling, zoals het FO het bedoelt. Op de plek die de vertellers noemden zei het spel "You are already at the Kattenbroek" terwijl er niets te zien was; nu loop je op een herkenningspunt af als je dat ziet. En in het transcript van de meellijn kocht de speler niets, omdat de winkel om kwart voor zeven nog dicht was; het script wacht nu. Alle zes lijnen spelen weer zoals `docs/PLAYTEST.md` ze beschrijft.
+
+Testen: werf Wouter (`recruit wouter`, als hij je mag) en loop met hem het Kattenbroek in; is het hem te gevaarlijk, dan blijft hij aan de rand staan tot je terugkomt. Leen geld van iemand die je goed kent (`borrow 5 stuivers from mirte`) en kijk in het dagboek onder "Your word and theirs"; betaal niet terug en kijk na een week wat Mirte ervan vindt. `npm run playtest -- dyke` laat de boodschap van Teunis aan Sijbrand lopen. Controles: `npm test` (498 tests), de 30-dagensimulatie van beide werelden zonder meldingen, en `npm run longrun`: 376 kB na 300 dagen, net als voorheen.
+
+Nog niet: een aanval op een ander dan de speler, want het gevechtssysteem kent alleen gevechten met de speler. Voorgaan en voornemens na een gesprek maakt in het spel nog niemand; dat doet M10.3. Het tweede deel van M10 (de kaart in kleur en lagen) wacht op jouw oordeel over de voorstelpagina: https://claude.ai/artifact/JH6AD1zCBy6F36LaiAcMDF.
+
+Ontwerp en tests: "Zo is het in M10.2 gebouwd" in het ontwerp voor signalen en nasleep, "Stand na M10.2" in het FO en de mist in hoofdstuk 4. Nieuwe toestand: een status op een verhaallijn en het register `state.agreements`, geen nieuwe werkwoorden. Het register is code omdat afspraken een nieuwe soort toestand zijn, voor elke gebeurtenis bruikbaar. Tests in `tests/m102.test.ts` en `tests/m10.test.ts`.
+
 ## M9.4 Afwerking en release, 27 september 2026
 
 Nieuw:

@@ -1,4 +1,5 @@
 import { minuteOfDay, nextOpening, parseHours, startOfDay, weekdayOf } from '../clock'
+import { delivered, goalEnded } from '../agreements'
 import type { DailyGoal, ScheduleBlock } from '../content'
 import type { Goal, Step } from '../state'
 import type { World } from '../world'
@@ -67,6 +68,8 @@ function carryWord(world: World, npcId: string, goal: Goal): void {
     // Someone who comes all this way to tell you in person is heard out.
     heardClaim(world, goal.target!, fact, h, 25)
   }
+  // Only now does the other know it; the register hears it was done (M10.2).
+  delivered(world, goal)
   world.emit('report', npc.location, `${callName(world.npc(npcId))} takes ${callName(world.npc(goal.target!))} aside and tells what ${world.say('{they}', npcId)} heard.`, npcId)
 }
 
@@ -76,6 +79,7 @@ function finishGoal(world: World, npcId: string, success: boolean): void {
   if (goal) {
     npc.goals = npc.goals.filter((g) => g !== goal)
     if (goal.message?.length && goal.target) carryWord(world, npcId, goal)
+    else if (goal.agreement) goalEnded(world, npcId, goal, success)
     if (goal.source === 'daily') npc.dailyDone[dailyKey(goal)] = startOfDay(world.now)
     if (!success) world.emit('goal_failed', npc.location, world.say(`{name} gives up for now, frowning.`, npcId), npcId)
     // A goal of its own done or given up: a new moment to decide (FO, chapter 7).

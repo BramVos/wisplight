@@ -4,7 +4,8 @@ import { describe, expect, it } from 'vitest'
 import { Engine, type SaveData } from '../src/engine'
 import { mapView } from '../src/engine/map/view'
 import { noise, regionMap } from '../src/engine/map/region'
-import { look, seenBits } from '../src/engine/map/travel'
+import { hexId, look, seenBits } from '../src/engine/map/travel'
+import { knownPlace, walkTarget } from '../src/engine/map/known'
 import { mayBeStuck } from '../src/engine/playtest'
 import { content } from './helpers'
 
@@ -89,5 +90,40 @@ describe('M10: what the developer kit tests found', () => {
     expect(mayBeStuck(world, 'npc_mirte')).toBe(true)
     world.state.npcs['npc_mirte']!.absent = true
     expect(mayBeStuck(world, 'npc_mirte')).toBe(false)
+  })
+})
+
+describe('M10: what the playtest of the lost girl found', () => {
+  it('checks the mist once a walk, so a place in the mist can be reached by walking on', async () => {
+    let reached = 0
+    for (let seed = 1; seed <= 12; seed++) {
+      const engine = new Engine(content, { seed })
+      const world = engine.world
+      world.state.player.location = 'loc_veenhoek_green'
+      ;(world.state.player.seenAreas ??= []).push('kattenbroek')
+      ;(world.state.player.journal ??= {})['kattenbroek'] = world.now
+      for (let walk = 0; walk < 8 && world.state.player.location !== 'loc_kattenbroek_edge'; walk++) {
+        world.state.weather = { kind: 'fog', since: world.now }
+        const out = said(await engine.handle('walk to the kattenbroek'))
+        // At most one stray a walk, and it ends the walk.
+        expect((out.match(/lose your bearings/g) ?? []).length).toBeLessThanOrEqual(1)
+      }
+      if (world.state.player.location === 'loc_kattenbroek_edge') reached++
+    }
+    expect(reached).toBeGreaterThanOrEqual(10)
+  }, 120_000)
+
+  it('does not say "already there" where the tellers put a place you cannot see: a landmark in sight leads on', async () => {
+    const engine = new Engine(content, { seed: 7 })
+    const world = engine.world
+    ;(world.state.player.journal ??= {})['kattenbroek'] = world.now
+    ;(world.state.player.sources ??= {})['kattenbroek'] = [{ from: 'npc_aaltje', t: world.now, level: 2 }]
+    const place = knownPlace(world, 'kattenbroek')!
+    expect(place.status).toBe('heard')
+    world.state.player.location = hexId(walkTarget(world, place)!)
+    world.state.weather = { kind: 'fog', since: world.now }
+    const out = said(await engine.handle('walk to the kattenbroek'))
+    expect(out).not.toMatch(/already at/)
+    expect(out).toMatch(/You make your way towards the Kattenbroek|about where they said the Kattenbroek would be/)
   })
 })

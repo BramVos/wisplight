@@ -265,6 +265,7 @@ Cornelis and Grietje pass each other without a word.
 Cornelis walks on to the south.
 Grietje walks on to the west.
 Jan comes from the south, on his way to Visser House, the doorstep.
+Jan stops and looks you over.
 Jan walks on to the west.
 Cornelis comes from the south, on his way to Upstairs at the Goose.
 Cornelis walks on to the northeast.

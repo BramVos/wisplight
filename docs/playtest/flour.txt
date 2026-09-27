@@ -71,9 +71,9 @@ Exits: north, east, south, west, northeast
 Across country you can head any way, or follow the fen path, the path to the Kabouterberg, the peat road, the priory path, the tow path.
 
 > walk to waagdam
-You make your way towards Waagdam for an hour and 12 minutes, over the peat road, the tow path, the Waagdam road and the heath road.
-On the heath road, just outside Waagdam
-A cart road runs through here, rutted and grey. A lone willow leans over the wet ground. Rain hisses on the reeds and runs down your neck.
+You make your way towards Waagdam for an hour and 24 minutes, over the peat road, the tow path, the Waagdam road and fields. Night is falling over the fen.
+In the fields, near Waagdam
+Drained fields lie in strips between straight ditches. Rain hisses on the reeds and runs down your neck. To the north-west, the tower of the Waag of Waagdam.
 Ways on: north, north-east, south-east, south, south-west, north-west.
 There it is: Waagdam, close by now.
 +30 experience: you came to the Holleveen.
@@ -81,7 +81,7 @@ There it is: Waagdam, close by now.
 # Mirte only said where it lies; the walk ends outside the town. Walk on in.
 
 > walk to waagdam
-You make your way towards Waagdam for 4 minutes, over the tow path. You come to The Harbour.
+You make your way towards Waagdam for 14 minutes, over fields and the tow path. You come to The Harbour.
 The Harbour
 The Graafse Vaart widens here into a basin crowded with flat barges. Men shout and swear as sacks go up and down the planks, and the water smells of tar and rotting weed. Gate Street is up the steps to the north.
 Exits: north
@@ -106,16 +106,16 @@ Exits: west, east, south, north
 There is nobody here to ask. Find someone and ask them, or look in your JOURNAL for what you know.
 
 > wait 10 hours
+Sacks of flour are short in Waagdam. The merchants have put their prices up and talk of sending far afield.
 Hendrik comes from the east, on his way to Hendrik's Smithy.
 Hendrik walks on to the north.
-Time passes. It is Woensdag 15 Herfstmaand 211 AW, 05:53 (dawn).
-Sacks of flour are short in Waagdam. The merchants have put their prices up and talk of sending far afield.
+Time passes. It is Woensdag 15 Herfstmaand 211 AW, 06:15 (dawn).
 
 > wait 90
 Mirte is here. You stop waiting.
 Mirte comes from the west, on her way to Lubbert's Grain Store.
 Mirte stops and gives you a nod, curious about the stranger.
-Time passes. It is Woensdag 15 Herfstmaand 211 AW, 06:43 (dawn).
+Time passes. It is Woensdag 15 Herfstmaand 211 AW, 06:45 (dawn).
 
 # Shortcut: across town to the grain shop the answer named.
 
@@ -133,17 +133,30 @@ You are not stuck in anything.
 > list
 Lubbert's trade is closed now. Hours: 07:00 to 18:00, Maandag, Dinsdag, Woensdag, Donderdag, Vrijdag, Zaterdag.
 
-> buy rye
-There is nobody here to buy from right now.
+# Closed until seven. Wait for it.
+
+> wait 30
+Mirte is here. You stop waiting.
+Mirte arrives from the north.
+Mirte buys 2 sacks of rye from Lubbert.
+Lubbert and Mirte pass each other without a word.
+Time passes. It is Woensdag 15 Herfstmaand 211 AW, 07:15 (morning).
+
+> list
+Lubbert sells: sack of rye 3 st 5 d (28 left); sack of flour 9 st (5 left); bolt of sailcloth 1 gl 5 st (3 left).
 
 > buy rye
-There is nobody here to buy from right now.
+You buy a sack of rye from Lubbert for 3 st 5 d.
 
 > buy rye
-There is nobody here to buy from right now.
+You buy a sack of rye from Lubbert for 3 st 5 d.
+Mirte leaves north.
+
+> buy rye
+You buy a sack of rye from Lubbert for 3 st 6 d.
 
 > inventory
-You carry 2 apples, a hanger, a knife and a leather jerkin, and 14 st.
+You carry 2 apples, a hanger, a knife, a leather jerkin and 3 sacks of rye, and 3 st.
 
 > walk to veenhoek
 You can't strike out across country from in here. Go out to the road or the edge of the village first.
@@ -152,7 +165,7 @@ You can't strike out across country from in here. Go out to the road or the edge
 Lubbert's Grain Store
 Sacks of grain are stacked to the ceiling, and a fine dust hangs in the air and tickles your nose. A slate by the door lists today's prices; the flour price has been rubbed out and written again, higher. Canal Street is north.
 Exits: north
-Here: Lubbert the grain merchant.
+Here: Lubbert the grain merchant (at work).
 
 # Shortcut: into the bakery, if the walk ended elsewhere in Veenhoek.
 
@@ -166,31 +179,35 @@ There are no sacks of flour to be had in Veenhoek. People make do, and grumble a
 > give three sacks of rye to mirte
 Mirte isn't here.
 
-# Mirte is out (to Waagdam on its market day, as it turns out). Come back next morning.
+# Mirte is out (to Waagdam on its market day, as it turns out). Wait for her here.
 
 > wait 10 hours
 Mirte is here. You stop waiting.
 Mirte comes from the west, on her way to Bakery Yard.
-Time passes. It is Woensdag 15 Herfstmaand 211 AW, 09:38 (morning).
-
-> wait 10 hours
+Mirte walks on to the east.
 Mirte arrives from the east.
 Mirte sets out 12 loaves of rye bread for sale.
-Mirte leaves west.
-Time passes. It is Woensdag 15 Herfstmaand 211 AW, 19:38 (evening).
+Time passes. It is Woensdag 15 Herfstmaand 211 AW, 12:41 (midday).
 
 > look
 The Bakery
 Warm, low and white with flour. Loaves cool on racks along the wall, and a slate by the counter says RYE 2 D in chalk, underlined twice. Through the back door, east, you can see the glow of the oven in the yard.
 Exits: west, east
+Here: Mirte the baker (arranging the goods for sale).
 
 > give three sacks of rye to mirte
-Mirte isn't here.
+"Rye! Teunis will grind it at the horse mill for a stuiver a sack." Mirte is already reaching for her shawl. "Bless you."
+Flour for Veenhoek: Flour brought. Veenhoek has bread on market day.
++100 experience: Flour for Veenhoek.
 
-==== AFTER (Woensdag 15 Herfstmaand 211 AW, 19:38 (evening))
+==== AFTER (Woensdag 15 Herfstmaand 211 AW, 12:46 (midday))
 
 [48 hours pass]
-Mirte leaves west.
+Mirte comes from the west, on her way to Bakery Yard.
+Mirte stops and gives you a nod, curious about the stranger.
+Mirte walks on to the east.
+Mirte arrives from the east.
+Mirte sets out 6 loaves of rye bread for sale.
 
 > journal
 People: Fenna Visser, Lubbert Graanhandel, Mirte Bakker.
@@ -198,16 +215,20 @@ Places: the Holleveen, Veenhoek, Waagdam, the Kattenbroek, The Mill De Zwaan, Th
 Lore: the stranger in Veenhoek.
 
 [96 hours pass]
-Flour for Veenhoek: Market day passed. Market day came and went without flour. Veenhoek bought stale bread at the Goose, dear.
-Mirte leaves west.
+Mirte comes from the west, on her way to Bakery Yard.
+Mirte stops and gives you a nod, curious about the stranger.
+Mirte walks on to the east.
+Mirte arrives from the east.
+Mirte sets out 6 loaves of rye bread for sale.
 
 > look
 The Bakery
 Warm, low and white with flour. Loaves cool on racks along the wall, and a slate by the counter says RYE 2 D in chalk, underlined twice. Through the back door, east, you can see the glow of the oven in the yard.
 Exits: west, east
+Here: Mirte the baker.
 
-==== END (Dinsdag 21 Herfstmaand 211 AW, 19:38 (evening))
-Quests: flour_for_veenhoek: market_day_passed
+==== END (Dinsdag 21 Herfstmaand 211 AW, 12:46 (midday))
+Quests: flour_for_veenhoek: flour_brought
 
 ######## CONTROL: THE PLAYER DOES NOTHING
 The barge from Graafhaven leaves you at the Veenhoek quay just as the light goes. The bargeman won't tie up. "Not after dark, not out here," he says, and poles away into the mist, taking his lantern with him.

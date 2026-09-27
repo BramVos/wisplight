@@ -233,9 +233,9 @@ Exits: north, east, south, west, northeast
 Across country you can head any way, or follow the fen path, the path to the Kabouterberg, the peat road, the priory path, the tow path.
 
 > walk to the kattenbroek
-You make your way towards the Kattenbroek for an hour and 25 minutes, over the peat road, the tow path, the Waagdam road, the east road and fields. The mist closes in and you lose your bearings.
-On the east road, near Waagdam
-A cart road runs through here, rutted and grey. A lone willow leans over the wet ground. Low grey cloud sits on the land. To the west, the tower of the Waag of Waagdam.
+You make your way towards the Kattenbroek for 4 hours, over the peat road, the tow path, the Waagdam road, fields and wet fen.
+In the fen, near the Kattenbroek
+Wet peat and sedge stretch around you, cut by black pools. Mist lies over everything and muffles every sound. To the south-west, a dark wall of reed and alder.
 Ways on: north, north-east, south-east, south, south-west, north-west.
 Somewhere around here, they said. You see no sign of the Kattenbroek yet.
 +30 experience: you came to the Holleveen.
@@ -244,33 +244,44 @@ Somewhere around here, they said. You see no sign of the Kattenbroek yet.
 You are not stuck in anything.
 
 > look
-On the east road, near Waagdam
-A cart road runs through here, rutted and grey. A lone willow leans over the wet ground. Low grey cloud sits on the land. To the west, the tower of the Waag of Waagdam.
+In the fen, near the Kattenbroek
+Wet peat and sedge stretch around you, cut by black pools. Mist lies over everything and muffles every sound. To the south-west, a dark wall of reed and alder.
 Ways on: north, north-east, south-east, south, south-west, north-west.
 
 > walk to the kattenbroek
-You make your way towards the Kattenbroek for 2 hours and 56 minutes, over fields, wet fen and the fen path. The fen takes you to the waist and holds on. You are Mired: STRUGGLE to work free.
-In the fen, just outside the Kattenbroek
-Wet peat and sedge stretch around you, cut by black pools. Mist lies over everything and muffles every sound.
+You make your way towards the Kattenbroek for 8 minutes, over wet fen. The mist closes in and you lose your bearings.
+In the fen, near the Kattenbroek
+Wet peat and sedge stretch around you, cut by black pools. A black pool lies to one side, still as glass. Mist lies over everything and muffles every sound.
 Ways on: north, north-east, south-east, south, south-west, north-west.
-There it is: the Kattenbroek, close by now.
 
 > struggle
-(Athletics 19 vs DC 13: success)
-With a sound like a cow pulling out of a ditch, the fen lets you go. You are black to the hips.
+You are not stuck in anything.
 
 > look
-In the fen, just outside the Kattenbroek
-Wet peat and sedge stretch around you, cut by black pools. Mist lies over everything and muffles every sound.
+In the fen, near the Kattenbroek
+Wet peat and sedge stretch around you, cut by black pools. A black pool lies to one side, still as glass. Mist lies over everything and muffles every sound.
 Ways on: north, north-east, south-east, south, south-west, north-west.
 
-> east
+# Seen now, not reached: walk on to it, again if the mist turns you round, then on to the hut.
+
+> walk to the kattenbroek
+You make your way towards the Kattenbroek for 8 minutes, over wet fen.
+In the fen, near the Kattenbroek
+Wet peat and sedge stretch around you, cut by black pools. Mist lies over everything and muffles every sound. To the south-west, a dark wall of reed and alder.
+Ways on: north, north-east, south-east, south, south-west, north-west.
+Somewhere around here, they said. You see no sign of the Kattenbroek yet.
+
+> walk to the kattenbroek
+You make your way towards the Kattenbroek for 12 minutes, over wet fen and the fen path. You come to The Edge of the Kattenbroek.
 The Edge of the Kattenbroek
 Reed closes in on every side, taller than a man, and the path under your feet turns to black water in places. Cats watch you from the tussocks, more of them than there should be. The air smells of rot and, strangely, of fish frying. Far in to the east, a hut on stilts shows its roof above the reeds.
 Exits: east, south
 Across country you can head any way, or follow the fen path.
 +10 experience: you found The Edge of the Kattenbroek.
 +30 experience: you came to the Kattenbroek.
+
+> walk to the kattenbroek
+You are already at the Kattenbroek.
 
 > look
 The Edge of the Kattenbroek
@@ -298,7 +309,7 @@ Kaatje isn't here.
 Kaatje is here. You stop waiting.
 Kaatje arrives from the south.
 Kaatje stops and looks you over.
-Time passes. It is Woensdag 15 Herfstmaand 211 AW, 12:04 (midday).
+Time passes. It is Woensdag 15 Herfstmaand 211 AW, 12:01 (midday).
 The Grey Cat on the Doorstep: The widow Kaatje names her price for Fenna: the Count's survey must lie still for seven days, or someone must bring her the measuring chest of Jacob van Dam.
 The widow looks at you a long time. "The girl lied to me. A lie is a debt, and debts are paid. Here is mine: that surveyor's chains lie still for seven days. Or bring me the chest of the one who came before him, Jacob van Dam. Then she can go home."
 
@@ -312,7 +323,7 @@ People: Fenna Visser, Aaltje Hendriks, Jacob van Dam, Jan Visser, Kaatje, Lubber
 Places: the Holleveen, Veenhoek, Waagdam, the Kattenbroek, Aaltje's Cottage, Chapel Lane, The Edge of the Kattenbroek, Below the Hut on Stilts, The Mill De Zwaan, The Bakery, Veenhoek, the Green, Canal Quay, Visser House, the doorstep, The Market Square, Waagdam, the West Gate.
 Lore: the Cat-Widow of the Kattenbroek, the stranger in Veenhoek, the grey cat.
 
-==== AFTER (Woensdag 15 Herfstmaand 211 AW, 12:09 (midday))
+==== AFTER (Woensdag 15 Herfstmaand 211 AW, 12:06 (midday))
 
 # Back to the Vissers, to see how it ended.
 
@@ -331,6 +342,8 @@ Here: Fenna Visser (home again), Grietje Visser (eating), Pim (eating).
 
 [192 hours pass]
 Flour for Veenhoek: Market day passed. Market day came and went without flour. Veenhoek bought stale bread at the Goose, dear.
+Jan arrives from the east.
+Jan puts out the lamp and goes to bed.
 Jan leaves east.
 Grietje leaves east.
 Grietje arrives from the east.
@@ -340,15 +353,17 @@ Grietje and Pim greet each other warmly.
 Jan arrives from the east.
 Fenna and Jan greet each other warmly.
 Grietje and Jan greet each other warmly.
+Grietje and Jan stand talking in Visser House, the doorstep.
 Jan and Pim greet each other warmly.
 
 > look
 Visser House, the doorstep
 A narrow house with a green door, standing open. The doorstep is empty now, swept clean, and inside a girl's voice is singing along with the spinning wheel, off key. It smells of peat smoke and boiled milk. The green is east.
 Exits: east
-Here: Fenna Visser (eating), Grietje Visser (eating), Jan Visser (eating), Pim (eating).
+Here: Fenna Visser (eating), Grietje Visser (talking with Jan), Jan Visser (talking with Grietje), Pim (eating).
+Jan and Grietje stand talking.
 
-==== END (Donderdag 23 Herfstmaand 211 AW, 12:09 (midday))
+==== END (Donderdag 23 Herfstmaand 211 AW, 12:06 (midday))
 Quests: grey_cat_on_the_doorstep: honest; flour_for_veenhoek: market_day_passed
 
 ######## CONTROL: THE PLAYER DOES NOTHING

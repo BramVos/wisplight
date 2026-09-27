@@ -1,5 +1,6 @@
 import { crowdsHour } from './growth/crowds'
 import { archiveDay } from './archive'
+import { agreementsTick } from './agreements'
 import { fillFromLedger, ledgerHour, nameless } from './economy/ledger'
 import { projectsDay } from './growth/growth'
 import { sawPerson } from './acquaintance'
@@ -40,6 +41,8 @@ export function advance(world: World, minutes: number): void {
     if (minuteOfDay(world.now) % 60 === 0) hourly(world)
     // Where the player is, people greet each other and stop to talk (M8.2).
     if (minuteOfDay(world.now) % 5 === 0) chatterNearPlayer(world)
+    // The register of agreements (M10.2): meetings, leaders, reports and intentions, without a model.
+    if (minuteOfDay(world.now) % 10 === 0) agreementsTick(world)
     if (minuteOfDay(world.now) % 15 === 0) {
       spreadNews(world)
       noticeCoincidences(world)

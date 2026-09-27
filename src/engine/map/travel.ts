@@ -213,18 +213,24 @@ const FEATURE: Record<NonNullable<Cell['feature']>, string> = {
 }
 
 function landmark(world: World, map: RegionMap, hex: Hex): string | undefined {
+  const best = landmarkIn(world, map, hex)
+  return best ? `To the ${best.wind}, ${best.text}.` : undefined
+}
+
+/** The nearest landmark to be seen from a hex, and the area it belongs to. */
+export function landmarkIn(world: World, map: RegionMap, hex: Hex): { area: string; text: string; km: number; wind: string } | undefined {
   const here = centre(hex, map.size)
   const fog = sight(world, map, map.cell(hex)!) <= 1
-  let best: { text: string; km: number; wind: string } | undefined
+  let best: { area: string; text: string; km: number; wind: string } | undefined
   for (const mark of map.region.landmarks) {
     const place = map.places.get(mark.area)
     if (!place) continue
     const there = centre(place, map.size)
     const km = Math.hypot(there[0] - here[0], there[1] - here[1])
     if (km < 0.3 || km > (fog ? 0.5 : mark.range)) continue
-    if (!best || km < best.km) best = { text: mark.text, km, wind: windBetween(here, there) }
+    if (!best || km < best.km) best = { area: mark.area, text: mark.text, km, wind: windBetween(here, there) }
   }
-  return best ? `To the ${best.wind}, ${best.text}.` : undefined
+  return best
 }
 
 export function waysLine(world: World, map: RegionMap, hex: Hex): string {
@@ -433,6 +439,7 @@ export function walk(world: World, plan: WalkPlan, pass: (minutes: number) => Ou
   let steps = 0
   let reason = ''
   let arrived: string | undefined
+  let strayAt: number | undefined
   // Following on from the last walk, keep the way you were going.
   let heading: HexDirection | undefined = plan.kind === 'follow' ? (mapState(world).heading as HexDirection | undefined) : undefined
 
@@ -489,8 +496,12 @@ export function walk(world: World, plan: WalkPlan, pass: (minutes: number) => Ou
       reason = cell.channel ? `A channel of open water bars the way; only a punt would cross it.` : `Deep water bars the way ${pretty(direction ?? plan.kind)}.`
       break
     }
-    // In mist, off the road, you may lose your bearings: Survival against DC 15 (FO, chapter 12, "Gevaar buiten gevechten").
-    const lost = sight(world, map, map.cell(at)!) <= 1 && !cell.way && !onKnownRidge(world, cell) && plan.kind !== 'follow' && world.rng.int('travel', 1, 20) + playerSkill(world, 'survival') < 15
+    // In mist, off the road, you may lose your bearings (FO, chapter 12, "Gevaar buiten gevechten"): one
+    // Survival check against DC 15 to hold your direction for the walk; failing it, you stray a step off
+    // within the first few steps, and stop. A check at every step made a place in the mist unreachable.
+    const misty = sight(world, map, map.cell(at)!) <= 1 && !cell.way && !onKnownRidge(world, cell) && plan.kind !== 'follow'
+    if (misty && strayAt === undefined) strayAt = world.rng.int('travel', 1, 20) + playerSkill(world, 'survival') < 15 ? steps + world.rng.int('travel', 0, 2) : Infinity
+    const lost = misty && steps === strayAt
     if (lost) {
       const drift = neighbours(at).filter((n) => map.cell(n.hex) && passable(world, map.cell(n.hex)!, true) && hexKey(n.hex) !== hexKey(next!))
       const pick = drift[world.rng.int('travel', 0, Math.max(0, drift.length - 1))]

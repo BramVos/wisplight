@@ -1,5 +1,5 @@
 import type { PlanState } from './quests/plans'
-import type { Fact, Signal, Storyline } from './state'
+import type { Agreement, Fact, Signal, Storyline } from './state'
 import { lineStatus } from './storylines'
 import type { World } from './world'
 
@@ -20,6 +20,10 @@ import type { World } from './world'
 // cause), while its old facts that nobody knows may go; the game log keeps
 // them, and a lookup finds them there. What a line follows and what it came
 // from stay with it: the arc keeps its beginning.
+//
+// Agreements (M10.2) go the same way: one that closed a month ago leaves the
+// save; an open one never does, and neither does what it points to, so an
+// agreement for next week outlives saving, restarting and archiving.
 
 const DAY = 24 * 60
 /** Over for this long, it goes to the archive. */
@@ -29,6 +33,7 @@ export const ARCHIVE_AFTER = 30 * DAY
 export interface Archived {
   facts: Fact[]
   lines?: Storyline[]
+  agreements?: Agreement[]
   plans: PlanState[]
   signals: Signal[]
 }
@@ -49,6 +54,9 @@ export function archiveDay(world: World): Archived | undefined {
   // A fact stays while anyone knows it, or anything that stays points to it.
   const heard = state.news?.heard ?? {}
   const known = new Set(Object.values(heard).flatMap((h) => Object.keys(h)))
+  const register = state.agreements?.list ?? []
+  const closed = register.filter((a) => a.status !== 'open' && (a.outcome?.t ?? a.t) < before)
+  const closedSet = new Set(closed)
   const facts = state.news?.facts ?? []
   const byId = new Map(facts.map((f) => [f.id, f]))
   const old = facts.filter((f) => f.t < before && !known.has(f.id))
@@ -60,7 +68,7 @@ export function archiveDay(world: World): Archived | undefined {
   if (old.length) {
     const lineSet = new Set(lines)
     // The facts of a line that stays are its own business (below), not a reason to keep them all.
-    const rest = { ...state, news: undefined, plans: keptPlans, signals: state.signals ? { ...state.signals, log: keptSignals } : undefined, chronicle: chronicle ? { ...chronicle, lines: chronicle.lines.filter((l) => !lineSet.has(l)).map(({ facts: _f, reported: _r, ...l }) => l) } : undefined }
+    const rest = { ...state, news: undefined, plans: keptPlans, agreements: state.agreements ? { ...state.agreements, list: register.filter((a) => !closedSet.has(a)) } : undefined, signals: state.signals ? { ...state.signals, log: keptSignals } : undefined, chronicle: chronicle ? { ...chronicle, lines: chronicle.lines.filter((l) => !lineSet.has(l)).map(({ facts: _f, reported: _r, ...l }) => l) } : undefined }
     pointed = new Set(JSON.stringify(rest).match(/\b(?:fact|line)_\d+\b/g) ?? [])
     // A line in lore, a request or a waiting run stays, and so does what a kept line follows or came from (M10.2).
     lines = lines.filter((l) => !pointed.has(l.id))
@@ -68,13 +76,14 @@ export function archiveDay(world: World): Archived | undefined {
     for (const l of chronicle?.lines ?? []) if (!lines.includes(l) && lineStatus(l) === 'active') for (const id of l.facts) pointed.add(id)
   }
   const gone = old.filter((f) => !pointed.has(f.id))
-  if (!plans.length && !signals.length && !gone.length && !lines.length) return undefined
+  if (!plans.length && !signals.length && !gone.length && !lines.length && !closed.length) return undefined
   if (plans.length) state.plans = keptPlans
+  if (closed.length) state.agreements!.list = register.filter((a) => !closedSet.has(a))
   if (signals.length) state.signals!.log = keptSignals
   if (lines.length) chronicle!.lines = chronicle!.lines.filter((l) => !lines.includes(l))
   if (gone.length) {
     const goneSet = new Set(gone)
     state.news!.facts = facts.filter((f) => !goneSet.has(f))
   }
-  return { facts: gone, plans, signals, ...(lines.length ? { lines } : {}) }
+  return { facts: gone, plans, signals, ...(lines.length ? { lines } : {}), ...(closed.length ? { agreements: closed } : {}) }
 }

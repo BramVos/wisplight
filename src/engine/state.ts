@@ -38,6 +38,8 @@ export interface Goal {
   created: number
   /** Facts to tell the target when they meet: a report carried there (M8.2). */
   message?: string[]
+  /** The agreement this goal carries out (M10.2): when it is done, the register hears of it. */
+  agreement?: string
 }
 
 export type Step =
@@ -61,6 +63,84 @@ export interface Pending {
   location?: string
   objectKey?: string
   setState?: Record<string, string | number | boolean>
+}
+
+/**
+ * An agreement (M10.2; design: signalen en nasleep, "Het verhaal- en
+ * afsprakenregister"): an offer that went through, an intention after a
+ * conversation, a promise of the player. One record with a fixed id, the
+ * parties, what, when, the terms, and a status that only the rules change.
+ */
+export type AgreementKind = 'accompany' | 'lead' | 'message' | 'meet' | 'wait' | 'give' | 'attack' | 'intention'
+export type AgreementStatus = 'open' | 'kept' | 'missed' | 'cancelled' | 'impossible'
+
+export interface AgreementTerms {
+  /** accompany: how long or how far, the wage, the limits, and what makes them go. */
+  until?: number
+  untilPlace?: string
+  wage?: number
+  limits?: string[]
+  leaves?: string[]
+  /** lead: whom to, where, where the leader thinks that person is, how long they wait, and what if nobody is there. */
+  person?: string
+  place?: string
+  thinks?: string
+  waits?: number
+  ifAbsent?: 'wait' | 'return' | 'search'
+  arrived?: number
+  /** When the one led got there and the person was not. */
+  met?: number
+  /** message: to whom, about what, which facts, on what condition; delivered when the other has heard it. */
+  recipient?: string
+  about?: string
+  facts?: string[]
+  condition?: string
+  delivered?: number
+  /** meet: from when, and who came. */
+  at?: number
+  came?: string[]
+  /** give: a thing or a sum, and the debt it pays. */
+  item?: string
+  amount?: number
+  debt?: string
+  /** attack: whom, and why; the fight itself is the combat system's. */
+  target?: string
+  reason?: string
+  fought?: number
+  /** intention: a goal of the catalogue. */
+  goal?: string
+}
+
+export interface Agreement {
+  id: string
+  kind: AgreementKind
+  /** Who does it: an NPC, or "player". */
+  by: string
+  /** For whom: an NPC, "player", or nobody for an intention of one's own. */
+  to?: string
+  source: 'offer' | 'conversation' | 'player' | 'brain' | 'chronicler' | 'rules'
+  /** In plain words, for the journal and the voice. */
+  what: string
+  t: number
+  /** By when; past it, the rules settle an open agreement. Without it, it runs until something ends it. */
+  due?: number
+  terms: AgreementTerms
+  status: AgreementStatus
+  /** Whether the other knows of it: they were there when it was made. Only then do they judge it. */
+  known: boolean
+  outcome?: { t: number; text: string; fault?: 'by' | 'to' | 'world'; fact?: string; told?: boolean }
+  /** What the maker believed when it was made, apart from what is true (where someone would be). */
+  belief?: string
+  /** A bluff or a lie, recorded as such: what was said, and what the maker knew. */
+  deceit?: { said: string; knew: string }
+  /** What the other made of it when it was not kept, from what they knew. */
+  judged?: 'understood' | 'let_down' | 'betrayed'
+  /** Everything the one choice recorded: a plan, a journal note, an expectation. */
+  effects: { kind: 'plan' | 'journal' | 'expect'; ref: string }[]
+  /** Breaks along the way, each with its end: paused, rerouted or ended, and whether they come back. */
+  interruptions?: { t: number; why: string; then: 'pause' | 'reroute' | 'end'; back: boolean; resumed?: number }[]
+  /** Part of a larger agreement: a wait while travelling with the player. */
+  part?: string
 }
 
 /**
@@ -457,6 +537,8 @@ export interface GameState {
   wanted?: Record<string, { fine: number; since: number }>
   /** The player's companions (FO, chapter 13). */
   companions?: Companion[]
+  /** The register of agreements (M10.2): who promised whom what, by when, and how it went. */
+  agreements?: { seq: number; list: Agreement[] }
   /** Romance per NPC (FO, chapter 8). */
   romance?: Record<string, { stage: 'interest' | 'courting' | 'together' | 'bound'; since: number }>
   /** Tension between realms, 0 to 100 (design: lore and world change, "Staatkunde"). */

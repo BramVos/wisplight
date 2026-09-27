@@ -7,6 +7,7 @@ import type { Packet } from './knowledge'
 import { peopleLine, peopleNow, ties } from '../people'
 import { standingLine } from '../standing'
 import { requestLines } from '../requests'
+import { agreementLines } from '../agreements'
 import { relation, type Attitude } from './relations'
 
 // Prompts for the voice role (FO, chapter 10). The system part is byte-for-byte
@@ -218,6 +219,8 @@ export function turnPrompt(world: World, ctx: TurnContext): string {
     ...peopleNow(world, ctx.npcId),
     ...onYourMind(world, ctx.npcId),
     ...requestLines(world, ctx.npcId),
+    // The register first (M10.2): agreements with the player and a few of their own, without a model.
+    ...agreementLines(world, ctx.npcId),
     ...farKnown(world, ctx.npcId),
     `ATTITUDE: ${ctx.attitude.band} (${ctx.attitude.score}). LISTENER: ${listener(world, ctx.npcId)}.`,
     'KNOWLEDGE:',

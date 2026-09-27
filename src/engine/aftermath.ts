@@ -1,4 +1,5 @@
 import { welcomingIn } from './social/groups'
+import { agree } from './agreements'
 import { orderGoods } from './economy/ledger'
 import { arrive, startProject, templateFor } from './growth/growth'
 import type { Output } from './commands'
@@ -479,7 +480,14 @@ export function runVerb(world: World, ctx: PlanContext, verb: Verb, st: StepStat
     const message = (world.state.news?.facts ?? []).filter((f) => heard[f.id] && heard[f.id]!.stance !== 'rejects' && (f.claim?.subject === v.about || f.about.includes(v.about))).map((f) => f.id)
     if (!message.length) return false
     const s = world.npcState(who)
-    s.goals.push({ id: `g${++world.state.goalSeq}`, type: 'Talk', target: to, priority: 1, source: 'ai', created: world.now, until: world.now + 2 * DAY, message })
+    const goal: Goal = { id: `g${++world.state.goalSeq}`, type: 'Talk', target: to, priority: 1, source: 'ai', created: world.now, until: world.now + 2 * DAY, message }
+    // A report to carry is an agreement in the register (M10.2): what, to whom, by when; delivered only when told.
+    const made = agree(world, { kind: 'message', by: who, to, source: ctx.plan.source === 'brain' || ctx.plan.source === 'chronicler' ? ctx.plan.source : 'rules', what: `tell ${nameOf(world, to)} about ${nameOf(world, v.about)}`, due: goal.until!, terms: { recipient: to, about: nameOf(world, v.about), facts: message } })
+    if ('id' in made) {
+      goal.agreement = made.id
+      made.effects.push({ kind: 'plan', ref: goal.id })
+    }
+    s.goals.push(goal)
     s.plan = []
     s.planGoal = undefined
     s.busyUntil = Math.min(s.busyUntil, world.now)
