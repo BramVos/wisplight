@@ -1,0 +1,76 @@
+# Objects on Skerrow, and what people can do with them.
+
+object_types:
+  - id: well
+    name: well
+    aliases: [bucket]
+    description: A squat well of grey stone with a bucket on a chain. The water comes up from deep under the island, sweet in spite of the sea all round.
+    affordances:
+      - id: drink
+        verb: drink
+        label: drinking
+        actors: [player, npc]
+        access: public
+        duration: 2
+        player_text: The water is cold and sweet, with no taste of salt at all.
+
+  - id: silver_birch
+    name: old birch
+    aliases: [birch, tree, silver birch, prayer tree]
+    description: The oldest birch of the grove, its bark gone silver-white and hung with shells on strings and scraps of cloth, one for every prayer to the Tidemother.
+    affordances:
+      - id: pray
+        verb: pray
+        label: praying
+        actors: [player, npc]
+        access: public
+        duration: 15
+        satisfies: { faith: 20 }
+        player_text: You tie a thread to a low branch and say what you have to say. The shells chime softly above you.
+
+  - id: bench
+    name: bench
+    aliases: [benches, table, settle]
+    description: A long settle made from a ship's timber, still with the bolt holes in it.
+    affordances:
+      - id: rest
+        verb: rest
+        label: resting
+        actors: [player]
+        access: public
+        duration: 30
+        player_text: You sit a while by the fire and let the salt dry out of your clothes.
+
+  - id: beacon
+    name: beacon
+    aliases: [lamp, great lamp, light, lamp of skerrow]
+    description: The Lamp of Skerrow, a bowl of bronze as wide as a cartwheel behind a lens of green glass, cold and black with old soot.
+    affordances: []
+
+  - id: waystone
+    name: waystone
+    aliases: [stone ring, ring, gate, rune gate, socket]
+    description: A ring of black stone taller than a man, cut all round with runes that seem to shift when you look away. A socket at its foot is shaped for a key.
+    affordances: []
+
+  - id: coracle
+    name: coracle
+    aliases: [lines, fishing lines, wenna's coracle]
+    description: A round little boat of hide on a willow frame, with a coil of hand lines and a gutting board beside it.
+    affordances:
+      - id: fish_inshore
+        verb: fish
+        label: fishing the inshore water
+        actors: [npc]
+        access: owner
+        produces: { salt_fish: 4 }
+        duration: 180
+        satisfies: { work: 25 }
+        narrate_start: "{name} hoists the coracle onto her back and walks it down to the water."
+        narrate_end: "{name} comes back up the slip with a string of pollock, and sets to gutting and salting them."
+
+  - id: boat
+    name: boat
+    aliases: [kittiwake, the kittiwake, slip]
+    description: The Kittiwake, Brannoc's boat, drawn up on the slip with her mast bare and daylight showing through her seams.
+    affordances: []

@@ -1,0 +1,24 @@
+# The three parts of Skerrow. The island has no map drawing of its own: you
+# get about by the exits between places.
+
+areas:
+  - id: skerrow_hythe
+    name: Skerrow Hythe
+    kind: hamlet
+    aliases: [the hythe, hythe, the hamlet, the village]
+    fame: 2
+    summary: The only hamlet on Skerrow, a dozen stone cottages round a little harbour, with the Salt Kettle for an inn.
+
+  - id: skerrow_shore
+    name: the Shore
+    kind: wilderness
+    aliases: [the shore, the strand, south shore]
+    fame: 1
+    summary: The rocky south shore of Skerrow, where the currents throw up whatever the sea breaks.
+
+  - id: skerrow_heights
+    name: the Heights
+    kind: wilderness
+    aliases: [the heights, the uplands, the high ground]
+    fame: 1
+    summary: The high ground of Skerrow, with the silver grove, the wyrm's barrow, the beacon and the old tower.

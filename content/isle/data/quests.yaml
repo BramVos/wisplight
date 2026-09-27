@@ -1,0 +1,141 @@
+# The one quest of Skerrow: get off the island before winter. Three ways:
+# Brannoc's boat, the beacon that brings a ship, or the waystone in the tower
+# with the key from the wyrm's barrow. Actions match what the player types
+# against regular expressions, lower case, over the whole command.
+
+quests:
+  - id: off_skerrow
+    name: Off Skerrow
+    kind: main
+    summary: Stranded on Skerrow after the wreck of the Grey Gull, the stranger has to find a way off the island before winter.
+    givers: [npc_maren]
+    helpers: [npc_brannoc, npc_garrick, npc_elowen, npc_tamsin, npc_pip]
+    starts: { at_start: true }
+    stages:
+      - id: stranded
+        text: The Grey Gull broke on the rocks of Skerrow, and you alone came ashore. No ship calls since the beacon on the headland went out, and the winter storms will soon close the sea. Find a way off the island.
+        on_enter: [{ learn: grey_gull }]
+    actions:
+      # Brannoc's boat: a sail from the wreck, pitch from the Kettle, and a man who has to be brave.
+      - id: mend_kittiwake
+        say: ['(?:give|bring|offer|hand) (?:the |a |my )?(?:sail|sailcloth|canvas|bolt of sailcloth)(?: and (?:the )?pitch)? to brannoc', '(?:help brannoc )?(?:mend|fix|repair|caulk) (?:the |his |brannoc.?s )?(?:boat|kittiwake)(?: .*)?']
+        intent: help Brannoc mend his boat with the sailcloth and the pitch you brought
+        with: npc_brannoc
+        when: [{ has: sailcloth }, { has: pitch }]
+        not_yet: 'Brannoc looks at the Kittiwake and shakes his head. "She wants a new sail and a pot of pitch for her seams. Bring me both, and then we''ll see."'
+        minutes: 240
+        text: You and Brannoc spend the day on the slip, cutting canvas and paying hot pitch into her seams while Pip holds whatever needs holding. By evening the Kittiwake sits proud on the slip with a new brown sail bent to her yard. Brannoc walks round her twice and says nothing, which from him is a great deal.
+        effects: [{ take: sailcloth }, { take: pitch }, { set: kittiwake_mended }, { relation: npc_brannoc, affinity: 10, trust: 5 }]
+      - id: talk_of_ysolde
+        say: ['(?:talk to|tell|comfort|reassure) brannoc about (?:ysolde|his wife|the crossing|the sea)(?: .*)?', 'talk (?:to brannoc )?about ysolde']
+        intent: talk with Brannoc about his dead wife and his fear of the crossing
+        with: npc_brannoc
+        when: [{ flag: kittiwake_mended }, { flag: "secret:npc_brannoc:afraid_to_sail" }]
+        text: 'You talk about Ysolde, and the crossing, and how the sea is only the sea. Brannoc listens with his hands between his knees. At last he says, "She''d have wanted the boy to see the mainland one day. I''ll take you. First light."'
+        effects: [{ set: brannoc_sails }, { relation: npc_brannoc, trust: 15 }]
+      - id: ask_brannoc_to_sail
+        say: ['ask brannoc to (?:sail|take) (?:me|us)(?: .*)?', 'ask brannoc (?:for (?:a )?passage|to cross)(?: .*)?', '(?:persuade|convince) brannoc(?: to sail)?(?: .*)?']
+        intent: ask Brannoc to sail you across to Havenmoor in the Kittiwake
+        with: npc_brannoc
+        when: [{ flag: kittiwake_mended }]
+        not_yet: '"In what?" Brannoc nods at the Kittiwake, bare-masted on the slip. "She wouldn''t cross a duck pond as she is."'
+        check: { skill: persuasion, dc: 15 }
+        once: false
+        text: 'Brannoc looks at the sky for a long time. "Tomorrow, on the morning tide, if the wind holds east. Pip stays with Maren." He says it like a man stepping off a cliff.'
+        fail_text: '"Not with winter coming," Brannoc says, and looks away east, towards the mainland. "Ask me another day."'
+        effects: [{ set: brannoc_sails }]
+
+      # The beacon: three casks of oil, and a lightkeeper who remembers who he is.
+      - id: fuel_beacon
+        say: ['(?:fill|fuel|feed) (?:the )?(?:beacon|lamp|light)(?: with (?:the )?oil)?', '(?:pour|put) (?:the )?oil in(?:to)? (?:the )?(?:beacon|lamp)']
+        intent: fill the beacon's lamp with the casks of oil you carry
+        at: [loc_skerrow_headland]
+        when: [{ has: lamp_oil, qty: 3 }]
+        not_yet: The great lamp's bowl is as wide as a cartwheel. Three casks of oil at the least, or it will gutter out before midnight.
+        minutes: 30
+        text: One cask after another, you pour the oil into the great bronze bowl until it shines black to the brim. The whole gallery stinks of seal.
+        effects: [{ take: lamp_oil, qty: 3 }, { set: beacon_fuelled }]
+      - id: rouse_garrick
+        say: ['(?:ask|persuade|convince|beg|tell) garrick to (?:tend|light|keep|mend|see to) (?:the )?(?:beacon|lamp|light)(?: .*)?', '(?:help|sober up|rouse|persuade|convince) garrick(?: .*)?']
+        intent: persuade Garrick the lightkeeper to tend the beacon again
+        with: npc_garrick
+        when: [{ not_flag: garrick_ready }]
+        check: { skill: persuasion, dc: 14 }
+        once: false
+        text: 'Garrick is quiet for a long time. "Thirty years I kept her," he says. "Thirty years, and one storm." Then he straightens up. "Right. If there''s oil, I''ll trim her. Let the old girl shine." He squares his shoulders like a man going back on watch.'
+        fail_text: '"What''s the use?" Garrick mutters. "No oil, no light, no ships. Leave an old man be."'
+        effects: [{ set: garrick_ready }, { send: npc_garrick, to: loc_skerrow_headland, hours: 48 }, { relation: npc_garrick, trust: 10 }]
+      - id: light_beacon
+        say: ['(?:light|kindle|relight) (?:the )?(?:beacon|lamp|light)(?: .*)?', 'help garrick (?:light|with) (?:the )?(?:beacon|lamp)(?: .*)?']
+        intent: light the beacon together with Garrick
+        at: [loc_skerrow_headland]
+        with: npc_garrick
+        when: [{ flag: beacon_fuelled }, { flag: garrick_ready }]
+        not_yet: The Lamp of Skerrow is not a candle. It wants oil in the bowl and a lightkeeper at the wick.
+        minutes: 20
+        text: Garrick trims the great wick with hands that have stopped shaking, and you strike the light together. The flame catches and climbs, then the green lens takes it and throws it out across the sea, a long, slow beam sweeping the dark. Down in the Hythe somebody starts to cheer.
+        effects:
+          - { stamp: beacon_lit }
+          - { set: beacon_burning }
+          - { relation: npc_garrick, affinity: 20, trust: 10 }
+          - fact: { title: the Lamp of Skerrow burns again, precise: The stranger and Garrick lit the Lamp of Skerrow on the headland again., village: "The beacon's lit! Garrick's back up his steps.", far: The light on Skerrow burns again., belang: 3, about: [the_beacon], place: loc_skerrow_headland }
+
+      # The waystone: the key from the barrow, and an elf who opens the way.
+      - id: ask_tamsin_about_barrow
+        say: ['ask (?:old )?tamsin (?:about|how to (?:get|go) into|for help with) (?:the )?(?:barrow|wyrm|old gentleman|skarth|old skarth|key)(?: .*)?']
+        intent: ask Tamsin how to get into the wyrm's barrow safely
+        with: npc_tamsin
+        when: [{ attitude: npc_tamsin, at_least: Neutral }]
+        not_yet: Tamsin looks at you a long while with her gull's eyes, and talks about the weather instead.
+        text: '"Into the old gentleman''s house?" Tamsin laughs until she coughs. "By day, when the sun''s on his back; he sleeps soundest then. Go barefoot, touch nothing but what you came for, and leave him a gift by the door. Salt fish. He likes salt fish."'
+        effects: [{ set: tamsin_counsel }, { learn: old_skarth }]
+      - id: enter_barrow_with_gift
+        say: ['(?:enter|search|explore|go into|creep into|sneak into|go down into) (?:the )?(?:barrow|mound|tomb|gap)(?: .*)?', '(?:take|get|find|fetch) (?:the )?(?:rune |stone |black )?key(?: .*)?']
+        at: [loc_skerrow_wyrm_barrow]
+        when: [{ flag: tamsin_counsel }, { has: salt_fish }, { night: false }, { not_flag: has_key }]
+        minutes: 60
+        text: You leave a salt fish by the standing stones and go down barefoot into the warm dark. Old Skarth fills the barrow like a hill inside a hill, scales dull as slate, each breath a long, hot tide. On a stone shelf by the tip of his tail lies a key of black stone. You take it and nothing else, and come up into the daylight shaking.
+        effects: [{ take: salt_fish }, { give: rune_key }, { set: has_key }, { learn: old_skarth }]
+      - id: enter_barrow
+        say: ['(?:enter|search|explore|go into|creep into|sneak into|go down into) (?:the )?(?:barrow|mound|tomb|gap)(?: .*)?', '(?:take|get|find|fetch) (?:the )?(?:rune |stone |black )?key(?: .*)?']
+        intent: creep into the wyrm's barrow for the rune key
+        at: [loc_skerrow_wyrm_barrow]
+        when: [{ not_flag: has_key }]
+        not_yet: You have what you came for. Leave the old gentleman be.
+        check: { skill: stealth, dc: 16 }
+        once: false
+        minutes: 45
+        text: You go down into the warm dark on hands and knees. Something vast lies there, breathing slow and deep. By the tip of a tail as thick as a tree you find a stone shelf, and on it a key of black stone. You take it and back out, and the breathing never changes.
+        fail_text: Half-way down, the dark shifts. An eye opens, gold as a lamp and as big as a shield, and looks at you. You do not remember climbing out. Behind you the whole barrow sighs, hot as a forge.
+        effects: [{ give: rune_key }, { set: has_key }, { learn: old_skarth }]
+        fail: [{ count: skarth_stirred }]
+      - id: open_waystone
+        say: ['(?:give|show|bring|hand) (?:the )?(?:rune |stone |black )?key to elowen', '(?:ask elowen to )?(?:open|wake|use) (?:the )?(?:waystone|gate|stone ring|rune gate)(?: .*)?', '(?:put|set|fit) (?:the )?(?:rune )?key in(?:to)? (?:the )?(?:waystone|socket)']
+        intent: give Elowen the rune key and ask her to open the waystone for you
+        at: [loc_skerrow_mage_tower]
+        with: npc_elowen
+        when: [{ has: rune_key }]
+        not_yet: The waystone sleeps. Without its key, and someone who knows the words, it is only a ring of stone.
+        minutes: 30
+        text: 'Elowen takes the key as if it might break. She fits it into the socket at the foot of the ring and speaks a long word that you forget as soon as you hear it. The runes wake one after another, and the ring fills with a grey light like the sea at dawn. "Havenmoor," she says, "or near it. Go, before I change my mind about following you."'
+        effects: [{ take: rune_key }, { set: waystone_open }, { relation: npc_elowen, affinity: 20, trust: 20 }]
+    outcomes:
+      - id: in_the_kittiwake
+        name: In the Kittiwake
+        text: On the morning tide the Kittiwake goes out past the harbour wall, Brannoc at the tiller and you at the sheet. Two days later she noses into Havenmoor. Brannoc buys the boy a knife in the market, and sails home a braver man.
+        when: [{ flag: brannoc_sails }]
+        effects: [{ relation: npc_brannoc, affinity: 15 }]
+      - id: a_ship_for_the_light
+        name: A ship for the light
+        text: Two nights after the Lamp of Skerrow was lit again, the Heron out of Havenmoor stands in to the Hythe to see what the light is about. Her master takes you across for the price of your story, and Skerrow has ships again.
+        when: [{ flag: beacon_burning }, { since: beacon_lit, hours: 36 }]
+        effects: [{ relation: npc_maren, affinity: 15 }]
+      - id: through_the_waystone
+        name: Through the waystone
+        text: You step into the grey light and out onto a wet hillside above a harbour full of masts. Behind you there is only a standing stone with moss on it. Somewhere very far off, the sea says goodbye.
+        when: [{ flag: waystone_open }]
+      - id: winter_closes_the_sea
+        name: Winter closes the sea
+        solution: false
+        text: The first of the winter gales closes the Glass Sea. No boat will cross now until spring; you winter on Skerrow, among the fishers and the gulls.
+        when: [{ days: 40 }]

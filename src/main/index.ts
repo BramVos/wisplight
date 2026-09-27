@@ -8,7 +8,7 @@ import { builderData, saveChange } from '../node/builder'
 import type { ProviderId } from '../node/ai/providers'
 import { AiService } from '../node/ai/service'
 import type { ChosenRole, Cipher } from '../node/ai/settings'
-import { loadContentFromDir } from '../node/content'
+import { DEFAULT_WORLD, listWorlds, loadContentFromDir } from '../node/content'
 import { format, GameLog, type Session } from '../node/gamelog'
 import { SaveStore } from '../node/savegame'
 import { aiCheck, BUILDER_CHECK_SCRIPT, keyCheck, LOG_CHECK_SCRIPT, prepareBuilderCheck, prepareKeyCheck, prepareLogCheck } from './checks'
@@ -23,6 +23,9 @@ const IDLE_PAUSE_MS = 60_000
 const AUTOSAVE_EVERY = 10
 
 let content: Content | undefined
+/** The world in play (M8): its folder under content/, and the worlds loaded so far. */
+let worldFolder = DEFAULT_WORLD
+const worldContents = new Map<string, Content>()
 let ai: AiService | undefined
 let engine: Engine | undefined
 let window: BrowserWindow | undefined
@@ -52,7 +55,7 @@ const BILLING: Record<ProviderId, string> = {
 let ready: Promise<void> | undefined
 function setup(): Promise<void> {
   ready ??= (async () => {
-    content = await loadContentFromDir(contentDir())
+    content = await worldContent(DEFAULT_WORLD)
     ai = new AiService({ dir: app.getPath('userData'), cipher, content })
     watchContent()
     // At start-up: are the chosen models still offered? In the background; Settings shows the answer.
@@ -128,8 +131,35 @@ function snapshot(): SaveData {
 
 const system = (text: string): Output => ({ kind: 'system', text })
 
-ipcMain.handle('engine:start', async () => {
+async function worldContent(folder: string): Promise<Content> {
+  let loaded = worldContents.get(folder)
+  if (!loaded) {
+    loaded = await loadContentFromDir(contentDir(), folder)
+    worldContents.set(folder, loaded)
+  }
+  return loaded
+}
+
+/** Plays in another world from now on: its content, and the builder's reloads follow it. */
+async function useWorld(folder: string): Promise<void> {
+  content = await worldContent(folder)
+  worldFolder = folder
+}
+
+/** The folder of the world a save belongs to, or an error when that world is gone from content/. */
+async function useWorldOf(save: SaveData): Promise<string | undefined> {
+  const folder = (await listWorlds(contentDir())).find((w) => w.id === save.world)?.folder
+  if (folder === undefined) return `This save belongs to the world "${save.world}", which is not in the content folder any more.`
+  await useWorld(folder)
+  return undefined
+}
+
+ipcMain.handle('engine:worlds', async () => (await listWorlds(contentDir())).map((w) => ({ ...w, current: w.folder === worldFolder })))
+
+ipcMain.handle('engine:start', async (_event, world: unknown) => {
   await setup()
+  // A new game in the chosen world (M8), or in the one played last.
+  if (typeof world === 'string' && world) await useWorld(world)
   unfollow?.()
   session = undefined
   engine = new Engine(content!, { seed: Math.floor(Math.random() * 2 ** 31), llm: ai!.client(), builder: !app.isPackaged })
@@ -157,6 +187,8 @@ ipcMain.handle('engine:command', async (_event, input: unknown) => {
   if (verb === 'continue' || verb === 'verder') {
     const data = store().latest()
     if (!data) return reply([{ kind: 'error', text: 'There is no saved game yet.' }])
+    const gone = await useWorldOf(data)
+    if (gone) return reply([{ kind: 'error', text: gone }])
     if (!data.session) {
       follow(Engine.fromSave(content, data, ai?.client()), journal().start(randomUUID()))
     } else {
@@ -172,6 +204,8 @@ ipcMain.handle('engine:command', async (_event, input: unknown) => {
     // The same world with a new character (M7.2).
     const data = store().latest()
     if (!data) return reply([{ kind: 'error', text: 'There is no saved world to carry on in.' }])
+    const gone = await useWorldOf(data)
+    if (gone) return reply([{ kind: 'error', text: gone }])
     const { engine: next, outputs } = Engine.carryOn(content, data, Math.floor(Math.random() * 2 ** 31), ai?.client())
     next.builder = !app.isPackaged
     follow(next, journal().start(randomUUID()))
@@ -180,6 +214,8 @@ ipcMain.handle('engine:command', async (_event, input: unknown) => {
   if (verb === 'load' || verb === 'laad') {
     const data = store().load('manual') ?? store().load('auto')
     if (!data) return reply([{ kind: 'error', text: 'There is no saved game yet.' }])
+    const gone = await useWorldOf(data)
+    if (gone) return reply([{ kind: 'error', text: gone }])
     const loaded = Engine.fromSave(content, data, ai?.client())
     if (!data.session) {
       follow(loaded, journal().start(randomUUID()))
@@ -222,20 +258,21 @@ const contentDir = () => (builderCheck ? join(builderCheck, 'content') : join(ap
 /** The running game carries on with the new content, keeping its log. */
 function adopt(next: Content): void {
   content = next
+  worldContents.set(worldFolder, next)
   if (engine) follow(engine.withContent(next), session ?? ensureSession())
   if (window && !window.isDestroyed()) window.webContents.send('builder:reloaded')
 }
 
 ipcMain.handle('builder:data', async () => {
   if (app.isPackaged) throw new Error('The world builder is part of the development build.')
-  return builderData(contentDir())
+  return builderData(contentDir(), worldFolder)
 })
 
 ipcMain.handle('builder:save', async (_event, kind: unknown, id: unknown, patch: unknown) => {
   if (app.isPackaged) throw new Error('The world builder is part of the development build.')
   if (kind !== 'location' && kind !== 'npc' && kind !== 'region') throw new Error('Unknown kind.')
   ignoreWatchUntil = Date.now() + 1500
-  const result = await saveChange(contentDir(), kind, String(id), (patch ?? {}) as Record<string, unknown>)
+  const result = await saveChange(contentDir(), kind, String(id), (patch ?? {}) as Record<string, unknown>, worldFolder)
   if (result.ok && result.content) adopt(result.content)
   return { ok: result.ok, problems: result.problems, file: result.file }
 })
@@ -249,8 +286,15 @@ function watchContent(): void {
     watch(contentDir(), { recursive: true }, (_type, file) => {
       if (!file || !/\.ya?ml$|CHRONICLER\.md$/.test(String(file)) || Date.now() < ignoreWatchUntil) return
       clearTimeout(reloadTimer)
+      // Another world's files: forget it, so it loads fresh when it is played next.
+      const changed = String(file).split(/[\\/]/)[0] ?? ''
+      if (changed !== worldFolder && !/^CHRONICLER\.md$/.test(changed)) {
+        worldContents.delete(changed)
+        return
+      }
+      if (changed === 'CHRONICLER.md') worldContents.clear()
       reloadTimer = setTimeout(() => {
-        loadContentFromDir(contentDir())
+        loadContentFromDir(contentDir(), worldFolder)
           .then((next) => adopt(next))
           .catch((error: unknown) => {
             const problems = error instanceof ContentError ? error.problems.slice(0, 5).join('; ') : String(error)
@@ -366,12 +410,20 @@ function createWindow(): void {
     },
   })
 
-  // WISPLIGHT_SMOKE=1: start hidden, print the first room the interface shows, quit.
+  // WISPLIGHT_SMOKE=1: start hidden, pick a world (WISPLIGHT_SMOKE=isle for another), print the first room the interface shows, quit.
   if (smoke) {
+    const world = /^[a-z0-9_-]+$/.test(process.env['WISPLIGHT_SMOKE'] ?? '') && process.env['WISPLIGHT_SMOKE'] !== '1' ? process.env['WISPLIGHT_SMOKE']! : 'base'
     window.webContents.once('did-finish-load', () => {
       setTimeout(async () => {
         const room: string = await window!.webContents.executeJavaScript(
-          "document.querySelector('.line.room')?.textContent ?? 'NO ROOM RENDERED'",
+          `(async () => {
+            const pick = document.querySelector('.worlds [data-world="${world}"]')
+            if (pick) {
+              pick.click()
+              await new Promise((r) => setTimeout(r, 1000))
+            }
+            return document.querySelector('.line.room')?.textContent ?? 'NO ROOM RENDERED'
+          })()`,
         )
         console.log(`[smoke] ${room.split('\n')[0]}`)
         app.quit()

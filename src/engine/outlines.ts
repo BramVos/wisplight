@@ -1,6 +1,6 @@
 import { outline as writeOutline, type Outline, type OutlineInput } from '../chronicler/outline'
 import type { ChroniclerModel } from '../chronicler'
-import { WORLD_FRAME } from './dialogue/prompt'
+import { worldFrame } from './dialogue/prompt'
 import { regionMap } from './map/region'
 import type { World } from './world'
 
@@ -40,7 +40,7 @@ export function farWhere(world: World, topic: string): string | undefined {
   const angle = (Math.atan2(pos[0] - centre[0], pos[1] - centre[1]) * 180) / Math.PI
   const wind = ['north', 'north-east', 'east', 'south-east', 'south', 'south-west', 'west', 'north-west'][Math.round(((angle + 360) % 360) / 45) % 8]
   const days = Math.max(1, Math.round(km / 40))
-  return `It lies about ${Math.round(km / 5) * 5} km ${wind} of the Holleveen, ${days === 1 ? 'a day' : `${days} days`} on foot.`
+  return `It lies about ${Math.round(km / 5) * 5} km ${wind} of ${world.words.region}, ${days === 1 ? 'a day' : `${days} days`} on foot.`
 }
 
 export function outlineInput(world: World, topic: string): OutlineInput {
@@ -57,7 +57,7 @@ export function outlineInput(world: World, topic: string): OutlineInput {
     .map((o) => ({ name: o.name, text: o.summary }))
   return {
     instruction: world.content.chronicler ?? '',
-    world: WORLD_FRAME,
+    world: worldFrame(world.content),
     place: { id: topic, name: t.name, kind: t.kind === 'place' ? 'place' : t.kind, where: farWhere(world, topic) ?? '', known: [t.summary, t.details, t.story].filter((x): x is string => Boolean(x)) },
     taken: [...taken].sort(),
     neighbours,

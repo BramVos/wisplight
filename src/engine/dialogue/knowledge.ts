@@ -339,7 +339,7 @@ export class Knowledge {
       return heard ? [`${versionOf(fact, heard)} ${this.source(heard)}`] : [fact.text.far]
     }
     const far = this.far(topicId)
-    if (far) return [`${far.name} is a ${far.kind} far away, beyond the Nethermarch.`, `What was said of it: "${far.line}"`]
+    if (far) return [`${far.name} is a ${far.kind} far away, beyond ${this.world.words.land}.`, `What was said of it: "${far.line}"`]
     const topic = this.world.content.topics.get(topicId)
     if (!topic) return []
     return level >= 2 && topic.details ? [topic.summary, topic.details] : [topic.summary]

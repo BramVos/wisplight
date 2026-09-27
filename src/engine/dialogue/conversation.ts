@@ -1,5 +1,5 @@
 import type { Output } from '../commands'
-import { formatMoney, GUILDER, STUIVER } from '../items'
+import { parseMoney, STUIVER } from '../items'
 import { MONTHS, WEEKDAYS } from '../clock'
 import { callName } from '../content'
 import { heardBy, newsAbout } from '../news'
@@ -15,7 +15,7 @@ import { closingLine, fallbackReply } from './fallback'
 import { fitLength, hasAnachronism, leakedNames, looksLikeInjection, unknownNames, vocabularyOf } from './guard'
 import type { Knowledge, Packet } from './knowledge'
 import type { LlmClient } from './llm'
-import { peopleIds, systemPrompt, turnPrompt, WORLD_FRAME } from './prompt'
+import { peopleIds, systemPrompt, turnPrompt, worldFrame } from './prompt'
 import { attitude, applyEffect, moodOf, relation, type Attitude } from './relations'
 import { askLine, askNow, requestName, visited } from '../requests'
 import { parseReply, replyJsonSchema, type Reply } from './schema'
@@ -74,7 +74,7 @@ export class Dialogue {
   /** Every word the world's content uses, for spotting names the model made up. */
   private vocabulary(): Set<string> {
     // The chronicler's instruction is not the world: its examples are no names of it.
-    this.words ??= vocabularyOf({ ...this.world.content, chronicler: undefined }, WORLD_FRAME, MONTHS, WEEKDAYS, (this.world.state.lore?.far ?? []).map((f) => f.name), (this.world.state.chronicle?.lore ?? []).map((l) => l.name))
+    this.words ??= vocabularyOf({ ...this.world.content, chronicler: undefined }, worldFrame(this.world.content), MONTHS, WEEKDAYS, (this.world.state.lore?.far ?? []).map((f) => f.name), (this.world.state.chronicle?.lore ?? []).map((l) => l.name))
     return this.words
   }
 
@@ -256,11 +256,11 @@ export class Dialogue {
     let about: string
 
     if (kind === 'bribe') {
-      const amount = parseMoney(text)
-      if (!amount) return [{ kind: 'error', text: 'Bribe with how much? For example: BRIBE LUBBERT 2 STUIVERS.' }]
-      if (amount > world.state.player.money) return [{ kind: 'error', text: `You only have ${formatMoney(world.state.player.money)}.` }]
+      const amount = parseMoney(text, world.coins)
+      if (!amount) return [{ kind: 'error', text: `Bribe with how much? For example: BRIBE ${callName(npc).toUpperCase()} 2 ${(world.coins[1] ?? world.coins[0]!).plural?.toUpperCase() ?? `${(world.coins[1] ?? world.coins[0]!).name.toUpperCase()}S`}.` }]
+      if (amount > world.state.player.money) return [{ kind: 'error', text: `You only have ${world.money(world.state.player.money)}.` }]
       result = playerCheck(world, 'persuasion', dcFor(18 - Math.floor(amount / STUIVER), band, npc.personality.honesty * 2))
-      about = `bribe them with ${formatMoney(amount)}`
+      about = `bribe them with ${world.money(amount)}`
       if (succeeded(result)) {
         world.state.player.money -= amount
         world.npcState(npcId).money += amount
@@ -637,13 +637,3 @@ function capitalise(value: string): string {
   return value.charAt(0).toUpperCase() + value.slice(1)
 }
 
-/** "2 stuivers", "10 duiten", "1 guilder", "3 st" to duiten. */
-export function parseMoney(text: string): number | undefined {
-  const match = text.match(/(\d+)\s*(gl|guilders?|gulden|st|stuivers?|d|duiten|duit)?/i)
-  if (!match) return undefined
-  const amount = Number(match[1])
-  const unit = (match[2] ?? 'st').toLowerCase()
-  if (unit.startsWith('g')) return amount * GUILDER
-  if (unit.startsWith('s')) return amount * STUIVER
-  return amount
-}

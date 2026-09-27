@@ -481,7 +481,7 @@ export function walk(world: World, plan: WalkPlan, pass: (minutes: number) => Ou
       }
     }
     if (!next || !map.inside(next)) {
-      reason = 'You have come to the edge of the Holleveen.'
+      reason = `You have come to the edge of ${world.words.region}.`
       break
     }
     const cell = map.cell(next)!

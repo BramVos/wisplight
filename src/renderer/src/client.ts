@@ -1,4 +1,4 @@
-import type { CreationData, JournalPage, Output, Status } from '../../engine'
+import type { CreationData, JournalPage, Output, Status, WorldInfo } from '../../engine'
 import type { Advice, TrialResult } from '../../node/ai/advisor'
 import type { AiLogEntry } from '../../node/ai/log'
 import type { BuilderData } from '../../node/builder'
@@ -7,6 +7,9 @@ import type { AiOverview } from '../../node/ai/service'
 import type { ChosenRole } from '../../node/ai/settings'
 
 export type { Advice, AiLogEntry, AiOverview, BuilderData, ChosenRole, CreationData, JournalPage, ModelInfo, ProviderId, TrialResult }
+
+/** A world to play in (M8), and whether it is the one played last. */
+export type WorldChoice = WorldInfo & { current: boolean }
 
 /** What the status bar shows about the AI: cost so far and whether calls go through. */
 export interface AiStatus {
@@ -56,7 +59,10 @@ export interface BuilderBridge {
 }
 
 export interface EngineClient {
-  start(): Promise<Reply>
+  /** A new game, in the given world (M8) or the one played last. */
+  start(world?: string): Promise<Reply>
+  /** The worlds in the content folder (M8). */
+  worlds(): Promise<WorldChoice[]>
   command(input: string): Promise<Reply>
   /** A page of the journal, or undefined for something the player does not know. */
   page(id: string): Promise<JournalPage | undefined>
@@ -87,14 +93,18 @@ const IDLE_PAUSE_MS = 60_000
 export async function createClient(): Promise<EngineClient> {
   if (window.wisplight) return window.wisplight
 
-  const { applyChange, builderView, Engine, loadContent, MockLlm } = await import('../../engine')
+  const { applyChange, builderView, DEFAULT_WORLD, Engine, filesOfWorld, loadContent, MockLlm, worldsIn } = await import('../../engine')
   const modules = import.meta.glob('../../../content/**/*.{yaml,yml,md}', {
     query: '?raw',
     import: 'default',
     eager: true,
   }) as Record<string, string>
-  const files = Object.entries(modules).map(([path, text]) => ({ path: path.replace(/^.*?content\//, ''), text }))
-  const content = loadContent(files)
+  // Every world's files; a new game picks one of them (M8).
+  const all = Object.entries(modules).map(([path, text]) => ({ path: path.replace(/^.*?content\//, ''), text }))
+  const worlds = worldsIn(all)
+  let folder = DEFAULT_WORLD
+  let files = filesOfWorld(all, folder)
+  let content = loadContent(files)
   const mock = new URLSearchParams(window.location.search).has('mock')
   const demo = mock ? await import('./demo') : undefined
   const llm = mock ? demo!.slowMock(new MockLlm('good')) : undefined
@@ -141,7 +151,16 @@ export async function createClient(): Promise<EngineClient> {
   }, 1000)
 
   return {
-    start: async () => ({ outputs: engine.start(), status: status() }),
+    start: async (world) => {
+      if (world && world !== folder) {
+        folder = world
+        files = filesOfWorld(all, folder)
+        content = loadContent(files)
+        engine = new Engine(content, { seed: 1, llm, builder: true })
+      }
+      return { outputs: engine.start(), status: status() }
+    },
+    worlds: async () => worlds.map((w) => ({ ...w, current: w.folder === folder })),
     command: async (input) => {
       lastInput = Date.now()
       if (/^(save|load|bewaar|laad|continue|verder|log|logboek)(\s+(\d+|export))?$/i.test(input.trim())) {

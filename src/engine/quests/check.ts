@@ -1,4 +1,5 @@
 import type { Content } from '../content'
+import { STANDARD_SKILLS } from '../dialogue/checks'
 import type { Condition, QuestEffect } from './schema'
 import type { PlanEffect } from './plans'
 
@@ -135,7 +136,7 @@ export function checkQuests(c: Refs): string[] {
       }
       for (const l of a.at) place(l, where)
       if (a.with) npc(a.with, where)
-      if (a.check && !c.rules?.skills.some((s) => s.id === a.check!.skill)) problems.push(`${where}: unknown skill ${a.check.skill}`)
+      if (a.check && !(c.rules ? c.rules.skills.some((s) => s.id === a.check!.skill) : (STANDARD_SKILLS as readonly string[]).includes(a.check.skill))) problems.push(`${where}: unknown skill ${a.check.skill}`)
       for (const x of a.when) condition(x, where)
       for (const e of [...a.effects, ...a.fail]) effect(e, where, stages, outcomes)
     }

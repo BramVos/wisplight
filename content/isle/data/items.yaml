@@ -1,0 +1,87 @@
+# Things on Skerrow. Prices are in copper pieces (1 sp = 10 cp, 1 gp = 100 cp).
+
+items:
+  - id: knife
+    name: knife
+    description: A sailor's knife with a cork grip, the blade dulled by salt.
+    aliases: [blade, sailor's knife]
+    value: 12
+    weapon: { damage: 1d4, light: true }
+
+  - id: ship_biscuit
+    name: ship's biscuit
+    plural: ship's biscuits
+    description: A square of ship's biscuit, hard enough to drive nails with.
+    aliases: [biscuit, biscuits, hardtack]
+    tags: [food]
+    value: 2
+    food: 20
+
+  - id: salt_fish
+    name: salt fish
+    plural: salt fish
+    description: A split and salted pollock, stiff as a board.
+    aliases: [fish, pollock, dried fish]
+    tags: [food]
+    value: 4
+    food: 35
+
+  - id: fish_stew
+    name: bowl of fish stew
+    plural: bowls of fish stew
+    description: Fish, kelp and barley stewed together, with a crust of bread to push it round with.
+    aliases: [stew, fish stew, meal, hot meal, bowl]
+    tags: [food]
+    value: 8
+    food: 60
+
+  - id: ale
+    name: mug of ale
+    plural: mugs of ale
+    description: Thin brown ale, brewed from the island's barley and tasting a little of the sea.
+    aliases: [ale, beer, mug]
+    tags: [drink]
+    value: 3
+    food: 5
+
+  - id: sailcloth
+    name: bolt of sailcloth
+    plural: bolts of sailcloth
+    description: A heavy bolt of tarred canvas from the Grey Gull's hold, wet but whole.
+    aliases: [sailcloth, canvas, sail, cloth]
+    value: 150
+
+  - id: pitch
+    name: pot of pitch
+    plural: pots of pitch
+    description: A clay pot of black pine pitch, for paying the seams of a boat.
+    aliases: [pitch, tar, pot of tar]
+    value: 20
+
+  - id: lamp_oil
+    name: cask of lamp oil
+    plural: casks of lamp oil
+    description: A small cask of seal oil, the kind the beacon burns. It smells like it.
+    aliases: [oil, lamp oil, cask, seal oil]
+    value: 30
+
+  - id: rope
+    name: coil of rope
+    plural: coils of rope
+    description: A coil of good hemp rope, still wet from the sea.
+    aliases: [rope, cordage, line]
+    value: 10
+
+  - id: rune_key
+    name: rune key
+    description: A key of black stone as long as your hand, cut with runes that are warm to the touch.
+    aliases: [key, stone key, black key]
+    value: 0
+
+  - id: kelp_salve
+    name: pot of kelp salve
+    plural: pots of kelp salve
+    description: Tamsin's salve of kelp, honey and something green. It stings, then it doesn't.
+    aliases: [salve, ointment]
+    value: 15
+    remedy: { heal: 1d8 }

@@ -1,6 +1,6 @@
 import { callName } from './content'
 import { applyEffect } from './dialogue/relations'
-import { formatMoney, itemName, withArticle } from './items'
+import { itemName, withArticle } from './items'
 import type { Request } from './state'
 import type { World } from './world'
 import { favour, gainXp, XP } from './rules/player'
@@ -51,7 +51,7 @@ export function requestName(world: World, request: Request): string {
 export function askLine(world: World, request: Request): string {
   if (request.ask) return request.ask
   const thing = request.item ? itemName(world.content, request.item, request.qty).replace(/^1 /, '') : ''
-  const pay = request.reward ? ` I'd give you ${formatMoney(request.reward)} for your trouble.` : ''
+  const pay = request.reward ? ` I'd give you ${world.money(request.reward)} for your trouble.` : ''
   if (request.kind === 'recover') return `I've lost my ${thing}. If you come across it, bring it back to me?${pay}`
   if (request.kind === 'visit' && request.target) return `Would you look in on ${callName(world.npc(request.target))} for me?`
   return `I need ${request.qty > 1 ? thing : withArticle(thing)}. If you can get hold of ${request.qty > 1 ? 'them' : 'one'}, bring ${request.qty > 1 ? 'them' : 'it'} to me.${pay}`
@@ -105,7 +105,7 @@ function finish(world: World, request: Request, thanks = true): string {
   }
   const npc = world.npc(request.npc)
   const they = npc.pronoun === 'she' ? 'She presses' : npc.pronoun === 'he' ? 'He presses' : 'They press'
-  const pay = paid ? `${they} ${formatMoney(paid)} into your hand.` : ''
+  const pay = paid ? `${they} ${world.money(paid)} into your hand.` : ''
   return thanks ? `${callName(npc)} lets out a breath. "That's a weight off. Thank you."${pay ? ` ${pay}` : ''}` : pay
 }
 

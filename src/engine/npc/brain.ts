@@ -129,7 +129,7 @@ function choose(world: World, npcId: string): boolean {
     }
 
     case 'pray': {
-      const place = placeFor(world, npcId, block?.at ?? 'loc_veenhoek_chapel')
+      const place = placeFor(world, npcId, block?.at ?? prayerPlace(world, npcId))
       return setPlan(world, npcId, [...goTo(world, npcId, place), { kind: 'spend', minutes: Math.min(60, remaining), activity: 'pray' }])
     }
 
@@ -142,7 +142,7 @@ function choose(world: World, npcId: string): boolean {
 
   // Free time: children play, the lonely seek company, everyone else rests at home.
   if (def.child) {
-    const place = placeFor(world, npcId, 'loc_veenhoek_green')
+    const place = placeFor(world, npcId, world.content.locations.has('loc_veenhoek_green') ? 'loc_veenhoek_green' : socialPlace(world, npcId))
     return setPlan(world, npcId, [...goTo(world, npcId, place), { kind: 'spend', minutes: Math.min(45, remaining), activity: 'play' }])
   }
   if (npc.needs.social < 40) {
@@ -186,7 +186,7 @@ function pursueOwnGoal(world: World, npcId: string, goal: Goal): boolean {
     case 'Socialize':
       return start([...goTo(world, npcId, goal.target ?? socialPlace(world, npcId)), { kind: 'spend', minutes: 45, activity: 'socialize' }])
     case 'Pray':
-      return start([...goTo(world, npcId, placeFor(world, npcId, 'loc_veenhoek_chapel')), { kind: 'spend', minutes: 30, activity: 'pray' }])
+      return start([...goTo(world, npcId, placeFor(world, npcId, prayerPlace(world, npcId))), { kind: 'spend', minutes: 30, activity: 'pray' }])
     case 'Rest':
       return start([...goHome(world, npcId), { kind: 'spend', minutes: 60, activity: 'idle', label: 'resting at home' }])
     case 'AskHelp':
@@ -410,6 +410,14 @@ function placeFor(world: World, npcId: string, at: string): string {
   return world.content.locations.has(at) ? at : def.home
 }
 
+/** Where someone prays without a place in the schedule: the Veenhoek chapel, or the nearest known place tagged "holy". */
+function prayerPlace(world: World, npcId: string): string {
+  if (world.content.locations.has('loc_veenhoek_chapel')) return 'loc_veenhoek_chapel'
+  const home = world.npc(npcId).home
+  const holy = [...world.knownLocations(npcId)].sort().filter((id) => world.location(id).tags.includes('holy'))
+  return holy.sort((a, b) => (world.route(home, a)?.minutes ?? Infinity) - (world.route(home, b)?.minutes ?? Infinity))[0] ?? home
+}
+
 /** The nearest known place tagged "social" (the inn, the green). */
 function socialPlace(world: World, npcId: string): string {
   const home = world.npc(npcId).home
@@ -438,7 +446,7 @@ export function usualPlace(world: World, npcId: string, at = world.now): { place
   const place =
     block.activity === 'work' ? placeFor(world, npcId, block.at ?? 'work')
     : block.activity === 'socialize' ? (block.at ? placeFor(world, npcId, block.at) : socialPlace(world, npcId))
-    : block.activity === 'pray' ? placeFor(world, npcId, block.at ?? 'loc_veenhoek_chapel')
+    : block.activity === 'pray' ? placeFor(world, npcId, block.at ?? prayerPlace(world, npcId))
     : block.at ? placeFor(world, npcId, block.at) : def.home
   return world.content.locations.has(place) ? { place, activity: block.activity } : undefined
 }

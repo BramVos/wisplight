@@ -2,7 +2,6 @@ import { minuteOfDay } from '../clock'
 import type { Output } from '../commands'
 import { areaTopicId, callName } from '../content'
 import { attitude } from '../dialogue/relations'
-import { formatMoney } from '../items'
 import { recordFact } from '../news'
 import { autoLevelChoice, createCharacter, levelUp, maxHp, skillBonus, suggestChoice, xpForLevel, type Character } from '../rules/character'
 import { gainXp } from '../rules/player'
@@ -121,7 +120,7 @@ export function offer(world: World, npcId: string, destination?: string): Offer 
   if (danger >= 3) reasons.push(`${destination ? world.content.locations.get(destination)?.name ?? 'that place' : 'the way'} is dangerous`)
   if (duty >= 10) reasons.push(`my work at ${npc.work ? world.location(npc.work).name : 'home'} needs me`)
   if (family >= 10) reasons.push('my family needs me')
-  if (!canPay) reasons.push(`you cannot pay ${formatMoney(terms.wage)} a day for long`)
+  if (!canPay) reasons.push(`you cannot pay ${world.money(terms.wage)} a day for long`)
   reasons.push(...fears)
   if (willingness < 0) return { decision: 'refuse', willingness, reasons: reasons.length ? reasons : ['it does not suit me now'], terms }
   if (willingness <= 30) {
@@ -173,7 +172,7 @@ export function recruit(world: World, npcId: string, destination?: string): Outp
   follow(world, npcId)
   payWages(world)
   const terms = [
-    `${formatMoney(o.terms.wage)} a day`,
+    `${world.money(o.terms.wage)} a day`,
     ...(o.terms.until ? [`for ${Math.round((o.terms.until - world.now) / DAY)} days`] : []),
     ...(o.terms.untilPlace ? [`as far as ${world.content.locations.get(o.terms.untilPlace)?.name ?? 'there'}`] : []),
     ...o.terms.limits.map((l) => (l === 'haunted' ? 'not into haunted places' : `not into ${world.content.locations.get(l)?.name ?? world.content.areas.get(l)?.name ?? l}`)),
@@ -271,7 +270,7 @@ function payWages(world: World): void {
       if (wage > 0 && today % 7 === 0) approve(world, 'fair_wage', [c.npc])
     } else {
       c.unpaid++
-      world.notices.push(`You cannot pay ${callName(world.npc(c.npc))} today (${formatMoney(wage)}).`)
+      world.notices.push(`You cannot pay ${callName(world.npc(c.npc))} today (${world.money(wage)}).`)
     }
   }
 }
@@ -315,8 +314,8 @@ function betrayal(world: World, c: Companion, name: string): void {
     const taken = Math.floor(world.state.player.money / 3)
     world.state.player.money -= taken
     world.npcState(c.npc).money += taken
-    world.notices.push(...leave(world, c.npc, `is gone in the night, and so is ${formatMoney(taken)} of your money.`).map((o) => o.text))
-    recordFact(world, { kind: 'betrayal', about: [c.npc], place: world.state.player.location, belang: 2, title: `${name} robbed the stranger`, text: { precise: `${name} left the stranger in the night with ${formatMoney(taken)} of their money.`, village: `${name} ran off with the stranger's money, they say.`, far: 'A companion robbed a traveller in the Holleveen.' } })
+    world.notices.push(...leave(world, c.npc, `is gone in the night, and so is ${world.money(taken)} of your money.`).map((o) => o.text))
+    recordFact(world, { kind: 'betrayal', about: [c.npc], place: world.state.player.location, belang: 2, title: `${name} robbed the stranger`, text: { precise: `${name} left the stranger in the night with ${world.money(taken)} of their money.`, village: `${name} ran off with the stranger's money, they say.`, far: `A companion robbed a traveller in ${world.words.region}.` } })
   }
 }
 

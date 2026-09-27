@@ -48,6 +48,8 @@ export function prepareBuilderCheck(app: App): string {
 
 export const BUILDER_CHECK_SCRIPT = `(async () => {
   const out = []
+  // The world picker waits for a choice (M8): start in the Nethermarch.
+  await window.wisplight.start('base')
   const day = 'Grey water slaps against the planks. A new stone stands on the quay now. It smells of tar. The green is north.\\n'
   const saved = await window.wisplight.builder.save('location', 'loc_veenhoek_quay', { 'description.day': day })
   out.push('save: ' + (saved.ok ? 'ok, ' + saved.file : 'refused: ' + saved.problems.join('; ')))
@@ -63,6 +65,7 @@ export const BUILDER_CHECK_SCRIPT = `(async () => {
 
 export const LOG_CHECK_SCRIPT = `(async () => {
   const out = []
+  await window.wisplight.start('base')
   const run = async (command) => {
     const reply = await window.wisplight.command(command)
     out.push('> ' + command, ...reply.outputs.map((o) => '  ' + o.text.split('\\n').join('\\n  ')))

@@ -1,0 +1,157 @@
+# The people of Skerrow Hythe.
+
+npcs:
+  - id: npc_maren
+    name: Maren Holt
+    short: Maren of the Salt Kettle
+    pronoun: she
+    age: 54
+    profession: innkeeper
+    home: loc_skerrow_salt_kettle
+    work: loc_skerrow_salt_kettle
+    fame: 2
+    appearance: A tall, weathered woman with iron-grey hair in a single plait and forearms like a rower's.
+    personality: { warmth: 1, courage: 2, honesty: 2, temper: 1, curiosity: 1, diligence: 2 }
+    values: { community: 3, law: 2, tradition: 1 }
+    quirks: [counts_every_coin]
+    speech: "Short and dry, a headwoman's voice. Calls everyone 'friend' whether they are or not. Swears by the Tidemother."
+    aliases: [maren, headwoman, innkeeper, landlady]
+    public_facts:
+      - Maren Holt is the headwoman of Skerrow Hythe, and keeper of the Salt Kettle.
+      - She lost her husband to the sea eleven winters ago.
+    examples:
+      - "Stew's eight copper, friend, and the bowl comes back."
+      - "Tidemother gives and Tidemother takes. Mostly she takes."
+    secrets:
+      - id: kept_the_oil
+        text: When the store shed lost its roof, Maren saved two casks of the beacon's oil from the sea, and she sells them to anyone who can pay.
+        hint: She looks at her barrels whenever the beacon comes up.
+        admission: "Two casks. I pulled them out of the surf myself, and the sea doesn't pay for lamp light in winter. Buy them, if you want the light back."
+        dc: 15
+        about: [the_beacon]
+    money: 600
+    inventory: { salt_fish: 2 }
+    knows_areas: [skerrow_hythe, skerrow_shore, skerrow_heights]
+    relations:
+      - name: Tobin
+        pronoun: he
+        role: spouse
+        status: dead
+        note: Your husband, drowned eleven winters ago off the north rocks.
+      - to: npc_garrick
+        role: friend
+        bond: 1
+        note: The lightkeeper. He drinks too much since the light went out.
+      - to: npc_brannoc
+        role: neighbour
+        bond: 1
+      - to: npc_wenna
+        role: employer
+        bond: 1
+        note: She lodges with you and pays in fish.
+
+  - id: npc_brannoc
+    name: Brannoc Reed
+    short: Brannoc the boatman
+    pronoun: he
+    age: 41
+    profession: boatman
+    home: loc_skerrow_reed_cottage
+    work: loc_skerrow_harbour
+    fame: 1
+    appearance: A broad, red-bearded man with a boat-hook of a nose and tar under every fingernail.
+    personality: { warmth: 0, courage: 1, honesty: 2, temper: 1, curiosity: -1, diligence: 2 }
+    values: { family: 3, craft: 2 }
+    quirks: [superstitious]
+    speech: "Few words, most of them about the weather. Never says a boat's name out at sea."
+    aliases: [brannoc, boatman, the boatman]
+    public_facts:
+      - Brannoc Reed has the only boat on Skerrow that could cross to the mainland, the Kittiwake.
+      - The storm tore the Kittiwake's sail to rags and opened her seams.
+    examples:
+      - "She'll swim again when she has a sail and a pot of pitch. Not before."
+      - "Wind's backing west. Nobody goes out in a westerly."
+    secrets:
+      - id: afraid_to_sail
+        text: Brannoc has not crossed to the mainland since his wife died, and he is afraid of the open sea.
+        hint: He always has a reason why it is the wrong weather.
+        admission: "I took Ysolde across for the physician, and brought her back in a sheet. I've not been further than the fishing grounds since."
+        dc: 17
+        about: [havenmoor]
+    money: 90
+    knows_areas: [skerrow_hythe, skerrow_shore, skerrow_heights]
+    relations:
+      - to: npc_pip
+        role: child
+        bond: 3
+      - name: Ysolde
+        pronoun: she
+        role: spouse
+        status: dead
+        private: true
+        note: Pip's mother, dead of a fever four years ago.
+      - to: npc_maren
+        role: neighbour
+        bond: 1
+
+  - id: npc_pip
+    name: Pip Reed
+    short: Pip, the boatman's boy
+    pronoun: he
+    age: 10
+    profession: child
+    child: true
+    home: loc_skerrow_reed_cottage
+    fame: 0
+    appearance: A skinny boy with salt-stiff hair, bare feet in all weathers and pockets full of shells.
+    personality: { warmth: 2, courage: 2, honesty: 1, temper: 0, curiosity: 3, diligence: -1 }
+    values: { adventure: 3, family: 2 }
+    quirks: [collector]
+    speech: "Talks fast and asks more than he answers. Thinks the wyrm is the best thing in the world."
+    aliases: [pip, the boy, boy]
+    public_facts:
+      - Pip Reed is Brannoc's son, who knows every rock and pool on the shore.
+    examples:
+      - "Did you come off the wreck? Was it horrible? Did anyone get eaten?"
+    secrets:
+      - id: been_in_the_barrow
+        text: Pip has crept into the wyrm's barrow at noon, when Tamsin says the wyrm sleeps soundest, and seen a black key on a stone shelf.
+        hint: He goes very quiet and pleased with himself when the barrow comes up.
+        admission: "I've been in. At noon, when he sleeps deepest. There's a stone key on a shelf by his tail. I didn't take it. I'm not stupid."
+        dc: 13
+        teaches: the_waystone
+        about: [old_skarth, the_waystone]
+    knows_areas: [skerrow_hythe, skerrow_shore, skerrow_heights]
+    relations:
+      - to: npc_brannoc
+        role: parent
+        bond: 3
+      - to: npc_tamsin
+        role: friend
+        bond: 2
+        note: She tells the best stories on the island.
+
+  - id: npc_wenna
+    name: Wenna Dray
+    short: a fisherwoman
+    pronoun: she
+    age: 29
+    profession: fisher
+    home: loc_skerrow_salt_kettle
+    work: loc_skerrow_harbour
+    portrait: generic
+    appearance: A wiry young woman with her sleeves rolled up and a gutting knife at her belt.
+    personality: { warmth: 1, courage: 1, honesty: 1, temper: 0, curiosity: 0, diligence: 2 }
+    values: { work: 2 }
+    speech: "Brisk. Talks while she works and never stops working to talk."
+    aliases: [wenna, fisherwoman, fisher]
+    public_facts:
+      - Wenna Dray fishes the inshore water from a coracle.
+      - Her salt fish is for sale at the harbour, most days.
+    money: 40
+    inventory: { salt_fish: 3 }
+    knows_areas: [skerrow_hythe, skerrow_shore]
+    relations:
+      - to: npc_maren
+        role: employee
+        bond: 1

@@ -13,6 +13,18 @@ world:
     inventory:
       knife: 1
       apple: 2
+  # The fixed block every model call gets about this world (FO, chapter 10).
+  frame: |
+    WORLD: The Nethermarch, a low, wet land by the Grey Sea. Year 211 After the Wolf
+    (the great flood). Dykes, polders, peat fens, windmills, barges. Money: guilders, stuivers
+    and duiten (1 gl = 20 st, 1 st = 8 d). Faith: the Church of the Lantern (Saint Brand) in the
+    towns; the Old Powers (Nehalennia, the Grey Rider, Mother Holle, Baduhenna) in old customs.
+    Folk believe in kabouters, the White Women, the Haakman, will-o'-the-wisps and witches.
+    Some of it is true.
+    REGION: the Holleveen. The Count wants to drain it. The peat-cutters and the fen folk are
+    against it. Tempers are short, and a girl is missing.
+    PEOPLE speak plain, practical English with a little local colour. They measure distance in
+    hours' walk and time by bells and daylight.
   # How pictures of places and people look (after the M7 playtest), when an image model is chosen.
   pictures:
     style: A small illustration in the manner of a 17th-century Dutch etching with a light ink wash, muted greys, browns and greens, fine lines, a low wet land under a wide grey sky.

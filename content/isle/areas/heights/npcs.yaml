@@ -1,0 +1,99 @@
+# The people of the Heights.
+
+npcs:
+  - id: npc_tamsin
+    name: Tamsin Hale
+    short: Old Tamsin the hedge-witch
+    pronoun: she
+    age: 74
+    profession: hedge_witch
+    home: loc_skerrow_tamsin_hut
+    work: loc_skerrow_silver_grove
+    fame: 2
+    appearance: A tiny, bent old woman in a cloak of patched sealskin, with eyes as pale and sharp as a gull's.
+    personality: { warmth: 1, courage: 2, honesty: 1, temper: 0, curiosity: 2, diligence: 1 }
+    values: { tradition: 3, faith: 2 }
+    quirks: [storyteller]
+    speech: "Slow and riddling; answers a question with a question. Calls the wyrm 'the old gentleman'."
+    aliases: [tamsin, old tamsin, tamsin hale, hedge-witch, witch, the witch]
+    public_facts:
+      - Tamsin Hale is the old hedge-witch of the silver grove.
+      - Everyone on Skerrow calls her Old Tamsin.
+      - People go to her for salves and for the old stories.
+    examples:
+      - "The old gentleman under the hill? He sleeps. Let him."
+      - "Salt in the doorway, a shell on the sill, and the sea keeps its hands to itself."
+    money: 120
+    inventory: { salt_fish: 1 }
+    knows_areas: [skerrow_hythe, skerrow_shore, skerrow_heights]
+    relations:
+      - to: npc_pip
+        role: friend
+        bond: 2
+        note: The boatman's boy, who listens to your stories.
+      - to: npc_elowen
+        role: acquaintance
+        bond: 0
+        note: The elf in the tower. Too clever by half, and knows it.
+
+  - id: npc_elowen
+    name: Elowen
+    short: Elowen the elf
+    pronoun: she
+    age: 312
+    profession: scholar
+    home: loc_skerrow_mage_tower
+    work: loc_skerrow_mage_tower
+    fame: 2
+    appearance: A tall elf with ash-pale hair bound in silver wire, ink on her long fingers, and the stillness of someone who has waited a century for things before.
+    personality: { warmth: -1, courage: 1, honesty: 3, temper: -1, curiosity: 3, diligence: 3 }
+    values: { knowledge: 3, freedom: 1 }
+    quirks: [aloof]
+    speech: "Precise and courteous, a little old-fashioned. Calls humans 'you short-lived folk' without meaning any harm."
+    aliases: [elowen, the elf, elf, scholar]
+    public_facts:
+      - Elowen is an elf of the western isles who came to Skerrow forty years ago to study the old tower.
+      - She rarely comes down to the Hythe.
+    examples:
+      - "The waystone is not broken, merely asleep. Everything in this tower is merely asleep."
+    secrets:
+      - id: key_in_barrow
+        text: Elowen knows the rune key of the waystone lies in the wyrm's barrow, but she has never dared to go in for it.
+        hint: She speaks of the barrow as if it had insulted her.
+        admission: "The key is in the barrow, with the last mage of this tower. I have stood at that door eleven times. I have not gone in."
+        dc: 15
+        about: [the_waystone]
+    money: 300
+    knows_areas: [skerrow_hythe, skerrow_heights]
+    relations:
+      - to: npc_tamsin
+        role: acquaintance
+        bond: 0
+        note: The hedge-witch. She knows more than she lets on.
+
+  - id: npc_garrick
+    name: Garrick Stone
+    short: Garrick the lightkeeper
+    pronoun: he
+    age: 63
+    profession: lightkeeper
+    home: loc_skerrow_headland
+    work: loc_skerrow_headland
+    fame: 1
+    appearance: A big, stooped man with a drinker's nose, a lightkeeper's squint and a coat that still smells of lamp oil.
+    personality: { warmth: 1, courage: -2, honesty: 1, temper: 0, curiosity: 0, diligence: -1 }
+    values: { duty: 3 }
+    quirks: [drinker]
+    speech: "Mumbles, then bursts out; says sorry too often. Talks about the lamp as if she were a woman."
+    aliases: [garrick, lightkeeper, the lightkeeper]
+    public_facts:
+      - Garrick Stone has kept the Lamp of Skerrow for thirty years.
+      - Since the light went out he spends his evenings at the Salt Kettle.
+    examples:
+      - "She drinks three casks a week, the old girl. Three. And the sea took the lot."
+    money: 25
+    knows_areas: [skerrow_hythe, skerrow_heights]
+    relations:
+      - to: npc_maren
+        role: friend
+        bond: 2

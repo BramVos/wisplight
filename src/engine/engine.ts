@@ -1,7 +1,7 @@
-import { GameClock } from './clock'
+import { dayName, GameClock } from './clock'
 import { describeRoom, findNpcAnywhere, findNpcHere, runCommand, type CommandHost, type Output } from './commands'
 import { areaTopicId, callName, type Content } from './content'
-import { Dialogue, parseMoney, QUICK_OPTIONS } from './dialogue/conversation'
+import { Dialogue, QUICK_OPTIONS } from './dialogue/conversation'
 import { Knowledge } from './dialogue/knowledge'
 import type { ChronicleOutput, ChroniclerRequest, Outline } from '../chronicler'
 import { applyOutline, farWhere, runOutline, wantOutline } from './outlines'
@@ -10,7 +10,7 @@ import { applyChoice, goalRequest, settleChoices } from './npc/goals'
 import { LlmError, type LlmClient, type LlmRequest, type LlmResponse } from './dialogue/llm'
 import { attitude, relation } from './dialogue/relations'
 import { TopicRegistry } from './dialogue/topics'
-import { add, formatMoney, itemName, matchItem } from './items'
+import { add, itemName, matchItem, parseMoney } from './items'
 import { chronicleText } from './chronicle'
 import { journalPage, type JournalPage } from './journal'
 import { die } from './life'
@@ -25,7 +25,7 @@ import { recordFact, seedNews } from './news'
 import { parseCommand, parseDirection } from './parser'
 import { advance } from './simulation'
 import { createInitialState, fitStateToContent, type GameState, type WorldEvent } from './state'
-import { World } from './world'
+import { upper, World } from './world'
 import { beginFight, fightView, playerCommand } from './combat/flow'
 import { foeXp } from './combat/balance'
 import type { Arena } from './combat/combat'
@@ -252,9 +252,9 @@ export class Engine {
       juice: 0.7,
       title: `the stranger in ${area.name}`,
       text: {
-        precise: `A stranger from Graafhaven came to ${area.name} on ${clock.weekday}, in the ${clock.dayPart}.`,
-        village: `There's a stranger about in ${area.name}, come from Graafhaven.`,
-        far: `A stranger has come to the Holleveen, they say.`,
+        precise: `A stranger from ${this.world.words.from} came to ${area.name} on ${dayName(clock.weekday, this.world.calendar)}, in the ${clock.dayPart}.`,
+        village: `There's a stranger about in ${area.name}, come from ${this.world.words.from}.`,
+        far: `A stranger has come to ${this.world.words.region}, they say.`,
       },
     })
   }
@@ -273,7 +273,7 @@ export class Engine {
 
   /** A page of the journal: what the player knows about a topic, with sources and links. */
   page(id: string): JournalPage | undefined {
-    if (id === 'map') return { id, kind: 'map', name: 'The Holleveen as you know it', lines: this.mapText().split('\n'), sources: [], links: [] }
+    if (id === 'map') return { id, kind: 'map', name: `${upper(this.world.words.region)} as you know it`, lines: this.mapText().split('\n'), sources: [], links: [] }
     if (id.startsWith('quest_')) {
       const page = questPage(this.world, id.slice(6))
       return page ? { id, kind: 'quest', name: page.name, lines: page.lines, sources: [], links: [] } : undefined
@@ -614,7 +614,7 @@ export class Engine {
         const place = topic ? knownPlace(this.world, topic) : undefined
         if (!topic || !place) return [{ kind: 'error', text: topic ? `You don't know where ${this.topics.name(topic)} is. Ask someone, or look for it.` : `You don't know a place called "${to[1]}".` }]
         const target = walkTarget(this.world, place)
-        if (!target) return [{ kind: 'error', text: `${place.name} lies beyond the Holleveen.` }]
+        if (!target) return [{ kind: 'error', text: `${place.name} lies beyond ${this.world.words.region}.` }]
         return this.walkPlan({ kind: 'to', target, name: place.name }, place)
       }
       case 'travel': {
@@ -791,8 +791,8 @@ export class Engine {
     return {
       location: location.name,
       area: this.content.areas.get(location.area)?.name ?? location.area,
-      time: this.clock.format(),
-      money: formatMoney(this.state.player.money),
+      time: this.clock.format(this.world.calendar),
+      money: this.world.money(this.state.player.money),
       paused: false,
       talk: talk
         ? { npc: talk.npc, name: this.world.npc(talk.npc).short, call: callName(this.world.npc(talk.npc)), attitude: attitude(this.world, talk.npc).band, turnsLeft: talk.turnsLeft, options: QUICK_OPTIONS }
@@ -889,7 +889,7 @@ export class Engine {
     const members = this.state.memberships ?? []
     const known = [...this.content.factions.values()].filter((f) => rep[f.id] !== undefined || members.includes(f.id))
     if (known.length) out.factions = known.map((f) => ({ id: f.id, name: f.name, rank: rankOf(rep[f.id] ?? 0), score: rep[f.id] ?? 0, member: members.includes(f.id) }))
-    const wanted = Object.entries(this.state.wanted ?? {}).map(([law, w]) => `${law === 'waagdam' ? 'Waagdam' : "the Count's land"}: ${formatMoney(w.fine)}`)
+    const wanted = Object.entries(this.state.wanted ?? {}).map(([law, w]) => `${law === 'waagdam' ? 'Waagdam' : upper(this.world.words.law.where.replace(/^(in|on|at) /, ''))}: ${this.world.money(w.fine)}`)
     if (wanted.length) out.wanted = wanted
     if (c && this.content.rules) {
       const klass = this.content.rules.classes.find((k) => k.id === c.class)
@@ -1027,7 +1027,7 @@ export class Engine {
     wantOutline(this.world, topic)
     const name = this.topics.name(topic)
     return [
-      { kind: 'text', text: `${name.charAt(0).toUpperCase()}${name.slice(1)} lies beyond the Holleveen. ${farWhere(this.world, topic) ?? ''} The roads out of the region stop at its edge for now.` },
+      { kind: 'text', text: `${name.charAt(0).toUpperCase()}${name.slice(1)} lies beyond ${this.world.words.region}. ${farWhere(this.world, topic) ?? ''} The roads out of the region stop at its edge for now.` },
       { kind: 'system', text: `What is known of ${name} is in your journal${this.state.outlines?.pending.includes(topic) ? '; the chronicler is working it out' : ''}.` },
     ]
   }
@@ -1167,7 +1167,7 @@ export class Engine {
         const amount = Number(rest[0])
         if (!Number.isInteger(amount) || amount < 0) return [{ kind: 'error', text: '@money <duiten>' }]
         this.state.player.money = amount
-        return [{ kind: 'system', text: `[build] You have ${formatMoney(amount)}.` }]
+        return [{ kind: 'system', text: `[build] You have ${this.world.money(amount)}.` }]
       }
       case 'time': {
         // @time 23: wait until the next time it is eleven at night.
@@ -1193,11 +1193,11 @@ export class Engine {
     if (!s || s.dead || (s.location !== here && !companionOf(this.world, owner))) return [{ kind: 'error', text: 'Punts are hired from Wouter, the eel-fisher, at his hut south of the peat cuttings.' }]
     const friend = Boolean(companionOf(this.world, owner)) || attitude(this.world, owner).band === 'Warm' || attitude(this.world, owner).band === 'Devoted'
     const price = friend ? 0 : 16
-    if (this.state.player.money < price) return [{ kind: 'error', text: `Wouter wants ${formatMoney(price)} for the day, and you haven't got it.` }]
+    if (this.state.player.money < price) return [{ kind: 'error', text: `Wouter wants ${this.world.money(price)} for the day, and you haven't got it.` }]
     this.state.player.money -= price
     this.world.npcState(owner).money += price
     this.state.player.punt = this.world.now + 12 * 60
-    return [{ kind: 'narration', text: `${price ? `You pay Wouter ${formatMoney(price)}.` : 'Wouter waves your money away.'} "Mind the pole in the channels, and bring her back before the dark." The punt is yours until evening: you can pole over open water and across the channels now.` }]
+    return [{ kind: 'narration', text: `${price ? `You pay Wouter ${this.world.money(price)}.` : 'Wouter waves your money away.'} "Mind the pole in the channels, and bring her back before the dark." The punt is yours until evening: you can pole over open water and across the channels now.` }]
   }
 
   /** Mired: no walking until you work free. Catform: no hands and no words. */
@@ -1325,7 +1325,7 @@ export class Engine {
         title: `the stranger attacked ${name}`,
         precise: `The stranger attacked ${name} at ${this.world.location(here).name}.`,
         village: `The stranger went for ${name}, at ${this.world.location(here).name}.`,
-        far: 'A stranger has been starting fights in the Holleveen.',
+        far: `A stranger has been starting fights in ${this.world.words.region}.`,
       }),
     )
     if (reaction === 'yield') {
@@ -1375,9 +1375,9 @@ export class Engine {
   /** BORROW <amount> FROM <person>: Warm and trust 30 or more (FO, chapter 8); the debt is due in a week. */
   private borrow(words: string): Output[] {
     const m = /^(.+?)\s+from\s+(.+)$/i.exec(words)
-    const amount = m ? parseMoney(m[1]!) : undefined
+    const amount = m ? parseMoney(m[1]!, this.world.coins) : undefined
     const npc = m ? findNpcHere(this.world, m[2]!) : undefined
-    if (!m || !amount || !npc) return [{ kind: 'error', text: 'BORROW <amount> FROM <person>, for example: borrow 5 stuivers from mirte.' }]
+    if (!m || !amount || !npc) return [{ kind: 'error', text: `BORROW <amount> FROM <person>, for example: borrow 5 ${this.world.coins[1]?.plural ?? `${(this.world.coins[1] ?? this.world.coins[0]!).name}s`} from ${this.world.content.npcs.has('npc_mirte') ? 'mirte' : 'a friend'}.` }]
     const name = callName(this.world.npc(npc))
     if (!mayLend(this.world, npc)) return [{ kind: 'speech', text: `${name} shakes ${this.world.npc(npc).pronoun === 'she' ? 'her' : this.world.npc(npc).pronoun === 'he' ? 'his' : 'their'} head. "I don't lend money. Not to you, not yet."` }]
     const state = this.world.npcState(npc)
@@ -1385,7 +1385,7 @@ export class Engine {
     state.money -= amount
     this.state.player.money += amount
     ;(this.state.ledger ??= []).push({ id: `debt_${(this.state.ledger?.length ?? 0) + 1}`, from: 'player', to: npc, amount, kind: 'money', t: this.world.now, due: this.world.now + 7 * 24 * 60 })
-    return [{ kind: 'text', text: `${name} counts out ${formatMoney(amount)}. "A week. I'll hold you to it."` }]
+    return [{ kind: 'text', text: `${name} counts out ${this.world.money(amount)}. "A week. I'll hold you to it."` }]
   }
 
   /** REPAY <person> [amount]: a debt paid on time is a promise kept. */
@@ -1394,8 +1394,8 @@ export class Engine {
     const npc = findNpcHere(this.world, who)
     const debt = npc ? (this.state.ledger ?? []).find((d) => d.from === 'player' && d.to === npc) : undefined
     if (!npc || !debt) return [{ kind: 'error', text: 'You owe nobody here anything.' }]
-    const amount = Math.min(debt.amount, parseMoney(rest.join(' ')) ?? debt.amount)
-    if (this.state.player.money < amount) return [{ kind: 'error', text: `You only have ${formatMoney(this.state.player.money)}.` }]
+    const amount = Math.min(debt.amount, parseMoney(rest.join(' '), this.world.coins) ?? debt.amount)
+    if (this.state.player.money < amount) return [{ kind: 'error', text: `You only have ${this.world.money(this.state.player.money)}.` }]
     this.state.player.money -= amount
     this.world.npcState(npc).money += amount
     debt.amount -= amount
@@ -1405,7 +1405,7 @@ export class Engine {
       if (debt.due === undefined || this.world.now <= debt.due) deed(this.world, npc, 'promise_kept')
       return [{ kind: 'text', text: `You pay ${name} back, all of it. ${name} nods. "Good as your word."` }]
     }
-    return [{ kind: 'text', text: `You pay ${name} ${formatMoney(amount)}. ${formatMoney(debt.amount)} still to go.` }]
+    return [{ kind: 'text', text: `You pay ${name} ${this.world.money(amount)}. ${this.world.money(debt.amount)} still to go.` }]
   }
 
   /** A command while a fight is on: fight commands, a look at the fight, or the sheet. */
@@ -1471,7 +1471,7 @@ export class Engine {
           repute(this.world, 'goat_riders', -5, 'you beat their men')
           repute(this.world, 'veenhoek_villagers', 3, 'you stood up to the Goat-Riders')
         }
-        fact = { title: `the stranger and ${who}`, precise: `The stranger fought ${who} at ${where} and won.`, village: `The stranger saw off ${who} at ${where}, they say.`, far: `Someone beat ${who} in the Holleveen.`, belang }
+        fact = { title: `the stranger and ${who}`, precise: `The stranger fought ${who} at ${where} and won.`, village: `The stranger saw off ${who} at ${where}, they say.`, far: `Someone beat ${who} in ${this.world.words.region}.`, belang }
         const prisoners = foes.filter((f) => (f.state === 'surrendered' || f.state === 'unconscious') && (f.kind === 'human' || f.kind === 'npc') && !people)
         if (prisoners.length) {
           combat.prisoners = prisoners.map((f) => f.id)
@@ -1491,15 +1491,15 @@ export class Engine {
         repute(this.world, 'goat_riders', 2, 'you paid their toll')
         const amount = Math.min(this.state.player.money, (encounter?.demand?.amount ?? 0) * (combat.round > 0 ? 2 : 1))
         this.state.player.money -= amount
-        out.push({ kind: 'system', text: `You pay ${formatMoney(amount)}.` })
-        fact = { title: `the stranger paid ${who}`, precise: `The stranger paid ${who} ${formatMoney(amount)} to pass at ${where}.`, village: `${who.charAt(0).toUpperCase() + who.slice(1)} took toll from the stranger at ${where}.`, far: `${who.charAt(0).toUpperCase() + who.slice(1)} are taking toll again.`, belang: Math.max(1, belang - 1) }
+        out.push({ kind: 'system', text: `You pay ${this.world.money(amount)}.` })
+        fact = { title: `the stranger paid ${who}`, precise: `The stranger paid ${who} ${this.world.money(amount)} to pass at ${where}.`, village: `${who.charAt(0).toUpperCase() + who.slice(1)} took toll from the stranger at ${where}.`, far: `${who.charAt(0).toUpperCase() + who.slice(1)} are taking toll again.`, belang: Math.max(1, belang - 1) }
         break
       }
       case 'fled': {
         favour(this.world, 'fled')
         approve(this.world, 'back_down')
         if (combat.from && this.content.locations.has(combat.from)) this.state.player.location = combat.from
-        fact = { title: `the stranger ran from ${who}`, precise: `The stranger ran from ${who} at ${where}.`, village: `The stranger ran from ${who} at ${where}, they say.`, far: `${who.charAt(0).toUpperCase() + who.slice(1)} were seen in the Holleveen.`, belang: Math.max(1, belang - 1) }
+        fact = { title: `the stranger ran from ${who}`, precise: `The stranger ran from ${who} at ${where}.`, village: `The stranger ran from ${who} at ${where}, they say.`, far: `${who.charAt(0).toUpperCase() + who.slice(1)} were seen in ${this.world.words.region}.`, belang: Math.max(1, belang - 1) }
         break
       }
       case 'surrendered':
@@ -1508,10 +1508,10 @@ export class Engine {
         const amount = take === 'all_money' ? this.state.player.money : take === 'half_money' ? Math.floor(this.state.player.money / 2) : 0
         if (amount) {
           this.state.player.money -= amount
-          out.push({ kind: 'system', text: `They take ${formatMoney(amount)}.` })
+          out.push({ kind: 'system', text: `They take ${this.world.money(amount)}.` })
         }
         if (combat.over === 'surrendered' && encounter) out.push({ kind: 'narration', text: encounter.surrender.text })
-        fact = { title: `${who} and the stranger`, precise: `${who.charAt(0).toUpperCase() + who.slice(1)} beat the stranger at ${where}${amount ? ` and took ${formatMoney(amount)}` : ''}.`, village: `${who.charAt(0).toUpperCase() + who.slice(1)} robbed the stranger at ${where}.`, far: `${who.charAt(0).toUpperCase() + who.slice(1)} are robbing travellers in the Holleveen.`, belang }
+        fact = { title: `${who} and the stranger`, precise: `${who.charAt(0).toUpperCase() + who.slice(1)} beat the stranger at ${where}${amount ? ` and took ${this.world.money(amount)}` : ''}.`, village: `${who.charAt(0).toUpperCase() + who.slice(1)} robbed the stranger at ${where}.`, far: `${who.charAt(0).toUpperCase() + who.slice(1)} are robbing travellers in ${this.world.words.region}.`, belang }
         break
       }
     }
@@ -1576,7 +1576,7 @@ export class Engine {
               title: `the stranger killed ${name}`,
               precise: `The stranger killed ${name} at ${this.world.location(here).name}.`,
               village: `The stranger killed ${name}!`,
-              far: 'A stranger has killed someone in the Holleveen.',
+              far: `A stranger has killed someone in ${this.world.words.region}.`,
             }),
           )
         }

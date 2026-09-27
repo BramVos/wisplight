@@ -19,6 +19,19 @@ export const MONTHS = [
 
 export const WEEKDAYS = ['Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrijdag', 'Zaterdag', 'Rustdag'] as const
 
+/** The names of a world's calendar (M8); the ids above stay what schedules use. */
+export interface Calendar {
+  era: string
+  months: readonly string[]
+  weekdays: readonly string[]
+}
+export const DEFAULT_CALENDAR: Calendar = { era: 'AW', months: MONTHS, weekdays: WEEKDAYS }
+
+/** A weekday as the world calls it. */
+export function dayName(weekday: (typeof WEEKDAYS)[number], calendar: Calendar = DEFAULT_CALENDAR): string {
+  return calendar.weekdays[WEEKDAYS.indexOf(weekday)] ?? weekday
+}
+
 export type DayPart = 'dawn' | 'morning' | 'midday' | 'afternoon' | 'evening' | 'night'
 
 const MINUTES_PER_DAY = 24 * 60
@@ -119,9 +132,15 @@ export class GameClock {
     return this.parts.dayPart === 'night'
   }
 
-  format(): string {
+  format(calendar: Calendar = DEFAULT_CALENDAR): string {
     const p = this.parts
     const time = `${String(p.hour).padStart(2, '0')}:${String(p.minute).padStart(2, '0')}`
-    return `${p.weekday} ${p.day} ${MONTHS[p.month - 1]} ${p.year} AW, ${time} (${p.dayPart})`
+    return `${dayName(p.weekday, calendar)} ${p.day} ${calendar.months[p.month - 1]} ${p.year} ${calendar.era}, ${time} (${p.dayPart})`
+  }
+
+  /** "Dinsdag 14 Herfstmaand, 18:30", without the year. */
+  short(calendar: Calendar = DEFAULT_CALENDAR): string {
+    const p = this.parts
+    return `${dayName(p.weekday, calendar)} ${p.day} ${calendar.months[p.month - 1]}, ${String(p.hour).padStart(2, '0')}:${String(p.minute).padStart(2, '0')}`
   }
 }

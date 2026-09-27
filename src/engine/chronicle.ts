@@ -1,4 +1,4 @@
-import { GameClock, MONTHS } from './clock'
+import { GameClock } from './clock'
 import { callName } from './content'
 import { requestName } from './requests'
 import type { World } from './world'
@@ -10,10 +10,9 @@ import type { World } from './world'
 export function chronicleText(world: World, start: number): string {
   const facts = [...(world.state.news?.facts ?? [])].sort((a, b) => a.t - b.t || a.id.localeCompare(b.id))
   const heard = world.state.news?.heard ?? {}
-  const lines = [`THE CHRONICLE`, `${new GameClock(start).format()} to ${new GameClock(world.now).format()}`, '']
+  const lines = [`THE CHRONICLE`, `${world.date(start)} to ${world.date()}`, '']
   for (const fact of facts) {
-    const clock = new GameClock(fact.t).parts
-    const when = `${clock.weekday} ${clock.day} ${MONTHS[clock.month - 1]}, ${String(clock.hour).padStart(2, '0')}:${String(clock.minute).padStart(2, '0')}`
+    const when = new GameClock(fact.t).short(world.calendar)
     lines.push(`${when}, ${world.location(fact.place).name}: ${capital(fact.title)}${fact.truth === false ? ' (not true)' : ''}`)
     lines.push(`  ${fact.text.precise}`)
     const knowers = Object.keys(heard).filter((who) => heard[who]![fact.id])

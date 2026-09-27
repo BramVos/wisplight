@@ -46,7 +46,7 @@ export function fallbackReply(world: World, npcId: string, act: Act, packet: Pac
     case 'OffTopic':
       return `${name} frowns at you. ${quote("You've a strange way of talking, stranger.")}`
     case 'AskAboutSelf':
-      return `${name} straightens a little. ${quote(`I'm ${npc.name}. ${npc.public_facts[0]?.replace(npc.name, 'I').replace(/^I is/, 'I am') ?? ''}`.trim())}`
+      return `${name} straightens a little. ${quote(`I'm ${npc.name}. ${npc.public_facts[0] ? firstPerson(npc.public_facts[0], npc.name) : ''}`.trim())}`
     case 'AskWork': {
       const profession = world.content.professions.get(npc.profession)?.name ?? npc.profession
       return `${name} gestures around. ${quote(`I'm the ${profession} here. It keeps me busy.`)}`
@@ -91,4 +91,12 @@ export function timeGreeting(minutes: number): string {
   if (hour >= 12 && hour < 18) return 'Afternoon.'
   if (hour >= 18 && hour < 23) return 'Evening.'
   return "You're up late."
+}
+
+/** "Wenna Dray fishes the water" as she would say it: "I fish the water". Only the verb after the name changes. */
+export function firstPerson(fact: string, name: string): string {
+  const own = fact.replace(name, 'I')
+  const plain = (verb: string) =>
+    verb === 'is' ? 'am' : verb === 'has' ? 'have' : verb === 'does' ? 'do' : verb === 'goes' ? 'go' : /(?:ss|sh|ch|x|z)es$/.test(verb) ? verb.slice(0, -2) : /[^aeiou]ies$/.test(verb) ? `${verb.slice(0, -3)}y` : /[^s]s$/.test(verb) ? verb.slice(0, -1) : verb
+  return own.replace(/^I ([a-z]+)\b/, (_match, verb: string) => `I ${plain(verb)}`)
 }

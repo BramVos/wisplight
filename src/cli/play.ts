@@ -7,9 +7,10 @@ import { SaveStore } from '../node/savegame'
 
 // Plays the game in the terminal: npm run play
 // Also accepts piped input, for example: printf 'look\nn\n' | npm run play
+// Another world: WISPLIGHT_WORLD=isle npm run play
 
 const contentDir = resolve(import.meta.dirname, '../../content')
-const content = await loadContentFromDir(contentDir)
+const content = await loadContentFromDir(contentDir, process.env['WISPLIGHT_WORLD'] || undefined)
 const saves = new SaveStore(resolve(import.meta.dirname, '../../saves/cli.sqlite'))
 let engine = new Engine(content, { seed: Number(process.env['WISPLIGHT_SEED'] ?? 1), builder: true })
 

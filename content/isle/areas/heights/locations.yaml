@@ -1,0 +1,129 @@
+# The Heights of Skerrow: the grove, the barrow, the beacon and the tower.
+
+locations:
+  - id: loc_skerrow_silver_grove
+    name: The Silver Grove
+    area: skerrow_heights
+    tags: [public, holy]
+    aliases: [grove, silver grove, the grove, birches, trees]
+    summary: A grove of silver birches out of the wind, where Old Tamsin lives.
+    description:
+      day: |
+        Birches with bark gone silver-white stand close together here, out of
+        the wind, and the moss between them is soft underfoot. Shells and
+        scraps of cloth hang from the branches on threads, and they tick and
+        chime whenever the air moves. A turf hut with a crooked chimney sits
+        among the trees. The cliff path runs south, the heights climb north to
+        the barrow of [Old Skarth], and a track crosses east to the headland.
+      night: |
+        The birches glimmer as if they held a little of the day back. The
+        shells chime in the dark, very softly, and a thread of smoke smells of
+        thyme from the hut among the trees. South is the cliff path, north
+        the barrow, east the headland.
+    exits:
+      south: { to: loc_skerrow_cliff_path, minutes: 15 }
+      north: { to: loc_skerrow_wyrm_barrow, minutes: 20 }
+      east: { to: loc_skerrow_headland, minutes: 12 }
+      in: { to: loc_skerrow_tamsin_hut, minutes: 1 }
+    objects:
+      - { id: old_birch, type: silver_birch }
+    services:
+      - id: tamsins_remedies
+        provider: npc_tamsin
+        hours: "08-17"
+        sells:
+          kelp_salve: { stock: 3, target: 3 }
+        supply:
+          - { item: kelp_salve, amount: 3, every: week, at: 8 }
+
+  - id: loc_skerrow_tamsin_hut
+    name: Tamsin's Hut
+    area: skerrow_heights
+    tags: [private]
+    aliases: [hut, tamsin's hut, turf hut]
+    summary: Old Tamsin's turf hut in the silver grove.
+    description:
+      day: |
+        The hut is one round room, dark and warm, hung so thick with drying
+        herbs that you have to duck. Jars of things you would rather not name
+        line the shelves. It smells of thyme, smoke and the sea. The door out
+        to the grove is a hide curtain behind you.
+      night: |
+        A fish-oil lamp gutters on the table, and the herbs overhead turn it
+        into a forest of shadows. Something in a jar is ticking. The hide
+        curtain behind you goes out to the grove.
+    exits:
+      out: { to: loc_skerrow_silver_grove, minutes: 1 }
+
+  - id: loc_skerrow_wyrm_barrow
+    name: The Wyrm Barrow
+    area: skerrow_heights
+    tags: [public, landmark]
+    aliases: [barrow, wyrm barrow, the barrow, the mound, mound, tomb]
+    summary: A long green mound on the top of the island, where they say a wyrm sleeps.
+    description:
+      day: |
+        A long green mound lies across the top of the island like a sleeping
+        animal, and nothing grows on it but short, warm grass. Put your ear to
+        the ground and you hear, very slow and very deep, something like
+        breathing. A gap between two standing stones at the east end is black
+        and goes down. The only way off the height is south, back to the
+        grove.
+      night: |
+        The barrow is darker than the dark around it, and there is no dew on
+        its grass. The air over the gap between the standing stones shimmers
+        like the air over a forge. The way back is south, to the grove.
+    exits:
+      south: { to: loc_skerrow_silver_grove, minutes: 20 }
+
+  - id: loc_skerrow_headland
+    name: The Headland
+    area: skerrow_heights
+    tags: [public, landmark]
+    aliases: [headland, the headland, beacon tower, lighthouse, point]
+    summary: The blunt headland with the beacon tower, the Lamp of Skerrow.
+    description:
+      day: |
+        The island ends here in a blunt headland with the sea on three sides
+        and a squat stone tower on top: the [beacon]. Its great lamp stands
+        cold behind green glass, and the wind whistles through the empty
+        gallery. Below the tower a lean-to store shed has lost half its roof,
+        and it smells strongly of fish oil. A track runs south to the hamlet
+        and west to the grove; north, a ruined tower stands alone on the last
+        rise.
+      night: |
+        The beacon tower is a black tooth against the stars, and its lamp is
+        as dark as the rest of the island. The sea booms on three sides.
+        Tracks go south to the hamlet and west to the grove; north, the ruined
+        tower is only a darker shape.
+    exits:
+      south: { to: loc_skerrow_green, minutes: 15 }
+      west: { to: loc_skerrow_silver_grove, minutes: 12 }
+      north: { to: loc_skerrow_mage_tower, minutes: 15 }
+    objects:
+      - { id: lamp, type: beacon, owner: npc_garrick }
+    items: { lamp_oil: 1 }
+
+  - id: loc_skerrow_mage_tower
+    name: The Drowned Mage's Tower
+    area: skerrow_heights
+    tags: [public, landmark]
+    aliases: [tower, mage tower, the tower, ruined tower, elowen's tower]
+    summary: Half a tower of black stone from the days of Aldmar, where the elf Elowen studies.
+    description:
+      day: |
+        Half a tower of black stone stands on the last rise of Skerrow, its
+        top storeys long since fallen into the sea. Inside, stairs climb round
+        the wall to nowhere, and in the middle of the floor stands the
+        [waystone], a ring of black stone taller than a man. The air hums
+        faintly, like a struck glass that never quite stops. Someone has made
+        a study of the place, with books, a lamp and a narrow cot; the way out
+        is south, down to the headland.
+      night: |
+        A single lamp burns among the books, and the runes on the [waystone]
+        catch its light and seem to move. The hum in the air is louder in the
+        dark. The way out is south, down to the headland.
+    exits:
+      south: { to: loc_skerrow_headland, minutes: 15 }
+    objects:
+      - { id: waystone, type: waystone }

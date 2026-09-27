@@ -66,7 +66,7 @@ export function flirt(world: World, npcId: string): Output[] {
   const shared = (companionOf(world, npcId)?.bond ?? 0) >= 1 || world.state.requests.some((r) => r.npc === npcId && r.status === 'done')
   if (current === 'interest' && rel.trust >= 40 && shared) {
     romance[npcId] = { stage: 'courting', since: world.now }
-    recordFact(world, { kind: 'romance', about: [npcId], place: world.state.player.location, belang: 2, juice: 0.9, title: `${name} and the stranger`, text: { precise: `${name} and the stranger are courting.`, village: `${name} has been seen walking out with the stranger, they say.`, far: 'Someone in the Holleveen is courting a stranger.' } })
+    recordFact(world, { kind: 'romance', about: [npcId], place: world.state.player.location, belang: 2, juice: 0.9, title: `${name} and the stranger`, text: { precise: `${name} and the stranger are courting.`, village: `${name} has been seen walking out with the stranger, they say.`, far: `Someone in ${world.words.region} is courting a stranger.` } })
     out.push({ kind: 'speech', text: world.say(`{name} takes your hand, just for a moment, and lets it go before anyone sees. Or so {they} hopes.`, npcId) })
     jealousy(world, npcId)
     return out
@@ -101,7 +101,7 @@ export function marry(world: World, npcId: string): Output[] {
   const here = world.location(world.state.player.location)
   if (!here.tags.includes('holy')) return [{ kind: 'error', text: 'A wedding is held in a chapel; an oath of the Old Faith at a holy place.' }]
   world.state.romance![npcId] = { stage: 'bound', since: world.now }
-  recordFact(world, { kind: 'wedding', about: [npcId], place: here.id, belang: 3, juice: 1, title: `${name} married the stranger`, text: { precise: `${name} and the stranger were bound at ${here.name}.`, village: `${name} has married the stranger!`, far: 'There was a wedding in the Holleveen.' } })
+  recordFact(world, { kind: 'wedding', about: [npcId], place: here.id, belang: 3, juice: 1, title: `${name} married the stranger`, text: { precise: `${name} and the stranger were bound at ${here.name}.`, village: `${name} has married the stranger!`, far: `There was a wedding in ${world.words.region}.` } })
   const spouse = world.npc(npcId)
   world.state.player.home = spouse.home
   world.state.player.homeNight = world.now

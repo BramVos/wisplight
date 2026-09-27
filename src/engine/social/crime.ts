@@ -1,6 +1,6 @@
 import { callName } from '../content'
 import type { Output } from '../commands'
-import { formatMoney, itemName, matchItem, withArticle } from '../items'
+import { itemName, matchItem, withArticle } from '../items'
 import { recordFact } from '../news'
 import { remember } from '../npc/execute'
 import { playerCheck } from '../rules/player'
@@ -122,8 +122,9 @@ export function crime(world: World, c: Omit<Crime, 'id' | 't' | 'reported' | 'la
     const wanted = ((world.state.wanted ??= {})[entry.law] ??= { fine: 0, since: world.now })
     wanted.fine += entry.fine
     const who = callName(world.npc(entry.reported[0]!))
-    out.push({ kind: 'system', text: `${who} will tell the ${entry.law === 'waagdam' ? 'town watch' : 'schout'}. You are wanted ${entry.law === 'waagdam' ? 'in Waagdam' : "in the Count's land"}: a fine of ${formatMoney(wanted.fine)}.` })
-    if (entry.law === 'count' && world.content.npcs.has('npc_everhard')) grievance(world, 'npc_everhard', 'the law', `"You're wanted, stranger. ${formatMoney(wanted.fine)} to the Count, or you come with me."`)
+    const law = world.words.law
+    out.push({ kind: 'system', text: `${who} will tell the ${entry.law === 'waagdam' ? 'town watch' : law.officer}. You are wanted ${entry.law === 'waagdam' ? 'in Waagdam' : law.where}: a fine of ${world.money(wanted.fine)}.` })
+    if (entry.law === 'count' && law.npc && world.content.npcs.has(law.npc)) grievance(world, law.npc, 'the law', `"You're wanted, stranger. ${world.money(wanted.fine)}${law.npc === 'npc_everhard' ? ' to the Count' : ''}, or you come with me."`)
   }
   if (c.victim) reputeFor(world, c.victim, c.grave ? -15 : -5, `${c.kind} against ${callName(world.npc(c.victim))}`)
   approve(world, c.kind === 'theft' ? 'theft' : 'cruelty')
@@ -167,7 +168,7 @@ export function steal(world: World, words: string): Output[] {
         const amount = Math.min(state.money, 8 + world.rng.int('witness', 0, 24))
         state.money -= amount
         player.money += amount
-        out.push({ kind: 'text', text: amount ? `You lift ${formatMoney(amount)} from ${callName(npc)}'s purse.` : `${callName(npc)}'s purse is empty.` })
+        out.push({ kind: 'text', text: amount ? `You lift ${world.money(amount)} from ${callName(npc)}'s purse.` : `${callName(npc)}'s purse is empty.` })
       } else if (!caught) {
         state.inventory[item!]! -= 1
         if (!state.inventory[item!]) delete state.inventory[item!]
@@ -226,7 +227,7 @@ function stolenTexts(world: World, victim: string | undefined, what: string, pla
     title: `the stranger stole from ${who}`,
     precise: `The stranger stole ${what} from ${who} at ${where}.`,
     village: `The stranger stole ${what} from ${who}, at ${where}.`,
-    far: `A stranger has been stealing in the Holleveen.`,
+    far: `A stranger has been stealing in ${world.words.region}.`,
   }
 }
 
@@ -246,14 +247,16 @@ export function payFine(world: World): Output[] {
   const here = world.state.player.location
   const law = lawAt(world, here)
   const debt = wanted[law]
-  if (!debt) return [{ kind: 'error', text: law === 'waagdam' ? 'Waagdam wants nothing from you.' : "The Count's men want nothing from you." }]
-  const at = law === 'waagdam' ? ['loc_waagdam_waag', 'loc_waagdam_weighing_room'].includes(here) : world.npcsAt(here).includes('npc_everhard') || here === 'loc_schout_house'
-  if (!at) return [{ kind: 'error', text: law === 'waagdam' ? 'Fines to the town are paid at the Waag.' : 'Fines to the Count are paid to the schout.' }]
-  if (world.state.player.money < debt.fine) return [{ kind: 'error', text: `The fine is ${formatMoney(debt.fine)}; you have ${formatMoney(world.state.player.money)}.` }]
+  const keeper = world.words.law
+  const nethermarch = keeper.npc === 'npc_everhard'
+  if (!debt) return [{ kind: 'error', text: law === 'waagdam' ? 'Waagdam wants nothing from you.' : nethermarch ? "The Count's men want nothing from you." : `The ${keeper.officer} wants nothing from you.` }]
+  const at = law === 'waagdam' ? ['loc_waagdam_waag', 'loc_waagdam_weighing_room'].includes(here) : Boolean(keeper.npc && world.npcsAt(here).includes(keeper.npc)) || here === keeper.office
+  if (!at) return [{ kind: 'error', text: law === 'waagdam' ? 'Fines to the town are paid at the Waag.' : nethermarch ? 'Fines to the Count are paid to the schout.' : `Fines are paid to the ${keeper.officer}.` }]
+  if (world.state.player.money < debt.fine) return [{ kind: 'error', text: `The fine is ${world.money(debt.fine)}; you have ${world.money(world.state.player.money)}.` }]
   world.state.player.money -= debt.fine
   delete wanted[law]
-  if (law === 'count' && world.content.npcs.has('npc_everhard')) delete world.npcState('npc_everhard').grievance
-  return [{ kind: 'text', text: `You pay ${formatMoney(debt.fine)}. ${law === 'waagdam' ? 'The clerk writes you out of the book.' : 'The schout counts it twice and puts it away. "That settles it."'}` }]
+  if (law === 'count' && keeper.npc && world.content.npcs.has(keeper.npc)) delete world.npcState(keeper.npc).grievance
+  return [{ kind: 'text', text: `You pay ${world.money(debt.fine)}. ${law === 'waagdam' ? 'The clerk writes you out of the book.' : `The ${keeper.officer} counts it twice and puts it away. "That settles it."`}` }]
 }
 
 /** In Waagdam, traders will not deal with someone the town wants. */
@@ -337,7 +340,7 @@ export function crimesHour(world: World): void {
       text: {
         precise: `${what.charAt(0).toUpperCase()}${what.slice(1)} went missing from ${who} at ${where}.${suspect ? ` Some say it was ${suspect}.` : ' Nobody knows who took it.'}`,
         village: `Someone took ${what} from ${who}!${suspect ? ` My money's on ${suspect}.` : ''}`,
-        far: 'There was a theft in the Holleveen.',
+        far: `There was a theft in ${world.words.region}.`,
       },
       ...(victim ? { witnesses: [victim] } : {}),
     })
@@ -361,13 +364,13 @@ export function investigated(world: World, officer: string, place: string): void
     crime.investigated = true
     const culprit = crime.offender ?? 'player'
     if (!seenNear(world, culprit, crime)) {
-      recordFact(world, { kind: 'investigation', about: [officer], place, belang: 1, title: 'the schout found nothing', text: { precise: `${callName(world.npc(officer))} looked into the theft at ${world.location(place).name} and found nothing.`, village: 'The schout poked about and found nothing. As usual.', far: 'A theft went unsolved.' } })
+      recordFact(world, { kind: 'investigation', about: [officer], place, belang: 1, title: `the ${world.words.law.officer} found nothing`, text: { precise: `${callName(world.npc(officer))} looked into the theft at ${world.location(place).name} and found nothing.`, village: `The ${world.words.law.officer} poked about and found nothing. As usual.`, far: 'A theft went unsolved.' } })
       continue
     }
     if (culprit === 'player') {
       const wanted = ((world.state.wanted ??= {})[crime.law] ??= { fine: 0, since: world.now })
       wanted.fine += crime.fine
-      grievance(world, officer, 'the law', `"A word, stranger. Things went missing at ${world.location(place).name}, and you were seen there. ${formatMoney(crime.fine)} to the Count, and we say no more about it."`)
+      grievance(world, officer, 'the law', `"A word, stranger. Things went missing at ${world.location(place).name}, and you were seen there. ${world.money(crime.fine)}${world.words.law.npc === 'npc_everhard' ? ' to the Count' : ' in fines'}, and we say no more about it."`)
     } else {
       const s = world.state.npcs[culprit]
       if (s && !s.dead) {

@@ -16,6 +16,9 @@ export interface CheckResult {
   degree: Degree
 }
 
+/** The skills a world without rules of its own can check (M8): the ready-made traveller has +0 on the ones not below. */
+export const STANDARD_SKILLS = ['athletics', 'stealth', 'thievery', 'watercraft', 'perception', 'survival', 'lore', 'medicine', 'crafting', 'insight', 'persuasion', 'deception', 'intimidation'] as const
+
 export const PLAYER_BONUS: Record<string, number> = {
   persuasion: 4,
   deception: 4,

@@ -1,6 +1,6 @@
 import { GameClock, isOpenAt, MINUTES_PER_DAY, parseHours, startOfDay } from './clock'
 import { callName, type Affordance, type Direction, type Npc, type ObjectInstance, type ObjectType, type Service } from './content'
-import { add, formatMoney, hasAll, itemName, listItems, matchItem, withArticle } from './items'
+import { add, hasAll, itemName, listItems, matchItem, withArticle } from './items'
 import { applyEffect } from './dialogue/relations'
 import { canSetOut, crossCountryLine, describeHex, hexOfId, isHexId, walk, waysLine } from './map/travel'
 import { regionMap } from './map/region'
@@ -69,7 +69,7 @@ export function runCommand(host: CommandHost, command: Command): Output[] {
       return [text(hex && map ? waysLine(world, map, hex) : exitLine(world))]
     }
     case 'inventory':
-      return [text(`You carry ${listItems(world.content, world.state.player.inventory)}, and ${formatMoney(world.state.player.money)}.`)]
+      return [text(`You carry ${listItems(world.content, world.state.player.inventory)}, and ${world.money(world.state.player.money)}.`)]
     case 'take':
       return take(host, command.args)
     case 'drop':
@@ -91,7 +91,9 @@ export function runCommand(host: CommandHost, command: Command): Output[] {
     case 'sleep':
       return sleep(host)
     case 'wait': {
-      const minutes = Math.min(600, Math.max(1, Number(command.args[0]) || 10))
+      // WAIT 30, WAIT 3 HOURS: minutes unless an hour is named, at most ten hours at a time.
+      const amount = Number(command.args[0]) || 10
+      const minutes = Math.min(600, Math.max(1, /^(h|hrs?|hours?|uur|uren)$/i.test(command.args[1] ?? '') ? amount * 60 : amount))
       if (minutes >= 120) approve(world, 'long_wait')
       const seen = host.pass(minutes)
       return [...seen, text(`Time passes. It is ${clockText(world)}.`)]
@@ -112,7 +114,7 @@ export function runCommand(host: CommandHost, command: Command): Output[] {
 }
 
 export function clockText(world: World): string {
-  return new GameClock(world.now).format()
+  return world.date()
 }
 
 // ---------------------------------------------------------------- looking
@@ -399,11 +401,11 @@ function list(world: World): Output[] {
     }
     const stock = world.stock(location, service.id)
     const goods = Object.keys(service.sells).map((item) =>
-      (stock[item] ?? 0) > 0 ? `${itemName(world.content, item)} ${formatMoney(world.price(location, service, item))} (${stock[item]} left)` : `${itemName(world.content, item)} (sold out)`,
+      (stock[item] ?? 0) > 0 ? `${itemName(world.content, item)} ${world.money(world.price(location, service, item))} (${stock[item]} left)` : `${itemName(world.content, item)} (sold out)`,
     )
     const lines = [`${provider} sells: ${goods.length ? goods.join('; ') : 'nothing today'}.`]
-    if (service.buys.length) lines.push(`${provider} buys: ${service.buys.map((i) => `${itemName(world.content, i)} for ${formatMoney(world.offer(i))}`).join('; ')}.`)
-    if (service.lodging) lines.push(`A room for the night: ${formatMoney(service.lodging)} (RENT ROOM).`)
+    if (service.buys.length) lines.push(`${provider} buys: ${service.buys.map((i) => `${itemName(world.content, i)} for ${world.money(world.offer(i))}`).join('; ')}.`)
+    if (service.lodging) lines.push(`A room for the night: ${world.money(service.lodging)} (RENT ROOM).`)
     return text(lines.join('\n'))
   })
 }
@@ -423,13 +425,13 @@ function buy(host: CommandHost, args: string[]): Output[] {
     const wanted = qty === 'all' ? stock[item] ?? 0 : qty
     const amount = Math.min(wanted, stock[item] ?? 0)
     if (amount <= 0) return [error(`${firstName(world.npc(service.provider))} has no ${itemName(world.content, item, 2).replace(/^2 /, '')} left.`)]
-    if (amount * price > world.state.player.money) return [error(`That costs ${formatMoney(amount * price)}. You have ${formatMoney(world.state.player.money)}.`)]
+    if (amount * price > world.state.player.money) return [error(`That costs ${world.money(amount * price)}. You have ${world.money(world.state.player.money)}.`)]
     world.state.player.money -= amount * price
     world.npcState(service.provider).money += amount * price
     add(stock, item, -amount)
     add(world.state.player.inventory, item, amount)
     const seen = host.pass(2)
-    return [text(`You buy ${qtyName(world, item, amount)} from ${firstName(world.npc(service.provider))} for ${formatMoney(amount * price)}.`), ...seen]
+    return [text(`You buy ${qtyName(world, item, amount)} from ${firstName(world.npc(service.provider))} for ${world.money(amount * price)}.`), ...seen]
   }
   return [error(name ? `Nobody here sells "${name}". Type LIST to see what is for sale.` : 'Buy what?')]
 }
@@ -455,7 +457,7 @@ function sell(host: CommandHost, args: string[]): Output[] {
   const stock = world.stock(buyer.location, buyer.service.id)
   if (item in buyer.service.sells) add(stock, item, affordable)
   const seen = host.pass(2)
-  return [text(`You sell ${qtyName(world, item, affordable)} to ${firstName(world.npc(buyer.service.provider))} for ${formatMoney(affordable * price)}.`), ...seen]
+  return [text(`You sell ${qtyName(world, item, affordable)} to ${firstName(world.npc(buyer.service.provider))} for ${world.money(affordable * price)}.`), ...seen]
 }
 
 function rent(host: CommandHost): Output[] {
@@ -463,12 +465,12 @@ function rent(host: CommandHost): Output[] {
   const inn = openServices(world).find(({ service, location }) => service.lodging && world.serviceOpen(location, service))
   if (!inn) return [error('There is no room to rent here, or nobody to rent it from.')]
   const price = inn.service.lodging!
-  if (world.state.player.money < price) return [error(`A room costs ${formatMoney(price)}. You have ${formatMoney(world.state.player.money)}.`)]
+  if (world.state.player.money < price) return [error(`A room costs ${world.money(price)}. You have ${world.money(world.state.player.money)}.`)]
   world.state.player.money -= price
   world.npcState(inn.service.provider).money += price
   const hour = Math.floor((world.now - startOfDay(world.now)) / 60)
   world.state.player.lodging = { location: inn.location, until: startOfDay(world.now) + (hour >= 6 ? MINUTES_PER_DAY : 0) + 12 * 60 }
-  return [text(`You pay ${formatMoney(price)} for a room until noon tomorrow. Go up and SLEEP when you are ready.`)]
+  return [text(`You pay ${world.money(price)} for a room until noon tomorrow. Go up and SLEEP when you are ready.`)]
 }
 
 // ---------------------------------------------------------------- objects
@@ -524,7 +526,7 @@ function cannotUse(world: World, here: string, instance: ObjectInstance, afforda
   if (!hasAll(world.state.player.inventory, affordance.consumes)) {
     return `You need ${Object.entries(affordance.consumes).map(([i, q]) => qtyName(world, i, q)).join(' and ')} for that.`
   }
-  if (affordance.fee > world.state.player.money) return `That costs ${formatMoney(affordance.fee)}.`
+  if (affordance.fee > world.state.player.money) return `That costs ${world.money(affordance.fee)}.`
   return undefined
 }
 

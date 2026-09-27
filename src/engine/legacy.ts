@@ -1,6 +1,7 @@
 import type { Content } from './content'
 import { callName } from './content'
 import type { GameState } from './state'
+import { wordsOf } from './world'
 
 // The same world with a new character (design: lore and world change, "Lore
 // meenemen naar een ander spel", decided on 27 September; M7.2). The world
@@ -34,7 +35,7 @@ export function carryOver(content: Content, state: GameState): string[] {
     const npc = state.npcs[npcId]
     if (!npc || npc.dead || !content.npcs.has(npcId) || rel.familiarity < 10) continue
     const feeling = rel.affinity >= 40 ? 'I miss them' : rel.affinity >= 10 ? 'decent enough' : rel.affinity <= -30 ? 'good riddance' : rel.affinity <= -10 ? 'I never trusted them' : 'we will see what the next one is like'
-    ;(npc.memory ??= []).push({ t: state.minutes, note: `I remember the stranger from Graafhaven who was here before. ${feeling[0]!.toUpperCase()}${feeling.slice(1)}.`, topics: [], valence: rel.affinity >= 10 ? 1 : rel.affinity <= -10 ? -1 : 0 })
+    ;(npc.memory ??= []).push({ t: state.minutes, note: `I remember the stranger from ${wordsOf(content).from} who was here before. ${feeling[0]!.toUpperCase()}${feeling.slice(1)}.`, topics: [], valence: rel.affinity >= 10 ? 1 : rel.affinity <= -10 ? -1 : 0 })
     delete npc.grievance
     npc.following = false
   }

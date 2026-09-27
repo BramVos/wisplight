@@ -9,12 +9,12 @@ import { readContentFiles } from './content'
 
 export type { BuilderData, BuildKind }
 
-export async function builderData(dir: string): Promise<BuilderData> {
-  return builderView(await readContentFiles(dir))
+export async function builderData(dir: string, world?: string): Promise<BuilderData> {
+  return builderView(await readContentFiles(dir, world))
 }
 
-export async function saveChange(dir: string, kind: BuildKind, id: string, patch: Record<string, unknown>): Promise<ChangeResult> {
-  const result = applyChange(await readContentFiles(dir), kind, id, patch)
+export async function saveChange(dir: string, kind: BuildKind, id: string, patch: Record<string, unknown>, world?: string): Promise<ChangeResult> {
+  const result = applyChange(await readContentFiles(dir, world), kind, id, patch)
   if (result.ok && result.file && result.text !== undefined) await writeFile(join(dir, result.file), result.text)
   return result
 }

@@ -1,4 +1,4 @@
-import { GameClock } from './clock'
+import { dayName, GameClock } from './clock'
 import { areaTopicId, callName } from './content'
 import type { TopicRegistry } from './dialogue/topics'
 import { itemName } from './items'
@@ -47,7 +47,7 @@ export function journalPage(world: World, topics: TopicRegistry, id: string): Jo
     .map(([factId, h]) => ({ fact: factById(world, factId)!, heard: h }))
     .filter(({ fact }) => fact && fact.id !== id && fact.about.includes(id))
     .sort((a, b) => a.fact.t - b.fact.t)
-  const newsLines = news.map(({ fact, heard: h }) => `${versionOf(fact, h)} (${who(world, h.from)}, ${day(fact.t)})`)
+  const newsLines = news.map(({ fact, heard: h }) => `${versionOf(fact, h)} (${who(world, h.from)}, ${day(world, fact.t)})`)
   const newsLinks = news.map(({ fact }) => ({ id: fact.id, name: fact.title, label: 'news' }))
 
   const npc = entry.kind === 'person' && entry.ref ? content.npcs.get(entry.ref) : undefined
@@ -75,7 +75,7 @@ export function journalPage(world: World, topics: TopicRegistry, id: string): Jo
       if (other.id !== npc.id && !shown.has(other.id) && npc.household && other.household === npc.household) page.links.push(...link(other.id, 'family'))
     }
     const death = world.state.npcs[npc.id]?.dead
-    if (death && heard[death.fact]) page.lines.push(`Dead since ${day(death.t)}.`)
+    if (death && heard[death.fact]) page.lines.push(`Dead since ${day(world, death.t)}.`)
   } else if (entry.kind === 'place' && entry.ref) {
     page.kind = 'place'
     const location = content.locations.get(entry.ref)!
@@ -134,7 +134,7 @@ export function journalPage(world: World, topics: TopicRegistry, id: string): Jo
   } else if (id.startsWith('far_')) {
     page.kind = 'place'
     const far = world.state.lore?.far.find((f) => f.id === id)
-    if (far) page.lines.push(`A ${far.kind} far away, beyond the Nethermarch. "${far.line}"`)
+    if (far) page.lines.push(`A ${far.kind} far away, beyond ${world.words.land}. "${far.line}"`)
   } else if (entry.kind === 'item') {
     page.kind = 'thing'
     for (const location of content.locations.values()) {
@@ -177,8 +177,8 @@ function requestPage(world: World, topics: TopicRegistry, id: string): JournalPa
   const link = (topicId: string, label: string): JournalLink[] => (journal[topicId] !== undefined && topics.entries.has(topicId) ? [{ id: topicId, name: topics.name(topicId), label }] : [])
   const giver = callName(world.npc(request.npc))
   const status =
-    request.status === 'done' ? `Done, ${day(request.done ?? world.now)}.` : request.status === 'failed' ? 'It can no longer be done.' : request.reward ? `Open. ${giver} offered a reward.` : 'Open.'
-  const page: JournalPage = { id, kind: 'quest', name: requestName(world, request), lines: [`${giver} asked you, ${day(request.asked)}: "${askLine(world, request)}"`], sources: [], links: [] }
+    request.status === 'done' ? `Done, ${day(world, request.done ?? world.now)}.` : request.status === 'failed' ? 'It can no longer be done.' : request.reward ? `Open. ${giver} offered a reward.` : 'Open.'
+  const page: JournalPage = { id, kind: 'quest', name: requestName(world, request), lines: [`${giver} asked you, ${day(world, request.asked)}: "${askLine(world, request)}"`], sources: [], links: [] }
   if (request.stakes) page.lines.push(request.stakes)
   page.lines.push(status)
   page.links.push(...link(request.npc, 'asked by'))
@@ -193,7 +193,7 @@ function sourcesOf(world: World, id: string): string[] {
   const list = [...(world.state.player.sources?.[id] ?? [])]
   const heard = world.state.news?.heard['player']?.[id]
   if (heard && !list.some((s) => s.from === heard.from)) list.push({ from: heard.from, t: heard.t, level: heard.level })
-  return list.sort((a, b) => a.t - b.t).map((s) => `${who(world, s.from)}, ${day(s.t)}`)
+  return list.sort((a, b) => a.t - b.t).map((s) => `${who(world, s.from)}, ${day(world, s.t)}`)
 }
 
 function who(world: World, from: string): string {
@@ -203,9 +203,9 @@ function who(world: World, from: string): string {
   return npc ? callName(npc) : from
 }
 
-function day(t: number): string {
+function day(world: World, t: number): string {
   const parts = new GameClock(t).parts
-  return `${parts.weekday} ${parts.day}`
+  return `${dayName(parts.weekday, world.calendar)} ${parts.day}`
 }
 
 function firstSentence(text: string): string {

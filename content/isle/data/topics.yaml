@@ -1,0 +1,77 @@
+# What people on Skerrow can talk about. Who knows what works as in every
+# world: known_by knows it all, everyone else by fame and distance.
+
+topics:
+  - id: the_starfall
+    name: the Starfall
+    kind: lore
+    aliases: [starfall, the starfall, aldmar, the drowned empire, the sky breaking]
+    everywhere: true
+    fame: 4
+    summary: Four hundred and twelve years ago the sky broke, stars fell into the sea, and the empire of Aldmar drowned.
+    details: What is left of Aldmar lies under the Glass Sea, and on the islands that were once its mountain tops. Its mages built towers and waystones on every one of them, and most of the towers are empty now.
+    story: |
+      My gran had it from her gran, so it's true enough. There was an empire once, Aldmar, with towers so tall the mages in them could talk to the stars. And one night they talked too loud. The sky cracked like an egg, and the stars came down hissing into the sea, and the sea got up and walked over Aldmar and never lay down again. What you're standing on is the top of one of its hills. Dig deep enough on Skerrow and you'll find a roof.
+    teller: npc_tamsin
+    known_by: [npc_tamsin, npc_elowen]
+
+  - id: old_skarth
+    name: Old Skarth
+    kind: lore
+    aliases: [skarth, old skarth, the wyrm, wyrm, the dragon, dragon, the old gentleman]
+    origin: skerrow_heights
+    fame: 3
+    audience: { child: 0.3 }
+    summary: They say a wyrm called Old Skarth sleeps under the long barrow on the heights, and has since before the Starfall.
+    details: Nobody living has seen him. On still nights the barrow breathes warm, and snow never lies on it. Tamsin says he sleeps soundest at noon, with the sun on his back.
+    story: |
+      The old gentleman? He came before the Starfall, when this was a mountain and not an island. The last mage of the tower made a bargain with him: a bed under the hill for as long as he liked, and in return he'd keep the mage's bones and the mage's key. He's kept them. He likes salt fish, and he doesn't like to be woken. Nobody's ever tested the second part. Nobody I'd want to bury, anyway.
+    teller: npc_tamsin
+    known_by: [npc_tamsin, npc_pip]
+
+  - id: the_waystone
+    name: the waystone
+    kind: lore
+    aliases: [waystone, the waystone, the stone in the tower, rune gate, the gate, stone ring]
+    origin: skerrow_heights
+    fame: 1
+    summary: In the ruined tower on the heights stands a waystone of Aldmar, a ring of black stone taller than a man.
+    details: Elowen says it once opened on every waystone in the isles, the one above Havenmoor among them. It wants a rune key to wake it, and the key went into the barrow with the last mage of the tower.
+    known_by: [npc_elowen]
+
+  - id: the_beacon
+    name: the beacon
+    kind: fact
+    aliases: [beacon, the beacon, the light, the lamp of skerrow, lighthouse, the lamp]
+    origin: skerrow_hythe
+    fame: 2
+    summary: The Lamp of Skerrow on the headland went out in the storm, and no ship has called since.
+    details: The lamp drinks three casks of oil a week, and the store went into the sea with half the shed's roof. Garrick the lightkeeper hasn't climbed his steps since.
+    known_by: [npc_garrick, npc_maren]
+
+  - id: grey_gull
+    name: the Grey Gull
+    kind: fact
+    aliases: [grey gull, the grey gull, the wreck, wreck, the ship, your ship]
+    origin: skerrow_shore
+    fame: 1
+    summary: A trading cog, the Grey Gull, broke on the rocks south of the Hythe in the storm three nights ago.
+    details: One stranger came ashore alive. The sea has been bringing her cargo in ever since, rope and canvas and a cask or two, and the Tidemother's law says what she brings is hers to give.
+
+  - id: havenmoor
+    name: Havenmoor
+    kind: place
+    aliases: [havenmoor, the mainland, the harbour town, the main]
+    everywhere: true
+    fame: 3
+    summary: Havenmoor is the harbour town on the mainland, two days' sail east with a fair wind.
+    details: Ships out of Havenmoor used to call at Skerrow every fortnight for fish and salt, as long as the beacon burned.
+
+  - id: the_tidemother
+    name: the Tidemother
+    kind: lore
+    aliases: [tidemother, the tidemother, the sea goddess, the mother]
+    everywhere: true
+    fame: 3
+    summary: The Tidemother is the sea itself; she gives the fish and the wrecks, and she takes back what she likes.
+    details: Fishers throw the first fish of the day back to her. What the sea brings ashore is hers to give, and nobody on Skerrow begrudges a stranger what came off their own ship.

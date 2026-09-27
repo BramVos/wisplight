@@ -3,7 +3,8 @@ import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron'
 // The only bridge between the window and the game. No Node access leaks through.
 
 contextBridge.exposeInMainWorld('wisplight', {
-  start: () => ipcRenderer.invoke('engine:start'),
+  start: (world?: string) => ipcRenderer.invoke('engine:start', world),
+  worlds: () => ipcRenderer.invoke('engine:worlds'),
   command: (input: string) => ipcRenderer.invoke('engine:command', input),
   page: (id: string) => ipcRenderer.invoke('engine:page', id),
   picture: (id: string) => ipcRenderer.invoke('engine:picture', id),

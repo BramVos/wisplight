@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import type { Output } from '../../engine'
-import { createClient, type AiStatus, type CreationData, type EngineClient, type Reply } from './client'
+import { createClient, type AiStatus, type CreationData, type EngineClient, type Reply, type WorldChoice } from './client'
 import { BuilderView } from './BuilderView'
 import { CharacterCreation } from './CharacterCreation'
+import { WorldPicker } from './WorldPicker'
 import { FightPanel } from './FightPanel'
 import { EndView } from './EndView'
 import { ConversationView, type TalkLine } from './ConversationView'
@@ -60,6 +61,8 @@ export function App() {
   const [ending, setEnding] = useState(false)
   const [building, setBuilding] = useState(false)
   const [creation, setCreation] = useState<CreationData>()
+  // More than one world in the content folder (M8): a new game asks which.
+  const [worlds, setWorlds] = useState<WorldChoice[]>()
   const logRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -67,20 +70,31 @@ export function App() {
     let cancelled = false
     createClient()
       .then(async (created) => {
-        const reply = await created.start()
+        const choices = await created.worlds()
         if (cancelled) return
-        setClient(created)
-        setLines(reply.outputs.map(withId))
-        setStatus(reply.status)
-        // A new game begins with making the character (FO, chapter 11).
-        const c = reply.status.character
-        if (c && !c.made && c.xp === 0) setCreation(await created.creation())
+        if (choices.length > 1) {
+          setClient(created)
+          setWorlds(choices)
+          return
+        }
+        await begin(created)
       })
       .catch((reason: unknown) => setError(String(reason)))
     return () => {
       cancelled = true
     }
   }, [])
+
+  /** Starts a new game in a world, and opens the character screen when the world has rules (FO, chapter 11). */
+  async function begin(target: EngineClient, world?: string) {
+    const reply = await target.start(world)
+    setClient(target)
+    setWorlds(undefined)
+    setLines(reply.outputs.map(withId))
+    setStatus(reply.status)
+    const c = reply.status.character
+    if (c && !c.made && c.xp === 0) setCreation(await target.creation())
+  }
 
   useEffect(() => {
     if (!client) return
@@ -96,8 +110,8 @@ export function App() {
 
   // Menus stop the clock (FO, chapter 3).
   useEffect(() => {
-    client?.hold(Boolean(settings) || ending || building || Boolean(creation) || Boolean(journal))
-  }, [client, settings, ending, building, creation, journal])
+    client?.hold(Boolean(settings) || ending || building || Boolean(creation) || Boolean(journal) || Boolean(worlds))
+  }, [client, settings, ending, building, creation, journal, worlds])
 
   // What the world builder saves is in the game at once: show the place again (FO, chapter 15).
   useEffect(() => {
@@ -364,7 +378,7 @@ export function App() {
         )}
         <div className="statusline">
           <span className="status">
-            {status ? `${status.location}  |  ${status.time}  |  ${status.money}${status.paused && !status.talk ? '  |  time paused' : ''}` : 'Loading the Nethermarch'}
+            {status ? `${status.location}  |  ${status.time}  |  ${status.money}${status.paused && !status.talk ? '  |  time paused' : ''}` : 'Loading the world'}
           </span>
           {status?.wanted && <span className="wanted">Wanted: {status.wanted.join('; ')}</span>}
           <button type="button" className="link journal-button" onClick={() => openPage()} title="Journal (J)">
@@ -391,6 +405,7 @@ export function App() {
         </label>
       </footer>
 
+      {worlds && client && <WorldPicker worlds={worlds} onPick={(folder) => void begin(client, folder).catch((reason: unknown) => setError(String(reason)))} />}
       {creation && (
         <CharacterCreation
           data={creation}

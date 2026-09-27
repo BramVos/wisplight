@@ -5,7 +5,7 @@ import type { World } from '../world'
 import { hasAnachronism, unknownNames, vocabularyOf, wordCount } from './guard'
 import type { Knowledge } from './knowledge'
 import type { LlmClient } from './llm'
-import { describePersonality, WORLD_FRAME } from './prompt'
+import { describePersonality, worldFrame } from './prompt'
 import type { TopicRegistry } from './topics'
 
 // The group conversation (FO, chapter 13, "Groepsgesprek en kampvuur"):
@@ -32,17 +32,17 @@ export async function partyTalk(world: World, topics: TopicRegistry, knowledge: 
       knows: known ? known.facts.slice(0, 2) : [],
     }
   })
-  const lines = llm ? await ask(llm, cards, question, vocabulary, words) : undefined
+  const lines = llm ? await ask(llm, cards, question, vocabulary, words, worldFrame(world.content)) : undefined
   return [
     { kind: 'text', text: `You: "${question}"` },
     ...cards.map((card, i) => ({ kind: 'speech' as const, text: `${card.name}: "${lines?.[i] ?? fallback(world, card, topic ? topics.name(topic) : undefined)}"` })),
   ]
 }
 
-async function ask(llm: LlmClient, cards: { id: string; name: string; card: string; knows: string[] }[], question: string, vocabulary: Set<string>, playerWords: string): Promise<(string | undefined)[] | undefined> {
+async function ask(llm: LlmClient, cards: { id: string; name: string; card: string; knows: string[] }[], question: string, vocabulary: Set<string>, playerWords: string, frame: string): Promise<(string | undefined)[] | undefined> {
   const system = [
     'You speak for several companions of the player in a late-medieval world, in English, each in their own voice.',
-    WORLD_FRAME,
+    frame,
     'RULES: Each companion says exactly one sentence of at most 25 words. Never make up names, places or facts: a companion only says what their card and KNOWS allow, or that they do not know. No modern words. JSON only.',
   ].join('\n')
   const prompt = [

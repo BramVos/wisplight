@@ -1,5 +1,6 @@
-import { isOpenAt } from './clock'
+import { DEFAULT_CALENDAR, GameClock, isOpenAt, type Calendar } from './clock'
 import { callName, type Content, type Direction, type Location, type Npc, type ObjectInstance, type ObjectType, type Service } from './content'
+import { DEFAULT_MONEY, formatMoney, type MoneyUnit } from './items'
 import { hexLocation, isHexId } from './map/travel'
 import { Rng } from './rng'
 import { objectKey, serviceKey, type GameState, type NpcState, type WorldEvent } from './state'
@@ -14,6 +15,30 @@ export interface Route {
 }
 
 const MAX_EVENTS = 300
+
+/** The names the game's own texts use for a world (M8); the Nethermarch's when world.yaml has none. */
+export interface WorldWords {
+  land: string
+  region: string
+  from: string
+  /** Wanted "in the Count's land"; fines go to the officer, at the office or to the NPC. */
+  law: { where: string; officer: string; npc?: string; office?: string }
+}
+const NETHERMARCH_WORDS: WorldWords = {
+  land: 'the Nethermarch',
+  region: 'the Holleveen',
+  from: 'Graafhaven',
+  law: { where: "in the Count's land", officer: 'schout', npc: 'npc_everhard', office: 'loc_schout_house' },
+}
+
+/** The words of a world, from its content. */
+export function wordsOf(content: Pick<Content, 'world'>): WorldWords {
+  const w = content.world
+  return { ...NETHERMARCH_WORDS, ...w.words, law: w.law ?? (w.words ? { where: `in ${w.words.region}`, officer: 'watch' } : NETHERMARCH_WORDS.law) }
+}
+
+/** The first letter up: "The Holleveen". */
+export const upper = (text: string): string => text.charAt(0).toUpperCase() + text.slice(1)
 
 export class World {
   readonly rng: Rng
@@ -42,6 +67,29 @@ export class World {
 
   get now(): number {
     return this.state.minutes
+  }
+
+  /** The names this world's texts use: the land, the region, the law (M8). */
+  get words(): WorldWords {
+    return wordsOf(this.content)
+  }
+
+  get calendar(): Calendar {
+    return this.content.world.calendar ?? DEFAULT_CALENDAR
+  }
+
+  get coins(): readonly MoneyUnit[] {
+    return this.content.world.money?.units ?? DEFAULT_MONEY
+  }
+
+  /** An amount of money in this world's coins. */
+  money(amount: number): string {
+    return formatMoney(amount, this.coins)
+  }
+
+  /** The date and time as this world writes them. */
+  date(minutes = this.now): string {
+    return new GameClock(minutes).format(this.calendar)
   }
 
   location(id: string): Location {

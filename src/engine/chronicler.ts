@@ -4,7 +4,7 @@ import { shiftTension } from './social/realms'
 import { GameClock, MONTHS, WEEKDAYS } from './clock'
 import { callName } from './content'
 import { leakedNames, unknownNames, vocabularyOf } from './dialogue/guard'
-import { WORLD_FRAME } from './dialogue/prompt'
+import { worldFrame } from './dialogue/prompt'
 import { itemName } from './items'
 import { questsOf } from './life'
 import { factById } from './news'
@@ -29,9 +29,8 @@ export const QUEST_TEMPLATES: QuestTemplate[] = [
 
 const FALLBACK_INSTRUCTION = 'Write the lore of this world from what happened. Only facts from the overview; only names from the overview.'
 
-function when(t: number): string {
-  const c = new GameClock(t).parts
-  return `${c.weekday} ${c.day} ${MONTHS[c.month - 1]} ${String(c.hour).padStart(2, '0')}:${String(c.minute).padStart(2, '0')}`
+function when(world: World, t: number): string {
+  return new GameClock(t).short(world.calendar).replace(',', '')
 }
 
 const cap = (text: string) => text.charAt(0).toUpperCase() + text.slice(1)
@@ -71,7 +70,7 @@ function eventOf(world: World, fact: Fact): ChronicleEvent {
     .map(([id]) => id)
     .sort()
     .slice(0, 4)
-  return { id: fact.id, when: when(fact.t), place: fact.place, who, witnesses, belang: fact.belang, text: fact.text.precise, ...(fact.truth === false ? { untrue: true } : {}) }
+  return { id: fact.id, when: when(world, fact.t), place: fact.place, who, witnesses, belang: fact.belang, text: fact.text.precise, ...(fact.truth === false ? { untrue: true } : {}) }
 }
 
 export function buildInput(world: World, run: ChronicleRun): ChronicleInput {
@@ -131,9 +130,9 @@ export function buildInput(world: World, run: ChronicleRun): ChronicleInput {
 
   return {
     instruction: world.content.chronicler ?? FALLBACK_INSTRUCTION,
-    world: WORLD_FRAME,
+    world: worldFrame(world.content),
     catalogue: catalogue(world),
-    now: when(world.now),
+    now: when(world, world.now),
     lines: chronicleLines,
     cards,
     lore: related,
@@ -231,7 +230,7 @@ export function lookupCards(world: World, ids: string[]): Card[] {
 function vocabulary(world: World): Set<string> {
   return vocabularyOf(
     { ...world.content, chronicler: undefined },
-    WORLD_FRAME,
+    worldFrame(world.content),
     MONTHS,
     WEEKDAYS,
     (world.state.lore?.far ?? []).map((f) => f.name),
@@ -386,7 +385,7 @@ export function applyOutput(world: World, run: ChronicleRun, output: ChronicleOu
     const fresh = unreported(world, line)
     const biggest = [...facts].sort((a, b) => b.belang - a.belang || b.t - a.t)[0]
     if (!written.has(line.id) && biggest && biggest.belang >= 3 && fresh.length) writeLore(world, line, facts, biggest.belang, templateLore(biggest), 'template')
-    if (!noted.has(line.id)) line.summary = facts.slice(-3).map((f) => `${cap(f.title)} (${when(f.t)}).`)
+    if (!noted.has(line.id)) line.summary = facts.slice(-3).map((f) => `${cap(f.title)} (${when(world, f.t)}).`)
     if (fresh.length && biggest) {
       const area = world.location(fresh.at(-1)!.place).area
       const old = state.news[area]

@@ -537,8 +537,21 @@ export const WorldSchema = z.object({
   }),
   player: z.object({ money: z.number().int().nonnegative(), inventory: ItemCounts }),
   knowledge: KnowledgeRulesSchema.default(KnowledgeRulesSchema.parse({})),
+  /** The fixed block every model call gets about this world (FO, chapter 10); without it, the Nethermarch's. */
+  frame: z.string().optional(),
   /** How pictures of places and people look in this world (after the M7 playtest): one style for all of them. */
   pictures: z.object({ style: z.string() }).strict().optional(),
+  /** The names the game's own texts use (M8): the land, the region you play in, where the stranger comes from. */
+  words: z.object({ land: z.string(), region: z.string(), from: z.string() }).strict().optional(),
+  /** Names for the calendar (M8): thirteen months (the last one five days), seven weekdays, and the era after the year. */
+  calendar: z.object({ era: z.string(), months: z.array(z.string()).length(13), weekdays: z.array(z.string()).length(7) }).strict().optional(),
+  /** The coins (M8), largest first; prices in the content are in the smallest. */
+  money: z
+    .object({ units: z.array(z.object({ short: z.string(), name: z.string(), plural: z.string().optional(), value: z.number().int().positive() }).strict()).min(1) })
+    .strict()
+    .optional(),
+  /** Who keeps the law (M8): wanted "in" where, the officer's title, and the NPC and place to pay fines. */
+  law: z.object({ where: z.string(), officer: z.string(), npc: z.string().optional(), office: z.string().optional() }).strict().optional(),
 })
 export type WorldDef = z.infer<typeof WorldSchema>
 
@@ -620,7 +633,7 @@ export interface Content {
   realms: Map<string, Realm>
   tensions: Tension[]
   plans: Map<string, Plan>
-  /** The chronicler's working instruction (content/CHRONICLER.md), if there is one. */
+  /** The chronicler's working instruction (content/CHRONICLER.md and the world's own), if there is one. */
   chronicler?: string
 }
 
@@ -665,8 +678,9 @@ export function loadContent(files: ContentFile[]): Content {
   let chronicler: string | undefined
   let rules: Rules | undefined
   for (const file of [...files].sort((a, b) => a.path.localeCompare(b.path))) {
+    // The shared working instruction first (it sorts first), then the world's own part.
     if (/(^|\/)CHRONICLER\.md$/.test(file.path)) {
-      chronicler = file.text
+      chronicler = chronicler ? `${chronicler.trimEnd()}\n\n${file.text}` : file.text
       continue
     }
     let doc: unknown
@@ -782,6 +796,8 @@ function checkReferences(world: WorldDef | undefined, c: Omit<Content, 'world'>)
   if (world) {
     location(world.start.location, 'world.start.location')
     for (const id of Object.keys(world.player.inventory)) item(id, 'world.player.inventory')
+    npc(world.law?.npc, 'world.law.npc')
+    location(world.law?.office, 'world.law.office')
   }
   for (const type of c.objectTypes.values()) {
     for (const aff of type.affordances) {

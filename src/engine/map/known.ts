@@ -113,13 +113,13 @@ export function landLines(world: World): string[] {
     const days = Math.max(1, Math.round(km / 40))
     lines.push(`  ${topic.name}: about ${Math.round(km / 5) * 5} km ${wind}, ${days === 1 ? 'a day' : `${days} days`} on foot.`)
   }
-  for (const far of world.state.lore?.far ?? []) if (journal[far.id] !== undefined) lines.push(`  ${far.name}: a ${far.kind} far beyond the Nethermarch, you were told.`)
-  return lines.length ? ['', 'BEYOND THE HOLLEVEEN', ...lines] : []
+  for (const far of world.state.lore?.far ?? []) if (journal[far.id] !== undefined) lines.push(`  ${far.name}: a ${far.kind} far beyond ${world.words.land}, you were told.`)
+  return lines.length ? ['', `BEYOND ${world.words.region.toUpperCase()}`, ...lines] : []
 }
 
 function playerHexOr(world: World, map: RegionMap): Hex {
   const here = world.state.player.location
-  return map.locations.get(here) ?? parseHex(here) ?? map.places.get('veenhoek') ?? { col: 0, row: 0 }
+  return map.locations.get(here) ?? parseHex(here) ?? map.locations.get(world.content.world.start.location) ?? map.places.get(world.location(world.content.world.start.location).area) ?? { col: 0, row: 0 }
 }
 
 function parseHex(id: string): Hex | undefined {

@@ -20,12 +20,12 @@ Hard rules, in the game and in the builder alike:
   happened, who was there, or when.
 - Only names from the lists you are given. A new name is allowed only for
   something beyond the known map: a far city, a land, a sea, a far river or a
-  lake. Never a new person, a place in the Holleveen or its neighbouring
-  regions, a god, a faction, an item or a price. An unnamed grandmother or "a
-  cousin up north" is fine.
-- The water spirit is the Haakman. Use no other name for him.
-- The world is the Nethermarch, a late-medieval Low Countries of peat, dykes,
-  canals and saints. No modern words or ideas.
+  lake. Never a new person, a place in the region you play in or its
+  neighbouring regions, a god, a faction, an item or a price. An unnamed
+  grandmother or "a cousin up north" is fine.
+- Each world has its own part of this instruction, under "This world" at the
+  end. Follow it: it names the world, its tone and the names you must keep.
+  No modern words or ideas in any world.
 - PEGI 18 with hard limits: nothing sexual involving minors, no hate against
   real groups, romance stays non-explicit. Violence and grief may be told
   plainly, without lingering.
@@ -34,16 +34,21 @@ Hard rules, in the game and in the builder alike:
 
 ## Where everything lives
 
+Every world has a folder of its own under `content/` (`base` is the
+Nethermarch, `isle` is Skerrow). In it:
+
 ```
-content/base/world.yaml                     the world: start, player, knowledge rules
-content/base/data/areas.yaml                areas with kind, fame and map position
-content/base/data/topics.yaml               lore, facts, places and people that can be talked about
-content/base/data/news.yaml                 rumours already going round at the start
-content/base/data/patterns.yaml             small story patterns the pacing engine plays
-content/base/data/professions.yaml          schedules and daily goals
-content/base/data/items.yaml, objects.yaml  things and the objects they live in
-content/base/regions/<region>/areas/<area>/locations.yaml
-content/base/regions/<region>/areas/<area>/npcs.yaml
+<world>/world.yaml                     the world: start, player, frame, knowledge rules
+<world>/CHRONICLER.md                  this world's part of the instruction
+<world>/data/areas.yaml                areas with kind, fame and map position
+<world>/data/topics.yaml               lore, facts, places and people that can be talked about
+<world>/data/news.yaml                 rumours already going round at the start
+<world>/data/patterns.yaml             small story patterns the pacing engine plays
+<world>/data/professions.yaml          schedules and daily goals
+<world>/data/items.yaml, objects.yaml  things and the objects they live in
+<world>/data/quests.yaml               written quests
+<world>/regions/<region>/areas/<area>/locations.yaml   (or <world>/areas/<area>/...)
+<world>/regions/<region>/areas/<area>/npcs.yaml
 ```
 
 A file holds one or more top-level lists (`areas:`, `topics:`, `npcs:` and so
@@ -109,7 +114,7 @@ same scale as fame, so a story that becomes lore knows how far it reaches.
 | 0 | everyday | bread bought | only witnesses, a day |
 | 1 | small news | a stranger on the quay, a quarrel | the place and the households, two days |
 | 2 | village news | a theft, someone ill | the whole village in a day, neighbours vaguely |
-| 3 | regional news | the mill turns again, a fight with wounded | the Holleveen in two or three days; becomes lore |
+| 3 | regional news | the mill turns again, a fight with wounded | the whole region in two or three days; becomes lore |
 | 4 | big news | a known person dead, a fire | the region in a day, neighbouring regions in a week |
 | 5 | historic | a dyke breach, the count murdered | everyone, sooner or later |
 
@@ -203,7 +208,7 @@ pattern already plays the search, so the proposal is small, with a note that
 `cat` also needs an entry in `items.yaml`:
 
 ```diff
- # content/base/data/patterns.yaml
+ # <world>/data/patterns.yaml
    - id: lost_thing
      kind: lost_thing
      belang: 1

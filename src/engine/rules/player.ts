@@ -1,4 +1,3 @@
-import { GameClock } from '../clock'
 import type { Output } from '../commands'
 import { check as rollCheck, PLAYER_BONUS, type CheckResult } from '../dialogue/checks'
 import { relation } from '../dialogue/relations'
@@ -522,10 +521,6 @@ export function clockLine(clock: Clock): string {
 
 export { ATTRIBUTE_CAP, boostsFor, extraSkills }
 
-export function dayOf(t: number): string {
-  const p = new GameClock(t).parts
-  return `${p.weekday} ${p.day}`
-}
 
 // ---------------------------------------------------------------- dangers outside fights (FO, chapter 12; M7.2)
 

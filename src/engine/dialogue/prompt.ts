@@ -1,4 +1,4 @@
-import { GameClock } from '../clock'
+import { dayName, GameClock } from '../clock'
 import type { Npc } from '../content'
 import type { World } from '../world'
 import { TIER_WORDS, type Act, type Tier } from './acts'
@@ -12,9 +12,10 @@ import { relation, type Attitude } from './relations'
 // stable per NPC so providers can cache it; everything that changes goes in
 // the prompt part.
 
-const RULES = `You voice one character in a text role-playing game set in the Nethermarch,
-a low, wet land of dykes, peat and old stories. Late-medieval technology.
-Rules:
+const NETHERMARCH = `You voice one character in a text role-playing game set in the Nethermarch,
+a low, wet land of dykes, peat and old stories. Late-medieval technology.`
+
+const RULES = `Rules:
 - Speak only as the character below. Never mention being an AI, a model, a game or rules.
 - Keep replies short: never more words than WORD LIMIT says. Plain British English with a
   little local colour. No modern words or ideas.
@@ -27,7 +28,7 @@ Rules:
   is everyone you know by name. If asked for a name you don't know, say you don't know it.
 - names: list every name in your reply as written, with new_kind 'none'. The one exception:
   you may name a single far-away place that is not in your lists, a city, land, sea, river
-  or lake beyond the Nethermarch. Give it its new_kind; it becomes part of the world. Never
+  or lake beyond this land. Give it its new_kind; it becomes part of the world. Never
   make up people, or places nearby.
 - Never agree to come along, go somewhere, fetch someone or do something later. The game
   decides that. If DECISION is given, your reply and memory_note must follow it.
@@ -57,6 +58,11 @@ against it. Tempers are short, and a girl is missing.
 PEOPLE speak plain, practical English with a little local colour. They measure distance in
 hours' walk and time by bells and daylight.`
 
+/** The frame of the world in play: its own (world.yaml, frame), or the Nethermarch's. */
+export function worldFrame(content: { world: { frame?: string } }): string {
+  return content.world.frame?.trim() || WORLD_FRAME
+}
+
 const TRAITS: Record<string, [string, string]> = {
   warmth: ['cold', 'warm'],
   courage: ['timid', 'bold'],
@@ -85,9 +91,10 @@ export function systemPrompt(world: World, npcId: string): string {
     .filter(([, v]) => v >= 2)
     .map(([k]) => k)
   return [
+    world.content.world.frame ? `You voice one character in a text role-playing game set in ${world.words.land}.` : NETHERMARCH,
     RULES,
     '',
-    WORLD_FRAME,
+    worldFrame(world.content),
     '',
     'CHARACTER',
     `Name: ${npc.name}, known as ${npc.short}. Age ${npc.age}. ${profession}.`,
@@ -179,8 +186,8 @@ export function turnPrompt(world: World, ctx: TurnContext): string {
     .filter((id) => id !== ctx.npcId)
     .map((id) => world.npc(id).short)
   const lines = [
-    `SCENE: ${location.name}, ${clock.parts.weekday}, ${clock.parts.dayPart}. ${npc.short} is ${state.activity}. Mood: ${ctx.mood}.`,
-    present.length ? `Also here: ${present.join(', ')}, and the player.` : 'Also here: the player, a stranger from Graafhaven.',
+    `SCENE: ${location.name}, ${dayName(clock.parts.weekday, world.calendar)}, ${clock.parts.dayPart}. ${npc.short} is ${state.activity}. Mood: ${ctx.mood}.`,
+    present.length ? `Also here: ${present.join(', ')}, and the player.` : `Also here: the player, a stranger from ${world.words.from}.`,
     ...recently(world, ctx.npcId),
     ...peopleNow(world, ctx.npcId),
     ...onYourMind(world, ctx.npcId),

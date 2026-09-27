@@ -1,0 +1,69 @@
+# Skerrow (M8): a second, very small world beside the Nethermarch, to show that
+# the game keeps more than one world. High fantasy: a rocky island in the Glass
+# Sea, four hundred years after the Starfall. You wash up from a wreck and have
+# to find a way off before the winter storms close the sea.
+#
+# It has no rules file, so it plays with the ready-made traveller and without
+# fights; everything else (people, schedules, knowledge, quests, the chronicler)
+# works as in the Nethermarch.
+
+world:
+  id: skerrow
+  name: Skerrow
+  start:
+    location: loc_skerrow_wreck_strand
+    year: 412
+    month: 9      # Leaffall
+    day: 3
+    hour: 7
+    minute: 10
+  player:
+    money: 35     # 3 sp 5 cp: what the sea left you
+    inventory:
+      knife: 1
+      ship_biscuit: 2
+  # The names the game's own texts use for this world.
+  words:
+    land: the Sundered Isles
+    region: Skerrow
+    from: the sea
+  law:
+    where: on Skerrow
+    officer: headwoman
+    npc: npc_maren
+    office: loc_skerrow_salt_kettle
+  calendar:
+    era: SF
+    months: [Deepwinter, Thawmoon, Seedtide, Blossom, Brightsun, Midsummer, Highsun, Harvest, Leaffall, Mistmoon, Frostwane, Longnight, Starfall Days]
+    weekdays: [Moonday, Tidesday, Windsday, Thornsday, Fireday, Starday, Restday]
+  money:
+    units:
+      - { short: gp, name: gold piece, value: 100 }
+      - { short: sp, name: silver piece, value: 10 }
+      - { short: cp, name: copper piece, value: 1 }
+  # The fixed block every model call gets about this world.
+  frame: |
+    WORLD: The Sundered Isles, a scatter of islands in the Glass Sea. Year 412 of the Starfall,
+    the night the sky broke and the empire of Aldmar drowned. Magic is real but rare: hedge-witches,
+    runes, and the ruined towers of Aldmar's mages. Elves of the western isles live long and speak
+    little; wyrms sleep under the old barrows. Money: gold, silver and copper pieces (1 gp = 10 sp,
+    1 sp = 10 cp). Faith: the Tidemother, who gives and takes back; sailors swear by the Old Stars.
+    REGION: Skerrow, a small rocky island with one fishing hamlet, Skerrow Hythe. The beacon on the
+    headland went out in the storm, and no ship has called since. The stranger was washed up from
+    the wreck of the Grey Gull, and the winter storms will soon close the sea.
+    PEOPLE speak plain English with a salt turn of phrase. They count time by tides and bells.
+  pictures:
+    style: A small illustration in the manner of an old high-fantasy book plate, pen and ink with a light watercolour wash, sea greens and storm greys, a lone rocky island under a vast sky.
+  intro: |
+    Cold water, then stones. You wake on your face on a strand of black
+    shingle, with the sea still pulling at your boots. Of the Grey Gull there
+    is not much left: a broken mast, a spill of cordage, a cask rolling in the
+    surf. Of her crew there is nothing at all.
+
+    Gulls argue overhead. Somewhere beyond the rocks a bell rings once, thin
+    and far, and then stops. There are people on this island, then.
+
+    This is Skerrow, though you do not know it yet. No ship has called here
+    since the light went out.
+
+    Type LOOK to look around. Type HELP if you are lost. You are, rather.

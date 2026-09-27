@@ -22,12 +22,41 @@ export function hasAll(counts: Counts, needed: Counts, times = 1): boolean {
   return Object.entries(needed).every(([item, qty]) => has(counts, item, qty * times))
 }
 
-export function formatMoney(duiten: number): string {
-  const guilders = Math.floor(duiten / GUILDER)
-  const stuivers = Math.floor((duiten % GUILDER) / STUIVER)
-  const rest = duiten % STUIVER
-  const parts = [guilders && `${guilders} gl`, stuivers && `${stuivers} st`, rest && `${rest} d`].filter(Boolean)
-  return parts.length > 0 ? parts.join(' ') : '0 d'
+/** A world's coins, largest first (M8); the Nethermarch's by default. */
+export interface MoneyUnit {
+  short: string
+  name: string
+  plural?: string
+  value: number
+}
+export const DEFAULT_MONEY: readonly MoneyUnit[] = [
+  { short: 'gl', name: 'guilder', value: GUILDER },
+  { short: 'st', name: 'stuiver', value: STUIVER },
+  { short: 'd', name: 'duit', plural: 'duiten', value: DUIT },
+]
+
+export function formatMoney(duiten: number, units: readonly MoneyUnit[] = DEFAULT_MONEY): string {
+  let rest = duiten
+  const parts: string[] = []
+  for (const unit of units) {
+    const n = Math.floor(rest / unit.value)
+    rest -= n * unit.value
+    if (n) parts.push(`${n} ${unit.short}`)
+  }
+  return parts.length > 0 ? parts.join(' ') : `0 ${units.at(-1)!.short}`
+}
+
+/** "2 stuivers", "10 duiten", "1 guilder", "3 st" to the smallest coin; a bare number counts in the second coin. */
+export function parseMoney(text: string, units: readonly MoneyUnit[] = DEFAULT_MONEY): number | undefined {
+  const names = units.flatMap((u) => [u.short, u.name, u.plural ?? `${u.name}s`, ...(u === DEFAULT_MONEY[0] ? ['gulden'] : [])])
+  const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const pattern = new RegExp(`(\\d+)\\s*(${names.sort((a, b) => b.length - a.length).map(escape).join('|')})?(?![a-z])`, 'i')
+  const match = text.match(pattern)
+  if (!match) return undefined
+  const amount = Number(match[1])
+  const word = match[2]?.toLowerCase()
+  const unit = word ? units.find((u) => [u.short, u.name, u.plural ?? `${u.name}s`].some((n) => n.toLowerCase() === word)) ?? units[0]! : (units[1] ?? units[0]!)
+  return amount * unit.value
 }
 
 export function itemName(content: Content, item: string, qty = 1): string {

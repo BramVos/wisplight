@@ -1,0 +1,72 @@
+# The Shore of Skerrow, where the Grey Gull broke. Words in [brackets] are
+# topics the interface shows as clickable.
+
+locations:
+  - id: loc_skerrow_wreck_strand
+    name: The Wreck Strand
+    area: skerrow_shore
+    tags: [public, landmark]
+    aliases: [strand, wreck strand, the strand, the beach, beach, shingle]
+    summary: A strand of black shingle where the wreck of the Grey Gull lies.
+    description:
+      day: |
+        You stand on a strand of black shingle where the sea throws up what is
+        left of the [Grey Gull]: a broken mast, a spill of wet rope, a cask
+        rolling in the shallows. The stones clatter and hiss with every wave,
+        and the air tastes of salt and tar. Gulls quarrel over something you
+        would rather not look at. North, a path climbs the low cliff; east, the
+        rocks give way to the [Tidepools].
+      night: |
+        The strand is black on black, and the sea is a roar you feel through
+        your boots. Now and then the wreck of the [Grey Gull] knocks against
+        the rocks like someone asking to be let in. There is no light anywhere
+        on the island. A path climbs north, and the rocks run east.
+    exits:
+      north: { to: loc_skerrow_cliff_path, minutes: 10 }
+      east: { to: loc_skerrow_tidepools, minutes: 8 }
+    items: { sailcloth: 1, lamp_oil: 1, rope: 1 }
+
+  - id: loc_skerrow_tidepools
+    name: The Tidepools
+    area: skerrow_shore
+    tags: [public]
+    aliases: [tidepools, pools, rock pools, the rocks]
+    summary: Shelves of rock full of clear pools between the strand and the harbour.
+    description:
+      day: |
+        Flat shelves of rock run out into the sea here, pocked with pools as
+        clear as window glass. Crabs sidle away from your shadow, and
+        anemones close like fists when you lean over them. The weed is slick
+        and cold under your hand. West lies the [Wreck Strand]; east, the
+        roofs of the Hythe show above a harbour wall.
+      night: |
+        The pools hold the stars, and every one of them trembles when a wave
+        comes in. The weed is treacherous in the dark, and something small
+        clicks and scuttles near your feet. West is the strand, east the
+        harbour wall.
+    exits:
+      west: { to: loc_skerrow_wreck_strand, minutes: 8 }
+      east: { to: loc_skerrow_harbour, minutes: 6 }
+
+  - id: loc_skerrow_cliff_path
+    name: The Cliff Path
+    area: skerrow_shore
+    tags: [public]
+    aliases: [cliff path, cliff, path, sheep track]
+    summary: A sheep track along the top of the south cliff.
+    description:
+      day: |
+        A sheep track runs along the top of the cliff between thrift and sea
+        campion. The wind comes straight off the Glass Sea and leans on you
+        like a hand, and far below the waves boom in the caves. South, it
+        drops to the [Wreck Strand]. Inland it climbs north towards a stand of
+        pale trees, and east it runs down to the hamlet.
+      night: |
+        The path is a pale thread along the edge of nothing. You hear the sea
+        below more than you see it, a slow boom and suck in the caves. South
+        is the strand; north the path climbs to the trees, east it goes down
+        to the hamlet.
+    exits:
+      south: { to: loc_skerrow_wreck_strand, minutes: 10 }
+      north: { to: loc_skerrow_silver_grove, minutes: 15 }
+      east: { to: loc_skerrow_green, minutes: 12 }

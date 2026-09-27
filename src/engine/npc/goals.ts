@@ -1,7 +1,7 @@
 import { GameClock, startOfDay } from '../clock'
 import { callName } from '../content'
 import type { LlmRequest } from '../dialogue/llm'
-import { describePersonality, peopleIds, WORLD_FRAME } from '../dialogue/prompt'
+import { describePersonality, peopleIds, worldFrame } from '../dialogue/prompt'
 import { goalJsonSchema, GoalReplySchema } from '../dialogue/schema'
 import { itemName } from '../items'
 import { questsOf } from '../life'
@@ -203,7 +203,7 @@ export function goalRequest(world: World, choice: GoalChoice): LlmRequest {
   const priority = questsOf(world, npcId).length ? 'normal' : 'low'
   return {
     role: 'brain',
-    system: [SYSTEM, '', WORLD_FRAME, '', ...card].join('\n'),
+    system: [SYSTEM, '', worldFrame(world.content), '', ...card].join('\n'),
     prompt: lines.join('\n'),
     schemaName: 'npc_goals',
     schema: goalJsonSchema(Object.keys(GOAL_CATALOGUE), targets),

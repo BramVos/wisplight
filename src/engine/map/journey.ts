@@ -1,6 +1,5 @@
 import { GameClock, weekdayOf } from '../clock'
 import type { Output } from '../commands'
-import { formatMoney } from '../items'
 import type { World } from '../world'
 import { blessed } from '../rules/blessings'
 import { weather } from '../weather'
@@ -100,6 +99,7 @@ const FARE = 16
 
 export function takeBarge(world: World, destination: string | undefined, pass: (minutes: number) => Output[]): Output[] {
   const here = world.state.player.location
+  if (!STOPS.every((stop) => world.content.locations.has(stop))) return [{ kind: 'error', text: 'There is no barge here.' }]
   if (!STOPS.includes(here)) return [{ kind: 'error', text: 'The barge stops at the quay in Veenhoek, the harbour in Waagdam and the sluice at Oude Zijl.' }]
   const day = weekdayOf(world.now)
   const hour = new GameClock(world.now).parts.hour
@@ -110,7 +110,7 @@ export function takeBarge(world: World, destination: string | undefined, pass: (
   if (/graafhaven/i.test(destination)) return [{ kind: 'text', text: 'The barge goes on to Graafhaven, two days west, but that lies beyond the Holleveen for now.' }]
   const to = STOPS.find((stop) => world.location(stop).area === destination || world.location(stop).name.toLowerCase().includes(destination) || world.content.areas.get(world.location(stop).area)?.name.toLowerCase() === destination)
   if (!to || to === here) return [{ kind: 'error', text: 'The barge stops at Oude Zijl, Veenhoek and Waagdam.' }]
-  if (world.state.player.money < FARE) return [{ kind: 'text', text: `The bargeman wants ${formatMoney(FARE)}, and you do not have it.` }]
+  if (world.state.player.money < FARE) return [{ kind: 'text', text: `The bargeman wants ${world.money(FARE)}, and you do not have it.` }]
   const map = regionMap(world.content)!
   const a = centre(map.locations.get(here)!, map.size)
   const b = centre(map.locations.get(to)!, map.size)
@@ -121,5 +121,5 @@ export function takeBarge(world: World, destination: string | undefined, pass: (
   world.state.player.money -= FARE
   pass(minutes)
   world.state.player.location = to
-  return [{ kind: 'narration', text: `You pay ${formatMoney(FARE)} and sit among sacks of grain while the horse plods along the tow path. After ${duration(minutes)} you step ashore at ${world.location(to).name}.` }]
+  return [{ kind: 'narration', text: `You pay ${world.money(FARE)} and sit among sacks of grain while the horse plods along the tow path. After ${duration(minutes)} you step ashore at ${world.location(to).name}.` }]
 }

@@ -1,0 +1,124 @@
+# Skerrow Hythe, the only hamlet on the island.
+
+locations:
+  - id: loc_skerrow_harbour
+    name: Skerrow Hythe, the Harbour
+    area: skerrow_hythe
+    tags: [public]
+    aliases: [harbour, the harbour, quay, slip, hythe harbour]
+    summary: A little harbour behind a wall of piled stone, with Brannoc's boat on the slip.
+    description:
+      day: |
+        A curved wall of piled stone keeps the sea out of a harbour no bigger
+        than a barn floor. Brannoc's boat, the Kittiwake, lies on the slip with
+        her mast bare, and nets hang drying from every post. It smells of
+        fish, wet rope and woodsmoke. Steps go up north to the green; west,
+        the rocks lead back to the [Tidepools], and a low door by the slip
+        opens into a cottage.
+      night: |
+        Water slaps against the harbour wall in the dark, and the nets hang
+        from their posts like ghosts. The Kittiwake is a black shape on the
+        slip. A line of firelight shows under the cottage door by the slip;
+        steps go up north to the green.
+    exits:
+      north: { to: loc_skerrow_green, minutes: 2 }
+      west: { to: loc_skerrow_tidepools, minutes: 6 }
+      in: { to: loc_skerrow_reed_cottage, minutes: 1 }
+    objects:
+      - { id: kittiwake, type: boat, name: the Kittiwake, owner: npc_brannoc }
+      - { id: coracle, type: coracle, owner: npc_wenna }
+    services:
+      - id: fish_rack
+        provider: npc_wenna
+        hours: "06-18"
+        sells:
+          salt_fish: { stock: 6, target: 8 }
+
+  - id: loc_skerrow_reed_cottage
+    name: The Reeds' Cottage
+    area: skerrow_hythe
+    tags: [private]
+    aliases: [cottage, brannoc's cottage, reed cottage, home]
+    summary: Brannoc and Pip's cottage by the slip.
+    description:
+      day: |
+        One low room, with a driftwood fire in the hearth and two box beds let
+        into the wall. Floats, shells and a half-finished model ship crowd
+        every shelf, which must be the boy's work. The smoke stings your eyes
+        a little. The door out to the harbour is behind you.
+      night: |
+        The fire has burned down to a red eye in the hearth. Someone is
+        breathing slow and even in one of the box beds, and the model ship
+        throws a long shadow on the wall. The door out is behind you.
+    exits:
+      out: { to: loc_skerrow_harbour, minutes: 1 }
+
+  - id: loc_skerrow_green
+    name: Skerrow Hythe, the Green
+    area: skerrow_hythe
+    tags: [public, social, landmark]
+    aliases: [green, the green, hythe, the hythe, hamlet]
+    summary: A patch of wind-flattened grass and a well among a dozen stone cottages.
+    description:
+      day: |
+        A dozen stone cottages with turf roofs stand round a patch of
+        wind-flattened grass and a squat well. Hens pick about your feet, and
+        somewhere a door bangs in the wind, over and over. The low, lit door of
+        the Salt Kettle is on the east side of the green. Steps lead south to
+        the harbour, a track climbs north to the headland and the [beacon],
+        and west the cliff path runs along the sea.
+      night: |
+        The cottages are dark humps against a darker sky, and the wind hums
+        in the well chain. Only the Salt Kettle, on the east side, still shows
+        a light. Steps go south to the harbour, a track north to the headland,
+        and the cliff path west.
+    exits:
+      south: { to: loc_skerrow_harbour, minutes: 2 }
+      east: { to: loc_skerrow_salt_kettle, minutes: 1 }
+      north: { to: loc_skerrow_headland, minutes: 15 }
+      west: { to: loc_skerrow_cliff_path, minutes: 12 }
+    objects:
+      - { id: well, type: well }
+
+  - id: loc_skerrow_salt_kettle
+    name: The Salt Kettle
+    area: skerrow_hythe
+    tags: [public, social]
+    aliases: [salt kettle, the kettle, kettle, inn, the inn, tavern]
+    summary: The island's inn, one long smoky room kept by Maren Holt.
+    description:
+      day: |
+        The inn is one long, smoky room under black beams, with a fire at one
+        end and a barrel of ale at the other. It smells of fish stew, tallow
+        and wet wool drying. A ship's figurehead, a woman with a chipped nose,
+        watches the door from the corner; they say she came off the last ship
+        that broke here before the [Grey Gull]. The door west goes out to the
+        green.
+      night: |
+        The fire is banked and the benches mostly empty. The figurehead in
+        the corner has a candle stub in her hand, and the wax has run down her
+        wooden arm. You can hear the wind trying the shutters. The door west
+        goes out to the green.
+    exits:
+      west: { to: loc_skerrow_green, minutes: 1 }
+    objects:
+      - { id: settle, type: bench }
+    services:
+      - id: kettle_tap
+        provider: npc_maren
+        hours: "07-23"
+        sells:
+          ale: { stock: 30, target: 30 }
+          fish_stew: { stock: 10, target: 10 }
+          ship_biscuit: { stock: 12, target: 12 }
+          pitch: { stock: 2, target: 2 }
+          lamp_oil: { stock: 2, target: 2 }
+        buys: [salt_fish, rope]
+        lodging: 15
+        supply:
+          - { item: ale, amount: 30, every: day, at: 6 }
+          - { item: fish_stew, amount: 10, every: day, at: 11 }
+          - { item: ship_biscuit, amount: 12, every: week, at: 6 }
+        demand:
+          - { item: ale, amount: 8, from: 17, to: 23 }
+          - { item: fish_stew, amount: 5, from: 12, to: 21 }
