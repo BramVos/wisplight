@@ -4,13 +4,15 @@ import { callName, type Quest } from '../content'
 import { applyEffect, attitude, type Attitude } from '../dialogue/relations'
 import { add } from '../items'
 import { die } from '../life'
-import { recordFact } from '../news'
+import { homeOf, livesWithParent } from '../layer'
+import { believes, recordFact } from '../news'
+import { tieTo } from '../people'
 import { addClock, favour, gainXp, playerCheck, tickClock, type Clock } from '../rules/player'
 import { blessed } from '../rules/blessings'
 import { approve, companionOf } from '../social/companions'
 import { repute } from '../social/factions'
 import type { World } from '../world'
-import type { Condition, PlaceStateName, QuestAction, QuestEffect } from './schema'
+import type { Condition, KnowsClaim, PlaceStateName, QuestAction, QuestEffect } from './schema'
 
 // The quest engine (FO, chapter 14): a quest gives NPCs a part and goals and
 // lets the systems do the rest. Stages move on when their conditions hold,
@@ -61,7 +63,7 @@ export function holds(world: World, c: Condition, questId?: string): boolean {
   const player = world.state.player
   if ('flag' in c) return c.is === undefined ? Boolean(f[c.flag]) : f[c.flag] === c.is
   if ('not_flag' in c) return !f[c.not_flag]
-  if ('knows' in c) return (player.journal ?? {})[c.knows] !== undefined || Boolean(f[`knows:${c.knows}`])
+  if ('knows' in c) return typeof c.knows === 'string' ? (player.journal ?? {})[c.knows] !== undefined || Boolean(f[`knows:${c.knows}`]) : knowsClaim(world, c.knows)
   if ('has' in c) return (player.inventory[c.has] ?? 0) >= (c.qty ?? 1)
   if ('money' in c) return player.money >= c.money
   if ('attitude' in c) return world.content.npcs.has(c.attitude) && ORDER.indexOf(attitude(world, c.attitude).band) >= ORDER.indexOf(c.at_least)
@@ -106,10 +108,39 @@ export function holds(world: World, c: Condition, questId?: string): boolean {
     const state = world.state.objects[c.object] ?? {}
     return Object.entries(c.state).every(([k, v]) => (state[k] ?? false) === v)
   }
+  // About people, for plans (M8.1).
+  if ('is_player' in c) return c.is_player === 'player'
+  if ('has_work' in c) return world.content.npcs.has(c.has_work) && Boolean(world.npc(c.has_work).work)
+  if ('lives_with_parent' in c) return livesWithParent(world, c.lives_with_parent)
+  if ('commute' in c) {
+    if (!world.content.npcs.has(c.commute)) return false
+    const npc = world.npc(c.commute)
+    return Boolean(npc.work) && (world.route(npc.home, npc.work!)?.minutes ?? Infinity) >= c.at_least
+  }
+  if ('thinks_home_stands' in c) {
+    const home = homeOf(world, c.thinks_home_stands)
+    const belief = home ? believes(world, c.thinks_home_stands, home, 'state') : undefined
+    return !belief || !['flooded', 'destroyed', 'occupied'].includes(belief.value)
+  }
+  if ('tie' in c) return tieTo(world, c.tie[0], c.tie[1])?.role === c.role
   if ('any' in c) return c.any.some((x) => holds(world, x, questId))
   if ('all' in c) return c.all.every((x) => holds(world, x, questId))
   if ('not' in c) return !holds(world, c.not, questId)
   return false
+}
+
+/** What someone believes about a claim: a value, anything but some values, how precise, how recent (M8.1). */
+function knowsClaim(world: World, k: KnowsClaim): boolean {
+  const belief = believes(world, k.who, k.subject, k.key)
+  if (!belief) return false
+  const list = (v: string | string[] | undefined) => (v === undefined ? undefined : Array.isArray(v) ? v : [v])
+  const want = list(k.value)
+  const not = list(k.not)
+  if (want && !want.includes(belief.value)) return false
+  if (not && not.includes(belief.value)) return false
+  if (k.level !== undefined && belief.level < k.level) return false
+  if (k.days !== undefined && world.now - belief.t > k.days * DAY) return false
+  return true
 }
 
 export function allHold(world: World, list: Condition[], questId?: string): boolean {
@@ -142,7 +173,7 @@ export function applyEffects(world: World, host: QuestHost, questId: string | un
       if (e.fear) applyEffect(world, e.relation, 'fear', e.fear)
     } else if ('fact' in e) {
       const place = e.fact.place ?? world.state.player.location
-      recordFact(world, { kind: questId ? `quest:${questId}` : 'quest', about: e.fact.about.filter((t) => world.content.topics.has(t) || world.content.npcs.has(t)), place, belang: e.fact.belang, title: e.fact.title, text: { precise: e.fact.precise, village: e.fact.village, far: e.fact.far } })
+      recordFact(world, { kind: e.fact.kind ?? (questId ? `quest:${questId}` : 'quest'), about: e.fact.about.filter((t) => world.content.topics.has(t) || world.content.npcs.has(t) || world.content.locations.has(t)), place, belang: e.fact.belang, title: e.fact.title, text: { precise: e.fact.precise, village: e.fact.village, far: e.fact.far }, ...(e.fact.claim ? { claim: e.fact.claim } : {}) })
     } else if ('goal' in e) {
       const s = world.state.npcs[e.goal]
       if (!s || s.dead || s.following) continue
@@ -236,8 +267,14 @@ export function applyEffects(world: World, host: QuestHost, questId: string | un
 /** A place changes (design: toestand van plekken): flooded, damaged, destroyed, abandoned, occupied, drained. */
 export function setPlaceState(world: World, host: QuestHost, location: string, state: PlaceStateName, out: Output[]): void {
   const places = (world.state.places ??= {})
+  const was = places[location]?.state
   if (state === 'normal') delete places[location]
   else places[location] = { state, since: world.now }
+  // A place that is itself again is news with a claim (M8.1): whoever hears it knows they can go back.
+  if (state === 'normal' && was && was !== 'drained' && world.content.locations.has(location)) {
+    const name = world.location(location).name
+    recordFact(world, { kind: 'place', about: [location], place: location, belang: 2, title: `${name} is itself again`, text: { precise: `${name} is ${was === 'occupied' ? 'free again' : 'safe again'}; people can go back.`, village: `${name} is ${was === 'occupied' ? 'free again' : 'all right again'}, they say.`, far: `Things are better in ${world.content.areas.get(world.location(location).area)?.name ?? world.words.region}, they say.` }, claim: { subject: location, key: 'state', value: 'normal' } })
+  }
   // Quests react to the state of the world, not to text.
   for (const [quest, q] of active(world)) {
     const to = quest.on_place?.[`${location}:${state}`] ?? (state !== 'normal' ? quest.on_place?.[location] : undefined)
@@ -295,7 +332,27 @@ export function endQuest(world: World, host: QuestHost, questId: string, outcome
   out.push({ kind: 'system', text: `${quest.name}: ${outcome ? `${outcome.name}. ${outcome.text}` : 'It is over.'}` })
   // Experience for every solution, not only the violent ones (FO, chapter 14, "Beloningen").
   if (outcome?.solution) gainXp(world, QUEST_XP[quest.kind] ?? 150, quest.name)
+  // Every outcome is a fact the world can hear of (M8.1), unless it has one of its own.
+  if (!outcome?.effects.some((e) => 'fact' in e)) outcomeFact(world, quest, outcomeId, outcome?.name, outcome?.text)
   if (outcome) applyEffects(world, host, questId, outcome.effects, out)
+}
+
+/** The fact of a quest's outcome: where the giver is, about the people with a part, with a claim for the watchers. */
+function outcomeFact(world: World, quest: Quest, outcomeId: string, name: string | undefined, text: string | undefined): void {
+  const giver = quest.givers.find((g) => world.state.npcs[g] && !world.state.npcs[g]!.note) ?? quest.givers[0]
+  const at = giver && world.state.npcs[giver] && !world.state.npcs[giver]!.dead ? world.state.npcs[giver]!.location : world.state.player.location
+  const place = world.content.locations.has(at) ? at : world.state.player.location
+  const people = [...new Set([...quest.givers, ...quest.helpers, ...quest.opponents])].filter((id) => world.content.npcs.has(id))
+  const told = text ?? `${quest.name} is over.`
+  recordFact(world, {
+    kind: `quest:${quest.id}`,
+    about: people,
+    place,
+    belang: quest.kind === 'main' ? 3 : 2,
+    title: `${quest.name}: ${name ?? 'the end of it'}`,
+    text: { precise: told, village: told, far: `Something happened in ${world.content.areas.get(world.location(place).area)?.name ?? world.words.region}, they say.` },
+    claim: { subject: quest.id, key: 'outcome', value: outcomeId },
+  })
 }
 
 /** Stages move on and endings are reached when their conditions hold; loops until nothing changes. */
@@ -469,6 +526,7 @@ export function questsOnDeath(world: World, host: QuestHost, npcId: string): Out
       q.outcome = 'giver_dead'
       q.ended = world.now
       out.push({ kind: 'system', text: `${quest.name}: with ${callName(world.npc(npcId))} dead, it cannot go on as it was.` })
+      outcomeFact(world, quest, 'giver_dead', 'the giver dead', `With ${callName(world.npc(npcId))} dead, nothing came of it.`)
     }
   }
   return out

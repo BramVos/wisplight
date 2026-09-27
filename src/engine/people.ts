@@ -118,9 +118,15 @@ export function ties(world: World, npcId: string): Tie[] {
 }
 
 function buildTies(world: World, npcId: string): Tie[] {
+  // With the layer of this game on top (M8.1): a sweetheart may be a spouse now, and the player can be one.
   const npc = world.npc(npcId)
   const list: Tie[] = []
   for (const r of npc.relations) {
+    if (r.to === 'player') {
+      const c = world.state.player.character
+      list.push({ id: 'player', name: c?.name ?? 'the stranger', pronoun: c?.pronoun ?? 'they', role: r.role, kind: KIND[r.role], bond: r.bond, status: 'alive', private: false })
+      continue
+    }
     const other = r.to ? world.content.npcs.get(r.to) : undefined
     const topic = r.to && !other ? world.content.topics.get(r.to) : undefined
     const name = other ? callName(other) : topic ? (topic.kind === 'person' ? callName(topic) : topic.name) : r.name!
@@ -130,7 +136,7 @@ function buildTies(world: World, npcId: string): Tie[] {
   const own = new Set(list.map((t) => t.id).filter(Boolean))
   for (const other of [...world.content.npcs.values()].sort((a, b) => a.id.localeCompare(b.id))) {
     if (other.id === npcId || own.has(other.id)) continue
-    const theirs = other.relations.find((r) => r.to === npcId)
+    const theirs = world.npc(other.id).relations.find((r) => r.to === npcId)
     if (!theirs) continue
     const role = INVERSE[theirs.role]
     list.push({ id: other.id, name: callName(other), pronoun: other.pronoun, role, kind: KIND[role], bond: theirs.bond, status: 'alive', private: theirs.private })

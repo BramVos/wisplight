@@ -1,0 +1,43 @@
+# Watchers (design: signalen en nasleep, M8.1). A watcher says when a change
+# in the world is a signal: a new fact with a claim, conditions that come
+# true, or a state the system works out. What follows is in aftermath.yaml.
+# A new kind of event is a watcher and an aftermath here, not code.
+
+watchers:
+  # Two people will marry: a quest's outcome says so ({ subject, key: betrothed, value }).
+  - id: betrothal
+    signal: life_event
+    event: betrothal
+    fact: { key: betrothed }
+
+  # Two people married: the player at a chapel, or two villagers at their feast.
+  - id: wedding
+    signal: life_event
+    event: wedding
+    fact: { key: married }
+
+  # Two people ran off together: a signal of its own, not a wedding.
+  - id: eloped
+    signal: eloped
+    fact: { key: eloped }
+
+  # Someone stopped working where they served: a place is open.
+  - id: vacancy
+    signal: vacancy
+    fact: { key: vacancy, not: filled }
+    who: [$about]
+
+  # A house nobody has lived in for three days.
+  - id: house_empty
+    signal: house_empty
+    probe: { house_empty: 3 }
+
+  # Peace between realms, and a place that is itself again after a flood or a war.
+  - id: peace
+    signal: realm_stance
+    event: peace
+    fact: { key: stance, value: peace }
+
+  - id: place_restored
+    signal: place_restored
+    fact: { key: state, value: normal }

@@ -1,5 +1,21 @@
 # Changelog
 
+## M8.1 Nasleep: fundament, 27 september 2026
+
+Nieuw:
+- **Een gebeurtenis heeft gevolgen.** Wachters in de content maken van een verandering een signaal (een bruiloft, vrede, een huis waar niemand meer woont), en de standaardnasleep zegt welk plan volgt: stappen over dagen, met een voorwaarde op wat iemand weet of wat waar is. Alles zonder extra AI. De code kent geen bruiloft; een nieuwe soort gebeurtenis is een wachter en een nasleep in `content/<wereld>/data/`.
+- **Wouter en Geesje trouwen.** Geeft Trijntje haar zegen, dan volgt op de eerste rustdag minstens een week later een feest in de Goose, met beide families. Daarna zijn ze man en vrouw, trekt Geesje bij Wouter in, en stopt ze na een nacht bij de Goose omdat het een half uur lopen is. Trijntje hangt een briefje op het prikbord in de stalhof (`examine board`) en iemand zonder werk die ervan hoort, neemt de plek. Lopen ze weg, dan zijn ze drie weken in Graafhaven en komen ze getrouwd terug.
+- **Jouw huwelijk loopt via dezelfde nasleep.** Zelfde uitkomst als in M7.2 (huis, schoonfamilie, een partner die je thuis verwacht), en je partner ziet je nu ook echt als echtgenoot.
+- **Terugkeer volgens wat mensen weten.** Laat de kroniekschrijver mensen vluchten voor een oorlog, dan gaan ze terug zodra ze horen dat het vrede is en denken dat hun huis nog staat. Wie hoorde dat hun dorp afbrandde, blijft weg.
+- **Nieuws voor wie weg is.** Wie op reis of gevlucht is, hoort het nieuws waar hij nu is, en groot nieuws (belang 4 en 5) komt overal in de streek aan. Wie ver weg is, is geen getuige meer op zijn oude plek.
+- **Een feit bij elke questuitkomst**, ook als de gever sterft, zodat het dorp hoort hoe het afliep.
+- **Editor:** wachters, nasleep en het nieuws per werkwoord zijn lijsten met controle. De speeltest toont signalen en plannen, de NPC-inspecteur waar iemand nu woont en werkt en welke banden veranderden.
+
+Testen: `npm run dev`, nieuw spel in de Nethermarch. Met de bouwcommando's: `@quest a_boat_and_a_bride`, `@flag trijntje_blesses`, dan wachten tot Rustdag 26 Herfstmaand rond vier uur en naar de Goose gaan voor het feest. Een dag later staat het briefje op het prikbord in de stalhof, en praat met Geesje of Wouter over hun huis. Of trouw zelf (zoals in M7.2) en kijk in de editor bij Playtest. Controles: `npm test` (350 tests), met drie saves van vóór M8.1 die laden en doorspelen, de dertig dagen en de uitspeelscripts van beide werelden.
+
+Nog niet: het brein plant nog niets zelf (M8.2). In de Nethermarch heeft iedereen werk, dus de plek bij Trijntje blijft voorlopig open; de kroniekschrijver en nieuwkomers vullen dat in M8.3 en M8.4 in. Zonder AI vlucht er in een oorlog niemand.
+
+Ontwerp: je besluiten van vandaag zitten erin (de kroniekschrijver beslist wie vlucht, het feest op een rustdag na een week, het prikbord). Afwijkingen en aanvullingen staan in het ontwerp onder "Zo is het in M8.1 gebouwd": alleen een vast plan met een vlucht blokkeert de kroniekschrijver nog (het oorlogsplan niet), de terugkeer zit in de vlucht zelf, er zijn werkwoorden bij (hire, post, thought, expect_home, regard, leave, tell, end_tie), en een open plek is belang 2 zodat het dorp hem twee weken onthoudt. Het FO heeft een stand na M8.1 in hoofdstuk 15 en de regel voor tegenstrijdige versies in hoofdstuk 5.
 ## Na je speeltest van M8, 27 september 2026
 
 Nieuw:

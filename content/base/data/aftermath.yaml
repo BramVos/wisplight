@@ -1,0 +1,151 @@
+# The standard aftermath (design: signalen en nasleep, M8.1): what follows a
+# signal by the rules, always, also without AI. Each is a plan of steps over
+# days, with a moment (at, after), a condition on what someone knows or what
+# is true (when), and one verb (do). The people of the signal are $a and $b,
+# its place $place (and its area $area), its claim $subject and $value.
+# Every step that is done is news, by the usual ways.
+
+aftermath:
+  # Two will marry: a feast on the first rest day at least a week on, near
+  # the one who moves, with both families; the feast is the wedding.
+  - id: betrothal
+    signal: life_event
+    event: betrothal
+    topic: wedding
+    expires: 30
+    steps:
+      - id: feast
+        at: { days: 7, hour: 16, rest_day: true }
+        do: { feast: { social_near: { mover: [$a, $b] } }, hours: 6, guests: [$a, $b, { family_of: $a }, { family_of: $b }] }
+      - id: wed
+        after: feast
+        wait: 1
+        do:
+          tell:
+            kind: wedding
+            about: [$a, $b]
+            place: { step: feast }
+            belang: 3
+            title: "{a} and {b} are married"
+            precise: "{a} and {b} were married at {place}, and half the district came to drink to them."
+            village: "{a} and {b} are married! There was a feast at {place}."
+            far: "There was a wedding in the Holleveen."
+            claim: { subject: $a, key: married, value: $b }
+
+  # Married: the tie, one house (the player or whoever still lives with a
+  # parent moves in with the other), the in-laws, a spouse who expects the
+  # player home, and work that is now too far away.
+  - id: wedding
+    signal: life_event
+    event: wedding
+    topic: household
+    expires: 5
+    steps:
+      - id: tie
+        do: { set_tie: [$a, $b], role: spouse, bond: 3 }
+      - id: home
+        after: tie
+        do: { join_household: { mover: [$a, $b] }, of: { stayer: [$a, $b] } }
+      - id: in_laws
+        after: tie
+        do: { regard: [{ family_of: $b }], to: $a, affinity: 10 }
+      - id: in_laws_too
+        after: tie
+        do: { regard: [{ family_of: $a }], to: $b, affinity: 10 }
+      - id: expects
+        after: home
+        when: [{ is_player: $mover }]
+        do: { expect_home: $stayer, of: $mover, nights: 5 }
+      - id: work
+        after: home
+        wait: 12
+        when: [{ has_work: $mover }, { commute: $mover, at_least: 30 }]
+        do: { quit_work: $mover }
+
+  # Ran off together: away down the Vaart for three weeks, and back married,
+  # without a feast and without the family's blessing.
+  - id: eloped
+    signal: eloped
+    topic: wedding
+    expires: 40
+    steps:
+      - id: go
+        at: { hour: 22 }
+        do: { leave: [$a, $b], to: graafhaven, days: 21 }
+      - id: back
+        after: go
+        wait: 520
+        do:
+          tell:
+            kind: wedding
+            about: [$a, $b]
+            place: { home_of: $a }
+            belang: 3
+            title: "{a} and {b} came back married"
+            precise: "{a} and {b} came back from Graafhaven married, with a paper from a city chapel to prove it."
+            village: "{a} and {b} are back, and married, if you please!"
+            far: "Two who ran off to the city came back married."
+            claim: { subject: $a, key: married, value: $b }
+
+  # A place is open: a notice on the nearest board, the one who needs help
+  # thinks about it, and someone without work who heard of it takes it.
+  - id: vacancy
+    signal: vacancy
+    topic: vacancy
+    expires: 30
+    steps:
+      - id: notice
+        do:
+          post: { board_near: $at }
+          fact:
+            kind: notice
+            about: [$b]
+            belang: 2
+            title: "{b} needs help at {at}"
+            precise: "A note on the board: help wanted at {at}, ask for {b}."
+            village: "{b} is looking for someone at {at}, they say."
+            far: "Someone is looking for help."
+            claim: { subject: $subject, key: vacancy, value: $value }
+      - id: mind
+        do: { thought: $b, text: "{a} has gone, and you need someone at {at}. You have put a note on the board.", days: 10 }
+      - id: hire
+        after: notice
+        wait: 12
+        otherwise: wait
+        # Not the one who just left it.
+        do: { hire: $subject, except: [$a] }
+
+  # A house nobody lives in: news, and it is on the list of free houses.
+  - id: house_empty
+    signal: house_empty
+    topic: house
+    steps:
+      - id: news
+        do:
+          tell:
+            kind: house_empty
+            about: [$place]
+            place: $place
+            belang: 1
+            title: "nobody lives at {place} now"
+            precise: "Nobody lives at {place} any more. The door is shut and the hearth is cold."
+            village: "{place} stands empty now."
+            far: "A house stands empty somewhere."
+
+  # Peace, and a place that is itself again: the news of the day where it
+  # matters. Who fled goes home by the return step of their own flight, as
+  # soon as they know and think their house stands.
+  - id: peace
+    signal: realm_stance
+    event: peace
+    topic: peace
+    steps:
+      - id: news
+        do: { news: "There's peace, they say. The barges will run again.", area: $area }
+
+  - id: place_restored
+    signal: place_restored
+    topic: place
+    steps:
+      - id: news
+        do: { news: "{place} is itself again, and people are going back.", area: $area }

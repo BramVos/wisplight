@@ -318,6 +318,16 @@ export interface Fact {
   truth?: boolean
   /** Level 3, 2 and 1: precise, as the village tells it, as it sounds far away. */
   text: { precise: string; village: string; far: string }
+  /** What it says in a form the systems can check (M8.1): who believes what follows from it. */
+  claim?: Claim
+}
+
+/** A claim of a fact: { subject: loc_veenhoek_green, key: state, value: normal }; far away it may say otherwise. */
+export interface Claim {
+  subject: string
+  key: string
+  value: string
+  far?: string
 }
 
 /** How someone heard of a fact: level, how sure, from whom, and whether it grew in the telling. */
@@ -422,6 +432,61 @@ export interface GameState {
   /** Progress clocks: threats and long jobs (FO, chapter 11). */
   clocks?: Record<string, Clock>
   brain?: { seq: number; pending: { id: string; npc: string; t: number; trigger: string }[]; counts: Record<string, { day: number; n: number }>; last?: Record<string, number>; due?: Record<string, number> }
+  /** What changed in play on top of the content (M8.1): ties, homes, work, households, who serves. */
+  layer?: Layer
+  /** Signals from the watchers, waiting and done (M8.1). */
+  signals?: SignalState
+  /** Notices pinned on boards: by location, the facts they tell (M8.1). */
+  boards?: Record<string, string[]>
+  /** The number of plans of the aftermath started, for their ids. */
+  planSeq?: number
+}
+
+/** A tie between two people that changed or began in play; null: the tie is gone. */
+export type TieChange = { role: import('./content').RelationRole; bond: number; t: number } | null
+
+/** The layer over the content (design: signalen en nasleep, "Wereldtoestand die mag veranderen"). */
+export interface Layer {
+  /** Per NPC: home, work (null for none), household (null for none) and trade, where they differ from the content. */
+  npcs?: Record<string, { home?: string; work?: string | null; household?: string | null; profession?: string }>
+  /** By NPC and then the other: an NPC id or "player". */
+  ties?: Record<string, Record<string, TieChange>>
+  /** Who serves at a service beyond or instead of the content, by service key. */
+  staff?: Record<string, { add: string[]; remove: string[] }>
+  /** Someone who expects another home: by NPC. */
+  expects?: Record<string, { of: string; nights: number; since: number }>
+  /** Houses nobody lives in, and since when: the free houses. */
+  empty?: Record<string, number>
+}
+
+/** A marked change in the state of the world (M8.1). Data, not text. */
+export interface Signal {
+  id: string
+  kind: string
+  /** The kind of life event, or another refinement: wedding, betrothal. */
+  event?: string
+  who: string[]
+  place: string
+  from?: string
+  to?: string
+  /** The facts or events that caused it. */
+  cause: string[]
+  /** One person, one household, or more. */
+  scope: 'person' | 'household' | 'many'
+  belang: number
+  t: number
+  claim?: Claim
+  watcher: string
+  /** Who took it up: the standard aftermath, a brain, the chronicler, or nobody. */
+  handled?: string
+}
+
+export interface SignalState {
+  seq: number
+  queue: Signal[]
+  log: Signal[]
+  /** What the watchers last saw, for changes: by watcher and subject. */
+  seen: Record<string, number | string | boolean>
 }
 
 export const objectKey = (location: string, object: string) => `${location}/${object}`

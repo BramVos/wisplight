@@ -1319,18 +1319,25 @@ quests:
         name: With her blessing
         text: Wouter has a boat and Trijntje's blessing. There'll be a wedding at the Goose after the eel season.
         when: [{ flag: trijntje_blesses }]
-        effects: [{ relation: npc_wouter, affinity: 20, trust: 20 }, { relation: npc_trijntje, affinity: 5 }]
+        effects:
+          - { relation: npc_wouter, affinity: 20, trust: 20 }
+          - { relation: npc_trijntje, affinity: 5 }
+          - { fact: { title: Wouter and Geesje will marry, precise: "Trijntje has given Wouter her blessing to marry Geesje, now he has a boat of his own.", village: "Wouter and Geesje are to be married! Trijntje said yes.", far: "There's to be a wedding in the Holleveen.", belang: 2, about: [npc_wouter, npc_geesje, npc_trijntje], place: loc_goose_common, claim: { subject: npc_wouter, key: betrothed, value: npc_geesje } } }
       - id: daughter_asked
         name: Her daughter asked
         text: Geesje talked her mother round in the kitchen. Wouter has a boat, a bride, and a mother-in-law who calls him "that eel-boy" with something like love.
         when: [{ flag: geesje_spoke }]
-        effects: [{ relation: npc_wouter, affinity: 20, trust: 15 }, { relation: npc_geesje, affinity: 15 }]
+        effects:
+          - { relation: npc_wouter, affinity: 20, trust: 15 }
+          - { relation: npc_geesje, affinity: 15 }
+          - { fact: { title: Wouter and Geesje will marry, precise: "Geesje talked her mother round in the kitchen: she'll marry Wouter.", village: "Wouter and Geesje are to be married! Geesje got round her mother.", far: "There's to be a wedding in the Holleveen.", belang: 2, about: [npc_wouter, npc_geesje, npc_trijntje], place: loc_goose_common, claim: { subject: npc_wouter, key: betrothed, value: npc_geesje } } }
       - id: eloped
         name: Eloped
         text: Wouter and Geesje went down the Vaart in the new boat one night. Trijntje doesn't say their names.
         when: [{ flag: eloped }]
         effects:
           - { relation: npc_wouter, affinity: 15 }
+          - { fact: { title: Wouter and Geesje ran off, precise: "Wouter and Geesje went down the Vaart in his new boat one night, without a word to Trijntje.", village: "Wouter and Geesje have run off together! Trijntje won't say their names.", far: "Two young ones ran off in the Holleveen.", belang: 2, about: [npc_wouter, npc_geesje, npc_trijntje], place: loc_goose_common, claim: { subject: npc_wouter, key: eloped, value: npc_geesje } } }
           - { relation: npc_trijntje, affinity: -30 }
           - { grievance: npc_trijntje, line: "You put that idea in his head. My girl, gone in the night." }
       - id: no_boat

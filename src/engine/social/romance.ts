@@ -7,6 +7,7 @@ import { companionOf } from './companions'
 import { deed, shiftBond } from './deeds'
 import { repute } from './factions'
 import { atLeast } from './gates'
+import { familyOf } from '../layer'
 
 // Romance (FO, chapter 8; Wereldboek, "Romance"), with fixed limits: only
 // adults who are open to it, each on their own terms. The system decides
@@ -101,12 +102,10 @@ export function marry(world: World, npcId: string): Output[] {
   const here = world.location(world.state.player.location)
   if (!here.tags.includes('holy')) return [{ kind: 'error', text: 'A wedding is held in a chapel; an oath of the Old Faith at a holy place.' }]
   world.state.romance![npcId] = { stage: 'bound', since: world.now }
-  recordFact(world, { kind: 'wedding', about: [npcId], place: here.id, belang: 3, juice: 1, title: `${name} married the stranger`, text: { precise: `${name} and the stranger were bound at ${here.name}.`, village: `${name} has married the stranger!`, far: `There was a wedding in ${world.words.region}.` } })
+  // The wedding is a signal (M8.1): the standard aftermath of the content gives the tie, the home, the in-laws and the expectations.
+  recordFact(world, { kind: 'wedding', about: [npcId], place: here.id, belang: 3, juice: 1, title: `${name} married the stranger`, text: { precise: `${name} and the stranger were bound at ${here.name}.`, village: `${name} has married the stranger!`, far: `There was a wedding in ${world.words.region}.` }, claim: { subject: 'player', key: 'married', value: npcId } })
   const spouse = world.npc(npcId)
-  world.state.player.home = spouse.home
-  world.state.player.homeNight = world.now
-  const family = spouse.relations.filter((r) => r.to && world.content.npcs.has(r.to) && FAMILY.includes(r.role)).map((r) => r.to!)
-  for (const id of family) applyEffect(world, id, 'affinity', 10)
+  const family = familyOf(world, npcId)
   const lantern = /chapel|church|kloosterveen/.test(here.id)
   repute(world, lantern ? 'lantern_church' : 'old_faith', 5, 'your wedding')
   return [
@@ -115,18 +114,24 @@ export function marry(world: World, npcId: string): Output[] {
   ]
 }
 
-const FAMILY = ['parent', 'child', 'sibling', 'spouse', 'grandparent', 'grandchild', 'kin']
-
-/** Each morning: a spouse whose partner has not slept at home for five nights says so, and minds it. */
+/**
+ * Each morning: a spouse whose partner has not slept at home for some nights
+ * says so, and minds it. The expectation is a step of the aftermath of a
+ * wedding (M8.1); a save from before that knows only the bond.
+ */
 export function homeDay(world: World): void {
   const player = world.state.player
   if (!player.home) return
-  const spouse = Object.entries(world.state.romance ?? {}).find(([, r]) => r.stage === 'bound')?.[0]
-  const s = spouse ? world.state.npcs[spouse] : undefined
-  if (!spouse || !s || s.dead) return
-  const away = (world.now - (player.homeNight ?? world.now)) / (24 * 60)
-  if (away < 5) return
-  applyEffect(world, spouse, 'affinity', -3)
-  const thoughts = (s.thoughts ??= [])
-  if (!thoughts.some((t) => t.until > world.now && t.text.startsWith('The one you married'))) thoughts.push({ text: `The one you married has not slept at home for ${Math.floor(away)} nights.`, t: world.now, until: world.now + 24 * 60 })
+  const expects = Object.entries(world.state.layer?.expects ?? {}).filter(([, e]) => e.of === 'player')
+  const old = Object.entries(world.state.romance ?? {}).find(([, r]) => r.stage === 'bound')?.[0]
+  const list = expects.length ? expects.map(([who, e]) => [who, e.nights] as const) : old ? [[old, 5] as const] : []
+  for (const [spouse, nights] of list) {
+    const s = world.state.npcs[spouse]
+    if (!s || s.dead) continue
+    const away = (world.now - (player.homeNight ?? world.now)) / (24 * 60)
+    if (away < nights) continue
+    applyEffect(world, spouse, 'affinity', -3)
+    const thoughts = (s.thoughts ??= [])
+    if (!thoughts.some((t) => t.until > world.now && t.text.startsWith('The one you married'))) thoughts.push({ text: `The one you married has not slept at home for ${Math.floor(away)} nights.`, t: world.now, until: world.now + 24 * 60 })
+  }
 }

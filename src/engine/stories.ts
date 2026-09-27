@@ -334,6 +334,15 @@ function playFeast(world: World, story: Story, pattern: Pattern): void {
   if (pattern.scene) world.emit('story', place, fill(pattern.scene, vars))
 }
 
+/**
+ * A feast of a plan (M8.1): a date and a place that are only known in play,
+ * and guests from further off besides the people of the place.
+ */
+export function holdFeast(world: World, place: string, from: number, until: number, guests: string[]): void {
+  const state = stories(world)
+  state.active.push({ id: `story_${++state.seq}`, pattern: '', kind: 'feast', started: world.now, roles: {}, data: { place, from, until, guests: guests.join(',') }, next: until })
+}
+
 /** Where a feast is on right now for this NPC, if any. */
 export function feastFor(world: World, npcId: string): { place: string; until: number } | undefined {
   const home = world.location(world.npc(npcId).home).area
@@ -342,7 +351,8 @@ export function feastFor(world: World, npcId: string): { place: string; until: n
     const place = String(story.data['place'])
     const from = Number(story.data['from'])
     const until = Number(story.data['until'])
-    if (world.now >= from && world.now < until && world.location(place).area === home) return { place, until }
+    const guest = String(story.data['guests'] ?? '').split(',').includes(npcId)
+    if (world.now >= from && world.now < until && (guest || world.location(place).area === home)) return { place, until }
   }
   return undefined
 }

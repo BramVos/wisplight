@@ -2,6 +2,7 @@ import type { Content } from './content'
 import { callName } from './content'
 import type { GameState } from './state'
 import { wordsOf } from './world'
+import { forgetPlayer } from './layer'
 
 // The same world with a new character (design: lore and world change, "Lore
 // meenemen naar een ander spel", decided on 27 September; M7.2). The world
@@ -47,6 +48,8 @@ export function carryOver(content: Content, state: GameState): string[] {
   delete state.combat
   state.companions = []
   state.romance = {}
+  // Ties to the old stranger and a spouse who waited for them go with them too (M8.1).
+  forgetPlayer(state)
   state.reputation = {}
   state.memberships = []
   state.wanted = {}

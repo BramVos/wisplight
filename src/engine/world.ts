@@ -1,6 +1,7 @@
 import { DEFAULT_CALENDAR, GameClock, isOpenAt, type Calendar } from './clock'
 import { callName, type Content, type Direction, type Location, type Npc, type ObjectInstance, type ObjectType, type Service } from './content'
 import { DEFAULT_MONEY, formatMoney, type MoneyUnit } from './items'
+import { mergeNpc, staffOf } from './layer'
 import { hexLocation, isHexId } from './map/travel'
 import { Rng } from './rng'
 import { objectKey, serviceKey, type GameState, type NpcState, type WorldEvent } from './state'
@@ -44,8 +45,11 @@ export class World {
   readonly rng: Rng
   private readonly routes = new Map<string, Route | undefined>()
   private readonly known = new Map<string, Set<string>>()
-  /** Relations between people, built once from the content (see people.ts). */
+  /** Relations between people, built once from the content and the layer (see people.ts). */
   readonly tieCache = new Map<string, unknown>()
+  /** People and services with the layer of this game on top (M8.1), built when first asked for. */
+  private readonly merged = new Map<string, Npc>()
+  private readonly mergedServices = new Map<string, Service>()
   /**
    * A model is connected, so the chronicler's runs and the NPCs' goal choices
    * wait for it; without one the templates and the utility function decide at
@@ -98,10 +102,25 @@ export class World {
     return loc
   }
 
+  /** Someone as they are now: the content with the changes of this game (a new home, work, ties). */
   npc(id: string): Npc {
     const npc = this.content.npcs.get(id)
     if (!npc) throw new Error(`Unknown NPC ${id}`)
-    return npc
+    if (!this.state.layer) return npc
+    let merged = this.merged.get(id)
+    if (!merged) {
+      merged = mergeNpc(this, npc)
+      this.merged.set(id, merged)
+    }
+    return merged
+  }
+
+  /** The layer changed: everything built from it is built again when asked for. */
+  layerChanged(): void {
+    this.merged.clear()
+    this.mergedServices.clear()
+    this.tieCache.clear()
+    this.known.clear()
   }
 
   npcState(id: string): NpcState {
@@ -122,8 +141,17 @@ export class World {
     return this.state.objects[key]
   }
 
+  /** A service as it is now: who serves there may have changed in play (M8.1). */
   service(locationId: string, serviceId: string): Service | undefined {
-    return this.location(locationId).services.find((s) => s.id === serviceId)
+    const service = this.location(locationId).services.find((s) => s.id === serviceId)
+    if (!service || !this.state.layer?.staff) return service
+    const key = serviceKey(locationId, serviceId)
+    let merged = this.mergedServices.get(key)
+    if (!merged) {
+      merged = { ...service, staff: staffOf(this, locationId, service) }
+      this.mergedServices.set(key, merged)
+    }
+    return merged
   }
 
   stock(locationId: string, serviceId: string): Record<string, number> {
@@ -155,7 +183,8 @@ export class World {
   }
 
   serviceOpen(locationId: string, service: Service, at = this.now): boolean {
-    return isOpenAt(at, service.hours, service.days) && this.staffed(locationId, service.provider, service.staff, service.premises)
+    const staff = this.state.layer?.staff ? staffOf(this, locationId, service) : service.staff
+    return isOpenAt(at, service.hours, service.days) && this.staffed(locationId, service.provider, staff, service.premises)
   }
 
   objectOpen(locationId: string, object: ObjectInstance, at = this.now): boolean {

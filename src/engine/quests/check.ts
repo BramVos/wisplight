@@ -33,7 +33,9 @@ export function checkQuests(c: Refs): string[] {
   }
 
   const condition = (x: Condition, where: string): void => {
-    if ('knows' in x) topic(x.knows, where)
+    if ('knows' in x) {
+      if (typeof x.knows === 'string') topic(x.knows, where)
+    }
     else if ('has' in x) item(x.has, where)
     else if ('attitude' in x) npc(x.attitude, where)
     else if ('at' in x) place(x.at, where)

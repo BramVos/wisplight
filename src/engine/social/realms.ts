@@ -50,6 +50,8 @@ export function shiftTension(world: World, a: string, b: string, delta: number, 
   }
   recordFact(world, {
     kind: 'realm',
+    // What it says, for the watchers and for what people believe (M8.1): war, peace, or the stance now.
+    claim: { subject: key, key: 'stance', value: war ? 'war' : peace ? 'peace' : now },
     about: [],
     place: world.content.world.start.location,
     belang: war ? 5 : peace ? 4 : 3,

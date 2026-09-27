@@ -3,6 +3,8 @@ import { callName } from './content'
 import { Engine } from './engine'
 import { MINUTES_PER_DAY } from './clock'
 import type { NpcState } from './state'
+import { nameOf, planLines } from './aftermath'
+import { planOf } from './quests/plans'
 
 // Playtest tools of the editor (M8, FO chapter 15, "Speeltest"): the world
 // runs a week or a month without a player, and the report says what went
@@ -24,6 +26,10 @@ export interface NpcSnapshot {
   /** What they did, oldest first: departures and arrivals left out. */
   days: string[]
   dead: boolean
+  /** Where they live and work now, and ties that changed in play (M8.1): the layer over the content. */
+  life: string[]
+  /** Plans they are part of that are still running. */
+  plans: string[]
 }
 
 export interface SimReport {
@@ -40,6 +46,9 @@ export interface SimReport {
   news: string[]
   quests: { id: string; name: string; state: string }[]
   people: NpcSnapshot[]
+  /** Signals and what took them up, and the plans of the aftermath with how they ended (M8.1). */
+  signals: string[]
+  plans: string[]
 }
 
 /** Runs a world without the player for some days. */
@@ -99,6 +108,12 @@ export function simulate(content: Content, days: number, seed = 1): SimReport {
     people: Object.keys(world.state.npcs)
       .sort()
       .map((id) => snapshot(engine, id, timeline.get(id) ?? [])),
+    signals: (world.state.signals?.log ?? []).map((s) => `${world.date(s.t).split(',')[0]}: ${s.kind}${s.event ? ` (${s.event})` : ''}${s.who.length ? ` for ${s.who.map((w) => nameOf(world, w)).join(' and ')}` : ` at ${nameOf(world, s.place)}`}, ${s.handled === 'rules' ? 'the standard aftermath' : 'nobody took it up'}`),
+    plans: (world.state.plans ?? []).map((p) => {
+      const plan = planOf(world, p.plan)
+      const how = p.ended !== undefined ? `${p.outcome ?? 'done'} ${world.date(p.ended).split(',')[0]}` : plan && p.phase < plan.phases.length ? `phase ${p.phase + 1} of ${plan.phases.length}` : 'running'
+      return `${plan?.name ?? p.plan}${p.subjects?.length ? ` for ${p.subjects.map((x) => nameOf(world, x)).join(' and ')}` : ''}: ${how}`
+    }),
   }
 }
 
@@ -118,5 +133,19 @@ function snapshot(engine: Engine, id: string, days: string[]): NpcSnapshot {
     memory: (npc.memory ?? []).slice(-8).map((m) => `${world.date(m.t).split(',')[0]}: ${m.note}`),
     days,
     dead: Boolean(npc.dead),
+    life: lifeOf(engine, id),
+    plans: planLines(world, id),
   }
+}
+
+/** Home, work, household and ties as they are now, where the game changed them. */
+function lifeOf(engine: Engine, id: string): string[] {
+  const world = engine.world
+  const now = world.npc(id)
+  const was = world.content.npcs.get(id)!
+  const lines = [`Lives at ${world.location(now.home).name}${now.home !== was.home ? ` (moved from ${world.location(was.home).name})` : ''}.`]
+  lines.push(now.work ? `Works at ${world.location(now.work).name}${now.work !== was.work ? ' (new)' : ''}.` : `No work${was.work ? ` (left ${world.location(was.work).name})` : ''}.`)
+  if (now.household !== was.household) lines.push(now.household ? `Household ${now.household} now.` : 'No household any more.')
+  for (const [other, change] of Object.entries(world.state.layer?.ties?.[id] ?? {})) lines.push(change ? `${nameOf(world, other)}: ${change.role} since ${world.date(change.t).split(',')[0]}.` : `No tie with ${nameOf(world, other)} any more.`)
+  return lines
 }

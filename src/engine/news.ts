@@ -2,7 +2,8 @@ import { minuteOfDay } from './clock'
 import { isFamilyNews, nearOf, tieTo } from './people'
 import { onFact } from './storylines'
 import { concerns, triggerChoice } from './npc/goals'
-import type { Fact, Heard } from './state'
+import { watchFact } from './signals'
+import type { Claim, Fact, Heard } from './state'
 import type { World } from './world'
 
 // News (design: lore and world change, "Wie weet wat"). A fact is written once
@@ -25,6 +26,8 @@ export interface FactInput {
   witnesses?: string[]
   /** Not true: a rumour or a lie. */
   truth?: boolean
+  /** What it says in a form the systems can check (M8.1). */
+  claim?: Claim
 }
 
 const DAY = 24 * 60
@@ -59,6 +62,7 @@ export function recordFact(world: World, input: FactInput): Fact {
     title: input.title,
     ...(input.truth === false ? { truth: false } : {}),
     text: input.text,
+    ...(input.claim ? { claim: input.claim } : {}),
   }
   store.facts.push(fact)
   const places = new Set([input.place])
@@ -68,6 +72,8 @@ export function recordFact(world: World, input: FactInput): Fact {
     // Whoever it is about knows it, even when their activity still says asleep.
     const concerned = input.about.includes(id)
     if (input.witnesses && !input.witnesses.includes(id)) continue
+    // Someone far away or on a journey is not at their old place (M8.1): they hear it where they are, later.
+    if (npc.note || npc.absent) continue
     if (places.has(npc.location) && (npc.activity !== 'asleep' || concerned) && !npc.dead) {
       heardBy(world, id)[fact.id] = { level: 3, reliability: 1, from: 'witness', t: world.now }
       noticed(world, id, fact)
@@ -78,7 +84,27 @@ export function recordFact(world: World, input: FactInput): Fact {
     ;(world.state.player.journal ??= {})[fact.id] = world.now
   }
   onFact(world, fact)
+  watchFact(world, fact)
   return fact
+}
+
+/**
+ * What someone believes about a claim (M8.1; FO, chapter 5): of all the facts
+ * they heard with this subject and key, the newest counts, and of equally
+ * new ones the most precise. Far away (level 1) the value may be the far one.
+ */
+export function believes(world: World, who: string, subject: string, key: string): { value: string; level: number; t: number; fact: Fact } | undefined {
+  const heard = world.state.news?.heard[who]
+  if (!heard) return undefined
+  let best: { value: string; level: number; t: number; fact: Fact } | undefined
+  for (const fact of world.state.news!.facts) {
+    const claim = fact.claim
+    const h = heard[fact.id]
+    if (!claim || !h || claim.subject !== subject || claim.key !== key) continue
+    const value = h.level === 1 && claim.far !== undefined ? claim.far : claim.value
+    if (!best || fact.t > best.fact.t || (fact.t === best.fact.t && h.level > best.level)) best = { value, level: h.level, t: h.t, fact }
+  }
+  return best
 }
 
 /** The rumours of the content that are going round when a game starts. */
@@ -124,8 +150,12 @@ const CHECKS_PER_HOUR = 4
 export function spreadNews(world: World): void {
   const store = world.state.news
   if (!store || store.facts.length === 0) return
-  if (minuteOfDay(world.now) % 60 === 0) forget(world)
+  if (minuteOfDay(world.now) % 60 === 0) {
+    forget(world)
+    newsArrives(world)
+  }
   tellTheFamily(world)
+  readBoards(world)
   const byPlace = new Map<string, string[]>()
   for (const id of Object.keys(world.state.npcs).sort()) {
     const npc = world.state.npcs[id]!
@@ -223,6 +253,73 @@ function tell(world: World, teller: string, listener: string): void {
     theirs[fact.id] = { level: Math.max(1, heard.level - 1) as Heard['level'], reliability: Math.round(heard.reliability * 0.9 * 100) / 100, from: teller, t: world.now, grown: grows || undefined }
     noticed(world, listener, fact)
   }
+}
+
+/**
+ * News beyond the village (M8.1; design: lore and world change, "Wie weet
+ * wat"): per area the game works out when news arrives, and from then on
+ * the people there know it at the level of the distance. For someone away
+ * (a note: on a journey, fled, far off) this is the only way news reaches
+ * them; for everyone it carries big news (belang 4 and 5) through the region.
+ */
+function newsArrives(world: World): void {
+  const store = world.state.news!
+  const fresh = store.facts.filter((f) => f.belang >= 2 && world.now - f.t <= (FORGET_AFTER[f.belang] ?? 30 * DAY))
+  if (fresh.length === 0) return
+  for (const id of Object.keys(world.state.npcs).sort()) {
+    const npc = world.state.npcs[id]!
+    if (npc.dead || npc.absent) continue
+    const away = Boolean(npc.note)
+    const where = npc.note?.where ?? npc.location
+    const heard = heardBy(world, id)
+    for (const fact of fresh) {
+      if (heard[fact.id] || (!away && fact.belang < 4)) continue
+      const km = areaKm(world, fact.place, where)
+      if (km > REACH_KM[fact.belang]!) continue
+      if (world.now < fact.t + (1 + km / 4) * 60) continue
+      heard[fact.id] = { level: km <= 10 ? 2 : 1, reliability: km <= 10 ? 0.8 : 0.6, from: 'news', t: world.now }
+      if (!away) noticed(world, id, fact)
+    }
+  }
+}
+
+/** Notices on a board (M8.1): whoever is there reads them, precisely. */
+function readBoards(world: World): void {
+  for (const [place, facts] of Object.entries(world.state.boards ?? {}).sort((a, b) => a[0].localeCompare(b[0]))) {
+    if (!facts.length) continue
+    const readers = Object.keys(world.state.npcs)
+      .sort()
+      .filter((id) => {
+        const npc = world.state.npcs[id]!
+        return npc.location === place && !npc.note && !npc.dead && !npc.absent && npc.activity !== 'asleep'
+      })
+    if (world.state.player.location === place) readers.push('player')
+    for (const who of readers) {
+      const heard = heardBy(world, who)
+      for (const id of facts) {
+        if (heard[id] || !factById(world, id)) continue
+        heard[id] = { level: 3, reliability: 1, from: 'board', t: world.now }
+        if (who === 'player') (world.state.player.journal ??= {})[id] = world.now
+        else noticed(world, who, factById(world, id)!)
+      }
+    }
+  }
+}
+
+/** How far news of each belang travels, in km. */
+const REACH_KM = [0, 0, 10, 30, 100, Infinity]
+
+/** Between the areas of two places, in km; far beyond the region for a place that is not on the map. */
+function areaKm(world: World, a: string, b: string): number {
+  const pos = (place: string) => {
+    const loc = world.content.locations.get(place)
+    const area = loc ? world.content.areas.get(loc.area) : undefined
+    return area?.pos
+  }
+  const pa = pos(a)
+  const pb = pos(b)
+  if (!pa || !pb) return pa || pb ? 150 : 0
+  return Math.hypot(pa[0] - pb[0], pa[1] - pb[1])
 }
 
 function forget(world: World): void {

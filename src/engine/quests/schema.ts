@@ -12,10 +12,26 @@ const PLACE_STATES = ['normal', 'flooded', 'damaged', 'destroyed', 'abandoned', 
 export const PlaceState = z.enum(PLACE_STATES)
 export type PlaceStateName = (typeof PLACE_STATES)[number]
 
+/** What someone believes about a claim (M8.1): the newest version they heard wins, and with the same age the most precise. */
+export interface KnowsClaim {
+  /** An NPC, "player", or a binding of a plan such as $who. */
+  who: string
+  subject: string
+  key: string
+  /** Believes one of these values. */
+  value?: string | string[]
+  /** Believes something other than these (or has heard nothing else). */
+  not?: string | string[]
+  /** Heard at least at this level: 3 precise, 2 as the village tells it, 1 from far away. */
+  level?: number
+  /** Heard it at most so many days ago. */
+  days?: number
+}
+
 type Cond =
   | { flag: string; is?: string | number | boolean }
   | { not_flag: string }
-  | { knows: string }
+  | { knows: string | KnowsClaim }
   | { has: string; qty?: number }
   | { money: number }
   | { attitude: string; at_least: z.infer<typeof BAND> }
@@ -42,6 +58,13 @@ type Cond =
   | { here: string }
   | { weather: string }
   | { object: string; state: Record<string, string | number | boolean> }
+  // For plans (M8.1): about people, by id or by a binding of the plan.
+  | { is_player: string }
+  | { has_work: string }
+  | { lives_with_parent: string }
+  | { commute: string; at_least: number }
+  | { thinks_home_stands: string }
+  | { tie: [string, string]; role: string }
   | { any: Cond[] }
   | { all: Cond[] }
   | { not: Cond }
@@ -50,7 +73,24 @@ export const ConditionSchema: z.ZodType<Cond> = z.lazy(() =>
   z.union([
     z.object({ flag: z.string(), is: z.union([z.string(), z.number(), z.boolean()]).optional() }).strict(),
     z.object({ not_flag: z.string() }).strict(),
-    z.object({ knows: z.string() }).strict(),
+    z
+      .object({
+        knows: z.union([
+          z.string(),
+          z
+            .object({
+              who: z.string(),
+              subject: z.string(),
+              key: z.string(),
+              value: z.union([z.string(), z.array(z.string())]).optional(),
+              not: z.union([z.string(), z.array(z.string())]).optional(),
+              level: z.number().int().min(1).max(3).optional(),
+              days: z.number().positive().optional(),
+            })
+            .strict(),
+        ]),
+      })
+      .strict(),
     z.object({ has: z.string(), qty: z.number().int().positive().optional() }).strict(),
     z.object({ money: z.number().int() }).strict(),
     z.object({ attitude: z.string(), at_least: BAND }).strict(),
@@ -87,6 +127,18 @@ export const ConditionSchema: z.ZodType<Cond> = z.lazy(() =>
     z.object({ weather: z.string() }).strict(),
     /** An object's state: 'loc_molenend_mill/de_zwaan' with broken false is the mill turning. */
     z.object({ object: z.string(), state: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])) }).strict(),
+    /** The one meant is the player. */
+    z.object({ is_player: z.string() }).strict(),
+    /** Has work somewhere. */
+    z.object({ has_work: z.string() }).strict(),
+    /** Lives in one house with a parent. */
+    z.object({ lives_with_parent: z.string() }).strict(),
+    /** The walk from home to work takes at least so many minutes. */
+    z.object({ commute: z.string(), at_least: z.number().int().min(0) }).strict(),
+    /** Does not believe their home is flooded, destroyed or occupied (M8.1). */
+    z.object({ thinks_home_stands: z.string() }).strict(),
+    /** What the first is to the second: spouse, sweetheart, friend. */
+    z.object({ tie: z.tuple([z.string(), z.string()]), role: z.string() }).strict(),
     z.object({ any: z.array(ConditionSchema) }).strict(),
     z.object({ all: z.array(ConditionSchema) }).strict(),
     z.object({ not: ConditionSchema }).strict(),
@@ -94,7 +146,23 @@ export const ConditionSchema: z.ZodType<Cond> = z.lazy(() =>
 )
 export type Condition = Cond
 
-const FactText = z.object({ title: z.string(), precise: z.string(), village: z.string(), far: z.string(), belang: z.number().int().min(0).max(5).default(2), about: z.array(z.string()).default([]), place: z.string().optional() }).strict()
+/** What a fact says in a form the systems can check (M8.1): a subject, a key and a value; far away the value may be wrong. */
+export const ClaimSchema = z.object({ subject: z.string(), key: z.string(), value: z.string(), far: z.string().optional() }).strict()
+
+const FactText = z
+  .object({
+    title: z.string(),
+    precise: z.string(),
+    village: z.string(),
+    far: z.string(),
+    belang: z.number().int().min(0).max(5).default(2),
+    about: z.array(z.string()).default([]),
+    place: z.string().optional(),
+    /** Its own kind, for watchers (M8.1); otherwise quest:<id>. */
+    kind: z.string().regex(/^[a-z0-9_:]+$/).optional(),
+    claim: ClaimSchema.optional(),
+  })
+  .strict()
 
 export const QuestEffectSchema = z.union([
   z.object({ set: z.string(), value: z.union([z.string(), z.number(), z.boolean()]).default(true) }).strict(),

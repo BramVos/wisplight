@@ -20,6 +20,7 @@ import { crimesHour } from './social/crime'
 import { conditionsDay } from './rules/player'
 import { debtsDue, weeklyDrift } from './social/deeds'
 import { realmsDay } from './social/realms'
+import { watchHour } from './signals'
 
 // The world clock. Every game minute, NPCs that are free decide and act;
 // every game hour, needs decay and the economy moves (supply and demand).
@@ -62,6 +63,7 @@ function hourly(world: World): void {
   pursue(world)
   crimesHour(world)
   healWounds(world)
+  watchHour(world)
   if (minuteOfDay(world.now) === 0) {
     realmsDay(world)
     if (Math.floor(world.now / MINUTES_PER_DAY) % 7 === 0) weeklyDrift(world)

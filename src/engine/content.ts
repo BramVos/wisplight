@@ -3,7 +3,8 @@ import { z } from 'zod'
 import { CreatureSchema, EncounterSchema, RulesSchema, type Creature, type Effect, type Encounter, type Rules, type Talent } from './rules/schema'
 import { QuestBodySchema } from './quests/schema'
 import { checkQuests } from './quests/check'
-import { PlanSchema, type Plan } from './quests/plans'
+import { AftermathSchema, PlanSchema, VerbTextSchema, WatcherSchema, type Aftermath, type Plan, type VerbText, type Watcher } from './quests/planschema'
+import { RELATION_ROLES } from './roles'
 
 // Content is plain YAML in content/. This module parses and validates it
 // without touching the file system, so it runs in Node and in the browser.
@@ -277,34 +278,7 @@ export type Profession = z.infer<typeof ProfessionSchema>
 
 const Axis = z.number().int().min(-3).max(3)
 
-/**
- * Who someone is to this NPC (FO, chapter 8, "De relatie"). The role says what
- * the other is to this NPC: `child` means "my son or daughter". A relation is
- * written once; the other side is derived (parent, employee, debtor, ...).
- */
-export const RELATION_ROLES = [
-  'parent',
-  'child',
-  'spouse',
-  'sibling',
-  'grandparent',
-  'grandchild',
-  'kin',
-  'sweetheart',
-  'friend',
-  'rival',
-  'employer',
-  'employee',
-  'foreman',
-  'crew',
-  'creditor',
-  'debtor',
-  'teacher',
-  'pupil',
-  'neighbour',
-  'acquaintance',
-] as const
-export type RelationRole = (typeof RELATION_ROLES)[number]
+export { RELATION_ROLES, type RelationRole } from './roles'
 
 export const RelationSchema = z
   .object({
@@ -602,6 +576,10 @@ const FileSchema = z
     realms: z.array(RealmSchema).optional(),
     tensions: z.array(TensionSchema).optional(),
     plans: z.array(PlanSchema).optional(),
+    /** When a change is a signal, what follows by the rules, and how each verb is news (M8.1). */
+    watchers: z.array(WatcherSchema).optional(),
+    aftermath: z.array(AftermathSchema).optional(),
+    verbs: z.array(VerbTextSchema).optional(),
     creatures: z.array(CreatureSchema).optional(),
     encounters: z.array(EncounterSchema).optional(),
   })
@@ -633,6 +611,10 @@ export interface Content {
   realms: Map<string, Realm>
   tensions: Tension[]
   plans: Map<string, Plan>
+  /** The aftermath (M8.1): watchers, the standard aftermath per signal, and the news of each verb. All optional. */
+  watchers: Map<string, Watcher>
+  aftermath: Map<string, Aftermath>
+  verbTexts: Map<string, VerbText>
   /** The chronicler's working instruction (content/CHRONICLER.md and the world's own), if there is one. */
   chronicler?: string
 }
@@ -673,6 +655,9 @@ export function loadContent(files: ContentFile[]): Content {
     realms: new Map<string, Realm>(),
     tensions: [] as Tension[],
     plans: new Map<string, Plan>(),
+    watchers: new Map<string, Watcher>(),
+    aftermath: new Map<string, Aftermath>(),
+    verbTexts: new Map<string, VerbText>(),
   }
 
   let chronicler: string | undefined
@@ -714,6 +699,9 @@ export function loadContent(files: ContentFile[]): Content {
     addAll(content.realms, data.realms, (v) => v.id, file.path, 'realm', problems)
     content.tensions.push(...(data.tensions ?? []))
     addAll(content.plans, data.plans, (v) => v.id, file.path, 'plan', problems)
+    addAll(content.watchers, data.watchers, (v) => v.id, file.path, 'watcher', problems)
+    addAll(content.aftermath, data.aftermath, (v) => v.id, file.path, 'aftermath', problems)
+    addAll(content.verbTexts, data.verbs, (v) => v.id, file.path, 'verb', problems)
     if (data.rules) {
       if (rules) problems.push(`${file.path}: the rules are defined twice`)
       rules = data.rules
@@ -895,5 +883,45 @@ function checkReferences(world: WorldDef | undefined, c: Omit<Content, 'world'>)
   for (const p of c.professions.values()) {
     for (const g of p.daily_goals) if (g.item) item(g.item, `profession ${p.id}.daily_goals`)
   }
+  // Plans with steps, and the standard aftermath (M8.1): steps refer to steps and groups of their own, people and places exist.
+  const steps = (where: string, list: Plan['steps'], groups: string[]) => {
+    const ids = new Set<string>()
+    for (const s of list) {
+      if (ids.has(s.id)) problems.push(`${where}: duplicate step ${s.id}`)
+      ids.add(s.id)
+    }
+    for (const s of list) {
+      if (s.after && !ids.has(s.after)) problems.push(`${where}.${s.id}: after an unknown step ${s.after}`)
+      if (s.after === s.id) problems.push(`${where}.${s.id}: after itself`)
+      if (s.each && !groups.includes(s.each)) problems.push(`${where}.${s.id}: each of an unknown group ${s.each}`)
+      for (const id of idsIn(s.do)) {
+        if (id.startsWith('npc_')) npc(id, `${where}.${s.id}`)
+        else if (id.startsWith('loc_')) location(id, `${where}.${s.id}`)
+      }
+      if ('profession' in s.do && s.do.profession && !c.professions.has(s.do.profession)) problems.push(`${where}.${s.id}: unknown profession ${s.do.profession}`)
+    }
+  }
+  for (const p of c.plans.values()) steps(`plan ${p.id}`, p.steps, Object.keys(p.groups))
+  for (const a of c.aftermath.values()) {
+    steps(`aftermath ${a.id}`, a.steps, Object.keys(a.groups))
+    if (!CODE_SIGNALS.includes(a.signal) && ![...c.watchers.values()].some((w) => w.signal === a.signal)) problems.push(`aftermath ${a.id}: no watcher gives the signal ${a.signal}`)
+  }
+  for (const w of c.watchers.values()) {
+    for (const id of [...(w.who ?? []), w.place ?? ''].filter((x) => x && !x.startsWith('$'))) {
+      if (id.startsWith('npc_')) npc(id, `watcher ${w.id}`)
+      else if (id.startsWith('loc_')) location(id, `watcher ${w.id}`)
+    }
+  }
   return problems
+}
+
+/** Signals the systems give themselves, without a watcher in the content. */
+const CODE_SIGNALS = ['house_lost', 'plan_failed']
+
+/** Every string in a step's verb that looks like an id. */
+function idsIn(value: unknown): string[] {
+  if (typeof value === 'string') return /^(npc|loc)_[a-z0-9_]+$/.test(value) ? [value] : []
+  if (Array.isArray(value)) return value.flatMap(idsIn)
+  if (value && typeof value === 'object') return Object.values(value).flatMap(idsIn)
+  return []
 }

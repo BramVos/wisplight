@@ -166,7 +166,14 @@ function examine(world: World, target: string): Output {
       .map(([, note]) => note)
     const uses = object.type.affordances.filter((a) => a.actors.includes('player')).map((a) => a.verb)
     const hint = uses.length > 0 ? ` (You could ${uses.map((u) => `USE ${(object.instance.name ?? object.type.name).toUpperCase()} ${u.toUpperCase()}`).join(' or ')}.)` : ''
-    return text(`${object.instance.description ?? object.type.description}${notes.length ? ` ${notes.join(' ')}` : ''}${hint}`)
+    // Notices on a board (M8.1): whoever looks at it reads them.
+    const pinned = object.type.id === 'notice_board' ? (world.state.boards?.[here] ?? []).map((id) => world.state.news?.facts.find((f) => f.id === id)).filter((f) => f !== undefined) : []
+    for (const f of pinned) {
+      ;((world.state.news!.heard['player'] ??= {})[f.id] ??= { level: 3, reliability: 1, from: 'board', t: world.now })
+      ;(world.state.player.journal ??= {})[f.id] ??= world.now
+    }
+    const read = pinned.length ? ` Among the notes, newer than the rest: ${pinned.map((f) => `"${f.text.precise}"`).join(' ')}` : ''
+    return text(`${object.instance.description ?? object.type.description}${notes.length ? ` ${notes.join(' ')}` : ''}${read}${hint}`)
   }
   const inventory = world.state.player.inventory
   const ground = world.state.ground[here] ?? {}

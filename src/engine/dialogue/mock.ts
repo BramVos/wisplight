@@ -36,6 +36,8 @@ function recognised(meta: MockMeta): string | undefined {
 
 export class MockLlm implements LlmClient {
   calls: LlmRequest[] = []
+  /** For tests: more for the chronicler to write, given the overview and the line marked PLAN, if any. */
+  chronicle?: (meta: ChronicleMeta, planned: string | undefined) => Record<string, unknown>
 
   constructor(
     public mode: MockMode = 'good',
@@ -168,6 +170,10 @@ export class MockLlm implements LlmClient {
     }
     const area = meta.cards.find((c) => c.kind === 'area')
     if (area && meta.lines[0]) reply.news.push({ area: area.key, text: meta.lines[0].text })
+    if (this.chronicle) {
+      const planned = meta.lines.find((l) => new RegExp(`${l.key} ".*" ?.*PLAN`).test(prompt))?.key
+      return JSON.stringify({ ...reply, ...this.chronicle(meta, planned) })
+    }
     // 'plan': a small shift between two realms, and consequences for a storyline marked PLAN (M7.2).
     if (this.mode === 'plan') {
       const realms = meta.cards.filter((c) => c.kind === 'realm')

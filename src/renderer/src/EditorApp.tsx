@@ -578,6 +578,15 @@ function templateFor(kind: EntityKind, view: EditorView): Raw {
       return { id: 'loc_new_place', name: 'A New Place', area, tags: ['public'], description: { day: 'Three to five sentences, in the second person. Something you hear or smell. A hint at an exit.\n' }, exits: { north: { to: place } } }
     case 'area':
       return { id: 'new_area', name: 'A new area', kind: 'hamlet', summary: 'What it is, in one sentence.' }
+    case 'watcher':
+      return { id: 'new_watcher', signal: 'new_signal', when: [{ flag: 'something_happened' }], who: [], place, belang: 1 }
+    case 'aftermath':
+      return {
+        id: 'new_aftermath',
+        signal: 'new_signal',
+        topic: 'new_topic',
+        steps: [{ id: 'news', do: { tell: { kind: 'news', about: [], belang: 1, title: 'what happened', precise: 'What happened, exactly.', village: 'What the village says.', far: 'What they say far away.' } } }],
+      }
     case 'npc':
       return { id: 'npc_new_person', name: 'New Person', short: 'the newcomer', pronoun: 'they', age: 30, profession: trade, home: place, appearance: 'What people see first.', personality: { warmth: 0, courage: 0, honesty: 0, temper: 0, curiosity: 0, diligence: 0 }, public_facts: ['What anyone may know about them.'] }
     case 'topic':
@@ -726,6 +735,18 @@ function PlaytestPanel({ bridge, world }: { bridge: EditorBridge; world: string 
               </ul>
               <h3>News of weight</h3>
               <ul className="check-list small">{report.news.length ? report.news.map((n) => <li key={n}>{n}</li>) : <li className="muted">none</li>}</ul>
+              <h3>Signals and plans</h3>
+              <ul className="check-list small">
+                {report.plans.length ? report.plans.map((p, i) => <li key={`p${i}`}>{p}</li>) : <li className="muted">no plans</li>}
+              </ul>
+              <details>
+                <summary className="small">The signals ({report.signals.length})</summary>
+                <ul className="check-list small">
+                  {report.signals.map((s, i) => (
+                    <li key={i}>{s}</li>
+                  ))}
+                </ul>
+              </details>
               <details>
                 <summary className="small">The days</summary>
                 <ul className="check-list small">
@@ -758,6 +779,13 @@ function PlaytestPanel({ bridge, world }: { bridge: EditorBridge; world: string 
                   </p>
                   <p className="muted">Wants: {npc.goals.join('; ') || 'nothing in particular'}</p>
                   <p className="muted">Plan: {npc.plan.join(', ') || 'none'}</p>
+                  <p className="muted">{npc.life.join(' ')}</p>
+                  {npc.plans.length > 0 && (
+                    <>
+                      <h3>Part of</h3>
+                      <ul className="check-list">{npc.plans.map((p) => <li key={p}>{p}</li>)}</ul>
+                    </>
+                  )}
                   <h3>Remembers</h3>
                   <ul className="check-list">{npc.memory.length ? npc.memory.map((m) => <li key={m}>{m}</li>) : <li className="muted">nothing yet</li>}</ul>
                   <h3>Did</h3>

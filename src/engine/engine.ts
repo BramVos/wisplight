@@ -43,6 +43,7 @@ import { conversationActions, evaluate, expireConditions, questAction, questlog,
 import { PlaceState } from './quests/schema'
 import { antagonists } from './quests/antagonists'
 import { plansDue, startPlan } from './quests/plans'
+import { primeWatchers, processSignals } from './signals'
 import { realmLines, realmPage } from './social/realms'
 import { kmFromPlayer, posOf } from './nearby'
 import { carryOver } from './legacy'
@@ -207,6 +208,8 @@ export class Engine {
     this.setLlm(options.llm)
     character(this.world)
     if (!state.bonds) seedBonds(this.world)
+    // What the watchers see now is the start: only what changes after this is a signal (M8.1).
+    if (!state.signals) primeWatchers(this.world)
     if (!options.state) {
       seedNews(this.world)
       this.arrive()
@@ -507,6 +510,8 @@ export class Engine {
     for (const id of this.world.deaths.splice(0)) out.push(...questsOnDeath(this.world, this.questHost, id))
     expireConditions(this.world)
     out.push(...antagonists(this.world, this.questHost))
+    // Signals go to their handler first, so what they plan runs with the rest (M8.1).
+    out.push(...processSignals(this.world, this.questHost))
     out.push(...plansDue(this.world, this.questHost))
     out.push(...evaluate(this.world, this.questHost))
     return out

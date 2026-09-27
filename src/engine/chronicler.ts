@@ -1,5 +1,5 @@
 import { chronicle, emptyOutput, type Card, type ChronicleEvent, type ChronicleInput, type ChronicleLine, type ChronicleOutput, type ChroniclerModel, type PlanOp, type QuestTemplate } from '../chronicler'
-import { PlanSchema, type Plan } from './quests/plans'
+import { PlanSchema, type Plan, type PlanEffect } from './quests/planschema'
 import { shiftTension } from './social/realms'
 import { GameClock, MONTHS, WEEKDAYS } from './clock'
 import { callName } from './content'
@@ -10,7 +10,7 @@ import { questsOf } from './life'
 import { factById } from './news'
 import { isNear, noun, ties } from './people'
 import { askLine, openRequest, openRequestsOf, requestName } from './requests'
-import type { ChronicleRun, Fact, LoreEntry, Storyline } from './state'
+import type { ChronicleRun, Claim, Fact, LoreEntry, Storyline } from './state'
 import { chronicleState, unreported } from './storylines'
 import type { World } from './world'
 
@@ -95,9 +95,8 @@ export function buildInput(world: World, run: ChronicleRun): ChronicleInput {
   const cast = new Set<string>()
   const places = new Set<string>()
   const big = lines.filter((line) => unreported(world, line).some((f) => f.belang >= 4))
-  // A big event may get a plan of consequences, unless a plan was started lately (a fixed one covers it).
-  const lately = (world.state.plans ?? []).some((p) => world.now - p.started < 24 * 60)
-  const plannable = lately ? [] : big.map((l) => l.id)
+  // A big event may get a plan of consequences, unless a fixed plan that lets people flee started lately (it covers it).
+  const plannable = mayPlan(world) ? big.map((l) => l.id) : []
   const items = new Set<string>()
   for (const line of chronicleLines) {
     for (const event of [...line.events, ...line.earlier]) {
@@ -110,6 +109,17 @@ export function buildInput(world: World, run: ChronicleRun): ChronicleInput {
     for (const f of facts(line)) for (const id of f.about) if (id.startsWith('item_') && world.content.items.has(id.slice(5))) items.add(id.slice(5))
     if (facts(line).some((f) => f.kind === 'sickness')) items.add('herbs')
   }
+  // Where people could go if they have to flee (M8.1): the chronicler decides the flight of a big event,
+  // so a plannable line comes with the churches, chapels and inns of the region as places.
+  const refuges: string[] = []
+  if (plannable.length) {
+    const from = [...places][0]
+    const shelters = [...world.content.locations.values()]
+      .filter((l) => (l.tags.includes('holy') || l.tags.includes('social')) && l.tags.includes('public') && !l.tags.some((t) => t === 'haunted' || t.startsWith('hazard')))
+      .map((l) => ({ id: l.id, minutes: from ? (world.route(from, l.id)?.minutes ?? Infinity) : 0 }))
+      .sort((a, b) => a.minutes - b.minutes || a.id.localeCompare(b.id))
+    for (const s of shelters.slice(0, 6)) if (!places.has(s.id)) refuges.push(s.id)
+  }
   // The people near to those in the story: the family of the dead, a sweetheart.
   for (const id of [...cast]) for (const tie of ties(world, id)) if (isNear(tie) && tie.id && world.content.npcs.has(tie.id) && !world.state.npcs[tie.id]?.absent) cast.add(tie.id)
   const requests = [...cast].flatMap((id) => openRequestsOf(world, id))
@@ -119,6 +129,7 @@ export function buildInput(world: World, run: ChronicleRun): ChronicleInput {
   const cards: Card[] = [
     ...sorted(cast).map((id) => personCard(world, id, cast)),
     ...sorted(places).map((id) => placeCard(world, id)),
+    ...refuges.map((id) => placeCard(world, id)),
     ...sorted(items).map((id) => ({ id, kind: 'item' as const, name: itemName(world.content, id), text: world.content.items.get(id)?.description ?? '' })),
   ]
   const areas = [...new Set([...places].map((p) => world.location(p).area))].sort()
@@ -147,24 +158,53 @@ export function buildInput(world: World, run: ChronicleRun): ChronicleInput {
 }
 
 /** A plan of the chronicler's is a plan like the fixed ones, with an id of its own (M7.2). */
-function toPlan(world: World, op: PlanOp, id: string): Plan | undefined {
+/**
+ * Whether the chronicler may plan consequences now: not while a fixed plan
+ * that lets people flee started in the last day, for that covers the event.
+ * Plans of the aftermath and of the chronicler do not count (M8.1), and a war
+ * without a flight of its own leaves the flight to him (Bram, 27 September).
+ */
+export function mayPlan(world: World): boolean {
+  return !(world.state.plans ?? []).some((p) => {
+    if (world.now - p.started >= 24 * 60 || !world.content.plans.has(p.plan)) return false
+    const plan = world.content.plans.get(p.plan)!
+    return plan.phases.some((ph) => ph.effects.some((e) => 'flee' in e)) || plan.steps.some((s) => 'flee' in s.do)
+  })
+}
+
+function toPlan(world: World, op: PlanOp, id: string, cause: Claim | undefined): Plan | undefined {
   const groups: Plan['groups'] = {}
-  const phases = op.phases.map((phase) => ({
+  const steps: Plan['steps'] = []
+  const phases = op.phases.map((phase, i) => ({
     after: phase.after,
-    effects: phase.effects.map((e) => {
-      if ('place' in e) return { place: e.place, state: e.state }
-      if ('news' in e) return { news: e.news, area: e.area }
-      if ('market' in e) return { market: e.market, factor: e.factor }
+    effects: phase.effects.flatMap((e): PlanEffect[] => {
+      if ('place' in e) return [{ place: e.place, state: e.state }]
+      if ('news' in e) return [{ news: e.news, area: e.area }]
+      if ('market' in e) return [{ market: e.market, factor: e.factor }]
+      // A flight is a step, and it ends with a return by what each of them knows (M8.1):
+      // back when what drove them out is over as far as they know, and they think their house stands.
       groups[e.flee] = { areas: [e.flee], npcs: [], except: [] }
-      return { flee: e.flee, to: e.to, days: e.days }
+      const n = steps.length / 2
+      steps.push({ id: `flee_${n}`, at: { hours: phase.after }, wait: 0, when: [], otherwise: 'skip', do: { flee: e.flee, to: e.to, days: e.days } })
+      steps.push({
+        id: `return_${n}`,
+        after: `flee_${n}`,
+        wait: cause ? 0 : e.days * 24,
+        each: e.flee,
+        when: [...(cause ? [{ knows: { who: '$who', subject: cause.subject, key: cause.key, not: cause.value } }] : []), { thinks_home_stands: '$who' }],
+        otherwise: 'wait',
+        do: { return: '$who' },
+      })
+      void i
+      return []
     }),
-  }))
-  const parsed = PlanSchema.safeParse({ id, name: op.name, groups, phases, max_effects: 10 })
+  })).filter((p) => p.effects.length > 0)
+  const parsed = PlanSchema.safeParse({ id, name: op.name, groups, phases, max_effects: 10, steps, ...(steps.length ? { expires: 60 } : {}) })
   if (!parsed.success) return undefined
   // Only places and things of this world.
-  const ok = parsed.data.phases.every((p) =>
-    p.effects.every((e) => ('place' in e && 'state' in e ? world.content.locations.has(e.place) : 'area' in e ? world.content.areas.has(e.area) : 'market' in e ? world.content.items.has(e.market) : 'flee' in e ? world.content.locations.has(e.to) : true)),
-  )
+  const ok =
+    parsed.data.phases.every((p) => p.effects.every((e) => ('place' in e && 'state' in e ? world.content.locations.has(e.place) : 'area' in e ? world.content.areas.has(e.area) : 'market' in e ? world.content.items.has(e.market) : true))) &&
+    parsed.data.steps.every((s) => !('flee' in s.do) || (world.content.locations.has(s.do.to) && world.content.areas.has(s.do.flee)))
   return ok ? parsed.data : undefined
 }
 
@@ -370,7 +410,9 @@ export function applyOutput(world: World, run: ChronicleRun, output: ChronicleOu
       continue
     }
     const id = `chronicle_${state.runs + 1}_${(world.state.dynamicPlans ? Object.keys(world.state.dynamicPlans).length : 0) + 1}`
-    const plan = toPlan(world, op, id)
+    // What drove it, for the returns: the newest claim among the big news of the line.
+    const cause = state.lines.find((l) => l.id === op.line)?.facts.map((f) => factById(world, f)).filter((f): f is Fact => Boolean(f?.claim && f.belang >= 4)).at(-1)?.claim
+    const plan = toPlan(world, op, id, cause)
     if (!plan) {
       problems.push(`plan "${op.name}": does not fit this world`)
       continue
