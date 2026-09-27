@@ -52,7 +52,7 @@ import { flirt, marry } from './social/romance'
 import { conversationActions, evaluate, expireConditions, questAction, questlog, questPage, questsOnDeath, runQuestAction, setPlaceState, startQuest, triggers, type QuestHost } from './quests/engine'
 import { PlaceState } from './quests/schema'
 import { plansDue, startPlan, startWorldPlans } from './quests/plans'
-import { primeWatchers, processSignals } from './signals'
+import { primeWatchers, processSignals, queueSignal } from './signals'
 import { mediateBetween } from './aftermath'
 import { groupBetween, mediateGroup, sideWith } from './social/groups'
 import { breakOff, chatLine, chatLineRequest, listen, longListen } from './chatter'
@@ -199,6 +199,8 @@ export class Engine {
   private readonly host: CommandHost
   private llm?: LlmClient
   private readonly listeners = new Set<(line: GameLogLine) => void>()
+  /** The chronicler's last runs, for the dev menu (M10.1): in memory only. */
+  readonly devRuns: { run: string; t: number; lines: string[]; offered: Offered; output: ChronicleOutput | null; problems: string[] }[] = []
   private eventMark: number
   /** The world builder's @ commands are on (a development build). */
   builder: boolean
@@ -535,6 +537,9 @@ export class Engine {
         if (!this.state.chronicle.pending.some((r) => r.id === run.id)) continue
         this.record({ t: this.world.now, k: 'chron', run: run.id, v: output, ...(offered ? { offered } : {}) })
         problems.push(...applyRun(this.world, run.id, output, undefined, offered))
+        // For the dev menu (M10.1): what the run got, gave and had refused. Not saved.
+        this.devRuns.push({ run: run.id, t: this.world.now, lines: run.lines, offered: offered ?? { facts: [], allowed: [] }, output, problems: [...problems] })
+        if (this.devRuns.length > 20) this.devRuns.shift()
         this.dialogue.syncNews()
         done.push({ run: run.id, problems })
       }
@@ -1335,7 +1340,7 @@ export class Engine {
       case 'plan': {
         const id = rest[0] ?? ''
         if (!this.content.plans.has(id)) return [{ kind: 'error', text: `@plan <id>: ${[...this.content.plans.keys()].join(', ')}` }]
-        return [...startPlan(this.world, this.questHost, id, 'builder'), ...this.pass(0)]
+        return [{ kind: 'system', text: `[build] The plan ${this.content.plans.get(id)!.name} starts.` }, ...startPlan(this.world, this.questHost, id, 'builder'), ...this.pass(0)]
       }
       case 'tension': {
         // @tension rijkland 30: the tension between this land and a realm goes up (or down), ten at a time.
@@ -1370,8 +1375,40 @@ export class Engine {
         const wait = (hour * 60 - minute + 24 * 60) % (24 * 60) || 24 * 60
         return [{ kind: 'system', text: `[build] ${wait} minutes pass.` }, ...this.pass(wait)]
       }
+      case 'skip': {
+        // @skip 1: whole days pass (M10.1, the dev menu), with everything that happens in them.
+        const days = Number(rest[0] ?? 1)
+        if (!Number.isFinite(days) || days <= 0 || days > 30) return [{ kind: 'error', text: '@skip <days, 1 to 30>' }]
+        const out: Output[] = [{ kind: 'system', text: `[build] ${days === 1 ? 'A day passes' : `${days} days pass`}.` }]
+        for (let d = 0; d < days; d++) out.push(...this.pass(24 * 60))
+        return out
+      }
+      case 'market': {
+        // @market lamp_oil 0.5: what comes in of a thing, as a share (the effect market of the plans).
+        const item = rest[0] ?? ''
+        const factor = Number(rest[1])
+        if (!this.content.items.has(item) || !Number.isFinite(factor) || factor < 0 || factor > 3) return [{ kind: 'error', text: '@market <item> <share 0 to 3>' }]
+        ;(this.state.market ??= {})[item] = factor
+        return [{ kind: 'system', text: `[build] ${itemName(this.content, item)}: ${factor} of what comes in.` }, ...this.pass(0)]
+      }
+      case 'signal': {
+        // @signal quarrel npc_gerrit npc_jan_visser: a signal as a watcher would give it, for the aftermath to take up.
+        const kind = rest[0] ?? ''
+        const who = rest.slice(1).filter((id) => this.content.npcs.has(id))
+        const kinds = [...new Set([...this.content.watchers.values()].map((w) => w.signal))].sort()
+        if (!kinds.includes(kind)) return [{ kind: 'error', text: `@signal <kind> [people]: ${kinds.join(', ')}` }]
+        const place = who[0] ? this.state.npcs[who[0]]!.location : this.state.player.location
+        queueSignal(this.world, { kind, who, place, cause: [], belang: 2, watcher: 'builder' })
+        return [{ kind: 'system', text: `[build] Signal ${kind}${who.length ? ` for ${who.map((id) => callName(this.world.npc(id))).join(' and ')}` : ''}.` }, ...this.pass(0)]
+      }
+      case 'budget': {
+        // @budget 0.5: the hourly budget for the models; the gateway keeps it, the log notes it.
+        const usd = Number(rest[0])
+        if (!Number.isFinite(usd) || usd < 0) return [{ kind: 'error', text: '@budget <dollars an hour>' }]
+        return [{ kind: 'system', text: `[build] The models may spend ${usd.toFixed(2)} dollars an hour.` }]
+      }
       default:
-        return [{ kind: 'error', text: 'Build commands: @kill <person> [how], @who-knows <topic>, @send <person> <place> [days], @where <person>, @fight <encounter or creature> [count], @xp <amount>, @like <person> <affinity> [trust], @goto <place>, @bring <person>, @give <item> [count], @flag <name> [value], @quest <id>, @plan <id>, @tension <realm> <change>, @place <place> <state>, @time <hour>, @money <duiten>.' }]
+        return [{ kind: 'error', text: 'Build commands: @kill <person> [how], @who-knows <topic>, @send <person> <place> [days], @where <person>, @fight <encounter or creature> [count], @xp <amount>, @like <person> <affinity> [trust], @goto <place>, @bring <person>, @give <item> [count], @flag <name> [value], @quest <id>, @plan <id>, @tension <realm> <change>, @place <place> <state>, @time <hour>, @money <duiten>, @skip <days>, @market <item> <share>, @signal <kind> [people], @budget <dollars>.' }]
     }
   }
 

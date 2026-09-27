@@ -1,6 +1,6 @@
 import { app, BrowserWindow, dialog, ipcMain, safeStorage, shell } from 'electron'
 import { randomUUID } from 'node:crypto'
-import { rmSync, watch } from 'node:fs'
+import { existsSync, readdirSync, readFileSync, rmSync, watch } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { ContentError, draftRequest, Engine, ENTITY_KINDS, lineDiff, readDraft, type Content, type Edit, type EntityKind, type FileChange, type Output, type SaveData } from '../engine'
@@ -258,6 +258,14 @@ ipcMain.handle('engine:command', async (_event, input: unknown) => {
 })
 
 ipcMain.handle('engine:page', (_event, id: unknown) => engine?.page(String(id)))
+// Under the bonnet (M10.1): a production build does not bundle the dev view at all.
+if (import.meta.env.DEV) {
+  ipcMain.handle('dev:view', async (_event, section: unknown, focus: unknown) => {
+    if (!engine || app.isPackaged) return undefined
+    const { devView } = await import('../engine/dev')
+    return devView(engine, String(section) as 'people' | 'background' | 'chronicler', typeof focus === 'string' ? focus : undefined)
+  })
+}
 ipcMain.handle('engine:creation', () => engine?.creationData())
 /** The end view shows the last lines; the whole log goes to a file with [Download]. */
 const END_LINES = 2000
@@ -565,6 +573,25 @@ function createWindow(): void {
           })()`,
         )
         console.log(`[smoke] ${room.split('\n')[0]}`)
+        // Under the bonnet (M10.1): a production build has no dev menu, no bridge to it, and no trace of it in its files.
+        if (!import.meta.env.DEV) {
+          const opened: boolean = await window!.webContents.executeJavaScript(
+            `(async () => {
+              const input = document.querySelector('input[aria-label="Command"]')
+              if (input) {
+                const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set
+                set.call(input, '@dev')
+                input.dispatchEvent(new Event('input', { bubbles: true }))
+                input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))
+                await new Promise((r) => setTimeout(r, 500))
+              }
+              return Boolean(window.wisplight.dev) || Boolean(document.querySelector('[data-dev-menu]'))
+            })()`,
+          )
+          const assets = join(app.getAppPath(), 'out', 'renderer', 'assets')
+          const traces = existsSync(assets) ? readdirSync(assets).filter((f) => readFileSync(join(assets, f), 'utf8').includes('data-dev-menu')) : []
+          console.log(`[smoke] dev menu ${opened || traces.length ? `PRESENT${traces.length ? ` in ${traces.join(', ')}` : ''}` : 'absent'}`)
+        }
         app.quit()
       }, 1500)
     })

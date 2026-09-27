@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { stringify } from 'yaml'
 import { adoptPlaceEdits, draftEdits, ENTITY_KINDS, exitTowards, KIND_NAMES, languageReference, parseEntityYaml, type MapPlace, type ReferenceEntry } from '../../engine'
+import { NpcInspector } from './Inspector'
 import { createEditor, type DiffLine, type Edit, type EditorBridge, type EditorDraft, type EditorSave, type EditorView, type EntityKind, type Raw, type ShownChange, type SimReport, type WorldInfo } from './client'
 
 // The editor (M8, FO chapter 15), in a window of its own: npm run editor, or
@@ -1040,39 +1041,7 @@ function PlaytestPanel({ bridge, world }: { bridge: EditorBridge; world: string 
                   </option>
                 ))}
               </select>
-              {npc && (
-                <div className="inspector small">
-                  <p>
-                    <strong>{npc.name}</strong> at {npc.location}, {npc.activity}.{npc.mood ? ` ${npc.mood}.` : ''}
-                  </p>
-                  <p className="needs">
-                    {Object.entries(npc.needs).map(([need, value]) => (
-                      <span key={need} className={value < 20 ? 'warn' : ''}>
-                        {need} {value}{' '}
-                      </span>
-                    ))}
-                  </p>
-                  <p className="muted">Wants: {npc.goals.join('; ') || 'nothing in particular'}</p>
-                  <p className="muted">Plan: {npc.plan.join(', ') || 'none'}</p>
-                  <p className="muted">{npc.life.join(' ')}</p>
-                  {npc.plans.length > 0 && (
-                    <>
-                      <h3>Part of</h3>
-                      <ul className="check-list">{npc.plans.map((p) => <li key={p}>{p}</li>)}</ul>
-                    </>
-                  )}
-                  {npc.beliefs.length > 0 && (
-                    <>
-                      <h3>Believes</h3>
-                      <ul className="check-list">{npc.beliefs.map((b, i) => <li key={i}>{b}</li>)}</ul>
-                    </>
-                  )}
-                  <h3>Remembers</h3>
-                  <ul className="check-list">{npc.memory.length ? npc.memory.map((m) => <li key={m}>{m}</li>) : <li className="muted">nothing yet</li>}</ul>
-                  <h3>Did</h3>
-                  <ul className="check-list">{npc.days.length ? npc.days.slice(-25).map((d, i) => <li key={i}>{d}</li>) : <li className="muted">nothing worth telling</li>}</ul>
-                </div>
-              )}
+              {npc && <NpcInspector npc={npc} />}
             </div>
           </div>
         </>

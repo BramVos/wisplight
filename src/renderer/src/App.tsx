@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import type { Output } from '../../engine'
 import { createClient, type AiStatus, type CreationData, type EngineClient, type JournalPage, type Reply, type WorldChoice } from './client'
 import { CharacterCreation } from './CharacterCreation'
@@ -10,6 +10,9 @@ import { ConversationView, type TalkLine } from './ConversationView'
 import { JournalView } from './JournalView'
 import { runs } from './mapRuns'
 import { Settings, usd, type SettingsTab } from './Settings'
+
+// Under the bonnet (M10.1): only a development build bundles the dev menu; a production build has no trace of it.
+const DevMenu = import.meta.env.DEV ? lazy(() => import('./dev/DevMenu')) : undefined
 
 type Line = (Output & { id: number }) | { id: number; kind: 'input'; text: string }
 type Status = Reply['status']
@@ -55,6 +58,7 @@ export function App() {
   const [error, setError] = useState<string>()
   const [waiting, setWaiting] = useState(false)
   const [settings, setSettings] = useState<SettingsTab>()
+  const [dev, setDev] = useState(false)
   // The journal window, open at a page or at its index (FO, chapter 2); near things first in a conversation.
   const [journal, setJournal] = useState<{ start?: string; nearby?: boolean }>()
   // Where the conversation in progress began in the log: its window shows the lines from there.
@@ -112,10 +116,20 @@ export function App() {
     logRef.current?.scrollTo({ top: logRef.current.scrollHeight })
   }, [lines, waiting])
 
-  // Menus stop the clock (FO, chapter 3).
+  // Menus stop the clock (FO, chapter 3); the dev menu too, so looking changes nothing.
   useEffect(() => {
-    client?.hold(Boolean(settings) || ending || exporting || typing || Boolean(creation) || Boolean(journal) || Boolean(worlds))
-  }, [client, settings, ending, exporting, typing, creation, journal, worlds])
+    client?.hold(Boolean(settings) || ending || exporting || typing || Boolean(creation) || Boolean(journal) || Boolean(worlds) || dev)
+  }, [client, settings, ending, exporting, typing, creation, journal, worlds, dev])
+
+  // Ctrl+Shift+D opens the dev menu in a development build.
+  useEffect(() => {
+    if (!DevMenu || !client?.dev) return
+    const onKey = (event: globalThis.KeyboardEvent) => {
+      if (event.ctrlKey && event.shiftKey && event.key.toLowerCase() === 'd') setDev((open) => !open)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [client])
 
   // What the editor saves is in the game at once: show the place again (FO, chapter 15).
   useEffect(() => {
@@ -163,6 +177,11 @@ export function App() {
     // The journal opens as its own window.
     if (/^(j|journal|dagboek)$/i.test(text)) {
       setJournal({})
+      return
+    }
+    // @dev opens the dev menu in a development build (M10.1); elsewhere it is an unknown build command.
+    if (DevMenu && client?.dev && /^@dev$/i.test(text)) {
+      setDev(true)
       return
     }
     void send(text)
@@ -476,6 +495,18 @@ export function App() {
       {ending && client && <EndView client={client} onClose={() => setEnding(false)} />}
       {exporting && client && <LogExport client={client} onClose={() => setExporting(false)} />}
       {settings && <Settings bridge={client?.ai} tab={settings} onTab={setSettings} onClose={() => setSettings(undefined)} />}
+      {DevMenu && dev && client && (
+        <Suspense fallback={null}>
+          <DevMenu
+            client={client}
+            onCommand={send}
+            onClose={() => {
+              setDev(false)
+              inputRef.current?.focus()
+            }}
+          />
+        </Suspense>
+      )}
     </div>
   )
 }

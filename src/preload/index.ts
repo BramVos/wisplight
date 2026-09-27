@@ -38,6 +38,8 @@ contextBridge.exposeInMainWorld('wisplight', {
     simulate: (world: string, days: number, seed: number) => ipcRenderer.invoke('editor:simulate', world, days, seed),
     draft: (world: string, ask: string, focus?: { kind: string; id: string }) => ipcRenderer.invoke('editor:draft', world, ask, focus),
   },
+  // Under the bonnet (M10.1): only a development build has the dev menu.
+  ...(import.meta.env.DEV ? { dev: { view: (section: string, focus?: string) => ipcRenderer.invoke('dev:view', section, focus) } } : {}),
   onTick: (listener: (reply: unknown) => void) => {
     const handler = (_event: IpcRendererEvent, reply: unknown) => listener(reply)
     ipcRenderer.on('engine:tick', handler)

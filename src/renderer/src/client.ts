@@ -1,10 +1,12 @@
 import type { CreationData, DiffLine, DraftChange, Edit, EditorView, EntityKind, JournalPage, Output, Raw, SimReport, Status, WorldInfo } from '../../engine'
+import type { DevSection, DevView } from '../../engine/dev'
 import type { Advice, TrialResult } from '../../node/ai/advisor'
 import type { AiLogEntry } from '../../node/ai/log'
 import type { ModelInfo, ProviderId } from '../../node/ai/providers'
 import type { AiOverview } from '../../node/ai/service'
 import type { ChosenRole } from '../../node/ai/settings'
 
+export type { DevSection, DevView }
 export type { Advice, AiLogEntry, AiOverview, ChosenRole, CreationData, DiffLine, DraftChange, Edit, EditorView, EntityKind, JournalPage, ModelInfo, ProviderId, Raw, SimReport, TrialResult, WorldInfo }
 
 /** A world to play in (M8), and whether it is the one played last. */
@@ -119,6 +121,13 @@ export interface EngineClient {
   builder?: ContentEvents
   /** The editor, in its own window (development builds) or tab (the preview). */
   editor?: EditorBridge
+  /** Under the bonnet (M10.1): the dev menu's view of the running game. Development builds only. */
+  dev?: DevBridge
+}
+
+/** What the dev menu reads (M10.1). Every change it makes is an @-command through command(). */
+export interface DevBridge {
+  view(section: DevSection, focus?: string): Promise<DevView | undefined>
 }
 
 /** Which part of the game log to export. */
@@ -215,6 +224,8 @@ export async function createClient(): Promise<EngineClient> {
     },
     ai: bridge,
     builder,
+    // Under the bonnet (M10.1): only when the preview runs as a development build.
+    ...(import.meta.env.DEV ? { dev: { view: async (section: DevSection, focus?: string) => (await import('../../engine/dev')).devView(engine, section, focus) } } : {}),
     editor: { ...(await createEditor()), open: async () => void window.open(`${window.location.pathname}?editor=1${mock ? '&mock=1' : ''}`, 'wisplight-editor') },
   }
 }

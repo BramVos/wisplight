@@ -1,5 +1,19 @@
 # Changelog
 
+## M10.1 Onder de motorkap, 27 september 2026
+
+Nieuw:
+- **Een dev-menu in het spel**, alleen in een ontwikkelbuild (`npm run dev`, of `npm run web`). Open het met `@dev` in de invoerregel of Ctrl+Shift+D. De klok staat stil zolang het open is, en kijken verandert niets aan het spel.
+- **Mensen:** per persoon behoeften, doelen, plan, de plannen waar ze in zitten, geloof, wat ze weten en geloven, herinneringen en wat ze bezighoudt, en wat hen stuurt met waar het vandaan komt: hun stand (huishoudbeurs tegen het midden), hun houding tegenover de speler (de optelsom), band en vertrouwdheid, en hun banden met anderen. Het is hetzelfde paneel als de NPC-inspecteur in de speeltest van de editor.
+- **Achtergrond:** de signalen die wachten en die net liepen (welke wachter, wie het oppakte, uit hoeveel feiten), de lopende plannen met hun stappen en welke voorwaarde een stap tegenhoudt, en het grootboek per nederzetting.
+- **Kroniekschrijver:** per run wat hij kreeg (de feiten, hoeveel namen hij mocht gebruiken), wat hij teruggaf (lore, notities, plannen) en wat geweigerd werd en waarom, plus de open verhaallijnen met fase, voorganger en volgende stap.
+- **AI:** het logboek van aanroepen met rol, model, tokens, cachedeel, kosten en reactietijd; een klik toont prompt en antwoord.
+- **Sturen:** knoppen voor een dag overslaan, een plan starten, spanning en markt zetten, een signaal afvuren en het uurbudget zetten. Elke knop is een `@`-commando (`@skip`, `@plan`, `@tension`, `@market`, `@signal`, `@budget`), dus het staat in het spellogboek en naspelen klopt.
+
+Testen: `npm run dev`, begin een spel en typ `@dev`. In de browser: `npm run web`, open `http://localhost:5199/?mock=1`, kies een wereld en typ `@dev`. Controles: `npm test` (439 tests). Dat de productiebuild geen menu heeft: `npm run build` en dan `WISPLIGHT_SMOKE=1 npx electron .`, die meldt `dev menu absent`.
+
+Nog niet: runs zonder model (de sjablonen schrijven dan meteen) staan niet in de lijst van runs.
+
 ## M9.2 Waarheid en samenhang, 27 september 2026
 
 Nieuw:

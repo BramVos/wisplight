@@ -522,7 +522,8 @@ function UsageTab({ bridge, overview, refresh }: { bridge: AiBridge; overview: A
   )
 }
 
-function LogTab({ bridge }: { bridge: AiBridge }) {
+/** The calls of this session: role, model, result, time, tokens, cache, cost; a click shows prompt and reply. The dev menu shows it too (M10.1). */
+export function LogTab({ bridge }: { bridge: AiBridge }) {
   const [entries, setEntries] = useState<AiLogEntry[]>()
   const [open, setOpen] = useState<number>()
   useEffect(() => {
@@ -541,6 +542,7 @@ function LogTab({ bridge }: { bridge: AiBridge }) {
             <th scope="col">result</th>
             <th scope="col">ms</th>
             <th scope="col">tokens</th>
+            <th scope="col">cache</th>
             <th scope="col" className="num">
               cost
             </th>
@@ -557,6 +559,7 @@ function LogTab({ bridge }: { bridge: AiBridge }) {
               <td>
                 {entry.inputTokens}/{entry.outputTokens}
               </td>
+              <td>{entry.inputTokens ? `${Math.round((100 * entry.cachedTokens) / entry.inputTokens)}%` : ''}</td>
               <td className="num">{entry.ok ? usd(entry.costUsd, 4) : ''}</td>
             </tr>
           ))}

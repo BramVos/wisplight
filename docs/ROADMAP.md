@@ -292,13 +292,13 @@ Scope: FO 4 "Weergave" (besluit 27 september 2026). De streekkaart en de landkaa
 
 Scope: een dev-menu in het spel zelf (besluit 27 september 2026), alleen in een ontwikkelbuild (`app.isPackaged` is uit, dezelfde vlag als de bouwmodus en de editor) en pas zichtbaar na een code in de invoerregel. Niet in de productiebuild. Wat de editor al toont in de speeltest (NPC-inspecteur, verhaallijnen met fase) hergebruikt het menu voor het lopende spel, zodat er één stel panelen is.
 
-- [ ] Het menu verschijnt met `@dev` (of een toetscombinatie) in een ontwikkelbuild en bestaat niet in een productiebuild: de code wordt niet meegebouwd, en `npm run build` plus de rooktest bewijzen dat
-- [ ] Mensen: per NPC behoeften, doelen, plan, voornemen, geloof, kennis en herinneringen van het lopende spel, live, met de waarde van elke slider (stand, band, houding, vertrouwdheid) en waar die vandaan komt
-- [ ] Achtergrond: de signaalwachtrij met wachters die vuurden, lopende plannen met hun stappen en voorwaarden (welke voorwaarde hield een stap tegen), de standaardnasleep die het overnam, en het grootboek per nederzetting
-- [ ] Kroniekschrijver: per run wat hij kreeg (feiten, kaarten), wat hij teruggaf, wat is geweigerd en waarom, en de verhaallijnen met fase en volgende beat
-- [ ] AI: het logboek van aanroepen met rol, model, tokens, cachedeel, kosten en reactietijd, en de prompt en het antwoord uitklapbaar
-- [ ] Knoppen om te sturen zonder te typen: een dag overslaan, een plan starten, spanning en markt zetten, een signaal afvuren, het budget zetten, en alles wat je zo doet komt als `@`-commando in het spellogboek zodat naspelen klopt
-- [ ] Het menu leest alleen; elke ingreep loopt via de motor en het logboek, en de speelstand verandert niet door het openen van het menu
+- [x] Het menu verschijnt met `@dev` (of een toetscombinatie) in een ontwikkelbuild en bestaat niet in een productiebuild: de code wordt niet meegebouwd, en `npm run build` plus de rooktest bewijzen dat
+- [x] Mensen: per NPC behoeften, doelen, plan, voornemen, geloof, kennis en herinneringen van het lopende spel, live, met de waarde van elke slider (stand, band, houding, vertrouwdheid) en waar die vandaan komt
+- [x] Achtergrond: de signaalwachtrij met wachters die vuurden, lopende plannen met hun stappen en voorwaarden (welke voorwaarde hield een stap tegen), de standaardnasleep die het overnam, en het grootboek per nederzetting
+- [x] Kroniekschrijver: per run wat hij kreeg (feiten, kaarten), wat hij teruggaf, wat is geweigerd en waarom, en de verhaallijnen met fase en volgende beat
+- [x] AI: het logboek van aanroepen met rol, model, tokens, cachedeel, kosten en reactietijd, en de prompt en het antwoord uitklapbaar
+- [x] Knoppen om te sturen zonder te typen: een dag overslaan, een plan starten, spanning en markt zetten, een signaal afvuren, het budget zetten, en alles wat je zo doet komt als `@`-commando in het spellogboek zodat naspelen klopt
+- [x] Het menu leest alleen; elke ingreep loopt via de motor en het logboek, en de speelstand verandert niet door het openen van het menu
 
 ## M10.3 Levende gesprekken en kleine verbeteringen
 

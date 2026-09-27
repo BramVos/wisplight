@@ -114,7 +114,7 @@ export function simulate(content: Content, days: number, seed = 1): SimReport {
     }),
     people: Object.keys(world.state.npcs)
       .sort()
-      .map((id) => snapshot(engine, id, timeline.get(id) ?? [])),
+      .map((id) => npcSnapshot(engine, id, timeline.get(id) ?? [])),
     signals: (world.state.signals?.log ?? []).map((s) => `${world.date(s.t).split(',')[0]}: ${s.kind}${s.event ? ` (${s.event})` : ''}${s.who.length ? ` for ${s.who.map((w) => nameOf(world, w)).join(' and ')}` : ` at ${nameOf(world, s.place)}`}, ${HANDLED[s.handled ?? ''] ?? 'nobody took it up'}`),
     plans: (world.state.plans ?? []).map((p) => {
       const plan = planOf(world, p.plan)
@@ -149,7 +149,8 @@ function written(raw: Record<string, unknown>): Record<string, unknown> {
 /** Who took a signal up, in words. */
 const HANDLED: Record<string, string> = { rules: 'the standard aftermath', brain: 'a brain', chronicler: 'the chronicler', none: 'nobody took it up' }
 
-function snapshot(engine: Engine, id: string, days: string[]): NpcSnapshot {
+/** One person as the inspector shows them (the playtest, and the dev menu of M10.1). */
+export function npcSnapshot(engine: Engine, id: string, days: string[] = []): NpcSnapshot {
   const world = engine.world
   const npc = world.state.npcs[id] as NpcState
   const place = (to: string) => (world.content.locations.has(to) ? world.location(to).name : to)

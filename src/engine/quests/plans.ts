@@ -335,3 +335,18 @@ export function fled(world: World): string[] {
 
 /** The claim that drove a plan: its signal's, for the conditions of a return. */
 export type Cause = Claim
+
+/**
+ * What holds a step back now, in words, or undefined (M10.1, the dev menu):
+ * the first condition that does not hold, or the verb's standard condition.
+ * Reads only.
+ */
+export function stepHeld(world: World, p: PlanState, step: Step): string | undefined {
+  const members = step.each ? (p.groups[step.each] ?? []).filter((m) => p.steps?.[step.id]?.members?.[m] === undefined) : [undefined]
+  const who = members[0]
+  const ctx = { plan: p, bind: { ...p.bind, ...(who ? { who } : {}) }, host: undefined as unknown as QuestHost, out: [] }
+  const blocking = step.when.find((c) => !holds(world, bindValue(world, c, ctx), undefined))
+  if (blocking) return `${who ? `${who}: ` : ''}${JSON.stringify(blocking)}`
+  const guard = step.unguarded && p.source !== 'chronicler' ? undefined : verbGuard(world, ctx, step.do)
+  return guard ? `${who ? `${who}: ` : ''}${guard}` : undefined
+}
