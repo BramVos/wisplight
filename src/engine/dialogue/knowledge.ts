@@ -299,7 +299,18 @@ export class Knowledge {
 
   /** Where the NPC has it from, and how sure it is, in words for the prompt. */
   source(heard: Heard): string {
-    const from = heard.from === 'witness' ? 'You saw it yourself.' : heard.from === 'player' ? 'The stranger told you.' : `You heard it from ${callName(this.world.npc(heard.from))}.`
+    const from =
+      heard.from === 'witness'
+        ? 'You saw it yourself.'
+        : heard.from === 'player'
+          ? 'The stranger told you.'
+          : heard.from === 'news'
+            ? 'It is going round; you heard it from people passing through.'
+            : heard.from === 'board'
+              ? 'You read it on the notice board.'
+              : this.world.content.npcs.has(heard.from)
+                ? `You heard it from ${callName(this.world.npc(heard.from))}.`
+                : 'You heard it somewhere.'
     const sure = heard.reliability >= 0.9 ? '' : heard.reliability >= 0.7 ? ' You are fairly sure.' : ' You are not sure it is true.'
     return `(${from}${sure}${heard.grown ? ' The way you heard it, it was bigger than this.' : ''})`
   }

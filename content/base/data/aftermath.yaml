@@ -149,3 +149,242 @@ aftermath:
     steps:
       - id: news
         do: { news: "{place} is itself again, and people are going back.", area: $area }
+
+  # M8.2: what follows by custom when nobody's brain plans it. Where brain is
+  # true, the brain of $a may make a plan of their own instead (with a model).
+
+  # Come up in the world: the village notices, the neighbours are envious, and
+  # from now on the chapel, not the inn (the rule of standing does that).
+  - id: rose_in_standing
+    signal: rose_in_standing
+    topic: standing
+    brain: true
+    steps:
+      - id: news
+        at: { hour: 20 }
+        do:
+          tell:
+            kind: standing
+            about: [$a]
+            place: { social_near: $a }
+            belang: 2
+            title: "{a} has come up in the world"
+            precise: "{a} stood everyone a round at {place} to show he has money now, and said it would be the last time he drank with the likes of them."
+            village: "{a} has grown too good for the rest of us, they say."
+            far: "Somebody in the Holleveen has come into money."
+      - id: mind
+        do: { thought: $a, text: "You are somebody now, and people had better see it.", days: 14 }
+
+  # Whatever they do about it, the neighbours are envious: always, by the rules.
+  - id: envy
+    signal: rose_in_standing
+    topic: envy
+    steps:
+      - id: envy
+        do: { regard: [{ neighbours_of: $a }], to: $a, affinity: -5 }
+
+  # A quarrel: the next evening someone both trust tries to make peace. Who
+  # mediates decides how it ends; without anyone, it becomes a feud in a week.
+  - id: quarrel
+    signal: quarrel
+    topic: quarrel
+    brain: true
+    expires: 8
+    steps:
+      - id: mediate
+        at: { days: 1, hour: 19 }
+        do: { mediate: [$a, $b] }
+
+  # A feud: enemies from now on, and the village knows it.
+  - id: feud
+    signal: feud
+    topic: feud
+    steps:
+      - id: enemies
+        do: { set_tie: [$a, $b], role: rival, bond: -2 }
+      - id: news
+        do:
+          tell:
+            kind: feud
+            about: [$a, $b]
+            place: { home_of: $a }
+            belang: 2
+            title: "{a} and {b} are not speaking"
+            precise: "{a} and {b} have not made it up, and now they cross the street rather than pass each other."
+            village: "{a} and {b} won't speak to each other any more."
+            far: "There's a feud in the Holleveen."
+
+  # Doubt with something at stake: first ask a trader, or go and look.
+  - id: doubt
+    signal: doubt
+    about: first
+    topic: doubt
+    brain: true
+    expires: 3
+    steps:
+      - id: ask
+        at: { hours: 1 }
+        otherwise: wait
+        do: { ask_around: $a, about: [$subject, $key] }
+
+  # A stranger who is not believed, by someone the gates let through.
+  - id: stranger_unwelcome
+    signal: stranger_unwelcome
+    about: first
+    topic: stranger
+    steps:
+      - id: chase
+        do: { chase_away: [$a, $b] }
+
+  # Known again after a long time: it comes back to them, and they go and speak to them.
+  - id: recognised
+    signal: recognised
+    about: first
+    topic: meeting
+    brain: true
+    expires: 2
+    steps:
+      - id: recall
+        do: { recall: $a, of: $b }
+      - id: talk
+        do: { goal: Talk, who: $a, target: $b, hours: 12 }
+
+  # Believed a warning about the dyke: carry word to the dyke reeve.
+  - id: warned
+    signal: warned
+    about: first
+    topic: warning
+    brain: true
+    expires: 3
+    steps:
+      - id: word
+        do: { carry_word: $a, to: npc_sijbrand, about: $subject }
+
+  # People from elsewhere stay on: by custom, only grumbling.
+  - id: strangers_stay
+    signal: strangers_stay
+    topic: strangers
+    brain: true
+    steps:
+      - id: mind
+        do: { thought: $a, text: "Those people are still here, eating our bread.", days: 7 }
+
+  # M8.3: the chronicler plans.
+
+  # Too many newcomers and too little food: those who mind them most band together.
+  - id: friction
+    signal: friction
+    topic: friction
+    brain: true
+    steps:
+      - id: band
+        do: { form_group: [$a, $b, $c], aim: against, about: $area, name: "those who want the newcomers gone" }
+
+  # Two brains' plans cross, and nobody writes the story: they go on, and people talk.
+  - id: plans_cross
+    signal: plans_cross
+    topic: crossing
+    brain: true
+    steps:
+      - id: talk
+        do:
+          tell:
+            kind: crossing
+            about: [$a, $b]
+            place: $place
+            belang: 1
+            title: "{a} and {b} are at cross purposes"
+            precise: "{a} and {b} are each going their own way about it, and each against the other."
+            village: "{a} and {b} are at it again, they say."
+            far: "Two people are at odds."
+
+  # A warning that came true: whoever did not believe it thinks better of the one who gave it, and may be ashamed.
+  - id: warning_proven
+    signal: warning_proven
+    topic: warning
+    about: first
+    steps:
+      - id: credit
+        do: { regard: [$a], to: $b, affinity: 10 }
+      - id: mind
+        do: { thought: $a, text: "{b} tried to warn you, and {b} was right.", days: 14 }
+      - id: shame
+        when: [{ did: chased, who: $a, to: $b }]
+        do: { thought: $a, text: "You ran {b} out of the village for telling the truth. You cannot look at the water without thinking of it.", days: 30 }
+      - id: story
+        when: [{ did: chased, who: $a, to: $b }]
+        do:
+          tell:
+            kind: warning
+            about: [$a, $b]
+            place: $place
+            belang: 3
+            title: "the stranger who was right"
+            precise: "{b} warned them about the dyke, and {a} ran {b} off. The dyke broke all the same."
+            village: "They chased off the one who warned them, and then the dyke went."
+            far: "Nobody listened to the one who warned them, they say."
+
+  # M8.4: the economy. The same shortage goes differently in a trading town
+  # and in a village: the town sends for more, the village makes do and
+  # grumbles, and a stranger finds it harder there (openness, belief.ts).
+  - id: shortage_sent_for
+    signal: shortage
+    topic: shortage
+    brain: true
+    when: [{ character: $area, is: trade }]
+    steps:
+      - id: send
+        do: { order: $value, to: $area, qty: 8, days: 3, by: a carter sent out of town }
+      - id: word
+        do: { news: "{value} are short in {area}, and the merchants have sent out for more. It will cost.", area: $area }
+
+  - id: shortage_made_do
+    signal: shortage
+    topic: shortage
+    brain: true
+    when: [{ not: { character: $area, is: trade } }]
+    steps:
+      - id: word
+        do: { news: "There are no {value} to be had in {area}. People make do, and grumble about it.", area: $area }
+
+  - id: surplus
+    signal: surplus
+    topic: surplus
+    brain: true
+    steps:
+      - id: word
+        do: { news: "{value} are piling up in {area}; you can have them for next to nothing.", area: $area }
+
+  - id: price_doubled
+    signal: price_doubled
+    topic: price
+    brain: true
+    steps:
+      - id: word
+        do: { news: "{a} is asking twice the worth for {value}, and people say so.", area: $area }
+      - id: grudge
+        do: { regard: [{ neighbours_of: $a }], to: $a, affinity: -3 }
+
+  - id: missing_trade
+    signal: missing_trade
+    topic: trade
+    steps:
+      - id: notice
+        do:
+          post: { board_near: $place }
+          fact:
+            kind: notice
+            about: [$area]
+            belang: 2
+            title: "nobody to work {place}"
+            precise: "A note on the board: {place} stands idle, and anyone who knows the work is wanted."
+            village: "Nobody works {place} any more, they say. Somebody ought to."
+            far: "A trade has nobody to work it."
+            claim: { subject: $subject, key: trade, value: $value }
+
+  - id: route_closed
+    signal: route_closed
+    topic: route
+    steps:
+      - id: word
+        do: { news: "Nothing comes along {subject} any more. What it brought will be dear soon.", area: $area }

@@ -26,10 +26,15 @@ export const LISTS = {
   plan: 'plans',
   watcher: 'watchers',
   aftermath: 'aftermath',
+  intention: 'intentions',
   verb: 'verbs',
   creature: 'creatures',
   encounter: 'encounters',
   region: 'regions',
+  settlement: 'settlements',
+  route: 'routes',
+  outland: 'outlands',
+  resource: 'resources',
 } as const
 export type EntityKind = keyof typeof LISTS
 export const ENTITY_KINDS = Object.keys(LISTS) as EntityKind[]

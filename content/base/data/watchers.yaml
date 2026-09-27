@@ -41,3 +41,76 @@ watchers:
   - id: place_restored
     signal: place_restored
     fact: { key: state, value: normal }
+
+  # M8.2: the brain plans.
+
+  # A household that rose two standings (money against the middle of the region).
+  - id: rose_in_standing
+    signal: rose_in_standing
+    probe: { standing_rise: 2 }
+
+  # A quarrel: a grudge between two, until someone makes peace.
+  - id: quarrel
+    signal: quarrel
+    fact: { kind: quarrel }
+    who: [$about]
+    belang: 1
+
+  # A grudge that lasted a week is a feud.
+  - id: feud
+    signal: feud
+    probe: { grudge: 7 }
+
+  # Someone believes a warning that a dyke leaks: they carry word to the dyke reeve.
+  - id: warned
+    signal: warned
+    belief: { key: state, value: leaking }
+
+  # People from elsewhere who have stayed a week: the one of the village who likes them least has a choice to make.
+  - id: strangers_stay
+    signal: strangers_stay
+    probe: { strangers_stay: 5 }
+
+  # Too many newcomers for the village, and food short: friction.
+  - id: friction
+    signal: friction
+    probe: { friction: 0.6 }
+
+  # The economy (M8.4): what the ledgers of the settlements show.
+  # A good short two days running: for the shopkeepers who sell it ($a), $area, $value the good.
+  - id: shortage
+    signal: shortage
+    probe: { shortage: 2 }
+    belang: 2
+
+  # Still short after a week: the whole place feels it.
+  - id: long_shortage
+    signal: shortage
+    event: lasting
+    probe: { shortage: 7 }
+    belang: 3
+
+  # More than twice what the place keeps, five days running.
+  - id: surplus
+    signal: surplus
+    probe: { surplus: 5 }
+    belang: 2
+
+  # A counter asking twice the worth of a good or more.
+  - id: price_doubled
+    signal: price_doubled
+    probe: { price_doubled: 2 }
+    belang: 2
+
+  # A workshop nobody has worked for three days.
+  - id: missing_trade
+    signal: missing_trade
+    probe: { missing_trade: 3 }
+    belang: 3
+
+  # A trade route closed: $subject the route.
+  - id: route_closed
+    signal: route_closed
+    fact: { key: route, value: closed }
+    who: []
+    belang: 3

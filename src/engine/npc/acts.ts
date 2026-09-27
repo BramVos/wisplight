@@ -4,7 +4,7 @@ import { meet, recordFact } from '../news'
 import { questsOf } from '../life'
 import { dangerOf } from '../social/companions'
 import { shiftBond, setMood } from '../social/deeds'
-import { investigated, type Crime } from '../social/crime'
+import { investigated, lawAt, type Crime } from '../social/crime'
 import type { Step } from '../state'
 import type { World } from '../world'
 import { remember } from './execute'
@@ -54,12 +54,17 @@ export function performAct(world: World, npcId: string, step: ActStep): boolean 
       const shop = world.location(here).services.find((s) => s.buys.includes(item))
       if (!qty || !shop) return false
       const price = world.content.items.get(item)?.value ?? 1
-      me.inventory[item] = 0
-      delete me.inventory[item]
-      me.money += price * qty
+      // The shopkeeper pays from the till, and buys no more than it holds (M8.4: not money from nothing).
+      const buyer = world.npcState(shop.provider)
+      const sold = shop.provider === npcId ? qty : Math.min(qty, Math.floor(Math.max(0, buyer.money) / price))
+      if (sold <= 0) return false
+      if (shop.provider !== npcId) buyer.money -= price * sold
+      me.inventory[item] = qty - sold
+      if (!me.inventory[item]) delete me.inventory[item]
+      me.money += price * sold
       const stock = world.stock(here, shop.id)
-      stock[item] = (stock[item] ?? 0) + qty
-      event(world, npcId, `{name} sells ${itemName(world.content, item, qty)} over the counter.`)
+      stock[item] = (stock[item] ?? 0) + sold
+      event(world, npcId, `{name} sells ${itemName(world.content, item, sold)} over the counter.`)
       return true
     }
     case 'deliver':
@@ -156,7 +161,7 @@ export function performAct(world: World, npcId: string, step: ActStep): boolean 
       else {
         // Nobody saw: the loss is noticed later, and the rumour may name the wrong person.
         const crimes = (world.state.crimes ??= [])
-        crimes.push({ id: `crime_${crimes.length + 1}`, kind: 'theft', t: world.now, place: here, victim: shop.provider, item, offender: npcId, value: world.basePrice(item), grave: false, witnesses: [], reported: [], law: world.location(here).area === 'waagdam' ? 'waagdam' : 'count', fine: 0, unseen: true, discoverAt: world.now + 90 })
+        crimes.push({ id: `crime_${crimes.length + 1}`, kind: 'theft', t: world.now, place: here, victim: shop.provider, item, offender: npcId, value: world.basePrice(item), grave: false, witnesses: [], reported: [], law: lawAt(world, here), fine: 0, unseen: true, discoverAt: world.now + 90 })
       }
       return true
     }
@@ -196,7 +201,7 @@ function caught(world: World, npcId: string, kind: Crime['kind'], place: string,
     remember(world, w, `I saw ${name} ${doing}.`)
   }
   const crimes = (world.state.crimes ??= [])
-  crimes.push({ id: `crime_${crimes.length + 1}`, kind, t: world.now, place, ...(victim ? { victim } : {}), offender: npcId, value: 0, grave: kind !== 'theft', witnesses, reported: [], law: world.location(place).area === 'waagdam' ? 'waagdam' : 'count', fine: 0 })
+  crimes.push({ id: `crime_${crimes.length + 1}`, kind, t: world.now, place, ...(victim ? { victim } : {}), offender: npcId, value: 0, grave: kind !== 'theft', witnesses, reported: [], law: lawAt(world, place), fine: 0 })
   recordFact(world, { kind: 'crime', about: [npcId, ...(victim ? [victim] : [])], place, belang: kind === 'theft' ? 2 : 3, juice: 0.9, title: `${name} caught ${doing}`, text: { precise: `${name} was seen ${doing} at ${world.location(place).name}.`, village: `You'll never guess. ${name}, ${doing}! In broad daylight.`, far: 'Someone in a village was caught doing wrong.' }, witnesses })
   event(world, npcId, `{name} is seen ${doing}, and knows it.`)
 }

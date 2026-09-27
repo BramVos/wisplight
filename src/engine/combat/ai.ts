@@ -1,4 +1,5 @@
 import { scaledDice } from '../rules/character'
+import { remedyItem } from '../items'
 import {
   abilityTargets,
   actionsFor,
@@ -186,7 +187,8 @@ export function autoTurn(arena: Arena, combat: Combat, f: Fighter, lines: Line[]
         actions -= healing.actions
         continue
       }
-      if (own && arena.items && arena.items.count('herbs') > 0 && useRemedy(arena, combat, f, 'herbs', lines)) {
+      const remedy = remedyItem(arena.content)
+      if (own && remedy && arena.items && arena.items.count(remedy) > 0 && useRemedy(arena, combat, f, remedy, lines)) {
         actions--
         continue
       }

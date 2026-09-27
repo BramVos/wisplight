@@ -132,7 +132,7 @@ Afwijkingen, met reden in FO hoofdstuk 15: geen kaart waarop je plekken sleept (
 
 ## M8.1 Nasleep: fundament (af)
 
-Scope: ontwerp "Signalen en nasleep" (Claude Docs), FO 7, 8 en 15; de taken staan in het werkpakket van dat ontwerp. De impactanalyse is gedaan; eerst komen een vastgelegde oude save per wereld en de gouden scenario's als falende tests. Signalen en wachters in de content (per wereld, met een gedeelde basis), een feit bij elke questuitkomst, banden en huis en werk als laag in de spelstand, standaardnasleep in de content (ook voor het huwelijk van de speler), feiten met een gestructureerde bewering, nieuws voor wie ver weg is, en de effectplannen als algemene planuitvoerder met voorwaarden op wat iemand weet en wat waar is. Wachters en nasleep in de editor. Nog zonder extra AI.
+Scope: ontwerp "Signalen en nasleep" (Claude Docs), FO 7, 8 en 15; de taken staan in het werkpakket van dat ontwerp. De impactanalyse is gedaan; eerst komen een vastgelegde oude save per wereld en de gouden scenario's als falende tests. Signalen en wachters in de content (per wereld; een gedeelde basis pas bij een derde wereld), een feit bij elke questuitkomst, banden en huis en werk als laag in de spelstand, standaardnasleep in de content (ook voor het huwelijk van de speler), feiten met een gestructureerde bewering, nieuws voor wie ver weg is, en de effectplannen als algemene planuitvoerder met voorwaarden op wat iemand weet en wat waar is. Wachters en nasleep in de editor. Nog zonder extra AI.
 
 - [x] De bruiloft van Wouter en Geesje geeft een feest, een verhuizing en een vacature bij Trijntje, en het dorp hoort ervan
 - [x] Trouwt de speler, dan loopt dat via dezelfde nasleep, met dezelfde uitkomst als nu (huis, schoonfamilie, verwachtingen)
@@ -140,37 +140,82 @@ Scope: ontwerp "Signalen en nasleep" (Claude Docs), FO 7, 8 en 15; de taken staa
 - [x] Een nieuwe soort gebeurtenis is toe te voegen met alleen content (een wachter en een nasleep), in de editor
 - [x] Alles wat er al was, speelt hetzelfde: het hele testpakket, 30 speldagen simulatie, de uitspeelscripts van beide werelden, en een oude save laadt en speelt verder
 
-## M8.2 Nasleep: het brein plant
+## M8.2 Nasleep: het brein plant (af)
 
-Scope: voornemens over meerdere dagen, liegen met een motief en navragen bij een reiziger of handelaar, openheid van een plek naar vreemden, geloven of twijfelen aan een bewering, vergeten en herkennen, voornemens als sjablonen in de content waaruit het brein kiest en de open bindingen invult, alleen voor zichzelf en het eigen huishouden (klein model, validator, budget, terugval op de standaardnasleep; gewijzigd na de review van 27 september, zie `docs/review-opzet-2026-09-27.md` en het ontwerp onder "Bijsturing na de review"), vijf standen (arm, gewoon, burger, welgesteld, notabel), voornemens zichtbaar in de speeltest en de NPC-inspecteur. Vooraf, uit de review: de Nethermarch-ids uit de motor, de breinprompt op orde (catalogus gecacht, korte sleutels, gesloten poorten weglaten, geen ochtendkeuze zonder delta, geen model buiten de volledige laag), één werkwoordentaal met het werkwoord `goal` en een permissietabel, en `chance` op een planstap.
+Scope: voornemens over meerdere dagen, liegen met een motief en navragen bij een reiziger of handelaar, openheid van een plek naar vreemden, geloven of twijfelen aan een bewering, vergeten en herkennen, groeten en praatjes waar de speler bij is, voornemens als sjablonen in de content waaruit het brein kiest en de open bindingen invult, alleen voor zichzelf en het eigen huishouden (klein model, validator, budget, terugval op de standaardnasleep; gewijzigd na de review van 27 september, zie `docs/review-opzet-2026-09-27.md` en het ontwerp onder "Bijsturing na de review"), vijf standen (arm, gewoon, burger, welgesteld, notabel), voornemens zichtbaar in de speeltest en de NPC-inspecteur. Vooraf, uit de review: de Nethermarch-ids uit de motor, de breinprompt op orde (catalogus gecacht, korte sleutels, gesloten poorten weglaten, geen ochtendkeuze zonder delta, geen model buiten de volledige laag), één werkwoordentaal met het werkwoord `goal` en een permissietabel, en `chance` op een planstap.
 
-- [ ] Harmen gedraagt zich binnen een week anders als zijn huishouden twee standen stijgt, en het dorp merkt het
-- [ ] Een ruzie die een week blijft, wordt bijgelegd of wordt een vete, afhankelijk van wie er bemiddelt
-- [ ] Een gerucht dat de oorlog voorbij is, van iemand die de vluchtelingen weg wil, laat een deel vertrekken; wie het eerst navraagt bij een handelaar, blijft
-- [ ] Een vreemde met een waarschuwing wordt in Waagdam gehoord en in Molenend gewantrouwd; een enkeling jaagt hem weg, iemand die hem gelooft meldt het, en of de hulp op tijd komt volgt uit de klokken
-- [ ] Wie elkaar lang niet ziet, vergeet elkaar tot een herinnering; een vluchteling die na een jaar terugkomt, wordt door wie hem goed kende herkend en daarop aangesproken
-- [ ] Zonder AI of met het budget op loopt alles door op de standaardnasleep
+- [x] Harmen gedraagt zich binnen een week anders als zijn huishouden twee standen stijgt, en het dorp merkt het
+- [x] Een ruzie die een week blijft, wordt bijgelegd of wordt een vete, afhankelijk van wie er bemiddelt
+- [x] Een gerucht dat de oorlog voorbij is, van iemand die de vluchtelingen weg wil, laat een deel vertrekken; wie het eerst navraagt bij een handelaar, blijft
+- [x] Een vreemde met een waarschuwing wordt in Waagdam gehoord en in Molenend gewantrouwd; een enkeling jaagt hem weg, iemand die hem gelooft meldt het, en of de hulp op tijd komt volgt uit de klokken
+- [x] Wie elkaar lang niet ziet, vergeet elkaar tot een herinnering; een vluchteling die na een jaar terugkomt, wordt door wie hem goed kende herkend en daarop aangesproken
+- [x] Waar de speler is, groeten mensen elkaar naar hun band en blijven ze staan voor een praatje als ze tijd en nieuws hebben; wie erbij komt, kan met LISTEN de strekking opvangen, en over de speler of een geheim zwijgen ze
+- [x] Zonder AI of met het budget op loopt alles door op de standaardnasleep
 
 ## M8.3 Nasleep: de kroniekschrijver plant
 
-Scope: de plannen van de kroniekschrijver krijgen de nieuwe werkwoorden, escalatie vanuit het brein, botsende plannen, plannen voor groepen, wrijving in een dorp en een waarschuwing die uitkomt.
+Scope: de plannen van de kroniekschrijver krijgen de hele werkwoordentaal (permissietabel in `verbs.ts`), escalatie als geen voornemen past of het meer huishoudens raakt, botsende plannen, plannen voor groepen, wrijving in een dorp en een waarschuwing die uitkomt. Uit de review van 27 september (`docs/review-opzet-2026-09-27.md`): opbouw per verhaallijn (fase, tempo dat lijnen in crisis meeweegt, hooguit één geplande beat per lijn), kleinere lijnen, de tegenspelers van de Holleveen als plan in de content, een naslag van voorwaarden en werkwoorden uit de schema's voor editor en `CHRONICLER.md`, en de verhaallijnen in de speeltest. De taken staan in het werkpakket van het ontwerp.
 
-- [ ] De vluchtelingen in Waagdam krijgen samen één plan waarin sommigen terugkeren en anderen blijven
-- [ ] Twee breinen met plannen die elkaar kruisen, worden één verhaal met een uitkomst
-- [ ] Ongeldige stappen worden geweigerd en vallen terug op de standaardnasleep
-- [ ] Bij te veel nieuwkomers en te weinig eten ontstaat een groep tegen de vluchtelingen, en de speler kan kant kiezen of bemiddelen
+- [x] De vluchtelingen in Waagdam krijgen samen één plan waarin sommigen terugkeren en anderen blijven
+- [x] Twee breinen met plannen die elkaar kruisen, worden één verhaal met een uitkomst
+- [x] Ongeldige stappen worden geweigerd en vallen terug op de standaardnasleep
+- [x] Bij te veel nieuwkomers en te weinig eten ontstaat een groep tegen de vluchtelingen, en de speler kan kant kiezen of bemiddelen
+- [x] Een verhaallijn loopt van opzet via crisis naar afloop: de kroniekschrijver zet per lijn een fase en hooguit één geplande beat, en in een dorp met twee lijnen in crisis begint de verhalenmotor niets nieuws
+- [x] De tegenspelers van de Holleveen spelen als plan in de content, met hetzelfde gedrag als de gescripte versie
+- [x] De editor en `CHRONICLER.md` tonen dezelfde naslag van voorwaarden en werkwoorden, gegenereerd uit de schema's, en de speeltest toont de verhaallijnen met hun fase
 
-## M8.4 Nasleep: groei
+## M8.4 Economie
 
-Scope: nieuwe mensen uit sjablonen (gevalideerd, met een maximum per seizoen), een grootboek per nederzetting, hulpbronnen per zone, projecten en bouwwerken, nederzettingen in de editor. Een rangwissel van een nederzetting pas als dat speelt.
+Scope: ontwerp "Signalen en nasleep", hoofdstuk Economie (besluit 27 september 2026). Vraag en aanbod per nederzetting in plaats van per toonbank: een grootboek per nederzetting (werkplaatsen met benoemde en naamloze werkers, bevolking, verbruik, productie en aanvoer, eens per speldag), hulpbronnen per zone uit het wereldboek (turf, klei, hout, rogge, paling; in een andere wereld ook erts of steen), handelsroutes met aanvoer van binnen en buiten de kaart, ketens die sluiten (een goed dat verbruikt wordt, wordt ergens gemaakt of aangevoerd, en de editor waarschuwt waar niet), een karakter per nederzetting (waar ze van leeft, plus tags uit de content) dat openheid, generieke mensen en wachters kleurt, en de signalen tekort, overschot, prijs verdubbeld, ambacht zonder beoefenaar en route gesloten als wachters in de content. Winkels vullen uit het grootboek; de vaste `supply`-regels blijven de terugval, zodat bestaande content en oude saves blijven werken. Echte productie stap voor stap alleen door benoemde NPC's in beeld. De bekende geldlekken (naamloze klanten, de verkoopact van een NPC, loon van gezellen) sluiten waar het grootboek ze raakt.
+
+Let op, voor de bouwer: dit werkpakket is op 27 september 2026 uit "Nasleep: groei" gehaald en ervoor gezet; groei is nu M8.5. Een streek buiten de kaart (Zwolderkamp, de Cog League) is alleen een stomp in de content: naam, wat ze stuurt en vraagt, prijspeil, drager en hoe vaak. Werk haar niet verder uit. Pas als de kroniekschrijver de streek uitwerkt, krijgt ze een eigen grootboek, en de route houdt dan haar id. Wat de kroniekschrijver intussen over de streek vertelt, moet kloppen met de stomp.
+
+- [x] Elke nederzetting van beide werelden heeft een grootboek dat eens per speldag rekent, en de toonbanken vullen eruit; zonder grootboek werkt de oude bevoorrading zoals nu
+- [x] Lampolie en spijkers komen de Nethermarch alleen binnen over de route uit Zwolderkamp; sluit de oorlog die route, dan is er binnen een week een tekort, stijgt de prijs bij Hendrik en klinkt het signaal, zonder dat iemand dat schreef
+- [x] Na de storm staat de molen stil: de meelvoorraad in Veenhoek daalt en de prijs bij Lubbert in Waagdam stijgt; draait de molen weer, dan zakt hij
+- [x] Een tekort dat een week blijft, een overschot en een ambacht dat niemand uitoefent zijn signalen die het brein of de kroniekschrijver oppakt, met de wachters in de content
+- [x] Waagdam (handelsstad) en Veenhoek (turfdorp) reageren anders op dezelfde vreemde en hetzelfde tekort, uit karakter en grootboek, zonder code per plek
+- [x] Een streek buiten de kaart bestaat als stomp; de kroniekschrijver praat erover in lijn met wat ze stuurt en vraagt, en werkt haar pas uit als het verhaal daarom vraagt
+- [x] De editor toont per nederzetting waar ze van leeft, haar karakter en haar routes, en waarschuwt bij een goed dat verbruikt wordt maar nergens gemaakt of aangevoerd
+- [x] Alles wat er al was, speelt hetzelfde: het hele testpakket, 30 speldagen simulatie, de uitspeelscripts van beide werelden, en een oude save laadt en speelt verder
+
+## M8.5 Nasleep: groei
+
+Scope: nieuwe mensen uit sjablonen (gevalideerd, met een maximum per seizoen), projecten en bouwwerken met materiaal uit het grootboek van M8.4, de speler die werkt voor loon, investeert en vervoert (een affordance kan een proef en ervaring hebben, zodat werk ambacht met oefening is), gegenereerde mensen en plekken in de editor. Een rangwissel van een nederzetting pas als dat speelt. Tot 27 september 2026 was dit M8.4; het grootboek en de hulpbronnen zijn naar M8.4 Economie verhuisd.
 
 - [ ] Een kuiper vestigt zich met zijn gezin in een leeg huis in Veenhoek omdat niemand tonnen maakt
 - [ ] Waagdam bouwt eerst een steenbakkerij en daarna een muur, met materiaal uit de economie
 - [ ] Een tekort dat blijft, leidt tot een besluit van een handelaar of een nieuwkomer
 
-## M9 Afwerking en release
+## M9.1 Vaste ids en de open punten
 
-Scope: FO 18. Balans, toegankelijkheid, prestaties, installers voor Mac en Windows.
+Scope: alles wat na M8.5 nog openstaat (besluit van Bram, 27 september 2026), en ids die nooit veranderen.
+
+Ids in de kern: een id is de sleutel en verandert nooit; een naam, label of beschrijving kan altijd veranderen zonder dat een save of log breekt. Elke wereld houdt een register van alle ids die ooit zijn vastgelegd (`content/<wereld>/ids.lock`, door het spel bijgehouden). Het laden weigert content waarin een vastgelegde id ontbreekt zonder grafsteen; een grafsteen zegt wat er van een verwijderd ding overblijft (weg, of opgegaan in een ander id). Oude saves, het spellogboek en de kroniek volgen de grafstenen bij het laden. De editor laat een id alleen invullen bij iets nieuws, ook in YAML, en maakt bij verwijderen een grafsteen.
+
+Verder, uit "Later" in het ontwerp "Signalen en nasleep" en uit eerdere mijlpalen:
+- een archief voor oude feiten die niemand meer kent en die niet in een lijn of lore zitten
+- de afstandsregel voor `feast`, `leave` en `return`: ver weg alleen een feit en een toestandswijziging
+- een optionele zin van de stem voor wie lang blijft luisteren bij een praatje
+- genereren tot speelbaar (niveau 3) voor een streek buiten de kaart
+- de legende-variant van lore meenemen naar een volgend spel
+- een kaart in de editor waarop je plekken versleept
+- een regelset voor Skerrow
+- Busy Hands, voor zover het na werken voor loon in M8.5 nog openstaat
+
+- [ ] Een naam of beschrijving wijzigen in de editor laat elke oude save en elk spellogboek laden en precies naspelen
+- [ ] Een id verwijderen of veranderen kan niet zonder grafsteen: het laden noemt de id en de plek, en de editor maakt de grafsteen zelf
+- [ ] Een save met iets wat later verwijderd of samengevoegd is, laadt en speelt verder volgens de grafsteen
+- [ ] Na 300 speldagen blijven laden, opslaan en het doorvertellen van nieuws even snel als na 30, dankzij het archief
+- [ ] Een feest, vertrek of terugkeer ver van de speler kost geen simulatie van mensen, alleen een feit en een toestandswijziging
+- [ ] Een streek buiten de kaart wordt speelbaar als de speler erheen gaat, gevalideerd als content, en ligt daarna vast in de savegame
+- [ ] Een nieuw spel kan de wereld van een oud spel als legende meenemen, zonder namen van mensen die nog leven
+- [ ] Skerrow heeft een eigen regelset en is met personage en gevecht te spelen
+- [ ] Alles wat er al was, speelt hetzelfde: het hele testpakket, de simulaties, de uitspeelscripts van beide werelden, en oude saves
+
+## M9.2 Afwerking en release
+
+Scope: FO 18. Balans, toegankelijkheid, prestaties, installers voor Mac en Windows. Tot 27 september 2026 was dit M9.
 
 - [ ] Alle niet-functionele eisen uit FO 18 zijn gemeten en gehaald
 - [ ] Installers voor Mac en Windows werken op een schone machine

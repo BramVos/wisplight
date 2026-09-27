@@ -96,3 +96,12 @@ export function matchItem(content: Content, text: string, among?: Iterable<strin
   }
   return undefined
 }
+
+/**
+ * The remedy of a world (M8.2): the item that cures this condition, or else
+ * the first that heals. The Nethermarch's is herbs; the code knows no herbs.
+ */
+export function remedyItem(content: Pick<Content, 'items'>, cures?: string): string | undefined {
+  const remedies = [...content.items.values()].filter((i) => i.remedy).sort((a, b) => a.id.localeCompare(b.id))
+  return (cures ? remedies.find((i) => i.remedy!.cures.includes(cures)) : undefined)?.id ?? remedies.find((i) => i.remedy!.heal)?.id ?? remedies[0]?.id
+}

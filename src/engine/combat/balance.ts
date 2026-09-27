@@ -1,3 +1,4 @@
+import { remedyItem } from '../items'
 import type { Content } from '../content'
 import { Rng } from '../rng'
 import { autoLevelChoice, createCharacter, levelUp, rulesOf, suggestChoice, xpForLevel, type Character } from '../rules/character'
@@ -77,7 +78,8 @@ export function simulateFight(content: Content, character: Character, group: Foe
   const rng = new Rng({}, seed)
   const c: Character = JSON.parse(JSON.stringify(character)) as Character
   const herbs = { count: c.class === 'herbalist' ? 3 : 1 }
-  const arena = { content, rng, character: c, items: { count: (id: string) => (id === 'herbs' ? herbs.count : 0), take: () => void herbs.count-- }, where: { outdoors: true } }
+  const remedy = remedyItem(content)
+  const arena = { content, rng, character: c, items: { count: (id: string) => (id === remedy ? herbs.count : 0), take: () => void herbs.count-- }, where: { outdoors: true } }
   const { combat } = beginFight(arena, { id: 'sim', place: 'sim', foes: [{ creature: group.creature, count: group.count, range: 'near' }], now: 0 })
   if (group.elite) {
     for (const f of combat.fighters) {

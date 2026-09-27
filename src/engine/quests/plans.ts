@@ -1,3 +1,4 @@
+import { setRoute } from '../economy/ledger'
 import { WEEKDAYS, weekdayOf } from '../clock'
 import type { Output } from '../commands'
 import { callName } from '../content'
@@ -39,7 +40,9 @@ export interface PlanState {
   steps?: Record<string, StepState>
   expires?: number
   ended?: number
-  outcome?: 'done' | 'failed' | 'expired'
+  outcome?: 'done' | 'failed' | 'expired' | 'merged'
+  /** The storyline a beat of the chronicler belongs to (M8.3). */
+  line?: string
 }
 
 export interface StepState {
@@ -57,6 +60,10 @@ export function planOf(world: World, id: string): Plan | undefined {
   if (id.startsWith('aftermath:')) {
     const a = world.content.aftermath.get(id.slice(10))
     return a ? { id: a.id, name: a.id, groups: a.groups, phases: [], max_effects: 30, steps: a.steps, expires: a.expires, topic: a.topic } : undefined
+  }
+  if (id.startsWith('intention:')) {
+    const i = world.content.intentions.get(id.slice(10))
+    return i ? { id: i.id, name: i.choice.name, groups: i.groups, phases: [], max_effects: 30, steps: i.steps, expires: i.expires, topic: i.topic } : undefined
   }
   return world.content.plans.get(id) ?? world.state.dynamicPlans?.[id]
 }
@@ -89,7 +96,7 @@ export function startPlan(world: World, host: QuestHost, planId: string, cause: 
   if (!plan) return []
   const plans = (world.state.plans ??= [])
   // A fixed plan runs once at a time; a plan of the aftermath once per topic and person.
-  if (!planId.startsWith('aftermath:') && plans.some((p) => p.plan === planId && running(world, p))) return []
+  if (!planId.startsWith('aftermath:') && !planId.startsWith('intention:') && plans.some((p) => p.plan === planId && running(world, p))) return []
   const state: PlanState = { plan: planId, started: world.now, phase: 0, cause, groups: groupsOf(world, plan), ...extra }
   if (plan.steps.length) {
     state.id ??= `plan_${(world.state.planSeq = (world.state.planSeq ?? 0) + 1)}`
@@ -100,6 +107,11 @@ export function startPlan(world: World, host: QuestHost, planId: string, cause: 
   }
   plans.push(state)
   return plansDue(world, host)
+}
+
+/** The plans of the world that run from the first day (world.yaml, M8.3): started once, in a new game or an old save. */
+export function startWorldPlans(world: World, host: QuestHost): Output[] {
+  return world.content.world.plans.filter((id) => !(world.state.plans ?? []).some((p) => p.plan === id)).flatMap((id) => startPlan(world, host, id, 'world'))
 }
 
 /** Runs the phases whose hour has come, and the steps that are due. */
@@ -115,12 +127,9 @@ export function plansDue(world: World, host: QuestHost): Output[] {
     if (plan.steps.length && p.ended === undefined) runSteps(world, host, p, plan, out)
   }
   // Wars that broke out by the rules of statecraft, and plans of the chronicler, are waiting.
-  for (const id of (world.state.pendingPlans ?? []).splice(0)) out.push(...startPlan(world, host, id, id.startsWith('chronicle_') ? 'chronicle' : 'war', pendingExtra.get(id)))
+  for (const id of (world.state.pendingPlans ?? []).splice(0)) out.push(...startPlan(world, host, id, id.startsWith('chronicle_') ? 'chronicle' : 'war'))
   return out
 }
-
-/** What a plan of the chronicler brings with it when it starts: what drove it. */
-export const pendingExtra = new Map<string, Partial<PlanState>>()
 
 // ---------------------------------------------------------------- steps (M8.1)
 
@@ -146,10 +155,12 @@ function runSteps(world: World, host: QuestHost, p: PlanState, plan: Plan, out: 
         return
       }
       if (result === 'done') moved = true
+      // Again in so many days, at the same hour (M8.3); a wait that lasts till then counts as skipped.
+      if (step.every && (result === 'done' || world.now >= due + step.every * DAY)) steps[step.id] = { due: due + step.every * DAY }
     }
     if (!moved) break
   }
-  if (plan.steps.every((s) => steps[s.id]?.done !== undefined || steps[s.id]?.skipped !== undefined)) {
+  if (plan.steps.every((s) => !s.every && (steps[s.id]?.done !== undefined || steps[s.id]?.skipped !== undefined))) {
     p.ended = world.now
     p.outcome = 'done'
   }
@@ -181,6 +192,11 @@ type Result = 'done' | 'wait' | 'skip' | 'fail'
 function runOne(world: World, host: QuestHost, p: PlanState, step: Step, st: StepState, bind: Record<string, string>, out: Output[]): Result {
   const ctx: PlanContext = { plan: p, bind, host, out }
   const ok = step.when.every((c) => holds(world, bindValue(world, c, ctx), undefined))
+  // A step with a chance may simply not happen when it can (rolled once, seeded).
+  if (ok && step.chance !== undefined && world.rng.next('plans') >= step.chance) {
+    st.skipped = world.now
+    return 'done'
+  }
   const done = ok && runVerb(world, ctx, step.do, st)
   if (done) {
     st.done = world.now
@@ -240,7 +256,9 @@ export function runEffect(world: World, host: QuestHost, p: PlanState, e: PlanEf
         }
       }
     }
-  } else if ('close' in e) {
+  } else if ('close_route' in e) setRoute(world, e.close_route, true, e.why)
+  else if ('open_route' in e) setRoute(world, e.open_route, false)
+  else if ('close' in e) {
     ;(world.state.closed ??= {})[routeKey(e.close[0], e.close[1])] = e.reason
   } else if ('open' in e) {
     delete world.state.closed?.[routeKey(e.open[0], e.open[1])]

@@ -1,9 +1,11 @@
 import { parse } from 'yaml'
+import { OutlandSchema, ResourceSchema, RouteSchema, SettlementSchema, type Outland, type Resource, type Route, type Settlement } from './economy/schema'
 import { z } from 'zod'
 import { CreatureSchema, EncounterSchema, RulesSchema, type Creature, type Effect, type Encounter, type Rules, type Talent } from './rules/schema'
 import { QuestBodySchema } from './quests/schema'
 import { checkQuests } from './quests/check'
-import { AftermathSchema, PlanSchema, VerbTextSchema, WatcherSchema, type Aftermath, type Plan, type VerbText, type Watcher } from './quests/planschema'
+import { AftermathSchema, IntentionSchema, PlanSchema, VerbTextSchema, WatcherSchema, type Aftermath, type Intention, type Plan, type VerbText, type Watcher } from './quests/planschema'
+import { permitted, verbName } from './quests/verbs'
 import { RELATION_ROLES } from './roles'
 
 // Content is plain YAML in content/. This module parses and validates it
@@ -391,6 +393,8 @@ export const TopicSchema = z.object({
   origin: z.string().optional(),
   /** Where the topic belongs on the map, when it is not an area of the content. */
   pos: Position.optional(),
+  /** What everyone talks about when asked what's new (M8.2: content, not a list in the code). */
+  standing_talk: z.boolean().default(false),
   /** Known the same everywhere, like a custom of the whole countryside. */
   everywhere: z.boolean().default(false),
   /** Extra chance for some listeners: profession ids, quirks or "child". */
@@ -525,7 +529,27 @@ export const WorldSchema = z.object({
     .strict()
     .optional(),
   /** Who keeps the law (M8): wanted "in" where, the officer's title, and the NPC and place to pay fines. */
-  law: z.object({ where: z.string(), officer: z.string(), npc: z.string().optional(), office: z.string().optional() }).strict().optional(),
+  law: z.object({ where: z.string(), officer: z.string(), npc: z.string().optional(), office: z.string().optional(), lord: z.string().optional() }).strict().optional(),
+  /** Towns with rights of their own (M8.2): their own fines, officer and place to pay, and maybe no trade with someone wanted. */
+  towns: z
+    .array(
+      z
+        .object({
+          id: z.string().regex(/^[a-z0-9_]+$/),
+          area: z.string(),
+          where: z.string(),
+          officer: z.string(),
+          offices: z.array(z.string()).default([]),
+          trade_ban: z.boolean().default(false),
+          cleared: z.string().optional(),
+        })
+        .strict(),
+    )
+    .default([]),
+  /** The five standings in this world's words, lowest first, and the trades that are an office (M8.2). */
+  standing: z.object({ names: z.array(z.string()).length(5), offices: z.array(z.string()).default([]) }).strict().optional(),
+  /** Plans that run from the first day (M8.3): the opponents who do not wait for the player. */
+  plans: z.array(z.string()).default([]),
 })
 export type WorldDef = z.infer<typeof WorldSchema>
 
@@ -543,8 +567,8 @@ export const FactionSchema = z
     rivals: z.array(z.string()).default([]),
     /** How the player can join: never, hired, by a patron, by reputation, or by buying citizenship. */
     join: z.enum(['never', 'hired', 'patron_lantern', 'patron_old', 'reputation', 'citizenship']).default('never'),
-    /** The law this faction keeps: the Count's land or the town rights of Waagdam. */
-    law: z.enum(['count', 'waagdam']).optional(),
+    /** The law this faction keeps: the land's (count), or a town's from world.yaml. */
+    law: z.string().optional(),
   })
   .strict()
 export type Faction = z.infer<typeof FactionSchema>
@@ -579,9 +603,15 @@ const FileSchema = z
     /** When a change is a signal, what follows by the rules, and how each verb is news (M8.1). */
     watchers: z.array(WatcherSchema).optional(),
     aftermath: z.array(AftermathSchema).optional(),
+    intentions: z.array(IntentionSchema).optional(),
     verbs: z.array(VerbTextSchema).optional(),
     creatures: z.array(CreatureSchema).optional(),
     encounters: z.array(EncounterSchema).optional(),
+    /** The economy (M8.4): settlements with their ledger, the ground, routes, and regions beyond the map. */
+    settlements: z.array(SettlementSchema).optional(),
+    resources: z.array(ResourceSchema).optional(),
+    routes: z.array(RouteSchema).optional(),
+    outlands: z.array(OutlandSchema).optional(),
   })
   .strict()
 
@@ -614,7 +644,14 @@ export interface Content {
   /** The aftermath (M8.1): watchers, the standard aftermath per signal, and the news of each verb. All optional. */
   watchers: Map<string, Watcher>
   aftermath: Map<string, Aftermath>
+  /** What a brain may choose to do about a signal (M8.2). */
+  intentions: Map<string, Intention>
   verbTexts: Map<string, VerbText>
+  /** The economy (M8.4). */
+  settlements: Map<string, Settlement>
+  resources: Map<string, Resource>
+  routes: Map<string, Route>
+  outlands: Map<string, Outland>
   /** The chronicler's working instruction (content/CHRONICLER.md and the world's own), if there is one. */
   chronicler?: string
 }
@@ -657,7 +694,12 @@ export function loadContent(files: ContentFile[]): Content {
     plans: new Map<string, Plan>(),
     watchers: new Map<string, Watcher>(),
     aftermath: new Map<string, Aftermath>(),
+    intentions: new Map<string, Intention>(),
     verbTexts: new Map<string, VerbText>(),
+    settlements: new Map<string, Settlement>(),
+    resources: new Map<string, Resource>(),
+    routes: new Map<string, Route>(),
+    outlands: new Map<string, Outland>(),
   }
 
   let chronicler: string | undefined
@@ -701,7 +743,12 @@ export function loadContent(files: ContentFile[]): Content {
     addAll(content.plans, data.plans, (v) => v.id, file.path, 'plan', problems)
     addAll(content.watchers, data.watchers, (v) => v.id, file.path, 'watcher', problems)
     addAll(content.aftermath, data.aftermath, (v) => v.id, file.path, 'aftermath', problems)
+    addAll(content.intentions, data.intentions, (v) => v.id, file.path, 'intention', problems)
     addAll(content.verbTexts, data.verbs, (v) => v.id, file.path, 'verb', problems)
+    addAll(content.settlements, data.settlements, (v) => v.id, file.path, 'settlement', problems)
+    addAll(content.resources, data.resources, (v) => v.id, file.path, 'resource', problems)
+    addAll(content.routes, data.routes, (v) => v.id, file.path, 'route', problems)
+    addAll(content.outlands, data.outlands, (v) => v.id, file.path, 'outland', problems)
     if (data.rules) {
       if (rules) problems.push(`${file.path}: the rules are defined twice`)
       rules = data.rules
@@ -786,7 +833,13 @@ function checkReferences(world: WorldDef | undefined, c: Omit<Content, 'world'>)
     for (const id of Object.keys(world.player.inventory)) item(id, 'world.player.inventory')
     npc(world.law?.npc, 'world.law.npc')
     location(world.law?.office, 'world.law.office')
+    for (const t of world.towns) {
+      if (!c.areas.has(t.area)) problems.push(`world.towns.${t.id}: unknown area ${t.area}`)
+      for (const o of t.offices) location(o, `world.towns.${t.id}.offices`)
+    }
+    for (const id of world.plans) if (!c.plans.has(id)) problems.push(`world.plans: unknown plan ${id}`)
   }
+  problems.push(...checkEconomy(c))
   for (const type of c.objectTypes.values()) {
     for (const aff of type.affordances) {
       for (const id of [...Object.keys(aff.consumes), ...Object.keys(aff.produces)]) item(id, `object type ${type.id}.${aff.id}`)
@@ -858,6 +911,7 @@ function checkReferences(world: WorldDef | undefined, c: Omit<Content, 'world'>)
     for (const who of [...q.givers, ...q.helpers, ...q.opponents]) npc(who, `quest ${q.id}`)
   }
   for (const f of c.factions.values()) {
+    if (f.law && f.law !== 'count' && !world?.towns.some((t) => t.id === f.law)) problems.push(`faction ${f.id}: unknown law ${f.law}`)
     for (const m of f.members) npc(m, `faction ${f.id}.members`)
     for (const other of [...f.allies, ...f.rivals]) if (!c.factions.has(other)) problems.push(`faction ${f.id}: unknown faction ${other}`)
   }
@@ -884,7 +938,7 @@ function checkReferences(world: WorldDef | undefined, c: Omit<Content, 'world'>)
     for (const g of p.daily_goals) if (g.item) item(g.item, `profession ${p.id}.daily_goals`)
   }
   // Plans with steps, and the standard aftermath (M8.1): steps refer to steps and groups of their own, people and places exist.
-  const steps = (where: string, list: Plan['steps'], groups: string[]) => {
+  const steps = (where: string, list: Plan['steps'], groups: string[], maker: 'content' | 'rules' | 'brain' = 'content') => {
     const ids = new Set<string>()
     for (const s of list) {
       if (ids.has(s.id)) problems.push(`${where}: duplicate step ${s.id}`)
@@ -899,12 +953,17 @@ function checkReferences(world: WorldDef | undefined, c: Omit<Content, 'world'>)
         else if (id.startsWith('loc_')) location(id, `${where}.${s.id}`)
       }
       if ('profession' in s.do && s.do.profession && !c.professions.has(s.do.profession)) problems.push(`${where}.${s.id}: unknown profession ${s.do.profession}`)
+      if (!permitted(s.do, maker)) problems.push(`${where}.${s.id}: ${verbName(s.do)} is not a verb ${maker === 'brain' ? 'an intention' : 'the standard aftermath'} may use`)
     }
   }
   for (const p of c.plans.values()) steps(`plan ${p.id}`, p.steps, Object.keys(p.groups))
   for (const a of c.aftermath.values()) {
-    steps(`aftermath ${a.id}`, a.steps, Object.keys(a.groups))
+    steps(`aftermath ${a.id}`, a.steps, Object.keys(a.groups), 'rules')
     if (!CODE_SIGNALS.includes(a.signal) && ![...c.watchers.values()].some((w) => w.signal === a.signal)) problems.push(`aftermath ${a.id}: no watcher gives the signal ${a.signal}`)
+  }
+  for (const i of c.intentions.values()) {
+    steps(`intention ${i.id}`, i.steps, Object.keys(i.groups), 'brain')
+    if (!CODE_SIGNALS.includes(i.signal) && ![...c.watchers.values()].some((w) => w.signal === i.signal)) problems.push(`intention ${i.id}: no watcher gives the signal ${i.signal}`)
   }
   for (const w of c.watchers.values()) {
     for (const id of [...(w.who ?? []), w.place ?? ''].filter((x) => x && !x.startsWith('$'))) {
@@ -916,7 +975,7 @@ function checkReferences(world: WorldDef | undefined, c: Omit<Content, 'world'>)
 }
 
 /** Signals the systems give themselves, without a watcher in the content. */
-const CODE_SIGNALS = ['house_lost', 'plan_failed']
+const CODE_SIGNALS = ['house_lost', 'plan_failed', 'doubt', 'stranger_unwelcome', 'recognised', 'plans_cross', 'warning_proven']
 
 /** Every string in a step's verb that looks like an id. */
 function idsIn(value: unknown): string[] {
@@ -924,4 +983,53 @@ function idsIn(value: unknown): string[] {
   if (Array.isArray(value)) return value.flatMap(idsIn)
   if (value && typeof value === 'object') return Object.values(value).flatMap(idsIn)
   return []
+}
+
+/** The economy refers to areas, places, people, goods, objects and ground: all of them must exist (M8.4). */
+function checkEconomy(c: Omit<Content, 'world'>): string[] {
+  const problems: string[] = []
+  const item = (id: string, where: string) => {
+    if (!c.items.has(id)) problems.push(`${where}: unknown item ${id}`)
+  }
+  for (const r of c.resources.values()) for (const g of r.gives) item(g, `resource ${r.id}`)
+  for (const s of c.settlements.values()) {
+    const where = `settlement ${s.id}`
+    if (!c.areas.has(s.id)) problems.push(`${where}: no area with that id`)
+    for (const g of [...Object.keys(s.use), ...Object.keys(s.keep)]) item(g, where)
+    for (const r of s.resources) if (!c.resources.has(r)) problems.push(`${where}: unknown resource ${r}`)
+    const seen = new Set<string>()
+    for (const w of s.workshops) {
+      const at = `${where}, workshop ${w.id}`
+      if (seen.has(w.id)) problems.push(`${at}: twice in the settlement`)
+      seen.add(w.id)
+      if (!c.locations.has(w.at)) problems.push(`${at}: unknown location ${w.at}`)
+      else if (c.locations.get(w.at)!.area !== s.id) problems.push(`${at}: ${w.at} is not in ${s.id}`)
+      for (const g of [...Object.keys(w.makes), ...Object.keys(w.uses)]) item(g, at)
+      for (const n of w.named) if (!c.npcs.has(n)) problems.push(`${at}: unknown NPC ${n}`)
+      if (w.from && !s.resources.includes(w.from)) problems.push(`${at}: works ${w.from}, which the settlement does not have`)
+      if (w.from && c.resources.has(w.from)) for (const g of Object.keys(w.makes)) if (!c.resources.get(w.from)!.gives.includes(g)) problems.push(`${at}: ${w.from} does not give ${g}`)
+      if (w.requires) {
+        const [loc, obj] = w.requires.object.split('/')
+        if (!loc || !obj || !c.locations.get(loc)?.objects.some((o) => o.id === obj)) problems.push(`${at}: unknown object ${w.requires.object}`)
+      }
+    }
+  }
+  for (const o of c.outlands.values()) {
+    for (const g of [...o.sends, ...o.asks]) item(g, `outland ${o.id}`)
+    if (o.topic && !c.topics.has(o.topic)) problems.push(`outland ${o.id}: unknown topic ${o.topic}`)
+    if (o.realm && !c.realms.has(o.realm)) problems.push(`outland ${o.id}: unknown realm ${o.realm}`)
+  }
+  for (const r of c.routes.values()) {
+    const where = `route ${r.id}`
+    const outland = c.outlands.get(r.from)
+    if (!c.settlements.has(r.from) && !outland) problems.push(`${where}: from ${r.from}, which is no settlement or region beyond the map`)
+    if (!c.settlements.has(r.to)) problems.push(`${where}: to ${r.to}, which is no settlement`)
+    for (const g of [...Object.keys(r.carries), ...Object.keys(r.returns)]) item(g, where)
+    if (outland) {
+      for (const g of Object.keys(r.carries)) if (!outland.sends.includes(g)) problems.push(`${where}: ${outland.name} does not send ${g}`)
+      for (const g of Object.keys(r.returns)) if (!outland.asks.includes(g)) problems.push(`${where}: ${outland.name} does not ask for ${g}`)
+    }
+    if (r.via) for (const l of r.via) if (!c.locations.has(l)) problems.push(`${where}: unknown location ${l}`)
+  }
+  return problems
 }

@@ -525,7 +525,7 @@ describe('M7: a dyke breach', () => {
   it('floods Veenhoek: the people near the player really walk away, the Vissers stay, and the quests react', async () => {
     const engine = await game()
     await run(engine, ['@goto loc_visser_house', '@goto loc_veenhoek_green', '@plan dyke_breach'])
-    const plan = engine.state.plans![0]!
+    const plan = engine.state.plans!.find((p) => p.plan === 'dyke_breach')!
     const fleeing = plan.groups['veenhoek']!
     expect(fleeing).toContain('npc_mirte')
     expect(fleeing).not.toContain('npc_grietje_visser')
@@ -557,7 +557,7 @@ describe('M7: a dyke breach', () => {
   it('makes notes of the people far from the player', async () => {
     const engine = await game()
     await run(engine, ['@goto loc_reuzenrust_road', '@plan dyke_breach', 'wait 70'])
-    const fleeing = engine.state.plans![0]!.groups['veenhoek']!
+    const fleeing = engine.state.plans!.find((p) => p.plan === 'dyke_breach')!.groups['veenhoek']!
     const notes = fleeing.filter((id) => engine.state.npcs[id]!.note?.unrest === 'fleeing')
     expect(notes.length, 'fleeing far from the player').toBeGreaterThan(fleeing.length / 2)
   })

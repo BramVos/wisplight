@@ -38,6 +38,8 @@ export class MockLlm implements LlmClient {
   calls: LlmRequest[] = []
   /** For tests: more for the chronicler to write, given the overview and the line marked PLAN, if any. */
   chronicle?: (meta: ChronicleMeta, planned: string | undefined) => Record<string, unknown>
+  /** For tests: the intention a brain chooses when a signal lets it (M8.2), with its open bindings; without it, none and custom decides. */
+  intend?: (npc: string, offered: string[], keys: Record<string, string>) => { choice: string; fill?: { name: string; key: string }[] } | undefined
 
   constructor(
     public mode: MockMode = 'good',
@@ -221,7 +223,9 @@ export class MockLlm implements LlmClient {
       })
     const place = meta?.places?.find((p) => !p.includes('house') && !p.includes('home')) ?? meta?.places?.[0]
     const goals = place ? [{ type: 'Visit', target: place, priority: 0.8, why: 'To see how things stand.' }] : []
-    return JSON.stringify({ goals: [...goals, { type: 'Work', target: 'none', priority: 0.5, why: 'There is work to do.' }], mood: 'calm', note: 'A plain day.' })
+    const m = (request.meta ?? {}) as { npc?: string; intentions?: string[]; keys?: Record<string, string> }
+    const intention = 'intention' in properties ? { intention: { fill: [], ...(this.intend?.(m.npc ?? '', m.intentions ?? [], m.keys ?? {}) ?? { choice: 'none' }) } } : {}
+    return JSON.stringify({ goals: [...goals, { type: 'Work', target: 'none', priority: 0.5, why: 'There is work to do.' }], mood: 'calm', note: 'A plain day.', ...intention })
   }
 }
 

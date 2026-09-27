@@ -1,3 +1,5 @@
+import { itemName } from './items'
+import { orderGoods } from './economy/ledger'
 import type { Output } from './commands'
 import { callName } from './content'
 import { applyEffect } from './dialogue/relations'
@@ -9,8 +11,17 @@ import { holds, type QuestHost } from './quests/engine'
 import type { Selector, Verb, VerbText } from './quests/planschema'
 import { planOf, runEffect, running, startPlan, type PlanState, type StepState } from './quests/plans'
 import { shiftBond } from './social/deeds'
-import { queueSignal } from './signals'
-import { serviceKey, type Claim, type Signal } from './state'
+import { queueSignal, watchBelief } from './signals'
+import { askTrader, isTrader, mayChaseAway } from './belief'
+import { remember } from './npc/execute'
+import { openRequest } from './requests'
+import { GOAL_CATALOGUE, triggerChoice } from './npc/goals'
+import { brainMayChoose, offered } from './npc/intentions'
+import { escalates, toChronicler } from './planning'
+import { relation } from './dialogue/relations'
+import { mayLieAbout } from './social/gates'
+import { againstNewcomer } from './social/groups'
+import { serviceKey, type Claim, type Goal, type Signal } from './state'
 import type { World } from './world'
 
 // The standard aftermath and the verbs of plans (M8.1; design: signalen en
@@ -41,6 +52,7 @@ export function startAftermath(world: World, host: QuestHost, signal: Signal): O
   if (signal.who[0]) bind['who'] = signal.who[0]
   if (signal.claim) {
     bind['subject'] = signal.claim.subject
+    bind['key'] = signal.claim.key
     bind['value'] = signal.claim.value
     // A service key (loc_goose_common#taproom): the place it is at.
     if (signal.claim.subject.includes('#')) bind['at'] = signal.claim.subject.split('#')[0]!
@@ -48,15 +60,33 @@ export function startAftermath(world: World, host: QuestHost, signal: Signal): O
   const area = world.content.locations.get(signal.place)?.area
   if (area) bind['area'] = area
   const ctx: PlanContext = { plan: { plan: '', started: world.now, phase: 0, cause: '', groups: {} }, bind, host, out }
+  // The brain of the one it is about may choose an intention of the content instead (M8.2):
+  // one person or household, small news, near the player, a model and budget, and intentions to choose from.
+  // Each person it is about gets a turn when intentions fit them (two at most: a quarrel has two sides).
+  let brainTurn = false
+  let chronicler = false
+  for (const brainOf of signal.who.filter((id) => world.content.npcs.has(id)).slice(0, 2)) {
+    if (!brainMayChoose(world, signal, brainOf) || !offered(world, signal, brainOf).length) continue
+    if (triggerChoice(world, brainOf, `Something changed for you: ${signal.kind.replace(/_/g, ' ')}${signal.event ? ` (${signal.event})` : ''}.`, 'signal', signal.id)) brainTurn = true
+  }
+  if (brainTurn) signal.handled = 'brain'
+  // What touches many, matters a lot or fits no intention goes to the chronicler (M8.3); his part waits for his run.
+  else if (escalates(world, signal)) {
+    toChronicler(world, signal)
+    chronicler = true
+  }
   for (const a of [...world.content.aftermath.values()].sort((x, y) => x.id.localeCompare(y.id))) {
     if (a.signal !== signal.kind || (a.event && a.event !== signal.event)) continue
     if (!a.when.every((c) => holds(world, bindValue(world, c, ctx)))) continue
+    // What the brain may do instead waits for its choice; back from the brain, only that part runs.
+    // What goes to the chronicler waits whole for his run; back from him without a plan, all of it runs.
+    if (chronicler || (brainTurn && a.brain) || (signal.rules && !signal.whole && !a.brain)) continue
     // One plan per topic per person: a second signal about the same does not start a second plan (design: "Grenzen").
-    const subjects = signal.who.length ? signal.who : [signal.place]
+    const subjects = signal.who.length ? (a.about === 'first' ? signal.who.slice(0, 1) : signal.who) : [signal.place]
     const busy = (world.state.plans ?? []).some((p) => p.topic === a.topic && p.ended === undefined && running(world, p) && (p.subjects ?? []).some((s) => subjects.includes(s)))
     if (busy) continue
     out.push(...startPlan(world, host, `aftermath:${a.id}`, signal.kind, { source: 'rules', topic: a.topic, subjects, signal: signal.id, bind: { ...bind } }))
-    signal.handled = 'rules'
+    signal.handled ??= 'rules'
   }
   signal.handled ??= 'none'
   return out
@@ -96,6 +126,16 @@ export function many(world: World, ctx: PlanContext, sel: Selector | undefined):
   if ('household_of' in sel) {
     const who = one(world, ctx, sel.household_of)
     return who && world.content.npcs.has(who) ? householdOf(world, who) : []
+  }
+  if ('neighbours_of' in sel) {
+    const who = one(world, ctx, sel.neighbours_of)
+    if (!who || !world.content.npcs.has(who)) return []
+    // Grown people who live within three quarters of an hour's walk: a hamlet's neighbours are the next village too.
+    const home = world.npc(who).home
+    const house = new Set(householdOf(world, who))
+    return Object.keys(world.state.npcs)
+      .sort()
+      .filter((id) => !house.has(id) && world.alive(id) && world.content.npcs.has(id) && !world.npc(id).child && !world.npc(id).quirks.includes('spirit') && !world.npc(id).creature && (world.route(home, world.npc(id).home)?.minutes ?? Infinity) <= 45)
   }
   if ('social_near' in sel) return list(nearest(world, placeOf(world, one(world, ctx, sel.social_near)), (id) => world.location(id).tags.includes('social')))
   if ('board_near' in sel) {
@@ -143,7 +183,7 @@ export function nameOf(world: World, id: string | undefined): string {
   if (id === 'player') return world.state.player.character?.name ?? 'the stranger'
   if (world.content.npcs.has(id)) return callName(world.npc(id))
   if (world.content.locations.has(id)) return world.location(id).name
-  return world.content.topics.get(id)?.name ?? world.content.areas.get(id)?.name ?? id
+  return world.content.topics.get(id)?.name ?? world.content.areas.get(id)?.name ?? (world.content.items.has(id) ? itemName(world.content, id, 2) : undefined) ?? world.content.routes.get(id)?.name ?? world.content.outlands.get(id)?.name ?? id
 }
 
 /** Fills {a}, {b}, {who}, {place} and the like with names. */
@@ -250,7 +290,49 @@ export function runVerb(world: World, ctx: PlanContext, verb: Verb, st: StepStat
   if ('return' in v) {
     const who = one(world, ctx, v.return)
     if (!who || !world.content.npcs.has(who)) return false
+    settledElsewhere(world, ctx, who)
     return comeHome(world, ctx, who)
+  }
+  if ('settle' in v) {
+    const who = one(world, ctx, v.settle)
+    const at = one(world, ctx, v.at)
+    if (!who || !at || !world.content.npcs.has(who) || !world.content.locations.has(at)) return false
+    // A free house in that area if there is one, else the place itself.
+    const area = world.location(at).area
+    const house = Object.keys(world.state.layer?.empty ?? {}).sort().find((h) => world.location(h).area === area) ?? at
+    const s = world.npcState(who)
+    setHome(world, who, house)
+    if (world.npc(who).household) setHousehold(world, who, undefined)
+    s.stayAt = undefined
+    if (s.note) s.note = { ...s.note, until: world.now, home: false, where: house }
+    settledElsewhere(world, ctx, who)
+    st.where = house
+    const name = nameOf(world, who)
+    const areaName = world.content.areas.get(area)?.name ?? nameOf(world, at)
+    recordFact(world, { kind: 'settled', about: [who], place: at, belang: 2, title: `${name} stays in ${areaName}`, text: { precise: `${name} is not going back: ${world.say('{they}', who)} lives at ${nameOf(world, house)} now.`, village: `${name} is staying in ${areaName} for good, they say.`, far: 'Some who fled stayed where they found shelter.' } })
+    return true
+  }
+  // The economy (M8.4).
+  if ('order' in v) {
+    const to = world.content.settlements.has(v.to) ? v.to : world.content.locations.get(v.to)?.area
+    return Boolean(to) && orderGoods(world, to!, v.order, v.qty, v.days, v.by)
+  }
+  if ('form_group' in v) {
+    const members = v.form_group.flatMap((s) => many(world, ctx, s)).filter((id) => world.content.npcs.has(id) && world.alive(id))
+    const area = world.content.areas.has(v.about) ? v.about : world.content.locations.get(v.about)?.area
+    if (!members.length || !area) return false
+    const groups = (world.state.groups ??= [])
+    if (groups.some((g) => !g.ended && g.area === area && g.aim === v.aim)) return true
+    const group = { id: `group_${groups.length + 1}`, name: fill(world, v.name, ctx.bind), aim: v.aim, area, members: [...new Set(members)].sort(), since: world.now }
+    groups.push(group)
+    const names = group.members.map((m) => nameOf(world, m))
+    const areaName = world.content.areas.get(area)?.name ?? area
+    recordFact(world, { kind: 'group', about: group.members, place: world.npc(group.members[0]!).home, belang: 3, title: `${group.name} in ${areaName}`, text: { precise: `${names.join(', ')} have banded together ${v.aim === 'against' ? 'against the newcomers' : 'to help the newcomers'} in ${areaName}.`, village: v.aim === 'against' ? `Some in ${areaName} want the newcomers gone, and they say so out loud.` : `Some in ${areaName} are taking the newcomers in hand.`, far: 'There is trouble over newcomers somewhere.' } })
+    for (const m of group.members) {
+      const s = world.state.npcs[m]!
+      s.thoughts = [...(s.thoughts ?? []).filter((t) => t.until > world.now), { text: v.aim === 'against' ? `You and ${names.filter((n) => n !== nameOf(world, m)).join(' and ') || 'others'} have had enough of the newcomers.` : `You and the others will see the newcomers through.`, t: world.now, until: world.now + 14 * DAY }].slice(-3)
+    }
+    return true
   }
   if ('leave' in v) {
     const who = v.leave.flatMap((s) => many(world, ctx, s)).filter((id) => world.content.npcs.has(id) && world.alive(id))
@@ -297,6 +379,121 @@ export function runVerb(world: World, ctx: PlanContext, verb: Verb, st: StepStat
   }
   if ('tell' in v) {
     tell(world, ctx, v.tell, one(world, ctx, v.tell.place) ?? ctx.bind['place'])
+    return true
+  }
+  if ('goal' in v && 'who' in v) {
+    const who = one(world, ctx, v.who)
+    const entry = GOAL_CATALOGUE[v.goal]
+    if (!who || !world.content.npcs.has(who) || !entry || !world.alive(who)) return false
+    const target = one(world, ctx, v.target)
+    const s = world.npcState(who)
+    const goal: Goal = { id: `g${++world.state.goalSeq}`, type: entry.type, priority: v.priority, source: 'ai', created: world.now, until: world.now + v.hours * 60 }
+    if (entry.target === 'item' || entry.target === 'mine') Object.assign(goal, { item: target, qty: 1 })
+    else if (entry.target === 'object' && target) Object.assign(goal, { target: target.split('/')[0], object: target.split('/')[1] })
+    else if (entry.target !== 'none') {
+      if (!target) return false
+      goal.target = target
+    }
+    s.goals.push(goal)
+    s.plan = []
+    s.planGoal = undefined
+    s.busyUntil = Math.min(s.busyUntil, world.now)
+    return true
+  }
+  if ('request' in v) {
+    const who = one(world, ctx, v.request)
+    const target = one(world, ctx, v.target)
+    if (!who || !world.content.npcs.has(who) || !world.alive(who)) return false
+    if (v.kind === 'visit' && (!target || !world.content.npcs.has(target))) return false
+    if (v.kind === 'fetch' && (!v.item || !world.content.items.has(v.item))) return false
+    openRequest(world, { npc: who, kind: v.kind, ...(target ? { target } : {}), ...(v.item ? { item: v.item } : {}), name: fill(world, v.name, ctx.bind), ask: fill(world, v.ask, ctx.bind), source: 'motor' })
+    return true
+  }
+  if ('ask_around' in v) {
+    const who = one(world, ctx, v.ask_around)
+    if (!who || !world.content.npcs.has(who) || !world.alive(who)) return false
+    const [subject, key] = v.about
+    const from = world.state.npcs[who]!.location
+    // A place within two hours they go and see for themselves: what is true there, they believe.
+    if (world.content.locations.has(subject) && (world.route(from, subject)?.minutes ?? Infinity) <= 120) {
+      lookForYourself(world, who, subject, key)
+      remember(world, who, `went to see ${nameOf(world, subject)} for ${world.say('{them}', who)}self`)
+      st.where = subject
+      return true
+    }
+    // Not the one it came from: the nearest trader or traveller within two hours.
+    const sources = new Set(Object.entries(world.state.news?.heard[who] ?? {}).filter(([id]) => world.state.news!.facts.find((f) => f.id === id)?.claim?.subject === subject).map(([, h]) => h.from))
+    const trader = Object.keys(world.state.npcs)
+      .sort()
+      .filter((id) => id !== who && !sources.has(id) && world.present(id) && isTrader(world, id))
+      .map((id) => ({ id, minutes: world.route(from, world.state.npcs[id]!.location)?.minutes ?? Infinity }))
+      .filter((t) => t.minutes <= 120)
+      .sort((a, b) => a.minutes - b.minutes || a.id.localeCompare(b.id))[0]?.id
+    if (!trader) return false
+    const answer = askTrader(world, who, trader, subject, key)
+    remember(world, who, `asked ${nameOf(world, trader)} whether it was true; ${answer ? `they said: ${answer}` : 'they did not know'}`)
+    st.where = world.state.npcs[trader]!.location
+    return true
+  }
+  if ('carry_word' in v) {
+    const who = one(world, ctx, v.carry_word)
+    const to = one(world, ctx, v.to)
+    if (!who || !to || who === to || !world.content.npcs.has(who) || !world.content.npcs.has(to) || !world.alive(who) || !world.alive(to)) return false
+    const heard = world.state.news?.heard[who] ?? {}
+    const message = (world.state.news?.facts ?? []).filter((f) => heard[f.id] && heard[f.id]!.stance !== 'rejects' && (f.claim?.subject === v.about || f.about.includes(v.about))).map((f) => f.id)
+    if (!message.length) return false
+    const s = world.npcState(who)
+    s.goals.push({ id: `g${++world.state.goalSeq}`, type: 'Talk', target: to, priority: 1, source: 'ai', created: world.now, until: world.now + 2 * DAY, message })
+    s.plan = []
+    s.planGoal = undefined
+    s.busyUntil = Math.min(s.busyUntil, world.now)
+    return true
+  }
+  if ('chase_away' in v) {
+    const [a, b] = v.chase_away.map((x) => one(world, ctx, x))
+    if (!a || !b || !world.content.npcs.has(a) || !world.content.npcs.has(b) || !world.present(a) || !world.present(b) || !mayChaseAway(world, a, b)) return true
+    const sb = world.npcState(b)
+    const place = world.state.npcs[a]!.location
+    // Off they go: home, and they keep away from the place for some days.
+    sb.stayAt = undefined
+    sb.avoid = { place, until: world.now + 3 * DAY }
+    sb.plan = []
+    sb.planGoal = undefined
+    sb.busyUntil = world.now
+    sb.thoughts = [...(sb.thoughts ?? []).filter((t) => t.until > world.now), { text: `${nameOf(world, a)} ran you out of ${areaOf(world, place)} without hearing you out.`, t: world.now, until: world.now + 7 * DAY }].slice(-3)
+    shiftBond(world, b, a, -20, -20)
+    world.emit('chase', place, `${nameOf(world, a)} shouts at ${nameOf(world, b)} to be off, and ${nameOf(world, b)} goes.`, a)
+    recordFact(world, { kind: 'chased', about: [a, b], place, belang: 2, loud: true, title: `${nameOf(world, a)} chased a stranger out of ${areaOf(world, place)}`, text: { precise: `${nameOf(world, a)} ran ${nameOf(world, b)} out of ${areaOf(world, place)} and would not listen to a word.`, village: `${nameOf(world, a)} chased a stranger off, they say.`, far: 'Somebody was chased out of a village.' } })
+    st.where = place
+    return true
+  }
+  if ('mediate' in v) return mediate(world, ctx, v.mediate.map((x) => one(world, ctx, x)) as [string | undefined, string | undefined], one(world, ctx, v.by), st)
+  if ('recall' in v) {
+    const who = one(world, ctx, v.recall)
+    const of = one(world, ctx, v.of)
+    if (!who || !of || !world.state.npcs[who] || !world.content.npcs.has(of)) return false
+    const s = world.npcState(who)
+    const memory = [...(s.memory ?? [])].reverse().find((m) => m.topics.includes(of))
+    const line = memory ? memory.note : `You knew ${nameOf(world, of)} once.`
+    s.thoughts = [...(s.thoughts ?? []).filter((t) => t.until > world.now), { text: `${nameOf(world, of)} is back. ${line}`, t: world.now, until: world.now + 7 * DAY }].slice(-3)
+    const row = ((world.state.bonds ??= {})[who] ??= {})
+    const bond = (row[of] ??= { affinity: 0, trust: 0, fear: 0, familiarity: 0 })
+    bond.familiarity = Math.max(bond.familiarity, 30)
+    return true
+  }
+  if ('spread_rumour' in v) {
+    const who = one(world, ctx, v.spread_rumour)
+    if (!who || !world.content.npcs.has(who) || !world.present(who) || !mayLieAbout(world, who)) return false
+    const t = v.fact
+    const where = world.state.npcs[who]!.location
+    const vars = { ...ctx.bind, who, place: where }
+    const claim = t.claim ? { ...t.claim, subject: bindValue(world, t.claim.subject, ctx), value: bindValue(world, t.claim.value, ctx) } : undefined
+    // Only they know it at first, and not as a witness: they pass it on as news.
+    const fact = recordFact(world, { kind: t.kind, about: [], place: where, belang: t.belang, truth: false, witnesses: [], title: fill(world, t.title, vars), text: { precise: fill(world, t.precise, vars), village: fill(world, t.village, vars), far: fill(world, t.far, vars) }, ...(claim ? { claim } : {}) })
+    heardBy(world, who)[fact.id] = { level: 3, reliability: 1, from: 'witness', t: world.now }
+    const s = world.npcState(who)
+    s.goals.push({ id: `g${++world.state.goalSeq}`, type: 'Spread', priority: 0.9, source: 'ai', created: world.now, until: world.now + DAY })
+    s.busyUntil = Math.min(s.busyUntil, world.now)
     return true
   }
   // Everything an effect plan could already do. A flight in a plan with steps has no end of its own.
@@ -369,6 +566,18 @@ const DEFAULT_TEXTS: Record<VerbText['id'], VerbText> = {
   leave: { id: 'leave', belang: 1, title: '{who} has gone away', precise: '{a} has gone away to {place}.', village: '{a} has gone off to {place}, they say.', far: 'Someone has gone away.' },
 }
 
+/** Whoever goes home or stays for good by this plan is no longer waited for by the return step of their flight. */
+function settledElsewhere(world: World, ctx: PlanContext, who: string): void {
+  for (const p of world.state.plans ?? []) {
+    if (p === ctx.plan || p.ended !== undefined || !Object.values(p.groups).flat().includes(who)) continue
+    for (const step of planOf(world, p.plan)?.steps ?? []) {
+      if (!step.each || !(p.groups[step.each] ?? []).includes(who)) continue
+      const st = ((p.steps ??= {})[step.id] ??= {})
+      ;(st.members ??= {})[who] ??= -world.now
+    }
+  }
+}
+
 /** Someone who fled or stayed away goes home; a home that is gone is a signal of its own. */
 function comeHome(world: World, ctx: PlanContext, who: string): boolean {
   const s = world.npcState(who)
@@ -413,6 +622,8 @@ function hire(world: World, ctx: PlanContext, key: string, reach: number, except
       const s = world.state.npcs[id]!
       const npc = world.npc(id)
       if (except.includes(id) || s.dead || s.absent || s.following || s.note || npc.child || npc.age < 16 || npc.work || npc.quirks.includes('spirit') || npc.creature) return false
+      // Someone of a group against the newcomers will not take one on (M8.3).
+      if (againstNewcomer(world, service.provider, id)) return false
       return Boolean(knows(id)) && (world.route(npc.home, location)?.minutes ?? Infinity) <= reach
     })
     .sort((a, b) => knows(a)!.t - knows(b)!.t || a.localeCompare(b))
@@ -426,6 +637,95 @@ function hire(world: World, ctx: PlanContext, key: string, reach: number, except
   // The notice comes down.
   for (const [board, list] of Object.entries(world.state.boards ?? {})) world.state.boards![board] = list.filter((f) => facts.find((x) => x.id === f)?.claim?.subject !== key)
   return true
+}
+
+/** The player (or anyone) tries to make peace between two with a grudge: 'reconciled', 'worse', or 'none' when there was nothing to settle. */
+export function mediateBetween(world: World, a: string, b: string, by: string): 'reconciled' | 'worse' | 'none' {
+  const bonds = world.state.bonds ?? {}
+  if (!bonds[a]?.[b]?.grudge && !bonds[b]?.[a]?.grudge) return 'none'
+  const ctx: PlanContext = { plan: { plan: '', started: world.now, phase: 0, cause: '', groups: {} }, bind: {}, host: { pass: () => [] }, out: [] }
+  mediate(world, ctx, [a, b], by, {})
+  return bonds[a]?.[b]?.grudge === undefined && bonds[b]?.[a]?.grudge === undefined ? 'reconciled' : 'worse'
+}
+
+/** Someone goes to look at a place: the truth of it is what they believe now. */
+function lookForYourself(world: World, who: string, subject: string, key: string): void {
+  const store = world.state.news
+  if (!store) return
+  const facts = store.facts.filter((f) => f.claim?.subject === subject && f.claim.key === key)
+  const truth = [...facts].reverse().find((f) => f.truth !== false)
+  const mine = (store.heard[who] ??= {})
+  for (const f of facts) {
+    const h = mine[f.id]
+    if (!h) continue
+    const value = h.level === 1 && f.claim!.far !== undefined ? f.claim!.far : f.claim!.value
+    if (truth && value === truth.claim!.value) delete h.stance
+    else h.stance = 'rejects'
+  }
+  if (truth) {
+    mine[truth.id] = { level: 3, reliability: 1, from: 'witness', t: world.now }
+    watchBelief(world, who, truth, 'witness')
+  }
+}
+
+/** Trust that counts for making peace is a bond: a plain neighbour is no mediator. */
+function trustFor(world: World, from: string, to: string): number {
+  const village = (id: string) => world.content.locations.get(world.npc(id).home)?.area
+  return to === 'player' ? relation(world.state, from).trust : (world.state.bonds?.[from]?.[to]?.trust ?? (village(from) === village(to) ? 10 : 0))
+}
+
+/** Who two people at odds both trust most: the mediators to choose from. */
+export function mediators(world: World, a: string, b: string, n: number): string[] {
+  return Object.keys(world.state.npcs)
+    .sort()
+    .filter((id) => id !== a && id !== b && world.present(id) && !world.npc(id).child && !world.npc(id).quirks.includes('spirit'))
+    .map((id) => ({ id, score: Math.min(trustFor(world, a, id), trustFor(world, b, id)) }))
+    .filter((m) => m.score > 0)
+    .sort((x, y) => y.score - x.score || x.id.localeCompare(y.id))
+    .slice(0, n)
+    .map((m) => m.id)
+}
+
+/**
+ * Making peace (design: "Een ruzie die blijft"): who mediates decides how it
+ * ends. Someone both trust makes it up between them; someone only one side
+ * trusts makes the other feel ganged up on, and the grudge goes deeper.
+ * Without a mediator nothing changes, and a week later it is a feud.
+ */
+function mediate(world: World, ctx: PlanContext, [a, b]: [string | undefined, string | undefined], by: string | undefined, st: StepState): boolean {
+  if (!a || !b || !world.content.npcs.has(a) || !world.content.npcs.has(b)) return false
+  const bonds = world.state.bonds ?? {}
+  if (!bonds[a]?.[b]?.grudge && !bonds[b]?.[a]?.grudge) return true
+  const trust = (from: string, to: string) => trustFor(world, from, to)
+  const mediator = by ?? mediators(world, a, b, 1)[0]
+  if (!mediator) return true
+  const ta = trust(a, mediator)
+  const tb = trust(b, mediator)
+  const place = world.state.npcs[a]?.location ?? world.npc(a).home
+  st.where = place
+  const names = { a: nameOf(world, a), b: nameOf(world, b), m: nameOf(world, mediator) }
+  if (ta >= 20 && tb >= 20) {
+    for (const [x, y] of [[a, b], [b, a]] as const) {
+      const bond = ((world.state.bonds ??= {})[x] ??= {})[y]
+      if (bond) delete bond.grudge
+      shiftBond(world, x, y, 10, 5)
+    }
+    recordFact(world, { kind: 'reconciled', about: [a, b, ...(world.content.npcs.has(mediator) ? [mediator] : [])], place, belang: 1, title: `${names.m} made peace between ${names.a} and ${names.b}`, text: { precise: `${names.m} sat ${names.a} and ${names.b} down together, and they shook on it.`, village: `${names.a} and ${names.b} have made it up, they say. ${names.m} saw to that.`, far: 'Two who quarrelled made it up.' } })
+    return true
+  }
+  // Trusted by one side only: the other feels ganged up on.
+  const sore = ta >= 20 ? b : a
+  const other = sore === a ? b : a
+  shiftBond(world, sore, other, -10, -5)
+  if (world.content.npcs.has(mediator)) shiftBond(world, sore, mediator, -10, -10)
+  recordFact(world, { kind: 'mediation_failed', about: [a, b, ...(world.content.npcs.has(mediator) ? [mediator] : [])], place, belang: 1, title: `${names.m} took sides between ${names.a} and ${names.b}`, text: { precise: `${names.m} tried to make peace, but ${nameOf(world, sore)} says ${names.m} was on the other side from the start.`, village: `${names.m} meddled between ${names.a} and ${names.b}, and made it worse.`, far: 'A quarrel got worse.' } })
+  void ctx
+  return true
+}
+
+function areaOf(world: World, place: string): string {
+  const loc = world.content.locations.get(place)
+  return (loc && world.content.areas.get(loc.area)?.name) ?? world.words.region
 }
 
 /** For the editor and the inspector: the plans that are running, in plain words. */

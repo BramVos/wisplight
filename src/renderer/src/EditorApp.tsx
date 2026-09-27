@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { stringify } from 'yaml'
-import { draftEdits, ENTITY_KINDS, KIND_NAMES, parseEntityYaml } from '../../engine'
+import { draftEdits, ENTITY_KINDS, KIND_NAMES, languageReference, parseEntityYaml, type ReferenceEntry } from '../../engine'
 import { createEditor, type DiffLine, type Edit, type EditorBridge, type EditorDraft, type EditorSave, type EditorView, type EntityKind, type Raw, type ShownChange, type SimReport, type WorldInfo } from './client'
 
 // The editor (M8, FO chapter 15), in a window of its own: npm run editor, or
@@ -11,7 +11,7 @@ import { createEditor, type DiffLine, type Edit, type EditorBridge, type EditorD
 // playtest without the player with an NPC inspector, and the chronicler,
 // whose proposals are shown as a change and saved only when accepted.
 
-type Panel = 'edit' | 'check' | 'playtest' | 'chronicler' | 'world'
+type Panel = 'edit' | 'check' | 'playtest' | 'reference' | 'chronicler' | 'world'
 
 const DIRECTIONS = ['north', 'northeast', 'east', 'southeast', 'south', 'southwest', 'west', 'northwest', 'up', 'down', 'in', 'out']
 const AXES = ['warmth', 'courage', 'honesty', 'temper', 'curiosity', 'diligence'] as const
@@ -87,6 +87,7 @@ export function EditorApp() {
               ['edit', 'Edit'],
               ['check', `Check${view.problems.length ? ` (${view.problems.length} errors)` : view.warnings.length ? ` (${view.warnings.length})` : ''}`],
               ['playtest', 'Playtest'],
+              ['reference', 'Reference'],
               ['chronicler', 'Chronicler'],
               ['world', 'New world'],
             ] as [Panel, string][]
@@ -138,6 +139,7 @@ export function EditorApp() {
       )}
       {panel === 'check' && <CheckPanel view={view} open={open} />}
       {panel === 'playtest' && <PlaytestPanel bridge={bridge} world={world} />}
+      {panel === 'reference' && <ReferencePanel />}
       {panel === 'chronicler' && <ChroniclerPanel bridge={bridge} world={world} focus={selected && !creating ? { kind, id: selected } : undefined} saved={refresh} open={open} />}
       {panel === 'world' && (
         <NewWorldPanel
@@ -580,6 +582,14 @@ function templateFor(kind: EntityKind, view: EditorView): Raw {
       return { id: 'new_area', name: 'A new area', kind: 'hamlet', summary: 'What it is, in one sentence.' }
     case 'watcher':
       return { id: 'new_watcher', signal: 'new_signal', when: [{ flag: 'something_happened' }], who: [], place, belang: 1 }
+    case 'intention':
+      return {
+        id: 'new_intention',
+        signal: 'new_signal',
+        topic: 'new_topic',
+        choice: { name: 'What they do', line: 'One line for the model: what this intention is.', open: {} },
+        steps: [{ id: 'mind', do: { thought: '$a', text: 'What stays on their mind.', days: 7 } }],
+      }
     case 'aftermath':
       return {
         id: 'new_aftermath',
@@ -622,6 +632,14 @@ function templateFor(kind: EntityKind, view: EditorView): Raw {
       return { id: 'new_faction', name: 'The New Faction', seat: area, wants: 'What they want.', stance: 'How they go about it.' }
     case 'realm':
       return { id: 'new_realm', name: 'The New Realm', ruler: 'Who rules it', capital: 'Its capital' }
+    case 'settlement':
+      return { id: area, tags: [], people: 20, use: {}, keep: {}, workshops: [] }
+    case 'route':
+      return { id: 'new_route', name: 'the new route', from: area, to: area, carries: {}, by: 'a cart', every: 1 }
+    case 'outland':
+      return { id: 'new_outland', name: 'A Place Beyond the Map', sends: [], asks: [], prices: 1, by: 'a pedlar', every: 7 }
+    case 'resource':
+      return { id: 'new_ground', name: 'new ground', gives: [] }
     default:
       return { id: `new_${kind}` }
   }
@@ -630,6 +648,45 @@ function templateFor(kind: EntityKind, view: EditorView): Raw {
 /** The same writer as the files, for a thing that is not saved yet. */
 function toYaml(raw: Raw): string {
   return stringify(raw, { lineWidth: 0 })
+}
+
+// ---------------------------------------------------------------- the reference
+
+/** The plan language (M8.3): the same text as in CHRONICLER.md, from the schemas and the permission table. */
+function ReferencePanel() {
+  const reference = useMemo(() => languageReference(), [])
+  const [filter, setFilter] = useState('')
+  const shown = (entries: ReferenceEntry[]) => entries.filter((e) => !filter || `${e.name} ${e.text}`.toLowerCase().includes(filter.toLowerCase()))
+  const who = (e: ReferenceEntry) => (e.who ? ['rules', 'brain', 'chronicler'].filter((k) => e.who![k as keyof typeof e.who]).join(', ') || 'content only' : '')
+  const section = (title: string, entries: ReferenceEntry[]) =>
+    shown(entries).length > 0 && (
+    <>
+      <h2 className="editor-title">{title}</h2>
+      <ul className="check-list small">
+        {shown(entries).map((e) => (
+          <li key={`${title}:${e.name}`}>
+            <strong>
+              <code>{e.name}</code>
+            </strong>
+            : {e.text}
+            {e.who && <span className="muted"> ({who(e)})</span>}
+            {e.form && <div className="muted">{e.form}</div>}
+          </li>
+        ))}
+      </ul>
+    </>
+  )
+  return (
+    <div className="settings-body editor-page">
+      <p className="muted small">Watchers, the standard aftermath, intentions, plans and quests speak one language. This is it, read from the schemas; content/CHRONICLER.md holds the same text for the chronicler.</p>
+      <input type="search" value={filter} onChange={(e) => setFilter(e.target.value)} placeholder="Look up a condition or verb" aria-label="Look up" />
+      {section('A step', reference.step)}
+      {section('Conditions', reference.conditions)}
+      {section('Verbs', reference.verbs)}
+      {section('Selectors', reference.selectors)}
+      {section('Bindings', reference.bindings)}
+    </div>
+  )
 }
 
 // ---------------------------------------------------------------- the checks
@@ -663,6 +720,30 @@ function CheckPanel({ view, open }: { view: EditorView; open: (kind: EntityKind,
       <ul className="check-list small">{view.warnings.map(row)}</ul>
       <h2 className="editor-title">Quests</h2>
       <QuestTable view={view} />
+      <h2 className="editor-title">Settlements ({view.economy.length})</h2>
+      <p className="muted small">What each lives on, from its ledger, its character and its routes. Goods used but made nowhere are under Worth a look.</p>
+      <ul className="check-list small">
+        {view.economy.map((s) => (
+          <li key={s.id}>
+            <button type="button" className="link" onClick={() => open('settlement', s.id)}>
+              {s.name}
+            </button>
+            : lives on {s.livesOn ?? 'nothing it makes'}
+            {s.tags.length > 0 && `, ${s.tags.join(', ')}`}, openness {s.openness >= 0 ? '+' : ''}
+            {s.openness}, {s.people} nameless
+            {s.makes.map((m) => (
+              <div key={m} className="muted">
+                makes {m}
+              </div>
+            ))}
+            {s.routes.map((r) => (
+              <div key={r} className="muted">
+                {r}
+              </div>
+            ))}
+          </li>
+        ))}
+      </ul>
     </div>
   )
 }
@@ -735,6 +816,8 @@ function PlaytestPanel({ bridge, world }: { bridge: EditorBridge; world: string 
               </ul>
               <h3>News of weight</h3>
               <ul className="check-list small">{report.news.length ? report.news.map((n) => <li key={n}>{n}</li>) : <li className="muted">none</li>}</ul>
+              <h3>Storylines</h3>
+              <ul className="check-list small">{report.lines.length ? report.lines.map((l, i) => <li key={`l${i}`}>{l}</li>) : <li className="muted">none</li>}</ul>
               <h3>Signals and plans</h3>
               <ul className="check-list small">
                 {report.plans.length ? report.plans.map((p, i) => <li key={`p${i}`}>{p}</li>) : <li className="muted">no plans</li>}
@@ -784,6 +867,12 @@ function PlaytestPanel({ bridge, world }: { bridge: EditorBridge; world: string 
                     <>
                       <h3>Part of</h3>
                       <ul className="check-list">{npc.plans.map((p) => <li key={p}>{p}</li>)}</ul>
+                    </>
+                  )}
+                  {npc.beliefs.length > 0 && (
+                    <>
+                      <h3>Believes</h3>
+                      <ul className="check-list">{npc.beliefs.map((b, i) => <li key={i}>{b}</li>)}</ul>
                     </>
                   )}
                   <h3>Remembers</h3>

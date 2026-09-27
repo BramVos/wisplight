@@ -302,7 +302,8 @@ locations:
         supply:
           - { item: rye_grain, amount: 30, every: week, weekday: Maandag, at: 6 }
           - { item: sailcloth, amount: 3, every: week, weekday: Maandag, at: 6 }
-          - { item: flour, amount: 6, every: day, at: 6, requires: { object: loc_molenend_mill/de_zwaan, state: { broken: false } } }
+          # From the town's store (economy.yaml): the horse mill, and De Zwaan when it turns.
+          - { item: flour, amount: 6, every: day, at: 6 }
         demand:
           - { item: rye_grain, amount: 3, from: 8, to: 17 }
           - { item: flour, amount: 4, from: 8, to: 17 }

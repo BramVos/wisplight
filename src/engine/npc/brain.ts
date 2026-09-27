@@ -9,6 +9,10 @@ import { executeStep, resolvePending } from './execute'
 import { isFailure, Planner } from './planner'
 import { unreported } from './acts'
 import { callName } from '../content'
+import { standingOf } from '../standing'
+import { LAND_LAW } from '../social/crime'
+import { factById, heardBy } from '../news'
+import { heardClaim } from '../belief'
 
 // Without AI an NPC falls back on its schedule, its needs and the daily goals
 // of its profession (FO, chapter 7: the utility layer). Goals chosen by the
@@ -42,11 +46,36 @@ export function think(world: World, npcId: string): void {
   }
 }
 
+/**
+ * A report carried to someone (M8.2): when they are together the other hears
+ * it from them, and believes it or not by the usual rules. Not found: try
+ * again while there is time.
+ */
+function carryWord(world: World, npcId: string, goal: Goal): void {
+  const npc = world.npcState(npcId)
+  const other = world.state.npcs[goal.target!]
+  if (!other || other.dead) return
+  if (other.location !== npc.location || other.note) {
+    if ((goal.until ?? 0) > world.now) npc.goals.push({ ...goal, id: `g${++world.state.goalSeq}` })
+    return
+  }
+  const heard = heardBy(world, goal.target!)
+  for (const id of goal.message!) {
+    const fact = factById(world, id)
+    if (!fact || heard[id]) continue
+    const h = (heard[id] = { level: 3, reliability: 0.9, from: npcId, t: world.now })
+    // Someone who comes all this way to tell you in person is heard out.
+    heardClaim(world, goal.target!, fact, h, 25)
+  }
+  world.emit('report', npc.location, `${callName(world.npc(npcId))} takes ${callName(world.npc(goal.target!))} aside and tells what ${world.say('{they}', npcId)} heard.`, npcId)
+}
+
 function finishGoal(world: World, npcId: string, success: boolean): void {
   const npc = world.npcState(npcId)
   const goal = npc.goals.find((g) => g.id === npc.planGoal)
   if (goal) {
     npc.goals = npc.goals.filter((g) => g !== goal)
+    if (goal.message?.length && goal.target) carryWord(world, npcId, goal)
     if (goal.source === 'daily') npc.dailyDone[dailyKey(goal)] = startOfDay(world.now)
     if (!success) world.emit('goal_failed', npc.location, world.say(`{name} gives up for now, frowning.`, npcId), npcId)
     // A goal of its own done or given up: a new moment to decide (FO, chapter 7).
@@ -142,7 +171,7 @@ function choose(world: World, npcId: string): boolean {
 
   // Free time: children play, the lonely seek company, everyone else rests at home.
   if (def.child) {
-    const place = placeFor(world, npcId, world.content.locations.has('loc_veenhoek_green') ? 'loc_veenhoek_green' : socialPlace(world, npcId))
+    const place = placeFor(world, npcId, taggedNear(world, npcId, 'play') ?? socialPlace(world, npcId))
     return setPlan(world, npcId, [...goTo(world, npcId, place), { kind: 'spend', minutes: Math.min(45, remaining), activity: 'play' }])
   }
   if (npc.needs.social < 40) {
@@ -289,10 +318,18 @@ function nearestWhere(world: World, npcId: string, test: (location: string) => b
   return best
 }
 
-/** Who keeps a law: the schout for the Count's land, the town hall for Waagdam. */
-function lawOfficer(world: World, law: 'count' | 'waagdam'): string | undefined {
+/** Who keeps a law: the members of the faction that keeps it, or the officer of the land's law (world.yaml). */
+function lawOfficer(world: World, law: string): string | undefined {
   const faction = [...world.content.factions.values()].find((f) => f.law === law)
-  return faction?.members.find((id) => world.alive(id)) ?? (law === 'count' && world.alive('npc_everhard') ? 'npc_everhard' : undefined)
+  const officer = world.words.law.npc
+  return faction?.members.find((id) => world.alive(id)) ?? (law === LAND_LAW && officer && world.alive(officer) ? officer : undefined)
+}
+
+/** The nearest known place with this tag, from home (M8.2: the tags play and holy, not the Nethermarch's ids). */
+function taggedNear(world: World, npcId: string, tag: string): string | undefined {
+  const home = world.npc(npcId).home
+  const places = [...world.knownLocations(npcId)].sort().filter((id) => world.location(id).tags.includes(tag))
+  return places.sort((a, b) => (world.route(home, a)?.minutes ?? Infinity) - (world.route(home, b)?.minutes ?? Infinity))[0]
 }
 
 function setPlan(world: World, npcId: string, steps: Step[]): boolean {
@@ -412,7 +449,6 @@ function placeFor(world: World, npcId: string, at: string): string {
 
 /** Where someone prays without a place in the schedule: the Veenhoek chapel, or the nearest known place tagged "holy". */
 function prayerPlace(world: World, npcId: string): string {
-  if (world.content.locations.has('loc_veenhoek_chapel')) return 'loc_veenhoek_chapel'
   const home = world.npc(npcId).home
   const holy = [...world.knownLocations(npcId)].sort().filter((id) => world.location(id).tags.includes('holy'))
   return holy.sort((a, b) => (world.route(home, a)?.minutes ?? Infinity) - (world.route(home, b)?.minutes ?? Infinity))[0] ?? home
@@ -422,10 +458,12 @@ function prayerPlace(world: World, npcId: string): string {
 function socialPlace(world: World, npcId: string): string {
   const home = world.npc(npcId).home
   const known = world.knownLocations(npcId)
+  // The well-to-do and the notable are not seen at the inn (M8.2): they spend their free time at church.
+  const tag = standingOf(world, npcId) >= 4 ? 'holy' : 'social'
   let best = home
   let bestMinutes = Infinity
   for (const id of [...known].sort()) {
-    if (!world.location(id).tags.includes('social')) continue
+    if (!world.location(id).tags.includes(tag) || world.location(id).tags.includes('haunted')) continue
     const minutes = world.route(home, id)?.minutes ?? Infinity
     if (minutes < bestMinutes) {
       best = id

@@ -210,6 +210,8 @@ function sourcesOf(world: World, id: string): string[] {
 function who(world: World, from: string): string {
   if (from === 'witness') return 'you saw it yourself'
   if (from === 'player') return 'you'
+  if (from === 'news') return 'going round'
+  if (from === 'board') return 'on the notice board'
   const npc = world.content.npcs.get(from)
   return npc ? callName(npc) : from
 }

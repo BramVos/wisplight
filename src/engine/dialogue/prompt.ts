@@ -5,6 +5,7 @@ import { TIER_WORDS, type Act, type Tier } from './acts'
 import type { CheckResult } from './checks'
 import type { Packet } from './knowledge'
 import { peopleLine, peopleNow } from '../people'
+import { standingLine } from '../standing'
 import { requestLines } from '../requests'
 import { relation, type Attitude } from './relations'
 
@@ -106,6 +107,7 @@ export function systemPrompt(world: World, npcId: string): string {
     npc.examples.length ? `Example lines: ${npc.examples.map((e) => `"${e}"`).join(' ')}` : '',
     `PEOPLE YOU KNOW: ${peopleKnown(world, npcId)}.`,
     peopleLine(world, npcId) ?? '',
+    standingLine(world, npcId) ?? '',
   ]
     .filter(Boolean)
     .join('\n')

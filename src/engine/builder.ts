@@ -30,6 +30,36 @@ export function warnings(content: Content): string[] {
   }
   for (const npc of content.npcs.values()) if (npc.public_facts.length === 0) out.push(`${npc.id}: no public facts, so nobody can tell anything about them`)
   for (const topic of content.topics.values()) if (!topic.origin && !topic.pos && !topic.everywhere && topic.kind !== 'person') out.push(`topic ${topic.id}: no origin, so nobody knows where it belongs`)
+  out.push(...chainWarnings(content))
+  return out
+}
+
+/**
+ * Chains that do not close (M8.4): a good that is used (by the nameless of a
+ * settlement, a workshop, an object people use, or its repair) but made nowhere and
+ * brought by no route. A fixed supply at a counter does not count: it comes
+ * from nowhere. And a settlement without a ledger keeps its fixed supply.
+ */
+export function chainWarnings(content: Content): string[] {
+  const out: string[] = []
+  const made = new Set<string>()
+  for (const s of content.settlements.values()) for (const w of s.workshops) for (const g of Object.keys(w.makes)) made.add(g)
+  for (const t of content.objectTypes.values()) for (const a of t.affordances) for (const g of Object.keys(a.produces)) made.add(g)
+  for (const r of content.routes.values()) if (content.outlands.has(r.from)) for (const g of Object.keys(r.carries)) made.add(g)
+  const used = new Map<string, string>()
+  const note = (g: string, by: string) => used.has(g) || used.set(g, by)
+  for (const s of content.settlements.values()) {
+    for (const g of Object.keys(s.use)) note(g, `the people of ${s.id}`)
+    for (const w of s.workshops) for (const g of Object.keys(w.uses)) note(g, `${w.name} in ${s.id}`)
+  }
+  for (const t of content.objectTypes.values()) {
+    // What only the player does (an offering at a stone) is no chain of the economy.
+    for (const a of t.affordances.filter((x) => x.actors.includes('npc'))) for (const g of Object.keys(a.consumes)) note(g, `${t.id} (${a.id})`)
+    for (const g of Object.keys(t.repair?.consumes ?? {})) note(g, `mending a ${t.id}`)
+  }
+  for (const [g, by] of [...used.entries()].sort((a, b) => a[0].localeCompare(b[0]))) if (!made.has(g)) out.push(`${g}: used by ${by}, but made nowhere and brought by no route`)
+  const kinds = new Set(['village', 'town', 'hamlet', 'inn'])
+  for (const a of content.areas.values()) if (kinds.has(a.kind) && !content.settlements.has(a.id)) out.push(`${a.id}: a settlement without a ledger, so its counters keep their fixed supply`)
   return out
 }
 

@@ -1,5 +1,61 @@
 # Changelog
 
+## M8.4 Economie, 27 september 2026
+
+Nieuw:
+- **Een grootboek per nederzetting.** Elke nederzetting van beide werelden rekent eens per speldag, om vijf uur: de werkplaatsen maken wat hun handen en grondstoffen toelaten, de naamlozen gebruiken wat ze nodig hebben, en wat overblijft gaat over de routes. De toonbanken vullen uit die voorraad; voor wat het grootboek niet kent, blijft de vaste bevoorrading. Alles staat in `content/<wereld>/data/economy.yaml`.
+- **Lampolie en spijkers komen alleen uit Zwolderkamp**, over de Oostweg. Breekt er oorlog uit, dan sluit het oorlogsplan die weg; binnen een paar dagen is er een tekort in Waagdam, wordt de kruik bij Hendrik duurder en klinkt het signaal. Niemand heeft dat tekort geschreven.
+- **De molen en het meel.** Na de storm staat De Zwaan stil: het meel in Veenhoek raakt op en Lubbert vraagt het driedubbele. Draait de molen weer, dan komt er meel over de karren naar Waagdam en Veenhoek en zakt de prijs.
+- **Signalen uit het grootboek.** Een tekort van twee dagen gaat naar het brein van wie het verkoopt (bijvoorbeeld Lubbert: zelf meer laten halen, de rest achterhouden of de vreemde vragen). Een tekort van een week, een overschot, een prijs die verdubbelt, een ambacht dat niemand meer uitoefent en een gesloten route zijn wachters in de content.
+- **Karakter per nederzetting.** Uit het grootboek volgt waar een plek van leeft (Veenhoek turf, Molenend meel, Waagdam handel), plus tags. Een handelsstad is opener voor vreemden en laat bij een tekort goederen halen; een turfdorp behelpt zich en moppert, en kijkt bij voedseltekort strenger naar een vreemde.
+- **Streken buiten de kaart als stomp.** Zwolderkamp en Hunnenloo hebben alleen wat ze sturen en vragen, prijspeil, drager en hoe vaak. De kroniekschrijver krijgt dat in zijn vaste deel en bij het uitwerken van zo'n plek, zodat wat hij vertelt klopt.
+- **Geld dat niet meer uit het niets komt:** naamloze klanten betalen uit de beurs van hun nederzetting, een winkelier betaalt wie hem iets verkoopt (en koopt niet meer dan de kas toelaat), en het loon en eten van een gezel gaan naar iemand toe.
+- **Editor:** nederzettingen, routes, streken buiten de kaart en grond zijn lijsten. Onder Check staat per nederzetting waar ze van leeft, haar karakter en haar routes; onder "Worth a look" een waarschuwing voor een goed dat gebruikt wordt maar nergens gemaakt of aangevoerd.
+
+Testen: `npm run dev` of `npm run editor`. In de editor onder Check zie je de nederzettingen. In het spel: wacht een paar dagen en vraag bij Lubbert naar meel (`list` in de graanhandel); repareer de molen met zeildoek en kijk de prijs zakken. `@plan war` sluit de Oostweg: wacht een paar dagen en kijk naar de lampolie bij Hendrik (`list` in de smidse). Controles: `npm test` (390 tests), met een oude save die zijn grootboeken start waar hij staat.
+
+Nog niet: nieuwe mensen rond het gemiddelde van een nederzetting (M8.5). Een streek die de kroniekschrijver uitwerkt, krijgt nog geen eigen grootboek. Warme maaltijden, melk, bier op Skerrow en scheepsbeschuit houden hun vaste bevoorrading. Grond die opraakt en seizoenen kan de content zetten, maar de Nethermarch gebruikt ze nog niet.
+
+Ontwerp: afwijkingen staan onder "Zo is het in M8.4 gebouwd". Let op: het wereldboek zegt niet wat Zwolderkamp en Hunnenloo sturen. Lampolie en spijkers komen uit het ontwerp; zeildoek, touw (Zwolderkamp) en wol (Hunnenloo, de schaapherders) heb ik toegevoegd zodat elke keten sluit. Wil je dat anders, dan is het alleen content. Skerrow heeft geen route naar buiten, omdat een pakketboot de hoofdquest ondergraaft. Het FO heeft een stand na M8.4.
+
+## M8.3 Nasleep: de kroniekschrijver plant, 27 september 2026
+
+Nieuw:
+- **De kroniekschrijver plant voor signalen.** Wat meer huishoudens raakt, belang 3 of meer heeft, iemand met een rol in een quest betreft of waar geen voornemen bij past, gaat naar hem. Hij schrijft stappen in dezelfde werkwoordentaal als de content, voor een groep persoon voor persoon: na de oorlog gaat de ene helft van de vluchtelingen naar huis en blijft de andere in Waagdam wonen. Wat hij niet mag, wordt geweigerd; zonder geldige stap doet de standaardnasleep het, helemaal.
+- **Botsende plannen worden één verhaal.** Kiest Gerrit ervoor het uit te praten en Jan om hem te ontlopen, dan maakt de kroniekschrijver er in de nacht één verhaal van. Bij een ruzie ziet hij wie ze allebei vertrouwen, als bemiddelaar.
+- **Wrijving in een dorp.** Te veel nieuwkomers tegen hoe open een dorp is, zwaarder bij voedseltekort of als ze van ver komen, en er ontstaat een groep tegen hen. Je kunt kant kiezen (`side with aaltje`) of bemiddelen (`mediate between cornelis and aaltje`).
+- **Een waarschuwing die uitkomt.** Breekt de dijk toch, dan schaamt wie de vreemde wegjoeg zich en denkt beter over hem.
+- **Opbouw per verhaallijn.** Een lijn krijgt een fase (opzet, stijgend, crisis, afloop, gesloten) en hooguit één geplande beat. Hooguit twee lijnen komen per week in crisis. Lopen er twee naar een crisis in een dorp, dan begint de verhalenmotor daar niets nieuws, en elders wat minder.
+- **Kleinere lijnen.** Hooguit twaalf feiten per lijn, en een druk persoon trekt niet meer elk klein ding naar één lijn: dezelfde soort of hetzelfde tweetal wel, groot nieuws ook.
+- **De tegenspelers als content.** Cornelis die meet, Gerrit die palen trekt, de Geitenrijders, de schout en de Haakman zijn drie plannen in `plans.yaml`, gestart vanuit `world.yaml`. Een test legt ze dag voor dag naast het oude script.
+- **Opgelost:** de verhalenmotor liet ook geesten ziek worden of iets verliezen ("the's fever"); nu alleen gewone mensen.
+- **Editor:** een tab Reference met alle voorwaarden, werkwoorden (en wie ze mag gebruiken), selectors en bindingen, uit de schema's. Dezelfde tekst staat in `content/CHRONICLER.md` (`npm run reference`). De speeltest toont de verhaallijnen met fase en notitie.
+
+Testen: `npm run dev`. `@plan dyke_breach` en twee dagen wachten geeft wrijving in Waagdam; ga naar de kerk daar en probeer `side with` en `mediate between`. Met een model gekoppeld zie je in de editor bij Playtest de fases van de lijnen. De tegenspelers doen wat ze deden: Cornelis meet op werkdagen, Gerrit trekt 's nachts palen, de schout grijpt in. Controles: `npm test` (381 tests).
+
+Nog niet: verschil in geloof telt niet mee in de wrijving (er is geen geloof per persoon). De ontvangstgroep (de Lantaarn met liefdadigheid) kan de kroniekschrijver maken, de standaardnasleep maakt alleen de groep tegen.
+
+Ontwerp: afwijkingen staan onder "Zo is het in M8.3 gebouwd". De belangrijkste: een stap kan zich herhalen (`every`), er zijn voorwaarden `around` en `carries`, en `world.yaml` kent `plans`. De kans op een stap wordt pas gegooid als de voorwaarden gelden. Een gearresteerde zit precies twee dagen vast, ook als de dijk intussen breekt (in het script bleef de vlag staan zolang hij ergens verbleef). Het FO heeft een stand na M8.3.
+
+## M8.2 Nasleep: het brein plant, 27 september 2026
+
+Nieuw:
+- **Vijf standen.** Arm, gewoon, burger, welgesteld, notabel: de kas van het huishouden tegen het midden van de streek, een stap hoger voor een ambt. Het staat op de kaart van de stem, mensen twee standen uit elkaar praten minder met elkaar, en wie welgesteld is, zit niet meer in de herberg maar in de kerk. Stijgt een huishouden twee standen, dan hoort het dorp het en worden de buren jaloers.
+- **Geloven, twijfelen, verwerpen.** Wie een bewering hoort, gelooft die of niet naar vertrouwen in de bron, of anderen hetzelfde zeggen, of het past bij wat hij weet, en hoe open zijn dorp is voor vreemden (een stad meer dan een gehucht). Wie twijfelt terwijl er iets van afhangt, vraagt het na bij een handelaar of gaat zelf kijken.
+- **Een vreemde met een waarschuwing.** Een lekkende dijk heeft een eigen klok. Wie de vreemde gelooft, loopt naar de dijkgraaf; wie hem niet gelooft en driftig is, jaagt hem weg. Of de dijk op tijd gestut wordt, volgt uit wie wie gelooft en de wandeling.
+- **Ruzie, vete en verzoening.** Een ruzie laat wrok na. Bemiddelt iemand die ze allebei vertrouwen, dan maken ze het goed; anders wordt het na een week een vete. Je kunt ook zelf bemiddelen: `mediate between gerrit and jan`.
+- **Vergeten en herkennen.** Wie elkaar lang niet ziet, raakt elkaar kwijt tot een herinnering. Wie na lange tijd terugkomt, wordt herkend door wie hem goed kende, en die komt hem opzoeken.
+- **Groeten en praatjes waar jij bent.** Mensen die elkaar tegenkomen, groeten naar hun band. Hebben ze tijd en nieuws, dan blijven ze staan praten; met `listen` vang je de strekking op. Gaat het over jou of een geheim, dan dempen ze hun stem of beginnen ze over iets anders.
+- **Het brein kiest een voornemen.** Een signaal over iemand zelf (rijk geworden, een ruzie, twijfel, een waarschuwing, herkend, vluchtelingen die blijven) gaat met een model naar zijn brein. Dat kiest een voornemen uit de content (`intentions.yaml`), zoals geld uitlenen aan iemand, iemand vragen om te bemiddelen, of liegen dat de oorlog voorbij is, en vult in wie of waar. Zonder model, zonder budget of met een foute keuze doet de standaardnasleep het.
+- **Na de review:** één werkwoordentaal met een tabel wie welk werkwoord mag gebruiken, een kans op een planstap, de breinprompt kleiner (vaste catalogus in het gecachte deel, korte sleutels, geen ochtendkeuze zonder aanleiding, geen model voor wie ver weg is), en de Nethermarch uit de motor: wet en stadsrechten in `world.yaml`, bid- en speelplekken als tags, het geneesmiddel als het voorwerp met `remedy`.
+- **Editor:** voornemens als lijst, en in de NPC-inspecteur stand, wat iemand gelooft en aan welk voornemen hij bezig is.
+
+Testen: `npm run dev`. Ga naar de brink van Veenhoek en wacht: wie binnenkomt, groet; staan er twee te praten, typ `listen`. `@plan dyke_leak` start een lekkende dijk; kijk wie het gelooft. Harmen die rijk wordt en zich anders gaat gedragen, zie je in de tests (`tests/m82.test.ts`) of na een lange speeltest in de editor, als de molen goed verdient. Met een model gekoppeld kiezen mensen hun eigen voornemen; in de editor bij Playtest zie je per persoon wat hij gelooft en van plan is. Controles: `npm test` (369 tests).
+
+Nog niet: de optionele zin van de stem voor wie lang blijft luisteren, en geheimen herkent het praatje alleen als leugen of verzwegen feit. Het brein plant alleen voor zichzelf; groepen en botsende plannen zijn voor de kroniekschrijver (M8.3).
+
+Ontwerp: gebouwd volgens de bijsturing na de review van 27 september (voornemens als sjablonen in de content in plaats van stappen van het model). Keuzes die ik maakte staan in het ontwerp onder "Zo is het in M8.2 gebouwd"; de review staat nu ook op main in `docs/`.
+
 ## M8.1 Nasleep: fundament, 27 september 2026
 
 Nieuw:
@@ -13,7 +69,7 @@ Nieuw:
 
 Testen: `npm run dev`, nieuw spel in de Nethermarch. Met de bouwcommando's: `@quest a_boat_and_a_bride`, `@flag trijntje_blesses`, dan wachten tot Rustdag 26 Herfstmaand rond vier uur en naar de Goose gaan voor het feest. Een dag later staat het briefje op het prikbord in de stalhof, en praat met Geesje of Wouter over hun huis. Of trouw zelf (zoals in M7.2) en kijk in de editor bij Playtest. Controles: `npm test` (350 tests), met drie saves van vóór M8.1 die laden en doorspelen, de dertig dagen en de uitspeelscripts van beide werelden.
 
-Nog niet: het brein plant nog niets zelf (M8.2). In de Nethermarch heeft iedereen werk, dus de plek bij Trijntje blijft voorlopig open; de kroniekschrijver en nieuwkomers vullen dat in M8.3 en M8.4 in. Zonder AI vlucht er in een oorlog niemand.
+Nog niet: het brein plant nog niets zelf (M8.2). In de Nethermarch heeft iedereen werk, dus de plek bij Trijntje blijft voorlopig open; de kroniekschrijver en nieuwkomers vullen dat in M8.3 en M8.5 in (tot 27 september 2026 M8.4). Zonder AI vlucht er in een oorlog niemand.
 
 Ontwerp: je besluiten van vandaag zitten erin (de kroniekschrijver beslist wie vlucht, het feest op een rustdag na een week, het prikbord). Afwijkingen en aanvullingen staan in het ontwerp onder "Zo is het in M8.1 gebouwd": alleen een vast plan met een vlucht blokkeert de kroniekschrijver nog (het oorlogsplan niet), de terugkeer zit in de vlucht zelf, er zijn werkwoorden bij (hire, post, thought, expect_home, regard, leave, tell, end_tie), en een open plek is belang 2 zodat het dorp hem twee weken onthoudt. Het FO heeft een stand na M8.1 in hoofdstuk 15 en de regel voor tegenstrijdige versies in hoofdstuk 5.
 ## Na je speeltest van M8, 27 september 2026

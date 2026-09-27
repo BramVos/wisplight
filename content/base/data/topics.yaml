@@ -5,6 +5,7 @@
 
 topics:
   - id: the_storm
+    standing_talk: true
     name: the storm
     kind: fact
     aliases: [storm, the storm, sails, the sails, storm damage]
@@ -14,6 +15,7 @@ topics:
     details: Since the storm the mill stands still. There's no flour in Veenhoek except what Lubbert sells in Waagdam, and he has doubled his price.
 
   - id: fenna
+    standing_talk: true
     name: Fenna Visser
     kind: person
     aliases: [fenna, fenna visser, the missing girl, the girl]
@@ -24,6 +26,7 @@ topics:
     known_by: [npc_jan_visser, npc_grietje_visser, npc_pim]
 
   - id: grey_cat
+    standing_talk: true
     name: the grey cat
     kind: fact
     aliases: [grey cat, the cat, cat, grijze kat, kat]
@@ -33,6 +36,7 @@ topics:
     details: It won't be chased off, won't eat what you give it, and watches the lane as if it's waiting for someone.
 
   - id: kattenbroek
+    standing_talk: true
     name: the Kattenbroek
     kind: place
     aliases: [kattenbroek, the kattenbroek, cat marsh, the fen to the south-east]
@@ -115,6 +119,7 @@ topics:
       When somebody's called a witch, she goes to the Waag in Waagdam, pays her guilder and two stuivers, and stands on the great scale in front of the weighmaster and two witnesses. A witch weighs next to nothing, you see, because she has given her weight away to fly. If you weigh what an honest body your size should, Weighmaster Dirck writes you a certificate with the town's seal on it, and after that no priest or schout in the land can touch you for witchcraft. Old Aaltje has hers framed on the wall. Men get weighed too, now and then, but mostly it's women, and mostly it's a neighbour who pointed the finger. The scale has been honest for fifty years, people say. People say a lot of things.
 
   - id: drainage
+    standing_talk: true
     name: the drainage of the Holleveen
     kind: fact
     aliases: [drainage, the drainage, polder, new polder, drooglegging]
@@ -124,6 +129,7 @@ topics:
     details: A surveyor from Graafhaven has been measuring the fen since spring. The peat-cutters are furious; the miller thinks it will be good for trade.
 
   - id: surveyor
+    standing_talk: true
     name: the surveyor
     kind: person
     aliases: [surveyor, the surveyor, cornelis, master cornelis, cornelis de wit, landmeter]

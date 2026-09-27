@@ -250,7 +250,9 @@ describe('M3.1: requests come up out of what happens', () => {
     await engine.handle(`give ${request.item} to ${content.npcs.get(owner)!.name.split(' ')[0]}`)
     expect(request.status).toBe('done')
     expect(engine.state.player.money).toBe(money + request.reward!)
-    expect(engine.status().journal.quests[0]!.name).toMatch(/\(done\)/)
+    // The owner may also give a quest of their own when spoken to: find the request among them.
+    const { requestName } = await import('../src/engine/requests')
+    expect(engine.status().journal.quests.find((q) => q.name.includes(requestName(engine.world, request)))?.name).toMatch(/\(done\)/)
   })
 
   it('asks for herbs when someone falls ill, and the herbs help', async () => {
@@ -259,7 +261,7 @@ describe('M3.1: requests come up out of what happens', () => {
     expect(startStory(engine.world, 'fever')).toBe(true)
     const request = engine.state.requests.find((r) => r.item === 'herbs')!
     const sick = engine.state.stories!.active.find((s) => s.kind === 'sickness')!.roles['name']!
-    expect(request.ask).toMatch(/fever.*Aaltje's herbs/)
+    expect(request.ask).toMatch(/fever.*bundle of herbs from Aaltje/)
     engine.state.player.money += 100
     engine.state.player.location = 'loc_aaltje_cottage'
     await engine.handle('buy herbs')
@@ -289,7 +291,9 @@ describe('M3.1: the AI chooses what NPCs want', () => {
     await engine.runBrain()
     const request = brainCalls(mock).find((c) => c.meta!['npc'] === 'npc_gerrit')!
     expect(request.prompt).toMatch(/WHY YOU CHOOSE NOW: You have just got up/)
-    expect(request.prompt).toMatch(/GOALS YOU MAY CHOOSE:/)
+    // The catalogue is in the cached part (M8.2, after the review); places and people have short keys.
+    expect(request.system).toMatch(/GOALS YOU MAY CHOOSE:/)
+    expect(request.prompt).toMatch(/PLACES YOU KNOW: l1 /)
     const gerrit = engine.state.npcs['npc_gerrit']!
     const goal = gerrit.goals.find((g) => g.source === 'ai')!
     expect(goal).toMatchObject({ type: 'Visit', priority: 0.8 })

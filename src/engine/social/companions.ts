@@ -1,3 +1,4 @@
+import { LAND_LAW } from './crime'
 import { minuteOfDay } from '../clock'
 import type { Output } from '../commands'
 import { areaTopicId, callName } from '../content'
@@ -109,7 +110,7 @@ export function offer(world: World, npcId: string, destination?: string): Offer 
   const rep = world.state.reputation ?? {}
   const factions = [...world.content.factions.values()].filter((f) => f.members.includes(npcId))
   if ((patron && patron === npc.patron) || factions.some((f) => (rep[f.id] ?? 0) >= 20)) goalMatch = 1
-  if ((world.state.wanted?.['count'] && (npc.values['law'] ?? 0) >= 1) || factions.some((f) => (rep[f.id] ?? 0) < -20)) goalMatch = -1
+  if ((world.state.wanted?.[LAND_LAW] && (npc.values['law'] ?? 0) >= 1) || factions.some((f) => (rep[f.id] ?? 0) < -20)) goalMatch = -1
   const danger = destination ? dangerOf(world, destination, npcId) : 1
   const duty = npc.work ? Math.max(0, npc.personality.diligence) * 5 : 0
   const family = Math.max(0, npc.values['family'] ?? 0) * 5
@@ -265,6 +266,8 @@ function payWages(world: World): void {
     const wage = attitude(world, c.npc).band === 'Devoted' ? 0 : c.conditions.wage
     if (world.state.player.money >= wage) {
       world.state.player.money -= wage
+      // The wage goes into the companion's purse (M8.4: it no longer vanishes).
+      world.npcState(c.npc).money += wage
       c.paidDay = today
       if (c.unpaid > 0) c.unpaid = 0
       if (wage > 0 && today % 7 === 0) approve(world, 'fair_wage', [c.npc])
@@ -285,6 +288,7 @@ function feed(world: World, c: Companion): void {
       const price = world.price(location.id, service, food)
       if (state.money < price) continue
       state.money -= price
+      world.npcState(service.provider).money += price
       world.stock(location.id, service.id)[food]! -= 1
       state.needs.hunger = Math.min(100, state.needs.hunger + (world.content.items.get(food)!.food ?? 30))
       return

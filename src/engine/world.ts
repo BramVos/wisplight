@@ -23,13 +23,13 @@ export interface WorldWords {
   region: string
   from: string
   /** Wanted "in the Count's land"; fines go to the officer, at the office or to the NPC. */
-  law: { where: string; officer: string; npc?: string; office?: string }
+  law: { where: string; officer: string; npc?: string; office?: string; lord?: string }
 }
 const NETHERMARCH_WORDS: WorldWords = {
   land: 'the Nethermarch',
   region: 'the Holleveen',
   from: 'Graafhaven',
-  law: { where: "in the Count's land", officer: 'schout', npc: 'npc_everhard', office: 'loc_schout_house' },
+  law: { where: "in the Count's land", officer: 'schout', npc: 'npc_everhard', office: 'loc_schout_house', lord: 'the Count' },
 }
 
 /** The words of a world, from its content. */

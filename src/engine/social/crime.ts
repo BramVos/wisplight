@@ -4,7 +4,7 @@ import { itemName, matchItem, withArticle } from '../items'
 import { recordFact } from '../news'
 import { remember } from '../npc/execute'
 import { playerCheck } from '../rules/player'
-import type { World } from '../world'
+import { upper, type World } from '../world'
 import { approve } from './companions'
 import { deed, setMood, shiftBond } from './deeds'
 import { reputeFor } from './factions'
@@ -35,13 +35,22 @@ export interface Crime {
   grave: boolean
   witnesses: string[]
   reported: string[]
-  law: 'count' | 'waagdam'
+  law: string
   fine: number
   fact?: string
 }
 
-export function lawAt(world: World, location: string): 'count' | 'waagdam' {
-  return world.content.locations.get(location)?.area === 'waagdam' ? 'waagdam' : 'count'
+/** The id of the land's law in saves and factions; towns have their own (world.yaml). */
+export const LAND_LAW = 'count'
+
+export function lawAt(world: World, location: string): string {
+  const area = world.content.locations.get(location)?.area
+  return world.content.world.towns.find((t) => t.area === area)?.id ?? LAND_LAW
+}
+
+/** A town with rights of its own, by the id of its law. */
+export function townLaw(world: World, law: string) {
+  return world.content.world.towns.find((t) => t.id === law)
 }
 
 /** An NPC's Perception: its character's when it has one, else curiosity and a little for lawmen. */
@@ -123,8 +132,9 @@ export function crime(world: World, c: Omit<Crime, 'id' | 't' | 'reported' | 'la
     wanted.fine += entry.fine
     const who = callName(world.npc(entry.reported[0]!))
     const law = world.words.law
-    out.push({ kind: 'system', text: `${who} will tell the ${entry.law === 'waagdam' ? 'town watch' : law.officer}. You are wanted ${entry.law === 'waagdam' ? 'in Waagdam' : law.where}: a fine of ${world.money(wanted.fine)}.` })
-    if (entry.law === 'count' && law.npc && world.content.npcs.has(law.npc)) grievance(world, law.npc, 'the law', `"You're wanted, stranger. ${world.money(wanted.fine)}${law.npc === 'npc_everhard' ? ' to the Count' : ''}, or you come with me."`)
+    const town = townLaw(world, entry.law)
+    out.push({ kind: 'system', text: `${who} will tell the ${town ? town.officer : law.officer}. You are wanted ${town ? town.where : law.where}: a fine of ${world.money(wanted.fine)}.` })
+    if (!town && law.npc && world.content.npcs.has(law.npc)) grievance(world, law.npc, 'the law', `"You're wanted, stranger. ${world.money(wanted.fine)}${law.lord ? ` to ${law.lord}` : ''}, or you come with me."`)
   }
   if (c.victim) reputeFor(world, c.victim, c.grave ? -15 : -5, `${c.kind} against ${callName(world.npc(c.victim))}`)
   approve(world, c.kind === 'theft' ? 'theft' : 'cruelty')
@@ -248,21 +258,26 @@ export function payFine(world: World): Output[] {
   const law = lawAt(world, here)
   const debt = wanted[law]
   const keeper = world.words.law
-  const nethermarch = keeper.npc === 'npc_everhard'
-  if (!debt) return [{ kind: 'error', text: law === 'waagdam' ? 'Waagdam wants nothing from you.' : nethermarch ? "The Count's men want nothing from you." : `The ${keeper.officer} wants nothing from you.` }]
-  const at = law === 'waagdam' ? ['loc_waagdam_waag', 'loc_waagdam_weighing_room'].includes(here) : Boolean(keeper.npc && world.npcsAt(here).includes(keeper.npc)) || here === keeper.office
-  if (!at) return [{ kind: 'error', text: law === 'waagdam' ? 'Fines to the town are paid at the Waag.' : nethermarch ? 'Fines to the Count are paid to the schout.' : `Fines are paid to the ${keeper.officer}.` }]
+  const town = townLaw(world, law)
+  const townName = town ? (world.content.areas.get(town.area)?.name ?? town.id) : ''
+  const office = town?.offices[0] ? world.location(town.offices[0]).name.replace(/^The /, 'the ') : ''
+  if (!debt) return [{ kind: 'error', text: town ? `${townName} wants nothing from you.` : keeper.lord ? `${upper(keeper.lord)}'s men want nothing from you.` : `The ${keeper.officer} wants nothing from you.` }]
+  const at = town ? town.offices.includes(here) : Boolean(keeper.npc && world.npcsAt(here).includes(keeper.npc)) || here === keeper.office
+  if (!at) return [{ kind: 'error', text: town ? `Fines to the town are paid at ${office || `the ${town.officer}`}.` : keeper.lord ? `Fines to ${keeper.lord} are paid to the ${keeper.officer}.` : `Fines are paid to the ${keeper.officer}.` }]
   if (world.state.player.money < debt.fine) return [{ kind: 'error', text: `The fine is ${world.money(debt.fine)}; you have ${world.money(world.state.player.money)}.` }]
   world.state.player.money -= debt.fine
   delete wanted[law]
-  if (law === 'count' && keeper.npc && world.content.npcs.has(keeper.npc)) delete world.npcState(keeper.npc).grievance
-  return [{ kind: 'text', text: `You pay ${world.money(debt.fine)}. ${law === 'waagdam' ? 'The clerk writes you out of the book.' : `The ${keeper.officer} counts it twice and puts it away. "That settles it."`}` }]
+  if (!town && keeper.npc && world.content.npcs.has(keeper.npc)) delete world.npcState(keeper.npc).grievance
+  return [{ kind: 'text', text: `You pay ${world.money(debt.fine)}. ${town ? (town.cleared ?? `The ${town.officer} writes you out of the book.`) : `The ${keeper.officer} counts it twice and puts it away. "That settles it."`}` }]
 }
 
 /** In Waagdam, traders will not deal with someone the town wants. */
 export function refusedTrade(world: World, location: string): string | undefined {
-  if (lawAt(world, location) !== 'waagdam' || !world.state.wanted?.['waagdam']) return undefined
-  return 'Nobody in Waagdam will trade with you until you have paid your fine at the Waag.'
+  const law = lawAt(world, location)
+  const town = townLaw(world, law)
+  if (!town?.trade_ban || !world.state.wanted?.[law]) return undefined
+  const office = town.offices[0] ? world.location(town.offices[0]).name.replace(/^The /, 'the ') : `the ${town.officer}`
+  return `Nobody ${town.where} will trade with you until you have paid your fine at ${office}.`
 }
 
 /**

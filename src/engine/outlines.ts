@@ -2,6 +2,8 @@ import { outline as writeOutline, type Outline, type OutlineInput } from '../chr
 import type { ChroniclerModel } from '../chronicler'
 import { worldFrame } from './dialogue/prompt'
 import { regionMap } from './map/region'
+import { withoutReference } from './quests/reference'
+import { tradeLine } from './economy/ledger'
 import type { World } from './world'
 
 // The world beyond the map (design: lore and world change, "De wereld buiten de
@@ -56,9 +58,9 @@ export function outlineInput(world: World, topic: string): OutlineInput {
     .filter((o) => o.id !== topic && o.pos && t.pos && Math.hypot(o.pos[0] - t.pos[0], o.pos[1] - t.pos[1]) < 60)
     .map((o) => ({ name: o.name, text: o.summary }))
   return {
-    instruction: world.content.chronicler ?? '',
+    instruction: withoutReference(world.content.chronicler ?? ''),
     world: worldFrame(world.content),
-    place: { id: topic, name: t.name, kind: t.kind === 'place' ? 'place' : t.kind, where: farWhere(world, topic) ?? '', known: [t.summary, t.details, t.story].filter((x): x is string => Boolean(x)) },
+    place: { id: topic, name: t.name, kind: t.kind === 'place' ? 'place' : t.kind, where: farWhere(world, topic) ?? '', known: [t.summary, t.details, t.story, ...[...world.content.outlands.values()].filter((o) => o.topic === topic).map((o) => tradeLine(world, o.id))].filter((x): x is string => Boolean(x)) },
     taken: [...taken].sort(),
     neighbours,
   }
