@@ -200,6 +200,17 @@ ipcMain.handle('engine:command', async (_event, input: unknown) => {
     }
     return reply([system('You pick up where you left off.'), ...(await engine.handle('look'))])
   }
+  if (/^(years later|new legend|jaren later)$/i.test(text)) {
+    // A new game in the same world, with the old one as legend (M9.1).
+    const data = store().latest()
+    if (!data) return reply([{ kind: 'error', text: 'There is no saved world to tell legends of.' }])
+    const gone = await useWorldOf(data)
+    if (gone) return reply([{ kind: 'error', text: gone }])
+    const { engine: next, outputs } = await Engine.legend(content, data, Math.floor(Math.random() * 2 ** 31), ai?.client())
+    next.builder = !app.isPackaged
+    follow(next, journal().start(randomUUID()))
+    return reply(outputs)
+  }
   if (/^(new stranger|carry on|nieuwe vreemdeling)$/i.test(text)) {
     // The same world with a new character (M7.2).
     const data = store().latest()

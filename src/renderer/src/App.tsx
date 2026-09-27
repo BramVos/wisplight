@@ -145,7 +145,7 @@ export function App() {
         setLines((previous) => [...previous, ...reply.outputs.map(withId)].slice(-400))
         setStatus(reply.status)
         // A new stranger in the same world makes their character first (M7.2).
-        if (/^(new stranger|carry on|nieuwe vreemdeling)$/i.test(text) && reply.status.character && !reply.status.character.made) setCreation(await client.creation())
+        if (/^(new stranger|carry on|nieuwe vreemdeling|years later|new legend|jaren later)$/i.test(text) && reply.status.character && !reply.status.character.made) setCreation(await client.creation())
       } catch (reason) {
         setLines((previous) => [...previous, withId({ kind: 'error', text: String(reason) })])
       } finally {

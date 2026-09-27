@@ -1,6 +1,7 @@
 import type { Archived } from './archive'
 import { applyFarPlace, farPlaceOf, farRequest, farWords, wantFarPlace, type FarWords } from './growth/far'
 import { crowdHere, nameOne } from './growth/crowds'
+import { applyLegendWords, legendRequest, legendsOf } from './legend'
 import { deliverLoad, listLoads, loadsHere, payToll, robLoad, takeLoad } from './economy/haul'
 import { worldFrame } from './dialogue/prompt'
 import { followTombstones, followTombstonesInLog, nameBook, withNames, type NameBook } from './ids'
@@ -32,7 +33,8 @@ import { knownRequests, requestName } from './requests'
 import { recordFact, seedNews } from './news'
 import { parseCommand, parseDirection } from './parser'
 import { advance } from './simulation'
-import { createInitialState, fitStateToContent, type GameState, type WorldEvent } from './state'
+import { createInitialState, fitStateToContent, type GameState, type LoreEntry, type WorldEvent } from './state'
+import { chronicleState } from './storylines'
 import { upper, World } from './world'
 import { beginFight, fightView, playerCommand } from './combat/flow'
 import { foeXp } from './combat/balance'
@@ -101,6 +103,8 @@ export type LogEntry =
   | { t: number; k: 'outline'; topic: string; v: Outline | null }
   // A far place made playable (M9.1): the chronicler's words, or null for the template.
   | { t: number; k: 'far'; topic: string; v: FarWords | null }
+  // The legends of an old game this one began with (M9.1).
+  | { t: number; k: 'legends'; v: LoreEntry[] }
   // The names the game began with (M9.1): playing the log back uses them, so a name changed later changes nothing.
   | { t: number; k: 'names'; v: NameBook }
 
@@ -1061,6 +1065,36 @@ export class Engine {
     return { engine, outputs }
   }
 
+  /**
+   * Years later, as legend (M9.1): a new game in the same world that carries
+   * the lore of an old one as old stories, without the names of the living.
+   * The chronicler retells them when a model is there; the engine checks the
+   * names, and the template tells what does not pass.
+   */
+  static async legend(content: Content, save: SaveData, seed: number, llm?: LlmClient): Promise<{ engine: Engine; outputs: Output[] }> {
+    if (save.world !== content.world.id) throw new Error(`This save belongs to world "${save.world}"`)
+    const old = followTombstones(content, JSON.parse(JSON.stringify(save.state)) as GameState)
+    let legends = legendsOf(content, old)
+    let reply: string | null = null
+    if (llm && legends.length) {
+      try {
+        reply = (await llm.complete({ ...legendRequest(content, legends), priority: 'low' })).text
+      } catch {
+        reply = null
+      }
+    }
+    legends = applyLegendWords(content, legends, reply)
+    const engine = new Engine(content, { seed, ...(llm ? { llm } : {}) })
+    engine.record({ t: engine.world.now, k: 'legends', v: legends })
+    chronicleState(engine.world).lore.push(...legends)
+    const outputs: Output[] = [
+      { kind: 'text', text: `Years have gone by in ${content.world.name}. People still tell of the stranger who came before, though the stories have grown in the telling.` },
+      { kind: 'system', text: legends.length ? `${legends.length} ${legends.length === 1 ? 'story' : 'stories'} of the old days ${legends.length === 1 ? 'is' : 'are'} told here now. Ask about them.` : 'Nothing of the old days is told any more.' },
+      describeRoom(engine.world),
+    ]
+    return { engine, outputs }
+  }
+
   /** The same game on changed content: what the world builder saves is in play at once (FO, chapter 15, "Live herladen"). */
   withContent(content: Content): Engine {
     const next = Engine.fromSave(content, this.save(), this.llm)
@@ -1126,6 +1160,10 @@ export class Engine {
         } else if (entry.k === 'outline') {
           this.log.push(entry)
           applyOutline(this.world, entry.topic, entry.v)
+        } else if (entry.k === 'legends') {
+          this.log.push(entry)
+          const lore = chronicleState(this.world).lore
+          for (const l of entry.v) if (!lore.some((x) => x.id === l.id)) lore.push(l)
         } else if (entry.k === 'far') {
           this.log.push(entry)
           applyFarPlace(this.world, entry.topic, entry.v)

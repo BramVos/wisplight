@@ -320,6 +320,13 @@ export class Knowledge {
     const lore = this.lore(topicId)
     if (!lore) return 0
     if (lore.teller === npcId) return 3
+    // A legend of the old days (M9.1): told where it happened, and far off when it is famous; the old know it best.
+    if (lore.by === 'legend') {
+      if (!this.world.content.npcs.has(npcId)) return 0
+      const near = this.ownAreas(npcId).has(this.world.location(lore.place).area)
+      const base = near ? 2 : lore.fame >= 4 ? 1 : 0
+      return Math.min(3, base + (base > 0 && this.world.npc(npcId).age >= 50 ? 1 : 0)) as Level
+    }
     const heard = this.world.state.news?.heard[npcId] ?? {}
     return Math.max(0, ...lore.facts.map((f) => heard[f]?.level ?? 0)) as Level
   }

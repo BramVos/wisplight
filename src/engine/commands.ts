@@ -52,7 +52,7 @@ const HELP = [
   "Talking: talk <person>, ask <person> about <topic>, say <text> or 'text.",
   'You: sheet, create (make your character), level up, train <skill>, wield <weapon>, wear <armour>, devote to <patron>, pray, rite.',
   'Fights: strike, advance, step back, raise shield, use herbs, recall, talk, flee, surrender, end. HELP in a fight says more.',
-  'Game: save, load, continue (exactly where you stopped), log [lines], log export, help.',
+  'Game: save, load, continue (exactly where you stopped), new stranger (the same world, a new character), years later (a new game with the old one as legend), log [lines], log export, help.',
   'Dutch works too: kijk, pak, koop, praat met, vraag ... over ...',
 ].join('\n')
 

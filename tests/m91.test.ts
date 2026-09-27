@@ -6,6 +6,9 @@ import { openness } from '../src/engine/belief'
 import { adoptPlaceEdits, readLock, withLock } from '../src/engine/edit'
 import { shiftTension } from '../src/engine/social/realms'
 import { crowdsAt } from '../src/engine/growth/crowds'
+import { livingNames, namesTheLiving } from '../src/engine/legend'
+import { Knowledge } from '../src/engine/dialogue/knowledge'
+import type { TopicRegistry } from '../src/engine/dialogue/topics'
 import { startProject } from '../src/engine/growth/growth'
 import { faithOf } from '../src/engine/faith'
 import { farFromPlayer, goAway } from '../src/engine/lod'
@@ -628,5 +631,59 @@ describe('M9.1: nameless groups', () => {
     engine.world.regrow()
     expect(startProject(engine.world, 'waagdam_wall')).toBe(true)
     expect(crowdsAt(engine.world, 'loc_waagdam_west_gate').map((c) => [c.name, c.count])).toEqual([['wall workers', 30]])
+  })
+})
+
+describe('M9.1: years later, as legend', () => {
+  function oldGame() {
+    const engine = new Engine(content, { seed: 108 })
+    engine.state.player.character = { ...(createCharacter(content, suggestChoice(content, 'warden', 'Joost')) as { character: NonNullable<typeof engine.state.player.character> }).character }
+    ;(engine.state.chronicle ??= { seq: 0, lines: [], lore: [], news: {}, pending: [], runs: 0 }).lore.push({
+      id: 'chr_lore_1',
+      name: "Mirte's drowned oven",
+      summary: 'Mirte Bakker and Joost pulled Harmen out of the Blackmere the night the dyke broke.',
+      details: 'Harmen still owes Joost a sack of flour, Mirte says.',
+      story: 'The water came over the green. Mirte and Joost went in after Harmen with a rope. Wendela rang the bell all night.',
+      far: 'Folk in Veenhoek say a stranger saved the miller from the water.',
+      teller: 'npc_mirte',
+      fame: 4,
+      place: 'loc_veenhoek_green',
+      line: 'line_1',
+      facts: ['fact_1'],
+      links: ['npc_harmen'],
+      t: 100,
+      by: 'template',
+    })
+    return engine.save()
+  }
+
+  it('a new game tells the old one as legends of the stranger, without the names of the living', async () => {
+    const { engine, outputs } = await Engine.legend(content, oldGame(), 7)
+    expect(outputs.map((o) => o.text).join('\n')).toMatch(/Years have gone by/)
+    const legend = engine.state.chronicle!.lore.find((l) => l.by === 'legend')!
+    const text = [legend.name, legend.summary, legend.details, legend.story, legend.far].join(' ')
+    expect(namesTheLiving(text, livingNames(content))).toBeUndefined()
+    expect(text).not.toMatch(/Joost/)
+    expect(legend.summary).toMatch(/^Years ago, they say: the baker and the stranger pulled the miller out of the Blackmere/)
+    expect(legend.facts).toEqual([])
+    // A new world: everyone is alive and at the start; only the stories remain.
+    expect(engine.state.news?.facts.length ?? 0).toBe(new Engine(content, { seed: 7 }).state.news?.facts.length ?? 0)
+    // The old know it best, and those who live near where it happened.
+    engine.status()
+    const who = await say(engine, `@who-knows ${legend.name}`)
+    void who
+    const knowledge = new Knowledge(engine.world, (engine as unknown as { topics: TopicRegistry }).topics)
+    expect(knowledge.level('npc_aaltje', legend.id)).toBe(3)
+    expect(knowledge.level('npc_mirte', legend.id)).toBe(2)
+    // The log plays back to the same legends.
+    const replayed = await Engine.replay(content, 7, engine.save().log)
+    expect(replayed.state.chronicle!.lore).toEqual(engine.state.chronicle!.lore)
+  })
+
+  it('the chronicler retells them; a living name that slips through is not used', async () => {
+    const told = await Engine.legend(content, oldGame(), 7, new MockLlm('good'))
+    expect(told.engine.state.chronicle!.lore[0]!.name).toBe('the stranger and the drowned bell')
+    const slipped = await Engine.legend(content, oldGame(), 7, new MockLlm('invent'))
+    expect(slipped.engine.state.chronicle!.lore[0]!.summary).toMatch(/^Years ago, they say: the baker/)
   })
 })

@@ -130,7 +130,8 @@ export interface LoreEntry {
   facts: string[]
   links: string[]
   t: number
-  by: 'chronicler' | 'template'
+  /** Legends from an old game (M9.1) have no facts: the old know them best, and those who live near where it happened. */
+  by: 'chronicler' | 'template' | 'legend'
 }
 
 export interface ChronicleRun {

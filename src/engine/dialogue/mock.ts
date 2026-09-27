@@ -61,6 +61,8 @@ export class MockLlm implements LlmClient {
             ? this.outline(String(request.meta?.['name'] ?? 'the place'))
             : request.schemaName === 'far_place'
             ? this.farPlace(String(request.meta?.['name'] ?? 'the place'))
+            : request.schemaName === 'legends'
+            ? this.legends((request.meta?.['legends'] as string[] | undefined) ?? [])
             : this.chronicler(request.meta as unknown as ChronicleMeta, request.prompt)
           : this.other(request)
     return { text, provider: 'mock', model: 'mock-1', usage: { inputTokens: Math.round((request.system.length + request.prompt.length) / 4), outputTokens: Math.round(text.length / 4), cachedTokens: 0 }, latencyMs: 1 }
@@ -190,6 +192,20 @@ export class MockLlm implements LlmClient {
       })
     }
     return JSON.stringify(reply)
+  }
+
+  /** Old lore retold as legend (M9.1); 'invent' lets a living name slip into the first. */
+  private legends(ids: string[]): string {
+    return JSON.stringify({
+      legends: ids.map((id, i) => ({
+        id,
+        name: 'the stranger and the drowned bell',
+        summary: `${this.mode === 'invent' && i === 0 ? 'Mirte' : 'A stranger'} came to the fen long ago, and the water was never the same after.`,
+        details: 'Some say the stranger made a bargain with the water. Others say the stranger only listened.',
+        story: 'My grandmother saw the stranger once, by the quay. Thin, she said, and quiet. The next spring the dykes held. Nobody thanked them. That is how it is here.',
+        far: 'A tale from the fen about a stranger and the water.',
+      })),
+    })
   }
 
   /** A far place made playable (M9.1): words for its three places and two people; 'invalid' writes one sentence too few. */

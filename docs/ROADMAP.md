@@ -231,7 +231,7 @@ Uit de mijlpaalverslagen van M8.2 tot en met M8.5 (verwerkt 27 september 2026):
 - [x] Een plek die door een project ontstond, is met [Adopt] in de content over te nemen met hetzelfde id, net als een nieuwkomer
 - [x] Ieder mens heeft een geloof uit de content van de wereld, en wrijving met nieuwkomers weegt verschil in geloof mee
 - [x] Een groep vóór nieuwkomers ontstaat ook zonder AI, als standaardnasleep in de content, naast de groep tegen
-- [ ] Een nieuw spel kan de wereld van een oud spel als legende meenemen, zonder namen van mensen die nog leven
+- [x] Een nieuw spel kan de wereld van een oud spel als legende meenemen, zonder namen van mensen die nog leven
 - [ ] Skerrow heeft een eigen regelset en is met personage en gevecht te spelen
 - [ ] Alles wat er al was, speelt hetzelfde: het hele testpakket, de simulaties, de uitspeelscripts van beide werelden, en oude saves
 
