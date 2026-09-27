@@ -71,8 +71,8 @@ Scope: ontwerp lore en wereldverandering, FO 7, 8 en 16. De kroniekschrijver als
 
 Scope: FO 4 en 15. Zonetekening naar hexkaart met generatorregels, hexbeschrijvingen uit sjablonen, lopen met automatisch doorlopen, zicht en mist, snelreizen, kaartpaneel met bezocht, gezien, gehoord en kaart, landkaart als kennis. Eerste versie van de wereldbouwer: kaart, locaties, uitgangen, zones, NPC-formulier en validatiepaneel. Uit het ontwerp lore en wereldverandering: detail naar afstand (volledig, grof, notitie) met materialiseren, de kaart in het dagboek, en genereren tot omtrek voor streken buiten de kaart.
 
-- [ ] De route van Veenhoek naar de Kattenbroek is te vinden; de verborgen droge rug alleen met Wouter of Pim
-- [ ] Gehoorde zones worden kleiner naarmate meer NPC's over dezelfde plek vertellen
+- [x] De route van Veenhoek naar de Kattenbroek is te vinden; de verborgen droge rug alleen met Wouter of Pim
+- [x] Gehoorde zones worden kleiner naarmate meer NPC's over dezelfde plek vertellen
 - [ ] Een locatie of NPC aanpassen in de wereldbouwer is direct zichtbaar in het spel
 - [ ] Een NPC ver weg is een notitie en wordt op die plek weer volledig zodra de speler in de buurt komt
 

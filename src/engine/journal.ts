@@ -20,7 +20,7 @@ export interface JournalLink {
 
 export interface JournalPage {
   id: string
-  kind: 'person' | 'place' | 'area' | 'event' | 'lore' | 'thing' | 'quest'
+  kind: 'person' | 'place' | 'area' | 'event' | 'lore' | 'thing' | 'quest' | 'map'
   name: string
   lines: string[]
   sources: string[]

@@ -13,8 +13,11 @@ import { formatMoney } from './items'
 import { chronicleText } from './chronicle'
 import { journalPage, type JournalPage } from './journal'
 import { die } from './life'
-import { knownPlace, walkTarget, type KnownPlace } from './map/known'
-import { followWay, isHexId, walk, windOf, type WalkPlan } from './map/travel'
+import { knownPlace, landLines, walkTarget, type KnownPlace } from './map/known'
+import { takeBarge, travelTo } from './map/journey'
+import { mapText, mapView, type MapView } from './map/view'
+import { regionMap } from './map/region'
+import { canSetOut, followWay, isHexId, look, playerHex, walk, windOf, type WalkPlan } from './map/travel'
 import { knownRequests, requestName } from './requests'
 import { recordFact, seedNews } from './news'
 import { parseCommand, parseDirection } from './parser'
@@ -68,7 +71,11 @@ export interface Status {
   paused: boolean
   talk?: { npc: string; name: string; call: string; attitude: string; turnsLeft: number; options: string[] }
   journal: { people: JournalEntry[]; places: JournalEntry[]; events: JournalEntry[]; lore: JournalEntry[]; things: JournalEntry[]; quests: JournalEntry[] }
+  /** The map round the player: rows of characters, and a class code per character (FO, chapter 4). */
+  map?: { rows: string[]; classes: string[] }
 }
+
+const MAP_CODES: Record<string, string> = { fen: 'f', water: 'w', woods: 't', heath: 'h', fields: 'd', way: 'y', place: 'p', zone: 'z', you: '@', unknown: 'u' }
 
 export interface EngineOptions {
   seed?: number
@@ -134,6 +141,7 @@ export class Engine {
     if (!options.state) {
       seedNews(this.world)
       this.arrive()
+      this.lookAround()
     }
     this.dialogue.learn(state.player.location, areaTopicId(content, this.world.location(state.player.location).area))
   }
@@ -161,7 +169,7 @@ export class Engine {
     if (visited.includes(location.area)) return
     visited.push(location.area)
     const area = this.content.areas.get(location.area)
-    if (!area || area.kind === 'route') return
+    if (!area || area.kind === 'route' || area.kind === 'wilderness') return
     const clock = new GameClock(this.world.now).parts
     recordFact(this.world, {
       kind: 'stranger',
@@ -178,6 +186,13 @@ export class Engine {
     })
   }
 
+  /** What the player can see from where they stand goes on their map. */
+  private lookAround(): void {
+    const map = regionMap(this.content)
+    const hex = map && playerHex(this.world)
+    if (map && hex) look(this.world, map, hex, isHexId(this.state.player.location) || canSetOut(this.world, this.state.player.location))
+  }
+
   /** Everything that really happened, for the end of a game. */
   chronicle(): string {
     return chronicleText(this.world, this.startMinute)
@@ -185,6 +200,7 @@ export class Engine {
 
   /** A page of the journal: what the player knows about a topic, with sources and links. */
   page(id: string): JournalPage | undefined {
+    if (id === 'map') return { id, kind: 'map', name: 'The Holleveen as you know it', lines: this.mapText().split('\n'), sources: [], links: [] }
     this.dialogue.syncNews()
     return journalPage(this.world, this.topics, id)
   }
@@ -342,6 +358,7 @@ export class Engine {
     if (talk && this.state.npcs[talk.npc]?.location !== this.state.player.location) this.state.talk = undefined
     this.dialogue.learn(this.state.player.location, areaTopicId(this.content, this.world.location(this.state.player.location).area))
     this.arrive()
+    this.lookAround()
     settleRuns(this.world)
     settleChoices(this.world)
     return this.shown(outputs)
@@ -349,6 +366,8 @@ export class Engine {
 
   private async route(text: string): Promise<Output[]> {
     if (text.startsWith('@')) return this.build(text.slice(1))
+    const barge = /^(?:take|catch|board)\s+(?:the\s+)?barge(?:\s+to\s+(.+))?$|^travel\s+by\s+barge(?:\s+to\s+(.+))?$/i.exec(text)
+    if (barge && !this.state.talk) return takeBarge(this.world, (barge[1] ?? barge[2])?.toLowerCase().replace(/^the\s+/, '').trim(), (minutes) => this.pass(minutes))
     const talk = this.state.talk
     const command = parseCommand(text.replace(/^\//, ''))
     const talking = talk && !text.startsWith('/')
@@ -418,6 +437,16 @@ export class Engine {
         if (!target) return [{ kind: 'error', text: `${place.name} lies beyond the Holleveen.` }]
         return this.walkPlan({ kind: 'to', target, name: place.name }, place)
       }
+      case 'travel': {
+        const to = /^(?:to|naar)\s+(.+)$/i.exec(command.args.join(' '))
+        if (!to) return [{ kind: 'error', text: 'Travel where? For example: travel to Waagdam.' }]
+        const topic = this.topics.find(to[1]!)
+        const place = topic ? knownPlace(this.world, topic) : undefined
+        if (!place?.hex) return [{ kind: 'error', text: place ? `You have only heard of ${place.name}. Walk there first.` : `You don't know a place called "${to[1]}".` }]
+        return [...travelTo(this.world, place.hex, place.name, (minutes) => this.pass(minutes)), describeRoom(this.world)]
+      }
+      case 'map':
+        return [{ kind: 'system', text: this.mapText() }]
       case 'follow': {
         const words = command.args.join(' ').toLowerCase()
         const windWord = command.args.at(-1)
@@ -512,7 +541,14 @@ export class Engine {
         ? { npc: talk.npc, name: this.world.npc(talk.npc).short, call: callName(this.world.npc(talk.npc)), attitude: attitude(this.world, talk.npc).band, turnsLeft: talk.turnsLeft, options: QUICK_OPTIONS }
         : undefined,
       journal,
+      map: this.compactMap(),
     }
+  }
+
+  private compactMap(): Status['map'] {
+    const view = this.mapView()
+    if (!view) return undefined
+    return { rows: view.rows.map((row) => row.map((c) => c.ch).join('')), classes: view.rows.map((row) => row.map((c) => MAP_CODES[c.cls] ?? 'u').join('')) }
   }
 
   save(): SaveData {
@@ -578,6 +614,16 @@ export class Engine {
     } finally {
       this.replaying = false
     }
+  }
+
+  /** The region as the player knows it, and what they know of the land beyond. */
+  mapText(): string {
+    return [mapText(this.world), ...landLines(this.world)].join('\n')
+  }
+
+  /** The map for the side panel (a window round the player) or the journal (the whole region). */
+  mapView(whole = false): MapView | undefined {
+    return mapView(this.world, whole ? { width: 60, height: 20, whole: true } : { width: 34, height: 12 })
   }
 
   /** Walks across the region, then shows where the walk ended (FO, chapter 4). */

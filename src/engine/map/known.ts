@@ -97,3 +97,32 @@ export function knownPlaces(world: World): KnownPlace[] {
   }
   return places
 }
+
+/** The land beyond the region (FO, chapter 4, "De landkaart"): the far places the player knows, by direction and days. */
+export function landLines(world: World): string[] {
+  const map = regionMap(world.content)
+  if (!map) return []
+  const journal = world.state.player.journal ?? {}
+  const here = map.posOf(playerHexOr(world, map))
+  const lines: string[] = []
+  for (const topic of [...world.content.topics.values()].sort((a, b) => a.name.localeCompare(b.name))) {
+    if (!topic.pos || journal[topic.id] === undefined || map.inside(map.hexOf(topic.pos))) continue
+    const km = Math.hypot(topic.pos[0] - here[0], topic.pos[1] - here[1])
+    const angle = (Math.atan2(topic.pos[0] - here[0], topic.pos[1] - here[1]) * 180) / Math.PI
+    const wind = ['north', 'north-east', 'east', 'south-east', 'south', 'south-west', 'west', 'north-west'][Math.round(((angle + 360) % 360) / 45) % 8]
+    const days = Math.max(1, Math.round(km / 40))
+    lines.push(`  ${topic.name}: about ${Math.round(km / 5) * 5} km ${wind}, ${days === 1 ? 'a day' : `${days} days`} on foot.`)
+  }
+  for (const far of world.state.lore?.far ?? []) if (journal[far.id] !== undefined) lines.push(`  ${far.name}: a ${far.kind} far beyond the Nethermarch, you were told.`)
+  return lines.length ? ['', 'BEYOND THE HOLLEVEEN', ...lines] : []
+}
+
+function playerHexOr(world: World, map: RegionMap): Hex {
+  const here = world.state.player.location
+  return map.locations.get(here) ?? parseHex(here) ?? map.places.get('veenhoek') ?? { col: 0, row: 0 }
+}
+
+function parseHex(id: string): Hex | undefined {
+  const match = /^hex:(\d+),(\d+)$/.exec(id)
+  return match ? { col: Number(match[1]), row: Number(match[2]) } : undefined
+}

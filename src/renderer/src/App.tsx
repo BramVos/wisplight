@@ -23,6 +23,18 @@ function renderText(text: string, onTopic: (topic: string) => void) {
   )
 }
 
+/** Groups a row of map characters into runs of the same colour. */
+function runs(row: string, classes: string): [string, string][] {
+  const out: [string, string][] = []
+  for (let i = 0; i < row.length; i++) {
+    const cls = classes[i] ?? 'u'
+    const last = out.at(-1)
+    if (last && last[1] === cls) last[0] += row[i]
+    else out.push([row[i]!, cls])
+  }
+  return out
+}
+
 // The AI part of the status bar (FO, chapter 16, "Kosten en verbruik in beeld").
 function aiLabel(ai: AiStatus): { text: string; tone: '' | 'warn' | 'over' } {
   if (!ai.connected) return { text: 'AI off', tone: '' }
@@ -165,7 +177,26 @@ export function App() {
       <aside className="side">
         <section>
           <h2>Map</h2>
-          <p className="muted">The map fills in as you explore (phase 1).</p>
+          {status?.map ? (
+            <>
+              <pre className="map" aria-label="Map of the land around you">
+                {status.map.rows.map((row, y) => (
+                  <div key={y}>
+                    {runs(row, status.map!.classes[y] ?? '').map(([text, cls], i) => (
+                      <span key={i} className={`m-${cls === '@' ? 'you' : cls}`}>
+                        {text}
+                      </span>
+                    ))}
+                  </div>
+                ))}
+              </pre>
+              <button type="button" className="link" onClick={() => void openPage('map')}>
+                [Whole map]
+              </button>
+            </>
+          ) : (
+            <p className="muted">The map fills in as you explore.</p>
+          )}
         </section>
         <section>
           <h2>Party</h2>
@@ -179,9 +210,11 @@ export function App() {
                 [Back]
               </button>
               <h3>{page.name}</h3>
-              {page.lines.map((line, index) => (
-                <p key={index}>{line}</p>
-              ))}
+              {page.kind === 'map' ? (
+                <pre className="map whole">{page.lines.join('\n')}</pre>
+              ) : (
+                page.lines.map((line, index) => <p key={index}>{line}</p>)
+              )}
               {page.sources.length > 0 && <p className="muted small">Heard from: {page.sources.join('; ')}</p>}
               {page.links.length > 0 && (
                 <ul className="journal-links">

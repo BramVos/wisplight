@@ -115,9 +115,14 @@ function index(map: RegionMap, hex: Hex): number {
   return hex.col * map.rows + hex.row
 }
 
-export function hasSeen(world: World, map: RegionMap, hex: Hex): boolean {
+export function hasSeen(world: World, map: RegionMap, hex: Hex, seen = seenBits(world, map)): boolean {
   const i = index(map, hex)
-  return (bits(mapState(world).seen, map.cols * map.rows)[i >> 3]! & (1 << (i & 7))) !== 0
+  return (seen[i >> 3]! & (1 << (i & 7))) !== 0
+}
+
+/** The seen hexes, decoded once for a whole map drawing. */
+export function seenBits(world: World, map: RegionMap): Uint8Array {
+  return bits(mapState(world).seen, map.cols * map.rows)
 }
 
 export function hasWalked(world: World, map: RegionMap, hex: Hex): boolean {

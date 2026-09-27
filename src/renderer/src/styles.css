@@ -111,6 +111,27 @@ body {
   padding-top: 14px;
 }
 
+.map {
+  font: 12px/1.15 var(--font);
+  margin: 0 0 6px;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+.map.whole {
+  font-size: 11px;
+}
+
+.m-f { color: #6f7f4a; }
+.m-w { color: #4f7fa8; }
+.m-t { color: #4e8a4a; }
+.m-h { color: #9c7fa8; }
+.m-d { color: #a39a6a; }
+.m-y { color: #cfc6a4; }
+.m-p { color: var(--room); font-weight: bold; }
+.m-z { color: #a8904f; }
+.m-you { color: #f2efe4; font-weight: bold; }
+
 .side h2 {
   color: var(--room);
   font-size: 13px;

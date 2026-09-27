@@ -115,3 +115,44 @@ describe('M4: what the player knows of the map', () => {
     expect(knownPlace(engine.world, 'area_veenhoek')!.status).toBe('visited')
   })
 })
+
+describe('M4: the map and fast travel', () => {
+  it('draws only what the player has seen, with the player on it', async () => {
+    const engine = game()
+    const before = engine.status().map!
+    expect(before.rows.join('')).toContain('@')
+    await play(engine, 's', 'w', 'follow the fen path south-east')
+    const after = engine.status().map!
+    const drawn = (rows: string[]) => rows.join('').replace(/\s/g, '').length
+    expect(drawn(after.rows)).toBeGreaterThan(drawn(before.rows))
+    expect(engine.page('map')!.lines.join('\n')).toMatch(/Veenhoek: been there/)
+  })
+
+  it('travels fast over a route walked before, and not over one never walked', async () => {
+    const engine = game()
+    await play(engine, 's', 'w')
+    expect(await play(engine, 'travel to the blackmere')).toMatch(/don't know|only heard|don't know a place/)
+    for (let i = 0; i < 6 && engine.state.player.location !== 'loc_blackmere_weirs'; i++) await play(engine, i === 0 ? 'follow the fen path south-east' : 'follow the fen path')
+    expect(engine.state.player.location).toBe('loc_blackmere_weirs')
+    const out = await play(engine, 'travel to veenhoek')
+    expect(out).toMatch(/You travel to Veenhoek\. It takes/)
+    expect(engine.world.location(engine.state.player.location).area).toBe('veenhoek')
+  })
+
+  it('runs the barge on its days, for a fare', async () => {
+    const engine = game()
+    // Dinsdag: no barge.
+    expect(await play(engine, 'take the barge to waagdam')).toMatch(/No barge today/)
+    at(engine, 16, 9) // Donderdag
+    const money = engine.state.player.money
+    const out = await play(engine, 'take the barge to waagdam')
+    expect(out).toMatch(/step ashore at The Harbour/)
+    expect(engine.state.player.money).toBe(money - 16)
+  })
+
+  it('lists the far places the player has heard of as directions and days', async () => {
+    const engine = game()
+    ;(engine.state.player.journal ??= {})['graafhaven'] = 1
+    expect(engine.page('map')!.lines.join('\n')).toMatch(/BEYOND THE HOLLEVEEN[\s\S]*Graafhaven: about \d+ km west, 2 days on foot/)
+  })
+})
