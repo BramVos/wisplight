@@ -37,6 +37,32 @@ aftermath:
       - id: mind
         do: { thought: $a, text: "The stranger is a friend of yours now.", days: 14 }
 
+  # The stranger gave back or paid for what they took (M10.3): it makes up for some of it,
+  # less when they were caught or found out first than when they came of their own accord.
+  - id: theft_mended_own
+    signal: theft_mended
+    event: own_accord
+    about: first
+    topic: theft
+    expires: 1
+    steps:
+      - id: regard
+        do: { regard: [$a], to: player, affinity: 8 }
+      - id: mind
+        do: { thought: $a, text: "The stranger came back of their own accord and made it right. That counts for something.", days: 7 }
+
+  - id: theft_mended_caught
+    signal: theft_mended
+    event: after_caught
+    about: first
+    topic: theft
+    expires: 1
+    steps:
+      - id: regard
+        do: { regard: [$a], to: player, affinity: 2 }
+      - id: mind
+        do: { thought: $a, text: "The stranger made it right, but only once they were caught.", days: 7 }
+
   # The stranger did not keep their word (M10.3): the one let down minds it, and the village hears of it.
   - id: broken_promise
     signal: broken_promise

@@ -1049,7 +1049,7 @@ function checkReferences(world: WorldDef | undefined, c: Omit<Content, 'world'>)
 }
 
 /** Signals the systems give themselves, without a watcher in the content. */
-const CODE_SIGNALS = ['house_lost', 'plan_failed', 'doubt', 'stranger_unwelcome', 'recognised', 'plans_cross', 'warning_proven', 'broken_promise', 'promise_kept', 'request_open']
+const CODE_SIGNALS = ['house_lost', 'plan_failed', 'doubt', 'stranger_unwelcome', 'recognised', 'plans_cross', 'warning_proven', 'broken_promise', 'promise_kept', 'request_open', 'theft_mended']
 
 /** Every string in a step's verb that looks like an id. */
 function idsIn(value: unknown): string[] {

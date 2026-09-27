@@ -47,7 +47,7 @@ import { maxHp, type CreationData } from './rules/character'
 import { npcFighter } from './combat/npc'
 import { approve, arrived, campfire, companionOf, companions, fleeWith, leave, mend, order, partyLines, recruit, restParty, setStance, sharedFight, syncLevels, withPlayer } from './social/companions'
 import { confronting, found as foundStranger, seekers, settleGrievance } from './social/confront'
-import { crime, LAND_LAW, payFine, steal, townLaw } from './social/crime'
+import { crime, LAND_LAW, payFine, payFor, steal, stolenSeen, townLaw } from './social/crime'
 import { deed, noticeCarried, seedBonds } from './social/deeds'
 import { factionLines, factionPage, join, rankOf, repute } from './social/factions'
 import { fightsBack, mayAttackFirst, mayLend } from './social/gates'
@@ -685,6 +685,8 @@ export class Engine {
     }
     noticeCarried(this.world)
     outputs.push(...this.questsTick())
+    // Whoever was robbed and sees their own thing on the stranger knows it now (M10.3).
+    outputs.push(...stolenSeen(this.world))
     outputs.push(...this.confrontations(), ...this.attacks(), ...this.sought())
     settleRuns(this.world)
     settleChoices(this.world)
@@ -913,7 +915,11 @@ export class Engine {
         return [{ kind: 'system', text: realmLines(this.world).join('\n') }]
       case 'pay': {
         if (/^fine/i.test(command.args.join(' '))) return payFine(this.world)
-        return [{ kind: 'error', text: 'Pay what? PAY FINE, or give money to someone.' }]
+        // PAY <person>: for what the stranger took from them (M10.3).
+        const whom = findNpcHere(this.world, command.args.join(' ').replace(/^(back\s+)?/i, ''))
+        const paid = whom ? payFor(this.world, whom) : undefined
+        if (paid) return paid
+        return [{ kind: 'error', text: 'Pay what? PAY FINE, PAY <someone> for what you took from them, or give money to someone.' }]
       }
       case 'borrow':
         return this.borrow(command.args.join(' '))

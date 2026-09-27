@@ -10,6 +10,7 @@ import { openRequest } from '../src/engine/requests'
 import { parseClaim, truthOf } from '../src/engine/claims'
 import { tieTo } from '../src/engine/people'
 import { ownerOf } from '../src/engine/social/ownership'
+import { crime } from '../src/engine/social/crime'
 import { loadContentFromDir } from '../src/node/content'
 import { content } from './helpers'
 
@@ -522,5 +523,79 @@ describe('M10.3: ownership', () => {
     openRequest(world, { npc: 'npc_harmen', kind: 'fetch', item: 'sailcloth', source: 'motor' })
     const offers = offersFor(world, 'npc_harmen', ['item_wool'], 'could I have the wool?')
     expect(offers.find((o) => o.key === 'trade:wool')).toMatchObject({ decision: 'yes', reasons: [expect.stringMatching(/bring you a bolt of sailcloth in return/)] })
+  })
+})
+
+describe('M10.3: caught, suspected, proven, and made right', () => {
+  it('caught in the act: a timid one shouts and everyone near is a witness; a hot one grabs your wrist; the law, if there, steps in', async () => {
+    const caught = async (setup: (e: Engine) => void) => {
+      const engine = new Engine(content, { seed: 7 })
+      await engine.handle('create rascal heathborn peat_cutter name=Joost')
+      stay(engine, 'npc_mirte', 'loc_veenhoek_bakery')
+      engine.state.player.location = 'loc_veenhoek_bakery'
+      setup(engine)
+      const texts = { title: 'the stranger stole from Mirte', precise: 'The stranger stole a loaf from Mirte.', village: 'The stranger stole from Mirte.', far: 'A theft.' }
+      const out = said(crime(engine.world, { kind: 'theft', place: 'loc_veenhoek_bakery', victim: 'npc_mirte', item: 'rye_bread', value: 2, grave: false, witnesses: ['npc_mirte'] }, texts))
+      return { engine, out, theft: engine.state.crimes!.at(-1)! }
+    }
+    const timid = await caught((e) => {
+      stay(e, 'npc_jan_visser', 'loc_veenhoek_bakery')
+      Object.assign(e.world.npc('npc_mirte').personality, { courage: -1 })
+    })
+    expect(timid.out).toMatch(/Mirte shouts "Thief! Thief!"/)
+    expect(timid.theft.witnesses).toContain('npc_jan_visser')
+    const hot = await caught((e) => {
+      Object.assign(relation(e.state, 'npc_mirte'), { affinity: -80, trust: -20 })
+      Object.assign(e.world.npc('npc_mirte').personality, { courage: 1 })
+    })
+    expect(hot.out).toMatch(/Mirte grabs your wrist and does not let go\./)
+    expect((hot.engine.state.agreements?.list ?? []).some((a) => a.kind === 'attack' && a.by === 'npc_mirte')).toBe(true)
+    const law = await caught((e) => stay(e, 'npc_everhard', 'loc_veenhoek_bakery'))
+    expect(law.out).toMatch(/Everhard steps in between you and Mirte\./)
+    expect(law.engine.state.wanted?.count?.fine).toBeGreaterThan(0)
+    expect(law.engine.state.npcs['npc_everhard']!.grievance?.reason).toBe('the law')
+  })
+
+  it('stolen unseen, the owner knows only that it is gone; seeing it on you is proof, with a fine and a name', async () => {
+    const engine = new Engine(content, { seed: 7 })
+    const world = engine.world
+    await engine.handle('create rascal heathborn peat_cutter name=Joost')
+    world.state.player.location = 'loc_molenend_house'
+    ;(world.state.ground['loc_molenend_house'] ??= {})['wool'] = 1
+    stay(engine, 'npc_harmen', 'loc_molenend_mill')
+    for (const id of Object.keys(world.state.npcs)) if (id !== 'npc_harmen' && world.state.npcs[id]!.location === 'loc_molenend_house') world.state.npcs[id]!.location = 'loc_molenend_mill'
+    await engine.handle('steal wool')
+    const theft = world.state.crimes!.at(-1)!
+    expect(theft).toMatchObject({ unseen: true, victim: 'npc_harmen' })
+    expect(world.state.wanted?.count?.fine ?? 0).toBe(0)
+    // Harmen sees his wool on the stranger.
+    stay(engine, 'npc_harmen', 'loc_molenend_house')
+    const out = said(await engine.handle('look'))
+    expect(out).toMatch(/Harmen stares at what you carry\. "That's my fleece!"/)
+    expect(theft.proven).toBe(true)
+    expect(world.state.news!.facts.at(-1)?.title).toBe("the stranger's theft from Harmen")
+  })
+
+  it('given back of your own accord makes up more than after being caught', async () => {
+    const run = async (caught: boolean) => {
+      const engine = new Engine(content, { seed: 7 })
+      const world = engine.world
+      await engine.handle('create rascal heathborn peat_cutter name=Joost')
+      world.state.player.location = 'loc_molenend_house'
+      ;(world.state.ground['loc_molenend_house'] ??= {})['wool'] = 1
+      stay(engine, 'npc_harmen', 'loc_molenend_mill')
+      for (const id of Object.keys(world.state.npcs)) if (id !== 'npc_harmen' && world.state.npcs[id]!.location === 'loc_molenend_house') world.state.npcs[id]!.location = 'loc_molenend_mill'
+      await engine.handle('steal wool')
+      const theft = world.state.crimes!.at(-1)!
+      if (caught) theft.proven = true
+      stay(engine, 'npc_harmen', 'loc_molenend_house')
+      const before = relation(engine.state, 'npc_harmen').affinity
+      await engine.handle('give wool to harmen')
+      engine.tick(60)
+      return relation(engine.state, 'npc_harmen').affinity - before
+    }
+    const own = await run(false)
+    const after = await run(true)
+    expect(own).toBeGreaterThan(after)
   })
 })

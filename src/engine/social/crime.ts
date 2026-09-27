@@ -1,4 +1,5 @@
 import { callName } from '../content'
+import { queueSignal } from '../signals'
 import { ownerOf } from './ownership'
 import type { Output } from '../commands'
 import { itemName, matchItem, withArticle } from '../items'
@@ -10,7 +11,8 @@ import { approve } from './companions'
 import { applyEffect } from '../dialogue/relations'
 import { deed, setMood, shiftBond } from './deeds'
 import { reputeFor } from './factions'
-import { mayReport } from './gates'
+import { mayAttackFirst, mayReport } from './gates'
+import { agree } from '../agreements'
 
 // Witnesses and crime (FO, chapter 8, "Getuigen en misdaad"). A crime only
 // counts when someone sees it: every NPC in the scene rolls Perception against
@@ -31,6 +33,10 @@ export interface Crime {
   investigated?: boolean
   /** The thief brought it back to the victim (M9.4). */
   returned?: boolean
+  /** Proven against the stranger by a trace (M10.3): the thing seen on them, or sold to someone who knew it. */
+  proven?: boolean
+  /** The village was told who it suspected (M10.3): colder once, not twice. */
+  cooled?: boolean
   t: number
   place: string
   victim?: string
@@ -116,8 +122,8 @@ export function returnStolen(world: World, npcId: string, item: string): string 
   delete theft.suspect
   const name = callName(world.npc(npcId))
   const thing = itemName(world.content, item, 1)
-  applyEffect(world, npcId, 'affinity', -5)
-  applyEffect(world, npcId, 'trust', 3)
+  // What it makes up is content (M10.3): less when the stranger was caught first than of their own accord.
+  mended(world, theft, 'returned')
   recordFact(world, {
     kind: 'returned',
     about: [npcId],
@@ -164,10 +170,13 @@ export function crime(world: World, c: Omit<Crime, 'id' | 't' | 'reported' | 'la
     deed(world, c.victim, c.kind === 'theft' ? 'theft' : 'violence', { note: texts.precise })
     setMood(world, c.victim, -10, 24, texts.title)
   }
+  // Caught in the act (M10.3): what the one robbed does is the engine's call.
+  if (c.kind === 'theft' && c.victim && c.witnesses.includes(c.victim)) out.push(...caughtInTheAct(world, entry))
   // Reporting: whoever the gate allows tells the law.
   for (const w of c.witnesses) {
     if (companions.has(w)) continue
-    if (mayReport(world, w, c.grave)) entry.reported.push(w)
+    // The law's own officer, seeing it, always acts on it (M10.3).
+    if (mayReport(world, w, c.grave) || w === world.words.law.npc) entry.reported.push(w)
   }
   if (entry.reported.length) {
     const wanted = ((world.state.wanted ??= {})[entry.law] ??= { fine: 0, since: world.now })
@@ -180,6 +189,49 @@ export function crime(world: World, c: Omit<Crime, 'id' | 't' | 'reported' | 'la
   }
   if (c.victim) reputeFor(world, c.victim, c.grave ? -15 : -5, `${c.kind} against ${callName(world.npc(c.victim))}`)
   approve(world, c.kind === 'theft' ? 'theft' : 'cruelty')
+  return out
+}
+
+/**
+ * Caught in the act (M10.3): from character, attitude and who is there, the
+ * one robbed demands it back, grabs the thief's wrist (the combat gate: a
+ * fight), or shouts so everyone near becomes a witness; someone runs for the
+ * law; and the law, if it is there, steps in at once.
+ */
+function caughtInTheAct(world: World, entry: Crime): Output[] {
+  const victim = entry.victim!
+  const here = entry.place
+  const name = callName(world.npc(victim))
+  const officer = world.words.law.npc
+  const out: Output[] = []
+  // The law is here: it steps in, now.
+  if (officer && officer !== victim && world.content.npcs.has(officer) && world.npcsAt(here).includes(officer) && world.npcState(officer).activity !== 'asleep' && entry.law === LAND_LAW) {
+    // Reported by the one who saw it: the fine and the law's grievance follow below, and he is here to have it out.
+    if (!entry.witnesses.includes(officer)) entry.witnesses.push(officer)
+    out.push({ kind: 'narration', text: `${callName(world.npc(officer))} steps in between you and ${name}.` })
+    return out
+  }
+  // Hot enough to go for the thief: a hand on the wrist, and a fight if it comes to it.
+  if (mayAttackFirst(world, victim, { provoked: true })) {
+    const made = agree(world, { kind: 'attack', by: victim, to: 'player', source: 'rules', what: `stop the thief`, terms: { target: 'player', reason: 'the theft' } })
+    if ('id' in made) {
+      out.push({ kind: 'narration', text: `${name} grabs your wrist and does not let go.` })
+      return out
+    }
+  }
+  const others = world.npcsAt(here).filter((id) => id !== victim && world.npcState(id).activity !== 'asleep')
+  // Timid: a shout, and everyone near is a witness now.
+  if (world.npc(victim).personality.courage <= 0) {
+    for (const id of others) if (!entry.witnesses.includes(id)) entry.witnesses.push(id)
+    recordFact(world, { kind: 'shout', about: [victim], place: here, belang: 1, loud: true, title: `${name} shouting "thief"`, text: { precise: `${name} shouted "thief!" at the stranger.`, village: `${name} caught the stranger thieving and shouted the place down.`, far: 'A thief was caught.' } })
+    out.push({ kind: 'narration', text: `${name} shouts "Thief! Thief!" loud enough to fetch the whole street.` })
+  } else {
+    grievance(world, victim, 'theft', `"You'll give that back, thief, or I'll know why."`)
+    out.push({ kind: 'narration', text: `${name} holds out a hand. "Give that back. Now."` })
+  }
+  // Someone runs for the law, if the gate lets them and the law is not here.
+  const runner = others.find((id) => !world.npc(id).child && world.npc(id).personality.courage >= 0 && mayReport(world, id, false) && !(world.state.companions ?? []).some((c) => c.npc === id))
+  if (runner) out.push({ kind: 'narration', text: `${callName(world.npc(runner))} runs off to fetch the ${townLaw(world, entry.law)?.officer ?? world.words.law.officer}.` })
   return out
 }
 
@@ -230,7 +282,7 @@ export function steal(world: World, words: string): Output[] {
     }
     const seen = whoNoticed(world, here, [target])
     const witnesses = [...(caught ? [target] : []), ...seen.noticed]
-    if (caught) out.push({ kind: 'narration', text: `${callName(npc)} feels your hand and grabs your wrist. "Thief!"` })
+    if (caught) out.push({ kind: 'narration', text: `${callName(npc)} feels your hand in ${npc.pronoun === 'she' ? 'her' : npc.pronoun === 'he' ? 'his' : 'their'} pocket.` })
     else if (seen.noticed.length) out.push({ kind: 'narration', text: `${seen.noticed.map((w) => callName(world.npc(w))).join(' and ')} saw it.` })
     const what = money ? 'money' : withArticle(itemName(world.content, item!, 1))
     out.push(...crime(world, { kind: 'theft', place: here, victim: target, ...(item ? { item } : {}), value: item ? world.basePrice(item) : 16, grave: false, witnesses }, stolenTexts(world, target, what, here)))
@@ -407,6 +459,8 @@ export function crimesHour(world: World): void {
       ...(victim ? { witnesses: [victim] } : {}),
     })
     if (victim && crime.suspect && crime.suspect !== 'player') shiftBond(world, victim, crime.suspect, -10, -10)
+    // Suspicion is no proof (M10.3): the stranger suspected, the village is colder, and that is all.
+    if (crime.suspect === 'player') coolVillage(world, crime)
     // The schout goes to look, if it is his to look into.
     const officerId = world.words.law.npc
     const schout = officerId && world.content.npcs.has(officerId) && world.alive(officerId) && crime.law === LAND_LAW ? world.state.npcs[officerId] : undefined
@@ -417,6 +471,104 @@ export function crimesHour(world: World): void {
       schout.planGoal = undefined
     }
   }
+}
+
+/**
+ * Repair (M10.3): the stranger gives back or pays for what they took. It is a
+ * signal, and the standard aftermath of the content says what it makes up:
+ * less when they were caught or proven first than of their own accord.
+ */
+function mended(world: World, theft: Crime, how: 'returned' | 'paid'): void {
+  if (!theft.victim) return
+  const caught = Boolean(theft.proven || theft.witnesses.includes(theft.victim))
+  queueSignal(world, { kind: 'theft_mended', event: caught ? 'after_caught' : 'own_accord', who: [theft.victim], place: world.state.npcs[theft.victim]?.location ?? theft.place, cause: theft.fact ? [theft.fact] : [], belang: 1, claim: { subject: theft.victim, key: 'mended', value: how }, watcher: 'rules' })
+}
+
+/** PAY <person>: paying for what the stranger took from them (M10.3), its worth. */
+export function payFor(world: World, npcId: string): Output[] | undefined {
+  const theft = (world.state.crimes ?? []).find((c) => c.kind === 'theft' && !c.offender && !c.returned && c.victim === npcId && (!c.unseen || c.proven || c.discovered))
+  if (!theft) return undefined
+  const name = callName(world.npc(npcId))
+  if (world.state.player.money < theft.value) return [{ kind: 'error', text: `What you took from ${name} was worth ${world.money(theft.value)}. You have ${world.money(world.state.player.money)}.` }]
+  world.state.player.money -= theft.value
+  world.npcState(npcId).money += theft.value
+  theft.returned = true
+  delete theft.suspect
+  mended(world, theft, 'paid')
+  return [{ kind: 'text', text: `You pay ${name} ${world.money(theft.value)} for what you took.` }, { kind: 'narration', text: world.say('{name} takes the money without a word, and counts it.', npcId) }]
+}
+
+/** The stranger is suspected (M10.3): the victim's village trusts them a little less, once per theft. */
+function coolVillage(world: World, crime: Crime): void {
+  if (crime.cooled || !crime.victim) return
+  crime.cooled = true
+  const area = world.location(world.npc(crime.victim).home).area
+  for (const id of Object.keys(world.state.npcs).sort()) {
+    if (!world.alive(id) || world.npc(id).child || !world.content.locations.has(world.npc(id).home) || world.location(world.npc(id).home).area !== area) continue
+    applyEffect(world, id, 'trust', -3)
+  }
+}
+
+/**
+ * A trace that proves it (M10.3): the one robbed sees the thing on the
+ * stranger, or someone who knows whose it is is offered it. Proof gives a
+ * fine and a name: the theft is news with the stranger in it, and the law
+ * hears of it.
+ */
+export function proveTheft(world: World, crime: Crime, witness: string, how: string): Output[] {
+  if (crime.proven || crime.returned) return []
+  crime.proven = true
+  crime.unseen = false
+  crime.discovered = true
+  crime.suspect = 'player'
+  if (!crime.witnesses.includes(witness)) crime.witnesses.push(witness)
+  const victim = crime.victim
+  const who = victim ? callName(world.npc(victim)) : 'someone'
+  const what = crime.item ? withArticle(itemName(world.content, crime.item, 1)) : 'money'
+  const fact = recordFact(world, { kind: 'crime', about: [...(victim ? [victim] : []), witness], place: world.state.player.location, belang: 2, juice: 0.9, title: `the stranger's theft from ${who}`, text: { precise: `It was the stranger who stole ${what} from ${who}: ${how}.`, village: `So it was the stranger who took ${who}'s ${crime.item ? itemName(world.content, crime.item, 1) : 'money'}!`, far: `A stranger was caught with stolen goods.` }, witnesses: [witness, ...(victim && world.npcsAt(world.state.player.location).includes(victim) ? [victim] : [])] })
+  crime.fact = fact.id
+  if (victim) {
+    deed(world, victim, 'theft', { note: fact.text.precise })
+    grievance(world, victim, 'theft', `"You'll give me back my ${crime.item ? itemName(world.content, crime.item, 1) : 'money'}, thief."`)
+  }
+  const out: Output[] = []
+  if (mayReport(world, witness, false) || witness === victim || witness === world.words.law.npc) {
+    crime.reported.push(witness)
+    const wanted = ((world.state.wanted ??= {})[crime.law] ??= { fine: 0, since: world.now })
+    wanted.fine += crime.fine
+    const town = townLaw(world, crime.law)
+    out.push({ kind: 'system', text: `${callName(world.npc(witness))} will tell the ${town ? town.officer : world.words.law.officer}. You are wanted ${town ? town.where : world.words.law.where}: a fine of ${world.money(wanted.fine)}.` })
+    const law = world.words.law
+    if (!town && law.npc && world.content.npcs.has(law.npc)) grievance(world, law.npc, 'the law', `"You're wanted, stranger. ${world.money(wanted.fine)}${law.lord ? ` to ${law.lord}` : ''}, or you come with me."`)
+  }
+  return out
+}
+
+/**
+ * After each of the stranger's commands (M10.3): whoever was robbed and is
+ * here, awake, sees their own thing on the stranger.
+ */
+export function stolenSeen(world: World): Output[] {
+  const here = world.state.player.location
+  const out: Output[] = []
+  for (const crime of world.state.crimes ?? []) {
+    if (crime.kind !== 'theft' || crime.offender || crime.returned || crime.proven || !crime.item || !crime.victim) continue
+    if ((world.state.player.inventory[crime.item] ?? 0) <= 0 || crime.witnesses.includes(crime.victim)) continue
+    if (!world.npcsAt(here).includes(crime.victim) || world.npcState(crime.victim).activity === 'asleep') continue
+    out.push({ kind: 'narration', text: `${callName(world.npc(crime.victim))} stares at what you carry. "That's my ${itemName(world.content, crime.item, 1)}!"` }, ...proveTheft(world, crime, crime.victim, `${callName(world.npc(crime.victim))} saw it on the stranger`))
+  }
+  return out
+}
+
+/** Offered a stolen thing by the stranger, someone who knows whose it is recognises it (M10.3). */
+export function recognisedSale(world: World, buyer: string, item: string): Output[] | undefined {
+  const crime = (world.state.crimes ?? []).find((c) => c.kind === 'theft' && !c.offender && !c.returned && !c.proven && c.item === item && c.victim)
+  if (!crime) return undefined
+  const victim = crime.victim!
+  const area = (id: string) => world.location(world.npc(id).home).area
+  const knows = buyer === victim || area(buyer) === area(victim) || Boolean(world.state.bonds?.[buyer]?.[victim])
+  if (!knows) return undefined
+  return [{ kind: 'narration', text: `${callName(world.npc(buyer))} turns it over and goes still. "This is ${callName(world.npc(victim))}'s. Where did you get it?"` }, ...proveTheft(world, crime, buyer, `${callName(world.npc(buyer))} knew it for ${callName(world.npc(victim))}'s when the stranger tried to sell it`)]
 }
 
 /** The schout has looked round the place: with someone seen there, he acts; without, the rumour is all there is. */
@@ -431,9 +583,11 @@ export function investigated(world: World, officer: string, place: string): void
       continue
     }
     if (culprit === 'player') {
-      const wanted = ((world.state.wanted ??= {})[crime.law] ??= { fine: 0, since: world.now })
-      wanted.fine += crime.fine
-      grievance(world, officer, 'the law', `"A word, stranger. Things went missing at ${world.location(place).name}, and you were seen there. ${world.money(crime.fine)}${world.words.law.lord ? ` to ${world.words.law.lord}` : ' in fines'}, and we say no more about it."`)
+      // Seen there is suspicion, not proof (M10.3): no fine, but the law keeps an eye on the stranger.
+      applyEffect(world, officer, 'trust', -5)
+      const memory = (world.npcState(officer).memory ??= [])
+      memory.push({ t: world.now, note: `Things went missing at ${world.location(place).name}, and the stranger was seen there. I have no proof. Yet.`, topics: [place], valence: -1 })
+      coolVillage(world, crime)
     } else {
       const s = world.state.npcs[culprit]
       const cell = lawCell(world)

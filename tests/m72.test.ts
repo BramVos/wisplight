@@ -213,7 +213,7 @@ describe('M7.2: a house after a wedding', () => {
 })
 
 describe('M7.2: a theft nobody saw', () => {
-  it('is noticed later, gets a suspect in the rumours, and the schout looks into it', async () => {
+  it('is noticed later, gets a suspect in the rumours, and the schout looks into it; seen there is suspicion, not proof (M10.3)', async () => {
     const engine = await player()
     await say(engine, '@goto loc_veenhoek_bakery')
     for (const id of engine.world.npcsAt('loc_veenhoek_bakery')) Object.assign(engine.state.npcs[id]!, { location: 'loc_veenhoek_green', plan: [], busyUntil: engine.world.now + 600 })
@@ -229,7 +229,10 @@ describe('M7.2: a theft nobody saw', () => {
     expect(fact.text.village).toMatch(/the stranger/)
     for (let i = 0; i < 24 && !crime.investigated; i++) engine.tick(60)
     expect(crime.investigated).toBe(true)
-    expect(engine.state.wanted?.count?.fine).toBeGreaterThan(0)
+    // Since M10.3: no fine without proof; the village is colder, and the schout keeps an eye on the stranger.
+    expect(engine.state.wanted?.count?.fine ?? 0).toBe(0)
+    expect(crime.cooled).toBe(true)
+    expect(engine.state.npcs['npc_everhard']!.memory?.at(-1)?.note).toMatch(/I have no proof\. Yet\./)
   })
 })
 

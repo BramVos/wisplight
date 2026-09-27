@@ -25,7 +25,7 @@ import { closedBetween, placeStateLine } from './quests/plans'
 import { active } from './quests/engine'
 import { approve, restParty } from './social/companions'
 import { deed } from './social/deeds'
-import { refusedTrade, returnStolen } from './social/crime'
+import { recognisedSale, refusedTrade, returnStolen } from './social/crime'
 
 // Player commands that need no AI. Each returns lines of output; commands that
 // take time call `pass(minutes)`, which runs the world and returns what the
@@ -517,6 +517,9 @@ function sell(host: CommandHost, args: string[]): Output[] {
   if (!item) return [error(name ? `You don't have "${name}".` : 'Sell what?')]
   const buyer = openServices(world).find(({ service, location }) => service.buys.includes(item) && world.serviceOpen(location, service))
   if (!buyer) return [error(`Nobody here wants to buy ${itemName(world.content, item, 2).replace(/^2 /, '')} right now.`)]
+  // A stolen thing offered to someone who knows whose it is (M10.3): not sold, recognised.
+  const recognised = recognisedSale(world, buyer.service.provider, item)
+  if (recognised) return recognised
   const amount = qty === 'all' ? inventory[item]! : Math.min(qty, inventory[item]!)
   const provider = world.npcState(buyer.service.provider)
   const price = world.offer(item)
