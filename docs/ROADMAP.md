@@ -309,9 +309,9 @@ Scope: een dev-menu in het spel zelf (besluit 27 september 2026), alleen in een 
 - [x] Knoppen om te sturen zonder te typen: een dag overslaan, een plan starten, spanning en markt zetten, een signaal afvuren, het budget zetten, en alles wat je zo doet komt als `@`-commando in het spellogboek zodat naspelen klopt
 - [x] Het menu leest alleen; elke ingreep loopt via de motor en het logboek, en de speelstand verandert niet door het openen van het menu
 
-## M10.3 Levende gesprekken en kleine verbeteringen
+## M10.2 Levende gesprekken en kleine verbeteringen
 
-Scope: de speeltest van Skerrow op 27 september 2026 (nummer op verzoek van Bram; M10.2 is vrij). De kern is dat een gesprek acties kan opleveren: het spel rekent vóór elke aanroep uit wat de NPC nu kan doen (aanbiedingen met besluit en redenen, zoals nu alleen bij Recruit), de stem kiest hooguit één sleutel uit die lijst, en de motor voert hem uit. Zie FO hoofdstuk 10, "Gepland (M10.3)". Daaromheen de kleine verbeteringen uit dezelfde speeltest.
+Scope: de speeltest van Skerrow op 27 september 2026 (tot 27 september kort M10.3). De kern is dat een gesprek acties kan opleveren: het spel rekent vóór elke aanroep uit wat de NPC nu kan doen (aanbiedingen met besluit en redenen, zoals nu alleen bij Recruit), de stem kiest hooguit één sleutel uit die lijst, en de motor voert hem uit. Zie FO hoofdstuk 10, "Gepland (M10.2)". Daaromheen de kleine verbeteringen uit dezelfde speeltest.
 
 Aanbiedingen in een gesprek:
 - [ ] Vraagt de speler Pip naar zijn vader, dan biedt het spel de stem "voorgaan naar het strand" en "wachten tot de vloed keert" aan met een besluit; kiest de stem er een, dan loopt Pip voorop, wacht bij de uitgang, zegt welke kant op als je verkeerd gaat, en geeft na een paar beurten op
