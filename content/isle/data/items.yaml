@@ -84,7 +84,7 @@ items:
     description: Tamsin's salve of kelp, honey and something green. It stings, then it doesn't.
     aliases: [salve, ointment]
     value: 15
-    remedy: { heal: 1d8 }
+    remedy: { heal: 1d8, cures: [bleeding, sickened] }
 
   # M9.1: what Skerrow's own counters are made of.
   - id: heather
@@ -100,3 +100,104 @@ items:
     aliases: [kelp, seaweed]
     description: Brown kelp from the strand, slick and smelling of the sea.
     value: 1
+
+  # Weapons and armour (M9.1): the numbers of the Nethermarch's, in the island's
+  # own shapes. Damage is the weapon die; Might adds to it for weapons used up close.
+
+  - id: spear
+    name: fishing spear
+    plural: fishing spears
+    description: An ash shaft with a barbed iron head, short enough to use with a shield.
+    aliases: [spear]
+    tags: [weapon]
+    value: 16
+    weapon: { damage: 1d6, crit: push, iron: true }
+
+  - id: iron_hook
+    name: iron boat-hook
+    plural: iron boat-hooks
+    description: A short, heavy boat-hook of black iron, the kind the Tidemother's keepers carry.
+    aliases: [hook, boat-hook, boathook]
+    tags: [weapon]
+    value: 24
+    weapon: { damage: 1d6, crit: prone, iron: true }
+
+  - id: staff
+    name: driftwood staff
+    plural: driftwood staffs
+    description: A staff of pale driftwood, worn smooth by the sea and then by a hand.
+    aliases: [staff, stave, stick]
+    tags: [weapon]
+    value: 1
+    weapon: { damage: 1d6, two_hands: true, crit: prone }
+
+  - id: longbow
+    name: yew bow
+    plural: yew bows
+    description: A tall bow of the old sea-watch, strung with gut, and a quiver of gull-feathered arrows.
+    aliases: [bow, longbow]
+    tags: [weapon]
+    value: 50
+    weapon: { damage: 1d8, kind: ranged, two_hands: true, range: far }
+
+  - id: cutlass
+    name: cutlass
+    plural: cutlasses
+    description: A short, broad sailor's sword with a basket guard gone green.
+    aliases: [sword, short sword]
+    tags: [weapon]
+    value: 30
+    weapon: { damage: 1d6, light: true, crit: bleeding, iron: true }
+
+  - id: quilted_coat
+    name: quilted coat
+    plural: quilted coats
+    description: A coat of quilted sailcloth stuffed with fleece, warm and dull-coloured.
+    aliases: [coat, gambeson]
+    tags: [armour]
+    value: 10
+    armour: { kind: light, defence: 1, cap: 4 }
+
+  - id: sealskin_jerkin
+    name: sealskin jerkin
+    plural: sealskin jerkins
+    description: A jerkin of oiled sealskin, stiff at the shoulders and smelling of the sea.
+    aliases: [jerkin, sealskin]
+    tags: [armour]
+    value: 20
+    armour: { kind: light, defence: 2, cap: 3 }
+
+  - id: scale_vest
+    name: scale vest
+    plural: scale vests
+    description: Small plates of iron riveted inside a canvas vest, from some drowned ship's stores.
+    aliases: [scales, vest]
+    tags: [armour, iron]
+    value: 60
+    armour: { kind: medium, defence: 3, cap: 2 }
+
+  - id: ring_shirt
+    name: ring shirt
+    plural: ring shirts
+    description: A shirt of riveted rings, greased against the salt.
+    aliases: [mail, chain, chain shirt]
+    tags: [armour, iron]
+    value: 100
+    armour: { kind: heavy, defence: 4, cap: 1 }
+
+  - id: round_shield
+    name: round shield
+    plural: round shields
+    description: A round shield of limewood with an iron boss and a painted gull.
+    aliases: [shield]
+    tags: [armour]
+    value: 16
+    armour: { kind: shield, defence: 2 }
+
+  - id: conch
+    name: great conch
+    plural: great conchs
+    description: A spiral shell as long as your forearm; blown, it sounds like the tide turning.
+    aliases: [conch, shell, horn]
+    tags: [tool]
+    value: 5

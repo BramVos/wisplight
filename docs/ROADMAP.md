@@ -232,7 +232,7 @@ Uit de mijlpaalverslagen van M8.2 tot en met M8.5 (verwerkt 27 september 2026):
 - [x] Ieder mens heeft een geloof uit de content van de wereld, en wrijving met nieuwkomers weegt verschil in geloof mee
 - [x] Een groep vóór nieuwkomers ontstaat ook zonder AI, als standaardnasleep in de content, naast de groep tegen
 - [x] Een nieuw spel kan de wereld van een oud spel als legende meenemen, zonder namen van mensen die nog leven
-- [ ] Skerrow heeft een eigen regelset en is met personage en gevecht te spelen
+- [x] Skerrow heeft een eigen regelset en is met personage en gevecht te spelen
 - [ ] Alles wat er al was, speelt hetzelfde: het hele testpakket, de simulaties, de uitspeelscripts van beide werelden, en oude saves
 
 ## M9.2 Waarheid en samenhang

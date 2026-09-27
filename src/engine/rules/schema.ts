@@ -113,6 +113,8 @@ const ClassSchema = z
     gear: z.record(z.string(), z.number().int().positive()).default({}),
     core: TalentSchema,
     trees: z.array(TreeSchema).length(3),
+    /** Keeps its distance in a fight, whatever it holds (M9.1; was a list of Nethermarch classes in the code). */
+    keeps_range: z.boolean().default(false),
   })
   .strict()
 
@@ -143,6 +145,13 @@ export const RulesSchema = z
     conditions: z.array(ConditionSchema),
     classes: z.array(ClassSchema),
     patrons: z.array(PatronSchema),
+    /** The ready-made traveller for a game started without making a character (M9.1: per world). */
+    ready_made: z
+      .object({ name: z.string(), ancestry: Id, background: Id, class: Id, boosts: z.array(AttributeEnum), skills: z.array(Id), talent: Id })
+      .strict()
+      .optional(),
+    /** For a suggested character: the ancestry for each key attribute (M9.1: per world); without it, the one that gives the key most. */
+    suggest: z.partialRecord(AttributeEnum, Id).optional(),
   })
   .strict()
 export type Rules = z.infer<typeof RulesSchema>

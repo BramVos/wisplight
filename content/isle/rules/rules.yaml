@@ -1,30 +1,20 @@
-# The Lowland d20 (FO, chapter 11): a slim d20 core. d20 + attribute + skill +
-# item against a DC, four degrees of success. Our own rules text; mechanics
-# after Pathfinder 2e (ORC), 13th Age, Ironsworn, Forged in the Dark and DCSS.
-#
-# Talent effects use a fixed vocabulary the engine carries out:
-#   bonus:   { to: attack | damage | defence | hp | initiative | momentum | skill:<id> | save:<id>, value, when? }
-#            when: melee | ranged | shield | quarry | vs_spirit | outdoors | fen | night | first_round | front
-#   ability: { actions: 1-3, uses: fight | day | at_will, target: enemy | ally | self | enemies | allies,
-#              range: engaged | near | far, do: [steps] }
-#            steps: strike { bonus, damage } | damage { dice, save } | condition { name, value, save, rounds }
-#                   heal { dice } | cure { name } | buff { to, value, rounds } | mark: quarry | protect: true
-#                   move: forward | back
-# The class DC is 10 + the key attribute + half the level + 2.
+# The rules of Skerrow (M9.1): the same slim d20 core as the Nethermarch, with
+# the island's own peoples, callings, patrons and beasts. The numbers are the
+# Nethermarch's, so the balance test holds for both worlds; the words are
+# Skerrow's. Talent effects use the same vocabulary (see base/rules/rules.yaml).
 
 rules:
   xp_per_level: 1000
-  # The ready-made traveller for a game started without making a character: a
-  # Rascal from the polders who used to smuggle, with the talking skills the
-  # game had before characters existed (M9.1: in the rules of each world).
-  ready_made: { name: Traveller, ancestry: dykelander, background: smuggler, class: rascal, boosts: [resolve, resolve, grace, might], skills: [intimidation, insight, perception], talent: quick_hands }
+  # The ready-made castaway for a game started without making a character: a
+  # knave of the islands, a wrecker's child, quick of tongue.
+  ready_made: { name: Castaway, ancestry: islander, background: wreckers_child, class: knave, boosts: [resolve, resolve, grace, might], skills: [intimidation, insight, perception], talent: quick_hands }
   # For a suggested character, the ancestry for each key attribute.
-  suggest: { might: heathborn, grace: fenfolk, wits: dykelander, resolve: dykelander }
+  suggest: { might: mainlander, grace: western_elf, wits: islander, resolve: islander }
   skills:
     - { id: athletics, name: Athletics, attribute: might }
     - { id: stealth, name: Stealth, attribute: grace }
     - { id: thievery, name: Thievery, attribute: grace }
-    - { id: watercraft, name: Watercraft, attribute: grace }
+    - { id: watercraft, name: Seamanship, attribute: grace }
     - { id: perception, name: Perception, attribute: wits }
     - { id: survival, name: Survival, attribute: wits }
     - { id: lore, name: Lore, attribute: wits }
@@ -36,53 +26,42 @@ rules:
     - { id: intimidation, name: Intimidation, attribute: resolve }
 
   ancestries:
-    - id: dykelander
-      name: Dykelander
-      text: People of the polders and the coast.
+    - id: islander
+      name: Islander
+      text: People of the Sundered Isles, born to boats and weather.
       attributes: { wits: 1, choice: 1 }
       hp: 8
-      special: Feels weather and water; advantage when foretelling storm and tide.
+      special: Feels weather and tide; advantage when foretelling storm and tide.
       aptitude: { watercraft: 1, crafting: 1 }
-    - id: heathborn
-      name: Heathborn
-      text: A tall folk of the heath, with giant's blood in them, people say.
+    - id: mainlander
+      name: Mainlander
+      text: People of Havenmoor and the big isles, broad and stubborn.
       attributes: { might: 1, resolve: 1, grace: -1 }
       hp: 10
       special: Carries twice the load; clumsy in tight places.
       aptitude: { athletics: 1, intimidation: 1, stealth: -1 }
-    - id: fenfolk
-      name: Fenfolk
-      text: People of the high fen.
+    - id: western_elf
+      name: Elf of the western isles
+      text: They live long and speak little.
       attributes: { grace: 1, wits: 1 }
       hp: 8
-      special: Never catches fen fever; sees will-o'-the-wisps for what they are.
-      aptitude: { survival: 1, stealth: 1, persuasion: -1 }
-      immune: [fen_fever]
-    - id: changeling
-      name: Changeling
-      text: Swapped by the fair folk at birth and raised by people.
-      attributes: { resolve: 1, grace: 1, might: -1 }
-      hp: 6
-      special: Sees spirits and the fair folk; superstitious people start a step cooler.
-      aptitude: { lore: 1, deception: 1, athletics: -1 }
+      special: Sees by starlight as by day, and remembers what others forget.
+      aptitude: { lore: 1, stealth: 1, persuasion: -1 }
 
   backgrounds:
-    - { id: peat_cutter, name: Peat-cutter, skills: [athletics, survival], talent: fen_walker, knows: [npc_gerrit, npc_jan_visser], topics: [drainage] }
-    - { id: eel_fisher, name: Eel-fisher, skills: [survival, watercraft], talent: fen_walker, knows: [npc_wouter, npc_trijntje], topics: [haakman] }
-    - { id: bargeman, name: Bargeman, skills: [watercraft, persuasion], talent: haggler, knows: [npc_kobus, npc_lubbert], topics: [graafhaven] }
-    - { id: lantern_novice, name: Novice of the Lantern, skills: [lore, medicine], talent: steady_hand, knows: [npc_wendela], topics: [saint_brand] }
-    - { id: pedlar, name: Pedlar, skills: [persuasion, deception], talent: haggler, knows: [npc_kobus, npc_trijntje], topics: [graafhaven] }
-    - { id: dyke_worker, name: Dyke-worker, skills: [athletics, crafting], talent: iron_stomach, knows: [npc_gerrit], topics: [water_wolf] }
-    - { id: smuggler, name: Smuggler, skills: [stealth, deception], talent: light_step, knows: [npc_trijntje], topics: [] }
-    - { id: herb_apprentice, name: Herb apprentice, skills: [medicine, survival], talent: iron_stomach, knows: [npc_aaltje], topics: [cat_widow] }
-    - { id: knights_youngest, name: A knight's youngest child, skills: [athletics, intimidation], talent: steady_hand, knows: [npc_everhard], topics: [the_count] }
-    - { id: counts_soldier, name: Soldier of the Count, skills: [athletics, perception], talent: light_step, knows: [npc_everhard], topics: [the_count] }
-    - { id: clerk, name: Clerk, skills: [lore, insight], talent: haggler, knows: [npc_dirck], topics: [witches_scale] }
+    - { id: castaway, name: Castaway sailor, skills: [athletics, watercraft], talent: shore_walker, knows: [npc_brannoc], topics: [grey_gull] }
+    - { id: fisher, name: Fisher, skills: [survival, watercraft], talent: shore_walker, knows: [npc_wenna, npc_brannoc], topics: [the_tidemother] }
+    - { id: lamp_hand, name: "Lightkeeper's hand", skills: [perception, crafting], talent: keen_eyes, knows: [npc_garrick], topics: [the_beacon] }
+    - { id: witch_apprentice, name: "Hedge-witch's apprentice", skills: [medicine, survival], talent: iron_stomach, knows: [npc_tamsin], topics: [old_skarth] }
+    - { id: rune_reader, name: Rune-reader, skills: [lore, insight], talent: steady_hand, knows: [npc_elowen], topics: [the_starfall, the_waystone] }
+    - { id: wreckers_child, name: "A wrecker's child", skills: [stealth, deception], talent: light_step, knows: [npc_maren], topics: [] }
+    - { id: havenmoor_guard, name: Guard of Havenmoor, skills: [athletics, perception], talent: light_step, knows: [], topics: [havenmoor] }
+    - { id: merchants_clerk, name: "Merchant's clerk", skills: [persuasion, insight], talent: haggler, knows: [npc_maren], topics: [havenmoor] }
 
   general_talents:
-    - { id: fen_walker, name: Fen-walker, text: "+2 Survival in the fen; soft ground does not swallow you so easily.", effects: [{ bonus: { to: 'skill:survival', value: 2, when: fen } }] }
+    - { id: shore_walker, name: Shore-walker, text: "+2 Survival out of doors; wet rock does not throw you so easily.", effects: [{ bonus: { to: 'skill:survival', value: 2, when: outdoors } }] }
     - { id: haggler, name: Haggler, text: "+2 Persuasion when bargaining; prices a little better.", effects: [{ bonus: { to: 'skill:persuasion', value: 1 } }] }
-    - { id: iron_stomach, name: Iron Stomach, text: "+2 Fortitude; bad food and fen water do not make you sick.", effects: [{ bonus: { to: 'save:fortitude', value: 2 } }] }
+    - { id: iron_stomach, name: Iron Stomach, text: "+2 Fortitude; bad fish and bilge water do not make you sick.", effects: [{ bonus: { to: 'save:fortitude', value: 2 } }] }
     - { id: steady_hand, name: Steady Hand, text: "+2 Medicine.", effects: [{ bonus: { to: 'skill:medicine', value: 2 } }] }
     - { id: light_step, name: Light Step, text: "+2 Stealth.", effects: [{ bonus: { to: 'skill:stealth', value: 2 } }] }
     - { id: toughness, name: Toughness, text: "+1 hit point per level.", effects: [{ bonus: { to: hp, value: 1, when: per_level } }] }
@@ -96,31 +75,28 @@ rules:
     - { id: prone, name: Prone, text: "-2 on attacks, easier to hit; standing up takes an action." }
     - { id: off_guard, name: Off-guard, text: "-2 defence until the end of its next turn." }
     - { id: sickened, name: Sickened, text: "Cannot eat or drink; -1 on checks." }
-    - { id: fen_fever, name: Fen Fever, text: "A sickness: -1 Might each day until cured." }
-    - { id: mired, name: Mired, text: "Stuck in the fen: no actions except getting free." }
     - { id: cursed, name: Cursed, text: "A curse with a rule of its own." }
-    - { id: catform, name: Catform, text: "You are a cat: sneak +4, talk to cats, use no things, speak to no one." }
     - { id: blinded, name: Blinded, text: "-4 on attacks and Perception." }
     - { id: slowed, name: Slowed, text: "One action fewer each turn." }
 
   classes:
-    - id: warden
-      name: Warden
-      text: A protector in heavy armour who holds the line.
+    - id: shieldhand
+      name: Shieldhand
+      text: "A shield-bearer of the old sea-watch who holds the line."
       key: might
       hp: 10
       trained: [athletics, intimidation, perception]
       armour: heavy
       proficiency: { attack: [1, 7], class_dc: [1, 9], defence: [1, 5, 9] }
-      gear: { spear: 1, chain_shirt: 1, round_shield: 1 }
+      gear: { spear: 1, ring_shirt: 1, round_shield: 1 }
       core:
         id: shield_wall
         name: Shield Wall
         text: Take the blow meant for an ally beside you.
         effects: [{ ability: { actions: 1, uses: at_will, target: ally, range: engaged, do: [{ protect: true }] } }]
       trees:
-        - id: dyke
-          name: Dyke
+        - id: seawall
+          name: Seawall
           talents:
             - { id: brace, name: Brace, text: "+1 defence while your shield is raised.", effects: [{ bonus: { to: defence, value: 1, when: shield } }] }
             - { id: stand_fast, name: Stand Fast, text: "+2 Fortitude and +5 hit points.", effects: [{ bonus: { to: 'save:fortitude', value: 2 } }, { bonus: { to: hp, value: 5 } }] }
@@ -141,15 +117,15 @@ rules:
             - { id: hold_the_line, name: Hold the Line, text: "Momentum starts one higher.", effects: [{ bonus: { to: momentum, value: 1 } }] }
             - { id: last_stand, name: Last Stand, text: "Once a fight, heal yourself when badly hurt.", effects: [{ ability: { actions: 1, uses: fight, target: self, do: [{ heal: { dice: 2d8 } }] } }] }
 
-    - id: poacher
-      name: Poacher
-      text: Bow, snares and tracks; nobody knows the reeds better.
+    - id: harpooner
+      name: Harpooner
+      text: "Bow, nets and the patience of the hunt; nobody reads the shore better."
       key: grace
       hp: 8
       trained: [stealth, survival, perception]
       armour: light
       proficiency: { attack: [1, 5, 9], class_dc: [1, 9], defence: [1, 5, 9] }
-      gear: { hunting_bow: 1, knife: 1, leather_jerkin: 1 }
+      gear: { longbow: 1, knife: 1, sealskin_jerkin: 1 }
       keeps_range: true
       core:
         id: quarry
@@ -164,30 +140,30 @@ rules:
             - { id: double_shot, name: Double Shot, text: "Two arrows at once.", effects: [{ ability: { actions: 2, uses: at_will, target: enemy, range: far, do: [{ strike: { bonus: -2 } }, { strike: { bonus: -2 } }] } }] }
             - { id: pinning_shot, name: Pinning Shot, text: "An arrow that slows.", effects: [{ ability: { actions: 2, uses: fight, target: enemy, range: far, do: [{ strike: { bonus: 0 } }, { condition: { name: slowed, rounds: 1, save: reflex } }] } }] }
             - { id: deadeye, name: Deadeye, text: "+2 damage on ranged strikes.", effects: [{ bonus: { to: damage, value: 2, when: ranged } }] }
-        - id: snares
-          name: Snares
+        - id: nets
+          name: Nets
           talents:
             - { id: tripwire, name: Tripwire, text: "Knock an enemy prone.", effects: [{ ability: { actions: 1, uses: fight, target: enemy, range: near, do: [{ condition: { name: prone, save: reflex } }] } }] }
             - { id: trapper, name: Trapper, text: "+2 Survival, and you see snares before they bite.", effects: [{ bonus: { to: 'skill:survival', value: 2 } }] }
-            - { id: bog_snare, name: Bog Snare, text: "An enemy stuck in the mud.", effects: [{ ability: { actions: 2, uses: fight, target: enemy, range: near, do: [{ condition: { name: grabbed, save: reflex } }] } }] }
+            - { id: kelp_snare, name: Kelp Snare, text: "An enemy tangled in wet kelp.", effects: [{ ability: { actions: 2, uses: fight, target: enemy, range: near, do: [{ condition: { name: grabbed, save: reflex } }] } }] }
             - { id: hunters_patience, name: "Hunter's Patience", text: "+2 attack in the first round.", effects: [{ bonus: { to: attack, value: 2, when: first_round } }] }
-        - id: reedland
-          name: Reedland
+        - id: rocks
+          name: Rocks
           talents:
-            - { id: into_the_reeds, name: Into the Reeds, text: "+2 Stealth and +1 defence at range.", effects: [{ bonus: { to: 'skill:stealth', value: 2 } }, { bonus: { to: defence, value: 1, when: ranged } }] }
+            - { id: among_the_rocks, name: Among the Rocks, text: "+2 Stealth and +1 defence at range.", effects: [{ bonus: { to: 'skill:stealth', value: 2 } }, { bonus: { to: defence, value: 1, when: ranged } }] }
             - { id: tracker, name: Tracker, text: "+2 Perception outdoors.", effects: [{ bonus: { to: 'skill:perception', value: 2, when: outdoors } }] }
             - { id: vanish, name: Vanish, text: "Slip away: enemies lose sight of you.", effects: [{ ability: { actions: 1, uses: fight, target: self, do: [{ move: back }, { buff: { to: defence, value: 2, rounds: 1 } }] } }] }
-            - { id: fen_ghost, name: Fen Ghost, text: "+2 initiative and +1 on attacks in the fen.", effects: [{ bonus: { to: initiative, value: 2 } }, { bonus: { to: attack, value: 1, when: fen } }] }
+            - { id: sea_mist, name: Sea Mist, text: "+2 initiative and +1 on attacks at night.", effects: [{ bonus: { to: initiative, value: 2 } }, { bonus: { to: attack, value: 1, when: night } }] }
 
-    - id: rascal
-      name: Rascal
-      text: Sneaking, tricks and a quick tongue, in the spirit of Tijl Uilenspiegel.
+    - id: knave
+      name: Knave
+      text: "Sneaking, tricks and a quick tongue; half the stories of the isles are about someone like you."
       key: grace
       hp: 8
       trained: [stealth, thievery, deception, persuasion]
       armour: light
       proficiency: { attack: [1, 5, 9], class_dc: [1, 9], defence: [1, 7] }
-      gear: { hanger: 1, knife: 1, leather_jerkin: 1 }
+      gear: { cutlass: 1, knife: 1, sealskin_jerkin: 1 }
       core:
         id: mischief
         name: Mischief
@@ -214,17 +190,17 @@ rules:
             - { id: pocket_sand, name: Pocket Sand, text: "Sand in the eyes.", effects: [{ ability: { actions: 1, uses: fight, target: enemy, range: engaged, do: [{ condition: { name: blinded, rounds: 1, save: reflex } }] } }] }
             - { id: slippery, name: Slippery, text: "+1 defence and +2 Reflex.", effects: [{ bonus: { to: defence, value: 1 } }, { bonus: { to: 'save:reflex', value: 2 } }] }
             - { id: tumble, name: Tumble, text: "Roll away out of reach.", effects: [{ ability: { actions: 1, uses: at_will, target: self, do: [{ move: back }] } }] }
-            - { id: owl_and_mirror, name: Owl and Mirror, text: "A trick so bold two foes stand stunned.", effects: [{ ability: { actions: 2, uses: fight, target: enemies, range: near, do: [{ condition: { name: slowed, rounds: 1, save: will } }] } }] }
+            - { id: gull_and_mirror, name: Gull and Mirror, text: "A trick so bold two foes stand stunned.", effects: [{ ability: { actions: 2, uses: fight, target: enemies, range: near, do: [{ condition: { name: slowed, rounds: 1, save: will } }] } }] }
 
-    - id: herbalist
-      name: Herbalist
-      text: Salves, poisons and the plants of the fen.
+    - id: witch
+      name: Hedge-witch
+      text: "Salves, poisons and the weeds of shore and heath."
       key: wits
       hp: 6
       trained: [medicine, survival, lore]
       armour: light
       proficiency: { attack: [1, 9], class_dc: [1, 5, 9], defence: [1, 5, 9] }
-      gear: { staff: 1, herbs: 3, padded_coat: 1 }
+      gear: { staff: 1, kelp_salve: 3, quilted_coat: 1 }
       keeps_range: true
       core:
         id: poultice
@@ -246,23 +222,23 @@ rules:
             - { id: toxin_lore, name: Toxin Lore, text: "+2 Fortitude.", effects: [{ bonus: { to: 'save:fortitude', value: 2 } }] }
             - { id: hemlock_cloud, name: Hemlock Cloud, text: "A cloud of foul spores.", effects: [{ ability: { actions: 2, uses: fight, target: enemies, range: near, do: [{ damage: { dice: 2d6, save: fortitude } }] } }] }
             - { id: black_nightshade, name: Black Nightshade, text: "A dose that drops a man.", effects: [{ ability: { actions: 2, uses: fight, target: enemy, range: engaged, do: [{ damage: { dice: 4d6, save: fortitude } }] } }] }
-        - id: fenweed
-          name: Fenweed
+        - id: wrack
+          name: Wrack
           talents:
-            - { id: fen_lore, name: Fen Lore, text: "+2 Survival and Lore.", effects: [{ bonus: { to: 'skill:survival', value: 2 } }, { bonus: { to: 'skill:lore', value: 2 } }] }
-            - { id: bog_myrtle, name: Bog Myrtle, text: "Burning myrtle keeps spirits off.", effects: [{ bonus: { to: defence, value: 2, when: vs_spirit } }] }
+            - { id: shore_lore, name: Shore Lore, text: "+2 Survival and Lore.", effects: [{ bonus: { to: 'skill:survival', value: 2 } }, { bonus: { to: 'skill:lore', value: 2 } }] }
+            - { id: rowan_charm, name: Rowan Charm, text: "A twist of rowan keeps spirits off.", effects: [{ bonus: { to: defence, value: 2, when: vs_spirit } }] }
             - { id: stinging_nettle, name: Stinging Nettle, text: "Whip of nettles.", effects: [{ ability: { actions: 1, uses: at_will, target: enemy, range: engaged, do: [{ damage: { dice: 2d4 } }] } }] }
             - { id: witches_brew, name: "Witch's Brew", text: "A draught for courage and strength.", effects: [{ ability: { actions: 1, uses: fight, target: allies, range: near, do: [{ buff: { to: attack, value: 1, rounds: 3 } }, { cure: { name: frightened } }] } }] }
 
-    - id: conjurer
-      name: Conjurer
-      text: "Word-magic: charms, wards and curses."
+    - id: runecaster
+      name: Runecaster
+      text: "Runes of drowned Aldmar: wards, bindings and curses."
       key: resolve
       hp: 6
       trained: [lore, insight, intimidation]
       armour: light
       proficiency: { attack: [1, 9], class_dc: [1, 5, 9], defence: [1, 5, 9] }
-      gear: { staff: 1, leather_jerkin: 1 }
+      gear: { staff: 1, sealskin_jerkin: 1 }
       keeps_range: true
       core:
         id: charm
@@ -292,87 +268,60 @@ rules:
             - { id: black_tongue, name: Black Tongue, text: "+2 Intimidation.", effects: [{ bonus: { to: 'skill:intimidation', value: 2 } }] }
             - { id: doom, name: Doom, text: "A curse that bites deep.", effects: [{ ability: { actions: 2, uses: fight, target: enemy, range: far, do: [{ damage: { dice: 4d6, save: will } }, { condition: { name: frightened, value: 2 } }] } }] }
 
-    - id: lanternbearer
-      name: Lanternbearer
-      text: Light, healing, and driving off spirits.
+    - id: tidecaller
+      name: Tidecaller
+      text: "A keeper of the Tidemother's rites: water that heals, and a voice the drowned obey."
       key: resolve
       hp: 8
       trained: [medicine, lore, persuasion]
       armour: medium
       proficiency: { attack: [1, 7], class_dc: [1, 5, 9], defence: [1, 7] }
-      gear: { mace: 1, brigandine: 1, lantern: 1 }
+      gear: { iron_hook: 1, scale_vest: 1, conch: 1 }
       core:
-        id: lantern_light
-        name: Lantern Light
-        text: A light that weakens spirits and gives allies heart.
+        id: tides_blessing
+        name: "Tide's Blessing"
+        text: Sea water sprinkled that weakens spirits and gives allies heart.
         effects: [{ ability: { actions: 2, uses: at_will, target: allies, range: near, do: [{ cure: { name: frightened } }, { heal: { dice: 1d4 } }] } }, { bonus: { to: damage, value: 2, when: vs_spirit } }]
       trees:
-        - id: light
-          name: Light
+        - id: tide
+          name: Tide
           talents:
-            - { id: searing_light, name: Searing Light, text: "Light that burns.", effects: [{ ability: { actions: 2, uses: at_will, target: enemy, range: near, do: [{ damage: { dice: 2d6, save: reflex } }] } }] }
-            - { id: bright_ward, name: Bright Ward, text: "+2 defence against spirits.", effects: [{ bonus: { to: defence, value: 2, when: vs_spirit } }] }
-            - { id: dazzle, name: Dazzle, text: "Blind a foe for a moment.", effects: [{ ability: { actions: 1, uses: fight, target: enemy, range: near, do: [{ condition: { name: blinded, rounds: 1, save: will } }] } }] }
-            - { id: sunburst, name: Sunburst, text: "Light on every foe.", effects: [{ ability: { actions: 3, uses: fight, target: enemies, range: near, do: [{ damage: { dice: 4d6, save: reflex } }] } }] }
+            - { id: scalding_brine, name: Scalding Brine, text: "Brine that burns.", effects: [{ ability: { actions: 2, uses: at_will, target: enemy, range: near, do: [{ damage: { dice: 2d6, save: reflex } }] } }] }
+            - { id: salt_ward, name: Salt Ward, text: "+2 defence against spirits.", effects: [{ bonus: { to: defence, value: 2, when: vs_spirit } }] }
+            - { id: spray, name: Spray, text: "Salt spray in a foe's eyes.", effects: [{ ability: { actions: 1, uses: fight, target: enemy, range: near, do: [{ condition: { name: blinded, rounds: 1, save: will } }] } }] }
+            - { id: breaking_wave, name: Breaking Wave, text: "A wave on every foe.", effects: [{ ability: { actions: 3, uses: fight, target: enemies, range: near, do: [{ damage: { dice: 4d6, save: reflex } }] } }] }
         - id: mercy
           name: Mercy
           talents:
             - { id: laying_on_hands, name: Laying on Hands, text: "Heal an ally.", effects: [{ ability: { actions: 2, uses: at_will, target: ally, range: engaged, do: [{ heal: { dice: 2d8 } }] } }] }
             - { id: gentle_word, name: Gentle Word, text: "+2 Persuasion.", effects: [{ bonus: { to: 'skill:persuasion', value: 2 } }] }
             - { id: shelter, name: Shelter, text: "Take harm for another.", effects: [{ ability: { actions: 1, uses: at_will, target: ally, range: engaged, do: [{ protect: true }] } }] }
-            - { id: mercy_of_brand, name: Mercy of Brand, text: "Heal everyone near you.", effects: [{ ability: { actions: 3, uses: fight, target: allies, range: near, do: [{ heal: { dice: 3d8 } }] } }] }
+            - { id: mothers_mercy, name: "Mother's Mercy", text: "Heal everyone near you.", effects: [{ ability: { actions: 3, uses: fight, target: allies, range: near, do: [{ heal: { dice: 3d8 } }] } }] }
         - id: vigil
           name: Vigil
           talents:
             - { id: watchful, name: Watchful, text: "+2 Perception and initiative.", effects: [{ bonus: { to: 'skill:perception', value: 2 } }, { bonus: { to: initiative, value: 2 } }] }
             - { id: steadfast_faith, name: Steadfast Faith, text: "+2 Will and +5 hit points.", effects: [{ bonus: { to: 'save:will', value: 2 } }, { bonus: { to: hp, value: 5 } }] }
-            - { id: blessed_strike, name: Blessed Strike, text: "A blow with the light in it.", effects: [{ ability: { actions: 1, uses: at_will, target: enemy, range: engaged, do: [{ strike: { bonus: 1, damage: 1d6 } }] } }] }
-            - { id: last_light, name: Last Light, text: "+1 on attacks and saves.", effects: [{ bonus: { to: attack, value: 1 } }, { bonus: { to: 'save:will', value: 1 } }] }
+            - { id: blessed_strike, name: Blessed Strike, text: "A blow with the sea in it.", effects: [{ ability: { actions: 1, uses: at_will, target: enemy, range: engaged, do: [{ strike: { bonus: 1, damage: 1d6 } }] } }] }
+            - { id: last_tide, name: Last Tide, text: "+1 on attacks and saves.", effects: [{ bonus: { to: attack, value: 1 } }, { bonus: { to: 'save:will', value: 1 } }] }
 
-  # Wereldboek, chapter 5. Favour runs from 0 to 100; blessings at 25, 50 and 75.
+  # Favour runs from 0 to 100; blessings at 25, 50 and 75.
   patrons:
-    - id: lantern
-      name: the Lantern
-      text: Saint Brand, light and rescue, community and mercy.
-      values: { gift: 2, returned: 3, request_done: 2, spared: 3, pray: 1 }
-      forbids: { killed_surrendered: -20, offering_old: -10 }
+    - id: tidemother
+      name: the Tidemother
+      text: The sea that gives and takes back; fish, weather and the drowned.
+      values: { request_done: 2, honour_dead: 3, spared: 2, pray: 1 }
+      forbids: { killed_surrendered: -20, grave_robbing: -20 }
       blessings:
-        - { at: 25, name: Comfort, text: "Frightened drops one more each round for the whole group.", effects: [{ bonus: { to: 'save:will', value: 1 } }] }
-        - { at: 50, name: "Light of Brand", text: "Once a day a light that makes spirits visible and off guard.", effects: [{ bonus: { to: damage, value: 1, when: vs_spirit } }] }
-        - { at: 75, name: Safe Harbour, text: "Once a week you steady yourself when dying.", effects: [] }
-    - id: nehalennia
-      name: Nehalennia
-      text: The sea, trade, safe passage.
-      values: { request_done: 3, offering_water: 5, pray: 1 }
-      forbids: { broken_promise: -20, cruelty_to_dogs: -15 }
+        - { at: 25, name: Salt Blood, text: "+1 Fortitude: the cold sea does not take you so easily.", effects: [{ bonus: { to: 'save:fortitude', value: 1 } }] }
+        - { at: 50, name: "The Mother's Hand", text: "+1 Seamanship; travel over water goes a quarter faster.", effects: [{ bonus: { to: 'skill:watercraft', value: 1 } }] }
+        - { at: 75, name: Given Back, text: "Once, the sea gives you back when you would drown; she asks for something later.", effects: [] }
+    - id: old_stars
+      name: the Old Stars
+      text: The stars that fell and the ones that stayed; sailors' oaths, luck and the way home.
+      values: { fight_won: 2, request_done: 1, pray: 1 }
+      forbids: { fled: -5, killed_surrendered: -10 }
       blessings:
-        - { at: 25, name: Fair Wind, text: "Travel over water goes a quarter faster.", effects: [] }
-        - { at: 50, name: "Merchant's Blessing", text: "Better prices with traders who honour her.", effects: [{ bonus: { to: 'skill:persuasion', value: 1 } }] }
-        - { at: 75, name: The White Dog, text: "Once a day a ghost-dog leads you out of the mist.", effects: [{ bonus: { to: 'skill:survival', value: 2 } }] }
-    - id: grey_rider
-      name: the Grey Rider
-      text: Hunt, death, harvest and storm; the Wild Hunt.
-      values: { fight_won: 2, honour_dead: 3, pray: 1 }
-      forbids: { fled_from_allies: -10, grave_robbing: -20 }
-      blessings:
-        - { at: 25, name: "Hunter's Eye", text: "+1 Survival and Perception outdoors.", effects: [{ bonus: { to: 'skill:survival', value: 1, when: outdoors } }, { bonus: { to: 'skill:perception', value: 1, when: outdoors } }] }
-        - { at: 50, name: Ride with the Storm, text: "+1 on attacks, and no fear.", effects: [{ bonus: { to: attack, value: 1 } }] }
-        - { at: 75, name: "The Rider's Share", text: "Once, you do not die when you would; the Rider asks a price later.", effects: [] }
-    - id: holle
-      name: Mother Holle
-      text: Hearth, weather, spinning and hard work.
-      values: { request_done: 2, offering_well: 5, pray: 1 }
-      forbids: { cruelty_to_children: -20, entered_uninvited: -5 }
-      blessings:
-        - { at: 25, name: Busy Hands, text: "Craft work takes a quarter less time.", effects: [] }
-        - { at: 50, name: The Feather Bed, text: "A full night's sleep clears every ailment but curses.", effects: [] }
-        - { at: 75, name: Gold at the Well, text: "Once a season a reward, gold or a vision.", effects: [] }
-    - id: baduhenna
-      name: Baduhenna
-      text: Battle, oaths and holy woods.
-      values: { fight_won: 2, oath_kept: 5, pray: 1 }
-      forbids: { fled: -5, oath_broken: -20 }
-      blessings:
-        - { at: 25, name: Oath-bound, text: "+2 on checks that serve an oath you swore.", effects: [] }
-        - { at: 50, name: Wrath of the Wood, text: "Momentum starts at +1 in every fight.", effects: [{ bonus: { to: momentum, value: 1 } }] }
-        - { at: 75, name: Unbroken, text: "Once a day shake off Frightened, Mired or Grabbed.", effects: [] }
+        - { at: 25, name: Star-sight, text: "+1 Perception and Survival out of doors.", effects: [{ bonus: { to: 'skill:perception', value: 1, when: outdoors } }, { bonus: { to: 'skill:survival', value: 1, when: outdoors } }] }
+        - { at: 50, name: Steady Course, text: "+1 on attacks.", effects: [{ bonus: { to: attack, value: 1 } }] }
+        - { at: 75, name: The Way Home, text: "+2 Survival; you never lose your way under the stars.", effects: [{ bonus: { to: 'skill:survival', value: 2 } }] }

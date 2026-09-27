@@ -1,0 +1,277 @@
+# The beasts and foes of Skerrow (M9.1). The numbers are those of the
+# Nethermarch's bestiary, creature for creature, so the balance holds for both
+# worlds; what they are, and what they say in a fight, is the island's.
+
+creatures:
+  - id: crab_swarm
+    name: crab swarm
+    plural: crab swarms
+    kind: beast
+    level: 1
+    hp: 12
+    defence: 13
+    saves: { fortitude: 5, reflex: 7, will: 2 }
+    attacks:
+      - { name: claws, bonus: 5, damage: 1d4, crit: sickened }
+    morale: { courage: -1, flees_below: 0.3 }
+    immune: [grabbed, prone]
+    text: A clattering tide of shore crabs, hundreds of them, all claws and eyes on stalks.
+    says:
+      hit: "{Name} swarms over {target}, pinching."
+      flee: "{Name} breaks up and scuttles away under the weed."
+      down: "The last of the crabs vanish into the cracks of the rock."
+
+  - id: weever
+    name: weever
+    plural: weevers
+    kind: beast
+    level: 0
+    hp: 4
+    defence: 14
+    saves: { fortitude: 3, reflex: 6, will: 1 }
+    attacks:
+      - { name: spines, bonus: 6, damage: '1', effect: { condition: sickened, save: fortitude, dc: 14 } }
+    morale: { courage: 0, flees_below: 0.5 }
+    text: A weever fish half-buried in the wet sand, its black back spines up.
+    says:
+      hit: "{Name}'s spines jab at {target}."
+      flee: "{Name} wriggles away into the sand."
+      down: "{Name} lies still in the shallows."
+
+  - id: seal_bull
+    name: bull seal
+    plural: bull seals
+    kind: beast
+    level: 1
+    hp: 16
+    defence: 15
+    saves: { fortitude: 6, reflex: 7, will: 3 }
+    attacks:
+      - { name: jaws, bonus: 7, damage: 1d6+2, crit: prone }
+    morale: { courage: 0, flees_below: 0.4 }
+    text: A grey bull seal, twice your weight, roaring over its stretch of rock.
+    says:
+      hit: "{Name} lunges at {target}, roaring."
+      flee: "{Name} humps away and slides into the sea."
+      down: "{Name} lies on the rock and does not get up."
+
+  - id: great_conger
+    name: great conger
+    plural: great congers
+    kind: beast
+    level: 2
+    hp: 24
+    defence: 16
+    saves: { fortitude: 8, reflex: 8, will: 3 }
+    attacks:
+      - { name: jaws, bonus: 8, damage: 1d8+2, crit: bleeding }
+    morale: { courage: 1, flees_below: 0.3 }
+    text: A conger eel as thick as your thigh, out of a crack in the harbour wall.
+    says:
+      hit: "{Name}'s jaws snap shut on {target}."
+      flee: "{Name} pulls back into its crack in a swirl of green water."
+      down: "{Name} slides out of the wall and floats, pale belly up."
+
+  - id: wrecker
+    name: wrecker
+    plural: wreckers
+    kind: human
+    level: 2
+    hp: 22
+    defence: 15
+    saves: { fortitude: 8, reflex: 7, will: 5 }
+    perception: 7
+    attacks:
+      - { name: boathook, bonus: 7, damage: 1d6+2, crit: prone }
+    abilities:
+      - id: false_light
+        name: false light
+        dc: 15
+        actions: 2
+        uses: fight
+        target: enemies
+        range: near
+        do: [{ condition: { name: frightened, value: 1, save: will } }]
+    morale: { courage: 0, flees_below: 0.5, surrenders: true }
+    text: A wrecker with a soot-blackened face and a boathook, the kind who hangs false lamps on the rocks.
+    says:
+      hit: "{Name} swings the boathook at {target}."
+      flee: "{Name} breaks and runs for the rocks."
+      surrender: "{Name} throws down the boathook. \"Enough! Tide take it, I yield!\""
+      down: "{Name} goes down on the wet stones of the path."
+
+  - id: wrecker_captain
+    name: the wreckers' captain
+    kind: human
+    level: 5
+    hp: 60
+    defence: 19
+    saves: { fortitude: 12, reflex: 11, will: 10 }
+    perception: 11
+    attacks:
+      - { name: cutlass, bonus: 12, damage: 1d8+4, crit: bleeding }
+    morale: { courage: 3, flees_below: 0.2, surrenders: true }
+    text: The wreckers' captain, grey-bearded and soft-spoken, with a cutlass from a ship that never came home.
+    says:
+      hit: "The captain cuts at {target}."
+      flee: "The captain steps back into the dark and is simply gone."
+      surrender: "The captain lowers the cutlass. \"We can talk like sensible folk, surely.\""
+      down: "The captain falls to one knee, then all the way."
+
+  - id: drowned_sailor
+    name: drowned sailor
+    plural: drowned sailors
+    kind: undead
+    level: 3
+    hp: 40
+    defence: 14
+    saves: { fortitude: 10, reflex: 5, will: 8 }
+    attacks:
+      - { name: grip, bonus: 9, damage: 1d6+3, effect: { condition: grabbed, save: reflex, dc: 16 } }
+    morale: { never: true }
+    immune: [frightened]
+    weak: { fire: 2 }
+    lore: { dc: 15, text: "Sailors say the drowned fear fire, and cannot climb above the tide line." }
+    text: A sailor of the Grey Gull, or what the sea left of one, walking out of the surf with weed in its hair.
+    says:
+      hit: "{Name}'s cold hands close on {target}."
+      down: "{Name} falls back into the surf, and is only weed and cloth."
+
+  - id: barrow_wight
+    name: barrow-wight
+    plural: barrow-wights
+    kind: spirit
+    level: 4
+    hp: 45
+    defence: 18
+    saves: { fortitude: 10, reflex: 12, will: 9 }
+    attacks:
+      - { name: cold touch, bonus: 11, damage: 1d8+3, effect: { condition: frightened, value: 2, save: will, dc: 18 } }
+    morale: { never: true }
+    lore: { dc: 16, text: "The wights of the Starfall barrows hate the light of dawn; running water breaks their hold." }
+    text: A shape of cold mist in rusted Aldmar mail, with two points of green light where its eyes should be.
+    says:
+      hit: "The barrow-wight's cold touch finds {target}."
+      down: "The barrow-wight comes apart like mist in the sun."
+
+  - id: salt_wraith
+    name: salt-wraith
+    plural: salt-wraiths
+    kind: spirit
+    level: 3
+    hp: 30
+    defence: 18
+    saves: { fortitude: 8, reflex: 11, will: 9 }
+    attacks:
+      - { name: claw, bonus: 10, damage: 1d8, crit: blinded }
+    morale: { courage: 1, flees_below: 0.3 }
+    lore: { dc: 15, text: "Salt-wraiths go for the eyes; the old ones say they will not cross a line of fresh water." }
+    text: A thin grey thing made of spray and old rope, with a face like a drowned gull.
+    says:
+      hit: "The salt-wraith claws at {target}."
+      flee: "The salt-wraith blows away over the rocks like spray."
+      down: "The salt-wraith falls apart into rope and foam."
+
+  - id: old_skarth
+    name: Old Skarth
+    kind: beast
+    level: 6
+    hp: 90
+    defence: 20
+    saves: { fortitude: 14, reflex: 12, will: 12 }
+    attacks:
+      - { name: bite, bonus: 14, damage: 2d6, effect: { condition: grabbed, save: reflex, dc: 20 } }
+    morale: { never: true }
+    weak: { iron: 2 }
+    lore: { dc: 18, topic: old_skarth, text: "Old wyrms hate cold iron: an iron blade bites Old Skarth double. Tamsin says salt fish puts him back to sleep." }
+    text: Old Skarth, the wyrm under the barrow, a head like an upturned boat and scales the colour of wet slate.
+    says:
+      hit: "Old Skarth's jaws come down on {target}."
+      flee: "Old Skarth draws back into the dark of the barrow."
+      down: "Old Skarth sinks down in the dark, and the barrow is still."
+
+  # Old Skarth half-awake: only his head out of the barrow, and cross about it.
+  - id: old_skarth_stirring
+    name: Old Skarth
+    kind: beast
+    level: 3
+    hp: 48
+    defence: 17
+    saves: { fortitude: 10, reflex: 9, will: 9 }
+    attacks:
+      - { name: bite, bonus: 10, damage: 2d4+2, effect: { condition: grabbed, save: reflex, dc: 17 } }
+    morale: { courage: 3, flees_below: 0.4 }
+    weak: { iron: 2 }
+    lore: { dc: 16, topic: old_skarth, text: "Old wyrms hate cold iron. Half-awake, Old Skarth is slow, and would rather sleep." }
+    text: Old Skarth half-awake, only his great head out of the barrow, smoke curling from his nostrils.
+    says:
+      hit: "Old Skarth snaps at {target}."
+      flee: "Old Skarth pulls his head back into the barrow, grumbling like a landslide."
+      down: "Old Skarth sighs, and his head sinks down, and he sleeps."
+
+# Encounters: none by day on the island's paths; the night belongs to others.
+encounters:
+  - id: drowned_on_the_strand
+    name: The drowned on the strand
+    places: [loc_skerrow_wreck_strand]
+    chance: 0.25
+    again_after: 3
+    hours: [21, 5]
+    foes:
+      - { creature: drowned_sailor, count: 1, range: near }
+    opening: Something walks up out of the black surf by the wreck, weed hanging from its arms. It wears the Grey Gull's jersey.
+    surrender:
+      take: nothing
+      text: You scramble up the rocks above the tide line, and it does not follow.
+    flee_dc: 13
+    news: { title: the drowned on the wreck strand, belang: 2 }
+
+  - id: wreckers_on_the_cliff_path
+    name: Wreckers on the cliff path
+    places: [loc_skerrow_cliff_path]
+    chance: 0.3
+    again_after: 4
+    hours: [20, 5]
+    foes:
+      - { creature: wrecker, count: 1, range: near }
+      - { creature: wrecker, count: 1, range: far, joins: 2 }
+    opening: A shuttered lamp opens on the path ahead, and a man with a boathook steps into its light. Another waits further up, by the edge.
+    demand:
+      amount: 20
+      text: '"Two silver, stranger, and you never saw us."'
+      paid: He weighs the coins in his palm, shutters the lamp, and the path is dark and empty again.
+    surrender:
+      take: half_money
+      text: They turn out your pockets on the wet path and leave you there, laughing into the wind.
+    flee_dc: 15
+    news: { title: wreckers on the cliff path, belang: 2 }
+
+  - id: wight_at_the_tower
+    name: The wight at the tower
+    places: [loc_skerrow_mage_tower]
+    chance: 0.3
+    again_after: 3
+    hours: [22, 4]
+    foes:
+      - { creature: barrow_wight, count: 1, range: near }
+    opening: The cold comes first, then the green lights, at the height of a man's eyes in the broken doorway.
+    surrender:
+      take: nothing
+      text: You back away down the headland, and it lets you go when the cold has had its fill of you.
+    flee_dc: 16
+    news: { title: a wight at the old tower, belang: 2 }
+
+  # Started by a quest or the builder, never by chance.
+  - id: skarth_wakes
+    name: Old Skarth wakes
+    places: [loc_skerrow_wyrm_barrow]
+    chance: 0
+    foes:
+      - { creature: old_skarth_stirring, count: 1, range: near }
+    opening: The barrow breathes out, hot and sour. Then a head as big as a boat comes up out of the dark, and one yellow eye opens.
+    surrender:
+      take: nothing
+      text: You run, and behind you Old Skarth grumbles, and settles, and sleeps again.
+    flee_dc: 14
+    win_flag: skarth_driven_back
+    news: { title: Old Skarth woke in the barrow, belang: 3 }

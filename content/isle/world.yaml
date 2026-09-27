@@ -3,9 +3,9 @@
 # Sea, four hundred years after the Starfall. You wash up from a wreck and have
 # to find a way off before the winter storms close the sea.
 #
-# It has no rules file, so it plays with the ready-made traveller and without
-# fights; everything else (people, schedules, knowledge, quests, the chronicler)
-# works as in the Nethermarch.
+# Since M9.1 it has rules of its own (rules/): the island's peoples, callings,
+# patrons and beasts, on the Nethermarch's numbers. Everything else (people,
+# schedules, knowledge, quests, the chronicler) works as in the Nethermarch.
 
 world:
   id: skerrow
@@ -29,8 +29,8 @@ world:
     from: the sea
   # Faiths (M9.1): the islanders keep to the Tidemother; the old ones still watch the Old Stars.
   faiths:
-    - { id: tidemother, name: the Tidemother }
-    - { id: old_stars, name: the Old Stars }
+    - { id: tidemother, name: the Tidemother, patrons: [tidemother] }
+    - { id: old_stars, name: the Old Stars, patrons: [old_stars] }
   law:
     where: on Skerrow
     officer: headwoman

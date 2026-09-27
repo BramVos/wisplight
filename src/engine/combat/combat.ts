@@ -70,7 +70,7 @@ export function characterFighter(content: Content, character: Character, who: { 
   const weapon = weaponStats(content, character)
   const dc = classDc(content, character)
   const abilities: FightAbility[] = abilitiesOf(content, character).map((a) => ({ ...a, dc, used: 0 }))
-  const ranged = weapon.kind === 'ranged' || ['conjurer', 'herbalist', 'poacher'].includes(character.class)
+  const ranged = weapon.kind === 'ranged' || Boolean(content.rules?.classes.find((k) => k.id === character.class)?.keeps_range)
   return {
     id: who.id,
     name: who.name,

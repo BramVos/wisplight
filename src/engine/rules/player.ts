@@ -1,3 +1,4 @@
+import type { Content } from '../content'
 import type { Output } from '../commands'
 import { check as rollCheck, PLAYER_BONUS, type CheckResult } from '../dialogue/checks'
 import { relation } from '../dialogue/relations'
@@ -57,10 +58,16 @@ export const READY_MADE: CreationChoice = {
   talent: 'quick_hands',
 }
 
+/** The ready-made traveller of this world: its rules say who (M9.1), or the first class made sensibly. */
+export function readyMade(content: Content): CreationChoice {
+  const rules = rulesOf(content)
+  return rules.ready_made ?? suggestChoice(content, rules.classes[0]!.id)
+}
+
 export function character(world: World): Character | undefined {
   const player = world.state.player
   if (!player.character && world.content.rules) {
-    const made = createCharacter(world.content, READY_MADE)
+    const made = createCharacter(world.content, readyMade(world.content))
     if ('character' in made) {
       player.character = made.character
       giveGear(world, made.character, false)
@@ -195,7 +202,7 @@ export function makeCharacter(world: World, choice: CreationChoice): Output[] {
 export function creationHelp(world: World): string {
   const rules = rulesOf(world.content)
   return [
-    'CREATE <class> <ancestry> <background> name=<name>, for example: CREATE warden heathborn peat_cutter name=Joost',
+    `CREATE <class> <ancestry> <background> name=<name>, for example: CREATE ${rules.classes[0]!.id} ${suggestChoice(world.content, rules.classes[0]!.id).ancestry} ${rules.backgrounds[0]!.id} name=${readyMade(world.content).name === 'Traveller' ? 'Joost' : readyMade(world.content).name}`,
     `Classes: ${rules.classes.map((c) => `${c.id} (${c.text})`).join('; ')}`,
     `Ancestries: ${rules.ancestries.map((a) => `${a.id} (${a.special})`).join('; ')}`,
     `Backgrounds: ${rules.backgrounds.map((b) => b.id).join(', ')}`,

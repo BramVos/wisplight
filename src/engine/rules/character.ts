@@ -1,5 +1,5 @@
 import type { Content, Item } from '../content'
-import { ATTRIBUTES, WHEN, type Ability, type Attribute, type Bonus, type ClassDef, type Effect, type Rules, type Save, type Talent } from './schema'
+import { ATTRIBUTES, WHEN, type Ability, type Ancestry, type Attribute, type Bonus, type ClassDef, type Effect, type Rules, type Save, type Talent } from './schema'
 
 // The player character (FO, chapter 11): ancestry, background and class,
 // four attributes, skills with ranks, talents from three trees, levels 1 to
@@ -200,7 +200,8 @@ export function suggestChoice(content: Content, klass: string, name = 'Traveller
   const rules = rulesOf(content)
   const c = classOf(content, klass)
   const second: Record<Attribute, Attribute> = { might: 'grace', grace: 'wits', wits: 'resolve', resolve: 'wits' }
-  const anc = ancestry ?? (c.key === 'might' ? 'heathborn' : c.key === 'grace' ? 'fenfolk' : 'dykelander')
+  const gives = (a: Ancestry) => (a.attributes[c.key] ?? 0) + (a.attributes.choice ?? 0) / 2
+  const anc = ancestry ?? rules.suggest?.[c.key] ?? [...rules.ancestries].sort((a, b) => gives(b) - gives(a))[0]!.id
   const back = background ?? rules.backgrounds.find((b) => b.skills.every((s) => !c.trained.includes(s)))?.id ?? rules.backgrounds[0]!.id
   const n = boostsFor(content, anc)
   const order: Attribute[] = [c.key, second[c.key], c.key, c.key === 'might' ? 'wits' : 'might', 'resolve', 'grace']

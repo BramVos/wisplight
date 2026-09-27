@@ -77,8 +77,9 @@ export interface FightResult {
 export function simulateFight(content: Content, character: Character, group: FoeGroup, seed: number): FightResult {
   const rng = new Rng({}, seed)
   const c: Character = JSON.parse(JSON.stringify(character)) as Character
-  const herbs = { count: c.class === 'herbalist' ? 3 : 1 }
   const remedy = remedyItem(content)
+  // What the class carries of the remedy, or one.
+  const herbs = { count: (remedy && content.rules?.classes.find((k) => k.id === c.class)?.gear[remedy]) || 1 }
   const arena = { content, rng, character: c, items: { count: (id: string) => (id === remedy ? herbs.count : 0), take: () => void herbs.count-- }, where: { outdoors: true } }
   const { combat } = beginFight(arena, { id: 'sim', place: 'sim', foes: [{ creature: group.creature, count: group.count, range: 'near' }], now: 0 })
   if (group.elite) {

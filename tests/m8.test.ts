@@ -69,7 +69,12 @@ describe('M8: more than one world', () => {
   })
 
   it('has no fights and no character sheet without rules, and says so gently', async () => {
-    const { engine, out } = await play(1, ['e', 'e', 'attack brannoc', 'take barge'])
+    // A world without rules (Skerrow had none until M9.1).
+    const bare = new Engine({ ...isle, rules: undefined } as typeof isle, { seed: 1 })
+    const lines = [text(bare.start())]
+    for (const command of ['e', 'e', 'attack brannoc', 'take barge']) lines.push(text(await bare.handle(command)))
+    const engine = bare
+    const out = lines.join('\n')
     expect(engine.creationData()).toBeUndefined()
     expect(engine.status().character).toBeUndefined()
     expect(out).toContain('There is nothing here to fight.')
@@ -107,10 +112,15 @@ describe('M8: more than one world', () => {
   })
 
   it('without the gift, the barrow is a check, and the wyrm stirs when it fails', async () => {
-    const { engine } = await play(2, ['n', 'n', 'n', ...Array.from({ length: 8 }, () => 'enter the barrow')])
-    // Seed 2 fails at least once before it gets the key: every failure is counted.
-    expect(engine.state.player.inventory['rune_key']).toBe(1)
-    expect(Number(engine.state.flags?.['skarth_stirred'] ?? 0)).toBeGreaterThan(0)
+    // A seed that fails at least once before it gets the key: every failure is counted.
+    // (Since M9.1 Skerrow has rules, and the castaway's Stealth makes the check.)
+    let stirred = 0
+    for (let seed = 2; seed < 40 && !stirred; seed++) {
+      const { engine } = await play(seed, ['n', 'n', 'n', ...Array.from({ length: 8 }, () => 'enter the barrow')])
+      expect(engine.state.player.inventory['rune_key']).toBe(1)
+      stirred = Number(engine.state.flags?.['skarth_stirred'] ?? 0)
+    }
+    expect(stirred).toBeGreaterThan(0)
   })
 
   it('closes the sea after forty days when nothing is done', async () => {

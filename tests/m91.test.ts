@@ -6,6 +6,7 @@ import { openness } from '../src/engine/belief'
 import { adoptPlaceEdits, readLock, withLock } from '../src/engine/edit'
 import { shiftTension } from '../src/engine/social/realms'
 import { crowdsAt } from '../src/engine/growth/crowds'
+import { balanceReport, marginProblems } from '../src/engine/combat/balance'
 import { livingNames, namesTheLiving } from '../src/engine/legend'
 import { Knowledge } from '../src/engine/dialogue/knowledge'
 import type { TopicRegistry } from '../src/engine/dialogue/topics'
@@ -687,3 +688,53 @@ describe('M9.1: years later, as legend', () => {
     expect(slipped.engine.state.chronicle!.lore[0]!.summary).toMatch(/^Years ago, they say: the baker/)
   })
 })
+
+describe('M9.1: rules for Skerrow', () => {
+  it('a character of the island, and a fight on the cliff path at night', async () => {
+    const isle = loadContent(await readContentFiles(root, 'isle'))
+    // The ready-made castaway, and a character of one's own.
+    const engine = new Engine(isle, { seed: 110, builder: true })
+    engine.start()
+    expect(engine.status().character).toBeDefined()
+    expect(await say(engine, 'sheet')).toMatch(/Castaway, Islander Knave/)
+    expect(await say(engine, 'create shieldhand mainlander castaway name=Kerra')).toMatch(/You are Kerra, a Mainlander Shieldhand, once a castaway sailor/)
+    expect(engine.state.player.inventory['ring_shirt']).toBe(1)
+    // The patrons are the island's faiths.
+    expect(isle.rules!.patrons.map((p) => p.id)).toEqual(['tidemother', 'old_stars'])
+    // At night the wreckers are out on the cliff path.
+    let fought = false
+    for (let seed = 110; seed < 160 && !fought; seed++) {
+      const e = new Engine(isle, { seed, builder: true })
+      e.start()
+      await say(e, 'create shieldhand mainlander castaway name=Kerra')
+      runUntilIn(e, 22)
+      e.state.player.location = 'loc_skerrow_wreck_strand'
+      const out = await say(e, 'north')
+      if (!e.state.combat) continue
+      expect(out).toMatch(/A shuttered lamp opens on the path ahead/)
+      expect(out).toMatch(/Two silver, stranger/)
+      await say(e, 'refuse')
+      for (let i = 0; i < 60 && e.state.combat && !e.state.combat.over; i++) {
+        const fight = e.status().combat!
+        await say(e, fight.fighters.some((f) => f.side === 'foes' && f.reachable) ? 'strike' : fight.actions > 0 ? 'advance' : 'end')
+      }
+      expect(e.state.news!.facts.some((f) => /wrecker/i.test(f.title))).toBe(true)
+      fought = true
+    }
+    expect(fought).toBe(true)
+  }, 120_000)
+
+  it('stays within the agreed margins over 1,000 fights per class', async () => {
+    const isle = loadContent(await readContentFiles(root, 'isle'))
+    const reports = balanceReport(isle, 1000)
+    expect(reports.map((r) => r.class)).toEqual(['shieldhand', 'harpooner', 'knave', 'witch', 'runecaster', 'tidecaller'])
+    expect(marginProblems(reports)).toEqual([])
+  }, 240_000)
+})
+
+/** On to an hour of the first night on Skerrow. */
+function runUntilIn(engine: Engine, hour: number): void {
+  const now = new GameClock(engine.world.now).parts
+  const minutes = ((hour - now.hour + 24) % 24) * 60 - now.minute
+  if (minutes > 0) engine.tick(minutes)
+}

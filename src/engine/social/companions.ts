@@ -5,7 +5,7 @@ import { areaTopicId, callName } from '../content'
 import { attitude } from '../dialogue/relations'
 import { recordFact } from '../news'
 import { autoLevelChoice, createCharacter, levelUp, maxHp, skillBonus, suggestChoice, xpForLevel, type Character } from '../rules/character'
-import { gainXp } from '../rules/player'
+import { gainXp, readyMade } from '../rules/player'
 import type { World } from '../world'
 import { mayJoin } from './gates'
 
@@ -135,7 +135,7 @@ export function offer(world: World, npcId: string, destination?: string): Offer 
 /** The companion as a character of its class, at its own level or one under the player's. */
 export function characterFor(world: World, npcId: string): Character {
   const npc = world.npc(npcId)
-  const klass = npc.fighter?.class ?? 'rascal'
+  const klass = npc.fighter?.class ?? readyMade(world.content).class
   const made = createCharacter(world.content, suggestChoice(world.content, klass, callName(npc)))
   if ('problems' in made) throw new Error(made.problems.join(' '))
   const c = made.character
@@ -161,7 +161,8 @@ export function recruit(world: World, npcId: string, destination?: string): Outp
     loyalty: Math.max(20, Math.min(80, 30 + o.willingness)),
     bond: 0,
     bondPoints: 0,
-    stance: npc.fighter?.class === 'herbalist' || npc.fighter?.class === 'lanternbearer' ? 'support' : 'aggressive',
+    // Who heals by their calling stands behind (M9.1: from the class's core, not a list of names).
+    stance: supports(world, npc.fighter?.class) ? 'support' : 'aggressive',
     conditions: o.terms,
     paidDay: Math.floor(world.now / DAY) - 1,
     unpaid: 0,
@@ -577,3 +578,8 @@ function capitalise(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1)
 }
 
+/** A class whose core talent heals: it stands behind the others in a fight. */
+function supports(world: World, klass: string | undefined): boolean {
+  const c = klass ? world.content.rules?.classes.find((k) => k.id === klass) : undefined
+  return Boolean(c?.core.effects.some((e) => 'ability' in e && e.ability.do.some((d) => 'heal' in d)))
+}
