@@ -1,7 +1,7 @@
 import { GameClock, startOfDay } from '../clock'
 import { callName } from '../content'
 import type { LlmRequest } from '../dialogue/llm'
-import { describePersonality, peopleIds, worldFrame } from '../dialogue/prompt'
+import { describePersonality, peopleIds, relevantPeople, worldFrame } from '../dialogue/prompt'
 import { goalJsonSchema, GoalReplySchema } from '../dialogue/schema'
 import { itemName } from '../items'
 import { questsOf } from '../life'
@@ -175,11 +175,22 @@ export function allowedIds(world: World, npcId: string): Allowed {
   return allowed(world, npcId)
 }
 
-function allowed(world: World, npcId: string): Allowed {
+/**
+ * What an NPC may choose among. Checking a reply takes everything they know;
+ * the prompt, with a focus, only what belongs to the choice (M9.3): their own
+ * places, where they are, the places in focus and the open places of their
+ * area (at most twenty), and the people who matter (at most sixteen).
+ */
+function allowed(world: World, npcId: string, focus?: { people: string[]; places: string[] }): Allowed {
   const npc = world.npc(npcId)
   const state = world.npcState(npcId)
-  const places = [...world.knownLocations(npcId)].filter((id) => !world.location(id).tags.includes('private') || id === npc.home || id === npc.work).sort()
-  const people = peopleIds(world, npcId).filter((id) => world.alive(id))
+  const known = world.knownLocations(npcId)
+  const area = world.location(npc.home).area
+  const open = [...known].filter((id) => world.location(id).area === area && !world.location(id).tags.includes('private')).sort()
+  const places = focus
+    ? [...new Set([npc.home, ...(npc.work ? [npc.work] : []), state.location, ...focus.places, ...open].filter((id) => world.content.locations.has(id) && known.has(id)))].slice(0, 20).sort()
+    : [...known].filter((id) => !world.location(id).tags.includes('private') || id === npc.home || id === npc.work).sort()
+  const people = (focus ? relevantPeople(world, npcId, focus.people, 16) : peopleIds(world, npcId)).filter((id) => world.alive(id))
   const items = new Set<string>(Object.keys(state.inventory))
   for (const id of places) for (const service of world.location(id).services) for (const item of Object.keys(service.sells)) items.add(item)
   for (const request of openRequestsOf(world, npcId)) if (request.item) items.add(request.item)
@@ -216,11 +227,14 @@ function openGoals(world: World, npcId: string, people: string[]): string[] {
  * the rules and the goals open to them in the cached part; in the changing
  * part only what is new, with short keys for places and people (l1, p1).
  */
-export function goalRequest(world: World, choice: GoalChoice): LlmRequest {
+export function goalRequest(world: World, choice: GoalChoice, answers?: string[]): LlmRequest {
   const npcId = choice.npc
   const npc = world.npc(npcId)
   const state = world.npcState(npcId)
-  const ids = allowed(world, npcId)
+  // The people and places of what this choice is about (M9.3): the signal, and the news they just heard.
+  const about = choice.signal ? signalOf(world, choice.signal) : undefined
+  const recent = Object.entries(world.state.news?.heard[npcId] ?? {}).filter(([, h]) => world.now - h.t < 2 * DAY).map(([id]) => world.state.news?.facts.find((f) => f.id === id)).filter((f) => f !== undefined)
+  const ids = allowed(world, npcId, { people: [...(about?.who ?? []), ...recent.flatMap((f) => f!.about)], places: [...(about ? [about.place] : []), ...recent.map((f) => f!.place)] })
   const profession = world.content.professions.get(npc.profession)?.name ?? npc.profession
   const keys: Record<string, string> = {}
   const keyOf = new Map<string, string>()
@@ -273,20 +287,28 @@ export function goalRequest(world: World, choice: GoalChoice): LlmRequest {
     ...(ids.mine.length ? [`YOU HAVE: ${ids.mine.join(', ')}`] : []),
     ...(ids.things.length ? [`OTHER PEOPLE'S THINGS: ${ids.things.join(', ')}`] : []),
     ...(signal && intentions.length ? intentionLines(world, npcId, signal, (id) => key(id, 'h')) : []),
+    // What they asked before choosing (M9.3), answered from their own head only.
+    ...(answers?.length ? ['LOOKED UP:', ...answers.map((a) => `  ${a}`)] : []),
+    ...(intentions.length && !answers ? ['If you need to know more before you choose, ask at most two questions in lookup and leave goals empty: "knows <your own key> <topic>", "bond <person key> <person key>" (your own bonds only), "near <place key>". Otherwise leave lookup empty.'] : []),
   ]
   const targets = [...new Set([...Object.keys(keys), ...ids.items, ...ids.objects, ...ids.mine, ...ids.things, 'none'])]
   // Goal choices of people with a part in a quest keep their place when the budget runs low (FO, chapter 16).
   const priority = questsOf(world, npcId).length ? 'normal' : 'low'
   const base = goalJsonSchema(goals, targets)
+  // Before a choice about a signal, one round of questions (M9.3).
+  const asking = intentions.length > 0 && !answers
+  const withLookup = (s: Record<string, unknown>) =>
+    asking ? { ...s, properties: { ...(s['properties'] as Record<string, unknown>), lookup: { type: 'array', maxItems: 2, items: { type: 'string' } } }, required: [...((s['required'] as string[]) ?? []), 'lookup'] } : s
+  keys['self'] = npcId
   return {
     role: 'brain',
     system: [SYSTEM, '', worldFrame(world.content), '', ...card].join('\n'),
     prompt: lines.join('\n'),
     schemaName: 'npc_goals',
-    schema: intentions.length ? (withIntention(base, intentions.map((i) => i.id), Object.keys(keys)) as typeof base) : base,
+    schema: withLookup(intentions.length ? (withIntention(base, intentions.map((i) => i.id), Object.keys(keys)) as typeof base) : base) as typeof base,
     maxTokens: intentions.length ? 500 : 400,
     priority,
-    meta: { npc: npcId, keys, places: ids.places, people: ids.people, items: ids.items, intentions: intentions.map((i) => i.id) },
+    meta: { npc: npcId, keys, places: ids.places, people: ids.people, items: ids.items, intentions: intentions.map((i) => i.id), ...(asking ? { lookups: true } : {}) },
   }
 }
 

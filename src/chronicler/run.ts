@@ -21,7 +21,9 @@ export async function chronicle(input: ChronicleInput, model: ChroniclerModel, l
   const lookedUp: Card[] = []
   let calls = 0
   for (let round = 0; ; round++) {
-    const lookupsLeft = lookup ? Math.max(0, limits.lookups - round) : 0
+    // The whole run has a budget over all its rounds (M9.3): once spent, he writes with what he has.
+    const spent = usage.inputTokens + usage.outputTokens
+    const lookupsLeft = lookup && spent < limits.runTokens ? Math.max(0, limits.lookups - round) : 0
     const reply = await model.complete(buildRequest(input, keys, limits, lookedUp, lookupsLeft))
     calls++
     usage.inputTokens += reply.usage.inputTokens
@@ -30,6 +32,8 @@ export async function chronicle(input: ChronicleInput, model: ChroniclerModel, l
     const read = readReply(reply.text, keys, input, limits)
     if (read.lookups.length && lookup && lookupsLeft > 0) {
       for (const card of await lookup(read.lookups)) {
+        // What the answers hold together is bounded too.
+        if (lookedUp.reduce((n, c) => n + c.text.length, 0) + card.text.length > limits.lookupChars) break
         keys.add(card.id, card.kind)
         if (!lookedUp.some((c) => c.id === card.id)) lookedUp.push(card)
       }

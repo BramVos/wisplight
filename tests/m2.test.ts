@@ -152,12 +152,13 @@ describe('M2: talking', () => {
     expect(recruit!.system).toMatch(/Never agree to come along/)
   })
 
-  it('tells the model everyone the NPC knows by name, so it has no need to make people up', async () => {
+  it('tells the model the people who matter to the talk by name, so it has no need to make people up', async () => {
     const run = await runSituation(content, SITUATIONS.find((s) => s.id === 'wendela_recruit')!, new MockLlm('good'))
-    const people = run.requests[0]!.system.split('\n').find((line) => line.startsWith('PEOPLE YOU KNOW:'))!
-    expect(people).toContain('Mirte the baker (Veenhoek)')
-    expect(people).toContain('Lubbert the grain merchant (Waagdam)')
+    // Since M9.3 in the changing part, and only those who belong to the conversation: at most twelve.
+    const people = run.requests[0]!.prompt.split('\n').find((line) => line.startsWith('PEOPLE YOU KNOW:'))!
     expect(people).not.toContain('Sister Wendela')
+    expect(people.split(', ').length).toBeLessThanOrEqual(12)
+    expect(run.requests[0]!.system).not.toContain('PEOPLE YOU KNOW:')
     expect(run.requests[0]!.system).toContain('Veenhoek has no priest of its own')
   })
 

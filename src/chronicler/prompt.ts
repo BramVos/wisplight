@@ -83,7 +83,7 @@ export function systemPrompt(input: ChronicleInput, limits: Limits): string {
     '',
     'HOW TO ANSWER',
     'The overview uses short keys: p person, l place, a area, t lore, q request, i item, s storyline, e event. Answer with JSON that matches the schema, in keys.',
-    `- lookup: up to ${limits.lookups} keys you need to know more about before you write. Use it only when you truly need it; then leave everything else empty and you get the cards.`,
+    `- lookup: up to ${limits.lookups} keys you need to know more about before you write, or questions: "knows <person key> <topic key>" (what they know of it), "why <storyline key>" (what caused it and what is still open), "bond <person key> <person key>", "near <place key>" (what happened there lately). Use it only when you truly need it; then leave everything else empty and you get the answers.`,
     `- lore: for each storyline with an event of belang 3 or more, one lore topic. name; summary (what anyone may have heard, one sentence); details (the core as the village tells it, up to ${limits.textWords} words); story (as a witness tells it, up to ${limits.storyWords} words); far (one line as it sounds far away, which may be wrong the way retold news goes wrong); teller (the witness whose story it is, or empty); links (keys of lore or people it connects to); claims: every thing the lore says happened, each on the event (key) it rests on: subject (a key), key, value. Keys: present (value yes: the subject was there), dead (yes or no), lives_at (value: a place or area key), owns (value: a place or item key), or the claim of the event itself. Lore without claims, or with a claim no event carries, is not kept.`,
     `- lines: update every storyline you were given. summary: at most ${limits.lineSummary} short lines. roles, hooks (open threads), next (what may follow), close (true when it is over).`,
     `- quests: at most ${limits.quests}. Turn an open thread into a request for the player, using one of the TEMPLATES and a giver from that storyline, or reword an open request (give its key). name; ask (what the giver says, in their own voice, one or two sentences); stakes (why it matters, one sentence).`,
@@ -168,7 +168,7 @@ export function replySchema(input: ChronicleInput, keys: Keys, lookupsLeft: numb
   const lookupable = [...people, ...keys.of('place'), ...keys.of('lore'), ...keys.of('line'), ...keys.of('item')]
   const object = (properties: Record<string, unknown>) => ({ type: 'object', additionalProperties: false, required: Object.keys(properties), properties })
   return object({
-    lookup: { type: 'array', items: keysOf(lookupsLeft > 0 ? lookupable : []) },
+    lookup: { type: 'array', items: lookupsLeft > 0 ? { type: 'string', description: `a key (${lookupable.slice(0, 3).join(', ')}, ...) or a question: knows p1 t1, why s1, bond p1 p2, near l1` } : keysOf([]) },
     lore: {
       type: 'array',
       items: object({

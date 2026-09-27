@@ -40,6 +40,9 @@ export class MockLlm implements LlmClient {
   chronicle?: (meta: ChronicleMeta, planned: string | undefined) => Record<string, unknown>
   /** For tests: what the second look at big lore finds that no fact says (M9.2); without it, nothing. */
   judge?: (story: string, facts: string[]) => string[]
+  /** For tests: the questions a brain asks before it chooses (M9.3), and what it heard back. */
+  ask?: (npc: string, keys: Record<string, string>) => string[]
+  heard?: (answers: string) => void
   /** For tests: the intention a brain chooses when a signal lets it (M8.2), with its open bindings; without it, none and custom decides. */
   intend?: (npc: string, offered: string[], keys: Record<string, string>) => { choice: string; fill?: { name: string; key: string }[] } | undefined
 
@@ -254,7 +257,13 @@ export class MockLlm implements LlmClient {
     // One line in a chat the player overhears (M9.1).
     if (request.schemaName === 'chat_line') return this.mode === 'invalid' ? 'Hmm.' : JSON.stringify({ line: `Is that so? Well, I never heard the like of it.` })
     if (!('goals' in properties)) return '{}'
-    const meta = request.meta as { places?: string[]; people?: string[] } | undefined
+    const meta = request.meta as { places?: string[]; people?: string[]; npc?: string; lookups?: boolean } | undefined
+    // Questions first, when a test wants them (M9.3).
+    if (meta?.lookups && this.ask) {
+      const questions = this.ask(String(meta.npc ?? ''), request.meta?.['keys'] as Record<string, string>)
+      if (questions.length) return JSON.stringify({ goals: [], lookup: questions })
+    }
+    if (this.heard && /LOOKED UP:/.test(request.prompt)) this.heard(request.prompt.slice(request.prompt.indexOf('LOOKED UP:')))
     if (this.mode === 'invalid') return 'I think she should bake.'
     // 'invent' breaks every rule the validator knows: a goal not in the list, a place nobody knows, a gate.
     if (this.mode === 'invent')

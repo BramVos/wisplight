@@ -2,6 +2,7 @@ import type { Archived } from './archive'
 import { applyFarPlace, farPlaceOf, farRequest, farWords, wantFarPlace, type FarWords } from './growth/far'
 import { crowdHere, nameOne } from './growth/crowds'
 import { applyLegendWords, legendRequest, legendsOf } from './legend'
+import { answerLookup, parseLookup } from './lookups'
 import { deliverLoad, listLoads, loadsHere, payToll, robLoad, takeLoad } from './economy/haul'
 import { worldFrame } from './dialogue/prompt'
 import { followTombstones, followTombstonesInLog, nameBook, withNames, type NameBook } from './ids'
@@ -488,10 +489,24 @@ export class Engine {
         let reply: unknown = null
         if (llm) {
           try {
-            const request = goalRequest(this.world, choice)
-            const response = await llm.complete(request)
+            const parse = (text: string) => JSON.parse(text.trim().replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '')) as Record<string, unknown>
+            let request = goalRequest(this.world, choice)
+            let parsed = parse((await llm.complete(request)).text)
+            // At most two questions first (M9.3), answered from the NPC's own head; then it chooses.
+            const asked = Array.isArray(parsed['lookup']) ? (parsed['lookup'] as unknown[]).filter((q): q is string => typeof q === 'string').slice(0, 2) : []
+            if (asked.length && request.meta?.['lookups']) {
+              const keys = request.meta['keys'] as Record<string, string>
+              const answers = asked.map((text) => {
+                const q = parseLookup(text, (k) => keys[k] ?? (this.content.topics.has(k) || this.content.locations.has(k) || this.content.areas.has(k) || this.content.items.has(k) ? k : undefined))
+                if (!q) return `${text}: not a question you can ask`
+                const a = answerLookup(this.world, choice.npc, q)
+                return 'refused' in a ? `${text}: ${a.refused}` : `${a.title}: ${a.text}`
+              })
+              request = goalRequest(this.world, choice, answers)
+              parsed = parse((await llm.complete(request)).text)
+            }
             // Keys back to ids before it is recorded: a replay applies the same answer.
-            reply = fromKeys(JSON.parse(response.text.trim().replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '')), request.meta?.['keys'] as Record<string, string> | undefined)
+            reply = fromKeys(parsed, request.meta?.['keys'] as Record<string, string> | undefined)
           } catch {
             reply = null
           }

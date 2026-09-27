@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import type { Keys } from './prompt'
+import { lookupId, parseLookup } from './lookup'
 import { PHASES, type CardKind, type ChronicleInput, type ChronicleOutput, type Limits, type LineOp, type LoreOp, type NewsOp, type Phase, type PlanEffectOp, type PlanOp, type QuestOp, type StepOp, type ThoughtOp } from './types'
 
 // Reading the reply: the shape must match, every key must be one of this
@@ -97,7 +98,13 @@ export function readReply(text: string, keys: Keys, input: ChronicleInput, limit
   if (!parsed.success) return { output, lookups: [], problems: [`the reply does not match the schema: ${parsed.error.issues[0]?.message ?? ''}`] }
   const reply = parsed.data
 
-  const lookups = reply.lookup.map((k) => keys.id(k)).filter((id): id is string => Boolean(id))
+  // A key to know more about, or a question (M9.3): knows <person> <topic>, why <storyline>, bond <person> <person>, near <place>.
+  const lookups = reply.lookup
+    .map((k) => {
+      const q = parseLookup(k, (key) => keys.id(key))
+      return q ? lookupId(q) : keys.id(k)
+    })
+    .filter((id): id is string => Boolean(id))
   if (lookups.length) return { output, lookups: lookups.slice(0, limits.lookups), problems }
 
   const runLines = new Set(input.lines.map((l) => l.id))

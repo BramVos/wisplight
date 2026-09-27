@@ -104,6 +104,10 @@ export interface Limits {
   thoughts: number
   lookups: number
   maxTokens: number
+  /** The budget of a whole run over all its lookup rounds (M9.3), in tokens in and out; then he writes. */
+  runTokens: number
+  /** What all answers to lookups may hold together, in characters. */
+  lookupChars: number
 }
 
 export const DEFAULT_LIMITS: Limits = {
@@ -115,6 +119,8 @@ export const DEFAULT_LIMITS: Limits = {
   thoughts: 3,
   lookups: 3,
   maxTokens: 1800,
+  runTokens: 30_000,
+  lookupChars: 4_000,
 }
 
 export interface ChronicleInput {

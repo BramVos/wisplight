@@ -4,7 +4,7 @@ import type { World } from '../world'
 import { TIER_WORDS, type Act, type Tier } from './acts'
 import type { CheckResult } from './checks'
 import type { Packet } from './knowledge'
-import { peopleLine, peopleNow } from '../people'
+import { peopleLine, peopleNow, ties } from '../people'
 import { standingLine } from '../standing'
 import { requestLines } from '../requests'
 import { relation, type Attitude } from './relations'
@@ -105,7 +105,6 @@ export function systemPrompt(world: World, npcId: string): string {
     npc.speech ? `Voice: ${npc.speech}` : '',
     npc.public_facts.length ? `Facts about you: ${npc.public_facts.join(' ')}` : '',
     npc.examples.length ? `Example lines: ${npc.examples.map((e) => `"${e}"`).join(' ')}` : '',
-    `PEOPLE YOU KNOW: ${peopleKnown(world, npcId)}.`,
     peopleLine(world, npcId) ?? '',
     standingLine(world, npcId) ?? '',
   ]
@@ -120,8 +119,31 @@ export function peopleIds(world: World, npcId: string): string[] {
   return [...world.content.npcs.values()].filter((other) => other.id !== npcId && areas.has(world.location(other.home).area)).map((other) => other.id)
 }
 
-function peopleKnown(world: World, npcId: string): string {
-  const people = peopleIds(world, npcId).map((id) => {
+/**
+ * Who matters to this NPC now (M9.3; review of 27 September 2026 on prompts):
+ * the people in focus (what is talked about, a signal's people), their own
+ * family and close ties, who is here, and those they know best. Never more
+ * than so many, however many they know: the prompt does not grow with the world.
+ */
+export function relevantPeople(world: World, npcId: string, focus: string[] = [], cap = 12): string[] {
+  const known = new Set(peopleIds(world, npcId))
+  const out: string[] = []
+  const add = (id: string | undefined) => {
+    if (!id || id === npcId || out.includes(id) || !world.content.npcs.has(id) || world.state.npcs[id]?.dead) return
+    out.push(id)
+  }
+  for (const id of focus) add(id)
+  for (const t of ties(world, npcId).filter((t) => t.kind === 'family' || t.kind === 'love' || t.bond >= 2).sort((a, b) => b.bond - a.bond)) add(t.id)
+  for (const id of world.npcsAt(world.npcState(npcId).location)) add(id)
+  const bonds = Object.entries(world.state.bonds?.[npcId] ?? {})
+    .filter(([id, b]) => known.has(id) && b.familiarity >= 20)
+    .sort((a, b) => b[1].familiarity - a[1].familiarity || a[0].localeCompare(b[0]))
+  for (const [id] of bonds) add(id)
+  return out.slice(0, cap)
+}
+
+function peopleKnown(world: World, npcId: string, focus: string[]): string {
+  const people = relevantPeople(world, npcId, focus).map((id) => {
     const area = world.location(world.npc(id).home).area
     return `${world.npc(id).short} (${world.content.areas.get(area)?.name ?? area})`
   })
@@ -191,6 +213,8 @@ export function turnPrompt(world: World, ctx: TurnContext): string {
     `SCENE: ${location.name}, ${dayName(clock.parts.weekday, world.calendar)}, ${clock.parts.dayPart}. ${npc.short} is ${state.activity}. Mood: ${ctx.mood}.`,
     present.length ? `Also here: ${present.join(', ')}, and the player.` : `Also here: the player, a stranger from ${world.words.from}.`,
     ...recently(world, ctx.npcId),
+    // Only those who matter to this talk (M9.3): its topics, their own people, who is here.
+    `PEOPLE YOU KNOW: ${peopleKnown(world, ctx.npcId, ctx.packet.known.map((k) => k.topic))}.`,
     ...peopleNow(world, ctx.npcId),
     ...onYourMind(world, ctx.npcId),
     ...requestLines(world, ctx.npcId),

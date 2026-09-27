@@ -12,6 +12,7 @@ import { isNear, noun, ties } from './people'
 import { askLine, openRequest, openRequestsOf, requestName } from './requests'
 import type { ChronicleRun, ChronicleState, Claim, Fact, LoreEntry, Offered, Storyline } from './state'
 import { judged, judgeRequest, loreProblem } from './truth'
+import { answerLookup, lookupFromId } from './lookups'
 import { chronicleState, unreported } from './storylines'
 import { chroniclerVerbs, extraCards, signalCards, startChroniclePlan, stepsFromOp, unplanned } from './planning'
 import { withoutReference } from './quests/reference'
@@ -261,6 +262,13 @@ function relatedLore(world: World, lines: Storyline[], cast: Set<string>, areas:
 export function lookupCards(world: World, ids: string[]): Card[] {
   const cards: Card[] = []
   for (const id of ids) {
+    // A question (M9.3), answered within its bounds.
+    const q = lookupFromId(id)
+    if (q) {
+      const a = answerLookup(world, 'chronicler', q)
+      cards.push({ id, kind: 'lore', name: 'refused' in a ? id : a.title, text: 'refused' in a ? `Refused: ${a.refused}.` : a.text })
+      continue
+    }
     const npc = world.content.npcs.get(id)
     if (npc) {
       const people = ties(world, id).map((t) => `${t.private ? 'PRIVATE: ' : ''}${t.name}, ${noun(t)}${t.status === 'alive' ? '' : ` (${t.status})`}${t.note ? `: ${t.note}` : ''}`)
