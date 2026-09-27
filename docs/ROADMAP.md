@@ -282,6 +282,12 @@ Scope: FO 4 "Weergave" (besluit 27 september 2026). De streekkaart en de landkaa
 Eerst rechtzetten (bevindingen van de kaartreview, 27 september 2026): de hash per hex mengt kleine invoer slecht, waardoor 59 procent van de veenhexen een poel heeft waar de code 10 procent bedoelt (nagemeten op de Holleveen: 4.915 veenhexen, poel 59, bult 12, petgat 7, wilg 5, ruïne 1, niets 16 procent); en de verborgen rug wordt nooit getekend, ook niet voor wie hem kent, omdat de kaartweergave het veld `hidden` niet leest.
 - [ ] De trekking per hex is gelijkmatig (een test meet de verdeling), het veen heeft ongeveer een poel op de tien hexen, en een oude save speelt door: gezien is gezien, ook waar de grond nu anders ligt
 - [ ] Wie de droge rug kent, ziet hem op de kaart als pad; wie hem niet kent, ziet veen
+
+Ook in M10, de vier fouten uit de tests van de ontwikkelaarskit (27 september 2026), in de code bevestigd:
+- [ ] `talk to aaltje about the grey cat` werkt: `talk` splitst op about, over en naar zoals `ask`, en de quest gaat verder (nu leest de motor alles na "to" als naam)
+- [ ] `@who-knows` toont de korte naam in plaats van het eerste woord van de volledige naam (nu "the" voor de Haakman en "Black" en "Ouwe" voor bijnamen)
+- [ ] `@where` en de andere bouwcommando's vinden een NPC ook op id (nu alleen op naam, roepnaam, beroep of alias)
+- [ ] `npm run sim` meldt geen mens als vastgelopen die dat niet is: wezens zonder schema (de kat, de Haakman, de witte wieven) en wie ver weg is tellen niet mee, met dezelfde regel als de speeltest in de editor, en de exitcode is alleen 1 bij een echte fout
 - [ ] Een voorstelpagina toont palet, de geshade Holleveen, dag, nacht en mist, een lichte papierversie en de zwart-witoptie, en Bram keurt hem goed voordat er gebouwd wordt
 - [ ] Elk terrein heeft drie tot vier gedempte tinten uit een geseede variatie per hex, drassige grond donkerder, droge ruggen lichter, water in twee tonen (open water en geul), wegen en paden in warm perkament
 - [ ] Kenmerken (poel, petgat, wilg, ruïne, bult) hebben een eigen glyph en tint; wat je lang geleden zag is vager dan wat je pas zag; nacht en mist leggen een waas over het paneel
@@ -325,12 +331,3 @@ Commando's en interface:
 - [ ] Rechtsonder een rij lampjes per AI-rol (stem, brein, kroniekschrijver, illustrator, bouwer) die groen oplichten tijdens een aanroep, met de laatste kosten en tijd bij aanwijzen; nu is er één "AI busy"
 - [ ] In een ontwikkelbuild opent een menu-item of knop de editor vanuit het spel; nu alleen `npm run editor` of `--editor`
 - [ ] Alles wat er al was, speelt hetzelfde: het hele testpakket, de simulaties, de uitspeelscripts van beide werelden, en oude saves
-
-## Fouten uit de tests van 27 september 2026
-
-Gevonden door de tester van de ontwikkelaarskit, in de code bevestigd. Klein; te verhelpen in de eerstvolgende mijlpaal die aan deze bestanden komt, of los daarvan.
-
-- [ ] `talk to aaltje about the grey cat` werkt: `talk` splitst op about, over en naar zoals `ask`, en de quest gaat verder (nu leest de motor alles na "to" als naam)
-- [ ] `@who-knows` toont de korte naam in plaats van het eerste woord van de volledige naam (nu "the" voor de Haakman en "Black" en "Ouwe" voor bijnamen)
-- [ ] `@where` en de andere bouwcommando's vinden een NPC ook op id (nu alleen op naam, roepnaam, beroep of alias)
-- [ ] `npm run sim` meldt geen mens als vastgelopen die dat niet is: wezens zonder schema (de kat, de Haakman, de witte wieven) en wie ver weg is tellen niet mee, met dezelfde regel als de speeltest in de editor, en de exitcode is alleen 1 bij een echte fout
