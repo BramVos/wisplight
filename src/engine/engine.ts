@@ -234,7 +234,7 @@ export class Engine {
     // A new game writes down the names it begins with (M9.1).
     if (!options.log && !options.state) this.log.push({ t: state.minutes, k: 'names', v: nameBook(source) })
     this.builder = options.builder ?? false
-    this.host = { world: this.world, pass: (minutes) => this.pass(minutes) }
+    this.host = { world: this.world, pass: (minutes) => this.pass(minutes), passUntil: (minutes, stop) => this.pass(minutes, stop) }
     this.topics = new TopicRegistry(content)
     for (const far of state.lore?.far ?? []) this.topics.addDuringPlay({ id: far.id, kind: 'place', name: far.name, aliases: [far.name] })
     this.dialogue = new Dialogue(this.world, this.topics, new Knowledge(this.world, this.topics), () => this.recorder)
@@ -613,7 +613,16 @@ export class Engine {
 
   /** The people and places a text names go in the journal as heard of (M9.4); with a teller, the map guesses from what they said. */
   private heardOf(text: string, from?: string): void {
-    const ids = this.topics.recognise(text).filter((id) => ['person', 'place', 'area'].includes(this.topics.kind(id) ?? '') && id !== from)
+    const found = this.topics.recognise(text).filter((id) => ['person', 'place', 'area'].includes(this.topics.kind(id) ?? '') && id !== from)
+    // One entry per name: "Fenna Visser" is the news of the missing girl, not also the girl as a second person.
+    const names = new Set(Object.keys(this.state.player.journal ?? {}).map((id) => this.topics.name(id)))
+    const ids: string[] = []
+    for (const id of [...found].sort((a, b) => Number(a.startsWith('npc_')) - Number(b.startsWith('npc_')))) {
+      const name = this.topics.name(id)
+      if (names.has(name) && !(this.state.player.journal ?? {})[id]) continue
+      names.add(name)
+      ids.push(id)
+    }
     this.dialogue.learn(...ids)
     if (!from) return
     const sources = (this.state.player.sources ??= {})
@@ -643,7 +652,15 @@ export class Engine {
     for (const listener of this.listeners) listener({ kind: 'in', t: this.world.now, text })
     const before = this.state.player.location
     // A line in quotes is speech (the conversation window sends them so), but it can still be a quest's own words.
-    const quest = this.state.combat ? undefined : questAction(this.world, this.questHost, text.replace(/^"|"$/g, ''))
+    const spoken = text.replace(/^"|"$/g, '')
+    let quest = this.state.combat ? undefined : questAction(this.world, this.questHost, spoken)
+    // In a conversation, "ask about the cat" is asked of whoever you talk to (found in the M9.4 playtest:
+    // the quest knew "ask aaltje about the cat", and the player talking to Aaltje never said her name).
+    const partner = this.state.talk?.npc
+    if (!quest && !this.state.combat && partner) {
+      const named = spoken.replace(/^(ask|tell|show|give|persuade|convince)\s+(?=about\b|over\b|for\b|to\b|how\b)/i, `$1 ${callName(this.world.npc(partner)).toLowerCase()} `)
+      if (named !== spoken) quest = questAction(this.world, this.questHost, named)
+    }
     const outputs = quest ?? (this.state.combat ? await this.inFight(text) : await this.route(text))
     const talk = this.state.talk
     if (talk && this.state.npcs[talk.npc]?.location !== this.state.player.location) this.state.talk = undefined
@@ -1993,15 +2010,26 @@ export class Engine {
   }
 
   /** Runs the world for some minutes and returns the events the player could see. */
-  private pass(minutes: number): Output[] {
+  private pass(minutes: number, stop?: () => string | undefined): Output[] {
     // A long wait is lived hour by hour: the opponents, big events and quests keep pace with the people.
+    // A wait that may stop early looks every five minutes; the quests still keep pace by the hour.
     const between: Output[] = []
+    let sinceQuests = 0
     for (let left = minutes; left > 0; ) {
-      const step = Math.min(60, left)
+      const step = Math.min(stop ? 5 : 60, left)
       advance(this.world, step)
       rest(this.world, step)
       left -= step
-      if (left > 0) between.push(...this.questsTick())
+      sinceQuests += step
+      if (left > 0 && sinceQuests >= 60) {
+        between.push(...this.questsTick())
+        sinceQuests = 0
+      }
+      const reason = stop?.()
+      if (reason) {
+        between.push({ kind: 'system', text: reason })
+        break
+      }
     }
     const here = this.state.player.location
     const seen = this.state.events.filter((e) => e.seq > this.state.seenSeq && e.location === here)

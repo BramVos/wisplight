@@ -1,0 +1,455 @@
+Het verdwenen meisje (base), seed 7
+
+######## THE PLAYER ACTS
+The barge from Graafhaven leaves you at the Veenhoek quay just as the light goes. The bargeman won't tie up. "Not after dark, not out here," he says, and poles away into the mist, taking his lantern with him.
+
+This is the Holleveen: peat and reed and black water, mile upon mile of it between the Great Dyke and the heath. The villages sit on the few dry places like cats on a fence. Peat smoke. A windmill turning slowly against a sky the colour of pewter.
+
+Somewhere a dog barks. On the doorstep of the nearest house a grey cat watches you, very still, the way cats don't usually watch people.
+
+Type LOOK to look around. Type HELP if you are lost. You probably are.
+Canal Quay
+Grey water slaps against the planks of the quay. A barge rope lies coiled by the mooring posts, and beside them stands a worn stone, waist-high, with a dog carved into it. Someone has put an apple on top. The [Graafse Vaart] runs east and west; the green is north and the peat sheds are south.
+Exits: north, east, west, south, southwest
+Across country you can head any way, or follow the fen path, the path to the Kabouterberg, the peat road, the priory path, the tow path.
+The pace of events is normal. Type TEMPO CALM or TEMPO DRAMATIC for less or more happening in the world.
+
+==== RECOGNISE (Dinsdag 14 Herfstmaand 211 AW, 18:30 (evening))
+
+> look
+Canal Quay
+Grey water slaps against the planks of the quay. A barge rope lies coiled by the mooring posts, and beside them stands a worn stone, waist-high, with a dog carved into it. Someone has put an apple on top. The [Graafse Vaart] runs east and west; the green is north and the peat sheds are south.
+Exits: north, east, west, south, southwest
+Across country you can head any way, or follow the fen path, the path to the Kabouterberg, the peat road, the priory path, the tow path.
+
+> north
+Veenhoek, the Green
+The village green is a patch of trampled grass around a stone well. Peat smoke hangs low over the roofs, and the ground gives a little underfoot, the way it does everywhere in the Holleveen. East, the [Bakery] door stands open, and west a grey cat sits very upright on the doorstep of a narrow house. A lane runs north to the [Chapel]; south, the canal glints between the houses, and a track leaves north-east.
+Exits: north, east, south, west, northeast
+Across country you can head any way, or follow the fen path, the path to the Kabouterberg, the peat road, the priory path, the tow path.
+Here: Jan Visser (on the way to The Drowned Goose, Common Room).
+Jan comes from the west, on his way to The Drowned Goose, Common Room.
++10 experience: you found Veenhoek, the Green.
+
+> look
+Veenhoek, the Green
+The village green is a patch of trampled grass around a stone well. Peat smoke hangs low over the roofs, and the ground gives a little underfoot, the way it does everywhere in the Holleveen. East, the [Bakery] door stands open, and west a grey cat sits very upright on the doorstep of a narrow house. A lane runs north to the [Chapel]; south, the canal glints between the houses, and a track leaves north-east.
+Exits: north, east, south, west, northeast
+Across country you can head any way, or follow the fen path, the path to the Kabouterberg, the peat road, the priory path, the tow path.
+Here: Jan Visser (on the way to The Drowned Goose, Common Room).
+
+> west
+Visser House, the doorstep
+A narrow house with a green door. On the doorstep sits a grey cat with one white paw, very upright, watching the lane; when you come close it doesn't run, but looks at you as if it is waiting for you to say something. Inside, a spinning wheel hums. The green is east.
+Exits: east
+Here: Grietje Visser (eating), Pim (eating).
+Grietje: Our Fenna went into the Kattenbroek for bog myrtle and never came home. Jan says the fen took her. But that cat came the same morning, and it looks at me with her eyes. Please. Find out what happened to my girl.
+New quest: The Grey Cat on the Doorstep. Fenna Visser is missing. Her mother Grietje asks you to find out what happened. A grey cat with one white paw sits on the doorstep and will not leave.
++10 experience: you found Visser House, the doorstep.
+
+> look
+Visser House, the doorstep
+A narrow house with a green door. On the doorstep sits a grey cat with one white paw, very upright, watching the lane; when you come close it doesn't run, but looks at you as if it is waiting for you to say something. Inside, a spinning wheel hums. The green is east.
+Exits: east
+Here: Grietje Visser (eating), Pim (eating).
+
+> talk to the cat
+The cat looks at you, and you look at the cat. Whatever she is saying, you don't understand it.
+
+> examine the cat
+(Lore 4 vs DC 16: critical failure)
+It's a grey cat with one white paw. A strange one, maybe. Old Aaltje would know more about such things.
+
+> east
+Veenhoek, the Green
+The village green is a patch of trampled grass around a stone well. Peat smoke hangs low over the roofs, and the ground gives a little underfoot, the way it does everywhere in the Holleveen. East, the [Bakery] door stands open, and west a grey cat sits very upright on the doorstep of a narrow house. A lane runs north to the [Chapel]; south, the canal glints between the houses, and a track leaves north-east.
+Exits: north, east, south, west, northeast
+Across country you can head any way, or follow the fen path, the path to the Kabouterberg, the peat road, the priory path, the tow path.
+
+> east
+The Bakery
+Warm, low and white with flour. Loaves cool on racks along the wall, and a slate by the counter says RYE 2 D in chalk, underlined twice. Through the back door, east, you can see the glow of the oven in the yard.
+Exits: west, east
+Here: Mirte the baker.
++10 experience: you found The Bakery.
+
+> talk mirte
+You are talking with Mirte the baker. Type what you want to say, pick a number, or BYE to stop.
+Mirte nods. "Evening."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+Mirte: The mill's standing still and I've flour for two more bakes. Lubbert in Waagdam says there's no rye this side of winter, and he's asking double for what there is. Bring me flour, or rye I can have ground, before market day on Zaterdag. Or Veenhoek goes without bread.
+New quest: Flour for Veenhoek. Mirte needs flour for Veenhoek's bread before market day on Zaterdag. The mill stands still for want of sailcloth, and Lubbert in Waagdam asks double.
+
+> 2
+You: "What's new around here?"
+Mirte nods slowly. "Fenna Visser, fifteen, the daughter of Jan and Grietje, has been missing for four days. She went out on the evening of 10 Herfstmaand and never came home. Nobody saw where she went. Some say the fen took her."
+
+> bye
+Mirte lifts a hand. "Go on, then."
+
+> journal
+People: Fenna Visser, Jan Visser, Lubbert Graanhandel, Mirte Bakker.
+Places: Veenhoek, Waagdam, the Kattenbroek, The Mill De Zwaan, The Bakery, Veenhoek, the Green, Canal Quay, Visser House, the doorstep, The Market Square, Waagdam, the West Gate.
+Lore: the stranger in Veenhoek.
+
+==== INFLUENCE (Dinsdag 14 Herfstmaand 211 AW, 18:41 (evening))
+
+# Find out who the cat is: the cat itself pointed to Old Aaltje.
+
+> talk mirte
+You are talking with Mirte the baker. Type what you want to say, pick a number, or BYE to stop.
+Mirte nods. "Evening."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> where is aaltje
+You: "Where can I find aaltje?"
+Mirte thinks a moment. "Old Aaltje is the herb woman of Veenhoek. She was weighed at the Waag and found honest; the certificate hangs on her wall."
+
+> bye
+Mirte lifts a hand. "Go on, then."
+
+> west
+Veenhoek, the Green
+The village green is a patch of trampled grass around a stone well. Peat smoke hangs low over the roofs, and the ground gives a little underfoot, the way it does everywhere in the Holleveen. East, the [Bakery] door stands open, and west a grey cat sits very upright on the doorstep of a narrow house. A lane runs north to the [Chapel]; south, the canal glints between the houses, and a track leaves north-east.
+Exits: north, east, south, west, northeast
+Across country you can head any way, or follow the fen path, the path to the Kabouterberg, the peat road, the priory path, the tow path.
+
+> north
+Chapel Lane
+A muddy lane between two rows of low houses, their doors painted green against the damp. It smells of wet thatch. North, the lane ends at the [Chapel of the Lantern]; the schout's brick house stands to the east and a cottage hung with drying herbs to the west.
+Exits: north, south, east, west, northwest
++10 experience: you found Chapel Lane.
+
+> look
+Chapel Lane
+A muddy lane between two rows of low houses, their doors painted green against the damp. It smells of wet thatch. North, the lane ends at the [Chapel of the Lantern]; the schout's brick house stands to the east and a cottage hung with drying herbs to the west.
+Exits: north, south, east, west, northwest
+
+> west
+Aaltje's Cottage
+Bunches of herbs hang from every beam, so you have to stoop. It smells of mint, smoke and something older. On the wall, in a frame of black wood, hangs a yellowed paper with a red seal: a certificate from the Waag of Waagdam, stating that one Aaltje Hendriks weighed as much as an honest woman should. The door opens east onto the lane.
+Exits: east
+Here: Old Aaltje (eating).
++10 experience: you found Aaltje's Cottage.
+
+> look
+Aaltje's Cottage
+Bunches of herbs hang from every beam, so you have to stoop. It smells of mint, smoke and something older. On the wall, in a frame of black wood, hangs a yellowed paper with a red seal: a certificate from the Waag of Waagdam, stating that one Aaltje Hendriks weighed as much as an honest woman should. The door opens east onto the lane.
+Exits: east
+Here: Old Aaltje (eating).
+
+> talk aaltje
+You are talking with Old Aaltje. Type what you want to say, pick a number, or BYE to stop.
+Aaltje nods. "Evening."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> What do you know about the grey cat?
+Aaltje scratches an ear. "A grey cat with one white paw has sat on the Vissers' doorstep every day since Fenna vanished."
+
+> ask about the cat
+Aaltje sits down heavily. "One white paw? That's her. That's Kaatje's work, the widow out in the Kattenbroek. She was my teacher once." She looks at her hands. "There are ways back. Pay what she asks. Or moon water from the Blackmere, drawn at night, and the right words over it; I can give you those. Or you could ask the girl herself what she did, if you could talk cat."
+The Grey Cat on the Doorstep: The grey cat is Fenna, turned by the widow of the Kattenbroek. You could pay the widow's price, break the curse, burn the witch with Jan, or find a way to talk to the cat.
+
+# Aaltje named four ways. The honest one: her draught, and talk to the cat.
+
+> ask for a draught
+Aaltje takes a small bottle from the rafters and wipes the dust off. "Valerian, cat's-ear and river mud. Drink it on the doorstep. It won't last long, and you'll want to chase birds for a day after."
+
+> bye
+Aaltje lifts a hand. "Go on, then."
+
+> east
+Chapel Lane
+A muddy lane between two rows of low houses, their doors painted green against the damp. It smells of wet thatch. North, the lane ends at the [Chapel of the Lantern]; the schout's brick house stands to the east and a cottage hung with drying herbs to the west.
+Exits: north, south, east, west, northwest
+
+> south
+Veenhoek, the Green
+The village green is a patch of trampled grass around a stone well. Peat smoke hangs low over the roofs, and the ground gives a little underfoot, the way it does everywhere in the Holleveen. East, the [Bakery] door stands open, and west a grey cat sits very upright on the doorstep of a narrow house. A lane runs north to the [Chapel]; south, the canal glints between the houses, and a track leaves north-east.
+Exits: north, east, south, west, northeast
+Across country you can head any way, or follow the fen path, the path to the Kabouterberg, the peat road, the priory path, the tow path.
+
+> west
+Visser House, the doorstep
+A narrow house with a green door. On the doorstep sits a grey cat with one white paw, very upright, watching the lane; when you come close it doesn't run, but looks at you as if it is waiting for you to say something. Inside, a spinning wheel hums. The green is east.
+Exits: east
+Here: Grietje Visser, Pim.
+
+> drink the draught
+It tastes of valerian and mud. The edges of the world go sharp, and every small sound suddenly means something.
+
+> talk to the cat
+"It was me," the cat says, and it's a girl's voice under the purring. "I told the widow I had nobody, no mother, nobody to miss me, so she'd sell me a charm cheap. For Klaas. A lie is a debt, she said. Tell her I'm sorry. Tell her I'll work it off, whatever she wants."
+
+# To the widow in the Kattenbroek, to tell her what the cat said: ask Aaltje the way, and go by daylight.
+
+> east
+Veenhoek, the Green
+The village green is a patch of trampled grass around a stone well. Peat smoke hangs low over the roofs, and the ground gives a little underfoot, the way it does everywhere in the Holleveen. East, the [Bakery] door stands open, and west a grey cat sits very upright on the doorstep of a narrow house. A lane runs north to the [Chapel]; south, the canal glints between the houses, and a track leaves north-east.
+Exits: north, east, south, west, northeast
+Across country you can head any way, or follow the fen path, the path to the Kabouterberg, the peat road, the priory path, the tow path.
+
+> north
+Chapel Lane
+A muddy lane between two rows of low houses, their doors painted green against the damp. It smells of wet thatch. North, the lane ends at the [Chapel of the Lantern]; the schout's brick house stands to the east and a cottage hung with drying herbs to the west.
+Exits: north, south, east, west, northwest
+
+> west
+Aaltje's Cottage
+Bunches of herbs hang from every beam, so you have to stoop. It smells of mint, smoke and something older. On the wall, in a frame of black wood, hangs a yellowed paper with a red seal: a certificate from the Waag of Waagdam, stating that one Aaltje Hendriks weighed as much as an honest woman should. The door opens east onto the lane.
+Exits: east
+Here: Old Aaltje.
+
+> talk aaltje
+You are talking with Old Aaltje. Type what you want to say, pick a number, or BYE to stop.
+Aaltje nods. "Evening."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> where is the kattenbroek
+You: "Where can I find the kattenbroek?"
+Aaltje nods slowly. "The Kattenbroek is a fen about three or four hours' walk south-east of Veenhoek, all reeds and black pools. Nobody goes there if they can help it. The peat-cutters lost a man there in 208, and they say a widow lives out in it."
+
+> where is the widow
+You: "Where can I find the widow?"
+Aaltje thinks a moment. "Folk say a widow out in the Kattenbroek turns thieves into cats. Her name is Kaatje. Her husband was an eel-fisher who drowned, and she keeps the fen as if it were his grave. Take from it without asking and you come home on four legs, if at all."
+
+> bye
+Aaltje lifts a hand. "Go on, then."
+
+> wait 10 hours
+Aaltje puts out the lamp and goes to bed.
+Time passes. It is Woensdag 15 Herfstmaand 211 AW, 05:17 (dawn).
+
+> east
+Chapel Lane
+A muddy lane between two rows of low houses, their doors painted green against the damp. It smells of wet thatch. North, the lane ends at the [Chapel of the Lantern]; the schout's brick house stands to the east and a cottage hung with drying herbs to the west.
+Exits: north, south, east, west, northwest
+
+> south
+Veenhoek, the Green
+The village green is a patch of trampled grass around a stone well. Peat smoke hangs low over the roofs, and the ground gives a little underfoot, the way it does everywhere in the Holleveen. East, the [Bakery] door stands open, and west a grey cat sits very upright on the doorstep of a narrow house. A lane runs north to the [Chapel]; south, the canal glints between the houses, and a track leaves north-east.
+Exits: north, east, south, west, northeast
+Across country you can head any way, or follow the fen path, the path to the Kabouterberg, the peat road, the priory path, the tow path.
+
+> walk to the kattenbroek
+You make your way towards the Kattenbroek for an hour and 25 minutes, over the peat road, the tow path, the Waagdam road, the east road and fields. The mist closes in and you lose your bearings.
+On the east road, near Waagdam
+A cart road runs through here, rutted and grey. A lone willow leans over the wet ground. Low grey cloud sits on the land. To the west, the tower of the Waag of Waagdam.
+Ways on: north, north-east, south-east, south, south-west, north-west.
+Somewhere around here, they said. You see no sign of the Kattenbroek yet.
++30 experience: you came to the Holleveen.
+
+> struggle
+You are not stuck in anything.
+
+> look
+On the east road, near Waagdam
+A cart road runs through here, rutted and grey. A lone willow leans over the wet ground. Low grey cloud sits on the land. To the west, the tower of the Waag of Waagdam.
+Ways on: north, north-east, south-east, south, south-west, north-west.
+
+> walk to the kattenbroek
+You make your way towards the Kattenbroek for 2 hours and 56 minutes, over fields, wet fen and the fen path. The fen takes you to the waist and holds on. You are Mired: STRUGGLE to work free.
+In the fen, just outside the Kattenbroek
+Wet peat and sedge stretch around you, cut by black pools. Mist lies over everything and muffles every sound.
+Ways on: north, north-east, south-east, south, south-west, north-west.
+There it is: the Kattenbroek, close by now.
+
+> struggle
+(Athletics 19 vs DC 13: success)
+With a sound like a cow pulling out of a ditch, the fen lets you go. You are black to the hips.
+
+> look
+In the fen, just outside the Kattenbroek
+Wet peat and sedge stretch around you, cut by black pools. Mist lies over everything and muffles every sound.
+Ways on: north, north-east, south-east, south, south-west, north-west.
+
+> east
+The Edge of the Kattenbroek
+Reed closes in on every side, taller than a man, and the path under your feet turns to black water in places. Cats watch you from the tussocks, more of them than there should be. The air smells of rot and, strangely, of fish frying. Far in to the east, a hut on stilts shows its roof above the reeds.
+Exits: east, south
+Across country you can head any way, or follow the fen path.
++10 experience: you found The Edge of the Kattenbroek.
++30 experience: you came to the Kattenbroek.
+
+> look
+The Edge of the Kattenbroek
+Reed closes in on every side, taller than a man, and the path under your feet turns to black water in places. Cats watch you from the tussocks, more of them than there should be. The air smells of rot and, strangely, of fish frying. Far in to the east, a hut on stilts shows its roof above the reeds.
+Exits: east, south
+Across country you can head any way, or follow the fen path.
+
+> east
+Below the Hut on Stilts
+A hut of grey planks stands on stilts over the black water, its ladder drawn up. Fish bones hang from the eaves on strings and turn in the wind, clicking softly. A cat sits on the top rung and does not blink. The reed path runs back west.
+Exits: west, east, south, northwest
++10 experience: you found Below the Hut on Stilts.
+
+> look
+Below the Hut on Stilts
+A hut of grey planks stands on stilts over the black water, its ladder drawn up. Fish bones hang from the eaves on strings and turn in the wind, clicking softly. A cat sits on the top rung and does not blink. The reed path runs back west.
+Exits: west, east, south, northwest
+
+> tell the widow that fenna is sorry
+Kaatje isn't here.
+
+# The widow is out. Wait for her at the hut, and speak as soon as she comes.
+
+> wait 8 hours
+Kaatje is here. You stop waiting.
+Kaatje arrives from the south.
+Kaatje stops and looks you over.
+Time passes. It is Woensdag 15 Herfstmaand 211 AW, 12:04 (midday).
+The Grey Cat on the Doorstep: The widow Kaatje names her price for Fenna: the Count's survey must lie still for seven days, or someone must bring her the measuring chest of Jacob van Dam.
+The widow looks at you a long time. "The girl lied to me. A lie is a debt, and debts are paid. Here is mine: that surveyor's chains lie still for seven days. Or bring me the chest of the one who came before him, Jacob van Dam. Then she can go home."
+
+> tell the widow that fenna is sorry
+The widow listens with her head on one side, like a bird. "Sorry," she says. "She said sorry." Something in her face gives. "Then she can come home, and work her debt off here: one day a week, all winter, cutting reed. Tell her that."
+The Grey Cat on the Doorstep: Honest. Fenna is home, and one day a week all winter she walks out to the Kattenbroek to cut the widow's reed. Nobody quite knows why, and she won't say.
++400 experience: The Grey Cat on the Doorstep.
+
+> journal
+People: Fenna Visser, Aaltje Hendriks, Jacob van Dam, Jan Visser, Kaatje, Lubbert Graanhandel, Mirte Bakker, the Count.
+Places: the Holleveen, Veenhoek, Waagdam, the Kattenbroek, Aaltje's Cottage, Chapel Lane, The Edge of the Kattenbroek, Below the Hut on Stilts, The Mill De Zwaan, The Bakery, Veenhoek, the Green, Canal Quay, Visser House, the doorstep, The Market Square, Waagdam, the West Gate.
+Lore: the Cat-Widow of the Kattenbroek, the stranger in Veenhoek, the grey cat.
+
+==== AFTER (Woensdag 15 Herfstmaand 211 AW, 12:09 (midday))
+
+[48 hours pass]
+Kaatje puts out the lamp and goes to bed.
+Kaatje leaves south.
+Kaatje arrives from the south.
+Kaatje stops and looks you over.
+
+> journal
+People: Fenna Visser, Aaltje Hendriks, Jacob van Dam, Jan Visser, Kaatje, Lubbert Graanhandel, Mirte Bakker, the Count.
+Places: the Holleveen, Veenhoek, Waagdam, the Kattenbroek, Aaltje's Cottage, Chapel Lane, The Edge of the Kattenbroek, Below the Hut on Stilts, The Mill De Zwaan, The Bakery, Veenhoek, the Green, Canal Quay, Visser House, the doorstep, The Market Square, Waagdam, the West Gate.
+Lore: the Cat-Widow of the Kattenbroek, the stranger in Veenhoek, the grey cat.
+
+[192 hours pass]
+Flour for Veenhoek: Market day passed. Market day came and went without flour. Veenhoek bought stale bread at the Goose, dear.
+Kaatje puts out the lamp and goes to bed.
+Kaatje leaves south.
+Kaatje arrives from the south.
+Kaatje stops and looks you over.
+
+> look
+Below the Hut on Stilts
+A hut of grey planks stands on stilts over the black water, its ladder drawn up. Fish bones hang from the eaves on strings and turn in the wind, clicking softly. A cat sits on the top rung and does not blink. The reed path runs back west.
+Exits: west, east, south, northwest
+Here: the widow Kaatje (stopping to look at the stranger).
+
+==== END (Zaterdag 25 Herfstmaand 211 AW, 12:09 (midday))
+Quests: grey_cat_on_the_doorstep: honest; flour_for_veenhoek: market_day_passed
+
+######## CONTROL: THE PLAYER DOES NOTHING
+The barge from Graafhaven leaves you at the Veenhoek quay just as the light goes. The bargeman won't tie up. "Not after dark, not out here," he says, and poles away into the mist, taking his lantern with him.
+
+This is the Holleveen: peat and reed and black water, mile upon mile of it between the Great Dyke and the heath. The villages sit on the few dry places like cats on a fence. Peat smoke. A windmill turning slowly against a sky the colour of pewter.
+
+Somewhere a dog barks. On the doorstep of the nearest house a grey cat watches you, very still, the way cats don't usually watch people.
+
+Type LOOK to look around. Type HELP if you are lost. You probably are.
+Canal Quay
+Grey water slaps against the planks of the quay. A barge rope lies coiled by the mooring posts, and beside them stands a worn stone, waist-high, with a dog carved into it. Someone has put an apple on top. The [Graafse Vaart] runs east and west; the green is north and the peat sheds are south.
+Exits: north, east, west, south, southwest
+Across country you can head any way, or follow the fen path, the path to the Kabouterberg, the peat road, the priory path, the tow path.
+The pace of events is normal. Type TEMPO CALM or TEMPO DRAMATIC for less or more happening in the world.
+
+==== RECOGNISE (Dinsdag 14 Herfstmaand 211 AW, 18:30 (evening))
+
+> look
+Canal Quay
+Grey water slaps against the planks of the quay. A barge rope lies coiled by the mooring posts, and beside them stands a worn stone, waist-high, with a dog carved into it. Someone has put an apple on top. The [Graafse Vaart] runs east and west; the green is north and the peat sheds are south.
+Exits: north, east, west, south, southwest
+Across country you can head any way, or follow the fen path, the path to the Kabouterberg, the peat road, the priory path, the tow path.
+
+> north
+Veenhoek, the Green
+The village green is a patch of trampled grass around a stone well. Peat smoke hangs low over the roofs, and the ground gives a little underfoot, the way it does everywhere in the Holleveen. East, the [Bakery] door stands open, and west a grey cat sits very upright on the doorstep of a narrow house. A lane runs north to the [Chapel]; south, the canal glints between the houses, and a track leaves north-east.
+Exits: north, east, south, west, northeast
+Across country you can head any way, or follow the fen path, the path to the Kabouterberg, the peat road, the priory path, the tow path.
+Here: Jan Visser (on the way to The Drowned Goose, Common Room).
+Jan comes from the west, on his way to The Drowned Goose, Common Room.
++10 experience: you found Veenhoek, the Green.
+
+> look
+Veenhoek, the Green
+The village green is a patch of trampled grass around a stone well. Peat smoke hangs low over the roofs, and the ground gives a little underfoot, the way it does everywhere in the Holleveen. East, the [Bakery] door stands open, and west a grey cat sits very upright on the doorstep of a narrow house. A lane runs north to the [Chapel]; south, the canal glints between the houses, and a track leaves north-east.
+Exits: north, east, south, west, northeast
+Across country you can head any way, or follow the fen path, the path to the Kabouterberg, the peat road, the priory path, the tow path.
+Here: Jan Visser (on the way to The Drowned Goose, Common Room).
+
+> west
+Visser House, the doorstep
+A narrow house with a green door. On the doorstep sits a grey cat with one white paw, very upright, watching the lane; when you come close it doesn't run, but looks at you as if it is waiting for you to say something. Inside, a spinning wheel hums. The green is east.
+Exits: east
+Here: Grietje Visser (eating), Pim (eating).
+Grietje: Our Fenna went into the Kattenbroek for bog myrtle and never came home. Jan says the fen took her. But that cat came the same morning, and it looks at me with her eyes. Please. Find out what happened to my girl.
+New quest: The Grey Cat on the Doorstep. Fenna Visser is missing. Her mother Grietje asks you to find out what happened. A grey cat with one white paw sits on the doorstep and will not leave.
++10 experience: you found Visser House, the doorstep.
+
+> look
+Visser House, the doorstep
+A narrow house with a green door. On the doorstep sits a grey cat with one white paw, very upright, watching the lane; when you come close it doesn't run, but looks at you as if it is waiting for you to say something. Inside, a spinning wheel hums. The green is east.
+Exits: east
+Here: Grietje Visser (eating), Pim (eating).
+
+> talk to the cat
+The cat looks at you, and you look at the cat. Whatever she is saying, you don't understand it.
+
+> examine the cat
+(Lore 4 vs DC 16: critical failure)
+It's a grey cat with one white paw. A strange one, maybe. Old Aaltje would know more about such things.
+
+> east
+Veenhoek, the Green
+The village green is a patch of trampled grass around a stone well. Peat smoke hangs low over the roofs, and the ground gives a little underfoot, the way it does everywhere in the Holleveen. East, the [Bakery] door stands open, and west a grey cat sits very upright on the doorstep of a narrow house. A lane runs north to the [Chapel]; south, the canal glints between the houses, and a track leaves north-east.
+Exits: north, east, south, west, northeast
+Across country you can head any way, or follow the fen path, the path to the Kabouterberg, the peat road, the priory path, the tow path.
+
+> east
+The Bakery
+Warm, low and white with flour. Loaves cool on racks along the wall, and a slate by the counter says RYE 2 D in chalk, underlined twice. Through the back door, east, you can see the glow of the oven in the yard.
+Exits: west, east
+Here: Mirte the baker.
++10 experience: you found The Bakery.
+
+> talk mirte
+You are talking with Mirte the baker. Type what you want to say, pick a number, or BYE to stop.
+Mirte nods. "Evening."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+Mirte: The mill's standing still and I've flour for two more bakes. Lubbert in Waagdam says there's no rye this side of winter, and he's asking double for what there is. Bring me flour, or rye I can have ground, before market day on Zaterdag. Or Veenhoek goes without bread.
+New quest: Flour for Veenhoek. Mirte needs flour for Veenhoek's bread before market day on Zaterdag. The mill stands still for want of sailcloth, and Lubbert in Waagdam asks double.
+
+> 2
+You: "What's new around here?"
+Mirte nods slowly. "Fenna Visser, fifteen, the daughter of Jan and Grietje, has been missing for four days. She went out on the evening of 10 Herfstmaand and never came home. Nobody saw where she went. Some say the fen took her."
+
+> bye
+Mirte lifts a hand. "Go on, then."
+
+> journal
+People: Fenna Visser, Jan Visser, Lubbert Graanhandel, Mirte Bakker.
+Places: Veenhoek, Waagdam, the Kattenbroek, The Mill De Zwaan, The Bakery, Veenhoek, the Green, Canal Quay, Visser House, the doorstep, The Market Square, Waagdam, the West Gate.
+Lore: the stranger in Veenhoek.
+
+==== AFTER (Dinsdag 14 Herfstmaand 211 AW, 18:41 (evening))
+
+[48 hours pass]
+
+
+> journal
+People: Fenna Visser, Jan Visser, Lubbert Graanhandel, Mirte Bakker.
+Places: Veenhoek, Waagdam, the Kattenbroek, The Mill De Zwaan, The Bakery, Veenhoek, the Green, Canal Quay, Visser House, the doorstep, The Market Square, Waagdam, the West Gate.
+Lore: the stranger in Veenhoek.
+
+[192 hours pass]
+Flour for Veenhoek: Market day passed. Market day came and went without flour. Veenhoek bought stale bread at the Goose, dear.
+
+> look
+The Bakery
+Warm, low and white with flour. Loaves cool on racks along the wall, and a slate by the counter says RYE 2 D in chalk, underlined twice. Through the back door, east, you can see the glow of the oven in the yard.
+Exits: west, east
+Here: Mirte the baker.
+
+==== END (Vrijdag 24 Herfstmaand 211 AW, 18:41 (evening))
+Quests: grey_cat_on_the_doorstep: open, stage missing; flour_for_veenhoek: market_day_passed

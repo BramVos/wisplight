@@ -2,7 +2,7 @@ import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterAll, describe, expect, it } from 'vitest'
-import { MockLlm, runSituation, type LlmClient, type LlmRequest } from '../src/engine'
+import { Engine, MockLlm, runSituation, type LlmClient, type LlmRequest } from '../src/engine'
 import { REPLY_WITHIN_MS } from '../src/engine/dialogue/conversation'
 import { CostRegister } from '../src/node/ai/costs'
 import { Gateway } from '../src/node/ai/gateway'
@@ -62,5 +62,56 @@ describe('M9.4: a reply within six seconds, or the set line', () => {
     await expect(gateway.complete({ ...request, timeoutMs: 50 })).rejects.toMatchObject({ kind: 'timeout' })
     expect(Date.now() - t).toBeLessThan(250)
     await expect(gateway.complete(request)).resolves.toMatchObject({ text: '{}' })
+  })
+})
+
+describe('M9.4: what the playtest of the storylines found', () => {
+  const said = (outputs: { text: string }[]) => outputs.map((o) => o.text).join('\n')
+  const game = () => new Engine(content, { seed: 7, builder: true })
+
+  it('puts the people and places a quest names in the journal, as heard of from the one who asked', async () => {
+    const engine = game()
+    for (const c of ['north', 'east', 'talk mirte', 'bye']) await engine.handle(c)
+    const journal = engine.state.player.journal ?? {}
+    expect(journal['npc_lubbert']).toBeDefined()
+    expect(Object.keys(journal).some((id) => /waagdam/.test(id))).toBe(true)
+    expect(engine.state.player.sources?.['npc_lubbert']?.[0]?.from).toBe('npc_mirte')
+    // One entry for one name: the news of the missing girl, not the girl twice.
+    await engine.handle('west')
+    await engine.handle('west')
+    const names = Object.keys(engine.state.player.journal ?? {}).filter((id) => id === 'fenna' || id === 'npc_fenna')
+    expect(names).toHaveLength(1)
+  })
+
+  it('says who is away when a quest action is for someone who is not here', async () => {
+    const engine = game()
+    for (const c of ['north', 'east', 'talk mirte', 'bye', '@give rye_grain 3', 'west']) await engine.handle(c)
+    expect(said(await engine.handle('give three sacks of rye to mirte'))).toBe("Mirte isn't here.")
+    await engine.handle('@bring mirte')
+    expect(said(await engine.handle('give three sacks of rye to mirte'))).toMatch(/Rye!/)
+  })
+
+  it('in a conversation, asking about something reaches the quest of the one you talk to', async () => {
+    const engine = game()
+    for (const c of ['north', 'west', 'east', 'north', 'west', 'talk aaltje']) await engine.handle(c)
+    const out = said(await engine.handle('ask about the cat'))
+    expect(out).toMatch(/That's Kaatje's work/)
+    expect(engine.state.questlog?.['grey_cat_on_the_doorstep']?.stage).toBe('the_cat_is_fenna')
+  })
+
+  it('stops waiting when someone a quest needs comes by', async () => {
+    const engine = game()
+    for (const c of ['north', 'west', '@flag cat_is_fenna', '@goto loc_kattenbroek_hut', '@time 9']) await engine.handle(c)
+    const start = engine.world.now
+    const out = said(await engine.handle('wait 8 hours'))
+    expect(out).toMatch(/Kaatje is here\. You stop waiting\./)
+    expect(engine.world.now - start).toBeLessThan(8 * 60)
+    expect(engine.world.npcsAt(engine.state.player.location)).toContain('npc_kaatje')
+  })
+
+  it('says there is nobody to ask when nobody is there', async () => {
+    const engine = game()
+    await engine.handle('@goto loc_kattenbroek_edge')
+    expect(said(await engine.handle('where is lubbert'))).toMatch(/There is nobody here to ask/)
   })
 })

@@ -1,0 +1,302 @@
+Meel voor Veenhoek (base), seed 7
+
+######## THE PLAYER ACTS
+The barge from Graafhaven leaves you at the Veenhoek quay just as the light goes. The bargeman won't tie up. "Not after dark, not out here," he says, and poles away into the mist, taking his lantern with him.
+
+This is the Holleveen: peat and reed and black water, mile upon mile of it between the Great Dyke and the heath. The villages sit on the few dry places like cats on a fence. Peat smoke. A windmill turning slowly against a sky the colour of pewter.
+
+Somewhere a dog barks. On the doorstep of the nearest house a grey cat watches you, very still, the way cats don't usually watch people.
+
+Type LOOK to look around. Type HELP if you are lost. You probably are.
+Canal Quay
+Grey water slaps against the planks of the quay. A barge rope lies coiled by the mooring posts, and beside them stands a worn stone, waist-high, with a dog carved into it. Someone has put an apple on top. The [Graafse Vaart] runs east and west; the green is north and the peat sheds are south.
+Exits: north, east, west, south, southwest
+Across country you can head any way, or follow the fen path, the path to the Kabouterberg, the peat road, the priory path, the tow path.
+The pace of events is normal. Type TEMPO CALM or TEMPO DRAMATIC for less or more happening in the world.
+
+==== RECOGNISE (Dinsdag 14 Herfstmaand 211 AW, 18:30 (evening))
+
+> look
+Canal Quay
+Grey water slaps against the planks of the quay. A barge rope lies coiled by the mooring posts, and beside them stands a worn stone, waist-high, with a dog carved into it. Someone has put an apple on top. The [Graafse Vaart] runs east and west; the green is north and the peat sheds are south.
+Exits: north, east, west, south, southwest
+Across country you can head any way, or follow the fen path, the path to the Kabouterberg, the peat road, the priory path, the tow path.
+
+> north
+Veenhoek, the Green
+The village green is a patch of trampled grass around a stone well. Peat smoke hangs low over the roofs, and the ground gives a little underfoot, the way it does everywhere in the Holleveen. East, the [Bakery] door stands open. A lane runs north to the [Chapel]; south, the canal glints between the houses, and a track leaves north-east.
+Exits: north, east, south, west, northeast
+Across country you can head any way, or follow the fen path, the path to the Kabouterberg, the peat road, the priory path, the tow path.
+Here: Jan Visser (on the way to The Drowned Goose, Common Room).
+Jan comes from the west, on his way to The Drowned Goose, Common Room.
++10 experience: you found Veenhoek, the Green.
+
+> east
+The Bakery
+Warm, low and white with flour. Loaves cool on racks along the wall, and a slate by the counter says RYE 2 D in chalk, underlined twice. Through the back door, east, you can see the glow of the oven in the yard.
+Exits: west, east
+Here: Mirte the baker.
++10 experience: you found The Bakery.
+
+> talk mirte
+You are talking with Mirte the baker. Type what you want to say, pick a number, or BYE to stop.
+Mirte nods. "Evening."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+Mirte: The mill's standing still and I've flour for two more bakes. Lubbert in Waagdam says there's no rye this side of winter, and he's asking double for what there is. Bring me flour, or rye I can have ground, before market day on Zaterdag. Or Veenhoek goes without bread.
+New quest: Flour for Veenhoek. Mirte needs flour for Veenhoek's bread before market day on Zaterdag. The mill stands still for want of sailcloth, and Lubbert in Waagdam asks double.
+
+> 2
+You: "What's new around here?"
+Mirte nods slowly. "Fenna Visser, fifteen, the daughter of Jan and Grietje, has been missing for four days. She went out on the evening of 10 Herfstmaand and never came home. Nobody saw where she went. Some say the fen took her."
+
+> What happened to the mill?
+Mirte thinks a moment. "De Zwaan, Harmen Molenaar's windmill, which grinds grain and pumps the polder dry. The storm of 8 Herfstmaand tore its sails. The Mill De Zwaan is about 20 minutes' walk from here: west to Veenhoek, the Green, then northeast to The Peat Road, then northeast to Molenend, the Lane, and on from there."
+
+> bye
+Mirte lifts a hand. "Go on, then."
+
+> journal
+People: Fenna Visser, Lubbert Graanhandel, Mirte Bakker.
+Places: Veenhoek, Waagdam, the Kattenbroek, The Mill De Zwaan, The Bakery, Veenhoek, the Green, Canal Quay, The Market Square, Waagdam, the West Gate.
+Lore: the stranger in Veenhoek.
+
+==== INFLUENCE (Dinsdag 14 Herfstmaand 211 AW, 18:35 (evening))
+
+# Mirte named Lubbert in Waagdam: walk there and buy three sacks of rye.
+
+> west
+Veenhoek, the Green
+The village green is a patch of trampled grass around a stone well. Peat smoke hangs low over the roofs, and the ground gives a little underfoot, the way it does everywhere in the Holleveen. East, the [Bakery] door stands open. A lane runs north to the [Chapel]; south, the canal glints between the houses, and a track leaves north-east.
+Exits: north, east, south, west, northeast
+Across country you can head any way, or follow the fen path, the path to the Kabouterberg, the peat road, the priory path, the tow path.
+
+> walk to waagdam
+You make your way towards Waagdam for an hour and 12 minutes, over the peat road, the tow path, the Waagdam road and the heath road.
+On the heath road, just outside Waagdam
+A cart road runs through here, rutted and grey. A lone willow leans over the wet ground. Rain hisses on the reeds and runs down your neck.
+Ways on: north, north-east, south-east, south, south-west, north-west.
+There it is: Waagdam, close by now.
++30 experience: you came to the Holleveen.
+
+# Mirte only said where it lies; the walk ends outside the town. Walk on in.
+
+> walk to waagdam
+You make your way towards Waagdam for 4 minutes, over the tow path. You come to The Harbour.
+The Harbour
+The Graafse Vaart widens here into a basin crowded with flat barges. Men shout and swear as sacks go up and down the planks, and the water smells of tar and rotting weed. Gate Street is up the steps to the north.
+Exits: north
+Across country you can head any way, or follow the Waagdam road, the east road, the heath road, the tow path.
++10 experience: you found The Harbour.
++30 experience: you came to Waagdam.
+
+> north
+Gate Street
+A cobbled street of narrow gabled houses leaning together over your head. You hear a hammer ringing from the smithy to the north. East the street opens onto the market square; south are the harbour steps, and the West Gate is behind you.
+Exits: west, east, south, north
++10 experience: you found Gate Street.
+
+> look
+Gate Street
+A cobbled street of narrow gabled houses leaning together over your head. You hear a hammer ringing from the smithy to the north. East the street opens onto the market square; south are the harbour steps, and the West Gate is behind you.
+Exits: west, east, south, north
+
+# It is evening. Ask someone where the grain seller is, then wait for morning.
+
+> where is lubbert
+There is nobody here to ask. Find someone and ask them, or look in your JOURNAL for what you know.
+
+> wait 10 hours
+Hendrik comes from the east, on his way to Hendrik's Smithy.
+Hendrik walks on to the north.
+Time passes. It is Woensdag 15 Herfstmaand 211 AW, 05:53 (dawn).
+
+> wait 90
+Mirte comes from the west, on her way to Lubbert's Grain Store.
+Mirte stops and gives you a nod, curious about the stranger.
+Mirte walks on to the east.
+Time passes. It is Woensdag 15 Herfstmaand 211 AW, 07:23 (morning).
+
+# Shortcut: across town to the grain shop the answer named.
+
+> @goto loc_waagdam_graanhandel   [build command: a shortcut]
+[build] You are at Lubbert's Grain Store.
+Lubbert's Grain Store
+Sacks of grain are stacked to the ceiling, and a fine dust hangs in the air and tickles your nose. A slate by the door lists today's prices; the flour price has been rubbed out and written again, higher. Canal Street is north.
+Exits: north
+Here: Lubbert the grain merchant (at work).
++10 experience: you found Lubbert's Grain Store.
+
+> struggle
+You are not stuck in anything.
+
+> list
+Lubbert sells: sack of rye 3 st 5 d (28 left); sack of flour 9 st (5 left); bolt of sailcloth 1 gl 5 st (3 left).
+
+> buy rye
+You buy a sack of rye from Lubbert for 3 st 5 d.
+
+> buy rye
+You buy a sack of rye from Lubbert for 3 st 5 d.
+
+> buy rye
+You buy a sack of rye from Lubbert for 3 st 6 d.
+
+> inventory
+You carry 2 apples, a hanger, a knife, a leather jerkin and 3 sacks of rye, and 3 st.
+
+> walk to veenhoek
+You can't strike out across country from in here. Go out to the road or the edge of the village first.
+
+> look
+Lubbert's Grain Store
+Sacks of grain are stacked to the ceiling, and a fine dust hangs in the air and tickles your nose. A slate by the door lists today's prices; the flour price has been rubbed out and written again, higher. Canal Street is north.
+Exits: north
+Here: Lubbert the grain merchant (at work).
+
+# Shortcut: into the bakery, if the walk ended elsewhere in Veenhoek.
+
+> @goto loc_veenhoek_bakery   [build command: a shortcut]
+[build] You are at The Bakery.
+The Bakery
+Warm, low and white with flour. Loaves cool on racks along the wall, and a slate by the counter says RYE 2 D in chalk, underlined twice. Through the back door, east, you can see the glow of the oven in the yard.
+Exits: west, east
+
+> give three sacks of rye to mirte
+Mirte isn't here.
+
+# Mirte is out (to Waagdam on its market day, as it turns out). Come back next morning.
+
+> wait 10 hours
+Mirte comes from the west, on her way to Bakery Yard.
+Mirte walks on to the east.
+Mirte arrives from the east.
+Mirte sets out 12 loaves of rye bread for sale.
+Time passes. It is Woensdag 15 Herfstmaand 211 AW, 17:29 (afternoon).
+
+> wait 10 hours
+Mirte leaves west.
+Mirte arrives from the west.
+Mirte stops and gives you a nod, curious about the stranger.
+Mirte puts out the lamp and goes to bed.
+Time passes. It is Donderdag 16 Herfstmaand 211 AW, 03:29 (night).
+
+> look
+The Bakery
+The bakery is dark and smells of yesterday's bread. The embers in the oven out back tick as they cool.
+Exits: west, east
+Here: Mirte the baker (asleep).
+
+> give three sacks of rye to mirte
+"Rye! Teunis will grind it at the horse mill for a stuiver a sack." Mirte is already reaching for her shawl. "Bless you."
+Flour for Veenhoek: Flour brought. Veenhoek has bread on market day.
++100 experience: Flour for Veenhoek.
+
+==== AFTER (Donderdag 16 Herfstmaand 211 AW, 03:34 (night))
+
+[48 hours pass]
+Mirte leaves west.
+Mirte arrives from the west.
+Mirte stops and gives you a nod, curious about the stranger.
+Mirte puts out the lamp and goes to bed.
+
+> journal
+People: Fenna Visser, Lubbert Graanhandel, Mirte Bakker.
+Places: the Holleveen, Veenhoek, Waagdam, the Kattenbroek, The Mill De Zwaan, The Bakery, Veenhoek, the Green, Canal Quay, Gate Street, Lubbert's Grain Store, The Harbour, The Market Square, Waagdam, the West Gate.
+Lore: the stranger in Veenhoek.
+
+[96 hours pass]
+Mirte leaves west.
+Mirte arrives from the west.
+Mirte stops and gives you a nod, curious about the stranger.
+Mirte puts out the lamp and goes to bed.
+
+> look
+The Bakery
+The bakery is dark and smells of yesterday's bread. The embers in the oven out back tick as they cool.
+Exits: west, east
+Here: Mirte the baker (asleep).
+
+==== END (Woensdag 22 Herfstmaand 211 AW, 03:34 (night))
+Quests: flour_for_veenhoek: flour_brought
+
+######## CONTROL: THE PLAYER DOES NOTHING
+The barge from Graafhaven leaves you at the Veenhoek quay just as the light goes. The bargeman won't tie up. "Not after dark, not out here," he says, and poles away into the mist, taking his lantern with him.
+
+This is the Holleveen: peat and reed and black water, mile upon mile of it between the Great Dyke and the heath. The villages sit on the few dry places like cats on a fence. Peat smoke. A windmill turning slowly against a sky the colour of pewter.
+
+Somewhere a dog barks. On the doorstep of the nearest house a grey cat watches you, very still, the way cats don't usually watch people.
+
+Type LOOK to look around. Type HELP if you are lost. You probably are.
+Canal Quay
+Grey water slaps against the planks of the quay. A barge rope lies coiled by the mooring posts, and beside them stands a worn stone, waist-high, with a dog carved into it. Someone has put an apple on top. The [Graafse Vaart] runs east and west; the green is north and the peat sheds are south.
+Exits: north, east, west, south, southwest
+Across country you can head any way, or follow the fen path, the path to the Kabouterberg, the peat road, the priory path, the tow path.
+The pace of events is normal. Type TEMPO CALM or TEMPO DRAMATIC for less or more happening in the world.
+
+==== RECOGNISE (Dinsdag 14 Herfstmaand 211 AW, 18:30 (evening))
+
+> look
+Canal Quay
+Grey water slaps against the planks of the quay. A barge rope lies coiled by the mooring posts, and beside them stands a worn stone, waist-high, with a dog carved into it. Someone has put an apple on top. The [Graafse Vaart] runs east and west; the green is north and the peat sheds are south.
+Exits: north, east, west, south, southwest
+Across country you can head any way, or follow the fen path, the path to the Kabouterberg, the peat road, the priory path, the tow path.
+
+> north
+Veenhoek, the Green
+The village green is a patch of trampled grass around a stone well. Peat smoke hangs low over the roofs, and the ground gives a little underfoot, the way it does everywhere in the Holleveen. East, the [Bakery] door stands open. A lane runs north to the [Chapel]; south, the canal glints between the houses, and a track leaves north-east.
+Exits: north, east, south, west, northeast
+Across country you can head any way, or follow the fen path, the path to the Kabouterberg, the peat road, the priory path, the tow path.
+Here: Jan Visser (on the way to The Drowned Goose, Common Room).
+Jan comes from the west, on his way to The Drowned Goose, Common Room.
++10 experience: you found Veenhoek, the Green.
+
+> east
+The Bakery
+Warm, low and white with flour. Loaves cool on racks along the wall, and a slate by the counter says RYE 2 D in chalk, underlined twice. Through the back door, east, you can see the glow of the oven in the yard.
+Exits: west, east
+Here: Mirte the baker.
++10 experience: you found The Bakery.
+
+> talk mirte
+You are talking with Mirte the baker. Type what you want to say, pick a number, or BYE to stop.
+Mirte nods. "Evening."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+Mirte: The mill's standing still and I've flour for two more bakes. Lubbert in Waagdam says there's no rye this side of winter, and he's asking double for what there is. Bring me flour, or rye I can have ground, before market day on Zaterdag. Or Veenhoek goes without bread.
+New quest: Flour for Veenhoek. Mirte needs flour for Veenhoek's bread before market day on Zaterdag. The mill stands still for want of sailcloth, and Lubbert in Waagdam asks double.
+
+> 2
+You: "What's new around here?"
+Mirte nods slowly. "Fenna Visser, fifteen, the daughter of Jan and Grietje, has been missing for four days. She went out on the evening of 10 Herfstmaand and never came home. Nobody saw where she went. Some say the fen took her."
+
+> What happened to the mill?
+Mirte thinks a moment. "De Zwaan, Harmen Molenaar's windmill, which grinds grain and pumps the polder dry. The storm of 8 Herfstmaand tore its sails. The Mill De Zwaan is about 20 minutes' walk from here: west to Veenhoek, the Green, then northeast to The Peat Road, then northeast to Molenend, the Lane, and on from there."
+
+> bye
+Mirte lifts a hand. "Go on, then."
+
+> journal
+People: Fenna Visser, Lubbert Graanhandel, Mirte Bakker.
+Places: Veenhoek, Waagdam, the Kattenbroek, The Mill De Zwaan, The Bakery, Veenhoek, the Green, Canal Quay, The Market Square, Waagdam, the West Gate.
+Lore: the stranger in Veenhoek.
+
+==== AFTER (Dinsdag 14 Herfstmaand 211 AW, 18:35 (evening))
+
+[48 hours pass]
+
+
+> journal
+People: Fenna Visser, Lubbert Graanhandel, Mirte Bakker.
+Places: Veenhoek, Waagdam, the Kattenbroek, The Mill De Zwaan, The Bakery, Veenhoek, the Green, Canal Quay, The Market Square, Waagdam, the West Gate.
+Lore: the stranger in Veenhoek.
+
+[96 hours pass]
+Flour for Veenhoek: Market day passed. Market day came and went without flour. Veenhoek bought stale bread at the Goose, dear.
+
+> look
+The Bakery
+Warm, low and white with flour. Loaves cool on racks along the wall, and a slate by the counter says RYE 2 D in chalk, underlined twice. Through the back door, east, you can see the glow of the oven in the yard.
+Exits: west, east
+Here: Mirte the baker.
+
+==== END (Maandag 20 Herfstmaand 211 AW, 18:35 (evening))
+Quests: flour_for_veenhoek: market_day_passed

@@ -20,6 +20,7 @@ import { nightOut, rest } from './rules/player'
 import { widowTurnsBack } from './quests/antagonists'
 import { ONCE, useBlessing } from './rules/blessings'
 import { closedBetween, placeStateLine } from './quests/plans'
+import { active } from './quests/engine'
 import { approve, restParty } from './social/companions'
 import { deed } from './social/deeds'
 import { refusedTrade } from './social/crime'
@@ -38,6 +39,8 @@ export interface Output {
 export interface CommandHost {
   world: World
   pass(minutes: number): Output[]
+  /** Passes up to so many minutes, and stops early when stop() says so (M9.4: WAIT ends when someone you need comes by). */
+  passUntil?(minutes: number, stop: () => string | undefined): Output[]
 }
 
 const HELP = [
@@ -105,7 +108,17 @@ export function runCommand(host: CommandHost, command: Command): Output[] {
       const amount = Number(command.args[0]) || 10
       const minutes = Math.min(600, Math.max(1, /^(h|hrs?|hours?|uur|uren)$/i.test(command.args[1] ?? '') ? amount * 60 : amount))
       if (minutes >= 120) approve(world, 'long_wait')
-      const seen = host.pass(minutes)
+      // Someone a quest of yours needs comes by: you stop waiting (found in the M9.4 playtest: the widow came
+      // home, looked the stranger over and left again, all within one wait).
+      const here = world.state.player.location
+      const before = new Set(world.npcsAt(here))
+      const needed = questPeople(world)
+      const seen = host.passUntil
+        ? host.passUntil(minutes, () => {
+            const come = world.npcsAt(world.state.player.location).filter((id) => !before.has(id) && needed.has(id) && world.npcState(id).activity !== 'asleep')
+            return come.length ? `${come.map((id) => callName(world.npc(id))).join(' and ')} ${come.length === 1 ? 'is' : 'are'} here. You stop waiting.` : undefined
+          })
+        : host.pass(minutes)
       return [...seen, text(`Time passes. It is ${clockText(world)}.`)]
     }
     case 'time':
@@ -679,3 +692,10 @@ function parseValue(value: string | undefined): string | number | boolean | unde
   return value
 }
 
+
+/** The people the player's quests need now: givers, helpers, opponents, and whoever an action is to be done with. */
+function questPeople(world: World): Set<string> {
+  const ids = new Set<string>()
+  for (const [quest] of active(world)) for (const id of [...quest.givers, ...(quest.helpers ?? []), ...(quest.opponents ?? []), ...(quest.actions ?? []).map((a) => a.with).filter((w): w is string => Boolean(w))]) ids.add(id)
+  return ids
+}
