@@ -318,6 +318,7 @@ Aanbiedingen in een gesprek:
 - [ ] Een NPC belooft in zijn tekst nooit iets wat niet in de aanbiedingen staat: het besluit staat in de prompt, en een voorstel van de NPC zelf ("kom mee naar het strand") verschijnt als klikbare optie die pas doorgaat als de speler instemt
 - [ ] Iemand halen, ergens afspreken op een tijd (met aantekening in het dagboek), hier wachten, iets geven uit eigen zak en een boodschap overbrengen zijn aanbiedingen met een eigen formule (houding, vertrouwen, werk en schema, gevaar, afstand, leeftijd), en de redenen staan in gewone woorden in de prompt
 - [ ] Zonder model kiest de motor uit dezelfde aanbiedingen met sjabloonregels, zodat het spel zonder AI hetzelfde kan
+- [ ] Een aanbieding die doorgaat wordt een afspraak in het register van M10.3 (id, betrokkenen, wat, wanneer, voorwaarden, status, uitkomst), zodat M10.2 en M10.3 één systeem zijn; wie M10.2 bouwt, legt daarmee de eerste vorm van dat register
 - [ ] Wat een NPC uit zichzelf noemt en zelf kent (de Heights, Old Tamsin), komt in je dagboek als "van Pip gehoord" en op de kaart als zone; nu telt alleen wat in het kennispakket van je eigen vraag zat
 
 Commando's en interface:
@@ -336,8 +337,25 @@ Commando's en interface:
 
 ## M10.3 Gesprekken die de wereld raken
 
-Scope: besluit 27 september 2026, na M10.2. Een gesprek werkt door in de tijd en in andere mensen, langs de validators en de werkwoordentabel die brein en kroniekschrijver al gebruiken. Zie FO hoofdstuk 10, "Gepland (M10.3)". Wat er nu ontbreekt: wat de speler vertelt wordt geen bewering, een gesprek is geen gebeurtenis en geen signaal, niemand zoekt de speler op, en een belofte heeft geen gevolg.
+Scope: besluit 27 september 2026, na M10.2, aangescherpt na een review van dezelfde dag. Een gesprek werkt door in de tijd en in andere mensen, langs de validators en de werkwoordentabel die brein en kroniekschrijver al gebruiken. In twee delen, in deze volgorde: eerst het blijvende verhaal- en afsprakenregister, daarna de gesprekken erop aangesloten. Eén actielaag voor dialoog, brein en kroniekschrijver: aanbod, instemming waar nodig, vastgelegde afspraak of voornemen, uitvoering, uitkomst, gevolgen. De AI stelt nooit een wereldverandering voor die de motor niet heeft bevestigd: het handelende deel van een antwoord hangt aan een gevalideerde keuze, en bij afwijzing herstelt de motor de tekst of gebruikt hij een sjabloon. Zie FO hoofdstuk 10, "Gepland (M10.3)", en het ontwerp "Signalen en nasleep", "Het verhaal- en afsprakenregister".
 
+Wat er nu mis is, in de code bevestigd: een verhaallijn sluit na veertien dagen zonder wijziging, ook met een open vraag (`storylines.ts`); het archief kijkt naar ouderdom, bekendheid en verwijzingen, maar niet naar open kwesties of status, en beschermt wat `follows` en `cause` aanwijzen bewust niet (`archive.ts`); de opzoekfuncties lezen alleen de actieve feiten en `archivedFact` is nergens aangesloten (`lookups.ts`, `gamelog.ts`). Bewaard blijven is daardoor nog niet hetzelfde als later weer invloed hebben.
+
+A. Het verhaal- en afsprakenregister (eerst):
+- [ ] Een verhaallijn is actief, sluimerend of afgerond; ze sluit alleen door een inhoudelijke afloop (een uitkomst, de fase closed van de kroniekschrijver, of geen open kwestie meer), nooit doordat een termijn verstrijkt; zonder verandering wordt ze sluimerend en houdt ze een compacte registratie: betrokkenen, open kwesties, oorzaken en voorwaarden voor hervatting
+- [ ] Een sluimerend verhaal (een familieruzie) wordt na honderd dagen door een passende gebeurtenis hervat (een terugkeer, een erfenis, een ontmoeting), met de oorspronkelijke oorzaak erbij, zonder dat er dagelijks een model voor draait
+- [ ] Archiveren is een aparte opslagkeuze: het weegt open kwesties en status mee, `follows` en `cause` beschermen wat ze aanwijzen, en wat naar het archief gaat is gericht terug te halen langs de opzoekfuncties (`archivedFact` sluit aan op de opzoekroute), binnen de kennisrechten van wie vraagt
+- [ ] Afspraken staan gestructureerd in het register: een vaste id, betrokkenen, wat, wanneer, voorwaarden, status (open, nagekomen, gemist, afgezegd, onmogelijk) en uitkomst; een aanbieding die doorgaat (M10.2), een voornemen na een gesprek en een belofte van de speler zijn alle drie zo'n afspraak, nooit alleen een memory_note of een verhaalsamenvatting
+- [ ] Per soort uitspraak legt de motor het juiste vast: voorgaan (wie, waar het personage die persoon denkt te vinden, bestemming, wachtgedrag, wat als zij er niet is), meegaan (duur of bestemming, vergoeding, grenzen aan gevaar, reden om te vertrekken), een boodschap (welke, aan wie, wanneer, onder welke voorwaarden; pas na bezorging weet de ander het), een aanval (een intentie met doelwit; het gevechtssysteem bepaalt bereik, reactie, treffen en gevolgen)
+- [ ] Wereldwaarheid, eigen kennis en verwachting blijven uit elkaar: "ik breng je naar haar huis" mag ook als moeder er nu niet is, en bluffen of liegen is een vastgelegde misleiding, geen toevallig verschil tussen tekst en gedrag
+- [ ] Een gemiste afspraak is geen verraad: de motor legt de feitelijke uitkomst vast (de brug weg, de NPC gewond, op tijd afgezegd) en het oordeel volgt uit wat de ander ervan weet
+- [ ] Een belofte vervalt niet stilzwijgend: een gespreksdoel vervalt na een dag, een aanvaarde afspraak voor volgende week overleeft opslaan, herstarten en archiveren
+- [ ] Onderbreking heeft een expliciete afloop: vluchten voor gevaar pauzeert, verlegt of beëindigt een begeleiding, en daarna staat vast of het personage terugkomt
+- [ ] Eén gekozen actie mag meerdere noodzakelijke gevolgen hebben (plan, dagboekaantekening, verwachting): de grens van één nawerking geldt voor het aantal keuzes per gesprek, niet voor wat een keuze vastlegt
+- [ ] Aanvallen is een eigen criterium: een gevalideerde aanvalsintentie gaat door het gevechtssysteem, en "geen dood" betekent dat een gesprek nooit rechtstreeks een dood voorschrijft
+- [ ] Zuinig: bij een gesprek haalt de motor eerst de relevante afspraken, banden en lijnen uit het register, alleen ontbrekende details komen gericht uit het archief, bewaken en vervaltermijnen en gevolgen lopen zonder AI, en bij een op budget voeren mensen hun afspraken uit langs de sjabloonroute
+
+B. Gesprekken erop aangesloten:
 - [ ] Wat de speler zegt wordt een bewering (onderwerp, sleutel, waarde, alleen uit de woordenschat van de wereld) die de NPC hoort "van de vreemde": hij gelooft, twijfelt of verwerpt naar vertrouwen en wat hij al weet, vraagt na bij een handelaar, en vertelt door. Vertel Mirte dat de molen weer draait terwijl dat niet zo is, en zij loopt voor niets naar Molenend; wie het navraagt, weet daarna wat jouw woord waard is
 - [ ] `Deceive` is echt liegen: een bewering die niet klopt, met de speler als bron; komt het uit, dan zakt het vertrouwen en gaat het rond
 - [ ] Een gesprek met een onderwerp van belang is een feit van belang 1 of 2 met getuigen ("de vreemde vroeg Pip naar zijn vader"), dat door het nieuws loopt; hooguit een paar per dag. Brannoc weet de volgende dag dat je naar hem vroeg
@@ -351,3 +369,11 @@ Scope: besluit 27 september 2026, na M10.2. Een gesprek werkt door in de tijd en
 - [ ] De grenzen: geen dood, geen geld uit het niets, hooguit één nawerking en een paar feiten per gesprek, alles in het logboek; zonder model kiezen de regels
 - [ ] De scène in één stuk speelt: je vraagt Pip naar zijn vader, hij loopt mee naar het strand, vertelt het 's avonds thuis, Brannoc zoekt je de volgende ochtend op, je belooft hem touw, en breng je dat niet, dan weet de Hythe het
 - [ ] Alles wat er al was, speelt hetzelfde: het hele testpakket, de simulaties, de uitspeelscripts van beide werelden, en oude saves
+
+C. Scenario's die slagen vóór M10.2 en M10.3 af zijn:
+- [ ] Een sluimerend verhaal wordt na honderd dagen door een passende gebeurtenis hervat, met de oorspronkelijke oorzaak
+- [ ] Een begeleiding wordt onderbroken door gevaar en krijgt een begrijpelijke voortzetting of beëindiging
+- [ ] Een afspraak voor volgende week overleeft opslaan, herstarten en archiveren
+- [ ] Een onmogelijke belofte verschijnt niet als toegezegde actie in de tekst
+- [ ] Een aanval doorloopt werkelijk de gevechtsregels
+- [ ] Dezelfde afspraken en gevolgen werken zonder model en worden bij naspelen niet dubbel uitgevoerd
