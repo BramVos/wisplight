@@ -228,6 +228,8 @@ export const EncounterSchema = z
     unless_flag: z.string().optional(),
     /** A flag set when the player wins (for quests). */
     win_flag: z.string().optional(),
+    /** With a load on the way (M9.1): how likely then, and what share of the load they take from whoever gives in. */
+    load: z.object({ chance: z.number().min(0).max(1), take: z.number().min(0).max(1) }).strict().optional(),
   })
   .strict()
 export type Encounter = z.infer<typeof EncounterSchema>

@@ -135,6 +135,16 @@ professions:
       - { from: "19:00", to: "21:00", activity: socialize }
       - { from: "22:00", to: "06:00", activity: sleep }
 
+  # A trader of a far town (M9.1): who sells at the market of a far place made playable.
+  - id: merchant
+    name: merchant
+    schedule:
+      - { from: "06:00", to: "07:00", activity: eat }
+      - { from: "07:00", to: "18:00", activity: work }
+      - { from: "18:00", to: "19:00", activity: eat }
+      - { from: "19:00", to: "21:00", activity: socialize }
+      - { from: "22:00", to: "06:00", activity: sleep }
+
   - id: horse_miller
     name: horse-miller
     schedule:

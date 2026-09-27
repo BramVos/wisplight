@@ -1,4 +1,6 @@
 import type { Archived } from './archive'
+import { applyFarPlace, farPlaceOf, farRequest, farWords, wantFarPlace, type FarWords } from './growth/far'
+import { deliverLoad, listLoads, loadsHere, payToll, robLoad, takeLoad } from './economy/haul'
 import { worldFrame } from './dialogue/prompt'
 import { followTombstones, followTombstonesInLog, nameBook, withNames, type NameBook } from './ids'
 import { shiftTension, tensionOf } from './social/realms'
@@ -96,6 +98,8 @@ export type LogEntry =
   | { t: number; k: 'goals'; choice: string; v: unknown }
   // A far place worked out to its outline, or null for what the world book says.
   | { t: number; k: 'outline'; topic: string; v: Outline | null }
+  // A far place made playable (M9.1): the chronicler's words, or null for the template.
+  | { t: number; k: 'far'; topic: string; v: FarWords | null }
   // The names the game began with (M9.1): playing the log back uses them, so a name changed later changes nothing.
   | { t: number; k: 'names'; v: NameBook }
 
@@ -402,6 +406,33 @@ export class Engine {
     await this.runBrain()
     await this.runChronicler()
     await this.runOutlines()
+    await this.runFarPlaces()
+  }
+
+  /** Far places waiting for the chronicler's words to be made playable (M9.1), one at a time. */
+  async runFarPlaces(): Promise<void> {
+    if (this.outlining) return
+    this.outlining = true
+    try {
+      const g = this.state.growth
+      while (g?.farPending?.length) {
+        const topic = g.farPending[0]!
+        const llm = this.llm
+        let words: FarWords | null = null
+        if (llm) {
+          try {
+            words = farWords((await llm.complete({ ...farRequest(this.world, topic), priority: 'low' })).text)
+          } catch {
+            words = null
+          }
+        }
+        if (!g.farPending.includes(topic)) continue
+        this.record({ t: this.world.now, k: 'far', topic, v: words })
+        if (!applyFarPlace(this.world, topic, words)) g.farPending = g.farPending.filter((p) => p !== topic)
+      }
+    } finally {
+      this.outlining = false
+    }
   }
 
   /** Far places waiting to be worked out to their outline, one at a time. */
@@ -575,7 +606,7 @@ export class Engine {
     if (before !== this.state.player.location) {
       arrived(this.world)
       outputs.push(...triggers(this.world, this.questHost, { at: this.state.player.location }))
-      outputs.push(...findPurse(this.world), ...this.maybeEncounter(before))
+      outputs.push(...findPurse(this.world), ...payToll(this.world), ...this.maybeEncounter(before))
     }
     noticeCarried(this.world)
     outputs.push(...this.questsTick())
@@ -612,6 +643,14 @@ export class Engine {
     if (peace && !this.state.talk) return this.makePeace(peace[1]!, peace[2]!)
     const side = /^(?:side|stand)\s+with\s+(.+)$/i.exec(text.trim())
     if (side && !this.state.talk) return this.sideWith(side[1]!)
+    // LOADS, HAUL <goods> TO <place>, DELIVER (M9.1): carrying for pay between settlements.
+    if (/^(?:loads|ask for (?:a )?loads?|any loads\??)$/i.test(text.trim()) && !this.state.talk) return listLoads(this.world)
+    const haul = /^(?:haul|carry|take)\s+(?:a\s+load\s+(?:of\s+)?)?(.*?)\s+to\s+(.+)$/i.exec(text.trim())
+    if (haul && !this.state.talk && (/^haul|^carry|load/i.test(text.trim()) || loadsHere(this.world).length)) {
+      const taken = takeLoad(this.world, haul[1]!, haul[2]!)
+      if (/^haul|^carry|load/i.test(text.trim()) || taken[0]?.kind !== 'error') return taken
+    }
+    if (/^(?:deliver|unload|hand over)(?:\s+(?:the\s+)?load)?$/i.test(text.trim()) && !this.state.talk) return deliverLoad(this.world)
     // INVEST <amount> [IN <project>] (M8.5): money into what a settlement is building.
     const stake = /^(?:invest|lend)\s+(\d+)(?:\s+(?:in|into|to)\s+(.+))?$/i.exec(text.trim())
     if (stake && !this.state.talk) return this.putIn(Number(stake[1]), stake[2])
@@ -695,6 +734,7 @@ export class Engine {
       case 'travel': {
         const to = /^(?:to|naar)\s+(.+)$/i.exec(command.args.join(' '))
         if (!to) return [{ kind: 'error', text: 'Travel where? For example: travel to Waagdam.' }]
+        if (this.state.player.load) return [{ kind: 'error', text: 'With a load you go on foot, one stretch at a time: GO <direction>.' }]
         const topic = this.topics.find(to[1]!)
         if (topic && this.beyond(topic)) return this.setOffBeyond(topic)
         const place = topic ? knownPlace(this.world, topic) : undefined
@@ -1082,6 +1122,9 @@ export class Engine {
         } else if (entry.k === 'outline') {
           this.log.push(entry)
           applyOutline(this.world, entry.topic, entry.v)
+        } else if (entry.k === 'far') {
+          this.log.push(entry)
+          applyFarPlace(this.world, entry.topic, entry.v)
         }
       }
     } finally {
@@ -1114,6 +1157,16 @@ export class Engine {
   private setOffBeyond(topic: string): Output[] {
     wantOutline(this.world, topic)
     const name = this.topics.name(topic)
+    // With its outline, the far place is made playable (M9.1, level 3), and the road there opens.
+    if (this.state.outlines?.done[topic]) wantFarPlace(this.world, topic)
+    const far = farPlaceOf(this.world, topic)
+    if (far) {
+      const edge = this.world.location(far.link.from)
+      const days = Math.round(far.link.minutes / (24 * 60))
+      if (this.state.player.location !== edge.id) return [{ kind: 'text', text: `The road to ${name} leaves ${this.world.words.region} at ${edge.name}, in ${this.content.areas.get(edge.area)?.name ?? edge.area}. From there it is ${days === 1 ? 'a day' : `${days} days`} on foot, ${far.link.direction}.` }]
+      return runCommand(this.host, { verb: 'go', args: [far.link.direction], raw: `go ${far.link.direction}` })
+    }
+    if (this.state.growth?.farPending?.includes(topic)) return [{ kind: 'system', text: `The chronicler is working out the road to ${name}. Try again in a moment.` }]
     return [
       { kind: 'text', text: `${name.charAt(0).toUpperCase()}${name.slice(1)} lies beyond ${this.world.words.region}. ${farWhere(this.world, topic) ?? ''} The roads out of the region stop at its edge for now.` },
       { kind: 'system', text: `What is known of ${name} is in your journal${this.state.outlines?.pending.includes(topic) ? '; the chronicler is working it out' : ''}.` },
@@ -1401,7 +1454,9 @@ export class Engine {
       if (e.hours && !(e.hours[0] <= e.hours[1] ? hour >= e.hours[0] && hour < e.hours[1] : hour >= e.hours[0] || hour < e.hours[1])) continue
       const last = this.state.player.encounters?.[e.id]
       if (last !== undefined && this.world.now - last < e.again_after * 24 * 60) continue
-      if (this.world.rng.next('encounters') >= e.chance) continue
+      // A load draws those who rob travellers (M9.1).
+      const chance = this.state.player.load && e.load ? Math.max(e.chance, e.load.chance) : e.chance
+      if (this.world.rng.next('encounters') >= chance) continue
       return this.startEncounter(e.id, from)
     }
     return []
@@ -1653,6 +1708,8 @@ export class Engine {
           out.push({ kind: 'system', text: `They take ${this.world.money(amount)}.` })
         }
         if (combat.over === 'surrendered' && encounter) out.push({ kind: 'narration', text: encounter.surrender.text })
+        // And of a load, their share (M9.1).
+        out.push(...robLoad(this.world, encounter?.load?.take ?? (foes.some((f) => f.kind === 'human') ? 0.5 : 0)))
         fact = { title: `${who} and the stranger`, precise: `${who.charAt(0).toUpperCase() + who.slice(1)} beat the stranger at ${where}${amount ? ` and took ${this.world.money(amount)}` : ''}.`, village: `${who.charAt(0).toUpperCase() + who.slice(1)} robbed the stranger at ${where}.`, far: `${who.charAt(0).toUpperCase() + who.slice(1)} are robbing travellers in ${this.world.words.region}.`, belang }
         break
       }

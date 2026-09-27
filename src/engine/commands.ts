@@ -45,6 +45,7 @@ const HELP = [
   'Looking: look (l), examine <thing or person> (x).',
   'Things: inventory (i), take, drop, give <thing> to <person>, use <object>, eat <food>.',
   'Trade: list (what is for sale here), buy <thing> [amount], sell <thing> [amount], rent a room.',
+  'Work: work (for a day\'s pay), invest <amount>, loads (what there is to carry from here), haul <goods> to <place>, deliver.',
   'Time: time, wait [minutes], sleep. At night: knock (on a door), wake <person>.',
   'Pace: tempo calm, tempo normal or tempo dramatic (how much happens in the world).',
   "Talking: talk <person>, ask <person> about <topic>, say <text> or 'text.",

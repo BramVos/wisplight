@@ -59,6 +59,8 @@ export class MockLlm implements LlmClient {
         : request.role === 'chronicler'
           ? request.schemaName === 'outline'
             ? this.outline(String(request.meta?.['name'] ?? 'the place'))
+            : request.schemaName === 'far_place'
+            ? this.farPlace(String(request.meta?.['name'] ?? 'the place'))
             : this.chronicler(request.meta as unknown as ChronicleMeta, request.prompt)
           : this.other(request)
     return { text, provider: 'mock', model: 'mock-1', usage: { inputTokens: Math.round((request.system.length + request.prompt.length) / 4), outputTokens: Math.round(text.length / 4), cachedTokens: 0 }, latencyMs: 1 }
@@ -188,6 +190,22 @@ export class MockLlm implements LlmClient {
       })
     }
     return JSON.stringify(reply)
+  }
+
+  /** A far place made playable (M9.1): words for its three places and two people; 'invalid' writes one sentence too few. */
+  private farPlace(name: string): string {
+    const short = this.mode === 'invalid'
+    return JSON.stringify({
+      places: [
+        { key: 'gate', name: 'the Lantern Gate', description: short ? `You are at the gate.` : `You pass under the Lantern Gate of ${name}, where the road from the fen ends in cobbles. The stones ring under the cart wheels, and the gatekeeper's dog barks at every stranger. A lamp burns over the arch even by day. The market lies within, and the road home runs back the way you came.` },
+        { key: 'market', name: 'the Salt Market', description: `You stand in the Salt Market, where the Cog League's merchants weigh everything twice. It smells of brine and lamp oil. Nobody looks up when you pass. The Carters' Rest is at the corner, and the gate is back out.` },
+        { key: 'inn', name: "the Carters' Rest", description: `You step into the Carters' Rest, low and smoky, full of men from the Oostweg. The beer is sour and the fire is good. Someone is singing badly about a drowned bell. The market is back out.` },
+      ],
+      people: [
+        { key: 'merchant', name: 'Wendel Hoorn', pronoun: 'he', looks: 'A thin man in a good coat, with a scale on a chain at his belt.', speech: 'Short, and always about the price.', fact: 'Wendel Hoorn buys rye from the Nethermarch and sells it dearer to the League.' },
+        { key: 'innkeeper', name: 'Aleid Kramer', pronoun: 'she', looks: 'A broad woman with flour on her sleeves and keys at her hip.', speech: 'Loud and kind.', fact: 'Aleid Kramer knows every carter on the Oostweg by name.' },
+      ],
+    })
   }
 
   /** A far place, worked out plainly; 'invent' reuses a name that is already taken. */

@@ -31,7 +31,7 @@ ids:
   base/data/plans.yaml:
     plan: [dyke_breach, fen_closed, soldiers_come, war, dyke_leak, holleveen_survey, holleveen_stakes, the_haakman_counts]
   base/data/professions.yaml:
-    profession: [baker, miller, peat_cutter, herbalist, eel_fisher, sister, schout, spinner, child, innkeeper, barmaid, grain_merchant, horse_miller, weighmaster, smith, pedlar, surveyor, mayor, notary, prior, dyke_reeve, miller_hand, witch, robber, spirit, cat, cooper, homemaker]
+    profession: [baker, miller, peat_cutter, herbalist, eel_fisher, sister, schout, spinner, child, innkeeper, barmaid, grain_merchant, merchant, horse_miller, weighmaster, smith, pedlar, surveyor, mayor, notary, prior, dyke_reeve, miller_hand, witch, robber, spirit, cat, cooper, homemaker]
   base/data/quests.yaml:
     quest: [grey_cat_on_the_doorstep, the_vissers_to_safety, flour_for_veenhoek, the_surveyors_lights, what_the_haakman_wants, milk_for_the_kabouters, the_goat_riders_toll, the_white_womens_riddle, the_drainage_question, a_stall_at_the_market, the_honest_scale, the_brotherhoods_charter, the_apprentices_debt, a_boat_and_a_bride, the_bell_of_kloosterveen, the_road_to_graafhaven]
   base/data/topics.yaml:

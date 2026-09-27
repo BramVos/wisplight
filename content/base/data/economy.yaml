@@ -133,7 +133,7 @@ outlands:
 
 routes:
   # Lamp oil and nails come into the Nethermarch only this way.
-  - { id: zwolderkamp_oostweg, name: the Oostweg from Zwolderkamp, from: zwolderkamp, to: waagdam, carries: { lamp_oil: 10, iron_nails: 10, sailcloth: 1, rope: 2 }, returns: { rye_grain: 6 }, by: carters on the Oostweg, every: 2 }
+  - { id: zwolderkamp_oostweg, name: the Oostweg from Zwolderkamp, from: zwolderkamp, to: waagdam, carries: { lamp_oil: 10, iron_nails: 10, sailcloth: 1, rope: 2 }, returns: { rye_grain: 6 }, by: carters on the Oostweg, every: 2, toll: { at: loc_waagdam_east_gate, amount: 8, by: the Count's tollkeeper } }
   - { id: hunnenloo_heideweg, name: the Heideweg from Hunnenloo, from: hunnenloo, to: waagdam, carries: { wool: 7 }, by: Kobus the pedlar, every: 7 }
   - { id: molenend_waagdam, name: the flour cart to Waagdam, from: molenend, to: waagdam, carries: { flour: 8 }, returns: { rye_grain: 6 }, by: Harmen's cart, every: 1 }
   - { id: molenend_veenhoek, name: the flour cart to Veenhoek, from: molenend, to: veenhoek, carries: { flour: 5 }, returns: { peat: 2 }, by: the miller's cart, every: 1 }

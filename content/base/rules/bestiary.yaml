@@ -233,6 +233,8 @@ encounters:
       text: They go through your purse and your pockets, laughing, and leave you sitting in the mud.
     flee_dc: 15
     news: { title: the Goat-Riders on the tow path, belang: 2 }
+    # A load on the tow path draws them, and whoever gives in loses half of it (M9.1).
+    load: { chance: 0.6, take: 0.5 }
 
   # Quest encounters (M7): started by a quest action, never by chance.
   - id: haakman_rises

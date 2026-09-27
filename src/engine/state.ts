@@ -5,6 +5,7 @@ import type { EconomyState } from './economy/ledger'
 import type { GrowthState } from './growth/growth'
 import type { Combat } from './combat/types'
 import type { Character } from './rules/character'
+import type { Load } from './economy/haul'
 import type { Clock } from './rules/player'
 import type { Companion } from './social/companions'
 import type { Crime } from './social/crime'
@@ -290,6 +291,8 @@ export interface PlayerState {
   homeNight?: number
   /** When each encounter last happened. */
   encounters?: Record<string, number>
+  /** A load the player carries from one settlement to another for pay (M9.1). */
+  load?: Load
   /** Conditions on the player that wear off, and when. */
   conditionsUntil?: Record<string, number>
   /** What the player knows of people from seeing and asking them (acquaintance.ts). */

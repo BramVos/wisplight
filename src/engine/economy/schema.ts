@@ -89,6 +89,11 @@ export const RouteSchema = z
     every: z.number().int().positive().default(1).describe('Every so many days.'),
     via: z.tuple([z.string(), z.string()]).optional().describe('A way it runs over: if that way is closed, so is the route.'),
     closed: z.boolean().default(false).describe('Closed from the start.'),
+    toll: z
+      .object({ at: z.string(), amount: z.number().int().positive(), by: z.string() })
+      .strict()
+      .optional()
+      .describe('A toll gate on the way: whoever carries a load of this route past it pays (M9.1).'),
   })
   .strict()
 export type Route = z.infer<typeof RouteSchema>

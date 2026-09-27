@@ -1,6 +1,6 @@
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { applyEdits, createCharacter, entities, Engine, GameClock, loadContent, MockLlm, recordFact, suggestChoice, type Content, type ContentFile } from '../src/engine'
+import { applyEdits, checkContent, createCharacter, entities, Engine, GameClock, loadContent, MockLlm, recordFact, suggestChoice, type Content, type ContentFile } from '../src/engine'
 import { carried, settlementAt } from '../src/engine/economy/ledger'
 import { readLock, withLock } from '../src/engine/edit'
 import { faithOf } from '../src/engine/faith'
@@ -336,5 +336,150 @@ describe('M9.1: the archive', () => {
     const loaded = Engine.fromSave(content, engine.save())
     loaded.tick(DAY)
     expect(await say(loaded, 'look')).toMatch(/\w/)
+  }, 120_000)
+})
+
+describe('M9.1: hauling', () => {
+  const ledger = (engine: Engine, s: string) => engine.state.economy!.ledgers[s]!
+
+  it('a load of peat from Veenhoek to Waagdam for pay; on the tow path the Goat-Riders take half of it', async () => {
+    const engine = new Engine(content, { seed: 100, builder: true })
+    runUntil(engine, 15, 9)
+    await say(engine, '@goto loc_veenhoek_green')
+    expect(await say(engine, 'loads')).toMatch(/baskets of peat to Waagdam, for/)
+    const peat = ledger(engine, 'veenhoek').stock['peat']!
+    expect(await say(engine, 'haul peat to waagdam')).toMatch(/You load \d+ baskets of peat for Waagdam/)
+    const load = { ...engine.state.player.load! }
+    expect(load.qty).toBeGreaterThan(1)
+    expect(ledger(engine, 'veenhoek').stock['peat']).toBe(peat - load.qty)
+    // Not for sale: it is not the player's.
+    expect(engine.state.player.inventory['peat']).toBeUndefined()
+    expect(await say(engine, 'travel to waagdam')).toMatch(/on foot/)
+    // A load on the tow path draws the Goat-Riders.
+    engine.state.player.location = 'loc_towpath_e'
+    for (let i = 0; i < 12 && !engine.state.combat; i++) await say(engine, engine.state.player.location === 'loc_towpath_e' ? 'east' : 'west')
+    expect(engine.state.combat?.encounter).toBe('goat_riders_toll')
+    await say(engine, 'refuse')
+    expect(await say(engine, 'surrender')).toMatch(/They take \d+ baskets of peat of your load/)
+    const left = engine.state.player.load!
+    expect(left.qty).toBe(load.qty - Math.round(load.qty * 0.5))
+    expect(left.pay).toBeLessThan(load.pay)
+    // Delivered in Waagdam, paid from the town's purse.
+    await say(engine, '@goto loc_waagdam_market')
+    const stock = ledger(engine, 'waagdam').stock['peat'] ?? 0
+    const purse = ledger(engine, 'waagdam').purse
+    const money = engine.state.player.money
+    expect(await say(engine, 'deliver')).toMatch(/You hand over \d+ baskets of peat. You are paid/)
+    expect(ledger(engine, 'waagdam').stock['peat']).toBe(stock + left.qty)
+    expect(engine.state.player.money).toBe(money + left.pay)
+    expect(ledger(engine, 'waagdam').purse).toBe(purse - left.pay)
+    expect(engine.state.player.load).toBeUndefined()
+    expect(engine.state.news!.facts.at(-1)!.title).toMatch(/the stranger brought \d+ baskets of peat from Veenhoek/)
+  }, 60_000)
+
+  it('the toll gate on the Oostweg takes its due from a load, or goods when there is no money', async () => {
+    const engine = new Engine(content, { seed: 101, builder: true })
+    runUntil(engine, 15, 9)
+    await say(engine, '@goto loc_waagdam_horse_mill')
+    const load = () => (engine.state.player.load = { item: 'rye_grain', qty: 6, from: 'waagdam', to: 'zwolderkamp', route: 'zwolderkamp_oostweg', pay: 12, t: engine.world.now })
+    load()
+    engine.state.player.money = 20
+    expect(await say(engine, 'east')).toMatch(/the Count's tollkeeper stops you and your load. You pay the toll/i)
+    expect(engine.state.player.money).toBe(12)
+    // Once only.
+    await say(engine, 'west', 'east')
+    expect(engine.state.player.money).toBe(12)
+    await say(engine, 'west')
+    load()
+    engine.state.player.money = 0
+    expect(await say(engine, 'east')).toMatch(/cannot pay the toll, so \d+ .* stays? behind/)
+    expect(engine.state.player.load!.qty).toBeLessThan(6)
+  }, 60_000)
+})
+
+describe('M9.1: a far place made playable', () => {
+  async function toTheGate(engine: Engine) {
+    runUntil(engine, 15, 8)
+    engine.state.player.journal = { ...(engine.state.player.journal ?? {}), zwolderkamp: engine.world.now }
+    await say(engine, '@goto loc_waagdam_east_gate')
+  }
+
+  it('Zwolderkamp: checked as content, fixed in the save, with its own ledger; the Oostweg keeps its id', async () => {
+    const engine = new Engine(content, { seed: 102, builder: true })
+    await toTheGate(engine)
+    const out = await say(engine, 'travel to zwolderkamp')
+    expect(engine.state.player.location).toBe('loc_zwolderkamp_gate')
+    expect(out).toMatch(/You come to the gate of Zwolderkamp after 2 days on the road/)
+    const far = engine.state.growth!.far!['zwolderkamp']!
+    expect(far.by).toBe('template')
+    // Content like any: the checks of loading pass, and every description keeps the rules.
+    expect(checkContent(engine.content)).toEqual([])
+    for (const raw of far.locations) {
+      const text = String((raw['description'] as { day: string }).day)
+      const n = text.split(/(?<=[.!?])\s+/).filter(Boolean).length
+      expect(n, String(raw['id'])).toBeGreaterThanOrEqual(3)
+      expect(n, String(raw['id'])).toBeLessThanOrEqual(5)
+      expect(text).toMatch(/\byou\b/i)
+    }
+    expect(engine.content.areas.get('zwolderkamp')?.kind).toBe('town')
+    expect(engine.content.settlements.has('zwolderkamp')).toBe(true)
+    expect(engine.content.routes.get('zwolderkamp_oostweg')!.from).toBe('zwolderkamp')
+    for (const raw of far.npcs) expect(engine.state.npcs[String(raw['id'])]).toBeDefined()
+    // Its own ledger: its workshops make lamp oil, and the Oostweg carries it on to Waagdam.
+    const oil = engine.state.economy!.ledgers['waagdam']!.last.came['lamp_oil'] ?? 0
+    engine.tick(2 * DAY)
+    expect(engine.state.economy!.ledgers['zwolderkamp']!.last.made['lamp_oil']).toBeGreaterThan(0)
+    expect(engine.state.economy!.ledgers['waagdam']!.stock['lamp_oil']).toBeGreaterThan(0)
+    void oil
+    // The market sells what the League sends.
+    await say(engine, 'in')
+    expect(await say(engine, 'list')).toMatch(/lamp oil/i)
+    // Fixed in the save.
+    const loaded = Engine.fromSave(content, engine.save())
+    expect(loaded.content.locations.get('loc_zwolderkamp_market')?.name).toBe(engine.content.locations.get('loc_zwolderkamp_market')?.name)
+    loaded.tick(60)
+    // And back the way you came.
+    await say(engine, 'out')
+    await say(engine, 'west')
+    expect(engine.state.player.location).toBe('loc_waagdam_east_gate')
+  }, 120_000)
+
+  it('with a model the chronicler words it; the log plays back to the same world', async () => {
+    const engine = new Engine(content, { seed: 103, builder: true, llm: new MockLlm('good') })
+    await toTheGate(engine)
+    await say(engine, 'travel to zwolderkamp')
+    await engine.runModels()
+    expect(await say(engine, 'travel to zwolderkamp')).toMatch(/The chronicler is working out the road to Zwolderkamp/)
+    await engine.runModels()
+    expect(await say(engine, 'travel to zwolderkamp')).toMatch(/You pass under the Lantern Gate of Zwolderkamp/)
+    expect(engine.state.player.location).toBe('loc_zwolderkamp_gate')
+    const far = engine.state.growth!.far!['zwolderkamp']!
+    expect(far.by).toBe('chronicler')
+    expect(far.npcs.map((n) => n['name'])).toEqual(['Wendel Hoorn', 'Aleid Kramer'])
+    const replayed = await Engine.replay(content, 103, engine.save().log)
+    expect(replayed.state.growth!.far).toEqual(engine.state.growth!.far)
+    // Words that break the rules are not used: the template takes that place.
+    const strict = new Engine(content, { seed: 104, builder: true, llm: new MockLlm('invalid') })
+    await toTheGate(strict)
+    for (let i = 0; i < 3; i++) {
+      await say(strict, 'travel to zwolderkamp')
+      await strict.runModels()
+    }
+    const gate = strict.state.growth!.far!['zwolderkamp']!.locations[0]!
+    expect((gate['description'] as { day: string }).day).toMatch(/You come to the gate of Zwolderkamp/)
+  }, 120_000)
+
+  it('a load of rye carried to Zwolderkamp pays the toll at the gate on the way', async () => {
+    const engine = new Engine(content, { seed: 105, builder: true })
+    await toTheGate(engine)
+    await say(engine, 'travel to zwolderkamp')
+    await say(engine, 'west', '@goto loc_waagdam_market')
+    engine.state.economy!.ledgers['waagdam']!.stock['rye_grain'] = 9000
+    expect(await say(engine, 'loads')).toMatch(/sacks of rye to Zwolderkamp/)
+    await say(engine, 'haul rye to zwolderkamp', '@goto loc_waagdam_horse_mill')
+    engine.state.player.money = 50
+    expect(await say(engine, 'east')).toMatch(/You pay the toll/)
+    await say(engine, 'east', 'in')
+    expect(await say(engine, 'deliver')).toMatch(/You are paid/)
   }, 120_000)
 })

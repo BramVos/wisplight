@@ -806,6 +806,14 @@ export function loadContent(files: ContentFile[]): Content {
   return { world, ...content, ...(rules ? { rules } : {}), ...(chronicler ? { chronicler } : {}), ...(lock ? { lock } : {}) }
 }
 
+/**
+ * The checks loading runs, on a content as a game has it (M9.1): what a game
+ * makes (a far place made playable) must pass them as if it had been written.
+ */
+export function checkContent(c: Content): string[] {
+  return [...checkReferences(c.world, c), ...checkQuests(c), ...(c.rules ? checkRules(c.rules, c) : [])]
+}
+
 function safeParse(text: string): unknown {
   try {
     return parse(text)
@@ -1085,6 +1093,7 @@ function checkEconomy(c: Omit<Content, 'world'>): string[] {
       for (const g of Object.keys(r.returns)) if (!outland.asks.includes(g)) problems.push(`${where}: ${outland.name} does not ask for ${g}`)
     }
     if (r.via) for (const l of r.via) if (!c.locations.has(l)) problems.push(`${where}: unknown location ${l}`)
+    if (r.toll && !c.locations.has(r.toll.at)) problems.push(`${where}: unknown toll gate ${r.toll.at}`)
   }
   return problems
 }
