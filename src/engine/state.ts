@@ -454,6 +454,10 @@ export interface Fact {
   claim?: Claim
   /** The facts that caused it (M9.2): what the plan, phase or aftermath that made it came from. */
   cause?: string[]
+  /** Who put it about when it is only their word (M10.3): "player" for what the stranger said. */
+  by?: string
+  /** Said knowing it was not so (M10.3): a lie, and news when found out. */
+  lie?: boolean
 }
 
 /** A claim of a fact: { subject: loc_veenhoek_green, key: state, value: normal }; far away it may say otherwise. */
@@ -473,6 +477,8 @@ export interface Heard {
   grown?: boolean
   /** A claim the hearer doubts or rejects (M8.2); without it, they believe it. */
   stance?: 'doubts' | 'rejects'
+  /** What the stranger said, found out to be wrong (M10.3): the consequence came once. */
+  checked?: boolean
 }
 
 /** A far-away place a model named in conversation, fixed in the savegame (design: lore and world change). */

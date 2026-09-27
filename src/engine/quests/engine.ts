@@ -142,6 +142,7 @@ export function holds(world: World, c: Condition, questId?: string): boolean {
   }
   if ('tie' in c) return tieTo(world, c.tie[0], c.tie[1])?.role === c.role
   if ('would_lie' in c) return world.content.npcs.has(c.would_lie) && mayLieAbout(world, c.would_lie)
+  if ('needs_from' in c) return needsFrom(world, c.needs_from[0], c.needs_from[1])
   if ('did' in c) return (world.state.news?.facts ?? []).some((f) => f.kind === c.did && f.about[0] === c.who && f.about.includes(c.to))
   if ('any' in c) return c.any.some((x) => holds(world, x, questId))
   if ('all' in c) return c.all.every((x) => holds(world, x, questId))
@@ -606,4 +607,20 @@ export function expireConditions(world: World): void {
 
 function cap(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1)
+}
+
+/**
+ * Whether someone's work takes in what a place makes (M10.3): the objects of
+ * their workplace consume what the objects there produce. The baker's oven
+ * takes flour, and the mill makes it.
+ */
+export function needsFrom(world: World, who: string, place: string): boolean {
+  if (!world.content.npcs.has(who) || !world.content.locations.has(place)) return false
+  const npc = world.npc(who)
+  if (npc.work === place) return false
+  const made = new Set(world.location(place).objects.flatMap((o) => (world.content.objectTypes.get(o.type)?.affordances ?? []).flatMap((a) => Object.keys(a.produces ?? {}))))
+  // Their objects: at their work and home, and any they keep (the baker's oven out in the yard).
+  const mine = [...world.content.locations.values()].flatMap((l) => l.objects.filter((o) => o.provider === who || o.owner === who || l.id === npc.work || l.id === npc.home))
+  const taken = mine.flatMap((o) => (world.content.objectTypes.get(o.type)?.affordances ?? []).flatMap((a) => Object.keys(a.consumes ?? {})))
+  return taken.some((item) => made.has(item))
 }

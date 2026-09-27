@@ -7,6 +7,7 @@ import { accept, offersFor, parseWhen } from '../src/engine/dialogue/offers'
 import { relation } from '../src/engine/dialogue/relations'
 import { heardBy, recordFact } from '../src/engine/news'
 import { openRequest } from '../src/engine/requests'
+import { parseClaim, truthOf } from '../src/engine/claims'
 import { loadContentFromDir } from '../src/node/content'
 import { content } from './helpers'
 
@@ -210,5 +211,70 @@ describe('M10.3: offers in a conversation', () => {
     expect(parseWhen('in two hours', day + 8 * 60)).toBe(day + 10 * 60)
     expect(parseWhen('see you tonight', day + 8 * 60)).toBe(day + 19 * 60)
     expect(parseWhen('hello there', day)).toBeUndefined()
+  })
+})
+
+describe('M10.3: what the player says is a claim', () => {
+  /** Mirte at her bakery, who trusts the stranger this much. */
+  function withMirte(trust: number): Engine {
+    const engine = new Engine(content, { seed: 7 })
+    Object.assign(relation(engine.state, 'npc_mirte'), { affinity: 30, trust, familiarity: 40 })
+    stay(engine, 'npc_mirte', 'loc_veenhoek_bakery', 0)
+    engine.state.player.location = 'loc_veenhoek_bakery'
+    return engine
+  }
+
+  it('tell Mirte the mill turns again when it does not: she believes the stranger, walks to Molenend for nothing, and knows what that word was worth', async () => {
+    const engine = withMirte(60)
+    const world = engine.world
+    const out = said(await engine.handle('tell mirte that the mill turns again'))
+    expect(out).toMatch(/Mirte looks up sharply/)
+    const fact = world.state.news!.facts.find((f) => f.kind === 'said')!
+    expect(fact).toMatchObject({ by: 'player', truth: false, claim: { subject: 'loc_molenend_mill', key: 'working', value: 'yes' } })
+    expect(world.state.news!.heard['npc_mirte']![fact.id]).toMatchObject({ from: 'player' })
+    expect(world.state.news!.heard['npc_mirte']![fact.id]!.stance).toBeUndefined()
+    // Her oven takes the mill's flour: she goes to see about it, once the talk is done.
+    await engine.handle('bye')
+    const before = relation(engine.state, 'npc_mirte').trust
+    for (let i = 0; i < 12 && !world.state.news!.heard['npc_mirte']![fact.id]!.checked; i++) engine.tick(60)
+    expect(world.state.npcs['npc_mirte']!.location).toBe('loc_molenend_mill')
+    expect(world.state.news!.heard['npc_mirte']![fact.id]).toMatchObject({ checked: true, stance: 'rejects' })
+    expect(relation(engine.state, 'npc_mirte').trust).toBeLessThan(before)
+    expect(world.state.npcs['npc_mirte']!.memory?.some((m) => /The stranger told me The Mill De Zwaan is working again\. It was not so\./.test(m.note))).toBe(true)
+  }, 60_000)
+
+  it('does not believe a stranger it does not trust', async () => {
+    const engine = withMirte(-20)
+    const out = said(await engine.handle('tell mirte that the mill turns again'))
+    expect(out).toMatch(/Mirte (snorts|gives you a long look)/)
+    expect(engine.state.npcs['npc_mirte']!.goals.some((g) => g.target === 'loc_molenend_mill')).toBe(false)
+  })
+
+  it('DECEIVE is lying for real: found out, trust falls further, and the lie goes round', async () => {
+    const engine = withMirte(60)
+    const world = engine.world
+    await engine.handle('talk mirte')
+    await engine.handle('deceive mirte that the mill turns again')
+    const fact = world.state.news!.facts.find((f) => f.kind === 'said')!
+    expect(fact).toMatchObject({ lie: true, truth: false })
+    const trust = relation(engine.state, 'npc_mirte').trust
+    // She sees for herself.
+    world.state.npcs['npc_mirte']!.location = 'loc_molenend_mill'
+    engine.tick(60)
+    expect(relation(engine.state, 'npc_mirte').trust).toBeLessThanOrEqual(trust - 15)
+    const caught = world.state.news!.facts.find((f) => f.kind === 'caught_lie')!
+    expect(caught.title).toBe("the stranger's lie to Mirte")
+    expect(world.state.news!.heard['npc_mirte']![caught.id]).toBeDefined()
+  }, 60_000)
+
+  it('reads claims only in the world\'s words', () => {
+    const world = new Engine(content, { seed: 7 }).world
+    expect(parseClaim(world, ['loc_molenend_mill'], 'the mill turns again')).toEqual({ subject: 'loc_molenend_mill', key: 'working', value: 'yes' })
+    expect(parseClaim(world, ['npc_harmen'], 'Harmen is dead')).toEqual({ subject: 'npc_harmen', key: 'alive', value: 'no' })
+    expect(parseClaim(world, ['npc_harmen', 'loc_goose_common'], 'Harmen is at the Goose')).toEqual({ subject: 'npc_harmen', key: 'at', value: 'loc_goose_common' })
+    expect(parseClaim(world, ['loc_veenhoek_green'], 'the green is flooded')).toEqual({ subject: 'loc_veenhoek_green', key: 'state', value: 'flooded' })
+    expect(parseClaim(world, ['loc_molenend_mill'], 'does the mill turn again?')).toBeUndefined()
+    expect(parseClaim(world, [], 'the moon is made of cheese')).toBeUndefined()
+    expect(truthOf(world, 'loc_molenend_mill', 'working')).toBe('no')
   })
 })

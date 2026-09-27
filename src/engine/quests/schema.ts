@@ -74,6 +74,7 @@ type Cond =
   | { thinks_home_stands: string }
   | { tie: [string, string]; role: string }
   | { would_lie: string }
+  | { needs_from: [string, string] }
   | { did: string; who: string; to: string }
   | { any: Cond[] }
   | { all: Cond[] }
@@ -142,6 +143,7 @@ export const ConditionSchema: z.ZodType<Cond> = z.lazy(() =>
     z.object({ thinks_home_stands: z.string() }).strict().describe('Someone does not believe their home is flooded, destroyed or occupied.'),
     z.object({ tie: z.tuple([z.string(), z.string()]), role: z.string() }).strict().describe('What the first is to the second: spouse, sweetheart, friend, rival, neighbour.'),
     z.object({ would_lie: z.string() }).strict().describe('The gate for lying lets someone through: honesty -1 or lower, grown.'),
+    z.object({ needs_from: z.tuple([z.string(), z.string()]) }).strict().describe("Someone's work takes in what a place makes: the baker's oven the mill's flour (M10.3)."),
     z.object({ did: z.string(), who: z.string(), to: z.string() }).strict().describe('A fact of this kind about the first and the second, in that order: who chased whom off.'),
     z.object({ any: z.array(ConditionSchema) }).strict().describe('At least one of these holds.'),
     z.object({ all: z.array(ConditionSchema) }).strict().describe('All of these hold.'),

@@ -1,6 +1,7 @@
 import { crowdsHour } from './growth/crowds'
 import { archiveDay } from './archive'
 import { agreementsTick } from './agreements'
+import { claimsHour } from './claims'
 import { fillFromLedger, ledgerHour, nameless } from './economy/ledger'
 import { projectsDay } from './growth/growth'
 import { sawPerson } from './acquaintance'
@@ -75,6 +76,8 @@ function hourly(world: World): void {
   nightly(world)
   weatherHour(world)
   companionsHour(world)
+  // Whoever holds a claim of the stranger and can see the truth, sees it (M10.3).
+  claimsHour(world)
   // What has been over for a month leaves the save for the game log (M9.1).
   if (minuteOfDay(world.now) === 4 * 60) {
     // Lines that took nothing new for two weeks sleep, or close when nothing is left open (M10.2).

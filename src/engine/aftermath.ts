@@ -1,5 +1,6 @@
 import { welcomingIn } from './social/groups'
 import { agree } from './agreements'
+import { checkedClaims } from './claims'
 import { orderGoods } from './economy/ledger'
 import { arrive, startProject, templateFor } from './growth/growth'
 import type { Output } from './commands'
@@ -720,6 +721,8 @@ function lookForYourself(world: World, who: string, subject: string, key: string
     mine[truth.id] = { level: 3, reliability: 1, from: 'witness', t: world.now }
     watchBelief(world, who, truth, 'witness')
   }
+  // What the stranger said about it, and was not so, is found out (M10.3).
+  checkedClaims(world, who, subject, key)
 }
 
 /** Trust that counts for making peace is a bond: a plain neighbour is no mediator. */

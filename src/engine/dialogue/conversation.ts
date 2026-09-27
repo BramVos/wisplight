@@ -15,6 +15,8 @@ import { partyTalk } from './party'
 import { closingLine, fallbackReply } from './fallback'
 import { fitLength, hasAnachronism, leakedNames, looksLikeInjection, outOfCharacter, promises, unknownNames, vocabularyOf } from './guard'
 import { accept, askedFor, kinOf, offerLine, offerLines, offersFor, proposal, proposalText, type Offer } from './offers'
+import { claimValid, claimWords, parseClaim, playerSays } from '../claims'
+import type { Claim } from '../state'
 import type { Knowledge, Packet } from './knowledge'
 import type { LlmClient } from './llm'
 import { peopleIds, systemPrompt, turnPrompt, worldFrame } from './prompt'
@@ -51,6 +53,10 @@ interface TurnOptions {
   secret?: string
   admission?: string
   echo?: boolean
+  /** What the player claims (M10.3), and whether it is a lie told on purpose, with the check's weight. */
+  claim?: Claim
+  lie?: boolean
+  claimBonus?: number
 }
 
 export class Dialogue {
@@ -250,6 +256,9 @@ export class Dialogue {
         { kind: 'narration', text: reaction },
       ]
     }
+    // Not news the player heard but something they say is so (M10.3): a claim, in the world's own words.
+    const claim = parseClaim(this.world, [...new Set([...(topic ? [topic] : []), ...this.topics.recognise(about)])], about.replace(/^that\s+/i, ''))
+    if (claim && claimValid(this.world, claim)) return this.turn(npcId, capitalise(about.replace(/^that\s+/i, '')), { act: 'Tell', topics: this.topics.recognise(about), echo: true, claim })
     return this.turn(npcId, `Let me tell you about ${about}.`, { act: 'Tell', topics: topic ? [topic] : [], echo: true })
   }
 
@@ -343,7 +352,10 @@ export class Dialogue {
       }
     }
     const words = kind === 'bribe' ? `Here, for your trouble.` : text || `(tries to ${kind} ${callName(npc)})`
-    lines.push(...(await this.turn(npcId, words, { act: kind === 'bribe' ? 'Bribe' : (capitalise(kind) as Act), check: { ...result, about }, secret, admission })))
+    // DECEIVE is lying for real (M10.3): a claim that is not so, with the stranger as its source; the check weighs it.
+    const lie = kind === 'deceive' ? parseClaim(world, this.topics.recognise(text), text.replace(/^(that|them that|him that|her that)\s+/i, '')) : undefined
+    const claimed = lie && claimValid(world, lie) ? { claim: lie, lie: true, claimBonus: win ? 40 : result.degree === 'critical failure' ? -60 : -30 } : {}
+    lines.push(...(await this.turn(npcId, words, { act: kind === 'bribe' ? 'Bribe' : (capitalise(kind) as Act), check: { ...result, about }, secret, admission, ...claimed })))
     return lines
   }
 
@@ -480,7 +492,11 @@ export class Dialogue {
 
     // 3. The model, or the designer's templates.
     const memories = (world.npcState(npcId).memory ?? []).slice(-5).map((m) => m.note)
-    const decision = act === 'Recruit' ? recruitDecision(world, npcId, band.band) : undefined
+    // What the player says is a claim, heard from the stranger and judged by the game (M10.3).
+    const claim = options.claim ?? (options.check || /\?\s*$/.test(text) ? undefined : parseClaim(world, topics, text))
+    const said = claim && claimValid(world, claim) ? playerSays(world, npcId, claim, { ...(options.lie ? { lie: true } : {}), ...(options.claimBonus ? { bonus: options.claimBonus } : {}) }) : undefined
+    const believed = said ? `The stranger says ${claimWords(world, claim!)}. You ${said.stance === 'believes' ? 'believe it' : said.stance === 'doubts' ? 'are not sure it is true' : 'do not believe it'}; answer that way.` : undefined
+    const decision = [act === 'Recruit' ? recruitDecision(world, npcId, band.band) : undefined, believed].filter(Boolean).join(' ') || undefined
     const offered = options.echo || options.check ? [] : (this.questOptions?.(npcId) ?? [])
     // What this person can do for the player now (M10.3): the game decides, the voice chooses and words it.
     const offers = options.check || options.secret || act === 'Recruit' ? [] : offersFor(world, npcId, topics, text)
@@ -497,7 +513,9 @@ export class Dialogue {
       ? reply.reply
       : asked
         ? offerLine(world, npcId, asked)
-        : options.secret
+        : said
+          ? claimLine(world, npcId, said.stance)
+          : options.secret
         ? world.say(`{name} glances at the door and lowers {their} voice. "${options.admission ?? 'All right. But it stays between us.'}"`, npcId)
         : options.check && !succeeded(options.check)
           ? world.say(`{name} shakes {their} head. "I don't think so."`, npcId)
@@ -754,6 +772,13 @@ function recruitDecision(world: World, npcId: string, band: Attitude): string {
   world.notices.push(...joined.filter((l) => l.kind === 'system').map((l) => l.text))
   const terms = `${o.terms.wage} duiten a day${o.terms.until ? `, for ${Math.round((o.terms.until - world.now) / (24 * 60))} days` : ''}${o.terms.limits.length ? ', and some places you will not go' : ''}`
   return o.decision === 'join' ? `You agree to come along with the stranger. Say yes in your own way. Your wage: ${terms}.` : `You agree to come, on terms: ${terms}. Say yes and name your terms plainly.`
+}
+
+/** How someone takes what the stranger claims, without a model. */
+function claimLine(world: World, npcId: string, stance: 'believes' | 'doubts' | 'rejects'): string {
+  if (stance === 'believes') return world.say('{name} looks up sharply. "Is that so? Then that changes things."', npcId)
+  if (stance === 'doubts') return world.say('{name} gives you a long look. "I\'ll believe that when I see it."', npcId)
+  return world.say('{name} snorts. "I don\'t believe a word of it."', npcId)
 }
 
 /** The topic words without closing punctuation, so the echo does not end in "?." or "..". */

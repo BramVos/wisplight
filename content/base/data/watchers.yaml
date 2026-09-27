@@ -66,6 +66,11 @@ watchers:
     signal: warned
     belief: { key: state, value: leaking }
 
+  # Someone hears that a workshop works again (M10.3): whoever's trade needs what it makes goes there.
+  - id: heard_working
+    signal: heard_working
+    belief: { key: working, value: yes }
+
   # People from elsewhere who have stayed a week: the one of the village who likes them least has a choice to make.
   - id: strangers_stay
     signal: strangers_stay

@@ -774,7 +774,8 @@ export class Engine {
       case 'where': {
         const party = /^(?:party|group|everyone|all)\s+(?:about|over)\s+(.+)$/i.exec(command.args.join(' '))
         if (command.verb === 'ask' && party) return this.dialogue.party(party[1]!)
-        const parsed = this.target(command.args, command.verb === 'where' ? /^(?:is|are)\s+/i : /^(?:about|over|naar)\s+|\s+(?:about|over|naar)\s+/i)
+        // TELL MIRTE THAT THE MILL TURNS AGAIN (M10.3): what follows "that" is a claim.
+        const parsed = this.target(command.args, command.verb === 'where' ? /^(?:is|are)\s+/i : command.verb === 'tell' ? /^(?:about|over|naar|that|dat)\s+|\s+(?:about|over|naar|that|dat)\s+/i : /^(?:about|over|naar)\s+|\s+(?:about|over|naar)\s+/i)
         if ('error' in parsed) return [{ kind: 'error', text: parsed.error }]
         const run = command.verb === 'ask' ? this.dialogue.ask.bind(this.dialogue) : command.verb === 'tell' ? this.dialogue.tell.bind(this.dialogue) : this.dialogue.where.bind(this.dialogue)
         return this.inConversation(() => run(parsed.npc, parsed.rest))

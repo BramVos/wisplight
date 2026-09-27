@@ -279,6 +279,7 @@ Watchers, the standard aftermath, intentions, fixed plans, quests and your own p
 - `thinks_home_stands` `{ thinks_home_stands: text }`: Someone does not believe their home is flooded, destroyed or occupied.
 - `tie` `{ tie: [text, text], role: text }`: What the first is to the second: spouse, sweetheart, friend, rival, neighbour.
 - `would_lie` `{ would_lie: text }`: The gate for lying lets someone through: honesty -1 or lower, grown.
+- `needs_from` `{ needs_from: [text, text] }`: Someone's work takes in what a place makes: the baker's oven the mill's flour (M10.3).
 - `did` `{ did: text, who: text, to: text }`: A fact of this kind about the first and the second, in that order: who chased whom off.
 - `any` `{ any: list of condition }`: At least one of these holds.
 - `all` `{ all: list of condition }`: All of these hold.

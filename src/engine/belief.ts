@@ -1,4 +1,5 @@
 import { foodGoods, opennessOf } from './economy/ledger'
+import { checkedClaims } from './claims'
 import { relation } from './dialogue/relations'
 import { factById } from './news'
 import { planOf } from './quests/plans'
@@ -195,6 +196,8 @@ export function askTrader(world: World, asker: string, trader: string, subject: 
   }
   mine[told.id] ??= { level: 2, reliability: 0.9, from: trader, t: world.now }
   delete mine[told.id]!.stance
+  // What the stranger said and the trader says otherwise: the asker knows now what the stranger's word is worth (M10.3).
+  checkedClaims(world, asker, subject, key)
   return answer
 }
 

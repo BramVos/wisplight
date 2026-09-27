@@ -260,6 +260,18 @@ aftermath:
       - id: word
         do: { carry_word: $a, to: npc_sijbrand, about: $subject }
 
+  # Heard that a workshop works again (M10.3): whose trade takes in what it makes goes there, today.
+  # Told the mill turns when it does not, the baker walks to Molenend for nothing, and sees it for herself.
+  - id: heard_working
+    signal: heard_working
+    about: first
+    topic: working
+    expires: 1
+    steps:
+      - id: go
+        when: [{ needs_from: [$a, $subject] }]
+        do: { goal: Visit, who: $a, target: $subject, priority: 0.9, hours: 12 }
+
   # People from elsewhere stay on: by custom, only grumbling.
   - id: strangers_stay
     signal: strangers_stay
