@@ -1,0 +1,354 @@
+De speler als dief op Skerrow (isle), seed 7
+
+######## THE PLAYER ACTS
+Cold water, then stones. You wake on your face on a strand of black shingle, with the sea still pulling at your boots. Of the Grey Gull there is not much left: a broken mast, a spill of cordage, a cask rolling in the surf. Of her crew there is nothing at all.
+
+Gulls argue overhead. Somewhere beyond the rocks a bell rings once, thin and far, and then stops. There are people on this island, then.
+
+This is Skerrow, though you do not know it yet. No ship has called here since the light went out.
+
+Type LOOK to look around. Type HELP if you are lost. You are, rather.
+The Wreck Strand
+You stand on a strand of black shingle where the sea throws up what is left of the [Grey Gull]: a broken mast, a spill of wet rope, a cask rolling in the shallows. The stones clatter and hiss with every wave, and the air tastes of salt and tar. Gulls quarrel over something you would rather not look at. North, a path climbs the low cliff; east, the rocks give way to the [Tidepools].
+On the ground: a cask of lamp oil, a coil of rope and a bolt of sailcloth.
+Exits: north, east
+The pace of events is normal. Type TEMPO CALM or TEMPO DRAMATIC for less or more happening in the world.
+New quest: Off Skerrow. The Grey Gull broke on the rocks of Skerrow, and you alone came ashore. No ship calls since the beacon on the headland went out, and the winter storms will soon close the sea. Find a way off the island.
+
+==== RECOGNISE (Windsday 3 Leaffall 412 SF, 07:10 (morning))
+
+# Shortcut: to the Salt Kettle at night, when Maren sleeps.
+
+> @goto loc_skerrow_salt_kettle   [build command: a shortcut]
+[build] You are at The Salt Kettle.
+The Salt Kettle
+The inn is one long, smoky room under black beams, with a fire at one end and a barrel of ale at the other. It smells of fish stew, tallow and wet wool drying. A ship's figurehead, a woman with a chipped nose, watches the door from the corner; they say she came off the last ship that broke here before the [Grey Gull]. The door west goes out to the green.
+Exits: west
+Here: Maren of the Salt Kettle, a fisherwoman.
++10 experience: you found The Salt Kettle.
++30 experience: you came to Skerrow Hythe.
+
+> @time 2   [build command: a shortcut]
+[build] 1130 minutes pass.
+Wenna leaves west.
+Wenna arrives from the west.
+Wenna stops and gives you a nod, curious about the stranger.
+Maren nods to Wenna.
+Wenna leaves west.
+Wenna arrives from the west.
+Maren nods to Wenna.
+Wenna puts out the lamp and goes to bed.
+Maren puts out the lamp and goes to bed.
+
+> look
+The Salt Kettle
+The fire is banked and the benches mostly empty. The figurehead in the corner has a candle stub in her hand, and the wax has run down her wooden arm. You can hear the wind trying the shutters. The door west goes out to the green.
+Exits: west
+Here: Maren of the Salt Kettle (asleep), a fisherwoman (asleep).
+
+> steal pitch
+You slip a pot of pitch under your coat.
+(Stealth 9)
+
+> inventory
+You carry a cutlass, a knife, a pot of pitch, a sealskin jerkin and 2 ship's biscuits, and 3 sp 5 cp.
+
+> wait 6 hours
+Wenna leaves west.
+Time passes. It is Thornsday 4 Leaffall 412 SF, 08:00 (morning).
+
+> look
+The Salt Kettle
+The inn is one long, smoky room under black beams, with a fire at one end and a barrel of ale at the other. It smells of fish stew, tallow and wet wool drying. A ship's figurehead, a woman with a chipped nose, watches the door from the corner; they say she came off the last ship that broke here before the [Grey Gull]. The door west goes out to the green.
+Exits: west
+Here: Maren of the Salt Kettle (at work).
+
+> talk maren of the salt kettle
+You are talking with Maren of the Salt Kettle. Type what you want to say, pick a number, or BYE to stop.
+Maren nods. "Morning."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+Maren nods slowly. "A pot of pitch went missing from Maren at The Salt Kettle. Nobody knows who took it. (You saw it yourself.)"
+
+> bye
+Maren lifts a hand. "Go on, then."
+
+> journal
+People: Maren Holt.
+Places: Skerrow Hythe, the Shore, The Headland, The Salt Kettle, The Tidepools, The Wreck Strand.
+Lore: the stranger in Skerrow Hythe, the theft at The Salt Kettle, the Grey Gull.
+
+==== INFLUENCE (Thornsday 4 Leaffall 412 SF, 08:02 (morning))
+
+# Make it right: give it back, and say sorry.
+
+> talk maren
+You are talking with Maren of the Salt Kettle. Type what you want to say, pick a number, or BYE to stop.
+Maren nods. "Morning."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> give pitch to maren
+You give a pot of pitch to Maren.
+Maren turns it over in her hands. "That's mine. From my own shelf." A long look at you, and it goes back where it belongs.
+
+> I am sorry. I took it in the night.
+Maren shrugs. "Well. Let's leave it."
+
+> bye
+Maren lifts a hand. "Go on, then."
+
+==== AFTER (Thornsday 4 Leaffall 412 SF, 08:04 (morning))
+
+[24 hours pass]
+Wenna arrives from the west.
+Wenna stops and gives you a nod, curious about the stranger.
+Maren nods to Wenna.
+Maren and Wenna stand talking in The Salt Kettle.
+Wenna leaves west.
+Wenna arrives from the west.
+Maren nods to Wenna.
+Wenna puts out the lamp and goes to bed.
+Maren puts out the lamp and goes to bed.
+Wenna leaves west.
+
+> look
+The Salt Kettle
+The inn is one long, smoky room under black beams, with a fire at one end and a barrel of ale at the other. It smells of fish stew, tallow and wet wool drying. A ship's figurehead, a woman with a chipped nose, watches the door from the corner; they say she came off the last ship that broke here before the [Grey Gull]. The door west goes out to the green.
+Exits: west
+Here: Maren of the Salt Kettle (at work).
+
+> talk maren of the salt kettle
+You are talking with Maren of the Salt Kettle. Type what you want to say, pick a number, or BYE to stop.
+Maren nods. "Morning."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+Maren thinks a moment. "A pot of pitch went missing from Maren at The Salt Kettle. Nobody knows who took it. (You saw it yourself.)"
+
+> bye
+Maren lifts a hand. "Go on, then."
+
+[72 hours pass]
+Wenna arrives from the west.
+Wenna stops and gives you a nod, curious about the stranger.
+Maren nods to Wenna.
+Wenna leaves west.
+Wenna arrives from the west.
+Maren nods to Wenna.
+Wenna puts out the lamp and goes to bed.
+Maren puts out the lamp and goes to bed.
+Wenna leaves west.
+Wenna arrives from the west.
+Wenna stops and gives you a nod, curious about the stranger.
+Maren nods to Wenna.
+Wenna leaves west.
+Wenna arrives from the west.
+Maren nods to Wenna.
+Wenna puts out the lamp and goes to bed.
+Maren puts out the lamp and goes to bed.
+Wenna leaves west.
+Wenna arrives from the west.
+Wenna stops and gives you a nod, curious about the stranger.
+Maren nods to Wenna.
+Wenna leaves west.
+Wenna arrives from the west.
+Maren nods to Wenna.
+Wenna puts out the lamp and goes to bed.
+Maren puts out the lamp and goes to bed.
+Wenna leaves west.
+
+> look
+The Salt Kettle
+The inn is one long, smoky room under black beams, with a fire at one end and a barrel of ale at the other. It smells of fish stew, tallow and wet wool drying. A ship's figurehead, a woman with a chipped nose, watches the door from the corner; they say she came off the last ship that broke here before the [Grey Gull]. The door west goes out to the green.
+Exits: west
+Here: Maren of the Salt Kettle (at work).
+
+> talk maren of the salt kettle
+You are talking with Maren of the Salt Kettle. Type what you want to say, pick a number, or BYE to stop.
+Maren nods. "Morning."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+Maren scratches an ear. "A pot of pitch went missing from Maren at The Salt Kettle. Nobody knows who took it. (You saw it yourself.)"
+
+> bye
+Maren lifts a hand. "Go on, then."
+
+> journal
+People: Maren Holt.
+Places: Skerrow Hythe, the Shore, The Headland, The Salt Kettle, The Tidepools, The Wreck Strand.
+Lore: the stranger in Skerrow Hythe, the theft at The Salt Kettle, the stranger bringing back Maren's pot of pitch, the Grey Gull.
+
+==== END (Moonday 8 Leaffall 412 SF, 08:08 (morning))
+Quests: off_skerrow: open, stage stranded
+
+######## CONTROL: THE PLAYER DOES NOTHING
+Cold water, then stones. You wake on your face on a strand of black shingle, with the sea still pulling at your boots. Of the Grey Gull there is not much left: a broken mast, a spill of cordage, a cask rolling in the surf. Of her crew there is nothing at all.
+
+Gulls argue overhead. Somewhere beyond the rocks a bell rings once, thin and far, and then stops. There are people on this island, then.
+
+This is Skerrow, though you do not know it yet. No ship has called here since the light went out.
+
+Type LOOK to look around. Type HELP if you are lost. You are, rather.
+The Wreck Strand
+You stand on a strand of black shingle where the sea throws up what is left of the [Grey Gull]: a broken mast, a spill of wet rope, a cask rolling in the shallows. The stones clatter and hiss with every wave, and the air tastes of salt and tar. Gulls quarrel over something you would rather not look at. North, a path climbs the low cliff; east, the rocks give way to the [Tidepools].
+On the ground: a cask of lamp oil, a coil of rope and a bolt of sailcloth.
+Exits: north, east
+The pace of events is normal. Type TEMPO CALM or TEMPO DRAMATIC for less or more happening in the world.
+New quest: Off Skerrow. The Grey Gull broke on the rocks of Skerrow, and you alone came ashore. No ship calls since the beacon on the headland went out, and the winter storms will soon close the sea. Find a way off the island.
+
+==== RECOGNISE (Windsday 3 Leaffall 412 SF, 07:10 (morning))
+
+# Shortcut: to the Salt Kettle at night, when Maren sleeps.
+
+> @goto loc_skerrow_salt_kettle   [build command: a shortcut]
+[build] You are at The Salt Kettle.
+The Salt Kettle
+The inn is one long, smoky room under black beams, with a fire at one end and a barrel of ale at the other. It smells of fish stew, tallow and wet wool drying. A ship's figurehead, a woman with a chipped nose, watches the door from the corner; they say she came off the last ship that broke here before the [Grey Gull]. The door west goes out to the green.
+Exits: west
+Here: Maren of the Salt Kettle, a fisherwoman.
++10 experience: you found The Salt Kettle.
++30 experience: you came to Skerrow Hythe.
+
+> @time 2   [build command: a shortcut]
+[build] 1130 minutes pass.
+Wenna leaves west.
+Wenna arrives from the west.
+Wenna stops and gives you a nod, curious about the stranger.
+Maren nods to Wenna.
+Wenna leaves west.
+Wenna arrives from the west.
+Maren nods to Wenna.
+Wenna puts out the lamp and goes to bed.
+Maren puts out the lamp and goes to bed.
+
+> look
+The Salt Kettle
+The fire is banked and the benches mostly empty. The figurehead in the corner has a candle stub in her hand, and the wax has run down her wooden arm. You can hear the wind trying the shutters. The door west goes out to the green.
+Exits: west
+Here: Maren of the Salt Kettle (asleep), a fisherwoman (asleep).
+
+> steal pitch
+You slip a pot of pitch under your coat.
+(Stealth 9)
+
+> inventory
+You carry a cutlass, a knife, a pot of pitch, a sealskin jerkin and 2 ship's biscuits, and 3 sp 5 cp.
+
+> wait 6 hours
+Wenna leaves west.
+Time passes. It is Thornsday 4 Leaffall 412 SF, 08:00 (morning).
+
+> look
+The Salt Kettle
+The inn is one long, smoky room under black beams, with a fire at one end and a barrel of ale at the other. It smells of fish stew, tallow and wet wool drying. A ship's figurehead, a woman with a chipped nose, watches the door from the corner; they say she came off the last ship that broke here before the [Grey Gull]. The door west goes out to the green.
+Exits: west
+Here: Maren of the Salt Kettle (at work).
+
+> talk maren of the salt kettle
+You are talking with Maren of the Salt Kettle. Type what you want to say, pick a number, or BYE to stop.
+Maren nods. "Morning."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+Maren nods slowly. "A pot of pitch went missing from Maren at The Salt Kettle. Nobody knows who took it. (You saw it yourself.)"
+
+> bye
+Maren lifts a hand. "Go on, then."
+
+> journal
+People: Maren Holt.
+Places: Skerrow Hythe, the Shore, The Headland, The Salt Kettle, The Tidepools, The Wreck Strand.
+Lore: the stranger in Skerrow Hythe, the theft at The Salt Kettle, the Grey Gull.
+
+==== AFTER (Thornsday 4 Leaffall 412 SF, 08:02 (morning))
+
+[24 hours pass]
+Wenna arrives from the west.
+Wenna stops and gives you a nod, curious about the stranger.
+Maren nods to Wenna.
+Maren and Wenna stand talking in The Salt Kettle.
+Wenna leaves west.
+Wenna arrives from the west.
+Maren nods to Wenna.
+Wenna puts out the lamp and goes to bed.
+Maren puts out the lamp and goes to bed.
+Wenna leaves west.
+
+> look
+The Salt Kettle
+The inn is one long, smoky room under black beams, with a fire at one end and a barrel of ale at the other. It smells of fish stew, tallow and wet wool drying. A ship's figurehead, a woman with a chipped nose, watches the door from the corner; they say she came off the last ship that broke here before the [Grey Gull]. The door west goes out to the green.
+Exits: west
+Here: Maren of the Salt Kettle (at work).
+
+> talk maren of the salt kettle
+You are talking with Maren of the Salt Kettle. Type what you want to say, pick a number, or BYE to stop.
+Maren nods. "Morning."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+Maren thinks a moment. "A pot of pitch went missing from Maren at The Salt Kettle. Nobody knows who took it. (You saw it yourself.)"
+
+> bye
+Maren lifts a hand. "Go on, then."
+
+[72 hours pass]
+Wenna arrives from the west.
+Wenna stops and gives you a nod, curious about the stranger.
+Maren nods to Wenna.
+Wenna leaves west.
+Wenna arrives from the west.
+Maren nods to Wenna.
+Wenna puts out the lamp and goes to bed.
+Maren puts out the lamp and goes to bed.
+Wenna leaves west.
+Wenna arrives from the west.
+Wenna stops and gives you a nod, curious about the stranger.
+Maren nods to Wenna.
+Wenna leaves west.
+Wenna arrives from the west.
+Maren nods to Wenna.
+Wenna puts out the lamp and goes to bed.
+Maren puts out the lamp and goes to bed.
+Wenna leaves west.
+Wenna arrives from the west.
+Wenna stops and gives you a nod, curious about the stranger.
+Maren nods to Wenna.
+Wenna leaves west.
+Wenna arrives from the west.
+Maren nods to Wenna.
+Wenna puts out the lamp and goes to bed.
+Maren puts out the lamp and goes to bed.
+Wenna leaves west.
+
+> look
+The Salt Kettle
+The inn is one long, smoky room under black beams, with a fire at one end and a barrel of ale at the other. It smells of fish stew, tallow and wet wool drying. A ship's figurehead, a woman with a chipped nose, watches the door from the corner; they say she came off the last ship that broke here before the [Grey Gull]. The door west goes out to the green.
+Exits: west
+Here: Maren of the Salt Kettle (at work).
+
+> talk maren of the salt kettle
+You are talking with Maren of the Salt Kettle. Type what you want to say, pick a number, or BYE to stop.
+Maren nods. "Morning."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+Maren scratches an ear. "A pot of pitch went missing from Maren at The Salt Kettle. Nobody knows who took it. (You saw it yourself.)"
+
+> bye
+Maren lifts a hand. "Go on, then."
+
+> journal
+People: Maren Holt.
+Places: Skerrow Hythe, the Shore, The Headland, The Salt Kettle, The Tidepools, The Wreck Strand.
+Lore: the stranger in Skerrow Hythe, the theft at The Salt Kettle, the Grey Gull.
+
+==== END (Moonday 8 Leaffall 412 SF, 08:06 (morning))
+Quests: off_skerrow: open, stage stranded

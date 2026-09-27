@@ -1,0 +1,369 @@
+Een verdrinking op Skerrow (isle), seed 7
+
+######## THE PLAYER ACTS
+Cold water, then stones. You wake on your face on a strand of black shingle, with the sea still pulling at your boots. Of the Grey Gull there is not much left: a broken mast, a spill of cordage, a cask rolling in the surf. Of her crew there is nothing at all.
+
+Gulls argue overhead. Somewhere beyond the rocks a bell rings once, thin and far, and then stops. There are people on this island, then.
+
+This is Skerrow, though you do not know it yet. No ship has called here since the light went out.
+
+Type LOOK to look around. Type HELP if you are lost. You are, rather.
+The Wreck Strand
+You stand on a strand of black shingle where the sea throws up what is left of the [Grey Gull]: a broken mast, a spill of wet rope, a cask rolling in the shallows. The stones clatter and hiss with every wave, and the air tastes of salt and tar. Gulls quarrel over something you would rather not look at. North, a path climbs the low cliff; east, the rocks give way to the [Tidepools].
+On the ground: a cask of lamp oil, a coil of rope and a bolt of sailcloth.
+Exits: north, east
+The pace of events is normal. Type TEMPO CALM or TEMPO DRAMATIC for less or more happening in the world.
+New quest: Off Skerrow. The Grey Gull broke on the rocks of Skerrow, and you alone came ashore. No ship calls since the beacon on the headland went out, and the winter storms will soon close the sea. Find a way off the island.
+
+==== RECOGNISE (Windsday 3 Leaffall 412 SF, 07:10 (morning))
+
+# Shortcut: to the Salt Kettle, where the island eats and talks.
+
+> @goto loc_skerrow_salt_kettle   [build command: a shortcut]
+[build] You are at The Salt Kettle.
+The Salt Kettle
+The inn is one long, smoky room under black beams, with a fire at one end and a barrel of ale at the other. It smells of fish stew, tallow and wet wool drying. A ship's figurehead, a woman with a chipped nose, watches the door from the corner; they say she came off the last ship that broke here before the [Grey Gull]. The door west goes out to the green.
+Exits: west
+Here: Maren of the Salt Kettle, a fisherwoman.
++10 experience: you found The Salt Kettle.
++30 experience: you came to Skerrow Hythe.
+
+> @time 12   [build command: a shortcut]
+[build] 290 minutes pass.
+Wenna leaves west.
+
+# Shortcut: a death comes when it comes; here Wenna the fisher drowns at once.
+
+> @kill wenna drowned off the harbour wall   [build command: a shortcut]
+[build] Wenna Dray drowned off the harbour wall. Belang 4.
+
+> wait 2 hours
+Time passes. It is Windsday 3 Leaffall 412 SF, 14:00 (afternoon).
+
+> look
+The Salt Kettle
+The inn is one long, smoky room under black beams, with a fire at one end and a barrel of ale at the other. It smells of fish stew, tallow and wet wool drying. A ship's figurehead, a woman with a chipped nose, watches the door from the corner; they say she came off the last ship that broke here before the [Grey Gull]. The door west goes out to the green.
+Exits: west
+Here: Maren of the Salt Kettle (at work).
+
+> talk maren of the salt kettle
+You are talking with Maren of the Salt Kettle. Type what you want to say, pick a number, or BYE to stop.
+Maren nods. "Afternoon."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+Maren nods slowly. "News of the day here: Wenna is dead. She drowned off the harbour wall, they say."
+
+> bye
+Maren lifts a hand. "Go on, then."
+
+> journal
+People: Maren Holt.
+Places: Skerrow Hythe, the Shore, The Headland, The Salt Kettle, The Tidepools, The Wreck Strand.
+Lore: the stranger in Skerrow Hythe, the death of Wenna Dray, the Grey Gull, news in Skerrow Hythe.
+
+==== INFLUENCE (Windsday 3 Leaffall 412 SF, 14:02 (afternoon))
+
+# Go to those she left: Maren, who kept the inn with her.
+
+> wait for maren
+Maren is here.
+
+> talk maren
+You are talking with Maren of the Salt Kettle. Type what you want to say, pick a number, or BYE to stop.
+Maren nods. "Afternoon."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> ask about wenna
+You: "What do you know about wenna?"
+Maren thinks a moment. "Wenna is dead. She drowned off the harbour wall, they say."
+
+> What happened to Wenna?
+Maren scratches an ear. "Wenna is dead. She drowned off the harbour wall, they say."
+
+> bye
+Maren lifts a hand. "Go on, then."
+
+> west
+Skerrow Hythe, the Green
+A dozen stone cottages with turf roofs stand round a patch of wind-flattened grass and a squat well. Hens pick about your feet, and somewhere a door bangs in the wind, over and over. The low, lit door of the Salt Kettle is on the east side of the green. Steps lead south to the harbour, a track climbs north to the headland and the [beacon], and west the cliff path runs along the sea.
+Exits: south, east, north, west
+Here: Pip, the boatman's boy (playing).
++10 experience: you found Skerrow Hythe, the Green.
+
+> talk pip, the boatman's boy
+You are talking with Pip, the boatman's boy. Type what you want to say, pick a number, or BYE to stop.
+Pip nods. "Afternoon."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+Pip nods slowly. "News of the day here: Wenna is dead. She drowned off the harbour wall, they say."
+
+> bye
+Pip lifts a hand. "Go on, then."
+
+==== AFTER (Windsday 3 Leaffall 412 SF, 14:08 (afternoon))
+
+[24 hours pass]
+Garrick arrives from the north.
+Garrick and Pip pass each other without a word.
+Pip leaves south.
+Pip arrives from the south.
+Pip stops and gives you a nod, curious about the stranger.
+Brannoc arrives from the south.
+Brannoc and Garrick pass each other without a word.
+Brannoc and Pip greet each other warmly.
+Pip leaves south.
+Brannoc leaves south.
+Garrick leaves north.
+Pip arrives from the south.
+Pip stops and gives you a nod, curious about the stranger.
+Pip leaves south.
+Pip arrives from the south.
+Tamsin arrives from the north.
+Tamsin stops and gives you a nod, curious about the stranger.
+Pip claps Tamsin on the shoulder.
+Tamsin leaves west.
+
+> look
+Skerrow Hythe, the Green
+A dozen stone cottages with turf roofs stand round a patch of wind-flattened grass and a squat well. Hens pick about your feet, and somewhere a door bangs in the wind, over and over. The low, lit door of the Salt Kettle is on the east side of the green. Steps lead south to the harbour, a track climbs north to the headland and the [beacon], and west the cliff path runs along the sea.
+Exits: south, east, north, west
+Here: Pip, the boatman's boy (playing).
+
+> talk pip, the boatman's boy
+You are talking with Pip, the boatman's boy. Type what you want to say, pick a number, or BYE to stop.
+Pip nods. "Afternoon."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+Pip thinks a moment. "News of the day here: Wenna is dead. She drowned off the harbour wall, they say."
+
+> bye
+Pip lifts a hand. "Go on, then."
+
+> journal
+People: Maren Holt, Pip Reed, Wenna Dray.
+Places: Skerrow Hythe, the Shore, Skerrow Hythe, the Green, The Headland, The Salt Kettle, The Tidepools, The Wreck Strand.
+Lore: the stranger in Skerrow Hythe, the death of Wenna Dray, the Grey Gull, news in Skerrow Hythe.
+
+[144 hours pass]
+Pip arrives from the south.
+Pip stops and gives you a nod, curious about the stranger.
+Pip leaves south.
+Pip arrives from the south.
+Tamsin arrives from the north.
+Tamsin stops and gives you a nod, curious about the stranger.
+Pip claps Tamsin on the shoulder.
+Tamsin leaves west.
+Garrick arrives from the north.
+Garrick and Pip pass each other without a word.
+Tamsin arrives from the north.
+Garrick nods to Tamsin.
+Pip claps Tamsin on the shoulder.
+Tamsin leaves west.
+Pip leaves south.
+Pip arrives from the south.
+Pip stops and gives you a nod, curious about the stranger.
+Brannoc arrives from the south.
+Brannoc and Garrick pass each other without a word.
+Brannoc and Pip greet each other warmly.
+Pip leaves south.
+Brannoc leaves south.
+Garrick leaves north.
+Pip arrives from the south.
+Pip stops and gives you a nod, curious about the stranger.
+Pip leaves south.
+Pip arrives from the south.
+Tamsin arrives from the north.
+Tamsin stops and gives you a nod, curious about the stranger.
+Pip claps Tamsin on the shoulder.
+Tamsin leaves west.
+Garrick arrives from the north.
+Garrick and Pip pass each other without a word.
+Tamsin arrives from the north.
+Garrick nods to Tamsin.
+Pip claps Tamsin on the shoulder.
+Tamsin leaves west.
+Pip leaves south.
+Pip arrives from the south.
+Pip stops and gives you a nod, curious about the stranger.
+Brannoc arrives from the south.
+Brannoc and Garrick pass each other without a word.
+Brannoc and Pip greet each other warmly.
+Pip leaves south.
+Brannoc leaves south.
+Garrick leaves north.
+Pip arrives from the south.
+Pip stops and gives you a nod, curious about the stranger.
+Pip leaves south.
+Pip arrives from the south.
+Tamsin arrives from the north.
+Tamsin stops and gives you a nod, curious about the stranger.
+Pip claps Tamsin on the shoulder.
+Tamsin leaves west.
+Garrick arrives from the north.
+Garrick and Pip pass each other without a word.
+Tamsin arrives from the north.
+Garrick nods to Tamsin.
+Pip claps Tamsin on the shoulder.
+Pip leaves south.
+Tamsin leaves west.
+Pip arrives from the south.
+Pip stops and gives you a nod, curious about the stranger.
+Brannoc arrives from the south.
+Brannoc and Garrick pass each other without a word.
+Brannoc and Pip greet each other warmly.
+Pip leaves south.
+Brannoc leaves south.
+Garrick leaves north.
+Pip arrives from the south.
+Pip stops and gives you a nod, curious about the stranger.
+Pip leaves south.
+Pip arrives from the south.
+Tamsin arrives from the north.
+Tamsin stops and gives you a nod, curious about the stranger.
+Pip claps Tamsin on the shoulder.
+Tamsin leaves west.
+
+> look
+Skerrow Hythe, the Green
+A dozen stone cottages with turf roofs stand round a patch of wind-flattened grass and a squat well. Hens pick about your feet, and somewhere a door bangs in the wind, over and over. The low, lit door of the Salt Kettle is on the east side of the green. Steps lead south to the harbour, a track climbs north to the headland and the [beacon], and west the cliff path runs along the sea.
+Exits: south, east, north, west
+Here: Pip, the boatman's boy (playing).
+
+> talk pip, the boatman's boy
+You are talking with Pip, the boatman's boy. Type what you want to say, pick a number, or BYE to stop.
+Pip nods. "Afternoon."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+Pip scratches an ear. "Wenna Dray drowned off the harbour wall. (You saw it yourself.)"
+
+> bye
+Pip lifts a hand. "Go on, then."
+
+==== END (Windsday 10 Leaffall 412 SF, 14:12 (afternoon))
+Quests: off_skerrow: open, stage stranded
+
+######## CONTROL: THE PLAYER DOES NOTHING
+Cold water, then stones. You wake on your face on a strand of black shingle, with the sea still pulling at your boots. Of the Grey Gull there is not much left: a broken mast, a spill of cordage, a cask rolling in the surf. Of her crew there is nothing at all.
+
+Gulls argue overhead. Somewhere beyond the rocks a bell rings once, thin and far, and then stops. There are people on this island, then.
+
+This is Skerrow, though you do not know it yet. No ship has called here since the light went out.
+
+Type LOOK to look around. Type HELP if you are lost. You are, rather.
+The Wreck Strand
+You stand on a strand of black shingle where the sea throws up what is left of the [Grey Gull]: a broken mast, a spill of wet rope, a cask rolling in the shallows. The stones clatter and hiss with every wave, and the air tastes of salt and tar. Gulls quarrel over something you would rather not look at. North, a path climbs the low cliff; east, the rocks give way to the [Tidepools].
+On the ground: a cask of lamp oil, a coil of rope and a bolt of sailcloth.
+Exits: north, east
+The pace of events is normal. Type TEMPO CALM or TEMPO DRAMATIC for less or more happening in the world.
+New quest: Off Skerrow. The Grey Gull broke on the rocks of Skerrow, and you alone came ashore. No ship calls since the beacon on the headland went out, and the winter storms will soon close the sea. Find a way off the island.
+
+==== RECOGNISE (Windsday 3 Leaffall 412 SF, 07:10 (morning))
+
+# Shortcut: to the Salt Kettle, where the island eats and talks.
+
+> @goto loc_skerrow_salt_kettle   [build command: a shortcut]
+[build] You are at The Salt Kettle.
+The Salt Kettle
+The inn is one long, smoky room under black beams, with a fire at one end and a barrel of ale at the other. It smells of fish stew, tallow and wet wool drying. A ship's figurehead, a woman with a chipped nose, watches the door from the corner; they say she came off the last ship that broke here before the [Grey Gull]. The door west goes out to the green.
+Exits: west
+Here: Maren of the Salt Kettle, a fisherwoman.
++10 experience: you found The Salt Kettle.
++30 experience: you came to Skerrow Hythe.
+
+> @time 12   [build command: a shortcut]
+[build] 290 minutes pass.
+Wenna leaves west.
+
+# Shortcut: a death comes when it comes; here Wenna the fisher drowns at once.
+
+> @kill wenna drowned off the harbour wall   [build command: a shortcut]
+[build] Wenna Dray drowned off the harbour wall. Belang 4.
+
+> wait 2 hours
+Time passes. It is Windsday 3 Leaffall 412 SF, 14:00 (afternoon).
+
+> look
+The Salt Kettle
+The inn is one long, smoky room under black beams, with a fire at one end and a barrel of ale at the other. It smells of fish stew, tallow and wet wool drying. A ship's figurehead, a woman with a chipped nose, watches the door from the corner; they say she came off the last ship that broke here before the [Grey Gull]. The door west goes out to the green.
+Exits: west
+Here: Maren of the Salt Kettle (at work).
+
+> talk maren of the salt kettle
+You are talking with Maren of the Salt Kettle. Type what you want to say, pick a number, or BYE to stop.
+Maren nods. "Afternoon."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+Maren nods slowly. "News of the day here: Wenna is dead. She drowned off the harbour wall, they say."
+
+> bye
+Maren lifts a hand. "Go on, then."
+
+> journal
+People: Maren Holt.
+Places: Skerrow Hythe, the Shore, The Headland, The Salt Kettle, The Tidepools, The Wreck Strand.
+Lore: the stranger in Skerrow Hythe, the death of Wenna Dray, the Grey Gull, news in Skerrow Hythe.
+
+==== AFTER (Windsday 3 Leaffall 412 SF, 14:02 (afternoon))
+
+[24 hours pass]
+Maren puts out the lamp and goes to bed.
+
+> look
+The Salt Kettle
+The inn is one long, smoky room under black beams, with a fire at one end and a barrel of ale at the other. It smells of fish stew, tallow and wet wool drying. A ship's figurehead, a woman with a chipped nose, watches the door from the corner; they say she came off the last ship that broke here before the [Grey Gull]. The door west goes out to the green.
+Exits: west
+Here: Maren of the Salt Kettle (at work).
+
+> talk maren of the salt kettle
+You are talking with Maren of the Salt Kettle. Type what you want to say, pick a number, or BYE to stop.
+Maren nods. "Afternoon."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+Maren thinks a moment. "News of the day here: Wenna is dead. She drowned off the harbour wall, they say."
+
+> bye
+Maren lifts a hand. "Go on, then."
+
+> journal
+People: Maren Holt.
+Places: Skerrow Hythe, the Shore, The Headland, The Salt Kettle, The Tidepools, The Wreck Strand.
+Lore: the stranger in Skerrow Hythe, the death of Wenna Dray, the Grey Gull, news in Skerrow Hythe.
+
+[144 hours pass]
+Maren puts out the lamp and goes to bed.
+Maren puts out the lamp and goes to bed.
+Maren puts out the lamp and goes to bed.
+Maren puts out the lamp and goes to bed.
+
+> look
+The Salt Kettle
+The inn is one long, smoky room under black beams, with a fire at one end and a barrel of ale at the other. It smells of fish stew, tallow and wet wool drying. A ship's figurehead, a woman with a chipped nose, watches the door from the corner; they say she came off the last ship that broke here before the [Grey Gull]. The door west goes out to the green.
+Exits: west
+Here: Maren of the Salt Kettle (at work).
+
+> talk maren of the salt kettle
+You are talking with Maren of the Salt Kettle. Type what you want to say, pick a number, or BYE to stop.
+Maren nods. "Afternoon."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+Maren scratches an ear. "Wenna is dead. She drowned off the harbour wall, they say. (It is going round; you heard it from people passing through. You are fairly sure.)"
+
+> bye
+Maren lifts a hand. "Go on, then."
+
+==== END (Windsday 10 Leaffall 412 SF, 14:06 (afternoon))
+Quests: off_skerrow: open, stage stranded

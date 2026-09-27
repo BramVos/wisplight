@@ -96,6 +96,20 @@ locations:
         as dark as the rest of the island. The sea booms on three sides.
         Tracks go south to the hamlet and west to the grove; north, the ruined
         tower is only a darker shape.
+    # The Lamp of Skerrow lit again (found in the M9.4 playtest: at night it still stood dark).
+    variants:
+      - flag: beacon_burning
+        day: |
+          The island ends here in a blunt headland with the sea on three sides
+          and the squat beacon tower on top, its green glass warm with the
+          lamp inside. It smells of fish oil and hot brass. A track runs south
+          to the hamlet and west to the grove; north, a ruined tower stands
+          alone on the last rise.
+        night: |
+          Above you the Lamp of Skerrow burns, and its long green beam sweeps
+          out over the sea and back, over and over. The tower hums faintly
+          with the heat. Tracks go south to the hamlet and west to the grove;
+          north, the ruined tower shows in each pass of the light.
     exits:
       south: { to: loc_skerrow_green, minutes: 15 }
       west: { to: loc_skerrow_silver_grove, minutes: 12 }

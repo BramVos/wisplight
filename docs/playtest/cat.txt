@@ -219,6 +219,7 @@ Aaltje lifts a hand. "Go on, then."
 > wait 10 hours
 Aaltje puts out the lamp and goes to bed.
 Time passes. It is Woensdag 15 Herfstmaand 211 AW, 05:17 (dawn).
+There are no sacks of flour to be had in Veenhoek. People make do, and grumble about it.
 
 > east
 Chapel Lane
@@ -313,31 +314,41 @@ Lore: the Cat-Widow of the Kattenbroek, the stranger in Veenhoek, the grey cat.
 
 ==== AFTER (Woensdag 15 Herfstmaand 211 AW, 12:09 (midday))
 
-[48 hours pass]
-Kaatje puts out the lamp and goes to bed.
-Kaatje leaves south.
-Kaatje arrives from the south.
-Kaatje stops and looks you over.
+# Back to the Vissers, to see how it ended.
 
-> journal
-People: Fenna Visser, Aaltje Hendriks, Jacob van Dam, Jan Visser, Kaatje, Lubbert Graanhandel, Mirte Bakker, the Count.
-Places: the Holleveen, Veenhoek, Waagdam, the Kattenbroek, Aaltje's Cottage, Chapel Lane, The Edge of the Kattenbroek, Below the Hut on Stilts, The Mill De Zwaan, The Bakery, Veenhoek, the Green, Canal Quay, Visser House, the doorstep, The Market Square, Waagdam, the West Gate.
-Lore: the Cat-Widow of the Kattenbroek, the stranger in Veenhoek, the grey cat.
+> @goto loc_visser_house   [build command: a shortcut]
+[build] You are at Visser House, the doorstep.
+Visser House, the doorstep
+A narrow house with a green door, standing open. The doorstep is empty now, swept clean, and inside a girl's voice is singing along with the spinning wheel, off key. It smells of peat smoke and boiled milk. The green is east.
+Exits: east
+Here: Fenna Visser (home again), Grietje Visser (eating), Pim (eating).
+
+> look
+Visser House, the doorstep
+A narrow house with a green door, standing open. The doorstep is empty now, swept clean, and inside a girl's voice is singing along with the spinning wheel, off key. It smells of peat smoke and boiled milk. The green is east.
+Exits: east
+Here: Fenna Visser (home again), Grietje Visser (eating), Pim (eating).
 
 [192 hours pass]
 Flour for Veenhoek: Market day passed. Market day came and went without flour. Veenhoek bought stale bread at the Goose, dear.
-Kaatje puts out the lamp and goes to bed.
-Kaatje leaves south.
-Kaatje arrives from the south.
-Kaatje stops and looks you over.
+Jan leaves east.
+Grietje leaves east.
+Grietje arrives from the east.
+Grietje stops and gives you a nod, curious about the stranger.
+Fenna and Grietje greet each other warmly.
+Grietje and Pim greet each other warmly.
+Jan arrives from the east.
+Fenna and Jan greet each other warmly.
+Grietje and Jan greet each other warmly.
+Jan and Pim greet each other warmly.
 
 > look
-Below the Hut on Stilts
-A hut of grey planks stands on stilts over the black water, its ladder drawn up. Fish bones hang from the eaves on strings and turn in the wind, clicking softly. A cat sits on the top rung and does not blink. The reed path runs back west.
-Exits: west, east, south, northwest
-Here: the widow Kaatje (stopping to look at the stranger).
+Visser House, the doorstep
+A narrow house with a green door, standing open. The doorstep is empty now, swept clean, and inside a girl's voice is singing along with the spinning wheel, off key. It smells of peat smoke and boiled milk. The green is east.
+Exits: east
+Here: Fenna Visser (eating), Grietje Visser (eating), Jan Visser (eating), Pim (eating).
 
-==== END (Zaterdag 25 Herfstmaand 211 AW, 12:09 (midday))
+==== END (Donderdag 23 Herfstmaand 211 AW, 12:09 (midday))
 Quests: grey_cat_on_the_doorstep: honest; flour_for_veenhoek: market_day_passed
 
 ######## CONTROL: THE PLAYER DOES NOTHING
@@ -434,22 +445,35 @@ Lore: the stranger in Veenhoek.
 
 ==== AFTER (Dinsdag 14 Herfstmaand 211 AW, 18:41 (evening))
 
-[48 hours pass]
+# Back to the Vissers, to see how it ended.
 
-
-> journal
-People: Fenna Visser, Jan Visser, Lubbert Graanhandel, Mirte Bakker.
-Places: Veenhoek, Waagdam, the Kattenbroek, The Mill De Zwaan, The Bakery, Veenhoek, the Green, Canal Quay, Visser House, the doorstep, The Market Square, Waagdam, the West Gate.
-Lore: the stranger in Veenhoek.
-
-[192 hours pass]
-Flour for Veenhoek: Market day passed. Market day came and went without flour. Veenhoek bought stale bread at the Goose, dear.
+> @goto loc_visser_house   [build command: a shortcut]
+[build] You are at Visser House, the doorstep.
+Visser House, the doorstep
+A narrow house with a green door. On the doorstep sits a grey cat with one white paw, very upright, watching the lane; when you come close it doesn't run, but looks at you as if it is waiting for you to say something. Inside, a spinning wheel hums. The green is east.
+Exits: east
+Here: Grietje Visser (eating), Pim (eating).
 
 > look
-The Bakery
-Warm, low and white with flour. Loaves cool on racks along the wall, and a slate by the counter says RYE 2 D in chalk, underlined twice. Through the back door, east, you can see the glow of the oven in the yard.
-Exits: west, east
-Here: Mirte the baker.
+Visser House, the doorstep
+A narrow house with a green door. On the doorstep sits a grey cat with one white paw, very upright, watching the lane; when you come close it doesn't run, but looks at you as if it is waiting for you to say something. Inside, a spinning wheel hums. The green is east.
+Exits: east
+Here: Grietje Visser (eating), Pim (eating).
 
-==== END (Vrijdag 24 Herfstmaand 211 AW, 18:41 (evening))
+[192 hours pass]
+There are no sacks of flour to be had in Veenhoek. People make do, and grumble about it.
+Flour for Veenhoek: Market day passed. Market day came and went without flour. Veenhoek bought stale bread at the Goose, dear.
+Jan leaves east.
+Jan arrives from the east.
+Grietje and Jan greet each other warmly.
+Jan and Pim greet each other warmly.
+Jan leaves east.
+
+> look
+Visser House, the doorstep
+A narrow house with a green door. On the doorstep sits a grey cat with one white paw, very upright, watching the lane; when you come close it doesn't run, but looks at you as if it is waiting for you to say something. Inside, a spinning wheel hums. The green is east.
+Exits: east
+Here: Grietje Visser, Pim (playing).
+
+==== END (Woensdag 22 Herfstmaand 211 AW, 18:41 (evening))
 Quests: grey_cat_on_the_doorstep: open, stage missing; flour_for_veenhoek: market_day_passed

@@ -23,7 +23,7 @@ import { closedBetween, placeStateLine } from './quests/plans'
 import { active } from './quests/engine'
 import { approve, restParty } from './social/companions'
 import { deed } from './social/deeds'
-import { refusedTrade } from './social/crime'
+import { refusedTrade, returnStolen } from './social/crime'
 
 // Player commands that need no AI. Each returns lines of output; commands that
 // take time call `pass(minutes)`, which runs the world and returns what the
@@ -108,12 +108,12 @@ export function runCommand(host: CommandHost, command: Command): Output[] {
       if (/^(for|op)$/i.test(command.args[0] ?? '') && command.args.length > 1) {
         const who = findNpcAnywhere(world, command.args.slice(1).join(' '))
         if (!who) return [error(`Wait for whom? Nobody called "${command.args.slice(1).join(' ')}".`)]
-        if (world.npcsAt(world.state.player.location).includes(who)) return [text(`${callName(world.npc(who))} is here.`)]
+        // Here and awake: someone asleep here is waited for until they wake.
+        const ready = () => world.npcsAt(world.state.player.location).includes(who) && world.npcState(who).activity !== 'asleep'
+        if (ready()) return [text(`${callName(world.npc(who))} is here.`)]
         const name = callName(world.npc(who))
-        const seen = host.passUntil
-          ? host.passUntil(600, () => (world.npcsAt(world.state.player.location).includes(who) ? `${name} is here.` : undefined))
-          : host.pass(600)
-        const came = world.npcsAt(world.state.player.location).includes(who)
+        const seen = host.passUntil ? host.passUntil(600, () => (ready() ? `${name} is here.` : undefined)) : host.pass(600)
+        const came = ready()
         return [...seen, text(came ? `It is ${clockText(world)}.` : `${name} has not come. It is ${clockText(world)}.`)]
       }
       // WAIT 30, WAIT 3 HOURS: minutes unless an hour is named, at most ten hours at a time.
@@ -308,6 +308,18 @@ function take(host: CommandHost, args: string[]): Output[] {
   const { world } = host
   const here = world.state.player.location
   const ground = world.state.ground[here] ?? {}
+  // TAKE ALL, GET EVERYTHING (M9.4): what lies here, all of it. The first thing a stranded player types.
+  if (args.length === 1 && /^(all|everything|alles)$/i.test(args[0]!)) {
+    const items = Object.keys(ground).filter((i) => (ground[i] ?? 0) > 0).sort()
+    if (!items.length) return [error('There is nothing here to take.')]
+    const taken = items.map((i) => {
+      const n = ground[i]!
+      add(ground, i, -n)
+      add(world.state.player.inventory, i, n)
+      return qtyName(world, i, n)
+    })
+    return [text(`You pick up ${taken.length > 1 ? `${taken.slice(0, -1).join(', ')} and ${taken.at(-1)}` : taken[0]}.`)]
+  }
   const { qty, text: name } = splitQuantity(args)
   const item = matchItem(world.content, name, Object.keys(ground))
   if (!item) return [error(name ? `There is no "${name}" here to take.` : 'Take what?')]
@@ -347,7 +359,7 @@ function give(host: CommandHost, args: string[]): Output[] {
   add(world.npcState(npcId).inventory, item, amount)
   world.emit('gift', world.state.player.location, `You give ${qtyName(world, item, amount)} to ${callName(world.npc(npcId))}.`)
   world.state.seenSeq = world.state.eventSeq
-  const returned = giveBack(world, npcId, item) ?? fulfil(world, npcId, item, amount)
+  const returned = returnStolen(world, npcId, item) ?? giveBack(world, npcId, item) ?? fulfil(world, npcId, item, amount)
   if (!returned) {
     // A gift moves someone a little, less with every gift that week (FO, chapter 8).
     deed(world, npcId, 'gift', { amount: world.basePrice(item) * amount })

@@ -6,6 +6,7 @@ import { remember } from '../npc/execute'
 import { playerCheck } from '../rules/player'
 import { upper, type World } from '../world'
 import { approve } from './companions'
+import { applyEffect } from '../dialogue/relations'
 import { deed, setMood, shiftBond } from './deeds'
 import { reputeFor } from './factions'
 import { mayReport } from './gates'
@@ -27,6 +28,8 @@ export interface Crime {
   discovered?: boolean
   suspect?: string
   investigated?: boolean
+  /** The thief brought it back to the victim (M9.4). */
+  returned?: boolean
   t: number
   place: string
   victim?: string
@@ -99,6 +102,37 @@ export function fineFor(kind: Crime['kind'], value: number): number {
  * those who like the victim think less of the player, and a witness who may
  * report it does, to the schout or the town watch.
  */
+/**
+ * The stranger gives back what they stole (M9.4): the one it was taken from
+ * knows it at once, and so knows who took it. Found in the playtest: Maren
+ * thanked the thief for her own pot of pitch.
+ */
+export function returnStolen(world: World, npcId: string, item: string): string | undefined {
+  const theft = (world.state.crimes ?? []).find((c) => c.kind === 'theft' && !c.offender && !c.returned && c.victim === npcId && c.item === item)
+  if (!theft) return undefined
+  theft.returned = true
+  // Whoever was suspected is not any more.
+  delete theft.suspect
+  const name = callName(world.npc(npcId))
+  const thing = itemName(world.content, item, 1)
+  applyEffect(world, npcId, 'affinity', -5)
+  applyEffect(world, npcId, 'trust', 3)
+  recordFact(world, {
+    kind: 'returned',
+    about: [npcId],
+    place: world.state.player.location,
+    belang: 2,
+    title: `the stranger bringing back ${name}'s ${thing}`,
+    text: {
+      precise: `The stranger brought back the ${thing} they had taken from ${name}.`,
+      village: `It was the stranger who took ${name}'s ${thing}, and then brought it back. Make of that what you will.`,
+      far: `A stranger stole, and then brought it back, they say.`,
+    },
+    witnesses: [npcId],
+  })
+  return world.say(`{name} turns it over in {their} hands. "That's mine. From my own shelf." A long look at you, and it goes back where it belongs.`, npcId)
+}
+
 export function crime(world: World, c: Omit<Crime, 'id' | 't' | 'reported' | 'law' | 'fine' | 'fact'>, texts: { title: string; precise: string; village: string; far: string }): Output[] {
   const out: Output[] = []
   const crimes = (world.state.crimes ??= [])

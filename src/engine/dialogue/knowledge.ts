@@ -235,6 +235,14 @@ export class Knowledge {
       case 'person': {
         const other = entry.ref ? content.npcs.get(entry.ref) : undefined
         if (other) {
+          // Someone who died, as far as the speaker has heard (found in the M9.4 playtest: asked about
+          // Wenna, the day she drowned, Maren told where to buy her salt fish).
+          const heard = this.world.state.news?.heard[npcId] ?? {}
+          const death = this.world.state.npcs[other.id]?.dead ? (this.world.state.news?.facts ?? []).findLast((f) => f.kind === 'death' && f.about.includes(other.id) && heard[f.id]) : undefined
+          if (death) {
+            facts.push(versionOf(death, heard[death.id]!))
+            break
+          }
           facts.push(...other.public_facts)
           if (level >= 2) {
             facts.push(`${other.short} lives at ${this.world.location(other.home).name}.`)

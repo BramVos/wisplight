@@ -9,10 +9,13 @@ import { Gateway } from '../src/node/ai/gateway'
 import { AiLog } from '../src/node/ai/log'
 import type { Provider } from '../src/node/ai/providers'
 import { UsageStore } from '../src/node/ai/usage'
+import { loadContentFromDir } from '../src/node/content'
 import { content } from './helpers'
 
 // Milestone M9.4 (docs/ROADMAP.md): finishing and release. The non-functional
 // requirements of FO chapter 18, measured where a test can measure them.
+
+const isle = await loadContentFromDir(join(import.meta.dirname, '../content'), 'isle')
 
 const folders: string[] = []
 const temp = () => {
@@ -136,7 +139,7 @@ describe('M9.4: what the playtest of the storylines found', () => {
     expect(said(engine.tick(60))).not.toMatch(/The dyke at Oude Zijl has broken/)
   })
 
-  it('does not tell the stranger their own coming as news, nor a speaker their own news', async () => {
+  it('does not tell the stranger their own coming as news', async () => {
     const engine = game()
     for (const c of ['@goto loc_goose_common', '@time 19']) await engine.handle(c)
     const someone = engine.world.npcsAt(engine.state.player.location).find((id) => engine.world.npcState(id).activity !== 'asleep')!
@@ -157,6 +160,36 @@ describe('M9.4: what the playtest of the storylines found', () => {
     const out = said(await engine.handle('wait for mirte'))
     expect(out).toMatch(/Mirte is here\./)
     expect(engine.world.npcsAt('loc_veenhoek_bakery')).toContain('npc_mirte')
+  })
+
+  it('on Skerrow: takes all there is, waits for a sleeper to wake, and lights the beacon once the oil is in', async () => {
+    const engine = new Engine(isle, { seed: 7, builder: true })
+    expect(said(await engine.handle('take all'))).toMatch(/You pick up a cask of lamp oil, a coil of rope and a bolt of sailcloth\./)
+    for (const c of ['@goto loc_skerrow_headland', 'take all', '@give lamp_oil 1', 'fill the beacon']) await engine.handle(c)
+    expect(engine.state.flags?.['beacon_fuelled']).toBe(true)
+    const waited = said(await engine.handle('wait for garrick'))
+    expect(waited).toMatch(/Garrick is here\./)
+    expect(engine.world.npcState('npc_garrick').activity).not.toBe('asleep')
+    // With the oil in, a lower mark: a few tries do it.
+    for (let i = 0; i < 12 && !engine.state.flags?.['garrick_ready']; i++) {
+      await engine.handle('ask garrick to tend the beacon')
+      if (!engine.state.flags?.['garrick_ready']) await engine.handle('wait 30')
+    }
+    expect(engine.state.flags?.['garrick_ready']).toBe(true)
+    expect(said(await engine.handle('light the beacon'))).toMatch(/green lens/)
+  })
+
+  it('answers about someone dead with the death, and knows its own goods when the thief brings them back', async () => {
+    const engine = new Engine(isle, { seed: 7, builder: true })
+    for (const c of ['@goto loc_skerrow_salt_kettle', '@time 12', '@kill wenna drowned off the harbour wall', 'wait 2 hours', 'talk maren']) await engine.handle(c)
+    expect(said(await engine.handle('ask about wenna'))).toMatch(/Wenna is dead/)
+    await engine.handle('bye')
+    const thief = new Engine(isle, { seed: 7, builder: true })
+    for (const c of ['@goto loc_skerrow_salt_kettle', '@time 2', 'steal pitch', 'wait 6 hours', 'talk maren']) await thief.handle(c)
+    expect(said(await thief.handle('give pitch to maren'))).toMatch(/That's mine/)
+    expect(thief.state.crimes?.[0]?.returned).toBe(true)
+    // A sentence that starts with "I" is said, not the inventory.
+    expect(said(await thief.handle('I am sorry. I took it in the night.'))).not.toMatch(/You carry/)
   })
 
   it('says there is nobody to ask when nobody is there', async () => {

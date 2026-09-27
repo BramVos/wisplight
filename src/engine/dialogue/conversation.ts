@@ -374,11 +374,11 @@ export class Dialogue {
     // The chronicler's news of the day for the NPC's own area comes first.
     const area = this.world.location(this.world.npc(npcId).home).area
     const today = this.knowledge.level(npcId, `news_${area}`) >= 2 ? [`news_${area}`] : []
-    // Not what the player already knows, such as their own coming (found in the M9.4 playtest: at the inn,
-    // everyone's news was the stranger who came in that evening, and the leak in the dyke went untold).
-    const known = this.world.state.news?.heard['player'] ?? {}
+    // Not the stranger's own coming, told to the stranger (found in the M9.4 playtest: at the inn, everyone's
+    // news was the stranger who came in that evening, and the leak in the dyke went untold). A theft the
+    // stranger did is still news to complain of, to the thief's face.
     const fresh = newsAbout(this.world, npcId, [], 8)
-      .filter(({ fact }) => !known[fact.id] && fact.about[0] !== npcId)
+      .filter(({ fact }) => fact.kind !== 'stranger')
       .slice(0, 2)
       .map(({ fact }) => fact.id)
     const standing = [...this.world.content.topics.values()].filter((t) => t.standing_talk).map((t) => t.id).sort().filter((t) => this.knowledge.level(npcId, t) >= 2)

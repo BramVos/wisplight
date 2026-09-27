@@ -189,6 +189,9 @@ const TALK_COMMANDS = new Set([
  */
 export function soundsLikeSpeech(verb: string, text: string): boolean {
   if (/^\S+[,!]/.test(text)) return true
+  // A one-letter command word with more after it is a sentence (found in the M9.4 playtest: "I am sorry"
+  // said to Maren was read as I, the inventory).
+  if (/^[a-z]\s+\S/i.test(text)) return true
   const whereIs = /^\S+\s+(is|are|lies|ligt|woont|zit|staat)\b/i
   if (/\?\s*$/.test(text) && !(verb === 'where' && whereIs.test(text)) && !/\s(about|over|naar)\s/i.test(text)) return true
   const second = text.split(/\s+/)[1]?.toLowerCase()

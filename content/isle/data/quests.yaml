@@ -55,6 +55,17 @@ quests:
         minutes: 30
         text: One cask after another, you pour the oil into the great bronze bowl until it shines black to the brim. The whole gallery stinks of seal.
         effects: [{ take: lamp_oil, qty: 3 }, { set: beacon_fuelled }]
+      # With oil in the bowl he has less to say against it (found in the M9.4 playtest: he still said "No oil").
+      - id: rouse_garrick_with_oil
+        say: ['(?:ask|persuade|convince|beg|tell) garrick to (?:tend|light|keep|mend|see to) (?:the )?(?:beacon|lamp|light)(?: .*)?', '(?:help|sober up|rouse|persuade|convince) garrick(?: .*)?']
+        intent: persuade Garrick the lightkeeper to tend the beacon, now there is oil in it
+        with: npc_garrick
+        when: [{ flag: beacon_fuelled }, { not_flag: garrick_ready }]
+        check: { skill: persuasion, dc: 10 }
+        once: false
+        text: 'Garrick looks at the full bowl for a long time. "You carried that up here," he says. "Thirty years I kept her, and one storm." Then he straightens up. "Right. I''ll trim her. Let the old girl shine."'
+        fail_text: '"Oil in the bowl," Garrick says, and shakes his head. "And an old man whose hands won''t keep still. Ask me again when I''ve slept on it."'
+        effects: [{ set: garrick_ready }, { send: npc_garrick, to: loc_skerrow_headland, hours: 48 }, { relation: npc_garrick, trust: 10 }]
       - id: rouse_garrick
         say: ['(?:ask|persuade|convince|beg|tell) garrick to (?:tend|light|keep|mend|see to) (?:the )?(?:beacon|lamp|light)(?: .*)?', '(?:help|sober up|rouse|persuade|convince) garrick(?: .*)?']
         intent: persuade Garrick the lightkeeper to tend the beacon again

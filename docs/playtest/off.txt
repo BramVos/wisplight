@@ -1,0 +1,376 @@
+Weg van Skerrow (isle), seed 7
+
+######## THE PLAYER ACTS
+Cold water, then stones. You wake on your face on a strand of black shingle, with the sea still pulling at your boots. Of the Grey Gull there is not much left: a broken mast, a spill of cordage, a cask rolling in the surf. Of her crew there is nothing at all.
+
+Gulls argue overhead. Somewhere beyond the rocks a bell rings once, thin and far, and then stops. There are people on this island, then.
+
+This is Skerrow, though you do not know it yet. No ship has called here since the light went out.
+
+Type LOOK to look around. Type HELP if you are lost. You are, rather.
+The Wreck Strand
+You stand on a strand of black shingle where the sea throws up what is left of the [Grey Gull]: a broken mast, a spill of wet rope, a cask rolling in the shallows. The stones clatter and hiss with every wave, and the air tastes of salt and tar. Gulls quarrel over something you would rather not look at. North, a path climbs the low cliff; east, the rocks give way to the [Tidepools].
+On the ground: a cask of lamp oil, a coil of rope and a bolt of sailcloth.
+Exits: north, east
+The pace of events is normal. Type TEMPO CALM or TEMPO DRAMATIC for less or more happening in the world.
+New quest: Off Skerrow. The Grey Gull broke on the rocks of Skerrow, and you alone came ashore. No ship calls since the beacon on the headland went out, and the winter storms will soon close the sea. Find a way off the island.
+
+==== RECOGNISE (Windsday 3 Leaffall 412 SF, 07:10 (morning))
+
+> look
+The Wreck Strand
+You stand on a strand of black shingle where the sea throws up what is left of the [Grey Gull]: a broken mast, a spill of wet rope, a cask rolling in the shallows. The stones clatter and hiss with every wave, and the air tastes of salt and tar. Gulls quarrel over something you would rather not look at. North, a path climbs the low cliff; east, the rocks give way to the [Tidepools].
+On the ground: a cask of lamp oil, a coil of rope and a bolt of sailcloth.
+Exits: north, east
+
+> take all
+You pick up a cask of lamp oil, a coil of rope and a bolt of sailcloth.
+
+> north
+The Cliff Path
+A sheep track runs along the top of the cliff between thrift and sea campion. The wind comes straight off the Glass Sea and leans on you like a hand, and far below the waves boom in the caves. South, it drops to the [Wreck Strand]. Inland it climbs north towards a stand of pale trees, and east it runs down to the hamlet.
+Exits: south, north, east
++10 experience: you found The Cliff Path.
+
+> north
+The Silver Grove
+Birches with bark gone silver-white stand close together here, out of the wind, and the moss between them is soft underfoot. Shells and scraps of cloth hang from the branches on threads, and they tick and chime whenever the air moves. A turf hut with a crooked chimney sits among the trees. The cliff path runs south, the heights climb north to the barrow of [Old Skarth], and a track crosses east to the headland.
+Exits: south, north, east, in
++10 experience: you found The Silver Grove.
++30 experience: you came to the Heights.
+
+> look
+The Silver Grove
+Birches with bark gone silver-white stand close together here, out of the wind, and the moss between them is soft underfoot. Shells and scraps of cloth hang from the branches on threads, and they tick and chime whenever the air moves. A turf hut with a crooked chimney sits among the trees. The cliff path runs south, the heights climb north to the barrow of [Old Skarth], and a track crosses east to the headland.
+Exits: south, north, east, in
+
+# Nobody here to ask.
+
+> east
+The Headland
+The island ends here in a blunt headland with the sea on three sides and a squat stone tower on top: the [beacon]. Its great lamp stands cold behind green glass, and the wind whistles through the empty gallery. Below the tower a lean-to store shed has lost half its roof, and it smells strongly of fish oil. A track runs south to the hamlet and west to the grove; north, a ruined tower stands alone on the last rise.
+On the ground: a cask of lamp oil.
+Exits: south, west, north
+Here: Garrick the lightkeeper (asleep).
++10 experience: you found The Headland.
+
+> look
+The Headland
+The island ends here in a blunt headland with the sea on three sides and a squat stone tower on top: the [beacon]. Its great lamp stands cold behind green glass, and the wind whistles through the empty gallery. Below the tower a lean-to store shed has lost half its roof, and it smells strongly of fish oil. A track runs south to the hamlet and west to the grove; north, a ruined tower stands alone on the last rise.
+On the ground: a cask of lamp oil.
+Exits: south, west, north
+Here: Garrick the lightkeeper (asleep).
+
+> examine the beacon
+The Lamp of Skerrow, a bowl of bronze as wide as a cartwheel behind a lens of green glass, cold and black with old soot.
+
+> journal
+Places: the Heights, the Shore, The Cliff Path, The Headland, The Silver Grove, The Tidepools, The Wreck Strand.
+Lore: the Grey Gull.
+
+==== INFLUENCE (Windsday 3 Leaffall 412 SF, 07:47 (morning))
+
+# The beacon is cold and Garrick asleep: one cask here, and the inn may sell more oil.
+
+> take all
+You pick up a cask of lamp oil.
+
+> wait for garrick
+Garrick is here.
+It is Windsday 3 Leaffall 412 SF, 09:32 (morning).
+
+> talk garrick
+You are talking with Garrick the lightkeeper. Type what you want to say, pick a number, or BYE to stop.
+Garrick nods. "Morning."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+Garrick shakes his head. "Nothing you would care about."
+
+> bye
+Garrick lifts a hand. "Go on, then."
+
+> ask garrick to tend the beacon
+(Persuasion 7 vs DC 14: failure)
+"What's the use?" Garrick mutters. "No oil, no light, no ships. Leave an old man be."
+
+> inventory
+You carry a cutlass, a knife, 2 casks of lamp oil, a coil of rope, a bolt of sailcloth, a sealskin jerkin and 2 ship's biscuits, and 3 sp 5 cp.
+
+# Shortcut: down to the Salt Kettle in the Hythe, to buy the third cask.
+
+> @goto loc_skerrow_salt_kettle   [build command: a shortcut]
+[build] You are at The Salt Kettle.
+The Salt Kettle
+The inn is one long, smoky room under black beams, with a fire at one end and a barrel of ale at the other. It smells of fish stew, tallow and wet wool drying. A ship's figurehead, a woman with a chipped nose, watches the door from the corner; they say she came off the last ship that broke here before the [Grey Gull]. The door west goes out to the green.
+Exits: west
+Here: Maren of the Salt Kettle (at work).
++10 experience: you found The Salt Kettle.
++30 experience: you came to Skerrow Hythe.
+
+> list
+Maren sells: mug of ale 3 cp (30 left); bowl of fish stew 8 cp (10 left); ship's biscuit 2 cp (12 left); pot of pitch 2 sp (2 left); cask of lamp oil 3 sp (2 left).
+Maren buys: salt fish for 2 cp; coil of rope for 5 cp.
+A room for the night: 1 sp 5 cp (RENT ROOM).
+
+> buy lamp oil
+You buy a cask of lamp oil from Maren for 3 sp.
+
+# Shortcut: back up to the headland.
+
+> @goto loc_skerrow_headland   [build command: a shortcut]
+[build] You are at The Headland.
+The Headland
+The island ends here in a blunt headland with the sea on three sides and a squat stone tower on top: the [beacon]. Its great lamp stands cold behind green glass, and the wind whistles through the empty gallery. Below the tower a lean-to store shed has lost half its roof, and it smells strongly of fish oil. A track runs south to the hamlet and west to the grove; north, a ruined tower stands alone on the last rise.
+Exits: south, west, north
+Here: Garrick the lightkeeper (eating).
+
+> fill the beacon
+One cask after another, you pour the oil into the great bronze bowl until it shines black to the brim. The whole gallery stinks of seal.
+
+# Now there is oil: ask Garrick again, and again the next day if need be.
+
+> wait for garrick
+Garrick is here.
+
+> ask garrick to tend the beacon
+(Persuasion 5 vs DC 10: critical failure)
+"Oil in the bowl," Garrick says, and shakes his head. "And an old man whose hands won't keep still. Ask me again when I've slept on it."
+
+> light the beacon
+The Lamp of Skerrow is not a candle. It wants oil in the bowl and a lightkeeper at the wick.
+
+> wait 10 hours
+Garrick leaves south.
+Time passes. It is Windsday 3 Leaffall 412 SF, 20:16 (evening).
+
+> wait for garrick
+Garrick is here.
+Garrick arrives from the south.
+It is Windsday 3 Leaffall 412 SF, 23:01 (night).
+
+> ask garrick to tend the beacon
+(Persuasion 22 vs DC 10: critical success)
+Garrick looks at the full bowl for a long time. "You carried that up here," he says. "Thirty years I kept her, and one storm." Then he straightens up. "Right. I'll trim her. Let the old girl shine."
+
+> light the beacon
+Garrick trims the great wick with hands that have stopped shaking, and you strike the light together. The flame catches and climbs, then the green lens takes it and throws it out across the sea, a long, slow beam sweeping the dark. Down in the Hythe somebody starts to cheer.
+
+> journal
+People: Garrick Stone.
+Places: the Heights, Skerrow Hythe, the Shore, The Cliff Path, The Headland, The Salt Kettle, The Silver Grove, The Tidepools, The Wreck Strand.
+Lore: the Grey Gull.
+
+==== AFTER (Windsday 3 Leaffall 412 SF, 23:26 (night))
+
+[48 hours pass]
+Off Skerrow: A ship for the light. Two nights after the Lamp of Skerrow was lit again, the Heron out of Havenmoor stands in to the Hythe to see what the light is about. Her master takes you across for the price of your story, and Skerrow has ships again.
+Tamsin comes from the west, on her way to Skerrow Hythe, the Green.
+Tamsin stops and gives you a nod, curious about the stranger.
+Garrick nods to Tamsin.
+Tamsin walks on to the south.
+Tamsin comes from the west, on her way to Skerrow Hythe, the Green.
+Garrick nods to Tamsin.
+Tamsin walks on to the south.
+Tamsin comes from the west, on her way to Skerrow Hythe, the Green.
+Tamsin stops and gives you a nod, curious about the stranger.
+Garrick nods to Tamsin.
+Tamsin walks on to the south.
+Tamsin comes from the west, on her way to Skerrow Hythe, the Green.
+Garrick nods to Tamsin.
+Tamsin walks on to the south.
+Elowen comes from the north, on her way to Skerrow Hythe, the Green.
+Elowen stops and looks you over.
+Elowen nods to Garrick.
+Elowen walks on to the south.
+Elowen comes from the south, on her way to The Drowned Mage's Tower.
+Elowen walks on to the north.
+Garrick puts out the lamp and goes to bed.
++400 experience: Off Skerrow.
+
+> look
+The Headland
+Above you the Lamp of Skerrow burns, and its long green beam sweeps out over the sea and back, over and over. The tower hums faintly with the heat. Tracks go south to the hamlet and west to the grove; north, the ruined tower shows in each pass of the light.
+Exits: south, west, north
+Here: Garrick the lightkeeper (asleep).
+
+> journal
+People: Garrick Stone.
+Places: the Heights, Skerrow Hythe, the Shore, The Cliff Path, The Headland, The Salt Kettle, The Silver Grove, The Tidepools, The Wreck Strand.
+Lore: the Grey Gull.
+
+[960 hours pass]
+Garrick arrives from the south.
+Garrick puts out the lamp and goes to bed.
+Tamsin comes from the west, on her way to Skerrow Hythe, the Green.
+Tamsin stops and gives you a nod, curious about the stranger.
+Garrick nods to Tamsin.
+Tamsin walks on to the south.
+Garrick leaves south.
+Tamsin comes from the west, on her way to Skerrow Hythe, the Green.
+Tamsin walks on to the south.
+Garrick arrives from the south.
+Garrick puts out the lamp and goes to bed.
+Tamsin comes from the west, on her way to Skerrow Hythe, the Green.
+Tamsin stops and gives you a nod, curious about the stranger.
+Garrick nods to Tamsin.
+Tamsin walks on to the south.
+Garrick leaves south.
+Tamsin comes from the west, on her way to Skerrow Hythe, the Green.
+Tamsin walks on to the south.
+Garrick arrives from the south.
+Garrick puts out the lamp and goes to bed.
+Tamsin comes from the west, on her way to Skerrow Hythe, the Green.
+Tamsin stops and gives you a nod, curious about the stranger.
+Garrick nods to Tamsin.
+Tamsin walks on to the south.
+Garrick leaves south.
+Tamsin comes from the west, on her way to Skerrow Hythe, the Green.
+Tamsin walks on to the south.
+Garrick arrives from the south.
+Garrick puts out the lamp and goes to bed.
+
+> look
+The Headland
+Above you the Lamp of Skerrow burns, and its long green beam sweeps out over the sea and back, over and over. The tower hums faintly with the heat. Tracks go south to the hamlet and west to the grove; north, the ruined tower shows in each pass of the light.
+Exits: south, west, north
+Here: Garrick the lightkeeper (asleep).
+
+==== END (Windsday 15 Mistmoon 412 SF, 23:26 (night))
+Quests: off_skerrow: a_ship_for_the_light
+
+######## CONTROL: THE PLAYER DOES NOTHING
+Cold water, then stones. You wake on your face on a strand of black shingle, with the sea still pulling at your boots. Of the Grey Gull there is not much left: a broken mast, a spill of cordage, a cask rolling in the surf. Of her crew there is nothing at all.
+
+Gulls argue overhead. Somewhere beyond the rocks a bell rings once, thin and far, and then stops. There are people on this island, then.
+
+This is Skerrow, though you do not know it yet. No ship has called here since the light went out.
+
+Type LOOK to look around. Type HELP if you are lost. You are, rather.
+The Wreck Strand
+You stand on a strand of black shingle where the sea throws up what is left of the [Grey Gull]: a broken mast, a spill of wet rope, a cask rolling in the shallows. The stones clatter and hiss with every wave, and the air tastes of salt and tar. Gulls quarrel over something you would rather not look at. North, a path climbs the low cliff; east, the rocks give way to the [Tidepools].
+On the ground: a cask of lamp oil, a coil of rope and a bolt of sailcloth.
+Exits: north, east
+The pace of events is normal. Type TEMPO CALM or TEMPO DRAMATIC for less or more happening in the world.
+New quest: Off Skerrow. The Grey Gull broke on the rocks of Skerrow, and you alone came ashore. No ship calls since the beacon on the headland went out, and the winter storms will soon close the sea. Find a way off the island.
+
+==== RECOGNISE (Windsday 3 Leaffall 412 SF, 07:10 (morning))
+
+> look
+The Wreck Strand
+You stand on a strand of black shingle where the sea throws up what is left of the [Grey Gull]: a broken mast, a spill of wet rope, a cask rolling in the shallows. The stones clatter and hiss with every wave, and the air tastes of salt and tar. Gulls quarrel over something you would rather not look at. North, a path climbs the low cliff; east, the rocks give way to the [Tidepools].
+On the ground: a cask of lamp oil, a coil of rope and a bolt of sailcloth.
+Exits: north, east
+
+> take all
+You pick up a cask of lamp oil, a coil of rope and a bolt of sailcloth.
+
+> north
+The Cliff Path
+A sheep track runs along the top of the cliff between thrift and sea campion. The wind comes straight off the Glass Sea and leans on you like a hand, and far below the waves boom in the caves. South, it drops to the [Wreck Strand]. Inland it climbs north towards a stand of pale trees, and east it runs down to the hamlet.
+Exits: south, north, east
++10 experience: you found The Cliff Path.
+
+> north
+The Silver Grove
+Birches with bark gone silver-white stand close together here, out of the wind, and the moss between them is soft underfoot. Shells and scraps of cloth hang from the branches on threads, and they tick and chime whenever the air moves. A turf hut with a crooked chimney sits among the trees. The cliff path runs south, the heights climb north to the barrow of [Old Skarth], and a track crosses east to the headland.
+Exits: south, north, east, in
++10 experience: you found The Silver Grove.
++30 experience: you came to the Heights.
+
+> look
+The Silver Grove
+Birches with bark gone silver-white stand close together here, out of the wind, and the moss between them is soft underfoot. Shells and scraps of cloth hang from the branches on threads, and they tick and chime whenever the air moves. A turf hut with a crooked chimney sits among the trees. The cliff path runs south, the heights climb north to the barrow of [Old Skarth], and a track crosses east to the headland.
+Exits: south, north, east, in
+
+# Nobody here to ask.
+
+> east
+The Headland
+The island ends here in a blunt headland with the sea on three sides and a squat stone tower on top: the [beacon]. Its great lamp stands cold behind green glass, and the wind whistles through the empty gallery. Below the tower a lean-to store shed has lost half its roof, and it smells strongly of fish oil. A track runs south to the hamlet and west to the grove; north, a ruined tower stands alone on the last rise.
+On the ground: a cask of lamp oil.
+Exits: south, west, north
+Here: Garrick the lightkeeper (asleep).
++10 experience: you found The Headland.
+
+> look
+The Headland
+The island ends here in a blunt headland with the sea on three sides and a squat stone tower on top: the [beacon]. Its great lamp stands cold behind green glass, and the wind whistles through the empty gallery. Below the tower a lean-to store shed has lost half its roof, and it smells strongly of fish oil. A track runs south to the hamlet and west to the grove; north, a ruined tower stands alone on the last rise.
+On the ground: a cask of lamp oil.
+Exits: south, west, north
+Here: Garrick the lightkeeper (asleep).
+
+> examine the beacon
+The Lamp of Skerrow, a bowl of bronze as wide as a cartwheel behind a lens of green glass, cold and black with old soot.
+
+> journal
+Places: the Heights, the Shore, The Cliff Path, The Headland, The Silver Grove, The Tidepools, The Wreck Strand.
+Lore: the Grey Gull.
+
+==== AFTER (Windsday 3 Leaffall 412 SF, 07:47 (morning))
+
+[48 hours pass]
+Garrick leaves south.
+Garrick arrives from the south.
+Garrick puts out the lamp and goes to bed.
+Tamsin comes from the west, on her way to Skerrow Hythe, the Green.
+Tamsin stops and gives you a nod, curious about the stranger.
+Garrick nods to Tamsin.
+Tamsin walks on to the south.
+Garrick leaves south.
+Tamsin comes from the west, on her way to Skerrow Hythe, the Green.
+Tamsin walks on to the south.
+Garrick arrives from the south.
+Garrick puts out the lamp and goes to bed.
+
+> look
+The Headland
+The island ends here in a blunt headland with the sea on three sides and a squat stone tower on top: the [beacon]. Its great lamp stands cold behind green glass, and the wind whistles through the empty gallery. Below the tower a lean-to store shed has lost half its roof, and it smells strongly of fish oil. A track runs south to the hamlet and west to the grove; north, a ruined tower stands alone on the last rise.
+On the ground: a cask of lamp oil.
+Exits: south, west, north
+Here: Garrick the lightkeeper (asleep).
+
+> journal
+Places: the Heights, the Shore, The Cliff Path, The Headland, The Silver Grove, The Tidepools, The Wreck Strand.
+Lore: the Grey Gull.
+
+[960 hours pass]
+Off Skerrow: Winter closes the sea. The first of the winter gales closes the Glass Sea. No boat will cross now until spring; you winter on Skerrow, among the fishers and the gulls.
+Tamsin comes from the west, on her way to Skerrow Hythe, the Green.
+Tamsin stops and gives you a nod, curious about the stranger.
+Garrick nods to Tamsin.
+Tamsin walks on to the south.
+Garrick leaves south.
+Tamsin comes from the west, on her way to Skerrow Hythe, the Green.
+Tamsin walks on to the south.
+Garrick arrives from the south.
+Garrick puts out the lamp and goes to bed.
+Tamsin comes from the west, on her way to Skerrow Hythe, the Green.
+Tamsin stops and gives you a nod, curious about the stranger.
+Garrick nods to Tamsin.
+Tamsin walks on to the south.
+Garrick leaves south.
+Tamsin comes from the west, on her way to Skerrow Hythe, the Green.
+Tamsin walks on to the south.
+Garrick arrives from the south.
+Garrick puts out the lamp and goes to bed.
+Tamsin comes from the west, on her way to Skerrow Hythe, the Green.
+Tamsin stops and gives you a nod, curious about the stranger.
+Garrick nods to Tamsin.
+Tamsin walks on to the south.
+Garrick leaves south.
+Tamsin comes from the west, on her way to Skerrow Hythe, the Green.
+Tamsin walks on to the south.
+Garrick arrives from the south.
+Garrick puts out the lamp and goes to bed.
+
+> look
+The Headland
+The island ends here in a blunt headland with the sea on three sides and a squat stone tower on top: the [beacon]. Its great lamp stands cold behind green glass, and the wind whistles through the empty gallery. Below the tower a lean-to store shed has lost half its roof, and it smells strongly of fish oil. A track runs south to the hamlet and west to the grove; north, a ruined tower stands alone on the last rise.
+On the ground: a cask of lamp oil.
+Exits: south, west, north
+Here: Garrick the lightkeeper (asleep).
+
+==== END (Windsday 15 Mistmoon 412 SF, 07:47 (morning))
+Quests: off_skerrow: winter_closes_the_sea
