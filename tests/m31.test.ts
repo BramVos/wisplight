@@ -116,6 +116,8 @@ describe('M3.1: the chronicler', () => {
     at(engine, 15, 11)
     // Mirte happens to be at the mill when it happens.
     if (witness) engine.state.npcs['npc_mirte']!.location = engine.state.npcs['npc_harmen']!.location
+    // Klaas lives with Harmen; for these stories Mirte is the one who saw it.
+    if (witness && engine.state.npcs['npc_klaas']!.location === engine.state.npcs['npc_harmen']!.location) engine.state.npcs['npc_klaas']!.location = 'loc_molenend_lane'
     return { engine, mock }
   }
   const chronicled = (mock: MockLlm) => mock.calls.filter((c) => c.role === 'chronicler')

@@ -1,0 +1,32 @@
+npcs:
+  - id: npc_ansfried
+    name: Ansfried
+    short: Prior Ansfried
+    pronoun: he
+    age: 65
+    profession: prior
+    home: loc_kloosterveen_lodging
+    work: loc_kloosterveen_library
+    fame: 2
+    appearance: A round, pink-faced old man in a grey habit with a brewer's apron over it and a ring of keys at his belt.
+    personality: { warmth: 1, courage: 0, honesty: 1, temper: -1, curiosity: 3, diligence: 1 }
+    values: { knowledge: 3, faith: 2 }
+    quirks: [bookish, brewer]
+    patron: lantern
+    speech: "Gentle, rambling, full of old books and older beer. Uses images of light and harbour."
+    aliases: [ansfried, prior, the prior]
+    public_facts:
+      - Prior Ansfried keeps the priory of Kloosterveen, its library and its brewery.
+    examples:
+      - "Every soul is a lantern, child. Some of us need a new wick, and some of us a new barrel."
+      - "The library does not lend. The library keeps. That is what libraries are for."
+    money: 200
+    inventory: { beer: 6 }
+    knows_areas: [kloosterveen, veenhoek, waagdam]
+    secrets:
+      - id: charter_valid
+        text: He knows the Fen Charter is still valid, but the Count is patron of the priory.
+        hint: At the word charter he looks at his keys.
+        admission: "The charter holds. It was never revoked. But the Count feeds this house, and I have forty mouths to think of."
+        dc: 19
+        about: [drainage, fen_charter]

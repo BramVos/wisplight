@@ -82,11 +82,14 @@ topics:
   - id: saint_brand
     name: Saint Brand
     kind: lore
-    aliases: [saint brand, brand, sint brand, the lantern, the church of the lantern]
+    aliases: [saint brand, brand, sint brand, the lantern, the church of the lantern, saint brand's lantern, brand's lantern, lantaarn van sint brand]
     fame: 5
     pos: [40, 110]
     summary: Saint Brand lit a lantern on the Great Dyke on the Night of the Water Wolf and led the drowning to dry land. The Church of the Lantern keeps his light.
-    known_by: [npc_wendela]
+    details: Brand was a dyke-man on the Great Dyke. When the Church of the Lantern was founded in the year 12, his lantern was made holy, and it burns now as the Brandaris over Graafhaven. That is why every chapel hangs a lantern with three panes, and why the Lantern asks you to help the lost.
+    story: |
+      On the Night of the Water Wolf the sea came over the Great Dyke in the dark, and nobody could tell land from water. Brand was a dyke-man, nobody special, mud to his knees like the rest of them. He climbed to the last stretch of dyke that still stood, lit his lantern and held it up all night, with the wind trying to tear it out of his hands. Those who saw it waded towards it through water up to their chests, and they lived. Those who didn't see it, didn't. In the morning he came down, and he never said a word about it for the rest of his life. The sisters say the light was the Lantern itself, burning in his hands. Some old dyke-men will tell you it was a pot of peat fire and a stubborn man, and that that's miracle enough.
+    known_by: [npc_wendela, npc_ansfried]
 
   - id: last_sheaf
     name: the last sheaf
@@ -94,6 +97,7 @@ topics:
     aliases: [last sheaf, the last sheaf, grey rider, the grey rider, wild hunt, laatste schoof, grijze ruiter]
     fame: 4
     everywhere: true
+    audience: { peat_cutter: 0.2 }
     summary: At harvest you leave the last sheaf standing for the Grey Rider's horse, or he takes something else.
     story: |
       At harvest you leave the last sheaf standing in the field, tied with a red thread. That one's for the Grey Rider's horse. Priests say it's superstition. Fine. Old Dirk Hoeve cut his last sheaf in 203. That winter the Rider came through in a storm, and Dirk's barn went up like tinder. You leave the sheaf.
@@ -104,8 +108,11 @@ topics:
     aliases: [witches' scale, the scale, heksenwaag, weighing, the weighing, certificate, waag certificate]
     origin: waagdam
     fame: 3
+    audience: { sister: 0.1, pious: 0.1 }
     summary: In the Waag of Waagdam people accused of witchcraft are weighed on the great scale. Whoever weighs what an honest person should gets a certificate that is honoured everywhere.
     details: The weighing costs a guilder and two stuivers. Weighmaster Dirck is known to be fair, and his certificates are good anywhere in the land.
+    story: |
+      When somebody's called a witch, she goes to the Waag in Waagdam, pays her guilder and two stuivers, and stands on the great scale in front of the weighmaster and two witnesses. A witch weighs next to nothing, you see, because she has given her weight away to fly. If you weigh what an honest body your size should, Weighmaster Dirck writes you a certificate with the town's seal on it, and after that no priest or schout in the land can touch you for witchcraft. Old Aaltje has hers framed on the wall. Men get weighed too, now and then, but mostly it's women, and mostly it's a neighbour who pointed the finger. The scale has been honest for fifty years, people say. People say a lot of things.
 
   - id: drainage
     name: the drainage of the Holleveen
@@ -192,7 +199,186 @@ topics:
     aliases: [goat-riders, goat riders, goatriders, bokkenrijders, the goat-riders, robbers, black mathijs, mathijs]
     fame: 3
     origin: rietdoolhof
-    audience: { eel_fisher: 0.2 }
+    audience: { eel_fisher: 0.2, child: 0.2 }
     summary: The Goat-Riders are robbers in goat-skins who say they ride through the air with the devil. They take a toll on the tow path and hide in the Rietdoolhof.
     details: Their leader is Black Mathijs, who has never been caught. The hangings in the south never finished them off, and people say the surveyor pays them now.
+    story: |
+      The Goat-Riders came up out of the south thirty years ago, and all the hangings down there never finished them. They meet at a crossroads at midnight and swear themselves to the devil, and he gives each of them a black goat that flies. On those goats they ride through the air over the fen, faster than any horse, and come down on a barge or a farm before anyone can bar the door. A bargeman on the Vaart saw them go over last winter, green fire under the hooves and a stink behind them like rotten eggs and peat smoke. They took his cargo and half his teeth. Black Mathijs rides in front on the biggest goat, and he's never been caught, because how do you catch a man who flies? So you pay the toll on the tow path, and you don't look up.
+
+  # The other stories of the world book (Wereldboek, chapter 11). The Night of the
+  # Water Wolf, Saint Brand's Lantern, the last sheaf, the Witches' Scale, the
+  # Goat-Riders, the Haakman, the Cat-Widow and the Weeping Stone are above.
+  # Summaries and details say what people believe; what really lies behind a
+  # story ("Geheimen achter de verhalen") is at most hinted at in the story.
+
+  - id: who_will_not_dyke
+    name: the dyke law
+    kind: lore
+    aliases: ["who will not dyke, must yield", who will not dyke, dyke law, the dyke law, dyke duty, dyke work, dyke-work, dyke league, the dyke league, "wie niet wil dijken, moet wijken", dijkplicht, dijkwerk, dijkverbond, het dijkverbond]
+    fame: 5
+    everywhere: true
+    summary: Who will not dyke, must yield. Everyone who lives behind a dyke owes dyke work, and whoever won't do his share loses his land to someone who will. It has been the law since the Water Wolf.
+    details: The Dyke League made the law in the first years after the flood, when the dyke boards were set up. The heemraad can call any man or woman in his district out to the dyke, and in a storm everybody goes, the schout too. A man who refuses gets a spade stuck in his field, and whoever pulls it out and does his work may keep the field.
+    story: |
+      After the Water Wolf, the ones who were left swore it would never happen again. They made the Dyke League, and the Dyke League made the law: who will not dyke, must yield. When the heemraad calls you out, you go, whoever you are, and you bring your own spade. If you won't, they stick a spade in your field, and whoever pulls it out and does your stretch of dyke gets your field. My grandfather saw it done at the Oude Zijl, to a man with three cows and a fine opinion of himself. By midsummer his field had a new owner, and nobody would lend him so much as a pail. The sea doesn't care whose land it is, you see. So neither can we.
+    known_by: [npc_sijbrand]
+
+  - id: mother_holles_featherbed
+    name: Mother Holle's featherbed
+    kind: lore
+    aliases: [mother holle, holle, featherbed, feather bed, the featherbed, mother holle's bed, vrouw holle, moeder holle, verenbed, het verenbed, pin in the well]
+    fame: 5
+    everywhere: true
+    audience: { child: 0.2, spinner: 0.2 }
+    summary: When it snows, Mother Holle is shaking out her featherbed. She rewards hard work and punishes idleness, and people still drop a pin in the well for her.
+    details: She is one of the Old Powers, the mistress of hearth, weather and spinning, and she lives at the bottom of the well. She is kind to children and hard on the lazy, and she does not like people walking into a house uninvited. Spinners keep to her quietly, even the ones who go to the chapel on Rustdag.
+    story: |
+      There was a girl who spun by the well until her fingers bled, and one day she dropped her spindle in. Her stepmother told her to fetch it out, so she jumped in after it. She woke in a green meadow, and there was an old woman at a cottage door with teeth as big as a horse's, who asked her to keep house. Every morning she was to shake the featherbed out of the window until the feathers flew, because that is what makes it snow down here. She worked a year and was never once lazy, and when she went home, Mother Holle stood her under a gate and gold rained down on her. Her lazy sister jumped in on purpose, shook nothing and swept nothing, and came home under a rain of pitch that never washed off. So when the snow comes, you know who's working. And you keep your spinning tidy, and you put a pin in the well.
+    known_by: [npc_aaltje, npc_grietje_visser]
+
+  - id: reynard_the_fox
+    name: Reynard the Fox
+    kind: lore
+    aliases: [reynard, reynard the fox, reinaert, reynaert, reinaert de vos, the fox who fooled the king]
+    fame: 5
+    pos: [100, -5]
+    audience: { child: 0.2 }
+    summary: Reynard the Fox fooled the king and all his court. Everyone knows a Reynard story, and children know a dozen.
+    details: The stories come from Flemmark in the south, where the cloth towns are. Reynard gets the bear stuck in a honey tree and the cat caught in a snare, talks his way off the gallows, and ends up the king's best counsellor. Some swear there really is such a fox, and that he lives in Flemmark still.
+    story: |
+      The lion was king of the beasts, and he called his court, and every animal came except Reynard, because every animal had a complaint against him. So the king sent Bruin the bear to fetch him. Reynard told Bruin about a tree trunk full of honey, split open with a wedge, and when the bear put his head in, the fox pulled the wedge out. Bruin came home without his ears. Then the king sent the cat, and the cat came home without an eye. In the end they had Reynard on the gallows with the rope round his neck, and he told the king about a buried treasure, and the king let him down to go and fetch it. There was no treasure. There never is, with a fox.
+
+  - id: drowned_bells_of_saeftinge
+    name: the drowned bells of Saeftinge
+    kind: lore
+    aliases: [drowned bells, the drowned bells, bells of saeftinge, saeftinge, the drowned city, drowned city, the mermaid of saeftinge, mermaid, verdronken klokken, de verdronken klokken, verdronken land van saeftinge]
+    fame: 4
+    pos: [75, 15]
+    audience: { eel_fisher: 0.1 }
+    summary: Saeftinge was the richest city of the delta until the Night of the Water Wolf drowned it. At low tide the stumps of its towers still stand out of the mud, and people hear its bells ringing under the water.
+    details: The story goes that Saeftinge's fishermen caught a mermaid and would not give her back, and her mate came up out of the sea and cursed the city, saying it would go under and only its tower tops would show. Not long after, the Water Wolf came. The place lies far to the south in the delta, and you can only see it at low water.
+    story: |
+      Saeftinge was so rich, they say, the girls wore gold buckles on their clogs. One day the fishermen hauled up a mermaid in their nets and carried her through the streets for everyone to gape at. Her mate came up out of the water and asked for her back, once, twice, three times, and they laughed at him. So he cursed them. Saeftinge shall go under, he said, and only the tops of its towers shall show. Not long after came the Night of the Water Wolf, and the city went down with every soul in it. Bargemen from the south say you can still see the tower stumps in the mud when the tide is out, and on a still evening you hear the bells. Don't go out to them. The tide comes back faster than a man can run.
+
+  - id: lord_halewijn
+    name: Lord Halewijn's song
+    kind: lore
+    aliases: [halewijn, lord halewijn, heer halewijn, halewijn's song, song of halewijn, the singing knight, singing knight, het lied van heer halewijn, de zingende ridder]
+    fame: 4
+    pos: [160, 80]
+    summary: Lord Halewijn sang a song that drew girls into the Grey Wold, and none came back, until a king's daughter took his head with his own sword.
+    details: It happened some forty years before the Water Wolf, in the woods on the high ground to the south-east. The song is still sung in the spinning rooms, though mothers don't like it. Charcoal-burners in the Grey Wold say that on some nights there is singing among the trees, and they stop their ears.
+    story: |
+      Lord Halewijn sang a song, and every girl who heard it had to go to him. One after another they went into the Grey Wold, and not one came back. Then a king's daughter heard it. She asked her father and her mother if she might go, and they said no, and she went anyway, in her best dress, on her father's best horse. Halewijn met her under a tree with other girls hanging in it, and told her to choose how she would die. She asked him to take off his coat first, so her blood wouldn't spoil it, and while he bent to do it she took his own sword from his belt and struck off his head. The head went on singing all the way home, and she never once looked back at it. That's why a girl in these parts is told never to follow a song in the dark.
+
+  - id: the_waylost
+    name: the Waylost
+    kind: lore
+    aliases: [waylost, the waylost, van der decken, captain van der decken, kapitein van der decken, ghost ship, the ghost ship, spookschip, het spookschip]
+    fame: 4
+    pos: [80, 215]
+    audience: { eel_fisher: 0.2 }
+    summary: The Waylost is Captain Van der Decken's ship. He cursed heaven in a storm off Skelling, and now he must sail until the end of days and never make harbour.
+    details: The boatmen of Skelling have seen her, a ship with black sails running full against the wind, and she always comes before a storm. If her crew hail you and hold out letters for home, you must not take them. They are for people a hundred years dead, and the ship that carries them goes down.
+    story: |
+      Captain Van der Decken sailed out of Skelling on a day when nobody with any sense would. The storm came up over the sands, and his men begged him on their knees to turn back. He lashed himself to the helm, cursed heaven and the Lantern both, and swore he would get round if it took him till the end of days. Something heard him. His ship never came home, and she never went down either. The Skelling boatmen see her before a storm, black sails full though the wind is the other way. If she comes alongside and her men hold out letters for home, you don't take them. They're for people dead these hundred years, and whoever carries them goes to the bottom.
+
+  - id: tall_pier
+    name: Tall Pier's sword
+    kind: lore
+    aliases: [tall pier, tall pier's sword, pier's sword, pier of terpwold, lange pier, het zwaard van lange pier]
+    fame: 4
+    pos: [170, 205]
+    audience: { peat_cutter: 0.2, hates_the_count: 0.2 }
+    summary: Tall Pier of Terpwold was seven feet tall, with a sword as long as a man, and no Count could tax him. His sword still hangs in the hall at Terpwold.
+    details: He led the free farmers of Terpwold against the Count's tax-gatherers for fifteen years, a hundred years ago and more. In the year 110 he vanished, and nobody ever saw him dead. The free farmers still pay no tax to any count, and they have not forgotten him.
+    story: |
+      Tall Pier was a farmer in Terpwold, seven feet tall if he was an inch, with hands like shovels. When the Count's men came for the tax, he told them the terps belonged to the people who had built them, and he sent them home in their shirts. They came back with soldiers, and he met them with a two-handed sword as long as a man that nobody else could lift. They say he once picked up a horse, rider and all, and threw them in a ditch. For fifteen years no tax-gatherer got past Terpwold. Then one winter he walked out across the ice and didn't come back, and nobody ever found him. His sword hangs in the hall there to this day, waiting. Peat-cutters here still drink to him, when the schout isn't listening.
+
+  - id: lady_of_stavermouth
+    name: the Lady of Stavermouth
+    kind: lore
+    aliases: [lady of stavermouth, the lady of stavermouth, widow of stavermouth, vrouw van stavermouth, de vrouw van stavermouth, vrouwezand, the vrouwezand, ship of grain, the ship of grain]
+    fame: 3
+    pos: [125, 193]
+    audience: { baker: 0.2, grain_merchant: 0.2, eel_fisher: 0.1 }
+    summary: The Lady of Stavermouth, a rich widow, had a whole ship of grain thrown into the sea out of pride. The sea threw back a sandbank, the harbour silted up, and the town has been dying ever since.
+    details: It happened about sixty years ago. She had sent her captain out for the most precious thing in the world, he came home with a hold of good wheat, and she had it tipped over the side at the harbour mouth. The sandbank is called the Vrouwezand, and the wheat that grew on it never set a single grain.
+    story: |
+      There was a widow in Stavermouth so rich she didn't know what to buy next. She sent her best captain to sea to bring her back the most precious thing in the world. He thought long and hard, and came home with a hold full of good wheat, because what's more precious than bread? She asked him which side of the ship he had loaded it on, and when he told her, she said, then tip it out on the other side. Out it went at the mouth of the harbour, with the poor of the town watching from the quay. The wheat sprouted in the sea, but the ears were empty, and the sand built up round it until no ship could get in. She died begging for bread at the doors she used to own, or so they say. Bakers tell that to every apprentice who spills flour.
+
+  - id: white_women
+    name: the White Women of Reuzenrust
+    kind: lore
+    aliases: [white women, the white women, white women of reuzenrust, white ladies, witte wieven, de witte wieven, witte wijven, wieven]
+    fame: 2
+    origin: reuzenrust
+    summary: In the autumn mist at Reuzenrust the White Women rise from the burial mounds. They heal or foretell for those who greet them with respect, and curse those who mock the dead.
+    details: Greet them as you would a neighbour, never mock the dead, and don't turn round when you leave. Striking at them does nothing; they are simply not there any more. They keep the rest of the dead in the mounds, and they care for little else.
+    story: |
+      When the autumn mist lies on the heath at Reuzenrust, the White Women come up out of the mounds. You see them first as mist that stands still while the rest of it moves. My grandmother went to them once, when her little boy had the fever, with a loaf and her best manners, and she greeted them as you'd greet the neighbours. They told her the boy would live, and he did, to be an old man. But a shepherd lad once laughed at them and called them old sheets on a line. He came home blind in one eye and never saw straight again. So you greet them, you don't laugh, and when you go, you don't turn round.
+    known_by: [npc_aaltje]
+
+  - id: surveyors_lights
+    name: the Surveyor's Lights
+    kind: lore
+    aliases: [surveyor's lights, surveyors' lights, surveyors lights, will-o'-the-wisp, will-o'-the-wisps, will o' the wisp, wisp, wisps, wisplight, wisplights, marsh lights, fen lights, dwaallicht, dwaallichten, where shall i put it]
+    fame: 4
+    everywhere: true
+    summary: Will-o'-the-wisps are the souls of people who moved a boundary stone in life, most of all surveyors who measured crooked. They wander the fields and the fen at night with a little light, and lead whoever follows them into a peat hole.
+    details: Never follow a light off the path; lantern light drives them off. Some of them call out "Where shall I put it?", and if you answer "Put it back where you found it", the soul can rest. Old folk say the same happens when the moved stone is set back in its right place.
+    story: |
+      A surveyor who measures crooked for a bribe, or a farmer who shifts his boundary stone a furrow into his neighbour's land, gets no rest when he dies. He has to walk the fields at night with a little light, carrying the stone, looking for where it belongs. That's what the lights in the fen are. My uncle met one on the fen path in the fog, and it called out, where shall I put it, where shall I put it? He was so frightened he shouted back, put it back where you found it, you fool! The light gave a sort of sigh and went out, and he never saw it again. But if a light only bobs along ahead of you and says nothing, don't follow it. That way lies a peat hole, and nobody finds you till spring.
+
+  - id: lights_over_harmens_field
+    name: the lights over Harmen's field
+    kind: lore
+    aliases: [lights over harmen's field, the lights over harmen's field, lights on harmen's field, lights at molenend, the lights at molenend, molenend lights, lichten boven harmens akker, dwaallichten bij molenend]
+    fame: 1
+    origin: molenend
+    summary: On foggy autumn nights two small lights drift over Harmen's field at Molenend, low over the stubble. Nobody with any sense goes after them.
+    details: They come with the fog, and they do not go when you shout at them. Harmen says it is marsh gas and won't hear another word about it. His lad Klaas won't cross the field after dark for any money.
+    story: |
+      You can see them any foggy night from the mill lane: two little lights over Harmen's field, low down, drifting and stopping and drifting again. They never come near the mill. They keep to the middle of the field, round the old boundary stone, as if they'd dropped something there and can't find it. Harmen says it's marsh gas. Marsh gas doesn't stop and wait for you. Old Aaltje says wisps only come where something has been put where it doesn't belong, and then she looks at nobody in particular. Klaas won't cross that field after dark for a week's wages, and I don't blame him.
+    known_by: [npc_aaltje, npc_harmen, npc_klaas]
+
+  - id: kabouter_milk
+    name: milk for the kabouters
+    kind: lore
+    aliases: [kabouters, the kabouters, kabouter, milk for the kabouters, milk for kabouters, a bowl of milk, melk voor de kabouters, melk voor de kabouter]
+    fame: 1
+    origin: kabouterberg
+    audience: { child: 0.2, old_customs: 0.2 }
+    summary: The kabouters of the Kabouterberg will do your work at night, in the house and on the land, if you leave them a bowl of milk. Spy on them and they turn nasty.
+    details: The milk goes in the hollow by the old oak on the Kabouterberg, or on the doorstep of a house that has kabouters. Never watch them while they work, and never dig in their hill. A promise made to a kabouter binds you, whether you meant it or not. The eldest of them is called Ouwe Knoert.
+    story: |
+      When I was a girl, my mother put out a bowl of milk every night, and every morning the bowl was empty, the floor was swept and the churn was full of butter. Kabouters, from the Kabouterberg. They're no taller than your knee and older than the fen, and they'll work all night for a bowl of milk and a little respect. But you must never watch them. My brother did, once, through a crack in the shutter, to see what they looked like. After that the milk turned in the pail every morning for a month, and every left shoe in the house went missing, and we never did find them all. My mother went up the hill with a jug of cream and said sorry for him, and that was the end of it. And whatever you promise a kabouter, you keep.
+    known_by: [npc_aaltje]
+
+  # The prior and notary Pen know it from the books (Wereldboek, chapter 11);
+  # Gerrit knows it from the peat face (his campfire line and his personal quest,
+  # The Brotherhood's Charter). That it still holds is the prior's secret, and
+  # only hinted at in the story.
+  - id: fen_charter
+    name: the Fen Charter
+    kind: lore
+    aliases: [fen charter, the fen charter, charter, the charter, the old charter, charter of floris, veenhandvest, het veenhandvest, handvest]
+    fame: 0
+    origin: kloosterveen
+    summary: There is said to be an old charter that gives the peat of the Holleveen to the people who cut it, for ever. Hardly anyone has seen it, and most have never heard of it.
+    details: Count Floris the Second granted it about a hundred and fifty years ago, the peat of the Holleveen to the fen folk and whoever cuts peat there, for ever. If it still exists, it lies in the library of the priory at Kloosterveen.
+    story: |
+      About a hundred and fifty years ago there was a Count, Floris the Second, who wasn't a thief, or so the story goes. He gave the peat of the Holleveen to the fen folk and whoever cuts peat there, for ever, and he had it written on parchment under his seal. For ever, mind. Not until some Count after him needs money. The peat-cutters kept the story, but the parchment went where old parchments go, into a chest, into a library, into the dust. Nobody has seen it in a hundred years, and most people think it's a tale the Brotherhood tells itself to feel better. If it were ever found, and still good, the Count could whistle for his polder.
+    known_by: [npc_gerrit, npc_ansfried, npc_pen]
+
+  - id: ringed_oak
+    name: the ringed oak of Baduhenna
+    kind: lore
+    aliases: [ringed oak, the ringed oak, ringed oak of baduhenna, baduhenna's oak, the oak with the ring, geringde eik, de geringde eik, eik van baduhenna]
+    fame: 1
+    pos: [170, 205]
+    summary: In Baduhenna's Wood beyond Terpwold stands an old oak with an iron ring grown into its trunk. An oath sworn there cannot be broken without the oak knowing.
+    details: The free farmers of Terpwold swear their gravest oaths at the ring, with a hand through it. Nobody fells a tree in that wood. Folk there say the oak remembers every oath, and that sooner or later it calls the debt in.
+    story: |
+      Long before there was a Count, the free folk of the terps swore by Baduhenna in her wood. They drove an iron ring into the oldest oak there, and the tree has grown round it since, so that only half the ring still shows. When a Terpwold man makes a promise that matters, he goes to the wood, puts his hand through the ring and says it out loud. The oak hears it. Break that oath, and the oak knows, and so does Baduhenna, and sooner or later the debt is called in. There was a man who swore at the ring to marry a girl and then took a richer one. They found him under that same oak in the spring, without a mark on him, and nobody in Terpwold would say more than that.
 

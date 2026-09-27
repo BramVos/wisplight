@@ -1,5 +1,5 @@
-# Kloosterveen (Wereldboek, chapter 7). The gate only, for now; the priory
-# itself comes with the full Holleveen (M7).
+# Kloosterveen (Wereldboek, chapter 7): the priory in the wood north-west of
+# Veenhoek, with its church, its library, its brewery and its herb garden.
 locations:
   - id: loc_kloosterveen_gate
     name: The Priory Gate
@@ -15,6 +15,143 @@ locations:
         to Veenhoek runs south-east through the trees.
       night: |
         The gatehouse is a black shape against blacker trees, and a single
-        lamp burns in a slit of a window. Somewhere inside, men are singing
-        slowly in Latin. The wood drips around you. The path to Veenhoek runs
+        lamp burns in a slit of a window. Somewhere inside, men are singing,
+        slow and low. The wood drips around you. The path to Veenhoek runs
         south-east, if you can find it.
+    exits:
+      north: { to: loc_kloosterveen_church }
+      northwest: { to: loc_kloosterveen_wood, minutes: 5 }
+      southeast: { to: loc_priory_path, minutes: 25 }
+
+  - id: loc_kloosterveen_church
+    name: The Priory Church
+    area: kloosterveen
+    tags: [holy, public]
+    aliases: [priory church, bell tower, kloosterkerk]
+    summary: The whitewashed brick church of the priory, whose bell tower shows above the trees.
+    description:
+      day: |
+        The church is tall and bare inside, its brick walls whitewashed and
+        stained green where the damp comes through. At the far end a lantern
+        with three panes burns above a plain altar, and on the wall beside it
+        someone has painted [Saint Brand] on the dyke, holding up his light
+        against a black flood. Your footsteps come back to you from the roof.
+        A low door leads north to the library, the brewery is east, the herb
+        garden west, and the gate is south.
+      night: |
+        The church is dark but for the lantern above the altar, which throws
+        three pale squares on the floor. The cold comes up from the stones
+        through your boots. High in the tower a rope creaks against the wood.
+        The gate is south.
+    exits:
+      south: { to: loc_kloosterveen_gate }
+      north: { to: loc_kloosterveen_library }
+      east: { to: loc_kloosterveen_brewery }
+      west: { to: loc_kloosterveen_garden }
+    objects:
+      - { id: altar, type: altar }
+
+  - id: loc_kloosterveen_library
+    name: The Priory Library
+    area: kloosterveen
+    tags: [private]
+    aliases: [library, priory library, books]
+    summary: The library of the priory, with its chained books and its sealed chests of old charters.
+    description:
+      day: |
+        Books lie chained to sloping desks under narrow windows, and the rest
+        stand on shelves that reach up to the beams. It smells of old leather,
+        dust and the tallow of a hundred winters. Along one wall stand chests
+        bound with iron, their lids sealed with wax and marked in a hand that
+        nobody writes any more. The church is back through the low door to
+        the south; another door, east, leads to the prior's lodging.
+      night: |
+        The library is black and very quiet, and the cold has settled into
+        the books. Somewhere a mouse is at the bindings; you hear it gnawing,
+        then nothing. The door to the church is south.
+    exits:
+      south: { to: loc_kloosterveen_church }
+      east: { to: loc_kloosterveen_lodging }
+
+  - id: loc_kloosterveen_lodging
+    name: The Prior's Lodging
+    area: kloosterveen
+    tags: [private]
+    aliases: [prior's lodging, lodging, prior's house]
+    summary: The prior's lodging, a small brick house between the library and the brewery.
+    description:
+      day: |
+        A small brick room with a box bed built into the wall, a table heaped
+        with papers and a jug of beer that has gone flat. The fire is banked
+        with peat and ticks quietly under its ash. On a slate by the window
+        someone has written MORE HOPS, and under it, NO, LESS. The library is
+        west; a door south opens onto the brewery.
+      night: |
+        The lodging is dark, the fire only a red eye in the hearth. It smells
+        of peat smoke and beer. The library is west and the brewery south.
+    exits:
+      west: { to: loc_kloosterveen_library }
+      south: { to: loc_kloosterveen_brewery }
+
+  - id: loc_kloosterveen_brewery
+    name: The Priory Brewery
+    area: kloosterveen
+    tags: [workshop]
+    aliases: [brewery, brewhouse, priory brewery]
+    summary: The brewery of Kloosterveen, famous for its autumn beer.
+    description:
+      day: |
+        Copper kettles squat over their hearths in a long, low brewhouse, and
+        barrels are stacked to the rafters along the back wall. The air is
+        thick and sweet with malt and the bitter green of hops. Through the
+        open door you see the hop poles standing in rows along the priory
+        wall. The church is west; a door north leads to the prior's lodging.
+      night: |
+        The brewhouse is dark and still warm, and something in the barrels
+        works and sighs as it ferments. You smell malt and wet wood. The
+        church is west.
+    exits:
+      west: { to: loc_kloosterveen_church }
+      north: { to: loc_kloosterveen_lodging }
+
+  - id: loc_kloosterveen_garden
+    name: The Herb Garden
+    area: kloosterveen
+    tags: [public]
+    aliases: [herb garden, garden, kruidentuin]
+    summary: The herb garden of the priory, in square beds behind a low wall.
+    description:
+      day: |
+        Square beds of herbs lie between gravel paths, each bed edged with
+        boards and marked with a wooden tag. Sage, rue and mint grow thick
+        here, and the wet air brings you their smell before you see them.
+        Snails have been at everything low enough to reach. A wicket gate in
+        the west wall opens onto the wood; the church is east.
+      night: |
+        The garden is a grid of dark beds, and the herbs smell stronger in
+        the damp. Something rustles under the sage and goes still. The wicket
+        gate to the wood creaks in the west wall; the church is east.
+    exits:
+      east: { to: loc_kloosterveen_church }
+      west: { to: loc_kloosterveen_wood, minutes: 5 }
+
+  - id: loc_kloosterveen_wood
+    name: The Priory Wood
+    area: kloosterveen
+    tags: [wilderness]
+    aliases: [priory wood, wood, the woods]
+    summary: The old wood of oak and beech that closes round the priory.
+    description:
+      day: |
+        Oaks and beeches stand close together here, old and grey with moss,
+        and the ground is soft with the leaves of many years. Every step
+        sinks a little and gives off a smell of mould and mushrooms. Through
+        the trees to the east you glimpse the garden wall of the priory; the
+        gate lies to the south-east.
+      night: |
+        Under the trees the dark is complete, and the wood drips all round
+        you. An owl calls close by, and another answers further off. East, a
+        light shows now and then between the trunks, where the priory stands.
+    exits:
+      east: { to: loc_kloosterveen_garden, minutes: 5 }
+      southeast: { to: loc_kloosterveen_gate, minutes: 5 }

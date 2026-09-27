@@ -1,11 +1,12 @@
-# The Kattenbroek (Wereldboek, chapter 7). The widow herself arrives with the
-# full Holleveen (M7); her hut already stands.
+# The Kattenbroek (Wereldboek, chapter 7): reed paths, black pools, the hut on
+# stilts, the cats' yard and the drowned oak. The hidden dry ridge from
+# Veenhoek comes out at the hummock west of the hut.
 locations:
   - id: loc_kattenbroek_edge
     name: The Edge of the Kattenbroek
     area: kattenbroek
     tags: [wilderness, fae, cursed, hazard:bog, hazard:fog, edge]
-    aliases: [reed paths, the reeds, cat fen]
+    aliases: [the reeds, cat fen]
     summary: Where the reed paths of the Kattenbroek begin, among black pools and watching cats.
     description:
       day: |
@@ -16,6 +17,7 @@ locations:
         shows its roof above the reeds.
     exits:
       east: { to: loc_kattenbroek_hut, minutes: 5 }
+      south: { to: loc_kattenbroek_reedpaths, minutes: 5 }
 
   - id: loc_kattenbroek_hut
     name: Below the Hut on Stilts
@@ -32,3 +34,146 @@ locations:
         blink. The reed path runs back west.
     exits:
       west: { to: loc_kattenbroek_edge, minutes: 5 }
+      east: { to: loc_kattenbroek_catyard, minutes: 2 }
+      south: { to: loc_kattenbroek_pools, minutes: 5 }
+      northwest: { to: loc_kattenbroek_ridge_end, minutes: 10 }
+
+  - id: loc_kattenbroek_reedpaths
+    name: The Reed Paths
+    area: kattenbroek
+    tags: [wilderness, fae, cursed, "hazard:bog", "hazard:fog"]
+    aliases: [reed paths]
+    summary: Narrow paths through the reeds of the Kattenbroek, which split and join and split again.
+    description:
+      day: |
+        The path splits, and splits again, each way a narrow gap in reed
+        taller than you are. Underfoot the stems have been trodden into a mat
+        that floats on the water and sinks a hand's breadth at every step.
+        Something pads along beside you on the other side of the reed wall,
+        keeping pace, and when you stop, it stops. The edge of the fen is
+        north; one way leads east to black pools, another south towards a
+        great dead tree.
+      night: |
+        The reed paths are black on black, and the reeds hiss and knock
+        together over your head. Eyes shine low down at the side of the path,
+        two, then four, then more. North is the way out, if the paths have not
+        moved.
+    exits:
+      north: { to: loc_kattenbroek_edge, minutes: 5 }
+      east: { to: loc_kattenbroek_pools, minutes: 10 }
+      south: { to: loc_kattenbroek_oak, minutes: 10 }
+
+  - id: loc_kattenbroek_pools
+    name: The Black Pools
+    area: kattenbroek
+    tags: [wilderness, fae, cursed, "hazard:bog", "hazard:fog"]
+    aliases: [black pools, pools, zwarte poelen]
+    summary: Still black pools among the reeds of the Kattenbroek, below the widow's hut.
+    description:
+      day: |
+        Pools of black water lie among the reeds, perfectly still, with a
+        sheen of colours like oil where the light falls on them. Bubbles rise
+        from the bottom now and then and burst with a smell of rotten eggs. A
+        heron stands at the far side on one leg, watching you, and does not
+        fly. The hut on stilts is north; a reed path leads back west.
+      night: |
+        The pools lie like holes in the world, with here and there a star
+        floating in them. Bubbles rise and burst softly, and the air stinks.
+        The hut is north, the reed path west.
+    exits:
+      north: { to: loc_kattenbroek_hut, minutes: 5 }
+      west: { to: loc_kattenbroek_reedpaths, minutes: 10 }
+
+  # On its own hex just east of the hut, so the edge stays the first way in
+  # on the area's own hex.
+  - id: loc_kattenbroek_catyard
+    name: The Cats' Yard
+    area: kattenbroek
+    tags: [fae, cursed]
+    aliases: [cats' yard, cat yard, kattenerf]
+    pos: [124.05, 99]
+    summary: The trodden yard beside the widow's hut, full of cats.
+    description:
+      day: |
+        Beside the hut a patch of higher ground has been trodden bare, and it
+        is covered in cats: on the woodpile, on an upturned tub, in the dry
+        places under the stilts. They are thin and sleek and every colour, and
+        all of them turn their heads to look at you at once. One big grey
+        tomcat sits apart from the rest, very upright, his front paws stained
+        dark as if he had walked through ink. The yard smells of fish and cat,
+        and the hut is back to the west.
+      night: |
+        The yard is full of eyes, green and gold, low down and never still.
+        The cats are quiet, all of them, which is worse than if they were
+        crying. The hut is west.
+    exits:
+      west: { to: loc_kattenbroek_hut, minutes: 2 }
+
+  - id: loc_kattenbroek_oak
+    name: The Drowned Oak
+    area: kattenbroek
+    tags: [wilderness, fae, cursed, "hazard:bog", "hazard:fog"]
+    aliases: [drowned oak, dead oak, dead tree]
+    summary: A great oak that drowned when the fen rose round it, standing dead in black water.
+    description:
+      day: |
+        A huge oak stands dead in the water here, drowned when the fen rose
+        round it, its bark long gone and its wood weathered to silver. Its
+        lowest branches reach out over the path like arms, and things hang
+        from them on strings: small bones, knots of reed, a bunch of dried
+        heather. They turn and click together in the wind. The reed path runs
+        back north; east, the reeds open on a patch of still water.
+      night: |
+        The drowned oak is a white shape in the dark, as if it gives off a
+        light of its own. The things in its branches click softly. Water drips
+        from it though it has not rained. North is the reed path; east, faint
+        and silver, lies still water.
+    exits:
+      north: { to: loc_kattenbroek_reedpaths, minutes: 10 }
+      east: { to: loc_kattenbroek_moonpool, minutes: 5 }
+
+  # Where the dry ridge from Veenhoek comes out (region rule hidden_path), on
+  # the last stretch it shares with the fen path before the edge.
+  - id: loc_kattenbroek_ridge_end
+    name: The Alder Hummock
+    area: kattenbroek
+    tags: [wilderness, fae, cursed, "hazard:fog", edge]
+    aliases: [alder hummock, hummock, firm ground]
+    pos: [123.4, 99.25]
+    summary: A hummock of firm ground with a few alders, west of the widow's hut, where a low back of old peat comes out of the fen.
+    description:
+      day: |
+        A few crooked alders grow on a hummock of firm ground here, the only
+        dry footing for a long way. Under the sedge you can feel the firm
+        ground go on, a low back of old peat that runs off north-west into the
+        fen and is soon lost among the tussocks. Somewhere close a cat is
+        crying. To the south-east the roof of the hut on stilts shows above
+        the reeds.
+      night: |
+        The alders creak over the hummock, and the firm ground under your feet
+        is a comfort in the dark. All round, water clucks and settles among
+        the tussocks. To the south-east a thread of smoke smells of peat and
+        fish, where the hut must be.
+    exits:
+      southeast: { to: loc_kattenbroek_hut, minutes: 10 }
+
+  - id: loc_kattenbroek_moonpool
+    name: The Moon Pool
+    area: kattenbroek
+    tags: [wilderness, fae, cursed, "hazard:fog"]
+    aliases: [moon pool, still pool]
+    summary: A round, still pool among the reeds of the Kattenbroek, in which nothing grows and nothing moves.
+    description:
+      day: |
+        The reeds stand back here from a round pool, so still that it holds
+        the whole sky without a ripple. No reed grows in it and no duckweed,
+        and nothing moves in it. It is very quiet; even the frogs stop when
+        you come near. Behind you, to the west, the drowned oak stands pale
+        above the reeds.
+      night: |
+        Whatever moon there is lies in the pool, whole and white, and does not
+        break when the wind crosses the water. The air is cold and smells of
+        nothing at all. You find you are holding your breath. The drowned oak
+        is west.
+    exits:
+      west: { to: loc_kattenbroek_oak, minutes: 5 }

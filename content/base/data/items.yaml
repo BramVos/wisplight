@@ -108,7 +108,7 @@ items:
     aliases: [sailcloth, canvas, zeildoek]
     description: Heavy canvas, rolled tight. Good for sails and not much else.
     tags: [material, trade]
-    value: 80
+    value: 200
 
   - id: lantern
     name: lantern
@@ -278,4 +278,62 @@ items:
     tags: [armour]
     value: 64
     armour: { kind: shield, defence: 2 }
+
+  # Quest things (M7).
+  - id: milk
+    name: jug of milk
+    plural: jugs of milk
+    aliases: [milk, melk, bowl of milk, jug]
+    description: Fresh milk in a stone jug, still smelling faintly of cow.
+    tags: [food]
+    value: 2
+    food: 10
+
+  - id: moon_water
+    name: flask of moon water
+    plural: flasks of moon water
+    aliases: [moon water, moonwater, maanwater, flask]
+    description: Black water from the Blackmere, drawn at night. It is heavier than water should be.
+    tags: [magic]
+    value: 0
+
+  - id: cat_draught
+    name: bottle of cat's draught
+    plural: bottles of cat's draught
+    aliases: [draught, potion, cat draught, cat's draught, brew, drankje]
+    description: A small brown bottle of Aaltje's. It smells of valerian and river mud.
+    tags: [remedy, magic]
+    value: 0
+
+  - id: measuring_chest
+    name: measuring chest
+    plural: measuring chests
+    aliases: [chest, measuring chest, jacob's chest, meetkist, kist]
+    description: An iron-bound chest with JvD burnt into the lid. Inside are a brass level, a folded chain and bundles of figures in a careful hand.
+    tags: [tool, survey]
+    value: 60
+
+  - id: fen_charter_deed
+    name: the Fen Charter
+    plural: copies of the Fen Charter
+    aliases: [charter, fen charter, the charter, veenhandvest, handvest]
+    description: A brown parchment in a lead case, with a great seal on a cord. It grants the villages of the Holleveen the fen they cut, for as long as they cut it.
+    tags: [document]
+    value: 0
+
+  - id: toll_letter
+    name: toll letter
+    plural: toll letters
+    aliases: [letter, toll letter, tolbrief]
+    description: A sealed letter granting a lawful toll of eight duiten a boat on the Vaart, for keeping it clear of reed.
+    tags: [document]
+    value: 0
+
+  - id: aaltje_letter
+    name: letter from Aaltje
+    plural: letters from Aaltje
+    aliases: [letter, aaltje's letter, brief]
+    description: A letter folded very small, in Aaltje's careful, round hand. You haven't read it.
+    tags: [document]
+    value: 0
 

@@ -20,7 +20,7 @@ npcs:
       - The storm tore his sails; the mill is standing still.
     examples:
       - "No sails, no flour. No flour, no money. You follow?"
-    money: 800
+    money: 240
     inventory: { rye_grain: 3 }
     knows_areas: [veenhoek, molenend, drowned_goose, waagdam, roads]
     relations:
@@ -33,3 +33,33 @@ npcs:
         role: neighbour
         bond: -1
         note: Her field borders yours.
+
+  - id: npc_klaas
+    name: Klaas
+    short: Klaas the miller's lad
+    pronoun: he
+    age: 16
+    profession: miller_hand
+    home: loc_molenend_house
+    work: loc_molenend_mill
+    household: hh_molenaar
+    child: true
+    fame: 0
+    appearance: A gangly lad white to the elbows with flour, with a fringe he keeps blowing out of his eyes.
+    personality: { warmth: 1, courage: -1, honesty: 1, temper: 0, curiosity: 1, diligence: 1 }
+    values: { family: 1 }
+    quirks: [shy]
+    patron: lantern
+    speech: "Mumbles, blushes, says sorry a lot. Speaks up only about the mill and its sails."
+    aliases: [klaas, miller's lad, lad, knecht]
+    public_facts:
+      - Klaas is the miller's lad at De Zwaan in Molenend.
+    examples:
+      - "The sails want new cloth, but don't tell Master Harmen I said so."
+      - "Lights? Over the field? I never looked. Not properly."
+    money: 6
+    knows_areas: [molenend, veenhoek, drowned_goose]
+    relations:
+      - to: npc_harmen
+        role: employer
+        bond: 0

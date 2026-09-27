@@ -4,7 +4,7 @@ locations:
     name: The Kabouterberg
     area: kabouterberg
     tags: [fae, landmark, edge]
-    aliases: [kabouter hill, the hill, the oak, milk place]
+    aliases: [kabouter hill, the hill]
     summary: A sandy hill with an old oak and a hollow in it, where people leave milk for the kabouters.
     description:
       day: |
@@ -13,3 +13,50 @@ locations:
         the hill, and someone has left a bowl of milk at its mouth. It is very
         quiet here; even the wind seems to go round. Veenhoek lies north-east
         across the fields.
+    exits:
+      up: { to: loc_kabouterberg_oak, minutes: 2 }
+      northeast: { to: loc_route_crossroads, minutes: 30 }
+
+  - id: loc_kabouterberg_oak
+    name: The Old Oak
+    area: kabouterberg
+    tags: [fae]
+    aliases: [old oak, oak, milk place, milk bowl]
+    summary: The old oak on top of the Kabouterberg, with the milk place between its roots.
+    description:
+      day: |
+        The oak is broad and low, its lower branches bent almost to the sand,
+        and its roots grip the hilltop like fingers. Between two of them lies
+        a flat stone with a wooden bowl on it, and the milk in the bowl is
+        fresh. Overhead the leaves hiss in a wind you cannot feel down here,
+        and the sand round the bowl has been swept smooth. The hollow opens
+        under the roots; the slope runs down to the foot of the hill.
+      night: |
+        The oak is a great black shape against the sky, and the bowl between
+        its roots shows pale. Now and then a small sound comes from the
+        hollow, like a spoon against a pot, and stops. You have the feeling
+        that you should not look too closely. The slope runs down behind you.
+    exits:
+      down: { to: loc_kabouterberg, minutes: 2 }
+      in: { to: loc_kabouterberg_hollow }
+
+  - id: loc_kabouterberg_hollow
+    name: The Hollow under the Oak
+    area: kabouterberg
+    tags: [fae, taboo]
+    aliases: [hollow, the hollow]
+    summary: A hollow in the sand under the roots of the old oak, where the kabouters are said to live.
+    description:
+      day: |
+        You crouch into a hollow under the roots, where the sand is dry and
+        cool and the light comes in green. Roots hang from the roof like
+        ropes, and among them hangs a row of tiny tools: a hook, a knife no
+        longer than your thumb, a spade. The air smells of earth and milk.
+        Further in, the hollow narrows into a dark you could never fit
+        through; the way out is back up into the light.
+      night: |
+        In the hollow it is pitch dark and oddly warm. You hear small feet
+        somewhere further in, and a whisper that stops when you hold your
+        breath. The way out is up, towards the lighter dark.
+    exits:
+      out: { to: loc_kabouterberg_oak }

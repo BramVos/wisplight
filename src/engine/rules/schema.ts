@@ -223,6 +223,11 @@ export const EncounterSchema = z
     flee_dc: z.number().int().default(15),
     /** The fact the village hears afterwards; {outcome} is filled in. */
     news: z.object({ title: z.string(), belang: z.number().int().min(0).max(5).default(2) }).strict().optional(),
+    /** Only while this flag is set (the fen without its keeper), or never while this one is (the trick unmasked). */
+    when_flag: z.string().optional(),
+    unless_flag: z.string().optional(),
+    /** A flag set when the player wins (for quests). */
+    win_flag: z.string().optional(),
   })
   .strict()
 export type Encounter = z.infer<typeof EncounterSchema>

@@ -1,0 +1,23 @@
+npcs:
+  - id: npc_white_women
+    name: the White Women
+    short: the White Women
+    pronoun: they
+    age: 1000
+    profession: spirit
+    home: loc_reuzenrust_barrows
+    work: loc_reuzenrust_barrows
+    fame: 2
+    appearance: Three shapes in the mist that are also one, pale as washing on a line, with no faces you can keep in your mind.
+    personality: { warmth: 0, courage: 3, honesty: 3, temper: 0, curiosity: 1, diligence: 0 }
+    values: { respect: 3, rest: 3 }
+    quirks: [spirit]
+    speech: "They speak together, in riddles, of the drowned and the buried. Never answer a question directly."
+    aliases: [white women, the white women, witte wieven, wieven]
+    public_facts:
+      - The White Women are seen in the mist at the barrows of Reuzenrust.
+    examples:
+      - "Who lies under the dyke that was the sea's? Name them, and pass."
+      - "Rest is owed. Rest is paid. What do you pay?"
+    money: 0
+    knows_areas: [reuzenrust]

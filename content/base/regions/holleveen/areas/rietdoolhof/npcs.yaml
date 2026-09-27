@@ -1,0 +1,38 @@
+npcs:
+  - id: npc_mathijs
+    name: Black Mathijs
+    short: Black Mathijs
+    pronoun: he
+    age: 41
+    profession: robber
+    home: loc_rietdoolhof_mathijs
+    work: loc_rietdoolhof_camp
+    creature: black_mathijs
+    fame: 3
+    appearance: A lean, black-bearded man in a good coat that was not made for him, with a real sword and the calm of a man never caught.
+    personality: { warmth: -1, courage: 2, honesty: -2, temper: 2, curiosity: 1, diligence: 0 }
+    values: { wealth: 3, freedom: 2 }
+    quirks: [charming]
+    patron: grey_rider
+    speech: "Easy and mocking, always sounds reasonable. Talks of toll as if it were rent."
+    aliases: [mathijs, black mathijs, zwarte mathijs, leader of the goat-riders]
+    public_facts:
+      - Black Mathijs leads the Goat-Riders. He has never been caught.
+    examples:
+      - "A toll is only a tax without a seal on it. Get me the seal, and I'm as honest as the Count."
+      - "Goats that fly? Who told you that? Children believe anything."
+    money: 900
+    knows_areas: [rietdoolhof, blackmere, drowned_goose, roads, waagdam, veenhoek]
+    relations:
+      - to: npc_cornelis
+        role: employer
+        bond: 0
+        private: true
+        note: The surveyor pays you to keep the peat-cutters off his stakes.
+    secrets:
+      - id: flying_goats
+        text: The flying goats are goat-skins and bog gas.
+        hint: He laughs a little too easily at talk of flying goats.
+        admission: "Goat-skins, a bladder of bog gas and a lantern on a pole. Farmers see what they fear."
+        dc: 18
+        about: [goat_riders]

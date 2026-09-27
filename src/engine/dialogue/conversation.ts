@@ -196,6 +196,7 @@ export class Dialogue {
     const secret = this.world.npc(npcId).secrets.find((s) => s.about.includes(topic) && !this.talk!.revealed.includes(s.id))
     if (!secret) return {}
     this.talk!.revealed.push(secret.id)
+    ;(this.world.state.flags ??= {})[`secret:${npcId}:${secret.id}`] = true
     gainXp(this.world, XP.secret, `${callName(this.world.npc(npcId))} told you a secret`)
     if (secret.teaches) this.teach(npcId, secret.teaches)
     return { secret: secret.text, admission: secret.admission }
@@ -286,6 +287,8 @@ export class Dialogue {
         secret = found.text
         admission = found.admission
         this.talk?.revealed.push(found.id)
+        // Quests react to what the player has found out (quests/engine.ts).
+        ;(world.state.flags ??= {})[`secret:${npcId}:${found.id}`] = true
         if (found.teaches) this.teach(npcId, found.teaches)
       }
     }

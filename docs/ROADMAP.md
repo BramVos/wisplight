@@ -96,10 +96,10 @@ Scope: FO 8 en 13. Relaties met vier waarden, houding en gedragspoorten, gebeurt
 
 Scope: FO 14, WB 7 tot en met 15. Questsysteem met stadia, voorwaarden, effecten, klokken, verzoeken uit NPC-doelen en tegenspelers. Alle content: 86 locaties, 29 NPC's, 22 verhalen, 10 quests en 5 persoonlijke quests. Uit het ontwerp lore en wereldverandering: rampen en oorlog met effectplannen, groepen, toestand van plekken, genereren tot speelbaar, en quests die op de wereld reageren, ook op de dood van iemand met een questrol.
 
-- [ ] Elke quest is via al zijn oplossingen uit te spelen in een geautomatiseerd script
-- [ ] 30 speldagen simulatie zonder vastlopers of onoplosbare quests
-- [ ] De drooglegging loopt door als de speler niets doet
-- [ ] Een dijkdoorbraak laat Veenhoek vluchten: wie dichtbij is loopt echt weg, verder weg worden het notities, en lopende quests reageren
+- [x] Elke quest is via al zijn oplossingen uit te spelen in een geautomatiseerd script
+- [x] 30 speldagen simulatie zonder vastlopers of onoplosbare quests
+- [x] De drooglegging loopt door als de speler niets doet
+- [x] Een dijkdoorbraak laat Veenhoek vluchten: wie dichtbij is loopt echt weg, verder weg worden het notities, en lopende quests reageren
 
 ## M8 Volledige wereldbouwer
 

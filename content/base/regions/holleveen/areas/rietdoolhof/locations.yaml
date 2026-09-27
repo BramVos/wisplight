@@ -1,4 +1,5 @@
-# The Rietdoolhof (Wereldboek, chapter 7): the Goat-Riders' reed maze.
+# The Rietdoolhof (Wereldboek, chapter 7): the Goat-Riders' reed maze, with
+# its passages, a hidden jetty and their camp.
 locations:
   - id: loc_rietdoolhof_edge
     name: The Reed Maze
@@ -12,3 +13,96 @@ locations:
         lose your way just by looking at them. Somewhere ahead a goat bleats,
         which makes no sense out here. The smell of woodsmoke drifts over the
         reeds. The only way you are sure of is back north, the way you came.
+    exits:
+      south: { to: loc_rietdoolhof_passages, minutes: 10 }
+
+  - id: loc_rietdoolhof_passages
+    name: The Reed Passages
+    area: rietdoolhof
+    tags: [wilderness, lair, "hazard:bog"]
+    aliases: [reed passages, passages, rietgangen]
+    summary: Narrow passages through the reed of the Rietdoolhof, some of them cut on purpose.
+    description:
+      day: |
+        The reed here has been cut back into passages just wide enough for a
+        punt, and the cut stems stand up out of the water like spikes. Some of
+        the passages end in nothing, and one ends in a snare of twine strung
+        low across the water. Woodsmoke drifts over the reeds, and with it a
+        sharp smell of goat. North leads back to the edge of the maze; the
+        passages go on south and west.
+      night: |
+        In the dark the passages all look alike, walls of black reed over
+        black water. A goat bleats somewhere ahead and then is suddenly quiet,
+        as if a hand has closed round its muzzle. North is the way back, you
+        think.
+    exits:
+      north: { to: loc_rietdoolhof_edge, minutes: 10 }
+      south: { to: loc_rietdoolhof_camp, minutes: 10 }
+      west: { to: loc_rietdoolhof_jetty, minutes: 10 }
+
+  - id: loc_rietdoolhof_jetty
+    name: The Hidden Jetty
+    area: rietdoolhof
+    tags: [wilderness, lair]
+    aliases: [hidden jetty, jetty, steiger]
+    summary: A jetty hidden in the reeds of the Rietdoolhof, where the Goat-Riders keep their fast boats.
+    description:
+      day: |
+        Tucked into a bend of the reeds is a jetty of new planks, so well
+        hidden that you are standing on it before you see it. Two narrow boats
+        lie alongside, light and low and painted black, their rowlocks wrapped
+        in rags. The planks smell of fresh tar. The passages lead back east; a
+        path of boards runs south-east towards the smoke of a camp.
+      night: |
+        The jetty creaks under you, and the black boats knock gently against
+        its posts. Through the reeds to the south-east, firelight shows. The
+        passages are east.
+    exits:
+      east: { to: loc_rietdoolhof_passages, minutes: 10 }
+      southeast: { to: loc_rietdoolhof_camp, minutes: 5 }
+
+  - id: loc_rietdoolhof_camp
+    name: The Goat-Riders' Camp
+    area: rietdoolhof
+    tags: [lair]
+    aliases: [goat-riders' camp, camp]
+    summary: The hidden camp of the Goat-Riders on a dry island in the Rietdoolhof.
+    description:
+      day: |
+        On a low island of dry ground a few huts of reed and turf stand round
+        a fire pit. Goat-skins hang drying on a line, whole, with the horns
+        still on the heads, and beside them hang masks of the same hide. The
+        place stinks of goat and peat smoke, and under both lies a rotten,
+        gassy smell that bubbles up from the mud wherever you step. The
+        passages are north and the jetty north-west; the biggest hut, off to
+        one side, has a door of real planks.
+      night: |
+        A peat fire burns low in the pit, and round it the goat-skins on their
+        line look like beasts standing in a row, horns and all. Now and then a
+        blue flame flickers up out of the mud at the edge of the island and
+        goes out. It smells of goat and rot. The jetty is north-west, the
+        passages north.
+    exits:
+      north: { to: loc_rietdoolhof_passages, minutes: 10 }
+      northwest: { to: loc_rietdoolhof_jetty, minutes: 5 }
+      in: { to: loc_rietdoolhof_mathijs }
+
+  - id: loc_rietdoolhof_mathijs
+    name: Black Mathijs's Hut
+    area: rietdoolhof
+    tags: [private, lair]
+    aliases: [mathijs's hut, big hut]
+    summary: The biggest hut in the Goat-Riders' camp, where Black Mathijs sleeps.
+    description:
+      day: |
+        The hut is bigger inside than it looks, and dry, with a floor of
+        planks and a real bed under a blanket of good wool. A chest with three
+        locks stands at the foot of the bed, and on a peg by the door hang a
+        black cloak and a mask of goat hide with the horns still on. It smells
+        of goat, peat smoke and wet wool. The door opens back onto the camp.
+      night: |
+        Inside the hut it is dark and close, and it smells of goat and wet
+        wool. Something rustles in the thatch overhead. The door is behind
+        you, onto the camp.
+    exits:
+      out: { to: loc_rietdoolhof_camp }

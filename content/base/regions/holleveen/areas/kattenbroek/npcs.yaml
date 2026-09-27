@@ -1,0 +1,83 @@
+npcs:
+  - id: npc_kaatje
+    name: Kaatje
+    short: the widow Kaatje
+    pronoun: she
+    age: 70
+    profession: witch
+    home: loc_kattenbroek_hut
+    work: loc_kattenbroek_pools
+    fame: 2
+    appearance: A small, straight-backed old woman in black, with river-grey eyes and a cat on each shoulder, as if it were nothing.
+    personality: { warmth: -1, courage: 3, honesty: 2, temper: 1, curiosity: 1, diligence: 2 }
+    values: { nature: 3, honour: 3 }
+    quirks: [old_customs, cats]
+    speech: "Few words, each one weighed. Talks of the fen as of a person, and of the dead as if they were in the next room."
+    aliases: [kaatje, widow, the widow, cat-widow, witch, weduwe, heks]
+    public_facts:
+      - They call her the Cat-Widow. She lives in a hut on stilts in the Kattenbroek.
+    examples:
+      - "The fen doesn't like you. Give it time. Or don't."
+      - "Everything you take from here, you pay for. The only question is when."
+    money: 40
+    knows_areas: [kattenbroek, blackmere, veenhoek, reuzenrust]
+    relations:
+      - name: her husband
+        pronoun: he
+        role: spouse
+        bond: 3
+        status: dead
+        note: An eel-fisher who went into the black water one spring.
+      - to: npc_aaltje
+        role: pupil
+        bond: 0
+        private: true
+        note: She was your apprentice once, and left.
+      - to: npc_dirck
+        role: creditor
+        bond: 1
+        private: true
+        note: He signed your certificate at the Waag, though you weighed too light.
+    secrets:
+      - id: knows_the_tomcat
+        text: She knows who the grey tomcat in her yard is.
+        hint: One of her cats she never feeds from her hand.
+        admission: "The grey one with ink on his paws? A surveyor. He came with chains. He stays with me now."
+        dc: 20
+        about: [surveyor, drainage]
+      - id: fenna_lied
+        text: The grey cat on the Vissers' doorstep is Fenna, who paid for a love charm with a lie.
+        hint: At the name Fenna her mouth twitches, not unkindly.
+        admission: "The girl lied to me for a charm. A lie is a debt. She is paying it in fur."
+        dc: 18
+        about: [fenna, grey_cat]
+
+  - id: npc_jacob
+    name: Jacob van Dam
+    short: Jacob van Dam
+    pronoun: he
+    age: 41
+    profession: cat
+    home: loc_kattenbroek_catyard
+    absent: true
+    fame: 2
+    appearance: A lean, nervous man with ink-stained fingers who rubs his wrists as if they had been bound.
+    personality: { warmth: 0, courage: -1, honesty: 2, temper: 0, curiosity: 2, diligence: 2 }
+    values: { knowledge: 2, family: 2 }
+    quirks: [nervous]
+    patron: lantern
+    speech: "Careful, exact, a little shaken. A surveyor's words, a cat's habits."
+    aliases: [jacob, van dam, jacob van dam, the old surveyor]
+    public_facts:
+      - Jacob van Dam was the Count's surveyor before Cornelis. He went into the Kattenbroek and did not come back.
+    examples:
+      - "I measured it. Drained peat sinks. Below the Vaart. Every village on it, under water in a generation."
+      - "My wife is in Graafhaven. She will think I'm dead."
+    money: 0
+    knows_areas: [kattenbroek, veenhoek, waagdam, drowned_goose]
+    relations:
+      - name: his wife
+        pronoun: she
+        role: spouse
+        bond: 3
+        status: away

@@ -11,6 +11,8 @@ import { isNight, qtyName, wakeNpc } from './npc/execute'
 import { parseDirection, splitQuantity, type Command } from './parser'
 import type { World } from './world'
 import { rest } from './rules/player'
+import { widowTurnsBack } from './quests/antagonists'
+import { closedBetween, placeStateLine } from './quests/plans'
 import { approve, restParty } from './social/companions'
 import { deed } from './social/deeds'
 import { refusedTrade } from './social/crime'
@@ -119,8 +121,12 @@ export function describeRoom(world: World): Output {
   if (hex) return describeHex(world, hex)
   const location = world.location(world.state.player.location)
   const night = new GameClock(world.now).isNight
-  const description = (night && location.description.night ? location.description.night : location.description.day).trim()
+  const variant = [...location.variants].reverse().find((v) => world.state.flags?.[v.flag])
+  const shown = variant ?? location.description
+  const description = (night && shown.night ? shown.night : shown.day).trim()
   const lines = [location.name, description]
+  const state = placeStateLine(world, location.id)
+  if (state) lines.push(state)
   const ground = world.state.ground[location.id]
   if (ground && Object.keys(ground).length > 0) lines.push(`On the ground: ${listItems(world.content, ground)}.`)
   lines.push(exitLine(world))
@@ -189,6 +195,10 @@ function go(host: CommandHost, args: string[]): Output[] {
     return [...result.outputs.slice(1), describeRoom(world)]
   }
   if (!exit) return [error(`You can't go ${direction} from here.`)]
+  const closed = closedBetween(world, player.location, exit.to)
+  if (closed) return [error(`You can't go that way: ${closed}`)]
+  const mist = widowTurnsBack(world, exit.to)
+  if (mist) return [text(mist), ...host.pass(30)]
   if (shutForNight(world, exit.to)) return [text(`The door of ${world.location(exit.to).name} is shut for the night. KNOCK to wake whoever lives there.`)]
   player.location = exit.to
   const seen = host.pass(exit.minutes)

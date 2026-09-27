@@ -377,8 +377,9 @@ function openPersonal(world: World, c: Companion): void {
   const quest = world.npc(c.npc).companion?.quest
   const q = quest ? world.content.quests.get(quest) : undefined
   if (!q) return
-  world.state.requests.push({ id: `req_${world.state.requests.length + 1}_${quest}`, npc: c.npc, kind: 'visit', target: c.npc, qty: 1, created: world.now, status: 'open', name: q.name, ask: q.summary, source: 'motor', asked: world.now })
-  world.notices.push(`${callName(world.npc(c.npc))} wants to talk to you about something of their own: ${q.name}. It is in your journal.`)
+  // The quest itself begins the next time the player talks to them (quests/engine.ts).
+  ;(world.state.flags ??= {})[`personal_${quest}`] = true
+  world.notices.push(`${callName(world.npc(c.npc))} wants to talk to you about something of their own: ${q.name}. Talk to them.`)
 }
 
 /** Companions rise with the group: one level under the player, or their own if higher. */

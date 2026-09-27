@@ -1,0 +1,97 @@
+# Effect plans for big events (design: lore and world change, "Grote
+# gebeurtenissen"). A plan runs in phases, hours after it starts, with effects
+# from a fixed vocabulary the system can check. Near the player people really
+# pack up and walk; far off they become notes. Quests react to the state of
+# places and people that follows (quests/engine.ts, on_place and on_death).
+
+plans:
+  - id: dyke_breach
+    name: The dyke breaks at Oude Zijl
+    groups:
+      # The Vissers stay: Grietje won't leave without the cat, and the cat won't leave the doorstep.
+      veenhoek: { areas: [veenhoek], except: [npc_grietje_visser, npc_pim, npc_jan_visser] }
+      molenend: { areas: [molenend] }
+    phases:
+      - after: 0
+        effects:
+          - { place: loc_oude_zijl_dyke, state: damaged }
+          - { place: loc_veenhoek_quay, state: flooded }
+          - { place: loc_peat_sheds, state: flooded }
+          - { place: loc_towpath_w, state: flooded }
+          - { place: loc_towpath_e, state: flooded }
+          - { close: [loc_veenhoek_quay, loc_towpath_w], reason: "The tow path is under brown water as far as you can see." }
+          - { close: [loc_gerrit_house, loc_towpath_e], reason: "The tow path is under brown water as far as you can see." }
+          - { news: "The dyke at Oude Zijl has broken, and the water is in Veenhoek.", area: veenhoek }
+          - { fact: { title: the dyke broke at Oude Zijl, precise: "The dyke at Oude Zijl broke in the night and the water ran into Veenhoek.", village: "The dyke's gone at Oude Zijl! The water's in Veenhoek, run for the high ground!", far: "A dyke broke in the Holleveen and a village went under.", belang: 5, about: [who_will_not_dyke, water_wolf], place: loc_oude_zijl_dyke } }
+      - after: 1
+        effects:
+          - { place: loc_veenhoek_green, state: flooded }
+          - { place: loc_visser_house, state: flooded }
+          - { place: loc_gerrit_house, state: flooded }
+          - { flee: veenhoek, to: loc_waagdam_church, days: 7 }
+      - after: 6
+        effects:
+          - { place: loc_veenhoek_bakery, state: flooded }
+          - { place: loc_aaltje_cottage, state: flooded }
+          - { place: loc_molenend_field, state: flooded }
+          - { flee: molenend, to: loc_goose_common, days: 4 }
+          - { market: flour, factor: 0.5 }
+          - { market: rye_grain, factor: 0.6 }
+      - after: 72
+        effects:
+          - { place: loc_veenhoek_quay, state: damaged }
+          - { place: loc_veenhoek_green, state: damaged }
+          - { place: loc_visser_house, state: damaged }
+          - { place: loc_gerrit_house, state: damaged }
+          - { place: loc_peat_sheds, state: damaged }
+          - { place: loc_towpath_w, state: normal }
+          - { place: loc_towpath_e, state: normal }
+          - { place: loc_veenhoek_bakery, state: damaged }
+          - { place: loc_aaltje_cottage, state: damaged }
+          - { place: loc_molenend_field, state: normal }
+          - { open: [loc_veenhoek_quay, loc_towpath_w] }
+          - { open: [loc_gerrit_house, loc_towpath_e] }
+          - { news: "The water is going down in Veenhoek, and people are going home to the mud.", area: veenhoek }
+      - after: 240
+        effects:
+          - { market: flour, factor: 1 }
+          - { market: rye_grain, factor: 1 }
+
+  - id: fen_closed
+    name: The widow closes the fen
+    phases:
+      - after: 0
+        effects:
+          - { close: [loc_kattenbroek_edge, loc_kattenbroek_reedpaths], reason: "Mist stands on the reed paths like a wall. You walk in, and you walk out where you started." }
+          - { close: [loc_kattenbroek_edge, loc_kattenbroek_hut], reason: "Mist stands between you and the hut like a wall. Somewhere in it, a cat laughs." }
+          - { news: "The Kattenbroek is closed in mist, and nobody who goes in finds the widow's hut.", area: kattenbroek }
+          - { fact: { title: mist over the Kattenbroek, precise: "The widow closed the Kattenbroek in mist when her patience ran out.", village: "The Kattenbroek's all mist now. You go in and come out where you started.", far: "A fen in the Holleveen is said to be bewitched.", belang: 3, about: [cat_widow, kattenbroek] } }
+
+  - id: soldiers_come
+    name: The Count sends soldiers
+    phases:
+      - after: 96
+        effects:
+          - { place: loc_route_peat_pits, state: occupied }
+          - { news: "Soldiers of the Count have camped at the peat pits. They ask everyone their name.", area: veenhoek }
+          - { fact: { title: the Count's soldiers at the peat pits, precise: "The Count sent soldiers to the Holleveen after his surveyor was chased off.", village: "Soldiers! At the peat pits, asking everyone their name!", far: "The Count has sent soldiers into the Holleveen.", belang: 4, about: [the_count, drainage], place: loc_route_peat_pits } }
+
+  - id: war
+    name: War
+    phases:
+      - after: 0
+        effects:
+          - { market: lamp_oil, factor: 0.5 }
+          - { market: iron_nails, factor: 0.5 }
+          - { news: "There's war, and the Count's men are buying up iron and oil.", area: waagdam }
+      - after: 48
+        effects:
+          - { place: loc_waagdam_harbour, state: occupied }
+          - { market: rye_grain, factor: 0.7 }
+          - { news: "Soldiers hold the harbour at Waagdam, and the barges are searched.", area: waagdam }
+      - after: 336
+        effects:
+          - { place: loc_waagdam_harbour, state: normal }
+          - { market: lamp_oil, factor: 1 }
+          - { market: iron_nails, factor: 1 }
+          - { market: rye_grain, factor: 1 }

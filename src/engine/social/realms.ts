@@ -41,6 +41,13 @@ export function shiftTension(world: World, a: string, b: string, delta: number, 
   if (!ra || !rb) return
   const war = now === 'war'
   const peace = was === 'war'
+  // A war that touches the player's land has its effect plan waiting (quests/plans.ts).
+  const home = world.content.world.id
+  if (war && (a === home || b === home)) {
+    const other = a === home ? b : a
+    const plan = world.content.plans.has(`war_${other}`) ? `war_${other}` : world.content.plans.has('war') ? 'war' : undefined
+    if (plan) (world.state.pendingPlans ??= []).push(plan)
+  }
   recordFact(world, {
     kind: 'realm',
     about: [],

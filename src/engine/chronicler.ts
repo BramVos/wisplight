@@ -106,7 +106,7 @@ export function buildInput(world: World, run: ChronicleRun): ChronicleInput {
     if (facts(line).some((f) => f.kind === 'sickness')) items.add('herbs')
   }
   // The people near to those in the story: the family of the dead, a sweetheart.
-  for (const id of [...cast]) for (const tie of ties(world, id)) if (isNear(tie) && tie.id && world.content.npcs.has(tie.id)) cast.add(tie.id)
+  for (const id of [...cast]) for (const tie of ties(world, id)) if (isNear(tie) && tie.id && world.content.npcs.has(tie.id) && !world.state.npcs[tie.id]?.absent) cast.add(tie.id)
   const requests = [...cast].flatMap((id) => openRequestsOf(world, id))
   for (const r of requests) if (r.item) items.add(r.item)
 
@@ -292,11 +292,12 @@ export function applyOutput(world: World, run: ChronicleRun, output: ChronicleOu
       Object.assign(request, { name: op.name, ask: op.ask, stakes: op.stakes, line: line.id })
       continue
     }
-    if (!world.alive(op.giver) || !input.cards.some((c) => c.id === op.giver)) {
+    const here = (id: string) => world.alive(id) && !world.state.npcs[id]?.absent
+    if (!here(op.giver) || !input.cards.some((c) => c.id === op.giver)) {
       problems.push(`request "${op.name}": ${op.giver} cannot ask anything`)
       continue
     }
-    if (op.template === 'visit' && (!op.target || op.target === op.giver || !world.alive(op.target))) {
+    if (op.template === 'visit' && (!op.target || op.target === op.giver || !here(op.target))) {
       problems.push(`request "${op.name}": nobody to visit`)
       continue
     }

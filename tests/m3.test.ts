@@ -50,9 +50,12 @@ describe('M3: the fixed chance roll (FO, chapter 5)', () => {
     for (let seed = 1; seed <= 40; seed++) {
       const k = knowledge(seed)
       for (const npc of content.npcs.keys()) {
-        expect(k.level(npc, 'hunnenloo'), `${npc} ${seed}`).toBeLessThanOrEqual(1)
+        // Hunnenloo is more than 100 km from everyone but the Kattenbroek, just under it.
+        const far = k.chance(npc, 'hunnenloo')!
+        expect(k.level(npc, 'hunnenloo'), `${npc} ${seed}`).toBeLessThanOrEqual(far.band === 4 ? 1 : 2)
         expect(k.level(npc, 'stavermouth'), `${npc} ${seed}`).toBeLessThanOrEqual(2)
       }
+      expect([...content.npcs.keys()].filter((npc) => k.chance(npc, 'hunnenloo')!.band === 4).length).toBeGreaterThan(20)
     }
   })
 

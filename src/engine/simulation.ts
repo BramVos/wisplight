@@ -35,7 +35,7 @@ export function advance(world: World, minutes: number): void {
     // Someone in a conversation with the player stays put until it ends.
     settleNotes(world)
     // Near the player every minute, further off every quarter of an hour; notes not at all (lod.ts).
-    for (const id of ids) if (world.state.talk?.npc !== id && !world.state.npcs[id]!.dead && !world.state.npcs[id]!.following && thinksNow(world, id)) think(world, id)
+    for (const id of ids) if (world.state.talk?.npc !== id && !world.state.npcs[id]!.dead && !world.state.npcs[id]!.following && !world.state.npcs[id]!.absent && thinksNow(world, id)) think(world, id)
     settleRuns(world)
     settleChoices(world)
   }
@@ -69,8 +69,10 @@ function decayNeeds(world: World): void {
   const workday = weekdayOf(world.now) !== 'Rustdag'
   for (const id of Object.keys(world.state.npcs).sort()) {
     const npc = world.state.npcs[id]!
-    if (npc.dead) continue
+    if (npc.dead || npc.absent) continue
     const def = world.npc(id)
+    // Spirits and the fair folk neither hunger nor tire.
+    if (def.quirks.includes('spirit')) continue
     const asleep = npc.activity === 'asleep'
     for (const need of Object.keys(DECAY) as Need[]) {
       let loss = DECAY[need]
@@ -99,7 +101,9 @@ function supply(world: World): void {
         const stock = world.stock(location.id, service.id)
         const target = service.sells[rule.item]?.target ?? rule.amount
         const room = Math.max(0, target - (stock[rule.item] ?? 0))
-        if (room > 0) add(stock, rule.item, Math.min(room, rule.amount))
+        // Scarcity from an effect plan: only a share comes in.
+        const share = world.state.market?.[rule.item] ?? 1
+        if (room > 0) add(stock, rule.item, Math.floor(Math.min(room, rule.amount) * share))
       }
     }
   }

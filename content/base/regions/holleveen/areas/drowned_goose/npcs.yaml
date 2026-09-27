@@ -123,3 +123,47 @@ npcs:
         bond: 0
         private: true
         note: He pays you to tell people the mill won't turn before winter.
+
+  - id: npc_cornelis
+    name: Cornelis de Wit
+    short: Master Cornelis the surveyor
+    pronoun: he
+    age: 36
+    profession: surveyor
+    home: loc_goose_rooms
+    work: loc_route_peat_pits
+    fame: 2
+    appearance: A thin man in a good black coat gone grey with mud at the hem, with a brass-bound measuring book under his arm.
+    personality: { warmth: -2, courage: -1, honesty: -1, temper: 0, curiosity: 1, diligence: 2 }
+    values: { knowledge: 2, wealth: 1, law: 1 }
+    quirks: [ambitious]
+    patron: lantern
+    speech: "Dry, precise, a little superior. Talks of sectors, levels and the Count's wishes."
+    aliases: [cornelis, surveyor, the surveyor, landmeter, master cornelis]
+    public_facts:
+      - Master Cornelis de Wit is the Count's surveyor. He lodges at The Drowned Goose.
+      - He is measuring the Holleveen for the drainage, a sector every working day.
+    examples:
+      - "Sector five by Rustdag, if the weather holds and the peat-cutters leave my stakes alone."
+      - "The Count wants land out of water. I merely tell him how much."
+    money: 600
+    inventory: { surveyors_chain: 1, measuring_chest: 1 }
+    knows_areas: [drowned_goose, veenhoek, molenend, waagdam, roads, blackmere]
+    relations:
+      - to: npc_everhard
+        role: acquaintance
+        bond: 1
+        note: The schout keeps order while you measure.
+    secrets:
+      - id: pays_mathijs
+        text: He pays Black Mathijs to keep the peat-cutters off his stakes.
+        hint: He keeps glancing at the door, and his purse is lighter every Vrijdag.
+        admission: "Protection. Everyone buys it out here. I buy it from the only man who sells it."
+        dc: 19
+        about: [goat_riders]
+      - id: old_survey
+        text: He knows from the old survey that drained peat shrinks and sinks below the level of the Vaart.
+        hint: He does not like talk of floods.
+        admission: "Drained peat sinks. The old survey says so. The Count does not want to hear it, so I do not say it."
+        dc: 21
+        about: [drainage]

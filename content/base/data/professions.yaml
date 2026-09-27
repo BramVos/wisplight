@@ -178,3 +178,105 @@ professions:
       - { from: "12:00", to: "17:00", days: [Maandag, Donderdag, Vrijdag], activity: work, at: loc_waagdam_gate_street }
       - { from: "17:00", to: "23:00", activity: socialize, at: loc_goose_common }
       - { from: "23:00", to: "06:30", activity: sleep }
+
+  # The rest of the Holleveen (M7; Wereldboek, chapter 9).
+
+  - id: surveyor
+    name: surveyor
+    schedule:
+      - { from: "07:00", to: "08:00", activity: eat }
+      - { from: "08:00", to: "12:00", activity: work, days: [Maandag, Dinsdag, Woensdag, Donderdag, Vrijdag, Zaterdag] }
+      - { from: "12:00", to: "13:00", activity: eat }
+      - { from: "13:00", to: "17:00", activity: work, days: [Maandag, Dinsdag, Woensdag, Donderdag, Vrijdag, Zaterdag] }
+      - { from: "17:30", to: "18:30", activity: eat }
+      - { from: "18:30", to: "22:00", activity: socialize, at: loc_goose_common }
+      - { from: "22:30", to: "07:00", activity: sleep }
+
+  - id: mayor
+    name: burgomaster
+    schedule:
+      - { from: "09:00", to: "11:00", activity: pray, at: loc_waagdam_church, days: [Rustdag] }
+      - { from: "07:00", to: "08:00", activity: eat }
+      - { from: "08:00", to: "12:00", activity: work }
+      - { from: "12:00", to: "13:00", activity: eat }
+      - { from: "13:00", to: "17:00", activity: work }
+      - { from: "18:00", to: "19:00", activity: eat }
+      - { from: "22:00", to: "07:00", activity: sleep }
+
+  - id: notary
+    name: notary
+    schedule:
+      - { from: "09:00", to: "11:00", activity: pray, at: loc_waagdam_church, days: [Rustdag] }
+      - { from: "07:30", to: "08:30", activity: eat }
+      - { from: "08:30", to: "12:30", activity: work }
+      - { from: "12:30", to: "13:30", activity: eat }
+      - { from: "13:30", to: "18:00", activity: work }
+      - { from: "18:00", to: "19:00", activity: eat }
+      - { from: "19:00", to: "22:30", activity: work }
+      - { from: "23:00", to: "07:30", activity: sleep }
+
+  - id: prior
+    name: prior
+    schedule:
+      - { from: "05:00", to: "06:00", activity: pray, at: loc_kloosterveen_church }
+      - { from: "06:00", to: "07:00", activity: eat }
+      - { from: "07:00", to: "12:00", activity: work }
+      - { from: "12:00", to: "13:00", activity: eat }
+      - { from: "13:00", to: "17:00", activity: work, at: loc_kloosterveen_brewery }
+      - { from: "17:00", to: "18:00", activity: pray, at: loc_kloosterveen_church }
+      - { from: "18:00", to: "19:00", activity: eat }
+      - { from: "19:00", to: "21:00", activity: work }
+      - { from: "21:00", to: "05:00", activity: sleep }
+
+  - id: dyke_reeve
+    name: heemraad
+    schedule:
+      - { from: "06:00", to: "07:00", activity: eat }
+      - { from: "07:00", to: "12:00", activity: work }
+      - { from: "12:00", to: "13:00", activity: eat }
+      - { from: "13:00", to: "18:00", activity: work, at: loc_oude_zijl_dyke }
+      - { from: "18:00", to: "19:00", activity: eat }
+      - { from: "19:00", to: "21:30", activity: home }
+      - { from: "21:30", to: "06:00", activity: sleep }
+
+  - id: miller_hand
+    name: miller's lad
+    schedule:
+      - { from: "05:30", to: "06:00", activity: eat }
+      - { from: "06:00", to: "12:00", activity: work, days: [Maandag, Dinsdag, Woensdag, Donderdag, Vrijdag, Zaterdag] }
+      - { from: "12:00", to: "13:00", activity: eat }
+      - { from: "13:00", to: "18:00", activity: work, days: [Maandag, Dinsdag, Woensdag, Donderdag, Vrijdag, Zaterdag] }
+      - { from: "18:00", to: "19:00", activity: eat }
+      - { from: "19:00", to: "21:00", activity: socialize }
+      - { from: "21:30", to: "05:30", activity: sleep }
+
+  - id: witch
+    name: witch of the Kattenbroek
+    schedule:
+      - { from: "06:00", to: "07:00", activity: eat }
+      - { from: "07:00", to: "12:00", activity: work }
+      - { from: "12:00", to: "13:00", activity: eat }
+      - { from: "13:00", to: "19:00", activity: work }
+      - { from: "19:00", to: "20:00", activity: eat }
+      - { from: "20:00", to: "23:00", activity: home }
+      - { from: "23:00", to: "06:00", activity: sleep }
+
+  - id: robber
+    name: robber
+    schedule:
+      - { from: "18:00", to: "23:00", activity: socialize, at: loc_goose_common, days: [Vrijdag] }
+      - { from: "09:00", to: "10:00", activity: eat }
+      - { from: "10:00", to: "17:00", activity: work }
+      - { from: "17:00", to: "18:00", activity: eat }
+      - { from: "18:00", to: "23:00", activity: home }
+      - { from: "23:30", to: "09:00", activity: sleep }
+
+  - id: spirit
+    name: spirit
+    schedule:
+      - { from: "00:00", to: "23:59", activity: home }
+
+  - id: cat
+    name: cat
+    schedule:
+      - { from: "00:00", to: "23:59", activity: home }

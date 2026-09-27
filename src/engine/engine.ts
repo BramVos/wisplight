@@ -10,7 +10,7 @@ import { applyChoice, goalRequest, settleChoices } from './npc/goals'
 import { LlmError, type LlmClient, type LlmRequest, type LlmResponse } from './dialogue/llm'
 import { attitude, relation } from './dialogue/relations'
 import { TopicRegistry } from './dialogue/topics'
-import { formatMoney } from './items'
+import { add, formatMoney, itemName, matchItem } from './items'
 import { chronicleText } from './chronicle'
 import { journalPage, type JournalPage } from './journal'
 import { die } from './life'
@@ -39,6 +39,10 @@ import { deed, noticeCarried, seedBonds } from './social/deeds'
 import { factionLines, join, rankOf, repute } from './social/factions'
 import { fightsBack, mayAttackFirst, mayLend } from './social/gates'
 import { flirt, marry } from './social/romance'
+import { evaluate, expireConditions, questAction, questlog, questPage, questsOnDeath, setPlaceState, startQuest, triggers, type QuestHost } from './quests/engine'
+import { PlaceState } from './quests/schema'
+import { antagonists } from './quests/antagonists'
+import { plansDue, startPlan } from './quests/plans'
 import { realmLines } from './social/realms'
 import {
   character,
@@ -170,6 +174,8 @@ export class Engine {
   /** True while a log is played back: build commands in it ran once, so they run again. */
   private replaying = false
   private chronicling = false
+  /** Quests that began with the game, told after the opening. */
+  private opening: Output[] = []
   private thinking = false
   private outlining = false
 
@@ -194,6 +200,7 @@ export class Engine {
       seedNews(this.world)
       this.arrive()
       this.lookAround()
+      this.opening = triggers(this.world, this.questHost, { newGame: true })
     }
     this.dialogue.learn(state.player.location, areaTopicId(content, this.world.location(state.player.location).area))
   }
@@ -258,6 +265,10 @@ export class Engine {
   /** A page of the journal: what the player knows about a topic, with sources and links. */
   page(id: string): JournalPage | undefined {
     if (id === 'map') return { id, kind: 'map', name: 'The Holleveen as you know it', lines: this.mapText().split('\n'), sources: [], links: [] }
+    if (id.startsWith('quest_')) {
+      const page = questPage(this.world, id.slice(6))
+      return page ? { id, kind: 'quest', name: page.name, lines: page.lines, sources: [], links: [] } : undefined
+    }
     if (id === 'factions') return { id, kind: 'lore', name: 'Factions', lines: factionLines(this.world).length ? factionLines(this.world) : ['No faction knows you yet.'], sources: [], links: [] }
     if (id === 'lands') return { id, kind: 'lore', name: 'The lands', lines: realmLines(this.world), sources: [], links: [] }
     if (id === 'party') return { id, kind: 'lore', name: 'Your companions', lines: partyLines(this.world).length ? [...partyLines(this.world), ...companions(this.world).flatMap((m) => m.approvals.slice(-3).map((a) => `  ${callName(this.world.npc(m.npc))}: ${a.text}`))] : ['You travel alone.'], sources: [], links: [] }
@@ -437,7 +448,28 @@ export class Engine {
       ...(intro ? [{ kind: 'text' as const, text: intro }] : []),
       describeRoom(this.world),
       { kind: 'system', text: 'The pace of events is normal. Type TEMPO CALM or TEMPO DRAMATIC for less or more happening in the world.' },
+      ...this.opening,
     ]
+  }
+
+  /** What the quest engine may ask of the engine: time, effect plans and encounters. */
+  private get questHost(): QuestHost {
+    return {
+      pass: (minutes) => this.pass(minutes),
+      plan: (id) => void this.world.notices.push(...startPlan(this.world, this.questHost, id, 'quest').map((o) => o.text)),
+      encounter: (id) => (this.content.encounters.has(id) ? this.startEncounter(id) : []),
+    }
+  }
+
+  /** After time passed: deaths reach the quests, plans run their phases, stages and endings are checked. */
+  private questsTick(): Output[] {
+    const out: Output[] = []
+    for (const id of this.world.deaths.splice(0)) out.push(...questsOnDeath(this.world, this.questHost, id))
+    expireConditions(this.world)
+    out.push(...antagonists(this.world, this.questHost))
+    out.push(...plansDue(this.world, this.questHost))
+    out.push(...evaluate(this.world, this.questHost))
+    return out
   }
 
   async handle(input: string): Promise<Output[]> {
@@ -446,7 +478,8 @@ export class Engine {
     this.record({ t: this.world.now, k: 'cmd', v: text })
     for (const listener of this.listeners) listener({ kind: 'in', t: this.world.now, text })
     const before = this.state.player.location
-    const outputs = this.state.combat ? await this.inFight(text) : await this.route(text)
+    const quest = this.state.combat ? undefined : questAction(this.world, this.questHost, text)
+    const outputs = quest ?? (this.state.combat ? await this.inFight(text) : await this.route(text))
     const talk = this.state.talk
     if (talk && this.state.npcs[talk.npc]?.location !== this.state.player.location) this.state.talk = undefined
     this.dialogue.learn(this.state.player.location, areaTopicId(this.content, this.world.location(this.state.player.location).area))
@@ -454,9 +487,11 @@ export class Engine {
     this.lookAround()
     if (before !== this.state.player.location) {
       arrived(this.world)
+      outputs.push(...triggers(this.world, this.questHost, { at: this.state.player.location }))
       outputs.push(...findPurse(this.world), ...this.maybeEncounter(before))
     }
     noticeCarried(this.world)
+    outputs.push(...this.questsTick())
     outputs.push(...this.confrontations())
     settleRuns(this.world)
     settleChoices(this.world)
@@ -488,7 +523,7 @@ export class Engine {
         // Start the conversation first, so the NPC stays put during the minute it takes.
         const opening = this.dialogue.start(npc)
         this.pass(1)
-        return opening
+        return [...opening, ...triggers(this.world, this.questHost, { talk: npc })]
       }
       case 'bye':
         return this.dialogue.end()
@@ -692,7 +727,7 @@ export class Engine {
     for (const listener of this.listeners) listener({ kind: 'replay', t: this.world.now, entry: { t: this.world.now, k: 'tick', v: minutes } })
     const passed = this.pass(minutes)
     noticeCarried(this.world)
-    const outputs = [...passed, ...this.confrontations()]
+    const outputs = [...passed, ...this.questsTick(), ...this.confrontations()]
     outputs.push(...this.world.notices.splice(0).map((text) => ({ kind: 'system' as const, text })))
     return this.shown(outputs)
   }
@@ -705,6 +740,10 @@ export class Engine {
     const heard = this.state.news?.heard['player'] ?? {}
     for (const lore of this.state.chronicle?.lore ?? []) if (lore.facts.some((f) => heard[f])) this.dialogue.learn(lore.id)
     const journal: Status['journal'] = { people: [], places: [], events: [], lore: [], things: [], quests: [] }
+    for (const [id, q] of Object.entries(questlog(this.world)).sort((a, b) => a[1].started - b[1].started)) {
+      const quest = this.content.quests.get(id)
+      if (quest) journal.quests.push({ id: `quest_${id}`, name: `${quest.name}${q.ended ? ' (over)' : ''}` })
+    }
     for (const request of knownRequests(this.world)) {
       const state = request.status === 'done' ? ' (done)' : request.status === 'failed' ? ' (too late)' : ''
       journal.quests.push({ id: request.id, name: `${requestName(this.world, request)}${state}` })
@@ -962,9 +1001,82 @@ export class Engine {
         gainXp(this.world, Number(rest[0]) || 0, 'the world builder says so')
         return this.world.notices.splice(0).map((text) => ({ kind: 'system' as const, text }))
       }
+      case 'goto': {
+        // @goto loc_kattenbroek_hut, or @goto the widow's hut: the player is there at once.
+        const place = this.findLocation(rest.join(' '))
+        if (!place) return [{ kind: 'error', text: '@goto <place>' }]
+        this.state.player.location = place
+        return [{ kind: 'system', text: `[build] You are at ${this.world.location(place).name}.` }, describeRoom(this.world), ...triggers(this.world, this.questHost, { at: place })]
+      }
+      case 'bring': {
+        // @bring aaltje: someone comes to where the player is, and stays an hour.
+        const npcId = findNpcAnywhere(this.world, rest.join(' '))
+        const npc = npcId ? this.state.npcs[npcId] : undefined
+        if (!npcId || !npc || npc.dead) return [{ kind: 'error', text: '@bring <person>' }]
+        Object.assign(npc, { location: this.state.player.location, plan: [], planGoal: undefined, busyUntil: this.world.now + 60, activity: 'waiting' })
+        return [{ kind: 'system', text: `[build] ${callName(this.world.npc(npcId))} is here.` }]
+      }
+      case 'give': {
+        // @give moon_water 2
+        const item = this.content.items.has(rest[0] ?? '') ? rest[0]! : matchItem(this.content, rest.slice(0, Number(rest.at(-1)) ? -1 : undefined).join(' '))
+        if (!item) return [{ kind: 'error', text: '@give <item> [count]' }]
+        add(this.state.player.inventory, item, Number(rest.at(-1)) || 1)
+        return [{ kind: 'system', text: `[build] You have ${itemName(this.content, item)}.` }]
+      }
+      case 'flag': {
+        // @flag widow_price_known, @flag survey_quiet_days 7, @flag -stakes_pulled_today
+        const name = rest[0] ?? ''
+        if (!name) return [{ kind: 'error', text: '@flag <name> [value], or @flag -<name> to clear it' }]
+        const flags = (this.state.flags ??= {})
+        if (name.startsWith('-')) delete flags[name.slice(1)]
+        else flags[name] = rest[1] === undefined ? true : Number.isFinite(Number(rest[1])) ? Number(rest[1]) : rest[1]
+        return [{ kind: 'system', text: `[build] Flag ${name}.` }, ...this.pass(0)]
+      }
+      case 'quest': {
+        const id = rest[0] ?? ''
+        if (!this.content.quests.get(id)?.stages?.length) return [{ kind: 'error', text: `@quest <id>: ${[...this.content.quests.values()].filter((q) => q.stages?.length).map((q) => q.id).join(', ')}` }]
+        return [...startQuest(this.world, this.questHost, id), ...this.pass(0)]
+      }
+      case 'plan': {
+        const id = rest[0] ?? ''
+        if (!this.content.plans.has(id)) return [{ kind: 'error', text: `@plan <id>: ${[...this.content.plans.keys()].join(', ')}` }]
+        return [...startPlan(this.world, this.questHost, id, 'builder'), ...this.pass(0)]
+      }
+      case 'place': {
+        // @place loc_visser_house flooded
+        const place = this.findLocation(rest.slice(0, -1).join(' '))
+        const state = PlaceState.safeParse(rest.at(-1))
+        if (!place || !state.success) return [{ kind: 'error', text: `@place <place> <${PlaceState.options.join('|')}>` }]
+        const out: Output[] = []
+        setPlaceState(this.world, this.questHost, place, state.data, out)
+        return [{ kind: 'system', text: `[build] ${this.world.location(place).name} is ${state.data}.` }, ...out, ...this.pass(0)]
+      }
+      case 'money': {
+        // @money 300: the purse holds this many duiten.
+        const amount = Number(rest[0])
+        if (!Number.isInteger(amount) || amount < 0) return [{ kind: 'error', text: '@money <duiten>' }]
+        this.state.player.money = amount
+        return [{ kind: 'system', text: `[build] You have ${formatMoney(amount)}.` }]
+      }
+      case 'time': {
+        // @time 23: wait until the next time it is eleven at night.
+        const hour = Number(rest[0])
+        if (!Number.isInteger(hour) || hour < 0 || hour > 23) return [{ kind: 'error', text: '@time <hour 0-23>' }]
+        const minute = this.world.now % (24 * 60)
+        const wait = (hour * 60 - minute + 24 * 60) % (24 * 60) || 24 * 60
+        return [{ kind: 'system', text: `[build] ${wait} minutes pass.` }, ...this.pass(wait)]
+      }
       default:
-        return [{ kind: 'error', text: 'Build commands: @kill <person> [how], @who-knows <topic>, @send <person> <place> [days], @where <person>, @fight <encounter or creature> [count], @xp <amount>, @like <person> <affinity> [trust].' }]
+        return [{ kind: 'error', text: 'Build commands: @kill <person> [how], @who-knows <topic>, @send <person> <place> [days], @where <person>, @fight <encounter or creature> [count], @xp <amount>, @like <person> <affinity> [trust], @goto <place>, @bring <person>, @give <item> [count], @flag <name> [value], @quest <id>, @plan <id>, @place <place> <state>, @time <hour>, @money <duiten>.' }]
     }
+  }
+
+  /** A location by id, or by name or alias. */
+  private findLocation(words: string): string | undefined {
+    const w = words.trim().toLowerCase()
+    if (!w) return undefined
+    if (this.content.locations.has(w)) return w
+    return [...this.content.locations.values()].find((l) => l.name.toLowerCase() === w || l.aliases.includes(w))?.id ?? [...this.content.locations.values()].find((l) => l.name.toLowerCase().includes(w))?.id
   }
 
   // ------------------------------------------------------------ fights (FO, chapter 12)
@@ -997,6 +1109,8 @@ export class Engine {
     const hour = this.clock.parts.hour
     for (const e of [...this.content.encounters.values()].sort((a, b) => a.id.localeCompare(b.id))) {
       if (!e.places.includes(here) && !(area && e.places.includes(area))) continue
+      if (e.when_flag && !this.state.flags?.[e.when_flag]) continue
+      if (e.unless_flag && this.state.flags?.[e.unless_flag]) continue
       if (e.hours && !(e.hours[0] <= e.hours[1] ? hour >= e.hours[0] && hour < e.hours[1] : hour >= e.hours[0] || hour < e.hours[1])) continue
       const last = this.state.player.encounters?.[e.id]
       if (last !== undefined && this.world.now - last < e.again_after * 24 * 60) continue
@@ -1202,6 +1316,7 @@ export class Engine {
     out.push(...this.afterPeople(combat))
     switch (combat.over) {
       case 'won': {
+        if (encounter?.win_flag) (this.state.flags ??= {})[encounter.win_flag] = true
         // Overcoming a challenge is experience; beating up a villager you went for is not.
         const xp = combat.started_by === 'player' ? 0 : foes.reduce((sum, f) => sum + foeXp(f.level, c.level), 0)
         if (xp) gainXp(this.world, xp, `you overcame ${who}`)
@@ -1391,11 +1506,18 @@ export class Engine {
 
   /** Runs the world for some minutes and returns the events the player could see. */
   private pass(minutes: number): Output[] {
-    advance(this.world, minutes)
-    rest(this.world, minutes)
+    // A long wait is lived hour by hour: the opponents, big events and quests keep pace with the people.
+    const between: Output[] = []
+    for (let left = minutes; left > 0; ) {
+      const step = Math.min(60, left)
+      advance(this.world, step)
+      rest(this.world, step)
+      left -= step
+      if (left > 0) between.push(...this.questsTick())
+    }
     const here = this.state.player.location
     const seen = this.state.events.filter((e) => e.seq > this.state.seenSeq && e.location === here)
     this.state.seenSeq = this.state.eventSeq
-    return seen.map((e) => ({ kind: 'narration' as const, text: e.text }))
+    return [...between, ...seen.map((e) => ({ kind: 'narration' as const, text: e.text }))]
   }
 }

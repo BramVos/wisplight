@@ -34,3 +34,100 @@ locations:
     exits:
       west: { to: loc_goose_crossroads, minutes: 25 }
       east: { to: loc_waagdam_west_gate, minutes: 25 }
+
+  # The peat fields south-west of Veenhoek (Wereldboek, chapter 7: peat pits,
+  # peat stacks, crossroads), on the way to the Kabouterberg.
+  - id: loc_route_peat_stacks
+    name: The Peat Stacks
+    area: roads
+    pos: [109.4, 104.4]
+    tags: [route]
+    aliases: [peat stacks, turfhopen]
+    summary: Rows of cut peat stacked to dry in the fields west of the peat cuttings.
+    description:
+      day: |
+        Cut peat stands in rows of small stacks along a track through the
+        fields, each stack built loose so the wind can get through it. The
+        blocks are black at the bottom and going brown at the top, and they
+        smell of earth and old smoke. A crow sits on one stack and watches
+        you pass. The tow path is north, the peat cuttings east, and the
+        track runs on south-west to a crossroads.
+      night: |
+        In the dark the peat stacks look like people standing in rows,
+        waiting. The wind whistles through the gaps between the blocks. The
+        tow path is north; the cuttings are east.
+    exits:
+      north: { to: loc_towpath_w, minutes: 10 }
+      east: { to: loc_peat_cuttings, minutes: 10 }
+      southwest: { to: loc_route_crossroads, minutes: 15 }
+
+  - id: loc_route_crossroads
+    name: Crossroads of Fen Tracks
+    area: roads
+    pos: [108.9, 103.5]
+    tags: [route]
+    aliases: [fen crossroads, fen tracks]
+    summary: Where three fen tracks cross south-west of Veenhoek, on the way to the Kabouterberg.
+    description:
+      day: |
+        Three tracks meet here on a low rise, each no more than two ruts with
+        a strip of grass between them. A post stands at the crossing with no
+        sign on it, only a bunch of rye ears tied to the top, grey with
+        weather. Peewits cry over the wet fields on every side. The track runs
+        north-east to the peat stacks and Veenhoek, south-west to the
+        [Kabouterberg], and south-east to the old peat pits.
+      night: |
+        The crossroads is only a pale fork in the dark, and the post leans
+        over it like someone listening. Out in the fields a small light hangs
+        low, then moves. Veenhoek is north-east; the Kabouterberg is
+        south-west.
+    exits:
+      northeast: { to: loc_route_peat_stacks, minutes: 15 }
+      southwest: { to: loc_kabouterberg, minutes: 30 }
+      southeast: { to: loc_route_peat_pits, minutes: 10 }
+
+  - id: loc_route_peat_pits
+    name: The Flooded Peat Pits
+    area: roads
+    pos: [109.6, 103.0]
+    tags: [wilderness, "hazard:bog"]
+    aliases: [peat pits, petgaten]
+    summary: Old peat workings, long since flooded, where the ground between the pits is treacherous.
+    description:
+      day: |
+        Here the peat was dug out long ago, and the pits have filled with
+        water as black and still as ink. Only narrow strips of peat are left
+        between them, and they quake when you step on them. A smell of rot
+        comes up whenever the surface breaks. The track back to the crossroads
+        is north-west; beyond the pits there is only the fen.
+      night: |
+        The pits cannot be seen in the dark, and that is the danger of them.
+        Somewhere out among them a small light floats a hand above the water,
+        patient, as if it is waiting for you to follow. The crossroads is
+        north-west.
+    exits:
+      northwest: { to: loc_route_crossroads, minutes: 10 }
+
+  # The priory path (Wereldboek, chapter 7): 6 km through the wood.
+  - id: loc_priory_path
+    name: The Priory Path
+    area: roads
+    pos: [107, 107]
+    tags: [route]
+    aliases: [priory path, kloosterpad]
+    summary: The path through the wood between Veenhoek and the priory of Kloosterveen.
+    description:
+      day: |
+        Here the path from Veenhoek leaves the fields and goes in under the
+        trees, a strip of wet sand and roots between banks of fern. It is
+        quieter at once; the wind stays up in the branches, and you hear your
+        own breathing. Cart ruts cut deep into the sand, full of brown water.
+        Ahead, to the north-west, a bell tower shows above the trees; the
+        fields and roofs of Veenhoek lie back to the south-east.
+      night: |
+        The path is black under the trees, and roots catch at your feet.
+        Something heavy moves off through the undergrowth and does not come
+        back. Kloosterveen is north-west, Veenhoek south-east.
+    exits:
+      northwest: { to: loc_kloosterveen_gate, minutes: 25 }
+      southeast: { to: loc_chapel_lane, minutes: 45 }

@@ -189,11 +189,32 @@ creatures:
       flee: "{Name} sinks back into the Blackmere without a ripple."
       down: "{Name} goes down into the black water, and the water closes over him."
 
+  # The Haakman in the shallows: roused, not at home in the deep, and he goes
+  # back under rather than die.
+  - id: haakman_shallows
+    name: the Haakman
+    kind: spirit
+    level: 3
+    hp: 48
+    defence: 17
+    saves: { fortitude: 10, reflex: 9, will: 9 }
+    attacks:
+      - { name: hook, bonus: 10, damage: 2d4+2, effect: { condition: grabbed, save: reflex, dc: 17 } }
+    morale: { courage: 3, flees_below: 0.4 }
+    weak: { iron: 2 }
+    lore: { dc: 16, topic: haakman, text: "The Haakman cannot bear iron: an iron blade hurts him double. In the shallows he is weaker than in the deep." }
+    text: Grey as a heron, with teeth like water-weed and a long hook, knee-deep in the shallows and not liking it.
+    says:
+      hit: "{Name}'s hook comes for {target}."
+      flee: "{Name} sinks back into the Blackmere without a ripple, and the water goes flat."
+      down: "{Name} goes down into the black water, and the water closes over him."
+
 # Encounters (FO, chapter 12, "Verloop"): who, where, and how it opens.
 encounters:
   - id: goat_riders_toll
     name: The Goat-Riders on the tow path
     places: [loc_towpath_mid]
+    unless_flag: riders_quiet
     chance: 0.35
     again_after: 4
     foes:
@@ -212,3 +233,74 @@ encounters:
       text: They go through your purse and your pockets, laughing, and leave you sitting in the mud.
     flee_dc: 15
     news: { title: the Goat-Riders on the tow path, belang: 2 }
+
+  # Quest encounters (M7): started by a quest action, never by chance.
+  - id: haakman_rises
+    name: The Haakman rises
+    places: [blackmere]
+    chance: 0
+    foes:
+      - { creature: haakman_shallows, count: 1, range: near }
+    opening: The water goes black and cold round your knees. Something with long grey fingers and a hook comes up out of the Blackmere.
+    surrender:
+      take: nothing
+      text: You stumble back onto the stones, and the Haakman lets you go. This time.
+    flee_dc: 14
+    win_flag: haakman_beaten
+    news: { title: a fight with the Haakman at the Blackmere, belang: 3 }
+
+  - id: goat_riders_camp
+    name: The Goat-Riders' camp
+    places: [loc_rietdoolhof_camp]
+    chance: 0
+    foes:
+      - { creature: black_mathijs, count: 1, range: near }
+      - { creature: goat_rider, count: 1, range: near }
+      - { creature: goat_rider, count: 1, range: far, joins: 2 }
+    opening: Black Mathijs is on his feet with his sword out before you're clear of the reeds. "Well, well," he says. "A guest."
+    surrender:
+      take: all_money
+      text: They take everything you have and throw you in the reeds. "Don't come back," Mathijs says, quite kindly.
+    flee_dc: 16
+    win_flag: riders_broken
+    news: { title: a fight at the Goat-Riders' camp, belang: 3 }
+
+  # The fen without its keeper, or dying from the drainage: the veenlijken rise.
+  - id: veenlijken_rise
+    name: The veenlijken rise
+    places: [kattenbroek, blackmere]
+    chance: 0.2
+    again_after: 3
+    hours: [20, 5]
+    when_flag: fen_without_keeper
+    foes:
+      - { creature: veenlijk, count: 1, range: near }
+    opening: The peat bulges and splits. A brown thing with a rope round its neck sits up in the bog and turns its leather face towards you.
+    surrender:
+      take: nothing
+      text: You run, and it doesn't follow. The fen keeps what it has.
+    flee_dc: 13
+    news: { title: a veenlijk in the fen, belang: 2 }
+
+
+  # Cornelis's hired guards at the peat pits, once he has paid the Goat-Riders.
+  - id: goat_riders_guard
+    name: The surveyor's guards
+    places: [loc_route_peat_pits]
+    chance: 0.5
+    again_after: 2
+    hours: [21, 5]
+    when_flag: goat_riders_hired
+    unless_flag: riders_quiet
+    foes:
+      - { creature: goat_rider, count: 1, range: near }
+    opening: A man in a goat-skin sits on a stack of the surveyor's stakes with a club across his knees. "Nobody touches these," he says. "Paid for."
+    demand:
+      amount: 8
+      text: '"Eight duiten and you never came this way."'
+      paid: He pockets the coins and goes back to watching the dark.
+    surrender:
+      take: half_money
+      text: He takes what's in your purse and kicks you back towards the road.
+    flee_dc: 13
+    news: { title: the Goat-Riders guarding the surveyor's stakes, belang: 2 }

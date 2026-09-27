@@ -20,6 +20,8 @@ describe('M1: the region runs on its own', () => {
       }
     }
     for (const id of Object.keys(engine.state.npcs)) {
+      // Under a curse, or a spirit of one place: they do not keep a day.
+      if (content.npcs.get(id)!.absent || content.npcs.get(id)!.quirks.includes('spirit')) continue
       expect(changes.get(id) ?? 0, `${id} barely moved in a week`).toBeGreaterThan(7)
     }
   })

@@ -1,0 +1,31 @@
+npcs:
+  - id: npc_knoert
+    name: Ouwe Knoert
+    short: Ouwe Knoert
+    pronoun: he
+    age: 500
+    profession: spirit
+    home: loc_kabouterberg_hollow
+    work: loc_kabouterberg_hollow
+    fame: 1
+    appearance: A little man no higher than your knee, with a beard to his boots and eyes like two wet pebbles.
+    personality: { warmth: 0, courage: 0, honesty: 2, temper: 1, curiosity: 2, diligence: 2 }
+    values: { respect: 3 }
+    quirks: [spirit]
+    speech: "Grumbling, formal, easily offended. Counts favours out loud."
+    aliases: [knoert, ouwe knoert, kabouter, the kabouters]
+    public_facts:
+      - Ouwe Knoert is the eldest of the kabouters of the Kabouterberg, if you believe in them.
+    examples:
+      - "Milk on the step, seven nights. Not six. Seven."
+      - "The boy looked. Nobody looks. Now nothing is where it should be."
+    money: 0
+    knows_areas: [kabouterberg, veenhoek, kattenbroek, blackmere, reuzenrust, molenend, roads]
+    secrets:
+      - id: hidden_paths
+        text: He knows every hidden path in the Holleveen.
+        hint: He speaks of the fen as of his own garden.
+        admission: "Every path. The dry ones, the drowned ones, the ones only the moon walks."
+        dc: 20
+        teaches: the_dry_ridge
+        about: [kattenbroek, the_dry_ridge]

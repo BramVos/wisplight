@@ -68,13 +68,6 @@ npcs:
       - "The scale is honest. People are merely heavier or lighter than they fear."
     money: 400
     knows_areas: [waagdam, drowned_goose, roads, veenhoek, molenend]
-    relations:
-      - to: cat_widow
-        pronoun: she
-        role: debtor
-        bond: 1
-        private: true
-        note: Forty years ago you signed her certificate although she weighed too light.
 
   - id: npc_hendrik
     name: Hendrik Smid
@@ -100,3 +93,70 @@ npcs:
       - "Iron keeps more than doors shut, if you ask the old women."
     money: 300
     knows_areas: [waagdam, drowned_goose, roads, veenhoek, molenend]
+
+  - id: npc_aleid
+    name: Aleid Vos
+    short: Burgomaster Aleid Vos
+    pronoun: she
+    age: 52
+    profession: mayor
+    home: loc_waagdam_town_hall
+    work: loc_waagdam_town_hall
+    fame: 2
+    appearance: A broad, handsome woman with a chain of office over a plain brown gown and ink on her thumb.
+    personality: { warmth: 0, courage: 1, honesty: 1, temper: 0, curiosity: 1, diligence: 2 }
+    values: { order: 2, wealth: 2 }
+    quirks: [careful]
+    patron: lantern
+    speech: "Formal, practical, talks of the town's money and the council's rules."
+    aliases: [aleid, burgomaster, mayor, burgemeester, vos]
+    public_facts:
+      - Aleid Vos is the burgomaster of Waagdam.
+    examples:
+      - "The council will hear you on Woensdag, after the market. Bring something better than a complaint."
+      - "Waagdam could be the seat of the new polder board. That would be worth something."
+    money: 300
+    knows_areas: [waagdam, drowned_goose, veenhoek, roads, oude_zijl]
+    relations:
+      - name: her husband
+        pronoun: he
+        role: spouse
+        bond: 2
+    secrets:
+      - id: town_broke
+        text: The town is broke.
+        hint: She speaks of money a little too often.
+        admission: "The coffers are empty. If the polder board comes to Waagdam, so will the money."
+        dc: 18
+        about: [drainage]
+
+  - id: npc_pen
+    name: Pieter Pen
+    short: Master Pen the notary
+    pronoun: he
+    age: 58
+    profession: notary
+    home: loc_waagdam_notary
+    work: loc_waagdam_notary
+    fame: 1
+    appearance: A stooped, spectacled man with ink up to the second knuckle and a quill behind each ear.
+    personality: { warmth: 0, courage: -1, honesty: 2, temper: -1, curiosity: 3, diligence: 2 }
+    values: { knowledge: 3, law: 2 }
+    quirks: [bookish]
+    patron: lantern
+    speech: "Pedantic and kind. Quotes registers and dates, loses the thread of his own sentences."
+    aliases: [pen, notary, pieter, master pen, notaris]
+    public_facts:
+      - Master Pieter Pen is the notary of Waagdam. He is writing a chronicle of the Holleveen.
+    examples:
+      - "Everything that matters was written down once. The trick is finding where."
+      - "A charter is a promise that outlives the people who made it."
+    money: 250
+    knows_areas: [waagdam, kloosterveen, veenhoek, drowned_goose]
+    secrets:
+      - id: charter_note
+        text: He once saw a note in a register that the Fen Charter lies in the library at Kloosterveen.
+        hint: At the word charter his eyes go to a shelf of registers.
+        admission: "There is a register entry, from before the Wolf. The Fen Charter was given into the keeping of the priory. Kloosterveen, if it still exists."
+        dc: 16
+        about: [drainage, fen_charter]

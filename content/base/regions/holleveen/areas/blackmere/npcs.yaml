@@ -1,0 +1,24 @@
+npcs:
+  - id: npc_haakman
+    name: the Haakman
+    short: the Haakman
+    pronoun: he
+    age: 400
+    profession: spirit
+    home: loc_blackmere_open_water
+    work: loc_blackmere_open_water
+    creature: haakman
+    fame: 2
+    appearance: Grey as a heron, with teeth like water-weed and a long hook, rising only to the waist out of the black water.
+    personality: { warmth: -2, courage: 3, honesty: 1, temper: 2, curiosity: -1, diligence: 0 }
+    values: { water: 3, respect: 3 }
+    quirks: [spirit]
+    speech: "Slow, cold, few words, like water under ice. Never says his own name."
+    aliases: [haakman, the haakman, hook-man, water spirit]
+    public_facts:
+      - The Haakman lives in the Blackmere.
+    examples:
+      - "My water. Mine. The wheel drinks it and I go thirsty."
+      - "Bread on the stone. Beer on the stone. And no wheel at the new moon."
+    money: 0
+    knows_areas: [blackmere]

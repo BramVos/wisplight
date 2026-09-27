@@ -54,6 +54,8 @@ export function die(world: World, npcId: string, input: DeathInput): Fact | unde
   if (world.state.talk?.npc === npcId) world.state.talk = undefined
   failRequestsOf(world, npcId)
   world.emit('death', place, fact.text.precise, npcId)
+  // Quests with a part for them react as soon as the engine looks (quests/engine.ts).
+  world.deaths.push(npcId)
   return fact
 }
 

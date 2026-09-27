@@ -44,6 +44,7 @@ locations:
       south: { to: loc_veenhoek_green }
       east: { to: loc_schout_house }
       west: { to: loc_aaltje_cottage }
+      northwest: { to: loc_priory_path, minutes: 45 }
 
   - id: loc_veenhoek_chapel
     name: Chapel of the Lantern
@@ -109,6 +110,13 @@ locations:
         with one white paw, very upright, watching the lane; when you come
         close it doesn't run, but looks at you as if it is waiting for you to
         say something. Inside, a spinning wheel hums. The green is east.
+    variants:
+      - flag: fenna_home
+        day: |
+          A narrow house with a green door, standing open. The doorstep is
+          empty now, swept clean, and inside a girl's voice is singing along
+          with the spinning wheel, off key. It smells of peat smoke and
+          boiled milk. The green is east.
     exits:
       east: { to: loc_veenhoek_green }
     objects:
@@ -237,6 +245,7 @@ locations:
         [Graafhaven]; today the path is empty. Veenhoek's quay is back east.
     exits:
       east: { to: loc_veenhoek_quay }
+      south: { to: loc_route_peat_stacks, minutes: 10 }
 
   - id: loc_towpath_e
     name: Tow Path, east of Veenhoek
@@ -292,6 +301,7 @@ locations:
     exits:
       east: { to: loc_peat_sheds }
       south: { to: loc_wouter_hut }
+      west: { to: loc_route_peat_stacks, minutes: 10 }
     objects:
       - { id: peat_bank, type: peat_bank, owner: npc_gerrit, staff: [npc_jan_visser] }
 

@@ -1,40 +1,557 @@
-# Quests (Wereldboek, chapter 14), as far as the other systems need them
-# before the quest system arrives in M7: who has a role in them. The death of
-# someone with a role ends or changes the quest, and the chronicler reacts at
-# once. People who are not in the content yet (Klaas, Cornelis, Zwarte Mathijs,
-# Pieter Pen, Aleid Vos) are left out until they are.
+# Quests (Wereldboek, chapter 14; FO, chapter 14). Each quest gives people a
+# part and lets the systems do the rest: stages move on when their conditions
+# hold, actions of the quest's own let the player do what the story needs,
+# and every ending is reached by whatever road leads there. The world does not
+# wait: the survey, the widow's patience and the Haakman's revenge run by
+# themselves (quests/antagonists.ts).
+#
+# Actions match what the player types against regular expressions, lower
+# case, over the whole command. Flags named secret:<npc>:<secret> are set when
+# a secret is told in conversation.
 
 quests:
+  # ------------------------------------------------------------------ main quest
   - id: grey_cat_on_the_doorstep
     name: The Grey Cat on the Doorstep
     kind: main
-    summary: The grey cat on the Vissers' doorstep is Fenna, cursed by the widow.
+    summary: The grey cat on the Vissers' doorstep is Fenna, cursed by the widow of the Kattenbroek.
     givers: [npc_grietje_visser, npc_pim]
-    helpers: [npc_aaltje, npc_wouter]
+    helpers: [npc_aaltje, npc_wouter, npc_pim]
     opponents: [npc_jan_visser, npc_wendela]
+    starts: { talk: [npc_grietje_visser, npc_pim], at: [loc_visser_house] }
+    ask: "Our Fenna went into the Kattenbroek for bog myrtle and never came home. Jan says the fen took her. But that cat came the same morning, and it looks at me with her eyes. Please. Find out what happened to my girl."
+    # The widow waits while her price is being paid: while the survey lies still.
+    timer: { clock: widow_patience, every_hours: 24, unless: [{ flag: widow_price_known }, { count: survey_quiet_days, at_least: 1 }] }
+    stages:
+      - id: missing
+        text: Fenna Visser is missing. Her mother Grietje asks you to find out what happened. A grey cat with one white paw sits on the doorstep and will not leave.
+        next:
+          - when: [{ any: [{ flag: cat_is_fenna }, { flag: "secret:npc_kaatje:fenna_lied" }] }]
+            to: the_cat_is_fenna
+      - id: the_cat_is_fenna
+        text: The grey cat is Fenna, turned by the widow of the Kattenbroek. You could pay the widow's price, break the curse, burn the witch with Jan, or find a way to talk to the cat.
+        on_enter:
+          - { set: cat_is_fenna }
+          - { learn: cat_widow }
+          - { clock: { id: widow_patience, name: "The widow's patience", size: 6, full: "Mist closes over the Kattenbroek, and the grey cat stops waiting at the door." } }
+        next:
+          - when: [{ here: npc_kaatje }]
+            to: the_widows_price
+      - id: the_widows_price
+        text: "The widow Kaatje names her price for Fenna: the Count's survey must lie still for seven days, or someone must bring her the measuring chest of Jacob van Dam."
+        on_enter:
+          - { set: widow_price_known }
+          - { text: "The widow looks at you a long time. \"The girl lied to me. A lie is a debt, and debts are paid. Here is mine: that surveyor's chains lie still for seven days. Or bring me the chest of the one who came before him, Jacob van Dam. Then she can go home.\"" }
+      - id: flooded_out
+        text: Water stands in the Vissers' house. Wherever Grietje goes now, the grey cat goes with her.
+        on_enter:
+          - { start: the_vissers_to_safety }
+    actions:
+      # Finding out: Lore DC 16, or through Aaltje.
+      - id: study_cat
+        say: ['(?:look at|study|examine|watch|observe) (?:the )?(?:grey )?cat', 'study (?:the )?cat closely']
+        at: [loc_visser_house]
+        when: [{ not_flag: cat_is_fenna }, { not_flag: studied_cat }]
+        check: { skill: lore, dc: 16 }
+        text: "You crouch and look. The cat looks back, and blinks slowly, the way Grietje blinks. There's a thread of blue wool round one paw, the same blue as the girl's shawl in the stories. This is no cat. This is someone the Kattenbroek has had a word with."
+        fail_text: It's a grey cat with one white paw. A strange one, maybe. Old Aaltje would know more about such things.
+        effects: [{ set: cat_is_fenna }]
+        fail: [{ set: studied_cat }]
+      - id: ask_aaltje_cat
+        say: ['ask (?:old )?aaltje about (?:the )?(?:grey )?(?:cat|fenna)', 'ask (?:old )?aaltje about (?:the )?(?:widow|curse)', 'tell (?:old )?aaltje about (?:the )?(?:grey )?cat']
+        with: npc_aaltje
+        when: [{ attitude: npc_aaltje, at_least: Neutral }]
+        not_yet: Aaltje purses her lips and says nothing about cats. She doesn't know you well enough yet.
+        text: "Aaltje sits down heavily. \"One white paw? That's her. That's Kaatje's work, the widow out in the Kattenbroek. She was my teacher once.\" She looks at her hands. \"There are ways back. Pay what she asks. Or moon water from the Blackmere, drawn at night, and the right words over it; I can give you those. Or you could ask the girl herself what she did, if you could talk cat.\""
+        effects: [{ set: cat_is_fenna }, { set: aaltje_words }]
+      # Talking to the cat: a charm, Aaltje's draught.
+      - id: ask_draught
+        say: ['ask (?:old )?aaltje for (?:a |the |her )?(?:cat ?)?(?:draught|potion|brew)', 'ask (?:old )?aaltje (?:how )?(?:to |for help to )?(?:talk|speak) (?:to|with) (?:the )?cat']
+        with: npc_aaltje
+        when: [{ flag: cat_is_fenna }]
+        text: "Aaltje takes a small bottle from the rafters and wipes the dust off. \"Valerian, cat's-ear and river mud. Drink it on the doorstep. It won't last long, and you'll want to chase birds for a day after.\""
+        effects: [{ give: cat_draught }]
+      - id: drink_draught
+        say: ['drink (?:the |aaltje.?s )?(?:cat ?)?(?:draught|potion|brew|bottle)']
+        when: [{ has: cat_draught }]
+        once: false
+        text: It tastes of valerian and mud. The edges of the world go sharp, and every small sound suddenly means something.
+        effects: [{ take: cat_draught }, { stamp: cat_speech }]
+      - id: cat_charm
+        say: ['(?:speak|say|use|try|mutter) (?:a |the )?(?:cat[- ]?(?:word|charm|tongue)|charm|spell) (?:to|on|for) (?:the )?cat', 'speak cat']
+        when: [{ flag: cat_is_fenna }, { any: [{ at: loc_visser_house }, { here: npc_grietje_visser }] }]
+        check: { skill: lore, dc: 20 }
+        once: false
+        text: You say the old words for cats, the ones grandmothers use on the doorstep. The cat's ears turn towards you.
+        fail_text: The cat looks at you as if you had just said something very stupid. Perhaps you had.
+        effects: [{ stamp: cat_speech }]
+      - id: talk_cat
+        say: ['(?:talk|speak) (?:to|with) (?:the )?(?:grey )?cat', '(?:talk|speak) (?:to|with) fenna', 'ask (?:the )?(?:grey )?cat about .+', 'ask fenna about .+']
+        when: [{ flag: cat_is_fenna }, { any: [{ at: loc_visser_house }, { here: npc_grietje_visser }] }, { not: { since: cat_speech, hours: 3 } }]
+        not_yet: The cat looks at you, and you look at the cat. Whatever she is saying, you don't understand it.
+        text: "\"It was me,\" the cat says, and it's a girl's voice under the purring. \"I told the widow I had nobody, no mother, nobody to miss me, so she'd sell me a charm cheap. For Klaas. A lie is a debt, she said. Tell her I'm sorry. Tell her I'll work it off, whatever she wants.\""
+        effects: [{ set: fenna_confessed }, { learn: fenna }]
+      - id: tell_widow_truth
+        say: ['tell (?:the )?(?:widow|kaatje) (?:the truth|that fenna is sorry|fenna is sorry|about fenna)', '(?:give|bring) (?:the )?(?:widow|kaatje) fenna.?s (?:apology|message|word)', 'apologi[sz]e (?:to (?:the )?(?:widow|kaatje) )?for fenna']
+        with: npc_kaatje
+        when: [{ flag: fenna_confessed }]
+        not_yet: You have nothing to tell her yet that she doesn't know.
+        text: "The widow listens with her head on one side, like a bird. \"Sorry,\" she says. \"She said sorry.\" Something in her face gives. \"Then she can come home, and work her debt off here: one day a week, all winter, cutting reed. Tell her that.\""
+        effects: [{ set: honest_bargain }]
+      # Paying: Jacob van Dam's chest, or the survey still for seven days.
+      - id: steal_chest
+        say: ['(?:take|steal|lift|grab|pinch) (?:the |jacob.?s |that )?(?:measuring |old )?chest']
+        at: [loc_goose_rooms]
+        when: [{ flag: widow_price_known }, { not: { here: npc_cornelis } }]
+        not_yet: Master Cornelis is right there, writing in his book.
+        check: { skill: thievery, dc: 15 }
+        text: The chest is under the bed, iron-bound and heavier than it looks. JvD is burnt into the lid. You get it under your cloak and down the stairs.
+        fail_text: A board creaks under your foot, loud as a shout. You back off and wait for the house to go quiet again.
+        effects: [{ seize: measuring_chest, from: npc_cornelis }]
+      - id: buy_chest
+        say: ['buy (?:the |jacob.?s |that )?(?:measuring |old )?chest(?: .*)?', 'ask (?:master )?cornelis (?:for|about) (?:the |jacob.?s )?(?:measuring |old )?chest']
+        with: npc_cornelis
+        when: [{ flag: widow_price_known }, { money: 120 }]
+        not_yet: Cornelis won't talk about Jacob's things for small coin. You'd need fifteen stuivers at least.
+        check: { skill: persuasion, dc: 14 }
+        text: "Cornelis looks at the chest as if it had bitten him. \"Van Dam's? Take it. Fifteen stuivers and it's yours, and I never want to see his figures again.\""
+        fail_text: "\"That chest belongs to the Count,\" Cornelis says, and pulls it closer to his feet."
+        effects: [{ pay: -120 }, { seize: measuring_chest, from: npc_cornelis }]
+      - id: give_chest
+        say: ['(?:give|hand|bring|offer) (?:the |jacob.?s )?(?:measuring |old )?chest to (?:the )?(?:widow|kaatje)', 'pay (?:the )?(?:widow|kaatje)(?: with (?:the )?chest)?']
+        with: npc_kaatje
+        when: [{ has: measuring_chest }]
+        not_yet: You have nothing she asked for.
+        text: The widow runs her hand over the burnt letters on the lid. "Jacob's," she says. "He'll want that back one day. Not yet." She nods, once. "Go home. The girl will be there before you."
+        effects: [{ hand: measuring_chest, to: npc_kaatje }, { set: widow_paid }]
+      # Breaking the curse: moon water from the Blackmere, and the right words.
+      - id: draw_moon_water
+        say: ['(?:fill|draw|collect|scoop|take|get)(?: .*)? (?:moon ?water|water)(?: .*)?', 'fill (?:a |the |my )?(?:flask|bottle|jar)(?: .*)?']
+        at: [loc_blackmere_shore, loc_blackmere_open_water, loc_blackmere_hookstone]
+        when: [{ night: true }, { flag: cat_is_fenna }]
+        not_yet: Moon water is drawn at night, and this isn't night.
+        once: false
+        text: You kneel on the cold stones and dip a flask into the black water. For a moment the moon is in it, and then it isn't, but the flask is heavier than water should be.
+        effects: [{ give: moon_water }]
+      - id: break_curse_with_aaltje
+        say: ['(?:pour|sprinkle|splash|throw) (?:the )?(?:moon ?water|water) (?:on|over) (?:the )?(?:grey )?(?:cat|fenna)', 'break (?:the )?curse', 'use (?:the )?moon ?water(?: on (?:the )?cat)?']
+        with: npc_aaltje
+        when: [{ has: moon_water }, { flag: cat_is_fenna }, { any: [{ at: loc_visser_house }, { here: npc_grietje_visser }] }]
+        text: Aaltje says the words, very low, and you pour. The cat yowls, twists, and then there's a girl on the doorstep in a wet blue shawl, crying and laughing at once.
+        effects: [{ take: moon_water }, { set: curse_broken }, { set: aaltje_helped_break }]
+      - id: break_curse
+        say: ['(?:pour|sprinkle|splash|throw) (?:the )?(?:moon ?water|water) (?:on|over) (?:the )?(?:grey )?(?:cat|fenna)', 'break (?:the )?curse', 'use (?:the )?moon ?water(?: on (?:the )?cat)?']
+        when: [{ has: moon_water }, { flag: cat_is_fenna }, { any: [{ at: loc_visser_house }, { here: npc_grietje_visser }] }]
+        not_yet: You need moon water, and the cat.
+        check: { skill: lore, dc: 16 }
+        text: You say the words Aaltje taught you, or the ones you remember from a grandmother's story, and pour. The cat yowls, twists, and then there's a girl on the doorstep in a wet blue shawl.
+        fail_text: The water runs off the cat's fur and she shakes herself, offended. The words were wrong, or the water was. You'll need more moon water.
+        effects: [{ take: moon_water }, { set: curse_broken }]
+        fail: [{ take: moon_water }]
+      # Burning the witch, with Jan.
+      - id: join_jan
+        say: ['(?:help|join) jan(?: visser)?(?: .*)?', 'tell jan(?: visser)? (?:the cat is fenna|about (?:the )?(?:cat|widow|witch))', 'agree to burn (?:the )?(?:witch|widow)']
+        with: npc_jan_visser
+        when: [{ flag: cat_is_fenna }]
+        text: "Jan's face goes white, then red. \"The witch. I knew it.\" He takes the peat-spade from the wall. \"Tonight. You and me and a pot of fire. Sister Wendela will say the words over the ashes.\""
+        effects:
+          - { set: burning_planned }
+          - { tick: widow_patience, n: 3 }
+          - { send: npc_jan_visser, to: loc_kattenbroek_hut, hours: 12 }
+          - { relation: npc_jan_visser, affinity: 10 }
+      - id: burn_hut
+        say: ['burn (?:down )?(?:the )?(?:hut|witch|widow)(?: .*)?', 'set (?:the )?hut (?:on fire|alight)', 'set fire to (?:the )?hut']
+        at: [loc_kattenbroek_hut]
+        when: [{ flag: cat_is_fenna }]
+        text: The reed thatch takes at once. Smoke rolls over the fen, and cats pour out of the hut in every direction. The widow isn't among them. Somewhere behind the reeds an old woman is laughing, or crying.
+        effects:
+          - { set: witch_burned }
+          - { place: loc_kattenbroek_hut, state: destroyed }
+          - { vanish: npc_kaatje }
+          - { reputation: lantern_church, delta: 10 }
+          - { reputation: fen_folk, delta: -20 }
+    outcomes:
+      - id: paid
+        name: Paid
+        text: Fenna comes home along the dyke at dusk, barefoot and in her blue shawl, as if she'd only been gone a day. The fen folk hear that you paid the widow fairly.
+        when: [{ any: [{ flag: widow_paid }, { all: [{ flag: widow_price_known }, { count: survey_quiet_days, at_least: 7 }] }] }]
+        effects:
+          - { restore: npc_fenna }
+          - { set: fenna_home }
+          - { reputation: fen_folk, delta: 10 }
+          - { relation: npc_grietje_visser, affinity: 20, trust: 15 }
+          - { relation: npc_kaatje, trust: 10 }
+          - { fact: { title: Fenna Visser came home, precise: "Fenna Visser came home from the Kattenbroek after the widow's price was paid.", village: "Fenna Visser's back! Walked in at dusk as if nothing happened.", far: "A lost girl came home in the Holleveen.", belang: 3, about: [npc_fenna, fenna] } }
+      - id: broken
+        name: Broken
+        text: The curse is broken and Fenna is home. The widow will know who did it, and she won't forget.
+        when: [{ flag: curse_broken }]
+        effects:
+          - { restore: npc_fenna }
+          - { set: fenna_home }
+          - { set: aaltje_reconciled }
+          - { relation: npc_grietje_visser, affinity: 20, trust: 15 }
+          - { relation: npc_aaltje, affinity: 10 }
+          - { relation: npc_kaatje, affinity: -20 }
+          - { grievance: npc_kaatje, line: "You broke my work with my own water. The fen remembers that." }
+          - { text: "Aaltje, who gave you the words, says she'll go out to the widow herself and settle it between them. For the first time in years she sounds as if she means it." }
+          - { fact: { title: the curse on Fenna Visser broken, precise: "Fenna Visser was a cat, and the curse was broken with moon water from the Blackmere.", village: "They say the Visser girl was a cat all along, and someone broke the spell!", far: "In the Holleveen a witch's curse was broken.", belang: 3, about: [npc_fenna, fenna, cat_widow] } }
+      - id: honest
+        name: Honest
+        text: Fenna is home, and one day a week all winter she walks out to the Kattenbroek to cut the widow's reed. Nobody quite knows why, and she won't say.
+        when: [{ flag: honest_bargain }]
+        effects:
+          - { restore: npc_fenna }
+          - { set: fenna_home }
+          - { set: fenna_works_off }
+          - { reputation: fen_folk, delta: 5 }
+          - { relation: npc_kaatje, affinity: 10, trust: 10 }
+          - { relation: npc_grietje_visser, affinity: 20, trust: 15 }
+          - { fact: { title: Fenna Visser came home, precise: "Fenna Visser came home, and works off a debt to the widow of the Kattenbroek.", village: "Fenna's home! Though she goes out to the Kattenbroek every week now, and won't say why.", far: "A lost girl came home in the Holleveen.", belang: 3, about: [npc_fenna, fenna] } }
+      - id: burned
+        name: Burned
+        text: The hut is ash and the widow is gone into the fen. The grey cat still sits on the Vissers' doorstep, and now she will stay a cat. The fen has no keeper any more.
+        when: [{ flag: witch_burned }]
+        effects:
+          - { set: fen_without_keeper }
+          - { set: fenna_cat_forever }
+          - { relation: npc_grietje_visser, affinity: -20 }
+          - { relation: npc_wendela, affinity: 15 }
+          - { fact: { title: the witch's hut burned, precise: "The widow's hut in the Kattenbroek was burned, and the widow fled into the fen.", village: "They burned the witch's hut! She got away, though. Into the fen.", far: "Folk in the Holleveen burned a witch's house.", belang: 4, about: [cat_widow, npc_kaatje] } }
+      - id: fen_closed
+        name: The fen is closed
+        solution: false
+        text: The widow's patience ran out. Mist stands on the reed paths like a wall, and Fenna stays a cat.
+        when: [{ clock_full: widow_patience }]
+        effects:
+          - { set: fenna_cat_forever }
+          - { plan: fen_closed }
+      - id: widow_dead
+        name: Nobody left to lift it
+        solution: false
+        text: With the widow dead, nobody can lift what she laid. Fenna stays a cat, and the fen has lost its keeper.
+        effects: [{ set: fenna_cat_forever }, { set: fen_without_keeper }]
+    on_death: { npc_kaatje: widow_dead }
+    on_place: { "loc_visser_house:flooded": flooded_out }
 
+  - id: the_vissers_to_safety
+    name: The Vissers to Safety
+    kind: request
+    summary: Veenhoek is under water. Bring the Vissers somewhere dry.
+    givers: [npc_grietje_visser]
+    helpers: [npc_jan_visser]
+    stages:
+      - id: flooded
+        text: Veenhoek is under water. Grietje, Pim and Jan need a dry place to go, and Grietje won't go anywhere without the grey cat.
+    actions:
+      - id: to_waagdam
+        say: ['(?:lead|take|bring|escort) (?:the )?vissers? to waagdam(?: .*)?', '(?:lead|take|bring|escort) grietje to waagdam(?: .*)?']
+        with: npc_grietje_visser
+        text: You carry the cat and Grietje carries what she can. By the East Gate of Waagdam the burghers are handing out bread in the church.
+        minutes: 120
+        effects:
+          - { move: npc_grietje_visser, to: loc_waagdam_church, days: 7 }
+          - { move: npc_pim, to: loc_waagdam_church, days: 7 }
+          - { move: npc_jan_visser, to: loc_waagdam_church, days: 7 }
+          - { set: vissers_in_waagdam }
+      - id: to_the_goose
+        say: ['(?:lead|take|bring|escort) (?:the )?vissers? to (?:the )?(?:drowned )?goose(?: .*)?', '(?:lead|take|bring|escort) grietje to (?:the )?(?:drowned )?goose(?: .*)?']
+        with: npc_grietje_visser
+        text: The Drowned Goose stands on its old terp, dry as a bone. Trijntje makes room by the fire without being asked.
+        minutes: 90
+        effects:
+          - { move: npc_grietje_visser, to: loc_goose_common, days: 7 }
+          - { move: npc_pim, to: loc_goose_common, days: 7 }
+          - { move: npc_jan_visser, to: loc_goose_common, days: 7 }
+          - { set: vissers_at_the_goose }
+      - id: to_the_priory
+        say: ['(?:lead|take|bring|escort) (?:the )?vissers? to (?:the )?(?:priory|kloosterveen)(?: .*)?', '(?:lead|take|bring|escort) grietje to (?:the )?(?:priory|kloosterveen)(?: .*)?']
+        with: npc_grietje_visser
+        text: The brothers at Kloosterveen open the gate for you and put the Vissers in the lodging. Jan grumbles about priests and eats three bowls of soup.
+        minutes: 180
+        effects:
+          - { move: npc_grietje_visser, to: loc_kloosterveen_lodging, days: 7 }
+          - { move: npc_pim, to: loc_kloosterveen_lodging, days: 7 }
+          - { move: npc_jan_visser, to: loc_kloosterveen_lodging, days: 7 }
+          - { set: vissers_at_the_priory }
+    outcomes:
+      - id: in_waagdam
+        name: Safe in Waagdam
+        text: The Vissers sleep in the church at Waagdam, dry, and the grey cat with them.
+        when: [{ flag: vissers_in_waagdam }]
+        effects: [{ relation: npc_grietje_visser, affinity: 15, trust: 10 }]
+      - id: at_the_goose
+        name: Safe at the Goose
+        text: The Vissers sit by Trijntje's fire at the Goose, dry, and the grey cat with them.
+        when: [{ flag: vissers_at_the_goose }]
+        effects: [{ relation: npc_grietje_visser, affinity: 15, trust: 10 }, { relation: npc_trijntje, affinity: 5 }]
+      - id: at_the_priory
+        name: Safe at the priory
+        text: The Vissers are in the priory lodging at Kloosterveen, dry, and the grey cat with them.
+        when: [{ flag: vissers_at_the_priory }]
+        effects: [{ relation: npc_grietje_visser, affinity: 15, trust: 10 }, { relation: npc_ansfried, affinity: 5 }]
+      - id: rescued_by_others
+        name: Somebody else came
+        solution: false
+        text: On the second day Wouter came poling down the lane in his punt and took the Vissers to the Goose, cat and all.
+        when: [{ days: 2 }]
+        effects:
+          - { move: npc_grietje_visser, to: loc_goose_common, days: 5 }
+          - { move: npc_pim, to: loc_goose_common, days: 5 }
+          - { move: npc_jan_visser, to: loc_goose_common, days: 5 }
+      - id: lost
+        name: Lost to the water
+        solution: false
+        text: The water took more than houses.
+        when: [{ any: [{ dead: npc_grietje_visser }, { dead: npc_pim }] }]
+
+  # ------------------------------------------------------------------ requests and bargains
   - id: flour_for_veenhoek
     name: Flour for Veenhoek
     kind: request
     summary: The mill stands still and Veenhoek has no flour.
     givers: [npc_mirte]
-    helpers: [npc_harmen]
+    helpers: [npc_harmen, npc_klaas]
     opponents: [npc_lubbert]
+    starts: { talk: [npc_mirte] }
+    ask: "The mill's standing still and I've flour for two more bakes. Lubbert in Waagdam says there's no rye this side of winter, and he's asking double for what there is. Bring me flour, or rye I can have ground, before market day on Zaterdag. Or Veenhoek goes without bread."
+    stages:
+      - id: no_flour
+        text: Mirte needs flour for Veenhoek's bread before market day on Zaterdag. The mill stands still for want of sailcloth, and Lubbert in Waagdam asks double.
+    actions:
+      - id: give_flour
+        say: ['(?:give|bring|sell|hand) (?:the |some |two |2 )?(?:sacks? of )?(?:flour|meel) to mirte', 'give mirte (?:the |some |two |2 )?(?:sacks? of )?(?:flour|meel)']
+        with: npc_mirte
+        when: [{ has: flour, qty: 2 }]
+        not_yet: Two sacks at least, Mirte said. One won't see Veenhoek through the week.
+        text: Mirte lifts the sacks as if they were babies. "Two sacks. That's the week. That's Rustdag bread for everyone." She pays you from the tin under the counter.
+        effects: [{ hand: flour, to: npc_mirte, qty: 2 }, { pay: 80 }, { set: flour_brought }]
+      - id: give_rye
+        say: ['(?:give|bring|sell|hand) (?:the |some |three |3 )?(?:sacks? of )?(?:rye|grain|rogge) to mirte', 'give mirte (?:the |some |three |3 )?(?:sacks? of )?(?:rye|grain|rogge)']
+        with: npc_mirte
+        when: [{ has: rye_grain, qty: 3 }]
+        not_yet: Three sacks of rye would do it, once they're ground. You haven't got three.
+        text: "\"Rye! Teunis will grind it at the horse mill for a stuiver a sack.\" Mirte is already reaching for her shawl. \"Bless you.\""
+        effects: [{ hand: rye_grain, to: npc_mirte, qty: 3 }, { pay: 60 }, { set: flour_brought }]
+      - id: confront_kobus
+        say: ['(?:confront|press|question|lean on) kobus(?: .*)?', 'ask kobus (?:about|who paid (?:him )?for) (?:the )?(?:rumou?r|rye|no rye|lubbert)(?: .*)?']
+        with: npc_kobus
+        check: { skill: persuasion, dc: 15 }
+        text: "Kobus squirms, then laughs. \"All right, all right. Lubbert gave me a guilder to say there's no rye to be had. There's rye. His loft's full of it. A man's got to eat.\""
+        fail_text: "\"Rumour? I only say what I hear, friend.\" Kobus smiles and looks at the door."
+        effects: [{ set: kobus_confessed }]
+      - id: expose_rumour
+        say: ['(?:expose|denounce|tell everyone about|tell (?:mirte|the village|people) about) (?:the |lubbert.?s )?(?:rumou?r|lie|lubbert)(?: .*)?', 'expose lubbert(?: .*)?']
+        at: [veenhoek, waagdam, drowned_goose]
+        when: [{ any: [{ flag: kobus_confessed }, { flag: "secret:npc_kobus:paid_rumour" }] }]
+        not_yet: You'd need proof. Somebody started that rumour, and pedlars hear everything.
+        text: By evening everyone knows Lubbert's loft is full. The carters bring rye at the old price, and Lubbert has to smile about it.
+        effects:
+          - { set: rumour_exposed }
+          - { relation: npc_lubbert, affinity: -25 }
+          - { grievance: npc_lubbert, line: "You cost me a good season with your tongue." }
+          - { fact: { title: Lubbert's rumour about the rye, precise: "Lubbert paid Kobus to spread the word that there was no rye.", village: "Lubbert paid that pedlar to say there's no rye! His loft's full to the roof.", far: "A Waagdam grain merchant was caught lying about the harvest.", belang: 2, about: [npc_lubbert, npc_kobus] } }
+    outcomes:
+      - id: flour_brought
+        name: Flour brought
+        text: Veenhoek has bread on market day.
+        when: [{ flag: flour_brought }]
+        effects: [{ relation: npc_mirte, affinity: 15, trust: 15 }]
+      - id: mill_turns
+        name: The mill turns
+        text: With new sails on De Zwaan, Harmen grinds again, and Mirte has all the flour she needs.
+        when: [{ object: loc_molenend_mill/de_zwaan, state: { broken: false } }]
+        effects: [{ relation: npc_mirte, affinity: 10, trust: 10 }, { relation: npc_harmen, affinity: 15 }]
+      - id: rumour_exposed
+        name: The rumour exposed
+        text: With the lie out, rye comes to Veenhoek at the old price, and Mirte bakes again.
+        when: [{ flag: rumour_exposed }]
+        effects: [{ relation: npc_mirte, affinity: 15, trust: 10 }]
+      - id: market_day_passed
+        name: Market day passed
+        solution: false
+        text: Market day came and went without flour. Veenhoek bought stale bread at the Goose, dear.
+        when: [{ days: 5 }]
+        effects: [{ relation: npc_mirte, affinity: -5 }]
 
   - id: the_surveyors_lights
     name: The Surveyor's Lights
     kind: mystery
     summary: Will-o'-the-wisps dance over Harmen's field, where he moved the boundary stone.
-    givers: [npc_aaltje]
+    givers: [npc_aaltje, npc_klaas]
+    helpers: [npc_pen, npc_klaas]
     opponents: [npc_harmen]
+    starts: { talk: [npc_klaas], at: [loc_molenend_field] }
+    ask: "Have you seen them? Lights, over the master's field. Every night since the storm. They go round and round one spot, and they whisper. I'm not going out there again."
+    stages:
+      - id: lights
+        text: Will-o'-the-wisps dance over Harmen's field at night. Klaas says they began after the storm.
+        next:
+          - when: [{ flag: knows_stone_moved }]
+            to: the_stone
+      - id: the_stone
+        text: Harmen moved the boundary stone into his neighbour's land after the storm. The lights are the dead who once did the same, asking where to put it.
+        on_enter: [{ learn: lights_over_harmens_field }]
+    actions:
+      - id: watch_lights
+        say: ['(?:watch|follow|look at|study|observe) (?:the )?(?:lights|wisps|will-o.?-the-wisps|dwaallichten)']
+        at: [loc_molenend_field]
+        when: [{ night: true }]
+        not_yet: There's nothing to see by daylight but wet furrows.
+        check: { skill: perception, dc: 14 }
+        once: false
+        text: "The lights circle one spot, then drift apart and circle it again. In the middle stands the old boundary stone, and beside it, twenty paces back, a filled-in hole where it stood before. \"Where shall I put it?\" one light whispers, very close to your ear."
+        fail_text: The lights slide away whenever you look straight at them. Your feet are soaked and you've learnt nothing.
+        effects: [{ set: knows_stone_moved }]
+      - id: examine_stone
+        say: ['(?:examine|look at|study|inspect|search) (?:the )?(?:boundary )?(?:stone|field)']
+        at: [loc_molenend_field]
+        check: { skill: perception, dc: 16 }
+        once: false
+        text: The boundary stone is clean at the bottom where it should be mossy. Twenty paces back towards the ditch there's a square of fresh earth. Someone moved it, and not long ago.
+        fail_text: A stone in a field. You don't see anything odd about it.
+        effects: [{ set: knows_stone_moved }]
+      - id: ask_pen
+        say: ['ask (?:master )?pen about (?:the )?(?:boundary(?: stone)?|stone|harmen.?s (?:field|land|stone)|land register|register|harmen)(?: .*)?']
+        with: npc_pen
+        text: "Pen pulls out the land register and runs a finger down it. \"Molenend, the miller's field: from the mill lane to the old ditch. The ditch, mind. If his stone stands past the ditch, it's walked.\""
+        effects: [{ set: knows_stone_moved }, { set: pen_register }]
+      - id: report_harmen
+        say: ['(?:report|denounce|accuse) harmen(?: .*)?', 'tell (?:the )?schout about (?:harmen|the (?:boundary )?stone)(?: .*)?']
+        with: npc_everhard
+        when: [{ flag: knows_stone_moved }]
+        text: Schout Everhard writes it all down. "A moved stone. That's a fine of three guilders and the stone back where it was, at his own cost." He almost smiles.
+        effects: [{ set: harmen_reported }]
+      - id: blackmail_harmen
+        say: ['blackmail harmen(?: .*)?', '(?:threaten|squeeze) harmen(?: .*)?', 'make harmen pay(?: .*)?']
+        with: npc_harmen
+        when: [{ flag: knows_stone_moved }]
+        check: { skill: intimidation, dc: 14 }
+        text: "Harmen goes grey. \"Five stuivers. And you never say a word. Not to the schout, not to Pen.\" He counts the coins out with shaking fingers."
+        fail_text: "\"Get out of my mill,\" Harmen says, and picks up a sack-hook. \"Say what you like. Who'll believe you?\""
+        effects: [{ pay: 40 }, { set: harmen_blackmailed }]
+        fail: [{ grievance: npc_harmen, line: "You tried to squeeze me. Don't think I've forgotten." }]
+      - id: persuade_harmen
+        say: ['(?:tell|ask|persuade|convince) harmen to (?:put|move|carry) (?:the )?stone back(?: .*)?', 'talk to harmen about (?:the )?(?:stone|lights)(?: .*)?']
+        with: npc_harmen
+        when: [{ flag: knows_stone_moved }]
+        check: { skill: persuasion, dc: 15 }
+        text: "Harmen looks at the floor a long time. \"The storm took my sails. I thought, a bit more land, a bit more rye... They whisper, you know. All night.\" He nods. \"Tonight, then. Help me carry it.\""
+        fail_text: "\"What stone?\" Harmen says, too quickly."
+        effects: [{ set: harmen_agrees }]
+      - id: put_stone_back
+        say: ['(?:help harmen )?(?:put|move|carry|set) (?:the )?(?:boundary )?stone back(?: .*)?']
+        at: [loc_molenend_field]
+        when: [{ flag: harmen_agrees }, { night: true }]
+        not_yet: Not by daylight, with the whole of Molenend watching. And not without Harmen.
+        check: { skill: athletics, dc: 12 }
+        minutes: 60
+        text: You and Harmen dig and heave by lantern light. When the stone drops into its old hole, the lights go out one by one, like candles in church.
+        fail_text: The stone slips and falls back into the mud. You'll have to try again.
+        effects: [{ set: stone_back }]
+    outcomes:
+      - id: reported
+        name: Reported
+        text: Harmen pays his fine and puts the stone back at his own cost. The lights go out. He will never forgive you.
+        when: [{ flag: harmen_reported }]
+        effects:
+          - { relation: npc_harmen, affinity: -30 }
+          - { grievance: npc_harmen, line: "Three guilders. Three guilders I haven't got, because of you." }
+          - { reputation: counts_men, delta: 5 }
+          - { set: lights_gone }
+      - id: blackmailed
+        name: Blackmailed
+        text: Harmen pays for your silence, and the lights keep dancing over his field.
+        when: [{ flag: harmen_blackmailed }]
+        effects: [{ relation: npc_harmen, affinity: -20, fear: 20 }]
+      - id: stone_back
+        name: The stone put back
+        text: The stone stands where it belongs, the lights are gone, and Harmen owes you more than he'll ever say.
+        when: [{ flag: stone_back }]
+        effects:
+          - { relation: npc_harmen, affinity: 20, trust: 20 }
+          - { relation: npc_klaas, affinity: 10 }
+          - { set: lights_gone }
+      - id: harmen_dead
+        name: Nobody to put it back
+        solution: false
+        text: Harmen is dead, and the lights still dance over his field.
+    on_death: { npc_harmen: harmen_dead }
 
   - id: what_the_haakman_wants
     name: What the Haakman Wants
     kind: bargain
     summary: The mill pumps the Blackmere empty, and the Haakman takes revenge.
     givers: [npc_wouter]
-    helpers: [npc_hendrik]
-    opponents: [npc_harmen]
+    helpers: [npc_wouter, npc_hendrik]
+    opponents: [npc_harmen, npc_haakman]
+    starts: { talk: [npc_wouter], at: [blackmere], when: [{ object: loc_molenend_mill/de_zwaan, state: { broken: false } }] }
+    ask: "De Zwaan's turning again, and the scoop wheel with it. The Blackmere's dropping a hand a day. You don't take water from the Haakman. He takes it back, and he takes more than water."
+    stages:
+      - id: pumping
+        text: De Zwaan pumps the polder dry, and the water in the Blackmere drops. Wouter says the Haakman won't stand for it.
+    actions:
+      - id: offer_bargain
+        say: ['(?:offer|leave|give|put) (?:the )?(?:bread and beer|beer and bread)(?: .*)?', '(?:bargain|make a bargain|strike a bargain|deal|parley|talk) with (?:the )?haakman(?: .*)?', 'call (?:the |on the )?haakman']
+        at: [loc_blackmere_shore, loc_blackmere_hookstone, loc_blackmere_open_water]
+        when: [{ has: rye_bread }, { has: beer }]
+        not_yet: Old folk say you don't speak to the Haakman with empty hands. Bread and beer, on the stone.
+        text: "You set the bread and the jug on the wet stone and step back. The water bulges. A voice like water in a pipe says: \"No pumping when the moon is new. Bread and beer on the stone every new moon. Then the water stays where it is, and so do your children.\""
+        effects: [{ take: rye_bread }, { take: beer }, { set: haakman_terms }]
+      - id: harmen_new_moon
+        say: ['(?:tell|ask|persuade|convince) harmen (?:not to pump|to stop pumping|to rest the mill)(?: .*)?', 'tell harmen (?:about )?(?:the )?(?:bargain|haakman|terms)(?: .*)?']
+        with: npc_harmen
+        when: [{ flag: haakman_terms }]
+        not_yet: You don't know yet what the Haakman would settle for.
+        check: { skill: persuasion, dc: 13 }
+        text: "Harmen spits. \"One night a month, for a fairy tale.\" But he looks towards the Blackmere when he says it. \"Fine. At the new moon the wheel stands still. You can tell your water-spook.\""
+        fail_text: "\"I've a mill to pay for,\" Harmen says. \"Your spook can pay it.\""
+        effects: [{ set: haakman_bargain }]
+      - id: challenge_haakman
+        say: ['(?:fight|attack|challenge|strike) (?:the )?haakman']
+        at: [loc_blackmere_shore, loc_blackmere_hookstone, loc_blackmere_open_water]
+        when: [{ wields: iron }]
+        not_yet: Everybody knows only iron bites the Haakman. Hendrik the smith in Waagdam sells good iron.
+        text: You wade in with the iron in your fist. The water goes black and cold, and something with long grey fingers comes up to meet you.
+        effects: [{ encounter: haakman_rises }]
+      - id: search_register
+        say: ['(?:search|read|study) (?:the )?(?:books|library|registers?|chronicles?|drowned book)(?: .*)?', 'look for (?:the )?haakman.?s name']
+        at: [loc_kloosterveen_library]
+        check: { skill: lore, dc: 18 }
+        once: false
+        minutes: 60
+        text: "In a book of the drowned from before the Wolf you find him: a man called Haak Aukes, who sold the priory's eels and cheated the brothers, and drowned in the Blackmere in the year the bell sank. 'Hook-man' they called him after. Names hold what they name."
+        fail_text: Hours of brown ink and dead brothers. Nothing about the Haakman.
+        effects: [{ set: haakman_name }]
+      - id: speak_name
+        say: ['(?:call|speak|say|name) (?:the )?haakman(?:.s)? (?:by )?(?:his )?(?:true )?name', 'say (?:his )?(?:true )?name', '(?:call|say) haak aukes', 'haak aukes']
+        at: [loc_blackmere_shore, loc_blackmere_hookstone, loc_blackmere_open_water]
+        when: [{ flag: haakman_name }]
+        not_yet: You'd need his name, his real one. Old names are kept in old books.
+        text: "\"Haak Aukes.\" The water goes flat as a table. For a long time nothing moves, and then a tired voice says: \"Nobody has called me that in three hundred years. What do you want, then?\" You tell him. He'll leave the mill alone. Names hold what they name."
+        effects: [{ set: haakman_named }]
+    outcomes:
+      - id: bargain
+        name: A bargain with the water
+        text: At every new moon the scoop wheel stands still and bread and beer lie on the stone. The Blackmere stays where it is.
+        when: [{ flag: haakman_bargain }]
+        effects: [{ set: haakman_at_peace }, { relation: npc_wouter, affinity: 15, trust: 10 }, { reputation: fen_folk, delta: 10 }]
+      - id: driven_off
+        name: Driven off with iron
+        text: The Haakman has gone down into the deepest part of the Blackmere and won't come up soon. Old women nod at you in the lane. Wouter isn't sure you did a good thing.
+        when: [{ flag: haakman_beaten }]
+        effects: [{ set: haakman_at_peace }, { reputation: fen_folk, delta: 5 }, { reputation: water_spirits, delta: -30 }]
+      - id: named
+        name: Named
+        text: Called by his own name, the Haakman keeps his word. The mill pumps, and the Blackmere keeps its level anyway.
+        when: [{ flag: haakman_named }]
+        effects: [{ set: haakman_at_peace }, { reputation: water_spirits, delta: 10 }]
+      - id: revenge
+        name: The Haakman's revenge
+        solution: false
+        text: The Haakman took his water back, and more. The dyke at Oude Zijl has broken.
+        when: [{ clock_full: haakman_revenge }]
+        effects: [{ plan: dyke_breach }]
 
   - id: milk_for_the_kabouters
     name: Milk for the Kabouters
@@ -42,6 +559,72 @@ quests:
     summary: Things go missing and milk turns sour, because Pim spied on the kabouters.
     givers: [npc_grietje_visser, npc_mirte]
     helpers: [npc_aaltje, npc_pim]
+    starts: { talk: [npc_grietje_visser, npc_mirte], at: [kabouterberg], when: [{ day: 2 }] }
+    ask: "Everything goes missing in this house. Spoons, thread, the good scissors. And the milk turns sour overnight, every night. Mirte says hers too. My mother would have said it's the kabouters. My mother would have been right, I think."
+    stages:
+      - id: mischief
+        text: Things go missing in Veenhoek and the milk turns sour overnight. Pim has been spying on the kabouters at the Kabouterberg.
+        on_enter: [{ learn: kabouter_milk }]
+    actions:
+      - id: pim_confesses
+        say: ['ask pim about (?:the )?(?:kabouters?|kabouterberg|little people|milk)', 'ask pim what he (?:did|saw)(?: .*)?']
+        with: npc_pim
+        text: "Pim goes red to the ears. \"I only looked! They were dancing round the old oak with little lanterns, and I hid in the bracken, and one of them saw me and put his finger to his nose like this.\" He sniffs. \"I didn't tell anyone. Until now.\""
+        effects: [{ set: pim_confessed }]
+      - id: leave_milk
+        say: ['(?:leave|put|set|place|pour) (?:a |the |some )?(?:bowl of |jug of )?milk(?: .*)?']
+        at: [kabouterberg]
+        when: [{ night: true }, { has: milk }, { since: milk_left, hours: 20 }]
+        not_yet: Milk for the kabouters goes out once a night, after dark. And you need milk to leave.
+        once: false
+        text: You set the bowl of milk between the roots. Something in the dark goes quiet, listening.
+        effects: [{ take: milk }, { count: milk_nights }, { stamp: milk_left }]
+      - id: pim_carries
+        say: ['ask pim to (?:leave|bring|take|carry) (?:the )?milk(?: .*)?', 'give pim (?:the )?milk(?: .*)?']
+        with: npc_pim
+        when: [{ flag: pim_confessed }, { has: milk, qty: 7 }]
+        not_yet: Pim would need to own up first, and he'd need milk for seven nights.
+        text: Pim takes the seven jugs very seriously. "Every night. At the oak. And I won't look." He crosses his heart.
+        effects: [{ hand: milk, to: npc_pim, qty: 7 }, { set: pim_brings_milk }, { stamp: pim_milk_start }]
+      - id: aaltje_apology
+        say: ['ask (?:old )?aaltje to (?:apologi[sz]e|say sorry|speak to the kabouters|go to the kabouterberg)(?: .*)?', 'ask (?:old )?aaltje (?:about|for help with) (?:the )?kabouters(?: .*)?']
+        with: npc_aaltje
+        when: [{ flag: pim_confessed }]
+        not_yet: '"Apologise for what, dear? Find out what the boy did first."'
+        text: "Aaltje sighs and reaches for her shawl. \"Kabouters are like old men. They don't want the milk, they want to be asked properly. I'll go up the hill and tell Ouwe Knoert the boy is sorry. He is sorry?\""
+        effects: [{ set: aaltje_apologising }, { send: npc_aaltje, to: loc_kabouterberg_hollow, hours: 6 }]
+      - id: set_trap
+        say: ['(?:set|lay|put down) (?:a )?trap(?: .*)?', 'trap (?:the )?kabouters?(?: .*)?']
+        at: [kabouterberg]
+        when: [{ has: rope }]
+        not_yet: You'd need rope for a snare.
+        text: You lay a noose of rope across the path under the oak and hide. Nothing comes. In the morning the rope is tied in knots nobody could untie.
+        effects: [{ take: rope }, { set: trap_set }]
+    outcomes:
+      - id: seven_nights
+        name: Seven nights of milk
+        text: After the seventh bowl the scissors turn up on the Vissers' table, polished. The milk keeps.
+        when: [{ count: milk_nights, at_least: 7 }]
+        effects: [{ reputation: kabouters, delta: 20 }, { relation: npc_grietje_visser, affinity: 10 }, { set: kabouters_content }]
+      - id: pim_pays
+        name: Pim pays his own debt
+        text: Seven nights Pim carries the milk up the hill and doesn't look. On the eighth morning there's a little carved horse on his pillow.
+        when: [{ flag: pim_brings_milk }, { since: pim_milk_start, hours: 160 }]
+        effects: [{ reputation: kabouters, delta: 15 }, { relation: npc_pim, affinity: 20 }, { set: kabouters_content }]
+      - id: apology
+        name: An apology, properly made
+        text: Aaltje comes down from the Kabouterberg with a thimble full of something that smells of hay. "Accepted," she says. "He says the boy has a good nose for hiding. That's praise, from him."
+        when: [{ flag: aaltje_apologising }, { npc_at: npc_aaltje, place: kabouterberg }]
+        effects: [{ reputation: kabouters, delta: 15 }, { relation: npc_aaltje, affinity: 10 }, { set: kabouters_content }]
+      - id: trapped
+        name: The trap
+        text: A trap was a bad idea. For a month every bucket in Veenhoek has a hole in it, and the kabouters don't come to the milk any more.
+        when: [{ flag: trap_set }]
+        effects:
+          - { reputation: kabouters, delta: -40 }
+          - { relation: npc_grietje_visser, affinity: -10 }
+          - { set: kabouters_angry }
+    on_death: { npc_pim: apology }
 
   - id: the_goat_riders_toll
     name: The Goat-Riders' Toll
@@ -49,47 +632,591 @@ quests:
     summary: The Goat-Riders levy a toll on the Vaart, and Cornelis pays them.
     givers: [npc_trijntje]
     helpers: [npc_wouter, npc_gerrit]
+    opponents: [npc_mathijs, npc_cornelis]
+    starts: { talk: [npc_trijntje], at: [loc_rietdoolhof_edge] }
+    ask: "The skippers won't stop here any more. The Goat-Riders take a toll on the Vaart, sixteen duiten a boat, and cut the nets of those who won't pay. And I hear the surveyor pays them to keep the peat-cutters off his stakes. Somebody ought to do something, and it won't be the schout."
+    stages:
+      - id: toll
+        text: The Goat-Riders levy a toll on the Vaart and the tow path. Trijntje says the skippers stay away, and that the surveyor pays Black Mathijs.
+    actions:
+      - id: attack_camp
+        say: ['(?:attack|raid|storm|fight) (?:the )?(?:camp|goat-?riders|riders|mathijs|black mathijs)(?: .*)?']
+        at: [loc_rietdoolhof_camp]
+        text: You come out of the reeds at a run. Somebody shouts, a goat bleats, and Black Mathijs is on his feet with an axe.
+        effects: [{ encounter: goat_riders_camp }]
+      - id: spy_camp
+        say: ['(?:spy on|watch|sneak into|search|creep into) (?:the )?camp(?: .*)?', '(?:spy on|watch) (?:the )?(?:goat-?riders|riders)(?: .*)?']
+        at: [loc_rietdoolhof_camp, loc_rietdoolhof_passages]
+        check: { skill: stealth, dc: 16 }
+        text: "Behind the huts: pots of pitch, bundles of wet peat for thick smoke, a pig's bladder of marsh gas that burns blue, and a goat-skin sewn onto a frame that swings from a pole. The Goat-Riders don't fly. They never did."
+        fail_text: A dog barks. You're out of the reeds and running before anyone sees your face, but they'll be watching now.
+        effects: [{ set: knows_goat_trick }]
+      - id: expose_trick
+        say: ['(?:expose|reveal|unmask|show everyone|tell (?:everyone|the village|people|the skippers) about) (?:the )?(?:goat )?(?:trick|riders|goat-?riders)(?: .*)?']
+        at: [loc_goose_common, loc_veenhoek_green, loc_waagdam_market, loc_veenhoek_quay]
+        when: [{ any: [{ flag: knows_goat_trick }, { flag: "secret:npc_mathijs:flying_goats" }] }]
+        not_yet: You'd need proof. People have been afraid of the Goat-Riders for a hundred years.
+        text: You tell it loud and plain, with the pitch pots and the bladder of marsh gas, and somebody laughs. Then everybody laughs. A Goat-Rider nobody fears is just a man in a smelly coat.
+        effects: [{ set: goat_trick_exposed }]
+      - id: letter_from_pen
+        say: ['ask (?:master )?pen (?:for|to (?:write|draw up)) (?:a )?(?:toll ?letter|toll charter|letter for mathijs)(?: .*)?']
+        with: npc_pen
+        when: [{ money: 40 }]
+        not_yet: '"A toll letter is five stuivers, sealed and witnessed," Pen says. "I don''t do charity."'
+        text: Pen writes it in his best hand, sands it and seals it. "A lawful toll of eight duiten a boat, for keeping the Vaart clear of reed. Get it signed at the town hall and it's law."
+        effects: [{ pay: -40 }, { give: toll_letter }]
+      - id: letter_from_aleid
+        say: ['ask (?:aleid|the burgomaster|the mayor) (?:for|to sign|about) (?:a |the )?(?:toll ?letter|toll)(?: .*)?']
+        with: npc_aleid
+        when: [{ any: [{ has: toll_letter }, { flag: "secret:npc_aleid:town_broke" }] }]
+        not_yet: '"A toll for robbers? Bring me something in writing, and a reason the town should care."'
+        check: { skill: persuasion, dc: 15 }
+        text: "Aleid reads it twice. \"A share for the town chest, and the Vaart kept clear for nothing.\" She signs. \"If it works, it was my idea.\""
+        fail_text: '"No," Aleid says. "Waagdam does not make deals with men in goat-skins."'
+        effects: [{ set: toll_letter_signed }, { give: toll_letter }]
+      - id: give_letter
+        say: ['(?:give|offer|hand|show) (?:the )?(?:toll ?)?letter to (?:black )?mathijs', 'offer (?:black )?mathijs a (?:lawful|legal) toll(?: .*)?']
+        with: npc_mathijs
+        when: [{ has: toll_letter }, { flag: toll_letter_signed }]
+        not_yet: A letter without the town's seal is worth nothing to a man like Mathijs.
+        text: Mathijs reads it with his lips moving. Then he reads it again. "Eight duiten. A receipt. And nobody hunts us." He laughs, short. "I always wanted to be a respectable man."
+        effects: [{ hand: toll_letter, to: npc_mathijs }, { set: toll_legal }]
+      - id: join_riders
+        say: ['join (?:the )?(?:goat-?riders|riders|you|your band)(?: .*)?', 'ask (?:black )?mathijs (?:if i can|to let me) join(?: .*)?']
+        with: npc_mathijs
+        check: { skill: intimidation, dc: 14 }
+        text: "Mathijs looks you up and down. \"You'll do. You ride with us, you wear the skin, you keep your mouth shut. And the surveyor's money is ours too.\""
+        fail_text: Mathijs laughs in your face. "Come back when you've got the stomach for it."
+        effects: [{ join: goat_riders }, { set: joined_goat_riders }]
+    outcomes:
+      - id: camp_broken
+        name: The camp broken
+        text: The Goat-Riders' camp is ash and the band has scattered into the reed. The skippers come back to the Vaart.
+        when: [{ flag: riders_broken }]
+        effects:
+          - { set: riders_quiet }
+          - { vanish: npc_mathijs }
+          - { reputation: goat_riders, delta: -40 }
+          - { relation: npc_trijntje, affinity: 20, trust: 10 }
+          - { fact: { title: the Goat-Riders' camp broken, precise: "The Goat-Riders' camp in the Rietdoolhof was broken up and Black Mathijs fled.", village: "Somebody took on the Goat-Riders in their own camp and won!", far: "Robbers were driven off in the Holleveen.", belang: 3, about: [goat_riders, npc_mathijs] } }
+      - id: exposed
+        name: The trick exposed
+        text: Nobody pays toll to a man in a smelly coat. The Goat-Riders' toll is over, and the band is a joke on the Vaart.
+        when: [{ flag: goat_trick_exposed }]
+        effects:
+          - { set: riders_quiet }
+          - { reputation: goat_riders, delta: -20 }
+          - { relation: npc_trijntje, affinity: 15, trust: 10 }
+          - { fact: { title: the Goat-Riders' trick, precise: "The Goat-Riders' flight is pitch smoke, marsh gas and a goat-skin on a pole.", village: "The Goat-Riders don't fly! It's pitch and marsh gas and a skin on a stick!", far: "In the Holleveen a band of robbers was laughed out of their trade.", belang: 3, about: [goat_riders] } }
+      - id: legal_toll
+        name: A lawful toll
+        text: The toll stays, but now it's eight duiten with a receipt, and a share goes to the town chest. The skippers grumble and pay.
+        when: [{ flag: toll_legal }]
+        effects: [{ set: riders_quiet }, { reputation: goat_riders, delta: 15 }, { relation: npc_trijntje, affinity: 5 }]
+      - id: joined
+        name: One of them
+        text: You wear the goat-skin now. The skippers pay you, too.
+        when: [{ flag: joined_goat_riders }]
+        effects: [{ reputation: counts_men, delta: -10 }, { relation: npc_trijntje, affinity: -25 }]
 
   - id: the_white_womens_riddle
     name: The White Women's Riddle
     kind: discovery
     summary: In the mist at Reuzenrust the White Women ask a riddle about the dead of the Water Wolf.
     givers: [npc_aaltje]
+    helpers: [npc_aaltje]
+    starts: { at: [reuzenrust] }
+    stages:
+      - id: the_riddle
+        text: "In the mist at Reuzenrust pale shapes ask you a riddle: \"We were many and we were counted. Nobody buried us. We lie under the Zuyder Mere and under your feet. Who are we?\""
+    actions:
+      - id: answer_riddle
+        say: ['answer (?:the )?riddle(?: .*)?', '(?:answer|reply|say|you are)(?: .*)?(?:water ?wolf|drowned|flood|the dead)(?: .*)?']
+        at: [loc_reuzenrust_barrows, loc_reuzenrust_hunebed]
+        when: [{ knows: water_wolf }]
+        not_yet: You don't know enough about the old flood to answer. People in Veenhoek tell of the Water Wolf.
+        check: { skill: lore, dc: 15 }
+        text: "\"The drowned of the Water Wolf,\" you say. \"The villages of the old land.\" The mist sighs. \"Remembered,\" a voice says. \"Then take this for remembering: the one in the Blackmere was a man once, Haak Aukes, and names hold what they name.\""
+        fail_text: The mist thickens. You walk for an hour and come out exactly where you started, colder than before.
+        effects: [{ set: riddle_solved }, { set: haakman_name }]
+      - id: offering
+        say: ['(?:leave|make|give|lay|offer) (?:an |a |some |the |my )?(?:offering|bread|gift|loaf)(?: .*)?', '(?:bow|kneel)(?: .*)?']
+        at: [loc_reuzenrust_barrows, loc_reuzenrust_hunebed]
+        when: [{ has: rye_bread }]
+        not_yet: You have nothing fit to offer. Bread, at least.
+        text: You lay the bread on the capstone and bow your head, and say nothing. After a while the mist moves round you like a hand smoothing a sheet, and lets you go.
+        effects: [{ take: rye_bread }, { set: white_women_offering }]
+      - id: walk_away
+        say: ['(?:walk|turn|go) away', 'leave (?:them|the white women|the riddle)(?: .*)?', 'ignore (?:them|the riddle|the white women)']
+        at: [reuzenrust]
+        text: You turn your back on the barrows and walk. Behind you somebody laughs, not unkindly. The mist lets you go.
+        effects: [{ set: walked_away }]
+    outcomes:
+      - id: solved
+        name: Solved with lore
+        text: The White Women remember the dead of the flood with you, and gave you a name to carry.
+        when: [{ flag: riddle_solved }]
+        effects: [{ reputation: white_women, delta: 20 }, { learn: white_women }]
+      - id: offering
+        name: An offering with respect
+        text: You didn't answer, but you showed respect. The mist at Reuzenrust will let you pass.
+        when: [{ flag: white_women_offering }]
+        effects: [{ reputation: white_women, delta: 10 }, { learn: white_women }]
+      - id: walked_away
+        name: Walked away
+        text: Some riddles are better left alone. You'll never know what they wanted.
+        when: [{ flag: walked_away }]
 
+  # ------------------------------------------------------------------ the regional conflict
   - id: the_drainage_question
     name: The Drainage Question
     kind: conflict
     summary: Will the Holleveen be drained?
-    givers: [npc_gerrit, npc_everhard]
+    givers: [npc_gerrit, npc_cornelis, npc_everhard]
+    helpers: [npc_pen, npc_ansfried, npc_sijbrand, npc_jacob]
+    opponents: [npc_cornelis, npc_gerrit]
+    starts: { talk: [npc_gerrit, npc_cornelis, npc_everhard], at: [loc_route_peat_pits] }
+    stages:
+      - id: the_survey
+        text: Master Cornelis measures a sector of the fen every working day. When his survey is done he sends his report to Graafhaven, and in spring the digging begins.
+        on_enter: [{ learn: drainage }]
+    actions:
+      # The polder comes: helping Cornelis.
+      - id: help_cornelis
+        say: ['help (?:master )?cornelis(?: .*)?', '(?:carry|hold) (?:the |his )?chains?(?: .*)?', 'offer to help (?:with )?(?:the )?survey(?: .*)?']
+        with: npc_cornelis
+        when: [{ since: helped_cornelis_at, hours: 20 }]
+        not_yet: You've helped him today already.
+        once: false
+        minutes: 240
+        text: You hold the far end of the chain across the wet peat while Cornelis writes. He pays you two stuivers and doesn't look at the peat-cutters watching from the dyke.
+        effects: [{ set: helped_cornelis }, { stamp: helped_cornelis_at }, { tick: survey }, { pay: 16 }, { reputation: counts_men, delta: 3 }, { reputation: fen_folk, delta: -5 }]
+      # The charter.
+      - id: search_library
+        say: ['(?:search|look (?:through|in)) (?:the )?(?:library|archive|shelves|books)(?: for .*)?', '(?:look|search) for (?:the )?(?:fen )?charter']
+        at: [loc_kloosterveen_library]
+        when: [{ knows: fen_charter }, { not: { has: fen_charter_deed } }]
+        not_yet: There are thousands of books here. You'd need to know what you're looking for.
+        check: { skill: lore, dc: 17 }
+        once: false
+        minutes: 120
+        text: Under a shelf of account books, in a lead case gone white with age, you find it. The Fen Charter, with the Count's great-grandfather's seal still on its cord.
+        fail_text: Hours of dust and the brothers' bad handwriting. Nothing.
+        effects: [{ give: fen_charter_deed }]
+      - id: ask_ansfried
+        say: ['ask (?:prior |the prior )?(?:ansfried)? ?(?:for|about) (?:the )?(?:fen )?charter(?: .*)?', 'ask (?:the )?prior (?:for|about) (?:the )?(?:fen )?charter(?: .*)?']
+        with: npc_ansfried
+        when: [{ any: [{ attitude: npc_ansfried, at_least: Friendly }, { flag: "secret:npc_ansfried:charter_valid" }] }, { not: { has: fen_charter_deed } }]
+        not_yet: The prior smiles and talks about the weather. He doesn't know you well enough to talk about charters.
+        text: "Ansfried takes a lead case down from a high shelf. \"I have read it,\" he says quietly. \"It is still good law. The Count will be very angry with this house. Take it, before I think better of it.\""
+        effects: [{ give: fen_charter_deed }]
+      - id: pen_reads
+        say: ['(?:ask (?:master )?pen to |have (?:master )?pen )?read (?:the )?charter(?: .*)?', '(?:give|show) (?:the )?(?:fen )?charter to (?:master )?pen']
+        with: npc_pen
+        when: [{ has: fen_charter_deed }]
+        text: "Pen reads it three times with his glasses on and once with them off. \"Genuine. And never revoked. The fen cannot be drained without the consent of the villages that cut it.\" He looks up. \"Take this to the council and the dyke reeve, and you'll have made yourself a powerful enemy.\""
+        effects: [{ set: charter_read }]
+      - id: charter_to_council
+        say: ['(?:present|show|lay|put|bring|give) (?:the )?(?:fen )?charter (?:before|to) (?:the )?(?:council|aleid|burgomaster|mayor)(?: .*)?']
+        with: npc_aleid
+        when: [{ has: fen_charter_deed }, { flag: charter_read }]
+        not_yet: The council won't look at old parchment without a notary's word on it.
+        text: Aleid reads Pen's note, then the charter, then the note again. "The council will uphold it," she says slowly. "Waagdam has never liked the Count's surveyors."
+        effects: [{ set: charter_council }]
+      - id: charter_to_sijbrand
+        say: ['(?:present|show|lay|put|bring|give) (?:the )?(?:fen )?charter (?:before|to) (?:the )?(?:heemraad|sijbrand|dyke ?reeve|dijkgraaf)(?: .*)?']
+        with: npc_sijbrand
+        when: [{ has: fen_charter_deed }, { flag: charter_read }]
+        not_yet: Sijbrand won't take old parchment on your word alone.
+        text: Sijbrand reads with his finger under the lines. "Who will not dyke, must yield," he says. "And who does not own the fen, must not drain it. It's good. I'll write to Graafhaven."
+        effects: [{ set: charter_sijbrand }]
+      # The truth: Jacob van Dam made human again.
+      - id: free_jacob
+        say: ['(?:pour|sprinkle|splash|throw) (?:the )?(?:moon ?water|water) (?:on|over) (?:the )?(?:grey )?(?:tom(?:cat)?|cat|jacob)(?: .*)?', 'free jacob(?: .*)?', 'break (?:jacob.?s|the tomcat.?s) curse']
+        at: [loc_kattenbroek_catyard]
+        when: [{ has: moon_water }, { any: [{ flag: "secret:npc_kaatje:knows_the_tomcat" }, { flag: knows_jacob_cat }] }]
+        not_yet: Which of all these cats would you pour it on? And you'd need moon water.
+        check: { skill: lore, dc: 16 }
+        text: The grey tom with ink on his paws yowls, twists, and then a thin man in a surveyor's coat is kneeling in the mud of the cat yard, rubbing his wrists. "What year is it?" says Jacob van Dam.
+        fail_text: The water runs off the tomcat's fur. He gives you a look of pure disgust and walks away.
+        effects: [{ take: moon_water }, { restore: npc_jacob, at: loc_kattenbroek_catyard }, { set: jacob_free }, { grievance: npc_kaatje, line: "You took my surveyor. He came with chains, and he'll go back to them." }]
+        fail: [{ take: moon_water }]
+      - id: spot_jacob
+        say: ['(?:look at|study|examine|watch) (?:the )?(?:cats|grey tom|tomcat|cat with ink.*)']
+        at: [loc_kattenbroek_catyard]
+        check: { skill: perception, dc: 15 }
+        text: One grey tom sits apart from the others and never comes to the widow's hand. There's ink on his front paws, old black ink, the kind that doesn't wash out.
+        fail_text: Cats. Dozens of them. They all look at you as if you owe them money.
+        effects: [{ set: knows_jacob_cat }]
+      - id: jacob_testifies
+        say: ['(?:ask|bring|take) jacob (?:to testify|to (?:sijbrand|the heemraad|the dyke ?reeve|oude zijl))(?: .*)?', 'ask jacob (?:about|to tell) the (?:survey|truth)(?: .*)?']
+        with: npc_jacob
+        when: [{ flag: jacob_free }]
+        text: "Jacob nods, and keeps nodding. \"Drained peat shrinks. It sinks below the Vaart. I measured it; I have it in my chest. I'll say it to the dyke reeve's face.\""
+        effects: [{ set: jacob_testifying }, { send: npc_jacob, to: loc_oude_zijl_dykehouse, hours: 48 }]
+      # Resistance.
+      - id: pull_stakes
+        say: ['(?:pull|tear|rip) (?:up |out )?(?:the )?(?:survey |measuring )?stakes(?: .*)?', 'sabotage (?:the )?survey(?: .*)?']
+        at: [loc_route_peat_pits, loc_route_peat_stacks]
+        when: [{ night: true }, { since: sabotage_at, hours: 20 }]
+        not_yet: Not with the whole world watching. At night, and not twice in one night.
+        once: false
+        minutes: 60
+        text: You work down the line of stakes in the dark, pulling each one out of the peat with a wet suck and throwing it in the ditch. A day of Cornelis's work, gone.
+        effects: [{ tick: survey, n: -1 }, { count: sabotage }, { stamp: sabotage_at }, { set: stakes_pulled_today }]
+      - id: steal_chain
+        say: ['(?:take|steal|lift|grab) (?:the |his |cornelis.?s )?(?:measuring |surveyor.?s )?chains?']
+        at: [loc_goose_rooms]
+        when: [{ not: { here: npc_cornelis } }]
+        not_yet: Cornelis is right there.
+        check: { skill: thievery, dc: 15 }
+        text: The chains are in a canvas bag by the bed, heavy as a sleeping dog. You get them out of the window and into the ditch behind the Goose.
+        fail_text: The chain clinks, loud as church bells. You leave it where it is and slip out.
+        effects: [{ seize: surveyors_chain, from: npc_cornelis }, { count: sabotage }]
+      - id: scare_cornelis
+        say: ['(?:scare|threaten|frighten|warn) (?:master )?cornelis(?: .*)?', 'tell (?:master )?cornelis to (?:leave|go)(?: .*)?', 'chase (?:master )?cornelis (?:off|away)(?: .*)?']
+        with: npc_cornelis
+        when: [{ count: sabotage, at_least: 2 }]
+        not_yet: Cornelis isn't a man to frighten with words alone. He'd need to see his work come to nothing first.
+        check: { skill: intimidation, dc: 16 }
+        text: Cornelis packs his books with shaking hands. "Tell your peat-cutters they've won," he says. "Tell them the Count will send soldiers next, not surveyors."
+        fail_text: "\"I've been threatened by better,\" Cornelis says, and goes back to his figures."
+        effects: [{ set: cornelis_scared }]
+      # A settlement.
+      - id: settle_cornelis
+        say: ['(?:propose|suggest|offer) (?:a )?(?:settlement|compromise|deal)(?: .*)?', '(?:propose|suggest) (?:to )?drain(?:ing)? only (?:the fields )?north(?: .*)?']
+        with: npc_cornelis
+        when: [{ any: [{ flag: "secret:npc_cornelis:old_survey" }, { flag: jacob_free }, { knows: drainage }] }]
+        check: { skill: persuasion, dc: 17 }
+        text: "Cornelis stares at his map for a long time. \"North of the Vaart the ground is clay under the peat. It would hold.\" He draws a line. \"The fen south of it stays wet. The Count gets his fields and I get my fee. It could be sold.\""
+        fail_text: "\"The Count wants the whole of it,\" Cornelis says. \"Half a polder is no polder.\""
+        effects: [{ set: cornelis_agrees }]
+      - id: settle_gerrit
+        say: ['(?:propose|suggest|offer) (?:a )?(?:settlement|compromise|deal)(?: .*)?', '(?:propose|suggest) (?:to )?drain(?:ing)? only (?:the fields )?north(?: .*)?']
+        with: npc_gerrit
+        check: { skill: persuasion, dc: 15 }
+        text: Gerrit chews on it. "The north fields were never ours to cut anyway. If the fen stays, and the Kattenbroek, and the Blackmere..." He spits in his hand and holds it out. "Get it in writing."
+        fail_text: "\"Not one sod,\" Gerrit says. \"You give them the north, they'll want the south by Candlemas.\""
+        effects: [{ set: gerrit_agrees }]
+    outcomes:
+      - id: charter
+        name: The charter
+        text: The Fen Charter is law again. The drainage cannot go on, and the Count is furious with the priory.
+        when: [{ flag: charter_council }, { flag: charter_sijbrand }]
+        effects:
+          - { set: drainage_stopped }
+          - { set: survey_halted }
+          - { reputation: counts_men, delta: -15 }
+          - { reputation: brotherhood, delta: 20 }
+          - { reputation: fen_folk, delta: 15 }
+          - { relation: npc_ansfried, trust: 10 }
+          - { fact: { title: the Fen Charter upheld, precise: "The Fen Charter from Kloosterveen was upheld by the council of Waagdam and the dyke reeve. The Holleveen cannot be drained.", village: "The old charter's been found! They can't drain the fen now, it's the law!", far: "An old charter stopped the Count's drainage in the Holleveen.", belang: 4, about: [fen_charter, drainage] } }
+      - id: truth
+        name: The truth
+        text: Jacob van Dam told the dyke reeve what drained peat does. The plan is stopped, and Cornelis has fallen from favour.
+        when: [{ flag: jacob_testifying }, { npc_at: npc_jacob, place: oude_zijl }]
+        effects:
+          - { set: drainage_stopped }
+          - { set: survey_halted }
+          - { vanish: npc_cornelis }
+          - { reputation: fen_folk, delta: 15 }
+          - { fact: { title: Jacob van Dam's testimony, precise: "Jacob van Dam, the lost surveyor, came back and testified that drained peat sinks below the Vaart. The dyke reeve stopped the drainage.", village: "The old surveyor's back from the dead, and he says the polder would drown us all!", far: "A surveyor thought dead stopped a drainage in the Holleveen.", belang: 4, about: [drainage, npc_jacob] } }
+      - id: resistance
+        name: Resistance
+        text: Cornelis has fled with his books. The survey is over, for now. The Count will send soldiers.
+        when: [{ flag: cornelis_scared }]
+        effects:
+          - { set: survey_halted }
+          - { vanish: npc_cornelis }
+          - { reputation: counts_men, delta: -30 }
+          - { reputation: brotherhood, delta: 20 }
+          - { plan: soldiers_come }
+          - { fact: { title: the surveyor chased off, precise: "Master Cornelis fled the Holleveen after his survey was sabotaged.", village: "The surveyor's gone! Packed his books and ran!", far: "The Count's surveyor was chased out of the Holleveen.", belang: 4, about: [drainage, npc_cornelis] } }
+      - id: settlement
+        name: A settlement
+        text: Only the fields north of the Vaart will be drained, and the fen stays. Nobody is quite happy, and nobody is at war.
+        when: [{ flag: cornelis_agrees }, { flag: gerrit_agrees }]
+        effects:
+          - { set: survey_halted }
+          - { set: drainage_north_only }
+          - { relation: npc_cornelis, trust: 5 }
+          - { relation: npc_gerrit, trust: 5 }
+          - { fact: { title: a settlement over the drainage, precise: "The drainage was settled: only the fields north of the Vaart will be drained.", village: "They'll only drain north of the Vaart. The fen stays. Could be worse.", far: "In the Holleveen the drainage was settled by agreement.", belang: 3, about: [drainage] } }
+      - id: polder_comes_helped
+        name: The polder comes
+        text: The survey is done, with your help. Cornelis sends his report to Graafhaven, and in spring the digging begins.
+        when: [{ clock_full: survey }, { flag: helped_cornelis }]
+        effects: [{ set: polder_coming }, { set: fen_dying }, { reputation: counts_men, delta: 10 }, { relation: npc_gerrit, affinity: -30 }, { grievance: npc_gerrit, line: "You held his chains. Don't come near the pits again." }]
+      - id: polder_comes
+        name: The polder comes
+        solution: false
+        text: Nobody stopped him. Cornelis sends his report to Graafhaven, and in spring the digging begins. The fen will die.
+        when: [{ clock_full: survey }]
+        effects:
+          - { set: polder_coming }
+          - { set: fen_dying }
+          - { fact: { title: the survey of the Holleveen finished, precise: "Master Cornelis finished the survey of the Holleveen and sent his report to Graafhaven.", village: "The survey's done. They'll start digging in spring, God help us.", far: "The Count's survey of the Holleveen is finished.", belang: 4, about: [drainage] } }
+      - id: surveyor_dead
+        name: The surveyor is dead
+        solution: false
+        text: With Cornelis dead the survey stops. The Count will send another surveyor, and soldiers with him.
+        effects: [{ set: survey_halted }, { plan: soldiers_come }]
+    on_death: { npc_cornelis: surveyor_dead }
 
   - id: a_stall_at_the_market
     name: A Stall at the Market
     kind: social
     summary: Mirte wants a stall in Waagdam, but the bakers' guild keeps outsiders out.
     givers: [npc_mirte]
-    helpers: [npc_trijntje]
+    helpers: [npc_aleid, npc_trijntje]
     opponents: [npc_lubbert]
+    starts: { talk: [npc_mirte], when: [{ outcome: "flour_for_veenhoek:*" }] }
+    ask: "Veenhoek's too small for a baker. In Waagdam I could sell sixty loaves on a market day. But the bakers' guild won't have a village woman at the market, and Lubbert sits on their council. Help me get a stall before the fair?"
+    stages:
+      - id: the_guild
+        text: Mirte wants a stall at the Waagdam market, but the bakers' guild keeps outsiders out, and the autumn fair is three weeks off.
+    actions:
+      - id: convince_council
+        say: ['(?:ask|persuade|convince) (?:aleid|the burgomaster|the mayor|the council)(?: .*)?', 'speak (?:up )?for mirte(?: .*)?']
+        with: npc_aleid
+        check: { skill: persuasion, dc: 17 }
+        text: "Aleid taps her quill against her teeth. \"A stall fee is a stall fee, and the town chest isn't what it was. The guild can grumble.\" She writes out a licence for Mirte Bakker."
+        fail_text: '"The guild has rights," Aleid says. "I can''t just walk over them for a baker from the fen."'
+        effects: [{ set: council_licence }]
+      - id: bribe_baker
+        say: ['bribe (?:a |the )?(?:guild )?(?:baker|guild|master)(?: .*)?', '(?:pay|grease) (?:the )?guild(?: .*)?']
+        at: [loc_waagdam_guild_house]
+        when: [{ money: 80 }]
+        not_yet: A guild master's goodwill costs ten stuivers at least. You haven't got it.
+        text: Master baker Joost counts the coins twice and puts them away. "One stall, by the fish benches. If anyone asks, she's my cousin."
+        effects: [{ pay: -80 }, { set: guild_bribed }]
+      - id: apprenticeship
+        say: ['(?:find|get|arrange) (?:mirte )?(?:a place|an apprenticeship|a master)(?: .*)?', 'ask (?:the )?guild to (?:take|admit) mirte(?: .*)?']
+        at: [loc_waagdam_guild_house]
+        check: { skill: persuasion, dc: 14 }
+        text: The guild hall takes her as a journeyman under old master Evert, who can't lift the peel any more. She'll bake in his oven and sell under his name.
+        fail_text: The guild masters look at each other and say nothing, which means no.
+        effects: [{ set: mirte_apprenticed }]
+    outcomes:
+      - id: council
+        name: A licence from the council
+        text: Mirte has a stall at the Waagdam market by licence of the council. The guild will never forgive her.
+        when: [{ flag: council_licence }]
+        effects: [{ relation: npc_mirte, affinity: 20, trust: 10 }, { relation: npc_lubbert, affinity: -10 }]
+      - id: bribed
+        name: A cousin of the guild
+        text: Mirte sells by the fish benches as Master Joost's cousin. It works as long as nobody looks too closely.
+        when: [{ flag: guild_bribed }]
+        effects: [{ relation: npc_mirte, affinity: 15 }, { reputation: waagdam_burghers, delta: -5 }]
+      - id: apprenticed
+        name: Under a master's name
+        text: Mirte bakes in old Evert's oven and sells under his name. In a few years she'll be a master herself.
+        when: [{ flag: mirte_apprenticed }]
+        effects: [{ relation: npc_mirte, affinity: 15, trust: 15 }]
+      - id: fair_passed
+        name: The fair passed
+        solution: false
+        text: The autumn fair came and went, and Mirte still sells only in Veenhoek.
+        when: [{ days: 21 }]
 
   - id: the_honest_scale
     name: The Honest Scale
     kind: trial
     summary: An envoy of the Lantern wants to take over the weighing, and Wendela accuses Aaltje.
     givers: [npc_dirck]
-    helpers: [npc_aaltje]
+    helpers: [npc_aaltje, npc_pen]
     opponents: [npc_wendela]
+    starts: { talk: [npc_dirck] }
+    ask: "Sister Wendela has accused Aaltje of witchcraft, and the Lantern has sent an envoy who says the weighing belongs to the Church now. There's a hearing at the Waag in five days. If the envoy wins, every old woman in the Holleveen will be weighed by a priest's thumb."
+    stages:
+      - id: accused
+        text: Sister Wendela has accused Aaltje of witchcraft, and an envoy of the Lantern wants the weighing at the Waag for the Church. Dirck asks for help before the hearing in five days.
+        on_enter: [{ learn: witches_scale }]
+    actions:
+      - id: ask_aaltje_weighed
+        say: ['ask (?:old )?aaltje to (?:be weighed|come to the waag|come to waagdam|clear her name)(?: .*)?']
+        with: npc_aaltje
+        check: { skill: persuasion, dc: 14 }
+        text: "Aaltje laughs, which you didn't expect. \"Weighed! At my age.\" Then she's quiet. \"Yes. Better than hiding. I'll be at the Waag.\""
+        fail_text: '"I won''t be put on a scale like a sack of rye," Aaltje says. "Not for her, not for anyone."'
+        effects: [{ set: aaltje_agrees }, { send: npc_aaltje, to: loc_waagdam_waag, hours: 12 }]
+      - id: weigh_aaltje
+        say: ['(?:let|have) aaltje (?:be )?weighed', 'weigh aaltje']
+        at: [loc_waagdam_waag, loc_waagdam_weighing_room]
+        with: npc_aaltje
+        text: Dirck sets the weights with the whole town watching. The beam dips, wavers, settles. Aaltje weighs exactly what a woman her size should.
+        effects: [{ set: aaltje_weighed }]
+      - id: investigate_envoy
+        say: ['(?:ask|find out|investigate|look into|dig into) (?:about )?(?:the )?envoy(?: .*)?', '(?:dig|search) for dirt on (?:the )?envoy(?: .*)?']
+        at: [waagdam]
+        check: { skill: insight, dc: 16 }
+        once: false
+        minutes: 60
+        text: At De Schaal a carter from the south tells you about the envoy's last town, where the Church's scale was found to weigh a pound light, and the fines went into the envoy's purse.
+        fail_text: Nobody in Waagdam wants to talk about a man of the Church to a stranger.
+        effects: [{ set: envoy_dirt }]
+      - id: expose_envoy
+        say: ['(?:expose|denounce|accuse|shame) (?:the )?envoy(?: .*)?']
+        at: [loc_waagdam_waag, loc_waagdam_town_hall, loc_waagdam_market]
+        when: [{ flag: envoy_dirt }]
+        not_yet: You'd need something on him first.
+        text: You say it in front of half the market. The envoy goes pale, then red, and leaves for the south the same afternoon without his dinner.
+        effects: [{ set: envoy_discredited }]
+      - id: dirck_secret_from_widow
+        say: ['ask (?:the )?(?:widow|kaatje) about (?:dirck|the waag|the scale|her certificate)(?: .*)?']
+        with: npc_kaatje
+        when: [{ attitude: npc_kaatje, at_least: Neutral }]
+        not_yet: The widow looks at you as if you were a slug on her step.
+        text: "\"Dirck?\" The widow smiles, just. \"I weighed too light, thirty years ago, and he signed my certificate anyway. He's an honest man. That's the only false paper he ever wrote.\""
+        effects: [{ set: knows_dirck_secret }]
+      - id: dirck_secret_from_dirck
+        say: ['ask dirck about (?:the )?(?:widow|kaatje|certificate|false certificate)(?: .*)?']
+        with: npc_dirck
+        check: { skill: insight, dc: 16 }
+        text: Dirck goes very still. "The envoy found the entry," he says. "The widow's weighing, thirty years ago. I signed it. She was too light. He'll use it to say the Waag was never honest."
+        fail_text: Dirck talks about the weather and the price of lead weights.
+        effects: [{ set: knows_dirck_secret }]
+      - id: protect_secret
+        say: ['(?:burn|tear out|destroy|hide|remove) (?:the )?(?:ledger|page|entry|record)(?: .*)?']
+        at: [loc_waagdam_weighing_room]
+        when: [{ flag: knows_dirck_secret }]
+        not_yet: Which page? You don't know what you're looking for.
+        check: { skill: thievery, dc: 15 }
+        text: The old ledger is in the cupboard under the beam. The page for the widow's weighing tears out clean, and goes into the brazier.
+        fail_text: A clerk comes in with a lamp. You pretend to be admiring the beam.
+        effects: [{ set: secret_protected }]
+      - id: use_secret
+        say: ['(?:threaten|blackmail|pressure) dirck(?: .*)?', 'use (?:the |dirck.?s )?secret(?: .*)?']
+        with: npc_dirck
+        when: [{ flag: knows_dirck_secret }]
+        check: { skill: intimidation, dc: 13 }
+        text: Dirck signs whatever you put in front of him, and rules for Aaltje without a hearing. He won't meet your eye again.
+        fail_text: '"Do your worst," Dirck says. "I''ll tell them myself before I let you hold it over me."'
+        effects: [{ set: secret_used }]
+    outcomes:
+      - id: weighed
+        name: Weighed and found true
+        text: Aaltje was weighed in public and found true. Wendela goes back to Veenhoek with nothing, and the envoy with less.
+        when: [{ any: [{ flag: aaltje_weighed }, { all: [{ flag: aaltje_agrees }, { npc_at: npc_aaltje, place: loc_waagdam_waag }] }] }]
+        effects: [{ relation: npc_aaltje, affinity: 15, trust: 15 }, { relation: npc_wendela, affinity: -10 }, { reputation: lantern_church, delta: -5 }, { set: aaltje_certified }]
+      - id: envoy_discredited
+        name: The envoy discredited
+        text: The envoy is gone, and with him the Church's claim on the Waag. Wendela withdraws her accusation quietly.
+        when: [{ flag: envoy_discredited }]
+        effects: [{ relation: npc_dirck, affinity: 15, trust: 10 }, { reputation: lantern_church, delta: -10 }, { reputation: waagdam_burghers, delta: 10 }]
+      - id: protected
+        name: The secret kept
+        text: Without the page, the envoy has nothing on Dirck. Dirck weighs Aaltje himself, true and public, and the Waag stays the town's.
+        when: [{ flag: secret_protected }]
+        effects: [{ relation: npc_dirck, affinity: 25, trust: 20 }, { relation: npc_aaltje, affinity: 10 }]
+      - id: used
+        name: The secret used
+        text: Aaltje walks free because Dirck is afraid of you. It works. It isn't pretty.
+        when: [{ flag: secret_used }]
+        effects: [{ relation: npc_dirck, affinity: -30, fear: 20 }, { relation: npc_aaltje, affinity: 5 }]
+      - id: hearing_lost
+        name: The hearing lost
+        solution: false
+        text: The hearing went to the envoy. The Church weighs at the Waag now, and Aaltje doesn't come to Waagdam any more.
+        when: [{ days: 6 }]
+        effects: [{ set: lantern_weighs }, { relation: npc_dirck, affinity: -10 }]
 
-  # Personal quests of the companions.
+  # ------------------------------------------------------------------ personal quests of the companions
   - id: the_brotherhoods_charter
     name: The Brotherhood's Charter
     kind: personal
     summary: Find the Fen Charter and have it recognised, without bloodshed if possible.
     givers: [npc_gerrit]
+    starts: { talk: [npc_gerrit], when: [{ flag: personal_the_brotherhoods_charter }] }
+    ask: "My grandfather's grandfather cut peat under a charter that said no lord could drain the fen without us. The priory had the copy. If it still exists, I want it back, and I want it read out in Waagdam. Without blood, if we can. With it, if we must."
+    stages:
+      - id: find_it
+        text: Gerrit wants the Fen Charter found and recognised, without bloodshed if possible. The priory at Kloosterveen had a copy.
+        on_enter: [{ learn: fen_charter }]
+    actions:
+      - id: give_charter_gerrit
+        say: ['(?:give|hand|show) (?:the )?(?:fen )?charter to gerrit', 'give gerrit (?:the )?(?:fen )?charter']
+        with: npc_gerrit
+        when: [{ has: fen_charter_deed }]
+        text: Gerrit holds it as if it might break. "The Brotherhood will keep it now. In the pit-house, under the floor. Let the Count come and ask for it."
+        effects: [{ hand: fen_charter_deed, to: npc_gerrit }, { set: brotherhood_holds_charter }]
+    outcomes:
+      - id: recognised
+        name: Recognised by law
+        text: The charter was read out in Waagdam and upheld. Gerrit wept, and says he didn't.
+        when: [{ outcome: "the_drainage_question:charter" }]
+        effects: [{ relation: npc_gerrit, affinity: 20, trust: 20 }]
+      - id: kept
+        name: Kept by the Brotherhood
+        text: The Brotherhood holds the charter again. The law doesn't know it yet, but the peat-cutters do.
+        when: [{ flag: brotherhood_holds_charter }]
+        effects: [{ relation: npc_gerrit, affinity: 15, trust: 15 }, { reputation: brotherhood, delta: 15 }]
+      - id: by_force
+        name: By force
+        text: The surveyor was chased out, and the charter never needed. Gerrit got what he wanted the other way, and knows what it will cost.
+        when: [{ outcome: "the_drainage_question:resistance" }]
+        effects: [{ relation: npc_gerrit, affinity: 10 }]
 
   - id: the_apprentices_debt
     name: The Apprentice's Debt
     kind: personal
     summary: Bring Aaltje to the widow for a last conversation.
     givers: [npc_aaltje]
+    helpers: [npc_kaatje]
+    starts: { talk: [npc_aaltje], when: [{ flag: personal_the_apprentices_debt }] }
+    ask: "I left her. Forty years ago, in the night, with her best knife and half her recipes. I'd like to see Kaatje once more before one of us dies. Will you take me? I don't think I can walk into the Kattenbroek alone."
+    stages:
+      - id: to_the_widow
+        text: Aaltje wants to see the widow Kaatje once more, her old teacher. She won't go into the Kattenbroek alone.
+    actions:
+      - id: speak_for_aaltje
+        say: ['(?:speak|put in a (?:good )?word) (?:to the widow |to kaatje )?for aaltje(?: .*)?', 'ask (?:the )?(?:widow|kaatje) to (?:see|forgive|talk to) aaltje(?: .*)?']
+        with: npc_kaatje
+        check: { skill: persuasion, dc: 16 }
+        text: "The widow is quiet a long time. \"She took my knife,\" she says at last. \"I suppose I'd like it back.\""
+        fail_text: '"Let her come herself if she wants something," the widow says.'
+        effects: [{ set: widow_softened }]
+      - id: bring_aaltje
+        say: ['let (?:them|aaltje) talk(?: .*)?', 'introduce aaltje(?: .*)?', 'bring aaltje to (?:the )?(?:widow|kaatje)(?: .*)?']
+        at: [loc_kattenbroek_hut, kattenbroek]
+        with: npc_aaltje
+        when: [{ here: npc_kaatje }]
+        not_yet: The widow isn't here.
+        minutes: 60
+        text: You wait outside on the stilts while the two old women talk. It takes an hour. Once, someone laughs.
+        effects: [{ set: aaltje_saw_widow }]
+      - id: carry_letter
+        say: ['ask (?:old )?aaltje to write (?:a |her )?letter(?: .*)?', 'offer to (?:take|carry) (?:a |her )?letter(?: .*)?']
+        with: npc_aaltje
+        text: Aaltje writes for a long time in her careful, round hand, and folds it small. "Give it to her. Don't read it."
+        effects: [{ give: aaltje_letter }]
+      - id: give_letter_widow
+        say: ['(?:give|hand) (?:the |aaltje.?s )?letter to (?:the )?(?:widow|kaatje)']
+        with: npc_kaatje
+        when: [{ has: aaltje_letter }]
+        text: The widow reads it standing up, then sits down to read it again. She says nothing at all, but she keeps it.
+        effects: [{ hand: aaltje_letter, to: npc_kaatje }, { set: letter_delivered }]
+    outcomes:
+      - id: reconciled
+        name: Reconciled
+        text: The old knife is back where it belongs, and so, a little, is Aaltje.
+        when: [{ flag: aaltje_saw_widow }, { any: [{ flag: widow_softened }, { flag: aaltje_reconciled }, { attitude: npc_kaatje, at_least: Friendly }] }]
+        effects: [{ relation: npc_aaltje, affinity: 20, trust: 20 }, { set: aaltje_reconciled }]
+      - id: said_goodbye
+        name: A last conversation
+        text: They didn't make it up. But it has been said, and Aaltje walks home lighter than she came.
+        when: [{ flag: aaltje_saw_widow }]
+        effects: [{ relation: npc_aaltje, affinity: 15, trust: 10 }]
+      - id: a_letter
+        name: A letter
+        text: Not the conversation Aaltje wanted, but the words have reached the widow.
+        when: [{ flag: letter_delivered }]
+        effects: [{ relation: npc_aaltje, affinity: 10, trust: 10 }]
+      - id: too_late
+        name: Too late
+        solution: false
+        text: The widow is gone. Whatever Aaltje wanted to say will stay unsaid.
+    on_death: { npc_kaatje: too_late }
 
   - id: a_boat_and_a_bride
     name: A Boat and a Bride
@@ -98,12 +1225,116 @@ quests:
     givers: [npc_wouter]
     helpers: [npc_geesje]
     opponents: [npc_trijntje]
+    starts: { talk: [npc_wouter], when: [{ flag: personal_a_boat_and_a_bride }] }
+    ask: "There's a boat for sale at Oude Zijl. Thirty stuivers, sound as a bell. With a boat of my own I'm somebody. And then I'd ask Trijntje for Geesje, and she'd have to say yes. Wouldn't she?"
+    stages:
+      - id: a_boat
+        text: Wouter needs thirty stuivers for a boat of his own, and Trijntje's blessing to marry Geesje.
+    actions:
+      - id: pay_boat
+        say: ['(?:give|lend) wouter (?:the )?(?:money|thirty stuivers|30 stuivers)(?: .*)?', 'pay for (?:the |wouter.?s )?boat(?: .*)?', 'buy (?:wouter )?(?:the |a )?boat(?: for wouter)?']
+        with: npc_wouter
+        when: [{ money: 240 }]
+        not_yet: Thirty stuivers. You haven't got it.
+        text: Wouter counts it twice and then hugs you, smelling of eels. "I'll pay it back. Every duit. In eels, if you like."
+        effects: [{ pay: -240 }, { set: boat_bought }]
+      - id: persuade_trijntje
+        say: ['(?:ask|persuade|convince|tell) trijntje (?:to let|about|for) (?:wouter|geesje|the wedding|them marry)(?: .*)?', 'speak (?:to trijntje )?for wouter(?: .*)?']
+        with: npc_trijntje
+        when: [{ flag: boat_bought }]
+        not_yet: '"An eel-fisher without a boat?" Trijntje says. "My girl deserves better."'
+        check: { skill: persuasion, dc: 16 }
+        text: "Trijntje wipes the same tankard for a long time. \"A boat of his own,\" she says. \"Well. He was always kind to her.\" She sighs. \"Tell him to come and ask me properly, with his hair combed.\""
+        fail_text: '"No," Trijntje says. "Not him, not now."'
+        effects: [{ set: trijntje_blesses }]
+      - id: geesje_asks
+        say: ['ask geesje to (?:talk|speak) to (?:her mother|trijntje)(?: .*)?', 'ask geesje about wouter(?: .*)?']
+        with: npc_geesje
+        when: [{ flag: boat_bought }, { attitude: npc_geesje, at_least: Friendly }]
+        not_yet: Geesje shakes her head. "Not while he hasn't even got a boat. Mother would laugh."
+        text: Geesje takes her mother into the kitchen and closes the door. When they come out, Trijntje's eyes are red, and she's smiling.
+        effects: [{ set: geesje_spoke }]
+      - id: elope
+        say: ['(?:tell|help) wouter (?:to )?(?:elope|run away|take geesje)(?: .*)?']
+        with: npc_wouter
+        when: [{ flag: boat_bought }]
+        text: "Wouter's eyes go wide. \"In the boat. Tonight. Down the Vaart to Graafhaven.\" He grins. \"She'll come. She's been wanting to go for years.\""
+        effects: [{ set: eloped }]
+    outcomes:
+      - id: blessed
+        name: With her blessing
+        text: Wouter has a boat and Trijntje's blessing. There'll be a wedding at the Goose after the eel season.
+        when: [{ flag: trijntje_blesses }]
+        effects: [{ relation: npc_wouter, affinity: 20, trust: 20 }, { relation: npc_trijntje, affinity: 5 }]
+      - id: daughter_asked
+        name: Her daughter asked
+        text: Geesje talked her mother round in the kitchen. Wouter has a boat, a bride, and a mother-in-law who calls him "that eel-boy" with something like love.
+        when: [{ flag: geesje_spoke }]
+        effects: [{ relation: npc_wouter, affinity: 20, trust: 15 }, { relation: npc_geesje, affinity: 15 }]
+      - id: eloped
+        name: Eloped
+        text: Wouter and Geesje went down the Vaart in the new boat one night. Trijntje doesn't say their names.
+        when: [{ flag: eloped }]
+        effects:
+          - { relation: npc_wouter, affinity: 15 }
+          - { relation: npc_trijntje, affinity: -30 }
+          - { grievance: npc_trijntje, line: "You put that idea in his head. My girl, gone in the night." }
+      - id: no_boat
+        name: No boat
+        solution: false
+        text: The boat at Oude Zijl was sold to someone else.
+        when: [{ days: 30 }, { not_flag: boat_bought }]
 
   - id: the_bell_of_kloosterveen
     name: The Bell of Kloosterveen
     kind: personal
     summary: A bell that rings by itself at the Blackmere, and Wendela's fear of the water.
     givers: [npc_wendela]
+    helpers: [npc_ansfried]
+    starts: { talk: [npc_wendela], when: [{ flag: personal_the_bell_of_kloosterveen }] }
+    ask: "At night I hear a bell. From the Blackmere, where the old chapel of Kloosterveen went down in the flood. My brother drowned there when we were children. I can't go near the water. But the bell won't stop."
+    stages:
+      - id: the_bell
+        text: A bell rings under the Blackmere at night. Wendela says it's the bell of the old Kloosterveen chapel, sunk in the flood, and that her brother drowned there.
+    actions:
+      - id: dive_bell
+        say: ['(?:dive|swim|search|look) (?:down )?(?:for )?(?:the )?bell(?: .*)?']
+        at: [loc_blackmere_open_water, loc_blackmere_hookstone]
+        check: { skill: athletics, dc: 17 }
+        text: Three dives, and on the third your hand closes on bronze, green and cold. You get a rope round it, and half Veenhoek helps haul it out. It rings once, on the stones, and then never by itself again.
+        fail_text: The water is black and cold and you come up gasping with nothing but weed.
+        effects: [{ set: bell_raised }]
+      - id: face_water
+        say: ['(?:hold wendela.?s hand|stay with wendela|help wendela face the water|take wendela.?s hand)(?: .*)?']
+        at: [blackmere]
+        with: npc_wendela
+        check: { skill: persuasion, dc: 15 }
+        text: You stand with her on the shore a long time. When the bell rings, she doesn't run. She says her brother's name out loud, twice, and the bell stops.
+        fail_text: Wendela turns and walks away fast, back towards the road, and won't look back.
+        effects: [{ set: wendela_faced_water }]
+      - id: ask_mass
+        say: ['ask (?:the )?prior (?:to|for) (?:say|hold|a) (?:a )?mass(?: .*)?', 'ask ansfried (?:to|for) (?:say|hold|bless|a mass)(?: .*)?']
+        with: npc_ansfried
+        when: [{ money: 40 }]
+        not_yet: A mass for the drowned asks a gift for the poor box. Five stuivers, the prior says gently.
+        text: Ansfried says a mass for the drowned of the old chapel, with Wendela kneeling at the front. The bell rings once more that night, softly, and then not again.
+        effects: [{ pay: -40 }, { set: mass_said }]
+    outcomes:
+      - id: raised
+        name: The bell raised
+        text: The bell of old Kloosterveen hangs in the priory again, and Wendela sleeps.
+        when: [{ flag: bell_raised }]
+        effects: [{ relation: npc_wendela, affinity: 20, trust: 15 }, { relation: npc_ansfried, affinity: 15 }]
+      - id: faced
+        name: Faced
+        text: Wendela faced the water, and the bell stopped for her. She is gentler since, people say.
+        when: [{ flag: wendela_faced_water }]
+        effects: [{ relation: npc_wendela, affinity: 25, trust: 20 }]
+      - id: blessed
+        name: A mass for the drowned
+        text: The drowned of old Kloosterveen have had their mass, and the bell is quiet.
+        when: [{ flag: mass_said }]
+        effects: [{ relation: npc_wendela, affinity: 15, trust: 10 }]
 
   - id: the_road_to_graafhaven
     name: The Road to Graafhaven
@@ -111,3 +1342,45 @@ quests:
     summary: To the city, with or against her mother.
     givers: [npc_geesje]
     opponents: [npc_trijntje]
+    starts: { talk: [npc_geesje], when: [{ flag: personal_the_road_to_graafhaven }] }
+    ask: "I'm twenty and I've never been further than Waagdam. Mother needs me at the Goose, she says. She'd need me at the Goose if I were fifty. I want to see Graafhaven. With her blessing, or without it."
+    stages:
+      - id: the_road
+        text: Geesje wants to go to Graafhaven, with or without her mother's blessing.
+    actions:
+      - id: persuade_mother
+        say: ['(?:ask|persuade|convince|tell) trijntje (?:to let geesje go|about graafhaven|about geesje)(?: .*)?', 'speak (?:to trijntje )?for geesje(?: .*)?']
+        with: npc_trijntje
+        check: { skill: persuasion, dc: 17 }
+        text: "Trijntje sits down on the bench, which you have never seen her do. \"I went to Graafhaven at her age,\" she says. \"I came back. She'll come back.\" She doesn't sound sure."
+        fail_text: '"She has a place here," Trijntje says. "That''s more than most have."'
+        effects: [{ set: trijntje_lets_go }]
+      - id: help_leave
+        say: ['help geesje (?:leave|run away|go|get away)(?: .*)?', '(?:take|put) geesje (?:on|onto) the barge(?: .*)?']
+        at: [loc_veenhoek_quay]
+        with: npc_geesje
+        text: The barge comes in at dawn. Geesje has one bag and doesn't look back until the quay is a smudge in the mist.
+        effects: [{ set: geesje_ran }, { vanish: npc_geesje }]
+      - id: find_place
+        say: ['(?:find|ask for|arrange) (?:a )?(?:place|position|job|work) for geesje(?: .*)?', 'ask dirck (?:to take|about) geesje(?: .*)?']
+        with: npc_dirck
+        check: { skill: persuasion, dc: 14 }
+        text: "Dirck scratches his chin. \"A clerk who can count and isn't afraid of skippers? At the Waag? Why not.\" Waagdam isn't Graafhaven, but it's a start, and a road runs from it."
+        fail_text: '"I''ve no room for a girl from an inn," Dirck says.'
+        effects: [{ set: geesje_placed }]
+    outcomes:
+      - id: with_blessing
+        name: With her blessing
+        text: Geesje will go to Graafhaven in spring, with her mother's blessing and a letter to a cousin.
+        when: [{ flag: trijntje_lets_go }]
+        effects: [{ relation: npc_geesje, affinity: 20, trust: 15 }, { relation: npc_trijntje, affinity: 5 }]
+      - id: without
+        name: Without it
+        text: Geesje took the barge at dawn. Trijntje runs the Goose alone now and doesn't talk about it.
+        when: [{ flag: geesje_ran }]
+        effects: [{ relation: npc_trijntje, affinity: -25 }, { grievance: npc_trijntje, line: "You put her on that barge. I know it was you." }]
+      - id: a_start
+        name: A start
+        text: Geesje keeps the books at the Waag in Waagdam. It isn't the city, but she's on her way.
+        when: [{ flag: geesje_placed }]
+        effects: [{ relation: npc_geesje, affinity: 15, trust: 15 }]

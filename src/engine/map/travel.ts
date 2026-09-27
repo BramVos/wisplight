@@ -271,6 +271,7 @@ export function hexLocation(world: World, id: string): Location | undefined {
     tags,
     aliases: [],
     description: { day: LAND[cell.land] },
+    variants: [],
     exits: {},
     objects: [],
     services: [],

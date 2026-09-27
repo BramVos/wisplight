@@ -1,6 +1,9 @@
 import { parse } from 'yaml'
 import { z } from 'zod'
 import { CreatureSchema, EncounterSchema, RulesSchema, type Creature, type Effect, type Encounter, type Rules, type Talent } from './rules/schema'
+import { QuestBodySchema } from './quests/schema'
+import { checkQuests } from './quests/check'
+import { PlanSchema, type Plan } from './quests/plans'
 
 // Content is plain YAML in content/. This module parses and validates it
 // without touching the file system, so it runs in Node and in the browser.
@@ -174,6 +177,8 @@ export const LocationSchema = z.object({
   aliases: z.array(z.string()).default([]),
   summary: z.string().optional(),
   description: z.object({ day: z.string(), night: z.string().optional() }),
+  /** Other descriptions once a flag is set: the doorstep without the cat, once Fenna is home. */
+  variants: z.array(z.object({ flag: z.string(), day: z.string(), night: z.string().optional() }).strict()).default([]),
   exits: z.partialRecord(z.enum(DIRECTIONS), Exit).default({}),
   objects: z.array(ObjectInstanceSchema).default([]),
   services: z.array(ServiceSchema).default([]),
@@ -365,6 +370,10 @@ export const NpcSchema = z.object({
     })
     .strict()
     .optional(),
+  /** Not in the world at the start: under a curse, found or freed by a quest. */
+  absent: z.boolean().default(false),
+  /** Fights with the numbers of a creature from the bestiary (the Haakman, Black Mathijs). */
+  creature: z.string().optional(),
   /** Open to romance (FO, chapter 8; Wereldboek, "Romance"): with whom, from which attitude. */
   romance: z.object({ open_to: z.enum(['anyone', 'women', 'men', 'nobody']), from: z.enum(['Friendly', 'Warm']).default('Warm'), note: z.string().optional() }).strict().optional(),
   relations: z.array(RelationSchema).default([]),
@@ -460,16 +469,18 @@ export type News = z.infer<typeof NewsSchema>
  * arrives (M7): who has a role in it. The death of someone with a role ends or
  * changes the quest, and the chronicler reacts at once.
  */
-export const QuestSchema = z.object({
-  id: z.string().regex(/^[a-z0-9_]+$/),
-  name: z.string(),
-  kind: z.enum(['main', 'request', 'mystery', 'bargain', 'threat', 'discovery', 'conflict', 'social', 'trial', 'personal']),
-  summary: z.string(),
-  /** NPC ids. People who are not in the content yet stay out until they are. */
-  givers: z.array(z.string()).default([]),
-  helpers: z.array(z.string()).default([]),
-  opponents: z.array(z.string()).default([]),
-})
+export const QuestSchema = z
+  .object({
+    id: z.string().regex(/^[a-z0-9_]+$/),
+    name: z.string(),
+    kind: z.enum(['main', 'request', 'mystery', 'bargain', 'threat', 'discovery', 'conflict', 'social', 'trial', 'personal']),
+    summary: z.string(),
+    /** NPC ids. People who are not in the content yet stay out until they are. */
+    givers: z.array(z.string()).default([]),
+    helpers: z.array(z.string()).default([]),
+    opponents: z.array(z.string()).default([]),
+  })
+  .extend(QuestBodySchema.shape)
 export type Quest = z.infer<typeof QuestSchema>
 
 // The chance that someone knows a topic, by fame and distance (FO, chapter 5). The designer can tune it per world.
@@ -573,6 +584,7 @@ const FileSchema = z
     factions: z.array(FactionSchema).optional(),
     realms: z.array(RealmSchema).optional(),
     tensions: z.array(TensionSchema).optional(),
+    plans: z.array(PlanSchema).optional(),
     creatures: z.array(CreatureSchema).optional(),
     encounters: z.array(EncounterSchema).optional(),
   })
@@ -603,6 +615,7 @@ export interface Content {
   factions: Map<string, Faction>
   realms: Map<string, Realm>
   tensions: Tension[]
+  plans: Map<string, Plan>
   /** The chronicler's working instruction (content/CHRONICLER.md), if there is one. */
   chronicler?: string
 }
@@ -642,6 +655,7 @@ export function loadContent(files: ContentFile[]): Content {
     factions: new Map<string, Faction>(),
     realms: new Map<string, Realm>(),
     tensions: [] as Tension[],
+    plans: new Map<string, Plan>(),
   }
 
   let chronicler: string | undefined
@@ -681,6 +695,7 @@ export function loadContent(files: ContentFile[]): Content {
     addAll(content.factions, data.factions, (v) => v.id, file.path, 'faction', problems)
     addAll(content.realms, data.realms, (v) => v.id, file.path, 'realm', problems)
     content.tensions.push(...(data.tensions ?? []))
+    addAll(content.plans, data.plans, (v) => v.id, file.path, 'plan', problems)
     if (data.rules) {
       if (rules) problems.push(`${file.path}: the rules are defined twice`)
       rules = data.rules
@@ -690,6 +705,7 @@ export function loadContent(files: ContentFile[]): Content {
   const world = worlds[0]
   if (worlds.length !== 1) problems.push(`expected exactly one world, found ${worlds.length}`)
   problems.push(...checkReferences(world, content))
+  problems.push(...checkQuests({ ...content, ...(rules ? { rules } : {}) }))
   if (rules) problems.push(...checkRules(rules, content))
   if (problems.length > 0 || !world) throw new ContentError(problems)
   return { world, ...content, ...(rules ? { rules } : {}), ...(chronicler ? { chronicler } : {}) }

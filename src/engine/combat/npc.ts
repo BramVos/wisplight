@@ -1,7 +1,7 @@
 import { callName } from '../content'
 import { companionOf, characterFor } from '../social/companions'
 import type { World } from '../world'
-import { characterFighter } from './combat'
+import { characterFighter, creatureFighter } from './combat'
 import type { Fighter } from './types'
 
 // People in a fight (FO, chapter 12 and 13): a companion fights with its own
@@ -16,6 +16,14 @@ export function npcFighter(world: World, npcId: string, side: 'party' | 'foes', 
   const state = world.npcState(npcId)
   const name = callName(npc)
   const companion = companionOf(world, npcId)
+  // A creature of the bestiary fights with its own numbers (the Haakman, Black Mathijs).
+  if (npc.creature && world.content.creatures.has(npc.creature)) {
+    const f = creatureFighter(world.content, npc.creature, id, name, 0)
+    f.npc = npcId
+    f.side = side
+    f.hp = Math.max(1, f.maxHp - (state.wounds ?? 0))
+    return f
+  }
   if (companion || npc.fighter) {
     const character = companion?.character ?? characterFor(world, npcId)
     if (!companion) character.hp = Math.max(1, character.hp - (state.wounds ?? 0))

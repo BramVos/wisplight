@@ -36,3 +36,91 @@ locations:
         The weirs are north, if you can find them.
     exits:
       north: { to: loc_blackmere_weirs, minutes: 10 }
+      west: { to: loc_blackmere_willows, minutes: 5 }
+      south: { to: loc_blackmere_hookstone, minutes: 5 }
+      east: { to: loc_blackmere_channel, minutes: 10 }
+
+  - id: loc_blackmere_willows
+    name: The Drowned Willows
+    area: blackmere
+    tags: [wilderness, haunted, "hazard:bog"]
+    aliases: [drowned willows, willows]
+    summary: Old willows standing dead in the shallows of the Blackmere.
+    description:
+      day: |
+        You wade out among the drowned willows, and the mud takes your feet to
+        the ankle at every step. The trees are long dead, grey and split, and
+        their bare branches hang down to the water. Up close they creak,
+        though the air is still, and it is hard not to hear voices in it. The
+        shore is back to the east.
+      night: |
+        Among the drowned willows the dark is full of shapes, and every one
+        of them looks like a man standing up to his waist in the water. The
+        mud sucks at your boots. The shore is east.
+    exits:
+      east: { to: loc_blackmere_shore, minutes: 5 }
+
+  - id: loc_blackmere_hookstone
+    name: The Haaksteen
+    area: blackmere
+    tags: [wilderness, haunted, fae]
+    aliases: [haaksteen, hook stone, hookstone, offering stone]
+    summary: A grey stone in the shallows of the Blackmere, where people leave bread and beer for the Haakman at the new moon.
+    description:
+      day: |
+        A grey stone stands a little way out in the shallows, flat on top,
+        and the water round it is darker than anywhere else. On it lie a crust
+        of bread gone soft and a cup with a little beer left in it, gifts for
+        the [Haakman], and the top of the stone is greasy with older ones. It
+        smells of wet stone and sour beer. The shore is north; south of the
+        stone, the bottom drops away into deep water.
+      night: |
+        The stone is a pale shape in the black water. Now and then the water
+        beside it moves, slowly, as if something large has turned over
+        underneath. You smell sour beer. The shore is north.
+    exits:
+      north: { to: loc_blackmere_shore, minutes: 5 }
+      south: { to: loc_blackmere_open_water, minutes: 15 }
+
+  - id: loc_blackmere_channel
+    name: The Drainage Channel
+    area: blackmere
+    tags: [wilderness, "hazard:bog"]
+    aliases: [drainage channel, mill channel, channel]
+    summary: A straight channel dug from the Blackmere towards Molenend, where the mill draws the water off and the mere is shrinking.
+    description:
+      day: |
+        A channel has been dug from the mere as straight as a stretched rope,
+        running north towards [Molenend] and the mill that draws the water
+        off. Along the shore the old waterline shows as a dark band on the
+        reeds, well above the water, and below it lies a strip of raw black
+        mud that stinks of rot. Dead mussels crack under your boots. The
+        shore is back to the west.
+      night: |
+        The channel is a black line cut into the dark, and water trickles
+        along it towards the north with a small, steady sound. The mud on
+        either side breathes out a smell of rot. The shore is west.
+    exits:
+      west: { to: loc_blackmere_shore, minutes: 10 }
+
+  - id: loc_blackmere_open_water
+    name: The Open Water
+    area: blackmere
+    tags: [wilderness, haunted, hazard:deep_water]
+    aliases: [open water, middle of the mere]
+    summary: The deep black water in the middle of the Blackmere, the Haakman's own.
+    description:
+      day: |
+        Past the stone the bottom drops away, and you are up to your chest in
+        water so cold it hurts, then over your head at a single misstep. The
+        water is black and clear at once, and far below you something pale
+        lies on the bottom that could be a branch, or bones. There is no
+        sound out here but your own breathing and the lap of the water. The
+        stone and the shallows are back to the north.
+      night: |
+        Out on the open water the dark is total, above and below. The cold
+        climbs your legs. Something brushes past your knee, slow and
+        deliberate, and moves away. The shallows are north, if you can still
+        tell which way north is.
+    exits:
+      north: { to: loc_blackmere_hookstone, minutes: 15 }

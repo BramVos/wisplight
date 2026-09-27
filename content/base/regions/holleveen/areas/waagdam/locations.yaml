@@ -283,8 +283,10 @@ locations:
         sells:
           rye_grain: { stock: 30, target: 40 }
           flour: { stock: 5, target: 20 }
+          sailcloth: { stock: 3, target: 3 }
         supply:
           - { item: rye_grain, amount: 30, every: week, weekday: Maandag, at: 6 }
+          - { item: sailcloth, amount: 3, every: week, weekday: Maandag, at: 6 }
           - { item: flour, amount: 6, every: day, at: 6, requires: { object: loc_molenend_mill/de_zwaan, state: { broken: false } } }
         demand:
           - { item: rye_grain, amount: 3, from: 8, to: 17 }

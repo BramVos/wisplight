@@ -30,6 +30,8 @@ export class World {
   aiLive = false
   /** Things the player should be told after this command: experience, a patron's mood. Not saved. */
   notices: string[] = []
+  /** Deaths since the engine last looked, for the quests (not saved: handled in the same step). */
+  deaths: string[] = []
 
   constructor(
     readonly content: Content,
@@ -95,7 +97,7 @@ export class World {
 
   /** Alive and somewhere: not a note on a journey or far away. */
   present(id: string): boolean {
-    return this.alive(id) && !this.state.npcs[id]!.note
+    return !this.state.npcs[id]?.absent && this.alive(id) && !this.state.npcs[id]!.note
   }
 
   /** Someone who can serve is on the premises (the location itself or listed rooms). */
@@ -132,7 +134,8 @@ export class World {
   }
 
   route(from: string, to: string): Route | undefined {
-    const key = `${from}>${to}`
+    const closed = this.state.closed ? Object.keys(this.state.closed).join(',') : ''
+    const key = `${from}>${to}${closed ? `#${closed}` : ''}`
     if (this.routes.has(key)) return this.routes.get(key)
     const result = this.dijkstra(from, to)
     this.routes.set(key, result)
@@ -158,6 +161,8 @@ export class World {
       if (current === to) break
       for (const [direction, exit] of Object.entries(this.location(current).exits)) {
         if (!exit) continue
+        // A route closed by a flood or a war (design: effect plans) is no way through.
+        if (this.state.closed?.[[current, exit.to].sort().join('|')]) continue
         const next = best + exit.minutes
         if (next < (dist.get(exit.to) ?? Infinity)) {
           dist.set(exit.to, next)

@@ -129,7 +129,7 @@ export function spreadNews(world: World): void {
   const byPlace = new Map<string, string[]>()
   for (const id of Object.keys(world.state.npcs).sort()) {
     const npc = world.state.npcs[id]!
-    if (npc.activity === 'asleep' || npc.dead || npc.note) continue
+    if (npc.activity === 'asleep' || npc.dead || npc.note || npc.absent) continue
     const list = byPlace.get(npc.location) ?? []
     list.push(id)
     byPlace.set(npc.location, list)

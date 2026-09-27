@@ -1,6 +1,7 @@
 import { isMap, isSeq, parseDocument } from 'yaml'
 import { ContentError, loadContent, type Content, type ContentFile } from './content'
 import { regionMap } from './map/region'
+import { questWarnings } from './quests/check'
 
 // The world builder's view of the content, and how a change goes in (FO,
 // chapter 15). Pure: it works on the texts of the content files, so the
@@ -92,7 +93,7 @@ export function builderView(files: ContentFile[]): BuilderData {
 
 /** Things that load but deserve a look (FO, chapter 15, "Schema's en validatie"). */
 export function warnings(content: Content): string[] {
-  const out: string[] = []
+  const out: string[] = [...questWarnings(content)]
   // Reachability over exits from the start, and from every edge on the region map (reached across country).
   const roots = [content.world.start.location, ...[...content.locations.values()].filter((l) => l.tags.includes('edge') && (l.pos ?? content.areas.get(l.area)?.pos)).map((l) => l.id)]
   const reached = new Set<string>(roots)

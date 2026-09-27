@@ -6,6 +6,9 @@ import type { Character } from './rules/character'
 import type { Clock } from './rules/player'
 import type { Companion } from './social/companions'
 import type { Crime } from './social/crime'
+import type { QuestState } from './quests/engine'
+import type { PlaceStateName } from './quests/schema'
+import type { PlanState } from './quests/plans'
 
 // Everything that changes during play lives in GameState. It is plain JSON:
 // a savegame is this object, and a replay rebuilds it from the input log.
@@ -174,6 +177,8 @@ export interface NpcState {
   left?: { location: string; t: number }
   /** Travelling with the player as a companion: the simulation leaves it be. */
   following?: boolean
+  /** Not in the world (yet): under a curse, or gone for good until a quest brings them back. */
+  absent?: boolean
   /** The day the AI last planned for this NPC, at getting up. */
   plannedDay?: number
   /**
@@ -256,6 +261,8 @@ export interface PlayerState {
   riderPrice?: boolean
   /** When each encounter last happened. */
   encounters?: Record<string, number>
+  /** Conditions on the player that wear off, and when. */
+  conditionsUntil?: Record<string, number>
 }
 
 export interface ServiceState {
@@ -367,6 +374,20 @@ export interface GameState {
   distracted?: Record<string, number>
   /** Coincidences already noticed, so each is told once. */
   coincidences?: Record<string, number>
+  /** Written quests in play (FO, chapter 14), and the flags quests and the world set. */
+  questlog?: Record<string, QuestState>
+  flags?: Record<string, string | number | boolean>
+  /** Places whose state changed: flooded, damaged, destroyed, abandoned, occupied, drained. */
+  places?: Record<string, { state: PlaceStateName; since: number }>
+  /** Effect plans in progress (design: grote gebeurtenissen), and plans waiting to start. */
+  plans?: PlanState[]
+  pendingPlans?: string[]
+  /** Routes closed by an event: exits that cannot be used, with the reason. */
+  closed?: Record<string, string>
+  /** Scarcity: what comes in of a thing, as a share of what came before. */
+  market?: Record<string, number>
+  /** The news of the day per area, set by an effect plan. */
+  areaNews?: Record<string, string>
   /** The fight in progress (FO, chapter 12). */
   combat?: Combat
   /** Progress clocks: threats and long jobs (FO, chapter 11). */
@@ -379,6 +400,7 @@ export const serviceKey = (location: string, service: string) => `${location}#${
 
 export function newNpcState(npc: Npc, now: number): NpcState {
   return {
+    ...(npc.absent ? { absent: true } : {}),
     location: npc.home,
     money: npc.money,
     inventory: { ...npc.inventory },

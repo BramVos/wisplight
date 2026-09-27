@@ -131,12 +131,6 @@ npcs:
         role: acquaintance
         bond: -1
         note: The sister thinks your herbs are the Old Powers' work.
-      - to: cat_widow
-        pronoun: she
-        role: teacher
-        bond: 1
-        private: true
-        note: You were her apprentice once. You parted badly and want to make peace before you die.
 
   - id: npc_wouter
     name: Wouter Aalman
@@ -389,3 +383,40 @@ npcs:
         bond: 3
         status: missing
         note: Your big sister. You miss her.
+
+  - id: npc_fenna
+    name: Fenna Visser
+    short: Fenna Visser
+    pronoun: she
+    age: 15
+    profession: child
+    home: loc_visser_house
+    household: hh_visser
+    child: true
+    absent: true
+    fame: 1
+    appearance: A thin, sharp-eyed girl of fifteen with one white streak in her hair, like a paw print.
+    personality: { warmth: 1, courage: 2, honesty: -1, temper: 1, curiosity: 3, diligence: -1 }
+    values: { freedom: 2 }
+    quirks: [restless]
+    speech: "Quick and cheeky, then suddenly ashamed. Still says 'we' about the cats."
+    aliases: [fenna, girl]
+    public_facts:
+      - Fenna Visser is the daughter of Jan and Grietje. She was missing for days.
+    examples:
+      - "I only wanted a charm. For Klaas. It's stupid, I know it's stupid."
+      - "You get used to the whiskers. It's the fish I can't forgive."
+    money: 0
+    knows_areas: [veenhoek, kattenbroek, molenend]
+    relations:
+      - to: npc_jan_visser
+        role: parent
+        bond: 3
+      - to: npc_grietje_visser
+        role: parent
+        bond: 3
+      - to: npc_klaas
+        role: sweetheart
+        bond: 1
+        private: true
+        note: You went to the widow for a love charm for Klaas, and paid with a lie.

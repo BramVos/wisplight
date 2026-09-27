@@ -1,0 +1,32 @@
+npcs:
+  - id: npc_sijbrand
+    name: Sijbrand
+    short: Heemraad Sijbrand
+    pronoun: he
+    age: 47
+    profession: dyke_reeve
+    home: loc_oude_zijl_dykehouse
+    work: loc_oude_zijl_sluice
+    fame: 1
+    appearance: A weathered man in a tarred coat, with a measuring rod he uses as a walking stick.
+    personality: { warmth: 0, courage: 1, honesty: 1, temper: 0, curiosity: 0, diligence: 3 }
+    values: { safety: 3, law: 2 }
+    quirks: [worried]
+    patron: lantern
+    speech: "Plain and heavy, like a man who counts storms. 'Who will not dyke, must yield.'"
+    aliases: [sijbrand, heemraad, dyke reeve, dijkgraaf]
+    public_facts:
+      - Sijbrand is the heemraad of the Dyke Board at the Oude Zijl.
+      - He wants the old sluice mended before winter.
+    examples:
+      - "Who will not dyke, must yield. My grandfather said it, and his, back to the Wolf."
+      - "The sluice holds. For now. Everything holds for now."
+    money: 180
+    knows_areas: [oude_zijl, veenhoek, drowned_goose, roads]
+    secrets:
+      - id: sluice_fails
+        text: He knows the sluice will not hold if the polder sinks.
+        hint: He speaks of the sluice as of a sick man.
+        admission: "If they drain the fen, the peat sinks, and the Vaart stands higher than the land. The sluice was never built for that. One storm."
+        dc: 18
+        about: [drainage, water_wolf]
