@@ -26,6 +26,32 @@ import { parseCommand, parseDirection } from './parser'
 import { advance } from './simulation'
 import { createInitialState, fitStateToContent, type GameState, type WorldEvent } from './state'
 import { World } from './world'
+import { beginFight, fightView, playerCommand } from './combat/flow'
+import { foeXp } from './combat/balance'
+import type { Arena } from './combat/combat'
+import type { Combat } from './combat/types'
+import { maxHp, type CreationData } from './rules/character'
+import {
+  character,
+  clockLine,
+  createCommand,
+  creationHelp,
+  equipCommand,
+  favour,
+  findPurse,
+  gainXp,
+  greyRider,
+  levelCommand,
+  makeCharacter,
+  patronCommand,
+  pray,
+  rest,
+  rite,
+  sheetLines,
+  trainCommand,
+  XP,
+  type Clock,
+} from './rules/player'
 
 export type { Output, OutputKind } from './commands'
 
@@ -77,6 +103,10 @@ export interface Status {
   journal: { people: JournalEntry[]; places: JournalEntry[]; events: JournalEntry[]; lore: JournalEntry[]; things: JournalEntry[]; quests: JournalEntry[] }
   /** The map round the player: rows of characters, and a class code per character (FO, chapter 4). */
   map?: { rows: string[]; classes: string[] }
+  /** The character in short, for the side panel (FO, chapter 11). */
+  character?: { name: string; title: string; level: number; hp: number; maxHp: number; xp: number; next: number; made: boolean; canLevel: boolean; shield: boolean }
+  /** The fight in progress (FO, chapter 12). */
+  combat?: ReturnType<typeof fightView> & { over?: string; prisoners?: string[] }
 }
 
 const MAP_CODES: Record<string, string> = { fen: 'f', water: 'w', woods: 't', heath: 'h', fields: 'd', way: 'y', place: 'p', zone: 'z', you: '@', unknown: 'u' }
@@ -143,6 +173,7 @@ export class Engine {
     this.dialogue.syncNews()
     this.eventMark = state.eventSeq
     this.setLlm(options.llm)
+    character(this.world)
     if (!options.state) {
       seedNews(this.world)
       this.arrive()
@@ -169,11 +200,16 @@ export class Engine {
   private arrive(): void {
     const location = this.world.location(this.state.player.location)
     const seen = (this.state.player.seen ??= [])
-    if (!seen.includes(location.id)) seen.push(location.id)
+    if (!seen.includes(location.id)) {
+      seen.push(location.id)
+      // A discovery is experience (FO, chapter 11); the start does not count.
+      if (seen.length > 1 && this.content.locations.has(location.id)) gainXp(this.world, XP.place, `you found ${location.name}`)
+    }
     const visited = (this.state.player.visited ??= [])
     if (visited.includes(location.area)) return
     visited.push(location.area)
     const area = this.content.areas.get(location.area)
+    if (visited.length > 1 && area && area.kind !== 'route') gainXp(this.world, XP.area, `you came to ${area.name}`)
     if (!area || area.kind === 'route' || area.kind === 'wilderness') return
     const clock = new GameClock(this.world.now).parts
     recordFact(this.world, {
@@ -206,6 +242,7 @@ export class Engine {
   /** A page of the journal: what the player knows about a topic, with sources and links. */
   page(id: string): JournalPage | undefined {
     if (id === 'map') return { id, kind: 'map', name: 'The Holleveen as you know it', lines: this.mapText().split('\n'), sources: [], links: [] }
+    if (id === 'sheet') return { id, kind: 'sheet', name: this.state.player.character?.name ?? 'You', lines: [...sheetLines(this.world), ...this.clockLines()], sources: [], links: [] }
     this.dialogue.syncNews()
     return journalPage(this.world, this.topics, id)
   }
@@ -389,14 +426,17 @@ export class Engine {
     if (!text) return []
     this.record({ t: this.world.now, k: 'cmd', v: text })
     for (const listener of this.listeners) listener({ kind: 'in', t: this.world.now, text })
-    const outputs = await this.route(text)
+    const before = this.state.player.location
+    const outputs = this.state.combat ? await this.inFight(text) : await this.route(text)
     const talk = this.state.talk
     if (talk && this.state.npcs[talk.npc]?.location !== this.state.player.location) this.state.talk = undefined
     this.dialogue.learn(this.state.player.location, areaTopicId(this.content, this.world.location(this.state.player.location).area))
     this.arrive()
     this.lookAround()
+    if (before !== this.state.player.location) outputs.push(...findPurse(this.world), ...this.maybeEncounter(before))
     settleRuns(this.world)
     settleChoices(this.world)
+    outputs.push(...this.world.notices.splice(0).map((text) => ({ kind: 'system' as const, text })))
     return this.shown(outputs)
   }
 
@@ -485,6 +525,26 @@ export class Engine {
       }
       case 'map':
         return [{ kind: 'system', text: this.mapText() }]
+      case 'sheet':
+        return [{ kind: 'system', text: sheetLines(this.world).join('\n') }]
+      case 'create':
+        return createCommand(this.world, command.args)
+      case 'level':
+        return levelCommand(this.world, command.args)
+      case 'train':
+        return trainCommand(this.world, command.args.join(' '))
+      case 'wield':
+        return equipCommand(this.world, command.args.join(' ').replace(/^(the|a|an|my)\s+/i, ''))
+      case 'devote':
+        return patronCommand(this.world, command.args.join(' '))
+      case 'pray':
+        return pray(this.world)
+      case 'rite':
+        return rite(this.world)
+      case 'clocks':
+        return [{ kind: 'system', text: this.clockLines().join('\n') || 'No clocks are running that you know of.' }]
+      case 'attack':
+        return [{ kind: 'error', text: this.content.rules ? 'There is nothing here to fight. (Quarrels with people are for another day.)' : 'There is nothing here to fight.' }]
       case 'follow': {
         const words = command.args.join(' ').toLowerCase()
         const windWord = command.args.at(-1)
@@ -537,7 +597,8 @@ export class Engine {
 
   /** Lets game time pass without a command (the real-time clock). Returns what the player sees. */
   tick(minutes = 1): Output[] {
-    if (minutes <= 0) return []
+    // The clock stands still while the player chooses in a fight (FO, chapter 12).
+    if (minutes <= 0 || this.state.combat) return []
     const last = this.log.at(-1)
     if (last?.k === 'tick') last.v += minutes
     else this.log.push({ t: this.world.now, k: 'tick', v: minutes })
@@ -580,7 +641,21 @@ export class Engine {
         : undefined,
       journal,
       map: this.compactMap(),
+      ...this.characterStatus(),
     }
+  }
+
+  private characterStatus(): Pick<Status, 'character' | 'combat'> {
+    const c = this.state.player.character
+    const out: Pick<Status, 'character' | 'combat'> = {}
+    if (c && this.content.rules) {
+      const klass = this.content.rules.classes.find((k) => k.id === c.class)
+      const next = c.level * this.content.rules.xp_per_level
+      out.character = { name: c.name, title: `${klass?.name ?? c.class} ${c.level}`, level: c.level, hp: c.hp, maxHp: maxHp(this.content, c), xp: c.xp, next, made: Boolean(c.made), canLevel: c.level < 10 && c.xp >= next, shield: Boolean(c.gear.shield) }
+    }
+    const combat = this.state.combat
+    if (combat) out.combat = { ...fightView(this.arena(), combat), ...(combat.over ? { over: combat.over } : {}), ...(combat.prisoners ? { prisoners: combat.prisoners } : {}) }
+    return out
   }
 
   private compactMap(): Status['map'] {
@@ -755,14 +830,256 @@ export class Engine {
         const npc = this.state.npcs[npcId]!
         return [{ kind: 'system', text: `[build] ${callName(this.world.npc(npcId))}: ${tierOf(this.world, npcId)}, at ${this.world.location(npc.location).name}${npc.note ? `, note: ${npc.note.activity} (${npc.note.unrest})` : ''}.` }]
       }
+      case 'fight': {
+        // @fight goat_riders_toll, or @fight veenlijk 2: a fight here and now, for playtesting.
+        const id = rest[0] ?? ''
+        if (this.content.encounters.has(id)) return this.startEncounter(id)
+        if (!this.content.creatures.has(id)) return [{ kind: 'error', text: `@fight <encounter or creature> [count]: ${[...this.content.encounters.keys(), ...this.content.creatures.keys()].join(', ')}` }]
+        return this.startFight({ foes: [{ creature: id, count: Number(rest[1] ?? 1) || 1, range: 'near' }] })
+      }
+      case 'xp': {
+        gainXp(this.world, Number(rest[0]) || 0, 'the world builder says so')
+        return this.world.notices.splice(0).map((text) => ({ kind: 'system' as const, text }))
+      }
       default:
-        return [{ kind: 'error', text: 'Build commands: @kill <person> [how], @who-knows <topic>, @send <person> <place> [days], @where <person>.' }]
+        return [{ kind: 'error', text: 'Build commands: @kill <person> [how], @who-knows <topic>, @send <person> <place> [days], @where <person>, @fight <encounter or creature> [count], @xp <amount>.' }]
     }
+  }
+
+  // ------------------------------------------------------------ fights (FO, chapter 12)
+
+  /** The arena of a fight: the world's dice, the character, the pack, and where it is. */
+  private arena(): Arena {
+    const inventory = this.state.player.inventory
+    const here = this.world.location(this.state.player.location)
+    const hour = this.clock.parts.hour
+    return {
+      content: this.content,
+      rng: this.world.rng,
+      character: character(this.world)!,
+      items: {
+        count: (id) => inventory[id] ?? 0,
+        take: (id) => {
+          inventory[id] = (inventory[id] ?? 0) - 1
+          if (inventory[id]! <= 0) delete inventory[id]
+        },
+      },
+      where: { outdoors: !here.tags.includes('indoors'), fen: here.tags.some((t) => t === 'hazard:bog' || t === 'wilderness'), night: hour < 6 || hour >= 20 },
+    }
+  }
+
+  /** An encounter can start when the player comes to one of its places (FO, chapter 12, "Verloop"). */
+  private maybeEncounter(from: string): Output[] {
+    if (this.state.combat || this.state.talk || !this.content.rules) return []
+    const here = this.state.player.location
+    const area = this.content.locations.get(here)?.area
+    const hour = this.clock.parts.hour
+    for (const e of [...this.content.encounters.values()].sort((a, b) => a.id.localeCompare(b.id))) {
+      if (!e.places.includes(here) && !(area && e.places.includes(area))) continue
+      if (e.hours && !(e.hours[0] <= e.hours[1] ? hour >= e.hours[0] && hour < e.hours[1] : hour >= e.hours[0] || hour < e.hours[1])) continue
+      const last = this.state.player.encounters?.[e.id]
+      if (last !== undefined && this.world.now - last < e.again_after * 24 * 60) continue
+      if (this.world.rng.next('encounters') >= e.chance) continue
+      return this.startEncounter(e.id, from)
+    }
+    return []
+  }
+
+  private startEncounter(id: string, from?: string): Output[] {
+    const e = this.content.encounters.get(id)!
+    ;(this.state.player.encounters ??= {})[id] = this.world.now
+    return this.startFight({ encounter: e.id, ...(from ? { from } : {}), foes: e.foes.map((f) => ({ creature: f.creature, count: f.count, range: f.range, ...(f.joins ? { joins: f.joins } : {}) })) })
+  }
+
+  private startFight(setup: { encounter?: string; from?: string; foes: { creature: string; count: number; range: 'engaged' | 'near' | 'far'; joins?: number }[] }): Output[] {
+    if (!character(this.world)) return [{ kind: 'error', text: 'This world has no rules for fights.' }]
+    this.state.talk = undefined
+    const encounter = setup.encounter ? this.content.encounters.get(setup.encounter) : undefined
+    const { combat, lines } = beginFight(this.arena(), {
+      id: `fight_${this.world.now}`,
+      place: this.state.player.location,
+      ...(setup.from ? { from: setup.from } : {}),
+      ...(encounter ? { encounter } : {}),
+      foes: setup.foes,
+      now: this.world.now,
+    })
+    this.state.combat = combat
+    return [...lines, ...this.afterFight()]
+  }
+
+  /** A command while a fight is on: fight commands, a look at the fight, or the sheet. */
+  private async inFight(text: string): Promise<Output[]> {
+    const combat = this.state.combat!
+    const words = text.trim().toLowerCase()
+    if (combat.over) return this.prisoners(words)
+    if (/^(sheet|character|char|stats|i|inv|inventory)$/.test(words)) {
+      if (words.startsWith('i')) return runCommand(this.host, parseCommand(words))
+      return [{ kind: 'system', text: sheetLines(this.world).join('\n') }]
+    }
+    if (/^(l|look|status)$/.test(words)) return [{ kind: 'system', text: this.fightLines().join('\n') }]
+    const encounter = combat.encounter ? this.content.encounters.get(combat.encounter) : undefined
+    const result = playerCommand(this.arena(), combat, text, encounter?.flee_dc ?? 15)
+    const out: Output[] = [...result.lines]
+    if (combat.over) out.push(...this.afterFight())
+    else if (combat.actions > 0 && combat.round > 0 && fightView(this.arena(), combat).fighters.find((f) => f.id === 'player')?.state === 'up') out.push({ kind: 'system', text: `${combat.actions} action${combat.actions === 1 ? '' : 's'} left.` })
+    return out
+  }
+
+  fightLines(): string[] {
+    const combat = this.state.combat
+    if (!combat) return []
+    const view = fightView(this.arena(), combat)
+    return [
+      combat.parley ? 'Before blows.' : `Round ${view.round}.${view.momentum ? ` Momentum +${view.momentum}.` : ''} ${view.actions} action${view.actions === 1 ? '' : 's'} left.${view.subdue ? ' Fighting to subdue.' : ''}`,
+      ...view.fighters.map((f) => `  ${f.name.padEnd(24)} ${String(f.hp).padStart(3)}/${f.maxHp} ${f.state === 'up' ? '' : f.state}${f.distance ? ` [${f.distance}]` : ''}${f.conditions.length ? ` (${f.conditions.join(', ')})` : ''}`),
+    ]
+  }
+
+  /**
+   * After a fight: time passes, wounds are bound, experience and news. Those
+   * who gave up wait for the player's word; a death is a walk with the Grey Rider.
+   */
+  private afterFight(): Output[] {
+    const combat = this.state.combat
+    if (!combat?.over || combat.prisoners) return []
+    const c = character(this.world)!
+    const player = combat.fighters.find((f) => f.id === 'player')!
+    const encounter = combat.encounter ? this.content.encounters.get(combat.encounter) : undefined
+    const out: Output[] = []
+    const foes = combat.fighters.filter((f) => f.side === 'foes')
+    const names = foes.length ? [...new Set(foes.map((f) => this.content.creatures.get(f.creature ?? '')?.plural ?? f.name))] : []
+    const who = foes.length > 1 ? `the ${names[0]?.replace(/^the\s+/i, '')}` : (foes[0]?.name ?? 'them')
+    c.hp = player.state === 'up' ? player.hp : 0
+    for (const k of Object.keys(c.conditions)) if (k !== 'sickened' && k !== 'cursed' && k !== 'fen_fever' && k !== 'catform') delete c.conditions[k]
+    const minutes = Math.max(1, Math.ceil((combat.round * 6) / 60))
+    let fact: { title: string; precise: string; village: string; far: string; belang: number } | undefined
+    const place = this.world.location(combat.place)
+    const where = place.name
+    const belang = encounter?.news?.belang ?? 1
+    switch (combat.over) {
+      case 'won': {
+        const xp = foes.reduce((sum, f) => sum + foeXp(f.level, c.level), 0)
+        gainXp(this.world, xp, `you overcame ${who}`)
+        favour(this.world, 'fight_won')
+        fact = { title: `the stranger and ${who}`, precise: `The stranger fought ${who} at ${where} and won.`, village: `The stranger saw off ${who} at ${where}, they say.`, far: `Someone beat ${who} in the Holleveen.`, belang }
+        const prisoners = foes.filter((f) => (f.state === 'surrendered' || f.state === 'unconscious') && (f.kind === 'human' || f.kind === 'npc'))
+        if (prisoners.length) {
+          combat.prisoners = prisoners.map((f) => f.id)
+          const list = prisoners.map((f) => f.name).join(' and ')
+          out.push({ kind: 'system', text: `${list.charAt(0).toUpperCase()}${list.slice(1)} ${prisoners.length > 1 ? 'are' : 'is'} at your mercy. LET GO, BIND (for the schout) or KILL.` })
+        }
+        break
+      }
+      case 'talked': {
+        gainXp(this.world, Math.round(foes.reduce((sum, f) => sum + foeXp(f.level, c.level), 0) / 2), `you talked your way past ${who}`)
+        fact = { title: `the stranger and ${who}`, precise: `The stranger talked ${who} out of a fight at ${where}.`, village: `The stranger faced down ${who} at ${where} with words alone.`, far: `Someone talked their way past ${who}.`, belang: Math.max(1, belang - 1) }
+        break
+      }
+      case 'paid': {
+        const amount = Math.min(this.state.player.money, (encounter?.demand?.amount ?? 0) * (combat.round > 0 ? 2 : 1))
+        this.state.player.money -= amount
+        out.push({ kind: 'system', text: `You pay ${formatMoney(amount)}.` })
+        fact = { title: `the stranger paid ${who}`, precise: `The stranger paid ${who} ${formatMoney(amount)} to pass at ${where}.`, village: `${who.charAt(0).toUpperCase() + who.slice(1)} took toll from the stranger at ${where}.`, far: `${who.charAt(0).toUpperCase() + who.slice(1)} are taking toll again.`, belang: Math.max(1, belang - 1) }
+        break
+      }
+      case 'fled': {
+        favour(this.world, 'fled')
+        if (combat.from && this.content.locations.has(combat.from)) this.state.player.location = combat.from
+        fact = { title: `the stranger ran from ${who}`, precise: `The stranger ran from ${who} at ${where}.`, village: `The stranger ran from ${who} at ${where}, they say.`, far: `${who.charAt(0).toUpperCase() + who.slice(1)} were seen in the Holleveen.`, belang: Math.max(1, belang - 1) }
+        break
+      }
+      case 'surrendered':
+      case 'lost': {
+        const take = encounter?.surrender.take ?? (foes.some((f) => f.kind === 'human') ? 'half_money' : 'nothing')
+        const amount = take === 'all_money' ? this.state.player.money : take === 'half_money' ? Math.floor(this.state.player.money / 2) : 0
+        if (amount) {
+          this.state.player.money -= amount
+          out.push({ kind: 'system', text: `They take ${formatMoney(amount)}.` })
+        }
+        if (combat.over === 'surrendered' && encounter) out.push({ kind: 'narration', text: encounter.surrender.text })
+        fact = { title: `${who} and the stranger`, precise: `${who.charAt(0).toUpperCase() + who.slice(1)} beat the stranger at ${where}${amount ? ` and took ${formatMoney(amount)}` : ''}.`, village: `${who.charAt(0).toUpperCase() + who.slice(1)} robbed the stranger at ${where}.`, far: `${who.charAt(0).toUpperCase() + who.slice(1)} are robbing travellers in the Holleveen.`, belang }
+        break
+      }
+    }
+    if (fact) {
+      recordFact(this.world, {
+        kind: 'fight',
+        about: ['goat_riders', areaTopicId(this.content, place.area)].filter((t) => this.content.topics.has(t) && (t !== 'goat_riders' || foes.some((f) => f.creature === 'goat_rider' || f.creature === 'black_mathijs'))),
+        place: combat.place,
+        belang: fact.belang,
+        juice: 0.8,
+        title: fact.title,
+        text: { precise: fact.precise, village: fact.village, far: fact.far },
+      })
+    }
+    const dead = player.state === 'dead'
+    const down = !dead && player.state !== 'up'
+    if (!combat.prisoners) this.state.combat = undefined
+    out.push(...this.pass(minutes))
+    if (dead) {
+      this.state.combat = undefined
+      out.push(...greyRider(this.world, combat.place, (m) => this.pass(m)))
+      out.push(describeRoom(this.world))
+    } else if (down) {
+      c.hp = 1
+      out.push(...this.pass(60))
+      out.push({ kind: 'narration', text: 'You come round in the mud an hour later, aching, alive.' })
+    } else if (combat.over === 'fled') out.push(describeRoom(this.world))
+    return out
+  }
+
+  /** The player's word on those who gave up (FO, chapter 12, "Moreel en overgave"). */
+  private async prisoners(words: string): Promise<Output[]> {
+    const combat = this.state.combat!
+    const ids = combat.prisoners ?? []
+    const names = ids.map((id) => combat.fighters.find((f) => f.id === id)!.name)
+    const them = names.length > 1 ? 'them' : names[0]!
+    const place = this.world.location(combat.place)
+    const about = ['goat_riders', areaTopicId(this.content, place.area)].filter((t) => this.content.topics.has(t))
+    this.state.combat = undefined
+    const fact = (title: string, precise: string, village: string, belang: number) =>
+      recordFact(this.world, { kind: 'prisoners', about, place: combat.place, belang, juice: 0.8, title, text: { precise, village, far: village } })
+    if (/^(kill|finish|slay|dood)/.test(words)) {
+      favour(this.world, 'killed_surrendered')
+      fact(`the stranger killed a prisoner`, `The stranger killed ${them} after ${names.length > 1 ? 'they' : 'he'} had given up, at ${place.name}.`, `The stranger killed a man who had given up, at ${place.name}.`, 3)
+      return [{ kind: 'narration', text: `You do it. It is quick, and it is not clean, and ${them} will not get up again.` }]
+    }
+    if (/^(bind|tie|arrest|hand|take)/.test(words)) {
+      const rope = this.state.player.inventory['rope'] ?? 0
+      if (rope < 1) {
+        combat.prisoners = ids
+        this.state.combat = combat
+        return [{ kind: 'error', text: 'You have no rope to bind them with. LET GO or KILL.' }]
+      }
+      this.state.player.inventory['rope'] = rope - 1
+      if (this.state.player.inventory['rope'] === 0) delete this.state.player.inventory['rope']
+      favour(this.world, 'spared')
+      fact(`the stranger brought in a Goat-Rider`, `The stranger bound ${them} at ${place.name} and sent word to the schout, whose men came for ${names.length > 1 ? 'them' : 'him'}.`, `The stranger caught a robber on the tow path and handed him to the schout.`, 3)
+      return [{ kind: 'narration', text: `You bind ${them} with your rope and send a boy running for the schout's men. They come within the hour and take ${names.length > 1 ? 'them' : 'him'} away.` }]
+    }
+    favour(this.world, 'spared')
+    fact(`the stranger let a Goat-Rider go`, `The stranger let ${them} go at ${place.name}.`, `The stranger let one of the robbers go, they say.`, 1)
+    const released = /^(let|release|spare|free|go)/.test(words)
+    const out: Output[] = [{ kind: 'narration', text: released ? `You let ${them} go. ${names.length > 1 ? 'They go' : 'He goes'} without looking back.` : `While you turn away, ${names.join(' and ')} slip${names.length > 1 ? '' : 's'} off into the reeds.` }]
+    return released ? out : [...out, ...(await this.route(words))]
+  }
+
+  private clockLines(): string[] {
+    return Object.values(this.state.clocks ?? {}).map((c) => clockLine(c as Clock))
+  }
+
+  /** What the creation screen needs: the rules and the gear's names (FO, chapter 11, "Personage maken"). */
+  creationData(): CreationData | undefined {
+    const rules = this.content.rules
+    if (!rules) return undefined
+    const gear = new Set(rules.classes.flatMap((k) => Object.keys(k.gear)))
+    return { rules, items: Object.fromEntries([...gear].map((id) => [id, this.content.items.get(id)!])) }
   }
 
   /** Runs the world for some minutes and returns the events the player could see. */
   private pass(minutes: number): Output[] {
     advance(this.world, minutes)
+    rest(this.world, minutes)
     const here = this.state.player.location
     const seen = this.state.events.filter((e) => e.seq > this.state.seenSeq && e.location === here)
     this.state.seenSeq = this.state.eventSeq

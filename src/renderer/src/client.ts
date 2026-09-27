@@ -1,4 +1,4 @@
-import type { JournalPage, Output, Status } from '../../engine'
+import type { CreationData, JournalPage, Output, Status } from '../../engine'
 import type { Advice, TrialResult } from '../../node/ai/advisor'
 import type { AiLogEntry } from '../../node/ai/log'
 import type { BuilderData } from '../../node/builder'
@@ -6,7 +6,7 @@ import type { ModelInfo, ProviderId } from '../../node/ai/providers'
 import type { AiOverview } from '../../node/ai/service'
 import type { ChosenRole } from '../../node/ai/settings'
 
-export type { Advice, AiLogEntry, AiOverview, BuilderData, ChosenRole, JournalPage, ModelInfo, ProviderId, TrialResult }
+export type { Advice, AiLogEntry, AiOverview, BuilderData, ChosenRole, CreationData, JournalPage, ModelInfo, ProviderId, TrialResult }
 
 /** What the status bar shows about the AI: cost so far and whether calls go through. */
 export interface AiStatus {
@@ -56,6 +56,8 @@ export interface EngineClient {
   command(input: string): Promise<Reply>
   /** A page of the journal, or undefined for something the player does not know. */
   page(id: string): Promise<JournalPage | undefined>
+  /** The rules for the creation screen (FO, chapter 11), or undefined in a world without them. */
+  creation(): Promise<CreationData | undefined>
   /** The player's own log (desktop only) and the true chronicle, for the end of a game. */
   end(): Promise<{ log?: string; chronicle: string }>
   activity(): void
@@ -117,7 +119,7 @@ export async function createClient(): Promise<EngineClient> {
   let lastInput = -Infinity
   let held = false
   const listeners = new Set<(reply: Reply) => void>()
-  const paused = () => held || Boolean(engine.state.talk) || Date.now() - lastInput > IDLE_PAUSE_MS
+  const paused = () => held || Boolean(engine.state.talk) || Boolean(engine.state.combat) || Date.now() - lastInput > IDLE_PAUSE_MS
   const status = (): Reply['status'] => ({ ...engine.status(), paused: paused(), ai: bridge ? demo!.demoStatus() : undefined })
 
   // The chronicler writes in the background, as in the desktop app.
@@ -144,6 +146,7 @@ export async function createClient(): Promise<EngineClient> {
       return { outputs, status: status() }
     },
     page: async (id) => engine.page(id),
+    creation: async () => engine.creationData(),
     end: async () => ({ chronicle: engine.chronicle() }),
     activity: () => {
       lastInput = Date.now()

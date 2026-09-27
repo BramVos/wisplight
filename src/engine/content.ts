@@ -1,5 +1,6 @@
 import { parse } from 'yaml'
 import { z } from 'zod'
+import { CreatureSchema, EncounterSchema, RulesSchema, type Creature, type Effect, type Encounter, type Rules, type Talent } from './rules/schema'
 
 // Content is plain YAML in content/. This module parses and validates it
 // without touching the file system, so it runs in Node and in the browser.
@@ -40,6 +41,33 @@ export const ItemSchema = z.object({
   tags: z.array(z.string()).default([]),
   value: z.number().int().nonnegative(),
   food: z.number().int().min(0).max(100).optional(),
+  /** A weapon (FO, chapter 12): its damage die, and what a critical hit does. */
+  weapon: z
+    .object({
+      damage: z.string().regex(/^\d+d\d+$/),
+      kind: z.enum(['melee', 'ranged', 'thrown']).default('melee'),
+      light: z.boolean().default(false),
+      two_hands: z.boolean().default(false),
+      /** A critical hit: axes make bleed, clubs knock down, spears keep at a distance. */
+      crit: z.enum(['bleeding', 'prone', 'push', 'none']).default('none'),
+      /** How far a ranged weapon reaches. */
+      range: z.enum(['near', 'far']).default('far'),
+      /** Iron or cold iron: some spirits cannot bear it. */
+      iron: z.boolean().default(false),
+    })
+    .strict()
+    .optional(),
+  /** Armour or a shield: the defence it gives, and how much Grace still counts in it. */
+  armour: z
+    .object({
+      kind: z.enum(['light', 'medium', 'heavy', 'shield']),
+      defence: z.number().int().min(0).max(6),
+      cap: z.number().int().min(0).max(6).default(6),
+    })
+    .strict()
+    .optional(),
+  /** A remedy: what using it heals or cures (FO, chapter 11, "Aandoeningen"). */
+  remedy: z.object({ heal: z.string().regex(/^\d+d\d+([+-]\d+)?$/).optional(), cures: z.array(z.string()).default([]) }).strict().optional(),
 })
 export type Item = z.infer<typeof ItemSchema>
 
@@ -491,6 +519,9 @@ const FileSchema = z
     patterns: z.array(PatternSchema).optional(),
     quests: z.array(QuestSchema).optional(),
     regions: z.array(RegionSchema).optional(),
+    rules: RulesSchema.optional(),
+    creatures: z.array(CreatureSchema).optional(),
+    encounters: z.array(EncounterSchema).optional(),
   })
   .strict()
 
@@ -512,6 +543,10 @@ export interface Content {
   patterns: Map<string, Pattern>
   quests: Map<string, Quest>
   regions: Map<string, Region>
+  /** The rules of play (FO, chapters 11 and 12); a content set without them plays with a ready-made character. */
+  rules?: Rules
+  creatures: Map<string, Creature>
+  encounters: Map<string, Encounter>
   /** The chronicler's working instruction (content/CHRONICLER.md), if there is one. */
   chronicler?: string
 }
@@ -546,9 +581,12 @@ export function loadContent(files: ContentFile[]): Content {
     patterns: new Map<string, Pattern>(),
     quests: new Map<string, Quest>(),
     regions: new Map<string, Region>(),
+    creatures: new Map<string, Creature>(),
+    encounters: new Map<string, Encounter>(),
   }
 
   let chronicler: string | undefined
+  let rules: Rules | undefined
   for (const file of [...files].sort((a, b) => a.path.localeCompare(b.path))) {
     if (/(^|\/)CHRONICLER\.md$/.test(file.path)) {
       chronicler = file.text
@@ -579,13 +617,72 @@ export function loadContent(files: ContentFile[]): Content {
     addAll(content.patterns, data.patterns, (v) => v.id, file.path, 'pattern', problems)
     addAll(content.quests, data.quests, (v) => v.id, file.path, 'quest', problems)
     addAll(content.regions, data.regions, (v) => v.id, file.path, 'region', problems)
+    addAll(content.creatures, data.creatures, (v) => v.id, file.path, 'creature', problems)
+    addAll(content.encounters, data.encounters, (v) => v.id, file.path, 'encounter', problems)
+    if (data.rules) {
+      if (rules) problems.push(`${file.path}: the rules are defined twice`)
+      rules = data.rules
+    }
   }
 
   const world = worlds[0]
   if (worlds.length !== 1) problems.push(`expected exactly one world, found ${worlds.length}`)
   problems.push(...checkReferences(world, content))
+  if (rules) problems.push(...checkRules(rules, content))
   if (problems.length > 0 || !world) throw new ContentError(problems)
-  return { world, ...content, ...(chronicler ? { chronicler } : {}) }
+  return { world, ...content, ...(rules ? { rules } : {}), ...(chronicler ? { chronicler } : {}) }
+}
+
+/** The rules refer to skills, talents, items, people and topics: all of them must exist. */
+function checkRules(rules: Rules, c: Omit<Content, 'world'>): string[] {
+  const problems: string[] = []
+  const skills = new Set(rules.skills.map((s) => s.id))
+  const conditions = new Set(rules.conditions.map((x) => x.id))
+  const talents = new Set<string>()
+  const skill = (id: string, where: string) => {
+    if (!skills.has(id)) problems.push(`rules ${where}: unknown skill ${id}`)
+  }
+  const effects = (list: Effect[], where: string) => {
+    for (const effect of list) {
+      if ('bonus' in effect && effect.bonus.to.startsWith('skill:')) skill(effect.bonus.to.slice(6), where)
+      if ('ability' in effect) {
+        for (const step of effect.ability.do) {
+          if ('condition' in step && !conditions.has(step.condition.name)) problems.push(`rules ${where}: unknown condition ${step.condition.name}`)
+          if ('cure' in step && step.cure.name !== 'any' && !conditions.has(step.cure.name)) problems.push(`rules ${where}: unknown condition ${step.cure.name}`)
+        }
+      }
+    }
+  }
+  const talent = (t: Talent, where: string) => {
+    if (talents.has(t.id)) problems.push(`rules ${where}: duplicate talent id ${t.id}`)
+    talents.add(t.id)
+    effects(t.effects, `${where}.${t.id}`)
+  }
+  for (const t of rules.general_talents) talent(t, 'general_talents')
+  for (const a of rules.ancestries) for (const s of Object.keys(a.aptitude)) skill(s, `ancestry ${a.id}`)
+  for (const k of rules.classes) {
+    for (const s of k.trained) skill(s, `class ${k.id}`)
+    for (const item of Object.keys(k.gear)) if (!c.items.has(item)) problems.push(`rules class ${k.id}: unknown item ${item} in gear`)
+    talent(k.core, `class ${k.id}`)
+    for (const tree of k.trees) for (const t of tree.talents) talent(t, `class ${k.id}.${tree.id}`)
+  }
+  for (const b of rules.backgrounds) {
+    for (const s of b.skills) skill(s, `background ${b.id}`)
+    if (!rules.general_talents.some((t) => t.id === b.talent)) problems.push(`rules background ${b.id}: unknown general talent ${b.talent}`)
+    for (const who of b.knows) if (!c.npcs.has(who)) problems.push(`rules background ${b.id}: unknown NPC ${who}`)
+    for (const topic of b.topics) if (!c.topics.has(topic)) problems.push(`rules background ${b.id}: unknown topic ${topic}`)
+  }
+  for (const p of rules.patrons) for (const b of p.blessings) effects(b.effects, `patron ${p.id}`)
+  for (const creature of c.creatures.values()) {
+    for (const a of creature.attacks) if (a.effect && !conditions.has(a.effect.condition)) problems.push(`creature ${creature.id}: unknown condition ${a.effect.condition}`)
+    for (const a of creature.abilities) effects([{ ability: a }], `creature ${creature.id}`)
+    if (creature.lore?.topic && !c.topics.has(creature.lore.topic)) problems.push(`creature ${creature.id}: unknown topic ${creature.lore.topic}`)
+  }
+  for (const e of c.encounters.values()) {
+    for (const place of e.places) if (!c.locations.has(place) && !c.areas.has(place)) problems.push(`encounter ${e.id}: unknown place ${place}`)
+    for (const foe of e.foes) if (!c.creatures.has(foe.creature)) problems.push(`encounter ${e.id}: unknown creature ${foe.creature}`)
+  }
+  return problems
 }
 
 function checkReferences(world: WorldDef | undefined, c: Omit<Content, 'world'>): string[] {

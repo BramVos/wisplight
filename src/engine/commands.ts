@@ -10,6 +10,7 @@ import { giveBack, stories, type Tempo } from './stories'
 import { isNight, qtyName, wakeNpc } from './npc/execute'
 import { parseDirection, splitQuantity, type Command } from './parser'
 import type { World } from './world'
+import { rest } from './rules/player'
 
 // Player commands that need no AI. Each returns lines of output; commands that
 // take time call `pass(minutes)`, which runs the world and returns what the
@@ -36,6 +37,8 @@ const HELP = [
   'Time: time, wait [minutes], sleep. At night: knock (on a door), wake <person>.',
   'Pace: tempo calm, tempo normal or tempo dramatic (how much happens in the world).',
   "Talking: talk <person>, ask <person> about <topic>, say <text> or 'text.",
+  'You: sheet, create (make your character), level up, train <skill>, wield <weapon>, wear <armour>, devote to <patron>, pray, rite.',
+  'Fights: strike, advance, step back, raise shield, use herbs, recall, talk, flee, surrender, end. HELP in a fight says more.',
   'Game: save, load, continue (exactly where you stopped), log [lines], log export, help.',
   'Dutch works too: kijk, pak, koop, praat met, vraag ... over ...',
 ].join('\n')
@@ -325,6 +328,8 @@ function sleep(host: CommandHost): Output[] {
   }
   const nextMorning = startOfDay(world.now) + (hour >= 20 ? MINUTES_PER_DAY : 0) + 7 * 60
   const seen = host.pass(nextMorning - world.now)
+  // A night's sleep heals (FO, chapter 11); sleeping rough heals too, but it is a cold night.
+  rest(world, 0, true)
   const how = inRoom ? 'You sleep under a heavy quilt that smells of peat smoke.' : 'You sleep rough, and badly. The damp gets into your bones.'
   return [text(`${how} You wake at first light.`), ...seen.slice(-3), describeRoom(world)]
 }

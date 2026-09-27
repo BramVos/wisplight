@@ -1,7 +1,9 @@
 import { Fragment, useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import type { Output } from '../../engine'
-import { createClient, type AiStatus, type EngineClient, type JournalPage, type Reply } from './client'
+import { createClient, type AiStatus, type CreationData, type EngineClient, type JournalPage, type Reply } from './client'
 import { BuilderView } from './BuilderView'
+import { CharacterCreation } from './CharacterCreation'
+import { FightPanel } from './FightPanel'
 import { EndView } from './EndView'
 import { Settings, usd, type SettingsTab } from './Settings'
 
@@ -68,6 +70,7 @@ export function App() {
   const [page, setPage] = useState<JournalPage>()
   const [ending, setEnding] = useState(false)
   const [building, setBuilding] = useState(false)
+  const [creation, setCreation] = useState<CreationData>()
   const logRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -80,6 +83,9 @@ export function App() {
         setClient(created)
         setLines(reply.outputs.map(withId))
         setStatus(reply.status)
+        // A new game begins with making the character (FO, chapter 11).
+        const c = reply.status.character
+        if (c && !c.made && c.xp === 0) setCreation(await created.creation())
       })
       .catch((reason: unknown) => setError(String(reason)))
     return () => {
@@ -101,8 +107,8 @@ export function App() {
 
   // Menus stop the clock (FO, chapter 3).
   useEffect(() => {
-    client?.hold(Boolean(settings) || ending || building)
-  }, [client, settings, ending, building])
+    client?.hold(Boolean(settings) || ending || building || Boolean(creation))
+  }, [client, settings, ending, building, creation])
 
   // What the world builder saves is in the game at once: show the place again (FO, chapter 15).
   useEffect(() => {
@@ -193,6 +199,39 @@ export function App() {
       </main>
 
       <aside className="side">
+        {status?.combat && <FightPanel fight={status.combat} send={(text) => void send(text)} busy={waiting} shield={Boolean(status.character?.shield)} />}
+        {status?.character && (
+          <section className="you">
+            <h2>
+              {status.character.name} <span className="muted small">{status.character.title}</span>
+            </h2>
+            <div className="hp" title={`${status.character.hp} of ${status.character.maxHp} hit points`}>
+              <span style={{ width: `${Math.round((status.character.hp / Math.max(1, status.character.maxHp)) * 100)}%` }} />
+            </div>
+            <p className="small">
+              {status.character.hp}/{status.character.maxHp} hp, {status.character.xp}/{status.character.next} xp
+            </p>
+            <button type="button" className="link" onClick={() => void openPage('sheet')}>
+              [Sheet]
+            </button>
+            {status.character.canLevel && (
+              <>
+                {' '}
+                <button type="button" className="link" disabled={waiting} onClick={() => void send('level up')}>
+                  [Level up]
+                </button>
+              </>
+            )}
+            {!status.character.made && status.character.xp === 0 && (
+              <>
+                {' '}
+                <button type="button" className="link" onClick={() => void client?.creation().then(setCreation)}>
+                  [Make your character]
+                </button>
+              </>
+            )}
+          </section>
+        )}
         <section>
           <h2>Map</h2>
           {status?.map ? (
@@ -228,8 +267,8 @@ export function App() {
                 [Back]
               </button>
               <h3>{page.name}</h3>
-              {page.kind === 'map' ? (
-                <pre className="map whole">{page.lines.join('\n')}</pre>
+              {page.kind === 'map' || page.kind === 'sheet' ? (
+                <pre className={page.kind === 'map' ? 'map whole' : 'sheet'}>{page.lines.join('\n')}</pre>
               ) : (
                 page.lines.map((line, index) => <p key={index}>{line}</p>)
               )}
@@ -333,6 +372,16 @@ export function App() {
         </label>
       </footer>
 
+      {creation && (
+        <CharacterCreation
+          data={creation}
+          onSkip={() => setCreation(undefined)}
+          onCreate={(command) => {
+            setCreation(undefined)
+            void send(command)
+          }}
+        />
+      )}
       {ending && client && <EndView client={client} onClose={() => setEnding(false)} />}
       {building && <BuilderView bridge={client?.builder} onClose={() => setBuilding(false)} />}
       {settings && <Settings bridge={client?.ai} tab={settings} onTab={setSettings} onClose={() => setSettings(undefined)} />}

@@ -6,6 +6,7 @@ contextBridge.exposeInMainWorld('wisplight', {
   start: () => ipcRenderer.invoke('engine:start'),
   command: (input: string) => ipcRenderer.invoke('engine:command', input),
   page: (id: string) => ipcRenderer.invoke('engine:page', id),
+  creation: () => ipcRenderer.invoke('engine:creation'),
   end: () => ipcRenderer.invoke('engine:end'),
   activity: () => ipcRenderer.send('engine:activity'),
   hold: (on: boolean) => ipcRenderer.send('engine:hold', on),

@@ -1,0 +1,214 @@
+# The bestiary (Wereldboek, chapter 12). Level, hit points, defence and attack
+# come from the world book; saves, abilities and the words for the fight are
+# worked out here. The feral dog and the great pike are named in the world
+# book's text; their numbers are ours.
+
+creatures:
+  - id: rat_swarm
+    name: rat swarm
+    plural: rat swarms
+    kind: beast
+    level: 1
+    hp: 12
+    defence: 13
+    saves: { fortitude: 5, reflex: 7, will: 2 }
+    attacks:
+      - { name: bites, bonus: 5, damage: 1d4, crit: sickened }
+    morale: { courage: -1, flees_below: 0.3 }
+    immune: [grabbed, prone]
+    text: A heaving carpet of brown rats out of the peat sheds, all teeth and tails.
+    says:
+      hit: "{Name} swarms over {target}, biting."
+      flee: "{Name} breaks up and pours away into the dark."
+      down: "The last of the rats scatter squealing."
+
+  - id: adder
+    name: adder
+    plural: adders
+    kind: beast
+    level: 0
+    hp: 4
+    defence: 14
+    saves: { fortitude: 3, reflex: 6, will: 1 }
+    attacks:
+      - { name: bite, bonus: 6, damage: '1', effect: { condition: sickened, save: fortitude, dc: 14 } }
+    morale: { courage: 0, flees_below: 0.5 }
+    text: A grey-and-black adder on the warm edge of the heath, coiled and hissing.
+    says:
+      hit: "{Name} strikes at {target}."
+      flee: "{Name} slides away into the heather."
+      down: "{Name} lies still."
+
+  - id: feral_dog
+    name: feral dog
+    plural: feral dogs
+    kind: beast
+    level: 1
+    hp: 16
+    defence: 15
+    saves: { fortitude: 6, reflex: 7, will: 3 }
+    attacks:
+      - { name: jaws, bonus: 7, damage: 1d6+2, crit: prone }
+    morale: { courage: 0, flees_below: 0.4 }
+    text: A rangy dog gone wild on the fen, ribs showing, lips drawn back.
+    says:
+      hit: "{Name} lunges at {target}."
+      flee: "{Name} yelps and runs off into the reeds."
+      down: "{Name} lies whimpering, then still."
+
+  - id: great_pike
+    name: great pike
+    plural: great pikes
+    kind: beast
+    level: 2
+    hp: 24
+    defence: 16
+    saves: { fortitude: 8, reflex: 8, will: 3 }
+    attacks:
+      - { name: jaws, bonus: 8, damage: 1d8+2, crit: bleeding }
+    morale: { courage: 1, flees_below: 0.3 }
+    text: A pike from the Blackmere, long as a man's leg, big enough to take a duck.
+    says:
+      hit: "{Name}'s jaws snap shut on {target}."
+      flee: "{Name} turns and is gone in a swirl of black water."
+      down: "{Name} rolls over, pale belly up."
+
+  - id: goat_rider
+    name: Goat-Rider
+    plural: Goat-Riders
+    kind: human
+    level: 2
+    hp: 22
+    defence: 15
+    saves: { fortitude: 8, reflex: 7, will: 5 }
+    perception: 7
+    attacks:
+      - { name: club, bonus: 7, damage: 1d6+2, crit: prone }
+    abilities:
+      - id: stink_pot
+        name: stink pot
+        dc: 15
+        actions: 2
+        uses: fight
+        target: enemies
+        range: near
+        do: [{ condition: { name: frightened, value: 1, save: will } }]
+    morale: { courage: 0, flees_below: 0.5, surrenders: true }
+    text: A man in a goat-skin with the horns still on, a club in his fist and soot on his face so you won't know him again.
+    says:
+      hit: "{Name} swings his club at {target}."
+      flee: "{Name} breaks and runs for the reeds, goat-skin flapping."
+      surrender: "{Name} throws down his club. \"Enough! Enough, I yield!\""
+      down: "{Name} goes down in the mud of the tow path."
+
+  - id: black_mathijs
+    name: Black Mathijs
+    kind: human
+    level: 5
+    hp: 60
+    defence: 19
+    saves: { fortitude: 12, reflex: 11, will: 10 }
+    perception: 11
+    attacks:
+      - { name: sword, bonus: 12, damage: 1d8+4, crit: bleeding }
+    morale: { courage: 3, flees_below: 0.2, surrenders: true }
+    text: The leader of the Goat-Riders, lean and black-bearded, with a real sword and the calm of a man who has never been caught.
+    says:
+      hit: "Black Mathijs cuts at {target}."
+      flee: "Black Mathijs steps back into the reeds and is simply gone."
+      surrender: "Black Mathijs lowers his sword. \"Let's talk like sensible people, shall we?\""
+      down: "Black Mathijs falls to one knee, then all the way."
+
+  - id: veenlijk
+    name: veenlijk
+    plural: veenlijken
+    kind: undead
+    level: 3
+    hp: 40
+    defence: 14
+    saves: { fortitude: 10, reflex: 5, will: 8 }
+    attacks:
+      - { name: grip, bonus: 9, damage: 1d6+3, effect: { condition: grabbed, save: reflex, dc: 16 } }
+    morale: { never: true }
+    immune: [frightened]
+    weak: { fire: 2 }
+    lore: { dc: 15, text: "The old stories say a veenlijk fears fire above all, and cannot follow you onto dry sand." }
+    text: A body the peat has kept for a thousand years, leather-brown, rising out of the bog with its hands first.
+    says:
+      hit: "{Name}'s cold hands close on {target}."
+      down: "{Name} sinks back into the peat, and is only a shape in the mud."
+
+  - id: kludde
+    name: Kludde
+    kind: spirit
+    level: 4
+    hp: 45
+    defence: 18
+    saves: { fortitude: 10, reflex: 12, will: 9 }
+    attacks:
+      - { name: leap, bonus: 11, damage: 1d8+3, effect: { condition: frightened, value: 2, save: will, dc: 18 } }
+    morale: { never: true }
+    lore: { dc: 16, text: "Kludde grows heavier the longer he rides you; the stories say running water breaks his hold." }
+    text: A black shape like a dog or a goat, with chains that rattle and two small blue flames for eyes.
+    says:
+      hit: "Kludde leaps onto {target}'s back, heavier with every breath."
+      down: "Kludde is gone, with a rattle of chains that dies away over the water."
+
+  - id: reigerbeen
+    name: Reigerbeen
+    kind: spirit
+    level: 3
+    hp: 30
+    defence: 18
+    saves: { fortitude: 8, reflex: 11, will: 9 }
+    attacks:
+      - { name: beak, bonus: 10, damage: 1d8, crit: blinded }
+    morale: { courage: 1, flees_below: 0.3 }
+    lore: { dc: 15, text: "Reigerbeen stalks the shallows at dusk and goes for the eyes; the stories say he will not cross a line of salt." }
+    text: A thing like a man on heron's legs, too tall and too thin, with a long grey beak.
+    says:
+      hit: "Reigerbeen's beak stabs at {target}."
+      flee: "Reigerbeen steps away over the water on his long legs."
+      down: "Reigerbeen folds up like a dead heron."
+
+  - id: haakman
+    name: the Haakman
+    kind: spirit
+    level: 6
+    hp: 90
+    defence: 20
+    saves: { fortitude: 14, reflex: 12, will: 12 }
+    attacks:
+      - { name: hook, bonus: 14, damage: 2d6, effect: { condition: grabbed, save: reflex, dc: 20 } }
+    morale: { never: true }
+    weak: { iron: 2 }
+    lore: { dc: 18, topic: haakman, text: "The Haakman cannot bear iron: an iron blade hurts him double. Old women say that his true name sends him back under the water." }
+    text: Grey as a heron, with teeth like water-weed and a long hook, rising out of the black water.
+    says:
+      hit: "{Name}'s hook comes for {target}."
+      flee: "{Name} sinks back into the Blackmere without a ripple."
+      down: "{Name} goes down into the black water, and the water closes over him."
+
+# Encounters (FO, chapter 12, "Verloop"): who, where, and how it opens.
+encounters:
+  - id: goat_riders_toll
+    name: The Goat-Riders on the tow path
+    places: [loc_towpath_mid]
+    chance: 0.35
+    again_after: 4
+    foes:
+      - { creature: goat_rider, count: 1, range: near }
+      - { creature: goat_rider, count: 1, range: far, joins: 2 }
+    opening: >-
+      A man in a goat-skin steps out of the reeds onto the tow path, horns on his
+      head and a club in his fist. Further back a second one stands among the
+      reeds, watching.
+    demand:
+      amount: 16
+      text: '"Toll for the path," says the first. "Two stuivers, and you walk on. Or we take it off you."'
+      paid: The Goat-Rider bites the coins, grins, and steps back into the reeds. "Safe journey, friend."
+    surrender:
+      take: half_money
+      text: They go through your purse and your pockets, laughing, and leave you sitting in the mud.
+    flee_dc: 15
+    news: { title: the Goat-Riders on the tow path, belang: 2 }

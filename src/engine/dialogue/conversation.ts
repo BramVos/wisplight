@@ -6,7 +6,8 @@ import { heardBy, newsAbout } from '../news'
 import type { FarName, TalkState } from '../state'
 import type { World } from '../world'
 import { classify, tierFor, TIER_TOKENS, TIER_WORDS, type Act, type Tier } from './acts'
-import { check, dcFor, describeCheck, succeeded, type CheckResult } from './checks'
+import { dcFor, describeCheck, succeeded, type CheckResult } from './checks'
+import { gainXp, playerCheck, XP } from '../rules/player'
 import { closingLine, fallbackReply } from './fallback'
 import { fitLength, hasAnachronism, leakedNames, looksLikeInjection, unknownNames, vocabularyOf } from './guard'
 import type { Knowledge, Packet } from './knowledge'
@@ -192,6 +193,7 @@ export class Dialogue {
     const secret = this.world.npc(npcId).secrets.find((s) => s.about.includes(topic) && !this.talk!.revealed.includes(s.id))
     if (!secret) return {}
     this.talk!.revealed.push(secret.id)
+    gainXp(this.world, XP.secret, `${callName(this.world.npc(npcId))} told you a secret`)
     if (secret.teaches) this.teach(npcId, secret.teaches)
     return { secret: secret.text, admission: secret.admission }
   }
@@ -218,7 +220,7 @@ export class Dialogue {
     if (this.talk!.revealed.includes('tried:insight')) return [{ kind: 'error', text: `You have already tried to read ${callName(npc)} this conversation.` }]
     this.talk!.revealed.push('tried:insight')
     const secret = npc.secrets.find((s) => !this.talk?.revealed.includes(`hint:${s.id}`))
-    const result = check(this.world.rng, 'insight', secret?.dc ?? 15)
+    const result = playerCheck(this.world, 'insight', secret?.dc ?? 15)
     const lines: Output[] = [{ kind: 'check', text: describeCheck(result) }]
     if (secret && succeeded(result)) {
       this.talk?.revealed.push(`hint:${secret.id}`)
@@ -241,7 +243,7 @@ export class Dialogue {
       const amount = parseMoney(text)
       if (!amount) return [{ kind: 'error', text: 'Bribe with how much? For example: BRIBE LUBBERT 2 STUIVERS.' }]
       if (amount > world.state.player.money) return [{ kind: 'error', text: `You only have ${formatMoney(world.state.player.money)}.` }]
-      result = check(world.rng, 'persuasion', dcFor(18 - Math.floor(amount / STUIVER), band, npc.personality.honesty * 2))
+      result = playerCheck(world, 'persuasion', dcFor(18 - Math.floor(amount / STUIVER), band, npc.personality.honesty * 2))
       about = `bribe them with ${formatMoney(amount)}`
       if (succeeded(result)) {
         world.state.player.money -= amount
@@ -250,7 +252,7 @@ export class Dialogue {
     } else {
       const skill = { persuade: 'persuasion', deceive: 'deception', intimidate: 'intimidation' }[kind]
       const extra = kind === 'intimidate' ? npc.personality.courage * 2 : kind === 'deceive' ? npc.personality.curiosity : 0
-      result = check(world.rng, skill, dcFor(15, band, extra))
+      result = playerCheck(world, skill, dcFor(15, band, extra))
       about = `${kind} them${text ? ` ${text.replace(/^to\s+/i, 'to ')}` : ''}`
     }
     lines.push({ kind: 'check', text: describeCheck(result) })
@@ -353,7 +355,12 @@ export class Dialogue {
 
   learn(...ids: string[]): void {
     const journal = (this.world.state.player.journal ??= {})
-    for (const id of ids) if (this.topics.entries.has(id) && journal[id] === undefined) journal[id] = this.world.now
+    for (const id of ids) {
+      if (!this.topics.entries.has(id) || journal[id] !== undefined) continue
+      journal[id] = this.world.now
+      // Knowledge is experience too (FO, chapter 11): a piece of lore learned.
+      if (this.topics.kind(id) === 'lore' && !id.startsWith('fact_')) gainXp(this.world, XP.lore, `you learned of ${this.topics.name(id)}`)
+    }
   }
 
   // ------------------------------------------------------------ one turn

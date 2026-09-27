@@ -76,13 +76,13 @@ Scope: FO 4 en 15. Zonetekening naar hexkaart met generatorregels, hexbeschrijvi
 - [x] Een locatie of NPC aanpassen in de wereldbouwer is direct zichtbaar in het spel
 - [x] Een NPC ver weg is een notitie en wordt op die plek weer volledig zodra de speler in de buurt komt
 
-## M5 Personage, regels en gevecht
+## M5 Personage, regels en gevecht (af)
 
 Scope: FO 11 en 12, WB 5 en 12. Personage maken, vaardigheden en proeven met vier slagingsgraden, levels en talentbomen voor zes klassen, beschermgoden met gunst, aandoeningen, klokken, gevecht in beurten met afstanden en Momentum, moreel, niet-dodelijk vechten, dood en de Weg van de Grijze Ruiter, het bestiarium.
 
-- [ ] Alle zes klassen zijn te maken en te spelen van level 1 tot 10
-- [ ] Het gevecht met de Bokkenrijders op het jaagpad is speelbaar, met vlucht en overgave
-- [ ] Een gesimuleerde balanstest van 1.000 gevechten per klasse blijft binnen de afgesproken marges
+- [x] Alle zes klassen zijn te maken en te spelen van level 1 tot 10
+- [x] Het gevecht met de Bokkenrijders op het jaagpad is speelbaar, met vlucht en overgave
+- [x] Een gesimuleerde balanstest van 1.000 gevechten per klasse blijft binnen de afgesproken marges
 
 ## M6 Relaties, facties en gezellen
 

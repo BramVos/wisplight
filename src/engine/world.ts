@@ -28,6 +28,8 @@ export class World {
    * makes the same choice.
    */
   aiLive = false
+  /** Things the player should be told after this command: experience, a patron's mood. Not saved. */
+  notices: string[] = []
 
   constructor(
     readonly content: Content,

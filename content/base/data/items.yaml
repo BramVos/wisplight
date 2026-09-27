@@ -84,6 +84,7 @@ items:
     description: Fen mint, yarrow and something grey-leaved, tied with a strip of linen.
     tags: [medicine, trade]
     value: 16
+    remedy: { heal: 1d8, cures: [bleeding, sickened] }
 
   - id: wool
     name: fleece
@@ -130,6 +131,7 @@ items:
     description: A plain working knife with a horn handle.
     tags: [tool, weapon]
     value: 48
+    weapon: { damage: 1d4, light: true, crit: bleeding, iron: true }
 
   - id: iron_nails
     name: handful of iron nails
@@ -146,3 +148,126 @@ items:
     description: Hemp rope, about ten ells of it.
     tags: [tool]
     value: 12
+
+  # Weapons and armour (FO, chapter 12). Damage is the weapon die; Might adds
+  # to it for weapons used up close.
+
+  - id: spear
+    name: spear
+    aliases: [speer]
+    description: An ash shaft with a leaf-shaped iron head, short enough to use with a shield.
+    tags: [weapon]
+    value: 64
+    weapon: { damage: 1d6, crit: push, iron: true }
+
+  - id: club
+    name: club
+    aliases: [cudgel, knuppel]
+    description: A knotted length of oak, heavier at one end.
+    tags: [weapon]
+    value: 8
+    weapon: { damage: 1d6, crit: prone }
+
+  - id: mace
+    name: mace
+    aliases: [knots, knotsstok]
+    description: An iron-bound mace of the kind the Lantern's wardens carry.
+    tags: [weapon]
+    value: 96
+    weapon: { damage: 1d6, crit: prone, iron: true }
+
+  - id: hatchet
+    name: hatchet
+    aliases: [axe, bijl]
+    description: A short axe for kindling and worse.
+    tags: [weapon, tool]
+    value: 40
+    weapon: { damage: 1d6, crit: bleeding, iron: true }
+
+  - id: staff
+    name: staff
+    aliases: [stave, stick, staf]
+    description: A walking staff of blackthorn, worn smooth by a hand.
+    tags: [weapon]
+    value: 4
+    weapon: { damage: 1d6, two_hands: true, crit: prone }
+
+  - id: short_bow
+    name: short bow
+    plural: short bows
+    aliases: [short bow, boog]
+    description: A short yew bow and a quiver of fletched arrows, for fowl and worse.
+    tags: [weapon]
+    value: 120
+    weapon: { damage: 1d6, kind: ranged, two_hands: true, range: far }
+
+  - id: hunting_bow
+    name: hunting bow
+    plural: hunting bows
+    aliases: [bow, longbow, jachtboog]
+    description: A tall bow of yew, too strong for a boy to draw, and a quiver of goose-feathered arrows.
+    tags: [weapon]
+    value: 200
+    weapon: { damage: 1d8, kind: ranged, two_hands: true, range: far }
+
+  - id: hanger
+    name: hanger
+    plural: hangers
+    aliases: [short sword, sword, hartsvanger]
+    description: A short, slightly curved hunting sword, the kind that hangs from a belt.
+    tags: [weapon]
+    value: 120
+    weapon: { damage: 1d6, light: true, crit: bleeding, iron: true }
+
+  - id: sling
+    name: sling
+    aliases: [slinger]
+    description: A leather sling and a pouch of river stones.
+    tags: [weapon]
+    value: 4
+    weapon: { damage: 1d4, kind: ranged, range: near }
+
+  - id: padded_coat
+    name: padded coat
+    plural: padded coats
+    aliases: [gambeson, wambuis]
+    description: A quilted linen coat stuffed with wool, warm and dull-coloured.
+    tags: [armour]
+    value: 40
+    armour: { kind: light, defence: 1, cap: 4 }
+
+  - id: leather_jerkin
+    name: leather jerkin
+    plural: leather jerkins
+    aliases: [jerkin, leather, leren kolder]
+    description: A jerkin of boiled leather, stiff at the shoulders.
+    tags: [armour]
+    value: 80
+    armour: { kind: light, defence: 2, cap: 3 }
+
+  - id: brigandine
+    name: brigandine
+    aliases: [scale vest]
+    description: Small iron plates riveted inside a canvas vest.
+    tags: [armour, iron]
+    value: 240
+    armour: { kind: medium, defence: 3, cap: 2 }
+
+  - id: chain_shirt
+    name: chain shirt
+    plural: chain shirts
+    aliases: [mail, maliënkolder]
+    description: A shirt of riveted rings, oiled against the damp of the fen.
+    tags: [armour, iron]
+    value: 400
+    armour: { kind: heavy, defence: 4, cap: 1 }
+
+  - id: round_shield
+    name: round shield
+    plural: round shields
+    aliases: [shield, schild]
+    description: A round shield of limewood with an iron boss.
+    tags: [armour]
+    value: 64
+    armour: { kind: shield, defence: 2 }
+

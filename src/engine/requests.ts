@@ -3,6 +3,7 @@ import { applyEffect } from './dialogue/relations'
 import { formatMoney, itemName, withArticle } from './items'
 import type { Request } from './state'
 import type { World } from './world'
+import { favour, gainXp, XP } from './rules/player'
 
 // Requests for the player (FO, chapter 14, "Verzoeken uit NPC-doelen"). They
 // come up out of what happens: someone loses a knife, a fever keeps someone in
@@ -85,6 +86,8 @@ export function visited(world: World, targetId: string): Request[] {
 function finish(world: World, request: Request, thanks = true): string {
   request.status = 'done'
   request.done = world.now
+  gainXp(world, XP.request, `you did what ${callName(world.npc(request.npc))} asked`)
+  favour(world, 'request_done')
   const giver = world.npcState(request.npc)
   const paid = Math.min(request.reward ?? 0, giver.money)
   giver.money -= paid

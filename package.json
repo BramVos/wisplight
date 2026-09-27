@@ -13,7 +13,8 @@
     "play": "tsx src/cli/play.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "sim": "tsx src/cli/sim.ts"
+    "sim": "tsx src/cli/sim.ts",
+    "balance": "tsx scripts/balance.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.128.0",

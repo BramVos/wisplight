@@ -591,3 +591,160 @@ body {
   font-size: 7px;
   line-height: 1;
 }
+
+/* Making a character (FO, chapter 11) */
+
+.creation h3 {
+  color: var(--room);
+  font-size: 13px;
+  font-weight: normal;
+  letter-spacing: 0.06em;
+  margin: 8px 0 4px;
+  text-transform: uppercase;
+}
+
+.creation .field {
+  align-items: baseline;
+  display: flex;
+  gap: 12px;
+}
+
+.creation input:not([type]),
+.creation select {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  color: var(--text);
+  font: inherit;
+  padding: 2px 6px;
+}
+
+.creation .choices {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+
+.creation .choice {
+  all: unset;
+  border: 1px solid var(--line);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px 10px;
+}
+
+.creation .choice.active {
+  border-color: var(--room);
+}
+
+.creation .choice:focus-visible {
+  outline: 1px solid var(--topic);
+}
+
+.creation .columns {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+.creation .radio,
+.creation .check {
+  align-items: baseline;
+  display: flex;
+  gap: 8px;
+  margin: 2px 0;
+}
+
+.creation .skills {
+  display: grid;
+  gap: 0 12px;
+  grid-template-columns: repeat(auto-fill, minmax(14ch, 1fr));
+}
+
+.creation .attr {
+  align-items: baseline;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 10ch 4ch auto auto;
+}
+
+.creation .preview {
+  border-top: 1px solid var(--line);
+  color: var(--system);
+  margin: 6px 0 0;
+  padding-top: 8px;
+}
+
+.error.small {
+  color: var(--error);
+  margin: 0;
+}
+
+/* The character and the fight in the side panel (FO, chapters 11 and 12) */
+
+.side .hp {
+  background: var(--line);
+  height: 5px;
+  margin: 4px 0;
+}
+
+.side .hp span {
+  background: var(--ok);
+  display: block;
+  height: 100%;
+}
+
+.side .you p,
+.side .fight p {
+  margin: 0 0 4px;
+}
+
+.fight {
+  border: 1px solid var(--warn);
+  margin: -4px -6px 0;
+  padding: 8px 10px;
+}
+
+.fight h2 {
+  color: var(--warn);
+}
+
+.fighters {
+  list-style: none;
+  margin: 6px 0;
+  padding: 0;
+}
+
+.fighters li {
+  margin-bottom: 6px;
+}
+
+.fighters .who {
+  display: flex;
+  font-size: 13px;
+  gap: 8px;
+  justify-content: space-between;
+}
+
+.fighters li.foes .hp span {
+  background: var(--over);
+}
+
+.fighters li.out {
+  opacity: 0.55;
+}
+
+.fight .actions {
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 13px;
+  gap: 2px 10px;
+  margin-top: 6px;
+}
+
+pre.sheet {
+  font: 12px/1.45 var(--font);
+  margin: 0;
+  white-space: pre-wrap;
+}

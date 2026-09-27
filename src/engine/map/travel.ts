@@ -2,6 +2,7 @@ import { GameClock, minuteOfDay } from '../clock'
 import type { Content, Location } from '../content'
 import type { Output } from '../commands'
 import type { World } from '../world'
+import { playerSkill } from '../rules/player'
 import { weather, weatherLine } from '../weather'
 import { centre, distance, type Hex, HEX_DIRECTIONS, type HexDirection, hexKey, neighbour, neighbours, stepToward, windBetween } from './hexgrid'
 import { type Cell, regionMap, type RegionMap } from './region'
@@ -479,8 +480,8 @@ export function walk(world: World, plan: WalkPlan, pass: (minutes: number) => Ou
       reason = cell.channel ? `A channel of open water bars the way; only a punt would cross it.` : `Deep water bars the way ${pretty(direction ?? plan.kind)}.`
       break
     }
-    // In mist, off the road, you may lose your bearings (FO: Survival against DC 15; skills arrive in M5).
-    const lost = sight(world, map, map.cell(at)!) <= 1 && !cell.way && !onKnownRidge(world, cell) && plan.kind !== 'follow' && world.rng.int('travel', 1, 20) < 15
+    // In mist, off the road, you may lose your bearings: Survival against DC 15 (FO, chapter 12, "Gevaar buiten gevechten").
+    const lost = sight(world, map, map.cell(at)!) <= 1 && !cell.way && !onKnownRidge(world, cell) && plan.kind !== 'follow' && world.rng.int('travel', 1, 20) + playerSkill(world, 'survival') < 15
     if (lost) {
       const drift = neighbours(at).filter((n) => map.cell(n.hex) && passable(world, map.cell(n.hex)!) && hexKey(n.hex) !== hexKey(next!))
       const pick = drift[world.rng.int('travel', 0, Math.max(0, drift.length - 1))]

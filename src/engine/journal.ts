@@ -21,7 +21,7 @@ export interface JournalLink {
 
 export interface JournalPage {
   id: string
-  kind: 'person' | 'place' | 'area' | 'event' | 'lore' | 'thing' | 'quest' | 'map'
+  kind: 'person' | 'place' | 'area' | 'event' | 'lore' | 'thing' | 'quest' | 'map' | 'sheet'
   name: string
   lines: string[]
   sources: string[]

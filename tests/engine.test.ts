@@ -64,7 +64,7 @@ describe('engine', () => {
     const engine = newEngine()
     const out = await engine.handle('ne')
     expect(engine.state.player.location).toMatch(/^hex:/)
-    expect(out.at(-1)!.text).toMatch(/Ways on:/)
+    expect(out.filter((o) => !o.text.includes('experience')).at(-1)!.text).toMatch(/Ways on:/)
   })
 })
 

@@ -1,6 +1,9 @@
 import { GameClock } from './clock'
 import { NEEDS, type Content, type Need, type Npc } from './content'
 import type { StoriesState } from './stories'
+import type { Combat } from './combat/types'
+import type { Character } from './rules/character'
+import type { Clock } from './rules/player'
 
 // Everything that changes during play lives in GameState. It is plain JSON:
 // a savegame is this object, and a replay rebuilds it from the input log.
@@ -221,6 +224,14 @@ export interface PlayerState {
   map?: { seen: string; walked: string; heading?: string }
   /** Areas the player has seen from afar. */
   seenAreas?: string[]
+  /** The player character (FO, chapter 11). */
+  character?: Character
+  /** Half the money, left where the player fell (the Way of the Grey Rider). */
+  lostPurse?: { location: string; amount: number; t: number }
+  /** Died three times: the Grey Rider wants a price. */
+  riderPrice?: boolean
+  /** When each encounter last happened. */
+  encounters?: Record<string, number>
 }
 
 export interface ServiceState {
@@ -309,6 +320,10 @@ export interface GameState {
   /** Far places worked out to their outline for this game (design, "De wereld buiten de kaart"). */
   outlines?: { pending: string[]; done: Record<string, unknown> }
   /** Goal choices waiting for the brain model, and how many each NPC had today (FO, chapter 7). */
+  /** The fight in progress (FO, chapter 12). */
+  combat?: Combat
+  /** Progress clocks: threats and long jobs (FO, chapter 11). */
+  clocks?: Record<string, Clock>
   brain?: { seq: number; pending: { id: string; npc: string; t: number; trigger: string }[]; counts: Record<string, { day: number; n: number }>; last?: Record<string, number>; due?: Record<string, number> }
 }
 

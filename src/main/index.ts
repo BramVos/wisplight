@@ -63,7 +63,7 @@ function setup(): Promise<void> {
 
 // The clock stands still in conversations and menus, and after a minute without input.
 function paused(): boolean {
-  return held || Boolean(engine?.state.talk) || Date.now() - lastInput > IDLE_PAUSE_MS
+  return Boolean(engine?.state.combat) || held || Boolean(engine?.state.talk) || Date.now() - lastInput > IDLE_PAUSE_MS
 }
 
 function aiStatus() {
@@ -203,6 +203,7 @@ ipcMain.handle('engine:command', async (_event, input: unknown) => {
 })
 
 ipcMain.handle('engine:page', (_event, id: unknown) => engine?.page(String(id)))
+ipcMain.handle('engine:creation', () => engine?.creationData())
 ipcMain.handle('engine:end', () => ({ log: session ? journal().text(session) : undefined, chronicle: engine?.chronicle() ?? '' }))
 
 // ---------------------------------------------------------------- the world builder (development builds only)

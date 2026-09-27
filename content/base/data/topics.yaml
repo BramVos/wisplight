@@ -184,3 +184,15 @@ topics:
     known_by: [npc_wouter, npc_pim]
     summary: A hidden ridge of dry ground runs through the fen from Veenhoek to the Kattenbroek, firm underfoot if you know where it goes.
     details: It leaves the peat cuttings south-east of Veenhoek and keeps to the higher tussocks between the pools, all the way to the reeds of the Kattenbroek.
+
+  # The Goat-Riders (Wereldboek, chapters 2, 7 and 12).
+  - id: goat_riders
+    name: the Goat-Riders
+    kind: lore
+    aliases: [goat-riders, goat riders, goatriders, bokkenrijders, the goat-riders, robbers, black mathijs, mathijs]
+    fame: 3
+    origin: rietdoolhof
+    audience: { eel_fisher: 0.2 }
+    summary: The Goat-Riders are robbers in goat-skins who say they ride through the air with the devil. They take a toll on the tow path and hide in the Rietdoolhof.
+    details: Their leader is Black Mathijs, who has never been caught. The hangings in the south never finished them off, and people say the surveyor pays them now.
+
