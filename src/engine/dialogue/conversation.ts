@@ -2,8 +2,8 @@ import { asksAge, toldAge } from '../acquaintance'
 import type { Output } from '../commands'
 import { parseMoney, STUIVER } from '../items'
 import { MONTHS, WEEKDAYS } from '../clock'
-import { callName } from '../content'
-import { heardBy, newsAbout } from '../news'
+import { areaTopicId, callName } from '../content'
+import { factById, heardBy, newsAbout, playerTells } from '../news'
 import type { FarName, TalkState } from '../state'
 import type { World } from '../world'
 import { classify, tierFor, TIER_TOKENS, TIER_WORDS, type Act, type Tier } from './acts'
@@ -228,7 +228,38 @@ export class Dialogue {
   async tell(npcId: string, subject: string): Promise<Output[]> {
     const about = bare(subject)
     const topic = this.topics.find(about)
+    // Something the player heard about it is passed on (M9.4): "tell sijbrand about the dyke" warns him of the leak.
+    const news = this.newsOnTopic(about, topic)
+    if (news) {
+      const world = this.world
+      const name = callName(world.npc(npcId))
+      if (!this.talk || this.talk.npc !== npcId) this.start(npcId, true)
+      const knew = Boolean(world.state.news?.heard[npcId]?.[news.id])
+      const h = playerTells(world, npcId, news.id)
+      const reaction = knew
+        ? `${name} nods. "I'd heard."`
+        : h?.stance === 'rejects'
+          ? `${name} doesn't believe a word of it, and says so.`
+          : h?.stance === 'doubts'
+            ? `${name} looks at you a long moment. "We'll see."`
+            : `${name} listens, and takes it seriously.`
+      return [
+        { kind: 'text', text: `You: "${news.text.village}"` },
+        { kind: 'narration', text: reaction },
+      ]
+    }
     return this.turn(npcId, `Let me tell you about ${about}.`, { act: 'Tell', topics: topic ? [topic] : [], echo: true })
+  }
+
+  /** The newest, weightiest thing the player heard that the words point to: its topic, its place or its title. */
+  private newsOnTopic(words: string, topic: string | undefined) {
+    const heard = this.world.state.news?.heard['player'] ?? {}
+    const lower = words.toLowerCase().replace(/^the /, '')
+    const matches = Object.keys(heard)
+      .map((id) => factById(this.world, id))
+      .filter((f): f is NonNullable<typeof f> => Boolean(f) && f!.belang >= 2)
+      .filter((f) => (topic && (f.about.includes(topic) || f.place === topic || f.claim?.subject === topic)) || (lower.length >= 3 && f.title.toLowerCase().includes(lower)))
+    return matches.sort((a, b) => b.belang - a.belang || b.t - a.t)[0]
   }
 
   async say(npcId: string, text: string): Promise<Output[]> {
@@ -343,7 +374,13 @@ export class Dialogue {
     // The chronicler's news of the day for the NPC's own area comes first.
     const area = this.world.location(this.world.npc(npcId).home).area
     const today = this.knowledge.level(npcId, `news_${area}`) >= 2 ? [`news_${area}`] : []
-    const fresh = newsAbout(this.world, npcId, [], 2).map(({ fact }) => fact.id)
+    // Not what the player already knows, such as their own coming (found in the M9.4 playtest: at the inn,
+    // everyone's news was the stranger who came in that evening, and the leak in the dyke went untold).
+    const known = this.world.state.news?.heard['player'] ?? {}
+    const fresh = newsAbout(this.world, npcId, [], 8)
+      .filter(({ fact }) => !known[fact.id] && fact.about[0] !== npcId)
+      .slice(0, 2)
+      .map(({ fact }) => fact.id)
     const standing = [...this.world.content.topics.values()].filter((t) => t.standing_talk).map((t) => t.id).sort().filter((t) => this.knowledge.level(npcId, t) >= 2)
     return [...today, ...fresh, ...standing].slice(0, 2)
   }
@@ -373,6 +410,11 @@ export class Dialogue {
       const mine = heardBy(this.world, 'player')
       if (mine[id]) continue
       mine[id] = { level: heard.level, reliability: Math.round(heard.reliability * 0.9 * 100) / 100, from: npcId, t: this.world.now, grown: heard.grown }
+      // Where it happened, the player has heard of now (found in the M9.4 playtest: told of the leak at
+      // Oude Zijl, the stranger could not walk there).
+      const place = factById(this.world, id)?.place
+      const where = place ? this.world.content.locations.get(place) : undefined
+      if (where) this.learn(areaTopicId(this.world.content, where.area))
     }
   }
 

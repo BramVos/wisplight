@@ -14,7 +14,7 @@ import { loadContentFromDir } from '../src/node/content'
 //
 // npm run playtest [-- <line id>]; transcripts go to docs/playtest/<line>.txt.
 
-type Step = string | { wait: number } | { note: string }
+type Step = string | { wait: number } | { note: string } | { askAround: true }
 
 interface Line {
   id: string
@@ -132,6 +132,51 @@ export const LINES: Line[] = [
     after: [{ note: 'Back to the Vissers, to see how it ended.' }, '@goto loc_visser_house', 'look', { wait: 8 * DAY }, 'look'],
     words: /cat|Fenna|missing|Visser|widow/i,
   },
+  {
+    id: 'dyke',
+    world: 'base',
+    title: 'De dijk bij Oude Zijl',
+    // A seed where word of the leak never reaches Veenhoek by itself, and the dyke breaks without the player.
+    seed: 1,
+    recognise: [
+      { note: 'Shortcut: a leak in the dyke comes when it comes; here it starts at once. Teunis from Waagdam comes upon it.' },
+      '@plan dyke_leak',
+      'north',
+      { askAround: true },
+      { note: 'Next morning to Waagdam, the market town, and ask around there.' },
+      'wait 10 hours',
+      'wait 5 hours',
+      { note: 'Shortcut: ask the way and walk the hour to the market square of Waagdam.' },
+      '@goto loc_waagdam_market',
+      'look',
+      { askAround: true },
+      { note: 'Shortcut: across town to the horse mill.' },
+      '@goto loc_waagdam_horse_mill',
+      'look',
+      { askAround: true },
+      'journal',
+    ],
+    influence: [
+      { note: 'Teunis saw the leak himself: ask him to come along, then warn the dyke reeve together.' },
+      'talk teunis',
+      '8',
+      'bye',
+      'east',
+      'walk to oude zijl',
+      'walk to oude zijl',
+      'look',
+      { askAround: true },
+      { note: 'Not at the sluice: try the dyke house, and wait for him there.' },
+      'north',
+      'look',
+      'wait for sijbrand',
+      'tell sijbrand about the dyke',
+      'wait 60',
+      'journal',
+    ],
+    after: [{ wait: 1 * DAY }, 'look', 'journal', { wait: 2 * DAY }, { note: 'Shortcut: back to the green of Veenhoek.' }, '@goto loc_veenhoek_green', 'look', { wait: 6 * HOUR }, 'look', 'journal'],
+    words: /dyke|Oude Zijl|leak|Sijbrand|water|flood/i,
+  },
 ]
 
 const say = (outputs: Output[]) => outputs.map((o) => o.text).join('\n')
@@ -146,6 +191,12 @@ async function play(line: Line, act: boolean): Promise<string> {
     for (const step of list) {
       if (typeof step === 'string') out.push(`\n> ${step}${step.startsWith('@') ? '   [build command: a shortcut]' : ''}\n${say(await engine.handle(step))}`)
       else if ('wait' in step) out.push(`\n[${step.wait / HOUR} hours pass]\n${say(engine.tick(step.wait))}`)
+      else if ('askAround' in step) {
+        // Whoever is here and awake: what's new?
+        const here = engine.world.npcsAt(engine.state.player.location).filter((id) => engine.world.npcState(id).activity !== 'asleep')
+        if (!here.length) out.push('\n# Nobody here to ask.')
+        for (const id of here.slice(0, 3)) for (const c of [`talk ${engine.world.npc(id).short.toLowerCase()}`, '2', 'bye']) out.push(`\n> ${c}\n${say(await engine.handle(c))}`)
+      }
       else out.push(`\n# ${step.note}`)
     }
   }

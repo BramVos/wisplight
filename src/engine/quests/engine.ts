@@ -286,11 +286,24 @@ export function applyEffects(world: World, host: QuestHost, questId: string | un
 }
 
 /** A place changes (design: toestand van plekken): flooded, damaged, destroyed, abandoned, occupied, drained. */
+/** What the player sees when the place they stand in changes (M9.4). */
+const HAPPENING: Record<PlaceStateName, string> = {
+  normal: 'The place around you is itself again.',
+  flooded: 'Water comes in, brown and cold. It spreads over the ground and rises round your feet.',
+  damaged: 'Something gives with a crack, and the place around you is broken.',
+  destroyed: 'Fire and ruin take the place around you.',
+  abandoned: 'People hurry off with what they can carry, and the place empties around you.',
+  occupied: 'Soldiers march in and take the place. They look you over.',
+  drained: 'The water drains away around you, and leaves stinking mud.',
+}
+
 export function setPlaceState(world: World, host: QuestHost, location: string, state: PlaceStateName, out: Output[]): void {
   const places = (world.state.places ??= {})
   const was = places[location]?.state
   if (state === 'normal') delete places[location]
   else places[location] = { state, since: world.now }
+  // It happens where the player stands (M9.4): they see it happen, not only find it so later.
+  if (location === world.state.player.location && state !== (was ?? 'normal')) out.push({ kind: 'narration', text: HAPPENING[state] })
   // A place that is itself again is news with a claim (M8.1): whoever hears it knows they can go back.
   if (state === 'normal' && was && was !== 'drained' && world.content.locations.has(location)) {
     const name = world.location(location).name

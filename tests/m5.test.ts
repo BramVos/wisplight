@@ -133,7 +133,10 @@ describe('checks with real skills', () => {
     await play(engine, 'create warden heathborn peat_cutter name=Joost')
     const c = character(engine.world)!
     expect(skillBonus(content, c, 'intimidation')).toBe(6)
-    const out = await play(engine, 'north', 'talk trijntje', 'intimidate trijntje to lower the price')
+    // Whoever is on the green (M9.4: naming someone who is elsewhere no longer falls to whoever is here).
+    await play(engine, 'north')
+    const here = engine.world.npc(engine.world.npcsAt(engine.state.player.location)[0]!).short.toLowerCase()
+    const out = await play(engine, `talk ${here}`, `intimidate ${here} to lower the price`)
     expect(out).toMatch(/\(Intimidation \d+ vs DC \d+/)
     const total = Number(/Intimidation (\d+) vs DC (\d+)/.exec(out)![1])
     expect(total).toBeGreaterThanOrEqual(7)

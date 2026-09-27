@@ -53,7 +53,7 @@ import { fightsBack, mayAttackFirst, mayLend } from './social/gates'
 import { flirt, marry } from './social/romance'
 import { conversationActions, evaluate, expireConditions, questAction, questlog, questPage, questsOnDeath, runQuestAction, setPlaceState, startQuest, triggers, type QuestHost } from './quests/engine'
 import { PlaceState } from './quests/schema'
-import { plansDue, startPlan, startWorldPlans } from './quests/plans'
+import { plansDue, startPlan, startWorldPlans, tellAreaNews } from './quests/plans'
 import { primeWatchers, processSignals, queueSignal } from './signals'
 import { mediateBetween } from './aftermath'
 import { groupBetween, mediateGroup, sideWith } from './social/groups'
@@ -670,6 +670,8 @@ export class Engine {
     if (before !== this.state.player.location) {
       arrived(this.world)
       outputs.push(...triggers(this.world, this.questHost, { at: this.state.player.location }))
+      // Into an area with news of its own: the player hears it once (M9.4).
+      tellAreaNews(this.world, outputs)
       outputs.push(...findPurse(this.world), ...payToll(this.world), ...this.maybeEncounter(before))
     }
     noticeCarried(this.world)
@@ -936,6 +938,10 @@ export class Engine {
     }
     const npc = findNpcHere(this.world, split[0] ?? '')
     if (!npc) {
+      // Someone named who is elsewhere: not the one who happens to be here (found in the M9.4 playtest:
+      // "tell sijbrand about the dyke" at the horse mill was said to Teunis).
+      const elsewhere = split[0] && split.length > 1 ? findNpcAnywhere(this.world, split[0]) : undefined
+      if (elsewhere) return { error: `${callName(this.world.npc(elsewhere))} isn't here.` }
       const only = this.onlyNpcHere()
       if (only) return { npc: only, rest: joined.replace(separator, '').trim() }
       // Nobody here to ask (found in the M9.4 playtest: "where is lubbert" alone on a street said "Who do you mean?").

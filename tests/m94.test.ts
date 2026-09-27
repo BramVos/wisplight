@@ -109,6 +109,56 @@ describe('M9.4: what the playtest of the storylines found', () => {
     expect(engine.world.npcsAt(engine.state.player.location)).toContain('npc_kaatje')
   })
 
+  it('lets someone come upon a leak, and the news finds its way; the player can pass it on', async () => {
+    const engine = new Engine(content, { seed: 1, builder: true })
+    await engine.handle('@plan dyke_leak')
+    const leak = engine.state.news!.facts.find((f) => f.claim?.value === 'leaking')!
+    // Teunis came upon it on the dyke road, wherever he is now.
+    expect(engine.state.news!.heard['npc_teunis']![leak.id]).toBeDefined()
+    for (const c of ['@goto loc_waagdam_horse_mill', '@time 9', 'talk teunis', '2', 'bye']) await engine.handle(c)
+    expect(engine.state.news!.heard['player']![leak.id]).toBeDefined()
+    // Where it happened is heard of now: the stranger can walk there.
+    expect(Object.keys(engine.state.player.journal ?? {}).some((id) => /oude_zijl/.test(id))).toBe(true)
+    for (const c of ['@goto loc_oude_zijl_dykehouse', 'wait for sijbrand']) await engine.handle(c)
+    const told = said(await engine.handle('tell sijbrand about the dyke'))
+    expect(told).toMatch(/The dyke's leaking at Oude Zijl/)
+    const theirs = engine.state.news!.heard['npc_sijbrand']![leak.id]!
+    expect(theirs.from).toBe('player')
+  })
+
+  it('tells the news of an area to the player there, once, and shows a place changing around them', async () => {
+    const engine = game()
+    await engine.handle('north')
+    const out = said(await engine.handle('@plan dyke_breach'))
+    const later = said(engine.tick(90))
+    expect(`${out}\n${later}`).toMatch(/The dyke at Oude Zijl has broken, and the water is in Veenhoek\./)
+    expect(`${out}\n${later}`).toMatch(/Water comes in, brown and cold/)
+    expect(said(engine.tick(60))).not.toMatch(/The dyke at Oude Zijl has broken/)
+  })
+
+  it('does not tell the stranger their own coming as news, nor a speaker their own news', async () => {
+    const engine = game()
+    for (const c of ['@goto loc_goose_common', '@time 19']) await engine.handle(c)
+    const someone = engine.world.npcsAt(engine.state.player.location).find((id) => engine.world.npcState(id).activity !== 'asleep')!
+    const name = engine.world.npc(someone).short.toLowerCase()
+    for (const c of [`talk ${name}`]) await engine.handle(c)
+    expect(said(await engine.handle('2'))).not.toMatch(/stranger from Graafhaven came/)
+  })
+
+  it('says someone named is not here, rather than speaking to whoever is', async () => {
+    const engine = game()
+    await engine.handle('north')
+    expect(said(await engine.handle('tell sijbrand about the dyke'))).toBe("Sijbrand isn't here.")
+  })
+
+  it('waits for someone, and stops when they come', async () => {
+    const engine = game()
+    for (const c of ['@goto loc_veenhoek_bakery', '@time 3']) await engine.handle(c)
+    const out = said(await engine.handle('wait for mirte'))
+    expect(out).toMatch(/Mirte is here\./)
+    expect(engine.world.npcsAt('loc_veenhoek_bakery')).toContain('npc_mirte')
+  })
+
   it('says there is nobody to ask when nobody is there', async () => {
     const engine = game()
     await engine.handle('@goto loc_kattenbroek_edge')

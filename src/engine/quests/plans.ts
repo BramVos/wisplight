@@ -327,7 +327,7 @@ export function runEffect(world: World, host: QuestHost, p: PlanState, e: PlanEf
       }
     }
   } else if ('tension' in e) shiftTension(world, e.tension[0], e.tension[1], e.delta, e.why)
-  else if ('news' in e) (world.state.areaNews ??= {})[e.area] = e.news
+  else if ('news' in e) setAreaNews(world, e.area, e.news, out)
   else applyEffects(world, host, undefined, [e], out)
 }
 
@@ -341,6 +341,27 @@ export function closedBetween(world: World, a: string, b: string): string | unde
 }
 
 /** What a place looks like in its changed state, after its own description. */
+/**
+ * News of an area (M9.4): the player there hears it at once, and whoever comes
+ * into the area later hears it once. Found in the playtest of the dyke: "the
+ * water is in Veenhoek" was written down and never told.
+ */
+export function setAreaNews(world: World, area: string, news: string, out: Output[]): void {
+  ;(world.state.areaNews ??= {})[area] = news
+  tellAreaNews(world, out)
+}
+
+/** The news of the player's area, once. */
+export function tellAreaNews(world: World, out: Output[]): void {
+  const area = world.content.locations.get(world.state.player.location)?.area
+  const news = area ? world.state.areaNews?.[area] : undefined
+  if (!area || !news) return
+  const told = (world.state.player.areaNewsTold ??= {})
+  if (told[area] === news) return
+  told[area] = news
+  out.push({ kind: 'narration', text: news.charAt(0).toUpperCase() + news.slice(1) })
+}
+
 export function placeStateLine(world: World, location: string): string | undefined {
   const state = world.state.places?.[location]?.state
   if (!state) return undefined

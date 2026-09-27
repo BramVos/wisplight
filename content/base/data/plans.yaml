@@ -120,6 +120,9 @@ plans:
             village: "The dyke's leaking at Oude Zijl, they say!"
             far: "A dyke is leaking somewhere, they say."
             claim: { subject: loc_oude_zijl_dyke, key: state, value: leaking }
+            # Teunis from Waagdam comes upon it on the dyke road while the dyke reeve is at home (M8.2 scenario;
+            # without a finder nobody ever knew, found in the M9.4 playtest).
+            witnesses: [npc_teunis]
       - id: shored
         after: leak
         when: [{ knows: { who: npc_sijbrand, subject: loc_oude_zijl_dyke, key: state, value: leaking } }, { not_flag: dyke_broke }]

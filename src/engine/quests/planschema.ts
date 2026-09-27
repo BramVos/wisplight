@@ -77,6 +77,8 @@ const FactTemplate = z
     about: z.array(z.string()).default([]),
     place: SelectorSchema.optional(),
     claim: ClaimSchema.optional(),
+    /** Only these saw it (M9.4): a leak someone came upon; without it, everyone at the place. */
+    witnesses: z.array(z.string()).optional(),
   })
   .strict()
 

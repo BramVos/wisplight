@@ -278,6 +278,8 @@ export interface Debt {
 }
 
 export interface PlayerState {
+  /** The news of each area the player has been told (M9.4): told once, and again when it changes. */
+  areaNewsTold?: Record<string, string>
   location: string
   money: number
   inventory: Counts

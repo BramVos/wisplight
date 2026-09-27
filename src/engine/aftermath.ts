@@ -10,7 +10,7 @@ import { believes, factById, heardBy, recordFact } from './news'
 import { holdFeast } from './stories'
 import { holds, type QuestHost } from './quests/engine'
 import type { Selector, Verb, VerbText } from './quests/planschema'
-import { planOf, runEffect, running, startPlan, type PlanState, type StepState } from './quests/plans'
+import { planOf, runEffect, running, setAreaNews, startPlan, type PlanState, type StepState } from './quests/plans'
 import { setMood, shiftBond } from './social/deeds'
 import { causeOf, queueSignal, watchBelief } from './signals'
 import { askTrader, isTrader, mayChaseAway } from './belief'
@@ -535,7 +535,7 @@ export function runVerb(world: World, ctx: PlanContext, verb: Verb, st: StepStat
   // Everything an effect plan could already do. A flight in a plan with steps has no end of its own.
   if ('news' in v && 'area' in v) {
     if (!world.content.areas.has(v.area)) return false
-    ;(world.state.areaNews ??= {})[v.area] = fill(world, v.news, ctx.bind)
+    setAreaNews(world, v.area, fill(world, v.news, ctx.bind), ctx.out)
     return true
   }
   runEffect(world, ctx.host, ctx.plan, v, ctx.out, 'flee' in v ? (ctx.plan.expires ?? world.now + v.days * DAY) : undefined)
@@ -551,7 +551,8 @@ function tell(world: World, ctx: PlanContext, t: Extract<Verb, { tell: unknown }
   const where = place && world.content.locations.has(place) ? place : (ctx.bind['place'] ?? world.state.player.location)
   const vars = { ...ctx.bind, place: where }
   const claim: Claim | undefined = t.claim ? { ...t.claim, subject: bindValue(world, t.claim.subject, ctx), value: bindValue(world, t.claim.value, ctx) } : undefined
-  return recordFact(world, {
+  const finders = t.witnesses ? bindValue(world, t.witnesses, ctx).filter((id) => world.content.npcs.has(id)) : undefined
+  const fact = recordFact(world, {
     kind: t.kind,
     about: bindValue(world, t.about, ctx).filter((id) => world.content.npcs.has(id) || world.content.topics.has(id) || world.content.locations.has(id)),
     place: world.content.locations.has(where) ? where : world.state.player.location,
@@ -559,7 +560,11 @@ function tell(world: World, ctx: PlanContext, t: Extract<Verb, { tell: unknown }
     title: fill(world, t.title, vars),
     text: { precise: fill(world, t.precise, vars), village: fill(world, t.village, vars), far: fill(world, t.far, vars) },
     ...(claim ? { claim } : {}),
-  }).id
+    ...(finders ? { witnesses: finders } : {}),
+  })
+  // Who came upon it knows it, wherever they are by now (M9.4): the leak Teunis saw on the dyke road.
+  for (const id of finders ?? []) if (world.alive(id)) heardBy(world, id)[fact.id] ??= { level: 3, reliability: 1, from: 'witness', t: world.now }
+  return fact.id
 }
 
 /** Every step that is done is news (design: "Elke stap wordt nieuws"): the belang and versions of its verb. */

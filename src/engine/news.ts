@@ -284,6 +284,24 @@ export function passOn(world: World, teller: string, listener: string, factId: s
   noticed(world, listener, fact)
 }
 
+/**
+ * The player tells an NPC something they heard (M9.4): the NPC hears it from
+ * the stranger, one step less sure, and believes it as far as they trust the
+ * stranger. Found in the playtest of the dyke: nobody could be warned.
+ */
+export function playerTells(world: World, listener: string, factId: string): Heard | undefined {
+  const mine = heardBy(world, 'player')[factId]
+  const fact = factById(world, factId)
+  const theirs = heardBy(world, listener)
+  if (!mine || !fact || !world.alive(listener)) return undefined
+  if (theirs[factId]) return theirs[factId]
+  const h: Heard = { level: Math.max(1, mine.level - 1) as Heard['level'], reliability: Math.round(mine.reliability * 0.9 * 100) / 100, from: 'player', t: world.now }
+  theirs[factId] = h
+  heardClaim(world, listener, fact, h)
+  noticed(world, listener, fact)
+  return h
+}
+
 /** The teller passes on the two juiciest facts the listener has not heard yet. */
 function tell(world: World, teller: string, listener: string): void {
   const known = heardBy(world, teller)

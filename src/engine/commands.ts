@@ -50,7 +50,7 @@ const HELP = [
   'Things: inventory (i), take, drop, give <thing> to <person>, use <object>, eat <food>.',
   'Trade: list (what is for sale here), buy <thing> [amount], sell <thing> [amount], rent a room.',
   'Work: work (for a day\'s pay), invest <amount>, loads (what there is to carry from here), haul <goods> to <place>, deliver.',
-  'Time: time, wait [minutes], sleep. At night: knock (on a door), wake <person>.',
+  'Time: time, wait [minutes], wait for <person>, sleep. At night: knock (on a door), wake <person>.',
   'Pace: tempo calm, tempo normal or tempo dramatic (how much happens in the world).',
   "Talking: talk <person>, ask <person> about <topic>, say <text> or 'text.",
   'You: sheet, create (make your character), level up, train <skill>, wield <weapon>, wear <armour>, devote to <patron>, pray, rite.',
@@ -104,6 +104,18 @@ export function runCommand(host: CommandHost, command: Command): Output[] {
     case 'sleep':
       return sleep(host)
     case 'wait': {
+      // WAIT FOR SIJBRAND (M9.4): up to ten hours, until that one is here.
+      if (/^(for|op)$/i.test(command.args[0] ?? '') && command.args.length > 1) {
+        const who = findNpcAnywhere(world, command.args.slice(1).join(' '))
+        if (!who) return [error(`Wait for whom? Nobody called "${command.args.slice(1).join(' ')}".`)]
+        if (world.npcsAt(world.state.player.location).includes(who)) return [text(`${callName(world.npc(who))} is here.`)]
+        const name = callName(world.npc(who))
+        const seen = host.passUntil
+          ? host.passUntil(600, () => (world.npcsAt(world.state.player.location).includes(who) ? `${name} is here.` : undefined))
+          : host.pass(600)
+        const came = world.npcsAt(world.state.player.location).includes(who)
+        return [...seen, text(came ? `It is ${clockText(world)}.` : `${name} has not come. It is ${clockText(world)}.`)]
+      }
       // WAIT 30, WAIT 3 HOURS: minutes unless an hour is named, at most ten hours at a time.
       const amount = Number(command.args[0]) || 10
       const minutes = Math.min(600, Math.max(1, /^(h|hrs?|hours?|uur|uren)$/i.test(command.args[1] ?? '') ? amount * 60 : amount))
