@@ -85,3 +85,18 @@ items:
     aliases: [salve, ointment]
     value: 15
     remedy: { heal: 1d8 }
+
+  # M9.1: what Skerrow's own counters are made of.
+  - id: heather
+    name: bundle of heather
+    plural: bundles of heather
+    aliases: [heather]
+    description: Tough purple heather from the Heights, for the Salt Kettle's ale.
+    value: 1
+
+  - id: kelp
+    name: armful of kelp
+    plural: armfuls of kelp
+    aliases: [kelp, seaweed]
+    description: Brown kelp from the strand, slick and smelling of the sea.
+    value: 1

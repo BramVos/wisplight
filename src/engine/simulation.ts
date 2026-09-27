@@ -128,10 +128,13 @@ function supply(world: World): void {
         const room = Math.max(0, target - (stock[rule.item] ?? 0))
         if (room <= 0) continue
         // From the settlement's store for a good its ledger carries (M8.4); otherwise the fixed supply.
-        const fromStore = fillFromLedger(world, location.id, service.provider, rule.item, Math.min(room, rule.amount))
+        const want = Math.min(room, rule.amount)
+        let fromStore = fillFromLedger(world, location.id, service.provider, rule.item, want)
+        // Food first (M9.1): whatever the store says, a kitchen or a tap scrapes a quarter together, so nobody goes hungry by a sum.
+        if (fromStore !== undefined && (world.content.items.get(rule.item)?.food ?? 0) > 0) fromStore = Math.max(fromStore, Math.min(want, Math.ceil(rule.amount / 4)))
         // Scarcity from an effect plan: only a share comes in.
         const share = world.state.market?.[rule.item] ?? 1
-        add(stock, rule.item, fromStore ?? Math.floor(Math.min(room, rule.amount) * share))
+        add(stock, rule.item, fromStore ?? Math.floor(want * share))
       }
     }
   }

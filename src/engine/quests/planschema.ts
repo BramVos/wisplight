@@ -27,6 +27,7 @@ export type Selector =
   | { step: string }
   | { mover: [Selector, Selector] }
   | { stayer: [Selector, Selector] }
+  | { welcoming: Selector }
 
 export const SelectorSchema: z.ZodType<Selector> = z.lazy(() =>
   z.union([
@@ -41,6 +42,7 @@ export const SelectorSchema: z.ZodType<Selector> = z.lazy(() =>
     z.object({ step: z.string() }).strict().describe('Where an earlier step of this plan happened.'),
     z.object({ mover: z.tuple([SelectorSchema, SelectorSchema]) }).strict().describe('Of two who set up house together: the one who moves (the player, or who lives with a parent).'),
     z.object({ stayer: z.tuple([SelectorSchema, SelectorSchema]) }).strict().describe('Of two who set up house together: the one who stays.'),
+    z.object({ welcoming: SelectorSchema }).strict().describe('Who in an area welcomes its newcomers most: warm hearts who like them, not against them.'),
   ]),
 )
 

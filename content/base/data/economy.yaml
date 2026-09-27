@@ -10,12 +10,18 @@
 # world book gives the places, the people and the prices; what Zwolderkamp and
 # Hunnenloo send and ask is from the design, as a stub: they are not worked out.
 
+# The seasons (Wereldboek, chapter 13; M9.1): peat is cut from Zomermaand to
+# Herfstmaand and must last the year, rye is harvested in Oogstmaand. In the
+# winter the stores go down; below half of what a place keeps, its counters
+# get a share and the price climbs. The clay of the Vaart runs out one day.
 resources:
-  - { id: fen, name: the peat fen, gives: [peat, herbs] }
+  - { id: fen, name: the peat fen, gives: [herbs] }
+  - { id: peat_banks, name: the peat banks, gives: [peat], months: [6, 7, 8, 9] }
   - { id: mere, name: the open water, gives: [eel] }
-  - { id: fields, name: the rye fields, gives: [rye_grain] }
+  - { id: fields, name: the rye fields, gives: [rye_grain], months: [8] }
   - { id: garden, name: a herb garden, gives: [herbs] }
-  - { id: clay, name: the clay of the Vaart, gives: [clay] }
+  - { id: clay, name: the clay of the Vaart, gives: [clay], amount: 30000 }
+  - { id: pasture, name: the meadows, gives: [milk] }
 
 settlements:
   # Veendorp, 180 souls: peat, eel from the weirs, herbs from the fen.
@@ -24,14 +30,15 @@ settlements:
     people: 150
     income: 20
     openness: -0.05
-    resources: [fen, mere]
+    resources: [fen, peat_banks, mere]
     use: { peat: 16, flour: 4, eel: 3, lamp_oil: 1, barrel: 0.2 }
-    keep: { peat: 60, flour: 12, eel: 8, herbs: 6, wool: 3, yarn: 2, lamp_oil: 3, rye_grain: 4, barrel: 4 }
+    # The summer's peat in the sheds: only what is above eight thousand baskets is sold on.
+    keep: { peat: 8000, flour: 12, eel: 12, herbs: 6, wool: 3, yarn: 2, lamp_oil: 3, rye_grain: 4, barrel: 4 }
     # Since the storm of 8 Herfstmaand De Zwaan stands still: the flour is gone.
-    stock: { flour: 0 }
+    stock: { flour: 0, peat: 8500 }
     workshops:
-      - { id: peat_cuttings, name: the peat cuttings, at: loc_peat_cuttings, from: fen, makes: { peat: 40 }, workers: 5, named: [npc_gerrit, npc_jan_visser] }
-      - { id: eel_weirs, name: the eel weirs, at: loc_wouter_hut, from: mere, makes: { eel: 8 }, workers: 1, named: [npc_wouter] }
+      - { id: peat_cuttings, name: the peat cuttings, at: loc_peat_cuttings, from: peat_banks, makes: { peat: 115 }, workers: 10, named: [npc_gerrit, npc_jan_visser] }
+      - { id: eel_weirs, name: the eel weirs, at: loc_wouter_hut, from: mere, makes: { eel: 11 }, workers: 2, named: [npc_wouter] }
       - { id: herb_gathering, name: herb gathering, at: loc_aaltje_cottage, from: fen, makes: { herbs: 1 }, named: [npc_aaltje] }
       - { id: spinning, name: spinning, at: loc_visser_house, uses: { wool: 1 }, makes: { yarn: 1 }, named: [npc_grietje_visser] }
       # Since old Tijs died last winter nobody makes the barrels the eel goes in (M8.5).
@@ -41,10 +48,10 @@ settlements:
   - id: molenend
     tags: [mill_hamlet]
     people: 6
-    resources: [fields]
+    resources: [fields, pasture]
     use: { peat: 2, flour: 1 }
-    keep: { rye_grain: 20, flour: 6, peat: 6 }
-    stock: { flour: 0 }
+    keep: { rye_grain: 800, flour: 6, peat: 200, milk: 4 }
+    stock: { flour: 0, rye_grain: 2500 }
     workshops:
       - id: mill
         name: the mill De Zwaan
@@ -53,7 +60,8 @@ settlements:
         uses: { rye_grain: 14 }
         makes: { flour: 14 }
         named: [npc_harmen, npc_klaas]
-      - { id: farms, name: the fields, at: loc_molenend_field, from: fields, makes: { rye_grain: 10 }, workers: 2 }
+      - { id: farms, name: the fields, at: loc_molenend_field, from: fields, makes: { rye_grain: 100 }, workers: 2 }
+      - { id: dairy, name: the cows in the meadow, at: loc_molenend_field, from: pasture, makes: { milk: 10 }, workers: 1 }
 
   # The market town, 1,400 souls: the Waag, the market on Wednesday, the grain trade, the horse mill.
   - id: waagdam
@@ -63,11 +71,15 @@ settlements:
     openness: 0.05
     resources: [fields, clay]
     use: { peat: 12, flour: 6, eel: 2, rye_grain: 4, lamp_oil: 2, iron_nails: 2 }
-    keep: { rye_grain: 60, flour: 18, peat: 40, eel: 6, lamp_oil: 8, iron_nails: 20, sailcloth: 4, rope: 6, wool: 2, beer: 40 }
-    stock: { flour: 0 }
+    # A winter's peat and a year's rye in store after the harvest.
+    keep: { rye_grain: 3000, flour: 18, peat: 1500, eel: 6, lamp_oil: 8, iron_nails: 20, sailcloth: 4, rope: 6, wool: 2, beer: 40, knife: 2, lantern: 1 }
+    stock: { flour: 0, rye_grain: 9000 }
     workshops:
       - { id: horse_mill, name: the horse mill, at: loc_waagdam_horse_mill, uses: { rye_grain: 5 }, makes: { flour: 5 }, named: [npc_teunis] }
-      - { id: farms, name: the fields east of the town, at: loc_waagdam_east_gate, from: fields, makes: { rye_grain: 26 }, workers: 8 }
+      - { id: farms, name: the fields east of the town, at: loc_waagdam_east_gate, from: fields, makes: { rye_grain: 300 }, workers: 8 }
+      # Hot meals at De Schaal, knives and lanterns at the smithy (M9.1: every counter from the ledger).
+      - { id: schaal_kitchen, name: the kitchen of De Schaal, at: loc_waagdam_de_schaal, uses: { eel: 1, peat: 1 }, makes: { hot_meal: 10 }, workers: 1, named: [npc_neeltje] }
+      - { id: smithy, name: Hendrik's forge, at: loc_waagdam_smithy, uses: { iron_nails: 1 }, makes: { knife: 0.15, lantern: 0.15 }, named: [npc_hendrik] }
 
   # An inn at the crossroads: travellers bring the money in.
   - id: drowned_goose
@@ -75,7 +87,9 @@ settlements:
     people: 4
     income: 60
     use: { peat: 3, eel: 2 }
-    keep: { peat: 10, eel: 6, beer: 50 }
+    keep: { peat: 300, eel: 8, beer: 50, milk: 8 }
+    workshops:
+      - { id: goose_kitchen, name: the kitchen of the Goose, at: loc_goose_kitchen, uses: { eel: 2, peat: 1 }, makes: { hot_meal: 12 }, workers: 1, named: [npc_trijntje] }
 
   # The priory: brothers, a brewery, a herb garden and the library.
   - id: kloosterveen
@@ -84,7 +98,7 @@ settlements:
     income: 15
     resources: [garden]
     use: { peat: 3, herbs: 1 }
-    keep: { beer: 60, rye_grain: 12, herbs: 4, peat: 9 }
+    keep: { beer: 60, rye_grain: 12, herbs: 4, peat: 300 }
     workshops:
       - { id: brewery, name: the priory brewery, at: loc_kloosterveen_brewery, uses: { rye_grain: 3 }, makes: { beer: 24 }, workers: 2, named: [npc_ansfried] }
       - { id: herb_garden, name: the herb garden, at: loc_kloosterveen_garden, from: garden, makes: { herbs: 1 }, workers: 1 }
@@ -95,7 +109,7 @@ settlements:
     people: 8
     income: 10
     use: { peat: 2, eel: 1 }
-    keep: { peat: 6, eel: 3 }
+    keep: { peat: 200, eel: 3 }
 
 # Beyond the map: only stubs. Not worked out until the chronicler works them out.
 outlands:
@@ -123,8 +137,9 @@ routes:
   - { id: hunnenloo_heideweg, name: the Heideweg from Hunnenloo, from: hunnenloo, to: waagdam, carries: { wool: 7 }, by: Kobus the pedlar, every: 7 }
   - { id: molenend_waagdam, name: the flour cart to Waagdam, from: molenend, to: waagdam, carries: { flour: 8 }, returns: { rye_grain: 6 }, by: Harmen's cart, every: 1 }
   - { id: molenend_veenhoek, name: the flour cart to Veenhoek, from: molenend, to: veenhoek, carries: { flour: 5 }, returns: { peat: 2 }, by: the miller's cart, every: 1 }
-  - { id: veenhoek_waagdam, name: the peat barges on the Vaart, from: veenhoek, to: waagdam, carries: { peat: 12, eel: 2, yarn: 1 }, returns: { lamp_oil: 1, wool: 1, rye_grain: 2 }, by: peat barges on the Graafse Vaart, every: 1 }
-  - { id: veenhoek_goose, name: the cart to the Goose, from: veenhoek, to: drowned_goose, carries: { peat: 3, eel: 2 }, by: a cart from Veenhoek, every: 1 }
+  - { id: veenhoek_waagdam, name: the peat barges on the Vaart, from: veenhoek, to: waagdam, carries: { peat: 16, eel: 3, yarn: 1 }, returns: { lamp_oil: 1, wool: 1, rye_grain: 2 }, by: peat barges on the Graafse Vaart, every: 1 }
+  - { id: veenhoek_goose, name: the cart to the Goose, from: veenhoek, to: drowned_goose, carries: { peat: 4, eel: 4 }, by: a cart from Veenhoek, every: 1 }
+  - { id: molenend_goose, name: the milk cart to the Goose, from: molenend, to: drowned_goose, carries: { milk: 8 }, by: the dairy cart, every: 1 }
   - { id: veenhoek_kloosterveen, name: the priory path, from: veenhoek, to: kloosterveen, carries: { peat: 3 }, by: a cart on the Priorijpad, every: 1 }
   - { id: veenhoek_oude_zijl, name: the tow path to Oude Zijl, from: veenhoek, to: oude_zijl, carries: { peat: 4, eel: 2 }, by: a barge on the tow path, every: 2 }
   - { id: kloosterveen_goose, name: the priory's beer to the Goose, from: kloosterveen, to: drowned_goose, carries: { beer: 20 }, by: the priory's cart, every: 1 }

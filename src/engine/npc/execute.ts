@@ -1,3 +1,5 @@
+import { inSeason } from '../content'
+import { GameClock } from '../clock'
 import { minuteOfDay } from '../clock'
 import { areaTopicId, callName, type Direction, type Need } from '../content'
 import { applyEffect, relation } from '../dialogue/relations'
@@ -117,6 +119,7 @@ export function executeStep(world: World, npcId: string, step: Step): StepResult
       if (!found || !affordance || npc.location !== step.location) return 'failed'
       const state = world.objectState(step.location, step.object)
       if (!Object.entries(affordance.requires_state).every(([k, v]) => state[k] === v)) return 'failed'
+      if (!inSeason(affordance, new GameClock(world.now).parts.month)) return 'failed'
       if (found.instance.provider && !world.objectOpen(step.location, found.instance)) return 'failed'
       if (!hasAll(npc.inventory, affordance.consumes, step.times)) return 'failed'
       const fee = affordance.fee * step.times

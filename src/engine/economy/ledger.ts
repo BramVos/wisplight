@@ -30,6 +30,8 @@ export interface Ledger {
   idle: Record<string, number>
   /** Goods a counter wanted today and the store could not give. */
   missed: Record<string, boolean>
+  /** For a good made only in its season: what lay in store when the season's making stopped (M9.1). */
+  peak?: Record<string, number>
   /** The last day: what was made and used, what came in and went out. */
   last: { made: Record<string, number>; used: Record<string, number>; came: Record<string, number>; went: Record<string, number> }
 }
@@ -89,6 +91,11 @@ export function carried(world: World, settlement: string): Set<string> {
   }
   byWorld.set(settlement, goods)
   return goods
+}
+
+/** Whether a settlement makes this good only in its season (peat in summer, rye at harvest). */
+export function seasonal(world: Pick<World, 'content'>, s: Settlement, item: string): boolean {
+  return s.workshops.some((w) => item in w.makes && w.from !== undefined && world.content.resources.get(w.from)?.months !== undefined)
 }
 
 /** What a settlement aims to hold of a good: its keep, or three days of its use. */
@@ -215,6 +222,8 @@ function produce(world: World, s: Settlement, today: number): void {
     for (const [item, n] of Object.entries(w.makes)) {
       const q = round(n * scale)
       l.stock[item] = round((l.stock[item] ?? 0) + q)
+      // The season's store: what there is while it is being made.
+      if (ground?.months) (l.peak ??= {})[item] = l.stock[item]!
       l.last.made[item] = round((l.last.made[item] ?? 0) + q)
       // The work is paid: half of what it is worth stays in the settlement.
       l.purse += Math.floor((q * value(world, item)) / 2)
@@ -303,7 +312,8 @@ function weigh(world: World, s: Settlement, unmet: Set<string>): void {
     // Short: the nameless did not get what they need, or a counter found the store empty since yesterday.
     l.short[item] = unmet.has(item) || l.missed[item] ? (l.short[item] ?? 0) + 1 : 0
     const aim = aimOf(s, item)
-    l.surplus[item] = aim > 0 && (l.stock[item] ?? 0) > aim * 2 ? (l.surplus[item] ?? 0) + 1 : 0
+    // What is made in its season (peat, the harvest) is the store for the year, not a surplus (M9.1).
+    l.surplus[item] = !seasonal(world, s, item) && aim > 0 && (l.stock[item] ?? 0) > aim * 2 ? (l.surplus[item] ?? 0) + 1 : 0
   }
   l.missed = {}
 }
@@ -318,7 +328,12 @@ export function fillFromLedger(world: World, location: string, provider: string,
   const s = settlementAt(world, location)
   if (!s || !carried(world, s.id).has(item)) return undefined
   const l = economy(world).ledgers[s.id]!
-  const qty = Math.floor(Math.min(want, Math.max(0, l.stock[item] ?? 0)))
+  // Below half of what the place wants to hold, the store is rationed (M9.1): the counter gets its share, and the price climbs.
+  // A good made only in its season is rationed once two thirds of the season's store is gone: through the winter it gets dearer.
+  const have = Math.max(0, l.stock[item] ?? 0)
+  const line = seasonal(world, s, item) ? ((l.peak ??= {})[item] ??= Math.max(have, aimOf(s, item))) * (2 / 3) : aimOf(s, item) / 2
+  const share = line > 0 && have < line ? have / line : 1
+  const qty = Math.floor(Math.min(want * share, have))
   // Less in store than the counter wants: that is short too.
   if (qty < want) l.missed[item] = true
   if (qty <= 0) return 0
@@ -372,9 +387,12 @@ function workOutLiving(world: Pick<World, 'content'>, settlement: string): strin
   const worth = new Map<string, number>()
   let made = 0
   for (const w of s.workshops) {
+    // A harvest counts as its share of the year (M9.1).
+    const months = w.from ? world.content.resources.get(w.from)?.months : undefined
+    const year = months ? months.length / 13 : 1
     for (const [item, n] of Object.entries(w.makes)) {
-      worth.set(item, (worth.get(item) ?? 0) + n * value(world, item))
-      made += n
+      worth.set(item, (worth.get(item) ?? 0) + n * year * value(world, item))
+      made += n * year
     }
   }
   if (made === 0) return undefined

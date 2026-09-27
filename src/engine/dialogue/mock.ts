@@ -208,6 +208,8 @@ export class MockLlm implements LlmClient {
 
   private other(request: LlmRequest): string {
     const properties = (request.schema['properties'] ?? {}) as Record<string, unknown>
+    // One line in a chat the player overhears (M9.1).
+    if (request.schemaName === 'chat_line') return this.mode === 'invalid' ? 'Hmm.' : JSON.stringify({ line: `Is that so? Well, I never heard the like of it.` })
     if (!('goals' in properties)) return '{}'
     const meta = request.meta as { places?: string[]; people?: string[] } | undefined
     if (this.mode === 'invalid') return 'I think she should bake.'

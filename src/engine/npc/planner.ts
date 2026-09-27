@@ -1,3 +1,5 @@
+import { inSeason } from '../content'
+import { GameClock } from '../clock'
 import { nextOpening } from '../clock'
 import type { Affordance, ObjectInstance, Service } from '../content'
 import { add } from '../items'
@@ -204,6 +206,7 @@ export class Planner {
         for (const affordance of type.affordances) {
           if (!affordance.actors.includes('npc') || !(affordance.produces[item] ?? 0)) continue
           if (!Object.entries(affordance.requires_state).every(([k, v]) => state[k] === v)) continue
+          if (!inSeason(affordance, new GameClock(this.world.now).parts.month)) continue
           const allowed =
             affordance.access === 'public' ||
             (affordance.access === 'owner' && object.owner === this.npcId) ||

@@ -71,6 +71,7 @@ export const OutlandSchema = z
     prices: z.number().positive().default(1).describe('Its prices against ours: 1.2 is a fifth dearer.'),
     by: z.string().describe('Who carries the goods: a wagon, a barge, a pedlar.'),
     every: z.number().int().positive().describe('Every so many days.'),
+    faith: z.string().optional().describe('What most people there hold, when it is not what most here hold (M9.1).'),
   })
   .strict()
 export type Outland = z.infer<typeof OutlandSchema>

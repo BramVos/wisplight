@@ -372,6 +372,7 @@ Where a verb wants someone or somewhere, it takes a selector.
 - `step` `{ step: text }`: Where an earlier step of this plan happened.
 - `mover` `{ mover: [selector, selector] }`: Of two who set up house together: the one who moves (the player, or who lives with a parent).
 - `stayer` `{ stayer: [selector, selector] }`: Of two who set up house together: the one who stays.
+- `welcoming` `{ welcoming: selector }`: Who in an area welcomes its newcomers most: warm hearts who like them, not against them.
 
 ### Bindings
 

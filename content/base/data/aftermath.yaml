@@ -279,6 +279,10 @@ aftermath:
     steps:
       - id: band
         do: { form_group: [$a, $b, $c], aim: against, about: $area, name: "those who want the newcomers gone" }
+      # And the warm hearts of the place take their side: the Lantern's charity (M9.1).
+      - id: help
+        at: { days: 1 }
+        do: { form_group: [{ welcoming: $area }], aim: for, about: $area, name: "the Lantern's charity" }
 
   # Two brains' plans cross, and nobody writes the story: they go on, and people talk.
   - id: plans_cross

@@ -1,17 +1,17 @@
-import { itemName } from './items'
+import { welcomingIn } from './social/groups'
 import { orderGoods } from './economy/ledger'
 import { arrive, startProject, templateFor } from './growth/growth'
 import type { Output } from './commands'
 import { callName } from './content'
 import { applyEffect } from './dialogue/relations'
 import { expectHome, familyOf, homeOf, householdOf, livesWithParent, removeTie, setHome, setHousehold, setTie, setWork, staffOf } from './layer'
-import { goAway } from './lod'
+import { farFromPlayer, goAway } from './lod'
 import { believes, heardBy, recordFact } from './news'
 import { holdFeast } from './stories'
 import { holds, type QuestHost } from './quests/engine'
 import type { Selector, Verb, VerbText } from './quests/planschema'
 import { planOf, runEffect, running, startPlan, type PlanState, type StepState } from './quests/plans'
-import { shiftBond } from './social/deeds'
+import { setMood, shiftBond } from './social/deeds'
 import { queueSignal, watchBelief } from './signals'
 import { askTrader, isTrader, mayChaseAway } from './belief'
 import { remember } from './npc/execute'
@@ -138,6 +138,11 @@ export function many(world: World, ctx: PlanContext, sel: Selector | undefined):
       .sort()
       .filter((id) => !house.has(id) && world.alive(id) && world.content.npcs.has(id) && !world.npc(id).child && !world.npc(id).quirks.includes('spirit') && !world.npc(id).creature && (world.route(home, world.npc(id).home)?.minutes ?? Infinity) <= 45)
   }
+  if ('welcoming' in sel) {
+    const at = one(world, ctx, sel.welcoming)
+    const area = at && world.content.areas.has(at) ? at : at ? world.content.locations.get(at)?.area : undefined
+    return area ? welcomingIn(world, area) : []
+  }
   if ('social_near' in sel) return list(nearest(world, placeOf(world, one(world, ctx, sel.social_near)), (id) => world.location(id).tags.includes('social')))
   if ('board_near' in sel) {
     const who = one(world, ctx, sel.board_near)
@@ -184,7 +189,7 @@ export function nameOf(world: World, id: string | undefined): string {
   if (id === 'player') return world.state.player.character?.name ?? 'the stranger'
   if (world.content.npcs.has(id)) return callName(world.npc(id))
   if (world.content.locations.has(id)) return world.location(id).name
-  return world.content.topics.get(id)?.name ?? world.content.areas.get(id)?.name ?? (world.content.items.has(id) ? itemName(world.content, id, 2) : undefined) ?? world.content.routes.get(id)?.name ?? world.content.outlands.get(id)?.name ?? id
+  return world.content.topics.get(id)?.name ?? world.content.areas.get(id)?.name ?? (world.content.items.has(id) ? (world.content.items.get(id)!.plural ?? `${world.content.items.get(id)!.name}s`) : undefined) ?? world.content.routes.get(id)?.name ?? world.content.outlands.get(id)?.name ?? id
 }
 
 /** Fills {a}, {b}, {who}, {place} and the like with names. */
@@ -284,8 +289,14 @@ export function runVerb(world: World, ctx: PlanContext, verb: Verb, st: StepStat
     const place = one(world, ctx, v.feast)
     if (!place || !world.content.locations.has(place)) return false
     const guests = v.guests.flatMap((g) => many(world, ctx, g)).filter((id) => world.content.npcs.has(id))
-    holdFeast(world, place, world.now, world.now + v.hours * 60, guests)
     st.where = place
+    if (farFromPlayer(world, place)) {
+      // Far from the player (M9.1): nobody walks to it; the guests had a good day, and the village hears of it.
+      for (const id of guests) if (world.alive(id)) setMood(world, id, 5, 24, 'a good feast')
+      for (const a of guests) for (const b of guests) if (a < b && world.alive(a) && world.alive(b)) shiftBond(world, a, b, 2)
+      return news(world, ctx, 'feast', ctx.plan.subjects?.filter((s) => isPerson(world, s)) ?? guests.slice(0, 2), vars({ place }), place)
+    }
+    holdFeast(world, place, world.now, world.now + v.hours * 60, guests)
     return news(world, ctx, 'feast', ctx.plan.subjects?.filter((s) => isPerson(world, s)) ?? guests.slice(0, 2), vars({ place }), place)
   }
   if ('return' in v) {
@@ -602,6 +613,11 @@ function comeHome(world: World, ctx: PlanContext, who: string): boolean {
     s.planGoal = undefined
     s.busyUntil = world.now
     s.activity = 'setting off home'
+    // Far from the player nobody walks (M9.1): they are home, as a change of state.
+    if (farFromPlayer(world, s.location) && farFromPlayer(world, home)) {
+      s.location = home
+      s.activity = 'home again'
+    }
   } else return true
   const state = world.state.places?.[home]?.state
   if (state && ['flooded', 'destroyed', 'occupied'].includes(state)) queueSignal(world, { kind: 'house_lost', who: [who], place: home, cause: ctx.plan.signal ? [ctx.plan.signal] : [], belang: 2, watcher: 'rules' })

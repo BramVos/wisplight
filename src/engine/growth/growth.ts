@@ -159,6 +159,8 @@ export function arrive(world: World, templateId: string, settlement: string): st
       inventory: {},
       knows_areas: [settlement],
       portrait: 'generic',
+      // The faith of where they came from, when it is not the common one here (M9.1).
+      ...(world.content.outlands.get(t.from)?.faith ? { faith: world.content.outlands.get(t.from)!.faith } : {}),
       relations: [] as { to: string; role: string; bond: number }[],
     }
     people.push(NpcSchema.parse(raw))

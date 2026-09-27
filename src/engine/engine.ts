@@ -1,3 +1,4 @@
+import { worldFrame } from './dialogue/prompt'
 import { followTombstones, followTombstonesInLog, nameBook, withNames, type NameBook } from './ids'
 import { shiftTension, tensionOf } from './social/realms'
 import { grownContent, invest } from './growth/growth'
@@ -48,7 +49,7 @@ import { plansDue, startPlan, startWorldPlans } from './quests/plans'
 import { primeWatchers, processSignals } from './signals'
 import { mediateBetween } from './aftermath'
 import { groupBetween, mediateGroup, sideWith } from './social/groups'
-import { breakOff, listen } from './chatter'
+import { breakOff, chatLine, chatLineRequest, listen, longListen } from './chatter'
 import { realmLines, realmPage } from './social/realms'
 import { kmFromPlayer, posOf } from './nearby'
 import { carryOver } from './legacy'
@@ -587,7 +588,21 @@ export class Engine {
     if (held) return held
     if (/^(?:hire|rent|borrow)\s+(?:a\s+|the\s+)?punt\b/i.test(text.trim())) return this.hirePunt()
     // LISTEN to people talking here (M8.2).
-    if (/^(?:listen|eavesdrop|overhear)(?:\s+(?:in|to|at)\b.*)?$/i.test(text.trim()) && !this.state.talk) return [...listen(this.world), ...this.pass(2)]
+    if (/^(?:listen|eavesdrop|overhear)(?:\s+(?:in|to|at)\b.*)?$/i.test(text.trim()) && !this.state.talk) {
+      const heard = listen(this.world)
+      // Who stays to listen may hear a line in the listener's voice, from the small model (M9.1).
+      const chat = longListen(this.world)
+      const recorder = this.recorder
+      if (chat && recorder && this.world.aiLive) {
+        try {
+          const reply = await recorder.complete(chatLineRequest(this.world, chat, worldFrame(this.content)))
+          heard.push(...chatLine(this.world, chat, reply.text))
+        } catch {
+          // Optional: the template is enough.
+        }
+      }
+      return [...heard, ...this.pass(2)]
+    }
     const peace = /^(?:mediate|make peace)\s+between\s+(.+?)\s+and\s+(.+)$/i.exec(text.trim())
     if (peace && !this.state.talk) return this.makePeace(peace[1]!, peace[2]!)
     const side = /^(?:side|stand)\s+with\s+(.+)$/i.exec(text.trim())

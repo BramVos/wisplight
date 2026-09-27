@@ -71,6 +71,8 @@ object_types:
         access: staff
         produces: { peat: 6 }
         duration: 60
+        # Peat is cut from Zomermaand to Herfstmaand (Wereldboek, chapter 13).
+        months: [6, 7, 8, 9]
         satisfies: { work: 25 }
         narrate_start: "{name} spits on {their} hands and drives the spade into the peat."
         narrate_end: "{name} stacks the new blocks of peat to dry."
@@ -81,6 +83,7 @@ object_types:
         actors: [player]
         produces: { peat: 6 }
         duration: 480
+        months: [6, 7, 8, 9]
         wage: 24
         check: { skill: athletics, dc: 10 }
         xp: 10

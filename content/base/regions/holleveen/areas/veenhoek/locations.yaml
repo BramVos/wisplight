@@ -285,6 +285,8 @@ locations:
         hours: "07-17"
         days: [Maandag, Dinsdag, Woensdag, Donderdag, Vrijdag, Zaterdag]
         sells: { peat: { stock: 12, target: 30 } }
+        # From the village's store in the sheds (M9.1): in a late winter the baskets get fewer and dearer.
+        supply: [{ item: peat, amount: 8, every: day, at: 7 }]
         demand: [{ item: peat, amount: 8, from: 8, to: 17 }]
 
   - id: loc_peat_cuttings

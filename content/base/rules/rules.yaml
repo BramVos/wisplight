@@ -355,7 +355,7 @@ rules:
       values: { request_done: 2, offering_well: 5, pray: 1 }
       forbids: { cruelty_to_children: -20, entered_uninvited: -5 }
       blessings:
-        - { at: 25, name: Busy Hands, text: "Craft work takes a quarter less time.", effects: [{ bonus: { to: 'skill:crafting', value: 1 } }] }
+        - { at: 25, name: Busy Hands, text: "Craft work takes a quarter less time.", effects: [] }
         - { at: 50, name: The Feather Bed, text: "A full night's sleep clears every ailment but curses.", effects: [] }
         - { at: 75, name: Gold at the Well, text: "Once a season a reward, gold or a vision.", effects: [] }
     - id: baduhenna

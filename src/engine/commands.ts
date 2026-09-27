@@ -1,3 +1,5 @@
+import { inSeason } from './content'
+import { blessed } from './rules/blessings'
 import { ledgerOf, settlementAt } from './economy/ledger'
 import { gainXp, playerCheck } from './rules/player'
 import { GameClock, isOpenAt, MINUTES_PER_DAY, parseHours, startOfDay } from './clock'
@@ -523,7 +525,7 @@ function use(host: CommandHost, args: string[]): Output[] {
   if (affordance.wage) return workForPay(host, object.instance, object.type, affordance)
   for (const [item, qty] of Object.entries(affordance.consumes)) add(world.state.player.inventory, item, -qty)
   for (const [item, qty] of Object.entries(affordance.produces)) add(world.state.player.inventory, item, qty)
-  const seen = host.pass(affordance.duration)
+  const seen = host.pass(craftTime(world, affordance))
   const produced = Object.entries(affordance.produces)
   const result = affordance.player_text ?? `You ${affordance.verb} at the ${label(object.instance, object.type)}.${produced.length ? ` You now have ${produced.map(([i, q]) => qtyName(world, i, q)).join(' and ')}.` : ''}`
   return [text(result), ...seen]
@@ -542,7 +544,7 @@ function workForPay(host: CommandHost, instance: ObjectInstance, type: ObjectTyp
   const result = affordance.check ? playerCheck(world, affordance.check.skill, affordance.check.dc) : undefined
   const well = !result || result.degree === 'success' || result.degree === 'critical success'
   const share = well ? 1 : 0.5
-  const seen = host.pass(affordance.duration)
+  const seen = host.pass(craftTime(world, affordance))
   const store = settlementAt(world, here) ? ledgerOf(world, settlementAt(world, here)!.id) : undefined
   for (const [item, qty] of Object.entries(affordance.produces)) {
     const made = Math.floor(qty * share)
@@ -563,8 +565,15 @@ function workForPay(host: CommandHost, instance: ObjectInstance, type: ObjectTyp
   return [text(`${done}${how}${pay}`), ...seen]
 }
 
+/** How long the player's work takes: craft work (something is made) a quarter less with Busy Hands, Vrouw Holle's blessing (M9.1). */
+function craftTime(world: World, affordance: Affordance): number {
+  const crafts = Object.keys(affordance.produces).length > 0
+  return crafts && blessed(world.content, world.state.player.character, 'Busy Hands') ? Math.round(affordance.duration * 0.75) : affordance.duration
+}
+
 function cannotUse(world: World, here: string, instance: ObjectInstance, affordance: Affordance): string | undefined {
   const state = world.objectState(here, instance.id)
+  if (!inSeason(affordance, new GameClock(world.now).parts.month)) return `Not in ${world.calendar.months[new GameClock(world.now).parts.month - 1] ?? 'this month'}: that is done in ${affordance.months!.map((m) => world.calendar.months[m - 1]).join(', ')}.`
   if (!Object.entries(affordance.requires_state).every(([k, v]) => state[k] === v)) {
     return affordance.broken_text ?? `The ${instance.name ?? instance.type} can't be used right now.`
   }

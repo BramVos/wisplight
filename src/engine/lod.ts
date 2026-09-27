@@ -41,6 +41,12 @@ function placeHex(world: World, location: string) {
   return map.locations.get(location) ?? (location.startsWith('hex:') ? { col: Number(location.slice(4).split(',')[0]), row: Number(location.split(',')[1]) } : undefined)
 }
 
+/** Whether a place is far from the player (M9.1, the distance rule): what happens there is a fact and a change of state, nobody walks. */
+export function farFromPlayer(world: World, location: string): boolean {
+  const km = kmBetween(world, location, world.state.player.location)
+  return km !== undefined && km > FULL_KM
+}
+
 export function tierOf(world: World, npcId: string): Tier {
   const npc = world.state.npcs[npcId]!
   if (npc.note) return 'note'
@@ -83,7 +89,8 @@ export function goAway(world: World, npcId: string, where: string, days: number)
   const inside = world.content.locations.has(where)
   const name = inside ? world.location(where).name : (world.content.topics.get(where)?.name ?? where)
   npc.plan = []
-  if (inside && journey(world, npcId, where)) {
+  // Far from the player nobody walks (M9.1): they are away, as a note, at once.
+  if (inside && !farFromPlayer(world, npc.location) && journey(world, npcId, where)) {
     npc.note!.stay = stay
     return
   }

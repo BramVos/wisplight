@@ -67,3 +67,26 @@ export function mediateGroup(world: World, group: Group, a: string, b: string): 
   for (const m of group.members) applyEffect(world, m, 'affinity', -5)
   return [{ kind: 'narration', text: `You try. But one of them does not trust you, and ${nm} goes back to the others more set against the newcomers than before.` }]
 }
+
+/** People from elsewhere staying in an area now. */
+export function newcomersIn(world: World, area: string): string[] {
+  return newcomersOf(world, { id: '', name: '', aim: 'for', area, members: [], since: world.now })
+}
+
+/**
+ * Who in an area welcomes its newcomers most (M9.1): grown people of the place
+ * with a warm heart, by how much they like them, not in a group against them.
+ * The members of a group for the newcomers, as the standard aftermath forms it.
+ */
+export function welcomingIn(world: World, area: string, n = 3): string[] {
+  const guests = newcomersIn(world, area)
+  if (!guests.length) return []
+  const against = new Set(activeGroups(world).filter((g) => g.aim === 'against' && g.area === area).flatMap((g) => g.members))
+  const liking = (who: string) => guests.reduce((sum, g) => sum + (world.state.bonds?.[who]?.[g]?.affinity ?? 0), 0) / guests.length + world.npc(who).personality.warmth * 10
+  return Object.keys(world.state.npcs)
+    .sort()
+    .filter((id) => world.present(id) && world.content.npcs.has(id) && !world.npc(id).child && !world.npc(id).quirks.includes('spirit') && !guests.includes(id) && !against.has(id))
+    .filter((id) => world.location(world.npc(id).home).area === area && world.npc(id).personality.warmth >= 1)
+    .sort((a, b) => liking(b) - liking(a) || a.localeCompare(b))
+    .slice(0, n)
+}

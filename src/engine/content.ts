@@ -102,8 +102,15 @@ export const AffordanceSchema = z.object({
   check: z.object({ skill: z.string(), dc: z.number().int() }).strict().optional(),
   /** Experience for doing it well: work is a trade you get better at (M8.5). */
   xp: z.number().int().positive().optional(),
+  /** Only in these months (1 to 13), as the ground allows: peat is cut in summer (M9.1). */
+  months: z.array(z.number().int().min(1).max(13)).optional(),
 })
 export type Affordance = z.infer<typeof AffordanceSchema>
+
+/** Whether an affordance can be done this month (M9.1). */
+export function inSeason(affordance: Pick<Affordance, 'months'>, month: number): boolean {
+  return !affordance.months || affordance.months.includes(month)
+}
 
 export const ObjectTypeSchema = z.object({
   id: z.string().regex(/^[a-z0-9_]+$/),
@@ -357,6 +364,8 @@ export const NpcSchema = z.object({
   portrait: z.enum(['unique', 'generic']).default('unique'),
   /** Not in the world at the start: under a curse, found or freed by a quest. */
   absent: z.boolean().default(false),
+  /** Their faith, one of the world's (M9.1); without it, from their patron, or what most people hold. */
+  faith: z.string().optional(),
   /** Fights with the numbers of a creature from the bestiary (the Haakman, Black Mathijs). */
   creature: z.string().optional(),
   /** Open to romance (FO, chapter 8; Wereldboek, "Romance"): with whom, from which attitude. */
@@ -561,6 +570,8 @@ export const WorldSchema = z.object({
   names: NamesSchema.optional(),
   /** At most so many newcomers a season (M8.5). */
   newcomers_per_season: z.number().int().min(0).default(6),
+  /** The faiths of this world (M9.1): the first is what most people hold; a faith may go with patrons of the rules. */
+  faiths: z.array(z.object({ id: z.string().regex(/^[a-z0-9_]+$/), name: z.string(), patrons: z.array(z.string()).default([]) }).strict()).default([]),
 })
 export type WorldDef = z.infer<typeof WorldSchema>
 
@@ -877,6 +888,9 @@ function checkReferences(world: WorldDef | undefined, c: Omit<Content, 'world'>)
       for (const o of t.offices) location(o, `world.towns.${t.id}.offices`)
     }
     for (const id of world.plans) if (!c.plans.has(id)) problems.push(`world.plans: unknown plan ${id}`)
+    const faiths = new Set(world.faiths.map((f) => f.id))
+    for (const n of c.npcs.values()) if (n.faith && !faiths.has(n.faith)) problems.push(`${n.id}: unknown faith ${n.faith}`)
+    for (const o of c.outlands.values()) if (o.faith && !faiths.has(o.faith)) problems.push(`outland ${o.id}: unknown faith ${o.faith}`)
   }
   problems.push(...checkEconomy(c))
   problems.push(...checkGrowth(c))

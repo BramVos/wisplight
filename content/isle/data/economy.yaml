@@ -1,19 +1,36 @@
-# The economy of Skerrow (M8.4): one hamlet with a ledger. The sea gives fish,
-# the Salt Kettle makes stew of it. Nothing comes from beyond the island: the
-# winter storms are coming, and the way off is the story. What the Kettle has
-# no ledger for (ale, biscuit) keeps its fixed supply.
+# The economy of Skerrow (M8.4, M9.1): the hamlet and the Heights each keep a
+# ledger. The sea gives fish, the Salt Kettle makes stew of it and brews heather
+# ale; the biscuit is what the wreck gave up, and it runs out. Nothing comes
+# from beyond the island: the winter storms are coming, and the way off is the
+# story.
 
 resources:
   - { id: sea, name: the inshore sea, gives: [salt_fish] }
+  - { id: heath, name: the heather of the Heights, gives: [heather] }
+  - { id: wreck, name: the wreck on the strand, gives: [ship_biscuit], amount: 300 }
+  - { id: kelp, name: the kelp of the strand, gives: [kelp] }
 
 settlements:
   - id: skerrow_hythe
     tags: [fishing_hamlet, harbour]
     people: 30
     income: 5
-    resources: [sea]
+    resources: [sea, heath, wreck]
     use: { salt_fish: 4 }
-    keep: { salt_fish: 12, fish_stew: 10 }
+    keep: { salt_fish: 12, fish_stew: 10, ale: 30, heather: 10, ship_biscuit: 12 }
     workshops:
+      - { id: brewhouse, name: the Salt Kettle's brewhouse, at: loc_skerrow_salt_kettle, from: heath, makes: { heather: 4 }, workers: 1 }
+      - { id: ale_brewing, name: heather ale, at: loc_skerrow_salt_kettle, uses: { heather: 3 }, makes: { ale: 30 }, workers: 1, named: [npc_maren] }
+      - { id: salvage, name: salvage from the wreck, at: loc_skerrow_harbour, from: wreck, makes: { ship_biscuit: 2 }, workers: 1 }
       - { id: inshore_fishing, name: the inshore fishing, at: loc_skerrow_harbour, from: sea, makes: { salt_fish: 8 }, workers: 2, named: [npc_wenna] }
       - { id: kettle_kitchen, name: the Salt Kettle's kitchen, at: loc_skerrow_salt_kettle, uses: { salt_fish: 3 }, makes: { fish_stew: 10 }, named: [npc_maren] }
+
+  # The Heights: nobody but Tamsin, who makes kelp salve in the silver grove.
+  - id: skerrow_heights
+    tags: [wild]
+    people: 0
+    resources: [kelp]
+    keep: { kelp: 4, kelp_salve: 3 }
+    workshops:
+      - { id: kelp_gathering, name: kelp gathering, at: loc_skerrow_silver_grove, from: kelp, makes: { kelp: 2 }, named: [npc_tamsin] }
+      - { id: salve_still, name: Tamsin's salve, at: loc_skerrow_silver_grove, uses: { kelp: 2 }, makes: { kelp_salve: 0.5 }, named: [npc_tamsin] }

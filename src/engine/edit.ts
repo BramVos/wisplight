@@ -154,9 +154,12 @@ export function applyEdits(files: ContentFile[], edits: Edit[]): EditResult {
   const problems: string[] = []
   const lock = readLock(files)
   const buried = new Set(lock.tombstones.map((t) => `${t.kind}:${t.id}`))
+  // The register changes only when something comes or goes.
+  let comesOrGoes = false
   for (const edit of edits) {
     // An id is a key (M9.1): a new thing may not take an id that went, or one that is there.
     const exists = Boolean(locate(next, edit.kind, edit.id))
+    if (!exists || !edit.data) comesOrGoes = true
     if (edit.data && !exists && buried.has(`${edit.kind}:${edit.id}`)) {
       problems.push(`${edit.id}: this id was used before and has a tombstone; a new thing needs a new id`)
       continue
@@ -171,7 +174,7 @@ export function applyEdits(files: ContentFile[], edits: Edit[]): EditResult {
     // What went leaves a tombstone.
     if (!edit.data && typeof result !== 'string') lock.tombstones.push({ kind: edit.kind, id: edit.id, ...(edit.into ? { into: edit.into } : {}) })
   }
-  if (!problems.length) next = withLock(next, lock)
+  if (!problems.length && comesOrGoes) next = withLock(next, lock)
   if (problems.length) return { ok: false, problems, files, changes: [] }
   const before = new Map(files.map((f) => [f.path, f.text]))
   const changes: FileChange[] = next

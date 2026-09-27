@@ -1,3 +1,4 @@
+import { commonFaith, faithOf } from './faith'
 import type { Output } from './commands'
 import { startAftermath } from './aftermath'
 import { allHold, type QuestHost } from './quests/engine'
@@ -239,6 +240,25 @@ function newcomersByArea(world: World): Map<string, string[]> {
 const FAR_KM = 30
 
 /**
+ * The pressure of newcomers on a village (M8.3, M9.1): their share, where one
+ * from far off (another dialect, other ways) or of another faith than most of
+ * the village weighs half again, each; against how open the place is, and
+ * half again when food is short.
+ */
+export function frictionPressure(world: World, area: string, guests: string[], residents: string[], place: string, short: boolean): number {
+  const here = world.content.areas.get(area)?.pos
+  const faith = commonFaith(world, residents)
+  const weight = (id: string) => {
+    const there = world.content.areas.get(world.location(world.npc(id).home).area)?.pos
+    const far = here && there && Math.hypot(here[0] - there[0], here[1] - there[1]) > FAR_KM
+    const other = faith !== undefined && faithOf(world, id) !== faith
+    return 1 + (far ? 0.5 : 0) + (other ? 0.5 : 0)
+  }
+  const share = guests.reduce((sum, id) => sum + weight(id), 0) / Math.max(1, guests.length + residents.length)
+  return (share / Math.max(0.1, openness(world, place))) * (short ? 1.5 : 1)
+}
+
+/**
  * Friction in a village (M8.3; design: "Wrijving in een dorp"): the share of
  * newcomers against how open the place is, half again as heavy when food is
  * short or they come from far. Over the threshold (0.6 in the content: with
@@ -258,14 +278,7 @@ function friction(world: World, w: Watcher, threshold: number): void {
       .filter((id) => world.present(id) && world.content.npcs.has(id) && !world.npc(id).child && !world.npc(id).quirks.includes('spirit') && world.location(world.npc(id).home).area === area && !guests.includes(id))
     if (!residents.length) continue
     const place = world.state.npcs[guests[0]!]!.stayAt?.where ?? world.npc(residents[0]!).home
-    // Newcomers from far off (more than a day's walk) weigh half again: another dialect, other ways.
-    const here = world.content.areas.get(area)?.pos
-    const weight = (id: string) => {
-      const there = world.content.areas.get(world.location(world.npc(id).home).area)?.pos
-      return here && there && Math.hypot(here[0] - there[0], here[1] - there[1]) > FAR_KM ? 1.5 : 1
-    }
-    const share = guests.reduce((sum, id) => sum + weight(id), 0) / (guests.length + residents.length)
-    const pressure = (share / Math.max(0.1, openness(world, place))) * (short ? 1.5 : 1)
+    const pressure = frictionPressure(world, area, guests, residents, place, short)
     if (pressure < threshold) continue
     seen[`${w.id}:${area}`] = world.now
     const liking = (who: string) => guests.reduce((sum, g) => sum + (world.state.bonds?.[who]?.[g]?.affinity ?? 0), 0) / guests.length + world.npc(who).personality.warmth * 10

@@ -1,3 +1,4 @@
+import type { LlmRequest } from './dialogue/llm'
 import type { Output } from './commands'
 import { callName } from './content'
 import { attitude } from './dialogue/relations'
@@ -27,6 +28,10 @@ export interface Chat {
   fact: string
   started: number
   until: number
+  /** How often the player listened in (M9.1): who stays to listen may hear a line in the listener's own voice. */
+  heard?: number
+  /** What the player caught: for that line. */
+  said?: string
 }
 
 function chatter(world: World) {
@@ -180,7 +185,46 @@ export function listen(world: World): Output[] {
   ;(world.state.player.journal ??= {})[fact.id] ??= world.now
   const said = versionOf(fact, { level, reliability: 0.7, from: chat.teller, t: world.now })
   const noticed = attitude(world, chat.teller).band === 'Hostile' || attitude(world, chat.teller).band === 'Unfriendly' ? ` ${teller} gives you a look.` : ''
+  chat.heard = (chat.heard ?? 0) + 1
+  chat.said = said
+  if (chat.heard > 1) return [{ kind: 'narration', text: `You stay where you are. ${teller} is still going on about it to ${listener}: "${said}"${noticed}` }]
   return [{ kind: 'narration', text: `You stand close enough to hear ${teller} telling ${listener}: "${said}"${noticed}` }]
+}
+
+/** A chat the player has listened to for a while, still going on here: one line of the listener's own may be heard (M9.1). */
+export function longListen(world: World): Chat | undefined {
+  return (world.state.chatter?.chats ?? []).find((c) => c.place === world.state.player.location && world.now < c.until && (c.heard ?? 0) > 1 && c.said)
+}
+
+/**
+ * The request for that one line (M9.1; design "Groeten en praatjes"): the
+ * small model, the listener's card, what was said, one sentence back in their
+ * voice. Optional: without a model the template is all there is.
+ */
+export function chatLineRequest(world: World, chat: Chat, frame: string): LlmRequest {
+  const listener = world.npc(chat.listener)
+  const teller = world.npc(chat.teller)
+  return {
+    role: 'brain',
+    system: `${frame}\n\nYou write one line of speech in a text game: what a villager says back in a chat the player overhears. One sentence, at most 20 words, in their own voice. Only what the line itself says; no names but the two of them. JSON only.`,
+    prompt: `${listener.name} (${listener.short}; ${listener.speech ?? 'plain speech'}) hears ${callName(teller)} say: "${chat.said}"\nWhat does ${callName(listener)} say back?`,
+    schemaName: 'chat_line',
+    schema: { type: 'object', additionalProperties: false, required: ['line'], properties: { line: { type: 'string' } } },
+    maxTokens: 80,
+    meta: { listener: callName(listener), teller: callName(teller), said: chat.said },
+  }
+}
+
+/** The line as it may be shown: one sentence of at most 25 words, or nothing. */
+export function chatLine(world: World, chat: Chat, text: string): Output[] {
+  let line: string | undefined
+  try {
+    line = (JSON.parse(text) as { line?: unknown }).line as string | undefined
+  } catch {
+    return []
+  }
+  if (typeof line !== 'string' || !line.trim() || line.split(/\s+/).length > 25 || /[\n{}]/.test(line)) return []
+  return [{ kind: 'narration', text: `${callName(world.npc(chat.listener))} says: "${line.trim().replace(/^"|"$/g, '')}"` }]
 }
 
 /** TALK breaks a chat off: whoever is spoken to turns to the player. */

@@ -27,6 +27,10 @@ world:
     land: the Sundered Isles
     region: Skerrow
     from: the sea
+  # Faiths (M9.1): the islanders keep to the Tidemother; the old ones still watch the Old Stars.
+  faiths:
+    - { id: tidemother, name: the Tidemother }
+    - { id: old_stars, name: the Old Stars }
   law:
     where: on Skerrow
     officer: headwoman
