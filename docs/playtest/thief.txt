@@ -56,43 +56,29 @@ You carry a cutlass, a knife, a pot of pitch, a sealskin jerkin and 2 ship's bis
 > wait 6 hours
 Wenna leaves west.
 Time passes. It is Thornsday 4 Leaffall 412 SF, 08:00 (morning).
-Maren stares at what you carry. "That's my pot of pitch!"
-Maren will tell the headwoman. You are wanted on Skerrow: a fine of 6 sp.
-Maren: "You're wanted, stranger. 6 sp, or you come with me."
-PAY FINE, or face the consequences.
 
 > look
 The Salt Kettle
 The inn is one long, smoky room under black beams, with a fire at one end and a barrel of ale at the other. It smells of fish stew, tallow and wet wool drying. A ship's figurehead, a woman with a chipped nose, watches the door from the corner; they say she came off the last ship that broke here before the [Grey Gull]. The door west goes out to the green.
 Exits: west
 Here: Maren of the Salt Kettle (at work).
-Maren: "You're wanted, stranger. 6 sp, or you come with me."
-PAY FINE, or face the consequences.
 
 > talk maren of the salt kettle
 You are talking with Maren of the Salt Kettle. Type what you want to say, pick a number, or BYE to stop.
-Maren gives you a short nod.
+Maren nods. "Morning."
 1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
-Maren: "You're wanted, stranger. 6 sp, or you come with me."
-PAY FINE, or face the consequences.
 
 > 2
 You: "What's new around here?"
-Maren nods slowly. "It was the stranger who stole a pot of pitch from Maren: Maren saw it on the stranger. (You saw it yourself.)"
-Maren: "You're wanted, stranger. 6 sp, or you come with me."
-PAY FINE, or face the consequences.
+Maren nods slowly. "A pot of pitch went missing from Maren at The Salt Kettle. Nobody knows who took it. (You saw it yourself.)"
 
 > bye
 Maren lifts a hand. "Go on, then."
-Maren: "You're wanted, stranger. 6 sp, or you come with me."
-PAY FINE, or face the consequences.
 
 > journal
 People: Maren Holt.
 Places: Skerrow Hythe, the Shore, The Headland, The Salt Kettle, The Tidepools, The Wreck Strand.
-Lore: the stranger in Skerrow Hythe, the theft at The Salt Kettle, the stranger's theft from Maren, the Grey Gull.
-Maren: "You're wanted, stranger. 6 sp, or you come with me."
-PAY FINE, or face the consequences.
+Lore: the stranger in Skerrow Hythe, the theft at The Salt Kettle, the Grey Gull.
 
 ==== INFLUENCE (Thornsday 4 Leaffall 412 SF, 08:02 (morning))
 
@@ -100,86 +86,104 @@ PAY FINE, or face the consequences.
 
 > talk maren
 You are talking with Maren of the Salt Kettle. Type what you want to say, pick a number, or BYE to stop.
-Maren gives you a short nod.
+Maren nods. "Morning."
 1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
-Maren: "You're wanted, stranger. 6 sp, or you come with me."
-PAY FINE, or face the consequences.
 
 > give pitch to maren
 You give a pot of pitch to Maren.
 Maren turns it over in her hands. "That's mine. From my own shelf." A long look at you, and it goes back where it belongs.
-Maren: "You're wanted, stranger. 6 sp, or you come with me."
-PAY FINE, or face the consequences.
 
 > I am sorry. I took it in the night.
 Maren shrugs. "Well. Let's leave it."
-Maren: "You're wanted, stranger. 6 sp, or you come with me."
-PAY FINE, or face the consequences.
 
 > bye
 Maren lifts a hand. "Go on, then."
-Maren: "You're wanted, stranger. 6 sp, or you come with me."
-PAY FINE, or face the consequences.
 
 ==== AFTER (Thornsday 4 Leaffall 412 SF, 08:04 (morning))
 
 [24 hours pass]
 Wenna arrives from the west.
+Wenna stops and gives you a nod, curious about the stranger.
+Maren nods to Wenna.
+Maren and Wenna stand talking in The Salt Kettle.
 Wenna leaves west.
 Wenna arrives from the west.
+Maren nods to Wenna.
 Wenna puts out the lamp and goes to bed.
+Maren puts out the lamp and goes to bed.
 Wenna leaves west.
-Maren: "You're wanted, stranger. 6 sp, or you come with me."
-Round 1. Initiative: Maren 15, you 4.
-(Maren's fists 16 vs defence 16: hit)
-Maren swings at you. 3 damage.
-(Maren's fists 14 vs defence 16: miss)
-Maren swings at you. It misses.
 
 > look
-Round 1. 3 actions left.
-  Castaway                  14/17 
-  Maren                     14/14  [engaged]
+The Salt Kettle
+The inn is one long, smoky room under black beams, with a fire at one end and a barrel of ale at the other. It smells of fish stew, tallow and wet wool drying. A ship's figurehead, a woman with a chipped nose, watches the door from the corner; they say she came off the last ship that broke here before the [Grey Gull]. The door west goes out to the green.
+Exits: west
+Here: Maren of the Salt Kettle (at work).
 
 > talk maren of the salt kettle
-(Intimidation 21 vs Maren's Will DC 19: success)
-Maren is Frightened 1.
-2 actions left.
+You are talking with Maren of the Salt Kettle. Type what you want to say, pick a number, or BYE to stop.
+Maren nods. "Morning."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
 
 > 2
-You are in a fight. In a fight: STRIKE [foe], ADVANCE / STEP BACK, RAISE SHIELD, TAKE COVER, USE <herbs>, RECALL [foe], TALK (demand surrender), GRAPPLE / SHOVE / TRIP <foe>, BREAK FREE, STAND, your abilities by name, TOGETHER <companion> [ON <foe>] (a joint strike, 2 actions, from band 1), FLEE (2 actions), SURRENDER, SUBDUE (fight not to kill), END (end your turn).
-2 actions left.
+You: "What's new around here?"
+Maren thinks a moment. "A pot of pitch went missing from Maren at The Salt Kettle. Nobody knows who took it. (You saw it yourself.)"
 
 > bye
-You are in a fight. In a fight: STRIKE [foe], ADVANCE / STEP BACK, RAISE SHIELD, TAKE COVER, USE <herbs>, RECALL [foe], TALK (demand surrender), GRAPPLE / SHOVE / TRIP <foe>, BREAK FREE, STAND, your abilities by name, TOGETHER <companion> [ON <foe>] (a joint strike, 2 actions, from band 1), FLEE (2 actions), SURRENDER, SUBDUE (fight not to kill), END (end your turn).
-2 actions left.
+Maren lifts a hand. "Go on, then."
 
 [72 hours pass]
-
+Wenna arrives from the west.
+Wenna stops and gives you a nod, curious about the stranger.
+Maren nods to Wenna.
+Wenna leaves west.
+Wenna arrives from the west.
+Maren nods to Wenna.
+Wenna puts out the lamp and goes to bed.
+Maren puts out the lamp and goes to bed.
+Wenna leaves west.
+Wenna arrives from the west.
+Wenna stops and gives you a nod, curious about the stranger.
+Maren nods to Wenna.
+Wenna leaves west.
+Wenna arrives from the west.
+Maren nods to Wenna.
+Wenna puts out the lamp and goes to bed.
+Maren puts out the lamp and goes to bed.
+Wenna leaves west.
+Wenna arrives from the west.
+Wenna stops and gives you a nod, curious about the stranger.
+Maren nods to Wenna.
+Wenna leaves west.
+Wenna arrives from the west.
+Maren nods to Wenna.
+Wenna puts out the lamp and goes to bed.
+Maren puts out the lamp and goes to bed.
+Wenna leaves west.
 
 > look
-Round 1. 2 actions left.
-  Castaway                  14/17 
-  Maren                     14/14  [engaged] (frightened 1)
+The Salt Kettle
+The inn is one long, smoky room under black beams, with a fire at one end and a barrel of ale at the other. It smells of fish stew, tallow and wet wool drying. A ship's figurehead, a woman with a chipped nose, watches the door from the corner; they say she came off the last ship that broke here before the [Grey Gull]. The door west goes out to the green.
+Exits: west
+Here: Maren of the Salt Kettle (at work).
 
 > talk maren of the salt kettle
-(Intimidation 12 vs Maren's Will DC 19: failure)
-Maren laughs at you.
-1 action left.
+You are talking with Maren of the Salt Kettle. Type what you want to say, pick a number, or BYE to stop.
+Maren nods. "Morning."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
 
 > 2
-You are in a fight. In a fight: STRIKE [foe], ADVANCE / STEP BACK, RAISE SHIELD, TAKE COVER, USE <herbs>, RECALL [foe], TALK (demand surrender), GRAPPLE / SHOVE / TRIP <foe>, BREAK FREE, STAND, your abilities by name, TOGETHER <companion> [ON <foe>] (a joint strike, 2 actions, from band 1), FLEE (2 actions), SURRENDER, SUBDUE (fight not to kill), END (end your turn).
-1 action left.
+You: "What's new around here?"
+Maren scratches an ear. "A pot of pitch went missing from Maren at The Salt Kettle. Nobody knows who took it. (You saw it yourself.)"
 
 > bye
-You are in a fight. In a fight: STRIKE [foe], ADVANCE / STEP BACK, RAISE SHIELD, TAKE COVER, USE <herbs>, RECALL [foe], TALK (demand surrender), GRAPPLE / SHOVE / TRIP <foe>, BREAK FREE, STAND, your abilities by name, TOGETHER <companion> [ON <foe>] (a joint strike, 2 actions, from band 1), FLEE (2 actions), SURRENDER, SUBDUE (fight not to kill), END (end your turn).
-1 action left.
+Maren lifts a hand. "Go on, then."
 
 > journal
-You are in a fight. In a fight: STRIKE [foe], ADVANCE / STEP BACK, RAISE SHIELD, TAKE COVER, USE <herbs>, RECALL [foe], TALK (demand surrender), GRAPPLE / SHOVE / TRIP <foe>, BREAK FREE, STAND, your abilities by name, TOGETHER <companion> [ON <foe>] (a joint strike, 2 actions, from band 1), FLEE (2 actions), SURRENDER, SUBDUE (fight not to kill), END (end your turn).
-1 action left.
+People: Maren Holt.
+Places: Skerrow Hythe, the Shore, The Headland, The Salt Kettle, The Tidepools, The Wreck Strand.
+Lore: the stranger in Skerrow Hythe, the theft at The Salt Kettle, the stranger bringing back Maren's pot of pitch, the Grey Gull.
 
-==== END (Fireday 5 Leaffall 412 SF, 08:04 (morning))
+==== END (Moonday 8 Leaffall 412 SF, 08:08 (morning))
 Quests: off_skerrow: open, stage stranded
 
 ######## CONTROL: THE PLAYER DOES NOTHING
@@ -238,101 +242,113 @@ You carry a cutlass, a knife, a pot of pitch, a sealskin jerkin and 2 ship's bis
 > wait 6 hours
 Wenna leaves west.
 Time passes. It is Thornsday 4 Leaffall 412 SF, 08:00 (morning).
-Maren stares at what you carry. "That's my pot of pitch!"
-Maren will tell the headwoman. You are wanted on Skerrow: a fine of 6 sp.
-Maren: "You're wanted, stranger. 6 sp, or you come with me."
-PAY FINE, or face the consequences.
 
 > look
 The Salt Kettle
 The inn is one long, smoky room under black beams, with a fire at one end and a barrel of ale at the other. It smells of fish stew, tallow and wet wool drying. A ship's figurehead, a woman with a chipped nose, watches the door from the corner; they say she came off the last ship that broke here before the [Grey Gull]. The door west goes out to the green.
 Exits: west
 Here: Maren of the Salt Kettle (at work).
-Maren: "You're wanted, stranger. 6 sp, or you come with me."
-PAY FINE, or face the consequences.
 
 > talk maren of the salt kettle
 You are talking with Maren of the Salt Kettle. Type what you want to say, pick a number, or BYE to stop.
-Maren gives you a short nod.
+Maren nods. "Morning."
 1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
-Maren: "You're wanted, stranger. 6 sp, or you come with me."
-PAY FINE, or face the consequences.
 
 > 2
 You: "What's new around here?"
-Maren nods slowly. "It was the stranger who stole a pot of pitch from Maren: Maren saw it on the stranger. (You saw it yourself.)"
-Maren: "You're wanted, stranger. 6 sp, or you come with me."
-PAY FINE, or face the consequences.
+Maren nods slowly. "A pot of pitch went missing from Maren at The Salt Kettle. Nobody knows who took it. (You saw it yourself.)"
 
 > bye
 Maren lifts a hand. "Go on, then."
-Maren: "You're wanted, stranger. 6 sp, or you come with me."
-PAY FINE, or face the consequences.
 
 > journal
 People: Maren Holt.
 Places: Skerrow Hythe, the Shore, The Headland, The Salt Kettle, The Tidepools, The Wreck Strand.
-Lore: the stranger in Skerrow Hythe, the theft at The Salt Kettle, the stranger's theft from Maren, the Grey Gull.
-Maren: "You're wanted, stranger. 6 sp, or you come with me."
-PAY FINE, or face the consequences.
+Lore: the stranger in Skerrow Hythe, the theft at The Salt Kettle, the Grey Gull.
 
 ==== AFTER (Thornsday 4 Leaffall 412 SF, 08:02 (morning))
 
 [24 hours pass]
 Wenna arrives from the west.
+Wenna stops and gives you a nod, curious about the stranger.
+Maren nods to Wenna.
+Maren and Wenna stand talking in The Salt Kettle.
 Wenna leaves west.
 Wenna arrives from the west.
+Maren nods to Wenna.
 Wenna puts out the lamp and goes to bed.
+Maren puts out the lamp and goes to bed.
 Wenna leaves west.
-Maren: "You're wanted, stranger. 6 sp, or you come with me."
-Round 1. Initiative: Maren 15, you 4.
-(Maren's fists 16 vs defence 16: hit)
-Maren swings at you. 3 damage.
-(Maren's fists 14 vs defence 16: miss)
-Maren swings at you. It misses.
 
 > look
-Round 1. 3 actions left.
-  Castaway                  14/17 
-  Maren                     14/14  [engaged]
+The Salt Kettle
+The inn is one long, smoky room under black beams, with a fire at one end and a barrel of ale at the other. It smells of fish stew, tallow and wet wool drying. A ship's figurehead, a woman with a chipped nose, watches the door from the corner; they say she came off the last ship that broke here before the [Grey Gull]. The door west goes out to the green.
+Exits: west
+Here: Maren of the Salt Kettle (at work).
 
 > talk maren of the salt kettle
-(Intimidation 21 vs Maren's Will DC 19: success)
-Maren is Frightened 1.
-2 actions left.
+You are talking with Maren of the Salt Kettle. Type what you want to say, pick a number, or BYE to stop.
+Maren nods. "Morning."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
 
 > 2
-You are in a fight. In a fight: STRIKE [foe], ADVANCE / STEP BACK, RAISE SHIELD, TAKE COVER, USE <herbs>, RECALL [foe], TALK (demand surrender), GRAPPLE / SHOVE / TRIP <foe>, BREAK FREE, STAND, your abilities by name, TOGETHER <companion> [ON <foe>] (a joint strike, 2 actions, from band 1), FLEE (2 actions), SURRENDER, SUBDUE (fight not to kill), END (end your turn).
-2 actions left.
+You: "What's new around here?"
+Maren thinks a moment. "A pot of pitch went missing from Maren at The Salt Kettle. Nobody knows who took it. (You saw it yourself.)"
 
 > bye
-You are in a fight. In a fight: STRIKE [foe], ADVANCE / STEP BACK, RAISE SHIELD, TAKE COVER, USE <herbs>, RECALL [foe], TALK (demand surrender), GRAPPLE / SHOVE / TRIP <foe>, BREAK FREE, STAND, your abilities by name, TOGETHER <companion> [ON <foe>] (a joint strike, 2 actions, from band 1), FLEE (2 actions), SURRENDER, SUBDUE (fight not to kill), END (end your turn).
-2 actions left.
+Maren lifts a hand. "Go on, then."
 
 [72 hours pass]
-
+Wenna arrives from the west.
+Wenna stops and gives you a nod, curious about the stranger.
+Maren nods to Wenna.
+Wenna leaves west.
+Wenna arrives from the west.
+Maren nods to Wenna.
+Wenna puts out the lamp and goes to bed.
+Maren puts out the lamp and goes to bed.
+Wenna leaves west.
+Wenna arrives from the west.
+Wenna stops and gives you a nod, curious about the stranger.
+Maren nods to Wenna.
+Wenna leaves west.
+Wenna arrives from the west.
+Maren nods to Wenna.
+Wenna puts out the lamp and goes to bed.
+Maren puts out the lamp and goes to bed.
+Wenna leaves west.
+Wenna arrives from the west.
+Wenna stops and gives you a nod, curious about the stranger.
+Maren nods to Wenna.
+Wenna leaves west.
+Wenna arrives from the west.
+Maren nods to Wenna.
+Wenna puts out the lamp and goes to bed.
+Maren puts out the lamp and goes to bed.
+Wenna leaves west.
 
 > look
-Round 1. 2 actions left.
-  Castaway                  14/17 
-  Maren                     14/14  [engaged] (frightened 1)
+The Salt Kettle
+The inn is one long, smoky room under black beams, with a fire at one end and a barrel of ale at the other. It smells of fish stew, tallow and wet wool drying. A ship's figurehead, a woman with a chipped nose, watches the door from the corner; they say she came off the last ship that broke here before the [Grey Gull]. The door west goes out to the green.
+Exits: west
+Here: Maren of the Salt Kettle (at work).
 
 > talk maren of the salt kettle
-(Intimidation 12 vs Maren's Will DC 19: failure)
-Maren laughs at you.
-1 action left.
+You are talking with Maren of the Salt Kettle. Type what you want to say, pick a number, or BYE to stop.
+Maren nods. "Morning."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
 
 > 2
-You are in a fight. In a fight: STRIKE [foe], ADVANCE / STEP BACK, RAISE SHIELD, TAKE COVER, USE <herbs>, RECALL [foe], TALK (demand surrender), GRAPPLE / SHOVE / TRIP <foe>, BREAK FREE, STAND, your abilities by name, TOGETHER <companion> [ON <foe>] (a joint strike, 2 actions, from band 1), FLEE (2 actions), SURRENDER, SUBDUE (fight not to kill), END (end your turn).
-1 action left.
+You: "What's new around here?"
+Maren scratches an ear. "A pot of pitch went missing from Maren at The Salt Kettle. Nobody knows who took it. (You saw it yourself.)"
 
 > bye
-You are in a fight. In a fight: STRIKE [foe], ADVANCE / STEP BACK, RAISE SHIELD, TAKE COVER, USE <herbs>, RECALL [foe], TALK (demand surrender), GRAPPLE / SHOVE / TRIP <foe>, BREAK FREE, STAND, your abilities by name, TOGETHER <companion> [ON <foe>] (a joint strike, 2 actions, from band 1), FLEE (2 actions), SURRENDER, SUBDUE (fight not to kill), END (end your turn).
-1 action left.
+Maren lifts a hand. "Go on, then."
 
 > journal
-You are in a fight. In a fight: STRIKE [foe], ADVANCE / STEP BACK, RAISE SHIELD, TAKE COVER, USE <herbs>, RECALL [foe], TALK (demand surrender), GRAPPLE / SHOVE / TRIP <foe>, BREAK FREE, STAND, your abilities by name, TOGETHER <companion> [ON <foe>] (a joint strike, 2 actions, from band 1), FLEE (2 actions), SURRENDER, SUBDUE (fight not to kill), END (end your turn).
-1 action left.
+People: Maren Holt.
+Places: Skerrow Hythe, the Shore, The Headland, The Salt Kettle, The Tidepools, The Wreck Strand.
+Lore: the stranger in Skerrow Hythe, the theft at The Salt Kettle, the Grey Gull.
 
-==== END (Fireday 5 Leaffall 412 SF, 08:02 (morning))
+==== END (Moonday 8 Leaffall 412 SF, 08:06 (morning))
 Quests: off_skerrow: open, stage stranded

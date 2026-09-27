@@ -1794,8 +1794,9 @@ export class Engine {
         if (this.state.combat) return out
       }
       if (law) {
-        // The schout waits for the fine; he will ask again another day.
+        // The schout waits for the fine; he will ask again another day, not at every word.
         g.t = this.world.now
+        g.quiet = this.world.now + 6 * 60
         this.world.npcState(id).goals = this.world.npcState(id).goals.filter((goal) => goal.id !== `confront_${id}`)
         out.push({ kind: 'system', text: 'PAY FINE, or face the consequences.' })
       } else settleGrievance(this.world, id)

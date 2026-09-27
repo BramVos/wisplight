@@ -554,6 +554,9 @@ export function stolenSeen(world: World): Output[] {
   for (const crime of world.state.crimes ?? []) {
     if (crime.kind !== 'theft' || crime.offender || crime.returned || crime.proven || !crime.item || !crime.victim) continue
     if ((world.state.player.inventory[crime.item] ?? 0) <= 0 || crime.witnesses.includes(crime.victim)) continue
+    // Openly: what the stranger wields or wears, not what is in their pack.
+    const gear = world.state.player.character?.gear
+    if (!gear || ![gear.weapon, gear.armour, gear.shield].includes(crime.item)) continue
     if (!world.npcsAt(here).includes(crime.victim) || world.npcState(crime.victim).activity === 'asleep') continue
     out.push({ kind: 'narration', text: `${callName(world.npc(crime.victim))} stares at what you carry. "That's my ${itemName(world.content, crime.item, 1)}!"` }, ...proveTheft(world, crime, crime.victim, `${callName(world.npc(crime.victim))} saw it on the stranger`))
   }

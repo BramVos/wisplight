@@ -38,7 +38,8 @@ export function confronting(world: World): string[] {
     .sort()
     .filter((id) => {
       const s = world.state.npcs[id]!
-      return s.grievance && s.location === here && !s.dead && s.activity !== 'asleep' && !s.following
+      // Someone who said their piece waits a while before saying it again (M10.3).
+      return s.grievance && s.location === here && !s.dead && s.activity !== 'asleep' && !s.following && !((s.grievance.quiet ?? 0) > world.now)
     })
 }
 

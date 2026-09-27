@@ -568,8 +568,10 @@ describe('M10.3: caught, suspected, proven, and made right', () => {
     const theft = world.state.crimes!.at(-1)!
     expect(theft).toMatchObject({ unseen: true, victim: 'npc_harmen' })
     expect(world.state.wanted?.count?.fine ?? 0).toBe(0)
-    // Harmen sees his wool on the stranger.
+    // In the pack, nobody sees it; worn openly, Harmen knows his own fleece.
     stay(engine, 'npc_harmen', 'loc_molenend_house')
+    expect(said(await engine.handle('look'))).not.toMatch(/That's my/)
+    engine.state.player.character!.gear.armour = 'wool'
     const out = said(await engine.handle('look'))
     expect(out).toMatch(/Harmen stares at what you carry\. "That's my fleece!"/)
     expect(theft.proven).toBe(true)

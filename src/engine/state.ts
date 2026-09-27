@@ -303,7 +303,7 @@ export interface NpcState {
   /** Anger or joy that lasts a while, -10 to +10 (FO, chapter 8). */
   mood?: { value: number; until: number; reason: string }
   /** Something the player did that the NPC wants to have out with them (the goal Confront). */
-  grievance?: { reason: string; t: number; line: string }
+  grievance?: { reason: string; t: number; line: string; quiet?: number }
   /** Will not serve the stranger until then (M10.3: insulted, they keep their trade shut for the day). */
   noService?: number
   /** Going to find the stranger, to open a talk with this line (M10.3, seek_player), until then. */
