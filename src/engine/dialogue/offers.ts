@@ -18,7 +18,7 @@ import { attitude, relation } from './relations'
 // model, the rules pick from the same offers, so the game can do it all
 // without AI. An offer that goes through is an agreement in the register.
 
-export type OfferKind = 'lead' | 'fetch' | 'wait' | 'meet' | 'give' | 'lend' | 'sell' | 'message' | 'ask'
+export type OfferKind = 'lead' | 'fetch' | 'wait' | 'meet' | 'give' | 'lend' | 'sell' | 'message' | 'ask' | 'teach'
 
 export interface Offer {
   key: string
@@ -40,6 +40,9 @@ export interface Offer {
   price?: number
   /** ask: the request it is about. */
   request?: string
+  /** teach: the skill, and a favour asked instead of money. */
+  skill?: string
+  favour?: string
 }
 
 const DAY = 24 * 60
@@ -202,6 +205,10 @@ export function offersFor(world: World, npcId: string, topics: string[], text: s
     if (when !== undefined) add({ key: `meet:${place}`, kind: 'meet', place, at: when, what: `meet the stranger at ${nameOf(world, place)}, ${clockWords(world, when)}`, intent: `meet at ${nameOf(world, place)} then` }, place)
   }
   for (const item of items.slice(0, 1)) offers.push(...thingOffers(world, npcId, item))
+  if (/\b(teach|learn|show me how|leer me|leren)\b/i.test(text)) {
+    const lesson = teachOffer(world, npcId)
+    if (lesson) offers.push(lesson)
+  }
   if (when !== undefined && !places.length) add({ key: `meet:${here}`, kind: 'meet', place: here, at: when, what: `meet the stranger here, ${clockWords(world, when)}`, intent: 'meet here then' })
   if (/\b(wait|stay)\b/i.test(text) && !offers.some((o) => o.kind === 'wait')) add({ key: 'wait:here', kind: 'wait', place: here, at: world.now + 60, what: 'wait here with the stranger for an hour', intent: 'have you wait here' })
   return offers.slice(0, MAX_OFFERS)
@@ -259,6 +266,30 @@ function thingOffers(world: World, npcId: string, item: string): Offer[] {
   ]
 }
 
+/** What a lesson costs, per rank the stranger already has, in the smallest coin. */
+const LESSON = 16
+
+/**
+ * A craftsman teaches the skill of their trade (M10.3, teach): for money, or
+ * for a favour when they need one and the stranger is short. A lesson is two
+ * practice marks; it will not go past what practice can give.
+ */
+export function teachOffer(world: World, npcId: string): Offer | undefined {
+  const skill = world.content.professions.get(world.npc(npcId).profession)?.teaches
+  const c = world.state.player.character
+  const def = world.content.rules?.skills.find((s) => s.id === skill)
+  if (!skill || !c || !def) return undefined
+  const band = attitude(world, npcId).band
+  const price = LESSON * ((c.ranks[skill] ?? 0) + 1)
+  const favour = world.state.requests.find((r) => r.npc === npcId && r.status === 'open' && r.item)
+  const full = (c.practice[skill] ?? 0) >= 3
+  const cold = band === 'Hostile' || band === 'Unfriendly' || band === 'Wary'
+  const pay = world.state.player.money >= price
+  const decision = !full && !cold && (pay || Boolean(favour)) ? 'yes' : 'no'
+  const reasons = full ? ['the stranger has learnt all practice can give; now they must train'] : cold ? ['you will not share your trade with the stranger'] : pay ? [`a lesson in ${def.name.toLowerCase()} is worth ${world.money(price)}`] : favour ? [`the stranger cannot pay, but could do you a favour: ${favour.item ? itemName(world.content, favour.item) : 'a thing you need'}`] : [`the stranger cannot pay ${world.money(price)}`]
+  return { key: `teach:${skill}`, kind: 'teach', skill, price, ...(pay || !favour ? {} : { favour: favour.id }), what: `teach the stranger some ${def.name.toLowerCase()}, ${pay || !favour ? `for ${world.money(price)}` : 'for a favour'}`, intent: `learn ${def.name.toLowerCase()} from you`, deed: `teach the stranger some ${def.name.toLowerCase()}`, decision, reasons }
+}
+
 /** Days the stranger has to bring what someone asked for, once promised. */
 const ASK_DAYS = 3
 
@@ -293,6 +324,7 @@ function deedOf(world: World, o: Omit<Offer, 'decision' | 'reasons' | 'deed'>): 
     case 'lend':
     case 'sell':
     case 'ask':
+    case 'teach':
       return o.what
   }
 }
@@ -300,18 +332,33 @@ function deedOf(world: World, o: Omit<Offer, 'decision' | 'reasons' | 'deed'>): 
 /** The offers for the prompt, with the game's decision and why. */
 export function offerLines(world: World, npcId: string, offers: Offer[]): string[] {
   if (!offers.length) return []
-  const people = [...new Set(offers.flatMap((o) => (o.person ? [o.person] : [])))]
-  const days = people
-    .filter((p) => knowsTheDayOf(world, npcId, p))
-    .map((p) => ({ p, day: routineNow(world, p) }))
-    .filter((x) => x.day)
-    .map(({ p, day }) => `${nameOf(world, p)} is usually ${day!.activity === 'work' ? 'at work' : day!.activity === 'sleep' ? 'asleep' : ''} at ${nameOf(world, day!.place)} until ${clockWords(world, day!.until)}`.replace('usually  at', 'usually at'))
   return [
-    ...(days.length ? [`WHERE THEY USUALLY ARE (you know their day): ${days.join('; ')}.`] : []),
     'OFFERS (what you can do for the stranger now; the game decided each):',
     ...offers.map((o) => `  ${o.key}: ${o.what}. DECISION: ${o.decision}, because ${o.reasons.join('; ')}.`),
     'If the player asks for one of these, put its key in action and follow the DECISION: a yes you do, a no you refuse with the reason. You may also propose one with DECISION yes (propose); it happens only if the player agrees. Never promise anything that is not a yes here.',
   ]
+}
+
+/**
+ * Time facts for the scene (M10.3, "Brannoc is back at six"): the NPC's own
+ * day, and the day of the people the talk is about whose day they know.
+ * What they think, by the schedules, so an agreement they make fits.
+ */
+export function dayLines(world: World, npcId: string, people: string[]): string[] {
+  const own = routineNow(world, npcId)
+  const days = [...new Set(people)]
+    .filter((p) => p !== npcId && world.content.npcs.has(p) && world.alive(p) && knowsTheDayOf(world, npcId, p))
+    .map((p) => ({ p, day: routineNow(world, p) }))
+    .filter((x) => x.day)
+    .map(({ p, day }) => `${nameOf(world, p)} is usually ${doing(day!.activity)}at ${nameOf(world, day!.place)} until ${clockWords(world, day!.until)}`)
+  return [
+    ...(own ? [`YOUR DAY: ${doing(own.activity)}at ${nameOf(world, own.place)} until ${clockWords(world, own.until)}.`] : []),
+    ...(days.length ? [`WHERE THEY USUALLY ARE (you know their day): ${days.join('; ')}.`] : []),
+  ]
+}
+
+function doing(activity: string): string {
+  return activity === 'work' ? 'at work ' : activity === 'sleep' ? 'asleep ' : activity === 'eat' ? 'eating ' : activity === 'pray' ? 'praying ' : ''
 }
 
 /** Which offer the player's words ask for, by rules: the same for the model's check and the game without a model. */
@@ -319,6 +366,7 @@ export function askedFor(offers: Offer[], text: string): Offer | undefined {
   const t = text.toLowerCase()
   const wants = (kind: OfferKind) => offers.filter((o) => o.kind === kind)
   if (/\b(bring|fetch|get|call|haal|roep)\b.*\b(here|him|her|them|over)\b/.test(t) || /\b(fetch|haal)\b/.test(t)) return wants('fetch')[0]
+  if (/\b(teach|learn|show me how|leer me|leren)\b/.test(t) && wants('teach')[0]) return wants('teach')[0]
   if (/\b(meet|see you|find you|afspreken|zie je)\b/.test(t) && wants('meet')[0]) return wants('meet')[0]
   if (/\b(tell|let .* know|pass .* on|word to|zeg|vertel)\b/.test(t) && wants('message')[0]) return wants('message')[0]
   if (/\b(lend|borrow|loan|leen|lenen)\b/.test(t) && wants('lend')[0]) return wants('lend')[0]
@@ -370,6 +418,31 @@ export function accept(world: World, npcId: string, offer: Offer): { outputs: Ou
     const text = offer.kind === 'lend' ? `${name} lends you ${a}. Bring it back ${clockWords(world, offer.at!)}; it is in your journal.` : offer.kind === 'sell' ? `You pay ${world.money(offer.price!)}, and ${name} hands you ${a}.` : `${name} gives you ${a}.`
     return { outputs: [{ kind: 'system', text }], ends: false }
   }
+  if (offer.kind === 'teach') {
+    const c = world.state.player.character
+    const def = world.content.rules?.skills.find((s) => s.id === offer.skill)
+    if (!c || !def) return { outputs: [], ends: false }
+    if (!offer.favour) {
+      if (world.state.player.money < (offer.price ?? 0)) return { outputs: [{ kind: 'system', text: `You cannot pay ${world.money(offer.price ?? 0)}.` }], ends: false }
+      world.state.player.money -= offer.price!
+      world.npcState(npcId).money += offer.price!
+    }
+    c.practice[offer.skill!] = Math.min(3, (c.practice[offer.skill!] ?? 0) + 2)
+    // A lesson paid for is an offer that went through at once, as a sale is.
+    if (!offer.favour) {
+      const lesson = agree(world, { ...base, kind: 'give', terms: { amount: offer.price! } })
+      if ('id' in lesson) {
+        lesson.status = 'kept'
+        lesson.outcome = { t: world.now, text: `${name} taught the stranger some ${def.name.toLowerCase()} for ${world.money(offer.price!)}` }
+      }
+    }
+    const out: Output[] = [{ kind: 'system', text: `${name} shows you how it is done in the trade. ${def.name} practice: ${'|'.repeat(c.practice[offer.skill!]!)}.` }]
+    // For a favour: the stranger's word to do it, as an ask.
+    const request = offer.favour ? world.state.requests.find((r) => r.id === offer.favour) : undefined
+    const ask = request ? askOffer(world, npcId, request) : undefined
+    if (ask) out.push(...accept(world, npcId, ask).outputs)
+    return { outputs: out, ends: false }
+  }
   if (offer.kind === 'ask') {
     // The stranger's word: bring it by the time. The NPC expects it; the journal has it.
     const promised = agree(world, { by: 'player', to: npcId, source: 'conversation', kind: 'give', what: offer.deed, due: offer.at!, terms: { item: offer.item! } })
@@ -406,6 +479,7 @@ export function offerLine(world: World, npcId: string, offer: Offer): string {
     sell: `"${offer.price !== undefined ? world.money(offer.price) : 'A fair price'}, and it's yours."`,
     message: `"I'll tell ${offer.person ? nameOf(world, offer.person) : 'them'}."`,
     ask: '"Good. I\'ll hold you to that."',
+    teach: '"Watch my hands, then. Like this."',
   }
   return `${callName(npc)}: ${said[offer.kind]}`
 }

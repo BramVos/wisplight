@@ -42,6 +42,7 @@ export const TIER_TOKENS: Record<Tier, number> = { short: 320, normal: 450, expl
 const RULES: { act: Act; pattern: RegExp }[] = [
   { act: 'Farewell', pattern: /^(bye|goodbye|farewell|good night|see you|dag|doei|tot ziens|tot later|welterusten)\b/i },
   { act: 'Insult', pattern: /\b(idiot|fool|stupid|ugly|shut up|hag|liar|coward|sukkel|idioot|stom|lelijk|kop dicht|lafaard)\b/i },
+  { act: 'Intimidate', pattern: /\b(or else|you'?ll regret|you will regret|i'?ll hurt you|i will hurt you|i'?ll kill you|i will kill you|i'?ll break your|watch your back|or you'?ll be sorry|anders krijg je|je zult het berouwen)\b/i },
   { act: 'Apologize', pattern: /\b(sorry|apologi[sz]e|forgive me|my apologies|excuse me|pardon|het spijt me|excuses)\b/i },
   { act: 'Flirt', pattern: /\b(beautiful|pretty eyes|handsome|kiss|lovely smile|mooie ogen|knap|zoen|kus)\b/i },
   { act: 'Compliment', pattern: /\b(thank you|thanks|well done|good bread|kind of you|bedankt|dank je|dank u|lekker|goed gedaan)\b/i },

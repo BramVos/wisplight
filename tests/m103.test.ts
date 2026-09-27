@@ -279,6 +279,89 @@ describe('M10.3: what the player says is a claim', () => {
   })
 })
 
+describe('M10.3: time facts, and learning from a craftsman', () => {
+  it('gives the voice the NPC\'s own day and the day of the people the talk is about', async () => {
+    const good = new MockLlm('good')
+    const engine = withPip(good)
+    await engine.handle('talk pip')
+    await engine.handle('What do you know about your father?')
+    const prompt = good.calls.at(-1)!.prompt
+    expect(prompt).toMatch(/WHERE THEY USUALLY ARE \(you know their day\): Brannoc is usually/)
+  })
+
+  it('a baker teaches baking for money, or for a favour when the stranger is short', async () => {
+    const run = async (money: number) => {
+      const engine = new Engine(content, { seed: 7 })
+      const world = engine.world
+      await engine.handle('create warden heathborn peat_cutter name=Joost')
+      Object.assign(relation(engine.state, 'npc_mirte'), { affinity: 30, trust: 30, familiarity: 40 })
+      stay(engine, 'npc_mirte', world.state.player.location)
+      world.state.player.money = money
+      openRequest(world, { npc: 'npc_mirte', kind: 'fetch', item: 'saw', source: 'motor' })
+      await engine.handle('talk mirte')
+      await engine.handle('no')
+      const out = said(await engine.handle('Could you teach me to bake?'))
+      return { engine, out }
+    }
+    const paid = await run(200)
+    expect(paid.out).toMatch(/Mirte: "Watch my hands, then\. Like this\."/)
+    expect(paid.out).toMatch(/Crafting practice: \|\|\./)
+    expect(paid.engine.state.player.money).toBe(200 - 16)
+    const favour = await run(0)
+    expect(favour.out).toMatch(/Crafting practice: \|\|/)
+    expect(favour.out).toMatch(/You give Mirte your word: bring a saw/)
+    expect(favour.engine.state.player.money).toBe(0)
+  })
+})
+
+describe('M10.3: reactions after a turn', () => {
+  it('an insult to a trader shuts the trade for the day, and it is a deed and gossip', async () => {
+    const engine = new Engine(content, { seed: 7 })
+    const world = engine.world
+    stay(engine, 'npc_mirte', 'loc_veenhoek_bakery')
+    world.state.player.location = 'loc_veenhoek_bakery'
+    await engine.handle('talk mirte')
+    const before = relation(engine.state, 'npc_mirte').affinity
+    const out = said(await engine.handle('Your bread is like stone, you fool.'))
+    expect(out).toMatch(/Mirte folds her arms\. "I'll not serve you today\. Not after that\."/)
+    expect(engine.state.talk).toBeUndefined()
+    expect(relation(engine.state, 'npc_mirte').affinity).toBeLessThan(before)
+    expect(world.state.news!.facts.some((f) => f.kind === 'insulted' && f.about.includes('npc_mirte'))).toBe(true)
+    expect(said(await engine.handle('buy bread'))).toMatch(/Mirte won't serve you today, not after what you said\./)
+    // The next day it has passed; the mood with it.
+    engine.tick(DAY)
+    expect(world.state.npcs['npc_mirte']!.mood?.until ?? 0).toBeLessThanOrEqual(world.now)
+  })
+
+  it('someone without a trade walks off, really; someone hot-tempered and cold to the stranger goes for them', async () => {
+    const engine = new Engine(content, { seed: 7 })
+    const world = engine.world
+    stay(engine, 'npc_jan_visser', 'loc_veenhoek_green')
+    world.state.player.location = 'loc_veenhoek_green'
+    await engine.handle('talk jan')
+    expect(said(await engine.handle('Shut up, you fool.'))).toMatch(/Jan turns on his heel and walks off\./)
+    expect(world.state.npcs['npc_jan_visser']!.location).not.toBe('loc_veenhoek_green')
+    const other = new Engine(content, { seed: 7 })
+    await other.handle('create warden heathborn peat_cutter name=Joost')
+    Object.assign(relation(other.state, 'npc_gerrit'), { affinity: -80, trust: -20 })
+    stay(other, 'npc_gerrit', other.state.player.location, 0)
+    await other.handle('talk gerrit')
+    await other.handle('You are a coward and a fool.')
+    expect((other.state.agreements?.list ?? []).find((a) => a.kind === 'attack')).toMatchObject({ by: 'npc_gerrit', terms: { reason: 'the insult' } })
+    expect(other.state.combat).toBeDefined()
+  })
+
+  it('a timid one who is threatened shouts for help, and the neighbours hear it', async () => {
+    const engine = new Engine(isle, { seed: 7 })
+    const world = engine.world
+    stay(engine, 'npc_garrick', world.state.player.location)
+    await engine.handle('talk garrick')
+    expect(said(await engine.handle("Give me your oil or you'll regret it."))).toMatch(/Garrick backs away and shouts\. "Help! Somebody, help!"/)
+    expect(world.state.news!.facts.find((f) => f.kind === 'threatened')?.text.precise).toMatch(/Garrick shouted for help/)
+    expect(engine.state.talk).toBeUndefined()
+  })
+})
+
 describe('M10.3: people who go and find the stranger', () => {
   it('someone who needs a thing and likes the stranger comes to ask; someone who does not, waits to be asked', async () => {
     const run = async (affinity: number, trust: number) => {

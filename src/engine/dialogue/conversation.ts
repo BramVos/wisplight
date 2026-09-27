@@ -14,9 +14,10 @@ import { silenceWitness, witnessed } from '../social/crime'
 import { partyTalk } from './party'
 import { closingLine, fallbackReply } from './fallback'
 import { fitLength, hasAnachronism, leakedNames, looksLikeInjection, outOfCharacter, promises, unknownNames, vocabularyOf } from './guard'
-import { accept, askedFor, askOffer, kinOf, offerLine, offerLines, offersFor, proposal, proposalText, type Offer } from './offers'
+import { accept, askedFor, askOffer, dayLines, kinOf, offerLine, offerLines, offersFor, proposal, proposalText, type Offer } from './offers'
 import { claimValid, claimWords, parseClaim, playerSays } from '../claims'
 import { afterChoice, doAfter, talkFact } from './aftertalk'
+import { provocation, react, walkAway, type Reaction } from './reactions'
 import type { Claim } from '../state'
 import type { Knowledge, Packet } from './knowledge'
 import type { LlmClient } from './llm'
@@ -58,6 +59,8 @@ interface TurnOptions {
   claim?: Claim
   lie?: boolean
   claimBonus?: number
+  /** A lie found out on the spot (M10.3): a reaction follows. */
+  caughtLie?: boolean
 }
 
 export class Dialogue {
@@ -362,6 +365,8 @@ export class Dialogue {
     // DECEIVE is lying for real (M10.3): a claim that is not so, with the stranger as its source; the check weighs it.
     const lie = kind === 'deceive' ? parseClaim(world, this.topics.recognise(text), text.replace(/^(that|them that|him that|her that)\s+/i, '')) : undefined
     const claimed = lie && claimValid(world, lie) ? { claim: lie, lie: true, claimBonus: win ? 40 : result.degree === 'critical failure' ? -60 : -30 } : {}
+    // A lie seen through on the spot is found out there and then (M10.3): a reaction follows.
+    if (kind === 'deceive' && result.degree === 'critical failure') Object.assign(claimed, { caughtLie: true })
     lines.push(...(await this.turn(npcId, words, { act: kind === 'bribe' ? 'Bribe' : (capitalise(kind) as Act), check: { ...result, about }, secret, admission, ...claimed })))
     return lines
   }
@@ -503,7 +508,10 @@ export class Dialogue {
     const claim = options.claim ?? (options.check || /\?\s*$/.test(text) ? undefined : parseClaim(world, topics, text))
     const said = claim && claimValid(world, claim) ? playerSays(world, npcId, claim, { ...(options.lie ? { lie: true } : {}), ...(options.claimBonus ? { bonus: options.claimBonus } : {}) }) : undefined
     const believed = said ? `The stranger says ${claimWords(world, claim!)}. You ${said.stance === 'believes' ? 'believe it' : said.stance === 'doubts' ? 'are not sure it is true' : 'do not believe it'}; answer that way.` : undefined
-    const decision = [act === 'Recruit' ? recruitDecision(world, npcId, band.band) : undefined, believed].filter(Boolean).join(' ') || undefined
+    // An insult, a threat or a lie found out: the engine decides the reaction; the voice words it (M10.3).
+    const provoked = provocation(act, { ...(options.caughtLie ? { caughtLie: true } : {}), ...(options.check ? { failedThreat: !succeeded(options.check) } : {}) })
+    const reaction = provoked ? react(world, npcId, provoked) : undefined
+    const decision = [act === 'Recruit' ? recruitDecision(world, npcId, band.band) : undefined, believed, reaction?.decision].filter(Boolean).join(' ') || undefined
     const offered = options.echo || options.check ? [] : (this.questOptions?.(npcId) ?? [])
     // What this person can do for the player now (M10.3): the game decides, the voice chooses and words it.
     const offers = options.check || options.secret || act === 'Recruit' ? [] : offersFor(world, npcId, topics, text)
@@ -521,11 +529,13 @@ export class Dialogue {
     const asked = reply ? offers.find((o) => o.key === reply.action) : askedFor(offers, text)
     const replyText = reply
       ? reply.reply
-      : asked
-        ? offerLine(world, npcId, asked)
-        : said
-          ? claimLine(world, npcId, said.stance)
-          : options.secret
+      : reaction
+        ? reactionLine(world, npcId, reaction.reaction)
+        : asked
+          ? offerLine(world, npcId, asked)
+          : said
+            ? claimLine(world, npcId, said.stance)
+            : options.secret
         ? world.say(`{name} glances at the door and lowers {their} voice. "${options.admission ?? 'All right. But it stays between us.'}"`, npcId)
         : options.check && !succeeded(options.check)
           ? world.say(`{name} shakes {their} head. "I don't think so."`, npcId)
@@ -581,11 +591,11 @@ export class Dialogue {
     // An offer that goes through becomes an agreement and starts; one the NPC proposes waits for the player's yes.
     const offerOut: Output[] = []
     let offerEnds = false
-    if (asked?.decision === 'yes') {
+    if (asked?.decision === 'yes' && !reaction) {
       const done = accept(world, npcId, asked)
       offerOut.push(...done.outputs)
       offerEnds = done.ends
-    } else if (!asked) {
+    } else if (!asked && !reaction) {
       const proposed = reply ? offers.find((o) => o.key === reply.propose && o.decision === 'yes') : proposal(offers, act)
       if (proposed) {
         talk.proposal = proposed
@@ -594,6 +604,13 @@ export class Dialogue {
     }
     // When the model was asked and gave nothing usable, say so, so a stock line is not mistaken for an answer.
     const failure: Output[] = !reply && this.lastFailure ? [{ kind: 'system', text: `(No answer from the AI: ${this.lastFailure}. A stock line stands in.)` }] : []
+    // A reaction that ends it (M10.3): walking off, shouting for help, going for the stranger, or the shop shut.
+    if (reaction && reaction.reaction !== 'let_pass') {
+      this.wrapUp(talk)
+      world.state.talk = undefined
+      const gone = reaction.reaction === 'walk_away' ? [{ kind: 'narration' as const, text: walkAway(world, npcId) }] : []
+      return [...echo, { kind: 'speech', text: replyText }, ...failure, ...gone]
+    }
     // Off to do it: the talk ends there, without a closing line.
     if (offerEnds) {
       this.wrapUp(talk)
@@ -693,6 +710,9 @@ export class Dialogue {
     })
     const offered = ctx.offered ?? []
     const offers = ctx.offers ?? []
+    // Time facts from the schedules (M10.3): their own day, and the day of the people the talk is about.
+    const days = dayLines(world, npcId, [...ctx.packet.known.map((k) => k.topic), ...offers.flatMap((o) => (o.person ? [o.person] : []))])
+    if (days.length) prompt += `\n${days.join('\n')}`
     if (offers.length) prompt += `\n${offerLines(world, npcId, offers).join('\n')}`
     if (talk && !talk.after) prompt += '\nAFTER THE TALK: if this talk makes you want to do one thing of your own later (tell someone of your own people, or go somewhere), put it in after; at most once in a talk. Otherwise after.kind is none.'
     if (offered.length) {
@@ -800,6 +820,18 @@ function recruitDecision(world: World, npcId: string, band: Attitude): string {
   world.notices.push(...joined.filter((l) => l.kind === 'system').map((l) => l.text))
   const terms = `${o.terms.wage} duiten a day${o.terms.until ? `, for ${Math.round((o.terms.until - world.now) / (24 * 60))} days` : ''}${o.terms.limits.length ? ', and some places you will not go' : ''}`
   return o.decision === 'join' ? `You agree to come along with the stranger. Say yes in your own way. Your wage: ${terms}.` : `You agree to come, on terms: ${terms}. Say yes and name your terms plainly.`
+}
+
+/** A reaction in the NPC's words, without a model. */
+function reactionLine(world: World, npcId: string, reaction: Reaction): string {
+  const lines: Record<Reaction, string> = {
+    walk_away: '{name}\'s face closes. "I\'ve heard enough from you."',
+    no_service: '{name} folds {their} arms. "I\'ll not serve you today. Not after that."',
+    call_help: '{name} backs away and shouts. "Help! Somebody, help!"',
+    attack: '{name} goes white, then red. "Say that again. Go on."',
+    let_pass: '{name} looks hurt. "That was unkind. I\'ll let it pass."',
+  }
+  return world.say(lines[reaction], npcId)
 }
 
 /** How someone takes what the stranger claims, without a model. */

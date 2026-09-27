@@ -302,6 +302,8 @@ export interface NpcState {
   mood?: { value: number; until: number; reason: string }
   /** Something the player did that the NPC wants to have out with them (the goal Confront). */
   grievance?: { reason: string; t: number; line: string }
+  /** Will not serve the stranger until then (M10.3: insulted, they keep their trade shut for the day). */
+  noService?: number
   /** Going to find the stranger, to open a talk with this line (M10.3, seek_player), until then. */
   seeking?: { line: string; since: number; until: number }
   /** Hit points lost in a fight, healing a little every hour. */

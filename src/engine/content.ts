@@ -296,6 +296,8 @@ export const ProfessionSchema = z.object({
   name: z.string(),
   schedule: z.array(ScheduleBlock),
   daily_goals: z.array(DailyGoal).default([]),
+  /** The skill this trade can teach someone, for a price or a favour (M10.3, the offer teach). */
+  teaches: z.string().optional(),
 })
 export type Profession = z.infer<typeof ProfessionSchema>
 
@@ -809,6 +811,8 @@ export function loadContent(files: ContentFile[]): Content {
   problems.push(...checkReferences(world, { ...content, ...(lock ? { lock } : {}) }))
   problems.push(...checkQuests({ ...content, ...(rules ? { rules } : {}) }))
   if (rules) problems.push(...checkRules(rules, content))
+  // What a trade teaches is a skill of the rules (M10.3).
+  if (rules) for (const p of content.professions.values()) if (p.teaches && !rules.skills.some((s) => s.id === p.teaches)) problems.push(`profession ${p.id}: teaches ${p.teaches}, which is no skill`)
   if (problems.length > 0 || !world) throw new ContentError(problems)
   return { world, ...content, ...(rules ? { rules } : {}), ...(chronicler ? { chronicler } : {}), ...(lock ? { lock } : {}) }
 }

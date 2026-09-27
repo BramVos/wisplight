@@ -13,6 +13,7 @@ professions:
 
   - id: fisher
     name: fisher
+    teaches: watercraft
     daily_goals:
       - { type: Produce, item: salt_fish, service: fish_rack }
     schedule:
@@ -26,6 +27,7 @@ professions:
 
   - id: boatman
     name: boatman
+    teaches: watercraft
     schedule:
       - { from: "06:00", to: "06:30", activity: eat }
       - { from: "06:30", to: "12:00", activity: work }
@@ -46,6 +48,7 @@ professions:
 
   - id: hedge_witch
     name: hedge-witch
+    teaches: medicine
     schedule:
       - { from: "06:00", to: "07:00", activity: pray, at: loc_skerrow_silver_grove }
       - { from: "07:00", to: "07:30", activity: eat }
@@ -58,6 +61,7 @@ professions:
 
   - id: scholar
     name: scholar
+    teaches: lore
     schedule:
       - { from: "08:00", to: "08:30", activity: eat }
       - { from: "08:30", to: "13:00", activity: work }

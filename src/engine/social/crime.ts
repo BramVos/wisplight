@@ -314,6 +314,9 @@ export function payFine(world: World): Output[] {
 
 /** In Waagdam, traders will not deal with someone the town wants. */
 export function refusedTrade(world: World, location: string): string | undefined {
+  // Insulted today, a trader keeps their trade shut to the stranger (M10.3).
+  const sulking = [...world.content.locations.values()].flatMap((l) => l.services.filter((s) => l.id === location || s.premises.includes(location))).map((s) => s.provider).find((id) => (world.state.npcs[id]?.noService ?? 0) > world.now)
+  if (sulking) return `${callName(world.npc(sulking))} won't serve you today, not after what you said.`
   const law = lawAt(world, location)
   const town = townLaw(world, law)
   if (!town?.trade_ban || !world.state.wanted?.[law]) return undefined
