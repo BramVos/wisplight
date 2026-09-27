@@ -1,0 +1,17 @@
+{
+  "title": "Look back",
+  "close": "Close",
+  "tabs": {
+    "chronicle": "The chronicle",
+    "log": "Your log"
+  },
+  "ask": {
+    "warning": "The chronicle tells everything that really happened, also what you never found out, and which stories were not true. You can play on afterwards, but you will know.",
+    "show": "Show me",
+    "notYet": "Not yet"
+  },
+  "text": {
+    "noLog": "Your log is kept by the desktop app.",
+    "download": "Download"
+  }
+}

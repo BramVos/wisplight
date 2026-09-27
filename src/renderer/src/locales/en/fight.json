@@ -1,0 +1,56 @@
+{
+  "panel": "Fight",
+  "heading": {
+    "trouble": "Trouble",
+    "after": "After the fight",
+    "round": "Round {n}"
+  },
+  "status": {
+    "actionsLeft": {
+      "one": "{count} action left",
+      "other": "{count} actions left"
+    },
+    "momentum": "Momentum +{n}",
+    "subdue": "to subdue"
+  },
+  "fighter": {
+    "hp": "{hp} of {max} hit points"
+  },
+  "parley": {
+    "pay": "Pay",
+    "refuse": "Refuse",
+    "talk": "Talk your way past",
+    "flee": "Flee"
+  },
+  "prisoners": {
+    "letGo": "Let go",
+    "bind": "Bind for the schout",
+    "kill": "Kill"
+  },
+  "actions": {
+    "strike": "Strike {name}",
+    "outOfReach": "Out of reach",
+    "advance": "Advance",
+    "stepBack": "Step back",
+    "raiseShield": "Raise shield",
+    "takeCover": "Take cover",
+    "useHerbs": "Use herbs",
+    "recall": "Recall",
+    "recallHint": "What do the stories say about it? (Lore)",
+    "demand": "Demand surrender",
+    "demandHint": "Intimidation against their Will"
+  },
+  "ability": {
+    "cost": {
+      "one": "{count} action, {range}",
+      "other": "{count} actions, {range}"
+    }
+  },
+  "turn": {
+    "kill": "Fight to kill",
+    "subdue": "Subdue",
+    "flee": "Flee (2)",
+    "surrender": "Surrender",
+    "end": "End turn"
+  }
+}

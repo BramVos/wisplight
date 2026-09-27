@@ -17,6 +17,7 @@ import {
   type CreationChoice,
   type CreationData,
 } from '../../engine'
+import { t } from './i18n'
 
 // Making a character (FO, chapter 11, "Personage maken"): class, ancestry and
 // background, boosts, extra skills and a first talent. Everything starts from
@@ -53,7 +54,7 @@ export function CharacterCreation({ data, onCreate, onSkip }: { data: CreationDa
   const background = rules.backgrounds.find((b) => b.id === choice.background)!
   const problems = checkChoice(content, choice)
   const preview = useMemo(() => {
-    const made = createCharacter(content, { ...choice, name: choice.name.trim() || 'Traveller' })
+    const made = createCharacter(content, { ...choice, name: choice.name.trim() || t('creation.preview.defaultName') })
     return 'character' in made ? made.character : undefined
   }, [content, choice])
   const boosts = boostsFor(content, choice.ancestry)
@@ -77,47 +78,45 @@ export function CharacterCreation({ data, onCreate, onSkip }: { data: CreationDa
   }
 
   return (
-    <div className="overlay" role="dialog" aria-modal="true" aria-label="Make your character">
+    <div className="overlay" role="dialog" aria-modal="true" aria-label={t('creation.dialog')}>
       <div className="panel settings creation">
         <header className="panel-head">
-          <h2>Who are you?</h2>
-          <span className="muted small">Everything starts from a suggestion; change what you like.</span>
+          <h2>{t('creation.head.title')}</h2>
+          <span className="muted small">{t('creation.head.hint')}</span>
           <button type="button" className="link" onClick={() => onSkip(tempo)}>
-            [Play the ready-made traveller]
+            [{t('creation.head.readyMade')}]
           </button>
         </header>
         <div className="settings-body">
           <div className="row">
             <label className="field">
-              <span>Name</span>
-              <input value={choice.name} maxLength={30} placeholder="Your name" onChange={(e) => setChoice({ ...choice, name: e.target.value })} autoFocus />
+              <span>{t('creation.name.label')}</span>
+              <input value={choice.name} maxLength={30} placeholder={t('creation.name.placeholder')} onChange={(e) => setChoice({ ...choice, name: e.target.value })} autoFocus />
             </label>
             <label className="field">
-              <span>People call you</span>
-              <select value={choice.pronoun ?? 'they'} onChange={(e) => setChoice({ ...choice, pronoun: e.target.value as 'she' | 'he' | 'they' })} aria-label="Pronoun">
-                <option value="she">she</option>
-                <option value="he">he</option>
-                <option value="they">they</option>
+              <span>{t('creation.pronoun.label')}</span>
+              <select value={choice.pronoun ?? 'they'} onChange={(e) => setChoice({ ...choice, pronoun: e.target.value as 'she' | 'he' | 'they' })} aria-label={t('creation.pronoun.aria')}>
+                <option value="she">{t('creation.pronoun.she')}</option>
+                <option value="he">{t('creation.pronoun.he')}</option>
+                <option value="they">{t('creation.pronoun.they')}</option>
               </select>
             </label>
             <label className="field">
-              <span>How much happens</span>
-              <select value={tempo} onChange={(e) => setTempo(e.target.value as Tempo)} aria-label="Pace of events">
-                <option value="calm">calm: a quiet life, few stories</option>
-                <option value="normal">normal</option>
-                <option value="dramatic">dramatic: more happens, more often</option>
+              <span>{t('creation.tempo.label')}</span>
+              <select value={tempo} onChange={(e) => setTempo(e.target.value as Tempo)} aria-label={t('creation.tempo.aria')}>
+                <option value="calm">{t('creation.tempo.calm')}</option>
+                <option value="normal">{t('creation.tempo.normal')}</option>
+                <option value="dramatic">{t('creation.tempo.dramatic')}</option>
               </select>
             </label>
           </div>
 
-          <h3>Class</h3>
+          <h3>{t('creation.class.heading')}</h3>
           <div className="choices">
             {rules.classes.map((c) => (
               <button key={c.id} type="button" className={`choice ${c.id === choice.class ? 'active' : ''}`} onClick={() => pick({ class: c.id })}>
                 <strong>{c.name}</strong>
-                <span className="muted small">
-                  {c.hp} hp a level, {cap(c.key)}. {c.core.name}: {c.core.text}
-                </span>
+                <span className="muted small">{t('creation.class.summary', { hp: c.hp, key: cap(c.key), core: c.core.name, text: c.core.text })}</span>
               </button>
             ))}
           </div>
@@ -125,19 +124,19 @@ export function CharacterCreation({ data, onCreate, onSkip }: { data: CreationDa
 
           <div className="columns">
             <div>
-              <h3>Ancestry</h3>
+              <h3>{t('creation.ancestry.heading')}</h3>
               {rules.ancestries.map((a) => (
                 <label key={a.id} className="radio">
                   <input type="radio" name="ancestry" checked={a.id === choice.ancestry} onChange={() => pick({ ancestry: a.id })} />
                   <span>
-                    <strong>{a.name}</strong> <span className="muted small">{a.hp} hp. {a.special}</span>
+                    <strong>{a.name}</strong> <span className="muted small">{t('creation.ancestry.summary', { hp: a.hp, special: a.special })}</span>
                   </span>
                 </label>
               ))}
             </div>
             <div>
-              <h3>Background</h3>
-              <select value={choice.background} onChange={(e) => pick({ background: e.target.value })} aria-label="Background">
+              <h3>{t('creation.background.heading')}</h3>
+              <select value={choice.background} onChange={(e) => pick({ background: e.target.value })} aria-label={t('creation.background.aria')}>
                 {rules.backgrounds.map((b) => (
                   <option key={b.id} value={b.id}>
                     {b.name}: {b.skills.join(', ')}
@@ -145,8 +144,8 @@ export function CharacterCreation({ data, onCreate, onSkip }: { data: CreationDa
                 ))}
               </select>
               <p className="muted small">
-                Trained in {background.skills.join(' and ')}. Talent: {rules.general_talents.find((t) => t.id === background.talent)?.name}.
-                {background.knows.length > 0 && ' Some people already know you.'}
+                {t('creation.background.summary', { skills: background.skills.join(t('creation.background.and')), talent: rules.general_talents.find((g) => g.id === background.talent)?.name ?? '' })}
+                {background.knows.length > 0 && ` ${t('creation.background.known')}`}
               </p>
             </div>
           </div>
@@ -154,16 +153,16 @@ export function CharacterCreation({ data, onCreate, onSkip }: { data: CreationDa
           <div className="columns">
             <div>
               <h3>
-                Attributes <span className="muted small">({choice.boosts.length} of {boosts} boosts)</span>
+                {t('creation.attributes.heading')} <span className="muted small">{t('creation.attributes.boosts', { used: choice.boosts.length, total: boosts })}</span>
               </h3>
               {ATTRIBUTES.map((a) => (
                 <div key={a} className="attr">
                   <span>{cap(a)}</span>
                   <strong>{signed(preview?.attributes[a] ?? 0)}</strong>
-                  <button type="button" className="link" onClick={() => boost(a, -1)} aria-label={`One boost less on ${a}`}>
+                  <button type="button" className="link" onClick={() => boost(a, -1)} aria-label={t('creation.attributes.less', { attribute: a })}>
                     [-]
                   </button>
-                  <button type="button" className="link" onClick={() => boost(a, 1)} aria-label={`One boost more on ${a}`}>
+                  <button type="button" className="link" onClick={() => boost(a, 1)} aria-label={t('creation.attributes.more', { attribute: a })}>
                     [+]
                   </button>
                 </div>
@@ -171,7 +170,7 @@ export function CharacterCreation({ data, onCreate, onSkip }: { data: CreationDa
             </div>
             <div>
               <h3>
-                Extra skills <span className="muted small">({choice.skills.length} of {extra})</span>
+                {t('creation.skills.heading')} <span className="muted small">{t('creation.skills.count', { chosen: choice.skills.length, total: extra })}</span>
               </h3>
               <div className="skills">
                 {rules.skills
@@ -186,15 +185,15 @@ export function CharacterCreation({ data, onCreate, onSkip }: { data: CreationDa
             </div>
           </div>
 
-          <h3>First talent</h3>
+          <h3>{t('creation.talent.heading')}</h3>
           <div className="choices">
             {klass.trees.map((tree) => {
-              const t = tree.talents[0]!
+              const first = tree.talents[0]!
               return (
-                <button key={t.id} type="button" className={`choice ${t.id === choice.talent ? 'active' : ''}`} onClick={() => setChoice({ ...choice, talent: t.id })}>
-                  <strong>{t.name}</strong>
+                <button key={first.id} type="button" className={`choice ${first.id === choice.talent ? 'active' : ''}`} onClick={() => setChoice({ ...choice, talent: first.id })}>
+                  <strong>{first.name}</strong>
                   <span className="muted small">
-                    {tree.name}: {t.text}
+                    {tree.name}: {first.text}
                   </span>
                 </button>
               )
@@ -203,20 +202,26 @@ export function CharacterCreation({ data, onCreate, onSkip }: { data: CreationDa
 
           {preview && (
             <p className="preview small">
-              {preview.name || 'You'}: {maxHp(content, preview)} hit points, defence {defence(content, preview)}, {weaponStats(content, preview).name} {signed(weaponStats(content, preview).attack)}, class DC {classDc(content, preview)}. Best skills:{' '}
-              {rules.skills
-                .map((s) => ({ s, b: skillBonus(content, preview, s.id) }))
-                .sort((x, y) => y.b - x.b)
-                .slice(0, 4)
-                .map(({ s, b }) => `${s.name} ${signed(b)}`)
-                .join(', ')}
-              .
+              {t('creation.preview.summary', {
+                name: preview.name || t('creation.preview.you'),
+                hp: maxHp(content, preview),
+                defence: defence(content, preview),
+                weapon: weaponStats(content, preview).name,
+                attack: signed(weaponStats(content, preview).attack),
+                dc: classDc(content, preview),
+                skills: rules.skills
+                  .map((s) => ({ s, b: skillBonus(content, preview, s.id) }))
+                  .sort((x, y) => y.b - x.b)
+                  .slice(0, 4)
+                  .map(({ s, b }) => `${s.name} ${signed(b)}`)
+                  .join(', '),
+              })}
             </p>
           )}
           {problems.length > 0 && <p className="error small">{problems.join(' ')}</p>}
           <div className="row">
             <button type="button" className="link" disabled={problems.length > 0} onClick={() => onCreate(creationCommand({ ...choice, name: choice.name.trim() }), tempo)}>
-              [Begin as {choice.name.trim() || '...'}]
+              [{t('creation.begin', { name: choice.name.trim() || '...' })}]
             </button>
           </div>
         </div>

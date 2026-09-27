@@ -1,0 +1,200 @@
+{
+  "title": "Settings",
+  "tabs": {
+    "ai": "AI",
+    "usage": "Usage",
+    "log": "AI log",
+    "display": "Display"
+  },
+  "close": "Close",
+  "desktopOnly": "AI settings work in the desktop app. In the browser preview, open the page with ?mock=1 to try them with made-up data.",
+  "loading": "Loading...",
+  "busy": "{task}...",
+  "priceUnknown": "price unknown",
+  "ai": {
+    "noEncryption": "Secure storage is not available on this computer, so keys cannot be saved.",
+    "keyLabel": "{name} key",
+    "encryptedModels": {
+      "one": "encrypted, {count} model",
+      "other": "encrypted, {count} models"
+    },
+    "askAdvice": "Ask for advice",
+    "remove": "Remove",
+    "apiKey": "{name} API key",
+    "connect": "Connect",
+    "busyLabels": {
+      "checkKey": "Checking the {name} key",
+      "advise": "Asking {name} for advice",
+      "reload": "Asking the providers for their models",
+      "saveRole": "Saving the {role} model",
+      "removing": "Removing",
+      "saving": "Saving"
+    },
+    "keySaved": {
+      "one": "Key saved, encrypted. It can use {count} chat model. Pick a model per role below, or ask for advice.",
+      "other": "Key saved, encrypted. It can use {count} chat models. Pick a model per role below, or ask for advice."
+    },
+    "adviceFrom": "Advice from {model}: use it with [Use], try it with [Try], then [Save].",
+    "noLongerOffered": "No longer offered: the model for {roles}. Pick another.",
+    "upToDate": "Model lists are up to date; your chosen models are all still offered.",
+    "saved": "Saved: {role} uses {model}.",
+    "connectFirst": "Connect a key to choose models. Without a model, NPCs speak set lines and the chronicle comes from templates.",
+    "roles": {
+      "voice": "VOICE (dialogue)",
+      "brain": "BRAIN (NPC goals)",
+      "chronicler": "CHRONICLER (lore, requests and news, mostly at night)"
+    },
+    "inUse": "in use:",
+    "none": {
+      "voice": "none (NPCs use set lines)",
+      "brain": "none (schedule and needs only)",
+      "chronicler": "none (stories from templates)"
+    },
+    "missingPickAnother": "no longer offered: pick another",
+    "modelFor": "Model for {role}",
+    "chooseModel": "choose a model",
+    "noLongerOfferedOption": "{model} (no longer offered)",
+    "try": "Try",
+    "trying": "Trying...",
+    "save": "Save",
+    "use": "Use",
+    "cheaper": "(cheaper)",
+    "chosenByTrial": "chosen by the trial",
+    "didNotPass": "did not pass: {why}",
+    "tryAdvice": "Try the advice and choose",
+    "tryAdviceNote": "plays the test set through the game with each, a few cents; the cheapest usable answer without leaks or false facts wins",
+    "checkLists": "Check model lists again",
+    "trial": {
+      "cost": "{perAnswer} a usable answer, ~{perHour} / hour",
+      "retried": "{count} retried",
+      "setLines": {
+        "one": "{count} set line",
+        "other": "{count} set lines"
+      },
+      "leaks": {
+        "one": "{count} leak",
+        "other": "{count} leaks"
+      },
+      "false": "{count} false",
+      "outOfCharacter": "{count} out of character",
+      "usable": "{valid}/{answers} usable",
+      "usableWrong": "{valid}/{answers} usable ({wrong})",
+      "summary": "{usable}  {seconds} s  {cost}"
+    },
+    "budget": {
+      "label": "Budget per hour",
+      "aria": "Budget per hour of play in dollars",
+      "saved": "Budget saved.",
+      "note": "At 80% the chronicler and the goals of NPCs without a quest role wait; at 100% dialogue falls back to set lines."
+    }
+  },
+  "pictures": {
+    "title": "PICTURES (places and people, optional)",
+    "about": "Claude makes no pictures; the image models of OpenAI do. Each area (all its places share one picture) and each named person is drawn once, in the style of the world, and kept; generic people get a plain figure. At low quality a picture costs about half a cent to one cent (September 2026), and counts in the budget.",
+    "none": "none (no pictures)",
+    "connectFirst": "Connect an OpenAI key above to choose an image model.",
+    "model": "Image model",
+    "noModels": "no image models for this key",
+    "drawing": "Drawing a trial picture",
+    "turningOff": "Turning pictures off",
+    "off": "Off",
+    "trialAlt": "A trial picture of the start of the world"
+  },
+  "usage": {
+    "unpriced": {
+      "one": "The price of {model} ({role}) is not known: its tokens are counted, and it is called at most {count} time an hour ({callsThisHour} this hour).",
+      "other": "The price of {model} ({role}) is not known: its tokens are counted, and it is called at most {count} times an hour ({callsThisHour} this hour)."
+    },
+    "session": "This session",
+    "today": "Today",
+    "month": "This month",
+    "calls": {
+      "one": "{calls} call",
+      "other": "{calls} calls"
+    },
+    "input": "{tokens} in ({percent} cached)",
+    "output": "{tokens} out",
+    "byRole": {
+      "role": "role",
+      "calls": "calls",
+      "fromCache": "from the cache",
+      "writtenTo": "written to it",
+      "cachedOf": {
+        "one": "{percent}% of {tokens} token",
+        "other": "{percent}% of {tokens} tokens"
+      }
+    },
+    "hourBudget": "Hourly budget",
+    "monthBudget": "Month budget",
+    "spentOf": "{spent} of {budget}",
+    "left": "{percent}% left",
+    "off": "off",
+    "monthNone": "none",
+    "monthAria": "Month budget in dollars",
+    "save": "Save",
+    "credit": {
+      "label": "{name} credit",
+      "estimated": "estimated {left} of {amount} ({percent}%), entered {date}",
+      "stale": ". Over 30 days old, please copy it again.",
+      "notEntered": "not entered",
+      "balance": "balance",
+      "aria": "{name} credit balance in dollars",
+      "update": "Update credit",
+      "billing": "Open billing page",
+      "note": "Neither provider tells the game how much credit is left, so the game counts down from the balance you copy from their console. Other programs on the same account are not counted, hence \"estimated\"."
+    },
+    "byModel": {
+      "title": "By model, this month",
+      "calls": "calls",
+      "in": "in",
+      "cached": "cached",
+      "out": "out",
+      "cost": "cost",
+      "none": "No calls yet this month."
+    },
+    "fellBack": "Fell back to set lines: {percent}% ({failed}, {rejected})",
+    "failedCalls": {
+      "one": "{count} failed call",
+      "other": "{count} failed calls"
+    },
+    "rejectedReplies": {
+      "one": "{count} rejected reply",
+      "other": "{count} rejected replies"
+    },
+    "exportCsv": "Export CSV",
+    "listPrices": "Amounts are worked out from list prices. The invoice from the provider is what counts."
+  },
+  "log": {
+    "none": "No model calls yet in this session.",
+    "columns": {
+      "time": "time",
+      "role": "role",
+      "model": "model",
+      "result": "result",
+      "ms": "ms",
+      "tokens": "tokens",
+      "cache": "cache",
+      "cost": "cost"
+    },
+    "ok": "ok",
+    "prompt": "Prompt",
+    "reply": "Reply",
+    "noReply": "(none)"
+  },
+  "display": {
+    "textSize": "Text size",
+    "sizes": {
+      "smaller": "Smaller",
+      "normal": "Normal",
+      "larger": "Larger",
+      "large": "Large",
+      "largest": "Largest"
+    },
+    "contrast": "Contrast",
+    "contrasts": {
+      "normal": "Normal",
+      "high": "High"
+    },
+    "keyboard": "Everything can be done with the keyboard: type commands, Tab through the buttons, Escape closes a window. The story is read out by a screen reader as it comes. Nothing in the game needs quick reflexes: the clock stops while you type, in a fight, and in any window like this one."
+  }
+}

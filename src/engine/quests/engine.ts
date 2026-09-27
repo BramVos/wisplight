@@ -39,6 +39,8 @@ export interface QuestHost {
   pass(minutes: number): Output[]
   plan?(id: string): void
   encounter?(id: string): Output[]
+  /** The player read this (M9.4): the people and places it names go in the journal as heard of, from whoever said it. */
+  heard?(text: string, from?: string): void
 }
 
 const DAY = 24 * 60
@@ -321,8 +323,11 @@ export function startQuest(world: World, host: QuestHost, questId: string): Outp
   const first = quest.stages[0]!
   log[questId] = { stage: first.id, started: world.now, stageAt: world.now, path: [first.id], done: [] }
   const out: Output[] = []
-  if (quest.ask && quest.givers[0] && world.state.npcs[quest.givers[0]]?.location === world.state.player.location) out.push({ kind: 'speech', text: `${callName(world.npc(quest.givers[0]))}: ${quest.ask}` })
+  const told = Boolean(quest.ask && quest.givers[0] && world.state.npcs[quest.givers[0]]?.location === world.state.player.location)
+  if (told) out.push({ kind: 'speech', text: `${callName(world.npc(quest.givers[0]!))}: ${quest.ask}` })
   out.push({ kind: 'system', text: `New quest: ${quest.name}. ${first.text}` })
+  // Who and where the quest names, the player now has heard of (found in the M9.4 playtest: "Lubbert in Waagdam").
+  host.heard?.(`${told ? quest.ask : ''} ${first.text}`, told ? quest.givers[0] : undefined)
   applyEffects(world, host, questId, first.on_enter ?? [], out)
   return out
 }
@@ -336,6 +341,7 @@ function enterStage(world: World, host: QuestHost, questId: string, stageId: str
   q.stageAt = world.now
   q.path.push(stageId)
   out.push({ kind: 'system', text: `${quest.name}: ${stage.text}` })
+  host.heard?.(stage.text)
   applyEffects(world, host, questId, stage.on_enter ?? [], out)
 }
 
@@ -446,6 +452,8 @@ export function triggers(world: World, host: QuestHost, on: { talk?: string; at?
  */
 export function questAction(world: World, host: QuestHost, input: string): Output[] | undefined {
   const text = input.trim().toLowerCase().replace(/[.!]+$/, '')
+  // The one it is meant for is elsewhere (found in the M9.4 playtest: "give rye to mirte" in her empty bakery said you had no rye).
+  let away: string | undefined
   for (const [quest, q] of active(world)) {
     for (const action of quest.actions ?? []) {
       if (action.once && q.done.includes(action.id)) continue
@@ -453,12 +461,13 @@ export function questAction(world: World, host: QuestHost, input: string): Outpu
       const refusal = actionBlocked(world, quest.id, action)
       if (refusal !== undefined) {
         if (refusal) return [{ kind: 'narration', text: refusal }]
+        if (action.with && world.state.npcs[action.with]?.location !== world.state.player.location) away ??= `${callName(world.npc(action.with))} isn't here.`
         continue
       }
       return perform(world, host, quest.id, q, action)
     }
   }
-  return undefined
+  return away ? [{ kind: 'narration', text: away }] : undefined
 }
 
 /** Carries out a quest action: the check, the text and the effects, the time it takes, and what follows. */
@@ -529,7 +538,7 @@ function actionBlocked(world: World, questId: string, action: QuestAction): stri
   const here = world.state.player.location
   const area = world.content.locations.get(here)?.area
   if (action.at.length && !action.at.includes(here) && !(area && action.at.includes(area))) return ''
-  if (action.with && world.state.npcs[action.with]?.location !== here) return action.not_yet ?? ''
+  if (action.with && world.state.npcs[action.with]?.location !== here) return ''
   if (!allHold(world, action.when, questId)) return action.not_yet ?? ''
   return undefined
 }

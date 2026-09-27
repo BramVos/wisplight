@@ -1,0 +1,50 @@
+{
+  "who": {
+    "readyMade": "the ready-made traveller ({command} makes your own)",
+    "level": "Level"
+  },
+  "bars": {
+    "hp": "Hit points",
+    "mark": "The Rider's Mark: -10% until a rite for the dead",
+    "xp": "Experience",
+    "xpMax": "{xp} (highest level)",
+    "canLevel": "You can rise to level {level}: {command}."
+  },
+  "tiles": {
+    "defence": "Defence",
+    "withShield": "{defence} with shield",
+    "initiative": "Initiative",
+    "classDc": "Class DC"
+  },
+  "attributes": {
+    "heading": "Attributes"
+  },
+  "saves": {
+    "heading": "Saves"
+  },
+  "arms": {
+    "heading": "Arms and armour",
+    "weapon": "Weapon",
+    "weaponLine": "{name}: attack {attack}, damage {damage}",
+    "critical": "critical: {crit}",
+    "armour": "Armour",
+    "none": "none"
+  },
+  "skills": {
+    "heading": "Skills",
+    "points": "{points} skill points to spend ({command} <skill>)",
+    "practice": "{n} practice"
+  },
+  "talents": {
+    "heading": "Talents"
+  },
+  "also": {
+    "heading": "Also",
+    "patron": "Patron: {name}, favour {favour}/100",
+    "blessings": "Blessings: {list}",
+    "deaths": {
+      "one": "You have walked the Way of the Grey Rider once.",
+      "other": "You have walked the Way of the Grey Rider {count} times."
+    }
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "hitPoints": "{hp} of {max} hit points",
+  "ai": {
+    "off": "AI off",
+    "cost": "AI {cost}",
+    "monthLeft": "AI {cost}  {percent}% of month left",
+    "busy": "AI {cost}  busy",
+    "noConnection": "AI {cost}  no connection",
+    "budgetSpent": "AI {cost}  budget used, set lines",
+    "title": "AI cost and usage"
+  },
+  "editor": {
+    "changed": "The world was changed in the editor."
+  },
+  "character": {
+    "stats": "{hp}/{maxHp} hp, {xp}/{next} xp",
+    "sheet": "Sheet",
+    "levelUp": "Level up",
+    "make": "Make your character"
+  },
+  "map": {
+    "title": "Map",
+    "label": "Map of the land around you",
+    "whole": "Whole map",
+    "empty": "The map fills in as you explore."
+  },
+  "party": {
+    "title": "Party",
+    "stats": "loyalty {loyalty}, bond {bond}",
+    "follow": "Follow",
+    "wait": "Wait here",
+    "talk": "Talk to the party",
+    "camp": "Camp",
+    "opinions": "Opinions",
+    "none": "No companions yet. Ask someone who trusts you: RECRUIT <name>."
+  },
+  "journal": {
+    "title": "Journal",
+    "open": "Open the journal",
+    "entries": {
+      "one": "{count} entry",
+      "other": "{count} entries"
+    },
+    "openQuests": "Open quests",
+    "empty": "Topics you learn appear here."
+  },
+  "menu": {
+    "settings": "Settings",
+    "lookBack": "Look back",
+    "exportLog": "Export log",
+    "editor": "Editor"
+  },
+  "talk": {
+    "thinking": "{name} thinks it over.",
+    "with": "Talking with {name} ({attitude})",
+    "bye": "BYE"
+  },
+  "status": {
+    "loading": "Loading the world",
+    "paused": "time paused",
+    "wanted": "Wanted: {crimes}",
+    "journal": "Journal",
+    "journalTitle": "Journal (J)"
+  },
+  "prompt": {
+    "label": "Command",
+    "idle": "type a command, or HELP",
+    "talking": "say something to {name}, pick a number, or BYE"
+  }
+}

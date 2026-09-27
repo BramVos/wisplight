@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { EngineClient } from './client'
+import { t } from './i18n'
 
 // The end of a game (design: lore and world change, "Wat de speler ziet"): the
 // player's own log and the true chronicle, each to read and to download. The
@@ -25,46 +26,46 @@ export function EndView({ client, onClose }: { client: EngineClient; onClose: ()
 
   const shown = tab === 'log' ? texts?.log : texts?.chronicle
   return (
-    <div className="overlay" role="dialog" aria-modal="true" aria-label="Look back">
+    <div className="overlay" role="dialog" aria-modal="true" aria-label={t('end.title')}>
       <div className="panel settings">
         <header className="panel-head">
-          <h2>Look back</h2>
+          <h2>{t('end.title')}</h2>
           {texts && (
             <nav className="tabs">
               <button type="button" className={tab === 'chronicle' ? 'active' : ''} onClick={() => setTab('chronicle')}>
-                The chronicle
+                {t('end.tabs.chronicle')}
               </button>
               <button type="button" className={tab === 'log' ? 'active' : ''} onClick={() => setTab('log')}>
-                Your log
+                {t('end.tabs.log')}
               </button>
             </nav>
           )}
           <button type="button" className="link" onClick={onClose}>
-            [Close]
+            [{t('end.close')}]
           </button>
         </header>
         {!texts ? (
           <div className="settings-body">
-            <p>The chronicle tells everything that really happened, also what you never found out, and which stories were not true. You can play on afterwards, but you will know.</p>
+            <p>{t('end.ask.warning')}</p>
             <div className="row">
               <button type="button" className="link" onClick={() => void client.end().then(setTexts)}>
-                [Show me]
+                [{t('end.ask.show')}]
               </button>
               <button type="button" className="link" onClick={onClose}>
-                [Not yet]
+                [{t('end.ask.notYet')}]
               </button>
             </div>
           </div>
         ) : (
           <div className="settings-body">
-            {shown ? <pre className="end-text">{shown}</pre> : <p className="muted">Your log is kept by the desktop app.</p>}
+            {shown ? <pre className="end-text">{shown}</pre> : <p className="muted">{t('end.text.noLog')}</p>}
             {shown && (
               <button
                 type="button"
                 className="link"
                 onClick={() => (tab === 'log' && client.exportLog ? void client.exportLog() : download(shown, tab === 'log' ? 'wisplight-log.txt' : 'wisplight-chronicle.txt'))}
               >
-                [Download]
+                [{t('end.text.download')}]
               </button>
             )}
           </div>

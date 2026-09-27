@@ -1,0 +1,57 @@
+{
+  "dialog": "Talking with {name}",
+  "head": {
+    "journal": "Journal",
+    "goodbye": "Goodbye"
+  },
+  "log": {
+    "thinking": "{name} thinks it over."
+  },
+  "quick": {
+    "who": "Who are you?",
+    "news": "What's new?",
+    "work": "Your work?",
+    "help": "Can you help me?",
+    "follow": "Come with me?",
+    "trade": "Trade",
+    "orTry": "or try:",
+    "acts": {
+      "persuade": "persuade",
+      "deceive": "deceive",
+      "intimidate": "intimidate",
+      "bribe": "bribe",
+      "insight": "insight"
+    }
+  },
+  "input": {
+    "placeholder": "Say something to {name}. Enter sends, Shift+Enter for a new line.",
+    "label": "What you say to {name}"
+  },
+  "about": {
+    "label": "What you know of {name}",
+    "portrait": "{name}, as you see them",
+    "noPicture": "No picture\n(Settings › AI › Pictures)",
+    "work": "Work",
+    "age": "Age",
+    "ask": "ask",
+    "askTitle": "Ask their age",
+    "askAge": "How old are you, if I may ask?",
+    "mood": "Mood to you",
+    "lastSeen": "Last seen",
+    "often": "Often at"
+  },
+  "topics": {
+    "label": "Topics you can ask about",
+    "search": "ask about...",
+    "searchLabel": "Search topics",
+    "where": "where?",
+    "whereTitle": "Ask the way",
+    "underKm": "< 1 km",
+    "km": "{km} km",
+    "further": {
+      "one": "{count} further away",
+      "other": "{count} further away"
+    },
+    "onlyNear": "Only what is near"
+  }
+}

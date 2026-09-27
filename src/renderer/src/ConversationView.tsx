@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
 import type { Output } from '../../engine'
 import type { JournalPage, Reply } from './client'
+import { t, tn } from './i18n'
 
 // A conversation in its own window (after the M7 playtest): it starts in the
 // ordinary interface with TALK, then goes on here. You type what you say in
@@ -90,31 +91,39 @@ export function ConversationView({
       ...journal.things.map((e) => ({ ...e, kind: 'thing' as const })),
     ].filter((e) => e.id !== talk.npc)
     const found = words ? all.filter((e) => e.name.toLowerCase().includes(words) || Boolean(e.group?.toLowerCase().includes(words))) : all
-    const near = (e: (typeof all)[number]) => e.km === undefined || e.km <= NEAR_KM
+    const near = (e: (typeof all)[number]) => e.km === undefined || NEAR_KM >= e.km
     const shown = words || everything ? found : found.filter(near)
     return { shown: shown.sort((a, b) => (a.km ?? 99) - (b.km ?? 99) || a.name.localeCompare(b.name)), hidden: found.length - shown.length }
   }, [journal, query, everything, talk.npc])
 
   const quick: [number, string][] = [
-    [1, 'Who are you?'],
-    [2, "What's new?"],
-    [3, 'Your work?'],
-    [6, 'Can you help me?'],
-    [8, 'Come with me?'],
+    [1, t('conversation.quick.who')],
+    [2, t('conversation.quick.news')],
+    [3, t('conversation.quick.work')],
+    [6, t('conversation.quick.help')],
+    [8, t('conversation.quick.follow')],
+  ]
+
+  const acts: [string, string][] = [
+    ['persuade', t('conversation.quick.acts.persuade')],
+    ['deceive', t('conversation.quick.acts.deceive')],
+    ['intimidate', t('conversation.quick.acts.intimidate')],
+    ['bribe', t('conversation.quick.acts.bribe')],
+    ['insight', t('conversation.quick.acts.insight')],
   ]
 
   return (
-    <div className="overlay talk-overlay" role="dialog" aria-modal="true" aria-label={`Talking with ${talk.name}`}>
+    <div className="overlay talk-overlay" role="dialog" aria-modal="true" aria-label={t('conversation.dialog', { name: talk.name })}>
       <div className="panel talk">
         <header className="panel-head">
           <h2>{talk.name}</h2>
           <span className="muted small">{talk.attitude}</span>
           <span className="spacer" />
           <button type="button" className="link" onClick={onJournal}>
-            [Journal]
+            [{t('conversation.head.journal')}]
           </button>
           <button type="button" className="link" disabled={busy} onClick={() => onSend('bye')}>
-            [Goodbye]
+            [{t('conversation.head.goodbye')}]
           </button>
         </header>
         <div className="talk-body">
@@ -125,7 +134,7 @@ export function ConversationView({
                   {line.kind === 'input' ? `> ${line.text.replace(/^"/, '')}` : render(line.text)}
                 </p>
               ))}
-              {busy && <p className="line thinking">{talk.call} thinks it over.</p>}
+              {busy && <p className="line thinking">{t('conversation.log.thinking', { name: talk.call })}</p>}
             </div>
             <div className="talk-quick">
               {quick.map(([n, label]) => (
@@ -134,12 +143,12 @@ export function ConversationView({
                 </button>
               ))}
               <button type="button" className="link" disabled={busy} onClick={() => onSend('list')}>
-                Trade
+                {t('conversation.quick.trade')}
               </button>
-              <span className="muted small">or try:</span>
-              {['persuade', 'deceive', 'intimidate', 'bribe', 'insight'].map((act) => (
+              <span className="muted small">{t('conversation.quick.orTry')}</span>
+              {acts.map(([act, label]) => (
                 <button key={act} type="button" className="link" disabled={busy} onClick={() => prefill(`${act} `)}>
-                  {act}
+                  {label}
                 </button>
               ))}
             </div>
@@ -150,42 +159,42 @@ export function ConversationView({
               rows={2}
               onChange={(event) => setText(event.target.value)}
               onKeyDown={onKeyDown}
-              placeholder={`Say something to ${talk.call}. Enter sends, Shift+Enter for a new line.`}
-              aria-label={`What you say to ${talk.call}`}
+              placeholder={t('conversation.input.placeholder', { name: talk.call })}
+              aria-label={t('conversation.input.label', { name: talk.call })}
               spellCheck
             />
           </div>
-          <aside className="talk-topics" aria-label="Topics you can ask about">
-            <section className="talk-about" aria-label={`What you know of ${talk.call}`}>
-              {portrait ? <img className="talk-portrait" src={portrait} alt={`${talk.name}, as you see them`} /> : <div className="talk-portrait none">No picture{'\n'}(Settings › AI › Pictures)</div>}
+          <aside className="talk-topics" aria-label={t('conversation.topics.label')}>
+            <section className="talk-about" aria-label={t('conversation.about.label', { name: talk.call })}>
+              {portrait ? <img className="talk-portrait" src={portrait} alt={t('conversation.about.portrait', { name: talk.name })} /> : <div className="talk-portrait none">{t('conversation.about.noPicture')}</div>}
               <dl>
                 {about?.person?.work && (
                   <>
-                    <dt>Work</dt>
+                    <dt>{t('conversation.about.work')}</dt>
                     <dd>{about.person.work}</dd>
                   </>
                 )}
                 {about?.person?.age && (
                   <>
-                    <dt>Age</dt>
+                    <dt>{t('conversation.about.age')}</dt>
                     <dd>
                       {about.person.age.text}
                       {!about.person.age.known && (
                         <>
                           {' '}
-                          <button type="button" className="link small" disabled={busy} onClick={() => onSend('"How old are you, if I may ask?')} title="Ask their age">
-                            ask
+                          <button type="button" className="link small" disabled={busy} onClick={() => onSend(`"${t('conversation.about.askAge')}`)} title={t('conversation.about.askTitle')}>
+                            {t('conversation.about.ask')}
                           </button>
                         </>
                       )}
                     </dd>
                   </>
                 )}
-                <dt>Mood to you</dt>
+                <dt>{t('conversation.about.mood')}</dt>
                 <dd>{talk.attitude}</dd>
                 {about?.person?.lastSeen && (
                   <>
-                    <dt>Last seen</dt>
+                    <dt>{t('conversation.about.lastSeen')}</dt>
                     <dd>
                       {about.person.lastSeen.where}, {about.person.lastSeen.ago}
                     </dd>
@@ -193,7 +202,7 @@ export function ConversationView({
                 )}
                 {about?.person?.often && about.person.often.length > 0 && (
                   <>
-                    <dt>Often at</dt>
+                    <dt>{t('conversation.about.often')}</dt>
                     <dd>{about.person.often.join(', ')}</dd>
                   </>
                 )}
@@ -209,7 +218,7 @@ export function ConversationView({
                 </p>
               )}
             </section>
-            <input className="journal-search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="ask about..." aria-label="Search topics" spellCheck={false} />
+            <input className="journal-search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t('conversation.topics.search')} aria-label={t('conversation.topics.searchLabel')} spellCheck={false} />
             <ul>
               {topics.shown.map((e) => (
                 <li key={e.id}>
@@ -219,23 +228,23 @@ export function ConversationView({
                   {(e.kind === 'person' || e.kind === 'place') && (
                     <>
                       {' '}
-                      <button type="button" className="link small" disabled={busy} onClick={() => onSend(`where is ${e.name.replace(/ \(heard of\)$/, '')}`)} title="Ask the way">
-                        where?
+                      <button type="button" className="link small" disabled={busy} onClick={() => onSend(`where is ${e.name.replace(/ \(heard of\)$/, '')}`)} title={t('conversation.topics.whereTitle')}>
+                        {t('conversation.topics.where')}
                       </button>
                     </>
                   )}
-                  {e.km !== undefined && <span className="muted small"> {e.km < 1 ? '< 1 km' : `${Math.round(e.km)} km`}</span>}
+                  {e.km !== undefined && <span className="muted small"> {e.km < 1 ? t('conversation.topics.underKm') : t('conversation.topics.km', { km: Math.round(e.km) })}</span>}
                 </li>
               ))}
             </ul>
             {topics.hidden > 0 && (
               <button type="button" className="link small" onClick={() => setEverything(true)}>
-                [{topics.hidden} further away]
+                [{tn('conversation.topics.further', topics.hidden)}]
               </button>
             )}
             {everything && !query && (
               <button type="button" className="link small" onClick={() => setEverything(false)}>
-                [Only what is near]
+                [{t('conversation.topics.onlyNear')}]
               </button>
             )}
           </aside>

@@ -1,0 +1,27 @@
+{
+  "title": "Export the log",
+  "close": "Close",
+  "intro": "The game keeps everything you typed and saw. This saves a copy wherever you like; the log itself stays as it is.",
+  "scope": {
+    "title": "What to export",
+    "all": "The whole game",
+    "loaded": "Since this save was loaded",
+    "week": "The last seven days"
+  },
+  "size": {
+    "measuring": "Measuring the log…",
+    "kb": "{size} KB",
+    "mb": "{size} MB",
+    "parts": {
+      "one": "About {size}, saved as one text file.",
+      "other": "About {size}, saved as a zip with {count} text files of up to 10 MB each."
+    }
+  },
+  "save": {
+    "button": "Save a copy",
+    "busy": "Saving…",
+    "done": "Saved a copy as {file}.",
+    "cancelled": "Not saved.",
+    "failed": "Could not save the copy: {reason}"
+  }
+}

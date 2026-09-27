@@ -1,4 +1,5 @@
 import type { JournalPage } from '../../engine'
+import { t, tn } from './i18n'
 
 // The character sheet laid out (after the M8 playtest): who you are, the
 // numbers that matter in a fight, attributes and saves, then every skill with
@@ -27,50 +28,50 @@ export function SheetView({ sheet }: { sheet: Sheet }) {
           <div className="sheet-name">{sheet.name}</div>
           <div className="muted">
             {sheet.ancestry} {sheet.className} · {sheet.background}
-            {sheet.readyMade && ' · the ready-made traveller (CREATE makes your own)'}
+            {sheet.readyMade && ` · ${t('sheet.who.readyMade', { command: 'CREATE' })}`}
           </div>
         </div>
         <div className="sheet-level">
-          <span className="sheet-label">Level</span>
+          <span className="sheet-label">{t('sheet.who.level')}</span>
           <span className="sheet-big">{sheet.level}</span>
         </div>
       </header>
 
       <div className="sheet-bars">
         <div>
-          <span className="sheet-label">Hit points</span>
+          <span className="sheet-label">{t('sheet.bars.hp')}</span>
           <span className="num">
             {sheet.hp} / {sheet.maxHp}
           </span>
           <Meter value={sheet.hp} max={sheet.maxHp} tone="hp" />
-          {sheet.mark && <span className="small warn">The Rider's Mark: -10% until a rite for the dead</span>}
+          {sheet.mark && <span className="small warn">{t('sheet.bars.mark')}</span>}
         </div>
         <div>
-          <span className="sheet-label">Experience</span>
-          <span className="num">{sheet.nextXp ? `${sheet.xp} / ${sheet.nextXp}` : `${sheet.xp} (highest level)`}</span>
+          <span className="sheet-label">{t('sheet.bars.xp')}</span>
+          <span className="num">{sheet.nextXp ? `${sheet.xp} / ${sheet.nextXp}` : t('sheet.bars.xpMax', { xp: sheet.xp })}</span>
           <Meter value={sheet.xp} max={sheet.nextXp ?? sheet.xp} tone="xp" />
-          {sheet.canLevel && <span className="small ok">You can rise to level {sheet.level + 1}: LEVEL UP.</span>}
+          {sheet.canLevel && <span className="small ok">{t('sheet.bars.canLevel', { level: sheet.level + 1, command: 'LEVEL UP' })}</span>}
         </div>
       </div>
 
       <div className="sheet-tiles">
         <div className="tile">
-          <span className="sheet-label">Defence</span>
+          <span className="sheet-label">{t('sheet.tiles.defence')}</span>
           <span className="sheet-big">{sheet.defence}</span>
-          {sheet.defenceShield !== undefined && <span className="small muted">{sheet.defenceShield} with shield</span>}
+          {sheet.defenceShield !== undefined && <span className="small muted">{t('sheet.tiles.withShield', { defence: sheet.defenceShield })}</span>}
         </div>
         <div className="tile">
-          <span className="sheet-label">Initiative</span>
+          <span className="sheet-label">{t('sheet.tiles.initiative')}</span>
           <span className="sheet-big">{signed(sheet.initiative)}</span>
         </div>
         <div className="tile">
-          <span className="sheet-label">Class DC</span>
+          <span className="sheet-label">{t('sheet.tiles.classDc')}</span>
           <span className="sheet-big">{sheet.classDc}</span>
         </div>
       </div>
 
       <section>
-        <h4>Attributes</h4>
+        <h4>{t('sheet.attributes.heading')}</h4>
         <div className="sheet-tiles">
           {sheet.attributes.map((a) => (
             <div key={a.name} className="tile">
@@ -82,7 +83,7 @@ export function SheetView({ sheet }: { sheet: Sheet }) {
       </section>
 
       <section>
-        <h4>Saves</h4>
+        <h4>{t('sheet.saves.heading')}</h4>
         <div className="sheet-tiles">
           {sheet.saves.map((s) => (
             <div key={s.name} className="tile">
@@ -94,22 +95,22 @@ export function SheetView({ sheet }: { sheet: Sheet }) {
       </section>
 
       <section>
-        <h4>Arms and armour</h4>
+        <h4>{t('sheet.arms.heading')}</h4>
         <dl className="sheet-kv">
-          <dt>Weapon</dt>
+          <dt>{t('sheet.arms.weapon')}</dt>
           <dd>
-            {sheet.weapon.name}: attack {signed(sheet.weapon.attack)}, damage {sheet.weapon.damage}
-            {sheet.weapon.crit && `, critical: ${sheet.weapon.crit}`}
+            {t('sheet.arms.weaponLine', { name: sheet.weapon.name, attack: signed(sheet.weapon.attack), damage: sheet.weapon.damage })}
+            {sheet.weapon.crit && `, ${t('sheet.arms.critical', { crit: sheet.weapon.crit })}`}
           </dd>
-          <dt>Armour</dt>
-          <dd>{sheet.armour.length ? sheet.armour.join(', ') : 'none'}</dd>
+          <dt>{t('sheet.arms.armour')}</dt>
+          <dd>{sheet.armour.length ? sheet.armour.join(', ') : t('sheet.arms.none')}</dd>
         </dl>
       </section>
 
       <section>
         <h4>
-          Skills
-          {sheet.skillPoints > 0 && <span className="small ok"> · {sheet.skillPoints} skill points to spend (TRAIN &lt;skill&gt;)</span>}
+          {t('sheet.skills.heading')}
+          {sheet.skillPoints > 0 && <span className="small ok"> · {t('sheet.skills.points', { points: sheet.skillPoints, command: 'TRAIN' })}</span>}
         </h4>
         <table className="sheet-skills">
           <tbody>
@@ -118,7 +119,7 @@ export function SheetView({ sheet }: { sheet: Sheet }) {
                 <td>{s.name}</td>
                 <td className="num">{signed(s.bonus)}</td>
                 <td>{s.rank && <span className="rank">{s.rank}</span>}</td>
-                <td className="practice" title={s.practice ? `${s.practice} practice` : undefined}>
+                <td className="practice" title={s.practice ? t('sheet.skills.practice', { n: s.practice }) : undefined}>
                   {'●'.repeat(s.practice)}
                 </td>
               </tr>
@@ -128,16 +129,16 @@ export function SheetView({ sheet }: { sheet: Sheet }) {
       </section>
 
       <section>
-        <h4>Talents</h4>
+        <h4>{t('sheet.talents.heading')}</h4>
         <div className="sheet-chips">
-          {sheet.talents.map((t) => (
-            <span key={t} className="chip">
-              {t}
+          {sheet.talents.map((talent) => (
+            <span key={talent} className="chip">
+              {talent}
             </span>
           ))}
-          {sheet.general.map((t) => (
-            <span key={t} className="chip general">
-              {t}
+          {sheet.general.map((talent) => (
+            <span key={talent} className="chip general">
+              {talent}
             </span>
           ))}
         </div>
@@ -146,7 +147,7 @@ export function SheetView({ sheet }: { sheet: Sheet }) {
 
       {(sheet.conditions.length > 0 || sheet.patron || sheet.deaths > 0) && (
         <section>
-          <h4>Also</h4>
+          <h4>{t('sheet.also.heading')}</h4>
           {sheet.conditions.length > 0 && (
             <div className="sheet-chips">
               {sheet.conditions.map((c) => (
@@ -159,14 +160,12 @@ export function SheetView({ sheet }: { sheet: Sheet }) {
           )}
           {sheet.patron && (
             <div className="sheet-patron">
-              <span>
-                Patron: {sheet.patron.name}, favour {sheet.patron.favour}/100
-              </span>
+              <span>{t('sheet.also.patron', { name: sheet.patron.name, favour: sheet.patron.favour })}</span>
               <Meter value={sheet.patron.favour} max={100} tone="favour" />
-              {sheet.patron.blessings.length > 0 && <span className="small muted">Blessings: {sheet.patron.blessings.join(', ')}</span>}
+              {sheet.patron.blessings.length > 0 && <span className="small muted">{t('sheet.also.blessings', { list: sheet.patron.blessings.join(', ') })}</span>}
             </div>
           )}
-          {sheet.deaths > 0 && <p className="small muted">You have walked the Way of the Grey Rider {sheet.deaths === 1 ? 'once' : `${sheet.deaths} times`}.</p>}
+          {sheet.deaths > 0 && <p className="small muted">{tn('sheet.also.deaths', sheet.deaths)}</p>}
         </section>
       )}
 

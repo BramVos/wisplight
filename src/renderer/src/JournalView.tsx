@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { EngineClient, JournalPage, Reply } from './client'
 import { SheetView } from './SheetView'
 import { runs } from './mapRuns'
+import { t, tn } from './i18n'
 
 // The journal as its own window (FO, chapter 2): everything the player has
 // learnt, in parts and under headings, searchable, with the page of what you
@@ -11,22 +12,22 @@ import { runs } from './mapRuns'
 
 type Journal = Reply['status']['journal']
 
-const PARTS: { key: keyof Journal; title: string }[] = [
-  { key: 'quests', title: 'Quests' },
-  { key: 'people', title: 'People' },
-  { key: 'places', title: 'Places' },
-  { key: 'lands', title: 'Lands' },
-  { key: 'factions', title: 'Factions' },
-  { key: 'events', title: 'Events' },
-  { key: 'lore', title: 'Lore' },
-  { key: 'things', title: 'Things' },
+const journalParts = (): { key: keyof Journal; title: string }[] => [
+  { key: 'quests', title: t('journal.parts.quests') },
+  { key: 'people', title: t('journal.parts.people') },
+  { key: 'places', title: t('journal.parts.places') },
+  { key: 'lands', title: t('journal.parts.lands') },
+  { key: 'factions', title: t('journal.parts.factions') },
+  { key: 'events', title: t('journal.parts.events') },
+  { key: 'lore', title: t('journal.parts.lore') },
+  { key: 'things', title: t('journal.parts.things') },
 ]
 
-const YOU = [
-  { id: 'sheet', name: 'Your character' },
-  { id: 'map', name: 'The whole map' },
-  { id: 'party', name: 'Your companions' },
-  { id: 'lands', name: 'How the lands stand' },
+const yours = () => [
+  { id: 'sheet', name: t('journal.you.sheet') },
+  { id: 'map', name: t('journal.you.map') },
+  { id: 'party', name: t('journal.you.party') },
+  { id: 'lands', name: t('journal.you.lands') },
 ]
 
 const NEAR_KM = 15
@@ -56,6 +57,7 @@ export function JournalView({
   const [picture, setPicture] = useState<string>()
   const searchRef = useRef<HTMLInputElement>(null)
   const pageRef = useRef<HTMLElement>(null)
+  const parts = journalParts()
 
   const open = async (id: string) => {
     const next = (await client.page(id)) ?? undefined
@@ -85,7 +87,7 @@ export function JournalView({
   // Each part, its entries under their headings, after the search.
   const shown = useMemo(
     () =>
-      PARTS.filter(({ key }) => part === 'all' || part === key)
+      parts.filter(({ key }) => part === 'all' || part === key)
         .map(({ key, title }) => {
           const groups: { group: string; entries: { id: string; name: string; km?: number }[] }[] = []
           // Searching for a part by its name ("lands", "people") shows all of it.
@@ -105,31 +107,31 @@ export function JournalView({
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [journal, words, part, onlyNear],
   )
-  const you = YOU.filter((e) => (part === 'all' || part === 'you') && matches(e.name))
-  const total = PARTS.reduce((n, { key }) => n + journal[key].length, 0)
+  const you = yours().filter((e) => (part === 'all' || part === 'you') && matches(e.name))
+  const total = parts.reduce((n, { key }) => n + journal[key].length, 0)
   const listed = shown.reduce((n, p) => n + p.count, 0)
 
   return (
-    <div className="overlay" role="dialog" aria-modal="true" aria-label="Journal">
+    <div className="overlay" role="dialog" aria-modal="true" aria-label={t('journal.title')}>
       <div className="panel journal">
         <header className="panel-head">
-          <h2>Journal</h2>
+          <h2>{t('journal.title')}</h2>
           <input
             ref={searchRef}
             className="journal-search"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder={`search ${total} entries`}
-            aria-label="Search the journal"
+            placeholder={tn('journal.head.search', total)}
+            aria-label={t('journal.head.searchLabel')}
             spellCheck={false}
           />
-          <span className="muted small still">time stands still</span>
+          <span className="muted small still">{t('journal.head.still')}</span>
           <button type="button" className="link" onClick={onClose}>
-            [Close]
+            [{t('journal.head.close')}]
           </button>
         </header>
-        <nav className="tabs journal-parts" aria-label="Parts of the journal">
-          {[{ key: 'all', title: 'All' }, ...PARTS.filter(({ key }) => journal[key].length > 0), { key: 'you', title: 'You' }].map(({ key, title }) => (
+        <nav className="tabs journal-parts" aria-label={t('journal.parts.label')}>
+          {[{ key: 'all', title: t('journal.parts.all') }, ...parts.filter(({ key }) => journal[key].length > 0), { key: 'you', title: t('journal.parts.you') }].map(({ key, title }) => (
             <button key={key} type="button" className={part === key ? 'active' : ''} onClick={() => setPart(key as typeof part)}>
               {title}
             </button>
@@ -141,19 +143,19 @@ export function JournalView({
               <p className="small">
                 {onlyNear ? (
                   <>
-                    <span className="muted">What lies within {NEAR_KM} km. </span>
+                    <span className="muted">{t('journal.index.within', { km: NEAR_KM })}</span>
                     <button type="button" className="link" onClick={() => setOnlyNear(false)}>
-                      [Everything, {total - listed} more]
+                      [{tn('journal.index.everything', total - listed)}]
                     </button>
                   </>
                 ) : (
                   <button type="button" className="link" onClick={() => setOnlyNear(true)}>
-                    [Only what is near]
+                    [{t('journal.index.onlyNear')}]
                   </button>
                 )}
               </p>
             )}
-            {shown.length === 0 && you.length === 0 && <p className="muted">{words ? `Nothing in your journal matches "${query.trim()}".` : 'Topics you learn appear here.'}</p>}
+            {shown.length === 0 && you.length === 0 && <p className="muted">{words ? t('journal.index.noMatch', { query: query.trim() }) : t('journal.index.empty')}</p>}
             {shown.map((p) => (
               <section key={p.key} className="journal-part">
                 <h3>
@@ -168,7 +170,7 @@ export function JournalView({
                           <button type="button" className={`topic${page?.id === e.id ? ' current' : ''}`} onClick={() => void open(e.id)}>
                             {e.name}
                           </button>
-                          {e.km !== undefined && <span className="muted small"> {e.km < 1 ? '< 1 km' : `${Math.round(e.km)} km`}</span>}
+                          {e.km !== undefined && <span className="muted small"> {e.km < 1 ? t('journal.index.underKm') : t('journal.index.km', { km: Math.round(e.km) })}</span>}
                         </li>
                       ))}
                     </ul>
@@ -178,7 +180,7 @@ export function JournalView({
             ))}
             {you.length > 0 && (
               <section className="journal-part">
-                <h3>You</h3>
+                <h3>{t('journal.parts.you')}</h3>
                 <ul>
                   {you.map((e) => (
                     <li key={e.id}>
@@ -193,18 +195,18 @@ export function JournalView({
           </div>
           <article className="journal-page" aria-live="polite" ref={pageRef}>
             {!page ? (
-              <p className="muted">Pick something on the left to read what you know about it.</p>
+              <p className="muted">{t('journal.page.empty')}</p>
             ) : (
               <>
                 <h3>{page.name}</h3>
-                {picture && <img className="page-picture" src={picture} alt={`${page.name}, as the chronicle pictures it`} />}
+                {picture && <img className="page-picture" src={picture} alt={t('journal.page.picture', { name: page.name })} />}
                 {page.map && (
-                  <pre className="map page-map" aria-label={`Where ${page.name} is: the star`}>
+                  <pre className="map page-map" aria-label={t('journal.page.map', { name: page.name })}>
                     {page.map.rows.map((row, y) => (
                       <div key={y}>
-                        {runs(row, page.map!.classes[y] ?? '').map(([t, cls], i) => (
+                        {runs(row, page.map!.classes[y] ?? '').map(([run, cls], i) => (
                           <span key={i} className={`m-${cls === '@' ? 'you' : cls}`}>
-                            {t}
+                            {run}
                           </span>
                         ))}
                       </div>
@@ -218,7 +220,7 @@ export function JournalView({
                 ) : (
                   page.lines.map((line, index) => <p key={index}>{line}</p>)
                 )}
-                {page.sources.length > 0 && <p className="muted small">Heard from: {page.sources.join('; ')}</p>}
+                {page.sources.length > 0 && <p className="muted small">{t('journal.page.heardFrom', { sources: page.sources.join('; ') })}</p>}
                 {page.links.length > 0 && (
                   <ul className="journal-links">
                     {page.links.map((l) => (
@@ -233,7 +235,7 @@ export function JournalView({
                 )}
                 {talkingTo && page.kind !== 'map' && page.kind !== 'sheet' && (
                   <button type="button" className="link" onClick={() => onAsk(page.name)}>
-                    [Ask {talkingTo} about this]
+                    [{t('journal.page.ask', { name: talkingTo })}]
                   </button>
                 )}
               </>

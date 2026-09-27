@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { EngineClient, LogScope } from './client'
+import { t, tn } from './i18n'
 
 // Saving a copy of the game log (FO, chapter 3, "Het spellogboek"). The log
 // itself stays where it is; this writes a copy wherever the player wants it.
@@ -7,15 +8,15 @@ import type { EngineClient, LogScope } from './client'
 
 const PART_BYTES = 10 * 1024 * 1024
 
-const CHOICES: { id: string; label: string; scope: LogScope }[] = [
-  { id: 'all', label: 'The whole game', scope: { kind: 'all' } },
-  { id: 'loaded', label: 'Since this save was loaded', scope: { kind: 'loaded' } },
-  { id: 'week', label: 'The last seven days', scope: { kind: 'days', days: 7 } },
+const CHOICES: { id: string; label: () => string; scope: LogScope }[] = [
+  { id: 'all', label: () => t('logexport.scope.all'), scope: { kind: 'all' } },
+  { id: 'loaded', label: () => t('logexport.scope.loaded'), scope: { kind: 'loaded' } },
+  { id: 'week', label: () => t('logexport.scope.week'), scope: { kind: 'days', days: 7 } },
 ]
 
 function size(bytes: number): string {
-  if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+  if (bytes < 1024 * 1024) return t('logexport.size.kb', { size: Math.max(1, Math.round(bytes / 1024)) })
+  return t('logexport.size.mb', { size: (bytes / (1024 * 1024)).toFixed(1) })
 }
 
 export function LogExport({ client, onClose }: { client: EngineClient; onClose: () => void }) {
@@ -45,9 +46,9 @@ export function LogExport({ client, onClose }: { client: EngineClient; onClose: 
     setBusy(true)
     try {
       const file = await client.exportLog?.(scope)
-      setResult(file ? `Saved a copy as ${file}.` : 'Not saved.')
+      setResult(file ? t('logexport.save.done', { file }) : t('logexport.save.cancelled'))
     } catch (reason) {
-      setResult(`Could not save the copy: ${String(reason)}`)
+      setResult(t('logexport.save.failed', { reason: String(reason) }))
     } finally {
       setBusy(false)
     }
@@ -55,34 +56,30 @@ export function LogExport({ client, onClose }: { client: EngineClient; onClose: 
 
   const parts = bytes === undefined ? 0 : Math.ceil(bytes / PART_BYTES)
   return (
-    <div className="overlay" role="dialog" aria-modal="true" aria-label="Export the log">
+    <div className="overlay" role="dialog" aria-modal="true" aria-label={t('logexport.title')}>
       <div className="panel settings">
         <header className="panel-head">
-          <h2>Export the log</h2>
+          <h2>{t('logexport.title')}</h2>
           <button type="button" className="link" onClick={onClose}>
-            [Close]
+            [{t('logexport.close')}]
           </button>
         </header>
         <div className="settings-body">
-          <p>The game keeps everything you typed and saw. This saves a copy wherever you like; the log itself stays as it is.</p>
+          <p>{t('logexport.intro')}</p>
           <fieldset className="log-scope">
-            <legend>What to export</legend>
+            <legend>{t('logexport.scope.title')}</legend>
             {CHOICES.map((c) => (
               <label key={c.id}>
-                <input id={`log-export-${c.id}`} type="radio" name="log-export" checked={choice === c.id} onChange={() => setChoice(c.id)} /> {c.label}
+                <input id={`log-export-${c.id}`} type="radio" name="log-export" checked={choice === c.id} onChange={() => setChoice(c.id)} /> {c.label()}
               </label>
             ))}
           </fieldset>
           <p className="muted">
-            {bytes === undefined
-              ? 'Measuring the log…'
-              : parts <= 1
-                ? `About ${size(bytes)}, saved as one text file.`
-                : `About ${size(bytes)}, saved as a zip with ${parts} text files of up to 10 MB each.`}
+            {bytes === undefined ? t('logexport.size.measuring') : tn('logexport.size.parts', Math.max(1, parts), { size: size(bytes) })}
           </p>
           <div className="row">
             <button type="button" className="link" disabled={busy} onClick={() => void save()}>
-              {busy ? '[Saving…]' : '[Save a copy]'}
+              [{busy ? t('logexport.save.busy') : t('logexport.save.button')}]
             </button>
           </div>
           {result && <p role="status">{result}</p>}

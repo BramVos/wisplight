@@ -1,0 +1,60 @@
+{
+  "dialog": "Make your character",
+  "head": {
+    "title": "Who are you?",
+    "hint": "Everything starts from a suggestion; change what you like.",
+    "readyMade": "Play the ready-made traveller"
+  },
+  "name": {
+    "label": "Name",
+    "placeholder": "Your name"
+  },
+  "pronoun": {
+    "label": "People call you",
+    "aria": "Pronoun",
+    "she": "she",
+    "he": "he",
+    "they": "they"
+  },
+  "tempo": {
+    "label": "How much happens",
+    "aria": "Pace of events",
+    "calm": "calm: a quiet life, few stories",
+    "normal": "normal",
+    "dramatic": "dramatic: more happens, more often"
+  },
+  "class": {
+    "heading": "Class",
+    "summary": "{hp} hp a level, {key}. {core}: {text}"
+  },
+  "ancestry": {
+    "heading": "Ancestry",
+    "summary": "{hp} hp. {special}"
+  },
+  "background": {
+    "heading": "Background",
+    "aria": "Background",
+    "summary": "Trained in {skills}. Talent: {talent}.",
+    "and": " and ",
+    "known": "Some people already know you."
+  },
+  "attributes": {
+    "heading": "Attributes",
+    "boosts": "({used} of {total} boosts)",
+    "less": "One boost less on {attribute}",
+    "more": "One boost more on {attribute}"
+  },
+  "skills": {
+    "heading": "Extra skills",
+    "count": "({chosen} of {total})"
+  },
+  "talent": {
+    "heading": "First talent"
+  },
+  "preview": {
+    "defaultName": "Traveller",
+    "you": "You",
+    "summary": "{name}: {hp} hit points, defence {defence}, {weapon} {attack}, class DC {dc}. Best skills: {skills}."
+  },
+  "begin": "Begin as {name}"
+}

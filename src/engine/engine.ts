@@ -607,6 +607,19 @@ export class Engine {
       pass: (minutes) => this.pass(minutes),
       plan: (id) => void this.world.notices.push(...startPlan(this.world, this.questHost, id, 'quest').map((o) => o.text)),
       encounter: (id) => (this.content.encounters.has(id) ? this.startEncounter(id) : []),
+      heard: (text, from) => this.heardOf(text, from),
+    }
+  }
+
+  /** The people and places a text names go in the journal as heard of (M9.4); with a teller, the map guesses from what they said. */
+  private heardOf(text: string, from?: string): void {
+    const ids = this.topics.recognise(text).filter((id) => ['person', 'place', 'area'].includes(this.topics.kind(id) ?? '') && id !== from)
+    this.dialogue.learn(...ids)
+    if (!from) return
+    const sources = (this.state.player.sources ??= {})
+    for (const id of ids) {
+      const list = (sources[id] ??= [])
+      if (!list.some((s) => s.from === from)) list.push({ from, t: this.world.now, level: 2 })
     }
   }
 
@@ -908,6 +921,8 @@ export class Engine {
     if (!npc) {
       const only = this.onlyNpcHere()
       if (only) return { npc: only, rest: joined.replace(separator, '').trim() }
+      // Nobody here to ask (found in the M9.4 playtest: "where is lubbert" alone on a street said "Who do you mean?").
+      if (this.world.npcsAt(this.state.player.location).length === 0) return { error: 'There is nobody here to ask. Find someone and ask them, or look in your JOURNAL for what you know.' }
       return { error: split[0] ? `There is nobody called "${split[0]}" here.` : 'Who do you mean?' }
     }
     return { npc, rest: split.slice(1).join(' ').trim() }

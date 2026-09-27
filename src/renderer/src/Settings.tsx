@@ -2,6 +2,7 @@ import { Fragment, useCallback, useEffect, useState } from 'react'
 import type { UsageTotals } from '../../node/ai/usage'
 import type { Advice, AiBridge, AiLogEntry, AiOverview, ModelInfo, ProviderId, TrialResult } from './client'
 import { loadDisplay, saveDisplay, TEXT_SIZES, type Display } from './display'
+import { t, tn } from './i18n'
 
 // Settings > AI, Usage and the AI log (FO, chapter 16). Keys are typed here,
 // sent to the main process once, and only ever shown masked afterwards.
@@ -15,17 +16,21 @@ const PROVIDERS: { id: ProviderId; name: string; hint: string }[] = [
 ]
 
 const ROLES = [
-  { id: 'voice', name: 'VOICE (dialogue)' },
-  { id: 'brain', name: 'BRAIN (NPC goals)' },
-  { id: 'chronicler', name: 'CHRONICLER (lore, requests and news, mostly at night)' },
+  { id: 'voice', name: 'settings.ai.roles.voice', none: 'settings.ai.none.voice' },
+  { id: 'brain', name: 'settings.ai.roles.brain', none: 'settings.ai.none.brain' },
+  { id: 'chronicler', name: 'settings.ai.roles.chronicler', none: 'settings.ai.none.chronicler' },
 ] as const
 
 type Role = (typeof ROLES)[number]['id']
 
-export const usd = (value: number | undefined, digits = value === undefined || value === 0 || value >= 0.1 ? 2 : value >= 0.01 ? 3 : 4) => (value === undefined ? 'price unknown' : `$${value.toFixed(digits)}`)
+export const usd = (value: number | undefined, digits = value === undefined || value === 0 || value >= 0.1 ? 2 : value >= 0.01 ? 3 : 4) => (value === undefined ? t('settings.priceUnknown') : `$${value.toFixed(digits)}`)
 const tokens = (value: number) => (value >= 1_000_000 ? `${(value / 1_000_000).toFixed(2)}M` : value >= 1000 ? `${(value / 1000).toFixed(1)}k` : String(value))
 const percent = (part: number, whole: number) => (whole ? `${Math.round((part / whole) * 100)}%` : '0%')
 const message = (error: unknown) => (error instanceof Error ? error.message.replace(/^Error invoking remote method '[^']+': (Error: )?/, '') : String(error))
+
+// Work that waits on the main process. A call signature rather than an arrow,
+// so the texts check of M9.4 does not take "=> Promise<" for words on screen.
+type Work = { (): Promise<void> }
 
 export function Settings({ bridge, tab, onTab, onClose }: { bridge?: AiBridge; tab: SettingsTab; onTab: (tab: SettingsTab) => void; onClose: () => void }) {
   const [overview, setOverview] = useState<AiOverview>()
@@ -51,27 +56,27 @@ export function Settings({ bridge, tab, onTab, onClose }: { bridge?: AiBridge; t
   }, [onClose])
 
   return (
-    <div className="overlay" role="dialog" aria-modal="true" aria-label="Settings">
+    <div className="overlay" role="dialog" aria-modal="true" aria-label={t('settings.title')}>
       <div className="panel settings">
         <header className="panel-head">
-          <h2>Settings</h2>
+          <h2>{t('settings.title')}</h2>
           <nav className="tabs">
             {(['ai', 'usage', 'log', 'display'] as const).map((id) => (
               <button key={id} type="button" className={tab === id ? 'active' : ''} onClick={() => onTab(id)}>
-                {id === 'ai' ? 'AI' : id === 'usage' ? 'Usage' : id === 'log' ? 'AI log' : 'Display'}
+                {id === 'ai' ? t('settings.tabs.ai') : id === 'usage' ? t('settings.tabs.usage') : id === 'log' ? t('settings.tabs.log') : t('settings.tabs.display')}
               </button>
             ))}
           </nav>
           <button type="button" className="link" onClick={onClose}>
-            [Close]
+            [{t('settings.close')}]
           </button>
         </header>
         {tab === 'display' ? (
           <DisplayTab />
         ) : !bridge ? (
-          <p className="muted">AI settings work in the desktop app. In the browser preview, open the page with ?mock=1 to try them with made-up data.</p>
+          <p className="muted">{t('settings.desktopOnly')}</p>
         ) : !overview ? (
-          <p className="muted">{error ?? 'Loading...'}</p>
+          <p className="muted">{error ?? t('settings.loading')}</p>
         ) : tab === 'ai' ? (
           <AiTab bridge={bridge} overview={overview} refresh={refresh} />
         ) : tab === 'usage' ? (
@@ -94,24 +99,24 @@ function DisplayTab() {
   return (
     <div className="settings-body">
       <fieldset className="display-choice">
-        <legend>Text size</legend>
+        <legend>{t('settings.display.textSize')}</legend>
         {TEXT_SIZES.map((size) => (
           <label key={size.scale}>
             <input type="radio" name="text-size" checked={display.scale === size.scale} onChange={() => change({ ...display, scale: size.scale })} />
-            {size.label}
+            {t(size.label)}
           </label>
         ))}
       </fieldset>
       <fieldset className="display-choice">
-        <legend>Contrast</legend>
+        <legend>{t('settings.display.contrast')}</legend>
         {(['normal', 'high'] as const).map((contrast) => (
           <label key={contrast}>
             <input type="radio" name="contrast" checked={display.contrast === contrast} onChange={() => change({ ...display, contrast })} />
-            {contrast === 'normal' ? 'Normal' : 'High'}
+            {contrast === 'normal' ? t('settings.display.contrasts.normal') : t('settings.display.contrasts.high')}
           </label>
         ))}
       </fieldset>
-      <p className="muted">Everything can be done with the keyboard: type commands, Tab through the buttons, Escape closes a window. The story is read out by a screen reader as it comes. Nothing in the game needs quick reflexes: the clock stops while you type, in a fight, and in any window like this one.</p>
+      <p className="muted">{t('settings.display.keyboard')}</p>
     </div>
   )
 }
@@ -127,20 +132,21 @@ const splitKey = (key: string): { provider: ProviderId; model: string } => {
 function trialText(trial: TrialResult | string | undefined): string | undefined {
   if (trial === undefined) return undefined
   if (typeof trial === 'string') return trial
-  const cost = trial.costPerUsableUsd === undefined ? 'price unknown' : `${usd(trial.costPerUsableUsd)} a usable answer, ~${usd(trial.costPerHourUsd ?? 0)} / hour`
+  const cost = trial.costPerUsableUsd === undefined ? t('settings.priceUnknown') : t('settings.ai.trial.cost', { perAnswer: usd(trial.costPerUsableUsd), perHour: usd(trial.costPerHourUsd ?? 0) })
   const wrong = [
-    trial.retries ? `${trial.retries} retried` : '',
-    trial.fallbacks ? `${trial.fallbacks} set ${trial.fallbacks === 1 ? 'line' : 'lines'}` : '',
-    trial.leaks ? `${trial.leaks} ${trial.leaks === 1 ? 'leak' : 'leaks'}` : '',
-    trial.factualErrors ? `${trial.factualErrors} false` : '',
-    trial.characterBreaks ? `${trial.characterBreaks} out of character` : '',
+    trial.retries ? t('settings.ai.trial.retried', { count: trial.retries }) : '',
+    trial.fallbacks ? tn('settings.ai.trial.setLines', trial.fallbacks) : '',
+    trial.leaks ? tn('settings.ai.trial.leaks', trial.leaks) : '',
+    trial.factualErrors ? t('settings.ai.trial.false', { count: trial.factualErrors }) : '',
+    trial.characterBreaks ? t('settings.ai.trial.outOfCharacter', { count: trial.characterBreaks }) : '',
   ].filter(Boolean)
-  return `${trial.valid}/${trial.answers} usable${wrong.length ? ` (${wrong.join(', ')})` : ''}  ${(trial.averageLatencyMs / 1000).toFixed(1)} s  ${cost}${trial.errors.length ? `  ${trial.errors[0]}` : ''}`
+  const usable = wrong.length ? t('settings.ai.trial.usableWrong', { valid: trial.valid, answers: trial.answers, wrong: wrong.join(', ') }) : t('settings.ai.trial.usable', { valid: trial.valid, answers: trial.answers })
+  return `${t('settings.ai.trial.summary', { usable, seconds: (trial.averageLatencyMs / 1000).toFixed(1), cost })}${trial.errors.length ? `  ${trial.errors[0]}` : ''}`
 }
 
 // Settings > AI (FO, chapter 16). The player picks a model per role from the
 // lists the keys gave, at any time; advice and trials are there when wanted.
-function AiTab({ bridge, overview, refresh }: { bridge: AiBridge; overview: AiOverview; refresh: () => Promise<void> }) {
+function AiTab({ bridge, overview, refresh }: { bridge: AiBridge; overview: AiOverview; refresh: Work }) {
   const { settings } = overview
   const [keys, setKeys] = useState<Record<ProviderId, string>>({ openai: '', anthropic: '' })
   const [busy, setBusy] = useState<string>()
@@ -162,7 +168,7 @@ function AiTab({ bridge, overview, refresh }: { bridge: AiBridge; overview: AiOv
   }
   const selected = (role: Role) => picked[role] ?? inUse(role) ?? ''
 
-  const run = async (label: string, work: () => Promise<void>) => {
+  const run = async (label: string, work: Work) => {
     setBusy(label)
     setProblem(undefined)
     setNote(undefined)
@@ -176,26 +182,26 @@ function AiTab({ bridge, overview, refresh }: { bridge: AiBridge; overview: AiOv
   }
 
   const connect = (provider: ProviderId) =>
-    run(`Checking the ${PROVIDER_NAMES[provider]} key`, async () => {
+    run(t('settings.ai.busyLabels.checkKey', { name: PROVIDER_NAMES[provider] }), async () => {
       const { models: count } = await bridge.connect(provider, keys[provider])
       setKeys((previous) => ({ ...previous, [provider]: '' }))
-      setNote(`Key saved, encrypted. It can use ${count} chat models. Pick a model per role below, or ask for advice.`)
+      setNote(tn('settings.ai.keySaved', count))
       await refresh()
     })
 
   const advise = (provider: ProviderId) =>
-    run(`Asking ${PROVIDER_NAMES[provider]} for advice`, async () => {
+    run(t('settings.ai.busyLabels.advise', { name: PROVIDER_NAMES[provider] }), async () => {
       const result = await bridge.advise(provider)
       setAdvice((previous) => ({ ...previous, [provider]: result }))
-      setNote(`Advice from ${result.advisorModel}: use it with [Use], try it with [Try], then [Save].`)
+      setNote(t('settings.ai.adviceFrom', { model: result.advisorModel }))
       await refresh()
     })
 
   const reload = () =>
-    run('Asking the providers for their models', async () => {
+    run(t('settings.ai.busyLabels.reload'), async () => {
       const missing = await bridge.refresh()
       await refresh()
-      setNote(missing.length ? `No longer offered: the model for ${missing.join(', ')}. Pick another.` : 'Model lists are up to date; your chosen models are all still offered.')
+      setNote(missing.length ? t('settings.ai.noLongerOffered', { roles: missing.join(', ') }) : t('settings.ai.upToDate'))
     })
 
   // Trials run on their own: saving never waits for them.
@@ -231,40 +237,40 @@ function AiTab({ bridge, overview, refresh }: { bridge: AiBridge; overview: AiOv
   }
 
   const save = (role: Role) =>
-    run(`Saving the ${role} model`, async () => {
+    run(t('settings.ai.busyLabels.saveRole', { role }), async () => {
       const key = selected(role)
       if (!key) return
       const { provider, model } = splitKey(key)
       const stored = await bridge.choose(role, provider, model)
       setPicked((previous) => ({ ...previous, [role]: undefined }))
-      setNote(`Saved: ${role} uses ${stored}.`)
+      setNote(t('settings.ai.saved', { role, model: stored }))
       await refresh()
     })
 
   return (
     <div className="settings-body">
-      {!settings.encryption && <p className="warn">Secure storage is not available on this computer, so keys cannot be saved.</p>}
+      {!settings.encryption && <p className="warn">{t('settings.ai.noEncryption')}</p>}
       {PROVIDERS.map(({ id, name, hint }) => {
         const state = settings.providers[id]
         return (
           <div key={id} className="row">
-            <span className="label">{name} key</span>
+            <span className="label">{t('settings.ai.keyLabel', { name })}</span>
             {state.configured ? (
               <>
                 <span className="mono">{state.masked}</span>
-                <span className="muted">encrypted, {settings.models[id]?.length ?? 0} models</span>
+                <span className="muted">{tn('settings.ai.encryptedModels', settings.models[id]?.length ?? 0)}</span>
                 <button type="button" className="link" disabled={Boolean(busy)} onClick={() => void advise(id)}>
-                  [Ask for advice]
+                  [{t('settings.ai.askAdvice')}]
                 </button>
-                <button type="button" className="link" disabled={Boolean(busy)} onClick={() => void run('Removing', async () => (await bridge.disconnect(id), await refresh()))}>
-                  [Remove]
+                <button type="button" className="link" disabled={Boolean(busy)} onClick={() => void run(t('settings.ai.busyLabels.removing'), async () => (await bridge.disconnect(id), await refresh()))}>
+                  [{t('settings.ai.remove')}]
                 </button>
               </>
             ) : (
               <>
-                <input type="password" autoComplete="off" spellCheck={false} placeholder={hint} value={keys[id]} onChange={(event) => setKeys((previous) => ({ ...previous, [id]: event.target.value }))} aria-label={`${name} API key`} />
+                <input type="password" autoComplete="off" spellCheck={false} placeholder={hint} value={keys[id]} onChange={(event) => setKeys((previous) => ({ ...previous, [id]: event.target.value }))} aria-label={t('settings.ai.apiKey', { name })} />
                 <button type="button" className="link" disabled={!keys[id].trim() || Boolean(busy)} onClick={() => void connect(id)}>
-                  [Connect]
+                  [{t('settings.ai.connect')}]
                 </button>
               </>
             )}
@@ -272,35 +278,36 @@ function AiTab({ bridge, overview, refresh }: { bridge: AiBridge; overview: AiOv
         )
       })}
 
-      {busy && <p className="muted">{busy}...</p>}
+      {busy && <p className="muted">{t('settings.busy', { task: busy })}</p>}
       {note && <p className="ok">{note}</p>}
       {problem && <p className="warn">{problem}</p>}
 
       <section className="advice">
         {options.length === 0 ? (
-          <p className="muted">Connect a key to choose models. Without a model, NPCs speak set lines and the chronicle comes from templates.</p>
+          <p className="muted">{t('settings.ai.connectFirst')}</p>
         ) : (
-          ROLES.map(({ id: role, name }) => {
+          ROLES.map(({ id: role, name, none }) => {
             const current = inUse(role)
             const key = selected(role)
             const suggestions = Object.values(advice).flatMap((a) =>
               a ? [a[role].recommended, a[role].cheaper].map((c, i) => ({ provider: a.provider, ...c, cheaper: i === 1 })) : [],
             )
             const unique = suggestions.filter((c, i) => suggestions.findIndex((d) => d.provider === c.provider && d.model === c.model) === i)
+            const dropped = current && !options.some((o) => o.key === current) ? current : undefined
             return (
               <fieldset key={role}>
-                <legend>{name}</legend>
+                <legend>{t(name)}</legend>
                 <div className="choice other">
-                  <span className="muted">in use:</span>
+                  <span className="muted">{t('settings.ai.inUse')}</span>
                   <span className="mono">
-                    {settings.roles[role]?.model ?? (role === 'voice' ? 'none (NPCs use set lines)' : role === 'chronicler' ? 'none (stories from templates)' : 'none (schedule and needs only)')}
-                    {settings.missing.includes(role) ? '  no longer offered: pick another' : ''}
+                    {settings.roles[role]?.model ?? t(none)}
+                    {settings.missing.includes(role) ? `  ${t('settings.ai.missingPickAnother')}` : ''}
                   </span>
                 </div>
                 <div className="choice pick">
-                  <select value={key} onChange={(event) => setPicked((previous) => ({ ...previous, [role]: event.target.value }))} aria-label={`Model for ${role}`}>
-                    {!key && <option value="">choose a model</option>}
-                    {current && !options.some((o) => o.key === current) && <option value={current}>{current.replace(':', ' · ')} (no longer offered)</option>}
+                  <select value={key} onChange={(event) => setPicked((previous) => ({ ...previous, [role]: event.target.value }))} aria-label={t('settings.ai.modelFor', { role })}>
+                    {!key && <option value="">{t('settings.ai.chooseModel')}</option>}
+                    {dropped && <option value={dropped}>{t('settings.ai.noLongerOfferedOption', { model: dropped.replace(':', ' · ') })}</option>}
                     {options.map((option) => (
                       <option key={option.key} value={option.key}>
                         {option.label}
@@ -308,10 +315,10 @@ function AiTab({ bridge, overview, refresh }: { bridge: AiBridge; overview: AiOv
                     ))}
                   </select>
                   <button type="button" className="link" disabled={!key || trying[role]} onClick={() => void tryRole(role)}>
-                    {trying[role] ? '[Trying...]' : '[Try]'}
+                    [{trying[role] ? t('settings.ai.trying') : t('settings.ai.try')}]
                   </button>
                   <button type="button" className="link" disabled={!key || key === current || Boolean(busy)} onClick={() => void save(role)}>
-                    [Save]
+                    [{t('settings.ai.save')}]
                   </button>
                 </div>
                 {trialText(trials[`${role}:${key}`]) && <p className="trial">{trialText(trials[`${role}:${key}`])}</p>}
@@ -323,19 +330,19 @@ function AiTab({ bridge, overview, refresh }: { bridge: AiBridge; overview: AiOv
                     <Fragment key={k}>
                       <div className="choice">
                         <button type="button" className="link" onClick={() => setPicked((previous) => ({ ...previous, [role]: k }))}>
-                          [Use]
+                          [{t('settings.ai.use')}]
                         </button>
                         <span className="mono">
                           {c.model}
-                          {c.cheaper ? ' (cheaper)' : ''}
-                          {verdict?.chosen === k ? '  chosen by the trial' : ''}
+                          {c.cheaper ? ` ${t('settings.ai.cheaper')}` : ''}
+                          {verdict?.chosen === k ? `  ${t('settings.ai.chosenByTrial')}` : ''}
                         </span>
                         <span className="reason">"{c.reason}"</span>
                       </div>
                       {judged && (
                         <p className={judged.passed ? 'trial' : 'trial warn'}>
                           {trialText(trials[`${role}:${k}`])}
-                          {judged.passed ? '' : `; did not pass: ${judged.why}`}
+                          {judged.passed ? '' : `; ${t('settings.ai.didNotPass', { why: judged.why })}`}
                         </p>
                       )}
                     </Fragment>
@@ -344,9 +351,9 @@ function AiTab({ bridge, overview, refresh }: { bridge: AiBridge; overview: AiOv
                 {unique.length > 1 && (
                   <div className="choice other">
                     <button type="button" className="link" disabled={trying[role]} onClick={() => void compareRole(role, unique.map((c) => ({ provider: c.provider, model: c.model })))}>
-                      {trying[role] ? '[Trying...]' : '[Try the advice and choose]'}
+                      [{trying[role] ? t('settings.ai.trying') : t('settings.ai.tryAdvice')}]
                     </button>
-                    <span className="muted">plays the test set through the game with each, a few cents; the cheapest usable answer without leaks or false facts wins</span>
+                    <span className="muted">{t('settings.ai.tryAdviceNote')}</span>
                   </div>
                 )}
               </fieldset>
@@ -355,7 +362,7 @@ function AiTab({ bridge, overview, refresh }: { bridge: AiBridge; overview: AiOv
         )}
         {options.length > 0 && (
           <button type="button" className="link" disabled={Boolean(busy)} onClick={() => void reload()}>
-            [Check model lists again]
+            [{t('settings.ai.checkLists')}]
           </button>
         )}
       </section>
@@ -363,13 +370,13 @@ function AiTab({ bridge, overview, refresh }: { bridge: AiBridge; overview: AiOv
       <Pictures bridge={bridge} overview={overview} refresh={refresh} />
 
       <div className="row">
-        <span className="label">Budget per hour</span>
+        <span className="label">{t('settings.ai.budget.label')}</span>
         <span>$</span>
-        <input className="amount" inputMode="decimal" value={budget} onChange={(event) => setBudget(event.target.value)} aria-label="Budget per hour of play in dollars" />
-        <button type="button" className="link" disabled={Boolean(busy) || !(Number(budget) > 0)} onClick={() => void run('Saving', async () => (await bridge.setBudget(Number(budget)), await refresh(), setNote('Budget saved.')))}>
-          [Save]
+        <input className="amount" inputMode="decimal" value={budget} onChange={(event) => setBudget(event.target.value)} aria-label={t('settings.ai.budget.aria')} />
+        <button type="button" className="link" disabled={Boolean(busy) || !(Number(budget) > 0)} onClick={() => void run(t('settings.ai.busyLabels.saving'), async () => (await bridge.setBudget(Number(budget)), await refresh(), setNote(t('settings.ai.budget.saved'))))}>
+          [{t('settings.ai.save')}]
         </button>
-        <span className="muted">At 80% the chronicler and the goals of NPCs without a quest role wait; at 100% dialogue falls back to set lines.</span>
+        <span className="muted">{t('settings.ai.budget.note')}</span>
       </div>
     </div>
   )
@@ -389,20 +396,16 @@ function Totals({ label, totals }: { label: string; totals: UsageTotals }) {
   return (
     <tr>
       <th scope="row">{label}</th>
-      <td>
-        {totals.calls.toLocaleString('en-GB')} {totals.calls === 1 ? 'call' : 'calls'}
-      </td>
-      <td>
-        {tokens(totals.inputTokens)} in ({percent(totals.cachedTokens, totals.inputTokens)} cached)
-      </td>
-      <td>{tokens(totals.outputTokens)} out</td>
+      <td>{tn('settings.usage.calls', totals.calls, { calls: totals.calls.toLocaleString('en-GB') })}</td>
+      <td>{t('settings.usage.input', { tokens: tokens(totals.inputTokens), percent: percent(totals.cachedTokens, totals.inputTokens) })}</td>
+      <td>{t('settings.usage.output', { tokens: tokens(totals.outputTokens) })}</td>
       <td className="num">{usd(totals.costUsd)}</td>
     </tr>
   )
 }
 
 // Pictures of places and people (after the M7 playtest): optional, OpenAI only.
-function Pictures({ bridge, overview, refresh }: { bridge: AiBridge; overview: AiOverview; refresh: () => Promise<void> }) {
+function Pictures({ bridge, overview, refresh }: { bridge: AiBridge; overview: AiOverview; refresh: Work }) {
   const { settings } = overview
   const [models, setModels] = useState<ModelInfo[]>([])
   const [picked, setPicked] = useState<string>()
@@ -416,8 +419,8 @@ function Pictures({ bridge, overview, refresh }: { bridge: AiBridge; overview: A
   }, [bridge, openai])
 
   const model = picked ?? settings.pictures?.model ?? models.find((m) => m.id === 'gpt-image-1-mini')?.id ?? models[0]?.id ?? ''
-  const act = async (label: string, work: () => Promise<void>) => {
-    setState(`${label}...`)
+  const act = async (label: string, work: Work) => {
+    setState(t('settings.busy', { task: label }))
     try {
       await work()
       setState(undefined)
@@ -428,52 +431,50 @@ function Pictures({ bridge, overview, refresh }: { bridge: AiBridge; overview: A
 
   return (
     <fieldset className="pictures">
-      <legend>PICTURES (places and people, optional)</legend>
-      <p className="muted small">
-        Claude makes no pictures; the image models of OpenAI do. Each area (all its places share one picture) and each named person is drawn once, in the style of the world, and kept; generic people get a plain figure. At low quality a picture costs about half a cent to one cent (September 2026), and counts in the budget.
-      </p>
+      <legend>{t('settings.pictures.title')}</legend>
+      <p className="muted small">{t('settings.pictures.about')}</p>
       <div className="choice other">
-        <span className="muted">in use:</span>
-        <span className="mono">{settings.pictures ? `${settings.pictures.model} (${settings.pictures.quality})` : 'none (no pictures)'}</span>
+        <span className="muted">{t('settings.ai.inUse')}</span>
+        <span className="mono">{settings.pictures ? `${settings.pictures.model} (${settings.pictures.quality})` : t('settings.pictures.none')}</span>
       </div>
       {!openai ? (
-        <p className="muted">Connect an OpenAI key above to choose an image model.</p>
+        <p className="muted">{t('settings.pictures.connectFirst')}</p>
       ) : (
         <div className="choice pick">
-          <select value={model} onChange={(event) => setPicked(event.target.value)} aria-label="Image model">
-            {models.length === 0 && <option value="">no image models for this key</option>}
+          <select value={model} onChange={(event) => setPicked(event.target.value)} aria-label={t('settings.pictures.model')}>
+            {models.length === 0 && <option value="">{t('settings.pictures.noModels')}</option>}
             {models.map((m) => (
               <option key={m.id} value={m.id}>
                 {m.id}
               </option>
             ))}
           </select>
-          <button type="button" className="link" disabled={!model || Boolean(state)} onClick={() => void act('Drawing a trial picture', async () => setTrial(await bridge.tryPicture('openai', model)))}>
-            [Try]
+          <button type="button" className="link" disabled={!model || Boolean(state)} onClick={() => void act(t('settings.pictures.drawing'), async () => setTrial(await bridge.tryPicture('openai', model)))}>
+            [{t('settings.ai.try')}]
           </button>
-          <button type="button" className="link" disabled={!model || Boolean(state) || settings.pictures?.model === model} onClick={() => void act('Saving', async () => (await bridge.setPictures('openai', model, 'low'), await refresh()))}>
-            [Save]
+          <button type="button" className="link" disabled={!model || Boolean(state) || settings.pictures?.model === model} onClick={() => void act(t('settings.ai.busyLabels.saving'), async () => (await bridge.setPictures('openai', model, 'low'), await refresh()))}>
+            [{t('settings.ai.save')}]
           </button>
           {settings.pictures && (
-            <button type="button" className="link" disabled={Boolean(state)} onClick={() => void act('Turning pictures off', async () => (await bridge.setPictures(null), await refresh()))}>
-              [Off]
+            <button type="button" className="link" disabled={Boolean(state)} onClick={() => void act(t('settings.pictures.turningOff'), async () => (await bridge.setPictures(null), await refresh()))}>
+              [{t('settings.pictures.off')}]
             </button>
           )}
         </div>
       )}
       {state && <p className="muted">{state}</p>}
-      {trial && <img className="trial-picture" src={trial} alt="A trial picture of the start of the world" />}
+      {trial && <img className="trial-picture" src={trial} alt={t('settings.pictures.trialAlt')} />}
     </fieldset>
   )
 }
 
-function UsageTab({ bridge, overview, refresh }: { bridge: AiBridge; overview: AiOverview; refresh: () => Promise<void> }) {
+function UsageTab({ bridge, overview, refresh }: { bridge: AiBridge; overview: AiOverview; refresh: Work }) {
   const { usage, status, settings } = overview
   const [month, setMonth] = useState(usage.monthBudgetUsd ? String(usage.monthBudgetUsd) : '')
   const [credit, setCredit] = useState<Record<ProviderId, string>>({ openai: '', anthropic: '' })
   const [problem, setProblem] = useState<string>()
 
-  const act = async (work: () => Promise<void>) => {
+  const act = async (work: Work) => {
     setProblem(undefined)
     try {
       await work()
@@ -498,24 +499,24 @@ function UsageTab({ bridge, overview, refresh }: { bridge: AiBridge; overview: A
     <div className="settings-body">
       {status.unpriced.map((u) => (
         <p key={u.role} className="warn small">
-          The price of {u.model} ({u.role}) is not known: its tokens are counted, and it is called at most {u.cap} times an hour ({u.callsThisHour} this hour).
+          {tn('settings.usage.unpriced', u.cap, { model: u.model, role: u.role, callsThisHour: u.callsThisHour })}
         </p>
       ))}
       <table className="usage">
         <tbody>
-          <Totals label="This session" totals={usage.session} />
-          <Totals label="Today" totals={usage.today} />
-          <Totals label="This month" totals={usage.month} />
+          <Totals label={t('settings.usage.session')} totals={usage.session} />
+          <Totals label={t('settings.usage.today')} totals={usage.today} />
+          <Totals label={t('settings.usage.month')} totals={usage.month} />
         </tbody>
       </table>
       {usage.byRole.length > 0 && (
         <table className="usage small">
           <thead>
             <tr>
-              <th scope="col">role</th>
-              <th scope="col">calls</th>
-              <th scope="col">from the cache</th>
-              <th scope="col">written to it</th>
+              <th scope="col">{t('settings.usage.byRole.role')}</th>
+              <th scope="col">{t('settings.usage.byRole.calls')}</th>
+              <th scope="col">{t('settings.usage.byRole.fromCache')}</th>
+              <th scope="col">{t('settings.usage.byRole.writtenTo')}</th>
             </tr>
           </thead>
           <tbody>
@@ -523,7 +524,7 @@ function UsageTab({ bridge, overview, refresh }: { bridge: AiBridge; overview: A
               <tr key={r.role}>
                 <td>{r.role}</td>
                 <td>{r.calls}</td>
-                <td>{r.cachedPercent}% of {r.inputTokens.toLocaleString('en-GB')} tokens</td>
+                <td>{tn('settings.usage.byRole.cachedOf', r.inputTokens, { percent: r.cachedPercent, tokens: r.inputTokens.toLocaleString('en-GB') })}</td>
                 <td>{r.cacheWriteTokens ? r.cacheWriteTokens.toLocaleString('en-GB') : ''}</td>
               </tr>
             ))}
@@ -532,29 +533,25 @@ function UsageTab({ bridge, overview, refresh }: { bridge: AiBridge; overview: A
       )}
 
       <div className="row">
-        <span className="label">Hourly budget</span>
+        <span className="label">{t('settings.usage.hourBudget')}</span>
         <Bar part={status.hourSpentUsd} whole={status.hourBudgetUsd} />
-        <span>
-          {usd(status.hourSpentUsd)} of {usd(status.hourBudgetUsd)}
-        </span>
+        <span>{t('settings.usage.spentOf', { spent: usd(status.hourSpentUsd), budget: usd(status.hourBudgetUsd) })}</span>
       </div>
       <div className="row">
-        <span className="label">Month budget</span>
+        <span className="label">{t('settings.usage.monthBudget')}</span>
         {usage.monthBudgetUsd ? (
           <>
             <Bar part={usage.month.costUsd} whole={usage.monthBudgetUsd} />
-            <span>
-              {usd(usage.month.costUsd)} of {usd(usage.monthBudgetUsd)}
-            </span>
-            <span className={usage.monthLeftPercent! <= 20 ? 'warn' : 'ok'}>{usage.monthLeftPercent}% left</span>
+            <span>{t('settings.usage.spentOf', { spent: usd(usage.month.costUsd), budget: usd(usage.monthBudgetUsd) })}</span>
+            <span className={usage.monthLeftPercent! <= 20 ? 'warn' : 'ok'}>{t('settings.usage.left', { percent: usage.monthLeftPercent! })}</span>
           </>
         ) : (
-          <span className="muted">off</span>
+          <span className="muted">{t('settings.usage.off')}</span>
         )}
         <span>$</span>
-        <input className="amount" inputMode="decimal" value={month} placeholder="none" onChange={(event) => setMonth(event.target.value)} aria-label="Month budget in dollars" />
+        <input className="amount" inputMode="decimal" value={month} placeholder={t('settings.usage.monthNone')} onChange={(event) => setMonth(event.target.value)} aria-label={t('settings.usage.monthAria')} />
         <button type="button" className="link" onClick={() => void act(() => bridge.setMonthBudget(month.trim() ? Number(month) : null))}>
-          [Save]
+          [{t('settings.usage.save')}]
         </button>
       </div>
 
@@ -562,38 +559,43 @@ function UsageTab({ bridge, overview, refresh }: { bridge: AiBridge; overview: A
         const known = usage.credit.find((c) => c.provider === id)
         return (
           <div key={id} className="row">
-            <span className="label">{name} credit</span>
+            <span className="label">{t('settings.usage.credit.label', { name })}</span>
             {known ? (
               <span className={known.leftPercent <= 20 ? 'warn' : ''}>
-                estimated {usd(known.estimatedLeftUsd)} of {usd(known.amountUsd)} ({known.leftPercent}%), entered {new Date(known.enteredAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
-                {known.stale ? '. Over 30 days old, please copy it again.' : ''}
+                {t('settings.usage.credit.estimated', {
+                  left: usd(known.estimatedLeftUsd),
+                  amount: usd(known.amountUsd),
+                  percent: known.leftPercent,
+                  date: new Date(known.enteredAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }),
+                })}
+                {known.stale ? t('settings.usage.credit.stale') : ''}
               </span>
             ) : (
-              <span className="muted">not entered</span>
+              <span className="muted">{t('settings.usage.credit.notEntered')}</span>
             )}
             <span>$</span>
-            <input className="amount" inputMode="decimal" value={credit[id]} placeholder="balance" onChange={(event) => setCredit((previous) => ({ ...previous, [id]: event.target.value }))} aria-label={`${name} credit balance in dollars`} />
+            <input className="amount" inputMode="decimal" value={credit[id]} placeholder={t('settings.usage.credit.balance')} onChange={(event) => setCredit((previous) => ({ ...previous, [id]: event.target.value }))} aria-label={t('settings.usage.credit.aria', { name })} />
             <button type="button" className="link" disabled={!credit[id].trim()} onClick={() => void act(async () => (await bridge.setCredit(id, Number(credit[id])), setCredit((previous) => ({ ...previous, [id]: '' }))))}>
-              [Update credit]
+              [{t('settings.usage.credit.update')}]
             </button>
             <button type="button" className="link" onClick={() => void bridge.billing(id)}>
-              [Open billing page]
+              [{t('settings.usage.credit.billing')}]
             </button>
           </div>
         )
       })}
-      <p className="muted small">Neither provider tells the game how much credit is left, so the game counts down from the balance you copy from their console. Other programs on the same account are not counted, hence "estimated".</p>
+      <p className="muted small">{t('settings.usage.credit.note')}</p>
 
       <table className="usage">
         <thead>
           <tr>
-            <th scope="col">By model, this month</th>
-            <th scope="col">calls</th>
-            <th scope="col">in</th>
-            <th scope="col">cached</th>
-            <th scope="col">out</th>
+            <th scope="col">{t('settings.usage.byModel.title')}</th>
+            <th scope="col">{t('settings.usage.byModel.calls')}</th>
+            <th scope="col">{t('settings.usage.byModel.in')}</th>
+            <th scope="col">{t('settings.usage.byModel.cached')}</th>
+            <th scope="col">{t('settings.usage.byModel.out')}</th>
             <th scope="col" className="num">
-              cost
+              {t('settings.usage.byModel.cost')}
             </th>
           </tr>
         </thead>
@@ -601,7 +603,7 @@ function UsageTab({ bridge, overview, refresh }: { bridge: AiBridge; overview: A
           {usage.byModel.length === 0 && (
             <tr>
               <td colSpan={6} className="muted">
-                No calls yet this month.
+                {t('settings.usage.byModel.none')}
               </td>
             </tr>
           )}
@@ -614,20 +616,24 @@ function UsageTab({ bridge, overview, refresh }: { bridge: AiBridge; overview: A
               <td>{tokens(row.inputTokens)}</td>
               <td>{percent(row.cachedTokens, row.inputTokens)}</td>
               <td>{tokens(row.outputTokens)}</td>
-              <td className="num">{row.unpriced && !row.costUsd ? 'price unknown' : usd(row.costUsd)}</td>
+              <td className="num">{row.unpriced && !row.costUsd ? t('settings.priceUnknown') : usd(row.costUsd)}</td>
             </tr>
           ))}
         </tbody>
       </table>
       <div className="row">
         <span className="muted">
-          Fell back to set lines: {usage.fallbackPercent}% ({usage.month.failed} failed calls, {usage.month.rejected} rejected replies)
+          {t('settings.usage.fellBack', {
+            percent: usage.fallbackPercent,
+            failed: tn('settings.usage.failedCalls', usage.month.failed),
+            rejected: tn('settings.usage.rejectedReplies', usage.month.rejected),
+          })}
         </span>
         <button type="button" className="link" onClick={() => void download()}>
-          [Export CSV]
+          [{t('settings.usage.exportCsv')}]
         </button>
       </div>
-      <p className="muted small">Amounts are worked out from list prices. The invoice from the provider is what counts.</p>
+      <p className="muted small">{t('settings.usage.listPrices')}</p>
       {problem && <p className="warn">{problem}</p>}
     </div>
   )
@@ -640,22 +646,22 @@ export function LogTab({ bridge }: { bridge: AiBridge }) {
   useEffect(() => {
     void bridge.log().then(setEntries)
   }, [bridge])
-  if (!entries) return <p className="muted">Loading...</p>
-  if (!entries.length) return <p className="muted">No model calls yet in this session.</p>
+  if (!entries) return <p className="muted">{t('settings.loading')}</p>
+  if (!entries.length) return <p className="muted">{t('settings.log.none')}</p>
   return (
     <div className="settings-body">
       <table className="usage log-table">
         <thead>
           <tr>
-            <th scope="col">time</th>
-            <th scope="col">role</th>
-            <th scope="col">model</th>
-            <th scope="col">result</th>
-            <th scope="col">ms</th>
-            <th scope="col">tokens</th>
-            <th scope="col">cache</th>
+            <th scope="col">{t('settings.log.columns.time')}</th>
+            <th scope="col">{t('settings.log.columns.role')}</th>
+            <th scope="col">{t('settings.log.columns.model')}</th>
+            <th scope="col">{t('settings.log.columns.result')}</th>
+            <th scope="col">{t('settings.log.columns.ms')}</th>
+            <th scope="col">{t('settings.log.columns.tokens')}</th>
+            <th scope="col">{t('settings.log.columns.cache')}</th>
             <th scope="col" className="num">
-              cost
+              {t('settings.log.columns.cost')}
             </th>
           </tr>
         </thead>
@@ -665,7 +671,7 @@ export function LogTab({ bridge }: { bridge: AiBridge }) {
               <td>{new Date(entry.time).toLocaleTimeString('en-GB')}</td>
               <td>{entry.role}</td>
               <td className="mono">{entry.model}</td>
-              <td className={entry.ok ? 'ok' : 'warn'}>{entry.ok ? 'ok' : entry.error}</td>
+              <td className={entry.ok ? 'ok' : 'warn'}>{entry.ok ? t('settings.log.ok') : entry.error}</td>
               <td>{entry.latencyMs}</td>
               <td>
                 {entry.inputTokens}/{entry.outputTokens}
@@ -678,10 +684,10 @@ export function LogTab({ bridge }: { bridge: AiBridge }) {
       </table>
       {open !== undefined && entries[open] && (
         <div className="log-detail">
-          <h3>Prompt</h3>
+          <h3>{t('settings.log.prompt')}</h3>
           <pre>{entries[open]!.prompt}</pre>
-          <h3>Reply</h3>
-          <pre>{entries[open]!.response || '(none)'}</pre>
+          <h3>{t('settings.log.reply')}</h3>
+          <pre>{entries[open]!.response || t('settings.log.noReply')}</pre>
         </div>
       )}
     </div>

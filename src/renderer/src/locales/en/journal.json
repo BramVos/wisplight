@@ -1,0 +1,50 @@
+{
+  "title": "Journal",
+  "head": {
+    "search": {
+      "one": "search {count} entry",
+      "other": "search {count} entries"
+    },
+    "searchLabel": "Search the journal",
+    "still": "time stands still",
+    "close": "Close"
+  },
+  "parts": {
+    "label": "Parts of the journal",
+    "all": "All",
+    "quests": "Quests",
+    "people": "People",
+    "places": "Places",
+    "lands": "Lands",
+    "factions": "Factions",
+    "events": "Events",
+    "lore": "Lore",
+    "things": "Things",
+    "you": "You"
+  },
+  "you": {
+    "sheet": "Your character",
+    "map": "The whole map",
+    "party": "Your companions",
+    "lands": "How the lands stand"
+  },
+  "index": {
+    "within": "What lies within {km} km. ",
+    "everything": {
+      "one": "Everything, {count} more",
+      "other": "Everything, {count} more"
+    },
+    "onlyNear": "Only what is near",
+    "noMatch": "Nothing in your journal matches \"{query}\".",
+    "empty": "Topics you learn appear here.",
+    "underKm": "< 1 km",
+    "km": "{km} km"
+  },
+  "page": {
+    "empty": "Pick something on the left to read what you know about it.",
+    "picture": "{name}, as the chronicle pictures it",
+    "map": "Where {name} is: the star",
+    "heardFrom": "Heard from: {sources}",
+    "ask": "Ask {name} about this"
+  }
+}

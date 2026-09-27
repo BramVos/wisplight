@@ -10,12 +10,13 @@ export interface Display {
   contrast: Contrast
 }
 
+/** The text sizes; each label is a key in locales/<language>/settings.json. */
 export const TEXT_SIZES = [
-  { scale: 0.9, label: 'Smaller' },
-  { scale: 1, label: 'Normal' },
-  { scale: 1.15, label: 'Larger' },
-  { scale: 1.3, label: 'Large' },
-  { scale: 1.5, label: 'Largest' },
+  { scale: 0.9, label: 'settings.display.sizes.smaller' },
+  { scale: 1, label: 'settings.display.sizes.normal' },
+  { scale: 1.15, label: 'settings.display.sizes.larger' },
+  { scale: 1.3, label: 'settings.display.sizes.large' },
+  { scale: 1.5, label: 'settings.display.sizes.largest' },
 ] as const
 
 const KEY = 'wisplight.display'

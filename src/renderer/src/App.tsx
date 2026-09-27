@@ -10,6 +10,7 @@ import { ConversationView, type TalkLine } from './ConversationView'
 import { JournalView } from './JournalView'
 import { runs } from './mapRuns'
 import { Settings, usd, type SettingsTab } from './Settings'
+import { t, tn } from './i18n'
 
 // Under the bonnet (M10.1): only a development build bundles the dev menu; a production build has no trace of it.
 const DevMenu = import.meta.env.DEV ? lazy(() => import('./dev/DevMenu')) : undefined
@@ -36,12 +37,15 @@ function renderText(text: string, onTopic: (topic: string) => void) {
 
 // The AI part of the status bar (FO, chapter 16, "Kosten en verbruik in beeld").
 function aiLabel(ai: AiStatus): { text: string; tone: '' | 'warn' | 'over' } {
-  if (!ai.connected) return { text: 'AI off', tone: '' }
-  if (ai.budgetSpent) return { text: `AI ${usd(ai.sessionUsd)}  budget used, set lines`, tone: 'over' }
-  if (ai.busy) return { text: `AI ${usd(ai.sessionUsd)}  busy`, tone: 'warn' }
-  if (ai.coolingDown) return { text: `AI ${usd(ai.sessionUsd)}  no connection`, tone: 'warn' }
-  const low = ai.hourPercent >= 80 || (ai.monthLeftPercent !== undefined && ai.monthLeftPercent <= 20)
-  return { text: `AI ${usd(ai.sessionUsd)}${ai.monthLeftPercent !== undefined ? `  ${ai.monthLeftPercent}% of month left` : ''}`, tone: low ? 'warn' : '' }
+  if (!ai.connected) return { text: t('app.ai.off'), tone: '' }
+  const cost = usd(ai.sessionUsd)
+  if (ai.budgetSpent) return { text: t('app.ai.budgetSpent', { cost }), tone: 'over' }
+  if (ai.busy) return { text: t('app.ai.busy', { cost }), tone: 'warn' }
+  if (ai.coolingDown) return { text: t('app.ai.noConnection', { cost }), tone: 'warn' }
+  const hourNearlyUsed = ai.hourPercent >= 80
+  const monthNearlyUsed = ai.monthLeftPercent !== undefined && ai.monthLeftPercent <= 20
+  const low = hourNearlyUsed || monthNearlyUsed
+  return { text: ai.monthLeftPercent !== undefined ? t('app.ai.monthLeft', { cost, percent: ai.monthLeftPercent }) : t('app.ai.cost', { cost }), tone: low ? 'warn' : '' }
 }
 
 const JOURNAL_KEYS: (keyof Status['journal'])[] = ['quests', 'people', 'places', 'lands', 'factions', 'events', 'lore', 'things']
@@ -137,7 +141,7 @@ export function App() {
     const offReload = client.builder.onReload(() => {
       void client.command('look').then((reply) => {
         setStatus(reply.status)
-        setLines((previous) => [...previous, withId({ kind: 'system', text: 'The world was changed in the editor.' }), ...reply.outputs.map(withId)].slice(-400))
+        setLines((previous) => [...previous, withId({ kind: 'system', text: t('app.editor.changed') }), ...reply.outputs.map(withId)].slice(-400))
       })
     })
     const offProblem = client.builder.onProblem((text) => setLines((previous) => [...previous, withId({ kind: 'error', text })].slice(-400)))
@@ -252,7 +256,7 @@ export function App() {
             {line.kind === 'input' ? `> ${line.text.replace(/^"/, '')}` : renderText(line.text, onTopic)}
           </p>
         ))}
-        {waiting && talk && <p className="line thinking">{talk.call} thinks it over.</p>}
+        {waiting && talk && <p className="line thinking">{t('app.talk.thinking', { name: talk.call })}</p>}
       </main>
 
       <aside className="side">
@@ -262,20 +266,20 @@ export function App() {
             <h2>
               {status.character.name} <span className="muted small">{status.character.title}</span>
             </h2>
-            <div className="hp" title={`${status.character.hp} of ${status.character.maxHp} hit points`}>
+            <div className="hp" title={t('app.hitPoints', { hp: status.character.hp, max: status.character.maxHp })}>
               <span style={{ width: `${Math.round((status.character.hp / Math.max(1, status.character.maxHp)) * 100)}%` }} />
             </div>
             <p className="small">
-              {status.character.hp}/{status.character.maxHp} hp, {status.character.xp}/{status.character.next} xp
+              {t('app.character.stats', { hp: status.character.hp, maxHp: status.character.maxHp, xp: status.character.xp, next: status.character.next })}
             </p>
             <button type="button" className="link" onClick={() => openPage('sheet')}>
-              [Sheet]
+              [{t('app.character.sheet')}]
             </button>
             {status.character.canLevel && (
               <>
                 {' '}
                 <button type="button" className="link" disabled={waiting} onClick={() => void send('level up')}>
-                  [Level up]
+                  [{t('app.character.levelUp')}]
                 </button>
               </>
             )}
@@ -283,17 +287,17 @@ export function App() {
               <>
                 {' '}
                 <button type="button" className="link" onClick={() => void client?.creation().then(setCreation)}>
-                  [Make your character]
+                  [{t('app.character.make')}]
                 </button>
               </>
             )}
           </section>
         )}
         <section>
-          <h2>Map</h2>
+          <h2>{t('app.map.title')}</h2>
           {status?.map ? (
             <>
-              <pre className="map" aria-label="Map of the land around you">
+              <pre className="map" aria-label={t('app.map.label')}>
                 {status.map.rows.map((row, y) => (
                   <div key={y}>
                     {runs(row, status.map!.classes[y] ?? '').map(([text, cls], i) => (
@@ -305,15 +309,15 @@ export function App() {
                 ))}
               </pre>
               <button type="button" className="link" onClick={() => openPage('map')}>
-                [Whole map]
+                [{t('app.map.whole')}]
               </button>
             </>
           ) : (
-            <p className="muted">The map fills in as you explore.</p>
+            <p className="muted">{t('app.map.empty')}</p>
           )}
         </section>
         <section className="party">
-          <h2>Party</h2>
+          <h2>{t('app.party.title')}</h2>
           {status?.party?.length ? (
             <>
               {status.party.map((m) => (
@@ -324,46 +328,46 @@ export function App() {
                     </span>
                     <span className="muted small">{m.away ?? m.stance}</span>
                   </div>
-                  <div className="hp" title={`${m.hp} of ${m.maxHp} hit points`}>
+                  <div className="hp" title={t('app.hitPoints', { hp: m.hp, max: m.maxHp })}>
                     <span style={{ width: `${Math.round((m.hp / Math.max(1, m.maxHp)) * 100)}%` }} />
                   </div>
                   <p className="small muted">
-                    loyalty {m.loyalty}, bond {m.bond}{' '}
+                    {t('app.party.stats', { loyalty: m.loyalty, bond: m.bond })}{' '}
                     {m.away ? (
                       <button type="button" className="link" disabled={waiting} onClick={() => void send(`order ${m.name.toLowerCase()} to follow me`)}>
-                        [Follow]
+                        [{t('app.party.follow')}]
                       </button>
                     ) : (
                       <button type="button" className="link" disabled={waiting} onClick={() => void send(`order ${m.name.toLowerCase()} to wait here`)}>
-                        [Wait here]
+                        [{t('app.party.wait')}]
                       </button>
                     )}
                   </p>
                 </div>
               ))}
               <button type="button" className="link" disabled={waiting} onClick={() => void send('talk party')}>
-                [Talk to the party]
+                [{t('app.party.talk')}]
               </button>{' '}
               <button type="button" className="link" disabled={waiting} onClick={() => void send('camp')}>
-                [Camp]
+                [{t('app.party.camp')}]
               </button>{' '}
               <button type="button" className="link" onClick={() => openPage('party')}>
-                [Opinions]
+                [{t('app.party.opinions')}]
               </button>
             </>
           ) : (
-            <p className="muted">No companions yet. Ask someone who trusts you: RECRUIT &lt;name&gt;.</p>
+            <p className="muted">{t('app.party.none')}</p>
           )}
         </section>
         <section>
-          <h2>Journal</h2>
+          <h2>{t('app.journal.title')}</h2>
           <button type="button" className="link" onClick={() => openPage()}>
-            [Open the journal]
+            [{t('app.journal.open')}]
           </button>{' '}
-          <span className="muted small">{journalCount} entries</span>
+          <span className="muted small">{tn('app.journal.entries', journalCount)}</span>
           {openQuests.length > 0 && (
             <div className="journal-group">
-              <h3>Open quests</h3>
+              <h3>{t('app.journal.openQuests')}</h3>
               <ul className="side-quests">
                 {openQuests.map((q) => (
                   <li key={q.id}>
@@ -375,20 +379,20 @@ export function App() {
               </ul>
             </div>
           )}
-          {journalCount === 0 && <p className="muted">Topics you learn appear here.</p>}
+          {journalCount === 0 && <p className="muted">{t('app.journal.empty')}</p>}
         </section>
         <section>
           <button type="button" className="link" onClick={() => setSettings('ai')}>
-            [Settings]
+            [{t('app.menu.settings')}]
           </button>{' '}
           <button type="button" className="link" onClick={() => setEnding(true)}>
-            [Look back]
+            [{t('app.menu.lookBack')}]
           </button>
           {client?.exportLog && (
             <>
               {' '}
               <button type="button" className="link" onClick={() => setExporting(true)}>
-                [Export log]
+                [{t('app.menu.exportLog')}]
               </button>
             </>
           )}
@@ -396,7 +400,7 @@ export function App() {
             <>
               {' '}
               <button type="button" className="link" onClick={() => void client.editor!.open!().catch((reason: unknown) => setError(String(reason)))}>
-                [Editor]
+                [{t('app.menu.editor')}]
               </button>
             </>
           )}
@@ -407,7 +411,7 @@ export function App() {
         {talk && (
           <div className="talkbar">
             <span className="talking">
-              Talking with {talk.name} ({talk.attitude})
+              {t('app.talk.with', { name: talk.name, attitude: talk.attitude })}
             </span>
             {talk.options.map((option, index) => (
               <button key={option} type="button" className="link" disabled={waiting} onClick={() => (index === 3 || index === 4 ? (setInput(index === 3 ? 'ask about ' : 'where is '), inputRef.current?.focus()) : void send(String(index + 1)))}>
@@ -415,33 +419,33 @@ export function App() {
               </button>
             ))}
             <button type="button" className="link" disabled={waiting} onClick={() => void send('bye')}>
-              BYE
+              {t('app.talk.bye')}
             </button>
           </div>
         )}
         <div className="statusline">
           <span className="status">
-            {status ? `${status.location}  |  ${status.time}  |  ${status.money}${status.paused && !status.talk ? '  |  time paused' : ''}` : 'Loading the world'}
+            {status ? `${status.location}  |  ${status.time}  |  ${status.money}${status.paused && !status.talk ? `  |  ${t('app.status.paused')}` : ''}` : t('app.status.loading')}
           </span>
-          {status?.wanted && <span className="wanted">Wanted: {status.wanted.join('; ')}</span>}
-          <button type="button" className="link journal-button" onClick={() => openPage()} title="Journal (J)">
-            [Journal]
+          {status?.wanted && <span className="wanted">{t('app.status.wanted', { crimes: status.wanted.join('; ') })}</span>}
+          <button type="button" className="link journal-button" onClick={() => openPage()} title={t('app.status.journalTitle')}>
+            [{t('app.status.journal')}]
           </button>
           {ai && (
-            <button type="button" className={`link ai ${ai.tone}`} onClick={() => setSettings('usage')} title="AI cost and usage">
+            <button type="button" className={`link ai ${ai.tone}`} onClick={() => setSettings('usage')} title={t('app.ai.title')}>
               {ai.text}
             </button>
           )}
         </div>
         <label className="prompt">
-          <span aria-hidden="true">&gt;</span>
+          <span aria-hidden="true">{'>'}</span>
           <input
             ref={inputRef}
             value={input}
             onChange={(event) => setInput(event.target.value)}
             onKeyDown={onKeyDown}
-            aria-label="Command"
-            placeholder={talk ? `say something to ${talk.call}, pick a number, or BYE` : 'type a command, or HELP'}
+            aria-label={t('app.prompt.label')}
+            placeholder={talk ? t('app.prompt.talking', { name: talk.call }) : t('app.prompt.idle')}
             autoFocus
             spellCheck={false}
           />

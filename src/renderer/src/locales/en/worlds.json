@@ -1,0 +1,8 @@
+{
+  "picker": {
+    "label": "Choose a world",
+    "title": "Where does your story begin?",
+    "hint": "Each world has its own people, places and story. A saved game opens in its own world.",
+    "begin": "Begin here"
+  }
+}
