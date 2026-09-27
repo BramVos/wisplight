@@ -274,3 +274,29 @@ Scope: FO 18. Balans, toegankelijkheid, prestaties, installers voor Mac en Windo
 
 - [ ] Alle niet-functionele eisen uit FO 18 zijn gemeten en gehaald
 - [ ] Installers voor Mac en Windows werken op een schone machine
+
+## M10 De kaart in kleur en lagen
+
+Scope: FO 4 "Weergave" (besluit 27 september 2026). De streekkaart en de landkaart mogen mooi zijn: een gedempt palet in de geest van Dwarf Fortress en Brogue, met schaduw per kleur, en een kaart met lagen. Eerst een voorstelpagina met palet, de echte Holleveen geshaded, een niveauwissel en de legendastrook, ter goedkeuring; dan bouwen. De tekst blijft leidend; de kaart is een zijpaneel en een journaalpagina.
+
+- [ ] Een voorstelpagina toont palet, de geshade Holleveen, dag, nacht en mist, een lichte papierversie en de zwart-witoptie, en Bram keurt hem goed voordat er gebouwd wordt
+- [ ] Elk terrein heeft drie tot vier gedempte tinten uit een geseede variatie per hex, drassige grond donkerder, droge ruggen lichter, water in twee tonen (open water en geul), wegen en paden in warm perkament
+- [ ] Kenmerken (poel, petgat, wilg, ruïne, bult) hebben een eigen glyph en tint; wat je lang geleden zag is vager dan wat je pas zag; nacht en mist leggen een waas over het paneel
+- [ ] Een hex heeft een niveau (onder de grond, maaiveld, kruin), wegen dragen hun niveau mee, en je ziet één niveau tegelijk met een glyph waar een trap, put, ladder of stam naar een ander niveau gaat; welke niveaus een wereld heeft en hoe ze heten staat in `world.yaml`
+- [ ] Een tunnel of boomweg die je niet kent, staat niet op je kaart, ook al loop je erboven of eronder: dezelfde regel als de verborgen rug
+- [ ] Een legendastrook onder de kaart met per terrein een gekleurd vakje, de glyph en de naam, en per plek een icoon naar soort en status; een klik licht dat terrein even op; dezelfde kleurtokens als de kaart
+- [ ] De landkaart (streken en trajecten uit het wereldboek) is een eigen journaalpagina met dezelfde stijl
+- [ ] Alles wat er al was, speelt hetzelfde, en de terminalclient houdt zijn tekstkaart
+
+## M10.1 Onder de motorkap
+
+Scope: een dev-menu in het spel zelf (besluit 27 september 2026), alleen in een ontwikkelbuild (`app.isPackaged` is uit, dezelfde vlag als de bouwmodus en de editor) en pas zichtbaar na een code in de invoerregel. Niet in de productiebuild. Wat de editor al toont in de speeltest (NPC-inspecteur, verhaallijnen met fase) hergebruikt het menu voor het lopende spel, zodat er één stel panelen is.
+
+- [ ] Het menu verschijnt met `@dev` (of een toetscombinatie) in een ontwikkelbuild en bestaat niet in een productiebuild: de code wordt niet meegebouwd, en `npm run build` plus de rooktest bewijzen dat
+- [ ] Mensen: per NPC behoeften, doelen, plan, voornemen, geloof, kennis en herinneringen van het lopende spel, live, met de waarde van elke slider (stand, band, houding, vertrouwdheid) en waar die vandaan komt
+- [ ] Achtergrond: de signaalwachtrij met wachters die vuurden, lopende plannen met hun stappen en voorwaarden (welke voorwaarde hield een stap tegen), de standaardnasleep die het overnam, en het grootboek per nederzetting
+- [ ] Kroniekschrijver: per run wat hij kreeg (feiten, kaarten), wat hij teruggaf, wat is geweigerd en waarom, en de verhaallijnen met fase en volgende beat
+- [ ] AI: het logboek van aanroepen met rol, model, tokens, cachedeel, kosten en reactietijd, en de prompt en het antwoord uitklapbaar
+- [ ] Knoppen om te sturen zonder te typen: een dag overslaan, een plan starten, spanning en markt zetten, een signaal afvuren, het budget zetten, en alles wat je zo doet komt als `@`-commando in het spellogboek zodat naspelen klopt
+- [ ] Het menu leest alleen; elke ingreep loopt via de motor en het logboek, en de speelstand verandert niet door het openen van het menu
+
