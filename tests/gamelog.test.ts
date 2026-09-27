@@ -1,9 +1,10 @@
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs'
+import { mkdtempSync, readFileSync, rmSync, statSync } from 'node:fs'
+import { execFileSync } from 'node:child_process'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { Engine, MockLlm, type SaveData } from '../src/engine'
-import { format, GameLog } from '../src/node/gamelog'
+import { format, GameLog, PART_BYTES } from '../src/node/gamelog'
 import { SaveStore } from '../src/node/savegame'
 import { content } from './helpers'
 
@@ -103,6 +104,38 @@ describe('the game log', () => {
       expect(text).toContain('> branch 9')
       expect(text).not.toContain('line 3000')
       expect(text.trimEnd()).toBe(log.text(branch))
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
+  it('exports part of the story, and a large log as a zip of parts that unpacks to the same text', () => {
+    const log = new GameLog(':memory:')
+    const root = log.start('big')
+    const day = 24 * 60
+    for (let i = 0; i < 100; i++) log.append(root, i * day, 'in', `day ${i}`)
+    const loaded = log.fork(root, 50)
+    for (let i = 0; i < 10; i++) log.append(loaded, (200 + i) * day, 'in', `after load ${i}`)
+    const dir = mkdtempSync(join(tmpdir(), 'wisplight-export-'))
+    try {
+      expect(log.exportTo(loaded, join(dir, 'all.txt'))).toBe(60)
+      expect(log.exportTo(loaded, join(dir, 'loaded.txt'), { kind: 'loaded' })).toBe(10)
+      expect(log.exportTo(loaded, join(dir, 'week.txt'), { kind: 'days', days: 3 })).toBe(4)
+      expect(log.size(loaded, { kind: 'loaded' })).toBeLessThan(log.size(loaded))
+
+      // About 25 MB of text: three parts of at most 10 MB.
+      const big = log.start('huge')
+      const filler = 'x'.repeat(1000)
+      for (let i = 0; i < 25_000; i++) log.append(big, i, 'out', `${i} ${filler}`)
+      expect(log.size(big)).toBeGreaterThan(PART_BYTES)
+      const zip = join(dir, 'huge.zip')
+      expect(log.exportTo(big, zip)).toBe(25_000)
+      expect(statSync(zip).size).toBeLessThan(2 * 1024 * 1024)
+      const out = join(dir, 'unzipped')
+      execFileSync('unzip', ['-q', zip, '-d', out])
+      const parts = ['01', '02', '03'].map((n) => readFileSync(join(out, `wisplight-log-part-${n}.txt`), 'utf8'))
+      for (const part of parts) expect(Buffer.byteLength(part)).toBeLessThanOrEqual(PART_BYTES)
+      expect(parts.join('').trimEnd()).toBe(log.text(big))
     } finally {
       rmSync(dir, { recursive: true, force: true })
     }

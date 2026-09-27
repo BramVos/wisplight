@@ -9,7 +9,7 @@ import type { ProviderId } from '../node/ai/providers'
 import { AiService } from '../node/ai/service'
 import type { ChosenRole, Cipher } from '../node/ai/settings'
 import { DEFAULT_WORLD, listWorlds, loadContentFromDir, readContentFiles } from '../node/content'
-import { format, GameLog, type Session } from '../node/gamelog'
+import { format, GameLog, PART_BYTES, type LogScope, type Session } from '../node/gamelog'
 import { SaveStore } from '../node/savegame'
 import { aiCheck, BUILDER_CHECK_SCRIPT, keyCheck, LOG_CHECK_SCRIPT, prepareBuilderCheck, prepareKeyCheck, prepareLogCheck } from './checks'
 
@@ -232,7 +232,9 @@ ipcMain.handle('engine:command', async (_event, input: unknown) => {
   if (verb === 'log' || verb === 'logboek') {
     const where = ensureSession()
     if (args[0] === 'export') {
-      const file = await exportLog(where)
+      // log export, log export loaded, log export days 7
+      const scope: LogScope = args[1] === 'loaded' ? { kind: 'loaded' } : args[1] === 'days' ? { kind: 'days', days: Math.max(1, Number(args[2]) || 7) } : { kind: 'all' }
+      const file = await exportLog(where, scope)
       return reply([system(file ? `The log is saved as ${file}.` : 'Not saved.')])
     }
     const lines = journal().recent(where, Math.min(500, Number(args[0]) || 30))
@@ -254,14 +256,30 @@ ipcMain.handle('engine:end', () => {
   const cut = lines && lines.length === END_LINES ? `(Only the last ${END_LINES} lines are shown here. [Download] saves the whole log.)\n\n` : ''
   return { log: lines ? cut + lines.map(format).join('\n') : undefined, chronicle: engine?.chronicle() ?? '' }
 })
-ipcMain.handle('engine:export-log', () => (session ? exportLog(session) : undefined))
+ipcMain.handle('engine:log-size', (_event, scope: unknown) => (session ? journal().size(session, logScope(scope)) : 0))
+ipcMain.handle('engine:export-log', (_event, scope: unknown) => (session ? exportLog(session, logScope(scope)) : undefined))
 
-/** Asks where to save the whole game log and streams it there. */
-async function exportLog(where: Session): Promise<string | undefined> {
+function logScope(value: unknown): LogScope {
+  const v = value as Partial<{ kind: string; days: number }> | undefined
+  if (v?.kind === 'loaded') return { kind: 'loaded' }
+  if (v?.kind === 'days') return { kind: 'days', days: Math.max(1, Math.min(3650, Math.floor(Number(v.days)) || 7)) }
+  return { kind: 'all' }
+}
+
+/**
+ * Asks where to save a copy of the game log and streams it there. Up to 10 MB
+ * it is one text file; larger, a zip with parts of 10 MB that each open quickly.
+ */
+async function exportLog(where: Session, scope: LogScope = { kind: 'all' }): Promise<string | undefined> {
   const stamp = new Date().toISOString().slice(0, 16).replace(/[-:T]/g, '')
-  const result = await dialog.showSaveDialog(window!, { title: 'Save the game log', defaultPath: join(app.getPath('documents'), `wisplight-log-${stamp}.txt`) })
+  const zip = journal().size(where, scope) > PART_BYTES
+  const result = await dialog.showSaveDialog(window!, {
+    title: 'Save a copy of the game log',
+    defaultPath: join(app.getPath('documents'), `wisplight-log-${stamp}.${zip ? 'zip' : 'txt'}`),
+    filters: [zip ? { name: 'Zip with text files', extensions: ['zip'] } : { name: 'Text', extensions: ['txt'] }],
+  })
   if (result.canceled || !result.filePath) return undefined
-  journal().exportTo(where, result.filePath)
+  journal().exportTo(where, result.filePath, scope)
   return result.filePath
 }
 

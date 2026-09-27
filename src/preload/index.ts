@@ -10,7 +10,8 @@ contextBridge.exposeInMainWorld('wisplight', {
   picture: (id: string) => ipcRenderer.invoke('engine:picture', id),
   creation: () => ipcRenderer.invoke('engine:creation'),
   end: () => ipcRenderer.invoke('engine:end'),
-  exportLog: () => ipcRenderer.invoke('engine:export-log'),
+  logSize: (scope?: unknown) => ipcRenderer.invoke('engine:log-size', scope),
+  exportLog: (scope?: unknown) => ipcRenderer.invoke('engine:export-log', scope),
   activity: () => ipcRenderer.send('engine:activity'),
   hold: (on: boolean) => ipcRenderer.send('engine:hold', on),
   // The game hears when the content changed under it (the editor saved, or a file changed).

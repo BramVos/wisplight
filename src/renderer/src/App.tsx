@@ -5,6 +5,7 @@ import { CharacterCreation } from './CharacterCreation'
 import { WorldPicker } from './WorldPicker'
 import { FightPanel } from './FightPanel'
 import { EndView } from './EndView'
+import { LogExport } from './LogExport'
 import { ConversationView, type TalkLine } from './ConversationView'
 import { JournalView } from './JournalView'
 import { runs } from './mapRuns'
@@ -58,6 +59,7 @@ export function App() {
   const [talkFrom, setTalkFrom] = useState<number>()
   const [portrait, setPortrait] = useState<string>()
   const [ending, setEnding] = useState(false)
+  const [exporting, setExporting] = useState(false)
   const [creation, setCreation] = useState<CreationData>()
   // More than one world in the content folder (M8): a new game asks which.
   const [worlds, setWorlds] = useState<WorldChoice[]>()
@@ -108,8 +110,8 @@ export function App() {
 
   // Menus stop the clock (FO, chapter 3).
   useEffect(() => {
-    client?.hold(Boolean(settings) || ending || Boolean(creation) || Boolean(journal) || Boolean(worlds))
-  }, [client, settings, ending, creation, journal, worlds])
+    client?.hold(Boolean(settings) || ending || exporting || Boolean(creation) || Boolean(journal) || Boolean(worlds))
+  }, [client, settings, ending, exporting, creation, journal, worlds])
 
   // What the editor saves is in the game at once: show the place again (FO, chapter 15).
   useEffect(() => {
@@ -347,6 +349,14 @@ export function App() {
           <button type="button" className="link" onClick={() => setEnding(true)}>
             [Look back]
           </button>
+          {client?.exportLog && (
+            <>
+              {' '}
+              <button type="button" className="link" onClick={() => setExporting(true)}>
+                [Export log]
+              </button>
+            </>
+          )}
           {client?.editor?.open && status?.builder && (
             <>
               {' '}
@@ -447,6 +457,7 @@ export function App() {
         />
       )}
       {ending && client && <EndView client={client} onClose={() => setEnding(false)} />}
+      {exporting && client && <LogExport client={client} onClose={() => setExporting(false)} />}
       {settings && <Settings bridge={client?.ai} tab={settings} onTab={setSettings} onClose={() => setSettings(undefined)} />}
     </div>
   )

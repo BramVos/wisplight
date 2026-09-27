@@ -104,8 +104,10 @@ export interface EngineClient {
   creation(): Promise<CreationData | undefined>
   /** The player's own log (desktop only) and the true chronicle, for the end of a game. */
   end(): Promise<{ log?: string; chronicle: string }>
-  /** Saves the whole game log to a file of the player's choice (desktop only). Returns where, or undefined. */
-  exportLog?(): Promise<string | undefined>
+  /** Roughly how large an export of this part of the game log is, in bytes (desktop only). */
+  logSize?(scope?: LogScope): Promise<number>
+  /** Saves a copy of the game log where the player chooses (desktop only). Returns where, or undefined. */
+  exportLog?(scope?: LogScope): Promise<string | undefined>
   activity(): void
   /** Stops the real-time clock while a menu is open. */
   hold(on: boolean): void
@@ -118,6 +120,9 @@ export interface EngineClient {
   /** The editor, in its own window (development builds) or tab (the preview). */
   editor?: EditorBridge
 }
+
+/** Which part of the game log to export. */
+export type LogScope = { kind: 'all' } | { kind: 'loaded' } | { kind: 'days'; days: number }
 
 const IDLE_PAUSE_MS = 60_000
 
@@ -192,6 +197,8 @@ export async function createClient(): Promise<EngineClient> {
     page: async (id) => engine.page(id),
     // The preview draws a placeholder with ?mock=1, so the interface can be checked without an image model.
     ...(demo ? { picture: async (id: string) => demo.demoPicture(content, id) } : {}),
+    // The preview has no game log on disk; with ?mock=1 the export window runs on a made-up size.
+    ...(demo ? { logSize: async (scope?: LogScope) => (scope?.kind === 'all' ? 23_600_000 : 1_900_000), exportLog: async () => 'wisplight-log-preview (the preview saves nothing)' } : {}),
     creation: async () => engine.creationData(),
     end: async () => ({ chronicle: engine.chronicle() }),
     activity: () => {

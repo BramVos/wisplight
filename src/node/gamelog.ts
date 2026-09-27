@@ -1,7 +1,8 @@
-import { closeSync, mkdirSync, openSync, writeSync } from 'node:fs'
+import { closeSync, mkdirSync, openSync, rmSync, writeSync } from 'node:fs'
 import { dirname } from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
 import { GameClock, type GameLogLine, type LogEntry } from '../engine'
+import { ZipWriter } from './zip'
 
 // The game log (FO, chapter 3): everything that happens in a game, written as
 // it happens, never cleaned up. Saving does not interrupt it. Loading an older
@@ -21,6 +22,14 @@ export interface LogLine {
   kind: string
   text: string
 }
+
+/** Which part of the story to export: all of it, what happened since the save was loaded, or the last days. */
+export type LogScope = { kind: 'all' } | { kind: 'loaded' } | { kind: 'days'; days: number }
+
+/** Above this the export becomes a zip with parts of this size, so every part opens quickly. */
+export const PART_BYTES = 10 * 1024 * 1024
+
+const MINUTES_PER_DAY = 24 * 60
 
 // What the player reads back: input, output and notes. Events and replay data stay hidden.
 const READABLE = ['in', 'out', 'note']
@@ -107,12 +116,14 @@ export class GameLog {
   }
 
   /** Every line of this history in order, one row at a time, oldest first. */
-  private *rows(session: Session, kinds: string[], afterId = 0): Generator<LogLine> {
+  private *rows(session: Session, kinds: string[], afterId = 0, scope: LogScope = { kind: 'all' }): Generator<LogLine> {
     const marks = kinds.map(() => '?').join(', ')
-    const query = this.db.prepare(`SELECT id, t, kind, text FROM gamelog WHERE game = ? AND branch = ? AND id > ? AND id <= ? AND kind IN (${marks}) ORDER BY id`)
+    const query = this.db.prepare(`SELECT id, t, kind, text FROM gamelog WHERE game = ? AND branch = ? AND id > ? AND id <= ? AND t >= ? AND kind IN (${marks}) ORDER BY id`)
+    const fromT = scope.kind === 'days' ? (this.recent(session, 1)[0]?.t ?? 0) - scope.days * MINUTES_PER_DAY : Number.MIN_SAFE_INTEGER
     // Lines of a branch are all newer than the fork in its parent, so root first is oldest first.
-    for (const { branch, upTo } of this.lineage(session).reverse()) {
-      yield* query.iterate(session.game, branch, afterId, upTo, ...kinds) as IterableIterator<LogLine>
+    const lineage = this.lineage(session)
+    for (const { branch, upTo } of scope.kind === 'loaded' ? lineage.slice(0, 1) : lineage.reverse()) {
+      yield* query.iterate(session.game, branch, afterId, upTo, fromT, ...kinds) as IterableIterator<LogLine>
     }
   }
 
@@ -140,13 +151,36 @@ export class GameLog {
     return out.join('\n')
   }
 
-  /** Writes the whole story to a file, streaming, however long the game ran. Returns the number of lines. */
-  exportTo(session: Session, path: string): number {
+  /** Roughly how many bytes an export of this scope will be, without reading the text. */
+  size(session: Session, scope: LogScope = { kind: 'all' }): number {
+    const marks = READABLE.map(() => '?').join(', ')
+    const query = this.db.prepare(`SELECT COUNT(*) AS n, COALESCE(SUM(LENGTH(CAST(text AS BLOB))), 0) AS bytes FROM gamelog WHERE game = ? AND branch = ? AND id <= ? AND t >= ? AND kind IN (${marks})`)
+    const fromT = scope.kind === 'days' ? (this.recent(session, 1)[0]?.t ?? 0) - scope.days * MINUTES_PER_DAY : Number.MIN_SAFE_INTEGER
+    const lineage = this.lineage(session)
+    let total = 0
+    for (const { branch, upTo } of scope.kind === 'loaded' ? lineage.slice(0, 1) : lineage) {
+      const row = query.get(session.game, branch, upTo, fromT, ...READABLE) as { n: number; bytes: number }
+      // The time stamp and the line break that format() adds to each line.
+      total += row.bytes + row.n * 24
+    }
+    return total
+  }
+
+  /**
+   * Writes the story to a file, streaming, however long the game ran. A path
+   * ending in .zip gets parts of about 10 MB (part-01.txt, part-02.txt, ...);
+   * anything else is one text file. Returns the number of lines.
+   */
+  exportTo(session: Session, path: string, scope: LogScope = { kind: 'all' }): number {
+    return path.toLowerCase().endsWith('.zip') ? this.exportZip(session, path, scope) : this.exportText(session, path, scope)
+  }
+
+  private exportText(session: Session, path: string, scope: LogScope): number {
     const fd = openSync(path, 'w')
     let lines = 0
     let buffer = ''
     try {
-      for (const row of this.rows(session, READABLE)) {
+      for (const row of this.rows(session, READABLE, 0, scope)) {
         buffer += `${format(row)}\n`
         lines++
         if (buffer.length > 64 * 1024) {
@@ -157,6 +191,36 @@ export class GameLog {
       if (buffer) writeSync(fd, buffer)
     } finally {
       closeSync(fd)
+    }
+    return lines
+  }
+
+  private exportZip(session: Session, path: string, scope: LogScope): number {
+    const zip = new ZipWriter(path)
+    let lines = 0
+    let part = 0
+    let chunks: string[] = []
+    let bytes = 0
+    const flush = () => {
+      if (chunks.length === 0) return
+      zip.add(`wisplight-log-part-${String(++part).padStart(2, '0')}.txt`, Buffer.from(chunks.join(''), 'utf8'))
+      chunks = []
+      bytes = 0
+    }
+    try {
+      for (const row of this.rows(session, READABLE, 0, scope)) {
+        const line = `${format(row)}\n`
+        if (bytes > 0 && bytes + Buffer.byteLength(line) > PART_BYTES) flush()
+        chunks.push(line)
+        bytes += Buffer.byteLength(line)
+        lines++
+      }
+      flush()
+      zip.finish()
+    } catch (error) {
+      zip.abort()
+      rmSync(path, { force: true })
+      throw error
     }
     return lines
   }

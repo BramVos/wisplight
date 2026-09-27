@@ -1151,3 +1151,17 @@ pre.sheet {
   font-size: 7px;
   line-height: 1;
 }
+
+/* Export the log */
+.log-scope {
+  border: 1px solid var(--line);
+  margin: 0 0 10px;
+  padding: 8px 12px;
+  display: grid;
+  gap: 6px;
+}
+
+.log-scope legend {
+  color: var(--room);
+  padding: 0 6px;
+}
