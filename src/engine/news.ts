@@ -21,6 +21,10 @@ export interface FactInput {
   /** Heard next door too: a fire, a fight, a scream. */
   loud?: boolean
   juice?: number
+  /** Only these saw it (a crime someone noticed); without it, everyone there did. */
+  witnesses?: string[]
+  /** Not true: a rumour or a lie. */
+  truth?: boolean
 }
 
 const DAY = 24 * 60
@@ -53,6 +57,7 @@ export function recordFact(world: World, input: FactInput): Fact {
     belang: input.belang,
     juice: input.juice ?? JUICE[input.belang] ?? 0.5,
     title: input.title,
+    ...(input.truth === false ? { truth: false } : {}),
     text: input.text,
   }
   store.facts.push(fact)
@@ -62,6 +67,7 @@ export function recordFact(world: World, input: FactInput): Fact {
     const npc = world.state.npcs[id]!
     // Whoever it is about knows it, even when their activity still says asleep.
     const concerned = input.about.includes(id)
+    if (input.witnesses && !input.witnesses.includes(id)) continue
     if (places.has(npc.location) && (npc.activity !== 'asleep' || concerned) && !npc.dead) {
       heardBy(world, id)[fact.id] = { level: 3, reliability: 1, from: 'witness', t: world.now }
       noticed(world, id, fact)
@@ -204,9 +210,11 @@ export function meet(world: World, a: string, b: string): void {
 function tell(world: World, teller: string, listener: string): void {
   const known = heardBy(world, teller)
   const theirs = heardBy(world, listener)
+  // A witness who was paid or scared into silence keeps it to themselves (FO, chapter 8).
+  const quiet = world.state.silenced?.[teller] ?? []
   const fresh = Object.entries(known)
     .map(([id, heard]) => ({ fact: factById(world, id)!, heard }))
-    .filter(({ fact }) => fact && !theirs[fact.id] && juiceNow(world, fact) >= 0.1)
+    .filter(({ fact }) => fact && !theirs[fact.id] && !quiet.includes(fact.id) && juiceNow(world, fact) >= 0.1)
     .sort((x, y) => juiceNow(world, y.fact) - juiceNow(world, x.fact) || x.fact.id.localeCompare(y.fact.id))
     .slice(0, 2)
   for (const { fact, heard } of fresh) {

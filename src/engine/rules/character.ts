@@ -11,6 +11,8 @@ export type When = (typeof WHEN)[number]
 
 export interface Character {
   name: string
+  /** How people speak of you, and who may fall for you (FO, chapter 8, "Romance"). */
+  pronoun?: 'she' | 'he' | 'they'
   ancestry: string
   background: string
   class: string
@@ -48,6 +50,7 @@ export interface Character {
 
 export interface CreationChoice {
   name: string
+  pronoun?: 'she' | 'he' | 'they'
   ancestry: string
   background: string
   class: string
@@ -164,6 +167,7 @@ export function createCharacter(content: Content, choice: CreationChoice): { cha
   for (const s of [...klass.trained, ...background.skills, ...choice.skills]) ranks[s] = 1
   const character: Character = {
     name: choice.name.trim(),
+    pronoun: choice.pronoun ?? 'they',
     ancestry: choice.ancestry,
     background: choice.background,
     class: choice.class,
@@ -218,7 +222,7 @@ export function suggestChoice(content: Content, klass: string, name = 'Traveller
 
 /** The one logged command that makes a character, so a replay makes the same one. */
 export function creationCommand(choice: CreationChoice): string {
-  return `create ${choice.class} ${choice.ancestry} ${choice.background} name=${choice.name.trim().replace(/\s+/g, '_')} boosts=${choice.boosts.join(',')} skills=${choice.skills.join(',')} talent=${choice.talent}`
+  return `create ${choice.class} ${choice.ancestry} ${choice.background} name=${choice.name.trim().replace(/\s+/g, '_')} boosts=${choice.boosts.join(',')} skills=${choice.skills.join(',')} talent=${choice.talent}${choice.pronoun ? ` pronoun=${choice.pronoun}` : ''}`
 }
 
 /** What the creation screen needs: the rules, and the names of the gear. */

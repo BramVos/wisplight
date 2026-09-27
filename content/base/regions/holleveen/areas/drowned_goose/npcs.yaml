@@ -13,6 +13,8 @@ npcs:
     personality: { warmth: 1, courage: 0, honesty: 0, temper: 1, curiosity: 3, diligence: 2 }
     values: { family: 3, wealth: 2 }
     quirks: [gossip]
+    patron: lantern
+    romance: { open_to: men, note: "A widow; looks for someone to carry the inn with her who won't chase Geesje off." }
     speech: "Loud, shrewd, friendly for a price. Knows every rumour in the Holleveen."
     aliases: [innkeeper, waardin, trijntje]
     public_facts:
@@ -51,6 +53,17 @@ npcs:
     personality: { warmth: 1, courage: 2, honesty: -1, temper: 1, curiosity: 3, diligence: -1 }
     values: { freedom: 3 }
     quirks: [restless]
+    fighter: { class: rascal, level: 2 }
+    companion:
+      wage: 32
+      approves: [adventure, trick, dare]
+      disapproves: [long_wait, back_down]
+      quest: the_road_to_graafhaven
+      campfire:
+        - "Mother says Graafhaven eats girls like me. I say it's never had one like me to eat."
+        - "Wouter wants a boat. I want a road. Funny how the both of them lead away from here."
+        - "You know what I'd do with a guilder? Buy a seat on the barge and never look back. Well. Maybe once."
+    romance: { open_to: anyone, note: "Wants to get away to Graafhaven; romance runs through her personal quest, and Trijntje is dead against it." }
     speech: "Quick, teasing, curious about anywhere that isn't here."
     aliases: [barmaid, geesje]
     public_facts:
@@ -87,6 +100,8 @@ npcs:
     personality: { warmth: 1, courage: 0, honesty: -1, temper: -1, curiosity: 3, diligence: 0 }
     values: { wealth: 2, freedom: 2 }
     quirks: [gossip]
+    patron: nehalennia
+    romance: { open_to: anyone, from: Friendly, note: "Charming and unfaithful; a romance with Kobus is mostly a story to tell later." }
     speech: "Quick, flattering, always selling. Tells every story a little better than it happened."
     aliases: [pedlar, marskramer, kobus]
     public_facts:

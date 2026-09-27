@@ -315,6 +315,8 @@ export const RelationSchema = z
     status: z.enum(['alive', 'dead', 'missing', 'away']).default('alive'),
     /** Not spoken of to people the NPC does not trust. */
     private: z.boolean().default(false),
+    /** Money this NPC owes the other, in duiten: the ledger of debts (FO, chapter 8). */
+    owes: z.number().int().positive().optional(),
     note: z.string().optional(),
   })
   .refine((r) => Boolean(r.to) !== Boolean(r.name), { message: 'a relation needs either to or name' })
@@ -343,6 +345,28 @@ export const NpcSchema = z.object({
   inventory: ItemCounts,
   knows_areas: z.array(z.string()).default([]),
   child: z.boolean().default(false),
+  /** The patron the NPC follows (Wereldboek, chapter 4): followers of the same are a step friendlier. */
+  patron: z.enum(['lantern', 'nehalennia', 'grey_rider', 'holle', 'baduhenna']).optional(),
+  /** Class and level in a fight (FO, chapter 12); others fight as ordinary folk. */
+  fighter: z.object({ class: z.string(), level: z.number().int().min(1).max(10) }).strict().optional(),
+  /** Can travel with the player (FO, chapter 13): daily wage in duiten, what they think of deeds, and the talk at the fire. */
+  companion: z
+    .object({
+      wage: z.number().int().nonnegative(),
+      approves: z.array(z.string()).default([]),
+      disapproves: z.array(z.string()).default([]),
+      /** Places (areas or locations) they will not set foot in. */
+      limits: z.array(z.string()).default([]),
+      campfire: z.array(z.string()).default([]),
+      /** Walks slowly: travel with them takes longer. */
+      slow: z.boolean().default(false),
+      /** The personal quest that opens at bond 3. */
+      quest: z.string().optional(),
+    })
+    .strict()
+    .optional(),
+  /** Open to romance (FO, chapter 8; Wereldboek, "Romance"): with whom, from which attitude. */
+  romance: z.object({ open_to: z.enum(['anyone', 'women', 'men', 'nobody']), from: z.enum(['Friendly', 'Warm']).default('Warm'), note: z.string().optional() }).strict().optional(),
   relations: z.array(RelationSchema).default([]),
   secrets: z
     .array(
@@ -503,6 +527,32 @@ export const WorldSchema = z.object({
 })
 export type WorldDef = z.infer<typeof WorldSchema>
 
+// ---------------------------------------------------------------- factions and realms
+
+export const FactionSchema = z
+  .object({
+    id: z.string().regex(/^[a-z0-9_]+$/),
+    name: z.string(),
+    seat: z.string(),
+    wants: z.string(),
+    stance: z.string(),
+    members: z.array(z.string()).default([]),
+    allies: z.array(z.string()).default([]),
+    rivals: z.array(z.string()).default([]),
+    /** How the player can join: never, hired, by a patron, by reputation, or by buying citizenship. */
+    join: z.enum(['never', 'hired', 'patron_lantern', 'patron_old', 'reputation', 'citizenship']).default('never'),
+    /** The law this faction keeps: the Count's land or the town rights of Waagdam. */
+    law: z.enum(['count', 'waagdam']).optional(),
+  })
+  .strict()
+export type Faction = z.infer<typeof FactionSchema>
+
+export const RealmSchema = z.object({ id: z.string().regex(/^[a-z0-9_]+$/), name: z.string(), ruler: z.string(), capital: z.string() }).strict()
+export type Realm = z.infer<typeof RealmSchema>
+
+export const TensionSchema = z.object({ between: z.tuple([z.string(), z.string()]), tension: z.number().int().min(0).max(100), why: z.string() }).strict()
+export type Tension = z.infer<typeof TensionSchema>
+
 // ---------------------------------------------------------------- loading
 
 const FileSchema = z
@@ -520,6 +570,9 @@ const FileSchema = z
     quests: z.array(QuestSchema).optional(),
     regions: z.array(RegionSchema).optional(),
     rules: RulesSchema.optional(),
+    factions: z.array(FactionSchema).optional(),
+    realms: z.array(RealmSchema).optional(),
+    tensions: z.array(TensionSchema).optional(),
     creatures: z.array(CreatureSchema).optional(),
     encounters: z.array(EncounterSchema).optional(),
   })
@@ -547,6 +600,9 @@ export interface Content {
   rules?: Rules
   creatures: Map<string, Creature>
   encounters: Map<string, Encounter>
+  factions: Map<string, Faction>
+  realms: Map<string, Realm>
+  tensions: Tension[]
   /** The chronicler's working instruction (content/CHRONICLER.md), if there is one. */
   chronicler?: string
 }
@@ -583,6 +639,9 @@ export function loadContent(files: ContentFile[]): Content {
     regions: new Map<string, Region>(),
     creatures: new Map<string, Creature>(),
     encounters: new Map<string, Encounter>(),
+    factions: new Map<string, Faction>(),
+    realms: new Map<string, Realm>(),
+    tensions: [] as Tension[],
   }
 
   let chronicler: string | undefined
@@ -619,6 +678,9 @@ export function loadContent(files: ContentFile[]): Content {
     addAll(content.regions, data.regions, (v) => v.id, file.path, 'region', problems)
     addAll(content.creatures, data.creatures, (v) => v.id, file.path, 'creature', problems)
     addAll(content.encounters, data.encounters, (v) => v.id, file.path, 'encounter', problems)
+    addAll(content.factions, data.factions, (v) => v.id, file.path, 'faction', problems)
+    addAll(content.realms, data.realms, (v) => v.id, file.path, 'realm', problems)
+    content.tensions.push(...(data.tensions ?? []))
     if (data.rules) {
       if (rules) problems.push(`${file.path}: the rules are defined twice`)
       rules = data.rules
@@ -771,6 +833,12 @@ function checkReferences(world: WorldDef | undefined, c: Omit<Content, 'world'>)
   for (const q of c.quests.values()) {
     for (const who of [...q.givers, ...q.helpers, ...q.opponents]) npc(who, `quest ${q.id}`)
   }
+  for (const f of c.factions.values()) {
+    for (const m of f.members) npc(m, `faction ${f.id}.members`)
+    for (const other of [...f.allies, ...f.rivals]) if (!c.factions.has(other)) problems.push(`faction ${f.id}: unknown faction ${other}`)
+  }
+  for (const t of c.tensions) for (const r of t.between) if (!c.realms.has(r)) problems.push(`tension: unknown realm ${r}`)
+  for (const n of c.npcs.values()) if (n.companion?.quest && !c.quests.has(n.companion.quest)) problems.push(`${n.id}: unknown personal quest ${n.companion.quest}`)
   for (const t of c.topics.values()) {
     if (t.origin && !c.areas.has(t.origin) && !c.locations.has(t.origin)) problems.push(`topic ${t.id}: unknown origin ${t.origin}`)
     for (const n of t.known_by) npc(n, `topic ${t.id}.known_by`)

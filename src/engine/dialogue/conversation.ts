@@ -8,6 +8,9 @@ import type { World } from '../world'
 import { classify, tierFor, TIER_TOKENS, TIER_WORDS, type Act, type Tier } from './acts'
 import { dcFor, describeCheck, succeeded, type CheckResult } from './checks'
 import { gainXp, playerCheck, XP } from '../rules/player'
+import { approve, companionOf, offer, recruit } from '../social/companions'
+import { silenceWitness, witnessed } from '../social/crime'
+import { partyTalk } from './party'
 import { closingLine, fallbackReply } from './fallback'
 import { fitLength, hasAnachronism, leakedNames, looksLikeInjection, unknownNames, vocabularyOf } from './guard'
 import type { Knowledge, Packet } from './knowledge'
@@ -267,6 +270,12 @@ export class Dialogue {
       applyEffect(world, npcId, 'trust', -3)
     }
 
+    // A witness who is paid, scared or talked round keeps quiet about what they saw (FO, chapter 8).
+    if (win && kind !== 'deceive' && witnessed(world, npcId)) {
+      const quiet = silenceWitness(world, npcId, kind === 'bribe' ? 'bribe' : kind === 'intimidate' ? 'intimidate' : 'persuade')
+      if (quiet) world.notices.push(quiet)
+    }
+
     // A persuaded NPC may admit a secret the player has noticed, or asked about.
     let secret: string | undefined
     let admission: string | undefined
@@ -283,6 +292,11 @@ export class Dialogue {
     const words = kind === 'bribe' ? `Here, for your trouble.` : text || `(tries to ${kind} ${callName(npc)})`
     lines.push(...(await this.turn(npcId, words, { act: kind === 'bribe' ? 'Bribe' : (capitalise(kind) as Act), check: { ...result, about }, secret, admission })))
     return lines
+  }
+
+  /** TALK PARTY, ASK PARTY ABOUT <topic>: every companion at once, in one call (FO, chapter 13). */
+  async party(words: string): Promise<Output[]> {
+    return partyTalk(this.world, this.topics, this.knowledge, this.llm(), words, this.vocabulary())
   }
 
   journal(): Output {
@@ -359,7 +373,10 @@ export class Dialogue {
       if (!this.topics.entries.has(id) || journal[id] !== undefined) continue
       journal[id] = this.world.now
       // Knowledge is experience too (FO, chapter 11): a piece of lore learned.
-      if (this.topics.kind(id) === 'lore' && !id.startsWith('fact_')) gainXp(this.world, XP.lore, `you learned of ${this.topics.name(id)}`)
+      if (this.topics.kind(id) === 'lore' && !id.startsWith('fact_')) {
+        gainXp(this.world, XP.lore, `you learned of ${this.topics.name(id)}`)
+        approve(this.world, 'learn_old_story')
+      }
     }
   }
 
@@ -569,15 +586,17 @@ export class Dialogue {
   }
 }
 
-// Whether someone joins the player is the game's call, not the model's (FO, chapter 13).
-// Companions arrive in M6; until then everyone declines, for reasons the game can name.
+// Whether someone joins the player is the game's call, not the model's (FO, chapter 13):
+// the recruiting formula decides, and a yes is carried out at once.
 function recruitDecision(world: World, npcId: string, band: Attitude): string {
-  const npc = world.npc(npcId)
-  const reasons: string[] = []
-  if (band !== 'Warm' && band !== 'Devoted') reasons.push('you hardly know this stranger and do not trust them enough')
-  if (npc.work) reasons.push(`your work at ${world.location(npc.work).name} needs you`)
-  if (npc.quirks.includes('afraid_of_deep_water')) reasons.push('the fen and its deep water frighten you')
-  return `You will not come along. Say no in your own way and give one or two of these reasons: ${reasons.join('; ') || 'you have your own life to see to'}.`
+  void band
+  if (companionOf(world, npcId)) return 'You are already travelling with the stranger. Say so.'
+  const o = offer(world, npcId)
+  if (o.decision === 'refuse') return `You will not come along. Say no in your own way and give one or two of these reasons: ${o.reasons.join('; ') || 'you have your own life to see to'}.`
+  const joined = recruit(world, npcId)
+  world.notices.push(...joined.filter((l) => l.kind === 'system').map((l) => l.text))
+  const terms = `${o.terms.wage} duiten a day${o.terms.until ? `, for ${Math.round((o.terms.until - world.now) / (24 * 60))} days` : ''}${o.terms.limits.length ? ', and some places you will not go' : ''}`
+  return o.decision === 'join' ? `You agree to come along with the stranger. Say yes in your own way. Your wage: ${terms}.` : `You agree to come, on terms: ${terms}. Say yes and name your terms plainly.`
 }
 
 /** The topic words without closing punctuation, so the echo does not end in "?." or "..". */

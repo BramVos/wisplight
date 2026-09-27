@@ -45,6 +45,11 @@ export interface FightSetup {
   foes: { creature: string; count: number; range: 'engaged' | 'near' | 'far'; joins?: number }[]
   now: number
   ambush?: boolean
+  /** People on the foes' side (an NPC the player attacked, or who attacked the player). */
+  foeFighters?: Fighter[]
+  /** Companions on the player's side. */
+  allies?: Fighter[]
+  startedBy?: 'player' | 'npc'
 }
 
 const POS = { engaged: 0, near: -1, far: -2 }
@@ -53,7 +58,7 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 export function beginFight(arena: Arena, setup: FightSetup): { combat: Combat; lines: Line[] } {
   if (!arena.character) throw new Error('A fight needs a character')
   const names = foeNames(arena.content, setup.foes)
-  const fighters: Fighter[] = [playerFighter(arena.content, arena.character)]
+  const fighters: Fighter[] = [playerFighter(arena.content, arena.character), ...(setup.allies ?? [])]
   let n = 0
   for (const group of setup.foes) {
     for (let i = 0; i < group.count; i++) {
@@ -61,8 +66,10 @@ export function beginFight(arena: Arena, setup: FightSetup): { combat: Combat; l
       n++
     }
   }
+  for (const f of setup.foeFighters ?? []) fighters.push(f)
   const combat: Combat = {
     id: setup.id,
+    ...(setup.startedBy ? { started_by: setup.startedBy } : {}),
     ...(setup.encounter ? { encounter: setup.encounter.id } : {}),
     place: setup.place,
     ...(setup.from ? { from: setup.from } : {}),
@@ -113,6 +120,7 @@ export function runOthers(arena: Arena, combat: Combat, auto = false, fleeDc?: n
       if (!auto && combat.actions > 0) return lines
       if (auto) autoTurn(arena, combat, f, lines, fleeDc !== undefined ? { fleeDc } : {})
     } else if (f.side === 'foes' && f.state === 'up') foeTurn(arena, combat, f, lines)
+    else if (f.side === 'party' && f.state === 'up') autoTurn(arena, combat, f, lines)
     if (settle(combat)) break
     endTurn(arena, combat, f, lines)
     nextTurn(arena, combat, lines)
@@ -141,6 +149,11 @@ function nextTurn(arena: Arena, combat: Combat, lines: Line[]): void {
  */
 function downed(arena: Arena, combat: Combat): Line[] {
   const lines: Line[] = []
+  // Companions who lie dying roll too; nobody is left standing to help them.
+  for (const f of combat.fighters) {
+    if (f.side !== 'party' || f.id === 'player') continue
+    for (let i = 0; i < 40 && f.state === 'dying'; i++) recoveryCheck(arena, f, lines)
+  }
   const player = fighter(combat, 'player')
   const foes = standing(combat, 'foes')
   const cruel = foes.find((f) => f.kind === 'spirit' || f.kind === 'undead')
@@ -184,6 +197,43 @@ function findAbility(f: Fighter, words: string): { ability: FightAbility; rest: 
     if (w === name || w.startsWith(`${name} `) || w === a.id || w.startsWith(`${a.id} `)) return { ability: a, rest: w.slice(w.startsWith(name) ? name.length : a.id.length).trim().replace(/^(on|at)\s+/, '') }
   }
   return undefined
+}
+
+/**
+ * ORDER <companion> TO <attack|shoot|strike> <foe>, TO HOLD, TO PROTECT <name>,
+ * TO HEAL: free, and refused by a badly hurt companion of low loyalty who is
+ * told to take on a stronger foe (FO, chapter 13).
+ */
+function orderInFight(combat: Combat, words: string): Line[] {
+  const m = /^(\S+)\s+(?:to\s+)?(attack|shoot|strike|hit|hold|protect|heal|support|defend|follow)\s*(.*)$/.exec(words.trim())
+  if (!m) return [{ kind: 'system', text: 'ORDER <companion> TO ATTACK <foe>, TO HOLD, TO PROTECT <name>, or TO HEAL.' }]
+  const who = combat.fighters.find((f) => f.side === 'party' && f.id !== 'player' && f.name.toLowerCase().startsWith(m[1]!))
+  if (!who) return [{ kind: 'system', text: `Nobody called "${m[1]}" fights beside you.` }]
+  if (who.state !== 'up') return [{ kind: 'system', text: `${cap(who.name)} cannot.` }]
+  const verb = m[2]!
+  if (verb === 'hold' || verb === 'defend') {
+    who.stance = verb === 'hold' ? 'hold' : 'defensive'
+    return [{ kind: 'narration', text: `${cap(who.name)} holds back, guarding.` }]
+  }
+  if (verb === 'heal' || verb === 'support') {
+    who.stance = 'support'
+    return [{ kind: 'narration', text: `${cap(who.name)} turns to tending the wounded.` }]
+  }
+  if (verb === 'protect') {
+    const guard = combat.fighters.find((f) => f.side === 'party' && (m[3] === 'me' ? f.id === 'player' : f.name.toLowerCase().startsWith(m[3] ?? '')))
+    who.stance = 'protect'
+    who.guard = guard?.id ?? 'player'
+    return [{ kind: 'narration', text: `${cap(who.name)} moves to cover ${guard && guard.id !== 'player' ? guard.name : 'you'}.` }]
+  }
+  if (verb === 'follow') {
+    who.stance = 'follow'
+    return [{ kind: 'narration', text: `${cap(who.name)} will go for whoever you go for.` }]
+  }
+  const target = findFoe(combat, m[3] ?? '')
+  if (!target) return [{ kind: 'system', text: `${cap(who.name)} looks at you: at whom?` }]
+  if (who.hp < who.maxHp * 0.3 && (who.loyalty ?? 100) < 60 && target.level > who.level + 1) return [{ kind: 'speech', text: `${cap(who.name)}: "Not like this. Not alone, not against ${target.name}."` }]
+  who.orderTarget = target.id
+  return [{ kind: 'narration', text: `${cap(who.name)} goes for ${target.name}.` }]
 }
 
 export const FIGHT_HELP =
@@ -263,6 +313,7 @@ export function playerCommand(arena: Arena, combat: Combat, text: string, fleeDc
   }
 
   if (/^(help|\?)$/.test(verb)) return { lines: [{ kind: 'system', text: FIGHT_HELP }] }
+  if (verb === 'order') return { lines: orderInFight(combat, rest) }
   if (/^(subdue|lethal|nonlethal)$/.test(verb)) {
     combat.subdue = verb === 'lethal' ? false : !(rest === 'off')
     return { lines: [{ kind: 'system', text: combat.subdue ? 'You fight to subdue, not to kill (-2 to hit).' : 'You fight to kill.' }] }
@@ -279,7 +330,10 @@ export function playerCommand(arena: Arena, combat: Combat, text: string, fleeDc
       // Out of reach with a weapon for close work: step in first, if there are actions for it.
       if (!reach() && attack.kind === 'melee' && distance(player, target) === 1 && !player.conditions['grabbed'] && !player.conditions['prone'] && spend(1)) stepMove(arena, combat, player, 'forward', lines)
       if (!reach()) lines.push({ kind: 'system', text: `${cap(target.name)} is out of reach.` })
-      else if (combat.actions > 0 && spend(1)) lines.push(...strike(arena, combat, player, target))
+      else if (combat.actions > 0 && spend(1)) {
+        combat.playerTarget = target.id
+        lines.push(...strike(arena, combat, player, target))
+      }
     }
   } else if (/^(advance|close|forward|charge|stride)$/.test(verb) || words === 'step in') {
     if (spend(1)) stepMove(arena, combat, player, 'forward', lines)

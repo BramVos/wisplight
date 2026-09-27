@@ -74,6 +74,13 @@ export interface Fighter {
   fleeing?: boolean
   /** Creatures whose weakness this fighter remembered (Recall). */
   recalled?: string[]
+  /** A companion's character, for its skills and gear. */
+  sheet?: import('../rules/character').Character
+  /** A companion's loyalty and stance, and a target the player ordered. */
+  loyalty?: number
+  stance?: 'aggressive' | 'defensive' | 'support' | 'hold' | 'protect' | 'follow'
+  guard?: string
+  orderTarget?: string
 }
 
 export interface Combat {
@@ -96,11 +103,15 @@ export interface Combat {
   over?: 'won' | 'fled' | 'surrendered' | 'lost' | 'paid' | 'talked'
   /** After a win: foes who gave up or lie senseless, waiting for the player's word. */
   prisoners?: string[]
+  /** Who started it: the player against an NPC, an NPC against the player, or an encounter. */
+  started_by?: 'player' | 'npc'
+  /** The last foe the player struck, for companions who follow the player's target. */
+  playerTarget?: string
   started: number
   xp: number
 }
 
 export interface Line {
-  kind: 'narration' | 'check' | 'system'
+  kind: 'narration' | 'check' | 'system' | 'speech'
   text: string
 }

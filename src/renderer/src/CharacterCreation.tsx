@@ -39,9 +39,10 @@ export function CharacterCreation({ data, onCreate, onSkip }: { data: CreationDa
 
   // A new class starts again from its suggestion; a new ancestry or background from the class's, keeping the other.
   const pick = (patch: Partial<Pick<CreationChoice, 'class' | 'ancestry' | 'background'>>) => {
-    if (patch.class) return setChoice({ ...suggestChoice(content, patch.class, choice.name), name: choice.name })
+    const keep = { name: choice.name, ...(choice.pronoun ? { pronoun: choice.pronoun } : {}) }
+    if (patch.class) return setChoice({ ...suggestChoice(content, patch.class, choice.name), ...keep })
     const next = { ...choice, ...patch }
-    setChoice({ ...suggestChoice(content, next.class, choice.name, next.ancestry, next.background), name: choice.name })
+    setChoice({ ...suggestChoice(content, next.class, choice.name, next.ancestry, next.background), ...keep })
   }
 
   const klass = rules.classes.find((c) => c.id === choice.class)!
@@ -82,10 +83,20 @@ export function CharacterCreation({ data, onCreate, onSkip }: { data: CreationDa
           </button>
         </header>
         <div className="settings-body">
-          <label className="field">
-            <span>Name</span>
-            <input value={choice.name} maxLength={30} placeholder="Your name" onChange={(e) => setChoice({ ...choice, name: e.target.value })} autoFocus />
-          </label>
+          <div className="row">
+            <label className="field">
+              <span>Name</span>
+              <input value={choice.name} maxLength={30} placeholder="Your name" onChange={(e) => setChoice({ ...choice, name: e.target.value })} autoFocus />
+            </label>
+            <label className="field">
+              <span>People call you</span>
+              <select value={choice.pronoun ?? 'they'} onChange={(e) => setChoice({ ...choice, pronoun: e.target.value as 'she' | 'he' | 'they' })} aria-label="Pronoun">
+                <option value="she">she</option>
+                <option value="he">he</option>
+                <option value="they">they</option>
+              </select>
+            </label>
+          </div>
 
           <h3>Class</h3>
           <div className="choices">

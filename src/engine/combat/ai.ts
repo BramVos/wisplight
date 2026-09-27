@@ -24,8 +24,6 @@ import type { Combat, FightAbility, FightAttack, Fighter, Line } from './types'
 // a small utility that weighs targets, own hit points, conditions and morale.
 // Foes use it on their turn; the balance test lets it play the player too.
 
-const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
-
 function avg(dice: string): number {
   const m = /^(\d+)d(\d+)([+-]\d+)?$/.exec(dice)
   if (!m) return Number(dice) || 0
@@ -142,9 +140,45 @@ function strikeValue(arena: Arena, combat: Combat, f: Fighter, target: Fighter):
  */
 export function autoTurn(arena: Arena, combat: Combat, f: Fighter, lines: Line[], opts: { fleeDc?: number } = {}): void {
   let actions = actionsFor(f)
+  const own = f.id === 'player'
+  const sheet = own ? arena.character : f.sheet
+  const stance = f.stance ?? 'aggressive'
+  // A companion's stance and the player's orders (FO, chapter 13, "Tactiek"):
+  // protect someone, heal first, hold the line, or strike the player's target.
+  if (!own && stance === 'protect') {
+    const guard = combat.fighters.find((x) => x.side === 'party' && x.state === 'up' && (x.id === f.guard || (f.guard === 'player' && x.id === 'player')))
+    const protect = f.abilities.find((a) => canUse(f, a) && a.do.some((s) => 'protect' in s))
+    if (guard && protect && actions >= protect.actions && abilityTargets(combat, f, protect, guard).length) {
+      lines.push(...useAbility(arena, combat, f, protect, guard))
+      actions -= protect.actions
+    }
+  }
+  if (!own && stance === 'support') {
+    const hurt = combat.fighters.filter((x) => x.side === 'party' && (x.state === 'up' || x.state === 'dying') && x.hp < x.maxHp * 0.5).sort((a, b) => a.hp / a.maxHp - b.hp / b.maxHp)[0]
+    const healing = hurt && f.abilities.find((a) => canUse(f, a) && a.actions <= actions && a.do.some((s) => 'heal' in s) && a.target !== 'enemy' && a.target !== 'enemies' && abilityTargets(combat, f, a, hurt).length)
+    if (hurt && healing) {
+      lines.push(...useAbility(arena, combat, f, healing, hurt))
+      actions -= healing.actions
+    }
+  }
+  // Loyalty under pressure: badly hurt, a companion only takes on a stronger foe from loyalty 60 (FO, chapter 13).
+  const shaken = !own && f.hp < f.maxHp * 0.3 && (f.loyalty ?? 100) < 60
   while (actions > 0 && !settle(combat)) {
-    const foes = standing(combat, 'foes')
+    let foes = standing(combat, 'foes')
     if (foes.length === 0) return
+    if (shaken) {
+      const weaker = foes.filter((x) => x.level <= f.level + 1)
+      if (weaker.length === 0) {
+        if (f.pos < 2 && stepMove(arena, combat, f, 'back', lines, true)) {
+          lines.push({ kind: 'narration', text: `${cap(f.name)} falls back, hurt, and will not take ${foes[0]!.name} on alone.` })
+          actions--
+          continue
+        }
+        f.cover = true
+        return
+      }
+      foes = weaker
+    }
     if (f.hp < f.maxHp * 0.4) {
       const healing = f.abilities.find((a) => canUse(f, a) && a.actions <= actions && a.do.some((s) => 'heal' in s) && a.target !== 'enemy' && a.target !== 'enemies')
       if (healing) {
@@ -152,13 +186,13 @@ export function autoTurn(arena: Arena, combat: Combat, f: Fighter, lines: Line[]
         actions -= healing.actions
         continue
       }
-      if (arena.items && arena.items.count('herbs') > 0 && useRemedy(arena, combat, f, 'herbs', lines)) {
+      if (own && arena.items && arena.items.count('herbs') > 0 && useRemedy(arena, combat, f, 'herbs', lines)) {
         actions--
         continue
       }
       const foeHp = foes.reduce((s, x) => s + x.hp, 0)
       const foeMax = foes.reduce((s, x) => s + x.maxHp, 0)
-      if (f.hp < f.maxHp * 0.2 && foeHp > foeMax * 0.5 && actions >= 2 && opts.fleeDc !== undefined) {
+      if (own && f.hp < f.maxHp * 0.2 && foeHp > foeMax * 0.5 && actions >= 2 && opts.fleeDc !== undefined) {
         actions -= 2
         if (tryFlee(arena, combat, opts.fleeDc, lines)) return
         continue
@@ -183,7 +217,8 @@ export function autoTurn(arena: Arena, combat: Combat, f: Fighter, lines: Line[]
       actions -= cure.actions
       continue
     }
-    const target = pickTarget(combat, f, foes)
+    const ordered = foes.find((x) => x.id === f.orderTarget) ?? (stance === 'follow' ? foes.find((x) => x.id === combat.playerTarget) : undefined)
+    const target = ordered ?? pickTarget(combat, f, foes)
     const mark = f.abilities.find((a) => a.do.some((s) => 'mark' in s) && canUse(f, a))
     if (mark && !f.quarry && actions >= 2 && inRange(f, target, mark.range)) {
       lines.push(...useAbility(arena, combat, f, mark, target))
@@ -204,13 +239,19 @@ export function autoTurn(arena: Arena, combat: Combat, f: Fighter, lines: Line[]
     }
     if (hit > 0) {
       if (f.strikes >= 2 && hit < 1.2) break
+      if (!own && stance === 'defensive' && f.strikes >= 1) break
       lines.push(...strike(arena, combat, f, target))
       actions--
       continue
     }
     if (f.conditions['grabbed']) breakFree(arena, combat, f, lines)
-    else if (!stepMove(arena, combat, f, 'forward', lines)) break
+    else if ((!own && (stance === 'hold' || stance === 'defensive')) || !stepMove(arena, combat, f, 'forward', lines, !own)) break
     actions--
   }
-  if (actions > 0 && !settle(combat) && arena.character?.gear.shield) f.shieldUp = true
+  if (actions > 0 && !settle(combat)) {
+    if (sheet?.gear.shield) f.shieldUp = true
+    else if (!own && (stance === 'defensive' || stance === 'hold')) f.cover = true
+  }
 }
+
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)

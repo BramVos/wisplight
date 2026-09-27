@@ -36,6 +36,7 @@ import {
   type LevelChoice,
 } from './character'
 import { ATTRIBUTES, SAVES, type Attribute } from './schema'
+import { approve, syncLevels } from '../social/companions'
 
 // The character in the world (FO, chapter 11): making one, checks with real
 // skills, experience, rest, patrons, clocks, and coming back from the dead.
@@ -128,7 +129,7 @@ export function createCommand(world: World, args: string[]): Output[] {
   const named: Record<string, string> = {}
   const loose: string[] = []
   for (const w of args) {
-    const m = /^(name|boosts|skills|talent)=(.+)$/i.exec(w)
+    const m = /^(name|boosts|skills|talent|pronoun)=(.+)$/i.exec(w)
     if (m) named[m[1]!.toLowerCase()] = m[2]!
     else loose.push(w.toLowerCase())
   }
@@ -154,6 +155,7 @@ export function createCommand(world: World, args: string[]): Output[] {
     ...(named['boosts'] ? { boosts: named['boosts'].split(',').map((b) => b.trim() as Attribute) } : {}),
     ...(named['skills'] ? { skills: named['skills'].split(',').map((s) => s.trim()) } : {}),
     ...(named['talent'] ? { talent: named['talent'].trim() } : {}),
+    ...(named['pronoun'] && ['she', 'he', 'they'].includes(named['pronoun'].toLowerCase()) ? { pronoun: named['pronoun'].toLowerCase() as 'she' | 'he' | 'they' } : {}),
   }
   return makeCharacter(world, final)
 }
@@ -277,6 +279,7 @@ export function levelCommand(world: World, args: string[]): Output[] {
     ].filter(Boolean)
     return [{ kind: 'system', text: menu.join('\n') }]
   }
+  syncLevels(world)
   return [{ kind: 'system', text: result.lines.join(' ') }]
 }
 
@@ -333,6 +336,7 @@ export function patronCommand(world: World, words: string): Output[] {
   if (!here.tags.includes('holy')) return [{ kind: 'error', text: 'You swear yourself to a patron at a holy place: a chapel, a church, an old barrow.' }]
   const before = c.patron && patrons.find((x) => x.id === c.patron!.id)
   c.patron = { id: p.id, favour: 5, since: world.now }
+  approve(world, p.id === 'lantern' ? 'fight_witchcraft' : 'old_rite')
   return [{ kind: 'text', text: `${before ? `You turn from ${before.name}. ` : ''}You swear yourself to ${p.name}. ${p.text}` }]
 }
 

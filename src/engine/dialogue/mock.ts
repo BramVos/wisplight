@@ -30,7 +30,9 @@ export class MockLlm implements LlmClient {
     this.calls.push(request)
     if (this.mode === 'throw') throw new LlmError('timeout', 'mock timeout')
     const text =
-      request.role === 'voice'
+      request.schemaName === 'party_reply'
+        ? this.party(request.meta as unknown as { party: { id: string; name: string; knows: string[] }[] })
+        : request.role === 'voice'
         ? this.voice(request.meta as unknown as MockMeta)
         : request.role === 'chronicler'
           ? request.schemaName === 'outline'
@@ -38,6 +40,12 @@ export class MockLlm implements LlmClient {
             : this.chronicler(request.meta as unknown as ChronicleMeta, request.prompt)
           : this.other(request)
     return { text, provider: 'mock', model: 'mock-1', usage: { inputTokens: Math.round((request.system.length + request.prompt.length) / 4), outputTokens: Math.round(text.length / 4), cachedTokens: 0 }, latencyMs: 1 }
+  }
+
+  /** The group talk: one line each, from what each companion knows. */
+  private party(meta: { party: { id: string; name: string; knows: string[] }[] }): string {
+    if (this.mode === 'invalid') return 'They all talk at once.'
+    return JSON.stringify({ lines: meta.party.map((p) => ({ speaker: p.id, text: p.knows[0]?.split(/(?<=[.!?])\s/)[0] ?? "Can't say I know much about that." })) })
   }
 
   private voice(meta: MockMeta): string {

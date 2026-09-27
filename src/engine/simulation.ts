@@ -11,6 +11,11 @@ import { settleChoices } from './npc/goals'
 import { clamp } from './npc/execute'
 import { think } from './npc/brain'
 import type { World } from './world'
+import { companionsHour, keepUp } from './social/companions'
+import { pursue } from './social/confront'
+import { noticeCoincidences } from './social/coincidence'
+import { debtsDue, weeklyDrift } from './social/deeds'
+import { realmsDay } from './social/realms'
 
 // The world clock. Every game minute, NPCs that are free decide and act;
 // every game hour, needs decay and the economy moves (supply and demand).
@@ -22,11 +27,15 @@ export function advance(world: World, minutes: number): void {
   for (let i = 0; i < minutes; i++) {
     world.state.minutes++
     if (minuteOfDay(world.now) % 60 === 0) hourly(world)
-    if (minuteOfDay(world.now) % 15 === 0) spreadNews(world)
+    if (minuteOfDay(world.now) % 15 === 0) {
+      spreadNews(world)
+      noticeCoincidences(world)
+    }
+    keepUp(world)
     // Someone in a conversation with the player stays put until it ends.
     settleNotes(world)
     // Near the player every minute, further off every quarter of an hour; notes not at all (lod.ts).
-    for (const id of ids) if (world.state.talk?.npc !== id && !world.state.npcs[id]!.dead && thinksNow(world, id)) think(world, id)
+    for (const id of ids) if (world.state.talk?.npc !== id && !world.state.npcs[id]!.dead && !world.state.npcs[id]!.following && thinksNow(world, id)) think(world, id)
     settleRuns(world)
     settleChoices(world)
   }
@@ -39,8 +48,21 @@ function hourly(world: World): void {
   storyHour(world)
   nightly(world)
   weatherHour(world)
+  companionsHour(world)
+  if (minuteOfDay(world.now) === 6 * 60) debtsDue(world)
+  pursue(world)
+  healWounds(world)
+  if (minuteOfDay(world.now) === 0) {
+    realmsDay(world)
+    if (Math.floor(world.now / MINUTES_PER_DAY) % 7 === 0) weeklyDrift(world)
+  }
   const lodging = world.state.player.lodging
   if (lodging && world.now >= lodging.until) world.state.player.lodging = undefined
+}
+
+/** Wounds from a fight heal a little every hour. */
+function healWounds(world: World): void {
+  for (const npc of Object.values(world.state.npcs)) if (npc.wounds) npc.wounds = Math.max(0, npc.wounds - 1) || undefined
 }
 
 function decayNeeds(world: World): void {

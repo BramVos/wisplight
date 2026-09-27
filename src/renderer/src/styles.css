@@ -748,3 +748,25 @@ pre.sheet {
   margin: 0;
   white-space: pre-wrap;
 }
+
+/* The party and the law (FO, chapters 8 and 13) */
+
+.party .member {
+  margin-bottom: 8px;
+}
+
+.party .who {
+  display: flex;
+  font-size: 13px;
+  gap: 8px;
+  justify-content: space-between;
+}
+
+.party p {
+  margin: 0;
+}
+
+.wanted {
+  color: var(--over);
+  font-size: 13px;
+}

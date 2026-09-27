@@ -1,14 +1,14 @@
 import { GameClock } from './clock'
 import { describeRoom, findNpcAnywhere, findNpcHere, runCommand, type CommandHost, type Output } from './commands'
 import { areaTopicId, callName, type Content } from './content'
-import { Dialogue, QUICK_OPTIONS } from './dialogue/conversation'
+import { Dialogue, parseMoney, QUICK_OPTIONS } from './dialogue/conversation'
 import { Knowledge } from './dialogue/knowledge'
 import type { ChronicleOutput, ChroniclerRequest, Outline } from '../chronicler'
 import { applyOutline, farWhere, runOutline, wantOutline } from './outlines'
 import { applyRun, settleRuns, writeRun } from './chronicler'
 import { applyChoice, goalRequest, settleChoices } from './npc/goals'
 import { LlmError, type LlmClient, type LlmRequest, type LlmResponse } from './dialogue/llm'
-import { attitude } from './dialogue/relations'
+import { attitude, relation } from './dialogue/relations'
 import { TopicRegistry } from './dialogue/topics'
 import { formatMoney } from './items'
 import { chronicleText } from './chronicle'
@@ -29,8 +29,17 @@ import { World } from './world'
 import { beginFight, fightView, playerCommand } from './combat/flow'
 import { foeXp } from './combat/balance'
 import type { Arena } from './combat/combat'
-import type { Combat } from './combat/types'
+import type { Combat, Fighter } from './combat/types'
 import { maxHp, type CreationData } from './rules/character'
+import { npcFighter } from './combat/npc'
+import { approve, arrived, campfire, companionOf, companions, leave, order, partyLines, recruit, restParty, setStance, sharedFight, syncLevels, withPlayer } from './social/companions'
+import { confronting, settleGrievance } from './social/confront'
+import { crime, payFine, steal } from './social/crime'
+import { deed, noticeCarried, seedBonds } from './social/deeds'
+import { factionLines, join, rankOf, repute } from './social/factions'
+import { fightsBack, mayAttackFirst, mayLend } from './social/gates'
+import { flirt, marry } from './social/romance'
+import { realmLines } from './social/realms'
 import {
   character,
   clockLine,
@@ -107,6 +116,12 @@ export interface Status {
   character?: { name: string; title: string; level: number; hp: number; maxHp: number; xp: number; next: number; made: boolean; canLevel: boolean; shield: boolean }
   /** The fight in progress (FO, chapter 12). */
   combat?: ReturnType<typeof fightView> & { over?: string; prisoners?: string[] }
+  /** The companions (FO, chapter 13). */
+  party?: { npc: string; name: string; title: string; hp: number; maxHp: number; loyalty: number; bond: number; stance: string; away?: string }[]
+  /** Standing with the factions that know the player (FO, chapter 8). */
+  factions?: { id: string; name: string; rank: string; score: number; member: boolean }[]
+  /** Fines the player owes, per law. */
+  wanted?: string[]
 }
 
 const MAP_CODES: Record<string, string> = { fen: 'f', water: 'w', woods: 't', heath: 'h', fields: 'd', way: 'y', place: 'p', zone: 'z', you: '@', unknown: 'u' }
@@ -174,6 +189,7 @@ export class Engine {
     this.eventMark = state.eventSeq
     this.setLlm(options.llm)
     character(this.world)
+    if (!state.bonds) seedBonds(this.world)
     if (!options.state) {
       seedNews(this.world)
       this.arrive()
@@ -242,6 +258,9 @@ export class Engine {
   /** A page of the journal: what the player knows about a topic, with sources and links. */
   page(id: string): JournalPage | undefined {
     if (id === 'map') return { id, kind: 'map', name: 'The Holleveen as you know it', lines: this.mapText().split('\n'), sources: [], links: [] }
+    if (id === 'factions') return { id, kind: 'lore', name: 'Factions', lines: factionLines(this.world).length ? factionLines(this.world) : ['No faction knows you yet.'], sources: [], links: [] }
+    if (id === 'lands') return { id, kind: 'lore', name: 'The lands', lines: realmLines(this.world), sources: [], links: [] }
+    if (id === 'party') return { id, kind: 'lore', name: 'Your companions', lines: partyLines(this.world).length ? [...partyLines(this.world), ...companions(this.world).flatMap((m) => m.approvals.slice(-3).map((a) => `  ${callName(this.world.npc(m.npc))}: ${a.text}`))] : ['You travel alone.'], sources: [], links: [] }
     if (id === 'sheet') return { id, kind: 'sheet', name: this.state.player.character?.name ?? 'You', lines: [...sheetLines(this.world), ...this.clockLines()], sources: [], links: [] }
     this.dialogue.syncNews()
     return journalPage(this.world, this.topics, id)
@@ -433,7 +452,12 @@ export class Engine {
     this.dialogue.learn(this.state.player.location, areaTopicId(this.content, this.world.location(this.state.player.location).area))
     this.arrive()
     this.lookAround()
-    if (before !== this.state.player.location) outputs.push(...findPurse(this.world), ...this.maybeEncounter(before))
+    if (before !== this.state.player.location) {
+      arrived(this.world)
+      outputs.push(...findPurse(this.world), ...this.maybeEncounter(before))
+    }
+    noticeCarried(this.world)
+    outputs.push(...this.confrontations())
     settleRuns(this.world)
     settleChoices(this.world)
     outputs.push(...this.world.notices.splice(0).map((text) => ({ kind: 'system' as const, text })))
@@ -458,6 +482,7 @@ export class Engine {
 
     switch (command.verb) {
       case 'talk': {
+        if (/^(party|group|everyone|all)$/i.test(command.args.join(' '))) return this.dialogue.party('')
         const npc = findNpcHere(this.world, command.args.join(' '))
         if (!npc) return [{ kind: 'error', text: command.args.length ? `There is nobody called "${command.args.join(' ')}" here.` : 'Talk to whom?' }]
         // Start the conversation first, so the NPC stays put during the minute it takes.
@@ -470,6 +495,8 @@ export class Engine {
       case 'ask':
       case 'tell':
       case 'where': {
+        const party = /^(?:party|group|everyone|all)\s+(?:about|over)\s+(.+)$/i.exec(command.args.join(' '))
+        if (command.verb === 'ask' && party) return this.dialogue.party(party[1]!)
         const parsed = this.target(command.args, command.verb === 'where' ? /^(?:is|are)\s+/i : /^(?:about|over|naar)\s+|\s+(?:about|over|naar)\s+/i)
         if ('error' in parsed) return [{ kind: 'error', text: parsed.error }]
         const run = command.verb === 'ask' ? this.dialogue.ask.bind(this.dialogue) : command.verb === 'tell' ? this.dialogue.tell.bind(this.dialogue) : this.dialogue.where.bind(this.dialogue)
@@ -543,8 +570,68 @@ export class Engine {
         return rite(this.world)
       case 'clocks':
         return [{ kind: 'system', text: this.clockLines().join('\n') || 'No clocks are running that you know of.' }]
-      case 'attack':
-        return [{ kind: 'error', text: this.content.rules ? 'There is nothing here to fight. (Quarrels with people are for another day.)' : 'There is nothing here to fight.' }]
+      case 'attack': {
+        const target = findNpcHere(this.world, command.args.join(' ').replace(/^(the)\s+/i, ''))
+        if (!target) return [{ kind: 'error', text: command.args.length ? `There is nobody called "${command.args.join(' ')}" here.` : 'Attack whom?' }]
+        return this.attackNpc(target)
+      }
+      case 'steal':
+        return steal(this.world, command.args.join(' '))
+      case 'recruit': {
+        const m = /^(.+?)(?:\s+(?:to|as far as)\s+(.+))?$/i.exec(command.args.join(' '))
+        const npc = m ? findNpcHere(this.world, m[1]!) : undefined
+        if (!npc) return [{ kind: 'error', text: 'Recruit whom? They must be here.' }]
+        const place = m?.[2] ? this.topics.find(m[2]) : undefined
+        return recruit(this.world, npc, place && this.content.locations.has(place) ? place : undefined)
+      }
+      case 'dismiss': {
+        const npc = findNpcHere(this.world, command.args.join(' '))
+        if (!npc || !companionOf(this.world, npc)) return [{ kind: 'error', text: 'Dismiss whom?' }]
+        return leave(this.world, npc, 'nods, and goes home.')
+      }
+      case 'order': {
+        const m = /^(\S+)\s+(?:to\s+)?(.+)$/i.exec(command.args.join(' '))
+        const npc = m ? companions(this.world).map((c) => c.npc).find((id) => callName(this.world.npc(id)).toLowerCase() === m[1]!.toLowerCase()) : undefined
+        if (!npc) return [{ kind: 'error', text: 'Order whom? ORDER <companion> TO <order>.' }]
+        return order(this.world, npc, m![2]!)
+      }
+      case 'stance': {
+        const [who = '', ...rest] = command.args
+        const npc = companions(this.world).map((c) => c.npc).find((id) => callName(this.world.npc(id)).toLowerCase() === who.toLowerCase())
+        if (!npc) return [{ kind: 'error', text: 'STANCE <companion> aggressive|defensive|support|hold|protect <name>|follow' }]
+        return setStance(this.world, npc, rest.join(' '))
+      }
+      case 'party': {
+        const words = command.args.join(' ').replace(/^(about|over)\s+/i, '')
+        if (!command.args.length) return [{ kind: 'system', text: partyLines(this.world).join('\n') || 'You travel alone.' }]
+        return this.dialogue.party(words)
+      }
+      case 'camp':
+        return campfire(this.world, (minutes) => this.pass(minutes))
+      case 'join':
+        return join(this.world, command.args.join(' '))
+      case 'factions':
+        return [{ kind: 'system', text: factionLines(this.world).join('\n') || 'No faction knows you yet.' }]
+      case 'lands':
+        return [{ kind: 'system', text: realmLines(this.world).join('\n') }]
+      case 'pay': {
+        if (/^fine/i.test(command.args.join(' '))) return payFine(this.world)
+        return [{ kind: 'error', text: 'Pay what? PAY FINE, or give money to someone.' }]
+      }
+      case 'borrow':
+        return this.borrow(command.args.join(' '))
+      case 'repay':
+        return this.repay(command.args.join(' '))
+      case 'flirt': {
+        const npc = findNpcHere(this.world, command.args.join(' '))
+        if (!npc) return [{ kind: 'error', text: 'Flirt with whom?' }]
+        return flirt(this.world, npc)
+      }
+      case 'marry': {
+        const npc = findNpcHere(this.world, command.args.join(' '))
+        if (!npc) return [{ kind: 'error', text: 'Marry whom? They must be here.' }]
+        return marry(this.world, npc)
+      }
       case 'follow': {
         const words = command.args.join(' ').toLowerCase()
         const windWord = command.args.at(-1)
@@ -603,7 +690,11 @@ export class Engine {
     if (last?.k === 'tick') last.v += minutes
     else this.log.push({ t: this.world.now, k: 'tick', v: minutes })
     for (const listener of this.listeners) listener({ kind: 'replay', t: this.world.now, entry: { t: this.world.now, k: 'tick', v: minutes } })
-    return this.shown(this.pass(minutes))
+    const passed = this.pass(minutes)
+    noticeCarried(this.world)
+    const outputs = [...passed, ...this.confrontations()]
+    outputs.push(...this.world.notices.splice(0).map((text) => ({ kind: 'system' as const, text })))
+    return this.shown(outputs)
   }
 
   status(): Status {
@@ -645,9 +736,29 @@ export class Engine {
     }
   }
 
-  private characterStatus(): Pick<Status, 'character' | 'combat'> {
+  private characterStatus(): Pick<Status, 'character' | 'combat' | 'party' | 'factions' | 'wanted'> {
     const c = this.state.player.character
-    const out: Pick<Status, 'character' | 'combat'> = {}
+    const out: Pick<Status, 'character' | 'combat' | 'party' | 'factions' | 'wanted'> = {}
+    const party = companions(this.world)
+    if (party.length) {
+      out.party = party.map((m) => ({
+        npc: m.npc,
+        name: callName(this.world.npc(m.npc)),
+        title: `${this.content.rules?.classes.find((k) => k.id === m.character.class)?.name ?? m.character.class} ${m.character.level}`,
+        hp: m.character.hp,
+        maxHp: maxHp(this.content, m.character),
+        loyalty: m.loyalty,
+        bond: m.bond,
+        stance: m.stance,
+        ...(m.away ? { away: `${m.away.kind === 'scout' ? 'scouting' : 'waiting'} at ${this.world.location(m.away.where).name}` } : {}),
+      }))
+    }
+    const rep = this.state.reputation ?? {}
+    const members = this.state.memberships ?? []
+    const known = [...this.content.factions.values()].filter((f) => rep[f.id] !== undefined || members.includes(f.id))
+    if (known.length) out.factions = known.map((f) => ({ id: f.id, name: f.name, rank: rankOf(rep[f.id] ?? 0), score: rep[f.id] ?? 0, member: members.includes(f.id) }))
+    const wanted = Object.entries(this.state.wanted ?? {}).map(([law, w]) => `${law === 'waagdam' ? 'Waagdam' : "the Count's land"}: ${formatMoney(w.fine)}`)
+    if (wanted.length) out.wanted = wanted
     if (c && this.content.rules) {
       const klass = this.content.rules.classes.find((k) => k.id === c.class)
       const next = c.level * this.content.rules.xp_per_level
@@ -837,12 +948,22 @@ export class Engine {
         if (!this.content.creatures.has(id)) return [{ kind: 'error', text: `@fight <encounter or creature> [count]: ${[...this.content.encounters.keys(), ...this.content.creatures.keys()].join(', ')}` }]
         return this.startFight({ foes: [{ creature: id, count: Number(rest[1] ?? 1) || 1, range: 'near' }] })
       }
+      case 'like': {
+        // @like wouter 60 40: set how someone feels about the player (affinity, trust), for playtesting.
+        const npcId = findNpcAnywhere(this.world, rest[0] ?? '')
+        if (!npcId) return [{ kind: 'error', text: '@like <person> <affinity> [trust]' }]
+        const rel = relation(this.state, npcId)
+        rel.affinity = Math.max(-100, Math.min(100, Number(rest[1] ?? rel.affinity)))
+        rel.trust = Math.max(-100, Math.min(100, Number(rest[2] ?? rel.trust)))
+        rel.familiarity = Math.max(rel.familiarity, 40)
+        return [{ kind: 'system', text: `[build] ${callName(this.world.npc(npcId))}: affinity ${rel.affinity}, trust ${rel.trust}, ${attitude(this.world, npcId).band}.` }]
+      }
       case 'xp': {
         gainXp(this.world, Number(rest[0]) || 0, 'the world builder says so')
         return this.world.notices.splice(0).map((text) => ({ kind: 'system' as const, text }))
       }
       default:
-        return [{ kind: 'error', text: 'Build commands: @kill <person> [how], @who-knows <topic>, @send <person> <place> [days], @where <person>, @fight <encounter or creature> [count], @xp <amount>.' }]
+        return [{ kind: 'error', text: 'Build commands: @kill <person> [how], @who-knows <topic>, @send <person> <place> [days], @where <person>, @fight <encounter or creature> [count], @xp <amount>, @like <person> <affinity> [trust].' }]
     }
   }
 
@@ -891,20 +1012,141 @@ export class Engine {
     return this.startFight({ encounter: e.id, ...(from ? { from } : {}), foes: e.foes.map((f) => ({ creature: f.creature, count: f.count, range: f.range, ...(f.joins ? { joins: f.joins } : {}) })) })
   }
 
-  private startFight(setup: { encounter?: string; from?: string; foes: { creature: string; count: number; range: 'engaged' | 'near' | 'far'; joins?: number }[] }): Output[] {
+  private startFight(setup: { encounter?: string; from?: string; foes: { creature: string; count: number; range: 'engaged' | 'near' | 'far'; joins?: number }[]; foeFighters?: Fighter[]; startedBy?: 'player' | 'npc' }): Output[] {
     if (!character(this.world)) return [{ kind: 'error', text: 'This world has no rules for fights.' }]
     this.state.talk = undefined
     const encounter = setup.encounter ? this.content.encounters.get(setup.encounter) : undefined
+    // Companions at the player's side fight too, unless it is against someone they hold dear (FO, chapter 13).
+    const out: Output[] = []
+    const allies: Fighter[] = []
+    const against = (setup.foeFighters ?? []).map((f) => f.npc).filter((x): x is string => Boolean(x))
+    for (const c of withPlayer(this.world)) {
+      const dear = against.find((id) => (this.state.bonds?.[c.npc]?.[id]?.affinity ?? 0) >= 50)
+      if (dear) {
+        c.loyalty = Math.max(0, c.loyalty - 5)
+        out.push({ kind: 'narration', text: `${callName(this.world.npc(c.npc))} will not raise a hand against ${callName(this.world.npc(dear))}, and stands aside.` })
+        continue
+      }
+      allies.push(npcFighter(this.world, c.npc, 'party'))
+    }
     const { combat, lines } = beginFight(this.arena(), {
       id: `fight_${this.world.now}`,
       place: this.state.player.location,
       ...(setup.from ? { from: setup.from } : {}),
       ...(encounter ? { encounter } : {}),
       foes: setup.foes,
+      ...(setup.foeFighters ? { foeFighters: setup.foeFighters } : {}),
+      allies,
+      ...(setup.startedBy ? { startedBy: setup.startedBy } : {}),
       now: this.world.now,
     })
     this.state.combat = combat
-    return [...lines, ...this.afterFight()]
+    return [...out, ...lines, ...this.afterFight()]
+  }
+
+  /** A fight with people: an NPC the player attacks, or one who attacks the player (FO, chapter 8, gates). */
+  private startNpcFight(npcId: string, startedBy: 'player' | 'npc', helpers: string[] = []): Output[] {
+    const foeFighters = [npcId, ...helpers].map((id) => npcFighter(this.world, id, 'foes'))
+    return this.startFight({ foes: [], foeFighters, startedBy })
+  }
+
+  /** ATTACK <person>: violence, with every bystander a witness; the victim fights back, yields or runs. */
+  private attackNpc(target: string): Output[] {
+    const npc = this.world.npc(target)
+    const name = callName(npc)
+    if (npc.child) return [{ kind: 'error', text: "You won't raise a hand against a child." }]
+    if (companionOf(this.world, target)) return [{ kind: 'error', text: `${name} is with you. DISMISS them first, if it has come to that.` }]
+    if (!character(this.world)) return [{ kind: 'error', text: 'There is nothing here to fight.' }]
+    const here = this.state.player.location
+    const witnesses = this.world.npcsAt(here).filter((id) => !this.world.npcState(id).dead && this.world.npcState(id).activity !== 'asleep')
+    const out: Output[] = []
+    const reaction = fightsBack(this.world, target)
+    out.push(
+      ...crime(this.world, { kind: 'assault', place: here, victim: target, value: 0, grave: false, witnesses }, {
+        title: `the stranger attacked ${name}`,
+        precise: `The stranger attacked ${name} at ${this.world.location(here).name}.`,
+        village: `The stranger went for ${name}, at ${this.world.location(here).name}.`,
+        far: 'A stranger has been starting fights in the Holleveen.',
+      }),
+    )
+    if (reaction === 'yield') {
+      out.push({ kind: 'narration', text: this.world.say(`{name} does not fight you. {They} throws up {their} hands and backs away, staring at you.`, target).replace('{They}', npc.pronoun === 'she' ? 'She' : npc.pronoun === 'he' ? 'He' : 'They') })
+      return out
+    }
+    if (reaction === 'flee') {
+      this.world.npcState(target).location = npc.home
+      this.world.npcState(target).plan = []
+      out.push({ kind: 'narration', text: `${name} runs.` })
+      return out
+    }
+    // Family and close friends who are there take the victim's side, if they have the courage.
+    const helpers = witnesses.filter((id) => id !== target && !companionOf(this.world, id) && !this.world.npc(id).child && this.world.npc(id).personality.courage >= 1 && (this.state.bonds?.[id]?.[target]?.affinity ?? 0) >= 50)
+    return [...out, { kind: 'narration', text: `You go for ${name}.` }, ...this.startNpcFight(target, 'player', helpers)]
+  }
+
+  /** Someone with a grievance finds the player: words, or blows if the gate allows it. */
+  private confrontations(): Output[] {
+    if (this.state.combat) return []
+    const out: Output[] = []
+    for (const id of confronting(this.world)) {
+      const g = this.world.npcState(id).grievance!
+      const law = g.reason === 'the law'
+      const name = callName(this.world.npc(id))
+      if (law && !this.state.wanted?.['count']) {
+        settleGrievance(this.world, id)
+        continue
+      }
+      out.push({ kind: 'speech', text: `${name}: ${g.line}` })
+      if (mayAttackFirst(this.world, id, { provoked: true, factionOrder: law })) {
+        settleGrievance(this.world, id)
+        out.push(...this.startNpcFight(id, 'npc'))
+        return out
+      }
+      if (law) {
+        // The schout waits for the fine; he will ask again another day.
+        g.t = this.world.now
+        this.world.npcState(id).goals = this.world.npcState(id).goals.filter((goal) => goal.id !== `confront_${id}`)
+        out.push({ kind: 'system', text: 'PAY FINE, or face the consequences.' })
+      } else settleGrievance(this.world, id)
+      if (!this.state.talk) this.dialogue.start(id, true)
+    }
+    return out
+  }
+
+  /** BORROW <amount> FROM <person>: Warm and trust 30 or more (FO, chapter 8); the debt is due in a week. */
+  private borrow(words: string): Output[] {
+    const m = /^(.+?)\s+from\s+(.+)$/i.exec(words)
+    const amount = m ? parseMoney(m[1]!) : undefined
+    const npc = m ? findNpcHere(this.world, m[2]!) : undefined
+    if (!m || !amount || !npc) return [{ kind: 'error', text: 'BORROW <amount> FROM <person>, for example: borrow 5 stuivers from mirte.' }]
+    const name = callName(this.world.npc(npc))
+    if (!mayLend(this.world, npc)) return [{ kind: 'speech', text: `${name} shakes ${this.world.npc(npc).pronoun === 'she' ? 'her' : this.world.npc(npc).pronoun === 'he' ? 'his' : 'their'} head. "I don't lend money. Not to you, not yet."` }]
+    const state = this.world.npcState(npc)
+    if (state.money < amount) return [{ kind: 'speech', text: `${name}: "I haven't got that much to spare."` }]
+    state.money -= amount
+    this.state.player.money += amount
+    ;(this.state.ledger ??= []).push({ id: `debt_${(this.state.ledger?.length ?? 0) + 1}`, from: 'player', to: npc, amount, kind: 'money', t: this.world.now, due: this.world.now + 7 * 24 * 60 })
+    return [{ kind: 'text', text: `${name} counts out ${formatMoney(amount)}. "A week. I'll hold you to it."` }]
+  }
+
+  /** REPAY <person> [amount]: a debt paid on time is a promise kept. */
+  private repay(words: string): Output[] {
+    const [who = '', ...rest] = words.split(/\s+/)
+    const npc = findNpcHere(this.world, who)
+    const debt = npc ? (this.state.ledger ?? []).find((d) => d.from === 'player' && d.to === npc) : undefined
+    if (!npc || !debt) return [{ kind: 'error', text: 'You owe nobody here anything.' }]
+    const amount = Math.min(debt.amount, parseMoney(rest.join(' ')) ?? debt.amount)
+    if (this.state.player.money < amount) return [{ kind: 'error', text: `You only have ${formatMoney(this.state.player.money)}.` }]
+    this.state.player.money -= amount
+    this.world.npcState(npc).money += amount
+    debt.amount -= amount
+    const name = callName(this.world.npc(npc))
+    if (debt.amount <= 0) {
+      this.state.ledger = (this.state.ledger ?? []).filter((d) => d !== debt)
+      if (debt.due === undefined || this.world.now <= debt.due) deed(this.world, npc, 'promise_kept')
+      return [{ kind: 'text', text: `You pay ${name} back, all of it. ${name} nods. "Good as your word."` }]
+    }
+    return [{ kind: 'text', text: `You pay ${name} ${formatMoney(amount)}. ${formatMoney(debt.amount)} still to go.` }]
   }
 
   /** A command while a fight is on: fight commands, a look at the fight, or the sheet. */
@@ -956,13 +1198,21 @@ export class Engine {
     const place = this.world.location(combat.place)
     const where = place.name
     const belang = encounter?.news?.belang ?? 1
+    const people = combat.started_by !== undefined
+    out.push(...this.afterPeople(combat))
     switch (combat.over) {
       case 'won': {
-        const xp = foes.reduce((sum, f) => sum + foeXp(f.level, c.level), 0)
-        gainXp(this.world, xp, `you overcame ${who}`)
+        // Overcoming a challenge is experience; beating up a villager you went for is not.
+        const xp = combat.started_by === 'player' ? 0 : foes.reduce((sum, f) => sum + foeXp(f.level, c.level), 0)
+        if (xp) gainXp(this.world, xp, `you overcame ${who}`)
         favour(this.world, 'fight_won')
+        approve(this.world, 'courage')
+        if (foes.some((f) => f.creature === 'goat_rider' || f.creature === 'black_mathijs')) {
+          repute(this.world, 'goat_riders', -5, 'you beat their men')
+          repute(this.world, 'veenhoek_villagers', 3, 'you stood up to the Goat-Riders')
+        }
         fact = { title: `the stranger and ${who}`, precise: `The stranger fought ${who} at ${where} and won.`, village: `The stranger saw off ${who} at ${where}, they say.`, far: `Someone beat ${who} in the Holleveen.`, belang }
-        const prisoners = foes.filter((f) => (f.state === 'surrendered' || f.state === 'unconscious') && (f.kind === 'human' || f.kind === 'npc'))
+        const prisoners = foes.filter((f) => (f.state === 'surrendered' || f.state === 'unconscious') && (f.kind === 'human' || f.kind === 'npc') && !people)
         if (prisoners.length) {
           combat.prisoners = prisoners.map((f) => f.id)
           const list = prisoners.map((f) => f.name).join(' and ')
@@ -971,11 +1221,14 @@ export class Engine {
         break
       }
       case 'talked': {
+        approve(this.world, 'trick')
         gainXp(this.world, Math.round(foes.reduce((sum, f) => sum + foeXp(f.level, c.level), 0) / 2), `you talked your way past ${who}`)
         fact = { title: `the stranger and ${who}`, precise: `The stranger talked ${who} out of a fight at ${where}.`, village: `The stranger faced down ${who} at ${where} with words alone.`, far: `Someone talked their way past ${who}.`, belang: Math.max(1, belang - 1) }
         break
       }
       case 'paid': {
+        approve(this.world, 'back_down')
+        repute(this.world, 'goat_riders', 2, 'you paid their toll')
         const amount = Math.min(this.state.player.money, (encounter?.demand?.amount ?? 0) * (combat.round > 0 ? 2 : 1))
         this.state.player.money -= amount
         out.push({ kind: 'system', text: `You pay ${formatMoney(amount)}.` })
@@ -984,6 +1237,7 @@ export class Engine {
       }
       case 'fled': {
         favour(this.world, 'fled')
+        approve(this.world, 'back_down')
         if (combat.from && this.content.locations.has(combat.from)) this.state.player.location = combat.from
         fact = { title: `the stranger ran from ${who}`, precise: `The stranger ran from ${who} at ${where}.`, village: `The stranger ran from ${who} at ${where}, they say.`, far: `${who.charAt(0).toUpperCase() + who.slice(1)} were seen in the Holleveen.`, belang: Math.max(1, belang - 1) }
         break
@@ -1001,7 +1255,8 @@ export class Engine {
         break
       }
     }
-    if (fact) {
+    if (withPlayer(this.world).length && (combat.over === 'won' || combat.over === 'fled' || combat.over === 'talked')) sharedFight(this.world)
+    if (fact && !people) {
       recordFact(this.world, {
         kind: 'fight',
         about: ['goat_riders', areaTopicId(this.content, place.area)].filter((t) => this.content.topics.has(t) && (t !== 'goat_riders' || foes.some((f) => f.creature === 'goat_rider' || f.creature === 'black_mathijs'))),
@@ -1028,6 +1283,56 @@ export class Engine {
     return out
   }
 
+  /**
+   * After a fight with people: companions keep their wounds or die for real
+   * (FO, chapter 13), an NPC who fell is dead, and one the player went for and
+   * killed is a murder with witnesses.
+   */
+  private afterPeople(combat: Combat): Output[] {
+    const out: Output[] = []
+    const here = combat.place
+    for (const f of combat.fighters) {
+      if (!f.npc) continue
+      const npcId = f.npc
+      const name = callName(this.world.npc(npcId))
+      const companion = companionOf(this.world, npcId)
+      if (companion) {
+        companion.character.hp = f.state === 'dead' ? 0 : f.state === 'up' ? f.hp : 1
+        if (f.state === 'dead') {
+          leave(this.world, npcId, 'is dead.')
+          die(this.world, npcId, { cause: 'fell fighting beside the stranger', place: here })
+          out.push({ kind: 'narration', text: `${name} is dead. There is nothing more you can do.` })
+        }
+        continue
+      }
+      if (f.side !== 'foes') continue
+      const state = this.world.npcState(npcId)
+      if (f.state === 'dead') {
+        const fact = die(this.world, npcId, { cause: combat.started_by === 'player' ? 'killed by the stranger' : 'killed by the stranger, who they attacked', place: here })
+        if (combat.started_by === 'player') {
+          const witnesses = this.world.npcsAt(here).filter((id) => id !== npcId && !this.world.npcState(id).dead)
+          out.push(
+            ...crime(this.world, { kind: 'murder', place: here, victim: npcId, value: 0, grave: true, witnesses }, {
+              title: `the stranger killed ${name}`,
+              precise: `The stranger killed ${name} at ${this.world.location(here).name}.`,
+              village: `The stranger killed ${name}!`,
+              far: 'A stranger has killed someone in the Holleveen.',
+            }),
+          )
+        }
+        void fact
+      } else {
+        state.wounds = Math.max(0, f.maxHp - f.hp)
+        if (f.state === 'fled') {
+          state.location = this.world.npc(npcId).home
+          state.plan = []
+        }
+        if (f.state === 'unconscious') state.activity = 'lying senseless'
+      }
+    }
+    return out
+  }
+
   /** The player's word on those who gave up (FO, chapter 12, "Moreel en overgave"). */
   private async prisoners(words: string): Promise<Output[]> {
     const combat = this.state.combat!
@@ -1041,6 +1346,8 @@ export class Engine {
       recordFact(this.world, { kind: 'prisoners', about, place: combat.place, belang, juice: 0.8, title, text: { precise, village, far: village } })
     if (/^(kill|finish|slay|dood)/.test(words)) {
       favour(this.world, 'killed_surrendered')
+      approve(this.world, 'kill_prisoner')
+      repute(this.world, 'counts_men', -5, 'you killed a prisoner')
       fact(`the stranger killed a prisoner`, `The stranger killed ${them} after ${names.length > 1 ? 'they' : 'he'} had given up, at ${place.name}.`, `The stranger killed a man who had given up, at ${place.name}.`, 3)
       return [{ kind: 'narration', text: `You do it. It is quick, and it is not clean, and ${them} will not get up again.` }]
     }
@@ -1054,10 +1361,16 @@ export class Engine {
       this.state.player.inventory['rope'] = rope - 1
       if (this.state.player.inventory['rope'] === 0) delete this.state.player.inventory['rope']
       favour(this.world, 'spared')
+      approve(this.world, 'hand_over_to_schout')
+      repute(this.world, 'counts_men', 10, 'you brought a robber to the schout')
+      repute(this.world, 'goat_riders', -10, 'you brought one of theirs to the schout')
       fact(`the stranger brought in a Goat-Rider`, `The stranger bound ${them} at ${place.name} and sent word to the schout, whose men came for ${names.length > 1 ? 'them' : 'him'}.`, `The stranger caught a robber on the tow path and handed him to the schout.`, 3)
       return [{ kind: 'narration', text: `You bind ${them} with your rope and send a boy running for the schout's men. They come within the hour and take ${names.length > 1 ? 'them' : 'him'} away.` }]
     }
     favour(this.world, 'spared')
+    approve(this.world, 'mercy')
+    approve(this.world, 'spare_prisoner')
+    repute(this.world, 'goat_riders', 3, 'you let one of theirs go')
     fact(`the stranger let a Goat-Rider go`, `The stranger let ${them} go at ${place.name}.`, `The stranger let one of the robbers go, they say.`, 1)
     const released = /^(let|release|spare|free|go)/.test(words)
     const out: Output[] = [{ kind: 'narration', text: released ? `You let ${them} go. ${names.length > 1 ? 'They go' : 'He goes'} without looking back.` : `While you turn away, ${names.join(' and ')} slip${names.length > 1 ? '' : 's'} off into the reeds.` }]

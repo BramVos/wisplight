@@ -84,13 +84,13 @@ Scope: FO 11 en 12, WB 5 en 12. Personage maken, vaardigheden en proeven met vie
 - [x] Het gevecht met de Bokkenrijders op het jaagpad is speelbaar, met vlucht en overgave
 - [x] Een gesimuleerde balanstest van 1.000 gevechten per klasse blijft binnen de afgesproken marges
 
-## M6 Relaties, facties en gezellen
+## M6 Relaties, facties en gezellen (af)
 
 Scope: FO 8 en 13. Relaties met vier waarden, houding en gedragspoorten, gebeurtenisregels, facties en reputatie, getuigen en misdaad, rekruteren met voorwaarden, loyaliteit, band, goedkeuring, bevelen, tactiek in gevecht, groepsgesprek, kampvuur, vertrek en verraad, romance. Uit het ontwerp lore en wereldverandering: staatkunde en spanning tussen landen, misdaad en intrige met het herkennen van een opvallende samenloop.
 
-- [ ] Gerrit valt niet als eerste aan zolang hij Vriendelijk is, ook als hij boos is
-- [ ] Wouter weigert een gevaarlijke opdracht bij lage loyaliteit en voert hem uit bij hoge
-- [ ] Een misdaad zonder getuigen heeft geen gevolgen; met getuigen verspreidt hij zich als gerucht
+- [x] Gerrit valt niet als eerste aan zolang hij Vriendelijk is, ook als hij boos is
+- [x] Wouter weigert een gevaarlijke opdracht bij lage loyaliteit en voert hem uit bij hoge
+- [x] Een misdaad zonder getuigen heeft geen gevolgen; met getuigen verspreidt hij zich als gerucht
 
 ## M7 Quests en de volledige Holleveen
 

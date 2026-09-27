@@ -4,6 +4,8 @@ import type { StoriesState } from './stories'
 import type { Combat } from './combat/types'
 import type { Character } from './rules/character'
 import type { Clock } from './rules/player'
+import type { Companion } from './social/companions'
+import type { Crime } from './social/crime'
 
 // Everything that changes during play lives in GameState. It is plain JSON:
 // a savegame is this object, and a replay rebuilds it from the input log.
@@ -162,6 +164,16 @@ export interface NpcState {
   dead?: { t: number; fact: string }
   /** What stays on the NPC's mind for a while, from the chronicler. */
   thoughts?: { text: string; t: number; until: number }[]
+  /** Anger or joy that lasts a while, -10 to +10 (FO, chapter 8). */
+  mood?: { value: number; until: number; reason: string }
+  /** Something the player did that the NPC wants to have out with them (the goal Confront). */
+  grievance?: { reason: string; t: number; line: string }
+  /** Hit points lost in a fight, healing a little every hour. */
+  wounds?: number
+  /** Where the NPC was before and when it left, for coincidences. */
+  left?: { location: string; t: number }
+  /** Travelling with the player as a companion: the simulation leaves it be. */
+  following?: boolean
   /** The day the AI last planned for this NPC, at getting up. */
   plannedDay?: number
   /**
@@ -206,6 +218,18 @@ export interface RelationState {
   trust: number
   fear: number
   familiarity: number
+}
+
+/** A debt in the ledger (FO, chapter 8): who owes whom, how much, and by when. */
+export interface Debt {
+  id: string
+  from: string
+  to: string
+  amount: number
+  kind: 'money' | 'favour'
+  t: number
+  due?: number
+  note?: string
 }
 
 export interface PlayerState {
@@ -320,6 +344,29 @@ export interface GameState {
   /** Far places worked out to their outline for this game (design, "De wereld buiten de kaart"). */
   outlines?: { pending: string[]; done: Record<string, unknown> }
   /** Goal choices waiting for the brain model, and how many each NPC had today (FO, chapter 7). */
+  /** The four numbers between NPCs (FO, chapter 8), by NPC and then the other NPC. */
+  bonds?: Record<string, Record<string, { affinity: number; trust: number; fear: number; familiarity: number }>>
+  /** Debts in money and favours, between NPCs and with the player. */
+  ledger?: Debt[]
+  /** Gifts this week per NPC, for diminishing returns. */
+  gifts?: Record<string, { week: number; count: number }>
+  /** The player's reputation per faction, -100 to 100, and the factions the player joined. */
+  reputation?: Record<string, number>
+  memberships?: string[]
+  /** Crimes the world knows of, witnesses who keep quiet, and fines per law. */
+  crimes?: Crime[]
+  silenced?: Record<string, string[]>
+  wanted?: Record<string, { fine: number; since: number }>
+  /** The player's companions (FO, chapter 13). */
+  companions?: Companion[]
+  /** Romance per NPC (FO, chapter 8). */
+  romance?: Record<string, { stage: 'interest' | 'courting' | 'together' | 'bound'; since: number }>
+  /** Tension between realms, 0 to 100 (design: lore and world change, "Staatkunde"). */
+  tension?: Record<string, number>
+  /** NPCs a companion is distracting, until when. */
+  distracted?: Record<string, number>
+  /** Coincidences already noticed, so each is told once. */
+  coincidences?: Record<string, number>
   /** The fight in progress (FO, chapter 12). */
   combat?: Combat
   /** Progress clocks: threats and long jobs (FO, chapter 11). */

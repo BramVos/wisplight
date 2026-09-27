@@ -255,9 +255,48 @@ export function App() {
             <p className="muted">The map fills in as you explore.</p>
           )}
         </section>
-        <section>
+        <section className="party">
           <h2>Party</h2>
-          <p className="muted">No companions yet.</p>
+          {status?.party?.length ? (
+            <>
+              {status.party.map((m) => (
+                <div key={m.npc} className="member">
+                  <div className="who">
+                    <span>
+                      {m.name} <span className="muted small">{m.title}</span>
+                    </span>
+                    <span className="muted small">{m.away ?? m.stance}</span>
+                  </div>
+                  <div className="hp" title={`${m.hp} of ${m.maxHp} hit points`}>
+                    <span style={{ width: `${Math.round((m.hp / Math.max(1, m.maxHp)) * 100)}%` }} />
+                  </div>
+                  <p className="small muted">
+                    loyalty {m.loyalty}, bond {m.bond}{' '}
+                    {m.away ? (
+                      <button type="button" className="link" disabled={waiting} onClick={() => void send(`order ${m.name.toLowerCase()} to follow me`)}>
+                        [Follow]
+                      </button>
+                    ) : (
+                      <button type="button" className="link" disabled={waiting} onClick={() => void send(`order ${m.name.toLowerCase()} to wait here`)}>
+                        [Wait here]
+                      </button>
+                    )}
+                  </p>
+                </div>
+              ))}
+              <button type="button" className="link" disabled={waiting} onClick={() => void send('talk party')}>
+                [Talk to the party]
+              </button>{' '}
+              <button type="button" className="link" disabled={waiting} onClick={() => void send('camp')}>
+                [Camp]
+              </button>{' '}
+              <button type="button" className="link" onClick={() => void openPage('party')}>
+                [Opinions]
+              </button>
+            </>
+          ) : (
+            <p className="muted">No companions yet. Ask someone who trusts you: RECRUIT &lt;name&gt;.</p>
+          )}
         </section>
         <section>
           <h2>Journal</h2>
@@ -293,6 +332,27 @@ export function App() {
             </div>
           )}
           {!page && journalCount === 0 && <p className="muted">Topics you learn appear here.</p>}
+          {!page && status?.factions && (
+            <div className="journal-group">
+              <h3>Factions</h3>
+              <p>
+                {status.factions.map((f, i, all) => (
+                  <span key={f.id} className="entry">
+                    <button type="button" className="topic" onClick={() => void openPage('factions')}>
+                      {f.name.replace(/^the /, '')}
+                    </button>{' '}
+                    <span className="muted small">{f.rank}{f.member ? ', member' : ''}</span>
+                    {i < all.length - 1 && ','}{' '}
+                  </span>
+                ))}
+              </p>
+            </div>
+          )}
+          {!page && (
+            <button type="button" className="link" onClick={() => void openPage('lands')}>
+              [The lands]
+            </button>
+          )}
           {!page &&
             status &&
             JOURNAL.filter(({ key }) => status.journal[key].length > 0).map(({ key, title }) => (
@@ -351,6 +411,7 @@ export function App() {
           <span className="status">
             {status ? `${status.location}  |  ${status.time}  |  ${status.money}${status.paused && !status.talk ? '  |  time paused' : ''}` : 'Loading the Nethermarch'}
           </span>
+          {status?.wanted && <span className="wanted">Wanted: {status.wanted.join('; ')}</span>}
           {ai && (
             <button type="button" className={`link ai ${ai.tone}`} onClick={() => setSettings('usage')} title="AI cost and usage">
               {ai.text}

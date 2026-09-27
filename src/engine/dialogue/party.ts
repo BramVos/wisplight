@@ -1,0 +1,87 @@
+import type { Output } from '../commands'
+import { callName } from '../content'
+import { withPlayer } from '../social/companions'
+import type { World } from '../world'
+import { hasAnachronism, unknownNames, vocabularyOf, wordCount } from './guard'
+import type { Knowledge } from './knowledge'
+import type { LlmClient } from './llm'
+import { describePersonality, WORLD_FRAME } from './prompt'
+import type { TopicRegistry } from './topics'
+
+// The group conversation (FO, chapter 13, "Groepsgesprek en kampvuur"):
+// TALK PARTY or ASK PARTY ABOUT <topic> asks every companion at once. One
+// model call with the short cards of all of them; each says one sentence of
+// at most 25 words, coloured by their values and what they know. Without a
+// model, or when the reply does not hold, the lines come from what they know.
+
+const MAX_WORDS = 25
+
+export async function partyTalk(world: World, topics: TopicRegistry, knowledge: Knowledge, llm: LlmClient | undefined, words: string, vocabulary: Set<string>): Promise<Output[]> {
+  const party = withPlayer(world)
+  if (!party.length) return [{ kind: 'error', text: 'There is nobody with you to ask.' }]
+  const topic = words ? topics.find(words) : undefined
+  const question = words ? `What do you make of ${topic ? topics.name(topic) : words}?` : 'What do you all think we should do?'
+  const cards = party.map((c) => {
+    const npc = world.npc(c.npc)
+    const packet = topic ? knowledge.packet(c.npc, [topic], false) : undefined
+    const known = packet?.known[0]
+    return {
+      id: c.npc,
+      name: callName(npc),
+      card: `${callName(npc)} (${npc.short}): ${describePersonality(npc)}. Values: ${Object.entries(npc.values).map(([v, n]) => `${v} ${n}`).join(', ') || 'none in particular'}. Loyalty to the stranger ${c.loyalty}/100.`,
+      knows: known ? known.facts.slice(0, 2) : [],
+    }
+  })
+  const lines = llm ? await ask(llm, cards, question, vocabulary, words) : undefined
+  return [
+    { kind: 'text', text: `You: "${question}"` },
+    ...cards.map((card, i) => ({ kind: 'speech' as const, text: `${card.name}: "${lines?.[i] ?? fallback(world, card, topic ? topics.name(topic) : undefined)}"` })),
+  ]
+}
+
+async function ask(llm: LlmClient, cards: { id: string; name: string; card: string; knows: string[] }[], question: string, vocabulary: Set<string>, playerWords: string): Promise<(string | undefined)[] | undefined> {
+  const system = [
+    'You speak for several companions of the player in a late-medieval world, in English, each in their own voice.',
+    WORLD_FRAME,
+    'RULES: Each companion says exactly one sentence of at most 25 words. Never make up names, places or facts: a companion only says what their card and KNOWS allow, or that they do not know. No modern words. JSON only.',
+  ].join('\n')
+  const prompt = [
+    'COMPANIONS:',
+    ...cards.map((c) => `- ${c.id}: ${c.card} KNOWS: ${c.knows.length ? c.knows.join(' ') : 'nothing about this'}`),
+    `THE STRANGER ASKS THE GROUP: "${question}"`,
+  ].join('\n')
+  try {
+    const reply = await llm.complete({
+      role: 'voice',
+      system,
+      prompt,
+      schemaName: 'party_reply',
+      schema: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['lines'],
+        properties: { lines: { type: 'array', items: { type: 'object', additionalProperties: false, required: ['speaker', 'text'], properties: { speaker: { type: 'string', enum: cards.map((c) => c.id) }, text: { type: 'string' } } } } },
+      },
+      maxTokens: 120 + 60 * cards.length,
+      meta: { party: cards.map((c) => ({ id: c.id, name: c.name, knows: c.knows })) },
+    })
+    const parsed = JSON.parse(reply.text.trim().replace(/^```(?:json)?\s*|\s*```$/g, '')) as { lines?: { speaker?: string; text?: string }[] }
+    const own = vocabularyOf(playerWords)
+    return cards.map((card) => {
+      const line = parsed.lines?.find((l) => l.speaker === card.id)?.text?.trim()
+      if (!line || wordCount(line) > MAX_WORDS + 5 || hasAnachronism(line) || unknownNames(line, vocabulary, own).length) return undefined
+      return line.replace(/^"|"$/g, '')
+    })
+  } catch {
+    return undefined
+  }
+}
+
+function fallback(world: World, card: { id: string; knows: string[] }, topicName?: string): string {
+  const npc = world.npc(card.id)
+  if (topicName && card.knows.length) return card.knows[0]!.split(/(?<=[.!?])\s/)[0]!
+  if (topicName) return npc.personality.honesty >= 1 ? `I don't know much about ${topicName}. Better ask someone who does.` : `${topicName}? Couldn't tell you.`
+  if (npc.personality.courage >= 2) return "Keep going. We've come this far."
+  if (npc.personality.courage <= 0) return "I'd rather we were home before dark."
+  return 'Your call. I go where you go.'
+}

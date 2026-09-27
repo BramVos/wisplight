@@ -12,6 +12,7 @@ npcs:
     personality: { warmth: -1, courage: -1, honesty: -2, temper: 0, curiosity: 0, diligence: 1 }
     values: { wealth: 3 }
     quirks: [greedy]
+    patron: lantern
     speech: "Smooth, calculating, always talking about prices and shortages."
     aliases: [lubbert, grain merchant, graanhandelaar]
     public_facts:
@@ -35,6 +36,7 @@ npcs:
     personality: { warmth: 1, courage: 0, honesty: 2, temper: -2, curiosity: 0, diligence: 2 }
     values: { craft: 2 }
     quirks: [talks_to_his_horse]
+    patron: lantern
     speech: "Slow and friendly, talks as much to the horse as to you."
     aliases: [teunis, horse-miller, rosmolenaar]
     public_facts:
@@ -57,6 +59,7 @@ npcs:
     personality: { warmth: 1, courage: 1, honesty: 3, temper: -1, curiosity: 1, diligence: 3 }
     values: { justice: 3, knowledge: 1 }
     quirks: [precise]
+    patron: lantern
     speech: "Measured, courteous, exact. Chooses every word like a weight."
     aliases: [weighmaster, dirck, waagmeester]
     public_facts:
@@ -86,6 +89,8 @@ npcs:
     personality: { warmth: 1, courage: 1, honesty: 1, temper: 1, curiosity: 0, diligence: 2 }
     values: { craft: 3 }
     quirks: [old_customs]
+    patron: grey_rider
+    romance: { open_to: anyone, note: "Shy; values craft and patience." }
     speech: "Hearty, plain, proud of his work."
     aliases: [smith, hendrik, smid]
     public_facts:

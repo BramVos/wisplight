@@ -141,6 +141,14 @@ items:
     tags: [material, iron]
     value: 8
 
+  - id: surveyors_chain
+    name: surveyor's chain
+    plural: surveyor's chains
+    aliases: [chain, chains, measuring chain, surveyor's chains, meetketting, meetkettingen]
+    description: A long chain of iron links with brass tags every ten ells, the kind the Count's surveyor measures the fen with.
+    tags: [tool, survey, iron]
+    value: 120
+
   - id: rope
     name: coil of rope
     plural: coils of rope

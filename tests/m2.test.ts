@@ -146,7 +146,7 @@ describe('M2: talking', () => {
     expect(recruit!.meta!['act']).toBe('Recruit')
     expect(recruit!.prompt).toMatch(/DECISION \(made by the game, follow it\): You will not come along\./)
     expect(recruit!.prompt).toMatch(/hardly know this stranger/)
-    expect(recruit!.prompt).toMatch(/deep water frighten you/)
+    expect(recruit!.prompt).toMatch(/deep water frighten/)
     expect(name!.prompt).not.toMatch(/DECISION/)
     expect(recruit!.system).toMatch(/Never agree to come along/)
   })

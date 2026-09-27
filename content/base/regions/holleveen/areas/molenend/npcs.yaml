@@ -12,6 +12,7 @@ npcs:
     personality: { warmth: -1, courage: 0, honesty: -1, temper: 1, curiosity: 0, diligence: 2 }
     values: { wealth: 2, craft: 2 }
     quirks: [greedy]
+    patron: lantern
     speech: "Gruff, grumbling about money, the storm and his sails."
     aliases: [miller, molenaar]
     public_facts:

@@ -1,0 +1,147 @@
+# Factions (FO, chapter 8; Wereldboek, chapter 4) and the realms beyond the
+# region (design: lore and world change, "Staatkunde"). Allies and rivals come
+# from the world book; reputation with a faction spills over to them: a fifth
+# of a change to its allies, and two fifths the other way to its rivals.
+
+factions:
+  - id: counts_men
+    name: the Count's men
+    seat: Graafhaven; locally the schout's house in Veenhoek
+    wants: Order, taxes and a new polder.
+    stance: for the drainage
+    members: [npc_everhard]
+    allies: [dyke_board, cog_league]
+    rivals: [brotherhood, fen_folk, goat_riders]
+    join: hired
+    law: count
+
+  - id: dyke_board
+    name: the Dyke Board
+    seat: the dyke house by the Oude Zijl
+    wants: Dry feet, dyke work, money for upkeep.
+    stance: for the drainage, if it pays for the dykes
+    allies: [counts_men]
+    rivals: []
+    join: never
+
+  - id: lantern_church
+    name: the Church of the Lantern
+    seat: the Brandaris in Graafhaven; the chapel in Veenhoek and the priory at Kloosterveen
+    wants: Souls, charity, an end to witchcraft and the old rites.
+    stance: divided; the prior knows of the charter
+    members: [npc_wendela]
+    allies: [counts_men, waagdam_burghers]
+    rivals: [old_faith, fen_folk]
+    join: patron_lantern
+
+  - id: old_faith
+    name: the Old Faith
+    seat: holy places in the fen and on the heath
+    wants: The old rites, respect for spirits and the dead.
+    stance: against the drainage
+    members: [npc_aaltje, npc_gerrit]
+    allies: [fen_folk, kabouters, white_women]
+    rivals: [lantern_church]
+    join: patron_old
+
+  - id: brotherhood
+    name: the Brotherhood of Peat-cutters
+    seat: the peat sheds of Veenhoek
+    wants: The fen as common land, and a fair price for peat.
+    stance: fiercely against the drainage
+    members: [npc_gerrit, npc_jan_visser]
+    allies: [veenhoek_villagers, old_faith]
+    rivals: [counts_men, goat_riders]
+    join: reputation
+
+  - id: waagdam_burghers
+    name: the burghers of Waagdam
+    seat: the town hall and the Waag
+    wants: Market, trade and quiet.
+    stance: in two minds; more grain, but less peat
+    members: [npc_dirck, npc_lubbert, npc_teunis, npc_hendrik]
+    allies: []
+    rivals: []
+    join: citizenship
+    law: waagdam
+
+  - id: veenhoek_villagers
+    name: the villagers of Veenhoek
+    seat: Veenhoek
+    wants: Bread, peat, safety, and Fenna back.
+    stance: divided
+    members: [npc_trijntje, npc_geesje, npc_mirte, npc_wouter, npc_jan_visser, npc_grietje_visser, npc_pim, npc_harmen, npc_kobus]
+    allies: [brotherhood]
+    rivals: []
+    join: never
+
+  - id: goat_riders
+    name: the Goat-Riders
+    seat: the Rietdoolhof south of the Blackmere
+    wants: Toll, loot and fear.
+    stance: for whoever pays best
+    allies: []
+    rivals: [counts_men, brotherhood]
+    join: reputation
+
+  - id: fen_folk
+    name: the Fen-folk of the Kattenbroek
+    seat: the hut on stilts in the Kattenbroek
+    wants: That the fen is left alone.
+    stance: against, to the last
+    allies: [old_faith, water_spirits]
+    rivals: [counts_men, lantern_church]
+    join: never
+
+  - id: kabouters
+    name: the kabouters
+    seat: the Kabouterberg
+    wants: Milk, respect, and not to be spied on.
+    stance: indifferent, as long as their hill stays
+    allies: [old_faith]
+    rivals: []
+    join: never
+
+  - id: water_spirits
+    name: the water spirits
+    seat: the Blackmere
+    wants: Water, and reverence for water.
+    stance: against; the mill pumps their mere dry
+    allies: [fen_folk]
+    rivals: []
+    join: never
+
+  - id: white_women
+    name: the White Women
+    seat: the barrows at Reuzenrust
+    wants: Rest and respect for the dead.
+    stance: indifferent
+    allies: [old_faith]
+    rivals: []
+    join: never
+
+  - id: cog_league
+    name: the Cog League
+    seat: Zwolderkamp, outside the region
+    wants: A return on their loans to the Count.
+    stance: for the drainage
+    allies: [counts_men]
+    rivals: []
+    join: never
+
+# The realms and power blocs, with the tension between them from 0 to 100:
+# allied below 20, neutral below 50, tense below 80, war from 80.
+realms:
+  - { id: nethermarch, name: the Nethermarch, ruler: Count Aelbrecht III, capital: Graafhaven }
+  - { id: flemmark, name: Flemmark, ruler: the lords of Flemmark, capital: south beyond the Three Rivers }
+  - { id: rijkland, name: Rijkland, ruler: the Rijkland princes, capital: east beyond the Grey Wold }
+  - { id: terpwold, name: Terpwold, ruler: the free farmers, capital: the terps }
+  - { id: cog_league, name: the Cog League, ruler: Everard Coggeschip, capital: Zwolderkamp }
+
+tensions:
+  - { between: [nethermarch, cog_league], tension: 15, why: "The Count owes the League, and both want the polder." }
+  - { between: [nethermarch, flemmark], tension: 50, why: "Old quarrels over the delta and the trade with Middelhaven." }
+  - { between: [nethermarch, terpwold], tension: 60, why: "The free farmers pay no tax to any count, and remember Tall Pier." }
+  - { between: [nethermarch, rijkland], tension: 30, why: "Distant neighbours beyond the Grey Wold." }
+  - { between: [cog_league, rijkland], tension: 25, why: "The river trade runs through both." }
+  - { between: [flemmark, cog_league], tension: 40, why: "Rivals for the sea trade." }

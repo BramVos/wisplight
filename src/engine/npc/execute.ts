@@ -52,6 +52,7 @@ export function executeStep(world: World, npcId: string, step: Step): StepResult
       npc.travelFrom ??= npc.location
       // Someone only passing through gets one line on the way in and a short one on the way out.
       world.emit('depart', npc.location, world.say(npc.passing ? '{name} walks on.' : `{name} ${leaving(direction)}.`, npcId), npcId)
+      npc.left = { location: npc.location, t: now }
       npc.location = exit.to
       npc.passing = exit.to !== step.to
       const destination = world.location(step.to).name

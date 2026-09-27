@@ -57,14 +57,21 @@ export const DEGREE_NAMES = ['critical failure', 'failure', 'success', 'critical
 // ---------------------------------------------------------------- fighters
 
 export function playerFighter(content: Content, character: Character): Fighter {
+  return characterFighter(content, character, { id: 'player', name: 'you', side: 'party', kind: 'player' })
+}
+
+/** A fighter from a character: the player, a companion, or an NPC with a class. */
+export function characterFighter(content: Content, character: Character, who: { id: string; name: string; side: 'party' | 'foes'; kind: 'player' | 'npc'; npc?: string }): Fighter {
   const weapon = weaponStats(content, character)
   const dc = classDc(content, character)
   const abilities: FightAbility[] = abilitiesOf(content, character).map((a) => ({ ...a, dc, used: 0 }))
+  const ranged = weapon.kind === 'ranged' || ['conjurer', 'herbalist', 'poacher'].includes(character.class)
   return {
-    id: 'player',
-    name: 'you',
-    side: 'party',
-    kind: 'player',
+    id: who.id,
+    name: who.name,
+    side: who.side,
+    kind: who.kind,
+    ...(who.npc ? { npc: who.npc, sheet: character } : {}),
     level: character.level,
     hp: Math.max(1, character.hp),
     maxHp: maxHp(content, character),
@@ -86,8 +93,8 @@ export function playerFighter(content: Content, character: Character): Fighter {
     conditions: Object.fromEntries(Object.entries(character.conditions).filter(([c]) => c === 'sickened' || c === 'cursed')),
     timers: {},
     buffs: [],
-    pos: 0,
-    row: 'front',
+    pos: who.side === 'party' && who.id !== 'player' && ranged ? 1 : 0,
+    row: who.side === 'party' && who.id !== 'player' && ranged ? 'back' : 'front',
     state: 'up',
     morale: { courage: 3, surrenders: true, never: false },
     immune: [],
@@ -271,14 +278,14 @@ function hurt(arena: Arena, combat: Combat, target: Fighter, amount: number, lin
   target.hp -= amount
   if (target.hp > 0) return
   target.hp = 0
-  if (target.id === 'player' || target.kind === 'npc') {
+  if (target.side === 'party') {
     target.state = 'dying'
     target.dying = crit ? 2 : 1
     lines.push({ kind: 'narration', text: target.id === 'player' ? 'You go down. The world tilts, and the mud comes up to meet you.' : `${cap(target.name)} goes down.` })
-    lines.push({ kind: 'system', text: `You are dying (${target.dying} of 4).` })
+    lines.push({ kind: 'system', text: target.id === 'player' ? `You are dying (${target.dying} of 4).` : `${cap(target.name)} is dying (${target.dying} of 4).` })
     return
   }
-  if (combat.subdue && source?.id === 'player' && target.kind !== 'spirit' && target.kind !== 'undead') {
+  if ((combat.subdue && source?.side === 'party' && target.kind !== 'spirit' && target.kind !== 'undead') || (target.kind === 'npc' && combat.subdue)) {
     target.state = 'unconscious'
     lines.push({ kind: 'narration', text: `${cap(target.name)} crumples, senseless but alive.` })
   } else {

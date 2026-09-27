@@ -14,6 +14,7 @@ npcs:
     personality: { warmth: 2, courage: -1, honesty: 1, temper: 0, curiosity: 2, diligence: 2 }
     values: { family: 2, craft: 2, faith: 1, law: 1 }
     quirks: [gossip, counts_every_duit, afraid_of_deep_water]
+    patron: lantern
     speech: "Warm, quick, practical. Calls people 'lamb'. Swears by Saint Brand."
     aliases: [baker, bakker]
     public_facts:
@@ -39,6 +40,7 @@ npcs:
         note: Your husband. He works on the tow barge and is often away for days.
       - to: npc_harmen
         role: creditor
+        owes: 480
         bond: 0
         private: true
         note: You owe him three guilders.
@@ -56,6 +58,18 @@ npcs:
     personality: { warmth: 0, courage: 2, honesty: 2, temper: 2, curiosity: 0, diligence: 1 }
     values: { freedom: 3, tradition: 2, law: -1 }
     quirks: [drinker, hates_the_count]
+    patron: grey_rider
+    fighter: { class: warden, level: 3 }
+    companion:
+      wage: 48
+      approves: [thwart_survey, defend_peatcutters, old_rights]
+      disapproves: [help_surveyor, hand_over_to_schout, theft]
+      quest: the_brotherhoods_charter
+      campfire:
+        - "My father cut peat here, and his father. Paper from Graafhaven won't change what the fen is."
+        - "There's a charter, they say. Old as the priory. The fen belongs to them that work it. If I could find it."
+        - "The schout and I were boys together. Now he carries the Count's stick and I carry a spade. Funny, that."
+    romance: { open_to: women, note: "Distrusts anyone who sides with the Count; honesty counts for more with him than charm." }
     speech: "Short and blunt. Says what he thinks and stops."
     aliases: [turfsteker, foreman]
     public_facts:
@@ -85,6 +99,18 @@ npcs:
     personality: { warmth: 1, courage: 1, honesty: 1, temper: -1, curiosity: 3, diligence: 1 }
     values: { nature: 3, knowledge: 2, tradition: 2 }
     quirks: [old_customs, keeps_secrets]
+    patron: holle
+    fighter: { class: herbalist, level: 3 }
+    companion:
+      wage: 32
+      slow: true
+      approves: [spare_fen, respect_taboo, learn_old_story]
+      disapproves: [burn, drain, mock_white_women]
+      quest: the_apprentices_debt
+      campfire:
+        - "I learned the herbs from a woman in the Kattenbroek. What she is now, I owe her a visit before I die."
+        - "Leave the last sheaf, child. It costs you nothing, and he remembers."
+        - "Every plant in this fen cures something and kills something. It depends who's asking."
     speech: "Slow, dry, knowing. Answers a question with a question when she likes."
     aliases: [aaltje, wise woman, herbalist, kruidenvrouw]
     public_facts:
@@ -125,6 +151,19 @@ npcs:
     personality: { warmth: -1, courage: 1, honesty: 1, temper: 0, curiosity: 1, diligence: 1 }
     values: { freedom: 2, nature: 2, wealth: 1 }
     quirks: [loner]
+    patron: grey_rider
+    fighter: { class: poacher, level: 2 }
+    companion:
+      wage: 40
+      approves: [fair_wage, fen_knowledge, courage]
+      disapproves: [waste, cruelty_to_animals, pointless_order]
+      limits: []
+      quest: a_boat_and_a_bride
+      campfire:
+        - "A boat of my own, that's all. Then Trijntje can't say I've nothing to offer."
+        - "My grandmother knew what the Haakman fears. She told me once, when I was small. I wish I'd listened better."
+        - "The eels are fewer every year since the mill started pumping. The fen's drying from the inside."
+    romance: { open_to: anyone, note: "In love with Geesje; whoever wants him has to deal with her." }
     speech: "Few words, dry humour, talks about the fen as if it can hear."
     aliases: [eel-fisher, eel fisher, palingvisser]
     public_facts:
@@ -171,6 +210,18 @@ npcs:
     personality: { warmth: 2, courage: 1, honesty: 2, temper: 0, curiosity: 1, diligence: 2 }
     values: { faith: 3, law: 1, family: 1 }
     quirks: [pious, afraid_of_deep_water]
+    patron: lantern
+    fighter: { class: lanternbearer, level: 2 }
+    companion:
+      wage: 32
+      approves: [mercy, fight_witchcraft, spare_prisoner]
+      disapproves: [old_rite, fae_bargain, kill_prisoner, theft]
+      quest: the_bell_of_kloosterveen
+      campfire:
+        - "I had a little brother. The water took him. I have not gone near deep water since, and yet here I am, in a fen."
+        - "They say a bell rings by the Blackmere where no bell hangs. Kloosterveen lost one, long ago."
+        - "The Lantern teaches mercy first. Some sisters forget that part when they speak of witches."
+    romance: { open_to: nobody, note: "Only if she leaves the order in her personal quest; whoever undermines her vows loses her for good." }
     speech: "Gentle, earnest, uses images of light and harbour."
     aliases: [wendela, sister, zuster]
     public_facts:
@@ -212,6 +263,8 @@ npcs:
     personality: { warmth: -1, courage: 1, honesty: 0, temper: 1, curiosity: -1, diligence: 3 }
     values: { law: 3, order: 2 }
     quirks: [hates_disorder]
+    patron: lantern
+    fighter: { class: warden, level: 3 }
     speech: "Formal, clipped, speaks of the law and the Count."
     aliases: [schout, everhard, bailiff]
     public_facts:
@@ -241,6 +294,7 @@ npcs:
     personality: { warmth: 0, courage: 1, honesty: 1, temper: 2, curiosity: 0, diligence: 1 }
     values: { family: 3 }
     quirks: [grieving]
+    patron: lantern
     speech: "Terse and angry since his daughter vanished."
     aliases: [jan, visser]
     public_facts:
@@ -277,6 +331,7 @@ npcs:
     personality: { warmth: 2, courage: 0, honesty: 1, temper: -1, curiosity: 1, diligence: 2 }
     values: { family: 3, faith: 1 }
     quirks: [old_customs, grieving]
+    patron: holle
     speech: "Quiet, polite, keeps drifting back to Fenna."
     aliases: [grietje]
     public_facts:

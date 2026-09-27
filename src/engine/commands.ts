@@ -11,6 +11,9 @@ import { isNight, qtyName, wakeNpc } from './npc/execute'
 import { parseDirection, splitQuantity, type Command } from './parser'
 import type { World } from './world'
 import { rest } from './rules/player'
+import { approve, restParty } from './social/companions'
+import { deed } from './social/deeds'
+import { refusedTrade } from './social/crime'
 
 // Player commands that need no AI. Each returns lines of output; commands that
 // take time call `pass(minutes)`, which runs the world and returns what the
@@ -86,6 +89,7 @@ export function runCommand(host: CommandHost, command: Command): Output[] {
       return sleep(host)
     case 'wait': {
       const minutes = Math.min(600, Math.max(1, Number(command.args[0]) || 10))
+      if (minutes >= 120) approve(world, 'long_wait')
       const seen = host.pass(minutes)
       return [...seen, text(`Time passes. It is ${clockText(world)}.`)]
     }
@@ -288,6 +292,9 @@ function give(host: CommandHost, args: string[]): Output[] {
   world.state.seenSeq = world.state.eventSeq
   const returned = giveBack(world, npcId, item) ?? fulfil(world, npcId, item, amount)
   if (!returned) {
+    // A gift moves someone a little, less with every gift that week (FO, chapter 8).
+    deed(world, npcId, 'gift', { amount: world.basePrice(item) * amount })
+    approve(world, 'generosity')
     const receiver = callName(world.npc(npcId))
     recordFact(world, {
       kind: 'gift',
@@ -330,6 +337,7 @@ function sleep(host: CommandHost): Output[] {
   const seen = host.pass(nextMorning - world.now)
   // A night's sleep heals (FO, chapter 11); sleeping rough heals too, but it is a cold night.
   rest(world, 0, true)
+  restParty(world)
   const how = inRoom ? 'You sleep under a heavy quilt that smells of peat smoke.' : 'You sleep rough, and badly. The damp gets into your bones.'
   return [text(`${how} You wake at first light.`), ...seen.slice(-3), describeRoom(world)]
 }
@@ -348,6 +356,8 @@ function openServices(world: World): { service: Service; location: string }[] {
 }
 
 function list(world: World): Output[] {
+  const refused = refusedTrade(world, world.state.player.location)
+  if (refused) return [error(refused)]
   const services = openServices(world)
   if (services.length === 0) return [error('Nobody sells anything here.')]
   return services.map(({ service, location }) => {
@@ -370,6 +380,8 @@ function list(world: World): Output[] {
 
 function buy(host: CommandHost, args: string[]): Output[] {
   const { world } = host
+  const refused = refusedTrade(world, world.state.player.location)
+  if (refused) return [error(refused)]
   const { qty, text: name } = splitQuantity(args)
   const open = openServices(world).filter(({ service, location }) => world.serviceOpen(location, service))
   if (open.length === 0) return [error('There is nobody here to buy from right now.')]
@@ -394,6 +406,8 @@ function buy(host: CommandHost, args: string[]): Output[] {
 
 function sell(host: CommandHost, args: string[]): Output[] {
   const { world } = host
+  const refused = refusedTrade(world, world.state.player.location)
+  if (refused) return [error(refused)]
   const inventory = world.state.player.inventory
   const { qty, text: name } = splitQuantity(args)
   const item = matchItem(world.content, name, Object.keys(inventory))
