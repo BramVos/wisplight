@@ -191,7 +191,7 @@ Scope: nieuwe mensen uit sjablonen (gevalideerd, met een maximum per seizoen), p
 
 Scope: alles wat na M8.5 nog openstaat (besluit van Bram, 27 september 2026), en ids die nooit veranderen.
 
-Ids in de kern: een id is de sleutel en verandert nooit; een naam, label of beschrijving kan altijd veranderen zonder dat een save of log breekt. Elke wereld houdt een register van alle ids die ooit zijn vastgelegd (`content/<wereld>/ids.lock`, door het spel bijgehouden). Het laden weigert content waarin een vastgelegde id ontbreekt zonder grafsteen; een grafsteen zegt wat er van een verwijderd ding overblijft (weg, of opgegaan in een ander id). Oude saves, het spellogboek en de kroniek volgen de grafstenen bij het laden. De editor laat een id alleen invullen bij iets nieuws, ook in YAML, en maakt bij verwijderen een grafsteen.
+Ids in de kern: een id is de sleutel en verandert nooit; een naam, label of beschrijving kan altijd veranderen zonder dat een save of log breekt. Elke wereld houdt een register van alle ids die ooit zijn vastgelegd (`content/<wereld>/ids.lock`, door het spel bijgehouden). Het laden weigert content waarin een vastgelegde id ontbreekt zonder grafsteen; een grafsteen zegt wat er van een verwijderd ding overblijft (weg, of opgegaan in een ander id). Oude saves, het spellogboek en de kroniek volgen de grafstenen bij het laden. De editor laat een id alleen invullen bij iets nieuws, ook in YAML, en maakt bij verwijderen een grafsteen. Ids die tijdens een spel ontstaan (mensen die aankomen, sinds M8.5 in `state.growth`) volgen dezelfde regel binnen hun save: eenmaal gegeven veranderen ze niet, ook niet als de naam verandert, en ze kunnen nooit samenvallen met een id uit de content. Neemt de editor zo iemand over in de wereld ([Adopt]), dan houdt hij zijn id, zodat de save en de content naar dezelfde persoon wijzen; valt dat id al samen met iets in de content, dan weigert de editor en zegt waarom.
 
 Verder, uit "Later" in het ontwerp "Signalen en nasleep" en uit eerdere mijlpalen:
 - een archief voor oude feiten die niemand meer kent en die niet in een lijn of lore zitten
@@ -206,6 +206,7 @@ Verder, uit "Later" in het ontwerp "Signalen en nasleep" en uit eerdere mijlpale
 - [ ] Een naam of beschrijving wijzigen in de editor laat elke oude save en elk spellogboek laden en precies naspelen
 - [ ] Een id verwijderen of veranderen kan niet zonder grafsteen: het laden noemt de id en de plek, en de editor maakt de grafsteen zelf
 - [ ] Een save met iets wat later verwijderd of samengevoegd is, laadt en speelt verder volgens de grafsteen
+- [ ] Een nieuwkomer die in een save ontstond en later met [Adopt] in de wereld kwam, is in die save en in een nieuw spel dezelfde persoon met hetzelfde id
 - [ ] Na 300 speldagen blijven laden, opslaan en het doorvertellen van nieuws even snel als na 30, dankzij het archief
 - [ ] Een feest, vertrek of terugkeer ver van de speler kost geen simulatie van mensen, alleen een feit en een toestandswijziging
 - [ ] Een streek buiten de kaart wordt speelbaar als de speler erheen gaat, gevalideerd als content, en ligt daarna vast in de savegame
