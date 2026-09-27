@@ -13,6 +13,7 @@ import type { Knowledge, Packet } from './knowledge'
 import type { LlmClient } from './llm'
 import { peopleIds, systemPrompt, turnPrompt, WORLD_FRAME } from './prompt'
 import { attitude, applyEffect, moodOf, relation, type Attitude } from './relations'
+import { askLine, askNow, requestName, visited } from '../requests'
 import { parseReply, replyJsonSchema, type Reply } from './schema'
 import type { TopicRegistry } from './topics'
 
@@ -56,7 +57,8 @@ export class Dialogue {
 
   /** Every word the world's content uses, for spotting names the model made up. */
   private vocabulary(): Set<string> {
-    this.words ??= vocabularyOf(this.world.content, WORLD_FRAME, MONTHS, WEEKDAYS, (this.world.state.lore?.far ?? []).map((f) => f.name))
+    // The chronicler's instruction is not the world: its examples are no names of it.
+    this.words ??= vocabularyOf({ ...this.world.content, chronicler: undefined }, WORLD_FRAME, MONTHS, WEEKDAYS, (this.world.state.lore?.far ?? []).map((f) => f.name), (this.world.state.chronicle?.lore ?? []).map((l) => l.name))
     return this.words
   }
 
@@ -81,9 +83,15 @@ export class Dialogue {
     this.learn(npcId)
     if (silent) return []
     const greeting = fallbackReply(world, npcId, 'Greet', { known: [], unknown: [] }, band)
+    // Going to see someone may be what another asked of the player.
+    const visits = visited(world, npcId).map((r) => ({ kind: 'narration' as const, text: `You have looked in on ${callName(npc)}, as ${callName(world.npc(r.npc))} asked.` }))
+    // Someone who needs help asks the player, once, when they next talk (FO, chapter 14).
+    const request = askNow(world, npcId)
     return [
       { kind: 'system', text: `You are talking with ${npc.short}. Type what you want to say, pick a number, or BYE to stop.` },
       { kind: 'speech', text: greeting },
+      ...visits,
+      ...(request ? [{ kind: 'speech' as const, text: `"${askLine(world, request)}"` }, { kind: 'system' as const, text: `New in your journal: ${requestName(world, request)}.` }] : []),
       this.options(),
     ]
   }
@@ -273,15 +281,27 @@ export class Dialogue {
   /** Fresh news first, then the standing talk of the village. */
   private rumours(npcId: string): string[] {
     this.syncNews()
+    // The chronicler's news of the day for the NPC's own area comes first.
+    const area = this.world.location(this.world.npc(npcId).home).area
+    const today = this.knowledge.level(npcId, `news_${area}`) >= 2 ? [`news_${area}`] : []
     const fresh = newsAbout(this.world, npcId, [], 2).map(({ fact }) => fact.id)
     const standing = RUMOUR_TOPICS.filter((t) => this.knowledge.level(npcId, t) >= 2)
-    return [...fresh, ...standing].slice(0, 2)
+    return [...today, ...fresh, ...standing].slice(0, 2)
   }
 
-  /** Facts are topics too, so they can be asked about, mentioned and put in the journal. */
+  /** Facts, the lore of this game and the news of the day are topics too: they can be asked about and go in the journal. */
   syncNews(): void {
     for (const fact of this.world.state.news?.facts ?? []) {
       if (!this.topics.entries.has(fact.id)) this.topics.addDuringPlay({ id: fact.id, kind: 'fact', name: fact.title, aliases: [] })
+    }
+    for (const lore of this.world.state.chronicle?.lore ?? []) {
+      if (this.topics.entries.has(lore.id)) continue
+      this.topics.addDuringPlay({ id: lore.id, kind: 'lore', name: lore.name, aliases: [lore.name.toLowerCase().replace(/^the /, '')] })
+      for (const word of vocabularyOf(lore.name)) this.vocabulary().add(word)
+    }
+    for (const area of Object.keys(this.world.state.chronicle?.news ?? {})) {
+      const id = `news_${area}`
+      if (!this.topics.entries.has(id)) this.topics.addDuringPlay({ id, kind: 'fact', name: `news in ${this.world.content.areas.get(area)?.name ?? area}`, aliases: [] })
     }
   }
 

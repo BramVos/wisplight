@@ -9,7 +9,9 @@ import type { UsageStore } from './usage'
 // limit runs out, and a short cool-down after repeated failures. On any
 // problem it throws, and the engine answers with a template instead.
 
-const TIMEOUT_MS: Record<LlmRole, number> = { voice: 8000, brain: 10000, advisor: 90000 }
+const TIMEOUT_MS: Record<LlmRole, number> = { voice: 8000, brain: 10000, chronicler: 90000, advisor: 90000 }
+// From this share of the hourly budget on, calls of low priority wait: the chronicler, and goal choices of NPCs without a quest role (FO, chapter 16).
+const LOW_PRIORITY_SHARE = 0.8
 const FAILURES_BEFORE_COOLDOWN = 3
 const COOLDOWN_MS = 2 * 60 * 1000
 // Below this many tokens left in the window, the next reply would likely hit a 429.
@@ -81,7 +83,9 @@ export class Gateway implements LlmClient {
       if (this.now() < health.coolingUntil) throw new LlmError('network', 'cooling down after repeated failures')
     }
     if (request.role !== 'advisor') {
-      if (this.options.log.spentLastHour(this.now()) >= this.options.budgetUsdPerHour()) throw new LlmError('budget', 'the hourly budget is used up')
+      const spent = this.options.log.spentLastHour(this.now())
+      if (spent >= this.options.budgetUsdPerHour()) throw new LlmError('budget', 'the hourly budget is used up')
+      if (request.priority === 'low' && spent >= LOW_PRIORITY_SHARE * this.options.budgetUsdPerHour()) throw new LlmError('budget', 'the hourly budget is kept for conversations')
       if (this.options.usage.monthBudgetSpent()) throw new LlmError('budget', 'the month budget is used up')
     }
 
@@ -117,7 +121,8 @@ export class Gateway implements LlmClient {
       if (failure instanceof BusyError) {
         // A full rate limit is about pace, not a broken connection: wait, do not count it.
         health.busyUntil = this.now() + failure.retryAfterMs
-      } else if (!override && ++health.failures >= FAILURES_BEFORE_COOLDOWN) {
+        // A slow chronicler at night says nothing about the connection for conversations.
+      } else if (!override && (request.role === 'voice' || request.role === 'brain') && ++health.failures >= FAILURES_BEFORE_COOLDOWN) {
         health.coolingUntil = this.now() + COOLDOWN_MS
         health.failures = 0
       }

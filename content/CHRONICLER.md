@@ -134,25 +134,49 @@ with their note and their new events.
 
 ## A run in the game
 
-You get a compact overview: the changed storylines, the new events as lines
-with time, place, who, what and witnesses, a one-line card for each person and
-place in them, and the titles and summaries of lore that may be related. If you
-need more, you may look up a person, a place, a pattern or an older line, at
-most three times per run.
+You get a compact overview in a fixed notation. People, places, things, lore,
+requests and storylines have short keys: p1, l1, i1, t1, q1, s1. You see the
+changed storylines with their note and their new events (time, place, who,
+witnesses, belang, what happened), a one-line card for each person and place
+in them, the lore that may be related, the requests that are open, and the
+request templates. Things marked PRIVATE are true, but not for telling.
 
-You answer in operations, as JSON:
+If you need more, you may look up a person, a place, lore, a thing or an
+older storyline first, at most three times per run: answer with only
+`lookup` and you get the cards.
 
-- `lore`: write a lore topic (id, name, summary, details, story, far, fame,
-  links to existing topic ids).
-- `line`: update or close a storyline note.
-- `effect`: propose a bounded effect (a relation, a price, the state of a
-  place). The engine decides whether and how much.
-- `news`: one line of news of the day per area, for "What's new around here?".
+Then you answer, in keys, with:
+
+- `lore`: for each storyline with an event of belang 3 or more, one lore
+  topic: name, summary, details, story, far, teller (a witness), links.
+- `lines`: a new note for every storyline: at most three lines, the roles,
+  the open threads (`hooks`), what may follow (`next`), and whether it is over.
+- `quests`: at most two. Turn an open thread into a request for the player,
+  or reword an open one. A request uses a template the game can check:
+  `fetch` (bring the giver a thing), `recover` (bring back what was lost or
+  stolen) or `visit` (go and see someone for the giver). The giver comes
+  from that storyline; name the thing or the person it needs. Write what the
+  giver says (`ask`) and why it matters (`stakes`).
+- `thoughts`: at most three. Something that stays on one person's mind for a
+  week, one sentence addressed to them: "You still owe Harmen three guilders."
+  This is your bounded effect on the world: the voice of that person hears it.
+- `news`: one line per area, for "What's new around here?".
 
 Only the stories themselves are running text. Everything is checked before it
-reaches the savegame: the schema, every id, fame against belang, every name,
-and every person, place and time against the events. A rejected part falls
-back to its template; the rest stays.
+reaches the savegame: the schema, every key, one lore topic per storyline,
+lore only for belang 3 or more, every name against the world, and every person
+and place against the overview. A rejected part falls back to its template;
+the rest stays. Fame is set by the game, from the belang.
+
+## Requests that come up by themselves
+
+Quests grow out of what happens. The world makes a plain request at once when
+a situation calls for it: someone who lost a knife asks the player to keep an
+eye out, a house with a fever wants herbs, a miller needs sailcloth. The giver
+asks the player the next time they talk; from then on it is in the journal.
+Your part is to work these out: a better name, the words of the giver, the
+stakes, and new requests from open threads (a widow alone, a debt to the dead,
+a quarrel that needs a go-between). Written quests with stages come later.
 
 ## Sparring in the world builder
 

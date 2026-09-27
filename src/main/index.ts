@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url'
 import { Engine, type Content, type Output, type SaveData } from '../engine'
 import type { ProviderId } from '../node/ai/providers'
 import { AiService } from '../node/ai/service'
-import type { Cipher } from '../node/ai/settings'
+import type { ChosenRole, Cipher } from '../node/ai/settings'
 import { loadContentFromDir } from '../node/content'
 import { format, GameLog, type Session } from '../node/gamelog'
 import { SaveStore } from '../node/savegame'
@@ -192,7 +192,9 @@ ipcMain.handle('engine:command', async (_event, input: unknown) => {
     return reply([system(lines.length ? lines.map(format).join('\n') : 'The log is empty.')])
   }
   ensureSession()
-  return reply(await engine.handle(text))
+  const outputs = await engine.handle(text)
+  chronicler()
+  return reply(outputs)
 })
 
 ipcMain.handle('engine:page', (_event, id: unknown) => engine?.page(String(id)))
@@ -217,8 +219,8 @@ const provider = (value: unknown): ProviderId => {
   if (value !== 'openai' && value !== 'anthropic') throw new Error('Unknown provider.')
   return value
 }
-const role = (value: unknown): 'voice' | 'brain' => {
-  if (value !== 'voice' && value !== 'brain') throw new Error('Unknown role.')
+const role = (value: unknown): ChosenRole => {
+  if (value !== 'voice' && value !== 'brain' && value !== 'chronicler') throw new Error('Unknown role.')
   return value
 }
 const amount = (value: unknown): number | undefined => (value === null || value === undefined || value === '' ? undefined : Number(value))
@@ -251,9 +253,15 @@ ipcMain.handle('ai:log', () => service().recentLog(50))
 ipcMain.handle('ai:billing', (_event, id: unknown) => shell.openExternal(BILLING[provider(id)]))
 
 // The real-time clock.
+/** The chronicler writes in the background; the game never waits for it (design, "Wanneer hij schrijft"). */
+function chronicler(): void {
+  if (engine && engine.chroniclerWaiting > 0) void engine.runChronicler().catch(() => undefined)
+}
+
 setInterval(() => {
   if (!engine || !window || window.isDestroyed() || paused()) return
   const outputs = engine.tick(1)
+  chronicler()
   window.webContents.send('engine:tick', reply(outputs))
   if (!smoke && ++minutesSinceSave >= AUTOSAVE_EVERY) {
     minutesSinceSave = 0

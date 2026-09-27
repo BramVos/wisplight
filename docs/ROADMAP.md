@@ -60,9 +60,11 @@ Scope: ontwerp lore en wereldverandering, FO 7, 8 en 16. De kroniekschrijver als
 - [x] Familie en dorp: een NPC spreekt over zijn eigen mensen anders dan over anderen, en tegen een vreemde anders dan tegen iemand die hij kent en vertrouwt; slecht nieuws over iemand bereikt zijn familie eerst, en wie rouwt, blijft thuis en gaat niet naar het feest
 - [x] De speler kiest het tempo (rustig, gewoon, dramatisch); standaard gewoon
 
-- [ ] Een gebeurtenis met belang 3 of meer wordt 's nachts lore met versies per afstand, zonder feiten buiten de gebeurtenissen
-- [ ] Een gewone nachtelijke run kost minder dan 3 dollarcent en valt zonder AI terug op sjablonen
-- [ ] De dood van iemand met een questrol leidt direct tot een run
+- [x] Een gebeurtenis met belang 3 of meer wordt 's nachts lore met versies per afstand, zonder feiten buiten de gebeurtenissen
+- [x] Een gewone nachtelijke run kost minder dan 3 dollarcent en valt zonder AI terug op sjablonen
+- [x] De dood van iemand met een questrol leidt direct tot een run
+- [x] Verzoeken ontstaan uit wat er gebeurt (iets kwijt, koorts, gebrek aan iets); de kroniekschrijver werkt ze uit of maakt er een van een open draad; de gever vraagt het de speler, het staat in het dagboek en wordt beloond
+- [x] De kroniekschrijver is een losse module (`src/chronicler`) zonder afhankelijkheden van het spel, zodat andere applicaties hem kunnen aanroepen
 - [ ] Ongeldige AI-doelen worden geweigerd en vallen terug op de nutsfunctie
 
 ## M4 Reizen, kaart en eerste wereldbouwer

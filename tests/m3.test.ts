@@ -217,7 +217,8 @@ describe('M3: small stories happen by themselves', () => {
     const affinity = engine.state.relations?.[owner]?.affinity ?? 0
     const out = await engine.handle(`give ${thing} to ${content.npcs.get(owner)!.name.split(' ')[0]}`)
     expect(out.map((o) => o.text).join(' ')).toMatch(/Where did you find it\?/)
-    expect(engine.state.relations![owner]!.affinity).toBe(affinity + 3)
+    // Help with something the NPC wanted: +3 for the thing, +4 for the request (FO, chapter 8: +5 to +15).
+    expect(engine.state.relations![owner]!.affinity).toBe(affinity + 7)
     expect(story.done).toBe(true)
     expect(engine.state.requests.filter((r) => r.npc === owner && r.item === thing && r.status === 'open')).toHaveLength(0)
     expect(engine.state.news!.facts.at(-1)!.kind).toBe('returned')

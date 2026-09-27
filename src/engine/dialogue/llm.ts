@@ -2,7 +2,7 @@
 // validates replies; the Node side (src/node/ai) sends them to OpenAI or
 // Anthropic. Tests and the browser preview use MockLlm.
 
-export type LlmRole = 'voice' | 'brain' | 'advisor'
+export type LlmRole = 'voice' | 'brain' | 'chronicler' | 'advisor'
 
 export interface JsonSchema {
   [key: string]: unknown
@@ -17,6 +17,8 @@ export interface LlmRequest {
   schemaName: string
   schema: JsonSchema
   maxTokens: number
+  /** Low: waits once 80% of the hourly budget is spent (the chronicler, goal choices without a quest role). */
+  priority?: 'normal' | 'low'
   /** Structured context for the mock model; real providers ignore it. */
   meta?: Record<string, unknown>
 }

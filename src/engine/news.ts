@@ -1,5 +1,6 @@
 import { minuteOfDay } from './clock'
 import { isFamilyNews, nearOf, tieTo } from './people'
+import { onFact } from './storylines'
 import type { Fact, Heard } from './state'
 import type { World } from './world'
 
@@ -66,6 +67,7 @@ export function recordFact(world: World, input: FactInput): Fact {
     heardBy(world, 'player')[fact.id] = { level: 3, reliability: 1, from: 'witness', t: world.now }
     ;(world.state.player.journal ??= {})[fact.id] = world.now
   }
+  onFact(world, fact)
   return fact
 }
 
@@ -89,6 +91,7 @@ export function seedNews(world: World): void {
     for (const [who, from] of Object.entries(item.known_by)) {
       heardBy(world, who)[fact.id] = { level: 3, reliability: from === 'witness' ? 1 : 0.9, from: from ?? 'witness', t: world.now }
     }
+    onFact(world, fact)
   }
 }
 

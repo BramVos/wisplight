@@ -5,7 +5,7 @@ import { askAdvice, trial, type Advice, type TrialResult } from './advisor'
 import { Gateway, type GatewayStatus } from './gateway'
 import { AiLog, type AiLogEntry } from './log'
 import { createProvider, type ModelInfo, type Provider, type ProviderId } from './providers'
-import { SettingsStore, type Cipher, type SettingsSummary } from './settings'
+import { CHOSEN_ROLES, SettingsStore, type Cipher, type ChosenRole, type SettingsSummary } from './settings'
 import { UsageStore, type UsageSummary } from './usage'
 
 // Everything the settings screen and the game need from the AI side, without
@@ -100,7 +100,7 @@ export class AiService {
     return askAdvice(this.gateway, id, await this.listModels(id, true))
   }
 
-  async trial(id: ProviderId, model: string, role: 'voice' | 'brain'): Promise<TrialResult> {
+  async trial(id: ProviderId, model: string, role: ChosenRole): Promise<TrialResult> {
     await this.requireModel(id, model)
     return trial(this.gateway, this.options.content, id, model, role)
   }
@@ -109,7 +109,7 @@ export class AiService {
    * Stores the exact model id, after checking it is in the provider's list and
    * making one test call with it. Returns the id as stored.
    */
-  async choose(role: 'voice' | 'brain', id: ProviderId, model: string): Promise<string> {
+  async choose(role: ChosenRole, id: ProviderId, model: string): Promise<string> {
     await this.requireModel(id, model)
     const result = await trial(this.gateway, this.options.content, id, model, role, 1)
     if (result.valid === 0) throw new Error(`The test call with ${model} failed: ${result.errors[0] ?? 'no reply'}`)
@@ -118,9 +118,9 @@ export class AiService {
   }
 
   /** Checks at start-up that the chosen models still exist; returns the roles whose model is gone. */
-  async missingModels(): Promise<('voice' | 'brain')[]> {
-    const missing: ('voice' | 'brain')[] = []
-    for (const role of ['voice', 'brain'] as const) {
+  async missingModels(): Promise<ChosenRole[]> {
+    const missing: ChosenRole[] = []
+    for (const role of CHOSEN_ROLES) {
       const choice = this.settings.role(role)
       if (!choice) continue
       try {

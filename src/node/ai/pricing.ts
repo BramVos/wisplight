@@ -48,5 +48,6 @@ export function costUsd(model: string, usage: { inputTokens: number; outputToken
   return (uncached * price.input + usage.cachedTokens * price.cachedInput + usage.outputTokens * price.output) / 1_000_000
 }
 
-// A play hour with a lot of talking (FO, chapter 16): 40 dialogue calls and 25 goal choices.
-export const CALLS_PER_HOUR = { voice: 40, brain: 25 }
+// A play hour with a lot of talking (FO, chapter 16): 40 dialogue calls and 25 goal choices;
+// the chronicler writes 0 to 2 times an hour (design: lore and world change).
+export const CALLS_PER_HOUR = { voice: 40, brain: 25, chronicler: 1 }

@@ -3,6 +3,8 @@ import type { Need } from './content'
 import { add } from './items'
 import { spreadNews } from './news'
 import { storyHour } from './stories'
+import { nightly } from './storylines'
+import { settleRuns } from './chronicler'
 import { clamp } from './npc/execute'
 import { think } from './npc/brain'
 import type { World } from './world'
@@ -20,6 +22,7 @@ export function advance(world: World, minutes: number): void {
     if (minuteOfDay(world.now) % 15 === 0) spreadNews(world)
     // Someone in a conversation with the player stays put until it ends.
     for (const id of ids) if (world.state.talk?.npc !== id && !world.state.npcs[id]!.dead) think(world, id)
+    settleRuns(world)
   }
 }
 
@@ -28,6 +31,7 @@ function hourly(world: World): void {
   supply(world)
   demand(world)
   storyHour(world)
+  nightly(world)
   const lodging = world.state.player.lodging
   if (lodging && world.now >= lodging.until) world.state.player.lodging = undefined
 }

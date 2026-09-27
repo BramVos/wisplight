@@ -14,6 +14,10 @@ export interface Cipher {
   decrypt(encoded: string): string
 }
 
+/** The roles a player chooses a model for (FO, chapter 16). */
+export type ChosenRole = Exclude<LlmRole, 'advisor'>
+export const CHOSEN_ROLES: ChosenRole[] = ['voice', 'brain', 'chronicler']
+
 export interface RoleChoice {
   provider: ProviderId
   model: string
@@ -86,8 +90,13 @@ export class SettingsStore {
     this.write()
   }
 
-  setRole(role: 'voice' | 'brain', choice: RoleChoice): void {
+  setRole(role: ChosenRole, choice: RoleChoice): void {
     this.data.roles[role] = { provider: choice.provider, model: choice.model }
+    this.write()
+  }
+
+  clearRole(role: ChosenRole): void {
+    delete this.data.roles[role]
     this.write()
   }
 

@@ -5,6 +5,7 @@ import { TIER_WORDS, type Act, type Tier } from './acts'
 import type { CheckResult } from './checks'
 import type { Packet } from './knowledge'
 import { peopleLine, peopleNow } from '../people'
+import { requestLines } from '../requests'
 import { relation, type Attitude } from './relations'
 
 // Prompts for the voice role (FO, chapter 10). The system part is byte-for-byte
@@ -127,6 +128,12 @@ export function listener(world: World, npcId: string): string {
   return `the player is ${who}${trust}`
 }
 
+/** What the chronicler left on the NPC's mind: a debt to the dead, a grudge. */
+function onYourMind(world: World, npcId: string): string[] {
+  const thoughts = (world.npcState(npcId).thoughts ?? []).filter((t) => t.until > world.now)
+  return thoughts.length ? [`ON YOUR MIND: ${thoughts.map((t) => t.text).join(' ')}`] : []
+}
+
 /** Far-away places this NPC has named or heard of, so it speaks of them the same way again. */
 function farKnown(world: World, npcId: string): string[] {
   const far = (world.state.lore?.far ?? []).filter((f) => f.known_by.includes(npcId))
@@ -176,6 +183,8 @@ export function turnPrompt(world: World, ctx: TurnContext): string {
     present.length ? `Also here: ${present.join(', ')}, and the player.` : 'Also here: the player, a stranger from Graafhaven.',
     ...recently(world, ctx.npcId),
     ...peopleNow(world, ctx.npcId),
+    ...onYourMind(world, ctx.npcId),
+    ...requestLines(world, ctx.npcId),
     ...farKnown(world, ctx.npcId),
     `ATTITUDE: ${ctx.attitude.band} (${ctx.attitude.score}). LISTENER: ${listener(world, ctx.npcId)}.`,
     'KNOWLEDGE:',

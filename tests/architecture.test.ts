@@ -20,4 +20,16 @@ describe('architecture', () => {
     }
     expect(offenders).toEqual([])
   })
+
+  it('keeps the chronicler on its own: nothing from the game, so other applications can use it', async () => {
+    const dir = resolve(import.meta.dirname, '../src/chronicler')
+    const files = (await readdir(dir, { recursive: true })).filter((file) => file.endsWith('.ts'))
+    const offenders: string[] = []
+    for (const file of files) {
+      const source = await readFile(join(dir, file), 'utf8')
+      for (const pattern of [...forbidden, /from ['"]\.\.\//]) if (pattern.test(source)) offenders.push(`${file}: ${pattern}`)
+    }
+    expect(files.length).toBeGreaterThan(0)
+    expect(offenders).toEqual([])
+  })
 })

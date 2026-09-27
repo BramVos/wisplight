@@ -294,7 +294,15 @@ describe('AI service', () => {
           if (!keyWorks) throw new Error(`401 Incorrect API key provided: ${key}`)
           return [{ id: 'gpt-4.1-mini-2025-04-14' }, { id: 'gpt-4.1-nano-2025-04-14' }]
         },
-        complete: async (model, request) => reply(request.role === 'brain' ? JSON.stringify({ goals: [], mood: 'calm', note: 'n' }) : goodReply, model),
+        complete: async (model, request) =>
+          reply(
+            request.role === 'brain'
+              ? JSON.stringify({ goals: [], mood: 'calm', note: 'n' })
+              : request.role === 'chronicler'
+                ? JSON.stringify({ lookup: [], lore: [], lines: [], quests: [], thoughts: [], news: [] })
+                : goodReply,
+            model,
+          ),
       }),
     })
     return { ai, dir }
@@ -322,5 +330,14 @@ describe('AI service', () => {
     expect(trial).toMatchObject({ runs: 6, valid: 6 })
     expect(trial.costPerHourUsd).toBeGreaterThan(0)
     expect(allText(dir)).not.toContain(TEST_KEY)
+  })
+
+  it('has a third role, the chronicler, tried on a drowning and a theft', async () => {
+    const { ai } = service()
+    await ai.connect('openai', TEST_KEY)
+    const trial = await ai.trial('openai', 'gpt-4.1-mini-2025-04-14', 'chronicler')
+    expect(trial).toMatchObject({ role: 'chronicler', runs: 2, valid: 2 })
+    expect(await ai.choose('chronicler', 'openai', 'gpt-4.1-mini-2025-04-14')).toBe('gpt-4.1-mini-2025-04-14')
+    expect(ai.settings.role('chronicler')).toEqual({ provider: 'openai', model: 'gpt-4.1-mini-2025-04-14' })
   })
 })

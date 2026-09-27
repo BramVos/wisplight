@@ -4,10 +4,11 @@ import { wordCount } from '../../engine/dialogue/guard'
 import type { LlmRequest } from '../../engine/dialogue/llm'
 import { MockLlm } from '../../engine/dialogue/mock'
 import { GoalReplySchema, parseReply } from '../../engine/dialogue/schema'
-import { brainRequests, trialRequests } from '../../engine/dialogue/testset'
+import { brainRequests, chroniclerRequests, trialRequests } from '../../engine/dialogue/testset'
 import type { Gateway } from './gateway'
 import { CALLS_PER_HOUR, costUsd, priceOf, priceTable, PRICING_AS_OF } from './pricing'
 import type { ModelInfo, ProviderId } from './providers'
+import { CHOSEN_ROLES, type ChosenRole } from './settings'
 
 // Model advice after connecting a provider (FO, chapter 16): a capable model
 // of that provider recommends a model per role, chosen only from the ids the
@@ -28,13 +29,14 @@ export interface Advice {
   advisorModel: string
   voice: RoleAdvice
   brain: RoleAdvice
+  chronicler: RoleAdvice
   unknownPrices: string[]
 }
 
 export interface TrialResult {
   provider: ProviderId
   model: string
-  role: 'voice' | 'brain'
+  role: ChosenRole
   runs: number
   valid: number
   averageLatencyMs: number
@@ -78,16 +80,20 @@ export function advicePrompt(models: ModelInfo[]): string {
   const priceLines = Object.entries(prices).map(([id, p]) => `  ${id}: input ${p.input}, cached input ${p.cachedInput}, output ${p.output}`)
   const unknown = ids.filter((id) => !prices[id])
   return [
-    'You are helping to set up Wisplight, a single-player text RPG. Every NPC',
-    'is voiced by a language model in one of two roles:',
+    'You are helping to set up Wisplight, a single-player text RPG. Language',
+    'models play three roles:',
     '- VOICE: short, in-character dialogue in English (15 to 50 words, up to',
     '  180 for a story), returned as JSON that follows a strict schema.',
     '- BRAIN: picks 1 to 3 goals for an NPC from a fixed list, as JSON.',
-    'Typical load per hour of play: about 160,000 input tokens (60% can be',
-    'cached) and 10,000 output tokens, roughly 70% VOICE and 30% BRAIN.',
-    'Targets: a reply within 4 seconds, valid JSON every time, good English,',
-    'and a total cost below 0.10 USD per hour of play. Cheaper is better as',
-    'long as quality holds.',
+    '- CHRONICLER: rarely, mostly at night, turns what happened into lore,',
+    '  notes, requests and news, as JSON: about 4,500 input tokens (3,000 of',
+    '  them cached) and up to 1,800 output tokens, 0 to 2 times per hour.',
+    '  Good writing and sticking to the facts matter more than speed.',
+    'Typical load per hour of play for VOICE and BRAIN: about 160,000 input',
+    'tokens (60% can be cached) and 10,000 output tokens, roughly 70% VOICE',
+    'and 30% BRAIN. Targets: a reply within 4 seconds, valid JSON every time,',
+    'good English, and a total cost below 0.10 USD per hour of play; a',
+    'CHRONICLER run below 0.03 USD. Cheaper is better as long as quality holds.',
     `AVAILABLE MODELS for this API key (use only these ids): ${ids.join(', ')}`,
     `KNOWN PRICES per million tokens in USD, as of ${PRICING_AS_OF}:`,
     ...(priceLines.length ? priceLines : ['  (none of these models are in the price table)']),
@@ -101,12 +107,13 @@ export function advicePrompt(models: ModelInfo[]): string {
 function adviceSchema(ids: string[]) {
   const choice = { type: 'object', additionalProperties: false, required: ['model', 'reason'], properties: { model: { type: 'string', enum: ids }, reason: { type: 'string' } } }
   const role = { type: 'object', additionalProperties: false, required: ['recommended', 'cheaper'], properties: { recommended: choice, cheaper: choice } }
-  return { type: 'object', additionalProperties: false, required: ['voice', 'brain'], properties: { voice: role, brain: role } }
+  return { type: 'object', additionalProperties: false, required: ['voice', 'brain', 'chronicler'], properties: { voice: role, brain: role, chronicler: role } }
 }
 
 /** Checks the advice: every id must come from the provider's list. Returns an error text or undefined. */
-export function validateAdvice(advice: { voice: RoleAdvice; brain: RoleAdvice }, ids: string[]): string | undefined {
-  for (const role of ['voice', 'brain'] as const) {
+export function validateAdvice(advice: { voice: RoleAdvice; brain: RoleAdvice; chronicler?: RoleAdvice }, ids: string[]): string | undefined {
+  for (const role of CHOSEN_ROLES) {
+    if (role === 'chronicler' && !advice.chronicler) continue
     for (const kind of ['recommended', 'cheaper'] as const) {
       const id = advice[role]?.[kind]?.model
       if (!id || !ids.includes(id)) return `The advice named "${id ?? 'nothing'}" for ${role}, which this key cannot use.`
@@ -130,9 +137,9 @@ export async function askAdvice(gateway: Gateway, provider: ProviderId, models: 
     },
     { provider, model: advisorModel },
   )
-  let parsed: { voice: RoleAdvice; brain: RoleAdvice }
+  let parsed: { voice: RoleAdvice; brain: RoleAdvice; chronicler?: RoleAdvice }
   try {
-    parsed = JSON.parse(response.text) as { voice: RoleAdvice; brain: RoleAdvice }
+    parsed = JSON.parse(response.text) as { voice: RoleAdvice; brain: RoleAdvice; chronicler?: RoleAdvice }
   } catch {
     throw new Error('The advice did not come back as JSON. Try again or pick a model yourself.')
   }
@@ -141,13 +148,17 @@ export async function askAdvice(gateway: Gateway, provider: ProviderId, models: 
   const snap = (choice: AdviceChoice): AdviceChoice => ({ model: preferSnapshot(choice.model, ids), reason: choice.reason })
   const voice = { recommended: snap(parsed.voice.recommended), cheaper: snap(parsed.voice.cheaper) }
   const brain = { recommended: snap(parsed.brain.recommended), cheaper: snap(parsed.brain.cheaper) }
-  const named = [voice.recommended, voice.cheaper, brain.recommended, brain.cheaper].map((c) => c.model)
-  return { provider, advisorModel, voice, brain, unknownPrices: [...new Set(named.filter((id) => !priceOf(id)))] }
+  // An advisor that leaves the chronicler out gets the voice's models for it: good writing first.
+  const writer = parsed.chronicler ?? parsed.voice
+  const chronicler = { recommended: snap(writer.recommended), cheaper: snap(writer.cheaper) }
+  const named = [voice, brain, chronicler].flatMap((r) => [r.recommended.model, r.cheaper.model])
+  return { provider, advisorModel, voice, brain, chronicler, unknownPrices: [...new Set(named.filter((id) => !priceOf(id)))] }
 }
 
 /** Runs a model on situations from the fixed test set and measures validity, latency, tokens and cost. */
-export async function trial(gateway: Gateway, content: Content, provider: ProviderId, model: string, role: 'voice' | 'brain', count = role === 'voice' ? 6 : 3): Promise<TrialResult> {
-  const requests: LlmRequest[] = role === 'voice' ? await trialRequests(content, new MockLlm('good'), count) : brainRequests().slice(0, count)
+export async function trial(gateway: Gateway, content: Content, provider: ProviderId, model: string, role: ChosenRole, count = role === 'voice' ? 6 : role === 'brain' ? 3 : 2): Promise<TrialResult> {
+  const requests: LlmRequest[] =
+    role === 'voice' ? await trialRequests(content, new MockLlm('good'), count) : role === 'brain' ? brainRequests().slice(0, count) : (await chroniclerRequests(content)).slice(0, count)
   const result: TrialResult = { provider, model, role, runs: 0, valid: 0, averageLatencyMs: 0, inputTokens: 0, outputTokens: 0, errors: [] }
   let latency = 0
   let cost = 0
@@ -164,7 +175,7 @@ export async function trial(gateway: Gateway, content: Content, provider: Provid
       const callCost = costUsd(model, response.usage)
       if (callCost === undefined) priced = false
       else cost += callCost
-      const problem = role === 'voice' ? voiceProblem(response.text, request) : brainProblem(response.text)
+      const problem = role === 'voice' ? voiceProblem(response.text, request) : role === 'brain' ? brainProblem(response.text) : chroniclerProblem(response.text)
       if (problem) result.errors.push(problem)
       else result.valid++
     } catch (error) {
@@ -186,6 +197,15 @@ function voiceProblem(text: string, request: LlmRequest): string | undefined {
   // The engine trims a reply that runs a little long; far too long counts as a miss.
   if (wordCount(reply.reply) > limit * 1.5) return `reply: ${wordCount(reply.reply)} words where ${limit} was the limit`
   return undefined
+}
+
+function chroniclerProblem(text: string): string | undefined {
+  try {
+    const reply = JSON.parse(text) as Record<string, unknown>
+    return ['lore', 'lines', 'quests', 'thoughts', 'news'].every((key) => Array.isArray(reply[key])) ? undefined : 'reply: not valid JSON for the chronicle schema'
+  } catch {
+    return 'reply: not JSON'
+  }
 }
 
 function brainProblem(text: string): string | undefined {

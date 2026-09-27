@@ -34,6 +34,7 @@ function aiLabel(ai: AiStatus): { text: string; tone: '' | 'warn' | 'over' } {
 }
 
 const JOURNAL: { key: keyof Status['journal']; title: string }[] = [
+  { key: 'quests', title: 'Quests' },
   { key: 'people', title: 'People' },
   { key: 'places', title: 'Places' },
   { key: 'events', title: 'Events' },

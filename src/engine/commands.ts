@@ -3,6 +3,7 @@ import { callName, type Affordance, type Direction, type Npc, type ObjectInstanc
 import { add, formatMoney, hasAll, itemName, listItems, matchItem, withArticle } from './items'
 import { applyEffect } from './dialogue/relations'
 import { recordFact } from './news'
+import { fulfil } from './requests'
 import { giveBack, stories, type Tempo } from './stories'
 import { isNight, qtyName, wakeNpc } from './npc/execute'
 import { parseDirection, splitQuantity, type Command } from './parser'
@@ -266,7 +267,7 @@ function give(host: CommandHost, args: string[]): Output[] {
   add(world.npcState(npcId).inventory, item, amount)
   world.emit('gift', world.state.player.location, `You give ${qtyName(world, item, amount)} to ${callName(world.npc(npcId))}.`)
   world.state.seenSeq = world.state.eventSeq
-  const returned = giveBack(world, npcId, item)
+  const returned = giveBack(world, npcId, item) ?? fulfil(world, npcId, item, amount)
   if (!returned) {
     const receiver = callName(world.npc(npcId))
     recordFact(world, {

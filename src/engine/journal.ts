@@ -4,6 +4,7 @@ import type { TopicRegistry } from './dialogue/topics'
 import { itemName } from './items'
 import { factById, versionOf } from './news'
 import { isNear, noun, ties } from './people'
+import { askLine, requestName } from './requests'
 import type { World } from './world'
 
 // The journal as a reference book (design: lore and world change, "Wat de
@@ -19,7 +20,7 @@ export interface JournalLink {
 
 export interface JournalPage {
   id: string
-  kind: 'person' | 'place' | 'area' | 'event' | 'lore' | 'thing'
+  kind: 'person' | 'place' | 'area' | 'event' | 'lore' | 'thing' | 'quest'
   name: string
   lines: string[]
   sources: string[]
@@ -27,6 +28,7 @@ export interface JournalPage {
 }
 
 export function journalPage(world: World, topics: TopicRegistry, id: string): JournalPage | undefined {
+  if (id.startsWith('req_')) return requestPage(world, topics, id)
   const journal = world.state.player.journal ?? {}
   const entry = topics.entries.get(id)
   if (!entry || journal[id] === undefined) return undefined
@@ -102,6 +104,8 @@ export function journalPage(world: World, topics: TopicRegistry, id: string): Jo
     if (h?.grown) page.lines.push('The way you heard it, it may have grown in the telling.')
     if (h && h.reliability < 0.7) page.lines.push("You're not sure it is true.")
     page.links.push(...fact.about.flatMap((topic) => link(topic, 'about')))
+    const told = world.state.chronicle?.lore.find((l) => l.facts.includes(id))
+    if (told) page.links.push(...link(told.id, 'told as'))
     // Other news about the same people or places: where two stories disagree, they meet here.
     for (const [otherId, other] of Object.entries(heard)) {
       const related = factById(world, otherId)
@@ -109,6 +113,20 @@ export function journalPage(world: World, topics: TopicRegistry, id: string): Jo
         page.links.push({ id: related.id, name: related.title, label: 'also heard' })
         page.lines.push(`Also heard: ${versionOf(related, other)}`)
       }
+    }
+  } else if (id.startsWith('chr_')) {
+    // Lore of this game: as much of it as the player heard, by level.
+    page.kind = 'lore'
+    const lore = world.state.chronicle?.lore.find((l) => l.id === id)
+    if (lore) {
+      const level = Math.max(1, ...lore.facts.map((f) => heard[f]?.level ?? 0), ...(world.state.player.sources?.[id] ?? []).map((s) => s.level))
+      page.lines.push(lore.summary)
+      if (level >= 2 && lore.details && lore.details !== lore.summary) page.lines.push(lore.details)
+      if (level >= 3 && lore.story) page.lines.push(lore.story)
+      if (lore.teller) page.links.push(...link(lore.teller, 'told by'))
+      for (const f of lore.facts) if (heard[f]) page.links.push({ id: f, name: factById(world, f)?.title ?? f, label: 'event' })
+      for (const f of lore.facts) page.links.push(...(factById(world, f)?.about ?? []).flatMap((t) => link(t, 'about')))
+      for (const l of lore.links) page.links.push(...link(l, 'see also'))
     }
   } else if (id.startsWith('far_')) {
     page.kind = 'place'
@@ -140,6 +158,26 @@ export function journalPage(world: World, topics: TopicRegistry, id: string): Jo
   page.lines.push(...newsLines)
   page.links.push(...newsLinks)
   page.links = page.links.filter((l, i, all) => all.findIndex((x) => x.id === l.id) === i)
+  return page
+}
+
+/** A request someone asked of the player: what, why, and how it stands. */
+function requestPage(world: World, topics: TopicRegistry, id: string): JournalPage | undefined {
+  const request = world.state.requests.find((r) => r.id === id)
+  if (!request || request.asked === undefined) return undefined
+  const journal = world.state.player.journal ?? {}
+  const link = (topicId: string, label: string): JournalLink[] => (journal[topicId] !== undefined && topics.entries.has(topicId) ? [{ id: topicId, name: topics.name(topicId), label }] : [])
+  const giver = callName(world.npc(request.npc))
+  const status =
+    request.status === 'done' ? `Done, ${day(request.done ?? world.now)}.` : request.status === 'failed' ? 'It can no longer be done.' : request.reward ? `Open. ${giver} offered a reward.` : 'Open.'
+  const page: JournalPage = { id, kind: 'quest', name: requestName(world, request), lines: [`${giver} asked you, ${day(request.asked)}: "${askLine(world, request)}"`], sources: [], links: [] }
+  if (request.stakes) page.lines.push(request.stakes)
+  page.lines.push(status)
+  page.links.push(...link(request.npc, 'asked by'))
+  if (request.target) page.links.push(...link(request.target, 'go and see'))
+  if (request.item) page.links.push(...link(`item_${request.item}`, 'wanted'))
+  const lore = world.state.chronicle?.lore.find((l) => l.line === request.line)
+  if (lore) page.links.push(...link(lore.id, 'the story'))
   return page
 }
 

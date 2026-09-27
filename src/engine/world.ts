@@ -20,6 +20,12 @@ export class World {
   private readonly known = new Map<string, Set<string>>()
   /** Relations between people, built once from the content (see people.ts). */
   readonly tieCache = new Map<string, unknown>()
+  /**
+   * A model is connected, so the chronicler's runs wait for it; without one they
+   * are written from templates at once. Set by the engine with the model, which
+   * the log records, so a replay makes the same choice.
+   */
+  chronicleLive = false
 
   constructor(
     readonly content: Content,

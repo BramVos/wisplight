@@ -60,6 +60,8 @@ export class Knowledge {
     if (!entry) return 0
     if (topicId.startsWith('far_')) return this.far(topicId)?.known_by.includes(npcId) ? 2 : 0
     if (topicId.startsWith('fact_')) return this.world.state.news?.heard[npcId]?.[topicId]?.level ?? 0
+    if (topicId.startsWith('chr_')) return this.chronicled(npcId, topicId)
+    if (topicId.startsWith('news_')) return this.ownAreas(npcId).has(topicId.slice(5)) && this.news(topicId) ? 2 : 0
     const own = this.ownAreas(npcId)
     const known = this.knownAreas(npcId)
     const { content } = this.world
@@ -275,8 +277,10 @@ export class Knowledge {
         facts.push(...this.topicFacts(npcId, topicId, level))
     }
     const topic = content.topics.get(topicId)
-    const story = wantsStory && level >= 2 ? topic?.story?.trim() : undefined
-    const toldBy = story && topic?.teller && topic.teller !== npcId ? content.npcs.get(topic.teller)?.short : undefined
+    const lore = topicId.startsWith('chr_') ? this.lore(topicId) : undefined
+    const story = wantsStory && level >= 2 ? (topic?.story ?? (level >= 3 ? lore?.story : undefined))?.trim() || undefined : undefined
+    const teller = topic?.teller ?? lore?.teller
+    const toldBy = story && teller && teller !== npcId ? content.npcs.get(teller)?.short : undefined
     return { facts: facts.filter(Boolean), story, toldBy }
   }
 
@@ -296,7 +300,35 @@ export class Knowledge {
     return `(${from}${sure}${heard.grown ? ' The way you heard it, it was bigger than this.' : ''})`
   }
 
+  /** Lore of this game: known as well as the news it came from was heard; its witness-teller knows it all. */
+  private chronicled(npcId: string, topicId: string): Level {
+    const lore = this.lore(topicId)
+    if (!lore) return 0
+    if (lore.teller === npcId) return 3
+    const heard = this.world.state.news?.heard[npcId] ?? {}
+    return Math.max(0, ...lore.facts.map((f) => heard[f]?.level ?? 0)) as Level
+  }
+
+  private lore(topicId: string) {
+    return this.world.state.chronicle?.lore.find((l) => l.id === topicId)
+  }
+
+  /** The chronicler's line of news for an area, while it is fresh: two days. */
+  private news(topicId: string): string | undefined {
+    const item = this.world.state.chronicle?.news[topicId.slice(5)]
+    return item && this.world.now - item.t < 2 * 24 * 60 ? item.text : undefined
+  }
+
   private topicFacts(npcId: string, topicId: string, level: Level): string[] {
+    const lore = topicId.startsWith('chr_') ? this.lore(topicId) : undefined
+    if (lore) {
+      const near = this.ownAreas(npcId).has(this.world.location(lore.place).area)
+      if (level >= 3) return [lore.summary, lore.details].filter(Boolean)
+      if (level === 2) return [lore.details || lore.summary]
+      return [near ? lore.summary : lore.far || lore.summary]
+    }
+    const news = topicId.startsWith('news_') ? this.news(topicId) : undefined
+    if (news) return [`News of the day here: ${news}`]
     const fact = topicId.startsWith('fact_') ? factById(this.world, topicId) : undefined
     if (fact) {
       const heard = this.world.state.news?.heard[npcId]?.[topicId]

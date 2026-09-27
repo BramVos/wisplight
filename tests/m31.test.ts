@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { Engine, GameClock, MockLlm, peopleLine, questsOf, systemPrompt, ties, tieTo } from '../src/engine'
+import { buildInput, Engine, GameClock, MockLlm, peopleLine, questsOf, recordFact, startStory, systemPrompt, ties, tieTo } from '../src/engine'
+import { assignKeys, buildRequest, DEFAULT_LIMITS } from '../src/chronicler'
+import { costUsd } from '../src/node/ai/pricing'
 import { content } from './helpers'
 
 // Milestone M3.1 (docs/ROADMAP.md): relations between people, death and grief
@@ -104,5 +106,166 @@ describe('M3.1: the pace of events is the player\'s choice', () => {
     expect(texts(await engine.handle('tempo dramatisch'))).toMatch(/dramatic: a lot happens/)
     expect(engine.state.stories!.tempo).toBe('dramatic')
     expect(await engine.handle('tempo wild')).toMatchObject([{ kind: 'error' }])
+  })
+})
+
+describe('M3.1: the chronicler', () => {
+  function game(mode: ConstructorParameters<typeof MockLlm>[0] = 'good', seed = 3, witness = true) {
+    const mock = new MockLlm(mode)
+    const engine = new Engine(content, { seed, llm: mock, builder: true })
+    at(engine, 15, 11)
+    // Mirte happens to be at the mill when it happens.
+    if (witness) engine.state.npcs['npc_mirte']!.location = engine.state.npcs['npc_harmen']!.location
+    return { engine, mock }
+  }
+  const chronicled = (mock: MockLlm) => mock.calls.filter((c) => c.role === 'chronicler')
+
+  it('writes big news up from templates at once when there is no model', async () => {
+    const engine = new Engine(content, { seed: 3, builder: true })
+    at(engine, 15, 11)
+    await engine.handle('@kill harmen drowned in the Blackmere')
+    const [lore] = engine.state.chronicle!.lore
+    expect(lore).toMatchObject({ by: 'template', fame: 4, name: 'The death of Harmen Molenaar', details: 'Harmen Molenaar drowned in the Blackmere.' })
+    expect(engine.state.chronicle!.pending).toEqual([])
+  })
+
+  it('writes at 04:00 about news of belang 3, and not before', () => {
+    const engine = new Engine(content, { seed: 5 })
+    at(engine, 15, 11)
+    recordFact(engine.world, { kind: 'theft', about: ['npc_dirck', 'loc_waagdam_waag'], place: 'loc_waagdam_waag', belang: 3, title: 'the theft at the Waag', text: { precise: 'Someone took the brass weights from the Waag.', village: 'The Waag was robbed.', far: 'A town was robbed, they say.' } })
+    at(engine, 16, 3, 59)
+    expect(engine.state.chronicle!.lore).toEqual([])
+    at(engine, 16, 4, 1)
+    expect(engine.state.chronicle!.lore.map((l) => l.name)).toEqual(['The theft at the Waag'])
+    // Whoever heard the news knows the story, as well as they know the news.
+    const witness = Object.keys(engine.state.news!.heard).find((id) => id !== 'player' && engine.state.news!.heard[id]!['fact_' + engine.state.news!.seq]?.from === 'witness')
+    if (witness) expect(engine.page(engine.state.chronicle!.lore[0]!.id)).toBeUndefined()
+  })
+
+  it('lets the chronicler write with a model: lore with a witness as teller, a thought, the news of the day', async () => {
+    const { engine, mock } = game()
+    await engine.handle('@kill harmen drowned in the Blackmere')
+    // A death with a quest role: the chronicler is asked at once, and the game goes on meanwhile.
+    expect(engine.chroniclerWaiting).toBe(1)
+    const [run] = await engine.runChronicler()
+    expect(run!.problems).toEqual([])
+    const request = chronicled(mock)[0]!
+    expect(request.system).toMatch(/Working instruction for the chronicler/)
+    expect(request.prompt).toMatch(/belang 4: Harmen Molenaar drowned in the Blackmere\./)
+    expect(request.prompt).toMatch(/PRIVATE: Harmen is her creditor/)
+    const [lore] = engine.state.chronicle!.lore
+    expect(lore).toMatchObject({ by: 'chronicler', teller: 'npc_mirte', fame: 4 })
+    expect(lore!.story).toMatch(/Nobody who saw it has slept well since/)
+    expect(engine.state.npcs['npc_mirte']!.thoughts![0]!.text).toMatch(/You still owe Harmen/)
+    expect(engine.state.chronicle!.news['molenend']!.text).toMatch(/Harmen Molenaar drowned/)
+    // Mirte saw it: she tells it as her own story, on her mind the debt.
+    engine.state.player.location = engine.state.npcs['npc_mirte']!.location
+    await engine.handle('talk mirte')
+    await engine.handle(`ask mirte about ${lore!.name}`)
+    const prompt = mock.calls.at(-1)!.prompt
+    expect(prompt).toMatch(new RegExp(`${lore!.id} \\(level 3\\)`))
+    expect(prompt).toMatch(/ON YOUR MIND: You still owe Harmen/)
+  })
+
+  it('turns down names the world does not know, and writes that part from the template', async () => {
+    const { engine } = game('invent')
+    await engine.handle('@kill harmen drowned in the Blackmere')
+    const [run] = await engine.runChronicler()
+    expect(run!.problems.join(' ')).toMatch(/Oswin/)
+    expect(engine.state.chronicle!.lore[0]).toMatchObject({ by: 'template' })
+  })
+
+  it('may look things up before it writes', async () => {
+    const { engine, mock } = game('lookup')
+    await engine.handle('@kill harmen drowned in the Blackmere')
+    await engine.runChronicler()
+    expect(chronicled(mock)).toHaveLength(2)
+    expect(chronicled(mock)[1]!.prompt).toMatch(/LOOKED UP/)
+  })
+
+  it('replays the chronicle from the log without calling the model again', async () => {
+    // Nothing moved by hand here: a replay only knows what the log knows.
+    const { engine, mock } = game('good', 3, false)
+    await engine.handle('@kill harmen drowned in the Blackmere')
+    engine.tick(10)
+    await engine.runChronicler()
+    engine.tick(30)
+    const calls = mock.calls.length
+    const replayed = await Engine.replay(content, 3, engine.save().log)
+    expect(replayed.state).toEqual(engine.state)
+    expect(mock.calls.length).toBe(calls)
+  })
+
+  it('works an open thread out into a request that the giver asks and the player can do', async () => {
+    const { engine } = game('quest')
+    await engine.handle('@kill harmen drowned in the Blackmere')
+    await engine.runChronicler()
+    const request = engine.state.requests.find((r) => r.source === 'chronicler')!
+    expect(request).toMatchObject({ kind: 'visit', status: 'open' })
+    engine.state.player.location = engine.state.npcs[request.npc]!.location
+    const asked = texts(await engine.handle(`talk ${content.npcs.get(request.npc)!.name.split(' ')[0]}`))
+    expect(asked).toContain(request.ask!)
+    expect(engine.status().journal.quests.map((q) => q.id)).toContain(request.id)
+    await engine.handle('bye')
+    engine.state.player.location = engine.state.npcs[request.target!]!.location
+    await engine.handle(`talk ${content.npcs.get(request.target!)!.name.split(' ')[0]}`)
+    expect(request.status).toBe('done')
+  })
+
+  it('costs less than 3 dollar cents for an ordinary night with a strong model', async () => {
+    const { engine } = game()
+    await engine.handle('@kill harmen drowned in the Blackmere')
+    const input = buildInput(engine.world, engine.state.chronicle!.pending[0]!)
+    const request = buildRequest(input, assignKeys(input), DEFAULT_LIMITS, [], DEFAULT_LIMITS.lookups)
+    const tokens = (text: string) => Math.ceil(text.length / 4)
+    const fixed = tokens(request.system)
+    const overview = tokens(request.prompt) + tokens(JSON.stringify(request.schema))
+    // The fixed part is cached from the second run on; the answer is at most the token limit.
+    const usage = { inputTokens: fixed + overview, cachedTokens: fixed, outputTokens: DEFAULT_LIMITS.maxTokens }
+    expect(costUsd('claude-sonnet-5', usage)!).toBeLessThan(0.03)
+    expect(fixed).toBeLessThan(5000)
+  })
+})
+
+describe('M3.1: requests come up out of what happens', () => {
+  it('asks the player to find a lost thing, and pays when it comes back', async () => {
+    const engine = new Engine(content, { seed: 6 })
+    at(engine, 15, 10)
+    expect(startStory(engine.world, 'lost_thing')).toBe(true)
+    const request = engine.state.requests.at(-1)!
+    expect(request).toMatchObject({ kind: 'recover', source: 'motor', status: 'open' })
+    const owner = request.npc
+    const place = Object.entries(engine.state.ground).find(([, items]) => items[request.item!])![0]
+    engine.state.player.location = engine.state.npcs[owner]!.location
+    const opening = texts(await engine.handle(`talk ${content.npcs.get(owner)!.name.split(' ')[0]}`))
+    expect(opening).toMatch(/I've lost my .*bring it back to me\?/)
+    expect(opening).toMatch(/New in your journal/)
+    await engine.handle('bye')
+    engine.state.player.location = place
+    await engine.handle(`take ${request.item}`)
+    engine.state.player.location = engine.state.npcs[owner]!.location
+    const money = engine.state.player.money
+    await engine.handle(`give ${request.item} to ${content.npcs.get(owner)!.name.split(' ')[0]}`)
+    expect(request.status).toBe('done')
+    expect(engine.state.player.money).toBe(money + request.reward!)
+    expect(engine.status().journal.quests[0]!.name).toMatch(/\(done\)/)
+  })
+
+  it('asks for herbs when someone falls ill, and the herbs help', async () => {
+    const engine = new Engine(content, { seed: 2 })
+    at(engine, 15, 9)
+    expect(startStory(engine.world, 'fever')).toBe(true)
+    const request = engine.state.requests.find((r) => r.item === 'herbs')!
+    const sick = engine.state.stories!.active.find((s) => s.kind === 'sickness')!.roles['name']!
+    expect(request.ask).toMatch(/fever.*Aaltje's herbs/)
+    engine.state.player.money += 100
+    engine.state.player.location = 'loc_aaltje_cottage'
+    await engine.handle('buy herbs')
+    engine.state.player.location = engine.state.npcs[request.npc]!.location
+    await engine.handle('talk ' + content.npcs.get(request.npc)!.name.split(' ')[0])
+    await engine.handle('bye')
+    await engine.handle(`give herbs to ${content.npcs.get(request.npc)!.name.split(' ')[0]}`)
+    expect(request.status).toBe('done')
+    expect(engine.state.npcs[sick]!.sickUntil!).toBeLessThanOrEqual(engine.world.now + 6 * 60)
   })
 })

@@ -1,6 +1,10 @@
 import { GameClock } from '../clock'
 import { callName, type Content } from '../content'
+import { assignKeys, buildRequest, DEFAULT_LIMITS } from '../../chronicler'
+import { buildInput } from '../chronicler'
 import { Engine, type Output } from '../engine'
+import { recordFact } from '../news'
+import { lineOf, requestRun } from '../storylines'
 import { goalJsonSchema } from './schema'
 import type { LlmClient, LlmRequest } from './llm'
 
@@ -115,4 +119,35 @@ export function brainRequests(): LlmRequest[] {
     'NPC: Lubbert the grain merchant. Needs: hunger 80, rest 60, social 25. Stock: rye grain 12 (target 40). The weekly barge comes on Maandag. Time: Donderdag 17:40.',
   ]
   return situations.map((prompt) => ({ role: 'brain' as const, system, prompt, schemaName: 'npc_goals', schema: goalJsonSchema(goalTypes, ids), maxTokens: 500 }))
+}
+
+/** Chronicler requests for trying out that role: a drowning and a theft, as a night run would see them. */
+export async function chroniclerRequests(content: Content): Promise<LlmRequest[]> {
+  const requests: LlmRequest[] = []
+  const drowning = new Engine(content, { seed: 3, builder: true })
+  // Keep the runs waiting for a model instead of writing them from templates.
+  drowning.world.chronicleLive = true
+  drowning.tick(GameClock.from(211, 9, 15, 11).minutes - drowning.world.now)
+  drowning.state.npcs['npc_mirte']!.location = drowning.state.npcs['npc_harmen']!.location
+  await drowning.handle('@kill harmen drowned in the Blackmere')
+  const theft = new Engine(content, { seed: 5 })
+  theft.world.chronicleLive = true
+  theft.tick(GameClock.from(211, 9, 15, 23).minutes - theft.world.now)
+  const fact = recordFact(theft.world, {
+    kind: 'theft',
+    about: ['npc_dirck', 'loc_waagdam_waag'],
+    place: 'loc_waagdam_waag',
+    belang: 3,
+    title: 'the theft at the Waag',
+    text: { precise: 'Someone took the brass weights from the Waag in the night.', village: 'The Waag was robbed.', far: 'A town was robbed, they say.' },
+  })
+  requestRun(theft.world, 'night', [lineOf(theft.world, fact.id)!.id])
+  for (const engine of [drowning, theft]) {
+    const run = engine.state.chronicle!.pending[0]
+    if (!run) continue
+    const input = buildInput(engine.world, run)
+    const request = buildRequest(input, assignKeys(input), DEFAULT_LIMITS, [], 0)
+    requests.push({ ...request, priority: 'low' })
+  }
+  return requests
 }

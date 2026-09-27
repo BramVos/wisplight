@@ -1,5 +1,6 @@
 import { callName, type Quest } from './content'
 import { recordFact } from './news'
+import { failRequestsOf } from './requests'
 import type { Fact } from './state'
 import type { World } from './world'
 
@@ -51,6 +52,7 @@ export function die(world: World, npcId: string, input: DeathInput): Fact | unde
   state.planGoal = undefined
   state.pending = undefined
   if (world.state.talk?.npc === npcId) world.state.talk = undefined
+  failRequestsOf(world, npcId)
   world.emit('death', place, fact.text.precise, npcId)
   return fact
 }

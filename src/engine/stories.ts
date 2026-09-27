@@ -4,6 +4,8 @@ import { applyEffect } from './dialogue/relations'
 import { add, itemName, withArticle } from './items'
 import { belangOf } from './life'
 import { recordFact } from './news'
+import { lineOf } from './storylines'
+import { fulfil, openRequest } from './requests'
 import { remember } from './npc/execute'
 import type { World } from './world'
 
@@ -152,9 +154,10 @@ function startLost(world: World, pattern: Pattern): boolean {
   const place = world.rng.pick('stories', places)
   if (!place) return false
   add((world.state.ground[place] ??= {}), thing, 1)
-  world.state.requests.push({ id: `req_${world.state.requests.length + 1}`, npc: owner, item: thing, qty: 1, created: world.now, status: 'open' })
   const vars = { owner: callName(world.npc(owner)), thing: thingName(world, thing), place: world.location(place).name, area: areaName(world, place) }
-  record(world, pattern, npc.location, [owner, `item_${thing}`, place], vars, world.npc(owner))
+  const fact = record(world, pattern, npc.location, [owner, `item_${thing}`, place], vars, world.npc(owner))
+  // Something lost is something the player can find: a request, as soon as the owner next talks to them.
+  openRequest(world, { npc: owner, kind: 'recover', item: thing, line: lineOf(world, fact)?.id, source: 'motor' })
   if (pattern.scene) world.emit('story', npc.location, fill(pattern.scene, vars, world.npc(owner)), owner)
   remember(world, owner, `lost your ${vars.thing}`)
   begin(world, pattern, { owner }, { thing, place }, world.now + 60)
@@ -221,8 +224,9 @@ export function giveBack(world: World, npcId: string, item: string): string | un
       far: `That stranger returns what folk lose, they say.`,
     },
   })
+  const paid = fulfil(world, npcId, item, 1, false)
   closeLost(world, story, npcId, item)
-  return world.say(`{name} turns it over in {their} hands. "My ${thing}! Where did you find it?"`, npcId)
+  return world.say(`{name} turns it over in {their} hands. "My ${thing}! Where did you find it?"`, npcId) + (paid ? ` ${paid}` : '')
 }
 
 /** In the evening, two people at a social place fall out, loudly. */
@@ -301,7 +305,24 @@ function startSickness(world: World, pattern: Pattern): boolean {
   }
   remember(world, who, 'fell ill with a fever')
   begin(world, pattern, { name: who }, { until: npc.sickUntil }, npc.sickUntil)
+  askForHerbs(world, who, fact)
   return true
+}
+
+/** A fever mends sooner with herbs: someone in the house asks the player to fetch them. */
+function askForHerbs(world: World, sick: string, fact: string): void {
+  const seller = [...world.content.locations.values()].flatMap((l) => l.services).find((s) => 'herbs' in s.sells)?.provider
+  if (!seller || seller === sick) return
+  const house = world.npc(sick).household
+  const giver = Object.keys(world.state.npcs)
+    .sort()
+    .find((id) => id !== sick && house && world.npc(id).household === house && world.alive(id) && !world.npc(id).child) ?? sick
+  const herbalist = callName(world.npc(seller))
+  const ask =
+    giver === sick
+      ? `This fever has me flat on my back. A bundle of ${herbalist}'s herbs would help, if you could fetch one.`
+      : `${callName(world.npc(sick))} is down with a fever. A bundle of ${herbalist}'s herbs would help, if you could fetch one.`
+  openRequest(world, { npc: giver, kind: 'fetch', item: 'herbs', name: `Herbs for ${callName(world.npc(sick))}`, ask, line: lineOf(world, fact)?.id, source: 'motor' })
 }
 
 /** A feast day: the people of the place gather there for a while. */

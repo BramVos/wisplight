@@ -44,13 +44,87 @@ export interface Pending {
   setState?: Record<string, string | number | boolean>
 }
 
+/**
+ * Something an NPC wants from the player (FO, chapter 14, "Verzoeken"). The
+ * motor makes one from a situation (a lost knife, a fever, a missing tool);
+ * the chronicler can work it out or make one from an open thread.
+ */
 export interface Request {
   id: string
   npc: string
-  item: string
+  /** fetch: bring the item; recover: bring back what was lost or stolen; visit: go and see the target. */
+  kind?: 'fetch' | 'recover' | 'visit'
+  item?: string
   qty: number
+  target?: string
   created: number
-  status: 'open' | 'done'
+  status: 'open' | 'done' | 'failed'
+  /** The storyline it came from. */
+  line?: string
+  name?: string
+  /** What the giver says when asking. */
+  ask?: string
+  stakes?: string
+  source?: 'motor' | 'chronicler'
+  /** The giver has asked the player; from then on it is in the journal. */
+  asked?: number
+  /** In duiten, paid when it is done. */
+  reward?: number
+  done?: number
+}
+
+/** Events that belong together (design, "Hoe de kroniekschrijver de wereld ziet": het schrift met verhaallijnen). */
+export interface Storyline {
+  id: string
+  title: string
+  pattern?: string
+  facts: string[]
+  people: string[]
+  places: string[]
+  /** The chronicler's note: at most three lines. */
+  summary: string[]
+  roles: { role: string; who: string }[]
+  hooks: string[]
+  next: string
+  open: boolean
+  changed: number
+  /** Facts the chronicler has already seen. */
+  reported: string[]
+}
+
+/** A lore topic that came into being in this game (design, "Opslag": de kroniek). */
+export interface LoreEntry {
+  id: string
+  name: string
+  summary: string
+  details: string
+  story: string
+  far: string
+  teller?: string
+  fame: number
+  place: string
+  line: string
+  facts: string[]
+  links: string[]
+  t: number
+  by: 'chronicler' | 'template'
+}
+
+export interface ChronicleRun {
+  id: string
+  t: number
+  reason: 'night' | 'urgent'
+  lines: string[]
+}
+
+export interface ChronicleState {
+  seq: number
+  lines: Storyline[]
+  lore: LoreEntry[]
+  /** One line of news per area, for "What's new around here?". */
+  news: Record<string, { text: string; t: number }>
+  pending: ChronicleRun[]
+  runs: number
 }
 
 export interface NpcState {
@@ -83,6 +157,8 @@ export interface NpcState {
   sickUntil?: number
   /** Dead: out of the simulation for good. The fact tells how. */
   dead?: { t: number; fact: string }
+  /** What stays on the NPC's mind for a while, from the chronicler. */
+  thoughts?: { text: string; t: number; until: number }[]
 }
 
 export interface MemoryRecord {
@@ -202,6 +278,7 @@ export interface GameState {
   stories?: StoriesState
   /** Facts and who heard them; "player" is the player. */
   news?: { seq: number; facts: Fact[]; heard: Record<string, Record<string, Heard>> }
+  chronicle?: ChronicleState
 }
 
 export const objectKey = (location: string, object: string) => `${location}/${object}`

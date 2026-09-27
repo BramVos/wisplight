@@ -3,7 +3,7 @@ import { mkdtempSync, readdirSync, readFileSync, rmSync, statSync } from 'node:f
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import type { App } from 'electron'
-import type { Content } from '../engine'
+import { Engine, GameClock, type Content } from '../engine'
 import { MockLlm } from '../engine/dialogue/mock'
 import { runSituation, SITUATIONS } from '../engine/dialogue/testset'
 import type { ProviderId } from '../node/ai/providers'
@@ -132,13 +132,20 @@ async function checkProvider(ai: AiService, content: Content, provider: Provider
   const ids = models.map((m) => m.id)
   console.log(`[ai-check] ${provider}: ${ids.length} chat models: ${ids.slice(0, 40).join(', ')}${ids.length > 40 ? ', ...' : ''}`)
   const advice = await ai.advise(provider)
-  const named = [advice.voice.recommended, advice.voice.cheaper, advice.brain.recommended, advice.brain.cheaper]
+  const named = [advice.voice.recommended, advice.voice.cheaper, advice.brain.recommended, advice.brain.cheaper, advice.chronicler.recommended, advice.chronicler.cheaper]
   console.log(`[ai-check] ${provider}: advice by ${advice.advisorModel}`)
-  for (const [label, choice] of [['voice', advice.voice.recommended], ['voice, cheaper', advice.voice.cheaper], ['brain', advice.brain.recommended], ['brain, cheaper', advice.brain.cheaper]] as const) {
+  for (const [label, choice] of [
+    ['voice', advice.voice.recommended],
+    ['voice, cheaper', advice.voice.cheaper],
+    ['brain', advice.brain.recommended],
+    ['brain, cheaper', advice.brain.cheaper],
+    ['chronicler', advice.chronicler.recommended],
+    ['chron., cheaper', advice.chronicler.cheaper],
+  ] as const) {
     console.log(`[ai-check]   ${label.padEnd(15)} ${choice.model}  ${ids.includes(choice.model) ? 'exists' : 'NOT IN LIST'}  "${choice.reason}"`)
   }
   if (!named.every((c) => ids.includes(c.model))) ok = false
-  for (const [role, model] of [['voice', advice.voice.recommended.model], ['brain', advice.brain.recommended.model]] as const) {
+  for (const [role, model] of [['voice', advice.voice.recommended.model], ['brain', advice.brain.recommended.model], ['chronicler', advice.chronicler.recommended.model]] as const) {
     const t = await ai.trial(provider, model, role)
     console.log(`[ai-check]   trial ${role} ${model}: ${t.valid}/${t.runs} valid, ${t.averageLatencyMs} ms, ${t.inputTokens} in / ${t.outputTokens} out, ${t.costPerHourUsd === undefined ? 'price unknown' : `~$${t.costPerHourUsd.toFixed(3)} per hour`}${t.errors.length ? `; problems: ${t.errors.slice(0, 3).join(' | ')}` : ''}`)
   }
@@ -154,7 +161,31 @@ async function checkProvider(ai: AiService, content: Content, provider: Provider
   }
   const injection = await runSituation(content, SITUATIONS.find((s) => s.noCall)!, new MockLlm('good'))
   console.log(`[ai-check]   injection attempt made ${injection.requests.length} model calls`)
+  ok = (await chronicleCheck(ai, content, provider, advice.chronicler.recommended.model)) && ok
   return ok
+}
+
+/** One real chronicler run on the drowning of Harmen, with the advised model; the choice you had is put back. */
+async function chronicleCheck(ai: AiService, content: Content, provider: ProviderId, model: string): Promise<boolean> {
+  const before = ai.settings.role('chronicler')
+  ai.settings.setRole('chronicler', { provider, model })
+  try {
+    const engine = new Engine(content, { seed: 3, llm: ai.gateway, builder: true })
+    engine.tick(GameClock.from(211, 9, 15, 11).minutes - engine.world.now)
+    engine.state.npcs['npc_mirte']!.location = engine.state.npcs['npc_harmen']!.location
+    await engine.handle('@kill harmen drowned in the Blackmere')
+    const [run] = await engine.runChronicler()
+    const lore = engine.state.chronicle?.lore[0]
+    console.log(`[ai-check]   chronicler ${model}: ${lore?.by ?? 'nothing'}${run?.problems.length ? `; dropped: ${run.problems.join(' | ')}` : ''}`)
+    if (lore) for (const line of [lore.name, lore.summary, lore.details, lore.story, `far: ${lore.far}`, `teller: ${lore.teller ?? '-'}`]) console.log(`[ai-check]     ${line}`)
+    for (const [area, news] of Object.entries(engine.state.chronicle?.news ?? {})) console.log(`[ai-check]     news ${area}: ${news.text}`)
+    for (const r of engine.state.requests.filter((r) => r.source === 'chronicler')) console.log(`[ai-check]     request by ${r.npc}: ${r.name}: "${r.ask}"`)
+    for (const [id, npc] of Object.entries(engine.state.npcs)) for (const t of npc.thoughts ?? []) console.log(`[ai-check]     on ${id}'s mind: ${t.text}`)
+    return lore?.by === 'chronicler'
+  } finally {
+    if (before) ai.settings.setRole('chronicler', before)
+    else ai.settings.clearRole('chronicler')
+  }
 }
 
 async function finish(ai: AiService, content: Content, before: ReturnType<AiService['settings']['role']>): Promise<boolean> {

@@ -3,6 +3,7 @@ import { callName, type Direction, type Need } from '../content'
 import { applyEffect, relation } from '../dialogue/relations'
 import { add, hasAll, itemName, withArticle } from '../items'
 import { meet, recordFact } from '../news'
+import { openRequest } from '../requests'
 import { objectKey, type Step } from '../state'
 import type { World } from '../world'
 
@@ -224,7 +225,7 @@ export function executeStep(world: World, npcId: string, step: Step): StepResult
     case 'askHelp': {
       const open = world.state.requests.find((r) => r.npc === npcId && r.item === step.item && r.status === 'open')
       if (!open) {
-        world.state.requests.push({ id: `req_${world.state.requests.length + 1}`, npc: npcId, item: step.item, qty: step.qty, created: now, status: 'open' })
+        openRequest(world, { npc: npcId, kind: 'fetch', item: step.item, qty: step.qty, source: 'motor' })
         const name = callName(world.npc(npcId))
         const goods = itemName(world.content, step.item, 2).replace(/^2 /, '')
         const area = world.content.areas.get(world.location(npc.location).area)?.name ?? 'the village'

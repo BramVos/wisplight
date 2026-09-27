@@ -3,6 +3,8 @@ import { describeRoom, findNpcAnywhere, findNpcHere, runCommand, type CommandHos
 import { callName, type Content } from './content'
 import { Dialogue, QUICK_OPTIONS } from './dialogue/conversation'
 import { Knowledge } from './dialogue/knowledge'
+import type { ChronicleOutput, ChroniclerRequest } from '../chronicler'
+import { applyRun, settleRuns, writeRun } from './chronicler'
 import { LlmError, type LlmClient, type LlmRequest, type LlmResponse } from './dialogue/llm'
 import { attitude } from './dialogue/relations'
 import { TopicRegistry } from './dialogue/topics'
@@ -10,6 +12,7 @@ import { formatMoney } from './items'
 import { chronicleText } from './chronicle'
 import { journalPage, type JournalPage } from './journal'
 import { die } from './life'
+import { knownRequests, requestName } from './requests'
 import { recordFact, seedNews } from './news'
 import { parseCommand, parseDirection } from './parser'
 import { advance } from './simulation'
@@ -28,6 +31,8 @@ export type LogEntry =
   | { t: number; k: 'ai'; v: string | null }
   // Whether a model was connected from this point on, so a replay makes the same calls.
   | { t: number; k: 'llm'; v: 'on' | 'off' }
+  // A chronicler run, applied at this point: what the model wrote (checked later again), or null for templates.
+  | { t: number; k: 'chron'; run: string; v: ChronicleOutput | null }
 
 export interface SaveData {
   version: 1
@@ -57,7 +62,7 @@ export interface Status {
   money: string
   paused: boolean
   talk?: { npc: string; name: string; call: string; attitude: string; turnsLeft: number; options: string[] }
-  journal: { people: JournalEntry[]; places: JournalEntry[]; events: JournalEntry[]; lore: JournalEntry[]; things: JournalEntry[] }
+  journal: { people: JournalEntry[]; places: JournalEntry[]; events: JournalEntry[]; lore: JournalEntry[]; things: JournalEntry[]; quests: JournalEntry[] }
 }
 
 export interface EngineOptions {
@@ -103,6 +108,7 @@ export class Engine {
   builder: boolean
   /** True while a log is played back: build commands in it ran once, so they run again. */
   private replaying = false
+  private chronicling = false
 
   constructor(
     readonly content: Content,
@@ -116,6 +122,7 @@ export class Engine {
     this.topics = new TopicRegistry(content)
     for (const far of state.lore?.far ?? []) this.topics.addDuringPlay({ id: far.id, kind: 'place', name: far.name, aliases: [far.name] })
     this.dialogue = new Dialogue(this.world, this.topics, new Knowledge(this.world, this.topics), () => this.recorder)
+    this.dialogue.syncNews()
     this.eventMark = state.eventSeq
     this.setLlm(options.llm)
     if (!options.state) {
@@ -201,6 +208,49 @@ export class Engine {
   setLlm(llm: LlmClient | undefined): void {
     if (Boolean(llm) !== Boolean(this.llm)) this.record({ t: this.world.now, k: 'llm', v: llm ? 'on' : 'off' })
     this.llm = llm
+    this.world.chronicleLive = Boolean(llm)
+  }
+
+  /** Storylines waiting for the chronicler. */
+  get chroniclerWaiting(): number {
+    return this.state.chronicle?.pending.length ?? 0
+  }
+
+  /**
+   * Lets the chronicler write the waiting runs, one after the other, in the
+   * background: the game goes on meanwhile (design, "Wanneer hij schrijft").
+   * The result is recorded where it lands in the log, so a replay applies the
+   * same at the same moment without calling the model again.
+   */
+  async runChronicler(): Promise<{ run: string; problems: string[] }[]> {
+    if (this.chronicling) return []
+    this.chronicling = true
+    const done: { run: string; problems: string[] }[] = []
+    try {
+      while (this.state.chronicle?.pending.length) {
+        const run = this.state.chronicle.pending[0]!
+        let output: ChronicleOutput | null = null
+        let problems: string[] = []
+        const llm = this.llm
+        if (llm) {
+          try {
+            const model = { complete: async (r: ChroniclerRequest) => llm.complete({ ...(r as LlmRequest), priority: 'low' }) }
+            ;({ output, problems } = await writeRun(this.world, run, model))
+          } catch (error) {
+            problems = [error instanceof Error ? error.message : String(error)]
+          }
+        }
+        // The run may have been settled meanwhile (the model was switched off).
+        if (!this.state.chronicle.pending.some((r) => r.id === run.id)) continue
+        this.record({ t: this.world.now, k: 'chron', run: run.id, v: output })
+        problems.push(...applyRun(this.world, run.id, output))
+        this.dialogue.syncNews()
+        done.push({ run: run.id, problems })
+      }
+    } finally {
+      this.chronicling = false
+    }
+    return done
   }
 
   /** Records every model reply (or failure) in the log, for replays. */
@@ -241,6 +291,7 @@ export class Engine {
     if (talk && this.state.npcs[talk.npc]?.location !== this.state.player.location) this.state.talk = undefined
     this.dialogue.learn(this.state.player.location, `area_${this.world.location(this.state.player.location).area}`)
     this.arrive()
+    settleRuns(this.world)
     return this.shown(outputs)
   }
 
@@ -354,7 +405,14 @@ export class Engine {
     const location = this.world.location(this.state.player.location)
     const talk = this.state.talk
     this.dialogue.syncNews()
-    const journal: Status['journal'] = { people: [], places: [], events: [], lore: [], things: [] }
+    // Lore of this game goes in the journal once the player heard the news it came from.
+    const heard = this.state.news?.heard['player'] ?? {}
+    for (const lore of this.state.chronicle?.lore ?? []) if (lore.facts.some((f) => heard[f])) this.dialogue.learn(lore.id)
+    const journal: Status['journal'] = { people: [], places: [], events: [], lore: [], things: [], quests: [] }
+    for (const request of knownRequests(this.world)) {
+      const state = request.status === 'done' ? ' (done)' : request.status === 'failed' ? ' (too late)' : ''
+      journal.quests.push({ id: request.id, name: `${requestName(this.world, request)}${state}` })
+    }
     for (const id of Object.keys(this.state.player.journal ?? {}).sort()) {
       const kind = this.topics.kind(id)
       if (id.startsWith('fact_')) {
@@ -430,6 +488,11 @@ export class Engine {
         if (entry.k === 'cmd') await this.handle(entry.v)
         else if (entry.k === 'tick') this.tick(entry.v)
         else if (entry.k === 'llm') this.setLlm(entry.v === 'on' ? recorded : undefined)
+        else if (entry.k === 'chron') {
+          this.log.push(entry)
+          applyRun(this.world, entry.run, entry.v)
+          this.dialogue.syncNews()
+        }
       }
     } finally {
       this.replaying = false

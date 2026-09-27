@@ -14,7 +14,8 @@ const PROVIDERS: { id: ProviderId; name: string; hint: string }[] = [
 
 const ROLES = [
   { id: 'voice', name: 'VOICE (dialogue)' },
-  { id: 'brain', name: 'BRAIN (NPC goals, used from M3)' },
+  { id: 'brain', name: 'BRAIN (NPC goals)' },
+  { id: 'chronicler', name: 'CHRONICLER (lore, requests and news, mostly at night)' },
 ] as const
 
 type Role = (typeof ROLES)[number]['id']
@@ -117,10 +118,10 @@ function AiTab({ bridge, overview, refresh }: { bridge: AiBridge; overview: AiOv
       const result = await bridge.advise(provider)
       setAdvice(result)
       setModels(await bridge.models(provider))
-      setPicked({ voice: result.voice.recommended.model, brain: result.brain.recommended.model })
+      setPicked({ voice: result.voice.recommended.model, brain: result.brain.recommended.model, chronicler: result.chronicler.recommended.model })
       setTrials({})
       const tried = new Set<string>()
-      for (const role of ['voice', 'brain'] as const) {
+      for (const { id: role } of ROLES) {
         for (const choice of [result[role].recommended, result[role].cheaper]) {
           const key = `${role}:${choice.model}`
           if (tried.has(key)) continue
@@ -140,7 +141,7 @@ function AiTab({ bridge, overview, refresh }: { bridge: AiBridge; overview: AiOv
     run('Saving your choice', async () => {
       if (!advice) return
       const stored: string[] = []
-      for (const role of ['voice', 'brain'] as const) {
+      for (const { id: role } of ROLES) {
         const model = picked[role]
         if (model) stored.push(`${role}: ${await bridge.choose(role, advice.provider, model)}`)
       }
@@ -184,6 +185,7 @@ function AiTab({ bridge, overview, refresh }: { bridge: AiBridge; overview: AiOv
         <span className="mono">
           voice {settings.roles.voice?.model ?? 'none (NPCs use set lines)'}
           {'  '}brain {settings.roles.brain?.model ?? 'none'}
+          {'  '}chronicler {settings.roles.chronicler?.model ?? 'none (stories from templates)'}
         </span>
       </div>
 

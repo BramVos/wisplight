@@ -452,6 +452,8 @@ export interface Content {
   news: Map<string, News>
   patterns: Map<string, Pattern>
   quests: Map<string, Quest>
+  /** The chronicler's working instruction (content/CHRONICLER.md), if there is one. */
+  chronicler?: string
 }
 
 export class ContentError extends Error {
@@ -485,7 +487,12 @@ export function loadContent(files: ContentFile[]): Content {
     quests: new Map<string, Quest>(),
   }
 
+  let chronicler: string | undefined
   for (const file of [...files].sort((a, b) => a.path.localeCompare(b.path))) {
+    if (/(^|\/)CHRONICLER\.md$/.test(file.path)) {
+      chronicler = file.text
+      continue
+    }
     let doc: unknown
     try {
       doc = parse(file.text)
@@ -516,7 +523,7 @@ export function loadContent(files: ContentFile[]): Content {
   if (worlds.length !== 1) problems.push(`expected exactly one world, found ${worlds.length}`)
   problems.push(...checkReferences(world, content))
   if (problems.length > 0 || !world) throw new ContentError(problems)
-  return { world, ...content }
+  return { world, ...content, ...(chronicler ? { chronicler } : {}) }
 }
 
 function checkReferences(world: WorldDef | undefined, c: Omit<Content, 'world'>): string[] {

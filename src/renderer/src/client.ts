@@ -3,8 +3,9 @@ import type { Advice, TrialResult } from '../../node/ai/advisor'
 import type { AiLogEntry } from '../../node/ai/log'
 import type { ModelInfo, ProviderId } from '../../node/ai/providers'
 import type { AiOverview } from '../../node/ai/service'
+import type { ChosenRole } from '../../node/ai/settings'
 
-export type { Advice, AiLogEntry, AiOverview, JournalPage, ModelInfo, ProviderId, TrialResult }
+export type { Advice, AiLogEntry, AiOverview, ChosenRole, JournalPage, ModelInfo, ProviderId, TrialResult }
 
 /** What the status bar shows about the AI: cost so far and whether calls go through. */
 export interface AiStatus {
@@ -29,8 +30,8 @@ export interface AiBridge {
   disconnect(provider: ProviderId): Promise<void>
   models(provider: ProviderId): Promise<ModelInfo[]>
   advise(provider: ProviderId): Promise<Advice>
-  trial(provider: ProviderId, model: string, role: 'voice' | 'brain'): Promise<TrialResult>
-  choose(role: 'voice' | 'brain', provider: ProviderId, model: string): Promise<string>
+  trial(provider: ProviderId, model: string, role: ChosenRole): Promise<TrialResult>
+  choose(role: ChosenRole, provider: ProviderId, model: string): Promise<string>
   setBudget(usd: number): Promise<void>
   setMonthBudget(usd: number | null): Promise<void>
   setCredit(provider: ProviderId, usd: number | null): Promise<void>
@@ -66,7 +67,7 @@ export async function createClient(): Promise<EngineClient> {
   if (window.wisplight) return window.wisplight
 
   const { Engine, loadContent, MockLlm } = await import('../../engine')
-  const modules = import.meta.glob('../../../content/**/*.{yaml,yml}', {
+  const modules = import.meta.glob('../../../content/**/*.{yaml,yml,md}', {
     query: '?raw',
     import: 'default',
     eager: true,
@@ -84,9 +85,15 @@ export async function createClient(): Promise<EngineClient> {
   const paused = () => held || Boolean(engine.state.talk) || Date.now() - lastInput > IDLE_PAUSE_MS
   const status = (): Reply['status'] => ({ ...engine.status(), paused: paused(), ai: bridge ? demo!.demoStatus() : undefined })
 
+  // The chronicler writes in the background, as in the desktop app.
+  const chronicler = () => {
+    if (engine.chroniclerWaiting > 0) void engine.runChronicler()
+  }
+
   setInterval(() => {
     if (paused()) return
     const reply = { outputs: engine.tick(1), status: status() }
+    chronicler()
     for (const listener of listeners) listener(reply)
   }, 1000)
 
@@ -97,7 +104,9 @@ export async function createClient(): Promise<EngineClient> {
       if (/^(save|load|bewaar|laad|continue|verder|log|logboek)(\s+(\d+|export))?$/i.test(input.trim())) {
         return { outputs: [{ kind: 'system', text: 'Saving, loading and the game log work in the desktop app.' }], status: status() }
       }
-      return { outputs: await engine.handle(input), status: status() }
+      const outputs = await engine.handle(input)
+      chronicler()
+      return { outputs, status: status() }
     },
     page: async (id) => engine.page(id),
     end: async () => ({ chronicle: engine.chronicle() }),
