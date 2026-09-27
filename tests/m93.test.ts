@@ -326,6 +326,31 @@ describe('M9.3: checkpoints', () => {
     expect(plain(resumed)).toEqual(plain(engine))
   })
 
+  it('opens a save file from before checkpoints, loads its saves, and saves on with checkpoints', async () => {
+    const path = join(temp(), 'old.sqlite')
+    const { DatabaseSync } = await import('node:sqlite')
+    // The file as M9.2 left it: saves with their whole state and log, no checkpoints.
+    const old = new DatabaseSync(path)
+    old.exec(`
+      CREATE TABLE saves (id INTEGER PRIMARY KEY AUTOINCREMENT, slot TEXT NOT NULL, created_at TEXT NOT NULL, world TEXT NOT NULL, version INTEGER NOT NULL, game_minutes INTEGER NOT NULL, seed INTEGER NOT NULL, state TEXT NOT NULL, log TEXT NOT NULL, session TEXT);
+      CREATE TABLE events (save_id INTEGER NOT NULL REFERENCES saves(id) ON DELETE CASCADE, seq INTEGER NOT NULL, t INTEGER NOT NULL, kind TEXT NOT NULL, location TEXT NOT NULL, actor TEXT, text TEXT NOT NULL, PRIMARY KEY (save_id, seq));
+    `)
+    const engine = new Engine(content, { seed: 174 })
+    await play(engine, ['north'])
+    const whole = engine.save()
+    old.prepare('INSERT INTO saves (slot, created_at, world, version, game_minutes, seed, state, log, session) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NULL)').run('manual', new Date().toISOString(), whole.world, 1, whole.state.minutes, whole.state.seed, JSON.stringify(whole.state), JSON.stringify(whole.log))
+    old.close()
+    const store = new SaveStore(path)
+    const loaded = await Engine.restore(content, store.load('manual')!)
+    expect(plain(loaded)).toEqual(plain(engine))
+    loaded.tick(30)
+    store.save('auto', loaded.saved())
+    loaded.tick(30)
+    store.save('auto', loaded.saved())
+    expect(plain(await Engine.restore(content, store.latest()!))).toEqual(plain(loaded))
+    expect(store.load('manual')!.version).toBe(1)
+  })
+
   it('the content version is the same for the same content and changes with it', () => {
     expect(contentVersion(content)).toMatch(/^[0-9a-f]{16}$/)
     const npcs = new Map(content.npcs)
