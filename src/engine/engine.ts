@@ -120,6 +120,8 @@ export interface Status {
   time: string
   money: string
   paused: boolean
+  /** A development build: the @ commands work and the editor can be opened. */
+  builder?: boolean
   talk?: { npc: string; name: string; call: string; attitude: string; turnsLeft: number; options: string[] }
   journal: { quests: JournalEntry[]; people: JournalEntry[]; places: JournalEntry[]; lands: JournalEntry[]; factions: JournalEntry[]; events: JournalEntry[]; lore: JournalEntry[]; things: JournalEntry[] }
   /** The map round the player: rows of characters, and a class code per character (FO, chapter 4). */
@@ -794,6 +796,7 @@ export class Engine {
       time: this.clock.format(this.world.calendar),
       money: this.world.money(this.state.player.money),
       paused: false,
+      ...(this.builder ? { builder: true } : {}),
       talk: talk
         ? { npc: talk.npc, name: this.world.npc(talk.npc).short, call: callName(this.world.npc(talk.npc)), attitude: attitude(this.world, talk.npc).band, turnsLeft: talk.turnsLeft, options: QUICK_OPTIONS }
         : undefined,

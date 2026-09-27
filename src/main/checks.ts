@@ -38,7 +38,7 @@ export function prepareLogCheck(app: App): string {
   return dir
 }
 
-/** WISPLIGHT_BUILDER_CHECK=1: a throwaway copy of the content, changed through the real world builder bridge. */
+/** WISPLIGHT_BUILDER_CHECK=1: a throwaway copy of the content, changed through the real editor bridge while a game runs. */
 export function prepareBuilderCheck(app: App): string {
   const dir = mkdtempSync(join(tmpdir(), 'wisplight-buildercheck-'))
   cpSync(join(app.getAppPath(), 'content'), join(dir, 'content'), { recursive: true })
@@ -50,16 +50,20 @@ export const BUILDER_CHECK_SCRIPT = `(async () => {
   const out = []
   // The world picker waits for a choice (M8): start in the Nethermarch.
   await window.wisplight.start('base')
+  const editor = window.wisplight.editor
+  const quay = await editor.entity('base', 'location', 'loc_veenhoek_quay')
   const day = 'Grey water slaps against the planks. A new stone stands on the quay now. It smells of tar. The green is north.\\n'
-  const saved = await window.wisplight.builder.save('location', 'loc_veenhoek_quay', { 'description.day': day })
-  out.push('save: ' + (saved.ok ? 'ok, ' + saved.file : 'refused: ' + saved.problems.join('; ')))
-  await new Promise((r) => setTimeout(r, 300))
+  const saved = await editor.save('base', [{ kind: 'location', id: 'loc_veenhoek_quay', data: { ...quay.raw, description: { ...quay.raw.description, day } } }])
+  out.push('save: ' + (saved.ok ? 'ok, ' + saved.changes.map((c) => c.path + ' (' + c.lines.filter((l) => l.kind !== ' ' && l.kind !== '@').length + ' lines)').join(', ') : 'refused: ' + saved.problems.join('; ')))
+  await new Promise((r) => setTimeout(r, 500))
   const look = await window.wisplight.command('look')
   out.push('look: ' + (look.outputs.map((o) => o.text).join(' ').includes('A new stone stands on the quay now.') ? 'shows the change' : 'DOES NOT show the change'))
-  const broken = await window.wisplight.builder.save('location', 'loc_veenhoek_quay', { exits: { north: { to: 'loc_nowhere' } } })
+  const broken = await editor.save('base', [{ kind: 'location', id: 'loc_veenhoek_quay', data: { ...quay.raw, exits: { north: { to: 'loc_nowhere' } } } }])
   out.push('broken change: ' + (broken.ok ? 'SAVED' : 'refused'))
-  const data = await window.wisplight.builder.data()
-  out.push('check: ' + data.problems.length + ' problems, ' + data.warnings.length + ' warnings')
+  const view = await editor.view('base')
+  out.push('check: ' + view.problems.length + ' problems, ' + view.warnings.length + ' warnings')
+  const isle = await editor.view('isle')
+  out.push('isle: ' + isle.lists.npc.length + ' people, ' + isle.quests.map((q) => q.name + ' ' + q.solutions + ' solutions').join(', '))
   return out.join('\\n')
 })()`
 

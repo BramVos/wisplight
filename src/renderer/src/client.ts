@@ -1,12 +1,11 @@
-import type { CreationData, JournalPage, Output, Status, WorldInfo } from '../../engine'
+import type { CreationData, DiffLine, DraftChange, Edit, EditorView, EntityKind, JournalPage, Output, Raw, SimReport, Status, WorldInfo } from '../../engine'
 import type { Advice, TrialResult } from '../../node/ai/advisor'
 import type { AiLogEntry } from '../../node/ai/log'
-import type { BuilderData } from '../../node/builder'
 import type { ModelInfo, ProviderId } from '../../node/ai/providers'
 import type { AiOverview } from '../../node/ai/service'
 import type { ChosenRole } from '../../node/ai/settings'
 
-export type { Advice, AiLogEntry, AiOverview, BuilderData, ChosenRole, CreationData, JournalPage, ModelInfo, ProviderId, TrialResult }
+export type { Advice, AiLogEntry, AiOverview, ChosenRole, CreationData, DiffLine, DraftChange, Edit, EditorView, EntityKind, JournalPage, ModelInfo, ProviderId, Raw, SimReport, TrialResult, WorldInfo }
 
 /** A world to play in (M8), and whether it is the one played last. */
 export type WorldChoice = WorldInfo & { current: boolean }
@@ -50,12 +49,45 @@ export interface AiBridge {
   tryPicture(provider: ProviderId, model: string): Promise<string>
 }
 
-/** The world builder (development builds of the desktop app only). */
-export interface BuilderBridge {
-  data(): Promise<BuilderData>
-  save(kind: 'location' | 'npc' | 'region', id: string, patch: Record<string, unknown>): Promise<{ ok: boolean; problems: string[]; file?: string }>
+/** The game hears when the content changed under it: the editor saved, or a file changed on disk. */
+export interface ContentEvents {
   onReload(listener: () => void): () => void
   onProblem(listener: (text: string) => void): () => void
+}
+
+/** A change as the editor shows it: the file, and the lines that differ. */
+export interface ShownChange {
+  path: string
+  fresh: boolean
+  lines: DiffLine[]
+}
+
+export interface EditorSave {
+  ok: boolean
+  problems: string[]
+  warnings: string[]
+  changes: ShownChange[]
+}
+
+export interface EditorDraft {
+  say: string
+  questions: string[]
+  changes: DraftChange[]
+  problems: string[]
+  diffs: ShownChange[]
+}
+
+/** The editor (M8): the desktop app writes the files; the browser preview keeps them in memory. */
+export interface EditorBridge {
+  open?(): Promise<void>
+  worlds(): Promise<WorldInfo[]>
+  view(world: string): Promise<EditorView>
+  entity(world: string, kind: EntityKind, id: string): Promise<{ raw: Raw; yaml: string; file: string } | undefined>
+  /** Checks the edits and, unless write is false, saves them. */
+  save(world: string, edits: Edit[], write?: boolean): Promise<EditorSave>
+  newWorld(folder: string, name: string): Promise<{ ok: boolean; problems: string[] }>
+  simulate(world: string, days: number, seed: number): Promise<SimReport>
+  draft(world: string, ask: string, focus?: { kind: EntityKind; id: string }): Promise<EditorDraft>
 }
 
 export interface EngineClient {
@@ -79,8 +111,10 @@ export interface EngineClient {
   onTick(listener: (reply: Reply) => void): () => void
   /** Only in the desktop app, or in the browser preview with ?mock=1. */
   ai?: AiBridge
-  /** Only in a development build of the desktop app. */
-  builder?: BuilderBridge
+  /** Content changes while playing (development builds, and the preview). */
+  builder?: ContentEvents
+  /** The editor, in its own window (development builds) or tab (the preview). */
+  editor?: EditorBridge
 }
 
 const IDLE_PAUSE_MS = 60_000
@@ -93,14 +127,9 @@ const IDLE_PAUSE_MS = 60_000
 export async function createClient(): Promise<EngineClient> {
   if (window.wisplight) return window.wisplight
 
-  const { applyChange, builderView, DEFAULT_WORLD, Engine, filesOfWorld, loadContent, MockLlm, worldsIn } = await import('../../engine')
-  const modules = import.meta.glob('../../../content/**/*.{yaml,yml,md}', {
-    query: '?raw',
-    import: 'default',
-    eager: true,
-  }) as Record<string, string>
+  const { DEFAULT_WORLD, Engine, filesOfWorld, loadContent, MockLlm, worldsIn } = await import('../../engine')
   // Every world's files; a new game picks one of them (M8).
-  const all = Object.entries(modules).map(([path, text]) => ({ path: path.replace(/^.*?content\//, ''), text }))
+  const all = contentFiles()
   const worlds = worldsIn(all)
   let folder = DEFAULT_WORLD
   let files = filesOfWorld(all, folder)
@@ -110,27 +139,15 @@ export async function createClient(): Promise<EngineClient> {
   const llm = mock ? demo!.slowMock(new MockLlm('good')) : undefined
   let engine = new Engine(content, { seed: 1, llm, builder: true })
   const bridge = demo?.demoBridge(content)
-  // In the preview the world builder changes the content in memory only; the desktop app writes the files.
+  // In the preview the editor opens in a tab of its own, and keeps its changes in memory.
   const reloads = new Set<() => void>()
-  const builder: BuilderBridge | undefined = mock
-    ? {
-        data: async () => builderView(files),
-        save: async (kind, id, patch) => {
-          const result = applyChange(files, kind, id, patch)
-          if (result.ok && result.file && result.content) {
-            files.find((f) => f.path === result.file)!.text = result.text!
-            engine = engine.withContent(result.content)
-            for (const listener of reloads) listener()
-          }
-          return { ok: result.ok, problems: result.problems, file: result.file }
-        },
-        onReload: (listener) => {
-          reloads.add(listener)
-          return () => reloads.delete(listener)
-        },
-        onProblem: () => () => undefined,
-      }
-    : undefined
+  const builder: ContentEvents = {
+    onReload: (listener) => {
+      reloads.add(listener)
+      return () => reloads.delete(listener)
+    },
+    onProblem: () => () => undefined,
+  }
   // The clock starts with the player's first keystroke, not while the opening is being read.
   let lastInput = -Infinity
   let held = false
@@ -189,5 +206,52 @@ export async function createClient(): Promise<EngineClient> {
     },
     ai: bridge,
     builder,
+    editor: { ...(await createEditor()), open: async () => void window.open(`${window.location.pathname}?editor=1${mock ? '&mock=1' : ''}`, 'wisplight-editor') },
+  }
+}
+
+/** Every file of content/, as the preview bundles them. */
+function contentFiles(): { path: string; text: string }[] {
+  const modules = import.meta.glob('../../../content/**/*.{yaml,yml,md}', { query: '?raw', import: 'default', eager: true }) as Record<string, string>
+  return Object.entries(modules).map(([path, text]) => ({ path: path.replace(/^.*?content\//, ''), text }))
+}
+
+/**
+ * The editor's bridge: the desktop app's, or in the preview the same pure
+ * functions on the bundled content, with the mock chronicler.
+ */
+export async function createEditor(): Promise<EditorBridge> {
+  if (window.wisplight?.editor) return window.wisplight.editor
+  const { applyEdits, draftRequest, editorView, entities, entityYaml, filesOfWorld, lineDiff, loadContent, MockLlm, newWorldFiles, readDraft, simulate, withReturnExits, worldsIn } = await import('../../engine')
+  let all = contentFiles()
+  const shown = (changes: { path: string; before?: string; text: string }[]) => changes.map((c) => ({ path: c.path, fresh: c.before === undefined, lines: lineDiff(c.before ?? '', c.text) }))
+  return {
+    worlds: async () => worldsIn(all),
+    view: async (world) => editorView(filesOfWorld(all, world)),
+    entity: async (world, kind, id) => {
+      const files = filesOfWorld(all, world)
+      const found = entities(files, kind).find((e) => e.id === id)
+      return found ? { raw: found.raw, yaml: entityYaml(files, kind, id) ?? '', file: found.file } : undefined
+    },
+    save: async (world, edits, write = true) => {
+      const files = filesOfWorld(all, world)
+      const result = applyEdits(files, withReturnExits(files, edits))
+      if (result.ok && write) {
+        const changed = new Map(result.changes.map((c) => [c.path, c.text]))
+        all = [...all.map((f) => (changed.has(f.path) ? { ...f, text: changed.get(f.path)! } : f)), ...result.changes.filter((c) => !all.some((f) => f.path === c.path)).map((c) => ({ path: c.path, text: c.text }))]
+      }
+      return { ok: result.ok, problems: result.problems, warnings: result.content ? editorView(result.files).warnings : [], changes: shown(result.changes) }
+    },
+    newWorld: async (folder, name) => {
+      if (!/^[a-z][a-z0-9_]{1,30}$/.test(folder) || all.some((f) => f.path.startsWith(`${folder}/`))) return { ok: false, problems: ['Pick a new folder name: lower-case letters, digits or underscores.'] }
+      all = [...all, ...newWorldFiles(folder, name || folder)]
+      return { ok: true, problems: [] }
+    },
+    simulate: async (world, days, seed) => simulate(loadContent(filesOfWorld(all, world)), days, seed),
+    draft: async (world, ask, focus) => {
+      const files = filesOfWorld(all, world)
+      const draft = readDraft(files, (await new MockLlm().complete(draftRequest(files, ask, focus))).text)
+      return { say: draft.say, questions: draft.questions, changes: draft.changes, problems: draft.problems, diffs: draft.result?.ok ? shown(draft.result.changes) : [] }
+    },
   }
 }

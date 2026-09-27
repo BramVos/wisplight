@@ -1,4 +1,5 @@
 import type { ChronicleMeta } from '../../chronicler/prompt'
+import { stringify } from 'yaml'
 import { LlmError, type LlmClient, type LlmRequest, type LlmResponse } from './llm'
 
 // A stand-in model for tests and the browser preview. It answers from the
@@ -45,7 +46,9 @@ export class MockLlm implements LlmClient {
     this.calls.push(request)
     if (this.mode === 'throw') throw new LlmError('timeout', 'mock timeout')
     const text =
-      request.schemaName === 'party_reply'
+      request.schemaName === 'builder_draft'
+        ? this.draft(request.meta ?? {})
+        : request.schemaName === 'party_reply'
         ? this.party(request.meta as unknown as { party: { id: string; name: string; knows: string[] }[] })
         : request.role === 'voice'
         ? this.voice(request.meta as unknown as MockMeta)
@@ -55,6 +58,42 @@ export class MockLlm implements LlmClient {
             : this.chronicler(request.meta as unknown as ChronicleMeta, request.prompt)
           : this.other(request)
     return { text, provider: 'mock', model: 'mock-1', usage: { inputTokens: Math.round((request.system.length + request.prompt.length) / 4), outputTokens: Math.round(text.length / 4), cachedTokens: 0 }, latencyMs: 1 }
+  }
+
+  /**
+   * A proposal in the world builder (M8): asked for a hamlet with the place in
+   * view, a new hamlet with three people and a small story, joined to that
+   * place; anything else gets a question back, as the working instruction asks.
+   */
+  private draft(meta: Record<string, unknown>): string {
+    if (this.mode === 'invalid') return 'Here is a lovely hamlet for you.'
+    const ask = String(meta['ask'] ?? '')
+    const focus = meta['focusRaw'] as Record<string, unknown> | undefined
+    if (!/hamlet|gehucht/i.test(ask) || !focus) {
+      return JSON.stringify({ say: 'I can write that, but a choice is yours first.', questions: [`Where should it go? Open the place it should join, and ask again.`], changes: [] })
+    }
+    const exits = { ...((focus['exits'] as Record<string, unknown> | undefined) ?? {}) }
+    const opposite: Record<string, string> = { north: 'south', south: 'north', east: 'west', west: 'east', northeast: 'southwest', southwest: 'northeast', northwest: 'southeast', southeast: 'northwest' }
+    const way = Object.keys(opposite).find((d) => !exits[d] && !exits[opposite[d]!]) ?? 'northwest'
+    exits[way] = { to: 'loc_nettlecombe_green', minutes: 20 }
+    const person = (id: string, name: string, short: string, pronoun: string, age: number, home: string, fact: string) =>
+      `id: ${id}\nname: ${name}\nshort: ${short}\npronoun: ${pronoun}\nage: ${age}\nprofession: hamlet_folk\nhome: ${home}\nappearance: ${fact}\npersonality: { warmth: 1, courage: 0, honesty: 2, temper: 0, curiosity: 1, diligence: 1 }\npublic_facts:\n  - ${name} lives in Nettlecombe.\nknows_areas: [nettlecombe]\n`
+    const changes = [
+      { kind: 'area', id: 'nettlecombe', yaml: 'id: nettlecombe\nname: Nettlecombe\nkind: hamlet\nsummary: Three cottages round a well that has gone dry.\n' },
+      { kind: 'profession', id: 'hamlet_folk', yaml: 'id: hamlet_folk\nname: cottager\nschedule:\n  - { from: "07:00", to: "08:00", activity: eat }\n  - { from: "08:00", to: "18:00", activity: work }\n  - { from: "18:00", to: "19:00", activity: eat }\n  - { from: "19:00", to: "22:00", activity: home }\n  - { from: "22:00", to: "07:00", activity: sleep }\n' },
+      { kind: 'location', id: 'loc_nettlecombe_green', yaml: `id: loc_nettlecombe_green\nname: Nettlecombe, the Green\narea: nettlecombe\ntags: [public, social]\ndescription:\n  day: |\n    Three cottages lean together round a well with a broken windlass. The grass smells of nettles and dust. A cottage door stands open to the north, and the way back runs ${opposite[way]}.\nexits:\n  ${opposite[way]}: { to: ${String(focus['id'])}, minutes: 20 }\n  north: { to: loc_nettlecombe_cottage }\n` },
+      { kind: 'location', id: 'loc_nettlecombe_cottage', yaml: 'id: loc_nettlecombe_cottage\nname: The Cottage by the Well\narea: nettlecombe\ntags: [private]\ndescription:\n  day: |\n    A low room with a cold hearth and three stools. It smells of damp stone. The door out to the green is south.\nexits:\n  south: { to: loc_nettlecombe_green }\n' },
+      { kind: 'location', id: String(focus['id']), yaml: stringifyExits(focus, exits) },
+      { kind: 'npc', id: 'npc_hob', yaml: person('npc_hob', 'Hob Tanner', 'Hob the cottager', 'he', 48, 'loc_nettlecombe_cottage', 'A stooped man with a bucket that never has water in it.') },
+      { kind: 'npc', id: 'npc_nell', yaml: person('npc_nell', 'Nell Tanner', 'Nell the cottager', 'she', 45, 'loc_nettlecombe_cottage', 'A brisk woman with dust on her skirts.') },
+      { kind: 'npc', id: 'npc_wat', yaml: person('npc_wat', 'Wat Tanner', 'Wat, the cottagers\' boy', 'he', 12, 'loc_nettlecombe_cottage', 'A boy with scraped knees and a stick.') },
+      {
+        kind: 'quest',
+        id: 'the_dry_well',
+        yaml: 'id: the_dry_well\nname: The Dry Well\nkind: request\nsummary: The well of Nettlecombe has gone dry.\ngivers: [npc_hob]\nstarts: { talk: [npc_hob] }\nask: "The well\'s gone dry. Three families, no water. Can you help?"\nstages:\n  - id: dry\n    text: The well of Nettlecombe has gone dry, and Hob asks for help.\nactions:\n  - id: clear_well\n    say: [\'clear (?:the )?well\']\n    at: [loc_nettlecombe_green]\n    text: You haul up stones and dead leaves until the water comes back.\n    effects: [{ set: well_cleared }]\n  - id: ask_nell\n    say: [\'ask nell about (?:the )?spring\']\n    with: npc_nell\n    text: Nell shows you the old spring behind the cottage.\n    effects: [{ set: spring_found }]\n  - id: carry_water\n    say: [\'carry water for (?:the )?tanners\']\n    at: [loc_nettlecombe_green]\n    minutes: 120\n    text: You carry water all morning until the butts are full.\n    effects: [{ set: water_carried }]\noutcomes:\n  - { id: cleared, name: The well cleared, text: "The well of Nettlecombe runs again.", when: [{ flag: well_cleared }] }\n  - { id: spring, name: The old spring, text: "The Tanners draw water from the old spring now.", when: [{ flag: spring_found }] }\n  - { id: carried, name: Water carried, text: "The butts are full, and that will do until the rain.", when: [{ flag: water_carried }] }\n',
+      },
+    ]
+    return JSON.stringify({ say: 'A small hamlet of three cottagers and a dry well, joined to the place in view. The well can be cleared, the old spring found, or water carried.', questions: [], changes })
   }
 
   /** The group talk: one line each, from what each companion knows. */
@@ -178,4 +217,9 @@ export class MockLlm implements LlmClient {
     const goals = place ? [{ type: 'Visit', target: place, priority: 0.8, why: 'To see how things stand.' }] : []
     return JSON.stringify({ goals: [...goals, { type: 'Work', target: 'none', priority: 0.5, why: 'There is work to do.' }], mood: 'calm', note: 'A plain day.' })
   }
+}
+
+/** A place as YAML with new exits, for the mock's proposals. */
+function stringifyExits(place: Record<string, unknown>, exits: Record<string, unknown>): string {
+  return stringify({ ...place, exits })
 }

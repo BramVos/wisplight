@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import type { Output } from '../../engine'
 import { createClient, type AiStatus, type CreationData, type EngineClient, type Reply, type WorldChoice } from './client'
-import { BuilderView } from './BuilderView'
 import { CharacterCreation } from './CharacterCreation'
 import { WorldPicker } from './WorldPicker'
 import { FightPanel } from './FightPanel'
@@ -59,7 +58,6 @@ export function App() {
   const [talkFrom, setTalkFrom] = useState<number>()
   const [portrait, setPortrait] = useState<string>()
   const [ending, setEnding] = useState(false)
-  const [building, setBuilding] = useState(false)
   const [creation, setCreation] = useState<CreationData>()
   // More than one world in the content folder (M8): a new game asks which.
   const [worlds, setWorlds] = useState<WorldChoice[]>()
@@ -110,16 +108,16 @@ export function App() {
 
   // Menus stop the clock (FO, chapter 3).
   useEffect(() => {
-    client?.hold(Boolean(settings) || ending || building || Boolean(creation) || Boolean(journal) || Boolean(worlds))
-  }, [client, settings, ending, building, creation, journal, worlds])
+    client?.hold(Boolean(settings) || ending || Boolean(creation) || Boolean(journal) || Boolean(worlds))
+  }, [client, settings, ending, creation, journal, worlds])
 
-  // What the world builder saves is in the game at once: show the place again (FO, chapter 15).
+  // What the editor saves is in the game at once: show the place again (FO, chapter 15).
   useEffect(() => {
     if (!client?.builder) return
     const offReload = client.builder.onReload(() => {
       void client.command('look').then((reply) => {
         setStatus(reply.status)
-        setLines((previous) => [...previous, withId({ kind: 'system', text: 'The world was changed in the builder.' }), ...reply.outputs.map(withId)].slice(-400))
+        setLines((previous) => [...previous, withId({ kind: 'system', text: 'The world was changed in the editor.' }), ...reply.outputs.map(withId)].slice(-400))
       })
     })
     const offProblem = client.builder.onProblem((text) => setLines((previous) => [...previous, withId({ kind: 'error', text })].slice(-400)))
@@ -349,11 +347,11 @@ export function App() {
           <button type="button" className="link" onClick={() => setEnding(true)}>
             [Look back]
           </button>
-          {client?.builder && (
+          {client?.editor?.open && status?.builder && (
             <>
               {' '}
-              <button type="button" className="link" onClick={() => setBuilding(true)}>
-                [Builder]
+              <button type="button" className="link" onClick={() => void client.editor!.open!().catch((reason: unknown) => setError(String(reason)))}>
+                [Editor]
               </button>
             </>
           )}
@@ -449,7 +447,6 @@ export function App() {
         />
       )}
       {ending && client && <EndView client={client} onClose={() => setEnding(false)} />}
-      {building && <BuilderView bridge={client?.builder} onClose={() => setBuilding(false)} />}
       {settings && <Settings bridge={client?.ai} tab={settings} onTab={setSettings} onClose={() => setSettings(undefined)} />}
     </div>
   )

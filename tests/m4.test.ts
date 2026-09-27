@@ -207,43 +207,52 @@ describe('M4: the first world builder', () => {
     return dir
   }
 
+  // Since M8 the builder is the editor (src/node/editor.ts); the same promises hold.
   it('writes a change to a place into its YAML file, and the game shows it at once', async () => {
-    const { saveChange } = await import('../src/node/builder')
+    const { ContentEditor } = await import('../src/node/editor')
+    const { loadContentFromDir } = await import('../src/node/content')
     const { readFile } = await import('node:fs/promises')
     const dir = await copy()
+    const editor = new ContentEditor(dir)
     const engine = new Engine(content, { seed: 1 })
+    const quay = (await editor.entity('base', 'location', 'loc_veenhoek_quay'))!
     const day = 'Grey water slaps against the planks. A new stone stands here now. It smells of tar. The green is north.\n'
-    const result = await saveChange(dir, 'location', 'loc_veenhoek_quay', { 'description.day': day })
-    expect(result).toMatchObject({ ok: true, file: 'base/regions/holleveen/areas/veenhoek/locations.yaml' })
-    const text = await readFile(`${dir}/${result.file}`, 'utf8')
+    const result = await editor.save('base', [{ kind: 'location', id: 'loc_veenhoek_quay', data: { ...quay.raw, description: { ...(quay.raw['description'] as object), day } } }])
+    expect(result.ok).toBe(true)
+    expect(result.changes.map((c) => c.path)).toEqual(['base/regions/holleveen/areas/veenhoek/locations.yaml'])
+    const text = await readFile(`${dir}/base/regions/holleveen/areas/veenhoek/locations.yaml`, 'utf8')
     expect(text).toContain('A new stone stands here now.')
     // Comments in the file stay where they were.
     expect(text.split('\n')[0]).toMatch(/^#|^locations:/)
-    const next = engine.withContent(result.content!)
+    const next = engine.withContent(await loadContentFromDir(dir))
     expect(texts(await next.handle('look'))).toMatch(/A new stone stands here now\./)
   })
 
   it('changes a person, and refuses a change that would break the content', async () => {
-    const { saveChange, builderData } = await import('../src/node/builder')
+    const { ContentEditor } = await import('../src/node/editor')
+    const { loadContentFromDir } = await import('../src/node/content')
     const dir = await copy()
-    const ok = await saveChange(dir, 'npc', 'npc_mirte', { appearance: 'A tall woman with flour in her hair.', personality: { warmth: 3, courage: -1, honesty: 1, temper: 0, curiosity: 2, diligence: 2 } })
+    const editor = new ContentEditor(dir)
+    const mirte = (await editor.entity('base', 'npc', 'npc_mirte'))!
+    const ok = await editor.save('base', [{ kind: 'npc', id: 'npc_mirte', data: { ...mirte.raw, appearance: 'A tall woman with flour in her hair.', personality: { warmth: 3, courage: -1, honesty: 1, temper: 0, curiosity: 2, diligence: 2 } } }])
     expect(ok.ok).toBe(true)
-    const engine = new Engine(ok.content!, { seed: 1 })
+    const engine = new Engine(await loadContentFromDir(dir), { seed: 1 })
     await play(engine, 'n', 'e')
     expect(await play(engine, 'examine mirte')).toMatch(/A tall woman with flour in her hair\./)
-    const broken = await saveChange(dir, 'location', 'loc_veenhoek_quay', { exits: { north: { to: 'loc_nowhere' } } })
+    const quay = (await editor.entity('base', 'location', 'loc_veenhoek_quay'))!
+    const broken = await editor.save('base', [{ kind: 'location', id: 'loc_veenhoek_quay', data: { ...quay.raw, exits: { north: { to: 'loc_nowhere' } } } }])
     expect(broken.ok).toBe(false)
     expect(broken.problems.join(' ')).toMatch(/loc_nowhere/)
-    const data = await builderData(dir)
-    expect(data.problems).toEqual([])
-    expect(data.locations.find((l) => l.id === 'loc_veenhoek_quay')!.exits['north']!.to).toBe('loc_veenhoek_green')
+    const view = await editor.view('base')
+    expect(view.problems).toEqual([])
+    expect(((await editor.entity('base', 'location', 'loc_veenhoek_quay'))!.raw['exits'] as Record<string, { to: string }>)['north']!.to).toBe('loc_veenhoek_green')
   })
 
   it('points out what loads but deserves a look', async () => {
-    const { builderData } = await import('../src/node/builder')
-    const data = await builderData((await import('node:path')).resolve(import.meta.dirname, '../content'))
-    expect(data.problems).toEqual([])
-    expect(Array.isArray(data.warnings)).toBe(true)
+    const { ContentEditor } = await import('../src/node/editor')
+    const view = await new ContentEditor((await import('node:path')).resolve(import.meta.dirname, '../content')).view('base')
+    expect(view.problems).toEqual([])
+    expect(Array.isArray(view.warnings)).toBe(true)
   })
 })
 

@@ -46,3 +46,6 @@ export * from './combat/types'
 export { fightView, FIGHT_HELP } from './combat/flow'
 export { balanceReport, marginProblems, MARGINS, standardGroups, characterAt, simulateFight, foeXp } from './combat/balance'
 
+export * from './edit'
+export * from './editor'
+export * from './playtest'

@@ -12,9 +12,8 @@ contextBridge.exposeInMainWorld('wisplight', {
   end: () => ipcRenderer.invoke('engine:end'),
   activity: () => ipcRenderer.send('engine:activity'),
   hold: (on: boolean) => ipcRenderer.send('engine:hold', on),
+  // The game hears when the content changed under it (the editor saved, or a file changed).
   builder: {
-    data: () => ipcRenderer.invoke('builder:data'),
-    save: (kind: string, id: string, patch: Record<string, unknown>) => ipcRenderer.invoke('builder:save', kind, id, patch),
     onReload: (listener: () => void) => {
       const handler = () => listener()
       ipcRenderer.on('builder:reloaded', handler)
@@ -25,6 +24,17 @@ contextBridge.exposeInMainWorld('wisplight', {
       ipcRenderer.on('builder:problem', handler)
       return () => ipcRenderer.removeListener('builder:problem', handler)
     },
+  },
+  // The editor (M8), in its own window: npm run editor, or [Editor] in a development build of the game.
+  editor: {
+    open: () => ipcRenderer.invoke('editor:open'),
+    worlds: () => ipcRenderer.invoke('editor:worlds'),
+    view: (world: string) => ipcRenderer.invoke('editor:view', world),
+    entity: (world: string, kind: string, id: string) => ipcRenderer.invoke('editor:entity', world, kind, id),
+    save: (world: string, edits: unknown[], write?: boolean) => ipcRenderer.invoke('editor:save', world, edits, write),
+    newWorld: (folder: string, name: string) => ipcRenderer.invoke('editor:new-world', folder, name),
+    simulate: (world: string, days: number, seed: number) => ipcRenderer.invoke('editor:simulate', world, days, seed),
+    draft: (world: string, ask: string, focus?: { kind: string; id: string }) => ipcRenderer.invoke('editor:draft', world, ask, focus),
   },
   onTick: (listener: (reply: unknown) => void) => {
     const handler = (_event: IpcRendererEvent, reply: unknown) => listener(reply)

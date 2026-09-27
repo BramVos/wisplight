@@ -3,12 +3,12 @@ import { randomUUID } from 'node:crypto'
 import { rmSync, watch, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { ContentError, Engine, type Content, type Output, type SaveData } from '../engine'
-import { builderData, saveChange } from '../node/builder'
+import { ContentError, draftRequest, Engine, ENTITY_KINDS, lineDiff, readDraft, type Content, type Edit, type EntityKind, type FileChange, type Output, type SaveData } from '../engine'
+import { ContentEditor } from '../node/editor'
 import type { ProviderId } from '../node/ai/providers'
 import { AiService } from '../node/ai/service'
 import type { ChosenRole, Cipher } from '../node/ai/settings'
-import { DEFAULT_WORLD, listWorlds, loadContentFromDir } from '../node/content'
+import { DEFAULT_WORLD, listWorlds, loadContentFromDir, readContentFiles } from '../node/content'
 import { format, GameLog, type Session } from '../node/gamelog'
 import { SaveStore } from '../node/savegame'
 import { aiCheck, BUILDER_CHECK_SCRIPT, keyCheck, LOG_CHECK_SCRIPT, prepareBuilderCheck, prepareKeyCheck, prepareLogCheck } from './checks'
@@ -263,19 +263,115 @@ function adopt(next: Content): void {
   if (window && !window.isDestroyed()) window.webContents.send('builder:reloaded')
 }
 
-ipcMain.handle('builder:data', async () => {
-  if (app.isPackaged) throw new Error('The world builder is part of the development build.')
-  return builderData(contentDir(), worldFolder)
+// ---------------------------------------------------------------- the editor (M8; development builds only)
+
+// npm run editor opens only the editor; in a development build the game has a link to it too.
+const editorMode = process.env['npm_lifecycle_event'] === 'editor' || process.argv.includes('--editor')
+let editorWindow: BrowserWindow | undefined
+
+function devOnly(): ContentEditor {
+  if (app.isPackaged) throw new Error('The editor is part of the development build (npm run editor).')
+  return new ContentEditor(contentDir())
+}
+const kindOf = (value: unknown): EntityKind => {
+  if (!ENTITY_KINDS.includes(value as EntityKind)) throw new Error('Unknown kind.')
+  return value as EntityKind
+}
+const worldOf = (value: unknown): string => {
+  const world = String(value ?? '')
+  if (!/^[a-z0-9_-]+$/.test(world)) throw new Error('Unknown world.')
+  return world
+}
+const editsOf = (value: unknown): Edit[] => {
+  if (!Array.isArray(value)) throw new Error('No edits.')
+  return value.map((e: { kind?: unknown; id?: unknown; data?: unknown; file?: unknown }) => ({
+    kind: kindOf(e.kind),
+    id: String(e.id),
+    ...(e.data && typeof e.data === 'object' ? { data: e.data as Record<string, unknown> } : {}),
+    ...(e.file ? { file: String(e.file) } : {}),
+  }))
+}
+/** A change as the editor shows it: the lines that differ. */
+const shown = (changes: FileChange[]) => changes.map((c) => ({ path: c.path, fresh: c.before === undefined, lines: lineDiff(c.before ?? '', c.text) }))
+
+/** After a save in the editor: the running game carries on with it, if it plays in that world. */
+function afterEdit(world: string): void {
+  worldContents.delete(world)
+  if (world !== worldFolder || !engine) return
+  loadContentFromDir(contentDir(), world)
+    .then((next) => adopt(next))
+    .catch(() => undefined)
+}
+
+ipcMain.handle('editor:worlds', () => devOnly().worlds())
+ipcMain.handle('editor:view', (_event, world: unknown) => devOnly().view(worldOf(world)))
+ipcMain.handle('editor:entity', (_event, world: unknown, kind: unknown, id: unknown) => devOnly().entity(worldOf(world), kindOf(kind), String(id)))
+ipcMain.handle('editor:save', async (_event, world: unknown, edits: unknown, write: unknown) => {
+  const editor = devOnly()
+  ignoreWatchUntil = Date.now() + 1500
+  const outcome = await editor.save(worldOf(world), editsOf(edits), write !== false)
+  if (outcome.ok && write !== false && outcome.changes.length) afterEdit(worldOf(world))
+  return { ok: outcome.ok, problems: outcome.problems, warnings: outcome.warnings, changes: shown(outcome.changes) }
+})
+ipcMain.handle('editor:new-world', (_event, folder: unknown, name: unknown) => devOnly().createWorld(String(folder ?? ''), String(name ?? '')))
+ipcMain.handle('editor:simulate', (_event, world: unknown, days: unknown, seed: unknown) => devOnly().simulate(worldOf(world), Number(days) || 7, Number(seed) || 1))
+ipcMain.handle('editor:draft', async (_event, world: unknown, ask: unknown, focus: unknown) => {
+  devOnly()
+  await setup()
+  const llm = ai?.client()
+  if (!llm) return { say: '', questions: [], changes: [], problems: ["The chronicler writes the proposals: connect a model in the game's Settings > AI first."], diffs: [] }
+  const files = await readContentFiles(contentDir(), worldOf(world))
+  const at = focus && typeof focus === 'object' ? (focus as { kind?: unknown; id?: unknown }) : undefined
+  const request = draftRequest(files, String(ask ?? '').slice(0, 2000), at?.kind && at.id ? { kind: kindOf(at.kind), id: String(at.id) } : undefined)
+  try {
+    const draft = readDraft(files, (await llm.complete(request)).text)
+    return { say: draft.say, questions: draft.questions, changes: draft.changes, problems: draft.problems, diffs: draft.result?.ok ? shown(draft.result.changes) : [] }
+  } catch (error) {
+    return { say: '', questions: [], changes: [], problems: [`The chronicler did not answer: ${error instanceof Error ? error.message : String(error)}`], diffs: [] }
+  }
+})
+ipcMain.handle('editor:open', () => {
+  devOnly()
+  openEditor()
 })
 
-ipcMain.handle('builder:save', async (_event, kind: unknown, id: unknown, patch: unknown) => {
-  if (app.isPackaged) throw new Error('The world builder is part of the development build.')
-  if (kind !== 'location' && kind !== 'npc' && kind !== 'region') throw new Error('Unknown kind.')
-  ignoreWatchUntil = Date.now() + 1500
-  const result = await saveChange(contentDir(), kind, String(id), (patch ?? {}) as Record<string, unknown>, worldFolder)
-  if (result.ok && result.content) adopt(result.content)
-  return { ok: result.ok, problems: result.problems, file: result.file }
-})
+function openEditor(): void {
+  if (editorWindow && !editorWindow.isDestroyed()) {
+    editorWindow.focus()
+    return
+  }
+  editorWindow = new BrowserWindow({
+    width: 1400,
+    height: 900,
+    title: 'Wisplight editor',
+    backgroundColor: '#12140f',
+    show: !smoke,
+    webPreferences: {
+      preload: fileURLToPath(new URL('../preload/index.mjs', import.meta.url)),
+      contextIsolation: true,
+      sandbox: false,
+    },
+  })
+  // WISPLIGHT_SMOKE=1 with --editor: open the editor hidden, print what it shows of a world and a place, quit.
+  if (smoke) {
+    editorWindow.webContents.once('did-finish-load', () => {
+      setTimeout(async () => {
+        const seen: string = await editorWindow!.webContents.executeJavaScript(
+          `(async () => {
+            const head = document.querySelector('.editor-head')?.innerText.replace(/\\s+/g, ' ') ?? 'NO EDITOR'
+            const place = await window.wisplight.editor.entity('isle', 'location', 'loc_skerrow_harbour')
+            return head + ' | ' + (place ? place.file : 'NO ENTITY')
+          })()`,
+        )
+        console.log(`[smoke-editor] ${seen}`)
+        app.quit()
+      }, 1500)
+    })
+  }
+  const devServer = process.env['ELECTRON_RENDERER_URL']
+  if (devServer) void editorWindow.loadURL(`${devServer}?editor=1`)
+  else void editorWindow.loadFile(fileURLToPath(new URL('../renderer/index.html', import.meta.url)), { search: 'editor=1' })
+}
 
 // Live reloading (FO, chapter 15): a content file changed outside the app is loaded at once.
 let ignoreWatchUntil = 0
@@ -471,9 +567,10 @@ void app.whenReady().then(async () => {
     app.exit(ok ? 0 : 1)
     return
   }
-  createWindow()
+  if (editorMode) openEditor()
+  else createWindow()
   app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow()
+    if (BrowserWindow.getAllWindows().length === 0) (editorMode ? openEditor : createWindow)()
   })
 })
 
