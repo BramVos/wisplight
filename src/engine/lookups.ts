@@ -1,5 +1,5 @@
 import { callName } from './content'
-import { versionOf } from './news'
+import { factById, versionOf } from './news'
 import { tieTo } from './people'
 import type { Fact } from './state'
 import type { World } from './world'
@@ -56,8 +56,8 @@ export function answerLookup(world: World, asker: string, q: LookupQuery): { tit
     const lines = world.state.chronicle?.lines ?? []
     const line = lines.find((l) => l.id === q.line)
     if (!line) return { refused: 'no such storyline' }
-    const title = (id: string) => facts.find((f) => f.id === id)?.title
-    const causes = [...new Set([...(line.cause ?? []), ...line.facts.flatMap((id) => facts.find((f) => f.id === id)?.cause ?? [])])]
+    const title = (id: string) => factById(world, id)?.title
+    const causes = [...new Set([...(line.cause ?? []), ...line.facts.flatMap((id) => factById(world, id)?.cause ?? [])])]
       .map(title)
       .filter((t): t is string => Boolean(t))
       .slice(0, LOOKUP_LIMITS.facts)

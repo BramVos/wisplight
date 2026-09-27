@@ -1,4 +1,5 @@
 import { callName, type RelationRole } from './content'
+import { factById } from './news'
 import type { Fact } from './state'
 import type { World } from './world'
 
@@ -197,21 +198,35 @@ export function peopleLine(world: World, npcId: string): string | undefined {
   return `YOUR PEOPLE: ${text.join('; ')}.`
 }
 
+/**
+ * The facts of these kinds an NPC has heard, oldest first. It walks what the
+ * NPC heard, not every fact in the world (M9.3), so it stays quick however
+ * long the game runs.
+ */
+function heardOf(world: World, npcId: string, kinds: string[]): Fact[] {
+  const found: Fact[] = []
+  for (const id of Object.keys(world.state.news?.heard[npcId] ?? {})) {
+    const fact = factById(world, id)
+    if (fact && kinds.includes(fact.kind)) found.push(fact)
+  }
+  const seq = (f: Fact) => Number(/^fact_(\d+)$/.exec(f.id)?.[1] ?? Infinity)
+  return found.sort((a, b) => a.t - b.t || seq(a) - seq(b))
+}
+
 /** What is going on with the NPC's own people right now, as far as the NPC knows. */
 export function peopleNow(world: World, npcId: string): string[] {
   const lines: string[] = []
-  const heard = world.state.news?.heard[npcId] ?? {}
-  const facts = world.state.news?.facts ?? []
+  const facts = heardOf(world, npcId, ['death', 'sickness'])
   for (const tie of ties(world, npcId)) {
     if (!tie.id || !world.content.npcs.has(tie.id)) continue
-    const death = facts.find((f) => f.kind === 'death' && f.about.includes(tie.id!) && heard[f.id])
+    const death = facts.find((f) => f.kind === 'death' && f.about.includes(tie.id!))
     if (death) {
       lines.push(`${tie.name}, ${describe(tie)}, is dead: ${death.text.precise}${isNear(tie) ? ' You are grieving.' : ''}`)
       continue
     }
     const state = world.state.npcs[tie.id]!
     const home = world.npc(npcId).household
-    const knowsIll = (home && home === world.npc(tie.id).household) || facts.some((f) => f.kind === 'sickness' && f.about.includes(tie.id!) && heard[f.id])
+    const knowsIll = (home && home === world.npc(tie.id).household) || facts.some((f) => f.kind === 'sickness' && f.about.includes(tie.id!))
     if (state.sickUntil !== undefined && state.sickUntil > world.now && knowsIll) lines.push(`${tie.name}, ${describe(tie)}, is ill in bed.`)
   }
   return lines.length ? [`YOUR PEOPLE NOW: ${lines.join(' ')}`] : []
@@ -219,8 +234,7 @@ export function peopleNow(world: World, npcId: string): string[] {
 
 /** Someone near to this NPC whose death it has heard of in the last two months. */
 export function mourning(world: World, npcId: string): Tie | undefined {
-  const heard = world.state.news?.heard[npcId] ?? {}
-  const deaths = (world.state.news?.facts ?? []).filter((f) => f.kind === 'death' && heard[f.id] && world.now - f.t < 60 * 24 * 60)
+  const deaths = heardOf(world, npcId, ['death']).filter((f) => world.now - f.t < 60 * 24 * 60)
   return ties(world, npcId).find((tie) => isNear(tie) && deaths.some((f) => f.about.includes(tie.id ?? '')))
 }
 
@@ -228,7 +242,7 @@ export function mourning(world: World, npcId: string): Tie | undefined {
 export function griefSince(world: World, npcId: string): number | undefined {
   const heard = world.state.news?.heard[npcId] ?? {}
   const near = new Set(ties(world, npcId).filter(isNear).map((t) => t.id))
-  const times = (world.state.news?.facts ?? []).filter((f) => f.kind === 'death' && heard[f.id] && f.about.some((id) => near.has(id))).map((f) => heard[f.id]!.t)
+  const times = heardOf(world, npcId, ['death']).filter((f) => f.about.some((id) => near.has(id))).map((f) => heard[f.id]!.t)
   return times.length ? Math.max(...times) : undefined
 }
 

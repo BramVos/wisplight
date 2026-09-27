@@ -78,6 +78,9 @@ export function recordFact(world: World, input: FactInput): Fact {
   const cause = (input.cause ?? world.causing).filter((id) => id !== fact.id && factById(world, id))
   if (cause.length) fact.cause = [...new Set(cause)]
   store.facts.push(fact)
+  // The index grows with the list (M9.3), rather than being built again.
+  const byId = index.get(store.facts)
+  if (byId && byId.size === store.facts.length - 1) byId.set(fact.id, fact)
   const places = new Set([input.place])
   if (input.loud) for (const exit of Object.values(world.location(input.place).exits)) places.add(exit.to)
   for (const id of Object.keys(world.state.npcs).sort()) {
@@ -160,6 +163,8 @@ export function versionOf(fact: Fact, heard: Heard): string {
 }
 
 const CHECKS_PER_HOUR = 4
+/** At a crowded place a teller talks with at most this many others a quarter of an hour, chosen seeded (M9.3). */
+const CONTACTS = 12
 
 /** Every quarter of an hour: people who are together pass on news; once an hour small news is forgotten. */
 export function spreadNews(world: World): void {
@@ -182,8 +187,10 @@ export function spreadNews(world: World): void {
   for (const [place, people] of [...byPlace.entries()].sort((a, b) => a[0].localeCompare(b[0]))) {
     if (people.length < 2) continue
     for (const teller of people) {
-      for (const listener of people) {
-        if (teller === listener) continue
+      // Bounded contacts (M9.3): in a crowd, a few of those present; in a small company, everyone as before.
+      const others = people.filter((p) => p !== teller)
+      const listeners = others.length <= CONTACTS ? others : pickSome(world, 'news', others, CONTACTS)
+      for (const listener of listeners) {
         // The chances are per hour; spread them over the checks in that hour.
         const perHour = chanceToTell(world, place, teller, listener)
         if (world.rng.next('news') >= 1 - Math.pow(1 - perHour, 1 / CHECKS_PER_HOUR)) continue
@@ -191,6 +198,13 @@ export function spreadNews(world: World): void {
       }
     }
   }
+}
+
+/** So many of a list, chosen with a system's own randomness, in their order. */
+export function pickSome(world: World, stream: string, list: string[], n: number): string[] {
+  const chosen = new Set<number>()
+  while (chosen.size < n) chosen.add(Math.floor(world.rng.next(stream) * list.length))
+  return [...chosen].sort((a, b) => a - b).map((i) => list[i]!)
 }
 
 function chanceToTell(world: World, place: string, teller: string, listener: string): number {
@@ -218,8 +232,10 @@ function chanceToTell(world: World, place: string, teller: string, listener: str
  */
 function tellTheFamily(world: World): void {
   const store = world.state.news!
-  for (const fact of store.facts) {
-    if (!isFamilyNews(fact) || world.now - fact.t > 12 * 60) continue
+  // Only the last twelve hours, from the newest back (M9.3): the list is in the order things happened.
+  for (let i = store.facts.length - 1; i >= 0 && world.now - store.facts[i]!.t <= 12 * 60; i--) {
+    const fact = store.facts[i]!
+    if (!isFamilyNews(fact)) continue
     const knowers = Object.keys(store.heard)
       .filter((who) => who !== 'player' && store.heard[who]![fact.id] && world.alive(who))
       .sort()
@@ -298,8 +314,19 @@ function tell(world: World, teller: string, listener: string): void {
  */
 function newsArrives(world: World): void {
   const store = world.state.news!
-  const fresh = store.facts.filter((f) => f.belang >= 2 && world.now - f.t <= (FORGET_AFTER[f.belang] ?? 30 * DAY))
+  // News still on its way: the last month at most, from the newest back (M9.3), in the order things happened.
+  const recent: Fact[] = []
+  for (let i = store.facts.length - 1; i >= 0 && world.now - store.facts[i]!.t <= 30 * DAY; i--) recent.push(store.facts[i]!)
+  const fresh = recent.reverse().filter((f) => f.belang >= 2 && world.now - f.t <= (FORGET_AFTER[f.belang] ?? 30 * DAY))
   if (fresh.length === 0) return
+  const km = new Map<string, number>()
+  const areaOf = (place: string) => world.content.locations.get(place)?.area ?? place
+  const kmOf = (a: string, b: string) => {
+    const key = `${areaOf(a)}|${areaOf(b)}`
+    let v = km.get(key)
+    if (v === undefined) km.set(key, (v = areaKm(world, a, b)))
+    return v
+  }
   for (const id of Object.keys(world.state.npcs).sort()) {
     const npc = world.state.npcs[id]!
     if (npc.dead || npc.absent) continue
@@ -308,7 +335,8 @@ function newsArrives(world: World): void {
     const heard = heardBy(world, id)
     for (const fact of fresh) {
       if (heard[fact.id] || (!away && fact.belang < 4)) continue
-      const km = areaKm(world, fact.place, where)
+      // Worked out once per area, not per person (M9.3).
+      const km = kmOf(fact.place, where)
       if (km > REACH_KM[fact.belang]!) continue
       if (world.now < fact.t + (1 + km / 4) * 60) continue
       const h: Heard = { level: km <= 10 ? 2 : 1, reliability: km <= 10 ? 0.8 : 0.6, from: 'news', t: world.now }

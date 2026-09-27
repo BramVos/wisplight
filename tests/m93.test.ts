@@ -2,7 +2,8 @@ import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterAll, describe, expect, it } from 'vitest'
-import { Engine, MockLlm, recordFact, type Content, type LlmRequest } from '../src/engine'
+import { Engine, factById, MockLlm, recordFact, type Content, type LlmRequest } from '../src/engine'
+import { performance } from 'node:perf_hooks'
 import { chronicle, type ChroniclerRequest } from '../src/chronicler'
 import { buildInput, lookupCards } from '../src/engine/chronicler'
 import { answerLookup, LOOKUP_LIMITS } from '../src/engine/lookups'
@@ -188,5 +189,45 @@ describe('M9.3: a brain that asks first', () => {
     expect(heard.split('\n').filter((l) => l.startsWith('  ')).length).toBe(2)
     // And then it chose, as before.
     expect(engine.state.plans!.some((p) => p.plan === 'intention:send_for_more' && p.subjects?.includes('npc_lubbert'))).toBe(true)
+  }, 120_000)
+})
+
+describe('M9.3: indexes, and work before people', () => {
+  it('with a hundred thousand facts, finding one and passing on news take no longer than with a thousand', () => {
+    const timed = (facts: number) => {
+      const engine = new Engine(content, { seed: 160 })
+      const store = engine.state.news!
+      const old = engine.world.now - 90 * 24 * 60
+      for (let i = 0; i < facts; i++) store.facts.push({ id: `fact_old_${i}`, kind: 'talk', about: [], place: 'loc_veenhoek_green', t: old, belang: 1, juice: 0.2, title: `old talk ${i}`, text: { precise: 'p', village: 'v', far: 'f' } })
+      const world = engine.world
+      // The index is built once, on the first look-up after facts came in from outside; after that each look-up is constant.
+      factById(world, 'fact_old_0')
+      let t = performance.now()
+      for (let i = 0; i < 10_000; i++) factById(world, `fact_old_${(i * 7919) % facts}`)
+      const find = performance.now() - t
+      t = performance.now()
+      for (let i = 0; i < 20; i++) engine.tick(15)
+      const spread = performance.now() - t
+      return { find, spread }
+    }
+    const small = timed(1_000)
+    const large = timed(100_000)
+    // Constant time: a hundred times the facts, not a hundred times the work (and some room for a busy machine).
+    expect(large.find).toBeLessThan(small.find * 5 + 20)
+    expect(large.spread).toBeLessThan(small.spread * 5 + 50)
+  })
+
+  it('a thousand more people: bounded contacts and due-first thinking keep an hour quick, and a replay makes the same world', async () => {
+    const npcs = new Map(content.npcs)
+    const homes = ['loc_visser_house', 'loc_gerrit_house', 'loc_aaltje_cottage', 'loc_veenhoek_bakery', 'loc_wouter_hut']
+    const template = content.npcs.get('npc_jan_visser')!
+    for (let i = 0; i < 1000; i++) npcs.set(`npc_x${i}`, { ...template, id: `npc_x${i}`, name: `Extra Person${i}`, short: `Person${i}`, aliases: [`person${i}`], relations: [], household: undefined, home: homes[i % homes.length]!, work: undefined })
+    const big = { ...content, npcs } as Content
+    const engine = new Engine(big, { seed: 161 })
+    const t = performance.now()
+    engine.tick(2 * 60)
+    expect(performance.now() - t).toBeLessThan(4_000)
+    const replayed = await Engine.replay(big, 161, engine.save().log)
+    expect(replayed.state).toEqual(engine.state)
   }, 120_000)
 })

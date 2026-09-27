@@ -53,15 +53,30 @@ export function middlePurse(world: World, purses = householdPurses(world)): numb
   return Math.max(1, sorted.length % 2 ? sorted[mid]! : (sorted[mid - 1]! + sorted[mid]!) / 2)
 }
 
+/** Per game minute, as the purses (M9.3): the middle, who holds an office by household, and the levels asked for. */
+const levels = new WeakMap<World, { t: number; purses: Map<string, number>; middle: number; office: Set<string>; level: Map<string, number> }>()
+
 /** Standing 1 (poor) to 5 (notable) of the household of someone. */
-export function standingOf(world: World, id: string, purses = householdPurses(world)): number {
+export function standingOf(world: World, id: string, purses?: Map<string, number>): number {
   if (!counts(world, id)) return 2
-  const ratio = (purses.get(householdKey(world, id)) ?? 0) / middlePurse(world, purses)
+  // Worked out once a game minute (M9.3): talk at a crowded place asked it for every pair, again and again.
+  let c = levels.get(world)
+  const own = householdPurses(world)
+  if (!c || c.t !== world.now || c.purses !== own) {
+    const offices = world.content.world.standing?.offices ?? OFFICES
+    const office = new Set(Object.keys(world.state.npcs).filter((m) => counts(world, m) && offices.includes(world.npc(m).profession)).map((m) => householdKey(world, m)))
+    c = { t: world.now, purses: own, middle: middlePurse(world, own), office, level: new Map() }
+    levels.set(world, c)
+  }
+  const using = purses ?? own
+  const known = using === own ? c.level.get(id) : undefined
+  if (known !== undefined) return known
+  const ratio = (using.get(householdKey(world, id)) ?? 0) / (using === own ? c.middle : middlePurse(world, using))
   let level = ratio < 0.5 ? 1 : ratio < 1.5 ? 2 : ratio < 3 ? 3 : ratio < 6 ? 4 : 5
-  const offices = world.content.world.standing?.offices ?? OFFICES
-  const members = Object.keys(world.state.npcs).filter((m) => counts(world, m) && householdKey(world, m) === householdKey(world, id))
-  if (members.some((m) => offices.includes(world.npc(m).profession))) level = Math.max(3, level + 1)
-  return Math.min(5, level)
+  if (c.office.has(householdKey(world, id))) level = Math.max(3, level + 1)
+  level = Math.min(5, level)
+  if (using === own) c.level.set(id, level)
+  return level
 }
 
 export function standingName(world: World, level: number): string {

@@ -458,7 +458,7 @@ export function runVerb(world: World, ctx: PlanContext, verb: Verb, st: StepStat
       return true
     }
     // Not the one it came from: the nearest trader or traveller within two hours.
-    const sources = new Set(Object.entries(world.state.news?.heard[who] ?? {}).filter(([id]) => world.state.news!.facts.find((f) => f.id === id)?.claim?.subject === subject).map(([, h]) => h.from))
+    const sources = new Set(Object.entries(world.state.news?.heard[who] ?? {}).filter(([id]) => factById(world, id)?.claim?.subject === subject).map(([, h]) => h.from))
     const trader = Object.keys(world.state.npcs)
       .sort()
       .filter((id) => id !== who && !sources.has(id) && world.present(id) && isTrader(world, id))
@@ -676,7 +676,7 @@ function hire(world: World, ctx: PlanContext, key: string, reach: number, except
   const vars = { ...ctx.bind, who, place: location }
   recordFact(world, { kind: 'vacancy', about: [who, service.provider, location], place: location, belang: text.belang, title: fill(world, text.title, vars), text: { precise: fill(world, text.precise, vars), village: fill(world, text.village, vars), far: fill(world, text.far, vars) }, claim: { subject: key, key: 'vacancy', value: 'filled' } })
   // The notice comes down.
-  for (const [board, list] of Object.entries(world.state.boards ?? {})) world.state.boards![board] = list.filter((f) => facts.find((x) => x.id === f)?.claim?.subject !== key)
+  for (const [board, list] of Object.entries(world.state.boards ?? {})) world.state.boards![board] = list.filter((f) => factById(world, f)?.claim?.subject !== key)
   return true
 }
 

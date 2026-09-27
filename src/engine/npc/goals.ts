@@ -5,7 +5,7 @@ import { describePersonality, peopleIds, relevantPeople, worldFrame } from '../d
 import { goalJsonSchema, GoalReplySchema } from '../dialogue/schema'
 import { itemName } from '../items'
 import { questsOf } from '../life'
-import { versionOf } from '../news'
+import { factById, versionOf } from '../news'
 import { isNear, peopleLine, tieTo } from '../people'
 import { standingLine } from '../standing'
 import { openRequestsOf } from '../requests'
@@ -233,7 +233,7 @@ export function goalRequest(world: World, choice: GoalChoice, answers?: string[]
   const state = world.npcState(npcId)
   // The people and places of what this choice is about (M9.3): the signal, and the news they just heard.
   const about = choice.signal ? signalOf(world, choice.signal) : undefined
-  const recent = Object.entries(world.state.news?.heard[npcId] ?? {}).filter(([, h]) => world.now - h.t < 2 * DAY).map(([id]) => world.state.news?.facts.find((f) => f.id === id)).filter((f) => f !== undefined)
+  const recent = Object.entries(world.state.news?.heard[npcId] ?? {}).filter(([, h]) => world.now - h.t < 2 * DAY).map(([id]) => factById(world, id)).filter((f) => f !== undefined)
   const ids = allowed(world, npcId, { people: [...(about?.who ?? []), ...recent.flatMap((f) => f!.about)], places: [...(about ? [about.place] : []), ...recent.map((f) => f!.place)] })
   const profession = world.content.professions.get(npc.profession)?.name ?? npc.profession
   const keys: Record<string, string> = {}

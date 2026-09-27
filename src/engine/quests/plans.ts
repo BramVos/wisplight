@@ -132,7 +132,7 @@ export function plansDue(world: World, host: QuestHost): Output[] {
   const before = world.causing
   for (const p of [...(world.state.plans ?? [])]) {
     const plan = planOf(world, p.plan)
-    if (!plan) continue
+    if (!plan || !planDue(world, p, plan)) continue
     // What happens now comes from what the plan came from (M9.2).
     world.causing = planCauses(world, p)
     while (p.phase < plan.phases.length && world.now >= p.started + plan.phases[p.phase]!.after * 60) {
@@ -149,6 +149,33 @@ export function plansDue(world: World, host: QuestHost): Output[] {
     out.push(...startPlan(world, host, id, cause ?? (id.startsWith('chronicle_') ? 'chronicle' : 'war')))
   }
   return out
+}
+
+/**
+ * Whether a plan has anything to do now (M9.3): a phase whose time has come,
+ * or, while it runs, a step that is due or waits on a condition, or its end.
+ * A plan whose next moment lies ahead is passed over without more work. It
+ * reads the plan and changes nothing.
+ */
+function planDue(world: World, p: PlanState, plan: Plan): boolean {
+  if (p.phase < plan.phases.length && world.now >= p.started + plan.phases[p.phase]!.after * 60) return true
+  if (!plan.steps.length || p.ended !== undefined) return false
+  if (p.expires !== undefined && world.now >= p.expires) return true
+  // A plan whose steps are all settled ends on this pass.
+  let open = false
+  for (const step of plan.steps) {
+    const st = p.steps?.[step.id]
+    if (st?.done !== undefined || st?.skipped !== undefined) continue
+    open = true
+    if (st?.due !== undefined) {
+      if (world.now >= st.due) return true
+      continue
+    }
+    // Not yet worked out: the step after an unsettled one waits; others are looked at by runSteps.
+    const before = step.after ? p.steps?.[step.after] : undefined
+    if (!step.after || before?.done !== undefined || before?.skipped !== undefined) return true
+  }
+  return !open
 }
 
 // ---------------------------------------------------------------- steps (M8.1)

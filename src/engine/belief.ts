@@ -1,5 +1,6 @@
 import { foodGoods, opennessOf } from './economy/ledger'
 import { relation } from './dialogue/relations'
+import { factById } from './news'
 import { planOf } from './quests/plans'
 import type { Condition } from './quests/schema'
 import { queueSignal, watchBelief } from './signals'
@@ -210,7 +211,7 @@ export function provenWarnings(world: World, fact: Fact): void {
     if (who === 'player' || !world.content.npcs.has(who)) continue
     for (const [id, h] of Object.entries(heard)) {
       if (!h.stance || id === fact.id) continue
-      const said = store.facts.find((f) => f.id === id)
+      const said = factById(world, id)
       if (!said?.claim || said.t > fact.t || said.claim.subject !== claim.subject || said.claim.key !== claim.key || said.claim.value !== claim.value) continue
       delete h.stance
       queueSignal(world, { kind: 'warning_proven', who: [who, ...(world.content.npcs.has(h.from) ? [h.from] : [])], place: world.state.npcs[who]?.location ?? fact.place, cause: [fact.id, id], belang: 2, claim, watcher: 'rules' })

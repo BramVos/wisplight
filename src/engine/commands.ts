@@ -9,7 +9,7 @@ import { add, hasAll, itemName, listItems, matchItem, withArticle } from './item
 import { applyEffect } from './dialogue/relations'
 import { canSetOut, crossCountryLine, describeHex, hexOfId, isHexId, walk, waysLine } from './map/travel'
 import { regionMap } from './map/region'
-import { recordFact } from './news'
+import { factById, recordFact } from './news'
 import { chatsAt } from './chatter'
 import { fulfil } from './requests'
 import { giveBack, stories, type Tempo } from './stories'
@@ -179,7 +179,7 @@ function examine(world: World, target: string): Output {
     const uses = object.type.affordances.filter((a) => a.actors.includes('player')).map((a) => a.verb)
     const hint = uses.length > 0 ? ` (You could ${uses.map((u) => `USE ${(object.instance.name ?? object.type.name).toUpperCase()} ${u.toUpperCase()}`).join(' or ')}.)` : ''
     // Notices on a board (M8.1): whoever looks at it reads them.
-    const pinned = object.type.id === 'notice_board' ? (world.state.boards?.[here] ?? []).map((id) => world.state.news?.facts.find((f) => f.id === id)).filter((f) => f !== undefined) : []
+    const pinned = object.type.id === 'notice_board' ? (world.state.boards?.[here] ?? []).map((id) => factById(world, id)).filter((f) => f !== undefined) : []
     for (const f of pinned) {
       ;((world.state.news!.heard['player'] ??= {})[f.id] ??= { level: 3, reliability: 1, from: 'board', t: world.now })
       ;(world.state.player.journal ??= {})[f.id] ??= world.now

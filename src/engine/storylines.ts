@@ -1,5 +1,6 @@
 import { minuteOfDay } from './clock'
 import { questsOf } from './life'
+import { factById } from './news'
 import type { ChronicleRun, ChronicleState, Fact, Storyline } from './state'
 import type { World } from './world'
 
@@ -24,8 +25,24 @@ export function chronicleState(world: World): ChronicleState {
   return (world.state.chronicle ??= { seq: 0, lines: [], lore: [], news: {}, pending: [], runs: 0 })
 }
 
+/**
+ * Which line a fact is on, as an index (M9.3). Lines and their facts are only
+ * ever added to the same list (the archive makes a new one), so their count
+ * says when the index is out of date.
+ */
+const lineIndex = new WeakMap<Storyline[], { facts: number; byFact: Map<string, Storyline> }>()
+
 export function lineOf(world: World, factId: string): Storyline | undefined {
-  return world.state.chronicle?.lines.find((l) => l.facts.includes(factId))
+  const lines = world.state.chronicle?.lines
+  if (!lines) return undefined
+  const facts = lines.reduce((n, l) => n + l.facts.length, lines.length)
+  let idx = lineIndex.get(lines)
+  if (!idx || idx.facts !== facts) {
+    const byFact = new Map<string, Storyline>()
+    for (const l of lines) for (const id of l.facts) if (!byFact.has(id)) byFact.set(id, l)
+    lineIndex.set(lines, (idx = { facts, byFact }))
+  }
+  return idx.byFact.get(factId)
 }
 
 /** Every new fact goes on a storyline; big news asks the chronicler to write at once. */
@@ -46,7 +63,7 @@ export function onFact(world: World, fact: Fact): void {
   let target: Storyline
   if (line) {
     // A line is called after the biggest thing that happened on it.
-    const biggest = Math.max(0, ...line.facts.map((id) => world.state.news?.facts.find((f) => f.id === id)?.belang ?? 0))
+    const biggest = Math.max(0, ...line.facts.map((id) => factById(world, id)?.belang ?? 0))
     if (fact.belang > biggest) line.title = fact.title
     line.facts.push(fact.id)
     line.people = [...new Set([...line.people, ...people])]
@@ -97,8 +114,7 @@ export function requestRun(world: World, reason: ChronicleRun['reason'], lines: 
 
 /** The facts on a line the chronicler has not seen yet. */
 export function unreported(world: World, line: Storyline): Fact[] {
-  const facts = world.state.news?.facts ?? []
-  return line.facts.filter((id) => !line.reported.includes(id)).map((id) => facts.find((f) => f.id === id)!).filter(Boolean)
+  return line.facts.filter((id) => !line.reported.includes(id)).map((id) => factById(world, id)).filter((f): f is Fact => Boolean(f))
 }
 
 /** At 04:00: every storyline with unseen news of belang 3 or more goes to the chronicler in one run. */

@@ -1,4 +1,5 @@
 import { regionMap } from './map/region'
+import { factById } from './news'
 import { hexOfId } from './map/travel'
 import type { World } from './world'
 
@@ -39,7 +40,7 @@ export function posOf(world: World, id: string): Pos | undefined {
     return area?.pos ?? (area ? firstOfArea(world, area.id) : undefined)
   }
   if (id.startsWith('fact_')) {
-    const fact = world.state.news?.facts.find((f) => f.id === id)
+    const fact = factById(world, id)
     return fact ? posOfLocation(world, fact.place) : undefined
   }
   const topic = content.topics.get(id)

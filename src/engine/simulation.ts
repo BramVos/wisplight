@@ -6,7 +6,7 @@ import { sawPerson } from './acquaintance'
 import { isOpenAt, MINUTES_PER_DAY, minuteOfDay, weekdayOf } from './clock'
 import type { Need } from './content'
 import { add } from './items'
-import { spreadNews } from './news'
+import { pickSome, spreadNews } from './news'
 import { storyHour } from './stories'
 import { nightly } from './storylines'
 import { weatherHour } from './weather'
@@ -49,7 +49,12 @@ export function advance(world: World, minutes: number): void {
     // Someone in a conversation with the player stays put until it ends.
     settleNotes(world)
     // Near the player every minute, further off every quarter of an hour; notes not at all (lod.ts).
-    for (const id of ids) if (world.state.talk?.npc !== id && !world.state.npcs[id]!.dead && !world.state.npcs[id]!.following && !world.state.npcs[id]!.absent && thinksNow(world, id)) think(world, id)
+    // Work first (M9.3): only who is due thinks; someone busy till later is not asked where they stand.
+    for (const id of ids) {
+      const s = world.state.npcs[id]!
+      if (world.now < s.busyUntil || world.state.talk?.npc === id || s.dead || s.following || s.absent) continue
+      if (thinksNow(world, id)) think(world, id)
+    }
     settleRuns(world)
     settleChoices(world)
   }
@@ -181,6 +186,9 @@ export function isDaytime(minutes: number): boolean {
 export { MINUTES_PER_DAY }
 
 /** People in the same place see each other: they can say later where they saw whom. */
+// How many of those around someone notices in a quarter of an hour, in a crowd.
+const SEEN_IN_A_CROWD = 24
+
 function noteSightings(world: World, ids: string[]): void {
   const at = new Map<string, string[]>()
   for (const id of ids) {
@@ -200,7 +208,9 @@ function noteSightings(world: World, ids: string[]): void {
     if (here.length < 2) continue
     for (const a of here) {
       const seen = (world.state.npcs[a]!.sightings ??= {})
-      for (const b of here) {
+      // In a crowd (M9.3) someone notices a few of those around, not all of them at once.
+      const others = here.length - 1 <= SEEN_IN_A_CROWD ? here : pickSome(world, 'sightings', here.filter((b) => b !== a), SEEN_IN_A_CROWD)
+      for (const b of others) {
         if (a === b) continue
         // Together again after a long time (M8.2): known again, or a stranger now.
         if (longApart(world, seen[b]?.t)) metAgain(world, a, b)
