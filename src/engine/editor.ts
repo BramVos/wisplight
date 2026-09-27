@@ -1,6 +1,6 @@
 import { stringify } from 'yaml'
 import { ContentError, loadContent, type Content, type ContentFile, type Direction } from './content'
-import { warnings } from './builder'
+import { regionPreview, warnings } from './builder'
 import { applyEdits, entities, ENTITY_KINDS, LISTS, parseEntityYaml, worldPrefix, type Edit, type EditResult, type EntityKind, type Raw } from './edit'
 import { worldFrame } from './dialogue/prompt'
 import type { LlmRequest } from './dialogue/llm'
@@ -37,6 +37,8 @@ export interface EditorView {
   /** Things that load but deserve a look. */
   warnings: string[]
   files: string[]
+  /** Each region as the generator draws it from its zones, while the world loads. */
+  maps: Record<string, string>
 }
 
 export const KIND_NAMES: Record<EntityKind, string> = {
@@ -95,6 +97,7 @@ export function editorView(files: ContentFile[]): EditorView {
     problems,
     warnings: content ? warnings(content) : [],
     files: files.map((f) => f.path).sort(),
+    maps: content ? Object.fromEntries([...content.regions.keys()].map((id) => [id, regionPreview(content, id) ?? ''])) : {},
   }
 }
 

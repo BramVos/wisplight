@@ -18,12 +18,13 @@ Claude builds Wisplight for Bram, milestone by milestone. Bram playtests and mak
 
 ```bash
 npm run dev        # desktop app with hot reload
+npm run editor     # the editor (M8), in its own window
 npm run play       # terminal client (accepts piped input)
-npm run web        # interface only, in a browser on port 5199
+npm run web        # interface only, in a browser on port 5199 (?editor=1 for the editor, ?mock=1 for the mock model)
 npm test
 npm run typecheck
 npm run build
-WISPLIGHT_SMOKE=1 npx electron .   # after build: hidden end-to-end check
+WISPLIGHT_SMOKE=1 npx electron .   # after build: hidden end-to-end check (WISPLIGHT_SMOKE=isle for Skerrow, add --editor for the editor)
 ```
 
 ## Architecture rules
@@ -32,12 +33,12 @@ WISPLIGHT_SMOKE=1 npx electron .   # after build: hidden end-to-end check
 - The AI decides, the systems execute. Models may only propose goals, lines and bounded effects; the engine validates and applies them.
 - All model calls go through one gateway with providers for OpenAI, Anthropic and a mock. Tests and headless simulations use the mock and recorded replies; they never call a real API.
 - API keys: only entered by the player in the app settings, stored with Electron `safeStorage`. Never log, print, commit or put a key in a test. Never type a real key anywhere yourself.
-- Content lives in `content/` as YAML validated with zod. Every id is stable once committed; renames go through an id map.
+- Content lives in `content/<world>/` as YAML validated with zod: `base` is the Nethermarch, `isle` is Skerrow. Every id is stable once committed; renames go through an id map. The game's own texts take region, calendar, coins and law from `world.yaml`, never hard-coded Nethermarch names.
 - Randomness is seeded per system, and every world change is an event in the log, so runs can be replayed.
 
 ## Content rules
 
-- Names and facts come from the world book. The water spirit is called the Haakman; never use the old name.
+- Names and facts of the Nethermarch come from the world book. Another world keeps its names and lore in its own folder (`world.yaml` frame and `CHRONICLER.md`). The water spirit is called the Haakman; never use the old name.
 - Room descriptions: three to five sentences, second person, present tense, one non-visual sense, a hint at an exit. Topics in `[brackets]`.
 - PEGI 18 with hard limits: nothing sexual involving minors, no hate against real groups, romance stays non-explicit.
 

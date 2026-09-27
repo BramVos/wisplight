@@ -1146,3 +1146,8 @@ pre.sheet {
 .editor-app .exit-row {
   grid-template-columns: 13ch minmax(0, 1fr) 7ch auto;
 }
+
+.map.generated {
+  font-size: 7px;
+  line-height: 1;
+}

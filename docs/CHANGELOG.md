@@ -1,5 +1,22 @@
 # Changelog
 
+## M8 Editor en meerdere werelden, 27 september 2026
+
+Nieuw:
+- **Een tweede wereld.** Naast de Nethermarch staat Skerrow, een klein high-fantasy-eiland waarop je strandt na het vergaan van de Grey Gull. Zeven bewoners (onder wie een elf in een verwoeste magiërstoren en een hedge-witch), twaalf plekken en een hoofdquest met drie oplossingen: Brannocs boot repareren, het baken weer laten branden zodat er een schip komt, of met de sleutel uit de grafheuvel van de wyrm door de waystone. Doe je niets, dan sluit na veertig dagen de winter de zee. Het eiland heeft een eigen kalender (Windsday 3 Leaffall 412 SF), eigen munten (gp, sp, cp), eigen wet en een eigen deel van de werkinstructie van de kroniekschrijver, en er zit geen regel code voor in. Het heeft geen regelbestand, dus je speelt de kant-en-klare reiziger zonder gevechten.
+- **Wereld kiezen.** Een nieuw spel vraagt in welke wereld je begint. CONTINUE, LOAD en NEW STRANGER openen de wereld van de save.
+- **De editor in een eigen venster.** `npm run editor`, of [Editor] in het spel als je `npm run dev` gebruikt. Kies een wereld en bewerk alles: plekken en mensen met een formulier, de rest als YAML. Opslaan controleert eerst de hele wereld en schrijft alleen het ding dat verandert, dus commentaar en indeling blijven staan. Een uitgang krijgt aan de andere kant vanzelf de weg terug. [Check and show the change] toont de wijziging als diff. Een lopend spel in dezelfde wereld gaat er meteen mee verder.
+- **Controle, speeltest en NPC-inspecteur.** Fouten en aandachtspunten met een link, per quest het aantal oplossingen, en een speeltest die de wereld 1 tot 30 dagen zonder jou laat draaien, met per persoon wat die wil, van plan is, onthoudt en deed.
+- **Sparren met de kroniekschrijver.** Vraag iets, bijvoorbeeld "een gehucht bij deze plek met drie mensen en een verhaal". Het voorstel verschijnt als diff, wordt gecontroleerd en komt pas in de bestanden na [Accept and save]. Dit gebruikt het model dat je voor de kroniekschrijver koos.
+- **Nieuwe wereld.** Onder New world maak je een lege wereld met een gebied en een plek, die meteen in de wereldkeuze staat.
+- Kleine dingen: `wait 3 hours` wacht nu uren, mensen stellen zich voor met het werkwoord in de ik-vorm, en de oude builder-overlay uit M4 is vervangen door de editor.
+
+Testen: `npm run dev` en kies Skerrow. Pak de zeildoek, loop oost, oost, noord, oost en koop pitch (`buy pitch`), ga terug naar de haven en `mend the boat`, dan `ask brannoc to sail me`. Of vraag Tamsin in het berkenbos naar de grafheuvel. Daarna `npm run editor`: open een plek, voeg een uitgang toe en bekijk de diff; vraag onder Chronicler om een gehucht met een plek open (met een model gekoppeld, of in de browser-preview `npm run web` met `?editor=1&mock=1`); draai onder Playtest een week. Controles: `npm test` (335 tests), waarin elke entiteit van beide werelden zonder verlies opent en opslaat, het gehucht van de kroniekschrijver speelbaar is en alle oplossingen van Skerrow worden uitgespeeld; na `npm run build` de rooktest voor beide werelden (`WISPLIGHT_SMOKE=isle`) en voor de editor (`--editor`).
+
+Nog niet: een kaart waarop je plekken sleept (uitgangen staan in het formulier), de bouwcommando's @dig, @desc, @spawn, @tag en @link (de editor doet dat werk), en een regelset voor Skerrow (elfen, tovenaars). Bewaarplekken zijn nog gedeeld over werelden: een SAVE in Skerrow vervangt de laatste handmatige save.
+
+Ontwerp: FO hoofdstuk 15 heeft een stand na M8 met de afwijkingen, het ontwerpdocument "Zo is het in M8 gebouwd". Afwijking: de kroniekschrijver levert hele entiteiten in YAML en de editor maakt de diff, omdat een model een diff vaak net verkeerd schrijft. Skerrow staat niet in het wereldboek, dat over de Nethermarch gaat; de namen staan in `content/isle`, en in CLAUDE.md staat nu dat een andere wereld haar namen in haar eigen map houdt.
+
 ## M7.2 Open punten uit M1 tot en met M7, 27 september 2026
 
 Nieuw, alles wat eerder onder "Nog niet" bleef staan:

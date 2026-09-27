@@ -118,15 +118,17 @@ Scope: wat in de milestone-rapporten onder "Nog niet" bleef staan en niet bij M8
 
 Blijft liggen, met reden: genereren tot speelbaar (niveau 3) komt met de eerste nieuwe streek, want pas dan gaan er wegen de streek uit; Busy Hands wacht op ambachtswerk voor de speler; de legende-variant van lore meenemen is een latere extra keuze (besluit 27 september).
 
-## M8 Volledige wereldbouwer
+## M8 Volledige wereldbouwer (af)
 
 Scope: FO 15. Lore-, quest-, object- en beroepseditors, speeltestgereedschap (tijd, teleport, NPC-inspecteur, AI-log, simulatie zonder speler), bouwcommando's in het spel, AI-schrijfhulp, live herladen, en sparren met de kroniekschrijver volgens de werkinstructie. Op verzoek van Bram (27 september) is de wereldbouwer een aparte editor, en kan hij meerdere werelden onderhouden; als bewijs komt er een tweede, heel kleine high-fantasywereld bij.
 
-- [ ] Een nieuw gehucht met drie NPC's en een verhaal is zonder code toe te voegen en direct speelbaar
-- [ ] Alle bestaande content opent en slaat op zonder verlies
-- [ ] Een voorstel van de kroniekschrijver in de wereldbouwer is eerst als wijziging te zien, wordt gevalideerd en pas na akkoord opgeslagen
-- [ ] De editor is een eigen venster met een eigen startcommando, en opent en bewaart elke wereld in `content/`
-- [ ] Een tweede wereld (een klein eiland waarop je strandt) is speelbaar naast de Nethermarch, en bij een nieuw spel kies je de wereld
+- [x] Een nieuw gehucht met drie NPC's en een verhaal is zonder code toe te voegen en direct speelbaar
+- [x] Alle bestaande content opent en slaat op zonder verlies
+- [x] Een voorstel van de kroniekschrijver in de wereldbouwer is eerst als wijziging te zien, wordt gevalideerd en pas na akkoord opgeslagen
+- [x] De editor is een eigen venster met een eigen startcommando, en opent en bewaart elke wereld in `content/`
+- [x] Een tweede wereld (een klein eiland waarop je strandt) is speelbaar naast de Nethermarch, en bij een nieuw spel kies je de wereld
+
+Afwijkingen, met reden in FO hoofdstuk 15: geen kaart waarop je plekken sleept (uitgangen in het formulier), de kroniekschrijver levert hele entiteiten en de editor maakt de diff, en @dig, @desc, @spawn, @tag en @link zijn niet gebouwd omdat de editor dat werk doet.
 
 ## M9 Afwerking en release
 

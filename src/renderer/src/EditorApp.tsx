@@ -331,6 +331,12 @@ function EntityEditor({ bridge, world, view, kind, id, saved }: { bridge: Editor
           <p className="muted small">One {kind.replace('_', ' ')} as it stands in its list, with its id. The schemas in src/engine/content.ts say which fields there are.</p>
         </>
       )}
+      {kind === 'region' && id && view.maps[id] && (
+        <>
+          <p className="muted small">The map the generator makes of the zones, every second row, with the places on it. Save to see a change drawn.</p>
+          <pre className="map whole generated">{view.maps[id]}</pre>
+        </>
+      )}
       <div className="row">
         <button type="button" className="link" disabled={busy} onClick={() => void run(true)}>
           [Save]

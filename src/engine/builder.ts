@@ -36,7 +36,7 @@ export function warnings(content: Content): string[] {
 /** The region as the generator makes it from the zone drawing, every second row, with the places of the content on it. */
 export function regionPreview(content: Content, id?: string): string | undefined {
   const region = id ? content.regions.get(id) : [...content.regions.values()][0]
-  const map = regionMap(content)
+  const map = region && regionMap(content, region.id)
   if (!region || !map) return undefined
   const terrain: Record<string, string> = { fen: '"', water: '~', woods: 'T', heath: '^', fields: '.' }
   const rows: string[] = []

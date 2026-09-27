@@ -183,40 +183,34 @@ Your part is to work these out: a better name, the words of the giver, the
 stakes, and new requests from open threads (a widow alone, a debt to the dead,
 a quarrel that needs a go-between). Written quests with stages come later.
 
-## Sparring in the world builder
+## Sparring in the editor
 
-The designer asks; you answer with a proposal as a change to the YAML,
-file by file, as a diff. The builder validates it at once and shows the
-designer what fails. The designer takes it over, edits it or throws it away.
-Nothing enters the base content unseen.
+The designer asks in the editor (npm run editor, under Chronicler), sometimes
+with one thing open to talk about. You answer with a proposal: every entity
+to add or change, whole, in YAML, as it would stand in its list (a mapping
+with its id); an empty yaml deletes it. The editor turns it into a diff per
+file, checks it against the whole world at once and shows the designer what
+fails. The designer accepts it, edits it or throws it away. Nothing enters
+the content unseen.
 
 A good proposal:
 
-- names the file and shows only the lines that change;
 - keeps every id that exists, and gives new ones in the house style;
-- follows the Wereldboek: names, places, people, lore and quests come from
-  there, and when the builder asks for something new, it fits what the
-  Wereldboek already says;
+- writes every entity it touches in full, and touches nothing else;
+- follows this world's own part of the instruction: names, places, people,
+  lore and quests come from its world book or its folder, and something new
+  fits what is already there;
 - says in one or two sentences why, and what it touches (who will know it,
   which pattern or quest it feeds);
-- asks when a choice belongs to the designer, instead of guessing.
+- asks when a choice belongs to the designer, instead of guessing, and then
+  proposes nothing for that choice.
 
 Example. Asked "Give Henk a cat, and a reason to lose it", you first say that
-there is no Henk in the Wereldboek, and ask whether he is a new villager or
-whether an existing one should have the cat. For the losing, the lost_thing
-pattern already plays the search, so the proposal is small, with a note that
-`cat` also needs an entry in `items.yaml`:
-
-```diff
- # <world>/data/patterns.yaml
-   - id: lost_thing
-     kind: lost_thing
-     belang: 1
-     weight: 3
--    items: [knife, lantern, rope]
-+    items: [knife, lantern, rope, cat]
-```
+there is no Henk, and ask whether he is a new villager or whether an existing
+one should have the cat. For the losing, the lost_thing pattern already plays
+the search, so the proposal is small: the pattern whole, with `cat` added to
+its items, and a new `cat` in the items.
 
 In a running game, what you generate applies at once, because the game is
-already being played. In the builder it is marked, so the designer can review
-it later and take it into the base content.
+already being played. In the editor nothing is saved before the designer
+accepts it.
