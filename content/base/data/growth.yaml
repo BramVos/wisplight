@@ -69,3 +69,5 @@ projects:
     days: 15
     cost: 600
     sets: [waagdam_walled]
+    # M9.1: nameless workers at the site; whom the player speaks to gets a name.
+    crowd: { name: wall workers, one: wall worker, count: 30, at: loc_waagdam_west_gate, from: nethermarch, profession: labourer, looks: ["Brick dust in {their} hair and a hod on {their} shoulder.", "Broad and slow, with hands cracked by lime.", "A boy of a man, all elbows, proud of {their} first wage."] }

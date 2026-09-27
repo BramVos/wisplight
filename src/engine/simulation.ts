@@ -1,3 +1,4 @@
+import { crowdsHour } from './growth/crowds'
 import { archiveDay } from './archive'
 import { fillFromLedger, ledgerHour, nameless } from './economy/ledger'
 import { projectsDay } from './growth/growth'
@@ -80,6 +81,7 @@ function hourly(world: World): void {
   crimesHour(world)
   healWounds(world)
   watchHour(world)
+  crowdsHour(world)
   if (minuteOfDay(world.now) === 0) {
     realmsDay(world)
     if (Math.floor(world.now / MINUTES_PER_DAY) % 7 === 0) {

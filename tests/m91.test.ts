@@ -3,7 +3,10 @@ import { describe, expect, it } from 'vitest'
 import { applyEdits, checkContent, createCharacter, entities, Engine, GameClock, loadContent, MockLlm, recordFact, suggestChoice, type Content, type ContentFile } from '../src/engine'
 import { carried, characterOf, settlementAt } from '../src/engine/economy/ledger'
 import { openness } from '../src/engine/belief'
-import { readLock, withLock } from '../src/engine/edit'
+import { adoptPlaceEdits, readLock, withLock } from '../src/engine/edit'
+import { shiftTension } from '../src/engine/social/realms'
+import { crowdsAt } from '../src/engine/growth/crowds'
+import { startProject } from '../src/engine/growth/growth'
 import { faithOf } from '../src/engine/faith'
 import { farFromPlayer, goAway } from '../src/engine/lod'
 import { simulate } from '../src/engine/playtest'
@@ -550,3 +553,80 @@ describe('M9.1: a change of rank', () => {
 function frictionOpenness(engine: Engine): number {
   return openness(engine.world, 'loc_waagdam_market')
 }
+
+describe('M9.1: a place a project made, adopted into the world', () => {
+  it('keeps its id: the old save and a new game have the same place, and the way in', async () => {
+    const engine = new Engine(content, { seed: 61, builder: true })
+    engine.tick(60)
+    for (let i = 0; i < 3; i++) shiftTension(engine.world, 'nethermarch', 'rijkland', 10, 'raids')
+    for (let d = 0; d < 30 && !engine.state.growth?.projects['waagdam_brickworks']?.done; d++) engine.tick(DAY)
+    expect(engine.state.growth!.projects['waagdam_brickworks']!.done).toBeDefined()
+    const save = engine.save()
+    const files = await readContentFiles(root)
+    const project = entities(files, 'project').find((e) => e.id === 'waagdam_brickworks')!
+    const from = entities(files, 'location').find((e) => e.id === 'loc_waagdam_harbour')!
+    const adopted = edited(files, ...adoptPlaceEdits(project.raw, from.raw))
+    const c = adopted.content!
+    expect(c.locations.get('loc_waagdam_brickworks')).toBeDefined()
+    expect(c.locations.get('loc_waagdam_harbour')!.exits.south?.to).toBe('loc_waagdam_brickworks')
+    expect(c.projects.get('waagdam_brickworks')!.place).toBeUndefined()
+    // The old save: the same place, from the world now.
+    const loaded = Engine.fromSave(c, save)
+    expect(loaded.content.locations.get('loc_waagdam_brickworks')).toBe(c.locations.get('loc_waagdam_brickworks'))
+    loaded.tick(DAY)
+    loaded.state.player.location = 'loc_waagdam_harbour'
+    expect(await say(loaded, 'south')).toMatch(/brickworks/i)
+    // A new game has it from the start.
+    expect(new Engine(c, { seed: 1 }).world.location('loc_waagdam_harbour').exits.south?.to).toBe('loc_waagdam_brickworks')
+    // Once in the world, adopting again is refused.
+    expect(applyEdits(adopted.files, adoptPlaceEdits(project.raw, from.raw)).problems.join(' ')).toMatch(/already a location with this id/)
+  }, 120_000)
+})
+
+describe('M9.1: nameless groups', () => {
+  it('refugees in the church are a number, not people; whom the player speaks to gets a name and a card', async () => {
+    const engine = new Engine(content, { seed: 106, builder: true })
+    runUntil(engine, 15, 9)
+    const people = Object.keys(engine.state.npcs).length
+    for (let i = 0; i < 4; i++) shiftTension(engine.world, 'nethermarch', 'rijkland', 10, 'raids')
+    for (let h = 0; h < 48 && !engine.state.crowds?.length; h++) engine.tick(60)
+    const crowd = engine.state.crowds!.find((c) => c.name === 'refugees from the eastern border')!
+    expect(crowd.count).toBe(18)
+    // No simulation per person: nobody new in the world.
+    expect(Object.keys(engine.state.npcs)).toHaveLength(people)
+    await say(engine, '@goto loc_waagdam_church')
+    expect(await say(engine, 'look')).toMatch(/Some 20 refugees from the eastern border are here/)
+    await say(engine, 'talk to a refugee')
+    expect(crowd.count).toBe(17)
+    const id = crowd.named[0]!
+    const card = engine.content.npcs.get(id)!
+    expect(card.profession).toBe('labourer')
+    expect(card.public_facts[0]).toMatch(/one of the refugees from the eastern border, from the Nethermarch/)
+    expect(engine.state.talk?.npc).toBe(id)
+    expect(Object.keys(engine.state.npcs)).toHaveLength(people + 1)
+    await say(engine, 'bye')
+    // The same person next time, by name.
+    await say(engine, `talk ${card.name.split(' ')[0]!.toLowerCase()}`)
+    expect(engine.state.talk?.npc).toBe(id)
+    expect(crowd.count).toBe(17)
+    await say(engine, 'bye')
+    // The save keeps them.
+    const loaded = Engine.fromSave(content, engine.save())
+    expect(loaded.content.npcs.get(id)?.name).toBe(card.name)
+    expect(loaded.state.crowds!.find((c) => c.id === crowd.id)!.count).toBe(17)
+    // After three weeks the group breaks up, and the one with a name goes with it.
+    for (let d = 0; d < 22; d++) engine.tick(DAY)
+    expect(engine.state.npcs[id]!.absent).toBe(true)
+    expect(await say(engine, 'look')).not.toMatch(/refugees from the eastern border are here/)
+  }, 120_000)
+
+  it('workers at the wall while it is built', () => {
+    const engine = new Engine(content, { seed: 107, builder: true })
+    engine.tick(60)
+    const g = (engine.state.growth ??= { people: [], projects: {}, hands: {} })
+    g.projects['waagdam_brickworks'] = { settlement: 'waagdam', started: 0, days: 10, used: {}, paid: 0, invested: {}, done: engine.world.now }
+    engine.world.regrow()
+    expect(startProject(engine.world, 'waagdam_wall')).toBe(true)
+    expect(crowdsAt(engine.world, 'loc_waagdam_west_gate').map((c) => [c.name, c.count])).toEqual([['wall workers', 30]])
+  })
+})

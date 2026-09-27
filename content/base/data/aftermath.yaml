@@ -434,6 +434,16 @@ aftermath:
 
   # M8.5: a wall for Waagdam. First a brickworks, for there is no stone in the
   # Holleveen: clay from the Vaart, fired with peat. Then the wall.
+  # M9.1: raids in the east drive people from the border villages to Waagdam:
+  # a crowd in the church, nameless until the player speaks to one of them.
+  - id: refugees_from_the_east
+    signal: threat
+    topic: refugees
+    expires: 30
+    steps:
+      - id: come
+        do: { crowd: refugees from the eastern border, one: refugee, count: 18, at: loc_waagdam_church, from: nethermarch, days: 21, profession: labourer }
+
   # M9.1: town rights. With the wall standing, the mayor goes to Graafhaven to
   # ask the Count to make Waagdam a city. The Count decides (the chance is his,
   # and the charter costs the town 200 duiten); the world notices either way.

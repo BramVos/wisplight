@@ -139,6 +139,8 @@ export const VerbSchema = z.union([
   z.object({ arrive: z.string(), to: z.string() }).strict(),
   /** A project of the content begins: materials from the store, workdays, money. */
   z.object({ build: z.string() }).strict(),
+  /** A nameless group comes to a place for some days (M9.1): refugees, workers. */
+  z.object({ crowd: z.string(), one: z.string(), count: z.number().int().positive().max(200), at: SelectorSchema, from: z.string(), days: z.number().positive(), profession: z.string() }).strict(),
   /** A settlement takes a new rank, paid from its purse: news of belang 4 (M9.1). */
   z.object({ rank: z.string(), kind: z.enum(['hamlet', 'village', 'town', 'city']), cost: z.number().int().min(0).default(0), by: z.string().optional() }).strict(),
   // M8.4: the economy.

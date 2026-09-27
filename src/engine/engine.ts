@@ -1,5 +1,6 @@
 import type { Archived } from './archive'
 import { applyFarPlace, farPlaceOf, farRequest, farWords, wantFarPlace, type FarWords } from './growth/far'
+import { crowdHere, nameOne } from './growth/crowds'
 import { deliverLoad, listLoads, loadsHere, payToll, robLoad, takeLoad } from './economy/haul'
 import { worldFrame } from './dialogue/prompt'
 import { followTombstones, followTombstonesInLog, nameBook, withNames, type NameBook } from './ids'
@@ -672,7 +673,10 @@ export class Engine {
     switch (command.verb) {
       case 'talk': {
         if (/^(party|group|everyone|all)$/i.test(command.args.join(' '))) return this.dialogue.party('')
-        const npc = findNpcHere(this.world, command.args.join(' '))
+        let npc = findNpcHere(this.world, command.args.join(' '))
+        // One of a nameless group gets a name and a card when spoken to (M9.1).
+        const crowd = npc ? undefined : crowdHere(this.world, command.args.join(' '))
+        if (crowd) npc = nameOne(this.world, crowd)
         if (!npc) return [{ kind: 'error', text: command.args.length ? `There is nobody called "${command.args.join(' ')}" here.` : 'Talk to whom?' }]
         // Start the conversation first, so the NPC stays put during the minute it takes. A chat they were in breaks off.
         breakOff(this.world, npc)

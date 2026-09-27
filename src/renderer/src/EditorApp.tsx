@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { stringify } from 'yaml'
-import { draftEdits, ENTITY_KINDS, KIND_NAMES, languageReference, parseEntityYaml, type ReferenceEntry } from '../../engine'
+import { adoptPlaceEdits, draftEdits, ENTITY_KINDS, KIND_NAMES, languageReference, parseEntityYaml, type ReferenceEntry } from '../../engine'
 import { createEditor, type DiffLine, type Edit, type EditorBridge, type EditorDraft, type EditorSave, type EditorView, type EntityKind, type Raw, type ShownChange, type SimReport, type WorldInfo } from './client'
 
 // The editor (M8, FO chapter 15), in a window of its own: npm run editor, or
@@ -679,6 +679,15 @@ function Grown({ bridge, world, grown }: { bridge: EditorBridge; world: string; 
     const result = await bridge.save(world, household.people.map((p) => ({ kind: 'npc' as const, id: String(p['id']), data: p, create: true })))
     setDone((d) => ({ ...d, [household.id]: result.ok ? 'written into the world' : result.problems.join('; ') }))
   }
+  const adoptPlace = async (place: SimReport['grown']['places'][number]) => {
+    // The same id as in the game (M9.1): the place, the way in, and the project without them.
+    const project = await bridge.entity(world, 'project', place.project)
+    const link = project?.raw['link'] as { from: string } | undefined
+    const from = link ? await bridge.entity(world, 'location', link.from) : undefined
+    const edits = project ? adoptPlaceEdits(project.raw, from?.raw) : []
+    const result = edits.length ? await bridge.save(world, edits) : { ok: false, problems: ['the project has no place to adopt'] }
+    setDone((d) => ({ ...d, [place.id]: result.ok ? 'written into the world' : result.problems.join('; ') }))
+  }
   if (!grown.households.length && !grown.built.length) return <p className="muted small">Nobody came and nothing was built.</p>
   return (
     <>
@@ -702,6 +711,18 @@ function Grown({ bridge, world, grown }: { bridge: EditorBridge; world: string; 
       ))}
       {grown.built.map((b) => (
         <li key={b}>{b}</li>
+      ))}
+      {(grown.places ?? []).map((p) => (
+        <li key={p.id}>
+          {p.name} ({p.id}), made by the project{' '}
+          {done[p.id] ? (
+            <span className="muted">{done[p.id]}</span>
+          ) : (
+            <button type="button" className="link" onClick={() => void adoptPlace(p)}>
+              [Adopt]
+            </button>
+          )}
+        </li>
       ))}
     </ul>
     </>

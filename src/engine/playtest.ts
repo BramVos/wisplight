@@ -55,7 +55,7 @@ export interface SimReport {
   /** The chronicler's storylines (M8.3): phase, open threads, what may follow. */
   lines: string[]
   /** People who came, by household, as content to look over and adopt; and what was built (M8.5). */
-  grown: { households: { id: string; names: string[]; people: Record<string, unknown>[] }[]; built: string[] }
+  grown: { households: { id: string; names: string[]; people: Record<string, unknown>[] }[]; built: string[]; places: { project: string; id: string; name: string }[] }
 }
 
 /** Runs a world without the player for some days. */
@@ -126,6 +126,10 @@ export function simulate(content: Content, days: number, seed = 1): SimReport {
         const people = (world.state.growth?.people ?? []).filter((p) => (p.household ?? p.id) === household)
         return { id: household, names: people.map((p) => `${p.name} (${p.age}, ${p.profession})`), people: people.map((p) => written(p as unknown as Record<string, unknown>)) }
       }),
+      // Places finished projects made, for the editor to adopt with the same id (M9.1).
+      places: Object.entries(world.state.growth?.projects ?? {})
+        .filter(([id, p]) => p.done !== undefined && content.projects.get(id)?.place)
+        .map(([id]) => ({ project: id, id: String(content.projects.get(id)!.place!['id']), name: String(content.projects.get(id)!.place!['name'] ?? id) })),
       built: Object.entries(world.state.growth?.projects ?? {}).map(([id, p]) => `${content.projects.get(id)?.name ?? id}: ${p.done !== undefined ? `finished ${world.date(p.done).split(',')[0]}` : `${p.days} of ${content.projects.get(id)?.days ?? '?'} workdays`}`),
     },
     lines: (world.state.chronicle?.lines ?? []).map((l) => {

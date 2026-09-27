@@ -6,6 +6,7 @@ import type { GrowthState } from './growth/growth'
 import type { Combat } from './combat/types'
 import type { Character } from './rules/character'
 import type { Load } from './economy/haul'
+import type { Crowd } from './growth/crowds'
 import type { Clock } from './rules/player'
 import type { Companion } from './social/companions'
 import type { Crime } from './social/crime'
@@ -400,6 +401,8 @@ export interface GameState {
   stories?: StoriesState
   /** Facts and who heard them; "player" is the player. */
   news?: { seq: number; facts: Fact[]; heard: Record<string, Record<string, Heard>> }
+  /** Nameless groups (M9.1): a number at a place, no simulation per person. */
+  crowds?: Crowd[]
   /** The rank of settlements that changed in this game (M9.1), by area. */
   ranks?: Record<string, 'hamlet' | 'village' | 'town' | 'city'>
   chronicle?: ChronicleState

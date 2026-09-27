@@ -16,6 +16,7 @@ import { queueSignal, watchBelief } from './signals'
 import { askTrader, isTrader, mayChaseAway } from './belief'
 import { remember } from './npc/execute'
 import { setRank } from './social/rank'
+import { addCrowd } from './growth/crowds'
 import { openRequest } from './requests'
 import { GOAL_CATALOGUE, triggerChoice } from './npc/goals'
 import { brainMayChoose, offered } from './npc/intentions'
@@ -334,6 +335,14 @@ export function runVerb(world: World, ctx: PlanContext, verb: Verb, st: StepStat
     return Boolean(people)
   }
   if ('build' in v) return startProject(world, v.build)
+  if ('crowd' in v) {
+    const at = one(world, ctx, v.at)
+    if (!at || !world.content.locations.has(at)) return false
+    const name = fill(world, v.crowd, ctx.bind)
+    addCrowd(world, { id: `crowd_${ctx.plan.id ?? ctx.plan.plan}_${name.replace(/[^a-z0-9]+/gi, '_').toLowerCase()}`, name, one: fill(world, v.one, ctx.bind), count: v.count, at, from: fill(world, v.from, ctx.bind), profession: v.profession, until: world.now + v.days * 24 * 60, cause: ctx.plan.id ?? ctx.plan.plan })
+    const place = world.location(at)
+    return Boolean(recordFact(world, { kind: 'crowd', about: [place.area], place: at, belang: 2, title: `${name} at ${place.name}`, text: { precise: `${v.count} ${name} have come to ${place.name}.`, village: `There are ${name} at ${place.name} now, a whole crowd of them.`, far: `There are ${name} in ${world.content.areas.get(place.area)?.name ?? place.area}.` } }))
+  }
   if ('rank' in v) {
     const target = fill(world, v.rank, ctx.bind)
     const area = world.content.areas.has(target) ? target : world.content.locations.get(target)?.area

@@ -1114,6 +1114,8 @@ function checkGrowth(c: Omit<Content, 'world'>): string[] {
     const s = c.settlements.get(p.settlement)
     if (!s) problems.push(`${where}: no settlement ${p.settlement}`)
     if (p.after && !c.projects.has(p.after)) problems.push(`${where}: after unknown project ${p.after}`)
+    if (p.crowd && !c.locations.has(p.crowd.at)) problems.push(`${where}: its workers are at unknown ${p.crowd.at}`)
+    if (p.crowd && !c.professions.has(p.crowd.profession)) problems.push(`${where}: its workers have unknown profession ${p.crowd.profession}`)
     for (const g of Object.keys(p.needs)) if (!c.items.has(g)) problems.push(`${where}: unknown item ${g}`)
     let place: string | undefined
     if (p.place) {

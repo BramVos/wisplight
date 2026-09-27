@@ -41,6 +41,19 @@ export const NewcomerSchema = z
   .strict()
 export type Newcomer = z.infer<typeof NewcomerSchema>
 
+/** A nameless group (M9.1): a number of people at a place; whom the player speaks to gets a name. */
+export const CrowdSchema = z
+  .object({
+    name: z.string().describe('Of them all: wall workers.'),
+    one: z.string().describe('One of them, as the player may call them: wall worker.'),
+    count: z.number().int().positive(),
+    at: z.string().describe('The place where they are.'),
+    from: z.string().describe('Where they come from: an area, a region beyond the map, a realm.'),
+    profession: z.string(),
+    looks: z.array(z.string()).optional().describe('What people see first; {they} and {their} are filled in.'),
+  })
+  .strict()
+
 /** Something a settlement may build, with materials from its store, workdays and money. */
 export const ProjectSchema = z
   .object({
@@ -55,6 +68,7 @@ export const ProjectSchema = z
     link: z.object({ from: z.string(), direction: z.string() }).strict().optional().describe('The way into the new place from a place that is there.'),
     workshops: z.array(WorkshopSchema).default([]).describe('Workshops the settlement has once it is finished.'),
     sets: z.array(z.string()).default([]).describe('Flags set when it is finished: descriptions that change with it.'),
+    crowd: CrowdSchema.optional().describe('Nameless workers at the site while it is built (M9.1).'),
   })
   .strict()
 export type Project = z.infer<typeof ProjectSchema>

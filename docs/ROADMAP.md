@@ -225,10 +225,10 @@ Uit de mijlpaalverslagen van M8.2 tot en met M8.5 (verwerkt 27 september 2026):
 - [x] De Nethermarch gebruikt seizoenen en uitputbare grond: turf wordt in de zomer gestoken, rogge in de Oogstmaand geoogst, en in de winter loopt de voorraad terug en stijgt de prijs, alleen uit content
 - [x] Elke toonbank van beide werelden vult uit het grootboek; de vaste bevoorrading blijft alleen als terugval voor nieuwe content, en niemand krijgt honger door een rekenfout
 - [x] Het wereldboek noemt wat Zwolderkamp en Hunnenloo sturen en vragen, en de content van de Nethermarch volgt het wereldboek
-- [ ] Een groep naamlozen (vluchtelingen, werkers aan de muur) krijgt pas een naam en een kaart als de speler iemand aanspreekt, en kost tot dan geen simulatie per persoon
+- [x] Een groep naamlozen (vluchtelingen, werkers aan de muur) krijgt pas een naam en een kaart als de speler iemand aanspreekt, en kost tot dan geen simulatie per persoon
 - [x] De speler kan een lading vervoeren van de ene nederzetting naar de andere voor loon, met tol en roof als risico onderweg
 - [x] Staat de muur van Waagdam, dan vraagt de burgemeester de graaf om stadsrechten; een rangwissel is een plan waarin de graaf beslist, en de wereld merkt het verschil
-- [ ] Een plek die door een project ontstond, is met [Adopt] in de content over te nemen met hetzelfde id, net als een nieuwkomer
+- [x] Een plek die door een project ontstond, is met [Adopt] in de content over te nemen met hetzelfde id, net als een nieuwkomer
 - [x] Ieder mens heeft een geloof uit de content van de wereld, en wrijving met nieuwkomers weegt verschil in geloof mee
 - [x] Een groep vóór nieuwkomers ontstaat ook zonder AI, als standaardnasleep in de content, naast de groep tegen
 - [ ] Een nieuw spel kan de wereld van een oud spel als legende meenemen, zonder namen van mensen die nog leven

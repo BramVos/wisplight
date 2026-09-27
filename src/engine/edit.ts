@@ -464,3 +464,20 @@ export function withLock(files: ContentFile[], lock: IdsLock): ContentFile[] {
   const old = files.find((f) => f.path === path)
   return old?.text === text ? files : [...others, { path, text }]
 }
+
+/**
+ * The edits that take a place a project made into the world (M9.1), as the
+ * editor's [Adopt] does for newcomers: the location with its own id, the way
+ * in from where the project linked it, and the project without its place and
+ * link, so a game where it was built and a new game both have the same place.
+ */
+export function adoptPlaceEdits(project: Raw, from?: Raw): Edit[] {
+  const place = project['place'] as Raw | undefined
+  if (!place) return []
+  const link = project['link'] as { from: string; direction: string } | undefined
+  const edits: Edit[] = [{ kind: 'location', id: String(place['id']), data: place, create: true }]
+  if (link && from) edits.push({ kind: 'location', id: link.from, data: { ...from, exits: { ...((from['exits'] as Raw | undefined) ?? {}), [link.direction]: { to: place['id'] } } } })
+  const rest = Object.fromEntries(Object.entries(project).filter(([k]) => k !== 'place' && k !== 'link'))
+  edits.push({ kind: 'project', id: String(project['id']), data: rest })
+  return edits
+}

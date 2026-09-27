@@ -1,4 +1,5 @@
 import { withFarPlaces, type FarPlace } from './far'
+import { addCrowd, endCrowd } from './crowds'
 import { GameClock } from '../clock'
 import { callName, LocationSchema, lockedIds, NpcSchema, type Content, type Npc } from '../content'
 import { economy, ledgerOf } from '../economy/ledger'
@@ -64,7 +65,8 @@ export function grownContent(base: Content, state: GameState): Content {
   const locations = built.length ? new Map(base.locations) : base.locations
   const settlements = built.length ? new Map(base.settlements) : base.settlements
   for (const p of built.sort((a, b) => a.id.localeCompare(b.id))) {
-    if (p.place) {
+    // A place the editor adopted into the world (M9.1) is the world's now, with the same id.
+    if (p.place && !base.locations.has(String(p.place['id']))) {
       const place = LocationSchema.parse(p.place)
       locations.set(place.id, place)
       if (p.link) {
@@ -225,6 +227,8 @@ export function startProject(world: World, id: string): boolean {
   if (g.projects[id]) return g.projects[id]!.done === undefined
   if (p.after && g.projects[p.after]?.done === undefined) return false
   g.projects[id] = { settlement: p.settlement, started: world.now, days: 0, used: {}, paid: 0, invested: {} }
+  // Nameless workers at the site while it is built (M9.1).
+  if (p.crowd) addCrowd(world, { id: `crowd_${id}`, ...p.crowd, cause: id })
   const area = world.content.areas.get(p.settlement)?.name ?? p.settlement
   recordFact(world, {
     kind: 'project',
@@ -274,6 +278,7 @@ export function projectsDay(world: World): void {
     state.days++
     if (state.days < p.days) continue
     state.done = world.now
+    endCrowd(world, `crowd_${id}`)
     for (const flag of p.sets) (world.state.flags ??= {})[flag] = true
     world.regrow()
     if (p.place) {

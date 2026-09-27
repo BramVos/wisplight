@@ -313,6 +313,7 @@ Watchers, the standard aftermath, intentions, fixed plans, quests and your own p
 - `form_group` `{ form_group: list of selector, aim: against | for, about: text, name: text }`: People band together for or against the newcomers of an area. Rules yes, brain no, chronicler yes.
 - `arrive` `{ arrive: text, to: text }`: Newcomers come to live in a free house and take up a trade nobody works. Rules yes, brain no, chronicler yes.
 - `build` `{ build: text }`: A settlement begins a project: a new place or a workshop, with materials from its store. Rules yes, brain no, chronicler yes.
+- `crowd` `{ crowd: text, one: text, count: number, at: selector, from: text, days: number, profession: text }`: A nameless group comes to a place for some days: refugees, workers; whom the player speaks to gets a name. Rules yes, brain no, chronicler yes.
 - `rank` `{ rank: text, kind: hamlet | village | town | city, cost?: number = 0, by?: text }`: A settlement takes a new rank (hamlet, village, town, city), paid from its purse; news of belang 4. Rules yes, brain no, chronicler yes.
 - `order` `{ order: text, to: text, qty?: number = 6, days?: number = 3, by?: text = "a carrier" }`: A settlement sends for goods that come in some days, at twice their worth. Rules yes, brain yes, chronicler yes.
 - `set` `{ set: text, value?: text or number or true/false = true }`: A flag. Rules yes, brain no, chronicler no.

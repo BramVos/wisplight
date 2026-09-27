@@ -1,4 +1,5 @@
 import { inSeason } from './content'
+import { crowdLines } from './growth/crowds'
 import { blessed } from './rules/blessings'
 import { ledgerOf, settlementAt } from './economy/ledger'
 import { gainXp, playerCheck } from './rules/player'
@@ -148,6 +149,7 @@ export function describeRoom(world: World): Output {
     return activity && !['taking it easy', 'at home'].includes(activity) ? `${npc.short} (${activity})` : npc.short
   })
   if (people.length > 0) lines.push(`Here: ${people.join(', ')}.`)
+  lines.push(...crowdLines(world, location.id))
   lines.push(...chatsAt(world, location.id))
   return { kind: 'room', text: lines.join('\n') }
 }
