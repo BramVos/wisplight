@@ -1,3 +1,4 @@
+import { sawPerson } from './acquaintance'
 import { isOpenAt, MINUTES_PER_DAY, minuteOfDay, weekdayOf } from './clock'
 import type { Need } from './content'
 import { add } from './items'
@@ -159,7 +160,10 @@ function noteSightings(world: World, ids: string[]): void {
   }
   // The player is seen too: that is how a rumour finds a suspect.
   const player = world.state.player.location
-  for (const id of at.get(player) ?? []) (world.state.npcs[id]!.sightings ??= {})['player'] = { where: player, t: world.now }
+  for (const id of at.get(player) ?? []) {
+    ;(world.state.npcs[id]!.sightings ??= {})['player'] = { where: player, t: world.now }
+    sawPerson(world, id, player)
+  }
   for (const [where, here] of at) {
     if (here.length < 2) continue
     for (const a of here) {

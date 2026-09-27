@@ -52,7 +52,7 @@ export function executeStep(world: World, npcId: string, step: Step): StepResult
       if (!direction || !exit) return 'failed'
       npc.travelFrom ??= npc.location
       // Someone only passing through gets one line on the way in and a short one on the way out.
-      world.emit('depart', npc.location, world.say(npc.passing ? '{name} walks on.' : `{name} ${leaving(direction)}.`, npcId), npcId)
+      world.emit('depart', npc.location, world.say(npc.passing ? `{name} walks on ${onward(direction)}.` : `{name} ${leaving(direction)}.`, npcId), npcId)
       npc.left = { location: npc.location, t: now }
       npc.location = exit.to
       npc.passing = exit.to !== step.to
@@ -381,6 +381,15 @@ export function clamp(value: number): number {
 
 function scale(values: Partial<Record<Need, number>>, times: number): Partial<Record<Need, number>> {
   return Object.fromEntries(Object.entries(values).map(([k, v]) => [k, (v ?? 0) * times]))
+}
+
+/** Which way someone passing through goes on: "walks on to the north". */
+function onward(direction: Direction): string {
+  if (direction === 'in') return 'inside'
+  if (direction === 'out') return 'outside'
+  if (direction === 'up') return 'upstairs'
+  if (direction === 'down') return 'downstairs'
+  return `to the ${direction}`
 }
 
 function leaving(direction: Direction): string {

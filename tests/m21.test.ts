@@ -127,7 +127,7 @@ describe('M2.1: people notice the stranger', () => {
     expect(lines).toMatch(/Gerrit stops and looks you over\./)
     engine.tick(12)
     expect(engine.state.npcs['npc_gerrit']).toMatchObject({ location: 'loc_veenhoek_quay', activity: 'stopping to look at the stranger' })
-    expect(texts(engine.tick(10))).toMatch(/Gerrit walks on\./)
+    expect(texts(engine.tick(10))).toMatch(/Gerrit walks on (to the \w+|inside|outside|upstairs|downstairs)\./)
   })
 
   it('does not stop twice for the same stranger within a few hours', () => {

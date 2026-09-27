@@ -280,6 +280,16 @@ export interface PlayerState {
   encounters?: Record<string, number>
   /** Conditions on the player that wear off, and when. */
   conditionsUntil?: Record<string, number>
+  /** What the player knows of people from seeing and asking them (acquaintance.ts). */
+  people?: Record<string, PersonNote>
+}
+
+/** Where the player saw someone, and their age once they told it. */
+export interface PersonNote {
+  seen?: { where: string; t: number }
+  /** How often the player saw them at each place; only the most frequent are kept. */
+  places?: Record<string, number>
+  age?: { value: number; t: number }
 }
 
 export interface ServiceState {

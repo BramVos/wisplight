@@ -1,3 +1,5 @@
+import type { SheetData } from './rules/player'
+import { personView, type PersonView } from './acquaintance'
 import { dayName, GameClock } from './clock'
 import { areaTopicId, callName } from './content'
 import type { TopicRegistry } from './dialogue/topics'
@@ -28,6 +30,10 @@ export interface JournalPage {
   links: JournalLink[]
   /** Where it is, on the map as the player knows it: rows of characters and a colour code per character. */
   map?: { rows: string[]; classes: string[] }
+  /** For a person: what the player saw and was told, laid out (acquaintance.ts). */
+  person?: PersonView
+  /** For the character sheet: the numbers, for the interface to lay out. */
+  sheet?: SheetData
 }
 
 export function journalPage(world: World, topics: TopicRegistry, id: string): JournalPage | undefined {
@@ -76,6 +82,11 @@ export function journalPage(world: World, topics: TopicRegistry, id: string): Jo
     }
     const death = world.state.npcs[npc.id]?.dead
     if (death && heard[death.fact]) page.lines.push(`Dead since ${day(world, death.t)}.`)
+    const view = personView(world, npc.id)
+    page.person = view
+    if (view.age) page.lines.push(view.age.known ? `${view.age.text} years old.` : `Looks ${view.age.text.replace(/\?$/, '')} years old, you would guess.`)
+    if (view.lastSeen) page.lines.push(`Last seen at ${view.lastSeen.where}, ${view.lastSeen.ago}.`)
+    if (view.often.length) page.lines.push(`Often at ${view.often.join(', ')}.`)
   } else if (entry.kind === 'place' && entry.ref) {
     page.kind = 'place'
     const location = content.locations.get(entry.ref)!

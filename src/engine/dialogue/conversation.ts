@@ -1,3 +1,4 @@
+import { asksAge, toldAge } from '../acquaintance'
 import type { Output } from '../commands'
 import { parseMoney, STUIVER } from '../items'
 import { MONTHS, WEEKDAYS } from '../clock'
@@ -63,6 +64,8 @@ export class Dialogue {
   questOptions?: (npcId: string) => { key: string; intent: string }[]
   /** A quest action the voice recognised in the player's words, for the engine to carry out. */
   private chosen?: string
+  /** Why the model gave no usable reply in the last turn, if it was asked. */
+  private lastFailure?: string
 
   /** Takes the quest action the voice recognised in the last turn, if any. */
   takeChosen(): string | undefined {
@@ -462,6 +465,8 @@ export class Dialogue {
     }
     const rel = relation(world.state, npcId)
     rel.familiarity = Math.min(100, rel.familiarity + 2)
+    // Asked their age and they answered: the journal knows it from now on.
+    if (reply && asksAge(world, npcId, text)) toldAge(world, npcId)
 
     // 5. New far-away places become part of this game's lore.
     for (const name of reply?.names ?? []) {
@@ -483,7 +488,9 @@ export class Dialogue {
     if (talk.history.length > 12) talk.history.splice(0, talk.history.length - 12)
     talk.turnsLeft--
     const ends = reply?.ends_conversation === true
-    return [...echo, { kind: 'speech', text: replyText }, ...(ends ? this.closeNow() : this.maybeClose())]
+    // When the model was asked and gave nothing usable, say so, so a stock line is not mistaken for an answer.
+    const failure: Output[] = !reply && this.lastFailure ? [{ kind: 'system', text: `(No answer from the AI: ${this.lastFailure}. A stock line stands in.)` }] : []
+    return [...echo, { kind: 'speech', text: replyText }, ...failure, ...(ends ? this.closeNow() : this.maybeClose())]
   }
 
   private maybeClose(): Output[] {
@@ -515,6 +522,7 @@ export class Dialogue {
       offered?: { key: string; intent: string }[]
     },
   ): Promise<Reply | undefined> {
+    this.lastFailure = undefined
     const llm = this.llm()
     if (!llm) return undefined
     const world = this.world
@@ -569,7 +577,8 @@ export class Dialogue {
             },
           })
         ).text
-      } catch {
+      } catch (error) {
+        this.lastFailure = error instanceof Error ? error.message : String(error)
         return undefined
       }
       const reply = parseReply(raw)
@@ -606,6 +615,7 @@ export class Dialogue {
       }
       return { ...reply, reply: fitted }
     }
+    this.lastFailure = 'both replies failed the checks'
     return undefined
   }
 

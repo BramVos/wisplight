@@ -1165,3 +1165,238 @@ pre.sheet {
   color: var(--room);
   padding: 0 6px;
 }
+
+/* What you know of the person you talk to (after the M8 playtest) */
+.talk-about {
+  border-bottom: 1px solid var(--line);
+  display: grid;
+  gap: 6px;
+  margin-bottom: 6px;
+  padding-bottom: 10px;
+}
+
+.talk-portrait {
+  aspect-ratio: 1;
+  border: 1px solid var(--line);
+  max-width: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
+.talk-portrait.none {
+  align-items: center;
+  color: var(--muted);
+  display: flex;
+  font-size: 12px;
+  justify-content: center;
+  text-align: center;
+  white-space: pre-line;
+}
+
+.talk-about dl {
+  display: grid;
+  font-size: 13px;
+  gap: 2px 10px;
+  grid-template-columns: auto 1fr;
+  margin: 0;
+}
+
+.talk-about dt {
+  color: var(--muted);
+}
+
+.talk-about dd {
+  margin: 0;
+}
+
+.talk-about p {
+  margin: 0;
+}
+
+/* The character sheet, laid out */
+.sheet-view {
+  display: grid;
+  gap: 14px;
+}
+
+.sheet-view h4 {
+  color: var(--room);
+  font-size: 13px;
+  font-weight: normal;
+  letter-spacing: 0.08em;
+  margin: 0 0 6px;
+  text-transform: uppercase;
+}
+
+.sheet-who {
+  align-items: flex-end;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  padding-bottom: 8px;
+}
+
+.sheet-name {
+  color: var(--speech);
+  font-size: 18px;
+}
+
+.sheet-level {
+  display: grid;
+  justify-items: end;
+}
+
+.sheet-label {
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.sheet-big {
+  color: var(--text);
+  font-size: 22px;
+  font-variant-numeric: tabular-nums;
+}
+
+.sheet-view .num {
+  font-variant-numeric: tabular-nums;
+}
+
+.sheet-bars {
+  display: grid;
+  gap: 12px 20px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.sheet-bars > div {
+  display: grid;
+  gap: 4px;
+  grid-template-columns: 1fr auto;
+}
+
+.sheet-bars .meter,
+.sheet-bars .small {
+  grid-column: 1 / -1;
+}
+
+.meter {
+  background: var(--line);
+  display: block;
+  height: 6px;
+  overflow: hidden;
+}
+
+.meter > span {
+  display: block;
+  height: 100%;
+}
+
+.meter.hp > span {
+  background: var(--ok);
+}
+
+.meter.xp > span {
+  background: var(--room);
+}
+
+.meter.favour > span {
+  background: var(--topic);
+}
+
+.sheet-tiles {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+}
+
+.sheet-tiles .tile {
+  border: 1px solid var(--line);
+  display: grid;
+  gap: 2px;
+  padding: 6px 8px;
+}
+
+.sheet-kv {
+  display: grid;
+  gap: 2px 12px;
+  grid-template-columns: auto 1fr;
+  margin: 0;
+}
+
+.sheet-kv dt {
+  color: var(--muted);
+}
+
+.sheet-kv dd {
+  margin: 0;
+}
+
+.sheet-skills {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.sheet-skills td {
+  border-bottom: 1px solid var(--line);
+  padding: 3px 8px 3px 0;
+}
+
+.sheet-skills td.num {
+  text-align: right;
+  width: 3em;
+}
+
+.sheet-skills tr:not(.trained) td {
+  color: var(--muted);
+}
+
+.sheet-skills .rank {
+  border: 1px solid var(--topic);
+  color: var(--topic);
+  font-size: 11px;
+  padding: 0 5px;
+}
+
+.sheet-skills .practice {
+  color: var(--room);
+  font-size: 10px;
+  letter-spacing: 2px;
+}
+
+.sheet-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.chip {
+  border: 1px solid var(--line);
+  font-size: 12px;
+  padding: 1px 8px;
+}
+
+.chip.general {
+  color: var(--muted);
+}
+
+.chip.bad {
+  border-color: var(--over);
+  color: var(--over);
+}
+
+.sheet-patron {
+  display: grid;
+  gap: 4px;
+  max-width: 360px;
+}
+
+.sheet-view .ok {
+  color: var(--ok);
+}
+
+.sheet-view .warn {
+  color: var(--warn);
+}

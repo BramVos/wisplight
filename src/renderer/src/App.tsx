@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import type { Output } from '../../engine'
-import { createClient, type AiStatus, type CreationData, type EngineClient, type Reply, type WorldChoice } from './client'
+import { createClient, type AiStatus, type CreationData, type EngineClient, type JournalPage, type Reply, type WorldChoice } from './client'
 import { CharacterCreation } from './CharacterCreation'
 import { WorldPicker } from './WorldPicker'
 import { FightPanel } from './FightPanel'
@@ -48,6 +48,8 @@ export function App() {
   const [lines, setLines] = useState<Line[]>([])
   const [status, setStatus] = useState<Status>()
   const [input, setInput] = useState('')
+  // The world waits while you type (after the M8 playtest).
+  const typing = input.trim().length > 0
   const [history, setHistory] = useState<string[]>([])
   const [historyIndex, setHistoryIndex] = useState(-1)
   const [error, setError] = useState<string>()
@@ -58,6 +60,8 @@ export function App() {
   // Where the conversation in progress began in the log: its window shows the lines from there.
   const [talkFrom, setTalkFrom] = useState<number>()
   const [portrait, setPortrait] = useState<string>()
+  // The journal page of the person you talk to, refreshed after every answer (age, where seen).
+  const [about, setAbout] = useState<JournalPage>()
   const [ending, setEnding] = useState(false)
   const [exporting, setExporting] = useState(false)
   const [creation, setCreation] = useState<CreationData>()
@@ -110,8 +114,8 @@ export function App() {
 
   // Menus stop the clock (FO, chapter 3).
   useEffect(() => {
-    client?.hold(Boolean(settings) || ending || exporting || Boolean(creation) || Boolean(journal) || Boolean(worlds))
-  }, [client, settings, ending, exporting, creation, journal, worlds])
+    client?.hold(Boolean(settings) || ending || exporting || typing || Boolean(creation) || Boolean(journal) || Boolean(worlds))
+  }, [client, settings, ending, exporting, typing, creation, journal, worlds])
 
   // What the editor saves is in the game at once: show the place again (FO, chapter 15).
   useEffect(() => {
@@ -188,6 +192,18 @@ export function App() {
     // Only when a conversation starts or ends.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [talk?.npc])
+  useEffect(() => {
+    if (!talk || !client) {
+      setAbout(undefined)
+      return
+    }
+    if (waiting) return
+    let live = true
+    void client.page(talk.npc).then((page) => live && setAbout(page))
+    return () => {
+      live = false
+    }
+  }, [client, talk?.npc, waiting])
   const openPage = (id?: string) => setJournal(id ? { start: id } : {})
   // A topic in the text: ask about it in a conversation; otherwise open its journal page, if known.
   const onTopic = (topic: string) => {
@@ -434,6 +450,7 @@ export function App() {
           journal={status.journal}
           busy={waiting}
           portrait={portrait}
+          about={about}
           render={(text) => renderText(text, onTopic)}
           onSend={(text) => void send(text)}
           onJournal={() => setJournal({ nearby: true })}

@@ -242,6 +242,84 @@ export function sheetLines(world: World): string[] {
   return lines
 }
 
+/** The character sheet as data, for the interface to lay out (the text lines stay for the terminal). */
+export interface SheetData {
+  name: string
+  ancestry: string
+  className: string
+  level: number
+  xp: number
+  nextXp?: number
+  readyMade: boolean
+  background: string
+  special: string
+  hp: number
+  maxHp: number
+  mark: boolean
+  defence: number
+  defenceShield?: number
+  initiative: number
+  classDc: number
+  attributes: { name: string; value: number }[]
+  saves: { name: string; value: number }[]
+  weapon: { name: string; attack: number; damage: string; crit?: string }
+  armour: string[]
+  skills: { name: string; bonus: number; rank?: string; practice: number }[]
+  skillPoints: number
+  talents: string[]
+  general: string[]
+  conditions: { name: string; level: number }[]
+  patron?: { name: string; favour: number; blessings: string[] }
+  deaths: number
+  canLevel: boolean
+  /** Other lines for the sheet page, such as the progress clocks. */
+  notes?: string[]
+}
+
+export function sheetData(world: World): SheetData | undefined {
+  const c = character(world)
+  if (!c) return undefined
+  const content = world.content
+  const rules = rulesOf(content)
+  const k = classOf(content, c.class)
+  const a = rules.ancestries.find((x) => x.id === c.ancestry)!
+  const b = rules.backgrounds.find((x) => x.id === c.background)!
+  const w = weaponStats(content, c)
+  const patron = c.patron ? rules.patrons.find((x) => x.id === c.patron!.id) : undefined
+  return {
+    name: c.name,
+    ancestry: a.name,
+    className: k.name,
+    level: c.level,
+    xp: c.xp,
+    ...(c.level < 10 ? { nextXp: xpForLevel(content, c.level + 1) } : {}),
+    readyMade: !c.made,
+    background: b.name,
+    special: a.special,
+    hp: c.hp,
+    maxHp: maxHp(content, c),
+    mark: Boolean(c.mark),
+    defence: defence(content, c),
+    ...(c.gear.shield ? { defenceShield: defence(content, c, { shield: true }) } : {}),
+    initiative: initiative(content, c),
+    classDc: classDc(content, c),
+    attributes: ATTRIBUTES.map((x) => ({ name: cap(x), value: c.attributes[x] })),
+    saves: SAVES.map((x) => ({ name: cap(x), value: saveBonus(content, c, x) })),
+    weapon: { name: w.name, attack: w.attack, damage: `${w.dice.count}d${w.dice.sides}${w.damage ? signed(w.damage) : ''}`, ...(w.crit !== 'none' ? { crit: String(w.crit) } : {}) },
+    armour: [c.gear.armour, c.gear.shield].filter((x): x is string => Boolean(x)).map((x) => content.items.get(x)!.name),
+    skills: rules.skills.map((x) => ({ name: x.name, bonus: skillBonus(content, c, x.id), ...(c.ranks[x.id] ? { rank: RANK_NAMES[c.ranks[x.id]!] } : {}), practice: c.practice[x.id] ?? 0 })),
+    skillPoints: c.skillPoints,
+    talents: c.talents.map((t) => talentById(content, t)!.name),
+    general: c.general.map((t) => talentById(content, t)!.name),
+    conditions: Object.entries(c.conditions)
+      .filter(([, v]) => v > 0)
+      .map(([name, level]) => ({ name, level })),
+    ...(patron && c.patron ? { patron: { name: patron.name, favour: c.patron.favour, blessings: patron.blessings.filter((x) => c.patron!.favour >= x.at).map((x) => x.name) } } : {}),
+    deaths: c.deaths ?? 0,
+    canLevel: canLevelUp(content, c),
+  }
+}
+
 // ---------------------------------------------------------------- levels and skills
 
 /** LEVEL UP [talent] [general] [expert skill] [master skill], or LEVEL UP AUTO. */

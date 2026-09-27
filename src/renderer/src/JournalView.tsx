@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { EngineClient, JournalPage, Reply } from './client'
+import { SheetView } from './SheetView'
 import { runs } from './mapRuns'
 
 // The journal as its own window (FO, chapter 2): everything the player has
@@ -210,7 +211,9 @@ export function JournalView({
                     ))}
                   </pre>
                 )}
-                {page.kind === 'map' || page.kind === 'sheet' ? (
+                {page.sheet ? (
+                  <SheetView sheet={page.sheet} />
+                ) : page.kind === 'map' || page.kind === 'sheet' ? (
                   <pre className={page.kind === 'map' ? 'map whole' : 'sheet'}>{page.lines.join('\n')}</pre>
                 ) : (
                   page.lines.map((line, index) => <p key={index}>{line}</p>)

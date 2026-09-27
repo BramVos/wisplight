@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
 import type { Output } from '../../engine'
-import type { Reply } from './client'
+import type { JournalPage, Reply } from './client'
 
 // A conversation in its own window (after the M7 playtest): it starts in the
 // ordinary interface with TALK, then goes on here. You type what you say in
@@ -24,6 +24,7 @@ export function ConversationView({
   journal,
   busy,
   portrait,
+  about,
   render,
   onSend,
   onJournal,
@@ -33,6 +34,8 @@ export function ConversationView({
   journal: Journal
   busy: boolean
   portrait?: string
+  /** What the player knows of this person: their journal page. */
+  about?: JournalPage
   render: (text: string) => ReactNode
   onSend: (text: string) => void
   onJournal: () => void
@@ -104,7 +107,6 @@ export function ConversationView({
     <div className="overlay talk-overlay" role="dialog" aria-modal="true" aria-label={`Talking with ${talk.name}`}>
       <div className="panel talk">
         <header className="panel-head">
-          {portrait && <img className="portrait" src={portrait} alt="" />}
           <h2>{talk.name}</h2>
           <span className="muted small">{talk.attitude}</span>
           <span className="spacer" />
@@ -154,6 +156,59 @@ export function ConversationView({
             />
           </div>
           <aside className="talk-topics" aria-label="Topics you can ask about">
+            <section className="talk-about" aria-label={`What you know of ${talk.call}`}>
+              {portrait ? <img className="talk-portrait" src={portrait} alt={`${talk.name}, as you see them`} /> : <div className="talk-portrait none">No picture{'\n'}(Settings › AI › Pictures)</div>}
+              <dl>
+                {about?.person?.work && (
+                  <>
+                    <dt>Work</dt>
+                    <dd>{about.person.work}</dd>
+                  </>
+                )}
+                {about?.person?.age && (
+                  <>
+                    <dt>Age</dt>
+                    <dd>
+                      {about.person.age.text}
+                      {!about.person.age.known && (
+                        <>
+                          {' '}
+                          <button type="button" className="link small" disabled={busy} onClick={() => onSend('"How old are you, if I may ask?')} title="Ask their age">
+                            ask
+                          </button>
+                        </>
+                      )}
+                    </dd>
+                  </>
+                )}
+                <dt>Mood to you</dt>
+                <dd>{talk.attitude}</dd>
+                {about?.person?.lastSeen && (
+                  <>
+                    <dt>Last seen</dt>
+                    <dd>
+                      {about.person.lastSeen.where}, {about.person.lastSeen.ago}
+                    </dd>
+                  </>
+                )}
+                {about?.person?.often && about.person.often.length > 0 && (
+                  <>
+                    <dt>Often at</dt>
+                    <dd>{about.person.often.join(', ')}</dd>
+                  </>
+                )}
+              </dl>
+              {about?.person?.appearance && <p className="small">{about.person.appearance}</p>}
+              {about?.links.some((l) => l.label !== 'news') && (
+                <p className="small muted">
+                  {about.links
+                    .filter((l) => l.label !== 'news')
+                    .slice(0, 4)
+                    .map((l) => `${l.label} ${l.name}`)
+                    .join(' · ')}
+                </p>
+              )}
+            </section>
             <input className="journal-search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="ask about..." aria-label="Search topics" spellCheck={false} />
             <ul>
               {topics.shown.map((e) => (

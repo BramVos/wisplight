@@ -63,7 +63,7 @@ import {
   rest,
   leaveSheaf,
   rite,
-  sheetLines,
+  sheetData, sheetLines,
   struggle,
   trainCommand,
   XP,
@@ -291,7 +291,10 @@ export class Engine {
       return lines ? { id, kind: 'lore', name: capitalise(this.content.factions.get(id.slice(8))!.name), lines, sources: [], links: [] } : undefined
     }
     if (id === 'party') return { id, kind: 'lore', name: 'Your companions', lines: partyLines(this.world).length ? [...partyLines(this.world), ...companions(this.world).flatMap((m) => m.approvals.slice(-3).map((a) => `  ${callName(this.world.npc(m.npc))}: ${a.text}`))] : ['You travel alone.'], sources: [], links: [] }
-    if (id === 'sheet') return { id, kind: 'sheet', name: this.state.player.character?.name ?? 'You', lines: [...sheetLines(this.world), ...this.clockLines()], sources: [], links: [] }
+    if (id === 'sheet') {
+      const sheet = sheetData(this.world)
+      return { id, kind: 'sheet', name: this.state.player.character?.name ?? 'You', lines: [...sheetLines(this.world), ...this.clockLines()], sources: [], links: [], ...(sheet ? { sheet: { ...sheet, notes: this.clockLines() } } : {}) }
+    }
     this.dialogue.syncNews()
     const page = journalPage(this.world, this.topics, id)
     // A place, a person or an event with a place in the region: where it is, on a small map.

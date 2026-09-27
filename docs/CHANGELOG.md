@@ -1,5 +1,21 @@
 # Changelog
 
+## Na je speeltest van M8, 27 september 2026
+
+Nieuw:
+- **Gesprekken die niets zeiden.** De stem kreeg voor een kort antwoord maar 120 tokens, terwijl de hele JSON meetelt (sinds M7.2 ook `quest_action`). Het antwoord werd afgekapt en het spel viel terug op een standaardzin ("Wendela nods. 'Evening.'"). Nu is er ruimte genoeg, en als de AI toch geen antwoord geeft, zie je dat in het gesprek: *(No answer from the AI: ... A stock line stands in.)*
+- **Welke kant op.** Wie doorloopt, zegt nu waarheen: "Gerrit walks on to the north."
+- **Wat je van iemand weet.** Naast het gesprek staat een kaartje: plaatje (of een lege plek met waar je plaatjes aanzet), beroep, leeftijd, houding, waar je iemand het laatst zag en waar vaak, uiterlijk en woonplaats. De leeftijd is eerst een schatting met een vraagteken ("about 35 to 45?"); vraag ernaar ([ask], of "how old are you?") en hij staat vast, en groeit mee met de jaren. Het dagboek toont hetzelfde.
+- **Iemand vinden.** Het spel onthoudt waar je iemand zag (de laatste keer en de vijf plekken waar het vaakst), dus je hoeft het niet op te schrijven. Klein genoeg om altijd bij te houden.
+- **De tijd wacht terwijl je typt.** Zolang er tekst in de invoer staat, staat de klok stil.
+- **Personagepagina.** [Sheet] is opgemaakt: niveau, levenspunten en ervaring als balk, verdediging, initiatief en klasse-DC, attributen en saves als tegels, wapen en harnas, vaardigheden met rang en oefening, talenten. De tekstversie blijft voor de terminal.
+
+Testen: `npm run dev`, nieuw spel, loop n en `talk mirte`. Zeg iets in gewone woorden, klik [ask] bij de leeftijd, en kijk rechts. Open [Sheet]. Typ iets in de invoer en wacht: de klok loopt niet. Controles: `npm test`, met `tests/playtest-m8.test.ts`.
+
+Nog niet: een [Look at] in het gesprek (het kaartje toont het uiterlijk al), en herkennen van iemands leeftijd uit wat de stem zegt; de leeftijd staat vast zodra de stem een antwoord gaf op een leeftijdsvraag.
+
+Ontwerp: FO hoofdstuk 2 (gespreksvenster, personagepagina, klok) en 5 (wat de speler van iemand weet) zijn bijgewerkt.
+
 ## M8 Editor en meerdere werelden, 27 september 2026
 
 Nieuw:
