@@ -1,3 +1,4 @@
+import type { Archived } from './archive'
 import { grownContent } from './growth/growth'
 import { DEFAULT_CALENDAR, GameClock, isOpenAt, type Calendar } from './clock'
 import { callName, type Content, type Direction, type Location, type Npc, type ObjectInstance, type ObjectType, type Service } from './content'
@@ -62,6 +63,8 @@ export class World {
   notices: string[] = []
   /** Deaths since the engine last looked, for the quests (not saved: handled in the same step). */
   deaths: string[] = []
+  /** What went to the archive since the engine last looked, for the game log (M9.1; not saved). */
+  archived: Archived[] = []
 
   /** The content of this game: the world's own, with what the game added (M8.5, growth). */
   content: Content

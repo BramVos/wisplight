@@ -9,6 +9,7 @@ import { simulate } from '../src/engine/playtest'
 import { frictionPressure } from '../src/engine/signals'
 import { newcomersIn, welcomingIn } from '../src/engine/social/groups'
 import { readContentFiles } from '../src/node/content'
+import { GameLog } from '../src/node/gamelog'
 import { content, runUntil, withNpc } from './helpers'
 
 // Milestone M9.1 (docs/ROADMAP.md): ids are keys. Names change, ids do not;
@@ -295,4 +296,45 @@ describe('M9.1: Busy Hands', () => {
     expect(await took(30)).toBe(360)
     expect(await took(10)).toBe(480)
   }, 60_000)
+})
+
+describe('M9.1: the archive', () => {
+  it('what has been over for a month leaves the save for the game log; the save stays as small, and the game plays on', async () => {
+    const log = new GameLog(':memory:')
+    const session = log.start('long-game')
+    const engine = new Engine(content, { seed: 99 })
+    engine.onLog((line) => log.write(session, line))
+    const size = () => JSON.stringify(engine.save()).length
+    for (let d = 0; d < 30; d++) engine.tick(DAY)
+    const month = { size: size(), facts: engine.state.news!.facts.length }
+    for (let d = 30; d < 120; d++) engine.tick(DAY)
+    const archived = [...log.archive(session)]
+    const facts = archived.flatMap((a) => a.facts)
+    expect(facts.length).toBeGreaterThan(50)
+    expect(archived.flatMap((a) => a.plans).length).toBeGreaterThan(20)
+    expect(archived.flatMap((a) => a.signals).length).toBeGreaterThan(20)
+    expect(archived.flatMap((a) => a.lines ?? []).length).toBeGreaterThan(10)
+    // Nobody knew what went, and nothing that stays points to it.
+    const heard = engine.state.news!.heard
+    const left = JSON.stringify({ ...engine.state, news: { ...engine.state.news, facts: [] } })
+    for (const f of facts) {
+      expect(Object.values(heard).some((h) => h[f.id])).toBe(false)
+      expect(left).not.toMatch(new RegExp(`\\b${f.id}\\b`))
+    }
+    // Nothing a content plan ran is lost: what may run once, runs once.
+    expect(archived.flatMap((a) => a.plans).every((p) => p.source !== 'content' && p.ended !== undefined)).toBe(true)
+    // After four months the save is hardly bigger than after one.
+    expect(size()).toBeLessThan(month.size * 1.5)
+    // What old news is left, someone still knows, or lore, a line or a board holds it.
+    const known = new Set(Object.values(heard).flatMap((h) => Object.keys(h)))
+    const held = JSON.stringify({ ...engine.state, news: undefined })
+    for (const f of engine.state.news!.facts.filter((f) => f.t < engine.world.now - 32 * DAY)) expect(known.has(f.id) || new RegExp(`\\b${f.id}\\b`).test(held), f.id).toBe(true)
+    expect(engine.state.news!.facts.length).toBeLessThan(month.facts * 3)
+    // The archive keeps it for good.
+    expect(log.archivedFact(session, facts[0]!.id)?.title).toBe(facts[0]!.title)
+    // It loads and plays on, and a replay makes the same world.
+    const loaded = Engine.fromSave(content, engine.save())
+    loaded.tick(DAY)
+    expect(await say(loaded, 'look')).toMatch(/\w/)
+  }, 120_000)
 })

@@ -1,3 +1,4 @@
+import type { Archived } from './archive'
 import { worldFrame } from './dialogue/prompt'
 import { followTombstones, followTombstonesInLog, nameBook, withNames, type NameBook } from './ids'
 import { shiftTension, tensionOf } from './social/realms'
@@ -113,6 +114,8 @@ export type GameLogLine =
   | { kind: 'out'; t: number; output: Output }
   | { kind: 'event'; t: number; event: WorldEvent }
   | { kind: 'replay'; t: number; entry: LogEntry }
+  /** What left the save for good (M9.1): the game log is its archive. */
+  | { kind: 'archive'; t: number; archived: Archived }
 
 export interface JournalEntry {
   id: string
@@ -370,7 +373,9 @@ export class Engine {
     for (const listener of this.listeners) {
       for (const output of outputs) listener({ kind: 'out', t, output })
       for (const event of this.state.events) if (event.seq > this.eventMark) listener({ kind: 'event', t: event.t, event })
+      for (const archived of this.world.archived) listener({ kind: 'archive', t, archived })
     }
+    this.world.archived = []
     this.eventMark = this.state.eventSeq
     return outputs
   }

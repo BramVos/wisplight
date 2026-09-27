@@ -1,7 +1,8 @@
 import { closeSync, mkdirSync, openSync, rmSync, writeSync } from 'node:fs'
 import { dirname } from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
-import { GameClock, type GameLogLine, type LogEntry } from '../engine'
+import { GameClock, type Fact, type GameLogLine, type LogEntry } from '../engine'
+import type { Archived } from '../engine/archive'
 import { ZipWriter } from './zip'
 
 // The game log (FO, chapter 3): everything that happens in a game, written as
@@ -85,6 +86,7 @@ export class GameLog {
     if (line.kind === 'in') this.append(session, line.t, 'in', line.text)
     else if (line.kind === 'out') this.append(session, line.t, 'out', line.output.text)
     else if (line.kind === 'event') this.append(session, line.t, 'event', JSON.stringify(line.event))
+    else if (line.kind === 'archive') this.append(session, line.t, 'archive', JSON.stringify(line.archived))
     else this.append(session, line.t, 'replay', JSON.stringify(line.entry))
   }
 
@@ -130,6 +132,20 @@ export class GameLog {
   /** What a replay needs after a save: the recorded input, time and model replies. */
   tail(session: Session, afterId: number): LogEntry[] {
     return [...this.rows(session, ['replay'], afterId)].map((row) => JSON.parse(row.text) as LogEntry)
+  }
+
+  /** What left the saves of this history for the archive (M9.1), oldest first, one batch at a time. */
+  *archive(session: Session): Generator<Archived> {
+    for (const row of this.rows(session, ['archive'])) yield JSON.parse(row.text) as Archived
+  }
+
+  /** A fact from the archive, by its id: for the chronicle and the builder, when a save no longer holds it. */
+  archivedFact(session: Session, id: string): Fact | undefined {
+    for (const batch of this.archive(session)) {
+      const fact = batch.facts.find((f) => f.id === id)
+      if (fact) return fact
+    }
+    return undefined
   }
 
   /** The story so far as the player saw it, the last `count` lines, read from the end. */

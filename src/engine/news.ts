@@ -45,8 +45,15 @@ export function heardBy(world: World, who: string): Record<string, Heard> {
   return (news(world).heard[who] ??= {})
 }
 
+/** The facts by id, per list: rebuilt when the list is another (a save loaded, the archive took some). */
+const index = new WeakMap<Fact[], Map<string, Fact>>()
+
 export function factById(world: World, id: string): Fact | undefined {
-  return world.state.news?.facts.find((f) => f.id === id)
+  const facts = world.state.news?.facts
+  if (!facts) return undefined
+  let byId = index.get(facts)
+  if (!byId || byId.size !== facts.length) index.set(facts, (byId = new Map(facts.map((f) => [f.id, f]))))
+  return byId.get(id)
 }
 
 /** Records a fact and tells the witnesses. */

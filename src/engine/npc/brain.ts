@@ -142,6 +142,8 @@ function choose(world: World, npcId: string): boolean {
     case 'eat': {
       const key = `eat@${startOfDay(world.now) + parseHours(`${block!.from}-${block!.to}`)[0]}`
       if (npc.dailyDone[key]) break
+      // Yesterday's meals are not kept (M9.1): only today's say whether this one was had.
+      for (const k of Object.keys(npc.dailyDone)) if (k.startsWith('eat@') && Number(k.slice(4)) < startOfDay(world.now)) delete npc.dailyDone[k]
       npc.dailyDone[key] = world.now
       return setPlan(world, npcId, eatPlan(world, npcId))
     }

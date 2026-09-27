@@ -1,3 +1,4 @@
+import { archiveDay } from './archive'
 import { fillFromLedger, ledgerHour, nameless } from './economy/ledger'
 import { projectsDay } from './growth/growth'
 import { sawPerson } from './acquaintance'
@@ -65,6 +66,11 @@ function hourly(world: World): void {
   nightly(world)
   weatherHour(world)
   companionsHour(world)
+  // What has been over for a month leaves the save for the game log (M9.1).
+  if (minuteOfDay(world.now) === 4 * 60) {
+    const archived = archiveDay(world)
+    if (archived) world.archived.push(archived)
+  }
   if (minuteOfDay(world.now) === 6 * 60) {
     debtsDue(world)
     homeDay(world)
