@@ -1,0 +1,71 @@
+# Growth (M8.5; design: signalen en nasleep, "Groei"). Who may come to live in
+# the Holleveen during a game, and what its settlements may build. A game only
+# instantiates these: names from world.yaml, a free house, the trade nobody
+# works. What it makes is checked as content before it enters the world.
+
+newcomers:
+  # Nobody in Veenhoek makes barrels since old Tijs died (design, scenario 5).
+  - id: cooper_family
+    trade: cooperage
+    from: zwolderkamp
+    people:
+      - role: head
+        age: [28, 46]
+        profession: cooper
+        looks:
+          - A broad {man} with forearms like hawsers and oak shavings caught in {their} clothes.
+          - A lean {man} who smells of tar and fresh-cut oak, and runs {their} thumb along every edge {they} see.
+      - role: spouse
+        age: [24, 44]
+        profession: homemaker
+        looks:
+          - A quick-eyed {man} in a Zwolderkamp bonnet, who looks at the fen as if it might bite.
+          - A tall, plain-spoken {man} with the town still in {their} clothes.
+      - role: child
+        age: [5, 12]
+        profession: child
+        looks:
+          - A small {man} with big ears who has not stopped staring at the water since the barge came in.
+    facts:
+      - "{name} came from {from} with the family to make barrels in {area}."
+    speech: Speaks with the flat, careful vowels of Zwolderkamp, and asks the price of everything.
+
+projects:
+  # A town wall for Waagdam (design, scenario 8): there is no stone in the
+  # Holleveen, so first a brickworks: clay from the Vaart, fired with peat.
+  - id: waagdam_brickworks
+    name: the brickworks by the Vaart
+    settlement: waagdam
+    needs: { peat: 40 }
+    days: 8
+    cost: 320
+    link: { from: loc_waagdam_harbour, direction: south }
+    place:
+      id: loc_waagdam_brickworks
+      name: The Brickworks
+      area: waagdam
+      tags: [public]
+      aliases: [brickworks, kiln, steenbakkerij]
+      summary: The new brickworks of Waagdam, on the bank of the Vaart below the harbour.
+      description:
+        day: |
+          Rows of grey clay bricks dry on planks along the bank, and a squat
+          kiln smokes behind them. The air tastes of peat smoke and wet clay,
+          and somebody is always shouting for more of both. The harbour is
+          north.
+      exits:
+        north: { to: loc_waagdam_harbour }
+      objects:
+        - { id: kiln, type: brick_kiln, owner: npc_aleid }
+    workshops:
+      - { id: clay_pit, name: the clay pit, at: loc_waagdam_brickworks, from: clay, makes: { clay: 20 }, workers: 3 }
+      - { id: brick_kiln, name: the brick kiln, at: loc_waagdam_brickworks, uses: { clay: 20, peat: 4 }, makes: { brick: 30 }, workers: 3 }
+
+  - id: waagdam_wall
+    name: the town wall of Waagdam
+    settlement: waagdam
+    after: waagdam_brickworks
+    needs: { brick: 300 }
+    days: 15
+    cost: 600
+    sets: [waagdam_walled]

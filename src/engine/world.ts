@@ -1,3 +1,4 @@
+import { grownContent } from './growth/growth'
 import { DEFAULT_CALENDAR, GameClock, isOpenAt, type Calendar } from './clock'
 import { callName, type Content, type Direction, type Location, type Npc, type ObjectInstance, type ObjectType, type Service } from './content'
 import { DEFAULT_MONEY, formatMoney, type MoneyUnit } from './items'
@@ -62,11 +63,22 @@ export class World {
   /** Deaths since the engine last looked, for the quests (not saved: handled in the same step). */
   deaths: string[] = []
 
+  /** The content of this game: the world's own, with what the game added (M8.5, growth). */
+  content: Content
   constructor(
-    readonly content: Content,
+    /** The world's own content, as written. */
+    readonly base: Content,
     readonly state: GameState,
   ) {
     this.rng = new Rng(state.rng, state.seed)
+    this.content = grownContent(base, state)
+  }
+
+  /** New people or places entered the world (M8.5): the content of the game is laid anew, and what was worked out from it is forgotten. */
+  regrow(): void {
+    this.content = grownContent(this.base, this.state)
+    this.routes.clear()
+    this.layerChanged()
   }
 
   get now(): number {

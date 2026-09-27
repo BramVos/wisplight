@@ -15,6 +15,7 @@ resources:
   - { id: mere, name: the open water, gives: [eel] }
   - { id: fields, name: the rye fields, gives: [rye_grain] }
   - { id: garden, name: a herb garden, gives: [herbs] }
+  - { id: clay, name: the clay of the Vaart, gives: [clay] }
 
 settlements:
   # Veendorp, 180 souls: peat, eel from the weirs, herbs from the fen.
@@ -24,8 +25,8 @@ settlements:
     income: 20
     openness: -0.05
     resources: [fen, mere]
-    use: { peat: 16, flour: 4, eel: 3, lamp_oil: 1 }
-    keep: { peat: 60, flour: 12, eel: 8, herbs: 6, wool: 3, yarn: 2, lamp_oil: 3, rye_grain: 4 }
+    use: { peat: 16, flour: 4, eel: 3, lamp_oil: 1, barrel: 0.2 }
+    keep: { peat: 60, flour: 12, eel: 8, herbs: 6, wool: 3, yarn: 2, lamp_oil: 3, rye_grain: 4, barrel: 4 }
     # Since the storm of 8 Herfstmaand De Zwaan stands still: the flour is gone.
     stock: { flour: 0 }
     workshops:
@@ -33,6 +34,8 @@ settlements:
       - { id: eel_weirs, name: the eel weirs, at: loc_wouter_hut, from: mere, makes: { eel: 8 }, workers: 1, named: [npc_wouter] }
       - { id: herb_gathering, name: herb gathering, at: loc_aaltje_cottage, from: fen, makes: { herbs: 1 }, named: [npc_aaltje] }
       - { id: spinning, name: spinning, at: loc_visser_house, uses: { wool: 1 }, makes: { yarn: 1 }, named: [npc_grietje_visser] }
+      # Since old Tijs died last winter nobody makes the barrels the eel goes in (M8.5).
+      - { id: cooperage, name: the cooperage, at: loc_veenhoek_cooperage, makes: { barrel: 1 } }
 
   # A hamlet round the mill De Zwaan. Since the storm of 8 Herfstmaand its sails are torn.
   - id: molenend
@@ -58,7 +61,7 @@ settlements:
     people: 900
     income: 120
     openness: 0.05
-    resources: [fields]
+    resources: [fields, clay]
     use: { peat: 12, flour: 6, eel: 2, rye_grain: 4, lamp_oil: 2, iron_nails: 2 }
     keep: { rye_grain: 60, flour: 18, peat: 40, eel: 6, lamp_oil: 8, iron_nails: 20, sailcloth: 4, rope: 6, wool: 2, beer: 40 }
     stock: { flour: 0 }

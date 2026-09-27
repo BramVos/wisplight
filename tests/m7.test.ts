@@ -477,7 +477,7 @@ describe('M7: thirty days of the Holleveen', () => {
       }
     }
     for (const [id, npc] of Object.entries(engine.state.npcs)) {
-      if (npc.dead || npc.absent || content.npcs.get(id)!.quirks.includes('spirit')) continue
+      if (npc.dead || npc.absent || engine.content.npcs.get(id)!.quirks.includes('spirit')) continue
       expect(changes.get(id) ?? 0, `${id} stuck for a month`).toBeGreaterThan(30)
     }
     // The world did not wait: the survey ran, and the quests with a deadline ended.

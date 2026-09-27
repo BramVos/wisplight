@@ -81,6 +81,8 @@ const VERB_ALIASES: Record<string, string> = {
   geef: 'give',
   use: 'use',
   gebruik: 'use',
+  work: 'work',
+  werk: 'work',
   buy: 'buy',
   koop: 'buy',
   sell: 'sell',

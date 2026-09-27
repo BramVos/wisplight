@@ -1,5 +1,6 @@
 import { itemName } from './items'
 import { orderGoods } from './economy/ledger'
+import { arrive, startProject, templateFor } from './growth/growth'
 import type { Output } from './commands'
 import { callName } from './content'
 import { applyEffect } from './dialogue/relations'
@@ -312,10 +313,19 @@ export function runVerb(world: World, ctx: PlanContext, verb: Verb, st: StepStat
     recordFact(world, { kind: 'settled', about: [who], place: at, belang: 2, title: `${name} stays in ${areaName}`, text: { precise: `${name} is not going back: ${world.say('{they}', who)} lives at ${nameOf(world, house)} now.`, village: `${name} is staying in ${areaName} for good, they say.`, far: 'Some who fled stayed where they found shelter.' } })
     return true
   }
+  // Growth (M8.5).
+  if ('arrive' in v) {
+    const to = world.content.settlements.has(v.to) ? v.to : world.content.locations.get(v.to)?.area
+    const template = world.content.newcomers.has(v.arrive) ? v.arrive : templateFor(world, v.arrive)?.id
+    const people = to && template ? arrive(world, template, to) : undefined
+    if (people?.[0]) st.where = world.npc(people[0]).home
+    return Boolean(people)
+  }
+  if ('build' in v) return startProject(world, v.build)
   // The economy (M8.4).
   if ('order' in v) {
     const to = world.content.settlements.has(v.to) ? v.to : world.content.locations.get(v.to)?.area
-    return Boolean(to) && orderGoods(world, to!, v.order, v.qty, v.days, v.by)
+    return Boolean(to) && orderGoods(world, to!, v.order, v.qty, v.days, fill(world, v.by, ctx.bind))
   }
   if ('form_group' in v) {
     const members = v.form_group.flatMap((s) => many(world, ctx, s)).filter((id) => world.content.npcs.has(id) && world.alive(id))

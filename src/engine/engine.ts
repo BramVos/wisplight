@@ -1,3 +1,5 @@
+import { shiftTension, tensionOf } from './social/realms'
+import { grownContent, invest } from './growth/growth'
 import { dayName, GameClock } from './clock'
 import { describeRoom, findNpcAnywhere, findNpcHere, runCommand, type CommandHost, type Output } from './commands'
 import { areaTopicId, callName, type Content } from './content'
@@ -191,13 +193,16 @@ export class Engine {
   private opening: Output[] = []
   private thinking = false
   private outlining = false
+  /** The content the topics were last brought in step with (M8.5). */
+  private grownFor?: Content
 
   constructor(
-    readonly content: Content,
+    source: Content,
     options: EngineOptions = {},
   ) {
-    const state = options.state ?? createInitialState(content, options.seed ?? 1)
-    this.world = new World(content, state)
+    const state = options.state ?? createInitialState(source, options.seed ?? 1)
+    this.world = new World(source, state)
+    const content = this.world.content
     this.log = options.log ? [...options.log] : []
     this.builder = options.builder ?? false
     this.host = { world: this.world, pass: (minutes) => this.pass(minutes) }
@@ -225,6 +230,25 @@ export class Engine {
 
   get state(): GameState {
     return this.world.state
+  }
+
+  /** The content of this game: the world's own, with the people who came and what was built (M8.5). */
+  get content(): Content {
+    return this.world.content
+  }
+
+  /** People who came and places that were built can be named in talk and commands, like any (M8.5). */
+  private knowGrowth(): void {
+    if (this.grownFor === this.world.content) return
+    this.grownFor = this.world.content
+    for (const npc of this.world.content.npcs.values()) {
+      if (this.topics.entries.has(npc.id)) continue
+      this.topics.addDuringPlay({ id: npc.id, kind: 'person', name: npc.name, ref: npc.id, aliases: [npc.name, npc.name.split(' ')[0]!, npc.short, ...npc.aliases] })
+    }
+    for (const location of this.world.content.locations.values()) {
+      if (this.topics.entries.has(location.id)) continue
+      this.topics.addDuringPlay({ id: location.id, kind: 'place', name: location.name, ref: location.id, aliases: [location.name, ...location.aliases] })
+    }
   }
 
   /** When the game began: the start of the world. */
@@ -512,6 +536,7 @@ export class Engine {
 
   /** After time passed: deaths reach the quests, plans run their phases, stages and endings are checked. */
   private questsTick(): Output[] {
+    this.knowGrowth()
     const out: Output[] = []
     for (const id of this.world.deaths.splice(0)) out.push(...questsOnDeath(this.world, this.questHost, id))
     expireConditions(this.world)
@@ -562,6 +587,9 @@ export class Engine {
     if (peace && !this.state.talk) return this.makePeace(peace[1]!, peace[2]!)
     const side = /^(?:side|stand)\s+with\s+(.+)$/i.exec(text.trim())
     if (side && !this.state.talk) return this.sideWith(side[1]!)
+    // INVEST <amount> [IN <project>] (M8.5): money into what a settlement is building.
+    const stake = /^(?:invest|lend)\s+(\d+)(?:\s+(?:in|into|to)\s+(.+))?$/i.exec(text.trim())
+    if (stake && !this.state.talk) return this.putIn(Number(stake[1]), stake[2])
     const barge = /^(?:take|catch|board)\s+(?:the\s+)?barge(?:\s+to\s+(.+))?$|^travel\s+by\s+barge(?:\s+to\s+(.+))?$/i.exec(text)
     if (barge && !this.state.talk) return takeBarge(this.world, (barge[1] ?? barge[2])?.toLowerCase().replace(/^the\s+/, '').trim(), (minutes) => this.pass(minutes))
     const talk = this.state.talk
@@ -937,7 +965,8 @@ export class Engine {
   static fromSave(content: Content, save: SaveData, llm?: LlmClient): Engine {
     if (save.world !== content.world.id) throw new Error(`This save belongs to world "${save.world}"`)
     const copy = JSON.parse(JSON.stringify(save)) as SaveData
-    fitStateToContent(content, copy.state)
+    // The people who came during that game are part of its world (M8.5).
+    fitStateToContent(grownContent(content, copy.state), copy.state)
     return new Engine(content, { state: copy.state, log: copy.log, llm })
   }
 
@@ -948,7 +977,7 @@ export class Engine {
   static carryOn(content: Content, save: SaveData, seed: number, llm?: LlmClient): { engine: Engine; outputs: Output[] } {
     if (save.world !== content.world.id) throw new Error(`This save belongs to world "${save.world}"`)
     const copy = JSON.parse(JSON.stringify(save)) as SaveData
-    fitStateToContent(content, copy.state)
+    fitStateToContent(grownContent(content, copy.state), copy.state)
     const notes = carryOver(content, copy.state)
     const engine = new Engine(content, { state: copy.state, seed, llm })
     const outputs: Output[] = [
@@ -1176,6 +1205,15 @@ export class Engine {
         if (!this.content.plans.has(id)) return [{ kind: 'error', text: `@plan <id>: ${[...this.content.plans.keys()].join(', ')}` }]
         return [...startPlan(this.world, this.questHost, id, 'builder'), ...this.pass(0)]
       }
+      case 'tension': {
+        // @tension rijkland 30: the tension between this land and a realm goes up (or down), ten at a time.
+        const realm = rest[0] ?? ''
+        const delta = Number(rest[1])
+        const home = this.content.world.id
+        if (!this.content.realms.has(realm) || realm === home || !Number.isFinite(delta)) return [{ kind: 'error', text: `@tension <realm> <change>: ${[...this.content.realms.keys()].filter((r) => r !== home).join(', ')}` }]
+        for (let left = delta; left !== 0; left -= Math.sign(left) * Math.min(10, Math.abs(left))) shiftTension(this.world, home, realm, Math.sign(left) * Math.min(10, Math.abs(left)), 'the builder')
+        return [{ kind: 'system', text: `[build] Tension with ${this.content.realms.get(realm)!.name}: ${tensionOf(this.world, home, realm)}.` }, ...this.pass(0)]
+      }
       case 'place': {
         // @place loc_visser_house flooded
         const place = this.findLocation(rest.slice(0, -1).join(' '))
@@ -1201,7 +1239,7 @@ export class Engine {
         return [{ kind: 'system', text: `[build] ${wait} minutes pass.` }, ...this.pass(wait)]
       }
       default:
-        return [{ kind: 'error', text: 'Build commands: @kill <person> [how], @who-knows <topic>, @send <person> <place> [days], @where <person>, @fight <encounter or creature> [count], @xp <amount>, @like <person> <affinity> [trust], @goto <place>, @bring <person>, @give <item> [count], @flag <name> [value], @quest <id>, @plan <id>, @place <place> <state>, @time <hour>, @money <duiten>.' }]
+        return [{ kind: 'error', text: 'Build commands: @kill <person> [how], @who-knows <topic>, @send <person> <place> [days], @where <person>, @fight <encounter or creature> [count], @xp <amount>, @like <person> <affinity> [trust], @goto <place>, @bring <person>, @give <item> [count], @flag <name> [value], @quest <id>, @plan <id>, @tension <realm> <change>, @place <place> <state>, @time <hour>, @money <duiten>.' }]
     }
   }
 
@@ -1247,6 +1285,18 @@ export class Engine {
       { kind: 'narration', text: outcome === 'reconciled' ? `You talk it through with ${na} and ${nb}, one and then the other, and then both. In the end they shake on it, grudgingly.` : `You try. But one of them trusts you and the other does not, and by the end it is worse than before.` },
       ...out,
     ]
+  }
+
+  /** INVEST <amount> [IN <project>] (M8.5): into a project being built in this settlement; back with a fifth more when it is finished. */
+  private putIn(amount: number, name?: string): Output[] {
+    const area = this.world.location(this.state.player.location).area
+    const running = Object.entries(this.state.growth?.projects ?? {}).filter(([, p]) => p.done === undefined && p.settlement === area)
+    const words = name?.toLowerCase().trim()
+    const found = running.find(([id]) => !words || this.content.projects.get(id)?.name.toLowerCase().includes(words.replace(/^the\s+/, '')))
+    if (!found) return [{ kind: 'error', text: running.length ? 'Put money into what?' : 'Nothing is being built here to put money into.' }]
+    const project = this.content.projects.get(found[0])!
+    if (!invest(this.world, found[0], amount)) return [{ kind: 'error', text: `You haven't got ${this.world.money(amount)}.` }]
+    return [{ kind: 'narration', text: `You put ${this.world.money(amount)} into ${project.name}. When it is finished, you will have it back with a fifth more, they say.` }, ...this.pass(10)]
   }
 
   /** SIDE WITH <someone> (M8.3): with a group, or with the newcomers it is against. */

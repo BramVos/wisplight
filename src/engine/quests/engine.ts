@@ -1,4 +1,6 @@
 import { characterOf } from '../economy/ledger'
+import { built } from '../growth/growth'
+import { tensionOf } from '../social/realms'
 import { GameClock } from '../clock'
 import type { Output } from '../commands'
 import { callName, type Quest } from '../content'
@@ -83,6 +85,9 @@ export function holds(world: World, c: Condition, questId?: string): boolean {
     return Boolean(s && !s.dead && !s.absent && !s.following)
   }
   if ('carries' in c) return (world.state.npcs[c.carries]?.inventory[c.item] ?? 0) > 0
+  if ('built' in c) return built(world, c.built)
+  if ('idle' in c) return Object.values(world.state.economy?.ledgers ?? {}).some((l) => l.idle[c.idle] !== undefined)
+  if ('tension' in c) return tensionOf(world, c.tension[0], c.tension[1]) >= c.at_least
   if ('character' in c) {
     const area = world.content.areas.has(c.character) ? c.character : world.content.locations.get(c.character)?.area
     return Boolean(area) && characterOf(world, area!).includes(c.is)

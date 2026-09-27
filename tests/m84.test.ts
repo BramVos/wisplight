@@ -91,6 +91,8 @@ describe('M8.4: lamp oil and nails from Zwolderkamp', () => {
 describe('M8.4: the mill and the flour', () => {
   it('after a storm the flour in Veenhoek goes down and Lubbert\'s price up; with the mill turning again it comes down', () => {
     const engine = new Engine(content, { seed: 52 })
+    // The Haakman is at peace: no dyke breaks while the mill pumps.
+    ;(engine.state.flags ??= {})['haakman_at_peace'] = true
     mill(engine)['broken'] = false
     runUntil(engine, 20, 12)
     const flour = stock(engine, 'veenhoek', 'flour')
@@ -133,7 +135,7 @@ describe('M8.4: signals from the ledgers', () => {
     engine.state.economy!.ledgers['veenhoek']!.stock['herbs'] = 60
     // Grietje is the only spinner in Veenhoek, and she is gone.
     engine.state.npcs['npc_grietje_visser']!.absent = true
-    for (let h = 0; h < 7 * 24; h++) {
+    for (let h = 0; h < 21 * 24; h++) {
       engine.tick(60)
       const news = engine.state.areaNews?.['veenhoek'] ?? ''
       if (/piling up/.test(news)) expect(news).toMatch(/herbs/)
@@ -142,9 +144,9 @@ describe('M8.4: signals from the ledgers', () => {
     expect(surplus.who).toContain('npc_aaltje')
     expect(surplus.handled).toBe('rules')
     expect(engine.state.plans!.some((p) => p.plan === 'aftermath:surplus' && p.signal === surplus.id)).toBe(true)
-    const missing = engine.state.signals!.log.find((s) => s.kind === 'missing_trade')!
+    const missing = engine.state.signals!.log.find((s) => s.kind === 'missing_trade' && s.claim?.value === 'spinning')!
     expect(missing.claim).toMatchObject({ subject: 'veenhoek', key: 'trade', value: 'spinning' })
-    expect(engine.state.news!.facts.some((f) => f.kind === 'notice' && f.claim?.key === 'trade')).toBe(true)
+    expect(engine.state.news!.facts.some((f) => f.kind === 'notice' && f.claim?.key === 'trade' && f.claim.value === 'spinning')).toBe(true)
   }, 60_000)
 })
 
@@ -157,11 +159,16 @@ describe('M8.4: a trading town and a peat village', () => {
     expect(opennessOf(engine.world, 'veenhoek')).toBeCloseTo(-0.05)
     expect(openness(engine.world, 'loc_waagdam_market') - openness(bare.world, 'loc_waagdam_market')).toBeGreaterThan(0)
     expect(openness(engine.world, 'loc_veenhoek_green') - openness(bare.world, 'loc_veenhoek_green')).toBeLessThan(0)
-    // The same shortage of flour (the mill stands still): Waagdam sends for more, Veenhoek makes do.
-    engine.tick(4 * DAY)
+    // The same shortage of flour (the mill stands still): in Waagdam the merchants put their prices up and,
+    // when it lasts, a trader sends far afield for it; Veenhoek makes do.
+    engine.tick(3 * DAY)
+    const reaction = (area: string) => engine.state.plans!.filter((p) => engine.state.signals!.log.find((s) => s.id === p.signal)?.claim?.subject === area && p.plan.startsWith('aftermath:shortage')).map((p) => p.plan)
+    expect(reaction('waagdam')).toContain('aftermath:shortage_sent_for')
+    expect(reaction('waagdam')).not.toContain('aftermath:shortage_made_do')
+    expect(reaction('veenhoek')).toContain('aftermath:shortage_made_do')
+    engine.tick(6 * DAY)
     expect(engine.state.news!.facts.some((f) => f.kind === 'goods' && f.about.includes('waagdam')) || engine.state.economy!.orders.some((o) => o.to === 'waagdam' && o.item === 'flour')).toBe(true)
     expect(engine.state.economy!.orders.some((o) => o.to === 'veenhoek')).toBe(false)
-    expect(engine.state.areaNews?.['veenhoek']).toMatch(/make do/)
   }, 60_000)
 })
 

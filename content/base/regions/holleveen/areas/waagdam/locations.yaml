@@ -14,6 +14,15 @@ locations:
         smell of the town reaches you anyway: smoke, dung and fresh bread.
         The tow path runs west, the road to the Goose north-west, and Gate
         Street leads east into town.
+    # M8.5: once the town wall is built.
+    variants:
+      - flag: waagdam_walled
+        day: |
+          The squat gate is not alone any more: a new wall of yellow-red
+          brick runs from it both ways, still smelling of lime and peat
+          smoke. The gatekeeper's bench has a gatekeeper on it now. The tow
+          path runs west, the road to the Goose north-west, and Gate Street
+          leads east into town.
     exits:
       west: { to: loc_towpath_mid, minutes: 35 }
       northwest: { to: loc_goose_road, minutes: 25 }
@@ -342,5 +351,13 @@ locations:
         Zwolderkamp, two days away. Carts wait here to pay the toll, and the
         tollkeeper's brazier smells of hot coals. That journey waits for
         another day; the horse mill is back west.
+    # M8.5: once the town wall is built.
+    variants:
+      - flag: waagdam_walled
+        day: |
+          The east gate stands in a new brick wall now, with a heavy door
+          that can be shut. Carts still wait to pay the toll, and the
+          tollkeeper's brazier smells of hot coals. The road runs east
+          towards Zwolderkamp; the horse mill is back west.
     exits:
       west: { to: loc_waagdam_horse_mill }

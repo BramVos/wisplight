@@ -69,6 +69,8 @@ export const KIND_NAMES: Record<EntityKind, string> = {
   route: 'Trade routes',
   outland: 'Beyond the map',
   resource: 'Ground',
+  newcomer: 'Newcomers',
+  project: 'Projects',
 }
 
 export function editorView(files: ContentFile[]): EditorView {

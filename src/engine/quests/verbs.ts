@@ -54,6 +54,8 @@ export const PERMISSIONS: Record<string, Permission> = {
   close_route: rules('a trade route stops running'),
   open_route: rules('a trade route runs again'),
   order: all('a settlement sends for goods that come in some days, at twice their worth'),
+  arrive: rules('newcomers come to live in a free house and take up a trade nobody works', true),
+  build: rules('a settlement begins a project: a new place or a workshop, with materials from its store', true),
   // Places, groups, the market, realms.
   flee: rules('a group flees to a place', true),
   place: rules('a place changes state: flooded, damaged, occupied, normal', true),

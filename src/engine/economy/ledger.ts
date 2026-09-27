@@ -195,13 +195,15 @@ function produce(world: World, s: Settlement, today: number): void {
     if (w.from && (!ground || !s.resources.includes(w.from) || (ground.months && !ground.months.includes(month)))) continue
     const drawnKey = `${s.id}:${w.from}`
     if (ground?.amount !== undefined && (economy(world).drawn[drawnKey] ?? 0) >= ground.amount) continue
-    const hands = w.workers + w.named.filter((id) => around(world, id)).length
+    // Those who came to take up the trade work it as well (M8.5).
+    const named = [...w.named, ...(world.state.growth?.hands[`${s.id}:${w.id}`] ?? [])]
+    const hands = w.workers + named.filter((id) => around(world, id)).length
     if (hands === 0) {
       l.idle[w.id] ??= today
       continue
     }
     delete l.idle[w.id]
-    const total = w.workers + w.named.length
+    const total = w.workers + named.length
     let scale = hands / Math.max(1, total)
     for (const [item, n] of Object.entries(w.uses)) scale = Math.min(scale, (l.stock[item] ?? 0) / n)
     if (scale <= 0) continue

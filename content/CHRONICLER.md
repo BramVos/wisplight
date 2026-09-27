@@ -268,6 +268,9 @@ Watchers, the standard aftermath, intentions, fixed plans, quests and your own p
 - `is_player` `{ is_player: text }`: The one meant is the player.
 - `around` `{ around: text }`: Someone is around: alive, in the world, and not travelling with the player.
 - `carries` `{ carries: text, item: text }`: Someone carries a thing.
+- `built` `{ built: text }`: A project is finished.
+- `idle` `{ idle: text }`: A workshop (by its id) that nobody works.
+- `tension` `{ tension: [text, text], at_least: number }`: The tension between two realms is at least this (0 to 100; war from 80).
 - `character` `{ character: text, is: text }`: A settlement (an area) has this character: what it lives on (trade, peat, flour) or one of its tags.
 - `has_work` `{ has_work: text }`: Someone has work somewhere.
 - `lives_with_parent` `{ lives_with_parent: text }`: Someone lives in one house with a parent.
@@ -308,6 +311,8 @@ Watchers, the standard aftermath, intentions, fixed plans, quests and your own p
 - `spread_rumour` `{ spread_rumour: selector, fact: { kind?: text = "aftermath", title: text, precise: text, village: text, far: text, belang?: number = 1, about?: list of text = [], place?: selector, claim?: { subject: text, key: text, value: text, far?: text } } }`: Someone the gate lets lie puts an untrue claim about. Rules yes, brain yes, chronicler yes.
 - `settle` `{ settle: selector, at: selector }`: Someone from elsewhere stays for good. Rules yes, brain no, chronicler yes.
 - `form_group` `{ form_group: list of selector, aim: against | for, about: text, name: text }`: People band together for or against the newcomers of an area. Rules yes, brain no, chronicler yes.
+- `arrive` `{ arrive: text, to: text }`: Newcomers come to live in a free house and take up a trade nobody works. Rules yes, brain no, chronicler yes.
+- `build` `{ build: text }`: A settlement begins a project: a new place or a workshop, with materials from its store. Rules yes, brain no, chronicler yes.
 - `order` `{ order: text, to: text, qty?: number = 6, days?: number = 3, by?: text = "a carrier" }`: A settlement sends for goods that come in some days, at twice their worth. Rules yes, brain yes, chronicler yes.
 - `set` `{ set: text, value?: text or number or true/false = true }`: A flag. Rules yes, brain no, chronicler no.
 - `unset` `{ unset: text }`: A flag cleared. Rules yes, brain no, chronicler no.

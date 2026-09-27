@@ -1,5 +1,6 @@
 import { parse } from 'yaml'
 import { OutlandSchema, ResourceSchema, RouteSchema, SettlementSchema, type Outland, type Resource, type Route, type Settlement } from './economy/schema'
+import { NamesSchema, NewcomerSchema, ProjectSchema, type Newcomer, type Project } from './growth/schema'
 import { z } from 'zod'
 import { CreatureSchema, EncounterSchema, RulesSchema, type Creature, type Effect, type Encounter, type Rules, type Talent } from './rules/schema'
 import { QuestBodySchema } from './quests/schema'
@@ -95,6 +96,12 @@ export const AffordanceSchema = z.object({
   narrate_end: z.string().optional(),
   player_text: z.string().optional(),
   broken_text: z.string().optional(),
+  /** Work for pay (M8.5): what the owner pays the player for it; what is made then goes into the owner's store, not the player's pocket. */
+  wage: z.number().int().positive().optional(),
+  /** A check of the player's: failed, half the work and half the pay (M8.5). */
+  check: z.object({ skill: z.string(), dc: z.number().int() }).strict().optional(),
+  /** Experience for doing it well: work is a trade you get better at (M8.5). */
+  xp: z.number().int().positive().optional(),
 })
 export type Affordance = z.infer<typeof AffordanceSchema>
 
@@ -550,6 +557,10 @@ export const WorldSchema = z.object({
   standing: z.object({ names: z.array(z.string()).length(5), offices: z.array(z.string()).default([]) }).strict().optional(),
   /** Plans that run from the first day (M8.3): the opponents who do not wait for the player. */
   plans: z.array(z.string()).default([]),
+  /** Names for people who come during a game (M8.5). */
+  names: NamesSchema.optional(),
+  /** At most so many newcomers a season (M8.5). */
+  newcomers_per_season: z.number().int().min(0).default(6),
 })
 export type WorldDef = z.infer<typeof WorldSchema>
 
@@ -612,6 +623,9 @@ const FileSchema = z
     resources: z.array(ResourceSchema).optional(),
     routes: z.array(RouteSchema).optional(),
     outlands: z.array(OutlandSchema).optional(),
+    /** Growth (M8.5): households that may come, and what may be built. */
+    newcomers: z.array(NewcomerSchema).optional(),
+    projects: z.array(ProjectSchema).optional(),
   })
   .strict()
 
@@ -652,6 +666,9 @@ export interface Content {
   resources: Map<string, Resource>
   routes: Map<string, Route>
   outlands: Map<string, Outland>
+  /** Growth (M8.5). */
+  newcomers: Map<string, Newcomer>
+  projects: Map<string, Project>
   /** The chronicler's working instruction (content/CHRONICLER.md and the world's own), if there is one. */
   chronicler?: string
 }
@@ -700,6 +717,8 @@ export function loadContent(files: ContentFile[]): Content {
     resources: new Map<string, Resource>(),
     routes: new Map<string, Route>(),
     outlands: new Map<string, Outland>(),
+    newcomers: new Map<string, Newcomer>(),
+    projects: new Map<string, Project>(),
   }
 
   let chronicler: string | undefined
@@ -749,6 +768,8 @@ export function loadContent(files: ContentFile[]): Content {
     addAll(content.resources, data.resources, (v) => v.id, file.path, 'resource', problems)
     addAll(content.routes, data.routes, (v) => v.id, file.path, 'route', problems)
     addAll(content.outlands, data.outlands, (v) => v.id, file.path, 'outland', problems)
+    addAll(content.newcomers, data.newcomers, (v) => v.id, file.path, 'newcomer', problems)
+    addAll(content.projects, data.projects, (v) => v.id, file.path, 'project', problems)
     if (data.rules) {
       if (rules) problems.push(`${file.path}: the rules are defined twice`)
       rules = data.rules
@@ -840,6 +861,7 @@ function checkReferences(world: WorldDef | undefined, c: Omit<Content, 'world'>)
     for (const id of world.plans) if (!c.plans.has(id)) problems.push(`world.plans: unknown plan ${id}`)
   }
   problems.push(...checkEconomy(c))
+  problems.push(...checkGrowth(c))
   for (const type of c.objectTypes.values()) {
     for (const aff of type.affordances) {
       for (const id of [...Object.keys(aff.consumes), ...Object.keys(aff.produces)]) item(id, `object type ${type.id}.${aff.id}`)
@@ -1030,6 +1052,51 @@ function checkEconomy(c: Omit<Content, 'world'>): string[] {
       for (const g of Object.keys(r.returns)) if (!outland.asks.includes(g)) problems.push(`${where}: ${outland.name} does not ask for ${g}`)
     }
     if (r.via) for (const l of r.via) if (!c.locations.has(l)) problems.push(`${where}: unknown location ${l}`)
+  }
+  return problems
+}
+
+/** Growth refers to trades, professions, places and goods; a project's new place is a location like any (M8.5). */
+function checkGrowth(c: Omit<Content, 'world'>): string[] {
+  const problems: string[] = []
+  const workshops = new Set([...c.settlements.values()].flatMap((s) => s.workshops.map((w) => w.id)))
+  for (const n of c.newcomers.values()) {
+    const where = `newcomer ${n.id}`
+    if (!workshops.has(n.trade)) problems.push(`${where}: no workshop ${n.trade} in any settlement`)
+    if (!c.outlands.has(n.from) && !c.areas.has(n.from)) problems.push(`${where}: from ${n.from}, which is no region beyond the map or area`)
+    for (const m of n.people) if (!c.professions.has(m.profession)) problems.push(`${where}: unknown profession ${m.profession}`)
+    if (n.people.filter((m) => m.role === 'head').length !== 1) problems.push(`${where}: needs exactly one head`)
+  }
+  for (const p of c.projects.values()) {
+    const where = `project ${p.id}`
+    const s = c.settlements.get(p.settlement)
+    if (!s) problems.push(`${where}: no settlement ${p.settlement}`)
+    if (p.after && !c.projects.has(p.after)) problems.push(`${where}: after unknown project ${p.after}`)
+    for (const g of Object.keys(p.needs)) if (!c.items.has(g)) problems.push(`${where}: unknown item ${g}`)
+    let place: string | undefined
+    if (p.place) {
+      const parsed = LocationSchema.safeParse(p.place)
+      if (!parsed.success) problems.push(`${where}: the place is no valid location (${parsed.error.issues.map((i) => `${i.path.join('.')} ${i.message}`).join('; ')})`)
+      else {
+        place = parsed.data.id
+        if (c.locations.has(place)) problems.push(`${where}: the place ${place} is there already`)
+        if (parsed.data.area !== p.settlement) problems.push(`${where}: the place is not in ${p.settlement}`)
+        for (const exit of Object.values(parsed.data.exits)) if (exit && !c.locations.has(exit.to)) problems.push(`${where}: the place leads to unknown ${exit.to}`)
+      }
+    }
+    if (p.link) {
+      const from = c.locations.get(p.link.from)
+      if (!place) problems.push(`${where}: a link without a place`)
+      if (!from) problems.push(`${where}: link from unknown ${p.link.from}`)
+      else if (!(DIRECTIONS as readonly string[]).includes(p.link.direction)) problems.push(`${where}: no direction ${p.link.direction}`)
+      else if (from.exits[p.link.direction as Direction]) problems.push(`${where}: ${p.link.from} already has a way ${p.link.direction}`)
+    }
+    for (const w of p.workshops) {
+      if (w.at !== place && c.locations.get(w.at)?.area !== p.settlement) problems.push(`${where}: the workshop ${w.id} is not at the new place or in ${p.settlement}`)
+      for (const g of [...Object.keys(w.makes), ...Object.keys(w.uses)]) if (!c.items.has(g)) problems.push(`${where}: unknown item ${g}`)
+      if (w.from && s && !s.resources.includes(w.from)) problems.push(`${where}: works ${w.from}, which ${p.settlement} does not have`)
+      if (w.from && c.resources.has(w.from)) for (const g of Object.keys(w.makes)) if (!c.resources.get(w.from)!.gives.includes(g)) problems.push(`${where}: ${w.from} does not give ${g}`)
+    }
   }
   return problems
 }

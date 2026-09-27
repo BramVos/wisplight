@@ -183,9 +183,9 @@ Let op, voor de bouwer: dit werkpakket is op 27 september 2026 uit "Nasleep: gro
 
 Scope: nieuwe mensen uit sjablonen (gevalideerd, met een maximum per seizoen), projecten en bouwwerken met materiaal uit het grootboek van M8.4, de speler die werkt voor loon, investeert en vervoert (een affordance kan een proef en ervaring hebben, zodat werk ambacht met oefening is), gegenereerde mensen en plekken in de editor. Een rangwissel van een nederzetting pas als dat speelt. Tot 27 september 2026 was dit M8.4; het grootboek en de hulpbronnen zijn naar M8.4 Economie verhuisd.
 
-- [ ] Een kuiper vestigt zich met zijn gezin in een leeg huis in Veenhoek omdat niemand tonnen maakt
-- [ ] Waagdam bouwt eerst een steenbakkerij en daarna een muur, met materiaal uit de economie
-- [ ] Een tekort dat blijft, leidt tot een besluit van een handelaar of een nieuwkomer
+- [x] Een kuiper vestigt zich met zijn gezin in een leeg huis in Veenhoek omdat niemand tonnen maakt
+- [x] Waagdam bouwt eerst een steenbakkerij en daarna een muur, met materiaal uit de economie
+- [x] Een tekort dat blijft, leidt tot een besluit van een handelaar of een nieuwkomer
 
 ## M9.1 Vaste ids en de open punten
 

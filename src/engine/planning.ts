@@ -37,6 +37,8 @@ export function chroniclerVerbs(): StepVerb[] {
   { name: 'form_group', text: 'these people band together, for or against the newcomers at the target area', who: 'many', target: ['area'], detail: '"against: a name" or "for: a name"' },
   { name: 'regard', text: 'these people think better or worse of the target', who: 'many', target: ['person'], detail: 'a number from -10 to 10' },
   { name: 'place', text: 'the target place changes', who: 'none', target: ['place'], detail: PLACE_STATES.join(', ') },
+  { name: 'arrive', text: 'newcomers come to live in a free house of the target area and take up a trade nobody works there', who: 'none', target: ['area'], detail: 'the trade, or a good it makes' },
+  { name: 'build', text: 'a settlement begins a project, with materials from its store', who: 'none', detail: 'the project' },
   { name: 'area_news', text: 'the news of the day in the target area', who: 'none', target: ['area'], detail: 'the news, as people there say it' },
   ]
 }
@@ -195,6 +197,18 @@ export function stepsFromOp(world: World, op: StepOp, n: number, problems: strin
       return place(op.target) ? [make(0, { place: op.target, state: op.detail?.trim().toLowerCase() })].filter((s): s is Step => Boolean(s)) : (problems.push('place: needs a place'), [])
     case 'area_news':
       return op.target && world.content.areas.has(op.target) ? [make(0, { news: op.detail ?? '', area: op.target })].filter((s): s is Step => Boolean(s)) : (problems.push('area_news: needs an area'), [])
+    case 'arrive': {
+      // The trade by its workshop, its name, or a good it makes (M8.5).
+      const words = (op.detail ?? '').trim().toLowerCase()
+      const workshop = [...world.content.settlements.values()].flatMap((s) => s.workshops).find((w) => w.id === words || w.name.toLowerCase() === words || words in w.makes)
+      if (!op.target || !world.content.settlements.has(op.target) || !workshop) return (problems.push('arrive: needs a settlement and a trade'), [])
+      return [make(0, { arrive: workshop.id, to: op.target })].filter((s): s is Step => Boolean(s))
+    }
+    case 'build': {
+      const words = (op.detail ?? '').trim().toLowerCase()
+      const project = [...world.content.projects.values()].find((p) => p.id === words || p.name.toLowerCase() === words)
+      return project ? [make(0, { build: project.id })].filter((s): s is Step => Boolean(s)) : (problems.push(`build: ${op.detail} is not a project`), [])
+    }
     default:
       problems.push(`step ${op.verb}: not a verb the chronicler may use`)
       return []

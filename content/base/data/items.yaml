@@ -337,3 +337,28 @@ items:
     tags: [document]
     value: 0
 
+
+  # M8.5: growth. What a cooper makes, and what a brickworks takes and gives.
+  - id: barrel
+    name: barrel
+    plural: barrels
+    aliases: [ton, cask, tun]
+    description: An oak barrel, hooped with iron, the kind eel is packed in for the barges.
+    tags: [container]
+    value: 40
+
+  - id: clay
+    name: basket of clay
+    plural: baskets of clay
+    aliases: [clay, klei]
+    description: Heavy grey clay dug from the bank of the Vaart, still wet.
+    tags: [material]
+    value: 2
+
+  - id: brick
+    name: brick
+    plural: bricks
+    aliases: [bricks, baksteen]
+    description: A hard yellow-red brick, fired with peat in a kiln by the Vaart.
+    tags: [material]
+    value: 3

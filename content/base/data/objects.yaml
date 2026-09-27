@@ -74,6 +74,17 @@ object_types:
         satisfies: { work: 25 }
         narrate_start: "{name} spits on {their} hands and drives the spade into the peat."
         narrate_end: "{name} stacks the new blocks of peat to dry."
+      # M8.5: a day's work for pay, as the peat-cutters do it (Wereldboek: "Dagloon turfsteker 3 stuivers").
+      - id: work_for_pay
+        verb: work
+        label: cutting peat for a day's wage
+        actors: [player]
+        produces: { peat: 6 }
+        duration: 480
+        wage: 24
+        check: { skill: athletics, dc: 10 }
+        xp: 10
+        player_text: You cut peat all day beside the others, up to your knees in black water, and stack the wet blocks to dry.
 
   - id: eel_traps
     name: eel traps
@@ -184,3 +195,20 @@ object_types:
     aliases: [board, notices, prikbord]
     description: A board on the stable wall, stuck with notes and a nail or two. Most of the notes are about lost goats.
     affordances: []
+
+  # M8.5: the kiln of the brickworks at Waagdam, once it is built.
+  - id: brick_kiln
+    name: brick kiln
+    aliases: [kiln, oven, steenoven]
+    description: A squat kiln of its own bricks, black with peat smoke, with clay drying in rows beside it.
+    affordances:
+      - id: work_for_pay
+        verb: work
+        label: firing bricks for a day's wage
+        actors: [player]
+        produces: { brick: 8 }
+        duration: 480
+        wage: 24
+        check: { skill: crafting, dc: 12 }
+        xp: 10
+        player_text: You tread clay, fill the moulds and feed the kiln with peat until your eyes sting with the smoke.

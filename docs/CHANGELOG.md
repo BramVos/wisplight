@@ -1,5 +1,21 @@
 # Changelog
 
+## M8.5 Nasleep: groei, 27 september 2026
+
+Nieuw:
+- **Nieuwkomers.** Ligt een ambacht twee weken stil, dan kan er een huishouden uit een sjabloon komen wonen: in de Nethermarch een kuipersgezin uit Zwolderkamp, in de oude kuiperij aan de kade van Veenhoek, op een dag dat de trekschuit vaart. Namen uit de naamtabel van de wereld, niemand kent ze en zij kennen niemand, en ze worden als content gecontroleerd voordat ze de wereld in komen. Hooguit zes nieuwkomers per seizoen. Komt er niemand, dan hangt er na drie dagen een briefje op het prikbord.
+- **Projecten.** Een nederzetting kan bouwen met materiaal uit haar grootboek, werkdagen en geld. Loopt de spanning met Rijkland op, dan wil Waagdam een muur: eerst een steenbakkerij aan de Vaart (turf uit de voorraad), die klei tot baksteen bakt, en daarna de muur van driehonderd stenen. De nieuwe plek komt erbij, en de poorten zien er anders uit als de muur staat.
+- **Een tekort dat blijft.** In een handelsstad gaan bij een tekort eerst de prijzen omhoog; houdt het een week aan, dan stuurt de winkelier zelf een kar ver weg. In een dorp komen er nieuwkomers als die het goed maken.
+- **Werken voor loon.** `work` bij de turfwand of later bij de steenoven: een dag werk voor loon, met een proef (gaat het slecht, dan half werk en half loon) en ervaring als het goed gaat. Wat je maakt, gaat in de voorraad van de nederzetting.
+- **Investeren.** `invest 20` in een nederzetting waar gebouwd wordt: als het af is, krijg je het terug met een vijfde erbij.
+- **Editor:** nieuwkomers en projecten zijn lijsten. De speeltest toont wie er kwam en wat er gebouwd werd, en met [Adopt] schrijf je een huishouden in de wereld.
+
+Testen: `npm run dev`. Speel ruim twee weken (of wacht) en ga naar de kade van Veenhoek: in de oude kuiperij woont een nieuw gezin. Voor de muur: `@tension rijkland 30` zet de spanning met Rijkland op 60; Waagdam begint dan aan de steenbakkerij, en ruim drie weken later staat de muur (kijk bij de West Gate). Met `invest 20` in Waagdam leg je geld in. In de editor bij Playtest laat dertig dagen draaien de nieuwkomers zien. `work` bij de turfwand (`@goto loc_peat_cuttings`). Controles: `npm test` (395 tests).
+
+Nog niet: groepen met naamlozen die pas een naam krijgen als je iemand aanspreekt, vervoeren als eigen handeling (nu via verzoeken om iets te halen), en een rangwissel van een nederzetting. Busy Hands en wat verder openstaat, staat in M9.1.
+
+Ontwerp en tests: afwijkingen staan onder "Zo is het in M8.5 gebouwd". Twee oude tests zochten een NPC op in de content van de wereld in plaats van die van het spel; die kijken nu naar `engine.content`, zodat ze de nieuwkomers meetellen. Een ambacht zonder handen is nu na veertien dagen een signaal (was drie), zodat een dorp het eerst zelf merkt. Het FO heeft een stand na M8.5.
+
 ## M8.4 Economie, 27 september 2026
 
 Nieuw:

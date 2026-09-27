@@ -29,6 +29,12 @@ world:
   law: { where: "in the Count's land", officer: schout, npc: npc_everhard, office: loc_schout_house, lord: the Count }
   towns:
     - { id: waagdam, area: waagdam, where: in Waagdam, officer: town watch, offices: [loc_waagdam_waag, loc_waagdam_weighing_room], trade_ban: true, cleared: The clerk writes you out of the book. }
+  # Names for people who come during a game (M8.5): Low Saxon, as from Zwolderkamp and the east.
+  names:
+    she: [Hilde, Marij, Geertje, Femke, Tjitske, Hendrikje, Janna, Wobbina, Roelie, Aukje]
+    he: [Roelof, Tjark, Berend, Wessel, Gijs, Hessel, Lammert, Egbert, Arend, Albert]
+    family: [Scholten, Veldkamp, Wessels, Brink, Hofstede, Lamberts, Postma, Roelofs, Dekker, Bosch]
+  newcomers_per_season: 6
   # Plans that run from the first day (M8.3): the opponents in the Holleveen do not wait for the player.
   plans: [holleveen_survey, holleveen_stakes, the_haakman_counts]
   # How pictures of places and people look (after the M7 playtest), when an image model is chosen.

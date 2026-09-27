@@ -54,6 +54,8 @@ export interface SimReport {
   plans: string[]
   /** The chronicler's storylines (M8.3): phase, open threads, what may follow. */
   lines: string[]
+  /** People who came, by household, as content to look over and adopt; and what was built (M8.5). */
+  grown: { households: { id: string; names: string[]; people: Record<string, unknown>[] }[]; built: string[] }
 }
 
 /** Runs a world without the player for some days. */
@@ -119,12 +121,25 @@ export function simulate(content: Content, days: number, seed = 1): SimReport {
       const how = p.ended !== undefined ? `${p.outcome ?? 'done'} ${world.date(p.ended).split(',')[0]}` : plan && p.phase < plan.phases.length ? `phase ${p.phase + 1} of ${plan.phases.length}` : 'running'
       return `${plan?.name ?? p.plan}${p.subjects?.length ? ` for ${p.subjects.map((x) => nameOf(world, x)).join(' and ')}` : ''}: ${how}`
     }),
+    grown: {
+      households: [...new Set((world.state.growth?.people ?? []).map((p) => p.household ?? p.id))].map((household) => {
+        const people = (world.state.growth?.people ?? []).filter((p) => (p.household ?? p.id) === household)
+        return { id: household, names: people.map((p) => `${p.name} (${p.age}, ${p.profession})`), people: people.map((p) => written(p as unknown as Record<string, unknown>)) }
+      }),
+      built: Object.entries(world.state.growth?.projects ?? {}).map(([id, p]) => `${content.projects.get(id)?.name ?? id}: ${p.done !== undefined ? `finished ${world.date(p.done).split(',')[0]}` : `${p.days} of ${content.projects.get(id)?.days ?? '?'} workdays`}`),
+    },
     lines: (world.state.chronicle?.lines ?? []).map((l) => {
       const head = `${l.title}${l.pattern ? ` [${l.pattern}]` : ''}, ${l.phase ?? 'no phase yet'}, ${l.open ? 'open' : 'closed'}, ${l.facts.length} fact${l.facts.length === 1 ? '' : 's'}`
       const note = [l.summary.length ? `so far: ${l.summary.join(' ')}` : '', l.hooks.length ? `threads: ${l.hooks.join('; ')}` : '', l.next ? `next: ${l.next}` : ''].filter(Boolean)
       return note.length ? `${head}. ${note.join('. ')}` : head
     }),
   }
+}
+
+/** An entity as a person would write it: without the empty and default fields. */
+function written(raw: Record<string, unknown>): Record<string, unknown> {
+  const empty = (v: unknown) => v === undefined || v === false || (Array.isArray(v) && v.length === 0) || (typeof v === 'object' && v !== null && !Array.isArray(v) && Object.keys(v).length === 0)
+  return Object.fromEntries(Object.entries(raw).filter(([k, v]) => !empty(v) && !(k === 'portrait' && v === 'unique')))
 }
 
 /** Who took a signal up, in words. */

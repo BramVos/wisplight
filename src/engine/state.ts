@@ -2,6 +2,7 @@ import { GameClock } from './clock'
 import { NEEDS, type Content, type Need, type Npc } from './content'
 import type { StoriesState } from './stories'
 import type { EconomyState } from './economy/ledger'
+import type { GrowthState } from './growth/growth'
 import type { Combat } from './combat/types'
 import type { Character } from './rules/character'
 import type { Clock } from './rules/player'
@@ -469,6 +470,8 @@ export interface GameState {
   groups?: Group[]
   /** The ledgers of the settlements, the routes and goods sent for (M8.4). */
   economy?: EconomyState
+  /** People who came and what was built during the game (M8.5). */
+  growth?: GrowthState
 }
 
 /** A group with members and an aim (M8.3): for or against the newcomers in an area. */

@@ -1,3 +1,5 @@
+import { ledgerOf, settlementAt } from './economy/ledger'
+import { gainXp, playerCheck } from './rules/player'
 import { GameClock, isOpenAt, MINUTES_PER_DAY, parseHours, startOfDay } from './clock'
 import { callName, type Affordance, type Direction, type Npc, type ObjectInstance, type ObjectType, type Service } from './content'
 import { add, hasAll, itemName, listItems, matchItem, withArticle } from './items'
@@ -87,6 +89,9 @@ export function runCommand(host: CommandHost, command: Command): Output[] {
       return rent(host)
     case 'use':
       return use(host, command.args)
+    // WORK [at <object>] (M8.5): an object's work for pay, as USE with the verb.
+    case 'work':
+      return use(host, ['work', ...command.args])
     case 'eat':
       return eat(host, command.args)
     case 'sleep':
@@ -503,7 +508,8 @@ function use(host: CommandHost, args: string[]): Output[] {
     const type = world.content.objectTypes.get(instance.type)
     return type ? [{ instance, type }] : []
   })
-  const object = candidates.find(({ instance, type }) => nameMatches(words, instance, type)) ?? (candidates.length === 1 && !words ? candidates[0] : undefined)
+  const verbHere = (type: ObjectType) => type.affordances.some((a) => a.actors.includes('player') && words.split(/\s+/).includes(a.verb))
+  const object = candidates.find(({ instance, type }) => nameMatches(words, instance, type)) ?? (candidates.length === 1 && !words ? candidates[0] : undefined) ?? candidates.find(({ type }) => verbHere(type))
   if (!object) return [error(words ? `There is no "${words}" here to use.` : 'Use what?')]
   const usable = object.type.affordances.filter((a) => a.actors.includes('player'))
   const affordance = usable.find((a) => words.includes(a.verb)) ?? usable[0]
@@ -514,12 +520,47 @@ function use(host: CommandHost, args: string[]): Output[] {
     world.state.player.money -= affordance.fee
     world.npcState(object.instance.provider).money += affordance.fee
   }
+  if (affordance.wage) return workForPay(host, object.instance, object.type, affordance)
   for (const [item, qty] of Object.entries(affordance.consumes)) add(world.state.player.inventory, item, -qty)
   for (const [item, qty] of Object.entries(affordance.produces)) add(world.state.player.inventory, item, qty)
   const seen = host.pass(affordance.duration)
   const produced = Object.entries(affordance.produces)
   const result = affordance.player_text ?? `You ${affordance.verb} at the ${label(object.instance, object.type)}.${produced.length ? ` You now have ${produced.map(([i, q]) => qtyName(world, i, q)).join(' and ')}.` : ''}`
   return [text(result), ...seen]
+}
+
+/**
+ * Work for pay (M8.5): a day at the peat cuttings or the brick kiln. A check
+ * of the player's decides how much gets done; the owner pays for what was
+ * done, and it goes into the store of the settlement (or the owner's hands).
+ * Done well, it is practice: experience.
+ */
+function workForPay(host: CommandHost, instance: ObjectInstance, type: ObjectType, affordance: Affordance): Output[] {
+  const { world } = host
+  const here = world.state.player.location
+  const payer = instance.provider ?? instance.owner
+  const result = affordance.check ? playerCheck(world, affordance.check.skill, affordance.check.dc) : undefined
+  const well = !result || result.degree === 'success' || result.degree === 'critical success'
+  const share = well ? 1 : 0.5
+  const seen = host.pass(affordance.duration)
+  const store = settlementAt(world, here) ? ledgerOf(world, settlementAt(world, here)!.id) : undefined
+  for (const [item, qty] of Object.entries(affordance.produces)) {
+    const made = Math.floor(qty * share)
+    if (store) store.stock[item] = (store.stock[item] ?? 0) + made
+    else if (payer) add(world.npcState(payer).inventory, item, made)
+  }
+  const owed = Math.round(affordance.wage! * share)
+  const purse = payer ? world.npcState(payer) : undefined
+  const paid = purse ? Math.min(owed, Math.max(0, purse.money)) : store ? Math.min(owed, store.purse) : 0
+  if (purse) purse.money -= paid
+  else if (store) store.purse -= paid
+  world.state.player.money += paid
+  if (well && affordance.xp) gainXp(world, affordance.xp, `a day's ${affordance.label}`)
+  const who = payer ? firstName(world.npc(payer)) : 'they'
+  const done = affordance.player_text ?? `You work at the ${label(instance, type)} until the light goes.`
+  const how = result ? (well ? ' It goes well.' : ' It goes badly; you get half done.') : ''
+  const pay = paid ? ` ${payer ? who : 'They'} pay${payer ? 's' : ''} you ${world.money(paid)}.` : ` There is no money to pay you today.`
+  return [text(`${done}${how}${pay}`), ...seen]
 }
 
 function cannotUse(world: World, here: string, instance: ObjectInstance, affordance: Affordance): string | undefined {

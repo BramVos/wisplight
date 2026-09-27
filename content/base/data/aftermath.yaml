@@ -325,18 +325,17 @@ aftermath:
             far: "Nobody listened to the one who warned them, they say."
 
   # M8.4: the economy. The same shortage goes differently in a trading town
-  # and in a village: the town sends for more, the village makes do and
-  # grumbles, and a stranger finds it harder there (openness, belief.ts).
+  # and in a village: in the town the merchants put their prices up and, if it
+  # lasts, send far afield (M8.5, below); the village makes do and grumbles,
+  # and a stranger finds it harder there (openness, belief.ts).
   - id: shortage_sent_for
     signal: shortage
     topic: shortage
     brain: true
     when: [{ character: $area, is: trade }]
     steps:
-      - id: send
-        do: { order: $value, to: $area, qty: 8, days: 3, by: a carter sent out of town }
       - id: word
-        do: { news: "{value} are short in {area}, and the merchants have sent out for more. It will cost.", area: $area }
+        do: { news: "{value} are short in {area}. The merchants have put their prices up and talk of sending far afield.", area: $area }
 
   - id: shortage_made_do
     signal: shortage
@@ -368,8 +367,18 @@ aftermath:
   - id: missing_trade
     signal: missing_trade
     topic: trade
+    expires: 21
     steps:
+      # Newcomers for the trade, if the content has them and a house stands free (M8.5): on a barge day.
+      - id: newcomers
+        at: { days: 2, hour: 15 }
+        when: [{ any: [{ weekday: Maandag }, { weekday: Donderdag }] }]
+        otherwise: wait
+        do: { arrive: $value, to: $area }
+      # Still nobody after three days: a note on the board.
       - id: notice
+        at: { days: 3, hour: 9 }
+        when: [{ idle: $value }]
         do:
           post: { board_near: $place }
           fact:
@@ -388,3 +397,51 @@ aftermath:
     steps:
       - id: word
         do: { news: "Nothing comes along {subject} any more. What it brought will be dear soon.", area: $area }
+
+  # M8.5: a shortage that lasts. A trader decides to send far afield; a village
+  # may draw newcomers who make the good, if the content has them.
+  - id: shortage_lasting_trader
+    signal: shortage
+    event: lasting
+    topic: shortage_lasting
+    when: [{ character: $area, is: trade }]
+    steps:
+      - id: cart
+        do: { order: $value, to: $area, qty: 20, days: 5, by: "a cart {a} sent far afield" }
+      - id: word
+        do:
+          tell:
+            kind: trader
+            about: [$a]
+            belang: 2
+            title: "{a} sent a cart far afield for {value}"
+            precise: "{a} has had enough of waiting and sent a cart far afield for {value}, whatever they cost."
+            village: "{a} has sent off for {value} at last. It'll cost us, you'll see."
+            far: "A trader sent far afield for goods."
+
+  - id: shortage_lasting_newcomers
+    signal: shortage
+    event: lasting
+    topic: shortage_lasting
+    when: [{ not: { character: $area, is: trade } }]
+    steps:
+      - id: newcomers
+        do: { arrive: $value, to: $area }
+
+  # M8.5: a wall for Waagdam. First a brickworks, for there is no stone in the
+  # Holleveen: clay from the Vaart, fired with peat. Then the wall.
+  - id: wall_for_waagdam
+    signal: threat
+    topic: wall
+    expires: 150
+    when: [{ character: $area, is: trade_town }]
+    steps:
+      - id: brickworks
+        do: { build: waagdam_brickworks }
+      - id: word
+        do: { news: "Mayor Aleid Vos wants a wall round the town, and first a brickworks by the Vaart: there is no stone in the Holleveen.", area: $area }
+      - id: wall
+        after: brickworks
+        when: [{ built: waagdam_brickworks }]
+        otherwise: wait
+        do: { build: waagdam_wall }

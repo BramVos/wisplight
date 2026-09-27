@@ -206,6 +206,7 @@ locations:
       east: { to: loc_gerrit_house }
       west: { to: loc_towpath_w }
       south: { to: loc_peat_sheds }
+      southwest: { to: loc_veenhoek_cooperage }
     objects:
       - { id: dog_stone, type: dog_stone }
     services:
@@ -321,3 +322,20 @@ locations:
       north: { to: loc_peat_cuttings }
     objects:
       - { id: eel_traps, type: eel_traps, owner: npc_wouter }
+
+  # M8.5: a house that stands empty at the start. Old Tijs the cooper died last
+  # winter and nobody took up the trade; a newcomer may.
+  - id: loc_veenhoek_cooperage
+    name: The Old Cooperage
+    area: veenhoek
+    tags: [private, vacant]
+    aliases: [cooperage, kuiperij, old cooperage]
+    summary: A cooper's house and workshop by the quay, empty since the old cooper died.
+    description:
+      day: |
+        A low brick house leans against its own workshop, the shutters
+        closed. Staves lie stacked under the eaves, grey with weather, and a
+        bent iron hoop hangs on a nail by the door. It smells of damp oak and
+        old tar. The quay is north-east.
+    exits:
+      northeast: { to: loc_veenhoek_quay }

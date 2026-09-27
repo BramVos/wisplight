@@ -1,4 +1,5 @@
 import { fillFromLedger, ledgerHour, nameless } from './economy/ledger'
+import { projectsDay } from './growth/growth'
 import { sawPerson } from './acquaintance'
 import { isOpenAt, MINUTES_PER_DAY, minuteOfDay, weekdayOf } from './clock'
 import type { Need } from './content'
@@ -54,8 +55,10 @@ export function advance(world: World, minutes: number): void {
 
 function hourly(world: World): void {
   decayNeeds(world)
-  // The ledgers before the counters fill (M8.4).
+  // The ledgers before the counters fill (M8.4), and a workday on what is being built (M8.5).
+  const ran = world.state.economy?.day
   ledgerHour(world)
+  if (world.state.economy && world.state.economy.day !== ran) projectsDay(world)
   supply(world)
   demand(world)
   storyHour(world)

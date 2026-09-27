@@ -132,6 +132,11 @@ export const VerbSchema = z.union([
   z.object({ settle: SelectorSchema, at: SelectorSchema }).strict(),
   /** People band together for or against the newcomers in an area. */
   z.object({ form_group: z.array(SelectorSchema).min(1), aim: z.enum(['against', 'for']), about: z.string(), name: z.string() }).strict(),
+  // M8.5: growth.
+  /** Newcomers from a template (or for a trade, by its workshop) come to live in a free house of a settlement and take up the trade. */
+  z.object({ arrive: z.string(), to: z.string() }).strict(),
+  /** A project of the content begins: materials from the store, workdays, money. */
+  z.object({ build: z.string() }).strict(),
   // M8.4: the economy.
   /** A settlement sends for goods: they come in so many days, paid at twice their worth ({ order: $value, to: $area }). */
   z.object({ order: z.string(), to: z.string(), qty: z.number().int().positive().default(6), days: z.number().int().positive().default(3), by: z.string().default('a carrier') }).strict(),

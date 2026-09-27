@@ -102,10 +102,10 @@ watchers:
     probe: { price_doubled: 2 }
     belang: 2
 
-  # A workshop nobody has worked for three days.
+  # A workshop nobody has worked for two weeks: the village notices.
   - id: missing_trade
     signal: missing_trade
-    probe: { missing_trade: 3 }
+    probe: { missing_trade: 14 }
     belang: 3
 
   # A trade route closed: $subject the route.
@@ -113,4 +113,12 @@ watchers:
     signal: route_closed
     fact: { key: route, value: closed }
     who: []
+    belang: 3
+
+  # M8.5: trouble from the east, and Waagdam a trading town: the town wants a wall (design, scenario 8).
+  - id: threat_from_the_east
+    signal: threat
+    when: [{ tension: [nethermarch, rijkland], at_least: 60 }, { character: waagdam, is: trade_town }]
+    who: [npc_aleid]
+    place: loc_waagdam_town_hall
     belang: 3

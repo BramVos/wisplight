@@ -640,6 +640,10 @@ function templateFor(kind: EntityKind, view: EditorView): Raw {
       return { id: 'new_outland', name: 'A Place Beyond the Map', sends: [], asks: [], prices: 1, by: 'a pedlar', every: 7 }
     case 'resource':
       return { id: 'new_ground', name: 'new ground', gives: [] }
+    case 'newcomer':
+      return { id: 'new_household', trade: 'a_workshop_id', from: area, people: [{ role: 'head', age: [25, 45], profession: trade, looks: ['What people see first, with {their} and {man}.'] }], facts: ['{name} came from {from} to work in {area}.'] }
+    case 'project':
+      return { id: 'new_project', name: 'the new project', settlement: area, needs: {}, days: 10, cost: 0 }
     default:
       return { id: `new_${kind}` }
   }
@@ -648,6 +652,42 @@ function templateFor(kind: EntityKind, view: EditorView): Raw {
 /** The same writer as the files, for a thing that is not saved yet. */
 function toYaml(raw: Raw): string {
   return stringify(raw, { lineWidth: 0 })
+}
+
+/** People who came in the playtest, to look over and write into the world (M8.5), and what was built. */
+function Grown({ bridge, world, grown }: { bridge: EditorBridge; world: string; grown: SimReport['grown'] }) {
+  const [done, setDone] = useState<Record<string, string>>({})
+  const adopt = async (household: SimReport['grown']['households'][number]) => {
+    const result = await bridge.save(world, household.people.map((p) => ({ kind: 'npc' as const, id: String(p['id']), data: p })))
+    setDone((d) => ({ ...d, [household.id]: result.ok ? 'written into the world' : result.problems.join('; ') }))
+  }
+  if (!grown.households.length && !grown.built.length) return <p className="muted small">Nobody came and nothing was built.</p>
+  return (
+    <>
+    <p className="muted small">Adopt writes a household into the world as people like any. Name the head among those who work the workshop (named), or the trade stays missing.</p>
+    <ul className="check-list small">
+      {grown.households.map((h) => (
+        <li key={h.id}>
+          {h.names.join(', ')}{' '}
+          {done[h.id] ? (
+            <span className="muted">{done[h.id]}</span>
+          ) : (
+            <button type="button" className="link" onClick={() => void adopt(h)}>
+              [Adopt]
+            </button>
+          )}
+          <details>
+            <summary className="small">As content</summary>
+            <pre className="small">{h.people.map((p) => stringify(p)).join('---\n')}</pre>
+          </details>
+        </li>
+      ))}
+      {grown.built.map((b) => (
+        <li key={b}>{b}</li>
+      ))}
+    </ul>
+    </>
+  )
 }
 
 // ---------------------------------------------------------------- the reference
@@ -816,6 +856,8 @@ function PlaytestPanel({ bridge, world }: { bridge: EditorBridge; world: string 
               </ul>
               <h3>News of weight</h3>
               <ul className="check-list small">{report.news.length ? report.news.map((n) => <li key={n}>{n}</li>) : <li className="muted">none</li>}</ul>
+              <h3>Newcomers and building</h3>
+              <Grown bridge={bridge} world={world} grown={report.grown} />
               <h3>Storylines</h3>
               <ul className="check-list small">{report.lines.length ? report.lines.map((l, i) => <li key={`l${i}`}>{l}</li>) : <li className="muted">none</li>}</ul>
               <h3>Signals and plans</h3>

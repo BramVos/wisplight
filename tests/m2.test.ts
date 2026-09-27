@@ -35,7 +35,8 @@ describe('M2: the fixed set of 50 conversation situations', () => {
       }
       for (const line of speechOf(run.outputs)) expect(line, situation.id).not.toMatch(/Weeping Stone/)
     }
-  })
+    // Fifty games in a row: under a full parallel run this takes more than the default five seconds.
+  }, 30_000)
 
   it('puts only what the NPC knows in the prompt, at the level of its roll', async () => {
     const run = await runSituation(content, SITUATIONS.find((s) => s.id === 'mirte_far')!, new MockLlm('good'))
