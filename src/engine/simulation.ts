@@ -30,6 +30,7 @@ export function advance(world: World, minutes: number): void {
     if (minuteOfDay(world.now) % 15 === 0) {
       spreadNews(world)
       noticeCoincidences(world)
+      noteSightings(world, ids)
     }
     keepUp(world)
     // Someone in a conversation with the player stays put until it ends.
@@ -137,3 +138,22 @@ export function isDaytime(minutes: number): boolean {
 }
 
 export { MINUTES_PER_DAY }
+
+/** People in the same place see each other: they can say later where they saw whom. */
+function noteSightings(world: World, ids: string[]): void {
+  const at = new Map<string, string[]>()
+  for (const id of ids) {
+    const s = world.state.npcs[id]!
+    if (s.dead || s.absent || s.note) continue
+    const here = at.get(s.location)
+    if (here) here.push(id)
+    else at.set(s.location, [id])
+  }
+  for (const [where, here] of at) {
+    if (here.length < 2) continue
+    for (const a of here) {
+      const seen = (world.state.npcs[a]!.sightings ??= {})
+      for (const b of here) if (a !== b) seen[b] = { where, t: world.now }
+    }
+  }
+}

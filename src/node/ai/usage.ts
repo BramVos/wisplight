@@ -113,8 +113,9 @@ export class UsageStore {
     renameSync(temp, this.path)
   }
 
-  record(provider: ProviderId, model: string, usage: LlmUsage | undefined, ok: boolean): number | undefined {
-    const cost = usage ? costUsd(model, usage) : undefined
+  /** One call: its tokens and cost. A picture has a price of its own instead of tokens. */
+  record(provider: ProviderId, model: string, usage: LlmUsage | undefined, ok: boolean, fixedCostUsd?: number): number | undefined {
+    const cost = fixedCostUsd ?? (usage ? costUsd(model, usage) : undefined)
     const entry: UsageTotals = {
       calls: 1,
       failed: ok ? 0 : 1,

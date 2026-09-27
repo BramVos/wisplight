@@ -25,11 +25,24 @@ export interface ProviderResponse extends LlmResponse {
   rateLimit?: RateLimit
 }
 
+/** A picture as the image model sends it: a JPEG, base64. */
+export interface PictureResponse {
+  base64: string
+  mime: string
+  model: string
+  latencyMs: number
+}
+
 export interface Provider {
   id: ProviderId
   listModels(): Promise<ModelInfo[]>
   complete(model: string, request: LlmRequest, signal?: AbortSignal): Promise<ProviderResponse>
+  /** Image models, for pictures of places and people (OpenAI only; Claude makes no pictures). */
+  listImageModels?(): Promise<ModelInfo[]>
+  picture?(model: string, prompt: string, quality: 'low' | 'medium', signal?: AbortSignal): Promise<PictureResponse>
 }
+
+const OPENAI_IMAGE = /^(gpt-image|chatgpt-image)/
 
 // Chat models only: the OpenAI list also holds audio, image and embedding models.
 const OPENAI_CHAT = /^(gpt-|o\d|chatgpt-)/
@@ -47,6 +60,24 @@ export function openAiProvider(apiKey: string): Provider {
         }
       }
       return models.sort((a, b) => a.id.localeCompare(b.id))
+    },
+    async listImageModels() {
+      const models: ModelInfo[] = []
+      for await (const model of client.models.list()) {
+        if (OPENAI_IMAGE.test(model.id)) models.push({ id: model.id, created: new Date(model.created * 1000).toISOString().slice(0, 10) })
+      }
+      return models.sort((a, b) => a.id.localeCompare(b.id))
+    },
+    async picture(model, prompt, quality, signal) {
+      const started = Date.now()
+      try {
+        const response = await client.images.generate({ model, prompt, n: 1, size: '1024x1024', quality, output_format: 'jpeg', output_compression: 70 }, { signal })
+        const base64 = response.data?.[0]?.b64_json
+        if (!base64) throw new LlmError('invalid', 'no picture in the reply')
+        return { base64, mime: 'image/jpeg', model, latencyMs: Date.now() - started }
+      } catch (error) {
+        throw mapError(error)
+      }
     },
     async complete(model, request, signal) {
       const started = Date.now()

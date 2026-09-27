@@ -308,6 +308,20 @@ ipcMain.handle('ai:credit', (_event, id: unknown, usd: unknown) => service().usa
 ipcMain.handle('ai:csv', () => service().usage.csv())
 ipcMain.handle('ai:log', () => service().recentLog(50))
 ipcMain.handle('ai:billing', (_event, id: unknown) => shell.openExternal(BILLING[provider(id)]))
+// Pictures of places and people (after the M7 playtest): made once, kept in the user data folder.
+ipcMain.handle('ai:image-models', (_event, id: unknown) => service().imageModels(provider(id)))
+ipcMain.handle('ai:pictures', (_event, id: unknown, model: unknown, quality: unknown) =>
+  service().choosePictures(id === null ? undefined : { provider: provider(id), model: String(model), quality: quality === 'medium' ? 'medium' : 'low' }),
+)
+ipcMain.handle('ai:try-picture', async (_event, id: unknown, model: unknown) => {
+  await setup()
+  return service().tryPicture(content!, provider(id), String(model))
+})
+ipcMain.handle('engine:picture', async (_event, id: unknown) => {
+  await setup()
+  if (!content || typeof id !== 'string') return undefined
+  return service().picture(content, id)
+})
 
 // The real-time clock.
 /** The chronicler writes in the background; the game never waits for it (design, "Wanneer hij schrijft"). */

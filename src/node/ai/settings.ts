@@ -30,6 +30,14 @@ interface SettingsFile {
   budgetUsdPerHour: number
   /** The models each key could use when last asked, so the player can choose without asking again. */
   models?: Partial<Record<ProviderId, { ids: string[]; at: string }>>
+  /** Pictures of places and people: off unless the player picks an image model. */
+  pictures?: PictureChoice
+}
+
+export interface PictureChoice {
+  provider: ProviderId
+  model: string
+  quality: 'low' | 'medium'
 }
 
 export interface SettingsSummary {
@@ -41,6 +49,7 @@ export interface SettingsSummary {
   models: Partial<Record<ProviderId, string[]>>
   /** Roles whose chosen model is no longer in its provider's list. */
   missing: ChosenRole[]
+  pictures?: PictureChoice
 }
 
 export class SettingsStore {
@@ -129,6 +138,16 @@ export class SettingsStore {
     return role === 'advisor' ? undefined : this.data.roles[role]
   }
 
+  get pictures(): PictureChoice | undefined {
+    return this.data.pictures
+  }
+
+  setPictures(choice: PictureChoice | undefined): void {
+    if (choice) this.data.pictures = choice
+    else delete this.data.pictures
+    this.write()
+  }
+
   get budgetUsdPerHour(): number {
     return this.data.budgetUsdPerHour
   }
@@ -150,6 +169,7 @@ export class SettingsStore {
       encryption: this.cipher.available(),
       models: Object.fromEntries(Object.entries(this.data.models ?? {}).map(([id, list]) => [id, list?.ids ?? []])),
       missing: this.missing(),
+      ...(this.data.pictures ? { pictures: { ...this.data.pictures } } : {}),
     }
   }
 }

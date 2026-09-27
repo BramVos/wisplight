@@ -131,6 +131,7 @@ body {
 .m-p { color: var(--room); font-weight: bold; }
 .m-z { color: #a8904f; }
 .m-you { color: #f2efe4; font-weight: bold; }
+.m-x { color: var(--error); font-weight: bold; }
 
 .side h2 {
   color: var(--room);
@@ -331,6 +332,106 @@ body {
 .journal-body .journal-page h3 {
   font-size: 15px;
   margin-top: 0;
+}
+
+/* A conversation in its own window (after the M7 playtest). */
+.panel.talk {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 96px);
+  width: 1040px;
+}
+
+.panel-head .spacer {
+  flex: 1;
+}
+
+.portrait {
+  border: 1px solid var(--line);
+  height: 48px;
+  object-fit: cover;
+  width: 48px;
+}
+
+.talk-body {
+  display: grid;
+  flex: 1;
+  gap: 20px;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  min-height: 0;
+}
+
+.talk-main {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+}
+
+.talk-log {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.talk-quick {
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 13px;
+  gap: 4px 14px;
+}
+
+.talk-input {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  color: var(--text);
+  font: inherit;
+  padding: 8px 10px;
+  resize: vertical;
+}
+
+.talk-input:focus {
+  border-color: var(--topic);
+  outline: none;
+}
+
+.talk-topics {
+  border-left: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 0;
+  overflow-y: auto;
+  padding-left: 16px;
+}
+
+.talk-topics .journal-search {
+  flex: 0 0 auto;
+}
+
+.talk-topics ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.talk-topics li {
+  margin: 2px 0;
+}
+
+.trial-picture,
+.page-picture {
+  border: 1px solid var(--line);
+  display: block;
+  height: auto;
+  margin: 6px 0 10px;
+  max-width: 240px;
+  width: 100%;
+}
+
+.page-map {
+  margin: 0 0 10px;
 }
 
 .statusline .journal-button {
@@ -583,8 +684,20 @@ body {
   .shell {
     grid-template-columns: 1fr;
   }
-  .panel.journal {
+  .panel.journal,
+  .panel.talk {
     height: auto;
+  }
+  .talk-body {
+    grid-template-columns: 1fr;
+  }
+  .talk-log {
+    max-height: 50vh;
+  }
+  .talk-topics {
+    border-left: 0;
+    border-top: 1px solid var(--line);
+    padding: 12px 0 0;
   }
   .panel.journal .panel-head {
     flex-wrap: wrap;

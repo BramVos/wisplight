@@ -6,6 +6,7 @@ contextBridge.exposeInMainWorld('wisplight', {
   start: () => ipcRenderer.invoke('engine:start'),
   command: (input: string) => ipcRenderer.invoke('engine:command', input),
   page: (id: string) => ipcRenderer.invoke('engine:page', id),
+  picture: (id: string) => ipcRenderer.invoke('engine:picture', id),
   creation: () => ipcRenderer.invoke('engine:creation'),
   end: () => ipcRenderer.invoke('engine:end'),
   activity: () => ipcRenderer.send('engine:activity'),
@@ -44,5 +45,8 @@ contextBridge.exposeInMainWorld('wisplight', {
     csv: () => ipcRenderer.invoke('ai:csv'),
     log: () => ipcRenderer.invoke('ai:log'),
     billing: (provider: string) => ipcRenderer.invoke('ai:billing', provider),
+    imageModels: (provider: string) => ipcRenderer.invoke('ai:image-models', provider),
+    setPictures: (provider: string | null, model?: string, quality?: string) => ipcRenderer.invoke('ai:pictures', provider, model, quality),
+    tryPicture: (provider: string, model: string) => ipcRenderer.invoke('ai:try-picture', provider, model),
   },
 })

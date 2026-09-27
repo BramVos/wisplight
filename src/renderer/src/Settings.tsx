@@ -276,6 +276,8 @@ function AiTab({ bridge, overview, refresh }: { bridge: AiBridge; overview: AiOv
         )}
       </section>
 
+      <Pictures bridge={bridge} overview={overview} refresh={refresh} />
+
       <div className="row">
         <span className="label">Budget per hour</span>
         <span>$</span>
@@ -312,6 +314,72 @@ function Totals({ label, totals }: { label: string; totals: UsageTotals }) {
       <td>{tokens(totals.outputTokens)} out</td>
       <td className="num">{usd(totals.costUsd)}</td>
     </tr>
+  )
+}
+
+// Pictures of places and people (after the M7 playtest): optional, OpenAI only.
+function Pictures({ bridge, overview, refresh }: { bridge: AiBridge; overview: AiOverview; refresh: () => Promise<void> }) {
+  const { settings } = overview
+  const [models, setModels] = useState<ModelInfo[]>([])
+  const [picked, setPicked] = useState<string>()
+  const [trial, setTrial] = useState<string>()
+  const [state, setState] = useState<string>()
+  const openai = settings.providers.openai.configured
+
+  useEffect(() => {
+    if (!openai) return
+    void bridge.imageModels('openai').then(setModels).catch(() => setModels([]))
+  }, [bridge, openai])
+
+  const model = picked ?? settings.pictures?.model ?? models.find((m) => m.id === 'gpt-image-1-mini')?.id ?? models[0]?.id ?? ''
+  const act = async (label: string, work: () => Promise<void>) => {
+    setState(`${label}...`)
+    try {
+      await work()
+      setState(undefined)
+    } catch (reason) {
+      setState(message(reason))
+    }
+  }
+
+  return (
+    <fieldset className="pictures">
+      <legend>PICTURES (places and people, optional)</legend>
+      <p className="muted small">
+        Claude makes no pictures; the image models of OpenAI do. Each area (all its places share one picture) and each named person is drawn once, in the style of the world, and kept; generic people get a plain figure. At low quality a picture costs about half a cent to one cent (September 2026), and counts in the budget.
+      </p>
+      <div className="choice other">
+        <span className="muted">in use:</span>
+        <span className="mono">{settings.pictures ? `${settings.pictures.model} (${settings.pictures.quality})` : 'none (no pictures)'}</span>
+      </div>
+      {!openai ? (
+        <p className="muted">Connect an OpenAI key above to choose an image model.</p>
+      ) : (
+        <div className="choice pick">
+          <select value={model} onChange={(event) => setPicked(event.target.value)} aria-label="Image model">
+            {models.length === 0 && <option value="">no image models for this key</option>}
+            {models.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.id}
+              </option>
+            ))}
+          </select>
+          <button type="button" className="link" disabled={!model || Boolean(state)} onClick={() => void act('Drawing a trial picture', async () => setTrial(await bridge.tryPicture('openai', model)))}>
+            [Try]
+          </button>
+          <button type="button" className="link" disabled={!model || Boolean(state) || settings.pictures?.model === model} onClick={() => void act('Saving', async () => (await bridge.setPictures('openai', model, 'low'), await refresh()))}>
+            [Save]
+          </button>
+          {settings.pictures && (
+            <button type="button" className="link" disabled={Boolean(state)} onClick={() => void act('Turning pictures off', async () => (await bridge.setPictures(null), await refresh()))}>
+              [Off]
+            </button>
+          )}
+        </div>
+      )}
+      {state && <p className="muted">{state}</p>}
+      {trial && <img className="trial-picture" src={trial} alt="A trial picture of the start of the world" />}
+    </fieldset>
   )
 }
 

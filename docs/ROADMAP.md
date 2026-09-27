@@ -92,7 +92,7 @@ Scope: FO 8 en 13. Relaties met vier waarden, houding en gedragspoorten, gebeurt
 - [x] Wouter weigert een gevaarlijke opdracht bij lage loyaliteit en voert hem uit bij hoge
 - [x] Een misdaad zonder getuigen heeft geen gevolgen; met getuigen verspreidt hij zich als gerucht
 
-## M7 Quests en de volledige Holleveen
+## M7 Quests en de volledige Holleveen (af)
 
 Scope: FO 14, WB 7 tot en met 15. Questsysteem met stadia, voorwaarden, effecten, klokken, verzoeken uit NPC-doelen en tegenspelers. Alle content: 86 locaties, 29 NPC's, 22 verhalen, 10 quests en 5 persoonlijke quests. Uit het ontwerp lore en wereldverandering: rampen en oorlog met effectplannen, groepen, toestand van plekken, genereren tot speelbaar, en quests die op de wereld reageren, ook op de dood van iemand met een questrol.
 
@@ -101,13 +101,30 @@ Scope: FO 14, WB 7 tot en met 15. Questsysteem met stadia, voorwaarden, effecten
 - [x] De drooglegging loopt door als de speler niets doet
 - [x] Een dijkdoorbraak laat Veenhoek vluchten: wie dichtbij is loopt echt weg, verder weg worden het notities, en lopende quests reageren
 
+## M7.1 Moderne interface (na de playtest van M7) (af)
+
+Scope: Brams bevindingen van 27 september. Gesprekken in een eigen venster, het dagboek per omgeving en met een kaartje, wie-weet-waar-iemand-is, en plaatjes van plekken en mensen.
+
+- [x] Een gesprek begint in de gewone interface en gaat verder in een eigen venster met vrije tekst; onderwerpen kies je uit het dagboek
+- [x] Het dagboek toont in een gesprek eerst wat binnen 15 km ligt; de rest is te zoeken of uit te klappen; plekken en mensen staan op een kaartje
+- [x] Een NPC weet waar een bekende rond deze tijd meestal is, met een foutmarge naar hoe goed hij die kent, en hoe die eruitziet; iets dat hij zelf zag, gaat voor
+- [x] Plaatjes van plekken en mensen zijn optioneel (een beeldmodel van OpenAI), worden eenmalig gemaakt en bewaard, en tellen mee in het AI-budget
+
+## M7.2 Open punten uit M1 tot en met M7
+
+Scope: wat in de milestone-rapporten onder "Nog niet" bleef staan en niet bij M8 of M9 hoort.
+
+- [ ] Elk punt uit de lijst in de changelog is gebouwd, of staat met reden bij een latere milestone
+
 ## M8 Volledige wereldbouwer
 
-Scope: FO 15. Lore-, quest-, object- en beroepseditors, speeltestgereedschap (tijd, teleport, NPC-inspecteur, AI-log, simulatie zonder speler), bouwcommando's in het spel, AI-schrijfhulp, live herladen, en sparren met de kroniekschrijver volgens de werkinstructie.
+Scope: FO 15. Lore-, quest-, object- en beroepseditors, speeltestgereedschap (tijd, teleport, NPC-inspecteur, AI-log, simulatie zonder speler), bouwcommando's in het spel, AI-schrijfhulp, live herladen, en sparren met de kroniekschrijver volgens de werkinstructie. Op verzoek van Bram (27 september) is de wereldbouwer een aparte editor, en kan hij meerdere werelden onderhouden; als bewijs komt er een tweede, heel kleine high-fantasywereld bij.
 
 - [ ] Een nieuw gehucht met drie NPC's en een verhaal is zonder code toe te voegen en direct speelbaar
 - [ ] Alle bestaande content opent en slaat op zonder verlies
 - [ ] Een voorstel van de kroniekschrijver in de wereldbouwer is eerst als wijziging te zien, wordt gevalideerd en pas na akkoord opgeslagen
+- [ ] De editor is een eigen venster met een eigen startcommando, en opent en bewaart elke wereld in `content/`
+- [ ] Een tweede wereld (een klein eiland waarop je strandt) is speelbaar naast de Nethermarch, en bij een nieuw spel kies je de wereld
 
 ## M9 Afwerking en release
 

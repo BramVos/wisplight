@@ -323,10 +323,26 @@ function socialPlace(world: World, npcId: string): string {
   return best
 }
 
-function currentBlock(world: World, npcId: string): ScheduleBlock | undefined {
+/**
+ * Where someone usually is at a time, by their day schedule: what a person
+ * who knows them would guess (after the M7 playtest: "where is Mirte?").
+ */
+export function usualPlace(world: World, npcId: string, at = world.now): { place: string; activity: ScheduleBlock['activity'] } | undefined {
+  const block = currentBlock(world, npcId, at)
+  if (!block) return undefined
+  const def = world.npc(npcId)
+  const place =
+    block.activity === 'work' ? placeFor(world, npcId, block.at ?? 'work')
+    : block.activity === 'socialize' ? (block.at ? placeFor(world, npcId, block.at) : socialPlace(world, npcId))
+    : block.activity === 'pray' ? placeFor(world, npcId, block.at ?? 'loc_veenhoek_chapel')
+    : block.at ? placeFor(world, npcId, block.at) : def.home
+  return world.content.locations.has(place) ? { place, activity: block.activity } : undefined
+}
+
+function currentBlock(world: World, npcId: string, at = world.now): ScheduleBlock | undefined {
   const profession = world.content.professions.get(world.npc(npcId).profession)
-  const day = weekdayOf(world.now)
-  const now = minuteOfDay(world.now)
+  const day = weekdayOf(at)
+  const now = minuteOfDay(at)
   return profession?.schedule.find((block) => {
     if (block.days && !block.days.includes(day)) return false
     const [from, to] = parseHours(`${block.from}-${block.to}`)

@@ -1,7 +1,8 @@
 import { LlmError, type LlmClient, type LlmRejection, type LlmRequest, type LlmResponse, type LlmRole } from '../../engine/dialogue/llm'
 import type { AiLog } from './log'
-import { BusyError, type Provider, type ProviderId, type RateLimit } from './providers'
-import type { RoleChoice } from './settings'
+import { picturePrice } from './pricing'
+import { BusyError, type PictureResponse, type Provider, type ProviderId, type RateLimit } from './providers'
+import type { PictureChoice, RoleChoice } from './settings'
 import type { UsageStore } from './usage'
 
 // Routes each call to the model the player chose for its role, with a time
@@ -25,7 +26,7 @@ export interface GatewayOptions {
   usage: UsageStore
   now?: () => number
   /** Tests use short time limits. */
-  timeoutMs?: Partial<Record<LlmRole, number>>
+  timeoutMs?: Partial<Record<LlmRole | 'illustrator', number>>
 }
 
 export interface GatewayStatus {
@@ -142,6 +143,39 @@ export class Gateway implements LlmClient {
         prompt: request.prompt,
         response: '',
       })
+      throw failure
+    } finally {
+      clearTimeout(timer)
+    }
+  }
+
+  /**
+   * A picture of a place or a person (after the M7 playtest). It counts in the
+   * budgets like any call, and waits from 80% of the hourly budget on, as the
+   * chronicler does: pictures are nice to have. A trial in the settings skips
+   * the budget, as a trial of a text model does.
+   */
+  async picture(prompt: string, choice: PictureChoice, trial = false): Promise<PictureResponse> {
+    const provider = this.options.provider(choice.provider)
+    if (!provider?.picture) throw new LlmError('config', `${choice.provider} makes no pictures`)
+    if (!trial) {
+      const spent = this.options.log.spentLastHour(this.now())
+      if (spent >= LOW_PRIORITY_SHARE * this.options.budgetUsdPerHour()) throw new LlmError('budget', 'the hourly budget is kept for conversations')
+      if (this.options.usage.monthBudgetSpent()) throw new LlmError('budget', 'the month budget is used up')
+    }
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), this.options.timeoutMs?.illustrator ?? 120_000)
+    const started = this.now()
+    const price = picturePrice(choice.model, choice.quality)
+    try {
+      const picture = await provider.picture(choice.model, prompt, choice.quality, controller.signal)
+      const costUsd = this.options.usage.record(choice.provider, choice.model, undefined, true, price)
+      this.options.log.add({ time: new Date(this.now()).toISOString(), role: 'illustrator', provider: choice.provider, model: choice.model, ok: true, latencyMs: picture.latencyMs, inputTokens: 0, outputTokens: 0, cachedTokens: 0, costUsd, prompt, response: `(a picture, ${Math.round((picture.base64.length * 3) / 4 / 1024)} kB)` })
+      return picture
+    } catch (error) {
+      const failure = controller.signal.aborted ? new LlmError('timeout', 'the picture took too long') : error instanceof LlmError ? error : new LlmError('network', String(error))
+      this.options.usage.record(choice.provider, choice.model, undefined, false)
+      this.options.log.add({ time: new Date(this.now()).toISOString(), role: 'illustrator', provider: choice.provider, model: choice.model, ok: false, error: `${failure.kind}: ${failure.message}`, latencyMs: this.now() - started, inputTokens: 0, outputTokens: 0, cachedTokens: 0, prompt, response: '' })
       throw failure
     } finally {
       clearTimeout(timer)

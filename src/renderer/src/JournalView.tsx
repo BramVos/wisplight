@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { EngineClient, JournalPage, Reply } from './client'
+import { runs } from './mapRuns'
 
 // The journal as its own window (FO, chapter 2): everything the player has
 // learnt, in parts and under headings, searchable, with the page of what you
-// pick beside it. The clock stands still while it is open.
+// pick beside it. The clock stands still while it is open. Opened from a
+// conversation it shows what lies within 15 km first; the rest is a search or
+// a click away.
 
 type Journal = Reply['status']['journal']
 
@@ -25,11 +28,14 @@ const YOU = [
   { id: 'lands', name: 'How the lands stand' },
 ]
 
+const NEAR_KM = 15
+
 export function JournalView({
   client,
   journal,
   start,
   talkingTo,
+  nearby = false,
   onAsk,
   onClose,
 }: {
@@ -37,17 +43,27 @@ export function JournalView({
   journal: Journal
   start?: string
   talkingTo?: string
+  /** Only what lies within 15 km, until the player searches or asks for the rest. */
+  nearby?: boolean
   onAsk: (topic: string) => void
   onClose: () => void
 }) {
   const [query, setQuery] = useState('')
   const [page, setPage] = useState<JournalPage>()
   const [part, setPart] = useState<keyof Journal | 'you' | 'all'>('all')
+  const [onlyNear, setOnlyNear] = useState(nearby)
+  const [picture, setPicture] = useState<string>()
   const searchRef = useRef<HTMLInputElement>(null)
   const pageRef = useRef<HTMLElement>(null)
 
   const open = async (id: string) => {
-    setPage((await client.page(id)) ?? undefined)
+    const next = (await client.page(id)) ?? undefined
+    setPage(next)
+    setPicture(undefined)
+    // A picture of a person or a place, when pictures are on (it may take a while the first time).
+    if (next && (next.kind === 'person' || next.kind === 'place' || next.kind === 'area') && client.picture) {
+      void client.picture(id).then((url) => setPicture((current) => (current === undefined ? url : current)))
+    }
     // On a narrow screen the page is under the index: bring it into view.
     if (window.innerWidth <= 760) requestAnimationFrame(() => pageRef.current?.scrollIntoView({ block: 'start' }))
   }
@@ -70,11 +86,13 @@ export function JournalView({
     () =>
       PARTS.filter(({ key }) => part === 'all' || part === key)
         .map(({ key, title }) => {
-          const groups: { group: string; entries: { id: string; name: string }[] }[] = []
+          const groups: { group: string; entries: { id: string; name: string; km?: number }[] }[] = []
           // Searching for a part by its name ("lands", "people") shows all of it.
           const whole = Boolean(words) && title.toLowerCase().includes(words)
           for (const e of journal[key]) {
             if (!whole && !matches(e.name, e.group)) continue
+            // Near only: quests always, the rest when it has a place within 15 km.
+            if (onlyNear && !words && key !== 'quests' && (e.km === undefined || e.km > NEAR_KM)) continue
             const group = e.group ?? ''
             const last = groups.at(-1)
             if (last && last.group === group) last.entries.push(e)
@@ -84,10 +102,11 @@ export function JournalView({
         })
         .filter((p) => p.count > 0),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [journal, words, part],
+    [journal, words, part, onlyNear],
   )
   const you = YOU.filter((e) => (part === 'all' || part === 'you') && matches(e.name))
   const total = PARTS.reduce((n, { key }) => n + journal[key].length, 0)
+  const listed = shown.reduce((n, p) => n + p.count, 0)
 
   return (
     <div className="overlay" role="dialog" aria-modal="true" aria-label="Journal">
@@ -117,6 +136,22 @@ export function JournalView({
         </nav>
         <div className="journal-body">
           <div className="journal-index">
+            {nearby && !words && (
+              <p className="small">
+                {onlyNear ? (
+                  <>
+                    <span className="muted">What lies within {NEAR_KM} km. </span>
+                    <button type="button" className="link" onClick={() => setOnlyNear(false)}>
+                      [Everything, {total - listed} more]
+                    </button>
+                  </>
+                ) : (
+                  <button type="button" className="link" onClick={() => setOnlyNear(true)}>
+                    [Only what is near]
+                  </button>
+                )}
+              </p>
+            )}
             {shown.length === 0 && you.length === 0 && <p className="muted">{words ? `Nothing in your journal matches "${query.trim()}".` : 'Topics you learn appear here.'}</p>}
             {shown.map((p) => (
               <section key={p.key} className="journal-part">
@@ -132,6 +167,7 @@ export function JournalView({
                           <button type="button" className={`topic${page?.id === e.id ? ' current' : ''}`} onClick={() => void open(e.id)}>
                             {e.name}
                           </button>
+                          {e.km !== undefined && <span className="muted small"> {e.km < 1 ? '< 1 km' : `${Math.round(e.km)} km`}</span>}
                         </li>
                       ))}
                     </ul>
@@ -160,6 +196,20 @@ export function JournalView({
             ) : (
               <>
                 <h3>{page.name}</h3>
+                {picture && <img className="page-picture" src={picture} alt={`${page.name}, as the chronicle pictures it`} />}
+                {page.map && (
+                  <pre className="map page-map" aria-label={`Where ${page.name} is: the star`}>
+                    {page.map.rows.map((row, y) => (
+                      <div key={y}>
+                        {runs(row, page.map!.classes[y] ?? '').map(([t, cls], i) => (
+                          <span key={i} className={`m-${cls === '@' ? 'you' : cls}`}>
+                            {t}
+                          </span>
+                        ))}
+                      </div>
+                    ))}
+                  </pre>
+                )}
                 {page.kind === 'map' || page.kind === 'sheet' ? (
                   <pre className={page.kind === 'map' ? 'map whole' : 'sheet'}>{page.lines.join('\n')}</pre>
                 ) : (

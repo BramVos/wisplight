@@ -1,4 +1,5 @@
 import type { Content } from '../../engine'
+import { pictureSubject } from '../../engine/pictures'
 import type { LlmClient } from '../../engine/dialogue/llm'
 import { costUsd } from '../../node/ai/pricing'
 import type { UsageSummary, UsageTotals } from '../../node/ai/usage'
@@ -21,6 +22,7 @@ const state = {
   keys: {} as Partial<Record<ProviderId, string>>,
   roles: {} as Partial<Record<'voice' | 'brain' | 'chronicler', { provider: ProviderId; model: string }>>,
   budget: 0.1,
+  pictures: undefined as { provider: ProviderId; model: string; quality: 'low' | 'medium' } | undefined,
   monthBudget: 5 as number | undefined,
   credit: { openai: { amountUsd: 10, enteredAt: '2026-09-02T09:00:00.000Z', spent: 0 } } as Partial<Record<ProviderId, { amountUsd: number; enteredAt: string; spent: number }>>,
   session: empty(),
@@ -98,6 +100,7 @@ export function demoBridge(_content: Content): AiBridge {
         encryption: true,
         models: Object.fromEntries((['openai', 'anthropic'] as const).filter((p) => state.keys[p]).map((p) => [p, MODELS[p].map((m) => m.id)])),
         missing: [],
+        ...(state.pictures ? { pictures: state.pictures } : {}),
       },
       usage: usage(),
       status: { busy: false, coolingDown: false, hourSpentUsd: state.session.costUsd, hourBudgetUsd: state.budget, monthBudgetSpent: false },
@@ -158,5 +161,22 @@ export function demoBridge(_content: Content): AiBridge {
     log: async () => state.log.slice(0, 50),
     // The desktop app opens the provider's billing page here.
     billing: async () => undefined,
+    imageModels: async (provider) => (provider === 'openai' && state.keys.openai ? [{ id: 'gpt-image-1-mini' }, { id: 'gpt-image-2' }] : []),
+    setPictures: async (provider, model, quality) => {
+      state.pictures = provider && model ? { provider, model, quality: quality ?? 'low' } : undefined
+    },
+    tryPicture: async () => placeholder('Canal Quay', 'place'),
   }
+}
+
+/** A placeholder picture: an etched-looking card with the initial, for checking the interface. */
+export function demoPicture(content: Content, id: string): string | undefined {
+  const subject = pictureSubject(content, id)
+  return subject ? (subject.plain ?? placeholder(subject.name, subject.kind)) : undefined
+}
+
+function placeholder(name: string, kind: 'person' | 'place'): string {
+  const letter = name.replace(/^the /i, '').charAt(0).toUpperCase()
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#2b2a22"/><g stroke="#8c8a7c" stroke-width="0.6" opacity="0.5">${Array.from({ length: 20 }, (_, i) => `<line x1="0" y1="${i * 5}" x2="100" y2="${i * 5 + (kind === 'place' ? 12 : 0)}"/>`).join('')}</g><text x="50" y="64" font-family="Georgia, serif" font-size="48" fill="#e3c77a" text-anchor="middle">${letter}</text></svg>`
+  return `data:image/svg+xml;base64,${btoa(svg)}`
 }

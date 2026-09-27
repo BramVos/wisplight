@@ -44,6 +44,7 @@ import { PlaceState } from './quests/schema'
 import { antagonists } from './quests/antagonists'
 import { plansDue, startPlan } from './quests/plans'
 import { realmLines, realmPage } from './social/realms'
+import { kmFromPlayer, posOf } from './nearby'
 import {
   character,
   clockLine,
@@ -106,6 +107,8 @@ export interface JournalEntry {
   name: string
   /** A heading within its part of the journal: the village someone lives in, open or finished quests. */
   group?: string
+  /** How far it is from the player, in km, when it has a place: the journal shows what is near first. */
+  km?: number
 }
 
 export interface Status {
@@ -130,7 +133,7 @@ export interface Status {
   wanted?: string[]
 }
 
-const MAP_CODES: Record<string, string> = { fen: 'f', water: 'w', woods: 't', heath: 'h', fields: 'd', way: 'y', place: 'p', zone: 'z', you: '@', unknown: 'u' }
+const MAP_CODES: Record<string, string> = { fen: 'f', water: 'w', woods: 't', heath: 'h', fields: 'd', way: 'y', place: 'p', zone: 'z', you: '@', unknown: 'u', mark: 'x' }
 
 export interface EngineOptions {
   seed?: number
@@ -284,7 +287,25 @@ export class Engine {
     if (id === 'party') return { id, kind: 'lore', name: 'Your companions', lines: partyLines(this.world).length ? [...partyLines(this.world), ...companions(this.world).flatMap((m) => m.approvals.slice(-3).map((a) => `  ${callName(this.world.npc(m.npc))}: ${a.text}`))] : ['You travel alone.'], sources: [], links: [] }
     if (id === 'sheet') return { id, kind: 'sheet', name: this.state.player.character?.name ?? 'You', lines: [...sheetLines(this.world), ...this.clockLines()], sources: [], links: [] }
     this.dialogue.syncNews()
-    return journalPage(this.world, this.topics, id)
+    const page = journalPage(this.world, this.topics, id)
+    // A place, a person or an event with a place in the region: where it is, on a small map.
+    if (page && ['person', 'place', 'area', 'event', 'lore'].includes(page.kind)) {
+      const map = regionMap(this.content)
+      const pos = posOf(this.world, id)
+      const hex = map && pos ? map.hexOf(pos) : undefined
+      if (map && hex && map.inside(hex)) {
+        const view = mapView(this.world, { width: 34, height: 12, centre: hex, mark: hex })
+        if (view) {
+          // Only the rows with something the player knows, so a page does not show a field of nothing.
+          const rows = view.rows.map((row) => row.map((c) => c.ch).join(''))
+          const classes = view.rows.map((row) => row.map((c) => MAP_CODES[c.cls] ?? 'u').join(''))
+          const used = rows.map((r, i) => (r.trim() ? i : -1)).filter((i) => i >= 0)
+          const [from, to] = [Math.max(0, (used[0] ?? 0) - 1), Math.min(rows.length, (used.at(-1) ?? rows.length - 1) + 2)]
+          page.map = { rows: rows.slice(from, to), classes: classes.slice(from, to) }
+        }
+      }
+    }
+    return page
   }
 
   /** Follows everything that happens, for the game log. Returns a function that stops following. */
@@ -488,7 +509,8 @@ export class Engine {
     this.record({ t: this.world.now, k: 'cmd', v: text })
     for (const listener of this.listeners) listener({ kind: 'in', t: this.world.now, text })
     const before = this.state.player.location
-    const quest = this.state.combat ? undefined : questAction(this.world, this.questHost, text)
+    // A line in quotes is speech (the conversation window sends them so), but it can still be a quest's own words.
+    const quest = this.state.combat ? undefined : questAction(this.world, this.questHost, text.replace(/^"|"$/g, ''))
     const outputs = quest ?? (this.state.combat ? await this.inFight(text) : await this.route(text))
     const talk = this.state.talk
     if (talk && this.state.npcs[talk.npc]?.location !== this.state.player.location) this.state.talk = undefined
@@ -518,6 +540,7 @@ export class Engine {
     const talking = talk && !text.startsWith('/')
 
     if (talking) {
+      if (text.startsWith('"')) return this.inConversation(() => this.dialogue.say(talk.npc, text.replace(/^"|"$/g, '').trim()))
       if (/^[1-8]$/.test(text)) return this.inConversation(() => this.dialogue.quick(Number(text)))
       if (/^(bye|goodbye|farewell|dag|doei|tot ziens)\b/i.test(text)) return this.dialogue.end()
       const direction = parseDirection(command.args[0])
@@ -788,26 +811,28 @@ export class Engine {
     const places: (JournalEntry & { order: string })[] = []
     for (const id of Object.keys(this.state.player.journal ?? {}).sort()) {
       const kind = this.topics.kind(id)
+      const km = kmFromPlayer(this.world, id)
+      const far = km === undefined ? {} : { km }
       if (id.startsWith('fact_')) {
-        journal.events.push({ id, name: this.topics.name(id) })
+        journal.events.push({ id, name: this.topics.name(id), ...far })
         continue
       }
       const name = id.startsWith('far_') ? `${this.topics.name(id)} (heard of)` : this.topics.name(id)
       if (kind === 'person') {
         const npc = this.content.npcs.get(id)
         const area = npc ? this.content.areas.get(this.world.location(npc.home).area) : undefined
-        people.push({ id, name, ...(area ? this.areaGroup(area.id) : { group: 'Further afield', order: '9' }) })
+        people.push({ id, name, ...far, ...(area ? this.areaGroup(area.id) : { group: 'Further afield', order: '9' }) })
       } else if (kind === 'place' || kind === 'area') {
         const entry = this.topics.entries.get(id)
         const areaId = kind === 'area' ? entry?.ref : entry?.ref && this.content.locations.has(entry.ref) ? this.content.locations.get(entry.ref)!.area : [...this.content.areas.values()].find((a) => a.topic === id)?.id
         const g = areaId && this.content.areas.has(areaId) ? this.areaGroup(areaId) : { group: 'Further afield', order: '9' }
         // The village itself first under its own heading, then its places.
         const first = kind === 'area' || (areaId !== undefined && this.content.areas.get(areaId)?.topic === id)
-        places.push({ id, name, group: g.group, order: `${g.order}${first ? '0' : '1'}${name.toLowerCase()}` })
-      } else if (kind === 'lore' || kind === 'fact') journal.lore.push({ id, name })
+        places.push({ id, name, ...far, group: g.group, order: `${g.order}${first ? '0' : '1'}${name.toLowerCase()}` })
+      } else if (kind === 'lore' || kind === 'fact') journal.lore.push({ id, name, ...far })
       else if (kind === 'item') journal.things.push({ id, name })
     }
-    const strip = ({ id, name, group }: JournalEntry) => ({ id, name, ...(group ? { group } : {}) })
+    const strip = ({ id, name, group, km }: JournalEntry) => ({ id, name, ...(group ? { group } : {}), ...(km === undefined ? {} : { km }) })
     journal.people.push(...people.sort((a, b) => a.order.localeCompare(b.order) || a.name.localeCompare(b.name)).map(strip))
     journal.places.push(...places.sort((a, b) => a.order.localeCompare(b.order)).map(strip))
     for (const realm of this.content.realms.values()) journal.lands.push({ id: `realm_${realm.id}`, name: capitalise(realm.name) })

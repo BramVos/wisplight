@@ -13,6 +13,9 @@ world:
     inventory:
       knife: 1
       apple: 2
+  # How pictures of places and people look (after the M7 playtest), when an image model is chosen.
+  pictures:
+    style: A small illustration in the manner of a 17th-century Dutch etching with a light ink wash, muted greys, browns and greens, fine lines, a low wet land under a wide grey sky.
   intro: |
     The barge from Graafhaven leaves you at the Veenhoek quay just as the
     light goes. The bargeman won't tie up. "Not after dark, not out here,"

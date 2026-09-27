@@ -51,3 +51,18 @@ export function costUsd(model: string, usage: { inputTokens: number; outputToken
 // A play hour with a lot of talking (FO, chapter 16): 40 dialogue calls and 25 goal choices;
 // the chronicler writes 0 to 2 times an hour (design: lore and world change).
 export const CALLS_PER_HOUR = { voice: 40, brain: 25, chronicler: 1 }
+
+// Pictures are priced per picture, not per token: 1024x1024 at low and medium
+// quality, as of September 2026 (the image generation guide's calculator, and
+// costgoat.com/pricing/openai-images). Unknown tiers show "price unknown".
+const PICTURES: Record<string, Partial<Record<'low' | 'medium', number>>> = {
+  'gpt-image-1-mini': { low: 0.005 },
+  'gpt-image-2': { low: 0.006, medium: 0.053 },
+  'gpt-image-1.5': { low: 0.009 },
+  'gpt-image-1': { low: 0.011 },
+}
+
+export function picturePrice(model: string, quality: 'low' | 'medium'): number | undefined {
+  const undated = model.replace(/-\d{4}-\d{2}-\d{2}$/, '')
+  return PICTURES[model]?.[quality] ?? PICTURES[undated]?.[quality]
+}

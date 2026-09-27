@@ -41,6 +41,10 @@ export interface AiBridge {
   csv(): Promise<string>
   log(): Promise<AiLogEntry[]>
   billing(provider: ProviderId): Promise<void>
+  /** Pictures (after the M7 playtest): the image models of a key, the choice, and a trial picture as a data URL. */
+  imageModels(provider: ProviderId): Promise<ModelInfo[]>
+  setPictures(provider: ProviderId | null, model?: string, quality?: 'low' | 'medium'): Promise<void>
+  tryPicture(provider: ProviderId, model: string): Promise<string>
 }
 
 /** The world builder (development builds of the desktop app only). */
@@ -56,6 +60,8 @@ export interface EngineClient {
   command(input: string): Promise<Reply>
   /** A page of the journal, or undefined for something the player does not know. */
   page(id: string): Promise<JournalPage | undefined>
+  /** A picture of a person or a place as a data URL, when pictures are on and it could be made. */
+  picture?(id: string): Promise<string | undefined>
   /** The rules for the creation screen (FO, chapter 11), or undefined in a world without them. */
   creation(): Promise<CreationData | undefined>
   /** The player's own log (desktop only) and the true chronicle, for the end of a game. */
@@ -146,6 +152,8 @@ export async function createClient(): Promise<EngineClient> {
       return { outputs, status: status() }
     },
     page: async (id) => engine.page(id),
+    // The preview draws a placeholder with ?mock=1, so the interface can be checked without an image model.
+    ...(demo ? { picture: async (id: string) => demo.demoPicture(content, id) } : {}),
     creation: async () => engine.creationData(),
     end: async () => ({ chronicle: engine.chronicle() }),
     activity: () => {

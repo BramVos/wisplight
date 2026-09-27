@@ -370,6 +370,8 @@ export const NpcSchema = z.object({
     })
     .strict()
     .optional(),
+  /** A portrait of their own, or the plain figure of someone generic (after the M7 playtest). */
+  portrait: z.enum(['unique', 'generic']).default('unique'),
   /** Not in the world at the start: under a curse, found or freed by a quest. */
   absent: z.boolean().default(false),
   /** Fights with the numbers of a creature from the bestiary (the Haakman, Black Mathijs). */
@@ -535,6 +537,8 @@ export const WorldSchema = z.object({
   }),
   player: z.object({ money: z.number().int().nonnegative(), inventory: ItemCounts }),
   knowledge: KnowledgeRulesSchema.default(KnowledgeRulesSchema.parse({})),
+  /** How pictures of places and people look in this world (after the M7 playtest): one style for all of them. */
+  pictures: z.object({ style: z.string() }).strict().optional(),
 })
 export type WorldDef = z.infer<typeof WorldSchema>
 

@@ -5,7 +5,9 @@ import { BuilderView } from './BuilderView'
 import { CharacterCreation } from './CharacterCreation'
 import { FightPanel } from './FightPanel'
 import { EndView } from './EndView'
+import { ConversationView, type TalkLine } from './ConversationView'
 import { JournalView } from './JournalView'
+import { runs } from './mapRuns'
 import { Settings, usd, type SettingsTab } from './Settings'
 
 type Line = (Output & { id: number }) | { id: number; kind: 'input'; text: string }
@@ -27,17 +29,6 @@ function renderText(text: string, onTopic: (topic: string) => void) {
   )
 }
 
-/** Groups a row of map characters into runs of the same colour. */
-function runs(row: string, classes: string): [string, string][] {
-  const out: [string, string][] = []
-  for (let i = 0; i < row.length; i++) {
-    const cls = classes[i] ?? 'u'
-    const last = out.at(-1)
-    if (last && last[1] === cls) last[0] += row[i]
-    else out.push([row[i]!, cls])
-  }
-  return out
-}
 
 // The AI part of the status bar (FO, chapter 16, "Kosten en verbruik in beeld").
 function aiLabel(ai: AiStatus): { text: string; tone: '' | 'warn' | 'over' } {
@@ -61,8 +52,11 @@ export function App() {
   const [error, setError] = useState<string>()
   const [waiting, setWaiting] = useState(false)
   const [settings, setSettings] = useState<SettingsTab>()
-  // The journal window, open at a page or at its index (FO, chapter 2).
-  const [journal, setJournal] = useState<{ start?: string }>()
+  // The journal window, open at a page or at its index (FO, chapter 2); near things first in a conversation.
+  const [journal, setJournal] = useState<{ start?: string; nearby?: boolean }>()
+  // Where the conversation in progress began in the log: its window shows the lines from there.
+  const [talkFrom, setTalkFrom] = useState<number>()
+  const [portrait, setPortrait] = useState<string>()
   const [ending, setEnding] = useState(false)
   const [building, setBuilding] = useState(false)
   const [creation, setCreation] = useState<CreationData>()
@@ -167,6 +161,17 @@ export function App() {
   }
 
   const talk = status?.talk
+  useEffect(() => {
+    if (!talk) {
+      setTalkFrom(undefined)
+      return
+    }
+    setTalkFrom((from) => from ?? [...lines].reverse().find((l) => l.kind === 'input')?.id ?? lines.at(-1)?.id ?? 0)
+    setPortrait(undefined)
+    if (client?.picture) void client.picture(talk.npc).then(setPortrait)
+    // Only when a conversation starts or ends.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [talk?.npc])
   const openPage = (id?: string) => setJournal(id ? { start: id } : {})
   // A topic in the text: ask about it in a conversation; otherwise open its journal page, if known.
   const onTopic = (topic: string) => {
@@ -193,7 +198,7 @@ export function App() {
         {error && <p className="line error">{error}</p>}
         {lines.map((line) => (
           <p key={line.id} className={`line ${line.kind}`}>
-            {line.kind === 'input' ? `> ${line.text}` : renderText(line.text, onTopic)}
+            {line.kind === 'input' ? `> ${line.text.replace(/^"/, '')}` : renderText(line.text, onTopic)}
           </p>
         ))}
         {waiting && talk && <p className="line thinking">{talk.call} thinks it over.</p>}
@@ -394,11 +399,24 @@ export function App() {
           }}
         />
       )}
+      {talk && status && talkFrom !== undefined && (
+        <ConversationView
+          talk={talk}
+          lines={lines.filter((l) => l.id >= talkFrom) as TalkLine[]}
+          journal={status.journal}
+          busy={waiting}
+          portrait={portrait}
+          render={(text) => renderText(text, onTopic)}
+          onSend={(text) => void send(text)}
+          onJournal={() => setJournal({ nearby: true })}
+        />
+      )}
       {journal && client && status && (
         <JournalView
           client={client}
           journal={status.journal}
           start={journal.start}
+          nearby={journal.nearby}
           talkingTo={talk?.call}
           onAsk={(topic) => {
             setJournal(undefined)

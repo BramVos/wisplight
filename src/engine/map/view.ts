@@ -34,16 +34,18 @@ const LAND: Record<string, MapCell> = {
  * A window on the region map around the player (the side panel), or the whole
  * region shrunk to fit (the journal): one character stands for a block of hexes.
  */
-export function mapView(world: World, options: { width: number; height: number; whole?: boolean }): MapView | undefined {
+export function mapView(world: World, options: { width: number; height: number; whole?: boolean; centre?: Hex; mark?: Hex }): MapView | undefined {
   const map = regionMap(world.content)
   if (!map) return undefined
   const you = playerHex(world)
+  // A journal page centres on what it is about, and marks it.
+  const middle = options.centre ?? you
   const scaleX = options.whole ? Math.max(1, Math.ceil(map.cols / options.width)) : 1
   const scaleY = options.whole ? Math.max(1, Math.ceil(map.rows / options.height)) : 2
   const width = options.whole ? Math.ceil(map.cols / scaleX) : options.width
   const height = options.whole ? Math.ceil(map.rows / scaleY) : options.height
-  const left = options.whole || !you ? 0 : Math.max(0, Math.min(map.cols - width * scaleX, you.col - Math.floor((width * scaleX) / 2)))
-  const top = options.whole || !you ? map.rows - 1 : Math.min(map.rows - 1, Math.max(height * scaleY - 1, you.row + Math.floor((height * scaleY) / 2)))
+  const left = options.whole || !middle ? 0 : Math.max(0, Math.min(map.cols - width * scaleX, middle.col - Math.floor((width * scaleX) / 2)))
+  const top = options.whole || !middle ? map.rows - 1 : Math.min(map.rows - 1, Math.max(height * scaleY - 1, middle.row + Math.floor((height * scaleY) / 2)))
 
   const places = knownPlaces(world)
   const zones = places.filter((p) => p.zone)
@@ -71,6 +73,11 @@ export function mapView(world: World, options: { width: number; height: number; 
     if (cell.cls === 'you') continue
     rows[y]![x] = place.hex ? { ch: place.name.replace(/^the /i, '')[0]!.toUpperCase(), cls: 'place' } : { ch: '?', cls: 'zone' }
     labels.push({ name: place.name, status: place.status, x, y })
+  }
+  if (options.mark) {
+    const x = Math.floor((options.mark.col - left) / scaleX)
+    const y = Math.floor((top - options.mark.row) / scaleY)
+    if (x >= 0 && y >= 0 && x < width && y < height && rows[y]![x]!.cls !== 'you') rows[y]![x] = { ch: '*', cls: 'mark' }
   }
   return { rows, labels, legend: legend(world, map, places) }
 }

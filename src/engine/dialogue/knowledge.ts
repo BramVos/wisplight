@@ -4,6 +4,7 @@ import { factById, newsAbout, versionOf } from '../news'
 import type { Heard } from '../state'
 import type { World } from '../world'
 import type { TopicRegistry } from './topics'
+import { usualPlace } from '../npc/brain'
 
 // What an NPC knows about a topic, and therefore what the model may say
 // (FO, chapter 5): certain knowledge of the own village and the places the NPC
@@ -238,7 +239,10 @@ export class Knowledge {
           if (level >= 2) {
             facts.push(`${other.short} lives at ${this.world.location(other.home).name}.`)
             if (other.work && other.work !== other.home) facts.push(`${other.short} works at ${this.world.location(other.work).name}.`)
+            facts.push(`What ${other.short} looks like: ${firstSentence(other.appearance)}`)
           }
+          const where = this.whereabouts(npcId, other.id, level)
+          if (where) facts.push(where)
           break
         }
         facts.push(...this.topicFacts(npcId, topicId, level))
@@ -392,6 +396,42 @@ export class Knowledge {
     return `${name} lies ${wind}, ${time}.`
   }
 
+  /**
+   * Where someone is likely to be now, as this NPC would know it (after the M7
+   * playtest): what they saw themselves beats the day schedule; those close to
+   * the person know the schedule to the place, a good acquaintance guesses it,
+   * and someone who only knows of them names the village.
+   */
+  whereabouts(npcId: string, otherId: string, level: number): string | undefined {
+    const world = this.world
+    const other = world.npc(otherId)
+    const them = world.state.npcs[otherId]
+    const me = world.state.npcs[npcId]
+    if (!them || them.dead || them.absent || !me) return undefined
+    if (me.location === them.location && !them.note) return `${other.short} is right here.`
+    const seen = me.sightings?.[otherId]
+    const ago = seen ? world.now - seen.t : Infinity
+    if (seen && ago <= 3 * 60) return `You saw ${other.short} at ${world.location(seen.where).name} ${agoWords(ago)}.`
+    const usual = usualPlace(world, otherId)
+    const close = this.close(npcId, otherId)
+    if (usual && close) return `At this hour ${other.short} is usually at ${world.location(usual.place).name}${ACTIVITY[usual.activity] ? `, ${ACTIVITY[usual.activity]}` : ''}.`
+    if (usual && level >= 3) return `Around this time ${other.short} is usually at ${world.location(usual.place).name}, you'd guess.`
+    if (seen && ago <= 24 * 60) return `You last saw ${other.short} at ${world.location(seen.where).name} ${agoWords(ago)}.`
+    if (usual && level >= 2) {
+      const area = world.content.areas.get(world.location(usual.place).area)
+      if (area) return `You'd most likely find ${other.short} somewhere in ${area.name}.`
+    }
+    return undefined
+  }
+
+  /** Family, friends, sweethearts, colleagues, the same roof or the same workplace. */
+  private close(a: string, b: string): boolean {
+    const da = this.world.npc(a)
+    const db = this.world.npc(b)
+    if (da.home === db.home || (da.work && da.work === db.work)) return true
+    return da.relations.some((r) => r.to === b && r.bond >= 1) || db.relations.some((r) => r.to === a && r.bond >= 1)
+  }
+
   /** Someone within 5 km whom the NPC knows, and who probably knows more about the topic (FO, chapter 5). */
   private referral(npcId: string, topicId: string): Packet['referral'] {
     const here = this.areaPos(this.world.location(this.world.npc(npcId).home).area)
@@ -407,6 +447,16 @@ export class Knowledge {
     const best = candidates[0]
     return best ? { npc: best.id, name: this.world.npc(best.id).short, call: callName(this.world.npc(best.id)), topic: topicId } : undefined
   }
+}
+
+const ACTIVITY: Partial<Record<string, string>> = { work: 'working', sleep: 'asleep', eat: 'eating', socialize: 'with company', pray: 'at prayer' }
+
+function agoWords(minutes: number): string {
+  if (minutes < 20) return 'just now'
+  if (minutes < 90) return 'an hour ago'
+  if (minutes < 4 * 60) return 'a couple of hours ago'
+  if (minutes < 12 * 60) return 'earlier today'
+  return 'yesterday'
 }
 
 function firstSentence(text: string): string {

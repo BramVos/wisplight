@@ -201,6 +201,8 @@ export interface NpcState {
   }
   /** Staying somewhere away from home for a while (sent there, or fled there). */
   stayAt?: { where: string; until: number }
+  /** Whom this NPC last saw, where and when: what they can tell when asked where someone is. */
+  sightings?: Record<string, { where: string; t: number }>
 }
 
 export interface MemoryRecord {

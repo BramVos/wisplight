@@ -365,3 +365,66 @@ describe('AI service', () => {
     expect(ai.settings.role('chronicler')).toEqual({ provider: 'openai', model: 'gpt-4.1-mini-2025-04-14' })
   })
 })
+
+describe('pictures (after the M7 playtest)', () => {
+  const picturing = () => {
+    const dir = temp()
+    let calls = 0
+    const ai = new AiService({
+      dir,
+      cipher: testCipher(),
+      content,
+      providerFactory: (id) => ({
+        id,
+        listModels: async () => [{ id: 'gpt-4.1-mini-2025-04-14' }],
+        complete: async () => reply('{}'),
+        listImageModels: async () => [{ id: 'gpt-image-1-mini' }],
+        picture: async (model) => {
+          calls++
+          return { base64: Buffer.from('fake jpeg').toString('base64'), mime: 'image/jpeg', model, latencyMs: 5 }
+        },
+      }),
+    })
+    return { ai, dir, calls: () => calls }
+  }
+
+  it('makes nothing while pictures are off, and a plain figure for someone generic costs nothing', async () => {
+    const { ai, calls } = picturing()
+    await ai.connect('openai', TEST_KEY)
+    expect(await ai.picture(content, 'npc_mirte')).toBeUndefined()
+    const generic = { ...content, npcs: new Map(content.npcs) }
+    generic.npcs.set('npc_kobus', { ...content.npcs.get('npc_kobus')!, portrait: 'generic' })
+    ai.choosePictures({ provider: 'openai', model: 'gpt-image-1-mini', quality: 'low' })
+    expect(await ai.picture(generic, 'npc_kobus')).toMatch(/^data:image\/svg\+xml;base64,/)
+    expect(calls()).toBe(0)
+  })
+
+  it('draws a person once and keeps it; all places of an area share one picture', async () => {
+    const { ai, dir, calls } = picturing()
+    await ai.connect('openai', TEST_KEY)
+    expect((await ai.imageModels('openai')).map((m) => m.id)).toEqual(['gpt-image-1-mini'])
+    ai.choosePictures({ provider: 'openai', model: 'gpt-image-1-mini', quality: 'low' })
+    const first = await ai.picture(content, 'npc_mirte')
+    expect(first).toMatch(/^data:image\/jpeg;base64,/)
+    expect(await ai.picture(content, 'npc_mirte')).toBe(first)
+    await ai.picture(content, 'loc_veenhoek_quay')
+    await ai.picture(content, 'loc_veenhoek_green')
+    await ai.picture(content, 'area_veenhoek')
+    expect(calls()).toBe(2)
+    expect(readdirSync(join(dir, 'pictures', 'nethermarch')).length).toBe(2)
+    // Priced per picture, and in the log as the illustrator.
+    expect(ai.usage.summary().session.costUsd).toBeCloseTo(0.01, 5)
+    expect(ai.recentLog(5).filter((e) => e.role === 'illustrator')).toHaveLength(2)
+  })
+
+  it('keeps pictures out of the last fifth of the hourly budget', async () => {
+    const { ai, calls } = picturing()
+    await ai.connect('openai', TEST_KEY)
+    // One picture of $0.011 takes it past 80% of the lowest budget, $0.01 an hour.
+    ai.settings.setBudget(0.01)
+    ai.choosePictures({ provider: 'openai', model: 'gpt-image-1', quality: 'low' })
+    await ai.picture(content, 'npc_mirte')
+    await ai.picture(content, 'npc_gerrit')
+    expect(calls()).toBe(1)
+  })
+})

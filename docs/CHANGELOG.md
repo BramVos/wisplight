@@ -1,5 +1,19 @@
 # Changelog
 
+## M7.1 Moderne interface, 27 september 2026
+
+Nieuw na je playtest:
+- **Gesprekken in een eigen venster.** Het gesprek begint met `talk grietje` en gaat verder in een venster waar je gewoon typt wat je zegt, zonder `say`. De snelle keuzes zijn knoppen. Rechts staan de onderwerpen die je kent, het dichtstbij eerst, met "where?" bij mensen en plekken; wat verder dan 15 km ligt, zoek je of klap je open.
+- **Het dagboek** opent vanuit een gesprek eerst op wat binnen 15 km ligt, toont bij elke regel de afstand, en zet plekken, mensen en gebeurtenissen op een kaartje met een ster.
+- **NPC's weten waar hun bekenden zijn.** Wat ze zelf zagen gaat voor, anders het dagschema: familie, vrienden en collega's weten de plek op dit uur, een kennis gokt, en wie iemand alleen van naam kent, noemt het dorp. Wie iemand kent, weet ook hoe die eruitziet.
+- **Plaatjes (optioneel).** Onder Settings > AI > Pictures kies je een beeldmodel van OpenAI (Claude maakt geen plaatjes). Elk gebied krijgt één plaatje voor al zijn plekken en elke benoemde persoon een portret; wie `portrait: generic` heeft, krijgt een egale figuur. Een plaatje kost op lage kwaliteit een halve tot een hele cent, wordt één keer gemaakt en bewaard, en telt mee in het budget.
+
+Testen: `npm run dev`, nieuw spel, loop n, w en `talk grietje`. Typ iets gewoons, klik een onderwerp rechts of "where?", en open [Journal] in het venster. Voor plaatjes: Settings > AI, OpenAI-sleutel, Pictures, [Try] en [Save]; praat daarna met iemand of open een plek in het dagboek. In de browser-preview zie je met `npm run web` en `?mock=1` placeholders in plaats van echte plaatjes. Controles: `npm test` (290 tests).
+
+Nog niet: de open punten uit M1 tot en met M7 (M7.2) en de aparte editor met een tweede wereld (M8).
+
+Ontwerp: FO hoofdstuk 2 (gespreksvenster en dagboek), 5 (waar iemand is) en 16 (plaatjes) zijn bijgewerkt. Afwijking van je voorstel: alle benoemde personen krijgen een portret en alleen "generieke" mensen een egale figuur, zodat het plaatje niet verraadt wie belangrijk is voor een quest. Per NPC om te zetten met `portrait: generic`.
+
 ## M7 Quests en de volledige Holleveen, 27 september 2026
 
 Nieuw: de hele Holleveen staat erin, met 86 locaties, 30 NPC's en de 22 verhalen uit het wereldboek. Nieuwe mensen zijn onder meer Klaas, landmeter Cornelis, burgemeester Aleid Vos, notaris Pen, prior Ansfried, heemraad Sijbrand, de weduwe Kaatje, Zwarte Mathijs, Ouwe Knoert, de Haakman en de witte wieven; Fenna en Jacob van Dam zijn er als kat. De tien quests en de vijf persoonlijke quests zijn uitgeschreven met stadia, eigen acties en minstens drie oplossingen elk. Je speelt ze met gewone zinnen, zoals `ask aaltje about the cat`, `fill a flask with moon water`, `pour the moon water on the cat`, `confront kobus`, `pull up the stakes` of `offer bread and beer`. Het dagboek toont per quest alleen wat je al weet.

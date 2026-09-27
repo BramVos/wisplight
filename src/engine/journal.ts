@@ -26,6 +26,8 @@ export interface JournalPage {
   lines: string[]
   sources: string[]
   links: JournalLink[]
+  /** Where it is, on the map as the player knows it: rows of characters and a colour code per character. */
+  map?: { rows: string[]; classes: string[] }
 }
 
 export function journalPage(world: World, topics: TopicRegistry, id: string): JournalPage | undefined {

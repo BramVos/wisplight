@@ -1,11 +1,13 @@
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { pictureSubject } from '../../engine/pictures'
 import type { Content } from '../../engine/content'
 import type { LlmClient } from '../../engine/dialogue/llm'
 import { askAdvice, testCall, trial, type Advice, type TrialResult } from './advisor'
 import { Gateway, type GatewayStatus } from './gateway'
 import { AiLog, type AiLogEntry } from './log'
 import { createProvider, type ModelInfo, type Provider, type ProviderId } from './providers'
-import { SettingsStore, type Cipher, type ChosenRole, type SettingsSummary } from './settings'
+import { SettingsStore, type Cipher, type ChosenRole, type PictureChoice, type SettingsSummary } from './settings'
 import { UsageStore, type UsageSummary } from './usage'
 
 // Everything the settings screen and the game need from the AI side, without
@@ -143,6 +145,59 @@ export class AiService {
 
   recentLog(count?: number): AiLogEntry[] {
     return this.log.recent(count)
+  }
+
+  // ---------------------------------------------------------------- pictures (after the M7 playtest)
+
+  private readonly drawing = new Map<string, Promise<string | undefined>>()
+
+  /** The image models a key can use: OpenAI only, Claude makes no pictures. */
+  async imageModels(id: ProviderId): Promise<ModelInfo[]> {
+    const provider = this.provider(id)
+    if (!provider?.listImageModels) return []
+    return provider.listImageModels()
+  }
+
+  /** Pictures on with this model, or off with undefined. */
+  choosePictures(choice: PictureChoice | undefined): void {
+    this.settings.setPictures(choice)
+  }
+
+  /**
+   * The picture of a person or a place, as a data URL: from disk when it was
+   * made before, otherwise made once by the image model and kept. Undefined
+   * when pictures are off, the budget is spent, or the model fails; the game
+   * simply shows none.
+   */
+  async picture(content: Content, id: string): Promise<string | undefined> {
+    const subject = pictureSubject(content, id)
+    if (!subject) return undefined
+    if (subject.plain) return subject.plain
+    const file = join(this.options.dir, 'pictures', content.world.id.replace(/[^a-z0-9_-]/gi, ''), `${subject.id}-${subject.key}.jpg`)
+    if (existsSync(file)) return `data:image/jpeg;base64,${readFileSync(file).toString('base64')}`
+    const choice = this.settings.pictures
+    if (!choice) return undefined
+    const running = this.drawing.get(file)
+    if (running) return running
+    const job = this.gateway
+      .picture(subject.prompt, choice)
+      .then((picture) => {
+        mkdirSync(join(file, '..'), { recursive: true })
+        writeFileSync(file, Buffer.from(picture.base64, 'base64'))
+        return `data:${picture.mime};base64,${picture.base64}`
+      })
+      .catch(() => undefined)
+      .finally(() => this.drawing.delete(file))
+    this.drawing.set(file, job)
+    return job
+  }
+
+  /** A trial picture of the start of the world, with a model the player may pick; not kept. */
+  async tryPicture(content: Content, id: ProviderId, model: string): Promise<string> {
+    const subject = pictureSubject(content, content.world.start.location)
+    if (!subject) throw new Error('This world has no place to draw.')
+    const picture = await this.gateway.picture(subject.prompt, { provider: id, model, quality: 'low' }, true)
+    return `data:${picture.mime};base64,${picture.base64}`
   }
 
   private async requireModel(id: ProviderId, model: string): Promise<void> {
