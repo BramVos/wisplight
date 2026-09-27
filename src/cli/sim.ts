@@ -2,6 +2,7 @@ import { resolve } from 'node:path'
 import { argv, stdout } from 'node:process'
 import { Engine, MINUTES_PER_DAY, type WorldEvent } from '../engine'
 import { loadContentFromDir } from '../node/content'
+import { mayBeStuck } from '../engine/playtest'
 
 // Runs the region without a player and reports what happened:
 //   npm run sim -- --days 7 [--seed 3] [--follow npc_mirte] [--quiet] [--world isle]
@@ -42,7 +43,8 @@ for (let day = 1; day <= days; day++) {
       const seen = lastMove.get(id)
       const key = { location: npc.location, activity: npc.activity }
       if (!seen || seen.location !== key.location || seen.activity !== key.activity) lastMove.set(id, { ...key, since: world.now })
-      else if (world.now - seen.since > 16 * 60 && npc.activity !== 'asleep' && npc.activity !== 'ill in bed' && npc.activity !== 'mourning at home' && !npc.dead) problems.push(`${id} stuck at ${npc.location} (${npc.activity}) since ${world.date(seen.since)}`)
+      // The same rule as the editor's playtest (M10): creatures without a day and whoever is far off do not count.
+      else if (world.now - seen.since > 16 * 60 && mayBeStuck(world, id)) problems.push(`${id} stuck at ${npc.location} (${npc.activity}) since ${world.date(seen.since)}`)
     }
     const fresh: WorldEvent[] = world.state.events.filter((e) => e.seq > lastSeq)
     lastSeq = world.state.eventSeq

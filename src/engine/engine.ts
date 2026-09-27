@@ -741,16 +741,24 @@ export class Engine {
     switch (command.verb) {
       case 'talk': {
         if (/^(party|group|everyone|all)$/i.test(command.args.join(' '))) return this.dialogue.party('')
-        let npc = findNpcHere(this.world, command.args.join(' '))
+        // TALK TO AALTJE ABOUT THE GREY CAT (M10): the name, then what to ask, as with ASK.
+        const [who = '', about] = command.args.join(' ').split(/\s+(?:about|over|naar)\s+/i)
+        let npc = findNpcHere(this.world, who)
         // One of a nameless group gets a name and a card when spoken to (M9.1).
-        const crowd = npc ? undefined : crowdHere(this.world, command.args.join(' '))
+        const crowd = npc ? undefined : crowdHere(this.world, who)
         if (crowd) npc = nameOne(this.world, crowd)
-        if (!npc) return [{ kind: 'error', text: command.args.length ? `There is nobody called "${command.args.join(' ')}" here.` : 'Talk to whom?' }]
+        if (!npc) return [{ kind: 'error', text: command.args.length ? `There is nobody called "${who}" here.` : 'Talk to whom?' }]
         // Start the conversation first, so the NPC stays put during the minute it takes. A chat they were in breaks off.
         breakOff(this.world, npc)
         const opening = this.dialogue.start(npc)
         this.pass(1)
-        return [...opening, ...triggers(this.world, this.questHost, { talk: npc })]
+        const out = [...opening, ...triggers(this.world, this.questHost, { talk: npc })]
+        if (about?.trim()) {
+          const partner = npc
+          const quest = questAction(this.world, this.questHost, `ask ${callName(this.world.npc(partner)).toLowerCase()} about ${about.trim()}`)
+          out.push(...(quest ?? (await this.inConversation(() => this.dialogue.ask(partner, about.trim())))))
+        }
+        return out
       }
       case 'bye':
         return this.dialogue.end()
@@ -1349,7 +1357,8 @@ export class Engine {
         const knowledge = new Knowledge(this.world, this.topics)
         const rows = [...this.content.npcs.keys()].sort().map((id) => {
           const odds = knowledge.chance(id, topic)
-          return `${callName(this.world.npc(id)).padEnd(10)} level ${knowledge.level(id, topic)}${odds ? `  chance ${Math.round(odds.chance * 100)}%` : ''}`
+          // The short name (M10): the first word of the full name was "the" for the Haakman.
+          return `${this.world.npc(id).short.padEnd(12)} level ${knowledge.level(id, topic)}${odds ? `  chance ${Math.round(odds.chance * 100)}%` : ''}`
         })
         return [{ kind: 'system', text: [`[build] Who knows ${this.topics.name(topic)}:`, ...rows].join('\n') }]
       }
@@ -1368,7 +1377,7 @@ export class Engine {
         const npcId = findNpcAnywhere(this.world, rest.join(' '))
         if (!npcId) return [{ kind: 'error', text: '@where <person>' }]
         const npc = this.state.npcs[npcId]!
-        return [{ kind: 'system', text: `[build] ${callName(this.world.npc(npcId))}: ${tierOf(this.world, npcId)}, at ${this.world.location(npc.location).name}${npc.note ? `, note: ${npc.note.activity} (${npc.note.unrest})` : ''}.` }]
+        return [{ kind: 'system', text: `[build] ${this.world.npc(npcId).short}: ${tierOf(this.world, npcId)}, at ${this.world.location(npc.location).name}${npc.note ? `, note: ${npc.note.activity} (${npc.note.unrest})` : ''}.` }]
       }
       case 'fight': {
         // @fight goat_riders_toll, or @fight veenlijk 2: a fight here and now, for playtesting.

@@ -262,7 +262,9 @@ export function noise(seed: number, col: number, row: number, salt: number): num
     h = Math.imul(h, 0xc2b2ae35) >>> 0
     h ^= h >>> 16
   }
-  return h / 0x100000000
+  // Unsigned (M10): the last xor can leave the sign bit set, and half the draws came out below zero, so
+  // 59 per cent of the fen had a pool where 10 was meant (the map review of 27 September 2026).
+  return (h >>> 0) / 0x100000000
 }
 
 const maps = new WeakMap<Content, Map<string, RegionMap>>()

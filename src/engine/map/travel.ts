@@ -46,7 +46,7 @@ function knows(world: World, topic: string): boolean {
 }
 
 /** A hidden path counts for whoever knows it; for everyone else it is just fen. */
-function onKnownRidge(world: World, cell: Cell): boolean {
+export function onKnownRidge(world: World, cell: Cell): boolean {
   return Boolean(cell.hidden && knows(world, cell.hidden))
 }
 

@@ -647,6 +647,9 @@ function tempo(world: World, word: string | undefined): Output[] {
 export function findNpcAnywhere(world: World, words: string): string | undefined {
   const wanted = words.trim().toLowerCase().replace(/^(the|de|het)\s+/, '')
   if (!wanted) return undefined
+  // By id too (M10): @where npc_haakman, or @where haakman.
+  if (world.content.npcs.has(wanted)) return wanted
+  if (world.content.npcs.has(`npc_${wanted}`)) return `npc_${wanted}`
   const all = [...world.content.npcs.keys()].sort()
   return (
     all.find((id) => namesOf(world.npc(id)).some((name) => name === wanted)) ??

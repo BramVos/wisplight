@@ -2,7 +2,7 @@ import type { World } from '../world'
 import { centre, type Hex } from './hexgrid'
 import { knownPlaces } from './known'
 import { regionMap, type RegionMap } from './region'
-import { hasSeen, playerHex, seenBits } from './travel'
+import { hasSeen, onKnownRidge, playerHex, seenBits } from './travel'
 
 // The map as the player knows it (FO, chapter 4, "Weergave"): characters with
 // a colour per terrain, in the style of Dwarf Fortress. Only what the player
@@ -92,6 +92,8 @@ function cellFor(world: World, map: RegionMap, block: Hex[], you: Hex | undefine
   const cells = seen.map((h) => map.cell(h)!)
   const way = cells.find((c) => c.way)
   if (way) return { ch: way.way!.kind === 'canal' ? '=' : way.way!.kind === 'road' ? ':' : ',', cls: 'way' }
+  // The hidden ridge (M10): a path for whoever knows it, fen for everyone else.
+  if (cells.some((c) => onKnownRidge(world, c))) return { ch: ',', cls: 'way' }
   // The land most of the block is.
   const counts = new Map<string, number>()
   for (const c of cells) counts.set(c.land, (counts.get(c.land) ?? 0) + 1)

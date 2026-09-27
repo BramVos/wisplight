@@ -1,3 +1,4 @@
+import type { World } from './world'
 import type { Content } from './content'
 import { callName } from './content'
 import { Engine } from './engine'
@@ -59,6 +60,22 @@ export interface SimReport {
 }
 
 /** Runs a world without the player for some days. */
+/**
+ * Whether someone can be stuck (M10): one rule for the sim and the editor's
+ * playtest. Not the dead, not whoever is away or far off, not whoever stays
+ * somewhere on purpose (fled, arrested), not a spirit, and not a creature
+ * without a day to live (a cat, the Haakman, the White Women). Asleep, ill
+ * or mourning is not stuck either.
+ */
+export function mayBeStuck(world: World, id: string): boolean {
+  const npc = world.state.npcs[id]
+  if (!npc || npc.dead || npc.absent || npc.note || npc.stayAt) return false
+  const person = world.npc(id)
+  if (person.quirks.includes('spirit')) return false
+  if (!(world.content.professions.get(person.profession)?.schedule?.length ?? 0)) return false
+  return !['asleep', 'ill in bed', 'mourning at home'].includes(npc.activity)
+}
+
 export function simulate(content: Content, days: number, seed = 1): SimReport {
   const engine = new Engine(content, { seed })
   const world = engine.world
@@ -82,7 +99,7 @@ export function simulate(content: Content, days: number, seed = 1): SimReport {
         if (npc.needs.hunger === 0 && !npc.dead && !npc.absent) problems.push(`${id} is starving (${world.date()})`)
         const seen = lastMove.get(id)
         if (!seen || seen.location !== npc.location || seen.activity !== npc.activity) lastMove.set(id, { location: npc.location, activity: npc.activity, since: world.now })
-        else if (world.now - seen.since > 16 * 60 && !['asleep', 'ill in bed', 'mourning at home'].includes(npc.activity) && !npc.dead && !npc.absent) problems.push(`${id} stuck at ${npc.location} (${npc.activity}) since ${world.date(seen.since)}`)
+        else if (world.now - seen.since > 16 * 60 && mayBeStuck(world, id)) problems.push(`${id} stuck at ${npc.location} (${npc.activity}) since ${world.date(seen.since)}`)
       }
       for (const e of world.state.events.filter((e) => e.seq > lastSeq)) {
         if (!e.actor || e.kind === 'depart' || e.kind === 'arrive') continue
