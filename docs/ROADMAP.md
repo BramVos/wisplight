@@ -187,9 +187,35 @@ Scope: nieuwe mensen uit sjablonen (gevalideerd, met een maximum per seizoen), p
 - [ ] Waagdam bouwt eerst een steenbakkerij en daarna een muur, met materiaal uit de economie
 - [ ] Een tekort dat blijft, leidt tot een besluit van een handelaar of een nieuwkomer
 
-## M9 Afwerking en release
+## M9.1 Vaste ids en de open punten
 
-Scope: FO 18. Balans, toegankelijkheid, prestaties, installers voor Mac en Windows.
+Scope: alles wat na M8.5 nog openstaat (besluit van Bram, 27 september 2026), en ids die nooit veranderen.
+
+Ids in de kern: een id is de sleutel en verandert nooit; een naam, label of beschrijving kan altijd veranderen zonder dat een save of log breekt. Elke wereld houdt een register van alle ids die ooit zijn vastgelegd (`content/<wereld>/ids.lock`, door het spel bijgehouden). Het laden weigert content waarin een vastgelegde id ontbreekt zonder grafsteen; een grafsteen zegt wat er van een verwijderd ding overblijft (weg, of opgegaan in een ander id). Oude saves, het spellogboek en de kroniek volgen de grafstenen bij het laden. De editor laat een id alleen invullen bij iets nieuws, ook in YAML, en maakt bij verwijderen een grafsteen.
+
+Verder, uit "Later" in het ontwerp "Signalen en nasleep" en uit eerdere mijlpalen:
+- een archief voor oude feiten die niemand meer kent en die niet in een lijn of lore zitten
+- de afstandsregel voor `feast`, `leave` en `return`: ver weg alleen een feit en een toestandswijziging
+- een optionele zin van de stem voor wie lang blijft luisteren bij een praatje
+- genereren tot speelbaar (niveau 3) voor een streek buiten de kaart
+- de legende-variant van lore meenemen naar een volgend spel
+- een kaart in de editor waarop je plekken versleept
+- een regelset voor Skerrow
+- Busy Hands, voor zover het na werken voor loon in M8.5 nog openstaat
+
+- [ ] Een naam of beschrijving wijzigen in de editor laat elke oude save en elk spellogboek laden en precies naspelen
+- [ ] Een id verwijderen of veranderen kan niet zonder grafsteen: het laden noemt de id en de plek, en de editor maakt de grafsteen zelf
+- [ ] Een save met iets wat later verwijderd of samengevoegd is, laadt en speelt verder volgens de grafsteen
+- [ ] Na 300 speldagen blijven laden, opslaan en het doorvertellen van nieuws even snel als na 30, dankzij het archief
+- [ ] Een feest, vertrek of terugkeer ver van de speler kost geen simulatie van mensen, alleen een feit en een toestandswijziging
+- [ ] Een streek buiten de kaart wordt speelbaar als de speler erheen gaat, gevalideerd als content, en ligt daarna vast in de savegame
+- [ ] Een nieuw spel kan de wereld van een oud spel als legende meenemen, zonder namen van mensen die nog leven
+- [ ] Skerrow heeft een eigen regelset en is met personage en gevecht te spelen
+- [ ] Alles wat er al was, speelt hetzelfde: het hele testpakket, de simulaties, de uitspeelscripts van beide werelden, en oude saves
+
+## M9.2 Afwerking en release
+
+Scope: FO 18. Balans, toegankelijkheid, prestaties, installers voor Mac en Windows. Tot 27 september 2026 was dit M9.
 
 - [ ] Alle niet-functionele eisen uit FO 18 zijn gemeten en gehaald
 - [ ] Installers voor Mac en Windows werken op een schone machine
