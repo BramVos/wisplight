@@ -41,7 +41,8 @@ jobs:
             run="$app"; [ "$arch" = x64 ] && run="arch -x86_64 $app"
             for world in 1 isle; do
               out="$RUNNER_TEMP/smoke-$arch-$world.txt"
-              WISPLIGHT_SMOKE=$world WISPLIGHT_SMOKE_OUT="$out" $run || true
+              # Under Rosetta the first start is slow: the Intel build gets two minutes for its first room.
+              WISPLIGHT_SMOKE=$world WISPLIGHT_SMOKE_OUT="$out" WISPLIGHT_SMOKE_WAIT_MS=120000 $run || true
               cat "$out"
               grep -q 'save and load exact' "$out"
               grep -q 'dev menu absent' "$out"
@@ -70,14 +71,23 @@ jobs:
         shell: pwsh
         run: |
           $setup = Get-ChildItem dist\Wisplight-*-windows-setup.exe | Select-Object -First 1
-          Start-Process -FilePath $setup.FullName -ArgumentList '/S' -Wait
+          # Wait for the installer itself, not for anything it starts, and not for ever.
+          $install = Start-Process -FilePath $setup.FullName -ArgumentList '/S' -PassThru
+          if (-not $install.WaitForExit(300000)) { throw 'The installer did not finish in five minutes' }
           $game = Join-Path $env:LOCALAPPDATA 'Programs\Wisplight\Wisplight.exe'
           if (-not (Test-Path $game)) { throw "Not installed at $game" }
+          Get-Process Wisplight -ErrorAction SilentlyContinue | Stop-Process -Force
           foreach ($world in @('1', 'isle')) {
             $out = Join-Path $env:RUNNER_TEMP "smoke-$world.txt"
             $env:WISPLIGHT_SMOKE = $world
             $env:WISPLIGHT_SMOKE_OUT = $out
-            Start-Process -FilePath $game -Wait
+            $run = Start-Process -FilePath $game -PassThru
+            if (-not $run.WaitForExit(180000)) {
+              Get-Process Wisplight -ErrorAction SilentlyContinue | Stop-Process -Force
+              if (Test-Path $out) { Get-Content $out }
+              throw "The game did not finish its smoke check in three minutes ($world)"
+            }
+            if (-not (Test-Path $out)) { throw "The game wrote nothing ($world)" }
             Get-Content $out
             $text = Get-Content $out -Raw
             if ($text -notmatch 'save and load exact') { throw 'The game did not save and load' }

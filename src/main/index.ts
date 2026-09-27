@@ -611,9 +611,9 @@ function createWindow(): void {
           `(async () => {
             const pick = document.querySelector('.worlds [data-world="${world}"]')
             if (pick) pick.click()
-            // Up to ten seconds for the first room: the installed app reads its world from an archive.
+            // Up to ten seconds for the first room (WISPLIGHT_SMOKE_WAIT_MS for more: an Intel build under Rosetta translates itself on its first start).
             const started = Date.now()
-            while (!document.querySelector('.line.room') && Date.now() - started < 10000) await new Promise((r) => setTimeout(r, 100))
+            while (!document.querySelector('.line.room') && Date.now() - started < ${Number(process.env['WISPLIGHT_SMOKE_WAIT_MS']) || 10000}) await new Promise((r) => setTimeout(r, 100))
             const room = document.querySelector('.line.room')?.textContent ?? 'NO ROOM RENDERED: ' + document.body.innerText.replace(/\\s+/g, ' ').slice(0, 300)
             return room.split('\\n')[0] + ' (after ' + (Date.now() - started) + ' ms)'
           })()`,

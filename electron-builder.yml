@@ -41,4 +41,6 @@ nsis:
   oneClick: false
   perMachine: false
   allowToChangeInstallationDirectory: true
+  # The finish page offers to start the game; a silent install (the workflow) starts nothing.
+  runAfterFinish: true
   artifactName: Wisplight-${version}-windows-setup.exe
