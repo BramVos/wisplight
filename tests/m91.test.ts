@@ -1,6 +1,6 @@
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { applyEdits, checkContent, createCharacter, entities, Engine, GameClock, loadContent, MockLlm, recordFact, suggestChoice, type Content, type ContentFile } from '../src/engine'
+import { applyEdits, checkContent, editorView, exitTowards, withReturnExits, createCharacter, entities, Engine, GameClock, loadContent, MockLlm, recordFact, suggestChoice, type Content, type ContentFile } from '../src/engine'
 import { carried, characterOf, settlementAt } from '../src/engine/economy/ledger'
 import { openness } from '../src/engine/belief'
 import { adoptPlaceEdits, readLock, withLock } from '../src/engine/edit'
@@ -738,3 +738,28 @@ function runUntilIn(engine: Engine, hour: number): void {
   const minutes = ((hour - now.hour + 24) % 24) * 60 - now.minute
   if (minutes > 0) engine.tick(minutes)
 }
+
+describe('M9.1: the editor map', () => {
+  it('has every place in km with its ways; a drag is a pos, a shift-drag a way both ways', async () => {
+    const files = await readContentFiles(root)
+    const view = editorView(files)
+    const quay = view.places.find((p) => p.id === 'loc_veenhoek_quay')!
+    expect(quay.at).toEqual(quay.pos ?? quay.at)
+    expect(view.places.length).toBe(view.lists.location.length)
+    // Places without a position of their own stand round their area, apart.
+    const loose = view.places.filter((p) => !p.pos)
+    expect(new Set(loose.map((p) => p.at.join())).size).toBe(loose.length)
+    expect(exitTowards([0, 0], [1, 0])).toBe('east')
+    expect(exitTowards([0, 0], [0, -1])).toBe('north')
+    expect(exitTowards([0, 0], [1, 1])).toBe('southeast')
+    // What the map saves: the place at a new spot, and a new way with its way back.
+    const pool = entities(files, 'location').find((e) => e.id === 'loc_kattenbroek_moonpool')!
+    const moved = edited(files, { kind: 'location', id: pool.id, data: { ...pool.raw, pos: [123.3, 99.2] } })
+    expect(moved.content!.locations.get(pool.id)!.pos).toEqual([123.3, 99.2])
+    const hummock = view.places.find((p) => /hummock/i.test(p.name))!
+    const way = exitTowards(view.places.find((p) => p.id === pool.id)!.at, hummock.at)
+    const linked = edited(files, ...withReturnExits(files, [{ kind: 'location', id: pool.id, data: { ...pool.raw, exits: { ...(pool.raw['exits'] as object), [way]: { to: hummock.id } } } }]))
+    expect(linked.content!.locations.get(pool.id)!.exits[way]?.to).toBe(hummock.id)
+    expect(Object.values(linked.content!.locations.get(hummock.id)!.exits).some((e) => e?.to === pool.id)).toBe(true)
+  })
+})

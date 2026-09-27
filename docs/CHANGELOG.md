@@ -1,5 +1,28 @@
 # Changelog
 
+## M9.1 Vaste ids en de open punten, 27 september 2026
+
+Nieuw:
+- **Ids zijn sleutels.** Elke wereld heeft een register (`ids.lock`). Een naam of beschrijving mag altijd veranderen; een id niet. Wat weggaat of opgaat in iets anders, krijgt een grafsteen, en oude saves en het spellogboek volgen die. De editor weigert een id te veranderen en maakt de grafsteen zelf. `npm run ids` schrijft het register.
+- **Seizoenen.** Turf wordt van Zomermaand tot Herfstmaand gestoken, rogge in de Oogstmaand geoogst. Is twee derde van de voorraad van het seizoen op, dan krijgen de toonbanken minder en stijgt de prijs. `work` bij de turfwand kan alleen in het seizoen.
+- **Alle toonbanken uit het grootboek**, in beide werelden, en eten gaat voor. Skerrow heeft een brouwerij, strandjutters en de Heights als nederzetting.
+- **Geloof per persoon.** In de wrijving telt een ander geloof mee, en de warme harten van een dorp vormen ook zonder AI een groep voor de nieuwkomers (de Lantaarn met liefdadigheid).
+- **Ver weg geen simulatie:** een feest, vertrek of terugkeer ver van de speler is een feit en een toestandswijziging. Wie lang blijft luisteren bij een praatje, hoort met een model soms een zin van de luisteraar zelf. Busy Hands maakt ambachtswerk een kwart korter.
+- **Het archief.** Wat een maand voorbij is, gaat van de save naar het spellogboek. Na 300 speldagen is de save 361 kB in plaats van 1272 kB, opslaan duurt 3 ms en laden 16 ms, net als na 30 dagen (`npm run longrun`).
+- **Vervoeren.** `loads` op het plein, `haul peat to waagdam`, en `deliver` daar: je wordt betaald uit de beurs van die nederzetting. Op het jaagpad komen de Bokkenrijders met een lading vaker, en wie zich overgeeft is de helft kwijt; aan de oostpoort heft de graaf tol.
+- **Zwolderkamp speelbaar.** Ga naar de oostpoort van Waagdam en `travel to zwolderkamp`: twee dagen lopen naar een poort, een markt en een herberg, met een koopman en een waard. Zwolderkamp heeft nu een eigen grootboek; de Oostweg houdt zijn naam en id.
+- **Stadsrechten.** Staat de muur van Waagdam, dan gaat burgemeester Aleid naar Graafhaven. De graaf beslist (meestal ja, als de stad 200 duiten voor het charter heeft). Een stad is opener voor vreemden en het charter hangt aan de Waag.
+- **Naamlozen.** Werkers aan de muur, vluchtelingen in de kerk bij onrust in het oosten: een aantal, geen mensen. `talk to a refugee` geeft er een een naam en een kaart.
+- **Jaren later.** `years later` (of `jaren later`) in de desktopapp begint een nieuw spel met de lore van het vorige als legendes over de vreemdeling, zonder namen van mensen die nog leven. Ouderen kennen ze het best.
+- **Skerrow heeft regels.** Een eigen personage (eilander, vastelander, elf; schildhand, harpoenier, schelm, heks, runenwerper, getijroeper), de Tidemother en de Old Stars, en 's nachts wreckers op het klifpad, verdronkenen op het wrakstrand en een barrow-wight bij de toren.
+- **Editor:** een tab Map per gebied: sleep een plek om haar te verplaatsen, shift-sleep naar een andere plek voor een weg (de weg terug komt vanzelf). Een plek die een project bouwde, neem je met [Adopt] over, met hetzelfde id.
+
+Testen: `npm run dev`. Seizoenen: wacht tot Wijnmaand en kijk bij Gerrit in de turfschuren (`list`). Vervoeren: `loads` op de brink van Veenhoek, `haul peat to waagdam`, over het jaagpad naar Waagdam en `deliver` op de markt. Zwolderkamp: `@goto loc_waagdam_east_gate`, dan `travel to zwolderkamp` (vraag eerst iemand naar Zwolderkamp, anders kent je dagboek het niet). Stadsrechten en vluchtelingen: `@tension rijkland 30` en een paar weken wachten, of kijk na een paar dagen in de kerk van Waagdam. Skerrow: start een nieuw spel op Skerrow en maak een personage. Editor: `npm run editor`, tab Map. Controles: `npm test` (424 tests), `npm run balance` voor de Nethermarch; Skerrow heeft zijn eigen balanstest in de suite.
+
+Nog niet: een speelbare streek heeft altijd dezelfde vorm (poort, markt, herberg); alleen de woorden verschillen. Alleen Zwolderkamp heeft een tolhek. De legende neemt alleen lore uit de kroniek mee, geen losse grote feiten, en `years later` zit niet in de browserversie. Het [Adopt] voor plekken heb ik niet in de browser kunnen zien: een speeltest van dertig dagen bouwt geen steenbakkerij zonder oplopende spanning; de test dekt het.
+
+Ontwerp en tests: afwijkingen staan onder "Zo is het in M9.1 gebouwd" in het ontwerp voor signalen en nasleep; het lore-ontwerp en het FO (stand na M9.1) zijn bijgewerkt. Nieuwe toestand: `ranks`, `crowds`, `growth.far`, de lading van de speler. Nieuwe werkwoorden: `rank` en `crowd`, bruikbaar voor elke nederzetting en elk plan. Wat in de code Nethermarch was (de kant-en-klare reiziger, de afkomst bij een voorgesteld personage, welke klassen afstand houden), staat nu in de regels van elke wereld. Twee M8-tests zijn aangepast omdat Skerrow regels kreeg: de wereld zonder regels is nu Skerrow met de regels eraf, en de barrowproef zoekt een seed waarop de schipbreukeling faalt. De 30-dagensimulatie geeft dezelfde zeven meldingen als voor M9.1 (geesten, een kind, de opgesloten Gerrit).
+
 ## M8.5 Nasleep: groei, 27 september 2026
 
 Nieuw:

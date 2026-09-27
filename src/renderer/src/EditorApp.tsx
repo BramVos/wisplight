@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { stringify } from 'yaml'
-import { adoptPlaceEdits, draftEdits, ENTITY_KINDS, KIND_NAMES, languageReference, parseEntityYaml, type ReferenceEntry } from '../../engine'
+import { adoptPlaceEdits, draftEdits, ENTITY_KINDS, exitTowards, KIND_NAMES, languageReference, parseEntityYaml, type MapPlace, type ReferenceEntry } from '../../engine'
 import { createEditor, type DiffLine, type Edit, type EditorBridge, type EditorDraft, type EditorSave, type EditorView, type EntityKind, type Raw, type ShownChange, type SimReport, type WorldInfo } from './client'
 
 // The editor (M8, FO chapter 15), in a window of its own: npm run editor, or
@@ -11,7 +11,7 @@ import { createEditor, type DiffLine, type Edit, type EditorBridge, type EditorD
 // playtest without the player with an NPC inspector, and the chronicler,
 // whose proposals are shown as a change and saved only when accepted.
 
-type Panel = 'edit' | 'check' | 'playtest' | 'reference' | 'chronicler' | 'world'
+type Panel = 'edit' | 'map' | 'check' | 'playtest' | 'reference' | 'chronicler' | 'world'
 
 const DIRECTIONS = ['north', 'northeast', 'east', 'southeast', 'south', 'southwest', 'west', 'northwest', 'up', 'down', 'in', 'out']
 const AXES = ['warmth', 'courage', 'honesty', 'temper', 'curiosity', 'diligence'] as const
@@ -85,6 +85,7 @@ export function EditorApp() {
           {(
             [
               ['edit', 'Edit'],
+              ['map', 'Map'],
               ['check', `Check${view.problems.length ? ` (${view.problems.length} errors)` : view.warnings.length ? ` (${view.warnings.length})` : ''}`],
               ['playtest', 'Playtest'],
               ['reference', 'Reference'],
@@ -137,6 +138,7 @@ export function EditorApp() {
           </main>
         </div>
       )}
+      {panel === 'map' && <MapPanel bridge={bridge} world={world} view={view} saved={refresh} open={open} />}
       {panel === 'check' && <CheckPanel view={view} open={open} />}
       {panel === 'playtest' && <PlaytestPanel bridge={bridge} world={world} />}
       {panel === 'reference' && <ReferencePanel />}
@@ -828,6 +830,115 @@ function CheckPanel({ view, open }: { view: EditorView; open: (kind: EntityKind,
 }
 
 // ---------------------------------------------------------------- playtest
+
+// ---------------------------------------------------------------- the map
+
+/**
+ * The places of an area on a map in km (M9.1). Drag a place to move it (its
+ * pos); shift-drag from one place to another for a way between them (the way
+ * back comes with it). Places without a position of their own stand in a ring
+ * round their area, hollow, until they are moved.
+ */
+function MapPanel({ bridge, world, view, saved, open }: { bridge: EditorBridge; world: string; view: EditorView; saved: () => Promise<void>; open: (kind: EntityKind, id?: string) => void }) {
+  const areas = useMemo(() => [...new Set(view.places.map((p) => p.area))].sort(), [view.places])
+  const [area, setArea] = useState(() => areas.find((a) => view.places.filter((p) => p.area === a && p.pos).length > 2) ?? areas[0] ?? '')
+  const [drag, setDrag] = useState<{ id: string; link: boolean; at: [number, number] } | undefined>()
+  const [note, setNote] = useState('')
+  const shown = view.places.filter((p) => p.area === area)
+  const byId = new Map(view.places.map((p) => [p.id, p]))
+  // Ways out of the area show as far as the next place.
+  const xs = shown.map((p) => p.at[0])
+  const ys = shown.map((p) => p.at[1])
+  const pad = 0.15
+  // Room on the right for the names.
+  const box = shown.length ? [Math.min(...xs) - pad, Math.min(...ys) - pad, Math.max(0.6, Math.max(...xs) - Math.min(...xs)) * 1.35 + 2 * pad, Math.max(0.4, Math.max(...ys) - Math.min(...ys)) + 2 * pad] : [0, 0, 1, 1]
+  const unit = Math.max(box[2]!, box[3]!) / 110
+  const toMap = (event: React.MouseEvent<SVGSVGElement>): [number, number] => {
+    const svg = event.currentTarget
+    const point = svg.createSVGPoint()
+    point.x = event.clientX
+    point.y = event.clientY
+    const p = point.matrixTransform(svg.getScreenCTM()!.inverse())
+    return [p.x, p.y]
+  }
+  const nearest = (at: [number, number], except: string): MapPlace | undefined =>
+    shown.filter((p) => p.id !== except).sort((a, b) => Math.hypot(a.at[0] - at[0], a.at[1] - at[1]) - Math.hypot(b.at[0] - at[0], b.at[1] - at[1]))[0]
+  const save = async (edits: Edit[], done: string) => {
+    const result = await bridge.save(world, edits)
+    setNote(result.ok ? done : result.problems.join('; '))
+    if (result.ok) await saved()
+  }
+  const drop = async (event: React.MouseEvent<SVGSVGElement>) => {
+    const d = drag
+    setDrag(undefined)
+    if (!d) return
+    const place = byId.get(d.id)!
+    const at = toMap(event)
+    const entity = await bridge.entity(world, 'location', d.id)
+    if (!entity) return
+    if (d.link) {
+      const to = nearest(at, d.id)
+      if (!to || Math.hypot(to.at[0] - at[0], to.at[1] - at[1]) > unit * 4) return setNote('Drop on a place to make a way to it.')
+      const direction = exitTowards(place.at, to.at)
+      const exits = (entity.raw['exits'] as Raw | undefined) ?? {}
+      if (exits[direction]) return setNote(`${place.name} has a way ${direction} already.`)
+      return save([{ kind: 'location', id: d.id, data: { ...entity.raw, exits: { ...exits, [direction]: { to: to.id } } } }], `A way ${direction} from ${place.name} to ${to.name}, and back.`)
+    }
+    if (Math.hypot(at[0] - place.at[0], at[1] - place.at[1]) < unit / 2) return open('location', d.id)
+    // To ten metres: a village is a kilometre across.
+    const pos = [Math.round(at[0] * 100) / 100, Math.round(at[1] * 100) / 100]
+    return save([{ kind: 'location', id: d.id, data: { ...entity.raw, pos } }], `${place.name} now lies at ${pos[0]}, ${pos[1]} km.`)
+  }
+  return (
+    <div className="editor-page">
+      <p className="muted small">
+        Drag a place to move it; shift-drag from one place to another for a way between them (the way back comes too). Click a place to open it. Hollow places have no position of their own yet.{' '}
+        <label>
+          Area{' '}
+          <select value={area} onChange={(e) => setArea(e.target.value)}>
+            {areas.map((a) => (
+              <option key={a} value={a}>
+                {view.lists.area.find((x) => x.id === a)?.name ?? a}
+              </option>
+            ))}
+          </select>
+        </label>
+      </p>
+      {note && <p className="small">{note}</p>}
+      <svg
+        className="place-map"
+        viewBox={box.join(' ')}
+        onMouseMove={(e) => drag && setDrag({ ...drag, at: toMap(e) })}
+        onMouseUp={(e) => void drop(e)}
+        onMouseLeave={() => setDrag(undefined)}
+        role="img"
+        aria-label={`Map of ${area}`}
+      >
+        {shown.flatMap((p) =>
+          p.exits
+            .filter((e) => byId.has(e.to))
+            .map((e) => {
+              const to = byId.get(e.to)!
+              return <line key={`${p.id}-${e.direction}`} x1={p.at[0]} y1={p.at[1]} x2={to.at[0]} y2={to.at[1]} className={to.area === area ? 'way' : 'way out'} strokeWidth={unit / 5} />
+            }),
+        )}
+        {drag?.link && <line x1={byId.get(drag.id)!.at[0]} y1={byId.get(drag.id)!.at[1]} x2={drag.at[0]} y2={drag.at[1]} className="way new" strokeWidth={unit / 4} />}
+        {shown.map((p) => {
+          const at = drag && !drag.link && drag.id === p.id ? drag.at : p.at
+          return (
+            <g key={p.id} onMouseDown={(e) => setDrag({ id: p.id, link: e.shiftKey, at: p.at })}>
+              <circle cx={at[0]} cy={at[1]} r={unit} className={p.pos ? 'place' : 'place loose'} strokeWidth={unit / 3} />
+              <text x={at[0] + unit * 1.6} y={at[1] + unit * 0.6} fontSize={unit * 1.9}>
+                {p.name}
+              </text>
+              <title>{`${p.name} (${p.id})${p.pos ? `, ${p.pos[0]}, ${p.pos[1]} km` : ', no position of its own'}`}</title>
+            </g>
+          )
+        })}
+      </svg>
+    </div>
+  )
+}
 
 function PlaytestPanel({ bridge, world }: { bridge: EditorBridge; world: string }) {
   const [days, setDays] = useState(7)

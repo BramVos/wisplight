@@ -42,6 +42,51 @@ export interface EditorView {
   maps: Record<string, string>
   /** The settlements with what they live on, their character and routes (M8.4). */
   economy: SettlementView[]
+  /** Every place for the map (M9.1): where it lies in km, and its ways out. */
+  places: MapPlace[]
+}
+
+/** A place on the editor's map: its own position, or near its area's when it has none. */
+export interface MapPlace {
+  id: string
+  name: string
+  area: string
+  /** Its own position in km, when it has one. */
+  pos?: [number, number]
+  /** Where the map draws it. */
+  at: [number, number]
+  exits: { direction: string; to: string }[]
+}
+
+const WINDS = ['north', 'northeast', 'east', 'southeast', 'south', 'southwest', 'west', 'northwest'] as const
+
+/** The wind from one point to another on the map (its y runs south): the way an exit between them goes. */
+export function exitTowards(from: readonly [number, number], to: readonly [number, number]): (typeof WINDS)[number] {
+  const angle = (Math.atan2(to[0] - from[0], -(to[1] - from[1])) * 180) / Math.PI
+  return WINDS[Math.round(((angle + 360) % 360) / 45) % 8]!
+}
+
+/** The places of a world for the map: those without a position of their own in a small ring round their area. */
+export function mapPlaces(files: ContentFile[]): MapPlace[] {
+  const areaPos = new Map(entities(files, 'area').map((a) => [a.id, a.raw['pos'] as [number, number] | undefined]))
+  const ring = new Map<string, number>()
+  const out: MapPlace[] = []
+  for (const l of entities(files, 'location').sort((a, b) => a.id.localeCompare(b.id))) {
+    const area = String(l.raw['area'] ?? '')
+    const pos = Array.isArray(l.raw['pos']) ? (l.raw['pos'] as [number, number]) : undefined
+    const centre = areaPos.get(area)
+    let at = pos
+    if (!at && centre) {
+      const n = ring.get(area) ?? 0
+      ring.set(area, n + 1)
+      const r = 0.25 + 0.08 * Math.floor(n / 8)
+      at = [Math.round((centre[0] + r * Math.cos((n * Math.PI) / 4)) * 100) / 100, Math.round((centre[1] + r * Math.sin((n * Math.PI) / 4)) * 100) / 100]
+    }
+    if (!at) continue
+    const exits = Object.entries((l.raw['exits'] as Record<string, { to?: string }> | undefined) ?? {}).map(([direction, e]) => ({ direction, to: String(e?.to ?? '') }))
+    out.push({ id: l.id, name: String(l.raw['name'] ?? l.id), area, ...(pos ? { pos } : {}), at, exits })
+  }
+  return out
 }
 
 export const KIND_NAMES: Record<EntityKind, string> = {
@@ -112,6 +157,7 @@ export function editorView(files: ContentFile[]): EditorView {
     economy: content ? economyOverview(content) : [],
     files: files.map((f) => f.path).sort(),
     maps: content ? Object.fromEntries([...content.regions.keys()].map((id) => [id, regionPreview(content, id) ?? ''])) : {},
+    places: mapPlaces(files),
   }
 }
 

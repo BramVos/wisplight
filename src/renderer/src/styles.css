@@ -1400,3 +1400,43 @@ pre.sheet {
 .sheet-view .warn {
   color: var(--warn);
 }
+
+/* The editor's map (M9.1). */
+.place-map {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  cursor: default;
+  height: auto;
+  max-height: 70vh;
+  user-select: none;
+  width: 100%;
+}
+
+.place-map .way {
+  stroke: var(--muted);
+}
+
+.place-map .way.out {
+  stroke: var(--line);
+  stroke-dasharray: 0.05 0.05;
+}
+
+.place-map .way.new {
+  stroke: var(--room);
+}
+
+.place-map .place {
+  cursor: grab;
+  fill: var(--room);
+  stroke: var(--bg);
+}
+
+.place-map .place.loose {
+  fill: var(--panel);
+  stroke: var(--room);
+}
+
+.place-map text {
+  fill: var(--text);
+  pointer-events: none;
+}
