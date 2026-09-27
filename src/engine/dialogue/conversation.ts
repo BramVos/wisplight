@@ -13,7 +13,7 @@ import { approve, companionOf, offer, recruit } from '../social/companions'
 import { silenceWitness, witnessed } from '../social/crime'
 import { partyTalk } from './party'
 import { closingLine, fallbackReply } from './fallback'
-import { fitLength, hasAnachronism, leakedNames, looksLikeInjection, unknownNames, vocabularyOf } from './guard'
+import { fitLength, hasAnachronism, leakedNames, looksLikeInjection, outOfCharacter, unknownNames, vocabularyOf } from './guard'
 import type { Knowledge, Packet } from './knowledge'
 import type { LlmClient } from './llm'
 import { peopleIds, systemPrompt, turnPrompt, worldFrame } from './prompt'
@@ -530,7 +530,9 @@ export class Dialogue {
     const location = world.location(world.state.player.location)
     const allowedTopics = [...new Set([...ctx.packet.known.map((k) => k.topic), ...(ctx.packet.referral ? [ctx.packet.referral.npc] : []), ...present])]
     // Names the NPC may say: what it knows, who is here, where it is, and whatever the player just said.
-    const allowedNames = new Set([...this.knowledge.knownTopics(npcId), ...peopleIds(world, npcId), ...present, location.id, `area_${location.area}`, ...ctx.spokenTopics, ...allowedTopics])
+    // And the names in what it was given to tell (found by the M9.3 trial): a story of the Haakman names the Blackmere.
+    const given = ctx.packet.known.flatMap((k) => [...k.facts, k.story ?? '', ...(k.news ?? []), k.toldBy ?? ''])
+    const allowedNames = new Set([...this.knowledge.knownTopics(npcId), ...peopleIds(world, npcId), ...present, location.id, `area_${location.area}`, ...ctx.spokenTopics, ...allowedTopics, ...this.topics.recognise(given.join(' '))])
 
     let prompt = turnPrompt(world, {
       npcId,
@@ -589,6 +591,11 @@ export class Dialogue {
       if (hasAnachronism(fitted)) {
         llm.report?.({ reason: 'anachronism' })
         prompt += '\nNOTE: your last reply used words that do not exist in this world. Answer again without them.'
+        continue
+      }
+      if (outOfCharacter(fitted)) {
+        llm.report?.({ reason: 'character' })
+        prompt += '\nNOTE: your last reply stepped out of the world. Answer again as yourself, in plain speech.'
         continue
       }
       const said = `${fitted} ${reply.memory_note}`

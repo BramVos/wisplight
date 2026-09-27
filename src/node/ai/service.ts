@@ -3,7 +3,7 @@ import { join } from 'node:path'
 import { pictureSubject } from '../../engine/pictures'
 import type { Content } from '../../engine/content'
 import type { LlmClient } from '../../engine/dialogue/llm'
-import { askAdvice, testCall, trial, type Advice, type TrialResult } from './advisor'
+import { askAdvice, judgeTrials, testCall, trial, type Advice, type TrialResult, type TrialVerdict } from './advisor'
 import { CostRegister } from './costs'
 import { Gateway, type GatewayStatus } from './gateway'
 import { AiLog, type AiLogEntry } from './log'
@@ -126,6 +126,14 @@ export class AiService {
   async trial(id: ProviderId, model: string, role: ChosenRole): Promise<TrialResult> {
     await this.requireModel(id, model)
     return trial(this.gateway, this.options.content, id, model, role)
+  }
+
+  /** Tries the advised models for a role one after the other and chooses on the trial (M9.3). */
+  async compare(role: ChosenRole, choices: { provider: ProviderId; model: string }[]): Promise<{ results: TrialResult[]; verdicts: TrialVerdict[]; choice?: { provider: ProviderId; model: string } }> {
+    const results: TrialResult[] = []
+    for (const c of choices.slice(0, 4)) results.push(await this.trial(c.provider, c.model, role))
+    const { choice, verdicts } = judgeTrials(results)
+    return { results, verdicts, ...(choice ? { choice: { provider: choice.provider, model: choice.model } } : {}) }
   }
 
   /**

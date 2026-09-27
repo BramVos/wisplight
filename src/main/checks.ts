@@ -177,7 +177,7 @@ async function checkProvider(ai: AiService, content: Content, provider: Provider
   if (!named.every((c) => ids.includes(c.model))) ok = false
   for (const [role, model] of [['voice', advice.voice.recommended.model], ['brain', advice.brain.recommended.model], ['chronicler', advice.chronicler.recommended.model]] as const) {
     const t = await ai.trial(provider, model, role)
-    console.log(`[ai-check]   trial ${role} ${model}: ${t.valid}/${t.runs} valid, ${t.averageLatencyMs} ms, ${t.inputTokens} in / ${t.outputTokens} out, ${t.costPerHourUsd === undefined ? 'price unknown' : `~$${t.costPerHourUsd.toFixed(3)} per hour`}${t.errors.length ? `; problems: ${t.errors.slice(0, 3).join(' | ')}` : ''}`)
+    console.log(`[ai-check]   trial ${role} ${model}: ${t.valid}/${t.answers} usable in ${t.runs} calls (${t.retries} retried, ${t.fallbacks} fallbacks, ${t.leaks} leaks, ${t.factualErrors} false, ${t.characterBreaks} out of character), ${t.averageLatencyMs} ms, ${t.inputTokens} in / ${t.outputTokens} out, ${t.costPerUsableUsd === undefined ? 'price unknown' : `$${t.costPerUsableUsd.toFixed(4)} a usable answer, ~$${(t.costPerHourUsd ?? 0).toFixed(3)} per hour`}${t.errors.length ? `; problems: ${t.errors.slice(0, 3).join(' | ')}` : ''}`)
   }
   const stored = await ai.choose('voice', provider, advice.voice.recommended.model)
   const exact = stored === advice.voice.recommended.model && ai.settings.role('voice')?.model === stored

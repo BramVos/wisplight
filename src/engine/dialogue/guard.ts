@@ -30,6 +30,15 @@ export function hasAnachronism(text: string): boolean {
   return ANACHRONISM.test(text)
 }
 
+// A reply that steps out of the world (M9.3): it speaks as a model, of prompts
+// and rules, or comes dressed in markup or emoji. The trial counts it as a
+// break of character; the game asks for the reply again.
+const OUT_OF_CHARACTER = /\b(as an ai|an ai model|language model|openai|anthropic|chatgpt|system prompt|my instructions|role-?play(?:ing)?|non-player|npc|video ?game)\b|\*\*|^#{1,6}\s|```|\p{Extended_Pictographic}/imu
+
+export function outOfCharacter(text: string): boolean {
+  return OUT_OF_CHARACTER.test(text)
+}
+
 export function wordCount(text: string): number {
   return text.trim().split(/\s+/).filter(Boolean).length
 }

@@ -3,7 +3,7 @@ import { pictureSubject } from '../../engine/pictures'
 import type { LlmClient } from '../../engine/dialogue/llm'
 import { costUsd } from '../../node/ai/pricing'
 import type { UsageSummary, UsageTotals } from '../../node/ai/usage'
-import type { AiBridge, AiLogEntry, AiStatus, ModelInfo, ProviderId } from './client'
+import type { AiBridge, AiLogEntry, AiStatus, ChosenRole, ModelInfo, ProviderId, TrialResult } from './client'
 
 // Browser preview only (npm run web, then open /?mock=1). Made-up data behind
 // the same bridge the desktop app uses, so the settings screen can be checked
@@ -32,6 +32,16 @@ const state = {
 }
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
+async function demoTrial(provider: ProviderId, model: string, role: ChosenRole): Promise<TrialResult> {
+  await wait(1200)
+  const perHour = model.includes('nano') ? 0.011 : model.includes('haiku') ? 0.21 : model.includes('mini') ? 0.058 : 0.4
+  const answers = role === 'voice' ? 6 : role === 'brain' ? 3 : 2
+  const leaks = model.includes('nano') && role === 'voice' ? 1 : 0
+  const valid = answers - leaks
+  const cost = perHour / 10
+  return { provider, model, role, runs: answers + leaks, answers, valid, retries: leaks, fallbacks: 0, leaks, factualErrors: 0, characterBreaks: 0, averageLatencyMs: model.includes('nano') ? 800 : 1900, maxLatencyMs: model.includes('nano') ? 1400 : 3100, inputTokens: 14800, outputTokens: 930, costUsd: cost, costPerUsableUsd: cost / valid, costPerHourUsd: perHour, errors: leaks ? ['reply: failed the leak check'] : [] }
+}
 
 /** The mock model with a short delay, so the "thinking" line shows, and with its usage counted. */
 export function slowMock(llm: LlmClient): LlmClient {
@@ -140,11 +150,14 @@ export function demoBridge(_content: Content): AiBridge {
             unknownPrices: [],
           }
     },
-    trial: async (provider, model, role) => {
-      await wait(1200)
-      const perHour = model.includes('nano') ? 0.011 : model.includes('haiku') ? 0.21 : model.includes('mini') ? 0.058 : 0.4
-      const runs = role === 'voice' ? 6 : role === 'brain' ? 3 : 2
-      return { provider, model, role, runs, valid: runs, averageLatencyMs: model.includes('nano') ? 800 : 1900, inputTokens: 14800, outputTokens: 930, costUsd: perHour / 10, costPerHourUsd: perHour, errors: [] }
+    trial: async (provider, model, role) => demoTrial(provider, model, role),
+    compare: async (role, choices) => {
+      const results = []
+      for (const c of choices) results.push(await demoTrial(c.provider, c.model, role))
+      // The demo's cheaper model leaks once in a story: the trial chooses the other.
+      const verdicts = results.map((r) => ({ model: r.model, provider: r.provider, passed: r.leaks === 0, why: r.leaks ? `${r.leaks} leak` : `${r.valid} of ${r.answers} usable, $${r.costPerUsableUsd!.toFixed(4)} a usable answer` }))
+      const chosen = results.filter((r) => r.leaks === 0).sort((a, b) => a.costPerUsableUsd! - b.costPerUsableUsd!)[0]
+      return { results, verdicts, ...(chosen ? { choice: { provider: chosen.provider, model: chosen.model } } : {}) }
     },
     choose: async (role, provider, model) => {
       await wait(600)

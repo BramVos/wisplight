@@ -1,13 +1,13 @@
 import type { CreationData, DiffLine, DraftChange, Edit, EditorView, EntityKind, JournalPage, Output, Raw, SimReport, Status, WorldInfo } from '../../engine'
 import type { DevSection, DevView } from '../../engine/dev'
-import type { Advice, TrialResult } from '../../node/ai/advisor'
+import type { Advice, TrialResult, TrialVerdict } from '../../node/ai/advisor'
 import type { AiLogEntry } from '../../node/ai/log'
 import type { ModelInfo, ProviderId } from '../../node/ai/providers'
 import type { AiOverview } from '../../node/ai/service'
 import type { ChosenRole } from '../../node/ai/settings'
 
 export type { DevSection, DevView }
-export type { Advice, AiLogEntry, AiOverview, ChosenRole, CreationData, DiffLine, DraftChange, Edit, EditorView, EntityKind, JournalPage, ModelInfo, ProviderId, Raw, SimReport, TrialResult, WorldInfo }
+export type { Advice, AiLogEntry, AiOverview, ChosenRole, CreationData, DiffLine, DraftChange, Edit, EditorView, EntityKind, JournalPage, ModelInfo, ProviderId, Raw, SimReport, TrialResult, TrialVerdict, WorldInfo }
 
 /** A world to play in (M8), and whether it is the one played last. */
 export type WorldChoice = WorldInfo & { current: boolean }
@@ -38,6 +38,8 @@ export interface AiBridge {
   refresh(): Promise<ChosenRole[]>
   advise(provider: ProviderId): Promise<Advice>
   trial(provider: ProviderId, model: string, role: ChosenRole): Promise<TrialResult>
+  /** Tries the advised models for a role and chooses on the trial (M9.3). */
+  compare(role: ChosenRole, choices: { provider: ProviderId; model: string }[]): Promise<{ results: TrialResult[]; verdicts: TrialVerdict[]; choice?: { provider: ProviderId; model: string } }>
   choose(role: ChosenRole, provider: ProviderId, model: string): Promise<string>
   setBudget(usd: number): Promise<void>
   setMonthBudget(usd: number | null): Promise<void>

@@ -53,6 +53,7 @@ contextBridge.exposeInMainWorld('wisplight', {
     refresh: () => ipcRenderer.invoke('ai:refresh'),
     advise: (provider: string) => ipcRenderer.invoke('ai:advise', provider),
     trial: (provider: string, model: string, role: string) => ipcRenderer.invoke('ai:trial', provider, model, role),
+    compare: (role: string, choices: { provider: string; model: string }[]) => ipcRenderer.invoke('ai:compare', role, choices),
     choose: (role: string, provider: string, model: string) => ipcRenderer.invoke('ai:choose', role, provider, model),
     setBudget: (usd: number) => ipcRenderer.invoke('ai:budget', usd),
     setMonthBudget: (usd: number | null) => ipcRenderer.invoke('ai:month-budget', usd),

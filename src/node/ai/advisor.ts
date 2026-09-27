@@ -1,10 +1,7 @@
 import type { Content } from '../../engine/content'
-import { TIER_WORDS } from '../../engine/dialogue/acts'
-import { wordCount } from '../../engine/dialogue/guard'
-import type { LlmRequest } from '../../engine/dialogue/llm'
-import { MockLlm } from '../../engine/dialogue/mock'
-import { GoalReplySchema, parseReply } from '../../engine/dialogue/schema'
-import { brainRequests, chroniclerRequests, trialRequests } from '../../engine/dialogue/testset'
+import { hasAnachronism, outOfCharacter } from '../../engine/dialogue/guard'
+import type { LlmClient, LlmRejection, LlmRequest, LlmResponse } from '../../engine/dialogue/llm'
+import { brainTrial, chroniclerTrial, runSituation, trialSituations } from '../../engine/dialogue/testset'
 import type { Gateway } from './gateway'
 import { CALLS_PER_HOUR, costUsd, priceOf, priceTable, PRICING_AS_OF } from './pricing'
 import type { ModelInfo, ProviderId } from './providers'
@@ -13,6 +10,14 @@ import { CHOSEN_ROLES, type ChosenRole } from './settings'
 // Model advice after connecting a provider (FO, chapter 16): a capable model
 // of that provider recommends a model per role, chosen only from the ids the
 // key can use; the game then tries the advice on the fixed test set.
+//
+// The trial (M9.3) plays the test set through the game itself: a conversation
+// with its retry and its set line when both replies fail, the brain's goal
+// choices, a chronicle run with its checks. It counts what the player would
+// get: usable answers, retries and fallbacks, knowledge leaks, false facts,
+// breaks of character, and how long an answer took. The cost that counts is
+// the cost of one usable answer, retries and failures included, and the
+// choice between models is made on that.
 
 export interface AdviceChoice {
   model: string
@@ -37,16 +42,47 @@ export interface TrialResult {
   provider: ProviderId
   model: string
   role: ChosenRole
+  /** Model calls made, retries and second looks included. */
   runs: number
+  /** Answers the game wanted: a reply, a goal choice, a chronicle run (M9.3). */
+  answers: number
+  /** Answers that passed the game's own checks, at once or after a retry. */
   valid: number
+  /** Calls made again after a reply failed the checks. */
+  retries: number
+  /** Answers the game made without the model in the end: a set line, the rules, a template. */
+  fallbacks: number
+  /** Names or knowledge the speaker could not have. */
+  leaks: number
+  /** Made-up names, goals that do not fit, lore no fact bears out. */
+  factualErrors: number
+  /** Words from outside the world, talk of models and prompts, markup. */
+  characterBreaks: number
   averageLatencyMs: number
+  maxLatencyMs: number
   inputTokens: number
   outputTokens: number
   costUsd?: number
-  /** Measured cost per call times the calls in an hour of play. */
+  /** What one usable answer cost, retries and failed answers included (M9.3). */
+  costPerUsableUsd?: number
+  /** The cost of a usable answer times the answers in an hour of play. */
   costPerHourUsd?: number
   errors: string[]
 }
+
+/** How a model came out of its trial, and why (M9.3). */
+export interface TrialVerdict {
+  model: string
+  provider: ProviderId
+  passed: boolean
+  why: string
+}
+
+// What a model must do in its trial to be chosen: the share of usable answers,
+// and how long an answer may take on average (FO, chapter 16: a reply within
+// four seconds; the chronicler writes in the background).
+const PASS_SHARE: Record<ChosenRole, number> = { voice: 0.8, brain: 0.66, chronicler: 0.5 }
+const LATENCY_MS: Record<ChosenRole, number> = { voice: 4000, brain: 8000, chronicler: 90000 }
 
 // Strong, quick models that are good at this kind of judgement. The first one
 // the key can use gives the advice; a single call costs a cent or two.
@@ -176,63 +212,161 @@ export async function testCall(gateway: Gateway, provider: ProviderId, model: st
   }
 }
 
-/** Runs a model on situations from the fixed test set and measures validity, latency, tokens and cost. */
-export async function trial(gateway: Gateway, content: Content, provider: ProviderId, model: string, role: ChosenRole, count = role === 'voice' ? 6 : role === 'brain' ? 3 : 2): Promise<TrialResult> {
-  const requests: LlmRequest[] =
-    role === 'voice' ? await trialRequests(content, new MockLlm('good'), count) : role === 'brain' ? brainRequests(content).slice(0, count) : (await chroniclerRequests(content)).slice(0, count)
-  const result: TrialResult = { provider, model, role, runs: 0, valid: 0, averageLatencyMs: 0, inputTokens: 0, outputTokens: 0, errors: [] }
-  let latency = 0
-  let cost = 0
-  let answered = 0
-  let priced = true
-  for (const request of requests) {
-    result.runs++
+interface Call {
+  latencyMs: number
+  inputTokens: number
+  outputTokens: number
+  costUsd?: number
+  /** Which answer it belongs to. */
+  answer: number
+  rejected?: LlmRejection['reason']
+  failed?: string
+}
+
+/** A client for the game that calls one model and keeps count of every call and every rejection. */
+class Meter implements LlmClient {
+  readonly calls: Call[] = []
+  answer = 0
+
+  constructor(
+    private readonly gateway: Gateway,
+    private readonly provider: ProviderId,
+    private readonly model: string,
+  ) {}
+
+  async complete(request: LlmRequest): Promise<LlmResponse> {
     try {
-      const response = await gateway.complete(request, { provider, model })
-      answered++
-      latency += response.latencyMs
-      result.inputTokens += response.usage.inputTokens
-      result.outputTokens += response.usage.outputTokens
-      const callCost = costUsd(model, response.usage)
-      if (callCost === undefined) priced = false
-      else cost += callCost
-      const problem = role === 'voice' ? voiceProblem(response.text, request) : role === 'brain' ? brainProblem(response.text) : chroniclerProblem(response.text)
-      if (problem) result.errors.push(problem)
-      else result.valid++
+      const response = await this.gateway.complete(request, { provider: this.provider, model: this.model })
+      this.calls.push({ latencyMs: response.latencyMs, inputTokens: response.usage.inputTokens, outputTokens: response.usage.outputTokens, costUsd: costUsd(this.model, response.usage), answer: this.answer })
+      return response
     } catch (error) {
-      result.errors.push(error instanceof Error ? error.message : String(error))
+      this.calls.push({ latencyMs: 0, inputTokens: 0, outputTokens: 0, costUsd: 0, answer: this.answer, failed: error instanceof Error ? error.message : String(error) })
+      throw error
     }
   }
-  result.averageLatencyMs = answered ? Math.round(latency / answered) : 0
-  if (priced && answered) {
-    result.costUsd = cost
-    result.costPerHourUsd = (cost / answered) * CALLS_PER_HOUR[role]
+
+  report(rejection: LlmRejection): void {
+    const last = this.calls.at(-1)
+    if (last) last.rejected = rejection.reason
+    this.gateway.report(rejection)
+  }
+}
+
+/**
+ * Tries a model in one role on the fixed test set, played through the game
+ * with the game's own checks (M9.3), and measures what it gives and costs.
+ */
+export async function trial(gateway: Gateway, content: Content, provider: ProviderId, model: string, role: ChosenRole, count = role === 'voice' ? 6 : role === 'brain' ? 3 : 2): Promise<TrialResult> {
+  const meter = new Meter(gateway, provider, model)
+  const result: TrialResult = { provider, model, role, runs: 0, answers: 0, valid: 0, retries: 0, fallbacks: 0, leaks: 0, factualErrors: 0, characterBreaks: 0, averageLatencyMs: 0, maxLatencyMs: 0, inputTokens: 0, outputTokens: 0, errors: [] }
+  const note = (problem: string) => {
+    if (result.errors.length < 8 && !result.errors.includes(problem)) result.errors.push(problem)
+  }
+  if (role === 'voice') {
+    // Every line the player says is an answer the game wants; a line without a call (a greeting from the rules) is not counted.
+    for (const situation of trialSituations(content, count)) {
+      await runSituation(content, situation, meter, 7, () => meter.answer++)
+    }
+    const byAnswer = new Map<number, Call[]>()
+    for (const call of meter.calls) byAnswer.set(call.answer, [...(byAnswer.get(call.answer) ?? []), call])
+    for (const calls of byAnswer.values()) {
+      result.answers++
+      result.retries += calls.length - 1
+      if (calls.some((c) => !c.rejected && !c.failed)) result.valid++
+      else result.fallbacks++
+    }
+    for (const call of meter.calls) {
+      if (call.rejected === 'leak') result.leaks++
+      if (call.rejected === 'invented') result.factualErrors++
+      if (call.rejected === 'anachronism' || call.rejected === 'character') result.characterBreaks++
+      if (call.rejected) note(`reply: failed the ${call.rejected} check`)
+      if (call.failed) note(call.failed)
+    }
+  } else if (role === 'brain') {
+    const engine = brainTrial(content, count)
+    engine.setLlm(meter)
+    for (const done of await engine.runBrain()) {
+      result.answers++
+      // No reply, or one that could not be read: the rules decide, as in the game.
+      const noReply = done.rejected.some((r) => r.startsWith('no reply'))
+      if (noReply || (done.accepted === 0 && done.rejected.length > 0)) {
+        result.fallbacks++
+        note(noReply ? 'goals: no usable reply, the rules decide' : 'goals: nothing usable in the reply, the rules decide')
+      } else result.valid++
+      for (const r of noReply ? [] : done.rejected) {
+        if (/not something .* knows/.test(r)) result.leaks++
+        else result.factualErrors++
+        note(`goal: ${r}`)
+      }
+    }
+  } else {
+    for (const engine of await chroniclerTrial(content)) {
+      if (result.answers >= count) break
+      engine.setLlm(meter)
+      for (const done of await engine.runChronicler()) {
+        result.answers++
+        meter.answer++
+        const run = engine.devRuns.find((r) => r.run === done.run)
+        // A reply that cannot be read leaves the run to the templates, as in the game.
+        if (!run?.output || done.problems.some((p) => /the reply is not JSON|does not match the schema/.test(p))) {
+          result.fallbacks++
+          note(`chronicle: ${done.problems[0] ?? 'no usable reply'}, a template wrote it`)
+          continue
+        }
+        result.valid++
+        for (const p of done.problems) {
+          // Names it was not given are a leak; names nobody knows, and lore no fact bears out, are false.
+          if (/not in the story/.test(p)) result.leaks++
+          else if (/names the world does not know|no fact says|could not be read/.test(p) || (/^lore "/.test(p) && !/not big enough/.test(p))) result.factualErrors++
+          note(`chronicle: ${p}`)
+        }
+        const texts = run.output.lore.flatMap((l) => [l.summary, l.story ?? '', ...(l.details ?? [])])
+        result.characterBreaks += texts.filter((t) => hasAnachronism(t) || outOfCharacter(t)).length
+      }
+    }
+  }
+  result.runs = meter.calls.length
+  const answered = meter.calls.filter((c) => !c.failed)
+  result.averageLatencyMs = answered.length ? Math.round(answered.reduce((sum, c) => sum + c.latencyMs, 0) / answered.length) : 0
+  result.maxLatencyMs = Math.max(0, ...answered.map((c) => c.latencyMs))
+  result.inputTokens = meter.calls.reduce((sum, c) => sum + c.inputTokens, 0)
+  result.outputTokens = meter.calls.reduce((sum, c) => sum + c.outputTokens, 0)
+  if (answered.every((c) => c.costUsd !== undefined)) {
+    result.costUsd = meter.calls.reduce((sum, c) => sum + (c.costUsd ?? 0), 0)
+    if (result.valid) {
+      result.costPerUsableUsd = result.costUsd / result.valid
+      result.costPerHourUsd = result.costPerUsableUsd * CALLS_PER_HOUR[role]
+    }
   }
   return result
 }
 
-function voiceProblem(text: string, request: LlmRequest): string | undefined {
-  const reply = parseReply(text)
-  if (!reply) return 'reply: not valid JSON for the reply schema'
-  const limit = (request.meta?.['wordLimit'] as number | undefined) ?? TIER_WORDS.normal
-  // The engine trims a reply that runs a little long; far too long counts as a miss.
-  if (wordCount(reply.reply) > limit * 1.5) return `reply: ${wordCount(reply.reply)} words where ${limit} was the limit`
-  return undefined
-}
-
-function chroniclerProblem(text: string): string | undefined {
-  try {
-    const reply = JSON.parse(text) as Record<string, unknown>
-    return ['lore', 'lines', 'quests', 'thoughts', 'news'].every((key) => Array.isArray(reply[key])) ? undefined : 'reply: not valid JSON for the chronicle schema'
-  } catch {
-    return 'reply: not JSON'
+/**
+ * Chooses between models tried in the same role (M9.3). A model passes with
+ * enough usable answers, no leaks, no false facts, no breaks of character and
+ * answers in time; of those, the cheapest usable answer wins, a known price
+ * before an unknown one, then the quicker. When none passes, the one with the
+ * fewest problems is named, and the verdict says so.
+ */
+export function judgeTrials(results: TrialResult[]): { choice?: TrialResult; verdicts: TrialVerdict[] } {
+  const why = (r: TrialResult): string[] => {
+    const reasons: string[] = []
+    if (!r.answers) reasons.push('no answers')
+    else if (r.valid / r.answers < PASS_SHARE[r.role]) reasons.push(`${r.valid} of ${r.answers} usable`)
+    if (r.leaks) reasons.push(`${r.leaks} ${r.leaks === 1 ? 'leak' : 'leaks'}`)
+    if (r.factualErrors) reasons.push(`${r.factualErrors} false ${r.factualErrors === 1 ? 'fact' : 'facts'}`)
+    if (r.characterBreaks) reasons.push(`${r.characterBreaks} out of character`)
+    if (r.averageLatencyMs > LATENCY_MS[r.role]) reasons.push(`${(r.averageLatencyMs / 1000).toFixed(1)} s an answer`)
+    return reasons
   }
-}
-
-function brainProblem(text: string): string | undefined {
-  try {
-    return GoalReplySchema.safeParse(JSON.parse(text)).success ? undefined : 'reply: not valid JSON for the goal schema'
-  } catch {
-    return 'reply: not JSON'
-  }
+  const cost = (r: TrialResult) => r.costPerUsableUsd ?? Infinity
+  const problems = (r: TrialResult) => (r.answers - r.valid) + r.leaks + r.factualErrors + r.characterBreaks
+  const passed = results.filter((r) => why(r).length === 0).sort((a, b) => cost(a) - cost(b) || a.averageLatencyMs - b.averageLatencyMs)
+  const choice = passed[0] ?? [...results].filter((r) => r.answers > 0).sort((a, b) => problems(a) - problems(b) || cost(a) - cost(b))[0]
+  const verdicts = results.map((r) => {
+    const reasons = why(r)
+    const price = r.costPerUsableUsd === undefined ? 'price unknown' : `$${r.costPerUsableUsd.toFixed(4)} a usable answer`
+    return { model: r.model, provider: r.provider, passed: reasons.length === 0, why: reasons.length ? reasons.join(', ') : `${r.valid} of ${r.answers} usable, ${price}` }
+  })
+  return { ...(choice ? { choice } : {}), verdicts }
 }

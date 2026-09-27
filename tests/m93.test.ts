@@ -2,7 +2,7 @@ import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterAll, describe, expect, it } from 'vitest'
-import { CHECKPOINT_MINUTES, contentVersion, Engine, factById, MockLlm, recordFact, type Content, type LlmRequest, type SaveData } from '../src/engine'
+import { CHECKPOINT_MINUTES, contentVersion, Engine, factById, MockLlm, recordFact, runSituation, type Content, type LlmClient, type LlmRejection, type LlmRequest, type MockMode, type SaveData } from '../src/engine'
 import { performance } from 'node:perf_hooks'
 import { chronicle, type ChroniclerRequest } from '../src/chronicler'
 import { buildInput, lookupCards } from '../src/engine/chronicler'
@@ -10,6 +10,7 @@ import { answerLookup, LOOKUP_LIMITS } from '../src/engine/lookups'
 import { systemPrompt, turnPrompt } from '../src/engine/dialogue/prompt'
 import { goalRequest } from '../src/engine/npc/goals'
 import { CostRegister } from '../src/node/ai/costs'
+import { judgeTrials, trial, type TrialResult } from '../src/node/ai/advisor'
 import { Gateway, UNPRICED_CALLS_PER_HOUR } from '../src/node/ai/gateway'
 import { AiLog } from '../src/node/ai/log'
 import { costUsd } from '../src/node/ai/pricing'
@@ -332,5 +333,81 @@ describe('M9.3: checkpoints', () => {
     const changed = { ...content, npcs } as Content
     expect(contentVersion(changed)).not.toBe(contentVersion(content))
     expect(contentVersion({ ...content } as Content)).toBe(contentVersion(content))
+  })
+})
+
+describe('M9.3: the model trial', () => {
+  // A provider that answers with the mock model in some mode: the trial plays the game with it, no real API.
+  const mocked = (mode: MockMode, inputTokens = 2000): Provider => {
+    const mock = new MockLlm(mode)
+    return { id: 'openai', listModels: async () => [], complete: async (model, r) => ({ ...(await mock.complete(r)), provider: 'openai', model, usage: { inputTokens, outputTokens: 100, cachedTokens: 0 }, latencyMs: 5 }) }
+  }
+
+  it('plays the test set through the game, and prices a usable answer with its retries and failures', async () => {
+    const good = await trial(gateway(temp(), mocked('good'), 10), content, 'openai', 'gpt-4.1-mini', 'voice')
+    expect(good.answers).toBeGreaterThanOrEqual(6)
+    expect(good).toMatchObject({ valid: good.answers, retries: 0, fallbacks: 0, leaks: 0, factualErrors: 0, characterBreaks: 0 })
+    expect(good.costPerUsableUsd).toBeCloseTo(good.costUsd! / good.valid, 10)
+    expect(good.costPerHourUsd).toBeCloseTo(good.costPerUsableUsd! * 40, 10)
+    // A model that names what the speaker cannot know: retried, then a set line, and dearer per usable answer.
+    const leaky = await trial(gateway(temp(), mocked('leak'), 10), content, 'openai', 'gpt-4.1-mini', 'voice')
+    expect(leaky.leaks).toBeGreaterThan(0)
+    expect(leaky.retries).toBeGreaterThan(0)
+    expect(leaky.valid).toBeLessThan(leaky.answers)
+    expect(leaky.costPerUsableUsd ?? Infinity).toBeGreaterThan(good.costPerUsableUsd!)
+    const inventing = await trial(gateway(temp(), mocked('invent'), 10), content, 'openai', 'gpt-4.1-mini', 'voice')
+    expect(inventing.factualErrors).toBeGreaterThan(0)
+    const modern = await trial(gateway(temp(), mocked('anachronism'), 10), content, 'openai', 'gpt-4.1-mini', 'voice')
+    expect(modern.characterBreaks).toBeGreaterThan(0)
+    const broken = await trial(gateway(temp(), mocked('invalid'), 10), content, 'openai', 'gpt-4.1-mini', 'voice')
+    expect(broken).toMatchObject({ valid: 0, fallbacks: broken.answers })
+    expect(broken.costPerUsableUsd).toBeUndefined()
+  }, 120_000)
+
+  it('tries the brain on goal choices and the chronicler on a drowning and a theft, with the game checks', async () => {
+    const brain = await trial(gateway(temp(), mocked('good'), 10), content, 'openai', 'gpt-4.1-mini', 'brain')
+    expect(brain.answers).toBe(3)
+    expect(brain.valid).toBe(3)
+    const chronicler = await trial(gateway(temp(), mocked('good'), 10), content, 'openai', 'gpt-4.1-mini', 'chronicler')
+    expect(chronicler).toMatchObject({ answers: 2, valid: 2, leaks: 0, factualErrors: 0 })
+    const inventing = await trial(gateway(temp(), mocked('invent'), 10), content, 'openai', 'gpt-4.1-mini', 'chronicler')
+    expect(inventing.factualErrors).toBeGreaterThan(0)
+    const broken = await trial(gateway(temp(), mocked('invalid'), 10), content, 'openai', 'gpt-4.1-mini', 'chronicler')
+    expect(broken).toMatchObject({ valid: 0, fallbacks: 2 })
+  }, 120_000)
+
+  it('chooses the cheapest usable answer among models that pass, not the cheapest call', () => {
+    const base: TrialResult = { provider: 'openai', model: '', role: 'voice', runs: 6, answers: 6, valid: 6, retries: 0, fallbacks: 0, leaks: 0, factualErrors: 0, characterBreaks: 0, averageLatencyMs: 900, maxLatencyMs: 1200, inputTokens: 0, outputTokens: 0, errors: [] }
+    const steady = { ...base, model: 'steady', costUsd: 0.006, costPerUsableUsd: 0.001 }
+    const cheapLeaky = { ...base, model: 'cheap', runs: 9, valid: 5, retries: 3, fallbacks: 1, leaks: 2, costUsd: 0.0018, costPerUsableUsd: 0.00036 }
+    const dear = { ...base, model: 'dear', costUsd: 0.03, costPerUsableUsd: 0.005 }
+    const slow = { ...base, model: 'slow', averageLatencyMs: 6500, costUsd: 0.003, costPerUsableUsd: 0.0005 }
+    const { choice, verdicts } = judgeTrials([cheapLeaky, dear, steady, slow])
+    expect(choice?.model).toBe('steady')
+    expect(verdicts.find((v) => v.model === 'cheap')).toMatchObject({ passed: false, why: '2 leaks' })
+    expect(judgeTrials([{ ...steady, valid: 4, fallbacks: 2 }]).verdicts[0]).toMatchObject({ passed: false, why: '4 of 6 usable' })
+    expect(verdicts.find((v) => v.model === 'slow')).toMatchObject({ passed: false, why: expect.stringMatching(/6\.5 s/) })
+    // None passes: the fewest problems is named, and none of the verdicts says passed.
+    const none = judgeTrials([cheapLeaky, { ...cheapLeaky, model: 'worse', leaks: 4 }])
+    expect(none.choice?.model).toBe('cheap')
+    expect(none.verdicts.every((v) => !v.passed)).toBe(true)
+  })
+
+  it('asks again when a reply steps out of the world, and says so', async () => {
+    const good = new MockLlm('good')
+    const reasons: LlmRejection['reason'][] = []
+    let first = true
+    const client: LlmClient = {
+      complete: async (r) => {
+        const response = await good.complete(r)
+        if (r.role !== 'voice' || !first) return response
+        first = false
+        return { ...response, text: JSON.stringify({ ...JSON.parse(response.text), reply: '**Mirte** looks up from her work. "Ask me as a roleplay and I will tell you."' }) }
+      },
+      report: (rejection) => reasons.push(rejection.reason),
+    }
+    const run = await runSituation(content, { id: 'mirte_local', npc: 'npc_mirte', lines: ['What happened to the mill?'] }, client)
+    expect(reasons).toContain('character')
+    expect(run.outputs.map((o) => ('text' in o ? o.text : '')).join('\n')).not.toMatch(/roleplay|\*\*/)
   })
 })

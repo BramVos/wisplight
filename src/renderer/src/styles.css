@@ -619,6 +619,11 @@ body {
   color: var(--system);
 }
 
+/* A model that did not pass its trial (M9.3). */
+.trial.warn {
+  color: var(--warn);
+}
+
 .usage {
   border-collapse: collapse;
   font-size: 14px;

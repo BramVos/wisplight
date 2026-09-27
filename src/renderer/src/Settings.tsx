@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { Fragment, useCallback, useEffect, useState } from 'react'
 import type { UsageTotals } from '../../node/ai/usage'
 import type { Advice, AiBridge, AiLogEntry, AiOverview, ModelInfo, ProviderId, TrialResult } from './client'
 
@@ -87,11 +87,19 @@ const splitKey = (key: string): { provider: ProviderId; model: string } => {
   return { provider: provider as ProviderId, model: rest.join(':') }
 }
 
+// What a trial found (M9.3): usable answers, what went wrong, time, and the cost of one usable answer.
 function trialText(trial: TrialResult | string | undefined): string | undefined {
   if (trial === undefined) return undefined
   if (typeof trial === 'string') return trial
-  const cost = trial.costPerHourUsd === undefined ? 'price unknown' : `~${usd(trial.costPerHourUsd)} / hour`
-  return `${trial.valid}/${trial.runs} valid  ${(trial.averageLatencyMs / 1000).toFixed(1)} s  ${cost}${trial.errors.length ? `  (${trial.errors[0]})` : ''}`
+  const cost = trial.costPerUsableUsd === undefined ? 'price unknown' : `${usd(trial.costPerUsableUsd)} a usable answer, ~${usd(trial.costPerHourUsd ?? 0)} / hour`
+  const wrong = [
+    trial.retries ? `${trial.retries} retried` : '',
+    trial.fallbacks ? `${trial.fallbacks} set ${trial.fallbacks === 1 ? 'line' : 'lines'}` : '',
+    trial.leaks ? `${trial.leaks} ${trial.leaks === 1 ? 'leak' : 'leaks'}` : '',
+    trial.factualErrors ? `${trial.factualErrors} false` : '',
+    trial.characterBreaks ? `${trial.characterBreaks} out of character` : '',
+  ].filter(Boolean)
+  return `${trial.valid}/${trial.answers} usable${wrong.length ? ` (${wrong.join(', ')})` : ''}  ${(trial.averageLatencyMs / 1000).toFixed(1)} s  ${cost}${trial.errors.length ? `  ${trial.errors[0]}` : ''}`
 }
 
 // Settings > AI (FO, chapter 16). The player picks a model per role from the
@@ -106,6 +114,8 @@ function AiTab({ bridge, overview, refresh }: { bridge: AiBridge; overview: AiOv
   const [trials, setTrials] = useState<Record<string, TrialResult | string>>({})
   const [trying, setTrying] = useState<Partial<Record<Role, boolean>>>({})
   const [picked, setPicked] = useState<Partial<Record<Role, string>>>({})
+  // The trial's verdict on the advised models of a role (M9.3): which it chose, and why the others not.
+  const [verdicts, setVerdicts] = useState<Partial<Record<Role, { chosen?: string; why: Record<string, { passed: boolean; why: string }> }>>>({})
   const [budget, setBudget] = useState(String(settings.budgetUsdPerHour))
 
   const connected = PROVIDERS.filter(({ id }) => settings.providers[id].configured)
@@ -163,6 +173,22 @@ function AiTab({ bridge, overview, refresh }: { bridge: AiBridge; overview: AiOv
       setTrials((previous) => ({ ...previous, [`${role}:${key}`]: result }))
     } catch (reason) {
       setTrials((previous) => ({ ...previous, [`${role}:${key}`]: message(reason) }))
+    } finally {
+      setTrying((previous) => ({ ...previous, [role]: false }))
+    }
+  }
+
+  // Tries every advised model for the role and picks the one the trial chooses; saving stays with the player.
+  const compareRole = async (role: Role, choices: { provider: ProviderId; model: string }[]) => {
+    setTrying((previous) => ({ ...previous, [role]: true }))
+    try {
+      const { results, verdicts: found, choice } = await bridge.compare(role, choices)
+      setTrials((previous) => ({ ...previous, ...Object.fromEntries(results.map((r) => [`${role}:${choiceKey(r.provider, r.model)}`, r])) }))
+      const chosen = choice ? choiceKey(choice.provider, choice.model) : undefined
+      setVerdicts((previous) => ({ ...previous, [role]: { ...(chosen ? { chosen } : {}), why: Object.fromEntries(found.map((v) => [choiceKey(v.provider, v.model), { passed: v.passed, why: v.why }])) } }))
+      if (chosen) setPicked((previous) => ({ ...previous, [role]: chosen }))
+    } catch (reason) {
+      setProblem(message(reason))
     } finally {
       setTrying((previous) => ({ ...previous, [role]: false }))
     }
@@ -253,18 +279,40 @@ function AiTab({ bridge, overview, refresh }: { bridge: AiBridge; overview: AiOv
                   </button>
                 </div>
                 {trialText(trials[`${role}:${key}`]) && <p className="trial">{trialText(trials[`${role}:${key}`])}</p>}
-                {unique.map((c) => (
-                  <div key={`${c.provider}:${c.model}`} className="choice">
-                    <button type="button" className="link" onClick={() => setPicked((previous) => ({ ...previous, [role]: choiceKey(c.provider, c.model) }))}>
-                      [Use]
+                {unique.map((c) => {
+                  const k = choiceKey(c.provider, c.model)
+                  const verdict = verdicts[role]
+                  const judged = verdict?.why[k]
+                  return (
+                    <Fragment key={k}>
+                      <div className="choice">
+                        <button type="button" className="link" onClick={() => setPicked((previous) => ({ ...previous, [role]: k }))}>
+                          [Use]
+                        </button>
+                        <span className="mono">
+                          {c.model}
+                          {c.cheaper ? ' (cheaper)' : ''}
+                          {verdict?.chosen === k ? '  chosen by the trial' : ''}
+                        </span>
+                        <span className="reason">"{c.reason}"</span>
+                      </div>
+                      {judged && (
+                        <p className={judged.passed ? 'trial' : 'trial warn'}>
+                          {trialText(trials[`${role}:${k}`])}
+                          {judged.passed ? '' : `; did not pass: ${judged.why}`}
+                        </p>
+                      )}
+                    </Fragment>
+                  )
+                })}
+                {unique.length > 1 && (
+                  <div className="choice other">
+                    <button type="button" className="link" disabled={trying[role]} onClick={() => void compareRole(role, unique.map((c) => ({ provider: c.provider, model: c.model })))}>
+                      {trying[role] ? '[Trying...]' : '[Try the advice and choose]'}
                     </button>
-                    <span className="mono">
-                      {c.model}
-                      {c.cheaper ? ' (cheaper)' : ''}
-                    </span>
-                    <span className="reason">"{c.reason}"</span>
+                    <span className="muted">plays the test set through the game with each, a few cents; the cheapest usable answer without leaks or false facts wins</span>
                   </div>
-                ))}
+                )}
               </fieldset>
             )
           })

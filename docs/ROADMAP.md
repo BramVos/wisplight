@@ -263,7 +263,7 @@ Scope: de review van 27 september 2026 op prestaties en kosten (na M8.5), in dez
 - [x] De simulatie kiest werk voordat ze mensen doorloopt: een index van mensen per plek, een wachtrij met het volgende moment per persoon en plan, begrensde en geseede gesprekscontacten, en verspreiding per gebied voor wie ver weg is; naspelen geeft dezelfde wereld
 - [x] Opslaan kopieert niet meer twee keer: een save is een checkpoint plus de gebeurtenissen sindsdien, met contentversie, seed, modelantwoorden en vertakkingen, en naspelen blijft exact
 - [x] De interface hapert niet bij een autosave, een reis of een dagwissel (gemeten); pas als dat na de andere stappen nog zo is, draait de motor in een eigen proces
-- [ ] De modelproef beoordeelt op kosten per bruikbaar, gevalideerd antwoord (inclusief herhalingen en terugval), kennislekken, feitelijke fouten, karaktervastheid en reactietijd, en het advies kiest daarop
+- [x] De modelproef beoordeelt op kosten per bruikbaar, gevalideerd antwoord (inclusief herhalingen en terugval), kennislekken, feitelijke fouten, karaktervastheid en reactietijd, en het advies kiest daarop
 - [ ] Alles wat er al was, speelt hetzelfde: het hele testpakket, de simulaties, de uitspeelscripts van beide werelden, en oude saves
 
 ## M9.4 Afwerking en release

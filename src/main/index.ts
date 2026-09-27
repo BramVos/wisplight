@@ -504,6 +504,9 @@ ipcMain.handle('ai:models', (_event, id: unknown) => service().listModels(provid
 ipcMain.handle('ai:refresh', () => service().refreshModels())
 ipcMain.handle('ai:advise', (_event, id: unknown) => service().advise(provider(id)))
 ipcMain.handle('ai:trial', (_event, id: unknown, model: unknown, which: unknown) => service().trial(provider(id), String(model), role(which)))
+ipcMain.handle('ai:compare', (_event, which: unknown, choices: unknown) =>
+  service().compare(role(which), (Array.isArray(choices) ? choices : []).map((c: { provider?: unknown; model?: unknown }) => ({ provider: provider(c?.provider), model: String(c?.model) }))),
+)
 ipcMain.handle('ai:choose', async (_event, which: unknown, id: unknown, model: unknown) => {
   const stored = await service().choose(role(which), provider(id), String(model))
   engine?.setLlm(service().client())
