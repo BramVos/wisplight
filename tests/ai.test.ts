@@ -290,11 +290,11 @@ describe('model advice', () => {
 
 describe('AI service', () => {
   const goodReply = JSON.stringify({ act: 'AskAbout', reply: 'Mirte shrugs. "The storm took the sails."', mentioned_topics: [], effects: [], memory_note: 'A stranger asked.', ends_conversation: false })
-  const service = (keyWorks = true) => {
+  const service = (keyWorks = true, cipher = testCipher()) => {
     const dir = temp()
     const ai = new AiService({
       dir,
-      cipher: testCipher(),
+      cipher,
       content,
       providerFactory: (id, key) => ({
         id,
@@ -305,7 +305,9 @@ describe('AI service', () => {
         },
         complete: async (model, request) =>
           reply(
-            request.role === 'brain'
+            request.schemaName === 'test_call'
+              ? JSON.stringify({ ok: true })
+              : request.role === 'brain'
               ? JSON.stringify({ goals: [], mood: 'calm', note: 'n' })
               : request.role === 'chronicler'
                 ? JSON.stringify({ lookup: [], lore: [], lines: [], quests: [], thoughts: [], news: [] })
@@ -339,6 +341,19 @@ describe('AI service', () => {
     expect(trial).toMatchObject({ runs: 6, valid: 6 })
     expect(trial.costPerHourUsd).toBeGreaterThan(0)
     expect(allText(dir)).not.toContain(TEST_KEY)
+  })
+
+  it('keeps the model lists, so a model can be chosen without asking again, and notices a model that is gone', async () => {
+    const cipher = testCipher()
+    const { ai, dir } = service(true, cipher)
+    await ai.connect('openai', TEST_KEY)
+    expect(ai.overview().settings.models.openai).toEqual(['gpt-4.1-mini-2025-04-14', 'gpt-4.1-nano-2025-04-14'])
+    await ai.choose('chronicler', 'openai', 'gpt-4.1-nano-2025-04-14')
+    // A new start: the lists come from the settings file, no call needed.
+    const again = new AiService({ dir, cipher, content, providerFactory: () => ({ id: 'openai', listModels: async () => [{ id: 'gpt-4.1-mini-2025-04-14' }], complete: async () => reply('{"ok":true}') }) })
+    expect((await again.listModels('openai')).map((m) => m.id)).toContain('gpt-4.1-nano-2025-04-14')
+    expect(await again.refreshModels()).toEqual(['chronicler'])
+    expect(again.overview().settings.missing).toEqual(['chronicler'])
   })
 
   it('has a third role, the chronicler, tried on a drowning and a theft', async () => {

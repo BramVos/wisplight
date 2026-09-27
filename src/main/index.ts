@@ -52,6 +52,8 @@ function setup(): Promise<void> {
   ready ??= (async () => {
     content = await loadContentFromDir(join(app.getAppPath(), 'content'))
     ai = new AiService({ dir: app.getPath('userData'), cipher, content })
+    // At start-up: are the chosen models still offered? In the background; Settings shows the answer.
+    if (!process.env['WISPLIGHT_SMOKE']) void ai.refreshModels().catch(() => undefined)
   })()
   return ready
 }
@@ -231,6 +233,8 @@ ipcMain.handle('ai:overview', async () => {
 })
 ipcMain.handle('ai:connect', async (_event, id: unknown, key: unknown) => {
   const models = await service().connect(provider(id), String(key ?? ''))
+  // A new key may see other models: check the chosen ones again.
+  await service().refreshModels()
   return { models: models.length }
 })
 ipcMain.handle('ai:disconnect', (_event, id: unknown) => {
@@ -238,6 +242,7 @@ ipcMain.handle('ai:disconnect', (_event, id: unknown) => {
   engine?.setLlm(service().client())
 })
 ipcMain.handle('ai:models', (_event, id: unknown) => service().listModels(provider(id), true))
+ipcMain.handle('ai:refresh', () => service().refreshModels())
 ipcMain.handle('ai:advise', (_event, id: unknown) => service().advise(provider(id)))
 ipcMain.handle('ai:trial', (_event, id: unknown, model: unknown, which: unknown) => service().trial(provider(id), String(model), role(which)))
 ipcMain.handle('ai:choose', async (_event, which: unknown, id: unknown, model: unknown) => {

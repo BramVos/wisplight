@@ -82,7 +82,8 @@ export class Gateway implements LlmClient {
       if (this.now() < health.busyUntil) throw new LlmError('busy', 'waiting for the rate limit to reset')
       if (this.now() < health.coolingUntil) throw new LlmError('network', 'cooling down after repeated failures')
     }
-    if (request.role !== 'advisor') {
+    // Setup calls with an explicit model (advice, trials, the test call when saving) are the player's own choice.
+    if (request.role !== 'advisor' && !override) {
       const spent = this.options.log.spentLastHour(this.now())
       if (spent >= this.options.budgetUsdPerHour()) throw new LlmError('budget', 'the hourly budget is used up')
       if (request.priority === 'low' && spent >= LOW_PRIORITY_SHARE * this.options.budgetUsdPerHour()) throw new LlmError('budget', 'the hourly budget is kept for conversations')

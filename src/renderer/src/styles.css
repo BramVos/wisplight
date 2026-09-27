@@ -385,6 +385,16 @@ body {
   grid-template-columns: auto 1fr;
 }
 
+.choice.pick {
+  align-items: center;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+}
+
+.choice.pick select {
+  min-width: 0;
+  width: 100%;
+}
+
 .trial {
   color: var(--system);
 }

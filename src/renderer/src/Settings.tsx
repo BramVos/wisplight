@@ -80,17 +80,41 @@ export function Settings({ bridge, tab, onTab, onClose }: { bridge?: AiBridge; t
   )
 }
 
+const PROVIDER_NAMES: Record<ProviderId, string> = { openai: 'OpenAI', anthropic: 'Anthropic' }
+const choiceKey = (provider: ProviderId, model: string) => `${provider}:${model}`
+const splitKey = (key: string): { provider: ProviderId; model: string } => {
+  const [provider, ...rest] = key.split(':')
+  return { provider: provider as ProviderId, model: rest.join(':') }
+}
+
+function trialText(trial: TrialResult | string | undefined): string | undefined {
+  if (trial === undefined) return undefined
+  if (typeof trial === 'string') return trial
+  const cost = trial.costPerHourUsd === undefined ? 'price unknown' : `~${usd(trial.costPerHourUsd)} / hour`
+  return `${trial.valid}/${trial.runs} valid  ${(trial.averageLatencyMs / 1000).toFixed(1)} s  ${cost}${trial.errors.length ? `  (${trial.errors[0]})` : ''}`
+}
+
+// Settings > AI (FO, chapter 16). The player picks a model per role from the
+// lists the keys gave, at any time; advice and trials are there when wanted.
 function AiTab({ bridge, overview, refresh }: { bridge: AiBridge; overview: AiOverview; refresh: () => Promise<void> }) {
   const { settings } = overview
   const [keys, setKeys] = useState<Record<ProviderId, string>>({ openai: '', anthropic: '' })
   const [busy, setBusy] = useState<string>()
   const [note, setNote] = useState<string>()
   const [problem, setProblem] = useState<string>()
-  const [advice, setAdvice] = useState<Advice>()
+  const [advice, setAdvice] = useState<Partial<Record<ProviderId, Advice>>>({})
   const [trials, setTrials] = useState<Record<string, TrialResult | string>>({})
+  const [trying, setTrying] = useState<Partial<Record<Role, boolean>>>({})
   const [picked, setPicked] = useState<Partial<Record<Role, string>>>({})
-  const [models, setModels] = useState<ModelInfo[]>([])
   const [budget, setBudget] = useState(String(settings.budgetUsdPerHour))
+
+  const connected = PROVIDERS.filter(({ id }) => settings.providers[id].configured)
+  const options = connected.flatMap(({ id }) => (settings.models[id] ?? []).map((model) => ({ key: choiceKey(id, model), label: `${PROVIDER_NAMES[id]} · ${model}` })))
+  const inUse = (role: Role) => {
+    const choice = settings.roles[role]
+    return choice ? choiceKey(choice.provider, choice.model) : undefined
+  }
+  const selected = (role: Role) => picked[role] ?? inUse(role) ?? ''
 
   const run = async (label: string, work: () => Promise<void>) => {
     setBusy(label)
@@ -106,46 +130,52 @@ function AiTab({ bridge, overview, refresh }: { bridge: AiBridge; overview: AiOv
   }
 
   const connect = (provider: ProviderId) =>
-    run(`Checking the ${provider} key`, async () => {
+    run(`Checking the ${PROVIDER_NAMES[provider]} key`, async () => {
       const { models: count } = await bridge.connect(provider, keys[provider])
       setKeys((previous) => ({ ...previous, [provider]: '' }))
-      setNote(`Key saved, encrypted. It can use ${count} chat models.`)
+      setNote(`Key saved, encrypted. It can use ${count} chat models. Pick a model per role below, or ask for advice.`)
       await refresh()
     })
 
   const advise = (provider: ProviderId) =>
-    run(`Asking ${provider} for advice`, async () => {
+    run(`Asking ${PROVIDER_NAMES[provider]} for advice`, async () => {
       const result = await bridge.advise(provider)
-      setAdvice(result)
-      setModels(await bridge.models(provider))
-      setPicked({ voice: result.voice.recommended.model, brain: result.brain.recommended.model, chronicler: result.chronicler.recommended.model })
-      setTrials({})
-      const tried = new Set<string>()
-      for (const { id: role } of ROLES) {
-        for (const choice of [result[role].recommended, result[role].cheaper]) {
-          const key = `${role}:${choice.model}`
-          if (tried.has(key)) continue
-          tried.add(key)
-          setBusy(`Trying ${choice.model} as ${role}`)
-          try {
-            const trial = await bridge.trial(provider, choice.model, role)
-            setTrials((previous) => ({ ...previous, [key]: trial }))
-          } catch (reason) {
-            setTrials((previous) => ({ ...previous, [key]: message(reason) }))
-          }
-        }
-      }
+      setAdvice((previous) => ({ ...previous, [provider]: result }))
+      setNote(`Advice from ${result.advisorModel}: use it with [Use], try it with [Try], then [Save].`)
+      await refresh()
     })
 
-  const save = () =>
-    run('Saving your choice', async () => {
-      if (!advice) return
-      const stored: string[] = []
-      for (const { id: role } of ROLES) {
-        const model = picked[role]
-        if (model) stored.push(`${role}: ${await bridge.choose(role, advice.provider, model)}`)
-      }
-      setNote(`Saved with the exact ids ${stored.join(', ')}.`)
+  const reload = () =>
+    run('Asking the providers for their models', async () => {
+      const missing = await bridge.refresh()
+      await refresh()
+      setNote(missing.length ? `No longer offered: the model for ${missing.join(', ')}. Pick another.` : 'Model lists are up to date; your chosen models are all still offered.')
+    })
+
+  // Trials run on their own: saving never waits for them.
+  const tryRole = async (role: Role) => {
+    const key = selected(role)
+    if (!key) return
+    const { provider, model } = splitKey(key)
+    setTrying((previous) => ({ ...previous, [role]: true }))
+    try {
+      const result = await bridge.trial(provider, model, role)
+      setTrials((previous) => ({ ...previous, [`${role}:${key}`]: result }))
+    } catch (reason) {
+      setTrials((previous) => ({ ...previous, [`${role}:${key}`]: message(reason) }))
+    } finally {
+      setTrying((previous) => ({ ...previous, [role]: false }))
+    }
+  }
+
+  const save = (role: Role) =>
+    run(`Saving the ${role} model`, async () => {
+      const key = selected(role)
+      if (!key) return
+      const { provider, model } = splitKey(key)
+      const stored = await bridge.choose(role, provider, model)
+      setPicked((previous) => ({ ...previous, [role]: undefined }))
+      setNote(`Saved: ${role} uses ${stored}.`)
       await refresh()
     })
 
@@ -160,7 +190,7 @@ function AiTab({ bridge, overview, refresh }: { bridge: AiBridge; overview: AiOv
             {state.configured ? (
               <>
                 <span className="mono">{state.masked}</span>
-                <span className="muted">encrypted</span>
+                <span className="muted">encrypted, {settings.models[id]?.length ?? 0} models</span>
                 <button type="button" className="link" disabled={Boolean(busy)} onClick={() => void advise(id)}>
                   [Ask for advice]
                 </button>
@@ -180,64 +210,71 @@ function AiTab({ bridge, overview, refresh }: { bridge: AiBridge; overview: AiOv
         )
       })}
 
-      <div className="row">
-        <span className="label">In use</span>
-        <span className="mono">
-          voice {settings.roles.voice?.model ?? 'none (NPCs use set lines)'}
-          {'  '}brain {settings.roles.brain?.model ?? 'none'}
-          {'  '}chronicler {settings.roles.chronicler?.model ?? 'none (stories from templates)'}
-        </span>
-      </div>
-
       {busy && <p className="muted">{busy}...</p>}
       {note && <p className="ok">{note}</p>}
       {problem && <p className="warn">{problem}</p>}
 
-      {advice && (
-        <section className="advice">
-          <p className="muted">
-            Advice from {advice.advisorModel}, tried on situations from the test set.
-            {advice.unknownPrices.length ? ` Price unknown for ${advice.unknownPrices.join(', ')}.` : ''}
-          </p>
-          {ROLES.map(({ id: role, name }) => (
-            <fieldset key={role}>
-              <legend>{name}</legend>
-              {[advice[role].recommended, advice[role].cheaper]
-                .filter((choice, index, all) => all.findIndex((c) => c.model === choice.model) === index)
-                .map((choice) => {
-                  const trial = trials[`${role}:${choice.model}`]
-                  return (
-                    <label key={choice.model} className="choice">
-                      <input type="radio" name={role} checked={picked[role] === choice.model} onChange={() => setPicked((previous) => ({ ...previous, [role]: choice.model }))} />
-                      <span className="mono">{choice.model}</span>
-                      <span className="trial">
-                        {trial === undefined
-                          ? 'not tried yet'
-                          : typeof trial === 'string'
-                            ? trial
-                            : `${trial.valid}/${trial.runs} valid  ${(trial.averageLatencyMs / 1000).toFixed(1)} s  ${trial.costPerHourUsd === undefined ? 'price unknown' : `~${usd(trial.costPerHourUsd)} / hour`}`}
-                      </span>
-                      <span className="reason">"{choice.reason}"</span>
-                    </label>
-                  )
-                })}
-              <label className="choice other">
-                <span className="muted">or pick yourself:</span>
-                <select value={picked[role] ?? ''} onChange={(event) => setPicked((previous) => ({ ...previous, [role]: event.target.value }))}>
-                  {models.map((model) => (
-                    <option key={model.id} value={model.id}>
-                      {model.id}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </fieldset>
-          ))}
-          <button type="button" className="link" disabled={Boolean(busy)} onClick={() => void save()}>
-            [Save choice]
+      <section className="advice">
+        {options.length === 0 ? (
+          <p className="muted">Connect a key to choose models. Without a model, NPCs speak set lines and the chronicle comes from templates.</p>
+        ) : (
+          ROLES.map(({ id: role, name }) => {
+            const current = inUse(role)
+            const key = selected(role)
+            const suggestions = Object.values(advice).flatMap((a) =>
+              a ? [a[role].recommended, a[role].cheaper].map((c, i) => ({ provider: a.provider, ...c, cheaper: i === 1 })) : [],
+            )
+            const unique = suggestions.filter((c, i) => suggestions.findIndex((d) => d.provider === c.provider && d.model === c.model) === i)
+            return (
+              <fieldset key={role}>
+                <legend>{name}</legend>
+                <div className="choice other">
+                  <span className="muted">in use:</span>
+                  <span className="mono">
+                    {settings.roles[role]?.model ?? (role === 'voice' ? 'none (NPCs use set lines)' : role === 'chronicler' ? 'none (stories from templates)' : 'none (schedule and needs only)')}
+                    {settings.missing.includes(role) ? '  no longer offered: pick another' : ''}
+                  </span>
+                </div>
+                <div className="choice pick">
+                  <select value={key} onChange={(event) => setPicked((previous) => ({ ...previous, [role]: event.target.value }))} aria-label={`Model for ${role}`}>
+                    {!key && <option value="">choose a model</option>}
+                    {current && !options.some((o) => o.key === current) && <option value={current}>{current.replace(':', ' · ')} (no longer offered)</option>}
+                    {options.map((option) => (
+                      <option key={option.key} value={option.key}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                  <button type="button" className="link" disabled={!key || trying[role]} onClick={() => void tryRole(role)}>
+                    {trying[role] ? '[Trying...]' : '[Try]'}
+                  </button>
+                  <button type="button" className="link" disabled={!key || key === current || Boolean(busy)} onClick={() => void save(role)}>
+                    [Save]
+                  </button>
+                </div>
+                {trialText(trials[`${role}:${key}`]) && <p className="trial">{trialText(trials[`${role}:${key}`])}</p>}
+                {unique.map((c) => (
+                  <div key={`${c.provider}:${c.model}`} className="choice">
+                    <button type="button" className="link" onClick={() => setPicked((previous) => ({ ...previous, [role]: choiceKey(c.provider, c.model) }))}>
+                      [Use]
+                    </button>
+                    <span className="mono">
+                      {c.model}
+                      {c.cheaper ? ' (cheaper)' : ''}
+                    </span>
+                    <span className="reason">"{c.reason}"</span>
+                  </div>
+                ))}
+              </fieldset>
+            )
+          })
+        )}
+        {options.length > 0 && (
+          <button type="button" className="link" disabled={Boolean(busy)} onClick={() => void reload()}>
+            [Check model lists again]
           </button>
-        </section>
-      )}
+        )}
+      </section>
 
       <div className="row">
         <span className="label">Budget per hour</span>

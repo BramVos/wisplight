@@ -28,6 +28,8 @@ interface SettingsFile {
   keys: Partial<Record<ProviderId, string>>
   roles: Partial<Record<Exclude<LlmRole, 'advisor'>, RoleChoice>>
   budgetUsdPerHour: number
+  /** The models each key could use when last asked, so the player can choose without asking again. */
+  models?: Partial<Record<ProviderId, { ids: string[]; at: string }>>
 }
 
 export interface SettingsSummary {
@@ -35,6 +37,10 @@ export interface SettingsSummary {
   roles: SettingsFile['roles']
   budgetUsdPerHour: number
   encryption: boolean
+  /** Model ids per provider, as last listed. */
+  models: Partial<Record<ProviderId, string[]>>
+  /** Roles whose chosen model is no longer in its provider's list. */
+  missing: ChosenRole[]
 }
 
 export class SettingsStore {
@@ -82,8 +88,27 @@ export class SettingsStore {
     }
   }
 
+  setModels(provider: ProviderId, ids: string[]): void {
+    ;(this.data.models ??= {})[provider] = { ids: [...ids].sort(), at: new Date().toISOString() }
+    this.write()
+  }
+
+  modelIds(provider: ProviderId): string[] | undefined {
+    return this.data.models?.[provider]?.ids
+  }
+
+  /** Roles whose model has gone from the list of its provider. */
+  missing(): ChosenRole[] {
+    return CHOSEN_ROLES.filter((role) => {
+      const choice = this.data.roles[role]
+      const ids = choice ? this.modelIds(choice.provider) : undefined
+      return Boolean(choice && ids && !ids.includes(choice.model))
+    })
+  }
+
   removeKey(provider: ProviderId): void {
     delete this.data.keys[provider]
+    delete this.data.models?.[provider]
     for (const [role, choice] of Object.entries(this.data.roles)) {
       if (choice?.provider === provider) delete this.data.roles[role as keyof SettingsFile['roles']]
     }
@@ -123,6 +148,8 @@ export class SettingsStore {
       roles: { ...this.data.roles },
       budgetUsdPerHour: this.data.budgetUsdPerHour,
       encryption: this.cipher.available(),
+      models: Object.fromEntries(Object.entries(this.data.models ?? {}).map(([id, list]) => [id, list?.ids ?? []])),
+      missing: this.missing(),
     }
   }
 }

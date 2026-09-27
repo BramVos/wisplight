@@ -29,6 +29,8 @@ export interface AiBridge {
   connect(provider: ProviderId, key: string): Promise<{ models: number }>
   disconnect(provider: ProviderId): Promise<void>
   models(provider: ProviderId): Promise<ModelInfo[]>
+  /** Asks the providers for their models again; returns the roles whose model is gone. */
+  refresh(): Promise<ChosenRole[]>
   advise(provider: ProviderId): Promise<Advice>
   trial(provider: ProviderId, model: string, role: ChosenRole): Promise<TrialResult>
   choose(role: ChosenRole, provider: ProviderId, model: string): Promise<string>

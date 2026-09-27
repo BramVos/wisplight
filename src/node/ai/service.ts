@@ -1,11 +1,11 @@
 import { join } from 'node:path'
 import type { Content } from '../../engine/content'
 import type { LlmClient } from '../../engine/dialogue/llm'
-import { askAdvice, trial, type Advice, type TrialResult } from './advisor'
+import { askAdvice, testCall, trial, type Advice, type TrialResult } from './advisor'
 import { Gateway, type GatewayStatus } from './gateway'
 import { AiLog, type AiLogEntry } from './log'
 import { createProvider, type ModelInfo, type Provider, type ProviderId } from './providers'
-import { CHOSEN_ROLES, SettingsStore, type Cipher, type ChosenRole, type SettingsSummary } from './settings'
+import { SettingsStore, type Cipher, type ChosenRole, type SettingsSummary } from './settings'
 import { UsageStore, type UsageSummary } from './usage'
 
 // Everything the settings screen and the game need from the AI side, without
@@ -78,6 +78,7 @@ export class AiService {
     }
     this.settings.setKey(id, key)
     this.models.set(id, models)
+    this.settings.setModels(id, models.map((m) => m.id))
     return models
   }
 
@@ -87,13 +88,30 @@ export class AiService {
     this.models.delete(id)
   }
 
+  /** The models this key can use: as last listed, or fresh from the provider. Fresh lists are saved. */
   async listModels(id: ProviderId, refresh = false): Promise<ModelInfo[]> {
     if (!refresh && this.models.has(id)) return this.models.get(id)!
+    const stored = this.settings.modelIds(id)
+    if (!refresh && stored) return stored.map((model) => ({ id: model }))
     const provider = this.provider(id)
     if (!provider) throw new Error(`No API key for ${id}.`)
     const models = await provider.listModels()
     this.models.set(id, models)
+    this.settings.setModels(id, models.map((m) => m.id))
     return models
+  }
+
+  /** Asks every connected provider for its models again, and returns the roles whose model is gone. */
+  async refreshModels(): Promise<ChosenRole[]> {
+    for (const id of ['openai', 'anthropic'] as const) {
+      if (!this.settings.key(id)) continue
+      try {
+        await this.listModels(id, true)
+      } catch {
+        // Offline: keep the last list, the game falls back to templates anyway.
+      }
+    }
+    return this.settings.missing()
   }
 
   async advise(id: ProviderId): Promise<Advice> {
@@ -111,25 +129,16 @@ export class AiService {
    */
   async choose(role: ChosenRole, id: ProviderId, model: string): Promise<string> {
     await this.requireModel(id, model)
-    const result = await trial(this.gateway, this.options.content, id, model, role, 1)
-    if (result.valid === 0) throw new Error(`The test call with ${model} failed: ${result.errors[0] ?? 'no reply'}`)
+    // One short call with the exact id; a full trial is up to the player (Try).
+    const problem = await testCall(this.gateway, id, model)
+    if (problem) throw new Error(`The test call with ${model} failed: ${problem}`)
     this.settings.setRole(role, { provider: id, model })
     return this.settings.role(role)!.model
   }
 
   /** Checks at start-up that the chosen models still exist; returns the roles whose model is gone. */
   async missingModels(): Promise<ChosenRole[]> {
-    const missing: ChosenRole[] = []
-    for (const role of CHOSEN_ROLES) {
-      const choice = this.settings.role(role)
-      if (!choice) continue
-      try {
-        if (!(await this.listModels(choice.provider, true)).some((m) => m.id === choice.model)) missing.push(role)
-      } catch {
-        // Offline: keep the choice, the game falls back to templates anyway.
-      }
-    }
-    return missing
+    return this.refreshModels()
   }
 
   recentLog(count?: number): AiLogEntry[] {

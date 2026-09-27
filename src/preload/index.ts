@@ -19,6 +19,7 @@ contextBridge.exposeInMainWorld('wisplight', {
     connect: (provider: string, key: string) => ipcRenderer.invoke('ai:connect', provider, key),
     disconnect: (provider: string) => ipcRenderer.invoke('ai:disconnect', provider),
     models: (provider: string) => ipcRenderer.invoke('ai:models', provider),
+    refresh: () => ipcRenderer.invoke('ai:refresh'),
     advise: (provider: string) => ipcRenderer.invoke('ai:advise', provider),
     trial: (provider: string, model: string, role: string) => ipcRenderer.invoke('ai:trial', provider, model, role),
     choose: (role: string, provider: string, model: string) => ipcRenderer.invoke('ai:choose', role, provider, model),

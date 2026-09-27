@@ -96,6 +96,8 @@ export function demoBridge(_content: Content): AiBridge {
         roles: { ...state.roles },
         budgetUsdPerHour: state.budget,
         encryption: true,
+        models: Object.fromEntries((['openai', 'anthropic'] as const).filter((p) => state.keys[p]).map((p) => [p, MODELS[p].map((m) => m.id)])),
+        missing: [],
       },
       usage: usage(),
       status: { busy: false, coolingDown: false, hourSpentUsd: state.session.costUsd, hourBudgetUsd: state.budget, monthBudgetSpent: false },
@@ -110,6 +112,7 @@ export function demoBridge(_content: Content): AiBridge {
       delete state.keys[provider]
     },
     models: async (provider) => MODELS[provider],
+    refresh: async () => [],
     advise: async (provider) => {
       await wait(1500)
       return provider === 'openai'

@@ -155,6 +155,27 @@ export async function askAdvice(gateway: Gateway, provider: ProviderId, models: 
   return { provider, advisorModel, voice, brain, chronicler, unknownPrices: [...new Set(named.filter((id) => !priceOf(id)))] }
 }
 
+/** One short call with this exact model id, to prove it answers in JSON. Returns a problem, or undefined. */
+export async function testCall(gateway: Gateway, provider: ProviderId, model: string): Promise<string | undefined> {
+  try {
+    const response = await gateway.complete(
+      {
+        role: 'advisor',
+        system: 'Reply with JSON that matches the schema, and nothing else.',
+        prompt: 'Is this line reaching you? Answer ok: true.',
+        schemaName: 'test_call',
+        schema: { type: 'object', additionalProperties: false, required: ['ok'], properties: { ok: { type: 'boolean' } } },
+        maxTokens: 50,
+      },
+      { provider, model },
+    )
+    const reply = JSON.parse(response.text.trim().replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '')) as { ok?: unknown }
+    return typeof reply.ok === 'boolean' ? undefined : 'the reply was not the expected JSON'
+  } catch (error) {
+    return error instanceof Error ? error.message : String(error)
+  }
+}
+
 /** Runs a model on situations from the fixed test set and measures validity, latency, tokens and cost. */
 export async function trial(gateway: Gateway, content: Content, provider: ProviderId, model: string, role: ChosenRole, count = role === 'voice' ? 6 : role === 'brain' ? 3 : 2): Promise<TrialResult> {
   const requests: LlmRequest[] =
