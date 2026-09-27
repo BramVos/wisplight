@@ -30,23 +30,17 @@ export type Selector =
 
 export const SelectorSchema: z.ZodType<Selector> = z.lazy(() =>
   z.union([
-    z.string(),
-    z.object({ home_of: SelectorSchema }).strict(),
-    z.object({ work_of: SelectorSchema }).strict(),
-    /** The family of someone: parents, children, brothers and sisters, spouses. */
-    z.object({ family_of: SelectorSchema }).strict(),
-    z.object({ household_of: SelectorSchema }).strict(),
-    /** The grown people who live within three quarters of an hour's walk, outside their household. */
-    z.object({ neighbours_of: SelectorSchema }).strict(),
-    /** The nearest place where people gather (tagged social), from someone's home. */
-    z.object({ social_near: SelectorSchema }).strict(),
-    /** The nearest notice board, from a place or someone's work. */
-    z.object({ board_near: SelectorSchema }).strict(),
-    /** Where an earlier step of this plan happened. */
-    z.object({ step: z.string() }).strict(),
-    /** Of two who set up house together: the one who moves (the player, or who lives with a parent), and the one who stays. */
-    z.object({ mover: z.tuple([SelectorSchema, SelectorSchema]) }).strict(),
-    z.object({ stayer: z.tuple([SelectorSchema, SelectorSchema]) }).strict(),
+    z.string().describe('An id, or a binding of the plan: $a, $b, $who, $place, $area, $subject, $value.'),
+    z.object({ home_of: SelectorSchema }).strict().describe("Someone's home."),
+    z.object({ work_of: SelectorSchema }).strict().describe('Where someone works.'),
+    z.object({ family_of: SelectorSchema }).strict().describe('The family of someone: parents, children, brothers and sisters, spouses.'),
+    z.object({ household_of: SelectorSchema }).strict().describe('The others who live in one house with someone.'),
+    z.object({ neighbours_of: SelectorSchema }).strict().describe("The grown people who live within three quarters of an hour's walk, outside their household."),
+    z.object({ social_near: SelectorSchema }).strict().describe("The nearest place where people gather (tagged social), from someone's home."),
+    z.object({ board_near: SelectorSchema }).strict().describe("The nearest notice board, from a place or someone's work."),
+    z.object({ step: z.string() }).strict().describe('Where an earlier step of this plan happened.'),
+    z.object({ mover: z.tuple([SelectorSchema, SelectorSchema]) }).strict().describe('Of two who set up house together: the one who moves (the player, or who lives with a parent).'),
+    z.object({ stayer: z.tuple([SelectorSchema, SelectorSchema]) }).strict().describe('Of two who set up house together: the one who stays.'),
   ]),
 )
 
@@ -130,6 +124,11 @@ export const VerbSchema = z.union([
   z.object({ recall: SelectorSchema, of: SelectorSchema }).strict(),
   /** Someone the gate lets lie, with a motive, puts an untrue claim about (design: "Liegen met een motief"). */
   z.object({ spread_rumour: SelectorSchema, fact: FactTemplate }).strict(),
+  // M8.3: groups.
+  /** Someone who fled or came from elsewhere stays for good: a free house in that area, or the place itself, is home now. */
+  z.object({ settle: SelectorSchema, at: SelectorSchema }).strict(),
+  /** People band together for or against the newcomers in an area. */
+  z.object({ form_group: z.array(SelectorSchema).min(1), aim: z.enum(['against', 'for']), about: z.string(), name: z.string() }).strict(),
   /** Everything a quest or an effect plan could already do. */
   PlanEffectSchema,
 ])
@@ -137,21 +136,20 @@ export type Verb = z.infer<typeof VerbSchema>
 
 export const StepSchema = z
   .object({
-    id: Id,
-    /** When, from the start of the plan: so many days and hours on, at an hour of the day, on a rest day. */
-    at: z.object({ days: z.number().min(0).optional(), hours: z.number().min(0).optional(), hour: z.number().int().min(0).max(23).optional(), rest_day: z.boolean().optional() }).strict().optional(),
-    /** After another step was done or skipped, and so many hours after that. */
-    after: z.string().optional(),
-    wait: z.number().min(0).default(0),
-    /** One by one for each member of a group of the plan, bound to $who. */
-    each: z.string().optional(),
-    /** On what someone knows (knows) and what is true (the other conditions). */
-    when: z.array(ConditionSchema).default([]),
-    /** When the conditions do not hold: skip the step, wait for them (until the plan expires), or let the plan fail. */
-    otherwise: z.enum(['skip', 'wait', 'fail']).default('skip'),
-    /** The chance the step happens at all when it is due, rolled once and seeded: otherwise it is skipped (M8.2). */
-    chance: z.number().min(0).max(1).optional(),
-    do: VerbSchema,
+    id: Id.describe('A name for the step, unique in the plan.'),
+    at: z
+      .object({ days: z.number().min(0).optional(), hours: z.number().min(0).optional(), hour: z.number().int().min(0).max(23).optional(), rest_day: z.boolean().optional() })
+      .strict()
+      .optional()
+      .describe('When, from the start of the plan: so many days and hours on, at an hour of the day, on a rest day.'),
+    after: z.string().optional().describe('After another step was done or skipped (and at, from then).'),
+    wait: z.number().min(0).default(0).describe('Hours to wait first.'),
+    each: z.string().optional().describe('One by one for each member of a group of the plan, bound to $who.'),
+    when: z.array(ConditionSchema).default([]).describe('Conditions: what someone knows (knows) and what is true.'),
+    otherwise: z.enum(['skip', 'wait', 'fail']).default('skip').describe('When the conditions do not hold: skip the step, wait for them (until the plan expires), or let the plan fail.'),
+    chance: z.number().min(0).max(1).optional().describe('The chance the step happens when it is due and its conditions hold, rolled once and seeded; otherwise it is skipped.'),
+    every: z.number().int().positive().optional().describe('Due again every so many days at the same hour, done or skipped, for as long as the plan runs.'),
+    do: VerbSchema.describe('One verb.'),
   })
   .strict()
 export type Step = z.infer<typeof StepSchema>
@@ -196,6 +194,8 @@ export const WatcherSchema = z
         z.object({ grudge: z.number().positive() }).strict(),
         /** People from elsewhere who have stayed so many days: $a the one of the place who likes them least, $place where they stay, the claim what drove them there. */
         z.object({ strangers_stay: z.number().positive() }).strict(),
+        /** Newcomers against the openness of a village, heavier with food short (M8.3): $a, $b, $c the villagers who mind them most, $area. */
+        z.object({ friction: z.number().positive() }).strict(),
       ])
       .optional(),
     /** Who it is about; for a fact, by default the subject and the value of its claim. */

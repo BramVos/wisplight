@@ -77,6 +77,11 @@ export function holds(world: World, c: Condition, questId?: string): boolean {
   if ('npc_at' in c) return world.state.npcs[c.npc_at]?.location === c.place || world.content.locations.get(world.state.npcs[c.npc_at]?.location ?? '')?.area === c.place
   if ('dead' in c) return Boolean(world.state.npcs[c.dead]?.dead)
   if ('alive' in c) return Boolean(world.state.npcs[c.alive] && !world.state.npcs[c.alive]!.dead)
+  if ('around' in c) {
+    const s = world.state.npcs[c.around]
+    return Boolean(s && !s.dead && !s.absent && !s.following)
+  }
+  if ('carries' in c) return (world.state.npcs[c.carries]?.inventory[c.item] ?? 0) > 0
   if ('stage' in c) {
     const [q, s] = c.stage.split(':')
     return questlog(world)[q!]?.stage === s
@@ -125,6 +130,7 @@ export function holds(world: World, c: Condition, questId?: string): boolean {
   }
   if ('tie' in c) return tieTo(world, c.tie[0], c.tie[1])?.role === c.role
   if ('would_lie' in c) return world.content.npcs.has(c.would_lie) && mayLieAbout(world, c.would_lie)
+  if ('did' in c) return (world.state.news?.facts ?? []).some((f) => f.kind === c.did && f.about[0] === c.who && f.about.includes(c.to))
   if ('any' in c) return c.any.some((x) => holds(world, x, questId))
   if ('all' in c) return c.all.every((x) => holds(world, x, questId))
   if ('not' in c) return !holds(world, c.not, questId)

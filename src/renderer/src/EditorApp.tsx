@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { stringify } from 'yaml'
-import { draftEdits, ENTITY_KINDS, KIND_NAMES, parseEntityYaml } from '../../engine'
+import { draftEdits, ENTITY_KINDS, KIND_NAMES, languageReference, parseEntityYaml, type ReferenceEntry } from '../../engine'
 import { createEditor, type DiffLine, type Edit, type EditorBridge, type EditorDraft, type EditorSave, type EditorView, type EntityKind, type Raw, type ShownChange, type SimReport, type WorldInfo } from './client'
 
 // The editor (M8, FO chapter 15), in a window of its own: npm run editor, or
@@ -11,7 +11,7 @@ import { createEditor, type DiffLine, type Edit, type EditorBridge, type EditorD
 // playtest without the player with an NPC inspector, and the chronicler,
 // whose proposals are shown as a change and saved only when accepted.
 
-type Panel = 'edit' | 'check' | 'playtest' | 'chronicler' | 'world'
+type Panel = 'edit' | 'check' | 'playtest' | 'reference' | 'chronicler' | 'world'
 
 const DIRECTIONS = ['north', 'northeast', 'east', 'southeast', 'south', 'southwest', 'west', 'northwest', 'up', 'down', 'in', 'out']
 const AXES = ['warmth', 'courage', 'honesty', 'temper', 'curiosity', 'diligence'] as const
@@ -87,6 +87,7 @@ export function EditorApp() {
               ['edit', 'Edit'],
               ['check', `Check${view.problems.length ? ` (${view.problems.length} errors)` : view.warnings.length ? ` (${view.warnings.length})` : ''}`],
               ['playtest', 'Playtest'],
+              ['reference', 'Reference'],
               ['chronicler', 'Chronicler'],
               ['world', 'New world'],
             ] as [Panel, string][]
@@ -138,6 +139,7 @@ export function EditorApp() {
       )}
       {panel === 'check' && <CheckPanel view={view} open={open} />}
       {panel === 'playtest' && <PlaytestPanel bridge={bridge} world={world} />}
+      {panel === 'reference' && <ReferencePanel />}
       {panel === 'chronicler' && <ChroniclerPanel bridge={bridge} world={world} focus={selected && !creating ? { kind, id: selected } : undefined} saved={refresh} open={open} />}
       {panel === 'world' && (
         <NewWorldPanel
@@ -640,6 +642,45 @@ function toYaml(raw: Raw): string {
   return stringify(raw, { lineWidth: 0 })
 }
 
+// ---------------------------------------------------------------- the reference
+
+/** The plan language (M8.3): the same text as in CHRONICLER.md, from the schemas and the permission table. */
+function ReferencePanel() {
+  const reference = useMemo(() => languageReference(), [])
+  const [filter, setFilter] = useState('')
+  const shown = (entries: ReferenceEntry[]) => entries.filter((e) => !filter || `${e.name} ${e.text}`.toLowerCase().includes(filter.toLowerCase()))
+  const who = (e: ReferenceEntry) => (e.who ? ['rules', 'brain', 'chronicler'].filter((k) => e.who![k as keyof typeof e.who]).join(', ') || 'content only' : '')
+  const section = (title: string, entries: ReferenceEntry[]) =>
+    shown(entries).length > 0 && (
+    <>
+      <h2 className="editor-title">{title}</h2>
+      <ul className="check-list small">
+        {shown(entries).map((e) => (
+          <li key={`${title}:${e.name}`}>
+            <strong>
+              <code>{e.name}</code>
+            </strong>
+            : {e.text}
+            {e.who && <span className="muted"> ({who(e)})</span>}
+            {e.form && <div className="muted">{e.form}</div>}
+          </li>
+        ))}
+      </ul>
+    </>
+  )
+  return (
+    <div className="settings-body editor-page">
+      <p className="muted small">Watchers, the standard aftermath, intentions, plans and quests speak one language. This is it, read from the schemas; content/CHRONICLER.md holds the same text for the chronicler.</p>
+      <input type="search" value={filter} onChange={(e) => setFilter(e.target.value)} placeholder="Look up a condition or verb" aria-label="Look up" />
+      {section('A step', reference.step)}
+      {section('Conditions', reference.conditions)}
+      {section('Verbs', reference.verbs)}
+      {section('Selectors', reference.selectors)}
+      {section('Bindings', reference.bindings)}
+    </div>
+  )
+}
+
 // ---------------------------------------------------------------- the checks
 
 function CheckPanel({ view, open }: { view: EditorView; open: (kind: EntityKind, id?: string) => void }) {
@@ -743,6 +784,8 @@ function PlaytestPanel({ bridge, world }: { bridge: EditorBridge; world: string 
               </ul>
               <h3>News of weight</h3>
               <ul className="check-list small">{report.news.length ? report.news.map((n) => <li key={n}>{n}</li>) : <li className="muted">none</li>}</ul>
+              <h3>Storylines</h3>
+              <ul className="check-list small">{report.lines.length ? report.lines.map((l, i) => <li key={`l${i}`}>{l}</li>) : <li className="muted">none</li>}</ul>
               <h3>Signals and plans</h3>
               <ul className="check-list small">
                 {report.plans.length ? report.plans.map((p, i) => <li key={`p${i}`}>{p}</li>) : <li className="muted">no plans</li>}

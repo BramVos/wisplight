@@ -52,6 +52,8 @@ export interface SimReport {
   /** Signals and what took them up, and the plans of the aftermath with how they ended (M8.1). */
   signals: string[]
   plans: string[]
+  /** The chronicler's storylines (M8.3): phase, open threads, what may follow. */
+  lines: string[]
 }
 
 /** Runs a world without the player for some days. */
@@ -111,14 +113,22 @@ export function simulate(content: Content, days: number, seed = 1): SimReport {
     people: Object.keys(world.state.npcs)
       .sort()
       .map((id) => snapshot(engine, id, timeline.get(id) ?? [])),
-    signals: (world.state.signals?.log ?? []).map((s) => `${world.date(s.t).split(',')[0]}: ${s.kind}${s.event ? ` (${s.event})` : ''}${s.who.length ? ` for ${s.who.map((w) => nameOf(world, w)).join(' and ')}` : ` at ${nameOf(world, s.place)}`}, ${s.handled === 'rules' ? 'the standard aftermath' : 'nobody took it up'}`),
+    signals: (world.state.signals?.log ?? []).map((s) => `${world.date(s.t).split(',')[0]}: ${s.kind}${s.event ? ` (${s.event})` : ''}${s.who.length ? ` for ${s.who.map((w) => nameOf(world, w)).join(' and ')}` : ` at ${nameOf(world, s.place)}`}, ${HANDLED[s.handled ?? ''] ?? 'nobody took it up'}`),
     plans: (world.state.plans ?? []).map((p) => {
       const plan = planOf(world, p.plan)
       const how = p.ended !== undefined ? `${p.outcome ?? 'done'} ${world.date(p.ended).split(',')[0]}` : plan && p.phase < plan.phases.length ? `phase ${p.phase + 1} of ${plan.phases.length}` : 'running'
       return `${plan?.name ?? p.plan}${p.subjects?.length ? ` for ${p.subjects.map((x) => nameOf(world, x)).join(' and ')}` : ''}: ${how}`
     }),
+    lines: (world.state.chronicle?.lines ?? []).map((l) => {
+      const head = `${l.title}${l.pattern ? ` [${l.pattern}]` : ''}, ${l.phase ?? 'no phase yet'}, ${l.open ? 'open' : 'closed'}, ${l.facts.length} fact${l.facts.length === 1 ? '' : 's'}`
+      const note = [l.summary.length ? `so far: ${l.summary.join(' ')}` : '', l.hooks.length ? `threads: ${l.hooks.join('; ')}` : '', l.next ? `next: ${l.next}` : ''].filter(Boolean)
+      return note.length ? `${head}. ${note.join('. ')}` : head
+    }),
   }
 }
+
+/** Who took a signal up, in words. */
+const HANDLED: Record<string, string> = { rules: 'the standard aftermath', brain: 'a brain', chronicler: 'the chronicler', none: 'nobody took it up' }
 
 function snapshot(engine: Engine, id: string, days: string[]): NpcSnapshot {
   const world = engine.world

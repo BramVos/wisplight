@@ -547,6 +547,8 @@ export const WorldSchema = z.object({
     .default([]),
   /** The five standings in this world's words, lowest first, and the trades that are an office (M8.2). */
   standing: z.object({ names: z.array(z.string()).length(5), offices: z.array(z.string()).default([]) }).strict().optional(),
+  /** Plans that run from the first day (M8.3): the opponents who do not wait for the player. */
+  plans: z.array(z.string()).default([]),
 })
 export type WorldDef = z.infer<typeof WorldSchema>
 
@@ -816,6 +818,7 @@ function checkReferences(world: WorldDef | undefined, c: Omit<Content, 'world'>)
       if (!c.areas.has(t.area)) problems.push(`world.towns.${t.id}: unknown area ${t.area}`)
       for (const o of t.offices) location(o, `world.towns.${t.id}.offices`)
     }
+    for (const id of world.plans) if (!c.plans.has(id)) problems.push(`world.plans: unknown plan ${id}`)
   }
   for (const type of c.objectTypes.values()) {
     for (const aff of type.affordances) {
@@ -952,7 +955,7 @@ function checkReferences(world: WorldDef | undefined, c: Omit<Content, 'world'>)
 }
 
 /** Signals the systems give themselves, without a watcher in the content. */
-const CODE_SIGNALS = ['house_lost', 'plan_failed', 'doubt', 'stranger_unwelcome', 'recognised']
+const CODE_SIGNALS = ['house_lost', 'plan_failed', 'doubt', 'stranger_unwelcome', 'recognised', 'plans_cross', 'warning_proven']
 
 /** Every string in a step's verb that looks like an id. */
 function idsIn(value: unknown): string[] {

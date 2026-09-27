@@ -1,5 +1,24 @@
 # Changelog
 
+## M8.3 Nasleep: de kroniekschrijver plant, 27 september 2026
+
+Nieuw:
+- **De kroniekschrijver plant voor signalen.** Wat meer huishoudens raakt, belang 3 of meer heeft, iemand met een rol in een quest betreft of waar geen voornemen bij past, gaat naar hem. Hij schrijft stappen in dezelfde werkwoordentaal als de content, voor een groep persoon voor persoon: na de oorlog gaat de ene helft van de vluchtelingen naar huis en blijft de andere in Waagdam wonen. Wat hij niet mag, wordt geweigerd; zonder geldige stap doet de standaardnasleep het, helemaal.
+- **Botsende plannen worden één verhaal.** Kiest Gerrit ervoor het uit te praten en Jan om hem te ontlopen, dan maakt de kroniekschrijver er in de nacht één verhaal van. Bij een ruzie ziet hij wie ze allebei vertrouwen, als bemiddelaar.
+- **Wrijving in een dorp.** Te veel nieuwkomers tegen hoe open een dorp is, zwaarder bij voedseltekort of als ze van ver komen, en er ontstaat een groep tegen hen. Je kunt kant kiezen (`side with aaltje`) of bemiddelen (`mediate between cornelis and aaltje`).
+- **Een waarschuwing die uitkomt.** Breekt de dijk toch, dan schaamt wie de vreemde wegjoeg zich en denkt beter over hem.
+- **Opbouw per verhaallijn.** Een lijn krijgt een fase (opzet, stijgend, crisis, afloop, gesloten) en hooguit één geplande beat. Hooguit twee lijnen komen per week in crisis. Lopen er twee naar een crisis in een dorp, dan begint de verhalenmotor daar niets nieuws, en elders wat minder.
+- **Kleinere lijnen.** Hooguit twaalf feiten per lijn, en een druk persoon trekt niet meer elk klein ding naar één lijn: dezelfde soort of hetzelfde tweetal wel, groot nieuws ook.
+- **De tegenspelers als content.** Cornelis die meet, Gerrit die palen trekt, de Geitenrijders, de schout en de Haakman zijn drie plannen in `plans.yaml`, gestart vanuit `world.yaml`. Een test legt ze dag voor dag naast het oude script.
+- **Opgelost:** de verhalenmotor liet ook geesten ziek worden of iets verliezen ("the's fever"); nu alleen gewone mensen.
+- **Editor:** een tab Reference met alle voorwaarden, werkwoorden (en wie ze mag gebruiken), selectors en bindingen, uit de schema's. Dezelfde tekst staat in `content/CHRONICLER.md` (`npm run reference`). De speeltest toont de verhaallijnen met fase en notitie.
+
+Testen: `npm run dev`. `@plan dyke_breach` en twee dagen wachten geeft wrijving in Waagdam; ga naar de kerk daar en probeer `side with` en `mediate between`. Met een model gekoppeld zie je in de editor bij Playtest de fases van de lijnen. De tegenspelers doen wat ze deden: Cornelis meet op werkdagen, Gerrit trekt 's nachts palen, de schout grijpt in. Controles: `npm test` (381 tests).
+
+Nog niet: verschil in geloof telt niet mee in de wrijving (er is geen geloof per persoon). De ontvangstgroep (de Lantaarn met liefdadigheid) kan de kroniekschrijver maken, de standaardnasleep maakt alleen de groep tegen.
+
+Ontwerp: afwijkingen staan onder "Zo is het in M8.3 gebouwd". De belangrijkste: een stap kan zich herhalen (`every`), er zijn voorwaarden `around` en `carries`, en `world.yaml` kent `plans`. De kans op een stap wordt pas gegooid als de voorwaarden gelden. Een gearresteerde zit precies twee dagen vast, ook als de dijk intussen breekt (in het script bleef de vlag staan zolang hij ergens verbleef). Het FO heeft een stand na M8.3.
+
 ## M8.2 Nasleep: het brein plant, 27 september 2026
 
 Nieuw:

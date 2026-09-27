@@ -396,7 +396,7 @@ export function applyChoice(world: World, choiceId: string, reply: unknown | nul
   const [choice] = state.pending.splice(index, 1)
   if (reply === null || !world.alive(choice!.npc)) {
     // No answer to a signal: the standard aftermath does it (M8.2).
-    if (choice!.signal) backToRules(world, choice!.signal)
+    if (choice!.signal) applyIntention(world, choice!.npc, choice!.signal, { choice: 'none' }, { people: [], places: [] })
     return { accepted: [], rejected: reply === null ? ['no reply: the utility function decides'] : [] }
   }
   const result = validateGoals(world, choice!.npc, reply)
@@ -415,6 +415,7 @@ export function applyChoice(world: World, choiceId: string, reply: unknown | nul
 /** Without a model, choices are not waited for; signals waiting for a brain go to the rules. */
 export function settleChoices(world: World): void {
   if (world.aiLive || !world.state.brain?.pending.length) return
-  for (const p of world.state.brain.pending) if (p.signal) backToRules(world, p.signal)
+  const signals = world.state.brain.pending.map((p) => p.signal).filter((s): s is string => Boolean(s))
   world.state.brain.pending = []
+  for (const s of signals) backToRules(world, s)
 }

@@ -4,7 +4,7 @@ import { applyEffect } from './dialogue/relations'
 import { add, itemName, remedyItem, withArticle } from './items'
 import { belangOf } from './life'
 import { recordFact } from './news'
-import { lineOf } from './storylines'
+import { lineOf, risingLines, tenseAreas } from './storylines'
 import { fulfil, openRequest } from './requests'
 import { remember } from './npc/execute'
 import { shiftBond } from './social/deeds'
@@ -13,7 +13,9 @@ import type { World } from './world'
 // Stories (design: lore and world change, "Soorten verhalen" and "Tempo en
 // toeval"). The rules of the world decide what happens; the pacing engine only
 // decides how often a small story starts, from the patterns in the content.
-// Each kind of pattern is one piece of the motor below.
+// Each kind of pattern is one piece of the motor below. Lines running towards
+// a crisis weigh on the pace (M8.3): fewer small stories while they run, and
+// none in a village where two of them run at once.
 
 export type Tempo = 'calm' | 'normal' | 'dramatic'
 
@@ -40,6 +42,8 @@ const DAY = 24 * 60
 /** Expected small stories per day, before the bonus for a quiet spell. */
 const PER_DAY: Record<Tempo, number> = { calm: 0.4, normal: 0.8, dramatic: 1.6 }
 const KEEP_DONE = 60
+/** Fewer small stories a day for every storyline in rising or crisis. */
+const RISING_WEIGHT = 0.2
 
 export function stories(world: World): StoriesState {
   return (world.state.stories ??= { seq: 0, tempo: 'normal', lastIncident: world.now, active: [], done: [] })
@@ -69,7 +73,7 @@ function morning(world: World): void {
     if (pattern.date?.month === today.month && pattern.date.day === today.day) start(world, pattern)
   }
   const quietDays = Math.max(0, (world.now - state.lastIncident) / DAY - 2)
-  const expected = PER_DAY[state.tempo] + Math.min(1, quietDays * 0.2)
+  const expected = PER_DAY[state.tempo] + Math.min(1, quietDays * 0.2) - RISING_WEIGHT * risingLines(world).length
   let started = 0
   for (let n = 0; n < 3 && world.rng.next('stories') < expected - n; n++) {
     const recent = new Set([...state.active, ...state.done].filter((s) => world.now - s.started < 2 * DAY).map((s) => s.pattern))
@@ -234,9 +238,10 @@ export function giveBack(world: World, npcId: string, item: string): string | un
 function playQuarrel(world: World, story: Story, pattern: Pattern): void {
   story.done = true
   const byPlace = new Map<string, string[]>()
+  const tense = tenseAreas(world)
   for (const id of Object.keys(world.state.npcs).sort()) {
     const npc = world.state.npcs[id]!
-    if (npc.dead || npc.note || npc.activity === 'asleep' || world.npc(id).child || !world.location(npc.location).tags.includes('social')) continue
+    if (npc.dead || npc.note || npc.activity === 'asleep' || world.npc(id).child || !world.location(npc.location).tags.includes('social') || tense.has(world.location(npc.location).area)) continue
     byPlace.set(npc.location, [...(byPlace.get(npc.location) ?? []), id])
   }
   let best: { place: string; a: string; b: string; heat: number } | undefined
@@ -287,7 +292,8 @@ function playTheft(world: World, story: Story, pattern: Pattern): void {
     heard[fact] = { level: 3, reliability: 1, from: 'witness', t: world.now }
     return
   }
-  const shops = [...world.content.locations.values()].flatMap((location) =>
+  const tense = tenseAreas(world)
+  const shops = [...world.content.locations.values()].filter((l) => !tense.has(l.area)).flatMap((location) =>
     location.services.flatMap((service) => pattern.items.filter((item) => (world.stock(location.id, service.id)[item] ?? 0) > 0).map((item) => ({ location: location.id, service, item }))),
   )
   const target = world.rng.pick('stories', shops.sort((a, b) => `${a.location}${a.item}`.localeCompare(`${b.location}${b.item}`)))
@@ -395,9 +401,12 @@ function fill(template: string, vars: Record<string, string>, subject?: Npc): st
     .replaceAll('{them}', forms[2]!)
 }
 
+/** Who a small story may start with: grown, mortal, free, and neither living nor being in a village where two lines run towards a crisis. */
 function adults(world: World): string[] {
+  const tense = tenseAreas(world)
   return Object.keys(world.state.npcs)
-    .filter((id) => world.present(id) && !world.npc(id).child && !(world.state.stories?.active ?? []).some((s) => Object.values(s.roles).includes(id)))
+    .filter((id) => world.present(id) && !world.npc(id).child && !world.npc(id).quirks.includes('spirit') && !(world.state.stories?.active ?? []).some((s) => Object.values(s.roles).includes(id)))
+    .filter((id) => !tense.has(world.location(world.npc(id).home).area) && !tense.has(world.location(world.state.npcs[id]!.location).area))
     .sort()
 }
 

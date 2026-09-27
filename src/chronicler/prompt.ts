@@ -5,7 +5,7 @@ import type { Card, CardKind, ChronicleEvent, ChronicleInput, ChroniclerRequest,
 // catalogue, how to answer) comes first and never changes between runs, so
 // the providers cache it. People and places get short keys: p1, l1, ...
 
-const PREFIX: Record<CardKind | 'line', string> = { person: 'p', place: 'l', area: 'a', lore: 't', request: 'q', item: 'i', realm: 'r', line: 's' }
+const PREFIX: Record<CardKind | 'line', string> = { person: 'p', place: 'l', area: 'a', lore: 't', request: 'q', item: 'i', realm: 'r', line: 's', signal: 'g' }
 
 export class Keys {
   private readonly toKey = new Map<Id, string>()
@@ -63,6 +63,7 @@ export function assignKeys(input: ChronicleInput): Keys {
   for (const line of input.lines) keys.add(line.id, 'line')
   for (const line of input.older ?? []) keys.add(line.id, 'line')
   for (const card of [...input.cards, ...input.lore, ...input.requests, ...input.areas, ...(input.realms ?? [])]) keys.add(card.id, card.kind)
+  for (const signal of input.signals ?? []) keys.add(signal.id, 'signal')
   return keys
 }
 
@@ -76,6 +77,7 @@ export function systemPrompt(input: ChronicleInput, limits: Limits): string {
     'WORLD',
     input.world.trim(),
     ...(input.catalogue ? ['', 'CATALOGUE', input.catalogue.trim()] : []),
+    ...(input.verbs?.length ? ['', 'VERBS', ...input.verbs.map((v) => `${v.name} (who: ${v.who}${v.target ? `; target: ${v.target.join(' or ')}` : ''}${v.detail ? `; detail: ${v.detail}` : ''}): ${v.text}`)] : []),
     '',
     'HOW TO ANSWER',
     'The overview uses short keys: p person, l place, a area, t lore, q request, i item, s storyline. Answer with JSON that matches the schema, in keys.',
@@ -87,6 +89,14 @@ export function systemPrompt(input: ChronicleInput, limits: Limits): string {
     '- news: one line per area where something happened, as people there would say it.',
     '- tensions: at most one, and only when what happened would really change how two REALMS stand: between (two realm keys), delta (-5 to 5, positive is worse), why (a short clause).',
     '- plans: only for storylines marked PLAN, and only when the event has consequences the world should feel: a name and up to 3 phases (after: hours from now, 0 to 240), each with effects: {place, state} for places of the storyline (flooded, damaged, destroyed, abandoned, occupied, normal), {news, area}, {market (an item key), factor 0.5 to 1.5}, {flee (an area key), to (a place key), days 1 to 14}. At most 10 effects in all. Leave plans empty when nothing lasting follows.',
+    ...(input.verbs?.length
+      ? [
+          '- plans may also have steps: {after (hours from now, 0 to 720), verb (from VERBS), who (person keys; each does it), target (a key, or empty), detail (as the verb says)}. At most 10 steps.',
+          '  For a SIGNAL TO PLAN FOR: a plan with signal (its key) and steps that settle it for everyone it is about; for a group, decide person by person (some may go home, some stay). Leave it out when custom is enough.',
+          '  For any other storyline that is rising or in crisis: at most one beat, a plan with line and exactly one step: the next thing that happens. Never a death.',
+          '- lines also have phase: setup, rising, crisis, resolution or closed.',
+        ]
+      : []),
     'Rules: only facts from the overview; never invent what happened, who was there or when. Use only names from the overview. A rumour marked untrue stays a rumour. Things marked PRIVATE may go into thoughts, never into lore or news. Plain words, the tone of the world.',
   ].join('\n')
 }
@@ -119,9 +129,18 @@ export function userPrompt(input: ChronicleInput, keys: Keys, lookedUp: Card[], 
     input.templates.map((t) => `${t.kind}${t.needs.length ? ` (needs ${t.needs.join(' and ')})` : ''}: ${t.text}`),
   )
   if (input.older?.length) section('OLDER STORYLINES, to look up', input.older.map((o) => `${keys.key(o.id, 'line')} ${o.title}`))
+  section(
+    'SIGNALS TO PLAN FOR',
+    (input.signals ?? []).map((g) => `${keys.key(g.id, 'signal')} ${g.text}; about ${g.who.map((id) => keys.any(id) ?? id).join(' ') || 'nobody named'}, at ${keys.any(g.place) ?? g.place}. By custom: ${g.standard}${g.group?.length ? `. Group: ${g.group.map((id) => keys.any(id) ?? id).join(' ')}` : ''}${g.trusted?.length ? `. Both trust: ${g.trusted.map((id) => keys.any(id) ?? id).join(' ')}` : ''}`),
+  )
+  if (input.pace && (input.pace.building.length || input.pace.climaxes))
+    section('PACE', [
+      ...input.pace.building.map((b) => `"${b.title}" is ${b.phase === 'crisis' ? 'in crisis' : 'rising'}.`),
+      `${input.pace.climaxes} storyline${input.pace.climaxes === 1 ? '' : 's'} came to a crisis this week; at two, let the others build slowly.`,
+    ])
   lines.push('STORYLINES')
   for (const line of input.lines) {
-    lines.push(`  ${keys.key(line.id, 'line')} "${line.title}"${line.pattern ? ` [${line.pattern}]` : ''}${input.mayPlan?.includes(line.id) ? ' PLAN' : ''}`)
+    lines.push(`  ${keys.key(line.id, 'line')} "${line.title}"${line.pattern ? ` [${line.pattern}]` : ''}${line.phase ? ` (${line.phase})` : ''}${input.mayPlan?.includes(line.id) ? ' PLAN' : ''}`)
     if (line.roles.length) lines.push(`    roles: ${line.roles.map((r) => `${r.role}=${keys.any(r.who) ?? r.who}`).join(', ')}`)
     if (line.summary.length) lines.push(`    so far: ${line.summary.join(' / ')}`)
     if (line.hooks.length) lines.push(`    open threads: ${line.hooks.join(' / ')}`)
@@ -159,6 +178,7 @@ export function replySchema(input: ChronicleInput, keys: Keys, lookupsLeft: numb
         hooks: { type: 'array', items: text },
         next: text,
         close: { type: 'boolean' },
+        ...(input.verbs?.length ? { phase: { type: 'string', enum: ['setup', 'rising', 'crisis', 'resolution', 'closed'] } } : {}),
       }),
     },
     quests: {
@@ -178,12 +198,13 @@ export function replySchema(input: ChronicleInput, keys: Keys, lookupsLeft: numb
     thoughts: { type: 'array', items: object({ who: keysOf(people), text }) },
     news: { type: 'array', items: object({ area: keysOf(keys.of('area')), text }) },
     ...(input.realms?.length ? { tensions: { type: 'array', items: object({ between: { type: 'array', items: keysOf(keys.of('realm')) }, delta: { type: 'integer' }, why: text }) } } : {}),
-    ...(input.mayPlan?.length
+    ...(input.mayPlan?.length || input.verbs?.length
       ? {
           plans: {
             type: 'array',
             items: object({
-              line: keysOf(input.mayPlan.map((id) => keys.key(id, 'line')!).filter(Boolean)),
+              line: keysOf(['', ...(input.verbs?.length ? lines : (input.mayPlan ?? []).map((id) => keys.key(id, 'line')!).filter(Boolean))]),
+              signal: keysOf(['', ...keys.of('signal')]),
               name: text,
               phases: {
                 type: 'array',
@@ -200,6 +221,16 @@ export function replySchema(input: ChronicleInput, keys: Keys, lookupsLeft: numb
                       ],
                     },
                   },
+                }),
+              },
+              steps: {
+                type: 'array',
+                items: object({
+                  after: { type: 'integer' },
+                  verb: keysOf((input.verbs ?? []).map((v) => v.name)),
+                  who: { type: 'array', items: keysOf(people) },
+                  target: keysOf(['', ...people, ...keys.of('place'), ...keys.of('area'), ...keys.of('item')]),
+                  detail: text,
                 }),
               },
             }),
@@ -225,6 +256,7 @@ export function buildRequest(input: ChronicleInput, keys: Keys, limits: Limits, 
 export type ChronicleMeta = {
   cards: { key: string; id: Id; kind: CardKind | 'line'; name: string; text: string }[]
   lines: { key: string; title: string; belang: number; who: string[]; witnesses: string[]; place: string; text: string }[]
+  signals: { key: string; text: string; who: string[]; place: string; group: string[]; trusted: string[] }[]
   lookupsLeft: number
 }
 
@@ -240,6 +272,7 @@ function mockMeta(input: ChronicleInput, keys: Keys, lookupsLeft: number): Chron
       const big = [...l.events].sort((a, b) => b.belang - a.belang)[0]
       return { key: keys.key(l.id, 'line')!, title: l.title, belang: big?.belang ?? 0, who: (big?.who ?? []).map(k), witnesses: (big?.witnesses ?? []).map(k), place: big ? k(big.place) : '', text: big?.text ?? '' }
     }),
+    signals: (input.signals ?? []).map((g) => ({ key: keys.key(g.id, 'signal')!, text: g.text, who: g.who.map(k), place: k(g.place), group: (g.group ?? []).map(k), trusted: (g.trusted ?? []).map(k) })),
     lookupsLeft,
   }
 }

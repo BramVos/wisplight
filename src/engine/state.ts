@@ -105,6 +105,10 @@ export interface Storyline {
   changed: number
   /** Facts the chronicler has already seen. */
   reported: string[]
+  /** Where it stands, as the chronicler set it (M8.3): the pace of the world weighs it. */
+  phase?: 'setup' | 'rising' | 'crisis' | 'resolution' | 'closed'
+  /** When it came to its crisis: no three climaxes in one week. */
+  crisisAt?: number
 }
 
 /** A lore topic that came into being in this game (design, "Opslag": de kroniek). */
@@ -130,6 +134,8 @@ export interface ChronicleRun {
   t: number
   reason: 'night' | 'urgent'
   lines: string[]
+  /** Signals to plan for in this run (M8.3). */
+  signals?: string[]
 }
 
 export interface ChronicleState {
@@ -140,6 +146,8 @@ export interface ChronicleState {
   news: Record<string, { text: string; t: number }>
   pending: ChronicleRun[]
   runs: number
+  /** Signals waiting for the night run (M8.3). */
+  signals?: string[]
 }
 
 export interface NpcState {
@@ -456,6 +464,19 @@ export interface GameState {
   planSeq?: number
   /** Greetings and chats where the player is (M8.2): when each pair last greeted, and the chats going on. */
   chatter?: { greeted: Record<string, number>; chats: import('./chatter').Chat[] }
+  /** People who band together for or against newcomers (M8.3). */
+  groups?: Group[]
+}
+
+/** A group with members and an aim (M8.3): for or against the newcomers in an area. */
+export interface Group {
+  id: string
+  name: string
+  aim: 'against' | 'for'
+  area: string
+  members: string[]
+  since: number
+  ended?: number
 }
 
 /** The four numbers from one NPC to another (FO, chapter 8), and since M8.2 an old grudge. */
@@ -499,8 +520,8 @@ export interface Signal {
   to?: string
   /** The facts or events that caused it. */
   cause: string[]
-  /** One person, one household, or more. */
-  scope: 'person' | 'household' | 'many'
+  /** One person, one household, two people of two households, or more. */
+  scope: 'person' | 'household' | 'pair' | 'many'
   belang: number
   t: number
   claim?: Claim
@@ -509,6 +530,8 @@ export interface Signal {
   handled?: string
   /** Only the standard aftermath: the brain had its turn (M8.2). */
   rules?: boolean
+  /** Back from the chronicler without a plan: all of the standard aftermath runs, not only the brain's part (M8.3). */
+  whole?: boolean
 }
 
 export interface SignalState {

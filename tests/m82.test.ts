@@ -117,7 +117,11 @@ describe('M8.2: a lie about the war, and asking around', () => {
     // He tells them at the church.
     const refugees = fled.filter((id) => engine.state.npcs[id]!.stayAt)
     for (const id of refugees) passOn(engine.world, 'npc_lubbert', id, lie.id)
-    engine.tick(2 * DAY)
+    // The models do their work in the background, as in the game.
+    for (let h = 0; h < 48; h++) {
+      engine.tick(60)
+      await engine.runModels()
+    }
     const asked = engine.state.signals!.log.filter((s) => s.kind === 'doubt' && refugees.includes(s.who[0]!)).map((s) => s.who[0]!)
     const left = refugees.filter((id) => !engine.state.npcs[id]!.stayAt)
     expect(left.length).toBeGreaterThan(0)
@@ -307,14 +311,19 @@ describe('M8.2: intentions of the brain, and the standard aftermath to fall back
     expect(second.state.plans!.some((p) => p.signal === again.id && p.plan === 'aftermath:rose_in_standing')).toBe(true)
   })
 
-  it('with the day\'s budget for signals used up, the standard aftermath does it', () => {
+  it('with the day\'s budget for signals used up, the standard aftermath does it', async () => {
     const mock = new MockLlm('good')
     const engine = new Engine(content, { seed: 32, llm: mock })
     engine.tick(60)
     engine.state.brain = { seq: 0, pending: [], counts: {}, signals: { day: Math.floor(engine.world.now / DAY) * DAY, n: 999 } }
     engine.state.npcs['npc_harmen']!.money += 800
     engine.tick(60)
+    // Harmen has a part in a quest: with a model, the chronicler takes it in the night run (M8.3); he plans nothing, so custom decides.
+    engine.tick(DAY)
+    await engine.runChronicler()
+    engine.tick(60)
     const signal = engine.state.signals!.log.find((s) => s.kind === 'rose_in_standing')!
     expect(signal.handled).toBe('rules')
+    expect(engine.state.plans!.some((p) => p.signal === signal.id && p.plan === 'aftermath:rose_in_standing')).toBe(true)
   })
 })

@@ -5,12 +5,18 @@ import type { World } from './world'
 
 // The chronicler's notebook of storylines (design: lore and world change, "Hoe
 // de kroniekschrijver de wereld ziet"). The motor groups facts that belong
-// together: the same people, the same pattern at the same place. It decides
-// when the chronicler writes: at 04:00 when there is news of belang 3 or more,
-// and at once for belang 4 or 5 or the death of someone with a quest role.
+// together: the same pattern with the same people or at the same place, the
+// same two people whatever happens between them next, or big news about
+// someone a line is about. A busy person does not pull every small thing onto
+// one line, and a full line starts a new one (M8.3).
+// It decides when the chronicler writes: at 04:00 when there is news of
+// belang 3 or more, and at once for belang 4 or 5 or the death of someone
+// with a quest role.
 
 const DAY = 24 * 60
 const OPEN_DAYS = 14
+/** A line takes no more facts than this; after it, the story goes on on a new line. */
+const MAX_FACTS = 12
 /** Everyday noise that tells no story. */
 const QUIET = new Set(['stranger', 'gift'])
 
@@ -30,10 +36,11 @@ export function onFact(world: World, fact: Fact): void {
   const people = fact.about.filter((id) => world.content.npcs.has(id))
   const places = [...new Set([fact.place, ...fact.about.filter((id) => world.content.locations.has(id))])]
   const pattern = fact.pattern ?? fact.kind
+  const shared = (l: Storyline) => people.filter((p) => l.people.includes(p)).length
   const line = state.lines
-    .filter((l) => l.open)
+    .filter((l) => l.open && l.facts.length < MAX_FACTS)
     .sort((a, b) => b.changed - a.changed || a.id.localeCompare(b.id))
-    .find((l) => people.some((p) => l.people.includes(p)) || (l.pattern === pattern && l.places.includes(fact.place) && world.now - l.changed < DAY))
+    .find((l) => (l.pattern === pattern && (shared(l) > 0 || (l.places.includes(fact.place) && world.now - l.changed < DAY))) || shared(l) >= (fact.belang >= 3 ? 1 : 2))
   let target: Storyline
   if (line) {
     // A line is called after the biggest thing that happened on it.
@@ -54,12 +61,12 @@ export function onFact(world: World, fact: Fact): void {
 }
 
 /** Asks the chronicler to write about these lines, unless a waiting run already covers them. */
-export function requestRun(world: World, reason: ChronicleRun['reason'], lines: string[]): ChronicleRun | undefined {
+export function requestRun(world: World, reason: ChronicleRun['reason'], lines: string[], signals: string[] = []): ChronicleRun | undefined {
   const state = chronicleState(world)
   const waiting = new Set(state.pending.flatMap((r) => r.lines))
   const fresh = lines.filter((l) => !waiting.has(l))
-  if (fresh.length === 0) return undefined
-  const run: ChronicleRun = { id: `run_${++state.seq}`, t: world.now, reason, lines: fresh }
+  if (fresh.length === 0 && signals.length === 0) return undefined
+  const run: ChronicleRun = { id: `run_${++state.seq}`, t: world.now, reason, lines: fresh, ...(signals.length ? { signals } : {}) }
   state.pending.push(run)
   return run
 }
@@ -76,5 +83,24 @@ export function nightly(world: World): void {
   const state = world.state.chronicle
   if (!state) return
   const lines = state.lines.filter((l) => unreported(world, l).some((f) => f.belang >= 3)).map((l) => l.id)
-  if (lines.length) requestRun(world, 'night', lines)
+  // Signals that waited for the night (M8.3) go in the same run.
+  const signals = (state.signals ?? []).splice(0)
+  if (lines.length || signals.length) requestRun(world, 'night', lines, signals)
+}
+
+/** The areas of a line: where its places are. */
+function areasOf(world: World, line: Storyline): string[] {
+  return [...new Set(line.places.map((id) => world.content.locations.get(id)?.area).filter((a): a is string => Boolean(a)))]
+}
+
+/** Open lines on their way to a climax (M8.3): the pace of the world weighs them. */
+export function risingLines(world: World): Storyline[] {
+  return (world.state.chronicle?.lines ?? []).filter((l) => l.open && (l.phase === 'rising' || l.phase === 'crisis'))
+}
+
+/** Villages where two lines or more run towards a crisis: the story engine starts nothing new there (design: "Opbouw per verhaallijn"). */
+export function tenseAreas(world: World): Set<string> {
+  const count = new Map<string, number>()
+  for (const line of risingLines(world)) for (const area of areasOf(world, line)) count.set(area, (count.get(area) ?? 0) + 1)
+  return new Set([...count.entries()].filter(([, n]) => n >= 2).map(([area]) => area))
 }

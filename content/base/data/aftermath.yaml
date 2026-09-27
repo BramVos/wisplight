@@ -268,3 +268,58 @@ aftermath:
     steps:
       - id: mind
         do: { thought: $a, text: "Those people are still here, eating our bread.", days: 7 }
+
+  # M8.3: the chronicler plans.
+
+  # Too many newcomers and too little food: those who mind them most band together.
+  - id: friction
+    signal: friction
+    topic: friction
+    brain: true
+    steps:
+      - id: band
+        do: { form_group: [$a, $b, $c], aim: against, about: $area, name: "those who want the newcomers gone" }
+
+  # Two brains' plans cross, and nobody writes the story: they go on, and people talk.
+  - id: plans_cross
+    signal: plans_cross
+    topic: crossing
+    brain: true
+    steps:
+      - id: talk
+        do:
+          tell:
+            kind: crossing
+            about: [$a, $b]
+            place: $place
+            belang: 1
+            title: "{a} and {b} are at cross purposes"
+            precise: "{a} and {b} are each going their own way about it, and each against the other."
+            village: "{a} and {b} are at it again, they say."
+            far: "Two people are at odds."
+
+  # A warning that came true: whoever did not believe it thinks better of the one who gave it, and may be ashamed.
+  - id: warning_proven
+    signal: warning_proven
+    topic: warning
+    about: first
+    steps:
+      - id: credit
+        do: { regard: [$a], to: $b, affinity: 10 }
+      - id: mind
+        do: { thought: $a, text: "{b} tried to warn you, and {b} was right.", days: 14 }
+      - id: shame
+        when: [{ did: chased, who: $a, to: $b }]
+        do: { thought: $a, text: "You ran {b} out of the village for telling the truth. You cannot look at the water without thinking of it.", days: 30 }
+      - id: story
+        when: [{ did: chased, who: $a, to: $b }]
+        do:
+          tell:
+            kind: warning
+            about: [$a, $b]
+            place: $place
+            belang: 3
+            title: "the stranger who was right"
+            precise: "{b} warned them about the dyke, and {a} ran {b} off. The dyke broke all the same."
+            village: "They chased off the one who warned them, and then the dyke went."
+            far: "Nobody listened to the one who warned them, they say."

@@ -6,6 +6,7 @@ import type { Condition } from './quests/schema'
 import type { Claim, Fact, Signal, SignalState } from './state'
 import { tieTo } from './people'
 import { planOf } from './quests/plans'
+import { openness } from './belief'
 import type { World } from './world'
 import { householdKey, householdPurses, standingOf } from './standing'
 
@@ -45,7 +46,7 @@ function scopeOf(world: World, who: string[]): Signal['scope'] {
   const people = who.filter((id) => id === 'player' || world.content.npcs.has(id))
   if (people.length <= 1) return 'person'
   const houses = new Set(people.map((id) => (id === 'player' ? world.state.player.home : (world.npc(id).household ?? world.npc(id).home))))
-  return houses.size === 1 || people.includes('player') ? 'household' : 'many'
+  return houses.size === 1 || people.includes('player') ? 'household' : houses.size === 2 ? 'pair' : 'many'
 }
 
 /** A new fact: every watcher of facts that it fits gives its signal. */
@@ -100,6 +101,7 @@ export function watchHour(world: World): void {
     else if (w.probe && 'standing_rise' in w.probe) risen(world, w, w.probe.standing_rise)
     else if (w.probe && 'grudge' in w.probe) grudges(world, w, w.probe.grudge)
     else if (w.probe && 'strangers_stay' in w.probe) strangersStay(world, w, w.probe.strangers_stay)
+    else if (w.probe && 'friction' in w.probe) friction(world, w, w.probe.friction)
   }
 }
 
@@ -138,6 +140,70 @@ function strangersStay(world: World, w: Watcher, days: number): void {
     const place = guests.map((g) => g.where).sort()[0]!
     queueSignal(world, { kind: w.signal, ...(w.event ? { event: w.event } : {}), who: [host], place, cause: [], belang: w.belang ?? 1, ...(causeOf(world, [...ids]) ? { claim: causeOf(world, [...ids]) } : {}), watcher: w.id })
   }
+}
+
+/** People staying in a place from elsewhere, by area. */
+function newcomersByArea(world: World): Map<string, string[]> {
+  const byArea = new Map<string, string[]>()
+  for (const id of Object.keys(world.state.npcs).sort()) {
+    const s = world.state.npcs[id]!
+    const where = s.stayAt?.where ?? (s.note?.unrest !== 'travelling' ? s.note?.where : undefined)
+    const area = where ? world.content.locations.get(where)?.area : undefined
+    if (!area || s.dead || !world.content.npcs.has(id) || world.location(world.npc(id).home).area === area) continue
+    byArea.set(area, [...(byArea.get(area) ?? []), id])
+  }
+  return byArea
+}
+
+/** Beyond this, a newcomer is from far off (km between areas). */
+const FAR_KM = 30
+
+/**
+ * Friction in a village (M8.3; design: "Wrijving in een dorp"): the share of
+ * newcomers against how open the place is, half again as heavy when food is
+ * short or they come from far. Over the threshold (0.6 in the content: with
+ * food short, about a third newcomers in a village), once a fortnight per
+ * village: a signal about the villagers who mind them most. It touches many
+ * households.
+ */
+function friction(world: World, w: Watcher, threshold: number): void {
+  const seen = signalState(world).seen
+  const short = foodShort(world)
+  for (const [area, guests] of [...newcomersByArea(world).entries()].sort((a, b) => a[0].localeCompare(b[0]))) {
+    const last = Number(seen[`${w.id}:${area}`] ?? -Infinity)
+    // Two guests are no crowd: an inn lives on them.
+    if (guests.length < 3 || world.now - last < 14 * DAY) continue
+    const residents = Object.keys(world.state.npcs)
+      .sort()
+      .filter((id) => world.present(id) && world.content.npcs.has(id) && !world.npc(id).child && !world.npc(id).quirks.includes('spirit') && world.location(world.npc(id).home).area === area && !guests.includes(id))
+    if (!residents.length) continue
+    const place = world.state.npcs[guests[0]!]!.stayAt?.where ?? world.npc(residents[0]!).home
+    // Newcomers from far off (more than a day's walk) weigh half again: another dialect, other ways.
+    const here = world.content.areas.get(area)?.pos
+    const weight = (id: string) => {
+      const there = world.content.areas.get(world.location(world.npc(id).home).area)?.pos
+      return here && there && Math.hypot(here[0] - there[0], here[1] - there[1]) > FAR_KM ? 1.5 : 1
+    }
+    const share = guests.reduce((sum, id) => sum + weight(id), 0) / (guests.length + residents.length)
+    const pressure = (share / Math.max(0.1, openness(world, place))) * (short ? 1.5 : 1)
+    if (pressure < threshold) continue
+    seen[`${w.id}:${area}`] = world.now
+    const liking = (who: string) => guests.reduce((sum, g) => sum + (world.state.bonds?.[who]?.[g]?.affinity ?? 0), 0) / guests.length + world.npc(who).personality.warmth * 10
+    const averse = residents.filter((id) => !guests.some((g) => ['family', 'love'].includes(tieTo(world, id, g)?.kind ?? ''))).sort((a, b) => liking(a) - liking(b) || a.localeCompare(b)).slice(0, 3)
+    if (!averse.length) continue
+    queueSignal(world, { kind: w.signal, ...(w.event ? { event: w.event } : {}), who: averse, place, cause: [], belang: w.belang ?? 3, scope: 'many', watcher: w.id })
+  }
+}
+
+/** Food is short: less comes in of something people eat, or of what it is made from (two steps back along the recipes). */
+export function foodShort(world: World): boolean {
+  const food = new Set([...world.content.items.values()].filter((i) => (i.food ?? 0) > 0).map((i) => i.id))
+  for (let round = 0; round < 2; round++) {
+    for (const type of world.content.objectTypes.values()) {
+      for (const a of type.affordances) if (Object.keys(a.produces).some((p) => food.has(p))) for (const c of Object.keys(a.consumes)) food.add(c)
+    }
+  }
+  return [...food].some((id) => (world.state.market?.[id] ?? 1) < 0.9)
 }
 
 /** What drove people from home: the claim a step of their plan waits to know otherwise. */

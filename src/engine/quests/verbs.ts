@@ -5,7 +5,8 @@ import type { Verb } from './planschema'
 // table says who may use which verb: fixed plans and quests in the content,
 // the standard aftermath (rules), the intentions a brain may choose (only for
 // themselves and their household), and the chronicler (M8.3). It replaces
-// the table "Werkwoorden" of the design as the source; the editor shows it.
+// the table "Werkwoorden" of the design as the source; the reference of the
+// language (reference.ts) shows it in the editor and in CHRONICLER.md.
 
 export type Maker = 'content' | 'rules' | 'brain' | 'chronicler'
 
@@ -47,6 +48,8 @@ export const PERMISSIONS: Record<string, Permission> = {
   chase_away: rules('someone the gates let through chases a stranger off'),
   post: rules('a notice on a board', true),
   return: rules('someone who fled or stayed away goes home', true),
+  settle: rules('someone from elsewhere stays for good', true),
+  form_group: rules('people band together for or against the newcomers of an area', true),
   leave: rules('some go away together for a while', true),
   // Places, groups, the market, realms.
   flee: rules('a group flees to a place', true),
@@ -106,11 +109,4 @@ export function permitted(verb: Verb, maker: Maker): boolean {
   if (maker === 'content') return true
   const p = PERMISSIONS[verbName(verb)]
   return Boolean(p && p[maker])
-}
-
-/** The table as text: for the editor, and for the chronicler's instruction (M8.3). */
-export function verbReference(maker?: Maker): string[] {
-  return Object.entries(PERMISSIONS)
-    .filter(([, p]) => !maker || maker === 'content' || p[maker])
-    .map(([name, p]) => `${name}: ${p.text}${maker ? '' : ` (rules ${p.rules ? 'yes' : 'no'}, brain ${p.brain ? 'yes' : 'no'}, chronicler ${p.chronicler ? 'yes' : 'no'})`}`)
 }

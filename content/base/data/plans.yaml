@@ -143,3 +143,221 @@ plans:
         after: breach
         when: [{ not_flag: dyke_shored }]
         do: { set: dyke_broke }
+      - id: proven
+        after: broke
+        when: [{ flag: dyke_broke }]
+        do:
+          tell:
+            kind: danger
+            about: [loc_oude_zijl_dyke]
+            place: loc_oude_zijl_dyke
+            belang: 3
+            title: the dyke at Oude Zijl was leaking after all
+            precise: "The dyke at Oude Zijl had been leaking, as the stranger said, and now it has given way."
+            village: "It was leaking all along, the dyke! And now look."
+            far: "A dyke gave way where a stranger said it would."
+            claim: { subject: loc_oude_zijl_dyke, key: state, value: leaking }
+
+  # The opponents do not wait for the player (Wereldboek, chapter 14; M8.3, in
+  # place of the scripted antagonists): Cornelis measures a sector every
+  # working evening, Gerrit pulls up stakes at night, Cornelis hires the
+  # Goat-Riders, the schout arrests a peat-cutter, and the Haakman counts the
+  # nights the mill pumps his water. They run from the first day (world.yaml,
+  # plans). Every step comes again each day (every); the flags in between are
+  # how one step tells the next what happened this evening or this night.
+  - id: holleveen_survey
+    name: Cornelis measures the Holleveen
+    topic: survey
+    steps:
+      - id: survey_begins
+        do: { clock: { id: survey, name: Survey of the Holleveen, size: 8, full: "Cornelis sends his report to Graafhaven. In spring the digging begins." } }
+      # A working evening with his chain, no halt, no pulled stakes, and the pits as they were.
+      - id: measures
+        at: { hour: 18 }
+        every: 1
+        when:
+          - { not: { clock_full: survey } }
+          - { not: { weekday: Rustdag } }
+          - { around: npc_cornelis }
+          - { carries: npc_cornelis, item: surveyors_chain }
+          - { not_flag: survey_halted }
+          - { not_flag: stakes_pulled_today }
+          - { place_state: loc_route_peat_pits, is: normal }
+        do: { set: measured_today }
+      # The widow counts the days the chains lie still: her price for Fenna.
+      - id: lies_still
+        at: { hour: 18 }
+        every: 1
+        when: [{ not: { clock_full: survey } }, { not_flag: measured_today }, { any: [{ not: { weekday: Rustdag } }, { flag: survey_halted }] }]
+        do: { count: survey_quiet_days }
+      - id: stakes_back
+        at: { hour: 18 }
+        every: 1
+        when: [{ not: { clock_full: survey } }]
+        do: { unset: stakes_pulled_today }
+      - id: quiet_ends
+        at: { hour: 18 }
+        every: 1
+        when: [{ flag: measured_today }]
+        do: { set: survey_quiet_days, value: 0 }
+      - id: sector
+        at: { hour: 18 }
+        every: 1
+        when: [{ flag: measured_today }]
+        do: { tick: survey }
+      - id: half
+        at: { hour: 18 }
+        every: 1
+        when: [{ flag: measured_today }, { clock: survey, at_least: 4 }, { not: { clock: survey, at_least: 5 } }]
+        do: { fact: { kind: survey, title: half the fen measured, precise: "Master Cornelis has measured half of the Holleveen for the drainage.", village: "The surveyor's measured half the fen already. Half!", far: "The Count is having the Holleveen measured.", belang: 3, about: [npc_cornelis, drainage], place: loc_route_peat_pits } }
+      - id: mist
+        at: { hour: 18 }
+        every: 1
+        when: [{ flag: measured_today }, { clock: survey, at_least: 6 }]
+        do: { set: widow_mist }
+      # The survey done: the report goes to Graafhaven, and Cornelis with it.
+      - id: polder
+        at: { hour: 18 }
+        every: 1
+        when: [{ flag: measured_today }, { clock_full: survey }]
+        do: { set: polder_coming }
+      - id: fen_dies
+        at: { hour: 18 }
+        every: 1
+        when: [{ flag: measured_today }, { clock_full: survey }]
+        do: { set: fen_dying }
+      - id: to_graafhaven
+        at: { hour: 18 }
+        every: 1
+        when: [{ flag: measured_today }, { clock_full: survey }, { alive: npc_cornelis }]
+        do: { vanish: npc_cornelis }
+      - id: report
+        at: { hour: 18 }
+        every: 1
+        when: [{ flag: measured_today }, { clock_full: survey }]
+        do: { fact: { kind: survey, title: the survey of the Holleveen finished, precise: "Master Cornelis finished the survey of the Holleveen and took his report to Graafhaven.", village: "The survey's done. They'll start digging in spring, God help us.", far: "The Count's survey of the Holleveen is finished.", belang: 4, about: [drainage], place: loc_route_peat_pits } }
+      - id: evening_over
+        at: { hour: 18 }
+        every: 1
+        do: { unset: measured_today }
+
+  - id: holleveen_stakes
+    name: Stakes in the night, and the schout
+    topic: stakes
+    steps:
+      # Gerrit pulls stakes once the survey is under way; less often once the Goat-Riders guard them.
+      - id: pulls
+        at: { hour: 2 }
+        every: 1
+        chance: 0.3
+        when: [{ not: { clock_full: survey } }, { not_flag: survey_halted }, { clock: survey, at_least: 2 }, { around: npc_gerrit }, { not_flag: gerrit_arrested }, { any: [{ not_flag: goat_riders_hired }, { flag: riders_quiet }] }]
+        do: { set: pulled_tonight }
+      - id: pulls_guarded
+        at: { hour: 2 }
+        every: 1
+        chance: 0.15
+        when: [{ not: { clock_full: survey } }, { not_flag: survey_halted }, { clock: survey, at_least: 2 }, { around: npc_gerrit }, { not_flag: gerrit_arrested }, { flag: goat_riders_hired }, { not_flag: riders_quiet }]
+        do: { set: pulled_tonight }
+      - id: stakes_out
+        at: { hour: 2 }
+        every: 1
+        when: [{ flag: pulled_tonight }]
+        do: { set: stakes_pulled_today }
+      - id: counted
+        at: { hour: 2 }
+        every: 1
+        when: [{ flag: pulled_tonight }]
+        do: { count: gerrit_pulled }
+      - id: sabotage
+        at: { hour: 2 }
+        every: 1
+        when: [{ flag: pulled_tonight }]
+        do: { fact: { kind: sabotage, title: "the surveyor's stakes pulled up", precise: "Somebody pulled up the surveyor's stakes at the peat pits in the night.", village: "Somebody pulled all the surveyor's stakes out last night. Can't think who.", far: "There is trouble over the drainage in the Holleveen.", belang: 2, about: [drainage], place: loc_route_peat_pits } }
+      - id: night_over
+        at: { hour: 2 }
+        every: 1
+        do: { unset: pulled_tonight }
+      # Cornelis answers by hiring the Goat-Riders to guard his stakes.
+      - id: riders_news
+        at: { hour: 2 }
+        every: 1
+        when: [{ count: gerrit_pulled, at_least: 1 }, { not_flag: goat_riders_hired }, { not_flag: riders_quiet }, { around: npc_cornelis }]
+        do: { fact: { kind: hired, title: the surveyor hired the Goat-Riders, precise: "Master Cornelis has hired the Goat-Riders to guard his stakes at night.", village: "The surveyor's paying the Goat-Riders to guard his stakes now. Imagine.", far: "Robbers guard the Count's surveyor in the Holleveen.", belang: 3, about: [npc_cornelis, goat_riders], place: loc_goose_common } }
+      - id: riders_hired
+        at: { hour: 2 }
+        every: 1
+        when: [{ count: gerrit_pulled, at_least: 1 }, { not_flag: goat_riders_hired }, { not_flag: riders_quiet }, { around: npc_cornelis }]
+        do: { set: goat_riders_hired }
+      # After the second night of pulled stakes the schout locks up a peat-cutter: Gerrit, or else Jan Visser.
+      - id: arrest_gerrit
+        at: { hour: 2 }
+        every: 1
+        when: [{ count: gerrit_pulled, at_least: 2 }, { not_flag: peat_cutter_arrested }, { around: npc_everhard }, { around: npc_gerrit }]
+        do: { fact: { kind: arrest, title: Gerrit Turfsteker arrested, precise: "Schout Everhard arrested Gerrit Turfsteker for pulling up the surveyor's stakes.", village: "The schout's locked up Gerrit Turfsteker! Over the stakes.", far: "A peat-cutter was arrested in the Holleveen.", belang: 3, about: [npc_gerrit, npc_everhard], place: loc_schout_house } }
+      - id: gerrit_locked_up
+        at: { hour: 2 }
+        every: 1
+        when: [{ count: gerrit_pulled, at_least: 2 }, { not_flag: peat_cutter_arrested }, { around: npc_everhard }, { around: npc_gerrit }]
+        do: { send: npc_gerrit, to: loc_schout_house, hours: 48 }
+      - id: gerrit_held
+        at: { hour: 2 }
+        every: 1
+        when: [{ count: gerrit_pulled, at_least: 2 }, { not_flag: peat_cutter_arrested }, { around: npc_everhard }, { around: npc_gerrit }]
+        do: { set: gerrit_arrested }
+      - id: gerrit_since
+        at: { hour: 2 }
+        every: 1
+        when: [{ count: gerrit_pulled, at_least: 2 }, { not_flag: peat_cutter_arrested }, { around: npc_everhard }, { around: npc_gerrit }]
+        do: { stamp: gerrit_locked_up }
+      - id: gerrit_it_was
+        at: { hour: 2 }
+        every: 1
+        when: [{ count: gerrit_pulled, at_least: 2 }, { not_flag: peat_cutter_arrested }, { around: npc_everhard }, { around: npc_gerrit }]
+        do: { set: peat_cutter_arrested, value: npc_gerrit }
+      - id: arrest_jan
+        at: { hour: 2 }
+        every: 1
+        when: [{ count: gerrit_pulled, at_least: 2 }, { not_flag: peat_cutter_arrested }, { around: npc_everhard }, { around: npc_jan_visser }]
+        do: { fact: { kind: arrest, title: Jan Visser arrested, precise: "Schout Everhard arrested Jan Visser for pulling up the surveyor's stakes.", village: "The schout's locked up Jan Visser! Over the stakes.", far: "A peat-cutter was arrested in the Holleveen.", belang: 3, about: [npc_jan_visser, npc_everhard], place: loc_schout_house } }
+      - id: jan_locked_up
+        at: { hour: 2 }
+        every: 1
+        when: [{ count: gerrit_pulled, at_least: 2 }, { not_flag: peat_cutter_arrested }, { around: npc_everhard }, { around: npc_jan_visser }]
+        do: { send: npc_jan_visser, to: loc_schout_house, hours: 48 }
+      - id: jan_it_was
+        at: { hour: 2 }
+        every: 1
+        when: [{ count: gerrit_pulled, at_least: 2 }, { not_flag: peat_cutter_arrested }, { around: npc_everhard }, { around: npc_jan_visser }]
+        do: { set: peat_cutter_arrested, value: npc_jan_visser }
+      # Two days on, Gerrit is out again.
+      - id: gerrit_out
+        at: { hour: 2 }
+        every: 1
+        when: [{ flag: gerrit_arrested }, { since: gerrit_locked_up, hours: 48 }]
+        do: { unset: gerrit_arrested }
+
+  - id: the_haakman_counts
+    name: The Haakman counts the nights
+    topic: haakman
+    steps:
+      # Every second night the mill pumps his water, the Haakman's patience runs shorter.
+      - id: patience
+        at: { days: 1, hour: 2 }
+        every: 2
+        when: [{ object: loc_molenend_mill/de_zwaan, state: { broken: false } }, { not_flag: haakman_at_peace }, { not_flag: haakman_revenge_done }]
+        do: { clock: { id: haakman_revenge, name: "The Haakman's revenge", size: 4, full: "The water rises against the dyke at Oude Zijl." } }
+      - id: counts
+        at: { days: 1, hour: 2 }
+        every: 2
+        when: [{ object: loc_molenend_mill/de_zwaan, state: { broken: false } }, { not_flag: haakman_at_peace }, { not_flag: haakman_revenge_done }]
+        do: { tick: haakman_revenge }
+      - id: revenge
+        at: { days: 1, hour: 2 }
+        every: 2
+        when: [{ clock_full: haakman_revenge }, { not_flag: haakman_revenge_done }]
+        do: { plan: dyke_breach }
+      - id: revenge_done
+        at: { days: 1, hour: 2 }
+        every: 2
+        when: [{ clock_full: haakman_revenge }]
+        do: { set: haakman_revenge_done }

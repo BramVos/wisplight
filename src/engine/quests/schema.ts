@@ -8,7 +8,7 @@ import { z } from 'zod'
 
 const Id = z.string().regex(/^[a-z0-9_]+$/)
 const BAND = z.enum(['Hostile', 'Unfriendly', 'Wary', 'Neutral', 'Friendly', 'Warm', 'Devoted'])
-const PLACE_STATES = ['normal', 'flooded', 'damaged', 'destroyed', 'abandoned', 'occupied', 'drained'] as const
+export const PLACE_STATES = ['normal', 'flooded', 'damaged', 'destroyed', 'abandoned', 'occupied', 'drained'] as const
 export const PlaceState = z.enum(PLACE_STATES)
 export type PlaceStateName = (typeof PLACE_STATES)[number]
 
@@ -62,20 +62,23 @@ type Cond =
   | { object: string; state: Record<string, string | number | boolean> }
   // For plans (M8.1): about people, by id or by a binding of the plan.
   | { is_player: string }
+  | { around: string }
+  | { carries: string; item: string }
   | { has_work: string }
   | { lives_with_parent: string }
   | { commute: string; at_least: number }
   | { thinks_home_stands: string }
   | { tie: [string, string]; role: string }
   | { would_lie: string }
+  | { did: string; who: string; to: string }
   | { any: Cond[] }
   | { all: Cond[] }
   | { not: Cond }
 
 export const ConditionSchema: z.ZodType<Cond> = z.lazy(() =>
   z.union([
-    z.object({ flag: z.string(), is: z.union([z.string(), z.number(), z.boolean()]).optional() }).strict(),
-    z.object({ not_flag: z.string() }).strict(),
+    z.object({ flag: z.string(), is: z.union([z.string(), z.number(), z.boolean()]).optional() }).strict().describe('A flag is set, or has this value.'),
+    z.object({ not_flag: z.string() }).strict().describe('A flag is not set.'),
     z
       .object({
         knows: z.union([
@@ -94,60 +97,47 @@ export const ConditionSchema: z.ZodType<Cond> = z.lazy(() =>
             .strict(),
         ]),
       })
-      .strict(),
-    z.object({ has: z.string(), qty: z.number().int().positive().optional() }).strict(),
-    z.object({ money: z.number().int() }).strict(),
-    z.object({ attitude: z.string(), at_least: BAND }).strict(),
-    z.object({ clock: z.string(), at_least: z.number().int() }).strict(),
-    z.object({ clock_full: z.string() }).strict(),
-    z.object({ at: z.string() }).strict(),
-    z.object({ npc_at: z.string(), place: z.string() }).strict(),
-    z.object({ dead: z.string() }).strict(),
-    z.object({ alive: z.string() }).strict(),
-    /** quest_id:stage_id */
-    z.object({ stage: z.string() }).strict(),
-    /** quest_id:outcome_id */
-    z.object({ outcome: z.string() }).strict(),
-    /** Days since this quest began. */
-    z.object({ days: z.number().int().min(0) }).strict(),
-    /** Days since the game began. */
-    z.object({ day: z.number().int().min(0) }).strict(),
-    z.object({ reputation: z.string(), at_least: z.number().int() }).strict(),
-    z.object({ companion: z.string() }).strict(),
-    z.object({ place_state: z.string(), is: PlaceState }).strict(),
-    /** A fact of this kind exists. */
-    z.object({ fact: z.string() }).strict(),
-    z.object({ level: z.number().int() }).strict(),
-    /** At least this many hours since the flag was stamped (or it never was). */
-    z.object({ since: z.string(), hours: z.number().min(0) }).strict(),
-    /** A counting flag has reached a number. */
-    z.object({ count: z.string(), at_least: z.number().int() }).strict(),
-    z.object({ weekday: z.string() }).strict(),
-    z.object({ night: z.boolean() }).strict(),
-    /** The player holds an iron weapon. */
-    z.object({ wields: z.literal('iron') }).strict(),
-    /** Someone is where the player is. */
-    z.object({ here: z.string() }).strict(),
-    z.object({ weather: z.string() }).strict(),
-    /** An object's state: 'loc_molenend_mill/de_zwaan' with broken false is the mill turning. */
-    z.object({ object: z.string(), state: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])) }).strict(),
-    /** The one meant is the player. */
-    z.object({ is_player: z.string() }).strict(),
-    /** Has work somewhere. */
-    z.object({ has_work: z.string() }).strict(),
-    /** Lives in one house with a parent. */
-    z.object({ lives_with_parent: z.string() }).strict(),
-    /** The walk from home to work takes at least so many minutes. */
-    z.object({ commute: z.string(), at_least: z.number().int().min(0) }).strict(),
-    /** Does not believe their home is flooded, destroyed or occupied (M8.1). */
-    z.object({ thinks_home_stands: z.string() }).strict(),
-    /** What the first is to the second: spouse, sweetheart, friend. */
-    z.object({ tie: z.tuple([z.string(), z.string()]), role: z.string() }).strict(),
-    /** The gate for lying among people lets them through (M8.2): honesty -1 or lower, grown. */
-    z.object({ would_lie: z.string() }).strict(),
-    z.object({ any: z.array(ConditionSchema) }).strict(),
-    z.object({ all: z.array(ConditionSchema) }).strict(),
-    z.object({ not: ConditionSchema }).strict(),
+      .strict()
+      .describe('The player knows a topic; or, with who, someone believes a claim (value, or anything but not), heard at least at this level, within so many days, perhaps doubting.'),
+    z.object({ has: z.string(), qty: z.number().int().positive().optional() }).strict().describe('The player has a thing, so many of it.'),
+    z.object({ money: z.number().int() }).strict().describe('The player has at least this much money, in the smallest coin.'),
+    z.object({ attitude: z.string(), at_least: BAND }).strict().describe('Someone thinks at least this well of the player.'),
+    z.object({ clock: z.string(), at_least: z.number().int() }).strict().describe('A progress clock has at least so many segments filled.'),
+    z.object({ clock_full: z.string() }).strict().describe('A progress clock is full.'),
+    z.object({ at: z.string() }).strict().describe('The player is at a place, or in an area.'),
+    z.object({ npc_at: z.string(), place: z.string() }).strict().describe('Someone is at a place, or in an area.'),
+    z.object({ dead: z.string() }).strict().describe('Someone is dead.'),
+    z.object({ alive: z.string() }).strict().describe('Someone is alive.'),
+    z.object({ stage: z.string() }).strict().describe('A quest is at a stage: quest_id:stage_id.'),
+    z.object({ outcome: z.string() }).strict().describe('A quest ended this way: quest_id:outcome_id.'),
+    z.object({ days: z.number().int().min(0) }).strict().describe('At least so many days since this quest began.'),
+    z.object({ day: z.number().int().min(0) }).strict().describe('At least so many days since the game began.'),
+    z.object({ reputation: z.string(), at_least: z.number().int() }).strict().describe("The player's reputation with a faction is at least this."),
+    z.object({ companion: z.string() }).strict().describe('Someone travels with the player.'),
+    z.object({ place_state: z.string(), is: PlaceState }).strict().describe('A place is flooded, damaged, destroyed, abandoned, occupied or normal.'),
+    z.object({ fact: z.string() }).strict().describe('A fact of this kind exists.'),
+    z.object({ level: z.number().int() }).strict().describe('The player is at least this level.'),
+    z.object({ since: z.string(), hours: z.number().min(0) }).strict().describe('At least this many hours since the flag was stamped, or it never was.'),
+    z.object({ count: z.string(), at_least: z.number().int() }).strict().describe('A counting flag has reached a number.'),
+    z.object({ weekday: z.string() }).strict().describe('It is this day of the week.'),
+    z.object({ night: z.boolean() }).strict().describe('It is night, or it is not.'),
+    z.object({ wields: z.literal('iron') }).strict().describe('The player holds an iron weapon.'),
+    z.object({ here: z.string() }).strict().describe('Someone is where the player is.'),
+    z.object({ weather: z.string() }).strict().describe('The weather is this.'),
+    z.object({ object: z.string(), state: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])) }).strict().describe('An object is in this state: loc_molenend_mill/de_zwaan with broken false is the mill turning.'),
+    z.object({ is_player: z.string() }).strict().describe('The one meant is the player.'),
+    z.object({ around: z.string() }).strict().describe('Someone is around: alive, in the world, and not travelling with the player.'),
+    z.object({ carries: z.string(), item: z.string() }).strict().describe('Someone carries a thing.'),
+    z.object({ has_work: z.string() }).strict().describe('Someone has work somewhere.'),
+    z.object({ lives_with_parent: z.string() }).strict().describe('Someone lives in one house with a parent.'),
+    z.object({ commute: z.string(), at_least: z.number().int().min(0) }).strict().describe("Someone's walk from home to work takes at least so many minutes."),
+    z.object({ thinks_home_stands: z.string() }).strict().describe('Someone does not believe their home is flooded, destroyed or occupied.'),
+    z.object({ tie: z.tuple([z.string(), z.string()]), role: z.string() }).strict().describe('What the first is to the second: spouse, sweetheart, friend, rival, neighbour.'),
+    z.object({ would_lie: z.string() }).strict().describe('The gate for lying lets someone through: honesty -1 or lower, grown.'),
+    z.object({ did: z.string(), who: z.string(), to: z.string() }).strict().describe('A fact of this kind about the first and the second, in that order: who chased whom off.'),
+    z.object({ any: z.array(ConditionSchema) }).strict().describe('At least one of these holds.'),
+    z.object({ all: z.array(ConditionSchema) }).strict().describe('All of these hold.'),
+    z.object({ not: ConditionSchema }).strict().describe('This does not hold.'),
   ]),
 )
 export type Condition = Cond

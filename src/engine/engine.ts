@@ -41,10 +41,10 @@ import { fightsBack, mayAttackFirst, mayLend } from './social/gates'
 import { flirt, marry } from './social/romance'
 import { conversationActions, evaluate, expireConditions, questAction, questlog, questPage, questsOnDeath, runQuestAction, setPlaceState, startQuest, triggers, type QuestHost } from './quests/engine'
 import { PlaceState } from './quests/schema'
-import { antagonists } from './quests/antagonists'
-import { plansDue, startPlan } from './quests/plans'
+import { plansDue, startPlan, startWorldPlans } from './quests/plans'
 import { primeWatchers, processSignals } from './signals'
 import { mediateBetween } from './aftermath'
+import { groupBetween, mediateGroup, sideWith } from './social/groups'
 import { breakOff, listen } from './chatter'
 import { realmLines, realmPage } from './social/realms'
 import { kmFromPlayer, posOf } from './nearby'
@@ -212,6 +212,8 @@ export class Engine {
     if (!state.bonds) seedBonds(this.world)
     // What the watchers see now is the start: only what changes after this is a signal (M8.1).
     if (!state.signals) primeWatchers(this.world)
+    // The opponents who do not wait for the player, from the first day or from loading an old save (M8.3).
+    startWorldPlans(this.world, this.questHost)
     if (!options.state) {
       seedNews(this.world)
       this.arrive()
@@ -513,7 +515,6 @@ export class Engine {
     const out: Output[] = []
     for (const id of this.world.deaths.splice(0)) out.push(...questsOnDeath(this.world, this.questHost, id))
     expireConditions(this.world)
-    out.push(...antagonists(this.world, this.questHost))
     // Signals go to their handler first, so what they plan runs with the rest (M8.1).
     out.push(...processSignals(this.world, this.questHost))
     out.push(...plansDue(this.world, this.questHost))
@@ -559,6 +560,8 @@ export class Engine {
     if (/^(?:listen|eavesdrop|overhear)(?:\s+(?:in|to|at)\b.*)?$/i.test(text.trim()) && !this.state.talk) return [...listen(this.world), ...this.pass(2)]
     const peace = /^(?:mediate|make peace)\s+between\s+(.+?)\s+and\s+(.+)$/i.exec(text.trim())
     if (peace && !this.state.talk) return this.makePeace(peace[1]!, peace[2]!)
+    const side = /^(?:side|stand)\s+with\s+(.+)$/i.exec(text.trim())
+    if (side && !this.state.talk) return this.sideWith(side[1]!)
     const barge = /^(?:take|catch|board)\s+(?:the\s+)?barge(?:\s+to\s+(.+))?$|^travel\s+by\s+barge(?:\s+to\s+(.+))?$/i.exec(text)
     if (barge && !this.state.talk) return takeBarge(this.world, (barge[1] ?? barge[2])?.toLowerCase().replace(/^the\s+/, '').trim(), (minutes) => this.pass(minutes))
     const talk = this.state.talk
@@ -1233,12 +1236,24 @@ export class Engine {
     if (!here.includes(a) && !here.includes(b)) return [{ kind: 'error', text: `You would have to find ${callName(this.world.npc(a))} or ${callName(this.world.npc(b))} first.` }]
     const outcome = mediateBetween(this.world, a, b, 'player')
     const [na, nb] = [callName(this.world.npc(a)), callName(this.world.npc(b))]
-    if (outcome === 'none') return [{ kind: 'narration', text: `${na} and ${nb} have nothing between them that needs settling.` }]
+    if (outcome === 'none') {
+      // Between a group and the newcomers it is against (M8.3).
+      const group = groupBetween(this.world, a, b)
+      if (group) return [...mediateGroup(this.world, group, a, b), ...this.pass(30)]
+      return [{ kind: 'narration', text: `${na} and ${nb} have nothing between them that needs settling.` }]
+    }
     const out = this.pass(30)
     return [
       { kind: 'narration', text: outcome === 'reconciled' ? `You talk it through with ${na} and ${nb}, one and then the other, and then both. In the end they shake on it, grudgingly.` : `You try. But one of them trusts you and the other does not, and by the end it is worse than before.` },
       ...out,
     ]
+  }
+
+  /** SIDE WITH <someone> (M8.3): with a group, or with the newcomers it is against. */
+  private sideWith(name: string): Output[] {
+    const who = findNpcAnywhere(this.world, name)
+    if (!who) return [{ kind: 'error', text: `Side with whom?` }]
+    return sideWith(this.world, who)
   }
 
   /** Mired: no walking until you work free. Catform: no hands and no words. */

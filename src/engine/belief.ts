@@ -190,3 +190,24 @@ export function askTrader(world: World, asker: string, trader: string, subject: 
   delete mine[told.id]!.stance
   return answer
 }
+
+/**
+ * A warning that comes true (M8.3; design: "Een wedloop die niemand plant"):
+ * a true fact says what someone rejected or doubted before. They believe it
+ * now, and it is a signal about them and whoever told them, once.
+ */
+export function provenWarnings(world: World, fact: Fact): void {
+  const claim = fact.claim
+  const store = world.state.news
+  if (!claim || fact.truth === false || !store) return
+  for (const [who, heard] of Object.entries(store.heard).sort((a, b) => a[0].localeCompare(b[0]))) {
+    if (who === 'player' || !world.content.npcs.has(who)) continue
+    for (const [id, h] of Object.entries(heard)) {
+      if (!h.stance || id === fact.id) continue
+      const said = store.facts.find((f) => f.id === id)
+      if (!said?.claim || said.t > fact.t || said.claim.subject !== claim.subject || said.claim.key !== claim.key || said.claim.value !== claim.value) continue
+      delete h.stance
+      queueSignal(world, { kind: 'warning_proven', who: [who, ...(world.content.npcs.has(h.from) ? [h.from] : [])], place: world.state.npcs[who]?.location ?? fact.place, cause: [fact.id, id], belang: 2, claim, watcher: 'rules' })
+    }
+  }
+}

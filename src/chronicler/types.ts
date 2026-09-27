@@ -5,7 +5,41 @@
 /** Ids are the caller's own. The chronicler shows the model short keys instead and maps them back. */
 export type Id = string
 
-export type CardKind = 'person' | 'place' | 'area' | 'lore' | 'request' | 'item' | 'realm'
+export type CardKind = 'person' | 'place' | 'area' | 'lore' | 'request' | 'item' | 'realm' | 'signal'
+
+/** Where a storyline stands, as the chronicler sees it: the caller can pace the world by it. */
+export type Phase = 'setup' | 'rising' | 'crisis' | 'resolution' | 'closed'
+export const PHASES: Phase[] = ['setup', 'rising', 'crisis', 'resolution', 'closed']
+
+/** A verb the caller lets the chronicler use in a step of a plan, and what it needs. */
+export interface StepVerb {
+  name: string
+  /** What it does, for the model. */
+  text: string
+  /** Who does it: nobody, one person, or several (each does it). */
+  who: 'none' | 'one' | 'two' | 'many'
+  /** What kind of key the target is, if it has one. */
+  target?: CardKind[]
+  /** What the detail is, if it has one: a role, a text, a number. */
+  detail?: string
+}
+
+/**
+ * A change the caller wants the chronicler to plan for (M8.3): it touches
+ * many people, or matters a lot, or the rules and a brain could not settle
+ * it. A group is the people it is about who may each go their own way.
+ */
+export interface SignalCard {
+  id: Id
+  text: string
+  who: Id[]
+  place: Id
+  /** What happens by custom if the chronicler plans nothing. */
+  standard: string
+  group?: Id[]
+  /** For two people at odds: who both of them trust, a mediator to choose. */
+  trusted?: Id[]
+}
 
 /** One line about someone or something that occurs in the overview. */
 export interface Card {
@@ -38,6 +72,7 @@ export interface ChronicleLine {
   pattern?: string
   /** The chronicler's own note so far, at most three lines. */
   summary: string[]
+  phase?: Phase
   roles: { role: string; who: Id }[]
   hooks: string[]
   next?: string
@@ -103,6 +138,11 @@ export interface ChronicleInput {
   realms?: Card[]
   /** Storylines with an event so big that its consequences may be planned (design: "Grote gebeurtenissen"). */
   mayPlan?: Id[]
+  /** Changes to plan for (M8.3), and the verbs a step may use. Without verbs, no steps. */
+  signals?: SignalCard[]
+  verbs?: StepVerb[]
+  /** Other storylines building up now, and how many came to a crisis this week (M8.3): the pace. */
+  pace?: { building: { title: string; phase: Phase }[]; climaxes: number }
 }
 
 // ---------------------------------------------------------------- what comes back, in the caller's ids
@@ -129,6 +169,7 @@ export interface LineOp {
   hooks: string[]
   next: string
   close: boolean
+  phase?: Phase
 }
 
 /** A request for the player: worked out from a hook, or a better wording of an open one. */
@@ -172,11 +213,26 @@ export type PlanEffectOp =
   | { market: Id; factor: number }
   | { flee: Id; to: Id; days: number }
 
-/** The consequences of a big event in phases (design: "Effectplan in fases"). */
+/** One step of a plan: after so many hours, a verb of the caller's list, who does it, what at, and a detail. */
+export interface StepOp {
+  after: number
+  verb: string
+  who: Id[]
+  target?: Id
+  detail?: string
+}
+
+/**
+ * Consequences in phases (design: "Effectplan in fases"), for a storyline
+ * marked PLAN; or steps (M8.3) for such a line, for a signal to plan for,
+ * or as the one beat of any other storyline in the run.
+ */
 export interface PlanOp {
-  line: Id
+  line?: Id
+  signal?: Id
   name: string
   phases: { after: number; effects: PlanEffectOp[] }[]
+  steps?: StepOp[]
 }
 
 export interface ChronicleOutput {

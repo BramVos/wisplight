@@ -70,3 +70,8 @@ watchers:
   - id: strangers_stay
     signal: strangers_stay
     probe: { strangers_stay: 5 }
+
+  # Too many newcomers for the village, and food short: friction.
+  - id: friction
+    signal: friction
+    probe: { friction: 0.6 }

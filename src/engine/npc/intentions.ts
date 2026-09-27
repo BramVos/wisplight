@@ -5,6 +5,7 @@ import type { Intention } from '../quests/planschema'
 import type { Signal } from '../state'
 import type { World } from '../world'
 import { bindValue, type PlanContext } from '../aftermath'
+import { queueSignal } from '../signals'
 
 // Intentions (M8.2; design: signalen en nasleep, "Van doel naar voornemen" and
 // "Bijsturing na de review"). An intention is a plan in the content, like the
@@ -17,11 +18,12 @@ import { bindValue, type PlanContext } from '../aftermath'
 
 const DAY = 24 * 60
 
-/** The bindings of a signal, as the standard aftermath has them. */
-export function signalBindings(world: World, signal: Signal): Record<string, string> {
+/** The bindings of a signal, as the standard aftermath has them; for one person's choice, they are $a and the others follow. */
+export function signalBindings(world: World, signal: Signal, first?: string): Record<string, string> {
   const bind: Record<string, string> = { signal: signal.id, place: signal.place }
-  signal.who.forEach((id, i) => (bind[String.fromCharCode(97 + i)] = id))
-  if (signal.who[0]) bind['who'] = signal.who[0]
+  const who = first ? [first, ...signal.who.filter((id) => id !== first)] : signal.who
+  who.forEach((id, i) => (bind[String.fromCharCode(97 + i)] = id))
+  if (who[0]) bind['who'] = who[0]
   if (signal.claim) {
     bind['subject'] = signal.claim.subject
     bind['key'] = signal.claim.key
@@ -35,7 +37,7 @@ export function signalBindings(world: World, signal: Signal): Record<string, str
 
 /** The intentions of the content this person may choose for this signal. */
 export function offered(world: World, signal: Signal, npcId: string): Intention[] {
-  const bind = { ...signalBindings(world, signal), a: npcId, who: npcId }
+  const bind = signalBindings(world, signal, npcId)
   const ctx: PlanContext = { plan: { plan: '', started: world.now, phase: 0, cause: '', groups: {} }, bind, host: { pass: () => [] }, out: [] }
   return [...world.content.intentions.values()]
     .filter((i) => i.signal === signal.kind && (!i.event || i.event === signal.event))
@@ -90,16 +92,16 @@ export function applyIntention(world: World, npcId: string, signalId: string, re
   const answer = reply as { choice?: unknown; fill?: unknown } | undefined
   const choice = typeof answer?.choice === 'string' ? answer.choice : 'none'
   if (choice === 'none') {
-    backToRules(world, signalId)
+    noneChosen(world, signalId)
     return []
   }
   const intention = offered(world, signal, npcId).find((i) => i.id === choice)
   if (!intention) {
-    backToRules(world, signalId)
+    noneChosen(world, signalId)
     return [`intention ${choice}: not one offered`]
   }
   const fill = Array.isArray(answer?.fill) ? (answer.fill as { name?: unknown; key?: unknown }[]) : []
-  const bind: Record<string, string> = { ...signalBindings(world, signal), a: npcId, who: npcId }
+  const bind = signalBindings(world, signal, npcId)
   const problems: string[] = []
   for (const [name, kind] of Object.entries(intention.choice.open)) {
     const value = fill.find((f) => f.name === name)?.key
@@ -108,21 +110,48 @@ export function applyIntention(world: World, npcId: string, signalId: string, re
     else bind[name] = value
   }
   if (problems.length) {
-    backToRules(world, signalId)
+    noneChosen(world, signalId)
     return problems
   }
   const subjects = intention.about === 'first' ? [npcId] : signal.who
-  ;(world.state.plans ??= []).push({ plan: `intention:${intention.id}`, id: `plan_${(world.state.planSeq = (world.state.planSeq ?? 0) + 1)}`, started: world.now, phase: 0, cause: signal.kind, groups: {}, source: 'brain', topic: intention.topic, subjects, signal: signal.id, steps: {}, expires: world.now + intention.expires * DAY, bind })
+  const id = `plan_${(world.state.planSeq = (world.state.planSeq ?? 0) + 1)}`
+  ;(world.state.plans ??= []).push({ plan: `intention:${intention.id}`, id, started: world.now, phase: 0, cause: signal.kind, groups: {}, source: 'brain', topic: intention.topic, subjects, signal: signal.id, steps: {}, expires: world.now + intention.expires * DAY, bind })
   signal.handled = 'brain'
+  crossing(world, npcId, id, bind)
   return []
 }
 
-/** The brain made no choice: the signal goes to the standard aftermath after all. */
-export function backToRules(world: World, signalId: string): void {
+/**
+ * Two brains' plans that cross (M8.3): this one is about someone whose own
+ * running intention is about this person. They become one story: a signal
+ * for the chronicler, who writes one plan with an outcome.
+ */
+function crossing(world: World, npcId: string, planId: string, bind: Record<string, string>): void {
+  const others = new Set(Object.entries(bind).filter(([k, v]) => !['a', 'who', 'signal', 'place', 'area', 'subject', 'key', 'value', 'at'].includes(k) && world.content.npcs.has(v) && v !== npcId).map(([, v]) => v))
+  for (const p of world.state.plans ?? []) {
+    if (p.id === planId || p.source !== 'brain' || p.ended !== undefined) continue
+    const theirs = (p.subjects ?? [])[0]
+    if (!theirs || !others.has(theirs)) continue
+    const aboutMe = Object.entries(p.bind ?? {}).some(([k, v]) => !['a', 'who'].includes(k) && v === npcId)
+    if (!aboutMe) continue
+    queueSignal(world, { kind: 'plans_cross', who: [npcId, theirs], place: world.state.npcs[npcId]!.location, cause: [planId, p.id!], belang: 3, watcher: 'rules' })
+    return
+  }
+}
+
+/** A brain chose nothing (or nothing valid): custom decides, unless another brain's choice for the same signal is still to come or made. */
+function noneChosen(world: World, signalId: string): void {
+  const waiting = world.state.brain?.pending.some((p) => p.signal === signalId)
+  const chosen = (world.state.plans ?? []).some((p) => p.signal === signalId && p.source === 'brain')
+  if (!waiting && !chosen) backToRules(world, signalId)
+}
+
+/** The brain made no choice, or the chronicler no plan (whole): the signal goes to the standard aftermath after all. */
+export function backToRules(world: World, signalId: string, whole = false): void {
   const signal = signalOf(world, signalId)
   const state = world.state.signals
   if (!signal || !state || state.queue.some((s) => s.id === signalId)) return
-  state.queue.push({ ...signal, rules: true, handled: undefined })
+  state.queue.push({ ...signal, rules: true, handled: undefined, ...(whole ? { whole } : {}) })
 }
 
 export function signalOf(world: World, id: string): Signal | undefined {

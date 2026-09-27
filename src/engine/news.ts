@@ -4,7 +4,7 @@ import { onFact } from './storylines'
 import { concerns, triggerChoice } from './npc/goals'
 import { watchFact } from './signals'
 import { standingOf } from './standing'
-import { heardClaim } from './belief'
+import { heardClaim, provenWarnings } from './belief'
 import type { Claim, Fact, Heard } from './state'
 import type { World } from './world'
 
@@ -87,6 +87,7 @@ export function recordFact(world: World, input: FactInput): Fact {
   }
   onFact(world, fact)
   watchFact(world, fact)
+  provenWarnings(world, fact)
   return fact
 }
 

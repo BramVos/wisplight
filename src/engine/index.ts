@@ -53,3 +53,4 @@ export { WatcherSchema, AftermathSchema, VerbTextSchema, type Watcher, type Afte
 export * from './edit'
 export * from './editor'
 export * from './playtest'
+export { languageReference, referenceMarkdown, withReference, type Reference, type ReferenceEntry } from './quests/reference'

@@ -12,6 +12,8 @@ import { isNear, noun, ties } from './people'
 import { askLine, openRequest, openRequestsOf, requestName } from './requests'
 import type { ChronicleRun, Claim, Fact, LoreEntry, Storyline } from './state'
 import { chronicleState, unreported } from './storylines'
+import { chroniclerVerbs, extraCards, signalCards, startChroniclePlan, stepsFromOp, unplanned } from './planning'
+import { withoutReference } from './quests/reference'
 import type { World } from './world'
 
 // The game's side of the chronicler (design: lore and world change). The
@@ -82,6 +84,7 @@ export function buildInput(world: World, run: ChronicleRun): ChronicleInput {
     title: line.title,
     ...(line.pattern ? { pattern: line.pattern } : {}),
     summary: line.summary,
+    ...(line.phase ? { phase: line.phase } : {}),
     roles: line.roles,
     hooks: line.hooks,
     next: line.next,
@@ -140,8 +143,10 @@ export function buildInput(world: World, run: ChronicleRun): ChronicleInput {
     .slice(-5)
     .map((l) => ({ id: l.id, title: l.title }))
 
-  return {
-    instruction: world.content.chronicler ?? FALLBACK_INSTRUCTION,
+  // Signals to plan for (M8.3), with the people and places they bring, and the verbs he may use.
+  const planning = signalCards(world, run.signals ?? [])
+  const input: ChronicleInput = {
+    instruction: withoutReference(world.content.chronicler ?? FALLBACK_INSTRUCTION),
     world: worldFrame(world.content),
     catalogue: catalogue(world),
     now: when(world, world.now),
@@ -155,10 +160,14 @@ export function buildInput(world: World, run: ChronicleRun): ChronicleInput {
     // Big events only (M7.2): the lands, whose relations may shift, and the storylines whose consequences may be planned.
     ...(big.length ? { realms: [...world.content.realms.values()].map((r) => ({ id: r.id, kind: 'realm' as const, name: r.name, text: `Ruled by ${r.ruler}, from ${r.capital}.` })) } : {}),
     ...(plannable.length ? { mayPlan: plannable } : {}),
+    ...(planning.signals.length ? { signals: planning.signals } : {}),
+    verbs: chroniclerVerbs(),
+    pace: { building: building(world, run), climaxes: climaxes(world) },
   }
+  extraCards(world, input, planning.people, planning.places, (id) => personCard(world, id, new Set([...cast, ...planning.people])), (id) => placeCard(world, id))
+  return input
 }
 
-/** A plan of the chronicler's is a plan like the fixed ones, with an id of its own (M7.2). */
 /**
  * Whether the chronicler may plan consequences now: not while a fixed plan
  * that lets people flee started in the last day, for that covers the event.
@@ -173,7 +182,8 @@ export function mayPlan(world: World): boolean {
   })
 }
 
-function toPlan(world: World, op: PlanOp, id: string, cause: Claim | undefined): Plan | undefined {
+/** A plan of the chronicler's is a plan like the fixed ones, with an id of its own (M7.2). */
+function toPlan(world: World, op: PlanOp & { line: string }, id: string, cause: Claim | undefined): Plan | undefined {
   const groups: Plan['groups'] = {}
   const steps: Plan['steps'] = []
   const phases = op.phases.map((phase, i) => ({
@@ -294,6 +304,21 @@ function slug(name: string): string {
  * Checks the chronicler's operations against the world and applies what holds.
  * Returns what was dropped, and why. Lines it did not cover get templates.
  */
+/** Climaxes a week at most: a third line waits. */
+const MAX_CLIMAXES = 2
+
+/** Lines that came to a crisis in the last seven days. */
+function climaxes(world: World): number {
+  return chronicleState(world).lines.filter((l) => l.crisisAt !== undefined && world.now - l.crisisAt < 7 * 24 * 60).length
+}
+
+/** Other lines that build up now, for the pace (M8.3). */
+function building(world: World, run: ChronicleRun): { title: string; phase: 'rising' | 'crisis' }[] {
+  return chronicleState(world)
+    .lines.filter((l) => l.open && !run.lines.includes(l.id) && (l.phase === 'rising' || l.phase === 'crisis'))
+    .map((l) => ({ title: l.title, phase: l.phase as 'rising' | 'crisis' }))
+}
+
 export function applyOutput(world: World, run: ChronicleRun, output: ChronicleOutput | null, by: LoreEntry['by'] = 'chronicler'): string[] {
   const state = chronicleState(world)
   const problems: string[] = []
@@ -350,7 +375,18 @@ export function applyOutput(world: World, run: ChronicleRun, output: ChronicleOu
     line.roles = op.roles.filter((r) => world.content.npcs.has(r.who))
     line.hooks = op.hooks
     line.next = op.next
-    if (op.close) line.open = false
+    if (op.phase === 'crisis' && line.phase !== 'crisis' && climaxes(world) >= MAX_CLIMAXES) {
+      // No three climaxes in one week (design: "Opbouw per verhaallijn"): this one builds a while longer.
+      problems.push(`line ${line.id}: two others came to a crisis this week, it stays rising`)
+      line.phase = 'rising'
+    } else if (op.phase) {
+      if (op.phase === 'crisis' && line.phase !== 'crisis') line.crisisAt = world.now
+      line.phase = op.phase
+    }
+    if (op.close) {
+      line.open = false
+      line.phase = 'closed'
+    }
     noted.add(line.id)
   }
 
@@ -405,22 +441,44 @@ export function applyOutput(world: World, run: ChronicleRun, output: ChronicleOu
     }
     shiftTension(world, op.between[0], op.between[1], Math.max(-5, Math.min(5, op.delta)), op.why)
   }
+  // Plans (M7.2, M8.3): consequences of a big event, a plan for a signal, or one beat of a storyline.
+  const planned = new Set<string>()
   for (const op of out.plans ?? []) {
-    if (!input.mayPlan?.includes(op.line)) {
+    if (op.signal) {
+      if (!(run.signals ?? []).includes(op.signal)) {
+        problems.push(`plan "${op.name}": not a signal of this run`)
+        continue
+      }
+      if (startChroniclePlan(world, op, state.runs + 1, problems)) planned.add(op.signal)
+      else problems.push(`plan "${op.name}": no valid step, custom decides`)
+      continue
+    }
+    if (!op.line || !input.mayPlan?.includes(op.line)) {
+      // One beat for a storyline of the run, and never a second while one still waits (design: "Opbouw per verhaallijn").
+      if (op.line && run.lines.includes(op.line) && (op.steps?.length ?? 0) === 1 && !op.phases.length) {
+        const waiting = (world.state.plans ?? []).some((p) => p.source === 'chronicler' && p.line === op.line && p.topic === 'beat' && p.ended === undefined)
+        if (waiting) problems.push(`beat "${op.name}": the line has a beat still to come`)
+        else if (!startChroniclePlan(world, op, state.runs + 1, problems)) problems.push(`beat "${op.name}": not a valid step`)
+        continue
+      }
       problems.push(`plan "${op.name}": not offered`)
       continue
     }
     const id = `chronicle_${state.runs + 1}_${(world.state.dynamicPlans ? Object.keys(world.state.dynamicPlans).length : 0) + 1}`
     // What drove it, for the returns: the newest claim among the big news of the line.
     const cause = state.lines.find((l) => l.id === op.line)?.facts.map((f) => factById(world, f)).filter((f): f is Fact => Boolean(f?.claim && f.belang >= 4)).at(-1)?.claim
-    const plan = toPlan(world, op, id, cause)
+    const plan = toPlan(world, { ...op, line: op.line }, id, cause)
     if (!plan) {
       problems.push(`plan "${op.name}": does not fit this world`)
       continue
     }
+    // Steps of his own beside the phases, checked like any.
+    plan.steps.push(...(op.steps ?? []).flatMap((s, i) => stepsFromOp(world, s, i + 1, problems)))
     ;(world.state.dynamicPlans ??= {})[id] = plan
     ;(world.state.pendingPlans ??= []).push(id)
   }
+  // Signals of this run without a valid plan: the standard aftermath does it (M8.3).
+  unplanned(world, run.signals ?? [], planned)
 
   // What the chronicler left out, the templates fill in.
   for (const line of lines) {

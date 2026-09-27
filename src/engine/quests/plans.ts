@@ -39,7 +39,9 @@ export interface PlanState {
   steps?: Record<string, StepState>
   expires?: number
   ended?: number
-  outcome?: 'done' | 'failed' | 'expired'
+  outcome?: 'done' | 'failed' | 'expired' | 'merged'
+  /** The storyline a beat of the chronicler belongs to (M8.3). */
+  line?: string
 }
 
 export interface StepState {
@@ -106,6 +108,11 @@ export function startPlan(world: World, host: QuestHost, planId: string, cause: 
   return plansDue(world, host)
 }
 
+/** The plans of the world that run from the first day (world.yaml, M8.3): started once, in a new game or an old save. */
+export function startWorldPlans(world: World, host: QuestHost): Output[] {
+  return world.content.world.plans.filter((id) => !(world.state.plans ?? []).some((p) => p.plan === id)).flatMap((id) => startPlan(world, host, id, 'world'))
+}
+
 /** Runs the phases whose hour has come, and the steps that are due. */
 export function plansDue(world: World, host: QuestHost): Output[] {
   const out: Output[] = []
@@ -147,10 +154,12 @@ function runSteps(world: World, host: QuestHost, p: PlanState, plan: Plan, out: 
         return
       }
       if (result === 'done') moved = true
+      // Again in so many days, at the same hour (M8.3); a wait that lasts till then counts as skipped.
+      if (step.every && (result === 'done' || world.now >= due + step.every * DAY)) steps[step.id] = { due: due + step.every * DAY }
     }
     if (!moved) break
   }
-  if (plan.steps.every((s) => steps[s.id]?.done !== undefined || steps[s.id]?.skipped !== undefined)) {
+  if (plan.steps.every((s) => !s.every && (steps[s.id]?.done !== undefined || steps[s.id]?.skipped !== undefined))) {
     p.ended = world.now
     p.outcome = 'done'
   }
@@ -180,13 +189,13 @@ function dueOf(world: World, p: PlanState, step: Step, st: StepState): number | 
 type Result = 'done' | 'wait' | 'skip' | 'fail'
 
 function runOne(world: World, host: QuestHost, p: PlanState, step: Step, st: StepState, bind: Record<string, string>, out: Output[]): Result {
-  // A step with a chance may simply not happen (rolled once, seeded).
-  if (step.chance !== undefined && world.rng.next('plans') >= step.chance) {
+  const ctx: PlanContext = { plan: p, bind, host, out }
+  const ok = step.when.every((c) => holds(world, bindValue(world, c, ctx), undefined))
+  // A step with a chance may simply not happen when it can (rolled once, seeded).
+  if (ok && step.chance !== undefined && world.rng.next('plans') >= step.chance) {
     st.skipped = world.now
     return 'done'
   }
-  const ctx: PlanContext = { plan: p, bind, host, out }
-  const ok = step.when.every((c) => holds(world, bindValue(world, c, ctx), undefined))
   const done = ok && runVerb(world, ctx, step.do, st)
   if (done) {
     st.done = world.now
