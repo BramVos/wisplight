@@ -18,6 +18,8 @@ import { accept, askedFor, askOffer, dayLines, kinOf, offerLine, offerLines, off
 import { claimValid, claimWords, parseClaim, playerSays } from '../claims'
 import { afterChoice, doAfter, talkFact } from './aftertalk'
 import { provocation, react, walkAway, type Reaction } from './reactions'
+import { flirt } from '../social/romance'
+import { tieTo } from '../people'
 import type { Claim } from '../state'
 import type { Knowledge, Packet } from './knowledge'
 import type { LlmClient } from './llm'
@@ -46,6 +48,8 @@ export const QUICK_OPTIONS = [
 ]
 
 const MAX_FAR = 50
+/** Claims a conversation can make facts of (M10.3). */
+const MAX_CLAIMS = 3
 const MAX_TALK_EFFECT = 5
 
 interface TurnOptions {
@@ -115,7 +119,9 @@ export class Dialogue {
     rel.familiarity = Math.min(100, rel.familiarity + 1)
     this.learn(npcId)
     if (silent) return []
-    const greeting = opened ? undefined : fallbackReply(world, npcId, 'Greet', { known: [], unknown: [] }, band)
+    // A friend of the stranger greets them as one (M10.3).
+    const friend = tieTo(world, npcId, 'player')?.role === 'friend'
+    const greeting = opened ? undefined : friend ? world.say('{name} lights up. "There you are, friend."', npcId) : fallbackReply(world, npcId, 'Greet', { known: [], unknown: [] }, band)
     // Going to see someone may be what another asked of the player.
     const visits = visited(world, npcId).map((r) => ({ kind: 'narration' as const, text: `You have looked in on ${callName(npc)}, as ${callName(world.npc(r.npc))} asked.` }))
     // Someone who needs help asks the player, once, when they next talk (FO, chapter 14).
@@ -506,12 +512,15 @@ export class Dialogue {
     const memories = (world.npcState(npcId).memory ?? []).slice(-5).map((m) => m.note)
     // What the player says is a claim, heard from the stranger and judged by the game (M10.3).
     const claim = options.claim ?? (options.check || /\?\s*$/.test(text) ? undefined : parseClaim(world, topics, text))
-    const said = claim && claimValid(world, claim) ? playerSays(world, npcId, claim, { ...(options.lie ? { lie: true } : {}), ...(options.claimBonus ? { bonus: options.claimBonus } : {}) }) : undefined
+    // A few claims a talk, no more (M10.3, the limits): after that, words are only words.
+    const said = claim && claimValid(world, claim) && (talk.claims = (talk.claims ?? 0) + 1) <= MAX_CLAIMS ? playerSays(world, npcId, claim, { ...(options.lie ? { lie: true } : {}), ...(options.claimBonus ? { bonus: options.claimBonus } : {}) }) : undefined
     const believed = said ? `The stranger says ${claimWords(world, claim!)}. You ${said.stance === 'believes' ? 'believe it' : said.stance === 'doubts' ? 'are not sure it is true' : 'do not believe it'}; answer that way.` : undefined
+    // Flirting in free talk goes by the same formula as FLIRT (M10.3); the voice words what it decided.
+    const flirted = act === 'Flirt' && !options.check ? flirtIn(world, npcId) : undefined
     // An insult, a threat or a lie found out: the engine decides the reaction; the voice words it (M10.3).
     const provoked = provocation(act, { ...(options.caughtLie ? { caughtLie: true } : {}), ...(options.check ? { failedThreat: !succeeded(options.check) } : {}) })
     const reaction = provoked ? react(world, npcId, provoked) : undefined
-    const decision = [act === 'Recruit' ? recruitDecision(world, npcId, band.band) : undefined, believed, reaction?.decision].filter(Boolean).join(' ') || undefined
+    const decision = [act === 'Recruit' ? recruitDecision(world, npcId, band.band) : undefined, believed, reaction?.decision, flirted?.decision].filter(Boolean).join(' ') || undefined
     const offered = options.echo || options.check ? [] : (this.questOptions?.(npcId) ?? [])
     // What this person can do for the player now (M10.3): the game decides, the voice chooses and words it.
     const offers = options.check || options.secret || act === 'Recruit' ? [] : offersFor(world, npcId, topics, text)
@@ -531,7 +540,9 @@ export class Dialogue {
       ? reply.reply
       : reaction
         ? reactionLine(world, npcId, reaction.reaction)
-        : asked
+        : flirted
+          ? flirted.line
+          : asked
           ? offerLine(world, npcId, asked)
           : said
             ? claimLine(world, npcId, said.stance)
@@ -820,6 +831,18 @@ function recruitDecision(world: World, npcId: string, band: Attitude): string {
   world.notices.push(...joined.filter((l) => l.kind === 'system').map((l) => l.text))
   const terms = `${o.terms.wage} duiten a day${o.terms.until ? `, for ${Math.round((o.terms.until - world.now) / (24 * 60))} days` : ''}${o.terms.limits.length ? ', and some places you will not go' : ''}`
   return o.decision === 'join' ? `You agree to come along with the stranger. Say yes in your own way. Your wage: ${terms}.` : `You agree to come, on terms: ${terms}. Say yes and name your terms plainly.`
+}
+
+/**
+ * Flirting in free talk (M10.3): the FLIRT formula decides, with the same
+ * limits (never a child); the voice gets what happened as a decision, and
+ * without a model the formula's own line stands.
+ */
+function flirtIn(world: World, npcId: string): { decision: string; line: string } {
+  if (world.npc(npcId).child || world.npc(npcId).age < 18) return { decision: 'The stranger said something you do not understand. Change the subject.', line: world.say('{name} frowns, puzzled, and talks of something else.', npcId) }
+  const said = flirt(world, npcId).filter((o) => o.kind === 'speech' || o.kind === 'narration').map((o) => o.text)
+  const line = said.join(' ') || world.say('{name} smiles, and says nothing.', npcId)
+  return { decision: `The stranger is flirting with you. What you do (the game decided): ${line} Say it in your own way.`, line }
 }
 
 /** A reaction in the NPC's words, without a model. */

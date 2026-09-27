@@ -8,6 +8,7 @@ import { relation } from '../src/engine/dialogue/relations'
 import { heardBy, recordFact } from '../src/engine/news'
 import { openRequest } from '../src/engine/requests'
 import { parseClaim, truthOf } from '../src/engine/claims'
+import { tieTo } from '../src/engine/people'
 import { loadContentFromDir } from '../src/node/content'
 import { content } from './helpers'
 
@@ -267,6 +268,13 @@ describe('M10.3: what the player says is a claim', () => {
     expect(world.state.news!.heard['npc_mirte']![caught.id]).toBeDefined()
   }, 60_000)
 
+  it('makes a fact of a few claims a talk, no more', async () => {
+    const engine = withMirte(60)
+    await engine.handle('talk mirte')
+    for (const words of ['The mill turns again.', 'The green is flooded.', 'Harmen is dead.', 'The green is damaged.', 'Harmen is at the Goose.']) await engine.handle(words)
+    expect(engine.state.news!.facts.filter((f) => f.kind === 'said')).toHaveLength(3)
+  })
+
   it('reads claims only in the world\'s words', () => {
     const world = new Engine(content, { seed: 7 }).world
     expect(parseClaim(world, ['loc_molenend_mill'], 'the mill turns again')).toEqual({ subject: 'loc_molenend_mill', key: 'working', value: 'yes' })
@@ -362,6 +370,37 @@ describe('M10.3: reactions after a turn', () => {
   })
 })
 
+describe('M10.3: friends, and flirting in free talk', () => {
+  it('someone Warm for three days who shared something becomes a friend: a tie, news, a warmer greeting', async () => {
+    const engine = new Engine(content, { seed: 7 })
+    const world = engine.world
+    Object.assign(relation(engine.state, 'npc_mirte'), { affinity: 80, trust: 60, familiarity: 60 })
+    ;(world.state.flags ??= {})['secret:npc_mirte:x'] = true
+    engine.tick(4 * DAY)
+    expect(tieTo(world, 'npc_mirte', 'player')?.role).toBe('friend')
+    stay(engine, 'npc_mirte', world.state.player.location)
+    expect(said(await engine.handle('talk mirte'))).toMatch(/Mirte lights up\. "There you are, friend\."/)
+    // Someone who is merely friendly does not become one.
+    const other = new Engine(content, { seed: 7 })
+    Object.assign(relation(other.state, 'npc_mirte'), { affinity: 20, trust: 20, familiarity: 60 })
+    other.tick(4 * DAY)
+    expect(tieTo(other.world, 'npc_mirte', 'player')?.role).not.toBe('friend')
+  }, 60_000)
+
+  it('flirting in free talk goes by the FLIRT formula, and never with a child', async () => {
+    const engine = new Engine(content, { seed: 7 })
+    const world = engine.world
+    stay(engine, 'npc_mirte', world.state.player.location)
+    await engine.handle('talk mirte')
+    expect(said(await engine.handle('You have lovely eyes.'))).toMatch(/Mirte (laughs, a little awkwardly\. "You hardly know me\."|gives you a look that is kind and closed)/)
+    expect(world.state.romance?.['npc_mirte']).toBeUndefined()
+    const pip = withPip()
+    await pip.handle('talk pip')
+    expect(said(await pip.handle('You have lovely eyes.'))).toMatch(/Pip frowns, puzzled, and talks of something else\./)
+    expect(pip.state.romance?.['npc_pip']).toBeUndefined()
+  })
+})
+
 describe('M10.3: people who go and find the stranger', () => {
   it('someone who needs a thing and likes the stranger comes to ask; someone who does not, waits to be asked', async () => {
     const run = async (affinity: number, trust: number) => {
@@ -379,6 +418,24 @@ describe('M10.3: people who go and find the stranger', () => {
     expect(liked).toMatch(/Mirte asks you to bring a saw\. YES to give your word/)
     expect(await run(-10, 0)).not.toMatch(/Mirte comes up to you/)
   }, 60_000)
+})
+
+describe('M10.3: what an NPC lacks, asked of the stranger', () => {
+  it('asks you to look in on someone: your word, kept when you go', async () => {
+    const engine = new Engine(content, { seed: 7 })
+    const world = engine.world
+    openRequest(world, { npc: 'npc_mirte', kind: 'visit', target: 'npc_aaltje', name: 'A visit to Aaltje', ask: 'Would you look in on Aaltje for me? She has not been well.', source: 'motor' })
+    stay(engine, 'npc_mirte', world.state.player.location)
+    const out = said(await engine.handle('talk mirte'))
+    expect(out).toMatch(/Mirte asks you to look in on Aaltje\. YES to give your word/)
+    expect(said(await engine.handle('yes'))).toMatch(/You give Mirte your word: look in on Aaltje, in 3 days/)
+    const errand = (engine.state.agreements?.list ?? []).find((a) => a.kind === 'errand')!
+    expect(errand).toMatchObject({ by: 'player', to: 'npc_mirte', status: 'open' })
+    await engine.handle('bye')
+    stay(engine, 'npc_aaltje', world.state.player.location)
+    await engine.handle('talk aaltje')
+    expect(errand.status).toBe('kept')
+  })
 })
 
 describe('M10.3: the scene in one piece', () => {

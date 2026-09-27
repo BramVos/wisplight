@@ -8,6 +8,7 @@ import type { Claim, Fact, Signal, SignalState } from './state'
 import { tieTo } from './people'
 import { planCauses, planOf } from './quests/plans'
 import { openness } from './belief'
+import { attitude } from './dialogue/relations'
 import { carried, foodGoods, placeOf } from './economy/ledger'
 import type { World } from './world'
 import { householdKey, householdPurses, standingOf } from './standing'
@@ -101,6 +102,7 @@ export function watchHour(world: World): void {
       if (now && before === false) queueSignal(world, { kind: w.signal, ...(w.event ? { event: w.event } : {}), who: w.who ?? [], place: w.place ?? placeIn(world, w.when) ?? world.content.world.start.location, cause: [], belang: w.belang ?? 1, watcher: w.id })
     } else if (w.probe && 'house_empty' in w.probe) emptyHouses(world, w, w.probe.house_empty)
     else if (w.probe && 'standing_rise' in w.probe) risen(world, w, w.probe.standing_rise)
+    else if (w.probe && 'befriended' in w.probe) befriended(world, w, w.probe.befriended)
     else if (w.probe && 'grudge' in w.probe) grudges(world, w, w.probe.grudge)
     else if (w.probe && 'strangers_stay' in w.probe) strangersStay(world, w, w.probe.strangers_stay)
     else if (w.probe && 'friction' in w.probe) friction(world, w, w.probe.friction)
@@ -342,6 +344,33 @@ function grudges(world: World, w: Watcher, days: number): void {
  * once, and from then on the new standing is where it is measured from.
  * A fall is simply the new measure.
  */
+/**
+ * A friend of the stranger (M10.3): someone who has been Warm or better for so
+ * many days and has shared something with them: a secret told, a favour
+ * done, a journey together, gifts. Once each.
+ */
+function befriended(world: World, w: Watcher, days: number): void {
+  const layer = (world.state.layer ??= {})
+  const warm = (layer.warm ??= {})
+  const seen = signalState(world).seen
+  for (const id of Object.keys(world.state.relations ?? {}).sort()) {
+    if (!world.content.npcs.has(id) || !world.alive(id) || world.npc(id).child) continue
+    const band = attitude(world, id).band
+    if (band !== 'Warm' && band !== 'Devoted') {
+      delete warm[id]
+      continue
+    }
+    warm[id] ??= world.now
+    const key = `${w.id}:${id}`
+    if (seen[key] || world.now - warm[id]! < days * 24 * 60) continue
+    const flags = Object.keys(world.state.flags ?? {})
+    const shared = flags.some((f) => f.startsWith(`secret:${id}:`)) || world.state.requests.some((r) => r.npc === id && r.status === 'done') || Boolean(world.state.companions?.some((c) => c.npc === id && c.bond >= 1)) || (world.state.gifts?.[id]?.count ?? 0) > 0
+    if (!shared) continue
+    seen[key] = true
+    queueSignal(world, { kind: w.signal, ...(w.event ? { event: w.event } : {}), who: [id], place: world.state.npcs[id]!.location, cause: [], belang: w.belang ?? 1, watcher: w.id })
+  }
+}
+
 function risen(world: World, w: Watcher, steps: number): void {
   const layer = (world.state.layer ??= {})
   const seen = (layer.standing ??= {})

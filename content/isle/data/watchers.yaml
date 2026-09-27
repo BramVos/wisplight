@@ -7,3 +7,8 @@ watchers:
   - id: asked_about
     signal: asked_about
     belief: { key: asked_about }
+
+  # Warm towards the stranger for three days, with something shared (M10.3): a friend.
+  - id: befriended
+    signal: befriended
+    probe: { befriended: 3 }

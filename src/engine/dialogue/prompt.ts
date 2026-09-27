@@ -1,4 +1,5 @@
 import { dayName, GameClock } from '../clock'
+import { tieTo } from '../people'
 import type { Npc } from '../content'
 import type { World } from '../world'
 import { TIER_WORDS, type Act, type Tier } from './acts'
@@ -223,6 +224,8 @@ export function turnPrompt(world: World, ctx: TurnContext): string {
     ...agreementLines(world, ctx.npcId),
     ...farKnown(world, ctx.npcId),
     `ATTITUDE: ${ctx.attitude.band} (${ctx.attitude.score}). LISTENER: ${listener(world, ctx.npcId)}.`,
+    // A friend of the stranger (M10.3, the watcher befriended).
+    ...(tieTo(world, ctx.npcId, 'player')?.role === 'friend' ? ['THE STRANGER is your friend.'] : []),
     'KNOWLEDGE:',
     ...(ctx.packet.known.length === 0 ? ['  (nothing relevant beyond your own life)'] : []),
     ...ctx.packet.known.map((k) => `  ${k.topic} (level ${k.level}): ${k.facts.join(' ')}${k.news ? `\n  NEWS about it: ${k.news.join(' ')}` : ''}${k.story ? `\n  ${k.toldBy ? `STORY as ${k.toldBy} tells it. Retell it in your own words; the people in it are ${k.toldBy}'s family, not yours:` : 'STORY you may tell, in your own words:'}\n  ${k.story}` : ''}`),

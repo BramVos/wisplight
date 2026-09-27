@@ -91,7 +91,7 @@ function finish(world: World, request: Request, thanks = true): string {
   request.status = 'done'
   request.done = world.now
   // The stranger's word to bring it (M10.3) is kept with it.
-  const word = openAgreements(world, 'player').find((a) => a.kind === 'give' && a.by === 'player' && a.to === request.npc && a.terms.item === request.item)
+  const word = openAgreements(world, 'player').find((a) => a.by === 'player' && a.to === request.npc && ((a.kind === 'give' && a.terms.item === request.item) || (a.kind === 'errand' && a.terms.request === request.id)))
   if (word) settle(world, word, 'kept', `the stranger brought ${callName(world.npc(request.npc))} what was promised`, { quiet: true })
   gainXp(world, XP.request, `you did what ${callName(world.npc(request.npc))} asked`)
   favour(world, 'request_done')

@@ -25,6 +25,18 @@ aftermath:
         when: [{ attitude: $a, at_least: Friendly }]
         do: { seek_player: $a, line: "There you are. There's something I'd ask of you.", hours: 24 }
 
+  # A friend of the stranger (M10.3): a tie, told as news, and a warmer greeting from now on.
+  - id: befriended
+    signal: befriended
+    about: first
+    topic: friendship
+    expires: 1
+    steps:
+      - id: tie
+        do: { set_tie: [$a, player], role: friend, bond: 2 }
+      - id: mind
+        do: { thought: $a, text: "The stranger is a friend of yours now.", days: 14 }
+
   # The stranger did not keep their word (M10.3): the one let down minds it, and the village hears of it.
   - id: broken_promise
     signal: broken_promise

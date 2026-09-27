@@ -226,6 +226,8 @@ export const WatcherSchema = z
         z.object({ price_doubled: z.number().positive() }).strict(),
         /** A workshop nobody works any more, so many days (M8.4): $place where it is, $area, the claim { key: trade, value: the workshop }. */
         z.object({ missing_trade: z.number().int().positive() }).strict(),
+        /** Warm towards the stranger for so many days, with something shared (a secret, a favour done, a journey, a gift) (M10.3): $a the new friend. */
+        z.object({ befriended: z.number().positive() }).strict(),
       ])
       .optional(),
     /** Who it is about; for a fact, by default the subject and the value of its claim. */

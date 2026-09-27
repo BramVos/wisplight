@@ -137,3 +137,8 @@ watchers:
   - id: project_done
     signal: project_done
     fact: { key: project, value: done }
+
+  # Warm towards the stranger for three days, with something shared (M10.3): a friend.
+  - id: befriended
+    signal: befriended
+    probe: { befriended: 3 }

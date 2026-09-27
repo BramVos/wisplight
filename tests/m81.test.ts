@@ -229,7 +229,7 @@ describe('M8.1: facts, knowledge and three repairs', () => {
 describe('M8.1: Skerrow plays as before', () => {
   it('has only what conversations need (M10.3), and without the stranger gives no signals', async () => {
     const isle = loadContent(await readContentFiles(root, 'isle'))
-    expect([...isle.watchers.keys()]).toEqual(['asked_about'])
+    expect([...isle.watchers.keys()]).toEqual(['asked_about', 'befriended'])
     const engine = new Engine(isle, { seed: 12 })
     engine.tick(2 * DAY)
     expect(engine.state.signals?.log ?? []).toEqual([])

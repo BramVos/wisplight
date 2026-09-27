@@ -4,6 +4,7 @@ import type { Output } from '../commands'
 import { areaTopicId, callName } from '../content'
 import { itemName, withArticle } from '../items'
 import { routineNow } from '../npc/brain'
+import { tieTo } from '../people'
 import { dangerOf } from '../social/companions'
 import type { Request } from '../state'
 import type { World } from '../world'
@@ -129,6 +130,8 @@ function willing(world: World, npcId: string, kind: OfferKind, to?: string): { y
   const reasons: string[] = []
   if (band.band === 'Hostile' || band.band === 'Unfriendly') return { yes: false, reasons: ['you do not trust the stranger, and owe them nothing'] }
   let score = band.score / 2 + trust / 4 + npc.personality.warmth * 5
+  // A friend helps sooner (M10.3).
+  if (tieTo(world, npcId, 'player')?.role === 'friend') score += 15
   if (npc.child) score += Math.max(0, npc.values['adventure'] ?? 0) * 5
   const here = world.npcState(npcId).location
   const day = routineNow(world, npcId)
@@ -299,6 +302,10 @@ const ASK_DAYS = 3
  * time; the request is in the journal already.
  */
 export function askOffer(world: World, npcId: string, request: Request): Offer | undefined {
+  if (request.kind === 'visit' && request.target && world.content.npcs.has(request.target)) {
+    const whom = callName(world.npc(request.target))
+    return { key: `ask:${request.id}`, kind: 'ask', person: request.target, request: request.id, at: world.now + ASK_DAYS * DAY, what: `ask the stranger to look in on ${whom}`, intent: '', deed: `look in on ${whom} for ${callName(world.npc(npcId))}`, decision: 'yes', reasons: ['you are worried'] }
+  }
   if (!request.item || request.kind === 'visit') return undefined
   const thing = request.qty > 1 ? itemName(world.content, request.item, request.qty) : withArticle(itemName(world.content, request.item))
   const at = world.now + ASK_DAYS * DAY
@@ -444,10 +451,10 @@ export function accept(world: World, npcId: string, offer: Offer): { outputs: Ou
     return { outputs: out, ends: false }
   }
   if (offer.kind === 'ask') {
-    // The stranger's word: bring it by the time. The NPC expects it; the journal has it.
-    const promised = agree(world, { by: 'player', to: npcId, source: 'conversation', kind: 'give', what: offer.deed, due: offer.at!, terms: { item: offer.item! } })
+    // The stranger's word: bring it, or go and see someone, by the time. The NPC expects it; the journal has it.
+    const promised = offer.item ? agree(world, { by: 'player', to: npcId, source: 'conversation', kind: 'give', what: offer.deed, due: offer.at!, terms: { item: offer.item } }) : agree(world, { by: 'player', to: npcId, source: 'conversation', kind: 'errand', what: offer.deed, due: offer.at!, terms: { request: offer.request!, ...(offer.person ? { person: offer.person } : {}) } })
     if ('rejected' in promised) return { outputs: [], ends: false }
-    return { outputs: [{ kind: 'system', text: `You give ${name} your word: ${offer.deed.replace(/^bring \S+ /, 'bring ')}, ${clockWords(world, offer.at!)}. It is in your journal.` }], ends: false }
+    return { outputs: [{ kind: 'system', text: `You give ${name} your word: ${offer.deed.replace(/^bring \S+ /, 'bring ').replace(/ for \S+$/, '')}, ${clockWords(world, offer.at!)}. It is in your journal.` }], ends: false }
   }
   if (!input) return { outputs: [], ends: false }
   const made = agree(world, input)
@@ -486,7 +493,7 @@ export function offerLine(world: World, npcId: string, offer: Offer): string {
 
 /** The words a proposal is shown with: a click or YES makes it happen. */
 export function proposalText(world: World, npcId: string, offer: Offer): string {
-  if (offer.kind === 'ask') return `${callName(world.npc(npcId))} asks you to ${offer.deed.replace(/^bring \S+ /, 'bring ')}. YES to give your word, NO to decline.`
+  if (offer.kind === 'ask') return `${callName(world.npc(npcId))} asks you to ${offer.deed.replace(/^bring \S+ /, 'bring ').replace(/ for \S+$/, '')}. YES to give your word, NO to decline.`
   return `${callName(world.npc(npcId))} offers to ${offer.deed.replace(/\bthe stranger\b/g, 'you')}. YES to agree, NO to decline.`
 }
 

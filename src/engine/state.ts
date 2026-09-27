@@ -71,7 +71,7 @@ export interface Pending {
  * conversation, a promise of the player. One record with a fixed id, the
  * parties, what, when, the terms, and a status that only the rules change.
  */
-export type AgreementKind = 'accompany' | 'lead' | 'message' | 'meet' | 'wait' | 'give' | 'lend' | 'attack' | 'intention'
+export type AgreementKind = 'accompany' | 'lead' | 'message' | 'meet' | 'wait' | 'give' | 'lend' | 'errand' | 'attack' | 'intention'
 export type AgreementStatus = 'open' | 'kept' | 'missed' | 'cancelled' | 'impossible'
 
 export interface AgreementTerms {
@@ -115,6 +115,8 @@ export interface AgreementTerms {
   fought?: number
   /** intention: a goal of the catalogue. */
   goal?: string
+  /** errand (M10.3): the request the stranger gave their word to, such as looking in on someone. */
+  request?: string
 }
 
 export interface Agreement {
@@ -362,6 +364,8 @@ export interface TalkState {
   /** Facts this conversation made, and whether the NPC has chosen what to do after it (M10.3). */
   facts?: string[]
   after?: boolean
+  /** Claims the stranger made in this talk (M10.3): a few, then words are only words. */
+  claims?: number
 }
 
 export interface RelationState {
@@ -657,6 +661,8 @@ export interface Layer {
   empty?: Record<string, number>
   /** The standing each household was last seen at, and where it came from (M8.2). */
   standing?: Record<string, { level: number; from?: number; t: number }>
+  /** Since when someone has been Warm or better towards the stranger (M10.3, the probe befriended). */
+  warm?: Record<string, number>
 }
 
 /** A marked change in the state of the world (M8.1). Data, not text. */

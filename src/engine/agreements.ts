@@ -62,6 +62,7 @@ export const AgreementInputSchema = z.discriminatedUnion('kind', [
   z.object({ ...Base, kind: z.literal('wait'), terms: z.object({ place: z.string(), person: z.string().optional() }).strict() }).strict(),
   z.object({ ...Base, kind: z.literal('give'), terms: z.object({ item: z.string().optional(), amount: z.number().positive().optional(), debt: z.string().optional() }).strict() }).strict(),
   z.object({ ...Base, kind: z.literal('lend'), terms: z.object({ item: z.string() }).strict() }).strict(),
+  z.object({ ...Base, kind: z.literal('errand'), terms: z.object({ request: z.string(), person: z.string().optional() }).strict() }).strict(),
   z.object({ ...Base, kind: z.literal('attack'), terms: z.object({ target: z.string(), reason: z.string().min(1) }).strict() }).strict(),
   z.object({ ...Base, kind: z.literal('intention'), terms: z.object({ goal: z.string(), target: z.string().optional() }).strict() }).strict(),
 ])
@@ -285,7 +286,7 @@ export function settle(world: World, agreement: Agreement, status: Exclude<Agree
   for (const part of agreements(world).filter((a) => a.part === agreement.id && a.status === 'open')) settle(world, part, status === 'kept' ? 'kept' : 'cancelled', text, { quiet: true, told: true })
   judge(world, agreement, opts.late ?? false)
   // The stranger's word kept or broken is a signal (M10.3): what follows is content (broken_promise, promise_kept).
-  if (agreement.by === 'player' && agreement.known && isNpc(world, agreement.to) && world.alive(agreement.to) && (agreement.kind === 'give' || agreement.kind === 'lend' || agreement.kind === 'meet')) {
+  if (agreement.by === 'player' && agreement.known && isNpc(world, agreement.to) && world.alive(agreement.to) && (agreement.kind === 'give' || agreement.kind === 'lend' || agreement.kind === 'meet' || agreement.kind === 'errand')) {
     const kept = status === 'kept' && !opts.late
     const broken = status === 'missed' && (opts.fault ?? 'by') === 'by'
     if (kept || broken) queueSignal(world, { kind: kept ? 'promise_kept' : 'broken_promise', who: [agreement.to], place: world.state.npcs[agreement.to]!.location, cause: [], belang: kept ? 1 : 2, claim: { subject: agreement.to, key: 'promise', value: promisePhrase(world, agreement) }, watcher: 'rules' })
@@ -644,7 +645,7 @@ export function forgetPlayerAgreements(state: GameState): void {
 }
 
 /** The kinds, for the builder and tests. */
-export const AGREEMENT_KINDS: AgreementKind[] = ['accompany', 'lead', 'message', 'meet', 'wait', 'give', 'lend', 'attack', 'intention']
+export const AGREEMENT_KINDS: AgreementKind[] = ['accompany', 'lead', 'message', 'meet', 'wait', 'give', 'lend', 'errand', 'attack', 'intention']
 
 /** The player gives a lent thing back to its owner (commands.ts): the loan is kept, or kept late. */
 export function returnLent(world: World, npcId: string, item: string): string | undefined {
