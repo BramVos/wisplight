@@ -1,6 +1,6 @@
 import { app, BrowserWindow, dialog, ipcMain, safeStorage, shell } from 'electron'
 import { randomUUID } from 'node:crypto'
-import { rmSync, watch, writeFileSync } from 'node:fs'
+import { rmSync, watch } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { ContentError, draftRequest, Engine, ENTITY_KINDS, lineDiff, readDraft, type Content, type Edit, type EntityKind, type FileChange, type Output, type SaveData } from '../engine'
@@ -232,11 +232,8 @@ ipcMain.handle('engine:command', async (_event, input: unknown) => {
   if (verb === 'log' || verb === 'logboek') {
     const where = ensureSession()
     if (args[0] === 'export') {
-      const stamp = new Date().toISOString().slice(0, 16).replace(/[-:T]/g, '')
-      const result = await dialog.showSaveDialog(window!, { title: 'Save the game log', defaultPath: join(app.getPath('documents'), `wisplight-log-${stamp}.txt`) })
-      if (result.canceled || !result.filePath) return reply([system('Not saved.')])
-      writeFileSync(result.filePath, `${journal().text(where)}\n`)
-      return reply([system(`The log is saved as ${result.filePath}.`)])
+      const file = await exportLog(where)
+      return reply([system(file ? `The log is saved as ${file}.` : 'Not saved.')])
     }
     const lines = journal().recent(where, Math.min(500, Number(args[0]) || 30))
     return reply([system(lines.length ? lines.map(format).join('\n') : 'The log is empty.')])
@@ -249,7 +246,24 @@ ipcMain.handle('engine:command', async (_event, input: unknown) => {
 
 ipcMain.handle('engine:page', (_event, id: unknown) => engine?.page(String(id)))
 ipcMain.handle('engine:creation', () => engine?.creationData())
-ipcMain.handle('engine:end', () => ({ log: session ? journal().text(session) : undefined, chronicle: engine?.chronicle() ?? '' }))
+/** The end view shows the last lines; the whole log goes to a file with [Download]. */
+const END_LINES = 2000
+
+ipcMain.handle('engine:end', () => {
+  const lines = session ? journal().recent(session, END_LINES) : undefined
+  const cut = lines && lines.length === END_LINES ? `(Only the last ${END_LINES} lines are shown here. [Download] saves the whole log.)\n\n` : ''
+  return { log: lines ? cut + lines.map(format).join('\n') : undefined, chronicle: engine?.chronicle() ?? '' }
+})
+ipcMain.handle('engine:export-log', () => (session ? exportLog(session) : undefined))
+
+/** Asks where to save the whole game log and streams it there. */
+async function exportLog(where: Session): Promise<string | undefined> {
+  const stamp = new Date().toISOString().slice(0, 16).replace(/[-:T]/g, '')
+  const result = await dialog.showSaveDialog(window!, { title: 'Save the game log', defaultPath: join(app.getPath('documents'), `wisplight-log-${stamp}.txt`) })
+  if (result.canceled || !result.filePath) return undefined
+  journal().exportTo(where, result.filePath)
+  return result.filePath
+}
 
 // ---------------------------------------------------------------- the world builder (development builds only)
 

@@ -104,6 +104,8 @@ export interface EngineClient {
   creation(): Promise<CreationData | undefined>
   /** The player's own log (desktop only) and the true chronicle, for the end of a game. */
   end(): Promise<{ log?: string; chronicle: string }>
+  /** Saves the whole game log to a file of the player's choice (desktop only). Returns where, or undefined. */
+  exportLog?(): Promise<string | undefined>
   activity(): void
   /** Stops the real-time clock while a menu is open. */
   hold(on: boolean): void

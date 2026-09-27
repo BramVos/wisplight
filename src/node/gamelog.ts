@@ -1,4 +1,4 @@
-import { mkdirSync } from 'node:fs'
+import { closeSync, mkdirSync, openSync, writeSync } from 'node:fs'
 import { dirname } from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
 import { GameClock, type GameLogLine, type LogEntry } from '../engine'
@@ -6,6 +6,9 @@ import { GameClock, type GameLogLine, type LogEntry } from '../engine'
 // The game log (FO, chapter 3): everything that happens in a game, written as
 // it happens, never cleaned up. Saving does not interrupt it. Loading an older
 // save starts a new branch, so what happened after that save stays readable.
+// A game can run for months, so nothing here holds the whole log in memory:
+// every line is one INSERT, reading back the end is a LIMIT query, and the
+// export streams row by row into the file.
 
 export interface Session {
   game: string
@@ -103,34 +106,59 @@ export class GameLog {
     return result
   }
 
-  private lines(session: Session, kinds: string[], afterId = 0): LogLine[] {
-    const rows: LogLine[] = []
+  /** Every line of this history in order, one row at a time, oldest first. */
+  private *rows(session: Session, kinds: string[], afterId = 0): Generator<LogLine> {
     const marks = kinds.map(() => '?').join(', ')
-    for (const { branch, upTo } of this.lineage(session)) {
-      rows.push(
-        ...(this.db
-          .prepare(`SELECT id, t, kind, text FROM gamelog WHERE game = ? AND branch = ? AND id > ? AND id <= ? AND kind IN (${marks}) ORDER BY id`)
-          .all(session.game, branch, afterId, upTo, ...kinds) as unknown as LogLine[]),
-      )
+    const query = this.db.prepare(`SELECT id, t, kind, text FROM gamelog WHERE game = ? AND branch = ? AND id > ? AND id <= ? AND kind IN (${marks}) ORDER BY id`)
+    // Lines of a branch are all newer than the fork in its parent, so root first is oldest first.
+    for (const { branch, upTo } of this.lineage(session).reverse()) {
+      yield* query.iterate(session.game, branch, afterId, upTo, ...kinds) as IterableIterator<LogLine>
     }
-    return rows.sort((a, b) => a.id - b.id)
   }
 
   /** What a replay needs after a save: the recorded input, time and model replies. */
   tail(session: Session, afterId: number): LogEntry[] {
-    return this.lines(session, ['replay'], afterId).map((row) => JSON.parse(row.text) as LogEntry)
+    return [...this.rows(session, ['replay'], afterId)].map((row) => JSON.parse(row.text) as LogEntry)
   }
 
-  /** The story so far as the player saw it, the last `count` lines. */
+  /** The story so far as the player saw it, the last `count` lines, read from the end. */
   recent(session: Session, count = 40): LogLine[] {
-    return this.lines(session, READABLE).slice(-count)
+    const marks = READABLE.map(() => '?').join(', ')
+    const query = this.db.prepare(`SELECT id, t, kind, text FROM gamelog WHERE game = ? AND branch = ? AND id <= ? AND kind IN (${marks}) ORDER BY id DESC LIMIT ?`)
+    const newestFirst: LogLine[] = []
+    for (const { branch, upTo } of this.lineage(session)) {
+      if (newestFirst.length >= count) break
+      newestFirst.push(...(query.all(session.game, branch, upTo, ...READABLE, count - newestFirst.length) as unknown as LogLine[]))
+    }
+    return newestFirst.reverse()
   }
 
-  /** The whole story as plain text, for the export. */
+  /** The whole story as plain text. Only for short logs and tests; the app exports with `exportTo`. */
   text(session: Session): string {
-    return this.lines(session, READABLE)
-      .map((row) => format(row))
-      .join('\n')
+    const out: string[] = []
+    for (const row of this.rows(session, READABLE)) out.push(format(row))
+    return out.join('\n')
+  }
+
+  /** Writes the whole story to a file, streaming, however long the game ran. Returns the number of lines. */
+  exportTo(session: Session, path: string): number {
+    const fd = openSync(path, 'w')
+    let lines = 0
+    let buffer = ''
+    try {
+      for (const row of this.rows(session, READABLE)) {
+        buffer += `${format(row)}\n`
+        lines++
+        if (buffer.length > 64 * 1024) {
+          writeSync(fd, buffer)
+          buffer = ''
+        }
+      }
+      if (buffer) writeSync(fd, buffer)
+    } finally {
+      closeSync(fd)
+    }
+    return lines
   }
 
   close(): void {

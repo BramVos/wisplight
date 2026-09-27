@@ -59,7 +59,11 @@ export function EndView({ client, onClose }: { client: EngineClient; onClose: ()
           <div className="settings-body">
             {shown ? <pre className="end-text">{shown}</pre> : <p className="muted">Your log is kept by the desktop app.</p>}
             {shown && (
-              <button type="button" className="link" onClick={() => download(shown, tab === 'log' ? 'wisplight-log.txt' : 'wisplight-chronicle.txt')}>
+              <button
+                type="button"
+                className="link"
+                onClick={() => (tab === 'log' && client.exportLog ? void client.exportLog() : download(shown, tab === 'log' ? 'wisplight-log.txt' : 'wisplight-chronicle.txt'))}
+              >
                 [Download]
               </button>
             )}

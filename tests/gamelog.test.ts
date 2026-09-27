@@ -1,3 +1,6 @@
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { Engine, MockLlm, type SaveData } from '../src/engine'
 import { format, GameLog } from '../src/node/gamelog'
@@ -79,5 +82,29 @@ describe('the game log', () => {
     store.save('auto', snapshot())
     expect(store.latest()!.session).toMatchObject({ game: 'game-1', branch: 1 })
     expect(store.load('manual')!.session).toBeUndefined()
+  })
+
+  it('reads the end and exports the whole of a long log without holding it in memory', () => {
+    const log = new GameLog(':memory:')
+    const root = log.start('long')
+    for (let i = 0; i < 5000; i++) log.append(root, i, i % 2 ? 'out' : 'in', `line ${i}`)
+    const branch = log.fork(root, 3000)
+    for (let i = 0; i < 10; i++) log.append(branch, 9000 + i, 'in', `branch ${i}`)
+    // The end of the branch: its own lines, then the root up to the fork, newest last.
+    const last = log.recent(branch, 12)
+    expect(last.map((l) => l.text)).toEqual(['line 2998', 'line 2999', ...Array.from({ length: 10 }, (_, i) => `branch ${i}`)])
+    expect(log.recent(root, 1)[0]!.text).toBe('line 4999')
+    const dir = mkdtempSync(join(tmpdir(), 'wisplight-log-'))
+    try {
+      const file = join(dir, 'log.txt')
+      expect(log.exportTo(branch, file)).toBe(3010)
+      const text = readFileSync(file, 'utf8')
+      expect(text.startsWith('[')).toBe(true)
+      expect(text).toContain('> branch 9')
+      expect(text).not.toContain('line 3000')
+      expect(text.trimEnd()).toBe(log.text(branch))
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
   })
 })
