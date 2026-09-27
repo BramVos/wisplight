@@ -19,7 +19,7 @@ const STOP = new Set(['the', 'a', 'an', 'of', 'de', 'het', 'een'])
 
 export class TopicRegistry {
   readonly entries = new Map<string, TopicEntry>()
-  private readonly patterns: { id: string; alias: string; regex: RegExp }[] = []
+  private readonly patterns: { id: string; alias: string; words: string[]; regex: RegExp }[] = []
 
   constructor(content: Content) {
     for (const npc of content.npcs.values()) {
@@ -58,7 +58,7 @@ export class TopicRegistry {
       const words = raw.split(/\s+/)
       if (words.length === 1 && (STOP.has(raw) || raw.length < 3)) continue
       const escaped = raw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s+')
-      this.patterns.push({ id: entry.id, alias: raw, regex: new RegExp(`(^|[^\\p{L}])${escaped}(?=$|[^\\p{L}])`, 'iu') })
+      this.patterns.push({ id: entry.id, alias: raw, words, regex: new RegExp(`(^|[^\\p{L}])${escaped}(?=$|[^\\p{L}])`, 'iu') })
     }
   }
 
@@ -66,7 +66,9 @@ export class TopicRegistry {
   recognise(text: string): string[] {
     let remaining = ` ${text.toLowerCase()} `
     const found: string[] = []
-    for (const { id, regex } of this.patterns) {
+    for (const { id, words, regex } of this.patterns) {
+      // Only where every word of the name is in the text (M9.3): a regex is compiled on its first use, and most never need to be.
+      if (!words.every((w) => remaining.includes(w))) continue
       const match = remaining.match(regex)
       if (!match || match.index === undefined) continue
       if (!found.includes(id)) found.push(id)

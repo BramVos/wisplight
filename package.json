@@ -18,7 +18,8 @@
     "balance": "tsx scripts/balance.ts",
     "reference": "tsx scripts/reference.ts",
     "ids": "tsx scripts/ids.ts",
-    "longrun": "tsx scripts/longrun.ts"
+    "longrun": "tsx scripts/longrun.ts",
+    "stutter": "tsx scripts/stutter.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.128.0",
