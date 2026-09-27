@@ -1,6 +1,7 @@
 import { Fragment, useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import type { Output } from '../../engine'
 import { createClient, type AiStatus, type EngineClient, type JournalPage, type Reply } from './client'
+import { BuilderView } from './BuilderView'
 import { EndView } from './EndView'
 import { Settings, usd, type SettingsTab } from './Settings'
 
@@ -66,6 +67,7 @@ export function App() {
   const [settings, setSettings] = useState<SettingsTab>()
   const [page, setPage] = useState<JournalPage>()
   const [ending, setEnding] = useState(false)
+  const [building, setBuilding] = useState(false)
   const logRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -99,8 +101,24 @@ export function App() {
 
   // Menus stop the clock (FO, chapter 3).
   useEffect(() => {
-    client?.hold(Boolean(settings) || ending)
-  }, [client, settings, ending])
+    client?.hold(Boolean(settings) || ending || building)
+  }, [client, settings, ending, building])
+
+  // What the world builder saves is in the game at once: show the place again (FO, chapter 15).
+  useEffect(() => {
+    if (!client?.builder) return
+    const offReload = client.builder.onReload(() => {
+      void client.command('look').then((reply) => {
+        setStatus(reply.status)
+        setLines((previous) => [...previous, withId({ kind: 'system', text: 'The world was changed in the builder.' }), ...reply.outputs.map(withId)].slice(-400))
+      })
+    })
+    const offProblem = client.builder.onProblem((text) => setLines((previous) => [...previous, withId({ kind: 'error', text })].slice(-400)))
+    return () => {
+      offReload()
+      offProblem()
+    }
+  }, [client])
 
   const send = useCallback(
     async (text: string) => {
@@ -263,6 +281,14 @@ export function App() {
           <button type="button" className="link" onClick={() => setEnding(true)}>
             [Look back]
           </button>
+          {client?.builder && (
+            <>
+              {' '}
+              <button type="button" className="link" onClick={() => setBuilding(true)}>
+                [Builder]
+              </button>
+            </>
+          )}
         </section>
       </aside>
 
@@ -308,6 +334,7 @@ export function App() {
       </footer>
 
       {ending && client && <EndView client={client} onClose={() => setEnding(false)} />}
+      {building && <BuilderView bridge={client?.builder} onClose={() => setBuilding(false)} />}
       {settings && <Settings bridge={client?.ai} tab={settings} onTab={setSettings} onClose={() => setSettings(undefined)} />}
     </div>
   )

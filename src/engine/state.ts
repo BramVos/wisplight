@@ -1,5 +1,5 @@
 import { GameClock } from './clock'
-import { NEEDS, type Content, type Need } from './content'
+import { NEEDS, type Content, type Need, type Npc } from './content'
 import type { StoriesState } from './stories'
 
 // Everything that changes during play lives in GameState. It is plain JSON:
@@ -306,6 +306,8 @@ export interface GameState {
   news?: { seq: number; facts: Fact[]; heard: Record<string, Record<string, Heard>> }
   chronicle?: ChronicleState
   weather?: { kind: 'clear' | 'overcast' | 'rain' | 'fog' | 'storm' | 'frost' | 'snow'; since: number }
+  /** Far places worked out to their outline for this game (design, "De wereld buiten de kaart"). */
+  outlines?: { pending: string[]; done: Record<string, unknown> }
   /** Goal choices waiting for the brain model, and how many each NPC had today (FO, chapter 7). */
   brain?: { seq: number; pending: { id: string; npc: string; t: number; trigger: string }[]; counts: Record<string, { day: number; n: number }>; last?: Record<string, number>; due?: Record<string, number> }
 }
@@ -313,26 +315,34 @@ export interface GameState {
 export const objectKey = (location: string, object: string) => `${location}/${object}`
 export const serviceKey = (location: string, service: string) => `${location}#${service}`
 
+export function newNpcState(npc: Npc, now: number): NpcState {
+  return {
+    location: npc.home,
+    money: npc.money,
+    inventory: { ...npc.inventory },
+    needs: Object.fromEntries(NEEDS.map((n) => [n, n === 'hunger' || n === 'rest' ? 80 : 70])) as Record<Need, number>,
+    goals: [],
+    plan: [],
+    replans: 0,
+    busyUntil: now,
+    activity: 'at home',
+    dailyDone: {},
+    lastAskHelp: {},
+  }
+}
+
+/** After the content changed under a running game (the world builder): new people get a state, removed ones go. */
+export function fitStateToContent(content: Content, state: GameState): void {
+  for (const npc of [...content.npcs.values()].sort((a, b) => a.id.localeCompare(b.id))) state.npcs[npc.id] ??= newNpcState(npc, state.minutes)
+  for (const id of Object.keys(state.npcs)) if (!content.npcs.has(id)) delete state.npcs[id]
+}
+
 export function createInitialState(content: Content, seed: number): GameState {
   const { world } = content
   const start = GameClock.from(world.start.year, world.start.month, world.start.day, world.start.hour, world.start.minute)
 
   const npcs: Record<string, NpcState> = {}
-  for (const npc of [...content.npcs.values()].sort((a, b) => a.id.localeCompare(b.id))) {
-    npcs[npc.id] = {
-      location: npc.home,
-      money: npc.money,
-      inventory: { ...npc.inventory },
-      needs: Object.fromEntries(NEEDS.map((n) => [n, n === 'hunger' || n === 'rest' ? 80 : 70])) as Record<Need, number>,
-      goals: [],
-      plan: [],
-      replans: 0,
-      busyUntil: start.minutes,
-      activity: 'at home',
-      dailyDone: {},
-      lastAskHelp: {},
-    }
-  }
+  for (const npc of [...content.npcs.values()].sort((a, b) => a.id.localeCompare(b.id))) npcs[npc.id] = newNpcState(npc, start.minutes)
 
   const objects: GameState['objects'] = {}
   const services: GameState['services'] = {}

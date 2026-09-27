@@ -1,16 +1,17 @@
 import { app, BrowserWindow, dialog, ipcMain, safeStorage, shell } from 'electron'
 import { randomUUID } from 'node:crypto'
-import { rmSync, writeFileSync } from 'node:fs'
+import { rmSync, watch, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { Engine, type Content, type Output, type SaveData } from '../engine'
+import { ContentError, Engine, type Content, type Output, type SaveData } from '../engine'
+import { builderData, saveChange } from '../node/builder'
 import type { ProviderId } from '../node/ai/providers'
 import { AiService } from '../node/ai/service'
 import type { ChosenRole, Cipher } from '../node/ai/settings'
 import { loadContentFromDir } from '../node/content'
 import { format, GameLog, type Session } from '../node/gamelog'
 import { SaveStore } from '../node/savegame'
-import { aiCheck, keyCheck, LOG_CHECK_SCRIPT, prepareKeyCheck, prepareLogCheck } from './checks'
+import { aiCheck, BUILDER_CHECK_SCRIPT, keyCheck, LOG_CHECK_SCRIPT, prepareBuilderCheck, prepareKeyCheck, prepareLogCheck } from './checks'
 
 // The engine runs in the main process for now; the design moves it to a
 // utility process once the simulation grows (FO, chapter 3).
@@ -34,6 +35,7 @@ const smoke = Boolean(process.env['WISPLIGHT_SMOKE'])
 const checking = Boolean(process.env['WISPLIGHT_AI_CHECK'] || process.env['WISPLIGHT_KEY_CHECK'])
 if (process.env['WISPLIGHT_KEY_CHECK']) prepareKeyCheck(app)
 const logCheck = process.env['WISPLIGHT_LOG_CHECK'] ? prepareLogCheck(app) : undefined
+const builderCheck = process.env['WISPLIGHT_BUILDER_CHECK'] ? prepareBuilderCheck(app) : undefined
 
 // API keys are encrypted with the operating system's key store before they reach the disk.
 const cipher: Cipher = {
@@ -50,8 +52,9 @@ const BILLING: Record<ProviderId, string> = {
 let ready: Promise<void> | undefined
 function setup(): Promise<void> {
   ready ??= (async () => {
-    content = await loadContentFromDir(join(app.getAppPath(), 'content'))
+    content = await loadContentFromDir(contentDir())
     ai = new AiService({ dir: app.getPath('userData'), cipher, content })
+    watchContent()
     // At start-up: are the chosen models still offered? In the background; Settings shows the answer.
     if (!process.env['WISPLIGHT_SMOKE']) void ai.refreshModels().catch(() => undefined)
   })()
@@ -202,6 +205,54 @@ ipcMain.handle('engine:command', async (_event, input: unknown) => {
 ipcMain.handle('engine:page', (_event, id: unknown) => engine?.page(String(id)))
 ipcMain.handle('engine:end', () => ({ log: session ? journal().text(session) : undefined, chronicle: engine?.chronicle() ?? '' }))
 
+// ---------------------------------------------------------------- the world builder (development builds only)
+
+const contentDir = () => (builderCheck ? join(builderCheck, 'content') : join(app.getAppPath(), 'content'))
+
+/** The running game carries on with the new content, keeping its log. */
+function adopt(next: Content): void {
+  content = next
+  if (engine) follow(engine.withContent(next), session ?? ensureSession())
+  if (window && !window.isDestroyed()) window.webContents.send('builder:reloaded')
+}
+
+ipcMain.handle('builder:data', async () => {
+  if (app.isPackaged) throw new Error('The world builder is part of the development build.')
+  return builderData(contentDir())
+})
+
+ipcMain.handle('builder:save', async (_event, kind: unknown, id: unknown, patch: unknown) => {
+  if (app.isPackaged) throw new Error('The world builder is part of the development build.')
+  if (kind !== 'location' && kind !== 'npc' && kind !== 'region') throw new Error('Unknown kind.')
+  ignoreWatchUntil = Date.now() + 1500
+  const result = await saveChange(contentDir(), kind, String(id), (patch ?? {}) as Record<string, unknown>)
+  if (result.ok && result.content) adopt(result.content)
+  return { ok: result.ok, problems: result.problems, file: result.file }
+})
+
+// Live reloading (FO, chapter 15): a content file changed outside the app is loaded at once.
+let ignoreWatchUntil = 0
+let reloadTimer: NodeJS.Timeout | undefined
+function watchContent(): void {
+  if (app.isPackaged || smoke || checking) return
+  try {
+    watch(contentDir(), { recursive: true }, (_type, file) => {
+      if (!file || !/\.ya?ml$|CHRONICLER\.md$/.test(String(file)) || Date.now() < ignoreWatchUntil) return
+      clearTimeout(reloadTimer)
+      reloadTimer = setTimeout(() => {
+        loadContentFromDir(contentDir())
+          .then((next) => adopt(next))
+          .catch((error: unknown) => {
+            const problems = error instanceof ContentError ? error.problems.slice(0, 5).join('; ') : String(error)
+            if (window && !window.isDestroyed()) window.webContents.send('builder:problem', `The content did not load after ${String(file)} changed: ${problems}`)
+          })
+      }, 300)
+    })
+  } catch {
+    // Watching is a convenience; without it, restart the app to see changes.
+  }
+}
+
 ipcMain.on('engine:activity', () => {
   lastInput = Date.now()
 })
@@ -283,7 +334,7 @@ function createWindow(): void {
     minHeight: 600,
     title: 'Wisplight',
     backgroundColor: '#12140f',
-    show: !smoke && !logCheck,
+    show: !smoke && !logCheck && !builderCheck,
     webPreferences: {
       preload: fileURLToPath(new URL('../preload/index.mjs', import.meta.url)),
       contextIsolation: true,
@@ -300,6 +351,17 @@ function createWindow(): void {
         )
         console.log(`[smoke] ${room.split('\n')[0]}`)
         app.quit()
+      }, 1500)
+    })
+  }
+
+  if (builderCheck) {
+    window.webContents.once('did-finish-load', () => {
+      setTimeout(async () => {
+        const result: string = await window!.webContents.executeJavaScript(BUILDER_CHECK_SCRIPT)
+        console.log(`[builder-check]\n${result}`)
+        rmSync(builderCheck, { recursive: true, force: true })
+        app.exit(0)
       }, 1500)
     })
   }

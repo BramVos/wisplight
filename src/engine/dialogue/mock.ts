@@ -30,7 +30,13 @@ export class MockLlm implements LlmClient {
     this.calls.push(request)
     if (this.mode === 'throw') throw new LlmError('timeout', 'mock timeout')
     const text =
-      request.role === 'voice' ? this.voice(request.meta as unknown as MockMeta) : request.role === 'chronicler' ? this.chronicler(request.meta as unknown as ChronicleMeta, request.prompt) : this.other(request)
+      request.role === 'voice'
+        ? this.voice(request.meta as unknown as MockMeta)
+        : request.role === 'chronicler'
+          ? request.schemaName === 'outline'
+            ? this.outline(String(request.meta?.['name'] ?? 'the place'))
+            : this.chronicler(request.meta as unknown as ChronicleMeta, request.prompt)
+          : this.other(request)
     return { text, provider: 'mock', model: 'mock-1', usage: { inputTokens: Math.round((request.system.length + request.prompt.length) / 4), outputTokens: Math.round(text.length / 4), cachedTokens: 0 }, latencyMs: 1 }
   }
 
@@ -100,6 +106,22 @@ export class MockLlm implements LlmClient {
     const area = meta.cards.find((c) => c.kind === 'area')
     if (area && meta.lines[0]) reply.news.push({ area: area.key, text: meta.lines[0].text })
     return JSON.stringify(reply)
+  }
+
+  /** A far place, worked out plainly; 'invent' reuses a name that is already taken. */
+  private outline(name: string): string {
+    return JSON.stringify({
+      summary: `${name} is a busy place of brick and water, two days from the fen. The Count's banner hangs over its gate.`,
+      areas: [{ name: 'the Harbour Quarter', text: 'Quays, warehouses and the fish market.' }],
+      places: [
+        { name: this.mode === 'invent' ? 'Veenhoek' : 'the Lantern Gate', kind: 'gate', text: 'The east gate, where the barge from the Holleveen comes in.' },
+        { name: 'the Salt Hall', kind: 'guild hall', text: 'Where the salt merchants meet and quarrel.' },
+      ],
+      routes: [{ to: 'the Holleveen', text: 'By barge along the Graafse Vaart, two days.' }],
+      people: [{ role: 'the harbour master', text: 'Takes a coin from every barge, and another if you argue.' }],
+      dangers: ['Cutpurses in the fish market.'],
+      lore: [{ name: 'the drowned bell', text: 'A bell under the harbour that rings before a storm.' }],
+    })
   }
 
   private other(request: LlmRequest): string {

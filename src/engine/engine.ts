@@ -3,7 +3,8 @@ import { describeRoom, findNpcAnywhere, findNpcHere, runCommand, type CommandHos
 import { areaTopicId, callName, type Content } from './content'
 import { Dialogue, QUICK_OPTIONS } from './dialogue/conversation'
 import { Knowledge } from './dialogue/knowledge'
-import type { ChronicleOutput, ChroniclerRequest } from '../chronicler'
+import type { ChronicleOutput, ChroniclerRequest, Outline } from '../chronicler'
+import { applyOutline, farWhere, runOutline, wantOutline } from './outlines'
 import { applyRun, settleRuns, writeRun } from './chronicler'
 import { applyChoice, goalRequest, settleChoices } from './npc/goals'
 import { LlmError, type LlmClient, type LlmRequest, type LlmResponse } from './dialogue/llm'
@@ -23,7 +24,7 @@ import { knownRequests, requestName } from './requests'
 import { recordFact, seedNews } from './news'
 import { parseCommand, parseDirection } from './parser'
 import { advance } from './simulation'
-import { createInitialState, type GameState, type WorldEvent } from './state'
+import { createInitialState, fitStateToContent, type GameState, type WorldEvent } from './state'
 import { World } from './world'
 
 export type { Output, OutputKind } from './commands'
@@ -42,6 +43,8 @@ export type LogEntry =
   | { t: number; k: 'chron'; run: string; v: ChronicleOutput | null }
   // A goal choice of the brain, applied at this point: the model's reply (validated again), or null.
   | { t: number; k: 'goals'; choice: string; v: unknown }
+  // A far place worked out to its outline, or null for what the world book says.
+  | { t: number; k: 'outline'; topic: string; v: Outline | null }
 
 export interface SaveData {
   version: 1
@@ -123,6 +126,7 @@ export class Engine {
   private replaying = false
   private chronicling = false
   private thinking = false
+  private outlining = false
 
   constructor(
     readonly content: Content,
@@ -241,13 +245,44 @@ export class Engine {
 
   /** Everything waiting for a model: goal choices and chronicler runs. */
   get modelsWaiting(): number {
-    return (this.state.brain?.pending.length ?? 0) + this.chroniclerWaiting
+    return (this.state.brain?.pending.length ?? 0) + this.chroniclerWaiting + this.outlinesWaiting
   }
 
   /** Lets the models do their waiting work in the background: goal choices first, they are short. */
   async runModels(): Promise<void> {
     await this.runBrain()
     await this.runChronicler()
+    await this.runOutlines()
+  }
+
+  /** Far places waiting to be worked out to their outline, one at a time. */
+  async runOutlines(): Promise<void> {
+    if (this.outlining) return
+    this.outlining = true
+    try {
+      while (this.state.outlines?.pending.length) {
+        const topic = this.state.outlines.pending[0]!
+        const llm = this.llm
+        let written: Outline | null = null
+        if (llm) {
+          try {
+            const model = { complete: async (r: ChroniclerRequest) => llm.complete({ ...(r as LlmRequest), priority: 'low' }) }
+            written = (await runOutline(this.world, topic, model)).outline ?? null
+          } catch {
+            written = null
+          }
+        }
+        if (!this.state.outlines.pending.includes(topic)) continue
+        this.record({ t: this.world.now, k: 'outline', topic, v: written })
+        applyOutline(this.world, topic, written)
+      }
+    } finally {
+      this.outlining = false
+    }
+  }
+
+  get outlinesWaiting(): number {
+    return this.state.outlines?.pending.length ?? 0
   }
 
   /**
@@ -432,6 +467,7 @@ export class Engine {
         const to = /^(?:to|naar|towards|richting)\s+(.+)$/i.exec(command.args.join(' '))
         if (!to) return runCommand(this.host, { verb: 'go', args: command.args, raw: command.raw })
         const topic = this.topics.find(to[1]!)
+        if (topic && this.beyond(topic)) return this.setOffBeyond(topic)
         const place = topic ? knownPlace(this.world, topic) : undefined
         if (!topic || !place) return [{ kind: 'error', text: topic ? `You don't know where ${this.topics.name(topic)} is. Ask someone, or look for it.` : `You don't know a place called "${to[1]}".` }]
         const target = walkTarget(this.world, place)
@@ -442,6 +478,7 @@ export class Engine {
         const to = /^(?:to|naar)\s+(.+)$/i.exec(command.args.join(' '))
         if (!to) return [{ kind: 'error', text: 'Travel where? For example: travel to Waagdam.' }]
         const topic = this.topics.find(to[1]!)
+        if (topic && this.beyond(topic)) return this.setOffBeyond(topic)
         const place = topic ? knownPlace(this.world, topic) : undefined
         if (!place?.hex) return [{ kind: 'error', text: place ? `You have only heard of ${place.name}. Walk there first.` : `You don't know a place called "${to[1]}".` }]
         return [...travelTo(this.world, place.hex, place.name, (minutes) => this.pass(minutes)), describeRoom(this.world)]
@@ -559,7 +596,15 @@ export class Engine {
   static fromSave(content: Content, save: SaveData, llm?: LlmClient): Engine {
     if (save.world !== content.world.id) throw new Error(`This save belongs to world "${save.world}"`)
     const copy = JSON.parse(JSON.stringify(save)) as SaveData
+    fitStateToContent(content, copy.state)
     return new Engine(content, { state: copy.state, log: copy.log, llm })
+  }
+
+  /** The same game on changed content: what the world builder saves is in play at once (FO, chapter 15, "Live herladen"). */
+  withContent(content: Content): Engine {
+    const next = Engine.fromSave(content, this.save(), this.llm)
+    next.builder = this.builder
+    return next
   }
 
   /** Rebuilds a game from its seed and log, feeding recorded model replies back in. */
@@ -610,6 +655,9 @@ export class Engine {
         } else if (entry.k === 'goals') {
           this.log.push(entry)
           applyChoice(this.world, entry.choice, entry.v)
+        } else if (entry.k === 'outline') {
+          this.log.push(entry)
+          applyOutline(this.world, entry.topic, entry.v)
         }
       }
     } finally {
@@ -625,6 +673,27 @@ export class Engine {
   /** The map for the side panel (a window round the player) or the journal (the whole region). */
   mapView(whole = false): MapView | undefined {
     return mapView(this.world, whole ? { width: 60, height: 20, whole: true } : { width: 34, height: 12 })
+  }
+
+  /** A place the player knows of that lies beyond the region map. */
+  private beyond(topic: string): boolean {
+    const pos = this.content.topics.get(topic)?.pos
+    const map = regionMap(this.content)
+    return Boolean(pos && map && !map.inside(map.hexOf(pos)) && (this.state.player.journal ?? {})[topic] !== undefined)
+  }
+
+  /**
+   * Setting off for a far place: the roads out of the region stop at its edge
+   * for now, but the place is worked out to its outline, once (design, "De
+   * wereld buiten de kaart", level 2).
+   */
+  private setOffBeyond(topic: string): Output[] {
+    wantOutline(this.world, topic)
+    const name = this.topics.name(topic)
+    return [
+      { kind: 'text', text: `${name.charAt(0).toUpperCase()}${name.slice(1)} lies beyond the Holleveen. ${farWhere(this.world, topic) ?? ''} The roads out of the region stop at its edge for now.` },
+      { kind: 'system', text: `What is known of ${name} is in your journal${this.state.outlines?.pending.includes(topic) ? '; the chronicler is working it out' : ''}.` },
+    ]
   }
 
   /** Walks across the region, then shows where the walk ended (FO, chapter 4). */

@@ -1,5 +1,5 @@
 import { randomBytes } from 'node:crypto'
-import { mkdtempSync, readdirSync, readFileSync, rmSync, statSync } from 'node:fs'
+import { cpSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import type { App } from 'electron'
@@ -37,6 +37,29 @@ export function prepareLogCheck(app: App): string {
   app.setPath('userData', dir)
   return dir
 }
+
+/** WISPLIGHT_BUILDER_CHECK=1: a throwaway copy of the content, changed through the real world builder bridge. */
+export function prepareBuilderCheck(app: App): string {
+  const dir = mkdtempSync(join(tmpdir(), 'wisplight-buildercheck-'))
+  cpSync(join(app.getAppPath(), 'content'), join(dir, 'content'), { recursive: true })
+  app.setPath('userData', join(dir, 'user'))
+  return dir
+}
+
+export const BUILDER_CHECK_SCRIPT = `(async () => {
+  const out = []
+  const day = 'Grey water slaps against the planks. A new stone stands on the quay now. It smells of tar. The green is north.\\n'
+  const saved = await window.wisplight.builder.save('location', 'loc_veenhoek_quay', { 'description.day': day })
+  out.push('save: ' + (saved.ok ? 'ok, ' + saved.file : 'refused: ' + saved.problems.join('; ')))
+  await new Promise((r) => setTimeout(r, 300))
+  const look = await window.wisplight.command('look')
+  out.push('look: ' + (look.outputs.map((o) => o.text).join(' ').includes('A new stone stands on the quay now.') ? 'shows the change' : 'DOES NOT show the change'))
+  const broken = await window.wisplight.builder.save('location', 'loc_veenhoek_quay', { exits: { north: { to: 'loc_nowhere' } } })
+  out.push('broken change: ' + (broken.ok ? 'SAVED' : 'refused'))
+  const data = await window.wisplight.builder.data()
+  out.push('check: ' + data.problems.length + ' problems, ' + data.warnings.length + ' warnings')
+  return out.join('\\n')
+})()`
 
 export const LOG_CHECK_SCRIPT = `(async () => {
   const out = []

@@ -1,11 +1,12 @@
 import type { JournalPage, Output, Status } from '../../engine'
 import type { Advice, TrialResult } from '../../node/ai/advisor'
 import type { AiLogEntry } from '../../node/ai/log'
+import type { BuilderData } from '../../node/builder'
 import type { ModelInfo, ProviderId } from '../../node/ai/providers'
 import type { AiOverview } from '../../node/ai/service'
 import type { ChosenRole } from '../../node/ai/settings'
 
-export type { Advice, AiLogEntry, AiOverview, ChosenRole, JournalPage, ModelInfo, ProviderId, TrialResult }
+export type { Advice, AiLogEntry, AiOverview, BuilderData, ChosenRole, JournalPage, ModelInfo, ProviderId, TrialResult }
 
 /** What the status bar shows about the AI: cost so far and whether calls go through. */
 export interface AiStatus {
@@ -42,6 +43,14 @@ export interface AiBridge {
   billing(provider: ProviderId): Promise<void>
 }
 
+/** The world builder (development builds of the desktop app only). */
+export interface BuilderBridge {
+  data(): Promise<BuilderData>
+  save(kind: 'location' | 'npc' | 'region', id: string, patch: Record<string, unknown>): Promise<{ ok: boolean; problems: string[]; file?: string }>
+  onReload(listener: () => void): () => void
+  onProblem(listener: (text: string) => void): () => void
+}
+
 export interface EngineClient {
   start(): Promise<Reply>
   command(input: string): Promise<Reply>
@@ -56,6 +65,8 @@ export interface EngineClient {
   onTick(listener: (reply: Reply) => void): () => void
   /** Only in the desktop app, or in the browser preview with ?mock=1. */
   ai?: AiBridge
+  /** Only in a development build of the desktop app. */
+  builder?: BuilderBridge
 }
 
 const IDLE_PAUSE_MS = 60_000
@@ -68,18 +79,40 @@ const IDLE_PAUSE_MS = 60_000
 export async function createClient(): Promise<EngineClient> {
   if (window.wisplight) return window.wisplight
 
-  const { Engine, loadContent, MockLlm } = await import('../../engine')
+  const { applyChange, builderView, Engine, loadContent, MockLlm } = await import('../../engine')
   const modules = import.meta.glob('../../../content/**/*.{yaml,yml,md}', {
     query: '?raw',
     import: 'default',
     eager: true,
   }) as Record<string, string>
-  const content = loadContent(Object.entries(modules).map(([path, text]) => ({ path, text })))
+  const files = Object.entries(modules).map(([path, text]) => ({ path: path.replace(/^.*?content\//, ''), text }))
+  const content = loadContent(files)
   const mock = new URLSearchParams(window.location.search).has('mock')
   const demo = mock ? await import('./demo') : undefined
   const llm = mock ? demo!.slowMock(new MockLlm('good')) : undefined
-  const engine = new Engine(content, { seed: 1, llm, builder: true })
+  let engine = new Engine(content, { seed: 1, llm, builder: true })
   const bridge = demo?.demoBridge(content)
+  // In the preview the world builder changes the content in memory only; the desktop app writes the files.
+  const reloads = new Set<() => void>()
+  const builder: BuilderBridge | undefined = mock
+    ? {
+        data: async () => builderView(files),
+        save: async (kind, id, patch) => {
+          const result = applyChange(files, kind, id, patch)
+          if (result.ok && result.file && result.content) {
+            files.find((f) => f.path === result.file)!.text = result.text!
+            engine = engine.withContent(result.content)
+            for (const listener of reloads) listener()
+          }
+          return { ok: result.ok, problems: result.problems, file: result.file }
+        },
+        onReload: (listener) => {
+          reloads.add(listener)
+          return () => reloads.delete(listener)
+        },
+        onProblem: () => () => undefined,
+      }
+    : undefined
   // The clock starts with the player's first keystroke, not while the opening is being read.
   let lastInput = -Infinity
   let held = false
@@ -125,5 +158,6 @@ export async function createClient(): Promise<EngineClient> {
       return () => listeners.delete(listener)
     },
     ai: bridge,
+    builder,
   }
 }

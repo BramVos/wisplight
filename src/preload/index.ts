@@ -9,6 +9,20 @@ contextBridge.exposeInMainWorld('wisplight', {
   end: () => ipcRenderer.invoke('engine:end'),
   activity: () => ipcRenderer.send('engine:activity'),
   hold: (on: boolean) => ipcRenderer.send('engine:hold', on),
+  builder: {
+    data: () => ipcRenderer.invoke('builder:data'),
+    save: (kind: string, id: string, patch: Record<string, unknown>) => ipcRenderer.invoke('builder:save', kind, id, patch),
+    onReload: (listener: () => void) => {
+      const handler = () => listener()
+      ipcRenderer.on('builder:reloaded', handler)
+      return () => ipcRenderer.removeListener('builder:reloaded', handler)
+    },
+    onProblem: (listener: (text: string) => void) => {
+      const handler = (_event: IpcRendererEvent, text: string) => listener(text)
+      ipcRenderer.on('builder:problem', handler)
+      return () => ipcRenderer.removeListener('builder:problem', handler)
+    },
+  },
   onTick: (listener: (reply: unknown) => void) => {
     const handler = (_event: IpcRendererEvent, reply: unknown) => listener(reply)
     ipcRenderer.on('engine:tick', handler)

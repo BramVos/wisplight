@@ -5,6 +5,7 @@ import { itemName } from './items'
 import { factById, versionOf } from './news'
 import { isNear, noun, ties } from './people'
 import { askLine, requestName } from './requests'
+import { outlineLines, outlineOf } from './outlines'
 import type { World } from './world'
 
 // The journal as a reference book (design: lore and world change, "Wat de
@@ -148,9 +149,14 @@ export function journalPage(world: World, topics: TopicRegistry, id: string): Jo
     page.kind = entry.kind === 'place' ? 'place' : entry.kind === 'person' ? 'person' : 'lore'
     const topic = content.topics.get(id)
     const level = Math.max(0, ...(world.state.player.sources?.[id] ?? []).map((s) => s.level))
-    if (topic) {
+    const worked = outlineOf(world, id)
+    if (worked) {
+      page.lines.push(...outlineLines(worked))
+    } else if (topic) {
       page.lines.push(topic.summary)
       if (level >= 2 && topic.details) page.lines.push(topic.details)
+    }
+    if (topic) {
       if (topic.origin) page.links.push(...link(areaTopicId(content, topic.origin), 'from'))
       if (topic.teller) page.links.push(...link(topic.teller, 'told by'))
     }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { Engine, GameClock } from '../src/engine'
+import { Engine, GameClock, MockLlm } from '../src/engine'
 import { distance, line } from '../src/engine/map/hexgrid'
 import { knownPlace } from '../src/engine/map/known'
 import { regionMap } from '../src/engine/map/region'
@@ -194,5 +194,88 @@ describe('M4: detail by distance', () => {
     expect(engine.world.present('npc_gerrit')).toBe(false)
     engine.tick(4 * 60)
     expect(engine.state.npcs['npc_gerrit']!.note).toBeUndefined()
+  })
+})
+
+describe('M4: the first world builder', () => {
+  async function copy() {
+    const { cp, mkdtemp } = await import('node:fs/promises')
+    const { tmpdir } = await import('node:os')
+    const { join, resolve } = await import('node:path')
+    const dir = await mkdtemp(join(tmpdir(), 'wisplight-builder-'))
+    await cp(resolve(import.meta.dirname, '../content'), dir, { recursive: true })
+    return dir
+  }
+
+  it('writes a change to a place into its YAML file, and the game shows it at once', async () => {
+    const { saveChange } = await import('../src/node/builder')
+    const { readFile } = await import('node:fs/promises')
+    const dir = await copy()
+    const engine = new Engine(content, { seed: 1 })
+    const day = 'Grey water slaps against the planks. A new stone stands here now. It smells of tar. The green is north.\n'
+    const result = await saveChange(dir, 'location', 'loc_veenhoek_quay', { 'description.day': day })
+    expect(result).toMatchObject({ ok: true, file: 'base/regions/holleveen/areas/veenhoek/locations.yaml' })
+    const text = await readFile(`${dir}/${result.file}`, 'utf8')
+    expect(text).toContain('A new stone stands here now.')
+    // Comments in the file stay where they were.
+    expect(text.split('\n')[0]).toMatch(/^#|^locations:/)
+    const next = engine.withContent(result.content!)
+    expect(texts(await next.handle('look'))).toMatch(/A new stone stands here now\./)
+  })
+
+  it('changes a person, and refuses a change that would break the content', async () => {
+    const { saveChange, builderData } = await import('../src/node/builder')
+    const dir = await copy()
+    const ok = await saveChange(dir, 'npc', 'npc_mirte', { appearance: 'A tall woman with flour in her hair.', personality: { warmth: 3, courage: -1, honesty: 1, temper: 0, curiosity: 2, diligence: 2 } })
+    expect(ok.ok).toBe(true)
+    const engine = new Engine(ok.content!, { seed: 1 })
+    await play(engine, 'n', 'e')
+    expect(await play(engine, 'examine mirte')).toMatch(/A tall woman with flour in her hair\./)
+    const broken = await saveChange(dir, 'location', 'loc_veenhoek_quay', { exits: { north: { to: 'loc_nowhere' } } })
+    expect(broken.ok).toBe(false)
+    expect(broken.problems.join(' ')).toMatch(/loc_nowhere/)
+    const data = await builderData(dir)
+    expect(data.problems).toEqual([])
+    expect(data.locations.find((l) => l.id === 'loc_veenhoek_quay')!.exits['north']!.to).toBe('loc_veenhoek_green')
+  })
+
+  it('points out what loads but deserves a look', async () => {
+    const { builderData } = await import('../src/node/builder')
+    const data = await builderData((await import('node:path')).resolve(import.meta.dirname, '../content'))
+    expect(data.problems).toEqual([])
+    expect(Array.isArray(data.warnings)).toBe(true)
+  })
+})
+
+describe('M4: the world beyond the map', () => {
+  it('works a far place out to its outline once, when the player sets off for it', async () => {
+    const mock = new MockLlm('good')
+    const engine = new Engine(content, { seed: 1, llm: mock })
+    ;(engine.state.player.journal ??= {})['graafhaven'] = 1
+    const out = texts(await engine.handle('walk to graafhaven'))
+    expect(out).toMatch(/lies beyond the Holleveen\. It lies about \d+ km west/)
+    expect(engine.outlinesWaiting).toBe(1)
+    await engine.runModels()
+    const page = engine.page('graafhaven')!
+    expect(page.lines.join('\n')).toMatch(/the Salt Hall, guild hall/)
+    expect(page.lines.join('\n')).toMatch(/Worked out by the chronicler/)
+    // Once only: setting off again asks for nothing more.
+    await engine.handle('travel to graafhaven')
+    expect(engine.outlinesWaiting).toBe(0)
+    const replayed = await Engine.replay(content, 1, engine.save().log)
+    expect(replayed.state.outlines).toEqual(engine.state.outlines)
+  })
+
+  it('keeps names that are already taken out of an outline, and without a model tells what the world book says', async () => {
+    const mock = new MockLlm('invent')
+    const engine = new Engine(content, { seed: 1, llm: mock })
+    ;(engine.state.player.journal ??= {})['hunnenloo'] = 1
+    await engine.handle('walk to hunnenloo')
+    await engine.runModels()
+    expect(engine.page('hunnenloo')!.lines.join('\n')).not.toMatch(/Veenhoek, gate/)
+    const plain = new Engine(content, { seed: 1 })
+    ;(plain.state.player.journal ??= {})['hunnenloo'] = 1
+    await plain.handle('walk to hunnenloo')
+    expect(plain.page('hunnenloo')!.lines[0]).toBe(content.topics.get('hunnenloo')!.summary)
   })
 })

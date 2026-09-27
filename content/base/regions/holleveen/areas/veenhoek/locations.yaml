@@ -106,8 +106,8 @@ locations:
     description:
       day: |
         A narrow house with a green door. On the doorstep sits a grey cat
-        with one white paw, very upright, watching the lane. When you come
-        close it doesn't run. It looks at you as if it is waiting for you to
+        with one white paw, very upright, watching the lane; when you come
+        close it doesn't run, but looks at you as if it is waiting for you to
         say something. Inside, a spinning wheel hums. The green is east.
     exits:
       east: { to: loc_veenhoek_green }
