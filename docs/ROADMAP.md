@@ -385,3 +385,23 @@ Commando's en interface:
 - [ ] Het transcript vertraagt het spel niet: de regels gaan gebufferd en asynchroon naar schijf via de schrijver van het spellogboek, met een flush aan het eind van elke beurt; boven een paar megabyte gaat het verder in een vervolgbestand (`-2.md`), en een fout bij het schrijven zet het transcript uit met één melding
 - [ ] Alles wat er al was, speelt hetzelfde: het hele testpakket, de simulaties, de uitspeelscripts van beide werelden, en oude saves
 
+## M10.5 Ambacht en vaardigheid
+
+Scope: besluit 27 september 2026, na een analyse van levelen, ervaring en vaardigheden (FO hoofdstuk 11). Wat er is, blijft: tien levels van duizend ervaring, dertien vaardigheden met vier rangen, punten en oefenstreepjes, talenten. Wat erbij komt, in twee delen: ambachten die groeien door te doen, met handelingen voor de effectvaardigheden; en props van de kroniekschrijver, die het verhaal lichtjes naar de vaardigheden van de speler schrijft. Nu: één vaardigheid Crafting voor alles, de speler mag bijna niets maken (de oven is alleen voor NPC's), Thievery kent geen sloten, Medicine geen behandeling, Survival geen verzamelen, en niemand wordt beter door alleen te doen.
+
+A. Ambachten en handelingen:
+- [ ] Ambachten zijn content: per werkplaats en beroep uit het grootboek (bakker, molenaar, turfsteker, palingvisser, kuiper, steenbakker, smid) een ambacht met vier rangen, en elk recept op een object noemt zijn ambacht en moeilijkheid; `USE OVEN BAKE` is een proef op bakken, met brood en een streepje bij succes en verloren meel bij een misser; de dertien vaardigheden blijven wat ze zijn en een ambacht leunt op één ervan voor de start
+- [ ] Een ambacht groeit alleen door te doen of te leren, niet door punten: tien geslaagde proeven maken getraind, dertig expert, honderd meester, met een grens per dag, zodat levelen voor talenten en de dertien vaardigheden blijft
+- [ ] Leermeesters: de band "teaching" krijgt betekenis; een dag leren bij een vakman die je vertrouwt (aanbieding `teach` uit M10.3, tegen geld of een gunst) telt als een stel streepjes, en gaat sneller dan het zelf uitvogelen
+- [ ] Effectvaardigheden krijgen een handeling: `pick` op een slot (Thievery), `treat <persoon>` bij ziekte en wonden (Medicine), verzamelen op de kaart uit de hulpbronnen per zone en sporen lezen (Survival), een oud opschrift lezen (Lore), iets verborgens vinden op een plek (Perception); elk met een proef, een streepje en waar het past ervaring
+- [ ] Een rang levert meer op dan de bonus: een hogere rang opent recepten (het feestbrood voor de meesterbakker), betere prijzen voor eigen werk, en een reputatie in het dorp die een signaal is voor het brein
+- [ ] Busy Hands werkt: de zegening die op ambachtswerk voor de speler wachtte sinds M7.2
+
+B. Props van de kroniekschrijver:
+- [ ] De kroniekschrijver krijgt een kaart van de speler in zijn overzicht: klasse, vaardigheden met een rang van getraind of hoger, en ambachten; geen getallen
+- [ ] Een prop is een sjabloon in de content (zoals de questsjablonen): een gesloten kist, een oud opschrift, een zieke in bed, een verzakt pad, een wacht die niet wil praten, een verborgen nis; met waar hij kan staan, van wie hij is, welke proef, wat erin zit, en altijd minstens twee wegen: de vaardigheid en een langzamere of duurdere weg
+- [ ] De kroniekschrijver kiest alleen soort, plek en verhaallijn met het werkwoord `place_prop`; de motor zet de prop neer als object met een eigenaar, en de moeilijkheid volgt het level van de speler
+- [ ] Hints in een prop zijn feiten van die verhaallijn in de woorden van de eigenaar, nooit vrije tekst; geld komt uit de beurs van de eigenaar of de nederzetting; voorwerpen zijn dingen die de wereld kent; eruit nemen is diefstal met getuigen en gevolgen langs het systeem dat er al is
+- [ ] Een prop staat nooit op het kritieke pad van een quest, hooguit één per verhaallijn en een paar per speelweek; zonder model plaatst de motor niets en werkt de wereld zonder props
+- [ ] De toets: in een lopende verhaallijn verschijnt een kist van Lubbert met zijn dagboek; een schelm opent hem stil, een boer haalt de smid erbij, de hints kloppen met wat er gebeurde, en Lubbert merkt de volgende dag dat er iets weg is
+- [ ] Alles wat er al was, speelt hetzelfde: het hele testpakket, de simulaties, de uitspeelscripts van beide werelden, en oude saves
