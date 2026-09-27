@@ -103,6 +103,23 @@ export function factionLines(world: World): string[] {
     .map((f) => `${cap(f.name)}: ${rankOf(rep[f.id] ?? 0)} (${rep[f.id] ?? 0})${members.includes(f.id) ? ', member' : ''}. ${f.wants}`)
 }
 
+/** A page for one faction the player knows: what it wants, where it sits, its friends and enemies, and your standing. */
+export function factionPage(world: World, id: string): string[] | undefined {
+  const f = world.content.factions.get(id)
+  const score = world.state.reputation?.[id]
+  const member = (world.state.memberships ?? []).includes(id)
+  if (!f || (score === undefined && !member)) return undefined
+  const names = (ids: string[]) => ids.map((x) => world.content.factions.get(x)?.name ?? x).join(', ')
+  return [
+    f.wants,
+    `Seat: ${f.seat}.`,
+    `On the drainage: ${f.stance}.`,
+    ...(f.allies.length ? [`Friends: ${names(f.allies)}.`] : []),
+    ...(f.rivals.length ? [`Enemies: ${names(f.rivals)}.`] : []),
+    `You: ${rankOf(score ?? 0)} (${score ?? 0})${member ? ', a member' : ''}.`,
+  ]
+}
+
 function cap(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1)
 }

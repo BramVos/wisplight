@@ -1,10 +1,11 @@
-import { Fragment, useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react'
+import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import type { Output } from '../../engine'
-import { createClient, type AiStatus, type CreationData, type EngineClient, type JournalPage, type Reply } from './client'
+import { createClient, type AiStatus, type CreationData, type EngineClient, type Reply } from './client'
 import { BuilderView } from './BuilderView'
 import { CharacterCreation } from './CharacterCreation'
 import { FightPanel } from './FightPanel'
 import { EndView } from './EndView'
+import { JournalView } from './JournalView'
 import { Settings, usd, type SettingsTab } from './Settings'
 
 type Line = (Output & { id: number }) | { id: number; kind: 'input'; text: string }
@@ -48,14 +49,7 @@ function aiLabel(ai: AiStatus): { text: string; tone: '' | 'warn' | 'over' } {
   return { text: `AI ${usd(ai.sessionUsd)}${ai.monthLeftPercent !== undefined ? `  ${ai.monthLeftPercent}% of month left` : ''}`, tone: low ? 'warn' : '' }
 }
 
-const JOURNAL: { key: keyof Status['journal']; title: string }[] = [
-  { key: 'quests', title: 'Quests' },
-  { key: 'people', title: 'People' },
-  { key: 'places', title: 'Places' },
-  { key: 'events', title: 'Events' },
-  { key: 'lore', title: 'Lore' },
-  { key: 'things', title: 'Things' },
-]
+const JOURNAL_KEYS: (keyof Status['journal'])[] = ['quests', 'people', 'places', 'lands', 'factions', 'events', 'lore', 'things']
 
 export function App() {
   const [client, setClient] = useState<EngineClient>()
@@ -67,7 +61,8 @@ export function App() {
   const [error, setError] = useState<string>()
   const [waiting, setWaiting] = useState(false)
   const [settings, setSettings] = useState<SettingsTab>()
-  const [page, setPage] = useState<JournalPage>()
+  // The journal window, open at a page or at its index (FO, chapter 2).
+  const [journal, setJournal] = useState<{ start?: string }>()
   const [ending, setEnding] = useState(false)
   const [building, setBuilding] = useState(false)
   const [creation, setCreation] = useState<CreationData>()
@@ -107,8 +102,8 @@ export function App() {
 
   // Menus stop the clock (FO, chapter 3).
   useEffect(() => {
-    client?.hold(Boolean(settings) || ending || building || Boolean(creation))
-  }, [client, settings, ending, building, creation])
+    client?.hold(Boolean(settings) || ending || building || Boolean(creation) || Boolean(journal))
+  }, [client, settings, ending, building, creation, journal])
 
   // What the world builder saves is in the game at once: show the place again (FO, chapter 15).
   useEffect(() => {
@@ -151,6 +146,11 @@ export function App() {
     const text = input.trim()
     if (!text) return
     setInput('')
+    // The journal opens as its own window.
+    if (/^(j|journal|dagboek)$/i.test(text)) {
+      setJournal({})
+      return
+    }
     void send(text)
   }
 
@@ -167,16 +167,16 @@ export function App() {
   }
 
   const talk = status?.talk
-  const openPage = async (id: string) => setPage((await client?.page(id)) ?? undefined)
+  const openPage = (id?: string) => setJournal(id ? { start: id } : {})
   // A topic in the text: ask about it in a conversation; otherwise open its journal page, if known.
   const onTopic = (topic: string) => {
     if (talk) {
       void send(`ask about ${topic}`)
       return
     }
-    const known = status ? JOURNAL.flatMap(({ key }) => status.journal[key]).find((e) => e.name.toLowerCase() === topic.toLowerCase()) : undefined
+    const known = status ? JOURNAL_KEYS.flatMap((key) => status.journal[key]).find((e) => e.name.toLowerCase() === topic.toLowerCase()) : undefined
     if (known) {
-      void openPage(known.id)
+      openPage(known.id)
       return
     }
     setInput(`ask about ${topic}`)
@@ -184,7 +184,8 @@ export function App() {
   }
 
   const ai = status?.ai ? aiLabel(status.ai) : undefined
-  const journalCount = status ? JOURNAL.reduce((sum, { key }) => sum + status.journal[key].length, 0) : 0
+  const journalCount = status ? JOURNAL_KEYS.reduce((sum, key) => sum + status.journal[key].length, 0) : 0
+  const openQuests = status?.journal.quests.filter((q) => q.group === 'Open') ?? []
 
   return (
     <div className="shell">
@@ -211,7 +212,7 @@ export function App() {
             <p className="small">
               {status.character.hp}/{status.character.maxHp} hp, {status.character.xp}/{status.character.next} xp
             </p>
-            <button type="button" className="link" onClick={() => void openPage('sheet')}>
+            <button type="button" className="link" onClick={() => openPage('sheet')}>
               [Sheet]
             </button>
             {status.character.canLevel && (
@@ -247,7 +248,7 @@ export function App() {
                   </div>
                 ))}
               </pre>
-              <button type="button" className="link" onClick={() => void openPage('map')}>
+              <button type="button" className="link" onClick={() => openPage('map')}>
                 [Whole map]
               </button>
             </>
@@ -290,7 +291,7 @@ export function App() {
               <button type="button" className="link" disabled={waiting} onClick={() => void send('camp')}>
                 [Camp]
               </button>{' '}
-              <button type="button" className="link" onClick={() => void openPage('party')}>
+              <button type="button" className="link" onClick={() => openPage('party')}>
                 [Opinions]
               </button>
             </>
@@ -300,78 +301,25 @@ export function App() {
         </section>
         <section>
           <h2>Journal</h2>
-          {page && (
-            <div className="journal-page">
-              <button type="button" className="link" onClick={() => setPage(undefined)}>
-                [Back]
-              </button>
-              <h3>{page.name}</h3>
-              {page.kind === 'map' || page.kind === 'sheet' ? (
-                <pre className={page.kind === 'map' ? 'map whole' : 'sheet'}>{page.lines.join('\n')}</pre>
-              ) : (
-                page.lines.map((line, index) => <p key={index}>{line}</p>)
-              )}
-              {page.sources.length > 0 && <p className="muted small">Heard from: {page.sources.join('; ')}</p>}
-              {page.links.length > 0 && (
-                <ul className="journal-links">
-                  {page.links.map((l) => (
-                    <li key={l.id}>
-                      <span className="muted">{l.label}: </span>
-                      <button type="button" className="topic" onClick={() => void openPage(l.id)}>
-                        {l.name}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-              {talk && (
-                <button type="button" className="link" onClick={() => void send(`ask about ${page.name}`)}>
-                  [Ask {talk.call} about this]
-                </button>
-              )}
-            </div>
-          )}
-          {!page && journalCount === 0 && <p className="muted">Topics you learn appear here.</p>}
-          {!page && status?.factions && (
+          <button type="button" className="link" onClick={() => openPage()}>
+            [Open the journal]
+          </button>{' '}
+          <span className="muted small">{journalCount} entries</span>
+          {openQuests.length > 0 && (
             <div className="journal-group">
-              <h3>Factions</h3>
-              <p>
-                {status.factions.map((f, i, all) => (
-                  <span key={f.id} className="entry">
-                    <button type="button" className="topic" onClick={() => void openPage('factions')}>
-                      {f.name.replace(/^the /, '')}
-                    </button>{' '}
-                    <span className="muted small">{f.rank}{f.member ? ', member' : ''}</span>
-                    {i < all.length - 1 && ','}{' '}
-                  </span>
+              <h3>Open quests</h3>
+              <ul className="side-quests">
+                {openQuests.map((q) => (
+                  <li key={q.id}>
+                    <button type="button" className="topic" onClick={() => openPage(q.id)}>
+                      {q.name}
+                    </button>
+                  </li>
                 ))}
-              </p>
+              </ul>
             </div>
           )}
-          {!page && (
-            <button type="button" className="link" onClick={() => void openPage('lands')}>
-              [The lands]
-            </button>
-          )}
-          {!page &&
-            status &&
-            JOURNAL.filter(({ key }) => status.journal[key].length > 0).map(({ key, title }) => (
-              <div key={key} className="journal-group">
-                <h3>{title}</h3>
-                <p>
-                  {status.journal[key].map((entry, index, all) => (
-                    <Fragment key={entry.id}>
-                      <span className="entry">
-                        <button type="button" className="topic" onClick={() => void openPage(entry.id)}>
-                          {entry.name}
-                        </button>
-                        {index < all.length - 1 && ','}
-                      </span>{' '}
-                    </Fragment>
-                  ))}
-                </p>
-              </div>
-            ))}
+          {journalCount === 0 && <p className="muted">Topics you learn appear here.</p>}
         </section>
         <section>
           <button type="button" className="link" onClick={() => setSettings('ai')}>
@@ -412,6 +360,9 @@ export function App() {
             {status ? `${status.location}  |  ${status.time}  |  ${status.money}${status.paused && !status.talk ? '  |  time paused' : ''}` : 'Loading the Nethermarch'}
           </span>
           {status?.wanted && <span className="wanted">Wanted: {status.wanted.join('; ')}</span>}
+          <button type="button" className="link journal-button" onClick={() => openPage()} title="Journal (J)">
+            [Journal]
+          </button>
           {ai && (
             <button type="button" className={`link ai ${ai.tone}`} onClick={() => setSettings('usage')} title="AI cost and usage">
               {ai.text}
@@ -440,6 +391,22 @@ export function App() {
           onCreate={(command) => {
             setCreation(undefined)
             void send(command)
+          }}
+        />
+      )}
+      {journal && client && status && (
+        <JournalView
+          client={client}
+          journal={status.journal}
+          start={journal.start}
+          talkingTo={talk?.call}
+          onAsk={(topic) => {
+            setJournal(undefined)
+            void send(`ask about ${topic}`)
+          }}
+          onClose={() => {
+            setJournal(undefined)
+            inputRef.current?.focus()
           }}
         />
       )}

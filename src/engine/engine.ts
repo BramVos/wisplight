@@ -36,14 +36,14 @@ import { approve, arrived, campfire, companionOf, companions, leave, order, part
 import { confronting, settleGrievance } from './social/confront'
 import { crime, payFine, steal } from './social/crime'
 import { deed, noticeCarried, seedBonds } from './social/deeds'
-import { factionLines, join, rankOf, repute } from './social/factions'
+import { factionLines, factionPage, join, rankOf, repute } from './social/factions'
 import { fightsBack, mayAttackFirst, mayLend } from './social/gates'
 import { flirt, marry } from './social/romance'
 import { evaluate, expireConditions, questAction, questlog, questPage, questsOnDeath, setPlaceState, startQuest, triggers, type QuestHost } from './quests/engine'
 import { PlaceState } from './quests/schema'
 import { antagonists } from './quests/antagonists'
 import { plansDue, startPlan } from './quests/plans'
-import { realmLines } from './social/realms'
+import { realmLines, realmPage } from './social/realms'
 import {
   character,
   clockLine,
@@ -104,6 +104,8 @@ export type GameLogLine =
 export interface JournalEntry {
   id: string
   name: string
+  /** A heading within its part of the journal: the village someone lives in, open or finished quests. */
+  group?: string
 }
 
 export interface Status {
@@ -113,7 +115,7 @@ export interface Status {
   money: string
   paused: boolean
   talk?: { npc: string; name: string; call: string; attitude: string; turnsLeft: number; options: string[] }
-  journal: { people: JournalEntry[]; places: JournalEntry[]; events: JournalEntry[]; lore: JournalEntry[]; things: JournalEntry[]; quests: JournalEntry[] }
+  journal: { quests: JournalEntry[]; people: JournalEntry[]; places: JournalEntry[]; lands: JournalEntry[]; factions: JournalEntry[]; events: JournalEntry[]; lore: JournalEntry[]; things: JournalEntry[] }
   /** The map round the player: rows of characters, and a class code per character (FO, chapter 4). */
   map?: { rows: string[]; classes: string[] }
   /** The character in short, for the side panel (FO, chapter 11). */
@@ -271,6 +273,14 @@ export class Engine {
     }
     if (id === 'factions') return { id, kind: 'lore', name: 'Factions', lines: factionLines(this.world).length ? factionLines(this.world) : ['No faction knows you yet.'], sources: [], links: [] }
     if (id === 'lands') return { id, kind: 'lore', name: 'The lands', lines: realmLines(this.world), sources: [], links: [] }
+    if (id.startsWith('realm_')) {
+      const lines = realmPage(this.world, id.slice(6))
+      return lines ? { id, kind: 'lore', name: capitalise(this.content.realms.get(id.slice(6))!.name), lines, sources: [], links: [] } : undefined
+    }
+    if (id.startsWith('faction_')) {
+      const lines = factionPage(this.world, id.slice(8))
+      return lines ? { id, kind: 'lore', name: capitalise(this.content.factions.get(id.slice(8))!.name), lines, sources: [], links: [] } : undefined
+    }
     if (id === 'party') return { id, kind: 'lore', name: 'Your companions', lines: partyLines(this.world).length ? [...partyLines(this.world), ...companions(this.world).flatMap((m) => m.approvals.slice(-3).map((a) => `  ${callName(this.world.npc(m.npc))}: ${a.text}`))] : ['You travel alone.'], sources: [], links: [] }
     if (id === 'sheet') return { id, kind: 'sheet', name: this.state.player.character?.name ?? 'You', lines: [...sheetLines(this.world), ...this.clockLines()], sources: [], links: [] }
     this.dialogue.syncNews()
@@ -739,27 +749,6 @@ export class Engine {
     // Lore of this game goes in the journal once the player heard the news it came from.
     const heard = this.state.news?.heard['player'] ?? {}
     for (const lore of this.state.chronicle?.lore ?? []) if (lore.facts.some((f) => heard[f])) this.dialogue.learn(lore.id)
-    const journal: Status['journal'] = { people: [], places: [], events: [], lore: [], things: [], quests: [] }
-    for (const [id, q] of Object.entries(questlog(this.world)).sort((a, b) => a[1].started - b[1].started)) {
-      const quest = this.content.quests.get(id)
-      if (quest) journal.quests.push({ id: `quest_${id}`, name: `${quest.name}${q.ended ? ' (over)' : ''}` })
-    }
-    for (const request of knownRequests(this.world)) {
-      const state = request.status === 'done' ? ' (done)' : request.status === 'failed' ? ' (too late)' : ''
-      journal.quests.push({ id: request.id, name: `${requestName(this.world, request)}${state}` })
-    }
-    for (const id of Object.keys(this.state.player.journal ?? {}).sort()) {
-      const kind = this.topics.kind(id)
-      if (id.startsWith('fact_')) {
-        journal.events.push({ id, name: this.topics.name(id) })
-        continue
-      }
-      const entry = { id, name: id.startsWith('far_') ? `${this.topics.name(id)} (heard of)` : this.topics.name(id) }
-      if (kind === 'person') journal.people.push(entry)
-      else if (kind === 'place' || kind === 'area') journal.places.push(entry)
-      else if (kind === 'lore' || kind === 'fact') journal.lore.push(entry)
-      else if (kind === 'item') journal.things.push(entry)
-    }
     return {
       location: location.name,
       area: this.content.areas.get(location.area)?.name ?? location.area,
@@ -769,10 +758,73 @@ export class Engine {
       talk: talk
         ? { npc: talk.npc, name: this.world.npc(talk.npc).short, call: callName(this.world.npc(talk.npc)), attitude: attitude(this.world, talk.npc).band, turnsLeft: talk.turnsLeft, options: QUICK_OPTIONS }
         : undefined,
-      journal,
+      journal: this.journal(),
       map: this.compactMap(),
       ...this.characterStatus(),
     }
+  }
+
+  /**
+   * The journal (FO, chapter 2): everything the player learnt, in parts, and
+   * within a part under headings, so it reads as an overview: people by the
+   * village they live in, places by village and town, then the lands and the
+   * factions that know the player.
+   */
+  private journal(): Status['journal'] {
+    const journal: Status['journal'] = { quests: [], people: [], places: [], lands: [], factions: [], events: [], lore: [], things: [] }
+    const open: JournalEntry[] = []
+    const over: JournalEntry[] = []
+    for (const [id, q] of Object.entries(questlog(this.world)).sort((a, b) => a[1].started - b[1].started)) {
+      const quest = this.content.quests.get(id)
+      if (quest) (q.ended ? over : open).push({ id: `quest_${id}`, name: quest.name })
+    }
+    for (const request of knownRequests(this.world)) {
+      const state = request.status === 'done' ? ' (done)' : request.status === 'failed' ? ' (too late)' : ''
+      ;(state ? over : open).push({ id: request.id, name: `${requestName(this.world, request)}${state}` })
+    }
+    journal.quests.push(...open.map((e) => ({ ...e, group: 'Open' })), ...over.map((e) => ({ ...e, group: 'Over' })))
+
+    const people: (JournalEntry & { order: string })[] = []
+    const places: (JournalEntry & { order: string })[] = []
+    for (const id of Object.keys(this.state.player.journal ?? {}).sort()) {
+      const kind = this.topics.kind(id)
+      if (id.startsWith('fact_')) {
+        journal.events.push({ id, name: this.topics.name(id) })
+        continue
+      }
+      const name = id.startsWith('far_') ? `${this.topics.name(id)} (heard of)` : this.topics.name(id)
+      if (kind === 'person') {
+        const npc = this.content.npcs.get(id)
+        const area = npc ? this.content.areas.get(this.world.location(npc.home).area) : undefined
+        people.push({ id, name, ...(area ? this.areaGroup(area.id) : { group: 'Further afield', order: '9' }) })
+      } else if (kind === 'place' || kind === 'area') {
+        const entry = this.topics.entries.get(id)
+        const areaId = kind === 'area' ? entry?.ref : entry?.ref && this.content.locations.has(entry.ref) ? this.content.locations.get(entry.ref)!.area : [...this.content.areas.values()].find((a) => a.topic === id)?.id
+        const g = areaId && this.content.areas.has(areaId) ? this.areaGroup(areaId) : { group: 'Further afield', order: '9' }
+        // The village itself first under its own heading, then its places.
+        const first = kind === 'area' || (areaId !== undefined && this.content.areas.get(areaId)?.topic === id)
+        places.push({ id, name, group: g.group, order: `${g.order}${first ? '0' : '1'}${name.toLowerCase()}` })
+      } else if (kind === 'lore' || kind === 'fact') journal.lore.push({ id, name })
+      else if (kind === 'item') journal.things.push({ id, name })
+    }
+    const strip = ({ id, name, group }: JournalEntry) => ({ id, name, ...(group ? { group } : {}) })
+    journal.people.push(...people.sort((a, b) => a.order.localeCompare(b.order) || a.name.localeCompare(b.name)).map(strip))
+    journal.places.push(...places.sort((a, b) => a.order.localeCompare(b.order)).map(strip))
+    for (const realm of this.content.realms.values()) journal.lands.push({ id: `realm_${realm.id}`, name: capitalise(realm.name) })
+    const rep = this.state.reputation ?? {}
+    const members = this.state.memberships ?? []
+    for (const f of this.content.factions.values()) {
+      if (rep[f.id] === undefined && !members.includes(f.id)) continue
+      journal.factions.push({ id: `faction_${f.id}`, name: capitalise(f.name), group: members.includes(f.id) ? 'Yours' : rankOf(rep[f.id] ?? 0) })
+    }
+    return journal
+  }
+
+  /** The heading for an area, and a sort key: towns, then villages and hamlets, inns, roads and the wild country. */
+  private areaGroup(areaId: string): { group: string; order: string } {
+    const area = this.content.areas.get(areaId)!
+    const rank = { town: 1, village: 2, hamlet: 3, inn: 4, route: 5, wilderness: 6 }[area.kind]
+    return { group: area.name, order: `${rank}${area.name.toLowerCase()}|` }
   }
 
   private characterStatus(): Pick<Status, 'character' | 'combat' | 'party' | 'factions' | 'wanted'> {
@@ -1520,4 +1572,8 @@ export class Engine {
     this.state.seenSeq = this.state.eventSeq
     return [...between, ...seen.map((e) => ({ kind: 'narration' as const, text: e.text }))]
   }
+}
+
+function capitalise(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1)
 }

@@ -239,6 +239,104 @@ body {
   white-space: nowrap;
 }
 
+.side-quests {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* The journal window (FO, chapter 2): an index on the left, the page on the right. */
+.panel.journal {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 96px);
+  width: 1040px;
+}
+
+.journal-search {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  color: var(--text);
+  flex: 1;
+  font: inherit;
+  min-width: 0;
+  padding: 4px 8px;
+}
+
+.journal-search:focus {
+  border-color: var(--topic);
+  outline: none;
+}
+
+.panel.journal .journal-parts {
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.journal-body {
+  display: grid;
+  flex: 1;
+  gap: 24px;
+  grid-template-columns: minmax(220px, 320px) minmax(0, 1fr);
+  min-height: 0;
+}
+
+.journal-index,
+.journal-body .journal-page {
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.journal-part + .journal-part {
+  margin-top: 14px;
+}
+
+.journal-part h3 {
+  color: var(--room);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  margin: 0 0 4px;
+  text-transform: uppercase;
+}
+
+.journal-part h4 {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: normal;
+  margin: 8px 0 2px;
+}
+
+.journal-part ul {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 10px;
+}
+
+.journal-part li {
+  margin: 1px 0;
+}
+
+.journal-part .topic.current {
+  color: var(--room);
+  text-decoration: underline;
+}
+
+.journal-body .journal-page {
+  border-left: 1px solid var(--line);
+  padding-left: 20px;
+}
+
+.journal-body .journal-page h3 {
+  font-size: 15px;
+  margin-top: 0;
+}
+
+.statusline .journal-button {
+  margin-left: auto;
+}
+
 .talkbar {
   display: flex;
   flex-wrap: wrap;
@@ -484,6 +582,28 @@ body {
 @media (max-width: 760px) {
   .shell {
     grid-template-columns: 1fr;
+  }
+  .panel.journal {
+    height: auto;
+  }
+  .panel.journal .panel-head {
+    flex-wrap: wrap;
+    gap: 8px 16px;
+  }
+  .journal-search {
+    flex-basis: 100%;
+    order: 3;
+  }
+  .panel.journal .still {
+    display: none;
+  }
+  .journal-body {
+    grid-template-columns: 1fr;
+  }
+  .journal-body .journal-page {
+    border-left: 0;
+    border-top: 1px solid var(--line);
+    padding: 12px 0 0;
   }
   .side {
     display: none;

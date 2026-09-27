@@ -203,7 +203,8 @@ describe('M3: small stories happen by themselves', () => {
     const dramatic = count('dramatic')
     expect(calm).toBeLessThan(dramatic)
     expect(count('normal')).toBeGreaterThan(calm)
-  })
+    // Twelve runs of two weeks each; the whole Holleveen (M7) has twice the people of M3.
+  }, 20_000)
 
   it('lets the player find a lost thing and give it back', async () => {
     const engine = new Engine(content, { seed: 6 })

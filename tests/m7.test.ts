@@ -595,3 +595,29 @@ describe('M7: replay', () => {
     expect(replayed.state).toEqual(engine.state)
   })
 })
+
+describe('the journal as an overview (playtest after M7)', () => {
+  it('groups people and places by village and town, and knows the lands and the factions', async () => {
+    const engine = await game()
+    await run(engine, ['@goto loc_visser_house', '@goto loc_waagdam_market', '@like aaltje 30 30', '@goto loc_veenhoek_green', '@bring aaltje', 'ask aaltje about the cat'])
+    engine.state.player.journal!['npc_lubbert'] = engine.world.now
+    engine.state.player.journal!['npc_aaltje'] = engine.world.now
+    engine.state.player.journal!['graafhaven'] = engine.world.now
+    const j = engine.status().journal
+    expect(j.people.find((p) => p.id === 'npc_aaltje')!.group).toBe('Veenhoek')
+    expect(j.people.find((p) => p.id === 'npc_lubbert')!.group).toBe('Waagdam')
+    // Towns before villages; the village itself heads its own places.
+    const groups = [...new Set(j.places.map((p) => p.group))]
+    expect(groups.indexOf('Waagdam')).toBeLessThan(groups.indexOf('Veenhoek'))
+    expect(groups.at(-1)).toBe('Further afield')
+    const veenhoek = j.places.filter((p) => p.group === 'Veenhoek')
+    expect(veenhoek[0]!.id).toBe('area_veenhoek')
+    expect(j.quests[0]).toMatchObject({ id: 'quest_grey_cat_on_the_doorstep', group: 'Open' })
+    expect(j.lands.map((l) => l.name)).toContain('The Nethermarch')
+    expect(engine.page('realm_terpwold')!.lines.join(' ')).toMatch(/Ruled by .*With the Nethermarch: tense/)
+    engine.state.reputation = { fen_folk: 12 }
+    expect(engine.status().journal.factions).toEqual([{ id: 'faction_fen_folk', name: 'The Fen-folk of the Kattenbroek', group: expect.any(String) }])
+    expect(engine.page('faction_fen_folk')!.lines.join(' ')).toMatch(/You: .*\(12\)/)
+    expect(engine.page('faction_goat_riders')).toBeUndefined()
+  })
+})

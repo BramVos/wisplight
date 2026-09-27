@@ -87,6 +87,19 @@ export function realmLines(world: World): string[] {
   return lines
 }
 
+/** A page for one realm: its ruler, and how it stands with the others. */
+export function realmPage(world: World, id: string): string[] | undefined {
+  const realm = world.content.realms.get(id)
+  if (!realm) return undefined
+  const lines = [`Ruled by ${realm.ruler}, from ${realm.capital}.`]
+  for (const t of world.content.tensions) {
+    if (!t.between.includes(id)) continue
+    const other = world.content.realms.get(t.between[0] === id ? t.between[1] : t.between[0])
+    if (other) lines.push(`With ${other.name}: ${stanceOf(tensionOf(world, t.between[0], t.between[1]))}. ${t.why}`)
+  }
+  return lines
+}
+
 function cap(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1)
 }
