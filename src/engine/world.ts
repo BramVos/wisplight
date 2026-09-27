@@ -63,6 +63,8 @@ export class World {
   notices: string[] = []
   /** Deaths since the engine last looked, for the quests (not saved: handled in the same step). */
   deaths: string[] = []
+  /** The facts that cause what happens now (M9.2): set while a plan, a phase or an aftermath runs; a new fact takes them as its cause. Not saved. */
+  causing: string[] = []
   /** What went to the archive since the engine last looked, for the game log (M9.1; not saved). */
   archived: Archived[] = []
 

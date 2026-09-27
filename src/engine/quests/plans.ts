@@ -6,9 +6,10 @@ import { goAway, tierOf } from '../lod'
 import { shiftTension } from '../social/realms'
 import type { Claim } from '../state'
 import type { World } from '../world'
+import { recordFact } from '../news'
 import { applyEffects, holds, type QuestHost } from './engine'
 import { PlanSchema, type Plan, type PlanEffect, type Step } from './planschema'
-import { bindValue, runVerb, type PlanContext } from '../aftermath'
+import { bindValue, runVerb, verbGuard, type PlanContext } from '../aftermath'
 
 export { PlanSchema, type Plan, type PlanEffect }
 
@@ -109,6 +110,17 @@ export function startPlan(world: World, host: QuestHost, planId: string, cause: 
   return plansDue(world, host)
 }
 
+/** The facts a plan comes from (M9.2): its cause, its signal's causes, the newest fact of its storyline. */
+export function planCauses(world: World, p: PlanState): string[] {
+  const out: string[] = []
+  if (p.cause.startsWith('fact_')) out.push(p.cause)
+  const signal = p.signal ? (world.state.signals?.log.find((s) => s.id === p.signal) ?? world.state.signals?.queue.find((s) => s.id === p.signal)) : undefined
+  for (const c of signal?.cause ?? []) if (c.startsWith('fact_')) out.push(c)
+  const line = p.line ? world.state.chronicle?.lines.find((l) => l.id === p.line) : undefined
+  if (line?.facts.length) out.push(line.facts.at(-1)!)
+  return [...new Set(out)]
+}
+
 /** The plans of the world that run from the first day (world.yaml, M8.3): started once, in a new game or an old save. */
 export function startWorldPlans(world: World, host: QuestHost): Output[] {
   return world.content.world.plans.filter((id) => !(world.state.plans ?? []).some((p) => p.plan === id)).flatMap((id) => startPlan(world, host, id, 'world'))
@@ -117,17 +129,25 @@ export function startWorldPlans(world: World, host: QuestHost): Output[] {
 /** Runs the phases whose hour has come, and the steps that are due. */
 export function plansDue(world: World, host: QuestHost): Output[] {
   const out: Output[] = []
+  const before = world.causing
   for (const p of [...(world.state.plans ?? [])]) {
     const plan = planOf(world, p.plan)
     if (!plan) continue
+    // What happens now comes from what the plan came from (M9.2).
+    world.causing = planCauses(world, p)
     while (p.phase < plan.phases.length && world.now >= p.started + plan.phases[p.phase]!.after * 60) {
       for (const e of plan.phases[p.phase]!.effects.slice(0, plan.max_effects)) runEffect(world, host, p, e, out)
       p.phase++
     }
     if (plan.steps.length && p.ended === undefined) runSteps(world, host, p, plan, out)
   }
-  // Wars that broke out by the rules of statecraft, and plans of the chronicler, are waiting.
-  for (const id of (world.state.pendingPlans ?? []).splice(0)) out.push(...startPlan(world, host, id, id.startsWith('chronicle_') ? 'chronicle' : 'war'))
+  world.causing = before
+  // Wars that broke out by the rules of statecraft, and plans of the chronicler, are waiting, with the fact they come from.
+  for (const id of (world.state.pendingPlans ?? []).splice(0)) {
+    const cause = world.state.pendingCauses?.[id]
+    if (world.state.pendingCauses) delete world.state.pendingCauses[id]
+    out.push(...startPlan(world, host, id, cause ?? (id.startsWith('chronicle_') ? 'chronicle' : 'war')))
+  }
   return out
 }
 
@@ -191,7 +211,9 @@ type Result = 'done' | 'wait' | 'skip' | 'fail'
 
 function runOne(world: World, host: QuestHost, p: PlanState, step: Step, st: StepState, bind: Record<string, string>, out: Output[]): Result {
   const ctx: PlanContext = { plan: p, bind, host, out }
-  const ok = step.when.every((c) => holds(world, bindValue(world, c, ctx), undefined))
+  // The standard conditions of the verb hold for every maker (M9.2); content may leave them out on purpose, a model may not.
+  const guarded = !step.unguarded || p.source === 'chronicler'
+  const ok = step.when.every((c) => holds(world, bindValue(world, c, ctx), undefined)) && !(guarded && verbGuard(world, ctx, step.do))
   // A step with a chance may simply not happen when it can (rolled once, seeded).
   if (ok && step.chance !== undefined && world.rng.next('plans') >= step.chance) {
     st.skipped = world.now
@@ -235,6 +257,13 @@ function runEach(world: World, host: QuestHost, p: PlanState, step: Step, st: St
 
 export function runEffect(world: World, host: QuestHost, p: PlanState, e: PlanEffect, out: Output[], until?: number): void {
   if ('flee' in e) {
+    // The flight is news (M9.2), from what the plan came from: every step of a plan is a fact.
+    const going = (p.groups[e.flee] ?? []).filter((id) => { const s = world.state.npcs[id]; return s && !s.dead && !s.following })
+    if (going.length && world.content.locations.has(e.to)) {
+      const from = world.content.areas.get(e.flee)?.name ?? e.flee
+      const to = world.location(e.to).name
+      recordFact(world, { kind: 'flight', about: going.slice(0, 5), place: e.to, belang: 3, title: `${from} fled to ${to}`, text: { precise: `${going.length} people of ${from} fled to ${to}.`, village: `Half of ${from} has come to ${to}, with what they could carry.`, far: `People are fleeing ${from}.` } })
+    }
     for (const id of p.groups[e.flee] ?? []) {
       const s = world.state.npcs[id]
       if (!s || s.dead || s.following) continue

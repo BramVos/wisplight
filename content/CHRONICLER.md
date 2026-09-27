@@ -232,6 +232,7 @@ Watchers, the standard aftermath, intentions, fixed plans, quests and your own p
 - `otherwise` `skip | wait | fail`: When the conditions do not hold: skip the step, wait for them (until the plan expires), or let the plan fail.
 - `chance` `number`: The chance the step happens when it is due and its conditions hold, rolled once and seeded; otherwise it is skipped.
 - `every` `number`: Due again every so many days at the same hour, done or skipped, for as long as the plan runs.
+- `unguarded` `true/false`: Content only: the standard conditions of the verb do not apply to this step (M9.2). Ignored in a plan a model made.
 - `do` `a verb`: One verb.
 
 ### Conditions
@@ -287,14 +288,14 @@ Watchers, the standard aftermath, intentions, fixed plans, quests and your own p
 
 - `set_tie` `{ set_tie: [text, text], role: parent | child | spouse | sibling | grandparent | grandchild | kin | sweetheart | friend | rival | employer | employee | foreman | crew | creditor | debtor | teacher | pupil | neighbour | acquaintance, bond?: number }`: A tie changes kind or begins, both ways. Rules yes, brain yes, chronicler yes.
 - `end_tie` `{ end_tie: [text, text] }`: A tie ends. Rules yes, brain yes, chronicler yes.
-- `move_home` `{ move_home: selector, to: selector }`: Someone lives somewhere else from now on. Rules yes, brain yes, chronicler yes.
+- `move_home` `{ move_home: selector, to: selector }`: Someone lives somewhere else from now on. Standard conditions: only to a place that is not flooded, destroyed or occupied. Rules yes, brain yes, chronicler yes.
 - `join_household` `{ join_household: selector, of: selector }`: Someone moves in with another and becomes one household with them. Rules yes, brain yes, chronicler yes.
 - `leave_household` `{ leave_household: selector, to?: selector }`: Someone leaves their household, for a free house. Rules yes, brain yes, chronicler yes.
 - `set_work` `{ set_work: selector, at: selector, service?: text, profession?: text }`: Someone works somewhere, at a service, in a trade. Rules yes, brain yes, chronicler yes.
 - `quit_work` `{ quit_work: selector }`: Someone stops working; where they served, a place comes open. Rules yes, brain yes, chronicler yes.
 - `hire` `{ hire: text, reach?: number = 120, except?: list of selector = [] }`: Someone without work who heard of an open place takes it. Rules yes, brain no, chronicler no.
-- `feast` `{ feast: selector, hours?: number = 4, guests?: list of selector = [] }`: A feast at a place, with guests. Rules yes, brain yes, chronicler yes.
-- `return` `{ return: selector }`: Someone who fled or stayed away goes home. Rules yes, brain no, chronicler yes.
+- `feast` `{ feast: selector, hours?: number = 4, guests?: list of selector = [] }`: A feast at a place, with guests. Standard conditions: only at a place that is not flooded, destroyed or occupied. Rules yes, brain yes, chronicler yes.
+- `return` `{ return: selector }`: Someone who fled or stayed away goes home. Standard conditions: only when they know what drove them away is over, believe their house stands, and it is not flooded, destroyed or occupied. Rules yes, brain no, chronicler yes.
 - `leave` `{ leave: list of selector, to: text, days: number }`: Some go away together for a while. Rules yes, brain no, chronicler yes.
 - `post` `{ post: selector, fact: { kind?: text = "aftermath", title: text, precise: text, village: text, far: text, belang?: number = 1, about?: list of text = [], place?: selector, claim?: { subject: text, key: text, value: text, far?: text } } }`: A notice on a board. Rules yes, brain no, chronicler yes.
 - `thought` `{ thought: selector, text: text, days?: number = 7 }`: Something stays on someone's mind for some days. Rules yes, brain yes, chronicler yes.
@@ -309,7 +310,7 @@ Watchers, the standard aftermath, intentions, fixed plans, quests and your own p
 - `mediate` `{ mediate: [selector, selector], by?: selector }`: Someone tries to make peace between two with a grudge. Rules yes, brain yes, chronicler yes.
 - `recall` `{ recall: selector, of: selector }`: Someone is known again from a memory. Rules yes, brain yes, chronicler yes.
 - `spread_rumour` `{ spread_rumour: selector, fact: { kind?: text = "aftermath", title: text, precise: text, village: text, far: text, belang?: number = 1, about?: list of text = [], place?: selector, claim?: { subject: text, key: text, value: text, far?: text } } }`: Someone the gate lets lie puts an untrue claim about. Rules yes, brain yes, chronicler yes.
-- `settle` `{ settle: selector, at: selector }`: Someone from elsewhere stays for good. Rules yes, brain no, chronicler yes.
+- `settle` `{ settle: selector, at: selector }`: Someone from elsewhere stays for good. Standard conditions: only at a place that is not flooded, destroyed or occupied. Rules yes, brain no, chronicler yes.
 - `form_group` `{ form_group: list of selector, aim: against | for, about: text, name: text }`: People band together for or against the newcomers of an area. Rules yes, brain no, chronicler yes.
 - `arrive` `{ arrive: text, to: text }`: Newcomers come to live in a free house and take up a trade nobody works. Rules yes, brain no, chronicler yes.
 - `build` `{ build: text }`: A settlement begins a project: a new place or a workshop, with materials from its store. Rules yes, brain no, chronicler yes.

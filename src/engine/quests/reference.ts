@@ -1,7 +1,7 @@
 import type { z } from 'zod'
 import { SelectorSchema, StepSchema, VerbSchema } from './planschema'
 import { ConditionSchema } from './schema'
-import { PERMISSIONS, verbName } from './verbs'
+import { GUARDS, PERMISSIONS, verbName } from './verbs'
 
 // The reference of the plan language (M8.3; review, "De editor"): the fields
 // of a step, the conditions, the verbs with who may use them, the selectors
@@ -117,7 +117,8 @@ export function languageReference(): Reference {
     verbs: optionsOf(VerbSchema).map((s) => {
       const name = verbName(Object.fromEntries(Object.keys(defOf(s).shape!).map((k) => [k, 1])) as never)
       const p = PERMISSIONS[name]
-      const text = p ? `${p.text.charAt(0).toUpperCase()}${p.text.slice(1)}.` : ''
+      const guard = GUARDS[name]
+      const text = p ? `${p.text.charAt(0).toUpperCase()}${p.text.slice(1)}.${guard ? ` Standard conditions: ${guard}.` : ''}` : ''
       return { ...entry(s, name, text), ...(p ? { who: { rules: p.rules, brain: p.brain, chronicler: p.chronicler } } : {}) }
     }),
     selectors: optionsOf(SelectorSchema).map((s) => (defOf(s).type === 'object' ? entry(s, Object.keys(defOf(s).shape!)[0]!, describe(s)) : { name: 'id', form: 'text', text: describe(s) })),

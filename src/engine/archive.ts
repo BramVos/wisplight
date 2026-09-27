@@ -52,9 +52,10 @@ export function archiveDay(world: World): Archived | undefined {
   let pointed = new Set<string>()
   if (old.length) {
     const lineSet = new Set(lines)
-    const rest = { ...state, news: undefined, plans: keptPlans, signals: state.signals ? { ...state.signals, log: keptSignals } : undefined, chronicle: chronicle ? { ...chronicle, lines: chronicle.lines.filter((l) => !lineSet.has(l)) } : undefined }
+    const rest = { ...state, news: undefined, plans: keptPlans, signals: state.signals ? { ...state.signals, log: keptSignals } : undefined, chronicle: chronicle ? { ...chronicle, lines: chronicle.lines.filter((l) => !lineSet.has(l)).map(({ follows: _f, cause: _c, ...l }) => l) } : undefined }
     pointed = new Set(JSON.stringify(rest).match(/\b(?:fact|line)_\d+\b/g) ?? [])
-    // A line in lore, a request or a waiting run stays, and so do its facts.
+    // A line in lore, a request or a waiting run stays, and so do its facts. What a line follows or came from does not
+    // keep the older one (M9.2): the arc simply begins where the archive ends.
     lines = lines.filter((l) => !pointed.has(l.id))
     for (const l of chronicle?.lines ?? []) if (!lines.includes(l)) for (const id of l.facts) pointed.add(id)
   }

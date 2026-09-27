@@ -5,7 +5,7 @@ import type { Card, CardKind, ChronicleEvent, ChronicleInput, ChroniclerRequest,
 // catalogue, how to answer) comes first and never changes between runs, so
 // the providers cache it. People and places get short keys: p1, l1, ...
 
-const PREFIX: Record<CardKind | 'line', string> = { person: 'p', place: 'l', area: 'a', lore: 't', request: 'q', item: 'i', realm: 'r', line: 's', signal: 'g' }
+const PREFIX: Record<CardKind | 'line', string> = { person: 'p', place: 'l', area: 'a', lore: 't', request: 'q', item: 'i', realm: 'r', line: 's', signal: 'g', event: 'e' }
 
 export class Keys {
   private readonly toKey = new Map<Id, string>()
@@ -64,6 +64,8 @@ export function assignKeys(input: ChronicleInput): Keys {
   for (const line of input.older ?? []) keys.add(line.id, 'line')
   for (const card of [...input.cards, ...input.lore, ...input.requests, ...input.areas, ...(input.realms ?? [])]) keys.add(card.id, card.kind)
   for (const signal of input.signals ?? []) keys.add(signal.id, 'signal')
+  // Events, so a claim can say which it rests on (M9.2).
+  for (const line of input.lines) for (const event of [...line.events, ...line.earlier]) keys.add(event.id, 'event')
   return keys
 }
 
@@ -80,9 +82,9 @@ export function systemPrompt(input: ChronicleInput, limits: Limits): string {
     ...(input.verbs?.length ? ['', 'VERBS', ...input.verbs.map((v) => `${v.name} (who: ${v.who}${v.target ? `; target: ${v.target.join(' or ')}` : ''}${v.detail ? `; detail: ${v.detail}` : ''}): ${v.text}`)] : []),
     '',
     'HOW TO ANSWER',
-    'The overview uses short keys: p person, l place, a area, t lore, q request, i item, s storyline. Answer with JSON that matches the schema, in keys.',
+    'The overview uses short keys: p person, l place, a area, t lore, q request, i item, s storyline, e event. Answer with JSON that matches the schema, in keys.',
     `- lookup: up to ${limits.lookups} keys you need to know more about before you write. Use it only when you truly need it; then leave everything else empty and you get the cards.`,
-    `- lore: for each storyline with an event of belang 3 or more, one lore topic. name; summary (what anyone may have heard, one sentence); details (the core as the village tells it, up to ${limits.textWords} words); story (as a witness tells it, up to ${limits.storyWords} words); far (one line as it sounds far away, which may be wrong the way retold news goes wrong); teller (the witness whose story it is, or empty); links (keys of lore or people it connects to).`,
+    `- lore: for each storyline with an event of belang 3 or more, one lore topic. name; summary (what anyone may have heard, one sentence); details (the core as the village tells it, up to ${limits.textWords} words); story (as a witness tells it, up to ${limits.storyWords} words); far (one line as it sounds far away, which may be wrong the way retold news goes wrong); teller (the witness whose story it is, or empty); links (keys of lore or people it connects to); claims: every thing the lore says happened, each on the event (key) it rests on: subject (a key), key, value. Keys: present (value yes: the subject was there), dead (yes or no), lives_at (value: a place or area key), owns (value: a place or item key), or the claim of the event itself. Lore without claims, or with a claim no event carries, is not kept.`,
     `- lines: update every storyline you were given. summary: at most ${limits.lineSummary} short lines. roles, hooks (open threads), next (what may follow), close (true when it is over).`,
     `- quests: at most ${limits.quests}. Turn an open thread into a request for the player, using one of the TEMPLATES and a giver from that storyline, or reword an open request (give its key). name; ask (what the giver says, in their own voice, one or two sentences); stakes (why it matters, one sentence).`,
     `- thoughts: at most ${limits.thoughts}. Something that stays on one person's mind, one sentence addressed to them: "You still owe Harmen three guilders."`,
@@ -97,6 +99,7 @@ export function systemPrompt(input: ChronicleInput, limits: Limits): string {
           '- lines also have phase: setup, rising, crisis, resolution or closed.',
         ]
       : []),
+    'A storyline with an arc goes on from the ones named there: tell them as one story, cause and effect, and keep the open threads of before. An event may say what it came from (because).',
     'Rules: only facts from the overview; never invent what happened, who was there or when. Use only names from the overview. A rumour marked untrue stays a rumour. Things marked PRIVATE may go into thoughts, never into lore or news. Plain words, the tone of the world.',
   ].join('\n')
 }
@@ -104,7 +107,7 @@ export function systemPrompt(input: ChronicleInput, limits: Limits): string {
 function eventLine(event: ChronicleEvent, keys: Keys): string {
   const key = (id: Id) => keys.any(id) ?? id
   const seen = event.witnesses.length ? `, seen by ${event.witnesses.map(key).join(' ')}` : ''
-  return `${event.when} at ${key(event.place)}, ${event.who.map(key).join(' ') || 'nobody named'}${seen}, belang ${event.belang}${event.untrue ? ', UNTRUE rumour' : ''}: ${event.text}`
+  return `${keys.key(event.id, 'event') ?? ''} ${event.when} at ${key(event.place)}, ${event.who.map(key).join(' ') || 'nobody named'}${seen}, belang ${event.belang}${event.untrue ? ', UNTRUE rumour' : ''}: ${event.text}${event.because?.length ? ` (because: ${event.because.join('; ')})` : ''}`
 }
 
 function cardLine(card: Card, keys: Keys): string {
@@ -141,6 +144,7 @@ export function userPrompt(input: ChronicleInput, keys: Keys, lookedUp: Card[], 
   lines.push('STORYLINES')
   for (const line of input.lines) {
     lines.push(`  ${keys.key(line.id, 'line')} "${line.title}"${line.pattern ? ` [${line.pattern}]` : ''}${line.phase ? ` (${line.phase})` : ''}${input.mayPlan?.includes(line.id) ? ' PLAN' : ''}`)
+    if (line.arc?.length) lines.push(`    arc: ${line.arc.map((a) => `"${a.title}"${a.summary.length ? ` (${a.summary.join(' / ')})` : ''}`).join(' > ')} > this`)
     if (line.roles.length) lines.push(`    roles: ${line.roles.map((r) => `${r.role}=${keys.any(r.who) ?? r.who}`).join(', ')}`)
     if (line.summary.length) lines.push(`    so far: ${line.summary.join(' / ')}`)
     if (line.hooks.length) lines.push(`    open threads: ${line.hooks.join(' / ')}`)
@@ -167,7 +171,17 @@ export function replySchema(input: ChronicleInput, keys: Keys, lookupsLeft: numb
     lookup: { type: 'array', items: keysOf(lookupsLeft > 0 ? lookupable : []) },
     lore: {
       type: 'array',
-      items: object({ line: keysOf(lines), name: text, summary: text, details: text, story: text, far: text, teller: keysOf(['', ...people]), links: { type: 'array', items: keysOf(linkable) } }),
+      items: object({
+        line: keysOf(lines),
+        name: text,
+        summary: text,
+        details: text,
+        story: text,
+        far: text,
+        teller: keysOf(['', ...people]),
+        links: { type: 'array', items: keysOf(linkable) },
+        claims: { type: 'array', items: object({ event: keysOf(keys.of('event')), subject: keysOf([...people, ...keys.of('place'), ...keys.of('item'), ...keys.of('area')]), key: text, value: text }) },
+      }),
     },
     lines: {
       type: 'array',
@@ -255,7 +269,7 @@ export function buildRequest(input: ChronicleInput, keys: Keys, limits: Limits, 
 /** For a stand-in model in tests: what each key stands for, and the storylines in keys. */
 export type ChronicleMeta = {
   cards: { key: string; id: Id; kind: CardKind | 'line'; name: string; text: string }[]
-  lines: { key: string; title: string; belang: number; who: string[]; witnesses: string[]; place: string; text: string }[]
+  lines: { key: string; title: string; belang: number; who: string[]; witnesses: string[]; place: string; text: string; event: string }[]
   signals: { key: string; text: string; who: string[]; place: string; group: string[]; trusted: string[] }[]
   lookupsLeft: number
 }
@@ -270,7 +284,7 @@ function mockMeta(input: ChronicleInput, keys: Keys, lookupsLeft: number): Chron
     }),
     lines: input.lines.map((l) => {
       const big = [...l.events].sort((a, b) => b.belang - a.belang)[0]
-      return { key: keys.key(l.id, 'line')!, title: l.title, belang: big?.belang ?? 0, who: (big?.who ?? []).map(k), witnesses: (big?.witnesses ?? []).map(k), place: big ? k(big.place) : '', text: big?.text ?? '' }
+      return { key: keys.key(l.id, 'line')!, title: l.title, belang: big?.belang ?? 0, who: (big?.who ?? []).map(k), witnesses: (big?.witnesses ?? []).map(k), place: big ? k(big.place) : '', text: big?.text ?? '', event: big ? (keys.key(big.id, 'event') ?? '') : '' }
     }),
     signals: (input.signals ?? []).map((g) => ({ key: keys.key(g.id, 'signal')!, text: g.text, who: g.who.map(k), place: k(g.place), group: (g.group ?? []).map(k), trusted: (g.trusted ?? []).map(k) })),
     lookupsLeft,

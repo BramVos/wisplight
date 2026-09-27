@@ -30,6 +30,8 @@ export interface FactInput {
   truth?: boolean
   /** What it says in a form the systems can check (M8.1). */
   claim?: Claim
+  /** The facts that caused it; without it, what is causing things now (M9.2). */
+  cause?: string[]
 }
 
 const DAY = 24 * 60
@@ -73,6 +75,8 @@ export function recordFact(world: World, input: FactInput): Fact {
     text: input.text,
     ...(input.claim ? { claim: input.claim } : {}),
   }
+  const cause = (input.cause ?? world.causing).filter((id) => id !== fact.id && factById(world, id))
+  if (cause.length) fact.cause = [...new Set(cause)]
   store.facts.push(fact)
   const places = new Set([input.place])
   if (input.loud) for (const exit of Object.values(world.location(input.place).exits)) places.add(exit.to)

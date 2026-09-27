@@ -38,6 +38,8 @@ export class MockLlm implements LlmClient {
   calls: LlmRequest[] = []
   /** For tests: more for the chronicler to write, given the overview and the line marked PLAN, if any. */
   chronicle?: (meta: ChronicleMeta, planned: string | undefined) => Record<string, unknown>
+  /** For tests: what the second look at big lore finds that no fact says (M9.2); without it, nothing. */
+  judge?: (story: string, facts: string[]) => string[]
   /** For tests: the intention a brain chooses when a signal lets it (M8.2), with its open bindings; without it, none and custom decides. */
   intend?: (npc: string, offered: string[], keys: Record<string, string>) => { choice: string; fill?: { name: string; key: string }[] } | undefined
 
@@ -164,6 +166,8 @@ export class MockLlm implements LlmClient {
           far: 'Something bad happened out in the fen, they say.',
           teller: line.witnesses[0] ?? '',
           links: [],
+          // What it says, on the event it rests on (M9.2).
+          claims: [{ event: line.event, subject: line.who[0] ?? line.place, key: 'present', value: 'yes' }],
         })
       }
       reply.lines.push({ line: line.key, summary: [line.text], roles: line.who[0] ? [{ role: 'subject', who: line.who[0] }] : [], hooks: ['What comes of it now?'], next: 'People will talk.', close: false })
@@ -242,6 +246,11 @@ export class MockLlm implements LlmClient {
 
   private other(request: LlmRequest): string {
     const properties = (request.schema['properties'] ?? {}) as Record<string, unknown>
+    // The second look at big lore (M9.2): what the story says that the facts do not.
+    if (request.schemaName === 'lore_check') {
+      const meta = request.meta as { story: string; facts: string[] }
+      return JSON.stringify({ invented: this.judge ? this.judge(meta.story, meta.facts) : this.mode === 'invent' && /Father Oswin/.test(meta.story) ? ['Father Oswin saw it'] : [] })
+    }
     // One line in a chat the player overhears (M9.1).
     if (request.schemaName === 'chat_line') return this.mode === 'invalid' ? 'Hmm.' : JSON.stringify({ line: `Is that so? Well, I never heard the like of it.` })
     if (!('goals' in properties)) return '{}'

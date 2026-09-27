@@ -166,6 +166,7 @@ export const StepSchema = z
     otherwise: z.enum(['skip', 'wait', 'fail']).default('skip').describe('When the conditions do not hold: skip the step, wait for them (until the plan expires), or let the plan fail.'),
     chance: z.number().min(0).max(1).optional().describe('The chance the step happens when it is due and its conditions hold, rolled once and seeded; otherwise it is skipped.'),
     every: z.number().int().positive().optional().describe('Due again every so many days at the same hour, done or skipped, for as long as the plan runs.'),
+    unguarded: z.boolean().default(false).describe('Content only: the standard conditions of the verb do not apply to this step (M9.2). Ignored in a plan a model made.'),
     do: VerbSchema.describe('One verb.'),
   })
   .strict()

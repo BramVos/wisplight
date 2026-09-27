@@ -6,13 +6,13 @@ import { callName } from './content'
 import { applyEffect } from './dialogue/relations'
 import { expectHome, familyOf, homeOf, householdOf, livesWithParent, removeTie, setHome, setHousehold, setTie, setWork, staffOf } from './layer'
 import { farFromPlayer, goAway } from './lod'
-import { believes, heardBy, recordFact } from './news'
+import { believes, factById, heardBy, recordFact } from './news'
 import { holdFeast } from './stories'
 import { holds, type QuestHost } from './quests/engine'
 import type { Selector, Verb, VerbText } from './quests/planschema'
 import { planOf, runEffect, running, startPlan, type PlanState, type StepState } from './quests/plans'
 import { setMood, shiftBond } from './social/deeds'
-import { queueSignal, watchBelief } from './signals'
+import { causeOf, queueSignal, watchBelief } from './signals'
 import { askTrader, isTrader, mayChaseAway } from './belief'
 import { remember } from './npc/execute'
 import { setRank } from './social/rank'
@@ -783,4 +783,42 @@ export function planLines(world: World, who?: string): string[] {
       const phases = plan.phases.length ? [`phase ${p.phase}/${plan.phases.length}`] : []
       return `${plan.name}${p.topic ? ` [${p.topic}]` : ''}${p.subjects?.length ? ` for ${p.subjects.map((s) => nameOf(world, s)).join(' and ')}` : ''}: ${[...phases, ...steps].join(', ')}`
     })
+}
+
+// ---------------------------------------------------------------- the standard conditions of verbs (M9.2)
+
+const UNSAFE = ['flooded', 'destroyed', 'occupied']
+
+const unsafe = (world: World, place: string | undefined) => Boolean(place && UNSAFE.includes(world.state.places?.[place]?.state ?? 'normal'))
+
+/** What drove someone away: what their flight waits to know otherwise, or the newest big claim on the plan's storyline. */
+function dangerOf(world: World, who: string, p: PlanState): Claim | undefined {
+  const flight = causeOf(world, [who])
+  if (flight) return flight
+  const line = p.line ? world.state.chronicle?.lines.find((l) => l.id === p.line) : undefined
+  return line?.facts
+    .map((id) => factById(world, id))
+    .filter((f) => f?.claim && f.belang >= 4)
+    .at(-1)?.claim
+}
+
+/**
+ * Why a verb may not happen now, whoever planned it (M9.2; design: "Na M9.1:
+ * waarheid en samenhang"), or undefined when it may. Checked when the step
+ * runs, not when it was planned. The words are in verbs.ts (GUARDS).
+ */
+export function verbGuard(world: World, ctx: PlanContext, v: Verb): string | undefined {
+  if ('return' in v) {
+    const who = one(world, ctx, v.return)
+    if (!who || !world.content.npcs.has(who)) return undefined
+    if (unsafe(world, world.npc(who).home)) return 'their house is not safe'
+    if (!holds(world, { thinks_home_stands: who })) return 'they do not believe their house stands'
+    const cause = dangerOf(world, who, ctx.plan)
+    if (cause && !holds(world, { knows: { who, subject: cause.subject, key: cause.key, not: cause.value } })) return 'they do not know it is over'
+    return undefined
+  }
+  if ('feast' in v) return unsafe(world, one(world, ctx, v.feast)) ? 'the place is not safe' : undefined
+  if ('move_home' in v) return unsafe(world, one(world, ctx, v.to)) ? 'the place is not safe' : undefined
+  if ('settle' in v) return unsafe(world, one(world, ctx, v.at)) ? 'the place is not safe' : undefined
+  return undefined
 }

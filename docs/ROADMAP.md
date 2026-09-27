@@ -239,14 +239,14 @@ Uit de mijlpaalverslagen van M8.2 tot en met M8.5 (verwerkt 27 september 2026):
 
 Scope: de review van 27 september 2026 op de kroniekschrijver en de verhaalopbouw (na M8.5). De kroniekschrijver mag niets beweren dat niet uit een feit volgt; vrije planstappen dragen dezelfde voorwaarden als vaste; wat tijdens een aanroep gebeurt, gaat niet verloren; oorzaak en gevolg staan op feiten en lijnen. Kleine ingrepen in `chronicler.ts`, `planning.ts`, `quests/verbs.ts` en `storylines.ts`, elk met een test die het scenario van de review naspeelt. Vastgelegd na M9.1 omdat M9.1 al in aanbouw was.
 
-- [ ] Lore noemt geen levende als dood, geen ander huis dan het echte en geen bezit dat iemand niet heeft: een regelfilter op toetsbare uitspraken (dood, plaats, bezit, betrokkenen) tegen de wereldtoestand; "Gerrit is dead" bij een levende Gerrit valt terug op het sjabloon
-- [ ] De kroniekschrijver levert zijn beweringen ook als structuur (onderwerp, sleutel, waarde), elk terug te voeren op een feit van de lijn; anders wordt het lore-item niet opgeslagen
-- [ ] Bij belang 4 of hoger beoordeelt een kleine tweede aanroep of de tekst iets zegt wat niet in de feiten staat; in de tests met de mock
-- [ ] Elk werkwoord heeft standaardvoorwaarden (`return`: weet dat het gevaar voorbij is, gelooft dat het huis staat, de plek is veilig) die gelden voor content, brein en kroniekschrijver; content mag ze bewust overschrijven, een model niet, en ze worden bij uitvoering opnieuw gecontroleerd
-- [ ] Een run legt vast welke feiten hij aanbood; alleen die worden na afloop als verwerkt gemarkeerd, en een feit dat tijdens de aanroep ontstond wacht op de volgende run (test: A aangeboden, B intussen, B blijft onverwerkt)
-- [ ] De namencontrole bij het verwerken kijkt naar de invoer die het model zag, niet naar de wereld van dat moment
-- [ ] Feiten dragen hun oorzaak (`cause`) en lijnen hun voorganger (`follows`); een lijn die na twaalf feiten splitst, draagt samenvatting, open vragen en oorzaak over, en de kroniekschrijver ziet oorlog, route dicht, tekort, onrust, vertrek als één boog
-- [ ] Alles wat er al was, speelt hetzelfde: het hele testpakket, de simulaties, de uitspeelscripts van beide werelden, en oude saves
+- [x] Lore noemt geen levende als dood, geen ander huis dan het echte en geen bezit dat iemand niet heeft: een regelfilter op toetsbare uitspraken (dood, plaats, bezit, betrokkenen) tegen de wereldtoestand; "Gerrit is dead" bij een levende Gerrit valt terug op het sjabloon
+- [x] De kroniekschrijver levert zijn beweringen ook als structuur (onderwerp, sleutel, waarde), elk terug te voeren op een feit van de lijn; anders wordt het lore-item niet opgeslagen
+- [x] Bij belang 4 of hoger beoordeelt een kleine tweede aanroep of de tekst iets zegt wat niet in de feiten staat; in de tests met de mock
+- [x] Elk werkwoord heeft standaardvoorwaarden (`return`: weet dat het gevaar voorbij is, gelooft dat het huis staat, de plek is veilig) die gelden voor content, brein en kroniekschrijver; content mag ze bewust overschrijven, een model niet, en ze worden bij uitvoering opnieuw gecontroleerd
+- [x] Een run legt vast welke feiten hij aanbood; alleen die worden na afloop als verwerkt gemarkeerd, en een feit dat tijdens de aanroep ontstond wacht op de volgende run (test: A aangeboden, B intussen, B blijft onverwerkt)
+- [x] De namencontrole bij het verwerken kijkt naar de invoer die het model zag, niet naar de wereld van dat moment
+- [x] Feiten dragen hun oorzaak (`cause`) en lijnen hun voorganger (`follows`); een lijn die na twaalf feiten splitst, draagt samenvatting, open vragen en oorzaak over, en de kroniekschrijver ziet oorlog, route dicht, tekort, onrust, vertrek als één boog
+- [x] Alles wat er al was, speelt hetzelfde: het hele testpakket, de simulaties, de uitspeelscripts van beide werelden, en oude saves
 
 ## M9.3 Maat: geschiedenis, opslag, prompts en kosten
 

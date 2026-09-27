@@ -5,7 +5,7 @@
 /** Ids are the caller's own. The chronicler shows the model short keys instead and maps them back. */
 export type Id = string
 
-export type CardKind = 'person' | 'place' | 'area' | 'lore' | 'request' | 'item' | 'realm' | 'signal'
+export type CardKind = 'person' | 'place' | 'area' | 'lore' | 'request' | 'item' | 'realm' | 'signal' | 'event'
 
 /** Where a storyline stands, as the chronicler sees it: the caller can pace the world by it. */
 export type Phase = 'setup' | 'rising' | 'crisis' | 'resolution' | 'closed'
@@ -63,6 +63,8 @@ export interface ChronicleEvent {
   text: string
   /** A rumour that is not true. */
   untrue?: boolean
+  /** What caused it, as the titles of those facts (M9.2). */
+  because?: string[]
 }
 
 /** Events that belong together: the same people, the same place, cause and effect. */
@@ -80,6 +82,8 @@ export interface ChronicleLine {
   events: ChronicleEvent[]
   /** Smaller, earlier events of the same line, for context. */
   earlier: ChronicleEvent[]
+  /** The storylines this one goes on from, oldest first (M9.2): one arc, told as one story. */
+  arc?: { title: string; summary: string[] }[]
 }
 
 /** A kind of request the caller can check and reward: fetch, deliver, recover, ... */
@@ -160,6 +164,19 @@ export interface LoreOp {
   far: string
   teller?: Id
   links: Id[]
+  /**
+   * What the lore says happened, as structure (M9.2): each rests on an event
+   * of the storyline. Without them the lore is not kept.
+   */
+  claims: ClaimOp[]
+}
+
+/** One thing the lore says: about whom or what, which key, which value, and the event it rests on. */
+export interface ClaimOp {
+  event: Id
+  subject: Id
+  key: string
+  value: string
 }
 
 export interface LineOp {

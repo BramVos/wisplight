@@ -340,6 +340,17 @@ aftermath:
     steps:
       - id: word
         do: { news: "{value} are short in {area}. The merchants have put their prices up and talk of sending far afield.", area: $area }
+      # The shortage as a fact (M9.2): cause and effect for the chronicler, from what shut it off.
+      - id: fact
+        do:
+          tell:
+            kind: shortage
+            belang: 2
+            claim: { subject: $area, key: short, value: $value }
+            title: "{value} short in {area}"
+            precise: "{value} are short in {area}, and the merchants have put their prices up."
+            village: "No {value} to be had in {area} but at a price."
+            far: "Goods are short in {area}."
 
   - id: shortage_made_do
     signal: shortage
@@ -349,6 +360,16 @@ aftermath:
     steps:
       - id: word
         do: { news: "There are no {value} to be had in {area}. People make do, and grumble about it.", area: $area }
+      - id: fact
+        do:
+          tell:
+            kind: shortage
+            belang: 2
+            claim: { subject: $area, key: short, value: $value }
+            title: "no {value} in {area}"
+            precise: "There are no {value} to be had in {area}; people make do."
+            village: "No {value} in {area}, and everyone grumbling."
+            far: "Goods are short in {area}."
 
   - id: surplus
     signal: surplus

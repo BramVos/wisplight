@@ -16,6 +16,16 @@ interface Permission {
   chronicler: boolean
   /** In plain words, for the editor and the chronicler's instruction. */
   text: string
+  /** The standard conditions of the verb (M9.2), in plain words: they hold for every maker, checked when the step runs. */
+  guard?: string
+}
+
+/** The standard conditions of the verbs that have them (M9.2), in plain words; the checks are in aftermath.ts (verbGuard). */
+export const GUARDS: Record<string, string> = {
+  return: 'only when they know what drove them away is over, believe their house stands, and it is not flooded, destroyed or occupied',
+  feast: 'only at a place that is not flooded, destroyed or occupied',
+  move_home: 'only to a place that is not flooded, destroyed or occupied',
+  settle: 'only at a place that is not flooded, destroyed or occupied',
 }
 
 const all = (text: string): Permission => ({ rules: true, brain: true, chronicler: true, text })

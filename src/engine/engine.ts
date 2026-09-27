@@ -33,7 +33,7 @@ import { knownRequests, requestName } from './requests'
 import { recordFact, seedNews } from './news'
 import { parseCommand, parseDirection } from './parser'
 import { advance } from './simulation'
-import { createInitialState, fitStateToContent, type GameState, type LoreEntry, type WorldEvent } from './state'
+import { createInitialState, fitStateToContent, type GameState, type LoreEntry, type Offered, type WorldEvent } from './state'
 import { chronicleState } from './storylines'
 import { upper, World } from './world'
 import { beginFight, fightView, playerCommand } from './combat/flow'
@@ -96,7 +96,7 @@ export type LogEntry =
   // Whether a model was connected from this point on, so a replay makes the same calls.
   | { t: number; k: 'llm'; v: 'on' | 'off' }
   // A chronicler run, applied at this point: what the model wrote (checked later again), or null for templates.
-  | { t: number; k: 'chron'; run: string; v: ChronicleOutput | null }
+  | { t: number; k: 'chron'; run: string; v: ChronicleOutput | null; offered?: Offered }
   // A goal choice of the brain, applied at this point: the model's reply (validated again), or null.
   | { t: number; k: 'goals'; choice: string; v: unknown }
   // A far place worked out to its outline, or null for what the world book says.
@@ -521,19 +521,20 @@ export class Engine {
         const run = this.state.chronicle.pending[0]!
         let output: ChronicleOutput | null = null
         let problems: string[] = []
+        let offered: Offered | undefined
         const llm = this.llm
         if (llm) {
           try {
             const model = { complete: async (r: ChroniclerRequest) => llm.complete({ ...(r as LlmRequest), priority: 'low' }) }
-            ;({ output, problems } = await writeRun(this.world, run, model))
+            ;({ output, problems, offered } = await writeRun(this.world, run, model))
           } catch (error) {
             problems = [error instanceof Error ? error.message : String(error)]
           }
         }
         // The run may have been settled meanwhile (the model was switched off).
         if (!this.state.chronicle.pending.some((r) => r.id === run.id)) continue
-        this.record({ t: this.world.now, k: 'chron', run: run.id, v: output })
-        problems.push(...applyRun(this.world, run.id, output))
+        this.record({ t: this.world.now, k: 'chron', run: run.id, v: output, ...(offered ? { offered } : {}) })
+        problems.push(...applyRun(this.world, run.id, output, undefined, offered))
         this.dialogue.syncNews()
         done.push({ run: run.id, problems })
       }
@@ -1152,7 +1153,7 @@ export class Engine {
         else if (entry.k === 'llm') this.setLlm(entry.v === 'on' ? recorded : undefined)
         else if (entry.k === 'chron') {
           this.log.push(entry)
-          applyRun(this.world, entry.run, entry.v)
+          applyRun(this.world, entry.run, entry.v, undefined, entry.offered)
           this.dialogue.syncNews()
         } else if (entry.k === 'goals') {
           this.log.push(entry)

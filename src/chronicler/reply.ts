@@ -12,7 +12,19 @@ const Str = z.string().default('')
 const ReplySchema = z.object({
   lookup: z.array(z.string()).default([]),
   lore: z
-    .array(z.object({ line: z.string(), name: z.string(), summary: z.string(), details: Str, story: Str, far: Str, teller: Str, links: z.array(z.string()).default([]) }))
+    .array(
+      z.object({
+        line: z.string(),
+        name: z.string(),
+        summary: z.string(),
+        details: Str,
+        story: Str,
+        far: Str,
+        teller: Str,
+        links: z.array(z.string()).default([]),
+        claims: z.array(z.object({ event: z.string(), subject: z.string(), key: z.string(), value: z.string() })).default([]),
+      }),
+    )
     .default([]),
   lines: z
     .array(
@@ -123,6 +135,8 @@ export function readReply(text: string, keys: Keys, input: ChronicleInput, limit
       far: within(lore.far, limits.textWords) ?? '',
       links: lore.links.map((k) => as(k, 'lore', 'person', 'place')).filter((id): id is string => Boolean(id)),
       ...(teller ? { teller } : {}),
+      // Claims in ids; a value that is a key becomes its id too. What does not resolve stays as written, for the caller to refuse.
+      claims: lore.claims.map((c) => ({ event: as(c.event, 'event') ?? c.event, subject: as(c.subject, 'person', 'place', 'item', 'area') ?? c.subject, key: c.key.trim(), value: as(c.value, 'person', 'place', 'item', 'area') ?? c.value.trim() })),
     }
     output.lore.push(op)
   }

@@ -43,12 +43,9 @@ export function shiftTension(world: World, a: string, b: string, delta: number, 
   const peace = was === 'war'
   // A war that touches the player's land has its effect plan waiting (quests/plans.ts).
   const home = world.content.world.id
-  if (war && (a === home || b === home)) {
-    const other = a === home ? b : a
-    const plan = world.content.plans.has(`war_${other}`) ? `war_${other}` : world.content.plans.has('war') ? 'war' : undefined
-    if (plan) (world.state.pendingPlans ??= []).push(plan)
-  }
-  recordFact(world, {
+  const other = a === home ? b : a
+  const plan = war && (a === home || b === home) ? (world.content.plans.has(`war_${other}`) ? `war_${other}` : world.content.plans.has('war') ? 'war' : undefined) : undefined
+  const fact = recordFact(world, {
     kind: 'realm',
     // What it says, for the watchers and for what people believe (M8.1): war, peace, or the stance now.
     claim: { subject: key, key: 'stance', value: war ? 'war' : peace ? 'peace' : now },
@@ -63,6 +60,11 @@ export function shiftTension(world: World, a: string, b: string, delta: number, 
       far: war ? `War between ${ra.name} and ${rb.name}.` : `News from the capitals.`,
     },
   })
+  // The war plan waits, with the war as its cause (M9.2).
+  if (plan) {
+    ;(world.state.pendingPlans ??= []).push(plan)
+    ;(world.state.pendingCauses ??= {})[plan] = fact.id
+  }
 }
 
 /** Once a day: a small drift, back towards where each tension began. */

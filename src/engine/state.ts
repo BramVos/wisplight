@@ -113,6 +113,10 @@ export interface Storyline {
   phase?: 'setup' | 'rising' | 'crisis' | 'resolution' | 'closed'
   /** When it came to its crisis: no three climaxes in one week. */
   crisisAt?: number
+  /** The storyline this one goes on from (M9.2): a full line split, or the line of what caused it. */
+  follows?: string
+  /** What caused it: the causes of its first fact, carried over when it splits. */
+  cause?: string[]
 }
 
 /** A lore topic that came into being in this game (design, "Opslag": de kroniek). */
@@ -141,6 +145,16 @@ export interface ChronicleRun {
   lines: string[]
   /** Signals to plan for in this run (M8.3). */
   signals?: string[]
+}
+
+/**
+ * What a run of the chronicler offered the model (M9.2): the facts it showed
+ * and what it could name. Only these count as reported afterwards, and the
+ * names in its answer are checked against these, not the world of later.
+ */
+export interface Offered {
+  facts: string[]
+  allowed: string[]
 }
 
 export interface ChronicleState {
@@ -337,6 +351,8 @@ export interface Fact {
   text: { precise: string; village: string; far: string }
   /** What it says in a form the systems can check (M8.1): who believes what follows from it. */
   claim?: Claim
+  /** The facts that caused it (M9.2): what the plan, phase or aftermath that made it came from. */
+  cause?: string[]
 }
 
 /** A claim of a fact: { subject: loc_veenhoek_green, key: state, value: normal }; far away it may say otherwise. */
@@ -402,6 +418,8 @@ export interface GameState {
   stories?: StoriesState
   /** Facts and who heard them; "player" is the player. */
   news?: { seq: number; facts: Fact[]; heard: Record<string, Record<string, Heard>> }
+  /** The fact a waiting plan comes from (M9.2): a war, a big event the chronicler planned for. */
+  pendingCauses?: Record<string, string>
   /** Nameless groups (M9.1): a number at a place, no simulation per person. */
   crowds?: Crowd[]
   /** The rank of settlements that changed in this game (M9.1), by area. */

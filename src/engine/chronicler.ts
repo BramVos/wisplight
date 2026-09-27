@@ -1,4 +1,4 @@
-import { chronicle, emptyOutput, type Card, type ChronicleEvent, type ChronicleInput, type ChronicleLine, type ChronicleOutput, type ChroniclerModel, type PlanOp, type QuestTemplate } from '../chronicler'
+import { chronicle, emptyOutput, type Card, type ChronicleEvent, type ChronicleInput, type ChronicleLine, type ChronicleOutput, type ChroniclerModel, type ChroniclerRequest, type PlanOp, type QuestTemplate } from '../chronicler'
 import { PlanSchema, type Plan, type PlanEffect } from './quests/planschema'
 import { shiftTension } from './social/realms'
 import { GameClock, MONTHS, WEEKDAYS } from './clock'
@@ -10,7 +10,8 @@ import { questsOf } from './life'
 import { factById } from './news'
 import { isNear, noun, ties } from './people'
 import { askLine, openRequest, openRequestsOf, requestName } from './requests'
-import type { ChronicleRun, Claim, Fact, LoreEntry, Storyline } from './state'
+import type { ChronicleRun, ChronicleState, Claim, Fact, LoreEntry, Offered, Storyline } from './state'
+import { judged, judgeRequest, loreProblem } from './truth'
 import { chronicleState, unreported } from './storylines'
 import { chroniclerVerbs, extraCards, signalCards, startChroniclePlan, stepsFromOp, unplanned } from './planning'
 import { withoutReference } from './quests/reference'
@@ -73,7 +74,8 @@ function eventOf(world: World, fact: Fact): ChronicleEvent {
     .map(([id]) => id)
     .sort()
     .slice(0, 4)
-  return { id: fact.id, when: when(world, fact.t), place: fact.place, who, witnesses, belang: fact.belang, text: fact.text.precise, ...(fact.truth === false ? { untrue: true } : {}) }
+  const because = (fact.cause ?? []).map((id) => factById(world, id)?.title).filter((t): t is string => Boolean(t))
+  return { id: fact.id, when: when(world, fact.t), place: fact.place, who, witnesses, belang: fact.belang, text: fact.text.precise, ...(fact.truth === false ? { untrue: true } : {}), ...(because.length ? { because } : {}) }
 }
 
 export function buildInput(world: World, run: ChronicleRun): ChronicleInput {
@@ -94,6 +96,7 @@ export function buildInput(world: World, run: ChronicleRun): ChronicleInput {
       .filter((f) => line.reported.includes(f.id))
       .slice(-3)
       .map((f) => eventOf(world, f)),
+    ...(arcOf(state, line).length ? { arc: arcOf(state, line) } : {}),
   }))
 
   const cast = new Set<string>()
@@ -169,6 +172,17 @@ export function buildInput(world: World, run: ChronicleRun): ChronicleInput {
   return input
 }
 
+/** The storylines a line goes on from, oldest first, at most four (M9.2). */
+function arcOf(state: ChronicleState, line: Storyline): { title: string; summary: string[] }[] {
+  const arc: { title: string; summary: string[] }[] = []
+  let at = line.follows ? state.lines.find((l) => l.id === line.follows) : undefined
+  while (at && arc.length < 4) {
+    arc.unshift({ title: at.title, summary: at.summary.slice(0, 2) })
+    at = at.follows ? state.lines.find((l) => l.id === at!.follows) : undefined
+  }
+  return arc
+}
+
 /**
  * Whether the chronicler may plan consequences now: not while a fixed plan
  * that lets people flee started in the last day, for that covers the event.
@@ -197,7 +211,7 @@ function toPlan(world: World, op: PlanOp & { line: string }, id: string, cause: 
       // back when what drove them out is over as far as they know, and they think their house stands.
       groups[e.flee] = { areas: [e.flee], npcs: [], except: [] }
       const n = steps.length / 2
-      steps.push({ id: `flee_${n}`, at: { hours: phase.after }, wait: 0, when: [], otherwise: 'skip', do: { flee: e.flee, to: e.to, days: e.days } })
+      steps.push({ id: `flee_${n}`, at: { hours: phase.after }, wait: 0, when: [], otherwise: 'skip', unguarded: false, do: { flee: e.flee, to: e.to, days: e.days } })
       steps.push({
         id: `return_${n}`,
         after: `flee_${n}`,
@@ -205,6 +219,7 @@ function toPlan(world: World, op: PlanOp & { line: string }, id: string, cause: 
         each: e.flee,
         when: [...(cause ? [{ knows: { who: '$who', subject: cause.subject, key: cause.key, not: cause.value } }] : []), { thinks_home_stands: '$who' }],
         otherwise: 'wait',
+        unguarded: false,
         do: { return: '$who' },
       })
       void i
@@ -322,15 +337,26 @@ function building(world: World, run: ChronicleRun): { title: string; phase: 'ris
     .map((l) => ({ title: l.title, phase: l.phase as 'rising' | 'crisis' }))
 }
 
-export function applyOutput(world: World, run: ChronicleRun, output: ChronicleOutput | null, by: LoreEntry['by'] = 'chronicler'): string[] {
+/** What an input offers: the facts of its storylines, and whom and what it lets be named. */
+export function offeredBy(input: ChronicleInput): Offered {
+  return {
+    facts: [...new Set(input.lines.flatMap((l) => [...l.events, ...l.earlier].map((e) => e.id)))],
+    allowed: [...new Set([...input.cards.map((c) => c.id), ...input.lore.map((c) => c.id), ...input.areas.map((a) => `area_${a.id}`)])],
+  }
+}
+
+export function applyOutput(world: World, run: ChronicleRun, output: ChronicleOutput | null, by: LoreEntry['by'] = 'chronicler', offered?: Offered): string[] {
   const state = chronicleState(world)
   const problems: string[] = []
   const out = output ?? emptyOutput()
   const words = vocabulary(world)
   const lines = run.lines.map((id) => state.lines.find((l) => l.id === id)).filter((l): l is Storyline => Boolean(l))
   const input = buildInput(world, run)
+  // What the model saw (M9.2): facts that came meanwhile wait for the next run, and only names it was shown pass.
+  const shown = offered ?? offeredBy(input)
+  const seen = new Set(shown.facts)
   // Everyone and everything in the overview may be named; nobody else.
-  const allowed = new Set([...input.cards.map((c) => c.id), ...input.lore.map((c) => c.id), ...input.areas.map((a) => `area_${a.id}`)])
+  const allowed = new Set(shown.allowed)
   const properNames = [
     ...[...world.content.npcs.values()].flatMap((n) => [
       { id: n.id, name: n.name },
@@ -358,13 +384,19 @@ export function applyOutput(world: World, run: ChronicleRun, output: ChronicleOu
   for (const op of out.lore) {
     const line = lines.find((l) => l.id === op.line)
     if (!line) continue
-    const facts = line.facts.map((id) => factById(world, id)).filter((f): f is Fact => Boolean(f))
+    const facts = line.facts.map((id) => factById(world, id)).filter((f): f is Fact => Boolean(f) && seen.has(f!.id))
     const belang = Math.max(0, ...facts.map((f) => f.belang))
     if (belang < 3) {
       problems.push(`lore "${op.name}": the storyline is not big enough for lore (belang ${belang})`)
       continue
     }
     if (!fits(`lore "${op.name}"`, op.summary, op.details, op.story, op.far)) continue
+    // Only what a fact carries (M9.2): its claims on events of the line, held against the world, and no checkable untruth in the words.
+    const untrue = loreProblem(world, op, facts)
+    if (untrue) {
+      problems.push(`lore "${op.name}": ${untrue}`)
+      continue
+    }
     const teller = op.teller && facts.some((f) => world.state.news?.heard[op.teller!]?.[f.id]?.from === 'witness') ? op.teller : undefined
     writeLore(world, line, facts, belang, { name: op.name, summary: op.summary, details: op.details, story: op.story, far: op.far, teller, links: op.links.filter((l) => world.content.topics.has(l) || world.content.npcs.has(l) || state.lore.some((e) => e.id === l)) }, by)
     written.add(line.id)
@@ -479,14 +511,17 @@ export function applyOutput(world: World, run: ChronicleRun, output: ChronicleOu
     plan.steps.push(...(op.steps ?? []).flatMap((s, i) => stepsFromOp(world, s, i + 1, problems)))
     ;(world.state.dynamicPlans ??= {})[id] = plan
     ;(world.state.pendingPlans ??= []).push(id)
+    // It comes from the big news of its storyline (M9.2).
+    const from = state.lines.find((l) => l.id === op.line)?.facts.map((f) => factById(world, f)).filter((f): f is Fact => Boolean(f && f.belang >= 4)).at(-1)
+    if (from) (world.state.pendingCauses ??= {})[id] = from.id
   }
   // Signals of this run without a valid plan: the standard aftermath does it (M8.3).
   unplanned(world, run.signals ?? [], planned)
 
   // What the chronicler left out, the templates fill in.
   for (const line of lines) {
-    const facts = line.facts.map((id) => factById(world, id)).filter((f): f is Fact => Boolean(f))
-    const fresh = unreported(world, line)
+    const facts = line.facts.map((id) => factById(world, id)).filter((f): f is Fact => Boolean(f) && seen.has(f!.id))
+    const fresh = unreported(world, line).filter((f) => seen.has(f.id))
     const biggest = [...facts].sort((a, b) => b.belang - a.belang || b.t - a.t)[0]
     if (!written.has(line.id) && biggest && biggest.belang >= 3 && fresh.length) writeLore(world, line, facts, biggest.belang, templateLore(biggest), 'template')
     if (!noted.has(line.id)) line.summary = facts.slice(-3).map((f) => `${cap(f.title)} (${when(world, f.t)}).`)
@@ -495,7 +530,7 @@ export function applyOutput(world: World, run: ChronicleRun, output: ChronicleOu
       const old = state.news[area]
       if (!out.news.some((n) => n.area === area) && (!old || world.now - old.t > 12 * 60)) state.news[area] = { text: fresh.at(-1)!.text.village, t: world.now }
     }
-    line.reported = [...line.facts]
+    line.reported = [...new Set([...line.reported, ...line.facts.filter((id) => seen.has(id))])]
   }
   state.runs++
   return problems
@@ -521,7 +556,7 @@ function writeLore(world: World, line: Storyline, facts: Fact[], belang: number,
     fame: Math.min(5, belang),
     place: biggest.place,
     line: line.id,
-    facts: [...line.facts],
+    facts: facts.map((f) => f.id),
     links: text.links,
     t: existing?.t ?? world.now,
     by,
@@ -538,16 +573,39 @@ export function settleRuns(world: World): void {
 }
 
 /** Applies a finished run, from the model or from templates, and takes it off the waiting list. */
-export function applyRun(world: World, runId: string, output: ChronicleOutput | null, by: LoreEntry['by'] = output ? 'chronicler' : 'template'): string[] {
+export function applyRun(world: World, runId: string, output: ChronicleOutput | null, by: LoreEntry['by'] = output ? 'chronicler' : 'template', offered?: Offered): string[] {
   const state = chronicleState(world)
   const index = state.pending.findIndex((r) => r.id === runId)
   if (index < 0) return [`no waiting run ${runId}`]
   const [run] = state.pending.splice(index, 1)
-  return applyOutput(world, run!, output, by)
+  return applyOutput(world, run!, output, by, offered)
 }
 
-/** Runs the chronicler model on the first waiting run. The caller records and applies the result. */
-export async function writeRun(world: World, run: ChronicleRun, model: ChroniclerModel): Promise<{ output: ChronicleOutput; problems: string[] }> {
-  const result = await chronicle(buildInput(world, run), model, (ids) => lookupCards(world, ids))
-  return { output: result.output, problems: result.problems }
+/** Runs the chronicler model on the first waiting run. The caller records and applies the result, with what was offered. */
+export async function writeRun(world: World, run: ChronicleRun, model: ChroniclerModel): Promise<{ output: ChronicleOutput; problems: string[]; offered: Offered }> {
+  const input = buildInput(world, run)
+  const offered = offeredBy(input)
+  const result = await chronicle(input, model, (ids) => {
+    const cards = lookupCards(world, ids)
+    // What he looked up, he saw.
+    offered.allowed.push(...cards.map((c) => c.id).filter((id) => !offered.allowed.includes(id)))
+    return cards
+  })
+  // Big lore gets a second look (M9.2): a small model names what no fact says; then the template tells it.
+  const problems = [...result.problems]
+  for (const op of [...result.output.lore]) {
+    const line = input.lines.find((l) => l.id === op.line)
+    const events = line ? [...line.events, ...line.earlier] : []
+    if (Math.max(0, ...events.map((e) => e.belang)) < 4) continue
+    let found: string[] | undefined
+    try {
+      found = judged((await model.complete(judgeRequest(op, events) as unknown as ChroniclerRequest)).text)
+    } catch {
+      found = undefined
+    }
+    if (found && !found.length) continue
+    result.output.lore = result.output.lore.filter((l) => l !== op)
+    problems.push(`lore "${op.name}": ${found ? `the second look found what no fact says (${found.join('; ')})` : 'the second look could not be read'}`)
+  }
+  return { output: result.output, problems, offered }
 }

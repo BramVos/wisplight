@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { holds } from '../src/engine/quests/engine'
 import { Engine, MockLlm } from '../src/engine'
 import { recordFact } from '../src/engine/news'
 import { shiftTension } from '../src/engine/social/realms'
@@ -61,7 +62,10 @@ describe('M8.3: one plan for the refugees', () => {
     const home = fled.filter((id) => !settled.includes(id) && !engine.state.npcs[id]!.stayAt)
     expect(settled.length).toBeGreaterThan(0)
     expect(home.length).toBeGreaterThan(0)
-    expect(settled.length + home.length).toBe(fled.length)
+    // Home only once they know the war is over (M9.2): the chronicler's word alone does not send anyone back.
+    const waiting = fled.filter((id) => !settled.includes(id) && !home.includes(id))
+    for (const id of waiting) expect(holds(engine.world, { knows: { who: id, subject: 'nethermarch|rijkland', key: 'stance', not: 'war' } }), id).toBe(false)
+    expect(settled.length + home.length + waiting.length).toBe(fled.length)
     expect(engine.state.news!.facts.some((f) => f.kind === 'settled')).toBe(true)
     const signal = engine.state.signals!.log.find((s) => s.kind === 'realm_stance')!
     expect(signal.handled).toBe('chronicler')

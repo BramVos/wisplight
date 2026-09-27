@@ -6,7 +6,7 @@ import type { Watcher } from './quests/planschema'
 import type { Condition } from './quests/schema'
 import type { Claim, Fact, Signal, SignalState } from './state'
 import { tieTo } from './people'
-import { planOf } from './quests/plans'
+import { planCauses, planOf } from './quests/plans'
 import { openness } from './belief'
 import { carried, foodGoods, placeOf } from './economy/ledger'
 import type { World } from './world'
@@ -124,6 +124,23 @@ function sellersOf(world: World, settlement: string, item: string): { who: strin
  * ledger (M8.4): once a spell, a signal for those who sell the good there,
  * with a claim the aftermath can bind ($subject the settlement, $value the good).
  */
+/**
+ * Why a settlement is short of something (M9.2): the closing of a route that
+ * brought it, when that is what shut it off. Cause and effect, as facts.
+ */
+function routeCauses(world: World, settlement: string, item: string): string[] {
+  const routes = [...world.content.routes.values()].filter((r) => (r.to === settlement && item in r.carries) || (r.from === settlement && item in r.returns))
+  const closed = routes.filter((r) => world.state.economy?.routes[r.id]?.closed ?? r.closed)
+  const facts = world.state.news?.facts ?? []
+  const shut = closed.flatMap((r) => {
+    const fact = [...facts].reverse().find((f) => f.claim?.subject === r.id && f.claim.key === 'route' && f.claim.value === 'closed')
+    return fact ? [fact.id] : []
+  })
+  // A shortage that lasts comes from the shortage told before it.
+  const told = [...facts].reverse().find((f) => f.claim?.subject === settlement && f.claim.key === 'short' && f.claim.value === item)
+  return [...shut, ...(told ? [told.id] : [])]
+}
+
 function ledgerSpell(world: World, w: Watcher, spell: 'short' | 'surplus', days: number): void {
   const state = world.state.economy
   if (!state) return
@@ -138,7 +155,7 @@ function ledgerSpell(world: World, w: Watcher, spell: 'short' | 'surplus', days:
       const sellers = sellersOf(world, settlement, item)
       const makers = spell === 'surplus' ? (world.content.settlements.get(settlement)?.workshops ?? []).filter((x) => item in x.makes).flatMap((x) => x.named.filter((id) => world.alive(id))) : []
       const who = [...new Set([...sellers.map((s) => s.who), ...makers])].slice(0, 3)
-      queueSignal(world, { kind: w.signal, ...(w.event ? { event: w.event } : {}), who, place: sellers[0]?.where ?? placeOf(world, settlement), cause: [], belang: w.belang ?? 2, claim: { subject: settlement, key: spell, value: item }, watcher: w.id, ...(who.length ? {} : { scope: 'many' as const }) })
+      queueSignal(world, { kind: w.signal, ...(w.event ? { event: w.event } : {}), who, place: sellers[0]?.where ?? placeOf(world, settlement), cause: spell === 'short' ? routeCauses(world, settlement, item) : [], belang: w.belang ?? 2, claim: { subject: settlement, key: spell, value: item }, watcher: w.id, ...(who.length ? {} : { scope: 'many' as const }) })
     }
   }
 }
@@ -162,7 +179,7 @@ function dearCounters(world: World, w: Watcher, factor: number): void {
           seen[`${key}:over`] = over
           if (!over || was !== false || world.now - Number(seen[key] ?? -Infinity) < 7 * DAY) continue
           seen[key] = world.now
-          queueSignal(world, { kind: w.signal, ...(w.event ? { event: w.event } : {}), who: world.alive(s.provider) ? [s.provider] : [], place: l.id, cause: [], belang: w.belang ?? 2, claim: { subject: settlement, key: 'price', value: item }, watcher: w.id })
+          queueSignal(world, { kind: w.signal, ...(w.event ? { event: w.event } : {}), who: world.alive(s.provider) ? [s.provider] : [], place: l.id, cause: routeCauses(world, settlement, item), belang: w.belang ?? 2, claim: { subject: settlement, key: 'price', value: item }, watcher: w.id })
         }
       }
     }
@@ -284,7 +301,9 @@ function friction(world: World, w: Watcher, threshold: number): void {
     const liking = (who: string) => guests.reduce((sum, g) => sum + (world.state.bonds?.[who]?.[g]?.affinity ?? 0), 0) / guests.length + world.npc(who).personality.warmth * 10
     const averse = residents.filter((id) => !guests.some((g) => ['family', 'love'].includes(tieTo(world, id, g)?.kind ?? ''))).sort((a, b) => liking(a) - liking(b) || a.localeCompare(b)).slice(0, 3)
     if (!averse.length) continue
-    queueSignal(world, { kind: w.signal, ...(w.event ? { event: w.event } : {}), who: averse, place, cause: [], belang: w.belang ?? 3, scope: 'many', watcher: w.id })
+    // What brought the newcomers is what the friction comes from (M9.2).
+    const brought = (world.state.plans ?? []).filter((p) => Object.values(p.groups).flat().some((id) => guests.includes(id))).flatMap((p) => planCauses(world, p))
+    queueSignal(world, { kind: w.signal, ...(w.event ? { event: w.event } : {}), who: averse, place, cause: [...new Set(brought)], belang: w.belang ?? 3, scope: 'many', watcher: w.id })
   }
 }
 
@@ -294,7 +313,7 @@ export function foodShort(world: World): boolean {
 }
 
 /** What drove people from home: the claim a step of their plan waits to know otherwise. */
-function causeOf(world: World, people: string[]): Claim | undefined {
+export function causeOf(world: World, people: string[]): Claim | undefined {
   for (const p of world.state.plans ?? []) {
     if (p.ended !== undefined || !Object.values(p.groups).flat().some((id) => people.includes(id))) continue
     for (const step of planOf(world, p.plan)?.steps ?? []) {

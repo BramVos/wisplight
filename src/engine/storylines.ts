@@ -37,10 +37,12 @@ export function onFact(world: World, fact: Fact): void {
   const places = [...new Set([fact.place, ...fact.about.filter((id) => world.content.locations.has(id))])]
   const pattern = fact.pattern ?? fact.kind
   const shared = (l: Storyline) => people.filter((p) => l.people.includes(p)).length
+  const fits = (l: Storyline) => (l.pattern === pattern && (shared(l) > 0 || (l.places.includes(fact.place) && world.now - l.changed < DAY))) || shared(l) >= (fact.belang >= 3 ? 1 : 2)
+  const newest = (a: Storyline, b: Storyline) => b.changed - a.changed || a.id.localeCompare(b.id)
   const line = state.lines
     .filter((l) => l.open && l.facts.length < MAX_FACTS)
-    .sort((a, b) => b.changed - a.changed || a.id.localeCompare(b.id))
-    .find((l) => (l.pattern === pattern && (shared(l) > 0 || (l.places.includes(fact.place) && world.now - l.changed < DAY))) || shared(l) >= (fact.belang >= 3 ? 1 : 2))
+    .sort(newest)
+    .find(fits)
   let target: Storyline
   if (line) {
     // A line is called after the biggest thing that happened on it.
@@ -52,7 +54,29 @@ export function onFact(world: World, fact: Fact): void {
     line.changed = world.now
     target = line
   } else {
-    target = { id: `line_${++state.seq}`, title: fact.title, pattern, facts: [fact.id], people, places, summary: [], roles: [], hooks: [], next: '', open: true, changed: world.now, reported: [] }
+    // A full line goes on as a new one (M9.2), with its note, its open threads and its cause;
+    // otherwise a new line follows the line of what caused this fact, so an arc stays one arc.
+    const full = state.lines.filter((l) => l.open && l.facts.length >= MAX_FACTS).sort(newest).find(fits)
+    const causeLine = full ? undefined : (fact.cause ?? []).map((id) => lineOf(world, id)).filter((l): l is Storyline => Boolean(l)).at(-1)
+    target = {
+      id: `line_${++state.seq}`,
+      title: fact.title,
+      pattern,
+      facts: [fact.id],
+      people: full ? [...new Set([...full.people, ...people])] : people,
+      places: full ? [...new Set([...full.places, ...places])] : places,
+      summary: full ? [...full.summary] : [],
+      roles: full ? [...full.roles] : [],
+      hooks: full ? [...full.hooks] : [],
+      next: full?.next ?? '',
+      open: true,
+      changed: world.now,
+      reported: [],
+      ...(full ? { follows: full.id } : causeLine ? { follows: causeLine.id } : {}),
+      ...((full?.cause ?? fact.cause)?.length ? { cause: [...(full?.cause ?? fact.cause)!] } : {}),
+      ...(full?.phase && full.phase !== 'closed' ? { phase: full.phase } : {}),
+    }
+    if (full) full.open = false
     state.lines.push(target)
   }
   // The death of someone with a quest role ends or changes that quest: the chronicler writes now.

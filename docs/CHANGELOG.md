@@ -1,5 +1,20 @@
 # Changelog
 
+## M9.2 Waarheid en samenhang, 27 september 2026
+
+Nieuw:
+- **Lore zegt alleen wat een feit draagt.** De kroniekschrijver levert bij elk lore-item zijn beweringen als structuur (onderwerp, sleutel, waarde, en de gebeurtenis waar het op rust). Een bewering die op geen feit van de lijn rust, of die de wereld tegenspreekt (een levende dood, een huis dat niet het zijne is, iets wat iemand niet heeft), en lore zonder beweringen worden niet bewaard; het sjabloon vertelt het dan. Ook de tekst zelf wordt gefilterd: "Gerrit is dead" bij een levende Gerrit valt terug op het sjabloon.
+- **Een tweede blik bij grote lore.** Bij belang 4 of hoger leest een klein model de feiten en de lore en noemt wat de lore zegt dat geen feit zegt. Vindt het iets, dan vertelt het sjabloon het.
+- **Standaardvoorwaarden per werkwoord.** Terugkeren kan alleen als iemand weet dat wat hem verdreef voorbij is, gelooft dat zijn huis staat, en het niet onder water staat, verwoest of bezet is. Een feest, verhuizen en blijven wonen alleen op een veilige plek. Dat geldt voor content, brein en kroniekschrijver, en wordt gecontroleerd als de stap echt gebeurt. Content kan het bewust uitzetten (`unguarded`), een model niet. De naslag noemt de voorwaarden.
+- **Een run onthoudt wat hij aanbood.** Alleen die feiten gelden daarna als verwerkt; wat tijdens de aanroep gebeurde, wacht op de volgende run. De namencontrole kijkt naar wat het model zag, niet naar de wereld van later. Het spellogboek bewaart die momentopname, zodat naspelen hetzelfde controleert.
+- **Oorzaak en gevolg.** Een feit draagt zijn oorzaak: wat een plan, een fase of een nasleep veroorzaakt, wijst naar het feit waar die vandaan kwam. Een tekort wijst naar de gesloten route, een blijvend tekort ook naar het eerdere tekort, wrijving naar wat de nieuwkomers deed vluchten, en een vlucht is nu zelf een feit. Een lijn volgt de lijn van haar oorzaak, en een volle lijn (twaalf feiten) gaat verder als een nieuwe met haar samenvatting, open vragen en oorzaak. De kroniekschrijver ziet per lijn de boog van voorgangers en per gebeurtenis waar ze uit kwam: oorlog, Oostweg dicht, lampolie kort, onrust in Waagdam en de vlucht uit Veenhoek zijn een boog.
+
+Testen: `npm run dev` met een model. `@tension rijkland 30` en een paar dagen wachten: in de editor bij Playtest (of straks het dev-menu uit M10.1) zie je de lijnen elkaar volgen. De controles zelf zie je vooral in de tests: `npm test` (435 tests), `tests/m92.test.ts` speelt elk scenario uit de review na.
+
+Nog niet: of een fase ook een begrijpelijk verhaal voor de speler was, bewijst geen code; dat is het speeltestprotocol in M9.4. Het tekstfilter kent alleen de drie toetsbare soorten zinnen (dood, woonplaats, bezit van een plek of voorwerp).
+
+Ontwerp en tests: afwijkingen staan onder "Zo is het in M9.2 gebouwd". Een M8.3-test is aangepast: na de oorlog gingen vluchtelingen op het woord van de kroniekschrijver naar huis, ook als ze nog niet wisten dat het vrede was. Dat was de fout uit de review; nu wachten ze tot ze het horen, en de test controleert dat wie nog niet thuis is het ook nog niet weet.
+
 ## M9.1 Vaste ids en de open punten, 27 september 2026
 
 Nieuw:
