@@ -81,9 +81,11 @@ plans:
     phases:
       - after: 0
         effects:
+          # The Oostweg is shut: no more lamp oil and nails from Zwolderkamp (economy.yaml).
+          - { close_route: zwolderkamp_oostweg, why: the Count's soldiers hold the toll gate }
           - { market: lamp_oil, factor: 0.5 }
           - { market: iron_nails, factor: 0.5 }
-          - { news: "There's war, and the Count's men are buying up iron and oil.", area: waagdam }
+          - { news: "There's war, and the Oostweg is shut. No more carts from Zwolderkamp.", area: waagdam }
       - after: 48
         effects:
           - { place: loc_waagdam_harbour, state: occupied }
@@ -92,6 +94,7 @@ plans:
       - after: 336
         effects:
           - { place: loc_waagdam_harbour, state: normal }
+          - { open_route: zwolderkamp_oostweg }
           - { market: lamp_oil, factor: 1 }
           - { market: iron_nails, factor: 1 }
           - { market: rye_grain, factor: 1 }

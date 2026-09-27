@@ -1,3 +1,4 @@
+import { setRoute } from '../economy/ledger'
 import { WEEKDAYS, weekdayOf } from '../clock'
 import type { Output } from '../commands'
 import { callName } from '../content'
@@ -255,7 +256,9 @@ export function runEffect(world: World, host: QuestHost, p: PlanState, e: PlanEf
         }
       }
     }
-  } else if ('close' in e) {
+  } else if ('close_route' in e) setRoute(world, e.close_route, true, e.why)
+  else if ('open_route' in e) setRoute(world, e.open_route, false)
+  else if ('close' in e) {
     ;(world.state.closed ??= {})[routeKey(e.close[0], e.close[1])] = e.reason
   } else if ('open' in e) {
     delete world.state.closed?.[routeKey(e.open[0], e.open[1])]

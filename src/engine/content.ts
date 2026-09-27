@@ -1,4 +1,5 @@
 import { parse } from 'yaml'
+import { OutlandSchema, ResourceSchema, RouteSchema, SettlementSchema, type Outland, type Resource, type Route, type Settlement } from './economy/schema'
 import { z } from 'zod'
 import { CreatureSchema, EncounterSchema, RulesSchema, type Creature, type Effect, type Encounter, type Rules, type Talent } from './rules/schema'
 import { QuestBodySchema } from './quests/schema'
@@ -606,6 +607,11 @@ const FileSchema = z
     verbs: z.array(VerbTextSchema).optional(),
     creatures: z.array(CreatureSchema).optional(),
     encounters: z.array(EncounterSchema).optional(),
+    /** The economy (M8.4): settlements with their ledger, the ground, routes, and regions beyond the map. */
+    settlements: z.array(SettlementSchema).optional(),
+    resources: z.array(ResourceSchema).optional(),
+    routes: z.array(RouteSchema).optional(),
+    outlands: z.array(OutlandSchema).optional(),
   })
   .strict()
 
@@ -641,6 +647,11 @@ export interface Content {
   /** What a brain may choose to do about a signal (M8.2). */
   intentions: Map<string, Intention>
   verbTexts: Map<string, VerbText>
+  /** The economy (M8.4). */
+  settlements: Map<string, Settlement>
+  resources: Map<string, Resource>
+  routes: Map<string, Route>
+  outlands: Map<string, Outland>
   /** The chronicler's working instruction (content/CHRONICLER.md and the world's own), if there is one. */
   chronicler?: string
 }
@@ -685,6 +696,10 @@ export function loadContent(files: ContentFile[]): Content {
     aftermath: new Map<string, Aftermath>(),
     intentions: new Map<string, Intention>(),
     verbTexts: new Map<string, VerbText>(),
+    settlements: new Map<string, Settlement>(),
+    resources: new Map<string, Resource>(),
+    routes: new Map<string, Route>(),
+    outlands: new Map<string, Outland>(),
   }
 
   let chronicler: string | undefined
@@ -730,6 +745,10 @@ export function loadContent(files: ContentFile[]): Content {
     addAll(content.aftermath, data.aftermath, (v) => v.id, file.path, 'aftermath', problems)
     addAll(content.intentions, data.intentions, (v) => v.id, file.path, 'intention', problems)
     addAll(content.verbTexts, data.verbs, (v) => v.id, file.path, 'verb', problems)
+    addAll(content.settlements, data.settlements, (v) => v.id, file.path, 'settlement', problems)
+    addAll(content.resources, data.resources, (v) => v.id, file.path, 'resource', problems)
+    addAll(content.routes, data.routes, (v) => v.id, file.path, 'route', problems)
+    addAll(content.outlands, data.outlands, (v) => v.id, file.path, 'outland', problems)
     if (data.rules) {
       if (rules) problems.push(`${file.path}: the rules are defined twice`)
       rules = data.rules
@@ -820,6 +839,7 @@ function checkReferences(world: WorldDef | undefined, c: Omit<Content, 'world'>)
     }
     for (const id of world.plans) if (!c.plans.has(id)) problems.push(`world.plans: unknown plan ${id}`)
   }
+  problems.push(...checkEconomy(c))
   for (const type of c.objectTypes.values()) {
     for (const aff of type.affordances) {
       for (const id of [...Object.keys(aff.consumes), ...Object.keys(aff.produces)]) item(id, `object type ${type.id}.${aff.id}`)
@@ -963,4 +983,53 @@ function idsIn(value: unknown): string[] {
   if (Array.isArray(value)) return value.flatMap(idsIn)
   if (value && typeof value === 'object') return Object.values(value).flatMap(idsIn)
   return []
+}
+
+/** The economy refers to areas, places, people, goods, objects and ground: all of them must exist (M8.4). */
+function checkEconomy(c: Omit<Content, 'world'>): string[] {
+  const problems: string[] = []
+  const item = (id: string, where: string) => {
+    if (!c.items.has(id)) problems.push(`${where}: unknown item ${id}`)
+  }
+  for (const r of c.resources.values()) for (const g of r.gives) item(g, `resource ${r.id}`)
+  for (const s of c.settlements.values()) {
+    const where = `settlement ${s.id}`
+    if (!c.areas.has(s.id)) problems.push(`${where}: no area with that id`)
+    for (const g of [...Object.keys(s.use), ...Object.keys(s.keep)]) item(g, where)
+    for (const r of s.resources) if (!c.resources.has(r)) problems.push(`${where}: unknown resource ${r}`)
+    const seen = new Set<string>()
+    for (const w of s.workshops) {
+      const at = `${where}, workshop ${w.id}`
+      if (seen.has(w.id)) problems.push(`${at}: twice in the settlement`)
+      seen.add(w.id)
+      if (!c.locations.has(w.at)) problems.push(`${at}: unknown location ${w.at}`)
+      else if (c.locations.get(w.at)!.area !== s.id) problems.push(`${at}: ${w.at} is not in ${s.id}`)
+      for (const g of [...Object.keys(w.makes), ...Object.keys(w.uses)]) item(g, at)
+      for (const n of w.named) if (!c.npcs.has(n)) problems.push(`${at}: unknown NPC ${n}`)
+      if (w.from && !s.resources.includes(w.from)) problems.push(`${at}: works ${w.from}, which the settlement does not have`)
+      if (w.from && c.resources.has(w.from)) for (const g of Object.keys(w.makes)) if (!c.resources.get(w.from)!.gives.includes(g)) problems.push(`${at}: ${w.from} does not give ${g}`)
+      if (w.requires) {
+        const [loc, obj] = w.requires.object.split('/')
+        if (!loc || !obj || !c.locations.get(loc)?.objects.some((o) => o.id === obj)) problems.push(`${at}: unknown object ${w.requires.object}`)
+      }
+    }
+  }
+  for (const o of c.outlands.values()) {
+    for (const g of [...o.sends, ...o.asks]) item(g, `outland ${o.id}`)
+    if (o.topic && !c.topics.has(o.topic)) problems.push(`outland ${o.id}: unknown topic ${o.topic}`)
+    if (o.realm && !c.realms.has(o.realm)) problems.push(`outland ${o.id}: unknown realm ${o.realm}`)
+  }
+  for (const r of c.routes.values()) {
+    const where = `route ${r.id}`
+    const outland = c.outlands.get(r.from)
+    if (!c.settlements.has(r.from) && !outland) problems.push(`${where}: from ${r.from}, which is no settlement or region beyond the map`)
+    if (!c.settlements.has(r.to)) problems.push(`${where}: to ${r.to}, which is no settlement`)
+    for (const g of [...Object.keys(r.carries), ...Object.keys(r.returns)]) item(g, where)
+    if (outland) {
+      for (const g of Object.keys(r.carries)) if (!outland.sends.includes(g)) problems.push(`${where}: ${outland.name} does not send ${g}`)
+      for (const g of Object.keys(r.returns)) if (!outland.asks.includes(g)) problems.push(`${where}: ${outland.name} does not ask for ${g}`)
+    }
+    if (r.via) for (const l of r.via) if (!c.locations.has(l)) problems.push(`${where}: unknown location ${l}`)
+  }
+  return problems
 }

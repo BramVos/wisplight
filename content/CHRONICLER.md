@@ -268,6 +268,7 @@ Watchers, the standard aftermath, intentions, fixed plans, quests and your own p
 - `is_player` `{ is_player: text }`: The one meant is the player.
 - `around` `{ around: text }`: Someone is around: alive, in the world, and not travelling with the player.
 - `carries` `{ carries: text, item: text }`: Someone carries a thing.
+- `character` `{ character: text, is: text }`: A settlement (an area) has this character: what it lives on (trade, peat, flour) or one of its tags.
 - `has_work` `{ has_work: text }`: Someone has work somewhere.
 - `lives_with_parent` `{ lives_with_parent: text }`: Someone lives in one house with a parent.
 - `commute` `{ commute: text, at_least: number }`: Someone's walk from home to work takes at least so many minutes.
@@ -307,6 +308,7 @@ Watchers, the standard aftermath, intentions, fixed plans, quests and your own p
 - `spread_rumour` `{ spread_rumour: selector, fact: { kind?: text = "aftermath", title: text, precise: text, village: text, far: text, belang?: number = 1, about?: list of text = [], place?: selector, claim?: { subject: text, key: text, value: text, far?: text } } }`: Someone the gate lets lie puts an untrue claim about. Rules yes, brain yes, chronicler yes.
 - `settle` `{ settle: selector, at: selector }`: Someone from elsewhere stays for good. Rules yes, brain no, chronicler yes.
 - `form_group` `{ form_group: list of selector, aim: against | for, about: text, name: text }`: People band together for or against the newcomers of an area. Rules yes, brain no, chronicler yes.
+- `order` `{ order: text, to: text, qty?: number = 6, days?: number = 3, by?: text = "a carrier" }`: A settlement sends for goods that come in some days, at twice their worth. Rules yes, brain yes, chronicler yes.
 - `set` `{ set: text, value?: text or number or true/false = true }`: A flag. Rules yes, brain no, chronicler no.
 - `unset` `{ unset: text }`: A flag cleared. Rules yes, brain no, chronicler no.
 - `give` `{ give: text, qty?: number = 1 }`: The player gets a thing. Rules no, brain no, chronicler no.
@@ -341,6 +343,8 @@ Watchers, the standard aftermath, intentions, fixed plans, quests and your own p
 - `vanish` `{ vanish: text }`: Someone leaves the world. Rules no, brain no, chronicler no.
 - `join` `{ join: text }`: The player joins a faction. Rules no, brain no, chronicler no.
 - `seize` `{ seize: text, from: text, qty?: number = 1 }`: Something passes to the player. Rules no, brain no, chronicler no.
+- `close_route` `{ close_route: text, why?: text }`: A trade route stops running. Rules yes, brain no, chronicler no.
+- `open_route` `{ open_route: text }`: A trade route runs again. Rules yes, brain no, chronicler no.
 - `flee` `{ flee: text, to: text, days: number }`: A group flees to a place. Rules yes, brain no, chronicler yes.
 - `close` `{ close: [text, text], reason: text }`: A route closes. Rules yes, brain no, chronicler yes.
 - `open` `{ open: [text, text] }`: A route opens again. Rules yes, brain no, chronicler yes.

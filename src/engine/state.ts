@@ -1,6 +1,7 @@
 import { GameClock } from './clock'
 import { NEEDS, type Content, type Need, type Npc } from './content'
 import type { StoriesState } from './stories'
+import type { EconomyState } from './economy/ledger'
 import type { Combat } from './combat/types'
 import type { Character } from './rules/character'
 import type { Clock } from './rules/player'
@@ -466,6 +467,8 @@ export interface GameState {
   chatter?: { greeted: Record<string, number>; chats: import('./chatter').Chat[] }
   /** People who band together for or against newcomers (M8.3). */
   groups?: Group[]
+  /** The ledgers of the settlements, the routes and goods sent for (M8.4). */
+  economy?: EconomyState
 }
 
 /** A group with members and an aim (M8.3): for or against the newcomers in an area. */

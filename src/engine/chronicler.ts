@@ -14,6 +14,7 @@ import type { ChronicleRun, Claim, Fact, LoreEntry, Storyline } from './state'
 import { chronicleState, unreported } from './storylines'
 import { chroniclerVerbs, extraCards, signalCards, startChroniclePlan, stepsFromOp, unplanned } from './planning'
 import { withoutReference } from './quests/reference'
+import { tradeLine } from './economy/ledger'
 import type { World } from './world'
 
 // The game's side of the chronicler (design: lore and world change). The
@@ -221,7 +222,9 @@ function toPlan(world: World, op: PlanOp & { line: string }, id: string, cause: 
 
 function catalogue(world: World): string {
   const patterns = [...world.content.patterns.values()].map((p) => `${p.id} (${p.kind}, belang ${p.belang})`).join(', ')
-  return `Small story patterns the world plays by itself: ${patterns}. Deaths, needs and news come from the rules.`
+  // Regions beyond the map are stubs (M8.4): what is said of them must fit what they send and ask.
+  const trade = [...world.content.outlands.keys()].sort().map((id) => tradeLine(world, id)).filter(Boolean)
+  return `Small story patterns the world plays by itself: ${patterns}. Deaths, needs and news come from the rules.${trade.length ? ` Trade from beyond the map (not worked out; keep to this): ${trade.join(' ')}` : ''}`
 }
 
 function relatedLore(world: World, lines: Storyline[], cast: Set<string>, areas: string[]): Card[] {

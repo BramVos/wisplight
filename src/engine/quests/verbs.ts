@@ -51,6 +51,9 @@ export const PERMISSIONS: Record<string, Permission> = {
   settle: rules('someone from elsewhere stays for good', true),
   form_group: rules('people band together for or against the newcomers of an area', true),
   leave: rules('some go away together for a while', true),
+  close_route: rules('a trade route stops running'),
+  open_route: rules('a trade route runs again'),
+  order: all('a settlement sends for goods that come in some days, at twice their worth'),
   // Places, groups, the market, realms.
   flee: rules('a group flees to a place', true),
   place: rules('a place changes state: flooded, damaged, occupied, normal', true),

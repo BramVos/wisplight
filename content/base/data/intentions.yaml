@@ -190,3 +190,79 @@ intentions:
     steps:
       - id: mind
         do: { thought: $a, text: "Those people are still here, eating our bread.", days: 7 }
+
+  # M8.4: a shortage, for those who sell the good.
+  - id: send_for_more
+    signal: shortage
+    topic: shortage
+    expires: 5
+    choice:
+      name: Send for more
+      line: Send someone out for more of it yourself, whatever it costs, and have it in before the others.
+    steps:
+      - id: send
+        do: { order: $value, to: $area, qty: 6, days: 2, by: "a carter sent by {a}" }
+
+  - id: hold_back
+    signal: shortage
+    topic: shortage
+    expires: 5
+    choice:
+      name: Hold back what you have
+      line: Keep the last of it back and let the price climb. People will pay.
+    steps:
+      - id: mind
+        do: { thought: $a, text: "Keep the last of it back. The price will climb, and they will pay.", days: 5 }
+      - id: talk
+        do:
+          tell:
+            kind: hoarding
+            about: [$a]
+            belang: 1
+            title: "{a} is holding back {value}"
+            precise: "{a} has {value} put by and will not sell them until the price is up."
+            village: "{a} is sitting on {value} while the rest of us go without, they say."
+            far: "A trader is hoarding."
+
+  - id: ask_the_stranger_to_fetch
+    signal: shortage
+    topic: shortage
+    expires: 7
+    when: [{ is_player: player }]
+    choice:
+      name: Ask the stranger
+      line: Ask the stranger to fetch some from elsewhere, for pay.
+    steps:
+      - id: ask
+        do: { request: $a, kind: fetch, item: $value, name: "{value} for {a}", ask: "Nobody has any left round here. Could you find me some, wherever you go? I'll pay you well." }
+
+  # More than the place needs: for those who sell or make it.
+  - id: sell_cheap
+    signal: surplus
+    topic: surplus
+    expires: 5
+    choice:
+      name: Sell it cheap
+      line: Let it go cheap before it spoils, and tell everyone.
+    steps:
+      - id: word
+        do:
+          tell:
+            kind: cheap
+            about: [$a]
+            belang: 1
+            title: "{a} is letting {value} go cheap"
+            precise: "{a} has more {value} than anyone needs and is letting them go cheap."
+            village: "You can have {value} for next to nothing from {a}, they say."
+            far: "Goods are cheap somewhere in the Holleveen."
+
+  - id: sit_on_it
+    signal: surplus
+    topic: surplus
+    expires: 5
+    choice:
+      name: Sit on it
+      line: Store it and wait for leaner times.
+    steps:
+      - id: mind
+        do: { thought: $a, text: "Store it away. Leaner times will come.", days: 7 }

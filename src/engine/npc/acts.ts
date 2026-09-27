@@ -54,12 +54,17 @@ export function performAct(world: World, npcId: string, step: ActStep): boolean 
       const shop = world.location(here).services.find((s) => s.buys.includes(item))
       if (!qty || !shop) return false
       const price = world.content.items.get(item)?.value ?? 1
-      me.inventory[item] = 0
-      delete me.inventory[item]
-      me.money += price * qty
+      // The shopkeeper pays from the till, and buys no more than it holds (M8.4: not money from nothing).
+      const buyer = world.npcState(shop.provider)
+      const sold = shop.provider === npcId ? qty : Math.min(qty, Math.floor(Math.max(0, buyer.money) / price))
+      if (sold <= 0) return false
+      if (shop.provider !== npcId) buyer.money -= price * sold
+      me.inventory[item] = qty - sold
+      if (!me.inventory[item]) delete me.inventory[item]
+      me.money += price * sold
       const stock = world.stock(here, shop.id)
-      stock[item] = (stock[item] ?? 0) + qty
-      event(world, npcId, `{name} sells ${itemName(world.content, item, qty)} over the counter.`)
+      stock[item] = (stock[item] ?? 0) + sold
+      event(world, npcId, `{name} sells ${itemName(world.content, item, sold)} over the counter.`)
       return true
     }
     case 'deliver':

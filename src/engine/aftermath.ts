@@ -1,3 +1,5 @@
+import { itemName } from './items'
+import { orderGoods } from './economy/ledger'
 import type { Output } from './commands'
 import { callName } from './content'
 import { applyEffect } from './dialogue/relations'
@@ -181,7 +183,7 @@ export function nameOf(world: World, id: string | undefined): string {
   if (id === 'player') return world.state.player.character?.name ?? 'the stranger'
   if (world.content.npcs.has(id)) return callName(world.npc(id))
   if (world.content.locations.has(id)) return world.location(id).name
-  return world.content.topics.get(id)?.name ?? world.content.areas.get(id)?.name ?? id
+  return world.content.topics.get(id)?.name ?? world.content.areas.get(id)?.name ?? (world.content.items.has(id) ? itemName(world.content, id, 2) : undefined) ?? world.content.routes.get(id)?.name ?? world.content.outlands.get(id)?.name ?? id
 }
 
 /** Fills {a}, {b}, {who}, {place} and the like with names. */
@@ -309,6 +311,11 @@ export function runVerb(world: World, ctx: PlanContext, verb: Verb, st: StepStat
     const areaName = world.content.areas.get(area)?.name ?? nameOf(world, at)
     recordFact(world, { kind: 'settled', about: [who], place: at, belang: 2, title: `${name} stays in ${areaName}`, text: { precise: `${name} is not going back: ${world.say('{they}', who)} lives at ${nameOf(world, house)} now.`, village: `${name} is staying in ${areaName} for good, they say.`, far: 'Some who fled stayed where they found shelter.' } })
     return true
+  }
+  // The economy (M8.4).
+  if ('order' in v) {
+    const to = world.content.settlements.has(v.to) ? v.to : world.content.locations.get(v.to)?.area
+    return Boolean(to) && orderGoods(world, to!, v.order, v.qty, v.days, v.by)
   }
   if ('form_group' in v) {
     const members = v.form_group.flatMap((s) => many(world, ctx, s)).filter((id) => world.content.npcs.has(id) && world.alive(id))

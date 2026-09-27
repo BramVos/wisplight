@@ -1,5 +1,23 @@
 # Changelog
 
+## M8.4 Economie, 27 september 2026
+
+Nieuw:
+- **Een grootboek per nederzetting.** Elke nederzetting van beide werelden rekent eens per speldag, om vijf uur: de werkplaatsen maken wat hun handen en grondstoffen toelaten, de naamlozen gebruiken wat ze nodig hebben, en wat overblijft gaat over de routes. De toonbanken vullen uit die voorraad; voor wat het grootboek niet kent, blijft de vaste bevoorrading. Alles staat in `content/<wereld>/data/economy.yaml`.
+- **Lampolie en spijkers komen alleen uit Zwolderkamp**, over de Oostweg. Breekt er oorlog uit, dan sluit het oorlogsplan die weg; binnen een paar dagen is er een tekort in Waagdam, wordt de kruik bij Hendrik duurder en klinkt het signaal. Niemand heeft dat tekort geschreven.
+- **De molen en het meel.** Na de storm staat De Zwaan stil: het meel in Veenhoek raakt op en Lubbert vraagt het driedubbele. Draait de molen weer, dan komt er meel over de karren naar Waagdam en Veenhoek en zakt de prijs.
+- **Signalen uit het grootboek.** Een tekort van twee dagen gaat naar het brein van wie het verkoopt (bijvoorbeeld Lubbert: zelf meer laten halen, de rest achterhouden of de vreemde vragen). Een tekort van een week, een overschot, een prijs die verdubbelt, een ambacht dat niemand meer uitoefent en een gesloten route zijn wachters in de content.
+- **Karakter per nederzetting.** Uit het grootboek volgt waar een plek van leeft (Veenhoek turf, Molenend meel, Waagdam handel), plus tags. Een handelsstad is opener voor vreemden en laat bij een tekort goederen halen; een turfdorp behelpt zich en moppert, en kijkt bij voedseltekort strenger naar een vreemde.
+- **Streken buiten de kaart als stomp.** Zwolderkamp en Hunnenloo hebben alleen wat ze sturen en vragen, prijspeil, drager en hoe vaak. De kroniekschrijver krijgt dat in zijn vaste deel en bij het uitwerken van zo'n plek, zodat wat hij vertelt klopt.
+- **Geld dat niet meer uit het niets komt:** naamloze klanten betalen uit de beurs van hun nederzetting, een winkelier betaalt wie hem iets verkoopt (en koopt niet meer dan de kas toelaat), en het loon en eten van een gezel gaan naar iemand toe.
+- **Editor:** nederzettingen, routes, streken buiten de kaart en grond zijn lijsten. Onder Check staat per nederzetting waar ze van leeft, haar karakter en haar routes; onder "Worth a look" een waarschuwing voor een goed dat gebruikt wordt maar nergens gemaakt of aangevoerd.
+
+Testen: `npm run dev` of `npm run editor`. In de editor onder Check zie je de nederzettingen. In het spel: wacht een paar dagen en vraag bij Lubbert naar meel (`list` in de graanhandel); repareer de molen met zeildoek en kijk de prijs zakken. `@plan war` sluit de Oostweg: wacht een paar dagen en kijk naar de lampolie bij Hendrik (`list` in de smidse). Controles: `npm test` (390 tests), met een oude save die zijn grootboeken start waar hij staat.
+
+Nog niet: nieuwe mensen rond het gemiddelde van een nederzetting (M8.5). Een streek die de kroniekschrijver uitwerkt, krijgt nog geen eigen grootboek. Warme maaltijden, melk, bier op Skerrow en scheepsbeschuit houden hun vaste bevoorrading. Grond die opraakt en seizoenen kan de content zetten, maar de Nethermarch gebruikt ze nog niet.
+
+Ontwerp: afwijkingen staan onder "Zo is het in M8.4 gebouwd". Let op: het wereldboek zegt niet wat Zwolderkamp en Hunnenloo sturen. Lampolie en spijkers komen uit het ontwerp; zeildoek, touw (Zwolderkamp) en wol (Hunnenloo, de schaapherders) heb ik toegevoegd zodat elke keten sluit. Wil je dat anders, dan is het alleen content. Skerrow heeft geen route naar buiten, omdat een pakketboot de hoofdquest ondergraaft. Het FO heeft een stand na M8.4.
+
 ## M8.3 Nasleep: de kroniekschrijver plant, 27 september 2026
 
 Nieuw:

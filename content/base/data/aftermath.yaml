@@ -323,3 +323,68 @@ aftermath:
             precise: "{b} warned them about the dyke, and {a} ran {b} off. The dyke broke all the same."
             village: "They chased off the one who warned them, and then the dyke went."
             far: "Nobody listened to the one who warned them, they say."
+
+  # M8.4: the economy. The same shortage goes differently in a trading town
+  # and in a village: the town sends for more, the village makes do and
+  # grumbles, and a stranger finds it harder there (openness, belief.ts).
+  - id: shortage_sent_for
+    signal: shortage
+    topic: shortage
+    brain: true
+    when: [{ character: $area, is: trade }]
+    steps:
+      - id: send
+        do: { order: $value, to: $area, qty: 8, days: 3, by: a carter sent out of town }
+      - id: word
+        do: { news: "{value} are short in {area}, and the merchants have sent out for more. It will cost.", area: $area }
+
+  - id: shortage_made_do
+    signal: shortage
+    topic: shortage
+    brain: true
+    when: [{ not: { character: $area, is: trade } }]
+    steps:
+      - id: word
+        do: { news: "There are no {value} to be had in {area}. People make do, and grumble about it.", area: $area }
+
+  - id: surplus
+    signal: surplus
+    topic: surplus
+    brain: true
+    steps:
+      - id: word
+        do: { news: "{value} are piling up in {area}; you can have them for next to nothing.", area: $area }
+
+  - id: price_doubled
+    signal: price_doubled
+    topic: price
+    brain: true
+    steps:
+      - id: word
+        do: { news: "{a} is asking twice the worth for {value}, and people say so.", area: $area }
+      - id: grudge
+        do: { regard: [{ neighbours_of: $a }], to: $a, affinity: -3 }
+
+  - id: missing_trade
+    signal: missing_trade
+    topic: trade
+    steps:
+      - id: notice
+        do:
+          post: { board_near: $place }
+          fact:
+            kind: notice
+            about: [$area]
+            belang: 2
+            title: "nobody to work {place}"
+            precise: "A note on the board: {place} stands idle, and anyone who knows the work is wanted."
+            village: "Nobody works {place} any more, they say. Somebody ought to."
+            far: "A trade has nobody to work it."
+            claim: { subject: $subject, key: trade, value: $value }
+
+  - id: route_closed
+    signal: route_closed
+    topic: route
+    steps:
+      - id: word
+        do: { news: "Nothing comes along {subject} any more. What it brought will be dear soon.", area: $area }

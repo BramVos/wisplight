@@ -49,6 +49,9 @@ const GroupSchema = z.object({ areas: z.array(z.string()).default([]), npcs: z.a
 
 export const PlanEffectSchema = z.union([
   QuestEffectSchema,
+  /** A trade route stops running, with why (M8.4): news, and the goods it brought stop coming. */
+  z.object({ close_route: z.string(), why: z.string().optional() }).strict(),
+  z.object({ open_route: z.string() }).strict(),
   /** A group flees: those near the player walk, the others become notes on the road. */
   z.object({ flee: z.string(), to: z.string(), days: z.number().int().positive() }).strict(),
   /** A route closes: an exit that cannot be used, with a reason. */
@@ -129,6 +132,9 @@ export const VerbSchema = z.union([
   z.object({ settle: SelectorSchema, at: SelectorSchema }).strict(),
   /** People band together for or against the newcomers in an area. */
   z.object({ form_group: z.array(SelectorSchema).min(1), aim: z.enum(['against', 'for']), about: z.string(), name: z.string() }).strict(),
+  // M8.4: the economy.
+  /** A settlement sends for goods: they come in so many days, paid at twice their worth ({ order: $value, to: $area }). */
+  z.object({ order: z.string(), to: z.string(), qty: z.number().int().positive().default(6), days: z.number().int().positive().default(3), by: z.string().default('a carrier') }).strict(),
   /** Everything a quest or an effect plan could already do. */
   PlanEffectSchema,
 ])
@@ -196,6 +202,14 @@ export const WatcherSchema = z
         z.object({ strangers_stay: z.number().positive() }).strict(),
         /** Newcomers against the openness of a village, heavier with food short (M8.3): $a, $b, $c the villagers who mind them most, $area. */
         z.object({ friction: z.number().positive() }).strict(),
+        /** A good a settlement's ledger fell short of so many days in a row (M8.4): $a the shopkeepers who sell it, $area, the claim { subject: area, key: short, value: the good }. */
+        z.object({ shortage: z.number().int().positive() }).strict(),
+        /** A good over twice what a settlement keeps, so many days in a row (M8.4): $a who sell or make it, $area, the claim { key: surplus }. */
+        z.object({ surplus: z.number().int().positive() }).strict(),
+        /** A price at a counter this many times its worth or more (M8.4), once a week: $a the shopkeeper, the claim { subject: area, key: price, value: the good }. */
+        z.object({ price_doubled: z.number().positive() }).strict(),
+        /** A workshop nobody works any more, so many days (M8.4): $place where it is, $area, the claim { key: trade, value: the workshop }. */
+        z.object({ missing_trade: z.number().int().positive() }).strict(),
       ])
       .optional(),
     /** Who it is about; for a fact, by default the subject and the value of its claim. */

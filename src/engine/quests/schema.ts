@@ -63,6 +63,7 @@ type Cond =
   // For plans (M8.1): about people, by id or by a binding of the plan.
   | { is_player: string }
   | { around: string }
+  | { character: string; is: string }
   | { carries: string; item: string }
   | { has_work: string }
   | { lives_with_parent: string }
@@ -128,6 +129,7 @@ export const ConditionSchema: z.ZodType<Cond> = z.lazy(() =>
     z.object({ is_player: z.string() }).strict().describe('The one meant is the player.'),
     z.object({ around: z.string() }).strict().describe('Someone is around: alive, in the world, and not travelling with the player.'),
     z.object({ carries: z.string(), item: z.string() }).strict().describe('Someone carries a thing.'),
+    z.object({ character: z.string(), is: z.string() }).strict().describe("A settlement (an area) has this character: what it lives on (trade, peat, flour) or one of its tags."),
     z.object({ has_work: z.string() }).strict().describe('Someone has work somewhere.'),
     z.object({ lives_with_parent: z.string() }).strict().describe('Someone lives in one house with a parent.'),
     z.object({ commute: z.string(), at_least: z.number().int().min(0) }).strict().describe("Someone's walk from home to work takes at least so many minutes."),

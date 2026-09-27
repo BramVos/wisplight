@@ -1,3 +1,4 @@
+import { economyOverview, type SettlementView } from './economy/ledger'
 import { stringify } from 'yaml'
 import { ContentError, loadContent, type Content, type ContentFile, type Direction } from './content'
 import { regionPreview, warnings } from './builder'
@@ -39,6 +40,8 @@ export interface EditorView {
   files: string[]
   /** Each region as the generator draws it from its zones, while the world loads. */
   maps: Record<string, string>
+  /** The settlements with what they live on, their character and routes (M8.4). */
+  economy: SettlementView[]
 }
 
 export const KIND_NAMES: Record<EntityKind, string> = {
@@ -62,6 +65,10 @@ export const KIND_NAMES: Record<EntityKind, string> = {
   creature: 'Creatures',
   encounter: 'Encounters',
   region: 'Regions',
+  settlement: 'Settlements',
+  route: 'Trade routes',
+  outland: 'Beyond the map',
+  resource: 'Ground',
 }
 
 export function editorView(files: ContentFile[]): EditorView {
@@ -100,6 +107,7 @@ export function editorView(files: ContentFile[]): EditorView {
     }),
     problems,
     warnings: content ? warnings(content) : [],
+    economy: content ? economyOverview(content) : [],
     files: files.map((f) => f.path).sort(),
     maps: content ? Object.fromEntries([...content.regions.keys()].map((id) => [id, regionPreview(content, id) ?? ''])) : {},
   }

@@ -7,6 +7,7 @@ import type { Claim, Fact, Signal, SignalState } from './state'
 import { tieTo } from './people'
 import { planOf } from './quests/plans'
 import { openness } from './belief'
+import { carried, foodGoods, placeOf } from './economy/ledger'
 import type { World } from './world'
 import { householdKey, householdPurses, standingOf } from './standing'
 
@@ -102,6 +103,85 @@ export function watchHour(world: World): void {
     else if (w.probe && 'grudge' in w.probe) grudges(world, w, w.probe.grudge)
     else if (w.probe && 'strangers_stay' in w.probe) strangersStay(world, w, w.probe.strangers_stay)
     else if (w.probe && 'friction' in w.probe) friction(world, w, w.probe.friction)
+    else if (w.probe && 'shortage' in w.probe) ledgerSpell(world, w, 'short', w.probe.shortage)
+    else if (w.probe && 'surplus' in w.probe) ledgerSpell(world, w, 'surplus', w.probe.surplus)
+    else if (w.probe && 'price_doubled' in w.probe) dearCounters(world, w, w.probe.price_doubled)
+    else if (w.probe && 'missing_trade' in w.probe) missingTrades(world, w, w.probe.missing_trade)
+  }
+}
+
+/** Who sells a good in a settlement, and where: the counters of its area. */
+function sellersOf(world: World, settlement: string, item: string): { who: string; where: string }[] {
+  return [...world.content.locations.values()]
+    .filter((l) => l.area === settlement)
+    .flatMap((l) => l.services.filter((s) => item in s.sells && world.alive(s.provider)).map((s) => ({ who: s.provider, where: l.id })))
+    .sort((a, b) => a.where.localeCompare(b.where) || a.who.localeCompare(b.who))
+}
+
+/**
+ * A shortage or a surplus that has lasted so many days in a settlement's
+ * ledger (M8.4): once a spell, a signal for those who sell the good there,
+ * with a claim the aftermath can bind ($subject the settlement, $value the good).
+ */
+function ledgerSpell(world: World, w: Watcher, spell: 'short' | 'surplus', days: number): void {
+  const state = world.state.economy
+  if (!state) return
+  const seen = signalState(world).seen
+  // The ledger's day, not the calendar's: the counts change at the ledger hour, not at midnight.
+  const day = state.day
+  for (const [settlement, ledger] of Object.entries(state.ledgers).sort((a, b) => a[0].localeCompare(b[0]))) {
+    for (const [item, n] of Object.entries(ledger[spell]).sort((a, b) => a[0].localeCompare(b[0]))) {
+      const key = `${w.id}:${settlement}:${item}`
+      if (n !== days || seen[key] === day) continue
+      seen[key] = day
+      const sellers = sellersOf(world, settlement, item)
+      const makers = spell === 'surplus' ? (world.content.settlements.get(settlement)?.workshops ?? []).filter((x) => item in x.makes).flatMap((x) => x.named.filter((id) => world.alive(id))) : []
+      const who = [...new Set([...sellers.map((s) => s.who), ...makers])].slice(0, 3)
+      queueSignal(world, { kind: w.signal, ...(w.event ? { event: w.event } : {}), who, place: sellers[0]?.where ?? placeOf(world, settlement), cause: [], belang: w.belang ?? 2, claim: { subject: settlement, key: spell, value: item }, watcher: w.id, ...(who.length ? {} : { scope: 'many' as const }) })
+    }
+  }
+}
+
+/**
+ * A price at a counter that climbs to so many times its worth (M8.4): for a
+ * good the counter fills from its settlement's store, when it crosses the
+ * line, at most once a week, for the shopkeeper. What stood there at the start
+ * is no news.
+ */
+function dearCounters(world: World, w: Watcher, factor: number): void {
+  const seen = signalState(world).seen
+  for (const settlement of [...world.content.settlements.keys()].sort()) {
+    const goods = carried(world, settlement)
+    for (const l of [...world.content.locations.values()].filter((x) => x.area === settlement).sort((a, b) => a.id.localeCompare(b.id))) {
+      for (const s of l.services) {
+        for (const item of s.supply.map((r) => r.item).filter((i, n, all) => goods.has(i) && all.indexOf(i) === n).sort()) {
+          const key = `${w.id}:${l.id}:${s.id}:${item}`
+          const over = world.price(l.id, s, item) >= world.basePrice(item, s) * factor
+          const was = seen[`${key}:over`]
+          seen[`${key}:over`] = over
+          if (!over || was !== false || world.now - Number(seen[key] ?? -Infinity) < 7 * DAY) continue
+          seen[key] = world.now
+          queueSignal(world, { kind: w.signal, ...(w.event ? { event: w.event } : {}), who: world.alive(s.provider) ? [s.provider] : [], place: l.id, cause: [], belang: w.belang ?? 2, claim: { subject: settlement, key: 'price', value: item }, watcher: w.id })
+        }
+      }
+    }
+  }
+}
+
+/** A workshop nobody has worked for so many days (M8.4): the trade is missing, and the whole place feels it. */
+function missingTrades(world: World, w: Watcher, days: number): void {
+  const state = world.state.economy
+  if (!state) return
+  const seen = signalState(world).seen
+  const today = Math.floor(world.now / DAY)
+  for (const s of [...world.content.settlements.values()].sort((a, b) => a.id.localeCompare(b.id))) {
+    for (const x of s.workshops) {
+      const since = state.ledgers[s.id]?.idle[x.id]
+      const key = `${w.id}:${s.id}:${x.id}`
+      if (since === undefined || today - since < days || seen[key] === since) continue
+      seen[key] = since
+      queueSignal(world, { kind: w.signal, ...(w.event ? { event: w.event } : {}), who: [], place: x.at, cause: [], belang: w.belang ?? 3, claim: { subject: s.id, key: 'trade', value: x.id }, watcher: w.id, scope: 'many' })
+    }
   }
 }
 
@@ -197,13 +277,7 @@ function friction(world: World, w: Watcher, threshold: number): void {
 
 /** Food is short: less comes in of something people eat, or of what it is made from (two steps back along the recipes). */
 export function foodShort(world: World): boolean {
-  const food = new Set([...world.content.items.values()].filter((i) => (i.food ?? 0) > 0).map((i) => i.id))
-  for (let round = 0; round < 2; round++) {
-    for (const type of world.content.objectTypes.values()) {
-      for (const a of type.affordances) if (Object.keys(a.produces).some((p) => food.has(p))) for (const c of Object.keys(a.consumes)) food.add(c)
-    }
-  }
-  return [...food].some((id) => (world.state.market?.[id] ?? 1) < 0.9)
+  return [...foodGoods(world)].some((id) => (world.state.market?.[id] ?? 1) < 0.9)
 }
 
 /** What drove people from home: the claim a step of their plan waits to know otherwise. */

@@ -1,3 +1,4 @@
+import { foodGoods, opennessOf } from './economy/ledger'
 import { relation } from './dialogue/relations'
 import { planOf } from './quests/plans'
 import type { Condition } from './quests/schema'
@@ -30,7 +31,12 @@ export function openness(world: World, location: string): number {
   const places = [...world.content.locations.values()].filter((l) => l.area === loc?.area)
   if (places.some((l) => l.services.length > 0 && l.tags.includes('social'))) value += 0.1
   if (places.some((l) => world.state.places?.[l.id] && world.state.places[l.id]!.state !== 'normal')) value -= 0.15
-  if (Object.values(world.state.market ?? {}).some((f) => f < 0.8)) value -= 0.1
+  // Food short, by a plan or in the settlement's own ledger (M8.4): people look harder at a stranger.
+  const ledger = loc ? world.state.economy?.ledgers[loc.area] : undefined
+  const hungry = Object.entries(ledger?.short ?? {}).some(([item, days]) => days > 0 && foodGoods(world).has(item))
+  if (hungry || Object.values(world.state.market ?? {}).some((f) => f < 0.8)) value -= 0.1
+  // Its character (M8.4): a trading town is more open, a peat village a little less.
+  if (loc) value += opennessOf(world, loc.area)
   if (Object.values(world.state.tension ?? {}).some((t) => t >= 80)) value -= 0.1
   return Math.max(0, Math.min(1, value))
 }

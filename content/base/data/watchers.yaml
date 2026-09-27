@@ -75,3 +75,42 @@ watchers:
   - id: friction
     signal: friction
     probe: { friction: 0.6 }
+
+  # The economy (M8.4): what the ledgers of the settlements show.
+  # A good short two days running: for the shopkeepers who sell it ($a), $area, $value the good.
+  - id: shortage
+    signal: shortage
+    probe: { shortage: 2 }
+    belang: 2
+
+  # Still short after a week: the whole place feels it.
+  - id: long_shortage
+    signal: shortage
+    event: lasting
+    probe: { shortage: 7 }
+    belang: 3
+
+  # More than twice what the place keeps, five days running.
+  - id: surplus
+    signal: surplus
+    probe: { surplus: 5 }
+    belang: 2
+
+  # A counter asking twice the worth of a good or more.
+  - id: price_doubled
+    signal: price_doubled
+    probe: { price_doubled: 2 }
+    belang: 2
+
+  # A workshop nobody has worked for three days.
+  - id: missing_trade
+    signal: missing_trade
+    probe: { missing_trade: 3 }
+    belang: 3
+
+  # A trade route closed: $subject the route.
+  - id: route_closed
+    signal: route_closed
+    fact: { key: route, value: closed }
+    who: []
+    belang: 3

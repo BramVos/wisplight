@@ -632,6 +632,14 @@ function templateFor(kind: EntityKind, view: EditorView): Raw {
       return { id: 'new_faction', name: 'The New Faction', seat: area, wants: 'What they want.', stance: 'How they go about it.' }
     case 'realm':
       return { id: 'new_realm', name: 'The New Realm', ruler: 'Who rules it', capital: 'Its capital' }
+    case 'settlement':
+      return { id: area, tags: [], people: 20, use: {}, keep: {}, workshops: [] }
+    case 'route':
+      return { id: 'new_route', name: 'the new route', from: area, to: area, carries: {}, by: 'a cart', every: 1 }
+    case 'outland':
+      return { id: 'new_outland', name: 'A Place Beyond the Map', sends: [], asks: [], prices: 1, by: 'a pedlar', every: 7 }
+    case 'resource':
+      return { id: 'new_ground', name: 'new ground', gives: [] }
     default:
       return { id: `new_${kind}` }
   }
@@ -712,6 +720,30 @@ function CheckPanel({ view, open }: { view: EditorView; open: (kind: EntityKind,
       <ul className="check-list small">{view.warnings.map(row)}</ul>
       <h2 className="editor-title">Quests</h2>
       <QuestTable view={view} />
+      <h2 className="editor-title">Settlements ({view.economy.length})</h2>
+      <p className="muted small">What each lives on, from its ledger, its character and its routes. Goods used but made nowhere are under Worth a look.</p>
+      <ul className="check-list small">
+        {view.economy.map((s) => (
+          <li key={s.id}>
+            <button type="button" className="link" onClick={() => open('settlement', s.id)}>
+              {s.name}
+            </button>
+            : lives on {s.livesOn ?? 'nothing it makes'}
+            {s.tags.length > 0 && `, ${s.tags.join(', ')}`}, openness {s.openness >= 0 ? '+' : ''}
+            {s.openness}, {s.people} nameless
+            {s.makes.map((m) => (
+              <div key={m} className="muted">
+                makes {m}
+              </div>
+            ))}
+            {s.routes.map((r) => (
+              <div key={r} className="muted">
+                {r}
+              </div>
+            ))}
+          </li>
+        ))}
+      </ul>
     </div>
   )
 }

@@ -1,0 +1,19 @@
+# The economy of Skerrow (M8.4): one hamlet with a ledger. The sea gives fish,
+# the Salt Kettle makes stew of it. Nothing comes from beyond the island: the
+# winter storms are coming, and the way off is the story. What the Kettle has
+# no ledger for (ale, biscuit) keeps its fixed supply.
+
+resources:
+  - { id: sea, name: the inshore sea, gives: [salt_fish] }
+
+settlements:
+  - id: skerrow_hythe
+    tags: [fishing_hamlet, harbour]
+    people: 30
+    income: 5
+    resources: [sea]
+    use: { salt_fish: 4 }
+    keep: { salt_fish: 12, fish_stew: 10 }
+    workshops:
+      - { id: inshore_fishing, name: the inshore fishing, at: loc_skerrow_harbour, from: sea, makes: { salt_fish: 8 }, workers: 2, named: [npc_wenna] }
+      - { id: kettle_kitchen, name: the Salt Kettle's kitchen, at: loc_skerrow_salt_kettle, uses: { salt_fish: 3 }, makes: { fish_stew: 10 }, named: [npc_maren] }

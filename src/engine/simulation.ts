@@ -1,3 +1,4 @@
+import { fillFromLedger, ledgerHour, nameless } from './economy/ledger'
 import { sawPerson } from './acquaintance'
 import { isOpenAt, MINUTES_PER_DAY, minuteOfDay, weekdayOf } from './clock'
 import type { Need } from './content'
@@ -53,6 +54,8 @@ export function advance(world: World, minutes: number): void {
 
 function hourly(world: World): void {
   decayNeeds(world)
+  // The ledgers before the counters fill (M8.4).
+  ledgerHour(world)
   supply(world)
   demand(world)
   storyHour(world)
@@ -120,9 +123,12 @@ function supply(world: World): void {
         const stock = world.stock(location.id, service.id)
         const target = service.sells[rule.item]?.target ?? rule.amount
         const room = Math.max(0, target - (stock[rule.item] ?? 0))
+        if (room <= 0) continue
+        // From the settlement's store for a good its ledger carries (M8.4); otherwise the fixed supply.
+        const fromStore = fillFromLedger(world, location.id, service.provider, rule.item, Math.min(room, rule.amount))
         // Scarcity from an effect plan: only a share comes in.
         const share = world.state.market?.[rule.item] ?? 1
-        if (room > 0) add(stock, rule.item, Math.floor(Math.min(room, rule.amount) * share))
+        add(stock, rule.item, fromStore ?? Math.floor(Math.min(room, rule.amount) * share))
       }
     }
   }
@@ -144,6 +150,9 @@ function demand(world: World): void {
         qty = Math.min(qty, stock[rule.item] ?? 0)
         if (qty <= 0) continue
         const price = world.price(location.id, service, rule.item)
+        // They pay from the settlement's purse, not from nothing (M8.4).
+        qty = nameless(world, location.id, qty, price)
+        if (qty <= 0) continue
         add(stock, rule.item, -qty)
         world.npcState(service.provider).money += qty * price
       }

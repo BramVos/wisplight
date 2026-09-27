@@ -99,7 +99,8 @@ export function triggerChoice(world: World, npcId: string, trigger: string, kind
     // A signal is its own reason to think, within the day's maximum for signals.
     const today = startOfDay(world.now)
     const used = state.signals?.day === today ? state.signals.n : 0
-    if (used >= SIGNALS_PER_DAY || state.pending.some((p) => p.npc === npcId && p.signal)) return false
+    // Two things at once may happen to someone (a shortage and a quarrel, M8.4): at most two signals waiting per person.
+    if (used >= SIGNALS_PER_DAY || state.pending.filter((p) => p.npc === npcId && p.signal).length >= 2 || state.pending.some((p) => p.signal === signal && p.npc === npcId)) return false
     state.signals = { day: today, n: used + 1 }
     state.pending.push({ id: `choice_${++state.seq}`, npc: npcId, t: world.now, trigger, signal })
     return true

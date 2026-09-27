@@ -1,3 +1,4 @@
+import { characterOf } from '../economy/ledger'
 import { GameClock } from '../clock'
 import type { Output } from '../commands'
 import { callName, type Quest } from '../content'
@@ -82,6 +83,10 @@ export function holds(world: World, c: Condition, questId?: string): boolean {
     return Boolean(s && !s.dead && !s.absent && !s.following)
   }
   if ('carries' in c) return (world.state.npcs[c.carries]?.inventory[c.item] ?? 0) > 0
+  if ('character' in c) {
+    const area = world.content.areas.has(c.character) ? c.character : world.content.locations.get(c.character)?.area
+    return Boolean(area) && characterOf(world, area!).includes(c.is)
+  }
   if ('stage' in c) {
     const [q, s] = c.stage.split(':')
     return questlog(world)[q!]?.stage === s
