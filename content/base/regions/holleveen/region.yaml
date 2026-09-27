@@ -1,0 +1,105 @@
+# The Holleveen (Wereldboek, chapter 7): the zone drawing for the region map
+# (FO, chapter 4). Each character is a zone of 0.5 km east-west by 1 km north-south;
+# the top row is 20 km north, the bottom row 0. The generator makes 120 by 80
+# hexes of 250 m from it, with the rules below. Names in the drawing are only
+# labels: the hexes under them take the land around them.
+
+regions:
+  - id: holleveen
+    name: the Holleveen
+    area: holleveen
+    # Where the south-west corner lies on the map of the land, in km.
+    origin: [95, 90]
+    size: [30, 20]
+    hex: 0.25
+    seed: 211
+    legend:
+      T: woods
+      '.': fields
+      '"': fen
+      '~': water
+      '^': heath
+      ':': road
+      '=': canal
+      ',': path
+    zones: |
+      T T T T T T T T T T T T . . . . . . . . . . . ^ heath ^ : ^ ^
+       T T T T T T T T T T T . . . . . . . . . . . . ^ ^ ^ ^ : ^ ^
+      T T T T T T T T T T + Kloosterveen  . . .  Reuzenrust n ^ ^ ^
+       T T T T T T T T T T T,,,, . . . . . . . . . . ^ ^ ::^ ^ ^ ^
+      . . . . . . . . . . . . .,,,, . .m Molenend . ^ ^:: ^ ^ ^ ^ ^
+      Oude Zijl H========= Veenhoek o==. . . . . . .:::. . . . . .
+      . . . . . . . . . . . . . .,, .,.=@ Drowned Goose " " " " " "
+       . . . . . . . . . . . . .,, . ,,. . . ===* Waagdam :::::::::
+      . . . . .  Kabouterberg k,. . . , . . . . . . . . " " " " "~~
+       . . . . . . . . . . . . . . . . , . . . . . . . . " "~~ " "
+      " " " " " " " " " " " " " " " " "," " " " " " " " " " " " " "
+       " " " " " " " " " " " " "  weirs e,,,,,,,,, Kattenbroek w "
+      " " " " " " " " " " " " " " " " "~~~~~~~~~~~" " " " " " "~~ "
+       " " " " " " " " " " " " " " " ~~~Blackmere~~~ " " " ~~" " "
+      " " " " " " " " " " " " " " " " "~~~~~~~~~~~" " " " " " " " "
+       " " " " " " " " " " " " " " " " " " " " " " " " " " " " " "
+      " " " " " " " " " " " " " " " " " " " " " " " x Rietdoolhof " "
+       " " " " " " " " " " " " " " " " " " " " " " " " " " " " " "
+      " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " "
+       " " " " " " " " " " " " " " " " " " " " " " " " " " " " " "
+      " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " "
+    # The routes of the Wereldboek (chapter 7) as lines through the zones, by
+    # area or by point (km from the south-west corner). The line characters in
+    # the drawing above only show where they run.
+    paths:
+      - kind: canal
+        name: the tow path
+        via: [oude_zijl, veenhoek, [18, 14.4], waagdam]
+      - kind: road
+        name: the peat road
+        via: [veenhoek, [15.8, 15.6], molenend]
+      - kind: road
+        name: the Waagdam road
+        via: [[15.8, 15.6], drowned_goose, [19, 13.8], waagdam]
+      - kind: road
+        name: the heath road
+        via: [waagdam, [22, 15], [23.5, 17], reuzenrust, [30, 20]]
+      - kind: road
+        name: the east road
+        via: [waagdam, [25, 13], [30, 13]]
+      - kind: path
+        name: the fen path
+        via: [veenhoek, [15.8, 13.5], [16.2, 12], [16.8, 10.5], [17, 9], [21.5, 9], [25, 9], kattenbroek]
+      - kind: path
+        name: the priory path
+        via: [veenhoek, [13.5, 16], [12, 17], kloosterveen]
+      - kind: path
+        name: the path to the Kabouterberg
+        via: [veenhoek, [14, 13.5], kabouterberg]
+    rules:
+      # A hidden dry ridge runs from Veenhoek to the widow's hut; only Wouter, Pim
+      # and the widow know it. Whoever learns it can walk it.
+      - kind: hidden_path
+        topic: the_dry_ridge
+        from: veenhoek
+        to: kattenbroek
+      # In fog the Kattenbroek shows no more than one hex around you.
+      - kind: sight
+        area: kattenbroek
+        radius: 3
+        fog: 1
+      # Between the Blackmere and the Reed Maze lie channels only a punt crosses.
+      - kind: channels
+        from: blackmere
+        to: rietdoolhof
+      # Around Reuzenrust the heath shows four hexes, except in fog.
+      - kind: sight
+        area: reuzenrust
+        radius: 2
+        clear: 4
+    # What you can see from afar, and how far (km).
+    landmarks:
+      - { area: molenend, text: "the sails of De Zwaan turn above the reeds", range: 4 }
+      - { area: veenhoek, text: "the roofs and the peat smoke of Veenhoek", range: 3 }
+      - { area: waagdam, text: "the tower of the Waag of Waagdam", range: 5 }
+      - { area: kloosterveen, text: "the bell tower of the priory above the trees", range: 3 }
+      - { area: reuzenrust, text: "the grey stones of the giant-bed on the heath", range: 3 }
+      - { area: kattenbroek, text: "a dark wall of reed and alder", range: 2 }
+      - { area: blackmere, text: "the black water of the Blackmere", range: 2 }
+      - { area: kabouterberg, text: "the old oak on the Kabouterberg", range: 2 }

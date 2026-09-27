@@ -2,6 +2,7 @@ locations:
   - id: loc_towpath_mid
     name: Tow Path, halfway to Waagdam
     area: roads
+    pos: [113, 104.4]
     tags: [route]
     aliases: [tow path, jaagpad]
     description:
@@ -21,6 +22,7 @@ locations:
   - id: loc_goose_road
     name: The Waagdam Road
     area: roads
+    pos: [114, 103.8]
     tags: [route]
     aliases: [road, waagdam road]
     description:

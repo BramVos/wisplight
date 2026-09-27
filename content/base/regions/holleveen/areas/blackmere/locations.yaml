@@ -1,0 +1,38 @@
+# The Blackmere (Wereldboek, chapter 7): deep water, the Haakman's.
+locations:
+  - id: loc_blackmere_weirs
+    name: Wouter's Eel Weirs
+    area: blackmere
+    tags: [wilderness, workshop, edge]
+    aliases: [weirs, eel weirs, the weirs]
+    pos: [112, 99]
+    summary: Wouter's eel weirs, rows of willow stakes and traps where the fen path meets the Blackmere.
+    description:
+      day: |
+        Rows of willow stakes march out into the water, hung with eel traps
+        of woven withy. A plank walk runs along them, slick and bowed, and you
+        hear the water slap against the stakes. A rusty nail is driven into
+        the first stake, against the [Haakman]. The fen path runs north to
+        Veenhoek and east towards the Kattenbroek; the open shore is south.
+    exits:
+      south: { to: loc_blackmere_shore, minutes: 10 }
+
+  - id: loc_blackmere_shore
+    name: The Shore of the Blackmere
+    area: blackmere
+    tags: [wilderness, haunted, fae, hazard:deep_water, edge]
+    aliases: [blackmere shore, the shore, the lake]
+    summary: The black shore of the Blackmere, with drowned willows standing in the shallows.
+    description:
+      day: |
+        The fen ends at black water that gives back no reflection. Drowned
+        willows stand out in the shallows like men wading, and the reeds
+        whisper though there is no wind. The water smells of iron and old
+        leaves. The eel weirs are north along the shore.
+      night: |
+        The Blackmere is darker than the sky, and very still. Out on the
+        water something breaks the surface once and is gone, and the ripples
+        reach your feet a long while after. The cold comes off it like breath.
+        The weirs are north, if you can find them.
+    exits:
+      north: { to: loc_blackmere_weirs, minutes: 10 }

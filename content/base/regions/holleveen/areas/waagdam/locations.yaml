@@ -4,7 +4,7 @@ locations:
   - id: loc_waagdam_west_gate
     name: Waagdam, the West Gate
     area: waagdam
-    tags: [public, landmark]
+    tags: [public, landmark, edge]
     aliases: [west gate, gate, waagdam]
     summary: The west gate of Waagdam, where the tow path and the road from the Drowned Goose come in.
     description:
@@ -39,7 +39,7 @@ locations:
   - id: loc_waagdam_harbour
     name: The Harbour
     area: waagdam
-    tags: [public]
+    tags: [public, edge]
     aliases: [harbour, haven]
     description:
       day: |
@@ -89,7 +89,7 @@ locations:
   - id: loc_waagdam_market
     name: The Market Square
     area: waagdam
-    tags: [public, landmark, social]
+    tags: [public, landmark, social, edge]
     aliases: [market, square, markt]
     summary: The market square of Waagdam, busy on Woensdag, overlooked by the Waag.
     description:
@@ -219,6 +219,7 @@ locations:
   - id: loc_waagdam_heath_road
     name: The Heath Road
     area: waagdam
+    pos: [116.3, 103.6]
     tags: [route]
     aliases: [heath road]
     description:
@@ -314,7 +315,8 @@ locations:
   - id: loc_waagdam_east_gate
     name: The East Gate
     area: waagdam
-    tags: [public]
+    pos: [116.6, 103]
+    tags: [public, edge]
     aliases: [east gate]
     description:
       day: |

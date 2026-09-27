@@ -2,7 +2,7 @@ locations:
   - id: loc_molenend_lane
     name: Molenend, the Lane
     area: molenend
-    tags: [public]
+    tags: [public, edge]
     aliases: [molenend, lane]
     summary: The single lane of Molenend, between the mill and the miller's house.
     description:
@@ -58,6 +58,7 @@ locations:
   - id: loc_molenend_field
     name: Harmen's Field
     area: molenend
+    pos: [111.1, 106]
     tags: [wilderness]
     aliases: [field, harmen's field]
     description:

@@ -197,6 +197,10 @@ export interface PlayerState {
   seen?: string[]
   /** Who told the player about a topic, and when (for the journal). */
   sources?: Record<string, { from: string; t: number; level: number }[]>
+  /** The region map as the player knows it: hexes seen and walked, as bitsets (FO, chapter 4). */
+  map?: { seen: string; walked: string; heading?: string }
+  /** Areas the player has seen from afar. */
+  seenAreas?: string[]
 }
 
 export interface ServiceState {
@@ -281,6 +285,7 @@ export interface GameState {
   /** Facts and who heard them; "player" is the player. */
   news?: { seq: number; facts: Fact[]; heard: Record<string, Record<string, Heard>> }
   chronicle?: ChronicleState
+  weather?: { kind: 'clear' | 'overcast' | 'rain' | 'fog' | 'storm' | 'frost' | 'snow'; since: number }
   /** Goal choices waiting for the brain model, and how many each NPC had today (FO, chapter 7). */
   brain?: { seq: number; pending: { id: string; npc: string; t: number; trigger: string }[]; counts: Record<string, { day: number; n: number }>; last?: Record<string, number>; due?: Record<string, number> }
 }

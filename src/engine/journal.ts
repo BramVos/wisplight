@@ -1,5 +1,5 @@
 import { GameClock } from './clock'
-import { callName } from './content'
+import { areaTopicId, callName } from './content'
 import type { TopicRegistry } from './dialogue/topics'
 import { itemName } from './items'
 import { factById, versionOf } from './news'
@@ -56,7 +56,7 @@ export function journalPage(world: World, topics: TopicRegistry, id: string): Jo
     if (met) page.lines.push(npc.appearance)
     page.links.push(...link(npc.home, 'lives at'))
     if (npc.work && npc.work !== npc.home) page.links.push(...link(npc.work, 'works at'))
-    page.links.push(...link(`area_${world.location(npc.home).area}`, 'from'))
+    page.links.push(...link(areaTopicId(content, world.location(npc.home).area), 'from'))
     // Who they are to others is village knowledge, once you have met them; private ties stay private.
     const shown = new Set<string>()
     if (met) {
@@ -85,7 +85,7 @@ export function journalPage(world: World, topics: TopicRegistry, id: string): Jo
     } else {
       page.lines.push("You haven't been there yourself.")
     }
-    page.links.push(...link(`area_${location.area}`, 'in'))
+    page.links.push(...link(areaTopicId(content, location.area), 'in'))
     for (const other of content.npcs.values()) {
       if (other.home === location.id) page.links.push(...link(other.id, 'lives here'))
       else if (other.work === location.id) page.links.push(...link(other.id, 'works here'))
@@ -151,7 +151,7 @@ export function journalPage(world: World, topics: TopicRegistry, id: string): Jo
     if (topic) {
       page.lines.push(topic.summary)
       if (level >= 2 && topic.details) page.lines.push(topic.details)
-      if (topic.origin) page.links.push(...link(`area_${topic.origin}`, 'from'))
+      if (topic.origin) page.links.push(...link(areaTopicId(content, topic.origin), 'from'))
       if (topic.teller) page.links.push(...link(topic.teller, 'told by'))
     }
   }

@@ -1,0 +1,20 @@
+# Kloosterveen (Wereldboek, chapter 7). The gate only, for now; the priory
+# itself comes with the full Holleveen (M7).
+locations:
+  - id: loc_kloosterveen_gate
+    name: The Priory Gate
+    area: kloosterveen
+    tags: [holy, public, edge]
+    aliases: [priory gate, gate, kloosterveen]
+    summary: The gatehouse of the priory of Kloosterveen, at the edge of the wood.
+    description:
+      day: |
+        A gatehouse of dark brick stands where the wood opens, its door
+        studded with iron. Beyond the wall rise the church roof and the hop
+        poles of the brewery. You smell malt and wet leaves. The path back
+        to Veenhoek runs south-east through the trees.
+      night: |
+        The gatehouse is a black shape against blacker trees, and a single
+        lamp burns in a slit of a window. Somewhere inside, men are singing
+        slowly in Latin. The wood drips around you. The path to Veenhoek runs
+        south-east, if you can find it.

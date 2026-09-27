@@ -10,3 +10,4 @@ coverage/
 .claude/*
 !.claude/launch.json
 saves/
+.scratch/

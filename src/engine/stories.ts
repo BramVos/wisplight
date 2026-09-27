@@ -1,5 +1,5 @@
 import { GameClock, minuteOfDay, startOfDay } from './clock'
-import { callName, type Npc, type Pattern } from './content'
+import { areaTopicId, callName, type Npc, type Pattern } from './content'
 import { applyEffect } from './dialogue/relations'
 import { add, itemName, withArticle } from './items'
 import { belangOf } from './life'
@@ -330,7 +330,7 @@ function playFeast(world: World, story: Story, pattern: Pattern): void {
   story.done = true
   const place = String(story.data['place'])
   const vars = { place: world.location(place).name, area: areaName(world, place) }
-  record(world, pattern, place, [place, `area_${world.location(place).area}`], vars)
+  record(world, pattern, place, [place, areaTopicId(world.content, world.location(place).area)], vars)
   if (pattern.scene) world.emit('story', place, fill(pattern.scene, vars))
 }
 

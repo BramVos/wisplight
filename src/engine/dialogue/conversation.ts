@@ -171,13 +171,35 @@ export class Dialogue {
     const topic = this.topics.find(about)
     const story = /\b(story|legend|tale|verhaal|legende)\b/i.test(about)
     const act: Act = story ? 'AskStory' : 'AskAbout'
-    return this.turn(npcId, `What do you know about ${about}?`, { act, topics: topic ? [topic] : [], echo: true })
+    return this.turn(npcId, `What do you know about ${about}?`, { act, topics: topic ? [topic] : [], echo: true, ...this.confide(npcId, topic) })
   }
 
   async where(npcId: string, place: string): Promise<Output[]> {
     const about = bare(place)
     const topic = this.topics.find(about)
-    return this.turn(npcId, `Where can I find ${about}?`, { act: 'AskDirections', topics: topic ? [topic] : [], echo: true })
+    return this.turn(npcId, `Where can I find ${about}?`, { act: 'AskDirections', topics: topic ? [topic] : [], echo: true, ...this.confide(npcId, topic) })
+  }
+
+  /**
+   * Someone the NPC holds dear (Warm or better) who asks about the right thing
+   * hears the secret without a check (FO, chapter 8: sharing a secret).
+   */
+  private confide(npcId: string, topic: string | undefined): { secret?: string; admission?: string } {
+    if (!topic) return {}
+    const band = attitude(this.world, npcId).band
+    if (band !== 'Warm' && band !== 'Devoted') return {}
+    if (!this.talk || this.talk.npc !== npcId) this.start(npcId, true)
+    const secret = this.world.npc(npcId).secrets.find((s) => s.about.includes(topic) && !this.talk!.revealed.includes(s.id))
+    if (!secret) return {}
+    this.talk!.revealed.push(secret.id)
+    if (secret.teaches) this.teach(npcId, secret.teaches)
+    return { secret: secret.text, admission: secret.admission }
+  }
+
+  /** A secret that shows the way: the player now knows it, from this NPC, at the full level. */
+  private teach(npcId: string, topic: string): void {
+    this.learn(topic)
+    this.noteSources(npcId, [{ topic, level: 3 }])
   }
 
   async tell(npcId: string, subject: string): Promise<Output[]> {
@@ -253,6 +275,7 @@ export class Dialogue {
         secret = found.text
         admission = found.admission
         this.talk?.revealed.push(found.id)
+        if (found.teaches) this.teach(npcId, found.teaches)
       }
     }
     const words = kind === 'bribe' ? `Here, for your trouble.` : text || `(tries to ${kind} ${callName(npc)})`

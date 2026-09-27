@@ -1,0 +1,14 @@
+# The Rietdoolhof (Wereldboek, chapter 7): the Goat-Riders' reed maze.
+locations:
+  - id: loc_rietdoolhof_edge
+    name: The Reed Maze
+    area: rietdoolhof
+    tags: [wilderness, lair, hazard:bog, edge]
+    aliases: [reed maze, rietdoolhof, the maze]
+    summary: The first channels of the Rietdoolhof, where every way through the reeds looks the same.
+    description:
+      day: |
+        Channels of brown water wind between walls of reed, so alike that you
+        lose your way just by looking at them. Somewhere ahead a goat bleats,
+        which makes no sense out here. The smell of woodsmoke drifts over the
+        reeds. The only way you are sure of is back north, the way you came.

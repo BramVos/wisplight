@@ -1,0 +1,15 @@
+# The Kabouterberg (Wereldboek, chapter 7). Taboo: you leave milk, you do not dig.
+locations:
+  - id: loc_kabouterberg
+    name: The Kabouterberg
+    area: kabouterberg
+    tags: [fae, landmark, edge]
+    aliases: [kabouter hill, the hill, the oak, milk place]
+    summary: A sandy hill with an old oak and a hollow in it, where people leave milk for the kabouters.
+    description:
+      day: |
+        A low hill of pale sand rises out of the fields, crowned by an oak
+        older than anyone's grandfather. Between its roots a hollow opens into
+        the hill, and someone has left a bowl of milk at its mouth. It is very
+        quiet here; even the wind seems to go round. Veenhoek lies north-east
+        across the fields.

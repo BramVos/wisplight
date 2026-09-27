@@ -2,6 +2,8 @@ import { GameClock, isOpenAt, MINUTES_PER_DAY, parseHours, startOfDay } from './
 import { callName, type Affordance, type Direction, type Npc, type ObjectInstance, type ObjectType, type Service } from './content'
 import { add, formatMoney, hasAll, itemName, listItems, matchItem, withArticle } from './items'
 import { applyEffect } from './dialogue/relations'
+import { canSetOut, crossCountryLine, describeHex, hexOfId, isHexId, walk, waysLine } from './map/travel'
+import { regionMap } from './map/region'
 import { recordFact } from './news'
 import { fulfil } from './requests'
 import { giveBack, stories, type Tempo } from './stories'
@@ -27,6 +29,7 @@ export interface CommandHost {
 
 const HELP = [
   'Moving: north, south, east, west, up, down, in, out (n, s, e, w, ...). Also: go <place>, exits.',
+  'Across country: head <direction>, walk to <place>, follow <the tow path, the road, the fen path>. Map: map.',
   'Looking: look (l), examine <thing or person> (x).',
   'Things: inventory (i), take, drop, give <thing> to <person>, use <object>, eat <food>.',
   'Trade: list (what is for sale here), buy <thing> [amount], sell <thing> [amount], rent a room.',
@@ -51,8 +54,11 @@ export function runCommand(host: CommandHost, command: Command): Output[] {
       return [examine(world, command.args.join(' '))]
     case 'go':
       return go(host, command.args)
-    case 'exits':
-      return [text(exitLine(world))]
+    case 'exits': {
+      const hex = hexOfId(world.state.player.location)
+      const map = regionMap(world.content)
+      return [text(hex && map ? waysLine(world, map, hex) : exitLine(world))]
+    }
     case 'inventory':
       return [text(`You carry ${listItems(world.content, world.state.player.inventory)}, and ${formatMoney(world.state.player.money)}.`)]
     case 'take':
@@ -102,6 +108,8 @@ export function clockText(world: World): string {
 // ---------------------------------------------------------------- looking
 
 export function describeRoom(world: World): Output {
+  const hex = hexOfId(world.state.player.location)
+  if (hex) return describeHex(world, hex)
   const location = world.location(world.state.player.location)
   const night = new GameClock(world.now).isNight
   const description = (night && location.description.night ? location.description.night : location.description.day).trim()
@@ -120,7 +128,9 @@ export function describeRoom(world: World): Output {
 
 export function exitLine(world: World): string {
   const exits = Object.keys(world.location(world.state.player.location).exits) as Direction[]
-  return exits.length > 0 ? `Exits: ${exits.join(', ')}` : 'There is no obvious way out.'
+  const across = crossCountryLine(world, world.state.player.location)
+  if (exits.length === 0) return across ?? 'There is no obvious way out.'
+  return `Exits: ${exits.join(', ')}${across ? `\n${across}` : ''}`
 }
 
 function examine(world: World, target: string): Output {
@@ -165,6 +175,12 @@ function go(host: CommandHost, args: string[]): Output[] {
   }
   if (!direction) return [error('Go where? Try a direction such as north, or the name of a place you can see.')]
   const exit = location.exits[direction]
+  // Out on the land, or at the edge of a place, a direction is one hex that way (FO, chapter 4).
+  if (!exit && (isHexId(player.location) || canSetOut(world, player.location)) && direction !== 'up' && direction !== 'down' && direction !== 'in' && direction !== 'out') {
+    const result = walk(world, { kind: 'head', wind: direction, steps: 1 }, (minutes) => host.pass(minutes))
+    if (Array.isArray(result)) return result
+    return [...result.outputs.slice(1), describeRoom(world)]
+  }
   if (!exit) return [error(`You can't go ${direction} from here.`)]
   if (shutForNight(world, exit.to)) return [text(`The door of ${world.location(exit.to).name} is shut for the night. KNOCK to wake whoever lives there.`)]
   player.location = exit.to

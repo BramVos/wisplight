@@ -1,0 +1,14 @@
+# Reuzenrust (Wereldboek, chapter 7): the giant-bed where the heath begins.
+locations:
+  - id: loc_reuzenrust_hunebed
+    name: The Giant-Bed at Reuzenrust
+    area: reuzenrust
+    tags: [holy, haunted, landmark, hazard:fog, edge]
+    aliases: [giant-bed, hunebed, the stones, burial mounds]
+    summary: A giant-bed of great grey stones and three burial mounds on the edge of the heath.
+    description:
+      day: |
+        Great grey stones lie in a row on the heath, a capstone balanced on
+        them like a table for giants. Three burial mounds rise beyond, furred
+        with heather. The wind carries the smell of sheep and sand. The road
+        to [Hunnenloo] runs away north-east; Waagdam lies to the south-west.

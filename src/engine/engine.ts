@@ -1,6 +1,6 @@
 import { GameClock } from './clock'
 import { describeRoom, findNpcAnywhere, findNpcHere, runCommand, type CommandHost, type Output } from './commands'
-import { callName, type Content } from './content'
+import { areaTopicId, callName, type Content } from './content'
 import { Dialogue, QUICK_OPTIONS } from './dialogue/conversation'
 import { Knowledge } from './dialogue/knowledge'
 import type { ChronicleOutput, ChroniclerRequest } from '../chronicler'
@@ -13,6 +13,8 @@ import { formatMoney } from './items'
 import { chronicleText } from './chronicle'
 import { journalPage, type JournalPage } from './journal'
 import { die } from './life'
+import { knownPlace, walkTarget, type KnownPlace } from './map/known'
+import { followWay, isHexId, walk, windOf, type WalkPlan } from './map/travel'
 import { knownRequests, requestName } from './requests'
 import { recordFact, seedNews } from './news'
 import { parseCommand, parseDirection } from './parser'
@@ -133,7 +135,7 @@ export class Engine {
       seedNews(this.world)
       this.arrive()
     }
-    this.dialogue.learn(state.player.location, `area_${this.world.location(state.player.location).area}`)
+    this.dialogue.learn(state.player.location, areaTopicId(content, this.world.location(state.player.location).area))
   }
 
   get state(): GameState {
@@ -163,7 +165,7 @@ export class Engine {
     const clock = new GameClock(this.world.now).parts
     recordFact(this.world, {
       kind: 'stranger',
-      about: [`area_${area.id}`],
+      about: [areaTopicId(this.content, area.id)],
       place: location.id,
       belang: 1,
       juice: 0.7,
@@ -338,7 +340,7 @@ export class Engine {
     const outputs = await this.route(text)
     const talk = this.state.talk
     if (talk && this.state.npcs[talk.npc]?.location !== this.state.player.location) this.state.talk = undefined
-    this.dialogue.learn(this.state.player.location, `area_${this.world.location(this.state.player.location).area}`)
+    this.dialogue.learn(this.state.player.location, areaTopicId(this.content, this.world.location(this.state.player.location).area))
     this.arrive()
     settleRuns(this.world)
     settleChoices(this.world)
@@ -401,6 +403,31 @@ export class Engine {
       case 'journal':
       case 'topics':
         return [this.dialogue.journal()]
+      case 'head': {
+        const wind = windOf(command.args.join('-')) ?? windOf(command.args[0])
+        if (!wind) return [{ kind: 'error', text: 'Head which way? For example: head south-east.' }]
+        return this.walkPlan({ kind: 'head', wind })
+      }
+      case 'walk': {
+        const to = /^(?:to|naar|towards|richting)\s+(.+)$/i.exec(command.args.join(' '))
+        if (!to) return runCommand(this.host, { verb: 'go', args: command.args, raw: command.raw })
+        const topic = this.topics.find(to[1]!)
+        const place = topic ? knownPlace(this.world, topic) : undefined
+        if (!topic || !place) return [{ kind: 'error', text: topic ? `You don't know where ${this.topics.name(topic)} is. Ask someone, or look for it.` : `You don't know a place called "${to[1]}".` }]
+        const target = walkTarget(this.world, place)
+        if (!target) return [{ kind: 'error', text: `${place.name} lies beyond the Holleveen.` }]
+        return this.walkPlan({ kind: 'to', target, name: place.name }, place)
+      }
+      case 'follow': {
+        const words = command.args.join(' ').toLowerCase()
+        const windWord = command.args.at(-1)
+        const wind = windOf(windWord)
+        const name = (wind ? command.args.slice(0, -1).join(' ') : words).toLowerCase().replace(/^(the|de|het)\s+/, '').trim()
+        const way = followWay(this.content, name)
+        if (!way) return [{ kind: 'error', text: 'Follow what? The tow path, the road, the fen path, or a ridge you know.' }]
+        if (way === 'ridge' && (this.state.player.journal ?? {})['the_dry_ridge'] === undefined) return [{ kind: 'error', text: "You don't know of any ridge here." }]
+        return this.walkPlan({ kind: 'follow', way, ...(wind ? { wind } : {}) })
+      }
       default: {
         const outputs = runCommand(this.host, command)
         if (command.verb === 'examine') {
@@ -551,6 +578,19 @@ export class Engine {
     } finally {
       this.replaying = false
     }
+  }
+
+  /** Walks across the region, then shows where the walk ended (FO, chapter 4). */
+  private walkPlan(plan: WalkPlan, place?: KnownPlace): Output[] {
+    const result = walk(this.world, plan, (minutes) => this.pass(minutes))
+    if (Array.isArray(result)) return result
+    const outputs = [...result.outputs, describeRoom(this.world)]
+    // Walking to a place you only heard of ends where the tellers said it was.
+    if (place?.status === 'heard' && isHexId(this.state.player.location)) {
+      const again = knownPlace(this.world, place.topic)
+      outputs.push({ kind: 'narration', text: again?.status === 'seen' ? `There it is: ${place.name}, close by now.` : `Somewhere around here, they said. You see no sign of ${place.name} yet.` })
+    }
+    return outputs
   }
 
   /** Build commands (FO, chapter 15, "Bouwcommando's in het spel"), for playtesting. */

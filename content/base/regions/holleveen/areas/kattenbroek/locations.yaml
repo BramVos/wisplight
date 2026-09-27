@@ -1,0 +1,34 @@
+# The Kattenbroek (Wereldboek, chapter 7). The widow herself arrives with the
+# full Holleveen (M7); her hut already stands.
+locations:
+  - id: loc_kattenbroek_edge
+    name: The Edge of the Kattenbroek
+    area: kattenbroek
+    tags: [wilderness, fae, cursed, hazard:bog, hazard:fog, edge]
+    aliases: [reed paths, the reeds, cat fen]
+    summary: Where the reed paths of the Kattenbroek begin, among black pools and watching cats.
+    description:
+      day: |
+        Reed closes in on every side, taller than a man, and the path under
+        your feet turns to black water in places. Cats watch you from the
+        tussocks, more of them than there should be. The air smells of rot
+        and, strangely, of fish frying. Far in to the east, a hut on stilts
+        shows its roof above the reeds.
+    exits:
+      east: { to: loc_kattenbroek_hut, minutes: 5 }
+
+  - id: loc_kattenbroek_hut
+    name: Below the Hut on Stilts
+    area: kattenbroek
+    tags: [fae, cursed, landmark]
+    aliases: [hut, the hut, widow's hut, hut on stilts]
+    pos: [123.8, 99]
+    summary: The widow's hut on stilts over the black water of the Kattenbroek.
+    description:
+      day: |
+        A hut of grey planks stands on stilts over the black water, its
+        ladder drawn up. Fish bones hang from the eaves on strings and turn in
+        the wind, clicking softly. A cat sits on the top rung and does not
+        blink. The reed path runs back west.
+    exits:
+      west: { to: loc_kattenbroek_edge, minutes: 5 }

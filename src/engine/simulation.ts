@@ -4,6 +4,7 @@ import { add } from './items'
 import { spreadNews } from './news'
 import { storyHour } from './stories'
 import { nightly } from './storylines'
+import { weatherHour } from './weather'
 import { settleRuns } from './chronicler'
 import { settleChoices } from './npc/goals'
 import { clamp } from './npc/execute'
@@ -34,6 +35,7 @@ function hourly(world: World): void {
   demand(world)
   storyHour(world)
   nightly(world)
+  weatherHour(world)
   const lodging = world.state.player.lodging
   if (lodging && world.now >= lodging.until) world.state.player.lodging = undefined
 }

@@ -1,0 +1,14 @@
+# Oude Zijl (Wereldboek, chapter 7): the sluice at the west end of the Vaart.
+locations:
+  - id: loc_oude_zijl_sluice
+    name: The Old Sluice
+    area: oude_zijl
+    tags: [public, landmark, edge]
+    aliases: [sluice, the sluice, oude zijl, dyke house]
+    summary: The sluice gates where the Graafse Vaart meets the dyke, with Heemraad Sijbrand's dyke house beside them.
+    description:
+      day: |
+        Two great sluice gates of tarred oak hold back the Vaart where it
+        meets the dyke. Water leaks through the seams with a steady hiss, and
+        gulls cry from the dyke top. A dyke house stands to one side with its
+        shutters closed. The tow path runs east along the Vaart to Veenhoek.

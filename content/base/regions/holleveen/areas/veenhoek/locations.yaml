@@ -5,7 +5,7 @@ locations:
   - id: loc_veenhoek_green
     name: Veenhoek, the Green
     area: veenhoek
-    tags: [public, landmark]
+    tags: [public, landmark, edge]
     aliases: [green, the green, brink]
     summary: The village green of Veenhoek, with the old well.
     description:
@@ -161,6 +161,7 @@ locations:
   - id: loc_peat_road
     name: The Peat Road
     area: veenhoek
+    pos: [110.8, 105.6]
     tags: [route]
     aliases: [peat road, track]
     description:
@@ -178,7 +179,7 @@ locations:
   - id: loc_veenhoek_quay
     name: Canal Quay
     area: veenhoek
-    tags: [public, landmark]
+    tags: [public, landmark, edge]
     aliases: [quay, kade, canal]
     summary: The landing stage of Veenhoek on the Graafse Vaart.
     description:
@@ -225,6 +226,7 @@ locations:
   - id: loc_towpath_w
     name: Tow Path, west of Veenhoek
     area: veenhoek
+    pos: [109.4, 105]
     tags: [route]
     aliases: [west tow path]
     description:
@@ -239,6 +241,7 @@ locations:
   - id: loc_towpath_e
     name: Tow Path, east of Veenhoek
     area: veenhoek
+    pos: [110.7, 105]
     tags: [route]
     aliases: [east tow path]
     description:
@@ -277,6 +280,7 @@ locations:
   - id: loc_peat_cuttings
     name: The Peat Cuttings
     area: veenhoek
+    pos: [110, 104.4]
     tags: [wilderness, "hazard:bog"]
     aliases: [cuttings, peat cuttings]
     description:
@@ -294,6 +298,7 @@ locations:
   - id: loc_wouter_hut
     name: Wouter's Hut
     area: veenhoek
+    pos: [110, 104]
     tags: [private]
     aliases: [hut, wouter's hut]
     description:

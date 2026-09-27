@@ -134,6 +134,14 @@ npcs:
       - "The fen gives. The fen takes. Mostly it takes."
     money: 90
     inventory: { eel: 2 }
+    secrets:
+      - id: dry_ridge
+        text: He knows a hidden ridge of dry ground through the fen to the Kattenbroek; his gran showed him.
+        hint: He talks about the fen as if he knew every tussock of it by name.
+        admission: There's a ridge of dry ground runs out from the cuttings, south-east, all the way to the Kattenbroek. Keep to the high tussocks and your feet stay dry. My gran showed me. Don't go showing half the parish.
+        dc: 16
+        teaches: the_dry_ridge
+        about: [kattenbroek, the_dry_ridge]
     knows_areas: [veenhoek, molenend, drowned_goose, waagdam, roads]
     relations:
       - to: npc_geesje
@@ -310,6 +318,14 @@ npcs:
       - Pim is the Vissers' youngest. His sister Fenna is missing.
     money: 3
     inventory: { apple: 1 }
+    secrets:
+      - id: children_path
+        text: He knows the children's path to the Kattenbroek, along a hidden ridge of dry ground.
+        hint: He glances south-east, towards the fen, whenever his sister is mentioned.
+        admission: There's a secret way. The big boys showed me. From the cuttings you go where the ground is hard, all the way to the cat fen. Don't tell Mam.
+        dc: 14
+        teaches: the_dry_ridge
+        about: [kattenbroek, the_dry_ridge]
     knows_areas: [veenhoek, molenend]
     relations:
       - to: fenna

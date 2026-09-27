@@ -2,7 +2,7 @@ locations:
   - id: loc_goose_crossroads
     name: The Crossroads at the Drowned Goose
     area: drowned_goose
-    tags: [public, landmark]
+    tags: [public, landmark, edge]
     aliases: [crossroads, kruispunt]
     description:
       day: |
@@ -82,7 +82,7 @@ locations:
   - id: loc_goose_yard
     name: The Stable Yard
     area: drowned_goose
-    tags: [public]
+    tags: [public, edge]
     aliases: [yard, stable, stable yard, stal]
     description:
       day: |

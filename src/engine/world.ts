@@ -1,5 +1,6 @@
 import { isOpenAt } from './clock'
 import { callName, type Content, type Direction, type Location, type Npc, type ObjectInstance, type ObjectType, type Service } from './content'
+import { hexLocation, isHexId } from './map/travel'
 import { Rng } from './rng'
 import { objectKey, serviceKey, type GameState, type NpcState, type WorldEvent } from './state'
 
@@ -40,7 +41,7 @@ export class World {
   }
 
   location(id: string): Location {
-    const loc = this.content.locations.get(id)
+    const loc = this.content.locations.get(id) ?? (isHexId(id) ? hexLocation(this, id) : undefined)
     if (!loc) throw new Error(`Unknown location ${id}`)
     return loc
   }

@@ -1,5 +1,5 @@
 import { minuteOfDay } from '../clock'
-import { callName, type Direction, type Need } from '../content'
+import { areaTopicId, callName, type Direction, type Need } from '../content'
 import { applyEffect, relation } from '../dialogue/relations'
 import { add, hasAll, itemName, withArticle } from '../items'
 import { meet, recordFact } from '../news'
@@ -340,7 +340,7 @@ function repairedNews(world: World, npcId: string, key: string): void {
   const name = callName(world.npc(npcId))
   recordFact(world, {
     kind: 'repaired',
-    about: [location, npcId, `area_${place.area}`],
+    about: [location, npcId, areaTopicId(world.content, place.area)],
     place: location,
     belang: found.type.id === 'windmill' ? 3 : 2,
     title: `${thing} working again`,

@@ -30,6 +30,8 @@ export class TopicRegistry {
       this.add({ id: location.id, kind: 'place', name: location.name, ref: location.id, aliases: [location.name, ...location.aliases] })
     }
     for (const area of content.areas.values()) {
+      // An area known through a lore topic (the Kattenbroek) is talked about as that topic.
+      if (area.topic) continue
       this.add({ id: `area_${area.id}`, kind: 'area', name: area.name, ref: area.id, aliases: [area.name, ...area.aliases] })
     }
     for (const topic of content.topics.values()) {

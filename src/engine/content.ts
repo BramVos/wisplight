@@ -150,6 +150,8 @@ export const LocationSchema = z.object({
   objects: z.array(ObjectInstanceSchema).default([]),
   services: z.array(ServiceSchema).default([]),
   items: z.record(z.string(), z.number().int().positive()).default({}),
+  /** Where on the map of the land it lies, in km, when not at its area's position (a tow path, a weir). */
+  pos: z.tuple([z.number(), z.number()]).optional(),
 })
 export type Location = z.infer<typeof LocationSchema>
 
@@ -164,8 +166,52 @@ export const AreaSchema = z.object({
   fame: z.number().int().min(0).max(5).default(1),
   /** Position on the map of the land, in km (Wereldboek, chapter 2). */
   pos: Position.optional(),
+  /** Known in conversation through this lore topic instead of by its own name (the Kattenbroek). */
+  topic: z.string().optional(),
 })
 export type Area = z.infer<typeof AreaSchema>
+
+/** The topic by which people talk about an area. */
+export function areaTopicId(content: Pick<Content, 'areas'>, areaId: string): string {
+  return content.areas.get(areaId)?.topic ?? `area_${areaId}`
+}
+
+// ---------------------------------------------------------------- regions
+
+/**
+ * A region map (FO, chapter 4, "De streekkaart"): the designer's zone drawing,
+ * the generator's rules and the landmarks you can see from afar. The hexes
+ * themselves are generated from it with a fixed seed.
+ */
+export const RegionSchema = z.object({
+  id: z.string().regex(/^[a-z0-9_]+$/),
+  name: z.string(),
+  /** The area that stands for the open land between the places. */
+  area: z.string(),
+  /** Where the south-west corner lies on the map of the land, in km. */
+  origin: z.tuple([z.number(), z.number()]),
+  size: z.tuple([z.number().positive(), z.number().positive()]),
+  hex: z.number().positive(),
+  seed: z.number().int(),
+  legend: z.record(z.string(), z.enum(['woods', 'fields', 'fen', 'water', 'heath', 'road', 'canal', 'path'])),
+  /** One character per zone, rows from north to south. */
+  zones: z.string(),
+  rules: z
+    .array(
+      z.discriminatedUnion('kind', [
+        z.object({ kind: z.literal('hidden_path'), topic: z.string(), from: z.string(), to: z.string() }),
+        z.object({ kind: z.literal('sight'), area: z.string(), radius: z.number().positive(), fog: z.number().int().optional(), clear: z.number().int().optional() }),
+        z.object({ kind: z.literal('channels'), from: z.string(), to: z.string() }),
+      ]),
+    )
+    .default([]),
+  landmarks: z.array(z.object({ area: z.string(), text: z.string(), range: z.number().positive() })).default([]),
+  /** Roads, tow paths and fen paths as lines through the zones: areas or points in km from the south-west corner. */
+  paths: z
+    .array(z.object({ kind: z.enum(['road', 'canal', 'path']), name: z.string(), via: z.array(z.union([z.string(), z.tuple([z.number(), z.number()])])).min(2) }))
+    .default([]),
+})
+export type Region = z.infer<typeof RegionSchema>
 
 // ---------------------------------------------------------------- professions and NPCs
 
@@ -271,7 +317,19 @@ export const NpcSchema = z.object({
   child: z.boolean().default(false),
   relations: z.array(RelationSchema).default([]),
   secrets: z
-    .array(z.object({ id: z.string(), text: z.string(), hint: z.string(), admission: z.string().optional(), dc: z.number().int().default(18) }))
+    .array(
+      z.object({
+        id: z.string(),
+        text: z.string(),
+        hint: z.string(),
+        admission: z.string().optional(),
+        dc: z.number().int().default(18),
+        /** A topic the player learns when the secret is told: the dry ridge. */
+        teaches: z.string().optional(),
+        /** Asked about one of these by someone it holds dear (Warm or better), the NPC tells it freely (FO, chapter 8). */
+        about: z.array(z.string()).default([]),
+      }),
+    )
     .default([]),
 })
 export type Npc = z.infer<typeof NpcSchema>
@@ -432,6 +490,7 @@ const FileSchema = z
     news: z.array(NewsSchema).optional(),
     patterns: z.array(PatternSchema).optional(),
     quests: z.array(QuestSchema).optional(),
+    regions: z.array(RegionSchema).optional(),
   })
   .strict()
 
@@ -452,6 +511,7 @@ export interface Content {
   news: Map<string, News>
   patterns: Map<string, Pattern>
   quests: Map<string, Quest>
+  regions: Map<string, Region>
   /** The chronicler's working instruction (content/CHRONICLER.md), if there is one. */
   chronicler?: string
 }
@@ -485,6 +545,7 @@ export function loadContent(files: ContentFile[]): Content {
     news: new Map<string, News>(),
     patterns: new Map<string, Pattern>(),
     quests: new Map<string, Quest>(),
+    regions: new Map<string, Region>(),
   }
 
   let chronicler: string | undefined
@@ -517,6 +578,7 @@ export function loadContent(files: ContentFile[]): Content {
     addAll(content.news, data.news, (v) => v.id, file.path, 'news', problems)
     addAll(content.patterns, data.patterns, (v) => v.id, file.path, 'pattern', problems)
     addAll(content.quests, data.quests, (v) => v.id, file.path, 'quest', problems)
+    addAll(content.regions, data.regions, (v) => v.id, file.path, 'region', problems)
   }
 
   const world = worlds[0]
@@ -583,6 +645,31 @@ function checkReferences(world: WorldDef | undefined, c: Omit<Content, 'world'>)
       if (r.to && !c.npcs.has(r.to) && !c.topics.has(r.to)) problems.push(`${n.id}: relation to unknown person ${r.to}`)
       if (r.to === n.id) problems.push(`${n.id}: relation to itself`)
     }
+  }
+  for (const n of c.npcs.values()) {
+    for (const secret of n.secrets) {
+      if (secret.teaches && !c.topics.has(secret.teaches)) problems.push(`${n.id}.secrets.${secret.id}: teaches unknown topic ${secret.teaches}`)
+      for (const t of secret.about) if (!c.topics.has(t)) problems.push(`${n.id}.secrets.${secret.id}: about unknown topic ${t}`)
+    }
+  }
+  for (const a of c.areas.values()) if (a.topic && !c.topics.has(a.topic)) problems.push(`area ${a.id}: unknown topic ${a.topic}`)
+  for (const r of c.regions.values()) {
+    const area = (id: string, where: string) => {
+      if (!c.areas.has(id)) problems.push(`region ${r.id}.${where}: unknown area ${id}`)
+    }
+    area(r.area, 'area')
+    for (const rule of r.rules) {
+      if (rule.kind === 'sight') area(rule.area, 'rules')
+      else {
+        area(rule.from, 'rules')
+        area(rule.to, 'rules')
+      }
+      if (rule.kind === 'hidden_path' && !c.topics.has(rule.topic)) problems.push(`region ${r.id}: hidden path topic ${rule.topic} does not exist`)
+    }
+    for (const l of r.landmarks) area(l.area, 'landmarks')
+    for (const path of r.paths) for (const point of path.via) if (typeof point === 'string') area(point, `paths.${path.name}`)
+    const rows = r.zones.split('\n').filter((line) => line.length > 0)
+    if (rows.length === 0) problems.push(`region ${r.id}: the zone drawing is empty`)
   }
   for (const q of c.quests.values()) {
     for (const who of [...q.givers, ...q.helpers, ...q.opponents]) npc(who, `quest ${q.id}`)

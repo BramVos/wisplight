@@ -172,3 +172,15 @@ topics:
     fame: 3
     pos: [200, 160]
     summary: Hunnenloo is a town far away on the heath, among the giant-beds and the sheep.
+
+  # Wereldboek, chapter 7: only Wouter, Pim and the widow know it. Learned from
+  # one of them (their secret), it can be walked (FO, chapter 4).
+  - id: the_dry_ridge
+    name: the dry ridge
+    kind: place
+    aliases: [dry ridge, the ridge, the hidden ridge, hidden ridge, droge rug, children's path, the children's path, secret way]
+    origin: veenhoek
+    fame: 0
+    known_by: [npc_wouter, npc_pim]
+    summary: A hidden ridge of dry ground runs through the fen from Veenhoek to the Kattenbroek, firm underfoot if you know where it goes.
+    details: It leaves the peat cuttings south-east of Veenhoek and keeps to the higher tussocks between the pools, all the way to the reeds of the Kattenbroek.

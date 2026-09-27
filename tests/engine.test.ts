@@ -55,7 +55,16 @@ describe('engine', () => {
 
   it('refuses exits that do not exist', async () => {
     const engine = newEngine()
+    await engine.handle('n')
+    await engine.handle('e')
     expect((await engine.handle('ne'))[0]).toMatchObject({ kind: 'error' })
+  })
+
+  it('steps out onto the land from the edge of a place (FO, chapter 4)', async () => {
+    const engine = newEngine()
+    const out = await engine.handle('ne')
+    expect(engine.state.player.location).toMatch(/^hex:/)
+    expect(out.at(-1)!.text).toMatch(/Ways on:/)
   })
 })
 

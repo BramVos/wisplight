@@ -38,3 +38,69 @@ areas:
     fame: 1
     pos: [113, 104.5]
     summary: The tow path along the Graafse Vaart and the road past the Drowned Goose, both leading from Veenhoek to Waagdam.
+
+  # The open land of the region, between the places: the hexes of the region map.
+  - id: holleveen
+    name: the Holleveen
+    kind: wilderness
+    aliases: [holleveen, the holleveen]
+    fame: 2
+    pos: [110, 100]
+    summary: The fen country between the Graafse Vaart and the heath, thirty by twenty kilometres of peat, reed and black water.
+
+  - id: kloosterveen
+    name: Kloosterveen
+    kind: hamlet
+    aliases: [the priory, klooster]
+    fame: 2
+    pos: [105, 108]
+    summary: The priory of Kloosterveen in the woods north-west of Veenhoek, with its church, its library and a brewery famous for autumn beer.
+
+  - id: oude_zijl
+    name: Oude Zijl
+    kind: hamlet
+    aliases: [the sluice, the old sluice]
+    fame: 1
+    pos: [100, 105]
+    summary: The old sluice and dyke house at the western end of the Graafse Vaart, where Heemraad Sijbrand keeps the gates.
+
+  - id: kabouterberg
+    name: the Kabouterberg
+    kind: wilderness
+    aliases: [kabouterberg, kabouter hill, the kabouter hill]
+    fame: 1
+    pos: [107, 102]
+    summary: A sandy hill south-west of Veenhoek with a hollow under an old oak. The kabouters live there, people say, and you leave them milk.
+
+  - id: blackmere
+    name: the Blackmere
+    kind: wilderness
+    aliases: [blackmere, the black mere, zwarte meer]
+    fame: 2
+    pos: [114, 97]
+    summary: A black fen lake south of Veenhoek, with Wouter's eel weirs on its shore and drowned willows in the shallows.
+
+  # Known through the lore topic of the same name, so the two do not compete in conversation.
+  - id: kattenbroek
+    name: the Kattenbroek
+    kind: wilderness
+    topic: kattenbroek
+    fame: 2
+    pos: [123.5, 99]
+    summary: A fen of reeds and black pools south-east of Veenhoek, where a widow is said to live.
+
+  - id: rietdoolhof
+    name: the Rietdoolhof
+    kind: wilderness
+    aliases: [rietdoolhof, the reed maze, reed maze]
+    fame: 2
+    pos: [117, 94]
+    summary: A maze of reed channels south of the Blackmere. Nobody with any sense goes in there.
+
+  - id: reuzenrust
+    name: Reuzenrust
+    kind: wilderness
+    aliases: [the giant-bed, the hunebed, giant's rest]
+    fame: 2
+    pos: [122, 108]
+    summary: Where the heath begins north-east of Waagdam, a giant-bed and three burial mounds mark the start of the road to Hunnenloo.
