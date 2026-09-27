@@ -13,7 +13,8 @@ import { approve, companionOf, offer, recruit } from '../social/companions'
 import { silenceWitness, witnessed } from '../social/crime'
 import { partyTalk } from './party'
 import { closingLine, fallbackReply } from './fallback'
-import { fitLength, hasAnachronism, leakedNames, looksLikeInjection, outOfCharacter, unknownNames, vocabularyOf } from './guard'
+import { fitLength, hasAnachronism, leakedNames, looksLikeInjection, outOfCharacter, promises, unknownNames, vocabularyOf } from './guard'
+import { accept, askedFor, kinOf, offerLine, offerLines, offersFor, proposal, proposalText, type Offer } from './offers'
 import type { Knowledge, Packet } from './knowledge'
 import type { LlmClient } from './llm'
 import { peopleIds, systemPrompt, turnPrompt, worldFrame } from './prompt'
@@ -189,7 +190,8 @@ export class Dialogue {
 
   async ask(npcId: string, question: string): Promise<Output[]> {
     const about = bare(question)
-    const topic = this.topics.find(about)
+    // "Ask Pip about his father", "about your father": the NPC's own people (M10.3).
+    const topic = this.topics.find(about) ?? kinOf(this.world, npcId, about.replace(/^(his|her|their)\b/i, 'your'))[0]
     const story = /\b(story|legend|tale|verhaal|legende)\b/i.test(about)
     const act: Act = story ? 'AskStory' : 'AskAbout'
     return this.turn(npcId, `What do you know about ${about}?`, { act, topics: topic ? [topic] : [], echo: true, ...this.confide(npcId, topic) })
@@ -197,7 +199,7 @@ export class Dialogue {
 
   async where(npcId: string, place: string): Promise<Output[]> {
     const about = bare(place)
-    const topic = this.topics.find(about)
+    const topic = this.topics.find(about) ?? kinOf(this.world, npcId, about.replace(/^(his|her|their)\b/i, 'your'))[0]
     return this.turn(npcId, `Where can I find ${about}?`, { act: 'AskDirections', topics: topic ? [topic] : [], echo: true, ...this.confide(npcId, topic) })
   }
 
@@ -468,7 +470,7 @@ export class Dialogue {
 
     // 2. Topics and act by rules.
     this.syncNews()
-    let topics = options.topics ?? this.topics.recognise(text)
+    let topics = options.topics ?? [...new Set([...this.topics.recognise(text), ...kinOf(world, npcId, text)])]
     const act = options.act ?? classify(text, topics.length)
     if (act === 'AskRumors' && topics.length === 0) topics = this.rumours(npcId)
     const packet = this.knowledge.packet(npcId, topics, act === 'AskStory' || act === 'AskAbout')
@@ -480,16 +482,22 @@ export class Dialogue {
     const memories = (world.npcState(npcId).memory ?? []).slice(-5).map((m) => m.note)
     const decision = act === 'Recruit' ? recruitDecision(world, npcId, band.band) : undefined
     const offered = options.echo || options.check ? [] : (this.questOptions?.(npcId) ?? [])
-    const reply = await this.callModel(npcId, text, { act, tier, packet, band, memories, check: options.check, secret: options.secret, decision, spokenTopics: this.topics.recognise(text), offered })
+    // What this person can do for the player now (M10.3): the game decides, the voice chooses and words it.
+    const offers = options.check || options.secret || act === 'Recruit' ? [] : offersFor(world, npcId, topics, text)
+    const reply = await this.callModel(npcId, text, { act, tier, packet, band, memories, check: options.check, secret: options.secret, decision, spokenTopics: this.topics.recognise(text), offered, offers })
     // The player's words meant a quest action: the engine carries it out, and its text is the answer.
     if (reply?.quest_action && offered.some((o) => o.key === reply.quest_action)) {
       this.chosen = reply.quest_action
       talk.history.push({ speaker: 'player', text })
       return echo
     }
+    // The offer the player asked for: the voice's choice, or by the rules without a model.
+    const asked = reply ? offers.find((o) => o.key === reply.action) : askedFor(offers, text)
     const replyText = reply
       ? reply.reply
-      : options.secret
+      : asked
+        ? offerLine(world, npcId, asked)
+        : options.secret
         ? world.say(`{name} glances at the door and lowers {their} voice. "${options.admission ?? 'All right. But it stays between us.'}"`, npcId)
         : options.check && !succeeded(options.check)
           ? world.say(`{name} shakes {their} head. "I don't think so."`, npcId)
@@ -528,13 +536,58 @@ export class Dialogue {
     memory.push({ t: world.now, note: reply?.memory_note || `The stranger talked to me${topics[0] ? ` about ${this.topics.name(topics[0])}` : ''}.`, topics, valence: 0 })
     if (memory.length > 30) memory.splice(0, memory.length - 30)
 
+    // Names the NPC brought up of its own accord and knows: the journal has them, heard from this NPC (M10.3).
+    const named = this.topics.recognise(replyText).filter((t) => t !== npcId && !told.includes(t) && this.knowledge.level(npcId, t) >= 1)
+    if (named.length) {
+      this.noteSources(npcId, named.map((t) => ({ topic: t, level: this.knowledge.level(npcId, t) })))
+      this.learn(...named)
+    }
+
     talk.history.push({ speaker: 'player', text }, { speaker: 'npc', text: replyText })
     if (talk.history.length > 12) talk.history.splice(0, talk.history.length - 12)
     talk.turnsLeft--
-    const ends = reply?.ends_conversation === true
+    // An offer that goes through becomes an agreement and starts; one the NPC proposes waits for the player's yes.
+    const offerOut: Output[] = []
+    let offerEnds = false
+    if (asked?.decision === 'yes') {
+      const done = accept(world, npcId, asked)
+      offerOut.push(...done.outputs)
+      offerEnds = done.ends
+    } else if (!asked) {
+      const proposed = reply ? offers.find((o) => o.key === reply.propose && o.decision === 'yes') : proposal(offers, act)
+      if (proposed) {
+        talk.proposal = proposed
+        offerOut.push({ kind: 'system', text: proposalText(world, npcId, proposed) })
+      }
+    }
     // When the model was asked and gave nothing usable, say so, so a stock line is not mistaken for an answer.
     const failure: Output[] = !reply && this.lastFailure ? [{ kind: 'system', text: `(No answer from the AI: ${this.lastFailure}. A stock line stands in.)` }] : []
-    return [...echo, { kind: 'speech', text: replyText }, ...failure, ...(ends ? this.closeNow() : this.maybeClose())]
+    // Off to do it: the talk ends there, without a closing line.
+    if (offerEnds) {
+      world.state.talk = undefined
+      return [...echo, { kind: 'speech', text: replyText }, ...failure, ...offerOut]
+    }
+    const ends = reply?.ends_conversation === true
+    return [...echo, { kind: 'speech', text: replyText }, ...failure, ...offerOut, ...(ends ? this.closeNow() : this.maybeClose())]
+  }
+
+  /** YES or NO to what the NPC proposed (M10.3): only a yes makes it happen. */
+  answer(yes: boolean): Output[] {
+    const talk = this.talk
+    const offer = talk?.proposal
+    if (!talk || !offer) return []
+    talk.proposal = undefined
+    const world = this.world
+    if (!yes) return [{ kind: 'speech', text: world.say('{name} shrugs. "Suit yourself."', talk.npc) }]
+    const done = accept(world, talk.npc, offer)
+    if (done.ends) world.state.talk = undefined
+    return [{ kind: 'speech', text: offerLine(world, talk.npc, offer) }, ...done.outputs]
+  }
+
+  /** The proposal waiting for the player's answer, in words, for the conversation bar. */
+  proposalNow(): string | undefined {
+    const talk = this.talk
+    return talk?.proposal ? proposalText(this.world, talk.npc, talk.proposal) : undefined
   }
 
   private maybeClose(): Output[] {
@@ -564,6 +617,7 @@ export class Dialogue {
       decision?: string
       spokenTopics: string[]
       offered?: { key: string; intent: string }[]
+      offers?: Offer[]
     },
   ): Promise<Reply | undefined> {
     this.lastFailure = undefined
@@ -594,6 +648,8 @@ export class Dialogue {
       playerText: text,
     })
     const offered = ctx.offered ?? []
+    const offers = ctx.offers ?? []
+    if (offers.length) prompt += `\n${offerLines(world, npcId, offers).join('\n')}`
     if (offered.length) {
       prompt += `\nQUEST ACTIONS: if the player's words clearly mean one of these, put its key in quest_action and the game carries it out; otherwise quest_action is "none".\n${offered.map((o) => `  ${o.key}: the player wants to ${o.intent}`).join('\n')}`
     }
@@ -609,7 +665,7 @@ export class Dialogue {
             system: systemPrompt(world, npcId),
             prompt,
             schemaName: 'npc_reply',
-            schema: replyJsonSchema(allowedTopics, offered.map((o) => o.key)),
+            schema: replyJsonSchema(allowedTopics, offered.map((o) => o.key), offers),
             maxTokens: TIER_TOKENS[ctx.tier],
             timeoutMs: REPLY_WITHIN_MS - (Date.now() - started),
             meta: {
@@ -623,6 +679,7 @@ export class Dialogue {
               secret: ctx.secret,
               questActions: offered,
               playerText: text,
+              offers,
             },
           })
         ).text
@@ -644,6 +701,13 @@ export class Dialogue {
       if (outOfCharacter(fitted)) {
         llm.report?.({ reason: 'character' })
         prompt += '\nNOTE: your last reply stepped out of the world. Answer again as yourself, in plain speech.'
+        continue
+      }
+      // A promise the game did not offer never stands in the text (M10.3): the deed hangs on a chosen yes.
+      const doing = offers.find((o) => o.key === reply.action && o.decision === 'yes') ?? offers.find((o) => o.key === reply.propose && o.decision === 'yes')
+      if (promises(fitted) && !doing && !ctx.decision && reply.quest_action === 'none') {
+        llm.report?.({ reason: 'promise' })
+        prompt += '\nNOTE: your last reply promised to do something the game did not offer. Answer again without promising it: choose an OFFER with decision yes, or say what you can and cannot do.'
         continue
       }
       const said = `${fitted} ${reply.memory_note}`

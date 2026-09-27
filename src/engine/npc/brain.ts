@@ -495,6 +495,13 @@ export function usualPlace(world: World, npcId: string, at = world.now): { place
   return world.content.locations.has(place) ? { place, activity: block.activity } : undefined
 }
 
+/** Where someone usually is now, doing what, and until when: a time fact for a conversation (M10.3: "Brannoc is back at six"). */
+export function routineNow(world: World, npcId: string, at = world.now): { place: string; activity: ScheduleBlock['activity']; until: number } | undefined {
+  const block = currentBlock(world, npcId, at)
+  const usual = block ? usualPlace(world, npcId, at) : undefined
+  return block && usual ? { ...usual, until: endOfBlock(at, block) } : undefined
+}
+
 function currentBlock(world: World, npcId: string, at = world.now): ScheduleBlock | undefined {
   const profession = world.content.professions.get(world.npc(npcId).profession)
   const day = weekdayOf(at)

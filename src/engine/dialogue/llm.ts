@@ -49,7 +49,7 @@ export interface LlmResponse {
 
 /** A reply the engine threw away after validation, so the usage overview can count it. */
 export interface LlmRejection {
-  reason: 'schema' | 'anachronism' | 'character' | 'leak' | 'invented' | 'goal'
+  reason: 'schema' | 'anachronism' | 'character' | 'leak' | 'invented' | 'goal' | 'promise'
 }
 
 export interface LlmClient {

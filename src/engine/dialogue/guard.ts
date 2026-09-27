@@ -39,6 +39,15 @@ export function outOfCharacter(text: string): boolean {
   return OUT_OF_CHARACTER.test(text)
 }
 
+// A promise of something done (M10.3): taking, showing, fetching, waiting, meeting, giving, carrying word.
+// "I'll tell you" is talk, not a deed; "I'll tell my father" is.
+const PROMISE = /\b(?:i'?ll|i will|i can|let me|i'?m going to|i shall)\s+(?:\w+\s+)?(?:take|show|lead|bring|fetch|walk|wait|meet|give|carry|come with|go with|tell (?:him|her|them|my|your|\p{Lu}))|\bfollow me\b|\bcome with me\b/iu
+
+/** Whether a reply promises to do something for the player. */
+export function promises(text: string): boolean {
+  return PROMISE.test(text)
+}
+
 export function wordCount(text: string): number {
   return text.trim().split(/\s+/).filter(Boolean).length
 }

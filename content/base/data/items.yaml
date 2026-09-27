@@ -125,6 +125,13 @@ items:
     tags: [fuel]
     value: 24
 
+  - id: saw
+    name: saw
+    aliases: [zaag, handsaw, bow saw]
+    description: A bow saw with a blade worn thin from years of mill timber, the handle dark with grease.
+    tags: [tool]
+    value: 18
+
   - id: knife
     name: knife
     aliases: [mes]

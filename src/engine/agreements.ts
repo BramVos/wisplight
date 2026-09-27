@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { callName } from './content'
 import { applyEffect } from './dialogue/relations'
 import { heardBy } from './news'
+import { routineNow } from './npc/brain'
 import { validateGoals } from './npc/goals'
 import { deed, shiftBond } from './social/deeds'
 import { mayAttackFirst, mayLie } from './social/gates'
@@ -54,11 +55,12 @@ const Base = {
 /** What may be proposed, per kind. The terms the engine works out itself (belief, arrival, delivery) are not input. */
 export const AgreementInputSchema = z.discriminatedUnion('kind', [
   z.object({ ...Base, kind: z.literal('accompany'), terms: z.object({ until: z.number().optional(), untilPlace: z.string().optional(), wage: z.number().min(0), limits: z.array(z.string()), leaves: z.array(z.string()) }).strict() }).strict(),
-  z.object({ ...Base, kind: z.literal('lead'), terms: z.object({ person: z.string().optional(), place: z.string(), waits: z.number().min(0).max(6 * 60).optional(), ifAbsent: z.enum(['wait', 'return', 'search']).optional() }).strict() }).strict(),
+  z.object({ ...Base, kind: z.literal('lead'), terms: z.object({ person: z.string().optional(), place: z.string(), waits: z.number().min(0).max(6 * 60).optional(), ifAbsent: z.enum(['wait', 'return', 'search']).optional(), ahead: z.boolean().optional(), bring: z.string().optional() }).strict() }).strict(),
   z.object({ ...Base, kind: z.literal('message'), terms: z.object({ recipient: z.string(), about: z.string(), facts: z.array(z.string()).min(1), condition: z.string().optional() }).strict() }).strict(),
   z.object({ ...Base, kind: z.literal('meet'), terms: z.object({ place: z.string(), at: z.number().optional() }).strict() }).strict(),
-  z.object({ ...Base, kind: z.literal('wait'), terms: z.object({ place: z.string() }).strict() }).strict(),
+  z.object({ ...Base, kind: z.literal('wait'), terms: z.object({ place: z.string(), person: z.string().optional() }).strict() }).strict(),
   z.object({ ...Base, kind: z.literal('give'), terms: z.object({ item: z.string().optional(), amount: z.number().positive().optional(), debt: z.string().optional() }).strict() }).strict(),
+  z.object({ ...Base, kind: z.literal('lend'), terms: z.object({ item: z.string() }).strict() }).strict(),
   z.object({ ...Base, kind: z.literal('attack'), terms: z.object({ target: z.string(), reason: z.string().min(1) }).strict() }).strict(),
   z.object({ ...Base, kind: z.literal('intention'), terms: z.object({ goal: z.string(), target: z.string().optional() }).strict() }).strict(),
 ])
@@ -143,6 +145,12 @@ export function agree(world: World, input: AgreementInput): Agreement | { reject
       due ??= terms.at + MEET_LATE
     }
   }
+  if (a.kind === 'lend') {
+    // Lent to the player: the player's word to bring it back by the time; the thing stays the lender's.
+    if (!world.content.items.has(a.terms.item)) return { rejected: `there is no thing ${a.terms.item}` }
+    if (a.due === undefined) return { rejected: 'a loan has a time to bring it back' }
+    if (a.by !== 'player' || !isNpc(world, a.to)) return { rejected: 'the stranger borrows from someone of the world' }
+  }
   if (a.kind === 'give') {
     if (a.terms.item !== undefined && !world.content.items.has(a.terms.item)) return { rejected: `there is no thing ${a.terms.item}` }
     if (a.terms.item === undefined && a.terms.amount === undefined) return { rejected: 'give what?' }
@@ -190,13 +198,20 @@ export function agree(world: World, input: AgreementInput): Agreement | { reject
   register.list.push(agreement)
   // One choice, every effect it needs: a plan, a note in the player's journal, an expectation.
   if (goal) plan(world, agreement, maker, goal)
-  if (a.kind === 'lead') plan(world, agreement, maker, visit(world, a.terms.place, due!))
+  // A leader who goes ahead of the player moves with the player's steps (leadAhead); one who fetches or goes alone walks there.
+  if (a.kind === 'lead' && !a.terms.ahead) plan(world, agreement, maker, visit(world, a.terms.place, due!))
+  if (a.kind === 'lead' && a.terms.ahead && isNpc(world, maker)) hold(world, maker, due!)
+  if (a.kind === 'wait' && isNpc(world, maker) && !a.part && due !== undefined) hold(world, maker, due)
   if (agreement.by === 'player' || agreement.to === 'player') agreement.effects.push({ kind: 'journal', ref: 'promises' })
   if (isNpc(world, agreement.to)) agreement.effects.push({ kind: 'expect', ref: agreement.to })
   return agreement
 }
 
-/** Where someone thinks another is: where they saw them, else at home; "dead" when they heard the death. */
+/**
+ * Where someone thinks another is: where they saw them; by their day if they
+ * know it (the same house, family, or working together); else at home; and
+ * "dead" when they heard the death. What they think, not what is true.
+ */
 export function thinksIsAt(world: World, who: string, person: string): string {
   const def = world.npc(person)
   const theirs = world.state.npcs[person]
@@ -205,8 +220,19 @@ export function thinksIsAt(world: World, who: string, person: string): string {
     if (death && heardBy(world, who)[death.id]) return 'dead'
     const mine = world.state.npcs[who]
     if (mine && mine.location === theirs.location && !theirs.dead) return theirs.location
+    if (knowsTheDayOf(world, who, person)) return routineNow(world, person)?.place ?? def.home
   }
   return def.home
+}
+
+/** Whether someone knows another's day: the same house, close family, or the same place of work. */
+export function knowsTheDayOf(world: World, who: string, person: string): boolean {
+  const a = world.npc(who)
+  const b = world.npc(person)
+  if (a.household && a.household === b.household) return true
+  if (a.home === b.home) return true
+  if (a.work && a.work === b.work) return true
+  return a.relations.some((r) => r.to === person && ['parent', 'child', 'spouse', 'sibling', 'sweetheart'].includes(r.role))
 }
 
 function routeMinutes(world: World, who: string, place: string): number | undefined {
@@ -257,7 +283,7 @@ export function settle(world: World, agreement: Agreement, status: Exclude<Agree
   }
   for (const part of agreements(world).filter((a) => a.part === agreement.id && a.status === 'open')) settle(world, part, status === 'kept' ? 'kept' : 'cancelled', text, { quiet: true, told: true })
   judge(world, agreement, opts.late ?? false)
-  if (!opts.quiet && (agreement.by === 'player' || agreement.to === 'player') && agreement.kind !== 'accompany') world.notices.push(`${capitalise(text)}`)
+  if (!opts.quiet && (agreement.by === 'player' || agreement.to === 'player') && agreement.kind !== 'accompany') world.notices.push(`${capitalise(toPlayer(text))}.`)
 }
 
 /** What the other makes of it: only of what they knew of, and only by what they know of why. */
@@ -344,7 +370,11 @@ export function agreementsTick(world: World): void {
       settle(world, a, 'impossible', `${nameOf(world, gone)} died before it could be done`, { fault: 'world', ...(death ? { fact: death.id } : {}) })
       continue
     }
-    if (a.kind === 'lead') lead(world, a)
+    if (a.kind === 'lead' && a.terms.bring) fetch(world, a)
+    else if (a.kind === 'lead' && a.terms.ahead && a.terms.arrived === undefined) {
+      if (a.due !== undefined && world.now >= a.due) settle(world, a, 'missed', `${nameOf(world, a.by)} waited for the stranger in vain`, { fault: 'to', told: true })
+    } else if (a.kind === 'lead') lead(world, a)
+    else if (a.kind === 'wait' && !a.part) waitFor(world, a)
     else if (a.kind === 'meet' && !a.part) meet(world, a)
     else if (a.kind === 'accompany') {
       // A companion who is no longer one without a word (an old path): the agreement ends, not in silence.
@@ -369,6 +399,7 @@ function lapse(world: World, a: Agreement): void {
   if (a.kind === 'attack') return settle(world, a, 'cancelled', `${by}'s anger passed before it came to blows`, { fault: 'by', quiet: true })
   if (a.kind === 'intention') return settle(world, a, 'missed', `${by} meant to ${a.what}, and a day went by without it`, { fault: 'by' })
   if (a.kind === 'give') return settle(world, a, 'missed', `${by} did not ${a.what} in time`, { fault: 'by' })
+  if (a.kind === 'lend') return settle(world, a, 'missed', `${by} did not bring ${nameOf(world, a.to)}'s ${world.content.items.get(a.terms.item!)?.name ?? a.terms.item} back in time`, { fault: 'by' })
   settle(world, a, 'missed', `${a.what}: it did not come about in time`, { fault: 'by' })
 }
 
@@ -420,6 +451,89 @@ function lead(world: World, a: Agreement): void {
     return
   }
   settle(world, a, 'kept', `${by} brought ${nameOf(world, a.to)} to ${nameOf(world, place)}; ${truth}${a.terms.ifAbsent === 'wait' ? `, though ${by} waited` : ''}`, { told: true })
+}
+
+/** How many turns a leader waits for a player who does not follow, before giving up (M10.3). */
+const GIVE_UP_TURNS = 4
+
+/**
+ * A leader going ahead of the player (M10.3, "Pip walks ahead"): when the
+ * player is with them, they go on to the next place on the way and wait
+ * there; when the player goes another way, they call which way it is; after a
+ * few turns without following, they give up. Runs after each of the player's
+ * commands, not on the clock.
+ */
+export function leadAhead(world: World): void {
+  const here = world.state.player.location
+  for (const a of agreements(world).filter((x) => x.status === 'open' && x.kind === 'lead' && x.terms.ahead && x.to === 'player' && x.terms.arrived === undefined)) {
+    const leader = a.by
+    if (!isNpc(world, leader) || !world.present(leader)) continue
+    const s = world.npcState(leader)
+    const place = a.terms.place!
+    const name = nameOf(world, leader)
+    if (here === place) {
+      s.location = place
+      a.terms.arrived = world.now
+      hold(world, leader, world.now + (a.terms.waits ?? LEAD_WAITS))
+      lead(world, a)
+      continue
+    }
+    if (here === s.location) {
+      const route = world.route(here, place)
+      const next = route?.nodes[1]
+      if (!route || !next) {
+        settle(world, a, 'missed', `${name} could not find the way to ${nameOf(world, place)}`, { fault: 'by', told: true })
+        continue
+      }
+      s.location = next
+      hold(world, leader, a.due ?? world.now + 180)
+      a.terms.turns = 0
+      world.notices.push(`${name} goes on ahead, ${route.directions[0]}, and waits for you there.`)
+      continue
+    }
+    a.terms.turns = (a.terms.turns ?? 0) + 1
+    if (a.terms.turns >= GIVE_UP_TURNS) {
+      settle(world, a, 'missed', `${name} gave up waiting; the stranger went another way`, { fault: 'to', told: true })
+      s.busyUntil = world.now
+      continue
+    }
+    // Close by: they call the way. Further off, they wait.
+    const back = world.route(here, s.location)
+    if (back && back.nodes.length === 2) world.notices.push(`${name} calls after you: "Not that way! ${capitalise(back.directions[0]!)}, this way!"`)
+  }
+}
+
+/** Fetching someone (M10.3): go where they think the person is, and bring them back. */
+function fetch(world: World, a: Agreement): void {
+  const by = nameOf(world, a.by)
+  const person = a.terms.person!
+  const place = a.terms.place!
+  const bring = a.terms.bring!
+  const s = world.state.npcs[a.by]
+  const p = world.state.npcs[person]
+  if (!s || !p) return
+  if (a.terms.arrived === undefined && s.location === place) a.terms.arrived = world.now
+  if (p.location === bring) return settle(world, a, 'kept', `${by} fetched ${nameOf(world, person)}`)
+  if (a.terms.arrived !== undefined && a.terms.met === undefined) {
+    if (p.location !== place || !world.present(person)) {
+      return settle(world, a, 'missed', `${by} went to ${nameOf(world, place)} for ${nameOf(world, person)}, who was not there`, { fault: 'world', told: true })
+    }
+    // Found: they both come back.
+    a.terms.met = world.now
+    plan(world, a, person, visit(world, bring, a.due ?? world.now + 180))
+    plan(world, a, a.by, visit(world, bring, a.due ?? world.now + 180))
+    return
+  }
+  if (a.due !== undefined && world.now >= a.due) settle(world, a, 'missed', `${by} did not come back with ${nameOf(world, person)} in time`, { fault: 'by' })
+}
+
+/** Waiting here with the player (M10.3, Guard): until the time, or until the one waited for comes. */
+function waitFor(world: World, a: Agreement): void {
+  const by = nameOf(world, a.by)
+  const place = a.terms.place!
+  const person = a.terms.person
+  if (person && world.state.npcs[person]?.location === place && world.present(person)) return settle(world, a, 'kept', `${by} waited, and ${nameOf(world, person)} came`)
+  if (a.due !== undefined && world.now >= a.due) settle(world, a, 'kept', `${by} waited at ${nameOf(world, place)} as agreed`)
 }
 
 /** Someone who waits stays where they are, until then. */
@@ -523,7 +637,26 @@ export function forgetPlayerAgreements(state: GameState): void {
 }
 
 /** The kinds, for the builder and tests. */
-export const AGREEMENT_KINDS: AgreementKind[] = ['accompany', 'lead', 'message', 'meet', 'wait', 'give', 'attack', 'intention']
+export const AGREEMENT_KINDS: AgreementKind[] = ['accompany', 'lead', 'message', 'meet', 'wait', 'give', 'lend', 'attack', 'intention']
+
+/** The player gives a lent thing back to its owner (commands.ts): the loan is kept, or kept late. */
+export function returnLent(world: World, npcId: string, item: string): string | undefined {
+  const loan = agreements(world).find((a) => a.kind === 'lend' && a.by === 'player' && a.to === npcId && a.terms.item === item && (a.status === 'open' || (a.status === 'missed' && !a.terms.delivered)))
+  if (!loan) return undefined
+  const name = nameOf(world, npcId)
+  loan.terms.delivered = world.now
+  if (loan.status === 'open') {
+    settle(world, loan, 'kept', `the stranger brought ${name}'s ${world.content.items.get(item)?.name ?? item} back`, { quiet: true })
+    return world.say(`{name} takes it back and turns it over. "Good as your word."`, npcId)
+  }
+  // Late: it is back, but the promise was already broken.
+  return world.say(`{name} takes it back without a word. It is late, and {they} ${world.npc(npcId).pronoun === 'they' ? 'let' : 'lets'} you see it.`, npcId)
+}
+
+/** A record's words as the player reads them: "you", not "the stranger". */
+function toPlayer(text: string): string {
+  return text.replace(/\bthe stranger's\b/g, 'your').replace(/\bthe stranger\b/g, 'you')
+}
 
 function capitalise(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1)

@@ -21,7 +21,7 @@ npcs:
     examples:
       - "No sails, no flour. No flour, no money. You follow?"
     money: 240
-    inventory: { rye_grain: 3 }
+    inventory: { rye_grain: 3, saw: 1 }
     knows_areas: [veenhoek, molenend, drowned_goose, waagdam, roads]
     relations:
       - to: npc_mirte

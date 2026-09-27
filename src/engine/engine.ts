@@ -25,7 +25,7 @@ import { add, itemName, matchItem, parseMoney } from './items'
 import { chronicleText } from './chronicle'
 import { journalPage, type JournalPage } from './journal'
 import { die } from './life'
-import { agree, agreements, openAgreements, promiseLines, settle } from './agreements'
+import { agree, agreements, leadAhead, openAgreements, promiseLines, settle } from './agreements'
 import { goAway, tierOf } from './lod'
 import { hexOfTopic, knownEntrance, knownPlace, landLines, walkTarget, type KnownPlace } from './map/known'
 import { takeBarge, travelTo } from './map/journey'
@@ -151,7 +151,7 @@ export interface Status {
   paused: boolean
   /** A development build: the @ commands work and the editor can be opened. */
   builder?: boolean
-  talk?: { npc: string; name: string; call: string; attitude: string; turnsLeft: number; options: string[] }
+  talk?: { npc: string; name: string; call: string; attitude: string; turnsLeft: number; options: string[]; proposal?: string }
   journal: { quests: JournalEntry[]; people: JournalEntry[]; places: JournalEntry[]; lands: JournalEntry[]; factions: JournalEntry[]; events: JournalEntry[]; lore: JournalEntry[]; things: JournalEntry[] }
   /** The map round the player: rows of characters, and a class code per character (FO, chapter 4). */
   map?: { rows: string[]; classes: string[] }
@@ -672,6 +672,8 @@ export class Engine {
     this.dialogue.learn(this.state.player.location, areaTopicId(this.content, this.world.location(this.state.player.location).area))
     this.arrive()
     this.lookAround()
+    // A leader going ahead moves with the player's steps (M10.3).
+    leadAhead(this.world)
     if (before !== this.state.player.location) {
       arrived(this.world)
       outputs.push(...triggers(this.world, this.questHost, { at: this.state.player.location }))
@@ -733,6 +735,9 @@ export class Engine {
 
     if (talking) {
       if (text.startsWith('"')) return this.inConversation(() => this.dialogue.say(talk.npc, text.replace(/^"|"$/g, '').trim()))
+      // What the NPC proposed happens only on the player's yes (M10.3).
+      if (talk.proposal && /^(yes|yeah|yep|aye|all right|alright|ok|okay|sure|please|please do|ja|goed|graag)\b[.!]*$/i.test(text.trim())) return this.inConversation(async () => this.dialogue.answer(true))
+      if (talk.proposal && /^(no|nope|no thanks|not now|nee|liever niet)\b[.!]*$/i.test(text.trim())) return this.inConversation(async () => this.dialogue.answer(false))
       if (/^[1-8]$/.test(text)) return this.inConversation(() => this.dialogue.quick(Number(text)))
       if (/^(bye|goodbye|farewell|dag|doei|tot ziens)\b/i.test(text)) return this.dialogue.end()
       const direction = parseDirection(command.args[0])
@@ -1011,7 +1016,7 @@ export class Engine {
       paused: false,
       ...(this.builder ? { builder: true } : {}),
       talk: talk
-        ? { npc: talk.npc, name: this.world.npc(talk.npc).short, call: callName(this.world.npc(talk.npc)), attitude: attitude(this.world, talk.npc).band, turnsLeft: talk.turnsLeft, options: QUICK_OPTIONS }
+        ? { npc: talk.npc, name: this.world.npc(talk.npc).short, call: callName(this.world.npc(talk.npc)), attitude: attitude(this.world, talk.npc).band, turnsLeft: talk.turnsLeft, options: QUICK_OPTIONS, ...(talk.proposal ? { proposal: this.dialogue.proposalNow()! } : {}) }
         : undefined,
       journal: this.journal(),
       map: this.compactMap(),

@@ -1,4 +1,5 @@
 import { inSeason } from './content'
+import { returnLent } from './agreements'
 import { crowdLines } from './growth/crowds'
 import { blessed } from './rules/blessings'
 import { ledgerOf, settlementAt } from './economy/ledger'
@@ -359,7 +360,7 @@ function give(host: CommandHost, args: string[]): Output[] {
   add(world.npcState(npcId).inventory, item, amount)
   world.emit('gift', world.state.player.location, `You give ${qtyName(world, item, amount)} to ${callName(world.npc(npcId))}.`)
   world.state.seenSeq = world.state.eventSeq
-  const returned = returnStolen(world, npcId, item) ?? giveBack(world, npcId, item) ?? fulfil(world, npcId, item, amount)
+  const returned = returnStolen(world, npcId, item) ?? returnLent(world, npcId, item) ?? giveBack(world, npcId, item) ?? fulfil(world, npcId, item, amount)
   if (!returned) {
     // A gift moves someone a little, less with every gift that week (FO, chapter 8).
     deed(world, npcId, 'gift', { amount: world.basePrice(item) * amount })

@@ -1,4 +1,5 @@
 import type { ChronicleMeta } from '../../chronicler/prompt'
+import { askedFor, proposal, type Offer } from './offers'
 import { stringify } from 'yaml'
 import { LlmError, type LlmClient, type LlmRequest, type LlmResponse } from './llm'
 
@@ -6,7 +7,7 @@ import { LlmError, type LlmClient, type LlmRequest, type LlmResponse } from './l
 // knowledge packet in request.meta and can misbehave on purpose, so tests can
 // prove that the guardrails catch it.
 
-export type MockMode = 'good' | 'leak' | 'long' | 'invalid' | 'throw' | 'anachronism' | 'topics' | 'invent' | 'far' | 'twofar' | 'lookup' | 'quest' | 'plan'
+export type MockMode = 'good' | 'leak' | 'long' | 'invalid' | 'throw' | 'anachronism' | 'topics' | 'invent' | 'far' | 'twofar' | 'lookup' | 'quest' | 'plan' | 'promise'
 
 export interface MockMeta {
   npcName: string
@@ -19,6 +20,8 @@ export interface MockMeta {
   secret?: string
   questActions?: { key: string; intent: string }[]
   playerText?: string
+  /** The offers of this turn (M10.3): the mock picks by the same rules as the game without a model. */
+  offers?: Offer[]
 }
 
 const COMMON = new Set(['about', 'what', 'with', 'that', 'this', 'from', 'your', 'have', 'there', 'they', 'them', 'will', 'would', 'could', 'know', 'want', 'wants'])
@@ -32,6 +35,13 @@ function recognised(meta: MockMeta): string | undefined {
     const shared = wanted.filter((w) => said.has(w) || said.has(`${w}s`) || said.has(w.replace(/s$/, ''))).length
     return wanted.length > 0 && shared >= Math.min(2, wanted.length)
   })?.key
+}
+
+/** The offer the player's words ask for, or else one the rules would propose: as the game does without a model. */
+function offerChoice(meta: MockMeta): { action: string; propose: string } {
+  const asked = askedFor(meta.offers!, meta.playerText ?? '')
+  const proposed = asked ? undefined : proposal(meta.offers!, meta.act)
+  return { action: asked?.key ?? 'none', propose: proposed?.key ?? 'none' }
 }
 
 export class MockLlm implements LlmClient {
@@ -132,6 +142,8 @@ export class MockLlm implements LlmClient {
     if (this.mode === 'long') speech = Array.from({ length: 12 }, () => speech).join(' ')
     if (this.mode === 'anachronism') speech = `Okay, ${speech}`
     if (this.mode === 'invent') speech = `${speech} Father Oswin would know more.`
+    // A promise the game did not offer (M10.3): the guard must keep it out of the text.
+    if (this.mode === 'promise') speech = `Come on, I'll take you there myself. ${speech}`
     if (this.mode === 'far') speech = `Salt comes dear from the Amber Coast these days. ${speech}`
     if (this.mode === 'twofar') speech = `Salt comes from the Amber Coast and tin from Kessmoor. ${speech}`
     const words = speech.split(/\s+/)
@@ -147,6 +159,7 @@ export class MockLlm implements LlmClient {
       memory_note: known ? `The stranger asked me about ${known.topic}.` : 'The stranger talked to me.',
       ends_conversation: false,
       ...(meta.questActions?.length ? { quest_action: this.mode === 'good' ? (recognised(meta) ?? 'none') : 'none' } : {}),
+      ...(meta.offers?.length ? (this.mode === 'promise' ? { action: 'none', propose: 'none' } : offerChoice(meta)) : {}),
     })
   }
 

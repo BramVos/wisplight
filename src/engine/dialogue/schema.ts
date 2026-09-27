@@ -18,16 +18,26 @@ export const ReplySchema = z.object({
   ends_conversation: z.boolean(),
   // A quest action the player's words meant (M7.2); older recorded replies have none.
   quest_action: z.string().default('none'),
+  // An offer the player asked for, and one the NPC proposes (M10.3); older replies have neither.
+  action: z.string().default('none'),
+  propose: z.string().default('none'),
 })
 export type Reply = z.infer<typeof ReplySchema>
 
-export function replyJsonSchema(allowedTopics: string[], questActions: string[] = []): JsonSchema {
+export function replyJsonSchema(allowedTopics: string[], questActions: string[] = [], offers: { key: string; decision: 'yes' | 'no' }[] = []): JsonSchema {
+  const yes = offers.filter((o) => o.decision === 'yes').map((o) => o.key)
   return {
     type: 'object',
     additionalProperties: false,
-    required: ['act', 'reply', 'names', 'mentioned_topics', 'effects', 'memory_note', 'ends_conversation', ...(questActions.length ? ['quest_action'] : [])],
+    required: ['act', 'reply', 'names', 'mentioned_topics', 'effects', 'memory_note', 'ends_conversation', ...(questActions.length ? ['quest_action'] : []), ...(offers.length ? ['action', 'propose'] : [])],
     properties: {
       ...(questActions.length ? { quest_action: { type: 'string', enum: ['none', ...questActions] } } : {}),
+      ...(offers.length
+        ? {
+            action: { type: 'string', enum: ['none', ...offers.map((o) => o.key)], description: 'The offer the player asked for, or none.' },
+            propose: { type: 'string', enum: ['none', ...yes], description: 'An offer with decision yes that you suggest yourself, or none.' },
+          }
+        : {}),
       act: { type: 'string', enum: [...ACTS] },
       reply: { type: 'string', description: 'What the player sees: an optional short action, then speech in double quotes.' },
       names: {

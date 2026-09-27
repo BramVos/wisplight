@@ -413,6 +413,17 @@ export function App() {
             <span className="talking">
               {t('app.talk.with', { name: talk.name, attitude: talk.attitude })}
             </span>
+            {talk.proposal && (
+              <span className="proposal">
+                {talk.proposal.replace(/ YES to agree, NO to decline\.$/, '')}{' '}
+                <button type="button" className="link" disabled={waiting} onClick={() => void send('yes')}>
+                  [{t('app.talk.yes')}]
+                </button>{' '}
+                <button type="button" className="link" disabled={waiting} onClick={() => void send('no')}>
+                  [{t('app.talk.no')}]
+                </button>
+              </span>
+            )}
             {talk.options.map((option, index) => (
               <button key={option} type="button" className="link" disabled={waiting} onClick={() => (index === 3 || index === 4 ? (setInput(index === 3 ? 'ask about ' : 'where is '), inputRef.current?.focus()) : void send(String(index + 1)))}>
                 {index + 1} {option}

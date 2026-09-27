@@ -71,7 +71,7 @@ export interface Pending {
  * conversation, a promise of the player. One record with a fixed id, the
  * parties, what, when, the terms, and a status that only the rules change.
  */
-export type AgreementKind = 'accompany' | 'lead' | 'message' | 'meet' | 'wait' | 'give' | 'attack' | 'intention'
+export type AgreementKind = 'accompany' | 'lead' | 'message' | 'meet' | 'wait' | 'give' | 'lend' | 'attack' | 'intention'
 export type AgreementStatus = 'open' | 'kept' | 'missed' | 'cancelled' | 'impossible'
 
 export interface AgreementTerms {
@@ -90,6 +90,12 @@ export interface AgreementTerms {
   arrived?: number
   /** When the one led got there and the person was not. */
   met?: number
+  /** lead with the player (M10.3): the leader goes one place ahead and waits; wrong turns and turns without following. */
+  ahead?: boolean
+  wrong?: number
+  turns?: number
+  /** fetch (M10.3): where to bring the person back to. */
+  bring?: string
   /** message: to whom, about what, which facts, on what condition; delivered when the other has heard it. */
   recipient?: string
   about?: string
@@ -99,7 +105,7 @@ export interface AgreementTerms {
   /** meet: from when, and who came. */
   at?: number
   came?: string[]
-  /** give: a thing or a sum, and the debt it pays. */
+  /** give: a thing or a sum, and the debt it pays; lend: the thing, which stays the lender's, and back by the due time. */
   item?: string
   amount?: number
   debt?: string
@@ -347,6 +353,8 @@ export interface TalkState {
   history: { speaker: 'player' | 'npc'; text: string }[]
   effects: number
   revealed: string[]
+  /** What the NPC proposed and the player has yet to answer (M10.3): YES carries it out. */
+  proposal?: import('./dialogue/offers').Offer
 }
 
 export interface RelationState {
