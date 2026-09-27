@@ -17,7 +17,7 @@ import type { World } from './world'
 
 export type Stance = 'believes' | 'doubts' | 'rejects'
 
-const AREA_OPENNESS: Record<string, number> = { town: 0.8, inn: 0.7, village: 0.5, route: 0.5, hamlet: 0.3, wilderness: 0.2 }
+const AREA_OPENNESS: Record<string, number> = { city: 0.9, town: 0.8, inn: 0.7, village: 0.5, route: 0.5, hamlet: 0.3, wilderness: 0.2 }
 
 /**
  * How open a place is to strangers, 0 to 1: its rank (a town is open, a

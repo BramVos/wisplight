@@ -1,7 +1,8 @@
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { applyEdits, checkContent, createCharacter, entities, Engine, GameClock, loadContent, MockLlm, recordFact, suggestChoice, type Content, type ContentFile } from '../src/engine'
-import { carried, settlementAt } from '../src/engine/economy/ledger'
+import { carried, characterOf, settlementAt } from '../src/engine/economy/ledger'
+import { openness } from '../src/engine/belief'
 import { readLock, withLock } from '../src/engine/edit'
 import { faithOf } from '../src/engine/faith'
 import { farFromPlayer, goAway } from '../src/engine/lod'
@@ -483,3 +484,69 @@ describe('M9.1: a far place made playable', () => {
     expect(await say(engine, 'deliver')).toMatch(/You are paid/)
   }, 120_000)
 })
+
+describe('M9.1: a change of rank', () => {
+  /** The wall of Waagdam is finished: the fact the projects make, and what built reads. */
+  function wallDone(engine: Engine) {
+    const g = (engine.state.growth ??= { people: [], projects: {}, hands: {} })
+    g.projects['waagdam_wall'] = { settlement: 'waagdam', started: engine.world.now - 20 * DAY, days: 20, used: { brick: 300 }, paid: 0, invested: {}, done: engine.world.now }
+    engine.world.regrow()
+    recordFact(engine.world, { kind: 'project', about: ['waagdam'], place: 'loc_waagdam_market', belang: 3, claim: { subject: 'waagdam_wall', key: 'project', value: 'done' }, title: 'the wall finished', text: { precise: 'p', village: 'v', far: 'f' } })
+  }
+
+  it('once the wall stands, the mayor asks the Count for town rights; he decides, and the world notices', async () => {
+    for (let seed = 1; seed < 20; seed++) {
+      const engine = new Engine(content, { seed, builder: true })
+      runUntil(engine, 15, 9)
+      const open = frictionOpenness(engine)
+      const purse = () => engine.state.economy!.ledgers['waagdam']!.purse
+      engine.state.economy!.ledgers['waagdam']!.purse = 1000
+      wallDone(engine)
+      engine.tick(60)
+      const plan = engine.state.plans!.find((p) => p.plan === 'aftermath:town_rights')
+      expect(plan).toBeDefined()
+      expect(engine.state.npcs['npc_aleid']!.note?.activity).toMatch(/Graafhaven/)
+      for (let d = 0; d < 9; d++) engine.tick(DAY)
+      if (engine.content.areas.get('waagdam')!.kind !== 'city') {
+        // No: the Count's word, and the town stays a town.
+        expect(engine.state.news!.facts.some((f) => f.title === 'the Count said no to Waagdam')).toBe(true)
+        continue
+      }
+      const fact = engine.state.news!.facts.find((f) => f.kind === 'rank')!
+      expect(fact.belang).toBe(4)
+      expect(fact.claim).toEqual({ subject: 'waagdam', key: 'rank', value: 'city' })
+      expect(purse()).toBeLessThan(1000)
+      expect(engine.state.flags!['waagdam_city']).toBe(true)
+      // The world notices: more open, a city in conditions, the charter on the Waag, and the save keeps it.
+      expect(frictionOpenness(engine)).toBeGreaterThan(open)
+      expect(characterOf(engine.world, 'waagdam')).toContain('city')
+      await say(engine, '@goto loc_waagdam_market')
+      expect(await say(engine, 'look')).toMatch(/Waagdam is a city now/)
+      expect(Engine.fromSave(content, engine.save()).content.areas.get('waagdam')!.kind).toBe('city')
+      // And no second plan once it is a city.
+      wallDone(engine)
+      engine.tick(60)
+      expect(engine.state.plans!.filter((p) => p.plan === 'aftermath:town_rights')).toHaveLength(1)
+      return
+    }
+    throw new Error('the Count never said yes')
+  }, 240_000)
+
+  it('without the money for the charter, the answer is no', () => {
+    const engine = new Engine(content, { seed: 3, builder: true })
+    runUntil(engine, 15, 9)
+    wallDone(engine)
+    engine.tick(60)
+    engine.state.economy!.ledgers['waagdam']!.purse = 0
+    for (let d = 0; d < 9; d++) {
+      engine.state.economy!.ledgers['waagdam']!.purse = 0
+      engine.tick(DAY)
+    }
+    expect(engine.content.areas.get('waagdam')!.kind).toBe('town')
+    expect(engine.state.news!.facts.some((f) => f.title === 'the Count said no to Waagdam')).toBe(true)
+  }, 120_000)
+})
+
+function frictionOpenness(engine: Engine): number {
+  return openness(engine.world, 'loc_waagdam_market')
+}

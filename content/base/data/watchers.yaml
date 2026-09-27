@@ -122,3 +122,8 @@ watchers:
     who: [npc_aleid]
     place: loc_waagdam_town_hall
     belang: 3
+
+  # M9.1: a settlement finished what it was building. What it built may change what it is.
+  - id: project_done
+    signal: project_done
+    fact: { key: project, value: done }

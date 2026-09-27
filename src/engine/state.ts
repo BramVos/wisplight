@@ -400,6 +400,8 @@ export interface GameState {
   stories?: StoriesState
   /** Facts and who heard them; "player" is the player. */
   news?: { seq: number; facts: Fact[]; heard: Record<string, Record<string, Heard>> }
+  /** The rank of settlements that changed in this game (M9.1), by area. */
+  ranks?: Record<string, 'hamlet' | 'village' | 'town' | 'city'>
   chronicle?: ChronicleState
   weather?: { kind: 'clear' | 'overcast' | 'rain' | 'fog' | 'storm' | 'frost' | 'snow'; since: number }
   /** Far places worked out to their outline for this game (design, "De wereld buiten de kaart"). */

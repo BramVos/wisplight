@@ -51,6 +51,12 @@ export function grownContent(base: Content, state: GameState): Content {
   const g = state.growth
   const built = g ? Object.entries(g.projects).filter(([, p]) => p.done !== undefined).map(([id]) => base.projects.get(id)!).filter(Boolean) : []
   if (g?.far && Object.keys(g.far).length) base = withFarPlaces(base, state)
+  // A settlement that changed rank (M9.1): its kind is the game's now.
+  if (state.ranks && Object.keys(state.ranks).length) {
+    const areas = new Map(base.areas)
+    for (const [id, kind] of Object.entries(state.ranks)) if (areas.has(id)) areas.set(id, { ...areas.get(id)!, kind })
+    base = { ...base, areas }
+  }
   if (!g || (g.people.length === 0 && built.length === 0)) return base
   const npcs = new Map(base.npcs)
   // Someone the editor adopted into the world is the world's now, with the same id (M9.1).

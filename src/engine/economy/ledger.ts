@@ -436,7 +436,9 @@ export function characterOf(world: Pick<World, 'content'>, settlement: string): 
   const s = world.content.settlements.get(settlement)
   if (!s) return []
   const living = livesOn(world, settlement)
-  return [...(living ? [living] : []), ...s.tags]
+  // Its rank too (M9.1): { character: $area, is: city }.
+  const kind = world.content.areas.get(settlement)?.kind
+  return [...(living ? [living] : []), ...s.tags, ...(kind ? [kind] : [])]
 }
 
 /** How much more open a settlement is to strangers from its character: its own measure, and a little more for a trading place. */

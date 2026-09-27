@@ -24,7 +24,7 @@ export interface PictureSubject {
 
 const STYLE = 'A small illustration in the manner of a 17th-century Dutch etching with a light ink wash: muted greys, browns and greens, fine lines.'
 const RULES = 'No text, no letters, no border, no frame. Nothing gory. Folklore, not photography.'
-const KIND: Record<string, string> = { town: 'a small walled town', village: 'a village', hamlet: 'a hamlet', inn: 'an inn by the road', route: 'a road across the land', wilderness: 'wild country' }
+const KIND: Record<string, string> = { city: 'a walled city with its charter', town: 'a small walled town', village: 'a village', hamlet: 'a hamlet', inn: 'an inn by the road', route: 'a road across the land', wilderness: 'wild country' }
 
 export function pictureSubject(content: Content, id: string): PictureSubject | undefined {
   const style = content.world.pictures?.style ?? STYLE

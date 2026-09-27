@@ -980,7 +980,7 @@ export class Engine {
   /** The heading for an area, and a sort key: towns, then villages and hamlets, inns, roads and the wild country. */
   private areaGroup(areaId: string): { group: string; order: string } {
     const area = this.content.areas.get(areaId)!
-    const rank = { town: 1, village: 2, hamlet: 3, inn: 4, route: 5, wilderness: 6 }[area.kind]
+    const rank = { city: 0, town: 1, village: 2, hamlet: 3, inn: 4, route: 5, wilderness: 6 }[area.kind]
     return { group: area.name, order: `${rank}${area.name.toLowerCase()}|` }
   }
 

@@ -108,6 +108,15 @@ locations:
         [Waag] with its stepped gable; the church is south, the town hall
         north-east, and Canal Street leads east. Pigeons squabble over spilled
         grain.
+    variants:
+      # M9.1: a city now, with the Count's charter.
+      - flag: waagdam_city
+        day: |
+          A wide square of uneven cobbles, and on the door of the [Waag] the
+          Count's charter, nailed up under glass: Waagdam is a city now, and
+          the market may be held twice a week. The church is south, the town
+          hall north-east, and Canal Street leads east. It smells of wet stone
+          and new paint on the town hall's shutters.
     exits:
       west: { to: loc_waagdam_gate_street }
       north: { to: loc_waagdam_waag }

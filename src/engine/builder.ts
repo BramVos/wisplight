@@ -58,7 +58,7 @@ export function chainWarnings(content: Content): string[] {
     for (const g of Object.keys(t.repair?.consumes ?? {})) note(g, `mending a ${t.id}`)
   }
   for (const [g, by] of [...used.entries()].sort((a, b) => a[0].localeCompare(b[0]))) if (!made.has(g)) out.push(`${g}: used by ${by}, but made nowhere and brought by no route`)
-  const kinds = new Set(['village', 'town', 'hamlet', 'inn'])
+  const kinds = new Set(['village', 'town', 'city', 'hamlet', 'inn'])
   for (const a of content.areas.values()) if (kinds.has(a.kind) && !content.settlements.has(a.id)) out.push(`${a.id}: a settlement without a ledger, so its counters keep their fixed supply`)
   return out
 }

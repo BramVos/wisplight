@@ -210,7 +210,7 @@ const Position = z.tuple([z.number(), z.number()])
 export const AreaSchema = z.object({
   id: z.string().regex(/^[a-z0-9_]+$/),
   name: z.string(),
-  kind: z.enum(['village', 'town', 'hamlet', 'inn', 'route', 'wilderness']),
+  kind: z.enum(['village', 'town', 'city', 'hamlet', 'inn', 'route', 'wilderness']),
   aliases: z.array(z.string()).default([]),
   summary: z.string(),
   fame: z.number().int().min(0).max(5).default(1),
