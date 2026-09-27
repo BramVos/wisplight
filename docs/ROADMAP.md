@@ -252,10 +252,10 @@ Scope: de review van 27 september 2026 op de kroniekschrijver en de verhaalopbou
 
 Scope: de review van 27 september 2026 op prestaties en kosten (na M8.5), in deze volgorde: kostenregister, contextselectie, feiten indexeren, checkpoints, modellen vergelijken. Het archief voor oude feiten en "300 dagen even snel" zitten al in M9.1; hier komen de indexen, het opslagpatroon, de prompts en de kosten. Niet meegenomen, met reden: SQLite (de motor is headless en draait ook in de browser, een native module bemoeilijkt de installers, en het spellogboek is al append-only en geïndexeerd; de drie lagen en de indexen komen er wel, in geheugen en in het archief); een eigen proces voor de motor (pas als de meting na de andere stappen nog haperingen laat zien); semantisch zoeken (exacte ids en onderwerpen volstaan, lore is kort); de rolverdeling van modellen (dat is al de opzet sinds M8.2: de motor bepaalt wat kan, het model kiest en formuleert).
 
-- [ ] Het uurbudget telt alle aanroepen van het laatste uur, ook na een herstart: een duurzaam kostenregister in plaats van de laatste 200 logregels (test: 250 aanroepen van 0,01 tellen als 2,50)
-- [ ] Vóór verzending reserveert de gateway een geschatte bovengrens en verrekent daarna het werkelijke verbruik, zodat gelijktijdige aanvragen niet samen over het budget gaan
-- [ ] Een onbekend tarief is een eigen status: tokens geteld, automatische besteding begrensd, zichtbaar in de instellingen
-- [ ] Cachewrites worden apart geteld en apart geprijsd, en het spel meet per rol hoeveel van een prompt werkelijk uit de cache kwam
+- [x] Het uurbudget telt alle aanroepen van het laatste uur, ook na een herstart: een duurzaam kostenregister in plaats van de laatste 200 logregels (test: 250 aanroepen van 0,01 tellen als 2,50)
+- [x] Vóór verzending reserveert de gateway een geschatte bovengrens en verrekent daarna het werkelijke verbruik, zodat gelijktijdige aanvragen niet samen over het budget gaan
+- [x] Een onbekend tarief is een eigen status: tokens geteld, automatische besteding begrensd, zichtbaar in de instellingen
+- [x] Cachewrites worden apart geteld en apart geprijsd, en het spel meet per rol hoeveel van een prompt werkelijk uit de cache kwam
 - [ ] Het brein krijgt niet alles wat iemand kent, maar wat bij het signaal hoort: karakter, het probleem, de eigen middelen, de haalbare opties en alleen de bijbehorende mensen en plekken; de stem krijgt alleen de bekenden die bij het gesprek horen (test: met duizend bekenden groeit de prompt niet mee)
 - [ ] Het model kan begrensd bijvragen: wat iemand over een onderwerp weet, de oorzaken en open vragen van een lijn, de band tussen twee mensen, recente gebeurtenissen rond een plek; elke functie begrenst kennisrecht, tijd, aantal en omvang, en een NPC wordt er niet alwetend van
 - [ ] Een verhaalbewerking heeft een totaalbudget over al haar opzoekrondes, naast de grens per aanroep

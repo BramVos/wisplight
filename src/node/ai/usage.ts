@@ -16,10 +16,23 @@ export interface UsageTotals {
   rejected: number
   inputTokens: number
   cachedTokens: number
+  /** Input written to the cache (M9.3), priced apart where the provider does. */
+  cacheWriteTokens: number
   outputTokens: number
   costUsd: number
   /** Calls whose model is not in the price table: tokens counted, no cost. */
   unpriced: number
+}
+
+/** How much of the prompts of a role came from the cache, this month (M9.3). */
+export interface RoleUsage {
+  role: string
+  calls: number
+  inputTokens: number
+  cachedTokens: number
+  cacheWriteTokens: number
+  /** Percent of the input that was read from the cache. */
+  cachedPercent: number
 }
 
 interface Credit {
@@ -33,6 +46,8 @@ interface UsageFile {
   version: 1
   /** Local date (YYYY-MM-DD) -> "provider/model" -> totals. */
   days: Record<string, Record<string, UsageTotals>>
+  /** Local date -> role -> totals (M9.3): the cache share per role. */
+  roles?: Record<string, Record<string, UsageTotals>>
   monthBudgetUsd?: number
   credit: Partial<Record<ProviderId, Credit>>
 }
@@ -62,19 +77,21 @@ export interface UsageSummary {
   credit: CreditStatus[]
   /** Share of this month's calls that failed or whose reply was thrown away. */
   fallbackPercent: number
+  /** Per role, this month: how much of its prompts came from the cache (M9.3). */
+  byRole: RoleUsage[]
 }
 
 const KEEP_DAYS = 400
 const STALE_DAYS = 30
 
 export function emptyTotals(): UsageTotals {
-  return { calls: 0, failed: 0, rejected: 0, inputTokens: 0, cachedTokens: 0, outputTokens: 0, costUsd: 0, unpriced: 0 }
+  return { calls: 0, failed: 0, rejected: 0, inputTokens: 0, cachedTokens: 0, cacheWriteTokens: 0, outputTokens: 0, costUsd: 0, unpriced: 0 }
 }
 
 const COUNTS = Object.keys(emptyTotals()) as (keyof UsageTotals)[]
 
 function add<T extends UsageTotals>(into: T, from: UsageTotals): T {
-  for (const key of COUNTS) into[key] += from[key]
+  for (const key of COUNTS) into[key] += from[key] ?? 0
   return into
 }
 
@@ -114,7 +131,7 @@ export class UsageStore {
   }
 
   /** One call: its tokens and cost. A picture has a price of its own instead of tokens. */
-  record(provider: ProviderId, model: string, usage: LlmUsage | undefined, ok: boolean, fixedCostUsd?: number): number | undefined {
+  record(provider: ProviderId, model: string, usage: LlmUsage | undefined, ok: boolean, fixedCostUsd?: number, role?: string): number | undefined {
     const cost = fixedCostUsd ?? (usage ? costUsd(model, usage) : undefined)
     const entry: UsageTotals = {
       calls: 1,
@@ -122,6 +139,7 @@ export class UsageStore {
       rejected: 0,
       inputTokens: usage?.inputTokens ?? 0,
       cachedTokens: usage?.cachedTokens ?? 0,
+      cacheWriteTokens: usage?.cacheWriteTokens ?? 0,
       outputTokens: usage?.outputTokens ?? 0,
       costUsd: cost ?? 0,
       unpriced: usage && cost === undefined ? 1 : 0,
@@ -129,6 +147,7 @@ export class UsageStore {
     const day = localDate(this.now())
     const models = (this.data.days[day] ??= {})
     add((models[`${provider}/${model}`] ??= emptyTotals()), entry)
+    if (role) add(((this.data.roles ??= {})[day] ??= {})[role] ??= emptyTotals(), entry)
     add(this.session, entry)
     this.prune()
     this.write()
@@ -137,7 +156,10 @@ export class UsageStore {
 
   private prune(): void {
     const days = Object.keys(this.data.days).sort()
-    for (const day of days.slice(0, Math.max(0, days.length - KEEP_DAYS))) delete this.data.days[day]
+    for (const day of days.slice(0, Math.max(0, days.length - KEEP_DAYS))) {
+      delete this.data.days[day]
+      delete this.data.roles?.[day]
+    }
   }
 
   reject(provider: ProviderId, model: string): void {
@@ -218,16 +240,28 @@ export class UsageStore {
       monthLeftPercent: budget ? Math.max(0, Math.round((1 - monthTotals.costUsd / budget) * 100)) : undefined,
       credit,
       fallbackPercent: monthTotals.calls ? Math.round(((monthTotals.failed + monthTotals.rejected) / monthTotals.calls) * 1000) / 10 : 0,
+      byRole: this.roleUsage(month),
     }
+  }
+
+  private roleUsage(month: string): RoleUsage[] {
+    const sum = new Map<string, UsageTotals>()
+    for (const [day, roles] of Object.entries(this.data.roles ?? {})) {
+      if (!day.startsWith(month)) continue
+      for (const [role, totals] of Object.entries(roles)) add((sum.get(role) ?? (sum.set(role, emptyTotals()), sum.get(role)!)), totals)
+    }
+    return [...sum.entries()]
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([role, t]) => ({ role, calls: t.calls, inputTokens: t.inputTokens, cachedTokens: t.cachedTokens, cacheWriteTokens: t.cacheWriteTokens, cachedPercent: t.inputTokens ? Math.round((1000 * t.cachedTokens) / t.inputTokens) / 10 : 0 }))
   }
 
   /** CSV of the kept days, one row per day and model. */
   csv(): string {
-    const lines = ['date,provider,model,calls,failed,rejected,input_tokens,cached_tokens,output_tokens,cost_usd']
+    const lines = ['date,provider,model,calls,failed,rejected,input_tokens,cached_tokens,output_tokens,cost_usd,cache_write_tokens']
     for (const day of Object.keys(this.data.days).sort()) {
       for (const [key, t] of Object.entries(this.data.days[day]!)) {
         const [provider, ...rest] = key.split('/')
-        lines.push([day, provider, rest.join('/'), t.calls, t.failed, t.rejected, t.inputTokens, t.cachedTokens, t.outputTokens, t.costUsd.toFixed(6)].join(','))
+        lines.push([day, provider, rest.join('/'), t.calls, t.failed, t.rejected, t.inputTokens, t.cachedTokens, t.outputTokens, t.costUsd.toFixed(6), t.cacheWriteTokens ?? 0].join(','))
       }
     }
     return `${lines.join('\n')}\n`

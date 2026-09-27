@@ -24,9 +24,13 @@ export interface LlmRequest {
 }
 
 export interface LlmUsage {
+  /** All input, cached and written to the cache included. */
   inputTokens: number
   outputTokens: number
+  /** Input read from the provider's cache. */
   cachedTokens: number
+  /** Input written to the cache on this call (M9.3; Anthropic prices it apart). */
+  cacheWriteTokens?: number
 }
 
 export interface LlmResponse {

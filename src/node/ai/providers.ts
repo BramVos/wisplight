@@ -160,7 +160,7 @@ export function anthropicProvider(apiKey: string): Provider {
           text,
           provider: 'anthropic',
           model: response.model,
-          usage: { inputTokens: response.usage.input_tokens + cacheWrite + cacheRead, outputTokens: response.usage.output_tokens, cachedTokens: cacheRead },
+          usage: { inputTokens: response.usage.input_tokens + cacheWrite + cacheRead, outputTokens: response.usage.output_tokens, cachedTokens: cacheRead, cacheWriteTokens: cacheWrite },
           latencyMs: Date.now() - started,
           rateLimit: rateLimitOf(raw.headers, 'anthropic-ratelimit-requests-remaining', 'anthropic-ratelimit-tokens-remaining', ['anthropic-ratelimit-requests-reset', 'anthropic-ratelimit-tokens-reset']),
         }

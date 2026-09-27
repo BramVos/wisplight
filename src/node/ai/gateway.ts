@@ -1,6 +1,7 @@
 import { LlmError, type LlmClient, type LlmRejection, type LlmRequest, type LlmResponse, type LlmRole } from '../../engine/dialogue/llm'
 import type { AiLog } from './log'
-import { picturePrice } from './pricing'
+import { CostRegister } from './costs'
+import { picturePrice, priceOf, upperBoundUsd } from './pricing'
 import { BusyError, type PictureResponse, type Provider, type ProviderId, type RateLimit } from './providers'
 import type { PictureChoice, RoleChoice } from './settings'
 import type { UsageStore } from './usage'
@@ -17,6 +18,8 @@ const FAILURES_BEFORE_COOLDOWN = 3
 const COOLDOWN_MS = 2 * 60 * 1000
 // Below this many tokens left in the window, the next reply would likely hit a 429.
 const LOW_TOKENS = 4000
+// A model without a known price (M9.3): its tokens are counted, and it may be called this often an hour without the player's say.
+export const UNPRICED_CALLS_PER_HOUR = 40
 
 export interface GatewayOptions {
   role(role: LlmRole): RoleChoice | undefined
@@ -24,6 +27,8 @@ export interface GatewayOptions {
   budgetUsdPerHour(): number
   log: AiLog
   usage: UsageStore
+  /** The cost register (M9.3): the last hour on disk, and what calls under way may cost. Without it, one in memory. */
+  costs?: CostRegister
   now?: () => number
   /** Tests use short time limits. */
   timeoutMs?: Partial<Record<LlmRole | 'illustrator', number>>
@@ -33,8 +38,12 @@ export interface GatewayStatus {
   busy: boolean
   coolingDown: boolean
   hourSpentUsd: number
+  /** What calls under way may still cost (M9.3). */
+  hourReservedUsd: number
   hourBudgetUsd: number
   monthBudgetSpent: boolean
+  /** Roles whose model has no known price (M9.3): tokens counted, calls capped. */
+  unpriced: { role: string; model: string; callsThisHour: number; cap: number }[]
 }
 
 interface ProviderHealth {
@@ -47,8 +56,11 @@ export class Gateway implements LlmClient {
   // Per provider: a rate limit or an outage at one should not stop the other.
   private readonly health = new Map<ProviderId, ProviderHealth>()
   private last?: RoleChoice
+  private readonly costs: CostRegister
 
-  constructor(private readonly options: GatewayOptions) {}
+  constructor(private readonly options: GatewayOptions) {
+    this.costs = options.costs ?? new CostRegister(undefined, () => this.now())
+  }
 
   private now(): number {
     return this.options.now?.() ?? Date.now()
@@ -67,9 +79,14 @@ export class Gateway implements LlmClient {
     return {
       busy: this.now() < health.busyUntil,
       coolingDown: this.now() < health.coolingUntil,
-      hourSpentUsd: this.options.log.spentLastHour(this.now()),
+      hourSpentUsd: this.costs.spentLastHour(),
+      hourReservedUsd: this.costs.reservedUsd(),
       hourBudgetUsd: this.options.budgetUsdPerHour(),
       monthBudgetSpent: this.options.usage.monthBudgetSpent(),
+      unpriced: (['voice', 'brain', 'chronicler'] as const).flatMap((role) => {
+        const choice = this.options.role(role)
+        return choice && !priceOf(choice.model) ? [{ role, model: choice.model, callsThisHour: this.costs.unpricedLastHour(), cap: UNPRICED_CALLS_PER_HOUR }] : []
+      }),
     }
   }
 
@@ -84,11 +101,17 @@ export class Gateway implements LlmClient {
       if (this.now() < health.coolingUntil) throw new LlmError('network', 'cooling down after repeated failures')
     }
     // Setup calls with an explicit model (advice, trials, the test call when saving) are the player's own choice.
+    // Everything else reserves the most it may cost first (M9.3), so calls at the same time stay within the budget together.
+    const bound = upperBoundUsd(choice.model, request)
+    let reservation: number | undefined
     if (request.role !== 'advisor' && !override) {
-      const spent = this.options.log.spentLastHour(this.now())
-      if (spent >= this.options.budgetUsdPerHour()) throw new LlmError('budget', 'the hourly budget is used up')
-      if (request.priority === 'low' && spent >= LOW_PRIORITY_SHARE * this.options.budgetUsdPerHour()) throw new LlmError('budget', 'the hourly budget is kept for conversations')
+      const budget = this.options.budgetUsdPerHour()
+      const spent = this.costs.spentLastHour() + this.costs.reservedUsd()
+      if (spent >= budget || spent + (bound ?? 0) > budget) throw new LlmError('budget', 'the hourly budget is used up')
+      if (request.priority === 'low' && spent + (bound ?? 0) >= LOW_PRIORITY_SHARE * budget) throw new LlmError('budget', 'the hourly budget is kept for conversations')
       if (this.options.usage.monthBudgetSpent()) throw new LlmError('budget', 'the month budget is used up')
+      if (bound === undefined && this.costs.unpricedLastHour() + this.costs.pending() >= UNPRICED_CALLS_PER_HOUR) throw new LlmError('budget', `the price of ${choice.model} is not known: at most ${UNPRICED_CALLS_PER_HOUR} calls an hour`)
+      reservation = this.costs.reserve(bound ?? 0)
     }
 
     const controller = new AbortController()
@@ -99,7 +122,9 @@ export class Gateway implements LlmClient {
       health.failures = 0
       this.last = choice
       this.watch(health, response.rateLimit)
-      const costUsd = this.options.usage.record(choice.provider, choice.model, response.usage, true)
+      const costUsd = this.options.usage.record(choice.provider, choice.model, response.usage, true, undefined, request.role)
+      // What it really cost goes into the register, in place of what was reserved.
+      if (request.role !== 'advisor' && !override) this.costs.add({ usd: costUsd ?? 0, role: request.role, ...(costUsd === undefined ? { unpriced: true } : {}) })
       this.options.log.add({
         time: new Date(this.now()).toISOString(),
         role: request.role,
@@ -128,7 +153,7 @@ export class Gateway implements LlmClient {
         health.coolingUntil = this.now() + COOLDOWN_MS
         health.failures = 0
       }
-      this.options.usage.record(choice.provider, choice.model, undefined, false)
+      this.options.usage.record(choice.provider, choice.model, undefined, false, undefined, request.role)
       this.options.log.add({
         time: new Date(this.now()).toISOString(),
         role: request.role,
@@ -146,6 +171,7 @@ export class Gateway implements LlmClient {
       throw failure
     } finally {
       clearTimeout(timer)
+      if (reservation !== undefined) this.costs.release(reservation)
     }
   }
 
@@ -159,7 +185,7 @@ export class Gateway implements LlmClient {
     const provider = this.options.provider(choice.provider)
     if (!provider?.picture) throw new LlmError('config', `${choice.provider} makes no pictures`)
     if (!trial) {
-      const spent = this.options.log.spentLastHour(this.now())
+      const spent = this.costs.spentLastHour() + this.costs.reservedUsd()
       if (spent >= LOW_PRIORITY_SHARE * this.options.budgetUsdPerHour()) throw new LlmError('budget', 'the hourly budget is kept for conversations')
       if (this.options.usage.monthBudgetSpent()) throw new LlmError('budget', 'the month budget is used up')
     }
@@ -169,7 +195,8 @@ export class Gateway implements LlmClient {
     const price = picturePrice(choice.model, choice.quality)
     try {
       const picture = await provider.picture(choice.model, prompt, choice.quality, controller.signal)
-      const costUsd = this.options.usage.record(choice.provider, choice.model, undefined, true, price)
+      const costUsd = this.options.usage.record(choice.provider, choice.model, undefined, true, price, 'illustrator')
+      if (!trial) this.costs.add({ usd: costUsd ?? 0, role: 'illustrator' })
       this.options.log.add({ time: new Date(this.now()).toISOString(), role: 'illustrator', provider: choice.provider, model: choice.model, ok: true, latencyMs: picture.latencyMs, inputTokens: 0, outputTokens: 0, cachedTokens: 0, costUsd, prompt, response: `(a picture, ${Math.round((picture.base64.length * 3) / 4 / 1024)} kB)` })
       return picture
     } catch (error) {

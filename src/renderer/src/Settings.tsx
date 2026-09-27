@@ -412,6 +412,11 @@ function UsageTab({ bridge, overview, refresh }: { bridge: AiBridge; overview: A
 
   return (
     <div className="settings-body">
+      {status.unpriced.map((u) => (
+        <p key={u.role} className="warn small">
+          The price of {u.model} ({u.role}) is not known: its tokens are counted, and it is called at most {u.cap} times an hour ({u.callsThisHour} this hour).
+        </p>
+      ))}
       <table className="usage">
         <tbody>
           <Totals label="This session" totals={usage.session} />
@@ -419,6 +424,28 @@ function UsageTab({ bridge, overview, refresh }: { bridge: AiBridge; overview: A
           <Totals label="This month" totals={usage.month} />
         </tbody>
       </table>
+      {usage.byRole.length > 0 && (
+        <table className="usage small">
+          <thead>
+            <tr>
+              <th scope="col">role</th>
+              <th scope="col">calls</th>
+              <th scope="col">from the cache</th>
+              <th scope="col">written to it</th>
+            </tr>
+          </thead>
+          <tbody>
+            {usage.byRole.map((r) => (
+              <tr key={r.role}>
+                <td>{r.role}</td>
+                <td>{r.calls}</td>
+                <td>{r.cachedPercent}% of {r.inputTokens.toLocaleString('en-GB')} tokens</td>
+                <td>{r.cacheWriteTokens ? r.cacheWriteTokens.toLocaleString('en-GB') : ''}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
 
       <div className="row">
         <span className="label">Hourly budget</span>

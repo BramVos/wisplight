@@ -16,7 +16,7 @@ const MODELS: Record<ProviderId, ModelInfo[]> = {
   anthropic: ['claude-haiku-4-5-20251001', 'claude-sonnet-5', 'claude-opus-5-5'].map((id) => ({ id })),
 }
 
-const empty = (): UsageTotals => ({ calls: 0, failed: 0, rejected: 0, inputTokens: 0, cachedTokens: 0, outputTokens: 0, costUsd: 0, unpriced: 0 })
+const empty = (): UsageTotals => ({ calls: 0, failed: 0, rejected: 0, inputTokens: 0, cachedTokens: 0, cacheWriteTokens: 0, outputTokens: 0, costUsd: 0, unpriced: 0 })
 
 const state = {
   keys: {} as Partial<Record<ProviderId, string>>,
@@ -27,7 +27,7 @@ const state = {
   credit: { openai: { amountUsd: 10, enteredAt: '2026-09-02T09:00:00.000Z', spent: 0 } } as Partial<Record<ProviderId, { amountUsd: number; enteredAt: string; spent: number }>>,
   session: empty(),
   // A month of earlier play, so the overview has something to show.
-  month: { calls: 2340, failed: 31, rejected: 11, inputTokens: 5_650_000, cachedTokens: 3_700_000, outputTokens: 314_000, costUsd: 1.36, unpriced: 0 },
+  month: { calls: 2340, failed: 31, rejected: 11, inputTokens: 5_650_000, cachedTokens: 3_700_000, cacheWriteTokens: 0, outputTokens: 314_000, costUsd: 1.36, unpriced: 0 },
   log: [] as AiLogEntry[],
 }
 
@@ -75,7 +75,7 @@ function usage(): UsageSummary {
     month: { ...state.month },
     byModel: [
       { provider: 'openai', model: DEMO_MODEL, ...state.month, calls: state.month.calls - 730, costUsd: state.month.costUsd - 0.1 },
-      { provider: 'openai', model: 'gpt-4.1-nano-2025-04-14', calls: 730, failed: 0, rejected: 0, inputTokens: 1_460_000, cachedTokens: 1_020_000, outputTokens: 73_000, costUsd: 0.1, unpriced: 0 },
+      { provider: 'openai', model: 'gpt-4.1-nano-2025-04-14', calls: 730, failed: 0, rejected: 0, inputTokens: 1_460_000, cachedTokens: 1_020_000, cacheWriteTokens: 0, outputTokens: 73_000, costUsd: 0.1, unpriced: 0 },
     ],
     monthBudgetUsd: state.monthBudget,
     monthLeftPercent: demoStatus().monthLeftPercent,
@@ -84,6 +84,10 @@ function usage(): UsageSummary {
       return { provider, amountUsd: c.amountUsd, enteredAt: c.enteredAt, estimatedLeftUsd: left, leftPercent: Math.round((left / c.amountUsd) * 100), stale: false }
     }),
     fallbackPercent: Math.round(((state.month.failed + state.month.rejected) / state.month.calls) * 1000) / 10,
+    byRole: [
+      { role: 'voice', calls: 1340, inputTokens: 2_680_000, cachedTokens: 1_610_000, cacheWriteTokens: 0, cachedPercent: 60.1 },
+      { role: 'brain', calls: 730, inputTokens: 1_460_000, cachedTokens: 1_020_000, cacheWriteTokens: 0, cachedPercent: 69.9 },
+    ],
   }
 }
 
@@ -103,7 +107,7 @@ export function demoBridge(_content: Content): AiBridge {
         ...(state.pictures ? { pictures: state.pictures } : {}),
       },
       usage: usage(),
-      status: { busy: false, coolingDown: false, hourSpentUsd: state.session.costUsd, hourBudgetUsd: state.budget, monthBudgetSpent: false },
+      status: { busy: false, coolingDown: false, hourSpentUsd: state.session.costUsd, hourReservedUsd: 0, hourBudgetUsd: state.budget, monthBudgetSpent: false, unpriced: [] },
     }),
     connect: async (provider, key) => {
       await wait(500)

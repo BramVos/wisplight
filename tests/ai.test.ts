@@ -134,7 +134,7 @@ describe('usage', () => {
     expect(summary.session.calls).toBe(0)
     expect(summary.credit[0]).toMatchObject({ estimatedLeftUsd: expect.closeTo(8.8, 6), stale: true })
     expect(reloaded.monthBudgetSpent()).toBe(false)
-    expect(reloaded.csv().split('\n')[0]).toBe('date,provider,model,calls,failed,rejected,input_tokens,cached_tokens,output_tokens,cost_usd')
+    expect(reloaded.csv().split('\n')[0]).toBe('date,provider,model,calls,failed,rejected,input_tokens,cached_tokens,output_tokens,cost_usd,cache_write_tokens')
   })
 })
 

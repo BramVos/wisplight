@@ -4,6 +4,7 @@ import { pictureSubject } from '../../engine/pictures'
 import type { Content } from '../../engine/content'
 import type { LlmClient } from '../../engine/dialogue/llm'
 import { askAdvice, testCall, trial, type Advice, type TrialResult } from './advisor'
+import { CostRegister } from './costs'
 import { Gateway, type GatewayStatus } from './gateway'
 import { AiLog, type AiLogEntry } from './log'
 import { createProvider, type ModelInfo, type Provider, type ProviderId } from './providers'
@@ -47,6 +48,8 @@ export class AiService {
       budgetUsdPerHour: () => this.settings.budgetUsdPerHour,
       log: this.log,
       usage: this.usage,
+      // The last hour's costs on disk (M9.3): the hourly budget holds after a restart.
+      costs: new CostRegister(join(options.dir, 'costs.jsonl')),
     })
   }
 
