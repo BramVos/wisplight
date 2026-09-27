@@ -21,16 +21,29 @@ export const ReplySchema = z.object({
   // An offer the player asked for, and one the NPC proposes (M10.3); older replies have neither.
   action: z.string().default('none'),
   propose: z.string().default('none'),
+  // One thing the NPC does of its own after the talk (M10.3): tell someone, or go somewhere.
+  after: z.object({ kind: z.enum(['none', 'tell', 'visit']), target: z.string() }).default({ kind: 'none', target: 'none' }),
 })
 export type Reply = z.infer<typeof ReplySchema>
 
-export function replyJsonSchema(allowedTopics: string[], questActions: string[] = [], offers: { key: string; decision: 'yes' | 'no' }[] = []): JsonSchema {
+export function replyJsonSchema(allowedTopics: string[], questActions: string[] = [], offers: { key: string; decision: 'yes' | 'no' }[] = [], after = false): JsonSchema {
   const yes = offers.filter((o) => o.decision === 'yes').map((o) => o.key)
   return {
     type: 'object',
     additionalProperties: false,
-    required: ['act', 'reply', 'names', 'mentioned_topics', 'effects', 'memory_note', 'ends_conversation', ...(questActions.length ? ['quest_action'] : []), ...(offers.length ? ['action', 'propose'] : [])],
+    required: ['act', 'reply', 'names', 'mentioned_topics', 'effects', 'memory_note', 'ends_conversation', ...(questActions.length ? ['quest_action'] : []), ...(offers.length ? ['action', 'propose'] : []), ...(after ? ['after'] : [])],
     properties: {
+      ...(after
+        ? {
+            after: {
+              type: 'object',
+              additionalProperties: false,
+              required: ['kind', 'target'],
+              description: 'One thing you will do of your own after this talk, or kind none.',
+              properties: { kind: { type: 'string', enum: ['none', 'tell', 'visit'] }, target: { type: 'string', enum: ['none', ...allowedTopics] } },
+            },
+          }
+        : {}),
       ...(questActions.length ? { quest_action: { type: 'string', enum: ['none', ...questActions] } } : {}),
       ...(offers.length
         ? {

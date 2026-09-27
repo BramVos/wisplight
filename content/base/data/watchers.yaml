@@ -66,6 +66,11 @@ watchers:
     signal: warned
     belief: { key: state, value: leaking }
 
+  # Someone hears the stranger was asking after them (M10.3): they may go and find out why.
+  - id: asked_about
+    signal: asked_about
+    belief: { key: asked_about }
+
   # Someone hears that a workshop works again (M10.3): whoever's trade needs what it makes goes there.
   - id: heard_working
     signal: heard_working

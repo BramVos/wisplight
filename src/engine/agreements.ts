@@ -3,6 +3,7 @@ import { callName } from './content'
 import { applyEffect } from './dialogue/relations'
 import { heardBy } from './news'
 import { routineNow } from './npc/brain'
+import { queueSignal } from './signals'
 import { validateGoals } from './npc/goals'
 import { deed, shiftBond } from './social/deeds'
 import { mayAttackFirst, mayLie } from './social/gates'
@@ -283,6 +284,12 @@ export function settle(world: World, agreement: Agreement, status: Exclude<Agree
   }
   for (const part of agreements(world).filter((a) => a.part === agreement.id && a.status === 'open')) settle(world, part, status === 'kept' ? 'kept' : 'cancelled', text, { quiet: true, told: true })
   judge(world, agreement, opts.late ?? false)
+  // The stranger's word kept or broken is a signal (M10.3): what follows is content (broken_promise, promise_kept).
+  if (agreement.by === 'player' && agreement.known && isNpc(world, agreement.to) && world.alive(agreement.to) && (agreement.kind === 'give' || agreement.kind === 'lend' || agreement.kind === 'meet')) {
+    const kept = status === 'kept' && !opts.late
+    const broken = status === 'missed' && (opts.fault ?? 'by') === 'by'
+    if (kept || broken) queueSignal(world, { kind: kept ? 'promise_kept' : 'broken_promise', who: [agreement.to], place: world.state.npcs[agreement.to]!.location, cause: [], belang: kept ? 1 : 2, claim: { subject: agreement.to, key: 'promise', value: promisePhrase(world, agreement) }, watcher: 'rules' })
+  }
   if (!opts.quiet && (agreement.by === 'player' || agreement.to === 'player') && agreement.kind !== 'accompany') world.notices.push(`${capitalise(toPlayer(text))}.`)
 }
 
@@ -618,8 +625,8 @@ export function promiseLines(world: World): string[] {
   const open = withPlayer.filter((a) => a.status === 'open')
   const done = withPlayer.filter((a) => a.status !== 'open' && world.now - (a.outcome?.t ?? 0) < 14 * DAY).slice(-6)
   const lines: string[] = []
-  for (const a of open) lines.push(a.by === 'player' ? `You promised ${nameOf(world, a.to)}: ${a.what}${when(world, a.due)}.` : `${capitalise(nameOf(world, a.by))} agreed: ${a.what}${when(world, a.due)}.`)
-  if (done.length) lines.push('', 'How it went:', ...done.map((a) => `  ${capitalise(a.what)}: ${a.outcome!.text} (${STATUS[a.status]}).`))
+  for (const a of open) lines.push(a.by === 'player' ? `You promised ${nameOf(world, a.to)}: ${a.what}${when(world, a.due)}.` : `${capitalise(nameOf(world, a.by))} agreed: ${toPlayer(a.what)}${when(world, a.due)}.`)
+  if (done.length) lines.push('', 'How it went:', ...done.map((a) => `  ${capitalise(toPlayer(a.what))}: ${toPlayer(a.outcome!.text)} (${STATUS[a.status]}).`))
   return lines.length ? lines : ['You have given nobody your word, and nobody has given you theirs.']
 }
 
@@ -651,6 +658,15 @@ export function returnLent(world: World, npcId: string, item: string): string | 
   }
   // Late: it is back, but the promise was already broken.
   return world.say(`{name} takes it back without a word. It is late, and {they} ${world.npc(npcId).pronoun === 'they' ? 'let' : 'lets'} you see it.`, npcId)
+}
+
+/** What was promised, without the one it was promised to: "bring a coil of rope". */
+function promisePhrase(world: World, a: Agreement): string {
+  const thing = a.terms.item ? world.content.items.get(a.terms.item)?.name ?? a.terms.item : undefined
+  if (a.kind === 'lend' && thing) return `bring the ${thing} back`
+  if (a.kind === 'give' && thing) return `bring the ${thing}`
+  if (a.kind === 'meet') return `meet at ${nameOf(world, a.terms.place)}`
+  return a.what
 }
 
 /** A record's words as the player reads them: "you", not "the stranger". */

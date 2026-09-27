@@ -143,6 +143,7 @@ export function holds(world: World, c: Condition, questId?: string): boolean {
   if ('tie' in c) return tieTo(world, c.tie[0], c.tie[1])?.role === c.role
   if ('would_lie' in c) return world.content.npcs.has(c.would_lie) && mayLieAbout(world, c.would_lie)
   if ('needs_from' in c) return needsFrom(world, c.needs_from[0], c.needs_from[1])
+  if ('same' in c) return c.same[0] === c.same[1]
   if ('did' in c) return (world.state.news?.facts ?? []).some((f) => f.kind === c.did && f.about[0] === c.who && f.about.includes(c.to))
   if ('any' in c) return c.any.some((x) => holds(world, x, questId))
   if ('all' in c) return c.all.every((x) => holds(world, x, questId))

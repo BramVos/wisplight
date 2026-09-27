@@ -5,6 +5,7 @@ import { areaTopicId, callName } from '../content'
 import { itemName, withArticle } from '../items'
 import { routineNow } from '../npc/brain'
 import { dangerOf } from '../social/companions'
+import type { Request } from '../state'
 import type { World } from '../world'
 import { attitude, relation } from './relations'
 
@@ -17,7 +18,7 @@ import { attitude, relation } from './relations'
 // model, the rules pick from the same offers, so the game can do it all
 // without AI. An offer that goes through is an agreement in the register.
 
-export type OfferKind = 'lead' | 'fetch' | 'wait' | 'meet' | 'give' | 'lend' | 'sell' | 'message'
+export type OfferKind = 'lead' | 'fetch' | 'wait' | 'meet' | 'give' | 'lend' | 'sell' | 'message' | 'ask'
 
 export interface Offer {
   key: string
@@ -37,6 +38,8 @@ export interface Offer {
   facts?: string[]
   /** sell: the price, in the smallest coin. */
   price?: number
+  /** ask: the request it is about. */
+  request?: string
 }
 
 const DAY = 24 * 60
@@ -256,6 +259,21 @@ function thingOffers(world: World, npcId: string, item: string): Offer[] {
   ]
 }
 
+/** Days the stranger has to bring what someone asked for, once promised. */
+const ASK_DAYS = 3
+
+/**
+ * What an NPC lacks, asked of the stranger (M10.3): an offer the other way
+ * round. A YES is the stranger's word, an agreement in the register with a
+ * time; the request is in the journal already.
+ */
+export function askOffer(world: World, npcId: string, request: Request): Offer | undefined {
+  if (!request.item || request.kind === 'visit') return undefined
+  const thing = request.qty > 1 ? itemName(world.content, request.item, request.qty) : withArticle(itemName(world.content, request.item))
+  const at = world.now + ASK_DAYS * DAY
+  return { key: `ask:${request.id}`, kind: 'ask', item: request.item, request: request.id, at, what: `ask the stranger to bring ${thing}`, intent: '', deed: `bring ${callName(world.npc(npcId))} ${thing}`, decision: 'yes', reasons: ['you need it'] }
+}
+
 /** What an offer is, in the register's plain words. */
 function deedOf(world: World, o: Omit<Offer, 'decision' | 'reasons' | 'deed'>): string {
   const place = o.place ? nameOf(world, o.place) : 'there'
@@ -274,6 +292,7 @@ function deedOf(world: World, o: Omit<Offer, 'decision' | 'reasons' | 'deed'>): 
     case 'give':
     case 'lend':
     case 'sell':
+    case 'ask':
       return o.what
   }
 }
@@ -351,6 +370,12 @@ export function accept(world: World, npcId: string, offer: Offer): { outputs: Ou
     const text = offer.kind === 'lend' ? `${name} lends you ${a}. Bring it back ${clockWords(world, offer.at!)}; it is in your journal.` : offer.kind === 'sell' ? `You pay ${world.money(offer.price!)}, and ${name} hands you ${a}.` : `${name} gives you ${a}.`
     return { outputs: [{ kind: 'system', text }], ends: false }
   }
+  if (offer.kind === 'ask') {
+    // The stranger's word: bring it by the time. The NPC expects it; the journal has it.
+    const promised = agree(world, { by: 'player', to: npcId, source: 'conversation', kind: 'give', what: offer.deed, due: offer.at!, terms: { item: offer.item! } })
+    if ('rejected' in promised) return { outputs: [], ends: false }
+    return { outputs: [{ kind: 'system', text: `You give ${name} your word: ${offer.deed.replace(/^bring \S+ /, 'bring ')}, ${clockWords(world, offer.at!)}. It is in your journal.` }], ends: false }
+  }
   if (!input) return { outputs: [], ends: false }
   const made = agree(world, input)
   if ('rejected' in made) return { outputs: [{ kind: 'system', text: `(${name} cannot after all: ${made.rejected}.)` }], ends: false }
@@ -380,12 +405,14 @@ export function offerLine(world: World, npcId: string, offer: Offer): string {
     lend: `"You can borrow it. ${offer.at !== undefined ? `I want it back ${clockWords(world, offer.at)}` : 'I want it back'}."`,
     sell: `"${offer.price !== undefined ? world.money(offer.price) : 'A fair price'}, and it's yours."`,
     message: `"I'll tell ${offer.person ? nameOf(world, offer.person) : 'them'}."`,
+    ask: '"Good. I\'ll hold you to that."',
   }
   return `${callName(npc)}: ${said[offer.kind]}`
 }
 
 /** The words a proposal is shown with: a click or YES makes it happen. */
 export function proposalText(world: World, npcId: string, offer: Offer): string {
+  if (offer.kind === 'ask') return `${callName(world.npc(npcId))} asks you to ${offer.deed.replace(/^bring \S+ /, 'bring ')}. YES to give your word, NO to decline.`
   return `${callName(world.npc(npcId))} offers to ${offer.deed.replace(/\bthe stranger\b/g, 'you')}. YES to agree, NO to decline.`
 }
 

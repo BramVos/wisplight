@@ -19,7 +19,7 @@ import { clamp } from './npc/execute'
 import { think } from './npc/brain'
 import type { World } from './world'
 import { companionsHour, keepUp } from './social/companions'
-import { pursue } from './social/confront'
+import { pursue, seekHour } from './social/confront'
 import { noticeCoincidences } from './social/coincidence'
 import { homeDay } from './social/romance'
 import { crimesHour } from './social/crime'
@@ -91,6 +91,7 @@ function hourly(world: World): void {
     conditionsDay(world)
   }
   pursue(world)
+  seekHour(world)
   crimesHour(world)
   healWounds(world)
   watchHour(world)

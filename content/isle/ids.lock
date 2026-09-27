@@ -13,6 +13,8 @@ ids:
     npc: [npc_maren, npc_brannoc, npc_pip, npc_wenna]
   isle/areas/shore/locations.yaml:
     location: [loc_skerrow_wreck_strand, loc_skerrow_tidepools, loc_skerrow_cliff_path]
+  isle/data/aftermath.yaml:
+    aftermath: [asked_about, request_open, broken_promise, promise_kept]
   isle/data/areas.yaml:
     area: [skerrow_hythe, skerrow_shore, skerrow_heights]
   isle/data/economy.yaml:
@@ -28,6 +30,8 @@ ids:
     quest: [off_skerrow]
   isle/data/topics.yaml:
     topic: [the_starfall, old_skarth, the_waystone, the_beacon, grey_gull, havenmoor, the_tidemother]
+  isle/data/watchers.yaml:
+    watcher: [asked_about]
   isle/rules/bestiary.yaml:
     creature: [crab_swarm, weever, seal_bull, great_conger, wrecker, wrecker_captain, drowned_sailor, barrow_wight, salt_wraith, old_skarth, old_skarth_stirring]
     encounter: [drowned_on_the_strand, wreckers_on_the_cliff_path, wight_at_the_tower, skarth_wakes]

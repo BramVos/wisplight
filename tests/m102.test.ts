@@ -134,7 +134,7 @@ describe('M10.2: the register of agreements', () => {
     expect(engine.state.npcs['npc_mirte']!.goals.some((g) => g.agreement === intention.id)).toBe(true)
     expect(agree(engine.world, { kind: 'intention', by: 'npc_mirte', source: 'conversation', what: 'fly', terms: { goal: 'Fly', target: 'loc_veenhoek_green' } })).toMatchObject({ rejected: expect.stringMatching(/not a goal the game knows/) })
     expect(texts(await engine.handle('promises'))).toMatch(/You promised Mirte: pay Mirte back/)
-    expect(engine.page('promises')?.lines.join('\n')).toMatch(/Wouter agreed: travel with the stranger/)
+    expect(engine.page('promises')?.lines.join('\n')).toMatch(/Wouter agreed: travel with you/)
   })
 
   it('records per kind what matters: a leader goes where they think the person is, and the truth is in the outcome', () => {

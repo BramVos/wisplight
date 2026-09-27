@@ -48,6 +48,7 @@ export const PERMISSIONS: Record<string, Permission> = {
   feast: all('a feast at a place, with guests'),
   ask_around: all('someone asks a trader, or goes to look, whether a claim is true'),
   carry_word: all('someone walks to another to tell them what they know'),
+  seek_player: all('someone goes to find the stranger, and opens a talk with a line'),
   mediate: all('someone tries to make peace between two with a grudge'),
   recall: all('someone is known again from a memory'),
   request: all('someone asks the player for a visit or a thing'),

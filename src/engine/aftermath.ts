@@ -494,6 +494,12 @@ export function runVerb(world: World, ctx: PlanContext, verb: Verb, st: StepStat
     s.busyUntil = Math.min(s.busyUntil, world.now)
     return true
   }
+  if ('seek_player' in v) {
+    const who = one(world, ctx, v.seek_player)
+    if (!who || !world.content.npcs.has(who) || !world.present(who) || world.npcState(who).following) return false
+    world.npcState(who).seeking = { line: fill(world, v.line, ctx.bind), since: world.now, until: world.now + v.hours * 60 }
+    return true
+  }
   if ('chase_away' in v) {
     const [a, b] = v.chase_away.map((x) => one(world, ctx, x))
     if (!a || !b || !world.content.npcs.has(a) || !world.content.npcs.has(b) || !world.present(a) || !world.present(b) || !mayChaseAway(world, a, b)) return true

@@ -22,6 +22,8 @@ export interface MockMeta {
   playerText?: string
   /** The offers of this turn (M10.3): the mock picks by the same rules as the game without a model. */
   offers?: Offer[]
+  /** What the rules would have the NPC do after the talk (M10.3); the mock chooses the same. */
+  after?: { kind: 'tell' | 'visit'; target: string }
 }
 
 const COMMON = new Set(['about', 'what', 'with', 'that', 'this', 'from', 'your', 'have', 'there', 'they', 'them', 'will', 'would', 'could', 'know', 'want', 'wants'])
@@ -160,6 +162,7 @@ export class MockLlm implements LlmClient {
       ends_conversation: false,
       ...(meta.questActions?.length ? { quest_action: this.mode === 'good' ? (recognised(meta) ?? 'none') : 'none' } : {}),
       ...(meta.offers?.length ? (this.mode === 'promise' ? { action: 'none', propose: 'none' } : offerChoice(meta)) : {}),
+      ...(meta.after && this.mode === 'good' ? { after: meta.after } : {}),
     })
   }
 

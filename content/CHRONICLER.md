@@ -280,6 +280,7 @@ Watchers, the standard aftermath, intentions, fixed plans, quests and your own p
 - `tie` `{ tie: [text, text], role: text }`: What the first is to the second: spouse, sweetheart, friend, rival, neighbour.
 - `would_lie` `{ would_lie: text }`: The gate for lying lets someone through: honesty -1 or lower, grown.
 - `needs_from` `{ needs_from: [text, text] }`: Someone's work takes in what a place makes: the baker's oven the mill's flour (M10.3).
+- `same` `{ same: [text, text] }`: Two bindings are the same one: the one who heard it is the one it is about (M10.3).
 - `did` `{ did: text, who: text, to: text }`: A fact of this kind about the first and the second, in that order: who chased whom off.
 - `any` `{ any: list of condition }`: At least one of these holds.
 - `all` `{ all: list of condition }`: All of these hold.
@@ -307,6 +308,7 @@ Watchers, the standard aftermath, intentions, fixed plans, quests and your own p
 - `request` `{ request: selector, kind: visit | fetch, target?: selector, item?: text, name: text, ask: text }`: Someone asks the player for a visit or a thing. Rules yes, brain yes, chronicler yes.
 - `ask_around` `{ ask_around: selector, about: [text, text] }`: Someone asks a trader, or goes to look, whether a claim is true. Rules yes, brain yes, chronicler yes.
 - `carry_word` `{ carry_word: selector, to: selector, about: text }`: Someone walks to another to tell them what they know. Rules yes, brain yes, chronicler yes.
+- `seek_player` `{ seek_player: selector, line: text, hours?: number = 24 }`: Someone goes to find the stranger, and opens a talk with a line. Rules yes, brain yes, chronicler yes.
 - `chase_away` `{ chase_away: [selector, selector] }`: Someone the gates let through chases a stranger off. Rules yes, brain no, chronicler no.
 - `mediate` `{ mediate: [selector, selector], by?: selector }`: Someone tries to make peace between two with a grudge. Rules yes, brain yes, chronicler yes.
 - `recall` `{ recall: selector, of: selector }`: Someone is known again from a memory. Rules yes, brain yes, chronicler yes.

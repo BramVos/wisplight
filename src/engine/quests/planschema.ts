@@ -123,6 +123,8 @@ export const VerbSchema = z.union([
   z.object({ ask_around: SelectorSchema, about: z.tuple([z.string(), z.string()]) }).strict(),
   /** Someone walks to another to tell them what they know about a subject: a report with its own travel time. */
   z.object({ carry_word: SelectorSchema, to: SelectorSchema, about: z.string() }).strict(),
+  // Someone with news, a request, thanks or a grievance about the stranger goes to find them (M10.3).
+  z.object({ seek_player: SelectorSchema, line: z.string(), hours: z.number().positive().default(24) }).strict(),
   /** Someone the gates let through chases a stranger out of the village. */
   z.object({ chase_away: z.tuple([SelectorSchema, SelectorSchema]) }).strict(),
   /** Someone both trust tries to make peace between two; who mediates decides how it ends. */

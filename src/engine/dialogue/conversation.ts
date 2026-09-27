@@ -14,8 +14,9 @@ import { silenceWitness, witnessed } from '../social/crime'
 import { partyTalk } from './party'
 import { closingLine, fallbackReply } from './fallback'
 import { fitLength, hasAnachronism, leakedNames, looksLikeInjection, outOfCharacter, promises, unknownNames, vocabularyOf } from './guard'
-import { accept, askedFor, kinOf, offerLine, offerLines, offersFor, proposal, proposalText, type Offer } from './offers'
+import { accept, askedFor, askOffer, kinOf, offerLine, offerLines, offersFor, proposal, proposalText, type Offer } from './offers'
 import { claimValid, claimWords, parseClaim, playerSays } from '../claims'
+import { afterChoice, doAfter, talkFact } from './aftertalk'
 import type { Claim } from '../state'
 import type { Knowledge, Packet } from './knowledge'
 import type { LlmClient } from './llm'
@@ -96,7 +97,8 @@ export class Dialogue {
 
   // ------------------------------------------------------------ entry points
 
-  start(npcId: string, silent = false): Output[] {
+  /** Starts a talk. Opened: the NPC came up and spoke first (M10.3), so there is no greeting. */
+  start(npcId: string, silent = false, opened = false): Output[] {
     const world = this.world
     const npc = world.npc(npcId)
     if (world.npcState(npcId).activity === 'asleep') return [this.asleep(npcId)]
@@ -110,16 +112,20 @@ export class Dialogue {
     rel.familiarity = Math.min(100, rel.familiarity + 1)
     this.learn(npcId)
     if (silent) return []
-    const greeting = fallbackReply(world, npcId, 'Greet', { known: [], unknown: [] }, band)
+    const greeting = opened ? undefined : fallbackReply(world, npcId, 'Greet', { known: [], unknown: [] }, band)
     // Going to see someone may be what another asked of the player.
     const visits = visited(world, npcId).map((r) => ({ kind: 'narration' as const, text: `You have looked in on ${callName(npc)}, as ${callName(world.npc(r.npc))} asked.` }))
     // Someone who needs help asks the player, once, when they next talk (FO, chapter 14).
     const request = askNow(world, npcId)
+    // What they ask of the stranger is an offer the other way round (M10.3): YES is the stranger's word.
+    const ask = request ? askOffer(world, npcId, request) : undefined
+    if (ask) this.talk!.proposal = ask
     return [
       { kind: 'system', text: `You are talking with ${npc.short}. Type what you want to say, pick a number, or BYE to stop.` },
-      { kind: 'speech', text: greeting },
+      ...(greeting ? [{ kind: 'speech' as const, text: greeting }] : []),
       ...visits,
       ...(request ? [{ kind: 'speech' as const, text: `"${askLine(world, request)}"` }, { kind: 'system' as const, text: `New in your journal: ${requestName(world, request)}.` }] : []),
+      ...(ask ? [{ kind: 'system' as const, text: proposalText(world, npcId, ask) }] : []),
       this.options(),
     ]
   }
@@ -156,6 +162,7 @@ export class Dialogue {
   end(farewell = true): Output[] {
     const talk = this.talk
     if (!talk) return [{ kind: 'error', text: "You aren't talking to anyone." }]
+    this.wrapUp(talk)
     this.world.state.talk = undefined
     if (!farewell) return []
     const band = attitude(this.world, talk.npc).band
@@ -500,6 +507,9 @@ export class Dialogue {
     const offered = options.echo || options.check ? [] : (this.questOptions?.(npcId) ?? [])
     // What this person can do for the player now (M10.3): the game decides, the voice chooses and words it.
     const offers = options.check || options.secret || act === 'Recruit' ? [] : offersFor(world, npcId, topics, text)
+    // Asked about someone who matters: news with witnesses, before anyone answers (M10.3).
+    const made = talkFact(world, npcId, topics, act)
+    if (made) (talk.facts ??= []).push(made.id)
     const reply = await this.callModel(npcId, text, { act, tier, packet, band, memories, check: options.check, secret: options.secret, decision, spokenTopics: this.topics.recognise(text), offered, offers })
     // The player's words meant a quest action: the engine carries it out, and its text is the answer.
     if (reply?.quest_action && offered.some((o) => o.key === reply.quest_action)) {
@@ -554,8 +564,12 @@ export class Dialogue {
     memory.push({ t: world.now, note: reply?.memory_note || `The stranger talked to me${topics[0] ? ` about ${this.topics.name(topics[0])}` : ''}.`, topics, valence: 0 })
     if (memory.length > 30) memory.splice(0, memory.length - 30)
 
+    // One thing the NPC does after the talk, from the voice (M10.3).
+    if (reply && reply.after.kind !== 'none' && !talk.after && doAfter(world, npcId, reply.after, talk.facts ?? [])) talk.after = true
+
     // Names the NPC brought up of its own accord and knows: the journal has them, heard from this NPC (M10.3).
-    const named = this.topics.recognise(replyText).filter((t) => t !== npcId && !told.includes(t) && this.knowledge.level(npcId, t) >= 1)
+    // People, places and tales only: "I saw him" is no saw.
+    const named = this.topics.recognise(replyText).filter((t) => t !== npcId && !told.includes(t) && ['person', 'place', 'area', 'lore'].includes(this.topics.kind(t) ?? '') && this.knowledge.level(npcId, t) >= 1)
     if (named.length) {
       this.noteSources(npcId, named.map((t) => ({ topic: t, level: this.knowledge.level(npcId, t) })))
       this.learn(...named)
@@ -582,6 +596,7 @@ export class Dialogue {
     const failure: Output[] = !reply && this.lastFailure ? [{ kind: 'system', text: `(No answer from the AI: ${this.lastFailure}. A stock line stands in.)` }] : []
     // Off to do it: the talk ends there, without a closing line.
     if (offerEnds) {
+      this.wrapUp(talk)
       world.state.talk = undefined
       return [...echo, { kind: 'speech', text: replyText }, ...failure, ...offerOut]
     }
@@ -598,7 +613,10 @@ export class Dialogue {
     const world = this.world
     if (!yes) return [{ kind: 'speech', text: world.say('{name} shrugs. "Suit yourself."', talk.npc) }]
     const done = accept(world, talk.npc, offer)
-    if (done.ends) world.state.talk = undefined
+    if (done.ends) {
+      this.wrapUp(talk)
+      world.state.talk = undefined
+    }
     return [{ kind: 'speech', text: offerLine(world, talk.npc, offer) }, ...done.outputs]
   }
 
@@ -614,9 +632,17 @@ export class Dialogue {
     return this.closeNow()
   }
 
+  /** When a talk ends: without a model, the rules choose the one thing the NPC does after it (M10.3). */
+  private wrapUp(talk: TalkState): void {
+    if (talk.after || this.llm()) return
+    const choice = afterChoice(this.world, talk.npc, talk.facts ?? [])
+    if (choice && doAfter(this.world, talk.npc, choice, talk.facts ?? [])) talk.after = true
+  }
+
   private closeNow(): Output[] {
     const talk = this.talk
     if (!talk) return []
+    this.wrapUp(talk)
     this.world.state.talk = undefined
     return [{ kind: 'narration', text: closingLine(this.world, talk.npc) }]
   }
@@ -668,6 +694,7 @@ export class Dialogue {
     const offered = ctx.offered ?? []
     const offers = ctx.offers ?? []
     if (offers.length) prompt += `\n${offerLines(world, npcId, offers).join('\n')}`
+    if (talk && !talk.after) prompt += '\nAFTER THE TALK: if this talk makes you want to do one thing of your own later (tell someone of your own people, or go somewhere), put it in after; at most once in a talk. Otherwise after.kind is none.'
     if (offered.length) {
       prompt += `\nQUEST ACTIONS: if the player's words clearly mean one of these, put its key in quest_action and the game carries it out; otherwise quest_action is "none".\n${offered.map((o) => `  ${o.key}: the player wants to ${o.intent}`).join('\n')}`
     }
@@ -683,7 +710,7 @@ export class Dialogue {
             system: systemPrompt(world, npcId),
             prompt,
             schemaName: 'npc_reply',
-            schema: replyJsonSchema(allowedTopics, offered.map((o) => o.key), offers),
+            schema: replyJsonSchema(allowedTopics, offered.map((o) => o.key), offers, !talk?.after),
             maxTokens: TIER_TOKENS[ctx.tier],
             timeoutMs: REPLY_WITHIN_MS - (Date.now() - started),
             meta: {
@@ -698,6 +725,7 @@ export class Dialogue {
               questActions: offered,
               playerText: text,
               offers,
+              ...(talk && !talk.after ? { after: afterChoice(world, npcId, talk.facts ?? []) } : {}),
             },
           })
         ).text

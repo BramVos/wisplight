@@ -56,8 +56,8 @@ Mirte thinks a moment. "De Zwaan, Harmen Molenaar's windmill, which grinds grain
 Mirte lifts a hand. "Go on, then."
 
 > journal
-People: Fenna Visser, Lubbert Graanhandel, Mirte Bakker.
-Places: Veenhoek, Waagdam, the Kattenbroek, The Mill De Zwaan, The Bakery, Veenhoek, the Green, Canal Quay, The Market Square, Waagdam, the West Gate.
+People: Fenna Visser, Grietje Visser, Harmen Molenaar, Jan Visser, Lubbert Graanhandel, Mirte Bakker.
+Places: Veenhoek, Waagdam, the Kattenbroek, Molenend, the Lane, The Mill De Zwaan, The Peat Road, The Bakery, Veenhoek, the Green, Canal Quay, The Market Square, Waagdam, the West Gate.
 Lore: the stranger in Veenhoek.
 
 ==== INFLUENCE (Dinsdag 14 Herfstmaand 211 AW, 18:35 (evening))
@@ -210,8 +210,8 @@ Mirte arrives from the east.
 Mirte sets out 6 loaves of rye bread for sale.
 
 > journal
-People: Fenna Visser, Lubbert Graanhandel, Mirte Bakker.
-Places: the Holleveen, Veenhoek, Waagdam, the Kattenbroek, The Mill De Zwaan, The Bakery, Veenhoek, the Green, Canal Quay, Gate Street, Lubbert's Grain Store, The Harbour, The Market Square, Waagdam, the West Gate.
+People: Fenna Visser, Grietje Visser, Harmen Molenaar, Jan Visser, Lubbert Graanhandel, Mirte Bakker.
+Places: the Holleveen, Veenhoek, Waagdam, the Kattenbroek, Molenend, the Lane, The Mill De Zwaan, The Peat Road, The Bakery, Veenhoek, the Green, Canal Quay, Gate Street, Lubbert's Grain Store, The Harbour, The Market Square, Waagdam, the West Gate.
 Lore: the stranger in Veenhoek.
 
 [96 hours pass]
@@ -286,8 +286,8 @@ Mirte thinks a moment. "De Zwaan, Harmen Molenaar's windmill, which grinds grain
 Mirte lifts a hand. "Go on, then."
 
 > journal
-People: Fenna Visser, Lubbert Graanhandel, Mirte Bakker.
-Places: Veenhoek, Waagdam, the Kattenbroek, The Mill De Zwaan, The Bakery, Veenhoek, the Green, Canal Quay, The Market Square, Waagdam, the West Gate.
+People: Fenna Visser, Grietje Visser, Harmen Molenaar, Jan Visser, Lubbert Graanhandel, Mirte Bakker.
+Places: Veenhoek, Waagdam, the Kattenbroek, Molenend, the Lane, The Mill De Zwaan, The Peat Road, The Bakery, Veenhoek, the Green, Canal Quay, The Market Square, Waagdam, the West Gate.
 Lore: the stranger in Veenhoek.
 
 ==== AFTER (Dinsdag 14 Herfstmaand 211 AW, 18:35 (evening))
@@ -296,8 +296,8 @@ Lore: the stranger in Veenhoek.
 There are no sacks of flour to be had in Veenhoek. People make do, and grumble about it.
 
 > journal
-People: Fenna Visser, Lubbert Graanhandel, Mirte Bakker.
-Places: Veenhoek, Waagdam, the Kattenbroek, The Mill De Zwaan, The Bakery, Veenhoek, the Green, Canal Quay, The Market Square, Waagdam, the West Gate.
+People: Fenna Visser, Grietje Visser, Harmen Molenaar, Jan Visser, Lubbert Graanhandel, Mirte Bakker.
+Places: Veenhoek, Waagdam, the Kattenbroek, Molenend, the Lane, The Mill De Zwaan, The Peat Road, The Bakery, Veenhoek, the Green, Canal Quay, The Market Square, Waagdam, the West Gate.
 Lore: the stranger in Veenhoek.
 
 [96 hours pass]

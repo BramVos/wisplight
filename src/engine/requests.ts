@@ -1,3 +1,5 @@
+import { openAgreements, settle } from './agreements'
+import { queueSignal } from './signals'
 import { callName } from './content'
 import { applyEffect } from './dialogue/relations'
 import { itemName, withArticle } from './items'
@@ -22,6 +24,8 @@ export function openRequest(world: World, input: RequestInput): Request | undefi
   const request: Request = { ...input, qty: input.qty ?? 1, id: `req_${world.state.requests.length + 1}`, created: world.now, status: 'open' }
   request.reward ??= rewardFor(world, request)
   world.state.requests.push(request)
+  // A request is a signal (M10.3): what follows is content, such as going to find the stranger to ask.
+  queueSignal(world, { kind: 'request_open', who: [request.npc], place: world.state.npcs[request.npc]?.location ?? world.npc(request.npc).home, cause: [], belang: 1, watcher: 'rules' })
   return request
 }
 
@@ -86,6 +90,9 @@ export function visited(world: World, targetId: string): Request[] {
 function finish(world: World, request: Request, thanks = true): string {
   request.status = 'done'
   request.done = world.now
+  // The stranger's word to bring it (M10.3) is kept with it.
+  const word = openAgreements(world, 'player').find((a) => a.kind === 'give' && a.by === 'player' && a.to === request.npc && a.terms.item === request.item)
+  if (word) settle(world, word, 'kept', `the stranger brought ${callName(world.npc(request.npc))} what was promised`, { quiet: true })
   gainXp(world, XP.request, `you did what ${callName(world.npc(request.npc))} asked`)
   favour(world, 'request_done')
   const giver = world.npcState(request.npc)

@@ -59,8 +59,8 @@ Maren nods slowly. "News of the day here: Wenna is dead. She drowned off the har
 Maren lifts a hand. "Go on, then."
 
 > journal
-People: Maren Holt.
-Places: Skerrow Hythe, the Shore, The Headland, The Salt Kettle, The Tidepools, The Wreck Strand.
+People: Maren Holt, Wenna Dray.
+Places: Skerrow Hythe, the Shore, Skerrow Hythe, the Harbour, The Headland, The Salt Kettle, The Tidepools, The Wreck Strand.
 Lore: the stranger in Skerrow Hythe, the death of Wenna Dray, the Grey Gull, news in Skerrow Hythe.
 
 ==== INFLUENCE (Windsday 3 Leaffall 412 SF, 14:02 (afternoon))
@@ -147,7 +147,7 @@ Pip lifts a hand. "Go on, then."
 
 > journal
 People: Maren Holt, Pip Reed, Wenna Dray.
-Places: Skerrow Hythe, the Shore, Skerrow Hythe, the Green, The Headland, The Salt Kettle, The Tidepools, The Wreck Strand.
+Places: Skerrow Hythe, the Shore, Skerrow Hythe, the Green, Skerrow Hythe, the Harbour, The Headland, The Salt Kettle, The Tidepools, The Wreck Strand.
 Lore: the stranger in Skerrow Hythe, the death of Wenna Dray, the Grey Gull, news in Skerrow Hythe.
 
 [144 hours pass]
@@ -309,8 +309,8 @@ Maren nods slowly. "News of the day here: Wenna is dead. She drowned off the har
 Maren lifts a hand. "Go on, then."
 
 > journal
-People: Maren Holt.
-Places: Skerrow Hythe, the Shore, The Headland, The Salt Kettle, The Tidepools, The Wreck Strand.
+People: Maren Holt, Wenna Dray.
+Places: Skerrow Hythe, the Shore, Skerrow Hythe, the Harbour, The Headland, The Salt Kettle, The Tidepools, The Wreck Strand.
 Lore: the stranger in Skerrow Hythe, the death of Wenna Dray, the Grey Gull, news in Skerrow Hythe.
 
 ==== AFTER (Windsday 3 Leaffall 412 SF, 14:02 (afternoon))
@@ -337,8 +337,8 @@ Maren thinks a moment. "News of the day here: Wenna is dead. She drowned off the
 Maren lifts a hand. "Go on, then."
 
 > journal
-People: Maren Holt.
-Places: Skerrow Hythe, the Shore, The Headland, The Salt Kettle, The Tidepools, The Wreck Strand.
+People: Maren Holt, Wenna Dray.
+Places: Skerrow Hythe, the Shore, Skerrow Hythe, the Harbour, The Headland, The Salt Kettle, The Tidepools, The Wreck Strand.
 Lore: the stranger in Skerrow Hythe, the death of Wenna Dray, the Grey Gull, news in Skerrow Hythe.
 
 [144 hours pass]

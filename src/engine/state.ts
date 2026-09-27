@@ -302,6 +302,8 @@ export interface NpcState {
   mood?: { value: number; until: number; reason: string }
   /** Something the player did that the NPC wants to have out with them (the goal Confront). */
   grievance?: { reason: string; t: number; line: string }
+  /** Going to find the stranger, to open a talk with this line (M10.3, seek_player), until then. */
+  seeking?: { line: string; since: number; until: number }
   /** Hit points lost in a fight, healing a little every hour. */
   wounds?: number
   /** Where the NPC was before and when it left, for coincidences. */
@@ -355,6 +357,9 @@ export interface TalkState {
   revealed: string[]
   /** What the NPC proposed and the player has yet to answer (M10.3): YES carries it out. */
   proposal?: import('./dialogue/offers').Offer
+  /** Facts this conversation made, and whether the NPC has chosen what to do after it (M10.3). */
+  facts?: string[]
+  after?: boolean
 }
 
 export interface RelationState {
@@ -551,6 +556,8 @@ export interface GameState {
   wanted?: Record<string, { fine: number; since: number }>
   /** The player's companions (FO, chapter 13). */
   companions?: Companion[]
+  /** Conversation facts of today (M10.3): how many, and about whom. */
+  talkFacts?: { day: number; people: string[] }
   /** The register of agreements (M10.2): who promised whom what, by when, and how it went. */
   agreements?: { seq: number; list: Agreement[] }
   /** Romance per NPC (FO, chapter 8). */

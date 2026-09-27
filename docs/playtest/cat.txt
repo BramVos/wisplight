@@ -88,7 +88,7 @@ Mirte nods slowly. "Fenna Visser, fifteen, the daughter of Jan and Grietje, has 
 Mirte lifts a hand. "Go on, then."
 
 > journal
-People: Fenna Visser, Jan Visser, Lubbert Graanhandel, Mirte Bakker.
+People: Fenna Visser, Grietje Visser, Jan Visser, Lubbert Graanhandel, Mirte Bakker.
 Places: Veenhoek, Waagdam, the Kattenbroek, The Mill De Zwaan, The Bakery, Veenhoek, the Green, Canal Quay, Visser House, the doorstep, The Market Square, Waagdam, the West Gate.
 Lore: the stranger in Veenhoek.
 
@@ -104,6 +104,8 @@ Mirte nods. "Evening."
 > where is aaltje
 You: "Where can I find aaltje?"
 Mirte thinks a moment. "Old Aaltje is the herb woman of Veenhoek. She was weighed at the Waag and found honest; the certificate hangs on her wall."
+Mirte offers to take you to Aaltje's Cottage, to Aaltje. YES to agree, NO to decline.
++10 experience: you learned of the Witches' Scale.
 
 > bye
 Mirte lifts a hand. "Go on, then."
@@ -319,9 +321,9 @@ The Grey Cat on the Doorstep: Honest. Fenna is home, and one day a week all wint
 +400 experience: The Grey Cat on the Doorstep.
 
 > journal
-People: Fenna Visser, Aaltje Hendriks, Jacob van Dam, Jan Visser, Kaatje, Lubbert Graanhandel, Mirte Bakker, the Count.
-Places: the Holleveen, Veenhoek, Waagdam, the Kattenbroek, Aaltje's Cottage, Chapel Lane, The Edge of the Kattenbroek, Below the Hut on Stilts, The Mill De Zwaan, The Bakery, Veenhoek, the Green, Canal Quay, Visser House, the doorstep, The Market Square, Waagdam, the West Gate.
-Lore: the Cat-Widow of the Kattenbroek, the stranger in Veenhoek, the grey cat.
+People: Fenna Visser, Aaltje Hendriks, Grietje Visser, Jacob van Dam, Jan Visser, Kaatje, Lubbert Graanhandel, Mirte Bakker, Wouter Aalman, the Count.
+Places: the Holleveen, Veenhoek, Waagdam, the Kattenbroek, Aaltje's Cottage, Chapel Lane, The Edge of the Kattenbroek, Below the Hut on Stilts, The Black Pools, The Mill De Zwaan, The Bakery, Veenhoek, the Green, Canal Quay, Visser House, the doorstep, The Market Square, The Waag, Waagdam, the West Gate.
+Lore: the Cat-Widow of the Kattenbroek, the stranger in Veenhoek, the grey cat, the Witches' Scale.
 
 ==== AFTER (Woensdag 15 Herfstmaand 211 AW, 12:06 (midday))
 
@@ -353,15 +355,13 @@ Grietje and Pim greet each other warmly.
 Jan arrives from the east.
 Fenna and Jan greet each other warmly.
 Grietje and Jan greet each other warmly.
-Grietje and Jan stand talking in Visser House, the doorstep.
 Jan and Pim greet each other warmly.
 
 > look
 Visser House, the doorstep
 A narrow house with a green door, standing open. The doorstep is empty now, swept clean, and inside a girl's voice is singing along with the spinning wheel, off key. It smells of peat smoke and boiled milk. The green is east.
 Exits: east
-Here: Fenna Visser (eating), Grietje Visser (talking with Jan), Jan Visser (talking with Grietje), Pim (eating).
-Jan and Grietje stand talking.
+Here: Fenna Visser (eating), Grietje Visser (eating), Jan Visser (eating), Pim (eating).
 
 ==== END (Donderdag 23 Herfstmaand 211 AW, 12:06 (midday))
 Quests: grey_cat_on_the_doorstep: honest; flour_for_veenhoek: market_day_passed
@@ -454,7 +454,7 @@ Mirte nods slowly. "Fenna Visser, fifteen, the daughter of Jan and Grietje, has 
 Mirte lifts a hand. "Go on, then."
 
 > journal
-People: Fenna Visser, Jan Visser, Lubbert Graanhandel, Mirte Bakker.
+People: Fenna Visser, Grietje Visser, Jan Visser, Lubbert Graanhandel, Mirte Bakker.
 Places: Veenhoek, Waagdam, the Kattenbroek, The Mill De Zwaan, The Bakery, Veenhoek, the Green, Canal Quay, Visser House, the doorstep, The Market Square, Waagdam, the West Gate.
 Lore: the stranger in Veenhoek.
 

@@ -147,7 +147,7 @@ describe('M10.3: offers in a conversation', () => {
     expect(said(await engine.handle('Will you meet me at the green tomorrow at noon?'))).toMatch(/Mirte agrees to meet you at Veenhoek, the Green, tomorrow at 12:00\. Noted in your journal/)
     const meet = agreementsOf(engine).find((a) => a.kind === 'meet')!
     expect(meet).toMatchObject({ by: 'npc_mirte', to: 'player', terms: { place: 'loc_veenhoek_green' } })
-    expect(engine.page('promises')?.lines.join('\n')).toMatch(/Mirte agreed: meet the stranger at Veenhoek, the Green, tomorrow at 12:00/)
+    expect(engine.page('promises')?.lines.join('\n')).toMatch(/Mirte agreed: meet you at Veenhoek, the Green, tomorrow at 12:00/)
     expect(said(await engine.handle('Would you wait here with me?'))).toMatch(/Mirte agrees to wait with you/)
     world.npcState('npc_mirte').inventory['rye_bread'] = 3
     expect(said(await engine.handle('Could you give me some rye bread?'))).toMatch(/Mirte gives you a loaf of rye bread|Mirte gives you/)
@@ -277,4 +277,63 @@ describe('M10.3: what the player says is a claim', () => {
     expect(parseClaim(world, [], 'the moon is made of cheese')).toBeUndefined()
     expect(truthOf(world, 'loc_molenend_mill', 'working')).toBe('no')
   })
+})
+
+describe('M10.3: people who go and find the stranger', () => {
+  it('someone who needs a thing and likes the stranger comes to ask; someone who does not, waits to be asked', async () => {
+    const run = async (affinity: number, trust: number) => {
+      const engine = new Engine(content, { seed: 7 })
+      const world = engine.world
+      Object.assign(relation(engine.state, 'npc_mirte'), { affinity, trust, familiarity: 40 })
+      world.state.player.location = 'loc_veenhoek_green'
+      openRequest(world, { npc: 'npc_mirte', kind: 'fetch', item: 'saw', source: 'motor' })
+      let out = ''
+      for (let hour = 0; hour < 12 && !/Mirte comes up to you/.test(out); hour++) out = said(engine.tick(60))
+      return out
+    }
+    const liked = await run(40, 30)
+    expect(liked).toMatch(/Mirte: "There you are\. There's something I'd ask of you\."/)
+    expect(liked).toMatch(/Mirte asks you to bring a saw\. YES to give your word/)
+    expect(await run(-10, 0)).not.toMatch(/Mirte comes up to you/)
+  }, 60_000)
+})
+
+describe('M10.3: the scene in one piece', () => {
+  it('asked about his father, Pip leads you, tells at home, Brannoc finds you in the morning, you promise rope, and not bringing it, the Hythe knows', async () => {
+    const engine = withPip()
+    const world = engine.world
+    openRequest(world, { npc: 'npc_brannoc', kind: 'fetch', item: 'rope', source: 'motor' })
+    await engine.handle('talk pip')
+    await engine.handle('where is your father?')
+    const asked = world.state.news!.facts.find((f) => f.kind === 'asked_about')!
+    expect(asked).toMatchObject({ belang: 2, title: 'the stranger asking Pip about his father', claim: { subject: 'npc_brannoc', key: 'asked_about', value: 'player' } })
+    await engine.handle('yes')
+    // After the talk, Pip means to tell his father: a report to carry, in the register.
+    const word = (engine.state.agreements?.list ?? []).find((a) => a.kind === 'message' && a.by === 'npc_pip')!
+    expect(word).toMatchObject({ terms: { recipient: 'npc_brannoc', facts: [asked.id] } })
+    await engine.handle('east')
+    await engine.handle('east')
+    // The stranger waits at the inn; the day goes by.
+    world.state.player.location = 'loc_skerrow_salt_kettle'
+    let met = ''
+    for (let hour = 0; hour < 36 && !met; hour++) {
+      const out = said(engine.tick(60))
+      if (/Brannoc comes up to you/.test(out)) met = out
+    }
+    expect(word.status).toBe('kept')
+    expect(world.state.news!.heard['npc_brannoc']![asked.id]).toBeDefined()
+    expect(met).toMatch(/Brannoc: "You were asking after me\. What do you want\?"/)
+    expect(met).toMatch(/Brannoc asks you to bring a coil of rope|Brannoc asks you to bring/)
+    expect(said(await engine.handle('yes'))).toMatch(/You give Brannoc your word: bring/)
+    const promise = (engine.state.agreements?.list ?? []).find((a) => a.kind === 'give' && a.by === 'player' && a.to === 'npc_brannoc')!
+    expect(promise.status).toBe('open')
+    await engine.handle('bye')
+    // Three days and no rope: the word is broken, and the Hythe hears of it.
+    engine.tick(4 * DAY)
+    expect(promise).toMatchObject({ status: 'missed', judged: 'let_down' })
+    const broken = world.state.news!.facts.find((f) => f.kind === 'broken_promise')!
+    expect(broken.title).toBe("the stranger's broken word to Brannoc")
+    const hythe = ['npc_maren', 'npc_pip', 'npc_garrick', 'npc_elowen'].filter((id) => world.state.news!.heard[id]?.[broken.id])
+    expect(hythe.length).toBeGreaterThanOrEqual(2)
+  }, 120_000)
 })

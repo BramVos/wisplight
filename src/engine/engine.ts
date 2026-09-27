@@ -46,7 +46,7 @@ import type { Combat, Fighter } from './combat/types'
 import { maxHp, type CreationData } from './rules/character'
 import { npcFighter } from './combat/npc'
 import { approve, arrived, campfire, companionOf, companions, fleeWith, leave, mend, order, partyLines, recruit, restParty, setStance, sharedFight, syncLevels, withPlayer } from './social/companions'
-import { confronting, settleGrievance } from './social/confront'
+import { confronting, found as foundStranger, seekers, settleGrievance } from './social/confront'
 import { crime, LAND_LAW, payFine, steal, townLaw } from './social/crime'
 import { deed, noticeCarried, seedBonds } from './social/deeds'
 import { factionLines, factionPage, join, rankOf, repute } from './social/factions'
@@ -683,7 +683,7 @@ export class Engine {
     }
     noticeCarried(this.world)
     outputs.push(...this.questsTick())
-    outputs.push(...this.confrontations(), ...this.attacks())
+    outputs.push(...this.confrontations(), ...this.attacks(), ...this.sought())
     settleRuns(this.world)
     settleChoices(this.world)
     outputs.push(...this.world.notices.splice(0).map((text) => ({ kind: 'system' as const, text })))
@@ -997,7 +997,7 @@ export class Engine {
     for (const listener of this.listeners) listener({ kind: 'replay', t: this.world.now, entry: { t: this.world.now, k: 'tick', v: minutes } })
     const passed = this.pass(minutes)
     noticeCarried(this.world)
-    const outputs = [...passed, ...this.questsTick(), ...this.confrontations(), ...this.attacks()]
+    const outputs = [...passed, ...this.questsTick(), ...this.confrontations(), ...this.attacks(), ...this.sought()]
     outputs.push(...this.world.notices.splice(0).map((text) => ({ kind: 'system' as const, text })))
     return this.shown(outputs)
   }
@@ -1750,6 +1750,19 @@ export class Engine {
     if (!intent) return []
     intent.terms.fought = this.world.now
     return this.startNpcFight(intent.by, 'npc')
+  }
+
+  /**
+   * Someone who went looking for the stranger finds them (M10.3, seek_player):
+   * they come up and open a talk with their line, and ask what they need.
+   */
+  private sought(): Output[] {
+    if (this.state.combat || this.state.talk) return []
+    const id = seekers(this.world)[0]
+    if (!id) return []
+    const line = foundStranger(this.world, id)
+    const name = callName(this.world.npc(id))
+    return [{ kind: 'narration', text: `${name} comes up to you.` }, { kind: 'speech', text: `${name}: "${line}"` }, ...this.dialogue.start(id, false, true)]
   }
 
   /** Someone with a grievance finds the player: words, or blows if the gate allows it. */

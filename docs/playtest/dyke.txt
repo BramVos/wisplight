@@ -136,8 +136,8 @@ Teunis scratches an ear. "Water is seeping through the dyke at Oude Zijl, low do
 Teunis lifts a hand. "Go on, then."
 
 > journal
-People: Fenna Visser, Jan Visser, Kobus, Teunis Ros.
-Places: Oude Zijl, Veenhoek, Waagdam, Veenhoek, the Green, Canal Quay, The Horse Mill, The Market Square.
+People: Fenna Visser, Cornelis de Wit, Harmen Molenaar, Jan Visser, Kobus, Lubbert Graanhandel, Teunis Ros.
+Places: Oude Zijl, Veenhoek, Waagdam, Graafhaven, The Mill De Zwaan, Veenhoek, the Green, Canal Quay, The Horse Mill, The Market Square.
 Lore: the drainage of the Holleveen, the stranger in Veenhoek, the dyke at Oude Zijl leaks, the stranger in Waagdam, the mill not turning before winter.
 
 ==== INFLUENCE (Woensdag 15 Herfstmaand 211 AW, 09:37 (morning))
@@ -210,8 +210,8 @@ Sijbrand leaves south.
 Time passes. It is Woensdag 15 Herfstmaand 211 AW, 14:00 (afternoon).
 
 > journal
-People: Fenna Visser, Jan Visser, Kobus, Sijbrand, Teunis Ros.
-Places: Oude Zijl, Veenhoek, Waagdam, The Dyke House, The Old Sluice, Veenhoek, the Green, Canal Quay, The East Gate, The Horse Mill, The Market Square.
+People: Fenna Visser, Cornelis de Wit, Harmen Molenaar, Jan Visser, Kobus, Lubbert Graanhandel, Sijbrand, Teunis Ros.
+Places: Oude Zijl, Veenhoek, Waagdam, Graafhaven, The Mill De Zwaan, The Dyke House, The Old Sluice, Veenhoek, the Green, Canal Quay, The East Gate, The Horse Mill, The Market Square.
 Lore: the drainage of the Holleveen, the stranger in Veenhoek, the dyke at Oude Zijl leaks, the stranger in Waagdam, the mill not turning before winter.
 
 ==== AFTER (Woensdag 15 Herfstmaand 211 AW, 14:00 (afternoon))
@@ -228,8 +228,8 @@ A square brick house with small windows, built into the side of the dyke so that
 Exits: south
 
 > journal
-People: Fenna Visser, Jan Visser, Kobus, Sijbrand, Teunis Ros.
-Places: Oude Zijl, Veenhoek, Waagdam, The Dyke House, The Old Sluice, Veenhoek, the Green, Canal Quay, The East Gate, The Horse Mill, The Market Square.
+People: Fenna Visser, Cornelis de Wit, Harmen Molenaar, Jan Visser, Kobus, Lubbert Graanhandel, Sijbrand, Teunis Ros.
+Places: Oude Zijl, Veenhoek, Waagdam, Graafhaven, The Mill De Zwaan, The Dyke House, The Old Sluice, Veenhoek, the Green, Canal Quay, The East Gate, The Horse Mill, The Market Square.
 Lore: the drainage of the Holleveen, the stranger in Veenhoek, the dyke at Oude Zijl leaks, the stranger in Waagdam, the mill not turning before winter.
 
 [48 hours pass]
@@ -282,8 +282,8 @@ Exits: north, east, south, west, northeast
 Across country you can head any way, or follow the fen path, the path to the Kabouterberg, the peat road, the priory path, the tow path.
 
 > journal
-People: Fenna Visser, Jan Visser, Kobus, Sijbrand, Teunis Ros.
-Places: Oude Zijl, Veenhoek, Waagdam, The Dyke House, The Old Sluice, Veenhoek, the Green, Canal Quay, The East Gate, The Horse Mill, The Market Square.
+People: Fenna Visser, Cornelis de Wit, Harmen Molenaar, Jan Visser, Kobus, Lubbert Graanhandel, Sijbrand, Teunis Ros.
+Places: Oude Zijl, Veenhoek, Waagdam, Graafhaven, The Mill De Zwaan, The Dyke House, The Old Sluice, Veenhoek, the Green, Canal Quay, The East Gate, The Horse Mill, The Market Square.
 Lore: the drainage of the Holleveen, the stranger in Veenhoek, the dyke at Oude Zijl leaks, the stranger in Waagdam, the mill not turning before winter.
 
 ==== END (Zaterdag 18 Herfstmaand 211 AW, 20:00 (evening))
@@ -425,8 +425,8 @@ Teunis scratches an ear. "Water is seeping through the dyke at Oude Zijl, low do
 Teunis lifts a hand. "Go on, then."
 
 > journal
-People: Fenna Visser, Jan Visser, Kobus, Teunis Ros.
-Places: Oude Zijl, Veenhoek, Waagdam, Veenhoek, the Green, Canal Quay, The Horse Mill, The Market Square.
+People: Fenna Visser, Cornelis de Wit, Harmen Molenaar, Jan Visser, Kobus, Lubbert Graanhandel, Teunis Ros.
+Places: Oude Zijl, Veenhoek, Waagdam, Graafhaven, The Mill De Zwaan, Veenhoek, the Green, Canal Quay, The Horse Mill, The Market Square.
 Lore: the drainage of the Holleveen, the stranger in Veenhoek, the dyke at Oude Zijl leaks, the stranger in Waagdam, the mill not turning before winter.
 
 ==== AFTER (Woensdag 15 Herfstmaand 211 AW, 09:37 (morning))
@@ -448,8 +448,8 @@ Exits: west, east
 Here: Teunis the horse-miller (at work).
 
 > journal
-People: Fenna Visser, Jan Visser, Kobus, Teunis Ros.
-Places: Oude Zijl, Veenhoek, Waagdam, Veenhoek, the Green, Canal Quay, The Horse Mill, The Market Square.
+People: Fenna Visser, Cornelis de Wit, Harmen Molenaar, Jan Visser, Kobus, Lubbert Graanhandel, Teunis Ros.
+Places: Oude Zijl, Veenhoek, Waagdam, Graafhaven, The Mill De Zwaan, Veenhoek, the Green, Canal Quay, The Horse Mill, The Market Square.
 Lore: the drainage of the Holleveen, the stranger in Veenhoek, the dyke at Oude Zijl leaks, the stranger in Waagdam, the mill not turning before winter.
 
 [48 hours pass]
@@ -504,8 +504,8 @@ Exits: north, east, south, west, northeast
 Across country you can head any way, or follow the fen path, the path to the Kabouterberg, the peat road, the priory path, the tow path.
 
 > journal
-People: Fenna Visser, Jan Visser, Kobus, Teunis Ros.
-Places: Oude Zijl, Veenhoek, Waagdam, Veenhoek, the Green, Canal Quay, The Horse Mill, The Market Square.
+People: Fenna Visser, Cornelis de Wit, Harmen Molenaar, Jan Visser, Kobus, Lubbert Graanhandel, Teunis Ros.
+Places: Oude Zijl, Veenhoek, Waagdam, Graafhaven, The Mill De Zwaan, Veenhoek, the Green, Canal Quay, The Horse Mill, The Market Square.
 Lore: the drainage of the Holleveen, the stranger in Veenhoek, the dyke at Oude Zijl leaks, the stranger in Waagdam, the mill not turning before winter.
 
 ==== END (Zaterdag 18 Herfstmaand 211 AW, 15:37 (afternoon))

@@ -1,0 +1,9 @@
+# Watchers of Skerrow (design: signalen en nasleep). A new kind of event is a
+# watcher here and an aftermath in aftermath.yaml, not code. Skerrow had none
+# until M10.3; these are what conversations that go on in the world need.
+
+watchers:
+  # Someone hears the stranger was asking after them (M10.3): they may go and find out why.
+  - id: asked_about
+    signal: asked_about
+    belief: { key: asked_about }
