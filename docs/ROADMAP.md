@@ -235,9 +235,42 @@ Uit de mijlpaalverslagen van M8.2 tot en met M8.5 (verwerkt 27 september 2026):
 - [ ] Skerrow heeft een eigen regelset en is met personage en gevecht te spelen
 - [ ] Alles wat er al was, speelt hetzelfde: het hele testpakket, de simulaties, de uitspeelscripts van beide werelden, en oude saves
 
-## M9.2 Afwerking en release
+## M9.2 Waarheid en samenhang
 
-Scope: FO 18. Balans, toegankelijkheid, prestaties, installers voor Mac en Windows. Tot 27 september 2026 was dit M9.
+Scope: de review van 27 september 2026 op de kroniekschrijver en de verhaalopbouw (na M8.5). De kroniekschrijver mag niets beweren dat niet uit een feit volgt; vrije planstappen dragen dezelfde voorwaarden als vaste; wat tijdens een aanroep gebeurt, gaat niet verloren; oorzaak en gevolg staan op feiten en lijnen. Kleine ingrepen in `chronicler.ts`, `planning.ts`, `quests/verbs.ts` en `storylines.ts`, elk met een test die het scenario van de review naspeelt. Vastgelegd na M9.1 omdat M9.1 al in aanbouw was.
+
+- [ ] Lore noemt geen levende als dood, geen ander huis dan het echte en geen bezit dat iemand niet heeft: een regelfilter op toetsbare uitspraken (dood, plaats, bezit, betrokkenen) tegen de wereldtoestand; "Gerrit is dead" bij een levende Gerrit valt terug op het sjabloon
+- [ ] De kroniekschrijver levert zijn beweringen ook als structuur (onderwerp, sleutel, waarde), elk terug te voeren op een feit van de lijn; anders wordt het lore-item niet opgeslagen
+- [ ] Bij belang 4 of hoger beoordeelt een kleine tweede aanroep of de tekst iets zegt wat niet in de feiten staat; in de tests met de mock
+- [ ] Elk werkwoord heeft standaardvoorwaarden (`return`: weet dat het gevaar voorbij is, gelooft dat het huis staat, de plek is veilig) die gelden voor content, brein en kroniekschrijver; content mag ze bewust overschrijven, een model niet, en ze worden bij uitvoering opnieuw gecontroleerd
+- [ ] Een run legt vast welke feiten hij aanbood; alleen die worden na afloop als verwerkt gemarkeerd, en een feit dat tijdens de aanroep ontstond wacht op de volgende run (test: A aangeboden, B intussen, B blijft onverwerkt)
+- [ ] De namencontrole bij het verwerken kijkt naar de invoer die het model zag, niet naar de wereld van dat moment
+- [ ] Feiten dragen hun oorzaak (`cause`) en lijnen hun voorganger (`follows`); een lijn die na twaalf feiten splitst, draagt samenvatting, open vragen en oorzaak over, en de kroniekschrijver ziet oorlog, route dicht, tekort, onrust, vertrek als één boog
+- [ ] Alles wat er al was, speelt hetzelfde: het hele testpakket, de simulaties, de uitspeelscripts van beide werelden, en oude saves
+
+## M9.3 Maat: geschiedenis, opslag, prompts en kosten
+
+Scope: de review van 27 september 2026 op prestaties en kosten (na M8.5), in deze volgorde: kostenregister, contextselectie, feiten indexeren, checkpoints, modellen vergelijken. Het archief voor oude feiten en "300 dagen even snel" zitten al in M9.1; hier komen de indexen, het opslagpatroon, de prompts en de kosten. Niet meegenomen, met reden: SQLite (de motor is headless en draait ook in de browser, een native module bemoeilijkt de installers, en het spellogboek is al append-only en geïndexeerd; de drie lagen en de indexen komen er wel, in geheugen en in het archief); een eigen proces voor de motor (pas als de meting na de andere stappen nog haperingen laat zien); semantisch zoeken (exacte ids en onderwerpen volstaan, lore is kort); de rolverdeling van modellen (dat is al de opzet sinds M8.2: de motor bepaalt wat kan, het model kiest en formuleert).
+
+- [ ] Het uurbudget telt alle aanroepen van het laatste uur, ook na een herstart: een duurzaam kostenregister in plaats van de laatste 200 logregels (test: 250 aanroepen van 0,01 tellen als 2,50)
+- [ ] Vóór verzending reserveert de gateway een geschatte bovengrens en verrekent daarna het werkelijke verbruik, zodat gelijktijdige aanvragen niet samen over het budget gaan
+- [ ] Een onbekend tarief is een eigen status: tokens geteld, automatische besteding begrensd, zichtbaar in de instellingen
+- [ ] Cachewrites worden apart geteld en apart geprijsd, en het spel meet per rol hoeveel van een prompt werkelijk uit de cache kwam
+- [ ] Het brein krijgt niet alles wat iemand kent, maar wat bij het signaal hoort: karakter, het probleem, de eigen middelen, de haalbare opties en alleen de bijbehorende mensen en plekken; de stem krijgt alleen de bekenden die bij het gesprek horen (test: met duizend bekenden groeit de prompt niet mee)
+- [ ] Het model kan begrensd bijvragen: wat iemand over een onderwerp weet, de oorzaken en open vragen van een lijn, de band tussen twee mensen, recente gebeurtenissen rond een plek; elke functie begrenst kennisrecht, tijd, aantal en omvang, en een NPC wordt er niet alwetend van
+- [ ] Een verhaalbewerking heeft een totaalbudget over al haar opzoekrondes, naast de grens per aanroep
+- [ ] Feiten, mensen, plekken, onderwerpen en open lijnen hebben een index; `factById` en de nieuwsverspreiding zoeken niet meer lineair (test: honderdduizend feiten, opzoeken in constante tijd)
+- [ ] De simulatie kiest werk voordat ze mensen doorloopt: een index van mensen per plek, een wachtrij met het volgende moment per persoon en plan, begrensde en geseede gesprekscontacten, en verspreiding per gebied voor wie ver weg is; naspelen geeft dezelfde wereld
+- [ ] Opslaan kopieert niet meer twee keer: een save is een checkpoint plus de gebeurtenissen sindsdien, met contentversie, seed, modelantwoorden en vertakkingen, en naspelen blijft exact
+- [ ] De interface hapert niet bij een autosave, een reis of een dagwissel (gemeten); pas als dat na de andere stappen nog zo is, draait de motor in een eigen proces
+- [ ] De modelproef beoordeelt op kosten per bruikbaar, gevalideerd antwoord (inclusief herhalingen en terugval), kennislekken, feitelijke fouten, karaktervastheid en reactietijd, en het advies kiest daarop
+- [ ] Alles wat er al was, speelt hetzelfde: het hele testpakket, de simulaties, de uitspeelscripts van beide werelden, en oude saves
+
+## M9.4 Afwerking en release
+
+Scope: FO 18. Balans, toegankelijkheid, prestaties, installers voor Mac en Windows. Tot 27 september 2026 was dit M9, daarna kort M9.2.
+
+- [ ] Een speeltestprotocol per verhaallijn: kon de speler het probleem herkennen, er invloed op uitoefenen en de afloop begrijpen; drie lijnen per wereld getest, met de uitkomst in de changelog
 
 - [ ] Alle niet-functionele eisen uit FO 18 zijn gemeten en gehaald
 - [ ] Installers voor Mac en Windows werken op een schone machine
