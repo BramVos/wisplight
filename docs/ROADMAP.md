@@ -130,6 +130,39 @@ Scope: FO 15. Lore-, quest-, object- en beroepseditors, speeltestgereedschap (ti
 
 Afwijkingen, met reden in FO hoofdstuk 15: geen kaart waarop je plekken sleept (uitgangen in het formulier), de kroniekschrijver levert hele entiteiten en de editor maakt de diff, en @dig, @desc, @spawn, @tag en @link zijn niet gebouwd omdat de editor dat werk doet.
 
+## M8.1 Nasleep: fundament
+
+Scope: ontwerp "Signalen en nasleep" (Claude Docs), FO 7, 8 en 15. Eerst een impactanalyse en de gouden scenario's als falende tests. Signalen en wachters in de content (per wereld, met een gedeelde basis), een feit bij elke questuitkomst, banden en huis en werk als laag in de spelstand, standaardnasleep in de content, en de effectplannen als algemene planuitvoerder met voorwaarden op wat iemand weet en wat waar is. Wachters en nasleep in de editor. Nog zonder extra AI.
+
+- [ ] De bruiloft van Wouter en Geesje geeft een feest, een verhuizing en een vacature bij Trijntje, en het dorp hoort ervan
+- [ ] Na een oorlog gaan vluchtelingen terug als ze weten dat het vrede is en denken dat hun huis staat; wie een foute versie hoorde, blijft weg
+- [ ] Een nieuwe soort gebeurtenis is toe te voegen met alleen content (een wachter en een nasleep), in de editor
+- [ ] Alles wat er al was, speelt hetzelfde: het hele testpakket, 30 speldagen simulatie, de uitspeelscripts van beide werelden, en een oude save laadt en speelt verder
+
+## M8.2 Nasleep: het brein plant
+
+Scope: voornemens over meerdere dagen, plannen van het brein voor zichzelf en het eigen huishouden (klein model, validator, budget, terugval op de standaardnasleep), vijf standen (arm, gewoon, burger, welgesteld, notabel), voornemens zichtbaar in de speeltest en de NPC-inspecteur.
+
+- [ ] Harmen gedraagt zich binnen een week anders als zijn huishouden twee standen stijgt, en het dorp merkt het
+- [ ] Een ruzie die een week blijft, wordt bijgelegd of wordt een vete, afhankelijk van wie er bemiddelt
+- [ ] Zonder AI of met het budget op loopt alles door op de standaardnasleep
+
+## M8.3 Nasleep: de kroniekschrijver plant
+
+Scope: de plannen van de kroniekschrijver krijgen de nieuwe werkwoorden, escalatie vanuit het brein, botsende plannen, plannen voor groepen.
+
+- [ ] De vluchtelingen in Waagdam krijgen samen één plan waarin sommigen terugkeren en anderen blijven
+- [ ] Twee breinen met plannen die elkaar kruisen, worden één verhaal met een uitkomst
+- [ ] Ongeldige stappen worden geweigerd en vallen terug op de standaardnasleep
+
+## M8.4 Nasleep: groei
+
+Scope: nieuwe mensen uit sjablonen (gevalideerd, met een maximum per seizoen), een grootboek per nederzetting, hulpbronnen per zone, projecten en bouwwerken, nederzettingen in de editor. Een rangwissel van een nederzetting pas als dat speelt.
+
+- [ ] Een kuiper vestigt zich met zijn gezin in een leeg huis in Veenhoek omdat niemand tonnen maakt
+- [ ] Waagdam bouwt eerst een steenbakkerij en daarna een muur, met materiaal uit de economie
+- [ ] Een tekort dat blijft, leidt tot een besluit van een handelaar of een nieuwkomer
+
 ## M9 Afwerking en release
 
 Scope: FO 18. Balans, toegankelijkheid, prestaties, installers voor Mac en Windows.
