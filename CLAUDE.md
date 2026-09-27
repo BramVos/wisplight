@@ -8,7 +8,7 @@ Claude builds Wisplight for Bram, milestone by milestone. Bram playtests and mak
 - World book (Dutch, Claude Docs): https://claude.ai/artifact/SimoCMSdUyTgXD3YFjHsr3 (docs project `d0499160-99d0-4650-8c32-7b67901e4cc4`). All names, places, NPCs, lore and quests come from here.
 - Design for lore and world change (Dutch, Claude Docs, agreed with Bram; basis for M3, M3.1 and parts of M4, M6, M7 and M8): https://claude.ai/artifact/MC1NwywtuFyJrxpAJPgtAd (docs project `a3803018-9656-4c30-9f74-57255da68632`).
 - Read these through the Claude Docs connector, never by web fetch. Read only the chapters the current task needs.
-- Design for signals and aftermath (Dutch, Claude Docs, agreed with Bram on 27 September 2026; basis for M8.1 to M8.4): https://claude.ai/code/artifact/2f06591d-4b3c-4053-a3cd-491070bd5947 (docs project `2f06591d-4b3c-4053-a3cd-491070bd5947`).
+- Design for signals and aftermath (Dutch, Claude Docs, agreed with Bram on 27 September 2026; basis for M8.1 to M8.5): https://claude.ai/code/artifact/2f06591d-4b3c-4053-a3cd-491070bd5947 (docs project `2f06591d-4b3c-4053-a3cd-491070bd5947`).
 - `docs/design-atlas.html` is a visual snapshot of the functional design for people, dated 26 September 2026. It is not the spec: never implement from it, and when it disagrees with the design doc, the design doc wins.
 - `docs/chronicler-atlas.html` is the same kind of snapshot for the lore and world-change design (the chronicler), dated 27 September 2026. The same rule applies: the design doc in Claude Docs wins.
 - `docs/scenario-atlas.html` walks four played scenarios through the systems (signal, decision, consequence), dated 27 September 2026. A reading aid with made-up example values; never implement from it.

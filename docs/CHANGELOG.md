@@ -13,7 +13,7 @@ Nieuw:
 
 Testen: `npm run dev`, nieuw spel in de Nethermarch. Met de bouwcommando's: `@quest a_boat_and_a_bride`, `@flag trijntje_blesses`, dan wachten tot Rustdag 26 Herfstmaand rond vier uur en naar de Goose gaan voor het feest. Een dag later staat het briefje op het prikbord in de stalhof, en praat met Geesje of Wouter over hun huis. Of trouw zelf (zoals in M7.2) en kijk in de editor bij Playtest. Controles: `npm test` (350 tests), met drie saves van vóór M8.1 die laden en doorspelen, de dertig dagen en de uitspeelscripts van beide werelden.
 
-Nog niet: het brein plant nog niets zelf (M8.2). In de Nethermarch heeft iedereen werk, dus de plek bij Trijntje blijft voorlopig open; de kroniekschrijver en nieuwkomers vullen dat in M8.3 en M8.4 in. Zonder AI vlucht er in een oorlog niemand.
+Nog niet: het brein plant nog niets zelf (M8.2). In de Nethermarch heeft iedereen werk, dus de plek bij Trijntje blijft voorlopig open; de kroniekschrijver en nieuwkomers vullen dat in M8.3 en M8.5 in (tot 27 september 2026 M8.4). Zonder AI vlucht er in een oorlog niemand.
 
 Ontwerp: je besluiten van vandaag zitten erin (de kroniekschrijver beslist wie vlucht, het feest op een rustdag na een week, het prikbord). Afwijkingen en aanvullingen staan in het ontwerp onder "Zo is het in M8.1 gebouwd": alleen een vast plan met een vlucht blokkeert de kroniekschrijver nog (het oorlogsplan niet), de terugkeer zit in de vlucht zelf, er zijn werkwoorden bij (hire, post, thought, expect_home, regard, leave, tell, end_tie), en een open plek is belang 2 zodat het dorp hem twee weken onthoudt. Het FO heeft een stand na M8.1 in hoofdstuk 15 en de regel voor tegenstrijdige versies in hoofdstuk 5.
 ## Na je speeltest van M8, 27 september 2026
