@@ -203,13 +203,34 @@ Verder, uit "Later" in het ontwerp "Signalen en nasleep" en uit eerdere mijlpale
 - een regelset voor Skerrow
 - Busy Hands, voor zover het na werken voor loon in M8.5 nog openstaat
 
+Uit de mijlpaalverslagen van M8.2 tot en met M8.5 (verwerkt 27 september 2026):
+- een streek buiten de kaart die de kroniekschrijver uitwerkt, krijgt een eigen grootboek en de route houdt haar id (M8.4)
+- seizoenen en uitputbare grond in de Nethermarch: de content kan ze al zetten, de wereld gebruikt ze nog niet (M8.4)
+- de laatste toonbanken met vaste bevoorrading (warme maaltijd, melk, bier op Skerrow, scheepsbeschuit) naar het grootboek, met "eten gaat voor alles" als vangnet (M8.4)
+- het wereldboek zegt niet wat Zwolderkamp en Hunnenloo sturen en vragen; de bouwer koos lampolie, spijkers, zeildoek en touw uit Zwolderkamp en wol uit Hunnenloo (M8.4)
+- groepen met naamlozen die pas een naam en een kaart krijgen als de speler iemand aanspreekt (M8.5)
+- vervoeren als eigen handeling: een lading van A naar B voor loon, met de risico's van de weg (M8.5)
+- een rangwissel van een nederzetting, als plan met de graaf als beslisser (M8.5, scenario 7 in het ontwerp)
+- een plek die door een project ontstond met [Adopt] overnemen in de content (M8.5)
+- geloof per persoon, zodat wrijving verschil in geloof meeweegt (M8.3)
+- een groep vóór nieuwkomers (de Lantaarn met liefdadigheid) ook als standaardnasleep, niet alleen via de kroniekschrijver (M8.3)
+
 - [ ] Een naam of beschrijving wijzigen in de editor laat elke oude save en elk spellogboek laden en precies naspelen
 - [ ] Een id verwijderen of veranderen kan niet zonder grafsteen: het laden noemt de id en de plek, en de editor maakt de grafsteen zelf
 - [ ] Een save met iets wat later verwijderd of samengevoegd is, laadt en speelt verder volgens de grafsteen
 - [ ] Een nieuwkomer die in een save ontstond en later met [Adopt] in de wereld kwam, is in die save en in een nieuw spel dezelfde persoon met hetzelfde id
 - [ ] Na 300 speldagen blijven laden, opslaan en het doorvertellen van nieuws even snel als na 30, dankzij het archief
 - [ ] Een feest, vertrek of terugkeer ver van de speler kost geen simulatie van mensen, alleen een feit en een toestandswijziging
-- [ ] Een streek buiten de kaart wordt speelbaar als de speler erheen gaat, gevalideerd als content, en ligt daarna vast in de savegame
+- [ ] Een streek buiten de kaart wordt speelbaar als de speler erheen gaat, gevalideerd als content, en ligt daarna vast in de savegame; ze krijgt dan een eigen grootboek en de route houdt haar id
+- [ ] De Nethermarch gebruikt seizoenen en uitputbare grond: turf wordt in de zomer gestoken, rogge in de Oogstmaand geoogst, en in de winter loopt de voorraad terug en stijgt de prijs, alleen uit content
+- [ ] Elke toonbank van beide werelden vult uit het grootboek; de vaste bevoorrading blijft alleen als terugval voor nieuwe content, en niemand krijgt honger door een rekenfout
+- [ ] Het wereldboek noemt wat Zwolderkamp en Hunnenloo sturen en vragen, en de content van de Nethermarch volgt het wereldboek
+- [ ] Een groep naamlozen (vluchtelingen, werkers aan de muur) krijgt pas een naam en een kaart als de speler iemand aanspreekt, en kost tot dan geen simulatie per persoon
+- [ ] De speler kan een lading vervoeren van de ene nederzetting naar de andere voor loon, met tol en roof als risico onderweg
+- [ ] Staat de muur van Waagdam, dan vraagt de burgemeester de graaf om stadsrechten; een rangwissel is een plan waarin de graaf beslist, en de wereld merkt het verschil
+- [ ] Een plek die door een project ontstond, is met [Adopt] in de content over te nemen met hetzelfde id, net als een nieuwkomer
+- [ ] Ieder mens heeft een geloof uit de content van de wereld, en wrijving met nieuwkomers weegt verschil in geloof mee
+- [ ] Een groep vóór nieuwkomers ontstaat ook zonder AI, als standaardnasleep in de content, naast de groep tegen
 - [ ] Een nieuw spel kan de wereld van een oud spel als legende meenemen, zonder namen van mensen die nog leven
 - [ ] Skerrow heeft een eigen regelset en is met personage en gevecht te spelen
 - [ ] Alles wat er al was, speelt hetzelfde: het hele testpakket, de simulaties, de uitspeelscripts van beide werelden, en oude saves
