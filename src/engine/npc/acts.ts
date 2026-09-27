@@ -4,7 +4,7 @@ import { meet, recordFact } from '../news'
 import { questsOf } from '../life'
 import { dangerOf } from '../social/companions'
 import { shiftBond, setMood } from '../social/deeds'
-import { investigated, lawAt, type Crime } from '../social/crime'
+import { investigated, lawAt, lawCell, type Crime } from '../social/crime'
 import type { Step } from '../state'
 import type { World } from '../world'
 import { remember } from './execute'
@@ -126,10 +126,13 @@ export function performAct(world: World, npcId: string, step: ActStep): boolean 
       if (thief && world.state.npcs[thief] && !world.state.npcs[thief]!.dead) {
         // Someone of the village caught out: a day in the schout's cell.
         const s = world.state.npcs[thief]!
-        s.stayAt = { where: 'loc_schout_house', until: world.now + DAY }
-        s.plan = []
-        s.planGoal = undefined
-        s.activity = 'locked up by the schout'
+        const cell = lawCell(world)
+        if (cell) {
+          s.stayAt = { where: cell, until: world.now + DAY }
+          s.plan = []
+          s.planGoal = undefined
+          s.activity = `locked up by the ${world.words.law.officer}`
+        }
       }
       event(world, npcId, `{name} tells what {they} saw, in a low voice, and points.`)
       return true

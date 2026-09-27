@@ -1,0 +1,835 @@
+<!doctype html>
+<!-- Visual overview of the architecture as built, dated 27 September 2026. A reading aid for people, in English; the design documents in Claude Docs are the specification and win when they disagree. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Wisplight Architecture Atlas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;0,800;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --paper:#E9ECE3; --sheet:#F4F5EF; --ink:#18231F; --ink-2:#4A5A52; --ink-3:#7C8A82;
+  --rule:#C5CCC0; --rule-strong:#18231F;
+  --water:#2C5A86; --water-soft:#D5E1EC;
+  --wisp:#C99A12; --wisp-hi:#F3D466; --wisp-soft:#F6E7B0;
+  --peat:#6A4B30; --peat-soft:#E6DCCF;
+  --reed:#6E7F3A; --reed-soft:#E0E6CC;
+  --danger:#A63D2A; --danger-soft:#F1D9D2;
+  --screen:#16201C; --screen-ink:#CFD8CF; --screen-dim:#7F9187; --screen-topic:#F0CD5C; --screen-cmd:#9CC3E6;
+  --shadow:0 1px 0 rgba(24,35,31,.06), 0 10px 30px -18px rgba(24,35,31,.35);
+  --f-display:"IM Fell English", "Iowan Old Style", Georgia, serif;
+  --f-sc:"IM Fell English SC", "IM Fell English", Georgia, serif;
+  --f-body:"Alegreya Sans", "Gill Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --paper:#0C1311; --sheet:#121B18; --ink:#DCE3DA; --ink-2:#A7B4AB; --ink-3:#74847A;
+    --rule:#2A3833; --rule-strong:#DCE3DA;
+    --water:#86B0D8; --water-soft:#1B2C3A;
+    --wisp:#F0C94A; --wisp-hi:#F6DB7A; --wisp-soft:#3A3217;
+    --peat:#C9A27E; --peat-soft:#2E251C;
+    --reed:#AEC06C; --reed-soft:#232C18;
+    --danger:#E28068; --danger-soft:#3A1F19;
+    --screen:#070B0A; --screen-ink:#CFD8CF; --screen-dim:#6F8177; --screen-topic:#F0CD5C; --screen-cmd:#9CC3E6;
+    --shadow:0 1px 0 rgba(0,0,0,.3), 0 14px 30px -18px rgba(0,0,0,.8);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --paper:#0C1311; --sheet:#121B18; --ink:#DCE3DA; --ink-2:#A7B4AB; --ink-3:#74847A;
+  --rule:#2A3833; --rule-strong:#DCE3DA;
+  --water:#86B0D8; --water-soft:#1B2C3A;
+  --wisp:#F0C94A; --wisp-hi:#F6DB7A; --wisp-soft:#3A3217;
+  --peat:#C9A27E; --peat-soft:#2E251C;
+  --reed:#AEC06C; --reed-soft:#232C18;
+  --danger:#E28068; --danger-soft:#3A1F19;
+  --screen:#070B0A; --screen-ink:#CFD8CF; --screen-dim:#6F8177; --screen-topic:#F0CD5C; --screen-cmd:#9CC3E6;
+  --shadow:0 1px 0 rgba(0,0,0,.3), 0 14px 30px -18px rgba(0,0,0,.8);
+}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:15.5px;line-height:1.5;margin:0}
+.wrap{max-width:1280px;margin:0 auto;padding-inline:clamp(16px,3vw,40px);padding-block:0 72px}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--wisp);outline-offset:2px}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:10;background:color-mix(in srgb,var(--paper) 92%,transparent);backdrop-filter:blur(6px);border-bottom:1px solid var(--rule)}
+.bar-in{max-width:1280px;margin:0 auto;padding:8px clamp(16px,3vw,40px);display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.bar-name{font-family:var(--f-sc);font-size:17px;letter-spacing:.02em}
+.bar nav{display:flex;gap:4px 12px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-2)}
+.bar nav a{text-decoration:none;letter-spacing:.04em;text-transform:uppercase}
+.bar nav a:hover{color:var(--ink)}
+header.hero{padding-block:44px 28px;border-bottom:1px solid var(--rule);display:grid;gap:14px}
+.eyebrow{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3)}
+h1{font-family:var(--f-display);font-weight:400;font-size:clamp(34px,5vw,58px);line-height:1.02;margin:0;text-wrap:balance}
+.lede{font-size:18px;max-width:62ch;color:var(--ink-2);margin:0}
+.note{font-size:13px;color:var(--ink-3);max-width:70ch}
+section{padding-block:44px 8px;border-bottom:1px solid var(--rule)}
+section:last-of-type{border-bottom:0}
+h2{font-family:var(--f-display);font-weight:400;font-size:clamp(26px,3.2vw,36px);line-height:1.1;margin:0 0 6px;text-wrap:balance}
+h3{font-family:var(--f-sc);font-weight:400;font-size:17px;margin:22px 0 6px;letter-spacing:.02em}
+.sub{color:var(--ink-2);max-width:68ch;margin:0 0 18px}
+p{max-width:68ch}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:22px 34px}
+.three{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.four{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+@media (max-width:900px){.two,.three,.four{grid-template-columns:1fr}}
+@media (min-width:600px) and (max-width:900px){.three,.four{grid-template-columns:1fr 1fr}}
+.card{background:var(--sheet);border:1px solid var(--rule);border-radius:6px;padding:16px 18px;box-shadow:var(--shadow);display:grid;gap:6px;align-content:start}
+.card h4{margin:0;font-family:var(--f-sc);font-weight:400;font-size:16px}
+.card p{margin:0;font-size:14px;color:var(--ink-2)}
+.card .where{font-family:var(--f-mono);font-size:11.5px;color:var(--ink-3);word-break:break-word}
+.tag{display:inline-block;font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:3px;background:var(--reed-soft);color:var(--reed)}
+.tag.ai{background:var(--wisp-soft);color:var(--peat)}
+.tag.rules{background:var(--water-soft);color:var(--water)}
+.tag.content{background:var(--peat-soft);color:var(--peat)}
+figure{margin:18px 0 8px;display:grid;gap:8px}
+figure svg{max-width:100%;height:auto;display:block;color:var(--ink);font-family:var(--f-body)}
+figcaption{font-size:13.5px;color:var(--ink-2);max-width:78ch}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px;margin:12px 0 8px}
+th,td{text-align:left;vertical-align:top;padding:8px 10px;border-bottom:1px solid var(--rule)}
+th{font-family:var(--f-sc);font-weight:400;font-size:14.5px;letter-spacing:.02em;color:var(--ink-2)}
+td.num{font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+code{font-family:var(--f-mono);font-size:12.5px;background:var(--sheet);border:1px solid var(--rule);border-radius:3px;padding:1px 5px}
+pre{background:var(--screen);color:var(--screen-ink);font-family:var(--f-mono);font-size:12.5px;line-height:1.5;padding:14px 16px;border-radius:6px;overflow-x:auto;margin:10px 0}
+pre .k{color:var(--screen-topic)} pre .c{color:var(--screen-dim);font-style:italic} pre .s{color:var(--screen-cmd)}
+.screen{background:var(--screen);color:var(--screen-ink);font-family:var(--f-mono);font-size:12.5px;line-height:1.55;padding:14px 16px;border-radius:6px;overflow-x:auto}
+.screen .you{color:var(--screen-cmd)} .screen .sys{color:var(--screen-dim)} .screen .topic{color:var(--screen-topic)}
+.timeline{display:grid;gap:0;border-left:2px solid var(--rule-strong);margin:14px 0 8px 8px}
+.beat{display:grid;grid-template-columns:110px 1fr;gap:10px;padding:8px 0 10px 16px;position:relative;align-items:start}
+.beat::before{content:"";position:absolute;left:-7px;top:14px;width:10px;height:10px;border-radius:50%;background:var(--paper);border:2px solid var(--rule-strong)}
+.beat.ai::before{background:var(--wisp)}
+.beat.rules::before{background:var(--water)}
+.beat.player::before{background:var(--danger)}
+.beat .when{font-family:var(--f-mono);font-size:11.5px;color:var(--ink-3);padding-top:3px}
+.beat .what{font-size:14.5px}
+.beat .what b{font-weight:700}
+.beat .what small{display:block;color:var(--ink-3);font-size:12.5px}
+@media (max-width:600px){.beat{grid-template-columns:1fr}}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-2);margin:6px 0 0}
+.legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:-1px;border:2px solid var(--rule-strong);background:var(--paper)}
+.legend .l-ai::before{background:var(--wisp)} .legend .l-rules::before{background:var(--water)} .legend .l-player::before{background:var(--danger)}
+ul.tight{margin:6px 0;padding-left:20px} ul.tight li{margin:3px 0}
+.tree{font-family:var(--f-mono);font-size:12.5px;line-height:1.6;color:var(--ink-2);background:var(--sheet);border:1px solid var(--rule);border-radius:6px;padding:14px 16px;overflow-x:auto;white-space:pre}
+.tree b{color:var(--ink);font-weight:500}
+.kicker{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+@media (prefers-reduced-motion: no-preference){ .card{transition:transform .15s ease} }
+</style>
+</head>
+<body>
+
+<div class="bar"><div class="bar-in">
+  <span class="bar-name">Wisplight · Architecture Atlas</span>
+  <nav>
+    <a href="#apps">Two apps</a><a href="#systems">Systems</a><a href="#minute">One minute</a><a href="#ai">AI roles</a><a href="#knowledge">Knowledge</a><a href="#aftermath">Aftermath</a><a href="#build">Building</a><a href="#play">Stories in play</a><a href="#distance">Distance</a><a href="#optional">Optional layers</a><a href="#code">Code map</a>
+  </nav>
+</div></div>
+
+<div class="wrap">
+
+<header class="hero">
+  <div class="eyebrow">Reading aid · state of the code after M8.1 · 27 September 2026</div>
+  <h1>How Wisplight is put together, and how a story runs through it</h1>
+  <p class="lede">Wisplight is a single-player text role-playing game in which every villager is driven by rules first and a language model second. One headless engine sits under two applications: the game you play and the editor you build worlds with. This atlas shows the parts, how they talk, how a world is authored, and how three stories actually unfold through the machinery.</p>
+  <p class="note">The functional design and the world book in Claude Docs are the specification; this page is a picture of what is built. Where they disagree, the design documents win. Numbers marked "measured" come from the mock model on the fixed test set.</p>
+</header>
+
+<!-- ============================================================ 1. TWO APPS -->
+<section id="apps">
+  <h2>Two applications, one engine</h2>
+  <p class="sub">Everything that decides what happens lives in <code>src/engine</code>, which imports nothing from Electron, React or Node. The game window, the conversation window, the editor, the terminal client and the browser preview are all thin shells around it. That is why the same world plays identically in tests, in the editor's playtest and on screen.</p>
+
+  <figure>
+    <svg viewBox="0 0 1180 560" role="img" aria-label="The layered architecture: content YAML at the bottom, the headless engine and the chronicler module above it, the Node side with savegame, game log and AI gateway beside it, and on top the Electron main process serving the game window, the conversation window and the editor window; the terminal client and the browser preview reach the engine directly.">
+      <defs>
+        <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker>
+      </defs>
+      <!-- Windows -->
+      <g font-size="13">
+        <rect x="40" y="30" width="250" height="92" rx="6" fill="var(--sheet)" stroke="currentColor"/>
+        <text x="165" y="56" text-anchor="middle" font-weight="700">Game window</text>
+        <text x="165" y="76" text-anchor="middle" fill="var(--ink-2)">room text · map · journal · sheet</text>
+        <text x="165" y="94" text-anchor="middle" fill="var(--ink-2)">fight panel · settings · usage</text>
+        <rect x="320" y="30" width="250" height="92" rx="6" fill="var(--sheet)" stroke="currentColor"/>
+        <text x="445" y="56" text-anchor="middle" font-weight="700">Conversation window</text>
+        <text x="445" y="76" text-anchor="middle" fill="var(--ink-2)">free text · quick options · topics</text>
+        <text x="445" y="94" text-anchor="middle" fill="var(--ink-2)">person card · journal within 15 km</text>
+        <rect x="600" y="30" width="250" height="92" rx="6" fill="var(--sheet)" stroke="currentColor"/>
+        <text x="725" y="56" text-anchor="middle" font-weight="700">Editor window</text>
+        <text x="725" y="76" text-anchor="middle" fill="var(--ink-2)">forms · YAML · check · diff</text>
+        <text x="725" y="94" text-anchor="middle" fill="var(--ink-2)">playtest · NPC inspector · chronicler</text>
+        <rect x="900" y="30" width="240" height="92" rx="6" fill="none" stroke="currentColor" stroke-dasharray="5 4"/>
+        <text x="1020" y="56" text-anchor="middle" font-weight="700">Terminal · browser preview</text>
+        <text x="1020" y="76" text-anchor="middle" fill="var(--ink-2)">npm run play · npm run web</text>
+        <text x="1020" y="94" text-anchor="middle" fill="var(--ink-2)">mock model, no Electron</text>
+      </g>
+      <!-- Electron main -->
+      <rect x="40" y="160" width="810" height="70" rx="6" fill="var(--water-soft)" stroke="currentColor"/>
+      <text x="445" y="186" text-anchor="middle" font-size="13" font-weight="700">Electron main process</text>
+      <text x="445" y="206" text-anchor="middle" font-size="12.5" fill="var(--ink-2)">IPC bridge · real-time clock that pauses while you type · hot reload of content · smoke checks</text>
+      <g stroke="currentColor" marker-end="url(#ar)"><line x1="165" y1="122" x2="165" y2="158"/><line x1="445" y1="122" x2="445" y2="158"/><line x1="725" y1="122" x2="725" y2="158"/></g>
+      <!-- Engine -->
+      <rect x="40" y="270" width="560" height="170" rx="6" fill="var(--wisp-soft)" stroke="currentColor"/>
+      <text x="320" y="296" text-anchor="middle" font-size="14" font-weight="700">src/engine — headless, deterministic</text>
+      <g font-size="12.5" fill="var(--ink-2)">
+        <text x="60" y="320">world · simulation · npc (brain, planner, acts)</text>
+        <text x="60" y="338">dialogue (knowledge, prompt, guard) · news · storylines</text>
+        <text x="60" y="356">signals · aftermath · quests (storylets, plans) · layer</text>
+        <text x="60" y="374">map (hex grid, travel, journeys) · lod · rules · combat</text>
+        <text x="60" y="392">social (relations, gates, crime, companions, romance)</text>
+        <text x="60" y="410">editor · edit · builder · playtest</text>
+        <text x="60" y="428" font-style="italic">seeded rng per system · every change is an event in the log</text>
+      </g>
+      <line x1="445" y1="230" x2="445" y2="268" stroke="currentColor" marker-end="url(#ar)"/>
+      <line x1="1020" y1="122" x2="1020" y2="250" stroke="currentColor" stroke-dasharray="5 4"/>
+      <path d="M1020 250 L620 250 L620 268" fill="none" stroke="currentColor" stroke-dasharray="5 4" marker-end="url(#ar)"/>
+      <!-- chronicler module -->
+      <rect x="630" y="270" width="220" height="80" rx="6" fill="var(--sheet)" stroke="currentColor"/>
+      <text x="740" y="296" text-anchor="middle" font-size="13" font-weight="700">src/chronicler</text>
+      <text x="740" y="316" text-anchor="middle" font-size="12" fill="var(--ink-2)">standalone: overview in, ops out</text>
+      <text x="740" y="334" text-anchor="middle" font-size="12" fill="var(--ink-2)">knows nothing of the game</text>
+      <line x1="600" y1="310" x2="628" y2="310" stroke="currentColor" marker-end="url(#ar)"/>
+      <!-- Node side -->
+      <rect x="880" y="270" width="260" height="170" rx="6" fill="var(--sheet)" stroke="currentColor"/>
+      <text x="1010" y="296" text-anchor="middle" font-size="13" font-weight="700">src/node</text>
+      <g font-size="12.5" fill="var(--ink-2)">
+        <text x="900" y="320">savegame (SQLite) · game log (JSONL)</text>
+        <text x="900" y="338">content loader · editor file writes</text>
+        <text x="900" y="360" font-weight="700" fill="currentColor">ai/ gateway · one door for all calls</text>
+        <text x="900" y="378">OpenAI · Anthropic · mock provider</text>
+        <text x="900" y="396">budgets per hour and month · rate limits</text>
+        <text x="900" y="414">keys in OS keychain · usage · AI log</text>
+      </g>
+      <line x1="850" y1="360" x2="878" y2="360" stroke="currentColor" marker-end="url(#ar)" marker-start="url(#ar)"/>
+      <!-- Content -->
+      <rect x="40" y="480" width="1100" height="60" rx="6" fill="var(--peat-soft)" stroke="currentColor"/>
+      <text x="590" y="504" text-anchor="middle" font-size="14" font-weight="700">content/&lt;world&gt;/  — YAML validated with zod: world · areas · locations · npcs · items · objects · professions · topics · news · patterns · quests · plans · watchers · aftermath · rules · bestiary</text>
+      <text x="590" y="526" text-anchor="middle" font-size="12.5" fill="var(--ink-2)">base = the Nethermarch (86 places, 30 people, 22 stories, 15 quests) · isle = Skerrow (12 places, 7 people, no rules file, no combat) · every id is stable once committed</text>
+      <line x1="320" y1="440" x2="320" y2="478" stroke="currentColor" marker-end="url(#ar)" marker-start="url(#ar)"/>
+      <line x1="1010" y1="440" x2="1010" y2="478" stroke="currentColor" marker-end="url(#ar)"/>
+      <text x="1030" y="464" font-size="11.5" fill="var(--ink-3)">editor writes only the entity that changed</text>
+    </svg>
+    <figcaption>The engine is the only place that changes the world. The Node side persists it and talks to the model providers; the windows only render and forward input. The editor reuses the same engine to validate every edit by loading the whole world with it.</figcaption>
+  </figure>
+
+  <div class="two">
+    <div class="card"><h4>Playing</h4><p><code>npm run dev</code> opens the game. You type commands or plain sentences; a conversation opens its own window. Time runs in real time while you read and pauses while you type. Every input, output, world event and model reply is written to the game log, so a run can be replayed exactly with the same seed and without calling a model again.</p><p class="where">src/main/index.ts · src/renderer/src/App.tsx · src/engine/engine.ts</p></div>
+    <div class="card"><h4>Building</h4><p><code>npm run editor</code> opens the editor on any world folder. Places and people have forms; everything else is YAML with a check. A save first loads the whole world with the change and writes only the entity that changed, so comments and layout survive. A running game in the same world picks the change up at once.</p><p class="where">src/renderer/src/EditorApp.tsx · src/engine/editor.ts · src/engine/edit.ts</p></div>
+  </div>
+</section>
+
+<!-- ============================================================ 2. SYSTEMS -->
+<section id="systems">
+  <h2>The systems, and what each one owns</h2>
+  <p class="sub">Each system owns one kind of state and one kind of decision. The colour of the tag says who decides: rules, the AI within bounds, or the content author.</p>
+  <div class="three">
+    <div class="card"><span class="tag rules">rules</span><h4>World and clock</h4><p>Places are a graph with exits and minutes, objects with affordances (what they let you do, what they consume and produce), services with stock and prices that follow stock, and a thirteen-month calendar. Routes are Dijkstra over exits; a flood can close an exit.</p><p class="where">world.ts · content.ts · clock.ts · items.ts</p></div>
+    <div class="card"><span class="tag rules">rules</span><h4>NPC life</h4><p>Every person has needs (hunger, rest, social, safety, work, faith), a profession schedule and daily goals. A planner turns "produce bread" into steps by searching backwards through affordances: buy flour, or grind rye at a mill that must not be broken. Without any model, the village runs on this alone.</p><p class="where">npc/brain.ts · npc/planner.ts · npc/execute.ts · npc/acts.ts</p></div>
+    <div class="card"><span class="tag ai">AI, bounded</span><h4>Goal choice (the brain)</h4><p>Two to four times a game day a small model picks 1 to 3 goals from a fixed catalogue of 29, using only ids the person knows. A validator throws out the rest; behaviour gates (temper, honesty, attitude) decide what a person may even attempt. Nothing waits for the model.</p><p class="where">npc/goals.ts · social/gates.ts</p></div>
+    <div class="card"><span class="tag rules">rules</span><h4>Knowledge and news</h4><p>Whether someone knows a topic is a fixed roll per person and topic, by fame and distance. Facts are written once with three versions (precise, village, far) and spread from person to person where people meet, losing precision, and are forgotten by importance. Since M8.1 a fact can carry a claim that people believe or doubt.</p><p class="where">dialogue/knowledge.ts · news.ts</p></div>
+    <div class="card"><span class="tag ai">AI, bounded</span><h4>The voice</h4><p>One model call per conversation turn, after rules have filtered injection, recognised the topics and built a knowledge packet of only what this person knows. The reply is JSON: speech, names used, topics mentioned, one small relation effect, a memory note. Invented names are rejected; a stock line stands in when the model fails.</p><p class="where">dialogue/conversation.ts · dialogue/prompt.ts · dialogue/guard.ts</p></div>
+    <div class="card"><span class="tag ai">AI, bounded</span><h4>The chronicler</h4><p>At 04:00, or at once for big news, the strong model gets only the storylines that changed, in a compact keyed notation, and writes lore with three versions, keeps a note per storyline, turns open threads into checkable requests, leaves thoughts on people, writes the news of the day, and after big events proposes an effect plan. Templates stand in without a model.</p><p class="where">src/chronicler/* · chronicler.ts · storylines.ts</p></div>
+    <div class="card"><span class="tag content">content</span><h4>Story patterns and pacing</h4><p>Five small patterns (something lost, a quarrel, a theft, a fever, a feast) start by themselves at a rate set by the tempo you chose (calm, normal, dramatic), more often after a quiet spell. Each plays out in beats and leaves facts and requests behind.</p><p class="where">stories.ts · content/base/data/patterns.yaml</p></div>
+    <div class="card"><span class="tag content">content</span><h4>Quests as storylets</h4><p>A written quest is data: how it starts, stages with conditions, actions the player can do in plain words, and at least three endings. Conditions come from one shared language (flags, knowledge, attitude, clocks, places, deaths). Quests react to the world: a death or a flooded place moves them on.</p><p class="where">quests/schema.ts · quests/engine.ts · content/base/data/quests.yaml</p></div>
+    <div class="card"><span class="tag content">content</span><h4>Signals and aftermath</h4><p>Watchers in the content turn a change of state into a signal (a wedding, a vacancy, an empty house, peace). The standard aftermath for that signal is a plan of steps over days with conditions on what people know and verbs that change lasting things: ties, homes, work, households. Every step is news.</p><p class="where">signals.ts · aftermath.ts · quests/plans.ts · layer.ts</p></div>
+    <div class="card"><span class="tag rules">rules</span><h4>The player in the world</h4><p>Relations with four numbers and an attitude band; deeds, gifts, debts and crimes with witnesses; thirteen factions with reputation; companions with loyalty, orders and their own quest; romance and marriage that runs through the same aftermath as anyone's. The world acts on you as much as you act on it.</p><p class="where">social/* · rules/player.ts</p></div>
+    <div class="card"><span class="tag content">content, optional</span><h4>Rules and combat</h4><p>A slim d20: four attributes, skills with practice marks, six classes with talent trees, patrons with favour, conditions, a bestiary and encounters, all in YAML. A world without a rules file plays with a ready-made traveller and no fights, as Skerrow does.</p><p class="where">rules/* · combat/* · content/base/rules/</p></div>
+    <div class="card"><span class="tag rules">rules</span><h4>Map and distance</h4><p>A region is a zone drawing that becomes a hex map with a fixed seed. You see only what you have seen; a place you only heard of is a zone that shrinks as more people describe it. People far from you become notes that become people again when you come near.</p><p class="where">map/* · lod.ts · outlines.ts</p></div>
+    <div class="card"><span class="tag rules">rules</span><h4>Persistence and replay</h4><p>A savegame is the state object plus the log. Loading an older save starts a branch; the later history stays. The layer (what changed about people in play) sits over the content, so the content itself is never touched by play.</p><p class="where">node/savegame.ts · node/gamelog.ts · state.ts · layer.ts</p></div>
+  </div>
+</section>
+
+<!-- ============================================================ 3. ONE MINUTE -->
+<section id="minute">
+  <h2>What happens in one game minute</h2>
+  <p class="sub">The clock advances one minute at a time. Most minutes almost nothing happens; the expensive work is spread over the quarter hour, the hour and the day, and the model runs in the background while the world goes on.</p>
+  <figure>
+    <svg viewBox="0 0 1180 330" role="img" aria-label="Four columns for every minute, every quarter hour, every hour and every day, each listing what the simulation does at that cadence, with a separate lane below for model work that runs in the background.">
+      <defs><marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+      <g font-size="12.5">
+        <rect x="30" y="30" width="260" height="200" rx="6" fill="var(--sheet)" stroke="currentColor"/>
+        <text x="160" y="56" text-anchor="middle" font-weight="700" font-size="14">every minute</text>
+        <text x="45" y="82" fill="var(--ink-2)">people near the player think</text>
+        <text x="45" y="100" fill="var(--ink-2)">and carry out one step of a plan</text>
+        <text x="45" y="124" fill="var(--ink-2)">companions keep up</text>
+        <text x="45" y="142" fill="var(--ink-2)">journeys that end, notes that</text>
+        <text x="45" y="160" fill="var(--ink-2)">become people again</text>
+        <text x="45" y="184" fill="var(--ink-2)">templates settle model work</text>
+        <text x="45" y="202" fill="var(--ink-2)">when no model is connected</text>
+
+        <rect x="320" y="30" width="260" height="200" rx="6" fill="var(--sheet)" stroke="currentColor"/>
+        <text x="450" y="56" text-anchor="middle" font-weight="700" font-size="14">every quarter hour</text>
+        <text x="335" y="82" fill="var(--ink-2)">people further off think</text>
+        <text x="335" y="106" fill="var(--ink-2)">news passes between people</text>
+        <text x="335" y="124" fill="var(--ink-2)">who are in the same place</text>
+        <text x="335" y="148" fill="var(--ink-2)">notice boards are read</text>
+        <text x="335" y="172" fill="var(--ink-2)">sightings: who saw whom where</text>
+        <text x="335" y="196" fill="var(--ink-2)">coincidences are noticed</text>
+
+        <rect x="610" y="30" width="260" height="200" rx="6" fill="var(--sheet)" stroke="currentColor"/>
+        <text x="740" y="56" text-anchor="middle" font-weight="700" font-size="14">every hour</text>
+        <text x="625" y="82" fill="var(--ink-2)">needs decay · supply and demand</text>
+        <text x="625" y="100" fill="var(--ink-2)">story beats · weather</text>
+        <text x="625" y="124" fill="var(--ink-2)">small news is forgotten,</text>
+        <text x="625" y="142" fill="var(--ink-2)">regional news arrives by distance</text>
+        <text x="625" y="166" fill="var(--ink-2)">watchers look for signals</text>
+        <text x="625" y="184" fill="var(--ink-2)">crimes are discovered · wounds heal</text>
+        <text x="625" y="208" fill="var(--ink-2)">04:00 the chronicler's night run</text>
+
+        <rect x="900" y="30" width="250" height="200" rx="6" fill="var(--sheet)" stroke="currentColor"/>
+        <text x="1025" y="56" text-anchor="middle" font-weight="700" font-size="14">every day</text>
+        <text x="915" y="82" fill="var(--ink-2)">06:00 story rolls · debts due</text>
+        <text x="915" y="100" fill="var(--ink-2)">a spouse minds your absence</text>
+        <text x="915" y="118" fill="var(--ink-2)">conditions wear off</text>
+        <text x="915" y="142" fill="var(--ink-2)">00:00 realms drift toward war</text>
+        <text x="915" y="160" fill="var(--ink-2)">or peace · weekly relation drift</text>
+        <text x="915" y="184" fill="var(--ink-2)">morning: every person plans</text>
+        <text x="915" y="202" fill="var(--ink-2)">the day (a brain choice)</text>
+      </g>
+      <rect x="30" y="260" width="1120" height="50" rx="6" fill="var(--wisp-soft)" stroke="currentColor"/>
+      <text x="590" y="281" text-anchor="middle" font-size="13" font-weight="700">after every command or tick, in the background: goal choices → chronicler runs → outlines of far places</text>
+      <text x="590" y="299" text-anchor="middle" font-size="12" fill="var(--ink-2)">each reply is validated, recorded in the log at the minute it lands, and applied; the person followed their schedule meanwhile</text>
+    </svg>
+    <figcaption>Cadence is the main cost control: a village of thirty people costs almost nothing per minute because only the people near you think every minute, and the model is never on the critical path.</figcaption>
+  </figure>
+</section>
+
+<!-- ============================================================ 4. AI ROLES -->
+<section id="ai">
+  <h2>The AI decides, the systems execute</h2>
+  <p class="sub">Three roles, three models you choose yourself in the settings, one gateway with budgets. Every role gets a fixed part the provider caches and a changing part with only what this call needs. Every reply passes a validator, and every role has a fallback so the game keeps playing offline.</p>
+
+  <figure>
+    <svg viewBox="0 0 1180 430" role="img" aria-label="Three lanes for the voice, the brain and the chronicler, each showing when it is called, what it receives, what it may return, and the validator and fallback it passes through before the engine applies the result.">
+      <defs><marker id="ar3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+      <g font-size="12" fill="var(--ink-2)">
+        <text x="30" y="22" font-weight="700" fill="currentColor" font-size="12.5">WHEN</text>
+        <text x="300" y="22" font-weight="700" fill="currentColor" font-size="12.5">GETS (fixed part cached · changing part)</text>
+        <text x="700" y="22" font-weight="700" fill="currentColor" font-size="12.5">MAY RETURN</text>
+        <text x="930" y="22" font-weight="700" fill="currentColor" font-size="12.5">CHECKED, THEN APPLIED</text>
+      </g>
+      <!-- Voice lane -->
+      <g>
+        <rect x="20" y="40" width="1140" height="115" rx="6" fill="var(--sheet)" stroke="currentColor"/>
+        <text x="34" y="62" font-size="14" font-weight="700">Voice</text>
+        <text x="34" y="82" font-size="12" fill="var(--ink-2)">each conversation turn</text>
+        <text x="34" y="100" font-size="12" fill="var(--ink-2)">time limit 8 s</text>
+        <text x="34" y="118" font-size="12" fill="var(--ink-2)">measured: ~1,150 cached</text>
+        <text x="34" y="136" font-size="12" fill="var(--ink-2)">+ 100–300 changing tokens</text>
+        <text x="300" y="66" font-size="12" fill="var(--ink-2)">cached: rules, world frame, this person's card, people they know</text>
+        <text x="300" y="86" font-size="12" fill="var(--ink-2)">changing: scene, what they did lately, who is here, thoughts,</text>
+        <text x="300" y="104" font-size="12" fill="var(--ink-2)">open requests, attitude, KNOWLEDGE only for recognised topics,</text>
+        <text x="300" y="122" font-size="12" fill="var(--ink-2)">a referral if they don't know, last four lines, the player's words</text>
+        <text x="700" y="66" font-size="12" fill="var(--ink-2)">reply text · names used</text>
+        <text x="700" y="84" font-size="12" fill="var(--ink-2)">topics mentioned · one effect −3..+3</text>
+        <text x="700" y="102" font-size="12" fill="var(--ink-2)">memory note · ends conversation</text>
+        <text x="700" y="120" font-size="12" fill="var(--ink-2)">quest action heard in plain words</text>
+        <text x="930" y="66" font-size="12" fill="var(--ink-2)">schema · anachronisms · name leak</text>
+        <text x="930" y="84" font-size="12" fill="var(--ink-2)">→ ask again once → stock line</text>
+        <text x="930" y="102" font-size="12" fill="var(--ink-2)">effects capped per talk; the game</text>
+        <text x="930" y="120" font-size="12" fill="var(--ink-2)">decides "will you come with me"</text>
+      </g>
+      <!-- Brain lane -->
+      <g>
+        <rect x="20" y="170" width="1140" height="115" rx="6" fill="var(--sheet)" stroke="currentColor"/>
+        <text x="34" y="192" font-size="14" font-weight="700">Brain</text>
+        <text x="34" y="212" font-size="12" fill="var(--ink-2)">morning · news about kin</text>
+        <text x="34" y="230" font-size="12" fill="var(--ink-2)">· after a finished goal</text>
+        <text x="34" y="248" font-size="12" fill="var(--ink-2)">max 6 per person per day</text>
+        <text x="34" y="266" font-size="12" fill="var(--ink-2)">measured: ~360 cached + ~1,240</text>
+        <text x="300" y="196" font-size="12" fill="var(--ink-2)">cached: instruction, world frame, character card</text>
+        <text x="300" y="216" font-size="12" fill="var(--ink-2)">changing: time and place, needs, money, current goals,</text>
+        <text x="300" y="234" font-size="12" fill="var(--ink-2)">news heard, thoughts, why it chooses now, the catalogue of 29,</text>
+        <text x="300" y="252" font-size="12" fill="var(--ink-2)">places, people and things it knows (ids)</text>
+        <text x="700" y="196" font-size="12" fill="var(--ink-2)">1 to 3 goals with a priority</text>
+        <text x="700" y="214" font-size="12" fill="var(--ink-2)">from the catalogue, targets by id</text>
+        <text x="700" y="232" font-size="12" fill="var(--ink-2)">(Visit, Talk, Deliver, Court,</text>
+        <text x="700" y="250" font-size="12" fill="var(--ink-2)">Investigate, Report, Steal …)</text>
+        <text x="930" y="196" font-size="12" fill="var(--ink-2)">in catalogue · ids known · gate open</text>
+        <text x="930" y="214" font-size="12" fill="var(--ink-2)">· not already wanted · at most 3 active</text>
+        <text x="930" y="232" font-size="12" fill="var(--ink-2)">→ rejected goals dropped, the</text>
+        <text x="930" y="250" font-size="12" fill="var(--ink-2)">schedule and needs carry on</text>
+      </g>
+      <!-- Chronicler lane -->
+      <g>
+        <rect x="20" y="300" width="1140" height="120" rx="6" fill="var(--sheet)" stroke="currentColor"/>
+        <text x="34" y="322" font-size="14" font-weight="700">Chronicler</text>
+        <text x="34" y="342" font-size="12" fill="var(--ink-2)">04:00 when news ≥ 3</text>
+        <text x="34" y="360" font-size="12" fill="var(--ink-2)">at once when ≥ 4, or a death</text>
+        <text x="34" y="378" font-size="12" fill="var(--ink-2)">with a quest role · 90 s</text>
+        <text x="34" y="396" font-size="12" fill="var(--ink-2)">measured: ~3,870 cached + 500–1,200</text>
+        <text x="300" y="326" font-size="12" fill="var(--ink-2)">cached: working instruction, world, catalogue, how to answer</text>
+        <text x="300" y="346" font-size="12" fill="var(--ink-2)">changing: only storylines that changed, with their note and new</text>
+        <text x="300" y="364" font-size="12" fill="var(--ink-2)">events (keys p1, l1, s1), one-line cards, related lore, open requests;</text>
+        <text x="300" y="382" font-size="12" fill="var(--ink-2)">it may ask to look up at most 3 keys before writing</text>
+        <text x="700" y="326" font-size="12" fill="var(--ink-2)">lore (summary, details, story, far)</text>
+        <text x="700" y="344" font-size="12" fill="var(--ink-2)">notes per line · ≤2 requests · ≤3 thoughts</text>
+        <text x="700" y="362" font-size="12" fill="var(--ink-2)">news per area · ≤1 tension shift</text>
+        <text x="700" y="380" font-size="12" fill="var(--ink-2)">an effect plan for a marked big line</text>
+        <text x="930" y="326" font-size="12" fill="var(--ink-2)">keys and lengths · names vs the world</text>
+        <text x="930" y="344" font-size="12" fill="var(--ink-2)">· lore only for belang ≥ 3 · teller</text>
+        <text x="930" y="362" font-size="12" fill="var(--ink-2)">was a witness · only what was offered</text>
+        <text x="930" y="380" font-size="12" fill="var(--ink-2)">→ what fails falls back to templates</text>
+      </g>
+    </svg>
+    <figcaption>The model never touches the state directly. It answers in JSON with ids from a list the engine gave it; the engine checks and applies. A rejected part is a line in the AI log, not a broken world. (Token counts are approximate, about four characters per token.)</figcaption>
+  </figure>
+
+  <div class="two">
+    <div>
+      <h3>The gateway</h3>
+      <ul class="tight">
+        <li>One <code>complete(request)</code> door for every role. The request names the role; the settings say which provider and model that role uses.</li>
+        <li>An hourly and a monthly budget in dollars. Low-priority calls (the chronicler, goal choices of people without a quest role, pictures) wait once 80% of the hour's budget is spent, so conversations keep their share.</li>
+        <li>A provider's rate limit pauses only that provider; three failures in a row give a two-minute cool-down for voice and brain calls.</li>
+        <li>Keys are entered by the player, encrypted with the OS keychain, and never logged. The AI log keeps every prompt and reply for the developer view.</li>
+        <li>A price table per model turns tokens into cost; the status bar shows the session's spend, the usage screen the day and month.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Choosing models</h3>
+      <ul class="tight">
+        <li>After connecting a key, an advisor model of that provider recommends a model per role from the ids that key can use, with the price table in its prompt so it does not guess prices.</li>
+        <li>A trial runs the fixed test set (conversation situations, goal choices, chronicler runs) against a model and reports validity, latency, tokens and cost per hour.</li>
+        <li>The exact model id is stored; at start-up the game checks the id still exists.</li>
+        <li>Pictures of places and people are optional, made once by an image model and kept on disk.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ 5. KNOWLEDGE -->
+<section id="knowledge">
+  <h2>How the world knows things, and gets them wrong</h2>
+  <p class="sub">No model is needed for news. A fact is written once by the rules with three versions; who knows it, how well and how surely is a table that changes as people meet. When a fact carries a claim, the same table says what someone believes, and a plan can wait for that belief.</p>
+  <figure>
+    <svg viewBox="0 0 1180 300" role="img" aria-label="A fact with three versions is written by the engine; witnesses know it precisely at once; it spreads from person to person where people meet, dropping one level and some reliability each hop; regional news arrives by distance; small news is forgotten by importance; a believes function reads the newest version someone heard; a plan step waits on a knows condition.">
+      <defs><marker id="ar4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+      <g font-size="12.5">
+        <rect x="20" y="40" width="220" height="120" rx="6" fill="var(--peat-soft)" stroke="currentColor"/>
+        <text x="130" y="64" text-anchor="middle" font-weight="700">a fact is recorded</text>
+        <text x="30" y="88" fill="var(--ink-2)">belang 0–5 · place · about</text>
+        <text x="30" y="106" fill="var(--ink-2)">precise · village · far</text>
+        <text x="30" y="124" fill="var(--ink-2)">claim { subject, key, value }</text>
+        <text x="30" y="142" fill="var(--ink-2)">truth: false for a lie</text>
+
+        <line x1="240" y1="100" x2="290" y2="100" stroke="currentColor" marker-end="url(#ar4)"/>
+        <text x="265" y="90" text-anchor="middle" font-size="11" fill="var(--ink-3)">at once</text>
+        <rect x="292" y="40" width="190" height="120" rx="6" fill="var(--sheet)" stroke="currentColor"/>
+        <text x="387" y="64" text-anchor="middle" font-weight="700">witnesses</text>
+        <text x="302" y="88" fill="var(--ink-2)">everyone in the place</text>
+        <text x="302" y="106" fill="var(--ink-2)">(or only those named)</text>
+        <text x="302" y="124" fill="var(--ink-2)">level 3, reliability 1</text>
+        <text x="302" y="142" fill="var(--ink-2)">the player too, in the journal</text>
+
+        <line x1="482" y1="100" x2="532" y2="100" stroke="currentColor" marker-end="url(#ar4)"/>
+        <text x="507" y="90" text-anchor="middle" font-size="11" fill="var(--ink-3)">every ¼ h</text>
+        <rect x="534" y="40" width="230" height="120" rx="6" fill="var(--sheet)" stroke="currentColor"/>
+        <text x="649" y="64" text-anchor="middle" font-weight="700">passed on where people meet</text>
+        <text x="544" y="88" fill="var(--ink-2)">chance by place (home 0.9, inn 0.5),</text>
+        <text x="544" y="106" fill="var(--ink-2)">gossip, curiosity, the bond</text>
+        <text x="544" y="124" fill="var(--ink-2)">each hop: level −1, reliability ×0.9,</text>
+        <text x="544" y="142" fill="var(--ink-2)">sometimes it grows in the telling</text>
+
+        <line x1="764" y1="100" x2="814" y2="100" stroke="currentColor" marker-end="url(#ar4)"/>
+        <text x="789" y="90" text-anchor="middle" font-size="11" fill="var(--ink-3)">hourly</text>
+        <rect x="816" y="40" width="170" height="120" rx="6" fill="var(--sheet)" stroke="currentColor"/>
+        <text x="901" y="64" text-anchor="middle" font-weight="700">far and forgotten</text>
+        <text x="826" y="88" fill="var(--ink-2)">big news reaches the region</text>
+        <text x="826" y="106" fill="var(--ink-2)">by distance (1 h + ¼ h per km)</text>
+        <text x="826" y="124" fill="var(--ink-2)">belang 1 gone in 2 days,</text>
+        <text x="826" y="142" fill="var(--ink-2)">belang 2 in two weeks</text>
+
+        <line x1="986" y1="100" x2="1036" y2="100" stroke="currentColor" marker-end="url(#ar4)"/>
+        <rect x="1038" y="40" width="122" height="120" rx="6" fill="var(--wisp-soft)" stroke="currentColor"/>
+        <text x="1099" y="64" text-anchor="middle" font-weight="700">told</text>
+        <text x="1048" y="88" fill="var(--ink-2)">the voice says the</text>
+        <text x="1048" y="106" fill="var(--ink-2)">version this person</text>
+        <text x="1048" y="124" fill="var(--ink-2)">heard, and from</text>
+        <text x="1048" y="142" fill="var(--ink-2)">whom, how sure</text>
+      </g>
+      <!-- belief row -->
+      <g font-size="12.5">
+        <rect x="292" y="200" width="472" height="80" rx="6" fill="var(--water-soft)" stroke="currentColor"/>
+        <text x="528" y="224" text-anchor="middle" font-weight="700">believes(person, subject, key)</text>
+        <text x="528" y="246" text-anchor="middle" fill="var(--ink-2)">of every fact heard with this claim: the newest wins, and among equals the most precise;</text>
+        <text x="528" y="264" text-anchor="middle" fill="var(--ink-2)">someone who heard it far away may hold the far, wrong value</text>
+        <rect x="816" y="200" width="344" height="80" rx="6" fill="var(--water-soft)" stroke="currentColor"/>
+        <text x="988" y="224" text-anchor="middle" font-weight="700">a plan step waits on it</text>
+        <text x="988" y="246" text-anchor="middle" fill="var(--ink-2)">when: knows { who: $who, subject: war, key: stance,</text>
+        <text x="988" y="264" text-anchor="middle" fill="var(--ink-2)">not: war } and thinks_home_stands → return home</text>
+        <path d="M649 160 L649 198" stroke="currentColor" marker-end="url(#ar4)"/>
+        <line x1="764" y1="240" x2="814" y2="240" stroke="currentColor" marker-end="url(#ar4)"/>
+      </g>
+    </svg>
+    <figcaption>This is where wrong behaviour comes from: a refugee who heard the far version ("Veenhoek has burned, they say") stays in Waagdam while his house stands, and the one who comes home to a ruin gives a new signal. No text is generated for any of it; the model only words what a person already holds when the player asks.</figcaption>
+  </figure>
+  <div class="two">
+    <div><h3>What someone knows before anything happens</h3><p>Every topic has a fame 0 to 5 and a place. A fixed roll from the game seed, the person and the topic is compared with a chance from a table of fame against distance (same settlement, 10 km, 30 km, 100 km, farther). Profession, quirks and age modify it: the innkeeper hears more, the baker knows flour. The margin under the chance sets the level: 1 a rumour, 2 as the village tells it, 3 the whole story. Far places are known only as a direction and days on foot.</p></div>
+    <div><h3>Three layers of truth</h3><ul class="tight"><li><b>Flags</b> are truth for quests and plans, never doubted.</li><li><b>Claims on facts</b> are knowledge: they spread, fade, and can be wrong or lied.</li><li><b>Place states and the layer</b> are truth about the world: flooded, occupied, who lives and works where now.</li></ul><p>Rule of thumb for authors: anything people could doubt or lie about is a claim; anything only the quest needs to know is a flag.</p></div>
+  </div>
+</section>
+
+<!-- ============================================================ 6. AFTERMATH -->
+<section id="aftermath">
+  <h2>Signals and aftermath: the loop that makes change last</h2>
+  <p class="sub">Since M8.1 the engine has one generic loop next to the fact-to-lore chain. A watcher sees a change in state and raises a signal; the cheapest handler that can take it makes a plan; the simulation works the plan off over days; every step is a fact, which can raise the next signal. The code knows no wedding or war, only signals, conditions, verbs and plans.</p>
+  <figure>
+    <svg viewBox="0 0 1180 360" role="img" aria-label="A cycle: a change of state, watchers in content, a signal with who, place, cause, scope and belang, then routing to the standard aftermath now, the brain in M8.2 and the chronicler in M8.3, producing a plan of steps with at, after, when and do, executed by the plan runner through verbs that change ties, homes, work, households and cause feasts and returns, each step recording a fact that feeds the news and the next watcher.">
+      <defs><marker id="ar5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+      <g font-size="12.5">
+        <rect x="20" y="120" width="170" height="90" rx="6" fill="var(--sheet)" stroke="currentColor"/>
+        <text x="105" y="146" text-anchor="middle" font-weight="700">change of state</text>
+        <text x="30" y="170" fill="var(--ink-2)">a fact with a claim</text>
+        <text x="30" y="188" fill="var(--ink-2)">conditions come true</text>
+        <text x="30" y="206" fill="var(--ink-2)">a house stands empty</text>
+
+        <line x1="190" y1="165" x2="240" y2="165" stroke="currentColor" marker-end="url(#ar5)"/>
+        <rect x="242" y="120" width="170" height="90" rx="6" fill="var(--peat-soft)" stroke="currentColor"/>
+        <text x="327" y="146" text-anchor="middle" font-weight="700">watcher (content)</text>
+        <text x="252" y="170" fill="var(--ink-2)">fact: { key: married }</text>
+        <text x="252" y="188" fill="var(--ink-2)">when: [conditions]</text>
+        <text x="252" y="206" fill="var(--ink-2)">probe: house_empty: 3</text>
+
+        <line x1="412" y1="165" x2="462" y2="165" stroke="currentColor" marker-end="url(#ar5)"/>
+        <rect x="464" y="120" width="180" height="90" rx="6" fill="var(--sheet)" stroke="currentColor"/>
+        <text x="554" y="146" text-anchor="middle" font-weight="700">signal (data)</text>
+        <text x="474" y="170" fill="var(--ink-2)">kind · event · who · place</text>
+        <text x="474" y="188" fill="var(--ink-2)">cause · scope · belang · claim</text>
+        <text x="474" y="206" fill="var(--ink-2)">merged per subject per hour</text>
+
+        <!-- handlers -->
+        <line x1="644" y1="165" x2="694" y2="165" stroke="currentColor" marker-end="url(#ar5)"/>
+        <rect x="696" y="40" width="200" height="60" rx="6" fill="var(--water-soft)" stroke="currentColor"/>
+        <text x="796" y="64" text-anchor="middle" font-weight="700">rules: standard aftermath</text>
+        <text x="796" y="84" text-anchor="middle" fill="var(--ink-2)">always, also without AI (M8.1)</text>
+        <rect x="696" y="135" width="200" height="60" rx="6" fill="var(--wisp-soft)" stroke="currentColor" stroke-dasharray="5 4"/>
+        <text x="796" y="159" text-anchor="middle" font-weight="700">brain: one person, one house</text>
+        <text x="796" y="179" text-anchor="middle" fill="var(--ink-2)">belang ≤ 2 · small model (M8.2)</text>
+        <rect x="696" y="230" width="200" height="60" rx="6" fill="var(--wisp-soft)" stroke="currentColor" stroke-dasharray="5 4"/>
+        <text x="796" y="254" text-anchor="middle" font-weight="700">chronicler: many households</text>
+        <text x="796" y="274" text-anchor="middle" fill="var(--ink-2)">belang ≥ 3, groups, clashes (M8.3)</text>
+        <path d="M694 165 L680 165 L680 70 L694 70" fill="none" stroke="currentColor" marker-end="url(#ar5)"/>
+        <path d="M680 165 L680 260 L694 260" fill="none" stroke="currentColor" marker-end="url(#ar5)"/>
+
+        <!-- plan -->
+        <line x1="896" y1="165" x2="946" y2="165" stroke="currentColor" marker-end="url(#ar5)"/>
+        <path d="M896 70 L920 70 L920 165" fill="none" stroke="currentColor"/>
+        <path d="M896 260 L920 260 L920 165" fill="none" stroke="currentColor"/>
+        <rect x="948" y="100" width="212" height="130" rx="6" fill="var(--sheet)" stroke="currentColor"/>
+        <text x="1054" y="124" text-anchor="middle" font-weight="700">one plan format</text>
+        <text x="958" y="148" fill="var(--ink-2)">steps: at / after · when · do</text>
+        <text x="958" y="166" fill="var(--ink-2)">bindings $a $b $place $subject</text>
+        <text x="958" y="184" fill="var(--ink-2)">expires · one per topic per person</text>
+        <text x="958" y="202" fill="var(--ink-2)">otherwise: skip · wait · fail</text>
+        <text x="958" y="220" fill="var(--ink-2)">run where the effect plans run</text>
+
+        <!-- verbs and back -->
+        <path d="M1054 230 L1054 300 L560 300" fill="none" stroke="currentColor" marker-end="url(#ar5)"/>
+        <rect x="242" y="270" width="316" height="60" rx="6" fill="var(--water-soft)" stroke="currentColor"/>
+        <text x="400" y="292" text-anchor="middle" font-weight="700">verbs: what lasts, and what happens</text>
+        <text x="400" y="312" text-anchor="middle" fill="var(--ink-2)">set_tie · move_home · join_household · set_work · quit_work · hire · feast · return · leave · post · thought · tell</text>
+        <path d="M242 300 L105 300 L105 212" fill="none" stroke="currentColor" marker-end="url(#ar5)"/>
+        <text x="130" y="262" font-size="11.5" fill="var(--ink-3)">every step is a fact →</text>
+        <text x="130" y="278" font-size="11.5" fill="var(--ink-3)">news, and the next signal</text>
+      </g>
+    </svg>
+    <figcaption>Solid boxes exist now; dashed ones are the M8.2 and M8.3 handlers. The lasting changes go into a layer over the content (ties, home, work, household, staff), which <code>World.npc()</code> merges in so the rest of the engine reads one person as they are today.</figcaption>
+  </figure>
+
+  <div class="two">
+    <div>
+      <h3>A watcher and its aftermath, as content</h3>
+<pre><span class="c"># watchers.yaml: a fact with the claim key "married" is a life event</span>
+<span class="k">- id:</span> wedding
+  <span class="k">signal:</span> life_event
+  <span class="k">event:</span> wedding
+  <span class="k">fact:</span> { key: married }
+
+<span class="c"># aftermath.yaml: what always follows, also without AI</span>
+<span class="k">- id:</span> wedding
+  <span class="k">signal:</span> life_event
+  <span class="k">event:</span> wedding
+  <span class="k">topic:</span> household
+  <span class="k">steps:</span>
+    - { id: tie,      do: { set_tie: [$a, $b], role: spouse, bond: 3 } }
+    - { id: home,     after: tie,
+        do: { join_household: { mover: [$a, $b] }, of: { stayer: [$a, $b] } } }
+    - { id: in_laws,  after: tie, do: { regard: [{ family_of: $b }], to: $a, affinity: 10 } }
+    - { id: expects,  after: home, when: [{ is_player: $mover }],
+        do: { expect_home: $stayer, of: $mover, nights: 5 } }
+    - { id: work,     after: home, wait: 12,
+        when: [{ has_work: $mover }, { commute: $mover, at_least: 30 }],
+        do: { quit_work: $mover } }</pre>
+    </div>
+    <div>
+      <h3>What the loop already does</h3>
+      <ul class="tight">
+        <li>Two villagers get engaged in a quest outcome → a feast on the first rest day a week on, near the one who moves, with both families → the feast records "married" → the wedding aftermath: spouses, one household, in-laws warm up, and the one who now walks half an hour to work quits after a night.</li>
+        <li>Quitting records a vacancy with a claim → a notice on the nearest board, a thought for the innkeeper, and <code>hire</code> waits for someone without work who heard of it and lives within reach.</li>
+        <li>The player's marriage runs through the same aftermath as anyone's.</li>
+        <li>Refugees return only when they believe the war is over and think their house stands; the chronicler's plans get a return step per refugee automatically.</li>
+        <li>A house nobody has lived in for three days becomes news and a free house.</li>
+      </ul>
+      <p class="note">New in M8.2 to M8.4, per the design: intentions the brain chooses for one person or household, standing (five classes), lies with a motive, doubt and asking around, feuds, openness of a settlement, forgetting and recognising; then the chronicler planning for groups; then newcomers, a ledger per settlement and building projects.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ 7. BUILDING -->
+<section id="build">
+  <h2>Building a world and its stories</h2>
+  <p class="sub">A world is a folder of YAML. You add depth in layers: a place to stand in, people with a life, things to know and talk about, small stories that start by themselves, written quests, and finally the events whose consequences the world should carry on its own. Each layer is optional; Skerrow stops after quests and plays fine.</p>
+
+  <figure>
+    <svg viewBox="0 0 1180 250" role="img" aria-label="Seven authoring layers from left to right: the world frame, places and areas, people and trades, topics and rumours, patterns, quests, and watchers with aftermath; under each the files it lives in and the editor tool that helps; a loop at the end back to playtest and the chronicler's proposals.">
+      <defs><marker id="ar6" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+      <g font-size="12">
+        <g transform="translate(20 30)">
+          <rect width="150" height="120" rx="6" fill="var(--peat-soft)" stroke="currentColor"/>
+          <text x="75" y="24" text-anchor="middle" font-weight="700">1 · the world</text>
+          <text x="10" y="48" fill="var(--ink-2)">frame for the models</text>
+          <text x="10" y="66" fill="var(--ink-2)">calendar · coins · law</text>
+          <text x="10" y="84" fill="var(--ink-2)">start · knowledge rules</text>
+          <text x="10" y="108" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--ink-3)">world.yaml · CHRONICLER.md</text>
+        </g>
+        <line x1="170" y1="90" x2="185" y2="90" stroke="currentColor" marker-end="url(#ar6)"/>
+        <g transform="translate(187 30)">
+          <rect width="150" height="120" rx="6" fill="var(--peat-soft)" stroke="currentColor"/>
+          <text x="75" y="24" text-anchor="middle" font-weight="700">2 · places</text>
+          <text x="10" y="48" fill="var(--ink-2)">areas with fame and km</text>
+          <text x="10" y="66" fill="var(--ink-2)">rooms with exits, objects,</text>
+          <text x="10" y="84" fill="var(--ink-2)">services · region drawing</text>
+          <text x="10" y="108" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--ink-3)">areas/*/locations.yaml</text>
+        </g>
+        <line x1="337" y1="90" x2="352" y2="90" stroke="currentColor" marker-end="url(#ar6)"/>
+        <g transform="translate(354 30)">
+          <rect width="150" height="120" rx="6" fill="var(--peat-soft)" stroke="currentColor"/>
+          <text x="75" y="24" text-anchor="middle" font-weight="700">3 · people</text>
+          <text x="10" y="48" fill="var(--ink-2)">card: looks, personality,</text>
+          <text x="10" y="66" fill="var(--ink-2)">values, quirks, secrets</text>
+          <text x="10" y="84" fill="var(--ink-2)">relations · trade schedule</text>
+          <text x="10" y="108" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--ink-3)">npcs.yaml · professions.yaml</text>
+        </g>
+        <line x1="504" y1="90" x2="519" y2="90" stroke="currentColor" marker-end="url(#ar6)"/>
+        <g transform="translate(521 30)">
+          <rect width="150" height="120" rx="6" fill="var(--peat-soft)" stroke="currentColor"/>
+          <text x="75" y="24" text-anchor="middle" font-weight="700">4 · what is known</text>
+          <text x="10" y="48" fill="var(--ink-2)">topics with three levels</text>
+          <text x="10" y="66" fill="var(--ink-2)">and a teller · rumours</text>
+          <text x="10" y="84" fill="var(--ink-2)">going round at the start</text>
+          <text x="10" y="108" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--ink-3)">topics.yaml · news.yaml</text>
+        </g>
+        <line x1="671" y1="90" x2="686" y2="90" stroke="currentColor" marker-end="url(#ar6)"/>
+        <g transform="translate(688 30)">
+          <rect width="150" height="120" rx="6" fill="var(--peat-soft)" stroke="currentColor"/>
+          <text x="75" y="24" text-anchor="middle" font-weight="700">5 · small stories</text>
+          <text x="10" y="48" fill="var(--ink-2)">patterns: lost thing,</text>
+          <text x="10" y="66" fill="var(--ink-2)">quarrel, theft, fever, feast</text>
+          <text x="10" y="84" fill="var(--ink-2)">texts with placeholders</text>
+          <text x="10" y="108" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--ink-3)">patterns.yaml</text>
+        </g>
+        <line x1="838" y1="90" x2="853" y2="90" stroke="currentColor" marker-end="url(#ar6)"/>
+        <g transform="translate(855 30)">
+          <rect width="150" height="120" rx="6" fill="var(--peat-soft)" stroke="currentColor"/>
+          <text x="75" y="24" text-anchor="middle" font-weight="700">6 · quests</text>
+          <text x="10" y="48" fill="var(--ink-2)">starts · stages · actions</text>
+          <text x="10" y="66" fill="var(--ink-2)">in plain words · ≥ 3 endings</text>
+          <text x="10" y="84" fill="var(--ink-2)">on_death · on_place · timer</text>
+          <text x="10" y="108" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--ink-3)">quests.yaml</text>
+        </g>
+        <line x1="1005" y1="90" x2="1020" y2="90" stroke="currentColor" marker-end="url(#ar6)"/>
+        <g transform="translate(1022 30)">
+          <rect width="138" height="120" rx="6" fill="var(--peat-soft)" stroke="currentColor"/>
+          <text x="69" y="24" text-anchor="middle" font-weight="700">7 · consequences</text>
+          <text x="10" y="48" fill="var(--ink-2)">watchers · aftermath</text>
+          <text x="10" y="66" fill="var(--ink-2)">effect plans in phases</text>
+          <text x="10" y="84" fill="var(--ink-2)">news per verb</text>
+          <text x="10" y="108" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--ink-3)">watchers · aftermath · plans</text>
+        </g>
+        <!-- editor loop -->
+        <rect x="20" y="180" width="1140" height="50" rx="6" fill="var(--sheet)" stroke="currentColor" stroke-dasharray="5 4"/>
+        <text x="590" y="200" text-anchor="middle" font-weight="700">the editor around every layer</text>
+        <text x="590" y="218" text-anchor="middle" fill="var(--ink-2)">check (errors and warnings with links) · diff before save · exits made both ways · playtest 1–30 days without a player · NPC inspector · spar with the chronicler: a proposal as a diff, accepted or not</text>
+        <path d="M1091 150 L1091 165 L590 165 L590 178" fill="none" stroke="currentColor" marker-end="url(#ar6)"/>
+      </g>
+    </svg>
+    <figcaption>Order matters only for references: a person needs a home that exists, a quest needs its givers. The loader refuses a world with a broken reference, so a half-written change can never reach a running game.</figcaption>
+  </figure>
+
+  <div class="two">
+    <div>
+      <h3>Anatomy of a quest (a storylet)</h3>
+<pre><span class="k">- id:</span> a_boat_and_a_bride
+  <span class="k">kind:</span> social
+  <span class="k">givers:</span> [npc_wouter]
+  <span class="k">starts:</span> { talk: [npc_wouter], when: [{ attitude: npc_wouter, at_least: Friendly }] }
+  <span class="k">stages:</span>
+    - { id: asked, text: "Wouter wants to marry Geesje, but Trijntje …",
+        next: [{ when: [{ flag: trijntje_blesses }], to: blessed }] }
+  <span class="k">actions:</span>
+    - { id: plead, say: ["^plead .*trijntje"], intent: "ask Trijntje for her blessing",
+        with: npc_trijntje, check: { skill: persuasion, dc: 16 },
+        effects: [{ set: trijntje_blesses }], text: "…" }
+  <span class="k">outcomes:</span>
+    - { id: wed, when: [{ flag: trijntje_blesses }],
+        effects: [{ fact: { title: "…", claim: { subject: npc_wouter, key: betrothed, value: npc_geesje } } }] }
+    - { id: eloped,   solution: true, when: [...] }
+    - { id: too_late, solution: false, when: [{ dead: npc_wouter }] }</pre>
+      <p>The outcome's fact carries a claim; the betrothal watcher sees it and the aftermath takes over. The quest never scripts the wedding.</p>
+    </div>
+    <div>
+      <h3>What a new kind of event needs</h3>
+      <table>
+        <tr><th>You want</th><th>You write</th><th>Code?</th></tr>
+        <tr><td>A new place, person, thing, trade</td><td>YAML in its list, or the form</td><td>no</td></tr>
+        <tr><td>A rumour going round at the start</td><td>news.yaml with who knows it</td><td>no</td></tr>
+        <tr><td>A small story that starts by itself</td><td>a pattern of an existing kind</td><td>no (a new kind: yes)</td></tr>
+        <tr><td>A quest with endings</td><td>quests.yaml</td><td>no</td></tr>
+        <tr><td>A consequence that unfolds over days</td><td>a watcher and an aftermath</td><td>no</td></tr>
+        <tr><td>A disaster with phases</td><td>plans.yaml, or let the chronicler plan</td><td>no</td></tr>
+        <tr><td>A new verb (something the world cannot change yet)</td><td>—</td><td>yes, once, for every event</td></tr>
+        <tr><td>A new kind of state (a settlement's ledger)</td><td>—</td><td>yes, once</td></tr>
+      </table>
+      <p class="note">The working agreement in CLAUDE.md: a new kind of event is content, not code. Code only for a new verb or a new kind of state, usable by every event.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ 8. STORIES IN PLAY -->
+<section id="play">
+  <h2>How stories play out: three worked examples</h2>
+  <p class="sub">The same machinery, three very different stories. Dots mark who decided each beat: a rule, a model within bounds, or the player. Names and places are from the Nethermarch; the beats are how the code runs them, not a script.</p>
+  <div class="legend"><span class="l-rules">rules decided</span><span class="l-ai">a model chose, within bounds</span><span class="l-player">the player acted</span><span>content said so</span></div>
+
+  <h3>1 · A wedding in Veenhoek</h3>
+  <div class="timeline">
+    <div class="beat player"><div class="when">day 1, 19:20</div><div class="what"><b>You plead with Trijntje for her blessing.</b> A persuasion check against DC 16, harder because she is only Neutral to you; success sets the flag <code>trijntje_blesses</code>.<small>quest action in plain words, recognised by the voice; the check is dice</small></div></div>
+    <div class="beat rules"><div class="when">day 1, 19:21</div><div class="what"><b>The quest reaches the outcome "wed"</b> and records a fact with the claim <code>betrothed</code>. Everyone in the Goose is a witness; the watcher <code>betrothal</code> raises a signal for Wouter and Geesje.<small>outcome effects; watchers of facts see them at once</small></div></div>
+    <div class="beat rules"><div class="when">day 1, 20:00</div><div class="what"><b>The betrothal aftermath starts a plan:</b> a feast on the first rest day at least a week on, at the social place nearest the one who moves, with both families as guests.<small>plan step with at: { days: 7, hour: 16, rest_day: true }</small></div></div>
+    <div class="beat rules"><div class="when">days 2–7</div><div class="what"><b>The village hears.</b> Mirte tells it at the counter (level 2), Kobus carries it to Waagdam a day later (level 1, "there's to be a wedding in the Holleveen"). "What's new around here?" now gets this first.<small>news spread every quarter hour; the voice words the version each person holds</small></div></div>
+    <div class="beat ai"><div class="when">day 3, 06:00</div><div class="what"><b>Wouter's brain</b>, told of the news at his morning choice, picks <code>Court npc_geesje</code> and <code>Obtain sailcloth</code> for the boat. The validator accepts both: Geesje is someone he knows, sailcloth is sold where he goes.<small>goal choice from the catalogue; the planner turns Obtain into walk, wait for opening, buy</small></div></div>
+    <div class="beat rules"><div class="when">rest day, 16:00</div><div class="what"><b>The feast.</b> Whoever is not grieving comes; the schedule yields to it. After an hour the step "wed" records the fact "Wouter and Geesje are married" with the claim <code>married</code>, belang 3.<small>feast verb via holdFeast; the tell verb with a claim</small></div></div>
+    <div class="beat rules"><div class="when">rest day, 17:00</div><div class="what"><b>The wedding aftermath:</b> spouse ties both ways; Geesje (who still lived with a parent) moves in with Wouter and they become one household; each family thinks ten points better of the in-law.<small>set_tie, join_household with the mover/stayer selector, regard</small></div></div>
+    <div class="beat rules"><div class="when">next day, 05:00</div><div class="what"><b>Geesje quits the Goose.</b> Her walk to work is now over thirty minutes. The quit records a vacancy with a claim; Trijntje hears it from her at once.<small>quit_work after a wait of 12 h, when has_work and commute ≥ 30</small></div></div>
+    <div class="beat rules"><div class="when">next day, 05:01</div><div class="what"><b>The vacancy aftermath:</b> a notice on the board in the stable yard, a thought for Trijntje ("Geesje has gone, and you need someone…"), and a hire step that waits for anyone without work who reads the board or hears of it within two hours' walk.<small>post, thought, hire (otherwise: wait); in the Nethermarch everyone has work, so it stays open until M8.3/M8.4 bring newcomers</small></div></div>
+    <div class="beat ai"><div class="when">04:00</div><div class="what"><b>The chronicler's night run</b> gets the storyline with its new events and writes lore with a summary, village details, a witness's telling and a far version, updates the line's note and hooks, and may turn "Trijntje needs help" into a request for you.<small>one run, ~4,000 cached tokens plus ~1,000 changing; everything checked against the world</small></div></div>
+  </div>
+
+  <h3>2 · The dyke breaks at Oude Zijl</h3>
+  <div class="timeline">
+    <div class="beat rules"><div class="when">each working day</div><div class="what"><b>Cornelis measures a sector.</b> A progress clock fills; at four sectors half the fen is measured (belang 3); Gerrit pulls up stakes at night with a 30% chance; Cornelis hires the Goat-Riders. The world does not wait for you.<small>scripted antagonists, each evening and night worked through once so a long wait and a quick save give the same world</small></div></div>
+    <div class="beat player"><div class="when">day 9</div><div class="what"><b>You learn who the cat is</b> and the widow's patience starts: six days, paused while the measuring is halted.<small>quest stage; a timer clock with an unless condition</small></div></div>
+    <div class="beat rules"><div class="when">day 15, 02:00</div><div class="what"><b>The widow pumps the mill; the Haakman takes revenge.</b> The effect plan <code>dyke_breach</code> starts: hour 0 the dyke damaged, the quay and tow paths flooded, two routes closed, news in Veenhoek, a belang-5 fact.<small>a fixed plan in plans.yaml, phases in hours after start</small></div></div>
+    <div class="beat rules"><div class="when">hour 1</div><div class="what"><b>Veenhoek flees.</b> The group "everyone who lives in Veenhoek except the Vissers" heads for Waagdam church: those near you pack up and really walk ("Mirte snatches up what she can carry…"); those far off become notes on the road.<small>flee effect; tier by distance decides walking or a note</small></div></div>
+    <div class="beat rules"><div class="when">hour 6</div><div class="what"><b>The bakery floods, Molenend flees to the Goose, flour and rye come in at half.</b> Prices follow stock; Mirte cannot bake, so her daily goal fails and she asks for help.<small>market factor on supply; planner failure → Ask_help</small></div></div>
+    <div class="beat rules"><div class="when">hour 6, 04:00</div><div class="what"><b>Quests react.</b> The main quest's <code>on_place</code> moves to its flood stage; "The Vissers stayed behind" opens as a new quest because the Vissers are still in a flooded house.<small>quests read place state, not text</small></div></div>
+    <div class="beat ai"><div class="when">04:00</div><div class="what"><b>The chronicler writes at once</b> (belang 5): lore of the breach as a witness tells it, a far version for the coast, thoughts for the reeve, and it may shift the tension between the realms by at most 5.<small>urgent run; tension bounded twice</small></div></div>
+    <div class="beat rules"><div class="when">hour 72</div><div class="what"><b>The water goes down.</b> Places turn from flooded to damaged, the tow paths reopen, news says people are going home to the mud. Refugees whose plan has a return step go back when they believe the flood is over and think their house stands; a fixed plan without that step goes home after its days.<small>phase effects; return by knowledge (M8.1) for chronicler-planned flights</small></div></div>
+    <div class="beat rules"><div class="when">day 25</div><div class="what"><b>Flour comes back to normal.</b> The village remembers the breach for weeks (belang 5 is never forgotten); it stays a topic you can ask anyone about, at the level they heard it.</div></div>
+  </div>
+
+  <h3>3 · A rumour that is not true</h3>
+  <div class="timeline">
+    <div class="beat"><div class="when">day 0</div><div class="what"><b>Content:</b> Lubbert paid Kobus the pedlar to tell that the mill will not turn before winter. A rumour in news.yaml with <code>truth: false</code>, known by Kobus (as a "witness") and Lubbert.<small>starting rumours are ordinary facts with a truth flag the world can check</small></div></div>
+    <div class="beat rules"><div class="when">Tuesday</div><div class="what"><b>Kobus works the green in Veenhoek.</b> Whoever buys from him may hear the two juiciest things he knows; a gossip tells it bigger. By evening the Goose has it at level 2.<small>meet() at a counter, spreadNews in the inn</small></div></div>
+    <div class="beat player"><div class="when">Wednesday</div><div class="what"><b>You ask Mirte about the mill.</b> The knowledge packet gives the voice her version: "The mill won't turn again this year, they say (you heard it from Kobus; you are fairly sure)". The reply is in her words; the journal shows the source.<small>the voice gets the level and source, and words it; you hear it one step less sure</small></div></div>
+    <div class="beat ai"><div class="when">Wednesday</div><div class="what"><b>Mirte's brain</b> hears news that concerns her trade and, at her next choice, picks <code>Ask_help sailcloth</code> or <code>Talk npc_harmen</code>; the planner finds nobody sells sailcloth in Veenhoek, so she asks around, which becomes a request to you.<small>news of belang 2 about her trade triggers a choice</small></div></div>
+    <div class="beat player"><div class="when">Thursday</div><div class="what"><b>You bring Harmen two bolts of sailcloth from Waagdam.</b> He repairs the mill (four hours), the object state flips, a fact "the mill turns again" (belang 3) is recorded; the quest condition <code>object: loc_molenend_mill/de_zwaan, state: { broken: false }</code> holds.<small>a request rewarded; repair affordance; quests read object state</small></div></div>
+    <div class="beat rules"><div class="when">Thursday–Friday</div><div class="what"><b>The truth outruns the lie.</b> The newer fact spreads on the same channels; anyone who now asks hears the mill turns. The journal keeps both versions side by side with who said what.<small>believes() prefers the newest; the end-of-game chronicle marks the rumour untrue</small></div></div>
+    <div class="beat ai"><div class="when">M8.2</div><div class="what"><b>Being found out.</b> When Mirte hears a version that contradicts what she believed and the new one is true, the watcher <code>deceived_found_out</code> signals her brain; her intentions are content: confront Lubbert, stop buying from him, spread the truth. Kobus's: shame, avoid Veenhoek a while.<small>planned in the signals-and-aftermath design; intentions as content after the review</small></div></div>
+  </div>
+
+  <h3>What the player sees of it</h3>
+  <div class="screen">
+<span class="sys">Bakery Yard, Woensdag, morning. Mirte the baker is baking bread.</span>
+<span class="you">&gt; ask mirte about the mill</span>
+Mirte wipes her hands on her apron. "The mill? Kobus says it won't turn again before winter. I'm fairly sure that's what he said. If it's true, I'll be grinding at the horse mill till spring, and paying for it."
+<span class="sys">New in your journal: <span class="topic">the mill at Molenend</span>, heard from Mirte (from Kobus). Two versions: this one, and Harmen's.</span>
+<span class="you">&gt; where is harmen</span>
+"At this hour Harmen is usually at the mill, working. Or trying to."
+  </div>
+</section>
+
+<!-- ============================================================ 9. DISTANCE -->
+<section id="distance">
+  <h2>Detail by distance</h2>
+  <p class="sub">The world is worked out to the level the moment needs. Near you, every minute counts; further off, a coarser tick; far away, a note. Beyond the map, a far city is an outline the chronicler writes once when you set out for it.</p>
+  <figure>
+    <svg viewBox="0 0 1180 260" role="img" aria-label="Concentric bands around the player: within 8 km people think every minute; further off every quarter hour; far away or on a journey they are notes with where, since when and until when; within 3 km a note becomes a person again; beyond the region, places are outlines and news arrives by distance and importance.">
+      <defs><marker id="ar7" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+      <g font-size="12.5">
+        <rect x="20" y="30" width="1140" height="200" rx="6" fill="var(--sheet)" stroke="currentColor" stroke-dasharray="5 4"/>
+        <text x="40" y="54" font-weight="700">beyond the region</text>
+        <text x="40" y="74" fill="var(--ink-2)">outlines: a far city written once by the chronicler when you set out; news reaches here only at belang 4–5</text>
+        <rect x="120" y="90" width="900" height="130" rx="6" fill="var(--peat-soft)" stroke="currentColor"/>
+        <text x="140" y="112" font-weight="700">the region: notes</text>
+        <text x="140" y="132" fill="var(--ink-2)">where · doing what · since · until · unrest (fixed, travelling, fleeing)</text>
+        <text x="140" y="150" fill="var(--ink-2)">no thinking; news arrives by area and distance; not a witness at the old place</text>
+        <rect x="420" y="120" width="480" height="90" rx="6" fill="var(--water-soft)" stroke="currentColor"/>
+        <text x="440" y="142" font-weight="700">coarse · within reach</text>
+        <text x="440" y="162" fill="var(--ink-2)">think every 15 minutes, with plans</text>
+        <rect x="620" y="140" width="260" height="60" rx="6" fill="var(--wisp-soft)" stroke="currentColor"/>
+        <text x="750" y="162" text-anchor="middle" font-weight="700">full · within 8 km of you</text>
+        <text x="750" y="182" text-anchor="middle" fill="var(--ink-2)">every minute, every step, every line</text>
+        <text x="750" y="216" text-anchor="middle" font-size="11.5" fill="var(--ink-3)">a note within 3 km becomes a person again, on that spot, with a line about how they came</text>
+      </g>
+    </svg>
+    <figcaption>A journey across country is a note that arrives when the walk would be done; a flight far from you is a note with unrest "fleeing". Detail is a property of distance from the player, never of importance to the plot.</figcaption>
+  </figure>
+</section>
+
+<!-- ============================================================ 10. OPTIONAL -->
+<section id="optional">
+  <h2>What a world can leave out</h2>
+  <p class="sub">The same engine can run a story-first world or a rules-heavy one. Each layer below is content; leaving it out changes what the game offers, not whether it runs.</p>
+  <div class="scroll"><table>
+    <tr><th>Layer</th><th>Where it lives</th><th>Without it</th><th>With it</th></tr>
+    <tr><td>Rules and combat</td><td><code>rules/rules.yaml</code>, <code>bestiary.yaml</code></td><td>a ready-made traveller with fixed talking skills; no fights, no levels (Skerrow)</td><td>character creation, skills with practice, six classes, talents, patrons, turn-based fights, death and the Grey Rider</td></tr>
+    <tr><td>Crafting depth</td><td>objects with affordances, professions with daily goals</td><td>shops with fixed supply rules</td><td>chains (rye → flour → bread; wool → yarn; peat → fire) that people really work, shortages with a cause; for the player: <code>use</code> on objects with <code>actors: [player]</code></td></tr>
+    <tr><td>Region map</td><td><code>region.yaml</code> zone drawing</td><td>places connected only by exits</td><td>hex map, walking across country, fog, journeys, zones you only heard of</td></tr>
+    <tr><td>Small stories and pacing</td><td><code>patterns.yaml</code></td><td>only what quests and people do</td><td>things go missing, quarrels, thefts, fevers, feasts at the tempo you choose</td></tr>
+    <tr><td>Consequences</td><td><code>watchers.yaml</code>, <code>aftermath.yaml</code>, <code>plans.yaml</code></td><td>events are facts and lore only</td><td>weddings change households, vacancies get filled, floods make people flee and return</td></tr>
+    <tr><td>Realms and factions</td><td><code>factions.yaml</code></td><td>no reputation, no war</td><td>thirteen factions, tension between lands that can become war</td></tr>
+    <tr><td>The models</td><td>settings</td><td>templates, schedules and the utility function; fully playable offline</td><td>voiced people, chosen goals, written lore; about 1 to 8 dollar cents per play hour</td></tr>
+    <tr><td>Pictures</td><td>settings</td><td>text only</td><td>one picture per area and a portrait per named person, made once</td></tr>
+  </table></div>
+  <p class="note">Not built yet, and small to add for a crafting-heavy world: a skill check and experience on an affordance, so using a loom is practice; a chain overview in the editor's check panel. Standing (five classes), a ledger per settlement, newcomers and building projects are M8.2 to M8.4.</p>
+</section>
+
+<!-- ============================================================ 11. CODE MAP -->
+<section id="code">
+  <h2>Map of the code</h2>
+  <p class="sub">About 29,000 lines of TypeScript, 355 tests. The architecture test refuses any import from Electron, React or Node inside the engine.</p>
+  <div class="tree"><b>src/engine/</b>            headless; the only place that changes the world
+  engine.ts            commands in, outputs out; the log; models run in the background
+  world.ts · state.ts  content + state facade; everything that changes, as plain JSON
+  simulation.ts        the clock: minute, quarter, hour, day
+  content.ts           zod schemas for every YAML list; reference checks
+  <b>npc/</b>                 brain (schedule, needs, goals), planner (backward search), execute, acts, goals (the AI choice)
+  <b>dialogue/</b>            conversation turn, knowledge packet, prompt, guard, schema, mock, testset
+  news.ts · storylines.ts   facts, spread, belief; storylines and when the chronicler runs
+  chronicler.ts        the game's side: builds the overview, checks and applies the reply
+  signals.ts · aftermath.ts · layer.ts   watchers, signals, verbs, the layer over the content
+  <b>quests/</b>              schema (conditions, effects), engine (storylets), plans (runner), antagonists
+  <b>social/</b>              relations, gates, deeds, crime, factions, companions, romance, realms, coincidences
+  <b>rules/</b> · <b>combat/</b>    character, checks, blessings; fights, foe AI, balance
+  <b>map/</b>                 hex grid, region generator, travel, journeys, what you know of the map
+  lod.ts · outlines.ts detail by distance; far places beyond the map
+  editor.ts · edit.ts · builder.ts · playtest.ts   the editor's core and checks
+<b>src/chronicler/</b>        the chronicler as a standalone module: types, prompt, reply, run
+<b>src/node/</b>              content loader, savegame (SQLite), game log, editor writes, ai/ (gateway, providers, settings, usage, pricing, advisor)
+<b>src/main/</b> · <b>src/preload/</b> · <b>src/renderer/</b>   Electron, the bridge, the React windows (game, conversation, journal, sheet, fight, settings, editor)
+<b>src/cli/</b>               play.ts (terminal), sim.ts (headless days)
+<b>content/base/</b> · <b>content/isle/</b>   the Nethermarch and Skerrow
+<b>tests/</b>                 one file per milestone, golden scenarios, three saves from before M8.1 that must still load</div>
+  <p class="note">Sources of truth: the functional design and the world book (Claude Docs), the design for lore and world change, and the design for signals and aftermath. The review of the architecture after M8.1 is in <code>docs/review-opzet-2026-09-27.md</code>.</p>
+</section>
+
+</div>
+
+</body>
+</html>

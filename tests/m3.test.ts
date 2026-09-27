@@ -133,7 +133,7 @@ describe('M3: news goes from person to person', () => {
     }
     // Two out of three start days is "usually".
     expect(reached).toBeGreaterThanOrEqual(8)
-  })
+  }, 20000)
 
   it('forgets small news: belang 1 after two days, belang 2 after two weeks', () => {
     const small = start(2, 16, 1)

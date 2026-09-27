@@ -43,6 +43,13 @@ export interface Crime {
 /** The id of the land's law in saves and factions; towns have their own (world.yaml). */
 export const LAND_LAW = 'count'
 
+/** Where the law locks someone up for a day: the office of the world's law, or else the officer's own house. */
+export function lawCell(world: World): string | undefined {
+  const law = world.words.law
+  if (law.office && world.content.locations.has(law.office)) return law.office
+  return law.npc && world.content.npcs.has(law.npc) ? world.npc(law.npc).home : undefined
+}
+
 export function lawAt(world: World, location: string): string {
   const area = world.content.locations.get(location)?.area
   return world.content.world.towns.find((t) => t.area === area)?.id ?? LAND_LAW
@@ -361,7 +368,8 @@ export function crimesHour(world: World): void {
     })
     if (victim && crime.suspect && crime.suspect !== 'player') shiftBond(world, victim, crime.suspect, -10, -10)
     // The schout goes to look, if it is his to look into.
-    const schout = world.content.npcs.has('npc_everhard') && world.alive('npc_everhard') && crime.law === 'count' ? world.state.npcs['npc_everhard'] : undefined
+    const officerId = world.words.law.npc
+    const schout = officerId && world.content.npcs.has(officerId) && world.alive(officerId) && crime.law === LAND_LAW ? world.state.npcs[officerId] : undefined
     if (schout && !schout.following) {
       schout.goals = schout.goals.filter((g) => g.id !== `investigate_${crime.id}`)
       schout.goals.push({ id: `investigate_${crime.id}`, type: 'Investigate', target: crime.place, priority: 1, source: 'ai', created: world.now, until: world.now + 24 * HOUR })
@@ -385,14 +393,15 @@ export function investigated(world: World, officer: string, place: string): void
     if (culprit === 'player') {
       const wanted = ((world.state.wanted ??= {})[crime.law] ??= { fine: 0, since: world.now })
       wanted.fine += crime.fine
-      grievance(world, officer, 'the law', `"A word, stranger. Things went missing at ${world.location(place).name}, and you were seen there. ${world.money(crime.fine)}${world.words.law.npc === 'npc_everhard' ? ' to the Count' : ' in fines'}, and we say no more about it."`)
+      grievance(world, officer, 'the law', `"A word, stranger. Things went missing at ${world.location(place).name}, and you were seen there. ${world.money(crime.fine)}${world.words.law.lord ? ` to ${world.words.law.lord}` : ' in fines'}, and we say no more about it."`)
     } else {
       const s = world.state.npcs[culprit]
-      if (s && !s.dead) {
-        s.stayAt = { where: 'loc_schout_house', until: world.now + 24 * HOUR }
+      const cell = lawCell(world)
+      if (s && !s.dead && cell) {
+        s.stayAt = { where: cell, until: world.now + 24 * HOUR }
         s.plan = []
         s.planGoal = undefined
-        s.activity = 'locked up by the schout'
+        s.activity = `locked up by the ${world.words.law.officer}`
       }
     }
   }
