@@ -2,7 +2,8 @@ import { GameClock, minuteOfDay } from '../clock'
 import type { Content, Location } from '../content'
 import type { Output } from '../commands'
 import type { World } from '../world'
-import { playerSkill } from '../rules/player'
+import { playerSkill, sink } from '../rules/player'
+import { blessed } from '../rules/blessings'
 import { weather, weatherLine } from '../weather'
 import { centre, distance, type Hex, HEX_DIRECTIONS, type HexDirection, hexKey, neighbour, neighbours, stepToward, windBetween } from './hexgrid'
 import { type Cell, regionMap, type RegionMap } from './region'
@@ -53,10 +54,17 @@ function frozen(world: World): boolean {
   return weather(world) === 'frost' || weather(world) === 'snow'
 }
 
-export function passable(world: World, cell: Cell): boolean {
+export function passable(world: World, cell: Cell, forPlayer = false): boolean {
   if (cell.land !== 'water') return true
+  // With a punt the player poles over open water and channels (M7.2).
+  if (forPlayer && hasPunt(world)) return true
   // Ice carries you over the Blackmere in a hard frost; channels never freeze hard enough.
   return frozen(world) && !cell.channel
+}
+
+/** A punt hired for the day: open water and channels are a way, not a wall. */
+export function hasPunt(world: World): boolean {
+  return (world.state.player.punt ?? 0) > world.now
 }
 
 /** Minutes to cross a hex. The dry ridge only counts for a player who knows it; NPCs keep to what everyone knows. */
@@ -66,7 +74,7 @@ export function minutesFor(world: World, cell: Cell, forPlayer = true): number {
   else if (forPlayer && onKnownRidge(world, cell)) minutes = 4
   else if (cell.land === 'fen') minutes = cell.feature === 'hummock' ? 6 : 8
   else if (cell.land === 'woods') minutes = 6
-  else if (cell.land === 'water') minutes = 5
+  else if (cell.land === 'water') minutes = forPlayer && hasPunt(world) && !frozen(world) ? (blessed(world.content, world.state.player.character, 'Fair Wind') ? 3 : 4) : 5
   else minutes = 4
   const kind = weather(world)
   if (kind === 'rain' || kind === 'snow') minutes += 1
@@ -225,7 +233,7 @@ export function waysLine(world: World, map: RegionMap, hex: Hex): string {
   for (const { direction, hex: next } of neighbours(hex)) {
     const cell = map.cell(next)
     if (!cell) continue
-    ;(passable(world, cell) ? open : shut).push(direction.replace(/^(north|south)(east|west)$/, '$1-$2'))
+    ;(passable(world, cell, true) ? open : shut).push(direction.replace(/^(north|south)(east|west)$/, '$1-$2'))
   }
   return `Ways on: ${open.join(', ') || 'none'}${shut.length ? `; deep water ${shut.join(', ')}` : ''}.`
 }
@@ -347,7 +355,7 @@ export function findPath(world: World, map: RegionMap, from: Hex, to: Hex, forPl
     seen.add(key)
     for (const { hex: next } of neighbours(hex)) {
       const cell = map.cell(next)
-      if (!cell || !passable(world, cell)) continue
+      if (!cell || !passable(world, cell, forPlayer)) continue
       const g = cost.get(key)! + minutesFor(world, cell, forPlayer) + (cell.bog ? 10 : 0)
       const nkey = hexKey(next)
       if (g < (cost.get(nkey) ?? Infinity)) {
@@ -442,7 +450,7 @@ export function walk(world: World, plan: WalkPlan, pass: (minutes: number) => Ou
       const here = wayAt(map.cell(at)!, plan.way, following)
       let options = neighbours(at).filter((n) => {
         const cell = map.cell(n.hex)
-        if (!cell || trail.has(hexKey(n.hex)) || !passable(world, cell) || !matchesWay(world, cell, plan.way)) return false
+        if (!cell || trail.has(hexKey(n.hex)) || !passable(world, cell, true) || !matchesWay(world, cell, plan.way)) return false
         if (!here || plan.way === 'ridge') return true
         const there = wayAt(cell, plan.way, here.name)
         return there !== undefined && Math.abs(there.at - here.at) === 1 && (sense === 0 || Math.sign(there.at - here.at) === sense)
@@ -477,14 +485,14 @@ export function walk(world: World, plan: WalkPlan, pass: (minutes: number) => Ou
       break
     }
     const cell = map.cell(next)!
-    if (!passable(world, cell)) {
+    if (!passable(world, cell, true)) {
       reason = cell.channel ? `A channel of open water bars the way; only a punt would cross it.` : `Deep water bars the way ${pretty(direction ?? plan.kind)}.`
       break
     }
     // In mist, off the road, you may lose your bearings: Survival against DC 15 (FO, chapter 12, "Gevaar buiten gevechten").
     const lost = sight(world, map, map.cell(at)!) <= 1 && !cell.way && !onKnownRidge(world, cell) && plan.kind !== 'follow' && world.rng.int('travel', 1, 20) + playerSkill(world, 'survival') < 15
     if (lost) {
-      const drift = neighbours(at).filter((n) => map.cell(n.hex) && passable(world, map.cell(n.hex)!) && hexKey(n.hex) !== hexKey(next!))
+      const drift = neighbours(at).filter((n) => map.cell(n.hex) && passable(world, map.cell(n.hex)!, true) && hexKey(n.hex) !== hexKey(next!))
       const pick = drift[world.rng.int('travel', 0, Math.max(0, drift.length - 1))]
       if (pick) next = pick.hex
     }
@@ -508,7 +516,7 @@ export function walk(world: World, plan: WalkPlan, pass: (minutes: number) => Ou
     }
     if (stepCell.bog) {
       minutes += 10
-      reason = 'The ground gives way under you and you sink to the knee. It takes a while to work free.'
+      reason = sink(world)
       break
     }
     if (stepCell.feature === 'ruin' && plan.kind !== 'to') {
@@ -531,7 +539,7 @@ export function walk(world: World, plan: WalkPlan, pass: (minutes: number) => Ou
   if (heading) mapState(world).heading = heading
   if (weather(world) === 'fog' && startWeather !== 'fog' && !reason) reason = 'A mist has come up while you walked.'
   const how = plan.kind === 'head' ? `You head ${pretty(plan.wind)}` : plan.kind === 'to' ? `You make your way towards ${plan.name}` : `You follow ${plan.way === 'ridge' ? 'the dry ridge' : plan.way}`
-  const over = [...lands].map((l) => ({ fen: 'wet fen', fields: 'fields', woods: 'woods', heath: 'heath', water: 'the ice' })[l] ?? l)
+  const over = [...lands].map((l) => ({ fen: 'wet fen', fields: 'fields', woods: 'woods', heath: 'heath', water: frozen(world) ? 'the ice' : 'open water, poling' })[l] ?? l)
   const summary = `${how} for ${duration(minutes)}, over ${list(over)}.${reason ? ` ${reason}` : ''}${arrived ? ` You come to ${world.location(arrived).name}.` : ''}`
   return { outputs: [{ kind: 'narration', text: summary }], minutes, at: world.state.player.location }
 }

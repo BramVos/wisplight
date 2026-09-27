@@ -60,8 +60,10 @@ import {
   patronCommand,
   pray,
   rest,
+  leaveSheaf,
   rite,
   sheetLines,
+  struggle,
   trainCommand,
   XP,
   type Clock,
@@ -533,6 +535,10 @@ export class Engine {
 
   private async route(text: string): Promise<Output[]> {
     if (text.startsWith('@')) return this.build(text.slice(1))
+    // Stuck in the fen, or a cat for a while (M7.2): some things cannot be done.
+    const held = this.heldBack(text)
+    if (held) return held
+    if (/^(?:hire|rent|borrow)\s+(?:a\s+|the\s+)?punt\b/i.test(text.trim())) return this.hirePunt()
     const barge = /^(?:take|catch|board)\s+(?:the\s+)?barge(?:\s+to\s+(.+))?$|^travel\s+by\s+barge(?:\s+to\s+(.+))?$/i.exec(text)
     if (barge && !this.state.talk) return takeBarge(this.world, (barge[1] ?? barge[2])?.toLowerCase().replace(/^the\s+/, '').trim(), (minutes) => this.pass(minutes))
     const talk = this.state.talk
@@ -636,6 +642,11 @@ export class Engine {
         return pray(this.world)
       case 'rite':
         return rite(this.world)
+      case 'offer':
+      case 'leave':
+        // The last sheaf for the Grey Rider, at a crossroads (the Rider's price).
+        if (/sheaf|rye|grain|rogge/i.test(command.args.join(' '))) return leaveSheaf(this.world)
+        return [{ kind: 'error', text: command.verb === 'leave' ? 'Leave what? To leave a place, go somewhere.' : 'Offer what, to whom?' }]
       case 'clocks':
         return [{ kind: 'system', text: this.clockLines().join('\n') || 'No clocks are running that you know of.' }]
       case 'attack': {
@@ -1148,6 +1159,38 @@ export class Engine {
     }
   }
 
+  /**
+   * A punt from Wouter (M7.2): two stuivers for the day, nothing for a friend.
+   * With it you pole over open water and the channels, where walking stops.
+   */
+  private hirePunt(): Output[] {
+    const here = this.state.player.location
+    const owner = 'npc_wouter'
+    const s = this.state.npcs[owner]
+    if (!s || s.dead || (s.location !== here && !companionOf(this.world, owner))) return [{ kind: 'error', text: 'Punts are hired from Wouter, the eel-fisher, at his hut south of the peat cuttings.' }]
+    const friend = Boolean(companionOf(this.world, owner)) || attitude(this.world, owner).band === 'Warm' || attitude(this.world, owner).band === 'Devoted'
+    const price = friend ? 0 : 16
+    if (this.state.player.money < price) return [{ kind: 'error', text: `Wouter wants ${formatMoney(price)} for the day, and you haven't got it.` }]
+    this.state.player.money -= price
+    this.world.npcState(owner).money += price
+    this.state.player.punt = this.world.now + 12 * 60
+    return [{ kind: 'narration', text: `${price ? `You pay Wouter ${formatMoney(price)}.` : 'Wouter waves your money away.'} "Mind the pole in the channels, and bring her back before the dark." The punt is yours until evening: you can pole over open water and across the channels now.` }]
+  }
+
+  /** Mired: no walking until you work free. Catform: no hands and no words. */
+  private heldBack(text: string): Output[] | undefined {
+    const conditions = this.state.player.character?.conditions ?? {}
+    const verb = parseCommand(text.replace(/^\//, '')).verb
+    if (/^(struggle|get free|pull free|work free)\b/i.test(text)) return struggle(this.world, (m) => this.pass(m))
+    if (conditions['mired'] && (['go', 'head', 'walk', 'follow', 'travel', 'enter'].includes(verb) || parseDirection(text.trim()) || /barge/i.test(text))) {
+      return [{ kind: 'error', text: 'You are stuck fast in the fen. STRUGGLE to work free first.' }]
+    }
+    if (conditions['catform'] && ['talk', 'say', 'ask', 'tell', 'buy', 'sell', 'give', 'use', 'eat', 'wield', 'attack', 'list', 'rent', 'borrow', 'repay', 'steal', 'flirt', 'recruit', 'order', 'persuade', 'deceive', 'intimidate', 'bribe', 'marry'].includes(verb)) {
+      return [{ kind: 'error', text: 'You are a cat. You have paws, not hands, and nobody understands a word you say.' }]
+    }
+    return undefined
+  }
+
   /** A location by id, or by name or alias. */
   private findLocation(words: string): string | undefined {
     const w = words.trim().toLowerCase()
@@ -1166,6 +1209,7 @@ export class Engine {
     return {
       content: this.content,
       rng: this.world.rng,
+      now: this.world.now,
       character: character(this.world)!,
       items: {
         count: (id) => inventory[id] ?? 0,

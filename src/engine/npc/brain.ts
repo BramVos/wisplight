@@ -7,6 +7,8 @@ import { morning, triggerChoice } from './goals'
 import { feastFor } from '../stories'
 import { executeStep, resolvePending } from './execute'
 import { isFailure, Planner } from './planner'
+import { unreported } from './acts'
+import { callName } from '../content'
 
 // Without AI an NPC falls back on its schedule, its needs and the daily goals
 // of its profession (FO, chapter 7: the utility layer). Goals chosen by the
@@ -190,8 +192,107 @@ function pursueOwnGoal(world: World, npcId: string, goal: Goal): boolean {
     case 'AskHelp':
       return start([{ kind: 'askHelp', item: goal.item!, qty: goal.qty ?? 1 }])
     default:
-      return start([])
+      return start(actPlan(world, npcId, goal))
   }
+}
+
+/** The rest of the catalogue (M7.2): walk to where it happens, spend the time, and the act itself (npc/acts.ts). */
+function actPlan(world: World, npcId: string, goal: Goal): Step[] {
+  const npc = world.npcState(npcId)
+  const other = goal.target ? world.state.npcs[goal.target] : undefined
+  const at = (id: string | undefined) => (id && world.content.npcs.has(id) ? callName(world.npc(id)) : 'them')
+  const toPerson = (): Step[] | undefined => (other && !other.dead && !other.absent ? goTo(world, npcId, other.location) : undefined)
+  const place = (id: string | undefined) => (id ? world.location(id).name : '')
+  switch (goal.type) {
+    case 'Sell': {
+      const shop = nearestWhere(world, npcId, (id) => world.location(id).services.some((s) => s.buys.includes(goal.item!)))
+      return shop ? [...goTo(world, npcId, shop), { kind: 'act', act: 'sell', item: goal.item }] : []
+    }
+    case 'Deliver': {
+      const way = toPerson()
+      return way && goal.item ? [...way, { kind: 'act', act: 'deliver', target: goal.target, item: goal.item }] : []
+    }
+    case 'Meet': {
+      const way = toPerson()
+      return way ? [...way, { kind: 'spend', minutes: 60, activity: 'socialize', label: `with ${at(goal.target)}` }, { kind: 'act', act: 'meet', target: goal.target }] : []
+    }
+    case 'Follow': {
+      const way = toPerson()
+      return way ? [...way, { kind: 'spend', minutes: 40, activity: 'idle', label: `keeping an eye on ${at(goal.target)}` }, { kind: 'act', act: 'follow', target: goal.target }] : []
+    }
+    case 'Guard':
+      return [...goTo(world, npcId, goal.target!), { kind: 'spend', minutes: 180, activity: 'idle', label: `keeping watch at ${place(goal.target)}` }]
+    case 'Avoid':
+      npc.avoid = { place: goal.target!, until: world.now + 24 * 60 }
+      return [{ kind: 'spend', minutes: 5, activity: 'idle', label: 'keeping out of the way' }]
+    case 'Help': {
+      const way = toPerson()
+      return way ? [...way, { kind: 'spend', minutes: 60, activity: 'work', label: `helping ${at(goal.target)}` }, { kind: 'act', act: 'help', target: goal.target }] : []
+    }
+    case 'Spread':
+      return [...goTo(world, npcId, socialPlace(world, npcId)), { kind: 'spend', minutes: 30, activity: 'socialize', label: 'passing on the news' }, { kind: 'act', act: 'spread' }]
+    case 'Court': {
+      const way = toPerson()
+      return way ? [...way, { kind: 'spend', minutes: 45, activity: 'socialize', label: `with ${at(goal.target)}` }, { kind: 'act', act: 'court', target: goal.target }] : []
+    }
+    case 'Celebrate':
+      return [...goTo(world, npcId, socialPlace(world, npcId)), { kind: 'act', act: 'celebrate' }, { kind: 'spend', minutes: 90, activity: 'socialize', label: 'celebrating' }]
+    case 'Investigate':
+      return [...goTo(world, npcId, goal.target!), { kind: 'spend', minutes: 45, activity: 'idle', label: `looking round ${place(goal.target)}` }, { kind: 'act', act: 'investigate' }]
+    case 'Report': {
+      const crime = unreported(world, npcId)[0]
+      const officer = crime ? lawOfficer(world, crime.law) : undefined
+      const where = officer ? world.state.npcs[officer]?.location : undefined
+      return where ? [...goTo(world, npcId, where), { kind: 'act', act: 'report', target: officer }] : []
+    }
+    case 'Confront': {
+      const way = toPerson()
+      return way ? [...way, { kind: 'act', act: 'confront', target: goal.target }] : []
+    }
+    case 'RecruitHelp': {
+      const way = toPerson()
+      return way ? [...way, { kind: 'act', act: 'recruit', target: goal.target }] : []
+    }
+    case 'Steal': {
+      const shop = nearestWhere(world, npcId, (id) => world.location(id).services.some((s) => (world.stock(id, s.id)[goal.item!] ?? 0) > 0))
+      return shop ? [...goTo(world, npcId, shop), { kind: 'act', act: 'steal', item: goal.item }] : []
+    }
+    case 'Sabotage': {
+      const [location] = (goal.target ?? '').split('/')
+      return location && world.content.locations.has(location) ? [...goTo(world, npcId, location), { kind: 'act', act: 'sabotage', target: goal.target }] : []
+    }
+    case 'Harm': {
+      const way = toPerson()
+      return way ? [...way, { kind: 'act', act: 'harm', target: goal.target }] : []
+    }
+    case 'Flee':
+      npc.stayAt = { where: goal.target!, until: world.now + 2 * 24 * 60 }
+      return goTo(world, npcId, goal.target!)
+    default:
+      return []
+  }
+}
+
+/** The nearest place the NPC knows where something holds. */
+function nearestWhere(world: World, npcId: string, test: (location: string) => boolean): string | undefined {
+  const here = world.npcState(npcId).location
+  let best: string | undefined
+  let bestMinutes = Infinity
+  for (const id of [...world.knownLocations(npcId)].sort()) {
+    if (!test(id)) continue
+    const minutes = id === here ? 0 : (world.route(here, id)?.minutes ?? Infinity)
+    if (minutes < bestMinutes) {
+      best = id
+      bestMinutes = minutes
+    }
+  }
+  return best
+}
+
+/** Who keeps a law: the schout for the Count's land, the town hall for Waagdam. */
+function lawOfficer(world: World, law: 'count' | 'waagdam'): string | undefined {
+  const faction = [...world.content.factions.values()].find((f) => f.law === law)
+  return faction?.members.find((id) => world.alive(id)) ?? (law === 'count' && world.alive('npc_everhard') ? 'npc_everhard' : undefined)
 }
 
 function setPlan(world: World, npcId: string, steps: Step[]): boolean {
@@ -296,7 +397,10 @@ function goHome(world: World, npcId: string): Step[] {
 }
 
 function goTo(world: World, npcId: string, place: string): Step[] {
-  return world.npcState(npcId).location === place ? [] : [{ kind: 'move', to: place }]
+  const npc = world.npcState(npcId)
+  // A place the NPC keeps away from for now (the goal Avoid): home instead.
+  if (npc.avoid && npc.avoid.until > world.now && npc.avoid.place === place) place = world.npc(npcId).home
+  return npc.location === place ? [] : [{ kind: 'move', to: place }]
 }
 
 function placeFor(world: World, npcId: string, at: string): string {

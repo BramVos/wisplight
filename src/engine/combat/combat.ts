@@ -16,6 +16,7 @@ import {
 } from '../rules/character'
 import { SAVES, type Save, type Step } from '../rules/schema'
 import type { Combat, FightAbility, FightAttack, Fighter, Line } from './types'
+import { blessed, ONCE, useBlessing } from '../rules/blessings'
 
 // The rules of a fight (FO, chapter 12). Everything here is deterministic
 // given the random stream: the same fight with the same rolls ends the same.
@@ -29,6 +30,8 @@ export interface Arena {
   items?: { count(id: string): number; take(id: string): void }
   /** Where the fight is: the fen, outdoors, at night. */
   where?: { fen?: boolean; outdoors?: boolean; night?: boolean }
+  /** The time, for blessings that come back once a day or a week. */
+  now?: number
 }
 
 const STREAM = 'combat'
@@ -520,10 +523,22 @@ export function startTurn(arena: Arena, combat: Combat, f: Fighter, lines: Line[
     lines.push({ kind: 'narration', text: `${cap(f.name)} comes out of the reeds and joins in.` })
   }
   if (f.state === 'dying') recoveryCheck(arena, f, lines)
+  // Unbroken (Baduhenna): once a day the player shakes off fear, the mire or a grip.
+  if (f.id === 'player' && f.state === 'up' && ['frightened', 'grabbed', 'mired'].some((c) => f.conditions[c]) && useBlessing(arena.content, arena.character, 'Unbroken', arena.now ?? 0, ONCE.day)) {
+    for (const c of ['frightened', 'grabbed', 'mired']) delete f.conditions[c]
+    lines.push({ kind: 'narration', text: 'Something old and stubborn rises in you, and you shake yourself free.' })
+  }
 }
 
 /** Dying: a flat check against 10 + dying; success brings it down, failure up; at 4 you die. */
 export function recoveryCheck(arena: Arena, f: Fighter, lines: Line[]): void {
+  // Safe Harbour (the Lantern): once a week the player steadies without a roll.
+  if (f.id === 'player' && useBlessing(arena.content, arena.character, 'Safe Harbour', arena.now ?? 0, ONCE.week)) {
+    f.dying = 0
+    f.state = 'unconscious'
+    lines.push({ kind: 'narration', text: 'A light like a lantern in a window, far off, and your breathing steadies. You will live.' })
+    return
+  }
   const dying = f.dying ?? 1
   const roll = arena.rng.int(STREAM, 1, 20)
   const d = degreeOf(roll, roll, 10 + dying)
@@ -550,7 +565,8 @@ export function endTurn(arena: Arena, combat: Combat, f: Fighter, lines: Line[])
     hurt(arena, combat, f, f.conditions['bleeding']!, lines)
   }
   if (f.conditions['frightened']) {
-    f.conditions['frightened']! -= 1
+    // Comfort (the Lantern): fear fades one step faster for the player's whole side.
+    f.conditions['frightened']! -= f.side === 'party' && blessed(arena.content, arena.character, 'Comfort') ? 2 : 1
     if (f.conditions['frightened']! <= 0) delete f.conditions['frightened']
   }
   for (const [name, left] of Object.entries(f.timers)) {

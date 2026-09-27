@@ -133,7 +133,7 @@ describe('Wouter and a dangerous order (roadmap M6)', () => {
 })
 
 describe('crime and witnesses (roadmap M6)', () => {
-  it('has no consequences when nobody sees it', async () => {
+  it('has no consequences at once when nobody sees it (it is found out later, M7.2)', async () => {
     const engine = new Engine(content, { seed: 1 })
     await play(engine, 'create rascal fenfolk smuggler name=Lies')
     // The bakery with nobody in it.
@@ -143,7 +143,8 @@ describe('crime and witnesses (roadmap M6)', () => {
     const out = await play(engine, 'steal bread')
     expect(out).toMatch(/You slip a loaf of rye bread under your coat/)
     expect(engine.state.player.inventory['rye_bread']).toBe(1)
-    expect(engine.state.crimes ?? []).toHaveLength(0)
+    expect((engine.state.crimes ?? []).filter((c) => !c.unseen)).toHaveLength(0)
+    expect(engine.state.crimes?.[0]).toMatchObject({ unseen: true, witnesses: [] })
     expect(engine.state.news?.facts.length ?? 0).toBe(facts)
     expect(engine.state.wanted).toBeUndefined()
     expect(relation(engine.state, 'npc_mirte').affinity).toBe(0)
@@ -158,8 +159,8 @@ describe('crime and witnesses (roadmap M6)', () => {
     engine.state.player.character!.ranks['stealth'] = 0
     engine.state.player.character!.attributes.grace = -1
     let out = ''
-    for (let i = 0; i < 6 && !(engine.state.crimes ?? []).length; i++) out += await play(engine, 'steal bread')
-    const crime = engine.state.crimes![0]!
+    for (let i = 0; i < 6 && !(engine.state.crimes ?? []).some((c) => !c.unseen); i++) out += await play(engine, 'steal bread')
+    const crime = engine.state.crimes!.find((c) => !c.unseen)!
     expect(crime.witnesses.length).toBeGreaterThan(0)
     expect(out).toMatch(/saw (it|that)/)
     const fact = engine.state.news!.facts.find((f) => f.id === crime.fact)!
@@ -180,8 +181,10 @@ describe('crime and witnesses (roadmap M6)', () => {
     place(engine, 'npc_mirte', 'loc_veenhoek_bakery')
     engine.state.player.character!.attributes.grace = -2
     engine.state.player.character!.ranks['stealth'] = 0
-    for (let i = 0; i < 8 && !(engine.state.crimes ?? []).length; i++) await play(engine, 'steal bread')
-    const crime = engine.state.crimes![0]!
+    // Enough bread on the counter to keep trying until Mirte sees it.
+    engine.world.stock('loc_veenhoek_bakery', 'bakery_counter')['rye_bread'] = 40
+    for (let i = 0; i < 30 && !(engine.state.crimes ?? []).some((c) => !c.unseen); i++) await play(engine, 'steal bread')
+    const crime = engine.state.crimes!.find((c) => !c.unseen)!
     Object.assign(relation(engine.state, 'npc_mirte'), { affinity: 40, trust: 30 })
     engine.state.player.money = 500
     let quiet = ''

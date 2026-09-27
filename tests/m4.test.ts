@@ -65,7 +65,7 @@ describe('M4: walking across the Holleveen', () => {
     const engine = game()
     await play(engine, 's', 'w')
     const out = await play(engine, 'head south', 'head south', 'head south', 'head south')
-    expect(out).toMatch(/Deep water bars the way|ground gives way|Night is falling|You come to|forks|edge of the Holleveen/)
+    expect(out).toMatch(/Deep water bars the way|ground gives way|fen takes you|stuck fast|Night is falling|You come to|forks|edge of the Holleveen/)
     expect(hexOfId(engine.state.player.location) ?? engine.state.player.location).toBeDefined()
   })
 

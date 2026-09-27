@@ -5,6 +5,7 @@ import { add, hasAll, itemName, withArticle } from '../items'
 import { meet, recordFact } from '../news'
 import { openRequest } from '../requests'
 import { journey } from '../lod'
+import { performAct } from './acts'
 import { objectKey, type Step } from '../state'
 import type { World } from '../world'
 
@@ -253,6 +254,24 @@ export function executeStep(world: World, npcId: string, step: Step): StepResult
         world.say(`{name} sighs that {they} could do with ${qtyName(world, step.item, step.qty)}, if only {they} knew where to get it.`, npcId),
         npcId,
       )
+      return 'done'
+    }
+
+    case 'act': {
+      // The moment the goal was for (npc/acts.ts): it happens, or the plan fails and the NPC thinks again.
+      if (!performAct(world, npcId, step)) {
+        // The other walked on meanwhile: after them, a few times.
+        const other = step.target ? world.state.npcs[step.target] : undefined
+        if (other && !other.dead && !other.absent && other.location !== npc.location && (npc.chases ?? 0) < 3) {
+          npc.chases = (npc.chases ?? 0) + 1
+          npc.plan = [{ kind: 'move', to: other.location }, step]
+          return 'busy'
+        }
+        npc.chases = 0
+        return 'failed'
+      }
+      npc.chases = 0
+      npc.busyUntil = now + 5
       return 'done'
     }
   }

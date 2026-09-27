@@ -10,8 +10,9 @@ import { giveBack, stories, type Tempo } from './stories'
 import { isNight, qtyName, wakeNpc } from './npc/execute'
 import { parseDirection, splitQuantity, type Command } from './parser'
 import type { World } from './world'
-import { rest } from './rules/player'
+import { nightOut, rest } from './rules/player'
 import { widowTurnsBack } from './quests/antagonists'
+import { ONCE, useBlessing } from './rules/blessings'
 import { closedBetween, placeStateLine } from './quests/plans'
 import { approve, restParty } from './social/companions'
 import { deed } from './social/deeds'
@@ -338,7 +339,7 @@ function sleep(host: CommandHost): Output[] {
   const player = world.state.player
   const hour = Math.floor((world.now - startOfDay(world.now)) / 60)
   const lodging = player.lodging
-  const inRoom = lodging && world.now < lodging.until && premisesOf(world, lodging.location).includes(player.location)
+  const inRoom = (lodging && world.now < lodging.until && premisesOf(world, lodging.location).includes(player.location)) || (player.home !== undefined && player.location === player.home)
   if (hour >= 8 && hour < 20) {
     const seen = host.pass(60)
     return [text(inRoom ? 'You doze for an hour in your room.' : 'You close your eyes for an hour. It is not a real rest.'), ...seen]
@@ -348,8 +349,27 @@ function sleep(host: CommandHost): Output[] {
   // A night's sleep heals (FO, chapter 11); sleeping rough heals too, but it is a cold night.
   rest(world, 0, true)
   restParty(world)
-  const how = inRoom ? 'You sleep under a heavy quilt that smells of peat smoke.' : 'You sleep rough, and badly. The damp gets into your bones.'
-  return [text(`${how} You wake at first light.`), ...seen.slice(-3), describeRoom(world)]
+  const home = player.home && player.location === player.home
+  if (home) player.homeNight = world.now
+  // A night out in the fen, with no roof: the damp may bring Fen Fever.
+  const tags = world.content.locations.get(player.location)?.tags ?? ['wilderness']
+  const fever = !inRoom && (tags.includes('wilderness') || tags.includes('edge') || isHexId(player.location)) ? nightOut(world) : []
+  const how = home ? 'You sleep at home, in your own bed, and it smells of peat smoke and of the one you married.' : inRoom ? 'You sleep under a heavy quilt that smells of peat smoke.' : 'You sleep rough, and badly. The damp gets into your bones.'
+  return [text(`${how} You wake at first light.`), ...fever, ...goldAtTheWell(world), ...seen.slice(-3), describeRoom(world)]
+}
+
+/** Gold at the Well (Mother Holle): once a season, a reward when you wake, gold or a dream that teaches. */
+function goldAtTheWell(world: World): Output[] {
+  const c = world.state.player.character
+  if (!useBlessing(world.content, c, 'Gold at the Well', world.now, ONCE.season)) return []
+  const unknown = [...world.content.topics.values()].filter((t) => t.kind === 'lore' && world.state.player.journal?.[t.id] === undefined).sort((a, b) => a.id.localeCompare(b.id))
+  const dream = unknown.length && world.rng.next('blessing') < 0.5 ? unknown[world.rng.int('blessing', 0, unknown.length - 1)] : undefined
+  if (dream) {
+    ;(world.state.player.journal ??= {})[dream.id] = world.now
+    return [{ kind: 'narration', text: `You dreamt of an old woman shaking out her featherbed, and snow falling, and in the snow a story: ${dream.summary} It is in your journal.` }]
+  }
+  world.state.player.money += 160
+  return [{ kind: 'narration', text: 'When you wake there is a guilder in your shoe, bright as if it came out of a well.' }]
 }
 
 // ---------------------------------------------------------------- trade
@@ -457,6 +477,17 @@ function use(host: CommandHost, args: string[]): Output[] {
   const { world } = host
   const here = world.state.player.location
   const words = args.join(' ').toLowerCase()
+  // A remedy of your own: herbs for Fen Fever, a bandage for bleeding (M7.2).
+  const remedy = matchItem(world.content, words, Object.keys(world.state.player.inventory))
+  const cure = remedy ? world.content.items.get(remedy)?.remedy : undefined
+  const c = world.state.player.character
+  if (remedy && cure && c) {
+    add(world.state.player.inventory, remedy, -1)
+    const cured = cure.cures.filter((name) => c.conditions[name])
+    for (const name of cured) delete c.conditions[name]
+    const seen = host.pass(10)
+    return [text(`You use ${withArticle(itemName(world.content, remedy))}.${cured.length ? ` It helps: no more ${cured.map((n) => n.replace(/_/g, ' ')).join(' or ')}.` : ' You feel a little better, if only in spirit.'}`), ...seen]
+  }
   const candidates = world.location(here).objects.flatMap((instance) => {
     const type = world.content.objectTypes.get(instance.type)
     return type ? [{ instance, type }] : []

@@ -36,6 +36,8 @@ export interface Character {
   /** What the character holds and wears. */
   gear: { weapon?: string; armour?: string; shield?: string }
   patron?: { id: string; favour: number; since: number; prayed?: number }
+  /** When a blessing that comes back after a while was last used (rules/blessings.ts). */
+  blessingsUsed?: Record<string, number>
   /** Times the character died and came back on the Way of the Grey Rider. */
   deaths: number
   /** The Rider's Mark: -10% hit points until a rite for the dead. */
@@ -329,18 +331,23 @@ export function maxHp(content: Content, character: Character): number {
   return Math.max(1, character.mark ? Math.floor(base * 0.9) : base)
 }
 
-/** The penalty every check takes from conditions: Frightened and Sickened. */
+/** The penalty every check takes from conditions: Frightened, Sickened, and a curse (M7.2). */
 export function conditionPenalty(conditions: Record<string, number>): number {
-  return (conditions['frightened'] ?? 0) + (conditions['sickened'] ? 1 : 0)
+  return (conditions['frightened'] ?? 0) + (conditions['sickened'] ? 1 : 0) + (conditions['cursed'] ? 2 : 0)
+}
+
+/** An attribute as it stands now: Fen Fever takes a point of Might for every day it has lasted. */
+function attribute(character: Character, a: Attribute): number {
+  return character.attributes[a] - (a === 'might' ? (character.conditions['fen_fever'] ?? 0) : 0)
 }
 
 export function skillBonus(content: Content, character: Character, skill: string, ctx: Context = {}): number {
   const def = rulesOf(content).skills.find((s) => s.id === skill)
   if (!def) return 0
-  const attribute = skill === 'intimidation' ? Math.max(character.attributes.resolve, character.attributes.might) : character.attributes[def.attribute]
+  const value = skill === 'intimidation' ? Math.max(attribute(character, 'resolve'), attribute(character, 'might')) : attribute(character, def.attribute)
   const rank = character.ranks[skill] ?? 0
   const catSneak = skill === 'stealth' && character.conditions['catform'] ? 4 : 0
-  return attribute + rank * 2 + half(character) + bonus(content, character, `skill:${skill}`, ctx) + catSneak - conditionPenalty(character.conditions)
+  return value + rank * 2 + half(character) + bonus(content, character, `skill:${skill}`, ctx) + catSneak - conditionPenalty(character.conditions)
 }
 
 const SAVE_ATTRIBUTE: Record<Save, Attribute> = { fortitude: 'might', reflex: 'grace', will: 'wits' }
@@ -349,7 +356,7 @@ const STRONG_SAVE: Record<Attribute, Save> = { might: 'fortitude', grace: 'refle
 export function saveBonus(content: Content, character: Character, save: Save): number {
   const klass = classOf(content, character.class)
   const rank = STRONG_SAVE[klass.key] === save ? 4 : 2
-  return character.attributes[SAVE_ATTRIBUTE[save]] + rank + half(character) + bonus(content, character, `save:${save}`) - conditionPenalty(character.conditions)
+  return attribute(character, SAVE_ATTRIBUTE[save]) + rank + half(character) + bonus(content, character, `save:${save}`) - conditionPenalty(character.conditions)
 }
 
 const ARMOUR_ORDER = ['none', 'light', 'medium', 'heavy']

@@ -2,6 +2,7 @@ import { GameClock, weekdayOf } from '../clock'
 import type { Output } from '../commands'
 import { formatMoney } from '../items'
 import type { World } from '../world'
+import { blessed } from '../rules/blessings'
 import { weather } from '../weather'
 import { centre, type Hex, hexKey, neighbours } from './hexgrid'
 import { regionMap, type RegionMap } from './region'
@@ -26,7 +27,7 @@ function knownRoute(world: World, map: RegionMap, from: Hex, to: Hex): Hex[] | u
     if (hexKey(hex) === goal) break
     for (const { hex: next } of neighbours(hex)) {
       const cell = map.cell(next)
-      if (!cell || !passable(world, cell) || (!known(next) && hexKey(next) !== goal)) continue
+      if (!cell || !passable(world, cell, true) || (!known(next) && hexKey(next) !== goal)) continue
       const g = cost.get(hexKey(hex))! + minutesFor(world, cell)
       if (g < (cost.get(hexKey(next)) ?? Infinity)) {
         cost.set(hexKey(next), g)
@@ -114,7 +115,9 @@ export function takeBarge(world: World, destination: string | undefined, pass: (
   const a = centre(map.locations.get(here)!, map.size)
   const b = centre(map.locations.get(to)!, map.size)
   // Some 70 km in a day of twelve hours: about 6 km an hour, and the barge takes its time at the locks.
-  const minutes = Math.round((Math.hypot(b[0] - a[0], b[1] - a[1]) / 6) * 60) + 15
+  // Fair Wind (Nehalennia): travel over water goes a quarter faster.
+  const fair = blessed(world.content, world.state.player.character, 'Fair Wind') ? 0.75 : 1
+  const minutes = Math.round((Math.hypot(b[0] - a[0], b[1] - a[1]) / 6) * 60 * fair) + 15
   world.state.player.money -= FARE
   pass(minutes)
   world.state.player.location = to

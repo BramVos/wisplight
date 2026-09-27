@@ -14,6 +14,9 @@ import type { World } from './world'
 import { companionsHour, keepUp } from './social/companions'
 import { pursue } from './social/confront'
 import { noticeCoincidences } from './social/coincidence'
+import { homeDay } from './social/romance'
+import { crimesHour } from './social/crime'
+import { conditionsDay } from './rules/player'
 import { debtsDue, weeklyDrift } from './social/deeds'
 import { realmsDay } from './social/realms'
 
@@ -50,8 +53,13 @@ function hourly(world: World): void {
   nightly(world)
   weatherHour(world)
   companionsHour(world)
-  if (minuteOfDay(world.now) === 6 * 60) debtsDue(world)
+  if (minuteOfDay(world.now) === 6 * 60) {
+    debtsDue(world)
+    homeDay(world)
+    conditionsDay(world)
+  }
   pursue(world)
+  crimesHour(world)
   healWounds(world)
   if (minuteOfDay(world.now) === 0) {
     realmsDay(world)
@@ -149,6 +157,9 @@ function noteSightings(world: World, ids: string[]): void {
     if (here) here.push(id)
     else at.set(s.location, [id])
   }
+  // The player is seen too: that is how a rumour finds a suspect.
+  const player = world.state.player.location
+  for (const id of at.get(player) ?? []) (world.state.npcs[id]!.sightings ??= {})['player'] = { where: player, t: world.now }
   for (const [where, here] of at) {
     if (here.length < 2) continue
     for (const a of here) {

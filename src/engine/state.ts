@@ -15,7 +15,10 @@ import type { PlanState } from './quests/plans'
 
 export type Counts = Record<string, number>
 
-export type GoalType = 'Produce' | 'Obtain' | 'Repair' | 'Eat' | 'Sleep' | 'Socialize' | 'Pray' | 'Work' | 'Visit' | 'Idle' | 'Talk' | 'Rest' | 'AskHelp'
+export type GoalType =
+  | 'Produce' | 'Obtain' | 'Repair' | 'Eat' | 'Sleep' | 'Socialize' | 'Pray' | 'Work' | 'Visit' | 'Idle' | 'Talk' | 'Rest' | 'AskHelp'
+  // The rest of the catalogue (FO, chapter 7; M7.2).
+  | 'Sell' | 'Deliver' | 'Meet' | 'Follow' | 'Guard' | 'Avoid' | 'Help' | 'Spread' | 'Court' | 'Celebrate' | 'Investigate' | 'Report' | 'Confront' | 'RecruitHelp' | 'Steal' | 'Sabotage' | 'Harm' | 'Flee'
 
 export interface Goal {
   id: string
@@ -42,6 +45,8 @@ export type Step =
   | { kind: 'sleep'; until: number; ready?: boolean }
   | { kind: 'spend'; minutes: number; activity: 'work' | 'socialize' | 'pray' | 'idle' | 'play'; label?: string }
   | { kind: 'askHelp'; item: string; qty: number }
+  /** The moment a goal is for, once the NPC is there (npc/acts.ts). */
+  | { kind: 'act'; act: import('./npc/acts').ActKind; target?: string; item?: string }
 
 export interface Pending {
   produces?: Counts
@@ -201,6 +206,10 @@ export interface NpcState {
   }
   /** Staying somewhere away from home for a while (sent there, or fled there). */
   stayAt?: { where: string; until: number }
+  /** How often the NPC went after someone who walked on before a goal's moment. */
+  chases?: number
+  /** A place this NPC keeps away from, until then (the goal Avoid). */
+  avoid?: { place: string; until: number }
   /** Whom this NPC last saw, where and when: what they can tell when asked where someone is. */
   sightings?: Record<string, { where: string; t: number }>
 }
@@ -261,6 +270,12 @@ export interface PlayerState {
   lostPurse?: { location: string; amount: number; t: number }
   /** Died three times: the Grey Rider wants a price. */
   riderPrice?: boolean
+  /** Until when the player has a punt hired (M7.2). */
+  punt?: number
+  /** Home after a marriage (M7.2): the spouse's house, where the player sleeps for nothing. */
+  home?: string
+  /** The last night the player slept at home: a spouse expects them now and then. */
+  homeNight?: number
   /** When each encounter last happened. */
   encounters?: Record<string, number>
   /** Conditions on the player that wear off, and when. */

@@ -1,10 +1,11 @@
 import type { Output } from '../commands'
 import { callName } from '../content'
-import { attitude, relation } from '../dialogue/relations'
+import { applyEffect, attitude, relation } from '../dialogue/relations'
 import { recordFact } from '../news'
 import type { World } from '../world'
 import { companionOf } from './companions'
 import { deed, shiftBond } from './deeds'
+import { repute } from './factions'
 import { atLeast } from './gates'
 
 // Romance (FO, chapter 8; Wereldboek, "Romance"), with fixed limits: only
@@ -90,7 +91,9 @@ function jealousy(world: World, npcId: string): void {
 
 /**
  * MARRY <person>: at the Lantern's chapel, or an oath at a holy place of the
- * Old Faith. A house, family and expectations follow in later versions.
+ * Old Faith. A house, family and expectations follow (M7.2): the spouse's home
+ * is yours, their family warms to you, the faith that bound you thinks better
+ * of you, and your spouse expects you home now and then.
  */
 export function marry(world: World, npcId: string): Output[] {
   const name = callName(world.npc(npcId))
@@ -99,5 +102,31 @@ export function marry(world: World, npcId: string): Output[] {
   if (!here.tags.includes('holy')) return [{ kind: 'error', text: 'A wedding is held in a chapel; an oath of the Old Faith at a holy place.' }]
   world.state.romance![npcId] = { stage: 'bound', since: world.now }
   recordFact(world, { kind: 'wedding', about: [npcId], place: here.id, belang: 3, juice: 1, title: `${name} married the stranger`, text: { precise: `${name} and the stranger were bound at ${here.name}.`, village: `${name} has married the stranger!`, far: 'There was a wedding in the Holleveen.' } })
-  return [{ kind: 'narration', text: `Before ${here.name} and whoever came to see it, you and ${name} are bound. Someone has brought beer.` }]
+  const spouse = world.npc(npcId)
+  world.state.player.home = spouse.home
+  world.state.player.homeNight = world.now
+  const family = spouse.relations.filter((r) => r.to && world.content.npcs.has(r.to) && FAMILY.includes(r.role)).map((r) => r.to!)
+  for (const id of family) applyEffect(world, id, 'affinity', 10)
+  const lantern = /chapel|church|kloosterveen/.test(here.id)
+  repute(world, lantern ? 'lantern_church' : 'old_faith', 5, 'your wedding')
+  return [
+    { kind: 'narration', text: `Before ${here.name} and whoever came to see it, you and ${name} are bound. Someone has brought beer.` },
+    { kind: 'system', text: `${world.location(spouse.home).name} is your home now: you sleep there for nothing. ${name} will expect you home now and then.${family.length ? ` ${family.map((f) => callName(world.npc(f))).join(' and ')} think${family.length === 1 ? 's' : ''} better of you.` : ''}` },
+  ]
+}
+
+const FAMILY = ['parent', 'child', 'sibling', 'spouse', 'grandparent', 'grandchild', 'kin']
+
+/** Each morning: a spouse whose partner has not slept at home for five nights says so, and minds it. */
+export function homeDay(world: World): void {
+  const player = world.state.player
+  if (!player.home) return
+  const spouse = Object.entries(world.state.romance ?? {}).find(([, r]) => r.stage === 'bound')?.[0]
+  const s = spouse ? world.state.npcs[spouse] : undefined
+  if (!spouse || !s || s.dead) return
+  const away = (world.now - (player.homeNight ?? world.now)) / (24 * 60)
+  if (away < 5) return
+  applyEffect(world, spouse, 'affinity', -3)
+  const thoughts = (s.thoughts ??= [])
+  if (!thoughts.some((t) => t.until > world.now && t.text.startsWith('The one you married'))) thoughts.push({ text: `The one you married has not slept at home for ${Math.floor(away)} nights.`, t: world.now, until: world.now + 24 * 60 })
 }

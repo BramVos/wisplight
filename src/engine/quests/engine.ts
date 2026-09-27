@@ -6,6 +6,7 @@ import { add } from '../items'
 import { die } from '../life'
 import { recordFact } from '../news'
 import { addClock, favour, gainXp, playerCheck, tickClock, type Clock } from '../rules/player'
+import { blessed } from '../rules/blessings'
 import { approve, companionOf } from '../social/companions'
 import { repute } from '../social/factions'
 import type { World } from '../world'
@@ -381,7 +382,9 @@ export function questAction(world: World, host: QuestHost, input: string): Outpu
       const out: Output[] = []
       let success = true
       if (action.check) {
-        const result = playerCheck(world, action.check.skill, action.check.dc)
+        // Oath-bound (Baduhenna): +2 on checks that serve a word you gave; a quest you took on is one.
+        const oath = blessed(world.content, world.state.player.character, 'Oath-bound') ? 2 : 0
+        const result = playerCheck(world, action.check.skill, action.check.dc - oath)
         out.push({ kind: 'check', text: `(${cap(action.check.skill)} ${result.total} vs DC ${action.check.dc}: ${result.degree})` })
         success = result.degree === 'success' || result.degree === 'critical success'
       }

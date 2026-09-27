@@ -84,7 +84,7 @@ items:
     description: Fen mint, yarrow and something grey-leaved, tied with a strip of linen.
     tags: [medicine, trade]
     value: 16
-    remedy: { heal: 1d8, cures: [bleeding, sickened] }
+    remedy: { heal: 1d8, cures: [bleeding, sickened, fen_fever] }
 
   - id: wool
     name: fleece

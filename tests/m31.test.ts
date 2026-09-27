@@ -308,7 +308,8 @@ describe('M3.1: the AI chooses what NPCs want', () => {
     const results = await engine.runBrain()
     const mirte = results.find((r) => engine.state.brain!.pending.length === 0 && r.rejected.length)!
     expect(mirte.accepted).toBe(0)
-    expect(mirte.rejected.join(' ')).toMatch(/Steal: not a goal the game knows/)
+    // Steal is in the catalogue since M7.2, but a person is not a thing to steal, and the gate would stop her anyway.
+    expect(mirte.rejected.join(' ')).toMatch(/Steal npc_lubbert: not something/)
     expect(mirte.rejected.join(' ')).toMatch(/Visit loc_the_moon: not something .* knows/)
     expect(rejected.some((r) => r.reason === 'goal')).toBe(true)
     expect(Object.values(engine.state.npcs).every((n) => n.goals.every((g) => g.source !== 'ai'))).toBe(true)

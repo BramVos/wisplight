@@ -91,6 +91,14 @@ quests:
         not_yet: The cat looks at you, and you look at the cat. Whatever she is saying, you don't understand it.
         text: "\"It was me,\" the cat says, and it's a girl's voice under the purring. \"I told the widow I had nobody, no mother, nobody to miss me, so she'd sell me a charm cheap. For Klaas. A lie is a debt, she said. Tell her I'm sorry. Tell her I'll work it off, whatever she wants.\""
         effects: [{ set: fenna_confessed }, { learn: fenna }]
+      - id: become_a_cat
+        say: ['ask (?:the )?(?:widow|kaatje) to (?:make me|turn me into) a cat(?: .*)?', 'ask (?:the )?(?:widow|kaatje) (?:if i can|to let me) (?:talk|speak) (?:to|with) (?:the )?cat(?: .*)?']
+        with: npc_kaatje
+        when: [{ flag: cat_is_fenna }, { attitude: npc_kaatje, at_least: Neutral }]
+        not_yet: The widow looks at you as if you had asked for her last egg.
+        once: false
+        text: "The widow blows in your face. The world goes large and loud and smells of everything, and you are low to the ground on four soft feet. \"Two hours,\" she says, from very high up. \"Go and ask the girl yourself.\""
+        effects: [{ player_condition: catform, hours: 2 }, { stamp: cat_speech }]
       - id: tell_widow_truth
         say: ['tell (?:the )?(?:widow|kaatje) (?:the truth|that fenna is sorry|fenna is sorry|about fenna)', '(?:give|bring) (?:the )?(?:widow|kaatje) fenna.?s (?:apology|message|word)', 'apologi[sz]e (?:to (?:the )?(?:widow|kaatje) )?for fenna']
         with: npc_kaatje
@@ -168,6 +176,8 @@ quests:
           - { set: witch_burned }
           - { place: loc_kattenbroek_hut, state: destroyed }
           - { vanish: npc_kaatje }
+          - { player_condition: cursed, hours: 336 }
+          - { text: "From the reeds an old voice says one word, and something settles on you like wet wool. You are Cursed: a rite at a holy place may lift it." }
           - { reputation: lantern_church, delta: 10 }
           - { reputation: fen_folk, delta: -20 }
     outcomes:
@@ -737,8 +747,9 @@ quests:
         not_yet: You don't know enough about the old flood to answer. People in Veenhoek tell of the Water Wolf.
         check: { skill: lore, dc: 15 }
         text: "\"The drowned of the Water Wolf,\" you say. \"The villages of the old land.\" The mist sighs. \"Remembered,\" a voice says. \"Then take this for remembering: the one in the Blackmere was a man once, Haak Aukes, and names hold what they name.\""
-        fail_text: The mist thickens. You walk for an hour and come out exactly where you started, colder than before.
+        fail_text: The mist thickens. You walk for an hour and come out exactly where you started, colder than before, and the cold stays with you.
         effects: [{ set: riddle_solved }, { set: haakman_name }]
+        fail: [{ player_condition: cursed, hours: 48 }]
       - id: offering
         say: ['(?:leave|make|give|lay|offer) (?:an |a |some |the |my )?(?:offering|bread|gift|loaf)(?: .*)?', '(?:bow|kneel)(?: .*)?']
         at: [loc_reuzenrust_barrows, loc_reuzenrust_hunebed]

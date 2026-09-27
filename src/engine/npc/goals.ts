@@ -10,6 +10,7 @@ import { isNear, peopleLine, tieTo } from '../people'
 import { openRequestsOf } from '../requests'
 import type { Fact, Goal, GoalType } from '../state'
 import type { World } from '../world'
+import { allowAct, type ActKind } from './acts'
 
 // The AI's choice of goals (FO, chapter 7): the model says what an NPC wants,
 // the planner and the simulation work out how. The model may only choose from
@@ -26,11 +27,14 @@ export interface GoalChoice {
 
 interface Entry {
   type: GoalType
-  target: 'item' | 'place' | 'person' | 'object' | 'none'
+  /** item: a thing to get; mine: a thing the NPC has; object: something of theirs to mend; thing: something anywhere. */
+  target: 'item' | 'mine' | 'place' | 'person' | 'object' | 'thing' | 'none'
   text: string
+  /** The gate that may refuse it (npc/acts.ts). */
+  gate?: ActKind | 'flee'
 }
 
-/** What the motor can carry out today. Darker goals (steal, harm) come with their gates in M6. */
+/** What the motor can carry out (FO, chapter 7, "De doelcatalogus"), with the gates from the FO. */
 export const GOAL_CATALOGUE: Record<string, Entry> = {
   Work: { type: 'Work', target: 'none', text: 'carry on with your work as usual' },
   Obtain: { type: 'Obtain', target: 'item', text: 'get hold of a thing: buy it where you know it is sold' },
@@ -42,6 +46,26 @@ export const GOAL_CATALOGUE: Record<string, Entry> = {
   Pray: { type: 'Pray', target: 'none', text: 'pray at the chapel' },
   Rest: { type: 'Rest', target: 'none', text: 'stay home and rest' },
   Ask_help: { type: 'AskHelp', target: 'item', text: 'ask around for a thing you need and cannot get: someone may bring it' },
+  // The rest of the catalogue (M7.2).
+  Buy: { type: 'Obtain', target: 'item', text: 'buy a thing where you know it is sold' },
+  Sell: { type: 'Sell', target: 'mine', text: 'sell something you have where they buy it' },
+  Deliver: { type: 'Deliver', target: 'person', text: 'bring someone the thing they asked for, if you have it' },
+  Meet: { type: 'Meet', target: 'person', text: "spend an hour in someone's company" },
+  Follow: { type: 'Follow', target: 'person', text: 'keep an eye on someone: go where they are and watch them a while' },
+  Guard: { type: 'Guard', target: 'place', text: 'keep watch at a place for some hours' },
+  Avoid: { type: 'Avoid', target: 'place', text: 'keep away from a place for a day' },
+  Help: { type: 'Help', target: 'person', text: 'go and give someone a hand with their work' },
+  Spread: { type: 'Spread', target: 'none', text: 'go where people gather and pass on what you have heard' },
+  Court: { type: 'Court', target: 'person', text: 'spend time with someone you are sweet on', gate: 'court' },
+  Celebrate: { type: 'Celebrate', target: 'none', text: 'celebrate with a drink where people gather' },
+  Investigate: { type: 'Investigate', target: 'place', text: 'go and look round a place yourself, to find out what happened there', gate: 'investigate' },
+  Report: { type: 'Report', target: 'none', text: 'tell the schout or the town watch what you saw', gate: 'report' },
+  Confront: { type: 'Confront', target: 'person', text: 'have it out with someone who wronged you' },
+  Recruit_help: { type: 'RecruitHelp', target: 'person', text: 'ask someone to come and help you' },
+  Steal: { type: 'Steal', target: 'item', text: 'take a thing from a shop when nobody is looking (only if you are that sort)', gate: 'steal' },
+  Sabotage: { type: 'Sabotage', target: 'thing', text: "damage something of someone else's (only if you are that sort)", gate: 'sabotage' },
+  Harm: { type: 'Harm', target: 'person', text: 'hurt someone you hate (almost never)', gate: 'harm' },
+  Flee: { type: 'Flee', target: 'place', text: 'get away to a place and stay there a while' },
 }
 
 const MAX_PER_DAY = 6
@@ -106,6 +130,9 @@ interface Allowed {
   people: string[]
   items: string[]
   objects: string[]
+  /** Things the NPC has, and objects of other people in places they know. */
+  mine: string[]
+  things: string[]
 }
 
 function allowed(world: World, npcId: string): Allowed {
@@ -120,7 +147,9 @@ function allowed(world: World, npcId: string): Allowed {
   for (const id of [npc.home, npc.work].filter((x): x is string => Boolean(x))) {
     for (const object of world.location(id).objects) if (world.objectState(id, object.id)['broken'] === true) objects.push(`${id}/${object.id}`)
   }
-  return { places, people, items: [...items].sort(), objects }
+  const mine = Object.keys(state.inventory).filter((i) => (state.inventory[i] ?? 0) > 0).sort()
+  const things = places.filter((id) => id !== npc.home && id !== npc.work).flatMap((id) => world.location(id).objects.filter((o) => world.objectState(id, o.id)['broken'] !== true).map((o) => `${id}/${o.id}`))
+  return { places, people, items: [...items].sort(), objects, mine, things }
 }
 
 const SYSTEM = [
@@ -166,8 +195,10 @@ export function goalRequest(world: World, choice: GoalChoice): LlmRequest {
     `PEOPLE YOU KNOW: ${ids.people.map((id) => `${id} (${name(id)})`).join(', ')}`,
     `THINGS: ${ids.items.join(', ')}`,
     ...(ids.objects.length ? [`BROKEN, YOURS TO MEND: ${ids.objects.join(', ')}`] : []),
+    ...(ids.mine.length ? [`YOU HAVE: ${ids.mine.join(', ')}`] : []),
+    ...(ids.things.length ? [`OTHER PEOPLE'S THINGS: ${ids.things.join(', ')}`] : []),
   ]
-  const targets = [...ids.places, ...ids.people, ...ids.items, ...ids.objects, 'none']
+  const targets = [...new Set([...ids.places, ...ids.people, ...ids.items, ...ids.objects, ...ids.mine, ...ids.things, 'none'])]
   // Goal choices of people with a part in a quest keep their place when the budget runs low (FO, chapter 16).
   const priority = questsOf(world, npcId).length ? 'normal' : 'low'
   return {
@@ -213,13 +244,24 @@ export function validateGoals(world: World, npcId: string, reply: unknown): Goal
       (entry.target === 'place' && ids.places.includes(target)) ||
       (entry.target === 'person' && ids.people.includes(target)) ||
       (entry.target === 'item' && ids.items.includes(target) && world.content.items.has(target)) ||
-      (entry.target === 'object' && ids.objects.includes(target))
+      (entry.target === 'mine' && ids.mine.includes(target)) ||
+      (entry.target === 'object' && ids.objects.includes(target)) ||
+      (entry.target === 'thing' && ids.things.includes(target))
     if (!known) {
       rejected.push(`${goal.type} ${target}: not something ${callName(world.npc(npcId))} knows`)
       continue
     }
     if (entry.type === 'Produce' && !producible(world, npcId, target)) {
       rejected.push(`Produce ${target}: not what this trade makes`)
+      continue
+    }
+    const refused = entry.gate ? allowAct(world, npcId, entry.gate, target) : undefined
+    if (refused) {
+      rejected.push(`${goal.type} ${target}: ${refused}`)
+      continue
+    }
+    if (entry.type === 'Deliver' && !deliverable(world, npcId, target)) {
+      rejected.push(`Deliver ${target}: nothing they asked for`)
       continue
     }
     if (entry.type === 'AskHelp' && (state.inventory[target] ?? 0) > 0) {
@@ -231,10 +273,18 @@ export function validateGoals(world: World, npcId: string, reply: unknown): Goal
       continue
     }
     if (entry.type === 'Work') continue
-    accepted.push(toGoal(world, entry, target, goal.priority))
+    const made = toGoal(world, entry, target, goal.priority)
+    if (entry.type === 'Deliver') made.item = deliverable(world, npcId, target)
+    accepted.push(made)
   }
   const active = state.goals.filter((g) => g.source === 'ai').length
   return { accepted: accepted.slice(0, Math.max(0, MAX_ACTIVE - active)), rejected }
+}
+
+/** Something the NPC has that the other asked for. */
+export function deliverable(world: World, npcId: string, target: string): string | undefined {
+  const mine = world.npcState(npcId).inventory
+  return world.state.requests.find((r) => r.npc === target && r.status === 'open' && r.item && (mine[r.item] ?? 0) > 0)?.item
 }
 
 function producible(world: World, npcId: string, item: string): boolean {
@@ -244,7 +294,7 @@ function producible(world: World, npcId: string, item: string): boolean {
 
 function toGoal(world: World, entry: Entry, target: string, priority: number): Goal {
   const base: Goal = { id: `g${++world.state.goalSeq}`, type: entry.type, priority: Math.max(0, Math.min(1, priority)), source: 'ai', created: world.now, until: world.now + DAY }
-  if (entry.target === 'item') return { ...base, item: target, qty: 1 }
+  if (entry.target === 'item' || entry.target === 'mine') return { ...base, item: target, qty: 1 }
   if (entry.target === 'object') {
     const [location, object] = target.split('/')
     return { ...base, target: location, object }

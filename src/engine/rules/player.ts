@@ -3,6 +3,7 @@ import type { Output } from '../commands'
 import { check as rollCheck, PLAYER_BONUS, type CheckResult } from '../dialogue/checks'
 import { relation } from '../dialogue/relations'
 import type { World } from '../world'
+import { blessed, ONCE, useBlessing } from './blessings'
 import {
   ATTRIBUTE_CAP,
   autoLevelChoice,
@@ -315,6 +316,12 @@ export function rest(world: World, minutes: number, slept = false): void {
   if (slept) {
     c.hp = max
     delete c.conditions['sickened']
+    // The Feather Bed (Mother Holle): a full night clears every ailment but curses.
+    if (blessed(world.content, c, 'The Feather Bed')) {
+      for (const name of Object.keys(c.conditions)) if (name !== 'cursed' && name !== 'catform') delete c.conditions[name]
+      const until = world.state.player.conditionsUntil ?? {}
+      for (const name of Object.keys(until)) if (name !== 'cursed' && name !== 'catform') delete until[name]
+    }
     return
   }
   const hours = Math.floor(((c.restMinutes ?? 0) + minutes) / 60)
@@ -379,6 +386,13 @@ export function pray(world: World): Output[] {
 export function greyRider(world: World, deathPlace: string, pass: (minutes: number) => Output[]): Output[] {
   const c = character(world)!
   const player = world.state.player
+  // The Rider's Share (the Grey Rider, favour 75): once, you do not die; the price comes later.
+  if (useBlessing(world.content, c, "The Rider's Share", world.now, ONCE.ever)) {
+    c.hp = Math.max(1, Math.floor(maxHp(world.content, c) / 4))
+    c.mark = true
+    player.riderPrice = true
+    return [{ kind: 'narration', text: 'A hand in a grey glove on your shoulder, and a voice like wind in stubble: "Not yet. But I will want my share." You open your eyes where you fell. The Rider\'s Mark is on you, and no rite will lift it until you leave him the last sheaf at a crossroads.' }]
+  }
   c.deaths += 1
   const lost = Math.floor(player.money / 2)
   player.money -= lost
@@ -424,11 +438,38 @@ export function rite(world: World): Output[] {
   if (!c) return [{ kind: 'error', text: 'This world has no rules for characters.' }]
   const here = world.location(world.state.player.location)
   if (!here.tags.includes('holy')) return [{ kind: 'error', text: 'A rite for the dead is performed at a barrow or a chapel.' }]
+  // A curse lifts at a holy place too (M7.2).
+  if (c.conditions['cursed']) {
+    delete c.conditions['cursed']
+    delete world.state.player.conditionsUntil?.['cursed']
+    if (!c.mark) return [{ kind: 'text', text: 'You say the old words at the holy place, and the wet-wool weight lifts off your shoulders. The curse is gone.' }]
+  }
   if (!c.mark) return [{ kind: 'text', text: 'You say the old words for the dead. Nobody answers.' }]
+  if (world.state.player.riderPrice) return [{ kind: 'text', text: 'The words do not take. The Rider wants his price first: the last sheaf, left for him at a crossroads.' }]
   delete c.mark
   favour(world, 'honour_dead')
   c.hp = Math.min(maxHp(world.content, c), c.hp + 5)
   return [{ kind: 'text', text: 'You pour out a little water, say the names of the dead you know, and ask the Rider for your share of the light. The cold goes out of your bones. The Mark is gone.' }]
+}
+
+/**
+ * The Rider's price (Wereldboek, "The last sheaf for the Grey Rider"): a sack
+ * of rye left at a crossroads. Then the Mark can be lifted again, and the
+ * Rider is paid.
+ */
+export function leaveSheaf(world: World): Output[] {
+  const player = world.state.player
+  const here = world.location(player.location)
+  if (!/crossroads/i.test(here.name) && !here.tags.includes('crossroads')) return [{ kind: 'error', text: 'The last sheaf is left where roads cross.' }]
+  if ((player.inventory['rye_grain'] ?? 0) < 1) return [{ kind: 'error', text: 'You have no rye to leave: a sack of it will do for a sheaf.' }]
+  player.inventory['rye_grain']! -= 1
+  if (!player.inventory['rye_grain']) delete player.inventory['rye_grain']
+  if (!player.riderPrice) return [{ kind: 'narration', text: 'You leave the rye at the foot of the post. The wind takes a few grains. Nobody else takes anything.' }]
+  delete player.riderPrice
+  const c = character(world)
+  if (c) delete c.mark
+  favour(world, 'honour_dead')
+  return [{ kind: 'narration', text: 'You set the rye at the foot of the post, where three tracks cross. The wind goes still, then gusts once, hard, from the north, and the sack is lighter than it was. The Rider is paid. The cold goes out of your bones.' }]
 }
 
 /** Coming back to where you fell: the purse may still lie there, unless someone passed first. */
@@ -484,4 +525,52 @@ export { ATTRIBUTE_CAP, boostsFor, extraSkills }
 export function dayOf(t: number): string {
   const p = new GameClock(t).parts
   return `${p.weekday} ${p.day}`
+}
+
+// ---------------------------------------------------------------- dangers outside fights (FO, chapter 12; M7.2)
+
+/** Each morning: Fen Fever takes another point of Might, up to five, until herbs cure it. */
+export function conditionsDay(world: World): void {
+  const c = world.state.player.character
+  if (!c?.conditions['fen_fever']) return
+  c.conditions['fen_fever'] = Math.min(5, c.conditions['fen_fever'] + 1)
+  notice(world, `Fen Fever: you are weaker again this morning (Might -${c.conditions['fen_fever']}). Herbs would help; Aaltje has them.`)
+}
+
+/** A night out in the fen: the damp may bring Fen Fever (Survival against DC 13, 15 in the rain). */
+export function nightOut(world: World): Output[] {
+  const c = character(world)
+  if (!c || c.conditions['fen_fever']) return []
+  const ancestry = rulesOf(world.content).ancestries.find((a) => a.id === c.ancestry)
+  if (ancestry?.immune?.includes('fen_fever')) return []
+  const wet = world.state.weather?.kind === 'rain' || world.state.weather?.kind === 'storm'
+  const result = playerCheck(world, 'survival', wet ? 15 : 13)
+  if (result.degree === 'success' || result.degree === 'critical success') return []
+  c.conditions['fen_fever'] = 1
+  return [{ kind: 'narration', text: 'You wake shivering, with a taste of marsh water in your mouth. Fen Fever: every morning it takes a little more of your strength, until herbs cure it.' }]
+}
+
+/** Sinking in soft ground: Athletics against DC 14, or you are Mired until you work free. */
+export function sink(world: World): string {
+  const c = character(world)
+  if (!c) return 'The ground gives way under you and you sink to the knee. It takes a while to work free.'
+  if ((world.state.companions ?? []).some((m) => !m.away)) return 'The ground gives way under you and you sink to the thigh, but hands grab your collar and haul you out.'
+  const result = playerCheck(world, 'athletics', 14)
+  if (result.degree === 'success' || result.degree === 'critical success') return 'The ground gives way under you and you sink to the knee. It takes a while to work free.'
+  if (useBlessing(world.content, c, 'Unbroken', world.now, ONCE.day)) return 'The fen takes you to the waist, and something old and stubborn in you will not have it. You tear free.'
+  c.conditions['mired'] = 1
+  return 'The fen takes you to the waist and holds on. You are Mired: STRUGGLE to work free.'
+}
+
+/** STRUGGLE: Athletics against DC 13, ten minutes a try. */
+export function struggle(world: World, pass: (minutes: number) => Output[]): Output[] {
+  const c = character(world)
+  if (!c?.conditions['mired']) return [{ kind: 'text', text: 'You are not stuck in anything.' }]
+  const result = playerCheck(world, 'athletics', 13)
+  const seen = pass(10)
+  if (result.degree === 'success' || result.degree === 'critical success') {
+    delete c.conditions['mired']
+    return [{ kind: 'check', text: `(Athletics ${result.total} vs DC 13: ${result.degree})` }, { kind: 'narration', text: 'With a sound like a cow pulling out of a ditch, the fen lets you go. You are black to the hips.' }, ...seen]
+  }
+  return [{ kind: 'check', text: `(Athletics ${result.total} vs DC 13: ${result.degree})` }, { kind: 'narration', text: 'You heave and sink a little deeper. The water is cold.' }, ...seen]
 }

@@ -6,7 +6,7 @@ import { remember } from '../npc/execute'
 import { playerCheck } from '../rules/player'
 import type { World } from '../world'
 import { approve } from './companions'
-import { deed, setMood } from './deeds'
+import { deed, setMood, shiftBond } from './deeds'
 import { reputeFor } from './factions'
 import { mayReport } from './gates'
 
@@ -19,6 +19,14 @@ import { mayReport } from './gates'
 export interface Crime {
   id: string
   kind: 'theft' | 'assault' | 'murder'
+  /** Who did it, when it was an NPC and not the player (M7.2). */
+  offender?: string
+  /** Nobody saw it (M7.2): found out later, with a suspect in the rumours, and looked into by the schout. */
+  unseen?: boolean
+  discoverAt?: number
+  discovered?: boolean
+  suspect?: string
+  investigated?: boolean
   t: number
   place: string
   victim?: string
@@ -77,8 +85,12 @@ export function fineFor(kind: Crime['kind'], value: number): number {
  */
 export function crime(world: World, c: Omit<Crime, 'id' | 't' | 'reported' | 'law' | 'fine' | 'fact'>, texts: { title: string; precise: string; village: string; far: string }): Output[] {
   const out: Output[] = []
-  if (c.witnesses.length === 0) return out
   const crimes = (world.state.crimes ??= [])
+  if (c.witnesses.length === 0) {
+    // Nobody saw it: the loss is noticed later, and people will have their own ideas (M7.2).
+    crimes.push({ ...c, id: `crime_${crimes.length + 1}`, t: world.now, reported: [], law: lawAt(world, c.place), fine: fineFor(c.kind, c.value), unseen: true, discoverAt: world.now + 60 + world.rng.int('witness', 0, 120) })
+    return out
+  }
   const entry: Crime = { ...c, id: `crime_${crimes.length + 1}`, t: world.now, reported: [], law: lawAt(world, c.place), fine: fineFor(c.kind, c.value) }
   crimes.push(entry)
   const area = world.location(c.place).area
@@ -281,3 +293,89 @@ export function witnessed(world: World, npcId: string): boolean {
   return (world.state.crimes ?? []).some((c) => c.witnesses.includes(npcId) && !(world.state.silenced?.[npcId] ?? []).includes(c.fact ?? ''))
 }
 
+// ---------------------------------------------------------------- unseen crimes and the schout (M7.2)
+
+const HOUR = 60
+
+/** Whether anyone saw this person at the place around the time. */
+function seenNear(world: World, who: string, crime: Crime): boolean {
+  return Object.values(world.state.npcs).some((s) => {
+    const seen = s.sightings?.[who]
+    return seen !== undefined && seen.where === crime.place && seen.t >= crime.t - 2 * HOUR && seen.t <= crime.t + HOUR
+  })
+}
+
+/**
+ * Once an hour: a loss nobody saw is noticed, and people name a suspect: the
+ * one who was seen there, or someone the victim never liked. The rumour may be
+ * wrong. The schout goes to look.
+ */
+export function crimesHour(world: World): void {
+  for (const crime of world.state.crimes ?? []) {
+    if (!crime.unseen || crime.discovered || (crime.discoverAt ?? 0) > world.now) continue
+    crime.discovered = true
+    const culprit = crime.offender ?? 'player'
+    const victim = crime.victim
+    const disliked = victim
+      ? Object.entries(world.state.bonds?.[victim] ?? {})
+          .filter(([id, b]) => b.affinity < -10 && id !== victim && world.alive(id) && !world.npc(id).child)
+          .sort((a, b) => a[1].affinity - b[1].affinity)[0]?.[0]
+      : undefined
+    crime.suspect = seenNear(world, culprit, crime) ? culprit : seenNear(world, 'player', crime) ? 'player' : disliked
+    const who = victim ? callName(world.npc(victim)) : 'someone'
+    const where = world.location(crime.place).name
+    const what = crime.item ? withArticle(itemName(world.content, crime.item, 1)) : 'money'
+    const suspect = crime.suspect === 'player' ? 'the stranger' : crime.suspect ? callName(world.npc(crime.suspect)) : undefined
+    recordFact(world, {
+      kind: 'crime',
+      about: [...(victim ? [victim] : []), ...(crime.suspect && crime.suspect !== 'player' ? [crime.suspect] : [])],
+      place: crime.place,
+      belang: 2,
+      juice: 0.9,
+      truth: crime.suspect === culprit,
+      title: `the theft at ${where}`,
+      text: {
+        precise: `${what.charAt(0).toUpperCase()}${what.slice(1)} went missing from ${who} at ${where}.${suspect ? ` Some say it was ${suspect}.` : ' Nobody knows who took it.'}`,
+        village: `Someone took ${what} from ${who}!${suspect ? ` My money's on ${suspect}.` : ''}`,
+        far: 'There was a theft in the Holleveen.',
+      },
+      ...(victim ? { witnesses: [victim] } : {}),
+    })
+    if (victim && crime.suspect && crime.suspect !== 'player') shiftBond(world, victim, crime.suspect, -10, -10)
+    // The schout goes to look, if it is his to look into.
+    const schout = world.content.npcs.has('npc_everhard') && world.alive('npc_everhard') && crime.law === 'count' ? world.state.npcs['npc_everhard'] : undefined
+    if (schout && !schout.following) {
+      schout.goals = schout.goals.filter((g) => g.id !== `investigate_${crime.id}`)
+      schout.goals.push({ id: `investigate_${crime.id}`, type: 'Investigate', target: crime.place, priority: 1, source: 'ai', created: world.now, until: world.now + 24 * HOUR })
+      schout.plan = []
+      schout.planGoal = undefined
+    }
+  }
+}
+
+/** The schout has looked round the place: with someone seen there, he acts; without, the rumour is all there is. */
+export function investigated(world: World, officer: string, place: string): void {
+  if (world.npc(officer).profession !== 'schout') return
+  for (const crime of world.state.crimes ?? []) {
+    if (!crime.unseen || !crime.discovered || crime.investigated || crime.place !== place) continue
+    crime.investigated = true
+    const culprit = crime.offender ?? 'player'
+    if (!seenNear(world, culprit, crime)) {
+      recordFact(world, { kind: 'investigation', about: [officer], place, belang: 1, title: 'the schout found nothing', text: { precise: `${callName(world.npc(officer))} looked into the theft at ${world.location(place).name} and found nothing.`, village: 'The schout poked about and found nothing. As usual.', far: 'A theft went unsolved.' } })
+      continue
+    }
+    if (culprit === 'player') {
+      const wanted = ((world.state.wanted ??= {})[crime.law] ??= { fine: 0, since: world.now })
+      wanted.fine += crime.fine
+      grievance(world, officer, 'the law', `"A word, stranger. Things went missing at ${world.location(place).name}, and you were seen there. ${formatMoney(crime.fine)} to the Count, and we say no more about it."`)
+    } else {
+      const s = world.state.npcs[culprit]
+      if (s && !s.dead) {
+        s.stayAt = { where: 'loc_schout_house', until: world.now + 24 * HOUR }
+        s.plan = []
+        s.planGoal = undefined
+        s.activity = 'locked up by the schout'
+      }
+    }
+  }
+}
