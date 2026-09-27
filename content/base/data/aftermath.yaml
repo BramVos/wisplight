@@ -149,3 +149,122 @@ aftermath:
     steps:
       - id: news
         do: { news: "{place} is itself again, and people are going back.", area: $area }
+
+  # M8.2: what follows by custom when nobody's brain plans it. Where brain is
+  # true, the brain of $a may make a plan of their own instead (with a model).
+
+  # Come up in the world: the village notices, the neighbours are envious, and
+  # from now on the chapel, not the inn (the rule of standing does that).
+  - id: rose_in_standing
+    signal: rose_in_standing
+    topic: standing
+    brain: true
+    steps:
+      - id: news
+        at: { hour: 20 }
+        do:
+          tell:
+            kind: standing
+            about: [$a]
+            place: { social_near: $a }
+            belang: 2
+            title: "{a} has come up in the world"
+            precise: "{a} stood everyone a round at {place} to show he has money now, and said it would be the last time he drank with the likes of them."
+            village: "{a} has grown too good for the rest of us, they say."
+            far: "Somebody in the Holleveen has come into money."
+      - id: mind
+        do: { thought: $a, text: "You are somebody now, and people had better see it.", days: 14 }
+
+  # Whatever they do about it, the neighbours are envious: always, by the rules.
+  - id: envy
+    signal: rose_in_standing
+    topic: envy
+    steps:
+      - id: envy
+        do: { regard: [{ neighbours_of: $a }], to: $a, affinity: -5 }
+
+  # A quarrel: the next evening someone both trust tries to make peace. Who
+  # mediates decides how it ends; without anyone, it becomes a feud in a week.
+  - id: quarrel
+    signal: quarrel
+    topic: quarrel
+    brain: true
+    expires: 8
+    steps:
+      - id: mediate
+        at: { days: 1, hour: 19 }
+        do: { mediate: [$a, $b] }
+
+  # A feud: enemies from now on, and the village knows it.
+  - id: feud
+    signal: feud
+    topic: feud
+    steps:
+      - id: enemies
+        do: { set_tie: [$a, $b], role: rival, bond: -2 }
+      - id: news
+        do:
+          tell:
+            kind: feud
+            about: [$a, $b]
+            place: { home_of: $a }
+            belang: 2
+            title: "{a} and {b} are not speaking"
+            precise: "{a} and {b} have not made it up, and now they cross the street rather than pass each other."
+            village: "{a} and {b} won't speak to each other any more."
+            far: "There's a feud in the Holleveen."
+
+  # Doubt with something at stake: first ask a trader, or go and look.
+  - id: doubt
+    signal: doubt
+    about: first
+    topic: doubt
+    brain: true
+    expires: 3
+    steps:
+      - id: ask
+        at: { hours: 1 }
+        otherwise: wait
+        do: { ask_around: $a, about: [$subject, $key] }
+
+  # A stranger who is not believed, by someone the gates let through.
+  - id: stranger_unwelcome
+    signal: stranger_unwelcome
+    about: first
+    topic: stranger
+    steps:
+      - id: chase
+        do: { chase_away: [$a, $b] }
+
+  # Known again after a long time: it comes back to them, and they go and speak to them.
+  - id: recognised
+    signal: recognised
+    about: first
+    topic: meeting
+    brain: true
+    expires: 2
+    steps:
+      - id: recall
+        do: { recall: $a, of: $b }
+      - id: talk
+        do: { goal: Talk, who: $a, target: $b, hours: 12 }
+
+  # Believed a warning about the dyke: carry word to the dyke reeve.
+  - id: warned
+    signal: warned
+    about: first
+    topic: warning
+    brain: true
+    expires: 3
+    steps:
+      - id: word
+        do: { carry_word: $a, to: npc_sijbrand, about: $subject }
+
+  # People from elsewhere stay on: by custom, only grumbling.
+  - id: strangers_stay
+    signal: strangers_stay
+    topic: strangers
+    brain: true
+    steps:
+      - id: mind
+        do: { thought: $a, text: "Those people are still here, eating our bread.", days: 7 }

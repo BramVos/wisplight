@@ -1,12 +1,13 @@
 import { GameClock, minuteOfDay, startOfDay } from './clock'
 import { areaTopicId, callName, type Npc, type Pattern } from './content'
 import { applyEffect } from './dialogue/relations'
-import { add, itemName, withArticle } from './items'
+import { add, itemName, remedyItem, withArticle } from './items'
 import { belangOf } from './life'
 import { recordFact } from './news'
 import { lineOf } from './storylines'
 import { fulfil, openRequest } from './requests'
 import { remember } from './npc/execute'
+import { shiftBond } from './social/deeds'
 import type { World } from './world'
 
 // Stories (design: lore and world change, "Soorten verhalen" and "Tempo en
@@ -260,6 +261,17 @@ function playQuarrel(world: World, story: Story, pattern: Pattern): void {
   if (pattern.scene) world.emit('story', best.place, fill(pattern.scene, vars), best.a)
   remember(world, best.a, `quarrelled with ${vars.b} about ${reason}`)
   remember(world, best.b, `quarrelled with ${vars.a} about ${reason}`)
+  // A quarrel leaves a grudge (M8.2): made up, or a feud after a week.
+  grudge(world, best.a, best.b)
+}
+
+/** Two people fall out: less liking both ways, and a grudge from now until it is made up. */
+export function grudge(world: World, a: string, b: string): void {
+  for (const [x, y] of [[a, b], [b, a]] as const) {
+    shiftBond(world, x, y, -15, -5)
+    const bond = world.state.bonds![x]![y]!
+    bond.grudge ??= world.now
+  }
 }
 
 /** At night someone takes goods from a shop; the owner finds out when opening up. */
@@ -309,20 +321,22 @@ function startSickness(world: World, pattern: Pattern): boolean {
   return true
 }
 
-/** A fever mends sooner with herbs: someone in the house asks the player to fetch them. */
+/** A fever mends sooner with the world's remedy: someone in the house asks the player to fetch it. */
 function askForHerbs(world: World, sick: string, fact: string): void {
-  const seller = [...world.content.locations.values()].flatMap((l) => l.services).find((s) => 'herbs' in s.sells)?.provider
-  if (!seller || seller === sick) return
+  const remedy = remedyItem(world.content, 'sickened')
+  const seller = remedy ? [...world.content.locations.values()].flatMap((l) => l.services).find((s) => remedy in s.sells)?.provider : undefined
+  if (!remedy || !seller || seller === sick) return
   const house = world.npc(sick).household
   const giver = Object.keys(world.state.npcs)
     .sort()
     .find((id) => id !== sick && house && world.npc(id).household === house && world.alive(id) && !world.npc(id).child) ?? sick
   const herbalist = callName(world.npc(seller))
+  const thing = itemName(world.content, remedy)
   const ask =
     giver === sick
-      ? `This fever has me flat on my back. A bundle of ${herbalist}'s herbs would help, if you could fetch one.`
-      : `${callName(world.npc(sick))} is down with a fever. A bundle of ${herbalist}'s herbs would help, if you could fetch one.`
-  openRequest(world, { npc: giver, kind: 'fetch', item: 'herbs', name: `Herbs for ${callName(world.npc(sick))}`, ask, line: lineOf(world, fact)?.id, source: 'motor' })
+      ? `This fever has me flat on my back. ${cap(withArticle(thing))} from ${herbalist} would help, if you could fetch one.`
+      : `${callName(world.npc(sick))} is down with a fever. ${cap(withArticle(thing))} from ${herbalist} would help, if you could fetch one.`
+  openRequest(world, { npc: giver, kind: 'fetch', item: remedy, name: `${thing.charAt(0).toUpperCase()}${thing.slice(1)} for ${callName(world.npc(sick))}`, ask, line: lineOf(world, fact)?.id, source: 'motor' })
 }
 
 /** A feast day: the people of the place gather there for a while. */
@@ -410,4 +424,8 @@ function areaName(world: World, location: string): string {
 function at(world: World, hour: number, minute: number): number {
   const today = startOfDay(world.now) + hour * 60 + minute
   return today > world.now ? today : today + DAY
+}
+
+function cap(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1)
 }

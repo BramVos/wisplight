@@ -21,6 +21,7 @@ export type Selector =
   | { work_of: Selector }
   | { family_of: Selector }
   | { household_of: Selector }
+  | { neighbours_of: Selector }
   | { social_near: Selector }
   | { board_near: Selector }
   | { step: string }
@@ -35,6 +36,8 @@ export const SelectorSchema: z.ZodType<Selector> = z.lazy(() =>
     /** The family of someone: parents, children, brothers and sisters, spouses. */
     z.object({ family_of: SelectorSchema }).strict(),
     z.object({ household_of: SelectorSchema }).strict(),
+    /** The grown people who live within three quarters of an hour's walk, outside their household. */
+    z.object({ neighbours_of: SelectorSchema }).strict(),
     /** The nearest place where people gather (tagged social), from someone's home. */
     z.object({ social_near: SelectorSchema }).strict(),
     /** The nearest notice board, from a place or someone's work. */
@@ -110,6 +113,23 @@ export const VerbSchema = z.union([
   z.object({ regard: z.array(SelectorSchema).min(1), to: SelectorSchema, affinity: z.number().int().min(-20).max(20) }).strict(),
   /** News with a claim, from templates: {a}, {b}, {who} and {place} are filled in. */
   z.object({ tell: FactTemplate }).strict(),
+  // M8.2: the brain's verbs, usable by every plan.
+  /** Someone goes after a goal of the brain's catalogue (Visit, Talk, Avoid, Confront, ...), for some hours: { goal: Visit, who: $a, target: loc_x }. */
+  z.object({ goal: z.string(), who: SelectorSchema, target: SelectorSchema.optional(), priority: z.number().min(0).max(1).default(0.8), hours: z.number().positive().default(24) }).strict(),
+  /** Someone asks the player for something (a visit, a thing): it goes in the journal when they speak to them. */
+  z.object({ request: SelectorSchema, kind: z.enum(['visit', 'fetch']), target: SelectorSchema.optional(), item: z.string().optional(), name: z.string(), ask: z.string() }).strict(),
+  /** Someone asks a trader or traveller whether a claim is true; what does not fit, they reject. Waits for a trader. */
+  z.object({ ask_around: SelectorSchema, about: z.tuple([z.string(), z.string()]) }).strict(),
+  /** Someone walks to another to tell them what they know about a subject: a report with its own travel time. */
+  z.object({ carry_word: SelectorSchema, to: SelectorSchema, about: z.string() }).strict(),
+  /** Someone the gates let through chases a stranger out of the village. */
+  z.object({ chase_away: z.tuple([SelectorSchema, SelectorSchema]) }).strict(),
+  /** Someone both trust tries to make peace between two; who mediates decides how it ends. */
+  z.object({ mediate: z.tuple([SelectorSchema, SelectorSchema]), by: SelectorSchema.optional() }).strict(),
+  /** Someone recognises another from a memory: it comes back to them. */
+  z.object({ recall: SelectorSchema, of: SelectorSchema }).strict(),
+  /** Someone the gate lets lie, with a motive, puts an untrue claim about (design: "Liegen met een motief"). */
+  z.object({ spread_rumour: SelectorSchema, fact: FactTemplate }).strict(),
   /** Everything a quest or an effect plan could already do. */
   PlanEffectSchema,
 ])
@@ -129,6 +149,8 @@ export const StepSchema = z
     when: z.array(ConditionSchema).default([]),
     /** When the conditions do not hold: skip the step, wait for them (until the plan expires), or let the plan fail. */
     otherwise: z.enum(['skip', 'wait', 'fail']).default('skip'),
+    /** The chance the step happens at all when it is due, rolled once and seeded: otherwise it is skipped (M8.2). */
+    chance: z.number().min(0).max(1).optional(),
     do: VerbSchema,
   })
   .strict()
@@ -161,17 +183,28 @@ export const WatcherSchema = z
     event: Id.optional(),
     /** A new fact with a claim of this key, and of this value or kind if given. Its people: $subject, $value, $about. */
     fact: z.object({ key: z.string().optional(), value: z.union([z.string(), z.array(z.string())]).optional(), not: z.union([z.string(), z.array(z.string())]).optional(), kind: z.string().optional() }).strict().optional(),
+    /** Someone comes to believe a claim of this key (and value or kind): $a who believes it, $b who told them (M8.2). */
+    belief: z.object({ key: z.string(), value: z.union([z.string(), z.array(z.string())]).optional(), kind: z.string().optional() }).strict().optional(),
     /** Conditions that come true: a signal each time they do. */
     when: z.array(ConditionSchema).optional(),
-    /** A house nobody has lived in for so many days: $place is the house. */
-    probe: z.object({ house_empty: z.number().positive() }).strict().optional(),
+    /** A state the system works out: a house nobody has lived in for so many days ($place), a household that rose so many standings ($a and the rest of it). */
+    probe: z
+      .union([
+        z.object({ house_empty: z.number().positive() }).strict(),
+        z.object({ standing_rise: z.number().int().min(1).max(4) }).strict(),
+        /** A grudge between two that has lasted so many days ($a and $b). */
+        z.object({ grudge: z.number().positive() }).strict(),
+        /** People from elsewhere who have stayed so many days: $a the one of the place who likes them least, $place where they stay, the claim what drove them there. */
+        z.object({ strangers_stay: z.number().positive() }).strict(),
+      ])
+      .optional(),
     /** Who it is about; for a fact, by default the subject and the value of its claim. */
     who: z.array(z.string()).optional(),
     place: z.string().optional(),
     belang: z.number().int().min(0).max(5).optional(),
   })
   .strict()
-  .refine((w) => [w.fact, w.when, w.probe].filter(Boolean).length === 1, { message: 'a watcher watches one of fact, when or probe' })
+  .refine((w) => [w.fact, w.belief, w.when, w.probe].filter(Boolean).length === 1, { message: 'a watcher watches one of fact, belief, when or probe' })
 export type Watcher = z.infer<typeof WatcherSchema>
 
 /** What follows a signal by the rules, always, also without AI (M8.1). */
@@ -187,9 +220,42 @@ export const AftermathSchema = z
     expires: z.number().positive().default(30),
     groups: z.record(z.string(), GroupSchema).default({}),
     steps: z.array(StepSchema).min(1).max(30),
+    /** The brain of $a may plan this for themselves and their household instead (M8.2); this is what happens without it. */
+    brain: z.boolean().default(false),
+    /** Whom it is about, for one plan per person and topic: all people of the signal, or only the first ($a; the second only told them). */
+    about: z.enum(['all', 'first']).default('all'),
   })
   .strict()
 export type Aftermath = z.infer<typeof AftermathSchema>
+
+/**
+ * An intention a brain may choose (M8.2; design: "Bijsturing na de review"):
+ * the same as a standard aftermath, for one signal, with a choice for the
+ * model: a name, one line, who may choose it (conditions with $a the one who
+ * chooses), and open bindings the brain fills in (who mediates, where to).
+ */
+export const IntentionSchema = z
+  .object({
+    id: Id,
+    signal: Id,
+    event: Id.optional(),
+    when: z.array(ConditionSchema).default([]),
+    topic: Id,
+    expires: z.number().positive().default(14),
+    groups: z.record(z.string(), GroupSchema).default({}),
+    about: z.enum(['all', 'first']).default('first'),
+    choice: z
+      .object({
+        name: z.string(),
+        line: z.string(),
+        /** Bindings the brain fills: a person it knows, a place it knows, or a free house. */
+        open: z.record(Id, z.enum(['person', 'place', 'house'])).default({}),
+      })
+      .strict(),
+    steps: z.array(StepSchema).min(1).max(20),
+  })
+  .strict()
+export type Intention = z.infer<typeof IntentionSchema>
 
 /** The news a verb makes when a step is done: belang and three versions (M8.1). A world can word them its own way. */
 export const VerbTextSchema = z

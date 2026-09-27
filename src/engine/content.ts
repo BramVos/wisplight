@@ -3,7 +3,8 @@ import { z } from 'zod'
 import { CreatureSchema, EncounterSchema, RulesSchema, type Creature, type Effect, type Encounter, type Rules, type Talent } from './rules/schema'
 import { QuestBodySchema } from './quests/schema'
 import { checkQuests } from './quests/check'
-import { AftermathSchema, PlanSchema, VerbTextSchema, WatcherSchema, type Aftermath, type Plan, type VerbText, type Watcher } from './quests/planschema'
+import { AftermathSchema, IntentionSchema, PlanSchema, VerbTextSchema, WatcherSchema, type Aftermath, type Intention, type Plan, type VerbText, type Watcher } from './quests/planschema'
+import { permitted, verbName } from './quests/verbs'
 import { RELATION_ROLES } from './roles'
 
 // Content is plain YAML in content/. This module parses and validates it
@@ -391,6 +392,8 @@ export const TopicSchema = z.object({
   origin: z.string().optional(),
   /** Where the topic belongs on the map, when it is not an area of the content. */
   pos: Position.optional(),
+  /** What everyone talks about when asked what's new (M8.2: content, not a list in the code). */
+  standing_talk: z.boolean().default(false),
   /** Known the same everywhere, like a custom of the whole countryside. */
   everywhere: z.boolean().default(false),
   /** Extra chance for some listeners: profession ids, quirks or "child". */
@@ -525,7 +528,25 @@ export const WorldSchema = z.object({
     .strict()
     .optional(),
   /** Who keeps the law (M8): wanted "in" where, the officer's title, and the NPC and place to pay fines. */
-  law: z.object({ where: z.string(), officer: z.string(), npc: z.string().optional(), office: z.string().optional() }).strict().optional(),
+  law: z.object({ where: z.string(), officer: z.string(), npc: z.string().optional(), office: z.string().optional(), lord: z.string().optional() }).strict().optional(),
+  /** Towns with rights of their own (M8.2): their own fines, officer and place to pay, and maybe no trade with someone wanted. */
+  towns: z
+    .array(
+      z
+        .object({
+          id: z.string().regex(/^[a-z0-9_]+$/),
+          area: z.string(),
+          where: z.string(),
+          officer: z.string(),
+          offices: z.array(z.string()).default([]),
+          trade_ban: z.boolean().default(false),
+          cleared: z.string().optional(),
+        })
+        .strict(),
+    )
+    .default([]),
+  /** The five standings in this world's words, lowest first, and the trades that are an office (M8.2). */
+  standing: z.object({ names: z.array(z.string()).length(5), offices: z.array(z.string()).default([]) }).strict().optional(),
 })
 export type WorldDef = z.infer<typeof WorldSchema>
 
@@ -543,8 +564,8 @@ export const FactionSchema = z
     rivals: z.array(z.string()).default([]),
     /** How the player can join: never, hired, by a patron, by reputation, or by buying citizenship. */
     join: z.enum(['never', 'hired', 'patron_lantern', 'patron_old', 'reputation', 'citizenship']).default('never'),
-    /** The law this faction keeps: the Count's land or the town rights of Waagdam. */
-    law: z.enum(['count', 'waagdam']).optional(),
+    /** The law this faction keeps: the land's (count), or a town's from world.yaml. */
+    law: z.string().optional(),
   })
   .strict()
 export type Faction = z.infer<typeof FactionSchema>
@@ -579,6 +600,7 @@ const FileSchema = z
     /** When a change is a signal, what follows by the rules, and how each verb is news (M8.1). */
     watchers: z.array(WatcherSchema).optional(),
     aftermath: z.array(AftermathSchema).optional(),
+    intentions: z.array(IntentionSchema).optional(),
     verbs: z.array(VerbTextSchema).optional(),
     creatures: z.array(CreatureSchema).optional(),
     encounters: z.array(EncounterSchema).optional(),
@@ -614,6 +636,8 @@ export interface Content {
   /** The aftermath (M8.1): watchers, the standard aftermath per signal, and the news of each verb. All optional. */
   watchers: Map<string, Watcher>
   aftermath: Map<string, Aftermath>
+  /** What a brain may choose to do about a signal (M8.2). */
+  intentions: Map<string, Intention>
   verbTexts: Map<string, VerbText>
   /** The chronicler's working instruction (content/CHRONICLER.md and the world's own), if there is one. */
   chronicler?: string
@@ -657,6 +681,7 @@ export function loadContent(files: ContentFile[]): Content {
     plans: new Map<string, Plan>(),
     watchers: new Map<string, Watcher>(),
     aftermath: new Map<string, Aftermath>(),
+    intentions: new Map<string, Intention>(),
     verbTexts: new Map<string, VerbText>(),
   }
 
@@ -701,6 +726,7 @@ export function loadContent(files: ContentFile[]): Content {
     addAll(content.plans, data.plans, (v) => v.id, file.path, 'plan', problems)
     addAll(content.watchers, data.watchers, (v) => v.id, file.path, 'watcher', problems)
     addAll(content.aftermath, data.aftermath, (v) => v.id, file.path, 'aftermath', problems)
+    addAll(content.intentions, data.intentions, (v) => v.id, file.path, 'intention', problems)
     addAll(content.verbTexts, data.verbs, (v) => v.id, file.path, 'verb', problems)
     if (data.rules) {
       if (rules) problems.push(`${file.path}: the rules are defined twice`)
@@ -786,6 +812,10 @@ function checkReferences(world: WorldDef | undefined, c: Omit<Content, 'world'>)
     for (const id of Object.keys(world.player.inventory)) item(id, 'world.player.inventory')
     npc(world.law?.npc, 'world.law.npc')
     location(world.law?.office, 'world.law.office')
+    for (const t of world.towns) {
+      if (!c.areas.has(t.area)) problems.push(`world.towns.${t.id}: unknown area ${t.area}`)
+      for (const o of t.offices) location(o, `world.towns.${t.id}.offices`)
+    }
   }
   for (const type of c.objectTypes.values()) {
     for (const aff of type.affordances) {
@@ -858,6 +888,7 @@ function checkReferences(world: WorldDef | undefined, c: Omit<Content, 'world'>)
     for (const who of [...q.givers, ...q.helpers, ...q.opponents]) npc(who, `quest ${q.id}`)
   }
   for (const f of c.factions.values()) {
+    if (f.law && f.law !== 'count' && !world?.towns.some((t) => t.id === f.law)) problems.push(`faction ${f.id}: unknown law ${f.law}`)
     for (const m of f.members) npc(m, `faction ${f.id}.members`)
     for (const other of [...f.allies, ...f.rivals]) if (!c.factions.has(other)) problems.push(`faction ${f.id}: unknown faction ${other}`)
   }
@@ -884,7 +915,7 @@ function checkReferences(world: WorldDef | undefined, c: Omit<Content, 'world'>)
     for (const g of p.daily_goals) if (g.item) item(g.item, `profession ${p.id}.daily_goals`)
   }
   // Plans with steps, and the standard aftermath (M8.1): steps refer to steps and groups of their own, people and places exist.
-  const steps = (where: string, list: Plan['steps'], groups: string[]) => {
+  const steps = (where: string, list: Plan['steps'], groups: string[], maker: 'content' | 'rules' | 'brain' = 'content') => {
     const ids = new Set<string>()
     for (const s of list) {
       if (ids.has(s.id)) problems.push(`${where}: duplicate step ${s.id}`)
@@ -899,12 +930,17 @@ function checkReferences(world: WorldDef | undefined, c: Omit<Content, 'world'>)
         else if (id.startsWith('loc_')) location(id, `${where}.${s.id}`)
       }
       if ('profession' in s.do && s.do.profession && !c.professions.has(s.do.profession)) problems.push(`${where}.${s.id}: unknown profession ${s.do.profession}`)
+      if (!permitted(s.do, maker)) problems.push(`${where}.${s.id}: ${verbName(s.do)} is not a verb ${maker === 'brain' ? 'an intention' : 'the standard aftermath'} may use`)
     }
   }
   for (const p of c.plans.values()) steps(`plan ${p.id}`, p.steps, Object.keys(p.groups))
   for (const a of c.aftermath.values()) {
-    steps(`aftermath ${a.id}`, a.steps, Object.keys(a.groups))
+    steps(`aftermath ${a.id}`, a.steps, Object.keys(a.groups), 'rules')
     if (!CODE_SIGNALS.includes(a.signal) && ![...c.watchers.values()].some((w) => w.signal === a.signal)) problems.push(`aftermath ${a.id}: no watcher gives the signal ${a.signal}`)
+  }
+  for (const i of c.intentions.values()) {
+    steps(`intention ${i.id}`, i.steps, Object.keys(i.groups), 'brain')
+    if (!CODE_SIGNALS.includes(i.signal) && ![...c.watchers.values()].some((w) => w.signal === i.signal)) problems.push(`intention ${i.id}: no watcher gives the signal ${i.signal}`)
   }
   for (const w of c.watchers.values()) {
     for (const id of [...(w.who ?? []), w.place ?? ''].filter((x) => x && !x.startsWith('$'))) {
@@ -916,7 +952,7 @@ function checkReferences(world: WorldDef | undefined, c: Omit<Content, 'world'>)
 }
 
 /** Signals the systems give themselves, without a watcher in the content. */
-const CODE_SIGNALS = ['house_lost', 'plan_failed']
+const CODE_SIGNALS = ['house_lost', 'plan_failed', 'doubt', 'stranger_unwelcome', 'recognised']
 
 /** Every string in a step's verb that looks like an id. */
 function idsIn(value: unknown): string[] {

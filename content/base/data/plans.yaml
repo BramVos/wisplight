@@ -95,3 +95,51 @@ plans:
           - { market: lamp_oil, factor: 1 }
           - { market: iron_nails, factor: 1 }
           - { market: rye_grain, factor: 1 }
+
+  # A danger with its own clock (M8.2; design: "Een wedloop die niemand plant").
+  # Whoever is at the dyke sees the leak. If the dyke reeve comes to believe
+  # it within two days, he has it shored; if not, the dyke breaks. Whether
+  # word reaches him in time follows from who believes whom, and the walk.
+  - id: dyke_leak
+    name: The dyke at Oude Zijl leaks
+    topic: dyke
+    expires: 4
+    steps:
+      - id: leak
+        do:
+          tell:
+            kind: danger
+            about: [loc_oude_zijl_dyke]
+            place: loc_oude_zijl_dyke
+            belang: 2
+            title: the dyke at Oude Zijl leaks
+            precise: "Water is seeping through the dyke at Oude Zijl, low down on the land side, and the seep is growing."
+            village: "The dyke's leaking at Oude Zijl, they say!"
+            far: "A dyke is leaking somewhere, they say."
+            claim: { subject: loc_oude_zijl_dyke, key: state, value: leaking }
+      - id: shored
+        after: leak
+        when: [{ knows: { who: npc_sijbrand, subject: loc_oude_zijl_dyke, key: state, value: leaking } }, { not_flag: dyke_broke }]
+        otherwise: wait
+        do: { set: dyke_shored }
+      - id: shored_news
+        after: shored
+        do:
+          tell:
+            kind: danger
+            about: [npc_sijbrand, loc_oude_zijl_dyke]
+            place: loc_oude_zijl_dyke
+            belang: 3
+            title: the dyke at Oude Zijl was shored in time
+            precise: "Sijbrand had the leak at Oude Zijl packed with clay and brushwood before it could open."
+            village: "They stopped the leak at Oude Zijl in time, thank the saints."
+            far: "A dyke nearly broke in the Holleveen."
+            claim: { subject: loc_oude_zijl_dyke, key: state, value: normal }
+      - id: breach
+        at: { days: 2 }
+        when: [{ not_flag: dyke_shored }]
+        do: { plan: dyke_breach }
+      - id: broke
+        after: breach
+        when: [{ not_flag: dyke_shored }]
+        do: { set: dyke_broke }

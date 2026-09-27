@@ -26,6 +26,7 @@ export const LISTS = {
   plan: 'plans',
   watcher: 'watchers',
   aftermath: 'aftermath',
+  intention: 'intentions',
   verb: 'verbs',
   creature: 'creatures',
   encounter: 'encounters',

@@ -580,6 +580,14 @@ function templateFor(kind: EntityKind, view: EditorView): Raw {
       return { id: 'new_area', name: 'A new area', kind: 'hamlet', summary: 'What it is, in one sentence.' }
     case 'watcher':
       return { id: 'new_watcher', signal: 'new_signal', when: [{ flag: 'something_happened' }], who: [], place, belang: 1 }
+    case 'intention':
+      return {
+        id: 'new_intention',
+        signal: 'new_signal',
+        topic: 'new_topic',
+        choice: { name: 'What they do', line: 'One line for the model: what this intention is.', open: {} },
+        steps: [{ id: 'mind', do: { thought: '$a', text: 'What stays on their mind.', days: 7 } }],
+      }
     case 'aftermath':
       return {
         id: 'new_aftermath',
@@ -784,6 +792,12 @@ function PlaytestPanel({ bridge, world }: { bridge: EditorBridge; world: string 
                     <>
                       <h3>Part of</h3>
                       <ul className="check-list">{npc.plans.map((p) => <li key={p}>{p}</li>)}</ul>
+                    </>
+                  )}
+                  {npc.beliefs.length > 0 && (
+                    <>
+                      <h3>Believes</h3>
+                      <ul className="check-list">{npc.beliefs.map((b, i) => <li key={i}>{b}</li>)}</ul>
                     </>
                   )}
                   <h3>Remembers</h3>

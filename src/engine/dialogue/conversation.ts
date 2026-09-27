@@ -37,7 +37,6 @@ export const QUICK_OPTIONS = [
   'Will you come with me?',
 ]
 
-const RUMOUR_TOPICS = ['fenna', 'grey_cat', 'the_storm', 'drainage', 'surveyor', 'kattenbroek']
 const MAX_FAR = 50
 const MAX_TALK_EFFECT = 5
 
@@ -342,7 +341,7 @@ export class Dialogue {
     const area = this.world.location(this.world.npc(npcId).home).area
     const today = this.knowledge.level(npcId, `news_${area}`) >= 2 ? [`news_${area}`] : []
     const fresh = newsAbout(this.world, npcId, [], 2).map(({ fact }) => fact.id)
-    const standing = RUMOUR_TOPICS.filter((t) => this.knowledge.level(npcId, t) >= 2)
+    const standing = [...this.world.content.topics.values()].filter((t) => t.standing_talk).map((t) => t.id).sort().filter((t) => this.knowledge.level(npcId, t) >= 2)
     return [...today, ...fresh, ...standing].slice(0, 2)
   }
 

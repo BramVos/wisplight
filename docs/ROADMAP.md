@@ -140,17 +140,17 @@ Scope: ontwerp "Signalen en nasleep" (Claude Docs), FO 7, 8 en 15; de taken staa
 - [x] Een nieuwe soort gebeurtenis is toe te voegen met alleen content (een wachter en een nasleep), in de editor
 - [x] Alles wat er al was, speelt hetzelfde: het hele testpakket, 30 speldagen simulatie, de uitspeelscripts van beide werelden, en een oude save laadt en speelt verder
 
-## M8.2 Nasleep: het brein plant
+## M8.2 Nasleep: het brein plant (af)
 
-Scope: voornemens over meerdere dagen, liegen met een motief en navragen bij een reiziger of handelaar, openheid van een plek naar vreemden, geloven of twijfelen aan een bewering, vergeten en herkennen, groeten en praatjes waar de speler bij is, plannen van het brein voor zichzelf en het eigen huishouden (klein model, validator, budget, terugval op de standaardnasleep), vijf standen (arm, gewoon, burger, welgesteld, notabel), voornemens zichtbaar in de speeltest en de NPC-inspecteur.
+Scope: voornemens over meerdere dagen, liegen met een motief en navragen bij een reiziger of handelaar, openheid van een plek naar vreemden, geloven of twijfelen aan een bewering, vergeten en herkennen, groeten en praatjes waar de speler bij is, voornemens als sjablonen in de content waaruit het brein kiest en de open bindingen invult, alleen voor zichzelf en het eigen huishouden (klein model, validator, budget, terugval op de standaardnasleep; gewijzigd na de review van 27 september, zie `docs/review-opzet-2026-09-27.md` en het ontwerp onder "Bijsturing na de review"), vijf standen (arm, gewoon, burger, welgesteld, notabel), voornemens zichtbaar in de speeltest en de NPC-inspecteur. Vooraf, uit de review: de Nethermarch-ids uit de motor, de breinprompt op orde (catalogus gecacht, korte sleutels, gesloten poorten weglaten, geen ochtendkeuze zonder delta, geen model buiten de volledige laag), één werkwoordentaal met het werkwoord `goal` en een permissietabel, en `chance` op een planstap.
 
-- [ ] Harmen gedraagt zich binnen een week anders als zijn huishouden twee standen stijgt, en het dorp merkt het
-- [ ] Een ruzie die een week blijft, wordt bijgelegd of wordt een vete, afhankelijk van wie er bemiddelt
-- [ ] Een gerucht dat de oorlog voorbij is, van iemand die de vluchtelingen weg wil, laat een deel vertrekken; wie het eerst navraagt bij een handelaar, blijft
-- [ ] Een vreemde met een waarschuwing wordt in Waagdam gehoord en in Molenend gewantrouwd; een enkeling jaagt hem weg, iemand die hem gelooft meldt het, en of de hulp op tijd komt volgt uit de klokken
-- [ ] Wie elkaar lang niet ziet, vergeet elkaar tot een herinnering; een vluchteling die na een jaar terugkomt, wordt door wie hem goed kende herkend en daarop aangesproken
-- [ ] Waar de speler is, groeten mensen elkaar naar hun band en blijven ze staan voor een praatje als ze tijd en nieuws hebben; wie erbij komt, kan met LISTEN de strekking opvangen, en over de speler of een geheim zwijgen ze
-- [ ] Zonder AI of met het budget op loopt alles door op de standaardnasleep
+- [x] Harmen gedraagt zich binnen een week anders als zijn huishouden twee standen stijgt, en het dorp merkt het
+- [x] Een ruzie die een week blijft, wordt bijgelegd of wordt een vete, afhankelijk van wie er bemiddelt
+- [x] Een gerucht dat de oorlog voorbij is, van iemand die de vluchtelingen weg wil, laat een deel vertrekken; wie het eerst navraagt bij een handelaar, blijft
+- [x] Een vreemde met een waarschuwing wordt in Waagdam gehoord en in Molenend gewantrouwd; een enkeling jaagt hem weg, iemand die hem gelooft meldt het, en of de hulp op tijd komt volgt uit de klokken
+- [x] Wie elkaar lang niet ziet, vergeet elkaar tot een herinnering; een vluchteling die na een jaar terugkomt, wordt door wie hem goed kende herkend en daarop aangesproken
+- [x] Waar de speler is, groeten mensen elkaar naar hun band en blijven ze staan voor een praatje als ze tijd en nieuws hebben; wie erbij komt, kan met LISTEN de strekking opvangen, en over de speler of een geheim zwijgen ze
+- [x] Zonder AI of met het budget op loopt alles door op de standaardnasleep
 
 ## M8.3 Nasleep: de kroniekschrijver plant
 

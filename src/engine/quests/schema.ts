@@ -26,6 +26,8 @@ export interface KnowsClaim {
   level?: number
   /** Heard it at most so many days ago. */
   days?: number
+  /** Also when they only doubt it. */
+  doubting?: boolean
 }
 
 type Cond =
@@ -65,6 +67,7 @@ type Cond =
   | { commute: string; at_least: number }
   | { thinks_home_stands: string }
   | { tie: [string, string]; role: string }
+  | { would_lie: string }
   | { any: Cond[] }
   | { all: Cond[] }
   | { not: Cond }
@@ -86,6 +89,7 @@ export const ConditionSchema: z.ZodType<Cond> = z.lazy(() =>
               not: z.union([z.string(), z.array(z.string())]).optional(),
               level: z.number().int().min(1).max(3).optional(),
               days: z.number().positive().optional(),
+              doubting: z.boolean().optional(),
             })
             .strict(),
         ]),
@@ -139,6 +143,8 @@ export const ConditionSchema: z.ZodType<Cond> = z.lazy(() =>
     z.object({ thinks_home_stands: z.string() }).strict(),
     /** What the first is to the second: spouse, sweetheart, friend. */
     z.object({ tie: z.tuple([z.string(), z.string()]), role: z.string() }).strict(),
+    /** The gate for lying among people lets them through (M8.2): honesty -1 or lower, grown. */
+    z.object({ would_lie: z.string() }).strict(),
     z.object({ any: z.array(ConditionSchema) }).strict(),
     z.object({ all: z.array(ConditionSchema) }).strict(),
     z.object({ not: ConditionSchema }).strict(),

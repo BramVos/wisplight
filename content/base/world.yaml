@@ -25,6 +25,10 @@ world:
     against it. Tempers are short, and a girl is missing.
     PEOPLE speak plain, practical English with a little local colour. They measure distance in
     hours' walk and time by bells and daylight.
+  # Who keeps the law (M8): the Count's schout, and Waagdam with town rights of its own (M8.2).
+  law: { where: "in the Count's land", officer: schout, npc: npc_everhard, office: loc_schout_house, lord: the Count }
+  towns:
+    - { id: waagdam, area: waagdam, where: in Waagdam, officer: town watch, offices: [loc_waagdam_waag, loc_waagdam_weighing_room], trade_ban: true, cleared: The clerk writes you out of the book. }
   # How pictures of places and people look (after the M7 playtest), when an image model is chosen.
   pictures:
     style: A small illustration in the manner of a 17th-century Dutch etching with a light ink wash, muted greys, browns and greens, fine lines, a low wet land under a wide grey sky.

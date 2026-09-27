@@ -1,5 +1,24 @@
 # Changelog
 
+## M8.2 Nasleep: het brein plant, 27 september 2026
+
+Nieuw:
+- **Vijf standen.** Arm, gewoon, burger, welgesteld, notabel: de kas van het huishouden tegen het midden van de streek, een stap hoger voor een ambt. Het staat op de kaart van de stem, mensen twee standen uit elkaar praten minder met elkaar, en wie welgesteld is, zit niet meer in de herberg maar in de kerk. Stijgt een huishouden twee standen, dan hoort het dorp het en worden de buren jaloers.
+- **Geloven, twijfelen, verwerpen.** Wie een bewering hoort, gelooft die of niet naar vertrouwen in de bron, of anderen hetzelfde zeggen, of het past bij wat hij weet, en hoe open zijn dorp is voor vreemden (een stad meer dan een gehucht). Wie twijfelt terwijl er iets van afhangt, vraagt het na bij een handelaar of gaat zelf kijken.
+- **Een vreemde met een waarschuwing.** Een lekkende dijk heeft een eigen klok. Wie de vreemde gelooft, loopt naar de dijkgraaf; wie hem niet gelooft en driftig is, jaagt hem weg. Of de dijk op tijd gestut wordt, volgt uit wie wie gelooft en de wandeling.
+- **Ruzie, vete en verzoening.** Een ruzie laat wrok na. Bemiddelt iemand die ze allebei vertrouwen, dan maken ze het goed; anders wordt het na een week een vete. Je kunt ook zelf bemiddelen: `mediate between gerrit and jan`.
+- **Vergeten en herkennen.** Wie elkaar lang niet ziet, raakt elkaar kwijt tot een herinnering. Wie na lange tijd terugkomt, wordt herkend door wie hem goed kende, en die komt hem opzoeken.
+- **Groeten en praatjes waar jij bent.** Mensen die elkaar tegenkomen, groeten naar hun band. Hebben ze tijd en nieuws, dan blijven ze staan praten; met `listen` vang je de strekking op. Gaat het over jou of een geheim, dan dempen ze hun stem of beginnen ze over iets anders.
+- **Het brein kiest een voornemen.** Een signaal over iemand zelf (rijk geworden, een ruzie, twijfel, een waarschuwing, herkend, vluchtelingen die blijven) gaat met een model naar zijn brein. Dat kiest een voornemen uit de content (`intentions.yaml`), zoals geld uitlenen aan iemand, iemand vragen om te bemiddelen, of liegen dat de oorlog voorbij is, en vult in wie of waar. Zonder model, zonder budget of met een foute keuze doet de standaardnasleep het.
+- **Na de review:** één werkwoordentaal met een tabel wie welk werkwoord mag gebruiken, een kans op een planstap, de breinprompt kleiner (vaste catalogus in het gecachte deel, korte sleutels, geen ochtendkeuze zonder aanleiding, geen model voor wie ver weg is), en de Nethermarch uit de motor: wet en stadsrechten in `world.yaml`, bid- en speelplekken als tags, het geneesmiddel als het voorwerp met `remedy`.
+- **Editor:** voornemens als lijst, en in de NPC-inspecteur stand, wat iemand gelooft en aan welk voornemen hij bezig is.
+
+Testen: `npm run dev`. Ga naar de brink van Veenhoek en wacht: wie binnenkomt, groet; staan er twee te praten, typ `listen`. `@plan dyke_leak` start een lekkende dijk; kijk wie het gelooft. Harmen die rijk wordt en zich anders gaat gedragen, zie je in de tests (`tests/m82.test.ts`) of na een lange speeltest in de editor, als de molen goed verdient. Met een model gekoppeld kiezen mensen hun eigen voornemen; in de editor bij Playtest zie je per persoon wat hij gelooft en van plan is. Controles: `npm test` (369 tests).
+
+Nog niet: de optionele zin van de stem voor wie lang blijft luisteren, en geheimen herkent het praatje alleen als leugen of verzwegen feit. Het brein plant alleen voor zichzelf; groepen en botsende plannen zijn voor de kroniekschrijver (M8.3).
+
+Ontwerp: gebouwd volgens de bijsturing na de review van 27 september (voornemens als sjablonen in de content in plaats van stappen van het model). Keuzes die ik maakte staan in het ontwerp onder "Zo is het in M8.2 gebouwd"; de review staat nu ook op main in `docs/`.
+
 ## M8.1 Nasleep: fundament, 27 september 2026
 
 Nieuw:

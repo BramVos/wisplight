@@ -1,0 +1,192 @@
+# Intentions (design: signalen en nasleep, M8.2, after the review): what a
+# brain may choose to do about a signal about itself, for the coming days.
+# The model gets those that fit the signal and the person (when, with $a the
+# one who chooses), chooses none or one, and fills in the open bindings. The
+# steps are content, like the standard aftermath; without a model, or when
+# it chooses none, the standard aftermath of the signal does it.
+
+intentions:
+  # Come up in the world.
+  - id: show_standing
+    signal: rose_in_standing
+    topic: standing
+    choice:
+      name: Show it
+      line: Let people see you have come up in the world. Stand one last round at the inn, then be seen at church.
+    steps:
+      - id: round
+        at: { hour: 20 }
+        do:
+          tell:
+            kind: standing
+            about: [$a]
+            place: { social_near: $a }
+            belang: 2
+            title: "{a} has come up in the world"
+            precise: "{a} stood everyone a round at {place} to show he has money now, and said it would be the last time he drank with the likes of them."
+            village: "{a} has grown too good for the rest of us, they say."
+            far: "Somebody in the Holleveen has come into money."
+      - id: church
+        at: { days: 1, hour: 10 }
+        do: { goal: Pray, who: $a, hours: 6 }
+
+  - id: keep_head_down
+    signal: rose_in_standing
+    topic: standing
+    choice:
+      name: Keep your head down
+      line: Change nothing that people can see. Money is nobody's business.
+    steps:
+      - id: mind
+        do: { thought: $a, text: "Money is nobody's business but your own. Let them wonder.", days: 14 }
+
+  - id: lend_money
+    signal: rose_in_standing
+    topic: standing
+    choice:
+      name: Lend money
+      line: Lend some of it at interest to someone you know who is short.
+      open: { debtor: person }
+    steps:
+      - id: offer
+        do: { goal: Talk, who: $a, target: $debtor, hours: 24 }
+      - id: mind
+        do: { thought: $a, text: "{debtor} is short of money, and money lent is money working.", days: 7 }
+
+  # A quarrel with someone.
+  - id: ask_mediator
+    signal: quarrel
+    topic: quarrel
+    choice:
+      name: Ask someone to make peace
+      line: Ask someone you both trust to sit you down together.
+      open: { mediator: person }
+    steps:
+      - id: ask
+        do: { goal: Talk, who: $a, target: $mediator, hours: 12 }
+      - id: mediate
+        at: { days: 1, hour: 19 }
+        do: { mediate: [$a, $b], by: $mediator }
+
+  - id: keep_away
+    signal: quarrel
+    topic: quarrel
+    choice:
+      name: Keep out of their way
+      line: Avoid them until it blows over, or does not.
+    steps:
+      - id: avoid
+        do: { goal: Avoid, who: $a, target: { home_of: $b }, hours: 48 }
+
+  - id: have_it_out
+    signal: quarrel
+    topic: quarrel
+    choice:
+      name: Have it out
+      line: Go and have it out with them, face to face.
+    steps:
+      - id: confront
+        do: { goal: Confront, who: $a, target: $b, hours: 12 }
+
+  # Doubt about something that matters to you.
+  - id: ask_a_trader
+    signal: doubt
+    topic: doubt
+    expires: 3
+    choice:
+      name: Ask around
+      line: Before you do anything, ask a trader or a boatman whether it is true, or go and look.
+    steps:
+      - id: ask
+        at: { hours: 1 }
+        otherwise: wait
+        do: { ask_around: $a, about: [$subject, $key] }
+
+  - id: let_it_be
+    signal: doubt
+    topic: doubt
+    choice:
+      name: Let it be
+      line: Do not bother. It will come out one way or another.
+    steps:
+      - id: mind
+        do: { thought: $a, text: "Who knows what is true these days.", days: 3 }
+
+  # A warning about the dyke that you believe.
+  - id: warn_the_reeve
+    signal: warned
+    topic: warning
+    expires: 3
+    choice:
+      name: Warn the dyke reeve
+      line: Walk to Sijbrand at Oude Zijl yourself and tell him.
+    steps:
+      - id: word
+        do: { carry_word: $a, to: npc_sijbrand, about: $subject }
+
+  - id: ask_the_stranger
+    signal: warned
+    topic: warning
+    when: [{ not: { is_player: $a } }]
+    choice:
+      name: Ask the stranger to go
+      line: Ask the stranger to take word to Sijbrand, who is quicker on their feet than you.
+    steps:
+      - id: ask
+        do: { request: $a, kind: visit, target: npc_sijbrand, name: "Word to Sijbrand", ask: "The dyke at Oude Zijl is leaking, I'm sure of it. Would you run and tell Sijbrand? You're quicker than I am." }
+
+  # Known again after a long time.
+  - id: welcome_back
+    signal: recognised
+    topic: meeting
+    choice:
+      name: Welcome them back
+      line: Go and speak to them, and ask where they have been.
+    steps:
+      - id: recall
+        do: { recall: $a, of: $b }
+      - id: talk
+        do: { goal: Talk, who: $a, target: $b, hours: 12 }
+
+  - id: look_away
+    signal: recognised
+    topic: meeting
+    choice:
+      name: Look the other way
+      line: You know them, but you would rather not. Keep your distance.
+    steps:
+      - id: avoid
+        do: { thought: $a, text: "{b} is back. Best keep your distance.", days: 7 }
+
+  # People from elsewhere who stay on in your village.
+  - id: lie_peace
+    signal: strangers_stay
+    topic: strangers
+    when: [{ would_lie: $a }, { knows: { who: $a, subject: $subject, key: $key, value: $value } }]
+    choice:
+      name: Tell them it is over
+      line: Put it about that what drove them here is over, so they go home. It is not true.
+    steps:
+      - id: lie
+        do:
+          spread_rumour: $a
+          fact:
+            kind: rumour
+            title: the war is over, they say
+            precise: "The war is over, they say in Graafhaven. They can all go home."
+            village: "The war's over! They can all go home, they say."
+            far: "There is peace, they say."
+            belang: 2
+            claim: { subject: $subject, key: $key, value: peace }
+      - id: go
+        do: { goal: Visit, who: $a, target: $place, hours: 6 }
+
+  - id: grumble
+    signal: strangers_stay
+    topic: strangers
+    choice:
+      name: Grumble
+      line: Say what you think of them to anyone who will listen, and do nothing.
+    steps:
+      - id: mind
+        do: { thought: $a, text: "Those people are still here, eating our bread.", days: 7 }

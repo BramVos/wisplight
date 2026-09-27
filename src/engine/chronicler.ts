@@ -5,7 +5,7 @@ import { GameClock, MONTHS, WEEKDAYS } from './clock'
 import { callName } from './content'
 import { leakedNames, unknownNames, vocabularyOf } from './dialogue/guard'
 import { worldFrame } from './dialogue/prompt'
-import { itemName } from './items'
+import { itemName, remedyItem } from './items'
 import { questsOf } from './life'
 import { factById } from './news'
 import { isNear, noun, ties } from './people'
@@ -107,7 +107,8 @@ export function buildInput(world: World, run: ChronicleRun): ChronicleInput {
   }
   for (const line of lines) {
     for (const f of facts(line)) for (const id of f.about) if (id.startsWith('item_') && world.content.items.has(id.slice(5))) items.add(id.slice(5))
-    if (facts(line).some((f) => f.kind === 'sickness')) items.add('herbs')
+    const remedy = remedyItem(world.content, 'sickened')
+    if (remedy && facts(line).some((f) => f.kind === 'sickness')) items.add(remedy)
   }
   // Where people could go if they have to flee (M8.1): the chronicler decides the flight of a big event,
   // so a plannable line comes with the churches, chapels and inns of the region as places.

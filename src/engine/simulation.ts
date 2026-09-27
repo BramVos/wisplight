@@ -21,6 +21,8 @@ import { conditionsDay } from './rules/player'
 import { debtsDue, weeklyDrift } from './social/deeds'
 import { realmsDay } from './social/realms'
 import { watchHour } from './signals'
+import { forgetWeek, longApart, metAgain } from './forgetting'
+import { chatterNearPlayer } from './chatter'
 
 // The world clock. Every game minute, NPCs that are free decide and act;
 // every game hour, needs decay and the economy moves (supply and demand).
@@ -32,6 +34,8 @@ export function advance(world: World, minutes: number): void {
   for (let i = 0; i < minutes; i++) {
     world.state.minutes++
     if (minuteOfDay(world.now) % 60 === 0) hourly(world)
+    // Where the player is, people greet each other and stop to talk (M8.2).
+    if (minuteOfDay(world.now) % 5 === 0) chatterNearPlayer(world)
     if (minuteOfDay(world.now) % 15 === 0) {
       spreadNews(world)
       noticeCoincidences(world)
@@ -66,7 +70,10 @@ function hourly(world: World): void {
   watchHour(world)
   if (minuteOfDay(world.now) === 0) {
     realmsDay(world)
-    if (Math.floor(world.now / MINUTES_PER_DAY) % 7 === 0) weeklyDrift(world)
+    if (Math.floor(world.now / MINUTES_PER_DAY) % 7 === 0) {
+      weeklyDrift(world)
+      forgetWeek(world)
+    }
   }
   const lodging = world.state.player.lodging
   if (lodging && world.now >= lodging.until) world.state.player.lodging = undefined
@@ -170,7 +177,12 @@ function noteSightings(world: World, ids: string[]): void {
     if (here.length < 2) continue
     for (const a of here) {
       const seen = (world.state.npcs[a]!.sightings ??= {})
-      for (const b of here) if (a !== b) seen[b] = { where, t: world.now }
+      for (const b of here) {
+        if (a === b) continue
+        // Together again after a long time (M8.2): known again, or a stranger now.
+        if (longApart(world, seen[b]?.t)) metAgain(world, a, b)
+        seen[b] = { where, t: world.now }
+      }
     }
   }
 }

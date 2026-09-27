@@ -11,6 +11,7 @@ import { addClock, favour, gainXp, playerCheck, tickClock, type Clock } from '..
 import { blessed } from '../rules/blessings'
 import { approve, companionOf } from '../social/companions'
 import { repute } from '../social/factions'
+import { mayLieAbout } from '../social/gates'
 import type { World } from '../world'
 import type { Condition, KnowsClaim, PlaceStateName, QuestAction, QuestEffect } from './schema'
 
@@ -120,9 +121,10 @@ export function holds(world: World, c: Condition, questId?: string): boolean {
   if ('thinks_home_stands' in c) {
     const home = homeOf(world, c.thinks_home_stands)
     const belief = home ? believes(world, c.thinks_home_stands, home, 'state') : undefined
-    return !belief || !['flooded', 'destroyed', 'occupied'].includes(belief.value)
+    return !belief || belief.doubt || !['flooded', 'destroyed', 'occupied'].includes(belief.value)
   }
   if ('tie' in c) return tieTo(world, c.tie[0], c.tie[1])?.role === c.role
+  if ('would_lie' in c) return world.content.npcs.has(c.would_lie) && mayLieAbout(world, c.would_lie)
   if ('any' in c) return c.any.some((x) => holds(world, x, questId))
   if ('all' in c) return c.all.every((x) => holds(world, x, questId))
   if ('not' in c) return !holds(world, c.not, questId)
@@ -132,7 +134,8 @@ export function holds(world: World, c: Condition, questId?: string): boolean {
 /** What someone believes about a claim: a value, anything but some values, how precise, how recent (M8.1). */
 function knowsClaim(world: World, k: KnowsClaim): boolean {
   const belief = believes(world, k.who, k.subject, k.key)
-  if (!belief) return false
+  // Knowing is believing: what someone only doubts is not enough to act on (M8.2).
+  if (!belief || (belief.doubt && !k.doubting)) return false
   const list = (v: string | string[] | undefined) => (v === undefined ? undefined : Array.isArray(v) ? v : [v])
   const want = list(k.value)
   const not = list(k.not)

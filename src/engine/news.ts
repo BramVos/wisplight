@@ -3,6 +3,8 @@ import { isFamilyNews, nearOf, tieTo } from './people'
 import { onFact } from './storylines'
 import { concerns, triggerChoice } from './npc/goals'
 import { watchFact } from './signals'
+import { standingOf } from './standing'
+import { heardClaim } from './belief'
 import type { Claim, Fact, Heard } from './state'
 import type { World } from './world'
 
@@ -93,16 +95,17 @@ export function recordFact(world: World, input: FactInput): Fact {
  * they heard with this subject and key, the newest counts, and of equally
  * new ones the most precise. Far away (level 1) the value may be the far one.
  */
-export function believes(world: World, who: string, subject: string, key: string): { value: string; level: number; t: number; fact: Fact } | undefined {
+export function believes(world: World, who: string, subject: string, key: string): { value: string; level: number; t: number; fact: Fact; doubt: boolean } | undefined {
   const heard = world.state.news?.heard[who]
   if (!heard) return undefined
-  let best: { value: string; level: number; t: number; fact: Fact } | undefined
+  let best: { value: string; level: number; t: number; fact: Fact; doubt: boolean } | undefined
   for (const fact of world.state.news!.facts) {
     const claim = fact.claim
     const h = heard[fact.id]
-    if (!claim || !h || claim.subject !== subject || claim.key !== key) continue
+    // What they reject does not count (M8.2); what they doubt counts, marked as doubt.
+    if (!claim || !h || claim.subject !== subject || claim.key !== key || h.stance === 'rejects') continue
     const value = h.level === 1 && claim.far !== undefined ? claim.far : claim.value
-    if (!best || fact.t > best.fact.t || (fact.t === best.fact.t && h.level > best.level)) best = { value, level: h.level, t: h.t, fact }
+    if (!best || fact.t > best.fact.t || (fact.t === best.fact.t && h.level > best.level)) best = { value, level: h.level, t: h.t, fact, doubt: h.stance === 'doubts' }
   }
   return best
 }
@@ -188,6 +191,8 @@ function chanceToTell(world: World, place: string, teller: string, listener: str
   // People talk more with those they are close to, and little with those they cannot stand.
   const tie = tieTo(world, teller, listener)
   if (tie) chance *= 1 + 0.15 * (tie.bond - 1)
+  // People two standings apart talk less (M8.2): one looks down, the other keeps their distance.
+  else if (Math.abs(standingOf(world, teller) - standingOf(world, listener)) >= 2) chance *= 0.7
   // Night hours at home are for sleeping, not talking.
   const hour = Math.floor(minuteOfDay(world.now) / 60)
   if (hour >= 23 || hour < 5) chance *= 0.3
@@ -209,10 +214,12 @@ function tellTheFamily(world: World): void {
     if (knowers.length === 0) continue
     for (const person of fact.about.filter((id) => world.content.npcs.has(id))) {
       for (const near of nearOf(world, person)) {
-        if (heardBy(world, near)[fact.id] || world.rng.next('news') >= 0.35) continue
+        // Someone runs to tell them, even if a vague rumour got there first.
+        if ((heardBy(world, near)[fact.id]?.level ?? 0) >= 3 || world.rng.next('news') >= 0.35) continue
         const teller = knowers.find((k) => k !== near)
         if (!teller) continue
-        heardBy(world, near)[fact.id] = { level: 3, reliability: 1, from: teller, t: world.now }
+        const h = (heardBy(world, near)[fact.id] = { level: 3, reliability: 1, from: teller, t: world.now })
+        heardClaim(world, near, fact, h)
         noticed(world, near, fact)
       }
     }
@@ -236,6 +243,19 @@ export function meet(world: World, a: string, b: string): void {
   }
 }
 
+/** A chat ends (M8.2): the teller passes on this one fact, by the same rules as any telling. */
+export function passOn(world: World, teller: string, listener: string, factId: string): void {
+  const heard = heardBy(world, teller)[factId]
+  const fact = factById(world, factId)
+  const theirs = heardBy(world, listener)
+  if (!heard || !fact || theirs[factId] || !world.alive(listener)) return
+  const grows = heard.grown || world.rng.next('news') < (world.npc(teller).quirks.includes('gossip') ? 0.25 : 0.1)
+  const h: Heard = { level: Math.max(1, heard.level - 1) as Heard['level'], reliability: Math.round(heard.reliability * 0.9 * 100) / 100, from: teller, t: world.now, grown: grows || undefined }
+  theirs[factId] = h
+  heardClaim(world, listener, fact, h)
+  noticed(world, listener, fact)
+}
+
 /** The teller passes on the two juiciest facts the listener has not heard yet. */
 function tell(world: World, teller: string, listener: string): void {
   const known = heardBy(world, teller)
@@ -244,13 +264,15 @@ function tell(world: World, teller: string, listener: string): void {
   const quiet = world.state.silenced?.[teller] ?? []
   const fresh = Object.entries(known)
     .map(([id, heard]) => ({ fact: factById(world, id)!, heard }))
-    .filter(({ fact }) => fact && !theirs[fact.id] && !quiet.includes(fact.id) && juiceNow(world, fact) >= 0.1)
+    .filter(({ fact, heard }) => fact && !theirs[fact.id] && !quiet.includes(fact.id) && heard.stance !== 'rejects' && juiceNow(world, fact) >= 0.1)
     .sort((x, y) => juiceNow(world, y.fact) - juiceNow(world, x.fact) || x.fact.id.localeCompare(y.fact.id))
     .slice(0, 2)
   for (const { fact, heard } of fresh) {
     // A gossip tells it bigger; anyone may, now and then.
     const grows = heard.grown || world.rng.next('news') < (world.npc(teller).quirks.includes('gossip') ? 0.25 : 0.1)
-    theirs[fact.id] = { level: Math.max(1, heard.level - 1) as Heard['level'], reliability: Math.round(heard.reliability * 0.9 * 100) / 100, from: teller, t: world.now, grown: grows || undefined }
+    const h: Heard = { level: Math.max(1, heard.level - 1) as Heard['level'], reliability: Math.round(heard.reliability * 0.9 * 100) / 100, from: teller, t: world.now, grown: grows || undefined }
+    theirs[fact.id] = h
+    heardClaim(world, listener, fact, h)
     noticed(world, listener, fact)
   }
 }
@@ -277,7 +299,9 @@ function newsArrives(world: World): void {
       const km = areaKm(world, fact.place, where)
       if (km > REACH_KM[fact.belang]!) continue
       if (world.now < fact.t + (1 + km / 4) * 60) continue
-      heard[fact.id] = { level: km <= 10 ? 2 : 1, reliability: km <= 10 ? 0.8 : 0.6, from: 'news', t: world.now }
+      const h: Heard = { level: km <= 10 ? 2 : 1, reliability: km <= 10 ? 0.8 : 0.6, from: 'news', t: world.now }
+      heard[fact.id] = h
+      heardClaim(world, id, fact, h)
       if (!away) noticed(world, id, fact)
     }
   }
@@ -300,7 +324,10 @@ function readBoards(world: World): void {
         if (heard[id] || !factById(world, id)) continue
         heard[id] = { level: 3, reliability: 1, from: 'board', t: world.now }
         if (who === 'player') (world.state.player.journal ??= {})[id] = world.now
-        else noticed(world, who, factById(world, id)!)
+        else {
+          heardClaim(world, who, factById(world, id)!, heard[id]!)
+          noticed(world, who, factById(world, id)!)
+        }
       }
     }
   }

@@ -140,11 +140,11 @@ function night(world: World, host: QuestHost, t: number, out: Output[]): void {
   }
 
   // The schout arrests a peat-cutter after the second night of pulled stakes.
-  if (Number(f['gerrit_pulled'] ?? 0) >= 2 && !f['peat_cutter_arrested'] && usable(world, 'npc_everhard')) {
+  if (Number(f['gerrit_pulled'] ?? 0) >= 2 && !f['peat_cutter_arrested'] && Boolean(world.words.law.npc && usable(world, world.words.law.npc))) {
     const who = usable(world, 'npc_gerrit') ? 'npc_gerrit' : usable(world, 'npc_jan_visser') ? 'npc_jan_visser' : undefined
     if (who) {
       const s = world.state.npcs[who]!
-      s.stayAt = { where: 'loc_schout_house', until: t + 2 * DAY }
+      s.stayAt = { where: (world.words.law.office ?? world.npc(who).home), until: t + 2 * DAY }
       s.plan = []
       s.planGoal = undefined
       s.busyUntil = world.now
@@ -154,8 +154,8 @@ function night(world: World, host: QuestHost, t: number, out: Output[]): void {
       const name = world.npc(who).name
       recordFact(world, {
         kind: 'arrest',
-        about: [who, 'npc_everhard'],
-        place: 'loc_schout_house',
+        about: [who, ...(world.words.law.npc ? [world.words.law.npc] : [])],
+        place: (world.words.law.office ?? world.npc(who).home),
         belang: 3,
         title: `${name} arrested`,
         text: { precise: `Schout Everhard arrested ${name} for pulling up the surveyor's stakes.`, village: `The schout's locked up ${name}! Over the stakes.`, far: 'A peat-cutter was arrested in the Holleveen.' },

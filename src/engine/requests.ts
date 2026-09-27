@@ -94,8 +94,8 @@ function finish(world: World, request: Request, thanks = true): string {
   world.state.player.money += paid
   applyEffect(world, request.npc, 'affinity', 4)
   applyEffect(world, request.npc, 'trust', 3)
-  // A fever mends sooner with Aaltje's herbs: the giver's, or someone's in the giver's house.
-  if (request.item === 'herbs') {
+  // A fever mends sooner with a remedy (herbs in the Nethermarch): the giver's, or someone's in the giver's house.
+  if (request.item && world.content.items.get(request.item)?.remedy) {
     const house = world.npc(request.npc).household
     for (const id of Object.keys(world.state.npcs)) {
       if (id !== request.npc && (!house || world.npc(id).household !== house)) continue

@@ -107,7 +107,8 @@ export function takeBarge(world: World, destination: string | undefined, pass: (
     return [{ kind: 'text', text: 'No barge today. It runs on Maandag and Donderdag, from first light until the afternoon.' }]
   }
   if (!destination) return [{ kind: 'error', text: 'Take the barge where? Oude Zijl, Veenhoek or Waagdam.' }]
-  if (/graafhaven/i.test(destination)) return [{ kind: 'text', text: 'The barge goes on to Graafhaven, two days west, but that lies beyond the Holleveen for now.' }]
+  const from = world.words.from
+  if (destination.includes(from.toLowerCase())) return [{ kind: 'text', text: `The barge goes on to ${from}, two days west, but that lies beyond ${world.words.region} for now.` }]
   const to = STOPS.find((stop) => world.location(stop).area === destination || world.location(stop).name.toLowerCase().includes(destination) || world.content.areas.get(world.location(stop).area)?.name.toLowerCase() === destination)
   if (!to || to === here) return [{ kind: 'error', text: 'The barge stops at Oude Zijl, Veenhoek and Waagdam.' }]
   if (world.state.player.money < FARE) return [{ kind: 'text', text: `The bargeman wants ${world.money(FARE)}, and you do not have it.` }]

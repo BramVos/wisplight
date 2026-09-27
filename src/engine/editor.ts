@@ -57,6 +57,7 @@ export const KIND_NAMES: Record<EntityKind, string> = {
   plan: 'Plans',
   watcher: 'Watchers',
   aftermath: 'Aftermath',
+  intention: 'Intentions',
   verb: 'News of the verbs',
   creature: 'Creatures',
   encounter: 'Encounters',

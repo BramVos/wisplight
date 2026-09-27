@@ -41,3 +41,32 @@ watchers:
   - id: place_restored
     signal: place_restored
     fact: { key: state, value: normal }
+
+  # M8.2: the brain plans.
+
+  # A household that rose two standings (money against the middle of the region).
+  - id: rose_in_standing
+    signal: rose_in_standing
+    probe: { standing_rise: 2 }
+
+  # A quarrel: a grudge between two, until someone makes peace.
+  - id: quarrel
+    signal: quarrel
+    fact: { kind: quarrel }
+    who: [$about]
+    belang: 1
+
+  # A grudge that lasted a week is a feud.
+  - id: feud
+    signal: feud
+    probe: { grudge: 7 }
+
+  # Someone believes a warning that a dyke leaks: they carry word to the dyke reeve.
+  - id: warned
+    signal: warned
+    belief: { key: state, value: leaking }
+
+  # People from elsewhere who have stayed a week: the one of the village who likes them least has a choice to make.
+  - id: strangers_stay
+    signal: strangers_stay
+    probe: { strangers_stay: 5 }

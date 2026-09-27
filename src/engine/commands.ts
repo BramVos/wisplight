@@ -5,6 +5,7 @@ import { applyEffect } from './dialogue/relations'
 import { canSetOut, crossCountryLine, describeHex, hexOfId, isHexId, walk, waysLine } from './map/travel'
 import { regionMap } from './map/region'
 import { recordFact } from './news'
+import { chatsAt } from './chatter'
 import { fulfil } from './requests'
 import { giveBack, stories, type Tempo } from './stories'
 import { isNight, qtyName, wakeNpc } from './npc/execute'
@@ -139,6 +140,7 @@ export function describeRoom(world: World): Output {
     return activity && !['taking it easy', 'at home'].includes(activity) ? `${npc.short} (${activity})` : npc.short
   })
   if (people.length > 0) lines.push(`Here: ${people.join(', ')}.`)
+  lines.push(...chatsAt(world, location.id))
   return { kind: 'room', text: lines.join('\n') }
 }
 

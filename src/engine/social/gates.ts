@@ -44,6 +44,15 @@ export function mayLie(world: World, npcId: string): boolean {
   return honesty <= -2 || (honesty <= 0 && atMost(attitude(world, npcId).band, 'Neutral'))
 }
 
+/**
+ * Putting a lie about among other people (M8.2): someone with honesty -1 or
+ * lower, never a child or a spirit. The motive is checked where the lie is chosen.
+ */
+export function mayLieAbout(world: World, npcId: string): boolean {
+  const npc = world.npc(npcId)
+  return !npc.child && !npc.quirks.includes('spirit') && npc.personality.honesty <= -1
+}
+
 /** Sharing a secret: Warm, or a check that succeeded. */
 export function mayShareSecret(world: World, npcId: string, checkPassed = false): boolean {
   return checkPassed || atLeast(attitude(world, npcId).band, 'Warm')

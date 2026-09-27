@@ -6,7 +6,7 @@ import { Knowledge } from './dialogue/knowledge'
 import type { ChronicleOutput, ChroniclerRequest, Outline } from '../chronicler'
 import { applyOutline, farWhere, runOutline, wantOutline } from './outlines'
 import { applyRun, settleRuns, writeRun } from './chronicler'
-import { applyChoice, goalRequest, settleChoices } from './npc/goals'
+import { applyChoice, fromKeys, goalRequest, settleChoices } from './npc/goals'
 import { LlmError, type LlmClient, type LlmRequest, type LlmResponse } from './dialogue/llm'
 import { attitude, relation } from './dialogue/relations'
 import { TopicRegistry } from './dialogue/topics'
@@ -34,7 +34,7 @@ import { maxHp, type CreationData } from './rules/character'
 import { npcFighter } from './combat/npc'
 import { approve, arrived, campfire, companionOf, companions, leave, order, partyLines, recruit, restParty, setStance, sharedFight, syncLevels, withPlayer } from './social/companions'
 import { confronting, settleGrievance } from './social/confront'
-import { crime, payFine, steal } from './social/crime'
+import { crime, LAND_LAW, payFine, steal, townLaw } from './social/crime'
 import { deed, noticeCarried, seedBonds } from './social/deeds'
 import { factionLines, factionPage, join, rankOf, repute } from './social/factions'
 import { fightsBack, mayAttackFirst, mayLend } from './social/gates'
@@ -44,6 +44,8 @@ import { PlaceState } from './quests/schema'
 import { antagonists } from './quests/antagonists'
 import { plansDue, startPlan } from './quests/plans'
 import { primeWatchers, processSignals } from './signals'
+import { mediateBetween } from './aftermath'
+import { breakOff, listen } from './chatter'
 import { realmLines, realmPage } from './social/realms'
 import { kmFromPlayer, posOf } from './nearby'
 import { carryOver } from './legacy'
@@ -411,8 +413,10 @@ export class Engine {
         let reply: unknown = null
         if (llm) {
           try {
-            const response = await llm.complete(goalRequest(this.world, choice))
-            reply = JSON.parse(response.text.trim().replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, ''))
+            const request = goalRequest(this.world, choice)
+            const response = await llm.complete(request)
+            // Keys back to ids before it is recorded: a replay applies the same answer.
+            reply = fromKeys(JSON.parse(response.text.trim().replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '')), request.meta?.['keys'] as Record<string, string> | undefined)
           } catch {
             reply = null
           }
@@ -551,6 +555,10 @@ export class Engine {
     const held = this.heldBack(text)
     if (held) return held
     if (/^(?:hire|rent|borrow)\s+(?:a\s+|the\s+)?punt\b/i.test(text.trim())) return this.hirePunt()
+    // LISTEN to people talking here (M8.2).
+    if (/^(?:listen|eavesdrop|overhear)(?:\s+(?:in|to|at)\b.*)?$/i.test(text.trim()) && !this.state.talk) return [...listen(this.world), ...this.pass(2)]
+    const peace = /^(?:mediate|make peace)\s+between\s+(.+?)\s+and\s+(.+)$/i.exec(text.trim())
+    if (peace && !this.state.talk) return this.makePeace(peace[1]!, peace[2]!)
     const barge = /^(?:take|catch|board)\s+(?:the\s+)?barge(?:\s+to\s+(.+))?$|^travel\s+by\s+barge(?:\s+to\s+(.+))?$/i.exec(text)
     if (barge && !this.state.talk) return takeBarge(this.world, (barge[1] ?? barge[2])?.toLowerCase().replace(/^the\s+/, '').trim(), (minutes) => this.pass(minutes))
     const talk = this.state.talk
@@ -571,7 +579,8 @@ export class Engine {
         if (/^(party|group|everyone|all)$/i.test(command.args.join(' '))) return this.dialogue.party('')
         const npc = findNpcHere(this.world, command.args.join(' '))
         if (!npc) return [{ kind: 'error', text: command.args.length ? `There is nobody called "${command.args.join(' ')}" here.` : 'Talk to whom?' }]
-        // Start the conversation first, so the NPC stays put during the minute it takes.
+        // Start the conversation first, so the NPC stays put during the minute it takes. A chat they were in breaks off.
+        breakOff(this.world, npc)
         const opening = this.dialogue.start(npc)
         this.pass(1)
         return [...opening, ...triggers(this.world, this.questHost, { talk: npc })]
@@ -900,7 +909,7 @@ export class Engine {
     const members = this.state.memberships ?? []
     const known = [...this.content.factions.values()].filter((f) => rep[f.id] !== undefined || members.includes(f.id))
     if (known.length) out.factions = known.map((f) => ({ id: f.id, name: f.name, rank: rankOf(rep[f.id] ?? 0), score: rep[f.id] ?? 0, member: members.includes(f.id) }))
-    const wanted = Object.entries(this.state.wanted ?? {}).map(([law, w]) => `${law === 'waagdam' ? 'Waagdam' : upper(this.world.words.law.where.replace(/^(in|on|at) /, ''))}: ${this.world.money(w.fine)}`)
+    const wanted = Object.entries(this.state.wanted ?? {}).map(([law, w]) => `${upper((townLaw(this.world, law)?.where ?? this.world.words.law.where).replace(/^(in|on|at) /, ''))}: ${this.world.money(w.fine)}`)
     if (wanted.length) out.wanted = wanted
     if (c && this.content.rules) {
       const klass = this.content.rules.classes.find((k) => k.id === c.class)
@@ -1211,6 +1220,27 @@ export class Engine {
     return [{ kind: 'narration', text: `${price ? `You pay Wouter ${this.world.money(price)}.` : 'Wouter waves your money away.'} "Mind the pole in the channels, and bring her back before the dark." The punt is yours until evening: you can pole over open water and across the channels now.` }]
   }
 
+  /**
+   * MEDIATE BETWEEN <a> AND <b> (M8.2): the player tries to make peace
+   * between two with a grudge, with one of them here. Both trusting the
+   * player makes it up; only one of them, and the other feels ganged up on.
+   */
+  private makePeace(first: string, second: string): Output[] {
+    const a = findNpcAnywhere(this.world, first)
+    const b = findNpcAnywhere(this.world, second)
+    if (!a || !b || a === b) return [{ kind: 'error', text: 'Make peace between whom?' }]
+    const here = this.world.npcsAt(this.state.player.location)
+    if (!here.includes(a) && !here.includes(b)) return [{ kind: 'error', text: `You would have to find ${callName(this.world.npc(a))} or ${callName(this.world.npc(b))} first.` }]
+    const outcome = mediateBetween(this.world, a, b, 'player')
+    const [na, nb] = [callName(this.world.npc(a)), callName(this.world.npc(b))]
+    if (outcome === 'none') return [{ kind: 'narration', text: `${na} and ${nb} have nothing between them that needs settling.` }]
+    const out = this.pass(30)
+    return [
+      { kind: 'narration', text: outcome === 'reconciled' ? `You talk it through with ${na} and ${nb}, one and then the other, and then both. In the end they shake on it, grudgingly.` : `You try. But one of them trusts you and the other does not, and by the end it is worse than before.` },
+      ...out,
+    ]
+  }
+
   /** Mired: no walking until you work free. Catform: no hands and no words. */
   private heldBack(text: string): Output[] | undefined {
     const conditions = this.state.player.character?.conditions ?? {}
@@ -1362,7 +1392,7 @@ export class Engine {
       const g = this.world.npcState(id).grievance!
       const law = g.reason === 'the law'
       const name = callName(this.world.npc(id))
-      if (law && !this.state.wanted?.['count']) {
+      if (law && !this.state.wanted?.[LAND_LAW]) {
         settleGrievance(this.world, id)
         continue
       }

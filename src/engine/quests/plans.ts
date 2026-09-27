@@ -58,6 +58,10 @@ export function planOf(world: World, id: string): Plan | undefined {
     const a = world.content.aftermath.get(id.slice(10))
     return a ? { id: a.id, name: a.id, groups: a.groups, phases: [], max_effects: 30, steps: a.steps, expires: a.expires, topic: a.topic } : undefined
   }
+  if (id.startsWith('intention:')) {
+    const i = world.content.intentions.get(id.slice(10))
+    return i ? { id: i.id, name: i.choice.name, groups: i.groups, phases: [], max_effects: 30, steps: i.steps, expires: i.expires, topic: i.topic } : undefined
+  }
   return world.content.plans.get(id) ?? world.state.dynamicPlans?.[id]
 }
 
@@ -89,7 +93,7 @@ export function startPlan(world: World, host: QuestHost, planId: string, cause: 
   if (!plan) return []
   const plans = (world.state.plans ??= [])
   // A fixed plan runs once at a time; a plan of the aftermath once per topic and person.
-  if (!planId.startsWith('aftermath:') && plans.some((p) => p.plan === planId && running(world, p))) return []
+  if (!planId.startsWith('aftermath:') && !planId.startsWith('intention:') && plans.some((p) => p.plan === planId && running(world, p))) return []
   const state: PlanState = { plan: planId, started: world.now, phase: 0, cause, groups: groupsOf(world, plan), ...extra }
   if (plan.steps.length) {
     state.id ??= `plan_${(world.state.planSeq = (world.state.planSeq ?? 0) + 1)}`
@@ -115,12 +119,9 @@ export function plansDue(world: World, host: QuestHost): Output[] {
     if (plan.steps.length && p.ended === undefined) runSteps(world, host, p, plan, out)
   }
   // Wars that broke out by the rules of statecraft, and plans of the chronicler, are waiting.
-  for (const id of (world.state.pendingPlans ?? []).splice(0)) out.push(...startPlan(world, host, id, id.startsWith('chronicle_') ? 'chronicle' : 'war', pendingExtra.get(id)))
+  for (const id of (world.state.pendingPlans ?? []).splice(0)) out.push(...startPlan(world, host, id, id.startsWith('chronicle_') ? 'chronicle' : 'war'))
   return out
 }
-
-/** What a plan of the chronicler brings with it when it starts: what drove it. */
-export const pendingExtra = new Map<string, Partial<PlanState>>()
 
 // ---------------------------------------------------------------- steps (M8.1)
 
@@ -179,6 +180,11 @@ function dueOf(world: World, p: PlanState, step: Step, st: StepState): number | 
 type Result = 'done' | 'wait' | 'skip' | 'fail'
 
 function runOne(world: World, host: QuestHost, p: PlanState, step: Step, st: StepState, bind: Record<string, string>, out: Output[]): Result {
+  // A step with a chance may simply not happen (rolled once, seeded).
+  if (step.chance !== undefined && world.rng.next('plans') >= step.chance) {
+    st.skipped = world.now
+    return 'done'
+  }
   const ctx: PlanContext = { plan: p, bind, host, out }
   const ok = step.when.every((c) => holds(world, bindValue(world, c, ctx), undefined))
   const done = ok && runVerb(world, ctx, step.do, st)

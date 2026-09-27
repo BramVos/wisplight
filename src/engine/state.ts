@@ -32,6 +32,8 @@ export interface Goal {
   priority: number
   source: 'daily' | 'need' | 'schedule' | 'ai'
   created: number
+  /** Facts to tell the target when they meet: a report carried there (M8.2). */
+  message?: string[]
 }
 
 export type Step =
@@ -337,6 +339,8 @@ export interface Heard {
   from: string
   t: number
   grown?: boolean
+  /** A claim the hearer doubts or rejects (M8.2); without it, they believe it. */
+  stance?: 'doubts' | 'rejects'
 }
 
 /** A far-away place a model named in conversation, fixed in the savegame (design: lore and world change). */
@@ -389,7 +393,7 @@ export interface GameState {
   outlines?: { pending: string[]; done: Record<string, unknown> }
   /** Goal choices waiting for the brain model, and how many each NPC had today (FO, chapter 7). */
   /** The four numbers between NPCs (FO, chapter 8), by NPC and then the other NPC. */
-  bonds?: Record<string, Record<string, { affinity: number; trust: number; fear: number; familiarity: number }>>
+  bonds?: Record<string, Record<string, Bond>>
   /** Debts in money and favours, between NPCs and with the player. */
   ledger?: Debt[]
   /** Gifts this week per NPC, for diminishing returns. */
@@ -431,7 +435,17 @@ export interface GameState {
   combat?: Combat
   /** Progress clocks: threats and long jobs (FO, chapter 11). */
   clocks?: Record<string, Clock>
-  brain?: { seq: number; pending: { id: string; npc: string; t: number; trigger: string }[]; counts: Record<string, { day: number; n: number }>; last?: Record<string, number>; due?: Record<string, number> }
+  brain?: {
+    seq: number
+    pending: { id: string; npc: string; t: number; trigger: string; signal?: string }[]
+    counts: Record<string, { day: number; n: number }>
+    last?: Record<string, number>
+    due?: Record<string, number>
+    /** Signals the brains took up today, for the day's maximum (M8.2). */
+    signals?: { day: number; n: number }
+    /** Brains that made no valid plan for a signal, by NPC: twice and it goes to the chronicler (M8.3). */
+    failed?: Record<string, number>
+  }
   /** What changed in play on top of the content (M8.1): ties, homes, work, households, who serves. */
   layer?: Layer
   /** Signals from the watchers, waiting and done (M8.1). */
@@ -440,6 +454,18 @@ export interface GameState {
   boards?: Record<string, string[]>
   /** The number of plans of the aftermath started, for their ids. */
   planSeq?: number
+  /** Greetings and chats where the player is (M8.2): when each pair last greeted, and the chats going on. */
+  chatter?: { greeted: Record<string, number>; chats: import('./chatter').Chat[] }
+}
+
+/** The four numbers from one NPC to another (FO, chapter 8), and since M8.2 an old grudge. */
+export interface Bond {
+  affinity: number
+  trust: number
+  fear: number
+  familiarity: number
+  /** A quarrel not made up, since then. */
+  grudge?: number
 }
 
 /** A tie between two people that changed or began in play; null: the tie is gone. */
@@ -457,6 +483,8 @@ export interface Layer {
   expects?: Record<string, { of: string; nights: number; since: number }>
   /** Houses nobody lives in, and since when: the free houses. */
   empty?: Record<string, number>
+  /** The standing each household was last seen at, and where it came from (M8.2). */
+  standing?: Record<string, { level: number; from?: number; t: number }>
 }
 
 /** A marked change in the state of the world (M8.1). Data, not text. */
@@ -479,6 +507,8 @@ export interface Signal {
   watcher: string
   /** Who took it up: the standard aftermath, a brain, the chronicler, or nobody. */
   handled?: string
+  /** Only the standard aftermath: the brain had its turn (M8.2). */
+  rules?: boolean
 }
 
 export interface SignalState {
