@@ -2,7 +2,11 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { App } from './App'
 import { EditorApp } from './EditorApp'
+import { applyDisplay, loadDisplay } from './display'
 import './styles.css'
+
+// Text size and contrast as the player set them (M9.4).
+applyDisplay(loadDisplay())
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

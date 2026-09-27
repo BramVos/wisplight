@@ -19,6 +19,12 @@ export interface LlmRequest {
   maxTokens: number
   /** Low: waits once 80% of the hourly budget is spent (the chronicler, goal choices without a quest role). */
   priority?: 'normal' | 'low'
+  /**
+   * How long this call may take at most, in milliseconds (M9.4): what is left of
+   * the six seconds a reply may take, over both tries. At zero or less the call
+   * fails at once, so a replay, which records the failure, goes the same way.
+   */
+  timeoutMs?: number
   /** Structured context for the mock model; real providers ignore it. */
   meta?: Record<string, unknown>
 }

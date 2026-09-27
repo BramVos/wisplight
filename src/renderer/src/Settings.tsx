@@ -1,11 +1,13 @@
 import { Fragment, useCallback, useEffect, useState } from 'react'
 import type { UsageTotals } from '../../node/ai/usage'
 import type { Advice, AiBridge, AiLogEntry, AiOverview, ModelInfo, ProviderId, TrialResult } from './client'
+import { loadDisplay, saveDisplay, TEXT_SIZES, type Display } from './display'
 
 // Settings > AI, Usage and the AI log (FO, chapter 16). Keys are typed here,
 // sent to the main process once, and only ever shown masked afterwards.
+// Settings > Display (M9.4): text size and contrast.
 
-export type SettingsTab = 'ai' | 'usage' | 'log'
+export type SettingsTab = 'ai' | 'usage' | 'log' | 'display'
 
 const PROVIDERS: { id: ProviderId; name: string; hint: string }[] = [
   { id: 'openai', name: 'OpenAI', hint: 'sk-...' },
@@ -54,9 +56,9 @@ export function Settings({ bridge, tab, onTab, onClose }: { bridge?: AiBridge; t
         <header className="panel-head">
           <h2>Settings</h2>
           <nav className="tabs">
-            {(['ai', 'usage', 'log'] as const).map((id) => (
+            {(['ai', 'usage', 'log', 'display'] as const).map((id) => (
               <button key={id} type="button" className={tab === id ? 'active' : ''} onClick={() => onTab(id)}>
-                {id === 'ai' ? 'AI' : id === 'usage' ? 'Usage' : 'AI log'}
+                {id === 'ai' ? 'AI' : id === 'usage' ? 'Usage' : id === 'log' ? 'AI log' : 'Display'}
               </button>
             ))}
           </nav>
@@ -64,7 +66,9 @@ export function Settings({ bridge, tab, onTab, onClose }: { bridge?: AiBridge; t
             [Close]
           </button>
         </header>
-        {!bridge ? (
+        {tab === 'display' ? (
+          <DisplayTab />
+        ) : !bridge ? (
           <p className="muted">AI settings work in the desktop app. In the browser preview, open the page with ?mock=1 to try them with made-up data.</p>
         ) : !overview ? (
           <p className="muted">{error ?? 'Loading...'}</p>
@@ -76,6 +80,38 @@ export function Settings({ bridge, tab, onTab, onClose }: { bridge?: AiBridge; t
           <LogTab bridge={bridge} />
         )}
       </div>
+    </div>
+  )
+}
+
+// Settings > Display (M9.4, FO chapter 18): text size and contrast, at once and kept on this computer.
+function DisplayTab() {
+  const [display, setDisplay] = useState<Display>(loadDisplay)
+  const change = (next: Display) => {
+    setDisplay(next)
+    saveDisplay(next)
+  }
+  return (
+    <div className="settings-body">
+      <fieldset className="display-choice">
+        <legend>Text size</legend>
+        {TEXT_SIZES.map((size) => (
+          <label key={size.scale}>
+            <input type="radio" name="text-size" checked={display.scale === size.scale} onChange={() => change({ ...display, scale: size.scale })} />
+            {size.label}
+          </label>
+        ))}
+      </fieldset>
+      <fieldset className="display-choice">
+        <legend>Contrast</legend>
+        {(['normal', 'high'] as const).map((contrast) => (
+          <label key={contrast}>
+            <input type="radio" name="contrast" checked={display.contrast === contrast} onChange={() => change({ ...display, contrast })} />
+            {contrast === 'normal' ? 'Normal' : 'High'}
+          </label>
+        ))}
+      </fieldset>
+      <p className="muted">Everything can be done with the keyboard: type commands, Tab through the buttons, Escape closes a window. The story is read out by a screen reader as it comes. Nothing in the game needs quick reflexes: the clock stops while you type, in a fight, and in any window like this one.</p>
     </div>
   )
 }

@@ -15,7 +15,28 @@
   --warn: #e0b35c;
   --over: #d98a74;
   --font: ui-monospace, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+  /* Text size, set in Settings > Display (M9.4, FO chapter 18). */
+  --text-scale: 1;
   color-scheme: dark;
+}
+
+/* High contrast, set in Settings > Display (M9.4): black ground, near-white text, brighter colours. */
+:root[data-contrast='high'] {
+  --bg: #000000;
+  --panel: #0b0b0b;
+  --line: #6b6b6b;
+  --text: #ffffff;
+  --muted: #d0d0d0;
+  --room: #ffd966;
+  --topic: #7fffd4;
+  --input: #d8f7b4;
+  --system: #d2e2ff;
+  --error: #ffab91;
+  --narration: #f0f0f0;
+  --speech: #ffffff;
+  --ok: #bdf7a0;
+  --warn: #ffd166;
+  --over: #ffab91;
 }
 
 * {
@@ -32,7 +53,7 @@ body,
 body {
   background: var(--bg);
   color: var(--text);
-  font: 15px/1.55 var(--font);
+  font: calc(15px * var(--text-scale)) / 1.55 var(--font);
 }
 
 .shell {
@@ -82,7 +103,7 @@ body {
 
 .line.check {
   color: var(--muted);
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale));
   margin-bottom: 4px;
 }
 
@@ -119,7 +140,7 @@ body {
 }
 
 .map.whole {
-  font-size: 11px;
+  font-size: calc(11px * var(--text-scale));
 }
 
 .m-f { color: #6f7f4a; }
@@ -135,7 +156,7 @@ body {
 
 .side h2 {
   color: var(--room);
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale));
   letter-spacing: 0.08em;
   margin: 0 0 6px;
   text-transform: uppercase;
@@ -158,7 +179,7 @@ body {
 
 .status {
   color: var(--muted);
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale));
 }
 
 .prompt {
@@ -207,7 +228,7 @@ body {
 
 .journal-group h3 {
   color: var(--muted);
-  font-size: 12px;
+  font-size: calc(12px * var(--text-scale));
   font-weight: normal;
   margin: 8px 0 2px;
 }
@@ -218,7 +239,7 @@ body {
 
 .journal-page h3 {
   color: var(--speech);
-  font-size: 14px;
+  font-size: calc(14px * var(--text-scale));
   margin: 8px 0 4px;
 }
 
@@ -296,7 +317,7 @@ body {
 
 .journal-part h3 {
   color: var(--room);
-  font-size: 12px;
+  font-size: calc(12px * var(--text-scale));
   letter-spacing: 0.08em;
   margin: 0 0 4px;
   text-transform: uppercase;
@@ -304,7 +325,7 @@ body {
 
 .journal-part h4 {
   color: var(--muted);
-  font-size: 12px;
+  font-size: calc(12px * var(--text-scale));
   font-weight: normal;
   margin: 8px 0 2px;
 }
@@ -330,7 +351,7 @@ body {
 }
 
 .journal-body .journal-page h3 {
-  font-size: 15px;
+  font-size: calc(15px * var(--text-scale));
   margin-top: 0;
 }
 
@@ -378,7 +399,7 @@ body {
 .talk-quick {
   display: flex;
   flex-wrap: wrap;
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale));
   gap: 4px 14px;
 }
 
@@ -442,7 +463,7 @@ body {
   display: flex;
   flex-wrap: wrap;
   gap: 4px 16px;
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale));
 }
 
 .talking {
@@ -458,7 +479,7 @@ body {
 
 .link.ai {
   color: var(--muted);
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale));
 }
 
 .link.ai.warn {
@@ -499,7 +520,7 @@ body {
 
 .panel-head h2 {
   color: var(--room);
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale));
   letter-spacing: 0.08em;
   margin: 0;
   text-transform: uppercase;
@@ -575,7 +596,7 @@ body {
 }
 
 .small {
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale));
 }
 
 .advice fieldset {
@@ -626,7 +647,7 @@ body {
 
 .usage {
   border-collapse: collapse;
-  font-size: 14px;
+  font-size: calc(14px * var(--text-scale));
   width: 100%;
 }
 
@@ -661,7 +682,7 @@ body {
 .end-text {
   background: var(--bg);
   border: 1px solid var(--line);
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale));
   max-height: 60vh;
   overflow: auto;
   padding: 10px 12px;
@@ -671,7 +692,7 @@ body {
 .log-detail pre {
   background: var(--bg);
   border: 1px solid var(--line);
-  font-size: 12px;
+  font-size: calc(12px * var(--text-scale));
   max-height: 240px;
   overflow: auto;
   padding: 8px;
@@ -680,7 +701,7 @@ body {
 
 .log-detail h3 {
   color: var(--muted);
-  font-size: 12px;
+  font-size: calc(12px * var(--text-scale));
   font-weight: normal;
   margin: 10px 0 4px;
 }
@@ -773,7 +794,7 @@ body {
 
 .creation h3 {
   color: var(--room);
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale));
   font-weight: normal;
   letter-spacing: 0.06em;
   margin: 8px 0 4px;
@@ -899,7 +920,7 @@ body {
 
 .fighters .who {
   display: flex;
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale));
   gap: 8px;
   justify-content: space-between;
 }
@@ -915,7 +936,7 @@ body {
 .fight .actions {
   display: flex;
   flex-wrap: wrap;
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale));
   gap: 2px 10px;
   margin-top: 6px;
 }
@@ -934,7 +955,7 @@ pre.sheet {
 
 .party .who {
   display: flex;
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale));
   gap: 8px;
   justify-content: space-between;
 }
@@ -945,7 +966,7 @@ pre.sheet {
 
 .wanted {
   color: var(--over);
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale));
 }
 
 /* The editor (M8): its own window, a list on the left and the work on the right. */
@@ -970,7 +991,7 @@ pre.sheet {
 
 .editor-head h1 {
   color: var(--room);
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale));
   letter-spacing: 0.08em;
   margin: 0;
   text-transform: uppercase;
@@ -1013,7 +1034,7 @@ pre.sheet {
 
 .editor-list h3 {
   color: var(--room);
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale));
   margin: 10px 0 2px;
 }
 
@@ -1038,7 +1059,7 @@ pre.sheet {
 
 .editor-title {
   color: var(--room);
-  font-size: 15px;
+  font-size: calc(15px * var(--text-scale));
   margin: 0;
 }
 
@@ -1047,7 +1068,7 @@ pre.sheet {
 }
 
 .yaml-box {
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale));
   line-height: 1.45;
   tab-size: 2;
   white-space: pre;
@@ -1084,7 +1105,7 @@ pre.sheet {
 }
 
 .diff pre {
-  font-size: 12.5px;
+  font-size: calc(12.5px * var(--text-scale));
   margin: 0;
   max-height: 50vh;
   overflow: auto;
@@ -1113,7 +1134,7 @@ pre.sheet {
 
 .editor-page h3 {
   color: var(--room);
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale));
   margin: 12px 0 4px;
 }
 
@@ -1192,7 +1213,7 @@ pre.sheet {
   align-items: center;
   color: var(--muted);
   display: flex;
-  font-size: 12px;
+  font-size: calc(12px * var(--text-scale));
   justify-content: center;
   text-align: center;
   white-space: pre-line;
@@ -1200,7 +1221,7 @@ pre.sheet {
 
 .talk-about dl {
   display: grid;
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale));
   gap: 2px 10px;
   grid-template-columns: auto 1fr;
   margin: 0;
@@ -1226,7 +1247,7 @@ pre.sheet {
 
 .sheet-view h4 {
   color: var(--room);
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale));
   font-weight: normal;
   letter-spacing: 0.08em;
   margin: 0 0 6px;
@@ -1244,7 +1265,7 @@ pre.sheet {
 
 .sheet-name {
   color: var(--speech);
-  font-size: 18px;
+  font-size: calc(18px * var(--text-scale));
 }
 
 .sheet-level {
@@ -1254,14 +1275,14 @@ pre.sheet {
 
 .sheet-label {
   color: var(--muted);
-  font-size: 11px;
+  font-size: calc(11px * var(--text-scale));
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
 .sheet-big {
   color: var(--text);
-  font-size: 22px;
+  font-size: calc(22px * var(--text-scale));
   font-variant-numeric: tabular-nums;
 }
 
@@ -1360,13 +1381,13 @@ pre.sheet {
 .sheet-skills .rank {
   border: 1px solid var(--topic);
   color: var(--topic);
-  font-size: 11px;
+  font-size: calc(11px * var(--text-scale));
   padding: 0 5px;
 }
 
 .sheet-skills .practice {
   color: var(--room);
-  font-size: 10px;
+  font-size: calc(10px * var(--text-scale));
   letter-spacing: 2px;
 }
 
@@ -1379,7 +1400,7 @@ pre.sheet {
 
 .chip {
   border: 1px solid var(--line);
-  font-size: 12px;
+  font-size: calc(12px * var(--text-scale));
   padding: 1px 8px;
 }
 
@@ -1444,4 +1465,21 @@ pre.sheet {
 .place-map text {
   fill: var(--text);
   pointer-events: none;
+}
+
+/* Settings > Display (M9.4). */
+.display-choice {
+  border: 1px solid var(--line);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  margin: 0 0 12px;
+  padding: 8px 12px;
+}
+
+.display-choice label {
+  align-items: center;
+  cursor: pointer;
+  display: flex;
+  gap: 6px;
 }

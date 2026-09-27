@@ -45,7 +45,7 @@ engine.start()
 const dir = mkdtempSync(join(tmpdir(), 'wisplight-stutter-'))
 const store = new SaveStore(join(dir, 'saves.sqlite'))
 
-const waits: Record<string, number[]> = { minute: [], 'day change': [], journey: [], 'model answers': [], 'autosave, checkpoint': [], 'autosave, tail': [] }
+const waits: Record<string, number[]> = { command: [], minute: [], 'day change': [], journey: [], 'model answers': [], 'autosave, checkpoint': [], 'autosave, tail': [] }
 const timed = async <T>(kind: string, f: () => T | Promise<T>): Promise<T> => {
   const t = performance.now()
   const result = await f()
@@ -54,6 +54,8 @@ const timed = async <T>(kind: string, f: () => T | Promise<T>): Promise<T> => {
 }
 const time = (kind: string, f: () => unknown) => timed(kind, f)
 const journeys: string[] = []
+// The slowest minute, and when it came: the first minutes also warm the code up.
+const slowest = { ms: 0, at: 0, clock: 0 }
 
 // Somewhere to travel to: the other end of the world, as if visited before.
 const areas = [...content.areas.keys()]
@@ -63,10 +65,24 @@ const farName = (id: string) => content.areas.get(id)?.name ?? id
 const hasMap = Boolean(regionMap(content))
 engine.state.player.visited = [...new Set([...(engine.state.player.visited ?? []), ...far])]
 
+// What the player types most (FO, chapter 18: an answer to a command within 50 ms), wherever they stand,
+// and a conversation with whoever is there, without a model: the answer comes from the rules.
+const commands = async () => {
+  for (const text of ['look', 'inventory', 'map', 'journal', 'time', 'help', 'sheet', 'north', 'look', 'south', 'look']) await time('command', () => engine.handle(text))
+  const someone = engine.world.npcsAt(engine.state.player.location).find((id) => !engine.world.npcState(id).dead)
+  if (someone) {
+    const call = engine.world.npc(someone).short.toLowerCase()
+    for (const text of [`talk ${call}`, 'What news is there?', '2', 'bye']) await time('command', () => engine.handle(text))
+  }
+}
+await commands()
+
 let sinceSave = 0
 for (let minute = 0; minute < days * 24 * 60; minute++) {
   const dayChange = minuteOfDay(engine.world.now + 1) === 4 * 60 || minuteOfDay(engine.world.now + 1) === 0
   await time(dayChange ? 'day change' : 'minute', () => engine.tick(1))
+  const last = waits[dayChange ? 'day change' : 'minute']!.at(-1)!
+  if (last > slowest.ms) Object.assign(slowest, { ms: last, at: minute, clock: minuteOfDay(engine.world.now) })
   if (model && engine.modelsWaiting > 0) await time('model answers', () => engine.runModels())
   if (++sinceSave >= 10) {
     sinceSave = 0
@@ -74,6 +90,8 @@ for (let minute = 0; minute < days * 24 * 60; minute++) {
     await time(saved.tail.length ? 'autosave, tail' : 'autosave, checkpoint', () => store.save('auto', saved))
   }
   // Twice a day the player sets off for the other end of the world: on foot the first day, then by the known road.
+  // Every few hours the player looks around and talks, as in play.
+  if (minute % (4 * 60) === 90) await commands()
   if (hasMap && minute % (12 * 60) === 6 * 60) {
     const n = Math.floor(minute / (12 * 60))
     const out = await timed('journey', () => engine.handle(`${n < 2 ? 'walk' : 'travel'} to ${farName(far[n % 2]!)}`))
@@ -104,4 +122,5 @@ for (const [kind, list] of Object.entries(waits)) {
   stdout.write(`${kind.padEnd(24)}${String(list.length).padEnd(8)}${pct(list, 50).toFixed(2).padEnd(8)}${pct(list, 99).toFixed(2).padEnd(8)}${max.toFixed(1)}${max > BUDGET_MS ? '  OVER' : ''}\n`)
 }
 stdout.write(over ? `${over} kind(s) over the budget.\n` : 'Nothing over the budget.\n')
+stdout.write(`Slowest minute: ${slowest.ms.toFixed(1)} ms, minute ${slowest.at} of the run, at ${String(Math.floor(slowest.clock / 60)).padStart(2, '0')}:${String(slowest.clock % 60).padStart(2, '0')}.\n`)
 stdout.write(hasMap ? `Journeys: ${[...new Set(journeys)].join(' ')}\n` : 'No region map, so no journeys.\n')

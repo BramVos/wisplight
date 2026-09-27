@@ -22,6 +22,8 @@ import { aiCheck, BUILDER_CHECK_SCRIPT, keyCheck, LOG_CHECK_SCRIPT, prepareBuild
 
 const IDLE_PAUSE_MS = 60_000
 const AUTOSAVE_EVERY = 10
+// A command that lets this much game time pass (travelling, a long walk, sleep) saves at once.
+const SAVE_AFTER_MINUTES = 60
 
 let content: Content | undefined
 /** The world in play (M8): its folder under content/, and the worlds loaded so far. */
@@ -259,8 +261,14 @@ ipcMain.handle('engine:command', async (_event, input: unknown) => {
     return reply([system(lines.length ? lines.map(format).join('\n') : 'The log is empty.')])
   }
   ensureSession()
+  const before = engine.world.now
   const outputs = await engine.handle(text)
   chronicler()
+  // After a journey the game saves (FO, chapter 18): an hour or more of the road is not lost.
+  if (!smoke && engine.world.now - before >= SAVE_AFTER_MINUTES) {
+    minutesSinceSave = 0
+    store().save('auto', snapshot())
+  }
   return reply(outputs)
 })
 

@@ -11,7 +11,8 @@ import type { UsageStore } from './usage'
 // limit runs out, and a short cool-down after repeated failures. On any
 // problem it throws, and the engine answers with a template instead.
 
-const TIMEOUT_MS: Record<LlmRole, number> = { voice: 8000, brain: 10000, chronicler: 90000, advisor: 90000 }
+// A reply of the voice within six seconds, or the set line (FO, chapter 18); the conversation may ask for less, for its second try.
+const TIMEOUT_MS: Record<LlmRole, number> = { voice: 6000, brain: 10000, chronicler: 90000, advisor: 90000 }
 // From this share of the hourly budget on, calls of low priority wait: the chronicler, and goal choices of NPCs without a quest role (FO, chapter 16).
 const LOW_PRIORITY_SHARE = 0.8
 const FAILURES_BEFORE_COOLDOWN = 3
@@ -93,6 +94,8 @@ export class Gateway implements LlmClient {
   async complete(request: LlmRequest, override?: RoleChoice): Promise<LlmResponse> {
     const choice = override ?? this.options.role(request.role)
     if (!choice) throw new LlmError('config', `no model chosen for ${request.role}`)
+    const timeoutMs = Math.min(request.timeoutMs ?? Infinity, this.options.timeoutMs?.[request.role] ?? TIMEOUT_MS[request.role])
+    if (timeoutMs <= 0) throw new LlmError('timeout', 'no time left for this reply')
     const provider = this.options.provider(choice.provider)
     if (!provider) throw new LlmError('config', `no API key for ${choice.provider}`)
     const health = this.healthOf(choice.provider)
@@ -115,7 +118,7 @@ export class Gateway implements LlmClient {
     }
 
     const controller = new AbortController()
-    const timer = setTimeout(() => controller.abort(), this.options.timeoutMs?.[request.role] ?? TIMEOUT_MS[request.role])
+    const timer = setTimeout(() => controller.abort(), timeoutMs)
     const started = this.now()
     try {
       const response = await provider.complete(choice.model, request, controller.signal)

@@ -22,6 +22,9 @@ import { askLine, askNow, requestName, visited } from '../requests'
 import { parseReply, replyJsonSchema, type Reply } from './schema'
 import type { TopicRegistry } from './topics'
 
+/** A reply comes within this many milliseconds, both tries together, or the NPC says a set line (FO, chapter 18). */
+export const REPLY_WITHIN_MS = 6000
+
 // One conversation turn, end to end (FO, chapters 9 and 10):
 //   words -> injection filter -> topics and act (rules) -> check (dice)
 //   -> knowledge packet -> model (or template) -> validation -> effects.
@@ -553,6 +556,8 @@ export class Dialogue {
       prompt += `\nQUEST ACTIONS: if the player's words clearly mean one of these, put its key in quest_action and the game carries it out; otherwise quest_action is "none".\n${offered.map((o) => `  ${o.key}: the player wants to ${o.intent}`).join('\n')}`
     }
 
+    // A reply comes within six seconds or not at all, over both tries (FO, chapter 18): then the set line.
+    const started = Date.now()
     for (let attempt = 0; attempt < 2; attempt++) {
       let raw: string
       try {
@@ -564,6 +569,7 @@ export class Dialogue {
             schemaName: 'npc_reply',
             schema: replyJsonSchema(allowedTopics, offered.map((o) => o.key)),
             maxTokens: TIER_TOKENS[ctx.tier],
+            timeoutMs: REPLY_WITHIN_MS - (Date.now() - started),
             meta: {
               npcName: callName(world.npc(npcId)),
               act: ctx.act,

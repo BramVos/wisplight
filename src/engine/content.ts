@@ -32,6 +32,13 @@ export type Direction = (typeof DIRECTIONS)[number]
 export const NEEDS = ['hunger', 'rest', 'social', 'safety', 'work', 'faith'] as const
 export type Need = (typeof NEEDS)[number]
 
+/**
+ * Text to read as it flows (M9.4): the line ends of a YAML block join into
+ * spaces, a blank line still parts two paragraphs. At a larger text size the
+ * written line ends made room descriptions and stories ragged.
+ */
+const Prose = z.string().transform((text) => text.replace(/([^\n])\n(?=[^\n])/g, '$1 '))
+
 const Id = (prefix: string) => z.string().regex(new RegExp(`^${prefix}_[a-z0-9_]+$`))
 const ItemCounts = z.record(z.string(), z.number().int().positive()).default({})
 const Hours = z.string().regex(/^\d{2}(:\d{2})?-\d{2}(:\d{2})?$/)
@@ -193,9 +200,9 @@ export const LocationSchema = z.object({
   tags: z.array(z.string()).default([]),
   aliases: z.array(z.string()).default([]),
   summary: z.string().optional(),
-  description: z.object({ day: z.string(), night: z.string().optional() }),
+  description: z.object({ day: Prose, night: Prose.optional() }),
   /** Other descriptions once a flag is set: the doorstep without the cat, once Fenna is home. */
-  variants: z.array(z.object({ flag: z.string(), day: z.string(), night: z.string().optional() }).strict()).default([]),
+  variants: z.array(z.object({ flag: z.string(), day: Prose, night: Prose.optional() }).strict()).default([]),
   exits: z.partialRecord(z.enum(DIRECTIONS), Exit).default({}),
   objects: z.array(ObjectInstanceSchema).default([]),
   services: z.array(ServiceSchema).default([]),
@@ -403,7 +410,7 @@ export const TopicSchema = z.object({
   aliases: z.array(z.string()).default([]),
   summary: z.string(),
   details: z.string().optional(),
-  story: z.string().optional(),
+  story: Prose.optional(),
   /** Whose telling the story is, when it is told in the first person. */
   teller: z.string().optional(),
   origin: z.string().optional(),
@@ -520,7 +527,7 @@ export type KnowledgeRules = z.infer<typeof KnowledgeRulesSchema>
 export const WorldSchema = z.object({
   id: z.string(),
   name: z.string(),
-  intro: z.string().optional(),
+  intro: Prose.optional(),
   start: z.object({
     location: z.string(),
     year: z.number().int().nonnegative(),
