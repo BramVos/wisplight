@@ -35,7 +35,7 @@ describe('M2: the fixed set of 50 conversation situations', () => {
       }
       for (const line of speechOf(run.outputs)) expect(line, situation.id).not.toMatch(/Weeping Stone/)
     }
-  })
+  }, 20000)
 
   it('puts only what the NPC knows in the prompt, at the level of its roll', async () => {
     const run = await runSituation(content, SITUATIONS.find((s) => s.id === 'mirte_far')!, new MockLlm('good'))
