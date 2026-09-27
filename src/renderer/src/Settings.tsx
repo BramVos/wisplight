@@ -246,7 +246,7 @@ function AiTab({ bridge, overview, refresh }: { bridge: AiBridge; overview: AiOv
         <button type="button" className="link" disabled={Boolean(busy) || !(Number(budget) > 0)} onClick={() => void run('Saving', async () => (await bridge.setBudget(Number(budget)), await refresh(), setNote('Budget saved.')))}>
           [Save]
         </button>
-        <span className="muted">At 80% NPC goals stop using the AI, at 100% dialogue falls back to set lines.</span>
+        <span className="muted">At 80% the chronicler and the goals of NPCs without a quest role wait; at 100% dialogue falls back to set lines.</span>
       </div>
     </div>
   )

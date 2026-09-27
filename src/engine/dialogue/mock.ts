@@ -104,7 +104,21 @@ export class MockLlm implements LlmClient {
 
   private other(request: LlmRequest): string {
     const properties = (request.schema['properties'] ?? {}) as Record<string, unknown>
-    if ('goals' in properties) return JSON.stringify({ goals: [], mood: 'calm', note: 'Nothing new today.' })
-    return '{}'
+    if (!('goals' in properties)) return '{}'
+    const meta = request.meta as { places?: string[]; people?: string[] } | undefined
+    if (this.mode === 'invalid') return 'I think she should bake.'
+    // 'invent' breaks every rule the validator knows: a goal not in the list, a place nobody knows, a gate.
+    if (this.mode === 'invent')
+      return JSON.stringify({
+        goals: [
+          { type: 'Steal', target: 'npc_lubbert', priority: 0.9, why: 'He is rich.' },
+          { type: 'Visit', target: 'loc_the_moon', priority: 2, why: 'Why not.' },
+        ],
+        mood: 'wild',
+        note: 'Made up.',
+      })
+    const place = meta?.places?.find((p) => !p.includes('house') && !p.includes('home')) ?? meta?.places?.[0]
+    const goals = place ? [{ type: 'Visit', target: place, priority: 0.8, why: 'To see how things stand.' }] : []
+    return JSON.stringify({ goals: [...goals, { type: 'Work', target: 'none', priority: 0.5, why: 'There is work to do.' }], mood: 'calm', note: 'A plain day.' })
   }
 }

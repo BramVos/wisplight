@@ -53,7 +53,7 @@ Scope: FO 5 en het ontwerp lore en wereldverandering (zonder AI). Vaste kansworp
 - [x] Het dagboek toont personen, plaatsen, gebeurtenissen en lore met links en bronnen; tegenstrijdige versies staan naast elkaar
 - [x] Aan het eind kan de speler zijn logboek en de echte kroniek bekijken en downloaden
 
-## M3.1 De kroniekschrijver
+## M3.1 De kroniekschrijver (af)
 
 Scope: ontwerp lore en wereldverandering, FO 7, 8 en 16. De kroniekschrijver als derde AI-rol met advies en proefrit; het schrift met verhaallijnen; het overzicht in vaste notatie; opzoeken met gereedschappen; de nachtelijke run en directe runs; lore met versies per afstand; nieuws van de dag; AI-doelkeuze van het brein met catalogus, validator, triggers en budget. Op verzoek van Bram naar voren gehaald uit M6: wie mensen voor elkaar zijn (familie, liefde, werk, schuld, dorp), de dood van een NPC en rouw; en uit het ontwerp het tempo kiezen.
 
@@ -65,7 +65,7 @@ Scope: ontwerp lore en wereldverandering, FO 7, 8 en 16. De kroniekschrijver als
 - [x] De dood van iemand met een questrol leidt direct tot een run
 - [x] Verzoeken ontstaan uit wat er gebeurt (iets kwijt, koorts, gebrek aan iets); de kroniekschrijver werkt ze uit of maakt er een van een open draad; de gever vraagt het de speler, het staat in het dagboek en wordt beloond
 - [x] De kroniekschrijver is een losse module (`src/chronicler`) zonder afhankelijkheden van het spel, zodat andere applicaties hem kunnen aanroepen
-- [ ] Ongeldige AI-doelen worden geweigerd en vallen terug op de nutsfunctie
+- [x] Ongeldige AI-doelen worden geweigerd en vallen terug op de nutsfunctie
 
 ## M4 Reizen, kaart en eerste wereldbouwer
 

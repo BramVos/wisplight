@@ -21,11 +21,12 @@ export class World {
   /** Relations between people, built once from the content (see people.ts). */
   readonly tieCache = new Map<string, unknown>()
   /**
-   * A model is connected, so the chronicler's runs wait for it; without one they
-   * are written from templates at once. Set by the engine with the model, which
-   * the log records, so a replay makes the same choice.
+   * A model is connected, so the chronicler's runs and the NPCs' goal choices
+   * wait for it; without one the templates and the utility function decide at
+   * once. Set by the engine with the model, which the log records, so a replay
+   * makes the same choice.
    */
-  chronicleLive = false
+  aiLive = false
 
   constructor(
     readonly content: Content,

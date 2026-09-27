@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildInput, Engine, GameClock, MockLlm, peopleLine, questsOf, recordFact, startStory, systemPrompt, ties, tieTo } from '../src/engine'
+import { buildInput, Engine, GameClock, goalRequest, MockLlm, peopleLine, questsOf, recordFact, startStory, systemPrompt, ties, tieTo, type LlmRejection } from '../src/engine'
 import { assignKeys, buildRequest, DEFAULT_LIMITS } from '../src/chronicler'
 import { costUsd } from '../src/node/ai/pricing'
 import { content } from './helpers'
@@ -267,5 +267,91 @@ describe('M3.1: requests come up out of what happens', () => {
     await engine.handle(`give herbs to ${content.npcs.get(request.npc)!.name.split(' ')[0]}`)
     expect(request.status).toBe('done')
     expect(engine.state.npcs[sick]!.sickUntil!).toBeLessThanOrEqual(engine.world.now + 6 * 60)
+  })
+})
+
+describe('M3.1: the AI chooses what NPCs want', () => {
+  function game(mode: ConstructorParameters<typeof MockLlm>[0] = 'good', seed = 4) {
+    const mock = new MockLlm(mode)
+    const rejected: LlmRejection[] = []
+    const engine = new Engine(content, { seed, llm: { complete: (r) => mock.complete(r), report: (r) => rejected.push(r) }, builder: true })
+    return { engine, mock, rejected }
+  }
+  const brainCalls = (mock: MockLlm) => mock.calls.filter((c) => c.role === 'brain')
+
+  it('plans the day when an NPC gets up, and the NPC carries out a valid goal', async () => {
+    const { engine, mock } = game()
+    at(engine, 15, 7)
+    const waiting = engine.state.brain!.pending.map((p) => p.npc)
+    expect(waiting).toContain('npc_mirte')
+    await engine.runBrain()
+    const request = brainCalls(mock).find((c) => c.meta!['npc'] === 'npc_gerrit')!
+    expect(request.prompt).toMatch(/WHY YOU CHOOSE NOW: You have just got up/)
+    expect(request.prompt).toMatch(/GOALS YOU MAY CHOOSE:/)
+    const gerrit = engine.state.npcs['npc_gerrit']!
+    const goal = gerrit.goals.find((g) => g.source === 'ai')!
+    expect(goal).toMatchObject({ type: 'Visit', priority: 0.8 })
+    // Within a few hours he goes there, and the goal is done.
+    let went = false
+    for (let i = 0; i < 4 * 60 && !went; i++) {
+      engine.tick(1)
+      went = gerrit.location === goal.target && /visiting|chatting/.test(gerrit.activity)
+    }
+    expect(went).toBe(true)
+  })
+
+  it('turns down goals outside the catalogue, the NPC\'s knowledge or the gates, and the utility function carries on', async () => {
+    const { engine, rejected } = game('invent')
+    at(engine, 15, 7)
+    const results = await engine.runBrain()
+    const mirte = results.find((r) => engine.state.brain!.pending.length === 0 && r.rejected.length)!
+    expect(mirte.accepted).toBe(0)
+    expect(mirte.rejected.join(' ')).toMatch(/Steal: not a goal the game knows/)
+    expect(mirte.rejected.join(' ')).toMatch(/Visit loc_the_moon: not something .* knows/)
+    expect(rejected.some((r) => r.reason === 'goal')).toBe(true)
+    expect(Object.values(engine.state.npcs).every((n) => n.goals.every((g) => g.source !== 'ai'))).toBe(true)
+    // The schedule still runs: Mirte bakes.
+    at(engine, 15, 9)
+    expect(engine.state.npcs['npc_mirte']!.activity).not.toBe('taking it easy')
+  })
+
+  it('falls back on the utility function when the reply is no JSON at all', async () => {
+    const { engine } = game('invalid')
+    at(engine, 15, 7)
+    const [first] = await engine.runBrain()
+    expect(first!.rejected).toEqual(['no reply: the utility function decides'])
+  })
+
+  it('thinks again when news concerns someone near, and at most six times a day', async () => {
+    const { engine } = game()
+    at(engine, 15, 7)
+    await engine.runBrain()
+    await engine.handle('@kill jan drowned in the Blackmere')
+    engine.tick(3 * 60)
+    const grietje = engine.state.brain!.pending.find((p) => p.npc === 'npc_grietje_visser')
+    expect(grietje?.trigger).toMatch(/You just heard: Jan Visser drowned in the Blackmere/)
+    for (let i = 0; i < 10; i++) {
+      await engine.runBrain()
+      engine.tick(60)
+    }
+    expect(engine.state.brain!.counts['npc_grietje_visser']!.n).toBeLessThanOrEqual(6)
+  })
+
+  it('gives goal choices of people with a quest role priority when the budget runs low', () => {
+    const { engine } = game()
+    const choice = (npc: string) => goalRequest(engine.world, { id: 'c', npc, t: engine.world.now, trigger: 'test' })
+    expect(choice('npc_harmen').priority).toBe('normal')
+    expect(choice('npc_teunis').priority).toBe('low')
+  })
+
+  it('replays the goal choices from the log without calling the model again', async () => {
+    const { engine, mock } = game()
+    at(engine, 15, 7)
+    await engine.runBrain()
+    engine.tick(60)
+    const calls = mock.calls.length
+    const replayed = await Engine.replay(content, 4, engine.save().log)
+    expect(replayed.state).toEqual(engine.state)
+    expect(mock.calls.length).toBe(calls)
   })
 })

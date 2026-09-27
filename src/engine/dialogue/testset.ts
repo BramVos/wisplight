@@ -5,7 +5,7 @@ import { buildInput } from '../chronicler'
 import { Engine, type Output } from '../engine'
 import { recordFact } from '../news'
 import { lineOf, requestRun } from '../storylines'
-import { goalJsonSchema } from './schema'
+import { goalRequest } from '../npc/goals'
 import type { LlmClient, LlmRequest } from './llm'
 
 // The fixed set of conversation situations (FO, chapter 16, "Modellen
@@ -105,20 +105,16 @@ export async function trialRequests(content: Content, capture: LlmClient, count:
   return picked
 }
 
-/** Goal-choice requests for trying out the brain role (used by the game from M3). */
-export function brainRequests(): LlmRequest[] {
-  const goalTypes = ['work', 'eat', 'sleep', 'buy', 'sell', 'visit', 'ask_help', 'worship', 'rest', 'gossip']
-  const ids = ['loc_mirte_bakery', 'loc_waagdam_grain_store', 'loc_horse_mill', 'npc_harmen', 'npc_lubbert', 'loc_st_brand_chapel', 'rye_grain', 'flour', 'none']
-  const system = [
-    'You choose the next goals for a villager in Wisplight, a text RPG set in a folklore version of the Low Countries.',
-    'Pick 1 to 3 goals from the allowed types and targets. Only use the ids you are given. Reply with JSON only.',
-  ].join('\n')
-  const situations = [
-    'NPC: Mirte the baker. Needs: hunger 62, rest 70, work 30. Money: 14 stuivers. Stock: flour 0, peat 3. The windmill De Zwaan is broken since the storm. Known sellers: Lubbert sells rye grain at Waagdam. Known mills: horse mill at Waagdam (Teunis). Time: Woensdag 06:10.',
-    'NPC: Harmen the miller. Needs: hunger 40, rest 55, work 20. Money: 3 stuivers. His mill is broken and needs 2 sailcloth. He owes Mirte 6 stuivers. Time: Woensdag 09:00.',
-    'NPC: Lubbert the grain merchant. Needs: hunger 80, rest 60, social 25. Stock: rye grain 12 (target 40). The weekly barge comes on Maandag. Time: Donderdag 17:40.',
-  ]
-  return situations.map((prompt) => ({ role: 'brain' as const, system, prompt, schemaName: 'npc_goals', schema: goalJsonSchema(goalTypes, ids), maxTokens: 500 }))
+/** Goal-choice requests for trying out the brain role: real morning choices, as the game makes them. */
+export function brainRequests(content: Content): LlmRequest[] {
+  const engine = new Engine(content, { seed: 1 })
+  engine.world.aiLive = true
+  engine.tick(GameClock.from(211, 9, 15, 7).minutes - engine.world.now)
+  const choices = engine.state.brain?.pending ?? []
+  return ['npc_mirte', 'npc_harmen', 'npc_lubbert']
+    .map((npc) => choices.find((c) => c.npc === npc))
+    .filter((c): c is NonNullable<typeof c> => Boolean(c))
+    .map((choice) => goalRequest(engine.world, choice))
 }
 
 /** Chronicler requests for trying out that role: a drowning and a theft, as a night run would see them. */
@@ -126,12 +122,12 @@ export async function chroniclerRequests(content: Content): Promise<LlmRequest[]
   const requests: LlmRequest[] = []
   const drowning = new Engine(content, { seed: 3, builder: true })
   // Keep the runs waiting for a model instead of writing them from templates.
-  drowning.world.chronicleLive = true
+  drowning.world.aiLive = true
   drowning.tick(GameClock.from(211, 9, 15, 11).minutes - drowning.world.now)
   drowning.state.npcs['npc_mirte']!.location = drowning.state.npcs['npc_harmen']!.location
   await drowning.handle('@kill harmen drowned in the Blackmere')
   const theft = new Engine(content, { seed: 5 })
-  theft.world.chronicleLive = true
+  theft.world.aiLive = true
   theft.tick(GameClock.from(211, 9, 15, 23).minutes - theft.world.now)
   const fact = recordFact(theft.world, {
     kind: 'theft',

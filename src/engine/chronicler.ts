@@ -375,7 +375,7 @@ function writeLore(world: World, line: Storyline, facts: Fact[], belang: number,
 /** Without a model, runs are written up from templates at once, at the moment they were asked for. */
 export function settleRuns(world: World): void {
   const state = world.state.chronicle
-  if (!state?.pending.length || world.chronicleLive) return
+  if (!state?.pending.length || world.aiLive) return
   while (state.pending.length) applyRun(world, state.pending[0]!.id, null, 'template')
 }
 

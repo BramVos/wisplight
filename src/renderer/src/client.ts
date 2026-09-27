@@ -87,7 +87,7 @@ export async function createClient(): Promise<EngineClient> {
 
   // The chronicler writes in the background, as in the desktop app.
   const chronicler = () => {
-    if (engine.chroniclerWaiting > 0) void engine.runChronicler()
+    if (engine.modelsWaiting > 0) void engine.runModels()
   }
 
   setInterval(() => {

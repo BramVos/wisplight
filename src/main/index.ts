@@ -255,7 +255,8 @@ ipcMain.handle('ai:billing', (_event, id: unknown) => shell.openExternal(BILLING
 // The real-time clock.
 /** The chronicler writes in the background; the game never waits for it (design, "Wanneer hij schrijft"). */
 function chronicler(): void {
-  if (engine && engine.chroniclerWaiting > 0) void engine.runChronicler().catch(() => undefined)
+  // Goal choices and chronicler runs: the game never waits for them.
+  if (engine && engine.modelsWaiting > 0) void engine.runModels().catch(() => undefined)
 }
 
 setInterval(() => {

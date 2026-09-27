@@ -1,6 +1,7 @@
 import { minuteOfDay } from './clock'
 import { isFamilyNews, nearOf, tieTo } from './people'
 import { onFact } from './storylines'
+import { concerns, triggerChoice } from './npc/goals'
 import type { Fact, Heard } from './state'
 import type { World } from './world'
 
@@ -61,7 +62,10 @@ export function recordFact(world: World, input: FactInput): Fact {
     const npc = world.state.npcs[id]!
     // Whoever it is about knows it, even when their activity still says asleep.
     const concerned = input.about.includes(id)
-    if (places.has(npc.location) && (npc.activity !== 'asleep' || concerned)) heardBy(world, id)[fact.id] = { level: 3, reliability: 1, from: 'witness', t: world.now }
+    if (places.has(npc.location) && (npc.activity !== 'asleep' || concerned) && !npc.dead) {
+      heardBy(world, id)[fact.id] = { level: 3, reliability: 1, from: 'witness', t: world.now }
+      noticed(world, id, fact)
+    }
   }
   if (places.has(world.state.player.location)) {
     heardBy(world, 'player')[fact.id] = { level: 3, reliability: 1, from: 'witness', t: world.now }
@@ -173,9 +177,17 @@ function tellTheFamily(world: World): void {
         const teller = knowers.find((k) => k !== near)
         if (!teller) continue
         heardBy(world, near)[fact.id] = { level: 3, reliability: 1, from: teller, t: world.now }
+        noticed(world, near, fact)
       }
     }
   }
+}
+
+/** News that concerns an NPC makes it think again about what it wants (FO, chapter 7, triggers). */
+function noticed(world: World, npcId: string, fact: Fact): void {
+  if (npcId === 'player' || !world.content.npcs.has(npcId) || !concerns(world, npcId, fact)) return
+  const heard = heardBy(world, npcId)[fact.id]
+  triggerChoice(world, npcId, `You just heard: ${heard ? versionOf(fact, heard) : fact.text.village}`)
 }
 
 /** A short meeting, such as buying something at a counter: both may pass on news. */
@@ -201,6 +213,7 @@ function tell(world: World, teller: string, listener: string): void {
     // A gossip tells it bigger; anyone may, now and then.
     const grows = heard.grown || world.rng.next('news') < (world.npc(teller).quirks.includes('gossip') ? 0.25 : 0.1)
     theirs[fact.id] = { level: Math.max(1, heard.level - 1) as Heard['level'], reliability: Math.round(heard.reliability * 0.9 * 100) / 100, from: teller, t: world.now, grown: grows || undefined }
+    noticed(world, listener, fact)
   }
 }
 

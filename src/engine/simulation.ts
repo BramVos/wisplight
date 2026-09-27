@@ -5,6 +5,7 @@ import { spreadNews } from './news'
 import { storyHour } from './stories'
 import { nightly } from './storylines'
 import { settleRuns } from './chronicler'
+import { settleChoices } from './npc/goals'
 import { clamp } from './npc/execute'
 import { think } from './npc/brain'
 import type { World } from './world'
@@ -23,6 +24,7 @@ export function advance(world: World, minutes: number): void {
     // Someone in a conversation with the player stays put until it ends.
     for (const id of ids) if (world.state.talk?.npc !== id && !world.state.npcs[id]!.dead) think(world, id)
     settleRuns(world)
+    settleChoices(world)
   }
 }
 

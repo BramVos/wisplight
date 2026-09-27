@@ -3,6 +3,7 @@ import type { DailyGoal, ScheduleBlock } from '../content'
 import type { Goal, Step } from '../state'
 import type { World } from '../world'
 import { griefSince } from '../people'
+import { morning, triggerChoice } from './goals'
 import { feastFor } from '../stories'
 import { executeStep, resolvePending } from './execute'
 import { isFailure, Planner } from './planner'
@@ -19,6 +20,7 @@ export function think(world: World, npcId: string): void {
   const npc = world.npcState(npcId)
   if (world.now < npc.busyUntil) return
   resolvePending(world, npcId)
+  morning(world, npcId)
 
   for (let i = 0; i < MAX_STEPS_PER_TURN && world.now >= npc.busyUntil; i++) {
     if (npc.plan.length === 0 && !choose(world, npcId)) {
@@ -45,6 +47,8 @@ function finishGoal(world: World, npcId: string, success: boolean): void {
     npc.goals = npc.goals.filter((g) => g !== goal)
     if (goal.source === 'daily') npc.dailyDone[dailyKey(goal)] = startOfDay(world.now)
     if (!success) world.emit('goal_failed', npc.location, world.say(`{name} gives up for now, frowning.`, npcId), npcId)
+    // A goal of its own done or given up: a new moment to decide (FO, chapter 7).
+    if (goal.source === 'ai') triggerChoice(world, npcId, success ? `You did what you set out to do: ${goal.type}.` : `What you set out to do did not work out: ${goal.type}.`, 'goal')
   }
   npc.planGoal = undefined
   npc.replans = 0
@@ -87,6 +91,11 @@ function choose(world: World, npcId: string): boolean {
   if (npc.needs.rest < 10) return setPlan(world, npcId, [...goHome(world, npcId), { kind: 'sleep', until: world.now + 6 * 60 }])
 
   const block = currentBlock(world, npcId)
+  // What the AI chose comes before the schedule; at work only when it matters more than the work.
+  npc.goals = npc.goals.filter((g) => g.source !== 'ai' || g.until === undefined || g.until > world.now)
+  const own = npc.goals.filter((g) => g.source === 'ai').sort((a, b) => b.priority - a.priority)[0]
+  if (own && block?.activity !== 'sleep' && (block?.activity !== 'work' || own.priority >= 0.5) && pursueOwnGoal(world, npcId, own)) return true
+
   const blockEnd = block ? endOfBlock(world.now, block) : world.now + 30
   const remaining = Math.max(10, blockEnd - world.now)
 
@@ -133,6 +142,51 @@ function choose(world: World, npcId: string): boolean {
     return setPlan(world, npcId, [...goTo(world, npcId, socialPlace(world, npcId)), { kind: 'spend', minutes: Math.min(45, remaining), activity: 'socialize' }])
   }
   return setPlan(world, npcId, [...goHome(world, npcId), { kind: 'spend', minutes: Math.min(30, remaining), activity: 'idle' }])
+}
+
+/** Carries out a goal the AI chose: the planner for things to get, make or mend; plain steps for the rest. */
+function pursueOwnGoal(world: World, npcId: string, goal: Goal): boolean {
+  const npc = world.npcState(npcId)
+  const start = (steps: Step[]) => {
+    if (steps.length === 0) {
+      npc.goals = npc.goals.filter((g) => g !== goal)
+      return false
+    }
+    npc.planGoal = goal.id
+    npc.plan = steps
+    npc.replans = 0
+    return true
+  }
+  switch (goal.type) {
+    case 'Obtain':
+    case 'Produce':
+    case 'Repair': {
+      const result = new Planner(world, npcId).plan(goal)
+      if (isFailure(result)) {
+        npc.goals = npc.goals.filter((g) => g !== goal)
+        triggerChoice(world, npcId, `You could not see how to ${goal.type.toLowerCase()} ${goal.item ?? goal.object ?? ''}: nobody you know has it.`, 'goal')
+        return false
+      }
+      return start(departLater(world, npcId, result.steps))
+    }
+    case 'Visit':
+      return start([...goTo(world, npcId, goal.target!), { kind: 'spend', minutes: 45, activity: world.location(goal.target!).tags.includes('social') ? 'socialize' : 'idle', label: `visiting ${world.location(goal.target!).name}` }])
+    case 'Talk': {
+      const other = world.state.npcs[goal.target!]
+      if (!other || other.dead) return start([])
+      return start([...goTo(world, npcId, other.location), { kind: 'spend', minutes: 20, activity: 'socialize', label: `talking with ${world.npc(goal.target!).short}` }])
+    }
+    case 'Socialize':
+      return start([...goTo(world, npcId, goal.target ?? socialPlace(world, npcId)), { kind: 'spend', minutes: 45, activity: 'socialize' }])
+    case 'Pray':
+      return start([...goTo(world, npcId, placeFor(world, npcId, 'loc_veenhoek_chapel')), { kind: 'spend', minutes: 30, activity: 'pray' }])
+    case 'Rest':
+      return start([...goHome(world, npcId), { kind: 'spend', minutes: 60, activity: 'idle', label: 'resting at home' }])
+    case 'AskHelp':
+      return start([{ kind: 'askHelp', item: goal.item!, qty: goal.qty ?? 1 }])
+    default:
+      return start([])
+  }
 }
 
 function setPlan(world: World, npcId: string, steps: Step[]): boolean {

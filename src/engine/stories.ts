@@ -287,7 +287,7 @@ function playTheft(world: World, story: Story, pattern: Pattern): void {
   const qty = Math.min(stock[target.item] ?? 0, world.rng.int('stories', 1, 3))
   add(stock, target.item, -qty)
   story.roles = { victim: target.service.provider }
-  story.data = { stage: 'found', place: target.location, victim: target.service.provider, goods: itemName(world.content, target.item, qty).replace(/^\d+ /, qty === 1 ? 'a ' : `${qty} `) }
+  story.data = { stage: 'found', place: target.location, victim: target.service.provider, goods: qty === 1 ? withArticle(itemName(world.content, target.item)) : itemName(world.content, target.item, qty) }
   story.next = at(world, 7, 30)
 }
 

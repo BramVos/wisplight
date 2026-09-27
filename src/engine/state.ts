@@ -7,7 +7,7 @@ import type { StoriesState } from './stories'
 
 export type Counts = Record<string, number>
 
-export type GoalType = 'Produce' | 'Obtain' | 'Repair' | 'Eat' | 'Sleep' | 'Socialize' | 'Pray' | 'Work' | 'Visit' | 'Idle'
+export type GoalType = 'Produce' | 'Obtain' | 'Repair' | 'Eat' | 'Sleep' | 'Socialize' | 'Pray' | 'Work' | 'Visit' | 'Idle' | 'Talk' | 'Rest' | 'AskHelp'
 
 export interface Goal {
   id: string
@@ -159,6 +159,8 @@ export interface NpcState {
   dead?: { t: number; fact: string }
   /** What stays on the NPC's mind for a while, from the chronicler. */
   thoughts?: { text: string; t: number; until: number }[]
+  /** The day the AI last planned for this NPC, at getting up. */
+  plannedDay?: number
 }
 
 export interface MemoryRecord {
@@ -279,6 +281,8 @@ export interface GameState {
   /** Facts and who heard them; "player" is the player. */
   news?: { seq: number; facts: Fact[]; heard: Record<string, Record<string, Heard>> }
   chronicle?: ChronicleState
+  /** Goal choices waiting for the brain model, and how many each NPC had today (FO, chapter 7). */
+  brain?: { seq: number; pending: { id: string; npc: string; t: number; trigger: string }[]; counts: Record<string, { day: number; n: number }>; last?: Record<string, number>; due?: Record<string, number> }
 }
 
 export const objectKey = (location: string, object: string) => `${location}/${object}`

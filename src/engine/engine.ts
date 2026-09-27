@@ -5,6 +5,7 @@ import { Dialogue, QUICK_OPTIONS } from './dialogue/conversation'
 import { Knowledge } from './dialogue/knowledge'
 import type { ChronicleOutput, ChroniclerRequest } from '../chronicler'
 import { applyRun, settleRuns, writeRun } from './chronicler'
+import { applyChoice, goalRequest, settleChoices } from './npc/goals'
 import { LlmError, type LlmClient, type LlmRequest, type LlmResponse } from './dialogue/llm'
 import { attitude } from './dialogue/relations'
 import { TopicRegistry } from './dialogue/topics'
@@ -33,6 +34,8 @@ export type LogEntry =
   | { t: number; k: 'llm'; v: 'on' | 'off' }
   // A chronicler run, applied at this point: what the model wrote (checked later again), or null for templates.
   | { t: number; k: 'chron'; run: string; v: ChronicleOutput | null }
+  // A goal choice of the brain, applied at this point: the model's reply (validated again), or null.
+  | { t: number; k: 'goals'; choice: string; v: unknown }
 
 export interface SaveData {
   version: 1
@@ -109,6 +112,7 @@ export class Engine {
   /** True while a log is played back: build commands in it ran once, so they run again. */
   private replaying = false
   private chronicling = false
+  private thinking = false
 
   constructor(
     readonly content: Content,
@@ -208,12 +212,57 @@ export class Engine {
   setLlm(llm: LlmClient | undefined): void {
     if (Boolean(llm) !== Boolean(this.llm)) this.record({ t: this.world.now, k: 'llm', v: llm ? 'on' : 'off' })
     this.llm = llm
-    this.world.chronicleLive = Boolean(llm)
+    this.world.aiLive = Boolean(llm)
   }
 
   /** Storylines waiting for the chronicler. */
   get chroniclerWaiting(): number {
     return this.state.chronicle?.pending.length ?? 0
+  }
+
+  /** Everything waiting for a model: goal choices and chronicler runs. */
+  get modelsWaiting(): number {
+    return (this.state.brain?.pending.length ?? 0) + this.chroniclerWaiting
+  }
+
+  /** Lets the models do their waiting work in the background: goal choices first, they are short. */
+  async runModels(): Promise<void> {
+    await this.runBrain()
+    await this.runChronicler()
+  }
+
+  /**
+   * The brain's goal choices (FO, chapter 7), one after the other. The NPC goes
+   * on with its schedule meanwhile. The reply is recorded where it lands in the
+   * log, so a replay applies the same goals at the same moment.
+   */
+  async runBrain(): Promise<{ choice: string; accepted: number; rejected: string[] }[]> {
+    if (this.thinking) return []
+    this.thinking = true
+    const done: { choice: string; accepted: number; rejected: string[] }[] = []
+    try {
+      while (this.state.brain?.pending.length) {
+        const choice = this.state.brain.pending[0]!
+        const llm = this.llm
+        let reply: unknown = null
+        if (llm) {
+          try {
+            const response = await llm.complete(goalRequest(this.world, choice))
+            reply = JSON.parse(response.text.trim().replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, ''))
+          } catch {
+            reply = null
+          }
+        }
+        if (!this.state.brain.pending.some((p) => p.id === choice.id)) continue
+        this.record({ t: this.world.now, k: 'goals', choice: choice.id, v: reply })
+        const result = applyChoice(this.world, choice.id, reply)
+        if (reply !== null && result.rejected.length) llm?.report?.({ reason: 'goal' })
+        done.push({ choice: choice.id, accepted: result.accepted.length, rejected: result.rejected })
+      }
+    } finally {
+      this.thinking = false
+    }
+    return done
   }
 
   /**
@@ -292,6 +341,7 @@ export class Engine {
     this.dialogue.learn(this.state.player.location, `area_${this.world.location(this.state.player.location).area}`)
     this.arrive()
     settleRuns(this.world)
+    settleChoices(this.world)
     return this.shown(outputs)
   }
 
@@ -482,6 +532,7 @@ export class Engine {
       },
     }
     this.llm = modelOn ? recorded : undefined
+    this.world.aiLive = modelOn
     this.replaying = true
     try {
       for (const entry of entries) {
@@ -492,6 +543,9 @@ export class Engine {
           this.log.push(entry)
           applyRun(this.world, entry.run, entry.v)
           this.dialogue.syncNews()
+        } else if (entry.k === 'goals') {
+          this.log.push(entry)
+          applyChoice(this.world, entry.choice, entry.v)
         }
       }
     } finally {

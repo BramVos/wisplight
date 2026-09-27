@@ -158,7 +158,7 @@ export async function askAdvice(gateway: Gateway, provider: ProviderId, models: 
 /** Runs a model on situations from the fixed test set and measures validity, latency, tokens and cost. */
 export async function trial(gateway: Gateway, content: Content, provider: ProviderId, model: string, role: ChosenRole, count = role === 'voice' ? 6 : role === 'brain' ? 3 : 2): Promise<TrialResult> {
   const requests: LlmRequest[] =
-    role === 'voice' ? await trialRequests(content, new MockLlm('good'), count) : role === 'brain' ? brainRequests().slice(0, count) : (await chroniclerRequests(content)).slice(0, count)
+    role === 'voice' ? await trialRequests(content, new MockLlm('good'), count) : role === 'brain' ? brainRequests(content).slice(0, count) : (await chroniclerRequests(content)).slice(0, count)
   const result: TrialResult = { provider, model, role, runs: 0, valid: 0, averageLatencyMs: 0, inputTokens: 0, outputTokens: 0, errors: [] }
   let latency = 0
   let cost = 0

@@ -172,6 +172,15 @@ describe('gateway', () => {
     expect(usage.summary().session.calls).toBe(1)
   })
 
+  it('keeps the last fifth of the hourly budget for conversations', async () => {
+    // gpt-4.1-mini costs $0.40 per million input tokens: one call of 500k tokens is $0.20 of a $0.24 budget, over 80%.
+    const provider = fakeProvider('openai', [], async () => reply('{}', 'gpt-4.1-mini', { inputTokens: 500_000, outputTokens: 0, cachedTokens: 0 }))
+    const { gateway } = setup(provider, 0.24)
+    await gateway.complete(voiceRequest)
+    await expect(gateway.complete({ ...voiceRequest, role: 'chronicler', priority: 'low' })).rejects.toMatchObject({ kind: 'budget', message: /kept for conversations/ })
+    await expect(gateway.complete(voiceRequest)).resolves.toBeDefined()
+  })
+
   it('waits after a rate limit without counting it as a failure, and cools down after three failures', async () => {
     let calls = 0
     const limited = fakeProvider('openai', [], async () => {
