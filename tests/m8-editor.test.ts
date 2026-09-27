@@ -86,7 +86,8 @@ describe('M8: new things, deleted things, and exits both ways', () => {
       ]),
     )
     expect(result.problems).toEqual([])
-    expect(result.changes.map((c) => c.path).sort()).toEqual(['isle/areas/heights/locations.yaml', 'isle/areas/skerrow_moor/locations.yaml', 'isle/data/areas.yaml', 'isle/data/topics.yaml'])
+    // And the register of ids (M9.1) has the new ones.
+    expect(result.changes.map((c) => c.path).sort()).toEqual(['isle/areas/heights/locations.yaml', 'isle/areas/skerrow_moor/locations.yaml', 'isle/data/areas.yaml', 'isle/data/topics.yaml', 'isle/ids.lock'])
     // The barrow got the way back.
     expect(result.content!.locations.get('loc_skerrow_wyrm_barrow')!.exits.north?.to).toBe('loc_skerrow_moor')
   })

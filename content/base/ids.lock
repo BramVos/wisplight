@@ -1,0 +1,92 @@
+# Every id this world has committed (M9.1). An id is a key and never changes;
+# a name, label or description may. A thing that goes leaves a tombstone: gone,
+# or gone up in another (into). Kept by the editor and by npm run ids; do not
+# edit by hand.
+ids:
+  base/data/aftermath.yaml:
+    aftermath: [betrothal, wedding, eloped, vacancy, house_empty, peace, place_restored, rose_in_standing, envy, quarrel, feud, doubt, stranger_unwelcome, recognised, warned, strangers_stay, friction, plans_cross, warning_proven, shortage_sent_for, shortage_made_do, surplus, price_doubled, missing_trade, route_closed, shortage_lasting_trader, shortage_lasting_newcomers, wall_for_waagdam]
+  base/data/areas.yaml:
+    area: [veenhoek, molenend, drowned_goose, waagdam, roads, holleveen, kloosterveen, oude_zijl, kabouterberg, blackmere, kattenbroek, rietdoolhof, reuzenrust]
+  base/data/economy.yaml:
+    outland: [zwolderkamp, hunnenloo]
+    resource: [fen, mere, fields, garden, clay]
+    route: [zwolderkamp_oostweg, hunnenloo_heideweg, molenend_waagdam, molenend_veenhoek, veenhoek_waagdam, veenhoek_goose, veenhoek_kloosterveen, veenhoek_oude_zijl, kloosterveen_goose, kloosterveen_waagdam]
+    settlement: [veenhoek, molenend, waagdam, drowned_goose, kloosterveen, oude_zijl]
+  base/data/factions.yaml:
+    faction: [counts_men, dyke_board, lantern_church, old_faith, brotherhood, waagdam_burghers, veenhoek_villagers, goat_riders, fen_folk, kabouters, water_spirits, white_women, cog_league]
+    realm: [nethermarch, flemmark, rijkland, terpwold, cog_league]
+  base/data/growth.yaml:
+    newcomer: [cooper_family]
+    project: [waagdam_brickworks, waagdam_wall]
+  base/data/intentions.yaml:
+    intention: [show_standing, keep_head_down, lend_money, ask_mediator, keep_away, have_it_out, ask_a_trader, let_it_be, warn_the_reeve, ask_the_stranger, welcome_back, look_away, lie_peace, grumble, send_for_more, hold_back, ask_the_stranger_to_fetch, sell_cheap, sit_on_it]
+  base/data/items.yaml:
+    item: [rye_grain, flour, rye_bread, peat, eel, smoked_eel, beer, hot_meal, apple, herbs, wool, yarn, sailcloth, lantern, lamp_oil, knife, iron_nails, surveyors_chain, rope, spear, club, mace, hatchet, staff, short_bow, hunting_bow, hanger, sling, padded_coat, leather_jerkin, brigandine, chain_shirt, round_shield, milk, moon_water, cat_draught, measuring_chest, fen_charter_deed, toll_letter, aaltje_letter, barrel, clay, brick]
+  base/data/news.yaml:
+    news: [mill_before_winter]
+  base/data/objects.yaml:
+    object_type: [bread_oven, windmill, horse_mill, peat_bank, eel_traps, spinning_wheel, well, altar, dog_stone, bench, forge, scale, counter, notice_board, brick_kiln]
+  base/data/patterns.yaml:
+    pattern: [lost_thing, quarrel, theft, fever, appeldag]
+  base/data/plans.yaml:
+    plan: [dyke_breach, fen_closed, soldiers_come, war, dyke_leak, holleveen_survey, holleveen_stakes, the_haakman_counts]
+  base/data/professions.yaml:
+    profession: [baker, miller, peat_cutter, herbalist, eel_fisher, sister, schout, spinner, child, innkeeper, barmaid, grain_merchant, horse_miller, weighmaster, smith, pedlar, surveyor, mayor, notary, prior, dyke_reeve, miller_hand, witch, robber, spirit, cat, cooper, homemaker]
+  base/data/quests.yaml:
+    quest: [grey_cat_on_the_doorstep, the_vissers_to_safety, flour_for_veenhoek, the_surveyors_lights, what_the_haakman_wants, milk_for_the_kabouters, the_goat_riders_toll, the_white_womens_riddle, the_drainage_question, a_stall_at_the_market, the_honest_scale, the_brotherhoods_charter, the_apprentices_debt, a_boat_and_a_bride, the_bell_of_kloosterveen, the_road_to_graafhaven]
+  base/data/topics.yaml:
+    topic: [the_storm, fenna, grey_cat, kattenbroek, cat_widow, haakman, water_wolf, saint_brand, last_sheaf, witches_scale, drainage, surveyor, graafhaven, zwolderkamp, the_count, stavermouth, weeping_stone, hunnenloo, the_dry_ridge, goat_riders, who_will_not_dyke, mother_holles_featherbed, reynard_the_fox, drowned_bells_of_saeftinge, lord_halewijn, the_waylost, tall_pier, lady_of_stavermouth, white_women, surveyors_lights, lights_over_harmens_field, kabouter_milk, fen_charter, ringed_oak]
+  base/data/watchers.yaml:
+    watcher: [betrothal, wedding, eloped, vacancy, house_empty, peace, place_restored, rose_in_standing, quarrel, feud, warned, strangers_stay, friction, shortage, long_shortage, surplus, price_doubled, missing_trade, route_closed, threat_from_the_east]
+  base/regions/holleveen/areas/blackmere/locations.yaml:
+    location: [loc_blackmere_weirs, loc_blackmere_shore, loc_blackmere_willows, loc_blackmere_hookstone, loc_blackmere_channel, loc_blackmere_open_water]
+  base/regions/holleveen/areas/blackmere/npcs.yaml:
+    npc: [npc_haakman]
+  base/regions/holleveen/areas/drowned_goose/locations.yaml:
+    location: [loc_goose_crossroads, loc_goose_common, loc_goose_kitchen, loc_goose_rooms, loc_goose_yard]
+  base/regions/holleveen/areas/drowned_goose/npcs.yaml:
+    npc: [npc_trijntje, npc_geesje, npc_kobus, npc_cornelis]
+  base/regions/holleveen/areas/kabouterberg/locations.yaml:
+    location: [loc_kabouterberg, loc_kabouterberg_oak, loc_kabouterberg_hollow]
+  base/regions/holleveen/areas/kabouterberg/npcs.yaml:
+    npc: [npc_knoert]
+  base/regions/holleveen/areas/kattenbroek/locations.yaml:
+    location: [loc_kattenbroek_edge, loc_kattenbroek_hut, loc_kattenbroek_reedpaths, loc_kattenbroek_pools, loc_kattenbroek_catyard, loc_kattenbroek_oak, loc_kattenbroek_ridge_end, loc_kattenbroek_moonpool]
+  base/regions/holleveen/areas/kattenbroek/npcs.yaml:
+    npc: [npc_kaatje, npc_jacob]
+  base/regions/holleveen/areas/kloosterveen/locations.yaml:
+    location: [loc_kloosterveen_gate, loc_kloosterveen_church, loc_kloosterveen_library, loc_kloosterveen_lodging, loc_kloosterveen_brewery, loc_kloosterveen_garden, loc_kloosterveen_wood]
+  base/regions/holleveen/areas/kloosterveen/npcs.yaml:
+    npc: [npc_ansfried]
+  base/regions/holleveen/areas/molenend/locations.yaml:
+    location: [loc_molenend_lane, loc_molenend_mill, loc_molenend_house, loc_molenend_field]
+  base/regions/holleveen/areas/molenend/npcs.yaml:
+    npc: [npc_harmen, npc_klaas]
+  base/regions/holleveen/areas/oude_zijl/locations.yaml:
+    location: [loc_oude_zijl_sluice, loc_oude_zijl_dykehouse, loc_oude_zijl_dyke, loc_oude_zijl_ferry]
+  base/regions/holleveen/areas/oude_zijl/npcs.yaml:
+    npc: [npc_sijbrand]
+  base/regions/holleveen/areas/reuzenrust/locations.yaml:
+    location: [loc_reuzenrust_hunebed, loc_reuzenrust_barrows, loc_reuzenrust_heath, loc_reuzenrust_road]
+  base/regions/holleveen/areas/reuzenrust/npcs.yaml:
+    npc: [npc_white_women]
+  base/regions/holleveen/areas/rietdoolhof/locations.yaml:
+    location: [loc_rietdoolhof_edge, loc_rietdoolhof_passages, loc_rietdoolhof_jetty, loc_rietdoolhof_camp, loc_rietdoolhof_mathijs]
+  base/regions/holleveen/areas/rietdoolhof/npcs.yaml:
+    npc: [npc_mathijs]
+  base/regions/holleveen/areas/roads/locations.yaml:
+    location: [loc_towpath_mid, loc_goose_road, loc_route_peat_stacks, loc_route_crossroads, loc_route_peat_pits, loc_priory_path]
+  base/regions/holleveen/areas/veenhoek/locations.yaml:
+    location: [loc_veenhoek_green, loc_chapel_lane, loc_veenhoek_chapel, loc_schout_house, loc_aaltje_cottage, loc_visser_house, loc_veenhoek_bakery, loc_bakery_yard, loc_peat_road, loc_veenhoek_quay, loc_gerrit_house, loc_towpath_w, loc_towpath_e, loc_peat_sheds, loc_peat_cuttings, loc_wouter_hut, loc_veenhoek_cooperage]
+  base/regions/holleveen/areas/veenhoek/npcs.yaml:
+    npc: [npc_mirte, npc_gerrit, npc_aaltje, npc_wouter, npc_wendela, npc_everhard, npc_jan_visser, npc_grietje_visser, npc_pim, npc_fenna]
+  base/regions/holleveen/areas/waagdam/locations.yaml:
+    location: [loc_waagdam_west_gate, loc_waagdam_gate_street, loc_waagdam_harbour, loc_waagdam_smithy, loc_waagdam_market, loc_waagdam_waag, loc_waagdam_weighing_room, loc_waagdam_dirck_house, loc_waagdam_church, loc_waagdam_de_schaal, loc_waagdam_town_hall, loc_waagdam_notary, loc_waagdam_heath_road, loc_waagdam_canal_street, loc_waagdam_guild_house, loc_waagdam_graanhandel, loc_waagdam_horse_mill, loc_waagdam_east_gate]
+  base/regions/holleveen/areas/waagdam/npcs.yaml:
+    npc: [npc_lubbert, npc_teunis, npc_dirck, npc_hendrik, npc_aleid, npc_pen, npc_neeltje]
+  base/regions/holleveen/region.yaml:
+    region: [holleveen]
+  base/rules/bestiary.yaml:
+    creature: [rat_swarm, adder, feral_dog, great_pike, goat_rider, black_mathijs, veenlijk, kludde, reigerbeen, haakman, haakman_shallows]
+    encounter: [goat_riders_toll, haakman_rises, goat_riders_camp, veenlijken_rise, goat_riders_guard]
+tombstones: []

@@ -1,5 +1,5 @@
-import { Document, isMap, isScalar, isSeq, parseDocument, Scalar, type Node, type YAMLMap, type YAMLSeq } from 'yaml'
-import { ContentError, loadContent, type Content, type ContentFile } from './content'
+import { Document, isMap, isScalar, isSeq, parse, parseDocument, Scalar, type Node, type YAMLMap, type YAMLSeq } from 'yaml'
+import { ContentError, IdsLockSchema, loadContent, type Content, type ContentFile, type IdsLock } from './content'
 
 // The editor's core (M8, FO chapter 15): create, change and delete anything
 // in a world's content, in the text of its files. Only the entity that
@@ -48,6 +48,10 @@ export interface Edit {
   kind: EntityKind
   id: string
   data?: Raw
+  /** Must be something new: refused when a thing with this id is there (adopting someone from a game, M9.1). */
+  create?: boolean
+  /** When deleting: the thing it went up in, for the tombstone (M9.1). */
+  into?: string
   /** For a new entity: the file to put it in, when not where things of its kind usually go. */
   file?: string
 }
@@ -148,11 +152,26 @@ export function parseEntityYaml(text: string): { raw?: Raw; problem?: string } {
 export function applyEdits(files: ContentFile[], edits: Edit[]): EditResult {
   let next = files.map((f) => ({ ...f }))
   const problems: string[] = []
+  const lock = readLock(files)
+  const buried = new Set(lock.tombstones.map((t) => `${t.kind}:${t.id}`))
   for (const edit of edits) {
+    // An id is a key (M9.1): a new thing may not take an id that went, or one that is there.
+    const exists = Boolean(locate(next, edit.kind, edit.id))
+    if (edit.data && !exists && buried.has(`${edit.kind}:${edit.id}`)) {
+      problems.push(`${edit.id}: this id was used before and has a tombstone; a new thing needs a new id`)
+      continue
+    }
+    if (edit.create && exists) {
+      problems.push(`${edit.id}: there is already a ${edit.kind.replace('_', ' ')} with this id in the world`)
+      continue
+    }
     const result = applyOne(next, edit)
     if (typeof result === 'string') problems.push(result)
     else next = result
+    // What went leaves a tombstone.
+    if (!edit.data && typeof result !== 'string') lock.tombstones.push({ kind: edit.kind, id: edit.id, ...(edit.into ? { into: edit.into } : {}) })
   }
+  if (!problems.length) next = withLock(next, lock)
   if (problems.length) return { ok: false, problems, files, changes: [] }
   const before = new Map(files.map((f) => [f.path, f.text]))
   const changes: FileChange[] = next
@@ -404,4 +423,41 @@ export function same(a: unknown, b: unknown): boolean {
 
 function sorted(files: ContentFile[]): ContentFile[] {
   return [...files].sort((a, b) => a.path.localeCompare(b.path))
+}
+
+// ---------------------------------------------------------------- the register of ids (M9.1)
+
+const LOCK_HEADER = `# Every id this world has committed (M9.1). An id is a key and never changes;
+# a name, label or description may. A thing that goes leaves a tombstone: gone,
+# or gone up in another (into). Kept by the editor and by npm run ids; do not
+# edit by hand.
+`
+
+/** The register as the files have it (empty when there is none yet). */
+export function readLock(files: ContentFile[]): IdsLock {
+  const file = files.find((f) => /(^|\/)ids\.lock$/.test(f.path))
+  const parsed = file ? IdsLockSchema.safeParse(parse(file.text) ?? {}) : undefined
+  return parsed?.success ? { ids: parsed.data.ids, tombstones: [...parsed.data.tombstones] } : { ids: {}, tombstones: [] }
+}
+
+/** The files with the register written anew: every id there is now, by file and kind, and the tombstones. */
+export function withLock(files: ContentFile[], lock: IdsLock): ContentFile[] {
+  const ids: IdsLock['ids'] = {}
+  for (const kind of ENTITY_KINDS) {
+    for (const e of entities(files, kind)) ((ids[e.file] ??= {})[kind] ??= []).push(e.id)
+  }
+  const sorted = Object.fromEntries(Object.entries(ids).sort((a, b) => a[0].localeCompare(b[0])).map(([file, kinds]) => [file, Object.fromEntries(Object.entries(kinds).sort((a, b) => a[0].localeCompare(b[0])))]))
+  const tombstones = [...new Map(lock.tombstones.map((t) => [`${t.kind}:${t.id}`, t])).values()]
+  const lines = [LOCK_HEADER.trimEnd(), 'ids:']
+  for (const [file, kinds] of Object.entries(sorted)) {
+    lines.push(`  ${file}:`)
+    for (const [kind, list] of Object.entries(kinds)) lines.push(`    ${kind}: [${list.join(', ')}]`)
+  }
+  lines.push(tombstones.length ? 'tombstones:' : 'tombstones: []')
+  for (const t of tombstones) lines.push(`  - { kind: ${t.kind}, id: ${t.id}${t.into ? `, into: ${t.into}` : ''}${t.t ? `, t: ${JSON.stringify(t.t)}` : ''} }`)
+  const text = `${lines.join('\n')}\n`
+  const path = `${worldPrefix(files)}ids.lock`
+  const others = files.filter((f) => f.path !== path)
+  const old = files.find((f) => f.path === path)
+  return old?.text === text ? files : [...others, { path, text }]
 }

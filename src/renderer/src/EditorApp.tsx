@@ -246,6 +246,7 @@ function EntityEditor({ bridge, world, view, kind, id, saved }: { bridge: Editor
   const [result, setResult] = useState<EditorSave & { written?: boolean }>()
   const [busy, setBusy] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [into, setInto] = useState('')
 
   useEffect(() => {
     let cancelled = false
@@ -289,7 +290,8 @@ function EntityEditor({ bridge, world, view, kind, id, saved }: { bridge: Editor
   const remove = async () => {
     if (!id) return
     setBusy(true)
-    const outcome = await bridge.save(world, [{ kind, id }], true)
+    // It leaves a tombstone (M9.1): gone, or gone up in another of its kind.
+    const outcome = await bridge.save(world, [{ kind, id, ...(into.trim() ? { into: into.trim() } : {}) }], true)
     setBusy(false)
     setResult({ ...outcome, written: outcome.ok })
     if (outcome.ok) await saved(undefined)
@@ -350,6 +352,21 @@ function EntityEditor({ bridge, world, view, kind, id, saved }: { bridge: Editor
           <button type="button" className="link" disabled={busy} onClick={() => (confirmDelete ? void remove() : setConfirmDelete(true))}>
             {confirmDelete ? '[Really delete it?]' : '[Delete]'}
           </button>
+        )}
+        {id && confirmDelete && (
+          <label className="small">
+            gone up in (an id, or empty for gone)
+            <select value={into} onChange={(e) => setInto(e.target.value)} aria-label="Gone up in">
+              <option value="">nothing: gone</option>
+              {view.lists[kind]
+                .filter((e) => e.id !== id)
+                .map((e) => (
+                  <option key={e.id} value={e.id}>
+                    {e.id}
+                  </option>
+                ))}
+            </select>
+          </label>
         )}
         {busy && <span className="muted small">Checking the whole world...</span>}
       </div>
@@ -658,7 +675,8 @@ function toYaml(raw: Raw): string {
 function Grown({ bridge, world, grown }: { bridge: EditorBridge; world: string; grown: SimReport['grown'] }) {
   const [done, setDone] = useState<Record<string, string>>({})
   const adopt = async (household: SimReport['grown']['households'][number]) => {
-    const result = await bridge.save(world, household.people.map((p) => ({ kind: 'npc' as const, id: String(p['id']), data: p })))
+    // With the ids they had in the game (M9.1); refused if the world has these ids already.
+    const result = await bridge.save(world, household.people.map((p) => ({ kind: 'npc' as const, id: String(p['id']), data: p, create: true })))
     setDone((d) => ({ ...d, [household.id]: result.ok ? 'written into the world' : result.problems.join('; ') }))
   }
   if (!grown.households.length && !grown.built.length) return <p className="muted small">Nobody came and nothing was built.</p>

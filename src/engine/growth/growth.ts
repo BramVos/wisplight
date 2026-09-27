@@ -1,5 +1,5 @@
 import { GameClock } from '../clock'
-import { callName, LocationSchema, NpcSchema, type Content, type Npc } from '../content'
+import { callName, LocationSchema, lockedIds, NpcSchema, type Content, type Npc } from '../content'
 import { economy, ledgerOf } from '../economy/ledger'
 import { recordFact } from '../news'
 import { newNpcState, objectKey, serviceKey, type GameState } from '../state'
@@ -48,7 +48,8 @@ export function grownContent(base: Content, state: GameState): Content {
   const built = g ? Object.entries(g.projects).filter(([, p]) => p.done !== undefined).map(([id]) => base.projects.get(id)!).filter(Boolean) : []
   if (!g || (g.people.length === 0 && built.length === 0)) return base
   const npcs = new Map(base.npcs)
-  for (const n of g.people) npcs.set(n.id, n)
+  // Someone the editor adopted into the world is the world's now, with the same id (M9.1).
+  for (const n of g.people) if (!base.npcs.has(n.id)) npcs.set(n.id, n)
   const locations = built.length ? new Map(base.locations) : base.locations
   const settlements = built.length ? new Map(base.settlements) : base.settlements
   for (const p of built.sort((a, b) => a.id.localeCompare(b.id))) {
@@ -116,6 +117,7 @@ export function arrive(world: World, templateId: string, settlement: string): st
   const home = freeHouseIn(world, settlement)
   if (!home) return undefined
   const taken = new Set([...world.content.npcs.values()].flatMap((n) => [n.name.split(' ')[0]!, n.name]))
+  const locked = lockedIds(world.base)
   const rng = (lo: number, hi: number) => world.rng.int('growth', lo, hi)
   const pick = <T>(list: T[]): T => list[rng(0, list.length - 1)]!
   const family = pick(names.family.filter((f) => ![...taken].some((n) => n.endsWith(` ${f}`))).length ? names.family.filter((f) => ![...taken].some((n) => n.endsWith(` ${f}`))) : names.family)
@@ -129,10 +131,14 @@ export function arrive(world: World, templateId: string, settlement: string): st
     const given = pool.length ? pick(pool) : pick(names[pronoun === 'she' ? 'she' : 'he'])
     taken.add(given)
     const name = `${given} ${family}`
-    const id = `npc_${given}_${family}`.toLowerCase().replace(/[^a-z0-9_]/g, '')
+    // An id is a key (M9.1): never one the world has, or ever had, or this game gave already.
+    const stem = `npc_${given}_${family}`.toLowerCase().replace(/[^a-z0-9_]/g, '')
+    const used = (candidate: string) => world.content.npcs.has(candidate) || locked.has(candidate) || people.some((p) => p.id === candidate)
+    let id = stem
+    for (let n = 2; used(id); n++) id = `${stem}_${n}`
     const vars = { name: given, from, area }
     const raw = {
-      id: world.content.npcs.has(id) ? `${id}_${Math.floor(world.now / DAY)}` : id,
+      id,
       name,
       short: m.role === 'head' ? `${given} the ${world.content.professions.get(m.profession)?.name ?? m.profession}` : given,
       pronoun,

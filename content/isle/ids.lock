@@ -1,0 +1,31 @@
+# Every id this world has committed (M9.1). An id is a key and never changes;
+# a name, label or description may. A thing that goes leaves a tombstone: gone,
+# or gone up in another (into). Kept by the editor and by npm run ids; do not
+# edit by hand.
+ids:
+  isle/areas/heights/locations.yaml:
+    location: [loc_skerrow_silver_grove, loc_skerrow_tamsin_hut, loc_skerrow_wyrm_barrow, loc_skerrow_headland, loc_skerrow_mage_tower]
+  isle/areas/heights/npcs.yaml:
+    npc: [npc_tamsin, npc_elowen, npc_garrick]
+  isle/areas/hythe/locations.yaml:
+    location: [loc_skerrow_harbour, loc_skerrow_reed_cottage, loc_skerrow_green, loc_skerrow_salt_kettle]
+  isle/areas/hythe/npcs.yaml:
+    npc: [npc_maren, npc_brannoc, npc_pip, npc_wenna]
+  isle/areas/shore/locations.yaml:
+    location: [loc_skerrow_wreck_strand, loc_skerrow_tidepools, loc_skerrow_cliff_path]
+  isle/data/areas.yaml:
+    area: [skerrow_hythe, skerrow_shore, skerrow_heights]
+  isle/data/economy.yaml:
+    resource: [sea]
+    settlement: [skerrow_hythe]
+  isle/data/items.yaml:
+    item: [knife, ship_biscuit, salt_fish, fish_stew, ale, sailcloth, pitch, lamp_oil, rope, rune_key, kelp_salve]
+  isle/data/objects.yaml:
+    object_type: [well, silver_birch, bench, beacon, waystone, coracle, boat]
+  isle/data/professions.yaml:
+    profession: [innkeeper, fisher, boatman, child, hedge_witch, scholar, lightkeeper]
+  isle/data/quests.yaml:
+    quest: [off_skerrow]
+  isle/data/topics.yaml:
+    topic: [the_starfall, old_skarth, the_waystone, the_beacon, grey_gull, havenmoor, the_tidemother]
+tombstones: []

@@ -669,6 +669,8 @@ export interface Content {
   /** Growth (M8.5). */
   newcomers: Map<string, Newcomer>
   projects: Map<string, Project>
+  /** Every id this world ever committed, and what became of those that went (M9.1, ids.lock). */
+  lock?: IdsLock
   /** The chronicler's working instruction (content/CHRONICLER.md and the world's own), if there is one. */
   chronicler?: string
 }
@@ -723,10 +725,18 @@ export function loadContent(files: ContentFile[]): Content {
 
   let chronicler: string | undefined
   let rules: Rules | undefined
+  let lock: IdsLock | undefined
   for (const file of [...files].sort((a, b) => a.path.localeCompare(b.path))) {
     // The shared working instruction first (it sorts first), then the world's own part.
     if (/(^|\/)CHRONICLER\.md$/.test(file.path)) {
       chronicler = chronicler ? `${chronicler.trimEnd()}\n\n${file.text}` : file.text
+      continue
+    }
+    // The register of committed ids (M9.1).
+    if (/(^|\/)ids\.lock$/.test(file.path)) {
+      const parsed = IdsLockSchema.safeParse(safeParse(file.text))
+      if (parsed.success) lock = parsed.data
+      else problems.push(`${file.path}: ${parsed.error.issues.map((i) => `${i.path.join('.') || '(root)'} ${i.message}`).join('; ')}`)
       continue
     }
     let doc: unknown
@@ -778,11 +788,19 @@ export function loadContent(files: ContentFile[]): Content {
 
   const world = worlds[0]
   if (worlds.length !== 1) problems.push(`expected exactly one world, found ${worlds.length}`)
-  problems.push(...checkReferences(world, content))
+  problems.push(...checkReferences(world, { ...content, ...(lock ? { lock } : {}) }))
   problems.push(...checkQuests({ ...content, ...(rules ? { rules } : {}) }))
   if (rules) problems.push(...checkRules(rules, content))
   if (problems.length > 0 || !world) throw new ContentError(problems)
-  return { world, ...content, ...(rules ? { rules } : {}), ...(chronicler ? { chronicler } : {}) }
+  return { world, ...content, ...(rules ? { rules } : {}), ...(chronicler ? { chronicler } : {}), ...(lock ? { lock } : {}) }
+}
+
+function safeParse(text: string): unknown {
+  try {
+    return parse(text)
+  } catch {
+    return undefined
+  }
 }
 
 /** The rules refer to skills, talents, items, people and topics: all of them must exist. */
@@ -862,6 +880,7 @@ function checkReferences(world: WorldDef | undefined, c: Omit<Content, 'world'>)
   }
   problems.push(...checkEconomy(c))
   problems.push(...checkGrowth(c))
+  if (c.lock) problems.push(...checkLock(c, c.lock))
   for (const type of c.objectTypes.values()) {
     for (const aff of type.affordances) {
       for (const id of [...Object.keys(aff.consumes), ...Object.keys(aff.produces)]) item(id, `object type ${type.id}.${aff.id}`)
@@ -1099,4 +1118,85 @@ function checkGrowth(c: Omit<Content, 'world'>): string[] {
     }
   }
   return problems
+}
+
+// ---------------------------------------------------------------- ids (M9.1)
+
+/** A thing that went: gone, or gone up in another thing of its kind. */
+export const TombstoneSchema = z.object({ kind: z.string(), id: z.string(), into: z.string().optional(), t: z.string().optional() }).strict()
+export type Tombstone = z.infer<typeof TombstoneSchema>
+
+/** The register of a world: every id it ever committed, by file and kind, and the tombstones of those that went. */
+export const IdsLockSchema = z
+  .object({
+    ids: z.record(z.string(), z.record(z.string(), z.array(z.string()))).default({}),
+    tombstones: z.array(TombstoneSchema).default([]),
+  })
+  .strict()
+export type IdsLock = z.infer<typeof IdsLockSchema>
+
+/** The kinds of things with an id of their own, and where the content keeps them (the editor's lists). */
+export const KIND_MAPS = {
+  location: 'locations',
+  area: 'areas',
+  npc: 'npcs',
+  topic: 'topics',
+  quest: 'quests',
+  item: 'items',
+  object_type: 'objectTypes',
+  profession: 'professions',
+  news: 'news',
+  pattern: 'patterns',
+  faction: 'factions',
+  realm: 'realms',
+  plan: 'plans',
+  watcher: 'watchers',
+  aftermath: 'aftermath',
+  intention: 'intentions',
+  verb: 'verbTexts',
+  creature: 'creatures',
+  encounter: 'encounters',
+  region: 'regions',
+  settlement: 'settlements',
+  route: 'routes',
+  outland: 'outlands',
+  resource: 'resources',
+  newcomer: 'newcomers',
+  project: 'projects',
+} as const satisfies Record<string, keyof Content>
+
+/** Whether the content has a thing of this kind. */
+export function hasThing(c: Omit<Content, 'world'>, kind: string, id: string): boolean {
+  const key = (KIND_MAPS as Record<string, keyof Content>)[kind]
+  const map = key ? (c as unknown as Record<string, unknown>)[key] : undefined
+  return map instanceof Map && map.has(id)
+}
+
+/**
+ * An id is a key and never changes (M9.1): every id in the register must
+ * still be there, or have a tombstone; a tombstone's heir must exist; and an
+ * id that went does not come back as something else.
+ */
+function checkLock(c: Omit<Content, 'world'>, lock: IdsLock): string[] {
+  const problems: string[] = []
+  const buried = new Map(lock.tombstones.map((t) => [`${t.kind}:${t.id}`, t]))
+  for (const [file, kinds] of Object.entries(lock.ids)) {
+    for (const [kind, ids] of Object.entries(kinds)) {
+      for (const id of ids) if (!hasThing(c, kind, id) && !buried.has(`${kind}:${id}`)) problems.push(`ids.lock: the ${kind.replace('_', ' ')} ${id} (in ${file}) is missing, and there is no tombstone for it`)
+    }
+  }
+  for (const t of lock.tombstones) {
+    if (!(t.kind in KIND_MAPS)) problems.push(`ids.lock: a tombstone of an unknown kind ${t.kind}`)
+    else if (hasThing(c, t.kind, t.id)) problems.push(`ids.lock: the ${t.kind.replace('_', ' ')} ${t.id} has a tombstone; an id that went does not come back`)
+    if (t.into && !hasThing(c, t.kind, t.into)) problems.push(`ids.lock: the ${t.kind.replace('_', ' ')} ${t.id} went into ${t.into}, which is not there`)
+  }
+  return problems
+}
+
+/** Every id the world ever had, the living and the buried: what a new thing may not be called. */
+export function lockedIds(c: Pick<Content, 'lock'>): Set<string> {
+  const out = new Set<string>()
+  for (const kinds of Object.values(c.lock?.ids ?? {})) for (const ids of Object.values(kinds)) for (const id of ids) out.add(id)
+  for (const t of c.lock?.tombstones ?? []) out.add(t.id)
+  return out
 }

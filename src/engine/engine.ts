@@ -1,3 +1,4 @@
+import { followTombstones, followTombstonesInLog, nameBook, withNames, type NameBook } from './ids'
 import { shiftTension, tensionOf } from './social/realms'
 import { grownContent, invest } from './growth/growth'
 import { dayName, GameClock } from './clock'
@@ -93,6 +94,8 @@ export type LogEntry =
   | { t: number; k: 'goals'; choice: string; v: unknown }
   // A far place worked out to its outline, or null for what the world book says.
   | { t: number; k: 'outline'; topic: string; v: Outline | null }
+  // The names the game began with (M9.1): playing the log back uses them, so a name changed later changes nothing.
+  | { t: number; k: 'names'; v: NameBook }
 
 export interface SaveData {
   version: 1
@@ -204,6 +207,8 @@ export class Engine {
     this.world = new World(source, state)
     const content = this.world.content
     this.log = options.log ? [...options.log] : []
+    // A new game writes down the names it begins with (M9.1).
+    if (!options.log && !options.state) this.log.push({ t: state.minutes, k: 'names', v: nameBook(source) })
     this.builder = options.builder ?? false
     this.host = { world: this.world, pass: (minutes) => this.pass(minutes) }
     this.topics = new TopicRegistry(content)
@@ -965,6 +970,9 @@ export class Engine {
   static fromSave(content: Content, save: SaveData, llm?: LlmClient): Engine {
     if (save.world !== content.world.id) throw new Error(`This save belongs to world "${save.world}"`)
     const copy = JSON.parse(JSON.stringify(save)) as SaveData
+    // What went from the world since, the save follows by its tombstones (M9.1).
+    copy.state = followTombstones(content, copy.state)
+    copy.log = followTombstonesInLog(content, copy.log)
     // The people who came during that game are part of its world (M8.5).
     fitStateToContent(grownContent(content, copy.state), copy.state)
     return new Engine(content, { state: copy.state, log: copy.log, llm })
@@ -977,6 +985,7 @@ export class Engine {
   static carryOn(content: Content, save: SaveData, seed: number, llm?: LlmClient): { engine: Engine; outputs: Output[] } {
     if (save.world !== content.world.id) throw new Error(`This save belongs to world "${save.world}"`)
     const copy = JSON.parse(JSON.stringify(save)) as SaveData
+    copy.state = followTombstones(content, copy.state)
     fitStateToContent(grownContent(content, copy.state), copy.state)
     const notes = carryOver(content, copy.state)
     const engine = new Engine(content, { state: copy.state, seed, llm })
@@ -997,9 +1006,12 @@ export class Engine {
 
   /** Rebuilds a game from its seed and log, feeding recorded model replies back in. */
   static async replay(content: Content, seed: number, log: LogEntry[]): Promise<Engine> {
-    const engine = new Engine(content, { seed })
-    await engine.apply(log)
-    return engine
+    // With the names the game began with (M9.1), then on with the names of now.
+    const entries = followTombstonesInLog(content, log)
+    const book = entries.find((e): e is Extract<LogEntry, { k: 'names' }> => e.k === 'names')?.v
+    const engine = new Engine(book ? withNames(content, book) : content, { seed })
+    await engine.apply(entries)
+    return book ? engine.withContent(content) : engine
   }
 
   /**
@@ -1007,9 +1019,12 @@ export class Engine {
    * recorded after it, with the recorded model replies. Then hands over to the live model.
    */
   static async resume(content: Content, save: SaveData, tail: LogEntry[], llm?: LlmClient): Promise<Engine> {
-    const engine = Engine.fromSave(content, save)
+    // The tail is played with the names the game began with, as in replay (M9.1).
+    const book = save.log.find((e): e is Extract<LogEntry, { k: 'names' }> => e.k === 'names')?.v
+    const played = Engine.fromSave(book ? withNames(content, book) : content, save)
     const last = save.log.findLast((e) => e.k === 'llm')
-    await engine.apply(tail, llm, last?.v === 'on')
+    await played.apply(followTombstonesInLog(content, tail), llm, last?.v === 'on')
+    const engine = book ? played.withContent(content) : played
     engine.setLlm(llm)
     return engine
   }
@@ -1033,6 +1048,7 @@ export class Engine {
     this.replaying = true
     try {
       for (const entry of entries) {
+        if (entry.k === 'names') continue
         if (entry.k === 'cmd') await this.handle(entry.v)
         else if (entry.k === 'tick') this.tick(entry.v)
         else if (entry.k === 'llm') this.setLlm(entry.v === 'on' ? recorded : undefined)

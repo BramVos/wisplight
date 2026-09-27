@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { editorView, Engine, loadContent, MockLlm, type Content, type SaveData } from '../src/engine'
+import { applyEdits, editorView, Engine, loadContent, MockLlm, type Content, type SaveData } from '../src/engine'
 import { openness } from '../src/engine/belief'
 import { buildInput } from '../src/engine/chronicler'
 import { opennessOf } from '../src/engine/economy/ledger'
@@ -197,9 +197,10 @@ describe('M8.4: the editor', () => {
     expect(waagdam.routes.some((r) => /Oostweg from Zwolderkamp: in .*lamp_oil.* from zwolderkamp/.test(r))).toBe(true)
     expect(view.economy.find((s) => s.id === 'veenhoek')!.livesOn).toBe('peat')
     expect(view.warnings.filter((w) => /made nowhere/.test(w))).toEqual([])
-    // Without the Oostweg, lamp oil is used but comes from nowhere.
-    const cut = files.map((f) => (f.path.endsWith('economy.yaml') && f.path.startsWith('base/') ? { ...f, text: f.text.replace(/^ {2}- \{ id: zwolderkamp_oostweg.*$/m, '') } : f))
-    expect(editorView(cut).warnings).toContain('lamp_oil: used by the people of veenhoek, but made nowhere and brought by no route')
+    // Without the Oostweg (deleted in the editor, which leaves its tombstone), lamp oil is used but comes from nowhere.
+    const cut = applyEdits(files, [{ kind: 'route', id: 'zwolderkamp_oostweg' }])
+    expect(cut.problems).toEqual([])
+    expect(editorView(cut.files).warnings).toContain('lamp_oil: used by the people of veenhoek, but made nowhere and brought by no route')
   })
 })
 

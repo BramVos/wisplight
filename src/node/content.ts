@@ -35,7 +35,7 @@ export async function readContentFiles(root: string, folder: string = DEFAULT_WO
   if (!/^[a-z0-9_-]*$/.test(world) || (world && !existsSync(join(root, world, 'world.yaml')))) throw new Error(`There is no world called "${folder}".`)
   const entries = await readdir(join(root, world), { recursive: true })
   const prefix = world ? `${world}/` : ''
-  const paths = entries.filter((entry) => /\.ya?ml$/.test(entry) || /(^|\/)CHRONICLER\.md$/.test(entry)).sort()
+  const paths = entries.filter((entry) => /\.ya?ml$/.test(entry) || /(^|\/)CHRONICLER\.md$/.test(entry) || /(^|\/)ids\.lock$/.test(entry)).sort()
   const files = await Promise.all(paths.map(async (path) => ({ path: `${prefix}${path}`, text: await readFile(join(root, world, path), 'utf8') })))
   if (world && existsSync(join(root, 'CHRONICLER.md'))) files.push({ path: 'CHRONICLER.md', text: await readFile(join(root, 'CHRONICLER.md'), 'utf8') })
   return filesOfWorld(files, world || undefined)
