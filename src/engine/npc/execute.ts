@@ -4,6 +4,7 @@ import { applyEffect, relation } from '../dialogue/relations'
 import { add, hasAll, itemName, withArticle } from '../items'
 import { meet, recordFact } from '../news'
 import { openRequest } from '../requests'
+import { journey } from '../lod'
 import { objectKey, type Step } from '../state'
 import type { World } from '../world'
 
@@ -45,7 +46,9 @@ export function executeStep(world: World, npcId: string, step: Step): StepResult
       const route = world.route(npc.location, step.to)
       const direction = route?.directions[0]
       const exit = direction && world.location(npc.location).exits[direction]
-      if (!route || !direction || !exit) return 'failed'
+      // No road there: across country, as a note until the walk is done (lod.ts).
+      if (!route) return journey(world, npcId, step.to) ? 'busy' : 'failed'
+      if (!direction || !exit) return 'failed'
       npc.travelFrom ??= npc.location
       // Someone only passing through gets one line on the way in and a short one on the way out.
       world.emit('depart', npc.location, world.say(npc.passing ? '{name} walks on.' : `{name} ${leaving(direction)}.`, npcId), npcId)

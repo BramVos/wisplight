@@ -161,6 +161,26 @@ export interface NpcState {
   thoughts?: { text: string; t: number; until: number }[]
   /** The day the AI last planned for this NPC, at getting up. */
   plannedDay?: number
+  /**
+   * Far from the player, or on a journey across country, the NPC is a note:
+   * where, since when, until when, and how restless its life is (design,
+   * "Wie waar is: detail naar afstand").
+   */
+  note?: {
+    unrest: 'fixed' | 'travelling' | 'fleeing' | 'campaign'
+    /** A location in the region, or a topic for a place beyond it. */
+    where: string
+    from?: string
+    since: number
+    until?: number
+    activity: string
+    /** After the days away, the way home. */
+    home?: boolean
+    /** On a journey out: how long to stay there. */
+    stay?: number
+  }
+  /** Staying somewhere away from home for a while (sent there, or fled there). */
+  stayAt?: { where: string; until: number }
 }
 
 export interface MemoryRecord {

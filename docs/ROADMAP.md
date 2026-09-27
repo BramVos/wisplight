@@ -74,7 +74,7 @@ Scope: FO 4 en 15. Zonetekening naar hexkaart met generatorregels, hexbeschrijvi
 - [x] De route van Veenhoek naar de Kattenbroek is te vinden; de verborgen droge rug alleen met Wouter of Pim
 - [x] Gehoorde zones worden kleiner naarmate meer NPC's over dezelfde plek vertellen
 - [ ] Een locatie of NPC aanpassen in de wereldbouwer is direct zichtbaar in het spel
-- [ ] Een NPC ver weg is een notitie en wordt op die plek weer volledig zodra de speler in de buurt komt
+- [x] Een NPC ver weg is een notitie en wordt op die plek weer volledig zodra de speler in de buurt komt
 
 ## M5 Personage, regels en gevecht
 

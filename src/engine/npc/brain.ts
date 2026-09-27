@@ -88,6 +88,11 @@ function choose(world: World, npcId: string): boolean {
   if (feast && !def.child) {
     return setPlan(world, npcId, [...goTo(world, npcId, feast.place), { kind: 'spend', minutes: Math.max(10, feast.until - world.now), activity: 'socialize' }])
   }
+  // Away from home for some days: there, about one's business, until it is time to go back.
+  if (npc.stayAt) {
+    if (world.now >= npc.stayAt.until) npc.stayAt = undefined
+    else return setPlan(world, npcId, [...goTo(world, npcId, npc.stayAt.where), { kind: 'spend', minutes: 60, activity: 'idle', label: `staying at ${world.location(npc.stayAt.where).name}` }])
+  }
   if (npc.needs.rest < 10) return setPlan(world, npcId, [...goHome(world, npcId), { kind: 'sleep', until: world.now + 6 * 60 }])
 
   const block = currentBlock(world, npcId)

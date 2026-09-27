@@ -58,10 +58,11 @@ export function passable(world: World, cell: Cell): boolean {
   return frozen(world) && !cell.channel
 }
 
-export function minutesFor(world: World, cell: Cell): number {
+/** Minutes to cross a hex. The dry ridge only counts for a player who knows it; NPCs keep to what everyone knows. */
+export function minutesFor(world: World, cell: Cell, forPlayer = true): number {
   let minutes: number
   if (cell.way) minutes = cell.way.kind === 'path' ? 4 : 3
-  else if (onKnownRidge(world, cell)) minutes = 4
+  else if (forPlayer && onKnownRidge(world, cell)) minutes = 4
   else if (cell.land === 'fen') minutes = cell.feature === 'hummock' ? 6 : 8
   else if (cell.land === 'woods') minutes = 6
   else if (cell.land === 'water') minutes = 5
@@ -328,7 +329,7 @@ export function windOf(word: string | undefined): string | undefined {
 const pretty = (wind: string) => wind.replace(/^(north|south)(east|west)$/, '$1-$2')
 
 /** The cheapest way between two hexes, by the minutes it takes. */
-export function findPath(world: World, map: RegionMap, from: Hex, to: Hex): Hex[] | undefined {
+export function findPath(world: World, map: RegionMap, from: Hex, to: Hex, forPlayer = true): Hex[] | undefined {
   const start = hexKey(from)
   const goal = hexKey(to)
   const cost = new Map<string, number>([[start, 0]])
@@ -345,7 +346,7 @@ export function findPath(world: World, map: RegionMap, from: Hex, to: Hex): Hex[
     for (const { hex: next } of neighbours(hex)) {
       const cell = map.cell(next)
       if (!cell || !passable(world, cell)) continue
-      const g = cost.get(key)! + minutesFor(world, cell) + (cell.bog ? 10 : 0)
+      const g = cost.get(key)! + minutesFor(world, cell, forPlayer) + (cell.bog ? 10 : 0)
       const nkey = hexKey(next)
       if (g < (cost.get(nkey) ?? Infinity)) {
         cost.set(nkey, g)

@@ -235,7 +235,7 @@ function playQuarrel(world: World, story: Story, pattern: Pattern): void {
   const byPlace = new Map<string, string[]>()
   for (const id of Object.keys(world.state.npcs).sort()) {
     const npc = world.state.npcs[id]!
-    if (npc.dead || npc.activity === 'asleep' || world.npc(id).child || !world.location(npc.location).tags.includes('social')) continue
+    if (npc.dead || npc.note || npc.activity === 'asleep' || world.npc(id).child || !world.location(npc.location).tags.includes('social')) continue
     byPlace.set(npc.location, [...(byPlace.get(npc.location) ?? []), id])
   }
   let best: { place: string; a: string; b: string; heat: number } | undefined
@@ -373,7 +373,7 @@ function fill(template: string, vars: Record<string, string>, subject?: Npc): st
 
 function adults(world: World): string[] {
   return Object.keys(world.state.npcs)
-    .filter((id) => world.alive(id) && !world.npc(id).child && !(world.state.stories?.active ?? []).some((s) => Object.values(s.roles).includes(id)))
+    .filter((id) => world.present(id) && !world.npc(id).child && !(world.state.stories?.active ?? []).some((s) => Object.values(s.roles).includes(id)))
     .sort()
 }
 

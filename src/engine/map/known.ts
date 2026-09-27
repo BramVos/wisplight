@@ -126,3 +126,14 @@ function parseHex(id: string): Hex | undefined {
   const match = /^hex:(\d+),(\d+)$/.exec(id)
   return match ? { col: Number(match[1]), row: Number(match[2]) } : undefined
 }
+
+/** The location that stands for a place on the map: the entrance of an area, if it has one. */
+export function knownEntrance(world: World, topic: string): string | undefined {
+  const map = regionMap(world.content)
+  if (!map) return undefined
+  const where = hexOfTopic(world, map, topic)
+  if (!where) return undefined
+  if (where.location) return where.location
+  const here = [...map.locations.entries()].filter(([id, h]) => h.col === where.hex.col && h.row === where.hex.row && !world.content.locations.get(id)!.tags.includes('private'))
+  return here.sort((a, b) => a[0].localeCompare(b[0]))[0]?.[0]
+}

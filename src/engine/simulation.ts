@@ -6,6 +6,7 @@ import { storyHour } from './stories'
 import { nightly } from './storylines'
 import { weatherHour } from './weather'
 import { settleRuns } from './chronicler'
+import { settleNotes, thinksNow } from './lod'
 import { settleChoices } from './npc/goals'
 import { clamp } from './npc/execute'
 import { think } from './npc/brain'
@@ -23,7 +24,9 @@ export function advance(world: World, minutes: number): void {
     if (minuteOfDay(world.now) % 60 === 0) hourly(world)
     if (minuteOfDay(world.now) % 15 === 0) spreadNews(world)
     // Someone in a conversation with the player stays put until it ends.
-    for (const id of ids) if (world.state.talk?.npc !== id && !world.state.npcs[id]!.dead) think(world, id)
+    settleNotes(world)
+    // Near the player every minute, further off every quarter of an hour; notes not at all (lod.ts).
+    for (const id of ids) if (world.state.talk?.npc !== id && !world.state.npcs[id]!.dead && thinksNow(world, id)) think(world, id)
     settleRuns(world)
     settleChoices(world)
   }

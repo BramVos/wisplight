@@ -80,10 +80,10 @@ export class World {
     return this.state.services[key].stock
   }
 
-  /** The living people here. */
+  /** The living people here, not away or on a journey. */
   npcsAt(locationId: string): string[] {
     return Object.keys(this.state.npcs)
-      .filter((id) => this.state.npcs[id]!.location === locationId && !this.state.npcs[id]!.dead)
+      .filter((id) => this.state.npcs[id]!.location === locationId && this.present(id))
       .sort()
   }
 
@@ -91,10 +91,15 @@ export class World {
     return !!this.state.npcs[id] && !this.state.npcs[id]!.dead
   }
 
+  /** Alive and somewhere: not a note on a journey or far away. */
+  present(id: string): boolean {
+    return this.alive(id) && !this.state.npcs[id]!.note
+  }
+
   /** Someone who can serve is on the premises (the location itself or listed rooms). */
   staffed(locationId: string, provider: string, staff: string[] = [], premises: string[] = []): boolean {
     const places = new Set([locationId, ...premises])
-    return [provider, ...staff].some((id) => this.alive(id) && places.has(this.state.npcs[id]!.location))
+    return [provider, ...staff].some((id) => this.present(id) && places.has(this.state.npcs[id]!.location))
   }
 
   serviceOpen(locationId: string, service: Service, at = this.now): boolean {

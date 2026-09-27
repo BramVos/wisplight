@@ -13,7 +13,8 @@ import { formatMoney } from './items'
 import { chronicleText } from './chronicle'
 import { journalPage, type JournalPage } from './journal'
 import { die } from './life'
-import { knownPlace, landLines, walkTarget, type KnownPlace } from './map/known'
+import { goAway, tierOf } from './lod'
+import { knownEntrance, knownPlace, landLines, walkTarget, type KnownPlace } from './map/known'
 import { takeBarge, travelTo } from './map/journey'
 import { mapText, mapView, type MapView } from './map/view'
 import { regionMap } from './map/region'
@@ -668,8 +669,25 @@ export class Engine {
         })
         return [{ kind: 'system', text: [`[build] Who knows ${this.topics.name(topic)}:`, ...rows].join('\n') }]
       }
+      case 'send': {
+        // @send wouter kattenbroek 2: away for two days, as a note while far from the player.
+        const npcId = findNpcAnywhere(this.world, rest[0] ?? '')
+        const days = Number(rest.at(-1))
+        const place = this.topics.find(rest.slice(1, Number.isFinite(days) ? -1 : undefined).join(' '))
+        if (!npcId || !place) return [{ kind: 'error', text: '@send <person> <place> [days]' }]
+        const map = regionMap(this.content)
+        const where = map && map.locations.has(place) ? place : (knownEntrance(this.world, place) ?? place)
+        goAway(this.world, npcId, where, Number.isFinite(days) ? days : 1)
+        return [{ kind: 'system', text: `[build] ${callName(this.world.npc(npcId))} goes to ${this.world.content.locations.has(where) ? this.world.location(where).name : this.topics.name(place)}.` }]
+      }
+      case 'where': {
+        const npcId = findNpcAnywhere(this.world, rest.join(' '))
+        if (!npcId) return [{ kind: 'error', text: '@where <person>' }]
+        const npc = this.state.npcs[npcId]!
+        return [{ kind: 'system', text: `[build] ${callName(this.world.npc(npcId))}: ${tierOf(this.world, npcId)}, at ${this.world.location(npc.location).name}${npc.note ? `, note: ${npc.note.activity} (${npc.note.unrest})` : ''}.` }]
+      }
       default:
-        return [{ kind: 'error', text: 'Build commands: @kill <person> [how], @who-knows <topic>.' }]
+        return [{ kind: 'error', text: 'Build commands: @kill <person> [how], @who-knows <topic>, @send <person> <place> [days], @where <person>.' }]
     }
   }
 

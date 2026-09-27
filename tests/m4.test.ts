@@ -156,3 +156,43 @@ describe('M4: the map and fast travel', () => {
     expect(engine.page('map')!.lines.join('\n')).toMatch(/BEYOND THE HOLLEVEEN[\s\S]*Graafhaven: about \d+ km west, 2 days on foot/)
   })
 })
+
+describe('M4: detail by distance', () => {
+  it('lets people far off think every quarter of an hour, and those near every minute', async () => {
+    const engine = new Engine(content, { seed: 5, builder: true })
+    at(engine, 15, 7)
+    const { tierOf } = await import('../src/engine/lod')
+    expect(tierOf(engine.world, 'npc_lubbert')).toBe('full')
+    engine.state.player.location = 'loc_kattenbroek_edge'
+    expect(tierOf(engine.world, 'npc_lubbert')).toBe('coarse')
+    expect(tierOf(engine.world, 'npc_mirte')).toBe('coarse')
+  })
+
+  it('makes someone far away a note, and a person again on that spot when the player comes near', async () => {
+    const engine = new Engine(content, { seed: 5, builder: true })
+    at(engine, 15, 7)
+    engine.state.weather = { kind: 'overcast', since: engine.world.now }
+    await play(engine, '@send wouter kattenbroek 3')
+    expect(engine.state.npcs['npc_wouter']!.note!.unrest).toBe('travelling')
+    engine.tick(8 * 60)
+    const note = engine.state.npcs['npc_wouter']!.note!
+    expect(note).toMatchObject({ unrest: 'fixed', where: 'loc_kattenbroek_edge' })
+    expect(engine.world.npcsAt('loc_kattenbroek_edge')).not.toContain('npc_wouter')
+    // The player goes there; near the place, Wouter is a person again, on that spot.
+    engine.state.player.location = 'loc_kattenbroek_edge'
+    engine.tick(1)
+    expect(engine.state.npcs['npc_wouter']!.note).toBeUndefined()
+    expect(engine.world.npcsAt('loc_kattenbroek_edge')).toContain('npc_wouter')
+    expect(engine.state.npcs['npc_wouter']!.recent!.at(-1)!.text).toMatch(/came to The Edge of the Kattenbroek/)
+  })
+
+  it('walks NPCs across country to places no road reaches', async () => {
+    const engine = new Engine(content, { seed: 5, builder: true })
+    at(engine, 15, 7)
+    const { journey } = await import('../src/engine/lod')
+    expect(journey(engine.world, 'npc_gerrit', 'loc_blackmere_weirs')).toBe(true)
+    expect(engine.world.present('npc_gerrit')).toBe(false)
+    engine.tick(4 * 60)
+    expect(engine.state.npcs['npc_gerrit']!.note).toBeUndefined()
+  })
+})
