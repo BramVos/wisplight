@@ -300,3 +300,25 @@ Scope: een dev-menu in het spel zelf (besluit 27 september 2026), alleen in een 
 - [ ] Knoppen om te sturen zonder te typen: een dag overslaan, een plan starten, spanning en markt zetten, een signaal afvuren, het budget zetten, en alles wat je zo doet komt als `@`-commando in het spellogboek zodat naspelen klopt
 - [ ] Het menu leest alleen; elke ingreep loopt via de motor en het logboek, en de speelstand verandert niet door het openen van het menu
 
+## M10.3 Levende gesprekken en kleine verbeteringen
+
+Scope: de speeltest van Skerrow op 27 september 2026 (nummer op verzoek van Bram; M10.2 is vrij). De kern is dat een gesprek acties kan opleveren: het spel rekent vóór elke aanroep uit wat de NPC nu kan doen (aanbiedingen met besluit en redenen, zoals nu alleen bij Recruit), de stem kiest hooguit één sleutel uit die lijst, en de motor voert hem uit. Zie FO hoofdstuk 10, "Gepland (M10.3)". Daaromheen de kleine verbeteringen uit dezelfde speeltest.
+
+Aanbiedingen in een gesprek:
+- [ ] Vraagt de speler Pip naar zijn vader, dan biedt het spel de stem "voorgaan naar het strand" en "wachten tot de vloed keert" aan met een besluit; kiest de stem er een, dan loopt Pip voorop, wacht bij de uitgang, zegt welke kant op als je verkeerd gaat, en geeft na een paar beurten op
+- [ ] Een NPC belooft in zijn tekst nooit iets wat niet in de aanbiedingen staat: het besluit staat in de prompt, en een voorstel van de NPC zelf ("kom mee naar het strand") verschijnt als klikbare optie die pas doorgaat als de speler instemt
+- [ ] Iemand halen, ergens afspreken op een tijd (met aantekening in het dagboek), hier wachten, iets geven uit eigen zak en een boodschap overbrengen zijn aanbiedingen met een eigen formule (houding, vertrouwen, werk en schema, gevaar, afstand, leeftijd), en de redenen staan in gewone woorden in de prompt
+- [ ] Zonder model kiest de motor uit dezelfde aanbiedingen met sjabloonregels, zodat het spel zonder AI hetzelfde kan
+- [ ] Wat een NPC uit zichzelf noemt en zelf kent (de Heights, Old Tamsin), komt in je dagboek als "van Pip gehoord" en op de kaart als zone; nu telt alleen wat in het kennispakket van je eigen vraag zat
+
+Commando's en interface:
+- [ ] `get all` pakt alles wat hier ligt en `get cask, sailcloth and rope` meerdere dingen; hetzelfde voor drop, buy en sell (nu werkt alleen `take all rope` voor één ding)
+- [ ] `look me`, `look at me` en `l me` geven een beschrijving van jezelf: uiterlijk uit de personage-aanmaak, wat je draagt, en hoe je eraan toe bent (gewond, moe, doorweekt), ook in het personageblad
+- [ ] `look south` en `look at tidepools` geven de korte omschrijving van wat die kant op ligt en de weg erheen; een plek die in de beschrijving oplicht, is dus altijd te bekijken
+- [ ] Rechtermuisknop op een opgelicht woord opent een klein menu (bekijken, vragen, waar is, ga naar); linkermuisknop opent de dagboekpagina als je die kent, en anders bekijken als het iets hier is (nu: in een gesprek altijd "ask about", daarbuiten de dagboekpagina of het invoerveld)
+- [ ] Het gespreksvenster houdt de focus (Escape sluit), en het antwoord verschijnt waar je typte; eindigt het gesprek, dan blijft het laatste antwoord in beeld met een regel dat het gesprek voorbij is
+- [ ] Familie op een personagekaart staat er pas als je het gehoord of gezien hebt (gevraagd, verteld, of kind naast ouder), anders "familie: onbekend"; nu is elke niet-privéband dorpskennis zodra je iemand hebt ontmoet
+- [ ] De melding "The world was changed in the editor" noemt het bestand en zegt "op schijf gewijzigd"; ze komt van de bestandswachter en niet van je eigen spel
+- [ ] Rechtsonder een rij lampjes per AI-rol (stem, brein, kroniekschrijver, illustrator, bouwer) die groen oplichten tijdens een aanroep, met de laatste kosten en tijd bij aanwijzen; nu is er één "AI busy"
+- [ ] In een ontwikkelbuild opent een menu-item of knop de editor vanuit het spel; nu alleen `npm run editor` of `--editor`
+- [ ] Alles wat er al was, speelt hetzelfde: het hele testpakket, de simulaties, de uitspeelscripts van beide werelden, en oude saves
