@@ -1,4 +1,5 @@
 import { callName } from '../content'
+import { ownerOf } from './ownership'
 import type { Output } from '../commands'
 import { itemName, matchItem, withArticle } from '../items'
 import { recordFact } from '../news'
@@ -246,7 +247,7 @@ export function steal(world: World, words: string): Output[] {
       if (!stock[item]) return [{ kind: 'error', text: `There is no ${itemName(world.content, item, 1)} left to take.` }]
       stock[item] -= 1
       player.inventory[item] = (player.inventory[item] ?? 0) + 1
-      const owner = service.provider
+      const owner = ownerOf(world, here, { service: service.id }).id ?? service.provider
       const seen = whoNoticed(world, here, [], { [owner]: 2 })
       out.push({ kind: 'text', text: `You slip ${withArticle(itemName(world.content, item, 1))} under your coat.` }, { kind: 'check', text: seen.roll })
       if (seen.noticed.length) out.push({ kind: 'narration', text: seen.noticed.includes(owner) ? `${callName(world.npc(owner))} saw that. "Hey! Put that back, thief!"` : `${seen.noticed.map((w) => callName(world.npc(w))).join(' and ')} saw it.` })
@@ -257,8 +258,10 @@ export function steal(world: World, words: string): Output[] {
   const ground = world.state.ground[here] ?? {}
   const item = matchItem(world.content, thingWords, Object.keys(ground).filter((i) => (ground[i] ?? 0) > 0))
   const loc = world.location(here)
-  if (item && loc.tags.includes('private')) {
-    const owner = Object.keys(world.state.npcs).sort().find((id) => world.npc(id).home === here)
+  // What lies in someone's home is the household's: the one owner function says so (M10.3).
+  const owned = ownerOf(world, here)
+  if (item && (owned.kind === 'household' || owned.kind === 'person')) {
+    const owner = owned.id
     ground[item]! -= 1
     if (!ground[item]) delete ground[item]
     player.inventory[item] = (player.inventory[item] ?? 0) + 1

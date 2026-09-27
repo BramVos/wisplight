@@ -211,6 +211,13 @@ export class Dialogue {
   }
 
   async ask(npcId: string, question: string): Promise<Output[]> {
+    // ASK HARMEN FOR THE SAW (M10.3): asking for a thing goes through the offers: give, lend, or for a favour.
+    const wanted = /^for\s+(.+)$/i.exec(bare(question))
+    if (wanted) {
+      const thing = wanted[1]!.replace(/^(the|a|an|some|your)\s+/i, '')
+      const topic = this.topics.find(thing)
+      return this.turn(npcId, `Could I have the ${thing}?`, { act: 'Request', topics: topic ? [topic] : [], echo: true })
+    }
     const about = bare(question)
     // "Ask Pip about his father", "about your father": the NPC's own people (M10.3).
     const topic = this.topics.find(about) ?? kinOf(this.world, npcId, about.replace(/^(his|her|their)\b/i, 'your'))[0]

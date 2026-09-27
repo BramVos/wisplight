@@ -238,7 +238,8 @@ function needs(world: World, npcId: string, item: string): boolean {
  */
 function thingOffers(world: World, npcId: string, item: string): Offer[] {
   const npc = world.npc(npcId)
-  const count = world.npcState(npcId).inventory[item] ?? 0
+  // What they carry, and what lies in their home: both theirs (the one owner function).
+  const count = (world.npcState(npcId).inventory[item] ?? 0) + (world.state.ground[npc.home]?.[item] ?? 0)
   const def = world.content.items.get(item)
   const value = def?.value ?? 8
   const band = attitude(world, npcId).band
@@ -262,7 +263,13 @@ function thingOffers(world: World, npcId: string, item: string): Offer[] {
   const price = Math.max(1, Math.round(value * markup * (npc.personality.honesty < 0 ? 1.3 : 1)))
   const sell = lacking.length ? lacking : need && count <= 1 ? ['you need it yourself'] : world.state.player.money < price ? [`the stranger cannot pay ${world.money(price)}`] : [`${world.money(price)} is a fair price`]
   const yes = (ok: boolean): 'yes' | 'no' => (ok ? 'yes' : 'no')
+  // Or for a favour in return (M10.3): something they need, as the stranger's word in the register.
+  const favour = world.state.requests.find((r) => r.npc === npcId && r.status === 'open' && r.item && r.item !== item)
+  const forFavour = favour && !lacking.length && !cold && !need && !(value <= spare || plenty)
   return [
+    ...(forFavour
+      ? [{ key: `trade:${item}`, kind: 'give' as const, item, favour: favour.id, what: `give the stranger ${a} for a favour: ${itemName(world.content, favour.item!)} in return`, intent: `have ${a} for a favour`, deed: `give the stranger ${a} for a favour`, decision: 'yes' as const, reasons: [`the stranger could bring you ${withArticle(itemName(world.content, favour.item!))} in return`] }]
+      : []),
     { key: `give:${item}`, kind: 'give', item, what: `give the stranger ${a} of your own`, intent: `be given ${a}`, deed: `give the stranger ${a}`, decision: yes(!lacking.length && !cold && !need && (value <= spare || plenty)), reasons: give },
     { key: `lend:${item}`, kind: 'lend', item, at: world.now + days * DAY, what: `lend the stranger ${a}, to be back ${clockWords(world, world.now + days * DAY)}; it stays yours`, intent: `borrow ${a}`, deed: `bring ${callName(npc)}'s ${thing} back, ${clockWords(world, world.now + days * DAY)}`, decision: yes(!lacking.length && !cold && trusted), reasons: lend },
     { key: `sell:${item}`, kind: 'sell', item, price, what: `sell the stranger ${a} of your own for ${world.money(price)}`, intent: `buy ${a} from you`, deed: `sell the stranger ${a} for ${world.money(price)}`, decision: yes(!lacking.length && !(need && count <= 1) && world.state.player.money >= price), reasons: sell },
@@ -378,7 +385,7 @@ export function askedFor(offers: Offer[], text: string): Offer | undefined {
   if (/\b(tell|let .* know|pass .* on|word to|zeg|vertel)\b/.test(t) && wants('message')[0]) return wants('message')[0]
   if (/\b(lend|borrow|loan|leen|lenen)\b/.test(t) && wants('lend')[0]) return wants('lend')[0]
   if (/\b(sell|buy|how much|what do you want for|verkoop|koop|hoeveel)\b/.test(t) && wants('sell')[0]) return wants('sell')[0]
-  if (/\b(give|spare|have one|may i have|can i have|geef|mag ik)\b/.test(t) && wants('give')[0]) return wants('give')[0]
+  if (/\b(give|spare|have one|may i have|can i have|could i have|geef|mag ik)\b/.test(t) && wants('give')[0]) return wants('give').find((o) => o.decision === 'yes') ?? wants('give')[0]
   if (/\b(wait|stay|wacht|blijf)\b/.test(t) && wants('wait')[0]) return wants('wait')[0]
   if (/\b(take me|show me|lead|bring me|the way|come with me to|walk me|breng me|wijs|laat .* zien)\b/.test(t)) return wants('lead')[0]
   return undefined
@@ -408,9 +415,12 @@ export function accept(world: World, npcId: string, offer: Offer): { outputs: Ou
     const state = world.npcState(npcId)
     const item = offer.item!
     const a = withArticle(itemName(world.content, item))
-    if ((state.inventory[item] ?? 0) <= 0) return { outputs: [], ends: false }
+    const home = world.state.ground[world.npc(npcId).home] ?? {}
+    if ((state.inventory[item] ?? 0) <= 0 && (home[item] ?? 0) <= 0) return { outputs: [], ends: false }
     if (offer.kind === 'sell' && world.state.player.money < (offer.price ?? 0)) return { outputs: [{ kind: 'system', text: `You cannot pay ${world.money(offer.price ?? 0)}.` }], ends: false }
-    state.inventory[item]! -= 1
+    // From their pocket, or from what lies in their home.
+    if ((state.inventory[item] ?? 0) > 0) state.inventory[item]! -= 1
+    else home[item]! -= 1
     world.state.player.inventory[item] = (world.state.player.inventory[item] ?? 0) + 1
     if (offer.kind === 'sell') {
       world.state.player.money -= offer.price!
@@ -423,7 +433,12 @@ export function accept(world: World, npcId: string, offer: Offer): { outputs: Ou
       made.outcome = { t: world.now, text: offer.kind === 'sell' ? `${name} sold the stranger ${a} for ${world.money(offer.price!)}` : `${name} gave the stranger ${a}` }
     }
     const text = offer.kind === 'lend' ? `${name} lends you ${a}. Bring it back ${clockWords(world, offer.at!)}; it is in your journal.` : offer.kind === 'sell' ? `You pay ${world.money(offer.price!)}, and ${name} hands you ${a}.` : `${name} gives you ${a}.`
-    return { outputs: [{ kind: 'system', text }], ends: false }
+    const out: Output[] = [{ kind: 'system', text }]
+    // For a favour: the stranger's word to do it.
+    const request = offer.favour ? world.state.requests.find((r) => r.id === offer.favour) : undefined
+    const ask = request ? askOffer(world, npcId, request) : undefined
+    if (ask) out.push(...accept(world, npcId, ask).outputs)
+    return { outputs: out, ends: false }
   }
   if (offer.kind === 'teach') {
     const c = world.state.player.character

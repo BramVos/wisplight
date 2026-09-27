@@ -363,9 +363,9 @@ Gesprekken die de wereld raken:
 - [ ] Alles wat er al was, speelt hetzelfde: het hele testpakket, de simulaties, de uitspeelscripts van beide werelden, en oude saves
 
 Eigendom en betrapt worden (besluit 27 september 2026; nu: eigendom afgeleid per object, huis en winkel, drie vormen van stelen met getuigen, boete en schout, teruggeven; geen sleutels, geen vragen als weg, een vaste regel bij betrapping, en overdag binnenlopen is geen vergrijp):
-- [ ] Eén eigenaarsfunctie: elk ding heeft een eigenaar (persoon, huishouden, nederzetting of niemand), afgeleid zoals nu maar op één plek, zodat pakken, gebruiken, verkopen en teruggeven dezelfde vraag stellen
+- [x] Eén eigenaarsfunctie: elk ding heeft een eigenaar (persoon, huishouden, nederzetting of niemand), afgeleid zoals nu maar op één plek, zodat pakken, gebruiken, verkopen en teruggeven dezelfde vraag stellen
 - [ ] Toegang als recht: een deur of kist kan een slot met een sleutel-id hebben (open met de sleutel, met `pick` uit M10.5, of met geweld en dus getuigen); wie je binnenlaat geeft toestemming met een grens, en binnen zijn zonder toestemming is het vergrijp `trespass` dat wie je ziet onthoudt
-- [ ] `take` van iets met een eigenaar in diens bijzijn vraagt: pakken (stelen, met proef) of vragen; vragen loopt via de aanbiedingen (geven, lenen op termijn, een wederdienst als afspraak in het register)
+- [x] `take` van iets met een eigenaar in diens bijzijn vraagt: pakken (stelen, met proef) of vragen; vragen loopt via de aanbiedingen (geven, lenen op termijn, een wederdienst als afspraak in het register)
 - [ ] Betrapt: de motor beslist uit karakter, houding en wie er is (terugeisen, je pols grijpen via de gevechtspoort, schreeuwen zodat omstanders getuigen worden, iemand sturen om de schout te halen met het doel Report), en staat de wacht of de schout ernaast, dan grijpt die meteen in; de stem verwoordt het besluit in eigen woorden
 - [ ] Verdenking is geen bewijs: ongezien gestolen weet de eigenaar alleen dát er iets weg is; verdacht word je door sporen (binnen gezien, het ding verkocht aan iemand die het herkent, het openlijk gedragen); bewijs geeft een boete en een naam, verdenking alleen een kouder dorp
 - [ ] Herstel als standaardnasleep in de content: teruggeven, betalen of een wederdienst, waarbij teruggeven na betrapping minder goedmaakt dan uit jezelf

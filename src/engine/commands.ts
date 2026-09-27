@@ -1,4 +1,5 @@
 import { inSeason } from './content'
+import { ownerOf, ownersHere } from './social/ownership'
 import { returnLent } from './agreements'
 import { crowdLines } from './growth/crowds'
 import { blessed } from './rules/blessings'
@@ -310,6 +311,19 @@ function take(host: CommandHost, args: string[]): Output[] {
   const here = world.state.player.location
   const ground = world.state.ground[here] ?? {}
   // TAKE ALL, GET EVERYTHING (M9.4): what lies here, all of it. The first thing a stranded player types.
+  // What lies in someone's home is theirs (M10.3): not for the taking.
+  const owner = ownerOf(world, here)
+  if (owner.kind === 'household' || owner.kind === 'person') {
+    const whose = callName(world.npc(owner.id!))
+    const present = ownersHere(world, owner)
+    const all = args.length === 1 && /^(all|everything|alles)$/i.test(args[0]!)
+    const { text: wanted } = splitQuantity(args)
+    const thing = all ? undefined : matchItem(world.content, wanted, Object.keys(ground))
+    if (all || thing) {
+      const what = thing ? `the ${itemName(world.content, thing, 1)}` : 'what lies here'
+      return [error(present.length ? `That is ${whose}'s. Ask ${present.length && world.npc(present[0]!).pronoun === 'she' ? 'her' : world.npc(present[0]!).pronoun === 'he' ? 'him' : 'them'} for it (ASK ${callName(world.npc(present[0]!)).toUpperCase()} FOR ${thing ? itemName(world.content, thing, 1).toUpperCase() : 'IT'}), or STEAL it.` : `${what.charAt(0).toUpperCase()}${what.slice(1)} belongs to ${whose}'s household. STEAL it, if that is what you mean to do.`)]
+    }
+  }
   if (args.length === 1 && /^(all|everything|alles)$/i.test(args[0]!)) {
     const items = Object.keys(ground).filter((i) => (ground[i] ?? 0) > 0).sort()
     if (!items.length) return [error('There is nothing here to take.')]

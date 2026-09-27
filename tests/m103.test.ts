@@ -9,6 +9,7 @@ import { heardBy, recordFact } from '../src/engine/news'
 import { openRequest } from '../src/engine/requests'
 import { parseClaim, truthOf } from '../src/engine/claims'
 import { tieTo } from '../src/engine/people'
+import { ownerOf } from '../src/engine/social/ownership'
 import { loadContentFromDir } from '../src/node/content'
 import { content } from './helpers'
 
@@ -476,4 +477,50 @@ describe('M10.3: the scene in one piece', () => {
     const hythe = ['npc_maren', 'npc_pip', 'npc_garrick', 'npc_elowen'].filter((id) => world.state.news!.heard[id]?.[broken.id])
     expect(hythe.length).toBeGreaterThanOrEqual(2)
   }, 120_000)
+})
+
+describe('M10.3: ownership', () => {
+  /** In the miller's house, with a sack of rye lying there, and Harmen at home or not. */
+  function inHarmensHouse(home: boolean): Engine {
+    const engine = new Engine(content, { seed: 7 })
+    const world = engine.world
+    world.state.player.location = 'loc_molenend_house'
+    ;(world.state.ground['loc_molenend_house'] ??= {})['rye_grain'] = 2
+    if (home) stay(engine, 'npc_harmen', 'loc_molenend_house')
+    else stay(engine, 'npc_harmen', 'loc_molenend_mill')
+    for (const id of Object.keys(world.state.npcs)) if (id !== 'npc_harmen' && world.state.npcs[id]!.location === 'loc_molenend_house') world.state.npcs[id]!.location = 'loc_molenend_mill'
+    return engine
+  }
+
+  it('asks one question of what belongs to whom: in someone\'s home, TAKE is not for the taking', async () => {
+    const home = inHarmensHouse(true)
+    expect(ownerOf(home.world, 'loc_molenend_house')).toMatchObject({ kind: 'household', id: 'npc_harmen' })
+    expect(ownerOf(home.world, 'loc_veenhoek_green')).toMatchObject({ kind: 'nobody' })
+    expect(said(await home.handle('take rye'))).toMatch(/That is Harmen's\. Ask him for it \(ASK HARMEN FOR SACK OF RYE\), or STEAL it\./)
+    expect(home.state.player.inventory['rye_grain']).toBeUndefined()
+    const away = inHarmensHouse(false)
+    expect(said(await away.handle('take all'))).toMatch(/belongs to Harmen's household\. STEAL it/)
+    // Stealing it is theft, as it always was; the owner function names the victim.
+    await away.handle('steal rye')
+    expect(away.state.crimes?.at(-1)).toMatchObject({ kind: 'theft', victim: 'npc_harmen', item: 'rye_grain' })
+  })
+
+  it('asking goes through the offers: given, or for a favour in return', async () => {
+    const engine = inHarmensHouse(true)
+    const world = engine.world
+    Object.assign(relation(engine.state, 'npc_harmen'), { affinity: 20, trust: 20, familiarity: 40 })
+    await engine.handle('talk harmen')
+    await engine.handle('no')
+    // A loaf is little enough to give; the rye is worth more, so he would lend or sell it instead.
+    world.state.ground['loc_molenend_house']!['rye_bread'] = 1
+    expect(said(await engine.handle('ask for the bread'))).toMatch(/Harmen gives you a loaf of rye bread\./)
+    expect(world.state.player.inventory['rye_bread']).toBe(1)
+    expect(world.state.ground['loc_molenend_house']!['rye_bread']).toBe(0)
+    expect(offersFor(world, 'npc_harmen', ['item_rye_grain'], 'could I have the rye?').map((o) => `${o.kind}:${o.decision}`)).toEqual(['give:no', 'lend:yes', 'sell:yes'])
+    // Worth more than he would give, and he needs sailcloth: for a favour.
+    world.npcState('npc_harmen').inventory['wool'] = 1
+    openRequest(world, { npc: 'npc_harmen', kind: 'fetch', item: 'sailcloth', source: 'motor' })
+    const offers = offersFor(world, 'npc_harmen', ['item_wool'], 'could I have the wool?')
+    expect(offers.find((o) => o.key === 'trade:wool')).toMatchObject({ decision: 'yes', reasons: [expect.stringMatching(/bring you a bolt of sailcloth in return/)] })
+  })
 })

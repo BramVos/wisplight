@@ -198,7 +198,9 @@ export function soundsLikeSpeech(verb: string, text: string): boolean {
   const second = text.split(/\s+/)[1]?.toLowerCase()
   if (verb !== 'say' && second && ['me', 'us', 'you', 'mij', 'me', 'ons', 'je', 'jij', 'u'].includes(second)) return true
   if (verb === 'where') return !whereIs.test(text)
-  if (verb === 'ask' || verb === 'tell') return !/\s(about|over|naar)\s/i.test(text)
+  // ASK ... FOR a thing and TELL ... THAT something (M10.3) are commands too.
+  if (verb === 'ask') return !/\s(about|over|naar|for|om)\s/i.test(text)
+  if (verb === 'tell') return !/\s(about|over|naar|that|dat)\s/i.test(text)
   return false
 }
 
