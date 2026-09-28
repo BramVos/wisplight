@@ -6,7 +6,7 @@ import type { World } from '../world'
 import type { TopicRegistry } from './topics'
 import { goneTo, usualPlace } from '../npc/brain'
 import { knowsTheDayOf } from '../people'
-import { weekdayOf } from '../clock'
+import { weekdayName } from '../clock'
 import { sketchById, sketchFacts } from '../sketches'
 
 // What an NPC knows about a topic, and therefore what the model may say
@@ -394,7 +394,7 @@ export class Knowledge {
         if (!(item in service.sells)) continue
         const seller = this.world.content.npcs.get(service.provider)
         const price = this.world.price(location.id, service, item)
-        if (seller) result.push(`${seller.short} sells ${itemName(this.world.content, item, 2).replace(/^2 /, '')} at ${location.name}, about ${price} duiten each.`)
+        if (seller) result.push(`${seller.short} sells ${itemName(this.world.content, item, 2).replace(/^2 /, '')} at ${location.name}, about ${this.world.money(price)} each.`)
       }
     }
     return result
@@ -458,7 +458,7 @@ export class Knowledge {
     const gone = close ? goneTo(world, otherId) : undefined
     if (gone) {
       const area = world.content.areas.get(world.location(gone).area)
-      const day = weekdayOf(world.now)
+      const day = weekdayName(world.now, world.calendar)
       const market = area?.market_days.includes(day) ? `; it's ${day}, market day there` : ''
       return `${other.short} has gone to ${area?.name ?? world.location(gone).name} today${market}.`
     }

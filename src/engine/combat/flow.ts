@@ -271,7 +271,7 @@ export function playerCommand(arena: Arena, combat: Combat, text: string, fleeDc
       lines.push({ kind: 'check', text: `(${skill === 'intimidation' ? 'Intimidation' : 'Persuasion'} ${total} vs Will DC ${dc}: ${DEGREE_NAMES[d]})` })
       if (d >= 2) {
         combat.over = 'talked'
-        lines.push({ kind: 'narration', text: skill === 'intimidation' ? 'The Goat-Rider looks at you a long moment, then spits and steps back into the reeds. "Not worth it."'.replace('The Goat-Rider', cap(foes[0]!.name)) : `${cap(foes[0]!.name)} shrugs. "Go on, then. Today's your lucky day."` })
+        lines.push({ kind: 'narration', text: skill === 'intimidation' ? `${cap(foes[0]!.name)} looks at you a long moment, then spits and steps back. "Not worth it."` : `${cap(foes[0]!.name)} shrugs. "Go on, then. Today's your lucky day."` })
         return { lines, outcome: 'talked' }
       }
       lines.push({ kind: 'narration', text: d === 0 ? `${cap(foes[0]!.name)} is on you before you have finished speaking.` : `${cap(foes[0]!.name)} laughs. "Brave words."` })

@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { argv, stdout } from 'node:process'
 import { Engine, MINUTES_PER_DAY, type WorldEvent } from '../engine'
@@ -5,7 +6,7 @@ import { loadContentFromDir } from '../node/content'
 import { mayBeStuck } from '../engine/playtest'
 
 // Runs the region without a player and reports what happened:
-//   npm run sim -- --days 7 [--seed 3] [--follow npc_mirte] [--quiet] [--world isle]
+//   npm run sim -- --days 7 [--seed 3] [--follow npc_mirte] [--quiet] [--world isle | --world other]
 // Exits with code 1 when an invariant breaks (a crash, a starving or stuck NPC).
 
 const args = argv.slice(2)
@@ -19,7 +20,9 @@ const follow = option('follow', '')
 const quiet = args.includes('--quiet')
 const worldFolder = option('world', 'base')
 
-const content = await loadContentFromDir(resolve(import.meta.dirname, '../../content'), worldFolder)
+// A world from content/, or a test world from tests/worlds (M10.17: --world other is Deepwell).
+const contentRoot = resolve(import.meta.dirname, '../../content')
+const content = await loadContentFromDir(existsSync(resolve(contentRoot, worldFolder)) ? contentRoot : resolve(import.meta.dirname, '../../tests/worlds'), worldFolder)
 const engine = new Engine(content, { seed })
 const world = engine.world
 const problems: string[] = []

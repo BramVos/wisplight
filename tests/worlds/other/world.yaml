@@ -35,6 +35,7 @@ world:
     era: AL
     months: [Ignition, Burn, Coast, Approach, Capture, Descent, Landfall, Thaw, Drill, Yield, Refit, Longdark, Blackout Days]
     weekdays: [Unday, Duoday, Triday, Quartday, Quintday, Sextday, Septday, Octday, Nonday, Decday]
+    start_weekday: Quintday
   money:
     units:
       - { short: cr, name: credit, value: 20 }

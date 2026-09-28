@@ -64,7 +64,7 @@ export const GOAL_CATALOGUE: Record<string, Entry> = {
   Court: { type: 'Court', target: 'person', text: 'spend time with someone you are sweet on', gate: 'court' },
   Celebrate: { type: 'Celebrate', target: 'none', text: 'celebrate with a drink where people gather' },
   Investigate: { type: 'Investigate', target: 'place', text: 'go and look round a place yourself, to find out what happened there', gate: 'investigate' },
-  Report: { type: 'Report', target: 'none', text: 'tell the schout or the town watch what you saw', gate: 'report' },
+  Report: { type: 'Report', target: 'none', text: 'tell the law what you saw', gate: 'report' },
   Confront: { type: 'Confront', target: 'person', text: 'have it out with someone who wronged you' },
   Recruit_help: { type: 'RecruitHelp', target: 'person', text: 'ask someone to come and help you' },
   Steal: { type: 'Steal', target: 'item', text: 'take a thing from a shop when nobody is looking (only if you are that sort)', gate: 'steal' },
@@ -272,10 +272,10 @@ export function goalRequest(world: World, choice: GoalChoice, answers?: string[]
   const signal = choice.signal ? signalOf(world, choice.signal) : undefined
   const intentions = signal ? offered(world, signal, npcId) : []
   const lines = [
-    `NOW: ${new GameClock(world.now).format()}, at ${world.location(state.location).name}. Doing: ${state.activity}.`,
+    `NOW: ${new GameClock(world.now).format(world.calendar)}, at ${world.location(state.location).name}. Doing: ${state.activity}.`,
     `NEEDS (0 bad, 100 good): ${Object.entries(state.needs)
       .map(([k, v]) => `${k} ${Math.round(v)}`)
-      .join(', ')}. Money: ${state.money} duiten.`,
+      .join(', ')}. Money: ${world.money(state.money)}.`,
     ...(state.goals.length ? [`GOALS NOW: ${state.goals.map((g) => `${g.type}${g.item ? ` ${g.item}` : ''}${g.target ? ` ${name(g.target)}` : ''}`).join(', ')}`] : []),
     ...(news.length ? ['NEWS YOU HEARD:', ...news] : []),
     ...(state.thoughts ?? []).filter((t) => t.until > world.now).map((t) => `ON YOUR MIND: ${t.text}`),

@@ -27,13 +27,12 @@ export interface MoneyUnit {
   short: string
   name: string
   plural?: string
+  /** Other words for it the player may use: "gulden" (M10.17). */
+  aliases?: string[]
   value: number
 }
-export const DEFAULT_MONEY: readonly MoneyUnit[] = [
-  { short: 'gl', name: 'guilder', value: GUILDER },
-  { short: 'st', name: 'stuiver', value: STUIVER },
-  { short: 'd', name: 'duit', plural: 'duiten', value: DUIT },
-]
+/** The money of a world that names none (M10.17): one plain coin, never another world's. */
+export const DEFAULT_MONEY: readonly MoneyUnit[] = [{ short: 'c', name: 'coin', value: 1 }]
 
 export function formatMoney(duiten: number, units: readonly MoneyUnit[] = DEFAULT_MONEY): string {
   let rest = duiten
@@ -48,14 +47,14 @@ export function formatMoney(duiten: number, units: readonly MoneyUnit[] = DEFAUL
 
 /** "2 stuivers", "10 duiten", "1 guilder", "3 st" to the smallest coin; a bare number counts in the second coin. */
 export function parseMoney(text: string, units: readonly MoneyUnit[] = DEFAULT_MONEY): number | undefined {
-  const names = units.flatMap((u) => [u.short, u.name, u.plural ?? `${u.name}s`, ...(u === DEFAULT_MONEY[0] ? ['gulden'] : [])])
+  const names = units.flatMap((u) => [u.short, u.name, u.plural ?? `${u.name}s`, ...(u.aliases ?? [])])
   const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
   const pattern = new RegExp(`(\\d+)\\s*(${names.sort((a, b) => b.length - a.length).map(escape).join('|')})?(?![a-z])`, 'i')
   const match = text.match(pattern)
   if (!match) return undefined
   const amount = Number(match[1])
   const word = match[2]?.toLowerCase()
-  const unit = word ? units.find((u) => [u.short, u.name, u.plural ?? `${u.name}s`].some((n) => n.toLowerCase() === word)) ?? units[0]! : (units[1] ?? units[0]!)
+  const unit = word ? units.find((u) => [u.short, u.name, u.plural ?? `${u.name}s`, ...(u.aliases ?? [])].some((n) => n.toLowerCase() === word)) ?? units[0]! : (units[1] ?? units[0]!)
   return amount * unit.value
 }
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { Engine, MockLlm, MONTHS, parseReply, runSituation, SITUATIONS, soundsLikeSpeech, timeGreeting, unknownNames, vocabularyOf, WEEKDAYS, wordCount, WORLD_FRAME, type LlmClient, type LlmRejection, type MockMode } from '../src/engine'
+import { calendarOf, Engine, MockLlm, parseReply, runSituation, SITUATIONS, soundsLikeSpeech, timeGreeting, unknownNames, vocabularyOf, wordCount, WORLD_FRAME, type LlmClient, type LlmRejection, type MockMode } from '../src/engine'
 import { content, newEngine } from './helpers'
 
 // Milestone M2 (docs/ROADMAP.md): talking with NPCs, with the mock model only.
@@ -82,7 +82,8 @@ describe('M2: guardrails', () => {
   })
 
   it('knows made-up names from names of the world', () => {
-    const vocabulary = vocabularyOf(content, WORLD_FRAME, MONTHS, WEEKDAYS)
+    const { months, weekdays } = calendarOf(content.world)
+    const vocabulary = vocabularyOf(content, WORLD_FRAME, months, weekdays)
     // "father" is a word of the world (Geesje's late father); the made-up name is not.
     expect(unknownNames('Wendela nods. "The vicar is Father Oswin. A good man."', vocabulary)).toEqual(['Oswin'])
     expect(unknownNames('She smiles. "Saint Brand keep you. Ask Mirte, or the Old Powers, or Lubbert in Waagdam on Maandag."', vocabulary)).toEqual([])

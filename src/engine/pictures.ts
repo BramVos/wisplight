@@ -22,9 +22,10 @@ export interface PictureSubject {
   plain?: string
 }
 
-const STYLE = 'A small illustration in the manner of a 17th-century Dutch etching with a light ink wash: muted greys, browns and greens, fine lines.'
+// A world without a style of its own (M10.17): plain, of no age or land in particular; world.yaml pictures.style says more.
+const STYLE = 'A small illustration in pen and ink with a light wash: muted colours, fine lines.'
 const RULES = 'No text, no letters, no border, no frame. Nothing gory. Folklore, not photography.'
-const KIND: Record<string, string> = { city: 'a walled city with its charter', town: 'a small walled town', village: 'a village', hamlet: 'a hamlet', inn: 'an inn by the road', route: 'a road across the land', wilderness: 'wild country' }
+const KIND: Record<string, string> = { city: 'a city', town: 'a small town', village: 'a village', hamlet: 'a hamlet', inn: 'an inn by the road', route: 'a road across the land', wilderness: 'wild country' }
 
 export function pictureSubject(content: Content, id: string): PictureSubject | undefined {
   const style = content.world.pictures?.style ?? STYLE
@@ -41,7 +42,7 @@ export function pictureSubject(content: Content, id: string): PictureSubject | u
   if (!area) return undefined
   const places = [...content.locations.values()].filter((l) => l.area === area.id)
   const first = places.find((l) => l.tags.includes('edge')) ?? places[0]
-  const prompt = `${style} A view of ${area.name}, ${KIND[area.kind] ?? 'a place'} in a low, wet land: ${clean(area.summary)} ${first ? clean(first.description.day) : ''} ${RULES}`
+  const prompt = `${style} A view of ${area.name}, ${KIND[area.kind] ?? 'a place'}: ${clean(area.summary)} ${first ? clean(first.description.day) : ''} ${RULES}`
   return { id: `area_${area.id}`, kind: 'place', name: area.name, prompt, key: hash(prompt) }
 }
 

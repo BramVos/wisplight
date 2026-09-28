@@ -3,7 +3,7 @@ import type { LandMapData } from './map/known'
 import { hintHolds } from './props'
 import type { SheetData } from './rules/player'
 import { knownName, knowsWork, personView, publicShort, type PersonView } from './acquaintance'
-import { dayName, GameClock } from './clock'
+import { GameClock, weekdayName } from './clock'
 import { areaTopicId, callName } from './content'
 import type { TopicRegistry } from './dialogue/topics'
 import { itemName } from './items'
@@ -246,7 +246,7 @@ function who(world: World, from: string): string {
 
 function day(world: World, t: number): string {
   const parts = new GameClock(t).parts
-  return `${dayName(parts.weekday, world.calendar)} ${parts.day}`
+  return `${weekdayName(t, world.calendar)} ${parts.day}`
 }
 
 function firstSentence(text: string): string {

@@ -4,10 +4,12 @@ import { DEFAULT_PALETTE, MapPaletteSchema, SURFACE, TERRAIN_ORDER, type Level, 
 import { previewMapData, type HexMapData } from './map/view'
 import { ContentError, loadContent, type Content, type ContentFile, type Direction } from './content'
 import { regionPreview, sceneryWarnings, warnings } from './builder'
-import { applyEdits, entities, ENTITY_KINDS, LISTS, parseEntityYaml, voiceYaml, worldPrefix, type Edit, type EditResult, type EntityKind, type Raw } from './edit'
+import { applyEdits, entities, ENTITY_KINDS, LISTS, parseEntityYaml, patchWorld, voiceYaml, worldPrefix, type Edit, type EditResult, type EntityKind, type FileChange, type Raw } from './edit'
 import { worldFrame } from './dialogue/prompt'
 import type { LlmRequest } from './dialogue/llm'
 import { voiceSummary } from './dialogue/voice'
+import { contractSummary, contractView, fieldsOf } from './contract'
+import { WORLD_GUIDE, WORLD_STEPS } from './worldguide'
 import { VoiceSchema } from './dialogue/voiceSchema'
 
 // What the editor shows of a world (M8, FO chapter 15), and the pieces of
@@ -50,6 +52,10 @@ export interface EditorView {
   economy: SettlementView[]
   /** Every place for the map (M9.1): where it lies in km, and its ways out. */
   places: MapPlace[]
+  /** What a world can have, per kind, and whether this one has it (M10.17: the contract tab). */
+  contract: ReturnType<typeof contractView>
+  /** The keys world.yaml can have, and whether this world sets each; the rest take the neutral default. */
+  worldKeys: { key: string; set: boolean }[]
 }
 
 /** A place on the editor's map: its own position, or near its area's when it has none. */
@@ -167,6 +173,8 @@ export function editorView(files: ContentFile[]): EditorView {
     problems,
     warnings: content ? warnings(content) : [],
     scenery: content ? sceneryWarnings(content) : [],
+    contract: contractView(content),
+    worldKeys: fieldsOf('world').map((f) => ({ key: f.name, set: def[f.name] !== undefined })),
     economy: content ? economyOverview(content) : [],
     files: files.map((f) => f.path).sort(),
     maps: content ? Object.fromEntries([...content.regions.keys()].map((id) => [id, regionPreview(content, id) ?? ''])) : {},
@@ -394,6 +402,10 @@ export interface Draft {
   say: string
   questions: string[]
   changes: DraftChange[]
+  /** Top-level keys of world.yaml to set, as YAML (M10.17); empty for none. */
+  world?: string
+  /** Whole files: only CHRONICLER.md and data/voice.yaml, next to world.yaml (M10.17). */
+  files?: { path: string; text: string }[]
   /** The proposal as edits, checked against the world. */
   result?: EditResult
   problems: string[]
@@ -418,6 +430,64 @@ const DRAFT_SCHEMA = {
   },
 }
 
+/** The same with world.yaml keys and whole files (M10.17), for building a world step by step. */
+const WORLD_STEP_SCHEMA = {
+  ...DRAFT_SCHEMA,
+  required: ['say', 'questions', 'changes', 'world', 'files'],
+  properties: {
+    ...DRAFT_SCHEMA.properties,
+    world: { type: 'string' },
+    files: { type: 'array', items: { type: 'object', additionalProperties: false, required: ['path', 'text'], properties: { path: { type: 'string' }, text: { type: 'string' } } } },
+  },
+}
+
+/** The files a proposal may write whole, next to world.yaml. */
+const DRAFT_FILES = /^(?:CHRONICLER\.md|data\/voice\.yaml)$/
+
+/**
+ * A proposal as files (M10.17): the entities as edits, then the keys of
+ * world.yaml, then whole files; checked by loading the world with all of it.
+ */
+export function draftResult(files: ContentFile[], draft: Pick<Draft, 'changes' | 'world' | 'files'>): EditResult {
+  const edits = draftEdits(draft)
+  const first = edits.length ? applyEdits(files, edits) : { ok: true, problems: [], files, changes: [] as FileChange[] }
+  if (!first.ok) return first
+  let next = first.files
+  const problems: string[] = []
+  const changes = new Map<string, FileChange>(first.changes.map((c) => [c.path, c]))
+  // A file changed twice keeps what it was before the first change.
+  const note = (change: FileChange) => {
+    const had = changes.get(change.path)
+    changes.set(change.path, had ? { path: change.path, text: change.text, ...(had.before !== undefined ? { before: had.before } : {}) } : change)
+  }
+  if (draft.world?.trim()) {
+    const patched = patchWorld(next, draft.world)
+    problems.push(...patched.problems)
+    next = patched.files
+    if (patched.change) note(patched.change)
+  }
+  const prefix = worldPrefix(files)
+  for (const file of draft.files ?? []) {
+    const path = file.path.replace(/^\/+/, '').replace(new RegExp(`^${prefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`), '')
+    if (!DRAFT_FILES.test(path)) {
+      problems.push(`${file.path}: a proposal may write only CHRONICLER.md and data/voice.yaml whole; the rest goes in world or changes.`)
+      continue
+    }
+    const full = `${prefix}${path}`
+    const before = next.find((f) => f.path === full)
+    if (before?.text === file.text) continue
+    next = before ? next.map((f) => (f === before ? { ...f, text: file.text } : f)) : [...next, { path: full, text: file.text }]
+    note({ path: full, ...(before ? { before: before.text } : {}), text: file.text })
+  }
+  if (problems.length) return { ok: false, problems, files: next, changes: [...changes.values()] }
+  try {
+    const content = loadContent(next)
+    return { ok: true, problems: [], content, files: next, changes: [...changes.values()] }
+  } catch (error) {
+    return { ok: false, problems: error instanceof ContentError ? error.problems : [String(error)], files: next, changes: [...changes.values()] }
+  }
+}
+
 /**
  * The request to the chronicler for a proposal (FO chapter 15, "Sparren met
  * de kroniekschrijver"): the working instruction, the world's frame, what
@@ -440,6 +510,9 @@ export function draftRequest(files: ContentFile[], ask: string, focus?: { kind: 
       // The world's voice (M10.10): new content comes in the same voice.
       content ? voiceSummary(content) : '',
       '',
+      // What a world can have (M10.17): the contract in short, with what this world has and what is still empty.
+      contractSummary(content),
+      '',
       'YOU ARE IN THE WORLD BUILDER. Answer the designer with a proposal: every entity to add or change in full YAML (one mapping with its id, as it would stand in its list), or an empty yaml to delete it. The builder shows it as a diff, checks it, and saves only what the designer accepts. Use only ids that exist or that you add in the same proposal. If a choice belongs to the designer, ask in questions and propose nothing for it. JSON only.',
     ].join('\n'),
     prompt: [`WHAT EXISTS:`, ...index, ...(shown ? ['', `IN VIEW (${focus!.kind} ${focus!.id}):`, stringify(shown.raw)] : []), '', `THE DESIGNER ASKS: ${ask}`].join('\n'),
@@ -452,7 +525,7 @@ export function draftRequest(files: ContentFile[], ask: string, focus?: { kind: 
 
 /** Reads the chronicler's reply and checks the proposal against the world, without saving anything. */
 export function readDraft(files: ContentFile[], text: string): Draft {
-  let parsed: { say?: unknown; questions?: unknown; changes?: unknown }
+  let parsed: { say?: unknown; questions?: unknown; changes?: unknown; world?: unknown; files?: unknown }
   try {
     parsed = JSON.parse(text.trim().replace(/^```(?:json)?\s*|\s*```$/g, '')) as typeof parsed
   } catch {
@@ -462,23 +535,61 @@ export function readDraft(files: ContentFile[], text: string): Draft {
     .filter((c): c is DraftChange => Boolean(c) && typeof c === 'object' && ENTITY_KINDS.includes((c as DraftChange).kind) && typeof (c as DraftChange).id === 'string')
     .map((c) => ({ kind: c.kind, id: c.id, yaml: typeof c.yaml === 'string' ? c.yaml : '' }))
   const problems: string[] = []
-  const edits: Edit[] = []
   for (const change of changes) {
-    if (!change.yaml.trim()) {
-      edits.push({ kind: change.kind, id: change.id })
-      continue
-    }
+    if (!change.yaml.trim()) continue
     const read = parseEntityYaml(change.yaml)
     if (!read.raw) problems.push(`${change.id}: ${read.problem}`)
-    else edits.push({ kind: change.kind, id: change.id, data: { ...read.raw, id: change.id } })
   }
-  const result = problems.length ? undefined : applyEdits(files, edits)
+  const world = typeof parsed.world === 'string' && parsed.world.trim() ? parsed.world : undefined
+  const whole = (Array.isArray(parsed.files) ? parsed.files : []).filter((f): f is { path: string; text: string } => Boolean(f) && typeof f === 'object' && typeof (f as { path?: unknown }).path === 'string' && typeof (f as { text?: unknown }).text === 'string')
+  const result = problems.length ? undefined : draftResult(files, { changes, ...(world ? { world } : {}), ...(whole.length ? { files: whole } : {}) })
   return {
     say: typeof parsed.say === 'string' ? parsed.say : '',
     questions: Array.isArray(parsed.questions) ? parsed.questions.filter((q): q is string => typeof q === 'string') : [],
     changes,
+    ...(world ? { world } : {}),
+    ...(whole.length ? { files: whole } : {}),
     ...(result ? { result } : {}),
     problems: [...problems, ...(result?.problems ?? [])],
+  }
+}
+
+/**
+ * The request for one step of building a world with the designer (M10.17): the
+ * world guide and the step's instruction, the contract in short, the world as
+ * it is (its world.yaml whole, and what exists), and what the designer said.
+ */
+export function worldStepRequest(files: ContentFile[], stepId: string, said: string): LlmRequest {
+  const step = WORLD_STEPS.find((s) => s.id === stepId) ?? WORLD_STEPS[0]!
+  const content = safeLoad(files)
+  const instruction = files.filter((f) => /(^|\/)CHRONICLER\.md$/.test(f.path)).sort((a, b) => a.path.localeCompare(b.path)).map((f) => f.text).join('\n\n')
+  const worldFile = files.find((f) => /(^|\/)world\.ya?ml$/.test(f.path))
+  const index = ENTITY_KINDS.map((kind) => {
+    const list = entities(files, kind)
+    return list.length ? `${LISTS[kind]}: ${list.map((e) => `${e.id} (${nameOf(kind, e.raw)})`).join(', ')}` : ''
+  }).filter(Boolean)
+  const order = WORLD_STEPS.map((s, i) => `${i + 1}. ${s.title}${s.id === step.id ? ' (NOW)' : ''}`).join(' ')
+  return {
+    role: 'chronicler',
+    system: [
+      WORLD_GUIDE,
+      '',
+      `THE STEPS: ${order}`,
+      step.prompt,
+      `ASK THE DESIGNER, if they have not said: ${step.ask.join(' ')}`,
+      `CHECK BEFORE YOU PROPOSE: ${step.checks.join(' ')}`,
+      `IF THE DESIGNER SKIPS THIS STEP: ${step.skipped}`,
+      '',
+      contractSummary(content),
+      '',
+      instruction,
+      'Answer in JSON: say, questions, changes (entities as full YAML), world (YAML of the top-level world.yaml keys to set, or empty), files (CHRONICLER.md or data/voice.yaml whole, or none).',
+    ].join('\n'),
+    prompt: [`WORLD.YAML NOW:`, worldFile?.text ?? '(none)', '', 'WHAT EXISTS:', ...index, '', `THE DESIGNER SAYS: ${said}`].join('\n'),
+    schemaName: 'world_step',
+    schema: WORLD_STEP_SCHEMA,
+    maxTokens: 6000,
+    meta: { step: step.id, ask: said, prefix: worldPrefix(files) },
   }
 }
 

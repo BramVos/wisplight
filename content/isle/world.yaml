@@ -41,6 +41,7 @@ world:
     era: SF
     months: [Deepwinter, Thawmoon, Seedtide, Blossom, Brightsun, Midsummer, Highsun, Harvest, Leaffall, Mistmoon, Frostwane, Longnight, Starfall Days]
     weekdays: [Moonday, Tidesday, Windsday, Thornsday, Fireday, Starday, Restday]
+    start_weekday: Windsday
   # Names for people a game makes (M10.9): someone spoken of who becomes a person, the people of a far place.
   names:
     she: [Kerra, Morwen, Lowena, Senara, Jenna, Tressa, Ebrel, Ysolt, Rosen, Demelza]
@@ -61,6 +62,11 @@ world:
     stay: 0.55
     prevailing: west
     readers: [fisher, boatman, lightkeeper, hedge_witch]
+    # The sky over Skerrow (M10.17): the sea is never far.
+    lines:
+      rain: Rain comes in off the sea and runs down your neck.
+      fog: A sea mist lies over everything and muffles every sound but the surf.
+      clear: { day: The sky is wide and pale over the water., night: Stars hang sharp and cold over the sea. }
   money:
     units:
       - { short: gp, name: gold piece, value: 100 }

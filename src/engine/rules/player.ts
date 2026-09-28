@@ -38,7 +38,7 @@ import {
   type CreationChoice,
   type LevelChoice,
 } from './character'
-import { ATTRIBUTES, SAVES, type Attribute } from './schema'
+import { ATTRIBUTES, SAVES, type Attribute, type Death } from './schema'
 import { approve, syncLevels } from '../social/companions'
 
 // The character in the world (FO, chapter 11): making one, checks with real
@@ -509,14 +509,10 @@ export function greyRider(world: World, deathPlace: string, pass: (minutes: numb
   player.money -= lost
   if (lost > 0) player.lostPurse = { location: deathPlace, amount: lost, t: world.now }
   c.mark = true
+  const death = deathOf(world)
   const patron = c.patron && rulesOf(world.content).patrons.find((p) => p.id === c.patron!.id)
-  const sender = patron && patron.id !== 'grey_rider' ? patron.name : 'the Rider'
-  const lines: Output[] = [
-    {
-      kind: 'narration',
-      text: `You are walking on a road of grey light, and there are hooves around you, and hounds, and a wind that does not touch the grass. The Wild Hunt rides past, and one rider turns his head: the Grey Rider himself, his face in the shadow of his hat. He looks at you a long time. Then ${sender === 'the Rider' ? 'he' : sender} points back the way you came.`,
-    },
-  ]
+  const sender = patron && patron.id !== death.patron ? patron.name : death.guide
+  const lines: Output[] = [{ kind: 'narration', text: death.vision.replace(/\{guide\}/g, sender) }]
   const holy = [...world.content.locations.values()].filter((l) => l.tags.includes('holy') && !l.tags.includes('haunted'))
   let wake = player.lodging?.location
   if (!wake) {
@@ -535,32 +531,48 @@ export function greyRider(world: World, deathPlace: string, pass: (minutes: numb
   pass(24 * 60)
   c.hp = maxHp(world.content, c)
   c.conditions = {}
-  lines.push({ kind: 'narration', text: 'You wake a day later, cold to the bone, with the taste of earth in your mouth.' })
-  lines.push({ kind: 'system', text: `The Rider's Mark is on you: 10% fewer hit points until you perform a RITE for the dead at a barrow or a chapel.${lost ? ` Half your money (${lost} duiten) lies where you fell.` : ''}` })
-  if (c.deaths >= 3) {
+  lines.push({ kind: 'narration', text: death.wake })
+  lines.push({ kind: 'system', text: death.mark.replace('{lost}', lost ? ` Half your money (${world.money(lost)}) lies where you fell.` : '') })
+  if (c.deaths >= 3 && death.price) {
     player.riderPrice = true
-    lines.push({ kind: 'narration', text: 'Before you open your eyes you hear him, close by: "Three times now. The next time I let you go, there is a price."' })
+    lines.push({ kind: 'narration', text: death.price.warn })
   }
   return lines
+}
+
+/** Death in plain words (M10.17), for a world whose rules say nothing of it: no guide by name, and no price. */
+const PLAIN_DEATH: Death = {
+  vision: 'Everything goes dark and quiet. For a long time there is nothing at all, and then a grey light, far off, and something sends you back towards it.',
+  guide: 'something',
+  wake: 'You wake a day later, cold to the bone, with the taste of earth in your mouth.',
+  mark: 'Death has left its mark on you: 10% fewer hit points until you perform a RITE for the dead at a holy place.{lost}',
+  rite_where: 'A rite for the dead is performed at a holy place.',
+  rite_done: 'You say the names of the dead you know, and the cold goes out of your bones. The mark is gone.',
+  rite_nothing: 'You say the old words for the dead. Nobody answers.',
+}
+
+function deathOf(world: World): Death {
+  return world.content.rules?.death ?? PLAIN_DEATH
 }
 
 export function rite(world: World): Output[] {
   const c = character(world)
   if (!c) return [{ kind: 'error', text: 'This world has no rules for characters.' }]
   const here = world.location(world.state.player.location)
-  if (!here.tags.includes('holy')) return [{ kind: 'error', text: 'A rite for the dead is performed at a barrow or a chapel.' }]
+  const death = deathOf(world)
+  if (!here.tags.includes('holy')) return [{ kind: 'error', text: death.rite_where }]
   // A curse lifts at a holy place too (M7.2).
   if (c.conditions['cursed']) {
     delete c.conditions['cursed']
     delete world.state.player.conditionsUntil?.['cursed']
     if (!c.mark) return [{ kind: 'text', text: 'You say the old words at the holy place, and the wet-wool weight lifts off your shoulders. The curse is gone.' }]
   }
-  if (!c.mark) return [{ kind: 'text', text: 'You say the old words for the dead. Nobody answers.' }]
-  if (world.state.player.riderPrice) return [{ kind: 'text', text: 'The words do not take. The Rider wants his price first: the last sheaf, left for him at a crossroads.' }]
+  if (!c.mark) return [{ kind: 'text', text: death.rite_nothing }]
+  if (world.state.player.riderPrice && death.price) return [{ kind: 'text', text: death.price.refused }]
   delete c.mark
   favour(world, 'honour_dead')
   c.hp = Math.min(maxHp(world.content, c), c.hp + 5)
-  return [{ kind: 'text', text: 'You pour out a little water, say the names of the dead you know, and ask the Rider for your share of the light. The cold goes out of your bones. The Mark is gone.' }]
+  return [{ kind: 'text', text: death.rite_done }]
 }
 
 /**
@@ -568,19 +580,21 @@ export function rite(world: World): Output[] {
  * of rye left at a crossroads. Then the Mark can be lifted again, and the
  * Rider is paid.
  */
-export function leaveSheaf(world: World): Output[] {
+export function leaveSheaf(world: World): Output[] | undefined {
+  const price = deathOf(world).price
+  if (!price) return undefined
   const player = world.state.player
   const here = world.location(player.location)
-  if (!/crossroads/i.test(here.name) && !here.tags.includes('crossroads')) return [{ kind: 'error', text: 'The last sheaf is left where roads cross.' }]
-  if ((player.inventory['rye_grain'] ?? 0) < 1) return [{ kind: 'error', text: 'You have no rye to leave: a sack of it will do for a sheaf.' }]
-  player.inventory['rye_grain']! -= 1
-  if (!player.inventory['rye_grain']) delete player.inventory['rye_grain']
-  if (!player.riderPrice) return [{ kind: 'narration', text: 'You leave the rye at the foot of the post. The wind takes a few grains. Nobody else takes anything.' }]
+  if (!new RegExp(price.at, 'i').test(here.name) && !here.tags.includes(price.at)) return [{ kind: 'error', text: price.where }]
+  if ((player.inventory[price.item] ?? 0) < 1) return [{ kind: 'error', text: price.none }]
+  player.inventory[price.item]! -= 1
+  if (!player.inventory[price.item]) delete player.inventory[price.item]
+  if (!player.riderPrice) return [{ kind: 'narration', text: price.nothing }]
   delete player.riderPrice
   const c = character(world)
   if (c) delete c.mark
   favour(world, 'honour_dead')
-  return [{ kind: 'narration', text: 'You set the rye at the foot of the post, where three tracks cross. The wind goes still, then gusts once, hard, from the north, and the sack is lighter than it was. The Rider is paid. The cold goes out of your bones.' }]
+  return [{ kind: 'narration', text: price.paid }]
 }
 
 /** Coming back to where you fell: the purse may still lie there, unless someone passed first. */
@@ -591,7 +605,7 @@ export function findPurse(world: World): Output[] {
   const days = (world.now - lost.t) / (24 * 60)
   if (days < 1.5 || world.rng.next('purse') < Math.pow(0.5, days)) {
     world.state.player.money += lost.amount
-    return [{ kind: 'narration', text: `Your purse lies in the mud where you fell, ${lost.amount} duiten still in it.` }]
+    return [{ kind: 'narration', text: `Your purse lies in the mud where you fell, ${world.money(lost.amount)} still in it.` }]
   }
   return [{ kind: 'narration', text: 'Your purse is gone from where you fell. Someone found it first.' }]
 }
@@ -641,13 +655,15 @@ export function conditionsDay(world: World): void {
   const c = world.state.player.character
   if (!c?.conditions['fen_fever']) return
   c.conditions['fen_fever'] = Math.min(5, c.conditions['fen_fever'] + 1)
-  notice(world, `Fen Fever: you are weaker again this morning (Might -${c.conditions['fen_fever']}). Herbs would help; Aaltje has them.`)
+  notice(world, `Fen Fever: you are weaker again this morning (Might -${c.conditions['fen_fever']}). Herbs would help.`)
 }
 
-/** A night out in the fen: the damp may bring Fen Fever (Survival against DC 13, 15 in the rain). */
+/** A night out in the wild: the damp may bring Fen Fever where the rules have it (Survival against DC 13, 15 in the rain). */
 export function nightOut(world: World): Output[] {
   const c = character(world)
   if (!c || c.conditions['fen_fever']) return []
+  // Only where the rules know the fever (M10.17): it is the Nethermarch's, not every world's.
+  if (!rulesOf(world.content).conditions.some((x) => x.id === 'fen_fever')) return []
   const ancestry = rulesOf(world.content).ancestries.find((a) => a.id === c.ancestry)
   if (ancestry?.immune?.includes('fen_fever')) return []
   const wet = world.state.weather?.kind === 'rain' || world.state.weather?.kind === 'storm'

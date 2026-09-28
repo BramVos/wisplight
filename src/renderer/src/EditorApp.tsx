@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { stringify } from 'yaml'
-import { adoptPlaceEdits, draftEdits, ENTITY_KINDS, exitTowards, KIND_NAMES, languageReference, markColours, parseEntityYaml, type MapPlace, type ReferenceEntry } from '../../engine'
+import { adoptPlaceEdits, ENTITY_KINDS, exitTowards, KIND_NAMES, languageReference, markColours, parseEntityYaml, WORLD_STEPS, type MapPlace, type ReferenceEntry } from '../../engine'
 import { NpcInspector } from './Inspector'
 import { HexMap } from './HexMap'
 import type { MapPalette, MapStyle, MapStyleName, PaletteView } from '../../engine'
@@ -14,7 +14,7 @@ import { createEditor, type DiffLine, type Edit, type EditorBridge, type EditorD
 // playtest without the player with an NPC inspector, and the chronicler,
 // whose proposals are shown as a change and saved only when accepted.
 
-type Panel = 'edit' | 'map' | 'palette' | 'voice' | 'check' | 'playtest' | 'reference' | 'chronicler' | 'world'
+type Panel = 'edit' | 'map' | 'palette' | 'voice' | 'check' | 'contract' | 'playtest' | 'reference' | 'chronicler' | 'world'
 
 const DIRECTIONS = ['north', 'northeast', 'east', 'southeast', 'south', 'southwest', 'west', 'northwest', 'up', 'down', 'in', 'out']
 const AXES = ['warmth', 'courage', 'honesty', 'temper', 'curiosity', 'diligence'] as const
@@ -29,6 +29,8 @@ export function EditorApp() {
   const [selected, setSelected] = useState<string>()
   const [creating, setCreating] = useState(false)
   const [error, setError] = useState<string>()
+  // What the contract tab asks the chronicler for (M10.17), put ready in its box.
+  const [asking, setAsking] = useState<string>()
 
   useEffect(() => {
     document.title = 'Wisplight editor'
@@ -92,6 +94,7 @@ export function EditorApp() {
               ['palette', 'Palette'],
               ['voice', 'Voice'],
               ['check', `Check${view.problems.length ? ` (${view.problems.length} errors)` : view.warnings.length ? ` (${view.warnings.length})` : ''}`],
+              ['contract', 'Contract'],
               ['playtest', 'Playtest'],
               ['reference', 'Reference'],
               ['chronicler', 'Chronicler'],
@@ -149,10 +152,22 @@ export function EditorApp() {
       {panel === 'check' && <CheckPanel view={view} open={open} />}
       {panel === 'playtest' && <PlaytestPanel bridge={bridge} world={world} />}
       {panel === 'reference' && <ReferencePanel />}
-      {panel === 'chronicler' && <ChroniclerPanel bridge={bridge} world={world} focus={selected && !creating ? { kind, id: selected } : undefined} saved={refresh} open={open} />}
+      {panel === 'contract' && (
+        <ContractPanel
+          view={view}
+          propose={(ask) => {
+            setAsking(ask)
+            setPanel('chronicler')
+          }}
+        />
+      )}
+      {panel === 'chronicler' && <ChroniclerPanel key={asking ?? ''} bridge={bridge} world={world} focus={selected && !creating ? { kind, id: selected } : undefined} initial={asking} saved={refresh} open={open} />}
       {panel === 'world' && (
         <NewWorldPanel
           bridge={bridge}
+          world={world}
+          view={view}
+          saved={refresh}
           made={async (folder) => {
             setWorlds(await bridge.worlds())
             setWorld(folder)
@@ -1080,8 +1095,8 @@ function PlaytestPanel({ bridge, world }: { bridge: EditorBridge; world: string 
 
 // ---------------------------------------------------------------- the chronicler
 
-function ChroniclerPanel({ bridge, world, focus, saved, open }: { bridge: EditorBridge; world: string; focus?: { kind: EntityKind; id: string }; saved: () => Promise<void>; open: (kind: EntityKind, id?: string) => void }) {
-  const [ask, setAsk] = useState('')
+function ChroniclerPanel({ bridge, world, focus, initial, saved, open }: { bridge: EditorBridge; world: string; focus?: { kind: EntityKind; id: string }; initial?: string; saved: () => Promise<void>; open: (kind: EntityKind, id?: string) => void }) {
+  const [ask, setAsk] = useState(initial ?? '')
   const [withFocus, setWithFocus] = useState(Boolean(focus))
   const [draft, setDraft] = useState<EditorDraft>()
   const [busy, setBusy] = useState(false)
@@ -1101,7 +1116,8 @@ function ChroniclerPanel({ bridge, world, focus, saved, open }: { bridge: Editor
   const accept = async () => {
     if (!draft) return
     setBusy(true)
-    const result = await bridge.save(world, draftEdits(draft) as Edit[], true)
+    // Entities, keys of world.yaml and whole files alike (M10.17).
+    const result = await bridge.saveDraft(world, draft)
     setBusy(false)
     setOutcome(result)
     if (result.ok) {
@@ -1127,45 +1143,7 @@ function ChroniclerPanel({ bridge, world, focus, saved, open }: { bridge: Editor
         </button>
         {busy && <span className="muted small">The chronicler is writing...</span>}
       </div>
-      {draft && (
-        <div className="draft">
-          {draft.say && <p>{draft.say}</p>}
-          {draft.questions.length > 0 && (
-            <ul className="check-list">
-              {draft.questions.map((q) => (
-                <li key={q}>{q}</li>
-              ))}
-            </ul>
-          )}
-          {draft.problems.length > 0 && (
-            <div className="warn small">
-              <p>The proposal does not load as it is:</p>
-              <ul className="check-list">
-                {draft.problems.slice(0, 10).map((p) => (
-                  <li key={p}>{p}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-          {draft.changes.length > 0 && (
-            <p className="small muted">
-              {draft.changes.length} change{draft.changes.length === 1 ? '' : 's'}:{' '}
-              {draft.changes.map((c) => `${c.yaml.trim() ? '' : 'delete '}${c.kind.replace('_', ' ')} ${c.id}`).join(', ')}
-            </p>
-          )}
-          <Diffs changes={draft.diffs} />
-          <div className="row">
-            {draft.diffs.length > 0 && draft.problems.length === 0 && (
-              <button type="button" className="link" disabled={busy} onClick={() => void accept()}>
-                [Accept and save]
-              </button>
-            )}
-            <button type="button" className="link" onClick={() => setDraft(undefined)}>
-              [Throw it away]
-            </button>
-          </div>
-        </div>
-      )}
+      {draft && <DraftView draft={draft} busy={busy} accept={() => void accept()} drop={() => setDraft(undefined)} />}
       {outcome && (
         <div className="small">
           {outcome.ok ? <p className="ok">Saved. {outcome.changes.length} files changed.</p> : <SaveResult result={outcome} />}
@@ -1180,14 +1158,125 @@ function ChroniclerPanel({ bridge, world, focus, saved, open }: { bridge: Editor
   )
 }
 
+/** A proposal of the chronicler: what it says and asks, what it changes as diffs, and accept or throw away. */
+function DraftView({ draft, busy, accept, drop }: { draft: EditorDraft; busy: boolean; accept: () => void; drop: () => void }) {
+  const parts = [
+    ...draft.changes.map((c) => `${c.yaml.trim() ? '' : 'delete '}${c.kind.replace('_', ' ')} ${c.id}`),
+    ...(draft.world ? [`world.yaml: ${Object.keys(parseEntityYaml(draft.world).raw ?? {}).join(', ')}`] : []),
+    ...(draft.files ?? []).map((f) => f.path),
+  ]
+  return (
+    <div className="draft">
+      {draft.say && <p>{draft.say}</p>}
+      {draft.questions.length > 0 && (
+        <ul className="check-list">
+          {draft.questions.map((q) => (
+            <li key={q}>{q}</li>
+          ))}
+        </ul>
+      )}
+      {draft.problems.length > 0 && (
+        <div className="warn small">
+          <p>The proposal does not load as it is:</p>
+          <ul className="check-list">
+            {draft.problems.slice(0, 10).map((p) => (
+              <li key={p}>{p}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {parts.length > 0 && (
+        <p className="small muted">
+          {parts.length} change{parts.length === 1 ? '' : 's'}: {parts.join(', ')}
+        </p>
+      )}
+      <Diffs changes={draft.diffs} />
+      <div className="row">
+        {draft.diffs.length > 0 && draft.problems.length === 0 && (
+          <button type="button" className="link" disabled={busy} onClick={accept}>
+            [Accept and save]
+          </button>
+        )}
+        <button type="button" className="link" onClick={drop}>
+          [Throw it away]
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------- the contract (M10.17)
+
+/**
+ * What a world can have (the content contract, docs/CONTENT.md): per kind
+ * what the game does with it and whether this world has it; for an empty one
+ * what happens without it, and the chronicler to propose it. Below, the keys
+ * of world.yaml this world sets, and those that take the neutral default.
+ */
+function ContractPanel({ view, propose }: { view: EditorView; propose: (ask: string) => void }) {
+  const unset = view.worldKeys.filter((k) => !k.set).map((k) => k.key)
+  return (
+    <div className="settings-body editor-page">
+      <p className="muted small">
+        Everything a world can have, from the schemas (docs/CONTENT.md). What a world leaves out works with a neutral default, never with another world&apos;s. The chronicler can propose
+        what is empty; nothing is saved until you accept it.
+      </p>
+      <table className="quest-table contract-table">
+        <thead>
+          <tr>
+            <th>Kind</th>
+            <th>This world</th>
+            <th>What it is for</th>
+          </tr>
+        </thead>
+        <tbody>
+          {view.contract.map((k) => (
+            <tr key={k.key} className={k.count ? '' : 'muted'}>
+              <td>
+                {k.key}
+                <div className="small muted">{k.file}</div>
+              </td>
+              <td className={k.count ? 'ok' : ''}>{k.count ? (k.list ? k.count : 'yes') : 'empty'}</td>
+              <td>
+                {k.does}
+                {!k.count && (
+                  <div className="small">
+                    <span className="muted">Without it: {k.missing}</span>{' '}
+                    <button type="button" className="link" onClick={() => propose(`Propose ${k.key} for this world (${k.file}): ${k.does}`)}>
+                      [Let the chronicler propose]
+                    </button>
+                  </div>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p className="small">
+        <strong>world.yaml sets:</strong> {view.worldKeys.filter((k) => k.set).map((k) => k.key).join(', ') || 'nothing yet'}.
+      </p>
+      {unset.length > 0 && (
+        <p className="small muted">
+          Neutral default: {unset.join(', ')}.{' '}
+          <button type="button" className="link" onClick={() => propose(`Propose world.yaml keys for this world, in world: ${unset.join(', ')}. Ask me first what is mine to choose.`)}>
+            [Let the chronicler propose]
+          </button>
+        </p>
+      )}
+    </div>
+  )
+}
+
 // ---------------------------------------------------------------- a new world
 
-function NewWorldPanel({ bridge, made }: { bridge: EditorBridge; made: (folder: string) => Promise<void> }) {
+function NewWorldPanel({ bridge, world, view, saved, made }: { bridge: EditorBridge; world: string; view: EditorView; saved: () => Promise<void>; made: (folder: string) => Promise<void> }) {
   const [folder, setFolder] = useState('')
   const [name, setName] = useState('')
   const [problems, setProblems] = useState<string[]>([])
   return (
     <div className="settings-body editor-page builder-fields">
+      <WorldSteps bridge={bridge} world={world} view={view} saved={saved} />
+      <h2>Or start a new world</h2>
       <p className="muted small">
         A new world gets its own folder in content/, with the smallest content that loads: one area, one place, and its own part of the chronicler&apos;s instruction. It shows up at once
         when a new game asks which world.
@@ -1209,6 +1298,105 @@ function NewWorldPanel({ bridge, made }: { bridge: EditorBridge; made: (folder: 
       </button>
       {problems.length > 0 && <p className="warn small">{problems.join(' ')}</p>}
     </div>
+  )
+}
+
+/**
+ * Building a world with the chronicler, step by step (M10.17; the steps and
+ * what to ask are in worldguide.ts): the designer answers in a few sentences,
+ * the chronicler proposes, the editor shows it as a diff and saves only what
+ * is accepted. A step skipped stays empty and works with its neutral default.
+ */
+function WorldSteps({ bridge, world, view, saved }: { bridge: EditorBridge; world: string; view: EditorView; saved: () => Promise<void> }) {
+  const [at, setAt] = useState(0)
+  const [said, setSaid] = useState('')
+  const [draft, setDraft] = useState<EditorDraft>()
+  const [busy, setBusy] = useState(false)
+  const [done, setDone] = useState<Record<string, 'saved' | 'skipped'>>({})
+  const [outcome, setOutcome] = useState<EditorSave>()
+  const step = WORLD_STEPS[at]!
+  const go = (index: number) => {
+    setAt(Math.max(0, Math.min(WORLD_STEPS.length - 1, index)))
+    setSaid('')
+    setDraft(undefined)
+    setOutcome(undefined)
+  }
+  const propose = async () => {
+    setBusy(true)
+    setOutcome(undefined)
+    try {
+      setDraft(await bridge.worldStep(world, step.id, said.trim()))
+    } catch (reason) {
+      setDraft({ say: '', questions: [], changes: [], problems: [reason instanceof Error ? reason.message : String(reason)], diffs: [] })
+    } finally {
+      setBusy(false)
+    }
+  }
+  const accept = async () => {
+    if (!draft) return
+    setBusy(true)
+    const result = await bridge.saveDraft(world, draft)
+    setBusy(false)
+    setOutcome(result)
+    if (result.ok) {
+      setDone((d) => ({ ...d, [step.id]: 'saved' }))
+      setDraft(undefined)
+      await saved()
+    }
+  }
+  return (
+    <section className="world-steps">
+      <h2>Build {view.world.name || world} with the chronicler</h2>
+      <p className="muted small">
+        Step by step: say in a few sentences what you want, the chronicler proposes, and you accept, change your answer or skip. What you skip stays empty and works with its neutral
+        default. Frame, places and people are needed; the rest may wait.
+      </p>
+      <nav className="tabs step-tabs" aria-label="Steps">
+        {WORLD_STEPS.map((s, i) => (
+          <button key={s.id} type="button" className={i === at ? 'active' : ''} onClick={() => go(i)}>
+            {i + 1}. {s.title}
+            {done[s.id] === 'saved' ? ' (saved)' : done[s.id] === 'skipped' ? ' (skipped)' : s.optional ? '' : ' *'}
+          </button>
+        ))}
+      </nav>
+      <h3>
+        {at + 1}. {step.title}
+        {step.optional ? '' : ' (needed)'}
+      </h3>
+      <ul className="check-list small">
+        {step.ask.map((q) => (
+          <li key={q}>{q}</li>
+        ))}
+      </ul>
+      <p className="small muted">If you skip it: {step.skipped}</p>
+      <textarea rows={4} value={said} onChange={(e) => setSaid(e.target.value)} placeholder="Your answer, in a few sentences. Or: you choose." aria-label="Your answer to the chronicler" />
+      <div className="row">
+        <button type="button" className="link" disabled={busy || !said.trim()} onClick={() => void propose()}>
+          [Propose]
+        </button>
+        {step.optional && (
+          <button
+            type="button"
+            className="link"
+            disabled={busy}
+            onClick={() => {
+              setDone((d) => ({ ...d, [step.id]: 'skipped' }))
+              go(at + 1)
+            }}
+          >
+            [Skip this step]
+          </button>
+        )}
+        {at < WORLD_STEPS.length - 1 && (
+          <button type="button" className="link" disabled={busy} onClick={() => go(at + 1)}>
+            [Next step]
+          </button>
+        )}
+        {busy && <span className="muted small">The chronicler is writing...</span>}
+      </div>
+      {draft && <DraftView draft={draft} busy={busy} accept={() => void accept()} drop={() => setDraft(undefined)} />}
+      {outcome && (outcome.ok ? <p className="ok small">Saved. {outcome.changes.length} files changed.</p> : <SaveResult result={outcome} />)}
+    </section>
   )
 }
 

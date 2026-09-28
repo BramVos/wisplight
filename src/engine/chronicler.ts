@@ -1,7 +1,7 @@
 import { chronicle, emptyOutput, type Card, type ChronicleEvent, type ChronicleInput, type ChronicleLine, type ChronicleOutput, type ChroniclerModel, type ChroniclerRequest, type PlanOp, type QuestTemplate } from '../chronicler'
 import { PlanSchema, type Plan, type PlanEffect } from './quests/planschema'
 import { shiftTension } from './social/realms'
-import { GameClock, MONTHS, WEEKDAYS } from './clock'
+import { GameClock } from './clock'
 import { callName } from './content'
 import { leakedNames, unknownNames, vocabularyOf } from './dialogue/guard'
 import { worldFrame } from './dialogue/prompt'
@@ -326,8 +326,8 @@ function vocabulary(world: World): Set<string> {
   return vocabularyOf(
     { ...world.content, chronicler: undefined },
     worldFrame(world.content),
-    MONTHS,
-    WEEKDAYS,
+    world.calendar.months,
+    world.calendar.weekdays,
     (world.state.lore?.far ?? []).map((f) => f.name),
     (world.state.lore?.people ?? []).map((p) => p.name),
     (world.state.chronicle?.lore ?? []).map((l) => l.name),

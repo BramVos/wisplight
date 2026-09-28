@@ -28,11 +28,16 @@ factions:
     name: the Church of the Lantern
     seat: the Brandaris in Graafhaven; the chapel in Veenhoek and the priory at Kloosterveen
     wants: Souls, charity, an end to witchcraft and the old rites.
-    stance: divided; the prior knows of the charter
+    stance: divided on the drainage; the prior knows of the charter
     members: [npc_wendela]
     allies: [counts_men, waagdam_burghers]
     rivals: [old_faith, fen_folk]
-    join: patron_lantern
+    join:
+      patrons: [lantern]
+      tag: holy
+      says:
+        patron: The Church takes novices who have sworn themselves to the Lantern.
+        place: You take the novice vows in a chapel or church.
 
   - id: old_faith
     name: the Old Faith
@@ -42,7 +47,10 @@ factions:
     members: [npc_aaltje, npc_gerrit]
     allies: [fen_folk, kabouters, white_women]
     rivals: [lantern_church]
-    join: patron_old
+    join:
+      not_patrons: [lantern]
+      says:
+        patron: The Old Faith is for those who follow one of the Old Powers.
 
   - id: brotherhood
     name: the Brotherhood of Peat-cutters
@@ -58,18 +66,23 @@ factions:
     name: the burghers of Waagdam
     seat: the town hall and the Waag
     wants: Market, trade and quiet.
-    stance: in two minds; more grain, but less peat
+    stance: in two minds on the drainage; more grain, but less peat
     members: [npc_dirck, npc_lubbert, npc_teunis, npc_hendrik]
     allies: []
     rivals: []
-    join: citizenship
+    join:
+      at: [loc_waagdam_waag, loc_waagdam_weighing_room]
+      fee: 800
+      says:
+        place: The town rights of Waagdam are bought at the Waag.
+        fee: The town rights cost five guilders.
     law: waagdam
 
   - id: veenhoek_villagers
     name: the villagers of Veenhoek
     seat: Veenhoek
     wants: Bread, peat, safety, and Fenna back.
-    stance: divided
+    stance: divided on the drainage
     members: [npc_trijntje, npc_geesje, npc_mirte, npc_wouter, npc_jan_visser, npc_grietje_visser, npc_pim, npc_harmen, npc_kobus]
     allies: [brotherhood]
     rivals: []
@@ -79,7 +92,7 @@ factions:
     name: the Goat-Riders
     seat: the Rietdoolhof south of the Blackmere
     wants: Toll, loot and fear.
-    stance: for whoever pays best
+    stance: on the drainage, for whoever pays best
     allies: []
     rivals: [counts_men, brotherhood]
     join: reputation
@@ -88,7 +101,7 @@ factions:
     name: the Fen-folk of the Kattenbroek
     seat: the hut on stilts in the Kattenbroek
     wants: That the fen is left alone.
-    stance: against, to the last
+    stance: against the drainage, to the last
     allies: [old_faith, water_spirits]
     rivals: [counts_men, lantern_church]
     join: never
@@ -97,7 +110,7 @@ factions:
     name: the kabouters
     seat: the Kabouterberg
     wants: Milk, respect, and not to be spied on.
-    stance: indifferent, as long as their hill stays
+    stance: indifferent to the drainage, as long as their hill stays
     allies: [old_faith]
     rivals: []
     join: never
@@ -106,7 +119,7 @@ factions:
     name: the water spirits
     seat: the Blackmere
     wants: Water, and reverence for water.
-    stance: against; the mill pumps their mere dry
+    stance: against the drainage; the mill pumps their mere dry
     allies: [fen_folk]
     rivals: []
     join: never
@@ -115,7 +128,7 @@ factions:
     name: the White Women
     seat: the barrows at Reuzenrust
     wants: Rest and respect for the dead.
-    stance: indifferent
+    stance: indifferent to the drainage
     allies: [old_faith]
     rivals: []
     join: never

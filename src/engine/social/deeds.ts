@@ -203,7 +203,7 @@ export function debtsOf(world: World, npcId: string): string[] {
     .map((d) => {
       const other = d.from === npcId ? d.to : d.from
       const name = other === 'player' ? 'the stranger' : world.content.npcs.has(other) ? callName(world.npc(other)) : other
-      return d.from === npcId ? `you owe ${name} ${d.amount} duiten` : `${name} owes you ${d.amount} duiten`
+      return d.from === npcId ? `you owe ${name} ${world.money(d.amount)}` : `${name} owes you ${world.money(d.amount)}`
     })
 }
 
@@ -217,7 +217,7 @@ export function debtsDue(world: World): void {
     if (word) settle(world, word, 'missed', `the stranger did not pay ${callName(world.npc(d.to))} back within the week`, { fault: 'by', quiet: true })
     else deed(world, d.to, 'promise_broken')
     const s = world.npcState(d.to)
-    s.grievance = { reason: 'debt', t: world.now, line: `"You owe me ${d.amount} duiten, and the week is up."` }
+    s.grievance = { reason: 'debt', t: world.now, line: `"You owe me ${world.money(d.amount)}, and the week is up."` }
   }
 }
 

@@ -193,7 +193,7 @@ export function makeFarPlace(world: World, topic: string, words: FarWords | null
       tags: ['public', 'social', 'market'],
       aliases: ['market'],
       description: {
-        day: room('market', `You stand in the market of ${name}, among stalls of ${wares}. Traders shout their prices over each other, and you smell pitch and hot fat from the cookshops. Nobody here has heard of the fen or cares what happens in it. An inn stands at the corner, and the gate is back out.`),
+        day: room('market', `You stand in the market of ${name}, among stalls of ${wares}. Traders shout their prices over each other, and you smell pitch and hot fat from the cookshops. Nobody here has heard of ${region} or cares what happens there. An inn stands at the corner, and the gate is back out.`),
       },
       exits: { out: { to: ids.gate, minutes: 3 }, in: { to: ids.inn, minutes: 1 } },
       services: [

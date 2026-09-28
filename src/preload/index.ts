@@ -43,6 +43,9 @@ contextBridge.exposeInMainWorld('wisplight', {
     voice: (world: string) => ipcRenderer.invoke('editor:voice', world),
     saveVoice: (world: string, yaml: string) => ipcRenderer.invoke('editor:save-voice', world, yaml),
     proposeVoice: (world: string, ask: string) => ipcRenderer.invoke('editor:propose-voice', world, ask),
+    // Building a world step by step with the chronicler (M10.17), and saving a proposal with world keys and files.
+    worldStep: (world: string, step: string, said: string) => ipcRenderer.invoke('editor:world-step', world, step, said),
+    saveDraft: (world: string, draft: unknown) => ipcRenderer.invoke('editor:save-draft', world, draft),
   },
   // Under the bonnet (M10.1): only a development build has the dev menu.
   ...(import.meta.env.DEV ? { dev: { view: (section: string, focus?: string) => ipcRenderer.invoke('dev:view', section, focus) } } : {}),

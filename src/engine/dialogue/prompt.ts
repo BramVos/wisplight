@@ -1,4 +1,4 @@
-import { dayName, GameClock } from '../clock'
+import { GameClock, weekdayName } from '../clock'
 import { tieTo } from '../people'
 import type { Npc } from '../content'
 import type { World } from '../world'
@@ -11,7 +11,7 @@ import { requestLines } from '../requests'
 import { agreementLines } from '../agreements'
 import { relation, type Attitude } from './relations'
 import { faithOf } from '../faith'
-import { forecastLine, readsTheSky, weather, wind, windWords } from '../weather'
+import { hasWeather, forecastLine, readsTheSky, weather, wind, windWords } from '../weather'
 import { oathsFor, talkSeed, voiceLines } from './voice'
 import { moodOf } from '../quests/plans'
 import { lodgerLine } from '../lodgings'
@@ -20,8 +20,8 @@ import { lodgerLine } from '../lodgings'
 // stable per NPC so providers can cache it; everything that changes goes in
 // the prompt part.
 
-const NETHERMARCH = `You voice one character in a text role-playing game set in the Nethermarch,
-a low, wet land of dykes, peat and old stories. Late-medieval technology.`
+/** The first line when a world has no frame of its own (M10.17): neutral, never another world. */
+const NO_FRAME = `You voice one character in a text role-playing game, in a world of its own.`
 
 const RULES = `Rules:
 - Speak only as the character below. Never mention being an AI, a model, a game or rules.
@@ -60,18 +60,11 @@ const RULES = `Rules:
   that your reply actually talks about.
 - Reply with JSON that matches the schema, and nothing else.`
 
-export const WORLD_FRAME = `WORLD: The Nethermarch, a low, wet land by the Grey Sea. Year 211 After the Wolf
-(the great flood). Dykes, polders, peat fens, windmills, barges. Money: guilders, stuivers
-and duiten (1 gl = 20 st, 1 st = 8 d). Faith: the Church of the Lantern (Saint Brand) in the
-towns; the Old Powers (Nehalennia, the Grey Rider, Mother Holle, Baduhenna) in old customs.
-Folk believe in kabouters, the White Women, the Haakman, will-o'-the-wisps and witches.
-Some of it is true.
-REGION: the Holleveen. The Count wants to drain it. The peat-cutters and the fen folk are
-against it. Tempers are short, and a girl is missing.
-PEOPLE speak plain, practical English with a little local colour. They measure distance in
-hours' walk and time by bells and daylight.`
+/** The frame when world.yaml has none (M10.17): neutral; every world writes its own. */
+export const WORLD_FRAME = `WORLD: a world of its own, with its own names, money and customs. Nothing of our world
+exists here unless the world says so. PEOPLE speak plain English.`
 
-/** The frame of the world in play: its own (world.yaml, frame), or the Nethermarch's. */
+/** The frame of the world in play: its own (world.yaml, frame), or a neutral one. */
 export function worldFrame(content: { world: { frame?: string } }): string {
   return content.world.frame?.trim() || WORLD_FRAME
 }
@@ -104,7 +97,7 @@ export function systemPrompt(world: World, npcId: string): string {
     .filter(([, v]) => v >= 2)
     .map(([k]) => k)
   return [
-    world.content.world.frame ? `You voice one character in a text role-playing game set in ${world.words.land}.` : NETHERMARCH,
+    world.content.world.frame ? `You voice one character in a text role-playing game set in ${world.words.land}.` : NO_FRAME,
     RULES,
     '',
     worldFrame(world.content),
@@ -254,9 +247,9 @@ export function turnPrompt(world: World, ctx: TurnContext): string {
     .filter((id) => id !== ctx.npcId)
     .map((id) => world.npc(id).short)
   const lines = [
-    `SCENE: ${location.name}, ${dayName(clock.parts.weekday, world.calendar)}, ${clock.parts.dayPart}. ${npc.short} is ${state.activity}. Mood: ${ctx.mood}.`,
+    `SCENE: ${location.name}, ${weekdayName(world.now, world.calendar)}, ${clock.parts.dayPart}. ${npc.short} is ${state.activity}. Mood: ${ctx.mood}.`,
     // The sky, and for who reads it what is coming (M10.8).
-    `WEATHER: ${weather(world)}, ${windWords(wind(world))}.${readsTheSky(world, ctx.npcId) && forecastLine(world) ? ` You read the sky: ${forecastLine(world)}` : ''}`,
+    ...(hasWeather(world) ? [`WEATHER: ${weather(world)}, ${windWords(wind(world))}.${readsTheSky(world, ctx.npcId) && forecastLine(world) ? ` You read the sky: ${forecastLine(world)}` : ''}`] : []),
     // The mood of the area (M10.11): panic, grief, a feast, a threat; the people here feel it.
     ...(moodOf(world, location.area) ? [`THE MOOD HERE: ${moodOf(world, location.area)!.prompt ?? moodOf(world, location.area)!.line}`] : []),
     present.length ? `Also here: ${present.join(', ')}, and the player.` : `Also here: the player, a stranger from ${world.words.from}.`,

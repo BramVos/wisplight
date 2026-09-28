@@ -1932,3 +1932,22 @@ pre.sheet {
   flex-wrap: wrap;
   gap: 4px 12px;
 }
+
+/* Building a world step by step (M10.17): the steps wrap, each on one line. */
+.step-tabs {
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin: 8px 0;
+}
+
+.step-tabs button {
+  white-space: nowrap;
+}
+
+.world-steps {
+  margin-bottom: 32px;
+}
+
+.contract-table td {
+  vertical-align: top;
+}

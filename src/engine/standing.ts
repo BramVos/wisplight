@@ -8,8 +8,8 @@ import type { World } from './world'
 
 export const STANDINGS = ['poor', 'common', 'burgher', 'well-to-do', 'notable'] as const
 
-/** Offices that raise standing by one: the schout, the mayor, the prior. A world can name its own. */
-const OFFICES = ['schout', 'mayor', 'prior', 'weighmaster', 'dyke_reeve', 'notary']
+/** Offices that raise standing by one: a world names its own (world.yaml standing.offices); without them, none (M10.17). */
+const OFFICES: string[] = []
 
 /** The words of a world for the five standings, lowest first. */
 export function standingNames(world: World): readonly string[] {

@@ -158,6 +158,15 @@ npcs:
         - "My grandmother knew what the Haakman fears. She told me once, when I was small. I wish I'd listened better."
         - "The eels are fewer every year since the mill started pumping. The fen's drying from the inside."
     romance: { open_to: anyone, note: "In love with Geesje; whoever wants him has to deal with her." }
+    hires:
+      - id: punt
+        name: punt
+        aliases: [boat, flat-bottomed boat]
+        price: 16
+        hours: 12
+        crosses: [water]
+        where: the eel-fisher, at his hut south of the peat cuttings
+        line: '"Mind the pole in the channels, and bring her back before the dark."'
     speech: "Few words, dry humour, talks about the fen as if it can hear."
     aliases: [eel-fisher, eel fisher, palingvisser]
     public_facts:

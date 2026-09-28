@@ -1,6 +1,6 @@
 import type { Archived } from './archive'
 import { grownContent } from './growth/growth'
-import { DEFAULT_CALENDAR, GameClock, isOpenAt, type Calendar } from './clock'
+import { calendarOf, GameClock, isOpenAt, type Calendar } from './clock'
 import { callName, type Content, type Direction, type Location, type Npc, type ObjectInstance, type ObjectType, type Service } from './content'
 import { DEFAULT_MONEY, formatMoney, type MoneyUnit } from './items'
 import { mergeNpc, staffOf } from './layer'
@@ -19,25 +19,33 @@ export interface Route {
 
 const MAX_EVENTS = 300
 
-/** The names the game's own texts use for a world (M8); the Nethermarch's when world.yaml has none. */
+/** The names the game's own texts use for a world (M8); neutral words when world.yaml has none (M10.17). */
 export interface WorldWords {
   land: string
   region: string
   from: string
   /** Wanted "in the Count's land"; fines go to the officer, at the office or to the NPC. */
   law: { where: string; officer: string; npc?: string; office?: string; lord?: string }
+  /** How a night's sleep reads (M10.17). */
+  sleep: { room: string; home: string; rough: string }
 }
-const NETHERMARCH_WORDS: WorldWords = {
-  land: 'the Nethermarch',
-  region: 'the Holleveen',
-  from: 'Graafhaven',
-  law: { where: "in the Count's land", officer: 'schout', npc: 'npc_everhard', office: 'loc_schout_house', lord: 'the Count' },
+/** What a world without words of its own is called (M10.17): never another world's names, and a law without an officer. */
+const NEUTRAL_WORDS: WorldWords = {
+  land: 'the land',
+  region: 'the region',
+  from: 'far away',
+  law: { where: 'here', officer: 'watch' },
+  sleep: {
+    room: 'You sleep under a heavy blanket.',
+    home: 'You sleep at home, in your own bed, beside the one you married.',
+    rough: 'You sleep rough, and badly. The cold gets into your bones.',
+  },
 }
 
 /** The words of a world, from its content. */
 export function wordsOf(content: Pick<Content, 'world'>): WorldWords {
   const w = content.world
-  return { ...NETHERMARCH_WORDS, ...w.words, law: w.law ?? (w.words ? { where: `in ${w.words.region}`, officer: 'watch' } : NETHERMARCH_WORDS.law) }
+  return { ...NEUTRAL_WORDS, ...w.words, sleep: { ...NEUTRAL_WORDS.sleep, ...w.words?.sleep }, law: w.law ?? (w.words ? { where: `in ${w.words.region}`, officer: 'watch' } : NEUTRAL_WORDS.law) }
 }
 
 /** The first letter up: "The Holleveen". */
@@ -105,8 +113,10 @@ export class World {
     return wordsOf(this.content)
   }
 
+  private anchored?: Calendar
+  /** The world's calendar, its week anchored on its own start (M10.17). */
   get calendar(): Calendar {
-    return this.content.world.calendar ?? DEFAULT_CALENDAR
+    return (this.anchored ??= calendarOf(this.content.world))
   }
 
   get coins(): readonly MoneyUnit[] {
@@ -211,11 +221,11 @@ export class World {
 
   serviceOpen(locationId: string, service: Service, at = this.now): boolean {
     const staff = this.state.layer?.staff ? staffOf(this, locationId, service) : service.staff
-    return isOpenAt(at, service.hours, service.days) && this.staffed(locationId, service.provider, staff, service.premises)
+    return isOpenAt(at, service.hours, service.days, this.calendar) && this.staffed(locationId, service.provider, staff, service.premises)
   }
 
   objectOpen(locationId: string, object: ObjectInstance, at = this.now): boolean {
-    if (!isOpenAt(at, object.hours, object.days)) return false
+    if (!isOpenAt(at, object.hours, object.days, this.calendar)) return false
     return object.provider ? this.staffed(locationId, object.provider, object.staff) : true
   }
 

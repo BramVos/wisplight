@@ -22,7 +22,8 @@
     "ids": "tsx scripts/ids.ts",
     "longrun": "tsx scripts/longrun.ts",
     "stutter": "tsx scripts/stutter.ts",
-    "playtest": "tsx scripts/playtest.ts"
+    "playtest": "tsx scripts/playtest.ts",
+    "content:contract": "tsx scripts/contract.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.128.0",

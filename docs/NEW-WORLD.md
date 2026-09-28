@@ -12,18 +12,18 @@ Zo maakt de kroniekverteller in de editor samen met jou een nieuwe wereld (M10.1
 
 | Stap | Wat hij vraagt | Wat het vult | Overgeslagen |
 | --- | --- | --- | --- |
-| Kader | Soort wereld en wat er niet bestaat; waar het verhaal begint en waarom de vreemdeling er is; de namen (wereld, land, streek, waar je vandaan komt) | `world.yaml`: name, frame, words, intro; `CHRONICLER.md` | Kan niet: zonder kader schrijft het model een algemene wereld |
+| Kader | Soort wereld en wat er niet bestaat; waar het verhaal begint en waarom de vreemdeling er is; de namen (wereld, land, streek, waar je vandaan komt) | `world.yaml`: name, frame, words (ook `sleep`: hoe een nacht in een kamer, thuis en buiten leest), intro; `CHRONICLER.md` | Kan niet: zonder kader schrijft het model een algemene wereld. Zonder slaapzinnen: een deken, je eigen bed, "The cold gets into your bones." |
 | Kalender en weer | Jaartelling en jaar; dertien maanden en de week (hoeveel dagen, welke namen); is er weer, en zo ja welke seizoenen en welk weer, eventueel met eigen zinnen voor de lucht | calendar, start, weather | De standaardkalender, en helemaal geen weer (zoals onder een koepel of op een schip) |
-| Geld | De munten van klein naar groot; wat een maaltijd, een nacht en een dagloon kosten; wat de vreemdeling bij zich heeft | money, player | Eén neutrale munt, prijzen als getallen |
-| Geloof | Is er geloof, welk, en tot wie bidden ze; zo niet, waar zweren ze bij | faiths | Geen geloof |
+| Geld | De munten van klein naar groot, met andere woorden die men ervoor gebruikt ("gulden"); wat een maaltijd, een nacht en een dagloon kosten; wat de vreemdeling bij zich heeft | money (met aliases), player | Eén neutrale munt, prijzen als getallen |
+| Geloof | Is er geloof, welk, en tot wie bidden ze; zo niet, waar zweren ze bij; wat de vreemdeling ziet als hij sterft en terugkomt, wie hem terugleidt, en welke rite (of prijs) er is | faiths, `rules.death` | Geen geloof; de dood in gewone woorden, zonder gids, rite of prijs |
 | Plekken | De gebieden en hun soort; vijf tot tien plekken en de eerste; hoe ze verbonden zijn en hoe lang dat lopen is | areas, locations, start | Kan niet: minstens één gebied en één plek |
 | Beroepen | Wat mensen de hele dag doen; wanneer ze werken, eten en slapen | professions | Mensen blijven thuis |
-| Mensen | De eerste drie tot zes mensen, met werk en huis; wie de wet handhaaft en waar; waar men over praat | npcs, topics, law, names | Kan niet: een lege wereld |
+| Mensen | De eerste drie tot zes mensen, met werk en huis; wie de wet handhaaft, waar, en wat de zwaarste en lichtste overtreding kost, en bij welke groepen je kunt horen (een gilde, een orde, een ploeg) en hoe; waar men over praat | npcs, topics, factions (met `join` en eventueel `stance`), law (met `fines`), standing, names | Kan niet: een lege wereld. Zonder boetes: afgeleid van de munten. Zonder ambten: geen ambten. Een groep zonder `join`: je kunt er niet bij |
 | Economie | Wat men eet en gebruikt en wie het verkoopt; wat hier gemaakt wordt; een ambacht om te leren | items, object_types, diensten, settlements, resources, crafts | Vaste prijzen, niets wordt gemaakt of verbruikt |
-| Vervoer | Reist men anders dan te voet, en waarmee; haltes, dagen, uren en prijs; verre plekken | passages, topics | Geen lijnen: je loopt |
+| Vervoer | Reist men anders dan te voet, waarmee, en met welke haltes, dagen, uren en prijs; kun je iets huren (een punter, een paard, een skimmer), bij wie en voor hoeveel; verre plekken, en wat er onderweg kan gebeuren | passages, `hires` op een persoon, topics, journey (met `on_the_way`) | Geen lijnen en niets te huur: je loopt, een wandeling is één regel en onderweg gebeurt niets |
 | Signalen | Welke veranderingen ertoe doen; wat de gewoonte dan doet | watchers, aftermath | Veranderingen gaan zonder signaal voorbij |
-| Stem | Eden, gezegden, hoe men een vreemdeling aanspreekt; tijd en maat; wat hier niet bestaat | `data/voice.yaml` | Alleen de vaste lijst moderne woorden blijft weg |
-| Palet | Kleuren van de kaart; de stijl van de afbeeldingen | palet, pictures | Het standaardpalet |
+| Stem | Eden, gezegden, hoe men een vreemdeling aanspreekt; tijd en maat; wat hier niet bestaat | `data/voice.yaml` | Alleen de vaste kern blijft weg (een model dat over modellen praat); verder is niets misplaatst, dus in Deepwell mag een computer |
+| Palet | Kleuren van de kaart en de namen van de terreinen (die komen terug in de kaartteksten: "In the salt marsh"); de stijl van de afbeeldingen | palet (met `names`), pictures | Het standaardpalet en de standaardnamen |
 
 Na elke stap controleert hij zijn eigen voorstel. Een paar voorbeelden: elke tekst die een beschrijving met "a" of "an" noemt heeft een detail, de startplek bestaat, een halte ligt op een bestaande plek, en weekdagen zijn uniek. De volledige lijst staat per stap in `WORLD_STEPS`.
 

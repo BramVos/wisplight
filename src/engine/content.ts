@@ -11,7 +11,7 @@ import { permitted, verbName } from './quests/verbs'
 import { RELATION_ROLES } from './roles'
 import { VoiceSchema, type Voice } from './dialogue/voiceSchema'
 import { PassageSchema, type Passage } from './map/passageSchema'
-import { WEEKDAYS } from './clock'
+import { DEFAULT_CALENDAR } from './clock'
 import { GestureSchema, LodgingSchema, ReturningSchema, type Gesture, type Lodging, type Returning } from './belongSchema'
 
 // Content is plain YAML in content/. This module parses and validates it
@@ -47,7 +47,8 @@ const Prose = z.string().transform((text) => text.replace(/([^\n])\n(?=[^\n])/g,
 const Id = (prefix: string) => z.string().regex(new RegExp(`^${prefix}_[a-z0-9_]+$`))
 const ItemCounts = z.record(z.string(), z.number().int().positive()).default({})
 const Hours = z.string().regex(/^\d{2}(:\d{2})?-\d{2}(:\d{2})?$/)
-const Weekday = z.enum(['Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrijdag', 'Zaterdag', 'Rustdag'])
+/** A day of the world's own week (M10.17): checked on loading against the calendar in world.yaml. */
+const Weekday = z.string().min(1)
 
 // ---------------------------------------------------------------- items
 
@@ -570,6 +571,31 @@ export const NpcSchema = z.object({
   creature: z.string().optional(),
   /** Open to romance (FO, chapter 8; Wereldboek, "Romance"): with whom, from which attitude. */
   romance: z.object({ open_to: z.enum(['anyone', 'women', 'men', 'nobody']), from: z.enum(['Friendly', 'Warm']).default('Warm'), note: z.string().optional() }).strict().optional(),
+  /**
+   * What this person hires out (M10.17, before M7.2's punt of Wouter in code): a punt, a horse, a skiff, a sled.
+   * HIRE <name> with the owner there; for the hours given it lets the stranger cross what it crosses. A friend pays nothing.
+   */
+  hires: z
+    .array(
+      z
+        .object({
+          id: z.string().regex(/^[a-z0-9_]+$/),
+          name: z.string(),
+          aliases: z.array(z.string()).default([]),
+          /** The price for the hire, in the smallest coin. */
+          price: z.number().int().nonnegative(),
+          hours: z.number().positive().default(12),
+          /** What it lets the stranger cross that stops a walker: open water and channels. */
+          crosses: z.array(z.enum(['water'])).default([]),
+          /** Where the owner is found, when the stranger asks elsewhere: "the eel-fisher, at his hut south of the peat cuttings". */
+          where: z.string().optional(),
+          /** What the owner says on handing it over. */
+          line: z.string().optional(),
+          free_for_friends: z.boolean().default(true),
+        })
+        .strict(),
+    )
+    .default([]),
   relations: z.array(RelationSchema).default([]),
   secrets: z
     .array(
@@ -731,16 +757,26 @@ export const WorldSchema = z.object({
   }),
   player: z.object({ money: z.number().int().nonnegative(), inventory: ItemCounts }),
   knowledge: KnowledgeRulesSchema.default(KnowledgeRulesSchema.parse({})),
-  /** The fixed block every model call gets about this world (FO, chapter 10); without it, the Nethermarch's. */
+  /** The fixed block every model call gets about this world (FO, chapter 10); without it, a plain one that names no world (M10.17). */
   frame: z.string().optional(),
   /** How pictures of places and people look in this world (after the M7 playtest): one style for all of them. */
   pictures: z.object({ style: z.string() }).strict().optional(),
   /** The map of this world (M10): its palette, and its levels from below to above. */
   map: WorldMapSchema.optional(),
   /** The names the game's own texts use (M8): the land, the region you play in, where the stranger comes from. */
-  words: z.object({ land: z.string(), region: z.string(), from: z.string() }).strict().optional(),
+  words: z
+    .object({
+      land: z.string(),
+      region: z.string(),
+      from: z.string(),
+      /** How a night's sleep reads here (M10.17): in a room, at home with a spouse, and rough; each a sentence. */
+      sleep: z.object({ room: z.string().optional(), home: z.string().optional(), rough: z.string().optional() }).strict().optional(),
+    })
+    .strict()
+    .optional(),
   /** Names for the calendar (M8): thirteen months (the last one five days), seven weekdays, and the era after the year. */
-  calendar: z.object({ era: z.string(), months: z.array(z.string()).length(13), weekdays: z.array(z.string()).length(7) }).strict().optional(),
+  // Thirteen months (twelve of thirty days and the short thirteenth), and a week of as many days as it names (M10.17).
+  calendar: z.object({ era: z.string(), months: z.array(z.string()).length(13), weekdays: z.array(z.string()).min(1), start_weekday: z.string().optional() }).strict().optional(),
   /**
    * The weather of this world (M10.8): the season of each month, the chances of each weather per season, how likely
    * the sky stays as it is for another part of the day, where the wind mostly comes from, and who reads the sky.
@@ -751,17 +787,30 @@ export const WorldSchema = z.object({
       chances: z.record(z.string(), z.partialRecord(z.enum(['clear', 'overcast', 'rain', 'fog', 'storm', 'frost', 'snow']), z.number().min(0))),
       stay: z.number().min(0).max(1).optional(),
       prevailing: z.enum(['north', 'north-east', 'east', 'south-east', 'south', 'south-west', 'west', 'north-west']).optional(),
+      /** The sky in this world's words (M10.17), per kind of weather: one sentence, or one for the day and one for the night. */
+      lines: z.partialRecord(z.enum(['clear', 'overcast', 'rain', 'fog', 'storm', 'frost', 'snow']), z.union([z.string(), z.object({ day: z.string(), night: z.string().optional() }).strict()])).optional(),
       readers: z.array(z.string()).default([]),
     })
     .strict()
     .optional(),
   /** The coins (M8), largest first; prices in the content are in the smallest. */
   money: z
-    .object({ units: z.array(z.object({ short: z.string(), name: z.string(), plural: z.string().optional(), value: z.number().int().positive() }).strict()).min(1) })
+    .object({ units: z.array(z.object({ short: z.string(), name: z.string(), plural: z.string().optional(), aliases: z.array(z.string()).default([]), value: z.number().int().positive() }).strict()).min(1) })
     .strict()
     .optional(),
   /** Who keeps the law (M8): wanted "in" where, the officer's title, and the NPC and place to pay fines. */
-  law: z.object({ where: z.string(), officer: z.string(), npc: z.string().optional(), office: z.string().optional(), lord: z.string().optional() }).strict().optional(),
+  law: z
+    .object({
+      where: z.string(),
+      officer: z.string(),
+      npc: z.string().optional(),
+      office: z.string().optional(),
+      lord: z.string().optional(),
+      /** Fines in the smallest coin (M10.17): for a death, a beating, and the least for a theft; else by the world's coins. */
+      fines: z.object({ murder: z.number().int().positive().optional(), assault: z.number().int().positive().optional(), least: z.number().int().positive().optional() }).strict().optional(),
+    })
+    .strict()
+    .optional(),
   /** Towns with rights of their own (M8.2): their own fines, officer and place to pay, and maybe no trade with someone wanted. */
   towns: z
     .array(
@@ -806,12 +855,33 @@ export const FactionSchema = z
     name: z.string(),
     seat: z.string(),
     wants: z.string(),
-    stance: z.string(),
+    /** Where they stand on what divides the land: "for the drainage". */
+    stance: z.string().optional(),
     members: z.array(z.string()).default([]),
     allies: z.array(z.string()).default([]),
     rivals: z.array(z.string()).default([]),
-    /** How the player can join: never, hired, by a patron, by reputation, or by buying citizenship. */
-    join: z.enum(['never', 'hired', 'patron_lantern', 'patron_old', 'reputation', 'citizenship']).default('never'),
+    /**
+     * How the player can join: never, hired (they hire, they do not enlist), by reputation, or on terms (M10.17, before
+     * that the Lantern, the Old Faith and the town rights at the Waag were in code): sworn to one of some patrons or to
+     * none of others, at some places or a place with a tag, for a fee, from a reputation; with what is said when the
+     * stranger falls short.
+     */
+    join: z
+      .union([
+        z.enum(['never', 'hired', 'reputation']),
+        z
+          .object({
+            patrons: z.array(z.string()).optional(),
+            not_patrons: z.array(z.string()).optional(),
+            at: z.array(z.string()).optional(),
+            tag: z.string().optional(),
+            fee: z.number().int().positive().optional(),
+            reputation: z.number().optional(),
+            says: z.object({ patron: z.string().optional(), place: z.string().optional(), fee: z.string().optional(), reputation: z.string().optional() }).strict().default({}),
+          })
+          .strict(),
+      ])
+      .default('never'),
     /** The law this faction keeps: the land's (count), or a town's from world.yaml. */
     law: z.string().optional(),
   })
@@ -840,7 +910,7 @@ export type Tension = z.infer<typeof TensionSchema>
 
 // ---------------------------------------------------------------- loading
 
-const FileSchema = z
+export const FileSchema = z
   .object({
     world: WorldSchema.optional(),
     items: z.array(ItemSchema).optional(),
@@ -1102,8 +1172,24 @@ export function loadContent(files: ContentFile[]): Content {
     if (!content.locations.has(l.at)) problems.push(`lodging ${l.id}: unknown location ${l.at}`)
     if (!content.npcs.has(l.keeper)) problems.push(`lodging ${l.id}: unknown keeper ${l.keeper}`)
   }
+  // Every day in the content is a day of the world's own week (M10.17): opening days, schedules, market days.
+  const weekdays = new Set<string>(world?.calendar?.weekdays ?? DEFAULT_CALENDAR.weekdays)
+  const day = (d: string, where: string) => {
+    if (!weekdays.has(d)) problems.push(`${where}: ${d} is no weekday of this world`)
+  }
+  for (const l of content.locations.values()) {
+    for (const o of l.objects) for (const d of o.days ?? []) day(d, `${l.id}.objects.${o.id}`)
+    for (const sv of l.services) {
+      for (const d of sv.days ?? []) day(d, `${l.id}.services.${sv.id}`)
+      for (const r of sv.demand) for (const d of r.days ?? []) day(d, `${l.id}.services.${sv.id}.demand`)
+    }
+  }
+  for (const p of content.professions.values()) {
+    for (const b of p.schedule) for (const d of b.days ?? []) day(d, `profession ${p.id}.schedule`)
+    for (const g of p.daily_goals ?? []) for (const d of g.days ?? []) day(d, `profession ${p.id}.daily_goals`)
+  }
+  for (const a of content.areas.values()) for (const d of a.market_days) day(d, `area ${a.id}.market_days`)
   // A passage stops at places of the world or far places it knows, on days of its calendar (M10.12).
-  const weekdays = new Set<string>(world?.calendar?.weekdays ?? WEEKDAYS)
   for (const p of content.passages.values()) {
     for (const stop of p.stops) if (!content.locations.has(stop) && !content.topics.has(stop)) problems.push(`passage ${p.id}: stop ${stop} is no place or topic`)
     for (const day of p.days) if (!weekdays.has(day)) problems.push(`passage ${p.id}: ${day} is no weekday of this world`)

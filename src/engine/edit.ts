@@ -1,5 +1,6 @@
 import { Document, isMap, isScalar, isSeq, parse, parseDocument, Scalar, type Node, type YAMLMap, type YAMLSeq } from 'yaml'
 import { ContentError, IdsLockSchema, loadContent, type Content, type ContentFile, type IdsLock } from './content'
+import { unknownFields } from './contract'
 
 // The editor's core (M8, FO chapter 15): create, change and delete anything
 // in a world's content, in the text of its files. Only the entity that
@@ -187,6 +188,13 @@ export function applyEdits(files: ContentFile[], edits: Edit[]): EditResult {
     }
     if (edit.create && exists) {
       problems.push(`${edit.id}: there is already a ${edit.kind.replace('_', ' ')} with this id in the world`)
+      continue
+    }
+    // Only what the contract knows (M10.17): a field of no schema is refused, with what the kind has.
+    const listKey = LISTS[edit.kind]
+    const stray = edit.data && !listKey.includes('.') ? unknownFields(listKey, edit.data) : undefined
+    if (stray) {
+      problems.push(`${edit.id}: ${stray}`)
       continue
     }
     const result = applyOne(next, edit)
@@ -528,6 +536,29 @@ export function voiceYaml(files: ContentFile[]): { file: string; yaml: string; o
 function tidy(text: string): string {
   const tight = tightenSeqs(text)
   return tight !== text && same(parse(tight), parse(text)) ? tight : text
+}
+
+/**
+ * Sets top-level keys of world.yaml from YAML (M10.17: the chronicler's
+ * proposals for a new world, step by step): key by key into the \`world:\`
+ * map, so the comments around them stay. A key the contract does not have is
+ * refused with the keys there are.
+ */
+export function patchWorld(files: ContentFile[], yaml: string): { problems: string[]; files: ContentFile[]; change?: FileChange } {
+  const read = parseEntityYaml(yaml)
+  if (!read.raw) return { problems: [`world: ${read.problem ?? 'nothing to set'}`], files }
+  const stray = unknownFields('world', read.raw)
+  if (stray) return { problems: [`world: ${stray}`], files }
+  const file = files.find((f) => /(^|\/)world\.ya?ml$/.test(f.path))
+  if (!file) return { problems: ['world: this world has no world.yaml'], files }
+  const doc = parseDocument(file.text)
+  const node = doc.get('world', true)
+  // Only the keys given: the rest of the world stays as it is.
+  if (isMap(node)) patchMap(doc, node, { ...(node.toJSON() as Raw), ...read.raw })
+  else doc.set('world', makeNode(doc, read.raw, 0))
+  const text = tidy(doc.toString({ lineWidth: 0 }))
+  if (text === file.text) return { problems: [], files }
+  return { problems: [], files: files.map((f) => (f === file ? { ...f, text } : f)), change: { path: file.path, before: file.text, text } }
 }
 
 /**

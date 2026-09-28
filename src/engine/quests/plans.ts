@@ -1,5 +1,5 @@
 import { setRoute } from '../economy/ledger'
-import { WEEKDAYS, weekdayOf } from '../clock'
+import { isRestDay } from '../clock'
 import type { Output } from '../commands'
 import { callName } from '../content'
 import { goAway, tierOf } from '../lod'
@@ -230,7 +230,7 @@ function dueOf(world: World, p: PlanState, step: Step, st: StepState): number | 
     t = day + step.at.hour * 60 >= t ? day + step.at.hour * 60 : day + DAY + step.at.hour * 60
   }
   // The day of rest is the last of the week in every calendar.
-  if (step.at?.rest_day) while (WEEKDAYS.indexOf(weekdayOf(t)) !== 6) t += DAY
+  if (step.at?.rest_day) while (!isRestDay(t, world.calendar)) t += DAY
   st.due = t
   return t
 }

@@ -238,7 +238,7 @@ Across country you can head any way, or follow the tow path west to Oude Zijl, t
 > walk to the kattenbroek
 You make your way towards the Kattenbroek for 4 hours. Your boots find the old ruts, and the road carries you along. A barge horse plods past with its head down, and the rope hisses on the water. The mist beads on your sleeves, and you keep close to what you can see. Away to the west you see the roofs and the peat smoke of Veenhoek.
 In the fen, near the Kattenbroek
-Wet peat and sedge stretch around you, cut by black pools. Mist lies over everything and muffles every sound. To the south-west, a dark wall of reed and alder.
+Wet ground and sedge stretch around you, cut by black pools. Mist lies over everything and muffles every sound. To the south-west, a dark wall of reed and alder.
 Ways on: north, north-east, south-east, south, south-west, north-west.
 Somewhere around here, they said. You see no sign of the Kattenbroek yet.
 +30 experience: you came to the Holleveen.
@@ -250,13 +250,13 @@ You are not stuck in anything.
 
 > look
 In the fen, near the Kattenbroek
-Wet peat and sedge stretch around you, cut by black pools. Mist lies over everything and muffles every sound. To the south-west, a dark wall of reed and alder.
+Wet ground and sedge stretch around you, cut by black pools. Mist lies over everything and muffles every sound. To the south-west, a dark wall of reed and alder.
 Ways on: north, north-east, south-east, south, south-west, north-west.
 
 > walk to the kattenbroek
-You make your way towards the Kattenbroek for 8 minutes, over wet fen. The mist closes in and you lose your bearings.
+You make your way towards the Kattenbroek for 8 minutes, over fen. The mist closes in and you lose your bearings.
 In the fen, near the Kattenbroek
-Wet peat and sedge stretch around you, cut by black pools. A black pool lies to one side, still as glass. Mist lies over everything and muffles every sound.
+Wet ground and sedge stretch around you, cut by black pools. A black pool lies to one side, still as glass. Mist lies over everything and muffles every sound.
 Ways on: north, north-east, south-east, south, south-west, north-west.
 
 > struggle
@@ -264,20 +264,20 @@ You are not stuck in anything.
 
 > look
 In the fen, near the Kattenbroek
-Wet peat and sedge stretch around you, cut by black pools. A black pool lies to one side, still as glass. Mist lies over everything and muffles every sound.
+Wet ground and sedge stretch around you, cut by black pools. A black pool lies to one side, still as glass. Mist lies over everything and muffles every sound.
 Ways on: north, north-east, south-east, south, south-west, north-west.
 
 # Seen now, not reached: walk on to it, again if the mist turns you round, then on to the hut.
 
 > walk to the kattenbroek
-You make your way towards the Kattenbroek for 8 minutes, over wet fen.
+You make your way towards the Kattenbroek for 8 minutes, over fen.
 In the fen, near the Kattenbroek
-Wet peat and sedge stretch around you, cut by black pools. Mist lies over everything and muffles every sound. To the south-west, a dark wall of reed and alder.
+Wet ground and sedge stretch around you, cut by black pools. Mist lies over everything and muffles every sound. To the south-west, a dark wall of reed and alder.
 Ways on: north, north-east, south-east, south, south-west, north-west.
 Somewhere around here, they said. You see no sign of the Kattenbroek yet.
 
 > walk to the kattenbroek
-You make your way towards the Kattenbroek for 12 minutes, over wet fen and the fen path. You come to The Edge of the Kattenbroek.
+You make your way towards the Kattenbroek for 12 minutes, over fen and the fen path. You come to The Edge of the Kattenbroek.
 The Edge of the Kattenbroek
 Reed closes in on every side, taller than a man, and the path under your feet turns to black water in places. Cats watch you from the tussocks, more of them than there should be. The air smells of rot and, strangely, of fish frying. Far in to the east, a hut on stilts shows its roof above the reeds.
 Exits: east, south

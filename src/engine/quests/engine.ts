@@ -1,7 +1,7 @@
 import { characterOf } from '../economy/ledger'
 import { built } from '../growth/growth'
 import { tensionOf } from '../social/realms'
-import { GameClock } from '../clock'
+import { GameClock, weekdayName } from '../clock'
 import type { Output } from '../commands'
 import { callName, type Quest } from '../content'
 import { applyEffect, attitude, type Attitude } from '../dialogue/relations'
@@ -115,7 +115,7 @@ export function holds(world: World, c: Condition, questId?: string): boolean {
   if ('level' in c) return (player.character?.level ?? 1) >= c.level
   if ('since' in c) return f[c.since] === undefined || world.now - Number(f[c.since]) >= c.hours * 60
   if ('count' in c) return Number(f[c.count] ?? 0) >= c.at_least
-  if ('weekday' in c) return new GameClock(world.now).parts.weekday === c.weekday
+  if ('weekday' in c) return weekdayName(world.now, world.calendar) === c.weekday
   if ('night' in c) return new GameClock(world.now).isNight === c.night
   if ('wields' in c) {
     const weapon = player.character?.gear.weapon

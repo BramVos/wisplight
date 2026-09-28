@@ -332,6 +332,27 @@ rules:
             - { id: last_light, name: Last Light, text: "+1 on attacks and saves.", effects: [{ bonus: { to: attack, value: 1 } }, { bonus: { to: 'save:will', value: 1 } }] }
 
   # Wereldboek, chapter 5. Favour runs from 0 to 100; blessings at 25, 50 and 75.
+  # Death in the Nethermarch (FO, chapter 12): the Way of the Grey Rider. A walk beside the Wild Hunt, the Rider's
+  # Mark until a rite at a barrow or a chapel, and after the third time his price: the last sheaf at a crossroads.
+  death:
+    vision: "You are walking on a road of grey light, and there are hooves around you, and hounds, and a wind that does not touch the grass. The Wild Hunt rides past, and one rider turns his head: the Grey Rider himself, his face in the shadow of his hat. He looks at you a long time. Then {guide} points back the way you came."
+    guide: he
+    patron: grey_rider
+    wake: You wake a day later, cold to the bone, with the taste of earth in your mouth.
+    mark: "The Rider's Mark is on you: 10% fewer hit points until you perform a RITE for the dead at a barrow or a chapel.{lost}"
+    rite_where: A rite for the dead is performed at a barrow or a chapel.
+    rite_done: You pour out a little water, say the names of the dead you know, and ask the Rider for your share of the light. The cold goes out of your bones. The Mark is gone.
+    rite_nothing: You say the old words for the dead. Nobody answers.
+    price:
+      warn: 'Before you open your eyes you hear him, close by: "Three times now. The next time I let you go, there is a price."'
+      refused: "The words do not take. The Rider wants his price first: the last sheaf, left for him at a crossroads."
+      item: rye_grain
+      at: crossroads
+      where: The last sheaf is left where roads cross.
+      none: "You have no rye to leave: a sack of it will do for a sheaf."
+      paid: You set the rye at the foot of the post, where three tracks cross. The wind goes still, then gusts once, hard, from the north, and the sack is lighter than it was. The Rider is paid. The cold goes out of your bones.
+      nothing: You leave the rye at the foot of the post. The wind takes a few grains. Nobody else takes anything.
+
   patrons:
     - id: lantern
       name: the Lantern

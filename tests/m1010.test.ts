@@ -159,12 +159,17 @@ describe('M10.10: the guard reads the world', () => {
     expect(strayNumbers('It cost twelve guilders.', 'A loaf costs 3 duiten.')).toEqual(['twelve'])
   })
 
-  it('a world without a kit keeps the old list', async () => {
+  it('a world without a kit has no list of words that do not belong, only the fixed core (M10.17)', async () => {
     const plain = { ...content, voice: undefined }
-    const llm = scripted('Okay, fresh bread.', 'Fresh bread.')
+    // A computer is no anachronism in every world: without a kit it stands.
+    const llm = scripted('The computer says the bread is fresh.')
     const { out } = await talkWith(llm, 'npc_mirte', 'How is the bread today?', plain)
-    expect(out).toMatch(/Fresh \[?bread\]?\./)
-    expect(llm.reports.map((r) => r.reason)).toEqual(['anachronism'])
+    expect(out).toMatch(/computer says/)
+    expect(llm.reports).toEqual([])
+    // A model speaking of models is refused in every world.
+    const core = scripted('As ChatGPT I bake bread.', 'Fresh bread.')
+    const again = await talkWith(core, 'npc_mirte', 'How is the bread today?', plain)
+    expect(again.out).toMatch(/Fresh \[?bread\]?\./)
   })
 })
 

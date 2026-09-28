@@ -77,6 +77,8 @@ export class MockLlm implements LlmClient {
     const text =
       request.schemaName === 'builder_draft'
         ? this.draft(request.meta ?? {})
+        : request.schemaName === 'world_step'
+        ? this.worldStep(request.meta ?? {})
         : request.schemaName === 'palette_draft'
         ? this.palette(request.meta ?? {})
         : request.schemaName === 'voice_draft'
@@ -125,6 +127,34 @@ export class MockLlm implements LlmClient {
    * view, a new hamlet with three people and a small story, joined to that
    * place; anything else gets a question back, as the working instruction asks.
    */
+  /** One step of building a world (M10.17): the frame, the calendar and the money from the designer's words; for the rest a question. */
+  private worldStep(meta: Record<string, unknown>): string {
+    if (this.mode === 'invalid') return 'Here is a lovely world for you.'
+    const said = String(meta['ask'] ?? '').trim()
+    const none = { changes: [], world: '', files: [] }
+    switch (meta['step']) {
+      case 'frame':
+        return JSON.stringify({
+          say: 'A frame from your words. Change the names if they are not right.',
+          questions: [],
+          ...none,
+          world: `name: Rimehold\nwords: { land: the Rim, region: Rimehold, from: the inner worlds }\nframe: |\n  WORLD: ${said.replace(/\n/g, ' ') || 'a station at the edge'}. No magic, no faster-than-light travel.\n  REGION: Rimehold, where the story begins.\n  PEOPLE speak plain English and count time in shifts.\n`,
+          files: [{ path: 'CHRONICLER.md', text: '## This world: Rimehold\n\n- Keep to the frame: no magic, no aliens.\n- Never invent a name the designer did not agree.\n' }],
+        })
+      case 'calendar':
+        return JSON.stringify({
+          say: 'Ten days a week, numbered months, and no weather under the dome.',
+          questions: [],
+          ...none,
+          world: 'calendar:\n  era: AL\n  months: [One, Two, Three, Four, Five, Six, Seven, Eight, Nine, Ten, Eleven, Twelve, Last Days]\n  weekdays: [Unday, Duoday, Triday, Quartday, Quintday, Sextday, Septday, Octday, Nonday, Decday]\n',
+        })
+      case 'money':
+        return JSON.stringify({ say: 'Credits and chits.', questions: [], ...none, world: 'money:\n  units:\n    - { short: cr, name: credit, value: 20 }\n    - { short: ch, name: chit, value: 1 }\n' })
+      default:
+        return JSON.stringify({ say: 'Tell me a little more first.', questions: ['What should this step hold?'], ...none })
+    }
+  }
+
   private draft(meta: Record<string, unknown>): string {
     if (this.mode === 'invalid') return 'Here is a lovely hamlet for you.'
     const ask = String(meta['ask'] ?? '')

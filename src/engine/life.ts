@@ -29,7 +29,7 @@ export function die(world: World, npcId: string, input: DeathInput): Fact | unde
   const place = input.place ?? state.location
   const they = npc.pronoun === 'she' ? 'She' : npc.pronoun === 'he' ? 'He' : 'They'
   const profession = world.content.professions.get(npc.profession)?.name ?? 'someone'
-  const area = world.content.areas.get(world.location(npc.home).area)?.name ?? 'the fen'
+  const area = world.content.areas.get(world.location(npc.home).area)?.name ?? world.words.region
   // A death is base 3, +1 because someone died.
   const fact = recordFact(world, {
     kind: 'death',

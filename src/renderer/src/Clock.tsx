@@ -58,11 +58,13 @@ export function ClockPanel({ clock }: { clock: Clock }) {
         </span>
         <span className="clock-time">{clock.time}</span>
       </div>
-      <div className="clock-row small muted">
-        <Weather kind={clock.weather} />
-        <span>{clock.weather}</span>
-        <span>{clock.wind}</span>
-      </div>
+      {clock.weather && (
+        <div className="clock-row small muted">
+          <Weather kind={clock.weather} />
+          <span>{clock.weather}</span>
+          <span>{clock.wind}</span>
+        </div>
+      )}
     </section>
   )
 }

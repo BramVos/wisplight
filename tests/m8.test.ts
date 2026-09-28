@@ -63,8 +63,11 @@ describe('M8: more than one world', () => {
     expect(parseMoney('2 silver pieces', isle.world.money!.units)).toBe(20)
     expect(parseMoney('3', isle.world.money!.units)).toBe(30)
     // The Nethermarch keeps its own.
-    expect(formatMoney(170)).toBe('1 gl 1 st 2 d')
-    expect(parseMoney('2 stuivers')).toBe(16)
+    expect(formatMoney(170, content.world.money!.units)).toBe('1 gl 1 st 2 d')
+    expect(parseMoney('2 stuivers', content.world.money!.units)).toBe(16)
+    expect(parseMoney('1 gulden', content.world.money!.units)).toBe(160)
+    // A world that names no money has one plain coin, never the guilder (M10.17).
+    expect(formatMoney(170)).toBe('170 c')
     expect(new Engine(content, { seed: 1 }).status().time).toMatch(/^Dinsdag 14 Herfstmaand 211 AW/)
   })
 

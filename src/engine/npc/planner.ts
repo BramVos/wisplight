@@ -239,7 +239,7 @@ export class Planner {
     const hours = service?.hours ?? object?.hours
     const days = service?.days ?? object?.days
     if (hours) {
-      const opening = nextOpening(next.time, hours, days)
+      const opening = nextOpening(next.time, hours, days, this.world.calendar)
       if (opening === undefined || opening - next.time > MAX_WAIT) return undefined
       if (opening > next.time || service || object?.provider) {
         steps.push({ kind: 'waitOpen', location: to, service: service?.id, object: object?.id })

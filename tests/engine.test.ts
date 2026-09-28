@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { ContentError, GameClock, loadContent, parseCommand, splitQuantity } from '../src/engine'
-import { newEngine } from './helpers'
+import { calendarOf, ContentError, GameClock, loadContent, parseCommand, splitQuantity } from '../src/engine'
+import { content, newEngine } from './helpers'
 
 describe('parser', () => {
   it('understands English and Dutch directions', () => {
@@ -27,7 +27,9 @@ describe('parser', () => {
 
 describe('clock', () => {
   it('formats the starting date', () => {
-    expect(GameClock.from(211, 9, 14, 16, 30).format()).toBe('Dinsdag 14 Herfstmaand 211 AW, 16:30 (afternoon)')
+    expect(GameClock.from(211, 9, 14, 16, 30).format(calendarOf(content.world))).toBe('Dinsdag 14 Herfstmaand 211 AW, 16:30 (afternoon)')
+    // A world without a calendar of its own gets plain names, never the Nethermarch's (M10.17); its start is the first day of the week.
+    expect(GameClock.from(211, 9, 14, 16, 30).format(calendarOf({ start: { year: 211, month: 9, day: 14 } }))).toBe('Monday 14 September 211, 16:30 (afternoon)')
   })
 
   it('rolls over into the Dyke Days at the end of the year', () => {

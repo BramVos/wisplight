@@ -11,7 +11,7 @@ items:
   - id: rye_grain
     name: sack of rye
     plural: sacks of rye
-    aliases: [rye, grain, graan, rogge]
+    aliases: [rye, grain, graan, rogge, sheaf, last sheaf]
     description: A coarse sack of rye grain, heavy as a sleeping child.
     tags: [grain, trade]
     value: 24

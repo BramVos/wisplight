@@ -522,7 +522,7 @@ export function startTurn(arena: Arena, combat: Combat, f: Fighter, lines: Line[
   if (f.protecting) delete f.protecting
   if (f.state === 'waiting' && f.joinsAt !== undefined && combat.round >= f.joinsAt) {
     f.state = 'up'
-    lines.push({ kind: 'narration', text: `${cap(f.name)} comes out of the reeds and joins in.` })
+    lines.push({ kind: 'narration', text: `${cap(f.name)} comes out of hiding and joins in.` })
   }
   if (f.state === 'dying') recoveryCheck(arena, f, lines)
   // Unbroken (Baduhenna): once a day the player shakes off fear, the mire or a grip.

@@ -1,4 +1,4 @@
-import { GameClock } from '../../src/engine/clock'
+import { GameClock, isRestDay } from '../../src/engine/clock'
 import type { Output } from '../../src/engine/commands'
 import { recordFact } from '../../src/engine/news'
 import { addClock, tickClock, type Clock } from '../../src/engine/rules/player'
@@ -62,7 +62,7 @@ function evening(world: World, host: QuestHost, t: number, out: Output[]): void 
   const f = flags(world)
   const clock = world.state.clocks?.[SURVEY] as Clock | undefined
   if (!clock || clock.done !== undefined) return
-  const workday = new GameClock(t).parts.weekday !== 'Rustdag'
+  const workday = !isRestDay(t, world.calendar)
   const cornelis = world.state.npcs['npc_cornelis']
   const works =
     workday &&

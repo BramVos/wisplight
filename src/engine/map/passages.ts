@@ -1,10 +1,11 @@
-import { dayName, GameClock, parseHours, weekdayOf } from '../clock'
+import { GameClock, parseHours, weekdayName } from '../clock'
 import type { Output } from '../commands'
 import type { ChoiceOption } from '../choice'
 import { factById } from '../news'
 import { playerSkill } from '../rules/player'
 import { blessed } from '../rules/blessings'
 import { allHold } from '../quests/engine'
+import { areaTopicId } from '../content'
 import type { Passage } from './passageSchema'
 import { weather, weatherLine } from '../weather'
 import type { World } from '../world'
@@ -26,7 +27,8 @@ const DAY = 24 * 60
 
 export { PassageSchema, type Passage } from './passageSchema'
 
-const CREW: Record<Passage['kind'], string> = { barge: 'bargeman', ferry: 'skipper', coach: 'coachman', ship: 'master', cart: 'carter' }
+/** Who takes the money when the content does not say: by the kind of vehicle, else the crew. */
+const CREW: Record<string, string> = { barge: 'bargeman', ferry: 'skipper', coach: 'coachman', ship: 'master', cart: 'carter' }
 
 function passages(world: World): Passage[] {
   return [...world.content.passages.values()]
@@ -63,16 +65,22 @@ export function stopHere(world: World, p: Passage): string | undefined {
 }
 
 function stopFits(world: World, stop: string, words: string): boolean {
-  const w = words.toLowerCase().replace(/^the\s+/, '').trim()
+  // "the Ice Works" and "ice works" are the same stop (the Deepwell tram, M10.17).
+  const bare = (x: string) => x.toLowerCase().replace(/^the\s+/, '').trim()
+  const w = bare(words)
   const location = world.content.locations.get(stop)
-  if (location && !farPlaceOf(world, stop)) return location.area === w || location.name.toLowerCase().includes(w) || world.content.areas.get(location.area)?.name.toLowerCase() === w
+  if (location && !farPlaceOf(world, stop)) {
+    const area = world.content.areas.get(location.area)
+    const topic = world.content.topics.get(areaTopicId(world.content, location.area))
+    return location.area === w || bare(location.name).includes(w) || (area !== undefined && bare(area.name) === w) || Boolean(topic?.aliases.some((a) => bare(a) === w))
+  }
   const topic = world.content.topics.get(stop)
-  return Boolean(topic && (topic.name.toLowerCase() === w || topic.aliases.some((a) => a.toLowerCase() === w) || stop === w))
+  return Boolean(topic && (bare(topic.name) === w || topic.aliases.some((a) => bare(a) === w) || stop === w))
 }
 
 /** Whether it runs on this day, by the world's own weekdays. */
 function runsOn(world: World, p: Passage, t: number): boolean {
-  return p.days.length === 0 || p.days.includes(dayName(weekdayOf(t), world.calendar))
+  return p.days.length === 0 || p.days.includes(weekdayName(t, world.calendar))
 }
 
 const minuteOf = (t: number) => ((t % DAY) + DAY) % DAY
@@ -110,7 +118,7 @@ function when(world: World, t: number): string {
   const p = clock.parts
   const today = Math.floor(t / DAY) === Math.floor(world.now / DAY)
   const time = `${String(p.hour).padStart(2, '0')}:${String(p.minute).padStart(2, '0')}`
-  return today ? `today at ${time}` : `on ${dayName(p.weekday, world.calendar)} at ${time}`
+  return today ? `today at ${time}` : `on ${weekdayName(t, world.calendar)} at ${time}`
 }
 
 /** Minutes between two stops: along the way, the map measuring what it can, the content the rest. */
@@ -173,12 +181,14 @@ export function takePassage(world: World, host: PassageHost, word: string, desti
     }
   }
   const others = p.stops.filter((s) => s !== here)
+  // One other stop: that is where it goes (Bram's rule: one option, do it).
+  if (!destination && others.length === 1) destination = stopName(world, others[0]!)
   if (!destination) return [{ kind: 'error', text: `Take the ${kind} where? ${listOf(others.map((s) => stopName(world, s))).replace(/ and ([^ ]+)$/, ' or $1')}.` }]
   const to = p.stops.find((s) => stopFits(world, s, destination))
   if (!to || to === here) return [{ kind: 'error', text: `The ${kind} stops at ${listOf(names)}.` }]
   const far = isFar(world, to) || isFar(world, here)
   const fare = p.fare + (far ? p.far_fare : 0)
-  if (world.state.player.money < fare) return [{ kind: 'text', text: `The ${p.crew ?? CREW[p.kind]} wants ${world.money(fare)}, and you do not have it.` }]
+  if (world.state.player.money < fare) return [{ kind: 'text', text: `The ${p.crew ?? CREW[p.kind] ?? 'crew'} wants ${world.money(fare)}, and you do not have it.` }]
   const minutes = rideMinutes(world, p, here, to)
   if (far) return journeyByPassage(world, host, p, here, to, minutes, fare)
   world.state.player.money -= fare
@@ -242,7 +252,10 @@ function dayOnTheWay(world: World, p: Passage | undefined): { text?: string; che
   const kinds = ['sight', 'weather', 'check', 'tiding'].filter((k) => k !== 'sight' || (p?.sights.length ?? 0) > 0)
   const kind = world.rng.pick('passage', kinds)
   if (kind === 'sight') return { text: world.rng.pick('passage', p!.sights) }
-  if (kind === 'weather') return { text: weatherLine(weather(world), new GameClock(world.now).isNight) }
+  if (kind === 'weather') {
+    const sky = weatherLine(world, weather(world), new GameClock(world.now).isNight)
+    return sky ? { text: sky } : undefined
+  }
   if (kind === 'check') {
     // A hard stretch: a mired wheel, a heavy sea, a river to ford. Survival carries you through.
     const roll = world.rng.int('passage', 1, 20)
@@ -258,7 +271,10 @@ function dayOnTheWay(world: World, p: Passage | undefined): { text?: string; che
   const heard = world.state.news?.heard['player'] ?? {}
   const fresh = (world.state.news?.facts ?? []).filter((f) => f.belang >= 2 && !heard[f.id] && world.now - f.t < 14 * DAY && world.content.locations.has(f.place)).slice(-5)
   const fact = fresh.length ? world.rng.pick('passage', fresh) : undefined
-  if (!fact) return { text: weatherLine(weather(world), false) }
+  if (!fact) {
+    const sky = weatherLine(world, weather(world), false)
+    return sky ? { text: sky } : undefined
+  }
   ;((world.state.news!.heard['player'] ??= {}) as Record<string, unknown>)[fact.id] = { level: 1, reliability: 0.6, from: 'news', t: world.now }
   return { text: `a fellow traveller has news: "${factById(world, fact.id)?.text.far ?? fact.text.far}"` }
 }
@@ -311,6 +327,6 @@ export function waysTo(world: World, topic: string): (ChoiceOption & { how: 'foo
 export function journeyLines(world: World): string[] {
   return (world.state.player.journeys ?? []).map((j) => {
     const p = new GameClock(j.t - j.minutes).parts
-    return `${dayName(p.weekday, world.calendar)} ${p.day} ${world.calendar.months[p.month - 1]}: ${j.by ? `by ${j.by}` : 'on foot'} from ${j.from} to ${j.to}, ${duration(j.minutes)}.`
+    return `${weekdayName(j.t - j.minutes, world.calendar)} ${p.day} ${world.calendar.months[p.month - 1]}: ${j.by ? `by ${j.by}` : 'on foot'} from ${j.from} to ${j.to}, ${duration(j.minutes)}.`
   })
 }

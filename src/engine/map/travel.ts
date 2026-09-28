@@ -8,6 +8,7 @@ import { weather, weatherLine, wind } from '../weather'
 import { centre, distance, type Hex, hexAt, HEX_DIRECTIONS, type HexDirection, hexKey, line as hexLine, neighbour, neighbours, parseHexKey, stepToward, windBetween } from './hexgrid'
 import { journeyParagraph, metOnTheWay, tellsJourneys } from './journeyText'
 import { type Cell, regionMap, type RegionMap } from './region'
+import { terrainName } from './palette'
 
 // Walking across the region (FO, chapter 4, "Lopen en automatisch doorlopen"):
 // hex by hex until there is something to decide, with one running text in
@@ -63,9 +64,16 @@ export function passable(world: World, cell: Cell, forPlayer = false): boolean {
   return frozen(world) && !cell.channel
 }
 
-/** A punt hired for the day: open water and channels are a way, not a wall. */
+/** What would cross water here, if anything is hired out that does: "only a punt would cross it". */
+function boatWord(world: World): string {
+  const boat = [...world.content.npcs.values()].flatMap((n) => n.hires).find((h) => h.crosses.includes('water'))
+  return boat ? `only a ${boat.name} would cross it` : 'nothing you have would cross it'
+}
+
+/** A punt (or whatever a world hires out that crosses water) hired for the day: open water and channels are a way, not a wall. */
 export function hasPunt(world: World): boolean {
-  return (world.state.player.punt ?? 0) > world.now
+  const p = world.state.player
+  return (p.punt ?? 0) > world.now || Object.values(p.hired ?? {}).some((h) => h.until > world.now && h.crosses.includes('water'))
 }
 
 /** Minutes to cross a hex. The dry ridge only counts for a player who knows it; NPCs keep to what everyone knows. */
@@ -282,7 +290,13 @@ function areaName(world: World, area: string): string {
 export function hexName(world: World, map: RegionMap, hex: Hex): string {
   const cell = map.cell(hex)!
   const where = nearest(map, hex)
-  const ground = cell.way ? `On ${cell.way.name}` : onKnownRidge(world, cell) ? 'On the dry ridge' : { fen: 'In the fen', fields: 'In the fields', woods: 'In the woods', heath: 'On the heath', water: 'On the ice', road: 'On the road', canal: 'On the tow path', path: 'On a path' }[cell.land]
+  // The land by the world's own name for it (M10.17: Skerrow's salt marsh is no fen).
+  const named = (land: string) => terrainName(world.content.world.map?.palette, land)
+  const ground = cell.way
+    ? `On ${cell.way.name}`
+    : onKnownRidge(world, cell)
+      ? `On the ${named('ridge')}`
+      : ({ fen: `In the ${named('fen')}`, fields: `In the ${named('fields')}`, woods: `In the ${named('woods')}`, heath: `On the ${named('heath')}`, water: 'On the ice', road: 'On the road', canal: 'On the tow path', path: 'On a path' } as Record<string, string>)[cell.land] ?? `In the ${named(cell.land)}`
   if (!where) return ground
   const name = areaName(world, where.area)
   if (where.km < 0.4) return `${ground}, just outside ${name}`
@@ -291,7 +305,7 @@ export function hexName(world: World, map: RegionMap, hex: Hex): string {
 }
 
 const LAND: Record<Cell['land'], string> = {
-  fen: 'Wet peat and sedge stretch around you, cut by black pools.',
+  fen: 'Wet ground and sedge stretch around you, cut by black pools.',
   fields: 'Drained fields lie in strips between straight ditches.',
   woods: 'Alder and birch close in around you, dripping.',
   heath: 'Heather and pale sand run out towards the sky.',
@@ -349,18 +363,19 @@ export function describeHex(world: World, hex: Hex): Output {
   if (cell.way) {
     lines.push(
       cell.way.kind === 'canal'
-        ? 'The tow path runs beside the grey water of the Vaart, rutted by the barge horses.'
+        ? 'The tow path runs beside the grey water, rutted by the horses that pull the boats.'
         : cell.way.kind === 'road'
           ? `A cart road runs through here, ${cell.land === 'fen' ? 'raised on a bank above the wet' : 'rutted and grey'}.`
-          : `A narrow path of trodden peat winds on between the ${cell.land === 'fen' ? 'pools' : 'ditches'}.`,
+          : `A narrow path of trodden earth winds on between the ${cell.land === 'fen' ? 'pools' : 'ditches'}.`,
     )
   } else if (onKnownRidge(world, cell)) {
-    lines.push('Under the sedge the ground is firm here: the dry ridge, if you keep to it.')
+    lines.push(`Under the sedge the ground is firm here: the ${terrainName(world.content.world.map?.palette, 'ridge')}, if you keep to it.`)
   } else {
     lines.push(LAND[cell.land])
   }
   if (cell.feature) lines.push(FEATURE[cell.feature])
-  lines.push(weatherLine(weather(world), night, wind(world)))
+  const sky = weatherLine(world, weather(world), night, wind(world))
+  if (sky) lines.push(sky)
   const mark = landmark(world, map, hex)
   if (mark) lines.push(mark)
   const ground = world.state.ground[hexId(hex)]
@@ -600,7 +615,7 @@ export function walk(world: World, plan: WalkPlan, pass: (minutes: number) => Ou
     }
     const cell = map.cell(next)!
     if (!passable(world, cell, true)) {
-      reason = cell.channel ? `A channel of open water bars the way; only a punt would cross it.` : `Deep water bars the way ${pretty(direction ?? plan.kind)}.`
+      reason = cell.channel ? `A channel of open water bars the way; ${boatWord(world)}.` : `Deep water bars the way ${pretty(direction ?? plan.kind)}.`
       break
     }
     // In mist, off the road, you may lose your bearings (FO, chapter 12, "Gevaar buiten gevechten"): one
@@ -647,7 +662,7 @@ export function walk(world: World, plan: WalkPlan, pass: (minutes: number) => Ou
     const before = minuteOfDay(world.now + minutes - minutesFor(world, stepCell))
     const after = minuteOfDay(world.now + minutes)
     if (before < 20 * 60 && after >= 20 * 60) {
-      reason = 'Night is falling over the fen.'
+      reason = 'Night is falling.'
       break
     }
     if (plan.kind === 'to' && steps + 1 >= path!.length) break
@@ -661,7 +676,7 @@ export function walk(world: World, plan: WalkPlan, pass: (minutes: number) => Ou
   if (weather(world) === 'fog' && startWeather !== 'fog' && !reason) reason = 'A mist has come up while you walked.'
   const how = plan.kind === 'head' ? `You head ${pretty(plan.wind)}` : plan.kind === 'to' ? `You make your way towards ${plan.name}` : `You follow ${plan.way === 'ridge' ? 'the dry ridge' : (plan.label ?? plan.way)}`
   // The way you follow is said once, by where it leads (after the M10 playtest); "over" names the rest.
-  const over = [...lands].filter((l) => !(plan.kind === 'follow' && l === plan.way)).map((l) => ({ fen: 'wet fen', fields: 'fields', woods: 'woods', heath: 'heath', water: frozen(world) ? 'the ice' : 'open water, poling' })[l] ?? l)
+  const over = [...lands].filter((l) => !(plan.kind === 'follow' && l === plan.way)).map((l) => (l === 'water' ? (frozen(world) ? 'the ice' : 'open water, poling') : ['fen', 'fields', 'woods', 'heath'].includes(l) ? terrainName(world.content.world.map?.palette, l) : l))
   // A walk of more than three steps is told in one paragraph (M10.11), where the world has the sentences for it.
   if (steps > 3 && tellsJourneys(world)) {
     const met = metOnTheWay(world, [...trail].flatMap((key) => {

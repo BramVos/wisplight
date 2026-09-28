@@ -96,6 +96,9 @@ export interface EditorDraft {
   say: string
   questions: string[]
   changes: DraftChange[]
+  /** Keys of world.yaml to set, as YAML, and whole files (M10.17). */
+  world?: string
+  files?: { path: string; text: string }[]
   problems: string[]
   diffs: ShownChange[]
 }
@@ -120,6 +123,10 @@ export interface EditorBridge {
   voice(world: string): Promise<{ file: string; yaml: string; own: boolean }>
   saveVoice(world: string, yaml: string): Promise<EditorSave>
   proposeVoice(world: string, ask: string): Promise<{ say: string; yaml?: string; problems: string[] }>
+  /** One step of building a world with the chronicler (M10.17): its proposal, checked, nothing saved. */
+  worldStep(world: string, step: string, said: string): Promise<EditorDraft>
+  /** Saves a proposal the designer accepts: entities, world.yaml keys and whole files. */
+  saveDraft(world: string, draft: Pick<EditorDraft, 'changes' | 'world' | 'files'>): Promise<EditorSave>
 }
 
 export interface EngineClient {
@@ -273,9 +280,18 @@ function contentFiles(): { path: string; text: string }[] {
  */
 export async function createEditor(): Promise<EditorBridge> {
   if (window.wisplight?.editor) return window.wisplight.editor
-  const { applyEdits, draftRequest, editorView, entities, entityYaml, filesOfWorld, lineDiff, loadContent, MockLlm, newWorldFiles, paletteRequest, paletteView, readDraft, readPalette, readVoice, savePalette, saveVoice, simulate, voiceRequest, voiceYaml, withReturnExits, worldsIn } = await import('../../engine')
+  const { applyEdits, draftRequest, draftResult, editorView, entities, entityYaml, filesOfWorld, lineDiff, loadContent, MockLlm, newWorldFiles, paletteRequest, paletteView, readDraft, readPalette, readVoice, savePalette, saveVoice, simulate, voiceRequest, voiceYaml, withReturnExits, worldsIn, worldStepRequest } = await import('../../engine')
   let all = contentFiles()
   const shown = (changes: { path: string; before?: string; text: string }[]) => changes.map((c) => ({ path: c.path, fresh: c.before === undefined, lines: lineDiff(c.before ?? '', c.text) }))
+  const shownDraft = (draft: ReturnType<typeof readDraft>): EditorDraft => ({
+    say: draft.say,
+    questions: draft.questions,
+    changes: draft.changes,
+    ...(draft.world ? { world: draft.world } : {}),
+    ...(draft.files ? { files: draft.files } : {}),
+    problems: draft.problems,
+    diffs: draft.result?.ok ? shown(draft.result.changes) : [],
+  })
   return {
     worlds: async () => worldsIn(all),
     view: async (world) => editorView(filesOfWorld(all, world)),
@@ -322,8 +338,19 @@ export async function createEditor(): Promise<EditorBridge> {
     proposeVoice: async (world, ask) => readVoice((await new MockLlm().complete(voiceRequest(filesOfWorld(all, world), ask))).text),
     draft: async (world, ask, focus) => {
       const files = filesOfWorld(all, world)
-      const draft = readDraft(files, (await new MockLlm().complete(draftRequest(files, ask, focus))).text)
-      return { say: draft.say, questions: draft.questions, changes: draft.changes, problems: draft.problems, diffs: draft.result?.ok ? shown(draft.result.changes) : [] }
+      return shownDraft(readDraft(files, (await new MockLlm().complete(draftRequest(files, ask, focus))).text))
+    },
+    worldStep: async (world, step, said) => {
+      const files = filesOfWorld(all, world)
+      return shownDraft(readDraft(files, (await new MockLlm().complete(worldStepRequest(files, step, said))).text))
+    },
+    saveDraft: async (world, draft) => {
+      const outcome = draftResult(filesOfWorld(all, world), draft)
+      if (outcome.ok) {
+        const changed = new Map(outcome.changes.map((c) => [c.path, c.text]))
+        all = [...all.map((f) => (changed.has(f.path) ? { ...f, text: changed.get(f.path)! } : f)), ...outcome.changes.filter((c) => !all.some((f) => f.path === c.path)).map((c) => ({ path: c.path, text: c.text }))]
+      }
+      return { ok: outcome.ok, problems: outcome.problems, warnings: [], changes: outcome.ok ? shown(outcome.changes) : [] }
     },
   }
 }

@@ -161,7 +161,7 @@ describe('M7.2: dangers and conditions outside fights', () => {
     const engine = await player()
     expect(await say(engine, 'hire punt')).toMatch(/hired from Wouter/)
     await say(engine, '@goto loc_wouter_hut', '@bring wouter', '@money 100', 'hire punt')
-    expect(engine.state.player.punt).toBeGreaterThan(engine.world.now)
+    expect(engine.state.player.hired?.['punt']?.until).toBeGreaterThan(engine.world.now)
     const { passable } = await import('../src/engine/map/travel')
     expect(passable(engine.world, { land: 'water', bog: false, channel: true } as never, true)).toBe(true)
     expect(passable(engine.world, { land: 'water', bog: false, channel: true } as never, false)).toBe(false)

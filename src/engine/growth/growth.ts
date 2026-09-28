@@ -1,7 +1,7 @@
 import { withProps } from '../props'
 import { withFarPlaces, type FarPlace } from './far'
 import { addCrowd, endCrowd } from './crowds'
-import { GameClock } from '../clock'
+import { isRestDay } from '../clock'
 import { callName, LocationSchema, lockedIds, NpcSchema, type Content, type Npc } from '../content'
 import { economy, ledgerOf } from '../economy/ledger'
 import { recordFact } from '../news'
@@ -264,7 +264,7 @@ function placeIn(world: World, settlement: string): string {
 export function projectsDay(world: World): void {
   const g = world.state.growth
   if (!g) return
-  if (new GameClock(world.now).parts.weekday === 'Rustdag') return
+  if (isRestDay(world.now, world.calendar)) return
   for (const [id, state] of Object.entries(g.projects).sort((a, b) => a[0].localeCompare(b[0]))) {
     if (state.done !== undefined) continue
     const p = world.content.projects.get(id)

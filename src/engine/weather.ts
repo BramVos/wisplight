@@ -45,7 +45,8 @@ const NEIGHBOURS: Record<WeatherKind, WeatherKind[]> = {
 /** How hard the wind blows with each weather: least and most. */
 const FORCE: Record<WeatherKind, [number, number]> = { clear: [0, 2], overcast: [1, 2], rain: [1, 3], storm: [3, 4], fog: [0, 1], frost: [0, 1], snow: [1, 2] }
 
-// The Nethermarch's weather, when a world says nothing of its own (M10.8: world.yaml has them now).
+// A plain temperate year: the seasons for a world that has a calendar but names none (M10.17). A world without
+// a weather block in world.yaml has no weather at all: the sky does not change and nobody speaks of it.
 const DEFAULT_SEASONS = ['winter', 'winter', 'spring', 'spring', 'spring', 'summer', 'summer', 'summer', 'autumn', 'autumn', 'autumn', 'winter', 'winter']
 const DEFAULT_CHANCES: Record<string, Partial<Record<WeatherKind, number>>> = {
   spring: { clear: 0.3, overcast: 0.3, rain: 0.3, fog: 0.1 },
@@ -55,6 +56,11 @@ const DEFAULT_CHANCES: Record<string, Partial<Record<WeatherKind, number>>> = {
 }
 /** The chance the sky stays as it is for another part of the day. */
 const STAY = 0.6
+
+/** Whether this world has weather (M10.17): only with a weather block in world.yaml. */
+export function hasWeather(world: World): boolean {
+  return Boolean(world.content.world.weather)
+}
 
 function climate(world: World) {
   const w = world.content.world.weather
@@ -67,12 +73,12 @@ export function season(minutes: number, world?: World): string {
 }
 
 export function weather(world: World): WeatherKind {
-  return world.state.weather?.kind ?? 'overcast'
+  return world.state.weather?.kind ?? (hasWeather(world) ? 'overcast' : 'clear')
 }
 
-/** The wind now: from where, and how hard (an old save without wind: a breeze from the usual quarter). */
+/** The wind now: from where, and how hard (an old save without wind: a breeze from the usual quarter; no weather: still). */
 export function wind(world: World): { from: Wind; force: number } {
-  return world.state.weather?.wind ?? { from: climate(world).prevailing, force: 1 }
+  return world.state.weather?.wind ?? { from: climate(world).prevailing, force: hasWeather(world) ? 1 : 0 }
 }
 
 /** One step of the sky: stay, or move to a neighbour, by the chances of the season; and the wind with it. */
@@ -102,6 +108,7 @@ function step(world: World, from: WeatherKind, gust: { from: Wind; force: number
 
 /** Every three game hours the sky over the region moves on; the step after it is rolled now, the forecast. */
 export function weatherHour(world: World): void {
+  if (!hasWeather(world)) return
   const hour = new GameClock(world.now).parts.hour
   const now = world.state.weather
   if (now && hour % 3 !== 0) return
@@ -143,26 +150,26 @@ export function forecastLine(world: World): string | undefined {
   return `${head}${turn}.`
 }
 
-/** One short sentence for a description outdoors, with the wind when it blows. */
-export function weatherLine(kind: WeatherKind, night: boolean, gust?: { from: Wind; force: number }): string {
-  const sky = (() => {
-    switch (kind) {
-      case 'fog':
-        return 'Mist lies over everything and muffles every sound.'
-      case 'rain':
-        return 'Rain hisses on the reeds and runs down your neck.'
-      case 'storm':
-        return 'Wind tears at your clothes and the rain comes sideways.'
-      case 'frost':
-        return 'Frost crackles underfoot and your breath smokes.'
-      case 'snow':
-        return 'Snow falls softly and swallows every sound.'
-      case 'clear':
-        return night ? 'Stars hang sharp and cold over the fen.' : 'The sky is wide and pale over the flat land.'
-      default:
-        return night ? 'There is no moon to speak of.' : 'Low grey cloud sits on the land.'
-    }
-  })()
+/** The words for the sky when a world gives none of its own (M10.17): plain, of no land in particular. */
+const SKY: Record<WeatherKind, { day: string; night?: string }> = {
+  fog: { day: 'Mist lies over everything and muffles every sound.' },
+  rain: { day: 'Rain falls steadily and runs down your neck.' },
+  storm: { day: 'Wind tears at your clothes and the rain comes sideways.' },
+  frost: { day: 'Frost crackles underfoot and your breath smokes.' },
+  snow: { day: 'Snow falls softly and swallows every sound.' },
+  clear: { day: 'The sky is wide and pale.', night: 'Stars hang sharp and cold overhead.' },
+  overcast: { day: 'Low grey cloud sits on the land.', night: 'There is no moon to speak of.' },
+}
+
+/**
+ * One short sentence for a description outdoors, with the wind when it blows; in the world's own words
+ * (world.yaml weather.lines) where it has them. Undefined in a world without weather.
+ */
+export function weatherLine(world: World, kind: WeatherKind, night: boolean, gust?: { from: Wind; force: number }): string | undefined {
+  if (!hasWeather(world)) return undefined
+  const own = world.content.world.weather?.lines?.[kind]
+  const words = typeof own === 'string' ? { day: own } : (own ?? SKY[kind])
+  const sky = (night ? words.night : undefined) ?? words.day
   // The wind (M10.8), when there is enough of it to feel, and the storm has not already said so.
   if (!gust || gust.force < 2 || kind === 'storm') return sky
   return `${sky} ${gust.force >= 3 ? `A ${gust.from} gale leans on you.` : `A ${gust.from} wind pushes at you.`}`
@@ -180,9 +187,10 @@ export function readsTheSky(world: World, npcId: string): boolean {
  * under the sky).
  */
 export function lookSky(world: World): string {
+  if (!hasWeather(world)) return 'There is no weather here to speak of.'
   const night = new GameClock(world.now).isNight
   const gust = wind(world)
-  const lines = [weatherLine(weather(world), night), gust.force > 0 ? `The wind: ${windWords(gust)}.` : 'The air is still.']
+  const lines = [weatherLine(world, weather(world), night) ?? '', gust.force > 0 ? `The wind: ${windWords(gust)}.` : 'The air is still.']
   const c = world.state.player.character
   const reader = Boolean(c && ((c.ranks['survival'] ?? 0) >= 1 || (world.content.world.weather?.readers ?? []).includes(c.background)))
   const coming = forecastLine(world)

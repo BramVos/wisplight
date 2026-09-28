@@ -142,6 +142,37 @@ const PatronSchema = z
 
 const ConditionSchema = z.object({ id: Id, name: z.string(), text: z.string(), max: z.number().int().min(1).optional() }).strict()
 
+const DeathSchema = z
+  .object({
+    /** The walk while dead; {guide} is the patron who sends you back, or the guide. */
+    vision: z.string(),
+    guide: z.string(),
+    /** The patron who is death's own guide (the Grey Rider): sworn to them, the guide sends you back, not a patron by name. */
+    patron: z.string().optional(),
+    wake: z.string(),
+    /** The mark: {lost} is the line about the purse, or nothing. */
+    mark: z.string(),
+    /** Where a rite lifts it, when the stranger tries elsewhere; what the rite says; and when nothing is to lift. */
+    rite_where: z.string(),
+    rite_done: z.string(),
+    rite_nothing: z.string(),
+    /** After the third death: a price before the rite takes again (an item, left at a place with this tag or name). */
+    price: z
+      .object({
+        warn: z.string(),
+        refused: z.string(),
+        item: z.string(),
+        at: z.string(),
+        where: z.string(),
+        none: z.string(),
+        paid: z.string(),
+        nothing: z.string(),
+      })
+      .strict()
+      .optional(),
+  })
+  .strict()
+
 export const RulesSchema = z
   .object({
     xp_per_level: z.number().int().positive().default(1000),
@@ -159,9 +190,15 @@ export const RulesSchema = z
       .optional(),
     /** For a suggested character: the ancestry for each key attribute (M9.1: per world); without it, the one that gives the key most. */
     suggest: z.partialRecord(AttributeEnum, Id).optional(),
+    /**
+     * What death is like in this world (M10.17; the Way of the Grey Rider in the Nethermarch): the vision, the waking,
+     * the mark and how a rite lifts it, and the price after the third time. Without it, plain words and no price.
+     */
+    death: DeathSchema.optional(),
   })
   .strict()
 export type Rules = z.infer<typeof RulesSchema>
+export type Death = z.infer<typeof DeathSchema>
 export type ClassDef = z.infer<typeof ClassSchema>
 export type Ancestry = z.infer<typeof AncestrySchema>
 export type Background = z.infer<typeof BackgroundSchema>

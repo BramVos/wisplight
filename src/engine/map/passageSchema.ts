@@ -11,7 +11,8 @@ export const PassageSchema = z
     id: Id,
     /** As the game says it: "the barge on the Graafse Vaart". */
     name: z.string(),
-    kind: z.enum(['barge', 'ferry', 'coach', 'ship', 'cart']),
+    /** What it is, in the word the player uses: barge, coach, ferry; a spaceship or a Ford T in another world (M10.17). */
+    kind: z.string().min(1),
     /** Other words the player may use for it: trekschuit, the boat. */
     aliases: z.array(z.string()).default([]),
     /** Its stops in order along the way: locations of the world, or the topics of far places. */

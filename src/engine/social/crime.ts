@@ -98,10 +98,19 @@ export function whoNoticed(world: World, place: string, except: string[] = [], e
   return { noticed, roll: `(Stealth ${check.total})` }
 }
 
-export function fineFor(kind: Crime['kind'], value: number): number {
-  if (kind === 'murder') return 20 * 20 * 8
-  if (kind === 'assault') return 5 * 20 * 8
-  return Math.max(16, value * 3)
+/**
+ * The fine for a crime, in the smallest coin: the world's own (world.yaml law.fines), or by its coins (M10.17):
+ * twenty of the largest for a death, five for a beating, and three times the value of what was taken, at least two of
+ * the second coin. In the Nethermarch that is twenty guilders, five guilders and two stuivers, as before.
+ */
+export function fineFor(world: World, kind: Crime['kind'], value: number): number {
+  const own = world.content.world.law?.fines
+  const coins = world.coins
+  const large = coins[0]!.value
+  const small = (coins[1] ?? coins[0]!).value
+  if (kind === 'murder') return own?.murder ?? 20 * large
+  if (kind === 'assault') return own?.assault ?? 5 * large
+  return Math.max(own?.least ?? 2 * small, value * 3)
 }
 
 /**
@@ -145,10 +154,10 @@ export function crime(world: World, c: Omit<Crime, 'id' | 't' | 'reported' | 'la
   const crimes = (world.state.crimes ??= [])
   if (c.witnesses.length === 0) {
     // Nobody saw it: the loss is noticed later, and people will have their own ideas (M7.2).
-    crimes.push({ ...c, id: `crime_${crimes.length + 1}`, t: world.now, reported: [], law: lawAt(world, c.place), fine: fineFor(c.kind, c.value), unseen: true, discoverAt: world.now + 60 + world.rng.int('witness', 0, 120) })
+    crimes.push({ ...c, id: `crime_${crimes.length + 1}`, t: world.now, reported: [], law: lawAt(world, c.place), fine: fineFor(world, c.kind, c.value), unseen: true, discoverAt: world.now + 60 + world.rng.int('witness', 0, 120) })
     return out
   }
-  const entry: Crime = { ...c, id: `crime_${crimes.length + 1}`, t: world.now, reported: [], law: lawAt(world, c.place), fine: fineFor(c.kind, c.value) }
+  const entry: Crime = { ...c, id: `crime_${crimes.length + 1}`, t: world.now, reported: [], law: lawAt(world, c.place), fine: fineFor(world, c.kind, c.value) }
   crimes.push(entry)
   const area = world.location(c.place).area
   const areaTopic = world.content.areas.get(area)?.topic ?? `area_${area}`
@@ -574,9 +583,11 @@ export function recognisedSale(world: World, buyer: string, item: string): Outpu
   return [{ kind: 'narration', text: `${callName(world.npc(buyer))} turns it over and goes still. "This is ${callName(world.npc(victim))}'s. Where did you get it?"` }, ...proveTheft(world, crime, buyer, `${callName(world.npc(buyer))} knew it for ${callName(world.npc(victim))}'s when the stranger tried to sell it`)]
 }
 
-/** The schout has looked round the place: with someone seen there, he acts; without, the rumour is all there is. */
+/** The officer of the law has looked round the place: with someone seen there, they act; without, the rumour is all there is. */
 export function investigated(world: World, officer: string, place: string): void {
-  if (world.npc(officer).profession !== 'schout') return
+  // Only the officer of the law, or one of the same trade (M10.17: the world's law.npc, before the schout by name).
+  const lawNpc = world.words.law.npc
+  if (officer !== lawNpc && (!lawNpc || !world.content.npcs.has(lawNpc) || world.npc(officer).profession !== world.npc(lawNpc).profession)) return
   for (const crime of world.state.crimes ?? []) {
     if (!crime.unseen || !crime.discovered || crime.investigated || crime.place !== place) continue
     crime.investigated = true

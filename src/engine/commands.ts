@@ -24,7 +24,7 @@ import { fulfil } from './requests'
 import { giveBack, stories, type Tempo } from './stories'
 import { isNight, qtyName, wakeNpc } from './npc/execute'
 import { parseCommand, parseDirection, splitQuantity, type Command } from './parser'
-import type { World } from './world'
+import { wordsOf, type World } from './world'
 import { nightOut, rest } from './rules/player'
 import { widowTurnsBack } from './quests/antagonists'
 import { ONCE, useBlessing } from './rules/blessings'
@@ -86,7 +86,7 @@ export interface CommandHost {
 
 const HELP = [
   'Moving: north, south, east, west, up, down, in, out (n, s, e, w, ...). Also: go <place>, exits.',
-  'Across country: head <direction>, walk to <place>, follow <the tow path, the road, the fen path>. Map: map. Further: travel to <place> (on foot or by barge, coach, ferry), take the barge to <place>, wait for the coach.',
+  'Across country: head <direction>, walk to <place>, follow <a road or path>. Map: map. Further: travel to <place> (on foot, or by a line that runs there), take <the line> to <place>, wait for <the line>, hire <what someone hires out>.',
   'Looking: look (l), examine <thing or person> (x).',
   'Things: inventory (i), take, drop, give <thing> to <person>, use <object>, eat <food>, open <chest>, take <thing> from <chest>, pick <door or chest> (the lock), force <door or chest>. In a talk: ask <person> for <thing>.',
   'Crafts and skills: use <workplace> [what to make] (USE OVEN BAKE), treat <person or me>, gather [what], track <person>, search (here), read <inscription>. In a talk with a craftsman: teach me.',
@@ -227,9 +227,17 @@ export function runCommand(host: CommandHost, command: Command): Output[] {
       return wake(host, command.args)
     case 'knock':
       return knock(host, command.args)
-    case 'help':
-      return [{ kind: 'system', text: HELP }]
+    case 'help': {
+      // The lines of this world by name (M10.17), so the help speaks of the barge where there is one, and the tram in Deepwell.
+      const lines = [...world.content.passages.values()].map((p) => p.name)
+      return [{ kind: 'system', text: lines.length ? `${HELP}
+Lines here: ${lines.join(', ')}.` : HELP }]
+    }
     default: {
+      // A verb an object here offers (DRINK FROM THE TAP, M10.17): as USE with that verb.
+      const said = command.raw.trim().split(/\s+/)[0]!.toLowerCase()
+      const offered = world.location(world.state.player.location).objects.some((o) => world.content.objectTypes.get(o.type)?.affordances.some((a) => a.actors.includes('player') && a.verb === said))
+      if (offered) return use(host, [said, ...command.args.filter((a) => !/^(?:from|at|on|with|in|the|a|an)$/i.test(a))])
       // Any other verb on a thing the description names: it stays as it is (after the M10 playtest).
       const words = command.args.join(' ')
       const thing = words ? (detailHere(world, words)?.name ?? sceneryHere(world, words)?.name) : undefined
@@ -556,7 +564,7 @@ function give(host: CommandHost, args: string[]): Output[] {
   const { world } = host
   const joined = args.join(' ')
   const match = joined.match(/^(.*?)\s+(?:to|aan)\s+(.+)$/i)
-  if (!match) return [error('Give what to whom? For example: give apple to mirte.')]
+  if (!match) return [error('Give what to whom? For example: give bread to <person>.')]
   const npcId = findNpcHere(world, match[2]!)
   if (!npcId) return [error(`There is nobody called "${match[2]}" here.`)]
   const inventory = world.state.player.inventory
@@ -618,10 +626,12 @@ function sleep(host: CommandHost): Output[] {
   restParty(world)
   const home = player.home && player.location === player.home
   if (home) player.homeNight = world.now
-  // A night out in the fen, with no roof: the damp may bring Fen Fever.
+  // A night out with no roof: the damp may bring a fever, where the rules have one (the Nethermarch's Fen Fever).
   const tags = world.content.locations.get(player.location)?.tags ?? ['wilderness']
   const fever = !inRoom && (tags.includes('wilderness') || tags.includes('edge') || isHexId(player.location)) ? nightOut(world) : []
-  const how = home ? 'You sleep at home, in your own bed, and it smells of peat smoke and of the one you married.' : inRoom ? 'You sleep under a heavy quilt that smells of peat smoke.' : 'You sleep rough, and badly. The damp gets into your bones.'
+  // In the world's own words (M10.17): the Nethermarch's smell of peat smoke.
+  const sleep = wordsOf(world.content).sleep
+  const how = home ? sleep.home : inRoom ? sleep.room : sleep.rough
   return [text(`${how} You wake at first light.`), ...fever, ...goldAtTheWell(world), ...seen.slice(-3), describeRoom(world)]
 }
 
@@ -635,8 +645,10 @@ function goldAtTheWell(world: World): Output[] {
     ;(world.state.player.journal ??= {})[dream.id] = world.now
     return [{ kind: 'narration', text: `You dreamt of an old woman shaking out her featherbed, and snow falling, and in the snow a story: ${dream.summary} It is in your journal.` }]
   }
-  world.state.player.money += 160
-  return [{ kind: 'narration', text: 'When you wake there is a guilder in your shoe, bright as if it came out of a well.' }]
+  // The largest coin of the world (M10.17): in the Nethermarch a guilder.
+  const coin = world.coins[0]!
+  world.state.player.money += coin.value
+  return [{ kind: 'narration', text: `When you wake there is a ${coin.name} in your shoe, bright as if it came out of a well.` }]
 }
 
 // ---------------------------------------------------------------- trade
@@ -660,7 +672,7 @@ function list(world: World): Output[] {
   return services.map(({ service, location }) => {
     const provider = firstName(world.npc(service.provider))
     if (!world.serviceOpen(location, service)) {
-      if (isOpenAt(world.now, service.hours, service.days)) return text(`Nobody is minding ${provider}'s trade right now. Try again later.`)
+      if (isOpenAt(world.now, service.hours, service.days, world.calendar)) return text(`Nobody is minding ${provider}'s trade right now. Try again later.`)
       const [from, to] = parseHours(service.hours)
       return text(`${provider}'s trade is closed now. Hours: ${hhmm(from)} to ${hhmm(to)}${service.days ? `, ${service.days.join(', ')}` : ''}.`)
     }

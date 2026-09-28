@@ -8,12 +8,11 @@ import type { Voice } from './voiceSchema'
 
 // The voice kit at work (M10.10): the prompt's VOICE block, the oaths of a
 // speaker, what the guard replaces or asks again, and a number the model made
-// up. A world without a kit keeps the fixed list of before.
+// up. A world without a kit has no list of words that do not belong (M10.17: a
+// computer is no anachronism on a mining colony); only the fixed core holds.
 
 type Group = Voice['groups'][number]
 
-/** Words from outside any world, when a world has no kit of its own (the guard's list before M10.10). */
-const FALLBACK = /\b(okay|ok|internet|online|website|e-?mail|phone|smartphone|computer|laptop|robot|television|tv|electricity|plastic|photograph|percent|awesome|cool|dude|hashtag|app)\b|\bAI\b/i
 /** The small fixed core every world keeps: a percent sign, and a model speaking of models (markup and emoji are out of character). */
 const CORE = /%|\bAI\b|\b(?:chatgpt|openai|anthropic|claude|gpt-?\d)\b/i
 
@@ -165,7 +164,7 @@ export function fixNotHere(world: Pick<World, 'content'>, text: string): { text:
 /** Words of a reply that do not exist here and have nothing to stand in for them: the game asks again. */
 export function strangeWords(world: Pick<World, 'content'>, text: string): string[] {
   const kit = kitOf(world)
-  if (!kit) return FALLBACK.test(text) || CORE.test(text) ? [(FALLBACK.exec(text) ?? CORE.exec(text))![0]] : []
+  if (!kit) return CORE.test(text) ? [CORE.exec(text)![0]] : []
   const found = kit.not_here.filter((n) => !n.instead && new RegExp(wordPattern(n.word).source, wordPattern(n.word).flags.replace('g', '')).test(text)).map((n) => n.word)
   const core = CORE.exec(text)
   return [...found, ...(core ? [core[0]] : [])]

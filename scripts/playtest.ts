@@ -1,4 +1,4 @@
-import { mkdirSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { argv, stdout } from 'node:process'
 import { Engine, type Output } from '../src/engine'
@@ -309,12 +309,39 @@ export const LINES: Line[] = [
     after: [{ wait: 1 * DAY }, 'look', { askAround: true }, { wait: 3 * DAY }, 'look', { askAround: true }, 'journal'],
     words: /pitch|thief|stole|stolen|theft|Maren/i,
   },
+  {
+    // The test world (M10.17, tests/worlds/other): every milestone plays here too, to show it is generic.
+    id: 'deepwell',
+    world: 'other',
+    title: 'Een nieuwkomer in Deepwell, de proefwereld zonder Nethermarch',
+    seed: 5,
+    recognise: ['look', 'e', 'list', { askAround: true }, 'journal'],
+    influence: [
+      { note: 'Eat, drink, and take the tram to the works and back.' },
+      'buy stew',
+      'eat stew',
+      'drink from tap',
+      'down',
+      'take the tram',
+      'look',
+      'take the tram',
+      'up',
+    ],
+    after: [{ wait: 1 * DAY }, 'look', { askAround: true }, 'time'],
+    words: /tram|credit|chit|\bch\b|stew|Pell|canteen/i,
+  },
 ]
+
+/** A world from content/, or a test world from tests/worlds (Deepwell). */
+function worldDir(world: string): string {
+  const content = resolve(import.meta.dirname, '../content')
+  return existsSync(resolve(content, world)) ? content : resolve(import.meta.dirname, '../tests/worlds')
+}
 
 const say = (outputs: Output[]) => outputs.map((o) => o.text).join('\n')
 
 async function play(line: Line, act: boolean): Promise<string> {
-  const content = await loadContentFromDir(resolve(import.meta.dirname, '../content'), line.world)
+  const content = await loadContentFromDir(worldDir(line.world), line.world)
   const engine = new Engine(content, { seed: line.seed, builder: true })
   const out: string[] = [say(engine.start())]
   const steps: [string, Step[]][] = [['RECOGNISE', line.recognise], ...(act ? [['INFLUENCE', line.influence] as [string, Step[]]] : []), ['AFTER', line.after]]

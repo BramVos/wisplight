@@ -1,6 +1,6 @@
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { Engine, GameClock, loadContent, weekdayOf, type Output } from '../src/engine'
+import { Engine, GameClock, loadContent, weekdayName, type Output } from '../src/engine'
 import type { World } from '../src/engine/world'
 import { blessed } from '../src/engine/rules/blessings'
 import { centre } from '../src/engine/map/hexgrid'
@@ -32,7 +32,7 @@ function oldBarge(world: World, destination: string | undefined, pass: (minutes:
   const here = world.state.player.location
   if (!STOPS.every((stop) => world.content.locations.has(stop))) return [{ kind: 'error', text: 'There is no barge here.' }]
   if (!STOPS.includes(here)) return [{ kind: 'error', text: 'The barge stops at the quay in Veenhoek, the harbour in Waagdam and the sluice at Oude Zijl.' }]
-  const day = weekdayOf(world.now)
+  const day = weekdayName(world.now, world.calendar)
   const hour = new GameClock(world.now).parts.hour
   if ((day !== 'Maandag' && day !== 'Donderdag') || hour < 7 || hour >= 17) return [{ kind: 'text', text: 'No barge today. It runs on Maandag and Donderdag, from first light until the afternoon.' }]
   if (!destination) return [{ kind: 'error', text: 'Take the barge where? Oude Zijl, Veenhoek or Waagdam.' }]

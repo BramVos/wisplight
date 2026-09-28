@@ -1,5 +1,5 @@
 import type { Output } from '../commands'
-import type { World } from '../world'
+import { wordsOf, type World } from '../world'
 
 // Factions and reputation (FO, chapter 8): -100 to +100 per faction, with
 // ranks from Enemy to Hero. A change spills over: a fifth to the faction's
@@ -64,30 +64,24 @@ export function join(world: World, words: string): Output[] {
   const patron = c?.patron?.id
   const rep = reputationOf(world, faction.id)
   let refusal: string | undefined
-  switch (faction.join) {
-    case 'never':
-      refusal = `${cap(faction.name)} take no members.`
-      break
-    case 'hired':
-      refusal = `${cap(faction.name)} hire, they do not enlist. Perhaps the schout has work for you one day.`
-      break
-    case 'patron_lantern':
-      if (patron !== 'lantern') refusal = 'The Church takes novices who have sworn themselves to the Lantern.'
-      else if (!world.location(world.state.player.location).tags.includes('holy')) refusal = 'You take the novice vows in a chapel or church.'
-      break
-    case 'patron_old':
-      if (!patron || patron === 'lantern') refusal = 'The Old Faith is for those who follow one of the Old Powers.'
-      break
-    case 'reputation':
-      if (rep < 30) refusal = `${cap(faction.name)} do not know you well enough yet (${rankOf(rep)}).`
-      break
-    case 'citizenship': {
-      const fee = 5 * 20 * 8
-      if (world.state.player.location !== 'loc_waagdam_waag' && world.state.player.location !== 'loc_waagdam_weighing_room') refusal = 'The town rights of Waagdam are bought at the Waag.'
-      else if (world.state.player.money < fee) refusal = 'The town rights cost five guilders.'
-      else world.state.player.money -= fee
-      break
-    }
+  const terms = faction.join
+  if (terms === 'never') refusal = `${cap(faction.name)} take no members.`
+  else if (terms === 'hired') {
+    const officer = wordsOf(world.content).law.officer
+    refusal = `${cap(faction.name)} hire, they do not enlist.${officer ? ` Perhaps the ${officer} has work for you one day.` : ''}`
+  } else if (terms === 'reputation') {
+    if (rep < 30) refusal = `${cap(faction.name)} do not know you well enough yet (${rankOf(rep)}).`
+  } else {
+    // On terms (M10.17): the patron, the place, the reputation and the fee, in that order.
+    const here = world.location(world.state.player.location)
+    const patronName = (id: string) => world.content.rules?.patrons.find((p) => p.id === id)?.name ?? id
+    if ((terms.patrons && (!patron || !terms.patrons.includes(patron))) || (terms.not_patrons && (!patron || terms.not_patrons.includes(patron))))
+      refusal = terms.says.patron ?? (terms.patrons ? `${cap(faction.name)} take only those sworn to ${terms.patrons.map(patronName).join(' or ')}.` : `${cap(faction.name)} take only those sworn to a patron of their own.`)
+    else if ((terms.at && !terms.at.includes(here.id)) || (terms.tag && !here.tags.includes(terms.tag)))
+      refusal = terms.says.place ?? (terms.at ? `You join ${faction.name} at ${world.content.locations.get(terms.at[0]!)?.name ?? terms.at[0]}.` : `This is not the place to join ${faction.name}.`)
+    else if (terms.reputation !== undefined && rep < terms.reputation) refusal = terms.says.reputation ?? `${cap(faction.name)} do not know you well enough yet (${rankOf(rep)}).`
+    else if (terms.fee && world.state.player.money < terms.fee) refusal = terms.says.fee ?? `Joining ${faction.name} costs ${world.money(terms.fee)}.`
+    else if (terms.fee) world.state.player.money -= terms.fee
   }
   if (refusal) return [{ kind: 'error', text: refusal }]
   memberships.push(faction.id)
@@ -113,7 +107,7 @@ export function factionPage(world: World, id: string): string[] | undefined {
   return [
     f.wants,
     `Seat: ${f.seat}.`,
-    `On the drainage: ${f.stance}.`,
+    ...(f.stance ? [`Where they stand: ${f.stance}.`] : []),
     ...(f.allies.length ? [`Friends: ${names(f.allies)}.`] : []),
     ...(f.rivals.length ? [`Enemies: ${names(f.rivals)}.`] : []),
     `You: ${rankOf(score ?? 0)} (${score ?? 0})${member ? ', a member' : ''}.`,

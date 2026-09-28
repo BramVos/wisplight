@@ -526,8 +526,10 @@ export interface PlayerState {
   lostPurse?: { location: string; amount: number; t: number }
   /** Died three times: the Grey Rider wants a price. */
   riderPrice?: boolean
-  /** Until when the player has a punt hired (M7.2). */
+  /** Until when the player has a punt hired (M7.2; an old save; since M10.17 in `hired`). */
   punt?: number
+  /** What the player has hired, by the owner's hire id, and until when (M10.17). */
+  hired?: Record<string, { owner: string; until: number; crosses: string[] }>
   /** Home after a marriage (M7.2): the spouse's house, where the player sleeps for nothing. */
   home?: string
   /** The last night the player slept at home: a spouse expects them now and then. */

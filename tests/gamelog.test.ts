@@ -31,7 +31,7 @@ describe('the game log', () => {
     const story = log.recent(session, 100)
     expect(story.map((l) => l.kind)).not.toContain('replay')
     expect(story.map((l) => l.kind)).not.toContain('event')
-    expect(story.map(format).join('\n')).toMatch(/\[Dinsdag 14 18:3\d\] > talk mirte/)
+    expect(story.map((row) => format(row, engine.world.calendar)).join('\n')).toMatch(/\[Dinsdag 14 18:3\d\] > talk mirte/)
     expect(story.map((l) => l.text).join('\n')).toMatch(/De Zwaan/)
     expect(log.text(session)).toContain('> What happened to the mill?')
   })

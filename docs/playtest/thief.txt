@@ -82,7 +82,7 @@ Maren lifts a hand. "Go on, then."
 > journal
 People: Maren Holt.
 Places: Skerrow Hythe, the Shore, The Headland, The Salt Kettle, The Tidepools, The Wreck Strand.
-Lore: the stranger in Skerrow Hythe, the theft at The Salt Kettle, the Grey Gull.
+Lore: the stranger in Skerrow Hythe, the theft at The Salt Kettle, the headwoman found nothing, the Grey Gull.
 
 ==== INFLUENCE (Thornsday 4 Leaffall 412 SF, 08:02 (morning))
 
@@ -185,7 +185,7 @@ Maren lifts a hand. "Go on, then."
 > journal
 People: Maren Holt.
 Places: Skerrow Hythe, the Shore, The Headland, The Salt Kettle, The Tidepools, The Wreck Strand.
-Lore: the stranger in Skerrow Hythe, the theft at The Salt Kettle, the stranger bringing back Maren's pot of pitch, the Grey Gull.
+Lore: the stranger in Skerrow Hythe, the theft at The Salt Kettle, the headwoman found nothing, the stranger bringing back Maren's pot of pitch, the Grey Gull.
 
 ==== END (Moonday 8 Leaffall 412 SF, 08:08 (morning))
 Quests: off_skerrow: open, stage stranded
@@ -272,7 +272,7 @@ Maren lifts a hand. "Go on, then."
 > journal
 People: Maren Holt.
 Places: Skerrow Hythe, the Shore, The Headland, The Salt Kettle, The Tidepools, The Wreck Strand.
-Lore: the stranger in Skerrow Hythe, the theft at The Salt Kettle, the Grey Gull.
+Lore: the stranger in Skerrow Hythe, the theft at The Salt Kettle, the headwoman found nothing, the Grey Gull.
 
 ==== AFTER (Thornsday 4 Leaffall 412 SF, 08:02 (morning))
 
@@ -356,7 +356,7 @@ Maren lifts a hand. "Go on, then."
 > journal
 People: Maren Holt.
 Places: Skerrow Hythe, the Shore, The Headland, The Salt Kettle, The Tidepools, The Wreck Strand.
-Lore: the stranger in Skerrow Hythe, the theft at The Salt Kettle, the Grey Gull.
+Lore: the stranger in Skerrow Hythe, the theft at The Salt Kettle, the headwoman found nothing, the Grey Gull.
 
 ==== END (Moonday 8 Leaffall 412 SF, 08:06 (morning))
 Quests: off_skerrow: open, stage stranded

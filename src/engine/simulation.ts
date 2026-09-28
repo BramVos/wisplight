@@ -8,7 +8,7 @@ import { claimsHour } from './claims'
 import { fillFromLedger, ledgerHour, nameless } from './economy/ledger'
 import { projectsDay } from './growth/growth'
 import { sawPerson } from './acquaintance'
-import { isOpenAt, MINUTES_PER_DAY, minuteOfDay, weekdayOf } from './clock'
+import { isOpenAt, isRestDay, MINUTES_PER_DAY, minuteOfDay, weekdayName } from './clock'
 import type { Need } from './content'
 import { add } from './items'
 import { pickSome, spreadNews } from './news'
@@ -127,7 +127,8 @@ function healWounds(world: World): void {
 }
 
 function decayNeeds(world: World): void {
-  const workday = weekdayOf(world.now) !== 'Rustdag'
+  // The world's own day of rest (M10.17): the last of its week.
+  const workday = !isRestDay(world.now, world.calendar)
   for (const id of Object.keys(world.state.npcs).sort()) {
     const npc = world.state.npcs[id]!
     if (npc.dead || npc.absent) continue
@@ -148,7 +149,7 @@ function decayNeeds(world: World): void {
 
 function supply(world: World): void {
   const hour = Math.floor(minuteOfDay(world.now) / 60)
-  const weekday = weekdayOf(world.now)
+  const weekday = weekdayName(world.now, world.calendar)
   for (const location of world.content.locations.values()) {
     for (const service of location.services) {
       for (const rule of service.supply) {
@@ -184,7 +185,7 @@ function demand(world: World): void {
       if (!world.serviceOpen(location.id, service)) continue
       for (const rule of service.demand) {
         if (hour < rule.from || hour >= rule.to) continue
-        if (rule.days && !rule.days.includes(weekdayOf(world.now))) continue
+        if (rule.days && !rule.days.includes(weekdayName(world.now, world.calendar))) continue
         const perHour = rule.amount / Math.max(1, rule.to - rule.from)
         let qty = Math.floor(perHour)
         if (world.rng.next(`demand:${location.id}`) < perHour - qty) qty++

@@ -14,7 +14,7 @@ import { worldFrame } from './dialogue/prompt'
 import { followTombstones, followTombstonesInLog, nameBook, withNames, type NameBook } from './ids'
 import { shiftTension, tensionOf } from './social/realms'
 import { grownContent, invest } from './growth/growth'
-import { dayName, GameClock, MONTHS, WEEKDAYS } from './clock'
+import { GameClock, weekdayName } from './clock'
 import { describeRoom, detailVerb, findNpcAnywhere, findNpcHere, runCommand, type CommandHost, type Output } from './commands'
 import { areaTopicId, callName, type Content, type Quest } from './content'
 import { Dialogue, QUICK_OPTIONS } from './dialogue/conversation'
@@ -46,7 +46,7 @@ import { recordFact, seedNews } from './news'
 import { parseCommand, parseDirection } from './parser'
 import { advance } from './simulation'
 import { createInitialState, fitStateToContent, type GameState, type LoreEntry, type Offered, type TalkLine, type TalkState, type WorldEvent } from './state'
-import { weather, wind, windWords, type WeatherKind } from './weather'
+import { hasWeather, weather, wind, windWords, type WeatherKind } from './weather'
 export type { TalkLine } from './state'
 import { chronicleState } from './storylines'
 import { upper, World } from './world'
@@ -338,7 +338,7 @@ export class Engine {
       juice: 0.7,
       title: `the stranger in ${area.name}`,
       text: {
-        precise: `A stranger from ${this.world.words.from} came to ${area.name} on ${dayName(clock.weekday, this.world.calendar)}, in the ${clock.dayPart}.`,
+        precise: `A stranger from ${this.world.words.from} came to ${area.name} on ${weekdayName(this.world.now, this.world.calendar)}, in the ${clock.dayPart}.`,
         village: `There's a stranger about in ${area.name}, come from ${this.world.words.from}.`,
         far: `A stranger has come to ${this.world.words.region}, they say.`,
       },
@@ -726,7 +726,7 @@ export class Engine {
         // A journey, or what changed since the last visit (M10.13): the same narrator, one call.
         const reply = await recorder.complete({ ...journeyRequest(this.world, output.text, frame, output.returning ? 'return' : 'journey'), timeoutMs: 8000 })
         const text = String((JSON.parse(reply.text.trim().replace(/^```(?:json)?\s*|\s*```$/g, '')) as { text?: unknown }).text ?? '').trim()
-        const words = vocabularyOf({ ...this.content, chronicler: undefined }, worldFrame(this.content), MONTHS, WEEKDAYS, output.text)
+        const words = vocabularyOf({ ...this.content, chronicler: undefined }, worldFrame(this.content), this.world.calendar.months, this.world.calendar.weekdays, output.text)
         const fine = text && wordCount(text) <= Math.max(110, wordCount(output.text) * 1.5) && !unknownNames(text, words).length && !strangeWords(this.world, text).length && !hasOurOaths(text) && !outOfCharacter(text)
         if (fine) output.text = text
         else recorder.report?.({ reason: 'invented', role: 'chronicler' })
@@ -869,7 +869,11 @@ export class Engine {
     // Stuck in the fen, or a cat for a while (M7.2): some things cannot be done.
     const held = this.heldBack(text)
     if (held) return held
-    if (/^(?:hire|rent|borrow)\s+(?:a\s+|the\s+)?punt\b/i.test(text.trim())) return this.hirePunt()
+    const hire = /^(?:hire|rent|borrow)\s+(?:a\s+|an\s+|the\s+)?(.+?)\s*$/i.exec(text.trim())
+    if (hire) {
+      const hired = this.hire(hire[1]!)
+      if (hired) return hired
+    }
     // LISTEN to people talking here (M8.2).
     if (/^(?:listen|eavesdrop|overhear)(?:\s+(?:in|to|at)\b.*)?$/i.test(text.trim()) && !this.state.talk) {
       const heard = listen(this.world)
@@ -1037,7 +1041,7 @@ export class Engine {
       }
       case 'travel': {
         const to = /^(?:to|naar)\s+(.+)$/i.exec(command.args.join(' '))
-        if (!to) return [{ kind: 'error', text: 'Travel where? For example: travel to Waagdam.' }]
+        if (!to) return [{ kind: 'error', text: 'Travel where? For example: travel to <a place you know of>.' }]
         if (this.state.player.load) return [{ kind: 'error', text: 'With a load you go on foot, one stretch at a time: GO <direction>.' }]
         // On foot, on purpose (M10.12): TRAVEL TO GRAAFHAVEN ON FOOT.
         const walking = /\s+(?:on\s+foot|te\s+voet)$/i.test(to[1]!)
@@ -1073,8 +1077,14 @@ export class Engine {
         return rite(this.world)
       case 'offer':
       case 'leave':
-        // The last sheaf for the Grey Rider, at a crossroads (the Rider's price).
-        if (/sheaf|rye|grain|rogge/i.test(command.args.join(' '))) return leaveSheaf(this.world)
+        // The price of death, where the rules have one (the last sheaf for the Grey Rider, at a crossroads).
+        if (command.args.length) {
+          const price = this.world.content.rules?.death?.price
+          const item = price && this.world.content.items.get(price.item)
+          const said = command.args.join(' ').toLowerCase()
+          const paid = item && [item.name, ...(item.aliases ?? [])].some((w) => said.includes(w.toLowerCase())) ? leaveSheaf(this.world) : undefined
+          if (paid) return paid
+        }
         return [{ kind: 'error', text: command.verb === 'leave' ? 'Leave what? To leave a place, go somewhere.' : 'Offer what, to whom?' }]
       case 'clocks':
         return [{ kind: 'system', text: this.clockLines().join('\n') || 'No clocks are running that you know of.' }]
@@ -1382,12 +1392,13 @@ export class Engine {
     const light = p.dayPart === 'night' ? 'night' : p.dayPart === 'dawn' || p.hour >= 19 ? 'dusk' : 'day'
     const words: Record<WeatherKind, string> = { clear: 'clear', overcast: 'cloudy', rain: 'rain', fog: 'mist', storm: 'storm', frost: 'frost', snow: 'snow' }
     return {
-      weekday: dayName(p.weekday, calendar),
+      weekday: weekdayName(this.world.now, calendar),
       date: `${p.day} ${calendar.months[p.month - 1]}`,
       time: `${String(p.hour).padStart(2, '0')}:${String(p.minute).padStart(2, '0')}`,
       light,
-      weather: words[weather(this.world)],
-      wind: windWords(wind(this.world)),
+      // A world without weather (M10.17) shows none.
+      weather: hasWeather(this.world) ? words[weather(this.world)] : '',
+      wind: hasWeather(this.world) ? windWords(wind(this.world)) : '',
     }
   }
 
@@ -1828,9 +1839,9 @@ export class Engine {
         return [{ kind: 'system', text: `[build] ${this.world.location(place).name} is ${state.data}.` }, ...out, ...this.pass(0)]
       }
       case 'money': {
-        // @money 300: the purse holds this many duiten.
+        // @money 300: the purse holds this much, in the smallest coin.
         const amount = Number(rest[0])
-        if (!Number.isInteger(amount) || amount < 0) return [{ kind: 'error', text: '@money <duiten>' }]
+        if (!Number.isInteger(amount) || amount < 0) return [{ kind: 'error', text: '@money <amount in the smallest coin>' }]
         this.state.player.money = amount
         return [{ kind: 'system', text: `[build] You have ${this.world.money(amount)}.` }]
       }
@@ -1880,21 +1891,38 @@ export class Engine {
   }
 
   /**
-   * A punt from Wouter (M7.2): two stuivers for the day, nothing for a friend.
-   * With it you pole over open water and the channels, where walking stops.
+   * HIRE <thing> (M7.2's punt of Wouter; since M10.17 content): whatever a
+   * person hires out, from their `hires`, with the owner there. A friend pays
+   * nothing. Undefined when nobody in this world hires out such a thing, so
+   * RENT A ROOM and the rest go on as before.
    */
-  private hirePunt(): Output[] {
+  private hire(word: string): Output[] | undefined {
+    const w = word.toLowerCase()
+    const offers = [...this.world.content.npcs.values()].flatMap((npc) => npc.hires.map((h) => ({ npc, h }))).filter(({ h }) => [h.id, h.name, ...h.aliases].some((n) => n.toLowerCase() === w))
+    if (!offers.length) return undefined
     const here = this.state.player.location
-    const owner = 'npc_wouter'
-    const s = this.state.npcs[owner]
-    if (!s || s.dead || (s.location !== here && !companionOf(this.world, owner))) return [{ kind: 'error', text: 'Punts are hired from Wouter, the eel-fisher, at his hut south of the peat cuttings.' }]
-    const friend = Boolean(companionOf(this.world, owner)) || attitude(this.world, owner).band === 'Warm' || attitude(this.world, owner).band === 'Devoted'
-    const price = friend ? 0 : 16
-    if (this.state.player.money < price) return [{ kind: 'error', text: `Wouter wants ${this.world.money(price)} for the day, and you haven't got it.` }]
+    const offer = offers.find(({ npc }) => {
+      const s = this.state.npcs[npc.id]
+      return s && !s.dead && (s.location === here || companionOf(this.world, npc.id))
+    })
+    if (!offer) {
+      const { npc, h } = offers[0]!
+      const a = /^[aeiou]/i.test(h.name) ? 'An' : 'A'
+      return [{ kind: 'error', text: `${a} ${h.name} is hired from ${callName(npc)}${h.where ? `, ${h.where}` : ''}.` }]
+    }
+    const { npc, h } = offer
+    const owner = callName(npc)
+    const band = attitude(this.world, npc.id).band
+    const friend = h.free_for_friends && (Boolean(companionOf(this.world, npc.id)) || band === 'Warm' || band === 'Devoted')
+    const price = friend ? 0 : h.price
+    if (this.state.player.money < price) return [{ kind: 'error', text: `${owner} wants ${this.world.money(price)} for the ${h.name}, and you haven't got it.` }]
     this.state.player.money -= price
-    this.world.npcState(owner).money += price
-    this.state.player.punt = this.world.now + 12 * 60
-    return [{ kind: 'narration', text: `${price ? `You pay Wouter ${this.world.money(price)}.` : 'Wouter waves your money away.'} "Mind the pole in the channels, and bring her back before the dark." The punt is yours until evening: you can pole over open water and across the channels now.` }]
+    this.world.npcState(npc.id).money += price
+    const until = this.world.now + Math.round(h.hours * 60)
+    ;(this.state.player.hired ??= {})[h.id] = { owner: npc.id, until, crosses: h.crosses }
+    const paid = price ? `You pay ${owner} ${this.world.money(price)}.` : `${owner} waves your money away.`
+    const crossing = h.crosses.includes('water') ? ' You can cross open water and the channels with it now.' : ''
+    return [{ kind: 'narration', text: `${paid}${h.line ? ` ${h.line}` : ''} The ${h.name} is yours for ${h.hours >= 24 ? `${Math.round(h.hours / 24)} day${h.hours >= 48 ? 's' : ''}` : `${h.hours} hours`}.${crossing}` }]
   }
 
   /**

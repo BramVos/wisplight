@@ -1,7 +1,6 @@
 import { asksAge, knownName, knowsOfPerson, learnTie, learnWork, publicShort, toldAge } from '../acquaintance'
 import type { Output } from '../commands'
-import { parseMoney, STUIVER } from '../items'
-import { MONTHS, WEEKDAYS } from '../clock'
+import { parseMoney } from '../items'
 import { areaTopicId, callName } from '../content'
 import { factById, heardBy, newsAbout, playerTells } from '../news'
 import type { Fact, FarName, TalkState } from '../state'
@@ -103,7 +102,7 @@ export class Dialogue {
   /** Every word the world's content uses, for spotting names the model made up. */
   private vocabulary(): Set<string> {
     // The chronicler's instruction is not the world: its examples are no names of it.
-    this.words ??= vocabularyOf({ ...this.world.content, chronicler: undefined }, worldFrame(this.world.content), MONTHS, WEEKDAYS, (this.world.state.lore?.far ?? []).map((f) => f.name), (this.world.state.lore?.people ?? []).map((p) => p.name), (this.world.state.chronicle?.lore ?? []).map((l) => l.name))
+    this.words ??= vocabularyOf({ ...this.world.content, chronicler: undefined }, worldFrame(this.world.content), this.world.calendar.months, this.world.calendar.weekdays, (this.world.state.lore?.far ?? []).map((f) => f.name), (this.world.state.lore?.people ?? []).map((p) => p.name), (this.world.state.chronicle?.lore ?? []).map((l) => l.name))
     return this.words
   }
 
@@ -378,7 +377,9 @@ export class Dialogue {
       const amount = parseMoney(text, world.coins)
       if (!amount) return [{ kind: 'error', text: `Bribe with how much? For example: BRIBE ${callName(npc).toUpperCase()} 2 ${(world.coins[1] ?? world.coins[0]!).plural?.toUpperCase() ?? `${(world.coins[1] ?? world.coins[0]!).name.toUpperCase()}S`}.` }]
       if (amount > world.state.player.money) return [{ kind: 'error', text: `You only have ${world.money(world.state.player.money)}.` }]
-      result = playerCheck(world, 'persuasion', dcFor(18 - Math.floor(amount / STUIVER), band, npc.personality.honesty * 2))
+      // Each small coin of the world makes it easier (M10.17: the world's second coin, not the Nethermarch's stuiver).
+      const small = world.coins[1]?.value ?? world.coins[0]!.value
+      result = playerCheck(world, 'persuasion', dcFor(18 - Math.floor(amount / small), band, npc.personality.honesty * 2))
       about = `bribe them with ${world.money(amount)}`
       if (succeeded(result)) {
         world.state.player.money -= amount
@@ -1052,7 +1053,7 @@ function recruitDecision(world: World, npcId: string, band: Attitude): string {
   if (o.decision === 'refuse') return `You will not come along. Say no in your own way and give one or two of these reasons: ${o.reasons.join('; ') || 'you have your own life to see to'}.`
   const joined = recruit(world, npcId)
   world.notices.push(...joined.filter((l) => l.kind === 'system').map((l) => l.text))
-  const terms = `${o.terms.wage} duiten a day${o.terms.until ? `, for ${Math.round((o.terms.until - world.now) / (24 * 60))} days` : ''}${o.terms.limits.length ? ', and some places you will not go' : ''}`
+  const terms = `${world.money(o.terms.wage)} a day${o.terms.until ? `, for ${Math.round((o.terms.until - world.now) / (24 * 60))} days` : ''}${o.terms.limits.length ? ', and some places you will not go' : ''}`
   return o.decision === 'join' ? `You agree to come along with the stranger. Say yes in your own way. Your wage: ${terms}.` : `You agree to come, on terms: ${terms}. Say yes and name your terms plainly.`
 }
 

@@ -4,7 +4,7 @@ import { appendFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFi
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { ContentError, draftRequest, Engine, ENTITY_KINDS, lineDiff, MapPaletteSchema, paletteRequest, paletteView, readDraft, readPalette, readVoice, savePalette, saveVoice, voiceRequest, voiceYaml, type Content, type Edit, type EntityKind, type FileChange, type CheckpointedSave, type MapPalette, type Output, type SaveData } from '../engine'
+import { ContentError, draftRequest, draftResult, Engine, ENTITY_KINDS, lineDiff, MapPaletteSchema, paletteRequest, paletteView, readDraft, readPalette, readVoice, savePalette, saveVoice, voiceRequest, voiceYaml, worldStepRequest, type Content, type Edit, type EntityKind, type FileChange, type CheckpointedSave, type MapPalette, type Output, type SaveData } from '../engine'
 import { ContentEditor } from '../node/editor'
 import type { ProviderId } from '../node/ai/providers'
 import { AiService } from '../node/ai/service'
@@ -192,6 +192,7 @@ function follow(next: Engine, where: Session): void {
   session = where
   scribe().begin(worldFolder, where.game)
   unfollow = next.onLog((line) => journal().write(where, line))
+  journal().calendar = next.world.calendar
   // What went to the archive is read back from this game's log (M10.2): the lookups and the chronicler find it there.
   next.world.archive = { fact: (id) => journal().archivedFact(where, id) }
 }
@@ -340,7 +341,7 @@ ipcMain.handle('engine:command', async (_event, input: unknown) => {
       return reply([system(file ? `The log is saved as ${file}.` : 'Not saved.')])
     }
     const lines = journal().recent(where, Math.min(500, Number(args[0]) || 30))
-    return reply([system(lines.length ? lines.map(format).join('\n') : 'The log is empty.')])
+    return reply([system(lines.length ? lines.map((row) => format(row, journal().calendar)).join('\n') : 'The log is empty.')])
   }
   ensureSession()
   const before = engine.world.now
@@ -382,7 +383,7 @@ const END_LINES = 2000
 ipcMain.handle('engine:end', () => {
   const lines = session ? journal().recent(session, END_LINES) : undefined
   const cut = lines && lines.length === END_LINES ? `(Only the last ${END_LINES} lines are shown here. [Download] saves the whole log.)\n\n` : ''
-  return { log: lines ? cut + lines.map(format).join('\n') : undefined, chronicle: engine?.chronicle() ?? '' }
+  return { log: lines ? cut + lines.map((row) => format(row, journal().calendar)).join('\n') : undefined, chronicle: engine?.chronicle() ?? '' }
 })
 ipcMain.handle('engine:log-size', (_event, scope: unknown) => (session ? journal().size(session, logScope(scope)) : 0))
 ipcMain.handle('engine:export-log', (_event, scope: unknown) => (session ? exportLog(session, logScope(scope)) : undefined))
@@ -485,11 +486,49 @@ ipcMain.handle('editor:draft', async (_event, world: unknown, ask: unknown, focu
   const at = focus && typeof focus === 'object' ? (focus as { kind?: unknown; id?: unknown }) : undefined
   const request = draftRequest(files, String(ask ?? '').slice(0, 2000), at?.kind && at.id ? { kind: kindOf(at.kind), id: String(at.id) } : undefined)
   try {
-    const draft = readDraft(files, (await llm.complete(request)).text)
-    return { say: draft.say, questions: draft.questions, changes: draft.changes, problems: draft.problems, diffs: draft.result?.ok ? shown(draft.result.changes) : [] }
+    return shownDraft(readDraft(files, (await llm.complete(request)).text))
   } catch (error) {
     return { say: '', questions: [], changes: [], problems: [`The chronicler did not answer: ${error instanceof Error ? error.message : String(error)}`], diffs: [] }
   }
+})
+/** A proposal as the editor shows it: what the chronicler says, and the files as diffs. */
+const shownDraft = (draft: ReturnType<typeof readDraft>) => ({
+  say: draft.say,
+  questions: draft.questions,
+  changes: draft.changes,
+  ...(draft.world ? { world: draft.world } : {}),
+  ...(draft.files ? { files: draft.files } : {}),
+  problems: draft.problems,
+  diffs: draft.result?.ok ? shown(draft.result.changes) : [],
+})
+// A step of building a world with the chronicler (M10.17), and saving what the designer accepts.
+ipcMain.handle('editor:world-step', async (_event, world: unknown, step: unknown, said: unknown) => {
+  devOnly()
+  await setup()
+  const llm = ai?.client()
+  if (!llm) return { say: '', questions: [], changes: [], problems: ["The chronicler builds the world with you: connect a model in the game's Settings > AI first."], diffs: [] }
+  const files = await readContentFiles(contentDir(), worldOf(world))
+  try {
+    return shownDraft(readDraft(files, (await llm.complete(worldStepRequest(files, String(step ?? ''), String(said ?? '').slice(0, 4000)))).text))
+  } catch (error) {
+    return { say: '', questions: [], changes: [], problems: [`The chronicler did not answer: ${error instanceof Error ? error.message : String(error)}`], diffs: [] }
+  }
+})
+ipcMain.handle('editor:save-draft', async (_event, world: unknown, draft: unknown) => {
+  devOnly()
+  const d = (draft && typeof draft === 'object' ? draft : {}) as { changes?: unknown; world?: unknown; files?: unknown }
+  const files = await readContentFiles(contentDir(), worldOf(world))
+  const changes = (Array.isArray(d.changes) ? d.changes : []).map((c: { kind?: unknown; id?: unknown; yaml?: unknown }) => ({ kind: kindOf(c.kind), id: String(c.id), yaml: String(c.yaml ?? '') }))
+  const whole = (Array.isArray(d.files) ? d.files : []).map((f: { path?: unknown; text?: unknown }) => ({ path: String(f.path ?? ''), text: String(f.text ?? '') }))
+  const outcome = draftResult(files, { changes, ...(typeof d.world === 'string' ? { world: d.world } : {}), files: whole })
+  if (!outcome.ok) return { ok: false, problems: outcome.problems, warnings: [], changes: [] }
+  ignoreWatchUntil = Date.now() + 1500
+  for (const change of outcome.changes) {
+    mkdirSync(dirname(join(contentDir(), change.path)), { recursive: true })
+    writeFileSync(join(contentDir(), change.path), change.text, 'utf8')
+  }
+  if (outcome.changes.length) afterEdit(worldOf(world))
+  return { ok: true, problems: [], warnings: [], changes: shown(outcome.changes) }
 })
 // The palette of a world's map (M10): read, written into world.yaml, or proposed by the writing aid.
 ipcMain.handle('editor:palette', async (_event, world: unknown, palette: unknown) => {

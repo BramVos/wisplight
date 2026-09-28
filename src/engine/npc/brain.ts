@@ -1,4 +1,4 @@
-import { minuteOfDay, nextOpening, parseHours, startOfDay, weekdayOf } from '../clock'
+import { minuteOfDay, nextOpening, parseHours, startOfDay, weekdayName } from '../clock'
 import { delivered, goalEnded } from '../agreements'
 import type { DailyGoal, ScheduleBlock } from '../content'
 import type { Goal, Step } from '../state'
@@ -362,7 +362,7 @@ function pursueDailyGoal(world: World, npcId: string): boolean {
   const profession = world.content.professions.get(world.npc(npcId).profession)
   const today = startOfDay(world.now)
   for (const template of profession?.daily_goals ?? []) {
-    if (template.days && !template.days.includes(weekdayOf(world.now))) continue
+    if (template.days && !template.days.includes(weekdayName(world.now, world.calendar))) continue
     const goal = concreteGoal(world, npcId, template)
     if (!goal) continue
     if (npc.dailyDone[dailyKey(goal)] === today) continue
@@ -436,7 +436,7 @@ function departLater(world: World, npcId: string, steps: Step[]): Step[] {
   const object = second.object ? world.object(second.location, second.object)?.instance : undefined
   if (!route) return steps
   const arrival = world.now + route.minutes
-  const opening = nextOpening(arrival, service?.hours ?? object?.hours, service?.days ?? object?.days)
+  const opening = nextOpening(arrival, service?.hours ?? object?.hours, service?.days ?? object?.days, world.calendar)
   if (opening === undefined || opening - arrival <= 30) return steps
   return [{ kind: 'spend', minutes: opening - arrival - 15, activity: 'work' }, ...steps]
 }
@@ -531,7 +531,7 @@ export function routineNow(world: World, npcId: string, at = world.now): { place
 
 function currentBlock(world: World, npcId: string, at = world.now): ScheduleBlock | undefined {
   const profession = world.content.professions.get(world.npc(npcId).profession)
-  const day = weekdayOf(at)
+  const day = weekdayName(at, world.calendar)
   const now = minuteOfDay(at)
   return profession?.schedule.find((block) => {
     if (block.days && !block.days.includes(day)) return false

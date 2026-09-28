@@ -31,7 +31,7 @@ export const WORLD_GUIDE = `YOU ARE BUILDING A NEW WORLD WITH THE DESIGNER, one 
 HOW YOU WORK
 - Do one step at a time, in the order the builder gives. Read what the world already has before you propose anything.
 - Ask before you invent. Every name, genre, tone, faith, coin and calendar belongs to the designer. Ask at most three questions at a time, each with a short proposal the designer can accept with a yes ("Months: thirteen names of your own, or numbered months?"). When the designer says "you choose", choose once, say what you chose, and keep to it.
-- Propose in full and small: the world.yaml keys this step sets in \`world\`, every entity in \`changes\` as full YAML (one mapping with its id), and CHRONICLER.md, data/voice.yaml or data/palette.yaml in \`files\`. The builder shows a diff, checks it and saves only what the designer accepts.
+- Propose in full and small: the world.yaml keys this step sets in \`world\`, every entity in \`changes\` as full YAML (one mapping with its id), and only CHRONICLER.md or data/voice.yaml in \`files\`. The builder shows a diff, checks it and saves only what the designer accepts.
 - What the designer leaves out stays out. The engine gives every missing file or field a neutral default (see "skipped" per step). Never fill a gap with a value from another world: no Nethermarch names, coins, saints, law or barges in a world that is not the Nethermarch.
 - Keep to the frame once it is agreed. A science-fiction world has no magic, a world without faith has no prayers or oaths by a god, a world without a map is walked by its exits.
 
@@ -68,12 +68,12 @@ export const WORLD_STEPS: readonly WorldStep[] = [
     skipped: 'A world always has a frame; left as the builder made it, every model call gets only the world\'s name and writes a generic world.',
     checks: [
       'The frame has a WORLD, a REGION and a PEOPLE part, and says what money, faith and technology there are.',
-      'words.land, words.region and words.from are set and fit the frame.',
+      'words.land, words.region and words.from are set and fit the frame; words.sleep, if given, has one sentence each for a rented room, a bed at home and sleeping rough.',
       'CHRONICLER.md names what must be kept (names, tone) and what must not be invented.',
       'Nothing breaks the hard limits.',
     ],
     prompt:
-      'STEP: THE FRAME. Agree the kind of world, the start of the story and the names with the designer. Then propose in `world`: name, frame (the fixed block every model call gets: WORLD with the setting, the era, money, faith and what does not exist; REGION with where play happens and why the stranger is there; PEOPLE with how they speak and count time), words (land, region, from) and intro (two or three short paragraphs in the second person, ending with "Type LOOK to look around. Type HELP if you are lost."). Propose CHRONICLER.md in `files`: "## This world: <name>" and a short list of what the chronicler must keep to and must not invent.',
+      'STEP: THE FRAME. Agree the kind of world, the start of the story and the names with the designer. Then propose in `world`: name, frame (the fixed block every model call gets: WORLD with the setting, the era, money, faith and what does not exist; REGION with where play happens and why the stranger is there; PEOPLE with how they speak and count time), words (land, region, from, and sleep with a sentence each for room, home and rough, how a night\'s sleep reads here; left out, a blanket, your own bed and "The cold gets into your bones.") and intro (two or three short paragraphs in the second person, ending with "Type LOOK to look around. Type HELP if you are lost."). Propose CHRONICLER.md in `files`: "## This world: <name>" and a short list of what the chronicler must keep to and must not invent.',
   },
   {
     id: 'calendar',
@@ -109,12 +109,12 @@ export const WORLD_STEPS: readonly WorldStep[] = [
     skipped: 'One neutral coin (c), and prices are plain numbers.',
     checks: [
       'The smallest unit has value 1, and every other value is how many of the smallest it is worth.',
-      'Short names are all different.',
+      'Short names are all different; aliases (other words for a coin, as people say them) belong to one coin only.',
       'The player\'s money is enough for a few days of food and not much more, in the smallest unit.',
       'Things in the player\'s inventory exist as items (or are added in the economy step).',
     ],
     prompt:
-      'STEP: MONEY. Agree the coins and a few prices with the designer. Propose in `world`: money.units (short, name, value, from largest to smallest, the smallest with value 1) and player (money in the smallest unit, inventory by item id). Keep the prices the designer gave for the economy step.',
+      'STEP: MONEY. Agree the coins and a few prices with the designer. Propose in `world`: money.units (short, name, value, from largest to smallest, the smallest with value 1, and aliases: other words the player may use for it) and player (money in the smallest unit, inventory by item id). Keep the prices the designer gave for the economy step.',
   },
   {
     id: 'faiths',
@@ -122,17 +122,22 @@ export const WORLD_STEPS: readonly WorldStep[] = [
     ask: [
       'Is there faith in this world? If so, which, and whom do they call on?',
       'If there is none: what do people swear by instead (the ship, the sea, their mothers)?',
+      'When the stranger dies and wakes again, what do they see, who guides them back, and what rite (or price) do the living keep?',
     ],
-    fills: [{ kind: 'world', keys: ['faiths'] }],
+    fills: [
+      { kind: 'world', keys: ['faiths'] },
+      { kind: 'rules', keys: ['death'] },
+    ],
     optional: true,
-    skipped: 'No faith: nobody prays, and the voice swears by nothing holy.',
+    skipped: 'No faith: nobody prays, and the voice swears by nothing holy; death is told in plain words, with no guide, no rite and no price.',
     checks: [
       'Every faith has an id, a name and its patrons, and the frame mentions it.',
       'With no faith, faiths is an empty list and the frame says what people swear by.',
       'No real religion is mocked or used.',
+      'Death fits the frame: a guide and a patron only where there is faith; {guide} and {lost} stand in the texts that need them; a price names a place and an item that exist.',
     ],
     prompt:
-      'STEP: FAITHS. Agree with the designer whether there is faith. Propose in `world`: faiths (id, name, patrons), or an empty list when there is none. Say in `say` what people swear by, for the voice step.',
+      'STEP: FAITHS. Agree with the designer whether there is faith. Propose in `world`: faiths (id, name, patrons), or an empty list when there is none. Say in `say` what people swear by, for the voice step. If the designer wants death to have its own words, propose rules.death in `changes` (vision with {guide}, guide, patron, wake, mark with {lost}, rite_where, rite_done, rite_nothing, and a price only if the designer asks for one); otherwise leave it out and death reads plain.',
   },
   {
     id: 'places',
@@ -182,25 +187,27 @@ export const WORLD_STEPS: readonly WorldStep[] = [
     title: 'People',
     ask: [
       'Who does the stranger meet first (three to six people): what do they do, where do they live and work?',
-      'Who keeps the law, and where?',
+      'Who keeps the law, where, and what do the worst and the least offences cost? Are there groups the stranger could join (a guild, an order, a crew), and on what terms?',
       'What do people here talk about: a story everyone knows, a worry, a rumour?',
     ],
     fills: [
       { kind: 'npcs' },
       { kind: 'topics' },
-      { kind: 'world', keys: ['law', 'names'] },
+      { kind: 'factions' },
+      { kind: 'world', keys: ['law', 'names', 'standing'] },
     ],
     optional: false,
     skipped: 'An empty world: nobody to talk to, and a law without an officer.',
     checks: [
       'Every home and work place exists, and every profession exists.',
       'Names fit the frame and the names list; nobody from another world.',
-      'The law\'s officer is one of these people and the office is a place.',
+      'The law\'s officer is one of these people and the office is a place; fines are in the smallest coin (left out: twenty and five times the largest coin for murder and assault, and for theft three times the value, at least twice the second coin).',
+      'A faction someone can join says how: never, hired, by reputation, or terms (patrons, places, a tag, a fee, a reputation, and what is said); standing.offices lists offices only if the world has them.',
       'Public facts are things a neighbour would know; examples are in the person\'s own speech.',
       'Relations point to people who exist, or are people outside the game with a role.',
     ],
     prompt:
-      'STEP: PEOPLE. Agree the first people, the law and what is talked about with the designer. Propose npcs in `changes` (name, short, pronoun, age, profession, home, work, appearance, personality, values, speech, aliases, public_facts, examples, money, knows_areas, relations) and topics (lore with a summary, details and, where someone tells it, a story in their voice). Propose law (where, officer, npc, office) and names (she, he, family: ten names each for people the game makes later) in `world`.',
+      'STEP: PEOPLE. Agree the first people, the law and what is talked about with the designer. Propose npcs in `changes` (name, short, pronoun, age, profession, home, work, appearance, personality, values, speech, aliases, public_facts, examples, money, knows_areas, relations) and topics (lore with a summary, details and, where someone tells it, a story in their voice). Propose law (where, officer, npc, office, and fines for murder, assault and the least offence if the designer names them), standing.offices (only if there are offices to hold) and names (she, he, family: ten names each for people the game makes later) in `world`, and factions in `changes` with how to join them (join) and, if it matters, where they stand (stance).',
   },
   {
     id: 'economy',
@@ -234,24 +241,28 @@ export const WORLD_STEPS: readonly WorldStep[] = [
     id: 'passages',
     title: 'Transport',
     ask: [
-      'Do people travel by anything but their feet (a barge, a coach, a ferry, a tram, a spaceship)? What is it called?',
-      'Where does it stop, on which days and at what hours, and what does it cost?',
-      'Is there anywhere far away the stranger could go, beyond the places of the game?',
+      'Do people travel by anything but their feet (a barge, a coach, a ferry, a tram, a spaceship)? What is it called, where does it stop, when, and what does it cost?',
+      'Can the stranger hire something from someone (a punt, a horse, a skimmer): from whom, for how much, and for how long?',
+      'Is there anywhere far away to go, and what may happen on a long walk (weather, people met, a lost way)?',
     ],
     fills: [
       { kind: 'passages' },
+      { kind: 'npcs' },
       { kind: 'topics' },
+      { kind: 'journey' },
     ],
     optional: true,
-    skipped: 'No lines: the stranger walks.',
+    skipped: 'No lines and nothing for hire: the stranger walks, a walk is told in one line, and nothing happens on the way.',
     checks: [
       'Every stop is a place or a far topic that exists.',
       'Days use the world\'s weekday names; empty means every day.',
       'Without a region map, legs give the minutes for every pair of stops that follow each other.',
       'The fare is in the smallest coin; closed, off and where say it in the world\'s words.',
+      'A thing for hire belongs to a person who is there to hand it over (where says where they are found); its price is in the smallest coin; crosses names water only if it floats.',
+      'On the way, what may happen fits the land and the frame.',
     ],
     prompt:
-      'STEP: TRANSPORT. Agree the lines of transport with the designer. Propose passages in `changes`: id, name, kind (any word: barge, coach, tram, shuttle), aliases, stops, days, hours or departs, fare, legs, water, crew, text with {fare}, {duration} and {place}, closed, where and a few sights on the way. A far place is a topic with kind place.',
+      'STEP: TRANSPORT. Agree the lines of transport with the designer. Propose passages in `changes`: id, name, kind (any word: barge, coach, tram, shuttle), aliases, stops, days, hours or departs, fare, legs, water, crew, text with {fare}, {duration} and {place}, closed, where and a few sights on the way. What someone hires out goes on that person in `changes` as hires (id, name, aliases, price, hours, crosses, where, line, free_for_friends); HIRE <name> works with the owner present. A far place is a topic with kind place. Journey sentences per terrain, weather and night, and on_the_way (what may happen on a long walk), go in journey.',
   },
   {
     id: 'watcher',
@@ -284,7 +295,7 @@ export const WORLD_STEPS: readonly WorldStep[] = [
     ],
     fills: [{ kind: 'voice' }],
     optional: true,
-    skipped: 'The fixed list of modern words is kept out, and nothing else.',
+    skipped: 'Only the fixed core is kept out (a model speaking of models); nothing else counts as out of place, so in a science-fiction world a computer is fine.',
     checks: [
       'Oaths belong to a faith that exists; with no faith, oaths swear by what the faith step named.',
       'What does not exist fits the frame (no magic in science fiction, no guns in a world without them).',
@@ -305,10 +316,11 @@ export const WORLD_STEPS: readonly WorldStep[] = [
     skipped: 'The standard palette, and pictures in a plain illustration style.',
     checks: [
       'Every colour is #rrggbb.',
+      'The names of the terrains read well in the game\'s texts ("In the salt marsh", "On the heath"): they name the hexes of the map.',
       'The colours for a visited place and for the trail stand out against the ground.',
       'The picture style fits the frame and names no living artist.',
     ],
     prompt:
-      'STEP: THE PALETTE. Agree the colours and the picture style with the designer. Propose the palette in data/palette.yaml in `files` (dark and paper styles: ground, unknown, label, label_shadow, terrain tints, ways, glyphs, visited, trail) and pictures.style in `world`.',
+      'STEP: THE PALETTE. Agree the colours and the picture style with the designer. Propose in `world`: map with its palette (names for each terrain, used in the map\'s hex names and texts; dark and paper styles: ground, unknown, label, label_shadow, terrain tints, ways, glyphs, visited, trail) and pictures.style. The palette lives in world.yaml, not in a file of its own.',
   },
 ]

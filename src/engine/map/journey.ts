@@ -42,15 +42,6 @@ function knownRoute(world: World, map: RegionMap, from: Hex, to: Hex): Hex[] | u
   return path
 }
 
-const ON_THE_WAY: { text: string; where: 'canal' | 'road' | 'fen' | 'any'; night?: boolean; minutes?: number }[] = [
-  { text: 'A barge slides past on the Vaart, the horse plodding along the tow path, the bargeman raising a hand.', where: 'canal' },
-  { text: 'Two peat-cutters pass you with their spades on their shoulders and give you a nod.', where: 'road' },
-  { text: 'A heron lifts out of the reeds ahead of you and flaps away, complaining.', where: 'fen' },
-  { text: 'The mist comes down so thick that you wait for it to lift before going on.', where: 'any', minutes: 30 },
-  { text: 'Somebody has left a bowl of milk on a gatepost. You leave it alone.', where: 'road' },
-  { text: 'Little lights dance over the fields in the dark. You keep your eyes on the way.', where: 'any', night: true },
-  { text: 'A cart has lost a wheel in the ruts and you lend a shoulder before going on.', where: 'road', minutes: 15 },
-]
 
 function onTheWay(world: World, map: RegionMap, path: Hex[], minutes: number): { lines: string[]; extra: number } {
   const lines: string[] = []
@@ -61,8 +52,8 @@ function onTheWay(world: World, map: RegionMap, path: Hex[], minutes: number): {
   for (let hour = 0; hour < hours && lines.length < 2; hour++) {
     const chance = 0.15 + (night ? 0.1 : 0) + (kinds.has('fen') ? 0.05 : 0)
     if (world.rng.next('travel') >= chance) continue
-    // What may happen on the way is the world's own (M10.11, journey.yaml); the Holleveen's when it says nothing.
-    const events = world.content.journey?.on_the_way.length ? world.content.journey.on_the_way : ON_THE_WAY
+    // What may happen on the way is the world's own (M10.11, journey.yaml); nothing when it says nothing (M10.17).
+    const events = world.content.journey?.on_the_way ?? []
     const fits = events.filter((e) => (e.where === 'any' || kinds.has(e.where)) && (e.night === undefined || e.night === night) && !lines.includes(e.text))
     const event = world.rng.pick('travel', fits)
     if (!event) continue

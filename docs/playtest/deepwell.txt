@@ -1,0 +1,341 @@
+Een nieuwkomer in Deepwell, de proefwereld zonder Nethermarch (other), seed 5
+
+######## THE PLAYER ACTS
+The shuttle hatch sighs open, and the cold comes in before the light does. You follow the other passengers down a ribbed gangway into an airlock that smells of metal and old air.
+
+Somewhere beyond the inner door a tram hums along its rail, and a voice on a speaker reads out a list of shift numbers nobody listens to.
+
+This is Deepwell, under the ice of Vessa. You came here for work, and nobody has told you where to find it yet.
+
+Type LOOK to look around. Type HELP if you are lost.
+The Shuttle Airlock
+You stand in a ribbed steel airlock big enough for a cargo sled, its walls furred with frost where the outer door meets the frame. The air smells of metal and of other people's breath, used many times. A faded poster of the Long Patience is taped beside the inner door. The inner door opens east onto the Commons.
+Exits: east
+The pace of events is normal. Type TEMPO CALM or TEMPO DRAMATIC for less or more happening in the world.
+
+==== RECOGNISE (Quintday 12 Thaw 140 AL, 09:00 (morning))
+
+> look
+The Shuttle Airlock
+You stand in a ribbed steel airlock big enough for a cargo sled, its walls furred with frost where the outer door meets the frame. The air smells of metal and of other people's breath, used many times. A faded poster of the Long Patience is taped beside the inner door. The inner door opens east onto the Commons.
+Exits: east
+
+> e
+The Commons
+The Commons is a wide dome of ice held back by a mesh of steel, lit by grow-lamps that turn everything faintly pink. Long tables fill the floor, and a canteen counter runs along the back, where algae stew steams in a heated trough. It smells of stew, coffee substitute and warm plastic. The airlock is west, the bunks north, the Fab Shop east, the warden's office south, and a stair goes down to the tram.
+Exits: west, north, east, south, down
+Here: Ama the ice cutter (stopping to look at the stranger), Ilse the warden (on the way to The Warden's Office), Pell of the canteen (stopping to look at the stranger), Teo the fabricator (stopping to look at the stranger).
+Ama comes from the north, on her way to The Cutting Face.
+Ama stops and gives you a nod, curious about the stranger.
+Ilse comes from the north, on her way to The Warden's Office.
+Pell arrives from the north.
+Pell stops and gives you a nod, curious about the stranger.
+Teo comes from the north, on his way to The Fab Shop.
+Teo stops and gives you a nod, curious about the stranger.
+
+> list
+Pell sells: bowl of algae stew 2 ch (20 left); ration bar 1 ch (30 left).
+Pell buys: ice core for 1 ch.
+A room for the night: 12 ch (RENT ROOM).
+
+> talk ama the ice cutter
+You are talking with Ama the ice cutter. Type what you want to say, pick a number, or BYE to stop.
+Ama nods. "Morning."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+Ama shakes her head. "Nothing you would care about."
+
+> bye
+Ama lifts a hand. "Go on, then."
+
+> talk ilse the warden
+There is nobody called "ilse the warden" here. Talk to whom?
+  1. Ama
+  2. Pell
+  3. Teo
+
+> 2
+You are talking with Pell of the canteen. Type what you want to say, pick a number, or BYE to stop.
+Pell nods. "Morning."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> bye
+Pell lifts a hand. "Go on, then."
+
+> talk pell of the canteen
+You are talking with Pell of the canteen. Type what you want to say, pick a number, or BYE to stop.
+Pell nods. "Morning."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+Pell shakes their head. "Nothing you would care about."
+
+> bye
+Pell lifts a hand. "Go on, then."
+
+> journal
+People: Ama Okafor, Pell Ostrander.
+Places: the Domes, The Shuttle Airlock, The Commons.
+Lore: the stranger in the Domes.
+
+==== INFLUENCE (Quintday 12 Thaw 140 AL, 09:06 (morning))
+
+# Eat, drink, and take the tram to the works and back.
+
+> buy stew
+You buy a bowl of algae stew from Pell for 2 ch.
+
+> eat stew
+You eat a bowl of algae stew. It does you good.
+Ama walks on downstairs.
+Teo walks on to the east.
+
+> drink from tap
+The water is ice-cold and tastes of metal, and it is free.
+
+> down
+The Dome Platform
+A narrow platform runs beside a single rail in a tunnel cut through the ice. When the tram is coming, the rail hums before you can see anything. A timetable is painted on the wall in yellow. The stair goes up to the Commons; a service tunnel runs east beside the rail, the long way to the Ice Works on foot.
+Exits: up, east
+
+> take the tram
+You tap your card for 3 ch, and the tram slides off along its rail. After 25 minutes it stops at The Works Platform.
+
+> look
+The Works Platform
+The rail ends here against a buffer of packed ice, and the platform opens into a hall full of sleds and hoses. Your breath smokes, and the cold gets in through the seams of your clothes. A board lists the day's cut in tonnes. The cutting face is further in; the service tunnel runs back west to the Domes.
+Exits: in, west
+Here: Ama the ice cutter (on the way to The Cutting Face).
+
+> take the tram
+You tap your card for 3 ch, and the tram slides off along its rail. After 25 minutes it stops at The Dome Platform.
+
+> up
+The Commons
+The Commons is a wide dome of ice held back by a mesh of steel, lit by grow-lamps that turn everything faintly pink. Long tables fill the floor, and a canteen counter runs along the back, where algae stew steams in a heated trough. It smells of stew, coffee substitute and warm plastic. The airlock is west, the bunks north, the Fab Shop east, the warden's office south, and a stair goes down to the tram.
+Exits: west, north, east, south, down
+Here: Pell of the canteen (at work).
+
+==== AFTER (Quintday 12 Thaw 140 AL, 10:14 (morning))
+
+[24 hours pass]
+Ilse comes from the south, on her way to The Bunkrooms.
+Ilse stops and looks you over.
+Ilse nods to Pell.
+Ilse walks on to the north.
+Teo comes from the east, on his way to The Bunkrooms.
+Teo walks on to the north.
+Ilse comes from the north, on her way to The Warden's Office.
+Ilse walks on to the south.
+Teo comes from the north, on his way to The Fab Shop.
+Pell nods to Teo.
+Teo walks on to the east.
+Ama comes from below, on her way to The Bunkrooms.
+Ama stops and gives you a nod, curious about the stranger.
+Ama nods to Pell.
+Ama walks on to the north.
+Ilse arrives from the south.
+Ilse stops and looks you over.
+Ilse nods to Pell.
+Ama arrives from the north.
+Ama nods to Ilse.
+Teo arrives from the east.
+Teo stops and gives you a nod, curious about the stranger.
+Ama nods to Teo.
+Ilse nods to Teo.
+Pell nods to Teo.
+Ama leaves north.
+Ilse leaves north.
+Pell leaves north.
+Teo leaves north.
+Pell arrives from the north.
+Pell stops and gives you a nod, curious about the stranger.
+Ama comes from the north, on her way to The Cutting Face.
+Ama stops and gives you a nod, curious about the stranger.
+Ama nods to Pell.
+Ama walks on downstairs.
+Ilse comes from the north, on her way to The Warden's Office.
+Ilse walks on to the south.
+Teo comes from the north, on his way to The Fab Shop.
+Teo stops and gives you a nod, curious about the stranger.
+Pell nods to Teo.
+Teo walks on to the east.
+
+> look
+The Commons
+The Commons is a wide dome of ice held back by a mesh of steel, lit by grow-lamps that turn everything faintly pink. Long tables fill the floor, and a canteen counter runs along the back, where algae stew steams in a heated trough. It smells of stew, coffee substitute and warm plastic. The airlock is west, the bunks north, the Fab Shop east, the warden's office south, and a stair goes down to the tram.
+Exits: west, north, east, south, down
+Here: Pell of the canteen (at work).
+
+> talk pell of the canteen
+You are talking with Pell of the canteen. Type what you want to say, pick a number, or BYE to stop.
+Pell nods. "Morning."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+Pell shakes their head. "Nothing you would care about."
+
+> bye
+Pell lifts a hand. "Go on, then."
+
+> time
+It is Sextday 13 Thaw 140 AL, 10:16 (morning).
+
+==== END (Sextday 13 Thaw 140 AL, 10:16 (morning))
+Quests: none
+
+######## CONTROL: THE PLAYER DOES NOTHING
+The shuttle hatch sighs open, and the cold comes in before the light does. You follow the other passengers down a ribbed gangway into an airlock that smells of metal and old air.
+
+Somewhere beyond the inner door a tram hums along its rail, and a voice on a speaker reads out a list of shift numbers nobody listens to.
+
+This is Deepwell, under the ice of Vessa. You came here for work, and nobody has told you where to find it yet.
+
+Type LOOK to look around. Type HELP if you are lost.
+The Shuttle Airlock
+You stand in a ribbed steel airlock big enough for a cargo sled, its walls furred with frost where the outer door meets the frame. The air smells of metal and of other people's breath, used many times. A faded poster of the Long Patience is taped beside the inner door. The inner door opens east onto the Commons.
+Exits: east
+The pace of events is normal. Type TEMPO CALM or TEMPO DRAMATIC for less or more happening in the world.
+
+==== RECOGNISE (Quintday 12 Thaw 140 AL, 09:00 (morning))
+
+> look
+The Shuttle Airlock
+You stand in a ribbed steel airlock big enough for a cargo sled, its walls furred with frost where the outer door meets the frame. The air smells of metal and of other people's breath, used many times. A faded poster of the Long Patience is taped beside the inner door. The inner door opens east onto the Commons.
+Exits: east
+
+> e
+The Commons
+The Commons is a wide dome of ice held back by a mesh of steel, lit by grow-lamps that turn everything faintly pink. Long tables fill the floor, and a canteen counter runs along the back, where algae stew steams in a heated trough. It smells of stew, coffee substitute and warm plastic. The airlock is west, the bunks north, the Fab Shop east, the warden's office south, and a stair goes down to the tram.
+Exits: west, north, east, south, down
+Here: Ama the ice cutter (stopping to look at the stranger), Ilse the warden (on the way to The Warden's Office), Pell of the canteen (stopping to look at the stranger), Teo the fabricator (stopping to look at the stranger).
+Ama comes from the north, on her way to The Cutting Face.
+Ama stops and gives you a nod, curious about the stranger.
+Ilse comes from the north, on her way to The Warden's Office.
+Pell arrives from the north.
+Pell stops and gives you a nod, curious about the stranger.
+Teo comes from the north, on his way to The Fab Shop.
+Teo stops and gives you a nod, curious about the stranger.
+
+> list
+Pell sells: bowl of algae stew 2 ch (20 left); ration bar 1 ch (30 left).
+Pell buys: ice core for 1 ch.
+A room for the night: 12 ch (RENT ROOM).
+
+> talk ama the ice cutter
+You are talking with Ama the ice cutter. Type what you want to say, pick a number, or BYE to stop.
+Ama nods. "Morning."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+Ama shakes her head. "Nothing you would care about."
+
+> bye
+Ama lifts a hand. "Go on, then."
+
+> talk ilse the warden
+There is nobody called "ilse the warden" here. Talk to whom?
+  1. Ama
+  2. Pell
+  3. Teo
+
+> 2
+You are talking with Pell of the canteen. Type what you want to say, pick a number, or BYE to stop.
+Pell nods. "Morning."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> bye
+Pell lifts a hand. "Go on, then."
+
+> talk pell of the canteen
+You are talking with Pell of the canteen. Type what you want to say, pick a number, or BYE to stop.
+Pell nods. "Morning."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+Pell shakes their head. "Nothing you would care about."
+
+> bye
+Pell lifts a hand. "Go on, then."
+
+> journal
+People: Ama Okafor, Pell Ostrander.
+Places: the Domes, The Shuttle Airlock, The Commons.
+Lore: the stranger in the Domes.
+
+==== AFTER (Quintday 12 Thaw 140 AL, 09:06 (morning))
+
+[24 hours pass]
+Ama walks on downstairs.
+Teo walks on to the east.
+Ilse comes from the south, on her way to The Bunkrooms.
+Ilse stops and looks you over.
+Ilse nods to Pell.
+Ilse walks on to the north.
+Teo comes from the east, on his way to The Bunkrooms.
+Teo walks on to the north.
+Ilse comes from the north, on her way to The Warden's Office.
+Ilse walks on to the south.
+Teo comes from the north, on his way to The Fab Shop.
+Pell nods to Teo.
+Teo walks on to the east.
+Ama comes from below, on her way to The Bunkrooms.
+Ama stops and gives you a nod, curious about the stranger.
+Ama nods to Pell.
+Ama walks on to the north.
+Ilse arrives from the south.
+Ilse stops and looks you over.
+Ilse nods to Pell.
+Ama arrives from the north.
+Ama nods to Ilse.
+Teo arrives from the east.
+Teo stops and gives you a nod, curious about the stranger.
+Ama nods to Teo.
+Ilse nods to Teo.
+Pell nods to Teo.
+Ama leaves north.
+Ilse leaves north.
+Pell leaves north.
+Teo leaves north.
+Pell arrives from the north.
+Pell stops and gives you a nod, curious about the stranger.
+Ama comes from the north, on her way to The Cutting Face.
+Ama stops and gives you a nod, curious about the stranger.
+Ama nods to Pell.
+Ama walks on downstairs.
+Ilse comes from the north, on her way to The Warden's Office.
+Ilse walks on to the south.
+Teo comes from the north, on his way to The Fab Shop.
+Teo stops and gives you a nod, curious about the stranger.
+Pell nods to Teo.
+Teo walks on to the east.
+
+> look
+The Commons
+The Commons is a wide dome of ice held back by a mesh of steel, lit by grow-lamps that turn everything faintly pink. Long tables fill the floor, and a canteen counter runs along the back, where algae stew steams in a heated trough. It smells of stew, coffee substitute and warm plastic. The airlock is west, the bunks north, the Fab Shop east, the warden's office south, and a stair goes down to the tram.
+Exits: west, north, east, south, down
+Here: Pell of the canteen (at work).
+
+> talk pell of the canteen
+You are talking with Pell of the canteen. Type what you want to say, pick a number, or BYE to stop.
+Pell nods. "Morning."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+Pell shakes their head. "Nothing you would care about."
+
+> bye
+Pell lifts a hand. "Go on, then."
+
+> time
+It is Sextday 13 Thaw 140 AL, 09:08 (morning).
+
+==== END (Sextday 13 Thaw 140 AL, 09:08 (morning))
+Quests: none

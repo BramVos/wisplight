@@ -1,7 +1,7 @@
 import { closeSync, mkdirSync, openSync, rmSync, writeSync } from 'node:fs'
 import { dirname } from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
-import { GameClock, type Fact, type GameLogLine, type LogEntry } from '../engine'
+import { DEFAULT_CALENDAR, GameClock, weekdayName, type Calendar, type Fact, type GameLogLine, type LogEntry } from '../engine'
 import type { Archived } from '../engine/archive'
 import { ZipWriter } from './zip'
 
@@ -37,6 +37,9 @@ const READABLE = ['in', 'out', 'note']
 
 export class GameLog {
   private readonly db: DatabaseSync
+
+  /** The calendar of the world being played, for the weekday in the time stamps (M10.17). */
+  calendar: Calendar = DEFAULT_CALENDAR
 
   constructor(readonly path: string) {
     if (path !== ':memory:') mkdirSync(dirname(path), { recursive: true })
@@ -163,7 +166,7 @@ export class GameLog {
   /** The whole story as plain text. Only for short logs and tests; the app exports with `exportTo`. */
   text(session: Session): string {
     const out: string[] = []
-    for (const row of this.rows(session, READABLE)) out.push(format(row))
+    for (const row of this.rows(session, READABLE)) out.push(format(row, this.calendar))
     return out.join('\n')
   }
 
@@ -197,7 +200,7 @@ export class GameLog {
     let buffer = ''
     try {
       for (const row of this.rows(session, READABLE, 0, scope)) {
-        buffer += `${format(row)}\n`
+        buffer += `${format(row, this.calendar)}\n`
         lines++
         if (buffer.length > 64 * 1024) {
           writeSync(fd, buffer)
@@ -225,7 +228,7 @@ export class GameLog {
     }
     try {
       for (const row of this.rows(session, READABLE, 0, scope)) {
-        const line = `${format(row)}\n`
+        const line = `${format(row, this.calendar)}\n`
         if (bytes > 0 && bytes + Buffer.byteLength(line) > PART_BYTES) flush()
         chunks.push(line)
         bytes += Buffer.byteLength(line)
@@ -246,9 +249,9 @@ export class GameLog {
   }
 }
 
-export function format(row: LogLine): string {
+export function format(row: LogLine, calendar: Calendar = DEFAULT_CALENDAR): string {
   const clock = new GameClock(row.t).parts
-  const stamp = `[${clock.weekday} ${clock.day} ${String(clock.hour).padStart(2, '0')}:${String(clock.minute).padStart(2, '0')}]`
+  const stamp = `[${weekdayName(row.t, calendar)} ${clock.day} ${String(clock.hour).padStart(2, '0')}:${String(clock.minute).padStart(2, '0')}]`
   if (row.kind === 'in') return `${stamp} > ${row.text}`
   if (row.kind === 'note') return `${stamp} --- ${row.text} ---`
   return row.text
