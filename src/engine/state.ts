@@ -388,6 +388,8 @@ export interface Debt {
 }
 
 export interface PlayerState {
+  /** Homes the stranger was let into (M10.3), until when. */
+  permits?: Record<string, number>
   /** The news of each area the player has been told (M9.4): told once, and again when it changes. */
   areaNewsTold?: Record<string, string>
   location: string
@@ -562,6 +564,8 @@ export interface GameState {
   wanted?: Record<string, { fine: number; since: number }>
   /** The player's companions (FO, chapter 13). */
   companions?: Companion[]
+  /** Locks opened with their key or broken (M10.3), by exit:<from>:<direction> or object:<location>/<object>. */
+  locks?: Record<string, 'open' | 'broken'>
   /** Conversation facts of today (M10.3): how many, and about whom. */
   talkFacts?: { day: number; people: string[] }
   /** The register of agreements (M10.2): who promised whom what, by when, and how it went. */

@@ -308,6 +308,8 @@ locations:
         Canal Street is north.
     exits:
       north: { to: loc_waagdam_canal_street }
+    objects:
+      - { id: strongbox, type: strongbox, name: Lubbert's strongbox, owner: npc_lubbert, lock: { key: lubberts_key, dc: 18 }, contents: { yarn: 2 } }
     services:
       - id: grain_store
         provider: npc_lubbert

@@ -1,6 +1,11 @@
 # Objects on Skerrow, and what people can do with them.
 
 object_types:
+  - id: strongbox
+    name: strongbox
+    aliases: [chest, box, strongbox, kist, geldkist]
+    description: A squat box of oak bound in iron, with a lock as big as a fist.
+
   - id: well
     name: well
     aliases: [bucket]

@@ -20,6 +20,7 @@ npcs:
       - He raised his flour prices after the storm.
     examples:
       - "Flour's dear since the storm, friend. Supply and demand."
+    inventory: { lubberts_key: 1 }
     money: 1600
     knows_areas: [waagdam, drowned_goose, roads, veenhoek, molenend]
 

@@ -103,6 +103,7 @@ locations:
       west: { to: loc_skerrow_green, minutes: 1 }
     objects:
       - { id: settle, type: bench }
+      - { id: strongbox, type: strongbox, name: Maren's strongbox, owner: npc_maren, lock: { key: marens_key, dc: 16 }, contents: { kelp_salve: 1 } }
     services:
       - id: kettle_tap
         provider: npc_maren

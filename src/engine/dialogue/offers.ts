@@ -6,6 +6,8 @@ import { itemName, withArticle } from '../items'
 import { routineNow } from '../npc/brain'
 import { tieTo } from '../people'
 import { dangerOf } from '../social/companions'
+import { letIn } from '../social/access'
+import { isSomeonesHome } from '../social/ownership'
 import type { Request } from '../state'
 import type { World } from '../world'
 import { attitude, relation } from './relations'
@@ -19,7 +21,7 @@ import { attitude, relation } from './relations'
 // model, the rules pick from the same offers, so the game can do it all
 // without AI. An offer that goes through is an agreement in the register.
 
-export type OfferKind = 'lead' | 'fetch' | 'wait' | 'meet' | 'give' | 'lend' | 'sell' | 'message' | 'ask' | 'teach'
+export type OfferKind = 'lead' | 'fetch' | 'wait' | 'meet' | 'give' | 'lend' | 'sell' | 'message' | 'ask' | 'teach' | 'let_in'
 
 export interface Offer {
   key: string
@@ -208,6 +210,14 @@ export function offersFor(world: World, npcId: string, topics: string[], text: s
     if (when !== undefined) add({ key: `meet:${place}`, kind: 'meet', place, at: when, what: `meet the stranger at ${nameOf(world, place)}, ${clockWords(world, when)}`, intent: `meet at ${nameOf(world, place)} then` }, place)
   }
   for (const item of items.slice(0, 1)) offers.push(...thingOffers(world, npcId, item))
+  // "May I come in?" (M10.3): leave to be in their home, for the rest of the day.
+  if (/\b(may i come in|can i come in|let me in|may i enter|could i come in|mag ik binnen)/i.test(text) && isSomeonesHome(world, npc.home)) {
+    const hour = Math.floor(minuteOfDay(world.now) / 60)
+    const band = attitude(world, npcId).band
+    const night = hour < 6 || hour >= 21
+    const ok = night ? band === 'Friendly' || band === 'Warm' || band === 'Devoted' : band !== 'Wary' && band !== 'Unfriendly' && band !== 'Hostile'
+    offers.push({ key: 'let_in', kind: 'let_in', place: npc.home, what: `let the stranger into your home, ${night ? 'for a few hours' : 'for the day'}`, intent: 'come in', deed: `let the stranger into ${nameOf(world, npc.home)}`, decision: ok ? 'yes' : 'no', reasons: ok ? ['you do not mind the stranger'] : [night ? 'it is the middle of the night, and you hardly know the stranger' : 'you do not want the stranger in your house'] })
+  }
   if (/\b(teach|learn|show me how|leer me|leren)\b/i.test(text)) {
     const lesson = teachOffer(world, npcId)
     if (lesson) offers.push(lesson)
@@ -339,6 +349,7 @@ function deedOf(world: World, o: Omit<Offer, 'decision' | 'reasons' | 'deed'>): 
     case 'sell':
     case 'ask':
     case 'teach':
+    case 'let_in':
       return o.what
   }
 }
@@ -381,6 +392,7 @@ export function askedFor(offers: Offer[], text: string): Offer | undefined {
   const wants = (kind: OfferKind) => offers.filter((o) => o.kind === kind)
   if (/\b(bring|fetch|get|call|haal|roep)\b.*\b(here|him|her|them|over)\b/.test(t) || /\b(fetch|haal)\b/.test(t)) return wants('fetch')[0]
   if (/\b(teach|learn|show me how|leer me|leren)\b/.test(t) && wants('teach')[0]) return wants('teach')[0]
+  if (wants('let_in')[0]) return wants('let_in')[0]
   if (/\b(meet|see you|find you|afspreken|zie je)\b/.test(t) && wants('meet')[0]) return wants('meet')[0]
   if (/\b(tell|let .* know|pass .* on|word to|zeg|vertel)\b/.test(t) && wants('message')[0]) return wants('message')[0]
   if (/\b(lend|borrow|loan|leen|lenen)\b/.test(t) && wants('lend')[0]) return wants('lend')[0]
@@ -439,6 +451,17 @@ export function accept(world: World, npcId: string, offer: Offer): { outputs: Ou
     const ask = request ? askOffer(world, npcId, request) : undefined
     if (ask) out.push(...accept(world, npcId, ask).outputs)
     return { outputs: out, ends: false }
+  }
+  if (offer.kind === 'let_in') {
+    const hour = Math.floor(minuteOfDay(world.now) / 60)
+    const until = hour < 6 || hour >= 21 ? world.now + 3 * 60 : world.now - minuteOfDay(world.now) + 21 * 60
+    letIn(world, offer.place!, until)
+    const made = agree(world, { ...base, kind: 'wait', due: until, terms: { place: offer.place! } })
+    if ('id' in made) {
+      made.status = 'kept'
+      made.outcome = { t: world.now, text: `${name} let the stranger in` }
+    }
+    return { outputs: [{ kind: 'system', text: `${name} lets you in. You may be in ${nameOf(world, offer.place!)} until ${clockWords(world, until)}.` }], ends: false }
   }
   if (offer.kind === 'teach') {
     const c = world.state.player.character
@@ -501,6 +524,7 @@ export function offerLine(world: World, npcId: string, offer: Offer): string {
     sell: `"${offer.price !== undefined ? world.money(offer.price) : 'A fair price'}, and it's yours."`,
     message: `"I'll tell ${offer.person ? nameOf(world, offer.person) : 'them'}."`,
     ask: '"Good. I\'ll hold you to that."',
+    let_in: '"Come in, then. Wipe your feet."',
     teach: '"Watch my hands, then. Like this."',
   }
   return `${callName(npc)}: ${said[offer.kind]}`

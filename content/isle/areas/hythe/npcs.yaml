@@ -30,7 +30,7 @@ npcs:
         dc: 15
         about: [the_beacon]
     money: 600
-    inventory: { salt_fish: 2 }
+    inventory: { marens_key: 1, salt_fish: 2 }
     knows_areas: [skerrow_hythe, skerrow_shore, skerrow_heights]
     relations:
       - name: Tobin

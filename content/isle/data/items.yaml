@@ -1,6 +1,13 @@
 # Things on Skerrow. Prices are in copper pieces (1 sp = 10 cp, 1 gp = 100 cp).
 
 items:
+  - id: marens_key
+    name: brass key
+    aliases: [key, brass key]
+    description: A small brass key, green at the edges, the kind that opens a strongbox.
+    tags: [key]
+    value: 2
+
   - id: knife
     name: knife
     description: A sailor's knife with a cork grip, the blade dulled by salt.

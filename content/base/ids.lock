@@ -21,11 +21,11 @@ ids:
   base/data/intentions.yaml:
     intention: [show_standing, keep_head_down, lend_money, ask_mediator, keep_away, have_it_out, ask_a_trader, let_it_be, warn_the_reeve, ask_the_stranger, welcome_back, look_away, lie_peace, grumble, send_for_more, hold_back, ask_the_stranger_to_fetch, sell_cheap, sit_on_it]
   base/data/items.yaml:
-    item: [rye_grain, flour, rye_bread, peat, eel, smoked_eel, beer, hot_meal, apple, herbs, wool, yarn, sailcloth, lantern, lamp_oil, saw, knife, iron_nails, surveyors_chain, rope, spear, club, mace, hatchet, staff, short_bow, hunting_bow, hanger, sling, padded_coat, leather_jerkin, brigandine, chain_shirt, round_shield, milk, moon_water, cat_draught, measuring_chest, fen_charter_deed, toll_letter, aaltje_letter, barrel, clay, brick]
+    item: [lubberts_key, rye_grain, flour, rye_bread, peat, eel, smoked_eel, beer, hot_meal, apple, herbs, wool, yarn, sailcloth, lantern, lamp_oil, saw, knife, iron_nails, surveyors_chain, rope, spear, club, mace, hatchet, staff, short_bow, hunting_bow, hanger, sling, padded_coat, leather_jerkin, brigandine, chain_shirt, round_shield, milk, moon_water, cat_draught, measuring_chest, fen_charter_deed, toll_letter, aaltje_letter, barrel, clay, brick]
   base/data/news.yaml:
     news: [mill_before_winter]
   base/data/objects.yaml:
-    object_type: [bread_oven, windmill, horse_mill, peat_bank, eel_traps, spinning_wheel, well, altar, dog_stone, bench, forge, scale, counter, notice_board, brick_kiln]
+    object_type: [strongbox, bread_oven, windmill, horse_mill, peat_bank, eel_traps, spinning_wheel, well, altar, dog_stone, bench, forge, scale, counter, notice_board, brick_kiln]
   base/data/patterns.yaml:
     pattern: [lost_thing, quarrel, theft, fever, appeldag]
   base/data/plans.yaml:

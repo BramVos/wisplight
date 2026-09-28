@@ -1,4 +1,5 @@
 import type { Archived } from './archive'
+import { entered } from './social/access'
 import { CHECKPOINT_ENTRIES, CHECKPOINT_MINUTES, contentVersion, type Checkpoint, type CheckpointedSave } from './checkpoint'
 import { applyFarPlace, farPlaceOf, farRequest, farWords, wantFarPlace, type FarWords } from './growth/far'
 import { crowdHere, nameOne } from './growth/crowds'
@@ -678,6 +679,8 @@ export class Engine {
     leadAhead(this.world)
     if (before !== this.state.player.location) {
       arrived(this.world)
+      // Into someone's home without leave (M10.3): trespass, if someone of the house sees it.
+      outputs.push(...entered(this.world, this.state.player.location))
       outputs.push(...triggers(this.world, this.questHost, { at: this.state.player.location }))
       // Into an area with news of its own: the player hears it once (M9.4).
       tellAreaNews(this.world, outputs)

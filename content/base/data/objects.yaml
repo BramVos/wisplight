@@ -2,6 +2,11 @@
 # Templates: {name} is the NPC's first name, {they}/{their}/{them} pronouns.
 
 object_types:
+  - id: strongbox
+    name: strongbox
+    aliases: [chest, box, strongbox, kist, geldkist]
+    description: A squat box of oak bound in iron, with a lock as big as a fist.
+
   - id: bread_oven
     name: bread oven
     aliases: [oven, bakoven]

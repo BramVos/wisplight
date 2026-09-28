@@ -119,6 +119,9 @@ export function inSeason(affordance: Pick<Affordance, 'months'>, month: number):
   return !affordance.months || affordance.months.includes(month)
 }
 
+/** A lock (M10.3): opened with the key of this id, by force (Athletics against the dc, loud), or later picked (M10.5). */
+export const LockSchema = z.object({ key: z.string(), dc: z.number().int().min(5).max(30).default(15) }).strict()
+
 export const ObjectTypeSchema = z.object({
   id: z.string().regex(/^[a-z0-9_]+$/),
   name: z.string(),
@@ -149,6 +152,9 @@ export const ObjectInstanceSchema = z.object({
   days: z.array(Weekday).optional(),
   state: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])).default({}),
   state_text: z.record(z.string(), z.string()).default({}),
+  /** A lock on it, and what it holds (M10.3): a chest, a strongbox. */
+  lock: LockSchema.optional(),
+  contents: z.record(z.string(), z.number().int().positive()).optional(),
 })
 export type ObjectInstance = z.infer<typeof ObjectInstanceSchema>
 
@@ -191,6 +197,7 @@ export type Service = z.infer<typeof ServiceSchema>
 const Exit = z.object({
   to: z.string(),
   minutes: z.number().int().positive().default(1),
+  lock: LockSchema.optional(),
 })
 
 export const LocationSchema = z.object({

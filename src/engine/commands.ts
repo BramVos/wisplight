@@ -1,4 +1,5 @@
 import { inSeason } from './content'
+import { force, openObject, passLock, takeFrom } from './social/access'
 import { ownerOf, ownersHere } from './social/ownership'
 import { returnLent } from './agreements'
 import { crowdLines } from './growth/crowds'
@@ -49,7 +50,7 @@ const HELP = [
   'Moving: north, south, east, west, up, down, in, out (n, s, e, w, ...). Also: go <place>, exits.',
   'Across country: head <direction>, walk to <place>, follow <the tow path, the road, the fen path>. Map: map.',
   'Looking: look (l), examine <thing or person> (x).',
-  'Things: inventory (i), take, drop, give <thing> to <person>, use <object>, eat <food>.',
+  'Things: inventory (i), take, drop, give <thing> to <person>, use <object>, eat <food>, open <chest>, take <thing> from <chest>, force <door or chest>. In a talk: ask <person> for <thing>.',
   'Trade: list (what is for sale here), buy <thing> [amount], sell <thing> [amount], rent a room.',
   'Work: work (for a day\'s pay), invest <amount>, loads (what there is to carry from here), haul <goods> to <place>, deliver.',
   'Time: time, wait [minutes], wait for <person>, sleep. At night: knock (on a door), wake <person>.',
@@ -82,8 +83,20 @@ export function runCommand(host: CommandHost, command: Command): Output[] {
     }
     case 'inventory':
       return [text(`You carry ${listItems(world.content, world.state.player.inventory)}, and ${world.money(world.state.player.money)}.`)]
-    case 'take':
+    case 'take': {
+      // TAKE <thing> FROM <chest> (M10.3): from an open chest; someone else's is theirs.
+      const from = /^(.+?)\s+(?:from|out of|uit)\s+(.+)$/i.exec(command.args.join(' '))
+      if (from && !findNpcHere(world, from[2]!)) return takeFrom(world, from[1]!, from[2]!)
       return take(host, command.args)
+    }
+    case 'open':
+      return openObject(world, command.args.join(' '))
+    case 'force': {
+      const direction = parseDirection(command.args[0])
+      const out = force(world, command.args.join(' '), direction)
+      host.pass(5)
+      return out
+    }
     case 'drop':
       return drop(host, command.args)
     case 'give':
@@ -246,12 +259,15 @@ function go(host: CommandHost, args: string[]): Output[] {
   if (!exit) return [error(`You can't go ${direction} from here.`)]
   const closed = closedBetween(world, player.location, exit.to)
   if (closed) return [error(`You can't go that way: ${closed}`)]
+  // A locked door opens with its key (M10.3).
+  const lock = passLock(world, player.location, direction, exit.lock)
+  if (!lock.ok) return [error(lock.text!)]
   const mist = widowTurnsBack(world, exit.to)
   if (mist) return [text(mist), ...host.pass(30)]
   if (shutForNight(world, exit.to)) return [text(`The door of ${world.location(exit.to).name} is shut for the night. KNOCK to wake whoever lives there.`)]
   player.location = exit.to
   const seen = host.pass(exit.minutes)
-  return [describeRoom(world), ...seen]
+  return [...(lock.text ? [text(lock.text)] : []), describeRoom(world), ...seen]
 }
 
 // ---------------------------------------------------------------- doors and sleepers

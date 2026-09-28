@@ -1,6 +1,13 @@
 # Prices are in duiten: 1 stuiver = 8 duiten, 1 guilder = 20 stuivers.
 
 items:
+  - id: lubberts_key
+    name: iron key
+    aliases: [key, iron key, sleutel]
+    description: A heavy iron key on a greasy string, the kind that opens a strongbox.
+    tags: [key]
+    value: 2
+
   - id: rye_grain
     name: sack of rye
     plural: sacks of rye

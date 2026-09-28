@@ -11,6 +11,7 @@ import { parseClaim, truthOf } from '../src/engine/claims'
 import { tieTo } from '../src/engine/people'
 import { ownerOf } from '../src/engine/social/ownership'
 import { crime } from '../src/engine/social/crime'
+import { letIn } from '../src/engine/social/access'
 import { loadContentFromDir } from '../src/node/content'
 import { content } from './helpers'
 
@@ -599,5 +600,63 @@ describe('M10.3: caught, suspected, proven, and made right', () => {
     const own = await run(false)
     const after = await run(true)
     expect(own).toBeGreaterThan(after)
+  })
+})
+
+describe('M10.3: access as a right', () => {
+  it('a strongbox opens with its key; what is in it is its owner\'s; forcing it is loud', async () => {
+    const engine = new Engine(content, { seed: 7 })
+    const world = engine.world
+    await engine.handle('create warden heathborn peat_cutter name=Joost')
+    world.state.player.location = 'loc_waagdam_graanhandel'
+    stay(engine, 'npc_lubbert', 'loc_waagdam_canal_street')
+    expect(said(await engine.handle('open strongbox'))).toMatch(/Lubbert's strongbox is locked\./)
+    world.state.player.inventory['lubberts_key'] = 1
+    expect(said(await engine.handle('open strongbox'))).toMatch(/In Lubbert's strongbox: .*yarn/)
+    await engine.handle('take yarn from strongbox')
+    expect(world.state.player.inventory['yarn']).toBe(1)
+    expect(world.state.crimes?.at(-1)).toMatchObject({ kind: 'theft', victim: 'npc_lubbert', item: 'yarn' })
+    // Forcing Maren's box on Skerrow: loud, whether it gives or not.
+    const isleGame = new Engine(isle, { seed: 7 })
+    await isleGame.handle('create warden heathborn peat_cutter name=Joost')
+    isleGame.state.player.location = 'loc_skerrow_salt_kettle'
+    const out = said(await isleGame.handle('force strongbox'))
+    expect(out).toMatch(/\(Athletics \d+ vs DC 16: /)
+    expect(isleGame.state.news!.facts.some((f) => f.kind === 'break_in')).toBe(true)
+  })
+
+  it('a locked door opens with its key and not without', async () => {
+    const engine = new Engine(content, { seed: 7 })
+    const world = engine.world
+    const exit = world.location('loc_molenend_lane').exits.east!
+    exit.lock = { key: 'lubberts_key', dc: 15 }
+    try {
+      world.state.player.location = 'loc_molenend_lane'
+      expect(said(await engine.handle('east'))).toMatch(/The door is locked\. You have no key to it\./)
+      world.state.player.inventory['lubberts_key'] = 1
+      expect(said(await engine.handle('east'))).toMatch(/You unlock the door with the iron key\./)
+      expect(world.state.player.location).toBe('loc_molenend_house')
+    } finally {
+      delete exit.lock
+    }
+  })
+
+  it('walking into a home uninvited, seen by someone who does not want you, is trespass they remember; asked in, you may stay', async () => {
+    const run = async (affinity: number, askFirst = false) => {
+      const engine = new Engine(content, { seed: 7 })
+      const world = engine.world
+      engine.tick((10 * 60 - (world.now % DAY) + DAY) % DAY)
+      Object.assign(relation(engine.state, 'npc_harmen'), { affinity, trust: affinity < 0 ? -20 : 10, familiarity: 30 })
+      stay(engine, 'npc_harmen', 'loc_molenend_house')
+      for (const id of Object.keys(world.state.npcs)) if (id !== 'npc_harmen' && world.state.npcs[id]!.location === 'loc_molenend_house') world.state.npcs[id]!.location = 'loc_molenend_mill'
+      world.state.player.location = 'loc_molenend_lane'
+      if (askFirst) letIn(world, 'loc_molenend_house', world.now + 60)
+      return { engine, out: said(await engine.handle('east')) }
+    }
+    const cold = await run(-40)
+    expect(cold.out).toMatch(/Harmen stares at you\. "What are you doing in my house\?/)
+    expect(cold.engine.state.npcs['npc_harmen']!.memory?.at(-1)?.note).toMatch(/walked into my home without a by-your-leave/)
+    expect((await run(10)).out).not.toMatch(/What are you doing in my house/)
+    expect((await run(-40, true)).out).not.toMatch(/What are you doing in my house/)
   })
 })
