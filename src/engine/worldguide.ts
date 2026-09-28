@@ -145,17 +145,17 @@ export const WORLD_STEPS: readonly WorldStep[] = [
       'What does a meal cost, a night\'s lodging, and a day\'s wage?',
       'What does the stranger carry at the start: money and a few things?',
     ],
-    fills: [{ kind: 'world', keys: ['money', 'player'] }],
+    fills: [{ kind: 'world', keys: ['money', 'player'] }, { kind: 'items' }],
     optional: true,
     skipped: 'One neutral coin (c), and prices are plain numbers.',
     checks: [
       'The smallest unit has value 1, and every other value is how many of the smallest it is worth.',
       'Short names are all different; aliases (other words for a coin, as people say them) belong to one coin only.',
       'The player\'s money is enough for a few days of food and not much more, in the smallest unit.',
-      'Things in the player\'s inventory exist as items (or are added in the economy step).',
+      'Everything the stranger carries at the start is in the player\'s inventory, and each is an item: one that exists, or one this step proposes.',
     ],
     prompt:
-      'STEP: MONEY. Agree the coins and a few prices with the designer. Propose in `world`: money.units (short, name, value, from largest to smallest, the smallest with value 1, and aliases: other words the player may use for it) and player (money in the smallest unit, inventory by item id). Keep the prices the designer gave for the economy step.',
+      'STEP: MONEY. Agree the coins and a few prices with the designer. Propose in `world`: money.units (short, name, value, from largest to smallest, the smallest with value 1, and aliases: other words the player may use for it) and player (money in the smallest unit, inventory by item id). What the stranger carries at the start (a knife, a coat, a terminal) goes in the inventory, and each thing that does not exist yet is proposed here as an item in `changes` (id, name, description, value in the smallest unit, tags), not left for the economy step (M10.20: the starting kit of The Quiet Reach waited for a step that never came). Keep the other prices the designer gave for the economy step.',
   },
   {
     id: 'faiths',

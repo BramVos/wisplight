@@ -72,6 +72,12 @@ describe('M10.20: places that read by the rules', () => {
     if (lost.length) expect(polished.say).toContain(`loc_skerrow_headland no longer names "${lost[0]!.words[0]}"`)
   })
 
+  it('lets the money step propose the starting kit as items, with their fields', () => {
+    const money = worldStepRequest(newWorldFiles('reach', 'The Reach'), 'money', 'A chip, a terminal and 120 credits.').system
+    expect(money).toContain('each thing that does not exist yet is proposed here as an item in `changes`')
+    expect(money).toMatch(/items, each one:\n  id: text matching \/\^\[a-z0-9_\]\+\$\/\n  name: text/)
+  })
+
   it('sends a light task to the model the player chose for the brain', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'wisplight-m1020places-'))
     folders.push(dir)
