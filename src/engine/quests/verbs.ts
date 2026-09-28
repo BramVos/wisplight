@@ -75,6 +75,7 @@ export const PERMISSIONS: Record<string, Permission> = {
   place_prop: rules("a new object from a template of the content in its owner's home, with a lock as hard as its make, what it holds and hints in the owner's words; one per storyline, a few a week, and only after the chances that are there already (M10.5)", true),
   crowd: rules('a nameless group comes to a place for some days: refugees, workers; whom the player speaks to gets a name', true),
   rank: rules('a settlement takes a new rank (hamlet, village, town, city), paid from its purse; news of belang 4', true),
+  found_faction: rules('a new faction forms, an uprising that becomes a movement: at most one a season in a world, kept as content in the save; news of belang 3 (M10.22)', true),
   // Places, groups, the market, realms.
   flee: rules('a group flees to a place', true),
   place: rules('a place changes state: flooded, damaged, occupied, normal', true),

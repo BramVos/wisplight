@@ -24,3 +24,7 @@ plans:
       # The shore folk shelter at the inn, and eat from what the hamlet has.
       - id: shelter
         do: { crowd: shore_folk, one: a family from the shore, count: 10, at: loc_skerrow_salt_kettle, from: skerrow_shore, days: 4, profession: fisher }
+      # When the water has gone, the boat crews band together to mend the wall before the next one (M10.22: a faction formed in play, at most one a season).
+      - id: crews
+        wait: 72
+        do: { found_faction: boat_crews, name: the boat crews of the Hythe, wants: "The harbour wall rebuilt before the next storm, and a share of every catch put by for it.", seat: the slip at the harbour, at: loc_skerrow_harbour, members: [npc_brannoc] }

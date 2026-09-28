@@ -86,6 +86,17 @@ describe('M10.22: the great lines', () => {
     const crowd = (engine.state.crowds ?? []).find((c) => c.at === 'loc_skerrow_salt_kettle')
     expect(crowd?.count).toBe(10)
     expect(engine.state.market?.['salt_fish']).toBe(0.5)
+    // When the water has gone, the boat crews band together: a faction formed in play, as content in the save.
+    engine.tick(3 * DAY)
+    const crews = engine.content.factions.get('boat_crews')
+    expect(crews?.members).toEqual(['npc_brannoc'])
+    expect(crews?.seats.map((s) => s.at)).toEqual(['loc_skerrow_harbour'])
+    expect(engine.state.news!.facts.some((f) => f.kind === 'faction' && f.title === 'the boat crews of the Hythe formed')).toBe(true)
+    const loaded = Engine.fromSave(isle, engine.save())
+    expect(loaded.content.factions.has('boat_crews')).toBe(true)
+    // At most one a season in a world.
+    const { foundFaction } = await import('../src/engine/growth/founded')
+    expect(foundFaction(engine.world, { id: 'another', name: 'another band', wants: 'More.', seat: 'somewhere', members: [], join: 'reputation' })).toBe(false)
   })
 
   it('lets a crowd eat from the stock of the settlement it is in', () => {

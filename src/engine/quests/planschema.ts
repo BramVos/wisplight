@@ -176,6 +176,13 @@ export const VerbSchema = z.union([
   z.object({ crowd: z.string(), one: z.string(), count: z.number().int().positive().max(200), at: SelectorSchema, from: z.string(), days: z.number().positive(), profession: z.string() }).strict(),
   /** A settlement takes a new rank, paid from its purse: news of belang 4 (M9.1). */
   z.object({ rank: z.string(), kind: z.enum(['hamlet', 'village', 'town', 'city']), cost: z.number().int().min(0).default(0), by: z.string().optional() }).strict(),
+  /**
+   * A new faction forms (M10.22: an uprising that becomes a movement): only
+   * from a plan, of a great line or a storyline, at most one a season in a
+   * world, and kept as content in the save. Its seat in words, and where it
+   * sits (a place or an area), with its first members.
+   */
+  z.object({ found_faction: z.string().regex(/^[a-z0-9_]+$/), name: z.string(), wants: z.string(), seat: z.string(), at: SelectorSchema.optional(), members: z.array(SelectorSchema).default([]), join: z.enum(['never', 'hired', 'reputation']).default('reputation') }).strict(),
   // M8.4: the economy.
   /** A settlement sends for goods: they come in so many days, paid at twice their worth ({ order: $value, to: $area }). */
   z.object({ order: z.string(), to: z.string(), qty: z.number().int().positive().default(6), days: z.number().int().positive().default(3), by: z.string().default('a carrier') }).strict(),

@@ -41,7 +41,9 @@ Kosten: één `tides`-aanroep per maand, hooguit 600 tokens, alleen als de werel
 
 Wat de editor en de kroniekverteller leerden: de soort `tides` in het contract (met een noot over de drijfveren), de stap Signalen (die ook plannen voorstelt), een sjabloon in de editor, en een regel in Check voor een lijn die niets kan duwen. Een onbekend plan, gebied, rijk, seizoen of nederzetting, of een drempel die niet boven de dreiging ligt, houdt het laden tegen. Het wereldboek toont de lijnen bij de machten.
 
-Nog open in M10.22 (andere sessie): de cadans met een rem in echte tijd, één wachtrij, de pagina "De grote lijnen" in het dagboek en de kleur op de landkaart, en jouw invloed via bemiddeling. Van mij nog open: een nieuwe factie die uit een grote lijn ontstaat.
+- **Een nieuwe factie ontstaat alleen uit een plan.** Dat kan een plan van een grote lijn zijn, of van een verhaallijn van de kroniekverteller: een opstand die een beweging wordt. Het gaat met het werkwoord `found_faction`, hooguit één per seizoen per wereld (knop `growth.new_faction_days`), en de factie komt als content in de save onder een id dat de wereld nooit had. Op Skerrow vormen de bootploegen van de Hythe zich na de grote storm om de havenmuur te herbouwen, met Brannoc als eerste lid.
+
+Nog open in M10.22 (andere sessie): de cadans met een rem in echte tijd, één wachtrij, de pagina "De grote lijnen" in het dagboek en de kleur op de landkaart, en jouw invloed via bemiddeling.
 
 ## M10.22 deel: zetels van facties, 29 september 2026
 

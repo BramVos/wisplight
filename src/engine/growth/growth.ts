@@ -3,7 +3,7 @@ import { withFarPlaces, type FarPlace } from './far'
 import { withDistricts } from './districts'
 import { addCrowd, endCrowd } from './crowds'
 import { isRestDay } from '../clock'
-import { callName, LocationSchema, lockedIds, NpcSchema, type Content, type Npc } from '../content'
+import { callName, FactionSchema, LocationSchema, lockedIds, NpcSchema, type Content, type Npc } from '../content'
 import { economy, ledgerOf } from '../economy/ledger'
 import { recordFact } from '../news'
 import { newNpcState, objectKey, serviceKey, type GameState } from '../state'
@@ -50,6 +50,9 @@ export interface GrowthState {
   districtPending?: string[]
   /** Districts whose new people the chronicler still weaves into the world (M10.22). */
   weavePending?: string[]
+  /** Factions formed in play (M10.22), as raw content, and when each formed: at most one a season. */
+  factions?: Record<string, unknown>[]
+  founded?: number[]
 }
 
 export function growth(world: World): GrowthState {
@@ -67,6 +70,15 @@ function grownOnly(base: Content, state: GameState): Content {
   const built = g ? Object.entries(g.projects).filter(([, p]) => p.done !== undefined).map(([id]) => base.projects.get(id)!).filter(Boolean) : []
   if (g?.far && Object.keys(g.far).length) base = withFarPlaces(base, state)
   if (g?.districts && Object.keys(g.districts).length) base = withDistricts(base, state)
+  // Factions formed in play (M10.22): content like any.
+  if (g?.factions?.length) {
+    const factions = new Map(base.factions)
+    for (const raw of g.factions) {
+      const f = FactionSchema.parse(raw)
+      if (!factions.has(f.id)) factions.set(f.id, f)
+    }
+    base = { ...base, factions }
+  }
   // A settlement that changed rank (M9.1): its kind is the game's now.
   if (state.ranks && Object.keys(state.ranks).length) {
     const areas = new Map(base.areas)

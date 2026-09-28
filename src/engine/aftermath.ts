@@ -21,6 +21,7 @@ import { askTrader, isTrader, lookForYourself, mayChaseAway } from './belief'
 import { remember } from './npc/execute'
 import { setRank } from './social/rank'
 import { addCrowd } from './growth/crowds'
+import { foundFaction } from './growth/founded'
 import { openRequest } from './requests'
 import { GOAL_CATALOGUE, triggerChoice } from './npc/goals'
 import { brainMayChoose, offered } from './npc/intentions'
@@ -369,6 +370,11 @@ export function runVerb(world: World, ctx: PlanContext, verb: Verb, st: StepStat
     addCrowd(world, { id: `crowd_${ctx.plan.id ?? ctx.plan.plan}_${name.replace(/[^a-z0-9]+/gi, '_').toLowerCase()}`, name, one: fill(world, v.one, ctx.bind), count: v.count, at, from: fill(world, v.from, ctx.bind), profession: v.profession, until: world.now + v.days * 24 * 60, cause: ctx.plan.id ?? ctx.plan.plan })
     const place = world.location(at)
     return Boolean(recordFact(world, { kind: 'crowd', about: [place.area], place: at, belang: 2, title: `${name} at ${place.name}`, text: { precise: `${v.count} ${name} have come to ${place.name}.`, village: `There are ${name} at ${place.name} now, a whole crowd of them.`, far: `There are ${name} in ${world.content.areas.get(place.area)?.name ?? place.area}.` } }))
+  }
+  if ('found_faction' in v) {
+    const members = v.members.flatMap((s) => many(world, ctx, s)).filter((id) => world.content.npcs.has(id) && world.alive(id))
+    const at = v.at ? one(world, ctx, v.at) : undefined
+    return foundFaction(world, { id: v.found_faction, name: fill(world, v.name, ctx.bind), wants: fill(world, v.wants, ctx.bind), seat: fill(world, v.seat, ctx.bind), ...(at ? { at } : {}), members, join: v.join })
   }
   if ('rank' in v) {
     const target = fill(world, v.rank, ctx.bind)
