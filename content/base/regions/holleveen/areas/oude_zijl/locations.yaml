@@ -36,6 +36,10 @@ locations:
         back wall, where the dyke presses against it. The sluice is south.
     exits:
       south: { to: loc_oude_zijl_sluice }
+    details:
+      - words: [table, plans, rolled plans]
+        look: A long table covered with rolled plans of dykes and ditches, held flat at the corners with stones. The lines are neat and the notes small.
+        take: The plans are someone's work, and not yours to take.
 
   - id: loc_oude_zijl_dyke
     name: On the Great Dyke
@@ -57,6 +61,11 @@ locations:
         stones below. The sluice is down the slope behind you.
     exits:
       down: { to: loc_oude_zijl_sluice, minutes: 2 }
+    details:
+      - words: [sky, sea, grey water]
+        look: Grey water runs out to a grey sky, and there is nothing on it, not one sail, as far as you can see.
+      - words: [sheep, grass]
+        look: Sheep have cropped the grass short all along the dyke, and their droppings are everywhere.
 
   - id: loc_oude_zijl_ferry
     name: The Ferry Landing
@@ -77,3 +86,10 @@ locations:
         creaks. The sluice is east.
     exits:
       east: { to: loc_oude_zijl_sluice, minutes: 10 }
+    details:
+      - words: [boat, ferry, ferry boat]
+        look: A flat ferry boat of tarred planks, big enough for a cart, tied to the landing.
+        take: It is a boat, and it is tied up. You leave it.
+      - words: [rope, ferry rope]
+        look: A thick rope runs from a post on the landing across the water to the far bank. The ferry is hauled across along it.
+        take: It runs across the whole water, and the ferry needs it.

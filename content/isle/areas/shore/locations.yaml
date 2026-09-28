@@ -31,6 +31,12 @@ locations:
         dc: 14
         item: lamp_oil
         text: Half-buried in the shingle above the tideline, where the storm threw it, a small cask. Lamp oil, by the smell of the bung.
+    details:
+      - words: [mast, broken mast]
+        look: A broken mast from the Grey Gull, lying in the shingle with its rigging tangled round it.
+        take: It is far too heavy to carry.
+      - words: [spill]
+        look: A spill of wet rope from the wreck, tangled in the shingle.
 
   - id: loc_skerrow_tidepools
     name: The Tidepools
@@ -54,6 +60,11 @@ locations:
       west: { to: loc_skerrow_wreck_strand, minutes: 8 }
       east: { to: loc_skerrow_harbour, minutes: 6 }
     forage: [kelp]
+    details:
+      - words: [wall, harbour wall]
+        look: East, above the rocks, the harbour wall of the Hythe.
+      - words: [pools, crabs, anemones]
+        look: Pools as clear as window glass, with crabs sidling away from your shadow and anemones closing like fists.
 
   - id: loc_skerrow_cliff_path
     name: The Cliff Path
@@ -77,3 +88,8 @@ locations:
       south: { to: loc_skerrow_wreck_strand, minutes: 10 }
       north: { to: loc_skerrow_silver_grove, minutes: 15 }
       east: { to: loc_skerrow_green, minutes: 12 }
+    details:
+      - words: [stand, trees, pale trees]
+        look: A stand of pale trees on the rise to the north, bent by the wind.
+      - words: [thrift, campion, sea campion]
+        look: Thrift and sea campion grow along the cliff top, pink and white.

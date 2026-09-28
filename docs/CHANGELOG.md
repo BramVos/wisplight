@@ -1,5 +1,15 @@
 # Changelog
 
+## M10, details voor alle plekken, 28 september 2026
+
+- **Elke plek heeft zijn details.** De 71 plekken die de editorlijst noemde (60 in de Nethermarch, 11 op Skerrow) hebben nu een eigen tekst voor wat hun beschrijving noemt: de bank van planken bij de fuiken, het brood en de beker voor de Haakman, het uithangbord van The Drowned Goose, de muilezel, de kist met drie sloten van Mathijs, het boegbeeld in de Salt Kettle, en zo verder. Waar het past, heeft een ding een eigen regel voor pakken en voor een werkwoord: DRINK, EAT, CLIMB, DIG, PET, WARM, OPEN, RING of READ. Het offer aan de Haakman drink je niet, de muilezel laat zich niet aaien, en de pomp in de stalhof geeft water.
+- **Werkwoorden van de engine zelf.** Een detail met een eigen regel voor een werkwoord gaat nu ook voor als de engine dat werkwoord zelf kent. READ SIGN leest het uithangbord in plaats van "Read whom?".
+- **Een scherpere lijst in de editor.** "Named, but no detail" slaat vergelijkingen over ("like a hen on her nest", "taller than a man"). Bij "a tidy, narrow house" pakt hij het huis en niet "tidy". Mensen die hier wonen of werken tellen mee als "the woman" of "the man". Dingen die met de toestand van een plek veranderen, zoals de kat op de stoep die Grietje binnenhaalt, laat hij aan de beschrijving over: LOOK leest die zoals hij nu is. Beide werelden staan op nul.
+
+Testen: LOOK, TAKE en een werkwoord op dingen uit de beschrijving, bijvoorbeeld DRINK PUMP en PET MULE in de stalhof van The Drowned Goose, READ SIGN op de kruising, EAT BREAD bij de haaksteen en OPEN CHEST bij de molenaar. Tests in `tests/m10play.test.ts` (15), alle 655 groen.
+
+Nog niet: een werkwoord op een detail geeft alleen tekst, zonder gevolg in de wereld.
+
 ## M10.8 Speeltest Veenhoek en Skerrow: fouten en interface, 28 september 2026
 
 - **Het gesprekspaneel.** Jouw zinnen staan links, die van de ander rechts, elk op een eigen zachte achtergrond; wat verder gebeurt staat over de hele breedte. Het paneel leest zijn regels uit de motor, dus elke regel staat erin, ook als het venster geen focus had. Een naam die de ander noemt en die je kunt volgen, is een link; een klik opent de dagboekpagina bovenop het paneel, en anders gaat LOOK het gesprek in, niet de hoofdinvoer. Escape sluit dan eerst het dagboek, niet het gesprek. Pijl omhoog in het paneel geeft wat je in dit gesprek zei; in de hoofdinvoer staan alleen nog commando's.

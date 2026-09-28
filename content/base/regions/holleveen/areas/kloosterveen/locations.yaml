@@ -22,6 +22,9 @@ locations:
       north: { to: loc_kloosterveen_church }
       northwest: { to: loc_kloosterveen_wood, minutes: 5 }
       southeast: { to: loc_priory_path, minutes: 25 }
+    details:
+      - words: [gatehouse, gate, iron]
+        look: A squat gatehouse of dark brick, with a door of oak studded with iron and a slit of a window above it. Beyond it rise the church roof and the hop poles of the brewery.
 
   - id: loc_kloosterveen_church
     name: The Priory Church
@@ -50,6 +53,14 @@ locations:
       west: { to: loc_kloosterveen_garden }
     objects:
       - { id: altar, type: altar }
+    details:
+      - words: [flood, painting, wall, saint brand]
+        look: On the whitewashed wall Saint Brand stands on the dyke with his light held high, and before him the flood comes on, black and curling, painted with more feeling than skill.
+      - words: [lantern, panes]
+        look: A lantern with three panes of glass, burning steadily above the altar. Someone has trimmed the wick with care.
+        take: It is the lantern above the altar. You leave it burning.
+      - words: [door, low door]
+        look: A low door in the north wall, its wood black with age. It leads to the library.
 
   - id: loc_kloosterveen_library
     name: The Priory Library
@@ -72,6 +83,12 @@ locations:
     exits:
       south: { to: loc_kloosterveen_church }
       east: { to: loc_kloosterveen_lodging }
+    details:
+      - words: [hand, marks, writing, seals, wax, chests]
+        look: The chests are bound with iron and sealed with wax, and the marks on them are in an old, looping hand that nobody writes any more. You can make out a letter here and there, but not a word.
+        take: The chests are heavy and sealed, and this is the brothers' house.
+        verbs:
+          open: The wax seals are whole. Breaking one would be noticed, and not forgiven.
 
   - id: loc_kloosterveen_lodging
     name: The Prior's Lodging
@@ -92,6 +109,20 @@ locations:
     exits:
       west: { to: loc_kloosterveen_library }
       south: { to: loc_kloosterveen_brewery }
+    details:
+      - words: [room, box bed, bed]
+        look: A small room for one man, with a box bed built into the wall behind a curtain.
+      - words: [table, papers]
+        look: "A table heaped with papers: accounts, letters, and a list of hop yields with most of it crossed out."
+        take: They are the prior's papers. You leave them.
+      - words: [slate, chalk]
+        look: "On the slate by the window, in chalk: MORE HOPS. Under it, in another hand: NO, LESS."
+        verbs:
+          read: "MORE HOPS. And under it, in another hand: NO, LESS."
+      - words: [jug, beer]
+        look: A jug of beer that has gone flat.
+        verbs:
+          drink: You sniff it. Flat, warm, and not yours. You put it down.
 
   - id: loc_kloosterveen_brewery
     name: The Priory Brewery
@@ -134,6 +165,16 @@ locations:
     exits:
       east: { to: loc_kloosterveen_church }
       west: { to: loc_kloosterveen_wood, minutes: 5 }
+    details:
+      - words: [tag, tags, wooden tag]
+        look: "Each bed has a wooden tag with its herb burnt into it: SAGE, RUE, MINT, and some you do not know."
+        verbs:
+          read: SAGE, RUE, MINT, and names you do not know.
+      - words: [gate, wicket gate, wicket]
+        look: A narrow wicket gate in the west wall, its hinges green with damp. It creaks whenever it moves.
+      - words: [herbs, beds, sage, rue, mint]
+        look: Sage, rue and mint in square beds edged with boards, grown thick and chewed low by snails.
+        take: These are the brothers' herbs, grown for the brothers. You leave them.
 
   - id: loc_kloosterveen_wood
     name: The Priory Wood

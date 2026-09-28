@@ -47,6 +47,9 @@ locations:
       northeast: { to: loc_peat_road }
     objects:
       - { id: well, type: well }
+    details:
+      - words: [patch, grass, green]
+        look: Trampled grass, worn down to mud round the well.
 
   - id: loc_chapel_lane
     name: Chapel Lane
@@ -95,6 +98,12 @@ locations:
         to the west.
     exits:
       west: { to: loc_chapel_lane }
+    details:
+      - words: [desk, ledgers]
+        look: A clerk's desk facing the door, stacked with ledgers of fines and complaints in a neat hand.
+        take: Not with the schout's eye on them.
+      - words: [cell, bars]
+        look: A barred cell in the corner, with a plank bed and a bucket.
 
   - id: loc_aaltje_cottage
     name: Aaltje's Cottage
@@ -118,6 +127,15 @@ locations:
         sells: { herbs: { stock: 6, target: 8 } }
         supply: [{ item: herbs, amount: 2, every: day, at: 7 }]
         demand: [{ item: herbs, amount: 1, from: 9, to: 17 }]
+    details:
+      - words: [frame, paper, certificate, seal]
+        look: "A yellowed paper with a red seal, in a frame of black wood: a certificate from the Waag of Waagdam, stating that one Aaltje Hendriks weighed as much as an honest woman should. It hangs where everyone can see it."
+        take: It is Aaltje's, and she is proud of it.
+        verbs:
+          read: A certificate from the Waag of Waagdam, stating that one Aaltje Hendriks weighed as much as an honest woman should.
+      - words: [herbs, bunches, beams]
+        look: Bunches of herbs hang from every beam, so low you have to stoop.
+        take: They are Aaltje's stock. You leave them hanging.
 
   - id: loc_visser_house
     name: Visser House, the doorstep
@@ -191,6 +209,10 @@ locations:
       west: { to: loc_veenhoek_bakery }
     objects:
       - { id: oven, type: bread_oven, owner: npc_mirte }
+    details:
+      - words: [lean-to, peat]
+        look: Peat stacked dry under a lean-to of old boards, fuel for the oven.
+        take: It is the baker's fuel. You leave it.
 
   - id: loc_peat_road
     name: The Peat Road
@@ -209,6 +231,11 @@ locations:
       southwest: { to: loc_veenhoek_green }
       northeast: { to: loc_molenend_lane, minutes: 18 }
       east: { to: loc_goose_crossroads, minutes: 25 }
+    details:
+      - words: [frog]
+        look: Gone before you see more than the ripple.
+      - words: [ditches, ditch, duckweed]
+        look: Ditches of black water on both sides, green with duckweed.
 
   - id: loc_veenhoek_quay
     name: Canal Quay
@@ -242,6 +269,12 @@ locations:
         days: [Maandag, Dinsdag, Woensdag, Donderdag, Vrijdag, Zaterdag]
         sells: { eel: { stock: 2, target: 8 } }
         demand: [{ item: eel, amount: 4, from: 10, to: 13 }]
+    details:
+      - words: [barge rope, rope, coil]
+        look: A heavy barge rope, coiled neatly by the mooring posts, stiff with tar and wet through.
+        take: It belongs to the bargemen, and it is heavier than it looks.
+      - words: [posts, mooring posts]
+        look: Mooring posts of black oak, worn smooth where the ropes have rubbed.
 
   - id: loc_gerrit_house
     name: Gerrit's House
@@ -257,6 +290,13 @@ locations:
     exits:
       west: { to: loc_veenhoek_quay }
       east: { to: loc_towpath_e }
+    details:
+      - words: [chest]
+        look: A heavy chest by the hearth, with the mark of the Brotherhood of Peat-cutters burnt into its lid.
+        take: It is Gerrit's, and heavy.
+      - words: [spades, peat spades]
+        look: Peat spades hang along the walls, their handles worn to the shape of their owner's grip.
+        take: They are Gerrit's tools. You leave them on the wall.
 
   - id: loc_towpath_w
     name: Tow Path, west of Veenhoek
@@ -273,6 +313,9 @@ locations:
     exits:
       east: { to: loc_veenhoek_quay }
       south: { to: loc_route_peat_stacks, minutes: 10 }
+    details:
+      - words: [groove, path, tow path]
+        look: The towing horses have worn the path to a hard groove, smooth and packed.
 
   - id: loc_towpath_e
     name: Tow Path, east of Veenhoek
@@ -340,6 +383,13 @@ locations:
         dc: 16
         topic: the_dry_ridge
         text: Where the last cutting ends, a line of heather runs on into the fen, straight as a ruler, and the reeds keep back from it. Firm ground under it. The dry ridge, it must be, that the old cutters talk about.
+    details:
+      - words: [path]
+        look: A path along the edge of the cuttings, south to a hut where the fen begins.
+      - words: [pits, old pits, steps]
+        look: Old pits cut in black steps and full of water to the brim. You cannot see the bottom.
+        verbs:
+          drink: The water smells of iron and rot. You think better of it.
 
   - id: loc_wouter_hut
     name: Wouter's Hut
@@ -357,6 +407,10 @@ locations:
       north: { to: loc_peat_cuttings }
     objects:
       - { id: eel_traps, type: eel_traps, owner: npc_wouter }
+    details:
+      - words: [barrel, smoking barrel]
+        look: A barrel with a fire under it and eels hung inside, smoking slowly. The smell of hot fish comes out in gusts.
+        take: It is Wouter's, and it is hot.
 
   # M8.5: a house that stands empty at the start. Old Tijs the cooper died last
   # winter and nobody took up the trade; a newcomer may.
@@ -381,3 +435,12 @@ locations:
         item: iron_nails
         qty: 2
         text: Behind a loose brick by the door, wrapped in greasy leather, a store of the old cooper's nails.
+    details:
+      - words: [house, workshop, shutters]
+        look: A low brick house leaning against its own workshop, its shutters closed. Nobody lives here now.
+      - words: [hoop, iron hoop, nail]
+        look: A bent iron hoop on a nail by the door, going to rust.
+        take: It is bent and rusted, and it belongs to the house. You leave it on its nail.
+      - words: [staves]
+        look: Oak staves stacked under the eaves, grey with weather.
+        take: They belong to the house, empty or not.

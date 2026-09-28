@@ -113,9 +113,31 @@ describe('what a description names', () => {
 
   it('names in the editor what a description brings in with no detail', () => {
     expect(introduced('A low hill of pale sand rises, crowned by an oak older than anyone. Between its roots a hollow opens, and someone has left a bowl of milk.')).toEqual(['hill', 'oak', 'hollow', 'bowl'])
-    const warnings = sceneryWarnings(content)
-    expect(warnings.some((w) => w.startsWith('loc_kabouterberg'))).toBe(false)
-    expect(warnings.length).toBeGreaterThan(0)
+    // A place whose details are taken away is named again.
+    const locations = new Map(content.locations)
+    locations.set('loc_kabouterberg', { ...locations.get('loc_kabouterberg')!, details: [] })
+    expect(sceneryWarnings({ ...content, locations })).toEqual(['loc_kabouterberg: the description brings in "hollow", with no detail to look at or handle (details:)'])
+  })
+
+  it('leaves nothing a description brings in without a detail, in either world, but what changes with the place', async () => {
+    const { loadContentFromDir } = await import('../src/node/content')
+    const { resolve } = await import('node:path')
+    const isle = await loadContentFromDir(resolve(import.meta.dirname, '../content'), 'isle')
+    expect(sceneryWarnings(content)).toEqual([])
+    expect(sceneryWarnings(isle)).toEqual([])
+    // The cat on Grietje's doorstep is gone once she takes it in: LOOK reads the description as it is now.
+    const engine = at('loc_visser_house')
+    expect(said(await engine.handle('look cat'))).toMatch(/grey cat with one white paw, very upright/)
+    engine.state.flags = { ...engine.state.flags, cat_taken_in: true }
+    expect(said(await engine.handle('look cat'))).toMatch(/curled by the hearth/)
+  })
+
+  it('answers verbs the engine has a meaning of its own for, on a thing with its own line', async () => {
+    const engine = at('loc_goose_crossroads')
+    expect(said(await engine.handle('read sign'))).toBe('THE DROWNED GOOSE, in faded letters under the painted bird.')
+    const yard = at('loc_goose_yard')
+    expect(said(await yard.handle('drink pump'))).toMatch(/cold and tasting of iron/)
+    expect(said(await yard.handle('look notice board'))).toMatch(/lost goats/)
   })
 
   it('gives the picture of the area you are in', () => {

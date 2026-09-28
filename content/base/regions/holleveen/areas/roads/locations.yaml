@@ -18,6 +18,11 @@ locations:
     exits:
       west: { to: loc_towpath_e, minutes: 35 }
       east: { to: loc_waagdam_west_gate, minutes: 35 }
+    details:
+      - words: [sky]
+        look: A sky that goes on for ever, grey and white, with the light moving across it.
+      - words: [heron]
+        look: A grey heron stands in the shallows and does not bother to fly off.
 
   - id: loc_goose_road
     name: The Waagdam Road
@@ -34,6 +39,13 @@ locations:
     exits:
       west: { to: loc_goose_crossroads, minutes: 25 }
       east: { to: loc_waagdam_west_gate, minutes: 25 }
+    details:
+      - words: [dyke, pasture]
+        look: The road runs along the top of a low dyke, above pasture so wet it shines.
+      - words: [cart, ruts]
+        look: No cart in sight, only the ruts it left, deep and shining with water.
+      - words: [cows]
+        look: Cows stand up to their knees in the wet, and look at you without much interest.
 
   # The peat fields south-west of Veenhoek (Wereldboek, chapter 7: peat pits,
   # peat stacks, crossroads), on the way to the Kabouterberg.
@@ -60,6 +72,12 @@ locations:
       north: { to: loc_towpath_w, minutes: 10 }
       east: { to: loc_peat_cuttings, minutes: 10 }
       southwest: { to: loc_route_crossroads, minutes: 15 }
+    details:
+      - words: [crow]
+        look: A crow on a peat stack, head on one side, watching you pass.
+      - words: [stacks, peat, peat stacks, blocks]
+        look: Blocks of cut peat stacked loose so the wind can get through, black at the bottom and going brown at the top.
+        take: The peat is someone's, stacked to dry. You leave it.
 
   - id: loc_route_crossroads
     name: Crossroads of Fen Tracks
@@ -85,6 +103,14 @@ locations:
       northeast: { to: loc_route_peat_stacks, minutes: 15 }
       southwest: { to: loc_kabouterberg, minutes: 30 }
       southeast: { to: loc_route_peat_pits, minutes: 10 }
+    details:
+      - words: [rise]
+        look: A low rise, hardly higher than the fields round it, but dry.
+      - words: [post, rye, bunch, rye ears]
+        look: A post with no sign on it, only a bunch of rye ears tied to the top, grey with weather.
+        take: You leave the rye where it is. Somebody tied it there for a reason.
+      - words: [strip, ruts, tracks]
+        look: Each track is two ruts with a strip of grass between them.
 
   - id: loc_route_peat_pits
     name: The Flooded Peat Pits
@@ -131,3 +157,8 @@ locations:
     exits:
       northwest: { to: loc_kloosterveen_gate, minutes: 25 }
       southeast: { to: loc_chapel_lane, minutes: 45 }
+    details:
+      - words: [strip, path, sand, roots]
+        look: A strip of wet sand and roots between banks of fern, cut deep by cart ruts full of brown water.
+      - words: [tower, bell tower]
+        look: A square bell tower of brick shows above the trees to the north-west.

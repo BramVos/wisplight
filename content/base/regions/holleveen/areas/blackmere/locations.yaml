@@ -16,6 +16,15 @@ locations:
         Veenhoek and east towards the Kattenbroek; the open shore is south.
     exits:
       south: { to: loc_blackmere_shore, minutes: 10 }
+    details:
+      - words: [plank walk, walk, planks, plank]
+        look: A single row of planks laid along the tops of the stakes, slick with weed and bowed in the middle where the water pushes at it. It takes you out along the traps, one careful step at a time.
+      - words: [nail, rusty nail, iron nail, first stake]
+        look: An old iron nail, rusted the colour of dried blood, driven into the first stake up to its head. Iron keeps the Haakman off, people say, or at least makes him think twice.
+        take: The nail is driven in to the head, and it is there for a reason. You leave it.
+      - words: [eel traps, traps, trap, stakes, willow stakes, withy]
+        look: Long baskets of woven withy, narrow at one end, hung from the stakes so the eels swim in and cannot find the way out again. One of them twitches.
+        take: They are tied fast, and they are somebody's living. You leave them.
 
   - id: loc_blackmere_shore
     name: The Shore of the Blackmere
@@ -81,6 +90,18 @@ locations:
     exits:
       north: { to: loc_blackmere_shore, minutes: 5 }
       south: { to: loc_blackmere_open_water, minutes: 15 }
+    details:
+      - words: [crust, bread, crust of bread, cup, beer, gifts, offerings]
+        look: A crust of bread gone soft in the damp and a cup with a finger of beer left in it, set out for the Haakman. Whoever left them did not stay to watch.
+        take: You reach for the cup and stop. Taking back what was given to the Haakman is how people end up in the water.
+        verbs:
+          drink: You lift the cup, and the water beside the stone goes very still. You put it back exactly where it was.
+          eat: You leave the bread where it lies. It was not put there for you.
+      - words: [stone, grey stone, hook stone]
+        look: The stone is grey and flat on top, and the top is dark and greasy with years of gifts. The water round it is darker than anywhere else in the mere.
+        take: It would take ten men to shift it, and not one of them would try.
+        verbs:
+          climb: You put a hand on the greasy stone and think better of standing on it.
 
   - id: loc_blackmere_channel
     name: The Drainage Channel
@@ -102,6 +123,16 @@ locations:
         either side breathes out a smell of rot. The shore is west.
     exits:
       west: { to: loc_blackmere_shore, minutes: 10 }
+    details:
+      - words: [strip, mud, black mud]
+        look: Raw black mud, laid bare where the mere has drawn back from the shore. It stinks of rot, and dead mussels lie in it with their shells gaping.
+      - words: [band, waterline, old waterline, reeds]
+        look: "A dark band on the reeds, a hand's breadth wide and well above the water: where the mere stood before the channel was dug."
+      - words: [channel, ditch]
+        look: Dug as straight as a stretched rope, its sides still raw, with the water of the mere trickling away through it north towards Molenend.
+      - words: [mussels, dead mussels, shells]
+        look: Mussels that lived in the mere and died when it drew back. They lie open in the mud and crack under your boots.
+        take: They are dead and they stink. You leave them.
 
   - id: loc_blackmere_open_water
     name: The Open Water
@@ -124,3 +155,13 @@ locations:
         tell which way north is.
     exits:
       north: { to: loc_blackmere_hookstone, minutes: 15 }
+    details:
+      - words: [branch, bones, something pale, bottom]
+        look: Far below, something pale lies on the bottom. It could be a branch, bleached by the water. It could be bones. The longer you look, the less you want to know.
+        take: It lies far down in the black water, out of reach, and you are glad of it.
+        verbs:
+          dive: You take a deep breath, think of the Haakman, and let it out again.
+      - words: [water, mere]
+        look: Black and clear at once, and so cold it hurts.
+        verbs:
+          drink: You take a mouthful. It is cold enough to make your teeth ache, and it tastes of peat.

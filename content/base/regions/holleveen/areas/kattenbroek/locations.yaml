@@ -63,6 +63,11 @@ locations:
       north: { to: loc_kattenbroek_edge, minutes: 5 }
       east: { to: loc_kattenbroek_pools, minutes: 10 }
       south: { to: loc_kattenbroek_oak, minutes: 10 }
+    details:
+      - words: [gap, gaps, reed wall, reed, reeds]
+        look: The reed stands taller than you on both sides, too thick to push through, and every gap in it looks like every other.
+      - words: [mat, stems, trodden stems]
+        look: Reed stems trodden flat into a mat that floats on the water. It sinks under your weight at every step and rises again behind you.
 
   - id: loc_kattenbroek_pools
     name: The Black Pools
@@ -84,6 +89,13 @@ locations:
     exits:
       north: { to: loc_kattenbroek_hut, minutes: 5 }
       west: { to: loc_kattenbroek_reedpaths, minutes: 10 }
+    details:
+      - words: [sheen, pools, pool, black water]
+        look: The pools are black and still, with a skin of colours on them like oil on a puddle. Now and then a bubble comes up and bursts with a smell of rotten eggs.
+        verbs:
+          drink: You bend to the water and the smell of rotten eggs comes up to meet you. You change your mind.
+      - words: [heron]
+        look: A grey heron on one leg at the far side of the pools. It watches you, and does not fly off, as any other heron would.
 
   # On its own hex just east of the hut, so the edge stays the first way in
   # on the area's own hex.
@@ -109,6 +121,15 @@ locations:
         crying. The hut is west.
     exits:
       west: { to: loc_kattenbroek_hut, minutes: 2 }
+    details:
+      - words: [patch, yard, bare ground]
+        look: A patch of higher ground, trodden bare and hard by a great many small feet.
+      - words: [tub, upturned tub, washtub]
+        look: An upturned washtub, grey with age, with three cats asleep on it. They open their eyes when you look at them, all at once.
+        take: Three cats are sleeping on it, and they would not thank you.
+      - words: [woodpile, wood]
+        look: A woodpile of driftwood and old stakes, with cats in every gap.
+        take: You reach for a piece and a cat in the gap beneath it hisses. You leave the wood where it is.
 
   - id: loc_kattenbroek_oak
     name: The Drowned Oak
@@ -132,6 +153,16 @@ locations:
     exits:
       north: { to: loc_kattenbroek_reedpaths, minutes: 10 }
       east: { to: loc_kattenbroek_moonpool, minutes: 5 }
+    details:
+      - words: [bunch, heather, bones, knots, strings, things]
+        look: Small bones, knots of reed and a bunch of dried heather, each on its own string, hung from the dead branches. They click together when the wind turns them. Someone hung them there with care.
+        take: You reach up, and the strings turn towards your hand. You let them be.
+      - words: [patch, still water]
+        look: Past the oak the reeds open on a patch of still water, silver even on a dull day.
+      - words: [oak, drowned oak, tree, branches]
+        look: The oak died when the fen rose round it, and the water has worn its wood to silver. Its lowest branches reach out over the path like arms.
+        verbs:
+          climb: The wood is slick and silver and warmer than it should be. You keep your feet on the path.
 
   # Where the dry ridge from Veenhoek comes out (region rule hidden_path), on
   # the last stretch it shares with the fen path before the edge.
@@ -157,6 +188,15 @@ locations:
         fish, where the hut must be.
     exits:
       southeast: { to: loc_kattenbroek_hut, minutes: 10 }
+    details:
+      - words: [back, firm ground, ground, hummock]
+        look: "Under the sedge the ground stays firm: a low back of old peat that runs off north-west before the tussocks swallow it."
+      - words: [alders, alder]
+        look: A few crooked alders, their roots gripping the only dry footing for a long way.
+        verbs:
+          climb: The alders are too crooked and too thin to hold you.
+      - words: [cat, crying]
+        look: You cannot see it. The crying comes from close by among the tussocks, and stops when you go looking.
 
   - id: loc_kattenbroek_moonpool
     name: The Moon Pool

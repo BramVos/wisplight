@@ -17,6 +17,14 @@ locations:
       east: { to: loc_reuzenrust_barrows, minutes: 5 }
       south: { to: loc_reuzenrust_heath, minutes: 10 }
       northeast: { to: loc_reuzenrust_road, minutes: 5 }
+    details:
+      - words: [capstone, stones, grey stones, giant-bed, hunebed]
+        look: The capstone is one slab of grey rock, longer than a cart, balanced on the stones below it. People say giants lifted it there.
+        take: Not even a giant would carry that off.
+        verbs:
+          climb: You set a foot on the stones and a cold feeling goes through you. You step down again.
+      - words: [mounds, burial mounds]
+        look: Three burial mounds rise beyond the stones, furred with heather.
 
   - id: loc_reuzenrust_barrows
     name: The Three Barrows
@@ -39,6 +47,14 @@ locations:
         not look back as you go.
     exits:
       west: { to: loc_reuzenrust_hunebed, minutes: 5 }
+    details:
+      - words: [path, narrow path]
+        look: A narrow path worn between the barrows by feet that did not dare go up their sides.
+      - words: [barrows, barrow, mounds]
+        look: Three round barrows, each as high as a house, furred with heather and moss. Nobody has dug into them.
+        verbs:
+          climb: Nobody climbs the barrows, and standing among them you understand why.
+          dig: Nobody digs here. Standing among the barrows, you understand why.
 
   - id: loc_reuzenrust_heath
     name: The Edge of the Heath
@@ -60,6 +76,11 @@ locations:
         be. The wind is cold and smells of heather. The giant-bed is north.
     exits:
       north: { to: loc_reuzenrust_hunebed, minutes: 10 }
+    details:
+      - words: [bank, sand]
+        look: A low bank of sand and heather where the heath ends, with the fields and the fen spread out below it.
+      - words: [tower, waag]
+        look: Far off to the south-west, small and grey, the tower of the Waag at Waagdam.
 
   - id: loc_reuzenrust_road
     name: The Road to Hunnenloo

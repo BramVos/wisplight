@@ -15,7 +15,7 @@ import { followTombstones, followTombstonesInLog, nameBook, withNames, type Name
 import { shiftTension, tensionOf } from './social/realms'
 import { grownContent, invest } from './growth/growth'
 import { dayName, GameClock } from './clock'
-import { describeRoom, findNpcAnywhere, findNpcHere, runCommand, type CommandHost, type Output } from './commands'
+import { describeRoom, detailVerb, findNpcAnywhere, findNpcHere, runCommand, type CommandHost, type Output } from './commands'
 import { areaTopicId, callName, type Content, type Quest } from './content'
 import { Dialogue, QUICK_OPTIONS } from './dialogue/conversation'
 import { Knowledge } from './dialogue/knowledge'
@@ -884,6 +884,9 @@ export class Engine {
       if (!isCommand) return this.inConversation(() => this.dialogue.say(talk.npc, text))
     }
 
+    // A thing of this place with its own line for the verb (READ SIGN, after the M10 playtest), before what the verb does elsewhere.
+    const own = detailVerb(this.world, command)
+    if (own) return [{ kind: 'text', text: own }]
     switch (command.verb) {
       case 'talk': {
         if (/^(party|group|everyone|all)$/i.test(command.args.join(' '))) return this.dialogue.party('')

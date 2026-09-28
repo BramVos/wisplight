@@ -16,6 +16,11 @@ locations:
     exits:
       south: { to: loc_rietdoolhof_passages, minutes: 10 }
     forage: [fen]
+    details:
+      - words: [goat]
+        look: You cannot see it. It bleats somewhere ahead in the reeds, where no goat has any business being.
+      - words: [channels, reed, reeds]
+        look: Channels of brown water wind between walls of reed, each one like the last.
 
   - id: loc_rietdoolhof_passages
     name: The Reed Passages
@@ -40,6 +45,12 @@ locations:
       north: { to: loc_rietdoolhof_edge, minutes: 10 }
       south: { to: loc_rietdoolhof_camp, minutes: 10 }
       west: { to: loc_rietdoolhof_jetty, minutes: 10 }
+    details:
+      - words: [punt, passages, stems, spikes]
+        look: The reed has been cut back with a blade into passages just wide enough for a punt, and the cut stems stand up out of the water as sharp as spikes.
+      - words: [snare, twine]
+        look: A snare of tarred twine, strung low across the water just where a punt would catch it, or a leg.
+        take: You could cut it loose, and whoever set it would know somebody had been by.
 
   - id: loc_rietdoolhof_jetty
     name: The Hidden Jetty
@@ -61,6 +72,14 @@ locations:
     exits:
       east: { to: loc_rietdoolhof_passages, minutes: 10 }
       southeast: { to: loc_rietdoolhof_camp, minutes: 5 }
+    details:
+      - words: [bend, jetty, planks]
+        look: A jetty of new planks, tarred and tight, tucked so well into a bend of the reeds that you are on it before you see it.
+      - words: [boats, boat, rowlocks, rags]
+        look: Two narrow boats painted black, light and low, their rowlocks wrapped in rags so they make no sound.
+        take: They are too big to carry, and somebody would miss them.
+      - words: [path, boards]
+        look: A path of boards laid over the mud, running south-east towards the smoke of a camp.
 
   - id: loc_rietdoolhof_camp
     name: The Goat-Riders' Camp
@@ -87,6 +106,14 @@ locations:
       north: { to: loc_rietdoolhof_passages, minutes: 10 }
       northwest: { to: loc_rietdoolhof_jetty, minutes: 5 }
       in: { to: loc_rietdoolhof_mathijs }
+    details:
+      - words: [island, huts, fire pit]
+        look: A low island of dry ground, with a few huts of reed and turf standing round a fire pit.
+      - words: [line, skins, goat-skins, masks, horns]
+        look: Whole goat-skins with the horns still on the heads, hung drying on a line, and beside them masks of the same hide.
+        take: They belong to whoever lives here, and they would come looking.
+      - words: [door, biggest hut, big hut]
+        look: The biggest hut, off to one side, has a door of real planks, the only one in the camp.
 
   - id: loc_rietdoolhof_mathijs
     name: Black Mathijs's Hut
@@ -107,3 +134,16 @@ locations:
         you, onto the camp.
     exits:
       out: { to: loc_rietdoolhof_camp }
+    details:
+      - words: [floor, planks]
+        look: A floor of planks, dry and swept. Somebody here likes things just so.
+      - words: [chest, locks]
+        look: A chest with three locks at the foot of the bed, and all three of them new.
+        take: It is heavy, and it is locked three times over.
+        verbs:
+          open: Three locks, and all of them new. You would need the keys, or a good deal of time.
+      - words: [peg, cloak, black cloak, mask]
+        look: On a peg by the door hang a black cloak and a mask of goat hide with the horns still on, like the masks on the line outside.
+        take: You leave them on their peg. Whoever wears them would know they were gone.
+      - words: [bed, blanket]
+        look: A real bed, under a blanket of good wool.

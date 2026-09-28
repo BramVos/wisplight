@@ -56,6 +56,17 @@ locations:
       out: { to: loc_skerrow_silver_grove, minutes: 1 }
     objects:
       - { id: pot, type: salve_pot, owner: npc_tamsin }
+    details:
+      - words: [curtain, hide curtain]
+        look: A hide curtain over the doorway, heavy and stiff with salt.
+      - words: [jars, shelves]
+        look: Jars of things you would rather not name, stoppered with wax and lined up along the shelves.
+        take: They are Tamsin's, and some of them are better left shut.
+        verbs:
+          open: You put your hand to a stopper and think better of it.
+      - words: [herbs, thyme]
+        look: "Herbs hang so thick from the roof that you have to duck: thyme most of all, and some you do not know."
+        take: They are Tamsin's. You leave them hanging.
 
   - id: loc_skerrow_wyrm_barrow
     name: The Wyrm Barrow
@@ -83,6 +94,13 @@ locations:
         dc: 15
         topic: old_skarth
         text: On the inner faces of the two standing stones the lichen is burnt away in long black tongues, and the stone is glazed like a pot, as if something breathed on them once, very hot, from below.
+    details:
+      - words: [gap, standing stones, stones]
+        look: Between two standing stones at the east end, a gap goes down into the dark. Warm air comes out of it, slow and deep, like breath.
+      - words: [mound, barrow, grass]
+        look: A long green mound, and the short grass on it is warm to the touch.
+        verbs:
+          dig: You kneel on the warm grass, and under your hands something breathes, very slow. You get up again.
 
   - id: loc_skerrow_headland
     name: The Headland
@@ -126,6 +144,11 @@ locations:
       - { id: lamp, type: beacon, owner: npc_garrick }
     forage: [heath]
     items: { lamp_oil: 1 }
+    details:
+      - words: [shed, store, store shed, lean-to]
+        look: A lean-to store shed at the foot of the tower, with half its roof gone. It smells strongly of fish oil.
+      - words: [track, tracks]
+        look: Tracks run south to the hamlet and west to the grove.
 
   - id: loc_skerrow_mage_tower
     name: The Drowned Mage's Tower
@@ -150,3 +173,13 @@ locations:
       south: { to: loc_skerrow_headland, minutes: 15 }
     objects:
       - { id: waystone, type: waystone }
+    details:
+      - words: [study, cot, books]
+        look: "Someone has made a study here among the ruins: books stacked against the wall, a lamp, and a narrow cot."
+      - words: [lamp]
+        look: A small oil lamp among the books.
+        take: It is someone's lamp, in someone's study. You leave it.
+      - words: [stairs]
+        look: Stairs climb round the inside of the wall and stop in the air where the tower has fallen.
+        verbs:
+          climb: You climb a few steps and look up at the sky where the rest of the tower should be. You come down again.

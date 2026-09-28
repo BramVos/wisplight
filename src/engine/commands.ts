@@ -215,7 +215,7 @@ export function runCommand(host: CommandHost, command: Command): Output[] {
 }
 
 /** The line a thing of this place has for this verb (DRINK MILK), if it has one. */
-function detailVerb(world: World, command: Command): string | undefined {
+export function detailVerb(world: World, command: Command): string | undefined {
   if (!command.args.length || ['look', 'examine', 'take', 'go'].includes(command.verb)) return undefined
   const verbs = detailHere(world, command.args.join(' '))?.verbs
   if (!verbs) return undefined

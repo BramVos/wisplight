@@ -16,6 +16,12 @@ locations:
       west: { to: loc_peat_road, minutes: 25 }
       east: { to: loc_goose_road, minutes: 25 }
       south: { to: loc_goose_yard }
+    details:
+      - words: [sign, painted sign, goose]
+        look: "A board swinging from an iron arm, painted with a goose upside down, feet in the air. Under it, in faded letters: THE DROWNED GOOSE."
+        take: It hangs well out of reach, and the inn would want it back.
+        verbs:
+          read: THE DROWNED GOOSE, in faded letters under the painted bird.
 
   - id: loc_goose_common
     name: The Drowned Goose, Common Room
@@ -54,6 +60,15 @@ locations:
         demand:
           - { item: beer, amount: 12, from: 12, to: 23 }
           - { item: hot_meal, amount: 6, from: 12, to: 21 }
+    details:
+      - words: [fire, peat fire, hearth]
+        look: A peat fire in a wide hearth, banked so low it hardly flickers. The warmth of it has soaked into the beams.
+        verbs:
+          warm: You hold your hands to the fire until the damp goes out of your fingers.
+      - words: [counter, tap, tankards]
+        look: A long counter of dark wood, worn pale where elbows rest, with the tap and a row of tankards behind it.
+      - words: [tables, table, scrubbed tables]
+        look: Tables scrubbed white with sand, and still a little sticky at the edges.
 
   - id: loc_goose_kitchen
     name: The Kitchen of the Goose
@@ -67,6 +82,15 @@ locations:
         rafters. The common room is south.
     exits:
       south: { to: loc_goose_common }
+    details:
+      - words: [pot, stew, eel stew]
+        look: "A black iron pot as big as a washtub, with eel stew bubbling in it: eel, onion, a bay leaf, something green. It smells better than it looks."
+        take: It is full, it is boiling, and it is the inn's. You leave it.
+        verbs:
+          eat: It is the inn's stew and it is boiling. You keep your hands to yourself.
+      - words: [garlic, dried fish, fish, rafters]
+        look: Strings of garlic and split, dried fish hang from the rafters, turning slowly in the steam.
+        take: They belong to the kitchen. You leave them hanging.
 
   - id: loc_goose_rooms
     name: Upstairs at the Goose
@@ -80,6 +104,14 @@ locations:
         snores. The stairs lead down.
     exits:
       down: { to: loc_goose_common }
+    details:
+      - words: [corridor]
+        look: Narrow, low and crooked under the thatch, with a floor that creaks at every board. Four doors open off it.
+      - words: [plate, brass plate, name plate]
+        look: "A small brass plate screwed to one of the doors and polished bright: CORNELIS DE WIT, LANDMETER. Nobody else in the Holleveen puts his name on a door."
+        take: It is screwed to the door.
+        verbs:
+          read: CORNELIS DE WIT, LANDMETER.
 
   - id: loc_goose_yard
     name: The Stable Yard
@@ -95,3 +127,17 @@ locations:
       north: { to: loc_goose_crossroads }
     objects:
       - { id: notice_board, type: notice_board }
+    details:
+      - words: [pump, trough]
+        look: An iron pump with a long handle, and a stone trough under it gone green with slime.
+        verbs:
+          drink: You work the handle until the water comes, cold and tasting of iron, and drink from your hands.
+      - words: [mule]
+        look: A grey mule with long ears and a longer face, who looks at you over the stable door as if you owe it money.
+        take: The mule is not yours, and it has made its views on you clear.
+        verbs:
+          pet: You reach out, and the mule lays its ears flat. You take your hand back.
+          stroke: You reach out, and the mule lays its ears flat. You take your hand back.
+          pat: You reach out, and the mule lays its ears flat. You take your hand back.
+      - words: [stable]
+        look: A low stable of tarred planks, smelling of hay and horse. Only the mule is at home.

@@ -33,6 +33,14 @@ locations:
         hours: "06-18"
         sells:
           salt_fish: { stock: 6, target: 8 }
+    details:
+      - words: [wall, harbour wall]
+        look: A curved wall of piled stone without mortar, keeping the sea out of the little harbour.
+      - words: [door, low door, cottage]
+        look: A low door by the slip, into a cottage.
+      - words: [nets, posts]
+        look: Nets hang drying from every post, smelling of fish and weed.
+        take: They are Brannoc's nets, and he would notice.
 
   - id: loc_skerrow_reed_cottage
     name: The Reeds' Cottage
@@ -52,6 +60,16 @@ locations:
         throws a long shadow on the wall. The door out is behind you.
     exits:
       out: { to: loc_skerrow_harbour, minutes: 1 }
+    details:
+      - words: [fire, hearth, driftwood]
+        look: A driftwood fire in the hearth, burning with small blue flames from the salt.
+        verbs:
+          warm: You crouch by the fire and let it take the chill out of your hands.
+      - words: [ship, model ship, model]
+        look: A half-finished model ship, carved with care, its rigging made of thread.
+        take: It is the boy's, and he is not finished with it.
+      - words: [floats, shells]
+        look: Floats and shells crowd every shelf.
 
   - id: loc_skerrow_green
     name: Skerrow Hythe, the Green
@@ -79,6 +97,13 @@ locations:
       west: { to: loc_skerrow_cliff_path, minutes: 12 }
     objects:
       - { id: well, type: well }
+    details:
+      - words: [stone, cottages, turf roofs]
+        look: A dozen stone cottages with turf roofs, low against the wind.
+      - words: [door, banging]
+        look: You cannot tell which door it is. It bangs, stops, and bangs again.
+      - words: [hens]
+        look: Hens pick about your feet, quite unafraid.
 
   - id: loc_skerrow_salt_kettle
     name: The Salt Kettle
@@ -123,3 +148,13 @@ locations:
         demand:
           - { item: ale, amount: 8, from: 17, to: 23 }
           - { item: fish_stew, amount: 5, from: 12, to: 21 }
+    details:
+      - words: [fire]
+        look: A fire at one end of the long room, with fish stew keeping warm beside it.
+        verbs:
+          warm: You stand by the fire until your wool starts to steam.
+      - words: [figurehead, woman, wooden woman]
+        look: A ship's figurehead, a woman with a chipped nose, watching the door from the corner. They say she came off the last ship that broke here before the Grey Gull.
+      - words: [barrel, ale]
+        look: A barrel of ale at the far end of the room.
+        take: It is Maren's ale. Buy a cup.

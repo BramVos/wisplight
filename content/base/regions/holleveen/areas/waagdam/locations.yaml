@@ -44,6 +44,11 @@ locations:
       east: { to: loc_waagdam_market }
       south: { to: loc_waagdam_harbour }
       north: { to: loc_waagdam_smithy }
+    details:
+      - words: [hammer, smithy]
+        look: "You cannot see it from here, only hear it: a hammer ringing on an anvil somewhere to the north."
+      - words: [houses, gables]
+        look: Narrow gabled houses lean together over the street, so close at the top that the sky is only a strip.
 
   - id: loc_waagdam_harbour
     name: The Harbour
@@ -58,6 +63,12 @@ locations:
         north.
     exits:
       north: { to: loc_waagdam_gate_street }
+    details:
+      - words: [basin, barges]
+        look: The Vaart widens here into a basin crowded with flat barges, their sides scraped and patched.
+      - words: [sacks]
+        look: Sacks going up and down the planks on men's backs.
+        take: The sacks are counted, and you would be too.
 
   - id: loc_waagdam_smithy
     name: Hendrik's Smithy
@@ -96,6 +107,11 @@ locations:
         demand:
           - { item: iron_nails, amount: 3, from: 8, to: 17 }
           - { item: lamp_oil, amount: 2, from: 8, to: 17 }
+    details:
+      - words: [hood, soot]
+        look: A hood of brick over the forge, black with years of soot.
+      - words: [anvil]
+        look: The anvil rings under the smith's hammer.
 
   - id: loc_waagdam_market
     name: The Market Square
@@ -142,6 +158,9 @@ locations:
       south: { to: loc_waagdam_market }
       up: { to: loc_waagdam_weighing_room }
       east: { to: loc_waagdam_dirck_house }
+    details:
+      - words: [stair, stairs]
+        look: A steep stair of worn oak, going up to the Weighing Room.
 
   - id: loc_waagdam_weighing_room
     name: The Weighing Room
@@ -160,6 +179,14 @@ locations:
       down: { to: loc_waagdam_waag }
     objects:
       - { id: great_scale, type: scale }
+    details:
+      - words: [beam, black oak]
+        look: The beam of the great scale, black oak bound with iron.
+      - words: [list, framed list, names]
+        look: "A framed list of the weighed: names and dates, some crossed out, in several hands."
+        take: It is screwed to the wall.
+        verbs:
+          read: Names and dates, some of them crossed out, in several hands.
 
   - id: loc_waagdam_dirck_house
     name: The Weighmaster's House
@@ -173,6 +200,12 @@ locations:
         mantel, the only one you have heard in the Holleveen. The Waag is west.
     exits:
       west: { to: loc_waagdam_waag }
+    details:
+      - words: [door]
+        look: A door in the wall that joins the house to the Waag.
+      - words: [clock, mantel]
+        look: "A clock on the mantel, ticking steadily: the only clock you have heard in the Holleveen."
+        take: It is the weighmaster's clock, and the only one for miles.
 
   - id: loc_waagdam_church
     name: The Church of the Lantern
@@ -190,6 +223,11 @@ locations:
       west: { to: loc_waagdam_de_schaal }
     objects:
       - { id: altar, type: altar }
+    details:
+      - words: [alley]
+        look: A narrow alley running west to the inn De Schaal.
+      - words: [lantern, glass]
+        look: A lantern of real glass hanging above the door.
 
   - id: loc_waagdam_de_schaal
     name: De Schaal
@@ -237,6 +275,13 @@ locations:
       southwest: { to: loc_waagdam_market }
       east: { to: loc_waagdam_notary }
       north: { to: loc_waagdam_heath_road }
+    details:
+      - words: [building, steps]
+        look: A handsome building of brick, with a flight of steps and a bell in a little tower.
+      - words: [bell, tower]
+        look: A bell in a little tower above the steps.
+        verbs:
+          ring: You look up at the bell, and at the clerks, and decide it is not your bell to ring.
 
   - id: loc_waagdam_notary
     name: The Notary's Office
@@ -250,6 +295,13 @@ locations:
         the window holds a half-written chronicle. The town hall is west.
     exits:
       west: { to: loc_waagdam_town_hall }
+    details:
+      - words: [room, deed boxes, boxes, labels, hand]
+        look: Deed boxes from floor to ceiling, each labelled in a small, precise hand.
+        take: They are the notary's, and each is labelled.
+      - words: [desk, chronicle]
+        look: A desk by the window with a half-written chronicle on it, the ink still fresh on the last line.
+        take: It is the notary's work, and would be missed.
 
   - id: loc_waagdam_heath_road
     name: The Heath Road
@@ -329,6 +381,16 @@ locations:
         demand:
           - { item: rye_grain, amount: 3, from: 8, to: 17 }
           - { item: flour, amount: 4, from: 8, to: 17 }
+    details:
+      - words: [dust, grain dust]
+        look: Fine grain dust hanging in the air. It tickles your nose.
+      - words: [slate, prices]
+        look: Today's prices on a slate by the door. The flour price has been rubbed out and written again, higher.
+        verbs:
+          read: Today's prices. The flour price has been rubbed out and written again, higher.
+      - words: [sacks, grain]
+        look: Sacks of grain stacked to the ceiling.
+        take: They are Lubbert's, and counted.
 
   - id: loc_waagdam_horse_mill
     name: The Horse Mill
@@ -351,6 +413,15 @@ locations:
         provider: npc_teunis
         hours: "07-17"
         days: [Maandag, Dinsdag, Woensdag, Donderdag, Vrijdag, Zaterdag]
+    details:
+      - words: [millstone]
+        look: The millstone turns under the thatch, grumbling like a sleeping dog as the horse walks its circle.
+      - words: [horse, grey horse, old horse]
+        look: An old grey horse walking its patient circle.
+        verbs:
+          pet: The old horse leans its head into your hand for a moment without breaking step.
+          stroke: The old horse leans its head into your hand for a moment without breaking step.
+          pat: The old horse leans its head into your hand for a moment without breaking step.
 
   - id: loc_waagdam_east_gate
     name: The East Gate
@@ -374,3 +445,10 @@ locations:
           towards Zwolderkamp; the horse mill is back west.
     exits:
       west: { to: loc_waagdam_horse_mill }
+    details:
+      - words: [road]
+        look: A straight road across the fields to the east, towards Zwolderkamp, two days away.
+      - words: [brazier, coals]
+        look: The tollkeeper's brazier, glowing with coals.
+        verbs:
+          warm: You hold your hands over the coals, and the tollkeeper lets you.

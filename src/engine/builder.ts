@@ -53,27 +53,44 @@ export function sceneryWarnings(content: Content): string[] {
       }),
       ...Object.keys(location.items).map((i) => content.items.get(i)?.name ?? i),
       ...Object.values(location.exits).flatMap((e) => (e ? [content.locations.get(e.to)?.name ?? '', ...(content.locations.get(e.to)?.aliases ?? [])] : [])),
-      ...[...content.npcs.values()].filter((n) => n.home === location.id || n.work === location.id).flatMap((n) => [n.name, n.short]),
+      // Whoever lives or works here answers to their name, and to "the woman" or "the man" the description calls them.
+      ...[...content.npcs.values()].filter((n) => n.home === location.id || n.work === location.id).flatMap((n) => [n.name, n.short, n.pronoun === 'she' ? 'woman girl' : n.pronoun === 'he' ? 'man boy' : 'person']),
     ]
       .join(' ')
       .toLowerCase()
-    const missing = [...new Set(introduced(location.description.day))].filter((noun) => !new RegExp(`\\b${noun}`).test(known))
+    // What changes with the state of the place (the cat on the doorstep, taken in) is left to the description: LOOK reads it as it is now.
+    const steady = (noun: string) => location.variants.every((v) => new RegExp(`\\b${noun}`).test(v.day.toLowerCase()))
+    const missing = [...new Set(introduced(location.description.day))].filter((noun) => steady(noun) && !new RegExp(`\\b${noun}`).test(known))
     if (missing.length) out.push(`${location.id}: the description brings in ${missing.map((m) => `"${m}"`).join(', ')}, with no detail to look at or handle (details:)`)
   }
   return out
 }
 
-/** The things a text brings in with "a" or "an": the noun of each, as best a rule can tell. */
+/**
+ * The things a text brings in with "a" or "an": the noun of each, as best a
+ * rule can tell. A likeness is not a thing here ("like a hen on her nest",
+ * "taller than a man"); an adjective before a comma goes on to its noun ("a
+ * tidy, narrow house").
+ */
 export function introduced(text: string): string[] {
   const nouns: string[] = []
   const plain = text.replace(/[[\]]/g, '').toLowerCase()
-  for (const match of plain.matchAll(/\b(?:a|an)\s+([a-z' -]+?)(?=[,.;:!?]|$)/g)) {
-    const words = match[1]!.split(/\s+/).filter(Boolean)
+  const re = /\b(a|an)\s+([a-z' -]+?)(?=[,.;:!?]|$)/g
+  for (const match of plain.matchAll(re)) {
+    const before = plain.slice(0, match.index).trim().split(/\s+/).at(-1) ?? ''
+    if (LIKENESS.has(before)) continue
+    let phrase = match[2]!
+    // "a tidy, narrow house": the words after the comma, unless they start a thing of their own.
+    const rest = plain.slice(match.index + match[0].length)
+    const next = /^,\s*([a-z' -]+?)(?=[,.;:!?]|$)/.exec(rest)
+    if (next && !phrase.includes(' ') && !/^(a|an|the|and|or|but|its|his|her|their|one|two|some)\b/.test(next[1]!)) phrase = next[1]!
+    const words = phrase.split(/\s+/).filter(Boolean)
     const kept: string[] = []
     for (const [i, w] of words.entries()) {
       // "an oak older than anyone's grandfather": the oak, not "older".
       if (words[i + 1] === 'than') break
-      if (PHRASE_END.has(w) || (i > 0 && /(ed|ing|s)$/.test(w) && !/ss$/.test(w) && kept.length > 0)) break
+      const verbish = /(ed|ing|s)$/.test(w) && !/ss$/.test(w) && !THING_WORDS.has(w)
+      if (PHRASE_END.has(w) || (i > 0 && verbish && kept.length > 0)) break
       kept.push(w)
       if (kept.length === 3) break
     }
@@ -83,8 +100,12 @@ export function introduced(text: string): string[] {
   return nouns
 }
 
+/** Words before "a" that make it a likeness, not a thing that is here. */
+const LIKENESS = new Set(['like', 'as', 'than', 'without', 'such'])
+/** Things that end like a verb: a building, a shed, a landing. */
+const THING_WORDS = new Set(['building', 'ceiling', 'landing', 'railing', 'clearing', 'wing', 'string', 'spring', 'ring', 'thing', 'swing', 'sling', 'king', 'bed', 'shed', 'reed', 'weed', 'seed', 'sled', 'steed'])
 const PHRASE_END = new Set(['of', 'with', 'on', 'in', 'at', 'by', 'from', 'that', 'which', 'and', 'or', 'but', 'to', 'into', 'onto', 'under', 'over', 'above', 'below', 'behind', 'beside', 'between', 'among', 'where', 'as', 'no', 'not', 'is', 'are', 'was', 'were', 'you', 'for', 'than', 'like', 'full', 'half', 'so', 'too', 'very', 'just', 'still', 'here', 'there', 'up', 'down', 'out', 'off', 'near', 'against', 'round', 'around', 'through', 'along', 'across'])
-const NOT_NOUNS = new Set(['few', 'little', 'lot', 'bit', 'while', 'moment', 'time', 'way', 'kind', 'sort', 'long', 'great', 'good', 'hundred', 'thousand', 'dozen', 'pair', 'row', 'handful', 'couple', 'piece', 'smell', 'sound', 'feeling', 'glimpse', 'hint', 'whiff', 'north', 'south', 'east', 'west', 'northeast', 'northwest', 'southeast', 'southwest'])
+const NOT_NOUNS = new Set(['few', 'little', 'lot', 'bit', 'while', 'moment', 'time', 'way', 'kind', 'sort', 'long', 'great', 'good', 'hundred', 'thousand', 'dozen', 'pair', 'row', 'handful', 'couple', 'piece', 'smell', 'sound', 'feeling', 'glimpse', 'hint', 'whiff', 'north', 'south', 'east', 'west', 'northeast', 'northwest', 'southeast', 'southwest', 'misstep', 'hurry', 'pause', 'day', 'night', 'moment', 'hiss', 'dim', 'small', 'tidy', 'handsome', 'rotten', 'hung', 'should', 'underfoot', 'upside', 'whole'])
 
 /**
  * Chains that do not close (M8.4): a good that is used (by the nameless of a

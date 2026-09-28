@@ -73,6 +73,12 @@ locations:
         west.
     exits:
       west: { to: loc_molenend_lane }
+    details:
+      - words: [chest, money chest]
+        look: A squat money chest with iron corners, set under the window where the miller can see it from his chair.
+        take: It is heavy, it is locked, and it is in plain sight of his chair.
+        verbs:
+          open: It is locked, and the lid would squeal.
 
   - id: loc_molenend_field
     name: Harmen's Field
@@ -91,3 +97,11 @@ locations:
     exits:
       east: { to: loc_molenend_lane }
     forage: [fields]
+    details:
+      - words: [stubble, rye stubble, furrows]
+        look: Short, pale rye stubble, stiff as bristles, running in rows down to the ditch.
+      - words: [stone, boundary stone]
+        look: A boundary stone of grey granite, leaning a little, as if it had been set in a hurry.
+        take: It is set in the ground, and moving a boundary stone is a crime everywhere.
+      - words: [crows, crow]
+        look: Crows lift off the furrows as you come near, and settle again behind you.
