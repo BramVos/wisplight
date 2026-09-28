@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import { stringify } from 'yaml'
 import { adoptPlaceEdits, ENTITY_KINDS, exitTowards, KIND_NAMES, KNOBS, languageReference, markColours, parseEntityYaml, WORLD_STEPS, type KnobDef, type MapPlace, type ReferenceEntry } from '../../engine'
 import { StaleBanner } from './StaleBanner'
+import { inline, Prose } from './Prose'
 import type { DesignLog } from '../../engine/designlog'
 import { NpcInspector } from './Inspector'
 import { HexMap } from './HexMap'
@@ -1267,7 +1268,7 @@ function PolishPlaces({ bridge, world, view, saved, counted }: { bridge: EditorB
       </div>
       {draft && (
         <div className="draft">
-          {draft.say && <p>{draft.say}</p>}
+          {draft.say && <Prose text={draft.say} />}
           {draft.problems.length > 0 && (
             <ul className="check-list small warn">
               {draft.problems.map((p) => (
@@ -1311,11 +1312,11 @@ function DraftView({ draft, busy, accept, drop, fix }: { draft: EditorDraft; bus
   ]
   return (
     <div className="draft">
-      {draft.say && <p>{draft.say}</p>}
+      {draft.say && <Prose text={draft.say} />}
       {draft.questions.length > 0 && (
         <ul className="check-list">
           {draft.questions.map((q) => (
-            <li key={q}>{q}</li>
+            <li key={q}>{inline(q)}</li>
           ))}
         </ul>
       )}

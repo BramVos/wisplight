@@ -2024,3 +2024,22 @@ pre.sheet {
   margin: 0 10px 4px 0;
   white-space: nowrap;
 }
+
+/* A model's explanation as text to read (M10.20): paragraphs, bold and lists, not stars and dashes. */
+.prose p {
+  margin: 0 0 8px;
+}
+
+.prose ul,
+.prose ol {
+  margin: 0 0 8px;
+  padding-left: 22px;
+}
+
+.prose li {
+  margin: 2px 0;
+}
+
+.prose li ul {
+  margin: 2px 0 0;
+}

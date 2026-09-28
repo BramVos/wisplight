@@ -1,5 +1,11 @@
 # Changelog
 
+## M10.20 deel: wat de editor toont, 28 september 2026
+
+- **De uitleg van de kroniekverteller leest als tekst.** Wat het model onder een voorstel schrijft, staat nu in alinea's, met vet, schuin, `code` en lijsten (één niveau diep), in plaats van sterren en streepjes in één blok. Dat geldt voor de stappen, het tabblad Chronicler en de polijstronde; de vragen van het model tonen vet en code ook. De tekst wordt als React-elementen opgebouwd en nooit als HTML, dus niets uit een antwoord kan opmaak of script worden.
+
+Testen: vraag in de editor een stap of iets op het tabblad Chronicler; een antwoord met `**vet**` en een lijst toont als opgemaakte tekst. Tests in `tests/prose.test.ts` (2).
+
 ## M10.20 deel: één laag voor knoppen, 28 september 2026
 
 - **Knoppen van een wereld.** Elke spelregel die per wereld mag verschillen is een knop: 72 in totaal, met een omschrijving in gewone taal, een eenheid, een standaard en grenzen. Voorbeelden zijn de grenzen van een gesprek, de dagen van lenen en verzoeken, het ritme van mensen, de verhalen van de wereld en de spelregels voor personage en gevecht. Een wereld zet ze in `world.yaml` onder `knobs:`, bij een tabel alleen de rijen die anders zijn. De lader keurt een onbekende knop, een verkeerde vorm en een waarde buiten de grenzen af. De standaarden zijn de oude waarden: alle tests, de simulaties en de speeltest-transcripties zijn ongewijzigd.
