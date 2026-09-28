@@ -784,7 +784,7 @@ export function polishRequest(files: ContentFile[], ids?: string[], light = true
       `--- ${l.id}: ${l.name} (${content!.areas.get(l.area)?.name ?? l.area})`,
       `ways out: ${ways || 'none'}`,
       things ? `things it has, to keep in the text: ${things}` : '',
-      `day now (${m?.words ?? 0} words): ${l.description.day.trim().replace(/\s+/g, ' ')}`,
+      `day now (${m?.words ?? 0} words${(m?.words ?? 0) > 70 ? `, ${(m?.words ?? 0) - 70} too many` : ''}): ${l.description.day.trim().replace(/\s+/g, ' ')}`,
       l.description.night ? `night now: ${l.description.night.trim().replace(/\s+/g, ' ')}` : 'night now: none (leave night empty)',
       note ? `the Check says: ${note}` : '',
     ]
@@ -796,6 +796,7 @@ export function polishRequest(files: ContentFile[], ids?: string[], light = true
     ...(light ? { tier: 'light' as const } : {}),
     system: [
       'YOU POLISH THE DESCRIPTIONS OF THE PLACES OF A WORLD, in the voice of that world. The designer built it step by step; you rewrite only what a place says, so it reads by the rules below.',
+      '- Length first: every description, day and night, at most 70 words. Count them; where a place says how many are too many, cut at least that many. A description over 70 words is not taken.',
       '- Change only the day and night descriptions. Keep every fact, clue, person and thing the description names that the world relies on: the things listed per place stay in the text, and so do the way the place looks and works. Invent nothing: no new object, person, clue or way out.',
       '- Keep the world\'s names and words exactly, in British spelling.',
       '- A night description only where the place has one now; otherwise night is empty.',
@@ -811,8 +812,9 @@ export function polishRequest(files: ContentFile[], ids?: string[], light = true
     prompt: ['WHAT CAN BE ASKED ABOUT (for [brackets]):', askable.join(', '), '', 'THE PLACES TO POLISH:', ...lines].join('\n'),
     schemaName: 'world_polish',
     schema: POLISH_SCHEMA,
-    // Per kind (CLAUDE.md): about 150 words a place, day and night, and a short say.
-    maxTokens: 400 * places.length + 600,
+    // Per kind (CLAUDE.md): about 150 words a place, day and night, a short say, and room to think
+    // (the Quiet Reach run: Opus 5.5 was cut off at 400 a place).
+    maxTokens: 700 * places.length + 1000,
     timeoutMs: 240000,
     meta: { step: 'polish', prefix: worldPrefix(files), places: places.map((p) => p.id) },
   }
@@ -849,6 +851,8 @@ export function readPolish(files: ContentFile[], text: string): Draft {
     changes.push({ kind: 'location', id, merge: true, yaml: stringify({ description: { day: `${day}\n`, ...(keptNight ? { night: `${keptNight}\n` } : {}) } }) })
     const lost = now.details.filter((d) => d.words.every((w) => !day.toLowerCase().includes(w.toLowerCase()))).map((d) => d.words[0])
     if (lost.length) notes.push(`${id} no longer names ${lost.map((w) => `"${w}"`).join(', ')}`)
+    const words = day.split(/\s+/).filter(Boolean).length
+    if (words > 70) notes.push(`${id} is still ${words} words`)
   }
   const say = [typeof parsed.say === 'string' ? parsed.say : '', notes.length ? `Worth a look: ${notes.join('; ')}.` : ''].filter(Boolean).join('\n\n')
   const draft = checkedDraft(files, { say, questions: [], changes })
