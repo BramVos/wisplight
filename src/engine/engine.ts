@@ -34,11 +34,11 @@ import { agree, agreements, leadAhead, openAgreements, promiseLines, settle } fr
 import { goAway, tierOf } from './lod'
 import { hexOfTopic, knownEntrance, knownPlace, knownPlaces, landLines, landMapData, walkTarget, type KnownPlace } from './map/known'
 import { hexMapData, type HexMapData } from './map/view'
-import { distance as hexDistance, line as hexLine } from './map/hexgrid'
+import { distance as hexDistance } from './map/hexgrid'
 import { takeBarge, travelTo } from './map/journey'
 import { mapText, mapView, type MapView } from './map/view'
 import { regionMap } from './map/region'
-import { canSetOut, followWay, hasSeen, hexName, hexOfId, isHexId, landmarkIn, look, playerHex, type WalkPlan, walk, waysFrom, windOf } from './map/travel'
+import { canSetOut, followWay, hasSeen, hexName, hexOfId, isHexId, landmarkIn, look, playerHex, routeBetween, trailEndsAt, tread, type WalkPlan, walk, waysFrom, windOf } from './map/travel'
 import { knownRequests, requestName } from './requests'
 import { recordFact, seedNews } from './news'
 import { parseCommand, parseDirection } from './parser'
@@ -352,8 +352,13 @@ export class Engine {
     const hex = map && playerHex(this.world)
     if (!map || !hex) return
     const was = from && from !== this.state.player.location ? (hexOfId(from) ?? map.locations.get(from)) : undefined
-    // Along the way, as far as a day's walk: a long jump (a barge, a dream) is not a walk.
-    if (was && (was.col !== hex.col || was.row !== hex.row) && hexDistance(was, hex) <= 40) for (const step of hexLine(was, hex).slice(0, -1)) look(this.world, map, step, true)
+    // Along the way, as far as a day's walk: a long jump (a barge, a dream) is not a walk. By the exits it
+    // goes along the road or path both places lie by, and on the trail (a walk put its own steps down).
+    if (was && (was.col !== hex.col || was.row !== hex.row) && hexDistance(was, hex) <= 40) {
+      const route = routeBetween(map, was, hex)
+      for (const step of route.slice(0, -1)) look(this.world, map, step, true)
+      if (!trailEndsAt(this.world, hex)) tread(this.world, map, route)
+    }
     look(this.world, map, hex, isHexId(this.state.player.location) || canSetOut(this.world, this.state.player.location))
   }
 

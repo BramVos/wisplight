@@ -471,7 +471,8 @@ export interface PlayerState {
   /** Who told the player about a topic, and when (for the journal). */
   sources?: Record<string, { from: string; t: number; level: number }[]>
   /** The region map as the player knows it: hexes seen and walked, as bitsets (FO, chapter 4). */
-  map?: { seen: string; walked: string; heading?: string; recent?: string; earlier?: string; period?: number }
+  /** The trail (after the M10 playtest): per hex three bits, a step to the north, north-east and south-east neighbour; and the hex it ends in. */
+  map?: { seen: string; walked: string; heading?: string; recent?: string; earlier?: string; period?: number; trail?: string; trailEnd?: string }
   /** Areas the player has seen from afar. */
   seenAreas?: string[]
   /** The player character (FO, chapter 11). */

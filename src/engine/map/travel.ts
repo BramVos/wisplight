@@ -5,7 +5,7 @@ import type { World } from '../world'
 import { playerSkill, sink } from '../rules/player'
 import { blessed } from '../rules/blessings'
 import { weather, weatherLine } from '../weather'
-import { centre, distance, type Hex, hexAt, HEX_DIRECTIONS, type HexDirection, hexKey, neighbour, neighbours, stepToward, windBetween } from './hexgrid'
+import { centre, distance, type Hex, hexAt, HEX_DIRECTIONS, type HexDirection, hexKey, line as hexLine, neighbour, neighbours, stepToward, windBetween } from './hexgrid'
 import { type Cell, regionMap, type RegionMap } from './region'
 
 // Walking across the region (FO, chapter 4, "Lopen en automatisch doorlopen"):
@@ -189,6 +189,76 @@ export function look(world: World, map: RegionMap, hex: Hex, walked = true): voi
     done[i >> 3]! |= 1 << (i & 7)
     state.walked = encode(done)
   }
+}
+
+// ---------------------------------------------------------------- the stranger's trail
+
+// The way the stranger walked (after the M10 playtest), a thin line on the
+// map from place to place: per hex three bits, for a step to its north,
+// north-east and south-east neighbour; a step the other way belongs to the
+// neighbour. Old saves have no trail yet: it starts with the next walk.
+
+const TRAIL: HexDirection[] = ['north', 'northeast', 'southeast']
+const BACK: Partial<Record<HexDirection, HexDirection>> = { south: 'north', southwest: 'northeast', northwest: 'southeast' }
+
+/** Puts the steps along a row of hexes on the trail; hexes that are not next to each other are joined straight. */
+export function tread(world: World, map: RegionMap, hexes: Hex[]): void {
+  if (hexes.length < 2) return
+  const state = mapState(world)
+  const data = bits(state.trail, map.cols * map.rows * 3)
+  for (let i = 1; i < hexes.length; i++) {
+    const a = hexes[i - 1]!
+    const b = hexes[i]!
+    const steps = distance(a, b) > 1 ? hexLine(a, b) : [a, b]
+    for (let j = 1; j < steps.length; j++) markStep(map, data, steps[j - 1]!, steps[j]!)
+  }
+  state.trail = encode(data)
+  state.trailEnd = hexKey(hexes.at(-1)!)
+}
+
+function markStep(map: RegionMap, data: Uint8Array, a: Hex, b: Hex): void {
+  const direction = neighbours(a).find((n) => n.hex.col === b.col && n.hex.row === b.row)?.direction
+  if (!direction || !map.inside(a) || !map.inside(b)) return
+  const own = TRAIL.indexOf(direction)
+  const [base, k] = own >= 0 ? [a, own] : [b, TRAIL.indexOf(BACK[direction]!)]
+  const i = index(map, base) * 3 + k
+  data[i >> 3]! |= 1 << (i & 7)
+}
+
+/** The trail, decoded once for a whole map drawing. */
+export function trailBits(world: World, map: RegionMap): Uint8Array {
+  return bits(mapState(world).trail, map.cols * map.rows * 3)
+}
+
+/** The steps on the trail from a hex, as a mask: 1 to the north, 2 to the north-east, 4 to the south-east. */
+export function trailAt(trail: Uint8Array, map: RegionMap, hex: Hex): number {
+  const i = index(map, hex) * 3
+  let mask = 0
+  for (let k = 0; k < 3; k++) if (trail[(i + k) >> 3]! & (1 << ((i + k) & 7))) mask |= 1 << k
+  return mask
+}
+
+/** Whether the trail already ends here: a walk put its own steps down. */
+export function trailEndsAt(world: World, hex: Hex): boolean {
+  return mapState(world).trailEnd === hexKey(hex)
+}
+
+/**
+ * The way between two places taken by their exits: along a road, tow path or
+ * path they both lie by, if that is not a long way round; else straight.
+ */
+export function routeBetween(map: RegionMap, a: Hex, b: Hex): Hex[] {
+  let best: Hex[] | undefined
+  for (const path of map.region.paths) {
+    const line = wayHexes(map, path.name)
+    const i = nearestIndex(line, a)
+    const j = nearestIndex(line, b)
+    if (i < 0 || j < 0 || i === j) continue
+    const part = i < j ? line.slice(i, j + 1) : line.slice(j, i + 1).reverse()
+    if (part.length > distance(a, b) * 2.5 + 3) continue
+    if (!best || part.length < best.length) best = [a, ...part, b]
+  }
+  return best ?? hexLine(a, b)
 }
 
 // ---------------------------------------------------------------- describing a hex
@@ -541,6 +611,7 @@ export function walk(world: World, plan: WalkPlan, pass: (minutes: number) => Ou
       if (pick) next = pick.hex
     }
     heading = direction ?? heading
+    tread(world, map, [at, next])
     at = next
     trail.add(hexKey(at))
     const stepCell = map.cell(at)!

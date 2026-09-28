@@ -5,7 +5,7 @@ import { blessed } from '../rules/blessings'
 import { weather } from '../weather'
 import { centre, type Hex, hexKey, neighbours } from './hexgrid'
 import { regionMap, type RegionMap } from './region'
-import { entranceOn, hasSeen, hasWalked, minutesFor, passable, playerHex, seenBits } from './travel'
+import { entranceOn, hasSeen, hasWalked, minutesFor, passable, playerHex, seenBits, tread } from './travel'
 
 // Fast travel (FO, chapter 4, "Snelreizen"): time runs on over a route you
 // know because you walked it, with a chance of something on the way. The
@@ -86,6 +86,7 @@ export function travelTo(world: World, target: Hex, name: string, pass: (minutes
   const minutes = path.slice(1).reduce((sum, h) => sum + minutesFor(world, map.cell(h)!), 0)
   const { lines, extra } = onTheWay(world, map, path, minutes)
   pass(minutes + extra)
+  tread(world, map, path)
   const entrance = entranceOn(world, map, target)
   world.state.player.location = entrance ?? `hex:${target.col},${target.row}`
   return [{ kind: 'narration', text: [`You travel to ${name}. It takes ${duration(minutes + extra)}.`, ...lines].join(' ') }]

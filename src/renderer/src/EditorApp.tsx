@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { stringify } from 'yaml'
-import { adoptPlaceEdits, draftEdits, ENTITY_KINDS, exitTowards, KIND_NAMES, languageReference, parseEntityYaml, type MapPlace, type ReferenceEntry } from '../../engine'
+import { adoptPlaceEdits, draftEdits, ENTITY_KINDS, exitTowards, KIND_NAMES, languageReference, markColours, parseEntityYaml, type MapPlace, type ReferenceEntry } from '../../engine'
 import { NpcInspector } from './Inspector'
 import { HexMap } from './HexMap'
 import type { MapPalette, MapStyle, MapStyleName, PaletteView } from '../../engine'
@@ -1303,6 +1303,11 @@ function PalettePanel({ bridge, world, saved }: { bridge: EditorBridge; world: s
               <td>ground</td>
               <td className="muted small">ground, unknown, label, its shadow</td>
               <td>{(['ground', 'unknown', 'label', 'label_shadow'] as const).map((k) => <span key={k}>{colour(s[k], (v) => setStyleToken(which, (st) => ({ ...st, [k]: v })), k)}</span>)}</td>
+            </tr>
+            <tr>
+              <td>you</td>
+              <td className="muted small">a place you have been, the way you walked</td>
+              <td>{(['visited', 'trail'] as const).map((k) => <span key={k}>{colour(markColours(s, which)[k], (v) => setStyleToken(which, (st) => ({ ...st, [k]: v })), k)}</span>)}</td>
             </tr>
           </tbody>
         </table>

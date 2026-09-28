@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import { introduced, sceneryWarnings } from '../src/engine/builder'
 import { answerChoice, choose } from '../src/engine/choice'
+import { neighbour, type Hex } from '../src/engine/map/hexgrid'
+import { DEFAULT_PALETTE, markColours, mapStyle } from '../src/engine/map/palette'
+import { regionMap } from '../src/engine/map/region'
+import { playerHex, trailAt, trailBits } from '../src/engine/map/travel'
+import type { Engine } from '../src/engine'
 import { content, newEngine } from './helpers'
 
 // After the M10 playtest (Bram, 28 September 2026): a command that can mean
@@ -115,5 +120,65 @@ describe('what a description names', () => {
 
   it('gives the picture of the area you are in', () => {
     expect(at('loc_kabouterberg_oak').status().scene).toBe('area_kabouterberg')
+  })
+})
+
+describe('the trail', () => {
+  /** Whether the trail joins two hexes, step by step. */
+  function joined(engine: Engine, a: Hex, b: Hex): boolean {
+    const map = regionMap(content)!
+    const bits = trailBits(engine.world, map)
+    const links = new Map<string, string[]>()
+    const link = (x: string, y: string) => (links.get(x) ?? links.set(x, []).get(x)!).push(y)
+    for (let col = 0; col < map.cols; col++)
+      for (let row = 0; row < map.rows; row++) {
+        const mask = trailAt(bits, map, { col, row })
+        for (const [bit, direction] of [[1, 'north'], [2, 'northeast'], [4, 'southeast']] as const) {
+          if (!(mask & bit)) continue
+          const n = neighbour({ col, row }, direction)
+          link(`${col},${row}`, `${n.col},${n.row}`)
+          link(`${n.col},${n.row}`, `${col},${row}`)
+        }
+      }
+    const seen = new Set([`${a.col},${a.row}`])
+    const queue = [...seen]
+    while (queue.length) for (const next of links.get(queue.shift()!) ?? []) if (!seen.has(next) && seen.add(next)) queue.push(next)
+    return seen.has(`${b.col},${b.row}`)
+  }
+
+  it('follows the hexes you walked, by a way, by the exits and across country', async () => {
+    const engine = at('loc_veenhoek_quay')
+    const quay = playerHex(engine.world)!
+    expect(engine.state.player.map?.trail ?? '').toBe('')
+    await engine.handle('follow the path to the kabouterberg')
+    const crossroads = playerHex(engine.world)!
+    expect(engine.state.player.location).toBe('loc_route_crossroads')
+    expect(joined(engine, quay, crossroads)).toBe(true)
+    await engine.handle('southwest')
+    const hill = playerHex(engine.world)!
+    expect(engine.state.player.location).toBe('loc_kabouterberg')
+    expect(joined(engine, crossroads, hill)).toBe(true)
+    await engine.handle('head east')
+    expect(joined(engine, quay, playerHex(engine.world)!)).toBe(true)
+  })
+
+  it('goes to the map with each hex, beside its memory and its sign', async () => {
+    const engine = at('loc_veenhoek_quay')
+    await engine.handle('follow tow path east')
+    const data = engine.status().hexMap!
+    const flags = [] as number[]
+    for (let i = 4; i < data.hexes.length; i += 5) flags.push(data.hexes[i]!)
+    expect(flags.some((f) => f >> 5 !== 0)).toBe(true)
+    expect(flags.every((f) => (f & 3) <= 2 && ((f >> 2) & 7) <= 5)).toBe(true)
+  })
+
+  it('has its colour and the colour of places visited in each palette, and a default for a palette without', () => {
+    for (const world of [content.world.map?.palette]) {
+      expect(world?.dark.visited).toMatch(/^#/)
+      expect(world?.paper.trail).toMatch(/^#/)
+    }
+    const bare = { ...DEFAULT_PALETTE.dark, visited: undefined, trail: undefined }
+    expect(markColours(bare, 'dark')).toEqual({ visited: DEFAULT_PALETTE.dark.visited, trail: DEFAULT_PALETTE.dark.trail })
+    expect(markColours(mapStyle(undefined, 'bw'), 'bw').visited).toBe('#000000')
   })
 })

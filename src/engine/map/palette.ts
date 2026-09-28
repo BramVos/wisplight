@@ -20,6 +20,10 @@ export const MapStyleSchema = z
     terrain: z.record(z.string(), Tints),
     ways: z.object({ road: Colour, path: Colour, canal: Colour }).strict(),
     glyph: z.object({ pool: Colour, peat_pit: Colour, peat_edge: Colour, willow: Colour, ruin: Colour, hummock: Colour, stairs: Colour }).strict(),
+    /** A place you have been (after the M10 playtest): its marker, in a colour that stands out. A palette without one takes the default's. */
+    visited: Colour.optional(),
+    /** The thin line of the way you walked. */
+    trail: Colour.optional(),
   })
   .strict()
 export type MapStyle = z.infer<typeof MapStyleSchema>
@@ -80,6 +84,8 @@ export const DEFAULT_PALETTE: MapPalette = {
     },
     ways: { road: '#cbb68a', path: '#b39f76', canal: '#88aab3' },
     glyph: { pool: '#8fb7c1', peat_pit: '#16120c', peat_edge: '#6b5c43', willow: '#a6b983', ruin: '#cdbba2', hummock: '#b1b682', stairs: '#e7d9a8' },
+    visited: '#f0b04a',
+    trail: '#e8a13c',
   },
   paper: {
     ground: '#e8dfc6',
@@ -101,6 +107,8 @@ export const DEFAULT_PALETTE: MapPalette = {
     },
     ways: { road: '#8a6d43', path: '#a0865b', canal: '#5c8a94' },
     glyph: { pool: '#4f7c88', peat_pit: '#5a4a35', peat_edge: '#3f3325', willow: '#52683e', ruin: '#6d5a44', hummock: '#8b8a5b', stairs: '#2b2418' },
+    visited: '#b0461c',
+    trail: '#a4481f',
   },
 }
 
@@ -125,7 +133,15 @@ export function mapStyle(palette: MapPalette | undefined, name: MapStyleName): M
     terrain: Object.fromEntries(Object.entries(paper.terrain).map(([k, tints]) => [k, tints.map(grey)])),
     ways: { road: '#1d1d1d', path: '#3a3a3a', canal: '#555555' },
     glyph: { pool: '#222222', peat_pit: '#111111', peat_edge: '#555555', willow: '#222222', ruin: '#222222', hummock: '#444444', stairs: '#111111' },
+    visited: '#000000',
+    trail: '#3a3a3a',
   }
+}
+
+/** The colours of a visited place and of your trail in a style, from the default palette when the world has none. */
+export function markColours(style: MapStyle, name: MapStyleName): { visited: string; trail: string } {
+  const fallback = name === 'dark' ? DEFAULT_PALETTE.dark : DEFAULT_PALETTE.paper
+  return { visited: style.visited ?? fallback.visited!, trail: style.trail ?? fallback.trail! }
 }
 
 /** The tints of a terrain in a style, falling back on the default palette, then on fields. */

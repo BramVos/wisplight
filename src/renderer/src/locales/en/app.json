@@ -68,6 +68,7 @@
     "centre": "Back to where you are",
     "walkTo": "Walk to {name}",
     "thisLand": "this land",
+    "trail": "the way you walked",
     "full": "Full screen",
     "leaveFull": "Close full screen (Escape)",
     "none": "{name} has no map; you get about by the exits between places."

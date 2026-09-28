@@ -1665,7 +1665,18 @@ pre.sheet {
 .hexmap-canvas canvas {
   display: block;
 }
-/* Where a click on the minimap would walk to. */
+/* The legend's sample of the trail: a very thin line. */
+.hexmap-trail {
+  position: relative;
+}
+.hexmap-trail span {
+  position: absolute;
+  left: 3px;
+  right: 3px;
+  top: 50%;
+  height: 1px;
+}
+/* Where a click on the minimap would walk to, or the name of the place pointed at. */
 .hexmap-hint {
   position: absolute;
   left: 6px;

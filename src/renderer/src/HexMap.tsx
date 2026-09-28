@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
 import { createPortal } from 'react-dom'
 import type { HexMapData, LandMapData } from '../../engine'
-import { neighbours } from '../../engine/map/hexgrid'
-import { mapStyle, tintsOf, type MapStyle, type MapStyleName } from '../../engine/map/palette'
+import { neighbour, neighbours } from '../../engine/map/hexgrid'
+import { mapStyle, markColours, tintsOf, type MapStyle, type MapStyleName } from '../../engine/map/palette'
 import { hasWords, t } from './i18n'
 
 // The map in colour (M10; FO, chapter 4, "Weergave"; the proposal page
@@ -18,6 +18,8 @@ import { hasWords, t } from './i18n'
 //   look at at leisure: the land, the places, and the secrets they know.
 //
 // Both zoom in and out and go full screen; the map is dragged about too.
+// Both show the way you walked as a very thin line from hex to hex, and the
+// places you have been with a marker of their own; pointing at a place names it.
 // Every hex has one of its terrain's muted tints, from its seed; features
 // their own sign; ways are warm parchment, places an icon by kind and status.
 
@@ -26,6 +28,12 @@ const word = (key: string, fallback: string) => (hasWords(key) ? t(key) : fallba
 const FEATURE = ['', 'pool', 'peat_pit', 'willow', 'ruin', 'hummock']
 const MARK: Record<string, string> = { fen: '"', bog: '"', hummock: '^', ridge: ',', water: '~', channel: '≈', woods: 'T', heath: '^', fields: '.', tunnel: '∩', crown: '♣', cliff: '▲', dune: '∽' }
 const SQRT3 = Math.sqrt(3)
+/** The steps of the trail from a hex, as the engine sends them: 1 north, 2 north-east, 4 south-east. */
+const TRAIL_STEPS = [
+  [1, 'north'],
+  [2, 'northeast'],
+  [4, 'southeast'],
+] as const
 
 export type MapMode = 'map' | 'local'
 
@@ -152,6 +160,18 @@ export function placeIcon(ctx: CanvasRenderingContext2D, kind: string, x: number
   ctx.stroke()
 }
 
+/** A place you have been: a patch of shadow, and its sign on it in the colour for places visited. */
+function visitedMark(ctx: CanvasRenderingContext2D, kind: string, x: number, y: number, s: MapStyle, colour: string, k: number): void {
+  const alpha = ctx.globalAlpha
+  ctx.globalAlpha = alpha * 0.85
+  ctx.fillStyle = s.label_shadow
+  ctx.beginPath()
+  ctx.arc(x, y - k, 8 * k, 0, 7)
+  ctx.fill()
+  ctx.globalAlpha = alpha
+  placeIcon(ctx, kind, x, y, 'visited', colour, k)
+}
+
 function label(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, s: MapStyle, max: number, size = 11): void {
   ctx.font = `600 ${size}px "Alegreya Sans", system-ui, sans-serif`
   ctx.textBaseline = 'middle'
@@ -259,7 +279,7 @@ function draw(canvas: HTMLCanvasElement, data: HexMapData, s: MapStyle, style: M
     hexPath(ctx, x, y, r + 0.35)
     ctx.fillStyle = fill
     ctx.fill()
-    const feature = FEATURE[flags >> 2] ?? ''
+    const feature = FEATURE[(flags >> 2) & 7] ?? ''
     if (feature && !flash && r >= 3) {
       if (local && memory < 2 && data.light !== 'day') continue
       ctx.globalAlpha = local && memory < 2 ? (memory === 1 ? 0.5 : 0.3) : 1
@@ -297,6 +317,28 @@ function draw(canvas: HTMLCanvasElement, data: HexMapData, s: MapStyle, style: M
     }
   }
   ctx.setLineDash([])
+  // Your trail (after the M10 playtest): a very thin line along the hexes you walked.
+  const marks = markColours(s, style)
+  ctx.strokeStyle = marks.trail
+  ctx.lineWidth = Math.max(0.8, Math.min(1.5, r / 10))
+  ctx.globalAlpha = flash && flash !== 'trail' ? 0.25 : 0.9
+  ctx.beginPath()
+  for (let i = 0; i < data.hexes.length; i += 5) {
+    const steps = data.hexes[i + 4]! >> 5
+    if (!steps) continue
+    const hex = { col: data.hexes[i]!, row: data.hexes[i + 1]! }
+    const [x, y] = at(hex.col, hex.row)
+    if (!visible(x, y)) continue
+    for (const [bit, direction] of TRAIL_STEPS) {
+      if (!(steps & bit)) continue
+      const n = neighbour(hex, direction)
+      const [x2, y2] = at(n.col, n.row)
+      ctx.moveTo(x, y)
+      ctx.lineTo(x2, y2)
+    }
+  }
+  ctx.stroke()
+  ctx.globalAlpha = 1
   for (const st of data.stairs) {
     const [x, y] = at(st.c, st.r)
     if (!visible(x, y)) continue
@@ -349,7 +391,9 @@ function draw(canvas: HTMLCanvasElement, data: HexMapData, s: MapStyle, style: M
     if (!visible(x, y)) continue
     const memory = sightOf.get(`${p.c},${p.r}`) ?? 2
     ctx.globalAlpha = local && memory < 2 ? (data.light === 'day' ? 0.85 : 0.65) : 1
-    placeIcon(ctx, p.kind, x, y, p.status, s.label, ik)
+    // A place you have been stands out (after the M10 playtest): its sign in its own colour, on a patch of shadow.
+    if (p.status === 'visited') visitedMark(ctx, p.kind, x, y, s, marks.visited, ik)
+    else placeIcon(ctx, p.kind, x, y, p.status, s.label, ik)
     label(ctx, p.name, x, y, s, width, size)
     ctx.globalAlpha = 1
   }
@@ -370,6 +414,8 @@ export interface WalkTarget {
   c: number
   r: number
   name?: string
+  /** A place: visited, seen or heard of. */
+  status?: string
 }
 
 /** What lies under a point of the canvas: the nearest place (or heard-of zone), else the hex, if you have seen it. */
@@ -383,9 +429,9 @@ function hitAt(data: HexMapData, view: View, width: number, height: number, px: 
   // An icon is easier to hit than its hex: a little more than a hex, or ten pixels.
   const reach = Math.max(1.2, 10 / view.r)
   const place = [...data.places].sort((a, b) => far(a.c, a.r) - far(b.c, b.r))[0]
-  if (place && far(place.c, place.r) <= reach) return { c: place.c, r: place.r, name: place.name }
+  if (place && far(place.c, place.r) <= reach) return { c: place.c, r: place.r, name: place.name, status: place.status }
   const zone = data.zones.find((z) => far(z.c, z.r) <= Math.max(reach, z.hexes * SQRT3))
-  if (zone) return { c: zone.c, r: zone.r, name: zone.name }
+  if (zone) return { c: zone.c, r: zone.r, name: zone.name, status: 'heard' }
   let best: WalkTarget | undefined
   let nearest = 1.05
   for (let i = 0; i < data.hexes.length; i += 5) {
@@ -578,9 +624,11 @@ function MapCanvas({
     event.currentTarget.setPointerCapture(event.pointerId)
   }
   const onMove = (event: ReactPointerEvent<HTMLCanvasElement>) => {
-    if (walkable) {
+    // Pointing names a place (after the M10 playtest); on the minimap it says where a click walks to.
+    if (!drag.current) {
       const hit = under(event)
-      if (hit?.c !== hover?.c || hit?.r !== hover?.r || hit?.name !== hover?.name) setHover(hit)
+      const shown = walkable ? hit : hit?.name ? hit : undefined
+      if (shown?.c !== hover?.c || shown?.r !== hover?.r || shown?.name !== hover?.name) setHover(shown)
     }
     const d = drag.current
     if (!d) return
@@ -644,26 +692,34 @@ function MapCanvas({
             zoom(1.6, event.clientX - rect.left, event.clientY - rect.top)
           }}
         />
-        {walkable && hover && <div className="hexmap-hint">{t('app.map.walkTo', { name: hover.name ?? t('app.map.thisLand') })}</div>}
+        {hover && (
+          <div className="hexmap-hint">
+            {walkable ? t('app.map.walkTo', { name: hover.name ?? t('app.map.thisLand') }) : `${hover.name}${hover.status ? `, ${word(`app.map.status.${hover.status}`, hover.status)}` : ''}`}
+          </div>
+        )}
       </div>
-      {legend && <Legend data={data} s={s} onFlash={setFlash} />}
+      {legend && <Legend data={data} s={s} style={style} onFlash={setFlash} />}
     </div>
   )
 }
 
-function Legend({ data, s, onFlash }: { data: HexMapData; s: MapStyle; onFlash: (key: string) => void }) {
+function Legend({ data, s, style, onFlash }: { data: HexMapData; s: MapStyle; style: MapStyleName; onFlash: (key: string) => void }) {
   const icons = useRef<HTMLCanvasElement[]>([])
   const kinds = [...new Map(data.places.map((p) => [`${p.kind}:${p.status}`, p])).values()]
+  const marks = markColours(s, style)
   useEffect(() => {
     kinds.forEach((p, i) => {
       const c = icons.current[i]
       const ctx = c?.getContext('2d')
       if (!c || !ctx) return
       ctx.clearRect(0, 0, c.width, c.height)
-      placeIcon(ctx, p.kind, 9, 10, p.status, s.label)
+      if (p.status === 'visited') visitedMark(ctx, p.kind, 9, 10, s, marks.visited, 1)
+      else placeIcon(ctx, p.kind, 9, 10, p.status, s.label)
     })
   })
   const ways = [...new Set(data.ways.map((w) => w.kind))]
+  let walked = false
+  for (let i = 4; i < data.hexes.length && !walked; i += 5) walked = data.hexes[i]! >> 5 !== 0
   return (
     <div className="hexmap-legend" aria-label={t('app.map.legend')}>
       {data.legend.map((l) => {
@@ -681,6 +737,14 @@ function Legend({ data, s, onFlash }: { data: HexMapData; s: MapStyle; onFlash: 
           {word(`app.map.ways.${w}`, w)}
         </button>
       ))}
+      {walked && (
+        <button type="button" onClick={() => onFlash('trail')}>
+          <i className="hexmap-trail" style={{ background: s.ground }}>
+            <span style={{ background: marks.trail }} />
+          </i>
+          {t('app.map.trail')}
+        </button>
+      )}
       {kinds.map((p, i) => (
         <span key={`${p.kind}:${p.status}`} className="hexmap-place">
           <canvas

@@ -100,6 +100,8 @@ world:
           crown: ["#6e6f6a", "#676863"]
         ways: { road: "#c4b894", path: "#a99d7c", canal: "#7fa3ad" }
         glyph: { pool: "#86b3bf", peat_pit: "#14120e", peat_edge: "#5f5645", willow: "#9fb38c", ruin: "#c9c3b2", hummock: "#a9ad8c", stairs: "#e3dcc0" }
+        visited: "#f2b35c"
+        trail: "#e9a647"
       paper:
         ground: "#e6e3d8"
         unknown: "#dfdcd0"
@@ -117,3 +119,5 @@ world:
           crown: ["#bdbdb6", "#b5b5ae"]
         ways: { road: "#7d6a4a", path: "#958062", canal: "#557f89" }
         glyph: { pool: "#4a7883", peat_pit: "#4f4535", peat_edge: "#3a3226", willow: "#4c6440", ruin: "#665a48", hummock: "#83845e", stairs: "#262018" }
+        visited: "#a8452a"
+        trail: "#9c4428"

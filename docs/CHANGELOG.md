@@ -1,5 +1,13 @@
 # Changelog
 
+## M10, bezochte plekken en je spoor op de kaart, 28 september 2026
+
+- **Je spoor.** Beide kaarten tonen een heel dunne amberkleurige lijn langs de hexen die je echt gelopen hebt. Het is geen rechte lijn en geen berekende route. Een wandeling legt elke stap vast. Een tocht via uitgangen volgt de weg of het pad waar beide plekken aan liggen, en gaat recht als er zo'n weg niet is of als die een grote omweg maakt. TRAVEL legt zijn route ook neer. Een oude save begint met een leeg spoor.
+- **Bezochte plekken.** Een plek waar je was, krijgt een eigen marker: het teken in een contrastkleur op een donker vlakje, zodat hij op elk terrein opvalt. Plekken die je alleen zag, houden het gewone teken, en waar je alleen van hoorde houdt het vraagteken. Wijs je een plek aan, dan staat de naam onderin ("the Kabouterberg, been there"), ook op de grote kaart.
+- **Legenda en palet.** De legenda noemt "the way you walked", en de bezochte plekken tonen hun nieuwe marker. De twee kleuren zijn tokens in het palet (`visited` en `trail`, voor donker en papier) en staan in de palet-editor onder "you". Een palet zonder die tokens neemt de standaardkleuren.
+
+Testen: loop van de kade naar de Kabouterberg, ga via de uitgang terug naar de kruising, en kijk naar de minimap en "The whole map". Wijs een plek aan. Tests in `tests/m10play.test.ts` (13), alle 613 groen.
+
 ## M10.6 Besluiten uit de speeltest, 28 september 2026
 
 - **De dijk.** Een vreemdeling alleen wordt nog steeds niet geloofd, maar Sijbrand is nu op drie manieren te overtuigen. Neem Teunis mee: "Will you come with me to Sijbrand? He must hear it from you." Teunis gaat, ook al is hij aan het werk en is het drie uur over land, want hij gelooft in het lek. Hij loopt naast je mee waar geen weg is, zoekt Sijbrand als die even weg is ("There he goes. Come on.") en zegt het zelf: "I saw it with my own eyes." Of vraag Teunis het Sijbrand te laten weten, en PERSUADE SIJBRAND THAT THE DYKE IS LEAKING: de proef is makkelijker met zijn woord erachter. Of neem Sijbrand mee de dijk op ("Come with me to the dyke"): wie iets niet geloofde en het met eigen ogen ziet, gelooft het. Overtuigd roept Sijbrand de mannen van Veenhoek op (het plan `dyke_muster`): Gerrit, Jan, Wouter en Everhard staan uren op de dijk, het lek wordt gedicht en de doorbraak komt niet. Wie in Oude Zijl of Veenhoek is, hoort de oproep en de afloop.

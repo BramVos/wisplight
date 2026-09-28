@@ -6,7 +6,7 @@ import { centre, distance, hexAt, type Hex } from './hexgrid'
 import { knownPlaces } from './known'
 import { DEFAULT_PALETTE, SURFACE, TERRAIN_ORDER, terrainName, type MapPalette } from './palette'
 import { noise, regionMap, type RegionMap } from './region'
-import { freshBits, hasSeen, onKnownRidge, playerHex, seenBits, sight } from './travel'
+import { freshBits, hasSeen, onKnownRidge, playerHex, seenBits, sight, trailAt, trailBits } from './travel'
 
 // The map as the player knows it (FO, chapter 4, "Weergave"): characters with
 // a colour per terrain, in the style of Dwarf Fortress. Only what the player
@@ -155,7 +155,7 @@ export interface HexMapData {
   levels: { id: string; name: string }[]
   /** Terrain keys, as the hexes refer to them. */
   keys: string[]
-  /** Per hex, five numbers: column, row, terrain (index in keys), tint (0 to 3), and flags (memory 0 seen long ago, 1 seen lately, 2 in sight now; feature times 4). */
+  /** Per hex, five numbers: column, row, terrain (index in keys), tint (0 to 3), and flags (memory 0 seen long ago, 1 seen lately, 2 in sight now; feature times 4; the steps of your trail from it times 32: 1 north, 2 north-east, 4 south-east). */
   hexes: number[]
   /** The light now, and how many hexes the player sees (after the M10 playtest): the minimap draws night and mist with them; the map does not. */
   light: 'day' | 'night' | 'mist'
@@ -184,6 +184,7 @@ export function hexMapData(world: World, options: { width?: number; height?: num
   const level = levels.some((l) => l.id === options.level) ? options.level! : SURFACE
   const seen = seenBits(world, map)
   const fresh = freshBits(world, map)
+  const trail = trailBits(world, map)
   const range = you ? sight(world, map, map.cell(you)!) : 0
   const misty = ['fog', 'storm'].includes(weather(world))
   const light: HexMapData['light'] = misty ? 'mist' : new GameClock(world.now).isNight ? 'night' : 'day'
@@ -226,7 +227,9 @@ export function hexMapData(world: World, options: { width?: number; height?: num
         if (level === SURFACE) stairs.push({ c: col, r: row, dir: levelIndex(world, s.level) < levelIndex(world, SURFACE) ? 'down' : 'up' })
         else if (s.level === level) stairs.push({ c: col, r: row, dir: levelIndex(world, level) < levelIndex(world, SURFACE) ? 'up' : 'down' })
       }
-      hexes.push(col, row, keyOf(key), Math.floor(noise(map.region.seed, col, row, 7) * 4), memory + feature * 4)
+      // The trail is the way you walked on the land, so only on the surface.
+      const steps = level === SURFACE ? trailAt(trail, map, hex) : 0
+      hexes.push(col, row, keyOf(key), Math.floor(noise(map.region.seed, col, row, 7) * 4), memory + feature * 4 + steps * 32)
     }
   }
   const places: HexMapData['places'] = []
