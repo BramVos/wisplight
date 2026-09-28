@@ -105,12 +105,17 @@ world:
     - { id: keeping, name: The Keeping, patrons: [the_remembered] }
     - { id: open_sky, name: The Open Sky, patrons: [the_witness] }
   law:
-    where: port_vesper
+    where: in Port Vesper
     officer: Settlement Marshal
     npc: npc_mara_venn
     office: loc_arrival_lock
     lord: the Vesper Settlement Compact
-    fines: { murder: 20000, assault: 6000, least: 500 }
+    # Bram's law (M10.20): no fine buys off a death or violence that does serious harm; custody and a hearing.
+    fines: { murder: hearing, assault: hearing, least: 500 }
+    hearing:
+      hours: 48
+      held: The Settlement Marshal takes you into secure custody behind the Arrival Lock. The door seals with a sigh, and the room hums with the settlement's air.
+      heard: Three residents who had nothing to do with it hear the case at a formal hearing, and nobody who was part of it takes part. What they decide goes into the Compact's record, and you are let out under watch, until a ship can take the matter to a Charter port.
   names:
     she: [Ines, Talia, Wren, Orla, Maren, Juno, Petra, Liss, Kaia, Seren]
     he: [Aren, Joss, Teodor, Callum, Rafe, Idris, Bram, Leon, Soren, Emrik]

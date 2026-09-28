@@ -32,7 +32,8 @@ describe('Skerrow, in its own words', () => {
     const { out } = await playing(isle, ['@goto loc_skerrow_wreck_strand', 'sleep'])
     expect(out[1]).toMatch(/^You sleep in the lee of a rock, and the wind finds you anyway/)
     expect(isle.world.money?.units.find((u) => u.short === 'gp')?.aliases).toContain('crowns')
-    expect(isle.world.law?.fines).toEqual({ murder: 1500, assault: 300, least: 20 })
+    // A death is heard on Skerrow, not fined (M10.20).
+    expect(isle.world.law?.fines).toEqual({ murder: 'hearing', assault: 300, least: 20 })
   })
 
   it('has factions of its own: the Hythe keeps the law, the faiths are groups, and the wreckers mind a fight', () => {
@@ -81,7 +82,9 @@ describe('Deepwell, in its own words', () => {
 
   it('has its own standing, fines and coin names', () => {
     expect(deepwell.world.standing?.offices).toEqual(['warden'])
-    expect(deepwell.world.law?.fines?.murder).toBe(400)
+    // A death goes before the colony council (M10.20); a beating is still a fine.
+    expect(deepwell.world.law?.fines?.murder).toBe('hearing')
+    expect(deepwell.world.law?.fines?.assault).toBe(100)
     expect(deepwell.world.money?.units.find((u) => u.short === 'cr')?.aliases).toContain('creds')
     expect([...deepwell.factions.values()].find((f) => f.law === 'count')?.id).toBe('colony_council')
   })

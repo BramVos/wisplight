@@ -27,7 +27,7 @@ One block with:
 | calendar | a map: era, months, weekdays, start_weekday | no |  |
 | weather | a map: seasons, chances, stay, prevailing, lines, readers | no |  |
 | money | a map: units | no |  |
-| law | a map: where, officer, npc, office, lord, fines | no |  |
+| law | a map: where, officer, npc, office, lord, fines, hearing | no |  |
 | towns | list of a map: id, area, where, officer, offices, trade_ban, cleared | no | [] |
 | standing | a map: names, offices | no |  |
 | plans | list of text | no | [] |

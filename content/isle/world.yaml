@@ -44,7 +44,12 @@ world:
     npc: npc_maren
     office: loc_skerrow_salt_kettle
     # What the headwoman fines, in copper pieces (M10.17): the island is poor, and so are its fines.
-    fines: { murder: 1500, assault: 300, least: 20 }
+    # A death is not paid for on Skerrow (M10.20): the island gathers and hears it.
+    fines: { murder: hearing, assault: 300, least: 20 }
+    hearing:
+      hours: 24
+      held: The headwoman has you shut in the salt store with the door barred, and a boy sits outside it all night with a gaff across his knees.
+      heard: In the morning the island gathers on the shingle, every household that can walk, and the headwoman asks what happened. They hear you and they hear the dead one's kin, and at the end they let you go, because the sea will judge you in its own time.
   # Standing on the island (M10.17): the lightkeeper's household stands a step higher.
   standing:
     names: [poor, plain folk, respected, well-found, notable]

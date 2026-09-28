@@ -47,6 +47,8 @@ export interface Crime {
   reported: string[]
   law: string
   fine: number
+  /** No fine buys it off (M10.20): the stranger is held and heard. */
+  hearing?: boolean
   fact?: string
 }
 
@@ -108,9 +110,29 @@ export function fineFor(world: World, kind: Crime['kind'], value: number): numbe
   const coins = world.coins
   const large = coins[0]!.value
   const small = (coins[1] ?? coins[0]!).value
-  if (kind === 'murder') return own?.murder ?? 20 * large
-  if (kind === 'assault') return own?.assault ?? 5 * large
+  if (heardFor(world, kind)) return 0
+  if (kind === 'murder') return typeof own?.murder === 'number' ? own.murder : 20 * large
+  if (kind === 'assault') return typeof own?.assault === 'number' ? own.assault : 5 * large
   return Math.max(own?.least ?? 2 * small, value * 3)
+}
+
+/** Whether no fine buys a crime off in this world, but a hearing (world.yaml law.fines: "hearing", M10.20). */
+export function heardFor(world: World, kind: Crime['kind']): boolean {
+  const own = world.content.world.law?.fines
+  return (kind === 'murder' && own?.murder === 'hearing') || (kind === 'assault' && own?.assault === 'hearing')
+}
+
+/** What the stranger is wanted for, in words: a fine, a hearing, or both (M10.20). */
+function wantedFor(world: World, wanted: { fine: number; hearing?: string[] }, officer: string): string {
+  const fine = wanted.fine > 0 ? `a fine of ${world.money(wanted.fine)}` : ''
+  if (!wanted.hearing?.length) return fine
+  return `${fine ? `${fine}, and ` : ''}no fine buys the rest off: the ${officer} will hold you for a hearing`
+}
+
+/** What the law's own officer says to someone wanted: pay, or come along (M10.20: only come along, when no fine will do). */
+function lawLine(world: World, wanted: { fine: number; hearing?: string[] }): string {
+  const law = world.words.law
+  return wanted.hearing?.length ? `"You're wanted, stranger. You'll come with me and be heard."` : `"You're wanted, stranger. ${world.money(wanted.fine)}${law.lord ? ` to ${law.lord}` : ''}, or you come with me."`
 }
 
 /**
@@ -157,7 +179,7 @@ export function crime(world: World, c: Omit<Crime, 'id' | 't' | 'reported' | 'la
     crimes.push({ ...c, id: `crime_${crimes.length + 1}`, t: world.now, reported: [], law: lawAt(world, c.place), fine: fineFor(world, c.kind, c.value), unseen: true, discoverAt: world.now + 60 + world.rng.int('witness', 0, 120) })
     return out
   }
-  const entry: Crime = { ...c, id: `crime_${crimes.length + 1}`, t: world.now, reported: [], law: lawAt(world, c.place), fine: fineFor(world, c.kind, c.value) }
+  const entry: Crime = { ...c, id: `crime_${crimes.length + 1}`, t: world.now, reported: [], law: lawAt(world, c.place), fine: fineFor(world, c.kind, c.value), ...(heardFor(world, c.kind) ? { hearing: true } : {}) }
   crimes.push(entry)
   const area = world.location(c.place).area
   const areaTopic = world.content.areas.get(area)?.topic ?? `area_${area}`
@@ -190,11 +212,12 @@ export function crime(world: World, c: Omit<Crime, 'id' | 't' | 'reported' | 'la
   if (entry.reported.length) {
     const wanted = ((world.state.wanted ??= {})[entry.law] ??= { fine: 0, since: world.now })
     wanted.fine += entry.fine
+    if (entry.hearing) (wanted.hearing ??= []).push(entry.id)
     const who = callName(world.npc(entry.reported[0]!))
     const law = world.words.law
     const town = townLaw(world, entry.law)
-    out.push({ kind: 'system', text: `${who} will tell the ${town ? town.officer : law.officer}. You are wanted ${town ? town.where : law.where}: a fine of ${world.money(wanted.fine)}.` })
-    if (!town && law.npc && world.content.npcs.has(law.npc)) grievance(world, law.npc, 'the law', `"You're wanted, stranger. ${world.money(wanted.fine)}${law.lord ? ` to ${law.lord}` : ''}, or you come with me."`)
+    out.push({ kind: 'system', text: `${who} will tell the ${town ? town.officer : law.officer}. You are wanted ${town ? town.where : law.where}: ${wantedFor(world, wanted, town ? town.officer : law.officer)}.` })
+    if (!town && law.npc && world.content.npcs.has(law.npc)) grievance(world, law.npc, 'the law', lawLine(world, wanted))
   }
   if (c.victim) reputeFor(world, c.victim, c.grave ? -15 : -5, `${c.kind} against ${callName(world.npc(c.victim))}`)
   approve(world, c.kind === 'theft' ? 'theft' : 'cruelty')
@@ -369,11 +392,44 @@ export function payFine(world: World): Output[] {
   if (!debt) return [{ kind: 'error', text: town ? `${townName} wants nothing from you.` : keeper.lord ? `${upper(keeper.lord)}'s men want nothing from you.` : `The ${keeper.officer} wants nothing from you.` }]
   const at = town ? town.offices.includes(here) : Boolean(keeper.npc && world.npcsAt(here).includes(keeper.npc)) || here === keeper.office
   if (!at) return [{ kind: 'error', text: town ? `Fines to the town are paid at ${office || `the ${town.officer}`}.` : keeper.lord ? `Fines to ${keeper.lord} are paid to the ${keeper.officer}.` : `Fines are paid to the ${keeper.officer}.` }]
+  // No fine buys off what wants a hearing (M10.20): the stranger gives themselves up instead.
+  if (debt.hearing?.length) return [{ kind: 'error', text: `No fine buys this off. GIVE YOURSELF UP to the ${town ? town.officer : keeper.officer}: you will be held, and heard.` }]
   if (world.state.player.money < debt.fine) return [{ kind: 'error', text: `The fine is ${world.money(debt.fine)}; you have ${world.money(world.state.player.money)}.` }]
   world.state.player.money -= debt.fine
   delete wanted[law]
   if (!town && keeper.npc && world.content.npcs.has(keeper.npc)) delete world.npcState(keeper.npc).grievance
   return [{ kind: 'text', text: `You pay ${world.money(debt.fine)}. ${town ? (town.cleared ?? `The ${town.officer} writes you out of the book.`) : `The ${keeper.officer} counts it twice and puts it away. "That settles it."`}` }]
+}
+
+/**
+ * GIVE YOURSELF UP (M10.20): to the officer, or at the office, when what the
+ * stranger is wanted for wants a hearing. The engine holds them in the cell
+ * for the hours the world gives, then the hearing settles the whole matter.
+ */
+export function surrenderTo(world: World): { error: string } | { law: string; hours: number; cell?: string; held: string } {
+  const here = world.state.player.location
+  const law = lawAt(world, here)
+  const debt = world.state.wanted?.[law]
+  const keeper = world.words.law
+  const town = townLaw(world, law)
+  const officer = town ? town.officer : keeper.officer
+  if (!debt) return { error: `The ${officer} wants nothing from you.` }
+  if (!debt.hearing?.length) return { error: `The ${officer} wants a fine, not you: PAY FINE settles it.` }
+  const at = town ? town.offices.includes(here) : Boolean(keeper.npc && world.npcsAt(here).includes(keeper.npc)) || here === keeper.office
+  if (!at) return { error: town ? `You give yourself up at ${town.offices[0] ? world.location(town.offices[0]).name : `the ${officer}'s`}.` : `You give yourself up to the ${officer}${keeper.office ? `, at ${world.location(keeper.office).name}` : ''}.` }
+  const own = world.content.world.law?.hearing
+  const cell = lawCell(world)
+  return { law, hours: own?.hours ?? 24, ...(cell ? { cell } : {}), held: own?.held ?? `The ${officer} takes you in, and you are held until the case can be heard.` }
+}
+
+/** The hearing (M10.20): the matter is settled, fines and all; the officer's grievance goes, and the village hears of it. */
+export function hearing(world: World, law: string): Output[] {
+  delete world.state.wanted?.[law]
+  const keeper = world.words.law
+  if (!townLaw(world, law) && keeper.npc && world.content.npcs.has(keeper.npc)) delete world.npcState(keeper.npc).grievance
+  const own = world.content.world.law?.hearing
+  recordFact(world, { kind: 'hearing', about: keeper.npc && world.content.npcs.has(keeper.npc) ? [keeper.npc] : [], place: world.state.player.location, belang: 3, title: 'the stranger held and heard', text: { precise: `The stranger gave themselves up to the ${keeper.officer} and was held and heard.`, village: `The stranger was locked up and brought before a hearing!`, far: 'A stranger was held and heard.' } })
+  return [{ kind: 'narration', text: own?.heard ?? `The case is heard. It is written down, and you are let go.` }]
 }
 
 /** In Waagdam, traders will not deal with someone the town wants. */
@@ -405,7 +461,8 @@ export function silenceWitness(world: World, npcId: string, how: 'bribe' | 'inti
         const wanted = world.state.wanted?.[c.law]
         if (wanted) {
           wanted.fine -= c.fine
-          if (wanted.fine <= 0) delete world.state.wanted![c.law]
+          if (wanted.hearing) wanted.hearing = wanted.hearing.filter((id) => id !== c.id)
+          if (wanted.fine <= 0 && !wanted.hearing?.length) delete world.state.wanted![c.law]
         }
       }
     }
@@ -546,9 +603,9 @@ export function proveTheft(world: World, crime: Crime, witness: string, how: str
     const wanted = ((world.state.wanted ??= {})[crime.law] ??= { fine: 0, since: world.now })
     wanted.fine += crime.fine
     const town = townLaw(world, crime.law)
-    out.push({ kind: 'system', text: `${callName(world.npc(witness))} will tell the ${town ? town.officer : world.words.law.officer}. You are wanted ${town ? town.where : world.words.law.where}: a fine of ${world.money(wanted.fine)}.` })
+    out.push({ kind: 'system', text: `${callName(world.npc(witness))} will tell the ${town ? town.officer : world.words.law.officer}. You are wanted ${town ? town.where : world.words.law.where}: ${wantedFor(world, wanted, town ? town.officer : world.words.law.officer)}.` })
     const law = world.words.law
-    if (!town && law.npc && world.content.npcs.has(law.npc)) grievance(world, law.npc, 'the law', `"You're wanted, stranger. ${world.money(wanted.fine)}${law.lord ? ` to ${law.lord}` : ''}, or you come with me."`)
+    if (!town && law.npc && world.content.npcs.has(law.npc)) grievance(world, law.npc, 'the law', lawLine(world, wanted))
   }
   return out
 }

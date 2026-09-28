@@ -61,7 +61,7 @@ import { maxHp, type CreationData } from './rules/character'
 import { npcFighter } from './combat/npc'
 import { approve, arrived, campfire, companionOf, companions, fleeWith, leave, mend, order, partyLines, recruit, restParty, setStance, sharedFight, syncLevels, withPlayer } from './social/companions'
 import { confronting, found as foundStranger, seekers, settleGrievance } from './social/confront'
-import { crime, LAND_LAW, payFine, payFor, steal, stolenSeen, townLaw } from './social/crime'
+import { crime, hearing, LAND_LAW, payFine, payFor, steal, stolenSeen, surrenderTo, townLaw } from './social/crime'
 import { deed, noticeCarried, seedBonds } from './social/deeds'
 import { factionLines, factionPage, join, rankOf, repute } from './social/factions'
 import { fightsBack, mayAttackFirst, mayLend } from './social/gates'
@@ -966,6 +966,8 @@ export class Engine {
     if (ride && rideWord && !this.state.talk && /^(?:barge|trekschuit|ferry|packet|coach|ship|cart)$/i.test(rideWord)) return [{ kind: 'error', text: `There is no ${rideWord.toLowerCase()} here.` }]
     const waitFor = /^wait\s+for\s+(?:the\s+)?(.+)$/i.exec(text.trim())
     if (waitFor && !this.state.talk && passagesNamed(this.world, waitFor[1]!).length) return waitForPassage(this.world, { pass: (minutes) => this.pass(minutes) }, waitFor[1]!)
+    // GIVE YOURSELF UP (M10.20): to the law, where no fine buys the matter off; in a talk with the officer too.
+    if (!this.state.combat && /^(?:give (?:yourself|myself) up|turn (?:yourself|myself) in|surrender)[.!]*$/i.test(text.trim())) return this.giveUp()
     const talk = this.state.talk
     const command = parseCommand(text.replace(/^\//, ''))
     const talking = talk && !text.startsWith('/')
@@ -1487,7 +1489,7 @@ export class Engine {
     const members = this.state.memberships ?? []
     const known = [...this.content.factions.values()].filter((f) => rep[f.id] !== undefined || members.includes(f.id))
     if (known.length) out.factions = known.map((f) => ({ id: f.id, name: f.name, rank: rankOf(rep[f.id] ?? 0), score: rep[f.id] ?? 0, member: members.includes(f.id) }))
-    const wanted = Object.entries(this.state.wanted ?? {}).map(([law, w]) => `${upper((townLaw(this.world, law)?.where ?? this.world.words.law.where).replace(/^(in|on|at) /, ''))}: ${this.world.money(w.fine)}`)
+    const wanted = Object.entries(this.state.wanted ?? {}).map(([law, w]) => `${upper((townLaw(this.world, law)?.where ?? this.world.words.law.where).replace(/^(in|on|at) /, ''))}: ${[w.fine > 0 ? this.world.money(w.fine) : '', w.hearing?.length ? 'a hearing' : ''].filter(Boolean).join(' and ')}`)
     if (wanted.length) out.wanted = wanted
     if (c && this.content.rules) {
       const klass = this.content.rules.classes.find((k) => k.id === c.class)
@@ -2240,10 +2242,23 @@ export class Engine {
         g.t = this.world.now
         g.quiet = this.world.now + 6 * 60
         this.world.npcState(id).goals = this.world.npcState(id).goals.filter((goal) => goal.id !== `confront_${id}`)
-        out.push({ kind: 'system', text: 'PAY FINE, or face the consequences.' })
+        // No fine buys a hearing off (M10.20): then the stranger is to give themselves up.
+        out.push({ kind: 'system', text: this.state.wanted?.[LAND_LAW]?.hearing?.length ? 'GIVE YOURSELF UP, or face the consequences.' : 'PAY FINE, or face the consequences.' })
       } else settleGrievance(this.world, id)
       if (!this.state.talk) this.dialogue.start(id, true)
     }
+    return out
+  }
+
+  /** Held and heard (M10.20): into the cell, the hours the world gives pass, then the hearing settles the matter. */
+  private giveUp(): Output[] {
+    const plan = surrenderTo(this.world)
+    if ('error' in plan) return [{ kind: 'error', text: plan.error }]
+    this.state.talk = undefined
+    const out: Output[] = [{ kind: 'narration', text: plan.held }]
+    if (plan.cell) this.state.player.location = plan.cell
+    out.push(...this.pass(plan.hours * 60))
+    out.push(...hearing(this.world, plan.law))
     return out
   }
 

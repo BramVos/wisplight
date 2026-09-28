@@ -381,7 +381,9 @@ Months: Deepnight, Frostline, Thaw, Runoff, Firstlight, Longday, Highsun, Stillw
 
 ### The law
 
-The law port_vesper is kept by the Settlement Marshal (Mara Venn).
+The law in Port Vesper is kept by the Settlement Marshal (Mara Venn).
+
+No fine buys off a death or a beating: the stranger is held 48 hours and heard. Three residents who had nothing to do with it hear the case at a formal hearing, and nobody who was part of it takes part. What they decide goes into the Compact's record, and you are let out under watch, until a ship can take the matter to a Charter port.
 
 ## 12. Names and speech
 

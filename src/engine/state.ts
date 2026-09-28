@@ -724,7 +724,8 @@ export interface GameState {
   /** Crimes the world knows of, witnesses who keep quiet, and fines per law. */
   crimes?: Crime[]
   silenced?: Record<string, string[]>
-  wanted?: Record<string, { fine: number; since: number }>
+  /** Wanted by a law: the fines, and the crimes no fine buys off, which want a hearing (M10.20). */
+  wanted?: Record<string, { fine: number; since: number; hearing?: string[] }>
   /** The player's companions (FO, chapter 13). */
   companions?: Companion[]
   /** The mood of an area for some days (M10.11), by area: panic, grief, feast or threat. */

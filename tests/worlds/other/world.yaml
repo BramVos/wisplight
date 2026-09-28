@@ -36,8 +36,12 @@ world:
     officer: warden
     npc: npc_ilse_varga
     office: loc_deepwell_warden_office
-    # What the warden fines, in chits (M10.17).
-    fines: { murder: 400, assault: 100, least: 10 }
+    # What the warden fines, in chits (M10.17); a death goes before the colony council (M10.20).
+    fines: { murder: hearing, assault: 100, least: 10 }
+    hearing:
+      hours: 12
+      held: The warden walks you to the brig behind her office and seals the hatch. The air in there tastes of other people's waiting.
+      heard: The council sits at the long table in the Commons, three of them, and hears you out. The warden logs what they decide, and the hatch opens.
   # Standing in the colony (M10.17), by shift rating; the warden's household stands a step higher.
   standing:
     names: [unrated, crew, rated, senior, council]

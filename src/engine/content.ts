@@ -858,8 +858,27 @@ export const WorldSchema = z.object({
       npc: z.string().optional(),
       office: z.string().optional(),
       lord: z.string().optional(),
-      /** Fines in the smallest coin (M10.17): for a death, a beating, and the least for a theft; else by the world's coins. */
-      fines: z.object({ murder: z.number().int().positive().optional(), assault: z.number().int().positive().optional(), least: z.number().int().positive().optional() }).strict().optional(),
+      /**
+       * Fines in the smallest coin (M10.17): for a death, a beating, and the least for a theft; else by the world's coins.
+       * A death or a beating may be "hearing" instead (M10.20): no fine buys it off; the stranger is held and heard.
+       */
+      fines: z
+        .object({
+          murder: z.union([z.number().int().positive(), z.literal('hearing')]).optional(),
+          assault: z.union([z.number().int().positive(), z.literal('hearing')]).optional(),
+          least: z.number().int().positive().optional(),
+        })
+        .strict()
+        .optional(),
+      /** What a hearing is in this world (M10.20): how long the stranger is held first, and the words for being held and heard. */
+      hearing: z
+        .object({
+          hours: z.number().int().min(1).max(336).default(24),
+          held: z.string().optional(),
+          heard: z.string().optional(),
+        })
+        .strict()
+        .optional(),
     })
     .strict()
     .optional(),

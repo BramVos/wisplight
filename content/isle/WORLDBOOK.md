@@ -350,6 +350,8 @@ Months: Deepwinter, Thawmoon, Seedtide, Blossom, Brightsun, Midsummer, Highsun, 
 
 The law on Skerrow is kept by the headwoman (Maren Holt).
 
+No fine buys off a death: the stranger is held 24 hours and heard. In the morning the island gathers on the shingle, every household that can walk, and the headwoman asks what happened. They hear you and they hear the dead one's kin, and at the end they let you go, because the sea will judge you in its own time.
+
 ## 13. Quests
 
 | Quest | What it is about | Given by | Ways it ends |

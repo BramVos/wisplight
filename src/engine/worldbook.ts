@@ -177,7 +177,20 @@ export function worldBook(content: Content, input: WorldBookInput = {}): string 
     ...(content.voice?.measures.length ? ['### Measures', '', ...para(content.voice.measures.join(', ') + '.')] : []),
     ...(cal ? ['### Calendar', '', '<!-- picture:calendar -->', '', ...para(`Months: ${cal.months.join(', ')}. The week: ${cal.weekdays.join(', ')}${cal.era ? `. Years are counted ${cal.era}` : ''}.`)] : []),
     ...(w.bells.length ? ['### Bells', '', ...list(w.bells.map((b) => `${cap(b.name)} at ${place(b.at)}, at ${b.hours.join(', ')} o'clock`))] : []),
-    ...(w.law ? ['### The law', '', ...para(`The law ${w.law.where} is kept by the ${w.law.officer}${w.law.npc ? ` (${person(w.law.npc)})` : ''}.`)] : []),
+    ...(w.law
+      ? [
+          '### The law',
+          '',
+          ...para(`The law ${w.law.where} is kept by the ${w.law.officer}${w.law.npc ? ` (${person(w.law.npc)})` : ''}.`),
+          // A death or a beating no fine buys off (M10.20): held and heard.
+          ...para(
+            (() => {
+              const heard = [w.law.fines?.murder === 'hearing' ? 'a death' : '', w.law.fines?.assault === 'hearing' ? 'a beating' : ''].filter(Boolean)
+              return heard.length ? `No fine buys off ${heard.join(' or ')}: the stranger is held ${w.law.hearing?.hours ?? 24} hours and heard.${w.law.hearing?.heard ? ` ${w.law.hearing.heard}` : ''}` : undefined
+            })(),
+          ),
+        ]
+      : []),
   ])
 
   // 13. Quests.
