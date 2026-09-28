@@ -1,7 +1,10 @@
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
-import type { Output } from '../../engine'
 import type { JournalPage, Reply } from './client'
+import { useShowRules } from './display'
 import { t, tn } from './i18n'
+import figure from './assets/portraits/figure.svg'
+import man from './assets/portraits/man.svg'
+import woman from './assets/portraits/woman.svg'
 
 // A conversation in its own window (after the M7 playtest): it starts in the
 // ordinary interface with TALK, then goes on here. You type what you say in
@@ -11,7 +14,17 @@ import { t, tn } from './i18n'
 type Status = Reply['status']
 type Talk = NonNullable<Status['talk']>
 type Journal = Status['journal']
-export type TalkLine = (Output & { id: number }) | { id: number; kind: 'input'; text: string }
+/** A line of the talk as the engine keeps it (M10.8). */
+export type TalkLine = Talk['lines'][number]
+
+/** Whoever has no portrait of their own: a figure in shadow (M10.8). */
+const GENERIC: Record<Talk['pronoun'], string> = { he: man, she: woman, they: figure }
+
+/** Who said a line (M10.8): the stranger on the left, the other on the right, the rest across. */
+function sideOf(line: TalkLine): 'me' | 'them' | 'aside' {
+  if (line.kind === 'input' || (line.kind === 'text' && /^You: /.test(line.text))) return 'me'
+  return line.kind === 'speech' ? 'them' : 'aside'
+}
 
 /** What the window sends as it is; everything else is speech. */
 const COMMAND = /^(ask|tell|where|persuade|deceive|intimidate|bribe|insight|buy|sell|list|give|trade|recruit|order|bye|goodbye|[1-8])(\s|$)/i
@@ -31,6 +44,7 @@ export function ConversationView({
   onJournal,
   ended = false,
   onClose,
+  covered = false,
 }: {
   talk: Talk
   lines: TalkLine[]
@@ -45,8 +59,14 @@ export function ConversationView({
   /** The talk is over (M10.4): the last answer stays in view until the window is closed. */
   ended?: boolean
   onClose?: () => void
+  /** A window lies over this one (the journal): Escape is for that one (M10.8). */
+  covered?: boolean
 }) {
   const [text, setText] = useState('')
+  // What was said in this talk, for the arrow keys (M10.8): the main input keeps only commands.
+  const [said, setSaid] = useState<string[]>([])
+  const [back, setBack] = useState(-1)
+  const showRules = useShowRules()
   const [query, setQuery] = useState('')
   const [everything, setEverything] = useState(false)
   const inputRef = useRef<HTMLTextAreaElement>(null)
@@ -65,18 +85,26 @@ export function ConversationView({
 
   useEffect(() => {
     const onKey = (event: globalThis.KeyboardEvent) => {
-      if (event.key !== 'Escape') return
+      if (event.key !== 'Escape' || covered) return
       if (ended) onClose?.()
       else onSend('bye')
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [onSend, onClose, ended])
+  }, [onSend, onClose, ended, covered])
+
+  // A new talk has its own history.
+  useEffect(() => {
+    setSaid([])
+    setBack(-1)
+  }, [talk.npc])
 
   const say = () => {
     const words = text.trim()
     if (!words || busy) return
     setText('')
+    setSaid((previous) => [words, ...previous.filter((w) => w !== words)].slice(0, 50))
+    setBack(-1)
     onSend(COMMAND.test(words) ? words : `"${words}`)
   }
 
@@ -84,6 +112,12 @@ export function ConversationView({
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault()
       say()
+    } else if ((event.key === 'ArrowUp' || event.key === 'ArrowDown') && !text.includes('\n') && said.length) {
+      // Up and down bring back what you said in this talk (M10.8).
+      event.preventDefault()
+      const index = Math.max(-1, Math.min(said.length - 1, back + (event.key === 'ArrowUp' ? 1 : -1)))
+      setBack(index)
+      setText(index === -1 ? '' : (said[index] ?? ''))
     }
   }
 
@@ -147,11 +181,15 @@ export function ConversationView({
         <div className="talk-body">
           <div className="talk-main">
             <div className="talk-log" ref={logRef} aria-live="polite">
-              {lines.filter((line) => !OPTIONS.test(line.text)).map((line) => (
-                <p key={line.id} className={`line ${line.kind}`}>
-                  {line.kind === 'input' ? `> ${line.text.replace(/^"/, '')}` : render(line.text)}
-                </p>
-              ))}
+              {lines
+                .filter((line) => !OPTIONS.test(line.text))
+                // What you typed, when the game says it back ("You: ..."), shows once; TALK itself is the window.
+                .filter((line, i, all) => !(line.kind === 'input' && (/^talk\b/i.test(line.text) || (all[i + 1]?.kind === 'text' && /^You: /.test(all[i + 1]!.text)))))
+                .map((line) => (
+                  <p key={line.id} className={`line ${line.kind} ${sideOf(line)}${showRules && line.kind === 'speech' && line.source === 'rules' ? ' rules' : ''}`} title={showRules && line.kind === 'speech' && line.source === 'rules' ? t('conversation.log.rules') : undefined}>
+                    {line.kind === 'input' ? line.text.replace(/^"/, '') : render(line.text)}
+                  </p>
+                ))}
               {busy && <p className="line thinking">{t('conversation.log.thinking', { name: talk.call })}</p>}
               {ended && <p className="line system">{t('conversation.log.over')}</p>}
             </div>
@@ -189,7 +227,7 @@ export function ConversationView({
           </div>
           <aside className="talk-topics" aria-label={t('conversation.topics.label')}>
             <section className="talk-about" aria-label={t('conversation.about.label', { name: talk.call })}>
-              {portrait ? <img className="talk-portrait" src={portrait} alt={t('conversation.about.portrait', { name: talk.name })} /> : <div className="talk-portrait none">{t('conversation.about.noPicture')}</div>}
+              <img className="talk-portrait" src={portrait ?? GENERIC[talk.pronoun]} alt={t('conversation.about.portrait', { name: talk.name })} />
               <dl>
                 {about?.person?.work && (
                   <>

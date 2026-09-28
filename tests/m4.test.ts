@@ -192,8 +192,13 @@ describe('M4: detail by distance', () => {
     const { journey } = await import('../src/engine/lod')
     expect(journey(engine.world, 'npc_gerrit', 'loc_blackmere_weirs')).toBe(true)
     expect(engine.world.present('npc_gerrit')).toBe(false)
-    engine.tick(4 * 60)
-    expect(engine.state.npcs['npc_gerrit']!.note).toBeUndefined()
+    // He gets there within four hours (what he does next, another walk perhaps, is his own affair).
+    let arrived = false
+    for (let i = 0; i < 24 && !arrived; i++) {
+      engine.tick(10)
+      arrived = engine.state.npcs['npc_gerrit']!.location === 'loc_blackmere_weirs'
+    }
+    expect(arrived).toBe(true)
   })
 })
 

@@ -1,3 +1,4 @@
+import { lookSky } from './weather'
 import { publicShort } from './acquaintance'
 import { inSeason } from './content'
 import { describeSelf, descriptionNow, detailHere, lookThere, lookThing, sceneryHere } from './looking'
@@ -285,6 +286,8 @@ function examine(host: CommandHost, target: string): Output[] {
   const { world } = host
   const found = examineHere(world, target)
   if (found) return [found]
+  // The sky (M10.8): the weather and the wind, and what is coming, for who can read it.
+  if (/^(?:at\s+)?(?:the\s+)?(?:sky|weather|clouds|heavens|lucht|wind)$/i.test(target.trim())) return [text(lookSky(world))]
   // A place the stranger knows of, out of sight (M10.8): Graafhaven from the tow path, before the sentence that names it.
   const known = target.trim() ? host.knownPlace?.(target) : undefined
   if (known) return [text(known)]
@@ -939,7 +942,9 @@ function findObjectHere(world: World, words: string): { instance: ObjectInstance
 function nameMatches(words: string, instance: ObjectInstance, type: ObjectType): boolean {
   if (!words) return false
   const names = [instance.name, type.name, instance.id.replace(/_/g, ' '), ...type.aliases].filter(Boolean).map((n) => n!.toLowerCase())
-  return names.some((name) => words.includes(name) || name.includes(words.split(' ')[0]!))
+  // A whole word of the name (M10.8): "count" is no counter.
+  const first = words.split(' ')[0]!
+  return names.some((name) => words.includes(name) || name.split(/\s+/).some((w) => w === first || w === `${first}s` || `${w}s` === first || w.replace(/'s$/, '') === first))
 }
 
 function premisesOf(world: World, location: string): string[] {

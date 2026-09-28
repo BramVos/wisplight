@@ -195,3 +195,76 @@ describe("M10.8: the world's own oaths, and one's own people", () => {
     expect(out).not.toMatch(/the daughter of Jan/)
   })
 })
+
+describe('M10.8: weather with a memory, from the content', () => {
+  it('moves by steps, so the sky holds a while, and a storm stays rare', () => {
+    const engine = new Engine(content, { seed: 11 })
+    const kinds: string[] = []
+    for (let i = 0; i < 8 * 60; i++) {
+      engine.tick(180)
+      kinds.push(engine.state.weather!.kind)
+    }
+    const storms = kinds.filter((k) => k === 'storm').length / kinds.length
+    expect(storms).toBeLessThan(0.1)
+    // Runs, not draws: on average the sky stays more than one step.
+    let changes = 0
+    for (let i = 1; i < kinds.length; i++) if (kinds[i] !== kinds[i - 1]) changes++
+    expect(kinds.length / Math.max(1, changes)).toBeGreaterThan(1.5)
+    // The wind and the next step are known.
+    expect(engine.state.weather!.wind).toBeDefined()
+    expect(engine.state.weather!.next).toBeDefined()
+  }, 60_000)
+
+  it('an old save without wind or forecast plays on from the weather of that moment', () => {
+    const engine = new Engine(content, { seed: 11 })
+    engine.state.weather = { kind: 'fog', since: engine.world.now }
+    engine.tick(6 * 60)
+    expect(engine.state.weather!.next).toBeDefined()
+  })
+
+  it('LOOK SKY tells the wind, and what is coming to who can read it', async () => {
+    const engine = new Engine(content, { seed: 11, builder: true })
+    await engine.handle('create warden heathborn peat_cutter name=Tester')
+    engine.tick(180)
+    const out = said(await engine.handle('look sky'))
+    expect(out).toMatch(/The wind: |The air is still\./)
+    expect(out).toMatch(/You read the sky: /)
+    const town = new Engine(content, { seed: 11, builder: true })
+    town.tick(180)
+    expect(said(await town.handle('look sky'))).toMatch(/What it will do next, you could not say\./)
+  })
+
+  it('Skerrow has its own sea weather', () => {
+    expect(isle.world.weather?.prevailing).toBe('west')
+    expect(isle.world.weather?.chances['winter']?.frost).toBeLessThan(content.world.weather?.chances['winter']?.frost ?? 1)
+  })
+})
+
+describe('M10.8: the talk window reads the engine, and words that lead somewhere', () => {
+  it('keeps every line of a talk, a second talk with the same person too, and the ended one for its window', async () => {
+    const engine = new Engine(content, { seed: 4, builder: true })
+    stay(engine, 'npc_gerrit', engine.state.player.location)
+    await engine.handle('talk gerrit')
+    await engine.handle('2')
+    const lines = engine.status().talk!.lines
+    expect(lines[0]).toMatchObject({ kind: 'input', text: 'talk gerrit' })
+    expect(lines.some((l) => l.kind === 'text' && /What's new around here\?/.test(l.text))).toBe(true)
+    await engine.handle('bye')
+    expect(engine.status().talk).toBeUndefined()
+    expect(engine.status().lastTalk?.lines.some((l) => l.kind === 'input' && l.text === 'bye')).toBe(true)
+    stay(engine, 'npc_gerrit', engine.state.player.location)
+    await engine.handle('talk gerrit')
+    expect(engine.status().talk!.lines[0]).toMatchObject({ kind: 'input', text: 'talk gerrit' })
+    expect(engine.status().lastTalk).toBeUndefined()
+  })
+
+  it('a word in [brackets] is a link only when it leads somewhere', async () => {
+    const engine = new Engine(content, { seed: 4, builder: true })
+    const quay = said(await engine.handle('look'))
+    // The Graafse Vaart is nowhere the stranger can follow yet: plain text.
+    expect(quay).toMatch(/The Graafse Vaart runs east and west/)
+    const green = said(await engine.handle('north'))
+    // The bakery is an exit here: a link.
+    expect(green).toMatch(/\[Bakery\]/)
+  })
+})

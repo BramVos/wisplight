@@ -11,6 +11,7 @@ import { requestLines } from '../requests'
 import { agreementLines } from '../agreements'
 import { relation, type Attitude } from './relations'
 import { faithOf } from '../faith'
+import { forecastLine, readsTheSky, weather, wind, windWords } from '../weather'
 
 // Prompts for the voice role (FO, chapter 10). The system part is byte-for-byte
 // stable per NPC so providers can cache it; everything that changes goes in
@@ -218,6 +219,8 @@ export function turnPrompt(world: World, ctx: TurnContext): string {
     .map((id) => world.npc(id).short)
   const lines = [
     `SCENE: ${location.name}, ${dayName(clock.parts.weekday, world.calendar)}, ${clock.parts.dayPart}. ${npc.short} is ${state.activity}. Mood: ${ctx.mood}.`,
+    // The sky, and for who reads it what is coming (M10.8).
+    `WEATHER: ${weather(world)}, ${windWords(wind(world))}.${readsTheSky(world, ctx.npcId) && forecastLine(world) ? ` You read the sky: ${forecastLine(world)}` : ''}`,
     present.length ? `Also here: ${present.join(', ')}, and the player.` : `Also here: the player, a stranger from ${world.words.from}.`,
     ...recently(world, ctx.npcId),
     // Only those who matter to this talk (M9.3): its topics, their own people, who is here.

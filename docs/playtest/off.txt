@@ -34,21 +34,21 @@ Exits: south, north, east
 
 > north
 The Silver Grove
-Birches with bark gone silver-white stand close together here, out of the wind, and the moss between them is soft underfoot. Shells and scraps of cloth hang from the branches on threads, and they tick and chime whenever the air moves. A turf hut with a crooked chimney sits among the trees. The cliff path runs south, the heights climb north to the barrow of [Old Skarth], and a track crosses east to the headland.
+Birches with bark gone silver-white stand close together here, out of the wind, and the moss between them is soft underfoot. Shells and scraps of cloth hang from the branches on threads, and they tick and chime whenever the air moves. A turf hut with a crooked chimney sits among the trees. The cliff path runs south, the heights climb north to the barrow of Old Skarth, and a track crosses east to the headland.
 Exits: south, north, east, in
 +10 experience: you found The Silver Grove.
 +30 experience: you came to the Heights.
 
 > look
 The Silver Grove
-Birches with bark gone silver-white stand close together here, out of the wind, and the moss between them is soft underfoot. Shells and scraps of cloth hang from the branches on threads, and they tick and chime whenever the air moves. A turf hut with a crooked chimney sits among the trees. The cliff path runs south, the heights climb north to the barrow of [Old Skarth], and a track crosses east to the headland.
+Birches with bark gone silver-white stand close together here, out of the wind, and the moss between them is soft underfoot. Shells and scraps of cloth hang from the branches on threads, and they tick and chime whenever the air moves. A turf hut with a crooked chimney sits among the trees. The cliff path runs south, the heights climb north to the barrow of Old Skarth, and a track crosses east to the headland.
 Exits: south, north, east, in
 
 # Nobody here to ask.
 
 > east
 The Headland
-The island ends here in a blunt headland with the sea on three sides and a squat stone tower on top: the [beacon]. Its great lamp stands cold behind green glass, and the wind whistles through the empty gallery. Below the tower a lean-to store shed has lost half its roof, and it smells strongly of fish oil. A track runs south to the hamlet and west to the grove; north, a ruined tower stands alone on the last rise.
+The island ends here in a blunt headland with the sea on three sides and a squat stone tower on top: the beacon. Its great lamp stands cold behind green glass, and the wind whistles through the empty gallery. Below the tower a lean-to store shed has lost half its roof, and it smells strongly of fish oil. A track runs south to the hamlet and west to the grove; north, a ruined tower stands alone on the last rise.
 On the ground: a cask of lamp oil.
 Exits: south, west, north
 Here: Garrick the lightkeeper (asleep).
@@ -56,7 +56,7 @@ Here: Garrick the lightkeeper (asleep).
 
 > look
 The Headland
-The island ends here in a blunt headland with the sea on three sides and a squat stone tower on top: the [beacon]. Its great lamp stands cold behind green glass, and the wind whistles through the empty gallery. Below the tower a lean-to store shed has lost half its roof, and it smells strongly of fish oil. A track runs south to the hamlet and west to the grove; north, a ruined tower stands alone on the last rise.
+The island ends here in a blunt headland with the sea on three sides and a squat stone tower on top: the beacon. Its great lamp stands cold behind green glass, and the wind whistles through the empty gallery. Below the tower a lean-to store shed has lost half its roof, and it smells strongly of fish oil. A track runs south to the hamlet and west to the grove; north, a ruined tower stands alone on the last rise.
 On the ground: a cask of lamp oil.
 Exits: south, west, north
 Here: Garrick the lightkeeper (asleep).
@@ -122,7 +122,7 @@ You buy a cask of lamp oil from Maren for 3 sp.
 > @goto loc_skerrow_headland   [build command: a shortcut]
 [build] You are at The Headland.
 The Headland
-The island ends here in a blunt headland with the sea on three sides and a squat stone tower on top: the [beacon]. Its great lamp stands cold behind green glass, and the wind whistles through the empty gallery. Below the tower a lean-to store shed has lost half its roof, and it smells strongly of fish oil. A track runs south to the hamlet and west to the grove; north, a ruined tower stands alone on the last rise.
+The island ends here in a blunt headland with the sea on three sides and a squat stone tower on top: the beacon. Its great lamp stands cold behind green glass, and the wind whistles through the empty gallery. Below the tower a lean-to store shed has lost half its roof, and it smells strongly of fish oil. A track runs south to the hamlet and west to the grove; north, a ruined tower stands alone on the last rise.
 Exits: south, west, north
 Here: Garrick the lightkeeper (eating).
 
@@ -274,21 +274,21 @@ Exits: south, north, east
 
 > north
 The Silver Grove
-Birches with bark gone silver-white stand close together here, out of the wind, and the moss between them is soft underfoot. Shells and scraps of cloth hang from the branches on threads, and they tick and chime whenever the air moves. A turf hut with a crooked chimney sits among the trees. The cliff path runs south, the heights climb north to the barrow of [Old Skarth], and a track crosses east to the headland.
+Birches with bark gone silver-white stand close together here, out of the wind, and the moss between them is soft underfoot. Shells and scraps of cloth hang from the branches on threads, and they tick and chime whenever the air moves. A turf hut with a crooked chimney sits among the trees. The cliff path runs south, the heights climb north to the barrow of Old Skarth, and a track crosses east to the headland.
 Exits: south, north, east, in
 +10 experience: you found The Silver Grove.
 +30 experience: you came to the Heights.
 
 > look
 The Silver Grove
-Birches with bark gone silver-white stand close together here, out of the wind, and the moss between them is soft underfoot. Shells and scraps of cloth hang from the branches on threads, and they tick and chime whenever the air moves. A turf hut with a crooked chimney sits among the trees. The cliff path runs south, the heights climb north to the barrow of [Old Skarth], and a track crosses east to the headland.
+Birches with bark gone silver-white stand close together here, out of the wind, and the moss between them is soft underfoot. Shells and scraps of cloth hang from the branches on threads, and they tick and chime whenever the air moves. A turf hut with a crooked chimney sits among the trees. The cliff path runs south, the heights climb north to the barrow of Old Skarth, and a track crosses east to the headland.
 Exits: south, north, east, in
 
 # Nobody here to ask.
 
 > east
 The Headland
-The island ends here in a blunt headland with the sea on three sides and a squat stone tower on top: the [beacon]. Its great lamp stands cold behind green glass, and the wind whistles through the empty gallery. Below the tower a lean-to store shed has lost half its roof, and it smells strongly of fish oil. A track runs south to the hamlet and west to the grove; north, a ruined tower stands alone on the last rise.
+The island ends here in a blunt headland with the sea on three sides and a squat stone tower on top: the beacon. Its great lamp stands cold behind green glass, and the wind whistles through the empty gallery. Below the tower a lean-to store shed has lost half its roof, and it smells strongly of fish oil. A track runs south to the hamlet and west to the grove; north, a ruined tower stands alone on the last rise.
 On the ground: a cask of lamp oil.
 Exits: south, west, north
 Here: Garrick the lightkeeper (asleep).
@@ -296,7 +296,7 @@ Here: Garrick the lightkeeper (asleep).
 
 > look
 The Headland
-The island ends here in a blunt headland with the sea on three sides and a squat stone tower on top: the [beacon]. Its great lamp stands cold behind green glass, and the wind whistles through the empty gallery. Below the tower a lean-to store shed has lost half its roof, and it smells strongly of fish oil. A track runs south to the hamlet and west to the grove; north, a ruined tower stands alone on the last rise.
+The island ends here in a blunt headland with the sea on three sides and a squat stone tower on top: the beacon. Its great lamp stands cold behind green glass, and the wind whistles through the empty gallery. Below the tower a lean-to store shed has lost half its roof, and it smells strongly of fish oil. A track runs south to the hamlet and west to the grove; north, a ruined tower stands alone on the last rise.
 On the ground: a cask of lamp oil.
 Exits: south, west, north
 Here: Garrick the lightkeeper (asleep).
@@ -326,7 +326,7 @@ Garrick puts out the lamp and goes to bed.
 
 > look
 The Headland
-The island ends here in a blunt headland with the sea on three sides and a squat stone tower on top: the [beacon]. Its great lamp stands cold behind green glass, and the wind whistles through the empty gallery. Below the tower a lean-to store shed has lost half its roof, and it smells strongly of fish oil. A track runs south to the hamlet and west to the grove; north, a ruined tower stands alone on the last rise.
+The island ends here in a blunt headland with the sea on three sides and a squat stone tower on top: the beacon. Its great lamp stands cold behind green glass, and the wind whistles through the empty gallery. Below the tower a lean-to store shed has lost half its roof, and it smells strongly of fish oil. A track runs south to the hamlet and west to the grove; north, a ruined tower stands alone on the last rise.
 On the ground: a cask of lamp oil.
 Exits: south, west, north
 Here: Garrick the lightkeeper (asleep).
@@ -367,7 +367,7 @@ Garrick puts out the lamp and goes to bed.
 
 > look
 The Headland
-The island ends here in a blunt headland with the sea on three sides and a squat stone tower on top: the [beacon]. Its great lamp stands cold behind green glass, and the wind whistles through the empty gallery. Below the tower a lean-to store shed has lost half its roof, and it smells strongly of fish oil. A track runs south to the hamlet and west to the grove; north, a ruined tower stands alone on the last rise.
+The island ends here in a blunt headland with the sea on three sides and a squat stone tower on top: the beacon. Its great lamp stands cold behind green glass, and the wind whistles through the empty gallery. Below the tower a lean-to store shed has lost half its roof, and it smells strongly of fish oil. A track runs south to the hamlet and west to the grove; north, a ruined tower stands alone on the last rise.
 On the ground: a cask of lamp oil.
 Exits: south, west, north
 Here: Garrick the lightkeeper (asleep).

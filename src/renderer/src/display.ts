@@ -13,6 +13,8 @@ export interface Display {
   scale: number
   contrast: Contrast
   map: MapLook
+  /** Speech that did not come from the AI in a warmer tint (M10.8): on while Bram playtests. */
+  rules: boolean
 }
 
 /** The text sizes; each label is a key in locales/<language>/settings.json. */
@@ -25,14 +27,14 @@ export const TEXT_SIZES = [
 ] as const
 
 const KEY = 'wisplight.display'
-const DEFAULT: Display = { scale: 1, contrast: 'normal', map: 'dark' }
+const DEFAULT: Display = { scale: 1, contrast: 'normal', map: 'dark', rules: true }
 const LOOKS: MapLook[] = ['dark', 'paper', 'bw']
 
 export function loadDisplay(): Display {
   try {
     const saved = JSON.parse(localStorage.getItem(KEY) ?? 'null') as Partial<Display> | null
     const scale = TEXT_SIZES.some((s) => s.scale === saved?.scale) ? saved!.scale! : DEFAULT.scale
-    return { scale, contrast: saved?.contrast === 'high' ? 'high' : 'normal', map: LOOKS.includes(saved?.map as MapLook) ? (saved!.map as MapLook) : 'dark' }
+    return { scale, contrast: saved?.contrast === 'high' ? 'high' : 'normal', map: LOOKS.includes(saved?.map as MapLook) ? (saved!.map as MapLook) : 'dark', rules: saved?.rules !== false }
   } catch {
     return DEFAULT
   }
@@ -63,4 +65,15 @@ export function useMapLook(): MapLook {
     return () => window.removeEventListener('wisplight:display', changed)
   }, [])
   return look
+}
+
+/** Whether speech that did not come from the AI shows in its own tint (M10.8), kept up to date with Settings. */
+export function useShowRules(): boolean {
+  const [on, setOn] = useState<boolean>(() => loadDisplay().rules)
+  useEffect(() => {
+    const changed = () => setOn(loadDisplay().rules)
+    window.addEventListener('wisplight:display', changed)
+    return () => window.removeEventListener('wisplight:display', changed)
+  }, [])
+  return on
 }

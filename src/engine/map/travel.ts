@@ -4,7 +4,7 @@ import type { Output } from '../commands'
 import type { World } from '../world'
 import { playerSkill, sink } from '../rules/player'
 import { blessed } from '../rules/blessings'
-import { weather, weatherLine } from '../weather'
+import { weather, weatherLine, wind } from '../weather'
 import { centre, distance, type Hex, hexAt, HEX_DIRECTIONS, type HexDirection, hexKey, line as hexLine, neighbour, neighbours, stepToward, windBetween } from './hexgrid'
 import { type Cell, regionMap, type RegionMap } from './region'
 
@@ -359,7 +359,7 @@ export function describeHex(world: World, hex: Hex): Output {
     lines.push(LAND[cell.land])
   }
   if (cell.feature) lines.push(FEATURE[cell.feature])
-  lines.push(weatherLine(weather(world), night))
+  lines.push(weatherLine(weather(world), night, wind(world)))
   const mark = landmark(world, map, hex)
   if (mark) lines.push(mark)
   const ground = world.state.ground[hexId(hex)]

@@ -378,6 +378,16 @@ export interface TalkState {
   leaving?: boolean
   /** Quests this talk may start once their subject comes up (M10.8), not at the greeting. */
   quests?: string[]
+  /** Every line of this talk as the stranger saw it (M10.8): the talk window reads these. */
+  lines?: TalkLine[]
+}
+
+/** A line of a conversation as the engine keeps it (M10.8): what was typed, and what came back. */
+export interface TalkLine {
+  id: number
+  kind: 'room' | 'text' | 'system' | 'error' | 'narration' | 'speech' | 'check' | 'input'
+  text: string
+  source?: 'model' | 'rules'
 }
 
 export interface RelationState {
@@ -622,7 +632,7 @@ export interface GameState {
   /** The rank of settlements that changed in this game (M9.1), by area. */
   ranks?: Record<string, 'hamlet' | 'village' | 'town' | 'city'>
   chronicle?: ChronicleState
-  weather?: { kind: 'clear' | 'overcast' | 'rain' | 'fog' | 'storm' | 'frost' | 'snow'; since: number }
+  weather?: import('./weather').WeatherState
   /** Far places worked out to their outline for this game (design, "De wereld buiten de kaart"). */
   outlines?: { pending: string[]; done: Record<string, unknown> }
   /** Goal choices waiting for the brain model, and how many each NPC had today (FO, chapter 7). */

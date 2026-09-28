@@ -31,6 +31,9 @@
     "make": "Make your character"
   },
   "scene": "A view of {name}",
+  "clock": {
+    "label": "{weekday} {date}, {time}; the weather: {weather}"
+  },
   "map": {
     "title": "Map",
     "label": "Map of the land around you",

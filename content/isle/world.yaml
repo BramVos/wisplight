@@ -41,6 +41,17 @@ world:
     era: SF
     months: [Deepwinter, Thawmoon, Seedtide, Blossom, Brightsun, Midsummer, Highsun, Harvest, Leaffall, Mistmoon, Frostwane, Longnight, Starfall Days]
     weekdays: [Moonday, Tidesday, Windsday, Thornsday, Fireday, Starday, Restday]
+  # Sea weather (M10.8): more wind and mist than on the mainland, hardly any frost; the sky moves by steps, not draws.
+  weather:
+    seasons: [winter, winter, spring, spring, spring, summer, summer, summer, autumn, autumn, autumn, winter, winter]
+    chances:
+      spring: { clear: 0.25, overcast: 0.3, rain: 0.25, fog: 0.15, storm: 0.05 }
+      summer: { clear: 0.45, overcast: 0.25, rain: 0.15, fog: 0.1, storm: 0.05 }
+      autumn: { clear: 0.1, overcast: 0.25, rain: 0.25, fog: 0.3, storm: 0.1 }
+      winter: { clear: 0.15, overcast: 0.35, rain: 0.2, fog: 0.15, storm: 0.1, frost: 0.05 }
+    stay: 0.55
+    prevailing: west
+    readers: [fisher, boatman, lightkeeper, hedge_witch]
   money:
     units:
       - { short: gp, name: gold piece, value: 100 }

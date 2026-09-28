@@ -1,4 +1,9 @@
 :root {
+  /* The talk window (M10.8): a soft ground for the stranger's lines and for the other's, and a warmer one for the game's own. */
+  --me-bg: rgb(169 184 154 / 9%);
+  --them-bg: rgb(230 223 200 / 7%);
+  --rules-bg: rgb(224 179 92 / 12%);
+  --rules: #ecd9a4;
   --bg: #12140f;
   --panel: #191c15;
   --line: #2c3025;
@@ -22,6 +27,10 @@
 
 /* High contrast, set in Settings > Display (M9.4): black ground, near-white text, brighter colours. */
 :root[data-contrast='high'] {
+  --me-bg: rgb(216 247 180 / 16%);
+  --them-bg: rgb(255 255 255 / 12%);
+  --rules-bg: rgb(255 209 102 / 22%);
+  --rules: #ffe7a3;
   --bg: #000000;
   --panel: #0b0b0b;
   --line: #6b6b6b;
@@ -353,6 +362,92 @@ body {
 .journal-body .journal-page h3 {
   font-size: calc(15px * var(--text-scale));
   margin-top: 0;
+}
+
+/* A line the game wrote itself, while a model is in play (M10.8): a warmer, yellower tint. */
+.line.speech.rules {
+  color: var(--rules);
+}
+
+/* The talk window (M10.8): the stranger on the left, the other on the right, each on a soft ground; the rest across. */
+.talk-log .line.me,
+.talk-log .line.them {
+  border-radius: 6px;
+  margin: 0 0 8px;
+  max-width: 82%;
+  padding: 4px 10px;
+  width: fit-content;
+}
+
+.talk-log .line.me {
+  background: var(--me-bg);
+  color: var(--input);
+  margin-right: auto;
+}
+
+.talk-log .line.them {
+  background: var(--them-bg);
+  margin-left: auto;
+}
+
+.talk-log .line.them.rules {
+  background: var(--rules-bg);
+}
+
+.talk-log .line.aside {
+  margin: 0 0 8px;
+  text-align: center;
+}
+
+/* The day, the hour and the sky at the top right (M10.8). */
+.clock {
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+}
+
+.clock-row {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+
+.clock-time {
+  color: var(--room);
+  font-weight: 600;
+  margin-left: auto;
+}
+
+.clock-icon {
+  fill: currentColor;
+  flex: none;
+  height: 18px;
+  stroke: currentColor;
+  width: 18px;
+}
+
+.clock-icon.day {
+  color: var(--warn);
+}
+
+.clock-icon.dusk {
+  color: #d9906a;
+}
+
+.clock-icon.night {
+  color: var(--system);
+}
+
+.clock-icon.weather {
+  color: var(--muted);
+  height: 16px;
+  width: 16px;
+}
+
+.display-check {
+  display: flex;
+  gap: 8px;
+  margin: 8px 0 2px;
 }
 
 /* A conversation in its own window (after the M7 playtest). */
@@ -1209,15 +1304,6 @@ pre.sheet {
   width: 100%;
 }
 
-.talk-portrait.none {
-  align-items: center;
-  color: var(--muted);
-  display: flex;
-  font-size: calc(12px * var(--text-scale));
-  justify-content: center;
-  text-align: center;
-  white-space: pre-line;
-}
 
 .talk-about dl {
   display: grid;

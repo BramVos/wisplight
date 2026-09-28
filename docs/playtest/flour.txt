@@ -9,7 +9,7 @@ Somewhere a dog barks. On the doorstep of the nearest house a grey cat watches y
 
 Type LOOK to look around. Type HELP if you are lost. You probably are.
 Canal Quay
-Grey water slaps against the planks of the quay. A barge rope lies coiled by the mooring posts, and beside them stands a worn stone, waist-high, with a dog carved into it. Someone has put an apple on top. The [Graafse Vaart] runs east and west; the green is north and the peat sheds are south.
+Grey water slaps against the planks of the quay. A barge rope lies coiled by the mooring posts, and beside them stands a worn stone, waist-high, with a dog carved into it. Someone has put an apple on top. The Graafse Vaart runs east and west; the green is north and the peat sheds are south.
 Exits: north, east, west, south, southwest
 Across country you can head any way, or follow the tow path west to Oude Zijl, the tow path east to Waagdam, the peat road to Molenend, the fen path to the Kattenbroek, the priory path to Kloosterveen or the path to the Kabouterberg.
 The pace of events is normal. Type TEMPO CALM or TEMPO DRAMATIC for less or more happening in the world.
@@ -18,7 +18,7 @@ The pace of events is normal. Type TEMPO CALM or TEMPO DRAMATIC for less or more
 
 > look
 Canal Quay
-Grey water slaps against the planks of the quay. A barge rope lies coiled by the mooring posts, and beside them stands a worn stone, waist-high, with a dog carved into it. Someone has put an apple on top. The [Graafse Vaart] runs east and west; the green is north and the peat sheds are south.
+Grey water slaps against the planks of the quay. A barge rope lies coiled by the mooring posts, and beside them stands a worn stone, waist-high, with a dog carved into it. Someone has put an apple on top. The Graafse Vaart runs east and west; the green is north and the peat sheds are south.
 Exits: north, east, west, south, southwest
 Across country you can head any way, or follow the tow path west to Oude Zijl, the tow path east to Waagdam, the peat road to Molenend, the fen path to the Kattenbroek, the priory path to Kloosterveen or the path to the Kabouterberg.
 
@@ -73,7 +73,7 @@ Across country you can head any way, or follow the tow path west to Oude Zijl, t
 > walk to waagdam
 You make your way towards Waagdam for an hour and 24 minutes, over the peat road, the tow path, the Waagdam road and fields. Night is falling over the fen.
 In the fields, near Waagdam
-Drained fields lie in strips between straight ditches. Rain hisses on the reeds and runs down your neck. To the north-west, the tower of the Waag of Waagdam.
+Drained fields lie in strips between straight ditches. Low grey cloud sits on the land. A south-west wind pushes at you. To the north-west, the tower of the Waag of Waagdam.
 Ways on: north, north-east, south-east, south, south-west, north-west.
 There it is: Waagdam, close by now.
 +30 experience: you came to the Holleveen.
@@ -81,7 +81,7 @@ There it is: Waagdam, close by now.
 # Mirte only said where it lies; the walk ends outside the town. Walk on in.
 
 > walk to waagdam
-You make your way towards Waagdam for 14 minutes, over fields and the tow path. You come to The Harbour.
+You make your way towards Waagdam for 11 minutes, over fields and the tow path. You come to The Harbour.
 The Harbour
 The Graafse Vaart widens here into a basin crowded with flat barges. Men shout and swear as sacks go up and down the planks, and the water smells of tar and rotting weed. Gate Street is up the steps to the north.
 Exits: north
@@ -109,13 +109,13 @@ There is nobody here to ask. Find someone and ask them, or look in your JOURNAL 
 Sacks of flour are short in Waagdam. The merchants have put their prices up and talk of sending far afield.
 Hendrik comes from the east, on his way to Hendrik's Smithy.
 Hendrik walks on to the north.
-Time passes. It is Woensdag 15 Herfstmaand 211 AW, 06:15 (dawn).
+Time passes. It is Woensdag 15 Herfstmaand 211 AW, 06:12 (dawn).
 
 > wait 90
 Mirte is here. You stop waiting.
 Mirte comes from the west, on her way to Lubbert's Grain Store.
 Mirte stops and gives you a nod, curious about the stranger.
-Time passes. It is Woensdag 15 Herfstmaand 211 AW, 06:45 (dawn).
+Time passes. It is Woensdag 15 Herfstmaand 211 AW, 06:42 (dawn).
 
 # Shortcut: across town to the grain shop the answer named.
 
@@ -136,27 +136,25 @@ Lubbert's trade is closed now. Hours: 07:00 to 18:00, Maandag, Dinsdag, Woensdag
 # Closed until seven. Wait for it.
 
 > wait 30
-Mirte is here. You stop waiting.
-Mirte arrives from the north.
-Mirte buys 2 sacks of rye from Lubbert.
-Lubbert and Mirte pass each other without a word.
-Time passes. It is Woensdag 15 Herfstmaand 211 AW, 07:15 (morning).
+Time passes. It is Woensdag 15 Herfstmaand 211 AW, 07:12 (morning).
 
 > list
-Lubbert sells: sack of rye 3 st 5 d (28 left); sack of flour 9 st (5 left); bolt of sailcloth 1 gl 5 st (3 left).
+Lubbert sells: sack of rye 3 st 4 d (30 left); sack of flour 9 st (5 left); bolt of sailcloth 1 gl 5 st (3 left).
+
+> buy rye
+You buy a sack of rye from Lubbert for 3 st 4 d.
+Mirte arrives from the north.
+Mirte buys 2 sacks of rye from Lubbert.
 
 > buy rye
 You buy a sack of rye from Lubbert for 3 st 5 d.
-
-> buy rye
-You buy a sack of rye from Lubbert for 3 st 5 d.
-Mirte leaves north.
+Lubbert and Mirte pass each other without a word.
 
 > buy rye
 You buy a sack of rye from Lubbert for 3 st 6 d.
 
 > inventory
-You carry 2 apples, a hanger, a knife, a leather jerkin and 3 sacks of rye, and 3 st.
+You carry 2 apples, a hanger, a knife, a leather jerkin and 3 sacks of rye, and 3 st 1 d.
 
 > walk to veenhoek
 You can't strike out across country from in here. Go out to the road or the edge of the village first.
@@ -165,7 +163,7 @@ You can't strike out across country from in here. Go out to the road or the edge
 Lubbert's Grain Store
 Sacks of grain are stacked to the ceiling, and a fine dust hangs in the air and tickles your nose. A slate by the door lists today's prices; the flour price has been rubbed out and written again, higher. Canal Street is north.
 Exits: north
-Here: Lubbert the grain merchant (at work).
+Here: Lubbert the grain merchant (at work), Mirte the baker (buying).
 
 # Shortcut: into the bakery, if the walk ended elsewhere in Veenhoek.
 
@@ -184,30 +182,28 @@ Mirte isn't here.
 > wait 10 hours
 Mirte is here. You stop waiting.
 Mirte comes from the west, on her way to Bakery Yard.
-Mirte walks on to the east.
-Mirte arrives from the east.
-Mirte sets out 12 loaves of rye bread for sale.
-Time passes. It is Woensdag 15 Herfstmaand 211 AW, 12:41 (midday).
+Time passes. It is Woensdag 15 Herfstmaand 211 AW, 09:38 (morning).
 
 > look
 The Bakery
 Warm, low and white with flour. Loaves cool on racks along the wall, and a slate by the counter says RYE 2 D in chalk, underlined twice. Through the back door, east, you can see the glow of the oven in the yard.
 Exits: west, east
-Here: Mirte the baker (arranging the goods for sale).
+Here: Mirte the baker (on the way to Bakery Yard).
 
 > give three sacks of rye to mirte
 "Rye! Teunis will grind it at the horse mill for a stuiver a sack." Mirte is already reaching for her shawl. "Bless you."
+Mirte walks on to the east.
 Flour for Veenhoek: Flour brought. Veenhoek has bread on market day.
 +100 experience: Flour for Veenhoek.
 
-==== AFTER (Woensdag 15 Herfstmaand 211 AW, 12:46 (midday))
+==== AFTER (Woensdag 15 Herfstmaand 211 AW, 09:43 (morning))
 
 [48 hours pass]
+Mirte puts out the lamp and goes to bed.
+Mirte leaves west.
 Mirte comes from the west, on her way to Bakery Yard.
 Mirte stops and gives you a nod, curious about the stranger.
 Mirte walks on to the east.
-Mirte arrives from the east.
-Mirte sets out 6 loaves of rye bread for sale.
 
 > journal
 People: Fenna Visser, Grietje, Harmen, Jan, Lubbert, Mirte Bakker.
@@ -215,19 +211,18 @@ Places: the Holleveen, Veenhoek, Waagdam, the Kattenbroek, Molenend, the Lane, T
 Lore: the stranger in Veenhoek.
 
 [96 hours pass]
+Mirte puts out the lamp and goes to bed.
+Mirte leaves west.
 Mirte comes from the west, on her way to Bakery Yard.
 Mirte stops and gives you a nod, curious about the stranger.
 Mirte walks on to the east.
-Mirte arrives from the east.
-Mirte sets out 6 loaves of rye bread for sale.
 
 > look
 The Bakery
 Warm, low and white with flour. Loaves cool on racks along the wall, and a slate by the counter says RYE 2 D in chalk, underlined twice. Through the back door, east, you can see the glow of the oven in the yard.
 Exits: west, east
-Here: Mirte the baker.
 
-==== END (Dinsdag 21 Herfstmaand 211 AW, 12:46 (midday))
+==== END (Dinsdag 21 Herfstmaand 211 AW, 09:43 (morning))
 Quests: flour_for_veenhoek: flour_brought
 
 ######## CONTROL: THE PLAYER DOES NOTHING
@@ -239,7 +234,7 @@ Somewhere a dog barks. On the doorstep of the nearest house a grey cat watches y
 
 Type LOOK to look around. Type HELP if you are lost. You probably are.
 Canal Quay
-Grey water slaps against the planks of the quay. A barge rope lies coiled by the mooring posts, and beside them stands a worn stone, waist-high, with a dog carved into it. Someone has put an apple on top. The [Graafse Vaart] runs east and west; the green is north and the peat sheds are south.
+Grey water slaps against the planks of the quay. A barge rope lies coiled by the mooring posts, and beside them stands a worn stone, waist-high, with a dog carved into it. Someone has put an apple on top. The Graafse Vaart runs east and west; the green is north and the peat sheds are south.
 Exits: north, east, west, south, southwest
 Across country you can head any way, or follow the tow path west to Oude Zijl, the tow path east to Waagdam, the peat road to Molenend, the fen path to the Kattenbroek, the priory path to Kloosterveen or the path to the Kabouterberg.
 The pace of events is normal. Type TEMPO CALM or TEMPO DRAMATIC for less or more happening in the world.
@@ -248,7 +243,7 @@ The pace of events is normal. Type TEMPO CALM or TEMPO DRAMATIC for less or more
 
 > look
 Canal Quay
-Grey water slaps against the planks of the quay. A barge rope lies coiled by the mooring posts, and beside them stands a worn stone, waist-high, with a dog carved into it. Someone has put an apple on top. The [Graafse Vaart] runs east and west; the green is north and the peat sheds are south.
+Grey water slaps against the planks of the quay. A barge rope lies coiled by the mooring posts, and beside them stands a worn stone, waist-high, with a dog carved into it. Someone has put an apple on top. The Graafse Vaart runs east and west; the green is north and the peat sheds are south.
 Exits: north, east, west, south, southwest
 Across country you can head any way, or follow the tow path west to Oude Zijl, the tow path east to Waagdam, the peat road to Molenend, the fen path to the Kattenbroek, the priory path to Kloosterveen or the path to the Kabouterberg.
 

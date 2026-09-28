@@ -7,7 +7,8 @@
   },
   "log": {
     "thinking": "{name} thinks it over.",
-    "over": "The conversation is over."
+    "over": "The conversation is over.",
+    "rules": "The game's own line, not the AI's"
   },
   "quick": {
     "who": "Who are you?",
@@ -32,7 +33,6 @@
   "about": {
     "label": "What you know of {name}",
     "portrait": "{name}, as you see them",
-    "noPicture": "No picture\n(Settings › AI › Pictures)",
     "work": "Work",
     "age": "Age",
     "ask": "ask",

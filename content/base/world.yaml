@@ -35,6 +35,18 @@ world:
     he: [Roelof, Tjark, Berend, Wessel, Gijs, Hessel, Lammert, Egbert, Arend, Albert]
     family: [Scholten, Veldkamp, Wessels, Brink, Hofstede, Lamberts, Postma, Roelofs, Dekker, Bosch]
   newcomers_per_season: 6
+  # The weather of the Holleveen (M10.8): the season of each month (Louwmaand to Dijkdagen), the chances per season,
+  # and a sky that moves by steps, so a storm builds and blows over. Who works outdoors reads what is coming.
+  weather:
+    seasons: [winter, winter, spring, spring, spring, summer, summer, summer, autumn, autumn, autumn, winter, winter]
+    chances:
+      spring: { clear: 0.3, overcast: 0.3, rain: 0.3, fog: 0.1 }
+      summer: { clear: 0.55, overcast: 0.25, rain: 0.15, storm: 0.05 }
+      autumn: { clear: 0.15, overcast: 0.25, rain: 0.2, fog: 0.35, storm: 0.05 }
+      winter: { clear: 0.2, overcast: 0.3, frost: 0.25, snow: 0.15, fog: 0.1 }
+    stay: 0.6
+    prevailing: south-west
+    readers: [peat_cutter, eel_fisher, dyke_reeve, miller, herbalist, witch]
   # Faiths (Wereldboek, chapter 5; M9.1): most are Lantern on Rustdag and the Old Powers when it comes to it.
   faiths:
     # Each faith swears by its own (M10.8); nobody here swears by Christ, God or the Lord.

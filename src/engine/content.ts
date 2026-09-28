@@ -729,6 +729,20 @@ export const WorldSchema = z.object({
   words: z.object({ land: z.string(), region: z.string(), from: z.string() }).strict().optional(),
   /** Names for the calendar (M8): thirteen months (the last one five days), seven weekdays, and the era after the year. */
   calendar: z.object({ era: z.string(), months: z.array(z.string()).length(13), weekdays: z.array(z.string()).length(7) }).strict().optional(),
+  /**
+   * The weather of this world (M10.8): the season of each month, the chances of each weather per season, how likely
+   * the sky stays as it is for another part of the day, where the wind mostly comes from, and who reads the sky.
+   */
+  weather: z
+    .object({
+      seasons: z.array(z.string()).length(13),
+      chances: z.record(z.string(), z.partialRecord(z.enum(['clear', 'overcast', 'rain', 'fog', 'storm', 'frost', 'snow']), z.number().min(0))),
+      stay: z.number().min(0).max(1).optional(),
+      prevailing: z.enum(['north', 'north-east', 'east', 'south-east', 'south', 'south-west', 'west', 'north-west']).optional(),
+      readers: z.array(z.string()).default([]),
+    })
+    .strict()
+    .optional(),
   /** The coins (M8), largest first; prices in the content are in the smallest. */
   money: z
     .object({ units: z.array(z.object({ short: z.string(), name: z.string(), plural: z.string().optional(), value: z.number().int().positive() }).strict()).min(1) })

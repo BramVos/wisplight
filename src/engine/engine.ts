@@ -43,7 +43,9 @@ import { knownRequests, requestName } from './requests'
 import { recordFact, seedNews } from './news'
 import { parseCommand, parseDirection } from './parser'
 import { advance } from './simulation'
-import { createInitialState, fitStateToContent, type GameState, type LoreEntry, type Offered, type WorldEvent } from './state'
+import { createInitialState, fitStateToContent, type GameState, type LoreEntry, type Offered, type TalkLine, type TalkState, type WorldEvent } from './state'
+import { weather, wind, windWords, type WeatherKind } from './weather'
+export type { TalkLine } from './state'
 import { chronicleState } from './storylines'
 import { upper, World } from './world'
 import { beginFight, fightView, playerCommand } from './combat/flow'
@@ -148,6 +150,8 @@ export interface JournalEntry {
   group?: string
   /** How far it is from the player, in km, when it has a place: the journal shows what is near first. */
   km?: number
+  /** Other names it goes by (M10.8): a highlighted "Count Aelbrecht" finds the page of the Count. */
+  aliases?: string[]
 }
 
 export interface Status {
@@ -160,7 +164,11 @@ export interface Status {
   paused: boolean
   /** A development build: the @ commands work and the editor can be opened. */
   builder?: boolean
-  talk?: { npc: string; name: string; call: string; attitude: string; turnsLeft: number; options: string[]; proposal?: string }
+  talk?: { npc: string; name: string; call: string; attitude: string; turnsLeft: number; options: string[]; proposal?: string; pronoun: 'she' | 'he' | 'they'; lines: TalkLine[] }
+  /** The talk that just ended (M10.8): its lines, for the window that stays until closed. */
+  lastTalk?: { npc: string; lines: TalkLine[] }
+  /** The clock and the sky for the top right (M10.8): weekday, date, hour, sun, dusk or moon, and the weather. */
+  clock: { weekday: string; date: string; time: string; light: 'day' | 'dusk' | 'night'; weather: string; wind: string }
   journal: { quests: JournalEntry[]; people: JournalEntry[]; places: JournalEntry[]; lands: JournalEntry[]; factions: JournalEntry[]; events: JournalEntry[]; lore: JournalEntry[]; things: JournalEntry[] }
   /** The map round the player: rows of characters, and a class code per character (FO, chapter 4). */
   map?: { rows: string[]; classes: string[] }
@@ -181,6 +189,9 @@ export interface Status {
   /** Fines the player owes, per law. */
   wanted?: string[]
 }
+
+/** A talk keeps at most this many lines for its window (M10.8). */
+const MAX_TALK_LINES = 160
 
 const MAP_CODES: Record<string, string> = { fen: 'f', water: 'w', woods: 't', heath: 'h', fields: 'd', way: 'y', place: 'p', zone: 'z', you: '@', unknown: 'u', mark: 'x' }
 
@@ -226,6 +237,8 @@ export class Engine {
   private readonly log: LogEntry[]
   private readonly host: CommandHost
   private llm?: LlmClient
+  /** The talk that just ended (M10.8), for its window; not saved. */
+  private lastTalk?: { npc: string; lines: TalkLine[] }
   private readonly listeners = new Set<(line: GameLogLine) => void>()
   /** The chronicler's last runs, for the dev menu (M10.1): in memory only. */
   readonly devRuns: { run: string; t: number; lines: string[]; offered: Offered; output: ChronicleOutput | null; problems: string[] }[] = []
@@ -438,6 +451,8 @@ export class Engine {
     const t = this.world.now
     // With a model in play, every spoken line that did not come from it is the game's own (M10.8).
     if (this.llm) for (const output of outputs) if (output.kind === 'speech' && !output.source) output.source = 'rules'
+    // A word in [brackets] is a link only when it does something (M10.8): otherwise plain text.
+    for (const output of outputs) if (output.text.includes('[')) output.text = output.text.replace(/\[([^\]\n]{1,60})\]/g, (whole, word: string) => (word === 'build' || this.followable(word) ? whole : word))
     for (const listener of this.listeners) {
       for (const output of outputs) listener({ kind: 'out', t, output })
       for (const event of this.state.events) if (event.seq > this.eventMark) listener({ kind: 'event', t: event.t, event })
@@ -472,6 +487,26 @@ export class Engine {
     const summary = location?.summary ?? area?.summary ?? topic?.summary
     const first = summary ? `${summary.split(/(?<=[.!?])\s/)[0]} ` : ''
     return `${first}${this.topics.name(id).replace(/^./, (c) => c.toUpperCase())} lies ${way.wind} of here, ${way.walk}.`
+  }
+
+  /**
+   * Whether a highlighted word does something (M10.8): it has a journal page, it is here to see (a person, an exit,
+   * a thing, a detail), or it is a place the stranger has heard of (LOOK then says which way it lies).
+   */
+  private followable(word: string): boolean {
+    const w = word.trim().toLowerCase().replace(/^(the|a|an)\s+/, '')
+    if (!w) return false
+    const id = this.topics.find(w)
+    if (id && (this.state.player.journal ?? {})[id] !== undefined) return true
+    if (findNpcHere(this.world, w)) return true
+    const here = this.world.location(this.state.player.location)
+    for (const exit of Object.values(here.exits)) {
+      const name = this.world.location(exit.to).name.toLowerCase().replace(/^the\s+/, '')
+      if (name.includes(w) || w.includes(name)) return true
+    }
+    if (here.objects.some((o) => (o.name ?? o.id.replace(/_/g, ' ')).toLowerCase().includes(w))) return true
+    if (here.details.some((d) => d.words.some((x) => x.toLowerCase() === w))) return true
+    return Object.keys(this.state.ground[here.id] ?? {}).some((item) => (this.content.items.get(item)?.name ?? item).toLowerCase().includes(w))
   }
 
   /** Swap the model at runtime, for instance after the player picks one in the settings. */
@@ -669,12 +704,15 @@ export class Engine {
 
   start(): Output[] {
     const intro = this.content.world.intro?.trim()
-    return [
+    const outputs: Output[] = [
       ...(intro ? [{ kind: 'text' as const, text: intro }] : []),
       describeRoom(this.world),
       { kind: 'system', text: 'The pace of events is normal. Type TEMPO CALM or TEMPO DRAMATIC for less or more happening in the world.' },
       ...this.opening,
     ]
+    // Words in brackets lead somewhere from the first line on (M10.8).
+    for (const output of outputs) if (output.text.includes('[')) output.text = output.text.replace(/\[([^\]\n]{1,60})\]/g, (whole, word: string) => (this.followable(word) ? whole : word))
+    return outputs
   }
 
   /** What the quest engine may ask of the engine: time, effect plans and encounters. */
@@ -731,6 +769,7 @@ export class Engine {
     if (answer) text = answer.run
     for (const listener of this.listeners) listener({ kind: 'in', t: this.world.now, text })
     const before = this.state.player.location
+    const talkBefore = this.state.talk
     // A line in quotes is speech (the conversation window sends them so), but it can still be a quest's own words.
     const spoken = text.replace(/^"|"$/g, '')
     let quest = this.state.combat ? undefined : questAction(this.world, this.questHost, spoken)
@@ -770,7 +809,24 @@ export class Engine {
     settleRuns(this.world)
     settleChoices(this.world)
     outputs.push(...this.world.notices.splice(0).map((text) => ({ kind: 'system' as const, text })))
-    return this.shown(outputs)
+    const shown = this.shown(outputs)
+    this.keepTalkLines(talkBefore, text, shown)
+    return shown
+  }
+
+  /**
+   * The lines of a talk, kept by the engine (M10.8): what was typed and what came back, for the talk window, which
+   * so shows every line, also when the window had no focus when the answer came. An ended talk stays for its window.
+   */
+  private keepTalkLines(before: TalkState | undefined, typed: string, outputs: Output[]): void {
+    const into = this.state.talk ?? before
+    if (!into) return
+    const list = (into.lines ??= [])
+    let id = list.at(-1)?.id ?? 0
+    list.push({ id: ++id, kind: 'input', text: typed })
+    for (const o of outputs) if (o.kind !== 'room') list.push({ id: ++id, kind: o.kind, text: o.text, ...(o.source ? { source: o.source } : {}) })
+    if (list.length > MAX_TALK_LINES) list.splice(0, list.length - MAX_TALK_LINES)
+    this.lastTalk = this.state.talk ? undefined : before && before !== this.state.talk ? { npc: before.npc, lines: list } : this.lastTalk
   }
 
   private async route(text: string): Promise<Output[]> {
@@ -1174,8 +1230,10 @@ export class Engine {
       paused: false,
       ...(this.builder ? { builder: true } : {}),
       talk: talk
-        ? { npc: talk.npc, name: publicShort(this.world, talk.npc), call: callName(this.world.npc(talk.npc)), attitude: attitude(this.world, talk.npc).band, turnsLeft: talk.turnsLeft, options: QUICK_OPTIONS, ...(talk.proposal ? { proposal: this.dialogue.proposalNow()! } : {}) }
+        ? { npc: talk.npc, name: publicShort(this.world, talk.npc), call: callName(this.world.npc(talk.npc)), attitude: attitude(this.world, talk.npc).band, turnsLeft: talk.turnsLeft, options: QUICK_OPTIONS, ...(talk.proposal ? { proposal: this.dialogue.proposalNow()! } : {}), pronoun: this.world.npc(talk.npc).pronoun, lines: talk.lines ?? [] }
         : undefined,
+      ...(!talk && this.lastTalk ? { lastTalk: this.lastTalk } : {}),
+      clock: this.clockStatus(),
       journal: this.journal(),
       map: this.compactMap(),
       hexMap: hexMapData(this.world, { width: 51, height: 35 }),
@@ -1216,23 +1274,25 @@ export class Engine {
         continue
       }
       const name = id.startsWith('far_') ? `${this.topics.name(id)} (heard of)` : this.topics.name(id)
+      const aliases = (this.topics.entries.get(id)?.aliases ?? []).map((a) => a.toLowerCase()).filter((a) => a !== name.toLowerCase())
+      const also = aliases.length ? { aliases } : {}
       if (kind === 'person') {
         const npc = this.content.npcs.get(id)
         // Only who the player met, saw or was told of, by the name they know (M10.8).
         if (npc && !knowsOfPerson(this.world, id)) continue
         const area = npc ? this.content.areas.get(this.world.location(npc.home).area) : undefined
-        people.push({ id, name: npc ? knownName(this.world, id) : name, ...far, ...(area ? this.areaGroup(area.id) : { group: 'Further afield', order: '9' }) })
+        people.push({ id, name: npc ? knownName(this.world, id) : name, ...far, ...also, ...(area ? this.areaGroup(area.id) : { group: 'Further afield', order: '9' }) })
       } else if (kind === 'place' || kind === 'area') {
         const entry = this.topics.entries.get(id)
         const areaId = kind === 'area' ? entry?.ref : entry?.ref && this.content.locations.has(entry.ref) ? this.content.locations.get(entry.ref)!.area : [...this.content.areas.values()].find((a) => a.topic === id)?.id
         const g = areaId && this.content.areas.has(areaId) ? this.areaGroup(areaId) : { group: 'Further afield', order: '9' }
         // The village itself first under its own heading, then its places.
         const first = kind === 'area' || (areaId !== undefined && this.content.areas.get(areaId)?.topic === id)
-        places.push({ id, name, ...far, group: g.group, order: `${g.order}${first ? '0' : '1'}${name.toLowerCase()}` })
-      } else if (kind === 'lore' || kind === 'fact') journal.lore.push({ id, name, ...far })
+        places.push({ id, name, ...far, ...also, group: g.group, order: `${g.order}${first ? '0' : '1'}${name.toLowerCase()}` })
+      } else if (kind === 'lore' || kind === 'fact') journal.lore.push({ id, name, ...far, ...also })
       else if (kind === 'item') journal.things.push({ id, name })
     }
-    const strip = ({ id, name, group, km }: JournalEntry) => ({ id, name, ...(group ? { group } : {}), ...(km === undefined ? {} : { km }) })
+    const strip = ({ id, name, group, km, aliases }: JournalEntry) => ({ id, name, ...(group ? { group } : {}), ...(km === undefined ? {} : { km }), ...(aliases ? { aliases } : {}) })
     journal.people.push(...people.sort((a, b) => a.order.localeCompare(b.order) || a.name.localeCompare(b.name)).map(strip))
     journal.places.push(...places.sort((a, b) => a.order.localeCompare(b.order)).map(strip))
     for (const realm of this.content.realms.values()) journal.lands.push({ id: `realm_${realm.id}`, name: capitalise(realm.name) })
@@ -1243,6 +1303,22 @@ export class Engine {
       journal.factions.push({ id: `faction_${f.id}`, name: capitalise(f.name), group: members.includes(f.id) ? 'Yours' : rankOf(rep[f.id] ?? 0) })
     }
     return journal
+  }
+
+  /** The clock and the sky (M10.8): for the top right of the window. */
+  private clockStatus(): Status['clock'] {
+    const p = this.clock.parts
+    const calendar = this.world.calendar
+    const light = p.dayPart === 'night' ? 'night' : p.dayPart === 'dawn' || p.hour >= 19 ? 'dusk' : 'day'
+    const words: Record<WeatherKind, string> = { clear: 'clear', overcast: 'cloudy', rain: 'rain', fog: 'mist', storm: 'storm', frost: 'frost', snow: 'snow' }
+    return {
+      weekday: dayName(p.weekday, calendar),
+      date: `${p.day} ${calendar.months[p.month - 1]}`,
+      time: `${String(p.hour).padStart(2, '0')}:${String(p.minute).padStart(2, '0')}`,
+      light,
+      weather: words[weather(this.world)],
+      wind: windWords(wind(this.world)),
+    }
   }
 
   /** The heading for an area, and a sort key: towns, then villages and hamlets, inns, roads and the wild country. */

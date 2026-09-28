@@ -89,7 +89,7 @@ Maren lifts a hand. "Go on, then."
 
 > west
 Skerrow Hythe, the Green
-A dozen stone cottages with turf roofs stand round a patch of wind-flattened grass and a squat well. Hens pick about your feet, and somewhere a door bangs in the wind, over and over. The low, lit door of the Salt Kettle is on the east side of the green. Steps lead south to the harbour, a track climbs north to the headland and the [beacon], and west the cliff path runs along the sea.
+A dozen stone cottages with turf roofs stand round a patch of wind-flattened grass and a squat well. Hens pick about your feet, and somewhere a door bangs in the wind, over and over. The low, lit door of the Salt Kettle is on the east side of the green. Steps lead south to the harbour, a track climbs north to the headland and the beacon, and west the cliff path runs along the sea.
 Exits: south, east, north, west
 Here: Pip, the boatman's boy (playing).
 +10 experience: you found Skerrow Hythe, the Green.
@@ -131,7 +131,7 @@ Tamsin leaves west.
 
 > look
 Skerrow Hythe, the Green
-A dozen stone cottages with turf roofs stand round a patch of wind-flattened grass and a squat well. Hens pick about your feet, and somewhere a door bangs in the wind, over and over. The low, lit door of the Salt Kettle is on the east side of the green. Steps lead south to the harbour, a track climbs north to the headland and the [beacon], and west the cliff path runs along the sea.
+A dozen stone cottages with turf roofs stand round a patch of wind-flattened grass and a squat well. Hens pick about your feet, and somewhere a door bangs in the wind, over and over. The low, lit door of the Salt Kettle is on the east side of the green. Steps lead south to the harbour, a track climbs north to the headland and the beacon, and west the cliff path runs along the sea.
 Exits: south, east, north, west
 Here: Pip, the boatman's boy (playing).
 
@@ -156,7 +156,7 @@ Lore: the stranger in Skerrow Hythe, the death of Wenna Dray, Wenna to be given 
 
 > north
 The Headland
-The island ends here in a blunt headland with the sea on three sides and a squat stone tower on top: the [beacon]. Its great lamp stands cold behind green glass, and the wind whistles through the empty gallery. Below the tower a lean-to store shed has lost half its roof, and it smells strongly of fish oil. A track runs south to the hamlet and west to the grove; north, a ruined tower stands alone on the last rise.
+The island ends here in a blunt headland with the sea on three sides and a squat stone tower on top: the beacon. Its great lamp stands cold behind green glass, and the wind whistles through the empty gallery. Below the tower a lean-to store shed has lost half its roof, and it smells strongly of fish oil. A track runs south to the hamlet and west to the grove; north, a ruined tower stands alone on the last rise.
 On the ground: a cask of lamp oil.
 Exits: south, west, north
 Here: Garrick the lightkeeper (eating).
@@ -174,7 +174,7 @@ Time passes. It is Thornsday 4 Leaffall 412 SF, 15:30 (afternoon).
 
 > look
 The Headland
-The island ends here in a blunt headland with the sea on three sides and a squat stone tower on top: the [beacon]. Its great lamp stands cold behind green glass, and the wind whistles through the empty gallery. Below the tower a lean-to store shed has lost half its roof, and it smells strongly of fish oil. A track runs south to the hamlet and west to the grove; north, a ruined tower stands alone on the last rise.
+The island ends here in a blunt headland with the sea on three sides and a squat stone tower on top: the beacon. Its great lamp stands cold behind green glass, and the wind whistles through the empty gallery. Below the tower a lean-to store shed has lost half its roof, and it smells strongly of fish oil. A track runs south to the hamlet and west to the grove; north, a ruined tower stands alone on the last rise.
 On the ground: a cask of lamp oil.
 Exits: south, west, north
 Here: Elowen the elf (stopping to look at the stranger), Garrick the lightkeeper (at the burial).
@@ -195,7 +195,7 @@ Time passes. It is Thornsday 4 Leaffall 412 SF, 15:35 (afternoon).
 
 > look
 The Headland
-The island ends here in a blunt headland with the sea on three sides and a squat stone tower on top: the [beacon]. Its great lamp stands cold behind green glass, and the wind whistles through the empty gallery. Below the tower a lean-to store shed has lost half its roof, and it smells strongly of fish oil. A track runs south to the hamlet and west to the grove; north, a ruined tower stands alone on the last rise.
+The island ends here in a blunt headland with the sea on three sides and a squat stone tower on top: the beacon. Its great lamp stands cold behind green glass, and the wind whistles through the empty gallery. Below the tower a lean-to store shed has lost half its roof, and it smells strongly of fish oil. A track runs south to the hamlet and west to the grove; north, a ruined tower stands alone on the last rise.
 On the ground: a cask of lamp oil.
 Exits: south, west, north
 Here: Brannoc the boatman (talking with Maren), Elowen the elf (stopping to look at the stranger), Garrick the lightkeeper (at the burial), Maren of the Salt Kettle (talking with Brannoc).
@@ -253,14 +253,14 @@ That night at the Salt Kettle they sang the old ebb song for Wenna, and Maren po
 > @goto loc_skerrow_headland   [build command: a shortcut]
 [build] You are at The Headland.
 The Headland
-The island ends here in a blunt headland with the sea on three sides and a squat stone tower on top: the [beacon]. Its great lamp stands cold behind green glass, and the wind whistles through the empty gallery. Below the tower a lean-to store shed has lost half its roof, and it smells strongly of fish oil. A track runs south to the hamlet and west to the grove; north, a ruined tower stands alone on the last rise.
+The island ends here in a blunt headland with the sea on three sides and a squat stone tower on top: the beacon. Its great lamp stands cold behind green glass, and the wind whistles through the empty gallery. Below the tower a lean-to store shed has lost half its roof, and it smells strongly of fish oil. A track runs south to the hamlet and west to the grove; north, a ruined tower stands alone on the last rise.
 Among the old cairns at the cliff edge stands a new one of grey stones, with Wenna's name scratched on a slate.
 On the ground: a cask of lamp oil.
 Exits: south, west, north
 
 > look
 The Headland
-The island ends here in a blunt headland with the sea on three sides and a squat stone tower on top: the [beacon]. Its great lamp stands cold behind green glass, and the wind whistles through the empty gallery. Below the tower a lean-to store shed has lost half its roof, and it smells strongly of fish oil. A track runs south to the hamlet and west to the grove; north, a ruined tower stands alone on the last rise.
+The island ends here in a blunt headland with the sea on three sides and a squat stone tower on top: the beacon. Its great lamp stands cold behind green glass, and the wind whistles through the empty gallery. Below the tower a lean-to store shed has lost half its roof, and it smells strongly of fish oil. A track runs south to the hamlet and west to the grove; north, a ruined tower stands alone on the last rise.
 Among the old cairns at the cliff edge stands a new one of grey stones, with Wenna's name scratched on a slate.
 On the ground: a cask of lamp oil.
 Exits: south, west, north
@@ -465,7 +465,7 @@ That night at the Salt Kettle they sang the old ebb song for Wenna, and Maren po
 > @goto loc_skerrow_headland   [build command: a shortcut]
 [build] You are at The Headland.
 The Headland
-The island ends here in a blunt headland with the sea on three sides and a squat stone tower on top: the [beacon]. Its great lamp stands cold behind green glass, and the wind whistles through the empty gallery. Below the tower a lean-to store shed has lost half its roof, and it smells strongly of fish oil. A track runs south to the hamlet and west to the grove; north, a ruined tower stands alone on the last rise.
+The island ends here in a blunt headland with the sea on three sides and a squat stone tower on top: the beacon. Its great lamp stands cold behind green glass, and the wind whistles through the empty gallery. Below the tower a lean-to store shed has lost half its roof, and it smells strongly of fish oil. A track runs south to the hamlet and west to the grove; north, a ruined tower stands alone on the last rise.
 Among the old cairns at the cliff edge stands a new one of grey stones, with Wenna's name scratched on a slate.
 On the ground: a cask of lamp oil.
 Exits: south, west, north
@@ -474,7 +474,7 @@ Exits: south, west, north
 
 > look
 The Headland
-The island ends here in a blunt headland with the sea on three sides and a squat stone tower on top: the [beacon]. Its great lamp stands cold behind green glass, and the wind whistles through the empty gallery. Below the tower a lean-to store shed has lost half its roof, and it smells strongly of fish oil. A track runs south to the hamlet and west to the grove; north, a ruined tower stands alone on the last rise.
+The island ends here in a blunt headland with the sea on three sides and a squat stone tower on top: the beacon. Its great lamp stands cold behind green glass, and the wind whistles through the empty gallery. Below the tower a lean-to store shed has lost half its roof, and it smells strongly of fish oil. A track runs south to the hamlet and west to the grove; north, a ruined tower stands alone on the last rise.
 Among the old cairns at the cliff edge stands a new one of grey stones, with Wenna's name scratched on a slate.
 On the ground: a cask of lamp oil.
 Exits: south, west, north

@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="A woman in shadow">
+  <!-- A figure in shadow, no face to speak of (M10.8): for whoever has no portrait of their own. -->
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="38%" r="70%">
+      <stop offset="0" stop-color="#3b3a30"/>
+      <stop offset="1" stop-color="#141410"/>
+    </radialGradient>
+    <linearGradient id="rim" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0" stop-color="#8a8468" stop-opacity="0.45"/>
+      <stop offset="0.35" stop-color="#8a8468" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect width="200" height="200" fill="url(#glow)"/>
+  <g fill="#0d0d0a">
+    <path d="M40 200c4-36 26-58 60-58s56 22 60 58z"/>
+    <path d="M62 150c-4-26-2-52 8-74 6-14 18-24 30-24s24 10 30 24c10 22 12 48 8 74-8-8-22-12-38-12s-30 4-38 12z"/>
+    <ellipse cx="100" cy="96" rx="26" ry="33"/>
+    <path d="M66 84c2-24 16-38 34-38s32 14 34 38c-8-12-20-18-34-18s-26 6-34 18z"/>
+  </g>
+  <g fill="url(#rim)">
+    <path d="M40 200c4-36 26-58 60-58s56 22 60 58z"/>
+    <path d="M62 150c-4-26-2-52 8-74 6-14 18-24 30-24s24 10 30 24c10 22 12 48 8 74-8-8-22-12-38-12s-30 4-38 12z"/>
+  </g>
+</svg>

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="A plain figure">
+  <!-- The plain figure (M10.8), as pictures.ts draws it for portrait: generic, now also a file. -->
+  <rect width="100" height="100" fill="#22231c"/>
+  <ellipse cx="50" cy="42" rx="15" ry="18" fill="#6b6857"/>
+  <path d="M18 100c2-22 16-32 32-32s30 10 32 32z" fill="#55533f"/>
+</svg>

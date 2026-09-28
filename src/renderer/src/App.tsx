@@ -10,7 +10,8 @@ import { ConversationView, type TalkLine } from './ConversationView'
 import { JournalView } from './JournalView'
 import { runs } from './mapRuns'
 import { HexMap } from './HexMap'
-import { useMapLook } from './display'
+import { useMapLook, useShowRules } from './display'
+import { ClockPanel } from './Clock'
 import { Settings, usd, type SettingsTab } from './Settings'
 import { t, tn } from './i18n'
 
@@ -88,10 +89,9 @@ export function App() {
   const [dev, setDev] = useState(false)
   // The journal window, open at a page or at its index (FO, chapter 2); near things first in a conversation.
   const [journal, setJournal] = useState<{ start?: string; nearby?: boolean }>()
-  // Where the conversation in progress began in the log: its window shows the lines from there.
-  const [talkFrom, setTalkFrom] = useState<number>()
-  // The talk that just ended (M10.4): its window stays until closed, with the last answer in view.
-  const [ended, setEnded] = useState<{ talk: NonNullable<Status['talk']>; from: number }>()
+  // The talk that just ended (M10.4): its window stays until closed, with the last answer in view; its lines are the
+  // engine's (M10.8), so every line shows, also when the window had no focus when the answer came.
+  const [ended, setEnded] = useState<{ talk: NonNullable<Status['talk']>; lines: TalkLine[] }>()
   const lastTalk = useRef<NonNullable<Status['talk']> | undefined>(undefined)
   // The lights per role (M10.4), as calls start and end.
   const [lights, setLights] = useState<RoleLight[]>()
@@ -190,9 +190,10 @@ export function App() {
 
   const talkOpen = useRef(false)
   const send = useCallback(
-    async (text: string) => {
+    async (text: string, fromTalk = false) => {
       if (!client || !text || waiting) return
-      setHistory((previous) => [text, ...previous].slice(0, 100))
+      // Up and down in the main input bring back commands only (M10.8): what is said, or sent from the talk window, is not.
+      if (!fromTalk && !text.startsWith('"')) setHistory((previous) => [text, ...previous].slice(0, 100))
       setHistoryIndex(-1)
       setLines((previous) => [...previous, { id: nextId++, kind: 'input' as const, text }].slice(-400))
       setWaiting(true)
@@ -244,17 +245,22 @@ export function App() {
   }
 
   const talk = status?.talk
+  const showRules = useShowRules()
+  // The talk as it stands, every answer: its lines go to the window that stays when it is over.
+  useEffect(() => {
+    if (talk) lastTalk.current = talk
+  }, [talk])
   useEffect(() => {
     if (!talk) {
-      // Over: the window stays with the last answer, until it is closed (M10.4).
-      if (talkFrom !== undefined && lastTalk.current) setEnded({ talk: lastTalk.current, from: talkFrom })
-      talkOpen.current = Boolean(talkFrom !== undefined && lastTalk.current)
-      setTalkFrom(undefined)
+      // Over: the window stays with the last answer, until it is closed (M10.4); the engine kept its last lines (M10.8).
+      const was = lastTalk.current
+      if (was) setEnded({ talk: was, lines: status?.lastTalk?.npc === was.npc ? status.lastTalk.lines : was.lines })
+      talkOpen.current = Boolean(was)
+      lastTalk.current = undefined
       return
     }
     lastTalk.current = talk
     setEnded(undefined)
-    setTalkFrom((from) => from ?? [...lines].reverse().find((l) => l.kind === 'input')?.id ?? lines.at(-1)?.id ?? 0)
     setPortrait(undefined)
     if (client?.picture) void client.picture(talk.npc).then(setPortrait)
     // Only when a conversation starts or ends.
@@ -272,10 +278,9 @@ export function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status?.scene, client])
   useEffect(() => {
-    if (!talk || !client) {
-      setAbout(undefined)
-      return
-    }
+    // The card stays while its talk is on and after it, until the window closes (M10.8): only another person clears it.
+    if (!talk || !client) return
+    if (about && about.id !== talk.npc) setAbout(undefined)
     if (waiting) return
     let live = true
     void client.page(talk.npc).then((page) => live && setAbout(page))
@@ -284,23 +289,40 @@ export function App() {
     }
   }, [client, talk?.npc, waiting])
   const openPage = (id?: string) => setJournal(id ? { start: id } : {})
+  /** The journal entry a highlighted word stands for: its name, or the name it begins ("Fenna" for Fenna Visser). */
+  const entryFor = (topic: string) => {
+    const word = topic.toLowerCase().replace(/^the\s+/, '')
+    const all = status ? JOURNAL_KEYS.flatMap((key) => status.journal[key]) : []
+    return all.find((e) => e.name.toLowerCase() === topic.toLowerCase()) ?? all.find((e) => e.name.toLowerCase().replace(/^the\s+/, '') === word) ?? all.find((e) => e.aliases?.includes(word) || e.aliases?.includes(topic.toLowerCase())) ?? all.find((e) => e.name.toLowerCase().startsWith(`${word} `))
+  }
   // A topic in the text (M10.4): its journal page if you know it, else a look at it if it is here.
   const onTopic = (topic: string) => {
     setMenu(undefined)
-    const known = status ? JOURNAL_KEYS.flatMap((key) => status.journal[key]).find((e) => e.name.toLowerCase() === topic.toLowerCase()) : undefined
+    const known = entryFor(topic)
     if (known) {
       openPage(known.id)
       return
     }
     void send(`look ${topic}`)
   }
+  // A topic in the talk window (M10.8): its page over the window, else the look goes into the talk, not the main input.
+  const talkTopic = (topic: string) => {
+    setMenu(undefined)
+    const known = entryFor(topic)
+    if (known) {
+      openPage(known.id)
+      return
+    }
+    void send(`look ${topic}`, true)
+  }
   const onMenu = (topic: string, x: number, y: number) => setMenu({ topic, x, y })
   const fromMenu = (command: string) => {
     setMenu(undefined)
-    void send(command)
+    void send(command, Boolean(talk))
   }
   const closeEnded = () => {
     setEnded(undefined)
+    setAbout(undefined)
     talkOpen.current = false
     inputRef.current?.focus()
   }
@@ -315,7 +337,7 @@ export function App() {
       <main className="log" ref={logRef} aria-live="polite">
         {error && <p className="line error">{error}</p>}
         {lines.map((line) => (
-          <p key={line.id} className={`line ${line.kind}`}>
+          <p key={line.id} className={`line ${line.kind}${showRules && line.kind === 'speech' && line.source === 'rules' ? ' rules' : ''}`}>
             {line.kind === 'input' ? `> ${line.text.replace(/^"/, '')}` : renderText(line.text, onTopic, onMenu)}
           </p>
         ))}
@@ -323,6 +345,7 @@ export function App() {
       </main>
 
       <aside className="side">
+        {status?.clock && <ClockPanel clock={status.clock} />}
         {status?.combat && <FightPanel fight={status.combat} send={(text) => void send(text)} busy={waiting} shield={Boolean(status.character?.shield)} />}
         {status?.character && (
           <section className="you">
@@ -576,31 +599,34 @@ export function App() {
           }}
         />
       )}
-      {talk && status && talkFrom !== undefined && (
+      {talk && status && (
         <ConversationView
           talk={talk}
-          lines={lines.filter((l) => l.id >= talkFrom) as TalkLine[]}
+          lines={talk.lines}
           journal={status.journal}
           busy={waiting}
           portrait={portrait}
           about={about}
-          render={(text) => renderText(text, onTopic, onMenu)}
-          onSend={(text) => void send(text)}
+          render={(text) => renderText(text, talkTopic, onMenu)}
+          onSend={(text) => void send(text, true)}
           onJournal={() => setJournal({ nearby: true })}
+          covered={Boolean(journal)}
         />
       )}
       {!talk && ended && status && (
         <ConversationView
           talk={ended.talk}
-          lines={lines.filter((l) => l.id >= ended.from) as TalkLine[]}
+          lines={ended.lines}
           journal={status.journal}
           busy={false}
+          portrait={portrait}
           about={about}
-          render={(text) => renderText(text, onTopic, onMenu)}
-          onSend={(text) => void send(text)}
+          render={(text) => renderText(text, talkTopic, onMenu)}
+          onSend={(text) => void send(text, true)}
           onJournal={() => setJournal({ nearby: true })}
           ended
           onClose={closeEnded}
+          covered={Boolean(journal)}
         />
       )}
       {menu && (
