@@ -38,7 +38,25 @@ import { recognisedSale, refusedTrade, returnStolen } from './social/crime'
 // take time call `pass(minutes)`, which runs the world and returns what the
 // player sees happen meanwhile.
 
-export type OutputKind = 'room' | 'text' | 'system' | 'error' | 'narration' | 'speech' | 'check'
+export type OutputKind = 'room' | 'text' | 'system' | 'error' | 'narration' | 'speech' | 'check' | 'card'
+
+/**
+ * A moment (M10.11): a card over the log for what deserves more than a line.
+ * Arriving at a place worth it, seeing it rise from afar, a tiding that
+ * changes things. The text of the output is the same, for the log and the
+ * terminal; the interface shows the card.
+ */
+export interface Card {
+  kind: 'arrival' | 'sighting' | 'tidings'
+  title: string
+  text: string
+  /** The place a picture is of, when there is one. */
+  picture?: string
+  /** A page of the journal it leads to. */
+  link?: string
+  /** Who it came from: a tiding heard. */
+  from?: string
+}
 
 export interface Output {
   kind: OutputKind
@@ -48,6 +66,10 @@ export interface Output {
    * only when a model is in play; without one every line is the game's own and nothing needs telling apart.
    */
   source?: 'model' | 'rules'
+  /** A moment (M10.11), for kind card. */
+  card?: Card
+  /** A journey told in one paragraph (M10.11): with a model, the narrator may reword it. */
+  journey?: boolean
 }
 
 export interface CommandHost {

@@ -161,6 +161,9 @@ export function placeIcon(ctx: CanvasRenderingContext2D, kind: string, x: number
 }
 
 /** A place you have been: a patch of shadow, and its sign on it in the colour for places visited. */
+/** The colour of an area's mood on the map (M10.11): panic, grief, a feast, a threat. */
+const MOOD_COLOURS: Record<string, string> = { panic: '#e0893a', grief: '#7f93b8', feast: '#d8c35a', threat: '#c0473f' }
+
 function visitedMark(ctx: CanvasRenderingContext2D, kind: string, x: number, y: number, s: MapStyle, colour: string, k: number): void {
   const alpha = ctx.globalAlpha
   ctx.globalAlpha = alpha * 0.85
@@ -391,6 +394,14 @@ function draw(canvas: HTMLCanvasElement, data: HexMapData, s: MapStyle, style: M
     if (!visible(x, y)) continue
     const memory = sightOf.get(`${p.c},${p.r}`) ?? 2
     ctx.globalAlpha = local && memory < 2 ? (data.light === 'day' ? 0.85 : 0.65) : 1
+    // The mood of its area (M10.11): a ring of colour outside the patch of a visited place.
+    if (p.mood && MOOD_COLOURS[p.mood]) {
+      ctx.strokeStyle = MOOD_COLOURS[p.mood]!
+      ctx.lineWidth = 2 * ik
+      ctx.beginPath()
+      ctx.arc(x, y - ik, 11 * ik, 0, 7)
+      ctx.stroke()
+    }
     // A place you have been stands out (after the M10 playtest): its sign in its own colour, on a patch of shadow.
     if (p.status === 'visited') visitedMark(ctx, p.kind, x, y, s, marks.visited, ik)
     else placeIcon(ctx, p.kind, x, y, p.status, s.label, ik)

@@ -59,6 +59,9 @@ locations:
         days: [Maandag, Dinsdag, Woensdag, Donderdag, Vrijdag, Zaterdag]
         state: { broken: true }
         state_text: { "broken=true": "The sails hang in ragged strips. It won't turn until someone fits new sailcloth." }
+    arrival:
+      text: De Zwaan rises over the reeds long before you reach it, tall and dark on its post, its torn sails hanging like washing nobody took in. Close by you smell tar and old flour, and the whole mill creaks in the wind as if it still meant to turn.
+      far: Above the reeds stands the tall mill De Zwaan, dark against the sky, its sails in rags and not turning.
 
   - id: loc_molenend_house
     name: The Miller's House

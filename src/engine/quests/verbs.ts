@@ -47,6 +47,7 @@ export const PERMISSIONS: Record<string, Permission> = {
   expect_home: all('someone expects another home now and then'),
   feast: all('a feast at a place, with guests; kind burial for a burial, where those in grief come too'),
   mark: rules('a mark at a place: a line in its description from now on or for some days, such as a cairn with a name (M10.7)'),
+  mood: rules('an area takes a mood for some days: panic, grief, feast or threat, with a line for its places and its people, and a colour on the map (M10.11)', true),
   ask_around: all('someone asks a trader, or goes to look, whether a claim is true'),
   carry_word: all('someone walks to another to tell them what they know'),
   seek_player: all('someone goes to find the stranger, and opens a talk with a line'),

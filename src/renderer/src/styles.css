@@ -1821,3 +1821,96 @@ pre.sheet {
   object-fit: cover;
   border-radius: 3px;
 }
+
+/* Moments (M10.11): a card over the log for a place worth it or a tiding; in the log, a line with a mark. */
+.line.card {
+  border-left: 2px solid var(--room);
+  color: var(--speech);
+  padding-left: 10px;
+}
+
+.line.card::first-line {
+  color: var(--room);
+  font-weight: 600;
+}
+
+.moment-overlay {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+}
+
+.moment {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  box-shadow: 0 12px 40px rgb(0 0 0 / 45%);
+  max-width: min(560px, calc(100vw - 32px));
+  padding: 20px 24px 16px;
+}
+
+.moment h2 {
+  color: var(--room);
+  font-size: calc(20px * var(--text-scale));
+  margin: 4px 0 10px;
+}
+
+.moment-kind {
+  color: var(--muted);
+  font-size: calc(12px * var(--text-scale));
+  letter-spacing: 0.08em;
+  margin: 10px 0 0;
+  text-transform: uppercase;
+}
+
+.moment-text {
+  line-height: 1.55;
+  margin: 0 0 10px;
+}
+
+.moment-from {
+  font-size: calc(13px * var(--text-scale));
+  font-style: italic;
+  margin: 0 0 8px;
+}
+
+.moment-picture {
+  aspect-ratio: 3 / 2;
+  border-radius: 3px;
+  object-fit: cover;
+  width: 100%;
+}
+
+.moment-drawing {
+  display: block;
+  margin: 0 auto;
+  max-height: 140px;
+  width: 100%;
+}
+
+.moment-drawing path,
+.moment-drawing rect {
+  fill: none;
+  stroke: var(--narration);
+  stroke-linecap: round;
+  stroke-width: 1.5;
+}
+
+.moment-drawing .mist {
+  opacity: 0.45;
+}
+
+.moment-drawing .seal {
+  fill: var(--error);
+  stroke: none;
+}
+
+.moment.tidings h2 {
+  color: var(--warn);
+}
+
+.moment-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: flex-end;
+}

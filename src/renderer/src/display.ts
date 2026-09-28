@@ -15,6 +15,8 @@ export interface Display {
   map: MapLook
   /** Speech that did not come from the AI in a warmer tint (M10.8): on while Bram playtests. */
   rules: boolean
+  /** Moments as cards over the log (M10.11); off, they are lines like any other. */
+  cards: boolean
 }
 
 /** The text sizes; each label is a key in locales/<language>/settings.json. */
@@ -27,14 +29,14 @@ export const TEXT_SIZES = [
 ] as const
 
 const KEY = 'wisplight.display'
-const DEFAULT: Display = { scale: 1, contrast: 'normal', map: 'dark', rules: true }
+const DEFAULT: Display = { scale: 1, contrast: 'normal', map: 'dark', rules: true, cards: true }
 const LOOKS: MapLook[] = ['dark', 'paper', 'bw']
 
 export function loadDisplay(): Display {
   try {
     const saved = JSON.parse(localStorage.getItem(KEY) ?? 'null') as Partial<Display> | null
     const scale = TEXT_SIZES.some((s) => s.scale === saved?.scale) ? saved!.scale! : DEFAULT.scale
-    return { scale, contrast: saved?.contrast === 'high' ? 'high' : 'normal', map: LOOKS.includes(saved?.map as MapLook) ? (saved!.map as MapLook) : 'dark', rules: saved?.rules !== false }
+    return { scale, contrast: saved?.contrast === 'high' ? 'high' : 'normal', map: LOOKS.includes(saved?.map as MapLook) ? (saved!.map as MapLook) : 'dark', rules: saved?.rules !== false, cards: saved?.cards !== false }
   } catch {
     return DEFAULT
   }
@@ -68,6 +70,17 @@ export function useMapLook(): MapLook {
 }
 
 /** Whether speech that did not come from the AI shows in its own tint (M10.8), kept up to date with Settings. */
+/** Whether moments come as cards (M10.11), kept up to date when it changes in Settings. */
+export function useShowCards(): boolean {
+  const [on, setOn] = useState<boolean>(() => loadDisplay().cards)
+  useEffect(() => {
+    const changed = () => setOn(loadDisplay().cards)
+    window.addEventListener('wisplight:display', changed)
+    return () => window.removeEventListener('wisplight:display', changed)
+  }, [])
+  return on
+}
+
 export function useShowRules(): boolean {
   const [on, setOn] = useState<boolean>(() => loadDisplay().rules)
   useEffect(() => {

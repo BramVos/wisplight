@@ -73,12 +73,14 @@ Exits: north, east, south, west, northeast
 Across country you can head any way, or follow the tow path west to Oude Zijl, the tow path east to Waagdam, the peat road to Molenend, the fen path to the Kattenbroek, the priory path to Kloosterveen or the path to the Kabouterberg.
 
 > walk to waagdam
-You make your way towards Waagdam for an hour and 24 minutes, over the peat road, the tow path, the Waagdam road and fields. Night is falling over the fen.
+You make your way towards Waagdam for an hour and 24 minutes. Your boots find the old ruts, and the road carries you along. A barge horse plods past with its head down, and the rope hisses on the water. The light never changes under the grey sky. Away to the north-east you see the tall mill De Zwaan above the reeds. Night is falling over the fen.
 In the fields, near Waagdam
 Drained fields lie in strips between straight ditches. Low grey cloud sits on the land. A south-west wind pushes at you. To the north-west, the tower of the Waag of Waagdam.
 Ways on: north, north-east, south-east, south, south-west, north-west.
 There it is: Waagdam, close by now.
 +30 experience: you came to the Holleveen.
+The Waag, to the north-west
+Over the flat land rises the tower of the Waag of Waagdam, and around it the roofs of more houses than the whole Holleveen has.
 
 # Mirte only said where it lies; the walk ends outside the town. Walk on in.
 
@@ -90,6 +92,8 @@ Exits: north
 Across country you can head any way, or follow the tow path to Veenhoek, the Waagdam road to The Drowned Goose, the heath road to Reuzenrust or the east road.
 +10 experience: you found The Harbour.
 +30 experience: you came to Waagdam.
+The Harbour
+The Vaart widens, and there is Waagdam across the water: barges moored three deep, brick houses shoulder to shoulder, and over them all the tower of the Waag. The noise reaches you before the smell of tar does.
 
 > north
 Gate Street

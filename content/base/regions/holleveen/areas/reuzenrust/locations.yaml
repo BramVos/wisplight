@@ -25,6 +25,9 @@ locations:
           climb: You set a foot on the stones and a cold feeling goes through you. You step down again.
       - words: [mounds, burial mounds]
         look: Three burial mounds rise beyond the stones, furred with heather.
+    arrival:
+      text: The great grey stones lie on the heath as if a giant had put them down and meant to come back for them. You touch one without meaning to; it is colder than the day.
+      far: Out on the heath lie grey stones in a row, too big for any wall, with a flat stone laid over them like a lid.
 
   - id: loc_reuzenrust_barrows
     name: The Three Barrows

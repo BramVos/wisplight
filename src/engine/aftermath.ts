@@ -13,7 +13,7 @@ import { believes, factById, heardBy, recordFact } from './news'
 import { holdFeast } from './stories'
 import { holds, type QuestHost } from './quests/engine'
 import type { Selector, Verb, VerbText } from './quests/planschema'
-import { planOf, runEffect, running, setAreaNews, startPlan, type PlanState, type StepState } from './quests/plans'
+import { planOf, runEffect, running, setAreaMood, setAreaNews, startPlan, type PlanState, type StepState } from './quests/plans'
 import { setMood, shiftBond } from './social/deeds'
 import { causeOf, queueSignal } from './signals'
 import { askTrader, isTrader, lookForYourself, mayChaseAway } from './belief'
@@ -587,6 +587,13 @@ export function runVerb(world: World, ctx: PlanContext, verb: Verb, st: StepStat
     const s = world.npcState(who)
     s.goals.push({ id: `g${++world.state.goalSeq}`, type: 'Spread', priority: 0.9, source: 'ai', created: world.now, until: world.now + DAY })
     s.busyUntil = Math.min(s.busyUntil, world.now)
+    return true
+  }
+  if ('mood' in v) {
+    // The mood of an area (M10.11): of a place's area, or an area by id.
+    const where = one(world, ctx, v.mood)
+    if (!where || !setAreaMood(world, where, v.kind, v.days, fill(world, v.line, ctx.bind), v.prompt ? fill(world, v.prompt, ctx.bind) : undefined)) return false
+    st.where = where
     return true
   }
   // Everything an effect plan could already do. A flight in a plan with steps has no end of its own.

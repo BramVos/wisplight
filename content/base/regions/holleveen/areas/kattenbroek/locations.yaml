@@ -19,6 +19,9 @@ locations:
       east: { to: loc_kattenbroek_hut, minutes: 5 }
       south: { to: loc_kattenbroek_reedpaths, minutes: 5 }
     forage: [fen]
+    arrival:
+      text: The reed closes over your head and the Kattenbroek swallows the path. Cats watch you from every tussock, not running and not coming closer.
+      far: The land ends in a dark wall of reed and alder, too even and too still. People from Veenhoek do not go that way unless they have to.
 
   - id: loc_kattenbroek_hut
     name: Below the Hut on Stilts

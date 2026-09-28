@@ -81,6 +81,8 @@ export class MockLlm implements LlmClient {
         ? this.palette(request.meta ?? {})
         : request.schemaName === 'voice_draft'
         ? this.voiceKit(request.meta ?? {})
+        : request.schemaName === 'journey'
+        ? JSON.stringify({ text: String(request.meta?.['journey'] ?? '') })
         : request.schemaName === 'party_reply'
         ? this.party(request.meta as unknown as { party: { id: string; name: string; knows: string[] }[] })
         : request.role === 'voice'

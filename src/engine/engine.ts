@@ -14,7 +14,7 @@ import { worldFrame } from './dialogue/prompt'
 import { followTombstones, followTombstonesInLog, nameBook, withNames, type NameBook } from './ids'
 import { shiftTension, tensionOf } from './social/realms'
 import { grownContent, invest } from './growth/growth'
-import { dayName, GameClock } from './clock'
+import { dayName, GameClock, MONTHS, WEEKDAYS } from './clock'
 import { describeRoom, detailVerb, findNpcAnywhere, findNpcHere, runCommand, type CommandHost, type Output } from './commands'
 import { areaTopicId, callName, type Content, type Quest } from './content'
 import { Dialogue, QUICK_OPTIONS } from './dialogue/conversation'
@@ -73,6 +73,10 @@ import { bearing, kmFromPlayer, posOf, posOfLocation } from './nearby'
 import { carryOver } from './legacy'
 import { arrival, character, type Clock, clockLine, createCommand, creationHelp, equipCommand, favour, findPurse, gainXp, greyRider, leaveSheaf, levelCommand, makeCharacter, patronCommand, pray, rest, rite, sheetData, sheetLines, struggle, trainCommand, XP } from './rules/player'
 import { sketchById } from './sketches'
+import { momentsNow } from './moments'
+import { journeyRequest } from './map/journeyText'
+import { strangeWords, voiceSummary } from './dialogue/voice'
+import { hasOurOaths, outOfCharacter, unknownNames, vocabularyOf, wordCount } from './dialogue/guard'
 
 export type { Output, OutputKind } from './commands'
 
@@ -690,12 +694,38 @@ export class Engine {
       // Why you are here (M10.9), after the world's own opening.
       ...arrival(this.world),
       describeRoom(this.world),
+      // Where the game begins may be worth a moment (M10.11): the wreck on Skerrow.
+      ...momentsNow(this.world, true),
       { kind: 'system', text: 'The pace of events is normal. Type TEMPO CALM or TEMPO DRAMATIC for less or more happening in the world.' },
       ...this.opening,
     ]
     // Words in brackets lead somewhere from the first line on (M10.8).
     for (const output of outputs) if (output.text.includes('[')) output.text = output.text.replace(/\[([^\]\n]{1,60})\]/g, (whole, word: string) => (this.followable(word) ? whole : word))
     return outputs
+  }
+
+  /**
+   * The narrator (M10.11): one call that rewords the paragraph of a journey in
+   * the voice of the world. Kept only when it names nothing new, has no word
+   * that is not here, and stays short; else the rules' paragraph stands.
+   */
+  private async narrate(outputs: Output[]): Promise<void> {
+    const recorder = this.recorder
+    if (!recorder || !this.world.aiLive) return
+    for (const output of outputs) {
+      if (!output.journey) continue
+      try {
+        const frame = [worldFrame(this.content), voiceSummary(this.content)].filter(Boolean).join('\n\n')
+        const reply = await recorder.complete({ ...journeyRequest(this.world, output.text, frame), timeoutMs: 8000 })
+        const text = String((JSON.parse(reply.text.trim().replace(/^```(?:json)?\s*|\s*```$/g, '')) as { text?: unknown }).text ?? '').trim()
+        const words = vocabularyOf({ ...this.content, chronicler: undefined }, worldFrame(this.content), MONTHS, WEEKDAYS, output.text)
+        const fine = text && wordCount(text) <= Math.max(110, wordCount(output.text) * 1.5) && !unknownNames(text, words).length && !strangeWords(this.world, text).length && !hasOurOaths(text) && !outOfCharacter(text)
+        if (fine) output.text = text
+        else recorder.report?.({ reason: 'invented', role: 'chronicler' })
+      } catch {
+        // Optional: the rules' paragraph is enough.
+      }
+    }
   }
 
   /** What the quest engine may ask of the engine: time, effect plans and encounters. */
@@ -792,6 +822,10 @@ export class Engine {
     settleRuns(this.world)
     settleChoices(this.world)
     outputs.push(...this.world.notices.splice(0).map((text) => ({ kind: 'system' as const, text })))
+    // Moments (M10.11): a place worth it reached or seen, a tiding heard; a card once each.
+    outputs.push(...momentsNow(this.world))
+    // A journey in the voice of the world, when a model may help (M10.11); the rules' paragraph otherwise.
+    await this.narrate(outputs)
     const shown = this.shown(outputs)
     this.keepTalkLines(talkBefore, text, shown)
     return shown
@@ -1197,6 +1231,8 @@ export class Engine {
     noticeCarried(this.world)
     const outputs = [...passed, ...this.questsTick(), ...this.confrontations(), ...this.attacks(), ...this.sought(), ...brawlShown(this.world)]
     outputs.push(...this.world.notices.splice(0).map((text) => ({ kind: 'system' as const, text })))
+    // A tiding that came while time ran (M10.11): something seen, someone who told it.
+    outputs.push(...momentsNow(this.world))
     return this.shown(outputs)
   }
 

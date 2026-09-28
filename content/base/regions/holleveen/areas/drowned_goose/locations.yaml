@@ -22,6 +22,9 @@ locations:
         take: It hangs well out of reach, and the inn would want it back.
         verbs:
           read: THE DROWNED GOOSE, in faded letters under the painted bird.
+    arrival:
+      text: Where the two raised roads cross stands the Drowned Goose, low and smoke-blackened, its upside-down goose creaking on the sign. Warm light and the smell of stew come out of the door.
+      night: The Drowned Goose is the only light for miles, its windows yellow over the black fields. Laughter spills out when the door opens, and the smell of stew with it.
 
   - id: loc_goose_common
     name: The Drowned Goose, Common Room

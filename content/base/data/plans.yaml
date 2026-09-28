@@ -81,6 +81,8 @@ plans:
           - { close: [loc_veenhoek_quay, loc_towpath_w], reason: "The tow path is under brown water as far as you can see." }
           - { close: [loc_gerrit_house, loc_towpath_e], reason: "The tow path is under brown water as far as you can see." }
           - { news: "The dyke at Oude Zijl has broken, and the water is in Veenhoek.", area: veenhoek }
+          # The mood of Veenhoek (M10.11): panic while the water comes, grief when it goes.
+          - { mood: veenhoek, kind: panic, days: 3, line: "People wade past with what they could carry, and nobody stops to talk.", prompt: "The dyke has broken and the water is in Veenhoek; everyone is frightened and busy saving what they can." }
           - { fact: { title: the dyke broke at Oude Zijl, precise: "The dyke at Oude Zijl broke in the night and the water ran into Veenhoek.", village: "The dyke's gone at Oude Zijl! The water's in Veenhoek, run for the high ground!", far: "A dyke broke in the Holleveen and a village went under.", belang: 5, about: [who_will_not_dyke, water_wolf], place: loc_oude_zijl_dyke } }
       - after: 1
         effects:
@@ -98,6 +100,7 @@ plans:
           - { market: rye_grain, factor: 0.6 }
       - after: 72
         effects:
+          - { mood: veenhoek, kind: grief, days: 7, line: "Mud lines every wall at the height the water reached, and people talk low about what was lost.", prompt: "The flood has gone down; people mourn what they lost and are short of everything." }
           - { place: loc_veenhoek_quay, state: damaged }
           - { place: loc_veenhoek_green, state: damaged }
           - { place: loc_visser_house, state: damaged }

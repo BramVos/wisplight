@@ -370,6 +370,12 @@ export const LocationSchema = z.object({
   hidden: z.array(HiddenSchema).default([]),
   /** Things the description names that you can look at and handle (after the M10 playtest): the hollow, the bowl of milk. */
   details: z.array(DetailSchema).default([]),
+  /**
+   * A place worth a moment (M10.11): two or three sentences for the first
+   * time you reach it, in mist, at night or in a storm if it reads otherwise
+   * then, and how it looks when it comes into view from afar (a landmark).
+   */
+  arrival: z.object({ text: z.string(), mist: z.string().optional(), night: z.string().optional(), storm: z.string().optional(), far: z.string().optional() }).strict().optional(),
 })
 export type Location = z.infer<typeof LocationSchema>
 
@@ -809,6 +815,20 @@ export const FactionSchema = z
   .strict()
 export type Faction = z.infer<typeof FactionSchema>
 
+/** Sentences for a journey (M10.11): chosen by the rules, seeded, per terrain, weather and time of day. */
+export const JourneySchema = z
+  .object({
+    /** Per kind of land (fen, fields, heath, woods, water) and way (canal, road, path, ridge). */
+    terrain: z.record(z.string(), z.array(z.string())).default({}),
+    /** Per weather (clear, overcast, rain, fog, storm, frost, snow). */
+    weather: z.record(z.string(), z.array(z.string())).default({}),
+    night: z.array(z.string()).default([]),
+    /** What may happen on a journey over known ground (FO, chapter 4, "Snelreizen"). */
+    on_the_way: z.array(z.object({ text: z.string(), where: z.enum(['canal', 'road', 'fen', 'any']), night: z.boolean().optional(), minutes: z.number().int().positive().optional() }).strict()).default([]),
+  })
+  .strict()
+export type Journey = z.infer<typeof JourneySchema>
+
 export const RealmSchema = z.object({ id: z.string().regex(/^[a-z0-9_]+$/), name: z.string(), ruler: z.string(), capital: z.string() }).strict()
 export type Realm = z.infer<typeof RealmSchema>
 
@@ -834,6 +854,8 @@ const FileSchema = z
     rules: RulesSchema.optional(),
     /** The voice kit (M10.10): oaths, sayings, address, time and what is not here. */
     voice: VoiceSchema.optional(),
+    /** Sentences for a journey (M10.11): per terrain and weather, at night, and what may happen on the way. */
+    journey: JourneySchema.optional(),
     factions: z.array(FactionSchema).optional(),
     realms: z.array(RealmSchema).optional(),
     tensions: z.array(TensionSchema).optional(),
@@ -882,6 +904,8 @@ export interface Content {
   rules?: Rules
   /** How people here speak (M10.10); a world without one keeps the old fixed guard. */
   voice?: Voice
+  /** Sentences for journeys (M10.11); a world without them keeps the one line of before. */
+  journey?: Journey
   creatures: Map<string, Creature>
   encounters: Map<string, Encounter>
   factions: Map<string, Faction>
@@ -965,6 +989,7 @@ export function loadContent(files: ContentFile[]): Content {
   let chronicler: string | undefined
   let rules: Rules | undefined
   let voice: Voice | undefined
+  let journey: Journey | undefined
   let lock: IdsLock | undefined
   for (const file of [...files].sort((a, b) => a.path.localeCompare(b.path))) {
     // The shared working instruction first (it sorts first), then the world's own part.
@@ -1030,6 +1055,10 @@ export function loadContent(files: ContentFile[]): Content {
       if (voice) problems.push(`${file.path}: the voice kit is defined twice`)
       voice = data.voice
     }
+    if (data.journey) {
+      if (journey) problems.push(`${file.path}: the journey sentences are defined twice`)
+      journey = data.journey
+    }
   }
 
   const world = worlds[0]
@@ -1050,7 +1079,7 @@ export function loadContent(files: ContentFile[]): Content {
     }
   }
   if (problems.length > 0 || !world) throw new ContentError(problems)
-  return { world, ...content, ...(rules ? { rules } : {}), ...(voice ? { voice } : {}), ...(chronicler ? { chronicler } : {}), ...(lock ? { lock } : {}) }
+  return { world, ...content, ...(rules ? { rules } : {}), ...(voice ? { voice } : {}), ...(journey ? { journey } : {}), ...(chronicler ? { chronicler } : {}), ...(lock ? { lock } : {}) }
 }
 
 /** The voice kit fits the world (M10.10): its faiths, areas, trades and groups are there; an NPC's own voice is a group. */

@@ -7,6 +7,7 @@ import { knownPlaces } from './known'
 import { DEFAULT_PALETTE, SURFACE, TERRAIN_ORDER, terrainName, type MapPalette } from './palette'
 import { noise, regionMap, type RegionMap } from './region'
 import { freshBits, hasSeen, onKnownRidge, playerHex, seenBits, sight, trailAt, trailBits } from './travel'
+import { moodOf } from '../quests/plans'
 
 // The map as the player knows it (FO, chapter 4, "Weergave"): characters with
 // a colour per terrain, in the style of Dwarf Fortress. Only what the player
@@ -163,7 +164,8 @@ export interface HexMapData {
   ways: { c: number; r: number; kind: 'road' | 'path' | 'canal' | 'ridge' }[]
   stairs: { c: number; r: number; dir: 'up' | 'down' }[]
   you?: { c: number; r: number }
-  places: { name: string; kind: string; status: string; c: number; r: number }[]
+  /** mood: the mood its area is in (M10.11), a ring of colour on the map. */
+  places: { name: string; kind: string; status: string; c: number; r: number; mood?: string }[]
   zones: { name: string; c: number; r: number; hexes: number }[]
   /** The terrains in view, in the order of the legend, with this world's names. */
   legend: { key: string; name: string }[]
@@ -238,7 +240,8 @@ export function hexMapData(world: World, options: { width?: number; height?: num
     for (const place of knownPlaces(world)) {
       const areaId = place.topic.startsWith('area_') ? place.topic.slice(5) : [...world.content.areas.values()].find((a) => a.topic === place.topic)?.id
       const kind = world.content.areas.get(areaId ?? '')?.kind ?? 'place'
-      if (place.hex) places.push({ name: place.name, kind, status: place.status, c: place.hex.col, r: place.hex.row })
+      const mood = moodOf(world, areaId)?.kind
+      if (place.hex) places.push({ name: place.name, kind, status: place.status, c: place.hex.col, r: place.hex.row, ...(mood ? { mood } : {}) })
       else if (place.zone) {
         const h = hexAt(place.zone.x, place.zone.y, map.size)
         zones.push({ name: place.name, c: h.col, r: h.row, hexes: Math.max(1, Math.round(place.zone.km / map.size)) })

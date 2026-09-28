@@ -168,7 +168,7 @@ Across country you can head any way, or follow the east road west or the east ro
 +10 experience: you found The East Gate.
 
 > walk to oude zijl
-You make your way towards Oude Zijl for 3 hours and 18 minutes, over the east road, the tow path and the Waagdam road. A mist has come up while you walked. You come to The Old Sluice.
+You make your way towards Oude Zijl for 3 hours and 18 minutes. Your boots find the old ruts, and the road carries you along. A barge horse plods past with its head down, and the rope hisses on the water. Mist hides everything more than a stone's throw off, and sounds come from nowhere. Away to the south-east you see the tower of the Waag of Waagdam. A mist has come up while you walked. You come to The Old Sluice.
 The Old Sluice
 Two great sluice gates of tarred oak hold back the Vaart where it meets the dyke. Water leaks through the seams with a steady hiss, and gulls cry from the dyke top. A dyke house stands to one side with its shutters closed. The tow path runs east along the Vaart to Veenhoek.
 Exits: north, up, west
@@ -213,6 +213,8 @@ Here: Heemraad Sijbrand (at work), Teunis the horse-miller (on the way to On the
 Teunis arrives from below.
 +10 experience: you found On the Great Dyke.
 Teunis brought you to On the Great Dyke, and Sijbrand was there.
+On the Great Dyke
+You climb the last of the slope and the wind hits you all at once. On one side the whole Holleveen lies below you; on the other the grey water stands higher than the fields, and you understand what the dyke is holding back.
 
 > tell sijbrand about the dyke
 You: "The dyke's leaking at Oude Zijl, they say!"
@@ -499,7 +501,7 @@ Teunis arrives from the west.
 [build] You are at Veenhoek, the Green.
 Veenhoek, the Green
 The village green is a patch of trampled grass around a stone well. Peat smoke hangs low over the roofs, and the ground gives a little underfoot, the way it does everywhere in the Holleveen. East, the [Bakery] door stands open, and west a grey cat sits very upright on the doorstep of a narrow house. A lane runs north to the [Chapel]; south, the canal glints between the houses, and a track leaves north-east.
-Brown water stands knee-deep here, cold and still. Whatever could float has floated away.
+Brown water stands knee-deep here, cold and still. Whatever could float has floated away. People wade past with what they could carry, and nobody stops to talk.
 Exits: north, east, south, west, northeast
 Across country you can head any way, or follow the tow path west to Oude Zijl, the tow path east to Waagdam, the peat road to Molenend, the fen path to the Kattenbroek, the priory path to Kloosterveen or the path to the Kabouterberg.
 The dyke at Oude Zijl has broken, and the water is in Veenhoek.
@@ -507,7 +509,7 @@ The dyke at Oude Zijl has broken, and the water is in Veenhoek.
 > look
 Veenhoek, the Green
 The village green is a patch of trampled grass around a stone well. Peat smoke hangs low over the roofs, and the ground gives a little underfoot, the way it does everywhere in the Holleveen. East, the [Bakery] door stands open, and west a grey cat sits very upright on the doorstep of a narrow house. A lane runs north to the [Chapel]; south, the canal glints between the houses, and a track leaves north-east.
-Brown water stands knee-deep here, cold and still. Whatever could float has floated away.
+Brown water stands knee-deep here, cold and still. Whatever could float has floated away. People wade past with what they could carry, and nobody stops to talk.
 Exits: north, east, south, west, northeast
 Across country you can head any way, or follow the tow path west to Oude Zijl, the tow path east to Waagdam, the peat road to Molenend, the fen path to the Kattenbroek, the priory path to Kloosterveen or the path to the Kabouterberg.
 
@@ -534,7 +536,7 @@ Wendela walks on to the north.
 > look
 Veenhoek, the Green
 The village green is a patch of trampled grass around a stone well. Peat smoke hangs low over the roofs, and the ground gives a little underfoot, the way it does everywhere in the Holleveen. East, the [Bakery] door stands open, and west a grey cat sits very upright on the doorstep of a narrow house. A lane runs north to the [Chapel]; south, the canal glints between the houses, and a track leaves north-east.
-Brown water stands knee-deep here, cold and still. Whatever could float has floated away.
+Brown water stands knee-deep here, cold and still. Whatever could float has floated away. People wade past with what they could carry, and nobody stops to talk.
 Exits: north, east, south, west, northeast
 Across country you can head any way, or follow the tow path west to Oude Zijl, the tow path east to Waagdam, the peat road to Molenend, the fen path to the Kattenbroek, the priory path to Kloosterveen or the path to the Kabouterberg.
 

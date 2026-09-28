@@ -150,6 +150,14 @@ aftermath:
       - id: news
         do: { news: "{place} is itself again, and people are going back.", area: $area }
 
+  # M10.11: a fire, a place torn down. People hurry past with buckets, and the map shows it.
+  - id: place_destroyed
+    signal: place_destroyed
+    topic: place
+    steps:
+      - id: panic
+        do: { mood: $area, kind: panic, days: 2, line: "People hurry past with buckets and spades, and nobody stops to talk.", prompt: "{place} is gone, burnt or torn down; people are shaken and talk of nothing else." }
+
   # M8.2: what follows by custom when nobody's brain plans it. Where brain is
   # true, the brain of $a may make a plan of their own instead (with a model).
 
@@ -611,6 +619,15 @@ aftermath:
             far: "Waagdam asked for town rights and did not get them."
             belang: 3
             about: [waagdam]
+
+  # M10.11: talk of war from the east: the town is uneasy, and red on the map.
+  - id: threat_felt
+    signal: threat
+    topic: threat
+    expires: 30
+    steps:
+      - id: unease
+        do: { mood: $area, kind: threat, days: 14, line: "People stand in doorways talking low, and the watch at the gates has been doubled.", prompt: "There is talk of war from the east; people are uneasy and wary of strangers." }
 
   - id: wall_for_waagdam
     signal: threat

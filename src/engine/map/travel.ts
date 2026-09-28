@@ -5,7 +5,8 @@ import type { World } from '../world'
 import { playerSkill, sink } from '../rules/player'
 import { blessed } from '../rules/blessings'
 import { weather, weatherLine, wind } from '../weather'
-import { centre, distance, type Hex, hexAt, HEX_DIRECTIONS, type HexDirection, hexKey, line as hexLine, neighbour, neighbours, stepToward, windBetween } from './hexgrid'
+import { centre, distance, type Hex, hexAt, HEX_DIRECTIONS, type HexDirection, hexKey, line as hexLine, neighbour, neighbours, parseHexKey, stepToward, windBetween } from './hexgrid'
+import { journeyParagraph, metOnTheWay, tellsJourneys } from './journeyText'
 import { type Cell, regionMap, type RegionMap } from './region'
 
 // Walking across the region (FO, chapter 4, "Lopen en automatisch doorlopen"):
@@ -534,6 +535,9 @@ export function walk(world: World, plan: WalkPlan, pass: (minutes: number) => Ou
   const startWeather = weather(world)
   const maxSteps = plan.kind === 'head' ? (plan.steps ?? 16) : 80
   const lands = new Set<string>()
+  // For the paragraph of a longer walk (M10.11): the kinds of land and way, and a landmark seen on the way.
+  const terrains: string[] = []
+  let seen: { text: string; wind: string } | undefined
   const trail = new Set<string>([hexKey(at)])
   // Which named way is being followed, and in which sense along it.
   let following: string | undefined
@@ -618,6 +622,8 @@ export function walk(world: World, plan: WalkPlan, pass: (minutes: number) => Ou
     minutes += minutesFor(world, stepCell)
     steps++
     lands.add(stepCell.way ? stepCell.way.name : onKnownRidge(world, stepCell) ? 'the dry ridge' : stepCell.land)
+    terrains.push(stepCell.way ? stepCell.way.kind : onKnownRidge(world, stepCell) ? 'ridge' : stepCell.land)
+    seen ??= landmarkIn(world, map, at)
     look(world, map, at)
     // On the way to somewhere, places on the road are passed through; any other walk stops there.
     const entrance = plan.kind === 'to' && steps + 1 < path!.length ? undefined : entranceOn(world, map, at)
@@ -656,6 +662,15 @@ export function walk(world: World, plan: WalkPlan, pass: (minutes: number) => Ou
   const how = plan.kind === 'head' ? `You head ${pretty(plan.wind)}` : plan.kind === 'to' ? `You make your way towards ${plan.name}` : `You follow ${plan.way === 'ridge' ? 'the dry ridge' : (plan.label ?? plan.way)}`
   // The way you follow is said once, by where it leads (after the M10 playtest); "over" names the rest.
   const over = [...lands].filter((l) => !(plan.kind === 'follow' && l === plan.way)).map((l) => ({ fen: 'wet fen', fields: 'fields', woods: 'woods', heath: 'heath', water: frozen(world) ? 'the ice' : 'open water, poling' })[l] ?? l)
+  // A walk of more than three steps is told in one paragraph (M10.11), where the world has the sentences for it.
+  if (steps > 3 && tellsJourneys(world)) {
+    const met = metOnTheWay(world, [...trail].flatMap((key) => {
+      const hex = parseHexKey(key)
+      return hex ? [hexId(hex)] : []
+    }))
+    const text = journeyParagraph(world, { how, minutes, terrains, ...(seen ? { seen: { text: seen.text, wind: seen.wind } } : {}), met, ...(reason ? { reason } : {}), ...(arrived ? { arrived: world.location(arrived).name } : {}) })
+    return { outputs: [{ kind: 'narration', text, journey: true }], minutes, at: world.state.player.location }
+  }
   const summary = `${how} for ${duration(minutes)}${over.length ? `, over ${list(over)}` : ''}.${reason ? ` ${reason}` : ''}${arrived ? ` You come to ${world.location(arrived).name}.` : ''}`
   return { outputs: [{ kind: 'narration', text: summary }], minutes, at: world.state.player.location }
 }

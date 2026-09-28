@@ -13,6 +13,7 @@ import { relation, type Attitude } from './relations'
 import { faithOf } from '../faith'
 import { forecastLine, readsTheSky, weather, wind, windWords } from '../weather'
 import { oathsFor, talkSeed, voiceLines } from './voice'
+import { moodOf } from '../quests/plans'
 
 // Prompts for the voice role (FO, chapter 10). The system part is byte-for-byte
 // stable per NPC so providers can cache it; everything that changes goes in
@@ -28,7 +29,8 @@ const RULES = `Rules:
 - Write the reply as it appears on screen: at most one short action in the third person,
   present tense, then what the character says in double quotes.
 - Use only facts from KNOWLEDGE, SCENE and the character card. If asked about anything else,
-  say you don't know, guess vaguely, or point to REFERRAL if one is given.
+  say you don't know, guess vaguely, or point to REFERRAL if one is given. Never bring news
+  or tidings of your own making: only what KNOWLEDGE gives.
 - Numbers, ages, prices, dates and distances only as given here, said as given. Never make
   one up; say "a few" or "some" instead.
 - Never invent places, people, items, prices or quests. Never name a place or person that is
@@ -254,6 +256,8 @@ export function turnPrompt(world: World, ctx: TurnContext): string {
     `SCENE: ${location.name}, ${dayName(clock.parts.weekday, world.calendar)}, ${clock.parts.dayPart}. ${npc.short} is ${state.activity}. Mood: ${ctx.mood}.`,
     // The sky, and for who reads it what is coming (M10.8).
     `WEATHER: ${weather(world)}, ${windWords(wind(world))}.${readsTheSky(world, ctx.npcId) && forecastLine(world) ? ` You read the sky: ${forecastLine(world)}` : ''}`,
+    // The mood of the area (M10.11): panic, grief, a feast, a threat; the people here feel it.
+    ...(moodOf(world, location.area) ? [`THE MOOD HERE: ${moodOf(world, location.area)!.prompt ?? moodOf(world, location.area)!.line}`] : []),
     present.length ? `Also here: ${present.join(', ')}, and the player.` : `Also here: the player, a stranger from ${world.words.from}.`,
     ...recently(world, ctx.npcId),
     // Only those who matter to this talk (M9.3): its topics, their own people, who is here.

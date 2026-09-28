@@ -69,6 +69,8 @@ locations:
       - words: [sacks]
         look: Sacks going up and down the planks on men's backs.
         take: The sacks are counted, and you would be too.
+    arrival:
+      text: "The Vaart widens, and there is Waagdam across the water: barges moored three deep, brick houses shoulder to shoulder, and over them all the tower of the Waag. The noise reaches you before the smell of tar does."
 
   - id: loc_waagdam_smithy
     name: Hendrik's Smithy
@@ -161,6 +163,9 @@ locations:
     details:
       - words: [stair, stairs]
         look: A steep stair of worn oak, going up to the Weighing Room.
+    arrival:
+      text: Inside the Waag the voices of the merchants roll round the high hall like thunder in a barrel. Great scales hang from the beams, and every sack that comes in is weighed, written down and taxed.
+      far: Over the flat land rises the tower of the Waag of Waagdam, and around it the roofs of more houses than the whole Holleveen has.
 
   - id: loc_waagdam_weighing_room
     name: The Weighing Room

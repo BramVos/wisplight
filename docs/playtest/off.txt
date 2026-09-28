@@ -14,6 +14,8 @@ The Wreck Strand
 You stand on a strand of black shingle where the sea throws up what is left of the [Grey Gull]: a broken mast, a spill of wet rope, a cask rolling in the shallows. The stones clatter and hiss with every wave, and the air tastes of salt and tar. Gulls quarrel over something you would rather not look at. North, a path climbs the low cliff; east, the rocks give way to the [Tidepools].
 On the ground: a cask of lamp oil, a coil of rope and a bolt of sailcloth.
 Exits: north, east
+The Wreck Strand
+You come to on black shingle with the sea still pulling at your boots. Around you lies what is left of the Grey Gull, a mast, rope, a cask turning in the shallows, and nobody else.
 The pace of events is normal. Type TEMPO CALM or TEMPO DRAMATIC for less or more happening in the world.
 New quest: Off Skerrow. The Grey Gull broke on the rocks of Skerrow, and you alone came ashore. No ship calls since the beacon on the headland went out, and the winter storms will soon close the sea. Find a way off the island.
 
@@ -55,6 +57,8 @@ On the ground: a cask of lamp oil.
 Exits: south, west, north
 Here: Garrick the lightkeeper (asleep).
 +10 experience: you found The Headland.
+The Headland
+The squat stone tower stands at the very end of the island with the sea on three sides, and the great lamp behind its green glass is cold. From up here you see why the ships stopped coming: without that light, Skerrow is only rocks in the dark.
 
 > look
 The Headland
@@ -257,6 +261,8 @@ The Wreck Strand
 You stand on a strand of black shingle where the sea throws up what is left of the [Grey Gull]: a broken mast, a spill of wet rope, a cask rolling in the shallows. The stones clatter and hiss with every wave, and the air tastes of salt and tar. Gulls quarrel over something you would rather not look at. North, a path climbs the low cliff; east, the rocks give way to the [Tidepools].
 On the ground: a cask of lamp oil, a coil of rope and a bolt of sailcloth.
 Exits: north, east
+The Wreck Strand
+You come to on black shingle with the sea still pulling at your boots. Around you lies what is left of the Grey Gull, a mast, rope, a cask turning in the shallows, and nobody else.
 The pace of events is normal. Type TEMPO CALM or TEMPO DRAMATIC for less or more happening in the world.
 New quest: Off Skerrow. The Grey Gull broke on the rocks of Skerrow, and you alone came ashore. No ship calls since the beacon on the headland went out, and the winter storms will soon close the sea. Find a way off the island.
 
@@ -298,6 +304,8 @@ On the ground: a cask of lamp oil.
 Exits: south, west, north
 Here: Garrick the lightkeeper (asleep).
 +10 experience: you found The Headland.
+The Headland
+The squat stone tower stands at the very end of the island with the sea on three sides, and the great lamp behind its green glass is cold. From up here you see why the ships stopped coming: without that light, Skerrow is only rocks in the dark.
 
 > look
 The Headland

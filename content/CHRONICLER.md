@@ -298,6 +298,7 @@ Watchers, the standard aftermath, intentions, fixed plans, quests and your own p
 - `hire` `{ hire: text, reach?: number = 120, except?: list of selector = [] }`: Someone without work who heard of an open place takes it. Rules yes, brain no, chronicler no.
 - `feast` `{ feast: selector, hours?: number = 4, guests?: list of selector = [], kind?: feast | burial = "feast" }`: A feast at a place, with guests; kind burial for a burial, where those in grief come too. Standard conditions: only at a place that is not flooded, destroyed or occupied. Rules yes, brain yes, chronicler yes.
 - `mark` `{ mark: selector, text: text, days?: number }`: A mark at a place: a line in its description from now on or for some days, such as a cairn with a name (M10.7). Rules yes, brain no, chronicler no.
+- `mood` `{ mood: selector, kind: panic | grief | feast | threat, days: number, line: text, prompt?: text }`: An area takes a mood for some days: panic, grief, feast or threat, with a line for its places and its people, and a colour on the map (M10.11). Rules yes, brain no, chronicler yes.
 - `return` `{ return: selector }`: Someone who fled or stayed away goes home. Standard conditions: only when they know what drove them away is over, believe their house stands, and it is not flooded, destroyed or occupied. Rules yes, brain no, chronicler yes.
 - `leave` `{ leave: list of selector, to: text, days: number }`: Some go away together for a while. Rules yes, brain no, chronicler yes.
 - `post` `{ post: selector, fact: { kind?: text = "aftermath", title: text, precise: text, village: text, far: text, belang?: number = 1, about?: list of text = [], place?: selector, claim?: { subject: text, key: text, value: text, far?: text }, witnesses?: list of text } }`: A notice on a board. Rules yes, brain no, chronicler yes.
@@ -366,6 +367,7 @@ Watchers, the standard aftermath, intentions, fixed plans, quests and your own p
 - `market` `{ market: text, factor: number }`: What comes in of a thing, as a share. Rules yes, brain no, chronicler yes.
 - `tension` `{ tension: [text, text], delta: number, why: text }`: The tension between two realms (the chronicler only by his own bounded proposal). Rules no, brain no, chronicler no.
 - `area_news` `{ news: text, area: text }`: The news of the day in an area. Rules yes, brain no, chronicler yes.
+- `mood` `{ mood: text, kind: panic | grief | feast | threat, days: number, line: text, prompt?: text }`: An area takes a mood for some days: panic, grief, feast or threat, with a line for its places and its people, and a colour on the map (M10.11). Rules yes, brain no, chronicler yes.
 
 ### Selectors
 

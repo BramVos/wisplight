@@ -1,5 +1,19 @@
 # Changelog
 
+## M10.11 Momenten: wat opvalt, opgelicht, 28 september 2026
+
+- **Aankomst.** Een plek met een `arrival` in de content krijgt de eerste keer een kaart boven het logboek: het plaatje van de plek (of een vaste tekening), de naam en twee of drie zinnen, met een eigen versie bij mist, nacht of storm. Een landmark die je op de kaart ziet opdoemen, krijgt zijn kaart op dat moment ("The Mill De Zwaan, to the north-east"); kom je er later, dan staat de tekst gewoon in het logboek. De Nethermarch heeft er tien (de Kabouterberg, De Zwaan, de dijk bij Oude Zijl, de priorij, de haven en de Waag van Waagdam, het hunebed, de Blackmere, de Drowned Goose, de Kattenbroek), Skerrow drie (het wrak, de Lamp, de toren). Een nieuw spel op Skerrow begint met de kaart van het wrak.
+- **De kaart onderbreekt niets.** De klok staat stil zolang hij open is, Enter of een klik sluit hem, en hij wacht tot het maakvenster dicht is. In de terminal is het een kader van tekst. Onder Instellingen > Display zet je kaarten uit; dan zijn het gewone regels.
+- **Tijding.** Een feit van belang 4 of meer dat jou bereikt (gehoord of zelf gezien) krijgt een kaart met de titel, de versie zoals jij het hoorde, van wie, en een knop naar het dagboek. Het is hetzelfde feit dat het nieuws al verspreidde.
+- **De tocht.** Een wandeling van meer dan drie stappen wordt één alinea uit zinnen in `data/journey.yaml`: het land, het weer, de nacht, een landmark in de verte, wie je onderweg passeerde, en hoe het eindigde. Met een model herschrijft de verteller die alinea in de stem van de wereld; wat iets verzint, blijft liggen. Snelreizen over bekend land haalt zijn voorvallen onderweg nu ook uit die content.
+- **Stemming van een gebied**, een nieuw soort toestand voor elke gebeurtenis: het werkwoord `mood` (en een effect in een plan) geeft een gebied paniek, rouw, feest of dreiging voor een aantal dagen, met een regel onder de beschrijving van de plekken, een regel in de prompt van wie er is, en een gekleurde ring op de kaart. De dijkbreuk geeft Veenhoek drie dagen paniek en daarna een week rouw; een plek die afbrandt of verwoest raakt geeft paniek; dreiging uit het oosten zet Waagdam veertien dagen op scherp; een dood op Skerrow maakt de haven een paar dagen stil. De stem vertelt geen tijdingen die niet in zijn kennis staan.
+
+Testen: begin op Skerrow en kijk naar de eerste kaart. In de Nethermarch: loop `ne` de kade af (De Zwaan doemt op), `head east` voor een tochtalinea, en `@plan dyke_breach` voor de stemming van Veenhoek. Zet onder Instellingen > Display de kaarten uit en weer aan. Tests in `tests/m1011.test.ts` (10), alle 681 groen, beide simulaties zonder problemen, rooktests van beide werelden. De speeltests tonen dezelfde feiten, nu met kaarten, alinea's en stemmingen erbij.
+
+Aangepast in bestaande tests: de test van het eerste stapje het land op verwacht nu dat De Zwaan daarna als kaart opdoemt.
+
+Nog niet: een wandeling had nooit een regel per stap, dus er staan ook geen stappen apart in het transcript; de alinea en de kamerbeschrijving staan erin. Skerrow heeft geen landkaart, dus geen tochtalinea en geen landmarks. De ring voor een stemming staat nog niet in de legenda van de kaart. Waarom een nieuw werkwoord en geen bestaand: een stemming geldt voor een heel gebied en heeft een eigen einde, en geen bestaande toestand of werkwoord deed dat.
+
 ## M10.10 In karakter: stem, gezegden en tijd, 28 september 2026
 
 - **Een stemkit per wereld** in `data/voice.yaml`: vloeken per geloof, gezegden van de streek en per groep (veenvolk, Waagdam, het klooster, de mannen van de Graaf; op Skerrow de havenmensen en de ouden van de hoogte), hoe men de vreemdeling aanspreekt, hoe men tijd, afstand en maten noemt, en wat hier niet bestaat met wat men in plaats daarvan zegt. Iemand hoort bij een groep door zijn beroep, zijn dorp of een eigen `voice`; Kobus praat als Waagdam. De vloeken staan nu in de kit, niet meer in `world.yaml`.

@@ -48,6 +48,10 @@ locations:
       west: { to: loc_blackmere_willows, minutes: 5 }
       south: { to: loc_blackmere_hookstone, minutes: 5 }
       east: { to: loc_blackmere_channel, minutes: 10 }
+    arrival:
+      text: "The fen gives out and there is the Blackmere: flat, black, and so still it looks solid. The drowned willows stand in it up to their waists, and you do not want to put your hand in the water."
+      mist: In the mist the Blackmere has no far shore at all, only black water going on into grey. Somewhere out there something slaps the surface once, and then nothing.
+      far: "Beyond the reeds lies a sheet of black water that gives back nothing of the sky: the Blackmere."
 
   - id: loc_blackmere_willows
     name: The Drowned Willows

@@ -34,6 +34,11 @@ locations:
         look: Pale, fine sand, dry even after rain. It has been swept smooth round the bowl, and there are no footprints in it but yours.
         verbs:
           dig: You kneel and put your hands to the sand, and stop. Nobody digs in the Kabouterberg; anyone in Veenhoek could tell you why.
+    arrival:
+      text: The pale hill rises out of the fields like the back of something asleep, and the old oak on top holds the sky in its branches. You find yourself walking more quietly as you climb, and the wind seems to go round you.
+      mist: The oak comes out of the mist before the hill does, a black shape with its arms out, and for a moment you would swear it moved. Then the pale sand is under your feet, and it is very quiet.
+      night: In the dark the hill is only a hump against the stars, and the oak a deeper black on top of it. Something small rustles away from the milk bowl as you come.
+      far: Across the fields a low pale hill rises with a single great oak on top, alone and very old. Even from here it looks like a place where you ask leave before you go in.
 
   - id: loc_kabouterberg_oak
     name: The Old Oak

@@ -8,7 +8,7 @@ import type { Claim } from '../state'
 import type { World } from '../world'
 import { recordFact } from '../news'
 import { applyEffects, holds, type QuestHost } from './engine'
-import { PlanSchema, type Plan, type PlanEffect, type Step } from './planschema'
+import { PlanSchema, type MoodKind, type Plan, type PlanEffect, type Step } from './planschema'
 import type { PlaceStateName } from './schema'
 import { bindValue, runVerb, verbGuard, type PlanContext } from '../aftermath'
 
@@ -329,6 +329,7 @@ export function runEffect(world: World, host: QuestHost, p: PlanState, e: PlanEf
     }
   } else if ('tension' in e) shiftTension(world, e.tension[0], e.tension[1], e.delta, e.why)
   else if ('news' in e) setAreaNews(world, e.area, e.news, out)
+  else if ('mood' in e) setAreaMood(world, e.mood, e.kind, e.days, e.line, e.prompt)
   else applyEffects(world, host, undefined, [e], out)
 }
 
@@ -347,6 +348,24 @@ export function closedBetween(world: World, a: string, b: string): string | unde
  * into the area later hears it once. Found in the playtest of the dyke: "the
  * water is in Veenhoek" was written down and never told.
  */
+/**
+ * The mood of an area (M10.11), a new kind of state for any event: panic,
+ * grief, feast or threat for some days. The area of a place, or an area by
+ * id; a newer mood takes the place of the old one.
+ */
+export function setAreaMood(world: World, where: string, kind: MoodKind, days: number, line: string, prompt?: string): boolean {
+  const area = world.content.areas.has(where) ? where : world.content.locations.get(where)?.area
+  if (!area) return false
+  ;(world.state.moods ??= {})[area] = { kind, t: world.now, until: world.now + days * DAY, line, ...(prompt ? { prompt } : {}) }
+  return true
+}
+
+/** The mood an area is in now, if any (M10.11). */
+export function moodOf(world: World, area: string | undefined): { kind: MoodKind; line: string; prompt?: string } | undefined {
+  const mood = area ? world.state.moods?.[area] : undefined
+  return mood && mood.until > world.now ? mood : undefined
+}
+
 export function setAreaNews(world: World, area: string, news: string, out: Output[]): void {
   ;(world.state.areaNews ??= {})[area] = news
   tellAreaNews(world, out)
@@ -368,7 +387,9 @@ export function placeStateLine(world: World, location: string): string | undefin
   const line = state ? stateLine(state) : undefined
   // Lasting marks (M10.7): a cairn with a name, a line on a wall.
   const marks = (world.state.marks?.[location] ?? []).filter((m) => m.until === undefined || m.until > world.now).map((m) => m.text)
-  const all = [line, ...marks].filter((x): x is string => Boolean(x))
+  // The mood of the area (M10.11): people hurrying past with buckets.
+  const mood = moodOf(world, world.content.locations.get(location)?.area)?.line
+  const all = [line, ...marks, mood].filter((x): x is string => Boolean(x))
   return all.length ? all.join(' ') : undefined
 }
 

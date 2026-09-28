@@ -149,6 +149,10 @@ locations:
         look: A lean-to store shed at the foot of the tower, with half its roof gone. It smells strongly of fish oil.
       - words: [track, tracks]
         look: Tracks run south to the hamlet and west to the grove.
+    arrival:
+      text: "The squat stone tower stands at the very end of the island with the sea on three sides, and the great lamp behind its green glass is cold. From up here you see why the ships stopped coming: without that light, Skerrow is only rocks in the dark."
+      night: At night the headland is all wind and the sound of the sea, and the tower is a black shape with no light in it. Somewhere out there a ship would have to guess where the rocks begin.
+      far: "On the last headland stands a squat stone tower with a gallery of green glass: the Lamp of Skerrow, with no light in it."
 
   - id: loc_skerrow_mage_tower
     name: The Drowned Mage's Tower
@@ -183,3 +187,6 @@ locations:
         look: Stairs climb round the inside of the wall and stop in the air where the tower has fallen.
         verbs:
           climb: You climb a few steps and look up at the sky where the rest of the tower should be. You come down again.
+    arrival:
+      text: Half a tower of black stone stands against the sky, its top long since fallen into the sea. As you come closer the air begins to hum, faint as a finger on glass, and the hair on your arms stands up.
+      far: On the last rise of the island stands half a tower of black stone, broken off like a tooth.

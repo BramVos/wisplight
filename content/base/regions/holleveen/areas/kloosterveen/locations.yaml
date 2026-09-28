@@ -25,6 +25,10 @@ locations:
     details:
       - words: [gatehouse, gate, iron]
         look: A squat gatehouse of dark brick, with a door of oak studded with iron and a slit of a window above it. Beyond it rise the church roof and the hop poles of the brewery.
+    arrival:
+      text: "The trees open and there is the priory: dark brick, a gate studded with iron, and the church roof rising behind the wall. A bell is ringing somewhere inside, slow and without hurry."
+      night: A single lamp burns over the priory gate, and the dark brick drinks the rest of the light. Somewhere behind the wall a bell rings for the night office.
+      far: Above the trees stands the bell tower of the priory, grey and square. On a still day you can hear its bell from here.
 
   - id: loc_kloosterveen_church
     name: The Priory Church

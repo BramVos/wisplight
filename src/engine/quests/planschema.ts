@@ -29,6 +29,10 @@ export type Selector =
   | { stayer: [Selector, Selector] }
   | { welcoming: Selector }
 
+/** The moods an area can be in (M10.11). */
+export const MOOD_KINDS = ['panic', 'grief', 'feast', 'threat'] as const
+export type MoodKind = (typeof MOOD_KINDS)[number]
+
 export const SelectorSchema: z.ZodType<Selector> = z.lazy(() =>
   z.union([
     z.string().describe('An id, or a binding of the plan: $a, $b, $who, $place, $area, $subject, $value.'),
@@ -63,6 +67,8 @@ export const PlanEffectSchema = z.union([
   z.object({ market: z.string(), factor: z.number().min(0).max(3) }).strict(),
   z.object({ tension: z.tuple([z.string(), z.string()]), delta: z.number().int(), why: z.string() }).strict(),
   z.object({ news: z.string(), area: z.string() }).strict(),
+  /** An area takes a mood for some days (M10.11): panic, grief, feast or threat, with a line for its places and its people. */
+  z.object({ mood: z.string(), kind: z.enum(MOOD_KINDS), days: z.number().positive(), line: z.string(), prompt: z.string().optional() }).strict(),
 ])
 export type PlanEffect = z.infer<typeof PlanEffectSchema>
 
@@ -105,6 +111,11 @@ export const VerbSchema = z.union([
   z.object({ feast: SelectorSchema, hours: z.number().positive().default(4), guests: z.array(SelectorSchema).default([]), kind: z.enum(['feast', 'burial']).default('feast') }).strict(),
   /** A lasting mark at a place (M10.7): a line in its description from now on, or for so many days; {a} and {place} filled in: a cairn with a name. */
   z.object({ mark: SelectorSchema, text: z.string(), days: z.number().positive().optional() }).strict(),
+  /**
+   * An area takes a mood for some days (M10.11): panic, grief, feast or threat. The area of a place, or an area by id;
+   * a line under the descriptions of its places, a line in the prompt of those there, and a colour on the map.
+   */
+  z.object({ mood: SelectorSchema, kind: z.enum(MOOD_KINDS), days: z.number().positive(), line: z.string(), prompt: z.string().optional() }).strict(),
   /** Someone who fled or stayed away goes home. */
   z.object({ return: SelectorSchema }).strict(),
   /** Some go away together for a while: beyond the region, or to a far place in it. */

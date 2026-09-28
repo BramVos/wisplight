@@ -6,6 +6,7 @@ import { weather } from '../weather'
 import { centre, type Hex, hexKey, neighbours } from './hexgrid'
 import { regionMap, type RegionMap } from './region'
 import { entranceOn, hasSeen, hasWalked, minutesFor, passable, playerHex, seenBits, tread } from './travel'
+import { tellsJourneys } from './journeyText'
 
 // Fast travel (FO, chapter 4, "Snelreizen"): time runs on over a route you
 // know because you walked it, with a chance of something on the way. The
@@ -60,7 +61,9 @@ function onTheWay(world: World, map: RegionMap, path: Hex[], minutes: number): {
   for (let hour = 0; hour < hours && lines.length < 2; hour++) {
     const chance = 0.15 + (night ? 0.1 : 0) + (kinds.has('fen') ? 0.05 : 0)
     if (world.rng.next('travel') >= chance) continue
-    const fits = ON_THE_WAY.filter((e) => (e.where === 'any' || kinds.has(e.where)) && (e.night === undefined || e.night === night) && !lines.includes(e.text))
+    // What may happen on the way is the world's own (M10.11, journey.yaml); the Holleveen's when it says nothing.
+    const events = world.content.journey?.on_the_way.length ? world.content.journey.on_the_way : ON_THE_WAY
+    const fits = events.filter((e) => (e.where === 'any' || kinds.has(e.where)) && (e.night === undefined || e.night === night) && !lines.includes(e.text))
     const event = world.rng.pick('travel', fits)
     if (!event) continue
     if (event.text.includes('mist') && weather(world) !== 'fog' && weather(world) !== 'overcast') continue
@@ -89,6 +92,14 @@ export function travelTo(world: World, target: Hex, name: string, pass: (minutes
   tread(world, map, path)
   const entrance = entranceOn(world, map, target)
   world.state.player.location = entrance ?? `hex:${target.col},${target.row}`
+  // Told in one paragraph where the world has the sentences for it (M10.11): the land, the weather, what happened on the way.
+  if (tellsJourneys(world) && path.length > 4) {
+    const kit = world.content.journey!
+    const terrains = [...new Set(path.slice(1).map((h) => map.cell(h)!).map((c) => (c.way ? c.way.kind : c.land)))].filter((t) => kit.terrain[t]?.length).slice(0, 2)
+    const pick = (list: string[] | undefined) => (list?.length ? world.rng.pick('journey', list) : undefined)
+    const parts = [`You travel to ${name}. It takes ${duration(minutes + extra)}.`, ...terrains.map((t) => pick(kit.terrain[t])), pick(kit.weather[weather(world)]), ...lines]
+    return [{ kind: 'narration', text: parts.filter((p): p is string => Boolean(p)).join(' '), journey: true }]
+  }
   return [{ kind: 'narration', text: [`You travel to ${name}. It takes ${duration(minutes + extra)}.`, ...lines].join(' ') }]
 }
 

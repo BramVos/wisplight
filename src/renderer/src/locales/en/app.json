@@ -34,6 +34,13 @@
   "clock": {
     "label": "{weekday} {date}, {time}; the weather: {weather}"
   },
+  "moment": {
+    "arrival": "You arrive",
+    "sighting": "In sight",
+    "tidings": "Tidings",
+    "journal": "[In your journal]",
+    "close": "[Go on]"
+  },
   "map": {
     "title": "Map",
     "label": "Map of the land around you",

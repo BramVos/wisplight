@@ -37,6 +37,9 @@ locations:
         take: It is far too heavy to carry.
       - words: [spill]
         look: A spill of wet rope from the wreck, tangled in the shingle.
+    arrival:
+      text: You come to on black shingle with the sea still pulling at your boots. Around you lies what is left of the Grey Gull, a mast, rope, a cask turning in the shallows, and nobody else.
+      storm: "The sea is still trying to take you back: waves drag at your legs over the black shingle, and wreckage of the Grey Gull comes in on every one. You crawl up the strand until the water lets you go."
 
   - id: loc_skerrow_tidepools
     name: The Tidepools

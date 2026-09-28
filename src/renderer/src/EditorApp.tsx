@@ -460,6 +460,13 @@ function PlaceFields({ raw, view, isNew, onChange }: { raw: Raw; view: EditorVie
       <label>
         By night <textarea rows={3} value={(description.night ?? '').trim()} onChange={(e) => set('description', clean({ ...description, night: e.target.value.trim() ? `${e.target.value.trim()}\n` : undefined }))} placeholder="(optional)" />
       </label>
+      {/* A moment (M10.11): only for a place worth it, a card the first time; the YAML holds the mist, night and storm variants. */}
+      <label>
+        Arriving <textarea rows={3} value={String((raw['arrival'] as Raw | undefined)?.['text'] ?? '')} onChange={(e) => set('arrival', e.target.value.trim() ? { ...((raw['arrival'] as Raw | undefined) ?? {}), text: e.target.value.trim() } : undefined)} placeholder="(only for a place worth a moment: two or three sentences for the first time you reach it)" />
+      </label>
+      <label>
+        Seen from afar <textarea rows={2} value={String((raw['arrival'] as Raw | undefined)?.['far'] ?? '')} disabled={!raw['arrival']} onChange={(e) => set('arrival', { ...((raw['arrival'] as Raw | undefined) ?? {}), far: e.target.value.trim() || undefined })} placeholder="(optional: when it rises into view as a landmark)" />
+      </label>
       <fieldset>
         <legend>Exits</legend>
         {exits.map(([direction, exit], index) => (

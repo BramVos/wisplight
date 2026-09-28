@@ -131,6 +131,9 @@ aftermath:
         do: { thought: npc_maren, text: "{a}'s place by the fire is empty. You keep looking at it, and you say so to whoever sits down there.", days: 7 }
       - id: empty_stool
         do: { mark: loc_skerrow_salt_kettle, text: "A stool by the fire stands empty, and nobody sits on it; a cup is turned upside down on it for {a}.", days: 7 }
+      # The mood of the hythe (M10.11): quiet for a few days, and grey on the map.
+      - id: quiet
+        do: { mood: loc_skerrow_salt_kettle, kind: grief, days: 3, line: "The harbour is quiet; people speak low, and nobody sings at the nets.", prompt: "Someone of the island has died; people speak low and think of the dead." }
       - id: announce
         do:
           tell:
@@ -187,6 +190,9 @@ aftermath:
         do: { thought: npc_maren, text: "{a} is lost, and there is nothing to bury. The place by the fire stays empty.", days: 7 }
       - id: empty_stool
         do: { mark: loc_skerrow_salt_kettle, text: "A stool by the fire stands empty, and nobody sits on it; a cup is turned upside down on it for {a}.", days: 7 }
+      # The mood of the hythe (M10.11): quiet for a few days, and grey on the map.
+      - id: quiet
+        do: { mood: loc_skerrow_salt_kettle, kind: grief, days: 3, line: "The harbour is quiet; people speak low, and nobody sings at the nets.", prompt: "Someone of the island has died; people speak low and think of the dead." }
       - id: name
         at: { days: 1, hour: 15 }
         do: { mark: loc_skerrow_harbour, text: "Someone has scratched {a}'s name into the harbour wall, low down, where the spray keeps it wet." }

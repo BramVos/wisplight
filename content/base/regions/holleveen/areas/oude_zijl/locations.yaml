@@ -66,6 +66,9 @@ locations:
         look: Grey water runs out to a grey sky, and there is nothing on it, not one sail, as far as you can see.
       - words: [sheep, grass]
         look: Sheep have cropped the grass short all along the dyke, and their droppings are everywhere.
+    arrival:
+      text: You climb the last of the slope and the wind hits you all at once. On one side the whole Holleveen lies below you; on the other the grey water stands higher than the fields, and you understand what the dyke is holding back.
+      storm: The wind nearly takes you off your feet at the top, and spray comes over the crest in sheets. Below you the Holleveen lies low and green and waiting, and the water on the other side is higher than it should be.
 
   - id: loc_oude_zijl_ferry
     name: The Ferry Landing

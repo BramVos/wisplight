@@ -43,6 +43,11 @@ watchers:
     # Only a place that was flooded, damaged or taken (kind place), not a leak shored in time (M10.6).
     fact: { key: state, value: normal, kind: place }
 
+  # M10.11: a place burnt out or torn down: the area is in a panic for a few days.
+  - id: place_destroyed
+    signal: place_destroyed
+    fact: { key: state, value: destroyed, kind: place }
+
   # M8.2: the brain plans.
 
   # A household that rose two standings (money against the middle of the region).

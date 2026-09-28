@@ -391,7 +391,7 @@ export interface TalkState {
 /** A line of a conversation as the engine keeps it (M10.8): what was typed, and what came back. */
 export interface TalkLine {
   id: number
-  kind: 'room' | 'text' | 'system' | 'error' | 'narration' | 'speech' | 'check' | 'input'
+  kind: 'room' | 'text' | 'system' | 'error' | 'narration' | 'speech' | 'check' | 'input' | 'card'
   text: string
   source?: 'model' | 'rules'
 }
@@ -463,9 +463,21 @@ export interface Prop {
   missed?: number
 }
 
+/** What the stranger has had a moment for (M10.11): places reached or seen from afar, tidings heard. */
+export interface MomentsState {
+  /** Places with an arrival the stranger reached. */
+  places: string[]
+  /** Places seen from afar first (their card came then). */
+  sighted: string[]
+  /** Facts of belang 4 or more that came to the stranger with a card. */
+  tidings: string[]
+}
+
 export interface PlayerState {
   /** Whom the stranger was told to ask for when they came (M10.9), by their background. */
   contact?: string
+  /** Moments the stranger had (M10.11): a card once per place and per tiding. */
+  moments?: MomentsState
   /** Crafts the stranger works at (M10.5), by craft. */
   crafts?: Record<string, CraftProgress>
   /** Hidden things found, `location/id`, and inscriptions read, `location/object` (M10.5). */
@@ -688,6 +700,8 @@ export interface GameState {
   wanted?: Record<string, { fine: number; since: number }>
   /** The player's companions (FO, chapter 13). */
   companions?: Companion[]
+  /** The mood of an area for some days (M10.11), by area: panic, grief, feast or threat. */
+  moods?: Record<string, { kind: import('./quests/planschema').MoodKind; t: number; until: number; line: string; prompt?: string }>
   /** Lasting marks at places (M10.7), by location: a cairn with a name, a line on a wall; shown under the description. */
   marks?: Record<string, { t: number; text: string; about?: string; until?: number }[]>
   /** A choice put to the player (after the M10 playtest): numbered, answered by the next command. */

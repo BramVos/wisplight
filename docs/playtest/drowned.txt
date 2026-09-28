@@ -14,6 +14,8 @@ The Wreck Strand
 You stand on a strand of black shingle where the sea throws up what is left of the [Grey Gull]: a broken mast, a spill of wet rope, a cask rolling in the shallows. The stones clatter and hiss with every wave, and the air tastes of salt and tar. Gulls quarrel over something you would rather not look at. North, a path climbs the low cliff; east, the rocks give way to the [Tidepools].
 On the ground: a cask of lamp oil, a coil of rope and a bolt of sailcloth.
 Exits: north, east
+The Wreck Strand
+You come to on black shingle with the sea still pulling at your boots. Around you lies what is left of the Grey Gull, a mast, rope, a cask turning in the shallows, and nobody else.
 The pace of events is normal. Type TEMPO CALM or TEMPO DRAMATIC for less or more happening in the world.
 New quest: Off Skerrow. The Grey Gull broke on the rocks of Skerrow, and you alone came ashore. No ship calls since the beacon on the headland went out, and the winter storms will soon close the sea. Find a way off the island.
 
@@ -46,7 +48,7 @@ Time passes. It is Windsday 3 Leaffall 412 SF, 14:00 (afternoon).
 > look
 The Salt Kettle
 The inn is one long, smoky room under black beams, with a fire at one end and a barrel of ale at the other. It smells of fish stew, tallow and wet wool drying. A ship's figurehead, a woman with a chipped nose, watches the door from the corner; they say she came off the last ship that broke here before the [Grey Gull]. The door west goes out to the green.
-A stool by the fire stands empty, and nobody sits on it; a cup is turned upside down on it for Wenna.
+A stool by the fire stands empty, and nobody sits on it; a cup is turned upside down on it for Wenna. The harbour is quiet; people speak low, and nobody sings at the nets.
 Exits: west
 Here: Maren of the Salt Kettle (at work).
 
@@ -58,6 +60,9 @@ Maren nods. "Afternoon."
 > 2
 You: "What's new around here?"
 Maren nods slowly. "News of the day here: Wenna is dead. She drowned off the harbour wall, they say."
+The death of Wenna Dray
+Wenna is dead. She drowned off the harbour wall, they say.
+(from Maren)
 
 > bye
 Maren lifts a hand. "Go on, then."
@@ -92,6 +97,7 @@ Maren lifts a hand. "Go on, then."
 > west
 Skerrow Hythe, the Green
 A dozen stone cottages with turf roofs stand round a patch of wind-flattened grass and a squat well. Hens pick about your feet, and somewhere a door bangs in the wind, over and over. The low, lit door of the Salt Kettle is on the east side of the green. Steps lead south to the harbour, a track climbs north to the headland and the beacon, and west the cliff path runs along the sea.
+The harbour is quiet; people speak low, and nobody sings at the nets.
 Exits: south, east, north, west
 Here: Pip, the boatman's boy (playing).
 +10 experience: you found Skerrow Hythe, the Green.
@@ -134,6 +140,7 @@ Tamsin leaves west.
 > look
 Skerrow Hythe, the Green
 A dozen stone cottages with turf roofs stand round a patch of wind-flattened grass and a squat well. Hens pick about your feet, and somewhere a door bangs in the wind, over and over. The low, lit door of the Salt Kettle is on the east side of the green. Steps lead south to the harbour, a track climbs north to the headland and the beacon, and west the cliff path runs along the sea.
+The harbour is quiet; people speak low, and nobody sings at the nets.
 Exits: south, east, north, west
 Here: Pip, the boatman's boy (playing).
 
@@ -164,6 +171,8 @@ Exits: south, west, north
 Here: Garrick the lightkeeper (eating).
 +10 experience: you found The Headland.
 +30 experience: you came to the Heights.
+The Headland
+The squat stone tower stands at the very end of the island with the sea on three sides, and the great lamp behind its green glass is cold. From up here you see why the ships stopped coming: without that light, Skerrow is only rocks in the dark.
 
 > wait 60
 Time passes. It is Thornsday 4 Leaffall 412 SF, 15:25 (afternoon).
@@ -209,7 +218,7 @@ Maren and Brannoc stand talking.
 [build] You are at The Salt Kettle.
 The Salt Kettle
 The inn is one long, smoky room under black beams, with a fire at one end and a barrel of ale at the other. It smells of fish stew, tallow and wet wool drying. A ship's figurehead, a woman with a chipped nose, watches the door from the corner; they say she came off the last ship that broke here before the [Grey Gull]. The door west goes out to the green.
-A stool by the fire stands empty, and nobody sits on it; a cup is turned upside down on it for Wenna.
+A stool by the fire stands empty, and nobody sits on it; a cup is turned upside down on it for Wenna. The harbour is quiet; people speak low, and nobody sings at the nets.
 Exits: west
 Maren keeps her strongbox at The Salt Kettle under lock, and the key close.
 
@@ -227,7 +236,7 @@ Time passes. It is Thornsday 4 Leaffall 412 SF, 17:40 (afternoon).
 > look
 The Salt Kettle
 The inn is one long, smoky room under black beams, with a fire at one end and a barrel of ale at the other. It smells of fish stew, tallow and wet wool drying. A ship's figurehead, a woman with a chipped nose, watches the door from the corner; they say she came off the last ship that broke here before the [Grey Gull]. The door west goes out to the green.
-A stool by the fire stands empty, and nobody sits on it; a cup is turned upside down on it for Wenna.
+A stool by the fire stands empty, and nobody sits on it; a cup is turned upside down on it for Wenna. The harbour is quiet; people speak low, and nobody sings at the nets.
 Exits: west
 Here: Maren of the Salt Kettle (on the way to The Salt Kettle).
 
@@ -309,6 +318,8 @@ The Wreck Strand
 You stand on a strand of black shingle where the sea throws up what is left of the [Grey Gull]: a broken mast, a spill of wet rope, a cask rolling in the shallows. The stones clatter and hiss with every wave, and the air tastes of salt and tar. Gulls quarrel over something you would rather not look at. North, a path climbs the low cliff; east, the rocks give way to the [Tidepools].
 On the ground: a cask of lamp oil, a coil of rope and a bolt of sailcloth.
 Exits: north, east
+The Wreck Strand
+You come to on black shingle with the sea still pulling at your boots. Around you lies what is left of the Grey Gull, a mast, rope, a cask turning in the shallows, and nobody else.
 The pace of events is normal. Type TEMPO CALM or TEMPO DRAMATIC for less or more happening in the world.
 New quest: Off Skerrow. The Grey Gull broke on the rocks of Skerrow, and you alone came ashore. No ship calls since the beacon on the headland went out, and the winter storms will soon close the sea. Find a way off the island.
 
@@ -341,7 +352,7 @@ Time passes. It is Windsday 3 Leaffall 412 SF, 14:00 (afternoon).
 > look
 The Salt Kettle
 The inn is one long, smoky room under black beams, with a fire at one end and a barrel of ale at the other. It smells of fish stew, tallow and wet wool drying. A ship's figurehead, a woman with a chipped nose, watches the door from the corner; they say she came off the last ship that broke here before the [Grey Gull]. The door west goes out to the green.
-A stool by the fire stands empty, and nobody sits on it; a cup is turned upside down on it for Wenna.
+A stool by the fire stands empty, and nobody sits on it; a cup is turned upside down on it for Wenna. The harbour is quiet; people speak low, and nobody sings at the nets.
 Exits: west
 Here: Maren of the Salt Kettle (at work).
 
@@ -353,6 +364,9 @@ Maren nods. "Afternoon."
 > 2
 You: "What's new around here?"
 Maren nods slowly. "News of the day here: Wenna is dead. She drowned off the harbour wall, they say."
+The death of Wenna Dray
+Wenna is dead. She drowned off the harbour wall, they say.
+(from Maren)
 
 > bye
 Maren lifts a hand. "Go on, then."
@@ -370,7 +384,7 @@ Maren puts out the lamp and goes to bed.
 > look
 The Salt Kettle
 The inn is one long, smoky room under black beams, with a fire at one end and a barrel of ale at the other. It smells of fish stew, tallow and wet wool drying. A ship's figurehead, a woman with a chipped nose, watches the door from the corner; they say she came off the last ship that broke here before the [Grey Gull]. The door west goes out to the green.
-A stool by the fire stands empty, and nobody sits on it; a cup is turned upside down on it for Wenna.
+A stool by the fire stands empty, and nobody sits on it; a cup is turned upside down on it for Wenna. The harbour is quiet; people speak low, and nobody sings at the nets.
 Exits: west
 Here: Maren of the Salt Kettle (at work).
 
@@ -406,7 +420,7 @@ Time passes. It is Thornsday 4 Leaffall 412 SF, 16:04 (afternoon).
 > look
 The Salt Kettle
 The inn is one long, smoky room under black beams, with a fire at one end and a barrel of ale at the other. It smells of fish stew, tallow and wet wool drying. A ship's figurehead, a woman with a chipped nose, watches the door from the corner; they say she came off the last ship that broke here before the [Grey Gull]. The door west goes out to the green.
-A stool by the fire stands empty, and nobody sits on it; a cup is turned upside down on it for Wenna.
+A stool by the fire stands empty, and nobody sits on it; a cup is turned upside down on it for Wenna. The harbour is quiet; people speak low, and nobody sings at the nets.
 Exits: west
 
 > wait 60
@@ -415,7 +429,7 @@ Time passes. It is Thornsday 4 Leaffall 412 SF, 17:04 (afternoon).
 > look
 The Salt Kettle
 The inn is one long, smoky room under black beams, with a fire at one end and a barrel of ale at the other. It smells of fish stew, tallow and wet wool drying. A ship's figurehead, a woman with a chipped nose, watches the door from the corner; they say she came off the last ship that broke here before the [Grey Gull]. The door west goes out to the green.
-A stool by the fire stands empty, and nobody sits on it; a cup is turned upside down on it for Wenna.
+A stool by the fire stands empty, and nobody sits on it; a cup is turned upside down on it for Wenna. The harbour is quiet; people speak low, and nobody sings at the nets.
 Exits: west
 
 # That evening at the Salt Kettle.
@@ -424,7 +438,7 @@ Exits: west
 [build] You are at The Salt Kettle.
 The Salt Kettle
 The inn is one long, smoky room under black beams, with a fire at one end and a barrel of ale at the other. It smells of fish stew, tallow and wet wool drying. A ship's figurehead, a woman with a chipped nose, watches the door from the corner; they say she came off the last ship that broke here before the [Grey Gull]. The door west goes out to the green.
-A stool by the fire stands empty, and nobody sits on it; a cup is turned upside down on it for Wenna.
+A stool by the fire stands empty, and nobody sits on it; a cup is turned upside down on it for Wenna. The harbour is quiet; people speak low, and nobody sings at the nets.
 Exits: west
 
 > wait 60
@@ -442,7 +456,7 @@ Time passes. It is Thornsday 4 Leaffall 412 SF, 19:39 (evening).
 > look
 The Salt Kettle
 The inn is one long, smoky room under black beams, with a fire at one end and a barrel of ale at the other. It smells of fish stew, tallow and wet wool drying. A ship's figurehead, a woman with a chipped nose, watches the door from the corner; they say she came off the last ship that broke here before the [Grey Gull]. The door west goes out to the green.
-A stool by the fire stands empty, and nobody sits on it; a cup is turned upside down on it for Wenna.
+A stool by the fire stands empty, and nobody sits on it; a cup is turned upside down on it for Wenna. The harbour is quiet; people speak low, and nobody sings at the nets.
 Exits: west
 Here: Maren of the Salt Kettle (at work).
 
@@ -475,6 +489,8 @@ On the ground: a cask of lamp oil.
 Exits: south, west, north
 +10 experience: you found The Headland.
 +30 experience: you came to the Heights.
+The Headland
+The squat stone tower stands at the very end of the island with the sea on three sides, and the great lamp behind its green glass is cold. From up here you see why the ships stopped coming: without that light, Skerrow is only rocks in the dark.
 
 > look
 The Headland

@@ -10,7 +10,8 @@ import { ConversationView, type TalkLine } from './ConversationView'
 import { JournalView } from './JournalView'
 import { runs } from './mapRuns'
 import { HexMap } from './HexMap'
-import { useMapLook, useShowRules } from './display'
+import { useMapLook, useShowCards, useShowRules } from './display'
+import { MomentCard } from './MomentCard'
 import { ClockPanel } from './Clock'
 import { Settings, usd, type SettingsTab } from './Settings'
 import { t, tn } from './i18n'
@@ -152,10 +153,20 @@ export function App() {
     logRef.current?.scrollTo({ top: logRef.current.scrollHeight })
   }, [lines, waiting])
 
-  // Menus stop the clock (FO, chapter 3); the dev menu too, so looking changes nothing.
+  // Moments (M10.11): each card a line brought, once, in turn; off in Settings, they stay lines.
+  const showCards = useShowCards()
+  const [moments, setMoments] = useState<NonNullable<Output['card']>[]>([])
+  const cardsUpTo = useRef(-1)
   useEffect(() => {
-    client?.hold(Boolean(settings) || ending || exporting || typing || Boolean(creation) || Boolean(journal) || Boolean(worlds) || dev)
-  }, [client, settings, ending, exporting, typing, creation, journal, worlds, dev])
+    const fresh = lines.filter((l) => l.id > cardsUpTo.current && l.kind === 'card' && 'card' in l && l.card)
+    if (lines.length) cardsUpTo.current = Math.max(cardsUpTo.current, lines.at(-1)!.id)
+    if (showCards && fresh.length) setMoments((previous) => [...previous, ...fresh.map((l) => (l as Output).card!)])
+  }, [lines, showCards])
+
+  // Menus stop the clock (FO, chapter 3); the dev menu too, so looking changes nothing; and a moment's card.
+  useEffect(() => {
+    client?.hold(Boolean(settings) || ending || exporting || typing || Boolean(creation) || Boolean(journal) || Boolean(worlds) || dev || moments.length > 0)
+  }, [client, settings, ending, exporting, typing, creation, journal, worlds, dev, moments.length])
 
   // Ctrl+Shift+D opens the dev menu in a development build.
   useEffect(() => {
@@ -648,6 +659,20 @@ export function App() {
             )}
           </div>
         </div>
+      )}
+      {moments[0] && client && !journal && !creation && !worlds && !settings && (
+        <MomentCard
+          card={moments[0]}
+          client={client}
+          onClose={() => {
+            setMoments((previous) => previous.slice(1))
+            inputRef.current?.focus()
+          }}
+          onPage={(id) => {
+            setMoments((previous) => previous.slice(1))
+            setJournal({ start: id })
+          }}
+        />
       )}
       {journal && client && status && (
         <JournalView

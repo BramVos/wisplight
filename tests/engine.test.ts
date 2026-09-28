@@ -67,7 +67,9 @@ describe('engine', () => {
     const engine = newEngine()
     const out = await engine.handle('ne')
     expect(engine.state.player.location).toMatch(/^hex:/)
-    expect(out.filter((o) => !o.text.includes('experience')).at(-1)!.text).toMatch(/Ways on:/)
+    // The mill rising into view is a moment of its own (M10.11), after the land.
+    expect(out.filter((o) => !o.text.includes('experience') && o.kind !== 'card').at(-1)!.text).toMatch(/Ways on:/)
+    expect(out.at(-1)).toMatchObject({ kind: 'card', card: { kind: 'sighting', title: 'The Mill De Zwaan, to the north-east' } })
   })
 })
 

@@ -14,9 +14,28 @@ const content = await loadContentFromDir(contentDir, process.env['WISPLIGHT_WORL
 const saves = new SaveStore(resolve(import.meta.dirname, '../../saves/cli.sqlite'))
 let engine = new Engine(content, { seed: Number(process.env['WISPLIGHT_SEED'] ?? 1), builder: true })
 
+/** A moment (M10.11) in the terminal: a frame of text around the card. */
+function framed(text: string): string {
+  const width = 72
+  const wrap = (line: string): string[] => {
+    const out: string[] = []
+    let current = ''
+    for (const word of line.split(/\s+/)) {
+      if ((current + ' ' + word).trim().length > width) {
+        out.push(current)
+        current = word
+      } else current = `${current} ${word}`.trim()
+    }
+    return [...out, current]
+  }
+  const rows = text.split('\n').flatMap(wrap)
+  const bar = `+${'-'.repeat(width + 2)}+`
+  return [bar, ...rows.map((r) => `| ${r.padEnd(width)} |`), bar].join('\n')
+}
+
 const print = (outputs: Output[]) => {
   // A spoken line the game wrote itself while a model is in play is marked with ~ (M10.8).
-  for (const output of outputs) stdout.write(`\n${output.kind === 'speech' && output.source === 'rules' ? '~ ' : ''}${output.text}\n`)
+  for (const output of outputs) stdout.write(`\n${output.card ? framed(output.text) : `${output.kind === 'speech' && output.source === 'rules' ? '~ ' : ''}${output.text}`}\n`)
 }
 
 print(engine.start())

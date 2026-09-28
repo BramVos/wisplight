@@ -1,0 +1,67 @@
+# A journey told in one paragraph (M10.11): sentences per kind of land and way,
+# per weather and for the night, chosen by the rules and seeded, so a walk of
+# more than three steps reads as a journey and not a list. With a model the
+# narrator may reword it. What may happen on a journey over known ground is
+# here too (FO, chapter 4, "Snelreizen").
+
+journey:
+  terrain:
+    fen:
+      - The fen gives underfoot, and every step sucks at your boots.
+      - You pick your way from tussock to tussock, and the black water waits between them.
+      - Reed and sedge rustle round your knees, and something small plops into a pool ahead of you.
+    fields:
+      - The fields lie flat and wet, cut into strips by ditches you have to jump.
+      - Cows lift their heads to watch you pass, then go back to the grass.
+    heath:
+      - The heath is dry and springy underfoot, all heather and sand.
+      - Sheep scatter from the heather ahead of you, and the wind has nothing to stop it.
+    woods:
+      - Under the trees the air is still and smells of wet leaves.
+      - Branches drip on you long after the rain has stopped.
+    water:
+      - You pole across open water, and the punt rocks at every push.
+    canal:
+      - The tow path runs beside the grey water, rutted by the barge horses.
+      - A barge horse plods past with its head down, and the rope hisses on the water.
+    road:
+      - The cart road is rutted and grey, raised on its bank above the wet.
+      - Your boots find the old ruts, and the road carries you along.
+    path:
+      - A narrow path of trodden peat winds between the pools.
+      - The path keeps to the higher ground, where someone has laid bundles of reed over the worst of the wet.
+    ridge:
+      - You keep to the dry ridge, and for once your feet stay dry.
+  weather:
+    clear:
+      - The sky is wide and pale, and you can see a long way.
+      - The sun is on your back, and the fen steams a little.
+    overcast:
+      - Low grey cloud sits on the land the whole way.
+      - The light never changes under the grey sky.
+    rain:
+      - Rain finds its way down your collar before the first hour is out.
+      - The rain comes and goes, and you walk wet either way.
+    fog:
+      - Mist hides everything more than a stone's throw off, and sounds come from nowhere.
+      - The mist beads on your sleeves, and you keep close to what you can see.
+    storm:
+      - The wind tears at you the whole way, and the rain comes sideways.
+      - You walk bent into the wind, and it takes the breath out of your mouth.
+    frost:
+      - The frost crunches underfoot, and the pools are skinned with ice.
+      - Your breath smokes, and your fingers ache with the cold.
+    snow:
+      - Snow falls softly and hides the ditches, so you go carefully.
+      - The snow swallows every sound but your own steps.
+  night:
+    - The dark comes down around you, and the fen is full of small noises.
+    - You walk by what light there is, and the land looks different in it.
+  on_the_way:
+    - { text: "A barge slides past on the Vaart, the horse plodding along the tow path, the bargeman raising a hand.", where: canal }
+    - { text: "Two peat-cutters pass you with their spades on their shoulders and give you a nod.", where: road }
+    - { text: "A heron lifts out of the reeds ahead of you and flaps away, complaining.", where: fen }
+    - { text: "The mist comes down so thick that you wait for it to lift before going on.", where: any, minutes: 30 }
+    - { text: "Somebody has left a bowl of milk on a gatepost. You leave it alone.", where: road }
+    - { text: "Little lights dance over the fields in the dark. You keep your eyes on the way.", where: any, night: true }
+    - { text: "A cart has lost a wheel in the ruts and you lend a shoulder before going on.", where: road, minutes: 15 }
