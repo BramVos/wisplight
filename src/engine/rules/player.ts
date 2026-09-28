@@ -121,7 +121,6 @@ export const XP = { place: 10, area: 30, secret: 40, request: 60, lore: 10 }
 
 // ---------------------------------------------------------------- making a character
 
-const ALIASES: Record<string, string> = { heathborn: 'heathborn', heideborene: 'heathborn', dijklander: 'dykelander', veenvolk: 'fenfolk', wisselkind: 'changeling' }
 
 /**
  * CREATE <class> <ancestry> <background> [name=...] [boosts=a,b,c] [skills=x,y] [talent=t].
@@ -145,7 +144,8 @@ export function createCommand(world: World, args: string[]): Output[] {
   if (words.length === 0) return [{ kind: 'system', text: creationHelp(world) }]
   const klass = rules.classes.find((c) => loose.includes(c.id) || loose.includes(c.name.toLowerCase()))
   if (!klass) return [{ kind: 'error', text: `Choose a class: ${rules.classes.map((c) => c.id).join(', ')}.` }]
-  const ancestry = rules.ancestries.find((a) => loose.includes(a.id) || loose.some((w) => ALIASES[w] === a.id))
+  // Other words for an ancestry come from the rules (M10.17: the Nethermarch's Dutch ones, "veenvolk").
+  const ancestry = rules.ancestries.find((a) => loose.includes(a.id) || a.aliases.some((w) => loose.includes(w.toLowerCase())))
   const background = rules.backgrounds.find((b) => loose.includes(b.id))
   const name = (named['name'] ?? 'Traveller').replace(/_/g, ' ')
   const choice: CreationChoice = {
@@ -451,10 +451,10 @@ export function patronCommand(world: World, words: string): Output[] {
   if (!p) return [{ kind: 'system', text: `DEVOTE TO <patron>: ${patrons.map((x) => `${x.name} (${x.text})`).join('; ')}.` }]
   if (c.patron?.id === p.id) return [{ kind: 'error', text: `You already follow ${p.name}.` }]
   const here = world.location(world.state.player.location)
-  if (!here.tags.includes('holy')) return [{ kind: 'error', text: 'You swear yourself to a patron at a holy place: a chapel, a church, an old barrow.' }]
+  if (!here.tags.includes('holy')) return [{ kind: 'error', text: 'You swear yourself to a patron at a holy place.' }]
   const before = c.patron && patrons.find((x) => x.id === c.patron!.id)
   c.patron = { id: p.id, favour: 5, since: world.now }
-  approve(world, p.id === 'lantern' ? 'fight_witchcraft' : 'old_rite')
+  if (p.sworn) approve(world, p.sworn)
   return [{ kind: 'text', text: `${before ? `You turn from ${before.name}. ` : ''}You swear yourself to ${p.name}. ${p.text}` }]
 }
 

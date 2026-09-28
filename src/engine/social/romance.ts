@@ -100,14 +100,15 @@ export function marry(world: World, npcId: string): Output[] {
   const name = callName(world.npc(npcId))
   if (stageOf(world, npcId) !== 'together') return [{ kind: 'error', text: `You and ${name} are not so far along.` }]
   const here = world.location(world.state.player.location)
-  if (!here.tags.includes('holy')) return [{ kind: 'error', text: 'A wedding is held in a chapel; an oath of the Old Faith at a holy place.' }]
+  if (!here.tags.includes('holy')) return [{ kind: 'error', text: 'A wedding is held at a holy place.' }]
   world.state.romance![npcId] = { stage: 'bound', since: world.now }
   // The wedding is a signal (M8.1): the standard aftermath of the content gives the tie, the home, the in-laws and the expectations.
   recordFact(world, { kind: 'wedding', about: [npcId], place: here.id, belang: 3, juice: 1, title: `${name} married the stranger`, text: { precise: `${name} and the stranger were bound at ${here.name}.`, village: `${name} has married the stranger!`, far: `There was a wedding in ${world.words.region}.` }, claim: { subject: 'player', key: 'married', value: npcId } })
   const spouse = world.npc(npcId)
   const family = familyOf(world, npcId)
-  const lantern = /chapel|church|kloosterveen/.test(here.id)
-  repute(world, lantern ? 'lantern_church' : 'old_faith', 5, 'your wedding')
+  // The faith of the holy place, and the faction that stands for it (M10.17; before, the Lantern by the place's name).
+  const faction = world.content.world.faiths.find((f) => f.id === here.faith)?.faction
+  if (faction) repute(world, faction, 5, 'your wedding')
   return [
     { kind: 'narration', text: `Before ${here.name} and whoever came to see it, you and ${name} are bound. Someone has brought beer.` },
     { kind: 'system', text: `${world.location(spouse.home).name} is your home now: you sleep there for nothing. ${name} will expect you home now and then.${family.length ? ` ${family.map((f) => callName(world.npc(f))).join(' and ')} think${family.length === 1 ? 's' : ''} better of you.` : ''}` },

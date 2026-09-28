@@ -39,7 +39,9 @@ export function lockDc(world: World, lock: Pick<Lock, 'dc' | 'quality' | 'materi
   const material = MATERIAL[lock.material ?? 'iron'][how]
   if (how === 'force') return base + material
   const hour = Math.floor(minuteOfDay(world.now) / 60)
-  const dark = (hour >= 21 || hour < 6) && (world.state.player.inventory['lantern'] ?? 0) <= 0 ? 2 : 0
+  // A light carried (M10.17: anything tagged light, before the lantern by id).
+  const lit = Object.entries(world.state.player.inventory).some(([id, n]) => n > 0 && world.content.items.get(id)?.tags.includes('light'))
+  const dark = (hour >= 21 || hour < 6) && !lit ? 2 : 0
   const wet = outdoors && ['rain', 'storm'].includes(weather(world)) ? 1 : 0
   return base + material + dark + wet
 }

@@ -89,6 +89,11 @@ areas:
     fame: 2
     pos: [123.5, 99]
     summary: A fen of reeds and black pools south-east of Veenhoek, where a widow is said to live.
+    # The widow's mist (Wereldboek, chapter 14): nobody gets in carrying measuring chains while she keeps the fen.
+    barred:
+      - when: [{ flag: widow_mist }, { not_flag: fen_without_keeper }]
+        carrying: survey
+        text: Mist comes up out of the reeds, thick as wool. You walk on and on, and come out where you started, with the chains heavy on your back.
 
   - id: rietdoolhof
     name: the Rietdoolhof

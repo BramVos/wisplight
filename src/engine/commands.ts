@@ -26,7 +26,7 @@ import { isNight, qtyName, wakeNpc } from './npc/execute'
 import { parseCommand, parseDirection, splitQuantity, type Command } from './parser'
 import { wordsOf, type World } from './world'
 import { nightOut, rest } from './rules/player'
-import { widowTurnsBack } from './quests/antagonists'
+import { barredWay } from './quests/antagonists'
 import { ONCE, useBlessing } from './rules/blessings'
 import { closedBetween, placeStateLine } from './quests/plans'
 import { active } from './quests/engine'
@@ -409,8 +409,8 @@ function go(host: CommandHost, args: string[]): Output[] {
   // A locked door opens with its key (M10.3).
   const lock = passLock(world, player.location, direction, exit.lock)
   if (!lock.ok) return [error(lock.text!)]
-  const mist = widowTurnsBack(world, exit.to)
-  if (mist) return [text(mist), ...host.pass(30)]
+  const barred = barredWay(world, exit.to)
+  if (barred) return [text(barred), ...host.pass(30)]
   if (shutForNight(world, exit.to)) return [text(`The door of ${world.location(exit.to).name} is shut for the night. KNOCK to wake whoever lives there.`)]
   player.location = exit.to
   const seen = host.pass(exit.minutes)

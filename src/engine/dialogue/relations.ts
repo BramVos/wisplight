@@ -55,15 +55,22 @@ export function situation(world: World, npcId: string): number {
   const patron = c?.patron?.id
   if (patron && npc.patron) {
     if (patron === npc.patron) score += 10
-    else if ((patron === 'lantern') !== (npc.patron === 'lantern') && (npc.quirks.includes('pious') || npc.values['faith'] || npc.values['tradition'])) score -= 10
+    // Sworn to a patron of another faith (M10.17: by the world's faiths, before the Lantern against the rest).
+    else if (faithOfPatron(world, patron) !== faithOfPatron(world, npc.patron) && (npc.quirks.includes('pious') || npc.values['faith'] || npc.values['tradition'])) score -= 10
   }
   const rep = world.state.reputation
   if (rep) {
     const factions = [...world.content.factions.values()].filter((f) => f.members.includes(npcId))
     if (factions.length) score += Math.max(-15, Math.min(15, Math.round(factions.reduce((s, f) => s + (rep[f.id] ?? 0), 0) / factions.length / 5)))
   }
-  if (c?.ancestry === 'changeling' && npc.quirks.includes('old_customs')) score -= 10
+  const ancestry = c && world.content.rules?.ancestries.find((a) => a.id === c.ancestry)
+  if (ancestry?.distrusted_by.some((q) => npc.quirks.includes(q))) score -= 10
   return score
+}
+
+/** The faith a patron belongs to, by the world's faiths; the patron itself when no faith names it. */
+function faithOfPatron(world: World, patron: string): string {
+  return world.content.world.faiths.find((f) => f.patrons.includes(patron))?.id ?? patron
 }
 
 export function band(score: number): Attitude {

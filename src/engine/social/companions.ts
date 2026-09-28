@@ -402,7 +402,8 @@ export function restParty(world: World): void {
 function betrayal(world: World, c: Companion, name: string): void {
   const npc = world.npc(c.npc)
   // Rare, and always announced: low loyalty, a dishonest heart, and an offer from the other side.
-  const offered = Boolean(world.state.player.encounters?.['goat_riders_toll'])
+  // An offer from the other side: an encounter that tempts, once met (M10.17; the Goat-Riders' toll in the Nethermarch).
+  const offered = Object.keys(world.state.player.encounters ?? {}).some((id) => world.content.encounters.get(id)?.tempts)
   if (c.betrayal === undefined && c.loyalty < 10 && npc.personality.honesty <= -1 && offered) {
     c.betrayal = world.now + DAY
     // From now on the word they gave is a lie, recorded as one (M10.2).

@@ -215,6 +215,7 @@ locations:
   - id: loc_waagdam_church
     name: The Church of the Lantern
     area: waagdam
+    faith: lantern
     tags: [holy, public]
     aliases: [church, kerk]
     description:

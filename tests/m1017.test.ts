@@ -135,6 +135,42 @@ describe('M10.17: what was in code is content', () => {
     expect((await other.handle('hire punt'))[0]!.text).not.toMatch(/Wouter/)
   })
 
+  it('a fight touches the faction of the creatures, from the bestiary: the Goat-Riders and Veenhoek, once each', () => {
+    const engine = new Engine(content, { seed: 8 })
+    const foeRepute = (engine as unknown as { foeRepute: (foes: { creature?: string }[], outcome: string, delta: number, why: string) => void }).foeRepute.bind(engine)
+    foeRepute([{ creature: 'goat_rider' }, { creature: 'goat_rider' }, { creature: 'black_mathijs' }], 'won', -5, 'you beat their men')
+    // As before M10.17: -5 with the Goat-Riders (their rivals think a little better of you), +3 with Veenhoek (and its ally the Brotherhood a little).
+    expect(engine.state.reputation).toMatchObject({ goat_riders: -5, veenhoek_villagers: 3, counts_men: 2, brotherhood: 3 })
+    // A creature of no faction touches nobody.
+    const quiet = new Engine(content, { seed: 8 })
+    ;(quiet as unknown as { foeRepute: typeof foeRepute }).foeRepute.call(quiet, [{ creature: 'veenlijk' }], 'won', -5, 'you beat their men')
+    expect(quiet.state.reputation ?? {}).toEqual({})
+  })
+
+  it('a wedding raises the faction of the faith of the holy place; a patron of another faith cools the pious', async () => {
+    const engine = new Engine(content, { seed: 9, builder: true })
+    await engine.handle('create warden heathborn peat_cutter name=Tester')
+    engine.state.romance = { npc_wouter: { stage: 'together', since: engine.world.now } }
+    for (const c of ['@goto loc_veenhoek_chapel', '@bring wouter', 'marry wouter']) await engine.handle(c)
+    expect(engine.state.reputation?.['lantern_church']).toBe(5)
+    const barrows = new Engine(content, { seed: 9, builder: true })
+    await barrows.handle('create warden heathborn peat_cutter name=Tester')
+    barrows.state.romance = { npc_wouter: { stage: 'together', since: barrows.world.now } }
+    for (const c of ['@goto loc_reuzenrust_barrows', '@bring wouter', 'marry wouter']) await barrows.handle(c)
+    expect(barrows.state.reputation?.['old_faith']).toBe(5)
+    // Old words for an ancestry come from the rules: "veenvolk" is the Fenfolk.
+    const made = new Engine(content, { seed: 9 })
+    await made.handle('create warden veenvolk peat_cutter name=Tester')
+    expect(made.state.player.character?.ancestry).toBe('fenfolk')
+  })
+
+  it('the widow\'s mist is a bar on the Kattenbroek in areas.yaml, and a tempting encounter in the bestiary', () => {
+    expect(content.areas.get('kattenbroek')!.barred).toEqual([expect.objectContaining({ carrying: 'survey' })])
+    expect(content.encounters.get('goat_riders_toll')!.tempts).toBe(true)
+    // No world but the Nethermarch knows any of it.
+    expect([...deepwell.areas.values()].some((a) => a.barred.length)).toBe(false)
+  })
+
   it('joining on terms from factions.yaml: the town rights at the Waag, for five guilders', async () => {
     const engine = new Engine(content, { seed: 6, builder: true })
     expect((await engine.handle('join the burghers of waagdam'))[0]!.text).toBe('The town rights of Waagdam are bought at the Waag.')

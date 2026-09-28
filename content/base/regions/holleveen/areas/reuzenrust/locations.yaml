@@ -4,6 +4,7 @@ locations:
   - id: loc_reuzenrust_hunebed
     name: The Giant-Bed at Reuzenrust
     area: reuzenrust
+    faith: old_powers
     tags: [holy, haunted, landmark, hazard:fog, edge]
     aliases: [giant-bed, hunebed, the stones]
     summary: A giant-bed of great grey stones and three burial mounds on the edge of the heath.
@@ -32,6 +33,7 @@ locations:
   - id: loc_reuzenrust_barrows
     name: The Three Barrows
     area: reuzenrust
+    faith: old_powers
     tags: [holy, haunted, "hazard:fog"]
     aliases: [three barrows, barrows, burial mounds, grave mounds, grafheuvels]
     summary: Three burial mounds beyond the giant-bed at Reuzenrust, where the White Women are seen in the mist.

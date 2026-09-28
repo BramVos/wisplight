@@ -79,6 +79,10 @@ const AncestrySchema = z
     /** A skill with +1 is cheaper to raise, one with -1 dearer (after DCSS). */
     aptitude: z.record(z.string(), z.number().int().min(-1).max(1)).default({}),
     immune: z.array(z.string()).default([]),
+    /** Other words for it in CREATE (M10.17): "veenvolk". */
+    aliases: z.array(z.string()).default([]),
+    /** NPCs with one of these quirks trust it less (the old customs and a changeling). */
+    distrusted_by: z.array(z.string()).default([]),
   })
   .strict()
 
@@ -137,6 +141,8 @@ const PatronSchema = z
     /** Deeds the patron forbids, with the favour they cost. */
     forbids: z.record(z.string(), z.number().int()),
     blessings: z.array(BlessingSchema),
+    /** The deed swearing to this patron counts as, for companions who approve or not (M10.17). */
+    sworn: z.string().optional(),
   })
   .strict()
 
@@ -246,6 +252,16 @@ export const CreatureSchema = z
     immune: z.array(z.string()).default([]),
     /** Things that hurt it more: iron, fire, light. */
     weak: z.record(z.string(), z.number()).default({}),
+    /**
+     * The faction it belongs to (M10.17, before the Goat-Riders by name in code): beating it costs standing with that
+     * faction, paying it gains a little, binding one for the law costs, letting one go gains; and the fact of a fight is
+     * about that faction's topic, when there is one.
+     */
+    faction: z.string().optional(),
+    /** Further reputation per outcome of a fight with it: "you stood up to the Goat-Riders" with the village. */
+    reputation: z
+      .partialRecord(z.enum(['won', 'paid', 'bound', 'freed', 'killed']), z.array(z.object({ faction: z.string(), by: z.number().int(), why: z.string() }).strict()))
+      .default({}),
     /** What the stories say (Recall): a Lore DC, and the weakness it tells. */
     lore: z.object({ dc: z.number().int(), text: z.string(), topic: z.string().optional() }).strict().optional(),
     text: z.string(),
@@ -283,6 +299,8 @@ export const EncounterSchema = z
     win_flag: z.string().optional(),
     /** With a load on the way (M9.1): how likely then, and what share of the load they take from whoever gives in. */
     load: z.object({ chance: z.number().min(0).max(1), take: z.number().min(0).max(1) }).strict().optional(),
+    /** Once met, a disloyal companion may hear an offer from this side (M10.17, before the Goat-Riders' toll by name). */
+    tempts: z.boolean().default(false),
   })
   .strict()
 export type Encounter = z.infer<typeof EncounterSchema>

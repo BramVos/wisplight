@@ -4,6 +4,7 @@ locations:
   - id: loc_kloosterveen_gate
     name: The Priory Gate
     area: kloosterveen
+    faith: lantern
     tags: [holy, public, edge]
     aliases: [priory gate, gate, kloosterveen]
     summary: The gatehouse of the priory of Kloosterveen, at the edge of the wood.
@@ -33,6 +34,7 @@ locations:
   - id: loc_kloosterveen_church
     name: The Priory Church
     area: kloosterveen
+    faith: lantern
     tags: [holy, public]
     aliases: [priory church, bell tower, kloosterkerk]
     summary: The whitewashed brick church of the priory, whose bell tower shows above the trees.

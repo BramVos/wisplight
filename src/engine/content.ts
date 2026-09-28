@@ -349,6 +349,8 @@ export const LocationSchema = z.object({
   tags: z.array(z.string()).default([]),
   aliases: z.array(z.string()).default([]),
   summary: z.string().optional(),
+  /** The faith a holy place belongs to (M10.17): a wedding here raises the standing of that faith's faction. */
+  faith: z.string().optional(),
   description: z.object({ day: Prose, night: Prose.optional() }),
   /**
    * Other descriptions once a flag is set (the doorstep without the cat, once Fenna is home), or while conditions hold
@@ -398,6 +400,11 @@ export const AreaSchema = z.object({
   topic: z.string().optional(),
   /** Weekdays of the world's calendar with a market here (M10.6): "it's Woensdag, market day in Waagdam". */
   market_days: z.array(z.string()).default([]),
+  /**
+   * Places of the area barred while conditions hold (M10.17; before, the widow's mist over the Kattenbroek in code):
+   * only for a stranger carrying something with this tag, or for anyone; with what they see.
+   */
+  barred: z.array(z.object({ when: z.array(ConditionSchema).default([]), carrying: z.string().optional(), text: z.string() }).strict()).default([]),
 })
 export type Area = z.infer<typeof AreaSchema>
 
@@ -542,7 +549,8 @@ export const NpcSchema = z.object({
   knows_areas: z.array(z.string()).default([]),
   child: z.boolean().default(false),
   /** The patron the NPC follows (Wereldboek, chapter 4): followers of the same are a step friendlier. */
-  patron: z.enum(['lantern', 'nehalennia', 'grey_rider', 'holle', 'baduhenna']).optional(),
+  /** A patron of the world's rules (M10.17: any world's, no longer the Nethermarch's five). */
+  patron: z.string().optional(),
   /** Class and level in a fight (FO, chapter 12); others fight as ordinary folk. */
   fighter: z.object({ class: z.string(), level: z.number().int().min(1).max(10) }).strict().optional(),
   /** Can travel with the player (FO, chapter 13): daily wage in duiten, what they think of deeds, and the talk at the fire. */
@@ -843,7 +851,10 @@ export const WorldSchema = z.object({
   newcomers_per_season: z.number().int().min(0).default(6),
   /** The faiths of this world (M9.1): the first is what most people hold; a faith may go with patrons of the rules. */
   // Each faith swears by its own (M10.8): "Saint Brand's light", "Holle take it"; the guard puts these in place of ours.
-  faiths: z.array(z.object({ id: z.string().regex(/^[a-z0-9_]+$/), name: z.string(), patrons: z.array(z.string()).default([]), oaths: z.array(z.string()).default([]) }).strict()).default([]),
+  /** The faiths (M9.1); with the faction that stands for each, whose standing a wedding at its holy place raises (M10.17). */
+  faiths: z
+    .array(z.object({ id: z.string().regex(/^[a-z0-9_]+$/), name: z.string(), patrons: z.array(z.string()).default([]), oaths: z.array(z.string()).default([]), faction: z.string().optional() }).strict())
+    .default([]),
 })
 export type WorldDef = z.infer<typeof WorldSchema>
 
@@ -1356,6 +1367,8 @@ function checkReferences(world: WorldDef | undefined, c: Omit<Content, 'world'>)
   }
   for (const n of c.npcs.values()) {
     if (!c.professions.has(n.profession)) problems.push(`${n.id}: unknown profession ${n.profession}`)
+    // A patron of this world's rules (M10.17: the schema no longer lists the Nethermarch's five).
+    if (n.patron && c.rules && !c.rules.patrons.some((p) => p.id === n.patron)) problems.push(`${n.id}: unknown patron ${n.patron}`)
     location(n.home, `${n.id}.home`)
     location(n.work, `${n.id}.work`)
     for (const id of Object.keys(n.inventory)) item(id, `${n.id}.inventory`)

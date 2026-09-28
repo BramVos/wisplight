@@ -2297,16 +2297,14 @@ export class Engine {
         if (xp) gainXp(this.world, xp, `you overcame ${who}`)
         favour(this.world, 'fight_won')
         approve(this.world, 'courage')
-        if (foes.some((f) => f.creature === 'goat_rider' || f.creature === 'black_mathijs')) {
-          repute(this.world, 'goat_riders', -5, 'you beat their men')
-          repute(this.world, 'veenhoek_villagers', 3, 'you stood up to the Goat-Riders')
-        }
+        // Their faction thinks less of you, and whoever the content says is glad (M10.17: the Goat-Riders and Veenhoek).
+        this.foeRepute(foes, 'won', -5, 'you beat their men')
         fact = { title: `the stranger and ${who}`, precise: `The stranger fought ${who} at ${where} and won.`, village: `The stranger saw off ${who} at ${where}, they say.`, far: `Someone beat ${who} in ${this.world.words.region}.`, belang }
         const prisoners = foes.filter((f) => (f.state === 'surrendered' || f.state === 'unconscious') && (f.kind === 'human' || f.kind === 'npc') && !people)
         if (prisoners.length) {
           combat.prisoners = prisoners.map((f) => f.id)
           const list = prisoners.map((f) => f.name).join(' and ')
-          out.push({ kind: 'system', text: `${list.charAt(0).toUpperCase()}${list.slice(1)} ${prisoners.length > 1 ? 'are' : 'is'} at your mercy. LET GO, BIND (for the schout) or KILL.` })
+          out.push({ kind: 'system', text: `${list.charAt(0).toUpperCase()}${list.slice(1)} ${prisoners.length > 1 ? 'are' : 'is'} at your mercy. LET GO, BIND (for the ${this.world.words.law.officer}) or KILL.` })
         }
         break
       }
@@ -2318,7 +2316,7 @@ export class Engine {
       }
       case 'paid': {
         approve(this.world, 'back_down')
-        repute(this.world, 'goat_riders', 2, 'you paid their toll')
+        this.foeRepute(foes, 'paid', 2, 'you paid their toll')
         const amount = Math.min(this.state.player.money, (encounter?.demand?.amount ?? 0) * (combat.round > 0 ? 2 : 1))
         this.state.player.money -= amount
         out.push({ kind: 'system', text: `You pay ${this.world.money(amount)}.` })
@@ -2352,7 +2350,7 @@ export class Engine {
     if (fact && !people) {
       recordFact(this.world, {
         kind: 'fight',
-        about: ['goat_riders', areaTopicId(this.content, place.area)].filter((t) => this.content.topics.has(t) && (t !== 'goat_riders' || foes.some((f) => f.creature === 'goat_rider' || f.creature === 'black_mathijs'))),
+        about: [...this.foeFactions(foes), areaTopicId(this.content, place.area)].filter((t) => this.content.topics.has(t)),
         place: combat.place,
         belang: fact.belang,
         juice: 0.8,
@@ -2427,6 +2425,22 @@ export class Engine {
     return out
   }
 
+  /** The factions the foes belong to, by their creatures in the bestiary (M10.17). */
+  private foeFactions(foes: { creature?: string }[]): string[] {
+    return [...new Set(foes.flatMap((f) => (f.creature ? this.content.creatures.get(f.creature)?.faction : undefined) ?? []))]
+  }
+
+  /**
+   * What an outcome of a fight does to reputation (M10.17; before, the Goat-Riders by name): their own faction by the
+   * standard amount, and what the bestiary adds for that outcome, once each however many of them there were.
+   */
+  private foeRepute(foes: { creature?: string }[], outcome: 'won' | 'paid' | 'bound' | 'freed' | 'killed', delta: number, why: string): void {
+    if (delta) for (const faction of this.foeFactions(foes)) repute(this.world, faction, delta, why)
+    const extra = new Map<string, { faction: string; by: number; why: string }>()
+    for (const f of foes) for (const r of (f.creature ? this.content.creatures.get(f.creature)?.reputation[outcome] : undefined) ?? []) extra.set(`${r.faction}|${r.why}`, r)
+    for (const r of extra.values()) repute(this.world, r.faction, r.by, r.why)
+  }
+
   /** The player's word on those who gave up (FO, chapter 12, "Moreel en overgave"). */
   private async prisoners(words: string): Promise<Output[]> {
     const combat = this.state.combat!
@@ -2434,14 +2448,21 @@ export class Engine {
     const names = ids.map((id) => combat.fighters.find((f) => f.id === id)!.name)
     const them = names.length > 1 ? 'them' : names[0]!
     const place = this.world.location(combat.place)
-    const about = ['goat_riders', areaTopicId(this.content, place.area)].filter((t) => this.content.topics.has(t))
+    const held = combat.fighters.filter((f) => ids.includes(f.id))
+    const about = [...this.foeFactions(held), areaTopicId(this.content, place.area)].filter((t) => this.content.topics.has(t))
+    const officer = this.world.words.law.officer
+    // The faction that keeps the land's law (M10.17: the Count's men in the Nethermarch), and what the prisoners are called.
+    const law = [...this.content.factions.values()].find((f) => f.law === LAND_LAW)?.id
+    const kind = held.map((f) => (f.creature ? this.content.creatures.get(f.creature)?.name : undefined)).find(Boolean) ?? 'robber'
+    const a = /^[aeiou]/i.test(kind) ? 'an' : 'a'
     this.state.combat = undefined
     const fact = (title: string, precise: string, village: string, belang: number) =>
       recordFact(this.world, { kind: 'prisoners', about, place: combat.place, belang, juice: 0.8, title, text: { precise, village, far: village } })
     if (/^(kill|finish|slay|dood)/.test(words)) {
       favour(this.world, 'killed_surrendered')
       approve(this.world, 'kill_prisoner')
-      repute(this.world, 'counts_men', -5, 'you killed a prisoner')
+      if (law) repute(this.world, law, -5, 'you killed a prisoner')
+      this.foeRepute(held, 'killed', 0, '')
       fact(`the stranger killed a prisoner`, `The stranger killed ${them} after ${names.length > 1 ? 'they' : 'he'} had given up, at ${place.name}.`, `The stranger killed a man who had given up, at ${place.name}.`, 3)
       return [{ kind: 'narration', text: `You do it. It is quick, and it is not clean, and ${them} will not get up again.` }]
     }
@@ -2456,18 +2477,18 @@ export class Engine {
       if (this.state.player.inventory['rope'] === 0) delete this.state.player.inventory['rope']
       favour(this.world, 'spared')
       approve(this.world, 'hand_over_to_schout')
-      repute(this.world, 'counts_men', 10, 'you brought a robber to the schout')
-      repute(this.world, 'goat_riders', -10, 'you brought one of theirs to the schout')
-      fact(`the stranger brought in a Goat-Rider`, `The stranger bound ${them} at ${place.name} and sent word to the schout, whose men came for ${names.length > 1 ? 'them' : 'him'}.`, `The stranger caught a robber on the tow path and handed him to the schout.`, 3)
-      return [{ kind: 'narration', text: `You bind ${them} with your rope and send a boy running for the schout's men. They come within the hour and take ${names.length > 1 ? 'them' : 'him'} away.` }]
+      if (law) repute(this.world, law, 10, `you brought a robber to the ${officer}`)
+      this.foeRepute(held, 'bound', -10, `you brought one of theirs to the ${officer}`)
+      fact(`the stranger brought in ${a} ${kind}`, `The stranger bound ${them} at ${place.name} and sent word to the ${officer}, whose men came for ${names.length > 1 ? 'them' : 'him'}.`, `The stranger caught a robber at ${place.name} and handed him to the ${officer}.`, 3)
+      return [{ kind: 'narration', text: `You bind ${them} with your rope and send a boy running for the ${officer}'s men. They come within the hour and take ${names.length > 1 ? 'them' : 'him'} away.` }]
     }
     favour(this.world, 'spared')
     approve(this.world, 'mercy')
     approve(this.world, 'spare_prisoner')
-    repute(this.world, 'goat_riders', 3, 'you let one of theirs go')
-    fact(`the stranger let a Goat-Rider go`, `The stranger let ${them} go at ${place.name}.`, `The stranger let one of the robbers go, they say.`, 1)
+    this.foeRepute(held, 'freed', 3, 'you let one of theirs go')
+    fact(`the stranger let ${a} ${kind} go`, `The stranger let ${them} go at ${place.name}.`, `The stranger let one of the robbers go, they say.`, 1)
     const released = /^(let|release|spare|free|go)/.test(words)
-    const out: Output[] = [{ kind: 'narration', text: released ? `You let ${them} go. ${names.length > 1 ? 'They go' : 'He goes'} without looking back.` : `While you turn away, ${names.join(' and ')} slip${names.length > 1 ? '' : 's'} off into the reeds.` }]
+    const out: Output[] = [{ kind: 'narration', text: released ? `You let ${them} go. ${names.length > 1 ? 'They go' : 'He goes'} without looking back.` : `While you turn away, ${names.join(' and ')} slip${names.length > 1 ? '' : 's'} away.` }]
     return released ? out : [...out, ...(await this.route(words))]
   }
 

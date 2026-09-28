@@ -34,7 +34,7 @@ One block with:
 | names | a map: she, he, family | no |  |
 | sketch | a map: bonds, domains | no |  |
 | newcomers_per_season | number | no | 6 |
-| faiths | list of a map: id, name, patrons, oaths | no | [] |
+| faiths | list of a map: id, name, patrons, oaths, faction | no | [] |
 
 ## areas (data/areas.yaml)
 
@@ -55,6 +55,7 @@ A list; each has:
 | pos | 2 values | no |  |
 | topic | text | no |  |
 | market_days | list of text | no | [] |
+| barred | list of a map: when, carrying, text | no | [] |
 
 ## locations (areas/<area>/locations.yaml)
 
@@ -72,6 +73,7 @@ A list; each has:
 | tags | list of text | no | [] |
 | aliases | list of text | no | [] |
 | summary | text | no |  |
+| faith | text | no |  |
 | description | a map: day, night | yes |  |
 | variants | list of a map: flag, when, day, night | no | [] |
 | exits | a map of names to a map: to, minutes, lock | no | {} |
@@ -136,7 +138,7 @@ A list; each has:
 | inventory | a map of names to number | no | {} |
 | knows_areas | list of text | no | [] |
 | child | yes or no | no | false |
-| patron | one of lantern, nehalennia, grey_rider, holle, baduhenna | no |  |
+| patron | text | no |  |
 | fighter | a map: class, level | no |  |
 | companion | a map: wage, approves, disapproves, limits, campfire, slow, quest | no |  |
 | portrait | one of unique, generic | no | "unique" |
@@ -317,12 +319,12 @@ One block with:
 | --- | --- | --- | --- |
 | xp_per_level | number | no | 1000 |
 | skills | list of a map: id, name, attribute | yes |  |
-| ancestries | list of a map: id, name, text, attributes, hp, special, aptitude, immune | yes |  |
+| ancestries | list of a map: id, name, text, attributes, hp, special, aptitude, immune, aliases, distrusted_by | yes |  |
 | backgrounds | list of a map: id, name, skills, talent, knows, topics, reason, contact, heard | yes |  |
 | general_talents | list of a map: id, name, text, effects | yes |  |
 | conditions | list of a map: id, name, text, max | yes |  |
 | classes | list of a map: id, name, text, key, hp, trained, armour, proficiency, gear, core, ... | yes |  |
-| patrons | list of a map: id, name, text, values, forbids, blessings | yes |  |
+| patrons | list of a map: id, name, text, values, forbids, blessings, sworn | yes |  |
 | ready_made | a map: name, ancestry, background, class, boosts, skills, talent | no |  |
 | suggest | a map of names to text | no |  |
 | death | a map: vision, guide, patron, wake, mark, rite_where, rite_done, rite_nothing, price | no |  |
@@ -617,6 +619,8 @@ A list; each has:
 | morale | a map: courage, flees_below, surrenders, never | no | {"courage":0,"surrenders":false,"neve... |
 | immune | list of text | no | [] |
 | weak | a map of names to number | no | {} |
+| faction | text | no |  |
+| reputation | a map of names to list of a map | no | {} |
 | lore | a map: dc, text, topic | no |  |
 | text | text | yes |  |
 | says | a map: hit, flee, surrender, down | no | {} |
@@ -647,6 +651,7 @@ A list; each has:
 | unless_flag | text | no |  |
 | win_flag | text | no |  |
 | load | a map: chance, take | no |  |
+| tempts | yes or no | no | false |
 
 ## settlements (data/economy.yaml)
 

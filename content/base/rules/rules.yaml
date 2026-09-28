@@ -43,6 +43,7 @@ rules:
       hp: 8
       special: Feels weather and water; advantage when foretelling storm and tide.
       aptitude: { watercraft: 1, crafting: 1 }
+      aliases: [dijklander]
     - id: heathborn
       name: Heathborn
       text: A tall folk of the heath, with giant's blood in them, people say.
@@ -50,6 +51,7 @@ rules:
       hp: 10
       special: Carries twice the load; clumsy in tight places.
       aptitude: { athletics: 1, intimidation: 1, stealth: -1 }
+      aliases: [heideborene]
     - id: fenfolk
       name: Fenfolk
       text: People of the high fen.
@@ -58,6 +60,7 @@ rules:
       special: Never catches fen fever; sees will-o'-the-wisps for what they are.
       aptitude: { survival: 1, stealth: 1, persuasion: -1 }
       immune: [fen_fever]
+      aliases: [veenvolk]
     - id: changeling
       name: Changeling
       text: Swapped by the fair folk at birth and raised by people.
@@ -65,6 +68,9 @@ rules:
       hp: 6
       special: Sees spirits and the fair folk; superstitious people start a step cooler.
       aptitude: { lore: 1, deception: 1, athletics: -1 }
+      aliases: [wisselkind]
+      # Superstitious people start a step cooler: those who keep the old customs.
+      distrusted_by: [old_customs]
 
   backgrounds:
     - { id: peat_cutter, name: Peat-cutter, skills: [athletics, survival], talent: fen_walker, knows: [npc_gerrit, npc_jan_visser], topics: [drainage], reason: "You cut peat in the Holleveen as a boy, and you have come back now that the Count talks of draining it. Gerrit wrote that the Brotherhood needs every spade it can get.", contact: npc_gerrit, heard: drainage }
@@ -356,6 +362,8 @@ rules:
   patrons:
     - id: lantern
       name: the Lantern
+      # Swearing to them is a deed companions judge (M10.17).
+      sworn: fight_witchcraft
       text: Saint Brand, light and rescue, community and mercy.
       values: { gift: 2, returned: 3, request_done: 2, spared: 3, pray: 1 }
       forbids: { killed_surrendered: -20, offering_old: -10 }
@@ -365,6 +373,8 @@ rules:
         - { at: 75, name: Safe Harbour, text: "Once a week you steady yourself when dying.", effects: [] }
     - id: nehalennia
       name: Nehalennia
+      # Swearing to them is a deed companions judge (M10.17).
+      sworn: old_rite
       text: The sea, trade, safe passage.
       values: { request_done: 3, offering_water: 5, pray: 1 }
       forbids: { broken_promise: -20, cruelty_to_dogs: -15 }
@@ -374,6 +384,8 @@ rules:
         - { at: 75, name: The White Dog, text: "Once a day a ghost-dog leads you out of the mist.", effects: [{ bonus: { to: 'skill:survival', value: 2 } }] }
     - id: grey_rider
       name: the Grey Rider
+      # Swearing to them is a deed companions judge (M10.17).
+      sworn: old_rite
       text: Hunt, death, harvest and storm; the Wild Hunt.
       values: { fight_won: 2, honour_dead: 3, pray: 1 }
       forbids: { fled_from_allies: -10, grave_robbing: -20 }
@@ -383,6 +395,8 @@ rules:
         - { at: 75, name: "The Rider's Share", text: "Once, you do not die when you would; the Rider asks a price later.", effects: [] }
     - id: holle
       name: Mother Holle
+      # Swearing to them is a deed companions judge (M10.17).
+      sworn: old_rite
       text: Hearth, weather, spinning and hard work.
       values: { request_done: 2, offering_well: 5, pray: 1 }
       forbids: { cruelty_to_children: -20, entered_uninvited: -5 }
@@ -392,6 +406,8 @@ rules:
         - { at: 75, name: Gold at the Well, text: "Once a season a reward, gold or a vision.", effects: [] }
     - id: baduhenna
       name: Baduhenna
+      # Swearing to them is a deed companions judge (M10.17).
+      sworn: old_rite
       text: Battle, oaths and holy woods.
       values: { fight_won: 2, oath_kept: 5, pray: 1 }
       forbids: { fled: -5, oath_broken: -20 }

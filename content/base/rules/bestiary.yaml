@@ -76,6 +76,10 @@ creatures:
   - id: goat_rider
     name: Goat-Rider
     plural: Goat-Riders
+    # Whom a fight with them touches (M10.17): their own gang, and Veenhoek, glad to see them beaten.
+    faction: goat_riders
+    reputation:
+      won: [{ faction: veenhoek_villagers, by: 3, why: you stood up to the Goat-Riders }]
     kind: human
     level: 2
     hp: 22
@@ -103,6 +107,10 @@ creatures:
 
   - id: black_mathijs
     name: Black Mathijs
+    # Whom a fight with them touches (M10.17): their own gang, and Veenhoek, glad to see them beaten.
+    faction: goat_riders
+    reputation:
+      won: [{ faction: veenhoek_villagers, by: 3, why: you stood up to the Goat-Riders }]
     kind: human
     level: 5
     hp: 60
@@ -213,6 +221,8 @@ creatures:
 encounters:
   - id: goat_riders_toll
     name: The Goat-Riders on the tow path
+    # A disloyal companion hears an offer from them once you have met them (M10.17).
+    tempts: true
     places: [loc_towpath_mid]
     unless_flag: riders_quiet
     chance: 0.35
