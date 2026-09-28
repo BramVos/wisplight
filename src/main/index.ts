@@ -645,7 +645,7 @@ handle('editor:world-fix', async (_event, world: unknown, step: unknown, said: u
   const proposal = {
     say: String(d.say ?? ''),
     questions: (Array.isArray(d.questions) ? d.questions : []).map(String),
-    changes: (Array.isArray(d.changes) ? d.changes : []).map((c: { kind?: unknown; id?: unknown; yaml?: unknown }) => ({ kind: kindOf(c.kind), id: String(c.id), yaml: String(c.yaml ?? '') })),
+    changes: (Array.isArray(d.changes) ? d.changes : []).map((c: { kind?: unknown; id?: unknown; yaml?: unknown; merge?: unknown }) => ({ kind: kindOf(c.kind), id: String(c.id), yaml: String(c.yaml ?? ''), ...(c.merge === true ? { merge: true } : {}) })),
     ...(typeof d.world === 'string' ? { world: d.world } : {}),
     files: (Array.isArray(d.files) ? d.files : []).map((f: { path?: unknown; text?: unknown }) => ({ path: String(f.path ?? ''), text: String(f.text ?? '') })),
   }
@@ -688,7 +688,7 @@ handle('editor:save-draft', async (_event, world: unknown, draft: unknown) => {
   devOnly()
   const d = (draft && typeof draft === 'object' ? draft : {}) as { changes?: unknown; world?: unknown; files?: unknown }
   const files = await readContentFiles(contentDir(), worldOf(world))
-  const changes = (Array.isArray(d.changes) ? d.changes : []).map((c: { kind?: unknown; id?: unknown; yaml?: unknown }) => ({ kind: kindOf(c.kind), id: String(c.id), yaml: String(c.yaml ?? '') }))
+  const changes = (Array.isArray(d.changes) ? d.changes : []).map((c: { kind?: unknown; id?: unknown; yaml?: unknown; merge?: unknown }) => ({ kind: kindOf(c.kind), id: String(c.id), yaml: String(c.yaml ?? ''), ...(c.merge === true ? { merge: true } : {}) }))
   const whole = (Array.isArray(d.files) ? d.files : []).map((f: { path?: unknown; text?: unknown }) => ({ path: String(f.path ?? ''), text: String(f.text ?? '') }))
   const outcome = draftResult(files, { changes, ...(typeof d.world === 'string' ? { world: d.world } : {}), files: whole })
   if (!outcome.ok) return { ok: false, problems: outcome.problems, warnings: [], changes: [] }

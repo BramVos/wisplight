@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { stringify } from 'yaml'
 import { adoptPlaceEdits, ENTITY_KINDS, exitTowards, KIND_NAMES, languageReference, markColours, parseEntityYaml, WORLD_STEPS, type MapPlace, type ReferenceEntry } from '../../engine'
 import { StaleBanner } from './StaleBanner'
@@ -1186,7 +1186,7 @@ function ChroniclerPanel({ bridge, world, focus, initial, saved, open }: { bridg
 /** A proposal of the chronicler: what it says and asks, what it changes as diffs, and accept or throw away. */
 function DraftView({ draft, busy, accept, drop, fix }: { draft: EditorDraft; busy: boolean; accept: () => void; drop: () => void; fix?: () => void }) {
   const parts = [
-    ...draft.changes.map((c) => `${c.yaml.trim() ? '' : 'delete '}${c.kind.replace('_', ' ')} ${c.id}`),
+    ...draft.changes.map((c) => `${c.yaml.trim() ? (c.merge ? 'add to ' : '') : 'delete '}${c.kind.replace('_', ' ')} ${c.id}`),
     ...(draft.world ? [`world.yaml: ${Object.keys(parseEntityYaml(draft.world).raw ?? {}).join(', ')}`] : []),
     ...(draft.files ?? []).map((f) => f.path),
   ]
@@ -1396,14 +1396,18 @@ function WorldSteps({ bridge, world, view, saved, existing = false }: { bridge: 
       live = false
     }
   }, [bridge, world])
+  // A decision clears the step's answer from the log, since the decision holds it now: the same words are not written back.
+  const settled = useRef<Record<string, string>>({})
   // What is typed is kept (M10.20: nothing the designer writes is lost), a moment after the typing stops.
   useEffect(() => {
-    if ((log.answers[step.title] ?? '') === said) return
+    if ((log.answers[step.title] ?? '') === said || settled.current[step.title] === said) return
     const timer = setTimeout(() => void bridge.design(world, { answer: { step: step.title, text: said } }).then(setLog), 800)
     return () => clearTimeout(timer)
   }, [said, step.title, world, bridge, log.answers])
-  const record = (decision: 'accepted' | 'changed' | 'rejected' | 'skipped', from?: EditorDraft, reason = '') =>
-    bridge.design(world, { decision: { step: step.title, decision, asked: from ? askedFor : said, say: from?.say ?? '', questions: from?.questions ?? [], changed: from ? changedBy(from) : [], reason } }).then(setLog)
+  const record = (decision: 'accepted' | 'changed' | 'rejected' | 'skipped', from?: EditorDraft, reason = '') => {
+    if (decision !== 'changed') settled.current[step.title] = said
+    return bridge.design(world, { decision: { step: step.title, decision, asked: from ? askedFor : said, say: from?.say ?? '', questions: from?.questions ?? [], changed: from ? changedBy(from) : [], reason } }).then(setLog)
+  }
   const go = (index: number) => {
     const next = Math.max(0, Math.min(WORLD_STEPS.length - 1, index))
     setAt(next)

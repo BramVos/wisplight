@@ -4,7 +4,7 @@ import { DEFAULT_PALETTE, MapPaletteSchema, SURFACE, TERRAIN_ORDER, type Level, 
 import { previewMapData, type HexMapData } from './map/view'
 import { ContentError, loadContent, type Content, type ContentFile, type Direction } from './content'
 import { regionPreview, sceneryWarnings, warnings } from './builder'
-import { applyEdits, entities, entityYaml, ENTITY_KINDS, LISTS, parseEntityYaml, patchWorld, voiceYaml, worldPrefix, type Edit, type EditResult, type EntityKind, type FileChange, type Raw } from './edit'
+import { applyEdits, entities, entityYaml, ENTITY_KINDS, LISTS, locate, parseEntityYaml, patchWorld, voiceYaml, worldPrefix, type Edit, type EditResult, type EntityKind, type FileChange, type Raw } from './edit'
 import { worldFrame } from './dialogue/prompt'
 import { suspectText, worldText, type SuspectText } from './safety'
 import type { LlmRequest } from './dialogue/llm'
@@ -408,6 +408,12 @@ export interface DraftChange {
   id: string
   /** The whole entity in YAML; empty to delete it. */
   yaml: string
+  /**
+   * Only the fields it sets, on a thing that exists (M10.20): each replaces
+   * that field whole, the rest stays. The economy step of The Quiet Reach was
+   * cut off writing out five places whole to give them a service and a bench.
+   */
+  merge?: boolean
 }
 
 export interface Draft {
@@ -437,7 +443,7 @@ const DRAFT_SCHEMA = {
         type: 'object',
         additionalProperties: false,
         required: ['kind', 'id', 'yaml'],
-        properties: { kind: { type: 'string', enum: ENTITY_KINDS }, id: { type: 'string' }, yaml: { type: 'string' } },
+        properties: { kind: { type: 'string', enum: ENTITY_KINDS }, id: { type: 'string' }, yaml: { type: 'string' }, merge: { type: 'boolean' } },
       },
     },
   },
@@ -478,7 +484,7 @@ export function draftResult(files: ContentFile[], draft: Pick<Draft, 'changes' |
     if (patched.change) note(patched.change)
   }
   // The builder adds the way back for every exit, as the world guide tells the chronicler.
-  const edits = withReturnExits(next, draftEdits(draft))
+  const edits = withReturnExits(next, draftEdits(draft, next))
   if (edits.length) {
     const applied = applyEdits(next, edits)
     for (const change of applied.changes) note(change)
@@ -563,7 +569,7 @@ function draftParts(text: string): DraftParts | undefined {
   }
   const changes = (Array.isArray(parsed.changes) ? parsed.changes : [])
     .filter((c): c is DraftChange => Boolean(c) && typeof c === 'object' && ENTITY_KINDS.includes((c as DraftChange).kind) && typeof (c as DraftChange).id === 'string')
-    .map((c) => ({ kind: c.kind, id: c.id, yaml: typeof c.yaml === 'string' ? c.yaml : '' }))
+    .map((c) => ({ kind: c.kind, id: c.id, yaml: typeof c.yaml === 'string' ? c.yaml : '', ...(c.merge === true ? { merge: true } : {}) }))
   const world = typeof parsed.world === 'string' && parsed.world.trim() ? parsed.world : undefined
   const whole = (Array.isArray(parsed.files) ? parsed.files : []).filter((f): f is { path: string; text: string } => Boolean(f) && typeof f === 'object' && typeof (f as { path?: unknown }).path === 'string' && typeof (f as { text?: unknown }).text === 'string')
   return {
@@ -599,7 +605,7 @@ export function worldFixRequest(files: ContentFile[], stepId: string, said: stri
   const base = worldStepRequest(files, stepId, said)
   const proposal = [
     'YOUR PROPOSAL AS IT STANDS:',
-    ...draft.changes.map((c) => `--- ${c.kind} ${c.id}\n${c.yaml.trim() || '(deleted)'}`),
+    ...draft.changes.map((c) => `--- ${c.kind} ${c.id}${c.merge ? ' (merge: only these fields)' : ''}\n${c.yaml.trim() || '(deleted)'}`),
     ...(draft.world?.trim() ? ['--- world', draft.world.trim()] : []),
     ...(draft.files ?? []).map((f) => `--- file ${f.path}: written whole, ${f.text.length} characters`),
   ]
@@ -673,14 +679,14 @@ export function worldStepRequest(files: ContentFile[], stepId: string, said: str
       designPrompt(files),
       '',
       instruction,
-      'Answer in JSON: say, questions, changes (entities as full YAML), world (YAML of the top-level world.yaml keys to set, or empty), files (CHRONICLER.md or data/voice.yaml whole, or none).',
+      'Answer in JSON: say, questions, changes (a new thing as full YAML; to add to or change a thing that exists, merge: true with only the fields you set, each of which replaces that field whole, so give a list whole; empty YAML without merge deletes), world (YAML of the top-level world.yaml keys to set, or empty), files (CHRONICLER.md or data/voice.yaml whole, or none).',
     ].join('\n'),
     prompt: [`WORLD.YAML NOW:`, worldFile?.text ?? '(none)', '', 'WHAT EXISTS:', ...index, ...(standing ? ['', standing] : []), '', `THE DESIGNER SAYS: ${said}`].join('\n'),
     schemaName: 'world_step',
     schema: WORLD_STEP_SCHEMA,
     // A whole chapter answered in YAML (M10.20: Bram's People chapter holds eight people, their factions and the law;
     // his Places chapter ran past 12,000 tokens in the real app). The gateway allows it ten minutes.
-    maxTokens: 32000,
+    maxTokens: 48000,
     timeoutMs: 600000,
     meta: { step: step.id, ask: said, prefix: worldPrefix(files), world: worldFacts(files) },
   }
@@ -712,7 +718,7 @@ export function stepEntities(files: ContentFile[], fills: readonly { kind: strin
   }
   if (!blocks.length && !left.length) return ''
   return [
-    'WHAT THIS STEP MAY CHANGE, AS IT STANDS (a change sends a thing whole: to add to one, send it with every field and word you do not change kept as it is):',
+    'WHAT THIS STEP MAY CHANGE, AS IT STANDS (to add to one of these, send merge: true with only the fields you set, a list whole; or send it whole with every field and word you do not change kept as it is):',
     ...blocks,
     ...(left.length ? [`Too long to show here, by id only: ${left.join(', ')}.`] : []),
   ].join('\n')
@@ -804,10 +810,13 @@ function worldFacts(files: ContentFile[]): { name: string; start: string; startR
 }
 
 /** The edits a draft stands for, to save when the designer accepts it. */
-export function draftEdits(draft: Pick<Draft, 'changes'>): Edit[] {
-  return draft.changes.map((c) => {
+export function draftEdits(draft: Pick<Draft, 'changes'>, files: ContentFile[] = []): Edit[] {
+  return draft.changes.flatMap((c): Edit[] => {
     const raw = c.yaml.trim() ? parseEntityYaml(c.yaml).raw : undefined
-    return raw ? { kind: c.kind, id: c.id, data: { ...raw, id: c.id } } : { kind: c.kind, id: c.id }
+    // A merge sets fields and never deletes: without fields it changes nothing.
+    if (!raw) return c.merge ? [] : [{ kind: c.kind, id: c.id }]
+    const base = c.merge ? locate(files, c.kind, c.id)?.raw : undefined
+    return [{ kind: c.kind, id: c.id, data: { ...(base ?? {}), ...raw, id: c.id } }]
   })
 }
 

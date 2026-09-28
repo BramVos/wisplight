@@ -81,6 +81,27 @@ describe('M10.20: the real run of a world', () => {
     expect(worldStepRequest(files, 'frame', 'Cold islands.').prompt).not.toContain('AS IT STANDS')
   })
 
+  it('adds to a thing that exists with only the fields a change sets', () => {
+    const files = newWorldFiles('quietreach', 'The Quiet Reach')
+    const result = draftResult(files, {
+      changes: [
+        // The economy step gives the first place a detail and a name to call it by, and nothing else of it.
+        { kind: 'location', id: 'loc_first_place', yaml: 'aliases: [the lock]\ndetails:\n  - words: [tap]\n    look: A steel tap.\n', merge: true },
+        // A merge without fields deletes nothing.
+        { kind: 'area', id: 'first_area', yaml: '', merge: true },
+      ],
+      files: [],
+    })
+    expect(result.problems).toEqual([])
+    const place = result.content!.locations.get('loc_first_place')!
+    expect(place.aliases).toEqual(['the lock'])
+    expect(place.details[0]?.words).toEqual(['tap'])
+    expect(place.description.day).toMatch(/You stand in the first place of a new world/)
+    expect(place.area).toBe('first_area')
+    expect(result.content!.areas.has('first_area')).toBe(true)
+    expect(worldStepRequest(files, 'economy', 'x').system).toContain('merge: true with only the fields you set')
+  })
+
   it('puts right a proposal that did not load, with only what the chronicler corrects', () => {
     const files = newWorldFiles('quietreach', 'The Quiet Reach')
     const topic = (id: string, summary: string) => ({ kind: 'topic' as const, id, yaml: `id: ${id}\nname: ${id}\nkind: lore\nsummary: ${summary}\n` })
