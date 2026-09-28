@@ -10,6 +10,7 @@ import type { LlmRequest } from './dialogue/llm'
 import { voiceSummary } from './dialogue/voice'
 import { contractSummary, contractView, fieldsOf } from './contract'
 import { WORLD_GUIDE, WORLD_STEPS } from './worldguide'
+import { designPrompt } from './designlog'
 import { VoiceSchema } from './dialogue/voiceSchema'
 
 // What the editor shows of a world (M8, FO chapter 15), and the pieces of
@@ -513,6 +514,9 @@ export function draftRequest(files: ContentFile[], ask: string, focus?: { kind: 
       // What a world can have (M10.17): the contract in short, with what this world has and what is still empty.
       contractSummary(content),
       '',
+      // What the designer said and decided before (M10.18): not proposed again.
+      designPrompt(files),
+      '',
       'YOU ARE IN THE WORLD BUILDER. Answer the designer with a proposal: every entity to add or change in full YAML (one mapping with its id, as it would stand in its list), or an empty yaml to delete it. The builder shows it as a diff, checks it, and saves only what the designer accepts. Use only ids that exist or that you add in the same proposal. If a choice belongs to the designer, ask in questions and propose nothing for it. JSON only.',
     ].join('\n'),
     prompt: [`WHAT EXISTS:`, ...index, ...(shown ? ['', `IN VIEW (${focus!.kind} ${focus!.id}):`, stringify(shown.raw)] : []), '', `THE DESIGNER ASKS: ${ask}`].join('\n'),
@@ -582,6 +586,8 @@ export function worldStepRequest(files: ContentFile[], stepId: string, said: str
       '',
       contractSummary(content),
       '',
+      designPrompt(files),
+      '',
       instruction,
       'Answer in JSON: say, questions, changes (entities as full YAML), world (YAML of the top-level world.yaml keys to set, or empty), files (CHRONICLER.md or data/voice.yaml whole, or none).',
     ].join('\n'),
@@ -589,7 +595,7 @@ export function worldStepRequest(files: ContentFile[], stepId: string, said: str
     schemaName: 'world_step',
     schema: WORLD_STEP_SCHEMA,
     maxTokens: 6000,
-    meta: { step: step.id, ask: said, prefix: worldPrefix(files) },
+    meta: { step: step.id, ask: said, prefix: worldPrefix(files), world: worldFacts(files) },
   }
 }
 
@@ -644,6 +650,8 @@ export function enhanceRequest(files: ContentFile[], stepId: string, said: strin
       '',
       contractSummary(content),
       '',
+      designPrompt(files),
+      '',
       instruction,
       'Answer in JSON: brief (the fuller answer, plain text), open (what only the designer can decide).',
     ].join('\n'),
@@ -665,6 +673,15 @@ export function readEnhance(text: string): Enhanced {
   } catch {
     return { brief: '', open: [], problems: ['The chronicler did not answer in the agreed form.'] }
   }
+}
+
+/** What a world has, by id, for the mock chronicler to build on (M10.20): its name, its start, and the ids per kind. */
+function worldFacts(files: ContentFile[]): { name: string; start: string; startRaw?: Raw; ids: Record<string, string[]> } {
+  const content = safeLoad(files)
+  const ids = Object.fromEntries((['area', 'location', 'npc', 'profession', 'item', 'object_type', 'faction'] as const).map((kind) => [kind, entities(files, kind).map((e) => e.id)]))
+  const start = content?.world.start.location ?? ''
+  const startRaw = entities(files, 'location').find((e) => e.id === start)?.raw
+  return { name: content?.world.name ?? '', start, ...(startRaw ? { startRaw } : {}), ids }
 }
 
 /** The edits a draft stands for, to save when the designer accepts it. */

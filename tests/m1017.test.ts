@@ -203,7 +203,8 @@ describe('M10.17: the chronicler as world builder', () => {
     expect(frame.changes.map((c) => c.path).sort()).toEqual(['rimehold/CHRONICLER.md', 'rimehold/world.yaml'])
     await step('calendar', 'A ten-day week, numbered months, no weather under the dome.')
     const world = loadContent(files)
-    expect(world.world.words).toMatchObject({ land: 'the Rim', region: 'Rimehold' })
+    // The mock keeps the name the designer gave (M10.20: no more renaming the world).
+    expect(world.world.words).toMatchObject({ land: 'Rimehold', region: 'Rimehold' })
     expect(world.world.calendar?.weekdays).toHaveLength(10)
     // The start and the rest of world.yaml stay as they were.
     expect(world.world.start.location).toBe('loc_first_place')

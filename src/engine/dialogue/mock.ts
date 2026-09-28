@@ -157,31 +157,130 @@ export class MockLlm implements LlmClient {
     return JSON.stringify({ narration: `You ${String(meta['verb'] ?? 'do it')} and wait. For a moment nothing stirs. Then the air seems to settle, as if something had been noticed.`, effect, spent: meta['domain'] === 'offering' })
   }
 
-  /** One step of building a world (M10.17): the frame, the calendar and the money from the designer's words; for the rest a question. */
+  /**
+   * One step of building a world (M10.17; all twelve since M10.20), from the
+   * designer's words: tables (rows with | or tabs) and lists are read as
+   * records, the world keeps the name it has, and each step proposes a small
+   * piece that loads, so the whole building of a world plays without a model.
+   */
   private worldStep(meta: Record<string, unknown>): string {
     if (this.mode === 'invalid') return 'Here is a lovely world for you.'
     const said = String(meta['ask'] ?? '').trim()
-    const none = { changes: [], world: '', files: [] }
+    const facts = (meta['world'] as { name?: string; start?: string; startRaw?: Record<string, unknown>; ids?: Record<string, string[]> } | undefined) ?? {}
+    const name = facts.name?.trim() || 'this world'
+    const start = facts.start ?? ''
+    const ids = facts.ids ?? {}
+    const rows = rowsOf(said)
+    const reply = (say: string, part: { changes?: { kind: string; id: string; yaml: string }[]; world?: string; files?: { path: string; text: string }[] }, questions: string[] = []) =>
+      JSON.stringify({ say, questions, changes: part.changes ?? [], world: part.world ?? '', files: part.files ?? [] })
+    const firstLine = (said.split('\n').find((l) => l.trim()) ?? '').replace(/^[#\-*\s]+/, '').trim()
     switch (meta['step']) {
       case 'frame':
-        return JSON.stringify({
-          say: 'A frame from your words. Change the names if they are not right.',
-          questions: [],
-          ...none,
-          world: `name: Rimehold\nwords: { land: the Rim, region: Rimehold, from: the inner worlds }\nframe: |\n  WORLD: ${said.replace(/\n/g, ' ') || 'a station at the edge'}. No magic, no faster-than-light travel.\n  REGION: Rimehold, where the story begins.\n  PEOPLE speak plain English and count time in shifts.\n`,
-          files: [{ path: 'CHRONICLER.md', text: '## This world: Rimehold\n\n- Keep to the frame: no magic, no aliens.\n- Never invent a name the designer did not agree.\n' }],
+        return reply(`A frame for ${name} from your words.`, {
+          world: stringify({ words: { land: name, region: name, from: 'far away' }, frame: `WORLD: ${firstLine || name}.\nREGION: ${name}, where the story begins.\nPEOPLE speak plain English.\n` }),
+          files: [{ path: 'CHRONICLER.md', text: `## This world: ${name}\n\n- Keep to the frame: ${firstLine || name}.\n- Never invent a name the designer did not agree.\n` }],
         })
-      case 'calendar':
-        return JSON.stringify({
-          say: 'Ten days a week, numbered months, and no weather under the dome.',
-          questions: [],
-          ...none,
-          world: 'calendar:\n  era: AL\n  months: [One, Two, Three, Four, Five, Six, Seven, Eight, Nine, Ten, Eleven, Twelve, Last Days]\n  weekdays: [Unday, Duoday, Triday, Quartday, Quintday, Sextday, Septday, Octday, Nonday, Decday]\n',
+      case 'calendar': {
+        const era = /\bera\b\s*[:=]?\s*([A-Za-z]{1,6})\b/i.exec(said)?.[1] ?? 'AL'
+        const named = rows.map((r) => r[0]!).filter((c) => /^[A-Z][A-Za-z' -]{1,24}$/.test(c) && !HEADER.test(c))
+        const months = named.length >= 13 ? named.slice(0, 13) : ['One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Last Days']
+        const listed = /(?:weekdays|days of the week|week)\s*[:=]\s*([^\n]+)/i.exec(said)?.[1]?.split(/,\s*|\s+and\s+/).map((d) => d.trim()).filter(Boolean)
+        const weekdays = listed && listed.length > 1 ? listed : /\bten[- ]day|\b10[- ]day/i.test(said) ? ['Unday', 'Duoday', 'Triday', 'Quartday', 'Quintday', 'Sextday', 'Septday', 'Octday', 'Nonday', 'Decday'] : ['Firstday', 'Secondday', 'Thirdday', 'Fourthday', 'Fifthday', 'Sixthday', 'Restday']
+        return reply(`${weekdays.length} days a week and ${named.length >= 13 ? 'your' : 'numbered'} months.`, { world: stringify({ calendar: { era, months, weekdays } }) })
+      }
+      case 'money': {
+        if (/credit|chit/i.test(said)) return reply('Credits and chits.', { world: 'money:\n  units:\n    - { short: cr, name: credit, value: 20 }\n    - { short: ch, name: chit, value: 1 }\n' })
+        const coins = rows.map((r) => ({ name: r[0]!.toLowerCase(), value: Number(r.slice(1).join(' ').match(/\d+/)?.[0] ?? NaN) })).filter((c) => /^[a-z' -]{2,20}$/.test(c.name) && !HEADER.test(c.name) && c.value > 0)
+        if (!coins.length) return reply('One plain coin, until you name others.', { world: 'money:\n  units:\n    - { short: c, name: coin, value: 1 }\n' })
+        const smallest = Math.min(...coins.map((c) => c.value))
+        const used = new Set<string>()
+        const units = coins
+          .sort((a, b) => b.value - a.value)
+          .map((c) => {
+            let short = c.name.replace(/[^a-z]/g, '').slice(0, 2) || 'c'
+            while (used.has(short)) short = `${short}${used.size}`
+            used.add(short)
+            return { short, name: c.name, value: Math.max(1, Math.round(c.value / smallest)) }
+          })
+        return reply(`${units.length} coins, the ${units.at(-1)!.name} the smallest.`, { world: stringify({ money: { units } }) })
+      }
+      case 'faiths': {
+        if (/no faith|nobody prays|no gods?|none/i.test(said) || !rows.length) return reply('No faith: nobody prays here.', { world: 'faiths: []\n' })
+        const faiths = rows.filter((r) => !HEADER.test(r[0]!)).slice(0, 4).map((r) => ({ id: slug(r[0]!), name: r[0]!, patrons: [] }))
+        return reply(`${faiths.length} faiths.`, { world: stringify({ faiths }) })
+      }
+      case 'places': {
+        const area = ids['area']?.[0] ?? 'first_area'
+        const names = rows.map((r) => r[0]!).filter((n) => !HEADER.test(n) && n.length <= 40).slice(0, 8)
+        if (!names.length || !start) return reply('Tell me the places first.', {}, ['Which places can the stranger stand in?'])
+        const idsOf = names.map((n) => `loc_${slug(n)}`)
+        const changes = names.map((n, i) => {
+          const exits: Record<string, { to: string; minutes: number }> = { west: { to: i === 0 ? start : idsOf[i - 1]!, minutes: 5 } }
+          if (i + 1 < names.length) exits['east'] = { to: idsOf[i + 1]!, minutes: 5 }
+          const summary = rows[i]?.[1] ?? ''
+          return { kind: 'location', id: idsOf[i]!, yaml: stringify({ id: idsOf[i], name: n, area, tags: ['public'], ...(summary ? { summary } : {}), description: { day: `You stand in ${n}. The air smells of dust and old smoke. It is quiet here. The way on runs east, and the way back runs west.\n` }, exits }) }
         })
-      case 'money':
-        return JSON.stringify({ say: 'Credits and chits.', questions: [], ...none, world: 'money:\n  units:\n    - { short: cr, name: credit, value: 20 }\n    - { short: ch, name: chit, value: 1 }\n' })
+        // The start gets its way on to the first of them, so every exit has a way back.
+        if (facts.startRaw) {
+          const exits = { ...((facts.startRaw['exits'] as Record<string, unknown> | undefined) ?? {}), east: { to: idsOf[0]!, minutes: 5 } }
+          changes.push({ kind: 'location', id: start, yaml: stringify({ ...facts.startRaw, exits }) })
+        }
+        return reply(`${names.length} places in a row, joined to the start.`, { changes })
+      }
+      case 'professions': {
+        const names = rows.map((r) => r[0]!).filter((n) => !HEADER.test(n) && n.length <= 30).slice(0, 8)
+        if (!names.length) return reply('Tell me the trades first.', {}, ['What do people here do all day?'])
+        const schedule = [{ from: '07:00', to: '08:00', activity: 'eat' }, { from: '08:00', to: '18:00', activity: 'work' }, { from: '18:00', to: '22:00', activity: 'home' }, { from: '22:00', to: '07:00', activity: 'sleep' }]
+        return reply(`${names.length} trades.`, { changes: names.map((n) => ({ kind: 'profession', id: slug(n), yaml: stringify({ id: slug(n), name: n.toLowerCase(), schedule }) })) })
+      }
+      case 'people': {
+        // A name is words with capitals ("Ada Wren", "Mirte"), not "Nobody yet".
+        const people = rows.filter((r) => !HEADER.test(r[0]!) && /^[A-Z][a-z'-]+(?: [A-Z][a-z'-]+){0,3}$/.test(r[0]!) && !/^(Nobody|None|No one|Nothing)$/.test(r[0]!)).slice(0, 6)
+        const trades = ids['profession'] ?? []
+        const places = ids['location'] ?? []
+        if (!people.length || !trades.length || !start) return reply('Tell me the people first.', {}, ['Who does the stranger meet first?'])
+        const changes = people.map((r) => {
+          const id = `npc_${slug(r[0]!)}`
+          const rest = r.slice(1).join(' ').toLowerCase()
+          const profession = trades.find((t) => rest.includes(t.replace(/_/g, ' '))) ?? trades[0]!
+          const home = places.find((p) => rest.includes(p.replace(/^loc_/, '').replace(/_/g, ' '))) ?? start
+          const pronoun = /\bshe\b|\bher\b|woman/.test(rest) ? 'she' : /\bhe\b|\bhis\b|\bman\b/.test(rest) ? 'he' : 'they'
+          return { kind: 'npc', id, yaml: stringify({ id, name: r[0], short: `${r[0]!.split(' ')[0]} the ${profession.replace(/_/g, ' ')}`, pronoun, age: 40, profession, home, appearance: `Someone of ${name}, as plain as the day.`, personality: { warmth: 1, courage: 0, honesty: 1, temper: 0, curiosity: 1, diligence: 1 }, public_facts: [`${r[0]} lives in ${name}.`] }) }
+        })
+        return reply(`${changes.length} people.`, { changes })
+      }
+      case 'economy': {
+        const goods = rows.filter((r) => !HEADER.test(r[0]!) && r[0]!.length <= 30).slice(0, 8)
+        if (!goods.length) return reply('Tell me the goods first.', {}, ['What do people eat and use?'])
+        const changes = goods.map((r) => {
+          const id = slug(r[0]!)
+          const value = Number(r.slice(1).join(' ').match(/\d+/)?.[0] ?? 2) || 2
+          const food = /bread|stew|fish|soup|ration|meal|ale|beer|food|cake|cheese/i.test(r[0]!)
+          return { kind: 'item', id, yaml: stringify({ id, name: r[0]!.toLowerCase(), description: `${r[0]}, as they have it in ${name}.`, value, ...(food ? { tags: ['food'], food: 20 } : {}) }) }
+        })
+        return reply(`${changes.length} goods.`, { changes })
+      }
+      case 'passages': {
+        const places = (ids['location'] ?? []).filter((p) => p !== start)
+        if (!start || !places.length) return reply('There is nowhere to go yet.', {}, ['Which places does it join?'])
+        const kind = /\b(?:a|the)\s+([a-z]+(?: [a-z]+)?)/i.exec(firstLine)?.[1]?.toLowerCase() ?? 'cart'
+        const other = places.at(-1)!
+        const passage = { id: slug(kind), name: `the ${kind}`, kind, aliases: [kind], stops: [start, other], hours: '06-22', fare: 2, legs: { [`${start}>${other}`]: 30 }, water: false, crew: 'driver', text: 'You pay {fare} and ride. After {duration} you are at {place}.' }
+        return reply(`The ${kind}, from the start to the far end.`, { changes: [{ kind: 'passage', id: passage.id, yaml: stringify(passage) }] })
+      }
+      case 'watcher':
+        return reply('A friend is a signal here: warm for three days, and something shared.', {
+          changes: [
+            { kind: 'watcher', id: 'befriended', yaml: 'id: befriended\nsignal: befriended\nprobe: { befriended: 3 }\n' },
+            { kind: 'aftermath', id: 'befriended', yaml: 'id: befriended\nsignal: befriended\nabout: first\ntopic: friendship\nexpires: 1\nsteps:\n  - id: tie\n    do: { set_tie: [$a, player], role: friend, bond: 2 }\n' },
+          ],
+        })
+      case 'voice':
+        return reply('A plain voice kit to start from.', { files: [{ path: 'data/voice.yaml', text: 'voice:\n  oaths: {}\n  sayings: []\n' }] })
+      case 'palette':
+        return reply('A picture style from your words.', { world: stringify({ pictures: { style: firstLine || `A small illustration of ${name}.` } }) })
       default:
-        return JSON.stringify({ say: 'Tell me a little more first.', questions: ['What should this step hold?'], ...none })
+        return reply('Tell me a little more first.', {}, ['What should this step hold?'])
     }
   }
 
@@ -406,4 +505,27 @@ export class MockLlm implements LlmClient {
 /** A place as YAML with new exits, for the mock's proposals. */
 function stringifyExits(place: Record<string, unknown>, exits: Record<string, unknown>): string {
   return stringify({ ...place, exits })
+}
+
+/** A header cell of a pasted table, or a word that names a column rather than a thing. */
+const HEADER = /^(month|months|name|names|coin|coins|value|place|places|person|people|item|items|good|goods|trade|trades|day|days|faith|faiths|price|prices|who|what|where)$/i
+
+/** What the designer wrote, as records (M10.20): a table row as its cells, a list item or a line as one cell. */
+function rowsOf(said: string): string[][] {
+  return said
+    .split('\n')
+    .map((l) => l.trim())
+    .filter((l) => l && !/^\|?\s*:?-{2,}/.test(l) && !/^#/.test(l))
+    .map((l) =>
+      l.includes('|')
+        ? l.replace(/^\||\|$/g, '').split('|').map((c) => c.trim()).filter(Boolean)
+        : l.includes('\t')
+          ? l.split('\t').map((c) => c.trim()).filter(Boolean)
+          : [l.replace(/^(?:[-*\u2022]|\d+[.)])\s+/, '').replace(/[.:]$/, '').trim()],
+    )
+    .filter((r) => r.length && r[0])
+}
+
+function slug(text: string): string {
+  return text.toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 30) || 'x'
 }

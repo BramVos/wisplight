@@ -1143,6 +1143,8 @@ export function loadContent(files: ContentFile[]): Content {
       chronicler = chronicler ? `${chronicler.trimEnd()}\n\n${file.text}` : file.text
       continue
     }
+    // Other Markdown beside the content (the design log, the world book: M10.18) is for people and the editor, not content.
+    if (/\.md$/.test(file.path)) continue
     // The register of committed ids (M9.1).
     if (/(^|\/)ids\.lock$/.test(file.path)) {
       const parsed = IdsLockSchema.safeParse(safeParse(file.text))

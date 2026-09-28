@@ -50,7 +50,8 @@ export async function readContentFiles(root: string, folder: string = DEFAULT_WO
   if (!/^[a-z0-9_-]*$/.test(world) || (world && !existsSync(join(root, world, 'world.yaml')))) throw new Error(`There is no world called "${folder}".`)
   const entries = await walk(join(root, world))
   const prefix = world ? `${world}/` : ''
-  const paths = entries.filter((entry) => /\.ya?ml$/.test(entry) || /(^|\/)CHRONICLER\.md$/.test(entry) || /(^|\/)ids\.lock$/.test(entry)).sort()
+  // The design log (M10.18) goes along, for the chronicler's prompt in the editor; the world book is made from these, never read.
+  const paths = entries.filter((entry) => /\.ya?ml$/.test(entry) || /(^|\/)(CHRONICLER|DESIGN)\.md$/.test(entry) || /(^|\/)ids\.lock$/.test(entry)).sort()
   const files = await Promise.all(paths.map(async (path) => ({ path: `${prefix}${path}`, text: await readFile(join(root, world, path), 'utf8') })))
   if (world && existsSync(join(root, 'CHRONICLER.md'))) files.push({ path: 'CHRONICLER.md', text: await readFile(join(root, 'CHRONICLER.md'), 'utf8') })
   return filesOfWorld(files, world || undefined)

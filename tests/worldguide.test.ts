@@ -61,6 +61,7 @@ describe('the guide for a new world', () => {
   it('tells the chronicler to ask before inventing, never to borrow from another world, and what building Deepwell taught', () => {
     expect(WORLD_GUIDE).toMatch(/Ask before you invent/)
     expect(WORLD_GUIDE).toMatch(/Never fill a gap with a value from another world/)
+    expect(WORLD_GUIDE).toMatch(/paste tables \(rows with \| or tabs\) and lists\. Read each row as a record/)
     for (const lesson of [/aftermath:/, /area of its settlement/, /made somewhere or brought by a route/, /way on foot/, /legs/, /first block that matches/, /smallest coin/]) expect(WORLD_GUIDE).toMatch(lesson)
   })
 })
