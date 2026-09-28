@@ -1521,3 +1521,107 @@ pre.sheet {
 .ai-light.failed {
   border-color: #c96b5a;
 }
+
+/* The map in colour (M10): a canvas that fits its box, and the legend strip under it. */
+.hexmap {
+  width: 100%;
+  display: grid;
+  gap: 8px;
+}
+.hexmap canvas {
+  display: block;
+  max-width: 100%;
+  border-radius: 3px;
+}
+.hexmap-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.hexmap-legend button,
+.hexmap-legend .hexmap-place {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: calc(12px * var(--text-scale)) / 1 var(--font);
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 4px 8px 4px 5px;
+}
+.hexmap-legend button {
+  cursor: pointer;
+}
+.hexmap-legend button:hover,
+.hexmap-legend button:focus-visible {
+  border-color: var(--muted);
+}
+.hexmap-legend i {
+  width: 18px;
+  height: 14px;
+  border-radius: 2px;
+  display: inline-grid;
+  place-items: center;
+  font-style: normal;
+  font-size: 11px;
+}
+.seg {
+  display: inline-flex;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+.seg button {
+  font: calc(12px * var(--text-scale)) / 1 var(--font);
+  color: var(--muted);
+  background: transparent;
+  border: 0;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+.seg button + button {
+  border-left: 1px solid var(--line);
+}
+.seg button[aria-pressed='true'] {
+  background: #2a2e20;
+  color: var(--input);
+}
+.map-text summary {
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+/* The palette tab of the editor (M10). */
+.palette-panel {
+  display: grid;
+  gap: 10px;
+  max-width: 980px;
+}
+.palette-table {
+  border-collapse: collapse;
+  font-size: calc(12px * var(--text-scale));
+}
+.palette-table td,
+.palette-table th {
+  padding: 3px 8px 3px 0;
+  text-align: left;
+  vertical-align: middle;
+}
+.palette-table input[type='color'] {
+  width: 30px;
+  height: 22px;
+  padding: 0;
+  border: 1px solid var(--line);
+  background: none;
+  margin-right: 3px;
+}
+.palette-ask {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.palette-ask input {
+  flex: 1 1 320px;
+}

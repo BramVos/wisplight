@@ -2,12 +2,17 @@
 // contrast can be set). A per-player preference of this computer, kept in the
 // window's own storage; without storage the defaults hold.
 
+import { useEffect, useState } from 'react'
+
 export type Contrast = 'normal' | 'high'
+/** How the map looks (M10): dark by default, paper, or black and white. */
+export type MapLook = 'dark' | 'paper' | 'bw'
 
 export interface Display {
   /** Multiplies every text size. */
   scale: number
   contrast: Contrast
+  map: MapLook
 }
 
 /** The text sizes; each label is a key in locales/<language>/settings.json. */
@@ -20,13 +25,14 @@ export const TEXT_SIZES = [
 ] as const
 
 const KEY = 'wisplight.display'
-const DEFAULT: Display = { scale: 1, contrast: 'normal' }
+const DEFAULT: Display = { scale: 1, contrast: 'normal', map: 'dark' }
+const LOOKS: MapLook[] = ['dark', 'paper', 'bw']
 
 export function loadDisplay(): Display {
   try {
     const saved = JSON.parse(localStorage.getItem(KEY) ?? 'null') as Partial<Display> | null
     const scale = TEXT_SIZES.some((s) => s.scale === saved?.scale) ? saved!.scale! : DEFAULT.scale
-    return { scale, contrast: saved?.contrast === 'high' ? 'high' : 'normal' }
+    return { scale, contrast: saved?.contrast === 'high' ? 'high' : 'normal', map: LOOKS.includes(saved?.map as MapLook) ? (saved!.map as MapLook) : 'dark' }
   } catch {
     return DEFAULT
   }
@@ -40,9 +46,21 @@ export function applyDisplay(display: Display): void {
 
 export function saveDisplay(display: Display): void {
   applyDisplay(display)
+  window.dispatchEvent(new CustomEvent('wisplight:display'))
   try {
     localStorage.setItem(KEY, JSON.stringify(display))
   } catch {
     // No storage (a private window): it holds until the window closes.
   }
+}
+
+/** The look of the map, kept up to date when it changes in Settings (M10). */
+export function useMapLook(): MapLook {
+  const [look, setLook] = useState<MapLook>(() => loadDisplay().map)
+  useEffect(() => {
+    const changed = () => setLook(loadDisplay().map)
+    window.addEventListener('wisplight:display', changed)
+    return () => window.removeEventListener('wisplight:display', changed)
+  }, [])
+  return look
 }

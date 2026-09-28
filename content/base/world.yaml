@@ -75,3 +75,53 @@ world:
       - { min_age: 60, kinds: [lore], factor: 1.2 }
       # Gossips hear more about people.
       - { quirk: [gossip], kinds: [person, fact], factor: 1.2 }
+
+  # The map (M10; the proposal page approved on 28 September 2026): the levels
+  # from below to above, and the palette of the proposal page. Four muted
+  # tints per terrain for the dark style and for paper; black and white is
+  # paper in greys. Change them here or in the editor (tab Palette).
+  map:
+    levels:
+      - { id: under, name: under the ground }
+      - { id: surface, name: ground level }
+      - { id: crown, name: the crowns }
+    palette:
+      names: { fen: fen, bog: boggy fen, hummock: hummock, ridge: dry ridge, water: open water, channel: channel, woods: woods, heath: heath, fields: fields, tunnel: tunnel, crown: crowns }
+      dark:
+        ground: "#101209"
+        unknown: "#171a12"
+        label: "#e3dcc5"
+        label_shadow: "#0b0c07"
+        terrain:
+          fen: ["#4a5337", "#434c32", "#515a3c", "#3f472f"]
+          bog: ["#353b28", "#383f2a"]
+          hummock: ["#5f6846", "#666f4b"]
+          ridge: ["#747454", "#7c7b59"]
+          water: ["#1c3540", "#1f3a46", "#1a313b", "#21404c"]
+          channel: ["#2b4f5a", "#305762"]
+          woods: ["#2f472d", "#2a4029", "#34502f", "#2b4329"]
+          heath: ["#655561", "#5d4f5a", "#6d5c66", "#584b56"]
+          fields: ["#777144", "#6f6a3f", "#7f7848", "#6a653c"]
+          tunnel: ["#6b5a45", "#62523f"]
+          crown: ["#5d7a48", "#56713f"]
+        ways: { road: "#cbb68a", path: "#b39f76", canal: "#88aab3" }
+        glyph: { pool: "#8fb7c1", peat_pit: "#16120c", peat_edge: "#6b5c43", willow: "#a6b983", ruin: "#cdbba2", hummock: "#b1b682", stairs: "#e7d9a8" }
+      paper:
+        ground: "#e8dfc6"
+        unknown: "#e2d8bd"
+        label: "#2f271b"
+        label_shadow: "#efe7d0"
+        terrain:
+          fen: ["#c1bf97", "#bab88f", "#c8c6a0", "#b4b18a"]
+          bog: ["#a9a780", "#a4a27b"]
+          hummock: ["#d2d0a9", "#d7d5ae"]
+          ridge: ["#dcd6ae", "#e1dbb3"]
+          water: ["#9ebac0", "#a6c1c6", "#98b4ba", "#abc5ca"]
+          channel: ["#86a9b1", "#8cafb7"]
+          woods: ["#9eb08a", "#96a983", "#a5b690", "#91a47e"]
+          heath: ["#c3abb6", "#baa3ae", "#cab2bc", "#b49ea8"]
+          fields: ["#d8cfa2", "#d1c89b", "#ded5a8", "#cbc295"]
+          tunnel: ["#a48c6a", "#9a8363"]
+          crown: ["#8fa874", "#88a06d"]
+        ways: { road: "#8a6d43", path: "#a0865b", canal: "#5c8a94" }
+        glyph: { pool: "#4f7c88", peat_pit: "#5a4a35", peat_edge: "#3f3325", willow: "#52683e", ruin: "#6d5a44", hummock: "#8b8a5b", stairs: "#2b2418" }

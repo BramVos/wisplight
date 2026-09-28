@@ -52,7 +52,7 @@ const shine = () => lightListeners.forEach((listener) => listener(lights.map((l)
 export function slowMock(llm: LlmClient): LlmClient {
   return {
     complete: async (request) => {
-      const light = lights.find((l) => l.role === (request.schemaName === 'builder_draft' ? 'builder' : request.role))
+      const light = lights.find((l) => l.role === (request.schemaName === 'builder_draft' || request.schemaName === 'palette_draft' ? 'builder' : request.role))
       if (light) {
         light.busy = true
         shine()

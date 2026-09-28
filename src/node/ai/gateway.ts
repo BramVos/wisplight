@@ -152,7 +152,7 @@ export class Gateway implements LlmClient {
     const timer = setTimeout(() => controller.abort(), timeoutMs)
     const started = this.now()
     // The light of this role (M10.4): the editor's drafts are the builder's, advice is nobody's.
-    const light: LightRole | undefined = request.schemaName === 'builder_draft' ? 'builder' : request.role === 'advisor' ? undefined : request.role
+    const light: LightRole | undefined = request.schemaName === 'builder_draft' || request.schemaName === 'palette_draft' ? 'builder' : request.role === 'advisor' ? undefined : request.role
     let outcome: { costUsd?: number; ok: boolean } = { ok: false }
     if (light) this.begin(light)
     try {

@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react
 import { stringify } from 'yaml'
 import { adoptPlaceEdits, draftEdits, ENTITY_KINDS, exitTowards, KIND_NAMES, languageReference, parseEntityYaml, type MapPlace, type ReferenceEntry } from '../../engine'
 import { NpcInspector } from './Inspector'
+import { HexMap } from './HexMap'
+import type { MapPalette, MapStyle, MapStyleName, PaletteView } from '../../engine'
 import { createEditor, type DiffLine, type Edit, type EditorBridge, type EditorDraft, type EditorSave, type EditorView, type EntityKind, type Raw, type ShownChange, type SimReport, type WorldInfo } from './client'
 
 // The editor (M8, FO chapter 15), in a window of its own: npm run editor, or
@@ -12,7 +14,7 @@ import { createEditor, type DiffLine, type Edit, type EditorBridge, type EditorD
 // playtest without the player with an NPC inspector, and the chronicler,
 // whose proposals are shown as a change and saved only when accepted.
 
-type Panel = 'edit' | 'map' | 'check' | 'playtest' | 'reference' | 'chronicler' | 'world'
+type Panel = 'edit' | 'map' | 'palette' | 'check' | 'playtest' | 'reference' | 'chronicler' | 'world'
 
 const DIRECTIONS = ['north', 'northeast', 'east', 'southeast', 'south', 'southwest', 'west', 'northwest', 'up', 'down', 'in', 'out']
 const AXES = ['warmth', 'courage', 'honesty', 'temper', 'curiosity', 'diligence'] as const
@@ -87,6 +89,7 @@ export function EditorApp() {
             [
               ['edit', 'Edit'],
               ['map', 'Map'],
+              ['palette', 'Palette'],
               ['check', `Check${view.problems.length ? ` (${view.problems.length} errors)` : view.warnings.length ? ` (${view.warnings.length})` : ''}`],
               ['playtest', 'Playtest'],
               ['reference', 'Reference'],
@@ -140,6 +143,7 @@ export function EditorApp() {
         </div>
       )}
       {panel === 'map' && <MapPanel bridge={bridge} world={world} view={view} saved={refresh} open={open} />}
+      {panel === 'palette' && <PalettePanel bridge={bridge} world={world} saved={refresh} />}
       {panel === 'check' && <CheckPanel view={view} open={open} />}
       {panel === 'playtest' && <PlaytestPanel bridge={bridge} world={world} />}
       {panel === 'reference' && <ReferencePanel />}
@@ -1184,6 +1188,132 @@ function NewWorldPanel({ bridge, made }: { bridge: EditorBridge; made: (folder: 
         [Make the world]
       </button>
       {problems.length > 0 && <p className="warn small">{problems.join(' ')}</p>}
+    </div>
+  )
+}
+
+/**
+ * The palette of the map (M10): content per world, in world.yaml. Every
+ * token as a colour box, for dark and for paper (black and white is paper in
+ * greys), and a map to try it on. The writing aid proposes a palette from the
+ * world's frame on request; nothing is saved until you save.
+ */
+function PalettePanel({ bridge, world, saved }: { bridge: EditorBridge; world: string; saved: () => Promise<void> }) {
+  const [view, setView] = useState<PaletteView>()
+  const [palette, setPalette] = useState<MapPalette>()
+  const [style, setStyle] = useState<MapStyleName>('dark')
+  const [ask, setAsk] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [message, setMessage] = useState<string>()
+  const [changed, setChanged] = useState(false)
+
+  useEffect(() => {
+    void bridge.palette(world).then((v) => {
+      setView(v)
+      setPalette(v.palette)
+      setChanged(false)
+    })
+  }, [bridge, world])
+
+  if (!view || !palette) return <div className="editor-page"><p className="muted">Loading the palette...</p></div>
+  const edited = (next: MapPalette) => {
+    setPalette(next)
+    setChanged(true)
+  }
+  const setStyleToken = (which: 'dark' | 'paper', change: (s: MapStyle) => MapStyle) => edited({ ...palette, [which]: change(palette[which]) })
+  const preview = view.preview ? { ...view.preview, palette, legend: view.preview.legend.map((l) => ({ ...l, name: palette.names[l.key] ?? l.name })) } : undefined
+  const terrains = [...new Set([...Object.keys(palette.dark.terrain), ...Object.keys(palette.paper.terrain)])]
+  const which: 'dark' | 'paper' = style === 'dark' ? 'dark' : 'paper'
+  const s = palette[which]
+  const colour = (value: string, set: (v: string) => void, label: string) => (
+    <input type="color" value={value} aria-label={label} title={`${label}: ${value}`} onChange={(e) => set(e.target.value)} />
+  )
+
+  const save = async () => {
+    setBusy(true)
+    const result = await bridge.savePalette(world, palette)
+    setBusy(false)
+    setMessage(result.ok ? 'Saved in world.yaml.' : result.problems.join('; '))
+    if (result.ok) {
+      setChanged(false)
+      await saved()
+    }
+  }
+  const propose = async () => {
+    setBusy(true)
+    const result = await bridge.proposePalette(world, ask)
+    setBusy(false)
+    if (result.palette) edited(result.palette)
+    setMessage(result.palette ? `${result.say} (Not saved yet: look at it, change what you like, then save.)` : result.problems.join('; '))
+  }
+
+  return (
+    <div className="editor-page palette-panel">
+      <h2>The map palette</h2>
+      <p className="muted small">
+        {view.own ? 'This world has its own palette in world.yaml.' : 'This world has no palette of its own yet: it draws with the default. Saving writes one into world.yaml.'} Levels: {view.levels.map((l) => l.name).join(', ')}.
+      </p>
+      <div className="seg" role="group" aria-label="Style">
+        {(['dark', 'paper', 'bw'] as const).map((st) => (
+          <button key={st} type="button" aria-pressed={style === st} onClick={() => setStyle(st)}>
+            {st === 'dark' ? 'dark' : st === 'paper' ? 'paper' : 'black and white'}
+          </button>
+        ))}
+      </div>
+      {preview ? <HexMap data={preview} style={style} label="The palette on a map of this world" /> : <p className="muted">The world does not load, so there is no map to try it on.</p>}
+      {style === 'bw' ? (
+        <p className="muted small">Black and white is the paper set in greys; change paper to change it.</p>
+      ) : (
+        <table className="palette-table">
+          <thead>
+            <tr>
+              <th>Terrain</th>
+              <th>Name in the legend</th>
+              <th>Tints ({which})</th>
+            </tr>
+          </thead>
+          <tbody>
+            {terrains.map((key) => (
+              <tr key={key}>
+                <td>{key}</td>
+                <td>
+                  <input value={palette.names[key] ?? ''} placeholder={key} onChange={(e) => edited({ ...palette, names: { ...palette.names, [key]: e.target.value } })} />
+                </td>
+                <td>
+                  {(s.terrain[key] ?? []).map((tint, i) =>
+                    <span key={i}>{colour(tint, (v) => setStyleToken(which, (st) => ({ ...st, terrain: { ...st.terrain, [key]: st.terrain[key]!.map((x, j) => (j === i ? v : x)) } })), `${key} tint ${i + 1}`)}</span>,
+                  )}
+                </td>
+              </tr>
+            ))}
+            <tr>
+              <td>ways</td>
+              <td className="muted small">road, path, tow path</td>
+              <td>{(['road', 'path', 'canal'] as const).map((w) => <span key={w}>{colour(s.ways[w], (v) => setStyleToken(which, (st) => ({ ...st, ways: { ...st.ways, [w]: v } })), w)}</span>)}</td>
+            </tr>
+            <tr>
+              <td>signs</td>
+              <td className="muted small">pool, peat pit, its edge, willow, ruin, hummock, stairs</td>
+              <td>{(Object.keys(s.glyph) as (keyof MapStyle['glyph'])[]).map((g) => <span key={g}>{colour(s.glyph[g], (v) => setStyleToken(which, (st) => ({ ...st, glyph: { ...st.glyph, [g]: v } })), g)}</span>)}</td>
+            </tr>
+            <tr>
+              <td>ground</td>
+              <td className="muted small">ground, unknown, label, its shadow</td>
+              <td>{(['ground', 'unknown', 'label', 'label_shadow'] as const).map((k) => <span key={k}>{colour(s[k], (v) => setStyleToken(which, (st) => ({ ...st, [k]: v })), k)}</span>)}</td>
+            </tr>
+          </tbody>
+        </table>
+      )}
+      <div className="palette-ask">
+        <input value={ask} placeholder="Ask the writing aid for a palette: colder, more like the sea, ..." onChange={(e) => setAsk(e.target.value)} aria-label="What to ask the writing aid" />
+        <button type="button" disabled={busy} onClick={() => void propose()}>
+          [Propose a palette]
+        </button>
+        <button type="button" disabled={busy || !changed} onClick={() => void save()}>
+          [Save]
+        </button>
+      </div>
+      {message && <p className="small">{message}</p>}
     </div>
   )
 }

@@ -1,5 +1,7 @@
 import { economyOverview, type SettlementView } from './economy/ledger'
-import { stringify } from 'yaml'
+import { parseDocument, stringify } from 'yaml'
+import { DEFAULT_PALETTE, MapPaletteSchema, SURFACE, TERRAIN_ORDER, type Level, type MapPalette } from './map/palette'
+import { previewMapData, type HexMapData } from './map/view'
 import { ContentError, loadContent, type Content, type ContentFile, type Direction } from './content'
 import { regionPreview, warnings } from './builder'
 import { applyEdits, entities, ENTITY_KINDS, LISTS, parseEntityYaml, worldPrefix, type Edit, type EditResult, type EntityKind, type Raw } from './edit'
@@ -485,3 +487,108 @@ function safeLoad(files: ContentFile[]): Content | undefined {
   }
 }
 
+
+// ---------------------------------------------------------------- the palette (M10)
+
+/** A world's map as the editor shows it: its palette (or the default), its levels, and a map to try it on. */
+export interface PaletteView {
+  palette: MapPalette
+  /** Whether the world has a palette of its own in world.yaml. */
+  own: boolean
+  levels: Level[]
+  preview?: HexMapData
+}
+
+function worldFileOf(files: ContentFile[]): ContentFile | undefined {
+  return files.find((f) => /(^|\/)world\.ya?ml$/.test(f.path))
+}
+
+export function paletteView(files: ContentFile[], palette?: MapPalette): PaletteView {
+  const content = safeLoad(files)
+  const own = content?.world.map?.palette
+  const shown = palette ?? own ?? DEFAULT_PALETTE
+  return { palette: shown, own: Boolean(own), levels: content?.world.map?.levels ?? [{ id: SURFACE, name: 'ground level' }], ...(content ? { preview: previewMapData(content, shown) } : {}) }
+}
+
+/**
+ * Writes a palette into world.yaml (M10): under world.map.palette, the rest of
+ * the file as it was, comments and all. Checked by loading the world with it.
+ */
+export function savePalette(files: ContentFile[], palette: MapPalette): { ok: boolean; problems: string[]; changes: { path: string; before?: string; text: string }[] } {
+  const parsed = MapPaletteSchema.safeParse(palette)
+  if (!parsed.success) return { ok: false, problems: parsed.error.issues.map((i) => `palette ${i.path.join('.')}: ${i.message}`), changes: [] }
+  const file = worldFileOf(files)
+  if (!file) return { ok: false, problems: ['This world has no world.yaml.'], changes: [] }
+  const doc = parseDocument(file.text)
+  doc.setIn(['world', 'map', 'palette'], doc.createNode(parsed.data))
+  const text = doc.toString({ lineWidth: 0 })
+  const next = files.map((f) => (f === file ? { ...f, text } : f))
+  try {
+    loadContent(next)
+  } catch (error) {
+    return { ok: false, problems: error instanceof ContentError ? error.problems : [String(error)], changes: [] }
+  }
+  return { ok: true, problems: [], changes: [{ path: file.path, before: file.text, text }] }
+}
+
+const HEX = { type: 'string', pattern: '^#[0-9a-fA-F]{6}$' }
+const TINTS = { type: 'array', items: HEX, minItems: 1, maxItems: 4 }
+const STYLE = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['ground', 'unknown', 'label', 'label_shadow', 'terrain', 'ways', 'glyph'],
+  properties: {
+    ground: HEX,
+    unknown: HEX,
+    label: HEX,
+    label_shadow: HEX,
+    terrain: { type: 'object', additionalProperties: TINTS },
+    ways: { type: 'object', additionalProperties: false, required: ['road', 'path', 'canal'], properties: { road: HEX, path: HEX, canal: HEX } },
+    glyph: { type: 'object', additionalProperties: false, required: ['pool', 'peat_pit', 'peat_edge', 'willow', 'ruin', 'hummock', 'stairs'], properties: Object.fromEntries(['pool', 'peat_pit', 'peat_edge', 'willow', 'ruin', 'hummock', 'stairs'].map((k) => [k, HEX])) },
+  },
+}
+const PALETTE_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['say', 'palette'],
+  properties: { say: { type: 'string' }, palette: { type: 'object', additionalProperties: false, required: ['names', 'dark', 'paper'], properties: { names: { type: 'object', additionalProperties: { type: 'string' } }, dark: STYLE, paper: STYLE } } },
+}
+
+/**
+ * The writing aid proposes a palette on request (M10): from the frame of the
+ * world (world.yaml and CHRONICLER.md), muted, three or four tints a terrain,
+ * for the dark style and for paper, with this world's names for the terrains.
+ */
+export function paletteRequest(files: ContentFile[], ask: string): LlmRequest {
+  const content = safeLoad(files)
+  const instruction = files.filter((f) => /(^|\/)CHRONICLER\.md$/.test(f.path)).sort((a, b) => a.path.localeCompare(b.path)).map((f) => f.text).join('\n\n')
+  const current = content?.world.map?.palette ?? DEFAULT_PALETTE
+  const terrains = [...new Set([...Object.keys(current.dark.terrain), ...TERRAIN_ORDER])]
+  return {
+    role: 'chronicler',
+    system: [
+      instruction,
+      '',
+      content ? worldFrame(content) : '',
+      '',
+      'YOU ARE IN THE WORLD BUILDER, AT THE MAP PALETTE. Propose colours for the map of this world that fit its frame: muted, in the spirit of Dwarf Fortress and Brogue, three or four close tints for every terrain (the seed of each hex picks one), boggy ground darker, dry ground lighter, water in two tones (open water and channel), ways in warm parchment. One set for the dark style and one for paper; black and white is made from paper. Give the legend names of the terrains as this world would say them. Colours as #rrggbb. JSON only.',
+    ].join('\n'),
+    prompt: [`THE PALETTE NOW:`, JSON.stringify(current), '', `TERRAINS: ${terrains.join(', ')}`, '', `THE DESIGNER ASKS: ${ask || 'a palette that fits this world'}`].join('\n'),
+    schemaName: 'palette_draft',
+    schema: PALETTE_SCHEMA,
+    maxTokens: 3000,
+    meta: { palette: current, ask },
+  }
+}
+
+/** Reads a proposed palette, checked against the schema: nothing is saved until the designer does. */
+export function readPalette(text: string): { say: string; palette?: MapPalette; problems: string[] } {
+  let parsed: { say?: unknown; palette?: unknown }
+  try {
+    parsed = JSON.parse(text.trim().replace(/^```(?:json)?\s*|\s*```$/g, '')) as typeof parsed
+  } catch {
+    return { say: '', problems: ['The writing aid did not answer in the agreed form.'] }
+  }
+  const palette = MapPaletteSchema.safeParse(parsed.palette)
+  return { say: typeof parsed.say === 'string' ? parsed.say : '', ...(palette.success ? { palette: palette.data } : {}), problems: palette.success ? [] : palette.error.issues.slice(0, 5).map((i) => `palette ${i.path.join('.')}: ${i.message}`) }
+}

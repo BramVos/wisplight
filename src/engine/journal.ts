@@ -1,3 +1,5 @@
+import type { HexMapData } from './map/view'
+import type { LandMapData } from './map/known'
 import { hintHolds } from './props'
 import type { SheetData } from './rules/player'
 import { personView, type PersonView } from './acquaintance'
@@ -24,7 +26,7 @@ export interface JournalLink {
 
 export interface JournalPage {
   id: string
-  kind: 'person' | 'place' | 'area' | 'event' | 'lore' | 'thing' | 'quest' | 'map' | 'sheet'
+  kind: 'person' | 'place' | 'area' | 'event' | 'lore' | 'thing' | 'quest' | 'map' | 'sheet' | 'land'
   name: string
   lines: string[]
   sources: string[]
@@ -35,6 +37,9 @@ export interface JournalPage {
   person?: PersonView
   /** For the character sheet: the numbers, for the interface to lay out. */
   sheet?: SheetData
+  /** The region in colour (M10), and the land beyond it. */
+  hexMap?: HexMapData
+  land?: LandMapData
 }
 
 export function journalPage(world: World, topics: TopicRegistry, id: string): JournalPage | undefined {

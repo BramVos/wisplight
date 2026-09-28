@@ -465,7 +465,7 @@ export interface PlayerState {
   /** Who told the player about a topic, and when (for the journal). */
   sources?: Record<string, { from: string; t: number; level: number }[]>
   /** The region map as the player knows it: hexes seen and walked, as bitsets (FO, chapter 4). */
-  map?: { seen: string; walked: string; heading?: string }
+  map?: { seen: string; walked: string; heading?: string; recent?: string; earlier?: string; period?: number }
   /** Areas the player has seen from afar. */
   seenAreas?: string[]
   /** The player character (FO, chapter 11). */

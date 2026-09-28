@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { EngineClient, JournalPage, Reply } from './client'
 import { SheetView } from './SheetView'
+import { HexMap, LandMap } from './HexMap'
+import { useMapLook } from './display'
 import { runs } from './mapRuns'
 import { t, tn } from './i18n'
 
@@ -26,6 +28,7 @@ const journalParts = (): { key: keyof Journal; title: string }[] => [
 const yours = () => [
   { id: 'sheet', name: t('journal.you.sheet') },
   { id: 'map', name: t('journal.you.map') },
+  { id: 'land', name: t('journal.you.land') },
   { id: 'party', name: t('journal.you.party') },
   { id: 'promises', name: t('journal.you.promises') },
   { id: 'lands', name: t('journal.you.lands') },
@@ -51,6 +54,7 @@ export function JournalView({
   onAsk: (topic: string) => void
   onClose: () => void
 }) {
+  const mapLook = useMapLook()
   const [query, setQuery] = useState('')
   const [page, setPage] = useState<JournalPage>()
   const [part, setPart] = useState<keyof Journal | 'you' | 'all'>('all')
@@ -214,8 +218,32 @@ export function JournalView({
                     ))}
                   </pre>
                 )}
+                {page.hexMap && page.hexMap.levels.length > 1 && (
+                  <div className="seg" role="group" aria-label={t('app.map.levels')}>
+                    {page.hexMap.levels.map((l) => (
+                      <button key={l.id} type="button" aria-pressed={page.hexMap!.level === l.id} onClick={() => void open(l.id === 'surface' ? 'map' : `map:${l.id}`)}>
+                        {l.name}
+                      </button>
+                    ))}
+                  </div>
+                )}
                 {page.sheet ? (
                   <SheetView sheet={page.sheet} />
+                ) : page.hexMap ? (
+                  <>
+                    <HexMap data={page.hexMap} style={mapLook} label={t('journal.page.map', { name: page.name })} />
+                    <details className="map-text">
+                      <summary className="muted small">{t('journal.page.asText')}</summary>
+                      <pre className="map whole">{page.lines.join('\n')}</pre>
+                    </details>
+                  </>
+                ) : page.land ? (
+                  <>
+                    <LandMap data={page.land} style={mapLook} label={page.name} />
+                    {page.lines.map((line, index) => (
+                      <p key={index}>{line.trim()}</p>
+                    ))}
+                  </>
                 ) : page.kind === 'map' || page.kind === 'sheet' ? (
                   <pre className={page.kind === 'map' ? 'map whole' : 'sheet'}>{page.lines.join('\n')}</pre>
                 ) : (

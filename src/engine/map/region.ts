@@ -28,6 +28,10 @@ export interface Cell {
   channel?: boolean
   /** The area whose place stands on this hex. */
   place?: string
+  /** Ways on other levels through this hex (M10): a tunnel beneath it, a walk through the crowns above. */
+  levels?: { level: string; kind: 'road' | 'canal' | 'path'; name: string; topic?: string }[]
+  /** Where a way goes up or down to another level from here (M10): a stair, a well, a ladder, a trunk. */
+  stairs?: { level: string; topic?: string }[]
 }
 
 export class RegionMap {
@@ -152,6 +156,20 @@ export class RegionMap {
         const a = hexAt(points[i]![0], points[i]![1], this.size)
         const b = hexAt(points[i + 1]![0], points[i + 1]![1], this.size)
         for (const hex of line(a, b)) if (!hexes.length || hexKey(hexes.at(-1)!) !== hexKey(hex)) hexes.push(hex)
+      }
+      if (path.level && path.level !== 'surface') {
+        // A way on another level leaves the ground as it is; its ends lead up or down (M10).
+        for (const hex of hexes) {
+          const cell = this.cell(hex)
+          if (!cell) continue
+          cell.levels ??= []
+          if (!cell.levels.some((l) => l.name === path.name)) cell.levels.push({ level: path.level, kind: path.kind, name: path.name, ...(path.topic ? { topic: path.topic } : {}) })
+        }
+        for (const end of [hexes[0], hexes.at(-1)]) {
+          const cell = end ? this.cell(end) : undefined
+          if (cell) (cell.stairs ??= []).push({ level: path.level, ...(path.topic ? { topic: path.topic } : {}) })
+        }
+        continue
       }
       hexes.forEach((hex, at) => this.lay(hex, path, at))
     }

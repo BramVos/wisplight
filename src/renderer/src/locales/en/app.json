@@ -34,7 +34,33 @@
     "title": "Map",
     "label": "Map of the land around you",
     "whole": "Whole map",
-    "empty": "The map fills in as you explore."
+    "empty": "The map fills in as you explore.",
+    "legend": "Legend: click a terrain to light it up",
+    "flash": "Light up {name} on the map",
+    "ways": {
+      "road": "road",
+      "path": "path",
+      "canal": "tow path",
+      "ridge": "dry ridge"
+    },
+    "kinds": {
+      "village": "village",
+      "town": "town",
+      "city": "city",
+      "hamlet": "hamlet",
+      "inn": "inn",
+      "wilderness": "wild place",
+      "route": "on the road",
+      "place": "place"
+    },
+    "status": {
+      "visited": "been there",
+      "seen": "seen from afar",
+      "heard": "heard of",
+      "mapped": "on the map"
+    },
+    "levels": "Level",
+    "style": "Map"
   },
   "party": {
     "title": "Party",

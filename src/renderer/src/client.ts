@@ -1,4 +1,4 @@
-import type { CreationData, DiffLine, DraftChange, Edit, EditorView, EntityKind, JournalPage, Output, Raw, SimReport, Status, WorldInfo } from '../../engine'
+import type { CreationData, DiffLine, DraftChange, Edit, EditorView, EntityKind, JournalPage, MapPalette, Output, PaletteView, Raw, SimReport, Status, WorldInfo } from '../../engine'
 import type { DevSection, DevView } from '../../engine/dev'
 import type { Advice, TrialResult, TrialVerdict } from '../../node/ai/advisor'
 import type { AiLogEntry } from '../../node/ai/log'
@@ -109,6 +109,11 @@ export interface EditorBridge {
   newWorld(folder: string, name: string): Promise<{ ok: boolean; problems: string[] }>
   simulate(world: string, days: number, seed: number): Promise<SimReport>
   draft(world: string, ask: string, focus?: { kind: EntityKind; id: string }): Promise<EditorDraft>
+  /** The map palette (M10): as it stands, or with this palette tried on the preview. */
+  palette(world: string, palette?: MapPalette): Promise<PaletteView>
+  savePalette(world: string, palette: MapPalette): Promise<EditorSave>
+  /** The writing aid's proposal for a palette, from the world's frame; nothing is saved. */
+  proposePalette(world: string, ask: string): Promise<{ say: string; palette?: MapPalette; problems: string[] }>
 }
 
 export interface EngineClient {
@@ -262,7 +267,7 @@ function contentFiles(): { path: string; text: string }[] {
  */
 export async function createEditor(): Promise<EditorBridge> {
   if (window.wisplight?.editor) return window.wisplight.editor
-  const { applyEdits, draftRequest, editorView, entities, entityYaml, filesOfWorld, lineDiff, loadContent, MockLlm, newWorldFiles, readDraft, simulate, withReturnExits, worldsIn } = await import('../../engine')
+  const { applyEdits, draftRequest, editorView, entities, entityYaml, filesOfWorld, lineDiff, loadContent, MockLlm, newWorldFiles, paletteRequest, paletteView, readDraft, readPalette, savePalette, simulate, withReturnExits, worldsIn } = await import('../../engine')
   let all = contentFiles()
   const shown = (changes: { path: string; before?: string; text: string }[]) => changes.map((c) => ({ path: c.path, fresh: c.before === undefined, lines: lineDiff(c.before ?? '', c.text) }))
   return {
@@ -288,6 +293,17 @@ export async function createEditor(): Promise<EditorBridge> {
       return { ok: true, problems: [] }
     },
     simulate: async (world, days, seed) => simulate(loadContent(filesOfWorld(all, world)), days, seed),
+    palette: async (world, palette) => paletteView(filesOfWorld(all, world), palette),
+    savePalette: async (world, palette) => {
+      const files = filesOfWorld(all, world)
+      const outcome = savePalette(files, palette)
+      if (outcome.ok) {
+        const changed = new Map(outcome.changes.map((c) => [c.path, c.text]))
+        all = all.map((f) => (changed.has(f.path) ? { ...f, text: changed.get(f.path)! } : f))
+      }
+      return { ok: outcome.ok, problems: outcome.problems, warnings: [], changes: shown(outcome.changes) }
+    },
+    proposePalette: async (world, ask) => readPalette((await new MockLlm().complete(paletteRequest(filesOfWorld(all, world), ask))).text),
     draft: async (world, ask, focus) => {
       const files = filesOfWorld(all, world)
       const draft = readDraft(files, (await new MockLlm().complete(draftRequest(files, ask, focus))).text)

@@ -9,6 +9,8 @@ import { LogExport } from './LogExport'
 import { ConversationView, type TalkLine } from './ConversationView'
 import { JournalView } from './JournalView'
 import { runs } from './mapRuns'
+import { HexMap } from './HexMap'
+import { useMapLook } from './display'
 import { Settings, usd, type SettingsTab } from './Settings'
 import { t, tn } from './i18n'
 
@@ -71,6 +73,7 @@ function lightTitle(light: RoleLight): string {
 const JOURNAL_KEYS: (keyof Status['journal'])[] = ['quests', 'people', 'places', 'lands', 'factions', 'events', 'lore', 'things']
 
 export function App() {
+  const mapLook = useMapLook()
   const [client, setClient] = useState<EngineClient>()
   const [lines, setLines] = useState<Line[]>([])
   const [status, setStatus] = useState<Status>()
@@ -342,7 +345,14 @@ export function App() {
         )}
         <section>
           <h2>{t('app.map.title')}</h2>
-          {status?.map ? (
+          {status?.hexMap ? (
+            <>
+              <HexMap data={status.hexMap} style={mapLook} labels legend={false} label={t('app.map.label')} />
+              <button type="button" className="link" onClick={() => openPage('map')}>
+                [{t('app.map.whole')}]
+              </button>
+            </>
+          ) : status?.map ? (
             <>
               <pre className="map" aria-label={t('app.map.label')}>
                 {status.map.rows.map((row, y) => (

@@ -1,5 +1,30 @@
 # Changelog
 
+## M10 De kaart in kleur en lagen, 28 september 2026
+
+Gebouwd na de goedkeuring van de voorstelpagina (28 september 2026, via de ontwerpsessie), met de aanpassingen die daarbij hoorden.
+
+Nieuw:
+- **De kaart in kleur.** Het zijpaneel en de pagina "The whole map" in het dagboek tekenen de streek per hex, in de gedempte tinten van de voorstelpagina. Elk terrein heeft drie of vier tinten en de seed van een hex kiest er een. Drassig veen is donkerder, bulten en de droge rug zijn lichter, water heeft twee tonen (open water en geul), en wegen en paden zijn warm perkament. Poel, petgat, wilg, ruïne en bult hebben een eigen teken.
+- **Geheugen en zicht.** Wat je nu ziet, is helder. Overdag is ook helder wat je de afgelopen dagen zag; wat je lang geleden zag, is vager. 's Nachts en in mist is alleen je directe omgeving helder en de rest herinnering, zonder waas over het hele paneel. Een oude save telt alles als lang geleden gezien.
+- **Plekken en legenda.** Een plek heeft een icoon naar soort (stad, dorp, gehucht, herberg, wildernis) en status: gevuld als je er was, open als je hem zag, een stippelcirkel met vraagteken als je er alleen van hoorde. Onder de kaart op de dagboekpagina staat een legendastrook met per terrein een vakje, het teken en de naam, de wegen en de soorten plekken. Een klik licht dat terrein even op.
+- **Stijl.** Onder Instellingen > Display kies je donker (standaard), papier of zwart-wit.
+- **Het palet is content.** De kleurtokens staan per wereld in `world.yaml` (`map.palette`, voor donker en papier; zwart-wit is papier in grijs). De Nethermarch heeft het palet van de voorstelpagina. Skerrow heeft een eigen, koeler palet: zeewater, zout gras, heide, kliffen en duin.
+- **Het palet in de editor.** Het nieuwe tabblad Palette heeft een kleurvakje per token, namen voor de legenda en een voorbeeldkaart in drie stijlen. Voor een wereld zonder streekkaart is dat een staal met een band per terrein. De schrijfhulp stelt op verzoek een palet voor uit het wereldframe; bewaard wordt pas als jij opslaat.
+- **Niveaus.** `world.yaml` noemt de niveaus van onder naar boven. Voor de Nethermarch zijn dat onder de grond, maaiveld en de kruinen, voor Skerrow de grotten, maaiveld en de kliftoppen. Een weg in de streek kan een niveau hebben: hij verandert dan het maaiveld niet, en zijn uiteinden zijn trappen. De dagboekkaart toont één niveau tegelijk, met een keuze zodra je een weg op een ander niveau kent. Een tunnel die je niet kent, staat niet op je kaart, net als de droge rug.
+- **De landkaart.** "The land map" is een eigen pagina in het dagboek: de streek als vlak, jij erin, de verre plekken die je kent en de routes erheen.
+- De terminal houdt zijn tekstkaart, en onder de dagboekkaart staat die ook ("The map as text").
+
+Testen: speel even het land in en kijk naar het zijpaneel; open "The whole map" en klik in de legenda; zet 's avonds de kaart open. Wissel onder Instellingen > Display naar papier en zwart-wit. Open in de editor het tabblad Palette in beide werelden en vraag om een voorstel. Controles: `npm test` (574 tests), beide simulaties van 30 dagen, de uitspeelscripts (ongewijzigd), de rooktests en de editor.
+
+Nog niet:
+- Geen van beide werelden heeft al een weg op een ander niveau. Het wereldboek noemt geen tunnels of boomwegen, dus ik heb ze niet verzonnen. De kaart en de regels zijn er, en een test gebruikt een proeftunnel.
+- Lopen door een tunnel kan nog niet: reizen blijft op het maaiveld, tot de content zo'n weg heeft.
+- Skerrow heeft nog geen streekkaart. Het palet en de niveaus wachten daarop, en de editor toont ze op een staal.
+- De kleine kaart op de dagboekpagina van een plek is nog tekst.
+
+Ontwerp: "Stand na M10" in het FO, hoofdstuk 4. Tests in `tests/m10.test.ts` (16).
+
 ## M10.5 Ambacht en vaardigheid, 28 september 2026
 
 Deel A, ambachten en handelingen:

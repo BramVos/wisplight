@@ -292,14 +292,14 @@ Ook in M10, uit de speeltest van 28 september 2026, in de code bevestigd: in mis
 - [x] In mist is er één Survival-proef per wandeling om je richting te houden; bij falen dwaal je binnen de eerste stappen één stap af en stop je (FO hoofdstuk 12), en een plek in de mist is door door te lopen te bereiken (een test)
 - [x] Wie staat waar men zei dat een plek lag en een herkenningspunt ervan ziet, loopt erop af; ziet hij niets, dan zegt het spel dat, in plaats van dat hij er al is
 - [x] Een voorstelpagina toont palet, de geshade Holleveen, dag, nacht en mist, een lichte papierversie en de zwart-witoptie, en Bram keurt hem goed voordat er gebouwd wordt (goedgekeurd 28 september 2026, met de aanpassingen hieronder)
-- [ ] Het palet is content per wereld: de kleurtokens per terrein en kenmerk, voor donker, papier en zwart-wit, staan in `world.yaml` en zijn in de editor te wijzigen (een tabblad met vakjes en een voorbeeldkaart); de schrijfhulp in de editor stelt op verzoek een passend palet voor uit het wereldframe (`world.yaml` en `CHRONICLER.md`); Skerrow krijgt zo nu zijn eigen palet (zeewater, zout gras, kliffen, duin) en de Nethermarch het palet van de voorstelpagina
-- [ ] Elk terrein heeft drie tot vier gedempte tinten uit een geseede variatie per hex, drassige grond donkerder, droge ruggen lichter, water in twee tonen (open water en geul), wegen en paden in warm perkament
-- [ ] Kenmerken (poel, petgat, wilg, ruïne, bult) hebben een eigen glyph en tint; wat je lang geleden zag is vager dan wat je pas zag; nacht en mist verkleinen het zicht rond de speler (wat je nu ziet is helder, daarbuiten toon je alleen wat je je herinnert, in de vagere tint) en leggen geen waas over het hele paneel
-- [ ] Een hex heeft een niveau (onder de grond, maaiveld, kruin: de namen zijn goedgekeurd), wegen dragen hun niveau mee, en je ziet één niveau tegelijk met een glyph waar een trap, put, ladder of stam naar een ander niveau gaat; welke niveaus een wereld heeft en hoe ze heten staat in `world.yaml`
-- [ ] Een tunnel of boomweg die je niet kent, staat niet op je kaart, ook al loop je erboven of eronder: dezelfde regel als de verborgen rug
-- [ ] Een legendastrook onder de kaart met per terrein een gekleurd vakje, de glyph en de naam, en per plek een icoon naar soort en status; een klik licht dat terrein even op; dezelfde kleurtokens als de kaart
-- [ ] De landkaart (streken en trajecten uit het wereldboek) is een eigen journaalpagina met dezelfde stijl
-- [ ] Alles wat er al was, speelt hetzelfde, en de terminalclient houdt zijn tekstkaart
+- [x] Het palet is content per wereld: de kleurtokens per terrein en kenmerk, voor donker, papier en zwart-wit, staan in `world.yaml` en zijn in de editor te wijzigen (een tabblad met vakjes en een voorbeeldkaart); de schrijfhulp in de editor stelt op verzoek een passend palet voor uit het wereldframe (`world.yaml` en `CHRONICLER.md`); Skerrow krijgt zo nu zijn eigen palet (zeewater, zout gras, kliffen, duin) en de Nethermarch het palet van de voorstelpagina
+- [x] Elk terrein heeft drie tot vier gedempte tinten uit een geseede variatie per hex, drassige grond donkerder, droge ruggen lichter, water in twee tonen (open water en geul), wegen en paden in warm perkament
+- [x] Kenmerken (poel, petgat, wilg, ruïne, bult) hebben een eigen glyph en tint; wat je lang geleden zag is vager dan wat je pas zag; nacht en mist verkleinen het zicht rond de speler (wat je nu ziet is helder, daarbuiten toon je alleen wat je je herinnert, in de vagere tint) en leggen geen waas over het hele paneel
+- [x] Een hex heeft een niveau (onder de grond, maaiveld, kruin: de namen zijn goedgekeurd), wegen dragen hun niveau mee, en je ziet één niveau tegelijk met een glyph waar een trap, put, ladder of stam naar een ander niveau gaat; welke niveaus een wereld heeft en hoe ze heten staat in `world.yaml`
+- [x] Een tunnel of boomweg die je niet kent, staat niet op je kaart, ook al loop je erboven of eronder: dezelfde regel als de verborgen rug
+- [x] Een legendastrook onder de kaart met per terrein een gekleurd vakje, de glyph en de naam, en per plek een icoon naar soort en status; een klik licht dat terrein even op; dezelfde kleurtokens als de kaart
+- [x] De landkaart (streken en trajecten uit het wereldboek) is een eigen journaalpagina met dezelfde stijl
+- [x] Alles wat er al was, speelt hetzelfde, en de terminalclient houdt zijn tekstkaart
 
 ## M10.1 Onder de motorkap
 

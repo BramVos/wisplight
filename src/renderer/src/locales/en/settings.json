@@ -196,7 +196,13 @@
       "normal": "Normal",
       "high": "High"
     },
-    "keyboard": "Everything can be done with the keyboard: type commands, Tab through the buttons, Escape closes a window. The story is read out by a screen reader as it comes. Nothing in the game needs quick reflexes: the clock stops while you type, in a fight, and in any window like this one."
+    "keyboard": "Everything can be done with the keyboard: type commands, Tab through the buttons, Escape closes a window. The story is read out by a screen reader as it comes. Nothing in the game needs quick reflexes: the clock stops while you type, in a fight, and in any window like this one.",
+    "mapStyle": "The map",
+    "mapStyles": {
+      "dark": "Dark",
+      "paper": "Paper",
+      "bw": "Black and white"
+    }
   },
   "transcript": {
     "on": "Write a transcript of every game",

@@ -30,7 +30,8 @@ import { journalPage, type JournalPage } from './journal'
 import { die } from './life'
 import { agree, agreements, leadAhead, openAgreements, promiseLines, settle } from './agreements'
 import { goAway, tierOf } from './lod'
-import { hexOfTopic, knownEntrance, knownPlace, landLines, walkTarget, type KnownPlace } from './map/known'
+import { hexOfTopic, knownEntrance, knownPlace, landLines, landMapData, walkTarget, type KnownPlace } from './map/known'
+import { hexMapData, type HexMapData } from './map/view'
 import { takeBarge, travelTo } from './map/journey'
 import { mapText, mapView, type MapView } from './map/view'
 import { regionMap } from './map/region'
@@ -158,6 +159,8 @@ export interface Status {
   journal: { quests: JournalEntry[]; people: JournalEntry[]; places: JournalEntry[]; lands: JournalEntry[]; factions: JournalEntry[]; events: JournalEntry[]; lore: JournalEntry[]; things: JournalEntry[] }
   /** The map round the player: rows of characters, and a class code per character (FO, chapter 4). */
   map?: { rows: string[]; classes: string[] }
+  /** The map round the player in colour (M10): the hexes the player knows, for the interface to draw. */
+  hexMap?: HexMapData
   /** The character in short, for the side panel (FO, chapter 11). */
   character?: { name: string; title: string; level: number; hp: number; maxHp: number; xp: number; next: number; made: boolean; canLevel: boolean; shield: boolean }
   /** The fight in progress (FO, chapter 12). */
@@ -344,7 +347,18 @@ export class Engine {
 
   /** A page of the journal: what the player knows about a topic, with sources and links. */
   page(id: string): JournalPage | undefined {
-    if (id === 'map') return { id, kind: 'map', name: `${upper(this.world.words.region)} as you know it`, lines: this.mapText().split('\n'), sources: [], links: [] }
+    // The whole region in colour (M10), on the surface or another level (map:under); the text stays for the terminal.
+    if (id === 'map' || id.startsWith('map:')) {
+      const level = id.startsWith('map:') ? id.slice(4) : undefined
+      const hexMap = hexMapData(this.world, { whole: true, ...(level ? { level } : {}) })
+      return { id, kind: 'map', name: `${upper(this.world.words.region)} as you know it`, lines: this.mapText().split('\n'), sources: [], links: [], ...(hexMap ? { hexMap } : {}) }
+    }
+    // The land beyond the region (M10): its own page, in the same style.
+    if (id === 'land') {
+      const land = landMapData(this.world)
+      const lines = landLines(this.world)
+      return { id, kind: 'land', name: `${upper(this.world.words.land)} as you know it`, lines: lines.length ? lines.slice(2) : [`You know nothing yet of what lies beyond ${this.world.words.region}.`], sources: [], links: [], ...(land ? { land } : {}) }
+    }
     if (id.startsWith('quest_')) {
       const page = questPage(this.world, id.slice(6))
       return page ? { id, kind: 'quest', name: page.name, lines: page.lines, sources: [], links: [] } : undefined
@@ -1045,6 +1059,7 @@ export class Engine {
         : undefined,
       journal: this.journal(),
       map: this.compactMap(),
+      hexMap: hexMapData(this.world, { width: 41, height: 29 }),
       ...this.characterStatus(),
     }
   }

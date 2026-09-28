@@ -71,3 +71,49 @@ world:
     since the light went out.
 
     Type LOOK to look around. Type HELP if you are lost. You are, rather.
+
+  # The map (M10): Skerrow's own palette, colder than the Nethermarch's, from
+  # the frame of the world: grey-green sea, salt grass, heather on the
+  # heights, cliffs and dune. Skerrow has no region map yet; the palette and
+  # the levels wait for one, and the editor shows them on a sample.
+  map:
+    levels:
+      - { id: under, name: the caves }
+      - { id: surface, name: ground level }
+      - { id: crown, name: the cliff tops }
+    palette:
+      names: { water: sea water, channel: tide channel, fields: salt grass, heath: heather, fen: salt marsh, cliff: cliffs, dune: dune, tunnel: caves, crown: cliff tops }
+      dark:
+        ground: "#0d1113"
+        unknown: "#151a1c"
+        label: "#dde3e0"
+        label_shadow: "#080a0b"
+        terrain:
+          water: ["#16323a", "#1a3942", "#132c33", "#1d4049"]
+          channel: ["#24505a", "#285862"]
+          fields: ["#5b6a4e", "#546248", "#627155", "#4e5c43"]
+          heath: ["#5e4f5c", "#574955", "#665663", "#51444f"]
+          fen: ["#3e4a3c", "#384436", "#445042", "#35403a"]
+          cliff: ["#5a5a58", "#626260", "#535351", "#6a6a67"]
+          dune: ["#8a8466", "#827c5f", "#928c6d", "#7b7659"]
+          tunnel: ["#4f4a44", "#48433e"]
+          crown: ["#6e6f6a", "#676863"]
+        ways: { road: "#c4b894", path: "#a99d7c", canal: "#7fa3ad" }
+        glyph: { pool: "#86b3bf", peat_pit: "#14120e", peat_edge: "#5f5645", willow: "#9fb38c", ruin: "#c9c3b2", hummock: "#a9ad8c", stairs: "#e3dcc0" }
+      paper:
+        ground: "#e6e3d8"
+        unknown: "#dfdcd0"
+        label: "#23292a"
+        label_shadow: "#f2f0e8"
+        terrain:
+          water: ["#8fb2b8", "#97b9bf", "#88abb1", "#9ec0c5"]
+          channel: ["#7aa1aa", "#80a7b0"]
+          fields: ["#bcc5a4", "#b5be9d", "#c3ccab", "#aeb796"]
+          heath: ["#c0acb9", "#b8a4b1", "#c8b4c0", "#b19eab"]
+          fen: ["#aeb8a0", "#a7b199", "#b5bfa7", "#a1ab93"]
+          cliff: ["#b8b7b2", "#c0bfba", "#b0afaa", "#c8c7c2"]
+          dune: ["#e2d9b4", "#dbd2ad", "#e8dfbb", "#d4cba6"]
+          tunnel: ["#9f988d", "#978f84"]
+          crown: ["#bdbdb6", "#b5b5ae"]
+        ways: { road: "#7d6a4a", path: "#958062", canal: "#557f89" }
+        glyph: { pool: "#4a7883", peat_pit: "#4f4535", peat_edge: "#3a3226", willow: "#4c6440", ruin: "#665a48", hummock: "#83845e", stairs: "#262018" }

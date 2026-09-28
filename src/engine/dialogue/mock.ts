@@ -69,6 +69,8 @@ export class MockLlm implements LlmClient {
     const text =
       request.schemaName === 'builder_draft'
         ? this.draft(request.meta ?? {})
+        : request.schemaName === 'palette_draft'
+        ? this.palette(request.meta ?? {})
         : request.schemaName === 'party_reply'
         ? this.party(request.meta as unknown as { party: { id: string; name: string; knows: string[] }[] })
         : request.role === 'voice'
@@ -83,6 +85,17 @@ export class MockLlm implements LlmClient {
             : this.chronicler(request.meta as unknown as ChronicleMeta, request.prompt)
           : this.other(request)
     return { text, provider: 'mock', model: 'mock-1', usage: { inputTokens: Math.round((request.system.length + request.prompt.length) / 4), outputTokens: Math.round(text.length / 4), cachedTokens: 0 }, latencyMs: 1 }
+  }
+
+  /** A palette proposal (M10): the palette now, every colour a shade warmer, so the test sees a change. */
+  palette(meta: Record<string, unknown>): string {
+    const warm = (hex: string) => {
+      const n = parseInt(hex.slice(1), 16)
+      const c = (v: number, d: number) => Math.max(0, Math.min(255, v + d)).toString(16).padStart(2, '0')
+      return `#${c(n >> 16, 8)}${c((n >> 8) & 255, 3)}${c(n & 255, -6)}`
+    }
+    const shift = (value: unknown): unknown => (typeof value === 'string' && /^#[0-9a-f]{6}$/i.test(value) ? warm(value) : Array.isArray(value) ? value.map(shift) : value && typeof value === 'object' ? Object.fromEntries(Object.entries(value).map(([k, v]) => [k, k === 'names' ? v : shift(v)])) : value)
+    return JSON.stringify({ say: 'A palette a shade warmer than the one you have, the same muted tones.', palette: shift(meta['palette']) })
   }
 
   /**

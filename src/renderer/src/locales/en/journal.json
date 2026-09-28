@@ -27,7 +27,8 @@
     "map": "The whole map",
     "party": "Your companions",
     "promises": "Your word and theirs",
-    "lands": "How the lands stand"
+    "lands": "How the lands stand",
+    "land": "The land map"
   },
   "index": {
     "within": "What lies within {km} km. ",
@@ -46,6 +47,7 @@
     "picture": "{name}, as the chronicle pictures it",
     "map": "Where {name} is: the star",
     "heardFrom": "Heard from: {sources}",
-    "ask": "Ask {name} about this"
+    "ask": "Ask {name} about this",
+    "asText": "The map as text"
   }
 }

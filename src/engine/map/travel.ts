@@ -140,10 +140,34 @@ export function hasWalked(world: World, map: RegionMap, hex: Hex): boolean {
   return (bits(mapState(world).walked, map.cols * map.rows)[i >> 3]! & (1 << (i & 7))) !== 0
 }
 
+/** How long a memory stays fresh on the map (M10): what was seen in this stretch or the one before. */
+const FRESH = 3 * 24 * 60
+
+/** The hexes seen lately (M10): what was seen long ago is drawn vaguer. Old saves have none: all of it is old. */
+export function freshBits(world: World, map: RegionMap): Uint8Array {
+  const state = mapState(world)
+  const size = map.cols * map.rows
+  const period = Math.floor(world.now / FRESH)
+  const recent = state.period === period || state.period === period - 1 ? bits(state.recent, size) : new Uint8Array(Math.ceil(size / 8))
+  if (state.period === period) {
+    const earlier = bits(state.earlier, size)
+    for (let i = 0; i < recent.length; i++) recent[i]! |= earlier[i]!
+  }
+  return recent
+}
+
 /** Everything within sight goes on the player's map as seen; the hex itself as walked. */
 export function look(world: World, map: RegionMap, hex: Hex, walked = true): void {
   const state = mapState(world)
   const seen = bits(state.seen, map.cols * map.rows)
+  // What is seen now is fresh; a stretch later it is the earlier stretch, and after that old.
+  const period = Math.floor(world.now / FRESH)
+  if (state.period !== period) {
+    state.earlier = state.period === period - 1 ? (state.recent ?? '') : ''
+    state.recent = ''
+    state.period = period
+  }
+  const recent = bits(state.recent, map.cols * map.rows)
   const range = sight(world, map, map.cell(hex)!)
   for (let dc = -range; dc <= range; dc++) {
     for (let dr = -range - 1; dr <= range + 1; dr++) {
@@ -151,12 +175,14 @@ export function look(world: World, map: RegionMap, hex: Hex, walked = true): voi
       if (!map.inside(other) || distance(hex, other) > range) continue
       const i = index(map, other)
       seen[i >> 3]! |= 1 << (i & 7)
+      recent[i >> 3]! |= 1 << (i & 7)
       // Places you see from afar are places you know by sight.
       const place = map.placeOn(other)
       if (place) (world.state.player.seenAreas ??= []).includes(place) || world.state.player.seenAreas!.push(place)
     }
   }
   state.seen = encode(seen)
+  state.recent = encode(recent)
   if (walked) {
     const done = bits(state.walked, map.cols * map.rows)
     const i = index(map, hex)

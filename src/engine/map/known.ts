@@ -1,6 +1,7 @@
 import type { World } from '../world'
 import { centre, type Hex, hexAt } from './hexgrid'
 import { noise, regionMap, type RegionMap } from './region'
+import { DEFAULT_PALETTE, type MapPalette } from './palette'
 
 // What the map shows (FO, chapter 4, "Wat de kaart laat zien"): places you
 // have been to or seen, exactly; places you have only heard of, as a zone.
@@ -136,4 +137,53 @@ export function knownEntrance(world: World, topic: string): string | undefined {
   if (where.location) return where.location
   const here = [...map.locations.entries()].filter(([id, h]) => h.col === where.hex.col && h.row === where.hex.row && !world.content.locations.get(id)!.tags.includes('private'))
   return here.sort((a, b) => a[0].localeCompare(b[0]))[0]?.[0]
+}
+
+/**
+ * The land map (M10; FO, chapter 4, "De landkaart"): the region as a box on
+ * the map of the land, the stranger in it, the far places they know, and the
+ * routes that run to those places. In national km, north up.
+ */
+export interface LandMapData {
+  region: { name: string; x: number; y: number; w: number; h: number }
+  you?: [number, number]
+  places: { name: string; x: number; y: number }[]
+  routes: { name: string; from: [number, number]; to: [number, number] }[]
+  palette: MapPalette
+}
+
+export function landMapData(world: World): LandMapData | undefined {
+  const map = regionMap(world.content)
+  if (!map) return undefined
+  const journal = world.state.player.journal ?? {}
+  const region = map.region
+  const places: LandMapData['places'] = []
+  for (const topic of [...world.content.topics.values()].sort((a, b) => a.name.localeCompare(b.name))) {
+    if (!topic.pos || journal[topic.id] === undefined || map.inside(map.hexOf(topic.pos))) continue
+    places.push({ name: topic.name, x: topic.pos[0], y: topic.pos[1] })
+  }
+  const posOf = (id: string): [number, number] | undefined => {
+    const outland = world.content.outlands.get(id)
+    if (outland) {
+      const topic = outland.topic ? world.content.topics.get(outland.topic) : undefined
+      return topic?.pos && journal[topic.id] !== undefined ? [topic.pos[0], topic.pos[1]] : undefined
+    }
+    const pos = world.content.areas.get(id)?.pos
+    return pos ? [pos[0], pos[1]] : undefined
+  }
+  const routes: LandMapData['routes'] = []
+  for (const route of world.content.routes.values()) {
+    if (!world.content.outlands.has(route.from) && !world.content.outlands.has(route.to)) continue
+    const from = posOf(route.from)
+    const to = posOf(route.to)
+    if (from && to) routes.push({ name: route.name, from, to })
+  }
+  const here = map.posOf(playerHexOr(world, map))
+  return {
+    region: { name: map.region.name, x: region.origin[0], y: region.origin[1], w: region.size[0], h: region.size[1] },
+    you: here,
+    places,
+    routes,
+    palette: world.content.world.map?.palette ?? DEFAULT_PALETTE,
+  }
 }

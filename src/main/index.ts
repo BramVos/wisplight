@@ -4,7 +4,7 @@ import { appendFileSync, existsSync, mkdtempSync, readdirSync, readFileSync, rmS
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { ContentError, draftRequest, Engine, ENTITY_KINDS, lineDiff, readDraft, type Content, type Edit, type EntityKind, type FileChange, type CheckpointedSave, type Output, type SaveData } from '../engine'
+import { ContentError, draftRequest, Engine, ENTITY_KINDS, lineDiff, MapPaletteSchema, paletteRequest, paletteView, readDraft, readPalette, savePalette, type Content, type Edit, type EntityKind, type FileChange, type CheckpointedSave, type MapPalette, type Output, type SaveData } from '../engine'
 import { ContentEditor } from '../node/editor'
 import type { ProviderId } from '../node/ai/providers'
 import { AiService } from '../node/ai/service'
@@ -484,6 +484,35 @@ ipcMain.handle('editor:draft', async (_event, world: unknown, ask: unknown, focu
     return { say: draft.say, questions: draft.questions, changes: draft.changes, problems: draft.problems, diffs: draft.result?.ok ? shown(draft.result.changes) : [] }
   } catch (error) {
     return { say: '', questions: [], changes: [], problems: [`The chronicler did not answer: ${error instanceof Error ? error.message : String(error)}`], diffs: [] }
+  }
+})
+// The palette of a world's map (M10): read, written into world.yaml, or proposed by the writing aid.
+ipcMain.handle('editor:palette', async (_event, world: unknown, palette: unknown) => {
+  devOnly()
+  const files = await readContentFiles(contentDir(), worldOf(world))
+  const parsed = palette ? MapPaletteSchema.safeParse(palette) : undefined
+  return paletteView(files, parsed?.success ? parsed.data : undefined)
+})
+ipcMain.handle('editor:save-palette', async (_event, world: unknown, palette: unknown) => {
+  devOnly()
+  const files = await readContentFiles(contentDir(), worldOf(world))
+  const outcome = savePalette(files, palette as MapPalette)
+  if (!outcome.ok) return { ok: false, problems: outcome.problems, warnings: [], changes: [] }
+  ignoreWatchUntil = Date.now() + 1500
+  for (const change of outcome.changes) writeFileSync(join(contentDir(), change.path), change.text, 'utf8')
+  afterEdit(worldOf(world))
+  return { ok: true, problems: [], warnings: [], changes: shown(outcome.changes) }
+})
+ipcMain.handle('editor:propose-palette', async (_event, world: unknown, ask: unknown) => {
+  devOnly()
+  await setup()
+  const llm = ai?.client()
+  if (!llm) return { say: '', problems: ["The writing aid needs a model: connect one in the game's Settings > AI first."] }
+  const files = await readContentFiles(contentDir(), worldOf(world))
+  try {
+    return readPalette((await llm.complete(paletteRequest(files, String(ask ?? '').slice(0, 1000)))).text)
+  } catch (error) {
+    return { say: '', problems: [`The writing aid did not answer: ${error instanceof Error ? error.message : String(error)}`] }
   }
 })
 ipcMain.handle('editor:open', () => {

@@ -118,6 +118,15 @@ function DisplayTab() {
           </label>
         ))}
       </fieldset>
+      <fieldset className="display-choice">
+        <legend>{t('settings.display.mapStyle')}</legend>
+        {(['dark', 'paper', 'bw'] as const).map((look) => (
+          <label key={look}>
+            <input type="radio" name="map-look" checked={display.map === look} onChange={() => change({ ...display, map: look })} />
+            {t(`settings.display.mapStyles.${look}`)}
+          </label>
+        ))}
+      </fieldset>
       <p className="muted">{t('settings.display.keyboard')}</p>
     </div>
   )

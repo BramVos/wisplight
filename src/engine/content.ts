@@ -2,6 +2,7 @@ import { parse } from 'yaml'
 import { OutlandSchema, ResourceSchema, RouteSchema, SettlementSchema, type Outland, type Resource, type Route, type Settlement } from './economy/schema'
 import { NamesSchema, NewcomerSchema, ProjectSchema, type Newcomer, type Project } from './growth/schema'
 import { z } from 'zod'
+import { WorldMapSchema } from './map/palette'
 import { CreatureSchema, EncounterSchema, RulesSchema, type Creature, type Effect, type Encounter, type Rules, type Talent } from './rules/schema'
 import { QuestBodySchema } from './quests/schema'
 import { checkQuests } from './quests/check'
@@ -394,7 +395,17 @@ export const RegionSchema = z.object({
   landmarks: z.array(z.object({ area: z.string(), text: z.string(), range: z.number().positive() })).default([]),
   /** Roads, tow paths and fen paths as lines through the zones: areas or points in km from the south-west corner. */
   paths: z
-    .array(z.object({ kind: z.enum(['road', 'canal', 'path']), name: z.string(), via: z.array(z.union([z.string(), z.tuple([z.number(), z.number()])])).min(2) }))
+    .array(
+      z.object({
+        kind: z.enum(['road', 'canal', 'path']),
+        name: z.string(),
+        via: z.array(z.union([z.string(), z.tuple([z.number(), z.number()])])).min(2),
+        /** A way on another level (M10): a tunnel under the ground, a walk through the crowns. Its ends lead up or down. */
+        level: z.string().optional(),
+        /** Known only to whoever knows this topic, as the hidden ridge (M10). */
+        topic: z.string().optional(),
+      }),
+    )
     .default([]),
 })
 export type Region = z.infer<typeof RegionSchema>
@@ -673,6 +684,8 @@ export const WorldSchema = z.object({
   frame: z.string().optional(),
   /** How pictures of places and people look in this world (after the M7 playtest): one style for all of them. */
   pictures: z.object({ style: z.string() }).strict().optional(),
+  /** The map of this world (M10): its palette, and its levels from below to above. */
+  map: WorldMapSchema.optional(),
   /** The names the game's own texts use (M8): the land, the region you play in, where the stranger comes from. */
   words: z.object({ land: z.string(), region: z.string(), from: z.string() }).strict().optional(),
   /** Names for the calendar (M8): thirteen months (the last one five days), seven weekdays, and the era after the year. */
@@ -955,6 +968,14 @@ export function loadContent(files: ContentFile[]): Content {
   // What a trade teaches is a skill of the rules (M10.3).
   if (rules) for (const p of content.professions.values()) if (p.teaches && !rules.skills.some((s) => s.id === p.teaches)) problems.push(`profession ${p.id}: teaches ${p.teaches}, which is no skill`)
   problems.push(...checkCrafts(content, rules))
+  // A way on another level runs on a level the world names (M10).
+  const levels = new Set((world?.map?.levels ?? [{ id: 'surface' }]).map((l) => l.id))
+  for (const region of content.regions.values()) {
+    for (const path of region.paths) {
+      if (path.level && !levels.has(path.level)) problems.push(`region ${region.id}: ${path.name} runs on the level ${path.level}, which world.yaml does not name`)
+      if (path.topic && !content.topics.has(path.topic)) problems.push(`region ${region.id}: ${path.name} is known by ${path.topic}, which is no topic`)
+    }
+  }
   if (problems.length > 0 || !world) throw new ContentError(problems)
   return { world, ...content, ...(rules ? { rules } : {}), ...(chronicler ? { chronicler } : {}), ...(lock ? { lock } : {}) }
 }
