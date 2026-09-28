@@ -15,9 +15,10 @@ import type { UsageStore } from './usage'
 // A reply of the voice within six seconds, or the set line (FO, chapter 18); the conversation may ask for less, for its second try.
 // The voice's own limit is the player's setting (replyWithinMs, M10.8), carried by each request; this is only a ceiling.
 const TIMEOUT_MS: Record<LlmRole, number> = { voice: 60000, brain: 10000, chronicler: 90000, advisor: 90000 }
-// The editor's own long answers (a world step with a chapter of YAML, M10.20) may ask for more time than their role, up to five minutes.
+// The editor's own long answers (a world step with a chapter of YAML, M10.20) may ask for more time than their role, up to ten
+// minutes: Bram's Places chapter of The Quiet Reach ran past 16,000 tokens.
 const EDITOR_SCHEMAS = new Set(['world_step', 'world_enhance', 'builder_draft'])
-const EDITOR_TIMEOUT_MS = 300_000
+const EDITOR_TIMEOUT_MS = 600_000
 // From this share of the hourly budget on, calls of low priority wait: the chronicler, and goal choices of NPCs without a quest role (FO, chapter 16).
 const LOW_PRIORITY_SHARE = 0.8
 const FAILURES_BEFORE_COOLDOWN = 3
@@ -202,7 +203,12 @@ export class Gateway implements LlmClient {
         health.coolingUntil = this.now() + COOLDOWN_MS
         health.failures = 0
       }
-      this.options.usage.record(choice.provider, choice.model, undefined, false, undefined, request.role)
+      // A reply cut off at its limit (M10.20) was paid for: it counts in the budgets and the log like any other.
+      const costUsd = this.options.usage.record(choice.provider, choice.model, failure.usage, false, undefined, request.role)
+      if (failure.usage) {
+        outcome = { ok: false, ...(costUsd !== undefined ? { costUsd } : {}) }
+        if (request.role !== 'advisor' && !override) this.costs.add({ usd: costUsd ?? 0, role: request.role, ...(costUsd === undefined ? { unpriced: true } : {}) })
+      }
       this.options.log.add({
         time: new Date(this.now()).toISOString(),
         role: request.role,
@@ -211,9 +217,8 @@ export class Gateway implements LlmClient {
         ok: false,
         error: `${failure.kind}: ${failure.message}`,
         latencyMs: this.now() - started,
-        inputTokens: 0,
-        outputTokens: 0,
-        cachedTokens: 0,
+        ...(failure.usage ?? { inputTokens: 0, outputTokens: 0, cachedTokens: 0 }),
+        ...(costUsd !== undefined ? { costUsd } : {}),
         prompt: request.prompt,
         response: '',
       })

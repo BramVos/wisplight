@@ -9,7 +9,7 @@ import { worldFrame } from './dialogue/prompt'
 import { suspectText, worldText, type SuspectText } from './safety'
 import type { LlmRequest } from './dialogue/llm'
 import { voiceSummary } from './dialogue/voice'
-import { contractSummary, contractView, fieldsOf } from './contract'
+import { contractSummary, contractView, fieldsOf, stepFields } from './contract'
 import { WORLD_GUIDE, WORLD_STEPS } from './worldguide'
 import { designPrompt } from './designlog'
 import { VoiceSchema } from './dialogue/voiceSchema'
@@ -590,6 +590,8 @@ export function worldStepRequest(files: ContentFile[], stepId: string, said: str
       '',
       contractSummary(content),
       '',
+      stepFields(step.fills),
+      '',
       designPrompt(files),
       '',
       instruction,
@@ -598,9 +600,10 @@ export function worldStepRequest(files: ContentFile[], stepId: string, said: str
     prompt: [`WORLD.YAML NOW:`, worldFile?.text ?? '(none)', '', 'WHAT EXISTS:', ...index, '', `THE DESIGNER SAYS: ${said}`].join('\n'),
     schemaName: 'world_step',
     schema: WORLD_STEP_SCHEMA,
-    // A whole chapter answered in YAML (M10.20: Bram's People chapter holds eight people, their factions and the law).
-    maxTokens: 12000,
-    timeoutMs: 240000,
+    // A whole chapter answered in YAML (M10.20: Bram's People chapter holds eight people, their factions and the law;
+    // his Places chapter ran past 12,000 tokens in the real app). The gateway allows it ten minutes.
+    maxTokens: 32000,
+    timeoutMs: 600000,
     meta: { step: step.id, ask: said, prefix: worldPrefix(files), world: worldFacts(files) },
   }
 }

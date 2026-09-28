@@ -79,6 +79,8 @@ export class LlmError extends Error {
   constructor(
     readonly kind: 'timeout' | 'network' | 'busy' | 'refusal' | 'config' | 'invalid' | 'budget',
     message: string,
+    /** What a failed call still used (M10.20): a reply cut off at its limit is paid for all the same. */
+    readonly usage?: LlmUsage,
   ) {
     super(message)
     this.name = 'LlmError'

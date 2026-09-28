@@ -60,7 +60,7 @@ export const KINDS: Record<string, KindText> = {
 
 type Schema = z.ZodType
 // The shape of zod 4's definitions, as far as the contract reads them.
-type Def = { type: string; innerType?: Schema; defaultValue?: unknown; element?: Schema; shape?: Record<string, Schema>; entries?: Record<string, string>; options?: Schema[]; getter?: () => Schema; valueType?: Schema; values?: unknown[]; in?: Schema; items?: Schema[] }
+type Def = { type: string; innerType?: Schema; defaultValue?: unknown; element?: Schema; shape?: Record<string, Schema>; entries?: Record<string, string>; options?: Schema[]; getter?: () => Schema; valueType?: Schema; keyType?: Schema; values?: unknown[]; in?: Schema; items?: Schema[]; checks?: { _zod: { def: { check: string; value?: unknown; inclusive?: boolean; format?: string } } }[] }
 const def = (s: Schema): Def => (s as unknown as { _zod: { def: Def } })._zod.def
 
 /** The schema under optional, default, lazy and pipe, with whether it was optional and its default. */
@@ -138,6 +138,98 @@ export function fieldsOf(key: string): Field[] {
     const u = unwrap(field)
     return { name, kind: kindOf(field), required: !u.optional, ...(u.fallback !== undefined ? { fallback: u.fallback } : {}) }
   })
+}
+
+/**
+ * A schema written out whole for a model (M10.20): every field of a map, with
+ * "?" after one that may be left out, maps inside opened up, every value of a
+ * choice and the range of a number. The real run of The Quiet Reach in the
+ * app went wrong where a step named a kind but not its fields: kinds of
+ * weather the engine lacks, a chance above 1, details with "id" and "names".
+ */
+export function shapeOf(s: Schema, depth = 0, named?: Map<string, string>, path: Schema[] = []): string {
+  // A shape inside itself (a condition of conditions: any, all, not) is not opened again. A lazy
+  // schema makes a new one each time, so it is known by its wrappers.
+  const chain: Schema[] = []
+  for (let x: Schema | undefined = s; x && chain.length < 10; ) {
+    chain.push(x)
+    const d = def(x)
+    x = d.type === 'lazy' ? d.getter!() : ['optional', 'default', 'prefault', 'nullable'].includes(d.type) ? d.innerType : d.type === 'pipe' ? d.in : undefined
+  }
+  if (chain.some((x) => path.includes(x))) return 'the same shape again, nested'
+  const text = shapeText(chain.at(-1)!, depth, named, [...path, ...chain])
+  // A long shape that comes back (the conditions of when) is written out once, under a name.
+  if (!named || text.length < 200 || depth < 2) return text
+  const name = named.get(text) ?? `SHAPE ${named.size + 1}`
+  named.set(text, name)
+  return name
+}
+
+function shapeText(s: Schema, depth: number, named: Map<string, string> | undefined, path: Schema[]): string {
+  const { s: inner } = unwrap(s)
+  const d = def(inner)
+  switch (d.type) {
+    case 'string':
+      return 'text'
+    case 'number':
+    case 'int': {
+      const checks = (d.checks ?? []).map((c) => c._zod.def)
+      const whole = d.type === 'int' || checks.some((c) => c.check === 'number_format' && /int/.test(c.format ?? ''))
+      const from = checks.find((c) => c.check === 'greater_than')
+      const to = checks.find((c) => c.check === 'less_than')
+      const range = [from ? `${from.inclusive ? 'from' : 'above'} ${String(from.value)}` : '', to ? `${to.inclusive ? 'to' : 'below'} ${String(to.value)}` : ''].filter(Boolean).join(' ')
+      return `${whole ? 'whole number' : 'number'}${range ? ` ${range}` : ''}`
+    }
+    case 'boolean':
+      return 'true or false'
+    case 'enum':
+      return `one of ${Object.values(d.entries ?? {}).join(', ')}`
+    case 'literal':
+      return JSON.stringify(d.values?.[0])
+    case 'array':
+      return `list of ${shapeOf(d.element!, depth + 1, named, path)}`
+    case 'tuple':
+      return `[${(d.items ?? []).map((i) => shapeOf(i, depth + 1, named, path)).join(', ')}]`
+    case 'record': {
+      const key = d.keyType ? def(unwrap(d.keyType).s) : undefined
+      const keys = key?.type === 'enum' ? Object.values(key.entries ?? {}).join(' | ') : 'names'
+      return `a map of ${keys} to ${shapeOf(d.valueType!, depth + 1, named, path)}`
+    }
+    case 'union':
+      return `(${(d.options ?? []).map((o) => shapeOf(o, depth + 1, named, path)).join(' or ')})`
+    case 'object': {
+      if (depth > 12) return 'a map'
+      const fields = Object.entries(d.shape ?? {}).map(([name, field]) => `${name}${unwrap(field).optional ? '?' : ''}: ${shapeOf(field, depth + 1, named, path)}`)
+      return `{ ${fields.join('; ')} }`
+    }
+    default:
+      return d.type
+  }
+}
+
+/**
+ * The exact fields of what a step of building a world fills (M10.20), for the
+ * chronicler: one line a field, written out whole with shapeOf. A kind the
+ * contract does not know (the voice has a file of its own) is left out.
+ */
+export function stepFields(fills: readonly { kind: string; keys?: string[] }[]): string {
+  const shape = (FileSchema as unknown as { shape: Record<string, Schema> }).shape
+  const lines: string[] = []
+  const named = new Map<string, string>()
+  for (const fill of fills) {
+    const top = shape[fill.kind]
+    if (!top) continue
+    let { s } = unwrap(top)
+    const list = def(s).type === 'array'
+    if (list) s = unwrap(def(s).element!).s
+    const fields = def(s).shape ?? {}
+    const names = (fill.keys ?? Object.keys(fields)).filter((name) => fields[name])
+    if (!names.length) continue
+    lines.push(`${fill.kind}${list ? ', each one' : ''}:`, ...names.map((name) => `  ${name}${unwrap(fields[name]!).optional ? '?' : ''}: ${shapeOf(fields[name]!, 1, named)}`))
+  }
+  if (!lines.length) return ''
+  const shapes = [...named].map(([text, name]) => `${name}: ${text}`)
+  return ['THE EXACT FIELDS OF WHAT THIS STEP FILLS (write these names and no others; "?" marks a field that may be left out):', ...lines, ...shapes].join('\n')
 }
 
 /** Whether a kind is a list of entities with ids, or one block. */

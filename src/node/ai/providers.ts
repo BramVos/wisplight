@@ -99,17 +99,18 @@ export function openAiProvider(apiKey: string): Provider {
           )
           .withResponse()
         const choice = response.choices[0]
+        const usage = {
+          inputTokens: response.usage?.prompt_tokens ?? 0,
+          outputTokens: response.usage?.completion_tokens ?? 0,
+          cachedTokens: response.usage?.prompt_tokens_details?.cached_tokens ?? 0,
+        }
         if (choice?.message.refusal) throw new LlmError('refusal', choice.message.refusal)
-        if (choice?.finish_reason === 'length') throw new LlmError('invalid', 'reply was cut off')
+        if (choice?.finish_reason === 'length') throw new LlmError('invalid', 'reply was cut off', usage)
         return {
           text: choice?.message.content ?? '',
           provider: 'openai',
           model: response.model,
-          usage: {
-            inputTokens: response.usage?.prompt_tokens ?? 0,
-            outputTokens: response.usage?.completion_tokens ?? 0,
-            cachedTokens: response.usage?.prompt_tokens_details?.cached_tokens ?? 0,
-          },
+          usage,
           latencyMs: Date.now() - started,
           rateLimit: rateLimitOf(raw.headers, 'x-ratelimit-remaining-requests', 'x-ratelimit-remaining-tokens', ['x-ratelimit-reset-requests', 'x-ratelimit-reset-tokens']),
         }
@@ -138,8 +139,9 @@ export function anthropicProvider(apiKey: string): Provider {
       const alwaysThinks = /fable|mythos|opus-5-5/.test(model)
       const thinkingByDefault = /opus-5|sonnet-5/.test(model) && !alwaysThinks
       try {
-        const { data: response, response: raw } = await client.messages
-          .create(
+        // Streamed (M10.20): the SDK refuses a long answer in one piece, and a world step may write a whole chapter of YAML.
+        const { data: stream, response: raw } = await client.messages
+          .stream(
             {
               model,
               max_tokens: request.maxTokens + (alwaysThinks ? 4000 : 0),
@@ -151,16 +153,18 @@ export function anthropicProvider(apiKey: string): Provider {
             { signal },
           )
           .withResponse()
-        if (response.stop_reason === 'refusal') throw new LlmError('refusal', 'the model declined')
-        if (response.stop_reason === 'max_tokens') throw new LlmError('invalid', 'reply was cut off')
-        const text = response.content.flatMap((block) => (block.type === 'text' ? [block.text] : [])).join('')
+        const response = await stream.finalMessage()
         const cacheWrite = response.usage.cache_creation_input_tokens ?? 0
         const cacheRead = response.usage.cache_read_input_tokens ?? 0
+        const usage = { inputTokens: response.usage.input_tokens + cacheWrite + cacheRead, outputTokens: response.usage.output_tokens, cachedTokens: cacheRead, cacheWriteTokens: cacheWrite }
+        if (response.stop_reason === 'refusal') throw new LlmError('refusal', 'the model declined')
+        if (response.stop_reason === 'max_tokens') throw new LlmError('invalid', 'reply was cut off', usage)
+        const text = response.content.flatMap((block) => (block.type === 'text' ? [block.text] : [])).join('')
         return {
           text,
           provider: 'anthropic',
           model: response.model,
-          usage: { inputTokens: response.usage.input_tokens + cacheWrite + cacheRead, outputTokens: response.usage.output_tokens, cachedTokens: cacheRead, cacheWriteTokens: cacheWrite },
+          usage,
           latencyMs: Date.now() - started,
           rateLimit: rateLimitOf(raw.headers, 'anthropic-ratelimit-requests-remaining', 'anthropic-ratelimit-tokens-remaining', ['anthropic-ratelimit-requests-reset', 'anthropic-ratelimit-tokens-reset']),
         }
