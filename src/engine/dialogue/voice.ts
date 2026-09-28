@@ -4,6 +4,7 @@ import { middlePurse } from '../standing'
 import type { World } from '../world'
 import { relation } from './relations'
 import { hasOurOaths } from './guard'
+import { crossesLimits } from '../safety'
 import type { Voice } from './voiceSchema'
 
 // The voice kit at work (M10.10): the prompt's VOICE block, the oaths of a
@@ -223,6 +224,10 @@ export interface CharacterChecks {
   numbers: boolean
   /** No more than one saying or oath in the reply: character is not a trick of sayings. */
   restraint: boolean
+  /** Not thrown away by the guard (M10.19): the trial's score counts refusals. */
+  kept: boolean
+  /** Within the hard limits (M10.19). */
+  limits: boolean
 }
 
 /** Checks one reply as the model gave it, against what it was given and why the game threw it away, if it did. */
@@ -237,6 +242,9 @@ export function characterChecks(content: { voice?: Voice }, reply: string, given
     ownPeople: !/\bthe (?:son|daughter|wife|husband|mother|father|sister|brother|child) of \p{Lu}/u.test(reply),
     numbers: strayNumbers(reply, given).length === 0,
     restraint: flourishes(world, reply) <= 1,
+    // Refused replies count against a model (M10.19): whatever the guard threw away, and anything across the hard limits.
+    kept: rejected === undefined,
+    limits: !crossesLimits(reply),
   }
 }
 

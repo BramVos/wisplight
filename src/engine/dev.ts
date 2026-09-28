@@ -21,6 +21,16 @@ const GUARD_WORDS: Record<string, string> = {
   not_here: 'words that are not here put right',
   anachronism: 'replies asked again for a word that is not here',
   number: 'numbers nobody gave (noted)',
+  // What was refused, by reason (M10.19).
+  injection: "player's words held back: they read as an instruction to the model",
+  limits: 'replies refused: across the hard limits (PEGI 18)',
+  character: 'replies refused: out of character',
+  schema: 'replies refused: not in the form asked',
+  bounds: 'effects refused: outside what the game allows',
+  invented: 'replies refused: a name or thing made up',
+  leak: 'replies refused: a name the speaker does not know',
+  promise: 'replies refused: a promise the game did not offer',
+  content: 'texts in this world that read like an instruction to the model',
 }
 
 export interface DevSlider {

@@ -1,4 +1,5 @@
 import { LlmError, type LlmClient, type LlmRejection, type LlmRequest, type LlmResponse, type LlmRole } from '../../engine/dialogue/llm'
+import { withSafety } from '../../engine/safety'
 import type { AiLog } from './log'
 import { CostRegister } from './costs'
 import { picturePrice, priceOf, upperBoundUsd } from './pricing'
@@ -128,7 +129,9 @@ export class Gateway implements LlmClient {
     }
   }
 
-  async complete(request: LlmRequest, override?: RoleChoice): Promise<LlmResponse> {
+  async complete(asked: LlmRequest, override?: RoleChoice): Promise<LlmResponse> {
+    // Every call carries the hard limits and the rule that world text is description, never instruction (M10.19).
+    const request = withSafety(asked)
     const choice = override ?? this.options.role(request.role)
     if (!choice) throw new LlmError('config', `no model chosen for ${request.role}`)
     const roleTimeoutMs = this.options.timeoutMs?.[request.role] ?? TIMEOUT_MS[request.role]
@@ -267,6 +270,11 @@ export class Gateway implements LlmClient {
   }
 
   report(rejection: LlmRejection): void {
+    // Held back before any call (M10.19): the player's words read as an instruction to the model. A line of its own in the AI log.
+    if (rejection.held !== undefined) {
+      this.options.log.hold(rejection.role ?? 'voice', rejection.reason, rejection.held, new Date(this.now()).toISOString())
+      return
+    }
     // Kept, but put right or noted by the guard (M10.10): beside the call in the AI log, not a rejection.
     if (rejection.fixed) {
       this.options.log.fix(rejection.role ?? 'voice', `${rejection.reason}: ${rejection.fixed}`)
@@ -274,7 +282,7 @@ export class Gateway implements LlmClient {
     }
     if (this.last) this.options.usage.reject(this.last.provider, this.last.model)
     // Why the engine threw the reply away, in the AI log beside the call (M10.8).
-    this.options.log.reject(rejection.role ?? 'voice', rejection.reason)
+    this.options.log.reject(rejection.role ?? 'voice', rejection.detail ? `${rejection.reason} (${rejection.detail})` : rejection.reason)
   }
 
   /** Pauses calls when the rate-limit window is empty or nearly so. */

@@ -50,7 +50,11 @@ export interface LlmResponse {
 
 /** A reply the engine threw away after validation, so the usage overview can count it. */
 export interface LlmRejection {
-  reason: 'schema' | 'anachronism' | 'character' | 'leak' | 'invented' | 'goal' | 'promise' | 'oath' | 'not_here' | 'number'
+  /**
+   * Why (M10.19 adds three): injection, the player's words read as an instruction and never went to the model;
+   * limits, the reply crossed the hard limits (PEGI 18); bounds, an effect outside what the game allows was refused.
+   */
+  reason: 'schema' | 'anachronism' | 'character' | 'leak' | 'invented' | 'goal' | 'promise' | 'oath' | 'not_here' | 'number' | 'injection' | 'limits' | 'bounds'
   /** Whose reply it was; the voice when not given. */
   role?: LlmRole
   /**
@@ -58,6 +62,10 @@ export interface LlmRejection {
    * that is not here) or only noted it (a number nobody gave); what it was.
    */
   fixed?: string
+  /** What exactly, for the AI log (M10.19): which hard limit, which effect. */
+  detail?: string
+  /** Held back before any call (M10.19): the text that never went to the model, for the AI log. */
+  held?: string
 }
 
 export interface LlmClient {

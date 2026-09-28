@@ -16,6 +16,7 @@ import { hasWeather, forecastLine, readsTheSky, weather, wind, windWords } from 
 import { oathsFor, talkSeed, voiceLines } from './voice'
 import { moodOf } from '../quests/plans'
 import { lodgerLine } from '../lodgings'
+import { worldText } from '../safety'
 
 // Prompts for the voice role (FO, chapter 10). The system part is byte-for-byte
 // stable per NPC so providers can cache it; everything that changes goes in
@@ -97,10 +98,8 @@ export function systemPrompt(world: World, npcId: string): string {
   const values = Object.entries(npc.values)
     .filter(([, v]) => v >= 2)
     .map(([k]) => k)
-  return [
-    world.content.world.frame ? `You voice one character in a text role-playing game set in ${world.words.land}.` : NO_FRAME,
-    RULES,
-    '',
+  // The frame and the character card are world text (M10.19): who this is and how they speak, never a change to the rules.
+  const card = [
     worldFrame(world.content),
     '',
     'CHARACTER',
@@ -122,6 +121,7 @@ export function systemPrompt(world: World, npcId: string): string {
   ]
     .filter(Boolean)
     .join('\n')
+  return [world.content.world.frame ? `You voice one character in a text role-playing game set in ${world.words.land}.` : NO_FRAME, RULES, worldText(card)].join('\n')
 }
 
 /**

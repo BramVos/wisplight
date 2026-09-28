@@ -55,6 +55,11 @@ export class AiLog {
     if (this.path) appendFileSync(this.path, `${JSON.stringify({ time: last.time, role, rejected: reason })}\n`, { mode: 0o600 })
   }
 
+  /** Text the guard held back before any call (M10.19): a line of its own, with the reason and the text, cut like a prompt. */
+  hold(role: string, reason: string, text: string, time: string): void {
+    this.add({ time, role, provider: 'guard', model: '-', ok: false, error: `held back: ${reason}`, latencyMs: 0, inputTokens: 0, outputTokens: 0, cachedTokens: 0, prompt: text, response: '', rejected: [reason] })
+  }
+
   /** The guard put something right in the last reply of this role, or noted it (M10.10). */
   fix(role: string, what: string): void {
     const last = [...this.entries].reverse().find((e) => e.role === role && e.ok)

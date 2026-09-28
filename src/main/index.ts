@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url'
 import { ContentError, draftRequest, draftResult, Engine, worldBookHtml, ENTITY_KINDS, lineDiff, MapPaletteSchema, paletteRequest, paletteView, readDraft, readPalette, readVoice, savePalette, saveVoice, voiceRequest, voiceYaml, worldStepRequest, enhanceRequest, readEnhance, type Content, type Edit, type EntityKind, type FileChange, type CheckpointedSave, type MapPalette, type Output, type SaveData } from '../engine'
 import { designUpdate, readDesignChange } from '../engine/designlog'
 import { ContentEditor } from '../node/editor'
+import { checkInput } from './inputs'
 import { worldBookFor, writeWorldBook } from '../node/worldbook'
 import type { ProviderId } from '../node/ai/providers'
 import { AiService } from '../node/ai/service'
@@ -252,7 +253,27 @@ async function useWorldOf(save: SaveData): Promise<string | undefined> {
 const HANDLED = new Set<string>()
 function handle(channel: string, listener: Parameters<typeof ipcMain.handle>[1]): void {
   HANDLED.add(channel)
-  ipcMain.handle(channel, listener)
+  // Only our own pages may call, and only with arguments that fit the channel (M10.19; src/main/inputs.ts).
+  ipcMain.handle(channel, (event, ...args) => {
+    if (!fromApp(event)) throw new Error(`Refused ${channel}: not from the app's own page`)
+    return listener(event, ...checkInput(channel, args))
+  })
+}
+
+/** The page of the app itself (M10.19): from the dev server in development, from the files in a build. */
+const APP_PAGE = new URL('../renderer/index.html', import.meta.url).href
+function fromApp(event: { senderFrame: { url: string } | null }): boolean {
+  const url = event.senderFrame?.url ?? ''
+  const dev = process.env['ELECTRON_RENDERER_URL']
+  return url.startsWith(APP_PAGE) || (dev !== undefined && url.startsWith(dev))
+}
+
+/** A window of the app stays on the app's page (M10.19): no navigating elsewhere, no new windows. */
+function keepHome(win: BrowserWindow): void {
+  win.webContents.on('will-navigate', (event, url) => {
+    if (!fromApp({ senderFrame: { url } })) event.preventDefault()
+  })
+  win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }))
 }
 ipcMain.handle('app:handled', () => [...HANDLED])
 
@@ -369,14 +390,18 @@ handle('engine:command', async (_event, input: unknown) => {
 handle('engine:page', (_event, id: unknown) => engine?.page(String(id)))
 // The transcript's settings (M10.4): on or off, and the folder.
 handle('transcript:get', () => transcriptSettings())
+// A folder the player chose in the dialog this session (M10.19): the page may only name one of these, the current one or none.
+const chosenFolders = new Set<string>()
 handle('transcript:set', (_event, enabled: unknown, folder: unknown) => {
-  const settings = { enabled: Boolean(enabled), folder: String(folder ?? '') || transcriptSettings().folder }
+  const asked = String(folder ?? '')
+  const settings = { enabled: Boolean(enabled), folder: asked && (chosenFolders.has(asked) || asked === transcriptSettings().folder) ? asked : transcriptSettings().folder }
   saveTranscriptSettings(settings)
   scribe().configure(settings)
   return settings
 })
 handle('transcript:choose', async () => {
   const chosen = await dialog.showOpenDialog({ properties: ['openDirectory', 'createDirectory'], defaultPath: transcriptSettings().folder })
+  if (!chosen.canceled && chosen.filePaths[0]) chosenFolders.add(chosen.filePaths[0])
   return chosen.canceled ? undefined : chosen.filePaths[0]
 })
 // Under the bonnet (M10.1): a production build does not bundle the dev view at all.
@@ -667,11 +692,13 @@ function openEditor(): void {
     backgroundColor: '#12140f',
     show: !smoke,
     webPreferences: {
-      preload: fileURLToPath(new URL('../preload/index.mjs', import.meta.url)),
+      // Sandboxed (M10.19): the page and its preload have no Node; the preload is CommonJS for that.
+      preload: fileURLToPath(new URL('../preload/index.cjs', import.meta.url)),
       contextIsolation: true,
-      sandbox: false,
+      sandbox: true,
     },
   })
+  keepHome(editorWindow)
   // WISPLIGHT_SMOKE=1 with --editor: open the editor hidden, print what it shows of a world and a place, quit.
   if (smoke) {
     editorWindow.webContents.once('did-finish-load', () => {
@@ -723,11 +750,20 @@ function watchContent(): void {
   }
 }
 
-ipcMain.on('engine:activity', () => {
+ipcMain.on('engine:activity', (event) => {
+  if (!fromApp(event)) return
   lastInput = Date.now()
 })
 
-ipcMain.on('engine:hold', (_event, on: unknown) => {
+ipcMain.on('engine:hold', (event, ...args: unknown[]) => {
+  if (!fromApp(event)) return
+  // A send has nobody to answer: what does not fit is dropped, never thrown in the main process.
+  let on: unknown
+  try {
+    ;[on] = checkInput('engine:hold', args)
+  } catch {
+    return
+  }
   // Closing a menu counts as activity; the first "no menu" at start-up does not start the clock.
   if (held && !on) lastInput = Date.now()
   held = Boolean(on)
@@ -825,11 +861,13 @@ function createWindow(): void {
     backgroundColor: '#12140f',
     show: !smoke && !logCheck && !builderCheck,
     webPreferences: {
-      preload: fileURLToPath(new URL('../preload/index.mjs', import.meta.url)),
+      // Sandboxed (M10.19): the page and its preload have no Node; the preload is CommonJS for that.
+      preload: fileURLToPath(new URL('../preload/index.cjs', import.meta.url)),
       contextIsolation: true,
-      sandbox: false,
+      sandbox: true,
     },
   })
+  keepHome(window)
 
   // WISPLIGHT_SMOKE=1: start hidden, pick a world (WISPLIGHT_SMOKE=isle for another), print the first room the interface shows, quit.
   if (smoke) {
@@ -883,6 +921,15 @@ function createWindow(): void {
           const traces = existsSync(assets) ? readdirSync(assets).filter((f) => readFileSync(join(assets, f), 'utf8').includes('data-dev-menu')) : []
           smokeSay(`[smoke] dev menu ${opened || traces.length ? `PRESENT${traces.length ? ` in ${traces.join(', ')}` : ''}` : 'absent'}`)
         }
+        // The window is sandboxed, without Node, and a path where a world name belongs is refused (M10.19).
+        const gate: string = await window!.webContents.executeJavaScript(
+          `(async () => {
+            const node = typeof require !== 'undefined' || typeof process !== 'undefined'
+            const refused = await window.wisplight.start('../../etc').then(() => false, (e) => /Refused input on engine:start/.test(String(e)))
+            return (node ? 'NODE IN THE PAGE' : 'no node') + ', ' + (refused ? 'a path for a world refused' : 'A PATH FOR A WORLD ACCEPTED')
+          })()`,
+        )
+        smokeSay(`[smoke] sandbox ${(window!.webContents as unknown as { getLastWebPreferences?: () => { sandbox?: boolean } | null }).getLastWebPreferences?.()?.sandbox ? 'on' : 'OFF'}, ${gate}`)
         app.quit()
       }, 1500)
     })

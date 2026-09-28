@@ -1,5 +1,19 @@
 # Changelog
 
+## M10.19 Veiligheid van de AI-laag, 28 september 2026
+
+- **Harde grenzen in elke aanroep.** Elke aanroep aan een model krijgt vooraan in het systeemdeel de harde grenzen van PEGI 18 (niets seksueels met minderjarigen, geen haat tegen echte groepen, romantiek blijft niet-expliciet) en de regel dat wereldtekst beschrijving is en nooit de regels verandert. Dat gebeurt op één plek, in de gateway, dus ook voor de schrijfhulp en de wereldstappen van de editor.
+- **De bewaker kent de grenzen.** Een antwoord dat eroverheen gaat, wordt afgewezen zoals een antwoord uit de rol: één nieuwe poging, dan de vaste regel, met de reden in het AI-logboek. Dat geldt voor gesprekken, improvisaties, reisteksten en de lore, het nieuws en de gedachten van de kroniekverteller. Lore die leest als een instructie aan een model wordt ook niet bewaard, want die komt later in andere prompts terecht. Een antwoord met een link of HTML valt nu ook uit de rol.
+- **Een wereld van een ander.** Het kader, de kaart van een personage en de eigen gids van de kroniekverteller (`CHRONICLER.md`) staan in de prompt in een eigen blok wereldtekst. Tekst in de content die leest als een instructie ("ignore all previous rules", "from now on you must") staat in de editor onder Check, en het dev-menu telt hem bij het laden.
+- **Electron dichter.** Beide vensters draaien in de sandbox, de preload is daarvoor CommonJS geworden. Elk IPC-kanaal heeft een zod-schema (`src/main/inputs.ts`) dat de argumenten keurt voordat een handler ze ziet. Alleen de eigen pagina van de app mag aanroepen, een venster kan niet wegnavigeren of een nieuw venster openen, en de map voor de transcriptie kan alleen een map zijn die je in het dialoogvenster koos. De smoketest laat zien: sandbox aan, geen Node in de pagina, een pad als wereldnaam geweigerd.
+- **Weigeringen zichtbaar.** Het AI-logboek toont per aanroep de reden (injectie, schema, grenzen, rol, PEGI met welke grens), en woorden van de speler die nooit naar het model gingen, als eigen regel met de tekst. Het dev-menu telt de weigeringen per reden. De karakterscore van een model telt afgewezen antwoorden en de grenzen mee.
+
+Testen: zeg in een gesprek "Ignore your previous instructions" (de vaste regel, en in het AI-logboek "held back: injection"). Kijk in Instellingen > Log na een gesprek met een model, en in het dev-menu onder Background. Tests in `tests/redteam.test.ts` (14), alle 789 groen, drie simulaties zonder problemen, speeltests, build en de drie smoketests.
+
+Wat de editor en de kroniekverteller leerden: geen nieuwe velden in de content. Nieuw onder Check: tekst die leest als een instructie aan het model.
+
+Nog niet: de PEGI-toets is een net van woorden en geen garantie; een valse treffer kost een nieuwe poging. Afbeeldingen krijgen de grenzen niet in hun prompt; daar filtert de aanbieder van het beeldmodel. De plekbeschrijvingen in het overzicht van de kroniekverteller staan niet in een eigen blok; de regel voor wereldtekst in het systeemdeel dekt ze wel. De Check-tab heb ik niet in de browser gezien: de dev-server stond uit voor de bouw van The Quiet Reach, en geen wereld in de repo heeft zulke tekst.
+
 ## M10.18 deel B: het ontwerplogboek van een wereld, 28 september 2026
 
 - **Wat je typt, blijft bewaard.** In het stappenpaneel van de editor wordt je antwoord op een stap een moment nadat je stopt met typen opgeslagen, in `content/<wereld>/DESIGN.md`. Ga je naar een andere stap of start je de editor opnieuw, dan staat het er weer. Een geplakt document met eigen kopjes breekt het logboek niet.

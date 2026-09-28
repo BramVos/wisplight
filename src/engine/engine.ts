@@ -82,6 +82,7 @@ import { momentsNow } from './moments'
 import { journeyRequest } from './map/journeyText'
 import { strangeWords, voiceSummary } from './dialogue/voice'
 import { hasOurOaths, outOfCharacter, unknownNames, vocabularyOf, wordCount } from './dialogue/guard'
+import { crossesLimits, suspectText, worldText } from './safety'
 import { noteVisit, returningOutput } from './returning'
 import { gestures } from './gestures'
 import { lodgingPage, putInChest, rentLodging, takeFromChest } from './lodgings'
@@ -257,6 +258,9 @@ export class Engine {
     const state = options.state ?? createInitialState(source, options.seed ?? 1)
     this.world = new World(source, state)
     const content = this.world.content
+    // Content text that reads like an instruction to the model, counted when the world loads (M10.19): the dev menu shows it.
+    const suspect = suspectText(content).length
+    if (suspect) this.world.guard['content'] = suspect
     this.log = options.log ? [...options.log] : []
     // A new game writes down the names it begins with (M9.1).
     if (!options.log && !options.state) this.log.push({ t: state.minutes, k: 'names', v: nameBook(source) })
@@ -695,12 +699,16 @@ export class Engine {
     try {
       const reply = await recorder.complete({ ...improviseRequest(this.world, imp), timeoutMs: 10000 })
       const read = readImprovisation(this.world, imp, reply.text)
-      if (!read) {
-        recorder.report?.({ reason: 'invented', role: 'voice' })
+      if ('problem' in read) {
+        this.world.guard[read.problem] = (this.world.guard[read.problem] ?? 0) + 1
+        recorder.report?.({ reason: read.problem, role: 'voice' })
         return improviseFallback(this.world, imp, { kind: 'checks', message: 'the answer did not pass' })
       }
       // An effect outside what the content allows is refused; the narration stays (a noted rejection, not a failure).
-      if (read.refused) recorder.report?.({ reason: 'schema', role: 'voice', fixed: `effect refused: ${read.refused}` })
+      if (read.refused) {
+        this.world.guard['bounds'] = (this.world.guard['bounds'] ?? 0) + 1
+        recorder.report?.({ reason: 'bounds', role: 'voice', fixed: `effect refused: ${read.refused}` })
+      }
       return applyImprovisation(this.world, imp, read.narration, read.effect, read.spent)
     } catch (error) {
       const kind = error instanceof LlmError ? error.kind : 'network'
@@ -757,14 +765,15 @@ export class Engine {
     for (const output of outputs) {
       if (!output.journey && !output.returning) continue
       try {
-        const frame = [worldFrame(this.content), voiceSummary(this.content)].filter(Boolean).join('\n\n')
+        const frame = worldText([worldFrame(this.content), voiceSummary(this.content)].filter(Boolean).join('\n\n'))
         // A journey, or what changed since the last visit (M10.13): the same narrator, one call.
         const reply = await recorder.complete({ ...journeyRequest(this.world, output.text, frame, output.returning ? 'return' : 'journey'), timeoutMs: 8000 })
         const text = String((JSON.parse(reply.text.trim().replace(/^```(?:json)?\s*|\s*```$/g, '')) as { text?: unknown }).text ?? '').trim()
         const words = vocabularyOf({ ...this.content, chronicler: undefined }, worldFrame(this.content), this.world.calendar.months, this.world.calendar.weekdays, output.text)
-        const fine = text && wordCount(text) <= Math.max(110, wordCount(output.text) * 1.5) && !unknownNames(text, words).length && !strangeWords(this.world, text).length && !hasOurOaths(text) && !outOfCharacter(text)
+        const limit = text ? crossesLimits(text, words) : undefined
+        const fine = text && !limit && wordCount(text) <= Math.max(110, wordCount(output.text) * 1.5) && !unknownNames(text, words).length && !strangeWords(this.world, text).length && !hasOurOaths(text) && !outOfCharacter(text)
         if (fine) output.text = text
-        else recorder.report?.({ reason: 'invented', role: 'chronicler' })
+        else recorder.report?.({ reason: limit ? 'limits' : 'invented', role: 'chronicler', ...(limit ? { detail: limit } : {}) })
       } catch {
         // Optional: the rules' paragraph is enough.
       }
@@ -917,7 +926,7 @@ export class Engine {
       const recorder = this.recorder
       if (chat && recorder && this.world.aiLive) {
         try {
-          const reply = await recorder.complete(chatLineRequest(this.world, chat, worldFrame(this.content)))
+          const reply = await recorder.complete(chatLineRequest(this.world, chat, worldText(worldFrame(this.content))))
           heard.push(...chatLine(this.world, chat, reply.text))
         } catch {
           // Optional: the template is enough.

@@ -7,6 +7,7 @@ import { fixNotHere, oathsFor, strangeWords } from './voice'
 import type { Knowledge } from './knowledge'
 import type { LlmClient } from './llm'
 import { describePersonality, worldFrame } from './prompt'
+import { worldText } from '../safety'
 import type { TopicRegistry } from './topics'
 
 // The group conversation (FO, chapter 13, "Groepsgesprek en kampvuur"):
@@ -38,7 +39,7 @@ export async function partyTalk(world: World, topics: TopicRegistry, knowledge: 
     const fixed = fixNotHere(world, swearRight(line, oathsFor(world, id))).text
     return strangeWords(world, fixed).length ? undefined : fixed
   }
-  const lines = llm ? await ask(llm, cards, question, vocabulary, words, worldFrame(world.content), fit) : undefined
+  const lines = llm ? await ask(llm, cards, question, vocabulary, words, worldText(worldFrame(world.content)), fit) : undefined
   return [
     { kind: 'text', text: `You: "${question}"` },
     ...cards.map((card, i) => ({ kind: 'speech' as const, text: `${card.name}: "${lines?.[i] ?? fallback(world, card, topic ? topics.name(topic) : undefined)}"`, ...(lines?.[i] ? { source: 'model' as const } : {}) })),

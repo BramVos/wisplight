@@ -24,7 +24,8 @@ import { flirt } from '../social/romance'
 import { tieTo } from '../people'
 import type { Claim } from '../state'
 import type { Knowledge, Packet } from './knowledge'
-import { LlmError, type LlmClient } from './llm'
+import { LlmError, type LlmClient, type LlmRejection } from './llm'
+import { crossesLimits } from '../safety'
 import { oathsOf, peopleIds, systemPrompt, turnPrompt, worldFrame } from './prompt'
 import { attitude, applyEffect, moodOf, relation, type Attitude } from './relations'
 import { askLine, askNow, knownRequests, requestName, visited } from '../requests'
@@ -597,6 +598,9 @@ export class Dialogue {
     // 1. Injection and meta talk never reach the model.
     if (looksLikeInjection(text)) {
       talk.turnsLeft--
+      // Held back, with the reason in the AI log and the dev menu (M10.19).
+      this.guarded('injection')
+      this.llm()?.report?.({ reason: 'injection', role: 'voice', held: text.slice(0, 500) })
       return [...echo, { kind: 'speech', text: fallbackReply(world, npcId, 'OffTopic', { known: [], unknown: [] }, band.band) }, ...this.maybeClose()]
     }
 
@@ -972,7 +976,7 @@ export class Dialogue {
       }
       const reply = parseReply(raw)
       if (!reply) {
-        llm.report?.({ reason: 'schema' })
+        this.refused('schema', llm)
         continue
       }
       // Our world's oaths give way to the speaker's own (M10.8): "Christ, yes" is "Saint Brand's light, yes".
@@ -982,20 +986,26 @@ export class Dialogue {
       const { text: fitted, fixed } = fixNotHere(world, sworn)
       const strange = strangeWords(world, fitted)
       if (strange.length) {
-        this.guarded('anachronism')
-        llm.report?.({ reason: 'anachronism' })
+        this.refused('anachronism', llm)
         prompt += `\nNOTE: your last reply used ${strange.map((w) => `"${w}"`).join(', ')}, which ${strange.length === 1 ? 'does' : 'do'} not exist in this world. Answer again without ${strange.length === 1 ? 'it' : 'them'}.`
         continue
       }
       if (outOfCharacter(fitted)) {
-        llm.report?.({ reason: 'character' })
+        this.refused('character', llm)
         prompt += '\nNOTE: your last reply stepped out of the world. Answer again as yourself, in plain speech.'
+        continue
+      }
+      // The hard limits (M10.19): asked again like a reply out of character, then the set line.
+      const limit = crossesLimits(fitted, this.vocabulary())
+      if (limit) {
+        this.refused('limits', llm, limit)
+        prompt += '\nNOTE: your last reply crossed the hard limits of this game. Answer again, plainly, without it.'
         continue
       }
       // A promise the game did not offer never stands in the text (M10.3): the deed hangs on a chosen yes.
       const doing = offers.find((o) => o.key === reply.action && o.decision === 'yes') ?? offers.find((o) => o.key === reply.propose && o.decision === 'yes')
       if (promises(fitted) && !doing && !ctx.decision && reply.quest_action === 'none') {
-        llm.report?.({ reason: 'promise' })
+        this.refused('promise', llm)
         prompt += '\nNOTE: your last reply promised to do something the game did not offer. Answer again without promising it: choose an OFFER with decision yes, or say what you can and cannot do.'
         continue
       }
@@ -1004,7 +1014,7 @@ export class Dialogue {
       const fresh = reply.names.filter((n) => n.new_kind !== 'none' && !this.topics.find(n.text) && fitted.includes(n.text.trim()))
       const farProblem = this.checkFar(npcId, fresh, fitted)
       if (farProblem) {
-        llm.report?.({ reason: 'invented' })
+        this.refused('invented', llm)
         prompt += `\nNOTE: ${farProblem} Answer again.`
         continue
       }
@@ -1012,19 +1022,19 @@ export class Dialogue {
       const person = namesSomeone(reply.person) ? reply.person : undefined
       const personProblem = person && checkSketch(world, npcId, person, fitted, Boolean(sketch), Boolean(talk?.sketched), (name) => Boolean(this.topics.find(name)))
       if (personProblem) {
-        llm.report?.({ reason: 'invented' })
+        this.refused('invented', llm)
         prompt += `\nNOTE: ${personProblem} Answer again.`
         continue
       }
       const leaks = leakedNames(said, this.topics.properNames(), allowedNames)
       if (leaks.length > 0) {
-        llm.report?.({ reason: 'leak' })
+        this.refused('leak', llm)
         prompt += `\nNOTE: you mentioned ${leaks.join(', ')}, which you know nothing about. Answer again without them.`
         continue
       }
       const invented = unknownNames(said, this.vocabulary(), vocabularyOf(text, ...fresh.map((n) => n.text), ...(person ? [person.name] : []), ...(talk?.history ?? []).filter((h) => h.speaker === 'player').map((h) => h.text)))
       if (invented.length > 0) {
-        llm.report?.({ reason: 'invented' })
+        this.refused('invented', llm)
         prompt += `\nNOTE: you used ${invented.join(', ')}, which ${invented.length === 1 ? 'does' : 'do'} not exist in this world. Never make up names. Use only names from PEOPLE YOU KNOW, KNOWLEDGE and SCENE, or say you don't know.`
         continue
       }
@@ -1038,8 +1048,14 @@ export class Dialogue {
     return undefined
   }
 
+  /** A reply thrown away and asked again (M10.19): counted for the dev menu, and the reason in the AI log. */
+  private refused(reason: LlmRejection['reason'], llm: LlmClient, detail?: string): void {
+    this.world.guard[reason] = (this.world.guard[reason] ?? 0) + 1
+    llm.report?.({ reason, ...(detail ? { detail } : {}) })
+  }
+
   /** Counts what the guard did (M10.10), for the dev menu; what it put right or noted also goes to the AI log. */
-  private guarded(what: 'anachronism' | 'oath' | 'not_here' | 'number', llm?: LlmClient, fixed?: string): void {
+  private guarded(what: 'anachronism' | 'oath' | 'not_here' | 'number' | 'injection', llm?: LlmClient, fixed?: string): void {
     this.world.guard[what] = (this.world.guard[what] ?? 0) + 1
     if (llm && fixed) llm.report?.({ reason: what, fixed })
   }

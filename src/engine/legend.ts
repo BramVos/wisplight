@@ -1,6 +1,7 @@
 import { callName, type Content } from './content'
 import type { LlmRequest } from './dialogue/llm'
 import { worldFrame } from './dialogue/prompt'
+import { worldText } from './safety'
 import type { GameState, LoreEntry } from './state'
 
 // Years later, as legend (M9.1; design: lore and world change, "Lore
@@ -76,7 +77,7 @@ export function legendRequest(content: Content, legends: LoreEntry[]): LlmReques
   return {
     role: 'chronicler',
     system: [
-      worldFrame(content),
+      worldText(worldFrame(content)),
       '',
       'Years have passed. You retell the stories of a game long ago as legends people tell now: of "the stranger" who came, of what happened, as a tale that has been told many times.',
       'Never use the name of a person: speak of "the miller", "a girl from the fen", "the stranger". Place names may stay. Keep what happened; let it grow a little in the telling. Each story: name (a few words), summary (one or two sentences), details (two sentences), story (three to five sentences, as a villager tells it), far (one sentence, as it sounds far away). JSON only.',

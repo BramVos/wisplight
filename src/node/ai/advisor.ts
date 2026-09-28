@@ -294,7 +294,7 @@ export async function trial(gateway: Gateway, content: Content, provider: Provid
     for (const call of meter.calls) {
       if (call.rejected === 'leak') result.leaks++
       if (call.rejected === 'invented') result.factualErrors++
-      if (call.rejected === 'anachronism' || call.rejected === 'character') result.characterBreaks++
+      if (call.rejected === 'anachronism' || call.rejected === 'character' || call.rejected === 'limits') result.characterBreaks++
       if (call.rejected) note(`reply: failed the ${call.rejected} check`)
       if (call.failed) note(call.failed)
     }
@@ -333,6 +333,7 @@ export async function trial(gateway: Gateway, content: Content, provider: Provid
         for (const p of done.problems) {
           // Names it was not given are a leak; names nobody knows, and lore no fact bears out, are false.
           if (/not in the story/.test(p)) result.leaks++
+          else if (/crosses the hard limits/.test(p)) result.characterBreaks++
           else if (/names the world does not know|no fact says|could not be read/.test(p) || (/^lore "/.test(p) && !/not big enough/.test(p))) result.factualErrors++
           note(`chronicle: ${p}`)
         }

@@ -856,6 +856,15 @@ function CheckPanel({ view, open }: { view: EditorView; open: (kind: EntityKind,
       <ul className="check-list">{view.problems.map(row)}</ul>
       <h2 className="editor-title">Worth a look ({view.warnings.length})</h2>
       <ul className="check-list small">{view.warnings.map(row)}</ul>
+      {view.suspect.length > 0 && (
+        <>
+          <h2 className="editor-title">Reads like an instruction to the model ({view.suspect.length})</h2>
+          <p className="muted small">
+            This text looks like an instruction to the model, not a description of the world. The game marks all world text as description, and every effect still goes through the rules, but a world from someone else could try this. Rewrite it as something the world says.
+          </p>
+          <ul className="check-list small">{view.suspect.map((s) => row(`${s.where}: ${s.field ? `${s.field}: ` : ''}"${s.text}"`))}</ul>
+        </>
+      )}
       <h2 className="editor-title">Named, but no detail ({view.scenery.length})</h2>
       <p className="muted small">Things a description brings in that nothing here answers to. LOOK still finds the sentence they are in; a detail (details: in the place) gives each its own look, and lines for TAKE and other verbs such as DRINK or CLIMB.</p>
       <ul className="check-list small">{view.scenery.map(row)}</ul>

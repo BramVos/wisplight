@@ -5,6 +5,7 @@ import { GameClock } from './clock'
 import { callName } from './content'
 import { leakedNames, unknownNames, vocabularyOf } from './dialogue/guard'
 import { worldFrame } from './dialogue/prompt'
+import { crossesLimits, readsAsInstruction, worldGuide, worldText } from './safety'
 import { itemName, remedyItem } from './items'
 import { questsOf } from './life'
 import { factById, factOrArchived } from './news'
@@ -156,9 +157,10 @@ export function buildInput(world: World, run: ChronicleRun): ChronicleInput {
   // Signals to plan for (M8.3), with the people and places they bring, and the verbs he may use.
   const planning = signalCards(world, run.signals ?? [])
   const input: ChronicleInput = {
-    instruction: withoutReference(world.content.chronicler ?? FALLBACK_INSTRUCTION),
+    // The world's own guide and its frame (M10.19): they shape tone and lore, never the rules.
+    instruction: world.content.chronicler ? worldGuide(withoutReference(world.content.chronicler)) : FALLBACK_INSTRUCTION,
     // With the world's voice (M10.10): oaths, sayings, time and what is not here, so lore comes in the same voice.
-    world: [worldFrame(world.content), voiceSummary(world.content)].filter(Boolean).join('\n\n'),
+    world: worldText([worldFrame(world.content), voiceSummary(world.content)].filter(Boolean).join('\n\n')),
     catalogue: catalogue(world),
     now: when(world, world.now),
     lines: chronicleLines,
@@ -393,6 +395,17 @@ export function applyOutput(world: World, run: ChronicleRun, output: ChronicleOu
   ]
   const fits = (what: string, ...texts: string[]) => {
     for (const text of texts.filter(Boolean)) {
+      // The hard limits (M10.19): such lore, news or a thought is never kept.
+      const limit = crossesLimits(text, words)
+      if (limit) {
+        problems.push(`${what}: crosses the hard limits (${limit})`)
+        return false
+      }
+      // Lore goes into other prompts later (what people know): text that reads as an instruction to a model is never kept (M10.19).
+      if (readsAsInstruction(text)) {
+        problems.push(`${what}: reads like an instruction to a model`)
+        return false
+      }
       const invented = unknownNames(text, words)
       if (invented.length) {
         problems.push(`${what}: names the world does not know (${invented.join(', ')})`)

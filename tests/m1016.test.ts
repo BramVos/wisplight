@@ -76,7 +76,7 @@ describe('M10.16: improvisation where the rules know no way', () => {
     const out = said(await engine.handle('pour milk on the oak'))
     expect(out).toBe('You pour it out. A loaf lies there that was not there before.')
     expect(engine.state.player.inventory['rye_bread'] ?? 0).toBe(0)
-    expect(llm.reports).toEqual([expect.objectContaining({ reason: 'schema', fixed: expect.stringMatching(/effect refused: item is not something this may do/) })])
+    expect(llm.reports).toEqual([expect.objectContaining({ reason: 'bounds', fixed: expect.stringMatching(/effect refused: item is not something this may do/) })])
   })
 
   it('no count a day: every act goes to the model while the budget lasts; spent, the thing\'s own line and why', async () => {

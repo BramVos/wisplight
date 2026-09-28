@@ -2,6 +2,7 @@ import { GameClock, startOfDay } from '../clock'
 import { callName } from '../content'
 import type { LlmRequest } from '../dialogue/llm'
 import { describePersonality, peopleIds, relevantPeople, worldFrame } from '../dialogue/prompt'
+import { worldText } from '../safety'
 import { goalJsonSchema, GoalReplySchema } from '../dialogue/schema'
 import { itemName } from '../items'
 import { questsOf } from '../life'
@@ -302,7 +303,7 @@ export function goalRequest(world: World, choice: GoalChoice, answers?: string[]
   keys['self'] = npcId
   return {
     role: 'brain',
-    system: [SYSTEM, '', worldFrame(world.content), '', ...card].join('\n'),
+    system: [SYSTEM, '', worldText([worldFrame(world.content), '', ...card].join('\n'))].join('\n'),
     prompt: lines.join('\n'),
     schemaName: 'npc_goals',
     schema: withLookup(intentions.length ? (withIntention(base, intentions.map((i) => i.id), Object.keys(keys)) as typeof base) : base) as typeof base,

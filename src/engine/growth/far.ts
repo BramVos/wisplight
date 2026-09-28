@@ -1,6 +1,7 @@
 import { AreaSchema, checkContent, lockedIds, LocationSchema, NpcSchema, type Content, type Direction } from '../content'
 import type { LlmRequest } from '../dialogue/llm'
 import { worldFrame } from '../dialogue/prompt'
+import { worldText } from '../safety'
 import { SettlementSchema } from '../economy/schema'
 import { recordFact } from '../news'
 import { newNpcState, type GameState } from '../state'
@@ -367,9 +368,8 @@ export function farRequest(world: World, topic: string): LlmRequest {
   return {
     role: 'chronicler',
     system: [
-      `${worldFrame(world.content)}`,
       // The world's voice (M10.10): the people of the far place talk like the world.
-      voiceSummary(world.content),
+      worldText([worldFrame(world.content), voiceSummary(world.content)].filter(Boolean).join('\n\n')),
       '',
       'You make a far place playable in a text game: you name and describe three places and two people. The shape is fixed; you write the words.',
       'Places: gate (where the road comes in, or the quay where the ship comes in when it lies over the sea), market, inn. Each description: three to five sentences, second person, present tense, one sense that is not sight, and a hint at a way out. Plain words, late-medieval, the tone of the world.',

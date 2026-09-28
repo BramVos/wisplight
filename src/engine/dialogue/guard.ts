@@ -31,9 +31,9 @@ export function hasAnachronism(text: string): boolean {
 }
 
 // A reply that steps out of the world (M9.3): it speaks as a model, of prompts
-// and rules, or comes dressed in markup or emoji. The trial counts it as a
+// and rules, or comes dressed in markup, emoji, a link or HTML (M10.19). The trial counts it as a
 // break of character; the game asks for the reply again.
-const OUT_OF_CHARACTER = /\b(as an ai|an ai model|language model|openai|anthropic|chatgpt|system prompt|my instructions|role-?play(?:ing)?|non-player|npc|video ?game)\b|\*\*|^#{1,6}\s|```|\p{Extended_Pictographic}/imu
+const OUT_OF_CHARACTER = /\b(as an ai|an ai model|language model|openai|anthropic|chatgpt|system prompt|my instructions|role-?play(?:ing)?|non-player|npc|video ?game)\b|\*\*|^#{1,6}\s|```|\p{Extended_Pictographic}|https?:\/\/|\bwww\.|\]\(|<\/?[a-z][a-z0-9]*[\s>]/imu
 
 export function outOfCharacter(text: string): boolean {
   return OUT_OF_CHARACTER.test(text)

@@ -6,6 +6,7 @@ import { ContentError, loadContent, type Content, type ContentFile, type Directi
 import { regionPreview, sceneryWarnings, warnings } from './builder'
 import { applyEdits, entities, ENTITY_KINDS, LISTS, parseEntityYaml, patchWorld, voiceYaml, worldPrefix, type Edit, type EditResult, type EntityKind, type FileChange, type Raw } from './edit'
 import { worldFrame } from './dialogue/prompt'
+import { suspectText, worldText, type SuspectText } from './safety'
 import type { LlmRequest } from './dialogue/llm'
 import { voiceSummary } from './dialogue/voice'
 import { contractSummary, contractView, fieldsOf } from './contract'
@@ -46,6 +47,8 @@ export interface EditorView {
   warnings: string[]
   /** Things descriptions bring in with no detail to look at or handle (after the M10 playtest). */
   scenery: string[]
+  /** Content text that reads like an instruction to the model (M10.19): a world may come from someone else. */
+  suspect: SuspectText[]
   files: string[]
   /** Each region as the generator draws it from its zones, while the world loads. */
   maps: Record<string, string>
@@ -174,6 +177,7 @@ export function editorView(files: ContentFile[]): EditorView {
     problems,
     warnings: content ? warnings(content) : [],
     scenery: content ? sceneryWarnings(content) : [],
+    suspect: content ? suspectText(content) : [],
     contract: contractView(content),
     worldKeys: fieldsOf('world').map((f) => ({ key: f.name, set: def[f.name] !== undefined })),
     economy: content ? economyOverview(content) : [],
@@ -507,7 +511,7 @@ export function draftRequest(files: ContentFile[], ask: string, focus?: { kind: 
     system: [
       instruction,
       '',
-      content ? worldFrame(content) : '',
+      content ? worldText(worldFrame(content)) : '',
       // The world's voice (M10.10): new content comes in the same voice.
       content ? voiceSummary(content) : '',
       '',
@@ -784,7 +788,7 @@ export function paletteRequest(files: ContentFile[], ask: string): LlmRequest {
     system: [
       instruction,
       '',
-      content ? worldFrame(content) : '',
+      content ? worldText(worldFrame(content)) : '',
       '',
       'YOU ARE IN THE WORLD BUILDER, AT THE MAP PALETTE. Propose colours for the map of this world that fit its frame: muted, in the spirit of Dwarf Fortress and Brogue, three or four close tints for every terrain (the seed of each hex picks one), boggy ground darker, dry ground lighter, water in two tones (open water and channel), ways in warm parchment. One set for the dark style and one for paper; black and white is made from paper. Give the legend names of the terrains as this world would say them. Colours as #rrggbb. JSON only.',
     ].join('\n'),
@@ -830,7 +834,7 @@ export function voiceRequest(files: ContentFile[], ask: string): LlmRequest {
     system: [
       instruction,
       '',
-      content ? worldFrame(content) : '',
+      content ? worldText(worldFrame(content)) : '',
       '',
       'YOU ARE IN THE WORLD BUILDER, AT THE VOICE KIT. Propose how people in this world speak, as YAML with these keys: oaths (per faith id, two or three each), sayings (three or four of the whole region), groups (id, name, areas, professions, two or three sayings each), default_group, address (stranger, known, friend, high; "she/he/they" forms allowed), time, distance, measures, and not_here (word, and instead when people here have a word for it; weekdays and months of our world with this world\'s own). Sayings are rare in play: make them few and good. JSON only, with the YAML as a string.',
     ].join('\n'),

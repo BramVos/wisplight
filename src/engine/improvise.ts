@@ -7,7 +7,8 @@ import { detailHere, sceneryHere } from './looking'
 import type { LlmRequest } from './dialogue/llm'
 import { worldFrame } from './dialogue/prompt'
 import { strangeWords, voiceSummary } from './dialogue/voice'
-import { hasOurOaths, outOfCharacter } from './dialogue/guard'
+import { hasOurOaths, outOfCharacter, vocabularyOf } from './dialogue/guard'
+import { crossesLimits, worldText } from './safety'
 import { add, itemName } from './items'
 import { recordFact } from './news'
 import { queueSignal } from './signals'
@@ -180,8 +181,7 @@ export function improviseRequest(world: World, imp: Improvisable): LlmRequest {
   return {
     role: 'voice',
     system: [
-      worldFrame(world.content),
-      voiceSummary(world.content),
+      worldText([worldFrame(world.content), voiceSummary(world.content)].filter(Boolean).join('\n\n')),
       'YOU TELL WHAT HAPPENS when the stranger does something the game has no rule for, to a thing that matters. Two to four sentences, second person, present tense, in the voice of this world. Tell only what the stranger sees, hears and feels; never explain, never promise, name nobody who is not given here. Then at most one effect, only from MAY, or nothing: most acts change nothing that lasts. JSON only.',
     ].join('\n\n'),
     prompt: [
@@ -217,18 +217,21 @@ function allowed(world: World, def: Improvise, e: ImprovisedEffect, target: Targ
 /**
  * Reads the model's answer and checks it (M10.16): a narration the guard lets
  * through, and at most one effect in MAY; what is outside is refused and only
- * the narration stays. Undefined when the narration will not do.
+ * the narration stays. A problem when the narration will not do: not JSON,
+ * across the hard limits (M10.19), or out of the world.
  */
-export function readImprovisation(world: World, imp: Improvisable, text: string): { narration: string; effect: ImprovisedEffect; spent: boolean; refused?: string } | undefined {
+export function readImprovisation(world: World, imp: Improvisable, text: string): { narration: string; effect: ImprovisedEffect; spent: boolean; refused?: string } | { problem: 'schema' | 'limits' | 'invented' } {
   let parsed: { narration?: unknown; effect?: Partial<ImprovisedEffect>; spent?: unknown }
   try {
     parsed = JSON.parse(text.trim().replace(/^```(?:json)?\s*|\s*```$/g, '')) as typeof parsed
   } catch {
-    return undefined
+    return { problem: 'schema' }
   }
   const narration = typeof parsed.narration === 'string' ? parsed.narration.trim() : ''
+  // The hard limits first (M10.19): such a narration is never shown.
+  if (crossesLimits(narration, vocabularyOf(world.content.world, world.content.topics))) return { problem: 'limits' }
   const sentences = narration.split(/(?<=[.!?])\s+/).filter(Boolean).length
-  if (!narration || sentences > 5 || narration.split(/\s+/).length > 110 || strangeWords(world, narration).length || outOfCharacter(narration) || hasOurOaths(narration)) return undefined
+  if (!narration || sentences > 5 || narration.split(/\s+/).length > 110 || strangeWords(world, narration).length || outOfCharacter(narration) || hasOurOaths(narration)) return { problem: 'invented' }
   const raw = parsed.effect ?? {}
   const effect: ImprovisedEffect = {
     kind: (['item', 'state', 'condition', 'standing', 'fact', 'nothing'] as const).find((k) => k === raw.kind) ?? 'nothing',

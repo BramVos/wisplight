@@ -178,8 +178,9 @@ describe('M10.10: a character score', () => {
     const plain = characterChecks(content, 'No, not today.', 'KNOWLEDGE: nothing.')
     expect(Object.values(plain).every(Boolean)).toBe(true)
     const bad = characterChecks(content, 'By Christ, the daughter of Jan and Grietje bought 12 potatoes. What the fen takes, it keeps. Water always finds the weakest board.', 'KNOWLEDGE: nothing.', 'invented')
-    expect(bad).toEqual({ oath: false, words: false, names: false, ownPeople: false, numbers: false, restraint: false })
-    expect(characterScore([plain, bad])).toBe(0.5)
+    // Refused by the guard counts against it too (M10.19); it stays within the hard limits.
+    expect(bad).toEqual({ oath: false, words: false, names: false, ownPeople: false, numbers: false, restraint: false, kept: false, limits: true })
+    expect(characterScore([plain, bad])).toBe(9 / 16)
   })
 
   it('the test set scores a run through the game', async () => {
