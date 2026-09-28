@@ -219,7 +219,7 @@ export const WORLD_STEPS: readonly WorldStep[] = [
     ask: [
       'What do people eat and use, and who sells it where?',
       'What is made here, by whom and from what? Is anything gathered from the land?',
-      'Is there a craft the stranger can learn, and at which bench or hearth?',
+      'Is there a craft the stranger can learn, at which bench or hearth, and what does a spoilt piece leave behind?',
     ],
     fills: [
       { kind: 'items' },
@@ -238,9 +238,11 @@ export const WORLD_STEPS: readonly WorldStep[] = [
       'Every village, town, hamlet or inn has a ledger.',
       'Prices are in the smallest coin; a craft\'s object names the craft and the technique.',
       'A lamp, torch or anything else that lights the way at night has the tag light.',
+      'A failure at a craft or a bench says what it leaves (poor: a poorer item; damaged: the object needs mending; leftover: a share of the material back; lost) and what a master would say (why); left out, the material is lost. Damaged needs repair on the object type (what mending takes; the owner mends it at dawn and minds who did it).',
+      'A poorer item names the good thing it is a poorer version of (quality poor, of); a thing the stranger can make and give away may say how someone uses it (used, with {name} and {their}).',
     ],
     prompt:
-      'STEP: THE ECONOMY. Agree what is eaten, sold and made with the designer. Propose items, object_types (with affordances), the services on locations (sells, buys, lodging, supply), settlements (people, use, keep, workshops), resources and crafts in `changes`, as one proposal that closes: what is used is made or brought.',
+      'STEP: THE ECONOMY. Agree what is eaten, sold and made with the designer. Propose items, object_types (with affordances), the services on locations (sells, buys, lodging, supply), settlements (people, use, keep, workshops), resources and crafts in `changes`, as one proposal that closes: what is used is made or brought. Crafts and bench affordances may say what a failure leaves (failure: outcome poor, damaged, leftover or lost, with item and qty for poor, share for leftover, why and critical); object types that can be damaged get repair; items may have quality poor with of, and used for how someone uses what the stranger made them.',
   },
   {
     id: 'passages',
@@ -274,7 +276,7 @@ export const WORLD_STEPS: readonly WorldStep[] = [
     title: 'Signals and dangers',
     ask: [
       'Which changes matter to people here: a death, a theft, a shortage, someone leaving?',
-      'What does custom do when it happens: a wake, a search, a collection, a warning?',
+      'What does custom do when it happens (a wake, a search, a collection, a warning), and when things go well (a repair, a danger past, a promise made good: a feast, better prices, a song)?',
       'Are there creatures or dangers the stranger may fight, and which group minds when one is beaten, paid off, bound for the law or let go?',
     ],
     fills: [
@@ -282,6 +284,7 @@ export const WORLD_STEPS: readonly WorldStep[] = [
       { kind: 'aftermath' },
       { kind: 'creatures' },
       { kind: 'encounters' },
+      { kind: 'rules', keys: ['conditions'] },
     ],
     optional: true,
     skipped: 'Changes pass without a signal and people react only in talk; there are no creatures to fight, and a fight touches no faction.',
@@ -290,9 +293,12 @@ export const WORLD_STEPS: readonly WorldStep[] = [
       'Aftermath steps use the verbs the engine knows.',
       'The file keys are watchers: and aftermath:.',
       'A creature with a faction says how that faction takes it when the creature is won, paid, bound or freed (reputation); an encounter that tempts a disloyal companion says so (tempts).',
+      'Good news is a signal too: a watcher on a fact of kind repaired:<object type>, on a claim that a danger is past (state normal, kind danger), or on a quest fact with a kind of its own; its aftermath may use feast, prices (a place or area, a factor from 0.5 to 1.5, days), mood, thought, mark (a seat kept for the stranger) and tell with grows (a song or story that grows a step with each teller).',
+      'The engine sends made_good (a broken word made good) and pupil_learnt (someone learnt a craft from the stranger; {value} is the craft); they count only when the world gives them an aftermath.',
+      'Where the land has bogs, the rules may have the condition wet (wet and cold, until an hour under a roof), set when the stranger struggles out of one.',
     ],
     prompt:
-      'STEP: SIGNALS. Agree with the designer which changes are signals and what custom follows. Propose watchers and aftermath in `changes`: a watcher with its signal and what sets it off, and an aftermath with the same signal and its steps. If there are creatures, propose them and their encounters too: a creature\'s faction and reputation (for won, paid, bound, freed or killed: which faction, by how much, why; left out, beating one costs 5 with its faction, paying gains 2, binding costs 10 and letting go gains 3), and tempts on an encounter that may turn a disloyal companion.',
+      'STEP: SIGNALS. Agree with the designer which changes are signals and what custom follows. Propose watchers and aftermath in `changes`: a watcher with its signal and what sets it off, and an aftermath with the same signal and its steps. If there are creatures, propose them and their encounters too: a creature\'s faction and reputation (for won, paid, bound, freed or killed: which faction, by how much, why; left out, beating one costs 5 with its faction, paying gains 2, binding costs 10 and letting go gains 3), and tempts on an encounter that may turn a disloyal companion. Good news gets its custom as well: a repair, a danger past, a promise made good (made_good) or a craft passed on (pupil_learnt) may bring a feast, better prices for a while, a mood, a seat kept for the stranger, or a song that grows with each teller. Where the land has bogs, the rules may have the condition wet.',
   },
   {
     id: 'voice',

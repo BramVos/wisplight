@@ -47,6 +47,11 @@ describe('the guide for a new world', () => {
     expect(step('economy').checks.join(' ')).toMatch(/tag light/)
     expect(step('watcher').fills.map((f) => f.kind)).toEqual(expect.arrayContaining(['creatures', 'encounters']))
     expect(step('watcher').prompt).toMatch(/tempts/)
+    expect(step('economy').prompt).toMatch(/failure: outcome poor, damaged, leftover or lost/)
+    expect(step('economy').prompt).toMatch(/quality poor with of, and used/)
+    expect(step('watcher').checks.join(' ')).toMatch(/made_good .* pupil_learnt/)
+    expect(step('watcher').checks.join(' ')).toMatch(/tell with grows/)
+    expect(step('watcher').fills).toContainEqual({ kind: 'rules', keys: ['conditions'] })
   })
 
   it('tells the chronicler to ask before inventing, never to borrow from another world, and what building Deepwell taught', () => {
