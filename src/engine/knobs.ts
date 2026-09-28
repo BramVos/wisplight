@@ -67,6 +67,8 @@ export const KNOBS = {
   'crafts.lessons': n('The lessons a pupil needs, on as many days, before they can do it on their own.', 'lessons', 3, 1, 20, 'outcomes.ts'),
   'economy.max_load': n('What the stranger can carry in one go, in units of the goods.', 'units', 20, 1, 500, 'economy/haul.ts'),
   'economy.ledger_hour': n('The hour a settlement counts its goods, before the counters fill.', 'hour', 5, 0, 23, 'economy/ledger.ts'),
+  'tides.decay': n('What a great line loses of its pressure each day that nothing pushes it: the world calms.', 'share', 0.02, 0, 0.5, 'tides.ts'),
+  'tides.cooldown_days': n('Days after a great event before the same line may break again (a line may set its own).', 'days', 91, 7, 3650, 'tides.ts'),
   'economy.days_of_use': n('How many days of use of a good a settlement aims to hold, when it names no keep.', 'days', 3, 1, 60, 'economy/ledger.ts'),
   // ---- the world's stories
   'stories.per_day': t('Small stories expected per day, by the tempo of the game.', 'stories', { calm: 0.4, normal: 0.8, dramatic: 1.6 }, 0, 10, 'stories.ts'),

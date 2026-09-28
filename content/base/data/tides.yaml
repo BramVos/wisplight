@@ -1,0 +1,34 @@
+# The great lines of the Nethermarch (M10.22): great dangers that grow in the
+# background, with or without the stranger. The engine adds up what pushes
+# each one every day and judges it on the first of every month: nothing, a
+# threat (a mood of threat in its areas, news, prices up), or the event, a
+# plan of the content that the engine plays out.
+
+tides:
+  # The Night of the Waterwolf is the story everyone knows (Wereldboek, chapter
+  # 3): autumn storms and winter water press on the Great Dyke by Oude Zijl.
+  # When it breaks, the dyke leaks (plan dyke_leak), and unless someone gets
+  # the dyke reeve to shore it in time, the breach follows.
+  - id: great_flood
+    name: the great flood
+    kind: flood
+    areas: [oude_zijl, veenhoek, molenend]
+    drivers:
+      - { season: autumn, weight: 1 }
+      - { season: winter, weight: 2 }
+      # A dyke that is manned and shored calms it.
+      - { flag: dyke_shored, weight: -3 }
+    threat: 40
+    threshold: 90
+    threatens:
+      line: The water stands high against the Great Dyke, and people keep looking at the sky.
+      news: The Vaart is higher than anyone remembers at this time of year, and the dyke reeve walks the dyke every night.
+      prices: 1.1
+      days: 14
+    plan: dyke_leak
+    breaks:
+      title: water through the Great Dyke
+      precise: The storm water has found its way into the Great Dyke by Oude Zijl, and it is leaking.
+      village: They say the Great Dyke is leaking by Oude Zijl.
+      far: The Great Dyke in the Holleveen is leaking.
+    cooldown: 180

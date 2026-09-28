@@ -33,12 +33,16 @@ ids:
     object_type: [strongbox, well, silver_birch, bench, beacon, waystone, salve_pot, coracle, boat]
   isle/data/passages.yaml:
     passage: [havenmoor_packet]
+  isle/data/plans.yaml:
+    plan: [great_storm]
   isle/data/professions.yaml:
     profession: [innkeeper, fisher, boatman, child, hedge_witch, scholar, lightkeeper]
   isle/data/props.yaml:
     prop: [locked_chest]
   isle/data/quests.yaml:
     quest: [off_skerrow]
+  isle/data/tides.yaml:
+    tide: [great_storm]
   isle/data/topics.yaml:
     topic: [the_starfall, old_skarth, the_waystone, the_beacon, grey_gull, havenmoor, the_tidemother]
   isle/data/watchers.yaml:

@@ -124,6 +124,23 @@ export function worldBook(content: Content, input: WorldBookInput = {}): string 
       factions.map((f) => [cap(f.name), [f.seat, ...f.seats.map((s) => `${place(s.at)}: ${s.wants}`)].join('; '), f.wants, f.stance ?? '', typeof f.join === 'string' ? f.join : [f.join.patrons ? `sworn to ${f.join.patrons.join(' or ')}` : '', f.join.at ? `at ${f.join.at.map(place).join(' or ')}` : '', f.join.fee && coins ? `for ${formatMoney(f.join.fee, coins)}` : ''].filter(Boolean).join(', ')]),
     ),
     ...(factions.some((f) => f.allies.length || f.rivals.length) ? ['### Relations', '', ...table(['Faction', 'Friends', 'Enemies'], factions.filter((f) => f.allies.length || f.rivals.length).map((f) => [cap(f.name), f.allies.map((a) => content.factions.get(a)?.name ?? a).join(', '), f.rivals.map((a) => content.factions.get(a)?.name ?? a).join(', ')]))] : []),
+    // The great lines (M10.22): what may come by itself, and what pushes it.
+    ...(content.tides.size
+      ? [
+          '### Great lines',
+          '',
+          ...table(
+            ['Line', 'What', 'Where', 'Pushed by', 'Threatens, breaks'],
+            [...content.tides.values()].map((t) => [
+              cap(t.name),
+              t.kind,
+              t.areas.map(place).join(', '),
+              t.drivers.map((d) => `${'season' in d ? d.season : 'tension' in d ? `tension of ${d.tension.join(' and ')} at ${d.at_least}` : 'short' in d ? `${d.short.settlement} short${d.short.item ? ` of ${d.short.item}` : ''}` : 'flag' in d ? d.flag : `facts${d.fact.kind ? ` of ${d.fact.kind}` : ''}`} (${d.weight > 0 ? '+' : ''}${d.weight})`).join(', '),
+              `${t.threat}, ${t.threshold}: ${t.breaks.title}`,
+            ]),
+          ),
+        ]
+      : []),
   ])
 
   // 5. Faith: the faiths, their patrons and blessings, and their holy places.

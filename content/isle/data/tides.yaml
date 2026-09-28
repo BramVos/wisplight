@@ -1,0 +1,27 @@
+# The great line of Skerrow (M10.22): the storms of the Glass Sea. Autumn and
+# winter push it, and it presses harder while the Lamp is dark and no ship
+# calls; when it breaks, the great storm (data/plans.yaml) plays out.
+
+tides:
+  - id: great_storm
+    name: the great storm
+    kind: storm
+    areas: [skerrow_hythe, skerrow_shore]
+    drivers:
+      - { season: autumn, weight: 1 }
+      - { season: winter, weight: 2 }
+      # A lit Lamp brings ships and help: the island is less alone with the sea.
+      - { flag: beacon_burning, weight: -1 }
+    threat: 40
+    threshold: 90
+    threatens:
+      line: The swell runs long and grey, and the old folk say the Glass Sea is gathering itself.
+      news: The fishers are hauling their boats high up the shingle; the weather-wise say a great storm is coming.
+      prices: 1.2
+      days: 10
+    plan: great_storm
+    breaks:
+      title: the great storm
+      precise: A great storm came in off the Glass Sea and broke over the harbour wall of Skerrow Hythe.
+      village: The storm's on us, the sea is over the harbour wall!
+      far: A great storm struck the island of Skerrow.

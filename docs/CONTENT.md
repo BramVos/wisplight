@@ -583,6 +583,30 @@ A list; each has:
 | place | text | no |  |
 | belang | number | no |  |
 
+## tides (data/tides.yaml)
+
+The great lines: great dangers (a war, a flood, a famine, a storm) that grow day by day from what drives them and are judged on the first of each month: nothing, a threat, or the event, a plan the engine plays.
+
+When a world has none: Nothing great happens by itself: no war, flood or famine comes unless a storyline brings it.
+
+A list; each has:
+
+| field | what | required | default |
+| --- | --- | --- | --- |
+| id | text | yes |  |
+| name | text | yes |  |
+| kind | text | yes |  |
+| areas | list of text | yes |  |
+| drivers | list of one of: a map \| a map \| a map \| a map \| a map | yes |  |
+| threat | number | yes |  |
+| threshold | number | yes |  |
+| threatens | a map: line, news, prices, days | yes |  |
+| plan | text | yes |  |
+| breaks | a map: title, precise, village, far | yes |  |
+| cooldown | number | no |  |
+
+`drivers`: each pushes the line every day it holds, by its weight (negative calms): `season` (a season of this world), `tension` with `at_least` (two realms), `short` (a settlement short of an item or anything), `flag`, or `fact` (the facts of the day of a kind, a belang, about someone, or by the stranger). The pressure loses a little every day. From `threat` it may threaten, from `threshold` break; the event is `plan`, a plan of the content, with `breaks` as its fact of belang 5; at most one event a season, then `cooldown` days.
+
 ## aftermath (data/aftermath.yaml)
 
 What follows a signal by custom, in steps of verbs.

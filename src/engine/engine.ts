@@ -11,6 +11,7 @@ import { CHECKPOINT_ENTRIES, CHECKPOINT_MINUTES, contentVersion, type Checkpoint
 import { applyFarPlace, farPlaceOf, farRequest, farWords, wantFarPlace, type FarWords } from './growth/far'
 import { applyDistrict, districtDue, districtRequest, districtWords, wantDistrict, type DistrictWords } from './growth/districts'
 import { applyWeave, weaveReply, weaveRequest, type WeaveReply } from './growth/weave'
+import { applyTides, tidesReply, tidesRequest, type TidesReply } from './tides'
 import { crowdHere, nameOne } from './growth/crowds'
 import { applyLegendWords, legendRequest, legendsOf } from './legend'
 import { answerLookup, parseLookup } from './lookups'
@@ -112,6 +113,7 @@ export type LogEntry =
   | { t: number; k: 'far'; topic: string; v: FarWords | null }
   | { t: number; k: 'district'; key: string; v: DistrictWords | null }
   | { t: number; k: 'weave'; key: string; v: WeaveReply | null }
+  | { t: number; k: 'tides'; v: TidesReply | null }
   // The legends of an old game this one began with (M9.1).
   | { t: number; k: 'legends'; v: LoreEntry[] }
   // The names the game began with (M9.1): playing the log back uses them, so a name changed later changes nothing.
@@ -535,7 +537,7 @@ export class Engine {
   /** Everything waiting for a model: goal choices and chronicler runs. */
   get modelsWaiting(): number {
     // A far place waiting for its words counts too (M10.21: alone, it never started the models).
-    return (this.state.brain?.pending.length ?? 0) + this.chroniclerWaiting + this.outlinesWaiting + (this.state.growth?.farPending?.length ?? 0) + (this.state.growth?.districtPending?.length ?? 0) + (this.state.growth?.weavePending?.length ?? 0)
+    return (this.state.brain?.pending.length ?? 0) + this.chroniclerWaiting + this.outlinesWaiting + (this.state.growth?.farPending?.length ?? 0) + (this.state.growth?.districtPending?.length ?? 0) + (this.state.growth?.weavePending?.length ?? 0) + (this.state.tides?.pending ? 1 : 0)
   }
 
   /** Lets the models do their waiting work in the background: goal choices first, they are short. */
@@ -546,6 +548,29 @@ export class Engine {
     await this.runFarPlaces()
     await this.runDistricts()
     await this.runWeaves()
+    await this.runTides()
+  }
+
+  /** The month's judgement of the great lines (M10.22), one call for all of them. */
+  async runTides(): Promise<void> {
+    if (this.outlining || !this.state.tides?.pending) return
+    this.outlining = true
+    try {
+      const llm = this.llm
+      let reply: TidesReply | null = null
+      if (llm) {
+        try {
+          reply = tidesReply((await llm.complete(tidesRequest(this.world))).text)
+        } catch {
+          reply = null
+        }
+      }
+      if (!this.state.tides?.pending) return
+      this.record({ t: this.world.now, k: 'tides', v: reply })
+      applyTides(this.world, reply)
+    } finally {
+      this.outlining = false
+    }
   }
 
   /** Districts whose new people the chronicler weaves into the world (M10.22), one at a time, at normal priority. */
@@ -1746,6 +1771,9 @@ export class Engine {
         } else if (entry.k === 'weave') {
           this.log.push(entry)
           applyWeave(this.world, entry.key, entry.v)
+        } else if (entry.k === 'tides') {
+          this.log.push(entry)
+          applyTides(this.world, entry.v)
         }
       }
     } finally {

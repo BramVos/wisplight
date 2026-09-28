@@ -14,6 +14,7 @@ import { GameClock } from './clock'
 import { recordFact } from './news'
 import { districtWords } from './growth/districts'
 import { weaveReply } from './growth/weave'
+import { tideState, tidesReply, tidesRequest } from './tides'
 import { farRequest, farWords } from './growth/far'
 import { improvisable, improviseRequest, readImprovisation } from './improvise'
 import { legendRequest, legendsOf } from './legend'
@@ -261,6 +262,13 @@ const SITUATION_BUILDS: Record<string, Build> = {
       await engine.runModels()
     })
     return { about: 'the new people of Graafhaven\'s gate district woven into the world', request, check: (text) => (weaveReply(text) ? checked(request, text) : ['the weave could not be read']) }
+  },
+  tides: async ({ base }) => {
+    const engine = new Engine(base, { seed: 1 })
+    // The great flood has come to its threshold: the chronicler may say threat or event.
+    for (const id of base.tides.keys()) tideState(engine.world, id).pressure = 95
+    const request = tidesRequest(engine.world)
+    return { about: 'the great lines of the Nethermarch on the first of a month, the great flood at its threshold', request, check: (text) => (tidesReply(text) ? checked(request, text) : ['the judgement could not be read']) }
   },
   builder_draft: async ({ isle }) => {
     const request = draftRequest(isle, 'A small hamlet near here, with three people and a story.', { kind: 'location', id: 'loc_skerrow_green' })

@@ -169,6 +169,12 @@ Levels: under the ground, ground level, the crowns.
 | The White Women | the Old Faith |  |
 | The Cog League | the Count's men |  |
 
+### Great lines
+
+| Line | What | Where | Pushed by | Threatens, breaks |
+| --- | --- | --- | --- | --- |
+| The great flood | flood | Oude Zijl, Veenhoek, Molenend | autumn (+1), winter (+2), dyke_shored (-3) | 40, 90: water through the Great Dyke |
+
 ## 5. Faith
 
 | Faith | Patrons | Faction |

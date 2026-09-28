@@ -289,11 +289,18 @@ function travel(world: World, r: Route, today: number): void {
   }
 }
 
-/** The nameless use what they need; what they could not get is short. */
+/**
+ * The nameless use what they need; what they could not get is short. A crowd
+ * that came (M10.22: refugees, a crew, pilgrims) eats with them, as many more
+ * mouths as it counts.
+ */
 function consume(world: World, s: Settlement): Set<string> {
   const l = economy(world).ledgers[s.id]!
   const unmet = new Set<string>()
-  for (const [item, n] of Object.entries(s.use)) {
+  const guests = (world.state.crowds ?? []).filter((c) => (c.until === undefined || c.until > world.now) && world.content.locations.get(c.at)?.area === s.id).reduce((sum, c) => sum + c.count, 0)
+  const share = guests > 0 ? 1 + guests / Math.max(1, s.people) : 1
+  for (const [item, used] of Object.entries(s.use)) {
+    const n = round(used * share)
     const took = round(Math.min(Math.max(0, l.stock[item] ?? 0), n))
     l.stock[item] = round((l.stock[item] ?? 0) - took)
     l.last.used[item] = round((l.last.used[item] ?? 0) + took)

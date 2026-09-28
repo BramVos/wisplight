@@ -715,6 +715,20 @@ function templateFor(kind: EntityKind, view: EditorView): Raw {
       return { id: 'new_prop', type: 'strongbox', name: "{owner}'s chest", where: ['private'], lock: { quality: ['common'], material: ['iron'] }, items: [], hints: [{ precise: '{owner} keeps {things} in a chest at {place}.', village: '{owner} has a chest at home, they say.', far: 'Someone keeps a locked chest.' }] }
     case 'craft':
       return { id: 'new_craft', name: 'the new craft', maker: 'maker', skill: 'crafting', professions: trade ? [trade] : [], techniques: [{ id: 'first_technique', name: 'the first technique' }] }
+    case 'tide':
+      // M10.22: a great line, pushed by what drives it and judged each month.
+      return {
+        id: 'new_line',
+        name: 'the new danger',
+        kind: 'storm',
+        areas: [area],
+        drivers: [{ season: 'winter', weight: 2 }],
+        threat: 40,
+        threshold: 90,
+        threatens: { line: 'What people feel coming, in the places it strikes.', news: 'What people say about it.', prices: 1.2, days: 14 },
+        plan: 'a_plan_id',
+        breaks: { title: 'what happened', precise: 'What happened, exactly.', village: 'What the village says.', far: 'What they say far away.' },
+      }
     case 'region':
       // M10.20, M10.21: a small region drawn a hex a character, and what lies beyond its edges. The Palette tab lays out a first one from the places.
       return {

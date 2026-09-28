@@ -133,6 +133,12 @@ Levels: the caves, ground level, the cliff tops.
 | The Tidemother's faithful | the folk of the Hythe |  |
 | The wreckers |  | the folk of the Hythe |
 
+### Great lines
+
+| Line | What | Where | Pushed by | Threatens, breaks |
+| --- | --- | --- | --- | --- |
+| The great storm | storm | Skerrow Hythe, the Shore | autumn (+1), winter (+2), beacon_burning (-1) | 40, 90: the great storm |
+
 ## 5. Faith
 
 | Faith | Patrons | Faction |

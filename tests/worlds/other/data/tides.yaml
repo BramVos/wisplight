@@ -1,0 +1,23 @@
+# The great line of Deepwell (M10.22): the long dark. A colony that runs short
+# of what it needs strains its machines; when it breaks, the heater fails.
+
+tides:
+  - id: long_dark
+    name: the long dark
+    kind: failure
+    areas: [deepwell_domes]
+    drivers:
+      - { short: { settlement: deepwell_domes }, weight: 4 }
+    threat: 30
+    threshold: 60
+    threatens:
+      line: The heater in the Domes coughs and rattles, and people wear their coats indoors.
+      news: The heater in the Domes keeps faltering; the fitters say it will not last the winter.
+      prices: 1.1
+      days: 7
+    plan: long_dark
+    breaks:
+      title: the long dark
+      precise: The main heater of the Domes failed, and the colony went to emergency power.
+      village: The heater's gone, we're on emergency power!
+      far: A colony on the ice lost its heat.

@@ -100,6 +100,8 @@ export class MockLlm implements LlmClient {
             ? this.outline(String(request.meta?.['name'] ?? 'the place'))
             : request.schemaName === 'far_place'
             ? this.farPlace(String(request.meta?.['name'] ?? 'the place'), (request.meta?.['named'] as { key: string; name: string; pronoun: string }[] | undefined) ?? [])
+            : request.schemaName === 'tides'
+            ? this.tides((request.meta?.['allowed'] as Record<string, string[]> | undefined) ?? {})
             : request.schemaName === 'weave'
             ? this.weave((request.meta?.['fresh'] as string[] | undefined) ?? [], (request.meta?.['known'] as string[] | undefined) ?? [], (request.meta?.['lines'] as string[] | undefined) ?? [])
             : request.schemaName === 'district'
@@ -109,6 +111,11 @@ export class MockLlm implements LlmClient {
             : this.chronicler(request.meta as unknown as ChronicleMeta, request.prompt)
           : this.other(request)
     return { text, provider: 'mock', model: 'mock-1', usage: { inputTokens: Math.round((request.system.length + request.prompt.length) / 4), outputTokens: Math.round(text.length / 4), cachedTokens: 0 }, latencyMs: 1 }
+  }
+
+  /** The month's judgement of the great lines (M10.22): the furthest each may go, and one made-up line that must be dropped. */
+  tides(allowed: Record<string, string[]>): string {
+    return JSON.stringify({ lines: [...Object.entries(allowed).map(([id, may]) => ({ id, judged: may.at(-1) ?? 'nothing', why: 'The signs have been gathering all month.' })), { id: 'made_up', judged: 'event', why: 'Because.' }] })
   }
 
   /** A weave round (M10.22): the first new person is kin of the first known, hides one thing, and has word for them. */

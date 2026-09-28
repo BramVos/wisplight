@@ -38,6 +38,8 @@ export function warnings(content: Content): string[] {
     const ids = topic.districts.map((d) => d.id)
     for (const id of new Set(ids)) if (ids.filter((x) => x === id).length > 1) out.push(`topic ${topic.id}: the district ${id} is named twice`)
   }
+  // A great line nothing can push (M10.22) never comes.
+  for (const tide of content.tides.values()) if (!tide.drivers.some((d) => d.weight > 0)) out.push(`tide ${tide.id}: nothing pushes it (every driver's weight is 0 or less), so it never comes`)
   // What lies beyond the map (M10.21): an edge without a line says only that nobody has told the stranger.
   for (const region of content.regions.values()) {
     const said = new Set((region.beyond ?? []).map((b) => b.side))

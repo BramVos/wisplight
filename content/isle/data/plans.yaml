@@ -1,0 +1,26 @@
+# Plans of Skerrow (M10.22): the great storm, played by the engine when the
+# great line breaks (data/tides.yaml). The harbour takes the worst of it, the
+# shore folk shelter at the Salt Kettle, and fish is scarce until the boats
+# go out again.
+
+plans:
+  - id: great_storm
+    name: The great storm
+    phases:
+      - after: 0
+        effects:
+          - { place: loc_skerrow_harbour, state: damaged }
+          - { news: "A great storm is on Skerrow: the sea is over the harbour wall.", area: skerrow_hythe }
+          - { mood: skerrow_hythe, kind: panic, days: 2, line: "Doors bang, shutters are nailed down, and nobody goes near the harbour.", prompt: "A great storm is on the island; everyone is frightened for the boats and the houses by the harbour." }
+          - { market: salt_fish, factor: 0.5 }
+      - after: 72
+        effects:
+          - { mood: skerrow_hythe, kind: grief, days: 5, line: "People stand at the broken harbour wall and count what the sea took.", prompt: "The storm is over; the island counts its losses." }
+      - after: 240
+        effects:
+          - { place: loc_skerrow_harbour, state: normal }
+          - { market: salt_fish, factor: 1 }
+    steps:
+      # The shore folk shelter at the inn, and eat from what the hamlet has.
+      - id: shelter
+        do: { crowd: shore_folk, one: a family from the shore, count: 10, at: loc_skerrow_salt_kettle, from: skerrow_shore, days: 4, profession: fisher }

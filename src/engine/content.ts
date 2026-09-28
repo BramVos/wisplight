@@ -10,6 +10,7 @@ import { CreatureSchema, EncounterSchema, RulesSchema, type Creature, type Effec
 import { ConditionSchema, QuestBodySchema } from './quests/schema'
 import { checkQuests } from './quests/check'
 import { AftermathSchema, IntentionSchema, PlanSchema, VerbTextSchema, WatcherSchema, type Aftermath, type Intention, type Plan, type VerbText, type Watcher } from './quests/planschema'
+import { TideSchema, type Tide } from './tideschema'
 import { permitted, verbName } from './quests/verbs'
 import { RELATION_ROLES } from './roles'
 import { VoiceSchema, type Voice } from './dialogue/voiceSchema'
@@ -1079,6 +1080,8 @@ export const FileSchema = z
     realms: z.array(RealmSchema).optional(),
     tensions: z.array(TensionSchema).optional(),
     plans: z.array(PlanSchema).optional(),
+    /** The great lines (M10.22): great dangers that grow day by day and are judged each month. */
+    tides: z.array(TideSchema).optional(),
     /** When a change is a signal, what follows by the rules, and how each verb is news (M8.1). */
     watchers: z.array(WatcherSchema).optional(),
     aftermath: z.array(AftermathSchema).optional(),
@@ -1137,6 +1140,8 @@ export interface Content {
   realms: Map<string, Realm>
   tensions: Tension[]
   plans: Map<string, Plan>
+  /** The great lines (M10.22). */
+  tides: Map<string, Tide>
   /** The aftermath (M8.1): watchers, the standard aftermath per signal, and the news of each verb. All optional. */
   watchers: Map<string, Watcher>
   aftermath: Map<string, Aftermath>
@@ -1197,6 +1202,7 @@ export function loadContent(files: ContentFile[]): Content {
     realms: new Map<string, Realm>(),
     tensions: [] as Tension[],
     plans: new Map<string, Plan>(),
+    tides: new Map<string, Tide>(),
     watchers: new Map<string, Watcher>(),
     aftermath: new Map<string, Aftermath>(),
     intentions: new Map<string, Intention>(),
@@ -1266,6 +1272,7 @@ export function loadContent(files: ContentFile[]): Content {
     addAll(content.realms, data.realms, (v) => v.id, file.path, 'realm', problems)
     content.tensions.push(...(data.tensions ?? []))
     addAll(content.plans, data.plans, (v) => v.id, file.path, 'plan', problems)
+    addAll(content.tides, data.tides, (v) => v.id, file.path, 'tide', problems)
     addAll(content.watchers, data.watchers, (v) => v.id, file.path, 'watcher', problems)
     addAll(content.aftermath, data.aftermath, (v) => v.id, file.path, 'aftermath', problems)
     addAll(content.intentions, data.intentions, (v) => v.id, file.path, 'intention', problems)
@@ -1557,6 +1564,19 @@ function checkReferences(world: WorldDef | undefined, c: Omit<Content, 'world'>)
     for (const other of [...f.allies, ...f.rivals]) if (!c.factions.has(other)) problems.push(`faction ${f.id}: unknown faction ${other}`)
   }
   for (const t of c.tensions) for (const r of t.between) if (!c.realms.has(r)) problems.push(`tension: unknown realm ${r}`)
+  // The great lines (M10.22): where they strike, what plays them, and what pushes them must exist.
+  for (const tide of c.tides.values()) {
+    for (const a of tide.areas) if (!c.areas.has(a)) problems.push(`tide ${tide.id}: unknown area ${a}`)
+    if (!c.plans.has(tide.plan)) problems.push(`tide ${tide.id}: unknown plan ${tide.plan}`)
+    if (tide.threshold <= tide.threat) problems.push(`tide ${tide.id}: the threshold (${tide.threshold}) must be above the threat (${tide.threat})`)
+    const seasons = world?.weather?.seasons
+    for (const d of tide.drivers) {
+      if ('tension' in d) for (const r of d.tension) if (!c.realms.has(r)) problems.push(`tide ${tide.id}: unknown realm ${r}`)
+      if ('short' in d && !c.settlements.has(d.short.settlement)) problems.push(`tide ${tide.id}: unknown settlement ${d.short.settlement}`)
+      if ('short' in d && d.short.item && !c.items.has(d.short.item)) problems.push(`tide ${tide.id}: unknown item ${d.short.item}`)
+      if ('season' in d && seasons && !seasons.includes(d.season)) problems.push(`tide ${tide.id}: ${d.season} is no season of this world (${[...new Set(seasons)].join(', ')})`)
+    }
+  }
   for (const n of c.npcs.values()) if (n.companion?.quest && !c.quests.has(n.companion.quest)) problems.push(`${n.id}: unknown personal quest ${n.companion.quest}`)
   for (const t of c.topics.values()) {
     if (t.origin && !c.areas.has(t.origin) && !c.locations.has(t.origin)) problems.push(`topic ${t.id}: unknown origin ${t.origin}`)
@@ -1810,6 +1830,7 @@ export const KIND_MAPS = {
   faction: 'factions',
   realm: 'realms',
   plan: 'plans',
+  tide: 'tides',
   watcher: 'watchers',
   aftermath: 'aftermath',
   intention: 'intentions',

@@ -26,6 +26,7 @@ export const MODEL_KINDS: readonly ModelKind[] = [
   { kind: 'district', role: 'chronicler', does: 'A district of a far town becomes playable when the stranger does something there or goes into it.', when: 'play' },
   { kind: 'weave', role: 'chronicler', does: 'The new people of a district woven into the world: bonds, a secret, a thread home.', when: 'play' },
   { kind: 'chronicle', role: 'chronicler', does: 'The nightly round: lore, requests and storylines from the day.', when: 'night' },
+  { kind: 'tides', role: 'chronicler', does: 'The great lines judged on the first of the month: nothing, a threat or the event, within what the rules allow.', when: 'night' },
   { kind: 'lore_check', role: 'brain', does: 'A second look at big lore: what it says that no fact says.', when: 'night' },
   { kind: 'legends', role: 'chronicler', does: 'Old lore retold as a legend.', when: 'night' },
   { kind: 'outline', role: 'chronicler', does: 'The outline of a storyline the chronicler starts.', when: 'night' },

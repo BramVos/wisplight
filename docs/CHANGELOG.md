@@ -12,6 +12,27 @@ Testen: bouw een wereld in de editor zoals op 28 september. Onder elke stap staa
 Bewust anders: het modeladvies laat de soorten van spel en nacht meedoen, niet die van de editor, want de wereldbouw meet die zelf. Haiku is voor de tabelstappen niet geprobeerd; het doel was al gehaald. Plekken is met 26.000 tokens uitvoer de duurste stap; denkinspanning laag is daar de volgende knop, maar niet gemeten. De vorm van het jaar per wereld wacht op jou, zoals afgesproken. De metingen kostten samen ongeveer $7,90.
 
 Wat de editor en de kroniekverteller leerden: geen nieuwe soort of nieuw veld, dus het contract is hetzelfde. De kroniekverteller krijgt in elke wereldstap de verplichte velden van elke soort. Het verzoek voor de stemkit noemt de exacte velden. `docs/NEW-WORLD.md` zegt welk model welke stap schrijft en wat een bouw kost.
+## M10.22 deel: de grote lijnen, 29 september 2026
+
+- **Een wereld heeft grote lijnen: grote gevaren die op de achtergrond groeien.** Nieuw is de soort `tides` in de content. Een lijn heeft gebieden, drijfveren, een dreigingspunt, een drempel, wat een dreiging doet, en het plan dat de gebeurtenis speelt. Drijfveren zijn een seizoen, spanning tussen rijken, een tekort in het grootboek, een vlag of feiten van een soort; een negatief gewicht kalmeert. Elke dag telt de motor op wat de lijn voedt, en de druk zakt een beetje (knop `tides.decay`).
+- **Op de eerste van elke maand wordt elke lijn één keer beoordeeld.** Onder het dreigingspunt: niets. Daarboven: een dreiging, met de stemming "threat" in de gebieden, nieuws en iets hogere prijzen. Vanaf de drempel: de gebeurtenis zelf. Met een model kiest de kroniekverteller (één aanroep `tides`, hooguit 600 tokens), maar alleen uit wat de regels toestaan. Zonder model beslist de regel. Hooguit één gebeurtenis per seizoen per lijn, daarna een afkoeling (knop `tides.cooldown_days`, standaard 91 dagen). Elke beoordeling staat met het waarom in de geschiedenis van de lijn en in de kroniek.
+- **De gebeurtenis speelt de motor.** Het is een plan uit de content, met een feit van belang 5 dat de spoedronde van de kroniekverteller vanzelf oproept. Het plan zelf draait zonder model, tik voor tik.
+- **Vluchtelingen eten mee.** Een groep die ergens terechtkomt (het werkwoord `crowd`) eet nu uit de voorraad van die nederzetting, naar rato van haar grootte.
+- **Per wereld:**
+  - **De Nethermarch** heeft de grote overstroming. De herfst duwt en de winter harder; een bemande dijk kalmeert. De gebeurtenis is het lek in de Grote Dijk (`dyke_leak`), en de doorbraak volgt als niemand de dijk op tijd stut.
+  - **Skerrow** heeft de grote storm, met een eigen plan: de haven kapot, de strandbewoners in de Salt Kettle, zoute vis schaars.
+  - **Deepwell** heeft de lange duisternis, gevoed door tekorten.
+  - **The Quiet Reach** heeft bewust nog geen lijn; dat is jouw wereld, en een lijn kan erbij in de stap Signalen.
+- **In dertig dagen zonder speler** komt er per wereld hooguit één dreiging en geen gebeurtenis. Een test bewijst dat.
+
+Testen: `tests/m1022tides.test.ts` (7). In een spel duurt het maanden. Wil je het zien, dan kan dat met de test of met een snelle klok over de winter.
+
+Kosten: één `tides`-aanroep per maand, hooguit 600 tokens, alleen als de wereld lijnen heeft. Er is nog geen opgenomen echt antwoord; dat neemt de andere sessie op met je sleutel, binnen je budget.
+
+Wat de editor en de kroniekverteller leerden: de soort `tides` in het contract (met een noot over de drijfveren), de stap Signalen (die ook plannen voorstelt), een sjabloon in de editor, en een regel in Check voor een lijn die niets kan duwen. Een onbekend plan, gebied, rijk, seizoen of nederzetting, of een drempel die niet boven de dreiging ligt, houdt het laden tegen. Het wereldboek toont de lijnen bij de machten.
+
+Nog open in M10.22 (andere sessie): de cadans met een rem in echte tijd, één wachtrij, de pagina "De grote lijnen" in het dagboek en de kleur op de landkaart, en jouw invloed via bemiddeling. Van mij nog open: een nieuwe factie die uit een grote lijn ontstaat.
+
 ## M10.22 deel: zetels van facties, 29 september 2026
 
 - **Een factie zit op meer plekken, met wat ze daar wil.** Nieuw is `seats` in de content: een plek of gebied met een zin over wat de factie daar wil. De Nethermarch haalt ze uit zijn eigen zeteltekst. De Graaf zit in het schoutshuis ("the survey finished, the peat-cutters quiet"), de Lantaarn in de kapel van Veenhoek en in de priorij. Skerrow heeft er één: de zeelieden van de Oude Sterren bij de haven. Deepwell noemt er bewust geen; dat is de neutrale standaard.

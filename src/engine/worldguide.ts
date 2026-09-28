@@ -329,9 +329,11 @@ export const WORLD_STEPS: readonly WorldStep[] = [
       { kind: 'creatures' },
       { kind: 'encounters' },
       { kind: 'rules', keys: ['conditions'] },
+      { kind: 'tides' },
+      { kind: 'plans' },
     ],
     optional: true,
-    skipped: 'Changes pass without a signal and people react only in talk; there are no creatures to fight, and a fight touches no faction.',
+    skipped: 'Changes pass without a signal and people react only in talk; there are no creatures to fight, and a fight touches no faction. Without great lines nothing great happens by itself: no war, flood or famine comes unless a storyline brings it.',
     checks: [
       'Every watcher\'s signal has an aftermath with the same signal.',
       'Aftermath steps use the verbs the engine knows.',
@@ -341,9 +343,10 @@ export const WORLD_STEPS: readonly WorldStep[] = [
       'The engine sends made_good (a broken word made good) and pupil_learnt (someone learnt a craft from the stranger; {value} is the craft); they count only when the world gives them an aftermath.',
       'Where the land has bogs, the rules may have the condition wet (wet and cold, until an hour under a roof), set when the stranger struggles out of one.',
       'An improvised act sends the signal improvised, with the thing\'s id as event (an object type, a place or an area); an aftermath with signal improvised and that event is how a spirit answers.',
+      'A great line names areas and a plan that exist, drivers that can push it (a season of this world, a realm, a settlement, a flag), and a threshold above its threat; its plan plays the event with effects the engine knows.',
     ],
     prompt:
-      'STEP: SIGNALS. Agree with the designer which changes are signals and what custom follows. Propose watchers and aftermath in `changes`: a watcher with its signal and what sets it off, and an aftermath with the same signal and its steps. If there are creatures, propose them and their encounters too: a creature\'s faction and reputation (for won, paid, bound, freed or killed: which faction, by how much, why; left out, beating one costs 5 with its faction, paying gains 2, binding costs 10 and letting go gains 3), and tempts on an encounter that may turn a disloyal companion. Good news gets its custom as well: a repair, a danger past, a promise made good (made_good) or a craft passed on (pupil_learnt) may bring a feast, better prices for a while, a mood, a seat kept for the stranger, or a song that grows with each teller. Where the land has bogs, the rules may have the condition wet (in `changes` as kind condition). Where the places step gave something improvise, an aftermath on the signal improvised with that thing\'s id as event lets it answer (the stone grows warm, the kabouters leave something).',
+      'STEP: SIGNALS. Agree with the designer which changes are signals and what custom follows. Propose watchers and aftermath in `changes`: a watcher with its signal and what sets it off, and an aftermath with the same signal and its steps. If there are creatures, propose them and their encounters too: a creature\'s faction and reputation (for won, paid, bound, freed or killed: which faction, by how much, why; left out, beating one costs 5 with its faction, paying gains 2, binding costs 10 and letting go gains 3), and tempts on an encounter that may turn a disloyal companion. Good news gets its custom as well: a repair, a danger past, a promise made good (made_good) or a craft passed on (pupil_learnt) may bring a feast, better prices for a while, a mood, a seat kept for the stranger, or a song that grows with each teller. Where the land has bogs, the rules may have the condition wet (in `changes` as kind condition). Where the places step gave something improvise, an aftermath on the signal improvised with that thing\'s id as event lets it answer (the stone grows warm, the kabouters leave something). If the world has a great danger that may come with or without the stranger (a war, a flood, a famine, a plague, a storm), propose it as a great line (kind tide): areas, drivers (a season, a tension between realms, a settlement short of something, a flag, facts of a kind; a negative weight calms it), a threat and a threshold, what a threat says (line, news, prices, days), breaks (the fact when it comes) and a plan (kind plan, with phases of effects: place states, news, mood, market, flee, and steps with verbs such as crowd for people who shelter elsewhere) that plays it.',
   },
   {
     id: 'palette',

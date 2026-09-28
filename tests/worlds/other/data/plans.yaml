@@ -1,0 +1,14 @@
+# A plan of Deepwell (M10.22): the long dark, played when the great line
+# breaks (data/tides.yaml). The domes go to emergency light for a few days.
+
+plans:
+  - id: long_dark
+    name: The long dark
+    phases:
+      - after: 0
+        effects:
+          - { news: "The main heater has failed; the Domes are on emergency power.", area: deepwell_domes }
+          - { mood: deepwell_domes, kind: panic, days: 3, line: "The corridors are dim and cold, and everyone talks too fast.", prompt: "The main heater has failed and the colony is on emergency power; people are frightened of the cold." }
+      - after: 72
+        effects:
+          - { mood: deepwell_domes, kind: grief, days: 3, line: "People sit close together in the canteen, counting the hours until the heater is fixed.", prompt: "The heater is back on, and people are tired and shaken." }

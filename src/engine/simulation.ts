@@ -32,6 +32,7 @@ import { dryOut, mendOvernight } from './outcomes'
 import { bellsHour } from './sound'
 import { debtsDue, weeklyDrift } from './social/deeds'
 import { realmsDay } from './social/realms'
+import { tidesDay, tidesMonth } from './tides'
 import { watchHour } from './signals'
 import { forgetWeek, longApart, metAgain } from './forgetting'
 import { chatterNearPlayer } from './chatter'
@@ -117,8 +118,11 @@ function hourly(world: World): void {
   healWounds(world)
   watchHour(world)
   crowdsHour(world)
+  // The great lines (M10.22): judged on the first of the month in the nightly round, pushed once a day.
+  tidesMonth(world)
   if (minuteOfDay(world.now) === 0) {
     realmsDay(world)
+    tidesDay(world)
     if (Math.floor(world.now / MINUTES_PER_DAY) % 7 === 0) {
       weeklyDrift(world)
       forgetWeek(world)

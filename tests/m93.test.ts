@@ -397,8 +397,8 @@ describe('M9.3: the model trial', () => {
     expect(brain.answers).toBe(5)
     expect(brain.valid).toBe(5)
     const chronicler = await trial(gateway(temp(), mocked('good'), 10), content, 'openai', 'gpt-4.1-mini', 'chronicler')
-    // A drowning and a theft, then a journey, a far place, a district, a weave, a legend and an outline.
-    expect(chronicler).toMatchObject({ answers: 8, valid: 8, leaks: 0, factualErrors: 0 })
+    // A drowning and a theft, then a journey, a far place, a district, a weave, the great lines (M10.22), a legend and an outline.
+    expect(chronicler).toMatchObject({ answers: 9, valid: 9, leaks: 0, factualErrors: 0 })
     const inventing = await trial(gateway(temp(), mocked('invent'), 10), content, 'openai', 'gpt-4.1-mini', 'chronicler')
     expect(inventing.factualErrors).toBeGreaterThan(0)
     const broken = await trial(gateway(temp(), mocked('invalid'), 10), content, 'openai', 'gpt-4.1-mini', 'chronicler')

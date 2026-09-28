@@ -749,6 +749,8 @@ export interface GameState {
   romance?: Record<string, { stage: 'interest' | 'courting' | 'together' | 'bound'; since: number }>
   /** Tension between realms, 0 to 100 (design: lore and world change, "Staatkunde"). */
   tension?: Record<string, number>
+  /** The great lines (M10.22): where each stands, and a month's judgement waiting for the chronicler. */
+  tides?: import('./tides').TidesState
   /** NPCs a companion is distracting, until when. */
   distracted?: Record<string, number>
   /** Coincidences already noticed, so each is told once. */

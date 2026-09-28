@@ -37,6 +37,8 @@ export const FIELD_NOTES: Record<string, string[]> = {
     '`beyond`: per edge (north, east, south or west) the line the stranger reads on reaching it, from the world book, and `toward`: the far places that way (topics), which they may go on to on foot or by a line. An edge without one says that nobody has told them; beyond the last land the world names, nothing is made.',
   ],
   npcs: ['`secrets`: `about` and `teaches` take ids: a topic, a person (an NPC id), a place (a location id) or an area (`area_<id>`).'],
+  // M10.22: the great lines.
+  tides: ['`drivers`: each pushes the line every day it holds, by its weight (negative calms): `season` (a season of this world), `tension` with `at_least` (two realms), `short` (a settlement short of an item or anything), `flag`, or `fact` (the facts of the day of a kind, a belang, about someone, or by the stranger). The pressure loses a little every day. From `threat` it may threaten, from `threshold` break; the event is `plan`, a plan of the content, with `breaks` as its fact of belang 5; at most one event a season, then `cooldown` days.'],
   // M10.22: factions grow, within bounds.
   factions: ['`seats`: where else a faction sits, each a place (a location or an area) with what it wants there. A town that grows in play brings no new factions: a district may get a seat of one the world has; a new faction comes only from a storyline or a great line.'],
   // M10.21: a far town grows by district.
@@ -71,6 +73,7 @@ export const KINDS: Record<string, KindText> = {
   tensions: { file: 'data/factions.yaml', does: 'How two realms stand at the start.', missing: 'All at peace.' },
   plans: { file: 'data/plans.yaml', does: 'Consequences and schemes in steps: a flood, a muster, an opponent who does not wait.', missing: 'Nothing unfolds but what the rules make.' },
   watchers: { file: 'data/watchers.yaml', does: 'What change is a signal: a death, a theft, a shortage, a threat.', missing: 'Changes pass without a signal.' },
+  tides: { file: 'data/tides.yaml', does: 'The great lines: great dangers (a war, a flood, a famine, a storm) that grow day by day from what drives them and are judged on the first of each month: nothing, a threat, or the event, a plan the engine plays.', missing: 'Nothing great happens by itself: no war, flood or famine comes unless a storyline brings it.' },
   aftermath: { file: 'data/aftermath.yaml', does: 'What follows a signal by custom, in steps of verbs.', missing: 'Signals have no custom aftermath.' },
   intentions: { file: 'data/intentions.yaml', does: 'What a person may choose to do about a signal, with a model.', missing: 'People follow custom.' },
   verbs: { file: 'data/verbs.yaml', does: 'How each verb is told as news in this world.', missing: 'The standard words.' },

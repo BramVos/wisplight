@@ -25,6 +25,7 @@ export const LISTS = {
   faction: 'factions',
   realm: 'realms',
   plan: 'plans',
+  tide: 'tides',
   watcher: 'watchers',
   aftermath: 'aftermath',
   intention: 'intentions',

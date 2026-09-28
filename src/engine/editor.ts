@@ -123,6 +123,7 @@ export const KIND_NAMES: Record<EntityKind, string> = {
   faction: 'Factions',
   realm: 'Realms',
   plan: 'Plans',
+  tide: 'Great lines',
   watcher: 'Watchers',
   aftermath: 'Aftermath',
   intention: 'Intentions',
