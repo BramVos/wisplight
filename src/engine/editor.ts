@@ -812,9 +812,10 @@ export function polishRequest(files: ContentFile[], ids?: string[], light = true
     prompt: ['WHAT CAN BE ASKED ABOUT (for [brackets]):', askable.join(', '), '', 'THE PLACES TO POLISH:', ...lines].join('\n'),
     schemaName: 'world_polish',
     schema: POLISH_SCHEMA,
-    // Per kind (CLAUDE.md): about 150 words a place, day and night, a short say, and room to think
-    // (the Quiet Reach run: Opus 5.5 was cut off at 400 a place).
-    maxTokens: 700 * places.length + 1000,
+    // Per kind (CLAUDE.md): about 150 words a place, day and night, and a short say. The chronicler's
+    // model thinks first and needs room for it (the Quiet Reach run: Opus 5.5 used 12,000 tokens on ten
+    // places and was cut off); the light model answered ten places in 2,828.
+    maxTokens: 700 * places.length + 1000 + (light ? 0 : 16000),
     timeoutMs: 240000,
     meta: { step: 'polish', prefix: worldPrefix(files), places: places.map((p) => p.id) },
   }

@@ -58,7 +58,9 @@ export function placeMeasures(content: Content): PlaceMeasure[] {
     const exits = Object.entries(location.exits).filter(([, e]) => e)
     const named = exits.filter(([dir, exit]) => {
       const to = content.locations.get(exit!.to)
-      const words = [dir, ...(to ? [to.name, ...to.aliases] : [])].map((w) => w.toLowerCase().replace(/^the /, '')).filter((w) => w.length > 2)
+      // In, out, up and down are everyday words ("in the air"): those ways count only by the place they lead to.
+      const byWord = ['in', 'out', 'up', 'down'].includes(dir) ? [] : [dir]
+      const words = [...byWord, ...(to ? [to.name, ...to.aliases] : [])].map((w) => w.toLowerCase().replace(/^the /, '')).filter((w) => w.length > 2)
       return words.some((w) => new RegExp(`\\b${w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`).test(day.toLowerCase()))
     })
     return {
