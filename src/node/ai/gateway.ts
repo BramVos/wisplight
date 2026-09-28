@@ -2,7 +2,7 @@ import { LlmError, type LlmClient, type LlmRejection, type LlmRequest, type LlmR
 import { withSafety } from '../../engine/safety'
 import type { AiLog } from './log'
 import { CostRegister } from './costs'
-import { picturePrice, priceOf, upperBoundUsd } from './pricing'
+import { picturePrice, priceOf, typicalUsd, upperBoundUsd } from './pricing'
 import { BusyError, type PictureResponse, type Provider, type ProviderId, type RateLimit } from './providers'
 import type { PictureChoice, RoleChoice } from './settings'
 import type { UsageStore } from './usage'
@@ -46,6 +46,10 @@ export interface GatewayOptions {
   replyWithinMs?: () => number
   /** The budgets of world builds (M10.20): the editor's steps count there, not in the hourly budget of the game. */
   builds?: BuildStore
+  /** From what cost of one call the game asks first (M10.21): the player's setting; without it, never. */
+  askAboveUsd?: () => number
+  /** The player chose "always" in a question about cost. */
+  askNever?: () => void
   /** The app's knobs (M10.20): time limits per role, the editor's own, and the share of the hour kept for conversations. */
   knobs?: () => { timeoutMs?: Partial<Record<LlmRole, number>>; editorTimeoutMs?: number; conversationShare?: number }
 }
@@ -133,6 +137,20 @@ export class Gateway implements LlmClient {
         return choice && !priceOf(choice.model) ? [{ role, model: choice.model, callsThisHour: this.costs.unpricedLastHour(), cap: UNPRICED_CALLS_PER_HOUR }] : []
       }),
     }
+  }
+
+  /** What a call would cost about on the model it would go to (M10.21), or undefined where the price is not known. */
+  costOf(request: LlmRequest): number | undefined {
+    const choice = (request.tier === 'light' ? this.options.role('brain') : undefined) ?? this.options.role(request.role)
+    return choice ? typicalUsd(choice.model, withSafety(request)) : undefined
+  }
+
+  askAboveUsd(): number {
+    return this.options.askAboveUsd?.() ?? Infinity
+  }
+
+  askNever(): void {
+    this.options.askNever?.()
   }
 
   async complete(asked: LlmRequest, override?: RoleChoice): Promise<LlmResponse> {

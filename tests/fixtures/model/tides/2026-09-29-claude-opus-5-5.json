@@ -1,0 +1,14 @@
+{
+  "kind": "tides",
+  "about": "the great lines of the Nethermarch on the first of a month, the great flood at its threshold",
+  "model": "claude-opus-5-5",
+  "provider": "anthropic",
+  "date": "2026-09-29",
+  "usage": {
+    "inputTokens": 1195,
+    "cachedTokens": 0,
+    "outputTokens": 254
+  },
+  "reply": "{\"lines\":[{\"id\":\"great_flood\",\"judged\":\"threat\",\"why\":\"The water stands high enough to break, but the land has been calm with no warning yet, so this month the fen folk should see the dykes weeping, the sea rising grey against the sluices and barge-men talking of Wolf-weather before it comes.\"}]}",
+  "problems": []
+}

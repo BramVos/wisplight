@@ -24,6 +24,7 @@ const state = {
   roles: {} as Partial<Record<'voice' | 'brain' | 'chronicler', { provider: ProviderId; model: string }>>,
   budget: 0.1,
   replyWithin: 10,
+  askAbove: 1 as number | null,
   pictures: undefined as { provider: ProviderId; model: string; quality: 'low' | 'medium' } | undefined,
   monthBudget: 5 as number | undefined,
   credit: { openai: { amountUsd: 10, enteredAt: '2026-09-02T09:00:00.000Z', spent: 0 } } as Partial<Record<ProviderId, { amountUsd: number; enteredAt: string; spent: number }>>,
@@ -143,6 +144,7 @@ export function demoBridge(_content: Content): AiBridge {
         },
         roles: { ...state.roles },
         budgetUsdPerHour: state.budget,
+        askAboveUsd: state.askAbove,
         encryption: true,
         models: Object.fromEntries((['openai', 'anthropic'] as const).filter((p) => state.keys[p]).map((p) => [p, MODELS[p].map((m) => m.id)])),
         missing: [],
@@ -200,6 +202,11 @@ export function demoBridge(_content: Content): AiBridge {
     setBudget: async (usd) => {
       const kept = hourlyBudget(usd)
       state.budget = kept.usd
+      return kept
+    },
+    setAskAbove: async (usd) => {
+      const kept = usd === null ? { usd: null, adjusted: false } : hourlyBudget(usd)
+      state.askAbove = kept.usd
       return kept
     },
     setReplyWithin: async (seconds: number) => {

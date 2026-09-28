@@ -225,6 +225,7 @@ function AiTab({ bridge, overview, refresh }: { bridge: AiBridge; overview: AiOv
   const [verdicts, setVerdicts] = useState<Partial<Record<Role, { chosen?: string; why: Record<string, { passed: boolean; why: string }> }>>>({})
   const [budget, setBudget] = useState(String(settings.budgetUsdPerHour))
   const [within, setWithin] = useState(String(settings.replyWithinSeconds ?? 10))
+  const [askAbove, setAskAbove] = useState(settings.askAboveUsd === null ? '' : String(settings.askAboveUsd ?? 1))
   // A high hourly budget is asked about once before it is saved (M10.20); the player's value stands.
   const [confirmBudget, setConfirmBudget] = useState(false)
   const saveBudget = (usd: number) =>
@@ -474,6 +475,42 @@ function AiTab({ bridge, overview, refresh }: { bridge: AiBridge; overview: AiOv
           </button>
         </div>
       )}
+      <div className="row">
+        <span className="label">{t('settings.ai.askAbove.label')}</span>
+        <span>$</span>
+        <input className="amount" inputMode="decimal" value={askAbove} placeholder={t('settings.ai.askAbove.never')} onChange={(event) => setAskAbove(event.target.value)} aria-label={t('settings.ai.askAbove.aria')} />
+        <button
+          type="button"
+          className="link"
+          disabled={Boolean(busy) || !(Number(askAbove) > 0)}
+          onClick={() =>
+            void run(t('settings.ai.busyLabels.saving'), async () => {
+              const kept = await bridge.setAskAbove(Number(askAbove))
+              await refresh()
+              setAskAbove(kept.usd === null ? '' : String(kept.usd))
+              setNote(kept.adjusted ? t('settings.ai.askAbove.adjusted', { usd: kept.usd ?? '' }) : t('settings.ai.askAbove.saved'))
+            })
+          }
+        >
+          [{t('settings.ai.save')}]
+        </button>
+        <button
+          type="button"
+          className="link"
+          disabled={Boolean(busy) || settings.askAboveUsd === null}
+          onClick={() =>
+            void run(t('settings.ai.busyLabels.saving'), async () => {
+              await bridge.setAskAbove(null)
+              await refresh()
+              setAskAbove('')
+              setNote(t('settings.ai.askAbove.neverSaved'))
+            })
+          }
+        >
+          [{t('settings.ai.askAbove.always')}]
+        </button>
+        <span className="muted">{settings.askAboveUsd === null ? t('settings.ai.askAbove.noteNever') : t('settings.ai.askAbove.note')}</span>
+      </div>
       <div className="row">
         <span className="label">{t('settings.ai.replyWithin.label')}</span>
         <input className="amount" inputMode="numeric" value={within} onChange={(event) => setWithin(event.target.value)} aria-label={t('settings.ai.replyWithin.aria')} />

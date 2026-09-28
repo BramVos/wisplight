@@ -1,5 +1,15 @@
 # Changelog
 
+## M10.21 deel: één vraag boven een grens, 29 september 2026
+
+- **Kleine bedragen lopen gewoon.** Onder Instellingen > AI staat "Ask first above", standaard $1. Een aanroep die volgens de prijzen minder kost, loopt meteen en is zichtbaar in de lampjes van de statusbalk. Kost één aanroep meer, dan vraagt het spel het één keer, als keuze in het spel: "Making ... costs about $1.50 with the model you chose. 1. Go on 2. Not now 3. Always go on, and stop asking". Go on doet het meteen. Not now geldt voor de rest van de speldag. Always zet de instelling op nooit vragen; [Never ask] in de instellingen doet hetzelfde, en een bedrag zet het terug.
+- **De prijs komt van de gateway**, die de modellen en hun prijzen kent. Hij rekent de invoer tegen de volle prijs, en de helft van wat de aanroep mag schrijven. Het mockmodel heeft geen prijs en vraagt dus nooit.
+- **Een replay stelt dezelfde vraag.** Of er gevraagd is, staat in het logboek (`k: 'ask'`), net als de antwoorden van een model.
+
+Testen: dit is het mechanisme. De eerste aanroep die het gebruikt, is een wijk van een verre stad; die sluit de andere sessie aan (`mustAsk` in `src/engine/asking.ts`). Zo'n wijk kost met Opus ongeveer $0,08, dus met de standaardgrens van $1 vraagt hij niet. Zet de grens op $0,05 om de vraag te zien. Tests in `tests/m1021ask.test.ts`.
+
+Bewust anders: de roadmap noemt "$0,80 voor een wijk", maar de wijk van de andere sessie is één kleine aanroep. Een vraag komt dus pas bij iets groters, zoals de uitbreidingsronde van later.
+
 ## M10.20 af: de wereldbouw goedkoper, echte voorstellen in de tests, elke aanroep beproefd, 29 september 2026
 
 - **Een bouw van twaalf stappen kost nu $2,84 in plaats van $10,09.** Gemeten op jouw hoofdstukken van The Quiet Reach, met jouw sleutel en modellen. Alle twaalf stappen laden; drie hadden één herstelronde nodig. Het vaste deel van een stap (gids, contract, `CHRONICLER.md`) gaat voorop en blijft een uur in de cache, zodat elke volgende stap het voor een twintigste van de prijs leest. Een stap ziet alleen de sleutels van `world.yaml` die hij nodig heeft. Hij krijgt een eigen maximum voor de lengte, dat meegroeit met je hoofdstuk, en een eigen denkinspanning: laag voor tabellen, midden voor verhalen. Stem, Kalender, Geld en Vervoer gaan naar het model dat je voor het brein koos (bij jou Sonnet 5, de helft van Opus). Ze laden daar even goed en zijn even trouw aan je tekst. Palet laadde op Sonnet niet en blijft bij de kroniekverteller. Alles staat in `docs/worldbuild/cost-measure.md`.

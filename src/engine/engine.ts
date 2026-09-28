@@ -6,6 +6,7 @@ import { knownName, knowsOfPerson, publicShort, seeFamily } from './acquaintance
 import { entered } from './social/access'
 import { inscribedHere, readInscription } from './skills'
 import { answerChoice, choose, MAX_OPTIONS, offer } from './choice'
+import { answerAsk } from './asking'
 import { brawlAnswer, brawlShown } from './social/brawl'
 import { CHECKPOINT_ENTRIES, CHECKPOINT_MINUTES, contentVersion, type Checkpoint, type CheckpointedSave } from './checkpoint'
 import { applyFarPlace, farPlaceOf, farRequest, farWords, wantFarPlace, type FarWords } from './growth/far'
@@ -114,6 +115,8 @@ export type LogEntry =
   | { t: number; k: 'district'; key: string; v: DistrictWords | null }
   | { t: number; k: 'weave'; key: string; v: WeaveReply | null }
   | { t: number; k: 'tides'; v: TidesReply | null }
+  // A question about cost put to the player (M10.21), so a replay puts the same one.
+  | { t: number; k: 'ask'; id: string; usd: number }
   // The legends of an old game this one began with (M9.1).
   | { t: number; k: 'legends'; v: LoreEntry[] }
   // The names the game began with (M9.1): playing the log back uses them, so a name changed later changes nothing.
@@ -248,6 +251,8 @@ export class Engine {
   builder: boolean
   /** True while a log is played back: build commands in it ran once, so they run again. */
   private replaying = false
+  /** The questions about cost in the log being played back, in order (M10.21). */
+  private replayAsks: Extract<LogEntry, { k: 'ask' }>[] = []
   private chronicling = false
   /** Quests that began with the game, told after the opening. */
   private opening: Output[] = []
@@ -282,6 +287,7 @@ export class Engine {
     this.dialogue.syncNews()
     this.eventMark = state.eventSeq
     this.setLlm(options.llm)
+    this.world.costAsk = (id, request) => this.costAskOf(id, request)
     character(this.world)
     if (!state.bonds) seedBonds(this.world)
     // What the watchers see now is the start: only what changes after this is a signal (M8.1).
@@ -523,6 +529,25 @@ export class Engine {
   }
 
   /** Swap the model at runtime, for instance after the player picks one in the settings. */
+  /**
+   * Whether a call must be asked for first (M10.21, asking.ts): its cost on
+   * the client, against the player's threshold; in a replay, the questions the
+   * log holds, in order.
+   */
+  private costAskOf(id: string, request: LlmRequest): number | undefined {
+    if (this.replaying) {
+      const next = this.replayAsks[0]
+      if (!next || next.id !== id) return undefined
+      this.replayAsks.shift()
+      this.record(next)
+      return next.usd
+    }
+    const usd = this.llm?.costOf?.(request)
+    if (usd === undefined || usd < (this.llm?.askAboveUsd?.() ?? Infinity)) return undefined
+    this.record({ t: this.world.now, k: 'ask', id, usd })
+    return usd
+  }
+
   setLlm(llm: LlmClient | undefined): void {
     if (Boolean(llm) !== Boolean(this.llm)) this.record({ t: this.world.now, k: 'llm', v: llm ? 'on' : 'off' })
     this.llm = llm
@@ -918,6 +943,16 @@ export class Engine {
     const answer = this.state.talk || this.state.combat ? undefined : answerChoice(this.world, text)
     if (answer && 'error' in answer) return [{ kind: 'error', text: answer.error }]
     if (answer) text = answer.run
+    // The answer to a question about cost (M10.21): agreed, the thing it was about is done now.
+    const cost = /^cost (go|not|always) (\S+)$/.exec(text)
+    const costLines: Output[] = []
+    if (cost) {
+      const done = answerAsk(this.world, cost[1]!, cost[2]!)
+      if (done.always && !this.replaying) this.llm?.askNever?.()
+      if (!done.run) return this.shown(done.outputs)
+      costLines.push(...done.outputs)
+      text = done.run
+    }
     for (const listener of this.listeners) listener({ kind: 'in', t: this.world.now, text })
     const before = this.state.player.location
     const talkBefore = this.state.talk
@@ -933,7 +968,7 @@ export class Engine {
     }
     // A fight in front of the stranger (M10.3, left over): this move answers it first.
     const brawl = this.brawlMove(spoken)
-    const outputs = brawl?.done ? brawl.out : [...(brawl?.out ?? []), ...(quest ?? (this.state.combat ? await this.inFight(text) : await this.route(text)))]
+    const outputs = [...costLines, ...(brawl?.done ? brawl.out : [...(brawl?.out ?? []), ...(quest ?? (this.state.combat ? await this.inFight(text) : await this.route(text)))])]
     // A far town grows by district (M10.21): the first when the stranger does something there (buys, asks,
     // rents a bed, says something in a talk), another when they go into it by its street.
     const doing = !outputs.some((o) => o.kind === 'error') && (/^(?:buy|sell|rent|ask|tell|order|trade|haggle|work|take lodgings?|lodge)\b/i.test(text) || Boolean(talkBefore && this.state.talk))
@@ -1740,6 +1775,7 @@ export class Engine {
     }
     this.llm = modelOn ? recorded : undefined
     this.world.aiLive = modelOn
+    this.replayAsks = entries.filter((e): e is Extract<LogEntry, { k: 'ask' }> => e.k === 'ask')
     this.replaying = true
     try {
       for (const entry of entries) {

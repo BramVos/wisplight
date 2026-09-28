@@ -125,6 +125,7 @@ contextBridge.exposeInMainWorld('wisplight', {
     choose: use('ai:choose'),
     setBudget: use('ai:budget'),
     setReplyWithin: use('ai:reply-within'),
+    setAskAbove: use('ai:ask-above'),
     setMonthBudget: use('ai:month-budget'),
     setCredit: use('ai:credit'),
     csv: use('ai:csv'),

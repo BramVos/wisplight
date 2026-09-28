@@ -102,6 +102,17 @@
       "saved": "Reply time saved.",
       "adjusted": "Saved as {seconds} seconds: a reply may take from {least} to {most} seconds.",
       "note": "How long the dialogue model may take for a reply, both tries together. Past it, the game's own line stands in. Large models need about ten."
+    },
+    "askAbove": {
+      "label": "Ask first above",
+      "aria": "From what cost of one call the game asks first, in dollars",
+      "never": "never",
+      "always": "Never ask",
+      "saved": "Saved: the game asks first before one call that costs more.",
+      "adjusted": "Saved as ${usd}: a cent at least, a thousand dollars at most.",
+      "neverSaved": "The game will not ask about cost; every call runs within the budgets.",
+      "note": "A call below this runs at once and shows in the status bar. Making a district or a region may cost more; then the game asks once.",
+      "noteNever": "The game never asks about cost. Set an amount to be asked again."
     }
   },
   "pictures": {

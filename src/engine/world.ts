@@ -67,6 +67,12 @@ export class World {
    * makes the same choice.
    */
   aiLive = false
+  /**
+   * What a call would cost when it reaches the player's threshold for a
+   * question, or undefined to go ahead (M10.21, asking.ts). Set by the engine,
+   * which asks its client and keeps the answer in the log. Not saved.
+   */
+  costAsk?: (id: string, request: import('./dialogue/llm').LlmRequest) => number | undefined
   /** Things the player should be told after this command: experience, a patron's mood. Not saved. */
   notices: string[] = []
   /** Deaths since the engine last looked, for the quests (not saved: handled in the same step). */

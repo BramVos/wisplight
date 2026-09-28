@@ -35,7 +35,12 @@ interface SettingsFile {
   pictures?: PictureChoice
   /** How long a spoken reply may take, in seconds (M10.8): ten unless the player sets it at the dialogue model. */
   replyWithinSeconds?: number
+  /** From what cost of one call the game asks first (M10.21), in dollars; null after "always". */
+  askAboveUsd?: number | null
 }
+
+/** The threshold for a question about cost unless the player sets one (M10.21, the roadmap): one dollar. */
+export const ASK_ABOVE_USD = 1
 
 /** The default time a spoken reply may take (M10.8; FO, chapter 18). */
 export const REPLY_WITHIN_SECONDS = 10
@@ -57,6 +62,8 @@ export interface SettingsSummary {
   missing: ChosenRole[]
   pictures?: PictureChoice
   replyWithinSeconds: number
+  /** From what cost of one call the game asks first; null: never. */
+  askAboveUsd: number | null
 }
 
 export class SettingsStore {
@@ -207,6 +214,21 @@ export class SettingsStore {
     return kept
   }
 
+  /** From what cost of one call the game asks first (M10.21): Infinity when the player chose "always". */
+  get askAboveUsd(): number {
+    const set = this.current.askAboveUsd
+    return set === null ? Infinity : (set ?? ASK_ABOVE_USD)
+  }
+
+  /** Sets the threshold, kept as the hourly budget is (a cent to a thousand dollars); null: never ask. */
+  setAskAbove(usd: number | null): { usd: number | null; adjusted: boolean } {
+    const kept = usd === null ? { usd: null, adjusted: false } : hourlyBudget(usd)
+    this.change((d) => {
+      d.askAboveUsd = kept.usd
+    })
+    return kept
+  }
+
   get replyWithinSeconds(): number {
     return this.current.replyWithinSeconds ?? REPLY_WITHIN_SECONDS
   }
@@ -230,6 +252,7 @@ export class SettingsStore {
       providers: { openai: describe('openai'), anthropic: describe('anthropic') },
       roles: { ...this.current.roles },
       budgetUsdPerHour: this.current.budgetUsdPerHour,
+      askAboveUsd: this.current.askAboveUsd === null ? null : (this.current.askAboveUsd ?? ASK_ABOVE_USD),
       encryption: this.cipher.available(),
       models: Object.fromEntries(Object.entries(this.current.models ?? {}).map(([id, list]) => [id, list?.ids ?? []])),
       missing: this.missing(),

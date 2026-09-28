@@ -89,6 +89,12 @@ export interface LlmRejection {
 
 export interface LlmClient {
   complete(request: LlmRequest): Promise<LlmResponse>
+  /** What a call would cost about, in dollars, on the model it would go to (M10.21); undefined where the price is not known. */
+  costOf?(request: LlmRequest): number | undefined
+  /** From what cost of one call the game asks first (M10.21): the player's setting, Infinity after "always". */
+  askAboveUsd?(): number
+  /** The player chose "always": no more questions about cost. */
+  askNever?(): void
   report?(rejection: LlmRejection): void
   /** How long a spoken reply may take, over its tries, in milliseconds (M10.8): the player's setting at the model. */
   replyWithinMs?(): number

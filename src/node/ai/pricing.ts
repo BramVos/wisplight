@@ -65,6 +65,18 @@ export function upperBoundUsd(model: string, request: { system: string; prompt: 
   return (input * Math.max(price.input, price.cacheWrite ?? 0) + request.maxTokens * price.output) / 1_000_000
 }
 
+/**
+ * What a call costs about (M10.21: the price in a question about cost): its
+ * input at the full price, and half the most it may write, as replies tend
+ * to run. Undefined for a model without a known price.
+ */
+export function typicalUsd(model: string, request: { system: string; prompt: string; maxTokens: number }): number | undefined {
+  const price = priceOf(model)
+  if (!price) return undefined
+  const input = Math.ceil((request.system.length + request.prompt.length) / 3.5)
+  return (input * price.input + (request.maxTokens / 2) * price.output) / 1_000_000
+}
+
 // A play hour with a lot of talking (FO, chapter 16): 40 dialogue calls and 25 goal choices;
 // the chronicler writes 0 to 2 times an hour (design: lore and world change).
 export const CALLS_PER_HOUR = { voice: 40, brain: 25, chronicler: 1 }

@@ -122,6 +122,7 @@ numbers:
   src/node/ai/pricing.ts:
     CALLS_PER_HOUR: 'code: the calls of an hour of play, to estimate what a model costs (an estimate, not a rule)'
   src/node/ai/settings.ts:
+    ASK_ABOVE_USD: 'settings (moved): from what cost of one call the game asks first (M10.21); this is its default'
     REPLY_WITHIN_SECONDS: 'settings (moved): the reply time the player sets (M10.8); this is its default'
   src/node/ai/usage.ts:
     KEEP_DAYS: 'code: the days of usage kept (store size)'

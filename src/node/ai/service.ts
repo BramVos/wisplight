@@ -59,6 +59,8 @@ export class AiService {
       role: (role) => this.settings.role(role),
       provider: (id) => this.provider(id),
       budgetUsdPerHour: () => this.settings.budgetUsdPerHour,
+      askAboveUsd: () => this.settings.askAboveUsd,
+      askNever: () => void this.settings.setAskAbove(null),
       replyWithinMs: () => this.settings.replyWithinSeconds * 1000,
       log: this.log,
       usage: this.usage,

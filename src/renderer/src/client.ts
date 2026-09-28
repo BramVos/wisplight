@@ -62,6 +62,8 @@ export interface AiBridge {
   choose(role: ChosenRole, provider: ProviderId, model: string): Promise<string>
   /** The hourly budget as kept (M10.20): the player's value, unless it had to be changed, and then adjusted says so. */
   setBudget(usd: number): Promise<{ usd: number; adjusted: boolean }>
+  /** From what cost of one call the game asks first (M10.21); null: never ask. */
+  setAskAbove(usd: number | null): Promise<{ usd: number | null; adjusted: boolean }>
   /** How long a spoken reply may take, in seconds (M10.8). */
   setReplyWithin(seconds: number): Promise<{ seconds: number; adjusted: boolean }>
   setMonthBudget(usd: number | null): Promise<void>

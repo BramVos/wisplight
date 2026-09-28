@@ -29,7 +29,7 @@ export const MODEL_KINDS: readonly ModelKind[] = [
   { kind: 'tides', role: 'chronicler', does: 'The great lines judged on the first of the month: nothing, a threat or the event, within what the rules allow.', when: 'night' },
   { kind: 'lore_check', role: 'brain', does: 'A second look at big lore: what it says that no fact says.', when: 'night' },
   { kind: 'legends', role: 'chronicler', does: 'Old lore retold as a legend.', when: 'night' },
-  { kind: 'outline', role: 'chronicler', does: 'The outline of a storyline the chronicler starts.', when: 'night' },
+  { kind: 'outline', role: 'chronicler', does: 'The outline of a far place: a few people, an inn, a market, what goes on there (since M10.21 when the stranger talks or stays the night there).', when: 'play' },
   { kind: 'builder_draft', role: 'chronicler', does: 'The writing aid in the editor proposes changes to a world.', when: 'editor' },
   { kind: 'world_step', role: 'chronicler', does: 'A step of building a world with the designer (and a round to put it right).', when: 'editor' },
   { kind: 'world_enhance', role: 'chronicler', does: 'Enhance with AI: more of what a built world has little of.', when: 'editor' },

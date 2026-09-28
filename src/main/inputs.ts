@@ -83,6 +83,7 @@ export const INPUTS: Record<string, z.ZodType<unknown[]>> = {
   'ai:choose': z.tuple([role, provider, model]),
   'ai:budget': z.tuple([amount]),
   'ai:reply-within': z.tuple([amount]),
+  'ai:ask-above': z.tuple([amount.nullable()]),
   'ai:month-budget': z.tuple([amount.nullable()]),
   'ai:credit': z.tuple([provider, amount.nullable()]),
   'ai:csv': z.tuple([]),
