@@ -501,6 +501,25 @@ export const RegionSchema = z.object({
     )
     .default([]),
   landmarks: z.array(z.object({ area: z.string(), text: z.string(), range: z.number().positive() })).default([]),
+  /**
+   * What lies beyond each edge of the map (M10.21): the line the stranger reads
+   * on walking up to it, from the world book, and the far places that way,
+   * which they may go on to (on foot in days, or by a line). An edge without
+   * one says that nobody has told them yet; beyond the last land the world
+   * book names, nothing is made.
+   */
+  beyond: z
+    .array(
+      z
+        .object({
+          side: z.enum(['north', 'east', 'south', 'west']),
+          text: z.string(),
+          /** Far places that way, by topic. */
+          toward: z.array(z.string()).default([]),
+        })
+        .strict(),
+    )
+    .default([]),
   /** Roads, tow paths and fen paths as lines through the zones: areas or points in km from the south-west corner. */
   paths: z
     .array(
@@ -1494,6 +1513,9 @@ function checkReferences(world: WorldDef | undefined, c: Omit<Content, 'world'>)
       if (rule.kind === 'hidden_path' && !c.topics.has(rule.topic)) problems.push(`region ${r.id}: hidden path topic ${rule.topic} does not exist`)
     }
     for (const l of r.landmarks) area(l.area, 'landmarks')
+    for (const b of r.beyond) for (const t of b.toward) if (!c.topics.has(t)) problems.push(`region ${r.id}.beyond.${b.side}: toward ${t}, which is no topic`)
+    const sides = r.beyond.map((b) => b.side)
+    for (const side of new Set(sides)) if (sides.filter((s) => s === side).length > 1) problems.push(`region ${r.id}.beyond: the ${side} edge is named twice`)
     for (const path of r.paths) for (const point of path.via) if (typeof point === 'string') area(point, `paths.${path.name}`)
     const rows = r.zones.split('\n').filter((line) => line.length > 0)
     if (rows.length === 0) problems.push(`region ${r.id}: the zone drawing is empty`)

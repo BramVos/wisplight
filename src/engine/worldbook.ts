@@ -93,7 +93,16 @@ export function worldBook(content: Content, input: WorldBookInput = {}): string 
       const own = Object.keys(r.lands ?? {}).length > 0
       const rows = Object.entries(r.legend).map(([mark, land]) => [mark, terrainName(w.map?.palette, land), ...(own ? [r.lands?.[land]?.like ?? '', r.lands?.[land]?.text ?? ''] : [])])
       const drawn = r.zone ? `, drawn a character to ${r.zone[0] * 1000} by ${r.zone[1] * 1000} m` : ''
-      return [`### ${r.name}`, '', ...para(`${r.size[0]} by ${r.size[1]} km, in hexes of ${r.hex * 1000} m${drawn}; the open land between the places is ${place(r.area)}.`), ...block(r.zones, 'map'), ...table(own ? ['Mark', 'Land', 'Walks like', 'What you read there'] : ['Mark', 'Land'], rows)]
+      // What lies beyond each edge (M10.21), and the far places that way.
+      const beyond = (r.beyond ?? []).map((b) => [b.side, b.text, b.toward.map((t) => content.topics.get(t)?.name ?? t).join(', ')])
+      return [
+        `### ${r.name}`,
+        '',
+        ...para(`${r.size[0]} by ${r.size[1]} km, in hexes of ${r.hex * 1000} m${drawn}; the open land between the places is ${place(r.area)}.`),
+        ...block(r.zones, 'map'),
+        ...table(own ? ['Mark', 'Land', 'Walks like', 'What you read there'] : ['Mark', 'Land'], rows),
+        ...(beyond.length ? table(['Edge', 'What lies beyond', 'On to'], beyond) : []),
+      ]
     }),
     ...((w.map?.levels ?? []).filter((l) => l.id !== SURFACE).length ? para(`Levels: ${(w.map!.levels ?? []).map((l) => l.name).join(', ')}.`) : []),
   ])

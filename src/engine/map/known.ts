@@ -3,6 +3,7 @@ import { centre, type Hex, hexAt } from './hexgrid'
 import { noise, regionMap, type RegionMap } from './region'
 import { DEFAULT_PALETTE, type MapPalette } from './palette'
 import { journeyLines, waysTo } from './passages'
+import { farPlaceOf } from '../growth/far'
 
 // What the map shows (FO, chapter 4, "Wat de kaart laat zien"): places you
 // have been to or seen, exactly; places you have only heard of, as a zone.
@@ -156,8 +157,12 @@ export function knownEntrance(world: World, topic: string): string | undefined {
 export interface LandMapData {
   region: { name: string; x: number; y: number; w: number; h: number }
   you?: [number, number]
-  /** ways (M10.12): how to get there, on foot or by a passage, each with the command that sets off. */
-  places: { name: string; x: number; y: number; topic?: string; ways?: { label: string; command: string }[] }[]
+  /**
+   * ways (M10.12): how to get there, on foot or by a passage, each with the command that sets off.
+   * level (M10.21): a sketch is only a name and a line from the world book, an outline is worked out
+   * in words, a place is playable; the map marks a sketch with a question mark.
+   */
+  places: { name: string; x: number; y: number; topic?: string; ways?: { label: string; command: string }[]; level: 'sketch' | 'outline' | 'place' }[]
   routes: { name: string; from: [number, number]; to: [number, number] }[]
   palette: MapPalette
 }
@@ -171,7 +176,8 @@ export function landMapData(world: World): LandMapData | undefined {
   for (const topic of [...world.content.topics.values()].sort((a, b) => a.name.localeCompare(b.name))) {
     if (!topic.pos || topic.kind !== 'place' || journal[topic.id] === undefined || map.inside(map.hexOf(topic.pos))) continue
     const ways = waysTo(world, topic.id).map((w) => ({ label: w.label, command: w.command }))
-    places.push({ name: topic.name, x: topic.pos[0], y: topic.pos[1], topic: topic.id, ...(ways.length ? { ways } : {}) })
+    const level = farPlaceOf(world, topic.id) ? 'place' : world.state.outlines?.done[topic.id] ? 'outline' : 'sketch'
+    places.push({ name: topic.name, x: topic.pos[0], y: topic.pos[1], topic: topic.id, ...(ways.length ? { ways } : {}), level })
   }
   const posOf = (id: string): [number, number] | undefined => {
     const outland = world.content.outlands.get(id)

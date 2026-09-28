@@ -715,6 +715,21 @@ function templateFor(kind: EntityKind, view: EditorView): Raw {
       return { id: 'new_prop', type: 'strongbox', name: "{owner}'s chest", where: ['private'], lock: { quality: ['common'], material: ['iron'] }, items: [], hints: [{ precise: '{owner} keeps {things} in a chest at {place}.', village: '{owner} has a chest at home, they say.', far: 'Someone keeps a locked chest.' }] }
     case 'craft':
       return { id: 'new_craft', name: 'the new craft', maker: 'maker', skill: 'crafting', professions: trade ? [trade] : [], techniques: [{ id: 'first_technique', name: 'the first technique' }] }
+    case 'region':
+      // M10.20, M10.21: a small region drawn a hex a character, and what lies beyond its edges. The Palette tab lays out a first one from the places.
+      return {
+        id: 'new_region',
+        name: 'the new region',
+        area,
+        origin: [0, 0],
+        size: [4, 4],
+        hex: 0.25,
+        seed: 1,
+        legend: { '.': 'fields', ',': 'path' },
+        zone: [0.25, 0.25],
+        zones: `${'................\n'.repeat(17)}`,
+        beyond: [{ side: 'north', text: 'What the stranger reads at the north edge: what lies that way, and how far.', toward: [] }],
+      }
     case 'passage':
       // M10.12: a line of transport, with its stops (places, or the topics of far places) and its days.
       return { id: 'new_passage', name: 'the new coach', kind: 'coach', stops: [place, place], days: [], departs: ['08:00'], fare: 10, text: 'You pay {fare} and climb aboard. After {duration} you get down at {place}.' }

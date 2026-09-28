@@ -44,7 +44,7 @@ import { duration } from './map/journeyText'
 import { mapText, mapView, type MapView } from './map/view'
 import { regionMap } from './map/region'
 import { terrainName } from './map/palette'
-import { canSetOut, followWay, hasSeen, hexName, hexOfId, isHexId, knownRidgeNear, landmarkIn, look, playerHex, routeBetween, trailEndsAt, tread, type WalkPlan, walk, waysFrom, windOf } from './map/travel'
+import { canSetOut, edgeOf, followWay, hasSeen, hexName, hexOfId, isHexId, knownRidgeNear, landmarkIn, look, playerHex, routeBetween, trailEndsAt, tread, type WalkPlan, walk, waysFrom, windOf } from './map/travel'
 import { knownRequests, requestName } from './requests'
 import { recordFact, seedNews } from './news'
 import { parseCommand, parseDirection } from './parser'
@@ -530,7 +530,8 @@ export class Engine {
 
   /** Everything waiting for a model: goal choices and chronicler runs. */
   get modelsWaiting(): number {
-    return (this.state.brain?.pending.length ?? 0) + this.chroniclerWaiting + this.outlinesWaiting
+    // A far place waiting for its words counts too (M10.21: alone, it never started the models).
+    return (this.state.brain?.pending.length ?? 0) + this.chroniclerWaiting + this.outlinesWaiting + (this.state.growth?.farPending?.length ?? 0)
   }
 
   /** Lets the models do their waiting work in the background: goal choices first, they are short. */
@@ -1712,9 +1713,24 @@ export class Engine {
         const p = this.content.passages.get(far.link.by)
         return [{ kind: 'text', text: `No road goes to ${name}. ${p ? `${p.name.charAt(0).toUpperCase()}${p.name.slice(1)} goes there from ${edge.name}.` : ''}`.trim() }]
       }
+      const gate = String((far.locations[0] as { id: string }).id)
+      // From the edge of the map itself (M10.21): on across country, as long as it is from here.
+      const map = regionMap(this.content)
+      const here = playerHex(this.world)
+      const pos = this.content.topics.get(topic)?.pos
+      if (map && here && pos && this.state.player.location !== edge.id && edgeOf(map, here)) {
+        const edgePos = edge.pos ?? this.content.areas.get(edge.area)?.pos
+        const herePos = map.posOf(here)
+        const share = edgePos ? Math.hypot(pos[0] - herePos[0], pos[1] - herePos[1]) / Math.max(1, Math.hypot(pos[0] - edgePos[0], pos[1] - edgePos[1])) : 1
+        const minutes = Math.max(12 * 60, Math.round((far.link.minutes * share) / 60) * 60)
+        const from = hexName(this.world, map, here).replace(/^(On|In) /, '').replace(/^[A-Z]/, (c) => c.toLowerCase())
+        return [
+          ...journeyOfDays(this.world, { pass: (m) => this.pass(m) }, { fromName: from, to: gate, toName: name, minutes, opening: `You leave ${this.world.words.region} behind and go on across country for ${name}. It takes ${duration(minutes)}.` }),
+          describeRoom(this.world),
+        ]
+      }
       if (this.state.player.location !== edge.id) return [{ kind: 'text', text: `The road to ${name} leaves ${this.world.words.region} at ${edge.name}, in ${this.content.areas.get(edge.area)?.name ?? edge.area}. From there it is ${days === 1 ? 'a day' : `${days} days`} on foot, ${far.link.direction}.` }]
       // A journey of days on foot (M10.12): the world plays on, a day at a time, and the way is told as one paragraph.
-      const gate = String((far.locations[0] as { id: string }).id)
       return [
         ...journeyOfDays(this.world, { pass: (minutes) => this.pass(minutes) }, { fromName: edge.name, to: gate, toName: name, minutes: far.link.minutes, opening: `You set out on foot from ${edge.name} for ${name}, ${far.link.direction}. It takes ${duration(far.link.minutes)}.` }),
         describeRoom(this.world),

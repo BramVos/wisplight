@@ -168,6 +168,12 @@ export interface HexMapData {
   /** mood: the mood its area is in (M10.11), a ring of colour on the map. */
   places: { name: string; kind: string; status: string; c: number; r: number; mood?: string; lodging?: boolean }[]
   zones: { name: string; c: number; r: number; hexes: number }[]
+  /**
+   * The edge of the region (M10.21), drawn as an edge and not as emptiness:
+   * its size in hexes, and per side the far places that way the stranger
+   * knows of (for the designer's map, all of them).
+   */
+  edge?: { cols: number; rows: number; beyond: { side: 'north' | 'east' | 'south' | 'west'; names: string[] }[] }
   /** The terrains in view, in the order of the legend, with this world's names. */
   legend: { key: string; name: string }[]
   palette: MapPalette
@@ -267,7 +273,17 @@ export function hexMapData(world: World, options: { width?: number; height?: num
   }
   const present = new Set(keys)
   const legend = [...TERRAIN_ORDER.filter((k) => present.has(k)), ...keys.filter((k) => !TERRAIN_ORDER.includes(k) && k !== 'unknown')].map((key) => ({ key, name: terrainName(palette, key) }))
-  return { left, top, width, height, level, levels, keys, hexes, light, sight: range, ways, stairs, ...(you ? { you: { c: you.col, r: you.row } } : {}), places, zones, legend, palette }
+  const known = (topic: string) => (world.state.player.journal ?? {})[topic] !== undefined
+  return { left, top, width, height, level, levels, keys, hexes, light, sight: range, ways, stairs, ...(you ? { you: { c: you.col, r: you.row } } : {}), places, zones, edge: edgeData(world.content, map, known), legend, palette }
+}
+
+/** The edge of a region and what lies beyond each side, by the far places someone knows of. */
+function edgeData(content: Content, map: RegionMap, known: (topic: string) => boolean): NonNullable<HexMapData['edge']> {
+  return {
+    cols: map.cols,
+    rows: map.rows,
+    beyond: (map.region.beyond ?? []).map((b) => ({ side: b.side, names: b.toward.filter(known).map((t) => content.topics.get(t)?.name ?? t) })).filter((b) => b.names.length),
+  }
 }
 
 function knowsTopic(world: World, topic: string): boolean {
@@ -326,7 +342,7 @@ export function previewMapData(content: Content, palette: MapPalette, whole = fa
       const a = content.areas.get(area)
       if (a) places.push({ name: a.name, kind: a.kind, status: 'visited', c: hex.col, r: hex.row })
     }
-    return { left, top, width, height, level: SURFACE, levels: [{ id: SURFACE, name: 'ground level' }], keys, hexes, light: 'day', sight: 99, ways, stairs: [], places, zones: [], legend: legendOf(keys, palette), palette }
+    return { left, top, width, height, level: SURFACE, levels: [{ id: SURFACE, name: 'ground level' }], keys, hexes, light: 'day', sight: 99, ways, stairs: [], places, zones: [], edge: edgeData(content, map, () => true), legend: legendOf(keys, palette), palette }
   }
   // No region map: a band for every terrain the palette names, and a road across.
   const terrains = [...TERRAIN_ORDER.filter((k) => palette.dark.terrain[k]), ...Object.keys(palette.dark.terrain).filter((k) => !TERRAIN_ORDER.includes(k))]

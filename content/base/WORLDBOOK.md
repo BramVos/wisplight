@@ -89,6 +89,13 @@ Oude Zijl H========= Veenhoek o==. . . . . . .:::. . . . . .
 | = | canal |
 | , | path |
 
+| Edge | What lies beyond | On to |
+| --- | --- | --- |
+| west | West, the fen runs on to the Great Dyke, and behind it lies the grey sea. Graafhaven, the Count's city by the sea, is some seventy kilometres on: two days on foot by the tow path, or a day on the barge from Oude Zijl. | Graafhaven |
+| north | North, past the priory woods, the peat gives way to the open water of the Zuyder Mere. Stavermouth, the silting harbour on its shore, lies two days and a crossing away. | Stavermouth |
+| east | East, the fen dries into heath and forest. The Oostweg runs two days on to Zwolderkamp, the trading town on the river, and the heath road climbs north-east past the giant-beds to Hunnenloo, three days off. | Zwolderkamp, Hunnenloo |
+| south | South, the fen goes on into reed and black water, and beyond it lies the delta of the Three Rivers, where drowned Saeftinge shows at low tide. No road you know of goes that way. |  |
+
 Levels: under the ground, ground level, the crowns.
 
 ## 3. History and lore

@@ -1,5 +1,17 @@
 # Changelog
 
+## M10.21 deel: de rand van de streek, 29 september 2026
+
+- **Wie over de rand van de kaart loopt, hoort wat erachter ligt.** Aan elke rand van de Holleveen staat nu wat het wereldboek daar zegt (hoofdstukken 2 en 7). Je krijgt de keuze om verder te gaan of om te keren. In het westen ga je verder naar Graafhaven, twee dagen te voet dwars door het land of met de trekschuit vanuit Oude Zijl. In het noorden ligt Stavermouth, in het oosten Zwolderkamp en Hunnenloo. In het zuiden alleen de delta en het verdronken Saeftinge: "No road you know of goes that way". Verder gaan met de voet begint meteen vanaf de rand, niet eerst terug naar het dorp waar de weg vertrekt.
+- **Niets wordt gemaakt door ernaar te kijken.** Aan de rand hoor je alleen de regel. Pas als je kiest om te gaan, wordt de verre plek uitgewerkt, zoals voorheen.
+- **De kaart tekent de rand als rand**: een stippellijn langs de zijde die in beeld is, met erachter de verre plekken die je kent ("← Graafhaven"). Op de landkaart staat een verre plek met een vraagteken zolang hij alleen een naam en een regel is.
+- **Skerrow** heeft vier randen in eigen woorden: in het oosten Havenmoor, twee dagen varen, met het pakketschip; in het westen de Glass Sea en de westelijke eilanden; in het zuiden het verdronken Aldmar.
+- **Gevonden en gerepareerd:** een verre plek die alleen nog op de woorden van het model wachtte, telde niet mee als werk voor het model. Met een model aangesloten werd hij dus pas gemaakt als er toevallig ook iets anders wachtte.
+
+Testen: speel de Nethermarch, ga naar Oude Zijl en typ een paar keer `head west`. Of kijk in de editor bij Palette naar de kaart van de Nethermarch: de noordrand met Stavermouth. Tests in `tests/m1021edge.test.ts` (7).
+
+Wat de editor en de kroniekverteller leerden: `beyond` in het contract; de stap Palet vraagt en controleert het; er is een sjabloon voor een nieuwe streek; en Check noemt een rand die niets zegt over wat erachter ligt. Het wereldboek toont per rand de regel en waar hij heen leidt.
+
 ## M10.20 deel: een kaart uit de plekken, 29 september 2026
 
 - **Een eerste streekkaart met één klik.** Een wereld zonder streekkaart speelde zonder kaart; geen stap maakte er een. Nu staat in de editor, tabblad Palette, onder de voorbeeldkaart "[Make a map from the places]". De editor legt de plekken neer zoals hun uitgangen zeggen: de windrichting, en zo ver als de minuten gaan in het tempo van de kaart (vier minuten per hex van 250 meter). Tussen de gebieden loopt een pad langs elke uitgang, en al het open land is één terrein van het palet. Het komt als voorstel met diff; pas bij [Accept and save] staat het erin. Daarbij zegt de editor wat je moet nakijken: een plek die alleen via in, uit, op of neer bereikbaar is, een lus waar de minuten en de kaart verschillen, en welke terreinen je nog moet schilderen.

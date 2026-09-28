@@ -240,6 +240,60 @@ function label(ctx: CanvasRenderingContext2D, text: string, x: number, y: number
   ctx.fillText(text, lx, y)
 }
 
+/**
+ * The edge of the region as an edge, not as emptiness (M10.21): a dashed line
+ * along each side of the region that is in view, and beyond it the far places
+ * that way. A side outside the window is not drawn.
+ */
+function edgeLine(ctx: CanvasRenderingContext2D, data: HexMapData, at: (col: number, row: number) => [number, number], r: number, s: MapStyle, width: number, height: number): void {
+  const edge = data.edge!
+  const first = data.left
+  const last = data.left + data.width - 1
+  const bottom = data.top - data.height + 1
+  const x0 = at(first, 0)[0] - r
+  const x1 = at(last, 0)[0] + r
+  const yN = at(first + 1, data.top)[1] - (r * SQRT3) / 2
+  const yS = at(first, bottom)[1] + (r * SQRT3) / 2
+  type Line = { from: [number, number]; to: [number, number] }
+  const sides: Record<'north' | 'east' | 'south' | 'west', Line | undefined> = {
+    west: first === 0 ? { from: [x0, yN], to: [x0, yS] } : undefined,
+    east: last === edge.cols - 1 ? { from: [x1, yN], to: [x1, yS] } : undefined,
+    north: data.top === edge.rows - 1 ? { from: [x0, yN], to: [x1, yN] } : undefined,
+    south: bottom === 0 ? { from: [x0, yS], to: [x1, yS] } : undefined,
+  }
+  ctx.save()
+  ctx.strokeStyle = s.label
+  ctx.globalAlpha = 0.55
+  ctx.lineWidth = 1.2
+  ctx.setLineDash([5, 4])
+  ctx.beginPath()
+  for (const line of Object.values(sides)) {
+    if (!line) continue
+    ctx.moveTo(line.from[0], line.from[1])
+    ctx.lineTo(line.to[0], line.to[1])
+  }
+  ctx.stroke()
+  ctx.restore()
+  const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v))
+  for (const b of edge.beyond) {
+    const line = sides[b.side]
+    if (!line) continue
+    const text = b.side === 'west' ? `\u2190 ${b.names.join(', ')}` : b.side === 'east' ? `${b.names.join(', ')} \u2192` : b.side === 'north' ? `\u2191 ${b.names.join(', ')}` : `\u2193 ${b.names.join(', ')}`
+    ctx.font = '600 11px "Alegreya Sans", system-ui, sans-serif'
+    ctx.textBaseline = 'middle'
+    const w = ctx.measureText(text).width
+    const midX = clamp((line.from[0] + line.to[0]) / 2 - w / 2, 4, width - w - 4)
+    const midY = clamp((line.from[1] + line.to[1]) / 2, 10, height - 10)
+    const [x, y] =
+      b.side === 'west' ? [clamp(x0 - w - 6, 4, width - w - 4), midY] : b.side === 'east' ? [clamp(x1 + 6, 4, width - w - 4), midY] : b.side === 'north' ? [midX, clamp(yN - 10, 10, height - 10)] : [midX, clamp(yS + 10, 10, height - 10)]
+    ctx.lineWidth = 3
+    ctx.strokeStyle = s.label_shadow
+    ctx.strokeText(text, x, y)
+    ctx.fillStyle = s.label
+    ctx.fillText(text, x, y)
+  }
+}
+
 /** The dark of the night and the grey of the mist, in each style. */
 function veil(style: MapStyleName, light: HexMapData['light']): string {
   if (light === 'mist') return style === 'dark' ? '#6f746c' : style === 'bw' ? '#e8e8e8' : '#f2efe6'
@@ -344,6 +398,8 @@ function draw(canvas: HTMLCanvasElement, data: HexMapData, s: MapStyle, style: M
       ctx.globalAlpha = 1
     }
   }
+  // The edge of the region (M10.21): a dashed line just outside its outer hexes, and what lies beyond each side.
+  if (data.edge) edgeLine(ctx, data, at, r, s, width, height)
   // Ways: a short stroke to each neighbouring hex on a way.
   const onWay = new Set(data.ways.map((w) => `${w.c},${w.r}`))
   ctx.lineCap = 'round'
@@ -934,7 +990,8 @@ export function LandMap({ data, style, label: ariaLabel, onCommand }: { data: La
       const [x, y] = at(p.x, p.y)
       spots.current.push({ name: p.name, x, y })
       placeIcon(ctx, 'town', x, y, p.name === picked ? 'visited' : 'seen', s.label)
-      label(ctx, p.name, x, y, s, width)
+      // Only a name and a line so far (M10.21): what is there is not yet known.
+      label(ctx, p.level === 'sketch' ? `${p.name} ?` : p.name, x, y, s, width)
     }
     if (data.you) {
       const [x, y] = at(data.you[0], data.you[1])

@@ -30,6 +30,12 @@ export function warnings(content: Content): string[] {
   }
   for (const npc of content.npcs.values()) if (npc.public_facts.length === 0) out.push(`${npc.id}: no public facts, so nobody can tell anything about them`)
   for (const topic of content.topics.values()) if (!topic.origin && !topic.pos && !topic.everywhere && topic.kind !== 'person') out.push(`topic ${topic.id}: no origin, so nobody knows where it belongs`)
+  // What lies beyond the map (M10.21): an edge without a line says only that nobody has told the stranger.
+  for (const region of content.regions.values()) {
+    const said = new Set((region.beyond ?? []).map((b) => b.side))
+    const silent = (['north', 'east', 'south', 'west'] as const).filter((side) => !said.has(side))
+    if (silent.length) out.push(`region ${region.id}: the ${silent.join(', ')} edge${silent.length > 1 ? 's say' : ' says'} nothing of what lies beyond (beyond:), so a stranger there reads only that nobody has told them`)
+  }
   out.push(...chainWarnings(content))
   return out
 }

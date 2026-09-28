@@ -92,6 +92,13 @@ Type LOOK to look around. Type HELP if you are lost. You are, rather.
 | : | road |  |  |
 | , | path |  |  |
 
+| Edge | What lies beyond | On to |
+| --- | --- | --- |
+| east | East, the grey water runs on to the mainland. Havenmoor, the harbour town, lies two days' sail that way with a fair wind, and the packet goes there from the Hythe when it sails at all. | Havenmoor |
+| west | West, the Glass Sea runs out to the edge of sight. Somewhere beyond it lie the western isles, and no boat of Skerrow goes that far. |  |
+| north | North there is only open sea, and the cold wind that comes off it. |  |
+| south | South, far over the water, the smoke of another island hangs on the horizon, and somewhere under the waves lies drowned Aldmar. |  |
+
 Levels: the caves, ground level, the cliff tops.
 
 ## 3. History and lore

@@ -10,7 +10,8 @@ import { centre, distance, type Hex, hexAt, HEX_DIRECTIONS, type HexDirection, h
 import { journeyParagraph, metOnTheWay, tellsJourneys } from './journeyText'
 import { type Cell, regionMap, type RegionMap } from './region'
 import { terrainName } from './palette'
-import { offer } from '../choice'
+import { offer, type ChoiceOption } from '../choice'
+import { waysTo } from './passages'
 
 // Walking across the region (FO, chapter 4, "Lopen en automatisch doorlopen"):
 // hex by hex until there is something to decide, with one running text in
@@ -623,6 +624,8 @@ export function walk(world: World, plan: WalkPlan, pass: (minutes: number) => Ou
   let minutes = 0
   let steps = 0
   let reason = ''
+  /** The edge of the map the walk came to (M10.21), if it did. */
+  let edge: Side | undefined
   let arrived: string | undefined
   let strayAt: number | undefined
   let forked: Output[] | undefined
@@ -684,6 +687,7 @@ export function walk(world: World, plan: WalkPlan, pass: (minutes: number) => Ou
     }
     if (!next || !map.inside(next)) {
       reason = `You have come to the edge of ${world.words.region}.`
+      edge = next ? sideOf(map, next) : undefined
       break
     }
     const cell = map.cell(next)!
@@ -742,7 +746,8 @@ export function walk(world: World, plan: WalkPlan, pass: (minutes: number) => Ou
     }
     if (plan.kind === 'to' && steps + 1 >= path!.length) break
   }
-  if (steps === 0) return [{ kind: 'error', text: reason || 'You stay where you are.' }]
+  // At the edge already: what lies beyond it, and whether to go on (M10.21).
+  if (steps === 0) return edge ? [{ kind: 'text', text: reason }, ...beyondEdge(world, map, edge)] : [{ kind: 'error', text: reason || 'You stay where you are.' }]
 
   // What happened back where you started, you did not see: you were walking.
   pass(minutes)
@@ -759,10 +764,79 @@ export function walk(world: World, plan: WalkPlan, pass: (minutes: number) => Ou
       return hex ? [hexId(hex)] : []
     }))
     const text = journeyParagraph(world, { how, minutes, terrains, ...(seen ? { seen: { text: seen.text, wind: seen.wind } } : {}), met, ...(reason ? { reason } : {}), ...(arrived ? { arrived: world.location(arrived).name } : {}) })
-    return { outputs: [{ kind: 'narration', text, journey: true }], minutes, at: world.state.player.location }
+    return { outputs: [{ kind: 'narration', text, journey: true }, ...(edge ? beyondEdge(world, map, edge) : [])], minutes, at: world.state.player.location }
   }
   const summary = `${how} for ${duration(minutes)}${over.length ? `, over ${list(over)}` : ''}.${reason ? ` ${reason}` : ''}${arrived ? ` You come to ${world.location(arrived).name}.` : ''}`
-  return { outputs: [{ kind: 'narration', text: summary }, ...(forked ?? [])], minutes, at: world.state.player.location }
+  return { outputs: [{ kind: 'narration', text: summary }, ...(forked ?? []), ...(edge ? beyondEdge(world, map, edge) : [])], minutes, at: world.state.player.location }
+}
+
+// ---------------------------------------------------------------- the edge of the map (M10.21)
+
+export type Side = 'north' | 'east' | 'south' | 'west'
+
+const SIDE_WIND: Record<Side, string> = { north: 'north', east: 'east', south: 'south', west: 'west' }
+const TURN_BACK: Record<Side, string> = { north: 'south', east: 'west', south: 'north', west: 'east' }
+
+/** Which edge a hex just off the map lies beyond. */
+export function sideOf(map: RegionMap, off: Hex): Side {
+  if (off.col < 0) return 'west'
+  if (off.col >= map.cols) return 'east'
+  return off.row < 0 ? 'south' : 'north'
+}
+
+/** The edge a hex of the map lies on, if it is on the outer ring. */
+export function edgeOf(map: RegionMap, hex: Hex): Side | undefined {
+  if (hex.col === 0) return 'west'
+  if (hex.col === map.cols - 1) return 'east'
+  if (hex.row === 0) return 'south'
+  if (hex.row === map.rows - 1) return 'north'
+  return undefined
+}
+
+/** A far place's rough way from a point, as a wind: "north", "south-west". */
+function windTo(from: readonly [number, number], to: readonly [number, number]): string {
+  const angle = (Math.atan2(to[0] - from[0], to[1] - from[1]) * 180) / Math.PI
+  return ['north', 'north-east', 'east', 'south-east', 'south', 'south-west', 'west', 'north-west'][Math.round(((angle + 360) % 360) / 45) % 8]!
+}
+
+/** Whether a far place lies roughly beyond this edge: within a right angle of its wind. */
+function liesBeyond(map: RegionMap, side: Side, pos: readonly [number, number]): boolean {
+  const middle = map.national([map.region.size[0] / 2, map.region.size[1] / 2])
+  return windTo(middle, pos).includes(SIDE_WIND[side])
+}
+
+/**
+ * What lies beyond an edge of the map (M10.21), and whether to go on: the
+ * world book's line for that edge, a way on foot to each far place that way
+ * and each line that goes there, or turning back. Nothing is made by looking:
+ * a far place is only worked out when the stranger chooses to go.
+ */
+export function beyondEdge(world: World, map: RegionMap, side: Side): Output[] {
+  const own = map.region.beyond?.find((b) => b.side === side)
+  // Without a line for this edge, the far places the stranger knows of that way (neutral: nobody has said more).
+  const toward = own
+    ? own.toward
+    : [...world.content.topics.values()].filter((t) => t.kind === 'place' && t.pos && !map.inside(map.hexOf(t.pos)) && (world.state.player.journal ?? {})[t.id] !== undefined && liesBeyond(map, side, t.pos)).map((t) => t.id)
+  const text = own?.text ?? `Beyond it the land runs on ${SIDE_WIND[side]}, and nobody has told you yet what lies that way.`
+  const here = playerHex(world)
+  const from = here ? map.posOf(here) : map.national([map.region.size[0] / 2, map.region.size[1] / 2])
+  const options: ChoiceOption[] = []
+  for (const topic of toward) {
+    const t = world.content.topics.get(topic)
+    if (!t) continue
+    // The line names it: from now on the stranger knows of it.
+    ;(world.state.player.journal ??= {})[topic] ??= world.now
+    const name = t.name
+    if (t.pos) {
+      // At the pace a far place's road is laid out (far.ts): some 35 km a day.
+      const days = Math.max(1, Math.round(Math.hypot(t.pos[0] - from[0], t.pos[1] - from[1]) / 35))
+      options.push({ label: `Go on to ${name} on foot, about ${days === 1 ? 'a day' : `${days} days`} ${windTo(from, t.pos)}`, command: `travel to ${name} on foot` })
+    }
+    for (const way of waysTo(world, topic)) if (way.how === 'passage') options.push({ label: way.label, command: way.command })
+  }
+  if (!options.length) return [{ kind: 'text', text }]
+  options.push({ label: `Turn back ${TURN_BACK[side]}`, command: `head ${TURN_BACK[side]}` })
+  return [{ kind: 'text', text }, ...offer(world, 'Go on, or turn back?', options)]
 }
 
 /** Where a way leads in a direction from here: ", towards the Kattenbroek", or nothing when it is not clear. */

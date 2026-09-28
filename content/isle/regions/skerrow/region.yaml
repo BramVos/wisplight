@@ -91,3 +91,15 @@ regions:
         name: the tower path
         text: A narrow path runs north along the cliff top to the broken tower.
         via: [[2.31, 3.16], [2.31, 4.09]]
+    # What lies beyond each edge of the map (M10.21), in the island's own
+    # words: the sea all round, Havenmoor over the water to the east.
+    beyond:
+      - side: east
+        text: "East, the grey water runs on to the mainland. Havenmoor, the harbour town, lies two days' sail that way with a fair wind, and the packet goes there from the Hythe when it sails at all."
+        toward: [havenmoor]
+      - side: west
+        text: "West, the Glass Sea runs out to the edge of sight. Somewhere beyond it lie the western isles, and no boat of Skerrow goes that far."
+      - side: north
+        text: "North there is only open sea, and the cold wind that comes off it."
+      - side: south
+        text: "South, far over the water, the smoke of another island hangs on the horizon, and somewhere under the waves lies drowned Aldmar."

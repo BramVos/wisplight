@@ -33,6 +33,8 @@ export const FIELD_NOTES: Record<string, string[]> = {
     '`zones`: one character is `zone` km east to west and north to south (without it half a km by one), the top row the north edge; every character is in `legend`.',
     '`lands`: the region\'s own terrains by the key of their palette tints, each with `like` (woods, fields, fen, water or heath: its minutes, its sight, what swallows a leg) and `text` (the line the stranger reads there).',
     '`paths[].text`: the line walking along it; without one, the Nethermarch\'s line for a road, tow path or path.',
+    // M10.21: the edge of the map is an edge, with what lies beyond it.
+    '`beyond`: per edge (north, east, south or west) the line the stranger reads on reaching it, from the world book, and `toward`: the far places that way (topics), which they may go on to on foot or by a line. An edge without one says that nobody has told them; beyond the last land the world names, nothing is made.',
   ],
   npcs: ['`secrets`: `about` and `teaches` take ids: a topic, a person (an NPC id), a place (a location id) or an area (`area_<id>`).'],
   // M10.20: the transport step of The Quiet Reach wrote legs as "a-b".
