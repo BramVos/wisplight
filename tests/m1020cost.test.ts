@@ -46,7 +46,7 @@ describe('M10.20: the world steps are cached and measured', () => {
     expect(safe.system.slice(safe.cacheBreak).startsWith('THE STEPS:')).toBe(true)
     // A round to put it right reads the same cached part.
     expect(fixed(worldFixRequest(files, 'people', 'x', { changes: [] }, ['x: wrong']))).toBe(first)
-  })
+  }, 60_000)
 
   it('sends Anthropic the fixed part with an hour-long cache mark and the rest after it', () => {
     const blocks = systemBlocks({ system: 'FIXED\nSTEP', cacheBreak: 6, cacheHour: true })

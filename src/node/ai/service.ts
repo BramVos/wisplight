@@ -6,6 +6,7 @@ import type { LlmClient } from '../../engine/dialogue/llm'
 import { askAdvice, judgeTrials, testCall, trial, type Advice, type TrialResult, type TrialVerdict } from './advisor'
 import { CostRegister } from './costs'
 import { BuildStore } from './builds'
+import { guidePrice, type GuidePrice } from './guideprice'
 import { type RoleActivity, Gateway, type GatewayStatus } from './gateway'
 import { AiLog, type AiLogEntry } from './log'
 import { createProvider, type ModelInfo, type Provider, type ProviderId } from './providers'
@@ -33,6 +34,8 @@ export interface AiOverview {
   settings: SettingsSummary
   usage: UsageSummary
   status: GatewayStatus
+  /** What an hour of play costs about with the chosen models (M10.21), from the recorded trials. */
+  guide?: GuidePrice
 }
 
 export class AiService {
@@ -96,7 +99,7 @@ export class AiService {
   }
 
   overview(): AiOverview {
-    return { settings: this.settings.summary(), usage: this.usage.summary(), status: this.gateway.status() }
+    return { settings: this.settings.summary(), usage: this.usage.summary(), status: this.gateway.status(), guide: guidePrice((role) => this.settings.role(role)) }
   }
 
   /** Saves a key only after the provider accepted it by listing its models. */

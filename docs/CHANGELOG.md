@@ -1,5 +1,10 @@
 # Changelog
 
+## M10.21 deel: een richtprijs per uur, 29 september 2026
+
+- **Onder Instellingen > AI staat nu wat een uur spelen ongeveer kost met jouw modellen.** Het gaat om 40 regels gesprek, 25 keuzes van doelen en de ronde van één nacht. Een nieuwe plek in een verre stad staat er apart bij: de omtrek, de eerste wijk en de weefronde. De cijfers komen uit de tokens van de echte proeven van vandaag (`src/node/ai/measured.ts`, geschreven door `npm run coverage`) en de prijzen van de modellen die je koos. Met Haiku, Sonnet en Opus 5.5 is dat ongeveer $0,49 per uur, en $0,16 voor een nieuwe plek. Van een model zonder bekende prijs zegt de regel dat.
+
+Testen: open Instellingen > AI en kijk onder het uurbudget. Test in `tests/m1021guide.test.ts`.
 ## M10.21 deel: de vraag voor een wijk, 29 september 2026
 
 - **Boven jouw grens vraagt een wijk het eerst.** Kost het maken van een wijk meer dan je instelling "Ask first above" (standaard $1), dan vraagt het spel het één keer: "Making the Dyke Gate and the fish market of Graafhaven playable costs about $0.80", met 1 Go on, 2 Not now en 3 Always. "Not now" betekent de rest van die speldag geen wijk en geen vraag. "Always" vraagt het nooit meer. Een wijk kost met Opus ongeveer $0,08, dus bij $1 vraagt hij niet. Zet de grens op $0,05 om het te zien. De vraag zelf is gebouwd door de andere sessie (`asking.ts`).

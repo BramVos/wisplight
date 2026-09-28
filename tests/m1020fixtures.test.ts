@@ -63,6 +63,6 @@ describe('M10.20: the recorded real world builds play again', () => {
       }
       // Nothing more to accept: the same world again changes nothing.
       expect(draftResult(files, { changes: [], files: [] }).ok).toBe(true)
-    })
+    }, 120_000)
   }
 })

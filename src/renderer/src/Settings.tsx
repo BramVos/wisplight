@@ -464,6 +464,15 @@ function AiTab({ bridge, overview, refresh }: { bridge: AiBridge; overview: AiOv
         </button>
         <span className="muted">{t('settings.ai.budget.note')}</span>
       </div>
+      {overview.guide && (overview.guide.conversations ?? overview.guide.goals ?? overview.guide.night) !== undefined && (
+        <div className="row small">
+          <span className="label">{t('settings.ai.guide.label')}</span>
+          <span>
+            {t(overview.guide.hour !== undefined ? 'settings.ai.guide.hour' : 'settings.ai.guide.parts', { hour: usd(overview.guide.hour), conversations: usd(overview.guide.conversations), goals: usd(overview.guide.goals), night: usd(overview.guide.night) })}
+            {overview.guide.place !== undefined ? ` ${t('settings.ai.guide.place', { place: usd(overview.guide.place) })}` : ''}
+          </span>
+        </div>
+      )}
       {confirmBudget && (
         <div className="row warn small" role="alertdialog" aria-label={t('settings.ai.budget.confirmAria')}>
           <span>{t('settings.ai.budget.confirm', { usd: Number(budget) })}</span>

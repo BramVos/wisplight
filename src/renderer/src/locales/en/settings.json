@@ -113,6 +113,12 @@
       "neverSaved": "The game will not ask about cost; every call runs within the budgets.",
       "note": "A call below this runs at once and shows in the status bar. Making a district or a region may cost more; then the game asks once.",
       "noteNever": "The game never asks about cost. Set an amount to be asked again."
+    },
+    "guide": {
+      "label": "Guide price",
+      "hour": "An hour of play with these models costs about {hour}: {conversations} for 40 lines of talk, {goals} for 25 goal choices, {night} for the night's round.",
+      "place": "A new place in a far town costs about {place} once, when you first do something there.",
+      "parts": "An hour of play with these models: {conversations} for 40 lines of talk, {goals} for 25 goal choices, {night} for the night's round."
     }
   },
   "pictures": {
