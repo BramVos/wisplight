@@ -64,7 +64,7 @@ describe('M2: guardrails', () => {
 
   it('throws away words from outside the world', async () => {
     const { run, rejected } = await leakyRun('anachronism')
-    expect(speechOf(run.outputs).join(' ')).not.toMatch(/\bOkay\b/)
+    expect(speechOf(run.outputs).join(' ')).not.toMatch(/\bphone\b/)
     expect(rejected.map((r) => r.reason)).toContain('anachronism')
   })
 

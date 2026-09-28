@@ -1,0 +1,126 @@
+# How people in the Nethermarch speak (M10.10; FO, chapters 10 and 16): the voice kit.
+# The prompt, the guard, the chronicler and the writing help read it. Character is
+# not a trick of sayings: a saying goes with one talk in three at most, once, and
+# only when it fits. What shows who someone is, is what they care about, steer
+# away from, remember and dare to say.
+
+voice:
+  # Each faith swears by its own; nobody here swears by Christ, God or the Lord.
+  oaths:
+    lantern: ["Saint Brand's light", "by the Lantern", "Lantern keep us"]
+    old_powers: ["Holle take it", "by the Grey Rider", "Nehalennia's nets"]
+
+  # Sayings of the whole Holleveen, old Low Countries proverbs among them.
+  sayings:
+    - When the calf has drowned, they fill in the well.
+    - Better half an egg than an empty shell.
+    - Water always finds the weakest board.
+    - East, west, home is best.
+
+  groups:
+    - id: fen
+      name: the fen folk
+      areas: [veenhoek, molenend, oude_zijl, drowned_goose, kattenbroek, blackmere, holleveen, rietdoolhof, reuzenrust, kabouterberg, roads]
+      sayings:
+        - What the fen takes, it keeps.
+        - Peat burns slow and warms long.
+        - Never follow a light across the water.
+    - id: town
+      name: the people of Waagdam
+      areas: [waagdam]
+      professions: [grain_merchant, weighmaster, notary, mayor]
+      sayings:
+        - Weighed twice, cheated once.
+        - Every guilder has two sides, and the Waag sees both.
+        - A handshake in Waagdam wants a witness.
+    - id: cloister
+      name: the priory
+      areas: [kloosterveen]
+      professions: [sister, prior]
+      sayings:
+        - The Lantern sees what the fen hides.
+        - Saint Brand did not hurry, and still he crossed the sea.
+        - A candle lit for another lights your own way too.
+    - id: counts_men
+      name: the Count's men
+      professions: [schout, surveyor]
+      sayings:
+        - Paper outlasts peat.
+        - An order is an order, even in the mud.
+  default_group: fen
+
+  # How people call the stranger: she/he/they by the stranger's pronoun.
+  address:
+    stranger: [stranger, traveller]
+    known: [goodwife/goodman/neighbour]
+    friend: [lass/lad/friend, neighbour]
+    high: [mistress/master/honoured guest]
+
+  time: [by the chapel bell, at first light, before the lamps are lit, at the ninth bell, by market day]
+  distance: [an hour's walk, a stone's throw, half a day by barge, two bells on foot]
+  measures: [an ell of cloth, a pound of butter, a mudde of rye, a stack of turf]
+
+  # What does not exist here. With `instead`, the guard puts that in its place;
+  # without, the game asks for the reply again. A word with a capital (a weekday,
+  # a month) only counts with its capital.
+  # First what this world most needs kept out: the prompt names the first eight.
+  not_here:
+    - { word: "o'clock", instead: bells }
+    - { word: potatoes, instead: turnips }
+    - { word: potato, instead: turnip }
+    - { word: tobacco }
+    - { word: cigarette }
+    - { word: cigar }
+    - { word: coffee }
+    - { word: chocolate }
+    - { word: tomatoes }
+    - { word: tomato }
+    - { word: pocket watch }
+    - { word: wristwatch }
+    - { word: okay, instead: aye }
+    - { word: ok, instead: aye }
+    - { word: photograph, instead: likeness }
+    - { word: photo, instead: likeness }
+    - { word: percent, instead: in a hundred }
+    - { word: awesome, instead: fine }
+    - { word: dude, instead: friend }
+    - { word: police, instead: the watch }
+    - { word: policeman, instead: watchman }
+    - { word: newspaper, instead: notice board }
+    - { word: weekend, instead: Rustdag }
+    - { word: dollars, instead: guilders }
+    - { word: dollar, instead: guilder }
+    - { word: pennies, instead: duiten }
+    - { word: penny, instead: duit }
+    - { word: cents, instead: duiten }
+    - { word: internet }
+    - { word: online }
+    - { word: website }
+    - { word: email }
+    - { word: e-mail }
+    - { word: phone }
+    - { word: smartphone }
+    - { word: computer }
+    - { word: laptop }
+    - { word: robot }
+    - { word: television }
+    - { word: electricity }
+    - { word: plastic }
+    - { word: hashtag }
+    - { word: Monday, instead: Maandag }
+    - { word: Tuesday, instead: Dinsdag }
+    - { word: Wednesday, instead: Woensdag }
+    - { word: Thursday, instead: Donderdag }
+    - { word: Friday, instead: Vrijdag }
+    - { word: Saturday, instead: Zaterdag }
+    - { word: Sunday, instead: Rustdag }
+    - { word: January, instead: Louwmaand }
+    - { word: February, instead: Sprokkelmaand }
+    - { word: April, instead: Grasmaand }
+    - { word: June, instead: Zomermaand }
+    - { word: July, instead: Hooimaand }
+    - { word: August, instead: Oogstmaand }
+    - { word: September, instead: Herfstmaand }
+    - { word: October, instead: Wijnmaand }
+    - { word: November, instead: Slachtmaand }
+    - { word: December, instead: Wintermaand }

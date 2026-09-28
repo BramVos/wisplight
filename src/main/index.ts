@@ -1,10 +1,10 @@
 import { app, BrowserWindow, dialog, ipcMain, safeStorage, shell } from 'electron'
 import { randomUUID } from 'node:crypto'
-import { appendFileSync, existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, watch, writeFileSync } from 'node:fs'
+import { appendFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, watch, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { ContentError, draftRequest, Engine, ENTITY_KINDS, lineDiff, MapPaletteSchema, paletteRequest, paletteView, readDraft, readPalette, savePalette, type Content, type Edit, type EntityKind, type FileChange, type CheckpointedSave, type MapPalette, type Output, type SaveData } from '../engine'
+import { ContentError, draftRequest, Engine, ENTITY_KINDS, lineDiff, MapPaletteSchema, paletteRequest, paletteView, readDraft, readPalette, readVoice, savePalette, saveVoice, voiceRequest, voiceYaml, type Content, type Edit, type EntityKind, type FileChange, type CheckpointedSave, type MapPalette, type Output, type SaveData } from '../engine'
 import { ContentEditor } from '../node/editor'
 import type { ProviderId } from '../node/ai/providers'
 import { AiService } from '../node/ai/service'
@@ -520,6 +520,36 @@ ipcMain.handle('editor:propose-palette', async (_event, world: unknown, ask: unk
     return { say: '', problems: [`The writing aid did not answer: ${error instanceof Error ? error.message : String(error)}`] }
   }
 })
+// The voice kit of a world (M10.10): read, written into its file, or proposed by the writing aid.
+ipcMain.handle('editor:voice', async (_event, world: unknown) => {
+  devOnly()
+  return voiceYaml(await readContentFiles(contentDir(), worldOf(world)))
+})
+ipcMain.handle('editor:save-voice', async (_event, world: unknown, yaml: unknown) => {
+  devOnly()
+  const files = await readContentFiles(contentDir(), worldOf(world))
+  const outcome = saveVoice(files, String(yaml ?? ''))
+  if (!outcome.ok) return { ok: false, problems: outcome.problems, warnings: [], changes: [] }
+  ignoreWatchUntil = Date.now() + 1500
+  for (const change of outcome.changes) {
+    mkdirSync(dirname(join(contentDir(), change.path)), { recursive: true })
+    writeFileSync(join(contentDir(), change.path), change.text, 'utf8')
+  }
+  afterEdit(worldOf(world))
+  return { ok: true, problems: [], warnings: [], changes: shown(outcome.changes) }
+})
+ipcMain.handle('editor:propose-voice', async (_event, world: unknown, ask: unknown) => {
+  devOnly()
+  await setup()
+  const llm = ai?.client()
+  if (!llm) return { say: '', problems: ["The writing aid needs a model: connect one in the game's Settings > AI first."] }
+  const files = await readContentFiles(contentDir(), worldOf(world))
+  try {
+    return readVoice((await llm.complete(voiceRequest(files, String(ask ?? '').slice(0, 1000)))).text)
+  } catch (error) {
+    return { say: '', problems: [`The writing aid did not answer: ${error instanceof Error ? error.message : String(error)}`] }
+  }
+})
 ipcMain.handle('editor:open', () => {
   devOnly()
   openEditor()
@@ -649,7 +679,8 @@ ipcMain.handle('ai:reply-within', (_event, seconds: unknown) => service().settin
 ipcMain.handle('ai:month-budget', (_event, usd: unknown) => service().usage.setMonthBudget(amount(usd)))
 ipcMain.handle('ai:credit', (_event, id: unknown, usd: unknown) => service().usage.setCredit(provider(id), amount(usd)))
 ipcMain.handle('ai:csv', () => service().usage.csv())
-ipcMain.handle('ai:log', () => service().recentLog(50))
+// Up to all the log keeps (M10.10): the guard's count per model reads them all; the table shows the last 50.
+ipcMain.handle('ai:log', () => service().recentLog(200))
 ipcMain.handle('ai:billing', (_event, id: unknown) => shell.openExternal(BILLING[provider(id)]))
 // Pictures of places and people (after the M7 playtest): made once, kept in the user data folder.
 ipcMain.handle('ai:image-models', (_event, id: unknown) => service().imageModels(provider(id)))

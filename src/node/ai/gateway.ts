@@ -263,6 +263,11 @@ export class Gateway implements LlmClient {
   }
 
   report(rejection: LlmRejection): void {
+    // Kept, but put right or noted by the guard (M10.10): beside the call in the AI log, not a rejection.
+    if (rejection.fixed) {
+      this.options.log.fix(rejection.role ?? 'voice', `${rejection.reason}: ${rejection.fixed}`)
+      return
+    }
     if (this.last) this.options.usage.reject(this.last.provider, this.last.model)
     // Why the engine threw the reply away, in the AI log beside the call (M10.8).
     this.options.log.reject(rejection.role ?? 'voice', rejection.reason)

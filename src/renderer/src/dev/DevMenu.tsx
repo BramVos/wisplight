@@ -173,6 +173,8 @@ function Background({ view }: { view: DevView }) {
       <ul className="check-list">{b.signals.length ? b.signals.map((s, i) => <li key={i}>{s}</li>) : <li className="muted">none</li>}</ul>
       <h3>Stock lines instead of the AI</h3>
       <ul className="check-list">{b.stock?.length ? b.stock.map((s, i) => <li key={i}>{s}</li>) : <li className="muted">none</li>}</ul>
+      <h3>The guard this session</h3>
+      <ul className="check-list">{b.guard?.length ? b.guard.map((s, i) => <li key={i}>{s}</li>) : <li className="muted">nothing yet</li>}</ul>
       <h3>Ledgers</h3>
       <table className="usage small">
         <thead>

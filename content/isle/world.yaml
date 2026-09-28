@@ -29,9 +29,9 @@ world:
     from: the sea
   # Faiths (M9.1): the islanders keep to the Tidemother; the old ones still watch the Old Stars.
   faiths:
-    # Each faith swears by its own (M10.8).
-    - { id: tidemother, name: the Tidemother, patrons: [tidemother], oaths: ["Tidemother keep us", "by the Tidemother", "salt and tide"] }
-    - { id: old_stars, name: the Old Stars, patrons: [old_stars], oaths: ["by the Old Stars", "stars above"] }
+    # Each faith swears by its own (M10.8): the oaths are in the voice kit, data/voice.yaml (M10.10).
+    - { id: tidemother, name: the Tidemother, patrons: [tidemother] }
+    - { id: old_stars, name: the Old Stars, patrons: [old_stars] }
   law:
     where: on Skerrow
     officer: headwoman

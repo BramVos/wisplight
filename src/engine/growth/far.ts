@@ -8,6 +8,7 @@ import { outlineOf } from '../outlines'
 import type { World } from '../world'
 import { growth } from './growth'
 import { sketchById, sketchNpc, sketchPhrase, sketchProfession } from '../sketches'
+import { voiceSummary } from '../dialogue/voice'
 
 // A far place made playable (M9.1; design: lore and world change, "De wereld
 // buiten de kaart", level 3). When the player sets off for a far place that
@@ -340,6 +341,8 @@ export function farRequest(world: World, topic: string): LlmRequest {
     role: 'chronicler',
     system: [
       `${worldFrame(world.content)}`,
+      // The world's voice (M10.10): the people of the far place talk like the world.
+      voiceSummary(world.content),
       '',
       'You make a far place playable in a text game: you name and describe three places and two people. The shape is fixed; you write the words.',
       'Places: gate (where the road comes in), market, inn. Each description: three to five sentences, second person, present tense, one sense that is not sight, and a hint at a way out. Plain words, late-medieval, the tone of the world.',

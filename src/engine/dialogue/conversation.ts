@@ -14,7 +14,7 @@ import { approve, companionOf, offer, recruit } from '../social/companions'
 import { silenceWitness, witnessed } from '../social/crime'
 import { partyTalk } from './party'
 import { closingLine, fallbackReply } from './fallback'
-import { fitLength, hasAnachronism, leakedNames, looksLikeInjection, outOfCharacter, promises, swearRight, unknownNames, vocabularyOf } from './guard'
+import { fitLength, leakedNames, looksLikeInjection, outOfCharacter, promises, swearRight, unknownNames, vocabularyOf } from './guard'
 import { accept, askedFor, askOffer, dayLines, kinOf, offerLine, offerLines, offersFor, proposal, proposalText, type Offer } from './offers'
 import { accepted, declined, inviteOffer } from '../social/invite'
 import { CLAIM_KEYS, claimValid, claimWords, parseClaim, playerSays } from '../claims'
@@ -33,6 +33,7 @@ import { routineNow } from '../npc/brain'
 import { parseReply, replyJsonSchema, type Reply } from './schema'
 import type { TopicRegistry } from './topics'
 import { checkSketch, namesSomeone, registerSketch, sketchBonds, sketchOpen, sketchPlaces, sketchRoom, type NamedPerson } from '../sketches'
+import { fixNotHere, flourishes, strangeWords, strayNumbers } from './voice'
 
 /** A reply comes within this many milliseconds, both tries together, or the NPC says a set line (FO, chapter 18). */
 /** How long a spoken reply may take over both tries (M10.8: ten seconds, unless the player sets it at the model). */
@@ -123,7 +124,7 @@ export class Dialogue {
     if (band === 'Warm' || band === 'Devoted') turns += 2
     if (band === 'Wary' || band === 'Unfriendly' || band === 'Hostile') turns -= 3
     if (/at work|baking|cutting|grinding|seeing to|spinning/.test(world.npcState(npcId).activity)) turns -= 2
-    world.state.talk = { npc: npcId, turnsLeft: Math.max(2, turns), history: [], effects: 0, revealed: [] }
+    world.state.talk = { npc: npcId, turnsLeft: Math.max(2, turns), history: [], effects: 0, revealed: [], began: world.now }
     rel.familiarity = Math.min(100, rel.familiarity + 1)
     this.learn(npcId)
     if (silent) return []
@@ -696,6 +697,8 @@ export class Dialogue {
     for (const name of reply?.names ?? []) {
       if (name.new_kind !== 'none' && !this.topics.find(name.text) && replyText.includes(name.text.trim())) this.registerFar(npcId, name.text.trim(), name.new_kind, replyText)
     }
+    // A saying or an oath once in a talk is enough (M10.10).
+    if (reply && flourishes(world, replyText) > 0) talk.flourished = true
     // Someone new the speaker named (M10.9), checked with the reply.
     if (reply && namesSomeone(reply.person) && !talk.sketched && !this.topics.find(reply.person.name)) this.registerSketch(npcId, reply.person, replyText)
 
@@ -966,10 +969,15 @@ export class Dialogue {
         continue
       }
       // Our world's oaths give way to the speaker's own (M10.8): "Christ, yes" is "Saint Brand's light, yes".
-      const fitted = swearRight(fitLength(reply.reply, ctx.tier), oathsOf(world, npcId))
-      if (hasAnachronism(fitted)) {
+      const trimmed = fitLength(reply.reply, ctx.tier)
+      const sworn = swearRight(trimmed, oathsOf(world, npcId))
+      // What does not exist here gives way to what people say instead (M10.10): potatoes are turnips, Sunday is Rustdag.
+      const { text: fitted, fixed } = fixNotHere(world, sworn)
+      const strange = strangeWords(world, fitted)
+      if (strange.length) {
+        this.guarded('anachronism')
         llm.report?.({ reason: 'anachronism' })
-        prompt += '\nNOTE: your last reply used words that do not exist in this world. Answer again without them.'
+        prompt += `\nNOTE: your last reply used ${strange.map((w) => `"${w}"`).join(', ')}, which ${strange.length === 1 ? 'does' : 'do'} not exist in this world. Answer again without ${strange.length === 1 ? 'it' : 'them'}.`
         continue
       }
       if (outOfCharacter(fitted)) {
@@ -1013,10 +1021,20 @@ export class Dialogue {
         prompt += `\nNOTE: you used ${invented.join(', ')}, which ${invented.length === 1 ? 'does' : 'do'} not exist in this world. Never make up names. Use only names from PEOPLE YOU KNOW, KNOWLEDGE and SCENE, or say you don't know.`
         continue
       }
+      // Kept (M10.10): what the guard put right in place, and a number nobody gave (noted, not changed), in the AI log.
+      if (sworn !== trimmed) this.guarded('oath', llm, 'our oath put right')
+      for (const f of fixed) this.guarded('not_here', llm, f)
+      for (const n of strayNumbers(fitted, `${systemPrompt(world, npcId)}\n${prompt}\n${text}`)) this.guarded('number', llm, `${n} was not given`)
       return { ...reply, reply: fitted }
     }
     this.lastFailure = { kind: 'checks', message: 'both replies failed the checks' }
     return undefined
+  }
+
+  /** Counts what the guard did (M10.10), for the dev menu; what it put right or noted also goes to the AI log. */
+  private guarded(what: 'anachronism' | 'oath' | 'not_here' | 'number', llm?: LlmClient, fixed?: string): void {
+    this.world.guard[what] = (this.world.guard[what] ?? 0) + 1
+    if (llm && fixed) llm.report?.({ reason: what, fixed })
   }
 
   private journalNames(limit: number): string {

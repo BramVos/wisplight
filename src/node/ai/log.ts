@@ -20,6 +20,15 @@ export interface AiLogEntry {
   response: string
   /** Replies of this call the engine threw away, and why (M10.8): schema, leak, invented, ... */
   rejected?: string[]
+  /** What the guard put right in this reply or noted (M10.10): "oath: ...", "not_here: potatoes > turnips", "number: 12 was not given". */
+  fixed?: string[]
+}
+
+/** How often the guard stepped in, per model and why (M10.10): replies thrown away and things put right. */
+export interface GuardCount {
+  provider: string
+  model: string
+  reasons: Record<string, number>
 }
 
 const KEEP = 200
@@ -44,6 +53,28 @@ export class AiLog {
     if (!last) return
     ;(last.rejected ??= []).push(reason)
     if (this.path) appendFileSync(this.path, `${JSON.stringify({ time: last.time, role, rejected: reason })}\n`, { mode: 0o600 })
+  }
+
+  /** The guard put something right in the last reply of this role, or noted it (M10.10). */
+  fix(role: string, what: string): void {
+    const last = [...this.entries].reverse().find((e) => e.role === role && e.ok)
+    if (!last) return
+    ;(last.fixed ??= []).push(what)
+    if (this.path) appendFileSync(this.path, `${JSON.stringify({ time: last.time, role, fixed: what })}\n`, { mode: 0o600 })
+  }
+
+  /** Per model, how often the guard threw a reply away or put one right, and why (M10.10), over the calls kept here. */
+  guardCounts(): GuardCount[] {
+    const out = new Map<string, GuardCount>()
+    for (const e of this.entries) {
+      const reasons = [...(e.rejected ?? []), ...(e.fixed ?? []).map((f) => f.split(':')[0]!)]
+      if (!reasons.length) continue
+      const key = `${e.provider}/${e.model}`
+      const count = out.get(key) ?? { provider: e.provider, model: e.model, reasons: {} }
+      for (const r of reasons) count.reasons[r] = (count.reasons[r] ?? 0) + 1
+      out.set(key, count)
+    }
+    return [...out.values()]
   }
 
   recent(count = 50): AiLogEntry[] {

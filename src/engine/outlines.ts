@@ -5,6 +5,7 @@ import { regionMap } from './map/region'
 import { withoutReference } from './quests/reference'
 import { tradeLine } from './economy/ledger'
 import type { World } from './world'
+import { voiceSummary } from './dialogue/voice'
 
 // The world beyond the map (design: lore and world change, "De wereld buiten de
 // kaart"): a far place the player sets off for is worked out once to its
@@ -59,7 +60,7 @@ export function outlineInput(world: World, topic: string): OutlineInput {
     .map((o) => ({ name: o.name, text: o.summary }))
   return {
     instruction: withoutReference(world.content.chronicler ?? ''),
-    world: worldFrame(world.content),
+    world: [worldFrame(world.content), voiceSummary(world.content)].filter(Boolean).join('\n\n'),
     place: { id: topic, name: t.name, kind: t.kind === 'place' ? 'place' : t.kind, where: farWhere(world, topic) ?? '', known: [t.summary, t.details, t.story, ...[...world.content.outlands.values()].filter((o) => o.topic === topic).map((o) => tradeLine(world, o.id))].filter((x): x is string => Boolean(x)) },
     taken: [...taken].sort(),
     neighbours,

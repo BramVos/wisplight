@@ -7,6 +7,8 @@ import { recordFact } from '../news'
 import { lineOf, requestRun } from '../storylines'
 import { goalRequest } from '../npc/goals'
 import type { LlmClient, LlmRequest } from './llm'
+import { parseReply } from './schema'
+import { characterChecks, type CharacterChecks } from './voice'
 
 // The fixed set of conversation situations (FO, chapter 16, "Modellen
 // vergelijken"). Tests run all of them against the mock; the model advice
@@ -96,6 +98,19 @@ export async function runSituation(content: Content, situation: Situation, llm: 
   onLine?.('bye')
   outputs.push(...(await engine.handle('bye')))
   return { situation, outputs, requests, replies }
+}
+
+/**
+ * How a run stays in character (M10.10): the rules' checks on every reply the
+ * model gave in it, as it gave it, against what it was given. The model trial
+ * scores them per model.
+ */
+export function characterOfRun(content: Content, run: SituationRun): CharacterChecks[] {
+  return run.replies.flatMap((raw, i) => {
+    const reply = parseReply(raw)?.reply
+    const request = run.requests[i]
+    return reply && request ? [characterChecks(content, reply, `${request.system}\n${request.prompt}`)] : []
+  })
 }
 
 /**

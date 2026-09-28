@@ -15,6 +15,14 @@ import { nameOf } from './aftermath'
 export type DevSection = 'people' | 'background' | 'chronicler'
 
 /** A value that steers someone, and where it comes from. */
+/** What each count of the guard is (M10.10). */
+const GUARD_WORDS: Record<string, string> = {
+  oath: 'oaths of our world put right',
+  not_here: 'words that are not here put right',
+  anachronism: 'replies asked again for a word that is not here',
+  number: 'numbers nobody gave (noted)',
+}
+
 export interface DevSlider {
   name: string
   value: string
@@ -47,6 +55,8 @@ export interface DevView {
     signals: string[]
     /** The last stock lines that stood in for the model, and why (M10.8). */
     stock: string[]
+    /** What the guard did this session (M10.10): oaths and words put right, replies asked again, numbers noted. */
+    guard?: string[]
     plans: DevPlan[]
     ledgers: { id: string; name: string; purse: number; short: string[]; surplus: string[]; stock: string[] }[]
   }
@@ -131,6 +141,9 @@ export function devView(engine: Engine, section: DevSection, focus?: string): De
       queue: (signals?.queue ?? []).map(line),
       signals: [...(signals?.log ?? [])].slice(-30).reverse().map(line),
       stock: [...world.stockLines].reverse().map((s) => `${world.date(s.t)}: ${nameOf(world, s.npc)}, ${s.reason}`),
+      guard: Object.entries(GUARD_WORDS)
+        .filter(([key]) => world.guard[key])
+        .map(([key, what]) => `${what}: ${world.guard[key]}`),
       plans: (world.state.plans ?? [])
         .filter((p) => p.ended === undefined)
         .map((p) => {

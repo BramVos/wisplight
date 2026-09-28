@@ -93,6 +93,8 @@ npcs:
     pronoun: he
     age: 60
     profession: pedlar
+    # He trades in Waagdam more than he sleeps at the Goose, and talks like it (M10.10).
+    voice: town
     home: loc_goose_common
     work: loc_goose_common
     fame: 2

@@ -9,6 +9,7 @@ import { checkQuests } from './quests/check'
 import { AftermathSchema, IntentionSchema, PlanSchema, VerbTextSchema, WatcherSchema, type Aftermath, type Intention, type Plan, type VerbText, type Watcher } from './quests/planschema'
 import { permitted, verbName } from './quests/verbs'
 import { RELATION_ROLES } from './roles'
+import { VoiceSchema, type Voice } from './dialogue/voiceSchema'
 
 // Content is plain YAML in content/. This module parses and validates it
 // without touching the file system, so it runs in Node and in the browser.
@@ -521,6 +522,8 @@ export const NpcSchema = z.object({
   values: z.record(z.string(), Axis).default({}),
   quirks: z.array(z.string()).default([]),
   speech: z.string().optional(),
+  /** Their group in the world's voice kit (M10.10), when not by where they live or what they do. */
+  voice: z.string().optional(),
   aliases: z.array(z.string()).default([]),
   public_facts: z.array(z.string()).default([]),
   examples: z.array(z.string()).default([]),
@@ -829,6 +832,8 @@ const FileSchema = z
     quests: z.array(QuestSchema).optional(),
     regions: z.array(RegionSchema).optional(),
     rules: RulesSchema.optional(),
+    /** The voice kit (M10.10): oaths, sayings, address, time and what is not here. */
+    voice: VoiceSchema.optional(),
     factions: z.array(FactionSchema).optional(),
     realms: z.array(RealmSchema).optional(),
     tensions: z.array(TensionSchema).optional(),
@@ -875,6 +880,8 @@ export interface Content {
   regions: Map<string, Region>
   /** The rules of play (FO, chapters 11 and 12); a content set without them plays with a ready-made character. */
   rules?: Rules
+  /** How people here speak (M10.10); a world without one keeps the old fixed guard. */
+  voice?: Voice
   creatures: Map<string, Creature>
   encounters: Map<string, Encounter>
   factions: Map<string, Faction>
@@ -957,6 +964,7 @@ export function loadContent(files: ContentFile[]): Content {
 
   let chronicler: string | undefined
   let rules: Rules | undefined
+  let voice: Voice | undefined
   let lock: IdsLock | undefined
   for (const file of [...files].sort((a, b) => a.path.localeCompare(b.path))) {
     // The shared working instruction first (it sorts first), then the world's own part.
@@ -1018,6 +1026,10 @@ export function loadContent(files: ContentFile[]): Content {
       if (rules) problems.push(`${file.path}: the rules are defined twice`)
       rules = data.rules
     }
+    if (data.voice) {
+      if (voice) problems.push(`${file.path}: the voice kit is defined twice`)
+      voice = data.voice
+    }
   }
 
   const world = worlds[0]
@@ -1028,6 +1040,7 @@ export function loadContent(files: ContentFile[]): Content {
   // What a trade teaches is a skill of the rules (M10.3).
   if (rules) for (const p of content.professions.values()) if (p.teaches && !rules.skills.some((s) => s.id === p.teaches)) problems.push(`profession ${p.id}: teaches ${p.teaches}, which is no skill`)
   problems.push(...checkCrafts(content, rules))
+  if (world) problems.push(...checkVoice(voice, world, content))
   // A way on another level runs on a level the world names (M10).
   const levels = new Set((world?.map?.levels ?? [{ id: 'surface' }]).map((l) => l.id))
   for (const region of content.regions.values()) {
@@ -1037,7 +1050,23 @@ export function loadContent(files: ContentFile[]): Content {
     }
   }
   if (problems.length > 0 || !world) throw new ContentError(problems)
-  return { world, ...content, ...(rules ? { rules } : {}), ...(chronicler ? { chronicler } : {}), ...(lock ? { lock } : {}) }
+  return { world, ...content, ...(rules ? { rules } : {}), ...(voice ? { voice } : {}), ...(chronicler ? { chronicler } : {}), ...(lock ? { lock } : {}) }
+}
+
+/** The voice kit fits the world (M10.10): its faiths, areas, trades and groups are there; an NPC's own voice is a group. */
+function checkVoice(voice: Voice | undefined, world: WorldDef, c: Pick<Content, 'areas' | 'professions' | 'npcs'>): string[] {
+  const problems: string[] = []
+  const groups = new Set((voice?.groups ?? []).map((g) => g.id))
+  for (const n of c.npcs.values()) if (n.voice && !groups.has(n.voice)) problems.push(`${n.id}: voice ${n.voice} is no group of the voice kit`)
+  if (!voice) return problems
+  const faiths = new Set(world.faiths.map((f) => f.id))
+  for (const faith of Object.keys(voice.oaths)) if (!faiths.has(faith)) problems.push(`voice.oaths: unknown faith ${faith}`)
+  for (const g of voice.groups) {
+    for (const a of g.areas) if (!c.areas.has(a)) problems.push(`voice.groups.${g.id}: unknown area ${a}`)
+    for (const p of g.professions) if (!c.professions.has(p)) problems.push(`voice.groups.${g.id}: unknown profession ${p}`)
+  }
+  if (voice.default_group && !groups.has(voice.default_group)) problems.push(`voice.default_group: ${voice.default_group} is no group`)
+  return problems
 }
 
 /**

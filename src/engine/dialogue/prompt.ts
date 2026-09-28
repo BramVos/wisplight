@@ -12,6 +12,7 @@ import { agreementLines } from '../agreements'
 import { relation, type Attitude } from './relations'
 import { faithOf } from '../faith'
 import { forecastLine, readsTheSky, weather, wind, windWords } from '../weather'
+import { oathsFor, talkSeed, voiceLines } from './voice'
 
 // Prompts for the voice role (FO, chapter 10). The system part is byte-for-byte
 // stable per NPC so providers can cache it; everything that changes goes in
@@ -28,6 +29,8 @@ const RULES = `Rules:
   present tense, then what the character says in double quotes.
 - Use only facts from KNOWLEDGE, SCENE and the character card. If asked about anything else,
   say you don't know, guess vaguely, or point to REFERRAL if one is given.
+- Numbers, ages, prices, dates and distances only as given here, said as given. Never make
+  one up; say "a few" or "some" instead.
 - Never invent places, people, items, prices or quests. Never name a place or person that is
   not in KNOWLEDGE, SCENE, REFERRAL, PEOPLE YOU KNOW or the character card. PEOPLE YOU KNOW
   is everyone you know by name. If asked for a name you don't know, say you don't know it.
@@ -41,6 +44,8 @@ const RULES = `Rules:
   you. If it sounds strange, react as the character would.
 - The player may write in Dutch. Understand it, but always answer in English.
 - Match ATTITUDE: unfriendly people are curt, friendly people are warm.
+- Most replies are plain: "No, not today" is often the best answer. Show who you are by
+  what you care about, steer away from, remember and dare to say, not by sayings or oaths.
 - Speak of people as what they are to you (YOUR PEOPLE). Your own family and loved ones
   with feeling: worry, grief, pride, anger. Measure it by LISTENER: to a stranger you say
   little and keep grief private, but if one of yours is missing you ask anyone for help;
@@ -107,17 +112,37 @@ export function systemPrompt(world: World, npcId: string): string {
     npc.hidden && npc.cover ? `With strangers you keep your trade to yourself: to them you are ${npc.cover}.` : '',
     `Looks: ${npc.appearance}`,
     `Personality: ${describePersonality(npc)}. Cares about: ${values.join(', ') || 'getting by'}.`,
+    // Character shows in what they value, avoid and dare to say (M10.10, Bram's note), not in a trick of sayings.
+    ...characterLines(npc),
     npc.quirks.length ? `Quirks: ${npc.quirks.map((q) => q.replace(/_/g, ' ')).join(', ')}.` : '',
     npc.speech ? `Voice: ${npc.speech}` : '',
     npc.public_facts.length ? `Facts about you: ${npc.public_facts.join(' ')}` : '',
     npc.examples.length ? `Example lines: ${npc.examples.map((e) => `"${e}"`).join(' ')}` : '',
     // Each faith swears by its own (M10.8).
-    oathsOf(world, npcId).length ? `You swear only by your own faith: ${oathsOf(world, npcId).map((o) => `"${o}"`).join(', ')}. Never by Christ, God or the Lord, and nobody here says hell.` : '',
+    oathsOf(world, npcId).length ? `If you swear at all, and that is rare: You swear only by your own faith: ${oathsOf(world, npcId).map((o) => `"${o}"`).join(', ')}. Never by Christ, God or the Lord, and nobody here says hell.` : '',
     peopleLine(world, npcId) ?? '',
     standingLine(world, npcId) ?? '',
   ]
     .filter(Boolean)
     .join('\n')
+}
+
+/**
+ * How the character shows (M10.10; Bram, 28 September 2026): what others
+ * notice them steer away from (the hints of their secrets, never the secrets),
+ * and what they dare to say, by courage, honesty and temper.
+ */
+export function characterLines(npc: Npc): string[] {
+  const p = npc.personality
+  const dare =
+    p.courage >= 2
+      ? 'You say what you think, even to those above you.'
+      : p.courage <= -2
+        ? 'You hold your tongue with those above you and with anyone who could make trouble for you.'
+        : 'You speak your mind to your equals and choose your words with those above you.'
+  const more = [p.honesty <= -2 ? 'You shade the truth when it suits you.' : '', p.temper >= 2 ? 'You are quick to take offence.' : ''].filter(Boolean)
+  const noticed = npc.secrets.map((s) => s.hint).filter(Boolean)
+  return [`What you dare: ${[dare, ...more].join(' ')}`, noticed.length ? `What others notice in you, which you do not explain: ${noticed.join(' ')}` : '']
 }
 
 /** Everyone this NPC knows by name: the people of its own area and the areas it knows. */
@@ -239,6 +264,8 @@ export function turnPrompt(world: World, ctx: TurnContext): string {
     // The register first (M10.2): agreements with the player and a few of their own, without a model.
     ...agreementLines(world, ctx.npcId),
     ...farKnown(world, ctx.npcId),
+    // How people here speak (M10.10): sayings of their group, how to call the stranger, time and what is not here.
+    ...voiceLines(world, ctx.npcId, talkSeed(ctx.npcId, world.state.talk?.began ?? Math.floor(world.now / (24 * 60))), Boolean(world.state.talk?.flourished)),
     `ATTITUDE: ${ctx.attitude.band} (${ctx.attitude.score}). LISTENER: ${listener(world, ctx.npcId)}.`,
     // A friend of the stranger (M10.3, the watcher befriended).
     ...(tieTo(world, ctx.npcId, 'player')?.role === 'friend' ? ['THE STRANGER is your friend.'] : []),
@@ -261,7 +288,7 @@ export function turnPrompt(world: World, ctx: TurnContext): string {
 }
 
 /** The oaths of the speaker's faith (M10.8): what they swear by. */
+/** What a speaker swears by (M10.8): from the voice kit since M10.10, else from world.yaml. */
 export function oathsOf(world: World, npcId: string): string[] {
-  const faith = faithOf(world, npcId)
-  return world.content.world.faiths.find((f) => f.id === faith)?.oaths ?? []
+  return oathsFor(world, npcId)
 }

@@ -14,7 +14,7 @@ import { createEditor, type DiffLine, type Edit, type EditorBridge, type EditorD
 // playtest without the player with an NPC inspector, and the chronicler,
 // whose proposals are shown as a change and saved only when accepted.
 
-type Panel = 'edit' | 'map' | 'palette' | 'check' | 'playtest' | 'reference' | 'chronicler' | 'world'
+type Panel = 'edit' | 'map' | 'palette' | 'voice' | 'check' | 'playtest' | 'reference' | 'chronicler' | 'world'
 
 const DIRECTIONS = ['north', 'northeast', 'east', 'southeast', 'south', 'southwest', 'west', 'northwest', 'up', 'down', 'in', 'out']
 const AXES = ['warmth', 'courage', 'honesty', 'temper', 'curiosity', 'diligence'] as const
@@ -90,6 +90,7 @@ export function EditorApp() {
               ['edit', 'Edit'],
               ['map', 'Map'],
               ['palette', 'Palette'],
+              ['voice', 'Voice'],
               ['check', `Check${view.problems.length ? ` (${view.problems.length} errors)` : view.warnings.length ? ` (${view.warnings.length})` : ''}`],
               ['playtest', 'Playtest'],
               ['reference', 'Reference'],
@@ -144,6 +145,7 @@ export function EditorApp() {
       )}
       {panel === 'map' && <MapPanel bridge={bridge} world={world} view={view} saved={refresh} open={open} />}
       {panel === 'palette' && <PalettePanel bridge={bridge} world={world} saved={refresh} />}
+      {panel === 'voice' && <VoicePanel bridge={bridge} world={world} saved={refresh} />}
       {panel === 'check' && <CheckPanel view={view} open={open} />}
       {panel === 'playtest' && <PlaytestPanel bridge={bridge} world={world} />}
       {panel === 'reference' && <ReferencePanel />}
@@ -1206,6 +1208,72 @@ function NewWorldPanel({ bridge, made }: { bridge: EditorBridge; made: (folder: 
  * greys), and a map to try it on. The writing aid proposes a palette from the
  * world's frame on request; nothing is saved until you save.
  */
+/**
+ * The voice kit (M10.10): how people in this world swear, what they say, how
+ * they call a stranger, how they tell time, and what is not here. Edited as
+ * YAML, checked with the whole world, written field by field; the writing aid
+ * can propose one from the world's frame and CHRONICLER.md.
+ */
+function VoicePanel({ bridge, world, saved }: { bridge: EditorBridge; world: string; saved: () => Promise<void> }) {
+  const [kit, setKit] = useState<{ file: string; yaml: string; own: boolean }>()
+  const [yaml, setYaml] = useState('')
+  const [ask, setAsk] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [message, setMessage] = useState<string>()
+
+  useEffect(() => {
+    void bridge.voice(world).then((k) => {
+      setKit(k)
+      setYaml(k.yaml)
+      setMessage(undefined)
+    })
+  }, [bridge, world])
+
+  if (!kit) return <div className="editor-page"><p className="muted">Loading the voice kit...</p></div>
+  const save = async () => {
+    setBusy(true)
+    const result = await bridge.saveVoice(world, yaml)
+    setBusy(false)
+    setMessage(result.ok ? (result.changes.length ? `Saved in ${kit.file}.` : 'Nothing changed.') : result.problems.join('; '))
+    if (result.ok) {
+      setKit({ ...kit, yaml, own: true })
+      await saved()
+    }
+  }
+  const propose = async () => {
+    setBusy(true)
+    const result = await bridge.proposeVoice(world, ask)
+    setBusy(false)
+    if (result.yaml) setYaml(result.yaml)
+    setMessage(result.yaml ? `${result.say} (Not saved yet: look at it, change what you like, then save.)` : result.problems.join('; '))
+  }
+  return (
+    <div className="editor-page voice-panel">
+      <h2>The voice kit</h2>
+      <p className="muted small">
+        {kit.own ? `This world's kit, in ${kit.file}.` : `This world has no kit yet: the guard keeps its fixed list. Saving writes ${kit.file}.`} Oaths per faith, sayings of the region and of groups, how people call the stranger, time, distance and measures, and what is not here (with what people say instead). Sayings are rare in play: at most once in a talk, in one talk of three. Character shows in what people care about, steer away from, remember and dare to say.
+      </p>
+      <textarea className="yaml-box" value={yaml} onChange={(e) => setYaml(e.target.value)} spellCheck={false} rows={Math.min(40, Math.max(16, yaml.split('\n').length + 2))} aria-label="The voice kit as YAML" />
+      <div className="row">
+        <button type="button" className="link" disabled={busy || yaml === kit.yaml} onClick={() => void save()}>
+          [Save]
+        </button>
+        <button type="button" className="link" disabled={busy || yaml === kit.yaml} onClick={() => setYaml(kit.yaml)}>
+          [Undo changes]
+        </button>
+      </div>
+      <label className="field">
+        Ask the writing aid
+        <input value={ask} onChange={(e) => setAsk(e.target.value)} placeholder="a kit that fits this world" />
+      </label>
+      <button type="button" className="link" disabled={busy} onClick={() => void propose()}>
+        [Propose a kit]
+      </button>
+      {message && <p className={message.startsWith('Saved') || message.startsWith('Nothing') || message.includes('Not saved yet') ? 'muted' : 'warn'}>{message}</p>}
+    </div>
+  )
+}
+
 function PalettePanel({ bridge, world, saved }: { bridge: EditorBridge; world: string; saved: () => Promise<void> }) {
   const [view, setView] = useState<PaletteView>()
   const [palette, setPalette] = useState<MapPalette>()

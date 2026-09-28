@@ -69,6 +69,8 @@ export class World {
   archived: Archived[] = []
   /** The last stock lines that stood in for the model, and why (M10.8), for the dev menu. Not saved. */
   stockLines: { t: number; npc: string; reason: string }[] = []
+  /** What the guard did this session (M10.10), by what: oaths put right, words put right, asked again, numbers noted. Not saved. */
+  guard: Record<string, number> = {}
   /**
    * The archive to read back from (M10.2): the game log of this game, set by
    * whoever keeps it (the desktop app). Without it, what went to the archive

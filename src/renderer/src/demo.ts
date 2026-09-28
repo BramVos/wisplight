@@ -78,6 +78,16 @@ export function slowMock(llm: LlmClient): LlmClient {
       }
       return { ...response, model: DEMO_MODEL, usage }
     },
+    // As the AI log does (M10.8, M10.10): a reply thrown away, or put right by the guard, beside its call.
+    report: (rejection) => {
+      const last = state.log.find((e) => e.role === (rejection.role ?? 'voice'))
+      if (!last) return
+      if (rejection.fixed) (last.fixed ??= []).push(`${rejection.reason}: ${rejection.fixed}`)
+      else {
+        ;(last.rejected ??= []).push(rejection.reason)
+        state.session.rejected++
+      }
+    },
   }
 }
 

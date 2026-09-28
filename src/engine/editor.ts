@@ -4,9 +4,11 @@ import { DEFAULT_PALETTE, MapPaletteSchema, SURFACE, TERRAIN_ORDER, type Level, 
 import { previewMapData, type HexMapData } from './map/view'
 import { ContentError, loadContent, type Content, type ContentFile, type Direction } from './content'
 import { regionPreview, sceneryWarnings, warnings } from './builder'
-import { applyEdits, entities, ENTITY_KINDS, LISTS, parseEntityYaml, worldPrefix, type Edit, type EditResult, type EntityKind, type Raw } from './edit'
+import { applyEdits, entities, ENTITY_KINDS, LISTS, parseEntityYaml, voiceYaml, worldPrefix, type Edit, type EditResult, type EntityKind, type Raw } from './edit'
 import { worldFrame } from './dialogue/prompt'
 import type { LlmRequest } from './dialogue/llm'
+import { voiceSummary } from './dialogue/voice'
+import { VoiceSchema } from './dialogue/voiceSchema'
 
 // What the editor shows of a world (M8, FO chapter 15), and the pieces of
 // work it does besides plain edits: exits that are made both ways, a new
@@ -432,6 +434,8 @@ export function draftRequest(files: ContentFile[], ask: string, focus?: { kind: 
       instruction,
       '',
       content ? worldFrame(content) : '',
+      // The world's voice (M10.10): new content comes in the same voice.
+      content ? voiceSummary(content) : '',
       '',
       'YOU ARE IN THE WORLD BUILDER. Answer the designer with a proposal: every entity to add or change in full YAML (one mapping with its id, as it would stand in its list), or an empty yaml to delete it. The builder shows it as a diff, checks it, and saves only what the designer accepts. Use only ids that exist or that you add in the same proposal. If a choice belongs to the designer, ask in questions and propose nothing for it. JSON only.',
     ].join('\n'),
@@ -595,4 +599,52 @@ export function readPalette(text: string): { say: string; palette?: MapPalette; 
   }
   const palette = MapPaletteSchema.safeParse(parsed.palette)
   return { say: typeof parsed.say === 'string' ? parsed.say : '', ...(palette.success ? { palette: palette.data } : {}), problems: palette.success ? [] : palette.error.issues.slice(0, 5).map((i) => `palette ${i.path.join('.')}: ${i.message}`) }
+}
+
+// ---------------------------------------------------------------- the voice kit (M10.10)
+
+const VOICE_SCHEMA = { type: 'object', additionalProperties: false, required: ['say', 'yaml'], properties: { say: { type: 'string' }, yaml: { type: 'string' } } }
+
+/**
+ * The writing aid proposes a voice kit on request (M10.10): from the world's
+ * frame and CHRONICLER.md, in the kit's own YAML (what stands under `voice:`).
+ * Rare sayings, plain speech: character shows in what people care about, not
+ * in a trick of proverbs.
+ */
+export function voiceRequest(files: ContentFile[], ask: string): LlmRequest {
+  const content = safeLoad(files)
+  const instruction = files.filter((f) => /(^|\/)CHRONICLER\.md$/.test(f.path)).sort((a, b) => a.path.localeCompare(b.path)).map((f) => f.text).join('\n\n')
+  const now = voiceYaml(files).yaml
+  const faiths = content?.world.faiths.map((f) => `${f.id} (${f.name})`).join(', ') ?? ''
+  const areas = content ? [...content.areas.values()].map((a) => `${a.id} (${a.name}, ${a.kind})`).join(', ') : ''
+  const trades = content ? [...content.professions.keys()].join(', ') : ''
+  return {
+    role: 'chronicler',
+    system: [
+      instruction,
+      '',
+      content ? worldFrame(content) : '',
+      '',
+      'YOU ARE IN THE WORLD BUILDER, AT THE VOICE KIT. Propose how people in this world speak, as YAML with these keys: oaths (per faith id, two or three each), sayings (three or four of the whole region), groups (id, name, areas, professions, two or three sayings each), default_group, address (stranger, known, friend, high; "she/he/they" forms allowed), time, distance, measures, and not_here (word, and instead when people here have a word for it; weekdays and months of our world with this world\'s own). Sayings are rare in play: make them few and good. JSON only, with the YAML as a string.',
+    ].join('\n'),
+    prompt: [`FAITHS: ${faiths}`, `AREAS: ${areas}`, `TRADES: ${trades}`, '', 'THE KIT NOW:', now || '(none yet)', '', `THE DESIGNER ASKS: ${ask || 'a voice kit that fits this world'}`].join('\n'),
+    schemaName: 'voice_draft',
+    schema: VOICE_SCHEMA,
+    maxTokens: 3000,
+    meta: { voice: now, faiths: content?.world.faiths.map((f) => f.id) ?? [], ask },
+  }
+}
+
+/** Reads a proposed voice kit, checked against the schema: nothing is saved until the designer does. */
+export function readVoice(text: string): { say: string; yaml?: string; problems: string[] } {
+  let parsed: { say?: unknown; yaml?: unknown }
+  try {
+    parsed = JSON.parse(text.trim().replace(/^```(?:json)?\s*|\s*```$/g, '')) as typeof parsed
+  } catch {
+    return { say: '', problems: ['The writing aid did not answer in the agreed form.'] }
+  }
+  const yaml = typeof parsed.yaml === 'string' ? parsed.yaml : ''
+  const raw = parseEntityYaml(yaml).raw
+  const kit = raw ? VoiceSchema.safeParse(raw) : undefined
+  return { say: typeof parsed.say === 'string' ? parsed.say : '', ...(kit?.success ? { yaml } : {}), problems: kit?.success ? [] : kit ? kit.error.issues.slice(0, 5).map((i) => `voice ${i.path.join('.')}: ${i.message}`) : ['The proposal is no YAML.'] }
 }

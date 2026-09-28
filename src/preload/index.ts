@@ -40,6 +40,9 @@ contextBridge.exposeInMainWorld('wisplight', {
     palette: (world: string, palette?: unknown) => ipcRenderer.invoke('editor:palette', world, palette),
     savePalette: (world: string, palette: unknown) => ipcRenderer.invoke('editor:save-palette', world, palette),
     proposePalette: (world: string, ask: string) => ipcRenderer.invoke('editor:propose-palette', world, ask),
+    voice: (world: string) => ipcRenderer.invoke('editor:voice', world),
+    saveVoice: (world: string, yaml: string) => ipcRenderer.invoke('editor:save-voice', world, yaml),
+    proposeVoice: (world: string, ask: string) => ipcRenderer.invoke('editor:propose-voice', world, ask),
   },
   // Under the bonnet (M10.1): only a development build has the dev menu.
   ...(import.meta.env.DEV ? { dev: { view: (section: string, focus?: string) => ipcRenderer.invoke('dev:view', section, focus) } } : {}),

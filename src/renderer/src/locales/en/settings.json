@@ -80,7 +80,8 @@
       "outOfCharacter": "{count} out of character",
       "usable": "{valid}/{answers} usable",
       "usableWrong": "{valid}/{answers} usable ({wrong})",
-      "summary": "{usable}  {seconds} s  {cost}"
+      "summary": "{usable}  {seconds} s  {cost}",
+      "character": "{score}% in character"
     },
     "budget": {
       "label": "Budget per hour",
@@ -186,6 +187,8 @@
     },
     "ok": "ok",
     "rejected": "thrown away: {reasons}",
+    "fixed": "(put right: {what})",
+    "guard": "The guard, per model: {counts}.",
     "prompt": "Prompt",
     "reply": "Reply",
     "noReply": "(none)"

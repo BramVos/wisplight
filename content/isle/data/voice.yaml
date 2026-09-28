@@ -1,0 +1,96 @@
+# How people on Skerrow speak (M10.10): the voice kit. The tide is the clock.
+# Character is not a trick of sayings: a saying goes with one talk in three at
+# most, once, and only when it fits.
+
+voice:
+  oaths:
+    tidemother: ["Tidemother keep us", "by the Tidemother", "salt and tide"]
+    old_stars: ["by the Old Stars", "stars above"]
+
+  sayings:
+    - The sea gives, and the sea keeps count.
+    - Tide waits for nobody, least of all the lazy.
+    - No light, no ships; no ships, no salt.
+
+  groups:
+    - id: hythe
+      name: the harbour folk
+      areas: [skerrow_hythe, skerrow_shore]
+      professions: [innkeeper, fisher, boatman]
+      sayings:
+        - Mend the net before you need it.
+        - A rope is only as good as its last knot.
+    - id: heights
+      name: the old ones of the heights
+      areas: [skerrow_heights]
+      professions: [hedge_witch, scholar, lightkeeper]
+      sayings:
+        - The stars are old, and they do not hurry.
+        - What the wyrm sleeps on, leave where it lies.
+  default_group: hythe
+
+  address:
+    stranger: [stranger, castaway]
+    known: [neighbour]
+    friend: [love, friend]
+    high: [mistress/master/honoured one]
+
+  time: [at the turn of the tide, by the harbour bell, before the Lamp is lit, at low water, at high water]
+  distance: [a morning's walk, a shout across the harbour, a tide's row]
+  measures: [a fathom of rope, a cask of oil, a creel of fish]
+
+  # First what this world most needs kept out: the prompt names the first eight.
+  not_here:
+    - { word: "o'clock", instead: bells }
+    - { word: potatoes, instead: turnips }
+    - { word: potato, instead: turnip }
+    - { word: tobacco }
+    - { word: coffee }
+    - { word: chocolate }
+    - { word: gun }
+    - { word: guns }
+    - { word: pistol }
+    - { word: musket }
+    - { word: gunpowder }
+    - { word: pocket watch }
+    - { word: okay, instead: aye }
+    - { word: ok, instead: aye }
+    - { word: photograph, instead: likeness }
+    - { word: percent, instead: in a hundred }
+    - { word: awesome, instead: fine }
+    - { word: dude, instead: friend }
+    - { word: police, instead: the watch }
+    - { word: weekend, instead: Restday }
+    - { word: dollars, instead: silver pieces }
+    - { word: dollar, instead: silver piece }
+    - { word: pennies, instead: coppers }
+    - { word: penny, instead: copper }
+    - { word: cents, instead: coppers }
+    - { word: internet }
+    - { word: online }
+    - { word: website }
+    - { word: email }
+    - { word: phone }
+    - { word: computer }
+    - { word: robot }
+    - { word: television }
+    - { word: electricity }
+    - { word: plastic }
+    - { word: hashtag }
+    - { word: Monday, instead: Moonday }
+    - { word: Tuesday, instead: Tidesday }
+    - { word: Wednesday, instead: Windsday }
+    - { word: Thursday, instead: Thornsday }
+    - { word: Friday, instead: Fireday }
+    - { word: Saturday, instead: Starday }
+    - { word: Sunday, instead: Restday }
+    - { word: January, instead: Deepwinter }
+    - { word: February, instead: Thawmoon }
+    - { word: April, instead: Blossom }
+    - { word: June, instead: Midsummer }
+    - { word: July, instead: Highsun }
+    - { word: August, instead: Harvest }
+    - { word: September, instead: Leaffall }
+    - { word: October, instead: Mistmoon }
+    - { word: November, instead: Frostwane }
+    - { word: December, instead: Longnight }

@@ -50,9 +50,14 @@ export interface LlmResponse {
 
 /** A reply the engine threw away after validation, so the usage overview can count it. */
 export interface LlmRejection {
-  reason: 'schema' | 'anachronism' | 'character' | 'leak' | 'invented' | 'goal' | 'promise'
+  reason: 'schema' | 'anachronism' | 'character' | 'leak' | 'invented' | 'goal' | 'promise' | 'oath' | 'not_here' | 'number'
   /** Whose reply it was; the voice when not given. */
   role?: LlmRole
+  /**
+   * Not thrown away (M10.10): the guard put it right in place (an oath, a word
+   * that is not here) or only noted it (a number nobody gave); what it was.
+   */
+  fixed?: string
 }
 
 export interface LlmClient {

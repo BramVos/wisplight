@@ -21,6 +21,7 @@ import { chancesIn, motorProp, playerCard } from './props'
 import type { World } from './world'
 import { sketchById, sketches, sketchPhrase } from './sketches'
 import { developSketch } from './growth/sketched'
+import { voiceSummary } from './dialogue/voice'
 
 // The game's side of the chronicler (design: lore and world change). The
 // chronicler itself (src/chronicler) knows nothing of the game: this file
@@ -156,7 +157,8 @@ export function buildInput(world: World, run: ChronicleRun): ChronicleInput {
   const planning = signalCards(world, run.signals ?? [])
   const input: ChronicleInput = {
     instruction: withoutReference(world.content.chronicler ?? FALLBACK_INSTRUCTION),
-    world: worldFrame(world.content),
+    // With the world's voice (M10.10): oaths, sayings, time and what is not here, so lore comes in the same voice.
+    world: [worldFrame(world.content), voiceSummary(world.content)].filter(Boolean).join('\n\n'),
     catalogue: catalogue(world),
     now: when(world, world.now),
     lines: chronicleLines,

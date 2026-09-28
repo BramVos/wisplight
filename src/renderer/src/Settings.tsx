@@ -186,7 +186,9 @@ function trialText(trial: TrialResult | string | undefined): string | undefined 
     trial.characterBreaks ? t('settings.ai.trial.outOfCharacter', { count: trial.characterBreaks }) : '',
   ].filter(Boolean)
   const usable = wrong.length ? t('settings.ai.trial.usableWrong', { valid: trial.valid, answers: trial.answers, wrong: wrong.join(', ') }) : t('settings.ai.trial.usable', { valid: trial.valid, answers: trial.answers })
-  return `${t('settings.ai.trial.summary', { usable, seconds: (trial.averageLatencyMs / 1000).toFixed(1), cost })}${trial.errors.length ? `  ${trial.errors[0]}` : ''}`
+  // How well it stays in character, by the rules (M10.10): beside cost and speed.
+  const character = trial.characterScore === undefined ? '' : `  ${t('settings.ai.trial.character', { score: Math.round(trial.characterScore * 100) })}`
+  return `${t('settings.ai.trial.summary', { usable, seconds: (trial.averageLatencyMs / 1000).toFixed(1), cost })}${character}${trial.errors.length ? `  ${trial.errors[0]}` : ''}`
 }
 
 // Settings > AI (FO, chapter 16). The player picks a model per role from the
@@ -703,8 +705,26 @@ export function LogTab({ bridge }: { bridge: AiBridge }) {
   }, [bridge])
   if (!entries) return <p className="muted">{t('settings.loading')}</p>
   if (!entries.length) return <p className="muted">{t('settings.log.none')}</p>
+  // How often the guard stepped in, per model and why (M10.10): replies thrown away and things put right.
+  const guard = new Map<string, Record<string, number>>()
+  for (const e of entries) {
+    for (const r of [...(e.rejected ?? []), ...(e.fixed ?? []).map((f) => f.split(':')[0]!)]) {
+      const counts = guard.get(e.model) ?? {}
+      counts[r] = (counts[r] ?? 0) + 1
+      guard.set(e.model, counts)
+    }
+  }
   return (
     <div className="settings-body">
+      {guard.size > 0 && (
+        <p className="muted small">
+          {t('settings.log.guard', {
+            counts: [...guard]
+              .map(([model, counts]) => `${model}: ${Object.entries(counts).map(([r, n]) => `${n} ${r.replace('_', ' ')}`).join(', ')}`)
+              .join('; '),
+          })}
+        </p>
+      )}
       <table className="usage log-table">
         <thead>
           <tr>
@@ -721,12 +741,15 @@ export function LogTab({ bridge }: { bridge: AiBridge }) {
           </tr>
         </thead>
         <tbody>
-          {entries.map((entry, index) => (
+          {entries.slice(0, 50).map((entry, index) => (
             <tr key={`${entry.time}-${index}`} onClick={() => setOpen(open === index ? undefined : index)} className="clickable">
               <td>{new Date(entry.time).toLocaleTimeString('en-GB')}</td>
               <td>{entry.role}</td>
               <td className="mono">{entry.model}</td>
-              <td className={entry.ok && !entry.rejected?.length ? 'ok' : 'warn'}>{entry.ok ? (entry.rejected?.length ? t('settings.log.rejected', { reasons: entry.rejected.join(', ') }) : t('settings.log.ok')) : entry.error}</td>
+              <td className={entry.ok && !entry.rejected?.length ? 'ok' : 'warn'}>
+                {entry.ok ? (entry.rejected?.length ? t('settings.log.rejected', { reasons: entry.rejected.join(', ') }) : t('settings.log.ok')) : entry.error}
+                {entry.fixed?.length ? ` ${t('settings.log.fixed', { what: entry.fixed.join('; ') })}` : ''}
+              </td>
               <td>{entry.latencyMs}</td>
               <td>
                 {entry.inputTokens}/{entry.outputTokens}

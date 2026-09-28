@@ -382,6 +382,10 @@ export interface TalkState {
   lines?: TalkLine[]
   /** Whether the speaker named someone new in this talk (M10.9): once a talk. */
   sketched?: boolean
+  /** When the talk began (M10.10): the seed of the speaker's sayings and address for this talk. */
+  began?: number
+  /** The speaker used a saying or an oath in this talk (M10.10): no more of either. */
+  flourished?: boolean
 }
 
 /** A line of a conversation as the engine keeps it (M10.8): what was typed, and what came back. */

@@ -508,3 +508,54 @@ export function adoptPlaceEdits(project: Raw, from?: Raw): Edit[] {
   edits.push({ kind: 'project', id: String(project['id']), data: rest })
   return edits
 }
+
+// ---------------------------------------------------------------- the voice kit (M10.10)
+
+/** Where a world's voice kit is written, and as the editor shows it: the YAML under `voice:`, without that line. */
+export function voiceYaml(files: ContentFile[]): { file: string; yaml: string; own: boolean } {
+  const file = sorted(files).find((f) => isYaml(f.path) && /^voice:/m.test(f.text))
+  if (!file) return { file: `${worldPrefix(files)}data/voice.yaml`, yaml: '', own: false }
+  const node = parseDocument(file.text).get('voice', true)
+  if (!isMap(node)) return { file: file.path, yaml: '', own: true }
+  const doc = new Document(node)
+  return { file: file.path, yaml: tidy(doc.toString({ lineWidth: 0 })), own: true }
+}
+
+/** The house style, [a, b] without inner spaces, where it reads back the same. */
+function tidy(text: string): string {
+  const tight = tightenSeqs(text)
+  return tight !== text && same(parse(tight), parse(text)) ? tight : text
+}
+
+/**
+ * Writes the voice kit from the editor's YAML box (M10.10): field by field
+ * into the kit where it stands, so the comments around it stay; a world
+ * without one gets data/voice.yaml. Checked by loading the whole world.
+ */
+export function saveVoice(files: ContentFile[], yaml: string): { ok: boolean; problems: string[]; changes: FileChange[] } {
+  const read = parseEntityYaml(yaml)
+  if (!read.raw) return { ok: false, problems: [read.problem ?? 'the voice kit is empty'], changes: [] }
+  const { file: path } = voiceYaml(files)
+  const file = files.find((f) => f.path === path)
+  let text: string
+  if (file) {
+    const doc = parseDocument(file.text)
+    const node = doc.get('voice', true)
+    if (isMap(node)) patchMap(doc, node, read.raw)
+    else doc.set('voice', makeNode(doc, read.raw, 0))
+    text = tidy(doc.toString({ lineWidth: 0 }))
+  } else {
+    const doc = new Document()
+    doc.contents = doc.createNode({}) as YAMLMap
+    ;(doc.contents as YAMLMap).set('voice', makeNode(doc, read.raw, 0))
+    text = `# How people in this world speak (M10.10): the voice kit.\n${tidy(doc.toString({ lineWidth: 0 }))}`
+  }
+  if (file?.text === text) return { ok: true, problems: [], changes: [] }
+  const next = file ? files.map((f) => (f === file ? { ...f, text } : f)) : [...files, { path, text }]
+  try {
+    loadContent(next)
+  } catch (error) {
+    return { ok: false, problems: error instanceof ContentError ? error.problems : [String(error)], changes: [] }
+  }
+  return { ok: true, problems: [], changes: [{ path, ...(file ? { before: file.text } : {}), text }] }
+}

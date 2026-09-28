@@ -226,8 +226,8 @@ describe('M3.1: the chronicler', () => {
     // The fixed part is cached from the second run on; the answer is at most the token limit.
     const usage = { inputTokens: fixed + overview, cachedTokens: fixed, outputTokens: DEFAULT_LIMITS.maxTokens }
     expect(costUsd('claude-sonnet-5', usage)!).toBeLessThan(0.03)
-    // With the domains of people named in talks (M10.9), a sentence of the world's own.
-    expect(fixed).toBeLessThan(5100)
+    // With the domains of people named in talks (M10.9), a sentence of the world's own, and the world's voice (M10.10).
+    expect(fixed).toBeLessThan(5300)
   })
 })
 

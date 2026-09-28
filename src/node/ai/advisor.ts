@@ -1,7 +1,9 @@
 import type { Content } from '../../engine/content'
 import { hasAnachronism, outOfCharacter } from '../../engine/dialogue/guard'
 import type { LlmClient, LlmRejection, LlmRequest, LlmResponse } from '../../engine/dialogue/llm'
+import { parseReply } from '../../engine/dialogue/schema'
 import { brainTrial, chroniclerTrial, runSituation, trialSituations } from '../../engine/dialogue/testset'
+import { characterChecks, characterScore } from '../../engine/dialogue/voice'
 import type { Gateway } from './gateway'
 import { CALLS_PER_HOUR, costUsd, priceOf, priceTable, PRICING_AS_OF } from './pricing'
 import type { ModelInfo, ProviderId } from './providers'
@@ -58,6 +60,8 @@ export interface TrialResult {
   factualErrors: number
   /** Words from outside the world, talk of models and prompts, markup. */
   characterBreaks: number
+  /** How well its answers stay in character by the rules (M10.10), 0 to 1: oaths, words, names, own people, numbers. */
+  characterScore?: number
   averageLatencyMs: number
   maxLatencyMs: number
   inputTokens: number
@@ -221,6 +225,9 @@ interface Call {
   answer: number
   rejected?: LlmRejection['reason']
   failed?: string
+  /** What the model was given and what it said (M10.10), for the character score. */
+  given?: string
+  text?: string
 }
 
 /** A client for the game that calls one model and keeps count of every call and every rejection. */
@@ -237,7 +244,7 @@ class Meter implements LlmClient {
   async complete(request: LlmRequest): Promise<LlmResponse> {
     try {
       const response = await this.gateway.complete(request, { provider: this.provider, model: this.model })
-      this.calls.push({ latencyMs: response.latencyMs, inputTokens: response.usage.inputTokens, outputTokens: response.usage.outputTokens, costUsd: costUsd(this.model, response.usage), answer: this.answer })
+      this.calls.push({ latencyMs: response.latencyMs, inputTokens: response.usage.inputTokens, outputTokens: response.usage.outputTokens, costUsd: costUsd(this.model, response.usage), answer: this.answer, given: `${request.system}\n${request.prompt}`, text: response.text })
       return response
     } catch (error) {
       this.calls.push({ latencyMs: 0, inputTokens: 0, outputTokens: 0, costUsd: 0, answer: this.answer, failed: error instanceof Error ? error.message : String(error) })
@@ -247,7 +254,8 @@ class Meter implements LlmClient {
 
   report(rejection: LlmRejection): void {
     const last = this.calls.at(-1)
-    if (last) last.rejected = rejection.reason
+    // What the guard put right or noted (M10.10) is no rejection: the reply stood.
+    if (last && !rejection.fixed) last.rejected = rejection.reason
     this.gateway.report(rejection)
   }
 }
@@ -275,6 +283,14 @@ export async function trial(gateway: Gateway, content: Content, provider: Provid
       if (calls.some((c) => !c.rejected && !c.failed)) result.valid++
       else result.fallbacks++
     }
+    // In character by the rules (M10.10): every reply the model gave, as it gave it.
+    const checks = meter.calls.flatMap((call) => {
+      if (!call.text || call.failed) return []
+      const reply = parseReply(call.text)?.reply
+      return reply ? [characterChecks(content, reply, call.given ?? '', call.rejected)] : []
+    })
+    const score = characterScore(checks)
+    if (score !== undefined) result.characterScore = score
     for (const call of meter.calls) {
       if (call.rejected === 'leak') result.leaks++
       if (call.rejected === 'invented') result.factualErrors++

@@ -79,6 +79,8 @@ export class MockLlm implements LlmClient {
         ? this.draft(request.meta ?? {})
         : request.schemaName === 'palette_draft'
         ? this.palette(request.meta ?? {})
+        : request.schemaName === 'voice_draft'
+        ? this.voiceKit(request.meta ?? {})
         : request.schemaName === 'party_reply'
         ? this.party(request.meta as unknown as { party: { id: string; name: string; knows: string[] }[] })
         : request.role === 'voice'
@@ -93,6 +95,16 @@ export class MockLlm implements LlmClient {
             : this.chronicler(request.meta as unknown as ChronicleMeta, request.prompt)
           : this.other(request)
     return { text, provider: 'mock', model: 'mock-1', usage: { inputTokens: Math.round((request.system.length + request.prompt.length) / 4), outputTokens: Math.round(text.length / 4), cachedTokens: 0 }, latencyMs: 1 }
+  }
+
+  /** A voice kit proposal (M10.10): the kit as it stands, or a small one for each faith of the world. */
+  voiceKit(meta: Record<string, unknown>): string {
+    const now = typeof meta['voice'] === 'string' ? meta['voice'] : ''
+    if (now) return JSON.stringify({ say: 'The kit as it stands reads well; I would keep it.', yaml: now })
+    const faiths = (meta['faiths'] as string[] | undefined) ?? []
+    const oaths = faiths.map((f) => `  ${f}: ["by the old ways", "saints preserve us"]`).join('\n')
+    const yaml = [`oaths:${faiths.length ? `\n${oaths}` : ' {}'}`, 'sayings:', '  - A dry foot is a lucky foot.', 'address:', '  stranger: [stranger]', '  known: [neighbour]', '  friend: [friend]', '  high: [mistress/master/honoured guest]', 'time: [by the bell, at first light]', 'not_here:', '  - { word: potatoes, instead: turnips }', '  - { word: tobacco }'].join('\n')
+    return JSON.stringify({ say: 'A plain kit to start from: few sayings, and a guard for what is not here.', yaml })
   }
 
   /** A palette proposal (M10): the palette now, every colour a shade warmer, so the test sees a change. */
@@ -163,7 +175,8 @@ export class MockLlm implements LlmClient {
 
     if (this.mode === 'leak') speech = `My cousin swears ${this.leakName} wept for it. ${speech}`
     if (this.mode === 'long') speech = Array.from({ length: 12 }, () => speech).join(' ')
-    if (this.mode === 'anachronism') speech = `Okay, ${speech}`
+    // A word with nothing in this world to stand for it (M10.10: "okay" the guard now puts right as "aye").
+    if (this.mode === 'anachronism') speech = `I'd look it up on my phone. ${speech}`
     if (this.mode === 'invent') speech = `${speech} Father Oswin would know more.`
     // A promise the game did not offer (M10.3): the guard must keep it out of the text.
     if (this.mode === 'promise') speech = `Come on, I'll take you there myself. ${speech}`

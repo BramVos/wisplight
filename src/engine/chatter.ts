@@ -7,6 +7,8 @@ import { tieTo } from './people'
 import { mayLie } from './social/gates'
 import type { Fact } from './state'
 import type { World } from './world'
+import { swearRight } from './dialogue/guard'
+import { fixNotHere, oathsFor, strangeWords } from './dialogue/voice'
 
 // Greetings and chats where the player is (M8.2, task 11; design: signalen en
 // nasleep, "Vreemden, geloof en vergeten", part 6). Only at the player's
@@ -224,7 +226,10 @@ export function chatLine(world: World, chat: Chat, text: string): Output[] {
     return []
   }
   if (typeof line !== 'string' || !line.trim() || line.split(/\s+/).length > 25 || /[\n{}]/.test(line)) return []
-  return [{ kind: 'narration', text: `${callName(world.npc(chat.listener))} says: "${line.trim().replace(/^"|"$/g, '')}"` }]
+  // The world's own guard (M10.10): the listener's oaths, what people here say instead, and nothing that is not here.
+  const fitted = fixNotHere(world, swearRight(line.trim(), oathsFor(world, chat.listener))).text
+  if (strangeWords(world, fitted).length) return []
+  return [{ kind: 'narration', text: `${callName(world.npc(chat.listener))} says: "${fitted.replace(/^"|"$/g, '')}"` }]
 }
 
 /** TALK breaks a chat off: whoever is spoken to turns to the player. */

@@ -53,9 +53,9 @@ world:
     readers: [peat_cutter, eel_fisher, dyke_reeve, miller, herbalist, witch]
   # Faiths (Wereldboek, chapter 5; M9.1): most are Lantern on Rustdag and the Old Powers when it comes to it.
   faiths:
-    # Each faith swears by its own (M10.8); nobody here swears by Christ, God or the Lord.
-    - { id: lantern, name: the Church of the Lantern, patrons: [lantern], oaths: ["Saint Brand's light", "by the Lantern", "Lantern keep us"] }
-    - { id: old_powers, name: the Old Powers, patrons: [nehalennia, grey_rider, holle, baduhenna], oaths: ["Holle take it", "by the Grey Rider", "Nehalennia's nets"] }
+    # Each faith swears by its own (M10.8): the oaths are in the voice kit, data/voice.yaml (M10.10).
+    - { id: lantern, name: the Church of the Lantern, patrons: [lantern] }
+    - { id: old_powers, name: the Old Powers, patrons: [nehalennia, grey_rider, holle, baduhenna] }
   # Plans that run from the first day (M8.3): the opponents in the Holleveen do not wait for the player.
   plans: [holleveen_survey, holleveen_stakes, the_haakman_counts]
   # How pictures of places and people look (after the M7 playtest), when an image model is chosen.
