@@ -144,6 +144,16 @@ npcs:
     personality: { warmth: 1, courage: 1, honesty: 1, temper: 0, curiosity: 0, diligence: 2 }
     values: { work: 2 }
     speech: "Brisk. Talks while she works and never stops working to talk."
+    # What Wenna hires out (M10.17): her coracle, for the day.
+    hires:
+      - id: coracle
+        name: coracle
+        aliases: [boat, little boat, hide boat]
+        price: 10
+        hours: 12
+        crosses: [water]
+        where: the fisherwoman, at the harbour
+        line: '"Keep her head to the swell, and bring her back before the tide turns."'
     aliases: [wenna, fisherwoman, fisher]
     public_facts:
       - Wenna Dray fishes the inshore water from a coracle.

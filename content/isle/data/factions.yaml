@@ -1,0 +1,50 @@
+# Factions of Skerrow (M10.17): the folk of the Hythe, whose law is the
+# headwoman's; the Tidemother's faithful and the sailors of the Old Stars, the
+# island's two faiths as groups with a standing; and the wreckers, who light
+# false lamps on the cliff path.
+
+factions:
+  - id: hythe_folk
+    name: the folk of the Hythe
+    seat: the Salt Kettle in Skerrow Hythe
+    wants: The Lamp lit again, and a ship to call before the winter storms close the sea.
+    members: [npc_maren, npc_brannoc, npc_wenna, npc_pip]
+    allies: [tidemother_faithful]
+    rivals: [wreckers]
+    join: reputation
+    law: count
+
+  - id: tidemother_faithful
+    name: the Tidemother's faithful
+    seat: the old birch in the silver grove
+    wants: Gifts to the sea, and the drowned remembered.
+    members: [npc_tamsin]
+    allies: [hythe_folk]
+    rivals: []
+    join:
+      patrons: [tidemother]
+      at: [loc_skerrow_silver_grove]
+      says:
+        patron: Only those sworn to the Tidemother keep her grove.
+        place: You make your promise to the Tidemother at the old birch in the silver grove.
+
+  - id: star_sailors
+    name: the sailors of the Old Stars
+    seat: wherever a ship is at sea
+    wants: Fair winds, a safe landfall, and the old star-lore kept.
+    members: [npc_brannoc]
+    allies: []
+    rivals: []
+    join:
+      patrons: [old_stars]
+      says:
+        patron: The sailors of the Old Stars take only those who swear by the stars.
+
+  - id: wreckers
+    name: the wreckers
+    seat: the cliff path, on dark nights
+    wants: Ships on the rocks, and their cargo on the shore.
+    members: []
+    allies: []
+    rivals: [hythe_folk]
+    join: never

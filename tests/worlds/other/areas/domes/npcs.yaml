@@ -47,6 +47,15 @@ npcs:
     values: { craft: 3, freedom: 1 }
     quirks: [talks_to_machines]
     speech: "Fast, half to himself. Calls every machine 'she' and every person 'friend'."
+    # What Teo hires out (M10.17): a pressure suit from the Fab Shop, for a shift.
+    hires:
+      - id: pressure_suit
+        name: pressure suit
+        aliases: [suit, pressure suit, vac suit, spacesuit]
+        price: 6
+        hours: 12
+        where: the fabricator, at the Fab Shop
+        line: '"Check the seals before you trust her, and bring her back before the night shift."'
     aliases: [teo, marsh, fabricator, the fabricator]
     public_facts:
       - Teo Marsh runs the Fab Shop, where anything broken in Deepwell ends up.

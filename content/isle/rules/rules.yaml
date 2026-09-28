@@ -28,6 +28,7 @@ rules:
   ancestries:
     - id: islander
       name: Islander
+      aliases: [islanders, islandfolk, island born]
       text: People of the Sundered Isles, born to boats and weather.
       attributes: { wits: 1, choice: 1 }
       hp: 8
@@ -35,6 +36,7 @@ rules:
       aptitude: { watercraft: 1, crafting: 1 }
     - id: mainlander
       name: Mainlander
+      aliases: [mainlanders, havenmoor folk]
       text: People of Havenmoor and the big isles, broad and stubborn.
       attributes: { might: 1, resolve: 1, grace: -1 }
       hp: 10
@@ -42,6 +44,9 @@ rules:
       aptitude: { athletics: 1, intimidation: 1, stealth: -1 }
     - id: western_elf
       name: Elf of the western isles
+      aliases: [elf, elves, elven, western elf]
+      # The superstitious keep a step back from the long-lived (M10.17).
+      distrusted_by: [superstitious]
       text: They live long and speak little.
       attributes: { grace: 1, wits: 1 }
       hp: 8
@@ -312,6 +317,8 @@ rules:
   patrons:
     - id: tidemother
       name: the Tidemother
+      # Swearing to her is a deed companions judge (M10.17).
+      sworn: mercy
       text: The sea that gives and takes back; fish, weather and the drowned.
       values: { request_done: 2, honour_dead: 3, spared: 2, pray: 1 }
       forbids: { killed_surrendered: -20, grave_robbing: -20 }
@@ -321,6 +328,8 @@ rules:
         - { at: 75, name: Given Back, text: "Once, the sea gives you back when you would drown; she asks for something later.", effects: [] }
     - id: old_stars
       name: the Old Stars
+      # Swearing to them is a deed companions judge (M10.17).
+      sworn: courage
       text: The stars that fell and the ones that stayed; sailors' oaths, luck and the way home.
       values: { fight_won: 2, request_done: 1, pray: 1 }
       forbids: { fled: -5, killed_surrendered: -10 }
@@ -328,3 +337,13 @@ rules:
         - { at: 25, name: Star-sight, text: "+1 Perception and Survival out of doors.", effects: [{ bonus: { to: 'skill:perception', value: 1, when: outdoors } }, { bonus: { to: 'skill:survival', value: 1, when: outdoors } }] }
         - { at: 50, name: Steady Course, text: "+1 on attacks.", effects: [{ bonus: { to: attack, value: 1 } }] }
         - { at: 75, name: The Way Home, text: "+2 Survival; you never lose your way under the stars.", effects: [{ bonus: { to: 'skill:survival', value: 2 } }] }
+  # Death on Skerrow (M10.17): the Tidemother gives you back to the shore, and the grove lifts the cold.
+  death:
+    vision: "Cold water closes over you, and then there is no water, only a long grey shore under a sky of falling stars. A woman made of the tide comes walking over the shingle, and {guide} turns you round by the shoulders and gives you back to the sea."
+    guide: she
+    patron: tidemother
+    wake: You wake on your back on the shingle a day later, coughing up salt water.
+    mark: "The sea has left its cold in you: 10% fewer hit points until you give the Tidemother a RITE at the old birch in the silver grove.{lost}"
+    rite_where: A rite for the drowned is given at the old birch in the silver grove.
+    rite_done: You tie a shell to the old birch and say the names of the drowned you know. The cold goes out of your bones.
+    rite_nothing: You say the names of the drowned. Only the sea answers.

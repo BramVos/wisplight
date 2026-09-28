@@ -15,3 +15,7 @@ areas:
     aliases: [the ice works, ice works, the works, the mine]
     fame: 1
     summary: The mine at the end of the tram line, where the colony cuts ice for water, air and fuel.
+    # Decday is the pressure test (M10.17): the doors of the Works stay sealed, and every step in is turned back.
+    barred:
+      - when: [{ weekday: Decday }]
+        text: A red lamp burns over the pressure door, and the door will not open. On Decday the Works are sealed for the pressure test.

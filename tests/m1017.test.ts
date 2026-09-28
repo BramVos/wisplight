@@ -102,7 +102,7 @@ describe('M10.17: neutral defaults, never the Nethermarch', () => {
 })
 
 describe('M10.17: what was in code is content', () => {
-  it('death: the Way of the Grey Rider from the Nethermarch rules; plain words and no price on Skerrow', async () => {
+  it('death: the Way of the Grey Rider from the Nethermarch rules; the Tidemother on Skerrow, with no price', async () => {
     const isle = await loadContentFromDir(resolve(import.meta.dirname, '../content'), 'isle')
     const skerrow = new Engine(isle, { seed: 4 })
     skerrow.start()
@@ -110,11 +110,12 @@ describe('M10.17: what was in code is content', () => {
     const c = skerrow.state.player.character!
     c.deaths = 3
     const said = greyRider(skerrow.world, skerrow.state.player.location, () => []).map((o) => o.text).join(' ')
-    expect(said).toMatch(/^Everything goes dark and quiet/)
+    // Skerrow's own words (after M10.17: every world its own version): the Tidemother gives you back to the shore.
+    expect(said).toMatch(/^Cold water closes over you/)
     expect(said).not.toMatch(/Rider|Wild Hunt|barrow|chapel/)
     expect(skerrow.state.player.riderPrice).toBeUndefined()
     // Woken at the nearest holy place, the rite lifts the mark: no price first, whatever the count.
-    expect((await skerrow.handle('rite'))[0]!.text).toBe('You say the names of the dead you know, and the cold goes out of your bones. The mark is gone.')
+    expect((await skerrow.handle('rite'))[0]!.text).toMatch(/You tie a shell to the old birch/)
     const base = new Engine(content, { seed: 4 })
     base.start()
     makeCharacter(base.world, readyMade(content))
@@ -167,8 +168,8 @@ describe('M10.17: what was in code is content', () => {
   it('the widow\'s mist is a bar on the Kattenbroek in areas.yaml, and a tempting encounter in the bestiary', () => {
     expect(content.areas.get('kattenbroek')!.barred).toEqual([expect.objectContaining({ carrying: 'survey' })])
     expect(content.encounters.get('goat_riders_toll')!.tempts).toBe(true)
-    // No world but the Nethermarch knows any of it.
-    expect([...deepwell.areas.values()].some((a) => a.barred.length)).toBe(false)
+    // Every world its own (after M10.17): Deepwell seals the Works on Decday; the bar of a world names nothing of another.
+    expect(deepwell.areas.get('ice_works')!.barred).toEqual([expect.objectContaining({ when: [{ weekday: 'Decday' }] })])
   })
 
   it('joining on terms from factions.yaml: the town rights at the Waag, for five guilders', async () => {

@@ -75,6 +75,11 @@ creatures:
   - id: wrecker
     name: wrecker
     plural: wreckers
+    # A fight with the wreckers touches the wreckers and the Hythe (M10.17).
+    faction: wreckers
+    reputation:
+      won: [{ faction: hythe_folk, by: 3, why: you drove the wreckers off the cliff path }]
+      bound: [{ faction: hythe_folk, by: 5, why: you brought a wrecker to the headwoman }]
     kind: human
     level: 2
     hp: 22
@@ -102,6 +107,9 @@ creatures:
 
   - id: wrecker_captain
     name: the wreckers' captain
+    faction: wreckers
+    reputation:
+      won: [{ faction: hythe_folk, by: 5, why: you beat the wreckers' captain }]
     kind: human
     level: 5
     hp: 60
@@ -228,6 +236,8 @@ encounters:
 
   - id: wreckers_on_the_cliff_path
     name: Wreckers on the cliff path
+    # A disloyal companion hears an offer from them once you have met them (M10.17).
+    tempts: true
     places: [loc_skerrow_cliff_path]
     chance: 0.3
     again_after: 4

@@ -5,6 +5,8 @@ locations:
     name: The Silver Grove
     area: skerrow_heights
     tags: [public, holy]
+    # The Tidemother's holy place (M10.17): a wedding here raises her faithful.
+    faith: tidemother
     aliases: [grove, silver grove, the grove, birches, trees]
     summary: A grove of silver birches out of the wind, where Old Tamsin lives.
     description:

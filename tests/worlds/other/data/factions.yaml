@@ -1,0 +1,27 @@
+# Factions of Deepwell (M10.17): the colony council, whose law is the
+# warden's, and the cutters' crew, who sign on at the face.
+
+factions:
+  - id: colony_council
+    name: the colony council
+    seat: the warden's office in the Domes
+    wants: Air, water and power for everyone, and the rules kept.
+    members: [npc_ilse_varga]
+    allies: [cutters_crew]
+    rivals: []
+    join: never
+    law: count
+
+  - id: cutters_crew
+    name: the cutters' crew
+    seat: the cutting face at the Ice Works
+    wants: The quota met, safe saws, and a fair share of the cut.
+    members: [npc_ama_okafor]
+    allies: [colony_council]
+    rivals: []
+    join:
+      at: [loc_deepwell_cutting_face]
+      fee: 20
+      says:
+        place: You sign on with the crew at the cutting face.
+        fee: Signing on with the crew costs a credit, for the crew's fund.

@@ -27,16 +27,28 @@ world:
     land: the Sundered Isles
     region: Skerrow
     from: the sea
+    # How a night's sleep reads on the island (M10.17).
+    sleep:
+      room: You sleep in a box bed at the Salt Kettle, under a blanket that smells of salt and smoke.
+      home: You sleep in your own box bed, with the sea loud outside the shutters.
+      rough: You sleep in the lee of a rock, and the wind finds you anyway. The cold gets into your bones.
   # Faiths (M9.1): the islanders keep to the Tidemother; the old ones still watch the Old Stars.
   faiths:
     # Each faith swears by its own (M10.8): the oaths are in the voice kit, data/voice.yaml (M10.10).
-    - { id: tidemother, name: the Tidemother, patrons: [tidemother] }
-    - { id: old_stars, name: the Old Stars, patrons: [old_stars] }
+    # With the faction that stands for each (M10.17): a wedding at the grove raises the Tidemother's faithful.
+    - { id: tidemother, name: the Tidemother, patrons: [tidemother], faction: tidemother_faithful }
+    - { id: old_stars, name: the Old Stars, patrons: [old_stars], faction: star_sailors }
   law:
     where: on Skerrow
     officer: headwoman
     npc: npc_maren
     office: loc_skerrow_salt_kettle
+    # What the headwoman fines, in copper pieces (M10.17): the island is poor, and so are its fines.
+    fines: { murder: 1500, assault: 300, least: 20 }
+  # Standing on the island (M10.17): the lightkeeper's household stands a step higher.
+  standing:
+    names: [poor, plain folk, respected, well-found, notable]
+    offices: [lightkeeper]
   calendar:
     era: SF
     months: [Deepwinter, Thawmoon, Seedtide, Blossom, Brightsun, Midsummer, Highsun, Harvest, Leaffall, Mistmoon, Frostwane, Longnight, Starfall Days]
@@ -69,9 +81,9 @@ world:
       clear: { day: The sky is wide and pale over the water., night: Stars hang sharp and cold over the sea. }
   money:
     units:
-      - { short: gp, name: gold piece, value: 100 }
-      - { short: sp, name: silver piece, value: 10 }
-      - { short: cp, name: copper piece, value: 1 }
+      - { short: gp, name: gold piece, aliases: [gold, crown, crowns], value: 100 }
+      - { short: sp, name: silver piece, aliases: [silver, shilling, shillings], value: 10 }
+      - { short: cp, name: copper piece, aliases: [copper, coppers], value: 1 }
   # The fixed block every model call gets about this world.
   frame: |
     WORLD: The Sundered Isles, a scatter of islands in the Glass Sea. Year 412 of the Starfall,

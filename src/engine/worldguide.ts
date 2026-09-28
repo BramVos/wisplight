@@ -160,11 +160,11 @@ export const WORLD_STEPS: readonly WorldStep[] = [
       'Every thing a description brings in with "a" or "an" has a detail.',
       'The start location exists, and every place can be reached from it by exits.',
       'Places reached only by a line of transport also have a way on foot.',
-      'An area that is barred (a mist, a gate, a curse) says when, what lifts it (a condition that can come true, or an item tag that exists) and what turns the stranger back.',
+      'An area that is barred (a mist, a gate, a curse) says when (conditions that can stop holding: the night, a storm, a weekday, a flag), whom it bars if not everyone (carrying: only someone with a thing of this tag, as the surveyor with his chains), and what turns the stranger back.',
       'Every [bracketed] topic exists or is added.',
     ],
     prompt:
-      'STEP: PLACES. Agree the areas and the places with the designer. Propose areas and locations in `changes` (an area that turns the stranger back while something holds gets barred: when, carrying and the text; each location with its area, tags, aliases, summary, description with day and, where it differs, night, exits with minutes, and details), and start.location in `world`. The builder adds the way back for every exit.',
+      'STEP: PLACES. Agree the areas and the places with the designer. Propose areas and locations in `changes` (an area that turns the stranger back while something holds gets barred: when, carrying if it bars only someone who carries a thing of that tag, and the text; each location with its area, tags, aliases, summary, description with day and, where it differs, night, exits with minutes, and details), and start.location in `world`. The builder adds the way back for every exit.',
   },
   {
     id: 'professions',

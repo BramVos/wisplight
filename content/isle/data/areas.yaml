@@ -22,3 +22,7 @@ areas:
     aliases: [the heights, the uplands, the high ground]
     fame: 1
     summary: The high ground of Skerrow, with the silver grove, the wyrm's barrow, the beacon and the old tower.
+    # A storm at night on the Heights (M10.17): every step there is turned back until it blows over or day comes.
+    barred:
+      - when: [{ night: true }, { weather: storm }]
+        text: The storm comes over the Heights in the dark so hard you cannot stand in it. You crouch against the rocks until it lets you go, back where you started.

@@ -24,6 +24,11 @@ world:
     land: the Oru system
     region: Deepwell
     from: the inner worlds
+    # How a night's sleep reads under the ice (M10.17).
+    sleep:
+      room: You sleep in a rented bunk behind a curtain, with the scrubbers humming in the wall.
+      home: You sleep in your own bunk, under your own name card, and the hum of the scrubbers is the sound of home.
+      rough: You sleep on a bench in the Commons with your coat for a blanket, and the cold of the floor gets into your bones.
   # No faith: nobody in Deepwell prays, and nobody swears by a god.
   faiths: []
   law:
@@ -31,6 +36,12 @@ world:
     officer: warden
     npc: npc_ilse_varga
     office: loc_deepwell_warden_office
+    # What the warden fines, in chits (M10.17).
+    fines: { murder: 400, assault: 100, least: 10 }
+  # Standing in the colony (M10.17), by shift rating; the warden's household stands a step higher.
+  standing:
+    names: [unrated, crew, rated, senior, council]
+    offices: [warden]
   calendar:
     era: AL
     months: [Ignition, Burn, Coast, Approach, Capture, Descent, Landfall, Thaw, Drill, Yield, Refit, Longdark, Blackout Days]
@@ -38,8 +49,8 @@ world:
     start_weekday: Quintday
   money:
     units:
-      - { short: cr, name: credit, value: 20 }
-      - { short: ch, name: chit, value: 1 }
+      - { short: cr, name: credit, aliases: [creds, cred], value: 20 }
+      - { short: ch, name: chit, aliases: [chits], value: 1 }
   # The fixed block every model call gets about this world.
   frame: |
     WORLD: The Oru system, far out from the inner worlds. Year 140 After Landfall, when the colony
