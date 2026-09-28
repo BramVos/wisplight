@@ -1,3 +1,4 @@
+import { knob } from '../knobs'
 import type { Output } from '../commands'
 import { recordFact } from '../news'
 import { gainXp } from '../rules/player'
@@ -12,8 +13,6 @@ import type { Route } from './schema'
 // The road has its risks: a toll gate on the route takes its due, and those
 // who rob travellers take part of the load of whoever gives in to them.
 
-/** What a player can carry in one go, in the units of the goods. */
-export const MAX_LOAD = 20
 
 export interface Load {
   item: string
@@ -60,9 +59,9 @@ export function loadsHere(world: World): LoadOffer[] {
       const theirs = state.ledgers[to]
       if (!there || !theirs) continue
       for (const item of Object.keys(carried).sort()) {
-        const spare = Math.floor((mine.stock[item] ?? 0) - aimOf(s, item))
-        const wanted = Math.ceil(aimOf(there, item) * 1.5 - (theirs.stock[item] ?? 0))
-        const qty = Math.min(MAX_LOAD, spare, wanted)
+        const spare = Math.floor((mine.stock[item] ?? 0) - aimOf(world, s, item))
+        const wanted = Math.ceil(aimOf(world, there, item) * 1.5 - (theirs.stock[item] ?? 0))
+        const qty = Math.min(knob(world, 'economy.max_load'), spare, wanted)
         if (qty < 1) continue
         // Half again when the other side is short of it.
         const pay = Math.max(6, Math.round(qty * value(world, item) * 0.3 * (theirs.short[item] ? 1.5 : 1)))

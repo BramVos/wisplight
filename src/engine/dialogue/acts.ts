@@ -36,7 +36,6 @@ export type Act = (typeof ACTS)[number]
 
 export type Tier = 'short' | 'normal' | 'explain' | 'story'
 
-export const TIER_WORDS: Record<Tier, number> = { short: 15, normal: 50, explain: 90, story: 180 }
 // The whole JSON reply counts, not only the words: act, names, topics, effects, the
 // memory note and the quest action take about 150 tokens before the reply itself.
 // The word limit per tier is kept by fitLength, so a roomy budget costs nothing extra.

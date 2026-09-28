@@ -1,10 +1,11 @@
+import { knob } from './knobs'
 import { GameClock, minuteOfDay } from './clock'
 import type { CommandHost, Output } from './commands'
 import { callName, type ObjectInstance } from './content'
 import { itemName, withArticle } from './items'
 import { recordFact } from './news'
 import { maxHp } from './rules/character'
-import { gainXp, playerCheck, XP } from './rules/player'
+import { gainXp, playerCheck } from './rules/player'
 import { deed } from './social/deeds'
 import { weather } from './weather'
 import type { World } from './world'
@@ -24,8 +25,6 @@ const good = (degree: string) => degree === 'success' || degree === 'critical su
 
 // ---------------------------------------------------------------- medicine
 
-/** How hard an ailment is to treat. */
-const AILMENT_DC: Record<string, number> = { fen_fever: 15, sickened: 13, bleeding: 12, wounds: 12, sickness: 15 }
 
 /** Herbs or a salve help: +2, and one is used. */
 function remedyAtHand(world: World): string | undefined {
@@ -51,7 +50,7 @@ export function treat(host: CommandHost, words: string, npc: string | undefined)
     if (!c) return [error('You have no body to speak of, in this world.')]
     const ailment = ['fen_fever', 'sickened', 'bleeding'].find((a) => c.conditions[a]) ?? (c.hp < maxHp(world.content, c) ? 'wounds' : undefined)
     if (!ailment) return [text('There is nothing wrong with you that a good night will not mend.')]
-    const result = playerCheck(world, 'medicine', AILMENT_DC[ailment]! - bonus)
+    const result = playerCheck(world, 'medicine', knob(world, 'rules.ailment_dc')[ailment]! - bonus)
     if (herbs) world.state.player.inventory[herbs]! -= 1
     const seen = host.pass(20)
     const out: Output[] = [checkLine(result)]
@@ -71,7 +70,7 @@ export function treat(host: CommandHost, words: string, npc: string | undefined)
   const hurt = (state.wounds ?? 0) > 0
   if (!sick && !hurt) return [text(`${name} is well; there is nothing to treat.`)]
   const ailment = sick ? 'sickness' : 'wounds'
-  const result = playerCheck(world, 'medicine', AILMENT_DC[ailment]! - bonus)
+  const result = playerCheck(world, 'medicine', knob(world, 'rules.ailment_dc')[ailment]! - bonus)
   if (herbs) world.state.player.inventory[herbs]! -= 1
   const seen = host.pass(30)
   const out: Output[] = [checkLine(result)]
@@ -127,7 +126,7 @@ export function gather(host: CommandHost, words: string): Output[] {
     const first = (world.state.player.found ??= [])
     if (!first.includes(`ground:${ground.id}`)) {
       first.push(`ground:${ground.id}`)
-      gainXp(world, XP.place, `learning where ${itemName(world.content, g.item, 2).replace(/^2 /, '')} can be found`)
+      gainXp(world, knob(world, 'rules.xp').place, `learning where ${itemName(world.content, g.item, 2).replace(/^2 /, '')} can be found`)
     }
   } else out.push(text(`You search and pick for a while, but find little worth taking.`))
   return [...out, ...seen]
@@ -221,7 +220,7 @@ export function readInscription(host: CommandHost, object: ObjectInstance): Outp
     found.push(key)
     out.push(text(`You trace the marks with a finger until they make sense. It says: ${inscription.text}`))
     if (inscription.topic) learnTopic(world, inscription.topic)
-    else gainXp(world, XP.lore, `reading the ${type.name}`)
+    else gainXp(world, knob(world, 'rules.xp').lore, `reading the ${type.name}`)
   } else out.push(text(inscription.look ? `${inscription.look} You can't make them out.` : 'The marks are worn, or in a hand you do not know. You can not make them out.'))
   return [...out, ...seen]
 }
@@ -232,7 +231,7 @@ function learnTopic(world: World, id: string): void {
   if (journal[id] !== undefined || !world.content.topics.has(id)) return
   journal[id] = world.now
   const topic = world.content.topics.get(id)!
-  if (topic.kind === 'lore') gainXp(world, XP.lore, `you learned of ${topic.name}`)
+  if (topic.kind === 'lore') gainXp(world, knob(world, 'rules.xp').lore, `you learned of ${topic.name}`)
 }
 
 function monthOf(world: World): number {

@@ -1,3 +1,4 @@
+import { knob } from '../knobs'
 import { minuteOfDay } from '../clock'
 import type { Output } from '../commands'
 import { callName, type Lock, type ObjectInstance } from '../content'
@@ -24,8 +25,6 @@ function lockOpen(world: World, id: string): boolean {
   return state === 'open' || state === 'broken'
 }
 
-/** How hard a lock is by the work that went into it (M10.5). */
-const QUALITY_DC: Record<Lock['quality'], number> = { crude: 10, common: 14, good: 17, fine: 20, masterwork: 24 }
 /** What it is made of: wood splits, iron holds; brass is fine work to pick. */
 const MATERIAL: Record<Lock['material'], { pick: number; force: number }> = { wood: { pick: -1, force: -3 }, iron: { pick: 0, force: 0 }, brass: { pick: 1, force: -1 } }
 
@@ -35,7 +34,7 @@ const MATERIAL: Record<Lock['material'], { pick: number; force: number }> = { wo
  * harder. A simple lock stays simple for an old hand.
  */
 export function lockDc(world: World, lock: Pick<Lock, 'dc' | 'quality' | 'material'>, how: 'pick' | 'force', outdoors = false): number {
-  const base = lock.dc ?? QUALITY_DC[lock.quality ?? 'common']
+  const base = lock.dc ?? knob(world, 'rules.lock_dc')[lock.quality ?? 'common']
   const material = MATERIAL[lock.material ?? 'iron'][how]
   if (how === 'force') return base + material
   const hour = Math.floor(minuteOfDay(world.now) / 60)

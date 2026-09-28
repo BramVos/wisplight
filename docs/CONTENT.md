@@ -36,6 +36,9 @@ One block with:
 | newcomers_per_season | number | no | 6 |
 | faiths | list of a map: id, name, patrons, oaths, faction | no | [] |
 | bells | list of a map: id, name, at, hours, heard, far, line, far_line | no | [] |
+| knobs | a map of names to one of: number \| a map of names to number | no |  |
+
+`knobs`: rules of play set otherwise than the default, by the id of a knob (docs/KNOBS.md): `talk.max_turns: 30`; for a table only the rows that differ.
 
 ## areas (data/areas.yaml)
 

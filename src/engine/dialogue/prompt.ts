@@ -1,9 +1,10 @@
+import { knob } from '../knobs'
 import { ownWorkPrompt, pupilPrompt } from '../outcomes'
 import { GameClock, weekdayName } from '../clock'
 import { tieTo } from '../people'
 import type { Npc } from '../content'
 import type { World } from '../world'
-import { TIER_WORDS, type Act, type Tier } from './acts'
+import { type Act, type Tier } from './acts'
 import type { CheckResult } from './checks'
 import type { Packet } from './knowledge'
 import { peopleLine, peopleNow, ties } from '../people'
@@ -285,7 +286,7 @@ export function turnPrompt(world: World, ctx: TurnContext): string {
     ...(ctx.decision ? [`DECISION (made by the game, follow it): ${ctx.decision}`] : []),
     ...(ctx.memories.length ? [`MEMORIES of the player: ${ctx.memories.join(' ')}`] : []),
     ...(ctx.history.length ? ['CONVERSATION SO FAR:', ...ctx.history.slice(-4).map((h) => `  ${h.speaker === 'player' ? 'Player' : npc.short}: ${h.text}`)] : []),
-    `ACT: ${ctx.act}. WORD LIMIT: ${TIER_WORDS[ctx.tier]}.`,
+    `ACT: ${ctx.act}. WORD LIMIT: ${knob(world, 'talk.words')[ctx.tier]}.`,
     `PLAYER SAYS: <<${ctx.playerText.replace(/[<>]/g, '')}>>`,
   ]
   return lines.join('\n')

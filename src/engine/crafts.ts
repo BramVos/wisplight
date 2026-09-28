@@ -1,3 +1,4 @@
+import { knob } from './knobs'
 import { minuteOfDay } from './clock'
 import type { Output } from './commands'
 import { callName, CRAFT_RANKS, type Affordance, type Craft, type ObjectInstance } from './content'
@@ -22,10 +23,6 @@ import type { World } from './world'
 // and is known in the village, a signal for the brains.
 
 const DAY = 24 * 60
-/** Past this many successes a recipe is routine: it counts only while it is harder than the rank. */
-export const MASTERED = 5
-/** Practice a day's lesson from a master gives, on top of the day's limit. */
-export const LESSON_PRACTICE = 4
 /** Experience for reaching journeyman, expert and master. */
 const RANK_XP = [0, 40, 80, 150]
 
@@ -92,7 +89,7 @@ export function learnFrom(world: World, craft: Craft, affordance: Affordance, ke
     p.recipes[key] = (p.recipes[key] ?? 0) + 1
     if (affordance.technique && !p.techniques.includes(affordance.technique)) p.techniques.push(affordance.technique)
     p.best = Math.max(p.best, tier)
-    if (p.recipes[key]! <= MASTERED || tier > p.rank) gain = 1
+    if (p.recipes[key]! <= knob(world, 'crafts.mastered_after') || tier > p.rank) gain = 1
     if (affordance.masterwork && !p.masterwork) p.masterwork = affordance.label
   } else if (result.degree === 'critical failure') gain = 1
   gain = Math.min(gain, dayLeft(world, craft, p))
@@ -102,7 +99,7 @@ export function learnFrom(world: World, craft: Craft, affordance: Affordance, ke
     p.practice += gain
     if (succeeded(result) && affordance.xp) gainXp(world, affordance.xp, affordance.label)
     if (result.degree === 'critical failure') out.push({ kind: 'system', text: 'It went badly, but you see now what you did wrong.' })
-  } else if (succeeded(result) && p.recipes[key]! > MASTERED) {
+  } else if (succeeded(result) && p.recipes[key]! > knob(world, 'crafts.mastered_after')) {
     out.push({ kind: 'system', text: `${cap(affordance.label)} is routine for you now: it no longer teaches you anything.` })
   } else if (dayLeft(world, craft, p) <= 0) {
     out.push({ kind: 'system', text: `That is enough to learn in ${craft.name} for one day; the rest is only work.` })
@@ -289,7 +286,7 @@ export function interruption(world: World, location: string, instance: ObjectIns
  */
 export function lesson(world: World, npcId: string, craft: Craft): Output[] {
   const p = craftProgress(world, craft.id)
-  p.practice += LESSON_PRACTICE
+  p.practice += knob(world, 'crafts.lesson_practice')
   const fresh = craft.techniques.find((t) => !p.techniques.includes(t.id))
   if (fresh) p.techniques.push(fresh.id)
   const c = character(world)

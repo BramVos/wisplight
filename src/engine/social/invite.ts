@@ -1,3 +1,4 @@
+import { knob } from '../knobs'
 import { callName } from '../content'
 import type { Offer } from '../dialogue/offers'
 import { familyOf } from '../layer'
@@ -13,8 +14,6 @@ import type { World } from '../world'
 // parent by, and only as far as a child may go (the rule of lead).
 
 const DAY = 24 * 60
-/** Further than this from home, a child does not go (the rule of lead). */
-const CHILD_RANGE = 45
 
 export interface Invitation {
   place: string
@@ -35,7 +34,7 @@ export function invite(world: World, who: string, place: string, opts: { person?
   const s = world.npcState(who)
   if (s.following || s.dead) return false
   const npc = world.npc(who)
-  if (npc.child && (world.route(npc.home, place)?.minutes ?? Infinity) > CHILD_RANGE) return false
+  if (npc.child && (world.route(npc.home, place)?.minutes ?? Infinity) > knob(world, 'people.child_range_minutes')) return false
   const until = world.now + (opts.hours ?? 24) * 60
   const where = world.location(place).name
   s.inviting = { place, ...(opts.person ? { person: opts.person } : {}), otherwise: opts.otherwise ?? 'alone', until }

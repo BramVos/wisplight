@@ -1,3 +1,4 @@
+import { knob } from './knobs'
 import { invite } from './social/invite'
 import { placeProp } from './props'
 import { welcomingIn } from './social/groups'
@@ -197,8 +198,6 @@ export function nameOf(world: World, id: string | undefined): string {
   return world.content.topics.get(id)?.name ?? world.content.areas.get(id)?.name ?? (world.content.items.has(id) ? (world.content.items.get(id)!.plural ?? `${world.content.items.get(id)!.name}s`) : undefined) ?? world.content.routes.get(id)?.name ?? world.content.outlands.get(id)?.name ?? id
 }
 
-/** At most this many lasting marks show at one place (M10.7); the oldest go first. */
-const MAX_MARKS = 3
 
 /** Fills {a}, {b}, {who}, {place} and the like with names. */
 function fill(world: World, text: string, vars: Record<string, string | undefined>): string {
@@ -318,7 +317,7 @@ export function runVerb(world: World, ctx: PlanContext, verb: Verb, st: StepStat
     const text = fill(world, v.text, vars({ place }))
     if (list.some((m) => m.text === text)) return true
     list.push({ t: world.now, text, ...(ctx.bind['a'] ? { about: ctx.bind['a'] } : {}), ...(v.days ? { until: world.now + v.days * 24 * 60 } : {}) })
-    if (list.length > MAX_MARKS) list.splice(0, list.length - MAX_MARKS)
+    if (list.length > knob(world, 'aftermath.marks_per_place')) list.splice(0, list.length - knob(world, 'aftermath.marks_per_place'))
     st.where = place
     return true
   }

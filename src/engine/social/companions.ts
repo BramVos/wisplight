@@ -1,3 +1,4 @@
+import { knob } from '../knobs'
 import { LAND_LAW } from './crime'
 import { minuteOfDay } from '../clock'
 import type { Output } from '../commands'
@@ -46,7 +47,6 @@ export interface Companion {
   personalOpen?: boolean
 }
 
-export const MAX_COMPANIONS = 3
 const DAY = 24 * 60
 
 export function companions(world: World): Companion[] {
@@ -106,7 +106,7 @@ export function offer(world: World, npcId: string, destination?: string): Offer 
   const fears = npc.quirks.includes('afraid_of_deep_water') ? ['the fen and its deep water frighten me'] : []
   if (!def) return { decision: 'refuse', willingness: -100, reasons: ['my life is here, not on the road with a stranger', ...fears], terms }
   if (!mayJoin(world, npcId)) return { decision: 'refuse', willingness: -50, reasons: ['I hardly know this stranger, and do not trust them enough', ...(npc.work ? [`my work at ${world.location(npc.work).name} needs me`] : []), ...fears], terms }
-  if (companions(world).length >= MAX_COMPANIONS) return { decision: 'refuse', willingness: -50, reasons: ['you have three people with you already'], terms }
+  if (companions(world).length >= knob(world, 'rules.max_companions')) return { decision: 'refuse', willingness: -50, reasons: ['you have three people with you already'], terms }
   const score = attitude(world, npcId).score
   let goalMatch = 0
   const patron = world.state.player.character?.patron?.id

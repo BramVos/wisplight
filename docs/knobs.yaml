@@ -24,169 +24,64 @@ numbers:
   src/engine/acquaintance.ts:
     YEAR: 'world: calendar.year (follows the shape of the year)'
     KEEP_PLACES: 'code: how many places are kept per person seen (save size)'
-  src/engine/aftermath.ts:
-    MAX_MARKS: 'world: aftermath.marks_per_place'
   src/engine/agreements.ts:
-    MESSAGE_LASTS: 'world: agreements.message_days'
-    LEAD_WAITS: 'world: agreements.lead_waits_minutes'
-    ATTACK_LASTS: 'world: agreements.anger_days'
-    MEET_EARLY: 'world: agreements.meet_early_minutes'
-    MEET_LATE: 'world: agreements.meet_late_minutes'
     KEEP_CLOSED: 'code: closed agreements go to the archive after this (save size)'
-    LEAD_STAYS: 'world: agreements.lead_stays_minutes'
-    GIVE_UP_TURNS: 'world: agreements.lead_gives_up_turns'
   src/engine/aisettings.ts:
     BUDGET_CEILING_USD: 'code: the most an hour may be set to, against a slip of the keyboard (safety)'
     BUDGET_FLOOR_USD: 'code: the least an hour may be set to (safety)'
     BUDGET_CONFIRM_USD: 'code: above this the settings ask once before saving (safety)'
-  src/engine/amends.ts:
-    FRESH: 'world: amends.fresh_days'
   src/engine/archive.ts:
     ARCHIVE_AFTER: 'code: what is over goes to the archive after this (save size)'
   src/engine/belief.ts:
-    AREA_OPENNESS: 'world: belief.openness (per kind of area)'
-    IN_PERSON: 'world: belief.in_person'
-    SAW_IT: 'world: belief.saw_it'
-    BACKED: 'world: belief.backed'
     RANK: 'code: the order of rejects, doubts and believes, not a number to tune'
-    SEEN_DAYS: 'world: belief.seen_days'
-  src/engine/chatter.ts:
-    GREET_EVERY: 'world: chatter.greet_every_hours'
   src/engine/checkpoint.ts:
     CHECKPOINT_ENTRIES: 'code: when a save writes a new checkpoint (save size and loading time)'
     CHECKPOINT_MINUTES: 'code: when a save writes a new checkpoint (save size and loading time)'
   src/engine/choice.ts:
     MAX_OPTIONS: 'code: a choice is answered with the keys 1 to 9 (the interface)'
-  src/engine/chronicler.ts:
-    MAX_CLIMAXES: 'world: story.climaxes_per_run'
   src/engine/clock.ts:
     DAYS_PER_YEAR: 'world: calendar.days_per_month (the shape of the year; now twelve months of thirty days and five)'
-  src/engine/combat/balance.ts:
-    STANDARD_BUDGET: 'world: rules.encounter_budget'
-  src/engine/combat/combat.ts:
-    FLED_AT: 'world: rules.fled_at'
-    SHIELD_HARDNESS: 'world: rules.shield_hardness'
   src/engine/combat/flow.ts:
     POS: 'code: the order of the positions in a fight, not a number to tune'
-  src/engine/crafts.ts:
-    MASTERED: 'world: crafts.mastered_after'
-    LESSON_PRACTICE: 'world: crafts.lesson_practice'
   src/engine/dialogue/acts.ts:
-    TIER_WORDS: 'world: talk.words (per length of reply)'
     TIER_TOKENS: 'code: the tokens a reply may use follow from its words (technique)'
-  src/engine/dialogue/aftertalk.ts:
-    TALK_FACTS_A_DAY: 'world: talk.facts_per_day'
   src/engine/dialogue/conversation.ts:
     REPLY_WITHIN_MS: 'settings (moved): the reply time the player sets (M10.8); this is its default'
-    MAX_FAR: 'world: talk.far_places'
-    MAX_CLAIMS: 'world: talk.max_claims'
-    MAX_TALK_EFFECT: 'world: talk.max_effect'
-    MAX_TURNS: 'world: talk.max_turns'
-    PERSUADED: 'world: talk.persuaded'
-    SUPPORT_DC: 'world: talk.support_dc'
-  src/engine/dialogue/knowledge.ts:
-    FAMOUS: 'world: fame.known_by_all'
-  src/engine/dialogue/offers.ts:
-    MAX_OFFERS: 'world: talk.max_offers'
-    CHILD_RANGE: 'world: people.child_range_minutes'
-    DANGER_DAYS: 'world: offers.danger_days'
-    LEND_DAYS: 'world: offers.lend_days'
-    LESSON: 'world: offers.lesson_price'
-    ASK_DAYS: 'world: offers.request_days'
-  src/engine/dialogue/party.ts:
-    MAX_WORDS: 'world: talk.party_words'
   src/engine/dialogue/testset.ts:
     TALK_AT: 'code: the moment the trial of a model is played at (a test fixture)'
-  src/engine/economy/haul.ts:
-    MAX_LOAD: 'world: economy.max_load'
-  src/engine/economy/ledger.ts:
-    LEDGER_HOUR: 'world: economy.ledger_hour'
-    DAYS_OF_USE: 'world: economy.days_of_use'
   src/engine/engine.ts:
     MAX_TALK_LINES: 'code: the lines a talk keeps for its window (memory)'
-  src/engine/forgetting.ts:
-    MEMORY: 'world: people.memory_below'
-    LONG: 'world: people.long_absence_days'
-  src/engine/gestures.ts:
-    TWICE: 'world: gestures.at_most'
   src/engine/growth/growth.ts:
     SEASON: 'world: calendar.season (follows the shape of the year)'
   src/engine/items.ts:
     DUIT: 'world (moved): world.yaml money.units (M10.17); kept as the default for a world without coins'
     STUIVER: 'world (moved): world.yaml money.units (M10.17); kept as the default for a world without coins'
     GUILDER: 'world (moved): world.yaml money.units (M10.17); kept as the default for a world without coins'
-  src/engine/legacy.ts:
-    KEEP_BELANG: 'world: legacy.keep_belang'
   src/engine/lod.ts:
     FULL_KM: 'code: how near the simulation counts every minute (speed)'
     NEAR_KM: 'code: how near a note on the map becomes a person again (speed)'
     COARSE_EVERY: 'code: how often a far person thinks (speed)'
-  src/engine/map/travel.ts:
-    FRESH: 'world: map.fresh_days'
-  src/engine/moments.ts:
-    TIDINGS: 'world: moments.tidings_belang'
   src/engine/news.ts:
     CHECKS_PER_HOUR: 'code: how often news is passed on in an hour (the grain of the simulation)'
     CONTACTS: 'code: how many others a teller meets in a crowd each quarter of an hour (speed)'
   src/engine/npc/brain.ts:
     MAX_STEPS_PER_TURN: 'code: a bound on one plan of a brain (safety)'
     MAX_REPLANS: 'code: a bound on replanning in one turn (safety)'
-    ASK_AGAIN_AFTER: 'settings: how soon a brain asks the model again (the cost of play)'
   src/engine/npc/execute.ts:
-    MAX_WAIT: 'world: people.wait_hours'
     RECENT: 'code: the steps a person remembers having taken (memory)'
-  src/engine/npc/goals.ts:
-    MAX_PER_DAY: 'world: people.goals_per_day'
-    SIGNALS_PER_DAY: 'world: signals.per_day'
-    MAX_ACTIVE: 'world: people.goals_at_once'
-    GOAL_REST: 'world: people.goal_rest_hours'
   src/engine/npc/planner.ts:
     MAX_DEPTH: 'code: a bound on the depth of a plan (speed)'
     MAX_WAIT: 'code: the longest a plan waits in one step (safety)'
-  src/engine/outcomes.ts:
-    LESSONS: 'world: crafts.lessons'
   src/engine/people.ts:
     PRONOUN_INDEX: 'code: an index, not a number to tune'
-  src/engine/props.ts:
-    PROPS_PER_WEEK: 'world: props.per_week'
-  src/engine/quests/engine.ts:
-    QUEST_XP: 'world: rules.quest_xp'
-  src/engine/returning.ts:
-    MAX_LINES: 'world: returning.max_lines'
-  src/engine/rules/character.ts:
-    FREE_BOOSTS: 'world: rules.free_boosts'
-    START_CAP: 'world: rules.start_cap'
-    ATTRIBUTE_CAP: 'world: rules.attribute_cap'
-  src/engine/rules/player.ts:
-    XP: 'world: rules.xp'
   src/engine/signals.ts:
     KEEP: 'code: the signals kept in the save (save size)'
-    FAR_KM: 'world: people.far_km'
-  src/engine/simulation.ts:
-    DECAY: 'world: needs.decay'
-    SEEN_IN_A_CROWD: 'world: people.seen_in_a_crowd'
   src/engine/sketches.ts:
     SEASON: 'world: calendar.season (follows the shape of the year)'
-    PER_DAY: 'world: sketches.per_day'
-    PER_SPEAKER: 'world: sketches.per_speaker'
-    PER_AREA_SEASON: 'world: sketches.per_area_season'
     MAX_SKETCHES: 'code: the sketches kept in the save (save size)'
-  src/engine/skills.ts:
-    AILMENT_DC: 'world: rules.ailment_dc'
-  src/engine/social/access.ts:
-    QUALITY_DC: 'world: rules.lock_dc'
-  src/engine/social/brawl.ts:
-    ROUNDS: 'world: rules.brawl_rounds'
-  src/engine/social/companions.ts:
-    MAX_COMPANIONS: 'world: rules.max_companions'
-  src/engine/social/invite.ts:
-    CHILD_RANGE: 'world: people.child_range_minutes'
   src/engine/stories.ts:
-    PER_DAY: 'world: stories.per_day (per tempo)'
     KEEP_DONE: 'code: the stories kept once done (save size)'
-    RISING_WEIGHT: 'world: stories.rising_weight'
   src/engine/storylines.ts:
-    OPEN_DAYS: 'world: storylines.open_days'
     MAX_FACTS: 'code: the facts one storyline takes, so a prompt stays small (cost)'
   src/engine/weather.ts:
     STAY: 'world (moved): world.yaml weather.stay; this is the default'

@@ -1,3 +1,4 @@
+import { knob } from '../knobs'
 import type { Output } from '../commands'
 import { callName } from '../content'
 import { withPlayer } from '../social/companions'
@@ -16,7 +17,6 @@ import type { TopicRegistry } from './topics'
 // at most 25 words, coloured by their values and what they know. Without a
 // model, or when the reply does not hold, the lines come from what they know.
 
-const MAX_WORDS = 25
 
 export async function partyTalk(world: World, topics: TopicRegistry, knowledge: Knowledge, llm: LlmClient | undefined, words: string, vocabulary: Set<string>): Promise<Output[]> {
   const party = withPlayer(world)
@@ -39,14 +39,14 @@ export async function partyTalk(world: World, topics: TopicRegistry, knowledge: 
     const fixed = fixNotHere(world, swearRight(line, oathsFor(world, id))).text
     return strangeWords(world, fixed).length ? undefined : fixed
   }
-  const lines = llm ? await ask(llm, cards, question, vocabulary, words, worldText(worldFrame(world.content)), fit) : undefined
+  const lines = llm ? await ask(llm, cards, question, vocabulary, words, worldText(worldFrame(world.content)), fit, knob(world, 'talk.party_words')) : undefined
   return [
     { kind: 'text', text: `You: "${question}"` },
     ...cards.map((card, i) => ({ kind: 'speech' as const, text: `${card.name}: "${lines?.[i] ?? fallback(world, card, topic ? topics.name(topic) : undefined)}"`, ...(lines?.[i] ? { source: 'model' as const } : {}) })),
   ]
 }
 
-async function ask(llm: LlmClient, cards: { id: string; name: string; card: string; knows: string[] }[], question: string, vocabulary: Set<string>, playerWords: string, frame: string, fit: (id: string, line: string) => string | undefined): Promise<(string | undefined)[] | undefined> {
+async function ask(llm: LlmClient, cards: { id: string; name: string; card: string; knows: string[] }[], question: string, vocabulary: Set<string>, playerWords: string, frame: string, fit: (id: string, line: string) => string | undefined, partyWords: number): Promise<(string | undefined)[] | undefined> {
   const system = [
     'You speak for several companions of the player in a late-medieval world, in English, each in their own voice.',
     frame,
@@ -77,7 +77,7 @@ async function ask(llm: LlmClient, cards: { id: string; name: string; card: stri
     return cards.map((card) => {
       const said = parsed.lines?.find((l) => l.speaker === card.id)?.text?.trim()
       const line = said ? fit(card.id, said) : undefined
-      if (!line || wordCount(line) > MAX_WORDS + 5 || unknownNames(line, vocabulary, own).length) return undefined
+      if (!line || wordCount(line) > partyWords + 5 || unknownNames(line, vocabulary, own).length) return undefined
       return line.replace(/^"|"$/g, '')
     })
   } catch {

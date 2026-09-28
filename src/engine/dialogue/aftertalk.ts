@@ -1,3 +1,4 @@
+import { knob } from '../knobs'
 import { agree, type AgreementInput } from '../agreements'
 import { callName } from '../content'
 import { heardBy, recordFact } from '../news'
@@ -14,8 +15,6 @@ import type { Act } from './acts'
 // father tonight" is a report carried home.
 
 const DAY = 24 * 60
-/** At most so many conversation facts a day, and one per person asked about. */
-const TALK_FACTS_A_DAY = 3
 
 /** Who someone is to the NPC, if family: "his father". */
 function kin(world: World, npcId: string, person: string): string | undefined {
@@ -42,7 +41,7 @@ export function talkFact(world: World, npcId: string, topics: string[], act: Act
     count.day = day
     count.people = []
   }
-  if (count.people.length >= TALK_FACTS_A_DAY || count.people.includes(person)) return undefined
+  if (count.people.length >= knob(world, 'talk.facts_per_day') || count.people.includes(person)) return undefined
   count.people.push(person)
   const who = callName(world.npc(npcId))
   const whom = callName(world.npc(person))

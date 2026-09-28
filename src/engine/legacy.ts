@@ -1,3 +1,4 @@
+import { knob } from './knobs'
 import { forgetPlayerAgreements } from './agreements'
 import type { Content } from './content'
 import { callName } from './content'
@@ -11,7 +12,6 @@ import { forgetPlayer } from './layer'
 // news is forgotten, and what people felt about the stranger becomes a memory.
 // Everything that belonged to the old character goes with them.
 
-const KEEP_BELANG = 4
 
 export function carryOver(content: Content, state: GameState): string[] {
   const notes: string[] = []
@@ -20,7 +20,7 @@ export function carryOver(content: Content, state: GameState): string[] {
   // Big events stay; small news is forgotten, by everyone.
   const news = state.news
   if (news) {
-    const kept = new Set(news.facts.filter((f) => f.belang >= KEEP_BELANG).map((f) => f.id))
+    const kept = new Set(news.facts.filter((f) => f.belang >= knob({ content }, 'legacy.keep_belang')).map((f) => f.id))
     notes.push(`${kept.size} big events remembered, ${news.facts.length - kept.size} small ones forgotten.`)
     news.facts = news.facts.filter((f) => kept.has(f.id))
     for (const [who, heard] of Object.entries(news.heard)) {

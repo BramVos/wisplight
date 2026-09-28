@@ -1,3 +1,4 @@
+import { knob } from './knobs'
 import { callName } from './content'
 import type { Output } from './commands'
 import { agreements } from './agreements'
@@ -13,7 +14,6 @@ import type { World } from './world'
 // them says nothing. From state that is there already: no new simulation.
 
 const DAY = 24 * 60
-const MAX_LINES = 3
 
 type Visit = NonNullable<World['state']['player']['visits']>[string]
 
@@ -95,7 +95,7 @@ export function returningLines(world: World, location: string): string[] {
   }
   return lines
     .sort((a, b) => Number(b.mine) - Number(a.mine) || a.rank - b.rank)
-    .slice(0, MAX_LINES)
+    .slice(0, knob(world, 'returning.max_lines'))
     .map((l) => l.text)
 }
 

@@ -1,3 +1,4 @@
+import { knob } from '../knobs'
 import { strangerHelped } from '../outcomes'
 import { inSeason } from '../content'
 import { GameClock } from '../clock'
@@ -33,7 +34,6 @@ const FROM: Record<Direction, string> = {
   out: 'inside',
 }
 
-const MAX_WAIT = 3 * 60
 
 export function executeStep(world: World, npcId: string, step: Step): StepResult {
   const npc = world.npcState(npcId)
@@ -85,7 +85,7 @@ export function executeStep(world: World, npcId: string, step: Step): StepResult
         return 'done'
       }
       npc.waitSince ??= now
-      if (now - npc.waitSince > MAX_WAIT) {
+      if (now - npc.waitSince > (knob(world, 'people.wait_hours') * 60)) {
         npc.waitSince = undefined
         return 'failed'
       }

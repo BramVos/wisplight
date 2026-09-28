@@ -1,3 +1,4 @@
+import { knob } from '../knobs'
 import { agree, knowsTheDayOf, thinksIsAt, type AgreementInput } from '../agreements'
 import { minuteOfDay } from '../clock'
 import type { Output } from '../commands'
@@ -60,10 +61,6 @@ export interface Offer {
 }
 
 const DAY = 24 * 60
-/** At most this many offers in a prompt: the ones this turn is about come first. */
-const MAX_OFFERS = 5
-/** Further than this from home, a child does not go (a boy runs to the beach, not across the island). */
-const CHILD_RANGE = 45
 
 const nameOf = (world: World, id: string): string => (world.content.npcs.has(id) ? callName(world.npc(id)) : (world.content.locations.get(id)?.name ?? world.content.items.get(id)?.name ?? id))
 
@@ -167,7 +164,7 @@ function willing(world: World, npcId: string, kind: OfferKind, to?: string): { y
     if (danger >= (npc.child ? 2 : 3)) return { yes: false, reasons: [`${nameOf(world, to)} is a dangerous place`, ...reasons] }
     // Where the roads of the exits do not go, across country (M10.6: from Waagdam to Oude Zijl).
     const minutes = world.route(here, to)?.minutes ?? overland(world, here, to) ?? Infinity
-    if (npc.child && (world.route(npc.home, to)?.minutes ?? Infinity) > CHILD_RANGE) return { yes: false, reasons: ['you are not allowed so far from home', ...reasons] }
+    if (npc.child && (world.route(npc.home, to)?.minutes ?? Infinity) > knob(world, 'people.child_range_minutes')) return { yes: false, reasons: ['you are not allowed so far from home', ...reasons] }
     if (minutes === Infinity) return { yes: false, reasons: [`you do not know the way to ${nameOf(world, to)}`] }
     if (minutes > 60 && !urgent) {
       score -= (minutes - 60) / 2
@@ -181,8 +178,6 @@ function willing(world: World, npcId: string, kind: OfferKind, to?: string): { y
   return { yes, reasons }
 }
 
-/** Days a danger stays pressing, unless word came since that it is over. */
-const DANGER_DAYS = 7
 
 /**
  * A danger this person believes, in the settlement the stranger would take
@@ -194,7 +189,7 @@ function dangerThere(world: World, npcId: string, to: string): Fact | undefined 
   const heard = world.state.news?.heard[npcId] ?? {}
   const facts = world.state.news?.facts ?? []
   if (!area) return undefined
-  for (let i = facts.length - 1; i >= 0 && world.now - facts[i]!.t <= DANGER_DAYS * DAY; i--) {
+  for (let i = facts.length - 1; i >= 0 && world.now - facts[i]!.t <= knob(world, 'offers.danger_days') * DAY; i--) {
     const f = facts[i]!
     if (f.kind !== 'danger' || f.belang < 2 || !f.place || !heard[f.id] || heard[f.id]!.stance) continue
     if (world.content.locations.get(f.place)?.area !== area) continue
@@ -267,11 +262,9 @@ export function offersFor(world: World, npcId: string, topics: string[], text: s
   }
   if (when !== undefined && !places.length) add({ key: `meet:${here}`, kind: 'meet', place: here, at: when, what: `meet the stranger here, ${clockWords(world, when)}`, intent: 'meet here then' })
   if (/\b(wait|stay)\b/i.test(text) && !offers.some((o) => o.kind === 'wait')) add({ key: 'wait:here', kind: 'wait', place: here, at: world.now + 60, what: 'wait here with the stranger for an hour', intent: 'have you wait here' })
-  return offers.slice(0, MAX_OFFERS)
+  return offers.slice(0, knob(world, 'talk.max_offers'))
 }
 
-/** Days a thing is lent for; a day when they need it themselves. */
-const LEND_DAYS = 3
 
 /** Whether someone needs a thing themselves (what the brain knows): the only tool of their work, or what their trade uses. */
 function needs(world: World, npcId: string, item: string): boolean {
@@ -308,7 +301,7 @@ function thingOffers(world: World, npcId: string, item: string): Offer[] {
   const plenty = count >= 3 && value <= 8
   const give = lacking.length ? lacking : cold ? ['you owe the stranger nothing'] : need ? ['you need it yourself'] : value > spare && !plenty ? ['you cannot spare it, not for nothing'] : [plenty ? 'you have more than you need' : done ? 'the stranger has done things for you' : 'it is little enough']
   // Lend: it stays theirs; trust, and a short time if they need it themselves.
-  const days = need ? 1 : LEND_DAYS
+  const days = need ? 1 : knob(world, 'offers.lend_days')
   const trusted = trust + done * 10 + (band === 'Warm' || band === 'Devoted' ? 20 : band === 'Friendly' ? 10 : 0) >= (value > 40 ? 30 : 10)
   const lend = lacking.length ? lacking : cold ? ['you do not trust the stranger with your things'] : !trusted ? ['you hardly know the stranger, and it is worth something'] : [need ? `you need it back by ${clockWords(world, world.now + DAY)} for your work` : 'you can do without it for a few days']
   // Sell: out of their own stock, not over the counter, for a fair price to a friend and more to a stranger.
@@ -329,8 +322,6 @@ function thingOffers(world: World, npcId: string, item: string): Offer[] {
   ]
 }
 
-/** What a lesson costs, per rank the stranger already has, in the smallest coin. */
-const LESSON = 16
 
 /**
  * A craftsman teaches the skill of their trade (M10.3, teach): for money, or
@@ -345,7 +336,7 @@ export function teachOffer(world: World, npcId: string): Offer | undefined {
   const def = world.content.rules?.skills.find((s) => s.id === skill)
   if (!skill || !c || !def) return undefined
   const band = attitude(world, npcId).band
-  const price = LESSON * ((c.ranks[skill] ?? 0) + 1)
+  const price = knob(world, 'offers.lesson_price') * ((c.ranks[skill] ?? 0) + 1)
   const favour = world.state.requests.find((r) => r.npc === npcId && r.status === 'open' && r.item)
   const full = (c.practice[skill] ?? 0) >= 3
   const cold = band === 'Hostile' || band === 'Unfriendly' || band === 'Wary'
@@ -366,7 +357,7 @@ function craftLessonOffer(world: World, npcId: string, craft: Craft): Offer {
   const band = attitude(world, npcId).band
   const pupil = tieTo(world, npcId, 'player')?.role === 'pupil'
   const trusted = pupil || ['Friendly', 'Warm', 'Devoted'].includes(band) || relation(world.state, npcId).trust >= 15
-  const price = LESSON * (rank + 1)
+  const price = knob(world, 'offers.lesson_price') * (rank + 1)
   const favour = world.state.requests.find((r) => r.npc === npcId && r.status === 'open' && r.item)
   const pay = world.state.player.money >= price
   const done = rank >= 2
@@ -439,8 +430,6 @@ function lockOffers(world: World, npcId: string, text: string): Offer[] {
   return offers
 }
 
-/** Days the stranger has to bring what someone asked for, once promised. */
-const ASK_DAYS = 3
 
 /**
  * What an NPC lacks, asked of the stranger (M10.3): an offer the other way
@@ -450,11 +439,11 @@ const ASK_DAYS = 3
 export function askOffer(world: World, npcId: string, request: Request): Offer | undefined {
   if (request.kind === 'visit' && request.target && world.content.npcs.has(request.target)) {
     const whom = callName(world.npc(request.target))
-    return { key: `ask:${request.id}`, kind: 'ask', person: request.target, request: request.id, at: world.now + ASK_DAYS * DAY, what: `ask the stranger to look in on ${whom}`, intent: '', deed: `look in on ${whom} for ${callName(world.npc(npcId))}`, decision: 'yes', reasons: ['you are worried'] }
+    return { key: `ask:${request.id}`, kind: 'ask', person: request.target, request: request.id, at: world.now + knob(world, 'offers.request_days') * DAY, what: `ask the stranger to look in on ${whom}`, intent: '', deed: `look in on ${whom} for ${callName(world.npc(npcId))}`, decision: 'yes', reasons: ['you are worried'] }
   }
   if (!request.item || request.kind === 'visit') return undefined
   const thing = request.qty > 1 ? itemName(world.content, request.item, request.qty) : withArticle(itemName(world.content, request.item))
-  const at = world.now + ASK_DAYS * DAY
+  const at = world.now + knob(world, 'offers.request_days') * DAY
   return { key: `ask:${request.id}`, kind: 'ask', item: request.item, request: request.id, at, what: `ask the stranger to bring ${thing}`, intent: '', deed: `bring ${callName(world.npc(npcId))} ${thing}`, decision: 'yes', reasons: ['you need it'] }
 }
 

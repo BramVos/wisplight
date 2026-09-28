@@ -1,3 +1,4 @@
+import { knob } from './knobs'
 import { chronicle, emptyOutput, type Card, type ChronicleEvent, type ChronicleInput, type ChronicleLine, type ChronicleOutput, type ChroniclerModel, type ChroniclerRequest, type PlanOp, type QuestTemplate } from '../chronicler'
 import { PlanSchema, type Plan, type PlanEffect } from './quests/planschema'
 import { shiftTension } from './social/realms'
@@ -351,8 +352,6 @@ function slug(name: string): string {
  * Checks the chronicler's operations against the world and applies what holds.
  * Returns what was dropped, and why. Lines it did not cover get templates.
  */
-/** Climaxes a week at most: a third line waits. */
-const MAX_CLIMAXES = 2
 
 /** Lines that came to a crisis in the last seven days. */
 function climaxes(world: World): number {
@@ -450,7 +449,7 @@ export function applyOutput(world: World, run: ChronicleRun, output: ChronicleOu
     line.roles = op.roles.filter((r) => world.content.npcs.has(r.who))
     line.hooks = op.hooks
     line.next = op.next
-    if (op.phase === 'crisis' && line.phase !== 'crisis' && climaxes(world) >= MAX_CLIMAXES) {
+    if (op.phase === 'crisis' && line.phase !== 'crisis' && climaxes(world) >= knob(world, 'story.climaxes')) {
       // No three climaxes in one week (design: "Opbouw per verhaallijn"): this one builds a while longer.
       problems.push(`line ${line.id}: two others came to a crisis this week, it stays rising`)
       line.phase = 'rising'

@@ -1,3 +1,4 @@
+import { knob } from './knobs'
 import type { Output } from './commands'
 import { callName, type Affordance, type Craft, type CraftFailure, type ObjectInstance, type ObjectType } from './content'
 import type { CheckResult } from './dialogue/checks'
@@ -189,8 +190,6 @@ export function ownWorkPrompt(world: World, npcId: string): string | undefined {
   return item ? `You have and use the ${world.content.items.get(item)?.name ?? item} the stranger made with their own hands and gave you. It may come up.` : undefined
 }
 
-/** Lessons a pupil needs, on as many days, before they can do it on their own. */
-export const LESSONS = 3
 
 /**
  * TEACH <person> [craft] (M10.14): the stranger, a journeyman or better,
@@ -221,7 +220,7 @@ export function teach(world: World, pass: (minutes: number) => Output[], npcId: 
   p.lessons += 1
   p.day = today
   applyEffect(world, npcId, 'affinity', 2)
-  if (p.lessons < LESSONS) return [{ kind: 'narration', text: `You spend two hours showing ${name} how ${craft.name} is done. ${name} is getting the hang of it: lesson ${p.lessons} of ${LESSONS}.` }, ...seen]
+  if (p.lessons < knob(world, 'crafts.lessons')) return [{ kind: 'narration', text: `You spend two hours showing ${name} how ${craft.name} is done. ${name} is getting the hang of it: lesson ${p.lessons} of ${knob(world, 'crafts.lessons')}.` }, ...seen]
   // Learnt: they can do it on their own now. What follows is content.
   ;(s.crafts ??= {})[craft.id] = 0
   delete lessons[craft.id]

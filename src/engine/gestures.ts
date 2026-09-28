@@ -1,3 +1,4 @@
+import { knob } from './knobs'
 import { agreements } from './agreements'
 import { callName } from './content'
 import type { Output } from './commands'
@@ -13,7 +14,6 @@ import type { World } from './world'
 // to another.
 
 const DAY = 24 * 60
-const TWICE = 2
 
 type Moment = Gesture['at']
 
@@ -56,8 +56,8 @@ export function gestures(world: World, at: Moment, present: string[]): Output[] 
     .map((g) => ({ g, s: shared(world, g) }))
     .filter((x): x is { g: Gesture; s: { what: string } } => Boolean(x.s))
     // One the stranger had twice gives way to another.
-    .sort((a, b) => Number((state.given[a.g.id] ?? 0) >= TWICE) - Number((state.given[b.g.id] ?? 0) >= TWICE) || (state.given[a.g.id] ?? 0) - (state.given[b.g.id] ?? 0) || a.g.id.localeCompare(b.g.id))
-  const pick = fits.find((x) => (state.given[x.g.id] ?? 0) < TWICE) ?? undefined
+    .sort((a, b) => Number((state.given[a.g.id] ?? 0) >= knob(world, 'gestures.at_most')) - Number((state.given[b.g.id] ?? 0) >= knob(world, 'gestures.at_most')) || (state.given[a.g.id] ?? 0) - (state.given[b.g.id] ?? 0) || a.g.id.localeCompare(b.g.id))
+  const pick = fits.find((x) => (state.given[x.g.id] ?? 0) < knob(world, 'gestures.at_most')) ?? undefined
   if (!pick) return []
   const { g, s } = pick
   state.given[g.id] = (state.given[g.id] ?? 0) + 1

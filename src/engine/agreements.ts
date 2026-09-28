@@ -1,3 +1,4 @@
+import { knob } from './knobs'
 import { brawlTick } from './social/brawl'
 import { openedBy } from './props'
 import { z } from 'zod'
@@ -32,15 +33,6 @@ import type { World } from './world'
 const DAY = 24 * 60
 /** An intention after a conversation lapses after a day (M10.2). */
 export const INTENTION_LASTS = DAY
-/** A report carried to someone, unless its maker says otherwise. */
-const MESSAGE_LASTS = 2 * DAY
-/** How long a leader waits at the place for the one they lead. */
-const LEAD_WAITS = 60
-/** An attack that does not come to it: the anger passes (as a grievance does). */
-const ATTACK_LASTS = 3 * DAY
-/** A meeting: from half an hour before the time until an hour after. */
-const MEET_EARLY = 30
-const MEET_LATE = 60
 /** Closed agreements stay in the save this long, for the voice and the journal; then the archive keeps them. */
 export const KEEP_CLOSED = 30 * DAY
 
@@ -132,7 +124,7 @@ export function agree(world: World, input: AgreementInput): Agreement | { reject
         deceit = { said: `${nameOf(world, a.terms.person)} would be at ${nameOf(world, a.terms.place)}`, knew: belief }
       }
     }
-    terms.waits = a.terms.waits ?? LEAD_WAITS
+    terms.waits = a.terms.waits ?? knob(world, 'agreements.lead_waits_minutes')
     terms.ifAbsent = a.terms.ifAbsent ?? 'wait'
     due ??= world.now + (routeMinutes(world, maker, a.terms.place) ?? 180) + terms.waits + 60
   }
@@ -144,13 +136,13 @@ export function agree(world: World, input: AgreementInput): Agreement | { reject
       if (unknown.length === a.terms.facts.length) return { rejected: `${nameOf(world, maker)} has nothing to tell about it` }
       terms.facts = a.terms.facts.filter((id) => !unknown.includes(id))
     }
-    due ??= world.now + MESSAGE_LASTS
+    due ??= world.now + (knob(world, 'agreements.message_days') * DAY)
   }
   if (a.kind === 'meet' || a.kind === 'wait') {
     if (!world.content.locations.has(a.terms.place) && !a.terms.place.startsWith('hex_')) return { rejected: `there is no place ${a.terms.place}` }
     if (a.kind === 'meet' && !a.part) {
       terms.at = a.terms.at ?? world.now
-      due ??= terms.at + MEET_LATE
+      due ??= terms.at + knob(world, 'agreements.meet_late_minutes')
     }
   }
   if (a.kind === 'lend') {
@@ -169,7 +161,7 @@ export function agree(world: World, input: AgreementInput): Agreement | { reject
     if (a.terms.target !== 'player' && (!isNpc(world, a.terms.target) || a.terms.target === maker || !world.alive(a.terms.target))) return { rejected: `there is nobody ${a.terms.target} to fight` }
     // The rules checked their own gate already (a grievance, or the law's order); a conversation or a plan goes through it here.
     if (a.source !== 'rules' && !mayAttackFirst(world, maker, { provoked: true })) return { rejected: `${nameOf(world, maker)} is not one to go for the stranger` }
-    due ??= world.now + ATTACK_LASTS
+    due ??= world.now + (knob(world, 'agreements.anger_days') * DAY)
   }
   let goal: Goal | undefined
   if (a.kind === 'intention') {
@@ -374,7 +366,7 @@ export function goalEnded(world: World, npcId: string, goal: Goal, success: bool
     if (success && world.state.npcs[npcId]?.location !== agreement.terms.place) return
     if (success) {
       agreement.terms.arrived ??= world.now
-      hold(world, npcId, world.now + (agreement.terms.waits ?? LEAD_WAITS))
+      hold(world, npcId, world.now + (agreement.terms.waits ?? knob(world, 'agreements.lead_waits_minutes')))
     } else settle(world, agreement, 'missed', `${nameOf(world, npcId)} could not get to ${nameOf(world, agreement.terms.place)}`, { fault: 'world', told: world.state.player.location === world.state.npcs[npcId]?.location })
   }
   if (agreement.kind === 'meet' && success) came(agreement, npcId)
@@ -418,7 +410,7 @@ export function agreementsTick(world: World): void {
         world,
         a,
         (text) => settle(world, a, 'kept', text, { quiet: true }),
-        (place) => plan(world, a, a.by, visit(world, place, a.due ?? world.now + ATTACK_LASTS)),
+        (place) => plan(world, a, a.by, visit(world, place, a.due ?? world.now + (knob(world, 'agreements.anger_days') * DAY))),
       )
     else if (a.kind === 'accompany') {
       // A companion who is no longer one without a word (an old path): the agreement ends, not in silence.
@@ -456,7 +448,7 @@ function lead(world: World, a: Agreement): void {
   // Already there when it was agreed (the planner has no steps for it): arrived at once.
   if (a.terms.arrived === undefined && isNpc(world, leader) && world.state.npcs[leader]!.location === place) {
     a.terms.arrived = world.now
-    hold(world, leader, world.now + (a.terms.waits ?? LEAD_WAITS))
+    hold(world, leader, world.now + (a.terms.waits ?? knob(world, 'agreements.lead_waits_minutes')))
   }
   const arrived = a.terms.arrived
   if (arrived === undefined) {
@@ -466,8 +458,8 @@ function lead(world: World, a: Agreement): void {
   const here = isNpc(world, leader) ? world.state.npcs[leader]!.location === place : player === place
   const follower = a.to === 'player' ? player === place : isNpc(world, a.to) && world.state.npcs[a.to]!.location === place
   if (!follower) {
-    if (world.now - arrived >= (a.terms.waits ?? LEAD_WAITS)) settle(world, a, 'missed', `${by} waited at ${nameOf(world, place)}, and ${nameOf(world, a.to)} never came`, { fault: 'to' })
-    else if (here && isNpc(world, leader)) hold(world, leader, arrived + (a.terms.waits ?? LEAD_WAITS))
+    if (world.now - arrived >= (a.terms.waits ?? knob(world, 'agreements.lead_waits_minutes'))) settle(world, a, 'missed', `${by} waited at ${nameOf(world, place)}, and ${nameOf(world, a.to)} never came`, { fault: 'to' })
+    else if (here && isNpc(world, leader)) hold(world, leader, arrived + (a.terms.waits ?? knob(world, 'agreements.lead_waits_minutes')))
     return
   }
   const person = a.terms.person
@@ -476,7 +468,7 @@ function lead(world: World, a: Agreement): void {
     // Brought to someone, the leader stays a while for the talk (M10.6: Teunis beside the stranger with Sijbrand).
     if (person && isNpc(world, leader)) {
       const s = world.npcState(leader)
-      s.busyUntil = Math.max(s.busyUntil, world.now + LEAD_STAYS)
+      s.busyUntil = Math.max(s.busyUntil, world.now + knob(world, 'agreements.lead_stays_minutes'))
       s.plan = []
       s.activity = `with ${nameOf(world, person)}`
     }
@@ -496,7 +488,7 @@ function lead(world: World, a: Agreement): void {
       a.terms.place = next
       delete a.terms.arrived
       delete a.terms.met
-      a.due = world.now + (routeMinutes(world, leader, next) ?? 120) + (a.terms.waits ?? LEAD_WAITS) + 60
+      a.due = world.now + (routeMinutes(world, leader, next) ?? 120) + (a.terms.waits ?? knob(world, 'agreements.lead_waits_minutes')) + 60
       if (isNpc(world, leader)) world.npcState(leader).goals = world.npcState(leader).goals.filter((g) => g.agreement !== a.id)
       plan(world, a, leader, visit(world, next, a.due))
       world.notices.push(near ? `${by}: "There ${world.say('{they}', person)} goes. Come on."` : `${by}: "Not here. Then ${world.say('{they}', person)}'ll be at ${nameOf(world, work!)}. Come on."`)
@@ -505,18 +497,14 @@ function lead(world: World, a: Agreement): void {
   }
   // Looked for them and not found either: they wait a while there too (M10.6: Sijbrand up on the dyke for a moment).
   const waits = a.terms.ifAbsent === 'wait' || a.terms.ifAbsent === 'search'
-  if (waits && world.now - since < (a.terms.waits ?? LEAD_WAITS) && world.alive(person)) {
-    if (isNpc(world, leader)) hold(world, leader, since + (a.terms.waits ?? LEAD_WAITS))
+  if (waits && world.now - since < (a.terms.waits ?? knob(world, 'agreements.lead_waits_minutes')) && world.alive(person)) {
+    if (isNpc(world, leader)) hold(world, leader, since + (a.terms.waits ?? knob(world, 'agreements.lead_waits_minutes')))
     return
   }
   settle(world, a, 'kept', `${by} brought ${nameOf(world, a.to)} to ${nameOf(world, place)}; ${truth}${waits ? `, though ${by} waited` : ''}`, { told: true })
 }
 
-/** Minutes a leader stays with the person they brought the stranger to (M10.6). */
-const LEAD_STAYS = 45
 
-/** How many turns a leader waits for a player who does not follow, before giving up (M10.3). */
-const GIVE_UP_TURNS = 4
 
 /**
  * A leader going ahead of the player (M10.3, "Pip walks ahead"): when the
@@ -536,7 +524,7 @@ export function leadAhead(world: World): void {
     if (here === place) {
       s.location = place
       a.terms.arrived = world.now
-      hold(world, leader, world.now + (a.terms.waits ?? LEAD_WAITS))
+      hold(world, leader, world.now + (a.terms.waits ?? knob(world, 'agreements.lead_waits_minutes')))
       lead(world, a)
       continue
     }
@@ -564,7 +552,7 @@ export function leadAhead(world: World): void {
       continue
     }
     a.terms.turns = (a.terms.turns ?? 0) + 1
-    if (a.terms.turns >= GIVE_UP_TURNS) {
+    if (a.terms.turns >= knob(world, 'agreements.lead_gives_up_turns')) {
       settle(world, a, 'missed', `${name} gave up waiting; the stranger went another way`, { fault: 'to', told: true })
       s.busyUntil = world.now
       continue
@@ -627,16 +615,16 @@ function meet(world: World, a: Agreement): void {
     const s = world.state.npcs[p]!
     const route = routeMinutes(world, p, place) ?? 60
     const planned = a.effects.some((e) => e.kind === 'plan' && s.goals.some((g) => g.id === e.ref))
-    if (s.location !== place && !planned && world.now >= at - route - 20 && world.now < at + MEET_LATE && world.present(p)) plan(world, a, p, visit(world, place, at + MEET_LATE))
+    if (s.location !== place && !planned && world.now >= at - route - 20 && world.now < at + knob(world, 'agreements.meet_late_minutes') && world.present(p)) plan(world, a, p, visit(world, place, at + knob(world, 'agreements.meet_late_minutes')))
   }
-  if (world.now >= at - MEET_EARLY) for (const p of parties) if ((p === 'player' ? world.state.player.location : world.state.npcs[p]?.location) === place) came(a, p)
+  if (world.now >= at - knob(world, 'agreements.meet_early_minutes')) for (const p of parties) if ((p === 'player' ? world.state.player.location : world.state.npcs[p]?.location) === place) came(a, p)
   const cameAll = parties.every((p) => (a.terms.came ?? []).includes(p))
   if (cameAll) {
     // A smith called in to open a lock does it now, and knows (M10.5).
     if (a.terms.open && isNpc(world, a.by)) openedBy(world, a.by, a.terms.open, place)
     return settle(world, a, 'kept', `${nameOf(world, a.by)} and ${nameOf(world, a.to)} met at ${nameOf(world, place)}${a.terms.open ? ', and the lock was opened' : ''}`)
   }
-  if (world.now < (a.due ?? at + MEET_LATE)) return
+  if (world.now < (a.due ?? at + knob(world, 'agreements.meet_late_minutes'))) return
   const missing = parties.filter((p) => !(a.terms.came ?? []).includes(p))
   const who = missing[0]!
   const s = isNpc(world, who) ? world.state.npcs[who] : undefined

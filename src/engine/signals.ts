@@ -1,3 +1,4 @@
+import { knob } from './knobs'
 import { commonFaith, faithOf } from './faith'
 import type { Output } from './commands'
 import { startAftermath } from './aftermath'
@@ -255,8 +256,6 @@ function newcomersByArea(world: World): Map<string, string[]> {
   return byArea
 }
 
-/** Beyond this, a newcomer is from far off (km between areas). */
-const FAR_KM = 30
 
 /**
  * The pressure of newcomers on a village (M8.3, M9.1): their share, where one
@@ -269,7 +268,7 @@ export function frictionPressure(world: World, area: string, guests: string[], r
   const faith = commonFaith(world, residents)
   const weight = (id: string) => {
     const there = world.content.areas.get(world.location(world.npc(id).home).area)?.pos
-    const far = here && there && Math.hypot(here[0] - there[0], here[1] - there[1]) > FAR_KM
+    const far = here && there && Math.hypot(here[0] - there[0], here[1] - there[1]) > knob(world, 'people.far_km')
     const other = faith !== undefined && faithOf(world, id) !== faith
     return 1 + (far ? 0.5 : 0) + (other ? 0.5 : 0)
   }

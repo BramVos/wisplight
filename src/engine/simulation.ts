@@ -1,3 +1,4 @@
+import { knob } from './knobs'
 import { invitesHour } from './social/invite'
 import { motorChance, propsHour } from './props'
 import { crowdsHour } from './growth/crowds'
@@ -39,7 +40,6 @@ import { meetSketches } from './growth/sketched'
 // The world clock. Every game minute, NPCs that are free decide and act;
 // every game hour, needs decay and the economy moves (supply and demand).
 
-const DECAY: Record<Need, number> = { hunger: 3, rest: 3, social: 1, safety: 0, work: 2, faith: 0.25 }
 
 export function advance(world: World, minutes: number): void {
   const ids = Object.keys(world.state.npcs).sort()
@@ -143,8 +143,8 @@ function decayNeeds(world: World): void {
     // Spirits and the fair folk neither hunger nor tire.
     if (def.quirks.includes('spirit')) continue
     const asleep = npc.activity === 'asleep'
-    for (const need of Object.keys(DECAY) as Need[]) {
-      let loss = DECAY[need]
+    for (const need of Object.keys(knob(world, 'needs.decay')) as Need[]) {
+      let loss = knob(world, 'needs.decay')[need]
       if (need === 'rest' && asleep) loss = 0
       if (need === 'hunger' && asleep) loss = 1
       if (need === 'social') loss += Math.max(0, def.personality.curiosity) * 0.25
@@ -217,8 +217,6 @@ export function isDaytime(minutes: number): boolean {
 export { MINUTES_PER_DAY }
 
 /** People in the same place see each other: they can say later where they saw whom. */
-// How many of those around someone notices in a quarter of an hour, in a crowd.
-const SEEN_IN_A_CROWD = 24
 
 function noteSightings(world: World, ids: string[]): void {
   const at = new Map<string, string[]>()
@@ -240,7 +238,7 @@ function noteSightings(world: World, ids: string[]): void {
     for (const a of here) {
       const seen = (world.state.npcs[a]!.sightings ??= {})
       // In a crowd (M9.3) someone notices a few of those around, not all of them at once.
-      const others = here.length - 1 <= SEEN_IN_A_CROWD ? here : pickSome(world, 'sightings', here.filter((b) => b !== a), SEEN_IN_A_CROWD)
+      const others = here.length - 1 <= knob(world, 'people.seen_in_a_crowd') ? here : pickSome(world, 'sightings', here.filter((b) => b !== a), knob(world, 'people.seen_in_a_crowd'))
       for (const b of others) {
         if (a === b) continue
         // Together again after a long time (M8.2): known again, or a stranger now.

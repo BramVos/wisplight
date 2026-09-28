@@ -1,3 +1,4 @@
+import { knob } from '../knobs'
 import { GameClock, startOfDay } from '../clock'
 import { callName } from '../content'
 import type { LlmRequest } from '../dialogue/llm'
@@ -74,11 +75,6 @@ export const GOAL_CATALOGUE: Record<string, Entry> = {
   Flee: { type: 'Flee', target: 'place', text: 'get away to a place and stay there a while' },
 }
 
-const MAX_PER_DAY = 6
-/** Signals the brains take up in one game day, in all; the rest gets the standard aftermath (design: "Dempen en bundelen"). */
-const SIGNALS_PER_DAY = 20
-const MAX_ACTIVE = 3
-const GOAL_REST = 5 * 60
 const DAY = 24 * 60
 
 function brain(world: World) {
@@ -101,23 +97,23 @@ export function triggerChoice(world: World, npcId: string, trigger: string, kind
     const today = startOfDay(world.now)
     const used = state.signals?.day === today ? state.signals.n : 0
     // Two things at once may happen to someone (a shortage and a quarrel, M8.4): at most two signals waiting per person.
-    if (used >= SIGNALS_PER_DAY || state.pending.filter((p) => p.npc === npcId && p.signal).length >= 2 || state.pending.some((p) => p.signal === signal && p.npc === npcId)) return false
+    if (used >= knob(world, 'signals.per_day') || state.pending.filter((p) => p.npc === npcId && p.signal).length >= 2 || state.pending.some((p) => p.signal === signal && p.npc === npcId)) return false
     state.signals = { day: today, n: used + 1 }
     state.pending.push({ id: `choice_${++state.seq}`, npc: npcId, t: world.now, trigger, signal })
     return true
   }
   if (state.pending.some((p) => p.npc === npcId)) return false
   const last = state.last?.[npcId]
-  if (kind === 'goal' && last !== undefined && world.now - last < GOAL_REST) {
+  if (kind === 'goal' && last !== undefined && world.now - last < (knob(world, 'people.goal_rest_hours') * 60)) {
     // Not yet: the NPC thinks again once the rest is over.
-    ;(state.due ??= {})[npcId] = last + GOAL_REST
+    ;(state.due ??= {})[npcId] = last + (knob(world, 'people.goal_rest_hours') * 60)
     return false
   }
   if (state.due) delete state.due[npcId]
   const today = startOfDay(world.now)
   const count = state.counts[npcId]
   const used = count && count.day === today ? count.n : 0
-  if (used >= MAX_PER_DAY) return false
+  if (used >= knob(world, 'people.goals_per_day')) return false
   state.counts[npcId] = { day: today, n: used + 1 }
   ;(state.last ??= {})[npcId] = world.now
   state.pending.push({ id: `choice_${++state.seq}`, npc: npcId, t: world.now, trigger })
@@ -387,7 +383,7 @@ export function validateGoals(world: World, npcId: string, reply: unknown): Goal
     accepted.push(made)
   }
   const active = state.goals.filter((g) => g.source === 'ai').length
-  return { accepted: accepted.slice(0, Math.max(0, MAX_ACTIVE - active)), rejected }
+  return { accepted: accepted.slice(0, Math.max(0, knob(world, 'people.goals_at_once') - active)), rejected }
 }
 
 /** Something the NPC has that the other asked for. */

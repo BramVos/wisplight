@@ -42,6 +42,9 @@ world:
       hours: 12
       held: The warden walks you to the brig behind her office and seals the hatch. The air in there tastes of other people's waiting.
       heard: The council sits at the long table in the Commons, three of them, and hears you out. The warden logs what they decide, and the hatch opens.
+  # A knob of this world (M10.20): under a dome, stores are kept for five days of use, not three.
+  knobs:
+    economy.days_of_use: 5
   # Standing in the colony (M10.17), by shift rating; the warden's household stands a step higher.
   standing:
     names: [unrated, crew, rated, senior, council]

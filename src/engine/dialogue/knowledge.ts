@@ -1,3 +1,4 @@
+import { knob } from '../knobs'
 import { callName } from '../content'
 import { itemName } from '../items'
 import { factById, newsAbout, versionOf } from '../news'
@@ -16,8 +17,6 @@ import { sketchById, sketchFacts } from '../sketches'
 
 export type Level = 0 | 1 | 2 | 3
 
-/** From this fame on, everyone knows at least the name (M10.8). */
-const FAMOUS = 3
 
 export interface KnownTopic {
   topic: string
@@ -85,11 +84,11 @@ export class Knowledge {
           const area = this.areaOf(other.home)!
           if (own.has(area)) return 3
           const chance = this.chanceLevel(npcId, topicId, 'person', other.fame, this.areaPos(area), false, { sells: this.goodsOf(other.id) })
-          return Math.max(known.has(area) ? 2 : 0, chance, other.fame >= FAMOUS ? 1 : 0) as Level
+          return Math.max(known.has(area) ? 2 : 0, chance, other.fame >= knob(this.world, 'fame.known_by_all') ? 1 : 0) as Level
         }
         // The famous are a name to everyone (M10.8): "Aelbrecht, curse him", even to a stranger who fishes for more.
         const topic = content.topics.get(topicId)
-        return Math.max(this.topicLevel(npcId, topicId), (topic?.fame ?? 0) >= FAMOUS ? 1 : 0) as Level
+        return Math.max(this.topicLevel(npcId, topicId), (topic?.fame ?? 0) >= knob(this.world, 'fame.known_by_all') ? 1 : 0) as Level
       }
       case 'place': {
         const location = entry.ref ? content.locations.get(entry.ref) : undefined

@@ -1,3 +1,4 @@
+import { knob } from '../knobs'
 import { characterOf } from '../economy/ledger'
 import { built } from '../growth/growth'
 import { tensionOf } from '../social/realms'
@@ -361,7 +362,6 @@ function enterStage(world: World, host: QuestHost, questId: string, stageId: str
   applyEffects(world, host, questId, stage.on_enter ?? [], out)
 }
 
-export const QUEST_XP: Record<string, number> = { main: 400, personal: 250, conflict: 300, threat: 200, mystery: 200, bargain: 150, discovery: 150, social: 150, trial: 200, request: 100 }
 
 export function endQuest(world: World, host: QuestHost, questId: string, outcomeId: string, out: Output[]): void {
   const quest = world.content.quests.get(questId)!
@@ -372,7 +372,7 @@ export function endQuest(world: World, host: QuestHost, questId: string, outcome
   q.ended = world.now
   out.push({ kind: 'system', text: `${quest.name}: ${outcome ? `${outcome.name}. ${outcome.text}` : 'It is over.'}` })
   // Experience for every solution, not only the violent ones (FO, chapter 14, "Beloningen").
-  if (outcome?.solution) gainXp(world, QUEST_XP[quest.kind] ?? 150, quest.name)
+  if (outcome?.solution) gainXp(world, knob(world, 'rules.quest_xp')[quest.kind] ?? 150, quest.name)
   // Every outcome is a fact the world can hear of (M8.1), unless it has one of its own.
   if (!outcome?.effects.some((e) => 'fact' in e)) outcomeFact(world, quest, outcomeId, outcome?.name, outcome?.text)
   if (outcome) applyEffects(world, host, questId, outcome.effects, out)

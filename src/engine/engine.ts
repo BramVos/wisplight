@@ -1,3 +1,4 @@
+import { knob } from './knobs'
 import { applyImprovisation, improviseFallback, improviseRequest, readImprovisation, type Improvisable } from './improvise'
 import { soundNow, type SoundNow } from './sound'
 import type { Archived } from './archive'
@@ -76,7 +77,7 @@ import { breakOff, chatLine, chatLineRequest, listen, longListen } from './chatt
 import { realmLines, realmPage } from './social/realms'
 import { bearing, kmFromPlayer, posOf, posOfLocation } from './nearby'
 import { carryOver } from './legacy'
-import { arrival, character, type Clock, clockLine, createCommand, creationHelp, equipCommand, favour, findPurse, gainXp, greyRider, leaveSheaf, levelCommand, makeCharacter, patronCommand, pray, rest, rite, sheetData, sheetLines, struggle, trainCommand, XP } from './rules/player'
+import { arrival, character, type Clock, clockLine, createCommand, creationHelp, equipCommand, favour, findPurse, gainXp, greyRider, leaveSheaf, levelCommand, makeCharacter, patronCommand, pray, rest, rite, sheetData, sheetLines, struggle, trainCommand } from './rules/player'
 import { sketchById } from './sketches'
 import { momentsNow } from './moments'
 import { journeyRequest } from './map/journeyText'
@@ -330,13 +331,13 @@ export class Engine {
     if (!seen.includes(location.id)) {
       seen.push(location.id)
       // A discovery is experience (FO, chapter 11); the start does not count.
-      if (seen.length > 1 && this.content.locations.has(location.id)) gainXp(this.world, XP.place, `you found ${location.name}`)
+      if (seen.length > 1 && this.content.locations.has(location.id)) gainXp(this.world, knob(this.world, 'rules.xp').place, `you found ${location.name}`)
     }
     const visited = (this.state.player.visited ??= [])
     if (visited.includes(location.area)) return
     visited.push(location.area)
     const area = this.content.areas.get(location.area)
-    if (visited.length > 1 && area && area.kind !== 'route') gainXp(this.world, XP.area, `you came to ${area.name}`)
+    if (visited.length > 1 && area && area.kind !== 'route') gainXp(this.world, knob(this.world, 'rules.xp').area, `you came to ${area.name}`)
     if (!area || area.kind === 'route' || area.kind === 'wilderness') return
     const clock = new GameClock(this.world.now).parts
     recordFact(this.world, {

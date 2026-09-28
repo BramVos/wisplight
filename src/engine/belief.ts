@@ -1,3 +1,4 @@
+import { knob } from './knobs'
 import { foodGoods, opennessOf } from './economy/ledger'
 import { checkedClaims } from './claims'
 import { relation } from './dialogue/relations'
@@ -19,7 +20,6 @@ import type { World } from './world'
 
 export type Stance = 'believes' | 'doubts' | 'rejects'
 
-const AREA_OPENNESS: Record<string, number> = { city: 0.9, town: 0.8, inn: 0.7, village: 0.5, route: 0.5, hamlet: 0.3, wilderness: 0.2 }
 
 /**
  * How open a place is to strangers, 0 to 1: its rank (a town is open, a
@@ -29,7 +29,7 @@ const AREA_OPENNESS: Record<string, number> = { city: 0.9, town: 0.8, inn: 0.7, 
 export function openness(world: World, location: string): number {
   const loc = world.content.locations.get(location)
   const area = loc ? world.content.areas.get(loc.area) : undefined
-  let value = AREA_OPENNESS[area?.kind ?? 'village'] ?? 0.5
+  let value = knob(world, 'belief.openness')[area?.kind ?? 'village'] ?? 0.5
   const places = [...world.content.locations.values()].filter((l) => l.area === loc?.area)
   if (places.some((l) => l.services.length > 0 && l.tags.includes('social'))) value += 0.1
   if (places.some((l) => world.state.places?.[l.id] && world.state.places[l.id]!.state !== 'normal')) value -= 0.15
@@ -132,12 +132,6 @@ function settleStance(world: World, listener: string, fact: Fact, heard: Heard, 
   }
 }
 
-/** Someone who comes to tell you to your face is heard out (M8.2, a report carried). */
-export const IN_PERSON = 25
-/** What an eyewitness adds to their word, told in person (M10.6): "I saw it with my own eyes." */
-export const SAW_IT = 20
-/** What someone adds who stands by a claim: beside the teller, or with their word given to say so (M10.6). */
-export const BACKED = 15
 
 const RANK: Record<Stance, number> = { rejects: 0, doubts: 1, believes: 2 }
 
@@ -203,8 +197,8 @@ export function backers(world: World, listener: string, fact: Fact, promises: bo
 }
 
 /** The weight of those who stand by it. */
-export function backing(list: { saw: boolean }[]): number {
-  return list.reduce((sum, b) => sum + BACKED + (b.saw ? SAW_IT : 0), 0)
+export function backing(world: World, list: { saw: boolean }[]): number {
+  return list.reduce((sum, b) => sum + knob(world, 'belief.backed') + (b.saw ? knob(world, 'belief.saw_it') : 0), 0)
 }
 
 /** Someone from elsewhere, whom this NPC has no bond with. */
@@ -325,8 +319,6 @@ export function lookForYourself(world: World, who: string, subject: string, key:
   checkedClaims(world, who, subject, key)
 }
 
-/** How far back a place's state can still be seen to be what was said. */
-const SEEN_DAYS = 30
 const visible = new WeakMap<Fact[], { n: number; list: Fact[] }>()
 
 /** The recent claims of a place's state: the only ones a passer-by can see for themselves. */
@@ -335,7 +327,7 @@ function placeClaims(world: World): Fact[] {
   const cached = visible.get(facts)
   if (cached && cached.n === facts.length) return cached.list
   const list: Fact[] = []
-  for (let i = facts.length - 1; i >= 0 && world.now - facts[i]!.t <= SEEN_DAYS * 24 * 60; i--) {
+  for (let i = facts.length - 1; i >= 0 && world.now - facts[i]!.t <= knob(world, 'belief.seen_days') * 24 * 60; i--) {
     const f = facts[i]!
     if (f.claim?.key === 'state' && world.content.locations.has(f.claim.subject)) list.push(f)
   }
@@ -375,7 +367,7 @@ export function witnessSays(world: World, listener: string, fact: Fact, witness:
   const store = world.state.news
   if (!store || !fact.claim || !world.alive(listener)) return undefined
   const theirs = (store.heard[listener] ??= {})
-  const weight = IN_PERSON + SAW_IT + bonus
+  const weight = knob(world, 'belief.in_person') + knob(world, 'belief.saw_it') + bonus
   if (theirs[fact.id]) {
     if (theirs[fact.id]!.stance) reconsider(world, listener, fact, witness, weight)
     return theirs[fact.id]

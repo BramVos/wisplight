@@ -1,3 +1,4 @@
+import { knob } from './knobs'
 import { GameClock } from './clock'
 import type { Card, Output } from './commands'
 import type { Location } from './content'
@@ -14,8 +15,6 @@ import type { World } from './world'
 // reached or rising from afar. Heard: a tiding of belang 4 or more. The
 // journey (travel.ts) is the third kind, a paragraph instead of a line.
 
-/** A tiding is a fact at least this big. */
-const TIDINGS = 4
 
 /**
  * What the stranger has had a moment for. A game that had none yet begins
@@ -31,7 +30,7 @@ export function moments(world: World, fresh = false): MomentsState {
       // A new game has its moment where it begins (the wreck on Skerrow); an old save has had it.
       places: [...world.content.locations.values()].filter((l) => l.arrival && (seen.has(l.id) || l.id === player.location) && !(fresh && l.id === player.location)).map((l) => l.id),
       sighted: [],
-      tidings: Object.keys(heard).filter((id) => (factById(world, id)?.belang ?? 0) >= TIDINGS),
+      tidings: Object.keys(heard).filter((id) => (factById(world, id)?.belang ?? 0) >= knob(world, 'moments.tidings_belang')),
     }
   }
   return player.moments
@@ -87,7 +86,7 @@ export function momentsNow(world: World, fresh = false): Output[] {
   for (const [id, h] of Object.entries(heard)) {
     if (m.tidings.includes(id)) continue
     const fact = factById(world, id)
-    if (!fact || fact.belang < TIDINGS) continue
+    if (!fact || fact.belang < knob(world, 'moments.tidings_belang')) continue
     m.tidings.push(id)
     const from = h.from === 'witness' ? 'you saw it yourself' : h.from === 'news' ? 'it is going round' : h.from === 'board' ? 'on the notice board' : world.content.npcs.has(h.from) ? `from ${world.npc(h.from).name.split(' ')[0]}` : undefined
     out.push(card({ kind: 'tidings', title: cap(fact.title), text: versionOf(fact, h), link: id, ...(from ? { from } : {}) }))

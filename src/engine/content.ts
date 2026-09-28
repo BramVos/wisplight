@@ -1,3 +1,4 @@
+import { knobProblems } from './knobs'
 import { parse } from 'yaml'
 import { OutlandSchema, ResourceSchema, RouteSchema, SettlementSchema, type Outland, type Resource, type Route, type Settlement } from './economy/schema'
 import { NamesSchema, NewcomerSchema, ProjectSchema, type Newcomer, type Project } from './growth/schema'
@@ -920,6 +921,12 @@ export const WorldSchema = z.object({
     .default([]),
   /** Bells that ring on the hour (M10.15): heard plainly in some areas and far off in others, and a line in the text. */
   bells: z.array(BellSchema).default([]),
+  /**
+   * The knobs of this world (M10.20): rules of play set otherwise than the
+   * default, by the knob's id (src/engine/knobs.ts, docs/KNOBS.md): one number,
+   * or for a table the rows that differ.
+   */
+  knobs: z.record(z.string(), z.union([z.number(), z.record(z.string(), z.number())])).optional(),
 })
 export type WorldDef = z.infer<typeof WorldSchema>
 
@@ -1455,6 +1462,8 @@ function checkReferences(world: WorldDef | undefined, c: Omit<Content, 'world'>)
     }
   }
   for (const a of c.areas.values()) if (a.topic && !c.topics.has(a.topic)) problems.push(`area ${a.id}: unknown topic ${a.topic}`)
+  // The world's knobs (M10.20): known, of the right shape and within bounds.
+  problems.push(...knobProblems(world?.knobs))
   for (const r of c.regions.values()) {
     const area = (id: string, where: string) => {
       if (!c.areas.has(id)) problems.push(`region ${r.id}.${where}: unknown area ${id}`)

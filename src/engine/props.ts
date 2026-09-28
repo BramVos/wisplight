@@ -1,3 +1,4 @@
+import { knob } from './knobs'
 import type { Card } from '../chronicler'
 import { minuteOfDay } from './clock'
 import { callName, CRAFT_RANKS, type Content, type ObjectInstance } from './content'
@@ -24,8 +25,6 @@ import type { World } from './world'
 // few a week. Without a model the rules choose from the same.
 
 const DAY = 24 * 60
-/** At most this many new objects in a week of play. */
-export const PROPS_PER_WEEK = 3
 
 export function propsOf(world: World): Prop[] {
   return world.state.props?.list ?? []
@@ -105,7 +104,7 @@ export function placeProp(world: World, templateId: string, ownerId: string, opt
   if (story && !story.people.includes(ownerId) && !story.roles.some((r) => r.who === ownerId)) return { problem: `${ownerId} has no part in that storyline` }
   if (opts.line && state.list.some((p) => p.line === opts.line)) return { problem: 'the storyline has its object already' }
   if (state.list.some((p) => p.owner === ownerId && p.template === templateId)) return { problem: `${ownerId} has one already` }
-  if (state.list.filter((p) => world.now - p.placed < 7 * DAY).length >= PROPS_PER_WEEK) return { problem: 'enough new things this week' }
+  if (state.list.filter((p) => world.now - p.placed < 7 * DAY).length >= knob(world, 'props.per_week')) return { problem: 'enough new things this week' }
   const id = `prop_${++state.seq}`
   // What it holds: the owner's own of the template's kind first, then of the bounded list; money from the purse.
   const owner = world.npcState(ownerId)

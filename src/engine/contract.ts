@@ -22,6 +22,7 @@ interface KindText {
  * contract, the fields of a world step and the writing aid's short contract.
  */
 export const FIELD_NOTES: Record<string, string[]> = {
+  world: ['`knobs`: rules of play set otherwise than the default, by the id of a knob (docs/KNOBS.md): `talk.max_turns: 30`; for a table only the rows that differ.'],
   npcs: ['`secrets`: `about` and `teaches` take ids: a topic, a person (an NPC id), a place (a location id) or an area (`area_<id>`).'],
   // M10.20: the transport step of The Quiet Reach wrote legs as "a-b".
   passages: ['`legs`: minutes between two of its stops that the map cannot measure, keyed `<stop>><stop>` with a `>` between the ids (`loc_quay>kestrel_landing: 90`).'],

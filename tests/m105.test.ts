@@ -2,7 +2,10 @@ import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { Engine } from '../src/engine'
 import { CRAFT_RANKS } from '../src/engine/content'
-import { craftBonus, craftProgress, interruption, MASTERED, recipeTier } from '../src/engine/crafts'
+import { craftBonus, craftProgress, interruption, recipeTier } from '../src/engine/crafts'
+import { KNOBS } from '../src/engine/knobs'
+
+const MASTERED = KNOBS['crafts.mastered_after'].default
 import { buildInput } from '../src/engine/chronicler'
 import { startChroniclePlan } from '../src/engine/planning'
 import { chancesIn, motorChance, motorProp, placeProp } from '../src/engine/props'

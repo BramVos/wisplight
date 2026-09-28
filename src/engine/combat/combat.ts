@@ -1,3 +1,4 @@
+import { knob } from '../knobs'
 import type { Content } from '../content'
 import type { Rng } from '../rng'
 import {
@@ -37,9 +38,6 @@ export interface Arena {
 }
 
 const STREAM = 'combat'
-export const FLED_AT = 4
-/** What a raised shield takes off one blow a round (Shield Block). */
-export const SHIELD_HARDNESS = 3
 
 export function rollDice(rng: Rng, dice: string, stream = STREAM): number {
   const m = /^(\d+)d(\d+)([+-]\d+)?$/.exec(dice.trim())
@@ -271,7 +269,7 @@ function hurt(arena: Arena, combat: Combat, target: Fighter, amount: number, lin
   // Shield Block: a raised shield soaks some of it.
   if (target.shieldUp && !target.reactionUsed && target.state === 'up') {
     target.reactionUsed = true
-    const soak = Math.min(amount, SHIELD_HARDNESS)
+    const soak = Math.min(amount, knob(arena, 'rules.shield_hardness'))
     amount -= soak
     lines.push({ kind: 'narration', text: `${cap(target.name)} ${verbS(target, 'catch', 'catches')} it on the shield (${soak} less).` })
   }
@@ -579,7 +577,7 @@ export function endTurn(arena: Arena, combat: Combat, f: Fighter, lines: Line[])
   }
   delete f.conditions['shaken']
   f.buffs = f.buffs.map((b) => ({ ...b, rounds: b.rounds - 1 })).filter((b) => b.rounds > 0)
-  if (f.fleeing && f.state === 'up' && Math.abs(f.pos) >= FLED_AT) {
+  if (f.fleeing && f.state === 'up' && Math.abs(f.pos) >= knob(arena, 'rules.fled_at')) {
     f.state = 'fled'
     lines.push({ kind: 'narration', text: fill(f.says.flee, f) ?? `${cap(f.name)} is gone.` })
   }

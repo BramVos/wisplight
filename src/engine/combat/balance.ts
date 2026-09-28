@@ -16,8 +16,6 @@ export function foeXp(foeLevel: number, playerLevel: number): number {
   return { '-4': 10, '-3': 15, '-2': 20, '-1': 30, '0': 40, '1': 60, '2': 80, '3': 120, '4': 160 }[String(diff)]!
 }
 
-/** A standard encounter for one character alone: about 40 experience of foes (one of its own level). */
-export const STANDARD_BUDGET = 40
 
 export const MARGINS = {
   /** Share of standard fights the character wins (foes dead, fled or given up), per class. */

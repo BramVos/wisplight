@@ -7,7 +7,6 @@ import { relation } from '../dialogue/relations'
 import type { World } from '../world'
 import { blessed, ONCE, useBlessing } from './blessings'
 import {
-  ATTRIBUTE_CAP,
   autoLevelChoice,
   boostsFor,
   canLevelUp,
@@ -117,7 +116,6 @@ export function gainXp(world: World, amount: number, why: string): void {
   if (!could && canLevelUp(world.content, c)) notice(world, `You can rise to level ${c.level + 1}. Type LEVEL UP.`)
 }
 
-export const XP = { place: 10, area: 30, secret: 40, request: 60, lore: 10 }
 
 // ---------------------------------------------------------------- making a character
 
@@ -645,7 +643,7 @@ export function clockLine(clock: Clock): string {
   return `${clock.name} [${'#'.repeat(clock.filled)}${'.'.repeat(clock.size - clock.filled)}] ${clock.filled}/${clock.size}`
 }
 
-export { ATTRIBUTE_CAP, boostsFor, extraSkills }
+export { boostsFor, extraSkills }
 
 
 // ---------------------------------------------------------------- dangers outside fights (FO, chapter 12; M7.2)

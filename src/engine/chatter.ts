@@ -1,3 +1,4 @@
+import { knob } from './knobs'
 import type { LlmRequest } from './dialogue/llm'
 import type { Output } from './commands'
 import { callName } from './content'
@@ -20,8 +21,6 @@ import { fixNotHere, oathsFor, strangeWords } from './dialogue/voice'
 // subject. Templates only. Far from the player nothing changes.
 
 const HOUR = 60
-/** A pair greets each other at most once in this many hours. */
-const GREET_EVERY = 3
 
 export interface Chat {
   teller: string
@@ -55,19 +54,19 @@ export function chatterNearPlayer(world: World): void {
   })
   if (people.length < 2) return
   const store = chatter(world)
-  for (const [key, t] of Object.entries(store.greeted)) if (world.now - t >= GREET_EVERY * HOUR) delete store.greeted[key]
+  for (const [key, t] of Object.entries(store.greeted)) if (world.now - t >= knob(world, 'chatter.greet_every_hours') * HOUR) delete store.greeted[key]
   for (let i = 0; i < people.length; i++) {
     for (let j = i + 1; j < people.length; j++) {
       const [a, b] = [people[i]!, people[j]!]
       // They meet: one of them has just come in. A greeting at once; a chat once they have time.
       const key = `${a}|${b}`
       const last = store.greeted[key]
-      if ((justCame(world, a, here, 6) || justCame(world, b, here, 6)) && (last === undefined || world.now - last >= GREET_EVERY * HOUR)) {
+      if ((justCame(world, a, here, 6) || justCame(world, b, here, 6)) && (last === undefined || world.now - last >= knob(world, 'chatter.greet_every_hours') * HOUR)) {
         store.greeted[key] = world.now
         world.emit('greeting', here, greeting(world, a, b), a)
       }
       const talked = store.greeted[`chat:${key}`]
-      if ((justCame(world, a, here, 20) || justCame(world, b, here, 20)) && (talked === undefined || world.now - talked >= GREET_EVERY * HOUR) && startChat(world, a, b, here)) store.greeted[`chat:${key}`] = world.now
+      if ((justCame(world, a, here, 20) || justCame(world, b, here, 20)) && (talked === undefined || world.now - talked >= knob(world, 'chatter.greet_every_hours') * HOUR) && startChat(world, a, b, here)) store.greeted[`chat:${key}`] = world.now
     }
   }
 }

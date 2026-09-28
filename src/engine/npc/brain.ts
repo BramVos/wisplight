@@ -1,3 +1,4 @@
+import { knob } from '../knobs'
 import { minuteOfDay, nextOpening, parseHours, startOfDay, weekdayName } from '../clock'
 import { delivered, goalEnded } from '../agreements'
 import type { DailyGoal, ScheduleBlock } from '../content'
@@ -13,7 +14,7 @@ import { callName } from '../content'
 import { standingOf } from '../standing'
 import { LAND_LAW } from '../social/crime'
 import { factById, heardBy } from '../news'
-import { heardClaim, IN_PERSON, reconsider, SAW_IT } from '../belief'
+import { heardClaim, reconsider } from '../belief'
 
 // Without AI an NPC falls back on its schedule, its needs and the daily goals
 // of its profession (FO, chapter 7: the utility layer). Goals chosen by the
@@ -21,7 +22,6 @@ import { heardClaim, IN_PERSON, reconsider, SAW_IT } from '../belief'
 
 const MAX_STEPS_PER_TURN = 8
 const MAX_REPLANS = 3
-const ASK_AGAIN_AFTER = 3 * 24 * 60
 
 export function think(world: World, npcId: string): void {
   const npc = world.npcState(npcId)
@@ -66,7 +66,7 @@ function carryWord(world: World, npcId: string, goal: Goal): void {
     const fact = factById(world, id)
     if (!fact) continue
     // Someone who comes all this way to tell you in person is heard out; more so when they saw it (M10.6).
-    const weight = IN_PERSON + (mine[id]?.from === 'witness' ? SAW_IT : 0)
+    const weight = knob(world, 'belief.in_person') + (mine[id]?.from === 'witness' ? knob(world, 'belief.saw_it') : 0)
     if (heard[id]) {
       // Heard it before and did not believe it: they think again (M10.6).
       if (heard[id]!.stance) reconsider(world, goal.target!, fact, npcId, weight)
@@ -375,7 +375,7 @@ function pursueDailyGoal(world: World, npcId: string): boolean {
     if (isFailure(result)) {
       npc.dailyDone[dailyKey(goal)] = today
       const last = npc.lastAskHelp[result.missing.item]
-      if (last === undefined || world.now - last >= ASK_AGAIN_AFTER) {
+      if (last === undefined || world.now - last >= (knob(world, 'people.ask_again_days') * 24 * 60)) {
         npc.goals.push(goal)
         npc.planGoal = goal.id
         npc.plan = [{ kind: 'askHelp', item: result.missing.item, qty: result.missing.qty }]

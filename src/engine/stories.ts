@@ -1,3 +1,4 @@
+import { knob } from './knobs'
 import { GameClock, minuteOfDay, startOfDay } from './clock'
 import { areaTopicId, callName, type Npc, type Pattern } from './content'
 import { applyEffect } from './dialogue/relations'
@@ -39,11 +40,7 @@ export interface StoriesState {
 }
 
 const DAY = 24 * 60
-/** Expected small stories per day, before the bonus for a quiet spell. */
-const PER_DAY: Record<Tempo, number> = { calm: 0.4, normal: 0.8, dramatic: 1.6 }
 const KEEP_DONE = 60
-/** Fewer small stories a day for every storyline in rising or crisis. */
-const RISING_WEIGHT = 0.2
 
 export function stories(world: World): StoriesState {
   return (world.state.stories ??= { seq: 0, tempo: 'normal', lastIncident: world.now, active: [], done: [] })
@@ -73,7 +70,7 @@ function morning(world: World): void {
     if (pattern.date?.month === today.month && pattern.date.day === today.day) start(world, pattern)
   }
   const quietDays = Math.max(0, (world.now - state.lastIncident) / DAY - 2)
-  const expected = PER_DAY[state.tempo] + Math.min(1, quietDays * 0.2) - RISING_WEIGHT * risingLines(world).length
+  const expected = knob(world, 'stories.per_day')[state.tempo] + Math.min(1, quietDays * 0.2) - knob(world, 'stories.rising_weight') * risingLines(world).length
   let started = 0
   for (let n = 0; n < 3 && world.rng.next('stories') < expected - n; n++) {
     const recent = new Set([...state.active, ...state.done].filter((s) => world.now - s.started < 2 * DAY).map((s) => s.pattern))

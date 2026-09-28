@@ -1,4 +1,3 @@
-import { TIER_WORDS, type Tier } from './acts'
 
 // Guardrails around the model (FO, chapter 10): what goes in, and what may
 // come out.
@@ -53,8 +52,7 @@ export function wordCount(text: string): number {
 }
 
 /** Cuts a reply that runs too long at the last full sentence within the limit. */
-export function fitLength(text: string, tier: Tier): string {
-  const limit = TIER_WORDS[tier]
+export function fitLength(text: string, limit: number): string {
   const clean = text.replace(/\s+/g, ' ').trim()
   if (wordCount(clean) <= Math.round(limit * 1.2)) return clean
   const sentences = clean.match(/[^.!?]+[.!?]+["')\]]?\s*/g) ?? [clean]

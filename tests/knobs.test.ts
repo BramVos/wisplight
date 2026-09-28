@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
+import { KNOBS } from '../src/engine/knobs'
 import { inventory, knobsMarkdown } from '../scripts/knobscan'
 
 // Milestone M10.20 (docs/ROADMAP.md): an inventory of the fixed numbers of
@@ -16,13 +17,13 @@ describe('M10.20: every fixed number has a place', () => {
     expect(problems).toEqual([])
     expect(unplaced.map((c) => `${c.file}:${c.line} ${c.name} = ${c.value}`), 'add it to docs/knobs.yaml as world, settings or code, then npm run knobs').toEqual([])
     expect(stale, 'remove it from docs/knobs.yaml, then npm run knobs').toEqual([])
-    expect(rows.length).toBeGreaterThan(150)
+    expect(rows.length).toBeGreaterThan(80)
     // What stays in the code says why.
     for (const r of rows.filter((r) => r.place === 'code')) expect(r.note.length, r.name).toBeGreaterThan(10)
   })
 
   it('docs/KNOBS.md is what npm run knobs writes', () => {
     const { rows } = inventory(root, places)
-    expect(readFileSync(resolve(root, 'docs/KNOBS.md'), 'utf8')).toBe(knobsMarkdown(rows))
+    expect(readFileSync(resolve(root, 'docs/KNOBS.md'), 'utf8')).toBe(knobsMarkdown(rows, Object.entries(KNOBS).map(([id, k]) => ({ id, ...k }))))
   })
 })

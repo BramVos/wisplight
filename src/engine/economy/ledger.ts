@@ -1,3 +1,4 @@
+import { knob } from '../knobs'
 import { GameClock } from '../clock'
 import { recordFact } from '../news'
 import type { Content } from '../content'
@@ -14,10 +15,6 @@ import type { Route, Settlement } from './schema'
 // travellers fill, and the shopkeepers pay the purse for what they take.
 
 const DAY = 24 * 60
-/** Before the counters fill at six. */
-export const LEDGER_HOUR = 5
-/** How much of a good a settlement aims to hold when it names no keep: three days of its use. */
-const DAYS_OF_USE = 3
 
 export interface Ledger {
   stock: Record<string, number>
@@ -99,8 +96,8 @@ export function seasonal(world: Pick<World, 'content'>, s: Settlement, item: str
 }
 
 /** What a settlement aims to hold of a good: its keep, or three days of its use. */
-export function aimOf(s: Settlement, item: string): number {
-  return s.keep[item] ?? (s.use[item] ?? 0) * DAYS_OF_USE
+export function aimOf(world: World, s: Settlement, item: string): number {
+  return s.keep[item] ?? (s.use[item] ?? 0) * knob(world, 'economy.days_of_use')
 }
 
 const value = (world: Pick<World, 'content'>, item: string) => world.content.items.get(item)?.value ?? 1
@@ -165,7 +162,7 @@ export function ledgerHour(world: World): void {
   if (world.content.settlements.size === 0) return
   const today = Math.floor(world.now / DAY)
   const state = economy(world)
-  if (state.day >= today || Math.floor((world.now % DAY) / 60) < LEDGER_HOUR) return
+  if (state.day >= today || Math.floor((world.now % DAY) / 60) < knob(world, 'economy.ledger_hour')) return
   state.day = today
   const settlements = [...world.content.settlements.values()].sort((a, b) => a.id.localeCompare(b.id))
   for (const s of settlements) state.ledgers[s.id]!.last = emptyLast()
@@ -233,15 +230,15 @@ function produce(world: World, s: Settlement, today: number): void {
 }
 
 /** Room at a settlement for a good that comes in: up to half again what it aims to hold. */
-function room(s: Settlement | undefined, l: Ledger, item: string, offered: number): number {
+function room(world: World, s: Settlement | undefined, l: Ledger, item: string, offered: number): number {
   if (!s) return offered
-  const aim = aimOf(s, item)
+  const aim = aimOf(world, s, item)
   return aim > 0 ? Math.max(0, aim * 1.5 - (l.stock[item] ?? 0)) : offered
 }
 
 /** What a settlement can spare of a good: what it has above what it aims to hold. */
-function spare(s: Settlement, l: Ledger, item: string): number {
-  return Math.max(0, (l.stock[item] ?? 0) - aimOf(s, item))
+function spare(world: World, s: Settlement, l: Ledger, item: string): number {
+  return Math.max(0, (l.stock[item] ?? 0) - aimOf(world, s, item))
 }
 
 function move(to: Ledger, from: Ledger | undefined, item: string, qty: number): void {
@@ -270,8 +267,8 @@ function travel(world: World, r: Route, today: number): void {
   for (const [item, n] of Object.entries(r.carries)) {
     // Scarcity from a plan (market): only a share of it comes.
     let qty = n * (world.state.market?.[item] ?? 1)
-    if (fromS && from) qty = Math.min(qty, spare(fromS, from, item))
-    qty = round(Math.min(qty, room(toS, to, item, qty)))
+    if (fromS && from) qty = Math.min(qty, spare(world, fromS, from, item))
+    qty = round(Math.min(qty, room(world, toS, to, item, qty)))
     move(to, from, item, qty)
     const cost = Math.round(qty * value(world, item) * (outland ? prices : 0.5))
     to.purse = Math.max(0, to.purse - cost)
@@ -279,8 +276,8 @@ function travel(world: World, r: Route, today: number): void {
   }
   for (const [item, n] of Object.entries(r.returns)) {
     if (outland && !outland.asks.includes(item)) continue
-    let qty = Math.min(n, spare(toS, to, item))
-    if (fromS && from) qty = Math.min(qty, room(fromS, from, item, qty))
+    let qty = Math.min(n, spare(world, toS, to, item))
+    if (fromS && from) qty = Math.min(qty, room(world, fromS, from, item, qty))
     qty = round(qty)
     if (qty <= 0) continue
     to.stock[item] = round((to.stock[item] ?? 0) - qty)
@@ -311,7 +308,7 @@ function weigh(world: World, s: Settlement, unmet: Set<string>): void {
   for (const item of carried(world, s.id)) {
     // Short: the nameless did not get what they need, or a counter found the store empty since yesterday.
     l.short[item] = unmet.has(item) || l.missed[item] ? (l.short[item] ?? 0) + 1 : 0
-    const aim = aimOf(s, item)
+    const aim = aimOf(world, s, item)
     // What is made in its season (peat, the harvest) is the store for the year, not a surplus (M9.1).
     l.surplus[item] = !seasonal(world, s, item) && aim > 0 && (l.stock[item] ?? 0) > aim * 2 ? (l.surplus[item] ?? 0) + 1 : 0
   }
@@ -331,7 +328,7 @@ export function fillFromLedger(world: World, location: string, provider: string,
   // Below half of what the place wants to hold, the store is rationed (M9.1): the counter gets its share, and the price climbs.
   // A good made only in its season is rationed once two thirds of the season's store is gone: through the winter it gets dearer.
   const have = Math.max(0, l.stock[item] ?? 0)
-  const line = seasonal(world, s, item) ? ((l.peak ??= {})[item] ??= Math.max(have, aimOf(s, item))) * (2 / 3) : aimOf(s, item) / 2
+  const line = seasonal(world, s, item) ? ((l.peak ??= {})[item] ??= Math.max(have, aimOf(world, s, item))) * (2 / 3) : aimOf(world, s, item) / 2
   const share = line > 0 && have < line ? have / line : 1
   const qty = Math.floor(Math.min(want * share, have))
   // Less in store than the counter wants: that is short too.

@@ -1,3 +1,4 @@
+import { knob } from './knobs'
 import { GameClock } from './clock'
 import { callName, type RelationRole } from './content'
 import type { Act } from './dialogue/acts'
@@ -18,10 +19,6 @@ import type { World } from './world'
 
 const DAY = 24 * 60
 const SEASON = 91 * DAY
-/** Bounds, as for far places: two a day, a few per speaker, a handful per area in a season, and a ceiling. */
-const PER_DAY = 2
-const PER_SPEAKER = 3
-const PER_AREA_SEASON = 6
 const MAX_SKETCHES = 60
 
 /** The bonds of a world without its own list: what someone new is to the speaker. */
@@ -125,7 +122,7 @@ export function sketchRoom(world: World, npcId: string): boolean {
   const mine = all.filter((s) => s.of === npcId)
   const area = world.content.locations.get(world.npc(npcId).home)?.area
   const inArea = all.filter((s) => world.now - s.t < SEASON && world.content.npcs.has(s.of) && world.content.locations.get(world.npc(s.of).home)?.area === area)
-  return mine.filter((s) => world.now - s.t < DAY).length < PER_DAY && mine.length < PER_SPEAKER && inArea.length < PER_AREA_SEASON && all.length < MAX_SKETCHES
+  return mine.filter((s) => world.now - s.t < DAY).length < knob(world, 'sketches.per_day') && mine.length < knob(world, 'sketches.per_speaker') && inArea.length < knob(world, 'sketches.per_area_season') && all.length < MAX_SKETCHES
 }
 
 /** Someone new, fixed in this game's lore; the talk puts them in the journal and the speaker's words. */

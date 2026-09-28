@@ -1,3 +1,4 @@
+import { knob } from './knobs'
 import { commissionDone } from './crafts'
 import { openAgreements, settle } from './agreements'
 import { queueSignal } from './signals'
@@ -6,7 +7,7 @@ import { applyEffect } from './dialogue/relations'
 import { itemName, withArticle } from './items'
 import type { Request } from './state'
 import type { World } from './world'
-import { favour, gainXp, XP } from './rules/player'
+import { favour, gainXp } from './rules/player'
 
 // Requests for the player (FO, chapter 14, "Verzoeken uit NPC-doelen"). They
 // come up out of what happens: someone loses a knife, a fever keeps someone in
@@ -95,7 +96,7 @@ function finish(world: World, request: Request, thanks = true): string {
   // The stranger's word to bring it (M10.3) is kept with it.
   const word = openAgreements(world, 'player').find((a) => a.by === 'player' && a.to === request.npc && ((a.kind === 'give' && a.terms.item === request.item) || (a.kind === 'errand' && a.terms.request === request.id)))
   if (word) settle(world, word, 'kept', `the stranger brought ${callName(world.npc(request.npc))} what was promised`, { quiet: true })
-  gainXp(world, XP.request, `you did what ${callName(world.npc(request.npc))} asked`)
+  gainXp(world, knob(world, 'rules.xp').request, `you did what ${callName(world.npc(request.npc))} asked`)
   // Made by the stranger's own hand, hard to make: a commission that counts as a masterwork (M10.5).
   if (request.item) commissionDone(world, request.npc, request.item)
   favour(world, 'request_done')

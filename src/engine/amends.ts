@@ -1,3 +1,4 @@
+import { knob } from './knobs'
 import { agree, agreements, madeGood } from './agreements'
 import type { Output } from './commands'
 import { callName } from './content'
@@ -15,15 +16,13 @@ import type { World } from './world'
 // is content.
 
 const DAY = 24 * 60
-/** How long a let-down is fresh enough to talk about. */
-const FRESH = 30 * DAY
 
 export type AmendsAct = 'Apologize' | 'Explain' | 'MakeGood'
 
 /** The last time the stranger let this person down and it is not settled: missed, judged, no amends that held. */
 export function letDown(world: World, npcId: string): Agreement | undefined {
   return agreements(world)
-    .filter((a) => a.by === 'player' && a.to === npcId && a.status === 'missed' && (a.judged === 'let_down' || a.judged === 'betrayed') && world.now - (a.outcome?.t ?? a.t) <= FRESH)
+    .filter((a) => a.by === 'player' && a.to === npcId && a.status === 'missed' && (a.judged === 'let_down' || a.judged === 'betrayed') && world.now - (a.outcome?.t ?? a.t) <= (knob(world, 'amends.fresh_days') * DAY))
     // Said sorry or explained, it can still be made good; refused, not again the same day; offered again or made good, it is settled.
     .filter((a) => !a.amends || a.amends.how === 'apologised' || a.amends.how === 'explained' || (a.amends.how === 'refused' && world.now - a.amends.t >= DAY))
     .sort((a, b) => (b.outcome?.t ?? b.t) - (a.outcome?.t ?? a.t))[0]

@@ -1,3 +1,4 @@
+import { knob } from './knobs'
 import { minuteOfDay } from './clock'
 import { questsOf } from './life'
 import { factById } from './news'
@@ -15,8 +16,6 @@ import type { World } from './world'
 // with a quest role.
 
 const DAY = 24 * 60
-/** A line that takes nothing new for this long goes dormant, or closes when nothing is left open (M10.2). */
-const OPEN_DAYS = 14
 /** A line takes no more facts than this; after it, the story goes on on a new line. */
 const MAX_FACTS = 12
 /** Everyday noise that tells no story. */
@@ -67,7 +66,7 @@ export function setLineStatus(world: World, line: Storyline, status: 'active' | 
  */
 export function settleLines(world: World): void {
   for (const line of world.state.chronicle?.lines ?? []) {
-    if (lineStatus(line) !== 'active' || world.now - line.changed <= OPEN_DAYS * DAY) continue
+    if (lineStatus(line) !== 'active' || world.now - line.changed <= knob(world, 'storylines.open_days') * DAY) continue
     setLineStatus(world, line, line.hooks.length > 0 && line.phase !== 'closed' ? 'dormant' : 'closed')
   }
 }

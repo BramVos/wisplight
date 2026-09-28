@@ -1,3 +1,4 @@
+import { knob } from '../knobs'
 import type { Content, Item } from '../content'
 import { ATTRIBUTES, WHEN, type Ability, type Ancestry, type Attribute, type Bonus, type ClassDef, type Effect, type Rules, type Save, type Talent } from './schema'
 
@@ -68,9 +69,6 @@ export interface CreationChoice {
   talent: string
 }
 
-export const FREE_BOOSTS = 3
-export const START_CAP = 4
-export const ATTRIBUTE_CAP = 6
 /** A talent at row r of a tree opens at this level. */
 export const ROW_LEVEL = [1, 3, 5, 7]
 /** Weapons do one die more from these levels (weapon training). */
@@ -117,7 +115,7 @@ export function extraSkills(content: Content, klass: string, background: string)
 
 export function boostsFor(content: Content, ancestry: string): number {
   const a = rulesOf(content).ancestries.find((x) => x.id === ancestry)
-  return FREE_BOOSTS + (a?.attributes.choice ?? 0)
+  return knob({ content }, 'rules.free_boosts') + (a?.attributes.choice ?? 0)
 }
 
 export function checkChoice(content: Content, choice: CreationChoice): string[] {
@@ -135,7 +133,7 @@ export function checkChoice(content: Content, choice: CreationChoice): string[] 
   if (choice.boosts.length !== boosts) problems.push(`Choose ${boosts} attribute boosts.`)
   if (choice.boosts.some((b) => !ATTRIBUTES.includes(b))) problems.push('A boost goes to might, grace, wits or resolve.')
   const attributes = startAttributes(content, choice)
-  for (const a of ATTRIBUTES) if (attributes[a] > START_CAP) problems.push(`${cap(a)} can be at most +${START_CAP} at the start.`)
+  for (const a of ATTRIBUTES) if (attributes[a] > knob({ content }, 'rules.start_cap')) problems.push(`${cap(a)} can be at most +${knob({ content }, 'rules.start_cap')} at the start.`)
   for (const a of ATTRIBUTES) if (choice.boosts.filter((b) => b === a).length > 2) problems.push(`At most two boosts on ${a}.`)
   const extra = extraSkills(content, klass.id, background.id)
   const trained = new Set([...klass.trained, ...background.skills])
@@ -213,7 +211,7 @@ export function suggestChoice(content: Content, klass: string, name = 'Traveller
   for (const a of order) {
     if (boosts.length >= n) break
     const probe = { name, ancestry: anc, background: back, class: klass, boosts: [...boosts, a], skills: [], talent: '' }
-    if (startAttributes(content, probe)[a] <= START_CAP && boosts.filter((b) => b === a).length < 2) boosts.push(a)
+    if (startAttributes(content, probe)[a] <= knob({ content }, 'rules.start_cap') && boosts.filter((b) => b === a).length < 2) boosts.push(a)
   }
   for (const a of ATTRIBUTES) if (boosts.length < n && !boosts.includes(a)) boosts.push(a)
   const b = rules.backgrounds.find((x) => x.id === back)!
@@ -545,7 +543,7 @@ export function levelUp(content: Content, character: Character, choice: LevelCho
     lines.push(`Your ${choice.master} is now master.`)
   }
   if (needs.attributes) {
-    for (const a of ATTRIBUTES) character.attributes[a] = Math.min(ATTRIBUTE_CAP, character.attributes[a] + 1)
+    for (const a of ATTRIBUTES) character.attributes[a] = Math.min(knob({ content }, 'rules.attribute_cap'), character.attributes[a] + 1)
     lines.push('All four attributes rise by one.')
   }
   if (needs.weapon) lines.push('Your weapons strike harder: one die more.')

@@ -1,3 +1,4 @@
+import { knob } from './knobs'
 import { callName } from './content'
 import { tieTo } from './people'
 import { queueSignal } from './signals'
@@ -14,10 +15,6 @@ import type { World } from './world'
 
 const DAY = 24 * 60
 const WEEK = 7 * DAY
-/** Below this, someone is only a memory. */
-const MEMORY = 10
-/** Apart this long, meeting again is a meeting after a long absence. */
-const LONG = 60 * DAY
 
 /** Once a week: familiarity sinks between people who did not see each other that week. */
 export function forgetWeek(world: World): void {
@@ -31,7 +28,7 @@ export function forgetWeek(world: World): void {
       const before = bond.familiarity
       bond.familiarity = Math.max(0, before - (tieTo(world, a, b) ? 1 : 3))
       // Someone known becomes a memory: one line, kept.
-      if (before >= MEMORY && bond.familiarity < MEMORY && !(self.memory ?? []).some((m) => m.topics.includes(b))) memoryOf(world, a, b)
+      if (before >= knob(world, 'people.memory_below') && bond.familiarity < knob(world, 'people.memory_below') && !(self.memory ?? []).some((m) => m.topics.includes(b))) memoryOf(world, a, b)
     }
   }
   // The player too, but slowly, and only after four weeks away.
@@ -71,6 +68,6 @@ export function metAgain(world: World, a: string, b: string): void {
 
 /** Whether this is a meeting after a long absence. */
 export function longApart(world: World, last: number | undefined): boolean {
-  return last !== undefined && world.now - last >= LONG
+  return last !== undefined && world.now - last >= (knob(world, 'people.long_absence_days') * DAY)
 }
 

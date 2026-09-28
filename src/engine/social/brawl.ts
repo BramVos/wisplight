@@ -1,3 +1,4 @@
+import { knob } from '../knobs'
 import type { Output } from '../commands'
 import { callName } from '../content'
 import { rollDice } from '../combat/combat'
@@ -39,7 +40,6 @@ export interface BrawlOutcome {
   text: string
 }
 
-const ROUNDS = 12
 
 function strike(world: World, a: Fighter, b: Fighter): void {
   const attack = a.attacks[0]
@@ -55,7 +55,7 @@ export function fightOut(world: World, by: string, target: string): { outcome: B
   const b = npcFighter(world, target, 'foes')
   let loser: Fighter | undefined
   let how: BrawlOutcome['how'] = 'hurt'
-  for (let round = 0; round < ROUNDS && !loser; round++) {
+  for (let round = 0; round < knob(world, 'rules.brawl_rounds') && !loser; round++) {
     for (const [x, y] of [
       [a, b],
       [b, a],

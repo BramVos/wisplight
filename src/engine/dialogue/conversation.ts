@@ -1,3 +1,4 @@
+import { knob } from '../knobs'
 import { amendsIn } from '../amends'
 import { asksAge, knownName, knowsOfPerson, learnTie, learnWork, publicShort, toldAge } from '../acquaintance'
 import type { Output } from '../commands'
@@ -5,11 +6,11 @@ import { parseMoney } from '../items'
 import { areaTopicId, callName } from '../content'
 import { factById, heardBy, newsAbout, playerTells } from '../news'
 import type { Fact, FarName, TalkState } from '../state'
-import { BACKED, backers, backing, witnessSays } from '../belief'
+import { backers, backing, witnessSays } from '../belief'
 import type { World } from '../world'
-import { classify, tierFor, TIER_TOKENS, TIER_WORDS, type Act, type Tier } from './acts'
+import { classify, tierFor, TIER_TOKENS, type Act, type Tier } from './acts'
 import { dcFor, describeCheck, succeeded, type CheckResult } from './checks'
-import { gainXp, playerCheck, XP } from '../rules/player'
+import { gainXp, playerCheck } from '../rules/player'
 import { approve, companionOf, offer, recruit } from '../social/companions'
 import { silenceWitness, witnessed } from '../social/crime'
 import { partyTalk } from './party'
@@ -55,10 +56,6 @@ export const QUICK_OPTIONS = [
   'Will you come with me?',
 ]
 
-const MAX_FAR = 50
-/** Claims a conversation can make facts of (M10.3). */
-const MAX_CLAIMS = 3
-const MAX_TALK_EFFECT = 5
 
 interface TurnOptions {
   act?: Act
@@ -158,7 +155,7 @@ export class Dialogue {
     if (!/^\p{Lu}[\p{L}'’-]*(\s[\p{L}'’-]+){0,3}$/u.test(name)) return `"${name}" is not a proper place name.`
     const far = this.world.state.lore?.far ?? []
     const today = far.filter((f) => f.by === npcId && this.world.now - f.t < 24 * 60).length
-    if (today >= 2 || far.length >= MAX_FAR) return `you may not name new places now. Use only names you were given.`
+    if (today >= 2 || far.length >= knob(this.world, 'talk.far_places')) return `you may not name new places now. Use only names you were given.`
     return undefined
   }
 
@@ -269,7 +266,7 @@ export class Dialogue {
     ;(this.world.state.flags ??= {})[`secret:${npcId}:${secret.id}`] = true
     // A secret found out: what they are is no cover any more (M10.8).
     learnWork(this.world, npcId)
-    gainXp(this.world, XP.secret, `${callName(this.world.npc(npcId))} told you a secret`)
+    gainXp(this.world, knob(this.world, 'rules.xp').secret, `${callName(this.world.npc(npcId))} told you a secret`)
     if (secret.teaches) this.teach(npcId, secret.teaches)
     return { secret: secret.text, admission: secret.admission }
   }
@@ -309,9 +306,9 @@ export class Dialogue {
     // An eyewitness beside the stranger says it themselves: the listener hears it from them, with the stranger's word beside it.
     const witness = standing.find((b) => b.here && b.saw)
     const others = standing.filter((b) => b !== witness)
-    const weight = backing(others) + (check?.weight ?? 0)
+    const weight = backing(world, others) + (check?.weight ?? 0)
     const h = witness
-      ? witnessSays(world, npcId, news, witness.id, weight + BACKED)
+      ? witnessSays(world, npcId, news, witness.id, weight + knob(this.world, 'belief.backed'))
       : playerTells(world, npcId, news.id, weight, check ? 'player:persuade' : ['player', ...standing.map((b) => b.id)].join('+'))
     const lines: Output[] = [{ kind: 'text', text: `You: "${news.text.village}"` }, ...(check?.lines ?? [])]
     for (const b of standing) {
@@ -462,10 +459,10 @@ export class Dialogue {
     const heard = world.state.news?.heard[npcId]?.[news.id]
     if (heard && !heard.stance) return this.passOnNews(npcId, news)
     const standing = backers(world, npcId, news, true)
-    const result = playerCheck(world, 'persuasion', dcFor(15, attitude(world, npcId).band, -SUPPORT_DC * standing.length))
+    const result = playerCheck(world, 'persuasion', dcFor(15, attitude(world, npcId).band, -knob(this.world, 'talk.support_dc') * standing.length))
     if (result.degree === 'critical failure') applyEffect(world, npcId, 'trust', -3)
     const lines: Output[] = [{ kind: 'check', text: describeCheck({ ...result }) }]
-    return this.passOnNews(npcId, news, { weight: succeeded(result) ? PERSUADED : 0, lines })
+    return this.passOnNews(npcId, news, { weight: succeeded(result) ? knob(this.world, 'talk.persuaded') : 0, lines })
   }
 
   /** The topics of the last turn, once (M10.8). */
@@ -571,7 +568,7 @@ export class Dialogue {
       journal[id] = this.world.now
       // Knowledge is experience too (FO, chapter 11): a piece of lore learned.
       if (this.topics.kind(id) === 'lore' && !id.startsWith('fact_')) {
-        gainXp(this.world, XP.lore, `you learned of ${this.topics.name(id)}`)
+        gainXp(this.world, knob(this.world, 'rules.xp').lore, `you learned of ${this.topics.name(id)}`)
         approve(this.world, 'learn_old_story')
       }
     }
@@ -619,12 +616,12 @@ export class Dialogue {
     // What the player says is a claim, heard from the stranger and judged by the game (M10.3).
     const claim = options.claim ?? (options.check || /\?\s*$/.test(text) ? undefined : parseClaim(world, topics, text))
     // A few claims a talk, no more (M10.3, the limits): after that, words are only words.
-    const said = claim && claimValid(world, claim) && (talk.claims = (talk.claims ?? 0) + 1) <= MAX_CLAIMS ? playerSays(world, npcId, claim, { ...(options.lie ? { lie: true } : {}), ...(options.claimBonus ? { bonus: options.claimBonus } : {}) }) : undefined
+    const said = claim && claimValid(world, claim) && (talk.claims = (talk.claims ?? 0) + 1) <= knob(this.world, 'talk.max_claims') ? playerSays(world, npcId, claim, { ...(options.lie ? { lie: true } : {}), ...(options.claimBonus ? { bonus: options.claimBonus } : {}) }) : undefined
     const believed = said ? `The stranger says ${claimWords(world, claim!)}. You ${said.stance === 'believes' ? 'believe it' : said.stance === 'doubts' ? 'are not sure it is true' : 'do not believe it'}; answer that way.` : talk.heard
     // What the voice read in the stranger's last words (M10.3, left over) sounds in this turn, once.
     talk.heard = undefined
     // The rules read no claim and it is no question: the voice may read one, in the same call (no second call, M9.3).
-    const claimable = !claim && !options.check && !/\?\s*$/.test(text) && (talk.claims ?? 0) < MAX_CLAIMS ? [...new Set([...topics, ...this.topics.recognise(text)])].filter((t) => t !== npcId && (world.content.npcs.has(t) || world.content.locations.has(t))) : []
+    const claimable = !claim && !options.check && !/\?\s*$/.test(text) && (talk.claims ?? 0) < knob(this.world, 'talk.max_claims') ? [...new Set([...topics, ...this.topics.recognise(text)])].filter((t) => t !== npcId && (world.content.npcs.has(t) || world.content.locations.has(t))) : []
     // Flirting in free talk goes by the same formula as FLIRT (M10.3); the voice words what it decided.
     const flirted = act === 'Flirt' && !options.check ? flirtIn(world, npcId) : undefined
     // Sorry, the reasons, or a second go, to whom the stranger let down (M10.14): the engine decides, the voice words it.
@@ -645,7 +642,7 @@ export class Dialogue {
     const reply = await this.callModel(npcId, text, { act, tier, packet, band, memories, check: options.check, secret: options.secret, decision, spokenTopics: this.topics.recognise(text), offered, offers, claimable })
     // A claim the voice read: the engine judges it and books it as heard from the stranger; the stance sounds next turn.
     const read = reply?.claim && reply.claim.subject !== 'none' && claimable.includes(reply.claim.subject) ? { subject: reply.claim.subject, key: reply.claim.key, value: reply.claim.value } : undefined
-    if (read && claimValid(world, read) && (talk.claims = (talk.claims ?? 0) + 1) <= MAX_CLAIMS) {
+    if (read && claimValid(world, read) && (talk.claims = (talk.claims ?? 0) + 1) <= knob(this.world, 'talk.max_claims')) {
       const taken = playerSays(world, npcId, read)
       if (taken) talk.heard = `Earlier the stranger said ${claimWords(world, read)}. You ${taken.stance === 'believes' ? 'believe it' : taken.stance === 'doubts' ? 'are not sure it is true' : 'do not believe it'}; let that show.`
     }
@@ -688,7 +685,7 @@ export class Dialogue {
     if (reply) {
       for (const effect of reply.effects.slice(0, 1)) {
         const delta = Math.max(-3, Math.min(3, effect.delta))
-        const room = MAX_TALK_EFFECT - Math.abs(talk.effects)
+        const room = knob(this.world, 'talk.max_effect') - Math.abs(talk.effects)
         const applied = Math.sign(delta) * Math.min(Math.abs(delta), Math.max(0, room))
         if (applied !== 0) {
           applyEffect(world, npcId, effect.type, applied)
@@ -744,7 +741,7 @@ export class Dialogue {
     // A talk goes on while it is about something (M10.8): past the turns it starts with, one more each time, up to a
     // limit. Who has to go says so a turn ahead; who has nothing more to say closes as before.
     const alive = (reply?.keep_talking ?? 'no') !== 'no' || this.stillAbout(npcId, packet)
-    if (talk.turnsLeft <= 0 && alive && talk.turns < MAX_TURNS && !talk.leaving) talk.turnsLeft = 1
+    if (talk.turnsLeft <= 0 && alive && talk.turns < knob(this.world, 'talk.max_turns') && !talk.leaving) talk.turnsLeft = 1
     const going: Output[] = []
     if (talk.turnsLeft === 1 && !alive && !talk.leaving) {
       const line = this.mustGo(npcId)
@@ -955,7 +952,7 @@ export class Dialogue {
             meta: {
               npcName: callName(world.npc(npcId)),
               act: ctx.act,
-              wordLimit: TIER_WORDS[ctx.tier],
+              wordLimit: knob(this.world, 'talk.words')[ctx.tier],
               known: ctx.packet.known,
               unknown: ctx.packet.unknown,
               referral: ctx.packet.referral,
@@ -980,7 +977,7 @@ export class Dialogue {
         continue
       }
       // Our world's oaths give way to the speaker's own (M10.8): "Christ, yes" is "Saint Brand's light, yes".
-      const trimmed = fitLength(reply.reply, ctx.tier)
+      const trimmed = fitLength(reply.reply, knob(world, 'talk.words')[ctx.tier])
       const sworn = swearRight(trimmed, oathsOf(world, npcId))
       // What does not exist here gives way to what people say instead (M10.10): potatoes are turnips, Sunday is Rustdag.
       const { text: fitted, fixed } = fixNotHere(world, sworn)
@@ -1124,13 +1121,7 @@ export function stockNotice(failure: { kind: string; message: string }, name: st
   return `(No answer from the AI: ${failure.message}; ${own}.)`
 }
 
-/** However much a talk is about, it ends after this many turns (M10.8). */
-const MAX_TURNS = 20
 
-/** What a persuasion that worked adds to the word it carries (M10.6), as much as a lie told well (M10.3). */
-const PERSUADED = 40
-/** How much easier a persuasion is for each who stands by it (M10.6). */
-const SUPPORT_DC = 4
 
 function bare(words: string): string {
   return words.trim().replace(/[\s.?!,;:]+$/, '')
