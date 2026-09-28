@@ -291,10 +291,11 @@ Ook in M10, de vier fouten uit de tests van de ontwikkelaarskit (27 september 20
 Ook in M10, uit de speeltest van 28 september 2026, in de code bevestigd: in mist gooide het spel bij elke stap een proef tegen 15, zodat een speler zonder Survival een plek in de mist niet haalde; en wie op de plek stond die de vertellers noemden, hoorde "You are already at" terwijl er niets te zien was.
 - [x] In mist is er één Survival-proef per wandeling om je richting te houden; bij falen dwaal je binnen de eerste stappen één stap af en stop je (FO hoofdstuk 12), en een plek in de mist is door door te lopen te bereiken (een test)
 - [x] Wie staat waar men zei dat een plek lag en een herkenningspunt ervan ziet, loopt erop af; ziet hij niets, dan zegt het spel dat, in plaats van dat hij er al is
-- [ ] Een voorstelpagina toont palet, de geshade Holleveen, dag, nacht en mist, een lichte papierversie en de zwart-witoptie, en Bram keurt hem goed voordat er gebouwd wordt
+- [x] Een voorstelpagina toont palet, de geshade Holleveen, dag, nacht en mist, een lichte papierversie en de zwart-witoptie, en Bram keurt hem goed voordat er gebouwd wordt (goedgekeurd 28 september 2026, met de aanpassingen hieronder)
+- [ ] Het palet is content per wereld: de kleurtokens per terrein en kenmerk, voor donker, papier en zwart-wit, staan in `world.yaml` en zijn in de editor te wijzigen (een tabblad met vakjes en een voorbeeldkaart); de schrijfhulp in de editor stelt op verzoek een passend palet voor uit het wereldframe (`world.yaml` en `CHRONICLER.md`); Skerrow krijgt zo nu zijn eigen palet (zeewater, zout gras, kliffen, duin) en de Nethermarch het palet van de voorstelpagina
 - [ ] Elk terrein heeft drie tot vier gedempte tinten uit een geseede variatie per hex, drassige grond donkerder, droge ruggen lichter, water in twee tonen (open water en geul), wegen en paden in warm perkament
-- [ ] Kenmerken (poel, petgat, wilg, ruïne, bult) hebben een eigen glyph en tint; wat je lang geleden zag is vager dan wat je pas zag; nacht en mist leggen een waas over het paneel
-- [ ] Een hex heeft een niveau (onder de grond, maaiveld, kruin), wegen dragen hun niveau mee, en je ziet één niveau tegelijk met een glyph waar een trap, put, ladder of stam naar een ander niveau gaat; welke niveaus een wereld heeft en hoe ze heten staat in `world.yaml`
+- [ ] Kenmerken (poel, petgat, wilg, ruïne, bult) hebben een eigen glyph en tint; wat je lang geleden zag is vager dan wat je pas zag; nacht en mist verkleinen het zicht rond de speler (wat je nu ziet is helder, daarbuiten toon je alleen wat je je herinnert, in de vagere tint) en leggen geen waas over het hele paneel
+- [ ] Een hex heeft een niveau (onder de grond, maaiveld, kruin: de namen zijn goedgekeurd), wegen dragen hun niveau mee, en je ziet één niveau tegelijk met een glyph waar een trap, put, ladder of stam naar een ander niveau gaat; welke niveaus een wereld heeft en hoe ze heten staat in `world.yaml`
 - [ ] Een tunnel of boomweg die je niet kent, staat niet op je kaart, ook al loop je erboven of eronder: dezelfde regel als de verborgen rug
 - [ ] Een legendastrook onder de kaart met per terrein een gekleurd vakje, de glyph en de naam, en per plek een icoon naar soort en status; een klik licht dat terrein even op; dezelfde kleurtokens als de kaart
 - [ ] De landkaart (streken en trajecten uit het wereldboek) is een eigen journaalpagina met dezelfde stijl
@@ -378,6 +379,11 @@ Scenario's die slagen vóór M10.3 af is (de eerste, derde en zesde al in M10.2)
 - [x] Een aanval doorloopt werkelijk de gevechtsregels
 - [x] Dezelfde afspraken en gevolgen werken zonder model en worden bij naspelen niet dubbel uitgevoerd
 
+Nog open na de oplevering van 28 september 2026 (besluit met Bram, 28 september 2026), te bouwen na M10:
+- [ ] Meelopen op verzoek van een NPC: een plan- of wachterstap `invite` (nieuw werkwoord, voor elke gebeurtenis bruikbaar: doel, plek, eventueel persoon) laat een NPC de speler opzoeken (`seek_player`) en zelf het aanbod `lead` doen ("Loop je mee naar de dijk?"); zegt de speler ja, dan is het dezelfde afspraak `lead` in het register, zegt hij nee of niets, dan gaat de NPC alleen of wacht, zoals de stap zegt; een kind vraagt het alleen bij een ouder of thuis (dezelfde regel als bij `lead`)
+- [ ] Een gevecht tussen twee NPC's: de afspraak `attack` mag een ander doel dan de speler hebben; de regels spelen het gevecht buiten beeld uit met dezelfde vechters als het gevechtssysteem (`combat/npc.ts`), in één beurt, met als uitkomst gewond, geeft op of vlucht; doden kan alleen als een plan het met `kill` zegt; staat de speler erbij, dan ziet hij het als scène en kan hij ingrijpen (ATTACK op een van beiden, of een proef Persuade of Intimidate om het te stoppen); omstanders zijn getuigen, het is een feit met `about` beide namen, een wrok voor de verliezer en werk voor de schout, via dezelfde paden als een aanval op de speler
+- [ ] Beweringen die de regels niet lezen: vindt `parseClaim` niets en is de zin geen vraag, dan mag de stem in dezelfde aanroep een `claim` teruggeven (onderwerp uit de namen in het gesprek, sleutel uit `CLAIM_KEYS`, waarde uit de woorden van de wereld); de motor keurt hem met `claimValid`, boekt hem na het antwoord als gehoord "van de vreemdeling", en de houding (gelooft, twijfelt, verwerpt) klinkt in de volgende beurt; de grens per gesprek blijft; geen tweede modelaanroep (M9.3); een test met het mockmodel
+
 ## M10.4 Kleine verbeteringen
 
 Scope: de speeltest van Skerrow op 27 september 2026: commando's, interface en instellingen. Los van M10.2 en M10.3 te bouwen.
@@ -421,3 +427,22 @@ B. De kroniekschrijver (eerst bestaande kansen, dan één soort nieuw object):
 - [x] Een prop staat nooit op het kritieke pad van een quest, hooguit één per verhaallijn en een paar per speelweek; zonder model kiest de motor met regels uit dezelfde sjablonen en bestaande kansen
 - [x] De toets: in een lopende verhaallijn wijst de kroniekschrijver op de kist van Lubbert met zijn dagboek; een schelm opent hem stil, een boer haalt de smid erbij, een prater krijgt toestemming en meer uitleg; de hints kloppen met wat er gebeurde; Lubbert merkt op zijn vaste moment dat er iets weg is en weet pas wie het was als iemand het zag
 - [x] Alles wat er al was, speelt hetzelfde: het hele testpakket, de simulaties, de uitspeelscripts van beide werelden, en oude saves
+
+## M10.6 Besluiten uit de speeltest
+
+Scope: de vijf open vragen uit `docs/PLAYTEST.md`, door Bram beantwoord op 28 september 2026. Content waar het kan, code alleen voor een nieuwe voorwaarde.
+
+- [ ] De dijk: een vreemdeling redt de dijk niet alleen, maar door het dorp op de been te brengen via zijn leider. Heemraad Sijbrand is te overtuigen op drie manieren, elk al een bestaand middel: een proef Persuade met de belofte van Teunis als steun, Teunis meebrengen (afspraak `accompany` of `lead` van Teunis naar Oude Zijl), of het lek laten zien (de speler brengt Sijbrand naar de dijk: afspraak `lead` van de speler, of Sijbrand die met `invite` meeloopt). Overtuigd zet Sijbrand een plan `dyke_muster` in gang (content: hij roept de mannen van Oude Zijl en Veenhoek, zij werken aan de dijk, de plek gaat van `leaking` naar `normal`, het plan `dyke_breach` vervalt); niet overtuigd, dan breekt de dijk zoals nu. `npm run playtest -- dyke` laat een nieuwe speler de dijk redden op minstens één van de drie manieren
+- [ ] Het verdwenen meisje zonder speler: de wereld beweegt al op afstand (M9.1, de afstandsregel), maar een questlijn lost zichzelf niet op. Een geschreven quest mag in de content een verloop zonder speler krijgen (`lapses: { after_days, when_far: true, effects }`): na een maand geeft de weduwe het op (feit, nieuws in Veenhoek) en haalt Grietje de kat binnen, alleen als de speler ver van het gebied is; een quest waar de speler in de buurt is, wacht op hem. De controlespeler van `npm run playtest -- cat` ziet die afloop
+- [ ] Mirte op marktdag: wie iemand goed kent (banden uit `acquaintance.ts`, niet alleen huisgenoten, naaste familie en collega's) weet diens dag en zegt waar die heen is ("She's at the market in Waagdam, it's Wednesday"); `knowsTheDayOf` leest die banden; een test
+- [ ] De opening: De Zwaan is de kapotte molen en staat bij het begin stil; de openingstekst in `world.yaml` zegt dat (wieken aan flarden, geen draaiende molen), en de beschrijving van de molen en van Molenend volgt de toestand `broken` van De Zwaan, zodat de molen na de reparatie in de tekst weer draait (een test)
+- [ ] Skerrow na een gebeurtenis is een eigen mijlpaal: M10.7
+
+## M10.7 Skerrow rouwt
+
+Scope: nasleep voor Skerrow, als content. Een dood, een vertrek of een verlies op het eiland laat sporen na: rouw bij wie de persoon na stond, een begrafenis op de dag erna waar het dorp samenkomt, een lege plek in de herberg die de waard een week lang noemt, en een grafsteen of gedenkplek die er blijft. Alles met de wachters en standaardnasleep van M8.1 tot M8.3 in `content/isle/`; code alleen waar een werkwoord of toestand ontbreekt, en dan voor elke wereld bruikbaar.
+
+- [ ] Wachters en nasleep in `content/isle/` voor dood, vertrek en verlies, met de namen en plekken van Skerrow (`CHRONICLER.md`)
+- [ ] Een begrafenis is een bijeenkomst op de dag na de dood: wie de dode kende gaat erheen, het eiland spreekt er die dag over, en de plek krijgt een blijvend spoor
+- [ ] Rouw is zichtbaar in gesprekken en in de wereld (een gesloten winkel, een lege stoel, een lied in de herberg) en ebt in weken weg, met dezelfde toestand als in de Nethermarch
+- [ ] `npm run playtest -- off` en de Skerrow-quests spelen door, en de M8.1-test die zegt dat Skerrow zonder speler geen signalen geeft blijft waar, of wordt bewust aangepast met een reden in het verslag

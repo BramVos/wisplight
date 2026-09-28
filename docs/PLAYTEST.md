@@ -69,6 +69,8 @@ Mensen en plaatsen die een quest noemt, en de plek van gehoord nieuws, komen in 
 
 ## Open vragen voor Bram
 
+Beantwoord op 28 september 2026; de besluiten staan in `docs/ROADMAP.md` als M10.6 (dijk, meisje, Mirte, opening) en M10.7 (Skerrow rouwt).
+
 - **De dijk.** Moet een vreemdeling met een waarschuwing iemand kunnen overtuigen, met een worp, door de getuige mee te nemen, of door het lek zelf te laten zien? Nu kan een nieuwe speler de dijk niet redden.
 - **Skerrow na een gebeurtenis.** Rouw, een begrafenis, een lege plek in de herberg: nasleep voor Skerrow is content die er nog niet is. Een eigen mijlpaal?
 - **Het verdwenen meisje zonder speler.** Moet de wereld zonder de speler verder gaan, bijvoorbeeld de weduwe die het na een maand opgeeft, of Grietje die de kat binnenhaalt?
