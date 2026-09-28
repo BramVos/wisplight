@@ -616,7 +616,8 @@ export function worldFixRequest(files: ContentFile[], stepId: string, said: stri
       '',
       'PUTTING IT RIGHT: your proposal for this step did not load. Correct only what the problems name, and change nothing else: no new ideas, no other wording. Answer in the same JSON: say (one sentence: what you corrected), questions (none), changes (only the entities you correct, each whole, as full YAML; leave out every entity no problem touches), world (whole again only if a problem is in it, otherwise empty), files (none, unless a problem is in one).',
     ].join('\n'),
-    prompt: [base.prompt, '', ...proposal, '', 'WHY IT DID NOT LOAD:', ...problems.map((p) => `- ${p}`)].join('\n'),
+    // Only why it did not load: an earlier failed call ("The chronicler did not answer: ...") is not the proposal's fault.
+    prompt: [base.prompt, '', ...proposal, '', 'WHY IT DID NOT LOAD:', ...problems.filter((p) => !/^The chronicler (did not answer|puts it right)/.test(p)).map((p) => `- ${p}`)].join('\n'),
     maxTokens: 12000,
     meta: { ...base.meta, fix: problems },
   }

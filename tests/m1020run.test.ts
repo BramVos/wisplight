@@ -37,6 +37,8 @@ describe('M10.20: the real run of a world', () => {
     expect(places).toMatch(/SHAPE \d+: \(\{ flag: text/)
     const calendar = worldStepRequest(files, 'calendar', 'Thirteen months.').system
     expect(calendar).toContain('stay?: number from 0 to 1')
+    // A text of a fixed form says which (the hours of a service came as "07:00 to 12:00").
+    expect(worldStepRequest(files, 'economy', 'Meals.').system).toContain('hours: text matching /^\\d{2}(:\\d{2})?-\\d{2}(:\\d{2})?$/')
     expect(calendar).toContain('a map of names to a map of clear | overcast | rain | fog | storm | frost | snow to number from 0')
     // A shape inside itself (conditions of conditions) is not opened without end.
     for (const step of WORLD_STEPS) {
@@ -114,6 +116,8 @@ describe('M10.20: the real run of a world', () => {
     expect(request.prompt).toMatch(/WHY IT DID NOT LOAD:\n- night_of_the_open_door: Nested mappings/)
     expect(request.system).toContain('Correct only what the problems name')
     expect(request.meta?.['fix']).toEqual(draft.problems)
+    // An earlier failed call is not a reason it did not load.
+    expect(worldFixRequest(files, 'people', 'Six people.', draft, ['The chronicler did not answer: the hourly budget is used up', ...draft.problems]).prompt).not.toContain('hourly budget')
     // The chronicler sends back only the topic it corrects.
     const fixed = mergeFix(files, draft, JSON.stringify({ say: 'Quoted the summary.', questions: [], changes: [topic('night_of_the_open_door', '"The night: the door stood open."')], world: '', files: [] }))
     expect(fixed.problems).toEqual([])

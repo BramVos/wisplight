@@ -68,7 +68,7 @@ export const KINDS: Record<string, KindText> = {
 
 type Schema = z.ZodType
 // The shape of zod 4's definitions, as far as the contract reads them.
-type Def = { type: string; innerType?: Schema; defaultValue?: unknown; element?: Schema; shape?: Record<string, Schema>; entries?: Record<string, string>; options?: Schema[]; getter?: () => Schema; valueType?: Schema; keyType?: Schema; values?: unknown[]; in?: Schema; items?: Schema[]; checks?: { _zod: { def: { check: string; value?: unknown; inclusive?: boolean; format?: string } } }[] }
+type Def = { type: string; innerType?: Schema; defaultValue?: unknown; element?: Schema; shape?: Record<string, Schema>; entries?: Record<string, string>; options?: Schema[]; getter?: () => Schema; valueType?: Schema; keyType?: Schema; values?: unknown[]; in?: Schema; items?: Schema[]; checks?: { _zod: { def: { check: string; value?: unknown; inclusive?: boolean; format?: string; pattern?: unknown } } }[] }
 const def = (s: Schema): Def => (s as unknown as { _zod: { def: Def } })._zod.def
 
 /** The schema under optional, default, lazy and pipe, with whether it was optional and its default. */
@@ -177,8 +177,11 @@ function shapeText(s: Schema, depth: number, named: Map<string, string> | undefi
   const { s: inner } = unwrap(s)
   const d = def(inner)
   switch (d.type) {
-    case 'string':
-      return 'text'
+    case 'string': {
+      // A text of a fixed form says it (M10.20: the hours of a service, "07-12", came as "07:00 to 12:00").
+      const pattern = (d.checks ?? []).map((c) => c._zod.def).find((c) => c.check === 'string_format' && c.format === 'regex')?.pattern
+      return pattern ? `text matching ${String(pattern)}` : 'text'
+    }
     case 'number':
     case 'int': {
       const checks = (d.checks ?? []).map((c) => c._zod.def)
