@@ -49,9 +49,18 @@ npm run stutter    # the longest waits of the interface as the app plays (-- --e
 - Room descriptions: three to five sentences, second person, present tense, one non-visual sense, a hint at an exit. Topics in `[brackets]`.
 - PEGI 18 with hard limits: nothing sexual involving minors, no hate against real groups, romance stays non-explicit.
 
+## The editor and the chronicler keep up
+
+Whenever a change adds to or changes what a world can hold (a new kind, field or file, or a new neutral default), the editor and the chronicler in the editor learn it in the same change:
+
+- The editor can create and edit it: a form or a YAML template for the kind, the palette or world tab where it belongs, and a line under Check when it can go wrong.
+- The chronicler knows it: the contract `docs/CONTENT.md` is regenerated from the schemas (M10.17), the short contract in the writing aid's prompt (`draftRequest` in `src/engine/editor.ts`) covers it, and the world guide (`src/engine/worldguide.ts`, with `docs/NEW-WORLD.md` for people) says in which step it comes up, what the chronicler asks the designer, what happens when it is left out, and what to check.
+- Skerrow and the test world Deepwell (`tests/worlds/other`) either get it or show the neutral default in a test.
+- The milestone report says what the editor and the chronicler learnt.
+
 ## Definition of done
 
-For every change: typecheck, tests and build pass. For UI changes, check the interface with `npm run web` in the browser preview and look at a screenshot. For main or preload changes, run the smoke test. Then commit with a clear message ending in the Co-Authored-By line and push to `main`. This is a solo project: no pull requests.
+For every change: typecheck, tests and build pass. When a change touches what a world can hold, the editor and the chronicler are brought up to date as above. For UI changes, check the interface with `npm run web` in the browser preview and look at a screenshot. For main or preload changes, run the smoke test. Then commit with a clear message ending in the Co-Authored-By line and push to `main`. This is a solo project: no pull requests.
 
 The repo uses a local git identity (BramVos with the GitHub noreply address) so no work email ends up in this public repository. Do not change it.
 
