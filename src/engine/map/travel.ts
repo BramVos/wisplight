@@ -12,6 +12,7 @@ import { type Cell, regionMap, type RegionMap } from './region'
 import { terrainName } from './palette'
 import { offer, type ChoiceOption } from '../choice'
 import { waysTo } from './passages'
+import { farPlaceOf, farTopicAt } from '../growth/far'
 
 // Walking across the region (FO, chapter 4, "Lopen en automatisch doorlopen"):
 // hex by hex until there is something to decide, with one running text in
@@ -596,6 +597,13 @@ export function walk(world: World, plan: WalkPlan, pass: (minutes: number) => Ou
   const map = regionMap(world.content)
   const startId = world.state.player.location
   if (!map) return [{ kind: 'error', text: 'There is no map of this land.' }]
+  // Beyond a far place the known world ends (M10.21): nothing is made by walking on.
+  const far = farTopicAt(world, startId)
+  if (far) {
+    if (plan.kind === 'head') return [{ kind: 'text', text: knownWorldEnds(world, far, plan.wind) }]
+    const way = farPlaceOf(world, far)
+    return [{ kind: 'error', text: `There is no map to walk by out here.${way && !way.link.by ? ` The road back to ${world.words.region} runs ${OPPOSITE_WIND[way.link.direction] ?? 'the way you came'}.` : ''}` }]
+  }
   if (!canSetOut(world, startId)) return [{ kind: 'error', text: "You can't strike out across country from in here. Go out to the road or the edge of the village first." }]
   const start = playerHex(world)
   if (!start) return [{ kind: 'error', text: 'You are off the map.' }]
@@ -776,6 +784,20 @@ export type Side = 'north' | 'east' | 'south' | 'west'
 
 const SIDE_WIND: Record<Side, string> = { north: 'north', east: 'east', south: 'south', west: 'west' }
 const TURN_BACK: Record<Side, string> = { north: 'south', east: 'west', south: 'north', west: 'east' }
+
+/**
+ * Where the known world ends (M10.21): at a far place there is no map to walk
+ * on, and beyond it the world book says nothing, so nothing is made. The way
+ * back is the road the stranger came by.
+ */
+export function knownWorldEnds(world: World, topic: string, wind?: string): string {
+  const name = world.content.topics.get(topic)?.name ?? topic
+  const far = farPlaceOf(world, topic)
+  const back = far && !far.link.by ? ` The road back to ${world.words.region} runs ${OPPOSITE_WIND[far.link.direction] ?? 'the way you came'}.` : ''
+  return `${wind ? `${wind.charAt(0).toUpperCase()}${wind.slice(1)} of ${name}` : `Beyond ${name}`}, the world as far as anyone has told you runs out: nobody here can say what lies that way.${back}`
+}
+
+const OPPOSITE_WIND: Record<string, string> = { north: 'south', south: 'north', east: 'west', west: 'east', northeast: 'south-west', northwest: 'south-east', southeast: 'north-west', southwest: 'north-east', 'north-east': 'south-west', 'north-west': 'south-east', 'south-east': 'north-west', 'south-west': 'north-east' }
 
 /** Which edge a hex just off the map lies beyond. */
 export function sideOf(map: RegionMap, off: Hex): Side {

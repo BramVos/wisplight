@@ -1,5 +1,17 @@
 # Changelog
 
+## M10.21 deel: de wereld groeit alleen waar jij iets doet, 29 september 2026
+
+- **De regel staat in het contract.** Niets maakt zichzelf. De wereld groeit alleen op drie momenten: je komt aan bij iets dat alleen een schets was, een lijn brengt je voorbij de kaart, of de kroniekverteller heeft 's nachts binnen zijn budget één plek of persoon nodig. Nooit omdat je alleen in de buurt loopt.
+- **Doorlopen kost niets.** Een verre plek wordt bij aankomst speelbaar uit sjablonen, ook als er een model is. Poort, markt en herberg, een koopman en een waard: zonder aanroep en zonder "de kroniekverteller werkt de weg nog uit". Pas als je er iemand aanspreekt of er een nacht blijft, werkt de kroniekverteller de plek uit tot een omtrek. Dat is één kleine aanroep (de outline, hooguit 1.400 tokens), één keer; een tweede bezoek kost niets.
+- **Voorbij de laatste plek houdt de bekende wereld op.** Wie bij een verre plek verder loopt, leest: "North of Stavermouth, the world as far as anyone has told you runs out", met de weg terug. Er wordt niets gemaakt.
+- **De doorrenner** heeft een test: dertig dagen elke dag naar het noorden. Resultaat: alleen Stavermouth, uit sjablonen, en geen enkele aanroep die iets maakt.
+- **Ontwerpwijziging.** Het punt "drie lagen" zei nog dat de omtrek komt zodra je vertrekt, en de speelbare plek met een aanroep bij aankomst. Ik heb het latere punt over de doorrenner gevolgd, dat de lagen koppelt aan wat je er doet en niet aan aankomst. Het FO en het ontwerp voor lore zijn bijgewerkt. Met een model zijn verre plekken daardoor voorlopig sjablonen; de wijk met eigen plekken en mensen (het volgende punt) komt als je er iets doet. De woorden van de kroniekverteller voor een verre plek werken nog wel voor een oude save waarin een plek erop wacht.
+
+Testen: speel de Nethermarch en loop een paar dagen naar het noorden (`head north`, bij de rand `1`). Of reis naar Zwolderkamp, slaap er en kijk in je dagboek. Tests in `tests/m1021runner.test.ts` (2); de far-place tests van M4 en M9.1 volgen de nieuwe regel.
+
+Kosten: een omtrek is één `outline`-aanroep met hooguit 1.400 tokens uitvoer, alleen bij iemand aanspreken of overnachten, één keer per plek. De meting per model hoort bij de dekkingstabel van de andere sessie.
+
 ## M10.21 deel: de rand van de streek, 29 september 2026
 
 - **Wie over de rand van de kaart loopt, hoort wat erachter ligt.** Aan elke rand van de Holleveen staat nu wat het wereldboek daar zegt (hoofdstukken 2 en 7). Je krijgt de keuze om verder te gaan of om te keren. In het westen ga je verder naar Graafhaven, twee dagen te voet dwars door het land of met de trekschuit vanuit Oude Zijl. In het noorden ligt Stavermouth, in het oosten Zwolderkamp en Hunnenloo. In het zuiden alleen de delta en het verdronken Saeftinge: "No road you know of goes that way". Verder gaan met de voet begint meteen vanaf de rand, niet eerst terug naar het dorp waar de weg vertrekt.

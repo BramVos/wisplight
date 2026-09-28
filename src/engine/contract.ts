@@ -271,6 +271,21 @@ const show = (value: unknown) => {
 }
 
 /** The whole contract as Markdown: docs/CONTENT.md. */
+/**
+ * How a world grows during play (M10.21; Bram, 28 September 2026: what does
+ * the AI cost while playing as the world grows, and without generating all
+ * the time?). The rule the engine keeps, said once for designers and models.
+ */
+export const GROWTH_RULE = [
+  'Nothing in a world makes itself. During play it grows only at three moments, never because the stranger merely walks near:',
+  '',
+  '1. The stranger comes to what was only a sketch: a far place the world book names (on foot, from the edge of the map or by its road), or a person named in a talk (M10.9), met where they live.',
+  '2. A line of transport (M10.12) takes them to a place beyond the map.',
+  '3. At night the chronicler needs one place or person for a storyline, within its budget.',
+  '',
+  'A far place grows in layers, each only when needed: the sketch, a name and a line from the world book, costs nothing; arriving makes it playable from templates, without a model; the outline, one small call, comes when the stranger talks to someone there or stays the night; a second visit costs nothing. Beyond the last land the world book names, nothing is made: the edge of the map says what lies beyond (a region\'s `beyond`), and past the far places the known world ends.',
+]
+
 export function contractMarkdown(): string {
   const shape = (FileSchema as unknown as { shape: Record<string, Schema> }).shape
   const lines = [
@@ -279,6 +294,10 @@ export function contractMarkdown(): string {
     'Everything a world can have, per kind, generated from the schemas in `src/engine` by `npm run content:contract` (M10.17). Do not edit by hand: a test fails when this file no longer matches the schemas.',
     '',
     'A world is a folder `content/<world>/` of YAML files. Each file holds one or more of the kinds below as top-level keys; the file names are a habit, not a rule. Whatever a world leaves out takes a neutral default, never the values of another world. Ids are keys and never change once committed (`ids.lock`).',
+    '',
+    '## How a world grows during play',
+    '',
+    ...GROWTH_RULE,
     '',
   ]
   const order = [...Object.keys(KINDS), ...Object.keys(shape).filter((k) => !(k in KINDS))]

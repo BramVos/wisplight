@@ -262,19 +262,23 @@ describe('M4: the first world builder', () => {
 })
 
 describe('M4: the world beyond the map', () => {
-  it('works a far place out to its outline once, when the player sets off for it', async () => {
+  it('works a far place out to its outline once, when the stranger stays there (M10.21: not when they set off)', async () => {
     const mock = new MockLlm('good')
-    const engine = new Engine(content, { seed: 1, llm: mock })
+    const engine = new Engine(content, { seed: 1, llm: mock, builder: true })
     ;(engine.state.player.journal ??= {})['graafhaven'] = 1
     const out = texts(await engine.handle('walk to graafhaven'))
-    expect(out).toMatch(/lies beyond the Holleveen\. It lies about \d+ km west/)
+    expect(out).toMatch(/The road to Graafhaven leaves the Holleveen at/)
+    // Setting off asks the chronicler for nothing: the place is made from its templates.
+    expect(engine.outlinesWaiting).toBe(0)
+    await engine.handle('@goto loc_graafhaven_gate')
+    await engine.handle('sleep')
     expect(engine.outlinesWaiting).toBe(1)
     await engine.runModels()
     const page = engine.page('graafhaven')!
     expect(page.lines.join('\n')).toMatch(/the Salt Hall, guild hall/)
     expect(page.lines.join('\n')).toMatch(/Worked out by the chronicler/)
-    // Once only: setting off again asks for nothing more.
-    await engine.handle('travel to graafhaven')
+    // Once only: another night asks for nothing more.
+    await engine.handle('sleep')
     expect(engine.outlinesWaiting).toBe(0)
     const replayed = await Engine.replay(content, 1, engine.save().log)
     expect(replayed.state.outlines).toEqual(engine.state.outlines)
@@ -282,10 +286,13 @@ describe('M4: the world beyond the map', () => {
 
   it('keeps names that are already taken out of an outline, and without a model tells what the world book says', async () => {
     const mock = new MockLlm('invent')
-    const engine = new Engine(content, { seed: 1, llm: mock })
+    const engine = new Engine(content, { seed: 1, llm: mock, builder: true })
     ;(engine.state.player.journal ??= {})['hunnenloo'] = 1
     await engine.handle('walk to hunnenloo')
+    await engine.handle('@goto loc_hunnenloo_gate')
+    await engine.handle('sleep')
     await engine.runModels()
+    expect(engine.state.outlines?.done['hunnenloo']).toBeDefined()
     expect(engine.page('hunnenloo')!.lines.join('\n')).not.toMatch(/Veenhoek, gate/)
     const plain = new Engine(content, { seed: 1 })
     ;(plain.state.player.journal ??= {})['hunnenloo'] = 1

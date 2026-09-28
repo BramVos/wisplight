@@ -38,6 +38,7 @@ import { approve, restParty } from './social/companions'
 import { deed } from './social/deeds'
 import { recognisedSale, refusedTrade, returnStolen } from './social/crime'
 import { lodgingLines } from './lodgings'
+import { engageFarPlace } from './outlines'
 
 // Player commands that need no AI. Each returns lines of output; commands that
 // take time call `pass(minutes)`, which runs the world and returns what the
@@ -208,6 +209,8 @@ export function runCommand(host: CommandHost, command: Command): Output[] {
     case 'eat':
       return eat(host, command.args)
     case 'sleep':
+      // A night at a far place is staying there (M10.21): the chronicler works it out.
+      engageFarPlace(world)
       return sleep(host)
     case 'wait': {
       // WAIT FOR SIJBRAND (M9.4): up to ten hours, until that one is here.

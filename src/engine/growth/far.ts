@@ -345,16 +345,25 @@ function namedAt(world: World, topic: string) {
   return (world.state.lore?.people ?? []).filter((sk) => !sk.npc && sk.place === topic).slice(0, 2)
 }
 
-/** A far place the player sets off for: made playable now without a model, or waiting for the chronicler. */
+/**
+ * A far place the player sets off for: made playable now, from its templates,
+ * with a model or without (M10.21: passing through costs nothing; the
+ * chronicler works a place out only when the stranger stays or talks there,
+ * and the district comes when they do something). A save from before, with
+ * a place still waiting for the chronicler's words, keeps waiting.
+ */
 export function wantFarPlace(world: World, topic: string, via?: FarVia): void {
   const g = growth(world)
   if (g.far?.[topic] || g.farPending?.includes(topic)) return
   if (via) (g.farVia ??= {})[topic] = via
-  if (!world.aiLive) {
-    applyFarPlace(world, topic, null, via)
-    return
-  }
-  ;(g.farPending ??= []).push(topic)
+  applyFarPlace(world, topic, null, via)
+}
+
+/** The far place a location belongs to, by the topic it was made for (M10.21). */
+export function farTopicAt(world: Pick<World, 'state' | 'content'>, location: string): string | undefined {
+  const area = world.content.locations.get(location)?.area
+  if (!area) return undefined
+  return Object.entries(world.state.growth?.far ?? {}).find(([, far]) => String(far.area['id']) === area)?.[0]
 }
 
 /** The request for the chronicler: the names and words of the places and people, in the tone of the world. */

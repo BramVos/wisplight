@@ -7,6 +7,7 @@ import { withoutReference } from './quests/reference'
 import { tradeLine } from './economy/ledger'
 import type { World } from './world'
 import { voiceSummary } from './dialogue/voice'
+import { farTopicAt } from './growth/far'
 
 // The world beyond the map (design: lore and world change, "De wereld buiten de
 // kaart"): a far place the player sets off for is worked out once to its
@@ -32,6 +33,16 @@ export function wantOutline(world: World, topic: string): void {
     return
   }
   state.pending.push(topic)
+}
+
+/**
+ * The stranger engages with a far place (M10.21): they talk to someone there
+ * or spend the night. Only then does the chronicler work it out to its
+ * outline, once; passing through costs nothing.
+ */
+export function engageFarPlace(world: World): void {
+  const topic = farTopicAt(world, world.state.player.location)
+  if (topic) wantOutline(world, topic)
 }
 
 /** Where a far place lies from the region, in words. */

@@ -456,27 +456,38 @@ describe('M9.1: a far place made playable', () => {
     expect(engine.state.player.location).toBe('loc_waagdam_east_gate')
   }, 120_000)
 
-  it('with a model the chronicler words it; the log plays back to the same world', async () => {
+  it('with a model it is made from its templates too (M10.21), and the log plays back to the same world', async () => {
+    const engine = new Engine(content, { seed: 103, builder: true, llm: new MockLlm('good') })
+    runUntil(engine, 15, 8)
+    // As a player finds it (so the log holds it all): to the east edge, where the line names Zwolderkamp, and on.
+    await say(engine, '@goto loc_waagdam_east_gate')
+    for (let i = 0; i < 4 && !engine.state.choice; i++) await say(engine, 'head east')
+    const on = engine.state.choice!.options.findIndex((o) => o.label.startsWith('Go on to Zwolderkamp'))
+    // Passing through costs nothing (M10.21): no waiting for the chronicler, no call.
+    expect(await say(engine, String(on + 1))).toMatch(/You come to the gate of Zwolderkamp/)
+    expect(engine.state.player.location).toBe('loc_zwolderkamp_gate')
+    expect(engine.state.growth!.far!['zwolderkamp']!.by).toBe('template')
+    const replayed = await Engine.replay(content, 103, engine.save().log)
+    expect(replayed.state.growth!.far).toEqual(engine.state.growth!.far)
+  }, 120_000)
+
+  it('a save from before, with a far place still waiting for the chronicler, gets its words; words that break the rules do not', async () => {
     const engine = new Engine(content, { seed: 103, builder: true, llm: new MockLlm('good') })
     await toTheGate(engine)
-    await say(engine, 'travel to zwolderkamp on foot')
+    ;(engine.state.growth ??= { people: [], projects: {}, hands: {} }).farPending = ['zwolderkamp']
+    expect(engine.modelsWaiting).toBeGreaterThanOrEqual(1)
     await engine.runModels()
-    expect(await say(engine, 'travel to zwolderkamp on foot')).toMatch(/The chronicler is working out the road to Zwolderkamp/)
-    await engine.runModels()
-    expect(await say(engine, 'travel to zwolderkamp on foot')).toMatch(/You pass under the Lantern Gate of Zwolderkamp/)
-    expect(engine.state.player.location).toBe('loc_zwolderkamp_gate')
     const far = engine.state.growth!.far!['zwolderkamp']!
     expect(far.by).toBe('chronicler')
     expect(far.npcs.map((n) => n['name'])).toEqual(['Wendel Hoorn', 'Aleid Kramer'])
+    expect(await say(engine, 'travel to zwolderkamp on foot')).toMatch(/You pass under the Lantern Gate of Zwolderkamp/)
     const replayed = await Engine.replay(content, 103, engine.save().log)
     expect(replayed.state.growth!.far).toEqual(engine.state.growth!.far)
     // Words that break the rules are not used: the template takes that place.
     const strict = new Engine(content, { seed: 104, builder: true, llm: new MockLlm('invalid') })
     await toTheGate(strict)
-    for (let i = 0; i < 3; i++) {
-      await say(strict, 'travel to zwolderkamp on foot')
-      await strict.runModels()
-    }
+    ;(strict.state.growth ??= { people: [], projects: {}, hands: {} }).farPending = ['zwolderkamp']
+    await strict.runModels()
     const gate = strict.state.growth!.far!['zwolderkamp']!.locations[0]!
     expect((gate['description'] as { day: string }).day).toMatch(/You come to the gate of Zwolderkamp/)
   }, 120_000)

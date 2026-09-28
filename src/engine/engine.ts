@@ -23,7 +23,7 @@ import { areaTopicId, callName, type Content, type Quest } from './content'
 import { Dialogue, QUICK_OPTIONS } from './dialogue/conversation'
 import { Knowledge } from './dialogue/knowledge'
 import type { ChronicleOutput, ChroniclerRequest, Outline } from '../chronicler'
-import { applyOutline, farWhere, runOutline, wantOutline } from './outlines'
+import { applyOutline, engageFarPlace, farWhere, runOutline, wantOutline } from './outlines'
 import { applyRun, settleRuns, writeRun } from './chronicler'
 import { applyChoice, fromKeys, goalRequest, settleChoices } from './npc/goals'
 import { LlmError, type LlmClient, type LlmRequest, type LlmResponse } from './dialogue/llm'
@@ -1007,6 +1007,7 @@ export class Engine {
         }
         // Start the conversation first, so the NPC stays put during the minute it takes. A chat they were in breaks off.
         breakOff(this.world, npc)
+        engageFarPlace(this.world)
         const opening = this.dialogue.start(npc)
         this.pass(1)
         const out = [...opening, ...this.talkQuests(npc)]
@@ -1027,6 +1028,7 @@ export class Engine {
         // TELL MIRTE THAT THE MILL TURNS AGAIN (M10.3): what follows "that" is a claim.
         const parsed = this.target(command.args, command.verb === 'where' ? /^(?:is|are)\s+/i : command.verb === 'tell' ? /^(?:about|over|naar|that|dat)\s+|\s+(?:about|over|naar|that|dat)\s+/i : /^(?:about|over|naar)\s+|\s+(?:about|over|naar)\s+/i)
         if ('error' in parsed) return [{ kind: 'error', text: parsed.error }]
+        engageFarPlace(this.world)
         const run = command.verb === 'ask' ? this.dialogue.ask.bind(this.dialogue) : command.verb === 'tell' ? this.dialogue.tell.bind(this.dialogue) : this.dialogue.where.bind(this.dialogue)
         return this.inConversation(() => run(parsed.npc, parsed.rest))
       }
@@ -1695,15 +1697,13 @@ export class Engine {
   }
 
   /**
-   * Setting off for a far place: the roads out of the region stop at its edge
-   * for now, but the place is worked out to its outline, once (design, "De
-   * wereld buiten de kaart", level 2).
+   * Setting off for a far place (M9.1, M10.21): it is made playable from its
+   * templates, which costs nothing; the chronicler works it out to its
+   * outline only when the stranger talks to someone there or stays the night.
    */
   private setOffBeyond(topic: string): Output[] {
-    wantOutline(this.world, topic)
     const name = this.topics.name(topic)
-    // With its outline, the far place is made playable (M9.1, level 3), and the road there opens.
-    if (this.state.outlines?.done[topic]) wantFarPlace(this.world, topic)
+    wantFarPlace(this.world, topic)
     const far = farPlaceOf(this.world, topic)
     if (far) {
       const edge = this.world.location(far.link.from)
