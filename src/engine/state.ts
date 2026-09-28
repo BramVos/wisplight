@@ -309,6 +309,8 @@ export interface NpcState {
   noService?: number
   /** Going to find the stranger, to open a talk with this line (M10.3, seek_player), until then. */
   seeking?: { line: string; since: number; until: number }
+  /** Asking the stranger to come along somewhere (M10.3, left over: invite), until then. */
+  inviting?: import('./social/invite').Invitation
   /** Hit points lost in a fight, healing a little every hour. */
   wounds?: number
   /** Where the NPC was before and when it left, for coincidences. */
@@ -367,6 +369,8 @@ export interface TalkState {
   after?: boolean
   /** Claims the stranger made in this talk (M10.3): a few, then words are only words. */
   claims?: number
+  /** A claim the voice read in the stranger's words (M10.3, left over), and how it was taken: it sounds in the next turn. */
+  heard?: string
 }
 
 export interface RelationState {

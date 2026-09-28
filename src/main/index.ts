@@ -13,7 +13,7 @@ import { DEFAULT_WORLD, listWorlds, loadContentFromDir, readContentFiles } from 
 import { format, GameLog, PART_BYTES, type LogScope, type Session } from '../node/gamelog'
 import { SaveStore } from '../node/savegame'
 import { Transcript, type TranscriptSettings } from '../node/transcript'
-import { aiCheck, BUILDER_CHECK_SCRIPT, keyCheck, LOG_CHECK_SCRIPT, prepareBuilderCheck, prepareKeyCheck, prepareLogCheck } from './checks'
+import { aiCheck, BUILDER_CHECK_SCRIPT, keyCheck, LOG_CHECK_SCRIPT, picturesRun, prepareBuilderCheck, prepareKeyCheck, prepareLogCheck } from './checks'
 
 // The engine runs in the main process for now; the design moves it to a
 // utility process once the simulation grows (FO, chapter 3).
@@ -39,6 +39,11 @@ let held = false
 let minutesSinceSave = 0
 
 const smoke = Boolean(process.env['WISPLIGHT_SMOKE'])
+// WISPLIGHT_PICTURES=<euros> (after the M10 playtest): every picture at once, then quit. Chromium gets a
+// folder of its own, so a game that is open keeps its own; the settings, the key and the pictures are the player's.
+const picturing = process.env['WISPLIGHT_PICTURES']
+const playerData = app.getPath('userData')
+if (picturing) app.setPath('userData', mkdtempSync(join(tmpdir(), 'wisplight-pictures-')))
 const checking = Boolean(process.env['WISPLIGHT_AI_CHECK'] || process.env['WISPLIGHT_KEY_CHECK'])
 if (process.env['WISPLIGHT_KEY_CHECK']) prepareKeyCheck(app)
 const logCheck = process.env['WISPLIGHT_LOG_CHECK'] ? prepareLogCheck(app) : undefined
@@ -782,6 +787,17 @@ function createWindow(): void {
 }
 
 void app.whenReady().then(async () => {
+  if (picturing) {
+    const worlds = await listWorlds(contentDir())
+    const contents = await Promise.all(worlds.map((w) => loadContentFromDir(contentDir(), w.folder)))
+    const service = new AiService({ dir: playerData, cipher, content: contents[0]! })
+    const ok = await picturesRun(service, contents, Number(picturing) || 5).catch((error: unknown) => {
+      console.log(`[pictures] stopped: ${error instanceof Error ? error.message : String(error)}`)
+      return false
+    })
+    app.exit(ok ? 0 : 1)
+    return
+  }
   if (checking) {
     await setup()
     const ok = await (process.env['WISPLIGHT_KEY_CHECK'] ? keyCheck(app, ai!, content!) : aiCheck(ai!, content!)).catch((error: unknown) => {

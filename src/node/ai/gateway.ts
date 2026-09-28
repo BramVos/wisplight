@@ -221,12 +221,13 @@ export class Gateway implements LlmClient {
    * chronicler does: pictures are nice to have. A trial in the settings skips
    * the budget, as a trial of a text model does.
    */
-  async picture(prompt: string, choice: PictureChoice, trial = false): Promise<PictureResponse> {
+  async picture(prompt: string, choice: PictureChoice, trial = false, options: { batch?: boolean } = {}): Promise<PictureResponse> {
     const provider = this.options.provider(choice.provider)
     if (!provider?.picture) throw new LlmError('config', `${choice.provider} makes no pictures`)
     if (!trial) {
       const spent = this.costs.spentLastHour() + this.costs.reservedUsd()
-      if (spent >= LOW_PRIORITY_SHARE * this.options.budgetUsdPerHour()) throw new LlmError('budget', 'the hourly budget is kept for conversations')
+      // A batch the player asked for has a cap of its own; in play, pictures leave room for conversations.
+      if (!options.batch && spent >= LOW_PRIORITY_SHARE * this.options.budgetUsdPerHour()) throw new LlmError('budget', 'the hourly budget is kept for conversations')
       if (this.options.usage.monthBudgetSpent()) throw new LlmError('budget', 'the month budget is used up')
     }
     const controller = new AbortController()

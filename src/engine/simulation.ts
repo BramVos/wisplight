@@ -1,3 +1,4 @@
+import { invitesHour } from './social/invite'
 import { motorChance, propsHour } from './props'
 import { crowdsHour } from './growth/crowds'
 import { archiveDay } from './archive'
@@ -81,6 +82,8 @@ function hourly(world: World): void {
   claimsHour(world)
   // Objects the chronicler placed: heirs, moving house, and the owner's look inside (M10.5).
   propsHour(world)
+  // Asked along and no answer: they go alone or wait (M10.3, left over).
+  invitesHour(world)
   // What has been over for a month leaves the save for the game log (M9.1).
   if (minuteOfDay(world.now) === 4 * 60) {
     // Lines that took nothing new for two weeks sleep, or close when nothing is left open (M10.2).

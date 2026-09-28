@@ -40,6 +40,7 @@ export function chroniclerVerbs(): StepVerb[] {
   { name: 'arrive', text: 'newcomers come to live in a free house of the target area and take up a trade nobody works there', who: 'none', target: ['area'], detail: 'the trade, or a good it makes' },
   { name: 'build', text: 'a settlement begins a project, with materials from its store', who: 'none', detail: 'the project' },
   { name: 'area_news', text: 'the news of the day in the target area', who: 'none', target: ['area'], detail: 'the news, as people there say it' },
+  { name: 'invite', text: 'someone finds the stranger and asks them along to the target place; no, and they go alone', who: 'one', target: ['place'], detail: 'what they say when asking' },
   { name: 'place_prop', text: "a new object (NEW OBJECTS) in its owner's home; one per storyline", who: 'one', detail: 'template: what it holds, "locked_chest: diary"' },
   ]
 }
@@ -205,6 +206,8 @@ export function stepsFromOp(world: World, op: StepOp, n: number, problems: strin
       if (!op.target || !world.content.settlements.has(op.target) || !workshop) return (problems.push('arrive: needs a settlement and a trade'), [])
       return [make(0, { arrive: workshop.id, to: op.target })].filter((s): s is Step => Boolean(s))
     }
+    case 'invite':
+      return place(op.target) && person(people[0]) ? [make(0, { invite: people[0], to: op.target, ...(op.detail ? { line: op.detail } : {}) })].filter((s): s is Step => Boolean(s)) : (problems.push('invite: needs someone and a place'), [])
     case 'place_prop': {
       const [template, items] = (op.detail ?? '').split(':').map((x) => x.trim())
       if (!template || !world.content.props.has(template) || !person(people[0])) return (problems.push('place_prop: needs a template and an owner'), [])

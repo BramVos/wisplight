@@ -15,7 +15,8 @@ import { partyTalk } from './party'
 import { closingLine, fallbackReply } from './fallback'
 import { fitLength, hasAnachronism, leakedNames, looksLikeInjection, outOfCharacter, promises, unknownNames, vocabularyOf } from './guard'
 import { accept, askedFor, askOffer, dayLines, kinOf, offerLine, offerLines, offersFor, proposal, proposalText, type Offer } from './offers'
-import { claimValid, claimWords, parseClaim, playerSays } from '../claims'
+import { accepted, declined, inviteOffer } from '../social/invite'
+import { CLAIM_KEYS, claimValid, claimWords, parseClaim, playerSays } from '../claims'
 import { afterChoice, doAfter, talkFact } from './aftertalk'
 import { provocation, react, walkAway, type Reaction } from './reactions'
 import { flirt } from '../social/romance'
@@ -127,7 +128,8 @@ export class Dialogue {
     // Someone who needs help asks the player, once, when they next talk (FO, chapter 14).
     const request = askNow(world, npcId)
     // What they ask of the stranger is an offer the other way round (M10.3): YES is the stranger's word.
-    const ask = request ? askOffer(world, npcId, request) : undefined
+    // Or they came to ask the stranger along (M10.3, left over: invite): their own offer to lead the way.
+    const ask = (request ? askOffer(world, npcId, request) : undefined) ?? (opened ? inviteOffer(world, npcId) : undefined)
     if (ask) this.talk!.proposal = ask
     return [
       { kind: 'system', text: `You are talking with ${npc.short}. Type what you want to say, pick a number, or BYE to stop.` },
@@ -521,7 +523,11 @@ export class Dialogue {
     const claim = options.claim ?? (options.check || /\?\s*$/.test(text) ? undefined : parseClaim(world, topics, text))
     // A few claims a talk, no more (M10.3, the limits): after that, words are only words.
     const said = claim && claimValid(world, claim) && (talk.claims = (talk.claims ?? 0) + 1) <= MAX_CLAIMS ? playerSays(world, npcId, claim, { ...(options.lie ? { lie: true } : {}), ...(options.claimBonus ? { bonus: options.claimBonus } : {}) }) : undefined
-    const believed = said ? `The stranger says ${claimWords(world, claim!)}. You ${said.stance === 'believes' ? 'believe it' : said.stance === 'doubts' ? 'are not sure it is true' : 'do not believe it'}; answer that way.` : undefined
+    const believed = said ? `The stranger says ${claimWords(world, claim!)}. You ${said.stance === 'believes' ? 'believe it' : said.stance === 'doubts' ? 'are not sure it is true' : 'do not believe it'}; answer that way.` : talk.heard
+    // What the voice read in the stranger's last words (M10.3, left over) sounds in this turn, once.
+    talk.heard = undefined
+    // The rules read no claim and it is no question: the voice may read one, in the same call (no second call, M9.3).
+    const claimable = !claim && !options.check && !/\?\s*$/.test(text) && (talk.claims ?? 0) < MAX_CLAIMS ? [...new Set([...topics, ...this.topics.recognise(text)])].filter((t) => t !== npcId && (world.content.npcs.has(t) || world.content.locations.has(t))) : []
     // Flirting in free talk goes by the same formula as FLIRT (M10.3); the voice words what it decided.
     const flirted = act === 'Flirt' && !options.check ? flirtIn(world, npcId) : undefined
     // An insult, a threat or a lie found out: the engine decides the reaction; the voice words it (M10.3).
@@ -534,7 +540,13 @@ export class Dialogue {
     // Asked about someone who matters: news with witnesses, before anyone answers (M10.3).
     const made = talkFact(world, npcId, topics, act)
     if (made) (talk.facts ??= []).push(made.id)
-    const reply = await this.callModel(npcId, text, { act, tier, packet, band, memories, check: options.check, secret: options.secret, decision, spokenTopics: this.topics.recognise(text), offered, offers })
+    const reply = await this.callModel(npcId, text, { act, tier, packet, band, memories, check: options.check, secret: options.secret, decision, spokenTopics: this.topics.recognise(text), offered, offers, claimable })
+    // A claim the voice read: the engine judges it and books it as heard from the stranger; the stance sounds next turn.
+    const read = reply?.claim && reply.claim.subject !== 'none' && claimable.includes(reply.claim.subject) ? { subject: reply.claim.subject, key: reply.claim.key, value: reply.claim.value } : undefined
+    if (read && claimValid(world, read) && (talk.claims = (talk.claims ?? 0) + 1) <= MAX_CLAIMS) {
+      const taken = playerSays(world, npcId, read)
+      if (taken) talk.heard = `Earlier the stranger said ${claimWords(world, read)}. You ${taken.stance === 'believes' ? 'believe it' : taken.stance === 'doubts' ? 'are not sure it is true' : 'do not believe it'}; let that show.`
+    }
     // The player's words meant a quest action: the engine carries it out, and its text is the answer.
     if (reply?.quest_action && offered.some((o) => o.key === reply.quest_action)) {
       this.chosen = reply.quest_action
@@ -649,7 +661,12 @@ export class Dialogue {
     if (!talk || !offer) return []
     talk.proposal = undefined
     const world = this.world
-    if (!yes) return [{ kind: 'speech', text: world.say('{name} shrugs. "Suit yourself."', talk.npc) }]
+    if (!yes) {
+      // Asked along and said no: they go alone, or wait, as the plan said.
+      if (offer.invite) declined(world, talk.npc)
+      return [{ kind: 'speech', text: world.say('{name} shrugs. "Suit yourself."', talk.npc) }]
+    }
+    if (offer.invite) accepted(world, talk.npc)
     const done = accept(world, talk.npc, offer)
     if (done.ends) {
       this.wrapUp(talk)
@@ -700,6 +717,8 @@ export class Dialogue {
       spokenTopics: string[]
       offered?: { key: string; intent: string }[]
       offers?: Offer[]
+      /** Who a claim the voice reads may be about (M10.3, left over); empty: no claim this turn. */
+      claimable?: string[]
     },
   ): Promise<Reply | undefined> {
     this.lastFailure = undefined
@@ -736,6 +755,10 @@ export class Dialogue {
     if (days.length) prompt += `\n${days.join('\n')}`
     if (offers.length) prompt += `\n${offerLines(world, npcId, offers).join('\n')}`
     if (talk && !talk.after) prompt += '\nAFTER THE TALK: if this talk makes you want to do one thing of your own later (tell someone of your own people, or go somewhere), put it in after; at most once in a talk. Otherwise after.kind is none.'
+    if (ctx.claimable?.length) {
+      const places = ctx.claimable.filter((id) => world.content.locations.has(id))
+      prompt += `\nCLAIM: if the stranger's words just said something is so about ${ctx.claimable.map((id) => `${id} (${this.topics.name(id)})`).join(', ')}, put it in claim: subject the id; key at (value: the place id where they are${places.length ? `, one of ${places.join(', ')}` : ''}), alive (yes or no), state (of a place: normal, flooded, damaged, occupied, leaking) or working (of a place: yes or no). Otherwise subject none. Only what the stranger said, never what you think.`
+    }
     if (offered.length) {
       prompt += `\nQUEST ACTIONS: if the player's words clearly mean one of these, put its key in quest_action and the game carries it out; otherwise quest_action is "none".\n${offered.map((o) => `  ${o.key}: the player wants to ${o.intent}`).join('\n')}`
     }
@@ -751,7 +774,7 @@ export class Dialogue {
             system: systemPrompt(world, npcId),
             prompt,
             schemaName: 'npc_reply',
-            schema: replyJsonSchema(allowedTopics, offered.map((o) => o.key), offers, !talk?.after),
+            schema: replyJsonSchema(allowedTopics, offered.map((o) => o.key), offers, !talk?.after, ctx.claimable?.length ? { subjects: ctx.claimable, keys: CLAIM_KEYS } : undefined),
             maxTokens: TIER_TOKENS[ctx.tier],
             timeoutMs: REPLY_WITHIN_MS - (Date.now() - started),
             meta: {
@@ -767,6 +790,7 @@ export class Dialogue {
               playerText: text,
               offers,
               ...(talk && !talk.after ? { after: afterChoice(world, npcId, talk.facts ?? []) } : {}),
+              ...(ctx.claimable?.length ? { claimable: ctx.claimable } : {}),
             },
           })
         ).text

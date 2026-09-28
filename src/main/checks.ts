@@ -237,3 +237,16 @@ function walk(dir: string): string[] {
     return statSync(path).isDirectory() ? walk(path) : [path]
   })
 }
+
+// WISPLIGHT_PICTURES=<euros>: makes every picture of every world at once, on
+// the player's request (after the M10 playtest), with the key and the image
+// model the player chose under Settings > AI, never past the cap. The cap is
+// in euros and kept in dollars as if a dollar were a euro, which is below it.
+// Prints what it makes and what it cost; never a key.
+export async function picturesRun(ai: AiService, contents: Content[], capEuro: number): Promise<boolean> {
+  const cap = Math.max(0, Math.min(capEuro, 20))
+  console.log(`[pictures] worlds: ${contents.map((c) => c.world.name).join(', ')}; cap ${cap} euro`)
+  const result = await ai.drawAll(contents, cap, (line) => console.log(`[pictures] ${line}`))
+  console.log(`[pictures] made ${result.made}, made before ${result.kept}, failed ${result.failed}, cost $${result.costUsd.toFixed(3)}${result.stopped ? `; stopped: ${result.stopped}` : ''}`)
+  return result.failed === 0
+}

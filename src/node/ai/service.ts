@@ -10,6 +10,8 @@ import { AiLog, type AiLogEntry } from './log'
 import { createProvider, type ModelInfo, type Provider, type ProviderId } from './providers'
 import { SettingsStore, type Cipher, type ChosenRole, type PictureChoice, type SettingsSummary } from './settings'
 import { UsageStore, type UsageSummary } from './usage'
+import { picturePrice } from './pricing'
+import { LlmError } from '../../engine/dialogue/llm'
 
 // Everything the settings screen and the game need from the AI side, without
 // Electron: main/index.ts passes in safeStorage as the cipher and the user data
@@ -205,6 +207,65 @@ export class AiService {
       .finally(() => this.drawing.delete(file))
     this.drawing.set(file, job)
     return job
+  }
+
+  /**
+   * Every picture of these worlds at once, on the player's request (after the
+   * M10 playtest): the people and places not made yet, three at a time, with
+   * the model chosen under Settings > AI, until the next one would pass the
+   * cap. Kept where the game looks for them; the costs are counted as any.
+   */
+  async drawAll(contents: Content[], capUsd: number, say: (line: string) => void): Promise<{ made: number; kept: number; failed: number; costUsd: number; stopped?: string }> {
+    const result: { made: number; kept: number; failed: number; costUsd: number; stopped?: string } = { made: 0, kept: 0, failed: 0, costUsd: 0 }
+    const choice = this.settings.pictures
+    if (!choice) return { ...result, stopped: 'pictures are off under Settings > AI' }
+    const price = picturePrice(choice.model, choice.quality)
+    if (price === undefined) return { ...result, stopped: `no known price for ${choice.model} at ${choice.quality} quality, so the cap cannot be kept` }
+    const jobs: { file: string; prompt: string; name: string; world: string }[] = []
+    for (const content of contents) {
+      const ids = [...content.npcs.keys(), ...[...content.areas.keys()].map((a) => `area_${a}`)]
+      for (const id of ids) {
+        const subject = pictureSubject(content, id)
+        if (!subject || subject.plain) continue
+        const file = join(this.options.dir, 'pictures', content.world.id.replace(/[^a-z0-9_-]/gi, ''), `${subject.id}-${subject.key}.jpg`)
+        if (jobs.some((j) => j.file === file)) continue
+        if (existsSync(file)) {
+          result.kept++
+          continue
+        }
+        jobs.push({ file, prompt: subject.prompt, name: subject.name, world: content.world.name })
+      }
+    }
+    say(`${jobs.length} to make, ${result.kept} made before; ${choice.model} at ${choice.quality} quality, $${price} each, at most $${capUsd.toFixed(2)}`)
+    let reserved = 0
+    const next = async (): Promise<void> => {
+      for (;;) {
+        const job = jobs.shift()
+        if (!job || result.stopped) return
+        if (reserved + price > capUsd) {
+          result.stopped = `the cap of $${capUsd.toFixed(2)}; ${jobs.length + 1} not made`
+          jobs.length = 0
+          return
+        }
+        reserved += price
+        try {
+          const picture = await this.gateway.picture(job.prompt, choice, false, { batch: true })
+          mkdirSync(join(job.file, '..'), { recursive: true })
+          writeFileSync(job.file, Buffer.from(picture.base64, 'base64'))
+          result.made++
+          result.costUsd += price
+          say(`made ${job.world}: ${job.name}`)
+        } catch (error) {
+          reserved -= price
+          result.failed++
+          const message = error instanceof Error ? error.message : String(error)
+          say(`failed ${job.world}: ${job.name}: ${message}`)
+          if (error instanceof LlmError && (error.kind === 'budget' || error.kind === 'config')) result.stopped = message
+        }
+      }
+    }
+    await Promise.all([next(), next(), next()])
+    return result
   }
 
   /** A trial picture of the start of the world, with a model the player may pick; not kept. */

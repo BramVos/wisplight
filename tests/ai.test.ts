@@ -417,6 +417,32 @@ describe('pictures (after the M7 playtest)', () => {
     expect(ai.recentLog(5).filter((e) => e.role === 'illustrator')).toHaveLength(2)
   })
 
+  it('draws every picture of the worlds at once on request, skips what is there, and never passes the cap (after the M10 playtest)', async () => {
+    const { ai, dir, calls } = picturing()
+    await ai.connect('openai', TEST_KEY)
+    ai.choosePictures({ provider: 'openai', model: 'gpt-image-1-mini', quality: 'low' })
+    await ai.picture(content, 'npc_mirte')
+    const lines: string[] = []
+    // The hourly share does not stop a batch the player asked for; the cap does: $0.05 is ten pictures.
+    ai.settings.setBudget(0.01)
+    const capped = await ai.drawAll([content], 0.05, (line) => lines.push(line))
+    expect(capped.made).toBe(10)
+    expect(capped.kept).toBe(1)
+    expect(capped.costUsd).toBeCloseTo(0.05, 5)
+    expect(capped.stopped).toMatch(/the cap of \$0\.05/)
+    expect(lines[0]).toMatch(/to make, 1 made before; gpt-image-1-mini at low quality, \$0\.005 each, at most \$0\.05/)
+    expect(readdirSync(join(dir, 'pictures', 'nethermarch')).length).toBe(11)
+    // Again with room: only what is missing, and nothing twice.
+    const before = calls()
+    const rest = await ai.drawAll([content], 5, () => undefined)
+    expect(rest.kept).toBe(11)
+    expect(calls() - before).toBe(rest.made)
+    expect(allText(dir)).not.toContain(TEST_KEY)
+    // Pictures off: nothing.
+    ai.choosePictures(undefined)
+    expect((await ai.drawAll([content], 5, () => undefined)).stopped).toMatch(/pictures are off/)
+  })
+
   it('keeps pictures out of the last fifth of the hourly budget', async () => {
     const { ai, calls } = picturing()
     await ai.connect('openai', TEST_KEY)

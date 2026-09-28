@@ -53,6 +53,8 @@ export interface Offer {
   craft?: string
   /** open_lock, let_open: the lock, as object:<location>/<object> (M10.5). */
   lock?: string
+  /** lead: the NPC asked the stranger along (invite): a no is theirs to act on (M10.3, left over). */
+  invite?: boolean
 }
 
 const DAY = 24 * 60

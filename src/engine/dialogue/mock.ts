@@ -24,6 +24,8 @@ export interface MockMeta {
   offers?: Offer[]
   /** What the rules would have the NPC do after the talk (M10.3); the mock chooses the same. */
   after?: { kind: 'tell' | 'visit'; target: string }
+  /** A claim may be read from the stranger's words (M10.3, left over): who it may be about. */
+  claimable?: string[]
 }
 
 const COMMON = new Set(['about', 'what', 'with', 'that', 'this', 'from', 'your', 'have', 'there', 'they', 'them', 'will', 'would', 'could', 'know', 'want', 'wants'])
@@ -57,6 +59,8 @@ export class MockLlm implements LlmClient {
   heard?: (answers: string) => void
   /** For tests: the intention a brain chooses when a signal lets it (M8.2), with its open bindings; without it, none and custom decides. */
   intend?: (npc: string, offered: string[], keys: Record<string, string>) => { choice: string; fill?: { name: string; key: string }[] } | undefined
+  /** For tests: the claim the voice reads in the stranger's words when one may be read (M10.3, left over). */
+  claim?: { subject: string; key: string; value: string }
 
   constructor(
     public mode: MockMode = 'good',
@@ -176,6 +180,8 @@ export class MockLlm implements LlmClient {
       ...(meta.questActions?.length ? { quest_action: this.mode === 'good' ? (recognised(meta) ?? 'none') : 'none' } : {}),
       ...(meta.offers?.length ? (this.mode === 'promise' ? { action: 'none', propose: 'none' } : offerChoice(meta)) : {}),
       ...(meta.after && this.mode === 'good' ? { after: meta.after } : {}),
+      // A claim the test has the mock read, if one may be read this turn.
+      ...(this.claim && meta.claimable?.includes(this.claim.subject) ? { claim: this.claim } : {}),
     })
   }
 

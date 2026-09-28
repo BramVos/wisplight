@@ -1,3 +1,4 @@
+import { invite } from './social/invite'
 import { placeProp } from './props'
 import { welcomingIn } from './social/groups'
 import { agree } from './agreements'
@@ -501,6 +502,13 @@ export function runVerb(world: World, ctx: PlanContext, verb: Verb, st: StepStat
     s.planGoal = undefined
     s.busyUntil = Math.min(s.busyUntil, world.now)
     return true
+  }
+  if ('invite' in v) {
+    const who = one(world, ctx, v.invite)
+    const to = one(world, ctx, v.to)
+    const person = v.person ? one(world, ctx, v.person) : undefined
+    if (!who || !to) return false
+    return invite(world, who, to, { ...(person ? { person } : {}), ...(v.line ? { line: fill(world, v.line, ctx.bind) } : {}), otherwise: v.otherwise, hours: v.hours })
   }
   if ('seek_player' in v) {
     const who = one(world, ctx, v.seek_player)

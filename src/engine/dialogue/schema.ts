@@ -23,16 +23,29 @@ export const ReplySchema = z.object({
   propose: z.string().default('none'),
   // One thing the NPC does of its own after the talk (M10.3): tell someone, or go somewhere.
   after: z.object({ kind: z.enum(['none', 'tell', 'visit']), target: z.string() }).default({ kind: 'none', target: 'none' }),
+  // What the stranger claims, when the rules could not read it (M10.3, left over): the engine judges it.
+  claim: z.object({ subject: z.string(), key: z.string(), value: z.string() }).optional(),
 })
 export type Reply = z.infer<typeof ReplySchema>
 
-export function replyJsonSchema(allowedTopics: string[], questActions: string[] = [], offers: { key: string; decision: 'yes' | 'no' }[] = [], after = false): JsonSchema {
+export function replyJsonSchema(allowedTopics: string[], questActions: string[] = [], offers: { key: string; decision: 'yes' | 'no' }[] = [], after = false, claim?: { subjects: string[]; keys: readonly string[] }): JsonSchema {
   const yes = offers.filter((o) => o.decision === 'yes').map((o) => o.key)
   return {
     type: 'object',
     additionalProperties: false,
     required: ['act', 'reply', 'names', 'mentioned_topics', 'effects', 'memory_note', 'ends_conversation', ...(questActions.length ? ['quest_action'] : []), ...(offers.length ? ['action', 'propose'] : []), ...(after ? ['after'] : [])],
     properties: {
+      ...(claim
+        ? {
+            claim: {
+              type: 'object',
+              additionalProperties: false,
+              required: ['subject', 'key', 'value'],
+              description: 'Only if the stranger just told you something is so about a person or place named in this talk: who or what (subject), which key, and the value in the words of the world. Otherwise subject none.',
+              properties: { subject: { type: 'string', enum: ['none', ...claim.subjects] }, key: { type: 'string', enum: ['none', ...claim.keys] }, value: { type: 'string' } },
+            },
+          }
+        : {}),
       ...(after
         ? {
             after: {
