@@ -13,6 +13,7 @@ import { SettingsStore, type Cipher, type ChosenRole, type PictureChoice, type S
 import { UsageStore, type UsageSummary } from './usage'
 import { picturePrice } from './pricing'
 import { cachedPictureIn } from '../worldbook'
+import type { AppKnobs } from '../knobs'
 import { LlmError } from '../../engine/dialogue/llm'
 
 // Everything the settings screen and the game need from the AI side, without
@@ -24,6 +25,8 @@ export interface AiServiceOptions {
   cipher: Cipher
   content: Content
   providerFactory?: (id: ProviderId, key: string) => Provider
+  /** The app's knobs (M10.20); without them, the defaults. */
+  knobs?: AppKnobs
 }
 
 export interface AiOverview {
@@ -49,7 +52,7 @@ export class AiService {
   constructor(private readonly options: AiServiceOptions) {
     this.settings = new SettingsStore(join(options.dir, 'settings.json'), options.cipher)
     this.usage = new UsageStore(join(options.dir, 'usage.json'))
-    this.log = new AiLog(join(options.dir, 'logs', 'ai.jsonl'))
+    this.log = new AiLog(join(options.dir, 'logs', 'ai.jsonl'), () => options.knobs?.get('ai_log_keep') ?? 200)
     this.builds = new BuildStore(join(options.dir, 'builds.json'), () => this.settings.budgetUsdPerHour)
     this.factory = options.providerFactory ?? createProvider
     this.gateway = new Gateway({
@@ -63,6 +66,15 @@ export class AiService {
       costs: new CostRegister(join(options.dir, 'costs.jsonl')),
       builds: this.builds,
       onActivity: (activity) => this.onActivity?.(activity),
+      ...(options.knobs
+        ? {
+            knobs: () => ({
+              timeoutMs: { brain: options.knobs!.get('brain_timeout_seconds') * 1000, chronicler: options.knobs!.get('chronicler_timeout_seconds') * 1000 },
+              editorTimeoutMs: options.knobs!.get('editor_timeout_seconds') * 1000,
+              conversationShare: options.knobs!.get('conversation_share'),
+            }),
+          }
+        : {}),
     })
   }
 

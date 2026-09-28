@@ -1,6 +1,7 @@
 import { Fragment, useCallback, useEffect, useState } from 'react'
 import type { UsageTotals } from '../../node/ai/usage'
-import type { Advice, AiBridge, AiLogEntry, AiOverview, ModelInfo, ProviderId, TranscriptBridge, TrialResult } from './client'
+import type { Advice, AiBridge, AiLogEntry, AiOverview, AppKnobsBridge, ModelInfo, ProviderId, TranscriptBridge, TrialResult } from './client'
+import type { AppKnobView } from '../../engine'
 import { loadDisplay, saveDisplay, TEXT_SIZES, type Display } from './display'
 import { t, tn } from './i18n'
 import { BUDGET_CEILING_USD, BUDGET_CONFIRM_USD, BUDGET_FLOOR_USD, REPLY_WITHIN_SECONDS_RANGE } from '../../engine/aisettings'
@@ -9,7 +10,7 @@ import { BUDGET_CEILING_USD, BUDGET_CONFIRM_USD, BUDGET_FLOOR_USD, REPLY_WITHIN_
 // sent to the main process once, and only ever shown masked afterwards.
 // Settings > Display (M9.4): text size and contrast.
 
-export type SettingsTab = 'ai' | 'usage' | 'log' | 'display' | 'transcript'
+export type SettingsTab = 'ai' | 'usage' | 'log' | 'display' | 'transcript' | 'advanced'
 
 const PROVIDERS: { id: ProviderId; name: string; hint: string }[] = [
   { id: 'openai', name: 'OpenAI', hint: 'sk-...' },
@@ -33,7 +34,7 @@ const message = (error: unknown) => (error instanceof Error ? error.message.repl
 // so the texts check of M9.4 does not take "=> Promise<" for words on screen.
 type Work = { (): Promise<void> }
 
-export function Settings({ bridge, transcript, tab, onTab, onClose }: { bridge?: AiBridge; transcript?: TranscriptBridge; tab: SettingsTab; onTab: (tab: SettingsTab) => void; onClose: () => void }) {
+export function Settings({ bridge, transcript, knobs, tab, onTab, onClose }: { bridge?: AiBridge; transcript?: TranscriptBridge; knobs?: AppKnobsBridge; tab: SettingsTab; onTab: (tab: SettingsTab) => void; onClose: () => void }) {
   const [overview, setOverview] = useState<AiOverview>()
   const [error, setError] = useState<string>()
 
@@ -62,9 +63,9 @@ export function Settings({ bridge, transcript, tab, onTab, onClose }: { bridge?:
         <header className="panel-head">
           <h2>{t('settings.title')}</h2>
           <nav className="tabs">
-            {(['ai', 'usage', 'log', 'display', 'transcript'] as const).map((id) => (
+            {(['ai', 'usage', 'log', 'display', 'transcript', 'advanced'] as const).map((id) => (
               <button key={id} type="button" className={tab === id ? 'active' : ''} onClick={() => onTab(id)}>
-                {id === 'ai' ? t('settings.tabs.ai') : id === 'usage' ? t('settings.tabs.usage') : id === 'log' ? t('settings.tabs.log') : id === 'display' ? t('settings.tabs.display') : t('settings.tabs.transcript')}
+                {t(`settings.tabs.${id}`)}
               </button>
             ))}
           </nav>
@@ -74,6 +75,8 @@ export function Settings({ bridge, transcript, tab, onTab, onClose }: { bridge?:
         </header>
         {tab === 'display' ? (
           <DisplayTab />
+        ) : tab === 'advanced' ? (
+          knobs ? <AdvancedTab bridge={knobs} /> : <p className="muted">{t('settings.advanced.desktopOnly')}</p>
         ) : tab === 'transcript' ? (
           transcript ? <TranscriptTab bridge={transcript} /> : <p className="muted">{t('settings.desktopOnly')}</p>
         ) : !bridge ? (
@@ -825,6 +828,76 @@ export function LogTab({ bridge }: { bridge: AiBridge }) {
           <pre>{entries[open]!.response || t('settings.log.noReply')}</pre>
         </div>
       )}
+    </div>
+  )
+}
+
+/**
+ * Advanced (M10.20): the knobs of the app, from its own list: what each does,
+ * its value, its default and a way back to it. A value outside its bounds is
+ * moved into them, and the screen says so.
+ */
+function AdvancedTab({ bridge }: { bridge: AppKnobsBridge }) {
+  const [knobs, setKnobs] = useState<AppKnobView[]>()
+  const [typed, setTyped] = useState<Record<string, string>>({})
+  const [note, setNote] = useState<string>()
+  const load = useCallback(async () => setKnobs(await bridge.list()), [bridge])
+  useEffect(() => {
+    void load()
+  }, [load])
+  if (!knobs) return <p className="muted">{t('settings.loading')}</p>
+  const save = async (id: string, value: number | null) => {
+    const done = await bridge.set(id, value)
+    setNote(done.adjusted)
+    setTyped((previous) => {
+      const next = { ...previous }
+      delete next[id]
+      return next
+    })
+    await load()
+  }
+  return (
+    <div className="settings-body">
+      <p className="muted">{t('settings.advanced.about')}</p>
+      {note && <p className="error">{note}</p>}
+      <table className="quest-table knob-table">
+        <tbody>
+          {knobs.map((k) => (
+            <tr key={k.id}>
+              <td>
+                {k.about}
+                <div className="muted small">
+                  {t('settings.advanced.range', { unit: k.unit, min: k.min, max: k.max, fallback: k.default })}
+                </div>
+              </td>
+              <td>
+                <input
+                  className="knob-input"
+                  inputMode="decimal"
+                  value={typed[k.id] ?? String(k.value)}
+                  aria-label={k.about}
+                  onChange={(e) => setTyped((previous) => ({ ...previous, [k.id]: e.target.value }))}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && typed[k.id] !== undefined && !Number.isNaN(Number(typed[k.id]))) void save(k.id, Number(typed[k.id]))
+                  }}
+                />{' '}
+                {typed[k.id] !== undefined && !Number.isNaN(Number(typed[k.id])) && (
+                  <button type="button" className="link small" onClick={() => void save(k.id, Number(typed[k.id]))}>
+                    [{t('settings.advanced.save')}]
+                  </button>
+                )}
+              </td>
+              <td>
+                {k.set && (
+                  <button type="button" className="link small" onClick={() => void save(k.id, null)}>
+                    [{t('settings.advanced.default')}]
+                  </button>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   )
 }

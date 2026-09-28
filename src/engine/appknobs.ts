@@ -1,0 +1,30 @@
+// The knobs of the app, as a list (M10.20): what each does, its unit, default
+// and bounds. Plain data, so the settings screen and the browser preview can
+// show it; src/node/knobs.ts keeps the player's values in knobs.json.
+
+export interface AppKnobDef {
+  about: string
+  unit: string
+  default: number
+  min: number
+  max: number
+}
+
+export const APP_KNOBS = {
+  autosave_every_minutes: { about: 'The game saves by itself this often, in minutes of play.', unit: 'minutes', default: 10, min: 1, max: 120 },
+  save_after_minutes: { about: 'A command that lets this much game time pass (a journey, a night) saves at once.', unit: 'game minutes', default: 60, min: 10, max: 1440 },
+  idle_pause_seconds: { about: 'The clock stops after this long without a key pressed.', unit: 'seconds', default: 60, min: 10, max: 3600 },
+  ai_log_keep: { about: 'The calls the AI log keeps to look at.', unit: 'calls', default: 200, min: 50, max: 5000 },
+  conversation_share: { about: 'The share of the hourly budget kept for conversations: above it, the chronicler and small choices wait.', unit: 'share', default: 0.8, min: 0.1, max: 1 },
+  editor_timeout_seconds: { about: 'How long a long answer in the editor (a world step) may take.', unit: 'seconds', default: 600, min: 60, max: 1800 },
+  brain_timeout_seconds: { about: 'How long a person\'s choice of what to do may take the model.', unit: 'seconds', default: 10, min: 3, max: 120 },
+  chronicler_timeout_seconds: { about: 'How long one night run of the chronicler may take.', unit: 'seconds', default: 90, min: 20, max: 600 },
+} as const satisfies Record<string, AppKnobDef>
+
+export type AppKnobId = keyof typeof APP_KNOBS
+
+export interface AppKnobView extends AppKnobDef {
+  id: AppKnobId
+  value: number
+  set: boolean
+}

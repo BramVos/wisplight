@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { stringify } from 'yaml'
-import { adoptPlaceEdits, ENTITY_KINDS, exitTowards, KIND_NAMES, languageReference, markColours, parseEntityYaml, WORLD_STEPS, type MapPlace, type ReferenceEntry } from '../../engine'
+import { adoptPlaceEdits, ENTITY_KINDS, exitTowards, KIND_NAMES, KNOBS, languageReference, markColours, parseEntityYaml, WORLD_STEPS, type KnobDef, type MapPlace, type ReferenceEntry } from '../../engine'
 import { StaleBanner } from './StaleBanner'
 import type { DesignLog } from '../../engine/designlog'
 import { NpcInspector } from './Inspector'
@@ -16,7 +16,7 @@ import { createEditor, type DiffLine, type Edit, type EditorBridge, type EditorD
 // playtest without the player with an NPC inspector, and the chronicler,
 // whose proposals are shown as a change and saved only when accepted.
 
-type Panel = 'edit' | 'map' | 'palette' | 'voice' | 'check' | 'contract' | 'playtest' | 'reference' | 'chronicler' | 'world'
+type Panel = 'edit' | 'map' | 'palette' | 'voice' | 'knobs' | 'check' | 'contract' | 'playtest' | 'reference' | 'chronicler' | 'world'
 
 const DIRECTIONS = ['north', 'northeast', 'east', 'southeast', 'south', 'southwest', 'west', 'northwest', 'up', 'down', 'in', 'out']
 const AXES = ['warmth', 'courage', 'honesty', 'temper', 'curiosity', 'diligence'] as const
@@ -104,6 +104,7 @@ export function EditorApp() {
               ['map', 'Map'],
               ['palette', 'Palette'],
               ['voice', 'Voice'],
+              ['knobs', 'Knobs'],
               ['check', `Check${view.problems.length ? ` (${view.problems.length} errors)` : view.warnings.length ? ` (${view.warnings.length})` : ''}`],
               ['contract', 'Contract'],
               ['playtest', 'Playtest'],
@@ -160,6 +161,7 @@ export function EditorApp() {
       {panel === 'map' && <MapPanel bridge={bridge} world={world} view={view} saved={refresh} open={open} />}
       {panel === 'palette' && <PalettePanel bridge={bridge} world={world} saved={refresh} />}
       {panel === 'voice' && <VoicePanel bridge={bridge} world={world} saved={refresh} />}
+      {panel === 'knobs' && <KnobsPanel bridge={bridge} world={world} view={view} saved={refresh} />}
       {panel === 'check' && <CheckPanel view={view} open={open} />}
       {panel === 'playtest' && <PlaytestPanel bridge={bridge} world={world} />}
       {panel === 'reference' && <ReferencePanel />}
@@ -1997,6 +1999,135 @@ function PalettePanel({ bridge, world, saved }: { bridge: EditorBridge; world: s
         </button>
       </div>
       {message && <p className="small">{message}</p>}
+    </div>
+  )
+}
+
+type KnobValue = number | Record<string, number>
+
+/**
+ * The knobs of a world (M10.20): every rule of play that may differ per
+ * world, from the engine's own list, with what it does, its default, this
+ * world's value and a way back to the default. Saved in world.yaml under
+ * `knobs:`, only what differs from the default; checked when the world loads.
+ */
+function KnobsPanel({ bridge, world, view, saved }: { bridge: EditorBridge; world: string; view: EditorView; saved: () => Promise<void> }) {
+  const own = view.knobs as Record<string, KnobValue>
+  const [draft, setDraft] = useState<Record<string, KnobValue>>(own)
+  const [message, setMessage] = useState<string>()
+  const [busy, setBusy] = useState(false)
+  useEffect(() => setDraft(own), [world, JSON.stringify(own)])
+  const defs = KNOBS as Record<string, KnobDef>
+  const groups = new Map<string, string[]>()
+  for (const id of Object.keys(defs)) groups.set(id.split('.')[0]!, [...(groups.get(id.split('.')[0]!) ?? []), id])
+  const shown = (v: KnobValue) => (typeof v === 'number' ? String(v) : Object.entries(v).map(([k, x]) => `${k} ${x}`).join(', '))
+  const set = (id: string, value: KnobValue | undefined) =>
+    setDraft((previous) => {
+      const next = { ...previous }
+      if (value === undefined) delete next[id]
+      else next[id] = value
+      return next
+    })
+  const changed = JSON.stringify(draft) !== JSON.stringify(own)
+  const save = async () => {
+    setBusy(true)
+    setMessage(undefined)
+    try {
+      const result = await bridge.saveDraft(world, { changes: [], world: stringify({ knobs: draft }), files: [] })
+      setMessage(result.ok ? 'Saved in world.yaml.' : result.problems.join(' '))
+      if (result.ok) await saved()
+    } finally {
+      setBusy(false)
+    }
+  }
+  return (
+    <div className="settings-body editor-page">
+      <h2 className="editor-title">Knobs</h2>
+      <p className="muted small">
+        Rules of play this world may set otherwise than the default: how long a talk lasts, how long a thing is lent, what a lesson costs. Leave a knob empty to keep the default. They are saved in world.yaml under knobs:, and only what differs.
+      </p>
+      <p>
+        <button type="button" className="link" disabled={busy || !changed} onClick={() => void save()}>
+          [Save the knobs]
+        </button>{' '}
+        {changed && (
+          <button type="button" className="link" disabled={busy} onClick={() => setDraft(own)}>
+            [Undo]
+          </button>
+        )}
+        {message && <span className="small"> {message}</span>}
+      </p>
+      {[...groups].map(([group, ids]) => (
+        <section key={group}>
+          <h3>{group}</h3>
+          <table className="quest-table knob-table">
+            <tbody>
+              {ids.map((id) => {
+                const def = defs[id]!
+                const value = draft[id]
+                return (
+                  <tr key={id}>
+                    <td>
+                      <code>{id}</code>
+                      <div className="muted small">{def.about}</div>
+                    </td>
+                    <td className="small">
+                      {def.unit}
+                      <div className="muted">
+                        {def.min} to {def.max}
+                      </div>
+                    </td>
+                    <td className="small">
+                      default {shown(def.default)}
+                    </td>
+                    <td>
+                      {typeof def.default === 'number' ? (
+                        <input
+                          className="knob-input"
+                          inputMode="decimal"
+                          value={typeof value === 'number' ? String(value) : ''}
+                          placeholder={String(def.default)}
+                          aria-label={id}
+                          onChange={(e) => set(id, e.target.value.trim() === '' || Number.isNaN(Number(e.target.value)) ? undefined : Number(e.target.value))}
+                        />
+                      ) : (
+                        Object.entries(def.default).map(([row, fallback]) => {
+                          const table = value && typeof value === 'object' ? value : {}
+                          return (
+                            <label key={row} className="knob-row small">
+                              {row}{' '}
+                              <input
+                                className="knob-input"
+                                inputMode="decimal"
+                                value={row in table ? String(table[row]) : ''}
+                                placeholder={String(fallback)}
+                                aria-label={`${id} ${row}`}
+                                onChange={(e) => {
+                                  const next = { ...table }
+                                  if (e.target.value.trim() === '' || Number.isNaN(Number(e.target.value))) delete next[row]
+                                  else next[row] = Number(e.target.value)
+                                  set(id, Object.keys(next).length ? next : undefined)
+                                }}
+                              />
+                            </label>
+                          )
+                        })
+                      )}
+                    </td>
+                    <td>
+                      {value !== undefined && (
+                        <button type="button" className="link small" onClick={() => set(id, undefined)}>
+                          [Default]
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </section>
+      ))}
     </div>
   )
 }

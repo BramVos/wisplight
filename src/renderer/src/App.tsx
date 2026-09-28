@@ -842,7 +842,7 @@ export function App() {
       )}
       {ending && client && <EndView client={client} onClose={() => setEnding(false)} />}
       {exporting && client && <LogExport client={client} onClose={() => setExporting(false)} />}
-      {settings && <Settings bridge={client?.ai} transcript={client?.transcript} tab={settings} onTab={setSettings} onClose={() => setSettings(undefined)} />}
+      {settings && <Settings bridge={client?.ai} transcript={client?.transcript} knobs={client?.knobs} tab={settings} onTab={setSettings} onClose={() => setSettings(undefined)} />}
       {DevMenu && dev && client && (
         <Suspense fallback={null}>
           <DevMenu

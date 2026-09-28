@@ -2574,7 +2574,7 @@ export class Engine {
     const rules = this.content.rules
     if (!rules) return undefined
     const gear = new Set(rules.classes.flatMap((k) => Object.keys(k.gear)))
-    return { rules, items: Object.fromEntries([...gear].map((id) => [id, this.content.items.get(id)!])) }
+    return { rules, items: Object.fromEntries([...gear].map((id) => [id, this.content.items.get(id)!])), ...(this.content.world.knobs ? { knobs: this.content.world.knobs } : {}) }
   }
 
   /** Runs the world for some minutes and returns the events the player could see. */

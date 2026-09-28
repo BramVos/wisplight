@@ -2004,3 +2004,23 @@ pre.sheet {
   padding: 2px 6px;
   width: min(100%, 22rem);
 }
+
+/* The knobs of a world (M10.20): a small box per value, the rows of a table side by side. */
+.knob-table td {
+  vertical-align: top;
+}
+
+.knob-input {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  color: var(--text);
+  font: inherit;
+  padding: 1px 4px;
+  width: 5.5em;
+}
+
+.knob-row {
+  display: inline-block;
+  margin: 0 10px 4px 0;
+  white-space: nowrap;
+}

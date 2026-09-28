@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url'
 import { ContentError, discoveredAtlasHtml, draftRequest, readSaveFile, saveAbout, saveFileName, saveFileText, SAVE_FILE_EXTENSION, type SaveFile, draftResult, Engine, ENTITY_KINDS, lineDiff, MapPaletteSchema, paletteRequest, paletteView, readDraft, readPalette, readVoice, savePalette, saveVoice, voiceRequest, voiceYaml, worldStepRequest, worldFixRequest, mergeFix, polishRequest, readPolish, descriptionCheck, enhanceRequest, readEnhance, type Content, type Edit, type EntityKind, type FileChange, type CheckpointedSave, type MapPalette, type Output, type SaveData } from '../engine'
 import { designUpdate, readDesignChange } from '../engine/designlog'
 import { ContentEditor } from '../node/editor'
+import { AppKnobs, type AppKnobId } from '../node/knobs'
 import { checkInput } from './inputs'
 import { cachedPictureIn, worldAtlasFor, worldBookFor, writeWorldBook } from '../node/worldbook'
 import type { ProviderId } from '../node/ai/providers'
@@ -22,12 +23,9 @@ import { aiCheck, BUILDER_CHECK_SCRIPT, keyCheck, LOG_CHECK_SCRIPT, picturesRun,
 // utility process once the simulation grows (FO, chapter 3).
 //
 // Hybrid clock (FO, chapter 3): outside conversations and menus, one real
-// second is one game minute. The clock pauses after 60 seconds without input.
-
-const IDLE_PAUSE_MS = 60_000
-const AUTOSAVE_EVERY = 10
-// A command that lets this much game time pass (travelling, a long walk, sleep) saves at once.
-const SAVE_AFTER_MINUTES = 60
+// second is one game minute. The clock pauses after a spell without input,
+// the game saves every so often, and at once after a long passage of time:
+// all three are knobs of the app (M10.20), under Settings, Advanced.
 
 let content: Content | undefined
 /** The world in play (M8): its folder under content/, and the worlds loaded so far. */
@@ -52,6 +50,12 @@ if (process.env['WISPLIGHT_KEY_CHECK']) prepareKeyCheck(app)
 const logCheck = process.env['WISPLIGHT_LOG_CHECK'] ? prepareLogCheck(app) : undefined
 const builderCheck = process.env['WISPLIGHT_BUILDER_CHECK'] ? prepareBuilderCheck(app) : undefined
 
+/** The knobs of the app (M10.20): knobs.json in the app's folder, read when first asked, after the smoke check chose its own folder. */
+let knobStore: AppKnobs | undefined
+function appKnobs(): AppKnobs {
+  return (knobStore ??= new AppKnobs(join(app.getPath('userData'), 'knobs.json')))
+}
+
 /** A line of the smoke check: on the console, and in a file when WISPLIGHT_SMOKE_OUT names one (an installed app on Windows has no console). */
 function smokeSay(line: string): void {
   console.log(line)
@@ -66,6 +70,8 @@ if (smokeData) {
   // Chromium's own storage keeps its key in the keychain too; the smoke check uses a stand-in.
   app.commandLine.appendSwitch('use-mock-keychain')
   app.setPath('userData', smokeData)
+  // One knob of the app set otherwise (M10.20): the smoke check shows the app reads it.
+  writeFileSync(join(smokeData, 'knobs.json'), JSON.stringify({ autosave_every_minutes: 5 }))
   app.on('will-quit', () => {
     try {
       rmSync(smokeData, { recursive: true, force: true })
@@ -115,7 +121,7 @@ let ready: Promise<void> | undefined
 function setup(): Promise<void> {
   ready ??= (async () => {
     content = await worldContent(DEFAULT_WORLD)
-    ai = new AiService({ dir: app.getPath('userData'), cipher, content })
+    ai = new AiService({ dir: app.getPath('userData'), cipher, content, knobs: appKnobs() })
     // The lights in the status bar (M10.4): every start and end of a call.
     ai.onActivity = (roles) => {
       if (window && !window.isDestroyed()) window.webContents.send('ai:activity', roles)
@@ -129,7 +135,7 @@ function setup(): Promise<void> {
 
 // The clock stands still in conversations and menus, and after a minute without input.
 function paused(): boolean {
-  return Boolean(engine?.state.combat) || held || Boolean(engine?.state.talk) || Date.now() - lastInput > IDLE_PAUSE_MS
+  return Boolean(engine?.state.combat) || held || Boolean(engine?.state.talk) || Date.now() - lastInput > appKnobs().get('idle_pause_seconds') * 1000
 }
 
 function aiStatus() {
@@ -360,6 +366,10 @@ handle('engine:export-discovered', async () => {
   writeFileSync(result.filePath, discoveredAtlasHtml(played, (id) => cachedPictureIn(app.getPath('userData'), played.content, id, { latest: true }), written), 'utf8')
   return result.filePath
 })
+// The knobs of the app (M10.20): the list for Settings, Advanced, and one set or back to its default.
+handle('app:knobs', () => appKnobs().list())
+handle('app:set-knob', (_event, id: unknown, value: unknown) => appKnobs().set(id as AppKnobId, typeof value === 'number' ? value : undefined))
+
 // The saves (M10.20): the list for the world picker and the load screen, continue a world, load one, name one,
 // and one save as a file to keep or bring back.
 handle('engine:saves', () => store().list().slice(0, 200))
@@ -467,7 +477,7 @@ handle('engine:command', async (_event, input: unknown) => {
   const outputs = await engine.handle(text)
   chronicler()
   // After a journey the game saves (FO, chapter 18): an hour or more of the road is not lost.
-  if (!smoke && engine.world.now - before >= SAVE_AFTER_MINUTES) {
+  if (!smoke && engine.world.now - before >= appKnobs().get('save_after_minutes')) {
     minutesSinceSave = 0
     keep('auto')
   }
@@ -984,7 +994,7 @@ setInterval(() => {
   const outputs = engine.tick(1)
   chronicler()
   window.webContents.send('engine:tick', reply(outputs))
-  if (!smoke && ++minutesSinceSave >= AUTOSAVE_EVERY) {
+  if (!smoke && ++minutesSinceSave >= appKnobs().get('autosave_every_minutes')) {
     minutesSinceSave = 0
     keep('auto')
   }
@@ -1075,6 +1085,7 @@ function createWindow(): void {
             return (node ? 'NODE IN THE PAGE' : 'no node') + ', ' + (refused ? 'a path for a world refused' : 'A PATH FOR A WORLD ACCEPTED') + ', ' + saves
           })()`,
         )
+        smokeSay(`[smoke] app knob: autosave every ${appKnobs().get('autosave_every_minutes')} minutes`)
         smokeSay(`[smoke] sandbox ${(window!.webContents as unknown as { getLastWebPreferences?: () => { sandbox?: boolean } | null }).getLastWebPreferences?.()?.sandbox ? 'on' : 'OFF'}, ${gate}`)
         app.quit()
       }, 1500)

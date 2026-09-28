@@ -88,23 +88,20 @@ numbers:
   src/engine/world.ts:
     MAX_EVENTS: 'code: the events kept in the save (save size)'
   src/main/index.ts:
-    IDLE_PAUSE_MS: 'settings: the pause after a minute of quiet'
-    AUTOSAVE_EVERY: 'settings: autosave every ten minutes'
-    SAVE_AFTER_MINUTES: 'settings: a long passage of time saves at once'
     END_LINES: 'code: the lines the end view shows; the whole log is a download (the window)'
   src/node/ai/advisor.ts:
     PASS_SHARE: 'code: what a model must do in its trial to be chosen (FO, chapter 16)'
     LATENCY_MS: 'code: how long a model may take on average in its trial (FO, chapter 16)'
   src/node/ai/gateway.ts:
-    TIMEOUT_MS: 'settings: the time a call may take per role (the voice already follows the reply time the player sets)'
-    EDITOR_TIMEOUT_MS: 'settings: the time for the editor''s own long answers'
-    LOW_PRIORITY_SHARE: 'settings: the share of the hourly budget kept for conversations'
+    TIMEOUT_MS: 'settings (moved): the app knobs brain_timeout_seconds and chronicler_timeout_seconds (the voice follows the reply time the player sets); these are the defaults'
+    EDITOR_TIMEOUT_MS: 'settings (moved): the app knob editor_timeout_seconds; this is its default'
+    LOW_PRIORITY_SHARE: 'settings (moved): the app knob conversation_share; this is its default'
     FAILURES_BEFORE_COOLDOWN: 'code: three failures and the connection cools down (safety)'
     COOLDOWN_MS: 'code: how long the connection cools down (safety)'
     LOW_TOKENS: 'code: below this the next call would hit the rate limit (technique)'
     UNPRICED_CALLS_PER_HOUR: 'code: a model without a known price is called at most this often an hour (safety of cost)'
   src/node/ai/log.ts:
-    KEEP: 'settings: the calls the AI log keeps'
+    KEEP: 'settings (moved): the app knob ai_log_keep; this is its default'
   src/node/ai/pricing.ts:
     CALLS_PER_HOUR: 'code: the calls of an hour of play, to estimate what a model costs (an estimate, not a rule)'
   src/node/ai/settings.ts:

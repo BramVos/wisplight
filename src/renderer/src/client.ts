@@ -1,4 +1,4 @@
-import type { CreationData, DiffLine, DraftChange, Edit, EditorView, EntityKind, JournalPage, MapPalette, Output, PaletteView, Raw, SaveAbout, SaveData, SimReport, Status, WorldInfo } from '../../engine'
+import type { AppKnobView, CreationData, DiffLine, DraftChange, Edit, EditorView, EntityKind, JournalPage, MapPalette, Output, PaletteView, Raw, SaveAbout, SaveData, SimReport, Status, WorldInfo } from '../../engine'
 import { designUpdate, type DesignChange, type DesignLog } from '../../engine/designlog'
 import type { DevSection, DevView } from '../../engine/dev'
 import type { Advice, TrialResult, TrialVerdict } from '../../node/ai/advisor'
@@ -109,6 +109,12 @@ export interface EditorDraft {
 }
 
 /** The editor (M8): the desktop app writes the files; the browser preview keeps them in memory. */
+/** The knobs of the app (M10.20): the list with the player's values, and one set or back to its default (null). */
+export interface AppKnobsBridge {
+  list(): Promise<AppKnobView[]>
+  set(id: string, value: number | null): Promise<{ value: number; adjusted?: string }>
+}
+
 /** A save as the world picker and the load screen show it (M10.20). */
 export interface SaveEntry {
   id: number
@@ -197,6 +203,8 @@ export interface EngineClient {
   exportDiscovered?(): Promise<string | undefined>
   /** The saves (M10.20): in the desktop app, and in the preview with ?mock=1 (in memory). */
   saves?: SavesBridge
+  /** The knobs of the app (M10.20), for Settings, Advanced: in the desktop app, and in the preview with ?mock=1 (in memory). */
+  knobs?: AppKnobsBridge
   activity(): void
   /** Stops the real-time clock while a menu is open. */
   hold(on: boolean): void
@@ -231,7 +239,7 @@ const IDLE_PAUSE_MS = 60_000
 export async function createClient(): Promise<EngineClient> {
   if (window.wisplight) return window.wisplight
 
-  const { DEFAULT_WORLD, discoveredAtlasHtml, Engine, filesOfWorld, loadContent, MockLlm, readSaveFile, saveAbout, saveFileName, saveFileText, worldsIn } = await import('../../engine')
+  const { APP_KNOBS, DEFAULT_WORLD, discoveredAtlasHtml, Engine, filesOfWorld, loadContent, MockLlm, readSaveFile, saveAbout, saveFileName, saveFileText, worldsIn } = await import('../../engine')
   // Every world's files; a new game picks one of them (M8).
   const all = contentFiles()
   const worlds = worldsIn(all)
@@ -262,6 +270,20 @@ export async function createClient(): Promise<EngineClient> {
   // The chronicler writes in the background, as in the desktop app.
   const chronicler = () => {
     if (engine.modelsWaiting > 0) void engine.runModels()
+  }
+
+  // The preview's app knobs (M10.20, ?mock=1): in memory, to try the Advanced tab; the app itself does not follow them here.
+  const knobValues: Record<string, number> = {}
+  const memoryKnobs: AppKnobsBridge = {
+    list: async () => Object.entries(APP_KNOBS).map(([id, k]) => ({ id: id as AppKnobView['id'], ...k, value: knobValues[id] ?? k.default, set: knobValues[id] !== undefined })),
+    set: async (id, value) => {
+      const k = APP_KNOBS[id as AppKnobView['id']]
+      if (!k) return { value: 0 }
+      if (value === null) delete knobValues[id]
+      else knobValues[id] = Math.min(k.max, Math.max(k.min, value))
+      const kept = knobValues[id] ?? k.default
+      return { value: kept, ...(value !== null && kept !== value ? { adjusted: `${value} is outside ${k.min} to ${k.max}, so it is ${kept}.` } : {}) }
+    },
   }
 
   // The preview's saves (M10.20, ?mock=1): in memory, gone with the tab.
@@ -371,7 +393,7 @@ export async function createClient(): Promise<EngineClient> {
     exportChronicle: async () => download('wisplight-chronicle.md', engine.chronicleMarkdown(), 'text/markdown'),
     // The preview has no pictures on disk: the page has the text and the map.
     exportDiscovered: async () => download(`${folder}-found-out.html`, discoveredAtlasHtml(engine, undefined, new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })), 'text/html'),
-    ...(demo ? { saves: memorySaves } : {}),
+    ...(demo ? { saves: memorySaves, knobs: memoryKnobs } : {}),
     activity: () => {
       lastInput = Date.now()
     },

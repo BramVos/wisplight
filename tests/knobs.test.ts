@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
+import { APP_KNOBS } from '../src/engine/appknobs'
 import { KNOBS } from '../src/engine/knobs'
 import { inventory, knobsMarkdown } from '../scripts/knobscan'
 
@@ -24,6 +25,6 @@ describe('M10.20: every fixed number has a place', () => {
 
   it('docs/KNOBS.md is what npm run knobs writes', () => {
     const { rows } = inventory(root, places)
-    expect(readFileSync(resolve(root, 'docs/KNOBS.md'), 'utf8')).toBe(knobsMarkdown(rows, Object.entries(KNOBS).map(([id, k]) => ({ id, ...k }))))
+    expect(readFileSync(resolve(root, 'docs/KNOBS.md'), 'utf8')).toBe(knobsMarkdown(rows, Object.entries(KNOBS).map(([id, k]) => ({ id, ...k })), Object.entries(APP_KNOBS).map(([id, k]) => ({ id, ...k }))))
   })
 })

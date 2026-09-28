@@ -1,5 +1,19 @@
 # Changelog
 
+## M10.20 deel: één laag voor knoppen, 28 september 2026
+
+- **Knoppen van een wereld.** Elke spelregel die per wereld mag verschillen is een knop: 72 in totaal, met een omschrijving in gewone taal, een eenheid, een standaard en grenzen. Voorbeelden zijn de grenzen van een gesprek, de dagen van lenen en verzoeken, het ritme van mensen, de verhalen van de wereld en de spelregels voor personage en gevecht. Een wereld zet ze in `world.yaml` onder `knobs:`, bij een tabel alleen de rijen die anders zijn. De lader keurt een onbekende knop, een verkeerde vorm en een waarde buiten de grenzen af. De standaarden zijn de oude waarden: alle tests, de simulaties en de speeltest-transcripties zijn ongewijzigd.
+- **Het tabblad Knobs in de editor.** Per knop de omschrijving, de standaard, de waarde van deze wereld en [Default]. Opslaan zet alleen wat afwijkt in `world.yaml`.
+- **Knoppen van de app.** Onder Instellingen, Advanced: automatisch opslaan, opslaan na een lange tijdsprong, de pauze na stilte, het aantal regels van het AI-logboek, het aandeel van het uurbudget voor gesprekken, en hoe lang de editor, een persoon en de kroniekverteller op het model mogen wachten. Een waarde buiten de grenzen wordt teruggezet, en het scherm zegt dat. Ze staan in `knobs.json` en worden per sleutel geschreven.
+- **Deepwell** houdt vijf dagen voorraad aan in plaats van drie, en een test laat zien dat het spel dat volgt. De smoketest zet één knop van de app anders.
+- **Gevonden bij het nalopen:** het scherm voor een nieuw personage liep vast op de nieuwe knoppen. Het krijgt nu de knoppen van de wereld mee, zodat een eigen startgrens daar ook telt.
+
+Testen: open de editor, tabblad Knobs, zet bijvoorbeeld `talk.max_turns` op 30 en sla op; kijk in Instellingen > Advanced. Tests in `tests/m1020knobs.test.ts` (7) en `tests/knobs.test.ts` (2), alle 836 groen, drie simulaties, speeltests, build en smoketests.
+
+Wat de editor en de kroniekverteller leerden: het veld `knobs` in `world.yaml`, met het tabblad Knobs. Het contract noemt het, en de lijst staat in `docs/KNOBS.md`. `knobsSummary()` geeft de knoppen kort voor de prompt; die gaat er pas in als een antwoord om een spelregel vraagt.
+
+Nog niet: de vorm van het jaar is geen knop. Daarvoor moet de kalender zelf anders; het staat als open punt in de roadmap en wacht op jouw besluit.
+
 ## M10.20 deel: The Quiet Reach in de app gebouwd, en wat de wereldbouw daarvan leerde, 28 september 2026
 
 - **The Quiet Reach staat erin.** Je twaalf hoofdstukken zijn stap voor stap in de editor van de app ingevoerd, met jouw instellingen (Opus 5.5 als kroniekverteller), zonder je tekst te veranderen en zonder Enhance. Alle twaalf stappen zijn geaccepteerd; de wereld laadt, speelt en haalt zijn contract. Wat het model weg liet, zelf koos of vroeg, en wat je nog moet bekijken, staat per stap in `docs/worldbuild/quiet-reach-report.md`. Kosten: $10,25 in 28 aanroepen, waarvan ongeveer de helft op pogingen die op een fout van de app strandden.

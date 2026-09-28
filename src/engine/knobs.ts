@@ -108,7 +108,8 @@ export type KnobValue<K extends KnobId> = Def<K> extends { default: infer D } ? 
  */
 export function knob<K extends KnobId>(world: { content: { world: Pick<WorldDef, 'knobs'> } }, id: K): KnobValue<K> {
   const def = KNOBS[id] as KnobDef
-  const own = world.content.world.knobs?.[id]
+  // A part of a world without its frame (the character screen's) plays by the defaults.
+  const own = world.content.world?.knobs?.[id]
   if (typeof def.default === 'number') return (typeof own === 'number' ? own : def.default) as unknown as KnobValue<K>
   return { ...def.default, ...(own && typeof own === 'object' ? own : {}) } as unknown as KnobValue<K>
 }

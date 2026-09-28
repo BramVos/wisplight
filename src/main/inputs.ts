@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { ENTITY_KINDS } from '../engine'
+import { APP_KNOBS, ENTITY_KINDS, type AppKnobId } from '../engine'
 
 // What the window may send the main process, per channel (M10.19; the
 // Electron security checklist). Every argument is checked here before a
@@ -33,6 +33,9 @@ export const INPUTS: Record<string, z.ZodType<unknown[]>> = {
   'engine:export-log': z.tuple([scope.optional()]),
   'engine:export-chronicle': z.tuple([]),
   'engine:export-discovered': z.tuple([]),
+  // The knobs of the app (M10.20): a known id, a number or null for the default.
+  'app:knobs': z.tuple([]),
+  'app:set-knob': z.tuple([z.enum(Object.keys(APP_KNOBS) as [AppKnobId, ...AppKnobId[]]), z.number().finite().nullable()]),
   // The saves (M10.20).
   'engine:saves': z.tuple([]),
   'engine:continue': z.tuple([z.union([world, z.literal('')]).optional()]),

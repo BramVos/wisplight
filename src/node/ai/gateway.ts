@@ -46,6 +46,8 @@ export interface GatewayOptions {
   replyWithinMs?: () => number
   /** The budgets of world builds (M10.20): the editor's steps count there, not in the hourly budget of the game. */
   builds?: BuildStore
+  /** The app's knobs (M10.20): time limits per role, the editor's own, and the share of the hour kept for conversations. */
+  knobs?: () => { timeoutMs?: Partial<Record<LlmRole, number>>; editorTimeoutMs?: number; conversationShare?: number }
 }
 
 /** The roles shown as lights (M10.4): the editor's drafts are the builder's. */
@@ -139,8 +141,9 @@ export class Gateway implements LlmClient {
     // A light task (M10.20) goes to the model the player chose for the brain, when there is one.
     const choice = override ?? (request.tier === 'light' ? this.options.role('brain') : undefined) ?? this.options.role(request.role)
     if (!choice) throw new LlmError('config', `no model chosen for ${request.role}`)
-    const roleTimeoutMs = this.options.timeoutMs?.[request.role] ?? TIMEOUT_MS[request.role]
-    const timeoutMs = EDITOR_SCHEMAS.has(request.schemaName) && request.timeoutMs ? Math.min(request.timeoutMs, EDITOR_TIMEOUT_MS) : Math.min(request.timeoutMs ?? Infinity, roleTimeoutMs)
+    const knobs = this.options.knobs?.()
+    const roleTimeoutMs = this.options.timeoutMs?.[request.role] ?? knobs?.timeoutMs?.[request.role] ?? TIMEOUT_MS[request.role]
+    const timeoutMs = EDITOR_SCHEMAS.has(request.schemaName) && request.timeoutMs ? Math.min(request.timeoutMs, knobs?.editorTimeoutMs ?? EDITOR_TIMEOUT_MS) : Math.min(request.timeoutMs ?? Infinity, roleTimeoutMs)
     if (timeoutMs <= 0) throw new LlmError('timeout', 'no time left for this reply')
     const provider = this.options.provider(choice.provider)
     if (!provider) throw new LlmError('config', `no API key for ${choice.provider}`)
@@ -174,7 +177,7 @@ export class Gateway implements LlmClient {
         const minutes = wait === undefined ? undefined : Math.max(1, Math.ceil(wait / 60000))
         throw new LlmError('budget', minutes === undefined ? `the hourly budget is used up: this call may cost up to $${(bound ?? 0).toFixed(2)}, more than the $${budget.toFixed(2)} an hour allows` : `the hourly budget is used up; there is room again in about ${minutes} minute${minutes === 1 ? '' : 's'}`)
       }
-      if (request.priority === 'low' && spent + (bound ?? 0) >= LOW_PRIORITY_SHARE * budget) throw new LlmError('budget', 'the hourly budget is kept for conversations')
+      if (request.priority === 'low' && spent + (bound ?? 0) >= this.conversationShare() * budget) throw new LlmError('budget', 'the hourly budget is kept for conversations')
       if (this.options.usage.monthBudgetSpent()) throw new LlmError('budget', 'the month budget is used up')
       if (bound === undefined && this.costs.unpricedLastHour() + this.costs.pending() >= UNPRICED_CALLS_PER_HOUR) throw new LlmError('budget', `the price of ${choice.model} is not known: at most ${UNPRICED_CALLS_PER_HOUR} calls an hour`)
       reservation = this.costs.reserve(bound ?? 0)
@@ -266,7 +269,7 @@ export class Gateway implements LlmClient {
     if (!trial) {
       const spent = this.costs.spentLastHour() + this.costs.reservedUsd()
       // A batch the player asked for has a cap of its own; in play, pictures leave room for conversations.
-      if (!options.batch && spent >= LOW_PRIORITY_SHARE * this.options.budgetUsdPerHour()) throw new LlmError('budget', 'the hourly budget is kept for conversations')
+      if (!options.batch && spent >= this.conversationShare() * this.options.budgetUsdPerHour()) throw new LlmError('budget', 'the hourly budget is kept for conversations')
       if (this.options.usage.monthBudgetSpent()) throw new LlmError('budget', 'the month budget is used up')
     }
     const controller = new AbortController()
@@ -291,6 +294,11 @@ export class Gateway implements LlmClient {
       clearTimeout(timer)
       if (!trial) this.end('illustrator', { at: this.now(), ms: this.now() - started, ...outcome })
     }
+  }
+
+  /** The share of the hour kept for conversations (M10.20: the player's app knob). */
+  private conversationShare(): number {
+    return this.options.knobs?.()?.conversationShare ?? LOW_PRIORITY_SHARE
   }
 
   /** How long a spoken reply may take over its tries (M10.8): the engine asks before each reply. */

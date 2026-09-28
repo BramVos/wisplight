@@ -56,3 +56,51 @@ describe('M10.20: the knobs of a world', () => {
     expect(knobsSummary()).toMatch(/^KNOBS \(world\.yaml `knobs:`[\s\S]*\n- talk\.max_turns \(turns; 20; 3 to 100\): A talk ends after this many turns/)
   })
 })
+
+describe('M10.20: the knobs of the app', () => {
+  it('a knob is the default until set; set outside its bounds it is moved in and says so; back to the default with undefined', async () => {
+    const { mkdtempSync, readFileSync: read } = await import('node:fs')
+    const { tmpdir } = await import('node:os')
+    const { AppKnobs } = await import('../src/node/knobs')
+    const path = join(mkdtempSync(join(tmpdir(), 'wisplight-knobs-')), 'knobs.json')
+    const knobs = new AppKnobs(path)
+    expect(knobs.get('autosave_every_minutes')).toBe(10)
+    expect(knobs.set('autosave_every_minutes', 5)).toEqual({ value: 5 })
+    expect(knobs.set('idle_pause_seconds', 5)).toEqual({ value: 10, adjusted: 'The clock stops after this long without a key pressed: 5 is outside 10 to 3600, so it is 10.' })
+    expect(JSON.parse(read(path, 'utf8'))).toEqual({ autosave_every_minutes: 5, idle_pause_seconds: 10 })
+    // A second window of the app, with an old picture in memory, writes only the key it changes.
+    const other = new AppKnobs(path)
+    knobs.set('ai_log_keep', 500)
+    other.set('conversation_share', 0.5)
+    expect(JSON.parse(read(path, 'utf8'))).toEqual({ autosave_every_minutes: 5, idle_pause_seconds: 10, ai_log_keep: 500, conversation_share: 0.5 })
+    knobs.set('autosave_every_minutes', undefined)
+    expect(new AppKnobs(path).list().find((k) => k.id === 'autosave_every_minutes')).toMatchObject({ value: 10, set: false })
+  })
+
+  it('the AI log keeps as many calls as the knob says', async () => {
+    const { AiLog } = await import('../src/node/ai/log')
+    let keep = 60
+    const log = new AiLog(undefined, () => keep)
+    const entry = { time: '', role: 'voice', provider: 'mock', model: 'm', ok: true, latencyMs: 1, inputTokens: 1, outputTokens: 1, cachedTokens: 0, prompt: '', response: '' }
+    for (let i = 0; i < 80; i++) log.add(entry)
+    expect(log.recent(1000)).toHaveLength(60)
+    keep = 50
+    log.add(entry)
+    expect(log.recent(1000)).toHaveLength(50)
+  })
+})
+
+describe('M10.20: the knobs on the character screen', () => {
+  it('the screen gets the world\'s knobs, and a start cap of its own counts there', async () => {
+    const { contentFor, suggestChoice } = await import('../src/engine/rules/character')
+    const own = { ...content, world: { ...content.world, knobs: { 'rules.start_cap': 3 } } }
+    const data = new Engine(own, { seed: 1 }).creationData()!
+    expect(data.knobs).toEqual({ 'rules.start_cap': 3 })
+    const screen = contentFor(data)
+    expect(knob({ content: screen }, 'rules.start_cap')).toBe(3)
+    // Without knobs the screen plays by the defaults, and never falls over.
+    const plain = contentFor({ rules: data.rules, items: data.items })
+    expect(knob({ content: plain }, 'rules.free_boosts')).toBe(3)
+    expect(() => suggestChoice(plain, data.rules.classes[0]!.id, '')).not.toThrow()
+  })
+})

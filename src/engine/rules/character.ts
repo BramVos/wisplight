@@ -234,11 +234,13 @@ export function creationCommand(choice: CreationChoice): string {
 export interface CreationData {
   rules: Rules
   items: Record<string, Item>
+  /** The world's knobs (M10.20): its own start cap and free boosts count on the character screen too. */
+  knobs?: Record<string, number | Record<string, number>>
 }
 
 /** A content object with just enough in it for the character functions, from creation data. */
 export function contentFor(data: CreationData): Content {
-  return { rules: data.rules, items: new Map(Object.entries(data.items)) } as unknown as Content
+  return { rules: data.rules, items: new Map(Object.entries(data.items)), world: { knobs: data.knobs ?? {} } } as unknown as Content
 }
 
 // ---------------------------------------------------------------- gear

@@ -36,14 +36,19 @@ const KEEP = 200
 export class AiLog {
   private readonly entries: AiLogEntry[] = []
 
-  constructor(private readonly path?: string) {
+  constructor(
+    private readonly path?: string,
+    /** How many calls are kept (M10.20: the player's app knob). */
+    private readonly keep: () => number = () => KEEP,
+  ) {
     if (path) mkdirSync(dirname(path), { recursive: true })
   }
 
   add(entry: AiLogEntry): void {
     const trimmed = { ...entry, prompt: entry.prompt.slice(0, 4000), response: entry.response.slice(0, 2000) }
     this.entries.push(trimmed)
-    if (this.entries.length > KEEP) this.entries.splice(0, this.entries.length - KEEP)
+    const keep = this.keep()
+    if (this.entries.length > keep) this.entries.splice(0, this.entries.length - keep)
     if (this.path) appendFileSync(this.path, `${JSON.stringify(trimmed)}\n`, { mode: 0o600 })
   }
 

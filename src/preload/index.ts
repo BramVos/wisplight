@@ -30,6 +30,11 @@ contextBridge.exposeInMainWorld('wisplight', {
   exportLog: use('engine:export-log'),
   exportChronicle: use('engine:export-chronicle'),
   exportDiscovered: use('engine:export-discovered'),
+  // The knobs of the app (M10.20): Settings, Advanced.
+  knobs: {
+    list: use('app:knobs'),
+    set: use('app:set-knob'),
+  },
   // The saves (M10.20): continue a world, load one, name one, and a save as a file.
   saves: {
     list: use('engine:saves'),

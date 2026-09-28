@@ -5,7 +5,8 @@
     "usage": "Usage",
     "log": "AI log",
     "display": "Display",
-    "transcript": "Transcript"
+    "transcript": "Transcript",
+    "advanced": "Advanced"
   },
   "close": "Close",
   "desktopOnly": "AI settings work in the desktop app. In the browser preview, open the page with ?mock=1 to try them with made-up data.",
@@ -233,5 +234,12 @@
     "folder": "Folder:",
     "choose": "Choose a folder",
     "how": "Everything you see goes into a Markdown file: what you type, speech as quotes, the game's own lines in italics, a heading for each game day and each place. One file per game and per day, only ever added to; a large one goes on in a second file."
+  },
+  "advanced": {
+    "about": "How the app itself behaves: saving, pausing, the AI log and how long a model may take. The rules of a world are its own knobs, in the editor.",
+    "range": "{unit}, {min} to {max}; default {fallback}",
+    "save": "Save",
+    "default": "Default",
+    "desktopOnly": "These work in the desktop app."
   }
 }
