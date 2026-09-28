@@ -32,6 +32,7 @@ import { realmsDay } from './social/realms'
 import { watchHour } from './signals'
 import { forgetWeek, longApart, metAgain } from './forgetting'
 import { chatterNearPlayer } from './chatter'
+import { meetSketches } from './growth/sketched'
 
 // The world clock. Every game minute, NPCs that are free decide and act;
 // every game hour, needs decay and the economy moves (supply and demand).
@@ -49,6 +50,8 @@ export function advance(world: World, minutes: number): void {
     if (minuteOfDay(world.now) % 10 === 0) agreementsTick(world)
     // Who doubted what was said of a place and stands there, sees it (M10.6).
     seeForYourself(world)
+    // Someone named in a talk who lives where the stranger now is, is there (M10.9).
+    meetSketches(world)
     if (minuteOfDay(world.now) % 15 === 0) {
       spreadNews(world)
       noticeCoincidences(world)

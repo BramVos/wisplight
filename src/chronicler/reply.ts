@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import type { Keys } from './prompt'
 import { lookupId, parseLookup } from './lookup'
-import { PHASES, type CardKind, type ChronicleInput, type ChronicleOutput, type Limits, type LineOp, type LoreOp, type NewsOp, type Phase, type PlanEffectOp, type PlanOp, type QuestOp, type StepOp, type ThoughtOp } from './types'
+import { PHASES, type CardKind, type ChronicleInput, type ChronicleOutput, type Limits, type LineOp, type LoreOp, type NamedOp, type NewsOp, type Phase, type PlanEffectOp, type PlanOp, type QuestOp, type StepOp, type ThoughtOp } from './types'
 
 // Reading the reply: the shape must match, every key must be one of this
 // overview, and texts must stay within their length. A part that fails is
@@ -46,6 +46,7 @@ const ReplySchema = z.object({
   thoughts: z.array(z.object({ who: z.string(), text: z.string() })).default([]),
   news: z.array(z.object({ area: z.string(), text: z.string() })).default([]),
   tensions: z.array(z.object({ between: z.array(z.string()), delta: z.number(), why: z.string() })).default([]),
+  named: z.array(z.object({ who: z.string(), how: z.string(), text: z.string() })).default([]),
   plans: z
     .array(
       z.object({
@@ -205,6 +206,15 @@ export function readReply(text: string, keys: Keys, input: ChronicleInput, limit
     if (!area || !said) problems.push(`news: unknown area ${item.area} or no text`)
     else if (!output.news.some((n) => n.area === area)) output.news.push({ area, text: said } satisfies NewsOp)
   }
+
+  // Someone spoken of in a talk (M10.9): one at most, only who was given as NAMED, by a letter or a visit.
+  for (const n of reply.named) {
+    const who = as(n.who, 'named')
+    const said = within(n.text, limits.textWords)
+    if (!who || !said || (n.how !== 'letter' && n.how !== 'visit')) problems.push(`named: unknown ${n.who}, no text, or not a letter or a visit`)
+    else if (!output.named?.length) (output.named ??= []).push({ who, how: n.how, text: said } satisfies NamedOp)
+  }
+  if (reply.named.length > 1) problems.push('named: one per run')
 
   // Realms: one small shift at most, only when realms were given.
   for (const t of reply.tensions.slice(0, 1)) {

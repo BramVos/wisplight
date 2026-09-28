@@ -41,7 +41,10 @@ describe('engine', () => {
   it('starts on the quay with the intro', () => {
     const outputs = newEngine().start()
     expect(outputs[0]?.text).toContain('The barge from Graafhaven')
-    expect(outputs[1]?.text).toContain('Canal Quay')
+    // Then why you are here (M10.9), and whom you were told to ask for, before the place itself.
+    expect(outputs[1]?.text).toMatch(/^You ran goods past the Count's tolls/)
+    expect(outputs[2]?.text).toMatch(/You were told to ask for Trijntje/)
+    expect(outputs[3]?.text).toContain('Canal Quay')
     expect(outputs.at(-1)?.text).toContain('TEMPO CALM')
   })
 

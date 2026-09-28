@@ -7,3 +7,6 @@
   the Haakman. Use no other name for him.
 - Money is guilders, stuivers and duiten; faith is the Church of the Lantern
   and the Old Powers. People measure distance in hours' walk and time by bells.
+- NAMED people are the kin, old masters, friends, trading partners or debtors
+  of whoever spoke of them, in the Holleveen or the towns beyond it. Bring one
+  in only by a letter or a visit.

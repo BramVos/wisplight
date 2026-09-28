@@ -5,7 +5,7 @@
 /** Ids are the caller's own. The chronicler shows the model short keys instead and maps them back. */
 export type Id = string
 
-export type CardKind = 'person' | 'place' | 'area' | 'lore' | 'request' | 'item' | 'realm' | 'signal' | 'event' | 'chance'
+export type CardKind = 'person' | 'place' | 'area' | 'lore' | 'request' | 'item' | 'realm' | 'signal' | 'event' | 'chance' | 'named'
 
 /** Where a storyline stands, as the chronicler sees it: the caller can pace the world by it. */
 export type Phase = 'setup' | 'rising' | 'crisis' | 'resolution' | 'closed'
@@ -159,6 +159,8 @@ export interface ChronicleInput {
   chances?: Card[]
   /** Templates of new objects a step place_prop may use (M10.5). */
   props?: { id: Id; text: string }[]
+  /** People spoken of in talks who are not in the world yet (M10.9): a storyline may bring one, by a letter or a visit. */
+  named?: Card[]
 }
 
 // ---------------------------------------------------------------- what comes back, in the caller's ids
@@ -228,6 +230,13 @@ export interface NewsOp {
   text: string
 }
 
+/** Someone spoken of in a talk comes into a storyline (M10.9): a letter to the one who spoke of them, or a visit. */
+export interface NamedOp {
+  who: Id
+  how: 'letter' | 'visit'
+  text: string
+}
+
 /** A small shift in how two realms stand, with its reason: bounded by the chronicler and again by the caller. */
 export interface TensionOp {
   between: [Id, Id]
@@ -272,6 +281,7 @@ export interface ChronicleOutput {
   news: NewsOp[]
   tensions?: TensionOp[]
   plans?: PlanOp[]
+  named?: NamedOp[]
 }
 
 // ---------------------------------------------------------------- the model

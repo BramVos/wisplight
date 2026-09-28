@@ -19,6 +19,8 @@ import { withoutReference } from './quests/reference'
 import { tradeLine } from './economy/ledger'
 import { chancesIn, motorProp, playerCard } from './props'
 import type { World } from './world'
+import { sketchById, sketches, sketchPhrase } from './sketches'
+import { developSketch } from './growth/sketched'
 
 // The game's side of the chronicler (design: lore and world change). The
 // chronicler itself (src/chronicler) knows nothing of the game: this file
@@ -179,6 +181,9 @@ export function buildInput(world: World, run: ChronicleRun): ChronicleInput {
   const chances = [...own, ...chancesIn(world, [world.location(world.state.player.location).area]).filter((c) => !own.some((o) => o.id === c.id))].slice(0, 6)
   if (chances.length) input.chances = chances.map((c) => ({ id: c.id, kind: 'chance' as const, name: c.kind, text: `${c.text} (${c.skill})` }))
   if (world.content.props.size) input.props = [...world.content.props.values()].map((p) => ({ id: p.id, text: `a ${world.content.objectTypes.get(p.type)?.name ?? p.type} in the home of its owner${p.items.length ? `; it may hold ${p.items.map((i) => itemName(world.content, i, 1)).join(', ')}` : ''}${p.money ? ', and some of their money' : ''}` }))
+  // People spoken of in talks (M10.9), of the cast or the places of the storyline: one may come by a letter or a visit.
+  const named = sketches(world).filter((sk) => !sk.npc && (cast.has(sk.of) || areas.includes(sk.place.replace(/^area_/, '')))).slice(0, 4)
+  if (named.length) input.named = named.map((sk) => ({ id: sk.id, kind: 'named' as const, name: sk.name, text: `${sketchPhrase(world, sk)}. "${sk.line}"` }))
   const chancePeople = chances.map((c) => c.who).filter((w): w is string => Boolean(w))
   extraCards(world, input, [...planning.people, ...chancePeople], [...planning.places, ...chances.map((c) => c.place)], (id) => personCard(world, id, new Set([...cast, ...planning.people])), (id) => placeCard(world, id))
   return input
@@ -322,6 +327,7 @@ function vocabulary(world: World): Set<string> {
     MONTHS,
     WEEKDAYS,
     (world.state.lore?.far ?? []).map((f) => f.name),
+    (world.state.lore?.people ?? []).map((p) => p.name),
     (world.state.chronicle?.lore ?? []).map((l) => l.name),
   )
 }
@@ -480,6 +486,19 @@ export function applyOutput(world: World, run: ChronicleRun, output: ChronicleOu
     if (!world.alive(op.who) || !input.cards.some((c) => c.id === op.who) || !fits('thought', op.text)) continue
     const npc = world.npcState(op.who)
     npc.thoughts = [...(npc.thoughts ?? []).filter((t) => t.until > world.now), { text: op.text, t: world.now, until: world.now + 7 * 24 * 60 }].slice(-3)
+  }
+
+  // Someone spoken of in a talk comes into the story (M10.9): a letter to the one who spoke of them, or a visit.
+  for (const op of (out.named ?? []).slice(0, 1)) {
+    const sk = sketchById(world, op.who)
+    if (!sk || sk.npc || !input.named?.some((c) => c.id === op.who) || !world.alive(sk.of) || !fits(`named ${sk.name}`, op.text)) continue
+    const speaker = world.npcState(sk.of)
+    const mind = (text: string) => (speaker.thoughts = [...(speaker.thoughts ?? []).filter((t) => t.until > world.now), { text, t: world.now, until: world.now + 7 * 24 * 60 }].slice(-3))
+    if (op.how === 'letter') {
+      ;(sk.letters ??= []).push({ t: world.now, text: op.text })
+      mind(`A letter came from your ${sk.bond} ${sk.name}: ${op.text}`)
+    } else if (developSketch(world, sk, 'visit')) mind(`Your ${sk.bond} ${sk.name} has come to stay: ${op.text}`)
+    else problems.push(`named ${sk.name}: could not come`)
   }
 
   for (const op of out.news) {

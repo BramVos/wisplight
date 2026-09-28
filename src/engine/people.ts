@@ -2,6 +2,7 @@ import { callName, type RelationRole } from './content'
 import { factById } from './news'
 import type { Fact } from './state'
 import type { World } from './world'
+import { sketchTies } from './sketches'
 
 // Who people are to each other (FO, chapter 8, "De relatie"): family, love,
 // work, debt and old grudges come from the content, written once and the other
@@ -25,7 +26,7 @@ export interface Tie {
   note?: string
 }
 
-const INVERSE: Record<RelationRole, RelationRole> = {
+export const INVERSE: Record<RelationRole, RelationRole> = {
   parent: 'child',
   child: 'parent',
   spouse: 'spouse',
@@ -48,7 +49,7 @@ const INVERSE: Record<RelationRole, RelationRole> = {
   acquaintance: 'acquaintance',
 }
 
-const KIND: Record<RelationRole, TieKind> = {
+export const KIND: Record<RelationRole, TieKind> = {
   parent: 'family',
   child: 'family',
   spouse: 'family',
@@ -134,6 +135,8 @@ function buildTies(world: World, npcId: string): Tie[] {
     const pronoun = other?.pronoun ?? r.pronoun ?? 'they'
     list.push({ id: r.to, name, pronoun, role: r.role, kind: KIND[r.role], bond: r.bond, status: r.status, private: r.private, note: r.note })
   }
+  // People they named to the stranger (M10.9), while they are only named.
+  for (const t of sketchTies(world, npcId)) list.push({ name: t.name, pronoun: t.pronoun, role: t.role, kind: KIND[t.role], bond: 1, status: 'alive', private: false, note: t.note })
   const own = new Set(list.map((t) => t.id).filter(Boolean))
   for (const other of [...world.content.npcs.values()].sort((a, b) => a.id.localeCompare(b.id))) {
     if (other.id === npcId || own.has(other.id)) continue

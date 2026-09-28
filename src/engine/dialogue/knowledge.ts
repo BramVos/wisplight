@@ -7,6 +7,7 @@ import type { TopicRegistry } from './topics'
 import { goneTo, usualPlace } from '../npc/brain'
 import { knowsTheDayOf } from '../people'
 import { weekdayOf } from '../clock'
+import { sketchById, sketchFacts } from '../sketches'
 
 // What an NPC knows about a topic, and therefore what the model may say
 // (FO, chapter 5): certain knowledge of the own village and the places the NPC
@@ -67,6 +68,7 @@ export class Knowledge {
     const entry = this.topics.entries.get(topicId)
     if (!entry) return 0
     if (topicId.startsWith('far_')) return this.far(topicId)?.known_by.includes(npcId) ? 2 : 0
+    if (topicId.startsWith('sketch_')) return sketchById(this.world, topicId)?.known_by.includes(npcId) ? 2 : 0
     if (topicId.startsWith('fact_')) return this.world.state.news?.heard[npcId]?.[topicId]?.level ?? 0
     if (topicId.startsWith('chr_')) return this.chronicled(npcId, topicId)
     if (topicId.startsWith('news_')) return this.ownAreas(npcId).has(topicId.slice(5)) && this.news(topicId) ? 2 : 0
@@ -374,6 +376,8 @@ export class Knowledge {
       const heard = this.world.state.news?.heard[npcId]?.[topicId]
       return heard ? [`${versionOf(fact, heard)} ${this.source(heard)}`] : [fact.text.far]
     }
+    const sketch = topicId.startsWith('sketch_') ? sketchById(this.world, topicId) : undefined
+    if (sketch) return sketchFacts(this.world, sketch, npcId)
     const far = this.far(topicId)
     if (far) return [`${far.name} is a ${far.kind} far away, beyond ${this.world.words.land}.`, `What was said of it: "${far.line}"`]
     const topic = this.world.content.topics.get(topicId)

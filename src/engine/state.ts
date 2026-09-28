@@ -380,6 +380,8 @@ export interface TalkState {
   quests?: string[]
   /** Every line of this talk as the stranger saw it (M10.8): the talk window reads these. */
   lines?: TalkLine[]
+  /** Whether the speaker named someone new in this talk (M10.9): once a talk. */
+  sketched?: boolean
 }
 
 /** A line of a conversation as the engine keeps it (M10.8): what was typed, and what came back. */
@@ -458,6 +460,8 @@ export interface Prop {
 }
 
 export interface PlayerState {
+  /** Whom the stranger was told to ask for when they came (M10.9), by their background. */
+  contact?: string
   /** Crafts the stranger works at (M10.5), by craft. */
   crafts?: Record<string, CraftProgress>
   /** Hidden things found, `location/id`, and inscriptions read, `location/object` (M10.5). */
@@ -581,6 +585,35 @@ export interface Heard {
   weighed?: string[]
 }
 
+/**
+ * Someone a speaker named in a talk who is not in the content (M10.9): a
+ * sketch in this game's lore, with a bond to the speaker and a place that
+ * exists, until the stranger comes there and they become a person.
+ */
+export interface SketchFigure {
+  id: string
+  /** A first name only. */
+  name: string
+  pronoun: 'she' | 'he' | 'they'
+  /** What they are to the speaker, in the world's words: "cousin", "old master". */
+  bond: string
+  /** The speaker. */
+  of: string
+  /** Where they live: an area's topic (area_waagdam), a far place's topic, or a far name of this game. */
+  place: string
+  placeName: string
+  /** What they are, in a few words: "a bargeman". */
+  what: string
+  /** The sentence they were first named in. */
+  line: string
+  t: number
+  known_by: string[]
+  /** The person they became (M10.9): when the stranger came to their place, or a storyline brought them. */
+  npc?: string
+  /** A letter from them the chronicler had come (M10.9). */
+  letters?: { t: number; text: string }[]
+}
+
 /** A far-away place a model named in conversation, fixed in the savegame (design: lore and world change). */
 export interface FarName {
   id: string
@@ -620,7 +653,7 @@ export interface GameState {
   relations?: Record<string, RelationState>
   talk?: TalkState
   /** The lore layer of this game, on top of the base lore from the content. */
-  lore?: { far: FarName[] }
+  lore?: { far: FarName[]; people?: SketchFigure[] }
   /** Story patterns in play, and the pacing (design: lore and world change). */
   stories?: StoriesState
   /** Facts and who heard them; "player" is the player. */

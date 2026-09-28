@@ -7,6 +7,7 @@ import { newNpcState, type GameState } from '../state'
 import { outlineOf } from '../outlines'
 import type { World } from '../world'
 import { growth } from './growth'
+import { sketchById, sketchNpc, sketchPhrase, sketchProfession } from '../sketches'
 
 // A far place made playable (M9.1; design: lore and world change, "De wereld
 // buiten de kaart", level 3). When the player sets off for a far place that
@@ -33,6 +34,8 @@ export interface FarPlace {
   outland?: string
   /** The way in from the region: an exit from a place at its edge, and back. */
   link: { from: string; direction: Direction; minutes: number }
+  /** People named in talks who live here (M10.9), and the person each became. */
+  sketches?: Record<string, string>
 }
 
 /** What the chronicler writes for it: names and words, never the shape. */
@@ -234,6 +237,11 @@ export function makeFarPlace(world: World, topic: string, words: FarWords | null
   const trader = world.content.professions.has('merchant') ? 'merchant' : 'pedlar'
   const merchant = person('merchant', trader, ids.inn, ids.market)
   const keeper = person('innkeeper', world.content.professions.has('innkeeper') ? 'innkeeper' : trader, ids.inn, ids.inn)
+  // People named in talks who live here (M10.9), two at most: now they are people, with the bond the talk gave.
+  const named = namedAt(world, topic)
+  const sketched = named.map((sk) =>
+    sketchNpc(world, sk, { id: freeId(world, `npc_${sk.name}_${slug}`.toLowerCase().replace(/[^a-z0-9_]/g, ''), taken), home: ids.inn, work: ids.market, area: areaId, profession: sketchProfession(world, sk, trader) }, words?.people.find((p) => p.key === sk.id)),
+  )
   locations[1]!.services![0]!.provider = merchant.id
   locations[2]!.services![0]!.provider = keeper.id
   const settlement = outland
@@ -253,7 +261,8 @@ export function makeFarPlace(world: World, topic: string, words: FarWords | null
     t: world.now,
     area: { id: areaId, name, kind: 'town', aliases: t.aliases, summary: outline?.summary ?? t.summary, fame: t.fame, pos: t.pos, topic },
     locations,
-    npcs: [merchant, keeper],
+    npcs: [merchant, keeper, ...sketched],
+    ...(named.length ? { sketches: Object.fromEntries(named.map((sk, i) => [sk.id, String(sketched[i]!['id'])])) } : {}),
     ...(settlement ? { settlement } : {}),
     ...(outland ? { outland: outland.id } : {}),
     link: { from: edge.from, direction: edge.direction, minutes: days * DAY },
@@ -286,6 +295,10 @@ export function applyFarPlace(world: World, topic: string, words: FarWords | nul
       const n = world.content.npcs.get(String(raw['id']))!
       world.state.npcs[n.id] ??= { ...newNpcState(n, world.now), location: n.work ?? n.home }
     }
+    for (const [sketch, npc] of Object.entries(made.sketches ?? {})) {
+      const named = sketchById(world, sketch)
+      if (named) named.npc = npc
+    }
     recordFact(world, {
       kind: 'far_place',
       about: [topic],
@@ -297,6 +310,11 @@ export function applyFarPlace(world: World, topic: string, words: FarWords | nul
     return made
   }
   return undefined
+}
+
+/** People named in talks who live at a far place and are no people yet (M10.9): two at most, oldest first. */
+function namedAt(world: World, topic: string) {
+  return (world.state.lore?.people ?? []).filter((sk) => !sk.npc && sk.place === topic).slice(0, 2)
 }
 
 /** A far place the player sets off for: made playable now without a model, or waiting for the chronicler. */
@@ -315,6 +333,7 @@ export function farRequest(world: World, topic: string): LlmRequest {
   const t = world.content.topics.get(topic)!
   const outline = outlineOf(world, topic)
   const taken = [...new Set([...world.content.npcs.values()].map((n) => n.name))].sort()
+  const sketches = namedAt(world, topic)
   const text = { type: 'string' }
   const object = (properties: Record<string, unknown>) => ({ type: 'object', additionalProperties: false, required: Object.keys(properties), properties })
   return {
@@ -327,14 +346,21 @@ export function farRequest(world: World, topic: string): LlmRequest {
       'People: merchant (sells at the market), innkeeper. A full name that fits the place, she or he, what people see first (one sentence), how they speak (a few words), one thing anyone may know of them.',
       'Never contradict what is KNOWN. Never use a TAKEN name. JSON only.',
     ].join('\n'),
-    prompt: [`PLACE: ${t.name}. ${t.summary}`, 'KNOWN:', ...(outline ? [outline.summary, ...outline.places.map((p) => `${p.name}: ${p.text}`), ...outline.people.map((p) => `${p.role}: ${p.text}`)] : []), `TAKEN: ${taken.join(', ')}`].join('\n'),
+    prompt: [
+      `PLACE: ${t.name}. ${t.summary}`,
+      'KNOWN:',
+      ...(outline ? [outline.summary, ...outline.places.map((p) => `${p.name}: ${p.text}`), ...outline.people.map((p) => `${p.role}: ${p.text}`)] : []),
+      // People named in talks who live here (M10.9): the chronicler makes them people too, as they were spoken of.
+      ...(sketches.length ? ['NAMED (people spoken of in talks who live here; a person each too, key the id, the same first name and a family name, as they were spoken of):', ...sketches.map((sk) => `  ${sk.id}: ${sk.name}, ${sketchPhrase(world, sk)}. "${sk.line}"`)] : []),
+      `TAKEN: ${taken.join(', ')}`,
+    ].join('\n'),
     schemaName: 'far_place',
     schema: object({
       places: { type: 'array', items: object({ key: text, name: text, description: text }) },
       people: { type: 'array', items: object({ key: text, name: text, pronoun: text, looks: text, speech: text, fact: text }) },
     }),
     maxTokens: 1600,
-    meta: { far: topic, name: t.name },
+    meta: { far: topic, name: t.name, ...(sketches.length ? { named: sketches.map((sk) => ({ key: sk.id, name: sk.name, pronoun: sk.pronoun })) } : {}) },
   }
 }
 

@@ -10,6 +10,22 @@ Testen: LOOK, TAKE en een werkwoord op dingen uit de beschrijving, bijvoorbeeld 
 
 Nog niet: een werkwoord op een detail geeft alleen tekst, zonder gevolg in de wereld.
 
+## M10.9 Een reden om hier te zijn, en wie er nog genoemd wordt, 28 september 2026
+
+- **Waarom je hier bent.** Elke achtergrond heeft nu een reden, een contact en iets wat je hoorde. Na de openingstekst lees je waarom je kwam ("You ran goods past the Count's tolls ...") en bij wie je terecht kunt ("You were told to ask for Trijntje the innkeeper at the Drowned Goose"). Het contact en wat je hoorde staan vanaf het begin in je dagboek, en het contact weet in een gesprek dat je naar hem of haar gestuurd bent.
+- **Nieuwe achtergronden.** De Nethermarch heeft de landmeter (Lore en Perception, door de Graaf gestuurd om de Holleveen op te meten, contact Meester Cornelis). Skerrow heeft de vluchteling, die onder een andere naam aanmonsterde op de Grey Gull, en de koopman, wiens waren op de bodem liggen; allebei met Maren als contact. De klerk en de novice van de Lantaarn komen op de geruchten over verdwijningen af.
+- **Kiezen.** In het venster staat de reden onder de gekozen achtergrond, en CREATE zonder woorden geeft per achtergrond de eerste zin.
+- **In de editor** is Backgrounds een eigen soort, met reden, contact en wat je hoorde. Een regel die in het bestand op één regel staat, opent per veld; het bestand houdt zijn eigen stijl. De ids van achtergronden staan nu in `ids.lock`, omdat een save de achtergrond noemt.
+- **Iemand die in een gesprek genoemd wordt.** Met een model mag de stem in een gesprek over de familie, het werk of het verleden van de spreker één nieuw persoon noemen: een voornaam, een band uit de lijst van de wereld (neef, oude meester, handelspartner, schuldenaar; in `world.yaml` onder `sketch`) en een plek die bestaat. De motor keurt het: de naam is nog niemand, band en plek kloppen, het gesprek gaat erover, één per gesprek en een paar per spreker. In je dagboek staat hij direct onder de spreker ("Aldert (Gerrit's cousin)"), met een eigen pagina zonder achternaam of kaartje, en Gerrit rekent hem voortaan tot zijn mensen.
+- **Van naam naar persoon.** Kom je in het dorp waar hij woont, dan is hij er: met een achternaam van de wereld, een beroep uit wat er gezegd werd en de band als relatie met de spreker. Op een verre plek maakt het spel hem mee, en schrijft de kroniekverteller zijn woorden. De kroniekverteller ziet deze mensen ook bij zijn verhaallijnen en mag er één een brief laten schrijven of laten logeren bij wie over hem sprak.
+- Skerrow heeft een lijst met namen gekregen voor mensen die het spel maakt.
+
+Testen: begin een nieuw spel en kijk na de opening in je dagboek. Kies in het venster de landmeter. Open `npm run web` met ?editor=1 en kies Backgrounds. Schetsfiguren alleen met een model: vraag Gerrit "Do you have family?", kijk in het dagboek en ga naar het dorp dat hij noemt. Tests in `tests/m109.test.ts` (14), alle 655 groen, beide simulaties zonder problemen, de speeltests beginnen nu met een reden, rooktests van beide werelden.
+
+Aangepast in bestaande tests: de openingstest verwacht de reden en het contact, en de kostengrens van M3.1 voor het vaste deel van de kroniekverteller gaat van 5000 naar 5100 tokens, voor de zin in `CHRONICLER.md` over wie genoemd mag worden.
+
+Nog niet: in de eigen streek maakt het sjabloon de persoon, zonder woorden van de kroniekverteller. Wie op bezoek komt, blijft voorlopig. Een brief staat alleen in het dagboek en in het hoofd van de spreker, niet als voorwerp. Ontwerp: FO en het ontwerp voor lore en wereldverandering zijn bijgewerkt, met die twee punten als afwijking.
+
 ## M10.8 Speeltest Veenhoek en Skerrow: fouten en interface, 28 september 2026
 
 - **Het gesprekspaneel.** Jouw zinnen staan links, die van de ander rechts, elk op een eigen zachte achtergrond; wat verder gebeurt staat over de hele breedte. Het paneel leest zijn regels uit de motor, dus elke regel staat erin, ook als het venster geen focus had. Een naam die de ander noemt en die je kunt volgen, is een link; een klik opent de dagboekpagina bovenop het paneel, en anders gaat LOOK het gesprek in, niet de hoofdinvoer. Escape sluit dan eerst het dagboek, niet het gesprek. Pijl omhoog in het paneel geeft wat je in dit gesprek zei; in de hoofdinvoer staan alleen nog commando's.

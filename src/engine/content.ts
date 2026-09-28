@@ -772,6 +772,12 @@ export const WorldSchema = z.object({
   plans: z.array(z.string()).default([]),
   /** Names for people who come during a game (M8.5). */
   names: NamesSchema.optional(),
+  /**
+   * Sketch figures (M10.9): the bonds a speaker may name someone new by, as
+   * what that someone is to them ("cousin": kin, "old master": teacher), and
+   * the domains a talk must be in for it (family, trade, the speaker's past).
+   */
+  sketch: z.object({ bonds: z.record(z.string(), z.enum(RELATION_ROLES)), domains: z.string().optional() }).strict().optional(),
   /** At most so many newcomers a season (M8.5). */
   newcomers_per_season: z.number().int().min(0).default(6),
   /** The faiths of this world (M9.1): the first is what most people hold; a faith may go with patrons of the rules. */
@@ -1016,7 +1022,7 @@ export function loadContent(files: ContentFile[]): Content {
 
   const world = worlds[0]
   if (worlds.length !== 1) problems.push(`expected exactly one world, found ${worlds.length}`)
-  problems.push(...checkReferences(world, { ...content, ...(lock ? { lock } : {}) }))
+  problems.push(...checkReferences(world, { ...content, ...(rules ? { rules } : {}), ...(lock ? { lock } : {}) }))
   problems.push(...checkQuests({ ...content, ...(rules ? { rules } : {}) }))
   if (rules) problems.push(...checkRules(rules, content))
   // What a trade teaches is a skill of the rules (M10.3).
@@ -1088,6 +1094,9 @@ function checkRules(rules: Rules, c: Omit<Content, 'world'>): string[] {
     if (!rules.general_talents.some((t) => t.id === b.talent)) problems.push(`rules background ${b.id}: unknown general talent ${b.talent}`)
     for (const who of b.knows) if (!c.npcs.has(who)) problems.push(`rules background ${b.id}: unknown NPC ${who}`)
     for (const topic of b.topics) if (!c.topics.has(topic)) problems.push(`rules background ${b.id}: unknown topic ${topic}`)
+    // Whom you were told to ask for, and what you heard (M10.9).
+    if (b.contact && !c.npcs.has(b.contact)) problems.push(`rules background ${b.id}: the contact ${b.contact} is no NPC`)
+    if (b.heard && !c.topics.has(b.heard) && !c.npcs.has(b.heard) && !c.locations.has(b.heard)) problems.push(`rules background ${b.id}: heard ${b.heard}, which is no topic, person or place`)
   }
   for (const p of rules.patrons) for (const b of p.blessings) effects(b.effects, `patron ${p.id}`)
   for (const creature of c.creatures.values()) {
@@ -1463,10 +1472,13 @@ export const KIND_MAPS = {
   project: 'projects',
   craft: 'crafts',
   prop: 'props',
+  // A list in the rules (M10.9): a save's character names its background.
+  background: 'rules',
 } as const satisfies Record<string, keyof Content>
 
 /** Whether the content has a thing of this kind. */
 export function hasThing(c: Omit<Content, 'world'>, kind: string, id: string): boolean {
+  if (kind === 'background') return Boolean(c.rules?.backgrounds.some((b) => b.id === id))
   const key = (KIND_MAPS as Record<string, keyof Content>)[kind]
   const map = key ? (c as unknown as Record<string, unknown>)[key] : undefined
   return map instanceof Map && map.has(id)

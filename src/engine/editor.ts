@@ -122,6 +122,7 @@ export const KIND_NAMES: Record<EntityKind, string> = {
   project: 'Projects',
   craft: 'Crafts',
   prop: 'Props the chronicler may place',
+  background: 'Backgrounds',
 }
 
 export function editorView(files: ContentFile[]): EditorView {

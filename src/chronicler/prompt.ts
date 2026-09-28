@@ -5,7 +5,7 @@ import type { Card, CardKind, ChronicleEvent, ChronicleInput, ChroniclerRequest,
 // catalogue, how to answer) comes first and never changes between runs, so
 // the providers cache it. People and places get short keys: p1, l1, ...
 
-const PREFIX: Record<CardKind | 'line', string> = { person: 'p', place: 'l', area: 'a', lore: 't', request: 'q', item: 'i', realm: 'r', line: 's', signal: 'g', event: 'e', chance: 'c' }
+const PREFIX: Record<CardKind | 'line', string> = { person: 'p', place: 'l', area: 'a', lore: 't', request: 'q', item: 'i', realm: 'r', line: 's', signal: 'g', event: 'e', chance: 'c', named: 'n' }
 
 export class Keys {
   private readonly toKey = new Map<Id, string>()
@@ -65,6 +65,7 @@ export function assignKeys(input: ChronicleInput): Keys {
   for (const card of [...input.cards, ...input.lore, ...input.requests, ...input.areas, ...(input.realms ?? [])]) keys.add(card.id, card.kind)
   for (const signal of input.signals ?? []) keys.add(signal.id, 'signal')
   for (const chance of input.chances ?? []) keys.add(chance.id, 'chance')
+  for (const card of input.named ?? []) keys.add(card.id, 'named')
   // Events, so a claim can say which it rests on (M9.2).
   for (const line of input.lines) for (const event of [...line.events, ...line.earlier]) keys.add(event.id, 'event')
   return keys
@@ -105,6 +106,11 @@ export function systemPrompt(input: ChronicleInput, limits: Limits): string {
           '- CHANCES are there already; a skill counts in each. Make one that fits a storyline visible first: a thought, the news, a request. Not all should suit THE STRANGER. Only when none will do and it fits place, owner and history: one step place_prop.',
         ]
       : []),
+    ...(input.named?.length
+      ? [
+          '- named: at most one. Someone NAMED in a talk may come into a storyline that needs them: how letter (they write to the one who spoke of them; text: what the letter says, one or two sentences) or visit (they come to stay a while; text: why they came, one sentence). Only people from NAMED; never make up others.',
+        ]
+      : []),
     'A storyline with an arc goes on from the ones named there: tell them as one story, cause and effect, and keep the open threads of before. An event may say what it came from (because).',
     'Rules: only facts from the overview; never invent what happened, who was there or when. Use only names from the overview. A rumour marked untrue stays a rumour. Things marked PRIVATE may go into thoughts, never into lore or news. Plain words, the tone of the world.',
   ].join('\n')
@@ -136,6 +142,7 @@ export function userPrompt(input: ChronicleInput, keys: Keys, lookedUp: Card[], 
   section('OPEN REQUESTS', input.requests.map((c) => cardLine(c, keys)))
   section('CHANCES (there already)', (input.chances ?? []).map((c) => cardLine(c, keys)))
   section('NEW OBJECTS (for place_prop)', (input.props ?? []).map((p) => `${p.id}: ${p.text}`))
+  section('NAMED (spoken of in talks, not met yet)', (input.named ?? []).map((c) => cardLine(c, keys)))
   section(
     'TEMPLATES',
     input.templates.map((t) => `${t.kind}${t.needs.length ? ` (needs ${t.needs.join(' and ')})` : ''}: ${t.text}`),
@@ -220,6 +227,7 @@ export function replySchema(input: ChronicleInput, keys: Keys, lookupsLeft: numb
     },
     thoughts: { type: 'array', items: object({ who: keysOf(people), text }) },
     news: { type: 'array', items: object({ area: keysOf(keys.of('area')), text }) },
+    ...(input.named?.length ? { named: { type: 'array', items: object({ who: keysOf(keys.of('named')), how: { type: 'string', enum: ['letter', 'visit'] }, text }) } } : {}),
     ...(input.realms?.length ? { tensions: { type: 'array', items: object({ between: { type: 'array', items: keysOf(keys.of('realm')) }, delta: { type: 'integer' }, why: text }) } } : {}),
     ...(input.mayPlan?.length || input.verbs?.length
       ? {
@@ -284,7 +292,7 @@ export type ChronicleMeta = {
 }
 
 function mockMeta(input: ChronicleInput, keys: Keys, lookupsLeft: number): ChronicleMeta {
-  const cards = [...input.cards, ...input.lore, ...input.requests, ...input.areas]
+  const cards = [...input.cards, ...input.lore, ...input.requests, ...input.areas, ...(input.named ?? [])]
   const k = (id: Id) => keys.any(id) ?? id
   return {
     cards: keys.all().map((entry) => {

@@ -941,6 +941,14 @@ body {
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
 }
 
+/* Why you came (M10.9): the background's reason, as the game will tell it. */
+.creation .creation-reason {
+  border-left: 2px solid var(--line);
+  font-style: italic;
+  margin: 6px 0 0;
+  padding-left: 10px;
+}
+
 .creation .radio,
 .creation .check {
   align-items: baseline;

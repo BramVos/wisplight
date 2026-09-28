@@ -672,6 +672,11 @@ function templateFor(kind: EntityKind, view: EditorView): Raw {
       return { id: 'new_prop', type: 'strongbox', name: "{owner}'s chest", where: ['private'], lock: { quality: ['common'], material: ['iron'] }, items: [], hints: [{ precise: '{owner} keeps {things} in a chest at {place}.', village: '{owner} has a chest at home, they say.', far: 'Someone keeps a locked chest.' }] }
     case 'craft':
       return { id: 'new_craft', name: 'the new craft', maker: 'maker', skill: 'crafting', professions: trade ? [trade] : [], techniques: [{ id: 'first_technique', name: 'the first technique' }] }
+    case 'background': {
+      // M10.9: why you came, whom to ask for first, and what you heard.
+      const contact = view.lists.npc[0]?.id
+      return { id: 'new_background', name: 'New background', skills: ['athletics', 'perception'], talent: 'haggler', knows: contact ? [contact] : [], topics: [], reason: 'Why you came here, in two sentences in the second person, with the names of this world.', ...(contact ? { contact } : {}) }
+    }
     default:
       return { id: `new_${kind}` }
   }

@@ -39,6 +39,8 @@ export const LISTS = {
   project: 'projects',
   craft: 'crafts',
   prop: 'props',
+  // A list inside another (M10.9): the backgrounds of the character rules.
+  background: 'rules.backgrounds',
 } as const
 export type EntityKind = keyof typeof LISTS
 export const ENTITY_KINDS = Object.keys(LISTS) as EntityKind[]
@@ -85,10 +87,22 @@ export interface Located {
 
 const isYaml = (path: string) => /\.ya?ml$/.test(path)
 
+/** A list's path in its file: "npcs", or "rules.backgrounds" for a list inside another. */
+const pathOf = (list: string): string[] => list.split('.')
+
+/** The lines that open a list in a new file: "npcs:", or "rules:\n  backgrounds:". */
+function header(list: string): string {
+  return pathOf(list)
+    .map((key, depth) => `${'  '.repeat(depth)}${key}:`)
+    .join('\n')
+}
+
 function listIn(text: string, list: string): { doc: Document; seq: YAMLSeq } | undefined {
-  if (!new RegExp(`^${list}:`, 'm').test(text)) return undefined
+  const path = pathOf(list)
+  if (!new RegExp(`^${path[0]}:`, 'm').test(text)) return undefined
+  if (path.length > 1 && !new RegExp(`^\\s+${path.at(-1)}:`, 'm').test(text)) return undefined
   const doc = parseDocument(text)
-  const seq = doc.get(list, true)
+  const seq = doc.getIn(path, true)
   return isSeq(seq) ? { doc, seq } : undefined
 }
 
@@ -129,7 +143,9 @@ export function entityYaml(files: ContentFile[], kind: EntityKind, id: string): 
   const file = at && files.find((f) => f.path === at.file)
   if (!at || !file) return undefined
   const node = listIn(file.text, LISTS[kind])!.seq.items[at.index] as YAMLMap
-  return dedent(itemText(LISTS[kind], node))
+  // An item on one line (a background in the rules, M10.9) opens a field a line; the file keeps its own style.
+  const shown = node.flow ? Object.assign(node.clone() as YAMLMap, { flow: false }) : node
+  return dedent(itemText(LISTS[kind], shown))
 }
 
 /** Reads what the editor's YAML box holds back into an entity. */
@@ -247,8 +263,14 @@ function applyOne(files: ContentFile[], edit: Edit): ContentFile[] | string {
   const node = makeNode(doc, edit.data, 0) as YAMLMap
   const text = itemText(list, node)
   const file = files.find((f) => f.path === path)
-  if (!file) return [...files, { path, text: `${list}:\n${text}` }]
+  if (!file) return [...files, { path, text: `${header(list)}\n${text}` }]
   const found = listIn(file.text, list)
+  if (!found && pathOf(list).length > 1) {
+    // A list inside another that is not there yet: set it in the file's own tree.
+    const whole = parseDocument(file.text)
+    whole.setIn(pathOf(list), whole.createNode([edit.data]))
+    return replace(path, whole.toString({ lineWidth: 0 }))
+  }
   if (!found) return replace(path, `${file.text.trimEnd()}\n\n${list}:\n${text}`)
   const last = found.seq.items.at(-1) as Node | undefined
   if (!last || found.seq.flow) {
@@ -308,6 +330,7 @@ export function homeFile(files: ContentFile[], kind: EntityKind, data: Raw): str
     return `${areaDir(area)}npcs.yaml`
   }
   if (kind === 'region') return `${prefix}regions/${String(data['id'])}/region.yaml`
+  if (kind === 'background') return entities(files, kind)[0]?.file ?? `${prefix}rules/rules.yaml`
   const counts = new Map<string, number>()
   for (const e of entities(files, kind)) counts.set(e.file, (counts.get(e.file) ?? 0) + 1)
   const best = [...counts].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0]
@@ -321,12 +344,13 @@ function itemText(list: string, node: YAMLMap): string {
   const copy = node.clone() as YAMLMap
   copy.commentBefore = undefined
   copy.spaceBefore = false
-  const doc = new Document({ [list]: [] })
-  ;(doc.get(list) as YAMLSeq).items.push(copy)
-  const plain = doc.toString({ lineWidth: 0 }).replace(/^[^\n]*\n/, '')
+  const path = pathOf(list)
+  const doc = new Document(path.reduceRight<unknown>((inner, key) => ({ [key]: inner }), []))
+  ;(doc.getIn(path) as YAMLSeq).items.push(copy)
+  const plain = doc.toString({ lineWidth: 0 }).split('\n').slice(path.length).join('\n')
   // The house style writes lists without inner spaces, [a, b]; keep it when that reads back the same.
   const tight = tightenSeqs(plain)
-  return tight !== plain && same(parseDocument(`${list}:\n${tight}`).toJSON(), parseDocument(`${list}:\n${plain}`).toJSON()) ? tight : plain
+  return tight !== plain && same(parseDocument(`${header(list)}\n${tight}`).toJSON(), parseDocument(`${header(list)}\n${plain}`).toJSON()) ? tight : plain
 }
 
 function tightenSeqs(text: string): string {
@@ -354,8 +378,9 @@ function tightenSeqs(text: string): string {
 }
 
 function dedent(text: string): string {
-  // "  - id: x\n    name: y" as "id: x\nname: y".
-  return text.replace(/^ {2}- /, '').replace(/^ {4}/gm, '')
+  // "  - id: x\n    name: y" as "id: x\nname: y" (deeper for a list inside another).
+  const indent = /^( *)- /.exec(text)?.[1]?.length ?? 2
+  return text.replace(/^ *- /, '').replace(new RegExp(`^ {${indent + 2}}`, 'gm'), '')
 }
 
 function lineStart(text: string, offset: number): number {

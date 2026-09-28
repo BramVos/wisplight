@@ -147,6 +147,7 @@ export function CharacterCreation({ data, onCreate, onSkip }: { data: CreationDa
                 {t('creation.background.summary', { skills: background.skills.join(t('creation.background.and')), talent: rules.general_talents.find((g) => g.id === background.talent)?.name ?? '' })}
                 {background.knows.length > 0 && ` ${t('creation.background.known')}`}
               </p>
+              {background.reason && <p className="creation-reason">{background.reason}</p>}
             </div>
           </div>
 

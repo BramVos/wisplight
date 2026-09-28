@@ -26,6 +26,8 @@ export interface MockMeta {
   after?: { kind: 'tell' | 'visit'; target: string }
   /** A claim may be read from the stranger's words (M10.3, left over): who it may be about. */
   claimable?: string[]
+  /** Someone new may be named (M10.9): the bonds and places the game offers. */
+  sketch?: { bonds: string[]; places: string[] }
 }
 
 const COMMON = new Set(['about', 'what', 'with', 'that', 'this', 'from', 'your', 'have', 'there', 'they', 'them', 'will', 'would', 'could', 'know', 'want', 'wants'])
@@ -61,6 +63,8 @@ export class MockLlm implements LlmClient {
   intend?: (npc: string, offered: string[], keys: Record<string, string>) => { choice: string; fill?: { name: string; key: string }[] } | undefined
   /** For tests: the claim the voice reads in the stranger's words when one may be read (M10.3, left over). */
   claim?: { subject: string; key: string; value: string }
+  /** For tests: someone new the voice names (M10.9), whether or not the game offered it; the place, when not given, is the first offered. */
+  someone?: { name: string; bond?: string; place?: string; what?: string; pronoun?: string }
 
   constructor(
     public mode: MockMode = 'good',
@@ -83,7 +87,7 @@ export class MockLlm implements LlmClient {
           ? request.schemaName === 'outline'
             ? this.outline(String(request.meta?.['name'] ?? 'the place'))
             : request.schemaName === 'far_place'
-            ? this.farPlace(String(request.meta?.['name'] ?? 'the place'))
+            ? this.farPlace(String(request.meta?.['name'] ?? 'the place'), (request.meta?.['named'] as { key: string; name: string; pronoun: string }[] | undefined) ?? [])
             : request.schemaName === 'legends'
             ? this.legends((request.meta?.['legends'] as string[] | undefined) ?? [])
             : this.chronicler(request.meta as unknown as ChronicleMeta, request.prompt)
@@ -165,6 +169,8 @@ export class MockLlm implements LlmClient {
     if (this.mode === 'promise') speech = `Come on, I'll take you there myself. ${speech}`
     if (this.mode === 'far') speech = `Salt comes dear from the Amber Coast these days. ${speech}`
     if (this.mode === 'twofar') speech = `Salt comes from the Amber Coast and tin from Kessmoor. ${speech}`
+    const someone = this.someone ? { name: this.someone.name, pronoun: this.someone.pronoun ?? 'he', bond: this.someone.bond ?? meta.sketch?.bonds[0] ?? 'cousin', place: this.someone.place ?? meta.sketch?.places[0] ?? 'nowhere', what: this.someone.what ?? 'a carter' } : undefined
+    if (someone) speech = `My ${someone.bond} ${someone.name} is ${someone.what} in ${someone.place}. ${speech}`
     const words = speech.split(/\s+/)
     if (this.mode === 'good' && words.length > meta.wordLimit) speech = words.slice(0, meta.wordLimit).join(' ').replace(/[,;:]?$/, '.')
 
@@ -183,6 +189,7 @@ export class MockLlm implements LlmClient {
       ...(meta.after && this.mode === 'good' ? { after: meta.after } : {}),
       // A claim the test has the mock read, if one may be read this turn.
       ...(this.claim && meta.claimable?.includes(this.claim.subject) ? { claim: this.claim } : {}),
+      ...(someone ? { person: someone } : meta.sketch ? { person: { name: '', pronoun: 'they', bond: 'none', place: 'none', what: '' } } : {}),
     })
   }
 
@@ -252,7 +259,7 @@ export class MockLlm implements LlmClient {
   }
 
   /** A far place made playable (M9.1): words for its three places and two people; 'invalid' writes one sentence too few. */
-  private farPlace(name: string): string {
+  private farPlace(name: string, named: { key: string; name: string; pronoun: string }[] = []): string {
     const short = this.mode === 'invalid'
     return JSON.stringify({
       places: [
@@ -263,6 +270,8 @@ export class MockLlm implements LlmClient {
       people: [
         { key: 'merchant', name: 'Wendel Hoorn', pronoun: 'he', looks: 'A thin man in a good coat, with a scale on a chain at his belt.', speech: 'Short, and always about the price.', fact: 'Wendel Hoorn buys rye from the Nethermarch and sells it dearer to the League.' },
         { key: 'innkeeper', name: 'Aleid Kramer', pronoun: 'she', looks: 'A broad woman with flour on her sleeves and keys at her hip.', speech: 'Loud and kind.', fact: 'Aleid Kramer knows every carter on the Oostweg by name.' },
+        // People named in talks who live here (M10.9): the same first name, a family name of the place.
+        ...named.map((n) => ({ key: n.key, name: `${n.name} Brinkman`, pronoun: n.pronoun === 'she' ? 'she' : 'he', looks: 'Someone with the look of a long road about them.', speech: 'Slow, and glad of news from home.', fact: `${n.name} Brinkman keeps a stall by the Salt Market.` })),
       ],
     })
   }

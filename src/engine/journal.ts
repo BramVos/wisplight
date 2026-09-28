@@ -12,6 +12,7 @@ import { isNear, noun, ties } from './people'
 import { askLine, requestName } from './requests'
 import { outlineLines, outlineOf } from './outlines'
 import type { World } from './world'
+import { sketchById, sketches, sketchLines } from './sketches'
 
 // The journal as a reference book (design: lore and world change, "Wat de
 // speler ziet"). Built from data, never from AI, and it gives nothing away:
@@ -73,6 +74,8 @@ export function journalPage(world: World, topics: TopicRegistry, id: string): Jo
     else if (met || page.sources.length > 0) page.lines.push(...npc.public_facts)
     if (met) page.lines.push(npc.appearance)
     page.links.push(...link(npc.home, 'lives at'))
+    // The people they named to the stranger (M10.9): under them in the journal.
+    for (const s of sketches(world)) if (s.of === npc.id) page.links.push(...link(s.id, s.bond))
     if (npc.work && npc.work !== npc.home) page.links.push(...link(npc.work, 'works at'))
     page.links.push(...link(areaTopicId(content, world.location(npc.home).area), 'from'))
     // Who they are to others (M10.4): only what the stranger heard or saw: asked, told, or a child seen with a parent.
@@ -156,6 +159,16 @@ export function journalPage(world: World, topics: TopicRegistry, id: string): Jo
       for (const f of lore.facts) page.links.push(...(factById(world, f)?.about ?? []).flatMap((t) => link(t, 'about')))
       for (const l of lore.links) page.links.push(...link(l, 'see also'))
     }
+  } else if (id.startsWith('sketch_')) {
+    // Someone named in a talk (M10.9): who they are to the speaker, from whom and when; no family name, no map.
+    page.kind = 'person'
+    const sketch = sketchById(world, id)
+    if (sketch) {
+      page.lines.push(...sketchLines(world, sketch))
+      page.links.push(...link(sketch.of, 'told by'))
+      if (sketch.npc) page.links.push(...link(sketch.npc, 'met as'))
+      page.links.push(...link(sketch.place, 'lives in'))
+    }
   } else if (id.startsWith('far_')) {
     page.kind = 'place'
     const far = world.state.lore?.far.find((f) => f.id === id)
@@ -226,6 +239,7 @@ function who(world: World, from: string): string {
   if (from === 'player') return 'you'
   if (from === 'news') return 'going round'
   if (from === 'board') return 'on the notice board'
+  if (from === 'told') return 'you were told to ask for them when you came'
   const npc = world.content.npcs.get(from)
   return npc ? callName(npc) : from
 }

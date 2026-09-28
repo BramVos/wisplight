@@ -30,16 +30,35 @@ export const ReplySchema = z.object({
   after: z.object({ kind: z.enum(['none', 'tell', 'visit']), target: z.string() }).default({ kind: 'none', target: 'none' }),
   // What the stranger claims, when the rules could not read it (M10.3, left over): the engine judges it.
   claim: z.object({ subject: z.string(), key: z.string(), value: z.string() }).optional(),
+  // Someone new the speaker named (M10.9): a first name, a bond and a place from the lists; name empty for nobody.
+  person: z.object({ name: z.string(), pronoun: z.string().default('they'), bond: z.string(), place: z.string(), what: z.string().default('') }).optional(),
 })
 export type Reply = z.infer<typeof ReplySchema>
 
-export function replyJsonSchema(allowedTopics: string[], questActions: string[] = [], offers: { key: string; decision: 'yes' | 'no' }[] = [], after = false, claim?: { subjects: string[]; keys: readonly string[] }): JsonSchema {
+export function replyJsonSchema(allowedTopics: string[], questActions: string[] = [], offers: { key: string; decision: 'yes' | 'no' }[] = [], after = false, claim?: { subjects: string[]; keys: readonly string[] }, sketch?: { bonds: string[]; places: string[] }): JsonSchema {
   const yes = offers.filter((o) => o.decision === 'yes').map((o) => o.key)
   return {
     type: 'object',
     additionalProperties: false,
-    required: ['act', 'reply', 'names', 'mentioned_topics', 'effects', 'memory_note', 'ends_conversation', 'keep_talking', ...(questActions.length ? ['quest_action'] : []), ...(offers.length ? ['action', 'propose'] : []), ...(after ? ['after'] : [])],
+    required: ['act', 'reply', 'names', 'mentioned_topics', 'effects', 'memory_note', 'ends_conversation', 'keep_talking', ...(questActions.length ? ['quest_action'] : []), ...(offers.length ? ['action', 'propose'] : []), ...(after ? ['after'] : []), ...(sketch ? ['person'] : [])],
     properties: {
+      ...(sketch
+        ? {
+            person: {
+              type: 'object',
+              additionalProperties: false,
+              required: ['name', 'pronoun', 'bond', 'place', 'what'],
+              description: 'Someone new you named in reply (see SOMEONE NEW), or name empty and bond none.',
+              properties: {
+                name: { type: 'string', description: 'A first name only, as in reply; empty for nobody.' },
+                pronoun: { type: 'string', enum: ['she', 'he', 'they'] },
+                bond: { type: 'string', enum: ['none', ...sketch.bonds] },
+                place: { type: 'string', enum: ['none', ...sketch.places] },
+                what: { type: 'string', description: 'What they are, in a few words: a bargeman, a weaver.' },
+              },
+            },
+          }
+        : {}),
       ...(claim
         ? {
             claim: {

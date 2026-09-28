@@ -91,6 +91,13 @@ const BackgroundSchema = z
     /** People who know you from before, and topics already in your journal. */
     knows: z.array(z.string()).default([]),
     topics: z.array(z.string()).default([]),
+    /**
+     * Why you are here (M10.9): two sentences in the second person, with the world's own names; whom you were told to
+     * ask for first (an NPC); and what you heard that brought you (a topic, in the journal from the start).
+     */
+    reason: z.string().optional(),
+    contact: z.string().optional(),
+    heard: z.string().optional(),
   })
   .strict()
 

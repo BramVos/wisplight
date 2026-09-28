@@ -71,29 +71,8 @@ import { breakOff, chatLine, chatLineRequest, listen, longListen } from './chatt
 import { realmLines, realmPage } from './social/realms'
 import { bearing, kmFromPlayer, posOf, posOfLocation } from './nearby'
 import { carryOver } from './legacy'
-import {
-  character,
-  clockLine,
-  createCommand,
-  creationHelp,
-  equipCommand,
-  favour,
-  findPurse,
-  gainXp,
-  greyRider,
-  levelCommand,
-  makeCharacter,
-  patronCommand,
-  pray,
-  rest,
-  leaveSheaf,
-  rite,
-  sheetData, sheetLines,
-  struggle,
-  trainCommand,
-  XP,
-  type Clock,
-} from './rules/player'
+import { arrival, character, type Clock, clockLine, createCommand, creationHelp, equipCommand, favour, findPurse, gainXp, greyRider, leaveSheaf, levelCommand, makeCharacter, patronCommand, pray, rest, rite, sheetData, sheetLines, struggle, trainCommand, XP } from './rules/player'
+import { sketchById } from './sketches'
 
 export type { Output, OutputKind } from './commands'
 
@@ -271,6 +250,8 @@ export class Engine {
     this.host = { world: this.world, pass: (minutes) => this.pass(minutes), passUntil: (minutes, stop) => this.pass(minutes, stop), knownPlace: (target) => this.knownPlace(target) }
     this.topics = new TopicRegistry(content)
     for (const far of state.lore?.far ?? []) this.topics.addDuringPlay({ id: far.id, kind: 'place', name: far.name, aliases: [far.name] })
+    // People named in talks (M10.9), by their first name.
+    for (const s of state.lore?.people ?? []) this.topics.addDuringPlay({ id: s.id, kind: 'person', name: s.name, aliases: [s.name] })
     this.dialogue = new Dialogue(this.world, this.topics, new Knowledge(this.world, this.topics), () => this.recorder)
     this.dialogue.questOptions = (npc) => conversationActions(this.world, npc)
     this.dialogue.syncNews()
@@ -706,6 +687,8 @@ export class Engine {
     const intro = this.content.world.intro?.trim()
     const outputs: Output[] = [
       ...(intro ? [{ kind: 'text' as const, text: intro }] : []),
+      // Why you are here (M10.9), after the world's own opening.
+      ...arrival(this.world),
       describeRoom(this.world),
       { kind: 'system', text: 'The pace of events is normal. Type TEMPO CALM or TEMPO DRAMATIC for less or more happening in the world.' },
       ...this.opening,
@@ -1283,8 +1266,14 @@ export class Engine {
         const npc = this.content.npcs.get(id)
         // Only who the player met, saw or was told of, by the name they know (M10.8).
         if (npc && !knowsOfPerson(this.world, id)) continue
-        const area = npc ? this.content.areas.get(this.world.location(npc.home).area) : undefined
-        people.push({ id, name: npc ? knownName(this.world, id) : name, ...far, ...also, ...(area ? this.areaGroup(area.id) : { group: 'Further afield', order: '9' }) })
+        // Someone named in a talk (M10.9): right under the one who named them.
+        const sketch = id.startsWith('sketch_') ? sketchById(this.world, id) : undefined
+        const home = npc ?? (sketch && this.content.npcs.get(sketch.of))
+        const area = home ? this.content.areas.get(this.world.location(home.home).area) : undefined
+        const g = area ? this.areaGroup(area.id) : { group: 'Further afield', order: '9' }
+        const shown = npc ? knownName(this.world, id) : sketch && home ? `${name} (${callName(home)}'s ${sketch.bond})` : name
+        const under = sketch && home ? `${knownName(this.world, home.id).toLowerCase()}|${name.toLowerCase()}` : shown.toLowerCase()
+        people.push({ id, name: shown, ...far, ...also, group: g.group, order: `${g.order}|${under}` })
       } else if (kind === 'place' || kind === 'area') {
         const entry = this.topics.entries.get(id)
         const areaId = kind === 'area' ? entry?.ref : entry?.ref && this.content.locations.has(entry.ref) ? this.content.locations.get(entry.ref)!.area : [...this.content.areas.values()].find((a) => a.topic === id)?.id

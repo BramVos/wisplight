@@ -200,7 +200,9 @@ export function makeCharacter(world: World, choice: CreationChoice): Output[] {
   const a = rulesOf(world.content).ancestries.find((x) => x.id === c.ancestry)!
   const was = background.name.charAt(0).toLowerCase() + background.name.slice(1)
   const an = (word: string) => (/^[aeiou]/i.test(word) ? 'an' : 'a')
-  return [{ kind: 'system', text: `You are ${c.name}, ${an(a.name)} ${a.name} ${k.name}, once ${/^a\s|^an\s/i.test(was) ? '' : `${an(was)} `}${was}. ${k.text} Type SHEET to see yourself.` }]
+  // A new background, a new reason to be here (M10.9); the ready-made traveller's contact gives way to this one.
+  delete player.contact
+  return [{ kind: 'system', text: `You are ${c.name}, ${an(a.name)} ${a.name} ${k.name}, once ${/^a\s|^an\s/i.test(was) ? '' : `${an(was)} `}${was}. ${k.text} Type SHEET to see yourself.` }, ...arrival(world)]
 }
 
 export function creationHelp(world: World): string {
@@ -209,7 +211,10 @@ export function creationHelp(world: World): string {
     `CREATE <class> <ancestry> <background> name=<name>, for example: CREATE ${rules.classes[0]!.id} ${suggestChoice(world.content, rules.classes[0]!.id).ancestry} ${rules.backgrounds[0]!.id} name=${readyMade(world.content).name === 'Traveller' ? 'Joost' : readyMade(world.content).name}`,
     `Classes: ${rules.classes.map((c) => `${c.id} (${c.text})`).join('; ')}`,
     `Ancestries: ${rules.ancestries.map((a) => `${a.id} (${a.special})`).join('; ')}`,
-    `Backgrounds: ${rules.backgrounds.map((b) => b.id).join(', ')}`,
+    // With why you came (M10.9): the first sentence of each background's reason.
+    rules.backgrounds.some((b) => b.reason)
+      ? `Backgrounds, and why you came:\n${rules.backgrounds.map((b) => `  ${b.id}${b.reason ? `: ${/^[^.!?]*[.!?]/.exec(b.reason)?.[0] ?? b.reason}` : ''}`).join('\n')}`
+      : `Backgrounds: ${rules.backgrounds.map((b) => b.id).join(', ')}`,
     'Optional: boosts=might,grace,... skills=a,b talent=<first talent>. What you leave out is chosen for you.',
   ].join('\n')
 }
@@ -675,4 +680,31 @@ export function struggle(world: World, pass: (minutes: number) => Output[]): Out
     return [{ kind: 'check', text: `(Athletics ${result.total} vs DC 13: ${result.degree})` }, { kind: 'narration', text: 'With a sound like a cow pulling out of a ditch, the fen lets you go. You are black to the hips.' }, ...seen]
   }
   return [{ kind: 'check', text: `(Athletics ${result.total} vs DC 13: ${result.degree})` }, { kind: 'narration', text: 'You heave and sink a little deeper. The water is cold.' }, ...seen]
+}
+
+/**
+ * Why the stranger is here (M10.9): the reason of their background, told after
+ * the world's own opening; whom they were told to ask for, in the journal as
+ * such; and what they heard that brought them, in the journal from the start.
+ * Nothing for a background without a reason (an old save plays on as it was).
+ */
+export function arrival(world: World): Output[] {
+  const c = character(world)
+  const background = c ? world.content.rules?.backgrounds.find((b) => b.id === c.background) : undefined
+  if (!background?.reason) return []
+  const journal = (world.state.player.journal ??= {})
+  const out: Output[] = [{ kind: 'text', text: background.reason }]
+  if (background.heard && (world.content.topics.has(background.heard) || world.content.npcs.has(background.heard) || world.content.locations.has(background.heard))) journal[background.heard] ??= world.now
+  const contact = background.contact && world.content.npcs.has(background.contact) ? world.npc(background.contact) : undefined
+  if (contact) {
+    world.state.player.contact = contact.id
+    journal[contact.id] ??= world.now
+    const sources = ((world.state.player.sources ??= {})[contact.id] ??= [])
+    if (!sources.some((s) => s.from === 'told')) sources.push({ from: 'told', t: world.now, level: 1 })
+    // At an inn, in a village; "the" small in the middle of a sentence.
+    const area = world.content.areas.get(world.location(contact.home).area)
+    const where = area && area.kind !== 'wilderness' && area.kind !== 'route' ? ` ${area.kind === 'inn' ? 'at' : 'in'} ${area.name.replace(/^The /, 'the ')}` : ''
+    out.push({ kind: 'system', text: `You were told to ask for ${contact.short}${where}. The name is in your journal.` })
+  }
+  return out
 }

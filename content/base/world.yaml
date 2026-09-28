@@ -35,6 +35,10 @@ world:
     he: [Roelof, Tjark, Berend, Wessel, Gijs, Hessel, Lammert, Egbert, Arend, Albert]
     family: [Scholten, Veldkamp, Wessels, Brink, Hofstede, Lamberts, Postma, Roelofs, Dekker, Bosch]
   newcomers_per_season: 6
+  # People a speaker may name who are not in the world yet (M10.9): what they are to the speaker, and in which talks.
+  sketch:
+    domains: your family, your trade or your past
+    bonds: { cousin: kin, aunt: kin, uncle: kin, brother-in-law: kin, sister-in-law: kin, old master: teacher, old pupil: pupil, trading partner: acquaintance, old friend: friend, debtor: debtor, creditor: creditor }
   # The weather of the Holleveen (M10.8): the season of each month (Louwmaand to Dijkdagen), the chances per season,
   # and a sky that moves by steps, so a storm builds and blows over. Who works outdoors reads what is coming.
   weather:

@@ -41,6 +41,15 @@ world:
     era: SF
     months: [Deepwinter, Thawmoon, Seedtide, Blossom, Brightsun, Midsummer, Highsun, Harvest, Leaffall, Mistmoon, Frostwane, Longnight, Starfall Days]
     weekdays: [Moonday, Tidesday, Windsday, Thornsday, Fireday, Starday, Restday]
+  # Names for people a game makes (M10.9): someone spoken of who becomes a person, the people of a far place.
+  names:
+    she: [Kerra, Morwen, Lowena, Senara, Jenna, Tressa, Ebrel, Ysolt, Rosen, Demelza]
+    he: [Jory, Kenan, Treve, Madoc, Petroc, Hedyn, Talan, Bryok, Denzel, Kitto]
+    family: [Penrose, Trevail, Nance, Polglase, Carne, Rowe, Tregear, Hocking, Jago, Pascoe]
+  # People a speaker may name who are not in the world yet (M10.9): what they are to the speaker, and in which talks.
+  sketch:
+    domains: your family, your trade, the sea or your past
+    bonds: { cousin: kin, aunt: kin, uncle: kin, old shipmate: friend, old skipper: employer, old teacher: teacher, trading partner: acquaintance, old friend: friend, debtor: debtor, creditor: creditor }
   # Sea weather (M10.8): more wind and mist than on the mainland, hardly any frost; the sky moves by steps, not draws.
   weather:
     seasons: [winter, winter, spring, spring, spring, summer, summer, summer, autumn, autumn, autumn, winter, winter]

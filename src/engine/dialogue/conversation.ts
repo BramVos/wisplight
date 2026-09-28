@@ -32,6 +32,7 @@ import { questsOf } from '../life'
 import { routineNow } from '../npc/brain'
 import { parseReply, replyJsonSchema, type Reply } from './schema'
 import type { TopicRegistry } from './topics'
+import { checkSketch, namesSomeone, registerSketch, sketchBonds, sketchOpen, sketchPlaces, sketchRoom, type NamedPerson } from '../sketches'
 
 /** A reply comes within this many milliseconds, both tries together, or the NPC says a set line (FO, chapter 18). */
 /** How long a spoken reply may take over both tries (M10.8: ten seconds, unless the player sets it at the model). */
@@ -101,7 +102,7 @@ export class Dialogue {
   /** Every word the world's content uses, for spotting names the model made up. */
   private vocabulary(): Set<string> {
     // The chronicler's instruction is not the world: its examples are no names of it.
-    this.words ??= vocabularyOf({ ...this.world.content, chronicler: undefined }, worldFrame(this.world.content), MONTHS, WEEKDAYS, (this.world.state.lore?.far ?? []).map((f) => f.name), (this.world.state.chronicle?.lore ?? []).map((l) => l.name))
+    this.words ??= vocabularyOf({ ...this.world.content, chronicler: undefined }, worldFrame(this.world.content), MONTHS, WEEKDAYS, (this.world.state.lore?.far ?? []).map((f) => f.name), (this.world.state.lore?.people ?? []).map((p) => p.name), (this.world.state.chronicle?.lore ?? []).map((l) => l.name))
     return this.words
   }
 
@@ -170,6 +171,17 @@ export class Dialogue {
     this.knowledge.forget(npcId)
     for (const word of vocabularyOf(name)) this.vocabulary().add(word)
     this.learn(id)
+  }
+
+  /** Someone new the speaker named (M10.9): in this game's lore, the journal, the speaker's people and words. */
+  private registerSketch(npcId: string, person: NamedPerson, replyText: string): void {
+    const sketch = registerSketch(this.world, npcId, person, replyText, (id) => this.topics.entries.has(id))
+    this.topics.addDuringPlay({ id: sketch.id, kind: 'person', name: sketch.name, aliases: [sketch.name] })
+    this.knowledge.forget(npcId)
+    for (const word of vocabularyOf(sketch.name)) this.vocabulary().add(word)
+    this.noteSources(npcId, [{ topic: sketch.id, level: 1 }])
+    this.learn(sketch.id)
+    if (this.talk) this.talk.sketched = true
   }
 
   private asleep(npcId: string): Output {
@@ -684,6 +696,8 @@ export class Dialogue {
     for (const name of reply?.names ?? []) {
       if (name.new_kind !== 'none' && !this.topics.find(name.text) && replyText.includes(name.text.trim())) this.registerFar(npcId, name.text.trim(), name.new_kind, replyText)
     }
+    // Someone new the speaker named (M10.9), checked with the reply.
+    if (reply && namesSomeone(reply.person) && !talk.sketched && !this.topics.find(reply.person.name)) this.registerSketch(npcId, reply.person, replyText)
 
     // 6. Journal and memory.
     const allowed = new Set([...packet.known.map((k) => k.topic), ...(packet.referral ? [packet.referral.npc] : [])])
@@ -870,6 +884,12 @@ export class Dialogue {
     const given = ctx.packet.known.flatMap((k) => [...k.facts, k.story ?? '', ...(k.news ?? []), k.toldBy ?? ''])
     const allowedNames = new Set([...this.knowledge.knownTopics(npcId), ...peopleIds(world, npcId), ...present, location.id, `area_${location.area}`, ...ctx.spokenTopics, ...allowedTopics, ...this.topics.recognise(given.join(' '))])
 
+    // Someone new (M10.9): only in a talk about the speaker's family, trade or past, once a talk, within bounds.
+    const sketch =
+      talk && !talk.sketched && sketchOpen(world, npcId, ctx.act, ctx.packet, text) && sketchRoom(world, npcId)
+        ? { bonds: Object.keys(sketchBonds(world)), places: sketchPlaces(world, npcId).map((p) => p.name) }
+        : undefined
+
     let prompt = turnPrompt(world, {
       npcId,
       act: ctx.act,
@@ -895,6 +915,10 @@ export class Dialogue {
       const places = ctx.claimable.filter((id) => world.content.locations.has(id))
       prompt += `\nCLAIM: if the stranger's words just said something is so about ${ctx.claimable.map((id) => `${id} (${this.topics.name(id)})`).join(', ')}, put it in claim: subject the id; key at (value: the place id where they are${places.length ? `, one of ${places.join(', ')}` : ''}), alive (yes or no), state (of a place: normal, flooded, damaged, occupied, leaking) or working (of a place: yes or no). Otherwise subject none. Only what the stranger said, never what you think.`
     }
+    if (sketch) {
+      const domains = world.content.world.sketch?.domains ?? 'your family, your trade or your past'
+      prompt += `\nSOMEONE NEW: this talk touches ${domains}. If it fits, you may name one person of your own who is in none of your lists: your ${sketch.bonds.join(', ')}, living in one of ${sketch.places.join(', ')}. A first name only, in one sentence, and put them in person. Otherwise person.name is empty and bond none.`
+    }
     if (offered.length) {
       prompt += `\nQUEST ACTIONS: if the player's words clearly mean one of these, put its key in quest_action and the game carries it out; otherwise quest_action is "none".\n${offered.map((o) => `  ${o.key}: the player wants to ${o.intent}`).join('\n')}`
     }
@@ -911,7 +935,7 @@ export class Dialogue {
             system: systemPrompt(world, npcId),
             prompt,
             schemaName: 'npc_reply',
-            schema: replyJsonSchema(allowedTopics, offered.map((o) => o.key), offers, !talk?.after, ctx.claimable?.length ? { subjects: ctx.claimable, keys: CLAIM_KEYS } : undefined),
+            schema: replyJsonSchema(allowedTopics, offered.map((o) => o.key), offers, !talk?.after, ctx.claimable?.length ? { subjects: ctx.claimable, keys: CLAIM_KEYS } : undefined, sketch),
             maxTokens: TIER_TOKENS[ctx.tier],
             timeoutMs: within - (Date.now() - started),
             meta: {
@@ -928,6 +952,7 @@ export class Dialogue {
               offers,
               ...(talk && !talk.after ? { after: afterChoice(world, npcId, talk.facts ?? []) } : {}),
               ...(ctx.claimable?.length ? { claimable: ctx.claimable } : {}),
+              ...(sketch ? { sketch } : {}),
             },
           })
         ).text
@@ -968,13 +993,21 @@ export class Dialogue {
         prompt += `\nNOTE: ${farProblem} Answer again.`
         continue
       }
+      // Someone new (M10.9): a bond and a place from the lists, a first name that is nobody yet, within bounds.
+      const person = namesSomeone(reply.person) ? reply.person : undefined
+      const personProblem = person && checkSketch(world, npcId, person, fitted, Boolean(sketch), Boolean(talk?.sketched), (name) => Boolean(this.topics.find(name)))
+      if (personProblem) {
+        llm.report?.({ reason: 'invented' })
+        prompt += `\nNOTE: ${personProblem} Answer again.`
+        continue
+      }
       const leaks = leakedNames(said, this.topics.properNames(), allowedNames)
       if (leaks.length > 0) {
         llm.report?.({ reason: 'leak' })
         prompt += `\nNOTE: you mentioned ${leaks.join(', ')}, which you know nothing about. Answer again without them.`
         continue
       }
-      const invented = unknownNames(said, this.vocabulary(), vocabularyOf(text, ...fresh.map((n) => n.text), ...(talk?.history ?? []).filter((h) => h.speaker === 'player').map((h) => h.text)))
+      const invented = unknownNames(said, this.vocabulary(), vocabularyOf(text, ...fresh.map((n) => n.text), ...(person ? [person.name] : []), ...(talk?.history ?? []).filter((h) => h.speaker === 'player').map((h) => h.text)))
       if (invented.length > 0) {
         llm.report?.({ reason: 'invented' })
         prompt += `\nNOTE: you used ${invented.join(', ')}, which ${invented.length === 1 ? 'does' : 'do'} not exist in this world. Never make up names. Use only names from PEOPLE YOU KNOW, KNOWLEDGE and SCENE, or say you don't know.`
