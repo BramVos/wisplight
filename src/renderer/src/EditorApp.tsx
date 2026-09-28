@@ -865,6 +865,11 @@ function CheckPanel({ view, open }: { view: EditorView; open: (kind: EntityKind,
           <ul className="check-list small">{view.suspect.map((s) => row(`${s.where}: ${s.field ? `${s.field}: ` : ''}"${s.text}"`))}</ul>
         </>
       )}
+      <h2 className="editor-title">Descriptions ({view.descriptions.places.length})</h2>
+      <p className="muted small">
+        {view.descriptions.summary} The rules: three to five sentences, second person, present tense, a sense that is not sight, a hint at one way out rather than a list, topics in [brackets], and no two places that open alike.
+      </p>
+      <ul className="check-list small">{view.descriptions.places.map(row)}</ul>
       <h2 className="editor-title">Named, but no detail ({view.scenery.length})</h2>
       <p className="muted small">Things a description brings in that nothing here answers to. LOOK still finds the sentence they are in; a detail (details: in the place) gives each its own look, and lines for TAKE and other verbs such as DRINK or CLIMB.</p>
       <ul className="check-list small">{view.scenery.map(row)}</ul>
@@ -1184,6 +1189,118 @@ function ChroniclerPanel({ bridge, world, focus, initial, saved, open }: { bridg
 }
 
 /** A proposal of the chronicler: what it says and asks, what it changes as diffs, and accept or throw away. */
+/**
+ * The polish round of the place descriptions (M10.20): a safety net after the
+ * steps, offered for the places the Check names under Descriptions, or those
+ * the designer ticks. The chronicler rewrites only their descriptions; each
+ * place can be taken or left, and the choice goes in the design log.
+ */
+function PolishPlaces({ bridge, world, view, saved, counted }: { bridge: EditorBridge; world: string; view: EditorView; saved: () => Promise<void>; counted: () => void }) {
+  const flagged = useMemo(() => view.descriptions.places.map((line) => line.slice(0, line.indexOf(':'))), [view.descriptions.places])
+  const [picked, setPicked] = useState<Set<string>>(() => new Set(flagged))
+  const [draft, setDraft] = useState<EditorDraft>()
+  const [taken, setTaken] = useState<Set<string>>(new Set())
+  const [busy, setBusy] = useState(false)
+  const [outcome, setOutcome] = useState<EditorSave>()
+  useEffect(() => setPicked(new Set(flagged)), [flagged])
+  const places = view.lists.location ?? []
+  if (!places.length) return null
+  const toggle = (set: Set<string>, id: string) => {
+    const next = new Set(set)
+    if (next.has(id)) next.delete(id)
+    else next.add(id)
+    return next
+  }
+  const polish = async (light: boolean) => {
+    setBusy(true)
+    setOutcome(undefined)
+    try {
+      const d = await bridge.polish(world, { ids: [...picked], light })
+      setDraft(d)
+      setTaken(new Set(d.changes.map((c) => c.id)))
+    } catch (reason) {
+      setDraft({ say: '', questions: [], changes: [], problems: [reason instanceof Error ? reason.message : String(reason)], diffs: [] })
+    } finally {
+      setBusy(false)
+      counted()
+    }
+  }
+  const accept = async () => {
+    if (!draft) return
+    setBusy(true)
+    const changes = draft.changes.filter((c) => taken.has(c.id))
+    const result = await bridge.saveDraft(world, { changes })
+    setBusy(false)
+    setOutcome(result)
+    if (!result.ok) return
+    const left = draft.changes.filter((c) => !taken.has(c.id)).map((c) => c.id)
+    await bridge.design(world, { decision: { step: 'Polish the places', decision: 'accepted', asked: [...picked].join(', '), say: draft.say, questions: [], changed: changes.map((c) => `location ${c.id}: description`), reason: left.length ? `Left as they were: ${left.join(', ')}` : '' } })
+    setDraft(undefined)
+    await saved()
+  }
+  return (
+    <section className="polish">
+      <h3>Polish the places</h3>
+      <p className="muted small">
+        {view.descriptions.summary} A safety net after the steps: the chronicler rewrites only the descriptions of the places you tick, by the place rules and in the voice of this world, and you take each place or leave it. The Check&apos;s places are ticked.
+      </p>
+      <ul className="check-list small">
+        {places.map((p) => (
+          <li key={p.id}>
+            <label className="check">
+              <input type="checkbox" checked={picked.has(p.id)} onChange={() => setPicked((s) => toggle(s, p.id))} /> {p.name}
+              {flagged.includes(p.id) ? <span className="muted"> ({view.descriptions.places.find((l) => l.startsWith(`${p.id}:`))?.slice(p.id.length + 2)})</span> : ''}
+            </label>
+          </li>
+        ))}
+      </ul>
+      <div className="row">
+        <button type="button" className="link" disabled={busy || picked.size === 0} onClick={() => void polish(true)} title="With the lighter model you chose for the brain">
+          [Polish {picked.size} place{picked.size === 1 ? '' : 's'}]
+        </button>
+        <button type="button" className="link" disabled={busy || picked.size === 0} onClick={() => void polish(false)}>
+          [with the chronicler&apos;s model]
+        </button>
+        {busy && <span className="muted small">The chronicler is polishing...</span>}
+      </div>
+      {draft && (
+        <div className="draft">
+          {draft.say && <p>{draft.say}</p>}
+          {draft.problems.length > 0 && (
+            <ul className="check-list small warn">
+              {draft.problems.map((p) => (
+                <li key={p}>{p}</li>
+              ))}
+            </ul>
+          )}
+          {draft.descriptions && <p className="small muted">After: {draft.descriptions.summary}</p>}
+          <ul className="check-list small">
+            {draft.changes.map((c) => (
+              <li key={c.id}>
+                <label className="check">
+                  <input type="checkbox" checked={taken.has(c.id)} onChange={() => setTaken((s) => toggle(s, c.id))} /> take {places.find((p) => p.id === c.id)?.name ?? c.id}
+                </label>
+              </li>
+            ))}
+          </ul>
+          <Diffs changes={draft.diffs} />
+          <div className="row">
+            {draft.problems.length === 0 && taken.size > 0 && (
+              <button type="button" className="link" disabled={busy} onClick={() => void accept()}>
+                [Accept the {taken.size} ticked]
+              </button>
+            )}
+            <button type="button" className="link" onClick={() => setDraft(undefined)}>
+              [Throw it away]
+            </button>
+          </div>
+        </div>
+      )}
+      {outcome && (outcome.ok ? <p className="ok small">Saved. {outcome.changes.length} files changed.</p> : <SaveResult result={outcome} />)}
+    </section>
+  )
+}
+
 function DraftView({ draft, busy, accept, drop, fix }: { draft: EditorDraft; busy: boolean; accept: () => void; drop: () => void; fix?: () => void }) {
   const parts = [
     ...draft.changes.map((c) => `${c.yaml.trim() ? (c.merge ? 'add to ' : '') : 'delete '}${c.kind.replace('_', ' ')} ${c.id}`),
@@ -1215,6 +1332,18 @@ function DraftView({ draft, busy, accept, drop, fix }: { draft: EditorDraft; bus
         <p className="small muted">
           {parts.length} change{parts.length === 1 ? '' : 's'}: {parts.join(', ')}
         </p>
+      )}
+      {draft.descriptions && (
+        <div className="small">
+          <p className="muted">How its places read, before you accept (M10.20): {draft.descriptions.summary}</p>
+          {draft.descriptions.places.length > 0 && (
+            <ul className="check-list small">
+              {draft.descriptions.places.map((p) => (
+                <li key={p}>{p}</li>
+              ))}
+            </ul>
+          )}
+        </div>
       )}
       <Diffs changes={draft.diffs} />
       <div className="row">
@@ -1632,6 +1761,7 @@ function WorldSteps({ bridge, world, view, saved, existing = false }: { bridge: 
         </>
       )}
       {outcome && (outcome.ok ? <p className="ok small">Saved. {outcome.changes.length} files changed.</p> : <SaveResult result={outcome} />)}
+      <PolishPlaces bridge={bridge} world={world} view={view} saved={saved} counted={() => void counted()} />
       <h3>Notes for this world</h3>
       <p className="muted small">
         Why the world is as it is, in your own words. They go in the design log (DESIGN.md), with every proposal and what you decided, and the chronicler reads them before it proposes.

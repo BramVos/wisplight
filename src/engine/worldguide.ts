@@ -26,6 +26,26 @@ export interface WorldStep {
 }
 
 /** The general part of the system prompt when the chronicler builds a new world with the designer. */
+/**
+ * The place rules of CLAUDE.md, word for word for the chronicler (M10.20; the
+ * first real build, The Quiet Reach, averaged 88 words a place where the
+ * Nethermarch has 56, named no topic in [brackets], listed every way out and
+ * opened each place with its own name), with two places of the Nethermarch
+ * for the measure. The Places step and the polish round both carry them.
+ */
+export const PLACE_RULES = [
+  'HOW A PLACE READS (every description, day and night):',
+  '- Three to five sentences, at most 70 words. Second person, present tense.',
+  '- One sense that is not sight: a smell, a sound, cold or damp, the feel of a floor.',
+  '- One hint at a way out, woven into a sentence ("The sluice is back to the east."). Never a list of every exit: the game shows the exits itself.',
+  '- Topics in [brackets]: a person, place, faith or story the stranger can ask about, where the place brings it up, as [Chapel] or [Harbour Record]; at most two a place.',
+  '- One image that could only be in this world, in its own things and words.',
+  '- Do not open with the place\'s own name (the title above says it), and no two places open alike.',
+  'Two places of another world, for the measure only (never borrow their names or things):',
+  '"Great grey stones lie in a row on the heath, a capstone balanced on them like a table for giants. Three burial mounds rise beyond, furred with heather. The wind carries the smell of sheep and sand. The road to [Hunnenloo] runs away north-east; Waagdam lies to the south-west." (49 words)',
+  '"West of the sluice the tow path runs on along the water towards [Graafhaven], two days away. Here a flat ferry boat is tied to a landing of black planks, and a rope runs from a post across the water to the far bank. The rope drips and creaks when the wind leans on it. The sluice is back to the east." (62 words)',
+].join('\n')
+
 export const WORLD_GUIDE = `YOU ARE BUILDING A NEW WORLD WITH THE DESIGNER, one step at a time. The designer decides; you ask, propose and check.
 
 HOW YOU WORK
@@ -77,6 +97,25 @@ export const WORLD_STEPS: readonly WorldStep[] = [
       'STEP: THE FRAME. Agree the kind of world, the start of the story and the names with the designer. Then propose in `world`: name, frame (the fixed block every model call gets: WORLD with the setting, the era, money, faith and what does not exist; REGION with where play happens and why the stranger is there; PEOPLE with how they speak and count time), words (land, region, from, and sleep with a sentence each for room, home and rough, how a night\'s sleep reads here; left out, a blanket, your own bed and "The cold gets into your bones.") and intro (two or three short paragraphs in the second person, ending with "Type LOOK to look around. Type HELP if you are lost."). Propose CHRONICLER.md in `files`: "## This world: <name>" and a short list of what the chronicler must keep to and must not invent.',
   },
   {
+    id: 'voice',
+    title: 'Voice',
+    ask: [
+      'How do people speak: their oaths, a saying or two, how they call a stranger?',
+      'How do they tell time and measure distance?',
+      'What words must never come up, because the thing does not exist here?',
+    ],
+    fills: [{ kind: 'voice' }],
+    optional: true,
+    skipped: 'Only the fixed core is kept out (a model speaking of models); nothing else counts as out of place, so in a science-fiction world a computer is fine.',
+    checks: [
+      'Oaths are keyed by a faith that exists; before the faith step there is none, so a group\'s own exclamations go on the group and the faith step adds the faiths\' oaths.',
+      'What does not exist fits the frame (no magic in science fiction, no guns in a world without them).',
+      'Sayings are rare and short.',
+    ],
+    prompt:
+      'STEP: THE VOICE. Agree how people speak with the designer. Propose data/voice.yaml in `files`, in the shape the builder shows for voice, with the oaths (keyed by faith id only), sayings, groups (by the areas people live in or their professions, each with its own sayings and oaths: what technicians or coast folk exclaim goes on their group), forms of address, time and measures, and the words that do not exist here. This step comes right after the frame (M10.20), so every place and person after it is written in this voice: faiths, places and professions do not exist yet, so oaths keyed by faith wait for the faith step, and a group names its areas and professions once the places and professions steps have made them (until then a group has only its name, sayings and oaths).',
+  },
+  {
     id: 'calendar',
     title: 'Calendar and weather',
     ask: [
@@ -126,7 +165,7 @@ export const WORLD_STEPS: readonly WorldStep[] = [
       'If there is none: what do people swear by instead (the ship, the sea, their mothers)?',
       'When the stranger dies and wakes again, what do they see, who guides them back, and what rite (or price) do the living keep?',
     ],
-    fills: [
+    fills: [{ kind: 'voice' },
       { kind: 'world', keys: ['faiths'] },
       { kind: 'rules', keys: ['death', 'patrons'] },
     ],
@@ -140,7 +179,7 @@ export const WORLD_STEPS: readonly WorldStep[] = [
       'Death fits the frame: a guide and a patron only where there is faith; {guide} and {lost} stand in the texts that need them; a price names a place and an item that exist.',
     ],
     prompt:
-      'STEP: FAITHS. Agree with the designer whether there is faith. Propose in `world`: faiths (id, name, patrons, and faction if the faith is also a group with a standing), or an empty list when there is none. Propose the patrons in the rules in `changes` (with sworn: the deed companions judge when the stranger swears to that patron), and give holy places their faith. Say in `say` what people swear by, for the voice step. If the designer wants death to have its own words, propose rules.death in `changes` (vision with {guide}, guide, patron, wake, mark with {lost}, rite_where, rite_done, rite_nothing, and a price only if the designer asks for one); otherwise leave it out and death reads plain.',
+      'STEP: FAITHS. Agree with the designer whether there is faith. Propose in `world`: faiths (id, name, patrons, and faction if the faith is also a group with a standing), or an empty list when there is none. Propose the patrons in the rules in `changes` (with sworn: the deed companions judge when the stranger swears to that patron), and give holy places their faith. Say in `say` what people swear by, for the voice step. If the designer wants death to have its own words, propose rules.death in `changes` (vision with {guide}, guide, patron, wake, mark with {lost}, rite_where, rite_done, rite_nothing, and a price only if the designer asks for one); otherwise leave it out and death reads plain. If data/voice.yaml exists (the voice step comes before this one), add each faith\'s oaths to it under voice.oaths, keyed by the faith\'s id, and send data/voice.yaml whole in `files`.',
   },
   {
     id: 'places',
@@ -150,7 +189,7 @@ export const WORLD_STEPS: readonly WorldStep[] = [
       'Which places can the stranger stand in (five to ten to begin with), and which is the first?',
       'How do they connect, and how many minutes is it between them?',
     ],
-    fills: [
+    fills: [{ kind: 'voice' },
       { kind: 'areas' },
       { kind: 'locations' },
       { kind: 'world', keys: ['start'] },
@@ -158,7 +197,7 @@ export const WORLD_STEPS: readonly WorldStep[] = [
     optional: false,
     skipped: 'A world needs at least one area and one place, the start; the builder\'s first place stays.',
     checks: [
-      'Every description keeps the rules: three to five sentences, second person, present tense, a sense that is not sight, a hint at a way out.',
+      'Every description keeps the place rules below: three to five sentences and at most 70 words, second person, present tense, a sense that is not sight, a hint at one way out and not a list, topics in [brackets], one image of this world only, not opening with its own name, and no two places opening alike.',
       'Every thing a description brings in with "a" or "an" has a detail.',
       'The start location exists, and every place can be reached from it by exits.',
       'Places reached only by a line of transport also have a way on foot.',
@@ -168,7 +207,7 @@ export const WORLD_STEPS: readonly WorldStep[] = [
       'Where the stranger may try what the rules know no way for (an offering at a shrine, a word to a spirit, a curse, a bit of lore or craft), the place, its area or the object gets improvise: a domain (offering, curse, spirit, lore or craft), what the act may do (may: an item, an object\'s state, a condition from the rules, a standing with a faction, or a fact), a fallback line for without a model, and takes only if it may spend what the stranger offers. Left out: the fixed answer ("You think better of it").',
     ],
     prompt:
-      'STEP: PLACES. Agree the areas and the places with the designer. Propose areas and locations in `changes` (an area that turns the stranger back while something holds gets barred: when, carrying if it bars only someone who carries a thing of that tag, and the text; each location with its area, tags, aliases, summary, description with day and, where it differs, night, exits with minutes, and details), and start.location in `world`. The builder adds the way back for every exit. Give areas, and places that sound different from their area (an inn, a workshop, a shore), a sound. Give improvise to the places, areas and objects where the unexpected belongs (a shrine, a haunted pool, a spirit\'s hill), with the smallest may that fits.',
+      'STEP: PLACES. Agree the areas and the places with the designer. Propose areas and locations in `changes` (an area that turns the stranger back while something holds gets barred: when, carrying if it bars only someone who carries a thing of that tag, and the text; each location with its area, tags, aliases, summary, description with day and, where it differs, night, exits with minutes, and details), and start.location in `world`. The builder adds the way back for every exit. Give areas, and places that sound different from their area (an inn, a workshop, a shore), a sound. Give improvise to the places, areas and objects where the unexpected belongs (a shrine, a haunted pool, a spirit\'s hill), with the smallest may that fits. If data/voice.yaml has a group of speakers by where they live, give it the areas it now can (send data/voice.yaml whole in `files`).',
   },
   {
     id: 'professions',
@@ -177,7 +216,7 @@ export const WORLD_STEPS: readonly WorldStep[] = [
       'What do people here do all day: which trades and duties are there?',
       'When do they work, eat and sleep (a working day, shifts, a night watch)?',
     ],
-    fills: [{ kind: 'professions' }],
+    fills: [{ kind: 'voice' }, { kind: 'professions' }],
     optional: true,
     skipped: 'People keep to their homes.',
     checks: [
@@ -186,7 +225,7 @@ export const WORLD_STEPS: readonly WorldStep[] = [
       'Activities are sleep, work, eat, socialize, pray, free or home; pray only where there is faith.',
     ],
     prompt:
-      'STEP: PROFESSIONS. Agree the trades and their hours with the designer. Propose professions in `changes`: id, name and a schedule of blocks (from, to, activity), and teaches where a trade can be learnt.',
+      'STEP: PROFESSIONS. Agree the trades and their hours with the designer. Propose professions in `changes`: id, name and a schedule of blocks (from, to, activity), and teaches where a trade can be learnt. If data/voice.yaml has a group of speakers by what they do, give it the professions it now can (send data/voice.yaml whole in `files`).',
   },
   {
     id: 'people',
@@ -304,25 +343,6 @@ export const WORLD_STEPS: readonly WorldStep[] = [
     ],
     prompt:
       'STEP: SIGNALS. Agree with the designer which changes are signals and what custom follows. Propose watchers and aftermath in `changes`: a watcher with its signal and what sets it off, and an aftermath with the same signal and its steps. If there are creatures, propose them and their encounters too: a creature\'s faction and reputation (for won, paid, bound, freed or killed: which faction, by how much, why; left out, beating one costs 5 with its faction, paying gains 2, binding costs 10 and letting go gains 3), and tempts on an encounter that may turn a disloyal companion. Good news gets its custom as well: a repair, a danger past, a promise made good (made_good) or a craft passed on (pupil_learnt) may bring a feast, better prices for a while, a mood, a seat kept for the stranger, or a song that grows with each teller. Where the land has bogs, the rules may have the condition wet. Where the places step gave something improvise, an aftermath on the signal improvised with that thing\'s id as event lets it answer (the stone grows warm, the kabouters leave something).',
-  },
-  {
-    id: 'voice',
-    title: 'Voice',
-    ask: [
-      'How do people speak: their oaths, a saying or two, how they call a stranger?',
-      'How do they tell time and measure distance?',
-      'What words must never come up, because the thing does not exist here?',
-    ],
-    fills: [{ kind: 'voice' }],
-    optional: true,
-    skipped: 'Only the fixed core is kept out (a model speaking of models); nothing else counts as out of place, so in a science-fiction world a computer is fine.',
-    checks: [
-      'Oaths belong to a faith that exists; with no faith, oaths swear by what the faith step named.',
-      'What does not exist fits the frame (no magic in science fiction, no guns in a world without them).',
-      'Sayings are rare and short.',
-    ],
-    prompt:
-      'STEP: THE VOICE. Agree how people speak with the designer. Propose data/voice.yaml in `files`, in the shape the builder shows for voice, with the oaths (keyed by faith id only), sayings, groups (by the areas people live in or their professions, each with its own sayings and oaths: what technicians or coast folk exclaim goes on their group), forms of address, time and measures, and the words that do not exist here.',
   },
   {
     id: 'palette',

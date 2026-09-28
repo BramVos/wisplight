@@ -104,6 +104,8 @@ export interface EditorDraft {
   files?: { path: string; text: string }[]
   problems: string[]
   diffs: ShownChange[]
+  /** How the proposal's places read against the place rules, before it is accepted (M10.20). */
+  descriptions?: { summary: string; places: string[] }
 }
 
 /** The editor (M8): the desktop app writes the files; the browser preview keeps them in memory. */
@@ -158,6 +160,8 @@ export interface EditorBridge {
   worldFix(world: string, step: string, said: string, draft: Pick<EditorDraft, 'say' | 'questions' | 'changes' | 'world' | 'files'>, problems: string[]): Promise<EditorDraft>
   /** What this world build may spend and has spent, per step (M10.20); a limit to set, or counting from zero. */
   build(world: string, change?: { limit?: number; reset?: boolean }): Promise<BuildView & { adjusted: boolean }>
+  /** The polish round (M10.20): only the descriptions of the places the Check names, or these; light: the player's lighter model. */
+  polish(world: string, choice?: { ids?: string[]; light?: boolean }): Promise<EditorDraft>
   /** Enhance with AI (after M10.17): the designer's answer to a step written out as a fuller brief, with what only they can decide. */
   enhance(world: string, step: string, said: string): Promise<{ brief: string; open: string[]; problems: string[] }>
   /** The design log of a world (M10.18): as it stands, or after one change (a note, an answer being written, a decision). */
@@ -400,7 +404,7 @@ function contentFiles(): { path: string; text: string }[] {
  */
 export async function createEditor(): Promise<EditorBridge> {
   if (window.wisplight?.editor) return window.wisplight.editor
-  const { applyEdits, draftRequest, draftResult, editorView, entities, entityYaml, filesOfWorld, lineDiff, loadContent, MockLlm, newWorldFiles, paletteRequest, paletteView, readDraft, readPalette, readVoice, savePalette, saveVoice, simulate, voiceRequest, voiceYaml, withReturnExits, worldAtlasHtml, worldBook, worldsIn, worldStepRequest, worldFixRequest, mergeFix, enhanceRequest, readEnhance, hourlyBudget } = await import('../../engine')
+  const { applyEdits, draftRequest, draftResult, editorView, entities, entityYaml, filesOfWorld, lineDiff, loadContent, MockLlm, newWorldFiles, paletteRequest, paletteView, readDraft, readPalette, readVoice, savePalette, saveVoice, simulate, voiceRequest, voiceYaml, withReturnExits, worldAtlasHtml, worldBook, worldsIn, worldStepRequest, worldFixRequest, mergeFix, polishRequest, readPolish, descriptionCheck, enhanceRequest, readEnhance, hourlyBudget } = await import('../../engine')
   let all = contentFiles()
   const builds: Record<string, BuildView> = {}
   const shown = (changes: { path: string; before?: string; text: string }[]) => changes.map((c) => ({ path: c.path, fresh: c.before === undefined, lines: lineDiff(c.before ?? '', c.text) }))
@@ -412,6 +416,7 @@ export async function createEditor(): Promise<EditorBridge> {
     ...(draft.files ? { files: draft.files } : {}),
     problems: draft.problems,
     diffs: draft.result?.ok ? shown(draft.result.changes) : [],
+    ...(draft.result?.content && draft.changes.some((c) => c.kind === 'location') ? { descriptions: descriptionCheck(draft.result.content, new Set(draft.changes.filter((c) => c.kind === 'location').map((c) => c.id))) } : {}),
   })
   return {
     worlds: async () => worldsIn(all),
@@ -476,6 +481,10 @@ export async function createEditor(): Promise<EditorBridge> {
         adjusted = kept.adjusted
       }
       return { ...b, steps: { ...b.steps }, adjusted }
+    },
+    polish: async (world, choice) => {
+      const files = filesOfWorld(all, world)
+      return shownDraft(readPolish(files, (await new MockLlm().complete(polishRequest(files, choice?.ids, choice?.light !== false))).text))
     },
     worldFix: async (world, step, said, draft, problems) => {
       const files = filesOfWorld(all, world)

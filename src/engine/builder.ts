@@ -34,6 +34,81 @@ export function warnings(content: Content): string[] {
   return out
 }
 
+/** How one place's day description measures against the place rules (M10.20). */
+export interface PlaceMeasure {
+  id: string
+  words: number
+  sentences: number
+  /** Topics in [brackets], day and night. */
+  brackets: number
+  /** Ways out, and whether the description names every one (by direction or by the place it leads to). */
+  exits: number
+  namesEvery: boolean
+  /** The first three words, to find places that open alike. */
+  opening: string
+  /** Whether it opens with its own name ("The Commons is ..."), which the title above it already says. */
+  opensWithName: boolean
+}
+
+/** Measures every place's description against the place rules: words, sentences, [brackets], the ways out it names. */
+export function placeMeasures(content: Content): PlaceMeasure[] {
+  return [...content.locations.values()].map((location) => {
+    const day = location.description.day
+    const text = `${day} ${location.description.night ?? ''}`.toLowerCase()
+    const exits = Object.entries(location.exits).filter(([, e]) => e)
+    const named = exits.filter(([dir, exit]) => {
+      const to = content.locations.get(exit!.to)
+      const words = [dir, ...(to ? [to.name, ...to.aliases] : [])].map((w) => w.toLowerCase().replace(/^the /, '')).filter((w) => w.length > 2)
+      return words.some((w) => new RegExp(`\\b${w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`).test(day.toLowerCase()))
+    })
+    return {
+      id: location.id,
+      words: day.split(/\s+/).filter(Boolean).length,
+      sentences: day.split(/(?<=[.!?])\s+/).filter((s) => s.trim()).length,
+      brackets: (text.match(/\[[^\]]+\]/g) ?? []).length,
+      exits: exits.length,
+      namesEvery: exits.length >= 3 && named.length === exits.length,
+      opening: day.trim().toLowerCase().split(/\s+/).slice(0, 3).join(' '),
+      opensWithName: day.trim().toLowerCase().replace(/^the /, '').startsWith(location.name.toLowerCase().replace(/^the /, '')),
+    }
+  })
+}
+
+/**
+ * The descriptions of a world against the place rules of CLAUDE.md, for the
+ * Check (M10.20; the first real build, The Quiet Reach, averaged 88 words
+ * where the Nethermarch has 56, named no topic in [brackets], listed every way
+ * out, and opened each place alike): a summary to compare worlds by, and the
+ * places worth a look. Advice, not an error: a world loads either way.
+ */
+export function descriptionCheck(content: Content, only?: ReadonlySet<string>): { summary: string; places: string[] } {
+  const most = 70
+  const all = placeMeasures(content)
+  // A proposal's own places, measured against the whole world for places that open alike.
+  const measures = only ? all.filter((m) => only.has(m.id)) : all
+  if (!measures.length) return { summary: 'No places yet.', places: [] }
+  const openings = new Map<string, string[]>()
+  for (const m of all) openings.set(m.opening, [...(openings.get(m.opening) ?? []), m.id])
+  const alike = (m: PlaceMeasure) => (openings.get(m.opening) ?? []).filter((id) => id !== m.id)
+  const average = Math.round(measures.reduce((sum, m) => sum + m.words, 0) / measures.length)
+  const over = measures.filter((m) => m.words > most).length
+  const bracketed = measures.filter((m) => m.brackets > 0).length
+  const listing = measures.filter((m) => m.namesEvery).length
+  const opensAlike = measures.filter((m) => alike(m).length).length
+  const named = measures.filter((m) => m.opensWithName).length
+  const summary = `${measures.length} places: ${average} words on average (at most ${most} reads best; ${over} over), ${bracketed} with a topic in [brackets], ${listing} naming every way out of three or more, ${opensAlike} opening like another, ${named} opening with their own name.`
+  const places = measures.flatMap((m) => {
+    const notes = [
+      m.words > most ? `${m.words} words` : '',
+      m.namesEvery ? `names all ${m.exits} ways out` : '',
+      alike(m).length ? `opens like ${alike(m).join(', ')} ("${m.opening} ...")` : '',
+      m.opensWithName ? 'opens with its own name' : '',
+    ].filter(Boolean)
+    return notes.length ? [`${m.id}: ${notes.join('; ')}`] : []
+  })
+  return { summary, places }
+}
+
 /**
  * Things a description brings in ("a bowl of milk", "a hollow") that nothing
  * here answers to (after the M10 playtest): no detail, object, thing lying

@@ -76,6 +76,8 @@ contextBridge.exposeInMainWorld('wisplight', {
     worldFix: use('editor:world-fix'),
     // What a world build may spend and has spent, per step (M10.20).
     build: use('editor:build'),
+    // The polish round of place descriptions (M10.20).
+    polish: use('editor:polish'),
     // Enhance with AI: the answer to a step written out as a fuller brief (after M10.17).
     enhance: use('editor:enhance'),
     // The design log of a world (M10.18): read it, or write a note, an answer being written or a decision.

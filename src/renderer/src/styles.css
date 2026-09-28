@@ -1948,6 +1948,17 @@ pre.sheet {
   margin-bottom: 32px;
 }
 
+/* The polish round (M10.20): a place to tick, on one line with its name. */
+.editor-app .polish label.check {
+  display: block;
+}
+
+.editor-app .polish .check input[type='checkbox'] {
+  display: inline-block;
+  margin: 0 6px 0 0;
+  width: auto;
+}
+
 .contract-table td {
   vertical-align: top;
 }

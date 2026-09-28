@@ -4,7 +4,7 @@ import { appendFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFi
 import { tmpdir } from 'node:os'
 import { basename, dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { ContentError, discoveredAtlasHtml, draftRequest, readSaveFile, saveAbout, saveFileName, saveFileText, SAVE_FILE_EXTENSION, type SaveFile, draftResult, Engine, ENTITY_KINDS, lineDiff, MapPaletteSchema, paletteRequest, paletteView, readDraft, readPalette, readVoice, savePalette, saveVoice, voiceRequest, voiceYaml, worldStepRequest, worldFixRequest, mergeFix, enhanceRequest, readEnhance, type Content, type Edit, type EntityKind, type FileChange, type CheckpointedSave, type MapPalette, type Output, type SaveData } from '../engine'
+import { ContentError, discoveredAtlasHtml, draftRequest, readSaveFile, saveAbout, saveFileName, saveFileText, SAVE_FILE_EXTENSION, type SaveFile, draftResult, Engine, ENTITY_KINDS, lineDiff, MapPaletteSchema, paletteRequest, paletteView, readDraft, readPalette, readVoice, savePalette, saveVoice, voiceRequest, voiceYaml, worldStepRequest, worldFixRequest, mergeFix, polishRequest, readPolish, descriptionCheck, enhanceRequest, readEnhance, type Content, type Edit, type EntityKind, type FileChange, type CheckpointedSave, type MapPalette, type Output, type SaveData } from '../engine'
 import { designUpdate, readDesignChange } from '../engine/designlog'
 import { ContentEditor } from '../node/editor'
 import { checkInput } from './inputs'
@@ -637,7 +637,7 @@ handle('editor:draft', async (_event, world: unknown, ask: unknown, focus: unkno
     return { say: '', questions: [], changes: [], problems: [`The chronicler did not answer: ${error instanceof Error ? error.message : String(error)}`], diffs: [] }
   }
 })
-/** A proposal as the editor shows it: what the chronicler says, and the files as diffs. */
+/** A proposal as the editor shows it: what the chronicler says, the files as diffs, and how its places read (M10.20). */
 const shownDraft = (draft: ReturnType<typeof readDraft>) => ({
   say: draft.say,
   questions: draft.questions,
@@ -646,6 +646,7 @@ const shownDraft = (draft: ReturnType<typeof readDraft>) => ({
   ...(draft.files ? { files: draft.files } : {}),
   problems: draft.problems,
   diffs: draft.result?.ok ? shown(draft.result.changes) : [],
+  ...(draft.result?.content && draft.changes.some((c) => c.kind === 'location') ? { descriptions: descriptionCheck(draft.result.content, new Set(draft.changes.filter((c) => c.kind === 'location').map((c) => c.id))) } : {}),
 })
 // A step of building a world with the chronicler (M10.17), and saving what the designer accepts.
 handle('editor:world-step', async (_event, world: unknown, step: unknown, said: unknown) => {
@@ -681,6 +682,21 @@ handle('editor:world-fix', async (_event, world: unknown, step: unknown, said: u
     return shownDraft(mergeFix(files, proposal, (await llm.complete(worldFixRequest(files, String(step ?? ''), String(said ?? '').slice(0, 20000), proposal, why))).text))
   } catch (error) {
     return { ...proposal, problems: [`The chronicler did not answer: ${error instanceof Error ? error.message : String(error)}`, ...why], diffs: [] }
+  }
+})
+// The polish round (M10.20): the chronicler rewrites only the descriptions of the places the Check names, or those picked.
+handle('editor:polish', async (_event, world: unknown, choice: unknown) => {
+  devOnly()
+  await setup()
+  const llm = ai?.client()
+  if (!llm) return { say: '', questions: [], changes: [], problems: ["The chronicler polishes the places: connect a model in the game's Settings > AI first."], diffs: [] }
+  const files = await readContentFiles(contentDir(), worldOf(world))
+  const c = (choice && typeof choice === 'object' ? choice : {}) as { ids?: unknown; light?: unknown }
+  const ids = Array.isArray(c.ids) ? c.ids.filter((i): i is string => typeof i === 'string') : undefined
+  try {
+    return shownDraft(readPolish(files, (await llm.complete(polishRequest(files, ids, c.light !== false))).text))
+  } catch (error) {
+    return { say: '', questions: [], changes: [], problems: [`The chronicler did not answer: ${error instanceof Error ? error.message : String(error)}`], diffs: [] }
   }
 })
 // What a world build may spend and has spent, per step (M10.20): read it, set the limit, or count from zero.

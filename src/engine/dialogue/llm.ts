@@ -26,6 +26,12 @@ export interface LlmRequest {
    * records the failure, goes the same way.
    */
   timeoutMs?: number
+  /**
+   * A lighter model will do (M10.20: the polish round of place descriptions):
+   * the model the player chose for the brain, where there is one, in place of
+   * the role's own. The player's choice, not a model named in the code.
+   */
+  tier?: 'light'
   /** Structured context for the mock model; real providers ignore it. */
   meta?: Record<string, unknown>
 }

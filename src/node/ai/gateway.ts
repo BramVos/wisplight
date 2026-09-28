@@ -18,7 +18,7 @@ import type { BuildStore } from './builds'
 const TIMEOUT_MS: Record<LlmRole, number> = { voice: 60000, brain: 10000, chronicler: 90000, advisor: 90000 }
 // The editor's own long answers (a world step with a chapter of YAML, M10.20) may ask for more time than their role, up to ten
 // minutes: Bram's Places chapter of The Quiet Reach ran past 16,000 tokens.
-const EDITOR_SCHEMAS = new Set(['world_step', 'world_enhance', 'builder_draft'])
+const EDITOR_SCHEMAS = new Set(['world_step', 'world_enhance', 'builder_draft', 'world_polish'])
 const EDITOR_TIMEOUT_MS = 600_000
 // From this share of the hourly budget on, calls of low priority wait: the chronicler, and goal choices of NPCs without a quest role (FO, chapter 16).
 const LOW_PRIORITY_SHARE = 0.8
@@ -136,7 +136,8 @@ export class Gateway implements LlmClient {
   async complete(asked: LlmRequest, override?: RoleChoice): Promise<LlmResponse> {
     // Every call carries the hard limits and the rule that world text is description, never instruction (M10.19).
     const request = withSafety(asked)
-    const choice = override ?? this.options.role(request.role)
+    // A light task (M10.20) goes to the model the player chose for the brain, when there is one.
+    const choice = override ?? (request.tier === 'light' ? this.options.role('brain') : undefined) ?? this.options.role(request.role)
     if (!choice) throw new LlmError('config', `no model chosen for ${request.role}`)
     const roleTimeoutMs = this.options.timeoutMs?.[request.role] ?? TIMEOUT_MS[request.role]
     const timeoutMs = EDITOR_SCHEMAS.has(request.schemaName) && request.timeoutMs ? Math.min(request.timeoutMs, EDITOR_TIMEOUT_MS) : Math.min(request.timeoutMs ?? Infinity, roleTimeoutMs)

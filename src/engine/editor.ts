@@ -3,14 +3,14 @@ import { parseDocument, stringify } from 'yaml'
 import { DEFAULT_PALETTE, MapPaletteSchema, SURFACE, TERRAIN_ORDER, type Level, type MapPalette } from './map/palette'
 import { previewMapData, type HexMapData } from './map/view'
 import { ContentError, loadContent, type Content, type ContentFile, type Direction } from './content'
-import { regionPreview, sceneryWarnings, warnings } from './builder'
+import { descriptionCheck, placeMeasures, regionPreview, sceneryWarnings, warnings } from './builder'
 import { applyEdits, entities, entityYaml, ENTITY_KINDS, LISTS, locate, parseEntityYaml, patchWorld, voiceYaml, worldPrefix, type Edit, type EditResult, type EntityKind, type FileChange, type Raw } from './edit'
 import { worldFrame } from './dialogue/prompt'
 import { suspectText, worldText, type SuspectText } from './safety'
 import type { LlmRequest } from './dialogue/llm'
 import { voiceSummary } from './dialogue/voice'
 import { contractSummary, contractView, fieldsOf, stepFields } from './contract'
-import { WORLD_GUIDE, WORLD_STEPS } from './worldguide'
+import { PLACE_RULES, WORLD_GUIDE, WORLD_STEPS } from './worldguide'
 import { designPrompt } from './designlog'
 import { VoiceSchema } from './dialogue/voiceSchema'
 
@@ -39,6 +39,8 @@ export interface QuestSummary {
 
 export interface EditorView {
   world: { id: string; name: string; prefix: string }
+  /** The world's knobs as world.yaml sets them (M10.20). */
+  knobs: Record<string, number | Record<string, number>>
   lists: Record<EntityKind, EditorEntry[]>
   quests: QuestSummary[]
   /** Errors: the world does not load while there are any. */
@@ -47,6 +49,8 @@ export interface EditorView {
   warnings: string[]
   /** Things descriptions bring in with no detail to look at or handle (after the M10 playtest). */
   scenery: string[]
+  /** The descriptions against the place rules (M10.20): a summary, and the places worth a look. */
+  descriptions: { summary: string; places: string[] }
   /** Content text that reads like an instruction to the model (M10.19): a world may come from someone else. */
   suspect: SuspectText[]
   files: string[]
@@ -162,6 +166,7 @@ export function editorView(files: ContentFile[]): EditorView {
   const def = (world ? (parseEntityYaml(world.text).raw?.['world'] as Raw | undefined) : undefined) ?? {}
   return {
     world: { id: String(def['id'] ?? ''), name: String(def['name'] ?? ''), prefix: worldPrefix(files) },
+    knobs: (def['knobs'] as Record<string, number | Record<string, number>> | undefined) ?? {},
     lists,
     quests: entities(files, 'quest').map((q) => {
       const outcomes = (q.raw['outcomes'] as Raw[] | undefined) ?? []
@@ -177,6 +182,7 @@ export function editorView(files: ContentFile[]): EditorView {
     problems,
     warnings: content ? warnings(content) : [],
     scenery: content ? sceneryWarnings(content) : [],
+    descriptions: content ? descriptionCheck(content) : { summary: '', places: [] },
     suspect: content ? suspectText(content) : [],
     contract: contractView(content),
     worldKeys: fieldsOf('world').map((f) => ({ key: f.name, set: def[f.name] !== undefined })),
@@ -665,6 +671,12 @@ export function worldStepRequest(files: ContentFile[], stepId: string, said: str
   }).filter(Boolean)
   const order = WORLD_STEPS.map((s, i) => `${i + 1}. ${s.title}${s.id === step.id ? ' (NOW)' : ''}`).join(' ')
   const standing = stepEntities(files, step.fills)
+  // The voice kit as it stands, for a step that fills it and must send it back whole (M10.20: the voice
+  // step comes second, and faiths, places and professions add their part), and the voice itself where
+  // places and people are written, so they are in it from the start.
+  const voiceFile = files.find((f) => /(^|\/)data\/voice\.ya?ml$/.test(f.path))
+  const voiceNow = step.fills.some((f) => f.kind === 'voice') && voiceFile ? ['', 'DATA/VOICE.YAML NOW (send it whole, with your part added):', voiceFile.text] : []
+  const voiceOf = (step.id === 'places' || step.id === 'people') && content ? voiceSummary(content) : ''
   return {
     role: 'chronicler',
     system: [
@@ -672,6 +684,9 @@ export function worldStepRequest(files: ContentFile[], stepId: string, said: str
       '',
       `THE STEPS: ${order}`,
       step.prompt,
+      // The place rules word for word where descriptions are written (M10.20); other steps do not carry them.
+      ...(step.id === 'places' ? [PLACE_RULES] : []),
+      ...(voiceOf ? [voiceOf] : []),
       `ASK THE DESIGNER, if they have not said: ${step.ask.join(' ')}`,
       `CHECK BEFORE YOU PROPOSE: ${step.checks.join(' ')}`,
       `IF THE DESIGNER SKIPS THIS STEP: ${step.skipped}`,
@@ -685,7 +700,7 @@ export function worldStepRequest(files: ContentFile[], stepId: string, said: str
       instruction,
       'Answer in JSON: say, questions, changes (a new thing as full YAML; to add to or change a thing that exists, merge: true with only the fields you set, each of which replaces that field whole, so give a list whole; empty YAML without merge deletes), world (YAML of the top-level world.yaml keys to set, or empty), files (CHRONICLER.md, data/voice.yaml or data/journey.yaml whole, or none).',
     ].join('\n'),
-    prompt: [`WORLD.YAML NOW:`, worldFile?.text ?? '(none)', '', 'WHAT EXISTS:', ...index, ...(standing ? ['', standing] : []), '', `THE DESIGNER SAYS: ${said}`].join('\n'),
+    prompt: [`WORLD.YAML NOW:`, worldFile?.text ?? '(none)', '', 'WHAT EXISTS:', ...index, ...(standing ? ['', standing] : []), ...voiceNow, '', `THE DESIGNER SAYS: ${said}`].join('\n'),
     schemaName: 'world_step',
     schema: WORLD_STEP_SCHEMA,
     // A whole chapter answered in YAML (M10.20: Bram's People chapter holds eight people, their factions and the law;
@@ -726,6 +741,118 @@ export function stepEntities(files: ContentFile[], fills: readonly { kind: strin
     ...blocks,
     ...(left.length ? [`Too long to show here, by id only: ${left.join(', ')}.`] : []),
   ].join('\n')
+}
+
+const POLISH_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['say', 'places'],
+  properties: {
+    say: { type: 'string' },
+    places: { type: 'array', items: { type: 'object', additionalProperties: false, required: ['id', 'day', 'night'], properties: { id: { type: 'string' }, day: { type: 'string' }, night: { type: 'string' } } } },
+  },
+}
+
+/** The places the Check names under Descriptions (M10.20), by id. */
+export function placesToPolish(content: Content): string[] {
+  return descriptionCheck(content).places.map((line) => line.slice(0, line.indexOf(':')))
+}
+
+/**
+ * The polish round (M10.20; the first real build, The Quiet Reach, averaged 88
+ * words a place and listed every way out): the chronicler rewrites only the
+ * descriptions of the places the Check names, or those the designer picks, in
+ * the voice of the world and by the place rules. Ids, names, exits, details
+ * and what lies there stay. A safety net after the steps, not a step: the rules
+ * are in the places step itself. A lighter model will do (the player's model
+ * for the brain), unless the designer asks for the chronicler's.
+ */
+export function polishRequest(files: ContentFile[], ids?: string[], light = true): LlmRequest {
+  const content = safeLoad(files)
+  const instruction = files.filter((f) => /(^|\/)CHRONICLER\.md$/.test(f.path)).sort((a, b) => a.path.localeCompare(b.path)).map((f) => f.text).join('\n\n')
+  const measures = content ? placeMeasures(content) : []
+  const check = content ? descriptionCheck(content) : undefined
+  const chosen = ids?.length ? ids : content ? placesToPolish(content) : []
+  const places = chosen.flatMap((id) => (content?.locations.get(id) ? [content.locations.get(id)!] : []))
+  const askable = content ? [...new Set([...[...content.topics.values()].map((t) => t.name), ...[...content.npcs.values()].map((n) => n.name), ...[...content.locations.values()].map((l) => l.name)])] : []
+  const lines = places.map((l) => {
+    const m = measures.find((x) => x.id === l.id)
+    const ways = Object.entries(l.exits).flatMap(([dir, e]) => (e ? [`${dir} to ${content!.locations.get(e.to)?.name ?? e.to}`] : [])).join(', ')
+    const things = l.details.map((d) => d.words[0]).filter(Boolean).join(', ')
+    const note = check?.places.find((p) => p.startsWith(`${l.id}:`))?.slice(l.id.length + 2)
+    return [
+      `--- ${l.id}: ${l.name} (${content!.areas.get(l.area)?.name ?? l.area})`,
+      `ways out: ${ways || 'none'}`,
+      things ? `things it has, to keep in the text: ${things}` : '',
+      `day now (${m?.words ?? 0} words): ${l.description.day.trim().replace(/\s+/g, ' ')}`,
+      l.description.night ? `night now: ${l.description.night.trim().replace(/\s+/g, ' ')}` : 'night now: none (leave night empty)',
+      note ? `the Check says: ${note}` : '',
+    ]
+      .filter(Boolean)
+      .join('\n')
+  })
+  return {
+    role: 'chronicler',
+    ...(light ? { tier: 'light' as const } : {}),
+    system: [
+      'YOU POLISH THE DESCRIPTIONS OF THE PLACES OF A WORLD, in the voice of that world. The designer built it step by step; you rewrite only what a place says, so it reads by the rules below.',
+      '- Change only the day and night descriptions. Keep every fact, clue, person and thing the description names that the world relies on: the things listed per place stay in the text, and so do the way the place looks and works. Invent nothing: no new object, person, clue or way out.',
+      '- Keep the world\'s names and words exactly, in British spelling.',
+      '- A night description only where the place has one now; otherwise night is empty.',
+      '- Put in [brackets] only names from the list of what can be asked about, written as they are there.',
+      '',
+      PLACE_RULES,
+      '',
+      content ? voiceSummary(content) : '',
+      '',
+      instruction,
+      'Answer in JSON: say (one or two sentences on what you changed), places (id, day, night: only the places you rewrite).',
+    ].join('\n'),
+    prompt: ['WHAT CAN BE ASKED ABOUT (for [brackets]):', askable.join(', '), '', 'THE PLACES TO POLISH:', ...lines].join('\n'),
+    schemaName: 'world_polish',
+    schema: POLISH_SCHEMA,
+    // Per kind (CLAUDE.md): about 150 words a place, day and night, and a short say.
+    maxTokens: 400 * places.length + 600,
+    timeoutMs: 240000,
+    meta: { step: 'polish', prefix: worldPrefix(files), places: places.map((p) => p.id) },
+  }
+}
+
+/**
+ * The polished descriptions as a proposal: per place a change that sets only
+ * its description (merge), checked by loading the world with them. A place
+ * that no longer names a thing it has to look at is noted in the say.
+ */
+export function readPolish(files: ContentFile[], text: string): Draft {
+  let parsed: { say?: unknown; places?: unknown }
+  try {
+    parsed = JSON.parse(text.trim().replace(/^```(?:json)?\s*|\s*```$/g, '')) as typeof parsed
+  } catch {
+    return { say: '', questions: [], changes: [], problems: ['The chronicler did not answer in the agreed form.'] }
+  }
+  const content = safeLoad(files)
+  const changes: DraftChange[] = []
+  const problems: string[] = []
+  const notes: string[] = []
+  for (const p of Array.isArray(parsed.places) ? parsed.places : []) {
+    const place = p && typeof p === 'object' ? (p as { id?: unknown; day?: unknown; night?: unknown }) : {}
+    const id = typeof place.id === 'string' ? place.id : ''
+    const now = content?.locations.get(id)
+    if (!now) {
+      problems.push(`${id || '(no id)'}: no such place`)
+      continue
+    }
+    const day = typeof place.day === 'string' ? place.day.trim() : ''
+    if (!day) continue
+    const night = typeof place.night === 'string' ? place.night.trim() : ''
+    const keptNight = now.description.night ? (night || now.description.night.trim()) : ''
+    changes.push({ kind: 'location', id, merge: true, yaml: stringify({ description: { day: `${day}\n`, ...(keptNight ? { night: `${keptNight}\n` } : {}) } }) })
+    const lost = now.details.filter((d) => d.words.every((w) => !day.toLowerCase().includes(w.toLowerCase()))).map((d) => d.words[0])
+    if (lost.length) notes.push(`${id} no longer names ${lost.map((w) => `"${w}"`).join(', ')}`)
+  }
+  const say = [typeof parsed.say === 'string' ? parsed.say : '', notes.length ? `Worth a look: ${notes.join('; ')}.` : ''].filter(Boolean).join('\n\n')
+  const draft = checkedDraft(files, { say, questions: [], changes })
+  return { ...draft, problems: [...problems, ...draft.problems] }
 }
 
 const ENHANCE_SCHEMA = {

@@ -81,6 +81,8 @@ export class MockLlm implements LlmClient {
         ? this.worldStep(request.meta ?? {})
         : request.schemaName === 'world_enhance'
         ? this.enhance(request.meta ?? {})
+        : request.schemaName === 'world_polish'
+        ? JSON.stringify({ say: 'Without a model nothing is polished.', places: [] })
         : request.schemaName === 'palette_draft'
         ? this.palette(request.meta ?? {})
         : request.schemaName === 'voice_draft'
