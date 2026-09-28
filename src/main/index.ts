@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { ContentError, draftRequest, draftResult, Engine, worldBookHtml, ENTITY_KINDS, lineDiff, MapPaletteSchema, paletteRequest, paletteView, readDraft, readPalette, readVoice, savePalette, saveVoice, voiceRequest, voiceYaml, worldStepRequest, enhanceRequest, readEnhance, type Content, type Edit, type EntityKind, type FileChange, type CheckpointedSave, type MapPalette, type Output, type SaveData } from '../engine'
+import { designUpdate, readDesignChange } from '../engine/designlog'
 import { ContentEditor } from '../node/editor'
 import { worldBookFor, writeWorldBook } from '../node/worldbook'
 import type { ProviderId } from '../node/ai/providers'
@@ -550,6 +551,19 @@ ipcMain.handle('editor:enhance', async (_event, world: unknown, step: unknown, s
   } catch (error) {
     return { brief: '', open: [], problems: [`The chronicler did not answer: ${error instanceof Error ? error.message : String(error)}`] }
   }
+})
+// The design log of a world (M10.18): read it, or write one change (a note, an answer being written, a decision).
+ipcMain.handle('editor:design', async (_event, world: unknown, change: unknown) => {
+  devOnly()
+  const files = await readContentFiles(contentDir(), worldOf(world))
+  const checked = change === undefined ? undefined : readDesignChange(change)
+  const next = designUpdate(files, checked)
+  if (!next) return { notes: [], answers: {}, decisions: [] }
+  if (checked) {
+    ignoreWatchUntil = Date.now() + 1500
+    writeFileSync(join(contentDir(), next.path), next.text, 'utf8')
+  }
+  return next.log
 })
 ipcMain.handle('editor:save-draft', async (_event, world: unknown, draft: unknown) => {
   devOnly()

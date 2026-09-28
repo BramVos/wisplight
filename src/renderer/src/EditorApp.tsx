@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { stringify } from 'yaml'
 import { adoptPlaceEdits, ENTITY_KINDS, exitTowards, KIND_NAMES, languageReference, markColours, parseEntityYaml, WORLD_STEPS, type MapPlace, type ReferenceEntry } from '../../engine'
+import type { DesignLog } from '../../engine/designlog'
 import { NpcInspector } from './Inspector'
 import { HexMap } from './HexMap'
 import type { MapPalette, MapStyle, MapStyleName, PaletteView } from '../../engine'
@@ -1355,15 +1356,41 @@ function WorldSteps({ bridge, world, view, saved, existing = false }: { bridge: 
   const [open, setOpen] = useState<string[]>([])
   const [before, setBefore] = useState<string>()
   const [enhanceProblems, setEnhanceProblems] = useState<string[]>([])
+  // The design log (M10.18): answers kept as they are typed, decisions recorded, the designer's notes.
+  const [log, setLog] = useState<DesignLog>({ notes: [], answers: {}, decisions: [] })
+  const [askedFor, setAskedFor] = useState('')
+  const [why, setWhy] = useState('')
+  const [note, setNote] = useState('')
   const step = WORLD_STEPS[at]!
+  useEffect(() => {
+    let live = true
+    void bridge.design(world).then((l) => {
+      if (!live) return
+      setLog(l)
+      setSaid((s) => s || l.answers[WORLD_STEPS[0]!.title] || '')
+    })
+    return () => {
+      live = false
+    }
+  }, [bridge, world])
+  // What is typed is kept (M10.20: nothing the designer writes is lost), a moment after the typing stops.
+  useEffect(() => {
+    if ((log.answers[step.title] ?? '') === said) return
+    const timer = setTimeout(() => void bridge.design(world, { answer: { step: step.title, text: said } }).then(setLog), 800)
+    return () => clearTimeout(timer)
+  }, [said, step.title, world, bridge, log.answers])
+  const record = (decision: 'accepted' | 'changed' | 'rejected' | 'skipped', from?: EditorDraft, reason = '') =>
+    bridge.design(world, { decision: { step: step.title, decision, asked: from ? askedFor : said, say: from?.say ?? '', questions: from?.questions ?? [], changed: from ? changedBy(from) : [], reason } }).then(setLog)
   const go = (index: number) => {
-    setAt(Math.max(0, Math.min(WORLD_STEPS.length - 1, index)))
-    setSaid('')
+    const next = Math.max(0, Math.min(WORLD_STEPS.length - 1, index))
+    setAt(next)
+    setSaid(log.answers[WORLD_STEPS[next]!.title] ?? '')
     setDraft(undefined)
     setOutcome(undefined)
     setOpen([])
     setBefore(undefined)
     setEnhanceProblems([])
+    setWhy('')
   }
   const enhance = async () => {
     setBusy(true)
@@ -1385,6 +1412,10 @@ function WorldSteps({ bridge, world, view, saved, existing = false }: { bridge: 
   const propose = async () => {
     setBusy(true)
     setOutcome(undefined)
+    // Asking again with a proposal still open: the designer changed their answer.
+    if (draft && !draft.problems.length) await record('changed', draft, why)
+    setAskedFor(said.trim())
+    setWhy('')
     try {
       setDraft(await bridge.worldStep(world, step.id, said.trim()))
     } catch (reason) {
@@ -1401,9 +1432,20 @@ function WorldSteps({ bridge, world, view, saved, existing = false }: { bridge: 
     setOutcome(result)
     if (result.ok) {
       setDone((d) => ({ ...d, [step.id]: 'saved' }))
+      await record('accepted', draft)
       setDraft(undefined)
       await saved()
     }
+  }
+  const drop = async () => {
+    if (draft && !draft.problems.length) await record('rejected', draft, why)
+    setDraft(undefined)
+    setWhy('')
+  }
+  const decided = (id: string) => {
+    const title = WORLD_STEPS.find((s) => s.id === id)?.title
+    const last = [...log.decisions].reverse().find((d) => d.step === title && d.decision !== 'changed')
+    return done[id] ?? (last?.decision === 'accepted' ? 'saved' : last?.decision === 'skipped' ? 'skipped' : undefined)
   }
   return (
     <section className="world-steps">
@@ -1421,7 +1463,7 @@ function WorldSteps({ bridge, world, view, saved, existing = false }: { bridge: 
         {WORLD_STEPS.map((s, i) => (
           <button key={s.id} type="button" className={i === at ? 'active' : ''} onClick={() => go(i)}>
             {i + 1}. {s.title}
-            {done[s.id] === 'saved' ? ' (saved)' : done[s.id] === 'skipped' ? ' (skipped)' : s.optional ? '' : ' *'}
+            {decided(s.id) === 'saved' ? ' (saved)' : decided(s.id) === 'skipped' ? ' (skipped)' : s.optional ? '' : ' *'}
           </button>
         ))}
       </nav>
@@ -1435,7 +1477,7 @@ function WorldSteps({ bridge, world, view, saved, existing = false }: { bridge: 
         ))}
       </ul>
       <p className="small muted">If you skip it: {step.skipped}</p>
-      <textarea rows={before === undefined ? 4 : 10} value={said} onChange={(e) => setSaid(e.target.value)} placeholder="Your answer, in a few sentences. Or: you choose." aria-label="Your answer to the chronicler" />
+      <textarea rows={before === undefined ? 8 : 12} value={said} onChange={(e) => setSaid(e.target.value)} placeholder="Your answer, in a few sentences. Or: you choose." aria-label="Your answer to the chronicler" />
       {open.length > 0 && (
         <div className="small">
           <p className="muted">Only you can decide:</p>
@@ -1485,6 +1527,7 @@ function WorldSteps({ bridge, world, view, saved, existing = false }: { bridge: 
             disabled={busy}
             onClick={() => {
               setDone((d) => ({ ...d, [step.id]: 'skipped' }))
+              void record('skipped')
               go(at + 1)
             }}
           >
@@ -1498,10 +1541,55 @@ function WorldSteps({ bridge, world, view, saved, existing = false }: { bridge: 
         )}
         {busy && <span className="muted small">The chronicler is writing...</span>}
       </div>
-      {draft && <DraftView draft={draft} busy={busy} accept={() => void accept()} drop={() => setDraft(undefined)} />}
+      {draft && (
+        <>
+          <DraftView draft={draft} busy={busy} accept={() => void accept()} drop={() => void drop()} />
+          {!draft.problems.length && (
+            <input className="small" value={why} onChange={(e) => setWhy(e.target.value)} placeholder="If you drop it or ask again: why? (optional, for the design log)" aria-label="Why you drop this proposal" />
+          )}
+        </>
+      )}
       {outcome && (outcome.ok ? <p className="ok small">Saved. {outcome.changes.length} files changed.</p> : <SaveResult result={outcome} />)}
+      <h3>Notes for this world</h3>
+      <p className="muted small">
+        Why the world is as it is, in your own words. They go in the design log (DESIGN.md), with every proposal and what you decided, and the chronicler reads them before it proposes.
+      </p>
+      {log.notes.length > 0 && (
+        <ul className="check-list small">
+          {log.notes.map((n, i) => (
+            <li key={i}>{n}</li>
+          ))}
+        </ul>
+      )}
+      <div className="row">
+        <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="There is no faith here, because..." aria-label="A note for this world" />
+        <button
+          type="button"
+          className="link"
+          disabled={!note.trim()}
+          onClick={() => {
+            void bridge.design(world, { note }).then(setLog)
+            setNote('')
+          }}
+        >
+          [Add note]
+        </button>
+      </div>
+      {log.decisions.length > 0 && (
+        <p className="muted small">
+          {log.decisions.length} {log.decisions.length === 1 ? 'decision' : 'decisions'} in the design log.
+        </p>
+      )}
     </section>
   )
+}
+
+/** What a proposal touched, for the design log: entities by kind and id, the world keys and whole files. */
+function changedBy(draft: EditorDraft): string[] {
+  const out = draft.changes.map((c) => `${c.kind} ${c.id}${c.yaml.trim() ? '' : ' (removed)'}`)
+  if (draft.world?.trim()) out.push(`world.yaml: ${draft.world.split('\n').filter((l) => /^[a-z_]+:/.test(l)).map((l) => l.split(':')[0]).join(', ') || 'keys'}`)
+  for (const f of draft.files ?? []) out.push(f.path)
+  return out
 }
 
 /**

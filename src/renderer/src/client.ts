@@ -1,4 +1,5 @@
 import type { CreationData, DiffLine, DraftChange, Edit, EditorView, EntityKind, JournalPage, MapPalette, Output, PaletteView, Raw, SimReport, Status, WorldInfo } from '../../engine'
+import { designUpdate, type DesignChange, type DesignLog } from '../../engine/designlog'
 import type { DevSection, DevView } from '../../engine/dev'
 import type { Advice, TrialResult, TrialVerdict } from '../../node/ai/advisor'
 import type { AiLogEntry } from '../../node/ai/log'
@@ -129,6 +130,8 @@ export interface EditorBridge {
   worldStep(world: string, step: string, said: string): Promise<EditorDraft>
   /** Enhance with AI (after M10.17): the designer's answer to a step written out as a fuller brief, with what only they can decide. */
   enhance(world: string, step: string, said: string): Promise<{ brief: string; open: string[]; problems: string[] }>
+  /** The design log of a world (M10.18): as it stands, or after one change (a note, an answer being written, a decision). */
+  design(world: string, change?: DesignChange): Promise<DesignLog>
   /** Saves a proposal the designer accepts: entities, world.yaml keys and whole files. */
   saveDraft(world: string, draft: Pick<EditorDraft, 'changes' | 'world' | 'files'>): Promise<EditorSave>
 }
@@ -352,6 +355,12 @@ export async function createEditor(): Promise<EditorBridge> {
       return shownDraft(readDraft(files, (await new MockLlm().complete(worldStepRequest(files, step, said))).text))
     },
     enhance: async (world, step, said) => readEnhance((await new MockLlm().complete(enhanceRequest(filesOfWorld(all, world), step, said))).text),
+    design: async (world, change) => {
+      const next = designUpdate(filesOfWorld(all, world), change)
+      if (!next) return { notes: [], answers: {}, decisions: [] }
+      if (change) all = [...all.filter((f) => f.path !== next.path), { path: next.path, text: next.text }]
+      return next.log
+    },
     worldBook: async (world) => {
       const files = filesOfWorld(all, world)
       const worldContent = loadContent(files)

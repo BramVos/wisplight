@@ -1,5 +1,14 @@
 # Changelog
 
+## M10.18 deel B: het ontwerplogboek van een wereld, 28 september 2026
+
+- **Wat je typt, blijft bewaard.** In het stappenpaneel van de editor wordt je antwoord op een stap een moment nadat je stopt met typen opgeslagen, in `content/<wereld>/DESIGN.md`. Ga je naar een andere stap of start je de editor opnieuw, dan staat het er weer. Een geplakt document met eigen kopjes breekt het logboek niet.
+- **Elk besluit in het logboek.** Neem je een voorstel aan, gooi je het weg, vraag je opnieuw of sla je een stap over, dan komt dat in het logboek met de datum, wat je vroeg, wat de kroniekverteller zei en terugvroeg, wat het voorstel veranderde, en je reden als je er een geeft (in het veld onder het voorstel).
+- **Notities.** Onder de stappen schrijf je waarom de wereld is zoals hij is ("There is no faith here, because..."). De kroniekverteller leest de notities en de laatste besluiten mee bij elke stap, bij Enhance with AI en bij de schrijfhulp, zodat hij niet opnieuw voorstelt wat je afwees.
+- **In het wereldboek.** Het logboek is het laatste hoofdstuk van het wereldboek van deel A ("How this world was made").
+
+Testen: bouw verder aan een wereld in de editor, typ een antwoord, ga naar een andere stap en terug; gooi een voorstel weg met een reden; voeg een notitie toe; kijk in `content/<wereld>/DESIGN.md`. Tests in `tests/designlog.test.ts` en `tests/m1020.test.ts`.
+
 ## M10.18 deel A: het wereldboek en de kroniek per spel, 28 september 2026
 
 - **Een wereldboek uit de content.** `npm run worldbook base` (of `isle`, of een andere wereld) schrijft `content/<wereld>/WORLDBOOK.md`: de wereld, de kaart, geschiedenis en lore, machten, geloven, dorpen, de startstreek, de plekken, de mensen met banden en beroepen, geheimen, bestiarium, munten en kalender, quests, namen en spraak, ambachten, vervoer, wat er gebeurt als (de wachters en nasleep in gewone taal), de regels in het kort, en hoe de wereld eruitziet en klinkt. De volgorde is die van het Nethermarch-wereldboek. Een soort die een wereld niet heeft, geeft geen hoofdstuk: Deepwell heeft geen Faith, Bestiary of regels.

@@ -48,6 +48,8 @@ contextBridge.exposeInMainWorld('wisplight', {
     worldStep: (world: string, step: string, said: string) => ipcRenderer.invoke('editor:world-step', world, step, said),
     // Enhance with AI: the answer to a step written out as a fuller brief (after M10.17).
     enhance: (world: string, step: string, said: string) => ipcRenderer.invoke('editor:enhance', world, step, said),
+    // The design log of a world (M10.18): read it, or write a note, an answer being written or a decision.
+    design: (world: string, change?: unknown) => ipcRenderer.invoke('editor:design', world, change),
     saveDraft: (world: string, draft: unknown) => ipcRenderer.invoke('editor:save-draft', world, draft),
     // The world book (M10.18): written next to the content and saved as HTML.
     worldBook: (world: string) => ipcRenderer.invoke('editor:worldbook', world),
