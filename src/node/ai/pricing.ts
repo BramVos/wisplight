@@ -43,12 +43,14 @@ export function priceTable(ids: string[]): Record<string, Price> {
   return Object.fromEntries(ids.flatMap((id) => (priceOf(id) ? [[id, priceOf(id)!]] : [])))
 }
 
-export function costUsd(model: string, usage: { inputTokens: number; outputTokens: number; cachedTokens: number; cacheWriteTokens?: number }): number | undefined {
+export function costUsd(model: string, usage: { inputTokens: number; outputTokens: number; cachedTokens: number; cacheWriteTokens?: number; cacheWriteHourTokens?: number }): number | undefined {
   const price = priceOf(model)
   if (!price) return undefined
   const written = usage.cacheWriteTokens ?? 0
+  // Kept an hour (M10.20): twice the input price, where five minutes is 1.25 times.
+  const hour = Math.min(written, usage.cacheWriteHourTokens ?? 0)
   const uncached = Math.max(0, usage.inputTokens - usage.cachedTokens - written)
-  return (uncached * price.input + usage.cachedTokens * price.cachedInput + written * (price.cacheWrite ?? price.input) + usage.outputTokens * price.output) / 1_000_000
+  return (uncached * price.input + usage.cachedTokens * price.cachedInput + (written - hour) * (price.cacheWrite ?? price.input) + hour * price.input * 2 + usage.outputTokens * price.output) / 1_000_000
 }
 
 /**

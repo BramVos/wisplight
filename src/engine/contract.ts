@@ -373,11 +373,38 @@ export function contractView(content: Content | undefined): { key: string; file:
  * The contract in short for the writing aid (M10.17): per kind one line, what
  * it is for, what this world has and what is still empty.
  */
-export function contractSummary(content: Content | undefined): string {
+export function contractSummary(content: Content | undefined, counted = true): string {
   return [
     'WHAT A WORLD CAN HAVE (the content contract; propose nothing outside it, and only fields it names):',
-    ...contractView(content).map((k) => `- ${k.key} (${k.file}): ${k.does} ${k.count ? `This world has ${k.list ? k.count : 'it'}.` : `Empty now: ${k.missing}`}${(FIELD_NOTES[k.key] ?? []).map((note) => ` Note: ${note}`).join('')}`),
+    ...contractView(content).map((k) => `- ${k.key} (${k.file}): ${k.does} ${!counted ? `When empty: ${k.missing}` : k.count ? `This world has ${k.list ? k.count : 'it'}.` : `Empty now: ${k.missing}`}${(FIELD_NOTES[k.key] ?? []).map((note) => ` Note: ${note}`).join('')}`),
   ].join('\n')
+}
+
+/**
+ * The fields every thing of a kind must have (M10.20: the places step of the
+ * trial run proposed a pass for a locked hangar as an item without its value,
+ * because a step is shown the exact fields only of the kinds it fills). One
+ * line a kind, for the part of a world step that is cached.
+ */
+export function requiredFields(): string {
+  const shape = (FileSchema as unknown as { shape: Record<string, Schema> }).shape
+  const lines = Object.keys(shape).flatMap((key) => {
+    const needed = fieldsOf(key).filter((f) => f.required).map((f) => f.name)
+    return needed.length ? [`- ${key}: ${needed.join(', ')}`] : []
+  })
+  return ['A NEW THING OF ANY KIND HAS AT LEAST THESE FIELDS (of the kinds this step fills, the exact fields follow below):', ...lines].join('\n')
+}
+
+/**
+ * What a world has of each kind, in one line (M10.20): for the world steps,
+ * which read the contract without the counts from the cache, so the counts,
+ * which change with every step, go with the step.
+ */
+export function contractState(content: Content | undefined): string {
+  const view = contractView(content)
+  const has = view.filter((k) => k.count).map((k) => (k.list ? `${k.key} ${k.count}` : k.key))
+  const empty = view.filter((k) => !k.count).map((k) => k.key)
+  return `THIS WORLD HAS NOW: ${has.join(', ') || 'nothing yet'}.${empty.length ? ` Empty: ${empty.join(', ')}.` : ''}`
 }
 
 /** Why the fields of an entity are not in the contract, or undefined: for the editor, with the fields a kind has. */

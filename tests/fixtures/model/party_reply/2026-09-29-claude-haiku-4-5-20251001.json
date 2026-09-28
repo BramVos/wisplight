@@ -1,0 +1,14 @@
+{
+  "kind": "party_reply",
+  "about": "two companions answer together about the Haakman",
+  "model": "claude-haiku-4-5-20251001",
+  "provider": "anthropic",
+  "date": "2026-09-29",
+  "usage": {
+    "inputTokens": 1071,
+    "cachedTokens": 0,
+    "outputTokens": 84
+  },
+  "reply": "{\"lines\": [{\"speaker\": \"npc_wouter\", \"text\": \"He is real enough—the water keeps its own law, and we must respect it or pay the price.\"}, {\"speaker\": \"npc_gerrit\", \"text\": \"Superstition, maybe, but the fen folk believe it fierce, and belief has its own teeth here.\"}]}",
+  "problems": []
+}

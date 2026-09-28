@@ -55,6 +55,7 @@ export { WatcherSchema, AftermathSchema, VerbTextSchema, type Watcher, type Afte
 export * from './edit'
 export * from './editor'
 export * from './worldguide'
+export * from './worldrun'
 export * from './sound'
 export * from './safety'
 export * from './worldbook'

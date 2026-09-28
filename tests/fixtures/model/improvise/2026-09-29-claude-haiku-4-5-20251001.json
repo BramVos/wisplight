@@ -1,0 +1,14 @@
+{
+  "kind": "improvise",
+  "about": "an offering the rules have no way for",
+  "model": "claude-haiku-4-5-20251001",
+  "provider": "anthropic",
+  "date": "2026-09-29",
+  "usage": {
+    "inputTokens": 1338,
+    "cachedTokens": 0,
+    "outputTokens": 121
+  },
+  "reply": "{\"narration\": \"You upend the jug over the gnarled oak, and milk streams down the furrowed bark, soaking into the earth between the roots. The liquid disappears into the hollow with a soft gurgle, and the quiet deepens—the wind truly does seem to pause. For a moment, the shadows beneath the oak seem to shift, though nothing moves that you can see.\", \"spent\": true, \"effect\": {\"kind\": \"standing\", \"id\": \"kabouters\", \"delta\": 1, \"title\": \"\"}}",
+  "problems": []
+}

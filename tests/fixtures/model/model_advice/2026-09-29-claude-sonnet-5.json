@@ -1,0 +1,14 @@
+{
+  "kind": "model_advice",
+  "about": "advice for the three roles",
+  "model": "claude-sonnet-5",
+  "provider": "anthropic",
+  "date": "2026-09-29",
+  "usage": {
+    "inputTokens": 3389,
+    "cachedTokens": 0,
+    "outputTokens": 584
+  },
+  "reply": "{\"provider\":\"anthropic\",\"advisorModel\":\"claude-sonnet-5\",\"voice\":{\"recommended\":{\"model\":\"claude-sonnet-5\",\"reason\":\"Sonnet-5 offers strong, natural in-character English dialogue with fast responses and reliable JSON formatting at a low known price, fitting the 4-second and cost targets for high-frequency VOICE calls.\"},\"cheaper\":{\"model\":\"claude-haiku-4-5-20251001\",\"reason\":\"Haiku is the cheapest known-priced model with good speed and adequate short-form dialogue quality, trading some nuance for a much lower cost per hour given VOICE's high call volume.\"}},\"brain\":{\"recommended\":{\"model\":\"claude-haiku-4-5-20251001\",\"reason\":\"Selecting 1-3 goals from a fixed list is a simple structured task that Haiku handles reliably and cheaply while easily meeting the 4-second latency target.\"},\"cheaper\":{\"model\":\"claude-haiku-4-5-20251001\",\"reason\":\"Haiku is already the cheapest known-priced model in the lineup, so there is no cheaper known-priced alternative to offer for this lightweight decision task.\"}},\"chronicler\":{\"recommended\":{\"model\":\"claude-opus-5-5\",\"reason\":\"Chronicler runs infrequently but needs strong prose quality and factual consistency over long context, and Opus-5-5 gives the best writing quality among known-priced models while its cheap cached-input rate keeps the mostly-cached 4,500 tokens affordable.\"},\"cheaper\":{\"model\":\"claude-sonnet-5\",\"reason\":\"Sonnet-5 is a much cheaper known-priced option that still produces coherent, fact-grounded long-form lore text, sacrificing some literary polish to comfortably stay under the 0.03 USD per-run budget.\"}},\"unknownPrices\":[]}",
+  "problems": []
+}

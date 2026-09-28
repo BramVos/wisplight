@@ -368,3 +368,48 @@ export const WORLD_STEPS: readonly WorldStep[] = [
       'STEP: THE PALETTE. Agree the colours and the picture style with the designer. Propose in `world`: map with its palette (names for each terrain, used in the map\'s hex names and texts, and for the ways road, path and canal when this world calls them otherwise; signs: this world\'s own signs on the land, each with a name, a shape, the land it lies on and its share, the line walking past, and means danger or uncertain where colour alone would not say it; dark and paper styles: ground, unknown, label, label_shadow, terrain tints, ways, a glyph colour for every sign and for stairs, visited, trail) and pictures.style. Name the signs by what they are in this world, never by the Nethermarch\'s pool, peat_pit, willow, ruin or hummock unless they are those. Without signs the world keeps the Nethermarch\'s. The palette lives in world.yaml, not in a file of its own. When the world has a region map (the Palette tab lays out a first one from the places, their exits and minutes, all in one land), paint it as a change of kind region with merge: true: zones, the drawing with this world\'s lands where the designer\'s words put them (the sea, the shallows, the scrub); lands, each own terrain with like (woods, fields, fen, water or heath: how it walks) and text (the line the stranger reads there); and paths with a text each; and beyond: for each edge the line the stranger reads on reaching it (what lies that way and how far, from the designer\'s words) and toward, the far places that way by topic. Keep its places, size and origin; a place is moved by its area\'s pos, not in the drawing. Without a region, propose none, and say that the Palette tab makes one from the places.',
   },
 ]
+
+/**
+ * What one world step may cost, and what it is shown (M10.20; the build of
+ * The Quiet Reach cost 10.09 dollars on Opus 5.5, every step with the whole
+ * world.yaml, room for 48,000 tokens and the model thinking at its default).
+ * A table takes little thought and may go to the lighter model the player
+ * chose for the brain; a story gets more. The measurement is in
+ * docs/worldbuild/cost-measure.md.
+ */
+export interface StepCall {
+  /** The most it writes for a short chapter; a longer chapter gets more (stepMaxTokens). */
+  maxTokens: number
+  effort: 'low' | 'medium'
+  /** A table: the model the player chose for the brain writes it (tier light). */
+  light: boolean
+  /** The keys of world.yaml it is shown besides the ones it fills and the frame. */
+  world: string[]
+  /** The kinds in the list of what exists that it is shown besides its own; undefined for all. */
+  sees?: string[]
+}
+
+export const STEP_CALLS: Record<WorldStep['id'], StepCall> = {
+  frame: { maxTokens: 4000, effort: 'medium', light: false, world: [], sees: [] },
+  voice: { maxTokens: 8000, effort: 'low', light: true, world: ['faiths', 'names'], sees: ['areas', 'professions', 'npcs'] },
+  calendar: { maxTokens: 8000, effort: 'low', light: true, world: [], sees: [] },
+  money: { maxTokens: 8000, effort: 'low', light: true, world: [], sees: ['items'] },
+  faiths: { maxTokens: 8000, effort: 'medium', light: false, world: ['calendar', 'names'], sees: ['areas', 'professions', 'rules.patrons'] },
+  places: { maxTokens: 16000, effort: 'medium', light: false, world: ['names'], sees: ['areas', 'locations', 'regions', 'settlements', 'topics'] },
+  professions: { maxTokens: 8000, effort: 'low', light: false, world: ['money'], sees: ['items', 'locations', 'areas'] },
+  people: { maxTokens: 16000, effort: 'medium', light: false, world: ['faiths', 'money'] },
+  economy: { maxTokens: 8000, effort: 'low', light: false, world: ['money', 'calendar'] },
+  passages: { maxTokens: 8000, effort: 'low', light: true, world: ['money', 'calendar', 'names'] },
+  watcher: { maxTokens: 8000, effort: 'medium', light: false, world: ['weather', 'calendar', 'law'] },
+  palette: { maxTokens: 8000, effort: 'low', light: false, world: ['names'], sees: ['areas', 'locations', 'regions'] },
+}
+
+/**
+ * The most a step may write (M10.20): its own measure, and more for a long
+ * chapter, since the answer grows with what the designer wrote (six tokens
+ * of YAML for each token of the chapter, as the build of The Quiet Reach
+ * wrote), never more than 48,000.
+ */
+export function stepMaxTokens(stepId: WorldStep['id'], said: string): number {
+  return Math.min(48000, STEP_CALLS[stepId].maxTokens + 6 * Math.ceil(said.length / 4))
+}

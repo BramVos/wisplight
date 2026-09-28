@@ -1,0 +1,14 @@
+{
+  "kind": "far_place",
+  "about": "a far place made playable (zwolderkamp)",
+  "model": "claude-opus-5-5",
+  "provider": "anthropic",
+  "date": "2026-09-29",
+  "usage": {
+    "inputTokens": 1956,
+    "cachedTokens": 0,
+    "outputTokens": 820
+  },
+  "reply": "{\"places\":[{\"key\":\"gate\",\"name\":\"The Oosterpoort\",\"description\":\"You come up the raised road between wet meadows to a squat brick gatehouse flying the red cog of the League. Toll-men in blue coats count your packs, and the air smells of tar, wet wool and horse dung. Carts from the west queue behind you, their axles creaking. Beyond the gate a cobbled street runs downhill toward the sound of voices, and a narrow towpath slips off along the moat to the north.\"},{\"key\":\"market\",\"name\":\"The Waagplein\",\"description\":\"You stand in a wide square before the tall weighhouse, where the great beam scales clank as sacks of grain and bales of cloth are weighed and stamped. Fishwives shout their prices over the clatter of pattens on stone, and the smell of smoked eel and fresh bread hangs thick. Clerks of the League stroll among the stalls with ledgers, noting who owes what to whom. A lane between the cloth-halls leads down to the river wharves, and another climbs toward the painted sign of an inn.\"},{\"key\":\"inn\",\"name\":\"The Gilded Cog\",\"description\":\"You duck under a low beam into a long room warmed by a peat fire, its smoke sweet and earthy in your throat. Merchants in fur-trimmed gowns bargain in low voices at the tables, and a bargeman sings off-key by the hearth. Ale is poured from a great cask by the stair, and the floor is strewn with fresh rushes that crackle underfoot. A back door opens onto the stable yard, where carts leave at first light for the roads west and south.\"}],\"people\":[{\"key\":\"merchant\",\"name\":\"Berber Lakenman\",\"pronoun\":\"she\",\"looks\":\"A broad, grey-haired woman in a good green gown, with a measuring rod always tucked under her arm.\",\"speech\":\"Brisk and blunt, quick with sums; says 'Better half an egg than an empty shell' when she haggles.\",\"fact\":\"She sells fine cloth from the south, and it is said she holds a share of the Count's debt to the League.\"},{\"key\":\"innkeeper\",\"name\":\"Reinout Tapper\",\"pronoun\":\"he\",\"looks\":\"A tall, stooped man with a bald crown and a leather apron stained dark with ale.\",\"speech\":\"Slow and friendly, lowers his voice for gossip, swears 'by the Lantern'.\",\"fact\":\"He hears every rumour the merchants bring, and has lately been asking travellers about the troubles in the Holleveen.\"}]}",
+  "problems": []
+}

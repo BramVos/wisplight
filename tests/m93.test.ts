@@ -393,14 +393,18 @@ describe('M9.3: the model trial', () => {
 
   it('tries the brain on goal choices and the chronicler on a drowning and a theft, with the game checks', async () => {
     const brain = await trial(gateway(temp(), mocked('good'), 10), content, 'openai', 'gpt-4.1-mini', 'brain')
-    expect(brain.answers).toBe(3)
-    expect(brain.valid).toBe(3)
+    // Three goal choices, and since M10.20 the brain's other kinds once each: a line overheard, a second look at lore.
+    expect(brain.answers).toBe(5)
+    expect(brain.valid).toBe(5)
     const chronicler = await trial(gateway(temp(), mocked('good'), 10), content, 'openai', 'gpt-4.1-mini', 'chronicler')
-    expect(chronicler).toMatchObject({ answers: 2, valid: 2, leaks: 0, factualErrors: 0 })
+    // A drowning and a theft, then a journey, a far place, a district, a weave, a legend and an outline.
+    expect(chronicler).toMatchObject({ answers: 8, valid: 8, leaks: 0, factualErrors: 0 })
     const inventing = await trial(gateway(temp(), mocked('invent'), 10), content, 'openai', 'gpt-4.1-mini', 'chronicler')
     expect(inventing.factualErrors).toBeGreaterThan(0)
     const broken = await trial(gateway(temp(), mocked('invalid'), 10), content, 'openai', 'gpt-4.1-mini', 'chronicler')
-    expect(broken).toMatchObject({ valid: 0, fallbacks: 2 })
+    // Both chronicle runs fall to the templates (the mock's invalid mode breaks only some of the other kinds).
+    expect(broken.fallbacks).toBeGreaterThanOrEqual(2)
+    expect(broken.errors.filter((e) => e.startsWith('chronicle:'))).not.toEqual([])
   }, 120_000)
 
   it('chooses the cheapest usable answer among models that pass, not the cheapest call', () => {

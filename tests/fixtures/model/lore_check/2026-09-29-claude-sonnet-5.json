@@ -1,0 +1,14 @@
+{
+  "kind": "lore_check",
+  "about": "a second look at the lore of a drowning",
+  "model": "claude-sonnet-5",
+  "provider": "anthropic",
+  "date": "2026-09-29",
+  "usage": {
+    "inputTokens": 727,
+    "cachedTokens": 0,
+    "outputTokens": 40
+  },
+  "reply": "{\"invented\": [\"Mirte saw it from the bakery\", \"the water took Harmen before anyone could reach him\"]}",
+  "problems": []
+}

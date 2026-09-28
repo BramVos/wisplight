@@ -1,0 +1,14 @@
+{
+  "kind": "npc_goals",
+  "about": "a villager chooses the day's goals",
+  "model": "claude-sonnet-5",
+  "provider": "anthropic",
+  "date": "2026-09-29",
+  "usage": {
+    "inputTokens": 2850,
+    "cachedTokens": 0,
+    "outputTokens": 264
+  },
+  "reply": "{\"goals\":[{\"type\":\"Buy\",\"target\":\"flour\",\"priority\":0.9,\"why\":\"The mill won't turn again before winter, so I'd best get flour now while Lubbert still has stock, before it runs short.\"},{\"type\":\"Produce\",\"target\":\"rye_bread\",\"priority\":0.7,\"why\":\"I need to bake today to keep the shop going and put food on the table while Joris is away.\"},{\"type\":\"Visit\",\"target\":\"l8\",\"priority\":0.3,\"why\":\"A quick word with Saint Brand for a safe day and news of the missing girl wouldn't go amiss.\"}],\"mood\":\"tired but purposeful, a little worried about the mill news and the money owed to Harmen\",\"note\":\"Mirte wants to secure flour before the mill trouble makes it scarce, then get bread in the oven for the day.\"}",
+  "problems": []
+}

@@ -91,9 +91,10 @@ export function openAiProvider(apiKey: string): Provider {
                 { role: 'system', content: request.system },
                 { role: 'user', content: request.prompt },
               ],
-              response_format: { type: 'json_schema', json_schema: { name: request.schemaName, schema: request.schema, strict: true } },
+              // Strict only where OpenAI allows it (M10.20): every field required and every object closed; otherwise the schema guides and the game's readers check.
+              response_format: { type: 'json_schema', json_schema: { name: request.schemaName, schema: request.schema, strict: openAiStrict(request.schema) } },
               max_completion_tokens: reasoning ? Math.max(request.maxTokens * 4, 2000) : request.maxTokens,
-              ...(reasoning ? { reasoning_effort: 'low' as const } : {}),
+              ...(reasoning ? { reasoning_effort: request.effort ?? ('low' as const) } : {}),
             },
             { signal },
           )
@@ -121,8 +122,10 @@ export function openAiProvider(apiKey: string): Provider {
   }
 }
 
-export function anthropicProvider(apiKey: string): Provider {
-  const client = new Anthropic({ apiKey, maxRetries: 1 })
+export function anthropicProvider(apiKey: string, given?: Pick<Anthropic, 'messages' | 'models'>): Provider {
+  const client = given ?? new Anthropic({ apiKey, maxRetries: 1 })
+  // The kinds whose schema Anthropic would not compile (M10.20): asked without the grammar from then on.
+  const loose = new Set<string>()
   return {
     id: 'anthropic',
     async listModels() {
@@ -138,30 +141,47 @@ export function anthropicProvider(apiKey: string): Provider {
       // always on, leave room for it (Claude API documentation, thinking and effort).
       const alwaysThinks = /fable|mythos|opus-5-5/.test(model)
       const thinkingByDefault = /opus-5|sonnet-5/.test(model) && !alwaysThinks
-      try {
-        // Streamed (M10.20): the SDK refuses a long answer in one piece, and a world step may write a whole chapter of YAML.
+      const effort = request.effort && takesEffort(model) ? { effort: request.effort } : {}
+      // Streamed (M10.20): the SDK refuses a long answer in one piece, and a world step may write a whole chapter of YAML.
+      const ask = async (schema: unknown) => {
         const { data: stream, response: raw } = await client.messages
           .stream(
             {
               model,
               max_tokens: request.maxTokens + (alwaysThinks ? 4000 : 0),
-              system: [{ type: 'text', text: request.system, cache_control: { type: 'ephemeral' } }],
+              system: systemBlocks(request, schema === undefined ? looseLine(request.schema) : undefined),
               messages: [{ role: 'user', content: request.prompt }],
-              output_config: { format: { type: 'json_schema', schema: request.schema } },
+              output_config: { ...(schema !== undefined ? { format: { type: 'json_schema' as const, schema: schema as Record<string, unknown> } } : {}), ...effort },
               ...(thinkingByDefault ? { thinking: { type: 'disabled' as const } } : {}),
             },
             { signal },
           )
           .withResponse()
-        const response = await stream.finalMessage()
+        return { response: await stream.finalMessage(), raw }
+      }
+      try {
+        // Structured output where the schema allows it (M10.20: the real trial of every kind found Anthropic refusing
+        // a map, maxItems, and the chronicle's schema as too large); otherwise the schema as words, and the game's
+        // readers check the reply as they always do.
+        const strict = loose.has(request.schemaName) ? undefined : anthropicSchema(request.schema)
+        let asked: Awaited<ReturnType<typeof ask>>
+        try {
+          asked = await ask(strict)
+        } catch (error) {
+          if (strict === undefined || !schemaRefused(error)) throw error
+          loose.add(request.schemaName)
+          asked = await ask(undefined)
+        }
+        const { response, raw } = asked
         const cacheWrite = response.usage.cache_creation_input_tokens ?? 0
         const cacheRead = response.usage.cache_read_input_tokens ?? 0
-        const usage = { inputTokens: response.usage.input_tokens + cacheWrite + cacheRead, outputTokens: response.usage.output_tokens, cachedTokens: cacheRead, cacheWriteTokens: cacheWrite }
+        const hour = response.usage.cache_creation?.ephemeral_1h_input_tokens ?? 0
+        const usage = { inputTokens: response.usage.input_tokens + cacheWrite + cacheRead, outputTokens: response.usage.output_tokens, cachedTokens: cacheRead, cacheWriteTokens: cacheWrite, ...(hour ? { cacheWriteHourTokens: hour } : {}) }
         if (response.stop_reason === 'refusal') throw new LlmError('refusal', 'the model declined')
         if (response.stop_reason === 'max_tokens') throw new LlmError('invalid', 'reply was cut off', usage)
         const text = response.content.flatMap((block) => (block.type === 'text' ? [block.text] : [])).join('')
         return {
-          text,
+          text: strict === undefined || loose.has(request.schemaName) ? jsonOf(text) : text,
           provider: 'anthropic',
           model: response.model,
           usage,
@@ -173,6 +193,100 @@ export function anthropicProvider(apiKey: string): Provider {
       }
     },
   }
+}
+
+/** Whether OpenAI's strict structured outputs take a schema: every object closed, with all its fields required. */
+export function openAiStrict(schema: unknown): boolean {
+  const ok = (node: unknown): boolean => {
+    if (Array.isArray(node)) return node.every(ok)
+    if (!node || typeof node !== 'object') return true
+    const n = node as Record<string, unknown>
+    if (n['type'] === 'object') {
+      const fields = Object.keys((n['properties'] as Record<string, unknown> | undefined) ?? {})
+      const required = new Set((n['required'] as string[] | undefined) ?? [])
+      if (n['additionalProperties'] !== false || !fields.length || fields.some((f) => !required.has(f))) return false
+    }
+    return Object.entries(n).every(([key, value]) => (key === 'properties' ? Object.values(value as Record<string, unknown>).every(ok) : key === 'enum' || key === 'required' || key === 'const' ? true : ok(value)))
+  }
+  return ok(schema)
+}
+
+// What Anthropic's structured outputs leave out of JSON Schema (Claude API documentation, JSON schema
+// limitations): numbers, lengths and array sizes as constraints. The game's readers check them.
+const UNSUPPORTED = new Set(['minimum', 'maximum', 'exclusiveMinimum', 'exclusiveMaximum', 'multipleOf', 'minLength', 'maxLength', 'minItems', 'maxItems', 'uniqueItems', 'pattern', 'minProperties', 'maxProperties'])
+
+/**
+ * A JSON schema as Anthropic's structured outputs take it (M10.20): the
+ * constraints it does not know dropped, every object closed; undefined where
+ * it cannot be said at all, a map of names (additionalProperties with a
+ * schema) or an object without fields.
+ */
+export function anthropicSchema(schema: unknown): unknown | undefined {
+  const walk = (node: unknown): unknown => {
+    if (Array.isArray(node)) return node.map(walk)
+    if (!node || typeof node !== 'object') return node
+    const n = node as Record<string, unknown>
+    const out: Record<string, unknown> = {}
+    for (const [key, value] of Object.entries(n)) {
+      if (UNSUPPORTED.has(key)) continue
+      if (key === 'properties' || key === '$defs' || key === 'definitions') out[key] = Object.fromEntries(Object.entries(value as Record<string, unknown>).map(([k, v]) => [k, walk(v)]))
+      else if (key === 'additionalProperties' || key === 'enum' || key === 'const' || key === 'required') out[key] = value
+      else out[key] = walk(value)
+    }
+    const isObject = n['type'] === 'object' || (Array.isArray(n['type']) && n['type'].includes('object'))
+    if (isObject) {
+      if (n['additionalProperties'] !== undefined && n['additionalProperties'] !== false) throw new Error('a map')
+      if (!n['properties']) throw new Error('an object without fields')
+      out['additionalProperties'] = false
+    }
+    return out
+  }
+  try {
+    return walk(schema)
+  } catch {
+    return undefined
+  }
+}
+
+/** Whether a 400 is about the schema of the reply, so that asking without it may work. */
+function schemaRefused(error: unknown): boolean {
+  const e = error as { status?: number; message?: string }
+  return e?.status === 400 && /grammar|output_config\.format|json_schema|schema/i.test(e.message ?? '')
+}
+
+/** The line that asks for JSON when the schema cannot go as a grammar. */
+function looseLine(schema: unknown): string {
+  return `ANSWER FORMAT: one JSON object and nothing else (no code fence, no words around it), in this shape (JSON schema): ${JSON.stringify(schema)}`
+}
+
+/** The JSON object in a reply that was asked for without a grammar: a fence or words around it taken off. */
+export function jsonOf(text: string): string {
+  const bare = text.trim().replace(/^```(?:json)?\s*|\s*```$/g, '')
+  if (bare.startsWith('{')) return bare
+  const from = bare.indexOf('{')
+  const to = bare.lastIndexOf('}')
+  return from >= 0 && to > from ? bare.slice(from, to + 1) : bare
+}
+
+/**
+ * The system part as Anthropic takes it (M10.20): what stays the same from
+ * call to call with the cache mark, what changes after it, so a world step
+ * reads the guide and the contract from the cache instead of writing them
+ * again with its own step and log.
+ */
+export function systemBlocks(request: Pick<LlmRequest, 'system' | 'cacheBreak' | 'cacheHour'>, tail?: string): { type: 'text'; text: string; cache_control?: { type: 'ephemeral'; ttl?: '1h' } }[] {
+  const cut = Math.max(0, Math.min(request.cacheBreak ?? request.system.length, request.system.length))
+  const fixed = request.system.slice(0, cut)
+  const rest = `${request.system.slice(cut)}${tail ? `\n\n${tail}` : ''}`
+  return [
+    ...(fixed.trim() ? [{ type: 'text' as const, text: fixed, cache_control: { type: 'ephemeral' as const, ...(request.cacheHour ? { ttl: '1h' as const } : {}) } }] : []),
+    ...(rest.trim() ? [{ type: 'text' as const, text: rest }] : []),
+  ]
+}
+
+/** Models that take an effort (Claude API documentation, effort): Opus from 4.5, Sonnet from 4.6, and what came after. */
+export function takesEffort(model: string): boolean {
+  return /opus-4-[5-9]|opus-5|sonnet-4-6|sonnet-5|fable|mythos/.test(model)
 }
 
 export function createProvider(id: ProviderId, apiKey: string): Provider {

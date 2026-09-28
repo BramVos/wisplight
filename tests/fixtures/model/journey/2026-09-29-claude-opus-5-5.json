@@ -1,0 +1,14 @@
+{
+  "kind": "journey",
+  "about": "an hour on foot along the dyke",
+  "model": "claude-opus-5-5",
+  "provider": "anthropic",
+  "date": "2026-09-29",
+  "usage": {
+    "inputTokens": 1001,
+    "cachedTokens": 0,
+    "outputTokens": 67
+  },
+  "reply": "{\"text\":\"You keep to the dyke path west for an hour's walk. The wind blows in off the water, and the reeds bend low before it. When the noon bell would be ringing, you come to the sluice.\"}",
+  "problems": []
+}

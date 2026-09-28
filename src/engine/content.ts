@@ -1744,7 +1744,8 @@ function checkCrafts(c: Pick<Content, 'crafts' | 'professions' | 'objectTypes' |
   // What a failed recipe leaves (M10.14): the poorer thing must exist.
   const failureRefs = (f: CraftFailure | undefined, where: string) => {
     if (!f) return
-    if ((f.outcome === 'poor' || f.critical === 'poor') && !f.item) problems.push(`${where}: a poor outcome needs the item it makes`)
+    // Which field says poor, and what to add (M10.20: the trial run's fix round did not see that `critical: poor` was meant).
+    if ((f.outcome === 'poor' || f.critical === 'poor') && !f.item) problems.push(`${where}: failure.${f.outcome === 'poor' ? 'outcome' : 'critical'} is poor, so failure.item must name the poorer item it makes (or choose another outcome)`)
     if (f.item && !c.items.has(f.item)) problems.push(`${where}: a failure makes ${f.item}, which is no item`)
   }
   for (const item of c.items.values()) if (item.of && !c.items.has(item.of)) problems.push(`item ${item.id}: a poorer make of ${item.of}, which is no item`)

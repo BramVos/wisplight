@@ -24,6 +24,8 @@
     "knobs": "tsx scripts/knobs.ts",
     "longrun": "tsx scripts/longrun.ts",
     "stutter": "tsx scripts/stutter.ts",
+    "trial": "tsx scripts/trial.ts",
+    "coverage": "tsx scripts/coverage.ts",
     "playtest": "tsx scripts/playtest.ts",
     "content:contract": "tsx scripts/contract.ts"
   },

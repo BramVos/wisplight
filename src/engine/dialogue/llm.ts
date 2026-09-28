@@ -32,6 +32,17 @@ export interface LlmRequest {
    * the role's own. The player's choice, not a model named in the code.
    */
   tier?: 'light'
+  /**
+   * Where the part of `system` that stays the same from call to call ends
+   * (M10.20: the world steps, whose guide, contract and working instruction
+   * stay the same for twelve steps while the step and the design log change).
+   * The providers cache up to here; without it, the whole system part.
+   */
+  cacheBreak?: number
+  /** Keep that part an hour rather than five minutes (M10.20: a designer reads a proposal for minutes between two steps). */
+  cacheHour?: boolean
+  /** How hard the model thinks, where the model lets itself be told (M10.20): low for a table, medium for a story. Without it, the provider's default. */
+  effort?: 'low' | 'medium' | 'high'
   /** Structured context for the mock model; real providers ignore it. */
   meta?: Record<string, unknown>
 }
@@ -44,6 +55,8 @@ export interface LlmUsage {
   cachedTokens: number
   /** Input written to the cache on this call (M9.3; Anthropic prices it apart). */
   cacheWriteTokens?: number
+  /** Of those, the tokens kept for an hour (M10.20), at twice the input price. */
+  cacheWriteHourTokens?: number
 }
 
 export interface LlmResponse {

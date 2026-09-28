@@ -1,0 +1,14 @@
+{
+  "kind": "test_call",
+  "about": "a short call to the chronicler's model",
+  "model": "claude-opus-5-5",
+  "provider": "anthropic",
+  "date": "2026-09-29",
+  "usage": {
+    "inputTokens": 540,
+    "cachedTokens": 0,
+    "outputTokens": 9
+  },
+  "reply": "{\"ok\":true}",
+  "problems": []
+}

@@ -9,8 +9,8 @@ import { worldFrame } from './dialogue/prompt'
 import { suspectText, worldText, type SuspectText } from './safety'
 import type { LlmRequest } from './dialogue/llm'
 import { voiceSummary } from './dialogue/voice'
-import { contractSummary, contractView, fieldsOf, stepFields } from './contract'
-import { PLACE_RULES, WORLD_GUIDE, WORLD_STEPS } from './worldguide'
+import { contractState, contractSummary, contractView, fieldsOf, requiredFields, stepFields } from './contract'
+import { PLACE_RULES, STEP_CALLS, stepMaxTokens, WORLD_GUIDE, WORLD_STEPS } from './worldguide'
 import { designPrompt } from './designlog'
 import { VoiceSchema } from './dialogue/voiceSchema'
 
@@ -477,6 +477,23 @@ const WORLD_STEP_SCHEMA = {
 const DRAFT_FILES = /^(?:CHRONICLER\.md|data\/voice\.yaml|data\/journey\.yaml)$/
 
 /**
+ * A whole data file with its top-level key put back when the proposal left it
+ * out (M10.20: the voice step on a lighter model wrote the voice kit's fields
+ * at the root of data/voice.yaml, and a round to put it right did the same).
+ * Only when every key at the root is a field of that file's kind.
+ */
+export function rootedFile(path: string, text: string): string {
+  const root = /^data\/(voice|journey)\.yaml$/.exec(path)?.[1]
+  if (!root) return text
+  const doc = parseDocument(text)
+  const data = doc.errors.length ? undefined : (doc.toJS() as unknown)
+  if (!data || typeof data !== 'object' || Array.isArray(data) || root in data) return text
+  const fields = new Set(fieldsOf(root).map((f) => f.name))
+  const keys = Object.keys(data)
+  return keys.length && keys.every((k) => fields.has(k)) ? stringify({ [root]: data }, { lineWidth: 0 }) : text
+}
+
+/**
  * A proposal as files (M10.17): the entities as edits, then the keys of
  * world.yaml, then whole files; checked by loading the world with all of it.
  */
@@ -519,10 +536,11 @@ export function draftResult(files: ContentFile[], draft: Pick<Draft, 'changes' |
       continue
     }
     const full = `${prefix}${path}`
+    const text = rootedFile(path, file.text)
     const before = next.find((f) => f.path === full)
-    if (before?.text === file.text) continue
-    next = before ? next.map((f) => (f === before ? { ...f, text: file.text } : f)) : [...next, { path: full, text: file.text }]
-    note({ path: full, ...(before ? { before: before.text } : {}), text: file.text })
+    if (before?.text === text) continue
+    next = before ? next.map((f) => (f === before ? { ...f, text } : f)) : [...next, { path: full, text }]
+    note({ path: full, ...(before ? { before: before.text } : {}), text })
   }
   if (problems.length) return { ok: false, problems, files: next, changes: [...changes.values()] }
   try {
@@ -646,7 +664,7 @@ export function worldFixRequest(files: ContentFile[], stepId: string, said: stri
     system: [
       base.system,
       '',
-      'PUTTING IT RIGHT: your proposal for this step did not load. Correct only what the problems name, and change nothing else: no new ideas, no other wording. Answer in the same JSON: say (one sentence: what you corrected), questions (none), changes (only the entities you correct, each whole, as full YAML; leave out every entity no problem touches), world and rules (whole again only if a problem is in them, otherwise empty), files (none, unless a problem is in one).',
+      'PUTTING IT RIGHT: your proposal for this step did not load. Correct only what the problems name, and change nothing else: no new ideas, no other wording. Answer in the same JSON: say (one sentence: what you corrected), questions (none), changes (only the entities you correct: a change that had merge: true again with merge: true and only its fields, any other whole, as full YAML; leave out every entity no problem touches), world and rules (whole again only if a problem is in them, otherwise empty), files (none, unless a problem is in one).',
     ].join('\n'),
     // Only why it did not load: an earlier failed call ("The chronicler did not answer: ...") is not the proposal's fault.
     prompt: [base.prompt, '', ...proposal, '', 'WHY IT DID NOT LOAD:', ...problems.filter((p) => !/^The chronicler (did not answer|puts it right)/.test(p)).map((p) => `- ${p}`)].join('\n'),
@@ -668,7 +686,14 @@ export function mergeFix(files: ContentFile[], draft: Pick<Draft, 'say' | 'quest
   const same = (a: DraftChange, b: DraftChange) => a.kind === b.kind && a.id === b.id
   // A correction never takes away (M10.20: a fix round answered with an empty change for a place, and its services went).
   const corrected = fix.changes.filter((f) => f.yaml.trim())
-  const changes = [...draft.changes.map((c) => corrected.find((f) => same(f, c)) ?? c), ...corrected.filter((f) => !draft.changes.some((c) => same(c, f)))]
+  // A correction of a change that adds to a thing adds to it as well (M10.20: the trial run's palette
+  // step added zones to a region, and the round to put it right sent the region back as a whole with
+  // only those fields, so its places, size and legend went).
+  const put = (c: DraftChange) => {
+    const f = corrected.find((x) => same(x, c))
+    return f ? (c.merge && !f.merge ? { ...f, merge: true } : f) : c
+  }
+  const changes = [...draft.changes.map(put), ...corrected.filter((f) => !draft.changes.some((c) => same(c, f)))]
   const whole = [...(draft.files ?? []).map((f) => fix.files?.find((x) => x.path === f.path) ?? f), ...(fix.files ?? []).filter((x) => !(draft.files ?? []).some((f) => f.path === x.path))]
   const world = fix.world ?? draft.world
   const rules = fix.rules ?? draft.rules
@@ -689,10 +714,13 @@ export function mergeFix(files: ContentFile[], draft: Pick<Draft, 'say' | 'quest
  */
 export function worldStepRequest(files: ContentFile[], stepId: string, said: string): LlmRequest {
   const step = WORLD_STEPS.find((s) => s.id === stepId) ?? WORLD_STEPS[0]!
+  const call = STEP_CALLS[step.id]
   const content = safeLoad(files)
   const instruction = files.filter((f) => /(^|\/)CHRONICLER\.md$/.test(f.path)).sort((a, b) => a.path.localeCompare(b.path)).map((f) => f.text).join('\n\n')
   const worldFile = files.find((f) => /(^|\/)world\.ya?ml$/.test(f.path))
-  const index = ENTITY_KINDS.map((kind) => {
+  // What exists, of the kinds this step fills and the ones it is shown (M10.20: not every kind for every step).
+  const own = new Set(step.fills.map((f) => f.kind))
+  const index = ENTITY_KINDS.filter((kind) => !call.sees || own.has(LISTS[kind]) || call.sees.includes(LISTS[kind])).map((kind) => {
     const list = entities(files, kind)
     return list.length ? `${LISTS[kind]}: ${list.map((e) => `${e.id} (${nameOf(kind, e.raw)})`).join(', ')}` : ''
   }).filter(Boolean)
@@ -704,38 +732,67 @@ export function worldStepRequest(files: ContentFile[], stepId: string, said: str
   const voiceFile = files.find((f) => /(^|\/)data\/voice\.ya?ml$/.test(f.path))
   const voiceNow = step.fills.some((f) => f.kind === 'voice') && voiceFile ? ['', 'DATA/VOICE.YAML NOW (send it whole, with your part added):', voiceFile.text] : []
   const voiceOf = (step.id === 'places' || step.id === 'people') && content ? voiceSummary(content) : ''
+  // The part that stays the same from step to step comes first and is cached (M10.20: the step came
+  // first, so each of twelve steps wrote some 18,000 tokens to the cache and never read them back).
+  const fixed = [
+    WORLD_GUIDE,
+    '',
+    contractSummary(content, false),
+    requiredFields(),
+    '',
+    instruction,
+    'Answer in JSON: say, questions, changes (a new thing as full YAML; to add to or change a thing that exists, merge: true with only the fields you set, each of which replaces that field whole, so give a list whole; empty YAML without merge deletes), world (YAML of the top-level world.yaml keys to set, or empty), rules (YAML of the top-level keys of the rules to set, such as death, or empty; patrons, conditions and ancestries are changes), files (CHRONICLER.md, data/voice.yaml under its key voice:, or data/journey.yaml under its key journey:, each whole, or none).',
+    '',
+  ].join('\n')
+  const changing = [
+    `THE STEPS: ${order}`,
+    step.prompt,
+    // The place rules word for word where descriptions are written (M10.20); other steps do not carry them.
+    ...(step.id === 'places' ? [PLACE_RULES] : []),
+    ...(voiceOf ? [voiceOf] : []),
+    `ASK THE DESIGNER, if they have not said: ${step.ask.join(' ')}`,
+    `CHECK BEFORE YOU PROPOSE: ${step.checks.join(' ')}`,
+    `IF THE DESIGNER SKIPS THIS STEP: ${step.skipped}`,
+    '',
+    stepFields(step.fills),
+    '',
+    designPrompt(files),
+  ].join('\n')
+  const keys = [...step.fills.filter((f) => f.kind === 'world').flatMap((f) => f.keys ?? []), ...call.world]
   return {
     role: 'chronicler',
-    system: [
-      WORLD_GUIDE,
-      '',
-      `THE STEPS: ${order}`,
-      step.prompt,
-      // The place rules word for word where descriptions are written (M10.20); other steps do not carry them.
-      ...(step.id === 'places' ? [PLACE_RULES] : []),
-      ...(voiceOf ? [voiceOf] : []),
-      `ASK THE DESIGNER, if they have not said: ${step.ask.join(' ')}`,
-      `CHECK BEFORE YOU PROPOSE: ${step.checks.join(' ')}`,
-      `IF THE DESIGNER SKIPS THIS STEP: ${step.skipped}`,
-      '',
-      contractSummary(content),
-      '',
-      stepFields(step.fills),
-      '',
-      designPrompt(files),
-      '',
-      instruction,
-      'Answer in JSON: say, questions, changes (a new thing as full YAML; to add to or change a thing that exists, merge: true with only the fields you set, each of which replaces that field whole, so give a list whole; empty YAML without merge deletes), world (YAML of the top-level world.yaml keys to set, or empty), rules (YAML of the top-level keys of the rules to set, such as death, or empty; patrons, conditions and ancestries are changes), files (CHRONICLER.md, data/voice.yaml or data/journey.yaml whole, or none).',
-    ].join('\n'),
-    prompt: [`WORLD.YAML NOW:`, worldFile?.text ?? '(none)', '', 'WHAT EXISTS:', ...index, ...(standing ? ['', standing] : []), ...voiceNow, '', `THE DESIGNER SAYS: ${said}`].join('\n'),
+    system: fixed + changing,
+    cacheBreak: fixed.length,
+    cacheHour: true,
+    prompt: [`WORLD.YAML NOW (${keys.length ? 'the keys this step needs' : 'what it is'}):`, worldFile ? worldKeys(worldFile.text, keys) : '(none)', '', contractState(content), '', 'WHAT EXISTS:', ...index, ...(standing ? ['', standing] : []), ...voiceNow, '', `THE DESIGNER SAYS: ${said}`].join('\n'),
     schemaName: 'world_step',
     schema: WORLD_STEP_SCHEMA,
-    // A whole chapter answered in YAML (M10.20: Bram's People chapter holds eight people, their factions and the law;
-    // his Places chapter ran past 12,000 tokens in the real app). The gateway allows it ten minutes.
-    maxTokens: 48000,
+    // A whole chapter answered in YAML, measured per step (M10.20: Bram's People chapter holds eight people,
+    // their factions and the law). A table takes little thought and may go to the lighter model.
+    maxTokens: stepMaxTokens(step.id, said),
+    effort: call.effort,
+    ...(call.light ? { tier: 'light' as const } : {}),
     timeoutMs: 600000,
     meta: { step: step.id, ask: said, prefix: worldPrefix(files), world: worldFacts(files) },
   }
+}
+
+/**
+ * world.yaml with only the keys a step needs (M10.20: every step was sent the
+ * whole file, map and pictures included): its own keys, the ones the guide
+ * names for it, and always the name, the start and the frame. Other top-level
+ * keys than `world` go whole.
+ */
+export function worldKeys(text: string, keys: string[]): string {
+  const doc = parseDocument(text)
+  const data = doc.errors.length ? undefined : (doc.toJS() as Record<string, unknown> | null)
+  if (!data || typeof data !== 'object') return text
+  const keep = new Set(['id', 'name', 'start', 'frame', ...keys])
+  const world = data['world']
+  if (!world || typeof world !== 'object' || Array.isArray(world)) return text
+  const kept = Object.fromEntries(Object.entries(world as Record<string, unknown>).filter(([key]) => keep.has(key)))
+  const left = Object.keys(world).filter((key) => !keep.has(key))
+  return `${stringify({ ...data, world: kept }, { lineWidth: 0 }).trimEnd()}${left.length ? `\n# not shown here: ${left.join(', ')}` : ''}`
 }
 
 /**
@@ -1140,7 +1197,9 @@ export function voiceRequest(files: ContentFile[], ask: string): LlmRequest {
       '',
       content ? worldText(worldFrame(content)) : '',
       '',
-      'YOU ARE IN THE WORLD BUILDER, AT THE VOICE KIT. Propose how people in this world speak, as YAML with these keys: oaths (per faith id, two or three each), sayings (three or four of the whole region), groups (id, name, areas, professions, two or three sayings each), default_group, address (stranger, known, friend, high; "she/he/they" forms allowed), time, distance, measures, and not_here (word, and instead when people here have a word for it; weekdays and months of our world with this world\'s own). Sayings are rare in play: make them few and good. JSON only, with the YAML as a string.',
+      'YOU ARE IN THE WORLD BUILDER, AT THE VOICE KIT. Propose how people in this world speak, as YAML with these keys: oaths (per faith id, two or three each), sayings (three or four of the whole region), groups (id, name, areas, professions, two or three sayings each), default_group, address (stranger, known, friend, high; "she/he/they" forms allowed), time, distance, measures, and not_here (word, and instead when people here have a word for it; weekdays and months of our world with this world\'s own). Sayings are rare in play: make them few and good. JSON only, with the YAML as a string: the fields below at its top, with or without voice: above them.',
+      // The exact fields (M10.20: the real trial of this call wrote each time phrase as a map where the kit has a line of text).
+      stepFields([{ kind: 'voice' }]),
     ].join('\n'),
     prompt: [`FAITHS: ${faiths}`, `AREAS: ${areas}`, `TRADES: ${trades}`, '', 'THE KIT NOW:', now || '(none yet)', '', `THE DESIGNER ASKS: ${ask || 'a voice kit that fits this world'}`].join('\n'),
     schemaName: 'voice_draft',
@@ -1159,7 +1218,9 @@ export function readVoice(text: string): { say: string; yaml?: string; problems:
     return { say: '', problems: ['The writing aid did not answer in the agreed form.'] }
   }
   const yaml = typeof parsed.yaml === 'string' ? parsed.yaml : ''
-  const raw = parseEntityYaml(yaml).raw
+  const read = parseEntityYaml(yaml).raw
+  // The kit under its file's key is the kit as well (M10.20: the writing aid is shown the fields as the file has them).
+  const raw = read && Object.keys(read).length === 1 && read['voice'] && typeof read['voice'] === 'object' ? (read['voice'] as Record<string, unknown>) : read
   const kit = raw ? VoiceSchema.safeParse(raw) : undefined
-  return { say: typeof parsed.say === 'string' ? parsed.say : '', ...(kit?.success ? { yaml } : {}), problems: kit?.success ? [] : kit ? kit.error.issues.slice(0, 5).map((i) => `voice ${i.path.join('.')}: ${i.message}`) : ['The proposal is no YAML.'] }
+  return { say: typeof parsed.say === 'string' ? parsed.say : '', ...(kit?.success ? { yaml: raw === read ? yaml : stringify(raw, { lineWidth: 0 }) } : {}), problems: kit?.success ? [] : kit ? kit.error.issues.slice(0, 5).map((i) => `voice ${i.path.join('.')}: ${i.message}`) : ['The proposal is no YAML.'] }
 }

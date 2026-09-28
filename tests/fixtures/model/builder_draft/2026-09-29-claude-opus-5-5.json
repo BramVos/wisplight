@@ -1,0 +1,14 @@
+{
+  "kind": "builder_draft",
+  "about": "the writing aid asked for a hamlet in Skerrow",
+  "model": "claude-opus-5-5",
+  "provider": "anthropic",
+  "date": "2026-09-29",
+  "usage": {
+    "inputTokens": 19676,
+    "cachedTokens": 0,
+    "outputTokens": 2288
+  },
+  "reply": "{\"say\":\"Before I write anything, one thing needs settling. The world book says Skerrow is 'a small rocky island with one fishing hamlet, Skerrow Hythe', so a second hamlet would contradict it. The questions below cover the choices that are yours; once you answer, I'll send the full YAML: the area, two or three locations, three NPCs, one topic and the exit on the existing place.\\n\\nHere is a sketch that fits the island as it stands, so you have something concrete to react to:\\n\\n**Gannet Holm.** A tidal islet off the Wreck Strand, reached by a causeway of weed-slick stones that the sea covers twice a day. It isn't a second fishing village: it's three turf huts, a goat fold and a gull-cliff. That keeps the Hythe the island's only hamlet in spirit, and the tide gives the place its rhythm. You cross at low water, or you wait.\\n\\n**Hesk Tolley.** An old widow who keeps goats and climbs for gull eggs. She is sharp-tongued and loyal to the Tidemother. Her late husband ran with the wreckers in his youth, and she has never said so aloud.\\n\\n**Col Tolley.** Her grandson, a restless lad of about sixteen. He wants off the holm and off Skerrow. The packet and the dark Lamp matter to him more than to anyone.\\n\\n**Idris Penhale.** A net-maker and rope-walker who came from Havenmoor twenty winters ago and never said why. He is quiet and kind, and he trades cordage to the Hythe for bread.\\n\\n**The story.** On the night the Grey Gull struck, with the beacon dark, Col saw a lantern moving along the cliff path where no honest soul would be. He told only his grandmother, and she hushed him hard. It's a slow secret that the player earns from Col, while Hesk resists. It ties into the beacon, the Grey Gull and the wreckers. Idris is the quiet way in: he suspects, and he fears being blamed as the outsider.\",\"questions\":[\"The world book gives Skerrow one hamlet. Shall I make this a tidal islet or steading (as sketched) and keep the world text, or do you want a true second hamlet and a change to the world text?\",\"Where should it join the map? I'd link it from the Wreck Strand by a causeway, but to add the exit I must rewrite that location whole. Shall I use loc_skerrow_wreck_strand, or the Cliff Path, or somewhere else?\",\"Should the false light be true lore: did wreckers lure the Grey Gull onto the rocks? That changes the backstory of the wreck and the wreckers faction, so it's your call.\",\"For Hesk and Idris, do you want new professions (goatherd, net-maker) with their own schedules, or shall I reuse fisher and boatman?\"],\"changes\":[]}",
+  "problems": []
+}

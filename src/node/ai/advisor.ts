@@ -4,6 +4,8 @@ import type { LlmClient, LlmRejection, LlmRequest, LlmResponse } from '../../eng
 import { parseReply } from '../../engine/dialogue/schema'
 import { brainTrial, chroniclerTrial, runSituation, trialSituations } from '../../engine/dialogue/testset'
 import { characterChecks, characterScore } from '../../engine/dialogue/voice'
+import { MODEL_KINDS } from '../../engine/modelkinds'
+import { kindSituation } from '../../engine/trials'
 import type { Gateway } from './gateway'
 import { CALLS_PER_HOUR, costUsd, priceOf, priceTable, PRICING_AS_OF } from './pricing'
 import type { ModelInfo, ProviderId } from './providers'
@@ -230,6 +232,9 @@ interface Call {
   text?: string
 }
 
+/** The kinds each role's own test set already plays (M9.3). */
+const TRIED_BEFORE: Record<ChosenRole, string[]> = { voice: ['npc_reply'], brain: ['npc_goals'], chronicler: ['chronicle'] }
+
 /** A client for the game that calls one model and keeps count of every call and every rejection. */
 class Meter implements LlmClient {
   readonly calls: Call[] = []
@@ -341,6 +346,27 @@ export async function trial(gateway: Gateway, content: Content, provider: Provid
         result.characterBreaks += texts.filter((t) => hasAnachronism(t) || outOfCharacter(t)).length
       }
     }
+  }
+  // Every other kind of call the role makes in play and at night (M10.20; before, the advice tried only
+  // three): its fixed situation, answered once, read as the game reads it. A situation this world cannot
+  // give (it lacks the people or places) is left out.
+  for (const kind of MODEL_KINDS.filter((k) => k.role === role && (k.when === 'play' || k.when === 'night') && !TRIED_BEFORE[role].includes(k.kind))) {
+    const situation = await kindSituation(kind.kind, { base: content, isle: [] }).catch(() => undefined)
+    if (!situation) continue
+    result.answers++
+    meter.answer++
+    let text: string
+    try {
+      text = (await meter.complete(situation.request)).text
+    } catch {
+      result.fallbacks++
+      continue
+    }
+    const problems = situation.check(text)
+    if (problems.length) {
+      result.fallbacks++
+      note(`${kind.kind}: ${problems[0]}`)
+    } else result.valid++
   }
   result.runs = meter.calls.length
   const answered = meter.calls.filter((c) => !c.failed)

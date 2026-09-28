@@ -1,0 +1,14 @@
+{
+  "kind": "world_enhance",
+  "about": "enhance the money of Skerrow",
+  "model": "claude-opus-5-5",
+  "provider": "anthropic",
+  "date": "2026-09-29",
+  "usage": {
+    "inputTokens": 23333,
+    "cachedTokens": 0,
+    "outputTokens": 933
+  },
+  "reply": "{\"brief\":\"Coins: gold, silver and copper pieces, as the island already reckons them. Ten copper make a silver piece and ten silver a gold piece. A copper is the smallest, worth 1. Players may say gold or crowns, silver or shillings, copper or coppers.\\n\\nDried cod: among the fishers of Skerrow Hythe a side of dried cod passes hand to hand in place of coin. It is a trade good, not a coin: a new item, dried cod, worth 4 cp, tagged food and trade, that fishers take and give in payment (suggestion). The existing salt fish stays as it is.\\n\\nPrices (suggestion): a bowl of fish stew at the Salt Kettle costs 3 cp, and a mug of ale 2 cp. A night's lodging in the loft costs 8 cp. A day's wage for hauling nets or mending costs 1 sp, often paid as two sides of dried cod and a meal. These are kept for the economy step.\\n\\nThe stranger's start: 35 cp (3 sp 5 cp), what the sea left in their purse, as now. They carry the knife and two ship's biscuits, as now (suggestion to keep). Add a sodden sea cloak, a new item worth 6 cp, tagged worn, so the castaway has something against the wind (suggestion).\",\"open\":[\"Should dried cod be a real unit of money in the purse, or only a trade good the fishers accept, as suggested?\",\"Is a day's wage of 1 sp right for an island this poor, or should it be lower?\",\"Does the stranger wash up with the sea cloak, or with nothing but the knife and biscuits?\"]}",
+  "problems": []
+}
