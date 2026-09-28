@@ -2,17 +2,33 @@ import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron'
 
 // The only bridge between the window and the game. No Node access leaks through.
 
+// The channels this preload calls (M10.20): the interface checks at start that the main process
+// handles every one, so an app whose main process is older than its interface says so at once
+// ("Restart the app") instead of failing at the first call.
+const CHANNELS: string[] = []
+const ch =
+  (channel: string) =>
+  (...args: unknown[]): Promise<unknown> =>
+    ipcRenderer.invoke(channel, ...args)
+const use = (channel: string) => {
+  CHANNELS.push(channel)
+  return ch(channel)
+}
+
 contextBridge.exposeInMainWorld('wisplight', {
-  start: (world?: string) => ipcRenderer.invoke('engine:start', world),
-  worlds: () => ipcRenderer.invoke('engine:worlds'),
-  command: (input: string) => ipcRenderer.invoke('engine:command', input),
-  page: (id: string) => ipcRenderer.invoke('engine:page', id),
-  picture: (id: string) => ipcRenderer.invoke('engine:picture', id),
-  creation: () => ipcRenderer.invoke('engine:creation'),
-  end: () => ipcRenderer.invoke('engine:end'),
-  logSize: (scope?: unknown) => ipcRenderer.invoke('engine:log-size', scope),
-  exportLog: (scope?: unknown) => ipcRenderer.invoke('engine:export-log', scope),
-  exportChronicle: () => ipcRenderer.invoke('engine:export-chronicle'),
+  // The version check (M10.20): what this preload calls, and what the main process handles.
+  channels: () => [...CHANNELS],
+  handled: () => ipcRenderer.invoke('app:handled'),
+  start: use('engine:start'),
+  worlds: use('engine:worlds'),
+  command: use('engine:command'),
+  page: use('engine:page'),
+  picture: use('engine:picture'),
+  creation: use('engine:creation'),
+  end: use('engine:end'),
+  logSize: use('engine:log-size'),
+  exportLog: use('engine:export-log'),
+  exportChronicle: use('engine:export-chronicle'),
   activity: () => ipcRenderer.send('engine:activity'),
   hold: (on: boolean) => ipcRenderer.send('engine:hold', on),
   // The game hears when the content changed under it (the editor saved, or a file changed).
@@ -30,32 +46,32 @@ contextBridge.exposeInMainWorld('wisplight', {
   },
   // The editor (M8), in its own window: npm run editor, or [Editor] in a development build of the game.
   editor: {
-    open: () => ipcRenderer.invoke('editor:open'),
-    worlds: () => ipcRenderer.invoke('editor:worlds'),
-    view: (world: string) => ipcRenderer.invoke('editor:view', world),
-    entity: (world: string, kind: string, id: string) => ipcRenderer.invoke('editor:entity', world, kind, id),
-    save: (world: string, edits: unknown[], write?: boolean) => ipcRenderer.invoke('editor:save', world, edits, write),
-    newWorld: (folder: string, name: string) => ipcRenderer.invoke('editor:new-world', folder, name),
-    simulate: (world: string, days: number, seed: number) => ipcRenderer.invoke('editor:simulate', world, days, seed),
-    draft: (world: string, ask: string, focus?: { kind: string; id: string }) => ipcRenderer.invoke('editor:draft', world, ask, focus),
-    palette: (world: string, palette?: unknown) => ipcRenderer.invoke('editor:palette', world, palette),
-    savePalette: (world: string, palette: unknown) => ipcRenderer.invoke('editor:save-palette', world, palette),
-    proposePalette: (world: string, ask: string) => ipcRenderer.invoke('editor:propose-palette', world, ask),
-    voice: (world: string) => ipcRenderer.invoke('editor:voice', world),
-    saveVoice: (world: string, yaml: string) => ipcRenderer.invoke('editor:save-voice', world, yaml),
-    proposeVoice: (world: string, ask: string) => ipcRenderer.invoke('editor:propose-voice', world, ask),
+    open: use('editor:open'),
+    worlds: use('editor:worlds'),
+    view: use('editor:view'),
+    entity: use('editor:entity'),
+    save: use('editor:save'),
+    newWorld: use('editor:new-world'),
+    simulate: use('editor:simulate'),
+    draft: use('editor:draft'),
+    palette: use('editor:palette'),
+    savePalette: use('editor:save-palette'),
+    proposePalette: use('editor:propose-palette'),
+    voice: use('editor:voice'),
+    saveVoice: use('editor:save-voice'),
+    proposeVoice: use('editor:propose-voice'),
     // Building a world step by step with the chronicler (M10.17), and saving a proposal with world keys and files.
-    worldStep: (world: string, step: string, said: string) => ipcRenderer.invoke('editor:world-step', world, step, said),
+    worldStep: use('editor:world-step'),
     // Enhance with AI: the answer to a step written out as a fuller brief (after M10.17).
-    enhance: (world: string, step: string, said: string) => ipcRenderer.invoke('editor:enhance', world, step, said),
+    enhance: use('editor:enhance'),
     // The design log of a world (M10.18): read it, or write a note, an answer being written or a decision.
-    design: (world: string, change?: unknown) => ipcRenderer.invoke('editor:design', world, change),
-    saveDraft: (world: string, draft: unknown) => ipcRenderer.invoke('editor:save-draft', world, draft),
+    design: use('editor:design'),
+    saveDraft: use('editor:save-draft'),
     // The world book (M10.18): written next to the content and saved as HTML.
-    worldBook: (world: string) => ipcRenderer.invoke('editor:worldbook', world),
+    worldBook: use('editor:worldbook'),
   },
   // Under the bonnet (M10.1): only a development build has the dev menu.
-  ...(import.meta.env.DEV ? { dev: { view: (section: string, focus?: string) => ipcRenderer.invoke('dev:view', section, focus) } } : {}),
+  ...(import.meta.env.DEV ? { dev: { view: use('dev:view') } } : {}),
   onTick: (listener: (reply: unknown) => void) => {
     const handler = (_event: IpcRendererEvent, reply: unknown) => listener(reply)
     ipcRenderer.on('engine:tick', handler)
@@ -63,9 +79,9 @@ contextBridge.exposeInMainWorld('wisplight', {
   },
   // The transcript (M10.4): on or off, and a folder.
   transcript: {
-    get: () => ipcRenderer.invoke('transcript:get'),
-    set: (enabled: boolean, folder: string) => ipcRenderer.invoke('transcript:set', enabled, folder),
-    choose: () => ipcRenderer.invoke('transcript:choose'),
+    get: use('transcript:get'),
+    set: use('transcript:set'),
+    choose: use('transcript:choose'),
   },
   ai: {
     // The lights of the roles (M10.4): a call starts or ends.
@@ -74,24 +90,24 @@ contextBridge.exposeInMainWorld('wisplight', {
       ipcRenderer.on('ai:activity', handler)
       return () => ipcRenderer.removeListener('ai:activity', handler)
     },
-    overview: () => ipcRenderer.invoke('ai:overview'),
-    connect: (provider: string, key: string) => ipcRenderer.invoke('ai:connect', provider, key),
-    disconnect: (provider: string) => ipcRenderer.invoke('ai:disconnect', provider),
-    models: (provider: string) => ipcRenderer.invoke('ai:models', provider),
-    refresh: () => ipcRenderer.invoke('ai:refresh'),
-    advise: (provider: string) => ipcRenderer.invoke('ai:advise', provider),
-    trial: (provider: string, model: string, role: string) => ipcRenderer.invoke('ai:trial', provider, model, role),
-    compare: (role: string, choices: { provider: string; model: string }[]) => ipcRenderer.invoke('ai:compare', role, choices),
-    choose: (role: string, provider: string, model: string) => ipcRenderer.invoke('ai:choose', role, provider, model),
-    setBudget: (usd: number) => ipcRenderer.invoke('ai:budget', usd),
-    setReplyWithin: (seconds: number) => ipcRenderer.invoke('ai:reply-within', seconds),
-    setMonthBudget: (usd: number | null) => ipcRenderer.invoke('ai:month-budget', usd),
-    setCredit: (provider: string, usd: number | null) => ipcRenderer.invoke('ai:credit', provider, usd),
-    csv: () => ipcRenderer.invoke('ai:csv'),
-    log: () => ipcRenderer.invoke('ai:log'),
-    billing: (provider: string) => ipcRenderer.invoke('ai:billing', provider),
-    imageModels: (provider: string) => ipcRenderer.invoke('ai:image-models', provider),
-    setPictures: (provider: string | null, model?: string, quality?: string) => ipcRenderer.invoke('ai:pictures', provider, model, quality),
-    tryPicture: (provider: string, model: string) => ipcRenderer.invoke('ai:try-picture', provider, model),
+    overview: use('ai:overview'),
+    connect: use('ai:connect'),
+    disconnect: use('ai:disconnect'),
+    models: use('ai:models'),
+    refresh: use('ai:refresh'),
+    advise: use('ai:advise'),
+    trial: use('ai:trial'),
+    compare: use('ai:compare'),
+    choose: use('ai:choose'),
+    setBudget: use('ai:budget'),
+    setReplyWithin: use('ai:reply-within'),
+    setMonthBudget: use('ai:month-budget'),
+    setCredit: use('ai:credit'),
+    csv: use('ai:csv'),
+    log: use('ai:log'),
+    billing: use('ai:billing'),
+    imageModels: use('ai:image-models'),
+    setPictures: use('ai:pictures'),
+    tryPicture: use('ai:try-picture'),
   },
 })

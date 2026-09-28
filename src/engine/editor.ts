@@ -594,7 +594,9 @@ export function worldStepRequest(files: ContentFile[], stepId: string, said: str
     prompt: [`WORLD.YAML NOW:`, worldFile?.text ?? '(none)', '', 'WHAT EXISTS:', ...index, '', `THE DESIGNER SAYS: ${said}`].join('\n'),
     schemaName: 'world_step',
     schema: WORLD_STEP_SCHEMA,
-    maxTokens: 6000,
+    // A whole chapter answered in YAML (M10.20: Bram's People chapter holds eight people, their factions and the law).
+    maxTokens: 12000,
+    timeoutMs: 240000,
     meta: { step: step.id, ask: said, prefix: worldPrefix(files), world: worldFacts(files) },
   }
 }

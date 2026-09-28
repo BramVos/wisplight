@@ -247,9 +247,18 @@ async function useWorldOf(save: SaveData): Promise<string | undefined> {
   return undefined
 }
 
-ipcMain.handle('engine:worlds', async () => (await listWorlds(contentDir())).map((w) => ({ ...w, current: w.folder === worldFolder })))
+// Every channel the main process handles goes through here (M10.20): the list answers 'app:handled',
+// so an interface newer than this main process can say "Restart the app" before its first call fails.
+const HANDLED = new Set<string>()
+function handle(channel: string, listener: Parameters<typeof ipcMain.handle>[1]): void {
+  HANDLED.add(channel)
+  ipcMain.handle(channel, listener)
+}
+ipcMain.handle('app:handled', () => [...HANDLED])
 
-ipcMain.handle('engine:start', async (_event, world: unknown) => {
+handle('engine:worlds', async () => (await listWorlds(contentDir())).map((w) => ({ ...w, current: w.folder === worldFolder })))
+
+handle('engine:start', async (_event, world: unknown) => {
   await setup()
   // A new game in the chosen world (M8), or in the one played last.
   if (typeof world === 'string' && world) await useWorld(world)
@@ -264,7 +273,7 @@ ipcMain.handle('engine:start', async (_event, world: unknown) => {
   return reply(outputs)
 })
 
-ipcMain.handle('engine:command', async (_event, input: unknown) => {
+handle('engine:command', async (_event, input: unknown) => {
   if (!engine || !content) throw new Error('Engine not started')
   lastInput = Date.now()
   const text = String(input).trim().slice(0, 500)
@@ -357,40 +366,40 @@ ipcMain.handle('engine:command', async (_event, input: unknown) => {
   return reply(outputs)
 })
 
-ipcMain.handle('engine:page', (_event, id: unknown) => engine?.page(String(id)))
+handle('engine:page', (_event, id: unknown) => engine?.page(String(id)))
 // The transcript's settings (M10.4): on or off, and the folder.
-ipcMain.handle('transcript:get', () => transcriptSettings())
-ipcMain.handle('transcript:set', (_event, enabled: unknown, folder: unknown) => {
+handle('transcript:get', () => transcriptSettings())
+handle('transcript:set', (_event, enabled: unknown, folder: unknown) => {
   const settings = { enabled: Boolean(enabled), folder: String(folder ?? '') || transcriptSettings().folder }
   saveTranscriptSettings(settings)
   scribe().configure(settings)
   return settings
 })
-ipcMain.handle('transcript:choose', async () => {
+handle('transcript:choose', async () => {
   const chosen = await dialog.showOpenDialog({ properties: ['openDirectory', 'createDirectory'], defaultPath: transcriptSettings().folder })
   return chosen.canceled ? undefined : chosen.filePaths[0]
 })
 // Under the bonnet (M10.1): a production build does not bundle the dev view at all.
 if (import.meta.env.DEV) {
-  ipcMain.handle('dev:view', async (_event, section: unknown, focus: unknown) => {
+  handle('dev:view', async (_event, section: unknown, focus: unknown) => {
     if (!engine || app.isPackaged) return undefined
     const { devView } = await import('../engine/dev')
     return devView(engine, String(section) as 'people' | 'background' | 'chronicler', typeof focus === 'string' ? focus : undefined)
   })
 }
-ipcMain.handle('engine:creation', () => engine?.creationData())
+handle('engine:creation', () => engine?.creationData())
 /** The end view shows the last lines; the whole log goes to a file with [Download]. */
 const END_LINES = 2000
 
-ipcMain.handle('engine:end', () => {
+handle('engine:end', () => {
   const lines = session ? journal().recent(session, END_LINES) : undefined
   const cut = lines && lines.length === END_LINES ? `(Only the last ${END_LINES} lines are shown here. [Download] saves the whole log.)\n\n` : ''
   return { log: lines ? cut + lines.map((row) => format(row, journal().calendar)).join('\n') : undefined, chronicle: engine?.chronicle() ?? '' }
 })
-ipcMain.handle('engine:log-size', (_event, scope: unknown) => (session ? journal().size(session, logScope(scope)) : 0))
-ipcMain.handle('engine:export-log', (_event, scope: unknown) => (session ? exportLog(session, logScope(scope)) : undefined))
+handle('engine:log-size', (_event, scope: unknown) => (session ? journal().size(session, logScope(scope)) : 0))
+handle('engine:export-log', (_event, scope: unknown) => (session ? exportLog(session, logScope(scope)) : undefined))
 // What happened in this game, as Markdown (M10.18): per save, never in the content.
-ipcMain.handle('engine:export-chronicle', async () => {
+handle('engine:export-chronicle', async () => {
   if (!engine) return undefined
   const stamp = new Date().toISOString().slice(0, 16).replace(/[-:T]/g, '')
   const result = await dialog.showSaveDialog(window!, { title: 'Save the chronicle of this game', defaultPath: join(app.getPath('documents'), `wisplight-chronicle-${stamp}.md`), filters: [{ name: 'Markdown', extensions: ['md'] }] })
@@ -478,9 +487,9 @@ function afterEdit(world: string): void {
     .catch(() => undefined)
 }
 
-ipcMain.handle('editor:worlds', () => devOnly().worlds())
+handle('editor:worlds', () => devOnly().worlds())
 // The world book (M10.18): written next to the content, and saved as HTML with the pictures there are.
-ipcMain.handle('editor:worldbook', async (_event, world: unknown) => {
+handle('editor:worldbook', async (_event, world: unknown) => {
   devOnly()
   const folder = worldOf(world)
   await writeWorldBook(contentDir(), folder)
@@ -491,18 +500,18 @@ ipcMain.handle('editor:worldbook', async (_event, world: unknown) => {
   writeFileSync(result.filePath, worldBookHtml(worldContent, markdown, (id) => ai?.cachedPicture(worldContent, id)), 'utf8')
   return { markdown, saved: result.filePath }
 })
-ipcMain.handle('editor:view', (_event, world: unknown) => devOnly().view(worldOf(world)))
-ipcMain.handle('editor:entity', (_event, world: unknown, kind: unknown, id: unknown) => devOnly().entity(worldOf(world), kindOf(kind), String(id)))
-ipcMain.handle('editor:save', async (_event, world: unknown, edits: unknown, write: unknown) => {
+handle('editor:view', (_event, world: unknown) => devOnly().view(worldOf(world)))
+handle('editor:entity', (_event, world: unknown, kind: unknown, id: unknown) => devOnly().entity(worldOf(world), kindOf(kind), String(id)))
+handle('editor:save', async (_event, world: unknown, edits: unknown, write: unknown) => {
   const editor = devOnly()
   ignoreWatchUntil = Date.now() + 1500
   const outcome = await editor.save(worldOf(world), editsOf(edits), write !== false)
   if (outcome.ok && write !== false && outcome.changes.length) afterEdit(worldOf(world))
   return { ok: outcome.ok, problems: outcome.problems, warnings: outcome.warnings, changes: shown(outcome.changes) }
 })
-ipcMain.handle('editor:new-world', (_event, folder: unknown, name: unknown) => devOnly().createWorld(String(folder ?? ''), String(name ?? '')))
-ipcMain.handle('editor:simulate', (_event, world: unknown, days: unknown, seed: unknown) => devOnly().simulate(worldOf(world), Number(days) || 7, Number(seed) || 1))
-ipcMain.handle('editor:draft', async (_event, world: unknown, ask: unknown, focus: unknown) => {
+handle('editor:new-world', (_event, folder: unknown, name: unknown) => devOnly().createWorld(String(folder ?? ''), String(name ?? '')))
+handle('editor:simulate', (_event, world: unknown, days: unknown, seed: unknown) => devOnly().simulate(worldOf(world), Number(days) || 7, Number(seed) || 1))
+handle('editor:draft', async (_event, world: unknown, ask: unknown, focus: unknown) => {
   devOnly()
   await setup()
   const llm = ai?.client()
@@ -527,33 +536,34 @@ const shownDraft = (draft: ReturnType<typeof readDraft>) => ({
   diffs: draft.result?.ok ? shown(draft.result.changes) : [],
 })
 // A step of building a world with the chronicler (M10.17), and saving what the designer accepts.
-ipcMain.handle('editor:world-step', async (_event, world: unknown, step: unknown, said: unknown) => {
+handle('editor:world-step', async (_event, world: unknown, step: unknown, said: unknown) => {
   devOnly()
   await setup()
   const llm = ai?.client()
   if (!llm) return { say: '', questions: [], changes: [], problems: ["The chronicler builds the world with you: connect a model in the game's Settings > AI first."], diffs: [] }
   const files = await readContentFiles(contentDir(), worldOf(world))
   try {
-    return shownDraft(readDraft(files, (await llm.complete(worldStepRequest(files, String(step ?? ''), String(said ?? '').slice(0, 4000)))).text))
+    // A whole chapter with tables fits (M10.20: Bram's chapters are longer than 4000 characters).
+    return shownDraft(readDraft(files, (await llm.complete(worldStepRequest(files, String(step ?? ''), String(said ?? '').slice(0, 20000)))).text))
   } catch (error) {
     return { say: '', questions: [], changes: [], problems: [`The chronicler did not answer: ${error instanceof Error ? error.message : String(error)}`], diffs: [] }
   }
 })
 // Enhance with AI (after M10.17): the designer's answer to a step, written out as a fuller brief; nothing is saved.
-ipcMain.handle('editor:enhance', async (_event, world: unknown, step: unknown, said: unknown) => {
+handle('editor:enhance', async (_event, world: unknown, step: unknown, said: unknown) => {
   devOnly()
   await setup()
   const llm = ai?.client()
   if (!llm) return { brief: '', open: [], problems: ["The chronicler writes it out with you: connect a model in the game's Settings > AI first."] }
   const files = await readContentFiles(contentDir(), worldOf(world))
   try {
-    return readEnhance((await llm.complete(enhanceRequest(files, String(step ?? ''), String(said ?? '').slice(0, 4000)))).text)
+    return readEnhance((await llm.complete(enhanceRequest(files, String(step ?? ''), String(said ?? '').slice(0, 20000)))).text)
   } catch (error) {
     return { brief: '', open: [], problems: [`The chronicler did not answer: ${error instanceof Error ? error.message : String(error)}`] }
   }
 })
 // The design log of a world (M10.18): read it, or write one change (a note, an answer being written, a decision).
-ipcMain.handle('editor:design', async (_event, world: unknown, change: unknown) => {
+handle('editor:design', async (_event, world: unknown, change: unknown) => {
   devOnly()
   const files = await readContentFiles(contentDir(), worldOf(world))
   const checked = change === undefined ? undefined : readDesignChange(change)
@@ -565,7 +575,7 @@ ipcMain.handle('editor:design', async (_event, world: unknown, change: unknown) 
   }
   return next.log
 })
-ipcMain.handle('editor:save-draft', async (_event, world: unknown, draft: unknown) => {
+handle('editor:save-draft', async (_event, world: unknown, draft: unknown) => {
   devOnly()
   const d = (draft && typeof draft === 'object' ? draft : {}) as { changes?: unknown; world?: unknown; files?: unknown }
   const files = await readContentFiles(contentDir(), worldOf(world))
@@ -582,13 +592,13 @@ ipcMain.handle('editor:save-draft', async (_event, world: unknown, draft: unknow
   return { ok: true, problems: [], warnings: [], changes: shown(outcome.changes) }
 })
 // The palette of a world's map (M10): read, written into world.yaml, or proposed by the writing aid.
-ipcMain.handle('editor:palette', async (_event, world: unknown, palette: unknown) => {
+handle('editor:palette', async (_event, world: unknown, palette: unknown) => {
   devOnly()
   const files = await readContentFiles(contentDir(), worldOf(world))
   const parsed = palette ? MapPaletteSchema.safeParse(palette) : undefined
   return paletteView(files, parsed?.success ? parsed.data : undefined)
 })
-ipcMain.handle('editor:save-palette', async (_event, world: unknown, palette: unknown) => {
+handle('editor:save-palette', async (_event, world: unknown, palette: unknown) => {
   devOnly()
   const files = await readContentFiles(contentDir(), worldOf(world))
   const outcome = savePalette(files, palette as MapPalette)
@@ -598,7 +608,7 @@ ipcMain.handle('editor:save-palette', async (_event, world: unknown, palette: un
   afterEdit(worldOf(world))
   return { ok: true, problems: [], warnings: [], changes: shown(outcome.changes) }
 })
-ipcMain.handle('editor:propose-palette', async (_event, world: unknown, ask: unknown) => {
+handle('editor:propose-palette', async (_event, world: unknown, ask: unknown) => {
   devOnly()
   await setup()
   const llm = ai?.client()
@@ -611,11 +621,11 @@ ipcMain.handle('editor:propose-palette', async (_event, world: unknown, ask: unk
   }
 })
 // The voice kit of a world (M10.10): read, written into its file, or proposed by the writing aid.
-ipcMain.handle('editor:voice', async (_event, world: unknown) => {
+handle('editor:voice', async (_event, world: unknown) => {
   devOnly()
   return voiceYaml(await readContentFiles(contentDir(), worldOf(world)))
 })
-ipcMain.handle('editor:save-voice', async (_event, world: unknown, yaml: unknown) => {
+handle('editor:save-voice', async (_event, world: unknown, yaml: unknown) => {
   devOnly()
   const files = await readContentFiles(contentDir(), worldOf(world))
   const outcome = saveVoice(files, String(yaml ?? ''))
@@ -628,7 +638,7 @@ ipcMain.handle('editor:save-voice', async (_event, world: unknown, yaml: unknown
   afterEdit(worldOf(world))
   return { ok: true, problems: [], warnings: [], changes: shown(outcome.changes) }
 })
-ipcMain.handle('editor:propose-voice', async (_event, world: unknown, ask: unknown) => {
+handle('editor:propose-voice', async (_event, world: unknown, ask: unknown) => {
   devOnly()
   await setup()
   const llm = ai?.client()
@@ -640,7 +650,7 @@ ipcMain.handle('editor:propose-voice', async (_event, world: unknown, ask: unkno
     return { say: '', problems: [`The writing aid did not answer: ${error instanceof Error ? error.message : String(error)}`] }
   }
 })
-ipcMain.handle('editor:open', () => {
+handle('editor:open', () => {
   devOnly()
   openEditor()
 })
@@ -738,50 +748,50 @@ const role = (value: unknown): ChosenRole => {
 }
 const amount = (value: unknown): number | undefined => (value === null || value === undefined || value === '' ? undefined : Number(value))
 
-ipcMain.handle('ai:overview', async () => {
+handle('ai:overview', async () => {
   await setup()
   return service().overview()
 })
-ipcMain.handle('ai:connect', async (_event, id: unknown, key: unknown) => {
+handle('ai:connect', async (_event, id: unknown, key: unknown) => {
   const models = await service().connect(provider(id), String(key ?? ''))
   // A new key may see other models: check the chosen ones again.
   await service().refreshModels()
   return { models: models.length }
 })
-ipcMain.handle('ai:disconnect', (_event, id: unknown) => {
+handle('ai:disconnect', (_event, id: unknown) => {
   service().disconnect(provider(id))
   engine?.setLlm(service().client())
 })
-ipcMain.handle('ai:models', (_event, id: unknown) => service().listModels(provider(id), true))
-ipcMain.handle('ai:refresh', () => service().refreshModels())
-ipcMain.handle('ai:advise', (_event, id: unknown) => service().advise(provider(id)))
-ipcMain.handle('ai:trial', (_event, id: unknown, model: unknown, which: unknown) => service().trial(provider(id), String(model), role(which)))
-ipcMain.handle('ai:compare', (_event, which: unknown, choices: unknown) =>
+handle('ai:models', (_event, id: unknown) => service().listModels(provider(id), true))
+handle('ai:refresh', () => service().refreshModels())
+handle('ai:advise', (_event, id: unknown) => service().advise(provider(id)))
+handle('ai:trial', (_event, id: unknown, model: unknown, which: unknown) => service().trial(provider(id), String(model), role(which)))
+handle('ai:compare', (_event, which: unknown, choices: unknown) =>
   service().compare(role(which), (Array.isArray(choices) ? choices : []).map((c: { provider?: unknown; model?: unknown }) => ({ provider: provider(c?.provider), model: String(c?.model) }))),
 )
-ipcMain.handle('ai:choose', async (_event, which: unknown, id: unknown, model: unknown) => {
+handle('ai:choose', async (_event, which: unknown, id: unknown, model: unknown) => {
   const stored = await service().choose(role(which), provider(id), String(model))
   engine?.setLlm(service().client())
   return stored
 })
-ipcMain.handle('ai:budget', (_event, usd: unknown) => service().settings.setBudget(Number(usd)))
-ipcMain.handle('ai:reply-within', (_event, seconds: unknown) => service().settings.setReplyWithin(Number(seconds)))
-ipcMain.handle('ai:month-budget', (_event, usd: unknown) => service().usage.setMonthBudget(amount(usd)))
-ipcMain.handle('ai:credit', (_event, id: unknown, usd: unknown) => service().usage.setCredit(provider(id), amount(usd)))
-ipcMain.handle('ai:csv', () => service().usage.csv())
+handle('ai:budget', (_event, usd: unknown) => service().settings.setBudget(Number(usd)))
+handle('ai:reply-within', (_event, seconds: unknown) => service().settings.setReplyWithin(Number(seconds)))
+handle('ai:month-budget', (_event, usd: unknown) => service().usage.setMonthBudget(amount(usd)))
+handle('ai:credit', (_event, id: unknown, usd: unknown) => service().usage.setCredit(provider(id), amount(usd)))
+handle('ai:csv', () => service().usage.csv())
 // Up to all the log keeps (M10.10): the guard's count per model reads them all; the table shows the last 50.
-ipcMain.handle('ai:log', () => service().recentLog(200))
-ipcMain.handle('ai:billing', (_event, id: unknown) => shell.openExternal(BILLING[provider(id)]))
+handle('ai:log', () => service().recentLog(200))
+handle('ai:billing', (_event, id: unknown) => shell.openExternal(BILLING[provider(id)]))
 // Pictures of places and people (after the M7 playtest): made once, kept in the user data folder.
-ipcMain.handle('ai:image-models', (_event, id: unknown) => service().imageModels(provider(id)))
-ipcMain.handle('ai:pictures', (_event, id: unknown, model: unknown, quality: unknown) =>
+handle('ai:image-models', (_event, id: unknown) => service().imageModels(provider(id)))
+handle('ai:pictures', (_event, id: unknown, model: unknown, quality: unknown) =>
   service().choosePictures(id === null ? undefined : { provider: provider(id), model: String(model), quality: quality === 'medium' ? 'medium' : 'low' }),
 )
-ipcMain.handle('ai:try-picture', async (_event, id: unknown, model: unknown) => {
+handle('ai:try-picture', async (_event, id: unknown, model: unknown) => {
   await setup()
   return service().tryPicture(content!, provider(id), String(model))
 })
-ipcMain.handle('engine:picture', async (_event, id: unknown) => {
+handle('engine:picture', async (_event, id: unknown) => {
   await setup()
   if (!content || typeof id !== 'string') return undefined
   return service().picture(content, id)

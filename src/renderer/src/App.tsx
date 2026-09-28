@@ -1,5 +1,6 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import type { Output } from '../../engine'
+import { StaleBanner } from './StaleBanner'
 import { createClient, type AiStatus, type CreationData, type EngineClient, type JournalPage, type Reply, type RoleLight, type WorldChoice } from './client'
 import { CharacterCreation } from './CharacterCreation'
 import { WorldPicker } from './WorldPicker'
@@ -380,6 +381,7 @@ export function App() {
   return (
     <div className="shell">
       <main className="log" ref={logRef} aria-live="polite">
+        <StaleBanner />
         {error && <p className="line error">{error}</p>}
         {lines.map((line) => (
           <p key={line.id} className={`line ${line.kind}${showRules && line.kind === 'speech' && line.source === 'rules' ? ' rules' : ''}`}>

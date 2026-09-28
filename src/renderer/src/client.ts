@@ -137,6 +137,9 @@ export interface EditorBridge {
 }
 
 export interface EngineClient {
+  /** The version check (M10.20): the channels the preload calls, and those the main process handles. Only in the app. */
+  channels?(): string[]
+  handled?(): Promise<string[]>
   /** A new game, in the given world (M8) or the one played last. */
   start(world?: string): Promise<Reply>
   /** The worlds in the content folder (M8). */

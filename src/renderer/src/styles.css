@@ -1951,3 +1951,11 @@ pre.sheet {
 .contract-table td {
   vertical-align: top;
 }
+
+/* The version check (M10.20): the main process is older than the interface. */
+.stale-banner {
+  margin: 0 0 12px;
+  padding: 8px 12px;
+  border: 1px solid currentColor;
+  border-radius: 3px;
+}

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { stringify } from 'yaml'
 import { adoptPlaceEdits, ENTITY_KINDS, exitTowards, KIND_NAMES, languageReference, markColours, parseEntityYaml, WORLD_STEPS, type MapPlace, type ReferenceEntry } from '../../engine'
+import { StaleBanner } from './StaleBanner'
 import type { DesignLog } from '../../engine/designlog'
 import { NpcInspector } from './Inspector'
 import { HexMap } from './HexMap'
@@ -65,10 +66,17 @@ export function EditorApp() {
     setCreating(false)
   }
 
-  if (!bridge || !view) return <div className="editor-app loading muted">{error ?? 'Opening the editor...'}</div>
+  if (!bridge || !view)
+    return (
+      <div className="editor-app loading muted">
+        <StaleBanner />
+        {error ?? 'Opening the editor...'}
+      </div>
+    )
 
   return (
     <div className="editor-app">
+      <StaleBanner />
       <header className="editor-head">
         <h1>Wisplight editor</h1>
         <label className="world-pick">
