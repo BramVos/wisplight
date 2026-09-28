@@ -44,7 +44,7 @@ export function mergeNpc(world: World, base: Npc): Npc {
     for (const [other, change] of Object.entries(ties).sort((a, b) => a[0].localeCompare(b[0]))) {
       if (!change) continue
       const old = base.relations.find((r) => r.to === other)
-      relations.push({ ...(old ?? { status: 'alive' as const, private: false }), to: other, role: change.role, bond: change.bond } as RelationDef)
+      relations.push({ ...(old ?? { status: 'alive' as const, private: false }), to: other, role: change.role, bond: change.bond, ...(change.why ? { note: change.why } : {}) } as RelationDef)
     }
   }
   return {
@@ -95,7 +95,8 @@ export function setHousehold(world: World, who: string, household: string | unde
  * A tie of a kind between two people, both ways (spouse and spouse, parent and
  * child); the bond stays what it was, or at least the given one.
  */
-export function setTie(world: World, a: string, b: string, role: RelationRole, bond = 2): void {
+/** A tie begins or changes in play; why (M10.22: the weave round) is kept as the note of the tie. */
+export function setTie(world: World, a: string, b: string, role: RelationRole, bond = 2, why?: string): void {
   const ties = (layerOf(world).ties ??= {})
   const inverse = INVERSE[role] ?? role
   for (const [x, y, r] of [
@@ -104,7 +105,7 @@ export function setTie(world: World, a: string, b: string, role: RelationRole, b
   ] as const) {
     if (x === 'player' || !world.content.npcs.has(x)) continue
     const old = world.npc(x).relations.find((rel) => rel.to === y)
-    ;(ties[x] ??= {})[y] = { role: r, bond: Math.max(bond, old?.bond ?? bond), t: world.now }
+    ;(ties[x] ??= {})[y] = { role: r, bond: Math.max(bond, old?.bond ?? bond), t: world.now, ...(why ? { why } : {}) }
   }
   world.layerChanged()
 }

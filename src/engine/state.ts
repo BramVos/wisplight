@@ -832,7 +832,7 @@ export interface Bond {
 }
 
 /** A tie between two people that changed or began in play; null: the tie is gone. */
-export type TieChange = { role: import('./content').RelationRole; bond: number; t: number } | null
+export type TieChange = { role: import('./content').RelationRole; bond: number; t: number; why?: string } | null
 
 /** The layer over the content (design: signalen en nasleep, "Wereldtoestand die mag veranderen"). */
 export interface Layer {

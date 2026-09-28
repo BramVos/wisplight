@@ -10,6 +10,7 @@ import { brawlAnswer, brawlShown } from './social/brawl'
 import { CHECKPOINT_ENTRIES, CHECKPOINT_MINUTES, contentVersion, type Checkpoint, type CheckpointedSave } from './checkpoint'
 import { applyFarPlace, farPlaceOf, farRequest, farWords, wantFarPlace, type FarWords } from './growth/far'
 import { applyDistrict, districtDue, districtRequest, districtWords, wantDistrict, type DistrictWords } from './growth/districts'
+import { applyWeave, weaveReply, weaveRequest, type WeaveReply } from './growth/weave'
 import { crowdHere, nameOne } from './growth/crowds'
 import { applyLegendWords, legendRequest, legendsOf } from './legend'
 import { answerLookup, parseLookup } from './lookups'
@@ -110,6 +111,7 @@ export type LogEntry =
   // A far place made playable (M9.1): the chronicler's words, or null for the template.
   | { t: number; k: 'far'; topic: string; v: FarWords | null }
   | { t: number; k: 'district'; key: string; v: DistrictWords | null }
+  | { t: number; k: 'weave'; key: string; v: WeaveReply | null }
   // The legends of an old game this one began with (M9.1).
   | { t: number; k: 'legends'; v: LoreEntry[] }
   // The names the game began with (M9.1): playing the log back uses them, so a name changed later changes nothing.
@@ -533,7 +535,7 @@ export class Engine {
   /** Everything waiting for a model: goal choices and chronicler runs. */
   get modelsWaiting(): number {
     // A far place waiting for its words counts too (M10.21: alone, it never started the models).
-    return (this.state.brain?.pending.length ?? 0) + this.chroniclerWaiting + this.outlinesWaiting + (this.state.growth?.farPending?.length ?? 0) + (this.state.growth?.districtPending?.length ?? 0)
+    return (this.state.brain?.pending.length ?? 0) + this.chroniclerWaiting + this.outlinesWaiting + (this.state.growth?.farPending?.length ?? 0) + (this.state.growth?.districtPending?.length ?? 0) + (this.state.growth?.weavePending?.length ?? 0)
   }
 
   /** Lets the models do their waiting work in the background: goal choices first, they are short. */
@@ -543,6 +545,33 @@ export class Engine {
     await this.runOutlines()
     await this.runFarPlaces()
     await this.runDistricts()
+    await this.runWeaves()
+  }
+
+  /** Districts whose new people the chronicler weaves into the world (M10.22), one at a time, at normal priority. */
+  async runWeaves(): Promise<void> {
+    if (this.outlining) return
+    this.outlining = true
+    try {
+      const g = this.state.growth
+      while (g?.weavePending?.length) {
+        const key = g.weavePending[0]!
+        const llm = this.llm
+        let reply: WeaveReply | null = null
+        if (llm) {
+          try {
+            reply = weaveReply((await llm.complete(weaveRequest(this.world, key))).text)
+          } catch {
+            reply = null
+          }
+        }
+        if (!g.weavePending.includes(key)) continue
+        this.record({ t: this.world.now, k: 'weave', key, v: reply })
+        applyWeave(this.world, key, reply)
+      }
+    } finally {
+      this.outlining = false
+    }
   }
 
   /** Districts of far towns waiting for the chronicler's words (M10.21), one at a time. */
@@ -1714,6 +1743,9 @@ export class Engine {
           this.log.push(entry)
           const [topic, id] = entry.key.split(':') as [string, string]
           applyDistrict(this.world, topic, id, entry.v)
+        } else if (entry.k === 'weave') {
+          this.log.push(entry)
+          applyWeave(this.world, entry.key, entry.v)
         }
       }
     } finally {

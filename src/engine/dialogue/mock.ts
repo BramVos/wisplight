@@ -100,6 +100,8 @@ export class MockLlm implements LlmClient {
             ? this.outline(String(request.meta?.['name'] ?? 'the place'))
             : request.schemaName === 'far_place'
             ? this.farPlace(String(request.meta?.['name'] ?? 'the place'), (request.meta?.['named'] as { key: string; name: string; pronoun: string }[] | undefined) ?? [])
+            : request.schemaName === 'weave'
+            ? this.weave((request.meta?.['fresh'] as string[] | undefined) ?? [], (request.meta?.['known'] as string[] | undefined) ?? [])
             : request.schemaName === 'district'
             ? this.district(String(request.meta?.['town'] ?? 'the town'), String(request.meta?.['name'] ?? 'the district'))
             : request.schemaName === 'legends'
@@ -107,6 +109,17 @@ export class MockLlm implements LlmClient {
             : this.chronicler(request.meta as unknown as ChronicleMeta, request.prompt)
           : this.other(request)
     return { text, provider: 'mock', model: 'mock-1', usage: { inputTokens: Math.round((request.system.length + request.prompt.length) / 4), outputTokens: Math.round(text.length / 4), cachedTokens: 0 }, latencyMs: 1 }
+  }
+
+  /** A weave round (M10.22): the first new person is kin of the first known, hides one thing, and has word for them. */
+  weave(fresh: string[], known: string[]): string {
+    const [a, b] = [fresh[0], known[0]]
+    if (!a || !b) return JSON.stringify({ bonds: [], secrets: [], thread: null })
+    return JSON.stringify({
+      bonds: [{ a, b, role: 'kin', why: 'They are cousins on the mother\'s side, and have not seen each other since they were children.' }, { a: 'nobody', b, role: 'friend', why: 'Made up.' }],
+      secrets: [{ who: a, text: 'Owes more than a year of rent and has told nobody.', hint: 'Always has an errand when the landlord comes by.' }],
+      thread: { from: a, to: b, name: 'Word for a cousin', ask: 'If you go home that way, tell my cousin I am well, and that I still have the knife.', why: 'The two families fell out over an inheritance, and this is the first word in years.' },
+    })
   }
 
   /** A district of a far town (M10.21): two places and two people, in the words a chronicler might use; invalid words in 'invalid' mode. */

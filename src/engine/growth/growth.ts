@@ -48,6 +48,8 @@ export interface GrowthState {
   /** The districts of far towns made in this game (M10.21), by town and district, and those waiting for the chronicler. */
   districts?: Record<string, import('./districts').District>
   districtPending?: string[]
+  /** Districts whose new people the chronicler still weaves into the world (M10.22). */
+  weavePending?: string[]
 }
 
 export function growth(world: World): GrowthState {

@@ -1,5 +1,16 @@
 # Changelog
 
+## M10.22 deel: de weefronde na een wijk, 29 september 2026
+
+- **Na elke wijk weeft de kroniekverteller de nieuwe mensen in de wereld.** Eén aanroep (`weave`, hooguit 1.200 tokens, normale voorrang). Hij krijgt de nieuwe mensen van de wijk, de mensen die je kent (die van thuis eerst), waar je vandaan kwam en de open verhaallijnen. Hij stelt alleen verbindingen voor: hooguit vier banden tussen een nieuwe en een bestaande persoon, hooguit twee geheimen voor nieuwe mensen, en één draad terug naar huis.
+- **De motor keurt alles.** Een band houdt hij alleen als het om een nieuwe en een bestaande, levende persoon gaat die nog geen band hebben, met een rol uit de lijst. Hij komt aan beide kanten, met het "waarom" als notitie en als feit in de kroniek. Een geheim komt als content op de nieuwe persoon (met een hint voor wie goed kijkt) en wordt eerst gecontroleerd. De draad is een verzoek van een nieuwe persoon om iemand thuis op te zoeken ("tell my cousin I am well"). Wat niet klopt, zoals een id die niet bestaat, valt weg.
+- **Mensen die in een gesprek genoemd zijn en in de stad wonen, worden mensen van haar eerste wijk.** Dat gebeurt zonder model, met de band uit dat gesprek. Voorheen gebeurde dat alleen als de verre plek zelf gemaakt werd.
+- **Zonder model** is er geen weefronde. Een verre plek waar je alleen doorheen loopt, krijgt er ook geen, volgens de regel van M10.21.
+
+Testen: speel met een model naar Graafhaven, vraag in de markt iemand iets, en kijk daarna in je dagboek en bij de nieuwe mensen: een neef van iemand uit Veenhoek, een verzoek om iemand thuis op te zoeken. Tests in `tests/m1022weave.test.ts` (3).
+
+Kosten: één `weave`-aanroep per wijk, alleen na een wijk die de kroniekverteller maakte of die nieuwe mensen heeft. De meting per model komt in de dekkingstabel van de andere sessie.
+
 ## M10.21 deel: een stad groeit per wijk, 29 september 2026
 
 - **Een verre stad heeft wijken, uit het wereldboek (hoofdstuk 6).** Graafhaven heeft de Dijkpoort met de vismarkt, de gildehuizen, het Graafshof, de Brandaris en de haven met de verdronken klokken. Zwolderkamp heeft de markt, de pakhuizen aan de Yssel en de lijnbaan. Stavermouth heeft de dichtgeslibde haven en het Vrouwezand. Havenmoor (bij Skerrow) heeft de kaden en de bovenstad.

@@ -8,6 +8,7 @@ import { newNpcState, type GameState } from '../state'
 import type { World } from '../world'
 import { farPlaceOf, farTopicAt, fitsRoom, freeId, withFarPlaces } from './far'
 import { growth } from './growth'
+import { sketchById, sketchNpc, sketchProfession } from '../sketches'
 
 // A far town grows by district, not all at once (M10.21; Bram, 28 September
 // 2026: a whole town with all its people, events and chances costs far more
@@ -39,6 +40,8 @@ export interface District {
   npcs: Record<string, unknown>[]
   /** The ways in from places outside it (the market, the gate). */
   joins: Join[]
+  /** People named in talks who live in this town (M10.9), and the person each became here (M10.22). */
+  sketches?: Record<string, string>
 }
 
 /** What the chronicler writes for a district: names and words, never the shape. */
@@ -190,6 +193,17 @@ export function makeDistrict(world: World, topic: string, id: string, words: Dis
     const trade = w.trade && world.content.professions.has(w.trade) ? w.trade : trades.includes('merchant') ? 'merchant' : trades[0]!
     person(w.name, w.pronoun, trade, at, w.looks && w.looks.length < 300 ? w.looks : `Someone of ${t.name}, busy with their own affairs.`, w.fact && w.fact.length < 200 ? w.fact : `${w.name.split(' ')[0]} lives in ${q.name} of ${t.name}.`, w.speech && w.speech.length < 200 ? w.speech : undefined)
   }
+  // People named in talks who live in this town and are no people yet (M10.9) become people of its first district, two at most, as they were spoken of (M10.22).
+  const sketched: Record<string, string> = {}
+  if (first) {
+    const trader = trades.includes('merchant') ? 'merchant' : trades[0]!
+    for (const sk of (world.state.lore?.people ?? []).filter((x) => !x.npc && x.place === topic).slice(0, 2)) {
+      const pid = freeId(world, `npc_${sk.name}_${slug}`.toLowerCase().replace(/[^a-z0-9_]/g, ''), taken)
+      const at = String(locations[0]?.['id'] ?? entrance)
+      npcs.push(sketchNpc(world, sk, { id: pid, home: at, work: at, area, profession: sketchProfession(world, sk, trader) }))
+      sketched[sk.id] = pid
+    }
+  }
   // Only what passed counts as the chronicler's; without any, another district gets one person who lives there, from the world's names.
   const theirs = placed.size > 0 || npcs.length > 0
   const pool = world.content.world.names
@@ -198,7 +212,7 @@ export function makeDistrict(world: World, topic: string, id: string, words: Dis
     const full = `${pool[pronoun][rng(0, pool[pronoun].length - 1)]} ${pool.family[rng(0, pool.family.length - 1)]}`
     if (!names.has(full)) person(full, pronoun, trades.includes('labourer') ? 'labourer' : trades[0]!, entrance, `Someone who has lived in ${q.name} all their life.`, `${full.split(' ')[0]} knows every door in ${q.name}.`)
   }
-  return { topic, id, by: theirs ? 'chronicler' : 'template', t: world.now, locations, npcs, joins }
+  return { topic, id, by: theirs ? 'chronicler' : 'template', t: world.now, locations, npcs, joins, ...(Object.keys(sketched).length ? { sketches: sketched } : {}) }
 }
 
 /** A stub: the street into a district not yet made, off the town's heart. */
@@ -276,6 +290,12 @@ export function applyDistrict(world: World, topic: string, id: string, words: Di
       const n = world.content.npcs.get(String(raw['id']))
       if (n) world.state.npcs[n.id] ??= { ...newNpcState(n, world.now), location: n.work ?? n.home }
     }
+    for (const [sketch, npc] of Object.entries(made.sketches ?? {})) {
+      const named = sketchById(world, sketch)
+      if (named) named.npc = npc
+    }
+    // The chronicler weaves the new people into the world (M10.22), once, when there is a model to do it.
+    if (world.aiLive && made.npcs.length) (g.weavePending ??= []).push(key)
     const q = quarters.find((d) => d.id === id)!
     const town = world.content.topics.get(topic)?.name ?? topic
     recordFact(world, {

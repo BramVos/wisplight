@@ -60,6 +60,10 @@ numbers:
   src/engine/growth/districts.ts:
     MOST_PLACES: 'code: a bound on what one district call may add, so the call stays small (cost)'
     MOST_PEOPLE: 'code: a bound on what one district call may add, so the call stays small (cost)'
+  src/engine/growth/weave.ts:
+    MOST_BONDS: 'code: a bound on what one weave round may add (safety of the world: a few believable ties, not a web)'
+    MOST_SECRETS: 'code: a bound on what one weave round may add (the roadmap: at most two secrets)'
+    MOST_KNOWN: 'code: the people shown to the chronicler in a weave round, so the call stays small (cost)'
   src/engine/lod.ts:
     FULL_KM: 'code: how near the simulation counts every minute (speed)'
     NEAR_KM: 'code: how near a note on the map becomes a person again (speed)'
