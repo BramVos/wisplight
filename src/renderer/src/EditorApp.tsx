@@ -157,6 +157,7 @@ export function EditorApp() {
       {panel === 'contract' && (
         <ContractPanel
           view={view}
+          book={() => bridge.worldBook(world)}
           propose={(ask) => {
             setAsking(ask)
             setPanel('chronicler')
@@ -1219,13 +1220,21 @@ function DraftView({ draft, busy, accept, drop }: { draft: EditorDraft; busy: bo
  * what happens without it, and the chronicler to propose it. Below, the keys
  * of world.yaml this world sets, and those that take the neutral default.
  */
-function ContractPanel({ view, propose }: { view: EditorView; propose: (ask: string) => void }) {
+function ContractPanel({ view, propose, book }: { view: EditorView; propose: (ask: string) => void; book: () => Promise<{ markdown: string; saved?: string }> }) {
   const unset = view.worldKeys.filter((k) => !k.set).map((k) => k.key)
+  const [saved, setSaved] = useState<string>()
   return (
     <div className="settings-body editor-page">
       <p className="muted small">
         Everything a world can have, from the schemas (docs/CONTENT.md). What a world leaves out works with a neutral default, never with another world&apos;s. The chronicler can propose
         what is empty; nothing is saved until you accept it.
+      </p>
+      <p className="small">
+        The world book (WORLDBOOK.md next to the content) is written again on every save.{' '}
+        <button type="button" className="link" onClick={() => void book().then((r) => setSaved(r.saved ?? 'not saved'))}>
+          [Save the world book as a web page]
+        </button>
+        {saved && <span className="muted"> {saved}</span>}
       </p>
       <table className="quest-table contract-table">
         <thead>

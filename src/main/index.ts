@@ -4,8 +4,9 @@ import { appendFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFi
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { ContentError, draftRequest, draftResult, Engine, ENTITY_KINDS, lineDiff, MapPaletteSchema, paletteRequest, paletteView, readDraft, readPalette, readVoice, savePalette, saveVoice, voiceRequest, voiceYaml, worldStepRequest, enhanceRequest, readEnhance, type Content, type Edit, type EntityKind, type FileChange, type CheckpointedSave, type MapPalette, type Output, type SaveData } from '../engine'
+import { ContentError, draftRequest, draftResult, Engine, worldBookHtml, ENTITY_KINDS, lineDiff, MapPaletteSchema, paletteRequest, paletteView, readDraft, readPalette, readVoice, savePalette, saveVoice, voiceRequest, voiceYaml, worldStepRequest, enhanceRequest, readEnhance, type Content, type Edit, type EntityKind, type FileChange, type CheckpointedSave, type MapPalette, type Output, type SaveData } from '../engine'
 import { ContentEditor } from '../node/editor'
+import { worldBookFor, writeWorldBook } from '../node/worldbook'
 import type { ProviderId } from '../node/ai/providers'
 import { AiService } from '../node/ai/service'
 import type { ChosenRole, Cipher } from '../node/ai/settings'
@@ -387,6 +388,15 @@ ipcMain.handle('engine:end', () => {
 })
 ipcMain.handle('engine:log-size', (_event, scope: unknown) => (session ? journal().size(session, logScope(scope)) : 0))
 ipcMain.handle('engine:export-log', (_event, scope: unknown) => (session ? exportLog(session, logScope(scope)) : undefined))
+// What happened in this game, as Markdown (M10.18): per save, never in the content.
+ipcMain.handle('engine:export-chronicle', async () => {
+  if (!engine) return undefined
+  const stamp = new Date().toISOString().slice(0, 16).replace(/[-:T]/g, '')
+  const result = await dialog.showSaveDialog(window!, { title: 'Save the chronicle of this game', defaultPath: join(app.getPath('documents'), `wisplight-chronicle-${stamp}.md`), filters: [{ name: 'Markdown', extensions: ['md'] }] })
+  if (result.canceled || !result.filePath) return undefined
+  writeFileSync(result.filePath, engine.chronicleMarkdown(), 'utf8')
+  return result.filePath
+})
 
 function logScope(value: unknown): LogScope {
   const v = value as Partial<{ kind: string; days: number }> | undefined
@@ -459,6 +469,8 @@ const shown = (changes: FileChange[]) => changes.map((c) => ({ path: c.path, fre
 /** After a save in the editor: the running game carries on with it, if it plays in that world. */
 function afterEdit(world: string): void {
   worldContents.delete(world)
+  // The world book is never behind the content (M10.18): written again on every save.
+  void writeWorldBook(contentDir(), world).catch(() => undefined)
   if (world !== worldFolder || !engine) return
   loadContentFromDir(contentDir(), world)
     .then((next) => adopt(next))
@@ -466,6 +478,18 @@ function afterEdit(world: string): void {
 }
 
 ipcMain.handle('editor:worlds', () => devOnly().worlds())
+// The world book (M10.18): written next to the content, and saved as HTML with the pictures there are.
+ipcMain.handle('editor:worldbook', async (_event, world: unknown) => {
+  devOnly()
+  const folder = worldOf(world)
+  await writeWorldBook(contentDir(), folder)
+  const markdown = await worldBookFor(contentDir(), folder)
+  const worldContent = await loadContentFromDir(contentDir(), folder)
+  const result = await dialog.showSaveDialog({ title: 'Save the world book', defaultPath: join(app.getPath('documents'), `${folder}-worldbook.html`), filters: [{ name: 'Web page', extensions: ['html'] }] })
+  if (result.canceled || !result.filePath) return { markdown }
+  writeFileSync(result.filePath, worldBookHtml(worldContent, markdown, (id) => ai?.cachedPicture(worldContent, id)), 'utf8')
+  return { markdown, saved: result.filePath }
+})
 ipcMain.handle('editor:view', (_event, world: unknown) => devOnly().view(worldOf(world)))
 ipcMain.handle('editor:entity', (_event, world: unknown, kind: unknown, id: unknown) => devOnly().entity(worldOf(world), kindOf(kind), String(id)))
 ipcMain.handle('editor:save', async (_event, world: unknown, edits: unknown, write: unknown) => {

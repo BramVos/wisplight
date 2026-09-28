@@ -123,6 +123,8 @@ export interface EditorBridge {
   voice(world: string): Promise<{ file: string; yaml: string; own: boolean }>
   saveVoice(world: string, yaml: string): Promise<EditorSave>
   proposeVoice(world: string, ask: string): Promise<{ say: string; yaml?: string; problems: string[] }>
+  /** The world book (M10.18): written next to the content, and saved as HTML with the pictures there are. */
+  worldBook(world: string): Promise<{ markdown: string; saved?: string }>
   /** One step of building a world with the chronicler (M10.17): its proposal, checked, nothing saved. */
   worldStep(world: string, step: string, said: string): Promise<EditorDraft>
   /** Enhance with AI (after M10.17): the designer's answer to a step written out as a fuller brief, with what only they can decide. */
@@ -149,6 +151,8 @@ export interface EngineClient {
   logSize?(scope?: LogScope): Promise<number>
   /** Saves a copy of the game log where the player chooses (desktop only). Returns where, or undefined. */
   exportLog?(scope?: LogScope): Promise<string | undefined>
+  /** What happened in this game, as Markdown (M10.18): saved where the player says, or downloaded in the preview. */
+  exportChronicle?(): Promise<string | undefined>
   activity(): void
   /** Stops the real-time clock while a menu is open. */
   hold(on: boolean): void
@@ -250,6 +254,7 @@ export async function createClient(): Promise<EngineClient> {
     ...(demo ? { logSize: async (scope?: LogScope) => (scope?.kind === 'all' ? 23_600_000 : 1_900_000), exportLog: async () => 'wisplight-log-preview (the preview saves nothing)' } : {}),
     creation: async () => engine.creationData(),
     end: async () => ({ chronicle: engine.chronicle() }),
+    exportChronicle: async () => download('wisplight-chronicle.md', engine.chronicleMarkdown(), 'text/markdown'),
     activity: () => {
       lastInput = Date.now()
     },
@@ -282,7 +287,7 @@ function contentFiles(): { path: string; text: string }[] {
  */
 export async function createEditor(): Promise<EditorBridge> {
   if (window.wisplight?.editor) return window.wisplight.editor
-  const { applyEdits, draftRequest, draftResult, editorView, entities, entityYaml, filesOfWorld, lineDiff, loadContent, MockLlm, newWorldFiles, paletteRequest, paletteView, readDraft, readPalette, readVoice, savePalette, saveVoice, simulate, voiceRequest, voiceYaml, withReturnExits, worldsIn, worldStepRequest, enhanceRequest, readEnhance } = await import('../../engine')
+  const { applyEdits, draftRequest, draftResult, editorView, entities, entityYaml, filesOfWorld, lineDiff, loadContent, MockLlm, newWorldFiles, paletteRequest, paletteView, readDraft, readPalette, readVoice, savePalette, saveVoice, simulate, voiceRequest, voiceYaml, withReturnExits, worldBook, worldBookHtml, worldsIn, worldStepRequest, enhanceRequest, readEnhance } = await import('../../engine')
   let all = contentFiles()
   const shown = (changes: { path: string; before?: string; text: string }[]) => changes.map((c) => ({ path: c.path, fresh: c.before === undefined, lines: lineDiff(c.before ?? '', c.text) }))
   const shownDraft = (draft: ReturnType<typeof readDraft>): EditorDraft => ({
@@ -347,6 +352,13 @@ export async function createEditor(): Promise<EditorBridge> {
       return shownDraft(readDraft(files, (await new MockLlm().complete(worldStepRequest(files, step, said))).text))
     },
     enhance: async (world, step, said) => readEnhance((await new MockLlm().complete(enhanceRequest(filesOfWorld(all, world), step, said))).text),
+    worldBook: async (world) => {
+      const files = filesOfWorld(all, world)
+      const worldContent = loadContent(files)
+      const own = files.find((f) => f.path === `${world}/CHRONICLER.md`)?.text
+      const markdown = worldBook(worldContent, { folder: world, ...(own ? { chronicler: own } : {}) })
+      return { markdown, saved: download(`${world}-worldbook.html`, worldBookHtml(worldContent, markdown), 'text/html') }
+    },
     saveDraft: async (world, draft) => {
       const outcome = draftResult(filesOfWorld(all, world), draft)
       if (outcome.ok) {
@@ -356,4 +368,14 @@ export async function createEditor(): Promise<EditorBridge> {
       return { ok: outcome.ok, problems: outcome.problems, warnings: [], changes: outcome.ok ? shown(outcome.changes) : [] }
     },
   }
+}
+
+/** A file the preview hands the browser to save (M10.18): what the desktop app writes with a save dialog. */
+function download(name: string, text: string, type: string): string {
+  const link = document.createElement('a')
+  link.href = URL.createObjectURL(new Blob([text], { type }))
+  link.download = name
+  link.click()
+  window.setTimeout(() => URL.revokeObjectURL(link.href), 1000)
+  return name
 }

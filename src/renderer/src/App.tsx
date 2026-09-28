@@ -547,6 +547,14 @@ export function App() {
               </button>
             </>
           )}
+          {client?.exportChronicle && (
+            <>
+              {' '}
+              <button type="button" className="link" onClick={() => void client.exportChronicle!()}>
+                [{t('app.menu.chronicle')}]
+              </button>
+            </>
+          )}
           {client?.editor?.open && status?.builder && (
             <>
               {' '}

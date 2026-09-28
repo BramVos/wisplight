@@ -29,7 +29,7 @@ import { LlmError, type LlmClient, type LlmRequest, type LlmResponse } from './d
 import { attitude, relation } from './dialogue/relations'
 import { TopicRegistry } from './dialogue/topics'
 import { add, itemName, matchItem, parseMoney } from './items'
-import { chronicleText } from './chronicle'
+import { chronicleMarkdown, chronicleText } from './chronicle'
 import { journalPage, type JournalPage } from './journal'
 import { die } from './life'
 import { agree, agreements, leadAhead, openAgreements, promiseLines, settle } from './agreements'
@@ -373,6 +373,11 @@ export class Engine {
   /** Everything that really happened, for the end of a game. */
   chronicle(): string {
     return chronicleText(this.world, this.startMinute)
+  }
+
+  /** What happened in this game, in Markdown, to download (M10.18). */
+  chronicleMarkdown(): string {
+    return chronicleMarkdown(this.world, this.startMinute)
   }
 
   /** A page of the journal: what the player knows about a topic, with sources and links. */

@@ -50,3 +50,35 @@ export function chronicleText(world: World, start: number): string {
 function capital(text: string): string {
   return text.charAt(0).toUpperCase() + text.slice(1)
 }
+
+/**
+ * What happened in this game (M10.18), in Markdown, to download from the menu
+ * or the journal: the events, the far places and the people named in passing,
+ * what the stranger improvised, the chronicler's stories and the storylines.
+ * Per save, never in the content; it goes as its own chapter after the world
+ * book ("What happened in this game").
+ */
+export function chronicleMarkdown(world: World, start: number): string {
+  const lines = [`# What happened in this game`, '', `${world.content.world.name}, ${world.date(start)} to ${world.date()}.`, '']
+  const facts = [...(world.state.news?.facts ?? [])].sort((a, b) => a.t - b.t || a.id.localeCompare(b.id))
+  if (facts.length) {
+    lines.push('## Events', '')
+    for (const fact of facts) lines.push(`- **${new GameClock(fact.t).short(world.calendar)}, ${world.location(fact.place).name}.** ${capital(fact.text.precise)}${fact.truth === false ? ' *(not true)*' : ''}`)
+    lines.push('')
+  }
+  const far = world.state.lore?.far ?? []
+  if (far.length) lines.push('## Far places named', '', ...far.map((p) => `- **${p.name}** (${p.kind}), first named by ${callName(world.npc(p.by))}: "${p.line}"`), '')
+  const people = world.state.lore?.people ?? []
+  if (people.length) lines.push('## People named in passing', '', ...people.map((p) => `- **${p.name}**, ${p.bond} of ${world.content.npcs.has(p.of) ? callName(world.npc(p.of)) : p.of}, in ${p.placeName}`), '')
+  const improvised = world.state.improvisations ?? []
+  if (improvised.length) lines.push('## What the stranger improvised', '', ...improvised.map((i) => `- **${new GameClock(i.t).short(world.calendar)}:** ${i.act}. ${i.narration}${i.effect !== 'nothing' ? ` *(${i.effect})*` : ''}`), '')
+  const lore = world.state.chronicle?.lore ?? []
+  if (lore.length) {
+    lines.push('## The stories of this game', '')
+    for (const entry of lore) lines.push(`### ${entry.name}`, '', entry.story || entry.details || entry.summary, ...(entry.far ? ['', `Far away they say: ${entry.far}`] : []), '')
+  }
+  const storylines = world.state.chronicle?.lines ?? []
+  if (storylines.length) lines.push('## Storylines', '', ...storylines.map((l) => `- **${capital(l.title)}**${l.open ? '' : ' (closed)'}${l.summary.length ? `: ${l.summary.join(' ')}` : ''}`), '')
+  if (lines.length <= 4) lines.push('Nothing worth telling happened yet.', '')
+  return lines.join('\n').trim() + '\n'
+}

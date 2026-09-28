@@ -20,6 +20,7 @@
     "balance": "tsx scripts/balance.ts",
     "reference": "tsx scripts/reference.ts",
     "ids": "tsx scripts/ids.ts",
+    "worldbook": "tsx scripts/worldbook.ts",
     "longrun": "tsx scripts/longrun.ts",
     "stutter": "tsx scripts/stutter.ts",
     "playtest": "tsx scripts/playtest.ts",

@@ -135,6 +135,11 @@ export function JournalView({
             spellCheck={false}
           />
           <span className="muted small still">{t('journal.head.still')}</span>
+          {client.exportChronicle && (
+            <button type="button" className="link" onClick={() => void client.exportChronicle!()}>
+              [{t('journal.head.chronicle')}]
+            </button>
+          )}
           <button type="button" className="link" onClick={onClose}>
             [{t('journal.head.close')}]
           </button>

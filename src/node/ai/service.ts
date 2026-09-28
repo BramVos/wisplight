@@ -187,6 +187,14 @@ export class AiService {
    * when pictures are off, the budget is spent, or the model fails; the game
    * simply shows none.
    */
+  /** A picture already made, from disk only, never drawn now (M10.18: the world book shows what there is). */
+  cachedPicture(content: Content, id: string): string | undefined {
+    const subject = pictureSubject(content, id)
+    if (!subject || subject.plain) return undefined
+    const file = join(this.options.dir, 'pictures', content.world.id.replace(/[^a-z0-9_-]/gi, ''), `${subject.id}-${subject.key}.jpg`)
+    return existsSync(file) ? `data:image/jpeg;base64,${readFileSync(file).toString('base64')}` : undefined
+  }
+
   async picture(content: Content, id: string): Promise<string | undefined> {
     const subject = pictureSubject(content, id)
     if (!subject) return undefined

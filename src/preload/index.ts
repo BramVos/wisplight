@@ -12,6 +12,7 @@ contextBridge.exposeInMainWorld('wisplight', {
   end: () => ipcRenderer.invoke('engine:end'),
   logSize: (scope?: unknown) => ipcRenderer.invoke('engine:log-size', scope),
   exportLog: (scope?: unknown) => ipcRenderer.invoke('engine:export-log', scope),
+  exportChronicle: () => ipcRenderer.invoke('engine:export-chronicle'),
   activity: () => ipcRenderer.send('engine:activity'),
   hold: (on: boolean) => ipcRenderer.send('engine:hold', on),
   // The game hears when the content changed under it (the editor saved, or a file changed).
@@ -48,6 +49,8 @@ contextBridge.exposeInMainWorld('wisplight', {
     // Enhance with AI: the answer to a step written out as a fuller brief (after M10.17).
     enhance: (world: string, step: string, said: string) => ipcRenderer.invoke('editor:enhance', world, step, said),
     saveDraft: (world: string, draft: unknown) => ipcRenderer.invoke('editor:save-draft', world, draft),
+    // The world book (M10.18): written next to the content and saved as HTML.
+    worldBook: (world: string) => ipcRenderer.invoke('editor:worldbook', world),
   },
   // Under the bonnet (M10.1): only a development build has the dev menu.
   ...(import.meta.env.DEV ? { dev: { view: (section: string, focus?: string) => ipcRenderer.invoke('dev:view', section, focus) } } : {}),

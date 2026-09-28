@@ -1,5 +1,21 @@
 # Changelog
 
+## M10.18 deel A: het wereldboek en de kroniek per spel, 28 september 2026
+
+- **Een wereldboek uit de content.** `npm run worldbook base` (of `isle`, of een andere wereld) schrijft `content/<wereld>/WORLDBOOK.md`: de wereld, de kaart, geschiedenis en lore, machten, geloven, dorpen, de startstreek, de plekken, de mensen met banden en beroepen, geheimen, bestiarium, munten en kalender, quests, namen en spraak, ambachten, vervoer, wat er gebeurt als (de wachters en nasleep in gewone taal), de regels in het kort, en hoe de wereld eruitziet en klinkt. De volgorde is die van het Nethermarch-wereldboek. Een soort die een wereld niet heeft, geeft geen hoofdstuk: Deepwell heeft geen Faith, Bestiary of regels.
+- **Altijd bij.** De editor schrijft het boek opnieuw bij elke opslag. De Nethermarch en Skerrow hebben het in de repo, en een test faalt als het niet meer bij de content past; `npm run worldbook` maakt het weer gelijk.
+- **Als webpagina.** In de editor onder Contract: "[Save the world book as a web page]". Dat geeft een HTML-bestand met de afbeeldingen die al gemaakt zijn (gebieden en portretten); wat nog geen afbeelding heeft, blijft tekst.
+- **De kroniek van een spel.** In het menu "[Chronicle]" en in het dagboek "[Save what happened in this game]": een Markdown-bestand met de gebeurtenissen, de verre plekken, de mensen die terloops genoemd zijn, de improvisaties, de verhalen van de kroniekverteller en de verhaallijnen. De kroniek hoort bij het spel en komt nooit in de content; je kunt haar als los hoofdstuk achter het wereldboek plakken.
+- **Hoe deze wereld gemaakt is.** Heeft een wereld een ontwerplogboek (`DESIGN.md`, het werk van de andere sessie), dan is dat het laatste hoofdstuk van het boek, zonder de antwoorden die nog getypt worden.
+
+Testen: pas in de editor een plek aan, sla op en kijk in `content/base/WORLDBOOK.md`; de knop onder Contract; in een spel het menu of het dagboek. Tests in `tests/m1018.test.ts` (6), alle 772 groen, drie simulaties zonder problemen, speeltests, build en de drie smoketests.
+
+Wat de editor en de kroniekverteller leerden: geen nieuwe velden in de content. Nieuw zijn het bestand `WORLDBOOK.md` naast de content, `npm run worldbook` en de kroniek per spel.
+
+Nog niet: een test kan Claude Docs niet lezen. Voor de Nethermarch blijft het boek in Claude Docs de bron; wie de content daaraan gelijk trekt, maakt het boek opnieuw. De open verhaallijnen staan in de kroniek per spel en niet in het wereldboek, want een wereld zonder spel heeft ze niet.
+
+Ontwerp: de alinea over het wereldboek en de kroniek staat in het FO (hoofdstuk 15, na improvisatie).
+
 ## M10.16 Improvisatie: als de regels geen weg weten, 28 september 2026
 
 - **Waar het ertoe doet.** Een object, plek of gebied kan in de content `improvise` hebben: wat het kan betekenen (offer, vloek, geest, lore, ambacht), wat er hooguit mag gebeuren, en een eigen regel voor als er geen model is. In de Nethermarch: de Kabouterberg en de oude eik (melk voor de kabouters), de hondensteen op de kade, de Haaksteen in de Blackmere, en de Blackmere en de Kabouterberg als geheel met minder mogelijkheden. Op Skerrow: het zilveren bos en de waystone.
