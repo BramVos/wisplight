@@ -1,5 +1,15 @@
 # Changelog
 
+## M10.22 deel: zetels van facties, 29 september 2026
+
+- **Een factie zit op meer plekken, met wat ze daar wil.** Nieuw is `seats` in de content: een plek of gebied met een zin over wat de factie daar wil. De Nethermarch haalt ze uit zijn eigen zeteltekst. De Graaf zit in het schoutshuis ("the survey finished, the peat-cutters quiet"), de Lantaarn in de kapel van Veenhoek en in de priorij. Skerrow heeft er één: de zeelieden van de Oude Sterren bij de haven. Deepwell noemt er bewust geen; dat is de neutrale standaard.
+- **Een wijk krijgt zetels van bestaande facties, nooit een nieuwe factie.** De wijk-aanroep mag hooguit twee zetels voorstellen op een van zijn eigen plekken, alleen voor facties die de wereld heeft. Een verzonnen factie valt weg.
+- **Het dagboek** noemt op de pagina van een factie ook de andere zetels, maar alleen waar je geweest bent of van gehoord hebt. Het wereldboek toont ze in de tabel met machten.
+
+Wat de editor en de kroniekverteller leerden: `seats` in het contract, in de stap Mensen en in het sjabloon voor een nieuwe factie. Een zetel op een plek die niet bestaat, houdt het laden tegen.
+
+Nog niet: een nieuwe factie die uit een verhaallijn of een grote lijn ontstaat. Die komt met de grote lijnen.
+
 ## M10.22 deel: verhaallijnen over gebieden heen, 29 september 2026
 
 - **Een lijn uit Veenhoek loopt door in Graafhaven.** Verhaallijnen volgen mensen en geen gebied, dus dat kon al in principe. Nieuw is dat de weefronde ook een echo mag geven: één nieuwe persoon van de wijk krijgt een rol in een open verhaallijn (een bode, iemand die ervan hoorde en je herkent). Dat feit komt op die lijn, die dan plekken heeft in Veenhoek én in de wijk.

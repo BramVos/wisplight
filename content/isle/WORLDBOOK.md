@@ -122,7 +122,7 @@ Levels: the caves, ground level, the cliff tops.
 | --- | --- | --- | --- | --- |
 | The folk of the Hythe | the Salt Kettle in Skerrow Hythe | The Lamp lit again, and a ship to call before the winter storms close the sea. |  | reputation |
 | The Tidemother's faithful | the old birch in the silver grove | Gifts to the sea, and the drowned remembered. |  | sworn to tidemother, at The Silver Grove |
-| The sailors of the Old Stars | wherever a ship is at sea | Fair winds, a safe landfall, and the old star-lore kept. |  | sworn to old_stars |
+| The sailors of the Old Stars | wherever a ship is at sea; Skerrow Hythe, the Harbour: The Kittiwake mended, the lamp on the headland lit, and the packet calling again. | Fair winds, a safe landfall, and the old star-lore kept. |  | sworn to old_stars |
 | The wreckers | the cliff path, on dark nights | Ships on the rocks, and their cargo on the shore. |  | never |
 
 ### Relations

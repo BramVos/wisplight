@@ -42,17 +42,23 @@ export interface District {
   joins: Join[]
   /** People named in talks who live in this town (M10.9), and the person each became here (M10.22). */
   sketches?: Record<string, string>
+  /** Seats of factions the world has, at a place of this district, with what they want there (M10.22). */
+  seats?: { faction: string; at: string; wants: string }[]
 }
 
 /** What the chronicler writes for a district: names and words, never the shape. */
 export interface DistrictWords {
   places: { key: string; name: string; description: string; near?: string }[]
   people: { key: string; name: string; pronoun: string; looks: string; speech: string; fact: string; trade?: string; at?: string }[]
+  /** Factions of the world that sit here (M10.22): never a new one. */
+  seats?: { faction: string; at: string; wants: string }[]
 }
 
 /** The most places and people a district may add, so a call stays small and a town stays a town. */
 const MOST_PLACES = 6
 const MOST_PEOPLE = 6
+/** The seats of factions one district may hold. */
+const MOST_SEATS = 2
 
 const keyOf = (topic: string, id: string) => `${topic}:${id}`
 const WINDS: Direction[] = ['north', 'east', 'south', 'west', 'northeast', 'northwest', 'southeast', 'southwest']
@@ -73,7 +79,15 @@ export function withDistricts(content: Content, state: GameState): Content {
   if (!all.length) return content
   const locations = new Map(content.locations)
   const npcs = new Map(content.npcs)
+  const factions = new Map(content.factions)
   const sorted = all.sort((a, b) => `${a.topic}:${a.id}`.localeCompare(`${b.topic}:${b.id}`))
+  // Seats of the world's factions in the districts (M10.22).
+  for (const d of sorted) {
+    for (const seat of d.seats ?? []) {
+      const f = factions.get(seat.faction)
+      if (f && !f.seats.some((s) => s.at === seat.at)) factions.set(f.id, { ...f, seats: [...f.seats, { at: seat.at, wants: seat.wants }] })
+    }
+  }
   for (const d of sorted) {
     for (const raw of d.locations) {
       const l = LocationSchema.parse(raw)
@@ -90,7 +104,7 @@ export function withDistricts(content: Content, state: GameState): Content {
       if (from && locations.has(j.to)) locations.set(from.id, { ...from, exits: { ...from.exits, [j.direction]: { to: j.to, minutes: 3 } } })
     }
   }
-  return { ...content, locations, npcs }
+  return { ...content, locations, npcs, factions }
 }
 
 /** The town's heart: the place its districts lead off (its market), from the far place the game made. */
@@ -212,7 +226,15 @@ export function makeDistrict(world: World, topic: string, id: string, words: Dis
     const full = `${pool[pronoun][rng(0, pool[pronoun].length - 1)]} ${pool.family[rng(0, pool.family.length - 1)]}`
     if (!names.has(full)) person(full, pronoun, trades.includes('labourer') ? 'labourer' : trades[0]!, entrance, `Someone who has lived in ${q.name} all their life.`, `${full.split(' ')[0]} knows every door in ${q.name}.`)
   }
-  return { topic, id, by: theirs ? 'chronicler' : 'template', t: world.now, locations, npcs, joins, ...(Object.keys(sketched).length ? { sketches: sketched } : {}) }
+  // Seats of factions the world has, at a place the chronicler made here; never a new faction.
+  const seats: NonNullable<District['seats']> = []
+  for (const seat of (words?.seats ?? []).slice(0, MOST_SEATS)) {
+    const at = placed.get(seat.at)
+    const wants = typeof seat.wants === 'string' ? seat.wants.trim() : ''
+    if (!at || !world.content.factions.has(seat.faction) || !wants || wants.length > 200 || seats.some((s) => s.faction === seat.faction)) continue
+    seats.push({ faction: seat.faction, at, wants })
+  }
+  return { topic, id, by: theirs ? 'chronicler' : 'template', t: world.now, locations, npcs, joins, ...(Object.keys(sketched).length ? { sketches: sketched } : {}), ...(seats.length ? { seats } : {}) }
 }
 
 /** A stub: the street into a district not yet made, off the town's heart. */
@@ -373,6 +395,7 @@ export function districtRequest(world: World, key: string): LlmRequest {
       'You make one district of a far town playable in a text game: you name and describe its places and people. The shape is fixed by the game; you write the words. Never contradict what is known of the town; use no name that is TAKEN.',
       `PLACES: up to ${MOST_PLACES}, each with a key, a name, a description, and near: the key of the place it lies next to (or leave it out: next to the way in). A description has three to five sentences and at most seventy words, second person, present tense, one sense that is not sight, a hint at one way out rather than a list, and never opens with its own name. Plain words, in the tone of the world.`,
       `PEOPLE: up to ${MOST_PEOPLE}, each with a key, a full name that fits the town, she or he, what people see first (one sentence), how they speak (a few words), one thing anyone may know of them, a trade from TRADES, and at: the key of the place they live and work.`,
+      `SEATS: up to ${MOST_SEATS}, where one of the FACTIONS has a hall, a church or an office at one of your places (by the place's key), with what they want in this town (one sentence). Never a faction that is not listed: a new town brings no new factions.`,
       'JSON only.',
     ].join('\n'),
     prompt: [
@@ -381,15 +404,17 @@ export function districtRequest(world: World, key: string): LlmRequest {
       first ? 'This is where the stranger comes in: the gate, the market and the inn are there already; add what else stands around them.' : `The way in is ${String(stub?.['name'] ?? q.name)}, off the market.`,
       `KNOWN PLACES OF THE TOWN: ${known.join('; ')}`,
       `TRADES: ${trades}`,
+      `FACTIONS: ${[...world.content.factions.values()].map((f) => `${f.id} (${f.name}: ${f.wants})`).join('; ')}`,
       `TAKEN: ${taken.join(', ')}`,
     ].join('\n'),
     schemaName: 'district',
     schema: object({
       places: { type: 'array', items: object({ key: text, name: text, description: text, near: text }, ['near']) },
       people: { type: 'array', items: object({ key: text, name: text, pronoun: text, looks: text, speech: text, fact: text, trade: text, at: text }) },
+      seats: { type: 'array', items: object({ faction: text, at: text, wants: text }) },
     }),
     maxTokens: 3000,
-    meta: { district: key, town: t.name, name: q.name },
+    meta: { district: key, town: t.name, name: q.name, factions: [...world.content.factions.keys()].sort() },
   }
 }
 

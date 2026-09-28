@@ -696,7 +696,7 @@ function templateFor(kind: EntityKind, view: EditorView): Raw {
     case 'pattern':
       return { id: 'new_pattern', kind: 'lost_thing', belang: 1, items: [], text: { title: "{owner}'s lost {thing}", precise: '{owner} lost {their} {thing} near {place}.', village: '{owner} lost {their} {thing}.', far: 'Someone lost a {thing}.' } }
     case 'faction':
-      return { id: 'new_faction', name: 'The New Faction', seat: area, wants: 'What they want.', stance: 'How they go about it.' }
+      return { id: 'new_faction', name: 'The New Faction', seat: area, wants: 'What they want.', stance: 'How they go about it.', seats: [{ at: place, wants: 'What they want there.' }] }
     case 'realm':
       return { id: 'new_realm', name: 'The New Realm', ruler: 'Who rules it', capital: 'Its capital' }
     case 'settlement':

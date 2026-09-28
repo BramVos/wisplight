@@ -8,6 +8,9 @@ factions:
     name: the Count's men
     seat: Graafhaven; locally the schout's house in Veenhoek
     wants: Order, taxes and a new polder.
+    # Where else they sit, with what they want there (M10.22).
+    seats:
+      - { at: loc_schout_house, wants: "The survey finished, the peat-cutters quiet, and every duit of tax paid on time." }
     stance: for the drainage
     members: [npc_everhard]
     allies: [dyke_board, cog_league]
@@ -28,6 +31,9 @@ factions:
     name: the Church of the Lantern
     seat: the Brandaris in Graafhaven; the chapel in Veenhoek and the priory at Kloosterveen
     wants: Souls, charity, an end to witchcraft and the old rites.
+    seats:
+      - { at: loc_veenhoek_chapel, wants: "The village at prayer on Rest Day, and no more apples left on the old stone." }
+      - { at: kloosterveen, wants: "The library kept, the brewery paying, and the old charter left where it lies." }
     stance: divided on the drainage; the prior knows of the charter
     members: [npc_wendela]
     allies: [counts_men, waagdam_burghers]

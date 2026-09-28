@@ -504,12 +504,15 @@ A list; each has:
 | name | text | yes |  |
 | seat | text | yes |  |
 | wants | text | yes |  |
+| seats | list of a map: at, wants | no | [] |
 | stance | text | no |  |
 | members | list of text | no | [] |
 | allies | list of text | no | [] |
 | rivals | list of text | no | [] |
 | join | one of: one of never, hired, reputation \| a map: patrons, not_patrons, at, tag, fee, reputation, says | no | "never" |
 | law | text | no |  |
+
+`seats`: where else a faction sits, each a place (a location or an area) with what it wants there. A town that grows in play brings no new factions: a district may get a seat of one the world has; a new faction comes only from a storyline or a great line.
 
 ## realms (data/factions.yaml)
 

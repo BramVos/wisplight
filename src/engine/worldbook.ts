@@ -121,7 +121,7 @@ export function worldBook(content: Content, input: WorldBookInput = {}): string 
   add('Powers', [
     ...table(
       ['Faction', 'Seat', 'Wants', 'Stands', 'Joining'],
-      factions.map((f) => [cap(f.name), f.seat, f.wants, f.stance ?? '', typeof f.join === 'string' ? f.join : [f.join.patrons ? `sworn to ${f.join.patrons.join(' or ')}` : '', f.join.at ? `at ${f.join.at.map(place).join(' or ')}` : '', f.join.fee && coins ? `for ${formatMoney(f.join.fee, coins)}` : ''].filter(Boolean).join(', ')]),
+      factions.map((f) => [cap(f.name), [f.seat, ...f.seats.map((s) => `${place(s.at)}: ${s.wants}`)].join('; '), f.wants, f.stance ?? '', typeof f.join === 'string' ? f.join : [f.join.patrons ? `sworn to ${f.join.patrons.join(' or ')}` : '', f.join.at ? `at ${f.join.at.map(place).join(' or ')}` : '', f.join.fee && coins ? `for ${formatMoney(f.join.fee, coins)}` : ''].filter(Boolean).join(', ')]),
     ),
     ...(factions.some((f) => f.allies.length || f.rivals.length) ? ['### Relations', '', ...table(['Faction', 'Friends', 'Enemies'], factions.filter((f) => f.allies.length || f.rivals.length).map((f) => [cap(f.name), f.allies.map((a) => content.factions.get(a)?.name ?? a).join(', '), f.rivals.map((a) => content.factions.get(a)?.name ?? a).join(', ')]))] : []),
   ])

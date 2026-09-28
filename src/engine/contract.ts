@@ -37,6 +37,8 @@ export const FIELD_NOTES: Record<string, string[]> = {
     '`beyond`: per edge (north, east, south or west) the line the stranger reads on reaching it, from the world book, and `toward`: the far places that way (topics), which they may go on to on foot or by a line. An edge without one says that nobody has told them; beyond the last land the world names, nothing is made.',
   ],
   npcs: ['`secrets`: `about` and `teaches` take ids: a topic, a person (an NPC id), a place (a location id) or an area (`area_<id>`).'],
+  // M10.22: factions grow, within bounds.
+  factions: ['`seats`: where else a faction sits, each a place (a location or an area) with what it wants there. A town that grows in play brings no new factions: a district may get a seat of one the world has; a new faction comes only from a storyline or a great line.'],
   // M10.21: a far town grows by district.
   topics: ['`districts` (a far town, kind place): its quarters as the world book names them, each with an id, a name and a line; the first is where the stranger comes in. The game makes the first playable when the stranger does something there (buys, asks, rents a bed), and each other when they go into it by its street; without a model from templates and the line.'],
   // M10.20: the transport step of The Quiet Reach wrote legs as "a-b".

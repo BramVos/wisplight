@@ -107,6 +107,12 @@ export function factionPage(world: World, id: string): string[] | undefined {
   return [
     f.wants,
     `Seat: ${f.seat}.`,
+    // Seats elsewhere (M10.22), where the stranger has been or heard of the place.
+    ...(() => {
+      const known = f.seats.filter((s) => (world.state.player.journal ?? {})[s.at] !== undefined || (world.state.player.visited ?? []).includes(s.at))
+      const where = (at: string) => world.content.locations.get(at)?.name ?? world.content.areas.get(at)?.name ?? at
+      return known.length ? [`Also at: ${known.map((s) => `${where(s.at)} (${s.wants})`).join('; ')}.`] : []
+    })(),
     ...(f.stance ? [`Where they stand: ${f.stance}.`] : []),
     ...(f.allies.length ? [`Friends: ${names(f.allies)}.`] : []),
     ...(f.rivals.length ? [`Enemies: ${names(f.rivals)}.`] : []),

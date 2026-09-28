@@ -103,7 +103,7 @@ export class MockLlm implements LlmClient {
             : request.schemaName === 'weave'
             ? this.weave((request.meta?.['fresh'] as string[] | undefined) ?? [], (request.meta?.['known'] as string[] | undefined) ?? [], (request.meta?.['lines'] as string[] | undefined) ?? [])
             : request.schemaName === 'district'
-            ? this.district(String(request.meta?.['town'] ?? 'the town'), String(request.meta?.['name'] ?? 'the district'))
+            ? this.district(String(request.meta?.['town'] ?? 'the town'), String(request.meta?.['name'] ?? 'the district'), (request.meta?.['factions'] as string[] | undefined) ?? [])
             : request.schemaName === 'legends'
             ? this.legends((request.meta?.['legends'] as string[] | undefined) ?? [])
             : this.chronicler(request.meta as unknown as ChronicleMeta, request.prompt)
@@ -124,7 +124,7 @@ export class MockLlm implements LlmClient {
   }
 
   /** A district of a far town (M10.21): two places and two people, in the words a chronicler might use; invalid words in 'invalid' mode. */
-  district(town: string, name: string): string {
+  district(town: string, name: string, factions: string[] = []): string {
     if (this.mode === 'invalid') return JSON.stringify({ places: [{ key: 'x', name: 'X', description: 'Too short.' }], people: [{ key: 'y', name: 'nobody', pronoun: 'it', looks: '', speech: '', fact: '', trade: 'none', at: 'x' }] })
     return JSON.stringify({
       places: [
@@ -135,6 +135,7 @@ export class MockLlm implements LlmClient {
         { key: 'hester', name: 'Hester Vlieland', pronoun: 'she', looks: 'A square woman with a pencil behind her ear and tar on her cuffs.', speech: 'short, counts aloud', fact: 'Hester keeps the chandlery and knows every ship that owes her money.', trade: 'merchant', at: 'chandlery' },
         { key: 'joris', name: 'Joris Kuipers', pronoun: 'he', looks: 'A broad man in a leather apron, with sawdust in his beard.', speech: 'slow, friendly', fact: 'Joris makes the best casks in the quarter, and says so.', trade: 'merchant', at: 'yard' },
       ],
+      seats: [...(factions[0] ? [{ faction: factions[0], at: 'chandlery', wants: 'A say in who supplies the ships, and a share of what they pay.' }] : []), { faction: 'made_up_league', at: 'yard', wants: 'Everything.' }],
     })
   }
 

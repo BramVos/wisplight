@@ -60,6 +60,7 @@ numbers:
   src/engine/growth/districts.ts:
     MOST_PLACES: 'code: a bound on what one district call may add, so the call stays small (cost)'
     MOST_PEOPLE: 'code: a bound on what one district call may add, so the call stays small (cost)'
+    MOST_SEATS: 'code: a bound on the seats of factions one district may hold (a town brings no new factions, and few new seats)'
   src/engine/growth/weave.ts:
     MOST_BONDS: 'code: a bound on what one weave round may add (safety of the world: a few believable ties, not a web)'
     MOST_SECRETS: 'code: a bound on what one weave round may add (the roadmap: at most two secrets)'

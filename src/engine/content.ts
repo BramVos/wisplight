@@ -989,6 +989,12 @@ export const FactionSchema = z
     name: z.string(),
     seat: z.string(),
     wants: z.string(),
+    /**
+     * Where else they sit (M10.22): a place (a location or an area) with what
+     * they want there. A new town brings no new factions: a district gets a
+     * seat of one the world has (the guild's hall in Graafhaven).
+     */
+    seats: z.array(z.object({ at: z.string(), wants: z.string() }).strict()).default([]),
     /** Where they stand on what divides the land: "for the drainage". */
     stance: z.string().optional(),
     members: z.array(z.string()).default([]),
@@ -1547,6 +1553,7 @@ function checkReferences(world: WorldDef | undefined, c: Omit<Content, 'world'>)
   for (const f of c.factions.values()) {
     if (f.law && f.law !== 'count' && !world?.towns.some((t) => t.id === f.law)) problems.push(`faction ${f.id}: unknown law ${f.law}`)
     for (const m of f.members) npc(m, `faction ${f.id}.members`)
+    for (const s of f.seats) if (!c.locations.has(s.at) && !c.areas.has(s.at)) problems.push(`faction ${f.id}.seats: ${s.at} is no place or area`)
     for (const other of [...f.allies, ...f.rivals]) if (!c.factions.has(other)) problems.push(`faction ${f.id}: unknown faction ${other}`)
   }
   for (const t of c.tensions) for (const r of t.between) if (!c.realms.has(r)) problems.push(`tension: unknown realm ${r}`)

@@ -32,6 +32,9 @@ factions:
     name: the sailors of the Old Stars
     seat: wherever a ship is at sea
     wants: Fair winds, a safe landfall, and the old star-lore kept.
+    # Where they sit on land (M10.22): the slip where the Kittiwake lies.
+    seats:
+      - { at: loc_skerrow_harbour, wants: "The Kittiwake mended, the lamp on the headland lit, and the packet calling again." }
     members: [npc_brannoc]
     allies: []
     rivals: []

@@ -138,9 +138,9 @@ Levels: under the ground, ground level, the crowns.
 
 | Faction | Seat | Wants | Stands | Joining |
 | --- | --- | --- | --- | --- |
-| The Count's men | Graafhaven; locally the schout's house in Veenhoek | Order, taxes and a new polder. | for the drainage | hired |
+| The Count's men | Graafhaven; locally the schout's house in Veenhoek; The Schout's House: The survey finished, the peat-cutters quiet, and every duit of tax paid on time. | Order, taxes and a new polder. | for the drainage | hired |
 | The Dyke Board | the dyke house by the Oude Zijl | Dry feet, dyke work, money for upkeep. | for the drainage, if it pays for the dykes | never |
-| The Church of the Lantern | the Brandaris in Graafhaven; the chapel in Veenhoek and the priory at Kloosterveen | Souls, charity, an end to witchcraft and the old rites. | divided on the drainage; the prior knows of the charter | sworn to lantern |
+| The Church of the Lantern | the Brandaris in Graafhaven; the chapel in Veenhoek and the priory at Kloosterveen; Chapel of the Lantern: The village at prayer on Rest Day, and no more apples left on the old stone.; Kloosterveen: The library kept, the brewery paying, and the old charter left where it lies. | Souls, charity, an end to witchcraft and the old rites. | divided on the drainage; the prior knows of the charter | sworn to lantern |
 | The Old Faith | holy places in the fen and on the heath | The old rites, respect for spirits and the dead. | against the drainage |  |
 | The Brotherhood of Peat-cutters | the peat sheds of Veenhoek | The fen as common land, and a fair price for peat. | fiercely against the drainage | reputation |
 | The burghers of Waagdam | the town hall and the Waag | Market, trade and quiet. | in two minds on the drainage; more grain, but less peat | at The Waag or The Weighing Room, for 5 gl |
