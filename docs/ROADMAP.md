@@ -549,3 +549,61 @@ Scope: vraag van Bram, 28 september 2026: laat wandelingen de kaart volgen, en m
 - [ ] De reis krijgt de tochtalinea van M10.11, met de dagen en wat er gebeurde, en het dagboek een regel per reis; het transcript houdt de dagen
 - [ ] Een lijn heeft een vertrektijd: wie te laat is wacht op de volgende, `wait for the coach` wacht tot het vertrek, en de klok loopt zoals bij elk wachten
 - [ ] Een oude save speelt door, `npm run playtest` blijft groen, en de trekschuit doet precies wat hij deed (een test die de oude en de nieuwe trekschuit vergelijkt)
+
+## M10.13 Terugkomen en erbij horen
+
+Scope: drie opmerkingen uit de review van 28 september 2026, door Bram overgenomen: terugkomen herkenbaar maken, relaties kleine praktische gevolgen geven, en de speler een plek geven om bij te horen. Alles uit toestand die er al is (plekken, objecten, relaties, het register, het nieuws); geen nieuwe simulatie, wel een nieuwe manier om te tonen wat er al gebeurde. Spaarzaam: twee of drie regels, nooit een samenvatting van alles.
+
+Terugkomen:
+- [ ] Wie na een dag of langer op een bekende plek terugkomt, krijgt na de plekbeschrijving hooguit drie regels over wat sinds zijn laatste bezoek veranderd is en hier waar te nemen valt: een object met een andere toestand (de brug hersteld: "The new planks of the bridge are still pale"), een plek met een andere toestand, iemand die er nu is of juist weg is, een afspraak uit het register die hier speelt, en één gebaar van iemand die de speler kent (hieronder). Gekozen op belang en op wat de speler zelf veroorzaakte (zijn invloed eerst); wat hij al hoorde als nieuws telt niet mee. De regels komen uit sjablonen per soort verandering in de content (`returning.yaml`), met de laatste bezoekdatum per plek in de save (`player.visits`)
+- [ ] Zonder model werkt het volledig; met model mag de vertellerlaag van M10.11 de drie regels tot één alinea maken
+
+Gebaren:
+- [ ] Een gebaar is een klein, praktisch gevolg van een relatie, als content (`gestures.yaml`): een voorwaarde (band, iets gedeelds uit het register of het geheugen van de NPC: een gered kind, een terugbetaalde lening, een gesprek over de dijk), een plek of moment (de NPC ziet de speler aankomen, in de winkel, bij vertrek), en een effect uit de bestaande verbs: een regel, een ding klaargelegd (`give` zonder afspraak), een stoel vrijgehouden (`let_in`), een waarschuwing ("I'm off to Waagdam at first light"), of een vraag hoe iets afliep (een gespreksopening uit het register). Voorbeelden in de content voor Mirte, Gerrit, de waard en Tamsin
+- [ ] Spaarzaam: hooguit één gebaar per persoon per dag en per plek per bezoek, alleen uit werkelijk gedeelde ervaringen (het register en het geheugen, nooit uit affiniteit alleen), en een gebaar dat de speler al twee keer kreeg wijkt voor een ander; een test telt
+
+Een plek om bij te horen:
+- [ ] Eén herkenbare verblijfplaats per wereld als content: een gehuurde kamer in de herberg (huur per week uit het grootboek), een werkbank bij een meester (M10.5), of een plek bij een huishouden (na een band); met opslag (een kist die de speler mag gebruiken, met eigendom), een paar persoonlijke voorwerpen die er blijven staan, en mensen die de speler verwachten (de waard vraagt waar je was; wie er woont noemt je bij je naam). Geen huizenbouw
+- [ ] De verblijfplaats staat in het dagboek en op de kaart, een lange reis (M10.12) vertrekt ervandaan en komt er terug (de tochtalinea noemt het), en wie weken wegblijft vindt bij terugkomst wat er in die tijd gebeurde (de terugkomregels hierboven)
+- [ ] Een oude save zonder verblijfplaats speelt door; `npm run playtest` blijft groen
+
+## M10.14 Goede afloop en mislukking die verder speelt
+
+Scope: twee opmerkingen uit de review van 28 september 2026. De nasleep van dood, diefstal en gebroken beloften is concreet (M8.1 tot M8.3, M10.2); geslaagd werk en behulpzaamheid verdienen hetzelfde, en een mislukking moet een nieuwe situatie opleveren in plaats van "materiaal kwijt, probeer opnieuw". Content waar het kan (wachters en nasleep), code alleen voor een werkwoord of toestand die ontbreekt.
+
+Goede afloop:
+- [ ] Standaardnasleep voor goed nieuws, als content in beide werelden: de eerste markt nadat de molen weer draait (een feest op de markt, prijzen even lager, de molenaar noemt de speler), een gezamenlijk maal na het redden van de dijk (een bijeenkomst in de herberg, de heemraad spreekt, de speler heeft een stoel), iemand die een door de speler gemaakt voorwerp gebruikt (een regel in de plekbeschrijving of het gesprek: "the knife you made"; het voorwerp draagt zijn maker, M10.5), een leerling die later iets zelfstandig kan (een nieuw ambacht bij een NPC na lessen van de speler), en een lied of verhaal waarin de bijdrage van de speler herkenbaar en wat overdreven terugkomt (een feit met `village`-versie die groeit bij het doorvertellen)
+- [ ] Het werkwoord `celebrate` of een bestaand bijeenkomst-werkwoord dekt feest en maal; als er code nodig is, zeg in het verslag waarom een wachter niet volstond
+
+Mislukking:
+- [ ] Een mislukte proef bij een ambacht (M10.5) levert een uitkomst op in plaats van niets: een matig product (een `quality` op het voorwerp: bruikbaar voor een ander doel, minder waard, en de meester zegt wat eraan schort), een beschadigd object dat herstel vraagt (een toestand `damaged` met een herstelaffordance), of materiaal dat deels over is; de content per ambacht zegt welke van de drie, en de uitkomst hangt af van de graad van falen (kritiek falen kan wel verlies zijn)
+- [ ] Een gemiste afspraak (M10.2) is uit te leggen of goed te maken: een gespreksact `Apologise` of `Explain` met een proef, en een aanbod `make_good` uit het register (het alsnog doen, of iets ervoor teruggeven), zodat de wrok niet de enige uitkomst is; de andere kant beslist volgens band en karakter
+- [ ] Een mislukte proef in het veld (mist, een slot, een sprong) laat de situatie achter waarin je nu zit (afgedwaald, een slot dat klemt, nat en koud), met begrijpelijke manieren om verder te gaan; de tekst zegt wat er nu is, niet alleen dat het mislukte
+- [ ] Niet elke mislukking wordt een quest: alleen wat een wachter oppakt, en de speeltest laat zien dat een nieuwe speler na een mislukking weet wat hij kan doen
+
+## M10.15 Geluid, bescheiden
+
+Scope: opmerking uit de review van 28 september 2026, door Bram overgenomen: optionele omgevingsgeluiden, geen gesproken dialogen. Subtiel, uitschakelbaar, en nooit nodig om iets te begrijpen. Stemmen later apart beoordelen.
+
+- [ ] Een geluidslaag in de app (niet in de terminalclient): per plek een omgevingsgeluid uit de content (`sound:` op een plek of gebied: wind door riet, regen op een dak, de zee achter de herberg, de werkplaats), aangepast aan weer en dagdeel; vrije geluidsbestanden in `assets/sound/` met bronvermelding, of een eigen generator (ruis en toon) voor wat er niet is
+- [ ] Een klokslag van de kapel op de uren waarop de kapel luidt (uit `world.yaml`), hoorbaar in het dorp en gedempt daarbuiten, en tegelijk een regel in de tekst, zodat wie zonder geluid speelt hetzelfde weet
+- [ ] Een instelling voor volume en uit, standaard zacht; geluid stopt in menu's en pauze; geen geluid bij het laden, en nooit meer dan één omgevingsgeluid plus de klok tegelijk
+- [ ] Stemmen niet in deze mijlpaal: een beoordeling in het verslag (wachttijd, herhaling, hoe een stem een personage vastlegt) voordat Bram beslist
+
+## M10.16 Improvisatie: als de regels geen weg weten
+
+Scope: vraag van Bram, 28 september 2026. Sommige handelingen kent de motor niet: melk op de offerboom, een naam in de rivier roepen, een steen omkeren die niemand een affordance gaf. Nu zegt het spel dat het niet kan. De AI mag hier bijspringen, maar alleen waar het voor het verhaal iets betekent, met begrensde gevolgen die de motor toepast, en binnen een budget. Dezelfde regel als overal: de AI stelt voor, de motor keurt en voert uit, de kroniekverteller beoordeelt wat ertoe doet. FO hoofdstuk 4 (affordances) en 16.
+
+Wanneer de motor de AI inschakelt:
+- [ ] Nooit als de regels een antwoord hebben: een bekende affordance, een bekend werkwoord, een quest-actie, of een duidelijke fout ("er is hier geen boom") blijven bij de regels. Improvisatie komt alleen aan bod als de zin een handeling is (een werkwoord met een ding of plek hier) zonder affordance, en het doel een `improvise` in de content heeft: een object, plek of gebied dat ertoe doet (de offerboom, de hondensteen, de dijk, het klooster, de Blackmere), met daarin wat het kan betekenen (`domain`: offering, curse, spirit, lore, craft) en wat er hooguit mag gebeuren (`may`: een lijst uit de effecten hieronder). Een gebied kan `improvise` dragen voor alles wat erin ligt (het veen als geheel), met een kleiner `may`
+- [ ] Een budget: hooguit drie improvisaties per speldag en één per doel per dag, het vaste antwoord daarna ("You try it. Nothing seems to happen, this time."); de aanroep telt mee in de kosten van M9.3 en het dev-menu toont hem; zonder model geeft het object zijn eigen `improvise.fallback` uit de content (een korte regel, geen effect)
+
+Wat de AI mag teruggeven (begrensd, gevalideerd door de motor):
+- [ ] Een vast schema, zoals in gesprekken: `narration` (twee tot vier zinnen, tweede persoon, in de stem van de wereld: de stemkit van M10.10), plus hooguit één effect uit `may`: `item` (een bestaand item-id uit de wereld verschijnt hier of in de hand; nooit een nieuw item), `state` (een toestand op het object of de plek uit de toestanden die de content al kent), `condition` (een aandoening op de speler uit de regels: vervloekt, gezegend, koud), `standing` (een kleine verschuiving bij een geest, geloof of factie, ±3), `fact` (een feit met `belang` hooguit 2 en `about` het doel, dat de kroniekverteller ziet), of `nothing`. Alles buiten `may` of buiten de lijsten wordt geweigerd en het antwoord is dan alleen de narration; de bewaker van M10.10 leest de tekst
+- [ ] Wat de AI weet: het object of de plek (beschrijving, `improvise.domain`, lore uit de onderwerpen erover), wat de speler deed en had (het item verdwijnt alleen als het effect dat zegt en de content het toestaat), het weer en het dagdeel, wat hier eerder geïmproviseerd is (zodat een tweede keer verder gaat in plaats van opnieuw begint), en wat de speler over dit onderwerp weet; niet de waarheid van de wereld die hij niet kent
+
+Hoe het in het verhaal komt:
+- [ ] Elke improvisatie is een signaal (`improvised`, met het doel, het effect en de narration), zodat wachters erop kunnen reageren als op elke gebeurtenis: een offer op de hondensteen met effect `standing` bij de Haakman kan een wachter in de content oppakken (de hond die 's nachts blaft, een droom), precies zoals nu bij een gewone gebeurtenis; niets in code per geval
+- [ ] De kroniekverteller ziet de improvisaties van de laatste dagen in zijn invoer en beslist of er iets van komt: hij mag een `fact` met belang 2 verheffen tot een verhaallijn of een vervolg (de vloek die losraakt, de geest die iets terugvraagt), of hem laten rusten; zijn oordeel staat in de kroniek, zodat Bram kan zien wat wel en niet opgepakt werd
+- [ ] Een gecreëerd item is echt: het staat in de save, is op te pakken, te verkopen en te verliezen, met de speler als vinder in het eigendom; een toestand houdt tot iets hem verandert; een aandoening loopt af zoals alle aandoeningen
+- [ ] Tests met het mockmodel: melk op de offerboom geeft een narration en een `standing`, een steen zonder `improvise` geeft het vaste antwoord, een effect buiten `may` wordt geweigerd, de vierde improvisatie op een dag geeft de vaste regel, en een `fact` bereikt de kroniekverteller
