@@ -4,7 +4,7 @@ import { appendFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFi
 import { tmpdir } from 'node:os'
 import { basename, dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { ContentError, discoveredAtlasHtml, draftRequest, readSaveFile, saveAbout, saveFileName, saveFileText, SAVE_FILE_EXTENSION, type SaveFile, draftResult, Engine, ENTITY_KINDS, lineDiff, MapPaletteSchema, paletteRequest, paletteView, readDraft, readPalette, readVoice, savePalette, saveVoice, voiceRequest, voiceYaml, worldStepRequest, worldFixRequest, mergeFix, polishRequest, readPolish, descriptionCheck, enhanceRequest, readEnhance, type Content, type Edit, type EntityKind, type FileChange, type CheckpointedSave, type MapPalette, type Output, type SaveData } from '../engine'
+import { ContentError, discoveredAtlasHtml, draftRequest, readSaveFile, saveAbout, saveFileName, saveFileText, SAVE_FILE_EXTENSION, type SaveFile, draftResult, Engine, ENTITY_KINDS, lineDiff, MapPaletteSchema, paletteRequest, paletteView, readDraft, readPalette, readVoice, savePalette, saveVoice, voiceRequest, voiceYaml, worldStepRequest, worldFixRequest, mergeFix, polishRequest, readPolish, recheckDraft, descriptionCheck, enhanceRequest, readEnhance, type Content, type Edit, type EntityKind, type FileChange, type CheckpointedSave, type MapPalette, type Output, type SaveData } from '../engine'
 import { designUpdate, readDesignChange } from '../engine/designlog'
 import { ContentEditor } from '../node/editor'
 import { AppKnobs, type AppKnobId } from '../node/knobs'
@@ -700,11 +700,26 @@ handle('editor:world-fix', async (_event, world: unknown, step: unknown, said: u
 // An open proposal of a world step, kept until it is accepted or thrown away (M10.20): it comes back after a restart.
 let draftStore: DraftStore | undefined
 const drafts = () => (draftStore ??= new DraftStore(join(app.getPath('userData'), 'drafts.json')))
-handle('editor:open-draft', (_event, world: unknown, step: unknown, kept: unknown) => {
+handle('editor:open-draft', async (_event, world: unknown, step: unknown, kept: unknown) => {
   devOnly()
   const w = worldOf(world)
   const s = String(step ?? '')
-  if (kept === undefined) return drafts().get(w, s)
+  if (kept === undefined) {
+    // Checked again against the world as it is now: it may have changed since.
+    const got = drafts().get(w, s)
+    if (!got) return undefined
+    const d = (got.draft && typeof got.draft === 'object' ? got.draft : {}) as { say?: unknown; questions?: unknown; changes?: unknown; world?: unknown; rules?: unknown; files?: unknown }
+    const files = await readContentFiles(contentDir(), w)
+    const parts = {
+      say: String(d.say ?? ''),
+      questions: (Array.isArray(d.questions) ? d.questions : []).map(String),
+      changes: (Array.isArray(d.changes) ? d.changes : []).map((c: { kind?: unknown; id?: unknown; yaml?: unknown; merge?: unknown }) => ({ kind: kindOf(c.kind), id: String(c.id), yaml: String(c.yaml ?? ''), ...(c.merge === true ? { merge: true } : {}) })),
+      ...(typeof d.world === 'string' ? { world: d.world } : {}),
+      ...(typeof d.rules === 'string' ? { rules: d.rules } : {}),
+      files: (Array.isArray(d.files) ? d.files : []).map((f: { path?: unknown; text?: unknown }) => ({ path: String(f.path ?? ''), text: String(f.text ?? '') })),
+    }
+    return { ...got, draft: shownDraft(recheckDraft(files, parts)) }
+  }
   const k = kept && typeof kept === 'object' ? (kept as { draft?: unknown; asked?: unknown }) : undefined
   drafts().set(w, s, k?.draft ? { draft: k.draft, asked: String(k.asked ?? '') } : null)
   return drafts().get(w, s)

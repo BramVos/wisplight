@@ -1,6 +1,6 @@
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { draftResult, Engine, newWorldFiles, patchWorld, worldStepRequest } from '../src/engine'
+import { draftResult, Engine, newWorldFiles, patchWorld, recheckDraft, worldStepRequest } from '../src/engine'
 import { hasCharacters } from '../src/engine/rules/character'
 import { readContentFiles } from '../src/node/content'
 
@@ -47,6 +47,16 @@ describe('M10.20: a proposal adds to the rules', () => {
     expect(crafted.problems.filter((p) => /which is no skill/.test(p))).toEqual([])
     // The faith step says so.
     expect(worldStepRequest(files, 'faiths', 'Two faiths.').system).toContain('as kind patron')
+  })
+
+  it('checks a kept proposal again against the world as it is now', () => {
+    // Kept while the engine refused it; checked again later, it says what holds now.
+    const files = faithful(newWorldFiles('reach', 'The Reach'))
+    const kept = { say: 'Two patrons.', questions: [], changes: [{ kind: 'patron' as const, id: 'the_remembered', yaml: 'id: the_remembered\nname: the Remembered\ntext: The dead whom people know by name.\n' }], files: [] }
+    const again = recheckDraft(files, kept)
+    expect(again.problems).toEqual([])
+    expect(again.say).toBe('Two patrons.')
+    expect(again.result?.content?.rules?.patrons.map((p) => p.id)).toEqual(['the_remembered'])
   })
 
   it('writes a new patron into the rules a world already has', async () => {

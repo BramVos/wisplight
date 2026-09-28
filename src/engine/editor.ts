@@ -603,6 +603,15 @@ function draftParts(text: string): DraftParts | undefined {
   }
 }
 
+/**
+ * A kept proposal checked again against the world as it is now (M10.20): the
+ * world may have changed since it was made, by another step or a new version
+ * of the app, so what it says and whether it loads are worked out afresh.
+ */
+export function recheckDraft(files: ContentFile[], parts: DraftParts): Draft {
+  return checkedDraft(files, parts)
+}
+
 /** A proposal checked against the world: the YAML of each change read, then the whole loaded with it. */
 function checkedDraft(files: ContentFile[], parts: DraftParts): Draft {
   const problems: string[] = []

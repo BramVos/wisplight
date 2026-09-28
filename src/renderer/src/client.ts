@@ -430,7 +430,7 @@ function contentFiles(): { path: string; text: string }[] {
  */
 export async function createEditor(): Promise<EditorBridge> {
   if (window.wisplight?.editor) return window.wisplight.editor
-  const { applyEdits, draftRequest, draftResult, editorView, entities, entityYaml, filesOfWorld, lineDiff, loadContent, MockLlm, newWorldFiles, paletteRequest, paletteView, readDraft, readPalette, readVoice, savePalette, saveVoice, simulate, voiceRequest, voiceYaml, withReturnExits, worldAtlasHtml, worldBook, worldsIn, worldStepRequest, worldFixRequest, mergeFix, polishRequest, readPolish, descriptionCheck, enhanceRequest, readEnhance, hourlyBudget } = await import('../../engine')
+  const { applyEdits, draftRequest, draftResult, editorView, entities, entityYaml, filesOfWorld, lineDiff, loadContent, MockLlm, newWorldFiles, paletteRequest, paletteView, readDraft, readPalette, readVoice, savePalette, saveVoice, simulate, voiceRequest, voiceYaml, withReturnExits, worldAtlasHtml, worldBook, worldsIn, worldStepRequest, worldFixRequest, mergeFix, polishRequest, readPolish, recheckDraft, descriptionCheck, enhanceRequest, readEnhance, hourlyBudget } = await import('../../engine')
   let all = contentFiles()
   const builds: Record<string, BuildView> = {}
   const openDrafts = new Map<string, { draft: EditorDraft; asked: string; at: string }>()
@@ -513,7 +513,10 @@ export async function createEditor(): Promise<EditorBridge> {
     // The browser preview keeps open proposals in memory only.
     openDraft: async (world, step, kept) => {
       const key = `${world}/${step}`
-      if (kept === undefined) return openDrafts.get(key)
+      if (kept === undefined) {
+        const got = openDrafts.get(key)
+        return got ? { ...got, draft: shownDraft(recheckDraft(filesOfWorld(all, world), got.draft)) } : undefined
+      }
       if (kept) openDrafts.set(key, { ...kept, at: new Date().toISOString() })
       else openDrafts.delete(key)
       return openDrafts.get(key)
