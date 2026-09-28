@@ -13,7 +13,7 @@ Zo maakt de kroniekverteller in de editor samen met jou een nieuwe wereld (M10.1
 | Stap | Wat hij vraagt | Wat het vult | Overgeslagen |
 | --- | --- | --- | --- |
 | Kader | Soort wereld en wat er niet bestaat; waar het verhaal begint en waarom de vreemdeling er is; de namen (wereld, land, streek, waar je vandaan komt) | `world.yaml`: name, frame, words, intro; `CHRONICLER.md` | Kan niet: zonder kader schrijft het model een algemene wereld |
-| Kalender | Jaartelling en jaar; dertien maanden, eigen namen of genummerd; hoeveel dagen een week heeft en hoe ze heten | calendar, start | De standaardkalender |
+| Kalender en weer | Jaartelling en jaar; dertien maanden en de week (hoeveel dagen, welke namen); is er weer, en zo ja welke seizoenen en welk weer, eventueel met eigen zinnen voor de lucht | calendar, start, weather | De standaardkalender, en helemaal geen weer (zoals onder een koepel of op een schip) |
 | Geld | De munten van klein naar groot; wat een maaltijd, een nacht en een dagloon kosten; wat de vreemdeling bij zich heeft | money, player | Eén neutrale munt, prijzen als getallen |
 | Geloof | Is er geloof, welk, en tot wie bidden ze; zo niet, waar zweren ze bij | faiths | Geen geloof |
 | Plekken | De gebieden en hun soort; vijf tot tien plekken en de eerste; hoe ze verbonden zijn en hoe lang dat lopen is | areas, locations, start | Kan niet: minstens één gebied en één plek |
