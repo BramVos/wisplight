@@ -517,3 +517,22 @@ Scope: de vloek bij Christus (M10.8) is één geval van iets breders: het model 
 - [ ] Een maat: de situatieset van M9.3 (`testset.ts`) krijgt een karakterscore per antwoord uit de regels (geen uitroep uit onze wereld, geen `not_here`-woord, geen naam buiten de lijsten, eerste persoon over eigen mensen, getallen als gegeven), en het modeladvies in de instellingen toont die score per model naast kosten en snelheid, zodat Bram een model kiest dat in karakter blijft; het dev-menu toont de teller van de bewaker live
 - [ ] De editor toont en bewerkt de stemkit (een tabblad naast het wereldframe), en de schrijfhulp stelt er op verzoek een voor uit het wereldframe en `CHRONICLER.md`
 - [ ] De kroniekverteller en de schrijfhulp krijgen dezelfde kit in hun prompt, zodat nieuwe content in dezelfde stem komt
+
+## M10.11 Momenten: wat opvalt, opgelicht
+
+Scope: vraag van Bram, 28 september 2026. Sommige dingen verdienen meer dan een regel in het logboek: een plek die uit de mist opdoemt, een lange tocht door het veen, een tijding die alles verandert (oorlog dreigt, brand, een leger op de dijk). Een moment is een presentatielaag over wat de motor al weet, geen nieuw soort gebeurtenis: dezelfde feiten, plekken en reizen, alleen uitgelicht. Drie soorten, naar hoe de speler het meemaakt: gezien (aankomst), doorstaan (tocht) en gehoord (tijding). Alles content; het model is nergens nodig en mag op één plek helpen. FO hoofdstuk 4 (weergave), 7 (reizen) en 11 (nieuws).
+
+Aankomst:
+- [ ] Een plek met een `arrival` in de content (twee tot drie zinnen, met varianten voor mist, nacht en storm) krijgt een aankomstkaart de eerste keer dat de speler hem ziet of bereikt: de afbeelding van de plek (`pictures.ts`, of de vaste tekening als er geen is), de naam, de tekst, en daaronder gewoon weer het logboek; daarna alleen tekst. Landmarks die je van ver ziet (`landmarks` in de streekkaart) krijgen hun kaart op het moment dat ze in zicht komen ("De Kabouterberg doemt op uit de mist"), niet pas bij aankomst
+- [ ] Alleen plekken die het waard zijn: de content bepaalt het (`arrival` aanwezig), niet de code; de Nethermarch krijgt er een stuk of tien (de Kabouterberg, De Zwaan, de dijk bij Oude Zijl, het klooster, Waagdam van over het water), Skerrow drie (de toren, de vuurtoren, het wrak); de editor toont en bewerkt ze en de schrijfhulp stelt er een voor
+- [ ] Een kaart onderbreekt niets: de klok staat stil zolang hij open is (als een menu), Enter of een klik sluit hem, en in de terminalclient is het een kader van tekst; een instelling zet kaarten uit
+
+Tocht:
+- [ ] Een wandeling van meer dan drie etappes (`travel.ts`) krijgt één samenvattende alinea in plaats van een regel per stap: uit wat de tocht was (terrein, weer, uren, wat je onderweg zag, wie je tegenkwam, een proef die faalde), samengesteld door de regels uit zinnen in de content per terrein en weer (`journey.yaml`), geseed zodat het niet elke keer hetzelfde is; de stappen zelf blijven in het transcript
+- [ ] Mag het model helpen, dan herschrijft de vertellerlaag (dezelfde rol als de kroniekverteller, één aanroep, gebudgetteerd in M9.3) die alinea in de stem van de wereld; zonder model staat de alinea van de regels er
+
+Tijding:
+- [ ] Een feit met `belang` 4 of hoger dat de speler bereikt (gehoord in een gesprek of van een omroeper, of zelf gezien: een brand, een leger op de dijk) krijgt een tijdingkaart na de regel waarin het viel: de titel, de versie zoals gehoord, van wie, en de link naar het dagboek; hetzelfde feit dat het nieuwssysteem verspreidt (`news.ts`), zodat de mensen om je heen het ook weten of het pas later horen, precies zoals nu
+- [ ] Stemming als toestand van een gebied (nieuw soort toestand, voor elke gebeurtenis bruikbaar): een nasleep mag met het werkwoord `mood` een gebied een stemming geven (paniek, rouw, feest, dreiging) voor zoveel dagen, met een regel voor de plekbeschrijving ("People hurry past with buckets and do not look up"), een regel in de prompt van wie er woont (naast MOOD van de persoon), en een kleur op de kaart; de brand en de dijkbreuk krijgen er een in de content, en oorlog die dreigt is een stemming `dreiging` die een verhaallijn of de kroniekverteller zet
+- [ ] Een tijding die in een gesprek valt ("er dreigt oorlog"), is een feit dat de spreker kent: het model mag geen tijdingen verzinnen; de kroniekverteller maakt ze als feit met belang, en de stem vertelt ze uit het pakket, zoals alle nieuws
+- [ ] Alles wat er al was speelt hetzelfde: de speeltest en de simulaties tonen dezelfde feiten, alleen anders gepresenteerd
