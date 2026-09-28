@@ -2,7 +2,7 @@ import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterAll, describe, expect, it } from 'vitest'
-import { LlmError, newWorldFiles, WORLD_STEPS, worldStepRequest, type LlmRequest } from '../src/engine'
+import { draftResult, LlmError, newWorldFiles, WORLD_STEPS, worldStepRequest, type LlmRequest } from '../src/engine'
 import { WEATHER_KINDS } from '../src/engine/weather'
 import { CostRegister } from '../src/node/ai/costs'
 import { Gateway } from '../src/node/ai/gateway'
@@ -44,6 +44,31 @@ describe('M10.20: the real run of a world', () => {
       expect(system, step.id).not.toMatch(/a map or a map/)
       expect(system.length, step.id).toBeLessThan(60000)
     }
+  })
+
+  it('loads a first proposal of places that moves the start, deletes the placeholder and writes each way once', () => {
+    const files = newWorldFiles('quietreach', 'The Quiet Reach')
+    const place = (id: string, exits: Record<string, { to: string; minutes?: number }>) => ({
+      kind: 'location' as const,
+      id,
+      yaml: `id: ${id}\nname: ${id}\narea: port_vesper\ndescription:\n  day: You stand here. It smells of salt. A way leads on.\nexits: ${JSON.stringify(exits)}\n`,
+    })
+    const result = draftResult(files, {
+      changes: [
+        { kind: 'location', id: 'loc_first_place', yaml: '' },
+        { kind: 'area', id: 'first_area', yaml: '' },
+        { kind: 'area', id: 'port_vesper', yaml: 'id: port_vesper\nname: Port Vesper\nkind: village\nsummary: A small port.\n' },
+        place('loc_arrival_lock', { north: { to: 'loc_commons', minutes: 2 }, east: { to: 'loc_workshop', minutes: 5 } }),
+        place('loc_commons', { southeast: { to: 'loc_workshop', minutes: 4 } }),
+        place('loc_workshop', {}),
+      ],
+      world: 'start: { location: loc_arrival_lock, year: 186, month: 9, day: 18, hour: 8 }',
+      files: [],
+    })
+    expect(result.problems).toEqual([])
+    const workshop = result.content!.locations.get('loc_workshop')!
+    expect(workshop.exits).toMatchObject({ west: { to: 'loc_arrival_lock', minutes: 5 }, northwest: { to: 'loc_commons', minutes: 4 } })
+    expect(result.content!.locations.get('loc_commons')!.exits).toMatchObject({ south: { to: 'loc_arrival_lock', minutes: 2 } })
   })
 
   it('counts a reply cut off at its limit in the budget and the log, with what it cost', async () => {

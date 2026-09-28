@@ -233,65 +233,73 @@ export const OPPOSITE: Record<Direction, Direction> = {
 type Exits = Partial<Record<Direction, { to: string; minutes?: number }>>
 
 /**
- * A place's exits changed: the places on the other side get the way back
- * (the opposite direction, when it is free), and lose it when the exit went.
- */
-export function returnExits(files: ContentFile[], id: string, before: Exits, after: Exits): Edit[] {
-  const places = new Map(entities(files, 'location').map((l) => [l.id, l.raw]))
-  const changed = new Map<string, Raw>()
-  const place = (to: string) => changed.get(to) ?? (places.get(to) ? structuredClone(places.get(to)!) : undefined)
-  for (const [dir, exit] of Object.entries(before) as [Direction, { to: string }][]) {
-    if (after[dir]?.to === exit.to) continue
-    const other = place(exit.to)
-    const theirs = (other?.['exits'] ?? {}) as Exits
-    const back = OPPOSITE[dir]
-    if (other && theirs[back]?.to === id && !Object.values(after).some((e) => e?.to === exit.to)) {
-      delete theirs[back]
-      other['exits'] = theirs
-      changed.set(exit.to, other)
-    }
-  }
-  for (const [dir, exit] of Object.entries(after) as [Direction, { to: string; minutes?: number }][]) {
-    const other = place(exit.to)
-    if (!other || exit.to === id) continue
-    const theirs = (other['exits'] ?? {}) as Exits
-    if (Object.values(theirs).some((e) => e?.to === id)) continue
-    const back = OPPOSITE[dir]
-    if (theirs[back]) continue
-    theirs[back] = exit.minutes && exit.minutes > 1 ? { to: id, minutes: exit.minutes } : { to: id }
-    other['exits'] = theirs
-    changed.set(exit.to, other)
-  }
-  return [...changed].map(([to, raw]) => ({ kind: 'location' as const, id: to, data: raw }))
-}
-
-/**
  * The edits, and what they need at the other end of their exits: a way back
- * to a place that gained an exit (unless it is tagged one_way), none from a
- * place that lost it, and no exits left pointing at a place that is deleted.
- * An edit of the designer's own to the other place comes first.
+ * to a place that gained an exit (the opposite direction, when it is free,
+ * and unless the place is tagged one_way), none from a place that lost it,
+ * and no exits left pointing at a place that is deleted. A place of the same
+ * edits gets its way back too, written into its edit (M10.20: a new world's
+ * places come in one proposal, and none of them existed yet); an exit the
+ * designer wrote there is never changed.
  */
 export function withReturnExits(files: ContentFile[], edits: Edit[]): Edit[] {
-  const out = [...edits]
+  const out: Edit[] = edits.map((e) => (e.kind === 'location' && e.data ? { ...e, data: structuredClone(e.data) } : e))
   const places = entities(files, 'location')
-  const own = (id: string) => out.some((e) => e.kind === 'location' && e.id === id)
-  for (const edit of edits) {
+  const stored = new Map(places.map((l) => [l.id, l.raw]))
+  const proposed = new Map(out.flatMap((e) => (e.kind === 'location' && e.data ? [[e.id, e.data] as const] : [])))
+  const deleted = new Set(out.filter((e) => e.kind === 'location' && !e.data).map((e) => e.id))
+  const own = (id: string) => proposed.has(id) || deleted.has(id)
+  // Places outside the edits that change: a copy of each, once, so two exits to one place both keep their way back.
+  const others = new Map<string, Raw>()
+  const changed = new Set<string>()
+  const place = (id: string): Raw | undefined => {
+    if (proposed.has(id)) return proposed.get(id)
+    if (deleted.has(id) || !stored.has(id)) return undefined
+    if (!others.has(id)) others.set(id, structuredClone(stored.get(id)!))
+    return others.get(id)
+  }
+  const setExits = (id: string, raw: Raw, exits: Exits) => {
+    raw['exits'] = exits
+    if (!proposed.has(id)) changed.add(id)
+  }
+  for (const edit of out) {
     if (edit.kind !== 'location') continue
     if (!edit.data) {
       for (const other of places) {
-        const exits = { ...((other.raw['exits'] ?? {}) as Exits) }
+        if (own(other.id)) continue
+        const raw = place(other.id)!
+        const exits = { ...((raw['exits'] ?? {}) as Exits) }
         const gone = (Object.keys(exits) as Direction[]).filter((d) => exits[d]?.to === edit.id)
-        if (!gone.length || own(other.id)) continue
+        if (!gone.length) continue
         for (const d of gone) delete exits[d]
-        out.push({ kind: 'location', id: other.id, data: { ...other.raw, exits } })
+        setExits(other.id, raw, exits)
       }
       continue
     }
     if (((edit.data['tags'] as string[] | undefined) ?? []).includes('one_way')) continue
-    const before = (places.find((l) => l.id === edit.id)?.raw['exits'] ?? {}) as Exits
-    for (const back of returnExits(files, edit.id, before, (edit.data['exits'] ?? {}) as Exits)) if (!own(back.id)) out.push(back)
+    const id = edit.id
+    const before = (stored.get(id)?.['exits'] ?? {}) as Exits
+    const after = (edit.data['exits'] ?? {}) as Exits
+    // An exit that went takes its way back along, unless the designer edits the other place as well.
+    for (const [dir, exit] of Object.entries(before) as [Direction, { to: string }][]) {
+      if (!exit || after[dir]?.to === exit.to || Object.values(after).some((e) => e?.to === exit.to) || own(exit.to)) continue
+      const raw = place(exit.to)
+      const theirs = { ...((raw?.['exits'] ?? {}) as Exits) }
+      if (!raw || theirs[OPPOSITE[dir]]?.to !== id) continue
+      delete theirs[OPPOSITE[dir]]
+      setExits(exit.to, raw, theirs)
+    }
+    for (const [dir, exit] of Object.entries(after) as [Direction, { to: string; minutes?: number }][]) {
+      if (!exit || exit.to === id) continue
+      const raw = place(exit.to)
+      if (!raw) continue
+      const theirs = { ...((raw['exits'] ?? {}) as Exits) }
+      const back = OPPOSITE[dir]
+      if (Object.values(theirs).some((e) => e?.to === id) || theirs[back]) continue
+      theirs[back] = exit.minutes && exit.minutes > 1 ? { to: id, minutes: exit.minutes } : { to: id }
+      setExits(exit.to, raw, theirs)
+    }
   }
-  return out
+  return [...out, ...[...changed].map((id) => ({ kind: 'location' as const, id, data: others.get(id)! }))]
 }
 
 // ---------------------------------------------------------------- a new world
@@ -454,22 +462,28 @@ const DRAFT_FILES = /^(?:CHRONICLER\.md|data\/voice\.yaml)$/
  * world.yaml, then whole files; checked by loading the world with all of it.
  */
 export function draftResult(files: ContentFile[], draft: Pick<Draft, 'changes' | 'world' | 'files'>): EditResult {
-  const edits = draftEdits(draft)
-  const first = edits.length ? applyEdits(files, edits) : { ok: true, problems: [], files, changes: [] as FileChange[] }
-  if (!first.ok) return first
-  let next = first.files
+  let next = files
   const problems: string[] = []
-  const changes = new Map<string, FileChange>(first.changes.map((c) => [c.path, c]))
+  const changes = new Map<string, FileChange>()
   // A file changed twice keeps what it was before the first change.
   const note = (change: FileChange) => {
     const had = changes.get(change.path)
     changes.set(change.path, had ? { path: change.path, text: change.text, ...(had.before !== undefined ? { before: had.before } : {}) } : change)
   }
+  // The world first (M10.20): a proposal that moves the start to a new place and deletes the old one loads only with both.
   if (draft.world?.trim()) {
     const patched = patchWorld(next, draft.world)
-    problems.push(...patched.problems)
+    if (patched.problems.length) return { ok: false, problems: patched.problems, files, changes: [] }
     next = patched.files
     if (patched.change) note(patched.change)
+  }
+  // The builder adds the way back for every exit, as the world guide tells the chronicler.
+  const edits = withReturnExits(next, draftEdits(draft))
+  if (edits.length) {
+    const applied = applyEdits(next, edits)
+    for (const change of applied.changes) note(change)
+    if (!applied.ok) return { ...applied, changes: [...changes.values()] }
+    next = applied.files
   }
   const prefix = worldPrefix(files)
   for (const file of draft.files ?? []) {
