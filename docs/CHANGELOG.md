@@ -1,5 +1,19 @@
 # Changelog
 
+## M10.20 deel: tekens op het land per wereld, 28 september 2026
+
+- **Een wereld noemt haar eigen tekens.** Tot nu toe had de kaart vijf vaste tekens, die van de Nethermarch: poel, veenput, wilg, oude muur en bult. Bij The Quiet Reach leende het model de veenput voor een mijnschacht. Nu heeft een palet `signs`, hooguit zeven, elk met een naam voor de legenda, een vorm (poel, put, boom, ruïne, bult, pluk, rots, waarschuwing, vraagteken), het land waarop het ligt met zijn aandeel (`fen: 0.1` is één vak op tien), de regel die de vreemdeling leest als hij erdoor loopt, en of het stevige grond is, water in de grond, of een plek waar een wandeling stilstaat om te kijken. De kleur per teken staat onder `glyph`, in beide stijlen.
+- **Gevaar en onzeker zijn meer dan een kleur.** `means: danger` of `means: uncertain` zet een ! of ? naast het teken, en de legenda zegt het erbij ("old mine shaft, danger"). Precies waar het ontwerp van The Quiet Reach om vroeg.
+- **De legenda toont de tekens** die op de kaart in beeld zijn, met hun vorm. Een wereld mag ook haar wegen een naam geven (`names.canal: tidal channel`).
+- **Zonder eigen tekens** houdt een wereld die van de Nethermarch. De kaart van de Nethermarch is vak voor vak gelijk gebleven, en de speeltest-transcripties zijn ongewijzigd.
+- **The Quiet Reach** heeft nu tide pool, old mine shaft (gevaar, koraal), native growth, abandoned structure (onzeker, violet) en basalt knoll, met je eigen kleuren. Het kanaal heet er tidal channel. **Skerrow** heeft tide pool, gorse, old cairn, wreck timbers (onzeker) en sheer drop (gevaar). Deepwell houdt bewust de standaard.
+
+Testen: open de editor, tabblad Palette, en kies The Quiet Reach. Onder "Signs on the land" staan de tekens; voeg er een toe (bijvoorbeeld `steam_vent`, vorm warning, danger), dan toont de kaart erboven hem al vóór het opslaan. Beide werelden hebben nog geen streekkaart, dus in het spel zie je de tekens pas als de volgende stap (een kaart uit de plekken) er is. Tests in `tests/m1020signs.test.ts` (5).
+
+Wat de editor en de kroniekverteller leerden: de editor heeft een tabel voor de tekens en namen voor de wegen. Het contract, de stap Palet in de wereldgids, `docs/NEW-WORLD.md` en het schema van het palet-voorstel kennen `signs`, met de regel dat een teken een eigen id krijgt en nooit de veenput van de Nethermarch leent. Een teken zonder kleur, een kleur zonder teken, een onbekend land of meer tekens dan een land vakken heeft, houdt het laden tegen.
+
+Bewust niet: de kaart in de wereldatlas toont de tekens niet. Over de hele streek zouden ze ruis zijn; alleen gevaar en onzeker zouden er iets toevoegen, en die heeft nog geen wereld met een streekkaart.
+
 ## M10.20 deel: wat de editor toont, 28 september 2026
 
 - **De uitleg van de kroniekverteller leest als tekst.** Wat het model onder een voorstel schrijft, staat nu in alinea's, met vet, schuin, `code` en lijsten (één niveau diep), in plaats van sterren en streepjes in één blok. Dat geldt voor de stappen, het tabblad Chronicler en de polijstronde; de vragen van het model tonen vet en code ook. De tekst wordt als React-elementen opgebouwd en nooit als HTML, dus niets uit een antwoord kan opmaak of script worden.

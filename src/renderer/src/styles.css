@@ -1711,6 +1711,56 @@ pre.sheet {
   background: none;
   margin-right: 3px;
 }
+/* The names of the ways (M10.20): a world's canal may be a tidal channel. */
+.palette-table input.way-name {
+  width: 88px;
+  margin-right: 4px;
+}
+
+/* The signs on the land (M10.20): one row a sign, the line walking past takes the room left. */
+.sign-table {
+  width: 100%;
+  table-layout: fixed;
+}
+.sign-table th:nth-child(1) {
+  width: 92px;
+}
+.sign-table th:nth-child(2) {
+  width: 130px;
+}
+.sign-table th:nth-child(3) {
+  width: 84px;
+}
+.sign-table th:nth-child(4) {
+  width: 112px;
+}
+.sign-table th:nth-child(5) {
+  width: 140px;
+}
+.sign-table th:nth-child(7) {
+  width: 64px;
+}
+.sign-table th:nth-child(8) {
+  width: 70px;
+}
+.sign-table code {
+  overflow-wrap: anywhere;
+}
+.sign-table td > input:not([type='checkbox']),
+.sign-table td > select {
+  width: 100%;
+  box-sizing: border-box;
+}
+.sign-table td > input + input {
+  margin-top: 3px;
+}
+.sign-table label {
+  display: block;
+  white-space: nowrap;
+}
+.sign-table td[colspan] input {
+  width: 260px;
+}
 .palette-ask {
   display: flex;
   gap: 8px;

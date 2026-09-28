@@ -1,6 +1,6 @@
 import { economyOverview, type SettlementView } from './economy/ledger'
 import { parseDocument, stringify } from 'yaml'
-import { DEFAULT_PALETTE, MapPaletteSchema, SURFACE, TERRAIN_ORDER, type Level, type MapPalette } from './map/palette'
+import { DEFAULT_PALETTE, LANDS, MapPaletteSchema, MAX_SIGNS, SIGN_SHAPES, signsOf, SURFACE, TERRAIN_ORDER, type Level, type MapPalette } from './map/palette'
 import { previewMapData, type HexMapData } from './map/view'
 import { ContentError, loadContent, type Content, type ContentFile, type Direction } from './content'
 import { descriptionCheck, placeMeasures, regionPreview, sceneryWarnings, warnings } from './builder'
@@ -1039,14 +1039,30 @@ const STYLE = {
     label_shadow: HEX,
     terrain: { type: 'object', additionalProperties: TINTS },
     ways: { type: 'object', additionalProperties: false, required: ['road', 'path', 'canal'], properties: { road: HEX, path: HEX, canal: HEX } },
-    glyph: { type: 'object', additionalProperties: false, required: ['pool', 'peat_pit', 'peat_edge', 'willow', 'ruin', 'hummock', 'stairs'], properties: Object.fromEntries(['pool', 'peat_pit', 'peat_edge', 'willow', 'ruin', 'hummock', 'stairs'].map((k) => [k, HEX])) },
+    // A colour per sign by its id, stairs, and peat_edge for the rim of a pit (M10.20).
+    glyph: { type: 'object', additionalProperties: HEX, required: ['stairs'], properties: { stairs: HEX } },
+  },
+}
+const SIGN = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['name', 'shape', 'on'],
+  properties: {
+    name: { type: 'string' },
+    shape: { type: 'string', enum: [...SIGN_SHAPES] },
+    means: { type: 'string', enum: ['danger', 'uncertain'] },
+    on: { type: 'object', additionalProperties: { type: 'number', minimum: 0, maximum: 1 } },
+    text: { type: 'string' },
+    firm: { type: 'boolean' },
+    wet: { type: 'boolean' },
+    stops: { type: 'string' },
   },
 }
 const PALETTE_SCHEMA = {
   type: 'object',
   additionalProperties: false,
   required: ['say', 'palette'],
-  properties: { say: { type: 'string' }, palette: { type: 'object', additionalProperties: false, required: ['names', 'dark', 'paper'], properties: { names: { type: 'object', additionalProperties: { type: 'string' } }, dark: STYLE, paper: STYLE } } },
+  properties: { say: { type: 'string' }, palette: { type: 'object', additionalProperties: false, required: ['names', 'dark', 'paper'], properties: { names: { type: 'object', additionalProperties: { type: 'string' } }, signs: { type: 'object', additionalProperties: SIGN }, dark: STYLE, paper: STYLE } } },
 }
 
 /**
@@ -1066,9 +1082,10 @@ export function paletteRequest(files: ContentFile[], ask: string): LlmRequest {
       '',
       content ? worldText(worldFrame(content)) : '',
       '',
-      'YOU ARE IN THE WORLD BUILDER, AT THE MAP PALETTE. Propose colours for the map of this world that fit its frame: muted, in the spirit of Dwarf Fortress and Brogue, three or four close tints for every terrain (the seed of each hex picks one), boggy ground darker, dry ground lighter, water in two tones (open water and channel), ways in warm parchment. One set for the dark style and one for paper; black and white is made from paper. Give the legend names of the terrains as this world would say them. Colours as #rrggbb. JSON only.',
+      'YOU ARE IN THE WORLD BUILDER, AT THE MAP PALETTE. Propose colours for the map of this world that fit its frame: muted, in the spirit of Dwarf Fortress and Brogue, three or four close tints for every terrain (the seed of each hex picks one), boggy ground darker, dry ground lighter, water in two tones (open water and channel), ways in warm parchment. One set for the dark style and one for paper; black and white is made from paper. Give the legend names of the terrains as this world would say them, and of the ways under the same names (road, path, and canal, which is a tow path in the Nethermarch and may be a tidal channel or a cable run elsewhere). Colours as #rrggbb. JSON only.',
+      `SIGNS ON THE LAND: a world names its own under palette.signs, at most ${MAX_SIGNS}, by an id of its own (a mine shaft is mine_shaft, never the Nethermarch's peat_pit): a name for the legend, a shape (${SIGN_SHAPES.join(', ')}), the land it lies on with its share of those hexes (on: { fen: 0.1 } is one hex in ten; a land is ${LANDS.join(', ')} or a terrain of the palette), the line the stranger reads walking past (text), and means: danger or means: uncertain where a colour alone would not say it (the map adds ! or ? and the legend the word). firm: true for firm ground, wet: true for water in the ground, stops for a line where a walk stops to look. Give every sign a colour under glyph in both styles by its id, and stairs; peat_edge is the rim of a pit-shaped sign. Leave signs out to keep the Nethermarch's pool, peat_pit, willow, ruin and hummock.`,
     ].join('\n'),
-    prompt: [`THE PALETTE NOW:`, JSON.stringify(current), '', `TERRAINS: ${terrains.join(', ')}`, '', `THE DESIGNER ASKS: ${ask || 'a palette that fits this world'}`].join('\n'),
+    prompt: [`THE PALETTE NOW:`, JSON.stringify(current), '', `TERRAINS: ${terrains.join(', ')}`, `SIGNS NOW: ${signsOf(current).map(([id, sign]) => `${id} (${sign.name}, ${sign.shape}${sign.means ? `, ${sign.means}` : ''})`).join(', ')}`, '', `THE DESIGNER ASKS: ${ask || 'a palette that fits this world'}`].join('\n'),
     schemaName: 'palette_draft',
     schema: PALETTE_SCHEMA,
     maxTokens: 3000,

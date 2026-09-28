@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { stringify } from 'yaml'
-import { adoptPlaceEdits, ENTITY_KINDS, exitTowards, KIND_NAMES, KNOBS, languageReference, markColours, parseEntityYaml, WORLD_STEPS, type KnobDef, type MapPlace, type ReferenceEntry } from '../../engine'
+import { adoptPlaceEdits, DEFAULT_SIGNS, ENTITY_KINDS, exitTowards, KIND_NAMES, KNOBS, languageReference, markColours, MAX_SIGNS, parseEntityYaml, SIGN_SHAPES, signsOf, WORLD_STEPS, type KnobDef, type MapPlace, type ReferenceEntry, type Sign } from '../../engine'
 import { StaleBanner } from './StaleBanner'
 import { inline, Prose } from './Prose'
 import type { DesignLog } from '../../engine/designlog'
@@ -1909,13 +1909,33 @@ function PalettePanel({ bridge, world, saved }: { bridge: EditorBridge; world: s
   const [message, setMessage] = useState<string>()
   const [changed, setChanged] = useState(false)
 
+  const [signPreview, setSignPreview] = useState<PaletteView['preview']>()
+  const [adding, setAdding] = useState('')
+
   useEffect(() => {
     void bridge.palette(world).then((v) => {
       setView(v)
       setPalette(v.palette)
       setChanged(false)
+      setSignPreview(undefined)
     })
   }, [bridge, world])
+  // Other signs than the saved ones are laid anew on the land (M10.20): the map shows them before saving.
+  const signsKey = JSON.stringify(palette?.signs ?? null)
+  useEffect(() => {
+    if (!view || !palette || signsKey === JSON.stringify(view.palette.signs ?? null)) return setSignPreview(undefined)
+    let live = true
+    const timer = setTimeout(() => {
+      void bridge
+        .palette(world, palette)
+        .then((v) => live && setSignPreview(v.preview))
+        .catch(() => undefined)
+    }, 300)
+    return () => {
+      live = false
+      clearTimeout(timer)
+    }
+  }, [signsKey, view])
 
   if (!view || !palette) return <div className="editor-page"><p className="muted">Loading the palette...</p></div>
   const edited = (next: MapPalette) => {
@@ -1923,7 +1943,46 @@ function PalettePanel({ bridge, world, saved }: { bridge: EditorBridge; world: s
     setChanged(true)
   }
   const setStyleToken = (which: 'dark' | 'paper', change: (s: MapStyle) => MapStyle) => edited({ ...palette, [which]: change(palette[which]) })
-  const preview = view.preview ? { ...view.preview, palette, legend: view.preview.legend.map((l) => ({ ...l, name: palette.names[l.key] ?? l.name })) } : undefined
+  const shownMap = signPreview ?? view.preview
+  const preview = shownMap ? { ...shownMap, palette, legend: shownMap.legend.map((l) => ({ ...l, name: palette.names[l.key] ?? l.name })) } : undefined
+  const signs = signsOf(palette)
+  const own = Boolean(palette.signs)
+  // A change to the signs makes them this world's own, starting from the Nethermarch's.
+  const setSigns = (change: (current: Record<string, Sign>) => Record<string, Sign>, colours?: (glyph: Record<string, string>, which: 'dark' | 'paper') => Record<string, string>) =>
+    edited({
+      ...palette,
+      signs: change({ ...(palette.signs ?? DEFAULT_SIGNS) }),
+      ...(colours ? { dark: { ...palette.dark, glyph: colours({ ...palette.dark.glyph }, 'dark') }, paper: { ...palette.paper, glyph: colours({ ...palette.paper.glyph }, 'paper') } } : {}),
+    })
+  const setSign = (id: string, change: Partial<Sign>) =>
+    setSigns((all) => {
+      const next = { ...all[id]!, ...change }
+      for (const k of Object.keys(change) as (keyof Sign)[]) if (next[k] === undefined || next[k] === '' || next[k] === false) delete next[k]
+      return { ...all, [id]: next }
+    })
+  const lands = (on: Record<string, number>) => Object.entries(on).map(([land, part]) => `${land} ${part}`).join(', ')
+  const readLands = (text: string): Record<string, number> =>
+    Object.fromEntries(
+      text
+        .split(',')
+        .map((part) => part.trim().split(/\s+/))
+        .filter(([land, part]) => land && part && Number.isFinite(Number(part)))
+        .map(([land, part]) => [land!, Math.min(1, Math.max(0, Number(part)))]),
+    )
+  const addSign = () => {
+    const id = adding.trim().toLowerCase().replace(/[^a-z0-9_]+/g, '_')
+    if (!id || id === 'stairs' || signs.some(([s]) => s === id) || signs.length >= MAX_SIGNS) return
+    setSigns(
+      (all) => ({ ...all, [id]: { name: id.replace(/_/g, ' '), shape: 'rock', on: {} } }),
+      (glyph, which) => ({ ...glyph, [id]: palette[which].label }),
+    )
+    setAdding('')
+  }
+  const removeSign = (id: string) =>
+    setSigns(
+      (all) => Object.fromEntries(Object.entries(all).filter(([s]) => s !== id)),
+      (glyph) => Object.fromEntries(Object.entries(glyph).filter(([g]) => g !== id)),
+    )
   const terrains = [...new Set([...Object.keys(palette.dark.terrain), ...Object.keys(palette.paper.terrain)])]
   const which: 'dark' | 'paper' = style === 'dark' ? 'dark' : 'paper'
   const s = palette[which]
@@ -1990,13 +2049,17 @@ function PalettePanel({ bridge, world, saved }: { bridge: EditorBridge; world: s
             ))}
             <tr>
               <td>ways</td>
-              <td className="muted small">road, path, tow path</td>
+              <td>
+                {(['road', 'path', 'canal'] as const).map((w) => (
+                  <input key={w} className="way-name" value={palette.names[w] ?? ''} placeholder={w === 'canal' ? 'tow path' : w} aria-label={`The name of the ${w} in the legend`} onChange={(e) => edited({ ...palette, names: { ...palette.names, [w]: e.target.value } })} />
+                ))}
+              </td>
               <td>{(['road', 'path', 'canal'] as const).map((w) => <span key={w}>{colour(s.ways[w], (v) => setStyleToken(which, (st) => ({ ...st, ways: { ...st.ways, [w]: v } })), w)}</span>)}</td>
             </tr>
             <tr>
               <td>signs</td>
-              <td className="muted small">pool, peat pit, its edge, willow, ruin, hummock, stairs</td>
-              <td>{(Object.keys(s.glyph) as (keyof MapStyle['glyph'])[]).map((g) => <span key={g}>{colour(s.glyph[g], (v) => setStyleToken(which, (st) => ({ ...st, glyph: { ...st.glyph, [g]: v } })), g)}</span>)}</td>
+              <td className="muted small">{[...signs.map(([id, sign]) => sign.name || id), ...(s.glyph['peat_edge'] ? ['the rim of a pit'] : []), 'stairs'].join(', ')}</td>
+              <td>{[...signs.map(([id]) => id), ...(s.glyph['peat_edge'] ? ['peat_edge'] : []), 'stairs'].map((g) => <span key={g}>{colour(s.glyph[g] ?? s.label, (v) => setStyleToken(which, (st) => ({ ...st, glyph: { ...st.glyph, [g]: v } })), g)}</span>)}</td>
             </tr>
             <tr>
               <td>ground</td>
@@ -2011,6 +2074,82 @@ function PalettePanel({ bridge, world, saved }: { bridge: EditorBridge; world: s
           </tbody>
         </table>
       )}
+      <h3>Signs on the land</h3>
+      <p className="muted small">
+        {own ? 'This world names its own signs.' : "This world uses the Nethermarch's signs: pools, peat pits, willows, old walls and hummocks. Change one and they become this world's own."} Each sign has a shape, the land it lies on with the share of those hexes (fen 0.1 is one hex in ten), and what the stranger reads walking past. Danger and uncertain show as a mark and a word, not only a colour. At most {MAX_SIGNS}.
+      </p>
+      <table className="palette-table sign-table">
+        <thead>
+          <tr>
+            <th>Sign</th>
+            <th>Name in the legend</th>
+            <th>Shape</th>
+            <th>Means</th>
+            <th>Lies on</th>
+            <th>What the stranger reads, and where a walk stops</th>
+            <th>Ground</th>
+            <th />
+          </tr>
+        </thead>
+        <tbody>
+          {signs.map(([id, sign]) => (
+            <tr key={id}>
+              <td>
+                <code>{id}</code>
+              </td>
+              <td>
+                <input value={sign.name} aria-label={`${id}: name`} onChange={(e) => setSign(id, { name: e.target.value })} />
+              </td>
+              <td>
+                <select value={sign.shape} aria-label={`${id}: shape`} onChange={(e) => setSign(id, { shape: e.target.value as Sign['shape'] })}>
+                  {SIGN_SHAPES.map((shape) => (
+                    <option key={shape} value={shape}>
+                      {shape}
+                    </option>
+                  ))}
+                </select>
+              </td>
+              <td>
+                <select value={sign.means ?? ''} aria-label={`${id}: means`} onChange={(e) => setSign(id, { means: (e.target.value || undefined) as Sign['means'] })}>
+                  <option value="">nothing more</option>
+                  <option value="danger">danger</option>
+                  <option value="uncertain">uncertain</option>
+                </select>
+              </td>
+              <td>
+                <input key={`${id}:${lands(sign.on)}`} defaultValue={lands(sign.on)} placeholder="fen 0.1, fields 0.04" aria-label={`${id}: lies on`} onBlur={(e) => setSign(id, { on: readLands(e.target.value) })} />
+              </td>
+              <td>
+                <input value={sign.text ?? ''} placeholder="The line walking past" aria-label={`${id}: text`} onChange={(e) => setSign(id, { text: e.target.value })} />
+                <input value={sign.stops ?? ''} placeholder="Where a walk stops to look (empty: it walks on)" aria-label={`${id}: stops`} onChange={(e) => setSign(id, { stops: e.target.value })} />
+              </td>
+              <td className="small">
+                <label title="Firm ground: quicker to cross, never soft">
+                  <input type="checkbox" checked={Boolean(sign.firm)} onChange={(e) => setSign(id, { firm: e.target.checked })} /> firm
+                </label>{' '}
+                <label title="Water in the ground: a way laid across it fills it in">
+                  <input type="checkbox" checked={Boolean(sign.wet)} onChange={(e) => setSign(id, { wet: e.target.checked })} /> wet
+                </label>
+              </td>
+              <td>
+                <button type="button" className="link" onClick={() => removeSign(id)}>
+                  [Remove]
+                </button>
+              </td>
+            </tr>
+          ))}
+          {signs.length < MAX_SIGNS && (
+            <tr>
+              <td colSpan={8}>
+                <input value={adding} placeholder="a new sign, for example mine_shaft" aria-label="The id of a new sign" onChange={(e) => setAdding(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && addSign()} />{' '}
+                <button type="button" className="link" disabled={!adding.trim()} onClick={addSign}>
+                  [Add a sign]
+                </button>
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
       <div className="palette-ask">
         <input value={ask} placeholder="Ask the writing aid for a palette: colder, more like the sea, ..." onChange={(e) => setAsk(e.target.value)} aria-label="What to ask the writing aid" />
         <button type="button" disabled={busy} onClick={() => void propose()}>

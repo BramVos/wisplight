@@ -19,7 +19,13 @@ export const MapStyleSchema = z
     /** Tints per terrain: the engine's lands (fen, water, woods, heath, fields), their kinds (bog, hummock, ridge, channel), a level's own (tunnel, crown), and any a world names. */
     terrain: z.record(z.string(), Tints),
     ways: z.object({ road: Colour, path: Colour, canal: Colour }).strict(),
-    glyph: z.object({ pool: Colour, peat_pit: Colour, peat_edge: Colour, willow: Colour, ruin: Colour, hummock: Colour, stairs: Colour }).strict(),
+    /**
+     * The colour of each sign on the land, by the sign's id (M10.20), and of
+     * `stairs`, the way up or down. `peat_edge` is the rim of a pit-shaped
+     * sign (the name is the Nethermarch's, kept so every world still loads);
+     * without it the rim is the sign's own colour, a little lighter.
+     */
+    glyph: z.record(z.string(), Colour).refine((g) => typeof g['stairs'] === 'string', { message: 'needs a colour for stairs, the way up or down' }),
     /** A place you have been (after the M10 playtest): its marker, in a colour that stands out. A palette without one takes the default's. */
     visited: Colour.optional(),
     /** The thin line of the way you walked. */
@@ -28,14 +34,57 @@ export const MapStyleSchema = z
   .strict()
 export type MapStyle = z.infer<typeof MapStyleSchema>
 
+/** How a sign is drawn: the shapes the map knows. */
+export const SIGN_SHAPES = ['pool', 'pit', 'tree', 'ruin', 'knoll', 'tuft', 'rock', 'warning', 'query'] as const
+export type SignShape = (typeof SIGN_SHAPES)[number]
+
+/** The most signs a world may name: the map keeps a sign in three bits of a hex. */
+export const MAX_SIGNS = 7
+
+/**
+ * A sign on the land (M10.20; found building The Quiet Reach: the model
+ * borrowed the Nethermarch's peat pit for a mine shaft, and had nowhere to
+ * say danger or uncertain). What the legend calls it, how it is drawn, what
+ * it means beyond its colour, on which land it lies and how often, and what
+ * the stranger notices walking past.
+ */
+export const SignSchema = z
+  .object({
+    name: z.string().min(1),
+    shape: z.enum(SIGN_SHAPES),
+    /** More than a colour can say: the map adds a mark (! or ?) and the legend the word. */
+    means: z.enum(['danger', 'uncertain']).optional(),
+    /** On which land it lies, and on what share of those hexes (0 to 1): `{ fen: 0.1 }`. */
+    on: z.record(z.string(), z.number().min(0).max(1)).default({}),
+    /** The line the stranger reads walking through its hex. */
+    text: z.string().optional(),
+    /** Firm ground: quicker to cross, never soft, and what a hidden path turns wet ground into. */
+    firm: z.boolean().optional(),
+    /** Water in the ground: a way laid across it fills it in. */
+    wet: z.boolean().optional(),
+    /** A walk stops here to look, with this line. */
+    stops: z.string().optional(),
+  })
+  .strict()
+export type Sign = z.infer<typeof SignSchema>
+
 export const MapPaletteSchema = z
   .object({
     /** What the legend calls each terrain in this world. */
     names: z.record(z.string(), z.string()).default({}),
+    /** The signs on this world's land, in order (M10.20); without them the Nethermarch's five. */
+    signs: z
+      .record(z.string().regex(/^[a-z0-9_]+$/), SignSchema)
+      .refine((s) => Object.keys(s).length <= MAX_SIGNS, { message: `at most ${MAX_SIGNS} signs: the map keeps a sign in three bits of a hex` })
+      .refine((s) => !('stairs' in s), { message: 'stairs is the way up or down, not a sign on the land' })
+      .optional(),
     dark: MapStyleSchema,
     paper: MapStyleSchema,
   })
   .strict()
+  .superRefine((palette, ctx) => {
+    for (const message of signProblems(palette)) ctx.addIssue({ code: 'custom', message })
+  })
 export type MapPalette = z.infer<typeof MapPaletteSchema>
 
 /** The levels of a world, from below to above: one is shown at a time (M10). */
@@ -54,6 +103,48 @@ export const WorldMapSchema = z
 export type WorldMap = z.infer<typeof WorldMapSchema>
 
 export type MapStyleName = 'dark' | 'paper' | 'bw'
+
+/**
+ * The Nethermarch's signs, and what a world without its own gets: the pools
+ * and peat pits of the fen, a willow, the stump of a wall and the hummocks,
+ * with the shares and lines the generator always had.
+ */
+export const DEFAULT_SIGNS: Record<string, Sign> = {
+  pool: { name: 'pool', shape: 'pool', on: { fen: 0.1 }, text: 'A black pool lies to one side, still as glass.', wet: true },
+  peat_pit: { name: 'peat pit', shape: 'pit', on: { fen: 0.07 }, text: 'An old peat pit gapes beside you, full of brown water.', wet: true },
+  willow: { name: 'willow', shape: 'tree', on: { fen: 0.05, fields: 0.04 }, text: 'A lone willow leans over the wet ground.' },
+  ruin: { name: 'old wall', shape: 'ruin', on: { fen: 0.01, heath: 0.02 }, text: 'The stump of an old wall stands here, black with moss.', stops: 'Something stands out of the sedge here: an old wall.' },
+  hummock: { name: 'hummock', shape: 'knoll', on: { fen: 0.12 }, text: 'The ground rises into a hummock, a little drier than the rest.', firm: true },
+}
+
+/** The signs of a world, in order: the index of one plus one is what a hex keeps. */
+export function signsOf(palette: Pick<MapPalette, 'signs'> | undefined): [string, Sign][] {
+  return Object.entries(palette?.signs ?? DEFAULT_SIGNS)
+}
+
+/**
+ * What is wrong with the signs of a palette (M10.20): a sign without a colour
+ * in a style, a colour for a sign that is not there, or more signs on a land
+ * than it has hexes.
+ */
+export function signProblems(palette: Pick<MapPalette, 'signs' | 'dark' | 'paper'>): string[] {
+  const problems: string[] = []
+  const ids = signsOf(palette).map(([id]) => id)
+  const share: Record<string, number> = {}
+  for (const [, sign] of signsOf(palette)) for (const [land, part] of Object.entries(sign.on ?? {})) share[land] = (share[land] ?? 0) + part
+  for (const [land, part] of Object.entries(share)) if (part > 1) problems.push(`palette signs: the signs on ${land} take ${Math.round(part * 100)}% of its hexes; together they may take at most all of them`)
+  const lands = new Set([...LANDS, ...Object.keys(palette.dark.terrain), ...Object.keys(palette.paper.terrain)])
+  for (const [id, sign] of signsOf(palette)) for (const land of Object.keys(sign.on ?? {})) if (!lands.has(land)) problems.push(`palette signs.${id}.on: there is no land ${land}; it is one of the engine's (${LANDS.join(', ')}) or a terrain of the palette`)
+  for (const style of ['dark', 'paper'] as const) {
+    const glyph = palette[style].glyph
+    for (const id of ids) if (!glyph[id]) problems.push(`palette ${style}.glyph: no colour for the sign ${id}`)
+    for (const key of Object.keys(glyph)) if (key !== 'stairs' && key !== 'peat_edge' && !ids.includes(key)) problems.push(`palette ${style}.glyph.${key}: there is no sign ${key}${palette.signs ? ' under palette.signs' : ' (a world without signs of its own has the pool, peat_pit, willow, ruin and hummock)'}`)
+  }
+  return problems
+}
+
+/** The lands the region generator knows (FO, chapter 4): a sign lies on one of these, or on a terrain a palette names. */
+export const LANDS = ['fen', 'water', 'woods', 'heath', 'fields']
 
 /** The terrains a legend can show, in order. */
 export const TERRAIN_ORDER = ['fen', 'bog', 'hummock', 'ridge', 'water', 'channel', 'woods', 'heath', 'fields', 'tunnel', 'crown']
@@ -132,7 +223,8 @@ export function mapStyle(palette: MapPalette | undefined, name: MapStyleName): M
     label_shadow: '#ffffff',
     terrain: Object.fromEntries(Object.entries(paper.terrain).map(([k, tints]) => [k, tints.map(grey)])),
     ways: { road: '#1d1d1d', path: '#3a3a3a', canal: '#555555' },
-    glyph: { pool: '#222222', peat_pit: '#111111', peat_edge: '#555555', willow: '#222222', ruin: '#222222', hummock: '#444444', stairs: '#111111' },
+    // Every sign in black; a pit darker, its rim and the firm ground lighter.
+    glyph: { ...Object.fromEntries(signsOf(p).map(([id, sign]) => [id, sign.shape === 'pit' ? '#111111' : sign.firm ? '#444444' : '#222222'])), peat_edge: '#555555', stairs: '#111111' },
     visited: '#000000',
     trail: '#3a3a3a',
   }

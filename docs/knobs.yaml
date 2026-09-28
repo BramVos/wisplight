@@ -61,6 +61,8 @@ numbers:
     FULL_KM: 'code: how near the simulation counts every minute (speed)'
     NEAR_KM: 'code: how near a note on the map becomes a person again (speed)'
     COARSE_EVERY: 'code: how often a far person thinks (speed)'
+  src/engine/map/palette.ts:
+    MAX_SIGNS: 'code: the map keeps the sign of a hex in three bits (the format)'
   src/engine/news.ts:
     CHECKS_PER_HOUR: 'code: how often news is passed on in an hour (the grain of the simulation)'
     CONTACTS: 'code: how many others a teller meets in a crowd each quarter of an hour (speed)'

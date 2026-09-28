@@ -137,6 +137,40 @@ world:
       - { id: crown, name: the cliff tops }
     palette:
       names: { water: sea water, channel: tide channel, fields: salt grass, heath: heather, fen: salt marsh, cliff: cliffs, dune: dune, tunnel: caves, crown: cliff tops }
+      # Skerrow's own signs (M10.20), not the Nethermarch's peat pits: tide
+      # pools in the salt marsh, gorse and old cairns on the heather, the grey
+      # timbers of some wreck nobody names, and the sheer drops of the heights.
+      signs:
+        tide_pool:
+          name: tide pool
+          shape: pool
+          on: { fen: 0.06 }
+          text: A tide pool holds the last of the tide, weed stirring in it.
+          wet: true
+        gorse:
+          name: gorse
+          shape: tuft
+          on: { heath: 0.08, fields: 0.03 }
+          text: Gorse grows thick here, yellow and sharp, and smells faintly of coconut.
+        cairn:
+          name: old cairn
+          shape: rock
+          on: { heath: 0.03 }
+          text: An old cairn of grey stones stands here, lichen on every one.
+        timbers:
+          name: wreck timbers
+          shape: ruin
+          means: uncertain
+          on: { fen: 0.01 }
+          text: Grey ship's timbers stick out of the mud, and nobody on Skerrow says which ship they were.
+          stops: "Something sticks out of the mud here: old ship's timbers."
+        sheer_drop:
+          name: sheer drop
+          shape: warning
+          means: danger
+          on: { heath: 0.01 }
+          text: The heather ends in nothing here, a sheer drop to the sea, and the wind pulls at you.
+          stops: "The ground ends in front of you: a sheer drop to the sea."
       dark:
         ground: "#0d1113"
         unknown: "#151a1c"
@@ -153,7 +187,7 @@ world:
           tunnel: ["#4f4a44", "#48433e"]
           crown: ["#6e6f6a", "#676863"]
         ways: { road: "#c4b894", path: "#a99d7c", canal: "#7fa3ad" }
-        glyph: { pool: "#86b3bf", peat_pit: "#14120e", peat_edge: "#5f5645", willow: "#9fb38c", ruin: "#c9c3b2", hummock: "#a9ad8c", stairs: "#e3dcc0" }
+        glyph: { tide_pool: "#86b3bf", gorse: "#c9b45a", cairn: "#a9ad8c", timbers: "#c9c3b2", sheer_drop: "#e0915a", stairs: "#e3dcc0" }
         visited: "#f2b35c"
         trail: "#e9a647"
       paper:
@@ -172,6 +206,6 @@ world:
           tunnel: ["#9f988d", "#978f84"]
           crown: ["#bdbdb6", "#b5b5ae"]
         ways: { road: "#7d6a4a", path: "#958062", canal: "#557f89" }
-        glyph: { pool: "#4a7883", peat_pit: "#4f4535", peat_edge: "#3a3226", willow: "#4c6440", ruin: "#665a48", hummock: "#83845e", stairs: "#262018" }
+        glyph: { tide_pool: "#4a7883", gorse: "#8a7a2a", cairn: "#83845e", timbers: "#665a48", sheer_drop: "#a4481f", stairs: "#262018" }
         visited: "#a8452a"
         trail: "#9c4428"

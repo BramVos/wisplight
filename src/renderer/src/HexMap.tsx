@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent as
 import { createPortal } from 'react-dom'
 import type { HexMapData, LandMapData } from '../../engine'
 import { neighbour, neighbours } from '../../engine/map/hexgrid'
-import { mapStyle, markColours, tintsOf, type MapStyle, type MapStyleName } from '../../engine/map/palette'
+import { mapStyle, markColours, signsOf, tintsOf, type MapStyle, type MapStyleName, type Sign } from '../../engine/map/palette'
 import { hasWords, t } from './i18n'
 
 // The map in colour (M10; FO, chapter 4, "Weergave"; the proposal page
@@ -20,12 +20,12 @@ import { hasWords, t } from './i18n'
 // Both zoom in and out and go full screen; the map is dragged about too.
 // Both show the way you walked as a very thin line from hex to hex, and the
 // places you have been with a marker of their own; pointing at a place names it.
-// Every hex has one of its terrain's muted tints, from its seed; features
-// their own sign; ways are warm parchment, places an icon by kind and status.
+// Every hex has one of its terrain's muted tints, from its seed; the signs
+// of the world's palette their own shape (M10.20: a world names its signs,
+// and danger and uncertain get a mark as well as a colour); ways are warm
+// parchment, places an icon by kind and status.
 
 const word = (key: string, fallback: string) => (hasWords(key) ? t(key) : fallback)
-
-const FEATURE = ['', 'pool', 'peat_pit', 'willow', 'ruin', 'hummock']
 const MARK: Record<string, string> = { fen: '"', bog: '"', hummock: '^', ridge: ',', water: '~', channel: '≈', woods: 'T', heath: '^', fields: '.', tunnel: '∩', crown: '♣', cliff: '▲', dune: '∽' }
 const SQRT3 = Math.sqrt(3)
 /** The steps of the trail from a hex, as the engine sends them: 1 north, 2 north-east, 4 south-east. */
@@ -73,21 +73,23 @@ function hexPath(ctx: CanvasRenderingContext2D, x: number, y: number, r: number)
   ctx.closePath()
 }
 
-function glyph(ctx: CanvasRenderingContext2D, feature: string, x: number, y: number, s: MapStyle, k: number): void {
-  const g = s.glyph
-  if (feature === 'pool') {
-    ctx.fillStyle = g.pool
+/** A sign on the land, by its shape, in the colour the style gives its id; with a mark when it means danger (!) or uncertain (?). */
+export function glyph(ctx: CanvasRenderingContext2D, id: string, sign: Sign, x: number, y: number, s: MapStyle, k: number): void {
+  const colour = s.glyph[id] ?? s.label
+  const shape = sign.shape
+  if (shape === 'pool') {
+    ctx.fillStyle = colour
     ctx.beginPath()
     ctx.ellipse(x, y + 0.3 * k, 2.1 * k, 1.5 * k, 0, 0, 7)
     ctx.fill()
-  } else if (feature === 'peat_pit') {
-    ctx.fillStyle = g.peat_pit
+  } else if (shape === 'pit') {
+    ctx.fillStyle = colour
     ctx.fillRect(x - 1.8 * k, y - 1.5 * k, 3.6 * k, 3 * k)
-    ctx.strokeStyle = g.peat_edge
+    ctx.strokeStyle = s.glyph['peat_edge'] ?? mix(colour, s.label, 0.35)
     ctx.lineWidth = 0.6
     ctx.strokeRect(x - 1.8 * k, y - 1.5 * k, 3.6 * k, 3 * k)
-  } else if (feature === 'willow') {
-    ctx.strokeStyle = g.willow
+  } else if (shape === 'tree') {
+    ctx.strokeStyle = colour
     ctx.lineWidth = 0.9
     ctx.beginPath()
     ctx.moveTo(x, y + 2.2 * k)
@@ -97,8 +99,8 @@ function glyph(ctx: CanvasRenderingContext2D, feature: string, x: number, y: num
     ctx.moveTo(x, y - k)
     ctx.quadraticCurveTo(x + 2.2 * k, y - k, x + 2.2 * k, y + 1.4 * k)
     ctx.stroke()
-  } else if (feature === 'ruin') {
-    ctx.strokeStyle = g.ruin
+  } else if (shape === 'ruin') {
+    ctx.strokeStyle = colour
     ctx.lineWidth = 0.9
     ctx.beginPath()
     ctx.moveTo(x - 2 * k, y + 2 * k)
@@ -107,14 +109,65 @@ function glyph(ctx: CanvasRenderingContext2D, feature: string, x: number, y: num
     ctx.moveTo(x + 2 * k, y + 2 * k)
     ctx.lineTo(x + 2 * k, y - 0.2 * k)
     ctx.stroke()
-  } else if (feature === 'hummock') {
-    ctx.strokeStyle = g.hummock
+  } else if (shape === 'knoll') {
+    ctx.strokeStyle = colour
     ctx.lineWidth = 0.8
     ctx.beginPath()
     ctx.moveTo(x - 1.8 * k, y + k)
     ctx.lineTo(x, y - k)
     ctx.lineTo(x + 1.8 * k, y + k)
     ctx.stroke()
+  } else if (shape === 'tuft') {
+    ctx.strokeStyle = colour
+    ctx.lineWidth = 0.8
+    ctx.beginPath()
+    for (const [dx, lean] of [
+      [-1.4, -0.6],
+      [0, 0],
+      [1.4, 0.6],
+    ] as const) {
+      ctx.moveTo(x + dx * k, y + 1.5 * k)
+      ctx.lineTo(x + (dx + lean) * k, y - (dx === 0 ? 1.6 : 0.9) * k)
+    }
+    ctx.stroke()
+  } else if (shape === 'rock') {
+    ctx.fillStyle = colour
+    ctx.beginPath()
+    ctx.moveTo(x - 2 * k, y + 1.4 * k)
+    ctx.lineTo(x - 1.2 * k, y - 0.8 * k)
+    ctx.lineTo(x + 0.4 * k, y - 1.6 * k)
+    ctx.lineTo(x + 2 * k, y - 0.2 * k)
+    ctx.lineTo(x + 1.6 * k, y + 1.4 * k)
+    ctx.closePath()
+    ctx.fill()
+  } else if (shape === 'warning') {
+    ctx.strokeStyle = colour
+    ctx.fillStyle = colour
+    ctx.lineWidth = 0.8
+    ctx.beginPath()
+    ctx.moveTo(x, y - 2 * k)
+    ctx.lineTo(x + 2.2 * k, y + 1.7 * k)
+    ctx.lineTo(x - 2.2 * k, y + 1.7 * k)
+    ctx.closePath()
+    ctx.moveTo(x, y - 0.8 * k)
+    ctx.lineTo(x, y + 0.5 * k)
+    ctx.stroke()
+    ctx.fillRect(x - 0.3 * k, y + 0.9 * k, 0.6 * k, 0.5 * k)
+  } else if (shape === 'query') {
+    ctx.fillStyle = colour
+    ctx.font = `bold ${Math.max(6, 4.4 * k)}px sans-serif`
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.fillText('?', x, y)
+  }
+  // A meaning shows as more than a colour: a small ! or ? beside the sign, unless the shape says it already.
+  const mark = sign.means === 'danger' && shape !== 'warning' ? '!' : sign.means === 'uncertain' && shape !== 'query' ? '?' : ''
+  if (mark) {
+    ctx.fillStyle = colour
+    ctx.font = `bold ${Math.max(6, 3.2 * k)}px sans-serif`
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.fillText(mark, x + 2.6 * k, y - 1.8 * k)
   }
 }
 
@@ -263,6 +316,7 @@ function draw(canvas: HTMLCanvasElement, data: HexMapData, s: MapStyle, style: M
   const k = Math.max(0.6, r / 5)
   const local = mode === 'local'
   const lit = (key: string) => !flash || flash === key
+  const signs = signsOf(data.palette)
   const sightOf = new Map<string, number>()
   for (let i = 0; i < data.hexes.length; i += 5) {
     const col = data.hexes[i]!
@@ -282,11 +336,11 @@ function draw(canvas: HTMLCanvasElement, data: HexMapData, s: MapStyle, style: M
     hexPath(ctx, x, y, r + 0.35)
     ctx.fillStyle = fill
     ctx.fill()
-    const feature = FEATURE[(flags >> 2) & 7] ?? ''
-    if (feature && !flash && r >= 3) {
+    const sign = signs[((flags >> 2) & 7) - 1]
+    if (sign && !flash && r >= 3) {
       if (local && memory < 2 && data.light !== 'day') continue
       ctx.globalAlpha = local && memory < 2 ? (memory === 1 ? 0.5 : 0.3) : 1
-      glyph(ctx, feature, x, y, s, k)
+      glyph(ctx, sign[0], sign[1], x, y, s, k)
       ctx.globalAlpha = 1
     }
   }
@@ -345,7 +399,7 @@ function draw(canvas: HTMLCanvasElement, data: HexMapData, s: MapStyle, style: M
   for (const st of data.stairs) {
     const [x, y] = at(st.c, st.r)
     if (!visible(x, y)) continue
-    ctx.fillStyle = s.glyph.stairs
+    ctx.fillStyle = s.glyph['stairs'] ?? s.label
     ctx.beginPath()
     const a = 2.4 * k
     if (st.dir === 'down') {
@@ -726,8 +780,15 @@ function MapCanvas({
 
 function Legend({ data, s, style, onFlash }: { data: HexMapData; s: MapStyle; style: MapStyleName; onFlash: (key: string) => void }) {
   const icons = useRef<HTMLCanvasElement[]>([])
+  const signIcons = useRef<HTMLCanvasElement[]>([])
   const kinds = [...new Map(data.places.map((p) => [`${p.kind}:${p.status}`, p])).values()]
   const marks = markColours(s, style)
+  // The signs on the map in view (M10.20), in the palette's order.
+  const all = signsOf(data.palette)
+  const inView = new Set<number>()
+  for (let i = 4; i < data.hexes.length; i += 5) inView.add((data.hexes[i]! >> 2) & 7)
+  // A sign with a tint of its own (the hummock) is in the legend as a terrain already.
+  const signs = all.filter(([id], i) => inView.has(i + 1) && !data.legend.some((l) => l.key === id))
   useEffect(() => {
     kinds.forEach((p, i) => {
       const c = icons.current[i]
@@ -736,6 +797,13 @@ function Legend({ data, s, style, onFlash }: { data: HexMapData; s: MapStyle; st
       ctx.clearRect(0, 0, c.width, c.height)
       if (p.status === 'visited') visitedMark(ctx, p.kind, 9, 10, s, marks.visited, 1)
       else placeIcon(ctx, p.kind, 9, 10, p.status, s.label)
+    })
+    signs.forEach(([id, sign], i) => {
+      const c = signIcons.current[i]
+      const ctx = c?.getContext('2d')
+      if (!c || !ctx) return
+      ctx.clearRect(0, 0, c.width, c.height)
+      glyph(ctx, id, sign, 8, 9, s, 1.6)
     })
   })
   const ways = [...new Set(data.ways.map((w) => w.kind))]
@@ -755,7 +823,7 @@ function Legend({ data, s, style, onFlash }: { data: HexMapData; s: MapStyle; st
       {ways.map((w) => (
         <button key={w} type="button" onClick={() => onFlash(w)}>
           <i style={{ background: s.ground, color: w === 'canal' ? s.ways.canal : w === 'road' ? s.ways.road : s.ways.path }}>{w === 'canal' ? '=' : w === 'road' ? ':' : ','}</i>
-          {word(`app.map.ways.${w}`, w)}
+          {data.palette.names[w] ?? word(`app.map.ways.${w}`, w)}
         </button>
       ))}
       {walked && (
@@ -766,6 +834,20 @@ function Legend({ data, s, style, onFlash }: { data: HexMapData; s: MapStyle; st
           {t('app.map.trail')}
         </button>
       )}
+      {signs.map(([id, sign], i) => (
+        <span key={id} className="hexmap-place">
+          <canvas
+            ref={(el) => {
+              if (el) signIcons.current[i] = el
+            }}
+            width={18}
+            height={16}
+            style={{ background: s.ground }}
+          />
+          {sign.name}
+          {sign.means && `, ${word(`app.map.means.${sign.means}`, sign.means)}`}
+        </span>
+      ))}
       {kinds.map((p, i) => (
         <span key={`${p.kind}:${p.status}`} className="hexmap-place">
           <canvas

@@ -4,8 +4,8 @@ import { weather } from '../weather'
 import type { World } from '../world'
 import { centre, distance, hexAt, type Hex } from './hexgrid'
 import { knownPlaces } from './known'
-import { DEFAULT_PALETTE, SURFACE, TERRAIN_ORDER, terrainName, type MapPalette } from './palette'
-import { noise, regionMap, type RegionMap } from './region'
+import { DEFAULT_PALETTE, signsOf, SURFACE, TERRAIN_ORDER, terrainName, type MapPalette } from './palette'
+import { type Cell, noise, RegionMap, regionMap } from './region'
 import { freshBits, hasSeen, onKnownRidge, playerHex, seenBits, sight, trailAt, trailBits } from './travel'
 import { moodOf } from '../quests/plans'
 import { lodgingNow } from '../lodgings'
@@ -157,7 +157,7 @@ export interface HexMapData {
   levels: { id: string; name: string }[]
   /** Terrain keys, as the hexes refer to them. */
   keys: string[]
-  /** Per hex, five numbers: column, row, terrain (index in keys), tint (0 to 3), and flags (memory 0 seen long ago, 1 seen lately, 2 in sight now; feature times 4; the steps of your trail from it times 32: 1 north, 2 north-east, 4 south-east). */
+  /** Per hex, five numbers: column, row, terrain (index in keys), tint (0 to 3), and flags (memory 0 seen long ago, 1 seen lately, 2 in sight now; sign times 4, one more than its place in the palette's signs; the steps of your trail from it times 32: 1 north, 2 north-east, 4 south-east). */
   hexes: number[]
   /** The light now, and how many hexes the player sees (after the M10 playtest): the minimap draws night and mist with them; the map does not. */
   light: 'day' | 'night' | 'mist'
@@ -173,7 +173,19 @@ export interface HexMapData {
   palette: MapPalette
 }
 
-const FEATURES = ['', 'pool', 'peat_pit', 'willow', 'ruin', 'hummock']
+/** The number a hex keeps for its sign: one more than the sign's place in the palette, or 0. */
+function signIndex(map: RegionMap, cell: Cell): number {
+  return cell.feature ? map.signs.findIndex(([id]) => id === cell.feature) + 1 : 0
+}
+
+/** The terrain a hex is coloured as: the ridge, a channel, soft fen, or a sign with a tint of its own (the hummock), else its land. */
+function hexKeyOf(map: RegionMap, cell: Cell, palette: MapPalette, ridge: boolean): string {
+  if (ridge) return 'ridge'
+  if (cell.channel) return 'channel'
+  if (cell.land === 'fen' && cell.bog) return 'bog'
+  if (cell.feature && map.sign(cell)?.firm && (palette.dark.terrain[cell.feature] ?? DEFAULT_PALETTE.dark.terrain[cell.feature])) return cell.feature
+  return cell.land
+}
 
 export function hexMapData(world: World, options: { width?: number; height?: number; whole?: boolean; level?: string } = {}): HexMapData | undefined {
   const map = regionMap(world.content)
@@ -189,6 +201,7 @@ export function hexMapData(world: World, options: { width?: number; height?: num
   const fresh = freshBits(world, map)
   const trail = trailBits(world, map)
   const range = you ? sight(world, map, map.cell(you)!) : 0
+  const palette = world.content.world.map?.palette ?? DEFAULT_PALETTE
   const misty = ['fog', 'storm'].includes(weather(world))
   const light: HexMapData['light'] = misty ? 'mist' : new GameClock(world.now).isNight ? 'night' : 'day'
   const keys: string[] = []
@@ -215,8 +228,8 @@ export function hexMapData(world: World, options: { width?: number; height?: num
       let key: string
       let feature = 0
       if (level === SURFACE) {
-        key = ridge ? 'ridge' : cell.channel ? 'channel' : cell.land === 'fen' && cell.bog ? 'bog' : cell.land === 'fen' && cell.feature === 'hummock' ? 'hummock' : cell.land
-        feature = cell.feature ? FEATURES.indexOf(cell.feature) : 0
+        key = hexKeyOf(map, cell, palette, ridge)
+        feature = signIndex(map, cell)
         if (cell.way) ways.push({ c: col, r: row, kind: cell.way.kind })
         else if (ridge) ways.push({ c: col, r: row, kind: 'ridge' })
       } else {
@@ -252,7 +265,6 @@ export function hexMapData(world: World, options: { width?: number; height?: num
       }
     }
   }
-  const palette = world.content.world.map?.palette ?? DEFAULT_PALETTE
   const present = new Set(keys)
   const legend = [...TERRAIN_ORDER.filter((k) => present.has(k)), ...keys.filter((k) => !TERRAIN_ORDER.includes(k) && k !== 'unknown')].map((key) => ({ key, name: terrainName(palette, key) }))
   return { left, top, width, height, level, levels, keys, hexes, light, sight: range, ways, stairs, ...(you ? { you: { c: you.col, r: you.row } } : {}), places, zones, legend, palette }
@@ -280,7 +292,10 @@ function levelIndex(world: World, level: string): number {
  * map, a sample with a band for every terrain of the palette.
  */
 export function previewMapData(content: Content, palette: MapPalette, whole = false): HexMapData {
-  const map = regionMap(content)
+  // A palette with other signs than the world's lays them anew on the same land.
+  const own = regionMap(content)
+  const same = JSON.stringify(signsOf(palette)) === JSON.stringify(signsOf(content.world.map?.palette))
+  const map = own && !same ? new RegionMap({ ...content, world: { ...content.world, map: { levels: content.world.map?.levels ?? [], ...content.world.map, palette } } }, own.region) : own
   const keys: string[] = []
   const keyOf = (k: string) => {
     let i = keys.indexOf(k)
@@ -301,8 +316,8 @@ export function previewMapData(content: Content, palette: MapPalette, whole = fa
       for (let row = top; row > top - height; row--) {
         const cell = map.cell({ col, row })
         if (!cell) continue
-        const key = cell.hidden ? 'ridge' : cell.channel ? 'channel' : cell.land === 'fen' && cell.bog ? 'bog' : cell.land === 'fen' && cell.feature === 'hummock' ? 'hummock' : cell.land
-        hexes.push(col, row, keyOf(key), Math.floor(noise(map.region.seed, col, row, 7) * 4), 2 + (cell.feature ? FEATURES.indexOf(cell.feature) : 0) * 4)
+        const key = hexKeyOf(map, cell, palette, Boolean(cell.hidden))
+        hexes.push(col, row, keyOf(key), Math.floor(noise(map.region.seed, col, row, 7) * 4), 2 + signIndex(map, cell) * 4)
         if (cell.way) ways.push({ c: col, r: row, kind: cell.way.kind })
       }
     }
@@ -321,7 +336,8 @@ export function previewMapData(content: Content, palette: MapPalette, whole = fa
   for (let col = 0; col < width; col++) {
     for (let row = height - 1; row >= 0; row--) {
       const key = terrains[Math.min(terrains.length - 1, Math.floor((height - 1 - row) / band))] ?? 'fields'
-      const feature = noise(7, col, row, 1) < 0.12 ? 1 + Math.floor(noise(7, col, row, 2) * 5) : 0
+      const signs = signsOf(palette).length
+      const feature = signs && noise(7, col, row, 1) < 0.12 ? 1 + Math.floor(noise(7, col, row, 2) * signs) : 0
       hexes.push(col, row, keyOf(key), Math.floor(noise(7, col, row, 7) * 4), 2 + feature * 4)
       if (col === Math.floor(width / 3)) ways.push({ c: col, r: row, kind: 'road' })
     }

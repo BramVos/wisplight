@@ -59,6 +59,10 @@
       "canal": "tow path",
       "ridge": "dry ridge"
     },
+    "means": {
+      "danger": "danger",
+      "uncertain": "uncertain"
+    },
     "kinds": {
       "village": "village",
       "town": "town",

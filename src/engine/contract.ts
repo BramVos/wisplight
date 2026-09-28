@@ -22,7 +22,12 @@ interface KindText {
  * contract, the fields of a world step and the writing aid's short contract.
  */
 export const FIELD_NOTES: Record<string, string[]> = {
-  world: ['`knobs`: rules of play set otherwise than the default, by the id of a knob (docs/KNOBS.md): `talk.max_turns: 30`; for a table only the rows that differ.'],
+  world: [
+    '`knobs`: rules of play set otherwise than the default, by the id of a knob (docs/KNOBS.md): `talk.max_turns: 30`; for a table only the rows that differ.',
+    // M10.20: the palette step of The Quiet Reach borrowed peat_pit for a mine shaft.
+    '`map.palette.signs`: the signs on this world\'s land by an id of its own (`mine_shaft`, never the Nethermarch\'s `peat_pit`), at most seven; each needs a colour under `glyph` in the dark and the paper style. `means: danger` or `uncertain` adds a mark and a word, not only a colour. Left out, the world has the Nethermarch\'s pool, peat_pit, willow, ruin and hummock.',
+    '`map.palette.names` also names the ways in the legend: `road`, `path` and `canal` (a tow path in the Nethermarch; `canal: tidal channel` elsewhere).',
+  ],
   npcs: ['`secrets`: `about` and `teaches` take ids: a topic, a person (an NPC id), a place (a location id) or an area (`area_<id>`).'],
   // M10.20: the transport step of The Quiet Reach wrote legs as "a-b".
   passages: ['`legs`: minutes between two of its stops that the map cannot measure, keyed `<stop>><stop>` with a `>` between the ids (`loc_quay>kestrel_landing: 90`).'],
@@ -30,7 +35,7 @@ export const FIELD_NOTES: Record<string, string[]> = {
 
 /** Every kind of content, in the order a new world is best filled in. */
 export const KINDS: Record<string, KindText> = {
-  world: { file: 'world.yaml', does: 'The frame of the world: its name and start, the frame every model call gets, the calendar, coins, law, faiths, towns, weather, map and palette, and the words its texts use for the land and the region.', missing: 'A world has exactly one. What it leaves out takes the neutral default: "the land", "the region", a law without an officer, no faith, the standard calendar, coins and palette.' },
+  world: { file: 'world.yaml', does: 'The frame of the world: its name and start, the frame every model call gets, the calendar, coins, law, faiths, towns, weather, map and palette with the signs on its land, and the words its texts use for the land and the region.', missing: 'A world has exactly one. What it leaves out takes the neutral default: "the land", "the region", a law without an officer, no faith, the standard calendar, coins and palette, and the Nethermarch\'s signs on the land.' },
   areas: { file: 'data/areas.yaml', does: 'The villages, towns, inns and stretches of wild land places belong to; who lives in an area knows it.', missing: 'Nothing can be placed: at least one area is needed.' },
   locations: { file: 'areas/<area>/locations.yaml', does: 'The places the stranger can stand in: their descriptions, exits, objects, services and things to look at.', missing: 'Nothing to stand in: at least one location is needed, the start.' },
   professions: { file: 'data/professions.yaml', does: 'What people do all day: the hours of work, home and sleep that move them about.', missing: 'People keep to their homes.' },

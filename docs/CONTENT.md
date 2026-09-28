@@ -6,9 +6,9 @@ A world is a folder `content/<world>/` of YAML files. Each file holds one or mor
 
 ## world (world.yaml)
 
-The frame of the world: its name and start, the frame every model call gets, the calendar, coins, law, faiths, towns, weather, map and palette, and the words its texts use for the land and the region.
+The frame of the world: its name and start, the frame every model call gets, the calendar, coins, law, faiths, towns, weather, map and palette with the signs on its land, and the words its texts use for the land and the region.
 
-When a world has none: A world has exactly one. What it leaves out takes the neutral default: "the land", "the region", a law without an officer, no faith, the standard calendar, coins and palette.
+When a world has none: A world has exactly one. What it leaves out takes the neutral default: "the land", "the region", a law without an officer, no faith, the standard calendar, coins and palette, and the Nethermarch's signs on the land.
 
 One block with:
 
@@ -39,6 +39,10 @@ One block with:
 | knobs | a map of names to one of: number \| a map of names to number | no |  |
 
 `knobs`: rules of play set otherwise than the default, by the id of a knob (docs/KNOBS.md): `talk.max_turns: 30`; for a table only the rows that differ.
+
+`map.palette.signs`: the signs on this world's land by an id of its own (`mine_shaft`, never the Nethermarch's `peat_pit`), at most seven; each needs a colour under `glyph` in the dark and the paper style. `means: danger` or `uncertain` adds a mark and a word, not only a colour. Left out, the world has the Nethermarch's pool, peat_pit, willow, ruin and hummock.
+
+`map.palette.names` also names the ways in the legend: `road`, `path` and `canal` (a tow path in the Nethermarch; `canal: tidal channel` elsewhere).
 
 ## areas (data/areas.yaml)
 

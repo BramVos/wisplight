@@ -83,7 +83,7 @@ export function minutesFor(world: World, cell: Cell, forPlayer = true): number {
   let minutes: number
   if (cell.way) minutes = cell.way.kind === 'path' ? 4 : 3
   else if (forPlayer && onKnownRidge(world, cell)) minutes = 4
-  else if (cell.land === 'fen') minutes = cell.feature === 'hummock' ? 6 : 8
+  else if (cell.land === 'fen') minutes = regionMap(world.content)?.sign(cell)?.firm ? 6 : 8
   else if (cell.land === 'woods') minutes = 6
   else if (cell.land === 'water') minutes = forPlayer && hasPunt(world) && !frozen(world) ? (blessed(world.content, world.state.player.character, 'Fair Wind') ? 3 : 4) : 5
   else minutes = 4
@@ -315,14 +315,6 @@ const LAND: Record<Cell['land'], string> = {
   path: 'A path runs through here.',
 }
 
-const FEATURE: Record<NonNullable<Cell['feature']>, string> = {
-  pool: 'A black pool lies to one side, still as glass.',
-  peat_pit: 'An old peat pit gapes beside you, full of brown water.',
-  willow: 'A lone willow leans over the wet ground.',
-  ruin: 'The stump of an old wall stands here, black with moss.',
-  hummock: 'The ground rises into a hummock, a little drier than the rest.',
-}
-
 function landmark(world: World, map: RegionMap, hex: Hex): string | undefined {
   const best = landmarkIn(world, map, hex)
   return best ? `To the ${best.wind}, ${best.text}.` : undefined
@@ -391,7 +383,8 @@ export function describeHex(world: World, hex: Hex): Output {
   } else {
     lines.push(LAND[cell.land])
   }
-  if (cell.feature) lines.push(FEATURE[cell.feature])
+  const sign = map.sign(cell)
+  if (sign?.text) lines.push(sign.text)
   const sky = weatherLine(world, weather(world), night, wind(world))
   if (sky) lines.push(sky)
   const mark = landmark(world, map, hex)
@@ -719,8 +712,9 @@ export function walk(world: World, plan: WalkPlan, pass: (minutes: number) => Ou
       reason = sink(world)
       break
     }
-    if (stepCell.feature === 'ruin' && plan.kind !== 'to') {
-      reason = 'Something stands out of the sedge here: an old wall.'
+    const stop = map.sign(stepCell)?.stops
+    if (stop && plan.kind !== 'to') {
+      reason = stop
       break
     }
     const before = minuteOfDay(world.now + minutes - minutesFor(world, stepCell))

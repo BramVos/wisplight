@@ -1,5 +1,6 @@
 import type { Content, Region } from '../content'
 import { centre, distance, type Hex, hexAt, hexKey, line, neighbours } from './hexgrid'
+import { signsOf, type Sign } from './palette'
 
 // The region map (FO, chapter 4, "De streekkaart"): the generator fills every
 // hex of 250 m from the designer's zone drawing, with a fixed seed, so the
@@ -8,7 +9,8 @@ import { centre, distance, type Hex, hexAt, hexKey, line, neighbours } from './h
 // rules of the region (a hidden ridge, channels) are laid over the top.
 
 export type Terrain = 'woods' | 'fields' | 'fen' | 'water' | 'heath' | 'road' | 'canal' | 'path'
-export type Feature = 'pool' | 'peat_pit' | 'willow' | 'ruin' | 'hummock'
+/** A sign on the land, by its id in the world's palette (M10.20): the Nethermarch's pool, peat_pit, willow, ruin and hummock, or a world's own. */
+export type Feature = string
 
 export interface Cell {
   col: number
@@ -44,12 +46,17 @@ export class RegionMap {
   /** Location id to its hex. */
   readonly locations = new Map<string, Hex>()
   private readonly placeAt = new Map<string, string>()
+  /** The world's signs, in order, and the first firm one: what a hidden path makes of wet ground. */
+  readonly signs: [string, Sign][]
+  private readonly firm: string | undefined
 
   constructor(
     readonly content: Content,
     readonly region: Region,
   ) {
     this.size = region.hex
+    this.signs = signsOf(content.world.map?.palette)
+    this.firm = this.signs.find(([, sign]) => sign.firm)?.[0]
     this.cols = Math.round(region.size[0] / region.hex)
     this.rows = Math.round(region.size[1] / region.hex)
     this.cells = []
@@ -99,18 +106,27 @@ export class RegionMap {
 
   // ------------------------------------------------------------ generation
 
+  /** The sign of a hex, by the shares of the world's signs on its land, in their order. */
+  sign(cell: Cell): Sign | undefined {
+    return cell.feature ? this.signs.find(([id]) => id === cell.feature)?.[1] : undefined
+  }
+
   private fill(col: number, row: number, land: Terrain): Cell {
     const r = (salt: number) => noise(this.region.seed, col, row, salt)
     const cell: Cell = { col, row, land, bog: false }
-    if (land === 'fen') {
-      const roll = r(1)
-      cell.feature = roll < 0.1 ? 'pool' : roll < 0.17 ? 'peat_pit' : roll < 0.22 ? 'willow' : roll < 0.23 ? 'ruin' : roll < 0.35 ? 'hummock' : undefined
-      cell.bog = cell.feature !== 'hummock' && r(2) < 0.09
-    } else if (land === 'fields') {
-      cell.feature = r(1) < 0.04 ? 'willow' : undefined
-    } else if (land === 'heath') {
-      cell.feature = r(1) < 0.02 ? 'ruin' : undefined
+    const roll = r(1)
+    let upTo = 0
+    for (const [id, sign] of this.signs) {
+      const part = sign.on[land] ?? 0
+      if (!part) continue
+      // The shares as the generator always had them (0.1, 0.17, ...), so the same seed gives the same land.
+      upTo = Math.round((upTo + part) * 1e9) / 1e9
+      if (roll < upTo) {
+        cell.feature = id
+        break
+      }
     }
+    if (land === 'fen') cell.bog = !this.sign(cell)?.firm && r(2) < 0.09
     return cell
   }
 
@@ -184,7 +200,7 @@ export class RegionMap {
     if (!cell.way || cell.way.kind === 'path' || path.kind === 'canal') cell.way = { kind: path.kind, name: path.name }
     if (cell.land === 'water') cell.land = 'fields'
     cell.bog = false
-    if (cell.feature === 'pool' || cell.feature === 'peat_pit') cell.feature = undefined
+    if (this.sign(cell)?.wet) cell.feature = undefined
   }
 
   private applyRules(): void {
@@ -218,7 +234,7 @@ export class RegionMap {
         if (this.placeOn(hex)) continue
         if (cell.land === 'water') cell.land = 'fen'
         cell.bog = false
-        if (cell.feature === 'pool' || cell.feature === 'peat_pit') cell.feature = 'hummock'
+        if (this.sign(cell)?.wet) cell.feature = this.firm
       }
     }
   }

@@ -129,6 +129,42 @@ world:
         shallows: tidal shallows
         scrub: coastal scrub
         beds: growing beds
+        canal: tidal channel
+      # The signs on the coast (M10.20), as the palette step named them: the
+      # shaft in coral for danger, the abandoned structure in greyed violet for
+      # what nobody is sure of. Each also gets a mark on the map (! and ?).
+      signs:
+        tide_pool:
+          name: tide pool
+          shape: pool
+          on: { shallows: 0.08 }
+          text: A tide pool lies among the black rocks, clear and very cold.
+          wet: true
+        mine_shaft:
+          name: old mine shaft
+          shape: pit
+          means: danger
+          on: { highland: 0.02 }
+          text: An old mine shaft drops away beside you, its rim broken and unfenced.
+          stops: "The ground opens in front of you: an old mine shaft."
+        growth:
+          name: native growth
+          shape: tuft
+          on: { scrub: 0.1 }
+          text: A clump of native growth clings to the rock, low and dark and wet.
+        structure:
+          name: abandoned structure
+          shape: ruin
+          means: uncertain
+          on: { volcanic: 0.01, highland: 0.01 }
+          text: An abandoned structure stands here, and nobody on the coast says whose it was.
+          stops: "Something stands out against the rock here: an abandoned structure."
+        knoll:
+          name: basalt knoll
+          shape: knoll
+          on: { volcanic: 0.1 }
+          text: The ground rises into a knoll of black basalt, firm underfoot.
+          firm: true
       dark:
         ground: "#111d26"
         unknown: "#0b141a"
@@ -143,12 +179,12 @@ world:
           beds: ["#7d9274", "#778c6e", "#839879"]
         ways: { road: "#b5a58a", path: "#9e9079", canal: "#5e93a0" }
         glyph:
-          pool: "#5e93a0"
-          peat_pit: "#cd786c"
+          tide_pool: "#5e93a0"
+          mine_shaft: "#cd786c"
           peat_edge: "#a8665c"
-          willow: "#4d7a72"
-          ruin: "#9d92b3"
-          hummock: "#8c989f"
+          growth: "#4d7a72"
+          structure: "#9d92b3"
+          knoll: "#8c989f"
           stairs: "#b5a58a"
         visited: "#dbe2df"
         trail: "#e4b66b"
@@ -166,12 +202,12 @@ world:
           beds: ["#b9c7b2", "#b3c1ac", "#bfcdb8"]
         ways: { road: "#7a6a4f", path: "#8f8068", canal: "#3f6e7f" }
         glyph:
-          pool: "#3f6e7f"
-          peat_pit: "#a8544a"
+          tide_pool: "#3f6e7f"
+          mine_shaft: "#a8544a"
           peat_edge: "#8a4a42"
-          willow: "#2f5049"
-          ruin: "#6e6388"
-          hummock: "#5a666d"
+          growth: "#2f5049"
+          structure: "#6e6388"
+          knoll: "#5a666d"
           stairs: "#7a6a4f"
         visited: "#1b2830"
         trail: "#b97f22"
