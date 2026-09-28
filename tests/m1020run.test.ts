@@ -104,6 +104,16 @@ describe('M10.20: the real run of a world', () => {
     expect(worldStepRequest(files, 'economy', 'x').system).toContain('merge: true with only the fields you set')
   })
 
+  it('lets the transport step write the journey whole, and says how a leg is keyed', () => {
+    const files = newWorldFiles('quietreach', 'The Quiet Reach')
+    const result = draftResult(files, { changes: [], files: [{ path: 'data/journey.yaml', text: 'journey:\n  night:\n    - Your lamp makes a small room of light on the wet stone.\n' }] })
+    expect(result.problems).toEqual([])
+    expect(result.content!.journey?.night).toEqual(['Your lamp makes a small room of light on the wet stone.'])
+    const transport = worldStepRequest(files, 'passages', 'A crawler to the ridge.').system
+    expect(transport).toContain('data/journey.yaml whole in `files`')
+    expect(transport).toContain('keyed `<stop>><stop>` with a `>` between the ids')
+  })
+
   it('puts right a proposal that did not load, with only what the chronicler corrects', () => {
     const files = newWorldFiles('quietreach', 'The Quiet Reach')
     const topic = (id: string, summary: string) => ({ kind: 'topic' as const, id, yaml: `id: ${id}\nname: ${id}\nkind: lore\nsummary: ${summary}\n` })

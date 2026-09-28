@@ -219,6 +219,6 @@ describe('M10.17: the chronicler as world builder', () => {
   it('refuses a world key outside the contract, and a whole file other than CHRONICLER.md or the voice kit', () => {
     const files = newWorldFiles('rimehold', 'Rimehold')
     expect(draftResult(files, { changes: [], world: 'climate: cold\n' }).problems.join(' ')).toMatch(/"climate" is not in the contract; world has: /)
-    expect(draftResult(files, { changes: [], files: [{ path: 'data/palette.yaml', text: 'palette: {}' }] }).problems.join(' ')).toMatch(/may write only CHRONICLER\.md and data\/voice\.yaml/)
+    expect(draftResult(files, { changes: [], files: [{ path: 'data/palette.yaml', text: 'palette: {}' }] }).problems.join(' ')).toMatch(/may write only CHRONICLER\.md, data\/voice\.yaml and data\/journey\.yaml/)
   })
 })

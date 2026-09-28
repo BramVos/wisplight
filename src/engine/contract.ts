@@ -23,6 +23,8 @@ interface KindText {
  */
 export const FIELD_NOTES: Record<string, string[]> = {
   npcs: ['`secrets`: `about` and `teaches` take ids: a topic, a person (an NPC id), a place (a location id) or an area (`area_<id>`).'],
+  // M10.20: the transport step of The Quiet Reach wrote legs as "a-b".
+  passages: ['`legs`: minutes between two of its stops that the map cannot measure, keyed `<stop>><stop>` with a `>` between the ids (`loc_quay>kestrel_landing: 90`).'],
 }
 
 /** Every kind of content, in the order a new world is best filled in. */

@@ -423,7 +423,7 @@ export interface Draft {
   changes: DraftChange[]
   /** Top-level keys of world.yaml to set, as YAML (M10.17); empty for none. */
   world?: string
-  /** Whole files: only CHRONICLER.md and data/voice.yaml, next to world.yaml (M10.17). */
+  /** Whole files: only CHRONICLER.md, data/voice.yaml and data/journey.yaml, next to world.yaml (M10.17, M10.20). */
   files?: { path: string; text: string }[]
   /** The proposal as edits, checked against the world. */
   result?: EditResult
@@ -461,7 +461,8 @@ const WORLD_STEP_SCHEMA = {
 }
 
 /** The files a proposal may write whole, next to world.yaml. */
-const DRAFT_FILES = /^(?:CHRONICLER\.md|data\/voice\.yaml)$/
+// The journey too (M10.20): the transport step fills it, and in The Quiet Reach it had no way to send it.
+const DRAFT_FILES = /^(?:CHRONICLER\.md|data\/voice\.yaml|data\/journey\.yaml)$/
 
 /**
  * A proposal as files (M10.17): the entities as edits, then the keys of
@@ -495,7 +496,7 @@ export function draftResult(files: ContentFile[], draft: Pick<Draft, 'changes' |
   for (const file of draft.files ?? []) {
     const path = file.path.replace(/^\/+/, '').replace(new RegExp(`^${prefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`), '')
     if (!DRAFT_FILES.test(path)) {
-      problems.push(`${file.path}: a proposal may write only CHRONICLER.md and data/voice.yaml whole; the rest goes in world or changes.`)
+      problems.push(`${file.path}: a proposal may write only CHRONICLER.md, data/voice.yaml and data/journey.yaml whole; the rest goes in world or changes.`)
       continue
     }
     const full = `${prefix}${path}`
@@ -682,7 +683,7 @@ export function worldStepRequest(files: ContentFile[], stepId: string, said: str
       designPrompt(files),
       '',
       instruction,
-      'Answer in JSON: say, questions, changes (a new thing as full YAML; to add to or change a thing that exists, merge: true with only the fields you set, each of which replaces that field whole, so give a list whole; empty YAML without merge deletes), world (YAML of the top-level world.yaml keys to set, or empty), files (CHRONICLER.md or data/voice.yaml whole, or none).',
+      'Answer in JSON: say, questions, changes (a new thing as full YAML; to add to or change a thing that exists, merge: true with only the fields you set, each of which replaces that field whole, so give a list whole; empty YAML without merge deletes), world (YAML of the top-level world.yaml keys to set, or empty), files (CHRONICLER.md, data/voice.yaml or data/journey.yaml whole, or none).',
     ].join('\n'),
     prompt: [`WORLD.YAML NOW:`, worldFile?.text ?? '(none)', '', 'WHAT EXISTS:', ...index, ...(standing ? ['', standing] : []), '', `THE DESIGNER SAYS: ${said}`].join('\n'),
     schemaName: 'world_step',
