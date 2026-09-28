@@ -370,7 +370,7 @@ export function App() {
               </button>
             </>
           ) : (
-            <p className="muted">{t('app.map.empty')}</p>
+            <p className="muted">{status?.mapless ? t('app.map.none', { name: status.mapless }) : t('app.map.empty')}</p>
           )}
         </section>
         <section className="party">

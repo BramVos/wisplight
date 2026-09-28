@@ -162,6 +162,8 @@ export interface Status {
   map?: { rows: string[]; classes: string[] }
   /** The map round the player in colour (M10): the hexes the player knows, for the interface to draw. */
   hexMap?: HexMapData
+  /** A world without a map of its own (Skerrow): its name, so the panel says so instead of promising one (M10.8). */
+  mapless?: string
   /** The character in short, for the side panel (FO, chapter 11). */
   character?: { name: string; title: string; level: number; hp: number; maxHp: number; xp: number; next: number; made: boolean; canLevel: boolean; shield: boolean }
   /** The fight in progress (FO, chapter 12). */
@@ -1069,6 +1071,7 @@ export class Engine {
       journal: this.journal(),
       map: this.compactMap(),
       hexMap: hexMapData(this.world, { width: 51, height: 35 }),
+      ...(regionMap(this.content) ? {} : { mapless: this.content.world.name }),
       ...this.characterStatus(),
     }
   }

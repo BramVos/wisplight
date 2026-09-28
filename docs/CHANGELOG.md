@@ -29,6 +29,8 @@ Na Brams speeltest, dezelfde dag:
 - **Het pad onderweg.** Loop je via een uitgang van plek naar plek, dan komt de weg ertussen nu op de kaart. Voorheen kwam alleen de plek van aankomst erop, zodat de weg naar The Drowned Goose ontbrak.
 - **Alleen plekken.** De Haakman stond als zone op de kaart omdat je de naam al kende. Nu staan alleen plekken op de kaart, geen verhalen of wezens.
 
+Uit M10.8 alvast meegenomen: het kaartpaneel op Skerrow zegt nu "Skerrow has no map; you get about by the exits between places." in plaats van een kaart te beloven. Of Skerrow alsnog een kleine hexkaart krijgt, kies jij. Het leeftijdskaartje dat na "ask their age" verdween, kon ik met het mockmodel niet naspelen (daar blijft het staan en toont het de leeftijd); dat zoek ik uit in M10.8.
+
 Ontwerp: "Stand na M10" in het FO, hoofdstuk 4. Tests in `tests/m10.test.ts` (18).
 
 ## M10.5 Ambacht en vaardigheid, 28 september 2026

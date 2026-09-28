@@ -66,7 +66,8 @@
     "fit": "Show all you know",
     "centre": "Back to where you are",
     "full": "Full screen",
-    "leaveFull": "Close full screen (Escape)"
+    "leaveFull": "Close full screen (Escape)",
+    "none": "{name} has no map; you get about by the exits between places."
   },
   "party": {
     "title": "Party",
