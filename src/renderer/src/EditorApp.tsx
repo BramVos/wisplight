@@ -1254,9 +1254,9 @@ function ContractPanel({ view, propose, book }: { view: EditorView; propose: (as
         what is empty; nothing is saved until you accept it.
       </p>
       <p className="small">
-        The world book (WORLDBOOK.md next to the content) is written again on every save.{' '}
+        The world book (WORLDBOOK.md next to the content) is written again on every save. As a page it is the atlas of the whole world, with the map, the places and the portraits there are, secrets and all: for the designer, not for players, who save what they found out from the game.{' '}
         <button type="button" className="link" onClick={() => void book().then((r) => setSaved(r.saved ?? 'not saved'))}>
-          [Save the world book as a web page]
+          [Save the world book as an atlas page]
         </button>
         {saved && <span className="muted"> {saved}</span>}
       </p>

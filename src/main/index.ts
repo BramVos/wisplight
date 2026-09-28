@@ -4,11 +4,11 @@ import { appendFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFi
 import { tmpdir } from 'node:os'
 import { basename, dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { ContentError, discoveredAtlasHtml, draftRequest, readSaveFile, saveAbout, saveFileName, saveFileText, SAVE_FILE_EXTENSION, type SaveFile, draftResult, Engine, worldBookHtml, ENTITY_KINDS, lineDiff, MapPaletteSchema, paletteRequest, paletteView, readDraft, readPalette, readVoice, savePalette, saveVoice, voiceRequest, voiceYaml, worldStepRequest, worldFixRequest, mergeFix, enhanceRequest, readEnhance, type Content, type Edit, type EntityKind, type FileChange, type CheckpointedSave, type MapPalette, type Output, type SaveData } from '../engine'
+import { ContentError, discoveredAtlasHtml, draftRequest, readSaveFile, saveAbout, saveFileName, saveFileText, SAVE_FILE_EXTENSION, type SaveFile, draftResult, Engine, ENTITY_KINDS, lineDiff, MapPaletteSchema, paletteRequest, paletteView, readDraft, readPalette, readVoice, savePalette, saveVoice, voiceRequest, voiceYaml, worldStepRequest, worldFixRequest, mergeFix, enhanceRequest, readEnhance, type Content, type Edit, type EntityKind, type FileChange, type CheckpointedSave, type MapPalette, type Output, type SaveData } from '../engine'
 import { designUpdate, readDesignChange } from '../engine/designlog'
 import { ContentEditor } from '../node/editor'
 import { checkInput } from './inputs'
-import { cachedPictureIn, worldBookFor, writeWorldBook } from '../node/worldbook'
+import { cachedPictureIn, worldAtlasFor, worldBookFor, writeWorldBook } from '../node/worldbook'
 import type { ProviderId } from '../node/ai/providers'
 import { AiService } from '../node/ai/service'
 import type { ChosenRole, Cipher } from '../node/ai/settings'
@@ -592,10 +592,10 @@ handle('editor:worldbook', async (_event, world: unknown) => {
   const folder = worldOf(world)
   await writeWorldBook(contentDir(), folder)
   const markdown = await worldBookFor(contentDir(), folder)
-  const worldContent = await loadContentFromDir(contentDir(), folder)
   const result = await dialog.showSaveDialog({ title: 'Save the world book', defaultPath: join(app.getPath('documents'), `${folder}-worldbook.html`), filters: [{ name: 'Web page', extensions: ['html'] }] })
   if (result.canceled || !result.filePath) return { markdown }
-  writeFileSync(result.filePath, worldBookHtml(worldContent, markdown, (id) => ai?.cachedPicture(worldContent, id)), 'utf8')
+  // The whole world as the atlas page (M10.20, approved by Bram): secrets and all, so the designer's, never the player's.
+  writeFileSync(result.filePath, await worldAtlasFor(contentDir(), folder, app.getPath('userData')), 'utf8')
   return { markdown, saved: result.filePath }
 })
 handle('editor:view', (_event, world: unknown) => devOnly().view(worldOf(world)))

@@ -396,7 +396,7 @@ function contentFiles(): { path: string; text: string }[] {
  */
 export async function createEditor(): Promise<EditorBridge> {
   if (window.wisplight?.editor) return window.wisplight.editor
-  const { applyEdits, draftRequest, draftResult, editorView, entities, entityYaml, filesOfWorld, lineDiff, loadContent, MockLlm, newWorldFiles, paletteRequest, paletteView, readDraft, readPalette, readVoice, savePalette, saveVoice, simulate, voiceRequest, voiceYaml, withReturnExits, worldBook, worldBookHtml, worldsIn, worldStepRequest, worldFixRequest, mergeFix, enhanceRequest, readEnhance } = await import('../../engine')
+  const { applyEdits, draftRequest, draftResult, editorView, entities, entityYaml, filesOfWorld, lineDiff, loadContent, MockLlm, newWorldFiles, paletteRequest, paletteView, readDraft, readPalette, readVoice, savePalette, saveVoice, simulate, voiceRequest, voiceYaml, withReturnExits, worldAtlasHtml, worldBook, worldsIn, worldStepRequest, worldFixRequest, mergeFix, enhanceRequest, readEnhance } = await import('../../engine')
   let all = contentFiles()
   const shown = (changes: { path: string; before?: string; text: string }[]) => changes.map((c) => ({ path: c.path, fresh: c.before === undefined, lines: lineDiff(c.before ?? '', c.text) }))
   const shownDraft = (draft: ReturnType<typeof readDraft>): EditorDraft => ({
@@ -476,7 +476,8 @@ export async function createEditor(): Promise<EditorBridge> {
       const worldContent = loadContent(files)
       const own = files.find((f) => f.path === `${world}/CHRONICLER.md`)?.text
       const markdown = worldBook(worldContent, { folder: world, ...(own ? { chronicler: own } : {}) })
-      return { markdown, saved: download(`${world}-worldbook.html`, worldBookHtml(worldContent, markdown), 'text/html') }
+      const written = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+      return { markdown, saved: download(`${world}-worldbook.html`, worldAtlasHtml(worldContent, markdown, undefined, { written }), 'text/html') }
     },
     saveDraft: async (world, draft) => {
       const outcome = draftResult(filesOfWorld(all, world), draft)
