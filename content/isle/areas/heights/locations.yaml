@@ -54,6 +54,8 @@ locations:
         curtain behind you goes out to the grove.
     exits:
       out: { to: loc_skerrow_silver_grove, minutes: 1 }
+    objects:
+      - { id: pot, type: salve_pot, owner: npc_tamsin }
 
   - id: loc_skerrow_wyrm_barrow
     name: The Wyrm Barrow
@@ -75,6 +77,12 @@ locations:
         like the air over a forge. The way back is south, to the grove.
     exits:
       south: { to: loc_skerrow_silver_grove, minutes: 20 }
+    # M10.5: for eyes that look.
+    hidden:
+      - id: scorched_stones
+        dc: 15
+        topic: old_skarth
+        text: On the inner faces of the two standing stones the lichen is burnt away in long black tongues, and the stone is glazed like a pot, as if something breathed on them once, very hot, from below.
 
   - id: loc_skerrow_headland
     name: The Headland
@@ -116,6 +124,7 @@ locations:
       north: { to: loc_skerrow_mage_tower, minutes: 15 }
     objects:
       - { id: lamp, type: beacon, owner: npc_garrick }
+    forage: [heath]
     items: { lamp_oil: 1 }
 
   - id: loc_skerrow_mage_tower

@@ -664,6 +664,8 @@ function templateFor(kind: EntityKind, view: EditorView): Raw {
       return { id: 'new_household', trade: 'a_workshop_id', from: area, people: [{ role: 'head', age: [25, 45], profession: trade, looks: ['What people see first, with {their} and {man}.'] }], facts: ['{name} came from {from} to work in {area}.'] }
     case 'project':
       return { id: 'new_project', name: 'the new project', settlement: area, needs: {}, days: 10, cost: 0 }
+    case 'craft':
+      return { id: 'new_craft', name: 'the new craft', maker: 'maker', skill: 'crafting', professions: trade ? [trade] : [], techniques: [{ id: 'first_technique', name: 'the first technique' }] }
     default:
       return { id: `new_${kind}` }
   }

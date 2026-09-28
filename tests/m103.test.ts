@@ -314,12 +314,13 @@ describe('M10.3: time facts, and learning from a craftsman', () => {
       const out = said(await engine.handle('Could you teach me to bake?'))
       return { engine, out }
     }
+    // Since M10.5 a baker teaches the craft of baking: a lesson of a few hours, and the stranger is her pupil.
     const paid = await run(200)
     expect(paid.out).toMatch(/Mirte: "Watch my hands, then\. Like this\."/)
-    expect(paid.out).toMatch(/Crafting practice: \|\|\./)
+    expect(paid.out).toMatch(/Baking: practice 4\. You are Mirte's pupil now/)
     expect(paid.engine.state.player.money).toBe(200 - 16)
     const favour = await run(0)
-    expect(favour.out).toMatch(/Crafting practice: \|\|/)
+    expect(favour.out).toMatch(/Baking: practice 4/)
     expect(favour.out).toMatch(/You give Mirte your word: bring a saw/)
     expect(favour.engine.state.player.money).toBe(0)
   })
@@ -629,7 +630,7 @@ describe('M10.3: access as a right', () => {
     const engine = new Engine(content, { seed: 7 })
     const world = engine.world
     const exit = world.location('loc_molenend_lane').exits.east!
-    exit.lock = { key: 'lubberts_key', dc: 15 }
+    exit.lock = { key: 'lubberts_key', dc: 15, quality: 'common', material: 'iron' }
     try {
       world.state.player.location = 'loc_molenend_lane'
       expect(said(await engine.handle('east'))).toMatch(/The door is locked\. You have no key to it\./)

@@ -6,9 +6,16 @@
 
 resources:
   - { id: sea, name: the inshore sea, gives: [salt_fish] }
-  - { id: heath, name: the heather of the Heights, gives: [heather] }
+  # M10.5: what the stranger can gather by hand where a place names the ground (Survival).
+  - id: heath
+    name: the heather of the Heights
+    gives: [heather]
+    gather: { item: heather, dc: 10, qty: 2, minutes: 45, text: "You cut heather tips with the bees grumbling round your hands, and tie them in a bundle." }
   - { id: wreck, name: the wreck on the strand, gives: [ship_biscuit], amount: 300 }
-  - { id: kelp, name: the kelp of the strand, gives: [kelp] }
+  - id: kelp
+    name: the kelp of the strand
+    gives: [kelp]
+    gather: { item: kelp, dc: 11, qty: 2, minutes: 45, text: "You drag the brown kelp off the rocks at low water and wring the sea out of it." }
 
 settlements:
   - id: skerrow_hythe

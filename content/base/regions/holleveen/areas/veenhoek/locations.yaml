@@ -309,6 +309,13 @@ locations:
       west: { to: loc_route_peat_stacks, minutes: 10 }
     objects:
       - { id: peat_bank, type: peat_bank, owner: npc_gerrit, staff: [npc_jan_visser] }
+    forage: [fen]
+    # M10.5: where the old cuttings end, the dry ridge begins, for eyes that look.
+    hidden:
+      - id: ridge_start
+        dc: 16
+        topic: the_dry_ridge
+        text: Where the last cutting ends, a line of heather runs on into the fen, straight as a ruler, and the reeds keep back from it. Firm ground under it. The dry ridge, it must be, that the old cutters talk about.
 
   - id: loc_wouter_hut
     name: Wouter's Hut
@@ -343,3 +350,10 @@ locations:
         old tar. The quay is north-east.
     exits:
       northeast: { to: loc_veenhoek_quay }
+    # M10.5: what old Tijs left behind a loose brick.
+    hidden:
+      - id: tijs_nails
+        dc: 14
+        item: iron_nails
+        qty: 2
+        text: Behind a loose brick by the door, wrapped in greasy leather, a store of the old cooper's nails.

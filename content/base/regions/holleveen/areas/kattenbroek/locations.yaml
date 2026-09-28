@@ -18,6 +18,7 @@ locations:
     exits:
       east: { to: loc_kattenbroek_hut, minutes: 5 }
       south: { to: loc_kattenbroek_reedpaths, minutes: 5 }
+    forage: [fen]
 
   - id: loc_kattenbroek_hut
     name: Below the Hut on Stilts

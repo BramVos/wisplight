@@ -23,6 +23,51 @@ object_types:
         satisfies: { work: 25 }
         narrate_start: "{name} rakes the embers and slides a tray of loaves into the oven."
         narrate_end: "{name} pulls a row of dark loaves from the oven. The smell of warm rye fills the air."
+      # M10.5: the stranger's baking, with the baker's leave. The fee is for the peat fire and the wear.
+      - id: bake_rye
+        verb: bake
+        label: baking rye loaves
+        actors: [player]
+        access: owner
+        craft: baking
+        technique: rye_loaf
+        consumes: { flour: 1, peat: 1 }
+        produces: { rye_bread: 6 }
+        duration: 90
+        fee: 2
+        check: { dc: 10 }
+        xp: 5
+        player_text: You knead the dough on the board, shape six loaves and slide them in on the long peel. An hour and a half later they come out dark and heavy.
+      - id: bake_apple_cake
+        verb: bake
+        label: baking apple cake
+        actors: [player]
+        access: owner
+        craft: baking
+        technique: sweet_dough
+        consumes: { flour: 1, apple: 3, peat: 1 }
+        produces: { apple_cake: 4 }
+        duration: 120
+        fee: 2
+        check: { dc: 14 }
+        xp: 10
+        player_text: You work the apples into a softer dough and bake it low and slow, watching the crust. The yard smells of it.
+      - id: bake_feast_bread
+        verb: bake
+        label: baking a feast bread
+        actors: [player]
+        access: owner
+        craft: baking
+        technique: feast_bread
+        rank: expert
+        masterwork: true
+        consumes: { flour: 2, milk: 1, apple: 2, peat: 1 }
+        produces: { feast_bread: 1 }
+        duration: 180
+        fee: 2
+        check: { dc: 19 }
+        xp: 30
+        player_text: You braid the dough into a ring as broad as a cartwheel, glaze it with milk and set apples in it like stones in a crown. It comes out golden.
 
   - id: windmill
     name: windmill
@@ -41,6 +86,23 @@ object_types:
         requires_state: { broken: false }
         broken_text: The sails hang in shreds. This mill won't turn until someone brings new sailcloth.
         player_text: The millstones rumble. A while later you have a sack of flour.
+      # M10.5: the stranger at the stones, with the miller's leave.
+      - id: mill_rye
+        verb: mill
+        label: milling rye
+        actors: [player]
+        access: owner
+        craft: milling
+        technique: grinding
+        consumes: { rye_grain: 2 }
+        produces: { flour: 2 }
+        duration: 40
+        fee: 2
+        requires_state: { broken: false }
+        broken_text: The sails hang in shreds. This mill won't turn until someone brings new sailcloth.
+        check: { dc: 12 }
+        xp: 5
+        player_text: You set the sails to the wind, feed the hopper and feel the flour between finger and thumb, closing the stones until it runs fine.
     repair:
       consumes: { sailcloth: 2 }
       duration: 240
@@ -92,6 +154,8 @@ object_types:
         wage: 24
         check: { skill: athletics, dc: 10 }
         xp: 10
+        craft: peat_cutting
+        technique: cutting
         player_text: You cut peat all day beside the others, up to your knees in black water, and stack the wet blocks to dry.
 
   - id: eel_traps
@@ -109,6 +173,19 @@ object_types:
         satisfies: { work: 25 }
         narrate_start: "{name} shoulders a bundle of willow traps and heads for the water's edge."
         narrate_end: "{name} comes back with a dripping bucket of eels."
+      # M10.5: the stranger at the traps, with the eel-fisher's leave.
+      - id: tend_traps
+        verb: fish
+        label: tending the eel traps
+        actors: [player]
+        access: owner
+        craft: eel_fishing
+        technique: setting_traps
+        produces: { eel: 3 }
+        duration: 120
+        check: { dc: 13 }
+        xp: 5
+        player_text: You wade out to the traps, lift them dripping, tip the eels into the bucket and set the willow mouths back against the current.
 
   - id: spinning_wheel
     name: spinning wheel
@@ -130,6 +207,11 @@ object_types:
     name: well
     aliases: [put]
     description: A round stone well with a wooden lid. Someone has scratched a spindle into the top stone. People drop pins in it for Mother Holle.
+    inscription:
+      look: Round the spindle, scratched marks go all the way round the top stone.
+      text: A spindle, and under it in old letters, "Holle, see our hands." A pin in the well asks Mother Holle to look kindly on your work.
+      dc: 12
+      topic: mother_holles_featherbed
     affordances:
       - id: drink
         verb: drink
@@ -143,6 +225,11 @@ object_types:
     name: altar
     aliases: [lantern, lantaarn]
     description: A plain altar under a lantern with three panes. The flame never goes out; someone makes sure of it.
+    inscription:
+      look: Letters are cut into the front of the altar, filled with soot.
+      text: "\"Brand kept the light, and the drowned came home.\" Saint Brand, and the Night of the Water Wolf."
+      dc: 11
+      topic: saint_brand
     affordances:
       - id: pray
         verb: pray
@@ -190,12 +277,76 @@ object_types:
     name: forge
     aliases: [anvil, smithy, smidse]
     description: A forge glowing under a hood of soot. The anvil beside it is older than the smith.
-    affordances: []
+    # M10.5: the stranger's smithing, with the smith's leave. Bar iron from the smith's own rack.
+    affordances:
+      - id: forge_nails
+        verb: forge
+        label: drawing out nails
+        actors: [player]
+        access: owner
+        craft: smithing
+        technique: drawing_out
+        consumes: { bar_iron: 1, peat: 1 }
+        produces: { iron_nails: 2 }
+        duration: 60
+        fee: 3
+        check: { dc: 11 }
+        xp: 5
+        player_text: You heat the bar, draw it out thin on the anvil's horn, cut it and head each nail in the nail-plate. Your ears ring.
+      - id: forge_knife
+        verb: forge
+        label: forging a knife
+        actors: [player]
+        access: owner
+        craft: smithing
+        technique: blade_work
+        consumes: { bar_iron: 1, peat: 1 }
+        produces: { knife: 1 }
+        duration: 120
+        fee: 3
+        check: { dc: 14 }
+        xp: 10
+        player_text: You beat out a blade, grind an edge, and quench it hissing in the trough. You fit a handle of ash.
+      - id: forge_lantern
+        verb: forge
+        label: making a lantern
+        actors: [player]
+        access: owner
+        craft: smithing
+        technique: sheet_work
+        consumes: { bar_iron: 1, peat: 1 }
+        produces: { lantern: 1 }
+        duration: 120
+        fee: 3
+        check: { dc: 15 }
+        xp: 10
+        player_text: You hammer the iron into sheet, cut it, pierce it and rivet it into a lantern with a door that shuts.
+      - id: forge_lock
+        verb: forge
+        label: making a lock
+        actors: [player]
+        access: owner
+        craft: smithing
+        technique: lock_work
+        rank: expert
+        masterwork: true
+        consumes: { bar_iron: 2, peat: 2 }
+        produces: { iron_lock: 1 }
+        duration: 240
+        fee: 3
+        check: { dc: 20 }
+        xp: 30
+        player_text: You file the wards one by one and fit them to a key of your own cutting. The bolt shoots home with a sound like a coin on a counter.
 
   - id: scale
     name: great scale
     aliases: [scale, heksenwaag, waag, weegschaal]
     description: The great beam scale of Waagdam, black oak and iron, with a seat hanging from one side. People are weighed here to prove they are no witch.
+    inscription:
+      look: Words are burnt into the beam, black on black.
+      text: "\"Weighed and found honest.\" Whoever weighs what an honest person should goes home with a certificate; whoever weighs too light does not."
+      dc: 13
+      topic: witches_scale
     affordances: []
 
   - id: counter
@@ -225,4 +376,6 @@ object_types:
         wage: 24
         check: { skill: crafting, dc: 12 }
         xp: 10
+        craft: brickmaking
+        technique: firing
         player_text: You tread clay, fill the moulds and feed the kiln with peat until your eyes sting with the smoke.

@@ -1,6 +1,8 @@
 import { inSeason } from './content'
 import { describeSelf, detailHere, lookThere, lookThing } from './looking'
-import { force, openObject, passLock, takeFrom } from './social/access'
+import { force, openObject, passLock, pick, takeFrom } from './social/access'
+import { craftCheck, craftOf, craftProgress, craftRank, craftTitle, interruption, learnFrom, ownWorkBonus, rankIndex, soldOwn, workplaceLeave } from './crafts'
+import { gather, searchHere, track, treat } from './skills'
 import { ownerOf, ownersHere } from './social/ownership'
 import { returnLent } from './agreements'
 import { crowdLines } from './growth/crowds'
@@ -51,7 +53,8 @@ const HELP = [
   'Moving: north, south, east, west, up, down, in, out (n, s, e, w, ...). Also: go <place>, exits.',
   'Across country: head <direction>, walk to <place>, follow <the tow path, the road, the fen path>. Map: map.',
   'Looking: look (l), examine <thing or person> (x).',
-  'Things: inventory (i), take, drop, give <thing> to <person>, use <object>, eat <food>, open <chest>, take <thing> from <chest>, force <door or chest>. In a talk: ask <person> for <thing>.',
+  'Things: inventory (i), take, drop, give <thing> to <person>, use <object>, eat <food>, open <chest>, take <thing> from <chest>, pick <door or chest> (the lock), force <door or chest>. In a talk: ask <person> for <thing>.',
+  'Crafts and skills: use <workplace> [what to make] (USE OVEN BAKE), treat <person or me>, gather [what], track <person>, search (here), read <inscription>. In a talk with a craftsman: teach me.',
   'Trade: list (what is for sale here), buy <thing> [amount], sell <thing> [amount], rent a room.',
   'Work: work (for a day\'s pay), invest <amount>, loads (what there is to carry from here), haul <goods> to <place>, deliver.',
   'Time: time, wait [minutes], wait for <person>, sleep. At night: knock (on a door), wake <person>.',
@@ -92,6 +95,27 @@ export function runCommand(host: CommandHost, command: Command): Output[] {
     }
     case 'open':
       return openObject(world, command.args.join(' '))
+    // PICK <door or chest> (M10.5): the lock; PICK <thing> is still taking it.
+    case 'pick': {
+      const direction = parseDirection(command.args[0])
+      const out = pick(world, command.args.join(' '), direction)
+      if (!out) return each(command.args, (a) => take(host, a))
+      host.pass(10)
+      return out
+    }
+    // The other skills (M10.5): TREAT, GATHER, TRACK, SEARCH.
+    case 'treat': {
+      const words = command.args.join(' ')
+      return treat(host, words, words && !/^(me|myself|self|mezelf|mij)$/i.test(words) ? findNpcHere(world, words) : undefined)
+    }
+    case 'gather':
+      return gather(host, command.args.join(' '))
+    case 'track': {
+      const words = command.args.join(' ').replace(/^(down\s+)?/i, '')
+      return track(host, words, words ? findNpcAnywhere(world, words) : undefined)
+    }
+    case 'search':
+      return searchHere(host)
     case 'force': {
       const direction = parseDirection(command.args[0])
       const out = force(world, command.args.join(' '), direction)
@@ -583,13 +607,19 @@ function sell(host: CommandHost, args: string[]): Output[] {
   const price = world.offer(item)
   const affordable = Math.min(amount, Math.floor(provider.money / price))
   if (affordable <= 0) return [error(`${firstName(world.npc(buyer.service.provider))} can't afford it.`)]
+  // The stranger's own work fetches more, by their rank in the craft (M10.5).
+  const bonus = ownWorkBonus(world, item)
+  const own = bonus > 0 ? Math.min(affordable, Object.values(world.state.player.crafts ?? {}).reduce((n, p) => n + (p.made?.[item] ?? 0), 0)) : 0
+  const total = Math.min(provider.money, affordable * price + own * Math.ceil(price * bonus))
   add(inventory, item, -affordable)
-  provider.money -= affordable * price
-  world.state.player.money += affordable * price
+  provider.money -= total
+  world.state.player.money += total
+  if (own) soldOwn(world, item, own)
   const stock = world.stock(buyer.location, buyer.service.id)
   if (item in buyer.service.sells) add(stock, item, affordable)
   const seen = host.pass(2)
-  return [text(`You sell ${qtyName(world, item, affordable)} to ${firstName(world.npc(buyer.service.provider))} for ${world.money(affordable * price)}.`), ...seen]
+  const praise = own ? ` ${firstName(world.npc(buyer.service.provider))} turns ${own === 1 ? 'it' : 'one'} over and nods: good work, and worth a little more.` : ''
+  return [text(`You sell ${qtyName(world, item, affordable)} to ${firstName(world.npc(buyer.service.provider))} for ${world.money(total)}.${praise}`), ...seen]
 }
 
 function rent(host: CommandHost): Output[] {
@@ -630,15 +660,24 @@ function use(host: CommandHost, args: string[]): Output[] {
   const object = candidates.find(({ instance, type }) => nameMatches(words, instance, type)) ?? (candidates.length === 1 && !words ? candidates[0] : undefined) ?? candidates.find(({ type }) => verbHere(type))
   if (!object) return [error(words ? `There is no "${words}" here to use.` : 'Use what?')]
   const usable = object.type.affordances.filter((a) => a.actors.includes('player'))
-  const affordance = usable.find((a) => words.includes(a.verb)) ?? usable[0]
+  const affordance = pickAffordance(world, usable, words)
   if (!affordance) return [error(`You can't do much with the ${label(object.instance, object.type)}.`)]
   const problem = cannotUse(world, here, object.instance, affordance)
   if (problem) return [error(problem)]
-  if (affordance.fee > 0 && object.instance.provider) {
+  // Someone's workplace (M10.5): with their leave, or the master's for a pupil.
+  const leave = affordance.access === 'public' ? undefined : workplaceLeave(world, here, object.instance, affordance)
+  if (leave && !leave.ok) return [error(leave.text)]
+  const leaveLine: Output[] = leave?.text ? [{ kind: 'speech', text: leave.text }] : []
+  if (leave?.ok && leave.fee > 0 && leave.to) {
+    world.state.player.money -= leave.fee
+    world.npcState(leave.to).money += leave.fee
+  }
+  if (affordance.fee > 0 && object.instance.provider && affordance.access === 'public') {
     world.state.player.money -= affordance.fee
     world.npcState(object.instance.provider).money += affordance.fee
   }
-  if (affordance.wage) return workForPay(host, object.instance, object.type, affordance)
+  if (affordance.wage) return [...leaveLine, ...workForPay(host, object.instance, object.type, affordance)]
+  if (affordance.craft) return [...leaveLine, ...makeWith(host, object.instance, object.type, affordance)]
   for (const [item, qty] of Object.entries(affordance.consumes)) add(world.state.player.inventory, item, -qty)
   for (const [item, qty] of Object.entries(affordance.produces)) add(world.state.player.inventory, item, qty)
   const seen = host.pass(craftTime(world, affordance))
@@ -657,7 +696,9 @@ function workForPay(host: CommandHost, instance: ObjectInstance, type: ObjectTyp
   const { world } = host
   const here = world.state.player.location
   const payer = instance.provider ?? instance.owner
-  const result = affordance.check ? playerCheck(world, affordance.check.skill, affordance.check.dc) : undefined
+  // Work of a craft is practice in it (M10.5): peat-cutting, brick-making.
+  const craft = craftOf(world, affordance)
+  const result = affordance.check ? (craft ? craftCheck(world, craft, affordance.check.dc) : playerCheck(world, affordance.check.skill ?? 'crafting', affordance.check.dc)) : undefined
   const well = !result || result.degree === 'success' || result.degree === 'critical success'
   const share = well ? 1 : 0.5
   const seen = host.pass(craftTime(world, affordance))
@@ -673,12 +714,69 @@ function workForPay(host: CommandHost, instance: ObjectInstance, type: ObjectTyp
   if (purse) purse.money -= paid
   else if (store) store.purse -= paid
   world.state.player.money += paid
-  if (well && affordance.xp) gainXp(world, affordance.xp, `a day's ${affordance.label}`)
+  if (well && affordance.xp && !craft) gainXp(world, affordance.xp, `a day's ${affordance.label}`)
   const who = payer ? firstName(world.npc(payer)) : 'they'
   const done = affordance.player_text ?? `You work at the ${label(instance, type)} until the light goes.`
   const how = result ? (well ? ' It goes well.' : ' It goes badly; you get half done.') : ''
   const pay = paid ? ` ${payer ? who : 'They'} pay${payer ? 's' : ''} you ${world.money(paid)}.` : ` There is no money to pay you today.`
-  return [text(`${done}${how}${pay}`), ...seen]
+  const learnt = craft && result ? learnFrom(world, craft, affordance, `${type.id}:${affordance.id}`, result) : []
+  return [...(result ? [{ kind: 'check' as const, text: checkLine(result) }] : []), text(`${done}${how}${pay}`), ...learnt, ...seen]
+}
+
+/** Which of an object's recipes the words mean: by verb, by what it makes, by technique; else the first. */
+function pickAffordance(world: World, usable: Affordance[], words: string): Affordance | undefined {
+  const w = words.split(/\s+/)
+  const makes = (a: Affordance) => Object.keys(a.produces).some((i) => { const n = itemName(world.content, i, 2).toLowerCase(); const one = itemName(world.content, i, 1).toLowerCase(); return words.includes(one) || words.includes(n.replace(/^\d+ /, '')) })
+  const technique = (a: Affordance) => Boolean(a.technique && craftOf(world, a)?.techniques.find((t) => t.id === a.technique && words.includes(t.name.toLowerCase())))
+  return usable.find(makes) ?? usable.find(technique) ?? usable.find((a) => w.includes(a.verb) && !a.rank) ?? usable.find((a) => w.includes(a.verb)) ?? usable[0]
+}
+
+function checkLine(result: { skill: string; total: number; dc: number; degree: string }): string {
+  return `(${result.skill.charAt(0).toUpperCase()}${result.skill.slice(1)} ${result.total} vs DC ${result.dc}: ${result.degree})`
+}
+
+/**
+ * Making something at a recipe of a craft (M10.5): USE OVEN BAKE. It takes its
+ * time, and something may stop it (half done, the material is spoilt). Then
+ * a check: done well, what it makes (a little more on a fine day); a miss,
+ * the material is gone. Either way the craft may learn from it.
+ */
+function makeWith(host: CommandHost, instance: ObjectInstance, type: ObjectType, affordance: Affordance): Output[] {
+  const { world } = host
+  const here = world.state.player.location
+  const craft = craftOf(world, affordance)!
+  const rank = craftRank(world, craft.id)
+  const needs = rankIndex(affordance.rank)
+  if (rank < needs) return [error(`${capital(affordance.label)} is work for ${craftTitle(craft, needs)}. You are ${craftTitle(craft, rank)}.`)]
+  const minutes = craftTime(world, affordance)
+  const start = world.now
+  const seen = host.passUntil ? host.passUntil(minutes, () => interruption(world, here, instance)) : host.pass(minutes)
+  const spent = world.now - start
+  if (spent < minutes) {
+    // Stopped: past half-way, what was in the work is spoilt.
+    const spoilt = spent * 2 >= minutes
+    if (spoilt) for (const [item, qty] of Object.entries(affordance.consumes)) add(world.state.player.inventory, item, -qty)
+    return [...seen, text(`You stop ${affordance.label}.${spoilt ? ' What you had started is spoilt.' : ' Nothing is lost: you can start again later.'}`)]
+  }
+  const result = craftCheck(world, craft, affordance.check?.dc ?? 12)
+  for (const [item, qty] of Object.entries(affordance.consumes)) add(world.state.player.inventory, item, -qty)
+  const out: Output[] = [{ kind: 'check', text: checkLine(result) }]
+  const well = result.degree === 'success' || result.degree === 'critical success'
+  if (well) {
+    const mine = (craftProgress(world, craft.id).made ??= {})
+    const made: [string, number][] = Object.entries(affordance.produces).map(([item, qty]) => [item, result.degree === 'critical success' ? qty + Math.floor(qty / 4) : qty])
+    for (const [item, qty] of made) {
+      add(world.state.player.inventory, item, qty)
+      mine[item] = (mine[item] ?? 0) + qty
+    }
+    const what = made.map(([i, q]) => qtyName(world, i, q)).join(' and ')
+    out.push(text(`${affordance.player_text ?? `You ${affordance.verb} at the ${label(instance, type)}.`}${result.degree === 'critical success' ? ' It could hardly have gone better.' : ''} You have ${what}.`))
+  } else {
+    const lost = Object.entries(affordance.consumes).map(([i, q]) => qtyName(world, i, q)).join(' and ')
+    out.push(text(result.degree === 'critical failure' ? `It goes wrong from the start, and you only see why at the end. ${capital(lost)} wasted.` : `It doesn't come right: nothing worth keeping.${lost ? ` ${capital(lost)} gone.` : ''}`))
+  }
+  out.push(...learnFrom(world, craft, affordance, `${type.id}:${affordance.id}`, result))
+  return [...out, ...seen]
 }
 
 /** How long the player's work takes: craft work (something is made) a quarter less with Busy Hands, Vrouw Holle's blessing (M9.1). */
@@ -692,10 +790,6 @@ function cannotUse(world: World, here: string, instance: ObjectInstance, afforda
   if (!inSeason(affordance, new GameClock(world.now).parts.month)) return `Not in ${world.calendar.months[new GameClock(world.now).parts.month - 1] ?? 'this month'}: that is done in ${affordance.months!.map((m) => world.calendar.months[m - 1]).join(', ')}.`
   if (!Object.entries(affordance.requires_state).every(([k, v]) => state[k] === v)) {
     return affordance.broken_text ?? `The ${instance.name ?? instance.type} can't be used right now.`
-  }
-  if (affordance.access !== 'public') {
-    const owner = instance.owner ? firstName(world.npc(instance.owner)) : 'someone'
-    return `That is ${owner}'s. You can't just use it.`
   }
   if (instance.provider && !world.objectOpen(here, instance)) return `Nobody is here to work it for you right now.`
   if (!hasAll(world.state.player.inventory, affordance.consumes)) {

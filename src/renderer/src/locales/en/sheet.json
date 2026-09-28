@@ -46,5 +46,8 @@
       "one": "You have walked the Way of the Grey Rider once.",
       "other": "You have walked the Way of the Grey Rider {count} times."
     }
+  },
+  "crafts": {
+    "heading": "Crafts"
   }
 }

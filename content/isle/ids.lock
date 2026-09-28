@@ -14,16 +14,18 @@ ids:
   isle/areas/shore/locations.yaml:
     location: [loc_skerrow_wreck_strand, loc_skerrow_tidepools, loc_skerrow_cliff_path]
   isle/data/aftermath.yaml:
-    aftermath: [asked_about, request_open, befriended, theft_mended_own, theft_mended_caught, broken_promise, promise_kept]
+    aftermath: [asked_about, request_open, befriended, theft_mended_own, theft_mended_caught, broken_promise, promise_kept, craft_rank]
   isle/data/areas.yaml:
     area: [skerrow_hythe, skerrow_shore, skerrow_heights]
+  isle/data/crafts.yaml:
+    craft: [fishing, salve_making]
   isle/data/economy.yaml:
     resource: [sea, heath, wreck, kelp]
     settlement: [skerrow_hythe, skerrow_heights]
   isle/data/items.yaml:
     item: [marens_key, knife, ship_biscuit, salt_fish, fish_stew, ale, sailcloth, pitch, lamp_oil, rope, rune_key, kelp_salve, heather, kelp, spear, iron_hook, staff, longbow, cutlass, quilted_coat, sealskin_jerkin, scale_vest, ring_shirt, round_shield, conch]
   isle/data/objects.yaml:
-    object_type: [strongbox, well, silver_birch, bench, beacon, waystone, coracle, boat]
+    object_type: [strongbox, well, silver_birch, bench, beacon, waystone, salve_pot, coracle, boat]
   isle/data/professions.yaml:
     profession: [innkeeper, fisher, boatman, child, hedge_witch, scholar, lightkeeper]
   isle/data/quests.yaml:

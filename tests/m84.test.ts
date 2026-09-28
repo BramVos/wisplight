@@ -177,7 +177,7 @@ describe('M8.4: a region beyond the map', () => {
     const engine = new Engine(content, { seed: 56 })
     engine.tick(DAY)
     const zwolderkamp = content.outlands.get('zwolderkamp')!
-    expect(zwolderkamp.sends).toEqual(['lamp_oil', 'iron_nails', 'sailcloth', 'rope'])
+    expect(zwolderkamp.sends).toEqual(['lamp_oil', 'iron_nails', 'sailcloth', 'rope', 'bar_iron'])
     expect(engine.state.economy!.ledgers['zwolderkamp']).toBeUndefined()
     const input = buildInput(engine.world, { id: 'run_x', t: engine.world.now, reason: 'night', lines: [] })
     expect(input.catalogue).toMatch(/Zwolderkamp sends jugs of lamp oil, .*to Waagdam, by carters on the Oostweg, every 2 days, and asks for sacks of rye/)

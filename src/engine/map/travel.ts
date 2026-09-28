@@ -291,8 +291,14 @@ export function hexLocation(world: World, id: string): Location | undefined {
     services: [],
     items: {},
     pos: map.posOf(hex),
+    // What grows or lives on this land can be gathered by hand (M10.5): herbs in the fen, eel in the water.
+    forage: (GROUND_OF[cell.land] ?? []).filter((r) => world.content.resources.get(r)?.gather),
+    hidden: [],
   }
 }
+
+/** The grounds of the economy that a kind of land is (M10.5). */
+const GROUND_OF: Partial<Record<string, string[]>> = { fen: ['fen'], water: ['mere'], heath: ['heath'], fields: ['fields'], woods: ['woods'] }
 
 // ---------------------------------------------------------------- walking
 

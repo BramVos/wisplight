@@ -15,10 +15,18 @@
 # winter the stores go down; below half of what a place keeps, its counters
 # get a share and the price climbs. The clay of the Vaart runs out one day.
 resources:
-  - { id: fen, name: the peat fen, gives: [herbs] }
+  # M10.5: what the stranger can gather by hand where a place names the ground (Survival).
+  - id: fen
+    name: the peat fen
+    gives: [herbs]
+    gather: { item: herbs, dc: 13, qty: 1, minutes: 60, text: "You work along the edge of the black pools, picking bog myrtle and meadowsweet where the ground will hold you." }
   - { id: peat_banks, name: the peat banks, gives: [peat], months: [6, 7, 8, 9] }
   - { id: mere, name: the open water, gives: [eel] }
-  - { id: fields, name: the rye fields, gives: [rye_grain], months: [8] }
+  - id: fields
+    name: the rye fields
+    gives: [rye_grain]
+    months: [8]
+    gather: { item: rye_grain, dc: 10, qty: 1, minutes: 120, text: "You glean the stubble behind the reapers, as the poor may, until you have a sack's worth of ears." }
   - { id: garden, name: a herb garden, gives: [herbs] }
   - { id: clay, name: the clay of the Vaart, gives: [clay], amount: 30000 }
   - { id: pasture, name: the meadows, gives: [milk] }
@@ -72,7 +80,7 @@ settlements:
     resources: [fields, clay]
     use: { peat: 12, flour: 6, eel: 2, rye_grain: 4, lamp_oil: 2, iron_nails: 2 }
     # A winter's peat and a year's rye in store after the harvest.
-    keep: { rye_grain: 3000, flour: 18, peat: 1500, eel: 6, lamp_oil: 8, iron_nails: 20, sailcloth: 4, rope: 6, wool: 2, beer: 40, knife: 2, lantern: 1 }
+    keep: { rye_grain: 3000, flour: 18, peat: 1500, eel: 6, lamp_oil: 8, iron_nails: 20, sailcloth: 4, rope: 6, wool: 2, beer: 40, knife: 2, lantern: 1, bar_iron: 8 }
     stock: { flour: 0, rye_grain: 9000 }
     workshops:
       - { id: horse_mill, name: the horse mill, at: loc_waagdam_horse_mill, uses: { rye_grain: 5 }, makes: { flour: 5 }, named: [npc_teunis] }
@@ -117,7 +125,7 @@ outlands:
     name: Zwolderkamp
     topic: zwolderkamp
     realm: cog_league
-    sends: [lamp_oil, iron_nails, sailcloth, rope]
+    sends: [lamp_oil, iron_nails, sailcloth, rope, bar_iron]
     asks: [rye_grain]
     prices: 1.2
     by: carters on the Oostweg
@@ -133,7 +141,7 @@ outlands:
 
 routes:
   # Lamp oil and nails come into the Nethermarch only this way.
-  - { id: zwolderkamp_oostweg, name: the Oostweg from Zwolderkamp, from: zwolderkamp, to: waagdam, carries: { lamp_oil: 10, iron_nails: 10, sailcloth: 1, rope: 2 }, returns: { rye_grain: 6 }, by: carters on the Oostweg, every: 2, toll: { at: loc_waagdam_east_gate, amount: 8, by: the Count's tollkeeper } }
+  - { id: zwolderkamp_oostweg, name: the Oostweg from Zwolderkamp, from: zwolderkamp, to: waagdam, carries: { lamp_oil: 10, iron_nails: 10, sailcloth: 1, rope: 2, bar_iron: 2 }, returns: { rye_grain: 6 }, by: carters on the Oostweg, every: 2, toll: { at: loc_waagdam_east_gate, amount: 8, by: the Count's tollkeeper } }
   - { id: hunnenloo_heideweg, name: the Heideweg from Hunnenloo, from: hunnenloo, to: waagdam, carries: { wool: 7 }, by: Kobus the pedlar, every: 7 }
   - { id: molenend_waagdam, name: the flour cart to Waagdam, from: molenend, to: waagdam, carries: { flour: 8 }, returns: { rye_grain: 6 }, by: Harmen's cart, every: 1 }
   - { id: molenend_veenhoek, name: the flour cart to Veenhoek, from: molenend, to: veenhoek, carries: { flour: 5 }, returns: { peat: 2 }, by: the miller's cart, every: 1 }

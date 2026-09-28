@@ -45,7 +45,7 @@ locations:
           beer: { stock: 40, target: 40 }
           hot_meal: { stock: 12, target: 12 }
           milk: { stock: 8, target: 8 }
-        buys: [eel]
+        buys: [eel, rye_bread, apple_cake, feast_bread]
         lodging: 8
         supply:
           - { item: beer, amount: 40, every: day, at: 6 }

@@ -18,6 +18,17 @@ export const ResourceSchema = z
     gives: z.array(z.string()).min(1).describe('The goods this ground gives.'),
     months: z.array(z.number().int().min(1).max(13)).optional().describe('The months it gives in (1 to 13); every month when left out.'),
     amount: z.number().int().positive().optional().describe('All there is, in units of what it gives; without it, it never runs out.'),
+    /** What the stranger can gather of it by hand (M10.5): Survival against the dc, where a place names this ground. */
+    gather: z
+      .object({
+        item: z.string(),
+        dc: z.number().int().min(5).max(30).default(12),
+        qty: z.number().int().positive().default(1),
+        minutes: z.number().int().positive().default(60),
+        text: z.string().describe('What gathering it is like, in the second person.'),
+      })
+      .strict()
+      .optional(),
   })
   .strict()
 export type Resource = z.infer<typeof ResourceSchema>

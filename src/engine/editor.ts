@@ -116,6 +116,7 @@ export const KIND_NAMES: Record<EntityKind, string> = {
   resource: 'Ground',
   newcomer: 'Newcomers',
   project: 'Projects',
+  craft: 'Crafts',
 }
 
 export function editorView(files: ContentFile[]): EditorView {

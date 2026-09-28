@@ -1,7 +1,8 @@
 import { agree, knowsTheDayOf, thinksIsAt, type AgreementInput } from '../agreements'
 import { minuteOfDay } from '../clock'
 import type { Output } from '../commands'
-import { areaTopicId, callName } from '../content'
+import { areaTopicId, callName, type Craft } from '../content'
+import { craftOfTrade, craftRank, craftTitle, lesson } from '../crafts'
 import { itemName, withArticle } from '../items'
 import { routineNow } from '../npc/brain'
 import { tieTo } from '../people'
@@ -46,6 +47,8 @@ export interface Offer {
   /** teach: the skill, and a favour asked instead of money. */
   skill?: string
   favour?: string
+  /** teach: the craft of the trade, for a day's lesson in it (M10.5). */
+  craft?: string
 }
 
 const DAY = 24 * 60
@@ -295,6 +298,8 @@ const LESSON = 16
  * practice marks; it will not go past what practice can give.
  */
 export function teachOffer(world: World, npcId: string): Offer | undefined {
+  const craft = craftOfTrade(world, world.npc(npcId).profession)
+  if (craft && world.state.player.character) return craftLessonOffer(world, npcId, craft)
   const skill = world.content.professions.get(world.npc(npcId).profession)?.teaches
   const c = world.state.player.character
   const def = world.content.rules?.skills.find((s) => s.id === skill)
@@ -308,6 +313,34 @@ export function teachOffer(world: World, npcId: string): Offer | undefined {
   const decision = !full && !cold && (pay || Boolean(favour)) ? 'yes' : 'no'
   const reasons = full ? ['the stranger has learnt all practice can give; now they must train'] : cold ? ['you will not share your trade with the stranger'] : pay ? [`a lesson in ${def.name.toLowerCase()} is worth ${world.money(price)}`] : favour ? [`the stranger cannot pay, but could do you a favour: ${favour.item ? itemName(world.content, favour.item) : 'a thing you need'}`] : [`the stranger cannot pay ${world.money(price)}`]
   return { key: `teach:${skill}`, kind: 'teach', skill, price, ...(pay || !favour ? {} : { favour: favour.id }), what: `teach the stranger some ${def.name.toLowerCase()}, ${pay || !favour ? `for ${world.money(price)}` : 'for a favour'}`, intent: `learn ${def.name.toLowerCase()} from you`, deed: `teach the stranger some ${def.name.toLowerCase()}`, decision, reasons }
+}
+
+/**
+ * A day's lesson in a craft from someone of the trade (M10.5): only from one
+ * who trusts the stranger (Friendly or better, or trust earned, or a pupil
+ * already); for money, or a favour. A master teaches up to expert; master
+ * the stranger becomes by their own masterwork.
+ */
+function craftLessonOffer(world: World, npcId: string, craft: Craft): Offer {
+  const rank = craftRank(world, craft.id)
+  const band = attitude(world, npcId).band
+  const pupil = tieTo(world, npcId, 'player')?.role === 'pupil'
+  const trusted = pupil || ['Friendly', 'Warm', 'Devoted'].includes(band) || relation(world.state, npcId).trust >= 15
+  const price = LESSON * (rank + 1)
+  const favour = world.state.requests.find((r) => r.npc === npcId && r.status === 'open' && r.item)
+  const pay = world.state.player.money >= price
+  const done = rank >= 2
+  const decision = !done && trusted && (pay || Boolean(favour)) ? 'yes' : 'no'
+  const reasons = done
+    ? [`the stranger is ${craftTitle(craft, rank)}: what is left is their own masterwork, not a lesson`]
+    : !trusted
+      ? [`you do not know the stranger well enough to let them near your ${craft.name}`]
+      : pay
+        ? [`a lesson in ${craft.name} is worth ${world.money(price)}`]
+        : favour
+          ? [`the stranger cannot pay, but could do you a favour: ${favour.item ? itemName(world.content, favour.item) : 'a thing you need'}`]
+          : [`the stranger cannot pay ${world.money(price)}`]
+  return { key: `teach:${craft.id}`, kind: 'teach', skill: craft.skill, craft: craft.id, price, ...(pay || !favour ? {} : { favour: favour.id }), what: `teach the stranger ${craft.name} for a few hours, ${pay || !favour ? `for ${world.money(price)}` : 'for a favour'}`, intent: `learn ${craft.name} from you`, deed: `teach the stranger ${craft.name}`, decision, reasons }
 }
 
 /** Days the stranger has to bring what someone asked for, once promised. */
@@ -462,6 +495,26 @@ export function accept(world: World, npcId: string, offer: Offer): { outputs: Ou
       made.outcome = { t: world.now, text: `${name} let the stranger in` }
     }
     return { outputs: [{ kind: 'system', text: `${name} lets you in. You may be in ${nameOf(world, offer.place!)} until ${clockWords(world, until)}.` }], ends: false }
+  }
+  if (offer.kind === 'teach' && offer.craft) {
+    const craft = world.content.crafts.get(offer.craft)
+    if (!craft) return { outputs: [], ends: false }
+    if (!offer.favour) {
+      if (world.state.player.money < (offer.price ?? 0)) return { outputs: [{ kind: 'system', text: `You cannot pay ${world.money(offer.price ?? 0)}.` }], ends: false }
+      world.state.player.money -= offer.price!
+      world.npcState(npcId).money += offer.price!
+      const paid = agree(world, { ...base, kind: 'give', terms: { amount: offer.price! } })
+      if ('id' in paid) {
+        paid.status = 'kept'
+        paid.outcome = { t: world.now, text: `${name} taught the stranger ${craft.name} for ${world.money(offer.price!)}` }
+      }
+    }
+    const out = lesson(world, npcId, craft)
+    const request = offer.favour ? world.state.requests.find((r) => r.id === offer.favour) : undefined
+    const ask = request ? askOffer(world, npcId, request) : undefined
+    if (ask) out.push(...accept(world, npcId, ask).outputs)
+    // The lesson takes the next hours: the talk ends here.
+    return { outputs: out, ends: true }
   }
   if (offer.kind === 'teach') {
     const c = world.state.player.character

@@ -71,3 +71,4 @@ locations:
         two small lights drift and hover and drift again. The lane is east.
     exits:
       east: { to: loc_molenend_lane }
+    forage: [fields]

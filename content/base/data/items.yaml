@@ -376,3 +376,38 @@ items:
     description: A hard yellow-red brick, fired with peat in a kiln by the Vaart.
     tags: [material]
     value: 3
+
+  # M10.5: what the stranger can make.
+  - id: apple_cake
+    name: apple cake
+    plural: apple cakes
+    aliases: [cake, apple cake, appelkoek, koek]
+    description: A round of sweet dough with apples baked into it, sticky at the edges.
+    tags: [food, bread]
+    value: 4
+    food: 25
+
+  - id: feast_bread
+    name: feast bread
+    plural: feast breads
+    aliases: [feast bread, feestbrood, wedding bread]
+    description: A ring of braided bread as broad as a cartwheel, glazed with milk and set with apples like stones in a crown. You bake one for a wedding or a feast day.
+    tags: [food, bread]
+    value: 40
+    food: 80
+
+  - id: bar_iron
+    name: bar of iron
+    plural: bars of iron
+    aliases: [iron, bar iron, iron bar, staafijzer]
+    description: A bar of grey iron as long as your forearm, from the smelters of the Cog League.
+    tags: [material, iron]
+    value: 6
+
+  - id: iron_lock
+    name: iron lock
+    plural: iron locks
+    aliases: [lock, slot]
+    description: A heavy iron lock with a key of its own, the wards filed by hand. Fit it to a chest or a door and it keeps.
+    tags: [material, iron]
+    value: 60

@@ -1,3 +1,4 @@
+import { craftLines } from '../crafts'
 import type { Content } from '../content'
 import { selfGear, selfState } from '../looking'
 import type { Output } from '../commands'
@@ -251,6 +252,7 @@ function sheetBody(world: World): string[] {
       .join(', ')}.`,
     `Skill points: ${c.skillPoints}${c.skillPoints ? ' (TRAIN <skill>)' : ''}.`,
     `Talents: ${c.talents.map((t) => talentById(content, t)!.name).join(', ')}. General: ${c.general.map((t) => talentById(content, t)!.name).join(', ')}.`,
+    ...craftLines(world).map((line) => `Craft: ${line}`),
   ]
   const conditions = Object.entries(c.conditions).filter(([, v]) => v > 0)
   if (conditions.length) lines.push(`Conditions: ${conditions.map(([x, v]) => `${x}${v > 1 ? ` ${v}` : ''}`).join(', ')}.`)
@@ -296,6 +298,8 @@ export interface SheetData {
   canLevel: boolean
   /** Other lines for the sheet page, such as the progress clocks. */
   notes?: string[]
+  /** The crafts the stranger works at (M10.5): a line each, rank and what the next asks. */
+  crafts: string[]
 }
 
 export function sheetData(world: World): SheetData | undefined {
@@ -339,6 +343,7 @@ export function sheetData(world: World): SheetData | undefined {
     ...(patron && c.patron ? { patron: { name: patron.name, favour: c.patron.favour, blessings: patron.blessings.filter((x) => c.patron!.favour >= x.at).map((x) => x.name) } } : {}),
     deaths: c.deaths ?? 0,
     canLevel: canLevelUp(content, c),
+    crafts: craftLines(world),
   }
 }
 

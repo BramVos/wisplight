@@ -627,3 +627,16 @@ aftermath:
         when: [{ built: waagdam_brickworks }]
         otherwise: wait
         do: { build: waagdam_wall }
+
+  # The stranger reached a rank in a craft (M10.5): someone of the trade near takes note,
+  # thinks better of them, and has it on their mind: a signal for the brain to work with.
+  - id: craft_rank
+    signal: craft_rank
+    about: first
+    topic: craft
+    expires: 1
+    steps:
+      - id: regard
+        do: { regard: [$a], to: player, affinity: 5 }
+      - id: mind
+        do: { thought: $a, text: "The stranger is {value} now. There may be work in that, or trouble.", days: 14 }

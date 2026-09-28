@@ -15,6 +15,7 @@ locations:
         reeds. The only way you are sure of is back north, the way you came.
     exits:
       south: { to: loc_rietdoolhof_passages, minutes: 10 }
+    forage: [fen]
 
   - id: loc_rietdoolhof_passages
     name: The Reed Passages

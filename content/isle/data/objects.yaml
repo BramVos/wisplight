@@ -57,6 +57,31 @@ object_types:
     aliases: [stone ring, ring, gate, rune gate, socket]
     description: A ring of black stone taller than a man, cut all round with runes that seem to shift when you look away. A socket at its foot is shaped for a key.
     affordances: []
+    inscription:
+      look: The runes of Aldmar crawl round the ring, and they will not hold still.
+      text: Runes of the mages of Aldmar. They name this stone and every stone it once opened to, the one above Havenmoor among them, and round the socket at its foot, one word over and over. Key.
+      dc: 18
+      topic: the_waystone
+
+  # M10.5: Tamsin's pot on the hearth, where the salve is made.
+  - id: salve_pot
+    name: salve pot
+    aliases: [pot, iron pot, cauldron, hearth]
+    description: A black iron pot on a trivet over the hearth, crusted green at the rim.
+    affordances:
+      - id: brew_salve
+        verb: brew
+        label: making kelp salve
+        actors: [player]
+        access: owner
+        craft: salve_making
+        technique: kelp_salve
+        consumes: { kelp: 2, heather: 1 }
+        produces: { kelp_salve: 2 }
+        duration: 90
+        check: { dc: 13 }
+        xp: 5
+        player_text: You render the kelp down with heather tips until it thickens, strain it through a cloth and pour it into two clay pots to set.
 
   - id: coracle
     name: coracle
@@ -73,6 +98,19 @@ object_types:
         satisfies: { work: 25 }
         narrate_start: "{name} hoists the coracle onto her back and walks it down to the water."
         narrate_end: "{name} comes back up the slip with a string of pollock, and sets to gutting and salting them."
+      # M10.5: the stranger in the coracle, with the fisher's leave.
+      - id: fish_lines
+        verb: fish
+        label: fishing with hand lines
+        actors: [player]
+        access: owner
+        craft: fishing
+        technique: hand_lines
+        produces: { salt_fish: 3 }
+        duration: 180
+        check: { dc: 12 }
+        xp: 5
+        player_text: You paddle the coracle out past the harbour wall, drop the hand lines over the side and feel for the tug. Back on the slip you gut and salt what you caught.
 
   - id: boat
     name: boat

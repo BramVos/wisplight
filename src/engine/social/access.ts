@@ -1,11 +1,12 @@
 import { minuteOfDay } from '../clock'
 import type { Output } from '../commands'
-import { callName, type ObjectInstance } from '../content'
+import { callName, type Lock, type ObjectInstance } from '../content'
 import { applyEffect, attitude } from '../dialogue/relations'
 import { itemName, matchItem, withArticle } from '../items'
 import { recordFact } from '../news'
 import { tieTo } from '../people'
-import { playerCheck } from '../rules/player'
+import { gainXp, playerCheck } from '../rules/player'
+import { weather } from '../weather'
 import type { World } from '../world'
 import { crime, whoNoticed } from './crime'
 import { householdOf, isSomeonesHome, ownerOf } from './ownership'
@@ -16,24 +17,45 @@ import { householdOf, isSomeonesHome, ownerOf } from './ownership'
 // the stranger in gives permission, for a while; being in someone's home
 // without it is trespass, which whoever sees remembers.
 
-/** The state of a lock: opened with its key, or broken; without an entry, locked. */
-function lockState(world: World, id: string): 'open' | 'broken' | undefined {
-  return world.state.locks?.[id]
+/** Whether a lock is open: opened with its key, picked, or broken. Jammed is still shut (M10.5). */
+function lockOpen(world: World, id: string): boolean {
+  const state = world.state.locks?.[id]
+  return state === 'open' || state === 'broken'
+}
+
+/** How hard a lock is by the work that went into it (M10.5). */
+const QUALITY_DC: Record<Lock['quality'], number> = { crude: 10, common: 14, good: 17, fine: 20, masterwork: 24 }
+/** What it is made of: wood splits, iron holds; brass is fine work to pick. */
+const MATERIAL: Record<Lock['material'], { pick: number; force: number }> = { wood: { pick: -1, force: -3 }, iron: { pick: 0, force: 0 }, brass: { pick: 1, force: -1 } }
+
+/**
+ * How hard a lock is (M10.5): the lock's own, not the stranger's. The work
+ * and the metal; picking in the dark without a lantern, or in the rain, is
+ * harder. A simple lock stays simple for an old hand.
+ */
+export function lockDc(world: World, lock: Pick<Lock, 'dc' | 'quality' | 'material'>, how: 'pick' | 'force', outdoors = false): number {
+  const base = lock.dc ?? QUALITY_DC[lock.quality ?? 'common']
+  const material = MATERIAL[lock.material ?? 'iron'][how]
+  if (how === 'force') return base + material
+  const hour = Math.floor(minuteOfDay(world.now) / 60)
+  const dark = (hour >= 21 || hour < 6) && (world.state.player.inventory['lantern'] ?? 0) <= 0 ? 2 : 0
+  const wet = outdoors && ['rain', 'storm'].includes(weather(world)) ? 1 : 0
+  return base + material + dark + wet
 }
 
 export const exitLockId = (from: string, direction: string) => `exit:${from}:${direction}`
 export const objectLockId = (location: string, object: string) => `object:${location}/${object}`
 
 /** Through a locked door: with the key it opens; without, it does not. */
-export function passLock(world: World, from: string, direction: string, lock: { key: string; dc: number } | undefined): { ok: boolean; text?: string } {
+export function passLock(world: World, from: string, direction: string, lock: Pick<Lock, 'key'> | undefined): { ok: boolean; text?: string } {
   if (!lock) return { ok: true }
   const id = exitLockId(from, direction)
-  if (lockState(world, id)) return { ok: true }
+  if (lockOpen(world, id)) return { ok: true }
   if ((world.state.player.inventory[lock.key] ?? 0) > 0) {
     ;(world.state.locks ??= {})[id] = 'open'
     return { ok: true, text: `You unlock the door with the ${itemName(world.content, lock.key, 1)}.` }
   }
-  return { ok: false, text: `The door is locked. You have no key to it. (FORCE ${direction.toUpperCase()} to break it open.)` }
+  return { ok: false, text: `The door is locked. You have no key to it. (PICK ${direction.toUpperCase()} to pick the lock, FORCE ${direction.toUpperCase()} to break it open.)` }
 }
 
 /** An object here by its name: a chest, a strongbox. */
@@ -61,8 +83,8 @@ export function openObject(world: World, words: string): Output[] {
   const name = object.name ?? world.content.objectTypes.get(object.type)?.name ?? object.id
   if (object.lock) {
     const id = objectLockId(here, object.id)
-    if (!lockState(world, id)) {
-      if ((world.state.player.inventory[object.lock.key] ?? 0) <= 0) return [{ kind: 'error', text: `${cap(theName(name))} is locked. (FORCE ${name.toUpperCase()} to break it open.)` }]
+    if (!lockOpen(world, id)) {
+      if ((world.state.player.inventory[object.lock.key] ?? 0) <= 0) return [{ kind: 'error', text: `${cap(theName(name))} is locked. (PICK ${name.toUpperCase()} to pick the lock, FORCE ${name.toUpperCase()} to break it open.)` }]
       ;(world.state.locks ??= {})[id] = 'open'
     }
   }
@@ -79,7 +101,7 @@ export function takeFrom(world: World, thingWords: string, objectWords: string):
   const object = objectHere(world, objectWords)
   if (!object) return [{ kind: 'error', text: `There is no ${objectWords} here.` }]
   const name = object.name ?? world.content.objectTypes.get(object.type)?.name ?? object.id
-  if (object.lock && !lockState(world, objectLockId(here, object.id))) return [{ kind: 'error', text: `${cap(theName(name))} is locked.` }]
+  if (object.lock && !lockOpen(world, objectLockId(here, object.id))) return [{ kind: 'error', text: `${cap(theName(name))} is locked.` }]
   const contents = contentsOf(world, here, object)
   const item = matchItem(world.content, thingWords, Object.keys(contents).filter((i) => (contents[i] ?? 0) > 0))
   if (!item) return [{ kind: 'error', text: `There is no ${thingWords} in ${theName(name)}.` }]
@@ -109,11 +131,12 @@ export function force(world: World, words: string, direction?: string): Output[]
   const lock = exit?.lock ?? object?.lock
   if (!lock) return [{ kind: 'error', text: exit || object ? 'There is no lock on it to force.' : `There is nothing called ${words} here to force.` }]
   const id = exit ? exitLockId(here, direction!) : objectLockId(here, object!.id)
-  if (lockState(world, id)) return [{ kind: 'error', text: 'It is not locked.' }]
-  const check = playerCheck(world, 'athletics', lock.dc)
+  if (lockOpen(world, id)) return [{ kind: 'error', text: 'It is not locked.' }]
+  const dc = lockDc(world, lock, 'force')
+  const check = playerCheck(world, 'athletics', dc)
   const won = check.degree === 'success' || check.degree === 'critical success'
   const what = exit ? `the door of ${world.location(exit.to).name}` : theName(object!.name ?? world.content.objectTypes.get(object!.type)?.name ?? object!.id)
-  const out: Output[] = [{ kind: 'check', text: `(Athletics ${check.total} vs DC ${lock.dc}: ${check.degree})` }]
+  const out: Output[] = [{ kind: 'check', text: `(Athletics ${check.total} vs DC ${dc}: ${check.degree})` }]
   if (won) (world.state.locks ??= {})[id] = 'broken'
   out.push({ kind: 'narration', text: won ? `With a crack of splitting wood, ${what} gives.` : `You throw yourself at ${what}. It holds, and the noise carries.` })
   // Loud either way: whoever is here or next door hears it.
@@ -122,6 +145,66 @@ export function force(world: World, words: string, direction?: string): Output[]
   recordFact(world, { kind: 'break_in', about: owner.id ? [owner.id] : [], place: here, belang: 1, loud: true, title: `someone breaking ${what}`, text: { precise: `Someone tried to break ${what}${won ? ', and did' : ''}.`, village: `Somebody was breaking in at ${place.name}!`, far: 'A break-in.' } })
   if (won && owner.id) {
     out.push(...crime(world, { kind: 'theft', place: here, victim: owner.id, value: 16, grave: false, witnesses: heard }, { title: `the stranger breaking into ${callName(world.npc(owner.id))}'s`, precise: `The stranger broke ${what}, which is ${callName(world.npc(owner.id))}'s.`, village: `The stranger broke into ${callName(world.npc(owner.id))}'s!`, far: 'A stranger broke in somewhere.' }))
+  }
+  return out
+}
+
+/** What will do to pick a lock with: something thin and stiff. */
+const PICKS = ['lockpicks', 'iron_nails', 'iron_hook', 'knife']
+
+/**
+ * PICK <door or chest> (M10.5): Thievery against the lock, quiet. Picked, it
+ * is open and nobody need know; whoever sees it, knows. A bad slip jams the
+ * lock (only the key or force will do then) and may cost the pick. The first
+ * time a lock gives is an obstacle overcome: experience. Undefined when the
+ * words name no lock here, so PICK APPLES is still taking.
+ */
+export function pick(world: World, words: string, direction?: string): Output[] | undefined {
+  const here = world.state.player.location
+  const place = world.location(here)
+  const w = words.toLowerCase().replace(/^(the\s+)?lock\s+(on|of)\s+/, '').replace(/\s+lock$/, '').trim()
+  const locked = (Object.entries(place.exits) as [string, { to: string; lock?: Lock }][]).filter(([, e]) => e.lock)
+  const door = direction ? locked.find(([d]) => d === direction) : /^(the\s+)?(door|lock)$/.test(w) && locked.length === 1 ? locked[0] : undefined
+  const object = door ? undefined : objectHere(world, w)
+  const lock = door?.[1].lock ?? object?.lock
+  if (!lock) return door || object ? [{ kind: 'error', text: 'There is no lock on it to pick.' }] : undefined
+  const id = door ? exitLockId(here, door[0]) : objectLockId(here, object!.id)
+  if (lockOpen(world, id)) return [{ kind: 'error', text: 'It is not locked.' }]
+  const what = door ? `the door of ${world.location(door[1].to).name}` : theName(object!.name ?? world.content.objectTypes.get(object!.type)?.name ?? object!.id)
+  if (world.state.locks?.[id] === 'jammed') return [{ kind: 'error', text: `The lock of ${what} is jammed. Only its key, or force, will open it now.` }]
+  const tool = PICKS.find((i) => (world.state.player.inventory[i] ?? 0) > 0)
+  if (!tool) return [{ kind: 'error', text: 'You have nothing thin and stiff enough to pick a lock with: a nail, a hook, the point of a knife.' }]
+  const outdoors = !place.tags.some((t) => ['indoors', 'private', 'shop', 'social', 'workshop'].includes(t))
+  const dc = lockDc(world, lock, 'pick', outdoors)
+  const check = playerCheck(world, 'thievery', dc)
+  const out: Output[] = [{ kind: 'check', text: `(Thievery ${check.total} vs DC ${dc}: ${check.degree})` }]
+  const tool1 = itemName(world.content, tool, 1)
+  const owner = door ? ownerOf(world, door[1].to) : ownerOf(world, here, { object: object!.id })
+  if (check.degree === 'success' || check.degree === 'critical success') {
+    ;(world.state.locks ??= {})[id] = 'open'
+    out.push({ kind: 'narration', text: `You work the ${tool1} into the lock of ${what}, feel for the wards, and turn. It gives with a small click.` })
+    const picked = (world.state.player.found ??= [])
+    if (!picked.includes(`picked:${id}`)) {
+      picked.push(`picked:${id}`)
+      gainXp(world, 20, `picking the lock of ${what}`)
+    }
+  } else if (check.degree === 'critical failure') {
+    ;(world.state.locks ??= {})[id] = 'jammed'
+    const lost = tool !== 'knife'
+    if (lost) world.state.player.inventory[tool] = (world.state.player.inventory[tool] ?? 1) - 1
+    out.push({ kind: 'narration', text: `Something inside the lock of ${what} shifts the wrong way and sticks.${lost ? ` The ${tool1} snaps off in it.` : ''} It is jammed now.` })
+  } else {
+    out.push({ kind: 'narration', text: `You work at the lock of ${what} with the ${tool1}, but the wards won't give.` })
+  }
+  // Quiet, but not invisible: whoever sees the stranger at someone's lock knows what they saw.
+  if (owner.id) {
+    const seen = whoNoticed(world, here, [], { [owner.id]: 2 }).noticed
+    if (seen.length) {
+      const name = callName(world.npc(owner.id))
+      out.push({ kind: 'narration', text: `${seen.map((s) => callName(world.npc(s))).join(' and ')} saw you at the lock.` })
+      recordFact(world, { kind: 'break_in', about: [owner.id], place: here, belang: 1, title: `the stranger picking ${name}'s lock`, text: { precise: `The stranger was picking the lock of ${what}, which is ${name}'s.`, village: `The stranger was at ${name}'s lock with a bit of wire!`, far: 'A stranger who picks locks.' }, witnesses: seen })
+      out.push(...crime(world, { kind: 'theft', place: here, victim: owner.id, value: 8, grave: false, witnesses: seen }, { title: `the stranger at ${name}'s lock`, precise: `The stranger picked at the lock of ${what}, which is ${name}'s.`, village: `The stranger was picking ${name}'s lock!`, far: 'A stranger who picks locks.' }))
+    }
   }
   return out
 }

@@ -145,6 +145,17 @@ export function SheetView({ sheet }: { sheet: Sheet }) {
         <p className="small muted">{sheet.special}</p>
       </section>
 
+      {sheet.crafts && sheet.crafts.length > 0 && (
+        <section>
+          <h4>{t('sheet.crafts.heading')}</h4>
+          {sheet.crafts.map((line) => (
+            <p key={line} className="small">
+              {line}
+            </p>
+          ))}
+        </section>
+      )}
+
       {(sheet.conditions.length > 0 || sheet.patron || sheet.deaths > 0) && (
         <section>
           <h4>{t('sheet.also.heading')}</h4>

@@ -1,0 +1,19 @@
+# Crafts of Skerrow (M10.5): learnt by doing and from someone of the trade.
+# Fishing with Wenna's coracle, and salve-making at Tamsin's hearth.
+
+crafts:
+  - id: fishing
+    name: fishing
+    maker: fisher
+    skill: watercraft
+    professions: [fisher, boatman]
+    techniques:
+      - { id: hand_lines, name: hand lines }
+
+  - id: salve_making
+    name: salve-making
+    maker: salve-maker
+    skill: medicine
+    professions: [hedge_witch]
+    techniques:
+      - { id: kelp_salve, name: kelp salve }

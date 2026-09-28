@@ -1,0 +1,71 @@
+# Crafts (M10.5; FO, chapter 11, "Gepland (M10.5)"): learnt by doing and from
+# a master, not with points. Each craft leans on one skill until its own rank
+# is higher. Every recipe on an object names its craft, its technique and its
+# difficulty. Baking and smithing are worked out whole; the other trades of
+# the ledger have their craft and ranks, and the recipes their workplaces allow.
+# Practice for journeyman, expert and master (10, 30, 100) and at most five a
+# day are first balance values.
+
+crafts:
+  - id: baking
+    name: baking
+    maker: baker
+    skill: crafting
+    professions: [baker]
+    techniques:
+      - { id: rye_loaf, name: rye loaves }
+      - { id: sweet_dough, name: sweet dough }
+      - { id: feast_bread, name: feast bread }
+    masterwork: a feast bread fit for a wedding
+
+  - id: smithing
+    name: smithing
+    maker: smith
+    skill: crafting
+    professions: [smith]
+    techniques:
+      - { id: drawing_out, name: drawing out nails }
+      - { id: blade_work, name: blade work }
+      - { id: sheet_work, name: sheet work }
+      - { id: lock_work, name: lock work }
+    masterwork: a lock that nothing but its own key will open
+
+  - id: milling
+    name: milling
+    maker: miller
+    skill: crafting
+    professions: [miller, horse_miller, miller_hand]
+    techniques:
+      - { id: grinding, name: grinding }
+
+  - id: peat_cutting
+    name: peat-cutting
+    maker: peat-cutter
+    skill: athletics
+    professions: [peat_cutter]
+    techniques:
+      - { id: cutting, name: cutting turves }
+
+  - id: eel_fishing
+    name: eel-fishing
+    maker: eel-fisher
+    skill: watercraft
+    professions: [eel_fisher]
+    techniques:
+      - { id: setting_traps, name: setting traps }
+
+  # Since old Tijs died nobody makes barrels in Veenhoek (M8.5); the craft waits for its bench and its staves.
+  - id: coopering
+    name: coopering
+    maker: cooper
+    skill: crafting
+    professions: [cooper]
+    techniques:
+      - { id: raising_barrels, name: raising a barrel }
+
+  - id: brickmaking
+    name: brick-making
+    maker: brick-maker
+    skill: crafting
+    techniques:
+      - { id: firing, name: firing bricks }

@@ -105,22 +105,101 @@ export const AffordanceSchema = z.object({
   broken_text: z.string().optional(),
   /** Work for pay (M8.5): what the owner pays the player for it; what is made then goes into the owner's store, not the player's pocket. */
   wage: z.number().int().positive().optional(),
-  /** A check of the player's: failed, half the work and half the pay (M8.5). */
-  check: z.object({ skill: z.string(), dc: z.number().int() }).strict().optional(),
+  /**
+   * A check of the player's: failed, half the work and half the pay (M8.5). A
+   * recipe of a craft (M10.5) needs only the difficulty: the craft says which
+   * skill it leans on.
+   */
+  check: z.object({ skill: z.string().optional(), dc: z.number().int() }).strict().optional(),
   /** Experience for doing it well: work is a trade you get better at (M8.5). */
   xp: z.number().int().positive().optional(),
   /** Only in these months (1 to 13), as the ground allows: peat is cut in summer (M9.1). */
   months: z.array(z.number().int().min(1).max(13)).optional(),
+  /** A recipe of a craft (M10.5): which craft, and which of its techniques. */
+  craft: z.string().optional(),
+  technique: z.string().optional(),
+  /** The rank in the craft it takes: feast bread is for an expert baker (M10.5). */
+  rank: z.enum(['novice', 'journeyman', 'expert', 'master']).optional(),
+  /** A piece that counts as a masterwork: done well, the craft may reach master (M10.5). */
+  masterwork: z.boolean().optional(),
 })
 export type Affordance = z.infer<typeof AffordanceSchema>
+
+/** The ranks of a craft (M10.5), from the first loaf to the masterwork. */
+export const CRAFT_RANKS = ['novice', 'journeyman', 'expert', 'master'] as const
+
+/**
+ * A craft (M10.5): baking, milling, smithing. Learnt by doing and from a
+ * master, not with points; it leans on one skill until its own rank is
+ * higher. Who has it by trade teaches it.
+ */
+export const CraftSchema = z
+  .object({
+    id: z.string().regex(/^[a-z0-9_]+$/),
+    name: z.string(),
+    /** What someone of the craft is called: a baker, a smith. */
+    maker: z.string(),
+    /** The skill it leans on at the start. */
+    skill: z.string(),
+    /** The trades that have it: they teach it. */
+    professions: z.array(z.string()).default([]),
+    techniques: z.array(z.object({ id: z.string().regex(/^[a-z0-9_]+$/), name: z.string() }).strict()).default([]),
+    /** What a masterwork of this craft is, in words, for the sheet and the chronicler. */
+    masterwork: z.string().optional(),
+    /** Practice for journeyman, expert and master: first balance values. */
+    practice: z.tuple([z.number().int().positive(), z.number().int().positive(), z.number().int().positive()]).default([10, 30, 100]),
+    /** At most this much practice a day: the rest is only work. */
+    per_day: z.number().int().positive().default(5),
+  })
+  .strict()
+export type Craft = z.infer<typeof CraftSchema>
 
 /** Whether an affordance can be done this month (M9.1). */
 export function inSeason(affordance: Pick<Affordance, 'months'>, month: number): boolean {
   return !affordance.months || affordance.months.includes(month)
 }
 
-/** A lock (M10.3): opened with the key of this id, by force (Athletics against the dc, loud), or later picked (M10.5). */
-export const LockSchema = z.object({ key: z.string(), dc: z.number().int().min(5).max(30).default(15) }).strict()
+/**
+ * A lock (M10.3): opened with the key of this id, by force (Athletics, loud),
+ * or picked (Thievery, quiet; M10.5). How hard it is belongs to the lock, not
+ * to the one at it: the work that went into it and what it is made of (M10.5);
+ * a dc of its own overrides the quality.
+ */
+export const LockSchema = z
+  .object({
+    key: z.string(),
+    dc: z.number().int().min(5).max(30).optional(),
+    quality: z.enum(['crude', 'common', 'good', 'fine', 'masterwork']).default('common'),
+    material: z.enum(['wood', 'iron', 'brass']).default('iron'),
+  })
+  .strict()
+export type Lock = z.infer<typeof LockSchema>
+
+/** Words on an object (M10.5): a rune stone, a carved lintel. Lore against the dc reads them. */
+export const InscriptionSchema = z
+  .object({
+    text: z.string().describe('What it says, once read.'),
+    dc: z.number().int().min(5).max(30).default(15),
+    /** What it looks like before it is read. */
+    look: z.string().optional(),
+    /** A topic learnt by reading it: it goes in the journal. */
+    topic: z.string().optional(),
+  })
+  .strict()
+
+/** Something hidden in a place (M10.5): Perception against the dc finds it, once. */
+export const HiddenSchema = z
+  .object({
+    id: z.string().regex(/^[a-z0-9_]+$/),
+    dc: z.number().int().min(5).max(30).default(15),
+    text: z.string().describe('What the stranger finds.'),
+    /** A thing that lies there, found: it is on the ground. */
+    item: z.string().optional(),
+    qty: z.number().int().positive().default(1),
+    /** A topic learnt by finding it. */
+    topic: z.string().optional(),
+  })
+  .strict()
 
 export const ObjectTypeSchema = z.object({
   id: z.string().regex(/^[a-z0-9_]+$/),
@@ -130,6 +209,8 @@ export const ObjectTypeSchema = z.object({
   affordances: z.array(AffordanceSchema).default([]),
   /** Things that belong to it (M10.4): the apple on the old stone. LOOK tells of it, TAKE answers with its own line. */
   details: z.array(z.object({ words: z.array(z.string()).min(1), look: z.string(), take: z.string().optional() }).strict()).default([]),
+  /** Words carved or written on it (M10.5): READ it. */
+  inscription: InscriptionSchema.optional(),
   repair: z
     .object({
       consumes: ItemCounts,
@@ -218,6 +299,10 @@ export const LocationSchema = z.object({
   items: z.record(z.string(), z.number().int().positive()).default({}),
   /** Where on the map of the land it lies, in km, when not at its area's position (a tow path, a weir). */
   pos: z.tuple([z.number(), z.number()]).optional(),
+  /** Grounds of the zone that can be gathered from here (M10.5): the fen's herbs, the shore's kelp. */
+  forage: z.array(z.string()).default([]),
+  /** What lies hidden here (M10.5): SEARCH finds it. */
+  hidden: z.array(HiddenSchema).default([]),
 })
 export type Location = z.infer<typeof LocationSchema>
 
@@ -655,6 +740,8 @@ const FileSchema = z
     /** Growth (M8.5): households that may come, and what may be built. */
     newcomers: z.array(NewcomerSchema).optional(),
     projects: z.array(ProjectSchema).optional(),
+    /** Crafts (M10.5): baking, smithing, fishing, with their techniques. */
+    crafts: z.array(CraftSchema).optional(),
   })
   .strict()
 
@@ -698,6 +785,8 @@ export interface Content {
   /** Growth (M8.5). */
   newcomers: Map<string, Newcomer>
   projects: Map<string, Project>
+  /** Crafts (M10.5). */
+  crafts: Map<string, Craft>
   /** Every id this world ever committed, and what became of those that went (M9.1, ids.lock). */
   lock?: IdsLock
   /** The chronicler's working instruction (content/CHRONICLER.md and the world's own), if there is one. */
@@ -750,6 +839,7 @@ export function loadContent(files: ContentFile[]): Content {
     outlands: new Map<string, Outland>(),
     newcomers: new Map<string, Newcomer>(),
     projects: new Map<string, Project>(),
+    crafts: new Map<string, Craft>(),
   }
 
   let chronicler: string | undefined
@@ -809,6 +899,7 @@ export function loadContent(files: ContentFile[]): Content {
     addAll(content.outlands, data.outlands, (v) => v.id, file.path, 'outland', problems)
     addAll(content.newcomers, data.newcomers, (v) => v.id, file.path, 'newcomer', problems)
     addAll(content.projects, data.projects, (v) => v.id, file.path, 'project', problems)
+    addAll(content.crafts, data.crafts, (v) => v.id, file.path, 'craft', problems)
     if (data.rules) {
       if (rules) problems.push(`${file.path}: the rules are defined twice`)
       rules = data.rules
@@ -822,6 +913,7 @@ export function loadContent(files: ContentFile[]): Content {
   if (rules) problems.push(...checkRules(rules, content))
   // What a trade teaches is a skill of the rules (M10.3).
   if (rules) for (const p of content.professions.values()) if (p.teaches && !rules.skills.some((s) => s.id === p.teaches)) problems.push(`profession ${p.id}: teaches ${p.teaches}, which is no skill`)
+  problems.push(...checkCrafts(content, rules))
   if (problems.length > 0 || !world) throw new ContentError(problems)
   return { world, ...content, ...(rules ? { rules } : {}), ...(chronicler ? { chronicler } : {}), ...(lock ? { lock } : {}) }
 }
@@ -1058,7 +1150,7 @@ function checkReferences(world: WorldDef | undefined, c: Omit<Content, 'world'>)
 }
 
 /** Signals the systems give themselves, without a watcher in the content. */
-const CODE_SIGNALS = ['house_lost', 'plan_failed', 'doubt', 'stranger_unwelcome', 'recognised', 'plans_cross', 'warning_proven', 'broken_promise', 'promise_kept', 'request_open', 'theft_mended']
+const CODE_SIGNALS = ['house_lost', 'plan_failed', 'doubt', 'stranger_unwelcome', 'recognised', 'plans_cross', 'warning_proven', 'broken_promise', 'promise_kept', 'request_open', 'theft_mended', 'craft_rank']
 
 /** Every string in a step's verb that looks like an id. */
 function idsIn(value: unknown): string[] {
@@ -1172,6 +1264,47 @@ export const TombstoneSchema = z.object({ kind: z.string(), id: z.string(), into
 export type Tombstone = z.infer<typeof TombstoneSchema>
 
 /** The register of a world: every id it ever committed, by file and kind, and the tombstones of those that went. */
+/**
+ * Crafts and their recipes (M10.5): a craft leans on a skill of the rules and
+ * is had by trades that exist; a recipe names a craft that exists and one of
+ * its techniques; a check without a skill is a recipe's.
+ */
+function checkCrafts(c: Pick<Content, 'crafts' | 'professions' | 'objectTypes' | 'resources' | 'items' | 'locations' | 'topics'>, rules: Rules | undefined): string[] {
+  const problems: string[] = []
+  for (const craft of c.crafts.values()) {
+    if (rules && !rules.skills.some((s) => s.id === craft.skill)) problems.push(`craft ${craft.id}: leans on ${craft.skill}, which is no skill`)
+    for (const p of craft.professions) if (!c.professions.has(p)) problems.push(`craft ${craft.id}: the trade ${p} does not exist`)
+    const [a, b, m] = craft.practice
+    if (!(a < b && b < m)) problems.push(`craft ${craft.id}: practice must rise from journeyman to master`)
+  }
+  for (const type of c.objectTypes.values()) {
+    for (const a of type.affordances) {
+      const craft = a.craft ? c.crafts.get(a.craft) : undefined
+      if (a.craft && !craft) problems.push(`object type ${type.id}: ${a.id} is a recipe of ${a.craft}, which is no craft`)
+      if (craft && a.technique && !craft.techniques.some((t) => t.id === a.technique)) problems.push(`object type ${type.id}: ${a.id} uses the technique ${a.technique}, which ${craft.id} does not have`)
+      if (a.check && !a.check.skill && !a.craft) problems.push(`object type ${type.id}: ${a.id} has a check without a skill, and is no recipe of a craft`)
+      if (a.check?.skill && rules && !rules.skills.some((s) => s.id === a.check!.skill)) problems.push(`object type ${type.id}: ${a.id} checks ${a.check.skill}, which is no skill`)
+      if ((a.rank || a.masterwork || a.technique) && !a.craft) problems.push(`object type ${type.id}: ${a.id} has a rank, technique or masterwork but no craft`)
+    }
+    if (type.inscription?.topic && !c.topics.has(type.inscription.topic)) problems.push(`object type ${type.id}: its inscription teaches ${type.inscription.topic}, which is no topic`)
+  }
+  for (const r of c.resources.values()) {
+    if (r.gather && !c.items.has(r.gather.item)) problems.push(`ground ${r.id}: gathers ${r.gather.item}, which is no item`)
+  }
+  for (const l of c.locations.values()) {
+    for (const f of l.forage) {
+      const r = c.resources.get(f)
+      if (!r) problems.push(`location ${l.id}: forage ${f} is no ground`)
+      else if (!r.gather) problems.push(`location ${l.id}: the ground ${f} cannot be gathered by hand`)
+    }
+    for (const h of l.hidden) {
+      if (h.item && !c.items.has(h.item)) problems.push(`location ${l.id}: hidden ${h.id} is ${h.item}, which is no item`)
+      if (h.topic && !c.topics.has(h.topic)) problems.push(`location ${l.id}: hidden ${h.id} teaches ${h.topic}, which is no topic`)
+    }
+  }
+  return problems
+}
+
 export const IdsLockSchema = z
   .object({
     ids: z.record(z.string(), z.record(z.string(), z.array(z.string()))).default({}),
@@ -1208,6 +1341,7 @@ export const KIND_MAPS = {
   resource: 'resources',
   newcomer: 'newcomers',
   project: 'projects',
+  craft: 'crafts',
 } as const satisfies Record<string, keyof Content>
 
 /** Whether the content has a thing of this kind. */

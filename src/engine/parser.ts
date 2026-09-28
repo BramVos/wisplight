@@ -73,7 +73,22 @@ const VERB_ALIASES: Record<string, string> = {
   inventaris: 'inventory',
   take: 'take',
   get: 'take',
-  pick: 'take',
+  pick: 'pick',
+  treat: 'treat',
+  tend: 'treat',
+  heal: 'treat',
+  bandage: 'treat',
+  verzorg: 'treat',
+  behandel: 'treat',
+  gather: 'gather',
+  forage: 'gather',
+  verzamel: 'gather',
+  pluk: 'gather',
+  track: 'track',
+  spoor: 'track',
+  search: 'search',
+  zoek: 'search',
+  doorzoek: 'search',
   pak: 'take',
   drop: 'drop',
   leg: 'drop',
@@ -225,6 +240,7 @@ export function parseCommand(input: string): Command {
     word = 'examine'
     rest = rest.slice(1)
   } else if (word === 'pick' && rest[0]?.toLowerCase() === 'up') {
+    word = 'take'
     rest = rest.slice(1)
   } else if ((word === 'talk' || word === 'praat') && ['to', 'with', 'met', 'tegen'].includes(rest[0]?.toLowerCase() ?? '')) {
     rest = rest.slice(1)

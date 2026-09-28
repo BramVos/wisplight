@@ -1,6 +1,7 @@
 import type { Archived } from './archive'
 import { seeFamily } from './acquaintance'
 import { entered } from './social/access'
+import { inscribedHere, readInscription } from './skills'
 import { CHECKPOINT_ENTRIES, CHECKPOINT_MINUTES, contentVersion, type Checkpoint, type CheckpointedSave } from './checkpoint'
 import { applyFarPlace, farPlaceOf, farRequest, farWords, wantFarPlace, type FarWords } from './growth/far'
 import { crowdHere, nameOne } from './growth/crowds'
@@ -806,6 +807,9 @@ export class Engine {
         return this.inConversation(() => this.dialogue.influence(command.verb as 'persuade', parsed.npc, parsed.rest))
       }
       case 'insight': {
+        // READ <stone> (M10.5): words on an object here, before reading a person.
+        const inscribed = /^read\b/i.test(command.raw) ? inscribedHere(this.world, command.args.join(' ')) : undefined
+        if (inscribed) return readInscription(this.host, inscribed)
         const npc = command.args.length ? findNpcHere(this.world, command.args.join(' ')) : (talk?.npc ?? this.onlyNpcHere())
         if (!npc) return [{ kind: 'error', text: 'Read whom?' }]
         return this.dialogue.insight(npc)
@@ -969,6 +973,12 @@ export class Engine {
     // The voice heard a quest action in the player's words (M7.2): it happens now.
     const key = this.dialogue.takeChosen()
     if (key) outputs.push(...(runQuestAction(this.world, this.questHost, key) ?? []))
+    // What was agreed takes time (M10.5: a lesson): it passes now.
+    const spend = this.state.player.spend
+    if (spend) {
+      this.state.player.spend = undefined
+      outputs.push(...this.pass(spend.minutes), { kind: 'system', text: `After ${spend.why}, it is ${this.world.date()}.` })
+    }
     return [...outputs, ...seen]
   }
 

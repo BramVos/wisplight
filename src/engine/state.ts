@@ -387,7 +387,36 @@ export interface Debt {
   note?: string
 }
 
+/**
+ * How far the stranger is in a craft (M10.5): a rank from novice to master,
+ * the practice that counts towards the next, and what they have done.
+ */
+export interface CraftProgress {
+  rank: number
+  practice: number
+  /** Techniques done well once, or taught. */
+  techniques: string[]
+  /** Successes per recipe, by `objectType:affordance`: past a handful it is routine. */
+  recipes: Record<string, number>
+  /** The hardest recipe done well, as a rank (0 to 3). */
+  best: number
+  /** Practice gained today: [day, amount]. */
+  today?: [number, number]
+  /** The masterwork, once made: what makes master possible. */
+  masterwork?: string
+  /** Things made by the stranger's own hand and not yet sold: they fetch more. */
+  made?: Record<string, number>
+}
+
 export interface PlayerState {
+  /** Crafts the stranger works at (M10.5), by craft. */
+  crafts?: Record<string, CraftProgress>
+  /** Hidden things found, `location/id`, and inscriptions read, `location/object` (M10.5). */
+  found?: string[]
+  /** Where the stranger last gathered from a ground, `location/ground`, by game day (M10.5). */
+  gathered?: Record<string, number>
+  /** Time the stranger spends on what was just agreed in a talk (M10.5: a lesson), passed after the turn. */
+  spend?: { minutes: number; why: string }
   /** Family ties the stranger has heard of or seen (M10.4), by person. */
   knownTies?: Record<string, string[]>
   /** When the stranger last slept (M10.4): tired after eighteen hours. */
@@ -568,8 +597,8 @@ export interface GameState {
   wanted?: Record<string, { fine: number; since: number }>
   /** The player's companions (FO, chapter 13). */
   companions?: Companion[]
-  /** Locks opened with their key or broken (M10.3), by exit:<from>:<direction> or object:<location>/<object>. */
-  locks?: Record<string, 'open' | 'broken'>
+  /** Locks opened with their key, picked or broken (M10.3), or jammed by a bad pick (M10.5), by exit:<from>:<direction> or object:<location>/<object>. */
+  locks?: Record<string, 'open' | 'broken' | 'jammed'>
   /** Conversation facts of today (M10.3): how many, and about whom. */
   talkFacts?: { day: number; people: string[] }
   /** The register of agreements (M10.2): who promised whom what, by when, and how it went. */

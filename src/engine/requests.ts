@@ -1,3 +1,4 @@
+import { commissionDone } from './crafts'
 import { openAgreements, settle } from './agreements'
 import { queueSignal } from './signals'
 import { callName } from './content'
@@ -94,6 +95,8 @@ function finish(world: World, request: Request, thanks = true): string {
   const word = openAgreements(world, 'player').find((a) => a.by === 'player' && a.to === request.npc && ((a.kind === 'give' && a.terms.item === request.item) || (a.kind === 'errand' && a.terms.request === request.id)))
   if (word) settle(world, word, 'kept', `the stranger brought ${callName(world.npc(request.npc))} what was promised`, { quiet: true })
   gainXp(world, XP.request, `you did what ${callName(world.npc(request.npc))} asked`)
+  // Made by the stranger's own hand, hard to make: a commission that counts as a masterwork (M10.5).
+  if (request.item) commissionDone(world, request.npc, request.item)
   favour(world, 'request_done')
   const giver = world.npcState(request.npc)
   const paid = Math.min(request.reward ?? 0, giver.money)

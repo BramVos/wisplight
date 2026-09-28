@@ -73,7 +73,7 @@ locations:
     exits:
       south: { to: loc_waagdam_gate_street }
     objects:
-      - { id: forge, type: forge }
+      - { id: forge, type: forge, owner: npc_hendrik }
     services:
       - id: smithy_goods
         provider: npc_hendrik
@@ -85,8 +85,10 @@ locations:
           knife: { stock: 3, target: 3 }
           iron_nails: { stock: 10, target: 10 }
           rope: { stock: 4, target: 4 }
+          bar_iron: { stock: 4, target: 4 }
         supply:
           - { item: iron_nails, amount: 4, every: day, at: 7 }
+          - { item: bar_iron, amount: 2, every: day, at: 7 }
           - { item: lamp_oil, amount: 2, every: day, at: 7 }
           - { item: lantern, amount: 1, every: week, weekday: Maandag, at: 7 }
           - { item: knife, amount: 1, every: week, weekday: Maandag, at: 7 }
