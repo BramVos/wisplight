@@ -9,6 +9,7 @@ import type { World } from '../world'
 import { recordFact } from '../news'
 import { applyEffects, holds, type QuestHost } from './engine'
 import { PlanSchema, type Plan, type PlanEffect, type Step } from './planschema'
+import type { PlaceStateName } from './schema'
 import { bindValue, runVerb, verbGuard, type PlanContext } from '../aftermath'
 
 export { PlanSchema, type Plan, type PlanEffect }
@@ -364,7 +365,14 @@ export function tellAreaNews(world: World, out: Output[]): void {
 
 export function placeStateLine(world: World, location: string): string | undefined {
   const state = world.state.places?.[location]?.state
-  if (!state) return undefined
+  const line = state ? stateLine(state) : undefined
+  // Lasting marks (M10.7): a cairn with a name, a line on a wall.
+  const marks = (world.state.marks?.[location] ?? []).filter((m) => m.until === undefined || m.until > world.now).map((m) => m.text)
+  const all = [line, ...marks].filter((x): x is string => Boolean(x))
+  return all.length ? all.join(' ') : undefined
+}
+
+function stateLine(state: PlaceStateName): string | undefined {
   return {
     normal: undefined,
     flooded: 'Brown water stands knee-deep here, cold and still. Whatever could float has floated away.',

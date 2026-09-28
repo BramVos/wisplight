@@ -98,8 +98,13 @@ export const VerbSchema = z.union([
   z.object({ quit_work: SelectorSchema }).strict(),
   /** Someone without work who heard of an open place takes it; until then the step waits. */
   z.object({ hire: z.string(), reach: z.number().int().positive().default(120), except: z.array(SelectorSchema).default([]) }).strict(),
-  /** A feast at a place for some hours: the people of the area come, and the guests from further off. */
-  z.object({ feast: SelectorSchema, hours: z.number().positive().default(4), guests: z.array(SelectorSchema).default([]) }).strict(),
+  /**
+   * A feast at a place for some hours: the people of the area come, and the guests from further off. A burial (M10.7) is
+   * the same gathering in a quiet mood, and those in fresh grief come to it rather than keep away.
+   */
+  z.object({ feast: SelectorSchema, hours: z.number().positive().default(4), guests: z.array(SelectorSchema).default([]), kind: z.enum(['feast', 'burial']).default('feast') }).strict(),
+  /** A lasting mark at a place (M10.7): a line in its description from now on, or for so many days; {a} and {place} filled in: a cairn with a name. */
+  z.object({ mark: SelectorSchema, text: z.string(), days: z.number().positive().optional() }).strict(),
   /** Someone who fled or stayed away goes home. */
   z.object({ return: SelectorSchema }).strict(),
   /** Some go away together for a while: beyond the region, or to a far place in it. */

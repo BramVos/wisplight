@@ -358,13 +358,13 @@ function playFeast(world: World, story: Story, pattern: Pattern): void {
  * A feast of a plan (M8.1): a date and a place that are only known in play,
  * and guests from further off besides the people of the place.
  */
-export function holdFeast(world: World, place: string, from: number, until: number, guests: string[]): void {
+export function holdFeast(world: World, place: string, from: number, until: number, guests: string[], kind: 'feast' | 'burial' = 'feast'): void {
   const state = stories(world)
-  state.active.push({ id: `story_${++state.seq}`, pattern: '', kind: 'feast', started: world.now, roles: {}, data: { place, from, until, guests: guests.join(',') }, next: until })
+  state.active.push({ id: `story_${++state.seq}`, pattern: '', kind: 'feast', started: world.now, roles: {}, data: { place, from, until, guests: guests.join(','), ...(kind === 'burial' ? { burial: 1 } : {}) }, next: until })
 }
 
-/** Where a feast is on right now for this NPC, if any. */
-export function feastFor(world: World, npcId: string): { place: string; until: number } | undefined {
+/** Where a feast (or a burial, M10.7) is on right now for this NPC, if any. */
+export function feastFor(world: World, npcId: string): { place: string; until: number; burial: boolean } | undefined {
   const home = world.location(world.npc(npcId).home).area
   for (const story of world.state.stories?.active ?? []) {
     if (story.kind !== 'feast') continue
@@ -372,7 +372,7 @@ export function feastFor(world: World, npcId: string): { place: string; until: n
     const from = Number(story.data['from'])
     const until = Number(story.data['until'])
     const guest = String(story.data['guests'] ?? '').split(',').includes(npcId)
-    if (world.now >= from && world.now < until && (guest || world.location(place).area === home)) return { place, until }
+    if (world.now >= from && world.now < until && (guest || world.location(place).area === home)) return { place, until, burial: Boolean(story.data['burial']) }
   }
   return undefined
 }

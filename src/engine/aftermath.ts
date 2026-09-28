@@ -197,6 +197,9 @@ export function nameOf(world: World, id: string | undefined): string {
   return world.content.topics.get(id)?.name ?? world.content.areas.get(id)?.name ?? (world.content.items.has(id) ? (world.content.items.get(id)!.plural ?? `${world.content.items.get(id)!.name}s`) : undefined) ?? world.content.routes.get(id)?.name ?? world.content.outlands.get(id)?.name ?? id
 }
 
+/** At most this many lasting marks show at one place (M10.7); the oldest go first. */
+const MAX_MARKS = 3
+
 /** Fills {a}, {b}, {who}, {place} and the like with names. */
 function fill(world: World, text: string, vars: Record<string, string | undefined>): string {
   return text.replace(/\{(\w+)\}/g, (whole, key: string) => (vars[key] !== undefined ? nameOf(world, vars[key]) : whole))
@@ -295,14 +298,29 @@ export function runVerb(world: World, ctx: PlanContext, verb: Verb, st: StepStat
     if (!place || !world.content.locations.has(place)) return false
     const guests = v.guests.flatMap((g) => many(world, ctx, g)).filter((id) => world.content.npcs.has(id))
     st.where = place
+    // A burial (M10.7): the same gathering, quiet; its news is the content's own (a tell step), not a feast's.
+    const burial = v.kind === 'burial'
     if (farFromPlayer(world, place)) {
-      // Far from the player (M9.1): nobody walks to it; the guests had a good day, and the village hears of it.
-      for (const id of guests) if (world.alive(id)) setMood(world, id, 5, 24, 'a good feast')
+      // Far from the player (M9.1): nobody walks to it; the guests had a good day (or said goodbye together), and the village hears of it.
+      for (const id of guests) if (world.alive(id)) setMood(world, id, burial ? -3 : 5, 24, burial ? 'a burial' : 'a good feast')
       for (const a of guests) for (const b of guests) if (a < b && world.alive(a) && world.alive(b)) shiftBond(world, a, b, 2)
-      return news(world, ctx, 'feast', ctx.plan.subjects?.filter((s) => isPerson(world, s)) ?? guests.slice(0, 2), vars({ place }), place)
+      return burial ? true : news(world, ctx, 'feast', ctx.plan.subjects?.filter((s) => isPerson(world, s)) ?? guests.slice(0, 2), vars({ place }), place)
     }
-    holdFeast(world, place, world.now, world.now + v.hours * 60, guests)
-    return news(world, ctx, 'feast', ctx.plan.subjects?.filter((s) => isPerson(world, s)) ?? guests.slice(0, 2), vars({ place }), place)
+    holdFeast(world, place, world.now, world.now + v.hours * 60, guests, v.kind)
+    return burial ? true : news(world, ctx, 'feast', ctx.plan.subjects?.filter((s) => isPerson(world, s)) ?? guests.slice(0, 2), vars({ place }), place)
+  }
+  if ('mark' in v) {
+    // A lasting mark at a place (M10.7): a line under its description from now on, a few at most.
+    const place = one(world, ctx, v.mark)
+    if (!place || !world.content.locations.has(place)) return false
+    const marks = (world.state.marks ??= {})
+    const list = (marks[place] = (marks[place] ?? []).filter((m) => m.until === undefined || m.until > world.now))
+    const text = fill(world, v.text, vars({ place }))
+    if (list.some((m) => m.text === text)) return true
+    list.push({ t: world.now, text, ...(ctx.bind['a'] ? { about: ctx.bind['a'] } : {}), ...(v.days ? { until: world.now + v.days * 24 * 60 } : {}) })
+    if (list.length > MAX_MARKS) list.splice(0, list.length - MAX_MARKS)
+    st.where = place
+    return true
   }
   if ('return' in v) {
     const who = one(world, ctx, v.return)
@@ -603,6 +621,9 @@ function tell(world: World, ctx: PlanContext, t: Extract<Verb, { tell: unknown }
   })
   // Who came upon it knows it, wherever they are by now (M9.4): the leak Teunis saw on the dyke road.
   for (const id of finders ?? []) if (world.alive(id)) heardBy(world, id)[fact.id] ??= { level: 3, reliability: 1, from: 'witness', t: world.now }
+  // Where the stranger stands, they see it happen (M10.7: the song for the dead at the Kettle): a step that names its
+  // place, unless only some came upon it. A tell that only follows its signal's place is the news beside it.
+  if (!finders && t.place !== undefined && world.content.locations.has(where) && where === world.state.player.location) world.notices.push(fact.text.precise)
   return fact.id
 }
 

@@ -116,3 +116,88 @@ aftermath:
         do: { regard: [$a], to: player, affinity: 5 }
       - id: mind
         do: { thought: $a, text: "The stranger is {value} now. There may be work in that, or trouble.", days: 14 }
+
+  # Skerrow mourns (M10.7, the drowning in the playtest of 28 September 2026). A death: Maren keeps the empty
+  # place at the Kettle in mind for a week; the day after, the island gives the dead back to the Tidemother on
+  # the headland, and whoever knew them comes, the grieving too; a cairn stays there with their name; and that
+  # night the Kettle sings for them. Grief itself (home for a day, no feasts for a week) is the same as in every world.
+  - id: death
+    signal: death
+    about: first
+    topic: death
+    expires: 3
+    steps:
+      - id: empty_place
+        do: { thought: npc_maren, text: "{a}'s place by the fire is empty. You keep looking at it, and you say so to whoever sits down there.", days: 7 }
+      - id: empty_stool
+        do: { mark: loc_skerrow_salt_kettle, text: "A stool by the fire stands empty, and nobody sits on it; a cup is turned upside down on it for {a}.", days: 7 }
+      - id: announce
+        do:
+          tell:
+            kind: burial
+            about: [$a]
+            place: { home_of: $a }
+            belang: 2
+            title: "{a} to be given back to the Tidemother"
+            precise: "{a} goes back to the Tidemother tomorrow afternoon, from the headland at the ebb. Everyone is to come."
+            village: "They're giving {a} back to the Tidemother tomorrow afternoon, up on the headland. Everyone's going."
+            far: "Someone on Skerrow is to be buried."
+      - id: burial
+        at: { days: 1, hour: 15 }
+        do: { feast: loc_skerrow_headland, kind: burial, hours: 2, guests: [{ family_of: $a }, { household_of: $a }, { neighbours_of: $a }] }
+      - id: buried
+        after: burial
+        wait: 2
+        do:
+          tell:
+            kind: burial
+            about: [$a]
+            place: loc_skerrow_headland
+            belang: 2
+            title: "the burial of {a}"
+            precise: "The island gave {a} back to the Tidemother from the headland at the ebb, and everyone who could walk came up to see it done."
+            village: "We gave {a} back to the Tidemother on the headland. The whole island came."
+            far: "Someone was buried on Skerrow."
+      - id: cairn
+        after: burial
+        wait: 2
+        do: { mark: loc_skerrow_headland, text: "Among the old cairns at the cliff edge stands a new one of grey stones, with {a}'s name scratched on a slate." }
+      - id: song
+        after: burial
+        wait: 5
+        do:
+          tell:
+            kind: mourning
+            about: [$a, npc_maren]
+            place: loc_skerrow_salt_kettle
+            belang: 1
+            title: "a song for {a} at the Salt Kettle"
+            precise: "That night at the Salt Kettle they sang the old ebb song for {a}, and Maren poured the first cup into the fire."
+            village: "They sang for {a} at the Kettle last night. Maren poured a cup into the fire."
+            far: "An island sang for its dead."
+
+  # Lost with no body to bury (M10.7): a name on the harbour wall, and the empty place at the Kettle.
+  - id: lost
+    signal: lost
+    about: first
+    topic: death
+    expires: 2
+    steps:
+      - id: empty_place
+        do: { thought: npc_maren, text: "{a} is lost, and there is nothing to bury. The place by the fire stays empty.", days: 7 }
+      - id: empty_stool
+        do: { mark: loc_skerrow_salt_kettle, text: "A stool by the fire stands empty, and nobody sits on it; a cup is turned upside down on it for {a}.", days: 7 }
+      - id: name
+        at: { days: 1, hour: 15 }
+        do: { mark: loc_skerrow_harbour, text: "Someone has scratched {a}'s name into the harbour wall, low down, where the spray keeps it wet." }
+
+  # Gone away for a while (M10.7): the Kettle is quieter, and Maren says so for a week.
+  - id: departure
+    signal: departure
+    about: first
+    topic: departure
+    expires: 1
+    steps:
+      - id: empty_place
+        when: [{ not: { same: [$a, npc_maren] } }]
+        do: { thought: npc_maren, text: "{a} has gone off the island, and the Kettle is quieter for it. You mention it to anyone who asks.", days: 7 }

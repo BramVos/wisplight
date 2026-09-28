@@ -12,3 +12,21 @@ watchers:
   - id: befriended
     signal: befriended
     probe: { befriended: 3 }
+
+  # Skerrow mourns (M10.7): a death on the island, $a the dead.
+  - id: death
+    signal: death
+    fact: { kind: death }
+    who: [$about]
+
+  # Lost to the sea, or otherwise gone without a body to bury (M10.7): a memorial, no burial.
+  - id: lost
+    signal: lost
+    fact: { kind: missing }
+    who: [$about]
+
+  # Someone went away from the island for a while (M10.7): the empty place at the Kettle.
+  - id: departure
+    signal: departure
+    fact: { kind: "aftermath:leave" }
+    who: [$about]

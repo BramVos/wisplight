@@ -227,9 +227,10 @@ describe('M8.1: facts, knowledge and three repairs', () => {
 })
 
 describe('M8.1: Skerrow plays as before', () => {
-  it('has only what conversations need (M10.3), and without the stranger gives no signals', async () => {
+  it('has what conversations need (M10.3) and mourning (M10.7), and without the stranger gives no signals', async () => {
     const isle = loadContent(await readContentFiles(root, 'isle'))
-    expect([...isle.watchers.keys()]).toEqual(['asked_about', 'befriended'])
+    // Death, loss and departure (M10.7) only fire when someone dies, is lost or leaves; two quiet days give none.
+    expect([...isle.watchers.keys()]).toEqual(['asked_about', 'befriended', 'death', 'lost', 'departure'])
     const engine = new Engine(isle, { seed: 12 })
     engine.tick(2 * DAY)
     expect(engine.state.signals?.log ?? []).toEqual([])

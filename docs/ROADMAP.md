@@ -450,16 +450,16 @@ Scope: de vijf open vragen uit `docs/PLAYTEST.md`, door Bram beantwoord op 28 se
 - [x] Het verdwenen meisje zonder speler: de wereld beweegt al op afstand (M9.1, de afstandsregel), maar een questlijn lost zichzelf niet op. Een geschreven quest mag in de content een verloop zonder speler krijgen (`lapses: { after_days, when_far: true, effects }`): na een maand geeft de weduwe het op (feit, nieuws in Veenhoek) en haalt Grietje de kat binnen, alleen als de speler ver van het gebied is; een quest waar de speler in de buurt is, wacht op hem. De controlespeler van `npm run playtest -- cat` ziet die afloop
 - [x] Mirte op marktdag: wie iemand goed kent (banden uit `acquaintance.ts`, niet alleen huisgenoten, naaste familie en collega's) weet diens dag en zegt waar die heen is ("She's at the market in Waagdam, it's Wednesday"); `knowsTheDayOf` leest die banden; een test
 - [x] De opening: De Zwaan is de kapotte molen en staat bij het begin stil; de openingstekst in `world.yaml` zegt dat (wieken aan flarden, geen draaiende molen), en de beschrijving van de molen en van Molenend volgt de toestand `broken` van De Zwaan, zodat de molen na de reparatie in de tekst weer draait (een test)
-- [ ] Skerrow na een gebeurtenis is een eigen mijlpaal: M10.7
+- [x] Skerrow na een gebeurtenis is een eigen mijlpaal: M10.7
 
 ## M10.7 Skerrow rouwt
 
 Scope: nasleep voor Skerrow, als content. Een dood, een vertrek of een verlies op het eiland laat sporen na: rouw bij wie de persoon na stond, een begrafenis op de dag erna waar het dorp samenkomt, een lege plek in de herberg die de waard een week lang noemt, en een grafsteen of gedenkplek die er blijft. Alles met de wachters en standaardnasleep van M8.1 tot M8.3 in `content/isle/`; code alleen waar een werkwoord of toestand ontbreekt, en dan voor elke wereld bruikbaar.
 
-- [ ] Wachters en nasleep in `content/isle/` voor dood, vertrek en verlies, met de namen en plekken van Skerrow (`CHRONICLER.md`)
-- [ ] Een begrafenis is een bijeenkomst op de dag na de dood: wie de dode kende gaat erheen, het eiland spreekt er die dag over, en de plek krijgt een blijvend spoor
-- [ ] Rouw is zichtbaar in gesprekken en in de wereld (een gesloten winkel, een lege stoel, een lied in de herberg) en ebt in weken weg, met dezelfde toestand als in de Nethermarch
-- [ ] `npm run playtest -- off` en de Skerrow-quests spelen door, en de M8.1-test die zegt dat Skerrow zonder speler geen signalen geeft blijft waar, of wordt bewust aangepast met een reden in het verslag
+- [x] Wachters en nasleep in `content/isle/` voor dood, vertrek en verlies, met de namen en plekken van Skerrow (`CHRONICLER.md`)
+- [x] Een begrafenis is een bijeenkomst op de dag na de dood: wie de dode kende gaat erheen, het eiland spreekt er die dag over, en de plek krijgt een blijvend spoor
+- [x] Rouw is zichtbaar in gesprekken en in de wereld (een gesloten winkel, een lege stoel, een lied in de herberg) en ebt in weken weg, met dezelfde toestand als in de Nethermarch
+- [x] `npm run playtest -- off` en de Skerrow-quests spelen door, en de M8.1-test die zegt dat Skerrow zonder speler geen signalen geeft blijft waar, of wordt bewust aangepast met een reden in het verslag
 
 ## M10.8 Speeltest Veenhoek en Skerrow: fouten en interface
 

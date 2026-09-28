@@ -634,6 +634,8 @@ export interface GameState {
   wanted?: Record<string, { fine: number; since: number }>
   /** The player's companions (FO, chapter 13). */
   companions?: Companion[]
+  /** Lasting marks at places (M10.7), by location: a cairn with a name, a line on a wall; shown under the description. */
+  marks?: Record<string, { t: number; text: string; about?: string; until?: number }[]>
   /** A choice put to the player (after the M10 playtest): numbered, answered by the next command. */
   choice?: { question: string; options: { label: string; command: string }[]; t: number }
   /** Objects the chronicler placed (M10.5), with the last id handed out. */

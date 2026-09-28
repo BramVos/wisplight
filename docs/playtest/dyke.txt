@@ -231,6 +231,7 @@ Lore: the drainage of the Holleveen, the stranger in Veenhoek, the dyke at Oude 
 
 [24 hours pass]
 The leak is packed with clay and brushwood, and the dyke at Oude Zijl holds.
+Sijbrand called out Oude Zijl and Veenhoek, and they packed the leak with clay and brushwood before it could open.
 
 > look
 On the Great Dyke

@@ -1,5 +1,16 @@
 # Changelog
 
+## M10.7 Skerrow rouwt, 28 september 2026
+
+- **Een dood op het eiland.** Maren heeft de lege plek bij het vuur een week in haar hoofd (het model hoort dat), en in de Salt Kettle staat die week een lege kruk met een omgekeerd kopje voor de dode. Dezelfde dag gaat rond dat de dode morgenmiddag vanaf de landtong aan de Tidemother wordt teruggegeven. De dag erna om drie uur is daar de begrafenis: wie de dode kende gaat erheen, ook wie rouwt. Daarna staat er voorgoed een nieuwe steenhoop met de naam op een lei tussen de oude, en die avond zingen ze in de Kettle het ebbelied en giet Maren de eerste beker in het vuur.
+- **Vermist zonder lichaam** (een feit van soort `missing`): een naam in de havenmuur en de lege kruk. **Vertrek** (iemand gaat een tijd weg): Maren noemt een week dat de Kettle stiller is.
+- **Rouw** is dezelfde toestand als in de Nethermarch: een dag thuis, een week geen feesten, en in gesprekken "grieving for ...". Een begrafenis is de uitzondering: daar gaan rouwenden wel heen.
+- **Algemene code, voor elke wereld.** Het werkwoord `feast` heeft een soort `burial`. Het nieuwe werkwoord `mark` zet een regel onder de beschrijving van een plek, voorgoed of voor een aantal dagen. En wat een plan vertelt waar jij staat, zie je nu gebeuren.
+
+Testen: `npm run playtest -- drowned` gaat nu mee naar de landtong, de Kettle en een week later terug. Zelf: `@kill wenna drowned` op Skerrow en de volgende middag naar de landtong. Tests in `tests/m107.test.ts` (5). De M8.1-test somt nu ook de drie nieuwe wachters op; zonder dood blijft Skerrow zonder speler stil. Alle 618 tests groen, beide simulaties zonder problemen, "off" speelt door.
+
+Nog niet: de Nethermarch heeft deze nasleep niet (een dood daar geeft rouw, maar geen begrafenis); met dezelfde werkwoorden is dat content, als je het wilt. Zonder model noemt Maren de lege plek niet in woorden; je ziet hem wel in de herberg.
+
 ## M10, bezochte plekken en je spoor op de kaart, 28 september 2026
 
 - **Je spoor.** Beide kaarten tonen een heel dunne amberkleurige lijn langs de hexen die je echt gelopen hebt. Het is geen rechte lijn en geen berekende route. Een wandeling legt elke stap vast. Een tocht via uitgangen volgt de weg of het pad waar beide plekken aan liggen, en gaat recht als er zo'n weg niet is of als die een grote omweg maakt. TRAVEL legt zijn route ook neer. Een oude save begint met een leeg spoor.
