@@ -340,7 +340,7 @@ Scope: de speeltest van Skerrow en de reviews van 27 september 2026, op het regi
 
 Aanbiedingen in een gesprek:
 - [x] Vraagt de speler Pip naar zijn vader, dan biedt het spel de stem "voorgaan naar het strand" en "wachten tot de vloed keert" aan met een besluit; kiest de stem er een, dan loopt Pip voorop, wacht bij de uitgang, zegt welke kant op als je verkeerd gaat, en geeft na een paar beurten op
-- [ ] Een NPC belooft in zijn tekst nooit iets wat niet in de aanbiedingen staat: het besluit staat in de prompt, en een voorstel van de NPC zelf ("kom mee naar het strand") verschijnt als klikbare optie die pas doorgaat als de speler instemt
+- [x] Een NPC belooft in zijn tekst nooit iets wat niet in de aanbiedingen staat: het besluit staat in de prompt, en een voorstel van de NPC zelf ("kom mee naar het strand") verschijnt als klikbare optie die pas doorgaat als de speler instemt
 - [x] Iemand halen, ergens afspreken op een tijd (met aantekening in het dagboek), hier wachten, iets geven uit eigen zak en een boodschap overbrengen zijn aanbiedingen met een eigen formule (houding, vertrouwen, werk en schema, gevaar, afstand, leeftijd), en de redenen staan in gewone woorden in de prompt
 - [x] Voorwerpen via een gesprek in drie smaken, elk met een eigen besluit: geven (weinig waarde of over), lenen (de zaag, de sleutel van de schuur: de NPC blijft eigenaar, jij krijgt hem op een termijn, en dat is een afspraak in het register; niet terugbrengen is `broken_promise`, wel terugbrengen bouwt vertrouwen) en verkopen buiten de toonbank (uit een beurs); het besluit weegt houding, vertrouwen, of de NPC het ding zelf nodig heeft (het brein weet dat), waarde tegenover wat je voor hem deed, en karakter, en de stem noemt alleen voorwaarden die uit de formule komen. Toets: Wouter mist een zaag, je leent die van Harmen, brengt hem naar Wouter, en Harmen verwacht hem terug
 - [x] Zonder model kiest de motor uit dezelfde aanbiedingen met sjabloonregels, zodat het spel zonder AI hetzelfde kan
@@ -360,7 +360,7 @@ Gesprekken die de wereld raken:
 - [x] Een wachter `befriended`: wie een tijd Warm is en iets met de speler heeft gedeeld, wordt als band vriend, met anders groeten, eerder helpen en roddel over de vriend van de vreemde; flirten in vrije tekst loopt door dezelfde formule als het commando `flirt`
 - [x] De grenzen: geen dood, geen geld uit het niets, hooguit één nawerking en een paar feiten per gesprek, alles in het logboek; zonder model kiezen de regels
 - [x] De scène in één stuk speelt: je vraagt Pip naar zijn vader, hij loopt mee naar het strand, vertelt het 's avonds thuis, Brannoc zoekt je de volgende ochtend op, je belooft hem touw, en breng je dat niet, dan weet de Hythe het
-- [ ] Alles wat er al was, speelt hetzelfde: het hele testpakket, de simulaties, de uitspeelscripts van beide werelden, en oude saves
+- [x] Alles wat er al was, speelt hetzelfde: het hele testpakket, de simulaties, de uitspeelscripts van beide werelden, en oude saves
 
 Eigendom en betrapt worden (besluit 27 september 2026; nu: eigendom afgeleid per object, huis en winkel, drie vormen van stelen met getuigen, boete en schout, teruggeven; geen sleutels, geen vragen als weg, een vaste regel bij betrapping, en overdag binnenlopen is geen vergrijp):
 - [x] Eén eigenaarsfunctie: elk ding heeft een eigenaar (persoon, huishouden, nederzetting of niemand), afgeleid zoals nu maar op één plek, zodat pakken, gebruiken, verkopen en teruggeven dezelfde vraag stellen

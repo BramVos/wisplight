@@ -1,5 +1,25 @@
 # Changelog
 
+## M10.3 Levende gesprekken, 28 september 2026
+
+Nieuw:
+- **Aanbiedingen.** Voor elke beurt rekent het spel uit wat iemand nu voor je kan doen: voorgaan, iemand halen, wachten, afspreken op een tijd, iets geven, lenen of verkopen, een boodschap overbrengen, je iets leren, je binnenlaten. Elk met een besluit en de redenen in gewone woorden. De stem kiest er een, of stelt er een voor; zo'n voorstel staat met [Yes] en [No] in de gespreksbalk en gaat pas door als jij ja zegt. Zonder model kiezen dezelfde regels. Belooft een antwoord iets wat niet is aangeboden, dan vraagt het spel opnieuw.
+- **Pip loopt voorop.** Vraag Pip naar zijn vader en hij biedt aan je naar de haven te brengen, waar hij denkt dat Brannoc is. Hij loopt telkens een plek vooruit en wacht, roept welke kant op als je verkeerd gaat, en geeft het na vier beurten op.
+- **Voorwerpen.** Geven, lenen en verkopen hebben elk een eigen besluit. Harmen leent je de zaag van de molen voor een dag; breng je hem terug, dan houdt hij je voor iemand van je woord, anders niet. ASK <iemand> FOR <ding> vraagt erom.
+- **Wat jij zegt, telt.** "Tell Mirte that the mill turns again" is een bewering. Gelooft ze je, dan loopt ze naar Molenend, ziet dat de molen stilstaat, en weet daarna wat je woord waard is. DECEIVE is echt liegen; een leugen die uitkomt gaat rond.
+- **Een gesprek werkt door.** Vraag Pip naar zijn vader en dat is nieuws; Pip vertelt het 's avonds thuis, en Brannoc komt je de volgende ochtend opzoeken en vraagt om touw. Zeg je ja, dan is dat je woord; breng je het niet, dan weet de Hythe het. Wie iets nodig heeft en je goed gezind is, zoekt je ook op.
+- **Reacties.** Beledig de bakker en ze verkoopt je die dag niets meer; iemand anders loopt weg, een bange roept om hulp, en een heethoofd gaat op je af.
+- **Leren, vrienden, flirten.** Een vakman leert je zijn vak voor geld of een wederdienst. Wie een paar dagen Warm is en iets met je deelde, wordt een vriend, groet je anders en helpt eerder. Flirten in gewone zinnen werkt zoals FLIRT.
+- **Eigendom.** TAKE in iemands huis pakt niets meer ongevraagd; je kunt vragen of stelen. Kisten en deuren kunnen op slot (de geldkist van Lubbert, die van Maren), met een sleutel of met FORCE, wat lawaai maakt. Binnenlopen waar je niet welkom bent, merkt wie er is. Betrapt reageert iemand naar zijn aard, en de schout grijpt in als hij erbij is. Gezien in de buurt maakt je verdacht, maar pas een spoor (je draagt het gestolene, of je biedt het te koop aan wie het kent) is bewijs. Teruggeven of PAY maakt het goed, uit jezelf meer dan na betrapping.
+
+Testen: op Skerrow `talk pip`, "where is your father?", YES, en volg hem oostwaarts; wacht daarna een dag in de Salt Kettle. In de Nethermarch: `tell mirte that the mill turns again`, `ask harmen for the saw`, of zeg iets onaardigs tegen Mirte en probeer daarna brood te kopen. `promises` en de dagboekpagina "Your word and theirs" laten je afspraken zien. Controles: `npm test` (531 tests), de 30-dagensimulatie van beide werelden zonder meldingen, alle zes speellijnen als voorheen, en `npm run longrun`: 384 kB na 300 dagen.
+
+Nog niet: een NPC die vraagt of je met hem meeloopt (daar is geen soort verzoek voor). Het model levert zelf geen bewering; de regels lezen ze, zodat het besluit al in de prompt staat. PICK voor sloten komt in M10.5. Het tweede deel van M10 wacht nog op jouw oordeel over de voorstelpagina: https://claude.ai/artifact/JH6AD1zCBy6F36LaiAcMDF.
+
+Ontwerpbesluit dat anders uitpakt: gezien in de buurt geeft geen boete meer (was zo sinds M7.2); de M7.2-test is daarop aangepast. Skerrow heeft zijn eerste wachters en nasleep, voor wat gesprekken nodig hebben; de M8.1-test die zei dat Skerrow er geen had, bewaakt nu dat Skerrow zonder speler geen signalen geeft.
+
+Ontwerp en tests: "Zo is het in M10.3 gebouwd" in het ontwerp voor signalen en nasleep, "Stand na M10.3" in het FO. Nieuwe werkwoorden en toestand, elk voor elke gebeurtenis bruikbaar: seek_player, de voorwaarden needs_from en same, de probe befriended, de soorten afspraken lend en errand, sloten en inhoud in de content. Tests in `tests/m103.test.ts`.
+
 ## M10.2 Het verhaal- en afsprakenregister, 28 september 2026
 
 Nieuw:
