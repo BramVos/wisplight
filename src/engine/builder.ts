@@ -35,6 +35,58 @@ export function warnings(content: Content): string[] {
 }
 
 /**
+ * Things a description brings in ("a bowl of milk", "a hollow") that nothing
+ * here answers to (after the M10 playtest): no detail, object, thing lying
+ * here, person or way out by that word. LOOK still finds the sentence; a
+ * detail gives it its own look, and lines for TAKE and other verbs.
+ */
+export function sceneryWarnings(content: Content): string[] {
+  const out: string[] = []
+  for (const location of content.locations.values()) {
+    const known = [
+      location.name,
+      ...location.aliases,
+      ...location.details.flatMap((d) => d.words),
+      ...location.objects.flatMap((o) => {
+        const type = content.objectTypes.get(o.type)
+        return [o.name ?? '', type?.name ?? '', ...(type?.aliases ?? []), ...(type?.details.flatMap((d) => d.words) ?? [])]
+      }),
+      ...Object.keys(location.items).map((i) => content.items.get(i)?.name ?? i),
+      ...Object.values(location.exits).flatMap((e) => (e ? [content.locations.get(e.to)?.name ?? '', ...(content.locations.get(e.to)?.aliases ?? [])] : [])),
+      ...[...content.npcs.values()].filter((n) => n.home === location.id || n.work === location.id).flatMap((n) => [n.name, n.short]),
+    ]
+      .join(' ')
+      .toLowerCase()
+    const missing = [...new Set(introduced(location.description.day))].filter((noun) => !new RegExp(`\\b${noun}`).test(known))
+    if (missing.length) out.push(`${location.id}: the description brings in ${missing.map((m) => `"${m}"`).join(', ')}, with no detail to look at or handle (details:)`)
+  }
+  return out
+}
+
+/** The things a text brings in with "a" or "an": the noun of each, as best a rule can tell. */
+export function introduced(text: string): string[] {
+  const nouns: string[] = []
+  const plain = text.replace(/[[\]]/g, '').toLowerCase()
+  for (const match of plain.matchAll(/\b(?:a|an)\s+([a-z' -]+?)(?=[,.;:!?]|$)/g)) {
+    const words = match[1]!.split(/\s+/).filter(Boolean)
+    const kept: string[] = []
+    for (const [i, w] of words.entries()) {
+      // "an oak older than anyone's grandfather": the oak, not "older".
+      if (words[i + 1] === 'than') break
+      if (PHRASE_END.has(w) || (i > 0 && /(ed|ing|s)$/.test(w) && !/ss$/.test(w) && kept.length > 0)) break
+      kept.push(w)
+      if (kept.length === 3) break
+    }
+    const noun = kept.at(-1)
+    if (noun && noun.length > 2 && !NOT_NOUNS.has(noun)) nouns.push(noun)
+  }
+  return nouns
+}
+
+const PHRASE_END = new Set(['of', 'with', 'on', 'in', 'at', 'by', 'from', 'that', 'which', 'and', 'or', 'but', 'to', 'into', 'onto', 'under', 'over', 'above', 'below', 'behind', 'beside', 'between', 'among', 'where', 'as', 'no', 'not', 'is', 'are', 'was', 'were', 'you', 'for', 'than', 'like', 'full', 'half', 'so', 'too', 'very', 'just', 'still', 'here', 'there', 'up', 'down', 'out', 'off', 'near', 'against', 'round', 'around', 'through', 'along', 'across'])
+const NOT_NOUNS = new Set(['few', 'little', 'lot', 'bit', 'while', 'moment', 'time', 'way', 'kind', 'sort', 'long', 'great', 'good', 'hundred', 'thousand', 'dozen', 'pair', 'row', 'handful', 'couple', 'piece', 'smell', 'sound', 'feeling', 'glimpse', 'hint', 'whiff', 'north', 'south', 'east', 'west', 'northeast', 'northwest', 'southeast', 'southwest'])
+
+/**
  * Chains that do not close (M8.4): a good that is used (by the nameless of a
  * settlement, a workshop, an object people use, or its repair) but made nowhere and
  * brought by no route. A fixed supply at a counter does not count: it comes

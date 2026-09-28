@@ -808,6 +808,9 @@ function CheckPanel({ view, open }: { view: EditorView; open: (kind: EntityKind,
       <ul className="check-list">{view.problems.map(row)}</ul>
       <h2 className="editor-title">Worth a look ({view.warnings.length})</h2>
       <ul className="check-list small">{view.warnings.map(row)}</ul>
+      <h2 className="editor-title">Named, but no detail ({view.scenery.length})</h2>
+      <p className="muted small">Things a description brings in that nothing here answers to. LOOK still finds the sentence they are in; a detail (details: in the place) gives each its own look, and lines for TAKE and other verbs such as DRINK or CLIMB.</p>
+      <ul className="check-list small">{view.scenery.map(row)}</ul>
       <h2 className="editor-title">Quests</h2>
       <QuestTable view={view} />
       <h2 className="editor-title">Settlements ({view.economy.length})</h2>

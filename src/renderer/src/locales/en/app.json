@@ -30,6 +30,7 @@
     "levelUp": "Level up",
     "make": "Make your character"
   },
+  "scene": "A view of {name}",
   "map": {
     "title": "Map",
     "label": "Map of the land around you",
@@ -65,6 +66,8 @@
     "zoomOut": "Zoom out",
     "fit": "Show all you know",
     "centre": "Back to where you are",
+    "walkTo": "Walk to {name}",
+    "thisLand": "this land",
     "full": "Full screen",
     "leaveFull": "Close full screen (Escape)",
     "none": "{name} has no map; you get about by the exits between places."

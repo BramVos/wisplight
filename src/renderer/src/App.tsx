@@ -98,6 +98,8 @@ export function App() {
   // A topic's menu, at the pointer (M10.4).
   const [menu, setMenu] = useState<{ topic: string; x: number; y: number }>()
   const [portrait, setPortrait] = useState<string>()
+  // The picture of where you are (after the M10 playtest): the area's, above the minimap.
+  const [scene, setScene] = useState<string>()
   // The journal page of the person you talk to, refreshed after every answer (age, where seen).
   const [about, setAbout] = useState<JournalPage>()
   const [ending, setEnding] = useState(false)
@@ -259,6 +261,17 @@ export function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [talk?.npc])
   useEffect(() => {
+    setScene(undefined)
+    if (!status?.scene || !client?.picture) return
+    let live = true
+    void client.picture(status.scene).then((url) => live && setScene(url))
+    return () => {
+      live = false
+    }
+    // A new picture only when the area changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status?.scene, client])
+  useEffect(() => {
     if (!talk || !client) {
       setAbout(undefined)
       return
@@ -343,11 +356,24 @@ export function App() {
             )}
           </section>
         )}
+        {scene && status && (
+          <figure className="scene">
+            <img src={scene} alt={t('app.scene', { name: status.area })} />
+          </figure>
+        )}
         <section>
           <h2>{t('app.map.title')}</h2>
           {status?.hexMap ? (
             <>
-              <HexMap data={status.hexMap} style={mapLook} mode="local" legend={false} height={220} label={t('app.map.label')} />
+              <HexMap
+                data={status.hexMap}
+                style={mapLook}
+                mode="local"
+                legend={false}
+                height={220}
+                label={t('app.map.label')}
+                onWalk={waiting ? undefined : (to) => void send(to.name ? `walk to ${to.name}` : `walk to ${to.c},${to.r}`)}
+              />
               <button type="button" className="link" onClick={() => openPage('map')}>
                 [{t('app.map.whole')}]
               </button>
@@ -512,6 +538,15 @@ export function App() {
             </button>
           )}
         </div>
+        {status?.choice && !talk && (
+          <div className="choice-bar" role="group" aria-label={status.choice.question}>
+            {status.choice.options.map((option, i) => (
+              <button key={option} type="button" className="link" onClick={() => void send(String(i + 1))}>
+                {i + 1}. {option}
+              </button>
+            ))}
+          </div>
+        )}
         <label className="prompt">
           <span aria-hidden="true">{'>'}</span>
           <input

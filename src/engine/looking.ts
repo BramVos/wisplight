@@ -3,6 +3,8 @@ import { parseDirection } from './parser'
 import { itemName, matchItem, withArticle } from './items'
 import { maxHp } from './rules/character'
 import { weather } from './weather'
+import { GameClock } from './clock'
+import type { Location } from './content'
 import type { World } from './world'
 
 // Looking (M10.4): at yourself, a way out, a place you can see, and a thing,
@@ -99,16 +101,60 @@ export function lookThing(world: World, words: string): Output | undefined {
   return text(`${capital(withArticle(itemName(world.content, item, 1)))} (${where}). ${def.description}`)
 }
 
-/** A thing that belongs to an object here, by the words for it. */
-export function detailHere(world: World, words: string): { look: string; take?: string } | undefined {
-  const wanted = words.toLowerCase().replace(/^(the|a|an|some)\s+/, '').trim()
-  for (const object of world.location(world.state.player.location).objects) {
-    const type = world.content.objectTypes.get(object.type)
-    const detail = type?.details.find((d) => d.words.some((w) => w.toLowerCase() === wanted))
-    if (detail) return detail
-  }
-  return undefined
+/** A thing a description names, found by its words (M10.4; places too after the M10 playtest). */
+export interface DetailFound {
+  /** What to call it: "the bowl of milk". */
+  name: string
+  look: string
+  take?: string
+  verbs?: Record<string, string>
 }
+
+/**
+ * A thing of this place or of an object here, by the words for it: the
+ * hollow between the roots, the apple on the stone. "The wooden bowl" finds
+ * the bowl by its last word.
+ */
+export function detailHere(world: World, words: string): DetailFound | undefined {
+  const wanted = words.toLowerCase().replace(/^(the|a|an|some|de|het|een)\s+/, '').trim()
+  if (!wanted) return undefined
+  const place = world.content.locations.get(world.state.player.location)
+  const all = [...(place?.details ?? []), ...world.location(world.state.player.location).objects.flatMap((o) => world.content.objectTypes.get(o.type)?.details ?? [])]
+  const last = wanted.split(/\s+/).at(-1)!
+  const found = all.find((d) => d.words.some((w) => w.toLowerCase() === wanted)) ?? all.find((d) => d.words.some((w) => w.toLowerCase() === last))
+  return found ? { name: `the ${found.words[0]}`, look: found.look, take: found.take, verbs: found.verbs } : undefined
+}
+
+/** The description of a place as it reads now: its variant, by day or night. */
+export function descriptionNow(world: World, location: Location): string {
+  const night = new GameClock(world.now).isNight
+  const variant = [...location.variants].reverse().find((v) => world.state.flags?.[v.flag])
+  const shown = variant ?? location.description
+  return (night && shown.night ? shown.night : shown.day).trim()
+}
+
+/**
+ * What the description of this place names, when nothing else here goes by
+ * those words (after the M10 playtest): the sentence it is in. What you read,
+ * you can look at.
+ */
+export function sceneryHere(world: World, words: string): { name: string; sentence: string } | undefined {
+  const significant = words
+    .toLowerCase()
+    .replace(/[^a-z' ]+/g, ' ')
+    .split(/\s+/)
+    .filter((w) => w.length > 2 && !SCENERY_STOP.has(w))
+  if (!significant.length) return undefined
+  const place = world.location(world.state.player.location)
+  const sentences = descriptionNow(world, place).replace(/[[\]]/g, '').replace(/\s+/g, ' ').split(/(?<=[.!?])\s+/)
+  // A word or its singular, in the singular or plural: stones, stone; bushes, bush.
+  const forms = (w: string) => [...new Set([w, w.replace(/s$/, ''), w.replace(/es$/, '')])].filter((f) => f.length > 2).join('|')
+  const fits = (sentence: string) => significant.every((w) => new RegExp(`\\b(${forms(w)})(e?s)?\\b`, 'i').test(sentence))
+  const sentence = sentences.find(fits)
+  return sentence ? { name: `the ${significant.join(' ')}`, sentence: sentence.trim() } : undefined
+}
+
+const SCENERY_STOP = new Set(['the', 'and', 'some', 'with', 'from', 'into', 'onto', 'that', 'this', 'there', 'here', 'your', 'you'])
 
 function firstSentence(text: string): string {
   return (text.replace(/\s+/g, ' ').trim().match(/^.*?[.!?](\s|$)/)?.[0] ?? text).trim()

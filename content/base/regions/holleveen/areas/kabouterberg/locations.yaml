@@ -16,6 +16,24 @@ locations:
     exits:
       up: { to: loc_kabouterberg_oak, minutes: 2 }
       northeast: { to: loc_route_crossroads, minutes: 30 }
+    details:
+      - words: [oak, old oak, tree]
+        look: The oak is broad and low, older than anyone's grandfather, and its roots grip the top of the hill. From down here you can just see the pale bowl between them. UP takes you to it.
+        verbs:
+          climb: You set a foot on a low root and think better of it. Whatever lives under this tree was here long before you.
+      - words: [hollow, hole, mouth]
+        look: The hollow opens between the roots of the oak, up on the hilltop, a dark mouth in the pale sand no higher than your knee. To see more you would have to go UP to the oak, and IN.
+        verbs:
+          dig: You kneel and put your hands to the sand, and stop. Nobody digs in the Kabouterberg; anyone in Veenhoek could tell you why.
+      - words: [bowl, milk, bowl of milk]
+        look: A wooden bowl of milk at the mouth of the hollow, full to the brim. Someone from Veenhoek put it there for the kabouters, and for nobody else.
+        take: You leave the bowl where it is. It was put there for the kabouters, not for you.
+        verbs:
+          drink: You bend over the bowl, and the whole hill seems to hold its breath. You straighten up again. That milk is not yours to drink.
+      - words: [sand, hill]
+        look: Pale, fine sand, dry even after rain. It has been swept smooth round the bowl, and there are no footprints in it but yours.
+        verbs:
+          dig: You kneel and put your hands to the sand, and stop. Nobody digs in the Kabouterberg; anyone in Veenhoek could tell you why.
 
   - id: loc_kabouterberg_oak
     name: The Old Oak
@@ -39,6 +57,27 @@ locations:
     exits:
       down: { to: loc_kabouterberg, minutes: 2 }
       in: { to: loc_kabouterberg_hollow }
+    details:
+      - words: [bowl, milk, wooden bowl, bowl of milk]
+        look: A wooden bowl, worn smooth by many hands, with fresh milk in it to the brim. Not a drop has been spilt on the stone.
+        take: You leave the bowl where it is. It was put there for the kabouters, not for you.
+        verbs:
+          drink: You bend over the bowl, and the leaves overhead go quiet. You straighten up again. That milk is not yours to drink.
+      - words: [stone, flat stone]
+        look: A flat grey stone, the only stone on the whole hill, set between two roots like a table. Its top is worn smooth where bowls have stood for longer than anyone remembers.
+        take: The stone is set deep between the roots. It stays where it is.
+      - words: [roots, root, oak, old oak, tree]
+        look: The roots grip the hilltop like fingers, grey and smooth, and under them the hollow opens into the dark. IN takes you there.
+        verbs:
+          climb: The lowest branches bend almost to the sand, easy to climb. You look at the bowl, and at the hollow, and decide against it.
+      - words: [leaves, branches, wind]
+        look: The leaves hiss overhead in a wind you cannot feel down here, and the lowest branches bend almost to the sand.
+        verbs:
+          climb: The lowest branches bend almost to the sand, easy to climb. You look at the bowl, and at the hollow, and decide against it.
+      - words: [sand]
+        look: The sand round the bowl has been swept smooth, and in it are small marks, like the strokes of a very small broom.
+        verbs:
+          dig: You kneel and put your hands to the sand, and stop. Nobody digs in the Kabouterberg; anyone in Veenhoek could tell you why.
 
   - id: loc_kabouterberg_hollow
     name: The Hollow under the Oak
@@ -60,3 +99,13 @@ locations:
         breath. The way out is up, towards the lighter dark.
     exits:
       out: { to: loc_kabouterberg_oak }
+    details:
+      - words: [tools, tiny tools, hook, knife, spade]
+        look: A hook, a knife no longer than your thumb and a spade the size of a spoon, hung in a neat row from the roots. They are sharp and clean and cared for, and they are not toys.
+        take: Your hand stops short of the little knife. Taking a kabouter's tools from its own house is the kind of thing people in Veenhoek tell stories about, and not happy ones.
+      - words: [roots, root]
+        look: Roots hang from the roof like ropes, pale and hairy, and the sand between them is dry and cool.
+      - words: [dark, further in]
+        look: Further in, the hollow narrows into a dark no wider than a cat. Something moves in there, or the sand settles.
+        verbs:
+          dig: You kneel and put your hands to the sand, and stop. Nobody digs in the Kabouterberg, and least of all in here.

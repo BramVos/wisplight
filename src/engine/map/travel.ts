@@ -5,7 +5,7 @@ import type { World } from '../world'
 import { playerSkill, sink } from '../rules/player'
 import { blessed } from '../rules/blessings'
 import { weather, weatherLine } from '../weather'
-import { centre, distance, type Hex, HEX_DIRECTIONS, type HexDirection, hexKey, neighbour, neighbours, stepToward, windBetween } from './hexgrid'
+import { centre, distance, type Hex, hexAt, HEX_DIRECTIONS, type HexDirection, hexKey, neighbour, neighbours, stepToward, windBetween } from './hexgrid'
 import { type Cell, regionMap, type RegionMap } from './region'
 
 // Walking across the region (FO, chapter 4, "Lopen en automatisch doorlopen"):
@@ -313,6 +313,7 @@ export function hexLocation(world: World, id: string): Location | undefined {
     description: { day: LAND[cell.land] },
     variants: [],
     exits: {},
+    details: [],
     objects: [],
     services: [],
     items: {},
@@ -331,7 +332,7 @@ const GROUND_OF: Partial<Record<string, string[]>> = { fen: ['fen'], water: ['me
 export type WalkPlan =
   | { kind: 'head'; wind: string; steps?: number }
   | { kind: 'to'; target: Hex; name: string }
-  | { kind: 'follow'; way: string; wind?: string }
+  | { kind: 'follow'; way: string; wind?: string; label?: string }
 
 export interface WalkResult {
   outputs: Output[]
@@ -581,9 +582,10 @@ export function walk(world: World, plan: WalkPlan, pass: (minutes: number) => Ou
   world.state.player.location = arrived ?? hexId(at)
   if (heading) mapState(world).heading = heading
   if (weather(world) === 'fog' && startWeather !== 'fog' && !reason) reason = 'A mist has come up while you walked.'
-  const how = plan.kind === 'head' ? `You head ${pretty(plan.wind)}` : plan.kind === 'to' ? `You make your way towards ${plan.name}` : `You follow ${plan.way === 'ridge' ? 'the dry ridge' : plan.way}`
-  const over = [...lands].map((l) => ({ fen: 'wet fen', fields: 'fields', woods: 'woods', heath: 'heath', water: frozen(world) ? 'the ice' : 'open water, poling' })[l] ?? l)
-  const summary = `${how} for ${duration(minutes)}, over ${list(over)}.${reason ? ` ${reason}` : ''}${arrived ? ` You come to ${world.location(arrived).name}.` : ''}`
+  const how = plan.kind === 'head' ? `You head ${pretty(plan.wind)}` : plan.kind === 'to' ? `You make your way towards ${plan.name}` : `You follow ${plan.way === 'ridge' ? 'the dry ridge' : (plan.label ?? plan.way)}`
+  // The way you follow is said once, by where it leads (after the M10 playtest); "over" names the rest.
+  const over = [...lands].filter((l) => !(plan.kind === 'follow' && l === plan.way)).map((l) => ({ fen: 'wet fen', fields: 'fields', woods: 'woods', heath: 'heath', water: frozen(world) ? 'the ice' : 'open water, poling' })[l] ?? l)
+  const summary = `${how} for ${duration(minutes)}${over.length ? `, over ${list(over)}` : ''}.${reason ? ` ${reason}` : ''}${arrived ? ` You come to ${world.location(arrived).name}.` : ''}`
   return { outputs: [{ kind: 'narration', text: summary }], minutes, at: world.state.player.location }
 }
 
@@ -624,12 +626,99 @@ export function followWay(content: Content, words: string): string | undefined {
   return undefined
 }
 
-/** For the exits of a place at the edge: the ways out across country from here. */
+/**
+ * The ways that go on from here, named by where they lead from here (after
+ * the M10 playtest: at the Kabouterberg its path is the path to Veenhoek, not
+ * the path to the Kabouterberg). A way through the place goes two ways; one
+ * that ends here, one. Each with the wind to follow it by.
+ */
+export function waysFrom(world: World, at: Hex): { label: string; way: string; wind?: string; to?: string }[] {
+  const map = regionMap(world.content)
+  if (!map) return []
+  const here = map.placeOn(at) ?? [...map.places.entries()].find(([, h]) => distance(h, at) <= 1)?.[0]
+  const seen = new Set<string>()
+  const out: { label: string; way: string; wind?: string; to?: string }[] = []
+  for (const h of [at, ...neighbours(at).map((n) => n.hex)]) {
+    for (const w of map.cell(h)?.ways ?? []) {
+      if (seen.has(w.name)) continue
+      seen.add(w.name)
+      const path = map.region.paths.find((p) => p.name === w.name)
+      if (!path) continue
+      const line = wayHexes(map, path.name)
+      // Where you are along it, and where each of its stops is.
+      const k = w.at
+      const stops = path.via.map((v) => {
+        const hex = typeof v === 'string' ? map.places.get(v) : hexAt(v[0], v[1], map.size)
+        const index = hex ? nearestIndex(line, hex) : -1
+        return { area: typeof v === 'string' ? v : undefined, index }
+      })
+      const kind = path.kind === 'canal' ? 'tow path' : path.kind
+      const generic = /^the (path|road|tow path) to /i.test(path.name)
+      const sides = [stops.filter((st) => st.index >= 0 && st.index < k && st.area !== here).reverse(), stops.filter((st) => st.index > k && st.area !== here)]
+      const ends = [k > 0 ? { stops: sides[0]!, hex: line[Math.max(0, k - 3)] } : undefined, k < line.length - 1 ? { stops: sides[1]!, hex: line[Math.min(line.length - 1, k + 3)] } : undefined].filter((e): e is { stops: typeof stops; hex: Hex | undefined } => Boolean(e))
+      for (const end of ends) {
+        const area = end.stops.find((st) => st.area)?.area
+        const name = area ? (world.content.areas.get(area)?.name ?? area) : undefined
+        const wind = end.hex ? windOfHexes(map, h, end.hex) : undefined
+        const toward = wind ? pretty(wind) : ''
+        // A way named for one of its ends goes by the end it leads to from here.
+        const label = generic
+          ? name
+            ? `the ${kind} to ${name}`
+            : `${path.name} ${toward}`.trim()
+          : ends.length > 1
+            ? `${path.name} ${toward}${name ? ` to ${name}` : ''}`.replace(/\s+/g, ' ').trim()
+            : name && !path.name.toLowerCase().includes(name.toLowerCase())
+              ? `${path.name} to ${name}`
+              : path.name
+        out.push({ label, way: path.name, ...(wind ? { wind } : {}), ...(name ? { to: name } : {}) })
+      }
+    }
+  }
+  return out
+}
+
+const wayLines = new WeakMap<RegionMap, Map<string, Hex[]>>()
+
+/** The hexes of a way in their order along it. */
+function wayHexes(map: RegionMap, name: string): Hex[] {
+  let cache = wayLines.get(map)
+  if (!cache) wayLines.set(map, (cache = new Map()))
+  let line = cache.get(name)
+  if (!line) {
+    const found: { hex: Hex; at: number }[] = []
+    for (let col = 0; col < map.cols; col++) for (let row = 0; row < map.rows; row++) for (const w of map.cell({ col, row })!.ways ?? []) if (w.name === name) found.push({ hex: { col, row }, at: w.at })
+    line = found.sort((a, b) => a.at - b.at).map((f) => f.hex)
+    cache.set(name, line)
+  }
+  return line
+}
+
+function nearestIndex(line: Hex[], hex: Hex): number {
+  let best = -1
+  let d = Infinity
+  line.forEach((h, i) => {
+    const dd = distance(h, hex)
+    if (dd < d) {
+      d = dd
+      best = i
+    }
+  })
+  return d <= 2 ? best : -1
+}
+
+/** The wind from one hex to another, in the words FOLLOW and HEAD take. */
+function windOfHexes(map: RegionMap, from: Hex, to: Hex): string | undefined {
+  const w = windBetween(centre(from, map.size), centre(to, map.size))
+  return w === 'here' ? undefined : windOf(w.replace('-', ''))
+}
+
+/** For the exits of a place at the edge: the ways out across country from here, by where they lead. */
 export function crossCountryLine(world: World, locationId: string): string | undefined {
   const map = regionMap(world.content)
   const hex = map?.locations.get(locationId)
   if (!map || !hex || !canSetOut(world, locationId)) return undefined
-  const names = new Set<string>()
-  for (const h of [hex, ...neighbours(hex).map((n) => n.hex)]) for (const w of map.cell(h)?.ways ?? []) names.add(w.name)
-  return names.size ? `Across country you can head any way, or follow ${[...names].sort().join(', ')}.` : 'Across country you can head any way from here.'
+  const ways = waysFrom(world, hex)
+  const labels = [...new Set(ways.map((w) => w.label))]
+  return labels.length ? `Across country you can head any way, or follow ${labels.length > 1 ? `${labels.slice(0, -1).join(', ')} or ${labels.at(-1)}` : labels[0]}.` : 'Across country you can head any way from here.'
 }

@@ -1,5 +1,18 @@
 # Changelog
 
+## M10, tweede speeltestronde, 28 september 2026
+
+- **Kiezen in plaats van raden.** Een commando dat hier maar één ding kan betekenen, doet dat meteen: TALK met één persoon erbij, USE bij één voorwerp, TAKE bij één ding op de grond. Noem je iets wat er niet is, of niets, dan krijg je een genummerde lijst ("Talk to whom? 1. Mirte 2. Saartje"). Je antwoordt met het cijfer of de naam, of klikt op een knop boven de invoer. Zijn er geen opties, dan krijg je een melding ("There is nobody here but you"). Dit werkt voor TALK, FOLLOW, LOOK, TAKE, DROP, USE en WALK TO.
+- **FOLLOW is vergevingsgezind.** De wegen heten naar waar ze vanaf hier heen gaan. Op de Kabouterberg is het nu "the path to Veenhoek", niet meer "the path to the Kabouterberg", en "follow path to kabouterberg" brengt je daar ook gewoon terug. Een weg met twee kanten vraagt welke kant: "1. the tow path west to Oude Zijl 2. the tow path east to Waagdam".
+- **Alles wat een beschrijving noemt, kun je aanraken.** LOOK HOLLOW of L MILK geeft altijd iets. Heeft het ding een eigen detail, dan krijg je die tekst, en anders de zin uit de beschrijving waarin het staat. Een ander werkwoord (DRINK MILK, KICK OAK) geeft nooit meer "You can't": een detail kan per werkwoord een eigen regel hebben, en anders laat je het ding met rust. Plekken hebben daarvoor nu `details` met `look`, `take` en `verbs`. De drie plekken van de Kabouterberg hebben ze: de holte, de eik, de melk, de steen en het kaboutergereedschap, trouw aan de lore (niet graven, niet stelen, de melk is niet voor jou).
+- **Afdwingen in de editor.** Onder Check staat een nieuwe lijst "Named, but no detail": per plek de dingen die de beschrijving met "a" of "an" invoert en waar niets op antwoordt. Nu zijn dat er 68 in de Nethermarch. Het is een lijst om af te werken, geen fout: LOOK vindt de zin toch al.
+- **De minimap met fog of war.** Ook overdag is alleen helder wat je nu ziet. Wat je pas zag, ligt onder een dunne nevel, en wat je lang geleden zag onder een dikkere. De minimap is ook om snel te reizen: onder de muis staat waar een klik heen gaat ("Walk to Veenhoek"), en een klik loopt erheen, ook vanuit volledig scherm. Voor een los vak is het commando `walk to 42,17`, alleen naar land dat je gezien hebt. De kaart in het dagboek toont alles helder, zoals eerst.
+- **De afbeelding van waar je bent.** Boven de minimap staat de afbeelding van het gebied waar je bent, als afbeeldingen aan staan. In de wildernis is dat die van de streek.
+
+Testen: loop naar de Kabouterberg en probeer LOOK HOLLOW, L MILK, DRINK MILK, TAKE MILK, DIG HILL en KICK OAK. Typ FOLLOW op de kade en kies met een cijfer of de knop. Typ TALK, LOOK XYZ of DROP zonder meer. Speel overdag en klik op de minimap. Open de editor onder Check. Tests in `tests/m10play.test.ts` (10), alle 605 groen.
+
+Nog niet: alleen de Kabouterberg heeft details. De rest van de 68 uit de editorlijst schrijf ik als je dat wilt, of je doet ze zelf in de editor. Een werkwoord op een detail geeft nu alleen tekst, zonder gevolg: DRINK MILK kan later een daad worden waar de kabouters op reageren (een standaardnasleep), als je dat wilt.
+
 ## M10.3, de restpunten, 28 september 2026
 
 - **Meelopen op verzoek.** Een plan, een wachter of de kroniekschrijver kan zeggen: deze persoon vraagt de vreemdeling mee (het nieuwe werkwoord `invite`). Die zoekt je op en vraagt het zelf, bijvoorbeeld "Will you walk up to the mill with me?". Ja is de gewone afspraak `lead`. Nee, of geen antwoord als het gesprek voorbij is, en de persoon gaat alleen of wacht, zoals de stap zegt. Een kind vraagt het alleen thuis of met een ouder erbij, en niet verder dan een kind mag.

@@ -1659,8 +1659,23 @@ pre.sheet {
   border-radius: 3px;
   touch-action: none;
 }
+.hexmap-canvas {
+  position: relative;
+}
 .hexmap-canvas canvas {
   display: block;
+}
+/* Where a click on the minimap would walk to. */
+.hexmap-hint {
+  position: absolute;
+  left: 6px;
+  bottom: 6px;
+  padding: 2px 7px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  color: var(--text);
+  font-size: 12px;
+  pointer-events: none;
 }
 .hexmap-full {
   position: fixed;
@@ -1679,4 +1694,25 @@ pre.sheet {
 .hexmap-full .hexmap-canvas {
   height: 100%;
   min-height: 0;
+}
+
+/* A choice the game put (after the M10 playtest): the options as buttons above the prompt. */
+.choice-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  padding: 4px 0 2px;
+  font-size: calc(13px * var(--text-scale));
+}
+
+/* The picture of where you are (after the M10 playtest): the area's, above the minimap. */
+.scene {
+  margin: 0 0 12px;
+}
+.scene img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+  border-radius: 3px;
 }

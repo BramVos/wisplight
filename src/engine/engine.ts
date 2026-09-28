@@ -2,6 +2,7 @@ import type { Archived } from './archive'
 import { seeFamily } from './acquaintance'
 import { entered } from './social/access'
 import { inscribedHere, readInscription } from './skills'
+import { answerChoice, choose, MAX_OPTIONS, offer } from './choice'
 import { brawlAnswer, brawlShown } from './social/brawl'
 import { CHECKPOINT_ENTRIES, CHECKPOINT_MINUTES, contentVersion, type Checkpoint, type CheckpointedSave } from './checkpoint'
 import { applyFarPlace, farPlaceOf, farRequest, farWords, wantFarPlace, type FarWords } from './growth/far'
@@ -31,13 +32,13 @@ import { journalPage, type JournalPage } from './journal'
 import { die } from './life'
 import { agree, agreements, leadAhead, openAgreements, promiseLines, settle } from './agreements'
 import { goAway, tierOf } from './lod'
-import { hexOfTopic, knownEntrance, knownPlace, landLines, landMapData, walkTarget, type KnownPlace } from './map/known'
+import { hexOfTopic, knownEntrance, knownPlace, knownPlaces, landLines, landMapData, walkTarget, type KnownPlace } from './map/known'
 import { hexMapData, type HexMapData } from './map/view'
 import { distance as hexDistance, line as hexLine } from './map/hexgrid'
 import { takeBarge, travelTo } from './map/journey'
 import { mapText, mapView, type MapView } from './map/view'
 import { regionMap } from './map/region'
-import { canSetOut, followWay, hexOfId, isHexId, landmarkIn, look, playerHex, type WalkPlan, walk, windOf } from './map/travel'
+import { canSetOut, followWay, hasSeen, hexName, hexOfId, isHexId, landmarkIn, look, playerHex, type WalkPlan, walk, waysFrom, windOf } from './map/travel'
 import { knownRequests, requestName } from './requests'
 import { recordFact, seedNews } from './news'
 import { parseCommand, parseDirection } from './parser'
@@ -152,6 +153,8 @@ export interface JournalEntry {
 export interface Status {
   location: string
   area: string
+  /** What the picture of where you are shows (after the M10 playtest): the area's, by the id pictures go by. */
+  scene: string
   time: string
   money: string
   paused: boolean
@@ -165,6 +168,8 @@ export interface Status {
   hexMap?: HexMapData
   /** A world without a map of its own (Skerrow): its name, so the panel says so instead of promising one (M10.8). */
   mapless?: string
+  /** A choice the game put to the player (after the M10 playtest): answered with a number, or a click. */
+  choice?: { question: string; options: string[] }
   /** The character in short, for the side panel (FO, chapter 11). */
   character?: { name: string; title: string; level: number; hp: number; maxHp: number; xp: number; next: number; made: boolean; canLevel: boolean; shield: boolean }
   /** The fight in progress (FO, chapter 12). */
@@ -682,9 +687,13 @@ export class Engine {
   }
 
   async handle(input: string): Promise<Output[]> {
-    const text = input.trim().slice(0, 500)
+    let text = input.trim().slice(0, 500)
     if (!text) return []
     this.record({ t: this.world.now, k: 'cmd', v: text })
+    // The answer to a choice the game put (after the M10 playtest): a number or a name runs what it stands for.
+    const answer = this.state.talk || this.state.combat ? undefined : answerChoice(this.world, text)
+    if (answer && 'error' in answer) return [{ kind: 'error', text: answer.error }]
+    if (answer) text = answer.run
     for (const listener of this.listeners) listener({ kind: 'in', t: this.world.now, text })
     const before = this.state.player.location
     // A line in quotes is speech (the conversation window sends them so), but it can still be a quest's own words.
@@ -793,7 +802,13 @@ export class Engine {
         // One of a nameless group gets a name and a card when spoken to (M9.1).
         const crowd = npc ? undefined : crowdHere(this.world, who)
         if (crowd) npc = nameOne(this.world, crowd)
-        if (!npc) return [{ kind: 'error', text: command.args.length ? `There is nobody called "${who}" here.` : 'Talk to whom?' }]
+        if (!npc) {
+          // Nobody named, or nobody by that name (after the M10 playtest): one person here is the one; more, a choice.
+          const here = this.world.npcsAt(this.state.player.location).filter((id) => this.world.present(id))
+          const options = here.map((id) => ({ label: callName(this.world.npc(id)), command: `talk ${callName(this.world.npc(id))}${about?.trim() ? ` about ${about.trim()}` : ''}` }))
+          const picked = choose(this.world, who, who ? `There is nobody called "${who}" here. Talk to whom?` : 'Talk to whom?', options, 'There is nobody here but you.')
+          return 'run' in picked ? this.route(picked.run) : picked.show
+        }
         // Start the conversation first, so the NPC stays put during the minute it takes. A chat they were in breaks off.
         breakOff(this.world, npc)
         const opening = this.dialogue.start(npc)
@@ -853,10 +868,15 @@ export class Engine {
       case 'walk': {
         const to = /^(?:to|naar|towards|richting)\s+(.+)$/i.exec(command.args.join(' '))
         if (!to) return runCommand(this.host, { verb: 'go', args: command.args, raw: command.raw })
+        // WALK TO 42,17 (after the M10 playtest): a hex you have seen, as a click on the minimap sends it.
+        const spot = /^(\d+)\s*,\s*(\d+)$/.exec(to[1]!.trim())
+        if (spot) return this.walkToHex({ col: Number(spot[1]), row: Number(spot[2]) })
         const topic = this.topics.find(to[1]!)
         if (topic && this.beyond(topic)) return this.setOffBeyond(topic)
         const place = topic ? knownPlace(this.world, topic) : undefined
-        if (!topic || !place) return [{ kind: 'error', text: topic ? `You don't know where ${this.topics.name(topic)} is. Ask someone, or look for it.` : `You don't know a place called "${to[1]}".` }]
+        if (topic && !place) return [{ kind: 'error', text: `You don't know where ${this.topics.name(topic)} is. Ask someone, or look for it.` }]
+        // A name you don't know (after the M10 playtest): the places you do, that fit the words or are nearest.
+        if (!place) return this.walkWhere(to[1]!)
         const target = walkTarget(this.world, place)
         if (!target) return [{ kind: 'error', text: `${place.name} lies beyond ${this.world.words.region}.` }]
         // At the spot the tellers gave: what you can make out from here is all there is to go on.
@@ -979,9 +999,24 @@ export class Engine {
         const wind = windOf(windWord)
         const name = (wind ? command.args.slice(0, -1).join(' ') : words).toLowerCase().replace(/^(the|de|het)\s+/, '').trim()
         const way = followWay(this.content, name)
-        if (!way) return [{ kind: 'error', text: 'Follow what? The tow path, the road, the fen path, or a ridge you know.' }]
         if (way === 'ridge' && (this.state.player.journal ?? {})['the_dry_ridge'] === undefined) return [{ kind: 'error', text: "You don't know of any ridge here." }]
-        return this.walkPlan({ kind: 'follow', way, ...(wind ? { wind } : {}) })
+        // A way named exactly, with its wind or the ridge: off you go, by the name it has from here.
+        if (way && (wind || way === 'ridge')) {
+          const from = playerHex(this.world)
+          const label = from && wind ? waysFrom(this.world, from).find((o) => o.way === way && o.wind === wind)?.label : undefined
+          return this.walkPlan({ kind: 'follow', way, ...(wind ? { wind } : {}), ...(label ? { label } : {}) })
+        }
+        // Otherwise the ways from here, by where they lead (after the M10 playtest): one that fits is followed, several are a choice.
+        const map = regionMap(this.content)
+        const hex = map ? playerHex(this.world) : undefined
+        const options = hex ? waysFrom(this.world, hex).map((o) => ({ label: o.label, command: `follow ${o.way}${o.wind ? ` ${o.wind}` : ''}` })) : []
+        if (way) {
+          const along = options.filter((o) => o.command.startsWith(`follow ${way}`))
+          if (along.length === 1) return this.route(along[0]!.command)
+          if (along.length > 1) return offer(this.world, 'Follow it which way?', along)
+        }
+        const picked = choose(this.world, words, words ? 'Follow which way?' : 'Follow which way?', options, 'There is no way to follow from here: you can HEAD any way across country.')
+        return 'run' in picked ? this.route(picked.run) : picked.show
       }
       default: {
         const outputs = runCommand(this.host, command)
@@ -1064,6 +1099,7 @@ export class Engine {
     return {
       location: location.name,
       area: this.content.areas.get(location.area)?.name ?? location.area,
+      scene: `area_${location.area}`,
       time: this.clock.format(this.world.calendar),
       money: this.world.money(this.state.player.money),
       paused: false,
@@ -1074,6 +1110,7 @@ export class Engine {
       journal: this.journal(),
       map: this.compactMap(),
       hexMap: hexMapData(this.world, { width: 51, height: 35 }),
+      ...(this.state.choice && !this.state.talk ? { choice: { question: this.state.choice.question, options: this.state.choice.options.map((o) => o.label) } } : {}),
       ...(regionMap(this.content) ? {} : { mapless: this.content.world.name }),
       ...this.characterStatus(),
     }
@@ -1393,6 +1430,37 @@ export class Engine {
   }
 
   /** Walks across the region, then shows where the walk ended (FO, chapter 4). */
+  /** WALK TO a hex: one you have seen, in the region, and not where you stand. */
+  private walkToHex(hex: { col: number; row: number }): Output[] {
+    const map = regionMap(this.content)
+    const here = playerHex(this.world)
+    if (!map || !here) return [{ kind: 'error', text: 'There is no map to walk by here.' }]
+    if (!map.cell(hex) || !hasSeen(this.world, map, hex)) return [{ kind: 'error', text: 'You have not seen that land yet. HEAD that way, or walk to a place you know.' }]
+    if (hex.col === here.col && hex.row === here.row) return [{ kind: 'error', text: 'You are there already.' }]
+    // "On the tow path, near Veenhoek" as a goal: "the tow path, near Veenhoek".
+    const name = hexName(this.world, map, hex).replace(/^(On|In) /, '').replace(/^[A-Z]/, (c) => c.toLowerCase())
+    return this.walkPlan({ kind: 'to', target: hex, name })
+  }
+
+  /** WALK TO a name you don't know: the known places it may mean, nearest first; one that fits is walked to at once. */
+  private walkWhere(words: string): Output[] {
+    const here = playerHex(this.world)
+    const far = (p: KnownPlace) => (here && p.hex ? hexDistance(here, p.hex) : 1e6)
+    const places = knownPlaces(this.world)
+      .filter((p) => !(here && p.hex && p.hex.col === here.col && p.hex.row === here.row))
+      // Nearest first; what you have only heard of comes after.
+      .sort((a, b) => far(a) - far(b) || a.name.localeCompare(b.name))
+    const missing = `You don't know a place called "${words}".`
+    const picked = choose(this.world, words, 'Walk where?', places.map((p) => ({ label: p.name, command: `walk to ${p.name}` })), missing)
+    if ('run' in picked) {
+      const place = places.find((p) => `walk to ${p.name}` === picked.run)!
+      const target = walkTarget(this.world, place)
+      return target ? this.walkPlan({ kind: 'to', target, name: place.name }, place) : [{ kind: 'error', text: `${place.name} lies beyond ${this.world.words.region}.` }]
+    }
+    const narrowed = (this.state.choice?.options.length ?? 0) < Math.min(places.length, MAX_OPTIONS)
+    return picked.show[0]?.kind === 'error' || narrowed ? picked.show : [{ kind: 'error', text: missing }, ...picked.show]
+  }
+
   private walkPlan(plan: WalkPlan, place?: KnownPlace): Output[] {
     const result = walk(this.world, plan, (minutes) => this.pass(minutes))
     if (Array.isArray(result)) return result

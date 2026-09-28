@@ -8,10 +8,12 @@ import { hasWords, t } from './i18n'
 // The map in colour (M10; FO, chapter 4, "Weergave"; the proposal page
 // approved on 28 September 2026), as two maps after the M10 playtest:
 //
-// - The minimap, in the side panel: the land around the stranger, close up.
-//   What they see now is clear; beyond it by day what they saw lately, and
-//   what they saw long ago vaguer; at night and in mist only their own small
-//   circle is clear and the rest is dark or grey.
+// - The minimap, in the side panel: the land around the stranger, close up,
+//   with fog of war: what they see now is clear, what they saw lately lies
+//   under a thin fog and what they saw long ago under a thicker one; at night
+//   and in mist their own small circle is clear and the rest dark or grey. It
+//   is for getting about quickly: a click on a place or on land you have
+//   seen walks there.
 // - The map, in the journal: everything the stranger knows, always clear, to
 //   look at at leisure: the land, the places, and the secrets they know.
 //
@@ -168,9 +170,14 @@ function veil(style: MapStyleName, light: HexMapData['light']): string {
   return style === 'dark' ? '#04060b' : style === 'bw' ? '#5a5a5a' : '#3b4458'
 }
 
-/** What the minimap does to a hex beyond sight: dim it by day, darken it at night, grey it in mist. */
+/** The fog of war by day: the colour of land you do not see now. */
+function fog(s: MapStyle, style: MapStyleName): string {
+  return style === 'dark' ? mix(s.unknown, '#8a8f84', 0.18) : style === 'bw' ? '#dcdcdc' : mix(s.unknown, '#ffffff', 0.25)
+}
+
+/** What the minimap does to a hex beyond sight: fog by day, darkness at night, grey in mist (after the M10 playtest: fog of war by day too). */
 function beyondSight(fill: string, memory: number, s: MapStyle, style: MapStyleName, light: HexMapData['light']): string {
-  if (light === 'day') return memory === 1 ? mix(fill, s.ground, 0.12) : mix(fill, s.ground, 0.45)
+  if (light === 'day') return mix(fill, fog(s, style), memory === 1 ? 0.42 : 0.66)
   const base = memory === 1 ? fill : mix(fill, s.ground, 0.3)
   return mix(base, veil(style, light), light === 'night' ? 0.64 : 0.58)
 }
@@ -255,7 +262,7 @@ function draw(canvas: HTMLCanvasElement, data: HexMapData, s: MapStyle, style: M
     const feature = FEATURE[flags >> 2] ?? ''
     if (feature && !flash && r >= 3) {
       if (local && memory < 2 && data.light !== 'day') continue
-      ctx.globalAlpha = local && memory === 0 ? 0.55 : 1
+      ctx.globalAlpha = local && memory < 2 ? (memory === 1 ? 0.5 : 0.3) : 1
       glyph(ctx, feature, x, y, s, k)
       ctx.globalAlpha = 1
     }
@@ -308,7 +315,7 @@ function draw(canvas: HTMLCanvasElement, data: HexMapData, s: MapStyle, style: M
     ctx.closePath()
     ctx.fill()
   }
-  // Night and mist on the minimap: your small circle clear, and the dark or the grey closing in beyond it.
+  // Night and mist on the minimap: your small circle clear, and the dark or the grey closing in beyond it. By day the fog lies on each hex.
   if (local && data.light !== 'day' && data.you) {
     const [x, y] = at(data.you.c, data.you.r)
     const inner = Math.max(r * 1.2, (data.sight + 0.5) * r * SQRT3)
@@ -316,7 +323,7 @@ function draw(canvas: HTMLCanvasElement, data: HexMapData, s: MapStyle, style: M
     const g = ctx.createRadialGradient(x, y, inner, x, y, outer)
     const [cr, cg, cb] = rgb(veil(style, data.light))
     g.addColorStop(0, `rgba(${cr},${cg},${cb},0)`)
-    g.addColorStop(1, `rgba(${cr},${cg},${cb},${data.light === 'night' ? 0.45 : 0.45})`)
+    g.addColorStop(1, `rgba(${cr},${cg},${cb},0.45)`)
     ctx.fillStyle = g
     ctx.fillRect(0, 0, width, height)
   }
@@ -341,7 +348,7 @@ function draw(canvas: HTMLCanvasElement, data: HexMapData, s: MapStyle, style: M
     const [x, y] = at(p.c, p.r)
     if (!visible(x, y)) continue
     const memory = sightOf.get(`${p.c},${p.r}`) ?? 2
-    ctx.globalAlpha = local && memory < 2 && data.light !== 'day' ? 0.65 : 1
+    ctx.globalAlpha = local && memory < 2 ? (data.light === 'day' ? 0.85 : 0.65) : 1
     placeIcon(ctx, p.kind, x, y, p.status, s.label, ik)
     label(ctx, p.name, x, y, s, width, size)
     ctx.globalAlpha = 1
@@ -358,6 +365,42 @@ function draw(canvas: HTMLCanvasElement, data: HexMapData, s: MapStyle, style: M
   }
 }
 
+/** Where a click on the minimap would take you: a place or zone by its name, else a hex you have seen. */
+export interface WalkTarget {
+  c: number
+  r: number
+  name?: string
+}
+
+/** What lies under a point of the canvas: the nearest place (or heard-of zone), else the hex, if you have seen it. */
+function hitAt(data: HexMapData, view: View, width: number, height: number, px: number, py: number): WalkTarget | undefined {
+  const mx = view.x + (px - width / 2) / view.r
+  const my = view.y - (py - height / 2) / view.r
+  const far = (c: number, r: number) => {
+    const [x, y] = hexPoint(c, r)
+    return Math.hypot(x - mx, y - my)
+  }
+  // An icon is easier to hit than its hex: a little more than a hex, or ten pixels.
+  const reach = Math.max(1.2, 10 / view.r)
+  const place = [...data.places].sort((a, b) => far(a.c, a.r) - far(b.c, b.r))[0]
+  if (place && far(place.c, place.r) <= reach) return { c: place.c, r: place.r, name: place.name }
+  const zone = data.zones.find((z) => far(z.c, z.r) <= Math.max(reach, z.hexes * SQRT3))
+  if (zone) return { c: zone.c, r: zone.r, name: zone.name }
+  let best: WalkTarget | undefined
+  let nearest = 1.05
+  for (let i = 0; i < data.hexes.length; i += 5) {
+    const c = data.hexes[i]!
+    const r = data.hexes[i + 1]!
+    if (data.keys[data.hexes[i + 2]!] === 'unknown') continue
+    const d = far(c, r)
+    if (d < nearest) {
+      nearest = d
+      best = { c, r }
+    }
+  }
+  return best
+}
+
 /**
  * A map in colour: the minimap (local) or the map; zoom with the buttons or
  * the wheel, drag the map about, and open either full screen.
@@ -370,6 +413,7 @@ export function HexMap({
   height = 360,
   label: ariaLabel,
   onLevel,
+  onWalk,
 }: {
   data: HexMapData
   style: MapStyleName
@@ -380,10 +424,29 @@ export function HexMap({
   label: string
   /** The map's other levels: a switch that opens one. */
   onLevel?: (level: string) => void
+  /** The minimap: a click on a place or on land you have seen walks there. */
+  onWalk?: (target: WalkTarget) => void
 }) {
   const [full, setFull] = useState(false)
   const body = (fullscreen: boolean) => (
-    <MapCanvas data={data} style={style} mode={mode} legend={fullscreen || legend} height={fullscreen ? undefined : height} label={ariaLabel} onLevel={onLevel} full={fullscreen} onFull={() => setFull(!fullscreen)} />
+    <MapCanvas
+      data={data}
+      style={style}
+      mode={mode}
+      legend={fullscreen || legend}
+      height={fullscreen ? undefined : height}
+      label={ariaLabel}
+      onLevel={onLevel}
+      full={fullscreen}
+      onFull={() => setFull(!fullscreen)}
+      onWalk={
+        onWalk &&
+        ((target) => {
+          if (fullscreen) setFull(false)
+          onWalk(target)
+        })
+      }
+    />
   )
   return (
     <>
@@ -409,6 +472,7 @@ function MapCanvas({
   onLevel,
   full,
   onFull,
+  onWalk,
 }: {
   data: HexMapData
   style: MapStyleName
@@ -419,7 +483,9 @@ function MapCanvas({
   onLevel?: (level: string) => void
   full: boolean
   onFull: () => void
+  onWalk?: (target: WalkTarget) => void
 }) {
+  const [hover, setHover] = useState<WalkTarget>()
   const canvas = useRef<HTMLCanvasElement>(null)
   const box = useRef<HTMLDivElement>(null)
   const [size, setSize] = useState({ width: 0, height: 0 })
@@ -499,12 +565,23 @@ function MapCanvas({
     return () => el.removeEventListener('wheel', onWheel)
   }, [zoom])
 
+  const walkable = mode === 'local' && !!onWalk
+  const under = (event: { clientX: number; clientY: number; currentTarget: HTMLCanvasElement }) => {
+    if (!view) return undefined
+    const rect = event.currentTarget.getBoundingClientRect()
+    const hit = hitAt(data, view, size.width, size.height, event.clientX - rect.left, event.clientY - rect.top)
+    return hit && data.you && hit.c === data.you.c && hit.r === data.you.r ? undefined : hit
+  }
   const onDown = (event: ReactPointerEvent<HTMLCanvasElement>) => {
     if (mode === 'local' || !view) return
     drag.current = { x: event.clientX, y: event.clientY, view }
     event.currentTarget.setPointerCapture(event.pointerId)
   }
   const onMove = (event: ReactPointerEvent<HTMLCanvasElement>) => {
+    if (walkable) {
+      const hit = under(event)
+      if (hit?.c !== hover?.c || hit?.r !== hover?.r || hit?.name !== hover?.name) setHover(hit)
+    }
     const d = drag.current
     if (!d) return
     setView({ ...d.view, x: d.view.x - (event.clientX - d.x) / d.view.r, y: d.view.y + (event.clientY - d.y) / d.view.r })
@@ -549,16 +626,25 @@ function MapCanvas({
           ref={canvas}
           role="img"
           aria-label={ariaLabel}
-          style={{ background: s.ground, cursor: mode === 'map' ? 'grab' : 'default' }}
+          style={{ background: s.ground, cursor: mode === 'map' ? 'grab' : walkable && hover ? 'pointer' : 'default' }}
           onPointerDown={onDown}
           onPointerMove={onMove}
           onPointerUp={onUp}
           onPointerCancel={onUp}
+          onPointerLeave={() => setHover(undefined)}
+          onClick={(event) => {
+            if (!walkable) return
+            const hit = under(event)
+            if (hit) onWalk!(hit)
+          }}
           onDoubleClick={(event) => {
+            // On the minimap a click walks; the buttons and the wheel zoom.
+            if (walkable) return
             const rect = event.currentTarget.getBoundingClientRect()
             zoom(1.6, event.clientX - rect.left, event.clientY - rect.top)
           }}
         />
+        {walkable && hover && <div className="hexmap-hint">{t('app.map.walkTo', { name: hover.name ?? t('app.map.thisLand') })}</div>}
       </div>
       {legend && <Legend data={data} s={s} onFlash={setFlash} />}
     </div>

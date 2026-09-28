@@ -629,6 +629,8 @@ export interface GameState {
   wanted?: Record<string, { fine: number; since: number }>
   /** The player's companions (FO, chapter 13). */
   companions?: Companion[]
+  /** A choice put to the player (after the M10 playtest): numbered, answered by the next command. */
+  choice?: { question: string; options: { label: string; command: string }[]; t: number }
   /** Objects the chronicler placed (M10.5), with the last id handed out. */
   props?: { seq: number; list: Prop[] }
   /** Existing chances the rules made visible (M10.5), by id, and when; and the news they put out, by area. */

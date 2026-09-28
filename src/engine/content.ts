@@ -211,6 +211,24 @@ export const PropTemplateSchema = z
   .strict()
 export type PropTemplate = z.infer<typeof PropTemplateSchema>
 
+/**
+ * A thing in a place or on an object that a description names (M10.4; after
+ * the M10 playtest also on places): the apple on the old stone, the bowl of
+ * milk at the hollow. LOOK tells of it; TAKE and other verbs (drink, climb,
+ * touch) have their own line; what a verb has no line for, it answers in a
+ * way that leaves the thing be.
+ */
+export const DetailSchema = z
+  .object({
+    words: z.array(z.string()).min(1),
+    look: z.string(),
+    take: z.string().optional(),
+    /** Lines for other verbs: { drink: "...", climb: "..." }. */
+    verbs: z.record(z.string(), z.string()).optional(),
+  })
+  .strict()
+export type Detail = z.infer<typeof DetailSchema>
+
 /** Words on an object (M10.5): a rune stone, a carved lintel. Lore against the dc reads them. */
 export const InscriptionSchema = z
   .object({
@@ -244,7 +262,7 @@ export const ObjectTypeSchema = z.object({
   aliases: z.array(z.string()).default([]),
   affordances: z.array(AffordanceSchema).default([]),
   /** Things that belong to it (M10.4): the apple on the old stone. LOOK tells of it, TAKE answers with its own line. */
-  details: z.array(z.object({ words: z.array(z.string()).min(1), look: z.string(), take: z.string().optional() }).strict()).default([]),
+  details: z.array(z.lazy(() => DetailSchema)).default([]),
   /** Words carved or written on it (M10.5): READ it. */
   inscription: InscriptionSchema.optional(),
   repair: z
@@ -339,6 +357,8 @@ export const LocationSchema = z.object({
   forage: z.array(z.string()).default([]),
   /** What lies hidden here (M10.5): SEARCH finds it. */
   hidden: z.array(HiddenSchema).default([]),
+  /** Things the description names that you can look at and handle (after the M10 playtest): the hollow, the bowl of milk. */
+  details: z.array(DetailSchema).default([]),
 })
 export type Location = z.infer<typeof LocationSchema>
 

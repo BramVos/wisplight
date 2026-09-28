@@ -3,7 +3,7 @@ import { parseDocument, stringify } from 'yaml'
 import { DEFAULT_PALETTE, MapPaletteSchema, SURFACE, TERRAIN_ORDER, type Level, type MapPalette } from './map/palette'
 import { previewMapData, type HexMapData } from './map/view'
 import { ContentError, loadContent, type Content, type ContentFile, type Direction } from './content'
-import { regionPreview, warnings } from './builder'
+import { regionPreview, sceneryWarnings, warnings } from './builder'
 import { applyEdits, entities, ENTITY_KINDS, LISTS, parseEntityYaml, worldPrefix, type Edit, type EditResult, type EntityKind, type Raw } from './edit'
 import { worldFrame } from './dialogue/prompt'
 import type { LlmRequest } from './dialogue/llm'
@@ -39,6 +39,8 @@ export interface EditorView {
   problems: string[]
   /** Things that load but deserve a look. */
   warnings: string[]
+  /** Things descriptions bring in with no detail to look at or handle (after the M10 playtest). */
+  scenery: string[]
   files: string[]
   /** Each region as the generator draws it from its zones, while the world loads. */
   maps: Record<string, string>
@@ -158,6 +160,7 @@ export function editorView(files: ContentFile[]): EditorView {
     }),
     problems,
     warnings: content ? warnings(content) : [],
+    scenery: content ? sceneryWarnings(content) : [],
     economy: content ? economyOverview(content) : [],
     files: files.map((f) => f.path).sort(),
     maps: content ? Object.fromEntries([...content.regions.keys()].map((id) => [id, regionPreview(content, id) ?? ''])) : {},

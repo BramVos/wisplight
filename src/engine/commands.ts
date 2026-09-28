@@ -1,5 +1,6 @@
 import { inSeason } from './content'
-import { describeSelf, detailHere, lookThere, lookThing } from './looking'
+import { describeSelf, descriptionNow, detailHere, lookThere, lookThing, sceneryHere } from './looking'
+import { choose, MAX_OPTIONS, offer, type ChoiceOption } from './choice'
 import { force, objectHere, openObject, passLock, pick, takeFrom } from './social/access'
 import { craftCheck, craftOf, craftProgress, craftRank, craftTitle, interruption, learnFrom, ownWorkBonus, rankIndex, soldOwn, workplaceLeave } from './crafts'
 import { gather, searchHere, track, treat } from './skills'
@@ -20,7 +21,7 @@ import { chatsAt } from './chatter'
 import { fulfil } from './requests'
 import { giveBack, stories, type Tempo } from './stories'
 import { isNight, qtyName, wakeNpc } from './npc/execute'
-import { parseDirection, splitQuantity, type Command } from './parser'
+import { parseCommand, parseDirection, splitQuantity, type Command } from './parser'
 import type { World } from './world'
 import { nightOut, rest } from './rules/player'
 import { widowTurnsBack } from './quests/antagonists'
@@ -71,13 +72,16 @@ const error = (value: string): Output => ({ kind: 'error', text: value })
 
 export function runCommand(host: CommandHost, command: Command): Output[] {
   const { world } = host
+  // DRINK MILK, CLIMB OAK (after the M10 playtest): a thing of this place with its own line for the verb.
+  const own = detailVerb(world, command)
+  if (own) return [text(own)]
   switch (command.verb) {
     case '':
       return []
     case 'look':
       return [describeRoom(world)]
     case 'examine':
-      return [examine(world, command.args.join(' '))]
+      return examine(host, command.args.join(' '))
     case 'go':
       return go(host, command.args)
     case 'exits': {
@@ -191,9 +195,48 @@ export function runCommand(host: CommandHost, command: Command): Output[] {
       return knock(host, command.args)
     case 'help':
       return [{ kind: 'system', text: HELP }]
-    default:
+    default: {
+      // Any other verb on a thing the description names: it stays as it is (after the M10 playtest).
+      const words = command.args.join(' ')
+      const thing = words ? (detailHere(world, words)?.name ?? sceneryHere(world, words)?.name) : undefined
+      if (thing) return [text(`You think better of it, and leave ${thing} be.`)]
       return [error(`You can't "${command.raw}" here. Type HELP for a list of commands.`)]
+    }
   }
+}
+
+/** The line a thing of this place has for this verb (DRINK MILK), if it has one. */
+function detailVerb(world: World, command: Command): string | undefined {
+  if (!command.args.length || ['look', 'examine', 'take', 'go'].includes(command.verb)) return undefined
+  const verbs = detailHere(world, command.args.join(' '))?.verbs
+  if (!verbs) return undefined
+  const said = command.raw.trim().split(/\s+/)[0]!.toLowerCase()
+  return verbs[command.verb] ?? verbs[said]
+}
+
+/** Nested runs of a picked option: one is enough, so a choice never loops. */
+let picking = 0
+
+/**
+ * What a command is about (after the M10 playtest): the one option that fits
+ * is done at once; otherwise the options, numbered, after the line for what
+ * was not found; with no options, only that line.
+ */
+function pickOrOffer(host: CommandHost, words: string, question: string, options: ChoiceOption[], missing: string): Output[] {
+  if (!options.length) return [error(missing)]
+  const picked = choose(host.world, words, question, options, missing)
+  if ('run' in picked && picking === 0) {
+    picking++
+    try {
+      return runCommand(host, parseCommand(picked.run))
+    } finally {
+      picking--
+    }
+  }
+  const shown = 'show' in picked ? picked.show : offer(host.world, question, options)
+  // Some options fit the words: they are the answer, not a miss.
+  const narrowed = (host.world.state.choice?.options.length ?? 0) < Math.min(options.length, MAX_OPTIONS)
+  return words && !narrowed ? [error(missing), ...shown] : shown
 }
 
 export function clockText(world: World): string {
@@ -206,11 +249,7 @@ export function describeRoom(world: World): Output {
   const hex = hexOfId(world.state.player.location)
   if (hex) return describeHex(world, hex)
   const location = world.location(world.state.player.location)
-  const night = new GameClock(world.now).isNight
-  const variant = [...location.variants].reverse().find((v) => world.state.flags?.[v.flag])
-  const shown = variant ?? location.description
-  const description = (night && shown.night ? shown.night : shown.day).trim()
-  const lines = [location.name, description]
+  const lines = [location.name, descriptionNow(world, location)]
   const state = placeStateLine(world, location.id)
   if (state) lines.push(state)
   const ground = world.state.ground[location.id]
@@ -234,7 +273,31 @@ export function exitLine(world: World): string {
   return `Exits: ${exits.join(', ')}${across ? `\n${across}` : ''}`
 }
 
-function examine(world: World, target: string): Output {
+function examine(host: CommandHost, target: string): Output[] {
+  const { world } = host
+  const found = examineHere(world, target)
+  if (found) return [found]
+  // What the description names (after the M10 playtest): the sentence it is in.
+  const scenery = sceneryHere(world, target)
+  if (scenery) return [text(scenery.sentence)]
+  return pickOrOffer(host, target, 'Look at what?', lookOptions(world), `You see no "${target}" here.`)
+}
+
+/** What you could look at here: who is here, the objects, the things the description names, what lies here. */
+function lookOptions(world: World): ChoiceOption[] {
+  const here = world.state.player.location
+  const place = world.content.locations.get(here)
+  const people = world.npcsAt(here).map((id) => callName(world.npc(id)))
+  const objects = world.location(here).objects.flatMap((o) => {
+    const type = world.content.objectTypes.get(o.type)
+    return type ? [label(o, type)] : []
+  })
+  const details = [...(place?.details ?? []), ...world.location(here).objects.flatMap((o) => world.content.objectTypes.get(o.type)?.details ?? [])].map((d) => d.words[0]!)
+  const ground = Object.keys(world.state.ground[here] ?? {}).filter((i) => (world.state.ground[here]![i] ?? 0) > 0).map((i) => itemName(world.content, i, 1))
+  return [...new Set([...people, ...objects, ...details, ...ground])].map((name) => ({ label: name, command: `look ${name}` }))
+}
+
+function examineHere(world: World, target: string): Output | undefined {
   if (!target.trim()) return describeRoom(world)
   // LOOK ME (M10.4): yourself, as others see you.
   if (/^(me|myself|self|yourself|mij|mezelf|mijzelf)$/i.test(target.trim())) return describeSelf(world)
@@ -266,9 +329,7 @@ function examine(world: World, target: string): Output {
   const thing = lookThing(world, target)
   if (thing) return thing
   // LOOK SOUTH, LOOK AT THE TIDEPOOLS: what lies that way (M10.4).
-  const there = lookThere(world, target)
-  if (there) return there
-  return error(`You see no "${target}" here.`)
+  return lookThere(world, target)
 }
 
 // ---------------------------------------------------------------- moving
@@ -393,7 +454,13 @@ function take(host: CommandHost, args: string[]): Output[] {
   // Something that belongs to an object here (M10.4): its own line, not "there is no apple here".
   const detail = item ? undefined : detailHere(world, name)
   if (detail) return [text(detail.take ?? `That belongs where it is. You leave it.`)]
-  if (!item) return [error(name ? `There is no "${name}" here to take.` : 'Take what?')]
+  // What the description names, and is not a thing to carry (after the M10 playtest).
+  const scenery = item || !name ? undefined : sceneryHere(world, name)
+  if (scenery) return [text('That belongs where it is. You leave it.')]
+  if (!item) {
+    const lying = Object.keys(ground).filter((i) => (ground[i] ?? 0) > 0).sort()
+    return pickOrOffer(host, name, 'Take what?', lying.map((i) => ({ label: itemName(world.content, i, 1), command: `take ${itemName(world.content, i, 1)}` })), name ? `There is no "${name}" here to take.` : 'There is nothing here to take.')
+  }
   const amount = qty === 'all' ? ground[item]! : Math.min(qty, ground[item]!)
   add(ground, item, -amount)
   add(world.state.player.inventory, item, amount)
@@ -432,7 +499,10 @@ function drop(host: CommandHost, args: string[]): Output[] {
   }
   const { qty, text: name } = splitQuantity(args)
   const item = matchItem(world.content, name, Object.keys(inventory))
-  if (!item) return [error(name ? `You don't have "${name}".` : 'Drop what?')]
+  if (!item) {
+    const carried = Object.keys(inventory).filter((i) => (inventory[i] ?? 0) > 0).sort()
+    return pickOrOffer(host, name, 'Drop what?', carried.map((i) => ({ label: itemName(world.content, i, 1), command: `drop ${itemName(world.content, i, 1)}` })), name ? `You don't have "${name}".` : 'You carry nothing to put down.')
+  }
   const amount = qty === 'all' ? inventory[item]! : Math.min(qty, inventory[item]!)
   add(inventory, item, -amount)
   const here = world.state.player.location
@@ -659,7 +729,10 @@ function use(host: CommandHost, args: string[]): Output[] {
   })
   const verbHere = (type: ObjectType) => type.affordances.some((a) => a.actors.includes('player') && words.split(/\s+/).includes(a.verb))
   const object = candidates.find(({ instance, type }) => nameMatches(words, instance, type)) ?? (candidates.length === 1 && !words ? candidates[0] : undefined) ?? candidates.find(({ type }) => verbHere(type))
-  if (!object) return [error(words ? `There is no "${words}" here to use.` : 'Use what?')]
+  if (!object) {
+    const usable = candidates.filter(({ type }) => type.affordances.some((a) => a.actors.includes('player')))
+    return pickOrOffer(host, words, 'Use what?', usable.map(({ instance, type }) => ({ label: label(instance, type), command: `use ${label(instance, type)}` })), words ? `There is no "${words}" here to use.` : 'There is nothing here to use.')
+  }
   const usable = object.type.affordances.filter((a) => a.actors.includes('player'))
   const affordance = pickAffordance(world, usable, words)
   if (!affordance) return [error(`You can't do much with the ${label(object.instance, object.type)}.`)]
