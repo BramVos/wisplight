@@ -1,4 +1,5 @@
 import { inSeason } from './content'
+import { describeSelf, detailHere, lookThere, lookThing } from './looking'
 import { force, openObject, passLock, takeFrom } from './social/access'
 import { ownerOf, ownersHere } from './social/ownership'
 import { returnLent } from './agreements'
@@ -87,7 +88,7 @@ export function runCommand(host: CommandHost, command: Command): Output[] {
       // TAKE <thing> FROM <chest> (M10.3): from an open chest; someone else's is theirs.
       const from = /^(.+?)\s+(?:from|out of|uit)\s+(.+)$/i.exec(command.args.join(' '))
       if (from && !findNpcHere(world, from[2]!)) return takeFrom(world, from[1]!, from[2]!)
-      return take(host, command.args)
+      return each(command.args, (a) => take(host, a))
     }
     case 'open':
       return openObject(world, command.args.join(' '))
@@ -98,15 +99,22 @@ export function runCommand(host: CommandHost, command: Command): Output[] {
       return out
     }
     case 'drop':
-      return drop(host, command.args)
+      return each(command.args, (a) => drop(host, a))
     case 'give':
       return give(host, command.args)
     case 'list':
       return list(world)
     case 'buy':
-      return buy(host, command.args)
+      return each(command.args, (a) => buy(host, a))
     case 'sell':
-      return sell(host, command.args)
+      // SELL ALL: whatever someone here buys (M10.4).
+      if (command.args.length === 1 && /^(all|everything|alles)$/i.test(command.args[0]!)) {
+        const buys = new Set(openServices(world).filter(({ service, location }) => world.serviceOpen(location, service)).flatMap(({ service }) => service.buys))
+        const sellable = Object.keys(world.state.player.inventory).filter((i) => buys.has(i) && (world.state.player.inventory[i] ?? 0) > 0).sort()
+        if (!sellable.length) return [error('Nobody here buys anything you carry.')]
+        return sellable.flatMap((i) => sell(host, ['all', ...itemName(world.content, i, 1).split(' ')]))
+      }
+      return each(command.args, (a) => sell(host, a))
     case 'rent':
       return rent(host)
     case 'use':
@@ -203,6 +211,8 @@ export function exitLine(world: World): string {
 
 function examine(world: World, target: string): Output {
   if (!target.trim()) return describeRoom(world)
+  // LOOK ME (M10.4): yourself, as others see you.
+  if (/^(me|myself|self|yourself|mij|mezelf|mijzelf)$/i.test(target.trim())) return describeSelf(world)
   const here = world.state.player.location
   const npcId = findNpcHere(world, target)
   if (npcId) {
@@ -227,10 +237,12 @@ function examine(world: World, target: string): Output {
     const read = pinned.length ? ` Among the notes, newer than the rest: ${pinned.map((f) => `"${f.text.precise}"`).join(' ')}` : ''
     return text(`${object.instance.description ?? object.type.description}${notes.length ? ` ${notes.join(' ')}` : ''}${read}${hint}`)
   }
-  const inventory = world.state.player.inventory
-  const ground = world.state.ground[here] ?? {}
-  const item = matchItem(world.content, target, new Set([...Object.keys(inventory), ...Object.keys(ground)]))
-  if (item) return text(world.content.items.get(item)!.description)
+  // What belongs to an object here comes first (the apple on the stone), then what you carry and what lies here, with where (M10.4).
+  const thing = lookThing(world, target)
+  if (thing) return thing
+  // LOOK SOUTH, LOOK AT THE TIDEPOOLS: what lies that way (M10.4).
+  const there = lookThere(world, target)
+  if (there) return there
   return error(`You see no "${target}" here.`)
 }
 
@@ -352,7 +364,10 @@ function take(host: CommandHost, args: string[]): Output[] {
     return [text(`You pick up ${taken.length > 1 ? `${taken.slice(0, -1).join(', ')} and ${taken.at(-1)}` : taken[0]}.`)]
   }
   const { qty, text: name } = splitQuantity(args)
-  const item = matchItem(world.content, name, Object.keys(ground))
+  const item = matchItem(world.content, name, Object.keys(ground).filter((i) => (ground[i] ?? 0) > 0))
+  // Something that belongs to an object here (M10.4): its own line, not "there is no apple here".
+  const detail = item ? undefined : detailHere(world, name)
+  if (detail) return [text(detail.take ?? `That belongs where it is. You leave it.`)]
   if (!item) return [error(name ? `There is no "${name}" here to take.` : 'Take what?')]
   const amount = qty === 'all' ? ground[item]! : Math.min(qty, ground[item]!)
   add(ground, item, -amount)
@@ -360,9 +375,36 @@ function take(host: CommandHost, args: string[]): Output[] {
   return [text(`You pick up ${qtyName(world, item, amount)}.`)]
 }
 
+/**
+ * "cask, sailcloth and rope" (M10.4): several things in one command, each on
+ * its own; one thing as before.
+ */
+function each(args: string[], one: (args: string[]) => Output[]): Output[] {
+  const joined = args.join(' ')
+  if (!/,|\s(and|en)\s/i.test(joined)) return one(args)
+  const parts = joined.split(/\s*,\s*(?:and\s+|en\s+)?|\s+(?:and|en)\s+/i).map((p) => p.trim()).filter(Boolean)
+  return parts.length > 1 ? parts.flatMap((p) => one(p.split(/\s+/))) : one(args)
+}
+
 function drop(host: CommandHost, args: string[]): Output[] {
   const { world } = host
   const inventory = world.state.player.inventory
+  // DROP ALL (M10.4): everything carried, but not what you hold or wear.
+  if (args.length === 1 && /^(all|everything|alles)$/i.test(args[0]!)) {
+    const gear = world.state.player.character?.gear
+    const worn = new Set([gear?.weapon, gear?.armour, gear?.shield].filter(Boolean))
+    const items = Object.keys(inventory).filter((i) => (inventory[i] ?? 0) > 0 && !worn.has(i)).sort()
+    if (!items.length) return [error('You carry nothing to put down.')]
+    const here = world.state.player.location
+    world.state.ground[here] ??= {}
+    const names = items.map((i) => {
+      const n = inventory[i]!
+      add(inventory, i, -n)
+      add(world.state.ground[here]!, i, n)
+      return qtyName(world, i, n)
+    })
+    return [text(`You put down ${names.length > 1 ? `${names.slice(0, -1).join(', ')} and ${names.at(-1)}` : names[0]}.`)]
+  }
   const { qty, text: name } = splitQuantity(args)
   const item = matchItem(world.content, name, Object.keys(inventory))
   if (!item) return [error(name ? `You don't have "${name}".` : 'Drop what?')]

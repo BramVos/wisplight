@@ -1,4 +1,5 @@
 import type { Content } from '../content'
+import { selfGear, selfState } from '../looking'
 import type { Output } from '../commands'
 import { check as rollCheck, PLAYER_BONUS, type CheckResult } from '../dialogue/checks'
 import { relation } from '../dialogue/relations'
@@ -136,7 +137,7 @@ export function createCommand(world: World, args: string[]): Output[] {
   const named: Record<string, string> = {}
   const loose: string[] = []
   for (const w of args) {
-    const m = /^(name|boosts|skills|talent|pronoun)=(.+)$/i.exec(w)
+    const m = /^(name|boosts|skills|talent|pronoun|look)=(.+)$/i.exec(w)
     if (m) named[m[1]!.toLowerCase()] = m[2]!
     else loose.push(w.toLowerCase())
   }
@@ -163,6 +164,7 @@ export function createCommand(world: World, args: string[]): Output[] {
     ...(named['skills'] ? { skills: named['skills'].split(',').map((s) => s.trim()) } : {}),
     ...(named['talent'] ? { talent: named['talent'].trim() } : {}),
     ...(named['pronoun'] && ['she', 'he', 'they'].includes(named['pronoun'].toLowerCase()) ? { pronoun: named['pronoun'].toLowerCase() as 'she' | 'he' | 'they' } : {}),
+    ...(named['look'] ? { appearance: named['look'].replace(/_/g, ' ') } : {}),
   }
   return makeCharacter(world, final)
 }
@@ -177,6 +179,7 @@ export function makeCharacter(world: World, choice: CreationChoice): Output[] {
   if ('problems' in made) return [{ kind: 'error', text: made.problems.join(' ') }]
   const c = made.character
   c.made = true
+  if (choice.appearance?.trim()) c.appearance = choice.appearance.trim().slice(0, 300)
   const player = world.state.player
   // The ready-made traveller's gear goes back; the new character's own comes.
   const old = player.character
@@ -216,6 +219,18 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 const signed = (n: number) => (n >= 0 ? `+${n}` : `${n}`)
 
 export function sheetLines(world: World): string[] {
+  return [...sheetBody(world), ...selfLines(world)]
+}
+
+/** How the stranger looks and is (M10.4): on the sheet as for LOOK ME. */
+function selfLines(world: World): string[] {
+  const c = world.state.player.character
+  if (!c) return []
+  const gear = selfGear(world)
+  return ['', `${c.appearance ? `Looks: ${c.appearance}` : 'Looks: as a stranger does.'}`, ...(gear ? [gear] : []), selfState(world)]
+}
+
+function sheetBody(world: World): string[] {
   const c = character(world)
   if (!c) return ['This world has no rules for characters.']
   const content = world.content
@@ -399,6 +414,8 @@ export function rest(world: World, minutes: number, slept = false): void {
   const max = maxHp(world.content, c)
   if (slept) {
     c.hp = max
+    // For LOOK ME (M10.4): how long since the last sleep.
+    world.state.player.sleptAt = world.now
     delete c.conditions['sickened']
     // The Feather Bed (Mother Holle): a full night clears every ailment but curses.
     if (blessed(world.content, c, 'The Feather Bed')) {

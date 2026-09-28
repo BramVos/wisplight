@@ -128,6 +128,8 @@ export const ObjectTypeSchema = z.object({
   description: z.string(),
   aliases: z.array(z.string()).default([]),
   affordances: z.array(AffordanceSchema).default([]),
+  /** Things that belong to it (M10.4): the apple on the old stone. LOOK tells of it, TAKE answers with its own line. */
+  details: z.array(z.object({ words: z.array(z.string()).min(1), look: z.string(), take: z.string().optional() }).strict()).default([]),
   repair: z
     .object({
       consumes: ItemCounts,

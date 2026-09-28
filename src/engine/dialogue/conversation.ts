@@ -1,4 +1,4 @@
-import { asksAge, toldAge } from '../acquaintance'
+import { asksAge, learnTie, toldAge } from '../acquaintance'
 import type { Output } from '../commands'
 import { parseMoney, STUIVER } from '../items'
 import { MONTHS, WEEKDAYS } from '../clock'
@@ -594,6 +594,9 @@ export class Dialogue {
 
     // One thing the NPC does after the talk, from the voice (M10.3).
     if (reply && reply.after.kind !== 'none' && !talk.after && doAfter(world, npcId, reply.after, talk.facts ?? [])) talk.after = true
+
+    // Family asked about or named: the stranger knows now who belongs to whom (M10.4).
+    for (const person of [...topics, ...this.topics.recognise(replyText)]) if (person !== npcId && world.content.npcs.has(person) && tieTo(world, npcId, person)) learnTie(world, npcId, person)
 
     // Names the NPC brought up of its own accord and knows: the journal has them, heard from this NPC (M10.3).
     // People, places and tales only: "I saw him" is no saw.

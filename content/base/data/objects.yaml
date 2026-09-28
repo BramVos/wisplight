@@ -157,6 +157,12 @@ object_types:
     name: old stone
     aliases: [stone, dog stone, steen]
     description: A worn stone, waist-high, with a dog carved on one side. There are apple cores in the moss around it, and one whole apple on top.
+    details:
+      - words: [apple, apples, the apple, appel]
+        look: An apple on top of the stone, left for the dog. It has gone soft on one side, and a wasp is at it.
+        take: You leave it be. It isn't yours, and the dog it was left for might mind.
+      - words: [apple cores, cores, moss]
+        look: Apple cores, brown and old, sunk into the moss around the foot of the stone. People have been leaving apples here for a long time.
     affordances:
       - id: offer
         verb: offer

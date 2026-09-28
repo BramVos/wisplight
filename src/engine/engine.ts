@@ -1,4 +1,5 @@
 import type { Archived } from './archive'
+import { seeFamily } from './acquaintance'
 import { entered } from './social/access'
 import { CHECKPOINT_ENTRIES, CHECKPOINT_MINUTES, contentVersion, type Checkpoint, type CheckpointedSave } from './checkpoint'
 import { applyFarPlace, farPlaceOf, farRequest, farWords, wantFarPlace, type FarWords } from './growth/far'
@@ -677,6 +678,8 @@ export class Engine {
     this.lookAround()
     // A leader going ahead moves with the player's steps (M10.3).
     leadAhead(this.world)
+    // A child seen with a parent: family the stranger knows of (M10.4).
+    seeFamily(this.world)
     if (before !== this.state.player.location) {
       arrived(this.world)
       // Into someone's home without leave (M10.3): trespass, if someone of the house sees it.

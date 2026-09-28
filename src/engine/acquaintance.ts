@@ -92,3 +92,24 @@ function ago(minutes: number): string {
   const days = Math.round(minutes / (24 * 60))
   return days === 1 ? 'yesterday' : `${days} days ago`
 }
+
+/** The stranger now knows these two are family (M10.4): asked, told, or seen together. */
+export function learnTie(world: World, a: string, b: string): void {
+  const known = (world.state.player.knownTies ??= {})
+  for (const [x, y] of [
+    [a, b],
+    [b, a],
+  ] as const) {
+    const list = (known[x] ??= [])
+    if (!list.includes(y)) list.push(y)
+  }
+}
+
+/** A child here with a parent here: the stranger sees they belong together (M10.4). */
+export function seeFamily(world: World): void {
+  const here = world.npcsAt(world.state.player.location)
+  for (const id of here) {
+    if (!world.npc(id).child) continue
+    for (const tie of world.npc(id).relations) if (tie.role === 'parent' && tie.to && here.includes(tie.to)) learnTie(world, id, tie.to)
+  }
+}

@@ -46,6 +46,8 @@ export interface Character {
   usedToday?: Record<string, number>
   /** Made by the player (CREATE), not the ready-made traveller. */
   made?: boolean
+  /** How they look, from the making (M10.4). */
+  appearance?: string
   /** Minutes of rest not yet counted towards an hour's healing. */
   restMinutes?: number
 }
@@ -53,6 +55,8 @@ export interface Character {
 export interface CreationChoice {
   name: string
   pronoun?: 'she' | 'he' | 'they'
+  /** How they look, in the player's own words (M10.4), for LOOK ME and the sheet. */
+  appearance?: string
   ancestry: string
   background: string
   class: string

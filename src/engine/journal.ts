@@ -66,10 +66,12 @@ export function journalPage(world: World, topics: TopicRegistry, id: string): Jo
     page.links.push(...link(npc.home, 'lives at'))
     if (npc.work && npc.work !== npc.home) page.links.push(...link(npc.work, 'works at'))
     page.links.push(...link(areaTopicId(content, world.location(npc.home).area), 'from'))
-    // Who they are to others is village knowledge, once you have met them; private ties stay private.
+    // Who they are to others (M10.4): only what the stranger heard or saw: asked, told, or a child seen with a parent.
     const shown = new Set<string>()
+    const told = (tie: { id?: string; name: string }) => Boolean(tie.id && world.state.player.knownTies?.[npc.id]?.includes(tie.id)) || npc.public_facts.some((f) => f.includes(tie.name))
+    const family = ties(world, npc.id).filter((t) => !t.private && t.kind !== 'known')
     if (met) {
-      for (const tie of ties(world, npc.id).filter((t) => !t.private && t.kind !== 'known')) {
+      for (const tie of family.filter(told)) {
         const label = `${noun(tie)}${tie.status === 'alive' ? '' : `, ${tie.status}`}`
         const linked = tie.id ? link(tie.id, label) : []
         if (linked.length) page.links.push(...linked)
@@ -78,8 +80,9 @@ export function journalPage(world: World, topics: TopicRegistry, id: string): Jo
       }
     }
     for (const other of content.npcs.values()) {
-      if (other.id !== npc.id && !shown.has(other.id) && npc.household && other.household === npc.household) page.links.push(...link(other.id, 'family'))
+      if (other.id !== npc.id && !shown.has(other.id) && npc.household && other.household === npc.household && world.state.player.knownTies?.[npc.id]?.includes(other.id)) page.links.push(...link(other.id, 'family'))
     }
+    if (met && family.length && !family.some(told)) page.lines.push('Family: unknown.')
     const death = world.state.npcs[npc.id]?.dead
     if (death && heard[death.fact]) page.lines.push(`Dead since ${day(world, death.t)}.`)
     const view = personView(world, npc.id)

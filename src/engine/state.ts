@@ -388,6 +388,10 @@ export interface Debt {
 }
 
 export interface PlayerState {
+  /** Family ties the stranger has heard of or seen (M10.4), by person. */
+  knownTies?: Record<string, string[]>
+  /** When the stranger last slept (M10.4): tired after eighteen hours. */
+  sleptAt?: number
   /** Homes the stranger was let into (M10.3), until when. */
   permits?: Record<string, number>
   /** The news of each area the player has been told (M9.4): told once, and again when it changes. */
