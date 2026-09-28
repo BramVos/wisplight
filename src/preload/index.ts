@@ -71,6 +71,7 @@ contextBridge.exposeInMainWorld('wisplight', {
     compare: (role: string, choices: { provider: string; model: string }[]) => ipcRenderer.invoke('ai:compare', role, choices),
     choose: (role: string, provider: string, model: string) => ipcRenderer.invoke('ai:choose', role, provider, model),
     setBudget: (usd: number) => ipcRenderer.invoke('ai:budget', usd),
+    setReplyWithin: (seconds: number) => ipcRenderer.invoke('ai:reply-within', seconds),
     setMonthBudget: (usd: number | null) => ipcRenderer.invoke('ai:month-budget', usd),
     setCredit: (provider: string, usd: number | null) => ipcRenderer.invoke('ai:credit', provider, usd),
     csv: () => ipcRenderer.invoke('ai:csv'),

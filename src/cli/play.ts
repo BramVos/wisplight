@@ -15,7 +15,8 @@ const saves = new SaveStore(resolve(import.meta.dirname, '../../saves/cli.sqlite
 let engine = new Engine(content, { seed: Number(process.env['WISPLIGHT_SEED'] ?? 1), builder: true })
 
 const print = (outputs: Output[]) => {
-  for (const output of outputs) stdout.write(`\n${output.text}\n`)
+  // A spoken line the game wrote itself while a model is in play is marked with ~ (M10.8).
+  for (const output of outputs) stdout.write(`\n${output.kind === 'speech' && output.source === 'rules' ? '~ ' : ''}${output.text}\n`)
 }
 
 print(engine.start())

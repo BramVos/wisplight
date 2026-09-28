@@ -3,7 +3,8 @@ import { join } from 'node:path'
 
 // The transcript (M10.4): everything the player sees, as Markdown, in a
 // folder of their choice. One file per game and per real day, only ever
-// added to. Your input as `> ...`, speech as a quote, system lines in
+// added to. Your input as `> ...`, speech as a quote (a line the game wrote
+// itself while a model is in play starts with ~, M10.8), system lines in
 // italics, a heading per game day and per place. It never holds up the game:
 // lines wait in a buffer and go to disk in the background at the end of each
 // turn; past a few megabytes the file goes on in a next one (-2.md); and when
@@ -17,6 +18,8 @@ export interface TranscriptSettings {
 export interface TranscriptLine {
   kind: string
   text: string
+  /** Speech (M10.8): from the model, or the game's own line; the game's own is marked with ~. */
+  source?: 'model' | 'rules'
 }
 
 /** Where the game stands: the game day and the place, for the headings. */
@@ -91,7 +94,7 @@ export class Transcript {
     for (const line of lines) {
       const text = line.text.trim()
       if (!text) continue
-      if (line.kind === 'speech') this.buffer.push(`${text.split('\n').map((l) => `> ${l}`).join('\n')}\n`)
+      if (line.kind === 'speech') this.buffer.push(`${text.split('\n').map((l, i) => `> ${i === 0 && line.source === 'rules' ? '~ ' : ''}${l}`).join('\n')}\n`)
       else if (line.kind === 'system' || line.kind === 'check' || line.kind === 'error') this.buffer.push(`${text.split('\n').map((l) => (l.trim() ? `*${l.trim()}*` : '')).join('\n')}\n`)
       else this.buffer.push(`${text}\n`)
     }

@@ -398,7 +398,8 @@ describe('M7: the personal quests of the companions', () => {
   it("The Brotherhood's Charter: by force", () => play('the_brotherhoods_charter', 'by_force', ['@quest the_brotherhoods_charter', '@quest the_drainage_question', ...resistance]))
   it('opens when a companion is close enough, and begins when you talk', async () => {
     const engine = await game()
-    await run(engine, ['@goto loc_gerrit_house', '@bring gerrit', '@flag personal_the_brotherhoods_charter'])
+    // He brings it up himself when he thinks well enough of the stranger (M10.8); a wary Gerrit waits for the subject.
+    await run(engine, ['@goto loc_gerrit_house', '@bring gerrit', '@flag personal_the_brotherhoods_charter', '@like gerrit 30 30'])
     expect(await run(engine, ['talk gerrit'])).toMatch(/New quest: The Brotherhood's Charter/)
   })
 
@@ -603,6 +604,9 @@ describe('the journal as an overview (playtest after M7)', () => {
     engine.state.player.journal!['npc_lubbert'] = engine.world.now
     engine.state.player.journal!['npc_aaltje'] = engine.world.now
     engine.state.player.journal!['graafhaven'] = engine.world.now
+    // Under People only who was met, seen or told of (M10.8): someone told the stranger of Lubbert.
+    expect(engine.status().journal.people.find((p) => p.id === 'npc_lubbert')).toBeUndefined()
+    ;(engine.state.player.sources ??= {})['npc_lubbert'] = [{ from: 'npc_aaltje', t: engine.world.now, level: 1 }]
     const j = engine.status().journal
     expect(j.people.find((p) => p.id === 'npc_aaltje')!.group).toBe('Veenhoek')
     expect(j.people.find((p) => p.id === 'npc_lubbert')!.group).toBe('Waagdam')

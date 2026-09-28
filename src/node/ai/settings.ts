@@ -32,7 +32,12 @@ interface SettingsFile {
   models?: Partial<Record<ProviderId, { ids: string[]; at: string }>>
   /** Pictures of places and people: off unless the player picks an image model. */
   pictures?: PictureChoice
+  /** How long a spoken reply may take, in seconds (M10.8): ten unless the player sets it at the dialogue model. */
+  replyWithinSeconds?: number
 }
+
+/** The default time a spoken reply may take (M10.8; FO, chapter 18). */
+export const REPLY_WITHIN_SECONDS = 10
 
 export interface PictureChoice {
   provider: ProviderId
@@ -50,6 +55,7 @@ export interface SettingsSummary {
   /** Roles whose chosen model is no longer in its provider's list. */
   missing: ChosenRole[]
   pictures?: PictureChoice
+  replyWithinSeconds: number
 }
 
 export class SettingsStore {
@@ -157,6 +163,17 @@ export class SettingsStore {
     this.write()
   }
 
+  get replyWithinSeconds(): number {
+    return this.data.replyWithinSeconds ?? REPLY_WITHIN_SECONDS
+  }
+
+  /** From three seconds to a minute; past it, the game's own line stands in. */
+  setReplyWithin(seconds: number): void {
+    if (!Number.isFinite(seconds)) return
+    this.data.replyWithinSeconds = Math.round(Math.max(3, Math.min(60, seconds)))
+    this.write()
+  }
+
   summary(): SettingsSummary {
     const describe = (provider: ProviderId) => {
       const key = this.key(provider)
@@ -170,6 +187,7 @@ export class SettingsStore {
       models: Object.fromEntries(Object.entries(this.data.models ?? {}).map(([id, list]) => [id, list?.ids ?? []])),
       missing: this.missing(),
       ...(this.data.pictures ? { pictures: { ...this.data.pictures } } : {}),
+      replyWithinSeconds: this.replyWithinSeconds,
     }
   }
 }

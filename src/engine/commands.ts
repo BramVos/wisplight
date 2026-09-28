@@ -1,3 +1,4 @@
+import { publicShort } from './acquaintance'
 import { inSeason } from './content'
 import { describeSelf, descriptionNow, detailHere, lookThere, lookThing, sceneryHere } from './looking'
 import { choose, MAX_OPTIONS, offer, type ChoiceOption } from './choice'
@@ -41,11 +42,18 @@ export type OutputKind = 'room' | 'text' | 'system' | 'error' | 'narration' | 's
 export interface Output {
   kind: OutputKind
   text: string
+  /**
+   * Speech only (M10.8): from the model, or the game's own (a set line, a greeting, a stock line standing in). Set
+   * only when a model is in play; without one every line is the game's own and nothing needs telling apart.
+   */
+  source?: 'model' | 'rules'
 }
 
 export interface CommandHost {
   world: World
   pass(minutes: number): Output[]
+  /** A place the stranger knows of but does not see from here (M10.8): what they know of it, and which way it lies. */
+  knownPlace?(target: string): string | undefined
   /** Passes up to so many minutes, and stops early when stop() says so (M9.4: WAIT ends when someone you need comes by). */
   passUntil?(minutes: number, stop: () => string | undefined): Output[]
 }
@@ -256,9 +264,9 @@ export function describeRoom(world: World): Output {
   if (ground && Object.keys(ground).length > 0) lines.push(`On the ground: ${listItems(world.content, ground)}.`)
   lines.push(exitLine(world))
   const people = world.npcsAt(location.id).map((id) => {
-    const npc = world.npc(id)
     const activity = world.npcState(id).activity
-    return activity && !['taking it easy', 'at home'].includes(activity) ? `${npc.short} (${activity})` : npc.short
+    const short = publicShort(world, id)
+    return activity && !['taking it easy', 'at home'].includes(activity) ? `${short} (${activity})` : short
   })
   if (people.length > 0) lines.push(`Here: ${people.join(', ')}.`)
   lines.push(...crowdLines(world, location.id))
@@ -277,6 +285,9 @@ function examine(host: CommandHost, target: string): Output[] {
   const { world } = host
   const found = examineHere(world, target)
   if (found) return [found]
+  // A place the stranger knows of, out of sight (M10.8): Graafhaven from the tow path, before the sentence that names it.
+  const known = target.trim() ? host.knownPlace?.(target) : undefined
+  if (known) return [text(known)]
   // What the description names (after the M10 playtest): the sentence it is in.
   const scenery = sceneryHere(world, target)
   if (scenery) return [text(scenery.sentence)]
@@ -306,7 +317,7 @@ function examineHere(world: World, target: string): Output | undefined {
   if (npcId) {
     const npc = world.npc(npcId)
     const activity = world.npcState(npcId).activity
-    return text(`${npc.short}. ${npc.appearance}${activity ? ` ${capital(world.say('{they}', npcId))} ${isOrAre(npc)} ${activity}.` : ''}`)
+    return text(`${publicShort(world, npcId)}. ${npc.appearance}${activity ? ` ${capital(world.say('{they}', npcId))} ${isOrAre(npc)} ${activity}.` : ''}`)
   }
   const object = findObjectHere(world, target)
   if (object) {

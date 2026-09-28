@@ -51,6 +51,7 @@ export class AiService {
       role: (role) => this.settings.role(role),
       provider: (id) => this.provider(id),
       budgetUsdPerHour: () => this.settings.budgetUsdPerHour,
+      replyWithinMs: () => this.settings.replyWithinSeconds * 1000,
       log: this.log,
       usage: this.usage,
       // The last hour's costs on disk (M9.3): the hourly budget holds after a restart.

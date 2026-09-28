@@ -12,7 +12,8 @@ import type { UsageStore } from './usage'
 // problem it throws, and the engine answers with a template instead.
 
 // A reply of the voice within six seconds, or the set line (FO, chapter 18); the conversation may ask for less, for its second try.
-const TIMEOUT_MS: Record<LlmRole, number> = { voice: 6000, brain: 10000, chronicler: 90000, advisor: 90000 }
+// The voice's own limit is the player's setting (replyWithinMs, M10.8), carried by each request; this is only a ceiling.
+const TIMEOUT_MS: Record<LlmRole, number> = { voice: 60000, brain: 10000, chronicler: 90000, advisor: 90000 }
 // From this share of the hourly budget on, calls of low priority wait: the chronicler, and goal choices of NPCs without a quest role (FO, chapter 16).
 const LOW_PRIORITY_SHARE = 0.8
 const FAILURES_BEFORE_COOLDOWN = 3
@@ -35,6 +36,8 @@ export interface GatewayOptions {
   timeoutMs?: Partial<Record<LlmRole | 'illustrator', number>>
   /** Told when a call starts or ends, per role (M10.4: the lights in the status bar). */
   onActivity?: (activity: RoleActivity[]) => void
+  /** How long a spoken reply may take over its tries (M10.8): the player's setting. */
+  replyWithinMs?: () => number
 }
 
 /** The roles shown as lights (M10.4): the editor's drafts are the builder's. */
@@ -254,8 +257,15 @@ export class Gateway implements LlmClient {
     }
   }
 
-  report(_rejection: LlmRejection): void {
+  /** How long a spoken reply may take over its tries (M10.8): the engine asks before each reply. */
+  replyWithinMs(): number {
+    return this.options.replyWithinMs?.() ?? 10_000
+  }
+
+  report(rejection: LlmRejection): void {
     if (this.last) this.options.usage.reject(this.last.provider, this.last.model)
+    // Why the engine threw the reply away, in the AI log beside the call (M10.8).
+    this.options.log.reject(rejection.role ?? 'voice', rejection.reason)
   }
 
   /** Pauses calls when the rate-limit window is empty or nearly so. */

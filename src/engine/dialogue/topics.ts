@@ -78,6 +78,29 @@ export class TopicRegistry {
     return found
   }
 
+  /**
+   * Puts the names of these topics in [brackets] (M10.8): what a speaker names that the stranger knows or was just
+   * told can be followed, as in the log. Longest names first; a name already bracketed stays as it is.
+   */
+  link(text: string, allowed: Set<string>): string {
+    if (!allowed.size) return text
+    let remaining = text.toLowerCase()
+    if (remaining.length !== text.length) return text
+    const spans: [number, number][] = []
+    for (const { id, words, regex } of this.patterns) {
+      if (!allowed.has(id) || !words.every((w) => remaining.includes(w))) continue
+      const match = remaining.match(regex)
+      if (!match || match.index === undefined) continue
+      const start = match.index + (match[1]?.length ?? 0)
+      const end = match.index + match[0].length
+      remaining = remaining.slice(0, start) + ' '.repeat(end - start) + remaining.slice(end)
+      if (text[start - 1] !== '[') spans.push([start, end])
+    }
+    let out = text
+    for (const [start, end] of spans.sort((a, b) => b[0] - a[0])) out = `${out.slice(0, start)}[${out.slice(start, end)}]${out.slice(end)}`
+    return out
+  }
+
   /** Finds one topic from what a player typed after "ask about". */
   find(text: string): string | undefined {
     const direct = this.recognise(text)[0]

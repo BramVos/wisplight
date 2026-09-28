@@ -177,6 +177,7 @@ export class MockLlm implements LlmClient {
       effects: this.mode === 'good' && known ? [{ type: 'affinity', delta: 1, reason: 'a friendly question' }] : [],
       memory_note: known ? `The stranger asked me about ${known.topic}.` : 'The stranger talked to me.',
       ends_conversation: false,
+      keep_talking: 'no',
       ...(meta.questActions?.length ? { quest_action: this.mode === 'good' ? (recognised(meta) ?? 'none') : 'none' } : {}),
       ...(meta.offers?.length ? (this.mode === 'promise' ? { action: 'none', propose: 'none' } : offerChoice(meta)) : {}),
       ...(meta.after && this.mode === 'good' ? { after: meta.after } : {}),

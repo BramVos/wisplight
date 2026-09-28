@@ -70,7 +70,7 @@ Maren nods. "Morning."
 
 > 2
 You: "What's new around here?"
-Maren nods slowly. "A pot of pitch went missing from Maren at The Salt Kettle. Nobody knows who took it. (You saw it yourself.)"
+Maren nods slowly. "A pot of pitch went missing from Maren at [The Salt Kettle]. Nobody knows who took it. (You saw it yourself.)"
 
 > bye
 Maren lifts a hand. "Go on, then."
@@ -126,7 +126,7 @@ Maren nods. "Morning."
 
 > 2
 You: "What's new around here?"
-Maren thinks a moment. "A pot of pitch went missing from Maren at The Salt Kettle. Nobody knows who took it. (You saw it yourself.)"
+Maren thinks a moment. "A pot of pitch went missing from Maren at [The Salt Kettle]. Nobody knows who took it. (You saw it yourself.)"
 
 > bye
 Maren lifts a hand. "Go on, then."
@@ -173,7 +173,7 @@ Maren nods. "Morning."
 
 > 2
 You: "What's new around here?"
-Maren scratches an ear. "A pot of pitch went missing from Maren at The Salt Kettle. Nobody knows who took it. (You saw it yourself.)"
+Maren scratches an ear. "A pot of pitch went missing from Maren at [The Salt Kettle]. Nobody knows who took it. (You saw it yourself.)"
 
 > bye
 Maren lifts a hand. "Go on, then."
@@ -256,7 +256,7 @@ Maren nods. "Morning."
 
 > 2
 You: "What's new around here?"
-Maren nods slowly. "A pot of pitch went missing from Maren at The Salt Kettle. Nobody knows who took it. (You saw it yourself.)"
+Maren nods slowly. "A pot of pitch went missing from Maren at [The Salt Kettle]. Nobody knows who took it. (You saw it yourself.)"
 
 > bye
 Maren lifts a hand. "Go on, then."
@@ -293,7 +293,7 @@ Maren nods. "Morning."
 
 > 2
 You: "What's new around here?"
-Maren thinks a moment. "A pot of pitch went missing from Maren at The Salt Kettle. Nobody knows who took it. (You saw it yourself.)"
+Maren thinks a moment. "A pot of pitch went missing from Maren at [The Salt Kettle]. Nobody knows who took it. (You saw it yourself.)"
 
 > bye
 Maren lifts a hand. "Go on, then."
@@ -340,7 +340,7 @@ Maren nods. "Morning."
 
 > 2
 You: "What's new around here?"
-Maren scratches an ear. "A pot of pitch went missing from Maren at The Salt Kettle. Nobody knows who took it. (You saw it yourself.)"
+Maren scratches an ear. "A pot of pitch went missing from Maren at [The Salt Kettle]. Nobody knows who took it. (You saw it yourself.)"
 
 > bye
 Maren lifts a hand. "Go on, then."

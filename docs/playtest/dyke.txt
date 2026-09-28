@@ -37,7 +37,7 @@ Jan nods. "Evening."
 
 > 2
 You: "What's new around here?"
-Jan nods slowly. "The Count wants to drain the Holleveen and make a polder of it. A surveyor from Graafhaven has been measuring the fen since spring. The peat-cutters are furious; the miller thinks it will be good for trade."
+Jan nods slowly. "The Count wants to drain the Holleveen and make a [polder] of it. A surveyor from Graafhaven has been measuring the fen since spring. The peat-cutters are furious; the miller thinks it will be good for trade."
 Gerrit walks on to the northeast.
 
 > bye
@@ -102,7 +102,7 @@ Kobus nods. "Morning."
 
 > 2
 You: "What's new around here?"
-Kobus thinks a moment. "De Zwaan won't turn again before winter. Harmen can't pay for new sailcloth, and nobody will lend it him. (You heard it from Lubbert.)"
+Kobus thinks a moment. "De Zwaan won't turn again before winter. [Harmen] can't pay for new sailcloth, and nobody will lend it him. (You heard it from Lubbert.)"
 
 > bye
 Kobus lifts a hand. "Go on, then."
@@ -136,7 +136,7 @@ Teunis scratches an ear. "Water is seeping through the dyke at Oude Zijl, low do
 Teunis lifts a hand. "Go on, then."
 
 > journal
-People: Fenna Visser, Cornelis de Wit, Harmen Molenaar, Jan Visser, Kobus, Lubbert Graanhandel, Teunis Ros.
+People: Fenna Visser, Cornelis, Harmen, Jan Visser, Kobus, Lubbert, Teunis Ros, the Count.
 Places: Oude Zijl, Veenhoek, Waagdam, Graafhaven, The Mill De Zwaan, On the Great Dyke, Veenhoek, the Green, Canal Quay, The Horse Mill, The Market Square.
 Lore: the drainage of the Holleveen, the stranger in Veenhoek, the dyke at Oude Zijl leaks, the stranger in Waagdam, the mill not turning before winter.
 
@@ -223,7 +223,7 @@ Teunis sets off across country towards The Horse Mill.
 Time passes. It is Woensdag 15 Herfstmaand 211 AW, 14:04 (afternoon).
 
 > journal
-People: Fenna Visser, Cornelis de Wit, Harmen Molenaar, Jan Visser, Kobus, Lubbert Graanhandel, Sijbrand, Teunis Ros.
+People: Fenna Visser, Cornelis, Harmen, Jan Visser, Kobus, Lubbert, Sijbrand, Teunis Ros, the Count.
 Places: Oude Zijl, Veenhoek, Waagdam, Graafhaven, The Mill De Zwaan, On the Great Dyke, The Dyke House, The Old Sluice, Veenhoek, the Green, Canal Quay, The East Gate, The Horse Mill, The Market Square.
 Lore: the drainage of the Holleveen, the stranger in Veenhoek, the dyke at Oude Zijl leaks, the stranger in Waagdam, the mill not turning before winter.
 
@@ -240,7 +240,7 @@ Exits: down
 Here: Heemraad Sijbrand (at work).
 
 > journal
-People: Fenna Visser, Cornelis de Wit, Harmen Molenaar, Jan Visser, Kobus, Lubbert Graanhandel, Sijbrand, Teunis Ros.
+People: Fenna Visser, Cornelis, Harmen, Jan Visser, Kobus, Lubbert, Sijbrand, Teunis Ros, the Count.
 Places: Oude Zijl, Veenhoek, Waagdam, Graafhaven, The Mill De Zwaan, On the Great Dyke, The Dyke House, The Old Sluice, Veenhoek, the Green, Canal Quay, The East Gate, The Horse Mill, The Market Square.
 Lore: the drainage of the Holleveen, the stranger in Veenhoek, the dyke at Oude Zijl leaks, the stranger in Waagdam, the mill not turning before winter.
 
@@ -313,7 +313,7 @@ Across country you can head any way, or follow the tow path west to Oude Zijl, t
 Here: Prior Ansfried (stopping to look at the stranger), Wouter the eel-fisher (stopping to look at the stranger).
 
 > journal
-People: Fenna Visser, Cornelis de Wit, Harmen Molenaar, Jan Visser, Kobus, Lubbert Graanhandel, Sijbrand, Teunis Ros.
+People: Fenna Visser, Cornelis, Harmen, Jan Visser, Kobus, Lubbert, Sijbrand, Teunis Ros, the Count.
 Places: Oude Zijl, Veenhoek, Waagdam, Graafhaven, The Mill De Zwaan, On the Great Dyke, The Dyke House, The Old Sluice, Veenhoek, the Green, Canal Quay, The East Gate, The Horse Mill, The Market Square.
 Lore: the drainage of the Holleveen, the stranger in Veenhoek, the dyke at Oude Zijl leaks, the stranger in Waagdam, the mill not turning before winter.
 
@@ -357,7 +357,7 @@ Jan nods. "Evening."
 
 > 2
 You: "What's new around here?"
-Jan nods slowly. "The Count wants to drain the Holleveen and make a polder of it. A surveyor from Graafhaven has been measuring the fen since spring. The peat-cutters are furious; the miller thinks it will be good for trade."
+Jan nods slowly. "The Count wants to drain the Holleveen and make a [polder] of it. A surveyor from Graafhaven has been measuring the fen since spring. The peat-cutters are furious; the miller thinks it will be good for trade."
 Gerrit walks on to the northeast.
 
 > bye
@@ -422,7 +422,7 @@ Kobus nods. "Morning."
 
 > 2
 You: "What's new around here?"
-Kobus thinks a moment. "De Zwaan won't turn again before winter. Harmen can't pay for new sailcloth, and nobody will lend it him. (You heard it from Lubbert.)"
+Kobus thinks a moment. "De Zwaan won't turn again before winter. [Harmen] can't pay for new sailcloth, and nobody will lend it him. (You heard it from Lubbert.)"
 
 > bye
 Kobus lifts a hand. "Go on, then."
@@ -456,7 +456,7 @@ Teunis scratches an ear. "Water is seeping through the dyke at Oude Zijl, low do
 Teunis lifts a hand. "Go on, then."
 
 > journal
-People: Fenna Visser, Cornelis de Wit, Harmen Molenaar, Jan Visser, Kobus, Lubbert Graanhandel, Teunis Ros.
+People: Fenna Visser, Cornelis, Harmen, Jan Visser, Kobus, Lubbert, Teunis Ros, the Count.
 Places: Oude Zijl, Veenhoek, Waagdam, Graafhaven, The Mill De Zwaan, On the Great Dyke, Veenhoek, the Green, Canal Quay, The Horse Mill, The Market Square.
 Lore: the drainage of the Holleveen, the stranger in Veenhoek, the dyke at Oude Zijl leaks, the stranger in Waagdam, the mill not turning before winter.
 
@@ -479,7 +479,7 @@ Exits: west, east
 Here: Teunis the horse-miller (at work).
 
 > journal
-People: Fenna Visser, Cornelis de Wit, Harmen Molenaar, Jan Visser, Kobus, Lubbert Graanhandel, Teunis Ros.
+People: Fenna Visser, Cornelis, Harmen, Jan Visser, Kobus, Lubbert, Teunis Ros, the Count.
 Places: Oude Zijl, Veenhoek, Waagdam, Graafhaven, The Mill De Zwaan, On the Great Dyke, Veenhoek, the Green, Canal Quay, The Horse Mill, The Market Square.
 Lore: the drainage of the Holleveen, the stranger in Veenhoek, the dyke at Oude Zijl leaks, the stranger in Waagdam, the mill not turning before winter.
 
@@ -535,7 +535,7 @@ Exits: north, east, south, west, northeast
 Across country you can head any way, or follow the tow path west to Oude Zijl, the tow path east to Waagdam, the peat road to Molenend, the fen path to the Kattenbroek, the priory path to Kloosterveen or the path to the Kabouterberg.
 
 > journal
-People: Fenna Visser, Cornelis de Wit, Harmen Molenaar, Jan Visser, Kobus, Lubbert Graanhandel, Teunis Ros.
+People: Fenna Visser, Cornelis, Harmen, Jan Visser, Kobus, Lubbert, Teunis Ros, the Count.
 Places: Oude Zijl, Veenhoek, Waagdam, Graafhaven, The Mill De Zwaan, On the Great Dyke, Veenhoek, the Green, Canal Quay, The Horse Mill, The Market Square.
 Lore: the drainage of the Holleveen, the stranger in Veenhoek, the dyke at Oude Zijl leaks, the stranger in Waagdam, the mill not turning before winter.
 

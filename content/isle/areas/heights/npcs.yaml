@@ -7,6 +7,10 @@ npcs:
     pronoun: she
     age: 74
     profession: hedge_witch
+    # Her craft is not for strangers (M10.8): they see an old woman with goats until someone tells them better.
+    hidden: true
+    cover: an old woman who keeps goats
+    short_public: Old Tamsin
     home: loc_skerrow_tamsin_hut
     work: loc_skerrow_silver_grove
     fame: 2

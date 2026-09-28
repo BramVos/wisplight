@@ -7,6 +7,9 @@ import type { JsonSchema } from './llm'
 
 export const FAR_KINDS = ['city', 'land', 'sea', 'river', 'lake'] as const
 
+/** Why a talk goes on (M10.8): a quest or a request between you, something new to tell, an offer, a story; or no. */
+export const KEEP_TALKING = ['no', 'quest', 'request', 'news', 'offer', 'story'] as const
+
 export const ReplySchema = z.object({
   act: z.enum(ACTS),
   reply: z.string().min(1),
@@ -16,6 +19,8 @@ export const ReplySchema = z.object({
   effects: z.array(z.object({ type: z.enum(['affinity', 'trust', 'fear']), delta: z.number().int(), reason: z.string() })),
   memory_note: z.string(),
   ends_conversation: z.boolean(),
+  // Whether the talk is still about something (M10.8), and what: past the turns a talk starts with, it goes on while so.
+  keep_talking: z.enum(KEEP_TALKING).default('no'),
   // A quest action the player's words meant (M7.2); older recorded replies have none.
   quest_action: z.string().default('none'),
   // An offer the player asked for, and one the NPC proposes (M10.3); older replies have neither.
@@ -33,7 +38,7 @@ export function replyJsonSchema(allowedTopics: string[], questActions: string[] 
   return {
     type: 'object',
     additionalProperties: false,
-    required: ['act', 'reply', 'names', 'mentioned_topics', 'effects', 'memory_note', 'ends_conversation', ...(questActions.length ? ['quest_action'] : []), ...(offers.length ? ['action', 'propose'] : []), ...(after ? ['after'] : [])],
+    required: ['act', 'reply', 'names', 'mentioned_topics', 'effects', 'memory_note', 'ends_conversation', 'keep_talking', ...(questActions.length ? ['quest_action'] : []), ...(offers.length ? ['action', 'propose'] : []), ...(after ? ['after'] : [])],
     properties: {
       ...(claim
         ? {
@@ -92,6 +97,7 @@ export function replyJsonSchema(allowedTopics: string[], questActions: string[] 
       },
       memory_note: { type: 'string', description: 'One short sentence the character will remember, in the first person.' },
       ends_conversation: { type: 'boolean' },
+      keep_talking: { type: 'string', enum: [...KEEP_TALKING], description: 'Whether this talk is still about something between you (a quest, a request, news, an offer, a story), or no.' },
     },
   }
 }

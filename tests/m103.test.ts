@@ -134,7 +134,8 @@ describe('M10.3: offers in a conversation', () => {
     stay(engine, 'npc_brannoc', 'loc_skerrow_harbour', 60)
     await engine.handle('talk pip')
     const out = said(await engine.handle('Can you get your father here?'))
-    expect(out).toMatch(/Pip: "Wait here\. I'll get Brannoc\."/)
+    // A name the stranger can follow is a link in the talk (M10.8).
+    expect(out).toMatch(/Pip: "Wait here\. I'll get \[Brannoc\]\."/)
     const fetch = agreementsOf(engine).find((a) => a.kind === 'lead')!
     expect(fetch.terms).toMatchObject({ person: 'npc_brannoc', place: 'loc_skerrow_harbour', bring: 'loc_skerrow_wreck_strand' })
     for (let i = 0; i < 24 && fetch.status === 'open'; i++) engine.tick(10)

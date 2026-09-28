@@ -22,6 +22,7 @@ const state = {
   keys: {} as Partial<Record<ProviderId, string>>,
   roles: {} as Partial<Record<'voice' | 'brain' | 'chronicler', { provider: ProviderId; model: string }>>,
   budget: 0.1,
+  replyWithin: 10,
   pictures: undefined as { provider: ProviderId; model: string; quality: 'low' | 'medium' } | undefined,
   monthBudget: 5 as number | undefined,
   credit: { openai: { amountUsd: 10, enteredAt: '2026-09-02T09:00:00.000Z', spent: 0 } } as Partial<Record<ProviderId, { amountUsd: number; enteredAt: string; spent: number }>>,
@@ -135,6 +136,7 @@ export function demoBridge(_content: Content): AiBridge {
         models: Object.fromEntries((['openai', 'anthropic'] as const).filter((p) => state.keys[p]).map((p) => [p, MODELS[p].map((m) => m.id)])),
         missing: [],
         ...(state.pictures ? { pictures: state.pictures } : {}),
+        replyWithinSeconds: state.replyWithin,
       },
       usage: usage(),
       status: { busy: false, coolingDown: false, hourSpentUsd: state.session.costUsd, hourReservedUsd: 0, hourBudgetUsd: state.budget, monthBudgetSpent: false, unpriced: [] },
@@ -186,6 +188,9 @@ export function demoBridge(_content: Content): AiBridge {
     },
     setBudget: async (usd) => {
       state.budget = Math.max(0.01, Math.min(5, usd))
+    },
+    setReplyWithin: async (seconds: number) => {
+      state.replyWithin = Math.round(Math.max(3, Math.min(60, seconds)))
     },
     setMonthBudget: async (usd) => {
       state.monthBudget = usd && usd > 0 ? usd : undefined

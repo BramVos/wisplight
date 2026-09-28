@@ -67,6 +67,8 @@ export class World {
   causing: string[] = []
   /** What went to the archive since the engine last looked, for the game log (M9.1; not saved). */
   archived: Archived[] = []
+  /** The last stock lines that stood in for the model, and why (M10.8), for the dev menu. Not saved. */
+  stockLines: { t: number; npc: string; reason: string }[] = []
   /**
    * The archive to read back from (M10.2): the game log of this game, set by
    * whoever keeps it (the desktop app). Without it, what went to the archive
@@ -314,7 +316,8 @@ export class World {
     const first = callName(npc)
     return template
       .replaceAll('{name}', first)
-      .replaceAll('{short}', npc.short)
+      // A hidden trade stays out of the short name until the stranger knows it (M10.8).
+      .replaceAll('{short}', npc.hidden && this.state.player.people?.[npcId]?.work === undefined ? (npc.short_public ?? first) : npc.short)
       .replaceAll('{they}', forms.they)
       .replaceAll('{their}', forms.their)
       .replaceAll('{them}', forms.them)

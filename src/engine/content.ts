@@ -505,6 +505,13 @@ export const NpcSchema = z.object({
   pronoun: z.enum(['she', 'he', 'they']),
   age: z.number().int().nonnegative(),
   profession: z.string(),
+  /**
+   * The profession is hidden (M10.8): the stranger sees the cover and the public short name until they know for
+   * sure (a secret of theirs found out), Tamsin the hedge-witch as "an old woman who keeps goats".
+   */
+  hidden: z.boolean().default(false),
+  cover: z.string().optional(),
+  short_public: z.string().optional(),
   home: z.string(),
   work: z.string().optional(),
   household: z.string().optional(),
@@ -754,7 +761,8 @@ export const WorldSchema = z.object({
   /** At most so many newcomers a season (M8.5). */
   newcomers_per_season: z.number().int().min(0).default(6),
   /** The faiths of this world (M9.1): the first is what most people hold; a faith may go with patrons of the rules. */
-  faiths: z.array(z.object({ id: z.string().regex(/^[a-z0-9_]+$/), name: z.string(), patrons: z.array(z.string()).default([]) }).strict()).default([]),
+  // Each faith swears by its own (M10.8): "Saint Brand's light", "Holle take it"; the guard puts these in place of ours.
+  faiths: z.array(z.object({ id: z.string().regex(/^[a-z0-9_]+$/), name: z.string(), patrons: z.array(z.string()).default([]), oaths: z.array(z.string()).default([]) }).strict()).default([]),
 })
 export type WorldDef = z.infer<typeof WorldSchema>
 

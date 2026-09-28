@@ -492,6 +492,13 @@ function farFromQuest(world: World, quest: Quest): boolean {
   return [...places].every((place) => farFromPlayer(world, place))
 }
 
+/** The quests that would begin now by talking to this person (M10.8: the engine decides when in the talk). */
+export function talkStarts(world: World, npcId: string): Quest[] {
+  return [...world.content.quests.values()]
+    .sort((a, b) => a.id.localeCompare(b.id))
+    .filter((q) => !questlog(world)[q.id] && q.stages?.length && q.starts?.talk.includes(npcId) && flags(world)[`lapsed:${q.id}`] === undefined && (!q.starts.when.length || allHold(world, q.starts.when)))
+}
+
 /** Quests that begin when the player talks to someone, or comes somewhere. */
 export function triggers(world: World, host: QuestHost, on: { talk?: string; at?: string; newGame?: boolean }): Output[] {
   const out: Output[] = []

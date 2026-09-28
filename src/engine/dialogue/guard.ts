@@ -127,3 +127,27 @@ export function unknownNames(text: string, vocabulary: Set<string>, playerWords:
   }
   return [...new Set(found)]
 }
+
+// Oaths of our world (M10.8): nobody in these worlds swears by Christ, God or
+// the Lord, nor sends anyone to hell. The whole exclamation goes, and an oath
+// of the speaker's own faith stands in its place.
+const OUR_OATHS = /\b(?:(?:oh|by|for|good|dear|great|sweet|my|thank)\s+)?(?:jesus(?:\s+christ)?|christ(?:\s+almighty)?|god(?:\s+almighty)?|lord(?:\s+above)?)(?:'s\s+sake|\s+knows|\s+help\s+(?:us|me)|\s+willing|\s+damn(?:\s+it)?)?\b|\bgod-?damn(?:ed|it)?\b|\b(?:what|where|who|how|why)\s+the\s+hell\b|\bbloody\s+hell\b|\bgo\s+to\s+hell\b/gi
+
+export function hasOurOaths(text: string): boolean {
+  OUR_OATHS.lastIndex = 0
+  return OUR_OATHS.test(text)
+}
+
+/** Puts the speaker's own oaths in place of ours; with none known, the words simply go. */
+export function swearRight(text: string, oaths: string[]): string {
+  let n = 0
+  const fixed = text.replace(OUR_OATHS, (match: string, offset: number) => {
+    const oath = oaths.length ? oaths[n++ % oaths.length]! : ''
+    // "What the hell happened?" keeps its question: "What, by the Lantern, happened?"; "go to hell" is plain rudeness.
+    const wh = /^(what|where|who|how|why)\s+the\s+hell$/i.exec(match)
+    const put = wh ? (oath ? `${wh[1]}, ${oath.charAt(0).toLowerCase()}${oath.slice(1)},` : wh[1]!) : /^go\s+to\s+hell$/i.test(match) ? 'get away with you' : oath
+    const start = offset === 0 || /[.!?"]\s*$/.test(text.slice(0, offset))
+    return start ? put.charAt(0).toUpperCase() + put.slice(1) : put
+  })
+  return fixed.replace(/,\s*([.!?])/g, '$1').replace(/\s+([,.!?])/g, '$1').replace(/"\s*,\s*/g, '"').replace(/\s{2,}/g, ' ').trim()
+}

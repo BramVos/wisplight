@@ -82,13 +82,13 @@ New quest: Flour for Veenhoek. Mirte needs flour for Veenhoek's bread before mar
 
 > 2
 You: "What's new around here?"
-Mirte nods slowly. "Fenna Visser, fifteen, the daughter of Jan and Grietje, has been missing for four days. She went out on the evening of 10 Herfstmaand and never came home. Nobody saw where she went. Some say the fen took her."
+Mirte nods slowly. "[Fenna Visser], fifteen, the daughter of [Jan] and Grietje, has been missing for four days. She went out on the evening of 10 Herfstmaand and never came home. Nobody saw where she went. Some say the fen took her."
 
 > bye
 Mirte lifts a hand. "Go on, then."
 
 > journal
-People: Fenna Visser, Grietje Visser, Jan Visser, Lubbert Graanhandel, Mirte Bakker.
+People: Fenna Visser, Grietje, Jan, Lubbert, Mirte Bakker.
 Places: Veenhoek, Waagdam, the Kattenbroek, The Mill De Zwaan, The Bakery, Veenhoek, the Green, Canal Quay, Visser House, the doorstep, The Market Square, Waagdam, the West Gate.
 Lore: the stranger in Veenhoek.
 
@@ -103,7 +103,7 @@ Mirte nods. "Evening."
 
 > where is aaltje
 You: "Where can I find aaltje?"
-Mirte thinks a moment. "At this hour Old Aaltje is usually at Aaltje's Cottage, eating."
+Mirte thinks a moment. "At this hour [Old Aaltje] is usually at [Aaltje]'s Cottage, eating."
 Mirte offers to take you to Aaltje's Cottage, to Aaltje. YES to agree, NO to decline.
 
 > bye
@@ -145,7 +145,7 @@ Aaltje nods. "Evening."
 1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
 
 > What do you know about the grey cat?
-Aaltje scratches an ear. "A grey cat with one white paw has sat on the Vissers' doorstep every day since Fenna vanished."
+Aaltje scratches an ear. "A [grey cat] with one white paw has sat on the [Vissers]' doorstep every day since [Fenna] vanished."
 
 > ask about the cat
 Aaltje sits down heavily. "One white paw? That's her. That's Kaatje's work, the widow out in the Kattenbroek. She was my teacher once." She looks at her hands. "There are ways back. Pay what she asks. Or moon water from the Blackmere, drawn at night, and the right words over it; I can give you those. Or you could ask the girl herself what she did, if you could talk cat."
@@ -208,11 +208,11 @@ Aaltje nods. "Evening."
 
 > where is the kattenbroek
 You: "Where can I find the kattenbroek?"
-Aaltje nods slowly. "The Kattenbroek is a fen about three or four hours' walk south-east of Veenhoek, all reeds and black pools. Nobody goes there if they can help it. The peat-cutters lost a man there in 208, and they say a widow lives out in it."
+Aaltje nods slowly. "[The Kattenbroek] is a fen about three or four hours' walk south-east of [Veenhoek], all reeds and black pools. Nobody goes there if they can help it. The peat-cutters lost a man there in 208, and they say a [widow] lives out in it."
 
 > where is the widow
 You: "Where can I find the widow?"
-Aaltje thinks a moment. "Folk say a widow out in the Kattenbroek turns thieves into cats. Her name is Kaatje. Her husband was an eel-fisher who drowned, and she keeps the fen as if it were his grave. Take from it without asking and you come home on four legs, if at all."
+Aaltje thinks a moment. "Folk say a [widow] out in [the Kattenbroek] turns thieves into cats. Her name is [Kaatje]. Her husband was an eel-fisher who drowned, and she keeps the fen as if it were his grave. Take from it without asking and you come home on four legs, if at all."
 
 > bye
 Aaltje lifts a hand. "Go on, then."
@@ -320,7 +320,7 @@ The Grey Cat on the Doorstep: Honest. Fenna is home, and one day a week all wint
 +400 experience: The Grey Cat on the Doorstep.
 
 > journal
-People: Fenna Visser, Aaltje Hendriks, Grietje Visser, Jacob van Dam, Jan Visser, Kaatje, Lubbert Graanhandel, Mirte Bakker, Wouter Aalman, the Count.
+People: Fenna Visser, Aaltje Hendriks, Grietje, Jan, Lubbert, Mirte Bakker, Wouter, the Count.
 Places: the Holleveen, Veenhoek, Waagdam, the Kattenbroek, Aaltje's Cottage, Chapel Lane, The Edge of the Kattenbroek, Below the Hut on Stilts, The Black Pools, The Mill De Zwaan, The Bakery, Veenhoek, the Green, Canal Quay, Visser House, the doorstep, The Market Square, Waagdam, the West Gate.
 Lore: the Cat-Widow of the Kattenbroek, the stranger in Veenhoek, the grey cat.
 
@@ -392,7 +392,7 @@ Exits: east
 Here: Fenna Visser (eating), Grietje Visser (eating), Pim (eating).
 
 > journal
-People: Fenna Visser, Aaltje Hendriks, Grietje Visser, Jacob van Dam, Jan Visser, Kaatje, Lubbert Graanhandel, Mirte Bakker, Wouter Aalman, the Count.
+People: Fenna Visser, Aaltje Hendriks, Grietje, Jan, Lubbert, Mirte Bakker, Wouter, the Count.
 Places: the Holleveen, Reuzenrust, Veenhoek, Waagdam, the Kattenbroek, Aaltje's Cottage, Chapel Lane, The Edge of the Kattenbroek, Below the Hut on Stilts, The Black Pools, The Mill De Zwaan, The Road to Hunnenloo, The Bakery, Veenhoek, the Green, Canal Quay, Visser House, the doorstep, The Market Square, Waagdam, the West Gate.
 Lore: the Cat-Widow of the Kattenbroek, the stranger in Veenhoek, the grey cat.
 
@@ -481,13 +481,13 @@ New quest: Flour for Veenhoek. Mirte needs flour for Veenhoek's bread before mar
 
 > 2
 You: "What's new around here?"
-Mirte nods slowly. "Fenna Visser, fifteen, the daughter of Jan and Grietje, has been missing for four days. She went out on the evening of 10 Herfstmaand and never came home. Nobody saw where she went. Some say the fen took her."
+Mirte nods slowly. "[Fenna Visser], fifteen, the daughter of [Jan] and Grietje, has been missing for four days. She went out on the evening of 10 Herfstmaand and never came home. Nobody saw where she went. Some say the fen took her."
 
 > bye
 Mirte lifts a hand. "Go on, then."
 
 > journal
-People: Fenna Visser, Grietje Visser, Jan Visser, Lubbert Graanhandel, Mirte Bakker.
+People: Fenna Visser, Grietje, Jan, Lubbert, Mirte Bakker.
 Places: Veenhoek, Waagdam, the Kattenbroek, The Mill De Zwaan, The Bakery, Veenhoek, the Green, Canal Quay, Visser House, the doorstep, The Market Square, Waagdam, the West Gate.
 Lore: the stranger in Veenhoek.
 
@@ -554,7 +554,7 @@ Exits: east
 Here: Pim (playing).
 
 > journal
-People: Fenna Visser, Grietje Visser, Jan Visser, Lubbert Graanhandel, Mirte Bakker.
+People: Fenna Visser, Grietje, Jan, Lubbert, Mirte Bakker.
 Places: Reuzenrust, Veenhoek, Waagdam, the Kattenbroek, The Mill De Zwaan, The Road to Hunnenloo, The Bakery, Veenhoek, the Green, Canal Quay, Visser House, the doorstep, The Market Square, Waagdam, the West Gate.
 Lore: the stranger in Veenhoek.
 

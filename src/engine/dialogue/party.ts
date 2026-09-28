@@ -35,7 +35,7 @@ export async function partyTalk(world: World, topics: TopicRegistry, knowledge: 
   const lines = llm ? await ask(llm, cards, question, vocabulary, words, worldFrame(world.content)) : undefined
   return [
     { kind: 'text', text: `You: "${question}"` },
-    ...cards.map((card, i) => ({ kind: 'speech' as const, text: `${card.name}: "${lines?.[i] ?? fallback(world, card, topic ? topics.name(topic) : undefined)}"` })),
+    ...cards.map((card, i) => ({ kind: 'speech' as const, text: `${card.name}: "${lines?.[i] ?? fallback(world, card, topic ? topics.name(topic) : undefined)}"`, ...(lines?.[i] ? { source: 'model' as const } : {}) })),
   ]
 }
 

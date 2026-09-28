@@ -47,16 +47,16 @@ New quest: Flour for Veenhoek. Mirte needs flour for Veenhoek's bread before mar
 
 > 2
 You: "What's new around here?"
-Mirte nods slowly. "Fenna Visser, fifteen, the daughter of Jan and Grietje, has been missing for four days. She went out on the evening of 10 Herfstmaand and never came home. Nobody saw where she went. Some say the fen took her."
+Mirte nods slowly. "[Fenna Visser], fifteen, the daughter of Jan and Grietje, has been missing for four days. She went out on the evening of 10 Herfstmaand and never came home. Nobody saw where she went. Some say the fen took her."
 
 > What happened to the mill?
-Mirte thinks a moment. "De Zwaan, Harmen Molenaar's windmill, which grinds grain and pumps the polder dry. The storm of 8 Herfstmaand tore its sails. The Mill De Zwaan is about 20 minutes' walk from here: west to Veenhoek, the Green, then northeast to The Peat Road, then northeast to Molenend, the Lane, and on from there."
+Mirte thinks a moment. "[De Zwaan], Harmen Molenaar's [windmill], which grinds grain and pumps the polder dry. The storm of 8 Herfstmaand tore its sails. [The Mill De Zwaan] is about 20 minutes' walk from here: west to [Veenhoek, the Green], then northeast to The Peat Road, then northeast to Molenend, the Lane, and on from there."
 
 > bye
 Mirte lifts a hand. "Go on, then."
 
 > journal
-People: Fenna Visser, Grietje Visser, Harmen Molenaar, Jan Visser, Lubbert Graanhandel, Mirte Bakker.
+People: Fenna Visser, Grietje, Harmen, Jan, Lubbert, Mirte Bakker.
 Places: Veenhoek, Waagdam, the Kattenbroek, Molenend, the Lane, The Mill De Zwaan, The Peat Road, The Bakery, Veenhoek, the Green, Canal Quay, The Market Square, Waagdam, the West Gate.
 Lore: the stranger in Veenhoek.
 
@@ -210,7 +210,7 @@ Mirte arrives from the east.
 Mirte sets out 6 loaves of rye bread for sale.
 
 > journal
-People: Fenna Visser, Grietje Visser, Harmen Molenaar, Jan Visser, Lubbert Graanhandel, Mirte Bakker.
+People: Fenna Visser, Grietje, Harmen, Jan, Lubbert, Mirte Bakker.
 Places: the Holleveen, Veenhoek, Waagdam, the Kattenbroek, Molenend, the Lane, The Mill De Zwaan, The Peat Road, The Bakery, Veenhoek, the Green, Canal Quay, Gate Street, Lubbert's Grain Store, The Harbour, The Market Square, Waagdam, the West Gate.
 Lore: the stranger in Veenhoek.
 
@@ -277,16 +277,16 @@ New quest: Flour for Veenhoek. Mirte needs flour for Veenhoek's bread before mar
 
 > 2
 You: "What's new around here?"
-Mirte nods slowly. "Fenna Visser, fifteen, the daughter of Jan and Grietje, has been missing for four days. She went out on the evening of 10 Herfstmaand and never came home. Nobody saw where she went. Some say the fen took her."
+Mirte nods slowly. "[Fenna Visser], fifteen, the daughter of Jan and Grietje, has been missing for four days. She went out on the evening of 10 Herfstmaand and never came home. Nobody saw where she went. Some say the fen took her."
 
 > What happened to the mill?
-Mirte thinks a moment. "De Zwaan, Harmen Molenaar's windmill, which grinds grain and pumps the polder dry. The storm of 8 Herfstmaand tore its sails. The Mill De Zwaan is about 20 minutes' walk from here: west to Veenhoek, the Green, then northeast to The Peat Road, then northeast to Molenend, the Lane, and on from there."
+Mirte thinks a moment. "[De Zwaan], Harmen Molenaar's [windmill], which grinds grain and pumps the polder dry. The storm of 8 Herfstmaand tore its sails. [The Mill De Zwaan] is about 20 minutes' walk from here: west to [Veenhoek, the Green], then northeast to The Peat Road, then northeast to Molenend, the Lane, and on from there."
 
 > bye
 Mirte lifts a hand. "Go on, then."
 
 > journal
-People: Fenna Visser, Grietje Visser, Harmen Molenaar, Jan Visser, Lubbert Graanhandel, Mirte Bakker.
+People: Fenna Visser, Grietje, Harmen, Jan, Lubbert, Mirte Bakker.
 Places: Veenhoek, Waagdam, the Kattenbroek, Molenend, the Lane, The Mill De Zwaan, The Peat Road, The Bakery, Veenhoek, the Green, Canal Quay, The Market Square, Waagdam, the West Gate.
 Lore: the stranger in Veenhoek.
 
@@ -296,7 +296,7 @@ Lore: the stranger in Veenhoek.
 There are no sacks of flour to be had in Veenhoek. People make do, and grumble about it.
 
 > journal
-People: Fenna Visser, Grietje Visser, Harmen Molenaar, Jan Visser, Lubbert Graanhandel, Mirte Bakker.
+People: Fenna Visser, Grietje, Harmen, Jan, Lubbert, Mirte Bakker.
 Places: Veenhoek, Waagdam, the Kattenbroek, Molenend, the Lane, The Mill De Zwaan, The Peat Road, The Bakery, Veenhoek, the Green, Canal Quay, The Market Square, Waagdam, the West Gate.
 Lore: the stranger in Veenhoek.
 

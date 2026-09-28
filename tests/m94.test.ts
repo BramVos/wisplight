@@ -182,7 +182,7 @@ describe('M9.4: what the playtest of the storylines found', () => {
   it('answers about someone dead with the death, and knows its own goods when the thief brings them back', async () => {
     const engine = new Engine(isle, { seed: 7, builder: true })
     for (const c of ['@goto loc_skerrow_salt_kettle', '@time 12', '@kill wenna drowned off the harbour wall', 'wait 2 hours', 'talk maren']) await engine.handle(c)
-    expect(said(await engine.handle('ask about wenna'))).toMatch(/Wenna is dead/)
+    expect(said(await engine.handle('ask about wenna'))).toMatch(/\[?Wenna\]? is dead/)
     await engine.handle('bye')
     const thief = new Engine(isle, { seed: 7, builder: true })
     for (const c of ['@goto loc_skerrow_salt_kettle', '@time 2', 'steal pitch', 'wait 6 hours', 'talk maren']) await thief.handle(c)

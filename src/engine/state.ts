@@ -373,6 +373,11 @@ export interface TalkState {
   claims?: number
   /** A claim the voice read in the stranger's words (M10.3, left over), and how it was taken: it sounds in the next turn. */
   heard?: string
+  /** Turns so far, and whether the NPC said they must go (M10.8): a talk goes on while it is about something. */
+  turns?: number
+  leaving?: boolean
+  /** Quests this talk may start once their subject comes up (M10.8), not at the greeting. */
+  quests?: string[]
 }
 
 export interface RelationState {
@@ -503,6 +508,8 @@ export interface PersonNote {
   /** How often the player saw them at each place; only the most frequent are kept. */
   places?: Record<string, number>
   age?: { value: number; t: number }
+  /** The stranger knows what they do (M10.8): they said it, someone told, or the stranger saw them at it. */
+  work?: number
 }
 
 export interface ServiceState {

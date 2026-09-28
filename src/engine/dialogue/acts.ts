@@ -46,6 +46,8 @@ const RULES: { act: Act; pattern: RegExp }[] = [
   { act: 'Apologize', pattern: /\b(sorry|apologi[sz]e|forgive me|my apologies|excuse me|pardon|het spijt me|excuses)\b/i },
   { act: 'Flirt', pattern: /\b(beautiful|pretty eyes|lovely eyes|handsome|kiss|lovely smile|mooie ogen|knap|zoen|kus)\b/i },
   { act: 'Compliment', pattern: /\b(thank you|thanks|well done|good bread|kind of you|bedankt|dank je|dank u|lekker|goed gedaan)\b/i },
+  // A wish or a hope is said, not asked (M10.8): "I hope you can make the Count understand, good sir."
+  { act: 'SmallTalk', pattern: /^(i hope|i wish|i trust|let'?s hope|may the|god willing|ik hoop|hopelijk|laten we hopen)\b/i },
   { act: 'Recruit', pattern: /\b(come with me|join me|travel with me|help me find|ga je mee|kom je mee|reis met me)\b/i },
   { act: 'Trade', pattern: /\b(buy|sell|how much|price|cost|trade|koop|kopen|verkoop|hoeveel|prijs|kost)\b/i },
   { act: 'AskStory', pattern: /\b(story|legend|tale|tell me about the|verhaal|legende|sage)\b/i },

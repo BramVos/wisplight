@@ -58,3 +58,15 @@ export function kmFromPlayer(world: World, id: string): number | undefined {
   if (!here || !there) return undefined
   return Math.round(Math.hypot(there[0] - here[0], there[1] - here[1]) * 10) / 10
 }
+
+/** Which way and how far, from one point of the map to another (M10.8): "west", "about three days on foot". */
+export function bearing(from: Pos, to: Pos): { wind: string; km: number; walk: string } {
+  const dx = to[0] - from[0]
+  const dy = to[1] - from[1]
+  const winds = ['east', 'north-east', 'north', 'north-west', 'west', 'south-west', 'south', 'south-east']
+  const wind = winds[(Math.round(Math.atan2(dy, dx) / (Math.PI / 4)) + 8) % 8]!
+  const km = Math.hypot(dx, dy)
+  const days = Math.round((km / 40) * 2) / 2
+  const walk = km < 1.5 ? 'a short walk' : km < 30 ? `about ${Math.max(1, Math.round(km / 5))} hour${Math.round(km / 5) > 1 ? 's' : ''} on foot` : days <= 1 ? 'about a day on foot' : `about ${days % 1 ? `${Math.floor(days)} and a half` : days} days on foot`
+  return { wind, km, walk }
+}

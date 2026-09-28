@@ -1,5 +1,5 @@
 import type { Archived } from './archive'
-import { seeFamily } from './acquaintance'
+import { knownName, knowsOfPerson, publicShort, seeFamily } from './acquaintance'
 import { entered } from './social/access'
 import { inscribedHere, readInscription } from './skills'
 import { answerChoice, choose, MAX_OPTIONS, offer } from './choice'
@@ -16,7 +16,7 @@ import { shiftTension, tensionOf } from './social/realms'
 import { grownContent, invest } from './growth/growth'
 import { dayName, GameClock } from './clock'
 import { describeRoom, findNpcAnywhere, findNpcHere, runCommand, type CommandHost, type Output } from './commands'
-import { areaTopicId, callName, type Content } from './content'
+import { areaTopicId, callName, type Content, type Quest } from './content'
 import { Dialogue, QUICK_OPTIONS } from './dialogue/conversation'
 import { Knowledge } from './dialogue/knowledge'
 import type { ChronicleOutput, ChroniclerRequest, Outline } from '../chronicler'
@@ -59,7 +59,7 @@ import { deed, noticeCarried, seedBonds } from './social/deeds'
 import { factionLines, factionPage, join, rankOf, repute } from './social/factions'
 import { fightsBack, mayAttackFirst, mayLend } from './social/gates'
 import { flirt, marry } from './social/romance'
-import { conversationActions, evaluate, expireConditions, questAction, questlog, questPage, questsOnDeath, runQuestAction, setPlaceState, startQuest, triggers, type QuestHost } from './quests/engine'
+import { conversationActions, evaluate, expireConditions, questAction, questlog, questPage, questsOnDeath, runQuestAction, setPlaceState, startQuest, talkStarts, triggers, type QuestHost } from './quests/engine'
 import { PlaceState } from './quests/schema'
 import { plansDue, startPlan, startWorldPlans, tellAreaNews } from './quests/plans'
 import { primeWatchers, processSignals, queueSignal } from './signals'
@@ -67,7 +67,7 @@ import { mediateBetween } from './aftermath'
 import { groupBetween, mediateGroup, sideWith } from './social/groups'
 import { breakOff, chatLine, chatLineRequest, listen, longListen } from './chatter'
 import { realmLines, realmPage } from './social/realms'
-import { kmFromPlayer, posOf } from './nearby'
+import { bearing, kmFromPlayer, posOf, posOfLocation } from './nearby'
 import { carryOver } from './legacy'
 import {
   character,
@@ -255,7 +255,7 @@ export class Engine {
     // A new game writes down the names it begins with (M9.1).
     if (!options.log && !options.state) this.log.push({ t: state.minutes, k: 'names', v: nameBook(source) })
     this.builder = options.builder ?? false
-    this.host = { world: this.world, pass: (minutes) => this.pass(minutes), passUntil: (minutes, stop) => this.pass(minutes, stop) }
+    this.host = { world: this.world, pass: (minutes) => this.pass(minutes), passUntil: (minutes, stop) => this.pass(minutes, stop), knownPlace: (target) => this.knownPlace(target) }
     this.topics = new TopicRegistry(content)
     for (const far of state.lore?.far ?? []) this.topics.addDuringPlay({ id: far.id, kind: 'place', name: far.name, aliases: [far.name] })
     this.dialogue = new Dialogue(this.world, this.topics, new Knowledge(this.world, this.topics), () => this.recorder)
@@ -436,6 +436,8 @@ export class Engine {
 
   private shown(outputs: Output[]): Output[] {
     const t = this.world.now
+    // With a model in play, every spoken line that did not come from it is the game's own (M10.8).
+    if (this.llm) for (const output of outputs) if (output.kind === 'speech' && !output.source) output.source = 'rules'
     for (const listener of this.listeners) {
       for (const output of outputs) listener({ kind: 'out', t, output })
       for (const event of this.state.events) if (event.seq > this.eventMark) listener({ kind: 'event', t: event.t, event })
@@ -444,6 +446,32 @@ export class Engine {
     this.world.archived = []
     this.eventMark = this.state.eventSeq
     return outputs
+  }
+
+  /**
+   * A place the stranger knows of but cannot see from here (M10.8, a highlighted word always does something): what
+   * they know of it and which way it lies from here, from its summary and its place on the map. It is in the journal.
+   */
+  private knownPlace(target: string): string | undefined {
+    const id = this.topics.find(target.replace(/^(the|a|an)\s+/i, ''))
+    const journal = this.state.player.journal ?? {}
+    if (!id || journal[id] === undefined) return undefined
+    const kind = this.topics.kind(id)
+    if (kind !== 'place' && kind !== 'area') return undefined
+    const here = this.state.player.location
+    const location = this.content.locations.get(id)
+    if (id === here || (kind === 'area' && location === undefined && this.topics.entries.get(id)?.ref === this.world.location(here).area)) return undefined
+    const from = posOfLocation(this.world, here)
+    const to = posOf(this.world, id)
+    if (!from || !to) return undefined
+    const way = bearing(from, to)
+    if (way.km < 0.3) return undefined
+    const entry = this.topics.entries.get(id)
+    const area = kind === 'area' ? this.content.areas.get(entry?.ref ?? '') : undefined
+    const topic = this.content.topics.get(id)
+    const summary = location?.summary ?? area?.summary ?? topic?.summary
+    const first = summary ? `${summary.split(/(?<=[.!?])\s/)[0]} ` : ''
+    return `${first}${this.topics.name(id).replace(/^./, (c) => c.toUpperCase())} lies ${way.wind} of here, ${way.walk}.`
   }
 
   /** Swap the model at runtime, for instance after the player picks one in the settings. */
@@ -568,7 +596,7 @@ export class Engine {
         if (!this.state.brain.pending.some((p) => p.id === choice.id)) continue
         this.record({ t: this.world.now, k: 'goals', choice: choice.id, v: reply })
         const result = applyChoice(this.world, choice.id, reply)
-        if (reply !== null && result.rejected.length) llm?.report?.({ reason: 'goal' })
+        if (reply !== null && result.rejected.length) llm?.report?.({ reason: 'goal', role: 'brain' })
         done.push({ choice: choice.id, accepted: result.accepted.length, rejected: result.rejected })
       }
     } finally {
@@ -634,6 +662,8 @@ export class Engine {
         }
       },
       report: (rejection) => llm.report?.(rejection),
+      // The time a spoken reply may take, as the player set it (M10.8).
+      ...(llm.replyWithinMs ? { replyWithinMs: () => llm.replyWithinMs!() } : {}),
     }
   }
 
@@ -818,7 +848,7 @@ export class Engine {
         breakOff(this.world, npc)
         const opening = this.dialogue.start(npc)
         this.pass(1)
-        const out = [...opening, ...triggers(this.world, this.questHost, { talk: npc })]
+        const out = [...opening, ...this.talkQuests(npc)]
         if (about?.trim()) {
           const partner = npc
           const quest = questAction(this.world, this.questHost, `ask ${callName(this.world.npc(partner)).toLowerCase()} about ${about.trim()}`)
@@ -1037,7 +1067,16 @@ export class Engine {
   /** A turn in conversation costs one game minute (FO, chapter 3). */
   private async inConversation(turn: () => Promise<Output[]>): Promise<Output[]> {
     const seen = this.pass(1)
+    const waiting = this.state.talk?.quests ?? []
     const outputs = await turn()
+    // A quest that waited in this talk begins now its subject came up (M10.8).
+    const touched = new Set(this.dialogue.takeTouched())
+    for (const id of waiting) {
+      const quest = this.content.quests.get(id)
+      if (!quest || questlog(this.world)[id] || ![...this.questSubjects(quest)].some((t) => touched.has(t))) continue
+      if (this.state.talk?.quests) this.state.talk.quests = this.state.talk.quests.filter((q) => q !== id)
+      outputs.push(...startQuest(this.world, this.questHost, id))
+    }
     // The voice heard a quest action in the player's words (M7.2): it happens now.
     const key = this.dialogue.takeChosen()
     if (key) outputs.push(...(runQuestAction(this.world, this.questHost, key) ?? []))
@@ -1048,6 +1087,31 @@ export class Engine {
       outputs.push(...this.pass(spend.minutes), { kind: 'system', text: `After ${spend.why}, it is ${this.world.date()}.` })
     }
     return [...outputs, ...seen]
+  }
+
+  /**
+   * Quests that begin by talking to this person (M10.8): one the giver asks about themselves begins at the greeting,
+   * if they think well enough of the stranger and were not just woken; the others wait in the talk until their subject
+   * comes up ("What is it? It's the middle of the night." is no time for a quest).
+   */
+  private talkQuests(npcId: string): Output[] {
+    const out: Output[] = []
+    const band = attitude(this.world, npcId).band
+    const woken = this.world.npcState(npcId).wokenAt
+    // A companion brings up their own matter whatever the mood (M7: close enough to ask).
+    const willing = (Boolean(companionOf(this.world, npcId)) || !['Wary', 'Unfriendly', 'Hostile'].includes(band)) && !(woken !== undefined && this.world.now - woken < 60)
+    for (const quest of talkStarts(this.world, npcId)) {
+      if (quest.ask && quest.givers.includes(npcId) && willing) out.push(...startQuest(this.world, this.questHost, quest.id))
+      else if (this.state.talk?.npc === npcId) (this.state.talk.quests ??= []).push(quest.id)
+    }
+    return out
+  }
+
+  /** What a quest is about, for starting it in a talk (M10.8): what it teaches, and the people, places and lore it names. */
+  private questSubjects(quest: Quest): Set<string> {
+    const learnt = (quest.stages ?? []).flatMap((s) => s.on_enter.flatMap((e) => ('learn' in e ? [e.learn] : [])))
+    const named = this.topics.recognise([quest.ask ?? '', quest.summary, quest.stages?.[0]?.text ?? ''].join(' '))
+    return new Set([...learnt, ...named].filter((t) => !quest.givers.includes(t) && this.topics.kind(t) !== 'area'))
   }
 
   /** "mirte about the mill" or, while talking, just "about the mill". */
@@ -1110,7 +1174,7 @@ export class Engine {
       paused: false,
       ...(this.builder ? { builder: true } : {}),
       talk: talk
-        ? { npc: talk.npc, name: this.world.npc(talk.npc).short, call: callName(this.world.npc(talk.npc)), attitude: attitude(this.world, talk.npc).band, turnsLeft: talk.turnsLeft, options: QUICK_OPTIONS, ...(talk.proposal ? { proposal: this.dialogue.proposalNow()! } : {}) }
+        ? { npc: talk.npc, name: publicShort(this.world, talk.npc), call: callName(this.world.npc(talk.npc)), attitude: attitude(this.world, talk.npc).band, turnsLeft: talk.turnsLeft, options: QUICK_OPTIONS, ...(talk.proposal ? { proposal: this.dialogue.proposalNow()! } : {}) }
         : undefined,
       journal: this.journal(),
       map: this.compactMap(),
@@ -1154,8 +1218,10 @@ export class Engine {
       const name = id.startsWith('far_') ? `${this.topics.name(id)} (heard of)` : this.topics.name(id)
       if (kind === 'person') {
         const npc = this.content.npcs.get(id)
+        // Only who the player met, saw or was told of, by the name they know (M10.8).
+        if (npc && !knowsOfPerson(this.world, id)) continue
         const area = npc ? this.content.areas.get(this.world.location(npc.home).area) : undefined
-        people.push({ id, name, ...far, ...(area ? this.areaGroup(area.id) : { group: 'Further afield', order: '9' }) })
+        people.push({ id, name: npc ? knownName(this.world, id) : name, ...far, ...(area ? this.areaGroup(area.id) : { group: 'Further afield', order: '9' }) })
       } else if (kind === 'place' || kind === 'area') {
         const entry = this.topics.entries.get(id)
         const areaId = kind === 'area' ? entry?.ref : entry?.ref && this.content.locations.has(entry.ref) ? this.content.locations.get(entry.ref)!.area : [...this.content.areas.values()].find((a) => a.topic === id)?.id

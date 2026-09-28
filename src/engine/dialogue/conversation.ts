@@ -1,4 +1,4 @@
-import { asksAge, learnTie, toldAge } from '../acquaintance'
+import { asksAge, knownName, knowsOfPerson, learnTie, learnWork, publicShort, toldAge } from '../acquaintance'
 import type { Output } from '../commands'
 import { parseMoney, STUIVER } from '../items'
 import { MONTHS, WEEKDAYS } from '../clock'
@@ -14,7 +14,7 @@ import { approve, companionOf, offer, recruit } from '../social/companions'
 import { silenceWitness, witnessed } from '../social/crime'
 import { partyTalk } from './party'
 import { closingLine, fallbackReply } from './fallback'
-import { fitLength, hasAnachronism, leakedNames, looksLikeInjection, outOfCharacter, promises, unknownNames, vocabularyOf } from './guard'
+import { fitLength, hasAnachronism, leakedNames, looksLikeInjection, outOfCharacter, promises, swearRight, unknownNames, vocabularyOf } from './guard'
 import { accept, askedFor, askOffer, dayLines, kinOf, offerLine, offerLines, offersFor, proposal, proposalText, type Offer } from './offers'
 import { accepted, declined, inviteOffer } from '../social/invite'
 import { CLAIM_KEYS, claimValid, claimWords, parseClaim, playerSays } from '../claims'
@@ -24,15 +24,18 @@ import { flirt } from '../social/romance'
 import { tieTo } from '../people'
 import type { Claim } from '../state'
 import type { Knowledge, Packet } from './knowledge'
-import type { LlmClient } from './llm'
-import { peopleIds, systemPrompt, turnPrompt, worldFrame } from './prompt'
+import { LlmError, type LlmClient } from './llm'
+import { oathsOf, peopleIds, systemPrompt, turnPrompt, worldFrame } from './prompt'
 import { attitude, applyEffect, moodOf, relation, type Attitude } from './relations'
-import { askLine, askNow, requestName, visited } from '../requests'
+import { askLine, askNow, knownRequests, requestName, visited } from '../requests'
+import { questsOf } from '../life'
+import { routineNow } from '../npc/brain'
 import { parseReply, replyJsonSchema, type Reply } from './schema'
 import type { TopicRegistry } from './topics'
 
 /** A reply comes within this many milliseconds, both tries together, or the NPC says a set line (FO, chapter 18). */
-export const REPLY_WITHIN_MS = 6000
+/** How long a spoken reply may take over both tries (M10.8: ten seconds, unless the player sets it at the model). */
+export const REPLY_WITHIN_MS = 10_000
 
 // One conversation turn, end to end (FO, chapters 9 and 10):
 //   words -> injection filter -> topics and act (rules) -> check (dice)
@@ -84,7 +87,9 @@ export class Dialogue {
   /** A quest action the voice recognised in the player's words, for the engine to carry out. */
   private chosen?: string
   /** Why the model gave no usable reply in the last turn, if it was asked. */
-  private lastFailure?: string
+  private lastFailure?: { kind: string; message: string }
+  /** The topics of the last turn (M10.8): asked about, said, or known and told; a waiting quest starts on them. */
+  private touched: string[] = []
 
   /** Takes the quest action the voice recognised in the last turn, if any. */
   takeChosen(): string | undefined {
@@ -133,7 +138,7 @@ export class Dialogue {
     const ask = (request ? askOffer(world, npcId, request) : undefined) ?? (opened ? inviteOffer(world, npcId) : undefined)
     if (ask) this.talk!.proposal = ask
     return [
-      { kind: 'system', text: `You are talking with ${npc.short}. Type what you want to say, pick a number, or BYE to stop.` },
+      { kind: 'system', text: `You are talking with ${publicShort(world, npcId)}. Type what you want to say, pick a number, or BYE to stop.` },
       ...(greeting ? [{ kind: 'speech' as const, text: greeting }] : []),
       ...visits,
       ...(request ? [{ kind: 'speech' as const, text: `"${askLine(world, request)}"` }, { kind: 'system' as const, text: `New in your journal: ${requestName(world, request)}.` }] : []),
@@ -248,6 +253,8 @@ export class Dialogue {
     if (!secret) return {}
     this.talk!.revealed.push(secret.id)
     ;(this.world.state.flags ??= {})[`secret:${npcId}:${secret.id}`] = true
+    // A secret found out: what they are is no cover any more (M10.8).
+    learnWork(this.world, npcId)
     gainXp(this.world, XP.secret, `${callName(this.world.npc(npcId))} told you a secret`)
     if (secret.teaches) this.teach(npcId, secret.teaches)
     return { secret: secret.text, admission: secret.admission }
@@ -402,6 +409,7 @@ export class Dialogue {
         this.talk?.revealed.push(found.id)
         // Quests react to what the player has found out (quests/engine.ts).
         ;(world.state.flags ??= {})[`secret:${npcId}:${found.id}`] = true
+        learnWork(world, npcId)
         if (found.teaches) this.teach(npcId, found.teaches)
       }
     }
@@ -444,6 +452,13 @@ export class Dialogue {
     return this.passOnNews(npcId, news, { weight: succeeded(result) ? PERSUADED : 0, lines })
   }
 
+  /** The topics of the last turn, once (M10.8). */
+  takeTouched(): string[] {
+    const list = this.touched
+    this.touched = []
+    return list
+  }
+
   /** TALK PARTY, ASK PARTY ABOUT <topic>: every companion at once, in one call (FO, chapter 13). */
   async party(words: string): Promise<Output[]> {
     return partyTalk(this.world, this.topics, this.knowledge, this.llm(), words, this.vocabulary())
@@ -455,7 +470,10 @@ export class Dialogue {
     for (const id of Object.keys(journal).sort()) {
       const kind = this.topics.kind(id)
       const name = this.topics.name(id)
-      if (kind === 'person') groups['People']!.push(name)
+      // Only who the player met, saw or was told of, by the name they know (M10.8).
+      if (kind === 'person' && this.world.content.npcs.has(id)) {
+        if (knowsOfPerson(this.world, id)) groups['People']!.push(knownName(this.world, id))
+      } else if (kind === 'person') groups['People']!.push(name)
       else if (kind === 'place' || kind === 'area') groups['Places']!.push(name)
       else if (kind === 'lore' || kind === 'fact') groups['Lore']!.push(name)
       else if (kind === 'item') groups['Things']!.push(name)
@@ -521,6 +539,8 @@ export class Dialogue {
   private noteSources(npcId: string, topics: { topic: string; level: number }[]): void {
     const sources = (this.world.state.player.sources ??= {})
     for (const { topic, level } of topics) {
+      // Told of someone by another (M10.8): what they do comes with it, a hidden trade too.
+      if (topic !== npcId && this.world.content.npcs.has(topic)) learnWork(this.world, topic)
       const list = (sources[topic] ??= [])
       const existing = list.find((s) => s.from === npcId)
       if (existing) existing.level = Math.max(existing.level, level)
@@ -548,7 +568,7 @@ export class Dialogue {
     const npc = world.npc(npcId)
     if (world.npcState(npcId).location !== world.state.player.location) {
       world.state.talk = undefined
-      return [{ kind: 'error', text: `${npc.short} isn't here any more.` }]
+      return [{ kind: 'error', text: `${publicShort(world, npcId)} isn't here any more.` }]
     }
     if (world.npcState(npcId).activity === 'asleep') {
       world.state.talk = undefined
@@ -630,7 +650,16 @@ export class Dialogue {
         ? world.say(`{name} glances at the door and lowers {their} voice. "${options.admission ?? 'All right. But it stays between us.'}"`, npcId)
         : options.check && !succeeded(options.check)
           ? world.say(`{name} shakes {their} head. "I don't think so."`, npcId)
-          : fallbackReply(world, npcId, act, packet, band.band)
+          : fallbackReply(world, npcId, act, packet, band.band, text)
+
+    // The names in the answer the stranger can follow (M10.8): what they were told this turn or know already, never
+    // the speaker's own name nor what the model made up beyond the packet.
+    const journal = world.state.player.journal ?? {}
+    const followable = new Set([...packet.known.map((k) => k.topic), ...this.topics.recognise(replyText).filter((t) => journal[t] !== undefined)].filter((t) => t !== npcId))
+    const shown = this.topics.link(replyText, followable)
+
+    // What this turn was about (M10.8): a quest waiting in this talk starts when its subject comes up.
+    this.touched = [...new Set([...topics, ...packet.known.map((k) => k.topic), ...this.topics.recognise(text), ...this.topics.recognise(replyText)])]
 
     // 4. Effects, bounded by the system.
     if (reply) {
@@ -648,6 +677,8 @@ export class Dialogue {
     rel.familiarity = Math.min(100, rel.familiarity + 2)
     // Asked their age and they answered: the journal knows it from now on.
     if (reply && asksAge(world, npcId, text)) toldAge(world, npcId)
+    // Asked who they are or what they do: the stranger knows their trade now, unless they keep it hidden (M10.8).
+    if ((act === 'AskWork' || act === 'AskAboutSelf') && !npc.hidden) learnWork(world, npcId)
 
     // 5. New far-away places become part of this game's lore.
     for (const name of reply?.names ?? []) {
@@ -682,6 +713,19 @@ export class Dialogue {
     talk.history.push({ speaker: 'player', text }, { speaker: 'npc', text: replyText })
     if (talk.history.length > 12) talk.history.splice(0, talk.history.length - 12)
     talk.turnsLeft--
+    talk.turns = (talk.turns ?? 0) + 1
+    // A talk goes on while it is about something (M10.8): past the turns it starts with, one more each time, up to a
+    // limit. Who has to go says so a turn ahead; who has nothing more to say closes as before.
+    const alive = (reply?.keep_talking ?? 'no') !== 'no' || this.stillAbout(npcId, packet)
+    if (talk.turnsLeft <= 0 && alive && talk.turns < MAX_TURNS && !talk.leaving) talk.turnsLeft = 1
+    const going: Output[] = []
+    if (talk.turnsLeft === 1 && !alive && !talk.leaving) {
+      const line = this.mustGo(npcId)
+      if (line) {
+        talk.leaving = true
+        going.push({ kind: 'speech', text: line })
+      }
+    }
     // An offer that goes through becomes an agreement and starts; one the NPC proposes waits for the player's yes.
     const offerOut: Output[] = []
     let offerEnds = false
@@ -697,22 +741,27 @@ export class Dialogue {
       }
     }
     // When the model was asked and gave nothing usable, say so, so a stock line is not mistaken for an answer.
-    const failure: Output[] = !reply && this.lastFailure ? [{ kind: 'system', text: `(No answer from the AI: ${this.lastFailure}. A stock line stands in.)` }] : []
+    const failure: Output[] = !reply && this.lastFailure ? [{ kind: 'system', text: stockNotice(this.lastFailure, callName(npc)) }] : []
+    if (!reply && this.lastFailure) {
+      // Why a stock line stood in, for the dev menu (M10.8); the AI log has the call itself.
+      world.stockLines.push({ t: world.now, npc: npcId, reason: `${this.lastFailure.kind}: ${this.lastFailure.message}` })
+      if (world.stockLines.length > 20) world.stockLines.splice(0, world.stockLines.length - 20)
+    }
     // A reaction that ends it (M10.3): walking off, shouting for help, going for the stranger, or the shop shut.
     if (reaction && reaction.reaction !== 'let_pass') {
       this.wrapUp(talk)
       world.state.talk = undefined
       const gone = reaction.reaction === 'walk_away' ? [{ kind: 'narration' as const, text: walkAway(world, npcId) }] : []
-      return [...echo, { kind: 'speech', text: replyText }, ...failure, ...gone]
+      return [...echo, { kind: 'speech', text: shown, ...(reply ? { source: 'model' as const } : {}) }, ...failure, ...gone]
     }
     // Off to do it: the talk ends there, without a closing line.
     if (offerEnds) {
       this.wrapUp(talk)
       world.state.talk = undefined
-      return [...echo, { kind: 'speech', text: replyText }, ...failure, ...offerOut]
+      return [...echo, { kind: 'speech', text: shown, ...(reply ? { source: 'model' as const } : {}) }, ...failure, ...offerOut]
     }
     const ends = reply?.ends_conversation === true
-    return [...echo, { kind: 'speech', text: replyText }, ...failure, ...offerOut, ...(ends ? this.closeNow() : this.maybeClose())]
+    return [...echo, { kind: 'speech', text: shown, ...(reply ? { source: 'model' as const } : {}) }, ...going, ...failure, ...offerOut, ...(ends ? this.closeNow() : this.maybeClose())]
   }
 
   /** YES or NO to what the NPC proposed (M10.3): only a yes makes it happen. */
@@ -740,6 +789,32 @@ export class Dialogue {
   proposalNow(): string | undefined {
     const talk = this.talk
     return talk?.proposal ? proposalText(this.world, talk.npc, talk.proposal) : undefined
+  }
+
+  /**
+   * Whether the talk is still about something, by the rules (M10.8): a quest on with this person, a request of theirs
+   * open, an offer waiting for the stranger's yes, or something they know well asked about this turn.
+   */
+  private stillAbout(npcId: string, packet: Packet): boolean {
+    const world = this.world
+    const quests = world.state.questlog ?? {}
+    // A quest of theirs on, or something of a quest to do with them in this talk.
+    if (questsOf(world, npcId).some((q) => q.givers.includes(npcId) && quests[q.id] && !quests[q.id]!.ended)) return true
+    if ((this.questOptions?.(npcId) ?? []).length > 0) return true
+    if (knownRequests(world).some((r) => r.npc === npcId && r.status === 'open')) return true
+    if (this.talk?.proposal) return true
+    return packet.known.some((k) => k.level >= 2 && k.topic !== npcId)
+  }
+
+  /** Who has to be somewhere says so a turn before they go (M10.8): back to work, or off to where the day takes them. */
+  private mustGo(npcId: string): string | undefined {
+    const world = this.world
+    const day = routineNow(world, npcId)
+    if (!day) return undefined
+    const name = callName(world.npc(npcId))
+    if (day.activity === 'work') return `${name} glances away. "I must get back to my work, but go on."`
+    if (day.until - world.now <= 30 && day.place !== world.npcState(npcId).location) return `${name} looks at the light. "I must be off soon, but go on."`
+    return undefined
   }
 
   private maybeClose(): Output[] {
@@ -824,7 +899,8 @@ export class Dialogue {
       prompt += `\nQUEST ACTIONS: if the player's words clearly mean one of these, put its key in quest_action and the game carries it out; otherwise quest_action is "none".\n${offered.map((o) => `  ${o.key}: the player wants to ${o.intent}`).join('\n')}`
     }
 
-    // A reply comes within six seconds or not at all, over both tries (FO, chapter 18): then the set line.
+    // A reply comes within its time or not at all, over both tries (FO, chapter 18; ten seconds unless set otherwise, M10.8): then the set line.
+    const within = llm.replyWithinMs?.() ?? REPLY_WITHIN_MS
     const started = Date.now()
     for (let attempt = 0; attempt < 2; attempt++) {
       let raw: string
@@ -837,7 +913,7 @@ export class Dialogue {
             schemaName: 'npc_reply',
             schema: replyJsonSchema(allowedTopics, offered.map((o) => o.key), offers, !talk?.after, ctx.claimable?.length ? { subjects: ctx.claimable, keys: CLAIM_KEYS } : undefined),
             maxTokens: TIER_TOKENS[ctx.tier],
-            timeoutMs: REPLY_WITHIN_MS - (Date.now() - started),
+            timeoutMs: within - (Date.now() - started),
             meta: {
               npcName: callName(world.npc(npcId)),
               act: ctx.act,
@@ -856,7 +932,7 @@ export class Dialogue {
           })
         ).text
       } catch (error) {
-        this.lastFailure = error instanceof Error ? error.message : String(error)
+        this.lastFailure = { kind: error instanceof LlmError ? error.kind : 'network', message: error instanceof Error ? error.message : String(error) }
         return undefined
       }
       const reply = parseReply(raw)
@@ -864,7 +940,8 @@ export class Dialogue {
         llm.report?.({ reason: 'schema' })
         continue
       }
-      const fitted = fitLength(reply.reply, ctx.tier)
+      // Our world's oaths give way to the speaker's own (M10.8): "Christ, yes" is "Saint Brand's light, yes".
+      const fitted = swearRight(fitLength(reply.reply, ctx.tier), oathsOf(world, npcId))
       if (hasAnachronism(fitted)) {
         llm.report?.({ reason: 'anachronism' })
         prompt += '\nNOTE: your last reply used words that do not exist in this world. Answer again without them.'
@@ -905,7 +982,7 @@ export class Dialogue {
       }
       return { ...reply, reply: fitted }
     }
-    this.lastFailure = 'both replies failed the checks'
+    this.lastFailure = { kind: 'checks', message: 'both replies failed the checks' }
     return undefined
   }
 
@@ -960,6 +1037,22 @@ function claimLine(world: World, npcId: string, stance: 'believes' | 'doubts' | 
 }
 
 /** The topic words without closing punctuation, so the echo does not end in "?." or "..". */
+/**
+ * What the player is told when a stock line stands in for the model (M10.8): what happened, and that the line is the
+ * game's own, from what the speaker knows, so it is not taken for an answer.
+ */
+export function stockNotice(failure: { kind: string; message: string }, name: string): string {
+  const own = `this is the game's own line from what ${name} knows`
+  if (failure.kind === 'timeout') return `(The AI took too long; ${own}.)`
+  if (failure.kind === 'checks') return `(The AI's answers did not pass the checks; ${own}.)`
+  if (failure.kind === 'config') return `(No AI: ${failure.message}; ${own}.)`
+  if (failure.kind === 'budget') return `(The AI budget is used up: ${failure.message}; ${own}.)`
+  return `(No answer from the AI: ${failure.message}; ${own}.)`
+}
+
+/** However much a talk is about, it ends after this many turns (M10.8). */
+const MAX_TURNS = 20
+
 /** What a persuasion that worked adds to the word it carries (M10.6), as much as a lie told well (M10.3). */
 const PERSUADED = 40
 /** How much easier a persuasion is for each who stands by it (M10.6). */

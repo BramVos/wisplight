@@ -21,8 +21,9 @@ export interface LlmRequest {
   priority?: 'normal' | 'low'
   /**
    * How long this call may take at most, in milliseconds (M9.4): what is left of
-   * the six seconds a reply may take, over both tries. At zero or less the call
-   * fails at once, so a replay, which records the failure, goes the same way.
+   * the time a reply may take, over both tries (ten seconds unless the player set
+   * otherwise, M10.8). At zero or less the call fails at once, so a replay, which
+   * records the failure, goes the same way.
    */
   timeoutMs?: number
   /** Structured context for the mock model; real providers ignore it. */
@@ -50,11 +51,15 @@ export interface LlmResponse {
 /** A reply the engine threw away after validation, so the usage overview can count it. */
 export interface LlmRejection {
   reason: 'schema' | 'anachronism' | 'character' | 'leak' | 'invented' | 'goal' | 'promise'
+  /** Whose reply it was; the voice when not given. */
+  role?: LlmRole
 }
 
 export interface LlmClient {
   complete(request: LlmRequest): Promise<LlmResponse>
   report?(rejection: LlmRejection): void
+  /** How long a spoken reply may take, over its tries, in milliseconds (M10.8): the player's setting at the model. */
+  replyWithinMs?(): number
 }
 
 export class LlmError extends Error {

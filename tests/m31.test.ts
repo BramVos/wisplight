@@ -24,10 +24,11 @@ describe('M3.1: who people are to each other', () => {
 
   it('tells the voice who its own people are, and what is private', () => {
     const line = peopleLine(world, 'npc_grietje_visser')!
-    expect(line).toMatch(/Jan, your husband/)
-    expect(line).toMatch(/Pim, your son/)
+    // With the age from the content (M10.8), so the voice does not make one up.
+    expect(line).toMatch(/Jan, aged 44, your husband/)
+    expect(line).toMatch(/Pim, aged 9, your son/)
     expect(line).toMatch(/Fenna, your daughter \(missing\)/)
-    expect(peopleLine(world, 'npc_kobus')).toMatch(/PRIVATE, not for people you do not trust: Lubbert, your employer/)
+    expect(peopleLine(world, 'npc_kobus')).toMatch(/PRIVATE, not for people you do not trust: Lubbert, aged \d+, your employer/)
     expect(systemPrompt(world, 'npc_mirte')).toMatch(/YOUR PEOPLE: Joris, your husband \(away\)/)
   })
 

@@ -59,6 +59,8 @@ export interface AiBridge {
   compare(role: ChosenRole, choices: { provider: ProviderId; model: string }[]): Promise<{ results: TrialResult[]; verdicts: TrialVerdict[]; choice?: { provider: ProviderId; model: string } }>
   choose(role: ChosenRole, provider: ProviderId, model: string): Promise<string>
   setBudget(usd: number): Promise<void>
+  /** How long a spoken reply may take, in seconds (M10.8). */
+  setReplyWithin(seconds: number): Promise<void>
   setMonthBudget(usd: number | null): Promise<void>
   setCredit(provider: ProviderId, usd: number | null): Promise<void>
   csv(): Promise<string>

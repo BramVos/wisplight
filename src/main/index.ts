@@ -645,6 +645,7 @@ ipcMain.handle('ai:choose', async (_event, which: unknown, id: unknown, model: u
   return stored
 })
 ipcMain.handle('ai:budget', (_event, usd: unknown) => service().settings.setBudget(Number(usd)))
+ipcMain.handle('ai:reply-within', (_event, seconds: unknown) => service().settings.setReplyWithin(Number(seconds)))
 ipcMain.handle('ai:month-budget', (_event, usd: unknown) => service().usage.setMonthBudget(amount(usd)))
 ipcMain.handle('ai:credit', (_event, id: unknown, usd: unknown) => service().usage.setCredit(provider(id), amount(usd)))
 ipcMain.handle('ai:csv', () => service().usage.csv())

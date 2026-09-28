@@ -61,7 +61,7 @@ Maren nods slowly. "News of the day here: Wenna is dead. She drowned off the har
 Maren lifts a hand. "Go on, then."
 
 > journal
-People: Maren Holt, Wenna Dray.
+People: Maren Holt, Wenna.
 Places: Skerrow Hythe, the Shore, Skerrow Hythe, the Harbour, The Headland, The Salt Kettle, The Tidepools, The Wreck Strand.
 Lore: the stranger in Skerrow Hythe, the death of Wenna Dray, Wenna to be given back to the Tidemother, the Grey Gull, news in Skerrow Hythe.
 
@@ -79,10 +79,10 @@ Maren nods. "Afternoon."
 
 > ask about wenna
 You: "What do you know about wenna?"
-Maren thinks a moment. "Wenna is dead. She drowned off the harbour wall, they say."
+Maren thinks a moment. "[Wenna] is dead. She drowned off [the harbour] wall, they say."
 
 > What happened to Wenna?
-Maren scratches an ear. "Wenna is dead. She drowned off the harbour wall, they say."
+Maren scratches an ear. "[Wenna] is dead. She drowned off [the harbour] wall, they say."
 
 > bye
 Maren lifts a hand. "Go on, then."
@@ -101,7 +101,7 @@ Pip nods. "Afternoon."
 
 > 2
 You: "What's new around here?"
-Pip nods slowly. "News of the day here: Wenna is dead. She drowned off the harbour wall, they say."
+Pip nods slowly. "News of the day here: [Wenna] is dead. She drowned off [the harbour] wall, they say."
 
 > bye
 Pip lifts a hand. "Go on, then."
@@ -142,13 +142,13 @@ Pip nods. "Afternoon."
 
 > 2
 You: "What's new around here?"
-Pip thinks a moment. "News of the day here: Wenna is dead. She drowned off the harbour wall, they say."
+Pip thinks a moment. "News of the day here: [Wenna] is dead. She drowned off [the harbour] wall, they say."
 
 > bye
 Pip lifts a hand. "Go on, then."
 
 > journal
-People: Maren Holt, Pip Reed, Wenna Dray.
+People: Maren Holt, Pip Reed, Wenna.
 Places: Skerrow Hythe, the Shore, Skerrow Hythe, the Green, Skerrow Hythe, the Harbour, The Headland, The Salt Kettle, The Tidepools, The Wreck Strand.
 Lore: the stranger in Skerrow Hythe, the death of Wenna Dray, Wenna to be given back to the Tidemother, the Grey Gull, news in Skerrow Hythe.
 
@@ -236,7 +236,7 @@ Maren nods. "Afternoon."
 
 > 2
 You: "What's new around here?"
-Maren scratches an ear. "News of the day here: Wenna is dead. She drowned off the harbour wall, they say."
+Maren scratches an ear. "News of the day here: [Wenna] is dead. She drowned off [the harbour] wall, they say."
 
 > bye
 Maren lifts a hand. "Go on, then."
@@ -285,7 +285,7 @@ Maren nods. "Afternoon."
 
 > 2
 You: "What's new around here?"
-Maren scratches an ear. "Wenna is dead. She drowned off the harbour wall, they say. (It is going round; you heard it from people passing through. You are fairly sure.)"
+Maren scratches an ear. "[Wenna] is dead. She drowned off [the harbour] wall, they say. (It is going round; you heard it from people passing through. You are fairly sure.)"
 
 > bye
 Maren lifts a hand. "Go on, then."
@@ -354,7 +354,7 @@ Maren nods slowly. "News of the day here: Wenna is dead. She drowned off the har
 Maren lifts a hand. "Go on, then."
 
 > journal
-People: Maren Holt, Wenna Dray.
+People: Maren Holt, Wenna.
 Places: Skerrow Hythe, the Shore, Skerrow Hythe, the Harbour, The Headland, The Salt Kettle, The Tidepools, The Wreck Strand.
 Lore: the stranger in Skerrow Hythe, the death of Wenna Dray, Wenna to be given back to the Tidemother, the Grey Gull, news in Skerrow Hythe.
 
@@ -377,13 +377,13 @@ Maren nods. "Afternoon."
 
 > 2
 You: "What's new around here?"
-Maren thinks a moment. "News of the day here: Wenna is dead. She drowned off the harbour wall, they say."
+Maren thinks a moment. "News of the day here: [Wenna] is dead. She drowned off [the harbour] wall, they say."
 
 > bye
 Maren lifts a hand. "Go on, then."
 
 > journal
-People: Maren Holt, Wenna Dray.
+People: Maren Holt, Wenna.
 Places: Skerrow Hythe, the Shore, Skerrow Hythe, the Harbour, The Headland, The Salt Kettle, The Tidepools, The Wreck Strand.
 Lore: the stranger in Skerrow Hythe, the death of Wenna Dray, Wenna to be given back to the Tidemother, the Grey Gull, news in Skerrow Hythe.
 
@@ -449,7 +449,7 @@ Maren nods. "Evening."
 
 > 2
 You: "What's new around here?"
-Maren scratches an ear. "News of the day here: Wenna is dead. She drowned off the harbour wall, they say."
+Maren scratches an ear. "News of the day here: [Wenna] is dead. She drowned off [the harbour] wall, they say."
 
 > bye
 Maren lifts a hand. "Go on, then."
@@ -500,7 +500,7 @@ Maren nods. "Evening."
 
 > 2
 You: "What's new around here?"
-Maren nods slowly. "Wenna is dead. She drowned off the harbour wall, they say. (It is going round; you heard it from people passing through. You are fairly sure.)"
+Maren nods slowly. "[Wenna] is dead. She drowned off [the harbour] wall, they say. (It is going round; you heard it from people passing through. You are fairly sure.)"
 
 > bye
 Maren lifts a hand. "Go on, then."

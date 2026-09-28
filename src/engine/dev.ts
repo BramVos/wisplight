@@ -45,6 +45,8 @@ export interface DevView {
   background?: {
     queue: string[]
     signals: string[]
+    /** The last stock lines that stood in for the model, and why (M10.8). */
+    stock: string[]
     plans: DevPlan[]
     ledgers: { id: string; name: string; purse: number; short: string[]; surplus: string[]; stock: string[] }[]
   }
@@ -128,6 +130,7 @@ export function devView(engine: Engine, section: DevSection, focus?: string): De
     view.background = {
       queue: (signals?.queue ?? []).map(line),
       signals: [...(signals?.log ?? [])].slice(-30).reverse().map(line),
+      stock: [...world.stockLines].reverse().map((s) => `${world.date(s.t)}: ${nameOf(world, s.npc)}, ${s.reason}`),
       plans: (world.state.plans ?? [])
         .filter((p) => p.ended === undefined)
         .map((p) => {

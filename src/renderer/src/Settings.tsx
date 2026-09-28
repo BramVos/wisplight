@@ -199,6 +199,7 @@ function AiTab({ bridge, overview, refresh }: { bridge: AiBridge; overview: AiOv
   // The trial's verdict on the advised models of a role (M9.3): which it chose, and why the others not.
   const [verdicts, setVerdicts] = useState<Partial<Record<Role, { chosen?: string; why: Record<string, { passed: boolean; why: string }> }>>>({})
   const [budget, setBudget] = useState(String(settings.budgetUsdPerHour))
+  const [within, setWithin] = useState(String(settings.replyWithinSeconds ?? 10))
 
   const connected = PROVIDERS.filter(({ id }) => settings.providers[id].configured)
   const options = connected.flatMap(({ id }) => (settings.models[id] ?? []).map((model) => ({ key: choiceKey(id, model), label: `${PROVIDER_NAMES[id]} · ${model}` })))
@@ -417,6 +418,15 @@ function AiTab({ bridge, overview, refresh }: { bridge: AiBridge; overview: AiOv
           [{t('settings.ai.save')}]
         </button>
         <span className="muted">{t('settings.ai.budget.note')}</span>
+      </div>
+      <div className="row">
+        <span className="label">{t('settings.ai.replyWithin.label')}</span>
+        <input className="amount" inputMode="numeric" value={within} onChange={(event) => setWithin(event.target.value)} aria-label={t('settings.ai.replyWithin.aria')} />
+        <span>{t('settings.ai.replyWithin.unit')}</span>
+        <button type="button" className="link" disabled={Boolean(busy) || !(Number(within) > 0)} onClick={() => void run(t('settings.ai.busyLabels.saving'), async () => (await bridge.setReplyWithin(Number(within)), await refresh(), setNote(t('settings.ai.replyWithin.saved'))))}>
+          [{t('settings.ai.save')}]
+        </button>
+        <span className="muted">{t('settings.ai.replyWithin.note')}</span>
       </div>
     </div>
   )
@@ -711,7 +721,7 @@ export function LogTab({ bridge }: { bridge: AiBridge }) {
               <td>{new Date(entry.time).toLocaleTimeString('en-GB')}</td>
               <td>{entry.role}</td>
               <td className="mono">{entry.model}</td>
-              <td className={entry.ok ? 'ok' : 'warn'}>{entry.ok ? t('settings.log.ok') : entry.error}</td>
+              <td className={entry.ok && !entry.rejected?.length ? 'ok' : 'warn'}>{entry.ok ? (entry.rejected?.length ? t('settings.log.rejected', { reasons: entry.rejected.join(', ') }) : t('settings.log.ok')) : entry.error}</td>
               <td>{entry.latencyMs}</td>
               <td>
                 {entry.inputTokens}/{entry.outputTokens}

@@ -215,7 +215,9 @@ export function peopleLine(world: World, npcId: string): string | undefined {
   if (own.length === 0) return undefined
   const text = own.map((tie) => {
     const status = STATUS[tie.status] ? ` (${STATUS[tie.status]})` : ''
-    return `${tie.private ? 'PRIVATE, not for people you do not trust: ' : ''}${tie.name}, ${describe(tie)}${status}${tie.note ? `. ${tie.note}` : ''}`
+    // Their age from the content (M10.8): the model says it as given, and does not make up its own.
+    const age = tie.id && world.content.npcs.has(tie.id) ? `, aged ${world.npc(tie.id).age}` : ''
+    return `${tie.private ? 'PRIVATE, not for people you do not trust: ' : ''}${tie.name}${age}, ${describe(tie)}${status}${tie.note ? `. ${tie.note}` : ''}`
   })
   return `YOUR PEOPLE: ${text.join('; ')}.`
 }
@@ -278,4 +280,34 @@ export const FAMILY_NEWS = new Set(['death', 'sickness', 'injury', 'missing', 'f
 
 export function isFamilyNews(fact: Fact): boolean {
   return FAMILY_NEWS.has(fact.kind)
+}
+
+const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+/**
+ * A fact or a summary in the speaker's own words (M10.8): their own people as
+ * what they are to them, not as the content names them. Jan reads "Fenna
+ * Visser, fifteen, the daughter of Jan and Grietje, has been missing" as "my
+ * daughter Fenna, fifteen, has been missing". For every speaker and every fact.
+ */
+export function ownWords(world: World, speakerId: string, text: string): string {
+  if (!world.content.npcs.has(speakerId)) return text
+  const me = world.npc(speakerId)
+  const myName = callName(me)
+  let out = text
+  // "the daughter of Jan and Grietje": the speaker is in it, so it is said as "my daughter" instead.
+  out = out.replace(new RegExp(`,\\s*the \\w+ of [^,.;]*\\b${escape(myName)}\\b[^,.;]*(?=[,.;])`, 'g'), '')
+  for (const tie of ties(world, speakerId)) {
+    if (!tie.id || !world.content.npcs.has(tie.id) || tie.private || !['family', 'love', 'friend'].includes(tie.kind)) continue
+    const other = world.npc(tie.id)
+    const first = callName(other)
+    const said = new RegExp(`\\b(?:${escape(other.name)}|${escape(first)})\\b`)
+    const at = said.exec(out)
+    if (!at) continue
+    const before = out.slice(0, at.index)
+    const start = at.index === 0 || /[.!?]\\s*$/.test(before)
+    const mine = `${start ? 'My' : 'my'} ${noun(tie)} ${first}`
+    out = `${before}${mine}${out.slice(at.index + at[0].length)}`
+  }
+  return out
 }

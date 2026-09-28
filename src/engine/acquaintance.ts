@@ -17,10 +17,48 @@ function note(world: World, npcId: string): PersonNote {
   return ((world.state.player.people ??= {})[npcId] ??= {})
 }
 
+/**
+ * Whether the player knows of someone (M10.8): talked with them or knows them
+ * from their background, saw them, or was told of them. Only these are under
+ * People in the journal.
+ */
+export function knowsOfPerson(world: World, npcId: string): boolean {
+  if ((world.state.relations?.[npcId]?.familiarity ?? 0) > 0) return true
+  if (world.state.player.people?.[npcId]?.seen) return true
+  return (world.state.player.sources?.[npcId]?.length ?? 0) > 0
+}
+
+/** The name the player knows someone by (M10.8): the whole name once they talked, else as they heard it: "Geesje". */
+export function knownName(world: World, npcId: string): string {
+  const npc = world.npc(npcId)
+  return (world.state.relations?.[npcId]?.familiarity ?? 0) > 0 ? npc.name : callName(npc)
+}
+
+/** The stranger knows what someone does now (M10.8): they said it, someone told, or the stranger saw them at it. */
+export function learnWork(world: World, npcId: string): void {
+  if (!world.content.npcs.has(npcId)) return
+  note(world, npcId).work ??= world.now
+}
+
+/** Whether the stranger knows what someone does (M10.8). */
+export function knowsWork(world: World, npcId: string): boolean {
+  return world.state.player.people?.[npcId]?.work !== undefined
+}
+
+/** The short name the stranger may see (M10.8): a hidden trade stays out of it until it is known, "Old Tamsin". */
+export function publicShort(world: World, npcId: string): string {
+  const npc = world.npc(npcId)
+  return npc.hidden && !knowsWork(world, npcId) ? (npc.short_public ?? callName(npc)) : npc.short
+}
+
 /** The player and this person are in the same place (every quarter hour, from the simulation). */
 export function sawPerson(world: World, npcId: string, where: string): void {
   const n = note(world, npcId)
   n.seen = { where, t: world.now }
+  // Seen at their work, at it (M10.8): the stranger knows what they do; a hidden trade shows only its cover.
+  const npc = world.npc(npcId)
+  const s = world.state.npcs[npcId]
+  if (!npc.hidden && npc.work === where && s?.activity === 'at work') learnWork(world, npcId)
   const places = (n.places ??= {})
   places[where] = (places[where] ?? 0) + 1
   const ranked = Object.entries(places).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
@@ -61,10 +99,9 @@ export function personView(world: World, npcId: string): PersonView {
     if (n?.age) view.age = { text: String(n.age.value + Math.floor((world.now - n.age.t) / YEAR)), known: true }
     else if (met || n?.seen) view.age = { text: guess(npcId, age), known: false }
   }
-  if (met) {
-    view.work = world.content.professions.get(npc.profession)?.name ?? npc.profession
-    view.appearance = npc.appearance
-  }
+  // What they do, as far as the stranger knows (M10.8): the trade once known, a cover for a hidden one, else unknown.
+  if (met || n?.seen) view.work = knowsWork(world, npcId) ? (world.content.professions.get(npc.profession)?.name ?? npc.profession) : npc.hidden && npc.cover ? npc.cover : '?'
+  if (met) view.appearance = npc.appearance
   if (n?.seen) view.lastSeen = { where: world.location(n.seen.where).name, ago: ago(world.now - n.seen.t) }
   if (n?.places) {
     view.often = Object.entries(n.places)

@@ -10,6 +10,7 @@ import { standingLine } from '../standing'
 import { requestLines } from '../requests'
 import { agreementLines } from '../agreements'
 import { relation, type Attitude } from './relations'
+import { faithOf } from '../faith'
 
 // Prompts for the voice role (FO, chapter 10). The system part is byte-for-byte
 // stable per NPC so providers can cache it; everything that changes goes in
@@ -101,12 +102,16 @@ export function systemPrompt(world: World, npcId: string): string {
     '',
     'CHARACTER',
     `Name: ${npc.name}, known as ${npc.short}. Age ${npc.age}. ${profession}.`,
+    // A hidden trade (M10.8): the stranger is not told it by its keeper.
+    npc.hidden && npc.cover ? `With strangers you keep your trade to yourself: to them you are ${npc.cover}.` : '',
     `Looks: ${npc.appearance}`,
     `Personality: ${describePersonality(npc)}. Cares about: ${values.join(', ') || 'getting by'}.`,
     npc.quirks.length ? `Quirks: ${npc.quirks.map((q) => q.replace(/_/g, ' ')).join(', ')}.` : '',
     npc.speech ? `Voice: ${npc.speech}` : '',
     npc.public_facts.length ? `Facts about you: ${npc.public_facts.join(' ')}` : '',
     npc.examples.length ? `Example lines: ${npc.examples.map((e) => `"${e}"`).join(' ')}` : '',
+    // Each faith swears by its own (M10.8).
+    oathsOf(world, npcId).length ? `You swear only by your own faith: ${oathsOf(world, npcId).map((o) => `"${o}"`).join(', ')}. Never by Christ, God or the Lord, and nobody here says hell.` : '',
     peopleLine(world, npcId) ?? '',
     standingLine(world, npcId) ?? '',
   ]
@@ -240,4 +245,10 @@ export function turnPrompt(world: World, ctx: TurnContext): string {
     `PLAYER SAYS: <<${ctx.playerText.replace(/[<>]/g, '')}>>`,
   ]
   return lines.join('\n')
+}
+
+/** The oaths of the speaker's faith (M10.8): what they swear by. */
+export function oathsOf(world: World, npcId: string): string[] {
+  const faith = faithOf(world, npcId)
+  return world.content.world.faiths.find((f) => f.id === faith)?.oaths ?? []
 }

@@ -2,7 +2,7 @@ import type { HexMapData } from './map/view'
 import type { LandMapData } from './map/known'
 import { hintHolds } from './props'
 import type { SheetData } from './rules/player'
-import { personView, type PersonView } from './acquaintance'
+import { knownName, knowsWork, personView, publicShort, type PersonView } from './acquaintance'
 import { dayName, GameClock } from './clock'
 import { areaTopicId, callName } from './content'
 import type { TopicRegistry } from './dialogue/topics'
@@ -65,9 +65,12 @@ export function journalPage(world: World, topics: TopicRegistry, id: string): Jo
   const npc = entry.kind === 'person' && entry.ref ? content.npcs.get(entry.ref) : undefined
   if (npc) {
     page.kind = 'person'
+    page.name = knownName(world, npc.id)
     const met = (world.state.relations?.[npc.id]?.familiarity ?? 0) > 0
-    page.lines.push(`${npc.short}.`)
-    if (met || page.sources.length > 0) page.lines.push(...npc.public_facts)
+    page.lines.push(`${publicShort(world, npc.id)}.`)
+    // A hidden trade (M10.8): the cover, until the stranger knows better.
+    if (npc.hidden && npc.cover && !knowsWork(world, npc.id)) page.lines.push(`As far as you know, ${npc.cover}.`)
+    else if (met || page.sources.length > 0) page.lines.push(...npc.public_facts)
     if (met) page.lines.push(npc.appearance)
     page.links.push(...link(npc.home, 'lives at'))
     if (npc.work && npc.work !== npc.home) page.links.push(...link(npc.work, 'works at'))
