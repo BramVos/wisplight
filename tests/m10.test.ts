@@ -6,6 +6,7 @@ import { hexMapData, mapView } from '../src/engine/map/view'
 import { DEFAULT_PALETTE, mapStyle } from '../src/engine/map/palette'
 import { readContentFiles } from '../src/node/content'
 import { noise, regionMap } from '../src/engine/map/region'
+import { line } from '../src/engine/map/hexgrid'
 import { hexId, look, seenBits } from '../src/engine/map/travel'
 import { knownPlace, landMapData, walkTarget } from '../src/engine/map/known'
 import { mayBeStuck } from '../src/engine/playtest'
@@ -177,7 +178,7 @@ describe('M10: the map in colour', () => {
     expect(panel.you!.c).toBeLessThan(panel.left + panel.width)
   })
 
-  it('what is in sight now is clear; by day what was seen lately too; at night only what is in sight, the rest as memory', async () => {
+  it('tells for every hex whether it is in sight, seen lately or long ago, and the light and the sight: the minimap draws night and mist with them', async () => {
     const engine = new Engine(content, { seed: 3 })
     const map = regionMap(content)!
     const world = engine.world
@@ -186,25 +187,49 @@ describe('M10: the map in colour', () => {
       for (let i = 0; i < data.hexes.length; i += 5) if (data.hexes[i] === c && data.hexes[i + 1] === r) return data.hexes[i + 4]! & 3
       return undefined
     }
-    // Walk a little way out into the land, looking.
     world.state.player.location = hexId({ col: 60, row: 40 })
     look(world, map, { col: 60, row: 40 })
     world.state.player.location = hexId({ col: 70, row: 40 })
     look(world, map, { col: 70, row: 40 })
-    // By day: the hex under you now, and the one you left, clear.
-    const night = new GameClock(world.now).isNight
-    if (!night) {
-      expect(at(70, 40)).toBe(2)
-      expect(at(60, 40)).toBe(1)
-    }
-    // Past the fresh stretch, what you saw long ago is vaguer.
+    expect(at(70, 40)).toBe(2)
+    expect(at(60, 40)).toBe(1)
+    // Past the fresh stretch, what you saw is long ago.
     world.state.minutes += 7 * 24 * 60
     expect(at(60, 40)).toBe(0)
-    // At night only what is in sight is clear.
-    look(world, map, { col: 60, row: 40 }, false)
+    // Night is in the data, and how far you see: one hex.
     while (!new GameClock(world.now).isNight) world.state.minutes += 60
-    expect(at(60, 40)).toBe(0)
-    expect(at(70, 40)).toBe(2)
+    const night = hexMapData(world, { width: 31, height: 23 })!
+    expect(night.light).toBe('night')
+    expect(night.sight).toBe(1)
+    while (new GameClock(world.now).isNight) world.state.minutes += 60
+    expect(hexMapData(world, { width: 31, height: 23 })!.light).not.toBe('night')
+  })
+
+  it('a walk from place to place puts the way between them on the map (the M10 playtest: the road to the Drowned Goose was missing)', async () => {
+    const engine = new Engine(content, { seed: 3 })
+    const map = regionMap(content)!
+    const from = map.locations.get('loc_peat_road')!
+    const to = map.locations.get('loc_goose_crossroads')!
+    expect(Math.abs(from.col - to.col) + Math.abs(from.row - to.row)).toBeGreaterThan(2)
+    engine.state.player.location = 'loc_peat_road'
+    await engine.handle('east')
+    expect(engine.state.player.location).toBe('loc_goose_crossroads')
+    const seen = seenBits(engine.world, map)
+    // Every hex of the way between is on the map now.
+    for (const hex of line(from, to)) {
+      const i = hex.col * map.rows + hex.row
+      expect((seen[i >> 3]! & (1 << (i & 7))) !== 0, `${hex.col},${hex.row}`).toBe(true)
+    }
+  })
+
+  it('only places are on the map: a tale or a being with a home somewhere is not (the Haakman)', () => {
+    const engine = new Engine(content, { seed: 3 })
+    ;(engine.state.player.journal ??= {})['haakman'] = engine.world.now
+    const data = hexMapData(engine.world, { whole: true })!
+    expect(data.zones.some((z) => /Haakman/.test(z.name))).toBe(false)
+    expect(data.places.some((p) => /Haakman/.test(p.name))).toBe(false)
+    ;(engine.state.player.journal ??= {})['kattenbroek'] = engine.world.now
+    expect(hexMapData(engine.world, { whole: true })!.zones.some((z) => /Kattenbroek/.test(z.name))).toBe(true)
   })
 
   it('shows one level at a time; a tunnel you do not know is not on your map, and its ends are stairs', () => {

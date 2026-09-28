@@ -1625,3 +1625,58 @@ pre.sheet {
 .palette-ask input {
   flex: 1 1 320px;
 }
+
+/* Two maps after the M10 playtest: the bar with zoom and full screen, and the full-screen overlay. */
+.hexmap-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.hexmap-bar .seg {
+  margin-bottom: 0;
+}
+.hexmap-bar .spacer {
+  flex: 1;
+}
+.map-tool {
+  font: calc(13px * var(--text-scale)) / 1 var(--font);
+  color: var(--muted);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  min-width: 26px;
+  height: 24px;
+  cursor: pointer;
+}
+.map-tool:hover,
+.map-tool:focus-visible {
+  color: var(--text);
+  border-color: var(--muted);
+}
+.hexmap-canvas {
+  width: 100%;
+  overflow: hidden;
+  border-radius: 3px;
+  touch-action: none;
+}
+.hexmap-canvas canvas {
+  display: block;
+}
+.hexmap-full {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: var(--bg);
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+}
+.hexmap-full .hexmap.is-full {
+  flex: 1;
+  min-height: 0;
+  grid-template-rows: auto 1fr auto;
+}
+.hexmap-full .hexmap-canvas {
+  height: 100%;
+  min-height: 0;
+}

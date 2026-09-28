@@ -347,7 +347,7 @@ export function App() {
           <h2>{t('app.map.title')}</h2>
           {status?.hexMap ? (
             <>
-              <HexMap data={status.hexMap} style={mapLook} labels legend={false} label={t('app.map.label')} />
+              <HexMap data={status.hexMap} style={mapLook} mode="local" legend={false} height={220} label={t('app.map.label')} />
               <button type="button" className="link" onClick={() => openPage('map')}>
                 [{t('app.map.whole')}]
               </button>

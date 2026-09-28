@@ -60,7 +60,13 @@
       "mapped": "on the map"
     },
     "levels": "Level",
-    "style": "Map"
+    "style": "Map",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "fit": "Show all you know",
+    "centre": "Back to where you are",
+    "full": "Full screen",
+    "leaveFull": "Close full screen (Escape)"
   },
   "party": {
     "title": "Party",

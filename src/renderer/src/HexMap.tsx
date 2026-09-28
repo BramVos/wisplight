@@ -1,20 +1,31 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
+import { createPortal } from 'react-dom'
 import type { HexMapData, LandMapData } from '../../engine'
 import { neighbours } from '../../engine/map/hexgrid'
 import { mapStyle, tintsOf, type MapStyle, type MapStyleName } from '../../engine/map/palette'
 import { hasWords, t } from './i18n'
 
-const word = (key: string, fallback: string) => (hasWords(key) ? t(key) : fallback)
-
 // The map in colour (M10; FO, chapter 4, "Weergave"; the proposal page
-// approved on 28 September 2026). Every hex the player knows gets one of its
-// terrain's muted tints, from its seed; features have their own sign; what is
-// remembered from long ago, and at night or in mist all beyond sight, is
-// vaguer. Ways are warm parchment, places an icon by kind and status. The
-// legend strip under it has the same tokens; a click lights a terrain up.
+// approved on 28 September 2026), as two maps after the M10 playtest:
+//
+// - The minimap, in the side panel: the land around the stranger, close up.
+//   What they see now is clear; beyond it by day what they saw lately, and
+//   what they saw long ago vaguer; at night and in mist only their own small
+//   circle is clear and the rest is dark or grey.
+// - The map, in the journal: everything the stranger knows, always clear, to
+//   look at at leisure: the land, the places, and the secrets they know.
+//
+// Both zoom in and out and go full screen; the map is dragged about too.
+// Every hex has one of its terrain's muted tints, from its seed; features
+// their own sign; ways are warm parchment, places an icon by kind and status.
+
+const word = (key: string, fallback: string) => (hasWords(key) ? t(key) : fallback)
 
 const FEATURE = ['', 'pool', 'peat_pit', 'willow', 'ruin', 'hummock']
 const MARK: Record<string, string> = { fen: '"', bog: '"', hummock: '^', ridge: ',', water: '~', channel: '≈', woods: 'T', heath: '^', fields: '.', tunnel: '∩', crown: '♣', cliff: '▲', dune: '∽' }
+const SQRT3 = Math.sqrt(3)
+
+export type MapMode = 'map' | 'local'
 
 function rgb(hex: string): [number, number, number] {
   return [parseInt(hex.slice(1, 3), 16), parseInt(hex.slice(3, 5), 16), parseInt(hex.slice(5, 7), 16)]
@@ -28,32 +39,20 @@ export function mix(a: string, b: string, t: number): string {
   return `#${c(r1, r2)}${c(g1, g2)}${c(b1, b2)}`
 }
 
-interface Geometry {
-  r: number
-  w: number
-  h: number
-  pad: number
-  width: number
-  height: number
-  at(col: number, row: number): [number, number]
+/** Where a hex lies in map units (one unit is the hex radius): flat-topped, odd columns half a hex north, north up. */
+function hexPoint(col: number, row: number): [number, number] {
+  return [col * 1.5, row * SQRT3 + (col % 2 === 1 ? SQRT3 / 2 : 0)]
 }
 
-/** Flat-topped hexes in columns, odd columns half a hex north, north up: as the engine lays them. */
-function geometry(data: Pick<HexMapData, 'left' | 'top' | 'width' | 'height'>, cssWidth: number): Geometry {
-  const pad = 6
-  const r = Math.max(2.5, (cssWidth - pad * 2) / (1.5 * (data.width - 1) + 2))
-  const w = 1.5 * r
-  const h = Math.sqrt(3) * r
-  return {
-    r,
-    w,
-    h,
-    pad,
-    width: Math.ceil(w * (data.width - 1) + 2 * r + pad * 2),
-    height: Math.ceil(h * data.height + h / 2 + pad * 2),
-    at: (col, row) => [pad + r + (col - data.left) * w, pad + h / 2 + (data.top - row) * h + (col % 2 === 1 ? 0 : h / 2)],
-  }
+/** A view on the map: the point in the middle, in map units, and the hex radius in pixels. */
+interface View {
+  x: number
+  y: number
+  r: number
 }
+
+const MIN_R = 2
+const MAX_R = 40
 
 function hexPath(ctx: CanvasRenderingContext2D, x: number, y: number, r: number): void {
   ctx.beginPath()
@@ -64,9 +63,8 @@ function hexPath(ctx: CanvasRenderingContext2D, x: number, y: number, r: number)
   ctx.closePath()
 }
 
-function glyph(ctx: CanvasRenderingContext2D, feature: string, x: number, y: number, s: MapStyle, scale: number): void {
+function glyph(ctx: CanvasRenderingContext2D, feature: string, x: number, y: number, s: MapStyle, k: number): void {
   const g = s.glyph
-  const k = scale
   if (feature === 'pool') {
     ctx.fillStyle = g.pool
     ctx.beginPath()
@@ -111,52 +109,52 @@ function glyph(ctx: CanvasRenderingContext2D, feature: string, x: number, y: num
 }
 
 /** A place by kind: a town with gables, a village and a hamlet as roofs, an inn with its sign, the wild as a ring. Filled when visited. */
-export function placeIcon(ctx: CanvasRenderingContext2D, kind: string, x: number, y: number, status: string, ink: string): void {
+export function placeIcon(ctx: CanvasRenderingContext2D, kind: string, x: number, y: number, status: string, ink: string, k = 1): void {
   ctx.lineWidth = 1.2
   ctx.strokeStyle = ink
   ctx.fillStyle = ink
   ctx.beginPath()
   if (kind === 'town' || kind === 'city') {
-    ctx.rect(x - 3.5, y - 6, 7, 10)
-    ctx.moveTo(x - 3.5, y - 6)
-    ctx.lineTo(x - 3.5, y - 8)
-    ctx.lineTo(x - 1.2, y - 8)
-    ctx.lineTo(x - 1.2, y - 6)
-    ctx.moveTo(x + 1.2, y - 6)
-    ctx.lineTo(x + 1.2, y - 8)
-    ctx.lineTo(x + 3.5, y - 8)
-    ctx.lineTo(x + 3.5, y - 6)
+    ctx.rect(x - 3.5 * k, y - 6 * k, 7 * k, 10 * k)
+    ctx.moveTo(x - 3.5 * k, y - 6 * k)
+    ctx.lineTo(x - 3.5 * k, y - 8 * k)
+    ctx.lineTo(x - 1.2 * k, y - 8 * k)
+    ctx.lineTo(x - 1.2 * k, y - 6 * k)
+    ctx.moveTo(x + 1.2 * k, y - 6 * k)
+    ctx.lineTo(x + 1.2 * k, y - 8 * k)
+    ctx.lineTo(x + 3.5 * k, y - 8 * k)
+    ctx.lineTo(x + 3.5 * k, y - 6 * k)
   } else if (kind === 'village') {
-    ctx.moveTo(x - 5, y + 4)
-    ctx.lineTo(x - 5, y - 1)
-    ctx.lineTo(x, y - 6)
-    ctx.lineTo(x + 5, y - 1)
-    ctx.lineTo(x + 5, y + 4)
+    ctx.moveTo(x - 5 * k, y + 4 * k)
+    ctx.lineTo(x - 5 * k, y - k)
+    ctx.lineTo(x, y - 6 * k)
+    ctx.lineTo(x + 5 * k, y - k)
+    ctx.lineTo(x + 5 * k, y + 4 * k)
     ctx.closePath()
   } else if (kind === 'hamlet') {
-    ctx.moveTo(x - 3.5, y + 3)
-    ctx.lineTo(x - 3.5, y - 0.5)
-    ctx.lineTo(x, y - 4)
-    ctx.lineTo(x + 3.5, y - 0.5)
-    ctx.lineTo(x + 3.5, y + 3)
+    ctx.moveTo(x - 3.5 * k, y + 3 * k)
+    ctx.lineTo(x - 3.5 * k, y - 0.5 * k)
+    ctx.lineTo(x, y - 4 * k)
+    ctx.lineTo(x + 3.5 * k, y - 0.5 * k)
+    ctx.lineTo(x + 3.5 * k, y + 3 * k)
     ctx.closePath()
   } else if (kind === 'inn') {
-    ctx.rect(x - 4, y - 3, 8, 7)
-    ctx.moveTo(x - 4, y - 3)
-    ctx.lineTo(x, y - 7)
-    ctx.lineTo(x + 4, y - 3)
+    ctx.rect(x - 4 * k, y - 3 * k, 8 * k, 7 * k)
+    ctx.moveTo(x - 4 * k, y - 3 * k)
+    ctx.lineTo(x, y - 7 * k)
+    ctx.lineTo(x + 4 * k, y - 3 * k)
   } else {
-    ctx.arc(x, y, 3.5, 0, 7)
+    ctx.arc(x, y, 3.5 * k, 0, 7)
   }
   if (status === 'visited') ctx.fill()
   ctx.stroke()
 }
 
-function label(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, s: MapStyle, max: number): void {
-  ctx.font = '600 10px "Alegreya Sans", system-ui, sans-serif'
+function label(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, s: MapStyle, max: number, size = 11): void {
+  ctx.font = `600 ${size}px "Alegreya Sans", system-ui, sans-serif`
   ctx.textBaseline = 'middle'
   const width = ctx.measureText(text).width
-  const lx = x + 8 + width > max - 4 ? x - 8 - width : x + 8
+  const lx = x + 9 + width > max - 4 ? x - 9 - width : x + 9
   ctx.lineWidth = 3
   ctx.strokeStyle = s.label_shadow
   ctx.strokeText(text, lx, y)
@@ -164,58 +162,122 @@ function label(ctx: CanvasRenderingContext2D, text: string, x: number, y: number
   ctx.fillText(text, lx, y)
 }
 
-/** Draws the map data on a canvas of this css width. */
-function draw(canvas: HTMLCanvasElement, data: HexMapData, s: MapStyle, cssWidth: number, flash: string | undefined, labels: boolean): void {
-  const g = geometry(data, cssWidth)
+/** The dark of the night and the grey of the mist, in each style. */
+function veil(style: MapStyleName, light: HexMapData['light']): string {
+  if (light === 'mist') return style === 'dark' ? '#6f746c' : style === 'bw' ? '#e8e8e8' : '#f2efe6'
+  return style === 'dark' ? '#04060b' : style === 'bw' ? '#5a5a5a' : '#3b4458'
+}
+
+/** What the minimap does to a hex beyond sight: dim it by day, darken it at night, grey it in mist. */
+function beyondSight(fill: string, memory: number, s: MapStyle, style: MapStyleName, light: HexMapData['light']): string {
+  if (light === 'day') return memory === 1 ? mix(fill, s.ground, 0.12) : mix(fill, s.ground, 0.45)
+  const base = memory === 1 ? fill : mix(fill, s.ground, 0.3)
+  return mix(base, veil(style, light), light === 'night' ? 0.64 : 0.58)
+}
+
+/** The hexes of the data in map units, for fitting a view. */
+function bounds(data: HexMapData): { x0: number; y0: number; x1: number; y1: number } {
+  let x0 = Infinity
+  let y0 = Infinity
+  let x1 = -Infinity
+  let y1 = -Infinity
+  const take = (c: number, r: number) => {
+    const [x, y] = hexPoint(c, r)
+    x0 = Math.min(x0, x)
+    y0 = Math.min(y0, y)
+    x1 = Math.max(x1, x)
+    y1 = Math.max(y1, y)
+  }
+  for (let i = 0; i < data.hexes.length; i += 5) take(data.hexes[i]!, data.hexes[i + 1]!)
+  for (const p of data.places) take(p.c, p.r)
+  for (const z of data.zones) take(z.c, z.r)
+  if (data.you) take(data.you.c, data.you.r)
+  if (x0 === Infinity) {
+    const [x, y] = hexPoint(data.left + data.width / 2, data.top - data.height / 2)
+    return { x0: x - 10, y0: y - 10, x1: x + 10, y1: y + 10 }
+  }
+  return { x0, y0, x1, y1 }
+}
+
+/** A view that shows all the player knows, with a margin, or the stranger's surroundings close up. */
+function fit(data: HexMapData, mode: MapMode, width: number, height: number): View {
+  if (mode === 'local' && data.you) {
+    const [x, y] = hexPoint(data.you.c, data.you.r)
+    // About fifteen hexes across in the side panel, close enough to see the land round you; full screen no bigger than a hand's width a hex.
+    return { x, y, r: Math.max(6, Math.min(18, width / (15 * 1.5))) }
+  }
+  const b = bounds(data)
+  const margin = 4
+  const r = Math.max(MIN_R, Math.min(18, width / (b.x1 - b.x0 + margin * 2), height / (b.y1 - b.y0 + margin * 2)))
+  return { x: (b.x0 + b.x1) / 2, y: (b.y0 + b.y1) / 2, r }
+}
+
+/** Draws the map data in a view on a canvas of this css size. */
+function draw(canvas: HTMLCanvasElement, data: HexMapData, s: MapStyle, style: MapStyleName, mode: MapMode, view: View, width: number, height: number, flash: string | undefined): void {
   const dpr = Math.min(2, window.devicePixelRatio || 1)
-  canvas.width = g.width * dpr
-  canvas.height = g.height * dpr
-  canvas.style.width = `${g.width}px`
-  canvas.style.height = `${g.height}px`
+  canvas.width = Math.round(width * dpr)
+  canvas.height = Math.round(height * dpr)
+  canvas.style.width = `${width}px`
+  canvas.style.height = `${height}px`
   const ctx = canvas.getContext('2d')
   if (!ctx) return
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
   ctx.fillStyle = s.ground
-  ctx.fillRect(0, 0, g.width, g.height)
-  const scale = Math.max(0.6, g.r / 5)
+  ctx.fillRect(0, 0, width, height)
+  const r = view.r
+  const at = (col: number, row: number): [number, number] => {
+    const [x, y] = hexPoint(col, row)
+    return [width / 2 + (x - view.x) * r, height / 2 - (y - view.y) * r]
+  }
+  const visible = (x: number, y: number) => x > -2 * r && x < width + 2 * r && y > -2 * r && y < height + 2 * r
+  const k = Math.max(0.6, r / 5)
+  const local = mode === 'local'
   const lit = (key: string) => !flash || flash === key
+  const sightOf = new Map<string, number>()
   for (let i = 0; i < data.hexes.length; i += 5) {
     const col = data.hexes[i]!
     const row = data.hexes[i + 1]!
+    const [x, y] = at(col, row)
+    if (!visible(x, y)) continue
     const key = data.keys[data.hexes[i + 2]!] ?? 'fields'
     const tint = data.hexes[i + 3]!
     const flags = data.hexes[i + 4]!
     const memory = flags & 3
-    const [x, y] = g.at(col, row)
+    sightOf.set(`${col},${row}`, memory)
     const tints = key === 'unknown' ? [s.unknown] : tintsOf(s, key)
     let fill = tints[tint % tints.length]!
-    // Remembered from long ago, or beyond sight at night and in mist: the vaguer tint.
-    if (memory === 0) fill = mix(fill, s.ground, 0.45)
+    // The minimap shows what you see and what you remember; the map shows all you know, clear.
+    if (local && memory < 2) fill = beyondSight(fill, memory, s, style, data.light)
     if (!lit(key)) fill = mix(fill, s.ground, 0.72)
-    hexPath(ctx, x, y, g.r + 0.35)
+    hexPath(ctx, x, y, r + 0.35)
     ctx.fillStyle = fill
     ctx.fill()
     const feature = FEATURE[flags >> 2] ?? ''
-    if (feature && !flash) {
-      ctx.globalAlpha = memory === 0 ? 0.55 : 1
-      glyph(ctx, feature, x, y, s, scale)
+    if (feature && !flash && r >= 3) {
+      if (local && memory < 2 && data.light !== 'day') continue
+      ctx.globalAlpha = local && memory === 0 ? 0.55 : 1
+      glyph(ctx, feature, x, y, s, k)
       ctx.globalAlpha = 1
     }
   }
-  // Ways: a short stroke to each neighbouring hex on a way of the same kind.
-  const onWay = new Map(data.ways.map((w) => [`${w.c},${w.r}`, w.kind]))
+  // Ways: a short stroke to each neighbouring hex on a way.
+  const onWay = new Set(data.ways.map((w) => `${w.c},${w.r}`))
   ctx.lineCap = 'round'
   for (const w of data.ways) {
-    const [x, y] = g.at(w.c, w.r)
-    const colour = w.kind === 'canal' ? s.ways.canal : w.kind === 'road' ? s.ways.road : s.ways.path
-    ctx.strokeStyle = flash && !['road', 'path', 'canal', 'ridge'].includes(flash) ? mix(colour, s.ground, 0.7) : colour
-    ctx.lineWidth = (w.kind === 'road' ? 1.8 : w.kind === 'canal' ? 2.2 : 1.1) * Math.max(0.7, scale)
-    ctx.setLineDash(w.kind === 'path' || w.kind === 'ridge' ? [1.6, 1.4] : [])
+    const [x, y] = at(w.c, w.r)
+    if (!visible(x, y)) continue
+    let colour = w.kind === 'canal' ? s.ways.canal : w.kind === 'road' ? s.ways.road : s.ways.path
+    const memory = sightOf.get(`${w.c},${w.r}`) ?? 2
+    if (local && memory < 2) colour = beyondSight(colour, memory, s, style, data.light)
+    if (flash && !['road', 'path', 'canal', 'ridge'].includes(flash) && flash !== w.kind) colour = mix(colour, s.ground, 0.7)
+    ctx.strokeStyle = colour
+    ctx.lineWidth = (w.kind === 'road' ? 1.8 : w.kind === 'canal' ? 2.2 : 1.1) * Math.max(0.7, k)
+    ctx.setLineDash(w.kind === 'path' || w.kind === 'ridge' ? [1.6 * k, 1.4 * k] : [])
     let alone = true
     for (const n of neighbours({ col: w.c, row: w.r })) {
       if (!onWay.has(`${n.hex.col},${n.hex.row}`)) continue
       alone = false
-      const [x2, y2] = g.at(n.hex.col, n.hex.row)
+      const [x2, y2] = at(n.hex.col, n.hex.row)
       ctx.beginPath()
       ctx.moveTo(x, y)
       ctx.lineTo((x + x2) / 2, (y + y2) / 2)
@@ -223,52 +285,73 @@ function draw(canvas: HTMLCanvasElement, data: HexMapData, s: MapStyle, cssWidth
     }
     if (alone) {
       ctx.beginPath()
-      ctx.arc(x, y, 0.8 * scale, 0, 7)
+      ctx.arc(x, y, 0.8 * k, 0, 7)
       ctx.stroke()
     }
   }
   ctx.setLineDash([])
   for (const st of data.stairs) {
-    const [x, y] = g.at(st.c, st.r)
+    const [x, y] = at(st.c, st.r)
+    if (!visible(x, y)) continue
     ctx.fillStyle = s.glyph.stairs
     ctx.beginPath()
-    const k = 2.4 * scale
+    const a = 2.4 * k
     if (st.dir === 'down') {
-      ctx.moveTo(x - k, y - k * 0.7)
-      ctx.lineTo(x + k, y - k * 0.7)
-      ctx.lineTo(x, y + k * 0.85)
+      ctx.moveTo(x - a, y - a * 0.7)
+      ctx.lineTo(x + a, y - a * 0.7)
+      ctx.lineTo(x, y + a * 0.85)
     } else {
-      ctx.moveTo(x - k, y + k * 0.7)
-      ctx.lineTo(x + k, y + k * 0.7)
-      ctx.lineTo(x, y - k * 0.85)
+      ctx.moveTo(x - a, y + a * 0.7)
+      ctx.lineTo(x + a, y + a * 0.7)
+      ctx.lineTo(x, y - a * 0.85)
     }
     ctx.closePath()
     ctx.fill()
   }
+  // Night and mist on the minimap: your small circle clear, and the dark or the grey closing in beyond it.
+  if (local && data.light !== 'day' && data.you) {
+    const [x, y] = at(data.you.c, data.you.r)
+    const inner = Math.max(r * 1.2, (data.sight + 0.5) * r * SQRT3)
+    const outer = inner + r * 5
+    const g = ctx.createRadialGradient(x, y, inner, x, y, outer)
+    const [cr, cg, cb] = rgb(veil(style, data.light))
+    g.addColorStop(0, `rgba(${cr},${cg},${cb},0)`)
+    g.addColorStop(1, `rgba(${cr},${cg},${cb},${data.light === 'night' ? 0.45 : 0.45})`)
+    ctx.fillStyle = g
+    ctx.fillRect(0, 0, width, height)
+  }
+  const size = Math.round(Math.max(10, Math.min(14, 9 + r / 3)))
   for (const z of data.zones) {
-    const [x, y] = g.at(z.c, z.r)
+    const [x, y] = at(z.c, z.r)
+    const radius = Math.max(8, z.hexes * r * SQRT3)
+    if (!visible(x, y) && !visible(x + radius, y) && !visible(x - radius, y)) continue
     ctx.setLineDash([3, 3])
     ctx.strokeStyle = s.label
     ctx.globalAlpha = 0.7
     ctx.lineWidth = 1
     ctx.beginPath()
-    ctx.arc(x, y, Math.max(8, z.hexes * g.h), 0, 7)
+    ctx.arc(x, y, radius, 0, 7)
     ctx.stroke()
     ctx.setLineDash([])
     ctx.globalAlpha = 1
-    if (labels) label(ctx, `${z.name}?`, x, y, s, g.width)
+    label(ctx, `${z.name}?`, x, y, s, width, size)
   }
+  const ik = Math.max(0.8, Math.min(1.6, r / 7))
   for (const p of data.places) {
-    const [x, y] = g.at(p.c, p.r)
-    placeIcon(ctx, p.kind, x, y, p.status, s.label)
-    if (labels) label(ctx, p.name, x, y, s, g.width)
+    const [x, y] = at(p.c, p.r)
+    if (!visible(x, y)) continue
+    const memory = sightOf.get(`${p.c},${p.r}`) ?? 2
+    ctx.globalAlpha = local && memory < 2 && data.light !== 'day' ? 0.65 : 1
+    placeIcon(ctx, p.kind, x, y, p.status, s.label, ik)
+    label(ctx, p.name, x, y, s, width, size)
+    ctx.globalAlpha = 1
   }
   if (data.you) {
-    const [x, y] = g.at(data.you.c, data.you.r)
+    const [x, y] = at(data.you.c, data.you.r)
     ctx.strokeStyle = s.label_shadow
     ctx.lineWidth = 3
     ctx.beginPath()
-    ctx.arc(x, y, 3.2 * Math.max(0.8, scale), 0, 7)
+    ctx.arc(x, y, Math.max(3.5, r * 0.45), 0, 7)
     ctx.stroke()
     ctx.fillStyle = '#c8d28a'
     ctx.fill()
@@ -276,29 +359,98 @@ function draw(canvas: HTMLCanvasElement, data: HexMapData, s: MapStyle, cssWidth
 }
 
 /**
- * The map in colour: a canvas that fits its box, and under it the legend
- * strip. A click on a terrain in the legend lights it up for a moment.
+ * A map in colour: the minimap (local) or the map; zoom with the buttons or
+ * the wheel, drag the map about, and open either full screen.
  */
-export function HexMap({ data, style, labels = true, legend = true, label: ariaLabel }: { data: HexMapData; style: MapStyleName; labels?: boolean; legend?: boolean; label: string }) {
+export function HexMap({
+  data,
+  style,
+  mode = 'map',
+  legend = true,
+  height = 360,
+  label: ariaLabel,
+  onLevel,
+}: {
+  data: HexMapData
+  style: MapStyleName
+  mode?: MapMode
+  legend?: boolean
+  /** Its height in the page, in pixels; full screen it takes the window. */
+  height?: number
+  label: string
+  /** The map's other levels: a switch that opens one. */
+  onLevel?: (level: string) => void
+}) {
+  const [full, setFull] = useState(false)
+  const body = (fullscreen: boolean) => (
+    <MapCanvas data={data} style={style} mode={mode} legend={fullscreen || legend} height={fullscreen ? undefined : height} label={ariaLabel} onLevel={onLevel} full={fullscreen} onFull={() => setFull(!fullscreen)} />
+  )
+  return (
+    <>
+      {body(false)}
+      {full &&
+        createPortal(
+          <div className="hexmap-full" role="dialog" aria-modal="true" aria-label={ariaLabel}>
+            {body(true)}
+          </div>,
+          document.body,
+        )}
+    </>
+  )
+}
+
+function MapCanvas({
+  data,
+  style,
+  mode,
+  legend,
+  height,
+  label: ariaLabel,
+  onLevel,
+  full,
+  onFull,
+}: {
+  data: HexMapData
+  style: MapStyleName
+  mode: MapMode
+  legend: boolean
+  height?: number
+  label: string
+  onLevel?: (level: string) => void
+  full: boolean
+  onFull: () => void
+}) {
   const canvas = useRef<HTMLCanvasElement>(null)
   const box = useRef<HTMLDivElement>(null)
-  const [width, setWidth] = useState(0)
+  const [size, setSize] = useState({ width: 0, height: 0 })
+  const [view, setView] = useState<View>()
   const [flash, setFlash] = useState<string>()
+  const drag = useRef<{ x: number; y: number; view: View } | undefined>(undefined)
   const s = useMemo(() => mapStyle(data.palette, style), [data.palette, style])
 
   useEffect(() => {
     const el = box.current
     if (!el) return
-    const measure = () => setWidth(el.clientWidth)
+    const measure = () => setSize({ width: el.clientWidth, height: height ?? el.clientHeight })
     measure()
     const observer = new ResizeObserver(measure)
     observer.observe(el)
     return () => observer.disconnect()
-  }, [])
+  }, [height])
+
+  // A fresh view when the map opens or changes level; the minimap follows the stranger and keeps its zoom.
+  const fitKey = mode === 'local' ? `${data.you?.c},${data.you?.r}` : `${data.level}`
+  const zoomed = useRef<number | undefined>(undefined)
+  useEffect(() => {
+    if (!size.width || !size.height) return
+    const fresh = fit(data, mode, size.width, size.height)
+    setView(mode === 'local' && zoomed.current ? { ...fresh, r: zoomed.current } : fresh)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fitKey, size.width, size.height, mode])
 
   useEffect(() => {
-    if (canvas.current && width > 0) draw(canvas.current, data, s, width, flash, labels)
-  }, [data, s, width, flash, labels])
+    if (canvas.current && view && size.width > 0) draw(canvas.current, data, s, style, mode, view, size.width, size.height, flash)
+  }, [data, s, style, mode, view, size, flash])
 
   useEffect(() => {
     if (!flash) return
@@ -306,9 +458,108 @@ export function HexMap({ data, style, labels = true, legend = true, label: ariaL
     return () => clearTimeout(timer)
   }, [flash])
 
+  useEffect(() => {
+    if (!full) return
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.stopPropagation()
+        onFull()
+      }
+    }
+    window.addEventListener('keydown', onKey, true)
+    return () => window.removeEventListener('keydown', onKey, true)
+  }, [full, onFull])
+
+  /** Zooms by a factor, keeping the point under (px, py) where it is; the minimap zooms round the stranger. */
+  const zoom = useCallback(
+    (factor: number, px?: number, py?: number) => {
+      setView((v) => {
+        if (!v) return v
+        const r = Math.max(MIN_R, Math.min(MAX_R, v.r * factor))
+        if (mode === 'local') zoomed.current = r
+        if (mode === 'local' || px === undefined || py === undefined) return { ...v, r }
+        // The map point under the cursor stays under it.
+        const mx = v.x + (px - size.width / 2) / v.r
+        const my = v.y - (py - size.height / 2) / v.r
+        return { x: mx - (px - size.width / 2) / r, y: my + (py - size.height / 2) / r, r }
+      })
+    },
+    [mode, size.width, size.height],
+  )
+
+  useEffect(() => {
+    const el = canvas.current
+    if (!el) return
+    const onWheel = (event: WheelEvent) => {
+      event.preventDefault()
+      const rect = el.getBoundingClientRect()
+      zoom(event.deltaY < 0 ? 1.15 : 1 / 1.15, event.clientX - rect.left, event.clientY - rect.top)
+    }
+    el.addEventListener('wheel', onWheel, { passive: false })
+    return () => el.removeEventListener('wheel', onWheel)
+  }, [zoom])
+
+  const onDown = (event: ReactPointerEvent<HTMLCanvasElement>) => {
+    if (mode === 'local' || !view) return
+    drag.current = { x: event.clientX, y: event.clientY, view }
+    event.currentTarget.setPointerCapture(event.pointerId)
+  }
+  const onMove = (event: ReactPointerEvent<HTMLCanvasElement>) => {
+    const d = drag.current
+    if (!d) return
+    setView({ ...d.view, x: d.view.x - (event.clientX - d.x) / d.view.r, y: d.view.y + (event.clientY - d.y) / d.view.r })
+  }
+  const onUp = () => {
+    drag.current = undefined
+  }
+
+  const reset = () => {
+    zoomed.current = undefined
+    setView(fit(data, mode, size.width, size.height))
+  }
+
   return (
-    <div className="hexmap" ref={box}>
-      <canvas ref={canvas} role="img" aria-label={ariaLabel} style={{ background: s.ground }} />
+    <div className={`hexmap${full ? ' is-full' : ''}`}>
+      <div className="hexmap-bar">
+        {onLevel && data.levels.length > 1 && (
+          <div className="seg" role="group" aria-label={t('app.map.levels')}>
+            {data.levels.map((l) => (
+              <button key={l.id} type="button" aria-pressed={data.level === l.id} onClick={() => onLevel(l.id)}>
+                {l.name}
+              </button>
+            ))}
+          </div>
+        )}
+        <span className="spacer" />
+        <button type="button" className="map-tool" onClick={() => zoom(1 / 1.3)} title={t('app.map.zoomOut')} aria-label={t('app.map.zoomOut')}>
+          −
+        </button>
+        <button type="button" className="map-tool" onClick={() => zoom(1.3)} title={t('app.map.zoomIn')} aria-label={t('app.map.zoomIn')}>
+          +
+        </button>
+        <button type="button" className="map-tool" onClick={reset} title={mode === 'local' ? t('app.map.centre') : t('app.map.fit')} aria-label={mode === 'local' ? t('app.map.centre') : t('app.map.fit')}>
+          ◎
+        </button>
+        <button type="button" className="map-tool" onClick={onFull} title={full ? t('app.map.leaveFull') : t('app.map.full')} aria-label={full ? t('app.map.leaveFull') : t('app.map.full')}>
+          {full ? '✕' : '⛶'}
+        </button>
+      </div>
+      <div className="hexmap-canvas" ref={box} style={height ? { height } : undefined}>
+        <canvas
+          ref={canvas}
+          role="img"
+          aria-label={ariaLabel}
+          style={{ background: s.ground, cursor: mode === 'map' ? 'grab' : 'default' }}
+          onPointerDown={onDown}
+          onPointerMove={onMove}
+          onPointerUp={onUp}
+          onPointerCancel={onUp}
+          onDoubleClick={(event) => {
+            const rect = event.currentTarget.getBoundingClientRect()
+            zoom(1.6, event.clientX - rect.left, event.clientY - rect.top)
+          }}
+        />
+      </div>
       {legend && <Legend data={data} s={s} onFlash={setFlash} />}
     </div>
   )

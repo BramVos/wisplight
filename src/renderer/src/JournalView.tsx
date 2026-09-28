@@ -218,20 +218,11 @@ export function JournalView({
                     ))}
                   </pre>
                 )}
-                {page.hexMap && page.hexMap.levels.length > 1 && (
-                  <div className="seg" role="group" aria-label={t('app.map.levels')}>
-                    {page.hexMap.levels.map((l) => (
-                      <button key={l.id} type="button" aria-pressed={page.hexMap!.level === l.id} onClick={() => void open(l.id === 'surface' ? 'map' : `map:${l.id}`)}>
-                        {l.name}
-                      </button>
-                    ))}
-                  </div>
-                )}
                 {page.sheet ? (
                   <SheetView sheet={page.sheet} />
                 ) : page.hexMap ? (
                   <>
-                    <HexMap data={page.hexMap} style={mapLook} label={t('journal.page.map', { name: page.name })} />
+                    <HexMap data={page.hexMap} style={mapLook} mode="map" height={Math.max(320, Math.round(window.innerHeight * 0.55))} label={t('journal.page.map', { name: page.name })} onLevel={(level) => void open(level === 'surface' ? 'map' : `map:${level}`)} />
                     <details className="map-text">
                       <summary className="muted small">{t('journal.page.asText')}</summary>
                       <pre className="map whole">{page.lines.join('\n')}</pre>

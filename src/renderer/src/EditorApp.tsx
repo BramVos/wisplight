@@ -1260,7 +1260,7 @@ function PalettePanel({ bridge, world, saved }: { bridge: EditorBridge; world: s
           </button>
         ))}
       </div>
-      {preview ? <HexMap data={preview} style={style} label="The palette on a map of this world" /> : <p className="muted">The world does not load, so there is no map to try it on.</p>}
+      {preview ? <HexMap data={preview} style={style} mode="map" height={420} label="The palette on a map of this world" /> : <p className="muted">The world does not load, so there is no map to try it on.</p>}
       {style === 'bw' ? (
         <p className="muted small">Black and white is the paper set in greys; change paper to change it.</p>
       ) : (

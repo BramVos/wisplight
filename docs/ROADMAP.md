@@ -301,6 +301,12 @@ Ook in M10, uit de speeltest van 28 september 2026, in de code bevestigd: in mis
 - [x] De landkaart (streken en trajecten uit het wereldboek) is een eigen journaalpagina met dezelfde stijl
 - [x] Alles wat er al was, speelt hetzelfde, en de terminalclient houdt zijn tekstkaart
 
+Uit Brams speeltest van M10 (28 september 2026):
+- [x] Twee kaarten: de minimap in het zijpaneel toont de bekende omgeving van dichtbij, met dag, nacht en mist rond het zicht van de speler en vager wat lang geleden gezien is; de kaart in het dagboek toont alles wat je kent altijd helder, met de plekken en de geheimen die je kent
+- [x] Beide kaarten zoomen in en uit (knoppen, muiswiel, dubbelklik), de kaart laat zich verslepen, en beide gaan volledig scherm (Escape sluit)
+- [x] Een wandeling van plek naar plek zet de weg ertussen op de kaart (de weg naar The Drowned Goose ontbrak)
+- [x] Alleen plekken staan op de kaart: een verhaal of een wezen met een thuis ergens niet (de Haakman stond er als zone)
+
 ## M10.1 Onder de motorkap
 
 Scope: een dev-menu in het spel zelf (besluit 27 september 2026), alleen in een ontwikkelbuild (`app.isPackaged` is uit, dezelfde vlag als de bouwmodus en de editor) en pas zichtbaar na een code in de invoerregel. Niet in de productiebuild. Wat de editor al toont in de speeltest (NPC-inspecteur, verhaallijnen met fase) hergebruikt het menu voor het lopende spel, zodat er één stel panelen is.

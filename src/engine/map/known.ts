@@ -93,6 +93,9 @@ export function knownPlaces(world: World): KnownPlace[] {
   const places: KnownPlace[] = []
   for (const topic of [...topics].sort()) {
     if (topic.startsWith('loc_')) continue
+    // Only places are on the map: a tale or a being with a home somewhere is not (the Haakman, after the M10 playtest).
+    const kind = world.content.topics.get(topic)?.kind
+    if (kind && kind !== 'place') continue
     const place = knownPlace(world, topic)
     if (place) places.push(place)
   }

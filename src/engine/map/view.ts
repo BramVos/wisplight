@@ -155,8 +155,11 @@ export interface HexMapData {
   levels: { id: string; name: string }[]
   /** Terrain keys, as the hexes refer to them. */
   keys: string[]
-  /** Per hex, five numbers: column, row, terrain (index in keys), tint (0 to 3), and flags (memory 0 old, 1 fresh, 2 now; feature times 4). */
+  /** Per hex, five numbers: column, row, terrain (index in keys), tint (0 to 3), and flags (memory 0 seen long ago, 1 seen lately, 2 in sight now; feature times 4). */
   hexes: number[]
+  /** The light now, and how many hexes the player sees (after the M10 playtest): the minimap draws night and mist with them; the map does not. */
+  light: 'day' | 'night' | 'mist'
+  sight: number
   ways: { c: number; r: number; kind: 'road' | 'path' | 'canal' | 'ridge' }[]
   stairs: { c: number; r: number; dir: 'up' | 'down' }[]
   you?: { c: number; r: number }
@@ -182,7 +185,8 @@ export function hexMapData(world: World, options: { width?: number; height?: num
   const seen = seenBits(world, map)
   const fresh = freshBits(world, map)
   const range = you ? sight(world, map, map.cell(you)!) : 0
-  const clearDay = !new GameClock(world.now).isNight && !['fog', 'storm'].includes(weather(world))
+  const misty = ['fog', 'storm'].includes(weather(world))
+  const light: HexMapData['light'] = misty ? 'mist' : new GameClock(world.now).isNight ? 'night' : 'day'
   const keys: string[] = []
   const keyOf = (k: string) => {
     let i = keys.indexOf(k)
@@ -201,8 +205,8 @@ export function hexMapData(world: World, options: { width?: number; height?: num
       if (!bit(seen, i)) continue
       const cell = map.cell(hex)!
       const now = you !== undefined && distance(you, hex) <= range
-      // Night and mist shrink what is clear to what you see now; by day, what you saw lately is clear too.
-      const memory = now ? 2 : clearDay && bit(fresh, i) ? 1 : 0
+      // In sight now, seen lately, or long ago; what night and mist do with it is the minimap's.
+      const memory = now ? 2 : bit(fresh, i) ? 1 : 0
       const ridge = onKnownRidge(world, cell)
       let key: string
       let feature = 0
@@ -241,7 +245,7 @@ export function hexMapData(world: World, options: { width?: number; height?: num
   const palette = world.content.world.map?.palette ?? DEFAULT_PALETTE
   const present = new Set(keys)
   const legend = [...TERRAIN_ORDER.filter((k) => present.has(k)), ...keys.filter((k) => !TERRAIN_ORDER.includes(k) && k !== 'unknown')].map((key) => ({ key, name: terrainName(palette, key) }))
-  return { left, top, width, height, level, levels, keys, hexes, ways, stairs, ...(you ? { you: { c: you.col, r: you.row } } : {}), places, zones, legend, palette }
+  return { left, top, width, height, level, levels, keys, hexes, light, sight: range, ways, stairs, ...(you ? { you: { c: you.col, r: you.row } } : {}), places, zones, legend, palette }
 }
 
 function knowsTopic(world: World, topic: string): boolean {
@@ -296,7 +300,7 @@ export function previewMapData(content: Content, palette: MapPalette): HexMapDat
       const a = content.areas.get(area)
       if (a) places.push({ name: a.name, kind: a.kind, status: 'visited', c: hex.col, r: hex.row })
     }
-    return { left, top, width, height, level: SURFACE, levels: [{ id: SURFACE, name: 'ground level' }], keys, hexes, ways, stairs: [], places, zones: [], legend: legendOf(keys, palette), palette }
+    return { left, top, width, height, level: SURFACE, levels: [{ id: SURFACE, name: 'ground level' }], keys, hexes, light: 'day', sight: 99, ways, stairs: [], places, zones: [], legend: legendOf(keys, palette), palette }
   }
   // No region map: a band for every terrain the palette names, and a road across.
   const terrains = [...TERRAIN_ORDER.filter((k) => palette.dark.terrain[k]), ...Object.keys(palette.dark.terrain).filter((k) => !TERRAIN_ORDER.includes(k))]
@@ -311,7 +315,7 @@ export function previewMapData(content: Content, palette: MapPalette): HexMapDat
       if (col === Math.floor(width / 3)) ways.push({ c: col, r: row, kind: 'road' })
     }
   }
-  return { left: 0, top: height - 1, width, height, level: SURFACE, levels: [{ id: SURFACE, name: 'ground level' }], keys, hexes, ways, stairs: [], places: [], zones: [], legend: legendOf(keys, palette), palette }
+  return { left: 0, top: height - 1, width, height, level: SURFACE, levels: [{ id: SURFACE, name: 'ground level' }], keys, hexes, light: 'day', sight: 99, ways, stairs: [], places: [], zones: [], legend: legendOf(keys, palette), palette }
 }
 
 function legendOf(keys: string[], palette: MapPalette): { key: string; name: string }[] {

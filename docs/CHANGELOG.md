@@ -23,7 +23,13 @@ Nog niet:
 - Skerrow heeft nog geen streekkaart. Het palet en de niveaus wachten daarop, en de editor toont ze op een staal.
 - De kleine kaart op de dagboekpagina van een plek is nog tekst.
 
-Ontwerp: "Stand na M10" in het FO, hoofdstuk 4. Tests in `tests/m10.test.ts` (16).
+Na Brams speeltest, dezelfde dag:
+- **Twee kaarten.** De minimap in het zijpaneel toont je omgeving van dichtbij. Daar zie je dag, nacht en mist: 's nachts is alleen een kleine cirkel om je heen helder en is de rest donkere herinnering, in mist grijs. Wat je lang geleden zag, is vager. De kaart in het dagboek toont alles wat je kent altijd helder: het land, de plekken en de geheimen die je kent, zoals de droge rug.
+- **Zoomen en volledig scherm.** Beide kaarten hebben knoppen voor in- en uitzoomen, en zoomen ook met het muiswiel en een dubbelklik. De grote kaart kun je verslepen. De knop ◎ zet je terug op waar je bent (minimap) of op alles wat je kent (kaart). Met ⛶ gaat een kaart volledig scherm, en Escape sluit dat weer.
+- **Het pad onderweg.** Loop je via een uitgang van plek naar plek, dan komt de weg ertussen nu op de kaart. Voorheen kwam alleen de plek van aankomst erop, zodat de weg naar The Drowned Goose ontbrak.
+- **Alleen plekken.** De Haakman stond als zone op de kaart omdat je de naam al kende. Nu staan alleen plekken op de kaart, geen verhalen of wezens.
+
+Ontwerp: "Stand na M10" in het FO, hoofdstuk 4. Tests in `tests/m10.test.ts` (18).
 
 ## M10.5 Ambacht en vaardigheid, 28 september 2026
 

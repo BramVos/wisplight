@@ -32,10 +32,11 @@ import { agree, agreements, leadAhead, openAgreements, promiseLines, settle } fr
 import { goAway, tierOf } from './lod'
 import { hexOfTopic, knownEntrance, knownPlace, landLines, landMapData, walkTarget, type KnownPlace } from './map/known'
 import { hexMapData, type HexMapData } from './map/view'
+import { distance as hexDistance, line as hexLine } from './map/hexgrid'
 import { takeBarge, travelTo } from './map/journey'
 import { mapText, mapView, type MapView } from './map/view'
 import { regionMap } from './map/region'
-import { canSetOut, followWay, isHexId, landmarkIn, look, playerHex, walk, windOf, type WalkPlan } from './map/travel'
+import { canSetOut, followWay, hexOfId, isHexId, landmarkIn, look, playerHex, type WalkPlan, walk, windOf } from './map/travel'
 import { knownRequests, requestName } from './requests'
 import { recordFact, seedNews } from './news'
 import { parseCommand, parseDirection } from './parser'
@@ -333,11 +334,19 @@ export class Engine {
     })
   }
 
-  /** What the player can see from where they stand goes on their map. */
-  private lookAround(): void {
+  /**
+   * What the player can see from where they stand goes on their map; after a
+   * walk from one place to another, what lay along the way too (found in the
+   * M10 playtest: the road to the Drowned Goose was walked and not on the map).
+   */
+  private lookAround(from?: string): void {
     const map = regionMap(this.content)
     const hex = map && playerHex(this.world)
-    if (map && hex) look(this.world, map, hex, isHexId(this.state.player.location) || canSetOut(this.world, this.state.player.location))
+    if (!map || !hex) return
+    const was = from && from !== this.state.player.location ? (hexOfId(from) ?? map.locations.get(from)) : undefined
+    // Along the way, as far as a day's walk: a long jump (a barge, a dream) is not a walk.
+    if (was && (was.col !== hex.col || was.row !== hex.row) && hexDistance(was, hex) <= 40) for (const step of hexLine(was, hex).slice(0, -1)) look(this.world, map, step, true)
+    look(this.world, map, hex, isHexId(this.state.player.location) || canSetOut(this.world, this.state.player.location))
   }
 
   /** Everything that really happened, for the end of a game. */
@@ -690,7 +699,7 @@ export class Engine {
     if (talk && this.state.npcs[talk.npc]?.location !== this.state.player.location) this.state.talk = undefined
     this.dialogue.learn(this.state.player.location, areaTopicId(this.content, this.world.location(this.state.player.location).area))
     this.arrive()
-    this.lookAround()
+    this.lookAround(before)
     // A leader going ahead moves with the player's steps (M10.3).
     leadAhead(this.world)
     // A child seen with a parent: family the stranger knows of (M10.4).
@@ -1059,7 +1068,7 @@ export class Engine {
         : undefined,
       journal: this.journal(),
       map: this.compactMap(),
-      hexMap: hexMapData(this.world, { width: 41, height: 29 }),
+      hexMap: hexMapData(this.world, { width: 51, height: 35 }),
       ...this.characterStatus(),
     }
   }
