@@ -681,6 +681,9 @@ function templateFor(kind: EntityKind, view: EditorView): Raw {
       return { id: 'new_prop', type: 'strongbox', name: "{owner}'s chest", where: ['private'], lock: { quality: ['common'], material: ['iron'] }, items: [], hints: [{ precise: '{owner} keeps {things} in a chest at {place}.', village: '{owner} has a chest at home, they say.', far: 'Someone keeps a locked chest.' }] }
     case 'craft':
       return { id: 'new_craft', name: 'the new craft', maker: 'maker', skill: 'crafting', professions: trade ? [trade] : [], techniques: [{ id: 'first_technique', name: 'the first technique' }] }
+    case 'passage':
+      // M10.12: a line of transport, with its stops (places, or the topics of far places) and its days.
+      return { id: 'new_passage', name: 'the new coach', kind: 'coach', stops: [place, place], days: [], departs: ['08:00'], fare: 10, text: 'You pay {fare} and climb aboard. After {duration} you get down at {place}.' }
     case 'background': {
       // M10.9: why you came, whom to ask for first, and what you heard.
       const contact = view.lists.npc[0]?.id

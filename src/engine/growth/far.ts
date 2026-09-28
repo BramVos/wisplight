@@ -33,10 +33,23 @@ export interface FarPlace {
   settlement?: Record<string, unknown>
   /** The outland it was: it stays (its id is a key), and its settlement's ledger now stands behind the route. */
   outland?: string
-  /** The way in from the region: an exit from a place at its edge, and back. */
-  link: { from: string; direction: Direction; minutes: number }
+  /**
+   * The way in from the region: an exit from a place at its edge, and back.
+   * By a passage only (M10.12, `by`): a place over the sea has no road; the
+   * line that brought you is the way back, and there are no exits.
+   */
+  link: { from: string; direction: Direction; minutes: number; by?: string }
   /** People named in talks who live here (M10.9), and the person each became. */
   sketches?: Record<string, string>
+}
+
+/** How a far place is reached when no road leads there (M10.12): a passage from one of its stops. */
+export interface FarVia {
+  from: string
+  minutes: number
+  /** The passage. */
+  by: string
+  water: boolean
 }
 
 /** What the chronicler writes for it: names and words, never the shape. */
@@ -76,7 +89,8 @@ export function withFarPlaces(content: Content, state: GameState): Content {
     }
     const from = locations.get(f.link.from)
     const gate = (f.locations[0] as { id: string }).id
-    if (from) locations.set(from.id, { ...from, exits: { ...from.exits, [f.link.direction]: { to: gate, minutes: f.link.minutes } } })
+    // A place reached by a passage only (M10.12) has no road from the region.
+    if (from && !f.link.by) locations.set(from.id, { ...from, exits: { ...from.exits, [f.link.direction]: { to: gate, minutes: f.link.minutes } } })
   }
   return { ...content, areas, locations, npcs, settlements }
 }
@@ -128,11 +142,13 @@ function fitsRoom(text: string | undefined): text is string {
  * The far place, made: the template's shape, with the chronicler's words
  * where they pass. Undefined when the world has nothing to make it from.
  */
-export function makeFarPlace(world: World, topic: string, words: FarWords | null): FarPlace | undefined {
+export function makeFarPlace(world: World, topic: string, words: FarWords | null, via?: FarVia): FarPlace | undefined {
   const t = world.content.topics.get(topic)
-  if (!t?.pos) return undefined
+  if (!t) return undefined
   const outland = [...world.content.outlands.values()].find((o) => (o.topic ?? o.id) === topic)
-  const edge = edgeTowards(world, t.pos, outland?.id)
+  // The road from the edge of the region; or, for a place only a passage reaches (M10.12: a ferry over the sea), the stop it leaves from.
+  const road = t.pos ? edgeTowards(world, t.pos, outland?.id) : undefined
+  const edge = road ?? (via ? { from: via.from, direction: 'out' as Direction, km: (via.minutes / DAY) * 35 } : undefined)
   if (!edge) return undefined
   const outline = outlineOf(world, topic)
   const names = world.content.world.names
@@ -154,17 +170,21 @@ export function makeFarPlace(world: World, topic: string, words: FarWords | null
   const asks = outland?.asks ?? []
   const itemName = (id: string) => world.content.items.get(id)?.plural ?? world.content.items.get(id)?.name ?? id
   const wares = sends.length ? sends.slice(0, 3).map(itemName).join(', ') : 'cloth, salt and pots'
+  // Over the sea (M10.12): a quay instead of a gate, and no road back, only the passage.
+  const sea = !road && via?.water
   const locations = [
     {
       id: ids.gate,
-      name: title('gate', `The Gate of ${name}`),
+      name: title('gate', sea ? `The Quay of ${name}` : `The Gate of ${name}`),
       area: areaId,
       tags: ['public', 'edge'],
-      aliases: ['gate'],
+      aliases: sea ? ['quay', 'harbour'] : ['gate'],
       description: {
-        day: room('gate', `You come to the gate of ${name} after ${days === 1 ? 'a day' : `${days} days`} on the road from ${region}. The walls are higher than any you have seen at home, and the air smells of tar, smoke and wet stone. Carts stand in line to be let in, and the gatekeepers call out to each other in a quick, flat speech. The market lies ahead, and the road back to ${region} runs ${back}.`),
+        day: sea
+          ? room('gate', `You step ashore on the quay of ${name} after ${days === 1 ? 'a day' : `${days} days`} at sea. The quay is crowded with barrels and nets, and the air smells of tar, fish and wet stone. Gulls scream over the masts, and the dockhands call out to each other in a quick, flat speech. The market lies ahead, and the ships leave from here.`)
+          : room('gate', `You come to the gate of ${name} after ${days === 1 ? 'a day' : `${days} days`} on the road from ${region}. The walls are higher than any you have seen at home, and the air smells of tar, smoke and wet stone. Carts stand in line to be let in, and the gatekeepers call out to each other in a quick, flat speech. The market lies ahead, and the road back to ${region} runs ${back}.`),
       },
-      exits: { [back]: { to: edge.from, minutes: days * DAY }, in: { to: ids.market, minutes: 3 } },
+      exits: road ? { [back]: { to: edge.from, minutes: days * DAY }, in: { to: ids.market, minutes: 3 } } : { in: { to: ids.market, minutes: 3 } },
     },
     {
       id: ids.market,
@@ -235,7 +255,8 @@ export function makeFarPlace(world: World, topic: string, words: FarWords | null
       ...(outland?.faith ? { faith: outland.faith } : {}),
     }
   }
-  const trader = world.content.professions.has('merchant') ? 'merchant' : 'pedlar'
+  // A trade the world has (M10.12: Skerrow has no merchants of its own): a merchant, a pedlar, an innkeeper, or any.
+  const trader = ['merchant', 'pedlar', 'innkeeper'].find((p) => world.content.professions.has(p)) ?? [...world.content.professions.keys()].sort()[0] ?? 'merchant'
   const merchant = person('merchant', trader, ids.inn, ids.market)
   const keeper = person('innkeeper', world.content.professions.has('innkeeper') ? 'innkeeper' : trader, ids.inn, ids.inn)
   // People named in talks who live here (M10.9), two at most: now they are people, with the bond the talk gave.
@@ -266,7 +287,7 @@ export function makeFarPlace(world: World, topic: string, words: FarWords | null
     ...(named.length ? { sketches: Object.fromEntries(named.map((sk, i) => [sk.id, String(sketched[i]!['id'])])) } : {}),
     ...(settlement ? { settlement } : {}),
     ...(outland ? { outland: outland.id } : {}),
-    link: { from: edge.from, direction: edge.direction, minutes: days * DAY },
+    link: { from: edge.from, direction: edge.direction, minutes: days * DAY, ...(road || !via ? {} : { by: via.by }) },
   }
 }
 
@@ -275,12 +296,14 @@ export function makeFarPlace(world: World, topic: string, words: FarWords | null
  * checked as content first: when the world would not load with it, it is not
  * made (and a template is tried when the chronicler's words were the trouble).
  */
-export function applyFarPlace(world: World, topic: string, words: FarWords | null): FarPlace | undefined {
+export function applyFarPlace(world: World, topic: string, words: FarWords | null, via?: FarVia): FarPlace | undefined {
   const g = growth(world)
   if (g.far?.[topic]) return g.far[topic]
   g.farPending = (g.farPending ?? []).filter((p) => p !== topic)
+  // A place a passage reaches (M10.12) remembers how, for when the chronicler's words come later.
+  const how = via ?? g.farVia?.[topic]
   for (const attempt of words ? [words, null] : [null]) {
-    const made = makeFarPlace(world, topic, attempt)
+    const made = makeFarPlace(world, topic, attempt, how)
     if (!made) return undefined
     const state = { ...world.state, growth: { ...g, far: { ...(g.far ?? {}), [topic]: made } } }
     let next: Content
@@ -300,13 +323,16 @@ export function applyFarPlace(world: World, topic: string, words: FarWords | nul
       const named = sketchById(world, sketch)
       if (named) named.npc = npc
     }
+    const to = world.content.topics.get(topic)?.name ?? topic
     recordFact(world, {
       kind: 'far_place',
       about: [topic],
       place: made.link.from,
       belang: 1,
-      title: `the road to ${world.content.topics.get(topic)?.name ?? topic}`,
-      text: { precise: `The road from ${world.location(made.link.from).name} runs on to ${world.content.topics.get(topic)?.name ?? topic}.`, village: `You can walk to ${world.content.topics.get(topic)?.name ?? topic} from here, they say.`, far: `There is a road to ${world.content.topics.get(topic)?.name ?? topic}.` },
+      title: made.link.by ? `the passage to ${to}` : `the road to ${to}`,
+      text: made.link.by
+        ? { precise: `From ${world.location(made.link.from).name} you can sail to ${to}.`, village: `There are ships to ${to} from here, they say.`, far: `Ships sail to ${to}.` }
+        : { precise: `The road from ${world.location(made.link.from).name} runs on to ${to}.`, village: `You can walk to ${to} from here, they say.`, far: `There is a road to ${to}.` },
     })
     return made
   }
@@ -319,11 +345,12 @@ function namedAt(world: World, topic: string) {
 }
 
 /** A far place the player sets off for: made playable now without a model, or waiting for the chronicler. */
-export function wantFarPlace(world: World, topic: string): void {
+export function wantFarPlace(world: World, topic: string, via?: FarVia): void {
   const g = growth(world)
   if (g.far?.[topic] || g.farPending?.includes(topic)) return
+  if (via) (g.farVia ??= {})[topic] = via
   if (!world.aiLive) {
-    applyFarPlace(world, topic, null)
+    applyFarPlace(world, topic, null, via)
     return
   }
   ;(g.farPending ??= []).push(topic)
@@ -345,7 +372,7 @@ export function farRequest(world: World, topic: string): LlmRequest {
       voiceSummary(world.content),
       '',
       'You make a far place playable in a text game: you name and describe three places and two people. The shape is fixed; you write the words.',
-      'Places: gate (where the road comes in), market, inn. Each description: three to five sentences, second person, present tense, one sense that is not sight, and a hint at a way out. Plain words, late-medieval, the tone of the world.',
+      'Places: gate (where the road comes in, or the quay where the ship comes in when it lies over the sea), market, inn. Each description: three to five sentences, second person, present tense, one sense that is not sight, and a hint at a way out. Plain words, late-medieval, the tone of the world.',
       'People: merchant (sells at the market), innkeeper. A full name that fits the place, she or he, what people see first (one sentence), how they speak (a few words), one thing anyone may know of them.',
       'Never contradict what is KNOWN. Never use a TAKEN name. JSON only.',
     ].join('\n'),

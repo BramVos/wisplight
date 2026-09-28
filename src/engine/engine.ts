@@ -35,7 +35,9 @@ import { goAway, tierOf } from './lod'
 import { hexOfTopic, knownEntrance, knownPlace, knownPlaces, landLines, landMapData, walkTarget, type KnownPlace } from './map/known'
 import { hexMapData, type HexMapData } from './map/view'
 import { distance as hexDistance } from './map/hexgrid'
-import { takeBarge, travelTo } from './map/journey'
+import { travelTo } from './map/journey'
+import { journeyOfDays, journeyLines, passagesNamed, takePassage, waitForPassage, waysTo } from './map/passages'
+import { duration } from './map/journeyText'
 import { mapText, mapView, type MapView } from './map/view'
 import { regionMap } from './map/region'
 import { canSetOut, followWay, hasSeen, hexName, hexOfId, isHexId, landmarkIn, look, playerHex, routeBetween, trailEndsAt, tread, type WalkPlan, walk, waysFrom, windOf } from './map/travel'
@@ -883,8 +885,16 @@ export class Engine {
     // INVEST <amount> [IN <project>] (M8.5): money into what a settlement is building.
     const stake = /^(?:invest|lend)\s+(\d+)(?:\s+(?:in|into|to)\s+(.+))?$/i.exec(text.trim())
     if (stake && !this.state.talk) return this.putIn(Number(stake[1]), stake[2])
-    const barge = /^(?:take|catch|board)\s+(?:the\s+)?barge(?:\s+to\s+(.+))?$|^travel\s+by\s+barge(?:\s+to\s+(.+))?$/i.exec(text)
-    if (barge && !this.state.talk) return takeBarge(this.world, (barge[1] ?? barge[2])?.toLowerCase().replace(/^the\s+/, '').trim(), (minutes) => this.pass(minutes))
+    // Passages (M10.12): TAKE THE BARGE [TO X], TRAVEL BY COACH TO X, TRAVEL TO X BY FERRY, WAIT FOR THE COACH.
+    const ride = /^(?:take|catch|board)\s+(?:the\s+)?(.+?)(?:\s+to\s+(.+))?$|^travel\s+by\s+(?:the\s+)?(.+?)(?:\s+to\s+(.+))?$|^travel\s+to\s+(.+?)\s+by\s+(?:the\s+)?(.+)$/i.exec(text.trim())
+    const rideWord = ride ? (ride[1] ?? ride[3] ?? ride[6]) : undefined
+    if (ride && rideWord && !this.state.talk && passagesNamed(this.world, rideWord).length) {
+      return takePassage(this.world, { pass: (minutes) => this.pass(minutes) }, rideWord, (ride[2] ?? ride[4] ?? ride[5])?.toLowerCase().replace(/^the\s+/, '').trim())
+    }
+    // A kind of transport this world has no line of: said so, as the barge always did.
+    if (ride && rideWord && !this.state.talk && /^(?:barge|trekschuit|ferry|packet|coach|ship|cart)$/i.test(rideWord)) return [{ kind: 'error', text: `There is no ${rideWord.toLowerCase()} here.` }]
+    const waitFor = /^wait\s+for\s+(?:the\s+)?(.+)$/i.exec(text.trim())
+    if (waitFor && !this.state.talk && passagesNamed(this.world, waitFor[1]!).length) return waitForPassage(this.world, { pass: (minutes) => this.pass(minutes) }, waitFor[1]!)
     const talk = this.state.talk
     const command = parseCommand(text.replace(/^\//, ''))
     const talking = talk && !text.startsWith('/')
@@ -982,7 +992,8 @@ export class Engine {
         // WALK TO 42,17 (after the M10 playtest): a hex you have seen, as a click on the minimap sends it.
         const spot = /^(\d+)\s*,\s*(\d+)$/.exec(to[1]!.trim())
         if (spot) return this.walkToHex({ col: Number(spot[1]), row: Number(spot[2]) })
-        const topic = this.topics.find(to[1]!)
+        // WALK TO a place beyond the region is on foot (M10.12: TRAVEL TO offers the other ways).
+        const topic = this.topics.find(to[1]!.replace(/\s+(?:on\s+foot|te\s+voet)$/i, ''))
         if (topic && this.beyond(topic)) return this.setOffBeyond(topic)
         const place = topic ? knownPlace(this.world, topic) : undefined
         if (topic && !place) return [{ kind: 'error', text: `You don't know where ${this.topics.name(topic)} is. Ask someone, or look for it.` }]
@@ -1005,8 +1016,16 @@ export class Engine {
         const to = /^(?:to|naar)\s+(.+)$/i.exec(command.args.join(' '))
         if (!to) return [{ kind: 'error', text: 'Travel where? For example: travel to Waagdam.' }]
         if (this.state.player.load) return [{ kind: 'error', text: 'With a load you go on foot, one stretch at a time: GO <direction>.' }]
-        const topic = this.topics.find(to[1]!)
-        if (topic && this.beyond(topic)) return this.setOffBeyond(topic)
+        // On foot, on purpose (M10.12): TRAVEL TO GRAAFHAVEN ON FOOT.
+        const walking = /\s+(?:on\s+foot|te\s+voet)$/i.test(to[1]!)
+        const topic = this.topics.find(to[1]!.replace(/\s+(?:on\s+foot|te\s+voet)$/i, ''))
+        if (topic && this.beyond(topic)) {
+          // More than one way there (M10.12): on foot, or a passage; the stranger chooses.
+          const ways = walking ? [] : waysTo(this.world, topic)
+          if (ways.length > 1) return offer(this.world, `How do you want to travel to ${this.topics.name(topic)}?`, ways)
+          if (ways.length === 1 && ways[0]!.how === 'passage') return this.route(ways[0]!.command)
+          return this.setOffBeyond(topic)
+        }
         const place = topic ? knownPlace(this.world, topic) : undefined
         if (!place?.hex) return [{ kind: 'error', text: place ? `You have only heard of ${place.name}. Walk there first.` : `You don't know a place called "${to[1]}".` }]
         return [...travelTo(this.world, place.hex, place.name, (minutes) => this.pass(minutes)), describeRoom(this.world)]
@@ -1594,8 +1613,18 @@ export class Engine {
     if (far) {
       const edge = this.world.location(far.link.from)
       const days = Math.round(far.link.minutes / (24 * 60))
+      // Over the sea (M10.12): no road, only the passage that goes there.
+      if (far.link.by) {
+        const p = this.content.passages.get(far.link.by)
+        return [{ kind: 'text', text: `No road goes to ${name}. ${p ? `${p.name.charAt(0).toUpperCase()}${p.name.slice(1)} goes there from ${edge.name}.` : ''}`.trim() }]
+      }
       if (this.state.player.location !== edge.id) return [{ kind: 'text', text: `The road to ${name} leaves ${this.world.words.region} at ${edge.name}, in ${this.content.areas.get(edge.area)?.name ?? edge.area}. From there it is ${days === 1 ? 'a day' : `${days} days`} on foot, ${far.link.direction}.` }]
-      return runCommand(this.host, { verb: 'go', args: [far.link.direction], raw: `go ${far.link.direction}` })
+      // A journey of days on foot (M10.12): the world plays on, a day at a time, and the way is told as one paragraph.
+      const gate = String((far.locations[0] as { id: string }).id)
+      return [
+        ...journeyOfDays(this.world, { pass: (minutes) => this.pass(minutes) }, { fromName: edge.name, to: gate, toName: name, minutes: far.link.minutes, opening: `You set out on foot from ${edge.name} for ${name}, ${far.link.direction}. It takes ${duration(far.link.minutes)}.` }),
+        describeRoom(this.world),
+      ]
     }
     if (this.state.growth?.farPending?.includes(topic)) return [{ kind: 'system', text: `The chronicler is working out the road to ${name}. Try again in a moment.` }]
     return [

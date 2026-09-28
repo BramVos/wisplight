@@ -10,6 +10,8 @@ import { AftermathSchema, IntentionSchema, PlanSchema, VerbTextSchema, WatcherSc
 import { permitted, verbName } from './quests/verbs'
 import { RELATION_ROLES } from './roles'
 import { VoiceSchema, type Voice } from './dialogue/voiceSchema'
+import { PassageSchema, type Passage } from './map/passageSchema'
+import { WEEKDAYS } from './clock'
 
 // Content is plain YAML in content/. This module parses and validates it
 // without touching the file system, so it runs in Node and in the browser.
@@ -856,6 +858,8 @@ const FileSchema = z
     voice: VoiceSchema.optional(),
     /** Sentences for a journey (M10.11): per terrain and weather, at night, and what may happen on the way. */
     journey: JourneySchema.optional(),
+    /** Lines of transport (M10.12): a barge, a coach, a ferry, with stops, days, fares and legs. */
+    passages: z.array(PassageSchema).optional(),
     factions: z.array(FactionSchema).optional(),
     realms: z.array(RealmSchema).optional(),
     tensions: z.array(TensionSchema).optional(),
@@ -906,6 +910,8 @@ export interface Content {
   voice?: Voice
   /** Sentences for journeys (M10.11); a world without them keeps the one line of before. */
   journey?: Journey
+  /** Lines of transport (M10.12). */
+  passages: Map<string, Passage>
   creatures: Map<string, Creature>
   encounters: Map<string, Encounter>
   factions: Map<string, Faction>
@@ -984,6 +990,7 @@ export function loadContent(files: ContentFile[]): Content {
     projects: new Map<string, Project>(),
     crafts: new Map<string, Craft>(),
     props: new Map<string, PropTemplate>(),
+    passages: new Map<string, Passage>(),
   }
 
   let chronicler: string | undefined
@@ -1047,6 +1054,7 @@ export function loadContent(files: ContentFile[]): Content {
     addAll(content.projects, data.projects, (v) => v.id, file.path, 'project', problems)
     addAll(content.crafts, data.crafts, (v) => v.id, file.path, 'craft', problems)
     addAll(content.props, data.props, (v) => v.id, file.path, 'prop', problems)
+    addAll(content.passages, data.passages, (v) => v.id, file.path, 'passage', problems)
     if (data.rules) {
       if (rules) problems.push(`${file.path}: the rules are defined twice`)
       rules = data.rules
@@ -1070,6 +1078,13 @@ export function loadContent(files: ContentFile[]): Content {
   if (rules) for (const p of content.professions.values()) if (p.teaches && !rules.skills.some((s) => s.id === p.teaches)) problems.push(`profession ${p.id}: teaches ${p.teaches}, which is no skill`)
   problems.push(...checkCrafts(content, rules))
   if (world) problems.push(...checkVoice(voice, world, content))
+  // A passage stops at places of the world or far places it knows, on days of its calendar (M10.12).
+  const weekdays = new Set<string>(world?.calendar?.weekdays ?? WEEKDAYS)
+  for (const p of content.passages.values()) {
+    for (const stop of p.stops) if (!content.locations.has(stop) && !content.topics.has(stop)) problems.push(`passage ${p.id}: stop ${stop} is no place or topic`)
+    for (const day of p.days) if (!weekdays.has(day)) problems.push(`passage ${p.id}: ${day} is no weekday of this world`)
+    for (const key of Object.keys(p.legs)) if (!key.split('>').every((s) => p.stops.includes(s))) problems.push(`passage ${p.id}: leg ${key} is not between two of its stops`)
+  }
   // A way on another level runs on a level the world names (M10).
   const levels = new Set((world?.map?.levels ?? [{ id: 'surface' }]).map((l) => l.id))
   for (const region of content.regions.values()) {
@@ -1530,6 +1545,7 @@ export const KIND_MAPS = {
   project: 'projects',
   craft: 'crafts',
   prop: 'props',
+  passage: 'passages',
   // A list in the rules (M10.9): a save's character names its background.
   background: 'rules',
 } as const satisfies Record<string, keyof Content>

@@ -26,6 +26,8 @@ ids:
     item: [marens_key, knife, ship_biscuit, salt_fish, fish_stew, ale, sailcloth, pitch, lamp_oil, rope, rune_key, kelp_salve, heather, kelp, spear, iron_hook, staff, longbow, cutlass, quilted_coat, sealskin_jerkin, scale_vest, ring_shirt, round_shield, conch, diary, letters]
   isle/data/objects.yaml:
     object_type: [strongbox, well, silver_birch, bench, beacon, waystone, salve_pot, coracle, boat]
+  isle/data/passages.yaml:
+    passage: [havenmoor_packet]
   isle/data/professions.yaml:
     profession: [innkeeper, fisher, boatman, child, hedge_witch, scholar, lightkeeper]
   isle/data/props.yaml:

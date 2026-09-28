@@ -685,6 +685,10 @@ export function App() {
             setJournal(undefined)
             void send(`ask about ${topic}`)
           }}
+          onCommand={(command) => {
+            setJournal(undefined)
+            void send(command)
+          }}
           onClose={() => {
             setJournal(undefined)
             inputRef.current?.focus()

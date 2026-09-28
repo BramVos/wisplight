@@ -26,6 +26,12 @@ export interface JourneyFacts {
 }
 
 export function duration(minutes: number): string {
+  // A journey of days (M10.12): days, and the hours over.
+  if (minutes >= 24 * 60) {
+    const days = Math.floor(minutes / (24 * 60))
+    const hours = Math.round((minutes - days * 24 * 60) / 60)
+    return `${days === 1 ? 'a day' : `${days} days`}${hours >= 1 ? ` and ${hours === 1 ? 'an hour' : `${hours} hours`}` : ''}`
+  }
   if (minutes < 60) return `${minutes} minutes`
   const hours = Math.floor(minutes / 60)
   const rest = minutes % 60

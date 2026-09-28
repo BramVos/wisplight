@@ -777,10 +777,14 @@ function Legend({ data, s, style, onFlash }: { data: HexMapData; s: MapStyle; st
  * The land map (M10): the region as a box, the stranger in it, the far places
  * known, and the routes to them, in the same tokens.
  */
-export function LandMap({ data, style, label: ariaLabel }: { data: LandMapData; style: MapStyleName; label: string }) {
+export function LandMap({ data, style, label: ariaLabel, onCommand }: { data: LandMapData; style: MapStyleName; label: string; onCommand?: (command: string) => void }) {
   const canvas = useRef<HTMLCanvasElement>(null)
   const box = useRef<HTMLDivElement>(null)
   const [width, setWidth] = useState(0)
+  // A destination picked on the map (M10.12): its ways there, each a button that sets off.
+  const spots = useRef<{ name: string; x: number; y: number }[]>([])
+  const [picked, setPicked] = useState<string>()
+  const chosen = data.places.find((p) => p.name === picked)
   const s = useMemo(() => mapStyle(data.palette, style), [data.palette, style])
   useEffect(() => {
     const el = box.current
@@ -833,9 +837,11 @@ export function LandMap({ data, style, label: ariaLabel }: { data: LandMapData; 
       ctx.stroke()
     }
     ctx.setLineDash([])
+    spots.current = []
     for (const p of data.places) {
       const [x, y] = at(p.x, p.y)
-      placeIcon(ctx, 'town', x, y, 'seen', s.label)
+      spots.current.push({ name: p.name, x, y })
+      placeIcon(ctx, 'town', x, y, p.name === picked ? 'visited' : 'seen', s.label)
       label(ctx, p.name, x, y, s, width)
     }
     if (data.you) {
@@ -848,10 +854,39 @@ export function LandMap({ data, style, label: ariaLabel }: { data: LandMapData; 
       ctx.stroke()
       ctx.fill()
     }
-  }, [data, s, width])
+  }, [data, s, width, picked])
+  const pick = (event: React.MouseEvent<HTMLCanvasElement>) => {
+    const r = event.currentTarget.getBoundingClientRect()
+    const x = event.clientX - r.left
+    const y = event.clientY - r.top
+    const near = spots.current.map((p) => ({ p, d: Math.hypot(p.x - x, p.y - y) })).sort((a, b) => a.d - b.d)[0]
+    setPicked(near && near.d < 24 ? near.p.name : undefined)
+  }
   return (
-    <div className="hexmap" ref={box}>
-      <canvas ref={canvas} role="img" aria-label={ariaLabel} />
+    <div className="hexmap land-map" ref={box}>
+      <canvas ref={canvas} role="img" aria-label={ariaLabel} onClick={pick} />
+      {onCommand && data.places.some((p) => p.ways?.length) && (
+        <div className="land-ways">
+          <p className="muted small">{chosen ? t('app.map.land.waysTo', { name: chosen.name }) : t('app.map.land.pick')}</p>
+          {!chosen && (
+            <div className="land-places">
+              {data.places
+                .filter((p) => p.ways?.length)
+                .map((p) => (
+                  <button key={p.name} type="button" className="link" onClick={() => setPicked(p.name)}>
+                    [{p.name}]
+                  </button>
+                ))}
+            </div>
+          )}
+          {chosen?.ways?.map((way) => (
+            <button key={way.command} type="button" className="link land-way" onClick={() => onCommand(way.command)}>
+              [{way.label}]
+            </button>
+          ))}
+          {chosen && !chosen.ways?.length && <p className="muted small">{t('app.map.land.noWay')}</p>}
+        </div>
+      )}
     </div>
   )
 }

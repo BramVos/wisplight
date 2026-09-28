@@ -419,7 +419,7 @@ describe('M9.1: a far place made playable', () => {
   it('Zwolderkamp: checked as content, fixed in the save, with its own ledger; the Oostweg keeps its id', async () => {
     const engine = new Engine(content, { seed: 102, builder: true })
     await toTheGate(engine)
-    const out = await say(engine, 'travel to zwolderkamp')
+    const out = await say(engine, 'travel to zwolderkamp on foot')
     expect(engine.state.player.location).toBe('loc_zwolderkamp_gate')
     expect(out).toMatch(/You come to the gate of Zwolderkamp after 2 days on the road/)
     const far = engine.state.growth!.far!['zwolderkamp']!
@@ -459,11 +459,11 @@ describe('M9.1: a far place made playable', () => {
   it('with a model the chronicler words it; the log plays back to the same world', async () => {
     const engine = new Engine(content, { seed: 103, builder: true, llm: new MockLlm('good') })
     await toTheGate(engine)
-    await say(engine, 'travel to zwolderkamp')
+    await say(engine, 'travel to zwolderkamp on foot')
     await engine.runModels()
-    expect(await say(engine, 'travel to zwolderkamp')).toMatch(/The chronicler is working out the road to Zwolderkamp/)
+    expect(await say(engine, 'travel to zwolderkamp on foot')).toMatch(/The chronicler is working out the road to Zwolderkamp/)
     await engine.runModels()
-    expect(await say(engine, 'travel to zwolderkamp')).toMatch(/You pass under the Lantern Gate of Zwolderkamp/)
+    expect(await say(engine, 'travel to zwolderkamp on foot')).toMatch(/You pass under the Lantern Gate of Zwolderkamp/)
     expect(engine.state.player.location).toBe('loc_zwolderkamp_gate')
     const far = engine.state.growth!.far!['zwolderkamp']!
     expect(far.by).toBe('chronicler')
@@ -474,7 +474,7 @@ describe('M9.1: a far place made playable', () => {
     const strict = new Engine(content, { seed: 104, builder: true, llm: new MockLlm('invalid') })
     await toTheGate(strict)
     for (let i = 0; i < 3; i++) {
-      await say(strict, 'travel to zwolderkamp')
+      await say(strict, 'travel to zwolderkamp on foot')
       await strict.runModels()
     }
     const gate = strict.state.growth!.far!['zwolderkamp']!.locations[0]!
@@ -484,7 +484,7 @@ describe('M9.1: a far place made playable', () => {
   it('a load of rye carried to Zwolderkamp pays the toll at the gate on the way', async () => {
     const engine = new Engine(content, { seed: 105, builder: true })
     await toTheGate(engine)
-    await say(engine, 'travel to zwolderkamp')
+    await say(engine, 'travel to zwolderkamp on foot')
     await say(engine, 'west', '@goto loc_waagdam_market')
     engine.state.economy!.ledgers['waagdam']!.stock['rye_grain'] = 9000
     expect(await say(engine, 'loads')).toMatch(/sacks of rye to Zwolderkamp/)

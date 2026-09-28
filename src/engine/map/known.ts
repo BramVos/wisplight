@@ -2,6 +2,7 @@ import type { World } from '../world'
 import { centre, type Hex, hexAt } from './hexgrid'
 import { noise, regionMap, type RegionMap } from './region'
 import { DEFAULT_PALETTE, type MapPalette } from './palette'
+import { journeyLines, waysTo } from './passages'
 
 // What the map shows (FO, chapter 4, "Wat de kaart laat zien"): places you
 // have been to or seen, exactly; places you have only heard of, as a zone.
@@ -110,15 +111,20 @@ export function landLines(world: World): string[] {
   const here = map.posOf(playerHexOr(world, map))
   const lines: string[] = []
   for (const topic of [...world.content.topics.values()].sort((a, b) => a.name.localeCompare(b.name))) {
-    if (!topic.pos || journal[topic.id] === undefined || map.inside(map.hexOf(topic.pos))) continue
+    // Only places (M10.12): a person the world book puts somewhere (the Count in Graafhaven) is no destination.
+    if (!topic.pos || topic.kind !== 'place' || journal[topic.id] === undefined || map.inside(map.hexOf(topic.pos))) continue
     const km = Math.hypot(topic.pos[0] - here[0], topic.pos[1] - here[1])
     const angle = (Math.atan2(topic.pos[0] - here[0], topic.pos[1] - here[1]) * 180) / Math.PI
     const wind = ['north', 'north-east', 'east', 'south-east', 'south', 'south-west', 'west', 'north-west'][Math.round(((angle + 360) % 360) / 45) % 8]
     const days = Math.max(1, Math.round(km / 40))
     lines.push(`  ${topic.name}: about ${Math.round(km / 5) * 5} km ${wind}, ${days === 1 ? 'a day' : `${days} days`} on foot.`)
+    // And what goes there (M10.12): a barge, a coach, with its next departure.
+    for (const way of waysTo(world, topic.id)) if (way.how === 'passage') lines.push(`    ${way.label}.`)
   }
   for (const far of world.state.lore?.far ?? []) if (journal[far.id] !== undefined) lines.push(`  ${far.name}: a ${far.kind} far beyond ${world.words.land}, you were told.`)
-  return lines.length ? ['', `BEYOND ${world.words.region.toUpperCase()}`, ...lines] : []
+  // The journeys of days the stranger made (M10.12), a line each.
+  const journeys = journeyLines(world)
+  return [...(lines.length ? ['', `BEYOND ${world.words.region.toUpperCase()}`, ...lines] : []), ...(journeys.length ? ['', 'YOUR JOURNEYS', ...journeys.map((j) => `  ${j}`)] : [])]
 }
 
 function playerHexOr(world: World, map: RegionMap): Hex {
@@ -150,7 +156,8 @@ export function knownEntrance(world: World, topic: string): string | undefined {
 export interface LandMapData {
   region: { name: string; x: number; y: number; w: number; h: number }
   you?: [number, number]
-  places: { name: string; x: number; y: number }[]
+  /** ways (M10.12): how to get there, on foot or by a passage, each with the command that sets off. */
+  places: { name: string; x: number; y: number; topic?: string; ways?: { label: string; command: string }[] }[]
   routes: { name: string; from: [number, number]; to: [number, number] }[]
   palette: MapPalette
 }
@@ -162,8 +169,9 @@ export function landMapData(world: World): LandMapData | undefined {
   const region = map.region
   const places: LandMapData['places'] = []
   for (const topic of [...world.content.topics.values()].sort((a, b) => a.name.localeCompare(b.name))) {
-    if (!topic.pos || journal[topic.id] === undefined || map.inside(map.hexOf(topic.pos))) continue
-    places.push({ name: topic.name, x: topic.pos[0], y: topic.pos[1] })
+    if (!topic.pos || topic.kind !== 'place' || journal[topic.id] === undefined || map.inside(map.hexOf(topic.pos))) continue
+    const ways = waysTo(world, topic.id).map((w) => ({ label: w.label, command: w.command }))
+    places.push({ name: topic.name, x: topic.pos[0], y: topic.pos[1], topic: topic.id, ...(ways.length ? { ways } : {}) })
   }
   const posOf = (id: string): [number, number] | undefined => {
     const outland = world.content.outlands.get(id)

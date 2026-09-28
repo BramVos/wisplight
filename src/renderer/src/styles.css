@@ -1914,3 +1914,21 @@ pre.sheet {
   gap: 16px;
   justify-content: flex-end;
 }
+
+/* The land map (M10.12): pick a far place, and the ways to it, each a button that sets off. */
+.land-map canvas {
+  cursor: pointer;
+}
+
+.land-ways {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.land-places {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+}

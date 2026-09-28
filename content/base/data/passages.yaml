@@ -1,0 +1,50 @@
+# Lines of transport (M10.12): stops, days and hours, fares, legs and what you
+# see on the way. A stop is a place of the region, or the topic of a far place
+# beyond it; a ride there takes days, and the world plays on meanwhile. TAKE
+# THE BARGE, TRAVEL TO GRAAFHAVEN BY BARGE, WAIT FOR THE COACH.
+
+passages:
+  # The barge on the Graafse Vaart (Wereldboek, chapter 7): Maandag and Donderdag,
+  # from first light until the afternoon, on to Graafhaven two days west.
+  - id: vaart_barge
+    name: the barge on the Graafse Vaart
+    kind: barge
+    aliases: [trekschuit, the trekschuit, vaart barge]
+    stops: [graafhaven, loc_oude_zijl_sluice, loc_veenhoek_quay, loc_waagdam_harbour]
+    days: [Maandag, Donderdag]
+    hours: "07-17"
+    fare: 16
+    far_fare: 44
+    speed: 6
+    stop_minutes: 15
+    legs: { "graafhaven>loc_oude_zijl_sluice": 2400 }
+    water: true
+    crew: bargeman
+    text: "You pay {fare} and sit among sacks of grain while the horse plods along the tow path. After {duration} you step ashore at {place}."
+    closed: No barge today. It runs on Maandag and Donderdag, from first light until the afternoon.
+    where: The barge stops at the quay in Veenhoek, the harbour in Waagdam and the sluice at Oude Zijl.
+    sights:
+      - Rows of pollard willows go by on the bank, one after another, like men waiting for something.
+      - At the locks the bargeman trades news with the lock-keeper while the water rises.
+      - Church towers stand up out of the flat land one after the other, each a village you do not stop at.
+
+  # The coach on the Oostweg: from the East Gate of Waagdam to Zwolderkamp in a
+  # long day, where on foot it takes two.
+  - id: oostweg_coach
+    name: the coach on the Oostweg
+    kind: coach
+    aliases: [stagecoach, the oostweg coach]
+    stops: [loc_waagdam_east_gate, zwolderkamp]
+    days: [Dinsdag, Vrijdag]
+    departs: ["08:00"]
+    fare: 30
+    far_fare: 30
+    legs: { "loc_waagdam_east_gate>zwolderkamp": 1200 }
+    crew: coachman
+    text: "You pay {fare} and squeeze in among the other travellers. After {duration} the coach sets you down at {place}."
+    closed: The coach to Zwolderkamp goes on Dinsdag and Vrijdag at eight in the morning.
+    where: The coach leaves from the East Gate of Waagdam.
+    sights:
+      - A string of pack horses from the League passes the other way, bells ringing.
+      - The coach stops at a toll house, and the coachman argues about the fare.
+      - Heath gives way to sandy woods, and the road runs straight as a ruler.

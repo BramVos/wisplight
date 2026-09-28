@@ -478,6 +478,8 @@ export interface PlayerState {
   contact?: string
   /** Moments the stranger had (M10.11): a card once per place and per tiding. */
   moments?: MomentsState
+  /** Journeys of days the stranger made (M10.12): a line each in the journal. */
+  journeys?: { t: number; from: string; to: string; by?: string; minutes: number }[]
   /** Crafts the stranger works at (M10.5), by craft. */
   crafts?: Record<string, CraftProgress>
   /** Hidden things found, `location/id`, and inscriptions read, `location/object` (M10.5). */

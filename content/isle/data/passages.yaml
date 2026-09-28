@@ -1,0 +1,24 @@
+# Lines of transport (M10.12). The packet from Havenmoor called every
+# fortnight while the Lamp burned; with the Lamp lit again, it runs.
+
+passages:
+  - id: havenmoor_packet
+    name: the Havenmoor packet
+    kind: ferry
+    aliases: [the packet, packet, the ship, ship]
+    stops: [loc_skerrow_harbour, havenmoor]
+    days: [Tidesday, Starday]
+    departs: ["08:00"]
+    fare: 30
+    legs: { "loc_skerrow_harbour>havenmoor": 2880 }
+    water: true
+    crew: skipper
+    when: [{ flag: beacon_burning }]
+    text: "You pay {fare} and find a place among the barrels. After {duration} you step ashore at {place}."
+    closed: The packet sails for Havenmoor on Tidesday and Starday at eight in the morning.
+    off: No ship has called at Skerrow since the Lamp went out. Light it, and they will come again.
+    where: The packet puts in at the harbour of Skerrow Hythe.
+    sights:
+      - Grey seals watch the ship from a skerry, and one follows the wake for a while.
+      - Far to the south the smoke of another island hangs on the horizon.
+      - The wind comes round in the night, and the sailors run about the deck shouting.

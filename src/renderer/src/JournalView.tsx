@@ -43,6 +43,7 @@ export function JournalView({
   talkingTo,
   nearby = false,
   onAsk,
+  onCommand,
   onClose,
 }: {
   client: EngineClient
@@ -52,6 +53,8 @@ export function JournalView({
   /** Only what lies within 15 km, until the player searches or asks for the rest. */
   nearby?: boolean
   onAsk: (topic: string) => void
+  /** A command from a page (M10.12): setting off from the land map. */
+  onCommand?: (command: string) => void
   onClose: () => void
 }) {
   const mapLook = useMapLook()
@@ -230,7 +233,7 @@ export function JournalView({
                   </>
                 ) : page.land ? (
                   <>
-                    <LandMap data={page.land} style={mapLook} label={page.name} />
+                    <LandMap data={page.land} style={mapLook} label={page.name} {...(onCommand ? { onCommand } : {})} />
                     {page.lines.map((line, index) => (
                       <p key={index}>{line.trim()}</p>
                     ))}

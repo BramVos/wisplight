@@ -42,6 +42,8 @@ export interface GrowthState {
   /** Far places made playable in this game (M9.1), by topic, and those waiting for the chronicler. */
   far?: Record<string, FarPlace>
   farPending?: string[]
+  /** How a far place without a road is reached (M10.12): the passage and its stop, kept while the chronicler words it. */
+  farVia?: Record<string, import('./far').FarVia>
 }
 
 export function growth(world: World): GrowthState {

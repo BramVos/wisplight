@@ -28,6 +28,8 @@ ids:
     news: [mill_before_winter]
   base/data/objects.yaml:
     object_type: [strongbox, bread_oven, windmill, horse_mill, peat_bank, eel_traps, spinning_wheel, well, altar, dog_stone, bench, forge, scale, counter, notice_board, brick_kiln]
+  base/data/passages.yaml:
+    passage: [vaart_barge, oostweg_coach]
   base/data/patterns.yaml:
     pattern: [lost_thing, quarrel, theft, fever, appeldag]
   base/data/plans.yaml:

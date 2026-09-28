@@ -1,16 +1,16 @@
-import { GameClock, weekdayOf } from '../clock'
+import { GameClock } from '../clock'
 import type { Output } from '../commands'
 import type { World } from '../world'
-import { blessed } from '../rules/blessings'
 import { weather } from '../weather'
-import { centre, type Hex, hexKey, neighbours } from './hexgrid'
+import { type Hex, hexKey, neighbours } from './hexgrid'
 import { regionMap, type RegionMap } from './region'
 import { entranceOn, hasSeen, hasWalked, minutesFor, passable, playerHex, seenBits, tread } from './travel'
 import { tellsJourneys } from './journeyText'
 
 // Fast travel (FO, chapter 4, "Snelreizen"): time runs on over a route you
 // know because you walked it, with a chance of something on the way. The
-// barge keeps its timetable and costs money.
+// barge and every other line of transport are content since M10.12
+// (passages.ts).
 
 /** The quickest way over hexes the player has walked, between known places. */
 function knownRoute(world: World, map: RegionMap, from: Hex, to: Hex): Hex[] | undefined {
@@ -101,38 +101,4 @@ export function travelTo(world: World, target: Hex, name: string, pass: (minutes
     return [{ kind: 'narration', text: parts.filter((p): p is string => Boolean(p)).join(' '), journey: true }]
   }
   return [{ kind: 'narration', text: [`You travel to ${name}. It takes ${duration(minutes + extra)}.`, ...lines].join(' ') }]
-}
-
-// ---------------------------------------------------------------- the barge
-
-/** Where the barge on the Graafse Vaart stops (Wereldboek, chapter 7: Maandag and Donderdag). */
-const STOPS = ['loc_oude_zijl_sluice', 'loc_veenhoek_quay', 'loc_waagdam_harbour']
-const FARE = 16
-
-export function takeBarge(world: World, destination: string | undefined, pass: (minutes: number) => Output[]): Output[] {
-  const here = world.state.player.location
-  if (!STOPS.every((stop) => world.content.locations.has(stop))) return [{ kind: 'error', text: 'There is no barge here.' }]
-  if (!STOPS.includes(here)) return [{ kind: 'error', text: 'The barge stops at the quay in Veenhoek, the harbour in Waagdam and the sluice at Oude Zijl.' }]
-  const day = weekdayOf(world.now)
-  const hour = new GameClock(world.now).parts.hour
-  if ((day !== 'Maandag' && day !== 'Donderdag') || hour < 7 || hour >= 17) {
-    return [{ kind: 'text', text: 'No barge today. It runs on Maandag and Donderdag, from first light until the afternoon.' }]
-  }
-  if (!destination) return [{ kind: 'error', text: 'Take the barge where? Oude Zijl, Veenhoek or Waagdam.' }]
-  const from = world.words.from
-  if (destination.includes(from.toLowerCase())) return [{ kind: 'text', text: `The barge goes on to ${from}, two days west, but that lies beyond ${world.words.region} for now.` }]
-  const to = STOPS.find((stop) => world.location(stop).area === destination || world.location(stop).name.toLowerCase().includes(destination) || world.content.areas.get(world.location(stop).area)?.name.toLowerCase() === destination)
-  if (!to || to === here) return [{ kind: 'error', text: 'The barge stops at Oude Zijl, Veenhoek and Waagdam.' }]
-  if (world.state.player.money < FARE) return [{ kind: 'text', text: `The bargeman wants ${world.money(FARE)}, and you do not have it.` }]
-  const map = regionMap(world.content)!
-  const a = centre(map.locations.get(here)!, map.size)
-  const b = centre(map.locations.get(to)!, map.size)
-  // Some 70 km in a day of twelve hours: about 6 km an hour, and the barge takes its time at the locks.
-  // Fair Wind (Nehalennia): travel over water goes a quarter faster.
-  const fair = blessed(world.content, world.state.player.character, 'Fair Wind') ? 0.75 : 1
-  const minutes = Math.round((Math.hypot(b[0] - a[0], b[1] - a[1]) / 6) * 60 * fair) + 15
-  world.state.player.money -= FARE
-  pass(minutes)
-  world.state.player.location = to
-  return [{ kind: 'narration', text: `You pay ${world.money(FARE)} and sit among sacks of grain while the horse plods along the tow path. After ${duration(minutes)} you step ashore at ${world.location(to).name}.` }]
 }

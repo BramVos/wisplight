@@ -1,5 +1,18 @@
 # Changelog
 
+## M10.12 Reizen over de landkaart, 28 september 2026
+
+- **Vervoer is content.** In `data/passages.yaml` staat per lijn wat voor vervoer het is, de haltes (plekken in de streek of verre plekken), de dagen en uren of vaste vertrektijden, de prijs, de duur per traject en wat je onderweg ziet. De trekschuit op de Vaart is zo'n lijn geworden en doet binnen de streek precies wat hij deed; een test vergelijkt hem met de oude code. Nieuw is dat hij doorvaart naar Graafhaven. Er is een koets van de Oostpoort van Waagdam naar Zwolderkamp (dinsdag en vrijdag om acht uur, twintig uur in plaats van twee dagen lopen). Skerrow heeft de Havenmoor-packet, die pas vaart als de Lamp weer brandt.
+- **Vertrektijden.** Wie te laat is, hoort wanneer de volgende gaat: "The next leaves on Vrijdag at 08:00: WAIT FOR THE COACH". WAIT FOR THE COACH wacht tot het vertrek, en vertrekt hij binnen het uur, dan wacht je vanzelf op de kade.
+- **Een reis van dagen.** Een rit of een tocht te voet naar een verre plek laat de wereld dag voor dag doorspelen terwijl jij weg bent; voor iedereen thuis ben je ver weg. Elke dag kan er iets gebeuren: iets wat je ziet, het weer, een zwaar stuk waar een Survival-proef je doorheen helpt of een halve dag kost, of nieuws van een medereiziger. De reis komt als één alinea met de dagen erin, en onder de landkaart staat "YOUR JOURNEYS" met een regel per reis. Een verre plek over zee (Havenmoor) heeft een kade in plaats van een poort en geen weg terug te voet.
+- **Kiezen.** TRAVEL TO ZWOLDERKAMP geeft de manieren: te voet, of de koets met het eerstvolgende vertrek, de duur en de prijs. TRAVEL TO ZWOLDERKAMP BY COACH of ON FOOT kiest meteen; WALK TO blijft te voet. Op de landkaart in het dagboek kies je een plek en zie je dezelfde manieren als knoppen.
+
+Testen: begin als schipper (bargeman) en open het dagboek bij "The land map": kies Graafhaven. Op donderdag op de kade van Veenhoek: TAKE THE BARGE TO GRAAFHAVEN. In Waagdam bij de Oostpoort: TRAVEL TO ZWOLDERKAMP. Op Skerrow na het ontsteken van de Lamp: TAKE THE PACKET TO HAVENMOOR. Tests in `tests/m1012.test.ts` (13), alle 694 groen, beide simulaties zonder problemen, speeltests ongewijzigd, rooktests van beide werelden.
+
+Aangepast in bestaande tests: de tests van M9.1 zeggen nu TRAVEL TO ZWOLDERKAMP ON FOOT, omdat TRAVEL TO zonder meer de keuze geeft tussen lopen en de koets. Een verre plek maakt nu een koopman van een beroep dat de wereld heeft (Skerrow heeft geen marskramers).
+
+Nog niet: een reis naar een verre plek zonder landkaart (Skerrow) staat alleen in tekst, want Skerrow heeft geen landkaart. Onderweg kan er per dag hooguit één ding gebeuren; een ontmoeting met een wezen onderweg zit er nog niet in. Op de landkaart zelf staan de lijnen nog niet als getekende route.
+
 ## M10.11 Momenten: wat opvalt, opgelicht, 28 september 2026
 
 - **Aankomst.** Een plek met een `arrival` in de content krijgt de eerste keer een kaart boven het logboek: het plaatje van de plek (of een vaste tekening), de naam en twee of drie zinnen, met een eigen versie bij mist, nacht of storm. Een landmark die je op de kaart ziet opdoemen, krijgt zijn kaart op dat moment ("The Mill De Zwaan, to the north-east"); kom je er later, dan staat de tekst gewoon in het logboek. De Nethermarch heeft er tien (de Kabouterberg, De Zwaan, de dijk bij Oude Zijl, de priorij, de haven en de Waag van Waagdam, het hunebed, de Blackmere, de Drowned Goose, de Kattenbroek), Skerrow drie (het wrak, de Lamp, de toren). Een nieuw spel op Skerrow begint met de kaart van het wrak.

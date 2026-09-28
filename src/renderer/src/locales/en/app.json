@@ -42,6 +42,11 @@
     "close": "[Go on]"
   },
   "map": {
+    "land": {
+      "pick": "Pick a place to see how to get there:",
+      "waysTo": "Ways to {name}:",
+      "noWay": "You know of no way there yet."
+    },
     "title": "Map",
     "label": "Map of the land around you",
     "whole": "Whole map",

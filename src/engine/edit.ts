@@ -39,6 +39,7 @@ export const LISTS = {
   project: 'projects',
   craft: 'crafts',
   prop: 'props',
+  passage: 'passages',
   // A list inside another (M10.9): the backgrounds of the character rules.
   background: 'rules.backgrounds',
 } as const
