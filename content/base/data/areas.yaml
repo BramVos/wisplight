@@ -30,6 +30,7 @@ areas:
     fame: 2
     pos: [116, 103]
     summary: The market town of the Holleveen, an hour and a quarter east along the Vaart, famous for its Witches' Scale. Market day is Woensdag.
+    market_days: [Woensdag]
 
   - id: roads
     name: the roads of the Holleveen

@@ -4,7 +4,7 @@ import { onFact } from './storylines'
 import { concerns, triggerChoice } from './npc/goals'
 import { watchFact } from './signals'
 import { standingOf } from './standing'
-import { heardClaim, provenWarnings } from './belief'
+import { heardClaim, provenWarnings, reconsider } from './belief'
 import type { Claim, Fact, Heard } from './state'
 import type { World } from './world'
 
@@ -298,15 +298,19 @@ export function passOn(world: World, teller: string, listener: string, factId: s
  * the stranger, one step less sure, and believes it as far as they trust the
  * stranger. Found in the playtest of the dyke: nobody could be warned.
  */
-export function playerTells(world: World, listener: string, factId: string): Heard | undefined {
+export function playerTells(world: World, listener: string, factId: string, bonus = 0, as = 'player'): Heard | undefined {
   const mine = heardBy(world, 'player')[factId]
   const fact = factById(world, factId)
   const theirs = heardBy(world, listener)
   if (!mine || !fact || !world.alive(listener)) return undefined
-  if (theirs[factId]) return theirs[factId]
+  // Heard it before and did not believe it: with more weight behind it this time, they think again (M10.6).
+  if (theirs[factId]) {
+    if (bonus > 0 && theirs[factId]!.stance) reconsider(world, listener, fact, 'player', bonus, as)
+    return theirs[factId]
+  }
   const h: Heard = { level: Math.max(1, mine.level - 1) as Heard['level'], reliability: Math.round(mine.reliability * 0.9 * 100) / 100, from: 'player', t: world.now }
   theirs[factId] = h
-  heardClaim(world, listener, fact, h)
+  heardClaim(world, listener, fact, h, bonus)
   noticed(world, listener, fact)
   return h
 }

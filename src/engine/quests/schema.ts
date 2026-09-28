@@ -286,5 +286,14 @@ export const QuestBodySchema = z
     on_place: z.record(z.string(), z.string()).default({}),
     /** A clock that runs by itself while the quest is on: the widow's patience. */
     timer: z.object({ clock: z.string(), every_hours: z.number().int().positive(), unless: z.array(ConditionSchema).default([]) }).strict().optional(),
+    /**
+     * Without the player (M10.6): so many days after it began (or after the game began, when the player never took it
+     * up), and only while the player is far from its people and places, the world settles it itself: the effects, and
+     * the quest is over (lapsed). Near, it waits for the player.
+     */
+    lapses: z
+      .object({ after_days: z.number().positive(), when_far: z.boolean().default(true), text: z.string().optional(), effects: z.array(QuestEffectSchema).default([]) })
+      .strict()
+      .optional(),
   })
   .partial()

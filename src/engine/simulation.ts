@@ -3,6 +3,7 @@ import { motorChance, propsHour } from './props'
 import { crowdsHour } from './growth/crowds'
 import { archiveDay } from './archive'
 import { agreementsTick } from './agreements'
+import { seeForYourself } from './belief'
 import { claimsHour } from './claims'
 import { fillFromLedger, ledgerHour, nameless } from './economy/ledger'
 import { projectsDay } from './growth/growth'
@@ -46,6 +47,8 @@ export function advance(world: World, minutes: number): void {
     if (minuteOfDay(world.now) % 5 === 0) chatterNearPlayer(world)
     // The register of agreements (M10.2): meetings, leaders, reports and intentions, without a model.
     if (minuteOfDay(world.now) % 10 === 0) agreementsTick(world)
+    // Who doubted what was said of a place and stands there, sees it (M10.6).
+    seeForYourself(world)
     if (minuteOfDay(world.now) % 15 === 0) {
       spreadNews(world)
       noticeCoincidences(world)

@@ -4,7 +4,8 @@ import { parseMoney, STUIVER } from '../items'
 import { MONTHS, WEEKDAYS } from '../clock'
 import { areaTopicId, callName } from '../content'
 import { factById, heardBy, newsAbout, playerTells } from '../news'
-import type { FarName, TalkState } from '../state'
+import type { Fact, FarName, TalkState } from '../state'
+import { BACKED, backers, backing, witnessSays } from '../belief'
 import type { World } from '../world'
 import { classify, tierFor, TIER_TOKENS, TIER_WORDS, type Act, type Tier } from './acts'
 import { dcFor, describeCheck, succeeded, type CheckResult } from './checks'
@@ -263,28 +264,54 @@ export class Dialogue {
     const topic = this.topics.find(about)
     // Something the player heard about it is passed on (M9.4): "tell sijbrand about the dyke" warns him of the leak.
     const news = this.newsOnTopic(about, topic)
-    if (news) {
-      const world = this.world
-      const name = callName(world.npc(npcId))
-      if (!this.talk || this.talk.npc !== npcId) this.start(npcId, true)
-      const knew = Boolean(world.state.news?.heard[npcId]?.[news.id])
-      const h = playerTells(world, npcId, news.id)
-      const reaction = knew
-        ? `${name} nods. "I'd heard."`
-        : h?.stance === 'rejects'
-          ? `${name} doesn't believe a word of it, and says so.`
-          : h?.stance === 'doubts'
-            ? `${name} looks at you a long moment. "We'll see."`
-            : `${name} listens, and takes it seriously.`
-      return [
-        { kind: 'text', text: `You: "${news.text.village}"` },
-        { kind: 'narration', text: reaction },
-      ]
-    }
+    if (news) return this.passOnNews(npcId, news)
     // Not news the player heard but something they say is so (M10.3): a claim, in the world's own words.
     const claim = parseClaim(this.world, [...new Set([...(topic ? [topic] : []), ...this.topics.recognise(about)])], about.replace(/^that\s+/i, ''))
     if (claim && claimValid(this.world, claim)) return this.turn(npcId, capitalise(about.replace(/^that\s+/i, '')), { act: 'Tell', topics: this.topics.recognise(about), echo: true, claim })
     return this.turn(npcId, `Let me tell you about ${about}.`, { act: 'Tell', topics: topic ? [topic] : [], echo: true })
+  }
+
+  /**
+   * The player passes on what they heard (M9.4), with whoever stands by it
+   * (M10.6): someone beside them who believes it says so, an eyewitness
+   * loudest. A persuasion that worked, and the word of those who promised to
+   * say the same, weigh in too (weight, from influence()). Someone who did
+   * not believe it before thinks again.
+   */
+  private passOnNews(npcId: string, news: Fact, check?: { weight: number; lines: Output[] }): Output[] {
+    const world = this.world
+    const name = callName(world.npc(npcId))
+    if (!this.talk || this.talk.npc !== npcId) this.start(npcId, true)
+    const before = world.state.news?.heard[npcId]?.[news.id]
+    const knew = Boolean(before && !before.stance)
+    const standing = knew ? [] : backers(world, npcId, news, Boolean(check)).filter((b) => b.here || check)
+    // An eyewitness beside the stranger says it themselves: the listener hears it from them, with the stranger's word beside it.
+    const witness = standing.find((b) => b.here && b.saw)
+    const others = standing.filter((b) => b !== witness)
+    const weight = backing(others) + (check?.weight ?? 0)
+    const h = witness
+      ? witnessSays(world, npcId, news, witness.id, weight + BACKED)
+      : playerTells(world, npcId, news.id, weight, check ? 'player:persuade' : ['player', ...standing.map((b) => b.id)].join('+'))
+    const lines: Output[] = [{ kind: 'text', text: `You: "${news.text.village}"` }, ...(check?.lines ?? [])]
+    for (const b of standing) {
+      const who = callName(world.npc(b.id))
+      if (b.here) lines.push({ kind: 'narration', text: b.saw ? `${who} nods. "I saw it with my own eyes."` : `${who} nods. "It's so. I heard it too."` })
+      else lines.push({ kind: 'narration', text: `You tell ${name} that ${who} ${b.saw ? 'saw it with their own eyes' : 'heard it too'}, and gave their word to say so.` })
+    }
+    const stance = h ? (h.stance ?? 'believes') : undefined
+    const reaction = knew
+      ? `${name} nods. "I'd heard."`
+      : before && stance === before.stance
+        ? `${name} shakes ${world.say('{their}', npcId)} head. "You told me. I don't believe it any more now than I did then."`
+        : stance === 'rejects'
+          ? `${name} doesn't believe a word of it, and says so.`
+          : stance === 'doubts'
+            ? `${name} looks at you a long moment. "We'll see."`
+            : before
+              ? `${name} is quiet a while. "Then you were right, and I was wrong."`
+              : `${name} listens, and takes it seriously.`
+    lines.push({ kind: 'narration', text: reaction })
+    return lines
   }
 
   /** The newest, weightiest thing the player heard that the words point to: its topic, its place or its title. */
@@ -337,6 +364,8 @@ export class Dialogue {
         world.state.player.money -= amount
         world.npcState(npcId).money += amount
       }
+    } else if (kind === 'persuade' && this.persuadable(text)) {
+      return this.persuadeOf(npcId, this.persuadable(text)!)
     } else {
       const skill = { persuade: 'persuasion', deceive: 'deception', intimidate: 'intimidation' }[kind]
       const extra = kind === 'intimidate' ? npc.personality.courage * 2 : kind === 'deceive' ? npc.personality.curiosity : 0
@@ -384,6 +413,35 @@ export class Dialogue {
     if (kind === 'deceive' && result.degree === 'critical failure') Object.assign(claimed, { caughtLie: true })
     lines.push(...(await this.turn(npcId, words, { act: kind === 'bribe' ? 'Bribe' : (capitalise(kind) as Act), check: { ...result, about }, secret, admission, ...claimed })))
     return lines
+  }
+
+  /** What the player heard that PERSUADE is about: "persuade sijbrand that the dyke is leaking", "about the dyke". */
+  private persuadable(text: string): Fact | undefined {
+    const words = bare(text).replace(/^(them|him|her)\s+/i, '').replace(/^(that|about|of)\s+/i, '')
+    if (!words) return undefined
+    for (const topic of [this.topics.find(words), ...this.topics.recognise(words)]) {
+      const news = this.newsOnTopic(words, topic)
+      if (news?.claim) return news
+    }
+    return undefined
+  }
+
+  /**
+   * Persuading someone that what the player heard is so (M10.6, the dyke): a
+   * Persuasion check, easier for each who stands by it (beside the player, or
+   * with their word given to say so, as Teunis may promise to tell Sijbrand).
+   * Won, it weighs heavily; lost, only the word is left. Someone who did not
+   * believe it before thinks again, once.
+   */
+  private persuadeOf(npcId: string, news: Fact): Output[] {
+    const world = this.world
+    const heard = world.state.news?.heard[npcId]?.[news.id]
+    if (heard && !heard.stance) return this.passOnNews(npcId, news)
+    const standing = backers(world, npcId, news, true)
+    const result = playerCheck(world, 'persuasion', dcFor(15, attitude(world, npcId).band, -SUPPORT_DC * standing.length))
+    if (result.degree === 'critical failure') applyEffect(world, npcId, 'trust', -3)
+    const lines: Output[] = [{ kind: 'check', text: describeCheck({ ...result }) }]
+    return this.passOnNews(npcId, news, { weight: succeeded(result) ? PERSUADED : 0, lines })
   }
 
   /** TALK PARTY, ASK PARTY ABOUT <topic>: every companion at once, in one call (FO, chapter 13). */
@@ -533,10 +591,13 @@ export class Dialogue {
     // An insult, a threat or a lie found out: the engine decides the reaction; the voice words it (M10.3).
     const provoked = provocation(act, { ...(options.caughtLie ? { caughtLie: true } : {}), ...(options.check ? { failedThreat: !succeeded(options.check) } : {}) })
     const reaction = provoked ? react(world, npcId, provoked) : undefined
-    const decision = [act === 'Recruit' ? recruitDecision(world, npcId, band.band) : undefined, believed, reaction?.decision, flirted?.decision].filter(Boolean).join(' ') || undefined
+    // "Come with me to the dyke" (M10.6): somewhere or to someone is a lead on offer, not joining the stranger's travels.
+    const leads = act === 'Recruit' && !options.check ? offersFor(world, npcId, topics, text).filter((o) => o.kind === 'lead') : []
+    const recruiting = act === 'Recruit' && leads.length === 0
+    const decision = [recruiting ? recruitDecision(world, npcId, band.band) : undefined, believed, reaction?.decision, flirted?.decision].filter(Boolean).join(' ') || undefined
     const offered = options.echo || options.check ? [] : (this.questOptions?.(npcId) ?? [])
     // What this person can do for the player now (M10.3): the game decides, the voice chooses and words it.
-    const offers = options.check || options.secret || act === 'Recruit' ? [] : offersFor(world, npcId, topics, text)
+    const offers = options.check || options.secret || recruiting ? [] : leads.length ? leads : offersFor(world, npcId, topics, text)
     // Asked about someone who matters: news with witnesses, before anyone answers (M10.3).
     const made = talkFact(world, npcId, topics, act)
     if (made) (talk.facts ??= []).push(made.id)
@@ -899,6 +960,11 @@ function claimLine(world: World, npcId: string, stance: 'believes' | 'doubts' | 
 }
 
 /** The topic words without closing punctuation, so the echo does not end in "?." or "..". */
+/** What a persuasion that worked adds to the word it carries (M10.6), as much as a lie told well (M10.3). */
+const PERSUADED = 40
+/** How much easier a persuasion is for each who stands by it (M10.6). */
+const SUPPORT_DC = 4
+
 function bare(words: string): string {
   return words.trim().replace(/[\s.?!,;:]+$/, '')
 }

@@ -4,7 +4,7 @@ import { NamesSchema, NewcomerSchema, ProjectSchema, type Newcomer, type Project
 import { z } from 'zod'
 import { WorldMapSchema } from './map/palette'
 import { CreatureSchema, EncounterSchema, RulesSchema, type Creature, type Effect, type Encounter, type Rules, type Talent } from './rules/schema'
-import { QuestBodySchema } from './quests/schema'
+import { ConditionSchema, QuestBodySchema } from './quests/schema'
 import { checkQuests } from './quests/check'
 import { AftermathSchema, IntentionSchema, PlanSchema, VerbTextSchema, WatcherSchema, type Aftermath, type Intention, type Plan, type VerbText, type Watcher } from './quests/planschema'
 import { permitted, verbName } from './quests/verbs'
@@ -345,8 +345,18 @@ export const LocationSchema = z.object({
   aliases: z.array(z.string()).default([]),
   summary: z.string().optional(),
   description: z.object({ day: Prose, night: Prose.optional() }),
-  /** Other descriptions once a flag is set: the doorstep without the cat, once Fenna is home. */
-  variants: z.array(z.object({ flag: z.string(), day: Prose, night: Prose.optional() }).strict()).default([]),
+  /**
+   * Other descriptions once a flag is set (the doorstep without the cat, once Fenna is home), or while conditions hold
+   * (M10.6: the mill turning again once De Zwaan is mended). The last that fits is shown.
+   */
+  variants: z
+    .array(
+      z
+        .object({ flag: z.string().optional(), when: z.array(ConditionSchema).default([]), day: Prose, night: Prose.optional() })
+        .strict()
+        .refine((v) => v.flag !== undefined || v.when.length > 0, 'a variant needs a flag or conditions (when)'),
+    )
+    .default([]),
   exits: z.partialRecord(z.enum(DIRECTIONS), Exit).default({}),
   objects: z.array(ObjectInstanceSchema).default([]),
   services: z.array(ServiceSchema).default([]),
@@ -375,6 +385,8 @@ export const AreaSchema = z.object({
   pos: Position.optional(),
   /** Known in conversation through this lore topic instead of by its own name (the Kattenbroek). */
   topic: z.string().optional(),
+  /** Weekdays of the world's calendar with a market here (M10.6): "it's Woensdag, market day in Waagdam". */
+  market_days: z.array(z.string()).default([]),
 })
 export type Area = z.infer<typeof AreaSchema>
 

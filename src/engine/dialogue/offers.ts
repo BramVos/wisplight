@@ -11,7 +11,9 @@ import { isNear, ties, tieTo } from '../people'
 import { dangerOf } from '../social/companions'
 import { letIn } from '../social/access'
 import { isSomeonesHome } from '../social/ownership'
-import type { Request } from '../state'
+import type { Fact, Request } from '../state'
+import { atStake } from '../belief'
+import { overland } from '../lod'
 import type { World } from '../world'
 import { attitude, relation } from './relations'
 
@@ -145,8 +147,13 @@ function willing(world: World, npcId: string, kind: OfferKind, to?: string): { y
   if (tieTo(world, npcId, 'player')?.role === 'friend') score += 15
   if (npc.child) score += Math.max(0, npc.values['adventure'] ?? 0) * 5
   const here = world.npcState(npcId).location
+  // Something that cannot wait (M10.6, the dyke): a danger they believe where the stranger would go, or a place whose
+  // state is theirs to know (a plan waits on it). Work and the road count for nothing then.
+  const danger = to && (kind === 'lead' || kind === 'fetch') ? dangerThere(world, npcId, to) : undefined
+  const urgent = danger ? `${danger.title}, and that cannot wait` : to && kind === 'lead' && atStake(world, npcId, to, 'state') ? `you want to see ${nameOf(world, to)} for yourself` : undefined
+  if (urgent) score += 20
   const day = routineNow(world, npcId)
-  if (day?.activity === 'work' && kind !== 'give' && kind !== 'message') {
+  if (day?.activity === 'work' && kind !== 'give' && kind !== 'message' && !urgent) {
     score -= 30
     reasons.push(`you are at work until ${clockWords(world, day.until)}`)
   }
@@ -158,19 +165,44 @@ function willing(world: World, npcId: string, kind: OfferKind, to?: string): { y
   if (to) {
     const danger = dangerOf(world, to, npcId)
     if (danger >= (npc.child ? 2 : 3)) return { yes: false, reasons: [`${nameOf(world, to)} is a dangerous place`, ...reasons] }
-    const minutes = world.route(here, to)?.minutes ?? Infinity
+    // Where the roads of the exits do not go, across country (M10.6: from Waagdam to Oude Zijl).
+    const minutes = world.route(here, to)?.minutes ?? overland(world, here, to) ?? Infinity
     if (npc.child && (world.route(npc.home, to)?.minutes ?? Infinity) > CHILD_RANGE) return { yes: false, reasons: ['you are not allowed so far from home', ...reasons] }
     if (minutes === Infinity) return { yes: false, reasons: [`you do not know the way to ${nameOf(world, to)}`] }
-    if (minutes > 60) {
+    if (minutes > 60 && !urgent) {
       score -= (minutes - 60) / 2
       reasons.push(`${nameOf(world, to)} is a long way`)
     }
   }
   const need = kind === 'wait' || kind === 'message' ? 0 : 10
   const yes = score >= need
-  if (yes) reasons.unshift(band.band === 'Warm' || band.band === 'Devoted' ? 'you like the stranger' : npc.personality.curiosity >= 2 ? 'you are curious about the stranger' : 'it is little trouble')
+  if (yes) reasons.unshift(urgent ?? (band.band === 'Warm' || band.band === 'Devoted' ? 'you like the stranger' : npc.personality.curiosity >= 2 ? 'you are curious about the stranger' : 'it is little trouble'))
   else if (!reasons.length) reasons.push('you hardly know the stranger')
   return { yes, reasons }
+}
+
+/** Days a danger stays pressing, unless word came since that it is over. */
+const DANGER_DAYS = 7
+
+/**
+ * A danger this person believes, in the settlement the stranger would take
+ * them to (M10.6): "the dyke at Oude Zijl leaks". Not when later word says
+ * otherwise (the leak shored).
+ */
+function dangerThere(world: World, npcId: string, to: string): Fact | undefined {
+  const area = world.content.locations.get(to)?.area
+  const heard = world.state.news?.heard[npcId] ?? {}
+  const facts = world.state.news?.facts ?? []
+  if (!area) return undefined
+  for (let i = facts.length - 1; i >= 0 && world.now - facts[i]!.t <= DANGER_DAYS * DAY; i--) {
+    const f = facts[i]!
+    if (f.kind !== 'danger' || f.belang < 2 || !f.place || !heard[f.id] || heard[f.id]!.stance) continue
+    if (world.content.locations.get(f.place)?.area !== area) continue
+    const claim = f.claim
+    if (claim && facts.slice(i + 1).some((g) => g.claim?.subject === claim.subject && g.claim.key === claim.key && g.claim.value !== claim.value && g.truth !== false)) continue
+    return f
+  }
+  return undefined
 }
 
 /**
@@ -519,7 +551,8 @@ export function accept(world: World, npcId: string, offer: Offer): { outputs: Ou
   const here = world.npcState(npcId).location
   const base = { by: npcId, to: 'player', source: 'conversation' as const, what: offer.deed }
   let input: AgreementInput | undefined
-  if (offer.kind === 'lead') input = { ...base, kind: 'lead', terms: { place: offer.place!, ...(offer.person ? { person: offer.person } : {}), ahead: true, ifAbsent: 'wait', waits: 30 } }
+  // To someone who is not there (M10.6: Sijbrand just stepped out to the sluice): they look for them at their work.
+  if (offer.kind === 'lead') input = { ...base, kind: 'lead', terms: { place: offer.place!, ...(offer.person ? { person: offer.person } : {}), ahead: true, ifAbsent: offer.person ? 'search' : 'wait', waits: offer.person ? 60 : 30 } }
   if (offer.kind === 'fetch') input = { ...base, kind: 'lead', due: world.now + (world.route(here, offer.place!)?.minutes ?? 60) * 2 + 60, terms: { place: offer.place!, person: offer.person!, bring: here, ifAbsent: 'return' } }
   if (offer.kind === 'wait') input = { ...base, kind: 'wait', due: offer.at ?? world.now + 60, terms: { place: here, ...(offer.person ? { person: offer.person } : {}) } }
   if (offer.kind === 'meet') input = { ...base, kind: 'meet', terms: { place: offer.place!, at: offer.at! } }

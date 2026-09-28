@@ -7,6 +7,7 @@ import { callName, type Quest } from '../content'
 import { applyEffect, attitude, type Attitude } from '../dialogue/relations'
 import { add } from '../items'
 import { die } from '../life'
+import { farFromPlayer } from '../lod'
 import { homeOf, livesWithParent } from '../layer'
 import { believes, recordFact } from '../news'
 import { tieTo } from '../people'
@@ -398,6 +399,7 @@ function outcomeFact(world: World, quest: Quest, outcomeId: string, name: string
 /** Stages move on and endings are reached when their conditions hold; loops until nothing changes. */
 export function evaluate(world: World, host: QuestHost): Output[] {
   const out: Output[] = []
+  lapseQuests(world, host, out)
   // Clocks that run by themselves while their quest is on.
   for (const [quest, q] of active(world)) {
     const timer = quest.timer
@@ -435,7 +437,7 @@ export function evaluate(world: World, host: QuestHost): Output[] {
       }
     }
     for (const quest of world.content.quests.values()) {
-      if (questlog(world)[quest.id] || !quest.stages?.length) continue
+      if (questlog(world)[quest.id] || !quest.stages?.length || flags(world)[`lapsed:${quest.id}`] !== undefined) continue
       const s = quest.starts
       // A quest with a person or a place to begin at waits for them; the conditions are its gate.
       if (s && s.when.length && !s.talk.length && !s.at.length && !s.at_start && allHold(world, s.when)) {
@@ -448,11 +450,53 @@ export function evaluate(world: World, host: QuestHost): Output[] {
   return out
 }
 
+/**
+ * Quests that settle themselves without the player (M10.6, the missing girl):
+ * so many days after they began, or after the game began for a quest the
+ * player never took up, and only while the player is far from its people and
+ * places. The effects of the content, and the quest is over: lapsed. A quest
+ * near the player waits for them.
+ */
+function lapseQuests(world: World, host: QuestHost, out: Output[]): void {
+  const f = flags(world)
+  for (const quest of [...world.content.quests.values()].sort((a, b) => a.id.localeCompare(b.id))) {
+    const lapses = quest.lapses
+    if (!lapses || f[`lapsed:${quest.id}`] !== undefined) continue
+    const q = questlog(world)[quest.id]
+    if (q?.ended) continue
+    if (world.now - (q?.started ?? startMinute(world)) < lapses.after_days * DAY) continue
+    if (lapses.when_far && !farFromQuest(world, quest)) continue
+    f[`lapsed:${quest.id}`] = world.now
+    if (q) {
+      q.outcome = 'lapsed'
+      q.ended = world.now
+      out.push({ kind: 'system', text: `${quest.name}: ${lapses.text ?? 'It was settled without you.'}` })
+    }
+    applyEffects(world, host, quest.id, lapses.effects, out)
+  }
+}
+
+/** Whether the player is far from everything a quest is about: where it begins, and the homes and whereabouts of its givers. */
+function farFromQuest(world: World, quest: Quest): boolean {
+  const places = new Set<string>()
+  for (const at of quest.starts?.at ?? []) {
+    if (world.content.locations.has(at)) places.add(at)
+    else for (const l of world.content.locations.values()) if (l.area === at) places.add(l.id)
+  }
+  for (const id of quest.givers) {
+    const s = world.state.npcs[id]
+    if (!s || s.dead) continue
+    places.add(world.npc(id).home)
+    if (world.content.locations.has(s.location)) places.add(s.location)
+  }
+  return [...places].every((place) => farFromPlayer(world, place))
+}
+
 /** Quests that begin when the player talks to someone, or comes somewhere. */
 export function triggers(world: World, host: QuestHost, on: { talk?: string; at?: string; newGame?: boolean }): Output[] {
   const out: Output[] = []
   for (const quest of [...world.content.quests.values()].sort((a, b) => a.id.localeCompare(b.id))) {
-    if (questlog(world)[quest.id] || !quest.stages?.length || !quest.starts) continue
+    if (questlog(world)[quest.id] || !quest.stages?.length || !quest.starts || flags(world)[`lapsed:${quest.id}`] !== undefined) continue
     const s = quest.starts
     const hit = (on.talk && s.talk.includes(on.talk)) || (on.at && (s.at.includes(on.at) || s.at.includes(world.content.locations.get(on.at)?.area ?? ''))) || (on.newGame && s.at_start)
     if (hit && (!s.when.length || allHold(world, s.when))) out.push(...startQuest(world, host, quest.id))
@@ -590,7 +634,7 @@ export function questPage(world: World, questId: string): { name: string; lines:
   if (clock && !q.ended) lines.push(`${clock.name}: ${clock.filled}/${clock.size}.`)
   if (q.ended) {
     const o = quest.outcomes?.find((x) => x.id === q.outcome)
-    lines.push(o ? `${o.name}. ${o.text}` : 'It is over.')
+    lines.push(o ? `${o.name}. ${o.text}` : q.outcome === 'lapsed' ? `Settled without you. ${quest.lapses?.text ?? ''}`.trim() : 'It is over.')
   }
   return { name: quest.name, lines }
 }

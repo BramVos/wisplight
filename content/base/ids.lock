@@ -31,7 +31,7 @@ ids:
   base/data/patterns.yaml:
     pattern: [lost_thing, quarrel, theft, fever, appeldag]
   base/data/plans.yaml:
-    plan: [dyke_breach, fen_closed, soldiers_come, war, dyke_leak, holleveen_survey, holleveen_stakes, the_haakman_counts]
+    plan: [dyke_muster, dyke_breach, cat_taken_in, fen_closed, soldiers_come, war, dyke_leak, holleveen_survey, holleveen_stakes, the_haakman_counts]
   base/data/professions.yaml:
     profession: [baker, miller, peat_cutter, herbalist, eel_fisher, sister, schout, spinner, child, innkeeper, barmaid, grain_merchant, labourer, merchant, horse_miller, weighmaster, smith, pedlar, surveyor, mayor, notary, prior, dyke_reeve, miller_hand, witch, robber, spirit, cat, cooper, homemaker]
   base/data/props.yaml:

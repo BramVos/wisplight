@@ -21,6 +21,24 @@ locations:
         At night the green is a dark pool between darker houses. Someone has
         left a lantern on the edge of the well. Far off, over the fen, small
         lights move where no one should be walking.
+    # The doorstep without the grey cat (M10.6): Grietje took her in, or Fenna came home.
+    variants:
+      - flag: cat_taken_in
+        day: |
+          The village green is a patch of trampled grass around a stone well.
+          Peat smoke hangs low over the roofs, and the ground gives a little
+          underfoot, the way it does everywhere in the Holleveen. East, the
+          [Bakery] door stands open, and west the doorstep of a narrow house
+          is empty. A lane runs north to the [Chapel]; south, the canal
+          glints between the houses, and a track leaves north-east.
+      - flag: fenna_home
+        day: |
+          The village green is a patch of trampled grass around a stone well.
+          Peat smoke hangs low over the roofs, and the ground gives a little
+          underfoot, the way it does everywhere in the Holleveen. East, the
+          [Bakery] door stands open, and west a narrow house has its green
+          door wide. A lane runs north to the [Chapel]; south, the canal
+          glints between the houses, and a track leaves north-east.
     exits:
       north: { to: loc_chapel_lane }
       east: { to: loc_veenhoek_bakery }
@@ -113,6 +131,12 @@ locations:
         close it doesn't run, but looks at you as if it is waiting for you to
         say something. Inside, a spinning wheel hums. The green is east.
     variants:
+      - flag: cat_taken_in
+        day: |
+          A narrow house with a green door, shut. The doorstep is empty. Through
+          the window you see a grey cat with one white paw curled by the hearth,
+          and a second bowl set at the table. The spinning wheel hums. The
+          green is east.
       - flag: fenna_home
         day: |
           A narrow house with a green door, standing open. The doorstep is

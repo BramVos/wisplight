@@ -8,9 +8,19 @@ locations:
     description:
       day: |
         A handful of houses huddle along a single lane at the foot of the
-        mill. Chickens scratch in the ruts and the wind carries the creak of
-        timber from above. North rises the mill [De Zwaan]; the miller's house
-        is east and his field west. The peat road leads back south-west.
+        mill. Chickens scratch in the ruts and the wind whistles through the
+        torn sails above, which do not move. North rises the mill [De Zwaan];
+        the miller's house is east and his field west. The peat road leads
+        back south-west.
+    # De Zwaan mended (M10.6): the sails turn again, in the lane as in the mill.
+    variants:
+      - when: [{ object: loc_molenend_mill/de_zwaan, state: { broken: false } }]
+        day: |
+          A handful of houses huddle along a single lane at the foot of the
+          mill. Chickens scratch in the ruts, and the great sails of De Zwaan
+          sweep round above the roofs with a creak and a rush of air. North
+          rises the mill [De Zwaan]; the miller's house is east and his field
+          west. The peat road leads back south-west.
     exits:
       southwest: { to: loc_peat_road, minutes: 18 }
       north: { to: loc_molenend_mill }
@@ -29,6 +39,15 @@ locations:
         millstones sit silent under a coat of flour, and the whole mill
         smells of dust and tar. Through the door you can see the sails, torn
         to rags by the storm. The lane is south.
+    # Mended (M10.6): the stones grind and the sails turn.
+    variants:
+      - when: [{ object: loc_molenend_mill/de_zwaan, state: { broken: false } }]
+        day: |
+          De Zwaan stands on its post like a heron on one leg, and the whole
+          mill shakes gently as the new sails go round. The millstones grind
+          with a deep rumble, and the air is warm with flour and tar. Through
+          the door you see the sails sweep past, one after another. The lane
+          is south.
     exits:
       south: { to: loc_molenend_lane }
     objects:

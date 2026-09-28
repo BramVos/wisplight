@@ -250,6 +250,17 @@ quests:
         effects: [{ set: fenna_cat_forever }, { set: fen_without_keeper }]
     on_death: { npc_kaatje: widow_dead }
     on_place: { "loc_visser_house:flooded": flooded_out }
+    # Without the stranger (M10.6, decided with Bram on 28 September 2026): a month on, with the stranger far from the
+    # Holleveen, the widow stops waiting for a price nobody brings, and Grietje takes the grey cat in. Near, it waits.
+    lapses:
+      after_days: 30
+      when_far: true
+      text: Nobody brought the widow her price. She stopped waiting, and Grietje took the grey cat in; the doorstep is empty now.
+      effects:
+        - { set: fenna_cat_forever }
+        - { set: cat_taken_in }
+        - { fact: { title: Grietje took the grey cat in, precise: "A month after Fenna Visser went missing, the widow of the Kattenbroek stopped waiting for her price, and Grietje Visser took the grey cat in.", village: "Grietje's taken that grey cat in off the doorstep. Sets a place for it at the table, talks to it like it was her Fenna.", far: "In the Holleveen a mother took in a stray cat, and calls it by her lost girl's name.", belang: 3, about: [npc_grietje_visser, npc_fenna, fenna, grey_cat, cat_widow], place: loc_visser_house } }
+        - { plan: cat_taken_in }
 
   - id: the_vissers_to_safety
     name: The Vissers to Safety

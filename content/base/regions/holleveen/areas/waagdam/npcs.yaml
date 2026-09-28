@@ -45,7 +45,8 @@ npcs:
     examples:
       - "Easy, Bles. We're not in a hurry. Nobody is, in Waagdam."
     money: 150
-    knows_areas: [waagdam, drowned_goose, roads, veenhoek, molenend]
+    # Oude Zijl too (M10.6): he takes flour out along the dyke road, where he came upon the leak.
+    knows_areas: [waagdam, drowned_goose, roads, veenhoek, molenend, oude_zijl]
 
   - id: npc_dirck
     name: Dirck Schaal

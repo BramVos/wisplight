@@ -4,6 +4,7 @@ import { itemName, matchItem, withArticle } from './items'
 import { maxHp } from './rules/character'
 import { weather } from './weather'
 import { GameClock } from './clock'
+import { allHold } from './quests/engine'
 import type { Location } from './content'
 import type { World } from './world'
 
@@ -128,7 +129,7 @@ export function detailHere(world: World, words: string): DetailFound | undefined
 /** The description of a place as it reads now: its variant, by day or night. */
 export function descriptionNow(world: World, location: Location): string {
   const night = new GameClock(world.now).isNight
-  const variant = [...location.variants].reverse().find((v) => world.state.flags?.[v.flag])
+  const variant = [...location.variants].reverse().find((v) => (v.flag === undefined || world.state.flags?.[v.flag]) && (v.when.length === 0 || allHold(world, v.when)))
   const shown = variant ?? location.description
   return (night && shown.night ? shown.night : shown.day).trim()
 }

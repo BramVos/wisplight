@@ -65,6 +65,8 @@ export function fallbackReply(world: World, npcId: string, act: Act, packet: Pac
     return `${name} looks away. ${quote(`My ${noun(tie)}. I'd rather not speak of ${them} to a stranger.`)}`
   }
 
+  // Where someone is, asked as such: where the speaker thinks they are comes first (M10.6).
+  if (known?.where && act === 'AskDirections') return `${name} ${pick(world, ['thinks a moment.', 'nods slowly.', 'scratches an ear.'])} ${quote(known.where)}`
   if (known) {
     // Someone else's first-person story cannot be read out as one's own; fall back to the plain facts.
     const fact = act === 'AskStory' && known.story && !known.toldBy ? known.story.split(/(?<=[.!?])\s+/).slice(0, 3).join(' ') : known.facts.slice(0, 2).join(' ')

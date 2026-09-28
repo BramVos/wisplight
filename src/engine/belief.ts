@@ -5,7 +5,7 @@ import { factById } from './news'
 import { planOf } from './quests/plans'
 import type { Condition } from './quests/schema'
 import { queueSignal, watchBelief } from './signals'
-import type { Fact, Heard } from './state'
+import type { Claim, Fact, Heard } from './state'
 import type { World } from './world'
 
 // Belief (M8.2; design: signalen en nasleep, "Vreemden, geloof en vergeten").
@@ -114,16 +114,97 @@ export function judge(world: World, listener: string, fact: Fact, heard: Heard, 
 export function heardClaim(world: World, listener: string, fact: Fact, heard: Heard, bonus = 0): void {
   if (!fact.claim || !world.content.npcs.has(listener)) return
   const stance = judge(world, listener, fact, heard, bonus)
-  if (stance === 'believes') delete heard.stance
-  else heard.stance = stance
   const teller = heard.from
-  if (stance === 'believes') watchBelief(world, listener, fact, teller)
-  else if (stance === 'doubts' && atStake(world, listener, fact.claim.subject, fact.claim.key)) {
-    queueSignal(world, { kind: 'doubt', who: [listener, ...(world.content.npcs.has(teller) ? [teller] : [])], place: world.state.npcs[listener]!.location, cause: [fact.id], belang: 1, claim: fact.claim, watcher: 'rules' })
-  }
+  settleStance(world, listener, fact, heard, stance)
   if (stance !== 'believes' && world.content.npcs.has(teller) && isStranger(world, listener, teller) && mayChaseAway(world, listener, teller)) {
     queueSignal(world, { kind: 'stranger_unwelcome', who: [listener, teller], place: world.state.npcs[listener]!.location, cause: [fact.id], belang: 2, watcher: 'rules' })
   }
+}
+
+/** The stance goes with what was heard: a belief is watched for, and doubt with something at stake is a signal. */
+function settleStance(world: World, listener: string, fact: Fact, heard: Heard, stance: Stance): void {
+  const teller = heard.from
+  if (stance === 'believes') delete heard.stance
+  else heard.stance = stance
+  if (stance === 'believes') watchBelief(world, listener, fact, teller)
+  else if (stance === 'doubts' && atStake(world, listener, fact.claim!.subject, fact.claim!.key)) {
+    queueSignal(world, { kind: 'doubt', who: [listener, ...(world.content.npcs.has(teller) ? [teller] : [])], place: world.state.npcs[listener]!.location, cause: [fact.id], belang: 1, claim: fact.claim, watcher: 'rules' })
+  }
+}
+
+/** Someone who comes to tell you to your face is heard out (M8.2, a report carried). */
+export const IN_PERSON = 25
+/** What an eyewitness adds to their word, told in person (M10.6): "I saw it with my own eyes." */
+export const SAW_IT = 20
+/** What someone adds who stands by a claim: beside the teller, or with their word given to say so (M10.6). */
+export const BACKED = 15
+
+const RANK: Record<Stance, number> = { rejects: 0, doubts: 1, believes: 2 }
+
+/**
+ * Thinking again (M10.6, the dyke at Oude Zijl): someone who doubted or
+ * rejected a claim hears it once more from a word that weighs more: an
+ * eyewitness in person, a persuasion that worked, or with others standing by
+ * it. The rules judge again, with that teller and weight; a better stance
+ * counts, a worse one does not. Once for each such word (as), so asking again
+ * and again is no way round it.
+ */
+export function reconsider(world: World, listener: string, fact: Fact, from: string, bonus: number, as = from): Stance | undefined {
+  const h = world.state.news?.heard[listener]?.[fact.id]
+  if (!h || !fact.claim || !world.content.npcs.has(listener)) return undefined
+  if (!h.stance) return 'believes'
+  if (h.weighed?.includes(as)) return h.stance
+  ;(h.weighed ??= []).push(as)
+  const stance = judge(world, listener, fact, { ...h, from }, bonus)
+  if (RANK[stance] <= RANK[h.stance]) return h.stance
+  h.from = from
+  settleStance(world, listener, fact, h, stance)
+  return stance
+}
+
+/** Whether two claims say the same. */
+function sameClaim(a: Claim | undefined, b: Claim | undefined): boolean {
+  return Boolean(a && b && a.subject === b.subject && a.key === b.key && a.value === b.value)
+}
+
+/**
+ * Who stands by a claim for this listener (M10.6): people beside them who
+ * believe it (Teunis at the dyke house, who saw the leak), and, with
+ * promises, who gave their word to tell them the same (an open report to them
+ * in the register). An eyewitness weighs more.
+ */
+export function backers(world: World, listener: string, fact: Fact, promises: boolean): { id: string; saw: boolean; here: boolean }[] {
+  const store = world.state.news
+  const here = world.state.npcs[listener]?.location
+  if (!store || !fact.claim || !here) return []
+  const holds = (id: string): { saw: boolean } | undefined => {
+    for (const [fid, h] of Object.entries(store.heard[id] ?? {})) {
+      if (h.stance) continue
+      const f = fid === fact.id ? fact : factById(world, fid)
+      if (f && (f.id === fact.id || sameClaim(f.claim, fact.claim))) return { saw: h.from === 'witness' }
+    }
+    return undefined
+  }
+  const found: { id: string; saw: boolean; here: boolean }[] = []
+  for (const id of Object.keys(world.state.npcs).sort()) {
+    const s = world.state.npcs[id]!
+    if (id === listener || s.dead || s.note || s.location !== here || s.activity === 'asleep') continue
+    const h = holds(id)
+    if (h) found.push({ id, saw: h.saw, here: true })
+  }
+  if (promises) {
+    for (const a of world.state.agreements?.list ?? []) {
+      if (a.status !== 'open' || a.kind !== 'message' || a.terms.recipient !== listener || found.some((b) => b.id === a.by) || !world.alive(a.by)) continue
+      if (!(a.terms.facts ?? []).some((id) => id === fact.id || sameClaim(factById(world, id)?.claim, fact.claim))) continue
+      found.push({ id: a.by, saw: Boolean(holds(a.by)?.saw), here: false })
+    }
+  }
+  return found.slice(0, 2)
+}
+
+/** The weight of those who stand by it. */
+export function backing(list: { saw: boolean }[]): number {
+  return list.reduce((sum, b) => sum + BACKED + (b.saw ? SAW_IT : 0), 0)
 }
 
 /** Someone from elsewhere, whom this NPC has no bond with. */
@@ -220,4 +301,87 @@ export function provenWarnings(world: World, fact: Fact): void {
       queueSignal(world, { kind: 'warning_proven', who: [who, ...(world.content.npcs.has(h.from) ? [h.from] : [])], place: world.state.npcs[who]?.location ?? fact.place, cause: [fact.id, id], belang: 2, claim, watcher: 'rules' })
     }
   }
+}
+
+/** Someone goes to look at a place: the truth of it is what they believe now. */
+export function lookForYourself(world: World, who: string, subject: string, key: string): void {
+  const store = world.state.news
+  if (!store) return
+  const facts = store.facts.filter((f) => f.claim?.subject === subject && f.claim.key === key)
+  const truth = [...facts].reverse().find((f) => f.truth !== false)
+  const mine = (store.heard[who] ??= {})
+  for (const f of facts) {
+    const h = mine[f.id]
+    if (!h) continue
+    const value = h.level === 1 && f.claim!.far !== undefined ? f.claim!.far : f.claim!.value
+    if (truth && value === truth.claim!.value) delete h.stance
+    else h.stance = 'rejects'
+  }
+  if (truth) {
+    mine[truth.id] = { level: 3, reliability: 1, from: 'witness', t: world.now }
+    watchBelief(world, who, truth, 'witness')
+  }
+  // What the stranger said about it, and was not so, is found out (M10.3).
+  checkedClaims(world, who, subject, key)
+}
+
+/** How far back a place's state can still be seen to be what was said. */
+const SEEN_DAYS = 30
+const visible = new WeakMap<Fact[], { n: number; list: Fact[] }>()
+
+/** The recent claims of a place's state: the only ones a passer-by can see for themselves. */
+function placeClaims(world: World): Fact[] {
+  const facts = world.state.news?.facts ?? []
+  const cached = visible.get(facts)
+  if (cached && cached.n === facts.length) return cached.list
+  const list: Fact[] = []
+  for (let i = facts.length - 1; i >= 0 && world.now - facts[i]!.t <= SEEN_DAYS * 24 * 60; i--) {
+    const f = facts[i]!
+    if (f.claim?.key === 'state' && world.content.locations.has(f.claim.subject)) list.push(f)
+  }
+  visible.set(facts, { n: facts.length, list })
+  return list
+}
+
+/**
+ * Seeing is believing (M10.6, the dyke at Oude Zijl): whoever doubted or
+ * rejected what was said of a place's state, and stands there awake, sees
+ * what is true, and believes that. Every minute, so someone brought there to
+ * see it sees it before they go; only those who heard such a claim, so a leak
+ * nobody spoke of stays unseen until someone finds it.
+ */
+export function seeForYourself(world: World): void {
+  const store = world.state.news
+  const claims = store ? placeClaims(world) : []
+  if (!claims.length) return
+  for (const fact of claims) {
+    const place = fact.claim!.subject
+    for (const who in store!.heard) {
+      if (!store!.heard[who]![fact.id]?.stance) continue
+      const s = world.state.npcs[who]
+      if (!s || s.location !== place || s.dead || s.activity === 'asleep' || !world.present(who)) continue
+      lookForYourself(world, who, place, 'state')
+    }
+  }
+}
+
+/**
+ * An eyewitness beside the stranger says it themselves (M10.6, Teunis at the
+ * dyke house): the listener hears it from them, in person, with the
+ * stranger's word beside it. Someone who did not believe it before thinks
+ * again, once for this witness.
+ */
+export function witnessSays(world: World, listener: string, fact: Fact, witness: string, bonus: number): Heard | undefined {
+  const store = world.state.news
+  if (!store || !fact.claim || !world.alive(listener)) return undefined
+  const theirs = (store.heard[listener] ??= {})
+  const weight = IN_PERSON + SAW_IT + bonus
+  if (theirs[fact.id]) {
+    if (theirs[fact.id]!.stance) reconsider(world, listener, fact, witness, weight)
+    return theirs[fact.id]
+  }
+  const h: Heard = { level: 3, reliability: 0.9, from: witness, t: world.now }
+  theirs[fact.id] = h
+  heardClaim(world, listener, fact, h, weight)
+  return h
 }

@@ -3,7 +3,7 @@ De dijk bij Oude Zijl (base), seed 1
 ######## THE PLAYER ACTS
 The barge from Graafhaven leaves you at the Veenhoek quay just as the light goes. The bargeman won't tie up. "Not after dark, not out here," he says, and poles away into the mist, taking his lantern with him.
 
-This is the Holleveen: peat and reed and black water, mile upon mile of it between the Great Dyke and the heath. The villages sit on the few dry places like cats on a fence. Peat smoke. A windmill turning slowly against a sky the colour of pewter.
+This is the Holleveen: peat and reed and black water, mile upon mile of it between the Great Dyke and the heath. The villages sit on the few dry places like cats on a fence. Peat smoke. A windmill standing still against a sky the colour of pewter, its sails torn to rags.
 
 Somewhere a dog barks. On the doorstep of the nearest house a grey cat watches you, very still, the way cats don't usually watch people.
 
@@ -11,7 +11,7 @@ Type LOOK to look around. Type HELP if you are lost. You probably are.
 Canal Quay
 Grey water slaps against the planks of the quay. A barge rope lies coiled by the mooring posts, and beside them stands a worn stone, waist-high, with a dog carved into it. Someone has put an apple on top. The [Graafse Vaart] runs east and west; the green is north and the peat sheds are south.
 Exits: north, east, west, south, southwest
-Across country you can head any way, or follow the fen path, the path to the Kabouterberg, the peat road, the priory path, the tow path.
+Across country you can head any way, or follow the tow path west to Oude Zijl, the tow path east to Waagdam, the peat road to Molenend, the fen path to the Kattenbroek, the priory path to Kloosterveen or the path to the Kabouterberg.
 The pace of events is normal. Type TEMPO CALM or TEMPO DRAMATIC for less or more happening in the world.
 
 ==== RECOGNISE (Dinsdag 14 Herfstmaand 211 AW, 18:30 (evening))
@@ -25,7 +25,7 @@ The pace of events is normal. Type TEMPO CALM or TEMPO DRAMATIC for less or more
 Veenhoek, the Green
 The village green is a patch of trampled grass around a stone well. Peat smoke hangs low over the roofs, and the ground gives a little underfoot, the way it does everywhere in the Holleveen. East, the [Bakery] door stands open, and west a grey cat sits very upright on the doorstep of a narrow house. A lane runs north to the [Chapel]; south, the canal glints between the houses, and a track leaves north-east.
 Exits: north, east, south, west, northeast
-Across country you can head any way, or follow the fen path, the path to the Kabouterberg, the peat road, the priory path, the tow path.
+Across country you can head any way, or follow the tow path west to Oude Zijl, the tow path east to Waagdam, the peat road to Molenend, the fen path to the Kattenbroek, the priory path to Kloosterveen or the path to the Kabouterberg.
 Here: Jan Visser (on the way to The Drowned Goose, Common Room).
 Jan comes from the west, on his way to The Drowned Goose, Common Room.
 +10 experience: you found Veenhoek, the Green.
@@ -82,7 +82,7 @@ Time passes. It is Woensdag 15 Herfstmaand 211 AW, 09:33 (morning).
 The Market Square
 A wide square of uneven cobbles, big enough for the Woensdag market and the arguments that come with it. On the north side stands the [Waag] with its stepped gable; the church is south, the town hall north-east, and Canal Street leads east. Pigeons squabble over spilled grain.
 Exits: west, north, east, south, northeast
-Across country you can head any way, or follow the Waagdam road, the east road, the heath road, the tow path.
+Across country you can head any way, or follow the tow path to Veenhoek, the Waagdam road to The Drowned Goose, the heath road to Reuzenrust or the east road.
 Here: Kobus the pedlar (at work).
 Sacks of flour are short in Waagdam. The merchants have put their prices up and talk of sending far afield.
 +10 experience: you found The Market Square.
@@ -92,7 +92,7 @@ Sacks of flour are short in Waagdam. The merchants have put their prices up and 
 The Market Square
 A wide square of uneven cobbles, big enough for the Woensdag market and the arguments that come with it. On the north side stands the [Waag] with its stepped gable; the church is south, the town hall north-east, and Canal Street leads east. Pigeons squabble over spilled grain.
 Exits: west, north, east, south, northeast
-Across country you can head any way, or follow the Waagdam road, the east road, the heath road, the tow path.
+Across country you can head any way, or follow the tow path to Veenhoek, the Waagdam road to The Drowned Goose, the heath road to Reuzenrust or the east road.
 Here: Kobus the pedlar (at work).
 
 > talk kobus the pedlar
@@ -137,12 +137,12 @@ Teunis lifts a hand. "Go on, then."
 
 > journal
 People: Fenna Visser, Cornelis de Wit, Harmen Molenaar, Jan Visser, Kobus, Lubbert Graanhandel, Teunis Ros.
-Places: Oude Zijl, Veenhoek, Waagdam, Graafhaven, The Mill De Zwaan, Veenhoek, the Green, Canal Quay, The Horse Mill, The Market Square.
+Places: Oude Zijl, Veenhoek, Waagdam, Graafhaven, The Mill De Zwaan, On the Great Dyke, Veenhoek, the Green, Canal Quay, The Horse Mill, The Market Square.
 Lore: the drainage of the Holleveen, the stranger in Veenhoek, the dyke at Oude Zijl leaks, the stranger in Waagdam, the mill not turning before winter.
 
 ==== INFLUENCE (Woensdag 15 Herfstmaand 211 AW, 09:37 (morning))
 
-# Teunis saw the leak himself: ask him to come along, then warn the dyke reeve together.
+# Teunis saw the leak himself: a stranger alone is not believed, so ask him to take you to the dyke reeve and say it himself (M10.6).
 
 > talk teunis
 You are talking with Teunis the horse-miller. Type what you want to say, pick a number, or BYE to stop.
@@ -153,14 +153,16 @@ Teunis nods. "Morning."
 You: "Will you come with me?"
 Teunis laughs. "Me? I've work to do, and you're a stranger."
 
-> bye
-Teunis lifts a hand. "Go on, then."
+> Will you come with me to Sijbrand? He must hear it from you.
+Teunis: "Come along. I'll show you."
+Teunis agrees to take you to The Dyke House, to Sijbrand.
+Teunis walks with you: there is no road to The Dyke House from here, only the way across country.
 
 > east
 The East Gate
 The east gate opens onto a straight road across the fields towards Zwolderkamp, two days away. Carts wait here to pay the toll, and the tollkeeper's brazier smells of hot coals. That journey waits for another day; the horse mill is back west.
 Exits: west
-Across country you can head any way, or follow the east road.
+Across country you can head any way, or follow the east road west or the east road east.
 +10 experience: you found The East Gate.
 
 > walk to oude zijl
@@ -168,76 +170,81 @@ You make your way towards Oude Zijl for 3 hours and 18 minutes, over the east ro
 The Old Sluice
 Two great sluice gates of tarred oak hold back the Vaart where it meets the dyke. Water leaks through the seams with a steady hiss, and gulls cry from the dyke top. A dyke house stands to one side with its shutters closed. The tow path runs east along the Vaart to Veenhoek.
 Exits: north, up, west
-Across country you can head any way, or follow the tow path.
+Across country you can head any way, or follow the tow path to Veenhoek.
 +10 experience: you found The Old Sluice.
 +30 experience: you came to Oude Zijl.
-
-> walk to oude zijl
-You are already at Oude Zijl.
+Teunis goes on ahead, north, and waits for you there.
 
 > look
 The Old Sluice
 Two great sluice gates of tarred oak hold back the Vaart where it meets the dyke. Water leaks through the seams with a steady hiss, and gulls cry from the dyke top. A dyke house stands to one side with its shutters closed. The tow path runs east along the Vaart to Veenhoek.
 Exits: north, up, west
-Across country you can head any way, or follow the tow path.
+Across country you can head any way, or follow the tow path to Veenhoek.
+Teunis calls after you: "Not that way! North, this way!"
 
-# Nobody here to ask.
-
-# Not at the sluice: try the dyke house, and wait for him there.
+# Teunis knows the way on: the dyke house, and if Sijbrand is not in, follow Teunis where he looks for him.
 
 > north
 The Dyke House
 A square brick house with small windows, built into the side of the dyke so that its back wall is earth. Inside, a long table is covered with rolled plans of dykes and ditches, held flat at the corners with stones. It smells of lamp oil and damp plaster, and somewhere behind the back wall water ticks. The door opens south onto the sluice.
 Exits: south
-Here: Heemraad Sijbrand.
+Here: Teunis the horse-miller (waiting for you).
+Sijbrand leaves south.
 +10 experience: you found The Dyke House.
+Teunis: "There he goes. Come on."
 
-> look
-The Dyke House
-A square brick house with small windows, built into the side of the dyke so that its back wall is earth. Inside, a long table is covered with rolled plans of dykes and ditches, held flat at the corners with stones. It smells of lamp oil and damp plaster, and somewhere behind the back wall water ticks. The door opens south onto the sluice.
-Exits: south
-Here: Heemraad Sijbrand.
+> south
+The Old Sluice
+Two great sluice gates of tarred oak hold back the Vaart where it meets the dyke. Water leaks through the seams with a steady hiss, and gulls cry from the dyke top. A dyke house stands to one side with its shutters closed. The tow path runs east along the Vaart to Veenhoek.
+Exits: north, up, west
+Across country you can head any way, or follow the tow path to Veenhoek.
+Here: Teunis the horse-miller (on the way to The Old Sluice).
+Sijbrand walks on upstairs.
+Teunis arrives from the north.
+Teunis: "There he goes. Come on."
 
-> wait for sijbrand
-Sijbrand is here.
+> up
+On the Great Dyke
+From the top of the dyke you see the Holleveen spread out on one side, flat and green and lower than it has any right to be. On the other side grey water runs out to a grey sky, and the wind off it tastes of salt and leans on you without a pause. Sheep have cropped the grass short, and their droppings are everywhere. The sluice lies below you, down the slope.
+Exits: down
+Here: Heemraad Sijbrand (at work), Teunis the horse-miller (on the way to On the Great Dyke).
+Teunis arrives from below.
++10 experience: you found On the Great Dyke.
+Teunis brought you to On the Great Dyke, and Sijbrand was there.
 
 > tell sijbrand about the dyke
 You: "The dyke's leaking at Oude Zijl, they say!"
-Sijbrand doesn't believe a word of it, and says so.
-Sijbrand leaves south.
+Teunis nods. "I saw it with my own eyes."
+Sijbrand listens, and takes it seriously.
+Sijbrand has sent to Veenhoek for every man with a spade. Clay and brushwood to the dyke, before the leak opens!
 
 > wait 60
-Time passes. It is Woensdag 15 Herfstmaand 211 AW, 14:00 (afternoon).
+Teunis sets off across country towards The Horse Mill.
+Time passes. It is Woensdag 15 Herfstmaand 211 AW, 14:04 (afternoon).
 
 > journal
 People: Fenna Visser, Cornelis de Wit, Harmen Molenaar, Jan Visser, Kobus, Lubbert Graanhandel, Sijbrand, Teunis Ros.
-Places: Oude Zijl, Veenhoek, Waagdam, Graafhaven, The Mill De Zwaan, The Dyke House, The Old Sluice, Veenhoek, the Green, Canal Quay, The East Gate, The Horse Mill, The Market Square.
+Places: Oude Zijl, Veenhoek, Waagdam, Graafhaven, The Mill De Zwaan, On the Great Dyke, The Dyke House, The Old Sluice, Veenhoek, the Green, Canal Quay, The East Gate, The Horse Mill, The Market Square.
 Lore: the drainage of the Holleveen, the stranger in Veenhoek, the dyke at Oude Zijl leaks, the stranger in Waagdam, the mill not turning before winter.
 
-==== AFTER (Woensdag 15 Herfstmaand 211 AW, 14:00 (afternoon))
+==== AFTER (Woensdag 15 Herfstmaand 211 AW, 14:04 (afternoon))
 
 [24 hours pass]
-Sijbrand leaves south.
-Sijbrand arrives from the south.
-Sijbrand stops and looks you over.
-Sijbrand leaves south.
+The leak is packed with clay and brushwood, and the dyke at Oude Zijl holds.
 
 > look
-The Dyke House
-A square brick house with small windows, built into the side of the dyke so that its back wall is earth. Inside, a long table is covered with rolled plans of dykes and ditches, held flat at the corners with stones. It smells of lamp oil and damp plaster, and somewhere behind the back wall water ticks. The door opens south onto the sluice.
-Exits: south
+On the Great Dyke
+From the top of the dyke you see the Holleveen spread out on one side, flat and green and lower than it has any right to be. On the other side grey water runs out to a grey sky, and the wind off it tastes of salt and leans on you without a pause. Sheep have cropped the grass short, and their droppings are everywhere. The sluice lies below you, down the slope.
+Exits: down
+Here: Heemraad Sijbrand (at work).
 
 > journal
 People: Fenna Visser, Cornelis de Wit, Harmen Molenaar, Jan Visser, Kobus, Lubbert Graanhandel, Sijbrand, Teunis Ros.
-Places: Oude Zijl, Veenhoek, Waagdam, Graafhaven, The Mill De Zwaan, The Dyke House, The Old Sluice, Veenhoek, the Green, Canal Quay, The East Gate, The Horse Mill, The Market Square.
+Places: Oude Zijl, Veenhoek, Waagdam, Graafhaven, The Mill De Zwaan, On the Great Dyke, The Dyke House, The Old Sluice, Veenhoek, the Green, Canal Quay, The East Gate, The Horse Mill, The Market Square.
 Lore: the drainage of the Holleveen, the stranger in Veenhoek, the dyke at Oude Zijl leaks, the stranger in Waagdam, the mill not turning before winter.
 
 [48 hours pass]
-Sijbrand puts out the lamp and goes to bed.
-Sijbrand leaves south.
-Sijbrand arrives from the south.
-Sijbrand stops and looks you over.
-Sijbrand leaves south.
+
 
 # Shortcut: back to the green of Veenhoek.
 
@@ -245,54 +252,77 @@ Sijbrand leaves south.
 [build] You are at Veenhoek, the Green.
 Veenhoek, the Green
 The village green is a patch of trampled grass around a stone well. Peat smoke hangs low over the roofs, and the ground gives a little underfoot, the way it does everywhere in the Holleveen. East, the [Bakery] door stands open, and west a grey cat sits very upright on the doorstep of a narrow house. A lane runs north to the [Chapel]; south, the canal glints between the houses, and a track leaves north-east.
-Brown water stands knee-deep here, cold and still. Whatever could float has floated away.
 Exits: north, east, south, west, northeast
-Across country you can head any way, or follow the fen path, the path to the Kabouterberg, the peat road, the priory path, the tow path.
-The dyke at Oude Zijl has broken, and the water is in Veenhoek.
+Across country you can head any way, or follow the tow path west to Oude Zijl, the tow path east to Waagdam, the peat road to Molenend, the fen path to the Kattenbroek, the priory path to Kloosterveen or the path to the Kabouterberg.
+Here: Prior Ansfried (on the way to The Priory Library).
+Sijbrand's calling every man to the dyke at Oude Zijl. Spades and brushwood, now!
 
 > look
 Veenhoek, the Green
 The village green is a patch of trampled grass around a stone well. Peat smoke hangs low over the roofs, and the ground gives a little underfoot, the way it does everywhere in the Holleveen. East, the [Bakery] door stands open, and west a grey cat sits very upright on the doorstep of a narrow house. A lane runs north to the [Chapel]; south, the canal glints between the houses, and a track leaves north-east.
-Brown water stands knee-deep here, cold and still. Whatever could float has floated away.
 Exits: north, east, south, west, northeast
-Across country you can head any way, or follow the fen path, the path to the Kabouterberg, the peat road, the priory path, the tow path.
+Across country you can head any way, or follow the tow path west to Oude Zijl, the tow path east to Waagdam, the peat road to Molenend, the fen path to the Kattenbroek, the priory path to Kloosterveen or the path to the Kabouterberg.
+Here: Prior Ansfried (on the way to The Priory Library).
 
 [6 hours pass]
+Ansfried walks on to the north.
+Mirte comes from the south, on her way to Bakery Yard.
+Mirte stops and gives you a nod, curious about the stranger.
+Mirte walks on to the east.
 Grietje comes from the northeast, on her way to Visser House, the doorstep.
 Grietje stops and gives you a nod, curious about the stranger.
+Aaltje comes from the northeast, on her way to Aaltje's Cottage.
+Aaltje stops and gives you a nod, curious about the stranger.
+Aaltje nods to Grietje.
+Everhard comes from the south, on his way to The Schout's House.
+Everhard walks on to the north.
 Cornelis comes from the northeast, on his way to The Flooded Peat Pits.
-Cornelis and Grietje pass each other without a word.
 Cornelis walks on to the south.
 Grietje walks on to the west.
+Aaltje walks on to the north.
+Wendela comes from the northeast, on her way to Chapel of the Lantern.
+Wendela stops and gives you a nod, curious about the stranger.
+Wendela walks on to the north.
 Jan comes from the south, on his way to Visser House, the doorstep.
 Jan stops and looks you over.
 Jan walks on to the west.
 Cornelis comes from the south, on his way to Upstairs at the Goose.
 Cornelis walks on to the northeast.
 Jan comes from the west, on his way to The Drowned Goose, Common Room.
+Gerrit comes from the south, on his way to The Drowned Goose, Common Room.
+Gerrit stops and looks you over.
 Jan walks on to the northeast.
+Gerrit walks on to the northeast.
+Wendela comes from the north, on her way to The Drowned Goose, Common Room.
+Wendela walks on to the northeast.
+Mirte comes from the east, on her way to The Drowned Goose, Common Room.
+Mirte walks on to the northeast.
 Ansfried comes from the north, on his way to The Market Square.
-Ansfried walks on to the northeast.
+Ansfried stops and gives you a nod, curious about the stranger.
+Aaltje comes from the north, on her way to The Drowned Goose, Common Room.
+Aaltje walks on to the northeast.
+Wouter comes from the south, on his way to The Drowned Goose, Common Room.
+Wouter stops and looks you over.
 
 > look
 Veenhoek, the Green
 The village green is a patch of trampled grass around a stone well. Peat smoke hangs low over the roofs, and the ground gives a little underfoot, the way it does everywhere in the Holleveen. East, the [Bakery] door stands open, and west a grey cat sits very upright on the doorstep of a narrow house. A lane runs north to the [Chapel]; south, the canal glints between the houses, and a track leaves north-east.
-Brown water stands knee-deep here, cold and still. Whatever could float has floated away.
 Exits: north, east, south, west, northeast
-Across country you can head any way, or follow the fen path, the path to the Kabouterberg, the peat road, the priory path, the tow path.
+Across country you can head any way, or follow the tow path west to Oude Zijl, the tow path east to Waagdam, the peat road to Molenend, the fen path to the Kattenbroek, the priory path to Kloosterveen or the path to the Kabouterberg.
+Here: Prior Ansfried (stopping to look at the stranger), Wouter the eel-fisher (stopping to look at the stranger).
 
 > journal
 People: Fenna Visser, Cornelis de Wit, Harmen Molenaar, Jan Visser, Kobus, Lubbert Graanhandel, Sijbrand, Teunis Ros.
-Places: Oude Zijl, Veenhoek, Waagdam, Graafhaven, The Mill De Zwaan, The Dyke House, The Old Sluice, Veenhoek, the Green, Canal Quay, The East Gate, The Horse Mill, The Market Square.
+Places: Oude Zijl, Veenhoek, Waagdam, Graafhaven, The Mill De Zwaan, On the Great Dyke, The Dyke House, The Old Sluice, Veenhoek, the Green, Canal Quay, The East Gate, The Horse Mill, The Market Square.
 Lore: the drainage of the Holleveen, the stranger in Veenhoek, the dyke at Oude Zijl leaks, the stranger in Waagdam, the mill not turning before winter.
 
-==== END (Zaterdag 18 Herfstmaand 211 AW, 20:00 (evening))
+==== END (Zaterdag 18 Herfstmaand 211 AW, 20:04 (evening))
 Quests: none
 
 ######## CONTROL: THE PLAYER DOES NOTHING
 The barge from Graafhaven leaves you at the Veenhoek quay just as the light goes. The bargeman won't tie up. "Not after dark, not out here," he says, and poles away into the mist, taking his lantern with him.
 
-This is the Holleveen: peat and reed and black water, mile upon mile of it between the Great Dyke and the heath. The villages sit on the few dry places like cats on a fence. Peat smoke. A windmill turning slowly against a sky the colour of pewter.
+This is the Holleveen: peat and reed and black water, mile upon mile of it between the Great Dyke and the heath. The villages sit on the few dry places like cats on a fence. Peat smoke. A windmill standing still against a sky the colour of pewter, its sails torn to rags.
 
 Somewhere a dog barks. On the doorstep of the nearest house a grey cat watches you, very still, the way cats don't usually watch people.
 
@@ -300,7 +330,7 @@ Type LOOK to look around. Type HELP if you are lost. You probably are.
 Canal Quay
 Grey water slaps against the planks of the quay. A barge rope lies coiled by the mooring posts, and beside them stands a worn stone, waist-high, with a dog carved into it. Someone has put an apple on top. The [Graafse Vaart] runs east and west; the green is north and the peat sheds are south.
 Exits: north, east, west, south, southwest
-Across country you can head any way, or follow the fen path, the path to the Kabouterberg, the peat road, the priory path, the tow path.
+Across country you can head any way, or follow the tow path west to Oude Zijl, the tow path east to Waagdam, the peat road to Molenend, the fen path to the Kattenbroek, the priory path to Kloosterveen or the path to the Kabouterberg.
 The pace of events is normal. Type TEMPO CALM or TEMPO DRAMATIC for less or more happening in the world.
 
 ==== RECOGNISE (Dinsdag 14 Herfstmaand 211 AW, 18:30 (evening))
@@ -314,7 +344,7 @@ The pace of events is normal. Type TEMPO CALM or TEMPO DRAMATIC for less or more
 Veenhoek, the Green
 The village green is a patch of trampled grass around a stone well. Peat smoke hangs low over the roofs, and the ground gives a little underfoot, the way it does everywhere in the Holleveen. East, the [Bakery] door stands open, and west a grey cat sits very upright on the doorstep of a narrow house. A lane runs north to the [Chapel]; south, the canal glints between the houses, and a track leaves north-east.
 Exits: north, east, south, west, northeast
-Across country you can head any way, or follow the fen path, the path to the Kabouterberg, the peat road, the priory path, the tow path.
+Across country you can head any way, or follow the tow path west to Oude Zijl, the tow path east to Waagdam, the peat road to Molenend, the fen path to the Kattenbroek, the priory path to Kloosterveen or the path to the Kabouterberg.
 Here: Jan Visser (on the way to The Drowned Goose, Common Room).
 Jan comes from the west, on his way to The Drowned Goose, Common Room.
 +10 experience: you found Veenhoek, the Green.
@@ -371,7 +401,7 @@ Time passes. It is Woensdag 15 Herfstmaand 211 AW, 09:33 (morning).
 The Market Square
 A wide square of uneven cobbles, big enough for the Woensdag market and the arguments that come with it. On the north side stands the [Waag] with its stepped gable; the church is south, the town hall north-east, and Canal Street leads east. Pigeons squabble over spilled grain.
 Exits: west, north, east, south, northeast
-Across country you can head any way, or follow the Waagdam road, the east road, the heath road, the tow path.
+Across country you can head any way, or follow the tow path to Veenhoek, the Waagdam road to The Drowned Goose, the heath road to Reuzenrust or the east road.
 Here: Kobus the pedlar (at work).
 Sacks of flour are short in Waagdam. The merchants have put their prices up and talk of sending far afield.
 +10 experience: you found The Market Square.
@@ -381,7 +411,7 @@ Sacks of flour are short in Waagdam. The merchants have put their prices up and 
 The Market Square
 A wide square of uneven cobbles, big enough for the Woensdag market and the arguments that come with it. On the north side stands the [Waag] with its stepped gable; the church is south, the town hall north-east, and Canal Street leads east. Pigeons squabble over spilled grain.
 Exits: west, north, east, south, northeast
-Across country you can head any way, or follow the Waagdam road, the east road, the heath road, the tow path.
+Across country you can head any way, or follow the tow path to Veenhoek, the Waagdam road to The Drowned Goose, the heath road to Reuzenrust or the east road.
 Here: Kobus the pedlar (at work).
 
 > talk kobus the pedlar
@@ -426,7 +456,7 @@ Teunis lifts a hand. "Go on, then."
 
 > journal
 People: Fenna Visser, Cornelis de Wit, Harmen Molenaar, Jan Visser, Kobus, Lubbert Graanhandel, Teunis Ros.
-Places: Oude Zijl, Veenhoek, Waagdam, Graafhaven, The Mill De Zwaan, Veenhoek, the Green, Canal Quay, The Horse Mill, The Market Square.
+Places: Oude Zijl, Veenhoek, Waagdam, Graafhaven, The Mill De Zwaan, On the Great Dyke, Veenhoek, the Green, Canal Quay, The Horse Mill, The Market Square.
 Lore: the drainage of the Holleveen, the stranger in Veenhoek, the dyke at Oude Zijl leaks, the stranger in Waagdam, the mill not turning before winter.
 
 ==== AFTER (Woensdag 15 Herfstmaand 211 AW, 09:37 (morning))
@@ -449,7 +479,7 @@ Here: Teunis the horse-miller (at work).
 
 > journal
 People: Fenna Visser, Cornelis de Wit, Harmen Molenaar, Jan Visser, Kobus, Lubbert Graanhandel, Teunis Ros.
-Places: Oude Zijl, Veenhoek, Waagdam, Graafhaven, The Mill De Zwaan, Veenhoek, the Green, Canal Quay, The Horse Mill, The Market Square.
+Places: Oude Zijl, Veenhoek, Waagdam, Graafhaven, The Mill De Zwaan, On the Great Dyke, Veenhoek, the Green, Canal Quay, The Horse Mill, The Market Square.
 Lore: the drainage of the Holleveen, the stranger in Veenhoek, the dyke at Oude Zijl leaks, the stranger in Waagdam, the mill not turning before winter.
 
 [48 hours pass]
@@ -466,7 +496,7 @@ Veenhoek, the Green
 The village green is a patch of trampled grass around a stone well. Peat smoke hangs low over the roofs, and the ground gives a little underfoot, the way it does everywhere in the Holleveen. East, the [Bakery] door stands open, and west a grey cat sits very upright on the doorstep of a narrow house. A lane runs north to the [Chapel]; south, the canal glints between the houses, and a track leaves north-east.
 Brown water stands knee-deep here, cold and still. Whatever could float has floated away.
 Exits: north, east, south, west, northeast
-Across country you can head any way, or follow the fen path, the path to the Kabouterberg, the peat road, the priory path, the tow path.
+Across country you can head any way, or follow the tow path west to Oude Zijl, the tow path east to Waagdam, the peat road to Molenend, the fen path to the Kattenbroek, the priory path to Kloosterveen or the path to the Kabouterberg.
 The dyke at Oude Zijl has broken, and the water is in Veenhoek.
 
 > look
@@ -474,7 +504,7 @@ Veenhoek, the Green
 The village green is a patch of trampled grass around a stone well. Peat smoke hangs low over the roofs, and the ground gives a little underfoot, the way it does everywhere in the Holleveen. East, the [Bakery] door stands open, and west a grey cat sits very upright on the doorstep of a narrow house. A lane runs north to the [Chapel]; south, the canal glints between the houses, and a track leaves north-east.
 Brown water stands knee-deep here, cold and still. Whatever could float has floated away.
 Exits: north, east, south, west, northeast
-Across country you can head any way, or follow the fen path, the path to the Kabouterberg, the peat road, the priory path, the tow path.
+Across country you can head any way, or follow the tow path west to Oude Zijl, the tow path east to Waagdam, the peat road to Molenend, the fen path to the Kattenbroek, the priory path to Kloosterveen or the path to the Kabouterberg.
 
 [6 hours pass]
 Jan comes from the south, on his way to Visser House, the doorstep.
@@ -501,11 +531,11 @@ Veenhoek, the Green
 The village green is a patch of trampled grass around a stone well. Peat smoke hangs low over the roofs, and the ground gives a little underfoot, the way it does everywhere in the Holleveen. East, the [Bakery] door stands open, and west a grey cat sits very upright on the doorstep of a narrow house. A lane runs north to the [Chapel]; south, the canal glints between the houses, and a track leaves north-east.
 Brown water stands knee-deep here, cold and still. Whatever could float has floated away.
 Exits: north, east, south, west, northeast
-Across country you can head any way, or follow the fen path, the path to the Kabouterberg, the peat road, the priory path, the tow path.
+Across country you can head any way, or follow the tow path west to Oude Zijl, the tow path east to Waagdam, the peat road to Molenend, the fen path to the Kattenbroek, the priory path to Kloosterveen or the path to the Kabouterberg.
 
 > journal
 People: Fenna Visser, Cornelis de Wit, Harmen Molenaar, Jan Visser, Kobus, Lubbert Graanhandel, Teunis Ros.
-Places: Oude Zijl, Veenhoek, Waagdam, Graafhaven, The Mill De Zwaan, Veenhoek, the Green, Canal Quay, The Horse Mill, The Market Square.
+Places: Oude Zijl, Veenhoek, Waagdam, Graafhaven, The Mill De Zwaan, On the Great Dyke, Veenhoek, the Green, Canal Quay, The Horse Mill, The Market Square.
 Lore: the drainage of the Holleveen, the stranger in Veenhoek, the dyke at Oude Zijl leaks, the stranger in Waagdam, the mill not turning before winter.
 
 ==== END (Zaterdag 18 Herfstmaand 211 AW, 15:37 (afternoon))

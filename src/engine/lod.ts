@@ -63,19 +63,29 @@ export function thinksNow(world: World, npcId: string): boolean {
 
 /** Across country where no road runs: the NPC is a note on the way, and arrives when the walk is done. */
 export function journey(world: World, npcId: string, to: string): boolean {
-  const map = regionMap(world.content)
   const npc = world.npcState(npcId)
-  const from = placeHex(world, npc.location)
-  const target = placeHex(world, to)
-  if (!map || !from || !target) return false
-  const path = findPath(world, map, from, target, false)
-  if (!path) return false
-  const minutes = Math.max(5, path.slice(1).reduce((sum, hex) => sum + minutesFor(world, map.cell(hex)!, false), 0))
+  const minutes = overland(world, npc.location, to)
+  if (minutes === undefined) return false
   world.emit('depart', npc.location, world.say(`{name} sets off across country towards ${world.location(to).name}.`, npcId), npcId)
   npc.note = { unrest: 'travelling', where: to, from: npc.location, since: world.now, until: world.now + minutes, activity: `on the way to ${world.location(to).name}` }
   npc.activity = npc.note.activity
   npc.busyUntil = world.now + minutes
   return true
+}
+
+/**
+ * Across country from one place to another, as someone of the world walks it
+ * (no hidden ways): the minutes, or nothing when there is no way. For where
+ * the roads of the exits do not go (M10.6: from Waagdam to Oude Zijl).
+ */
+export function overland(world: World, from: string, to: string): number | undefined {
+  const map = regionMap(world.content)
+  const a = placeHex(world, from)
+  const b = placeHex(world, to)
+  if (!map || !a || !b) return undefined
+  const path = findPath(world, map, a, b, false)
+  if (!path) return undefined
+  return Math.max(5, path.slice(1).reduce((sum, hex) => sum + minutesFor(world, map.cell(hex)!, false), 0))
 }
 
 /**

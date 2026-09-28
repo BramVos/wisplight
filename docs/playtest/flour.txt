@@ -3,7 +3,7 @@ Meel voor Veenhoek (base), seed 7
 ######## THE PLAYER ACTS
 The barge from Graafhaven leaves you at the Veenhoek quay just as the light goes. The bargeman won't tie up. "Not after dark, not out here," he says, and poles away into the mist, taking his lantern with him.
 
-This is the Holleveen: peat and reed and black water, mile upon mile of it between the Great Dyke and the heath. The villages sit on the few dry places like cats on a fence. Peat smoke. A windmill turning slowly against a sky the colour of pewter.
+This is the Holleveen: peat and reed and black water, mile upon mile of it between the Great Dyke and the heath. The villages sit on the few dry places like cats on a fence. Peat smoke. A windmill standing still against a sky the colour of pewter, its sails torn to rags.
 
 Somewhere a dog barks. On the doorstep of the nearest house a grey cat watches you, very still, the way cats don't usually watch people.
 
@@ -11,7 +11,7 @@ Type LOOK to look around. Type HELP if you are lost. You probably are.
 Canal Quay
 Grey water slaps against the planks of the quay. A barge rope lies coiled by the mooring posts, and beside them stands a worn stone, waist-high, with a dog carved into it. Someone has put an apple on top. The [Graafse Vaart] runs east and west; the green is north and the peat sheds are south.
 Exits: north, east, west, south, southwest
-Across country you can head any way, or follow the fen path, the path to the Kabouterberg, the peat road, the priory path, the tow path.
+Across country you can head any way, or follow the tow path west to Oude Zijl, the tow path east to Waagdam, the peat road to Molenend, the fen path to the Kattenbroek, the priory path to Kloosterveen or the path to the Kabouterberg.
 The pace of events is normal. Type TEMPO CALM or TEMPO DRAMATIC for less or more happening in the world.
 
 ==== RECOGNISE (Dinsdag 14 Herfstmaand 211 AW, 18:30 (evening))
@@ -20,13 +20,13 @@ The pace of events is normal. Type TEMPO CALM or TEMPO DRAMATIC for less or more
 Canal Quay
 Grey water slaps against the planks of the quay. A barge rope lies coiled by the mooring posts, and beside them stands a worn stone, waist-high, with a dog carved into it. Someone has put an apple on top. The [Graafse Vaart] runs east and west; the green is north and the peat sheds are south.
 Exits: north, east, west, south, southwest
-Across country you can head any way, or follow the fen path, the path to the Kabouterberg, the peat road, the priory path, the tow path.
+Across country you can head any way, or follow the tow path west to Oude Zijl, the tow path east to Waagdam, the peat road to Molenend, the fen path to the Kattenbroek, the priory path to Kloosterveen or the path to the Kabouterberg.
 
 > north
 Veenhoek, the Green
 The village green is a patch of trampled grass around a stone well. Peat smoke hangs low over the roofs, and the ground gives a little underfoot, the way it does everywhere in the Holleveen. East, the [Bakery] door stands open, and west a grey cat sits very upright on the doorstep of a narrow house. A lane runs north to the [Chapel]; south, the canal glints between the houses, and a track leaves north-east.
 Exits: north, east, south, west, northeast
-Across country you can head any way, or follow the fen path, the path to the Kabouterberg, the peat road, the priory path, the tow path.
+Across country you can head any way, or follow the tow path west to Oude Zijl, the tow path east to Waagdam, the peat road to Molenend, the fen path to the Kattenbroek, the priory path to Kloosterveen or the path to the Kabouterberg.
 Here: Jan Visser (on the way to The Drowned Goose, Common Room).
 Jan comes from the west, on his way to The Drowned Goose, Common Room.
 +10 experience: you found Veenhoek, the Green.
@@ -68,7 +68,7 @@ Lore: the stranger in Veenhoek.
 Veenhoek, the Green
 The village green is a patch of trampled grass around a stone well. Peat smoke hangs low over the roofs, and the ground gives a little underfoot, the way it does everywhere in the Holleveen. East, the [Bakery] door stands open, and west a grey cat sits very upright on the doorstep of a narrow house. A lane runs north to the [Chapel]; south, the canal glints between the houses, and a track leaves north-east.
 Exits: north, east, south, west, northeast
-Across country you can head any way, or follow the fen path, the path to the Kabouterberg, the peat road, the priory path, the tow path.
+Across country you can head any way, or follow the tow path west to Oude Zijl, the tow path east to Waagdam, the peat road to Molenend, the fen path to the Kattenbroek, the priory path to Kloosterveen or the path to the Kabouterberg.
 
 > walk to waagdam
 You make your way towards Waagdam for an hour and 24 minutes, over the peat road, the tow path, the Waagdam road and fields. Night is falling over the fen.
@@ -85,7 +85,7 @@ You make your way towards Waagdam for 14 minutes, over fields and the tow path. 
 The Harbour
 The Graafse Vaart widens here into a basin crowded with flat barges. Men shout and swear as sacks go up and down the planks, and the water smells of tar and rotting weed. Gate Street is up the steps to the north.
 Exits: north
-Across country you can head any way, or follow the Waagdam road, the east road, the heath road, the tow path.
+Across country you can head any way, or follow the tow path to Veenhoek, the Waagdam road to The Drowned Goose, the heath road to Reuzenrust or the east road.
 +10 experience: you found The Harbour.
 +30 experience: you came to Waagdam.
 
@@ -233,7 +233,7 @@ Quests: flour_for_veenhoek: flour_brought
 ######## CONTROL: THE PLAYER DOES NOTHING
 The barge from Graafhaven leaves you at the Veenhoek quay just as the light goes. The bargeman won't tie up. "Not after dark, not out here," he says, and poles away into the mist, taking his lantern with him.
 
-This is the Holleveen: peat and reed and black water, mile upon mile of it between the Great Dyke and the heath. The villages sit on the few dry places like cats on a fence. Peat smoke. A windmill turning slowly against a sky the colour of pewter.
+This is the Holleveen: peat and reed and black water, mile upon mile of it between the Great Dyke and the heath. The villages sit on the few dry places like cats on a fence. Peat smoke. A windmill standing still against a sky the colour of pewter, its sails torn to rags.
 
 Somewhere a dog barks. On the doorstep of the nearest house a grey cat watches you, very still, the way cats don't usually watch people.
 
@@ -241,7 +241,7 @@ Type LOOK to look around. Type HELP if you are lost. You probably are.
 Canal Quay
 Grey water slaps against the planks of the quay. A barge rope lies coiled by the mooring posts, and beside them stands a worn stone, waist-high, with a dog carved into it. Someone has put an apple on top. The [Graafse Vaart] runs east and west; the green is north and the peat sheds are south.
 Exits: north, east, west, south, southwest
-Across country you can head any way, or follow the fen path, the path to the Kabouterberg, the peat road, the priory path, the tow path.
+Across country you can head any way, or follow the tow path west to Oude Zijl, the tow path east to Waagdam, the peat road to Molenend, the fen path to the Kattenbroek, the priory path to Kloosterveen or the path to the Kabouterberg.
 The pace of events is normal. Type TEMPO CALM or TEMPO DRAMATIC for less or more happening in the world.
 
 ==== RECOGNISE (Dinsdag 14 Herfstmaand 211 AW, 18:30 (evening))
@@ -250,13 +250,13 @@ The pace of events is normal. Type TEMPO CALM or TEMPO DRAMATIC for less or more
 Canal Quay
 Grey water slaps against the planks of the quay. A barge rope lies coiled by the mooring posts, and beside them stands a worn stone, waist-high, with a dog carved into it. Someone has put an apple on top. The [Graafse Vaart] runs east and west; the green is north and the peat sheds are south.
 Exits: north, east, west, south, southwest
-Across country you can head any way, or follow the fen path, the path to the Kabouterberg, the peat road, the priory path, the tow path.
+Across country you can head any way, or follow the tow path west to Oude Zijl, the tow path east to Waagdam, the peat road to Molenend, the fen path to the Kattenbroek, the priory path to Kloosterveen or the path to the Kabouterberg.
 
 > north
 Veenhoek, the Green
 The village green is a patch of trampled grass around a stone well. Peat smoke hangs low over the roofs, and the ground gives a little underfoot, the way it does everywhere in the Holleveen. East, the [Bakery] door stands open, and west a grey cat sits very upright on the doorstep of a narrow house. A lane runs north to the [Chapel]; south, the canal glints between the houses, and a track leaves north-east.
 Exits: north, east, south, west, northeast
-Across country you can head any way, or follow the fen path, the path to the Kabouterberg, the peat road, the priory path, the tow path.
+Across country you can head any way, or follow the tow path west to Oude Zijl, the tow path east to Waagdam, the peat road to Molenend, the fen path to the Kattenbroek, the priory path to Kloosterveen or the path to the Kabouterberg.
 Here: Jan Visser (on the way to The Drowned Goose, Common Room).
 Jan comes from the west, on his way to The Drowned Goose, Common Room.
 +10 experience: you found Veenhoek, the Green.

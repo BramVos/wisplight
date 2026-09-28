@@ -5,6 +5,65 @@
 # places and people that follows (quests/engine.ts, on_place and on_death).
 
 plans:
+  # The dyke reeve calls out the dyke (M10.6): convinced of the leak, Sijbrand sends for the men of Veenhoek, and with
+  # clay and brushwood they pack it before it opens (hours on the dyke: the goal Guard). The breach does not come.
+  - id: dyke_muster
+    name: Sijbrand calls out the dyke
+    topic: dyke
+    expires: 2
+    groups:
+      hands: { npcs: [npc_gerrit, npc_jan_visser, npc_wouter, npc_everhard] }
+    steps:
+      - id: mustered
+        do: { set: dyke_mustered }
+      - id: call
+        after: mustered
+        do:
+          tell:
+            kind: danger
+            about: [npc_sijbrand, loc_oude_zijl_dyke]
+            place: loc_oude_zijl_sluice
+            belang: 3
+            title: Sijbrand calls out the dyke
+            precise: "Heemraad Sijbrand has sent to Veenhoek for every man with a spade: clay and brushwood to the dyke at Oude Zijl, before the leak opens."
+            village: "Sijbrand's calling every man to the dyke at Oude Zijl. Bring a spade!"
+            far: "They are out on a dyke in the Holleveen, packing a leak."
+      - id: called
+        after: call
+        do: { news: "Sijbrand has sent to Veenhoek for every man with a spade. Clay and brushwood to the dyke, before the leak opens!", area: oude_zijl }
+      - id: called_veenhoek
+        after: call
+        do: { news: "Sijbrand's calling every man to the dyke at Oude Zijl. Spades and brushwood, now!", area: veenhoek }
+      - id: reeve
+        after: call
+        do: { goal: Guard, who: npc_sijbrand, target: loc_oude_zijl_dyke, priority: 0.95, hours: 8 }
+      - id: hands
+        after: call
+        each: hands
+        do: { goal: Guard, who: $who, target: loc_oude_zijl_dyke, priority: 0.95, hours: 8 }
+      - id: shored
+        at: { hours: 5 }
+        when: [{ not_flag: dyke_broke }]
+        do: { set: dyke_shored }
+      - id: held
+        after: shored
+        when: [{ flag: dyke_shored }]
+        do: { news: "The leak is packed with clay and brushwood, and the dyke at Oude Zijl holds.", area: oude_zijl }
+      - id: shored_news
+        after: shored
+        when: [{ flag: dyke_shored }]
+        do:
+          tell:
+            kind: danger
+            about: [npc_sijbrand, loc_oude_zijl_dyke]
+            place: loc_oude_zijl_dyke
+            belang: 3
+            title: the dyke at Oude Zijl was shored in time
+            precise: "Sijbrand called out Oude Zijl and Veenhoek, and they packed the leak with clay and brushwood before it could open."
+            village: "They stopped the leak at Oude Zijl in time, thank the saints. Sijbrand had every man out on the dyke."
+            far: "A dyke nearly broke in the Holleveen."
+            claim: { subject: loc_oude_zijl_dyke, key: state, value: normal }
+
   - id: dyke_breach
     name: The dyke breaks at Oude Zijl
     groups:
@@ -56,6 +115,14 @@ plans:
         effects:
           - { market: flour, factor: 1 }
           - { market: rye_grain, factor: 1 }
+
+  # The missing girl without the stranger (M10.6): Veenhoek hears that Grietje took the grey cat in.
+  - id: cat_taken_in
+    name: Grietje takes the grey cat in
+    phases:
+      - after: 0
+        effects:
+          - { news: "Grietje Visser has taken the grey cat in off the doorstep. The widow stopped waiting, they say, and the girl stays a cat.", area: veenhoek }
 
   - id: fen_closed
     name: The widow closes the fen
@@ -123,31 +190,20 @@ plans:
             # Teunis from Waagdam comes upon it on the dyke road while the dyke reeve is at home (M8.2 scenario;
             # without a finder nobody ever knew, found in the M9.4 playtest).
             witnesses: [npc_teunis]
+      # Convinced (M10.6): Sijbrand believes it, by a persuasion with Teunis's word behind it, by Teunis himself, or
+      # by his own eyes on the dyke. A stranger's word alone is not enough; then he calls out the village.
       - id: shored
         after: leak
         when: [{ knows: { who: npc_sijbrand, subject: loc_oude_zijl_dyke, key: state, value: leaking } }, { not_flag: dyke_broke }]
         otherwise: wait
-        do: { set: dyke_shored }
-      - id: shored_news
-        after: shored
-        do:
-          tell:
-            kind: danger
-            about: [npc_sijbrand, loc_oude_zijl_dyke]
-            place: loc_oude_zijl_dyke
-            belang: 3
-            title: the dyke at Oude Zijl was shored in time
-            precise: "Sijbrand had the leak at Oude Zijl packed with clay and brushwood before it could open."
-            village: "They stopped the leak at Oude Zijl in time, thank the saints."
-            far: "A dyke nearly broke in the Holleveen."
-            claim: { subject: loc_oude_zijl_dyke, key: state, value: normal }
+        do: { plan: dyke_muster }
       - id: breach
         at: { days: 2 }
-        when: [{ not_flag: dyke_shored }]
+        when: [{ not_flag: dyke_shored }, { not_flag: dyke_mustered }]
         do: { plan: dyke_breach }
       - id: broke
         after: breach
-        when: [{ not_flag: dyke_shored }]
+        when: [{ not_flag: dyke_shored }, { not_flag: dyke_mustered }]
         do: { set: dyke_broke }
       - id: proven
         after: broke

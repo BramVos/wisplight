@@ -51,8 +51,8 @@ world:
 
     This is the Holleveen: peat and reed and black water, mile upon mile
     of it between the Great Dyke and the heath. The villages sit on the
-    few dry places like cats on a fence. Peat smoke. A windmill turning
-    slowly against a sky the colour of pewter.
+    few dry places like cats on a fence. Peat smoke. A windmill standing
+    still against a sky the colour of pewter, its sails torn to rags.
 
     Somewhere a dog barks. On the doorstep of the nearest house a grey cat
     watches you, very still, the way cats don't usually watch people.
@@ -106,6 +106,8 @@ world:
           crown: ["#5d7a48", "#56713f"]
         ways: { road: "#cbb68a", path: "#b39f76", canal: "#88aab3" }
         glyph: { pool: "#8fb7c1", peat_pit: "#16120c", peat_edge: "#6b5c43", willow: "#a6b983", ruin: "#cdbba2", hummock: "#b1b682", stairs: "#e7d9a8" }
+        visited: "#f0b04a"
+        trail: "#e8a13c"
       paper:
         ground: "#e8dfc6"
         unknown: "#e2d8bd"
@@ -125,3 +127,5 @@ world:
           crown: ["#8fa874", "#88a06d"]
         ways: { road: "#8a6d43", path: "#a0865b", canal: "#5c8a94" }
         glyph: { pool: "#4f7c88", peat_pit: "#5a4a35", peat_edge: "#3f3325", willow: "#52683e", ruin: "#6d5a44", hummock: "#8b8a5b", stairs: "#2b2418" }
+        visited: "#b0461c"
+        trail: "#a4481f"

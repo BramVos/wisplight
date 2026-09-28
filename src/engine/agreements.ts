@@ -4,7 +4,9 @@ import { z } from 'zod'
 import { callName } from './content'
 import { applyEffect } from './dialogue/relations'
 import { heardBy } from './news'
-import { routineNow } from './npc/brain'
+import { overland } from './lod'
+import { goneTo, routineNow } from './npc/brain'
+import { knowsTheDayOf } from './people'
 import { queueSignal } from './signals'
 import { validateGoals } from './npc/goals'
 import { deed, shiftBond } from './social/deeds'
@@ -224,20 +226,13 @@ export function thinksIsAt(world: World, who: string, person: string): string {
     if (death && heardBy(world, who)[death.id]) return 'dead'
     const mine = world.state.npcs[who]
     if (mine && mine.location === theirs.location && !theirs.dead) return theirs.location
-    if (knowsTheDayOf(world, who, person)) return routineNow(world, person)?.place ?? def.home
+    if (knowsTheDayOf(world, who, person)) return goneTo(world, person) ?? routineNow(world, person)?.place ?? def.home
   }
   return def.home
 }
 
-/** Whether someone knows another's day: the same house, close family, or the same place of work. */
-export function knowsTheDayOf(world: World, who: string, person: string): boolean {
-  const a = world.npc(who)
-  const b = world.npc(person)
-  if (a.household && a.household === b.household) return true
-  if (a.home === b.home) return true
-  if (a.work && a.work === b.work) return true
-  return a.relations.some((r) => r.to === person && ['parent', 'child', 'spouse', 'sibling', 'sweetheart'].includes(r.role))
-}
+/** Whether someone knows another's day (M10.6: by their ties, and in a village everyone): people.ts. */
+export { knowsTheDayOf }
 
 function routeMinutes(world: World, who: string, place: string): number | undefined {
   const from = who === 'player' ? world.state.player.location : world.state.npcs[who]?.location
@@ -345,6 +340,8 @@ export function goalEnded(world: World, npcId: string, goal: Goal, success: bool
     else settle(world, agreement, 'missed', `${nameOf(world, npcId)} set out to ${agreement.what}, and it did not work out`, { fault: 'world' })
   }
   if (agreement.kind === 'lead') {
+    // Only there counts as arrived: a walk to where they looked before is not (M10.6, a search that moved on).
+    if (success && world.state.npcs[npcId]?.location !== agreement.terms.place) return
     if (success) {
       agreement.terms.arrived ??= world.now
       hold(world, npcId, world.now + (agreement.terms.waits ?? LEAD_WAITS))
@@ -445,30 +442,48 @@ function lead(world: World, a: Agreement): void {
   }
   const person = a.terms.person
   if (!person || world.state.npcs[person]?.location === place) {
-    return settle(world, a, 'kept', `${by} brought ${nameOf(world, a.to)} to ${nameOf(world, place)}${person ? `, and ${nameOf(world, person)} was there` : ''}`)
+    settle(world, a, 'kept', `${by} brought ${nameOf(world, a.to)} to ${nameOf(world, place)}${person ? `, and ${nameOf(world, person)} was there` : ''}`)
+    // Brought to someone, the leader stays a while for the talk (M10.6: Teunis beside the stranger with Sijbrand).
+    if (person && isNpc(world, leader)) {
+      const s = world.npcState(leader)
+      s.busyUntil = Math.max(s.busyUntil, world.now + LEAD_STAYS)
+      s.plan = []
+      s.activity = `with ${nameOf(world, person)}`
+    }
+    return
   }
   // The person is not where the leader thought. The truth is in the outcome; the promise was the way there.
   const truth = world.alive(person) ? `${nameOf(world, person)} was not there` : `${nameOf(world, person)} was dead, and ${by} had not known`
   const since = (a.terms.met ??= world.now)
-  if (a.terms.ifAbsent === 'search' && !a.interruptions?.length) {
+  if (a.terms.ifAbsent === 'search' && (a.interruptions?.length ?? 0) < 2) {
+    // Just a step away, where the leader can see them go (M10.6: Sijbrand up on the dyke); else at their work, once.
+    const now = world.state.npcs[person]?.location
+    const near = now && now !== place && Object.values(world.location(place).exits).some((e) => e.to === now) ? now : undefined
     const work = world.npc(person).work
-    if (work && work !== place && isNpc(world, leader) && world.knownLocations(leader).has(work) && world.alive(person)) {
+    const next = near ?? (work && work !== place && !a.interruptions?.length ? work : undefined)
+    if (next && isNpc(world, leader) && world.knownLocations(leader).has(next) && world.alive(person)) {
       interrupt(world, a, truth, 'reroute', true)
-      a.terms.place = work
+      a.terms.place = next
       delete a.terms.arrived
       delete a.terms.met
-      a.due = world.now + (routeMinutes(world, leader, work) ?? 120) + (a.terms.waits ?? LEAD_WAITS) + 60
-      plan(world, a, leader, visit(world, work, a.due))
-      world.notices.push(`${by}: "Not here. Then ${world.say('{they}', person)}'ll be at ${nameOf(world, work)}. Come on."`)
+      a.due = world.now + (routeMinutes(world, leader, next) ?? 120) + (a.terms.waits ?? LEAD_WAITS) + 60
+      if (isNpc(world, leader)) world.npcState(leader).goals = world.npcState(leader).goals.filter((g) => g.agreement !== a.id)
+      plan(world, a, leader, visit(world, next, a.due))
+      world.notices.push(near ? `${by}: "There ${world.say('{they}', person)} goes. Come on."` : `${by}: "Not here. Then ${world.say('{they}', person)}'ll be at ${nameOf(world, work!)}. Come on."`)
       return
     }
   }
-  if (a.terms.ifAbsent === 'wait' && world.now - since < (a.terms.waits ?? LEAD_WAITS) && world.alive(person)) {
+  // Looked for them and not found either: they wait a while there too (M10.6: Sijbrand up on the dyke for a moment).
+  const waits = a.terms.ifAbsent === 'wait' || a.terms.ifAbsent === 'search'
+  if (waits && world.now - since < (a.terms.waits ?? LEAD_WAITS) && world.alive(person)) {
     if (isNpc(world, leader)) hold(world, leader, since + (a.terms.waits ?? LEAD_WAITS))
     return
   }
-  settle(world, a, 'kept', `${by} brought ${nameOf(world, a.to)} to ${nameOf(world, place)}; ${truth}${a.terms.ifAbsent === 'wait' ? `, though ${by} waited` : ''}`, { told: true })
+  settle(world, a, 'kept', `${by} brought ${nameOf(world, a.to)} to ${nameOf(world, place)}; ${truth}${waits ? `, though ${by} waited` : ''}`, { told: true })
 }
+
+/** Minutes a leader stays with the person they brought the stranger to (M10.6). */
+const LEAD_STAYS = 45
 
 /** How many turns a leader waits for a player who does not follow, before giving up (M10.3). */
 const GIVE_UP_TURNS = 4
@@ -495,13 +510,23 @@ export function leadAhead(world: World): void {
       lead(world, a)
       continue
     }
-    if (here === s.location) {
+    if (here === s.location || a.terms.overland) {
       const route = world.route(here, place)
       const next = route?.nodes[1]
+      // No road of the exits from here (M10.6, from Waagdam to Oude Zijl): across country, they walk beside the player.
+      if ((!route || !next) && overland(world, here, place) !== undefined) {
+        if (world.content.locations.has(here)) s.location = here
+        hold(world, leader, a.due ?? world.now + 180)
+        a.terms.turns = 0
+        if (!a.terms.overland) world.notices.push(`${name} walks with you: there is no road to ${nameOf(world, place)} from here, only the way across country.`)
+        a.terms.overland = true
+        continue
+      }
       if (!route || !next) {
         settle(world, a, 'missed', `${name} could not find the way to ${nameOf(world, place)}`, { fault: 'by', told: true })
         continue
       }
+      a.terms.overland = undefined
       s.location = next
       hold(world, leader, a.due ?? world.now + 180)
       a.terms.turns = 0

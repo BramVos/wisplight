@@ -40,7 +40,8 @@ watchers:
 
   - id: place_restored
     signal: place_restored
-    fact: { key: state, value: normal }
+    # Only a place that was flooded, damaged or taken (kind place), not a leak shored in time (M10.6).
+    fact: { key: state, value: normal, kind: place }
 
   # M8.2: the brain plans.
 

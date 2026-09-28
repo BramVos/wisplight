@@ -150,6 +150,28 @@ export function tieTo(world: World, npcId: string, otherId: string): Tie | undef
   return ties(world, npcId).find((t) => t.id === otherId)
 }
 
+/**
+ * Whether someone knows another's day (M10.6, Mirte on market day): the same
+ * house, roof or place of work; family of any kind; a tie with some warmth
+ * (friends, sweethearts, work, neighbours, teaching; never a rival); or the
+ * same village or hamlet, where everyone knows where the baker goes on market
+ * day. Not in a town.
+ */
+export function knowsTheDayOf(world: World, who: string, person: string): boolean {
+  if (who === person || !world.content.npcs.has(who) || !world.content.npcs.has(person)) return false
+  const a = world.npc(who)
+  const b = world.npc(person)
+  if (a.household && a.household === b.household) return true
+  if (a.home === b.home) return true
+  if (a.work && a.work === b.work) return true
+  const tie = tieTo(world, who, person)
+  if (tie && (tie.kind === 'family' || isNear(tie) || (tie.bond >= 1 && tie.kind !== 'rival'))) return true
+  const village = (id: string) => world.content.locations.get(world.npc(id).home)?.area
+  const area = village(who)
+  const kind = area ? world.content.areas.get(area)?.kind : undefined
+  return area !== undefined && area === village(person) && (kind === 'village' || kind === 'hamlet')
+}
+
 /** How close two people are: their tie, or 1 for people of the same village, else 0. */
 export function closeness(world: World, a: string, b: string): number {
   const tie = tieTo(world, a, b)

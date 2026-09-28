@@ -92,6 +92,8 @@ export interface AgreementTerms {
   met?: number
   /** lead with the player (M10.3): the leader goes one place ahead and waits; wrong turns and turns without following. */
   ahead?: boolean
+  /** lead where no road of the exits goes (M10.6): the leader walks beside the player across country. */
+  overland?: boolean
   wrong?: number
   turns?: number
   /** fetch (M10.3): where to bring the person back to. */
@@ -557,6 +559,8 @@ export interface Heard {
   stance?: 'doubts' | 'rejects'
   /** What the stranger said, found out to be wrong (M10.3): the consequence came once. */
   checked?: boolean
+  /** Whose word made them think again, once each (M10.6): an eyewitness, a persuasion. */
+  weighed?: string[]
 }
 
 /** A far-away place a model named in conversation, fixed in the savegame (design: lore and world change). */

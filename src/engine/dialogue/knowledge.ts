@@ -4,7 +4,9 @@ import { factById, newsAbout, versionOf } from '../news'
 import type { Heard } from '../state'
 import type { World } from '../world'
 import type { TopicRegistry } from './topics'
-import { usualPlace } from '../npc/brain'
+import { goneTo, usualPlace } from '../npc/brain'
+import { knowsTheDayOf } from '../people'
+import { weekdayOf } from '../clock'
 
 // What an NPC knows about a topic, and therefore what the model may say
 // (FO, chapter 5): certain knowledge of the own village and the places the NPC
@@ -23,6 +25,8 @@ export interface KnownTopic {
   toldBy?: string
   /** News the NPC heard about this topic, with where it came from. */
   news?: string[]
+  /** A person: where the NPC thinks they are now, for "where is ...?" without a model (M10.6). */
+  where?: string
 }
 
 export interface Packet {
@@ -227,10 +231,11 @@ export class Knowledge {
     return packet
   }
 
-  private facts(npcId: string, topicId: string, level: Level, wantsStory: boolean): { facts: string[]; story?: string; toldBy?: string } {
+  private facts(npcId: string, topicId: string, level: Level, wantsStory: boolean): { facts: string[]; story?: string; toldBy?: string; where?: string } {
     const entry = this.topics.entries.get(topicId)!
     const { content } = this.world
     const facts: string[] = []
+    let where: string | undefined
     switch (entry.kind) {
       case 'person': {
         const other = entry.ref ? content.npcs.get(entry.ref) : undefined
@@ -249,7 +254,7 @@ export class Knowledge {
             if (other.work && other.work !== other.home) facts.push(`${other.short} works at ${this.world.location(other.work).name}.`)
             facts.push(`What ${other.short} looks like: ${firstSentence(other.appearance)}`)
           }
-          const where = this.whereabouts(npcId, other.id, level)
+          where = this.whereabouts(npcId, other.id, level)
           if (where) facts.push(where)
           break
         }
@@ -293,7 +298,7 @@ export class Knowledge {
     const story = wantsStory && level >= 2 ? (topic?.story ?? (level >= 3 ? lore?.story : undefined))?.trim() || undefined : undefined
     const teller = topic?.teller ?? lore?.teller
     const toldBy = story && teller && teller !== npcId ? content.npcs.get(teller)?.short : undefined
-    return { facts: facts.filter(Boolean), story, toldBy }
+    return { facts: facts.filter(Boolean), story, toldBy, ...(where ? { where } : {}) }
   }
 
   /** Forgets what was worked out about an NPC's knowledge, after it learned something new. */
@@ -439,7 +444,15 @@ export class Knowledge {
     const ago = seen ? world.now - seen.t : Infinity
     if (seen && ago <= 3 * 60) return `You saw ${other.short} at ${world.location(seen.where).name} ${agoWords(ago)}.`
     const usual = usualPlace(world, otherId)
-    const close = this.close(npcId, otherId)
+    const close = knowsTheDayOf(world, npcId, otherId)
+    // Gone somewhere else today, and those who know their day know where (M10.6: Mirte at the market in Waagdam).
+    const gone = close ? goneTo(world, otherId) : undefined
+    if (gone) {
+      const area = world.content.areas.get(world.location(gone).area)
+      const day = weekdayOf(world.now)
+      const market = area?.market_days.includes(day) ? `; it's ${day}, market day there` : ''
+      return `${other.short} has gone to ${area?.name ?? world.location(gone).name} today${market}.`
+    }
     if (usual && close) return `At this hour ${other.short} is usually at ${world.location(usual.place).name}${ACTIVITY[usual.activity] ? `, ${ACTIVITY[usual.activity]}` : ''}.`
     if (usual && level >= 3) return `Around this time ${other.short} is usually at ${world.location(usual.place).name}, you'd guess.`
     if (seen && ago <= 24 * 60) return `You last saw ${other.short} at ${world.location(seen.where).name} ${agoWords(ago)}.`
@@ -448,14 +461,6 @@ export class Knowledge {
       if (area) return `You'd most likely find ${other.short} somewhere in ${area.name}.`
     }
     return undefined
-  }
-
-  /** Family, friends, sweethearts, colleagues, the same roof or the same workplace. */
-  private close(a: string, b: string): boolean {
-    const da = this.world.npc(a)
-    const db = this.world.npc(b)
-    if (da.home === db.home || (da.work && da.work === db.work)) return true
-    return da.relations.some((r) => r.to === b && r.bond >= 1) || db.relations.some((r) => r.to === a && r.bond >= 1)
   }
 
   /** Someone within 5 km whom the NPC knows, and who probably knows more about the topic (FO, chapter 5). */

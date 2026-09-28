@@ -13,7 +13,7 @@ import { callName } from '../content'
 import { standingOf } from '../standing'
 import { LAND_LAW } from '../social/crime'
 import { factById, heardBy } from '../news'
-import { heardClaim } from '../belief'
+import { heardClaim, IN_PERSON, reconsider, SAW_IT } from '../belief'
 
 // Without AI an NPC falls back on its schedule, its needs and the daily goals
 // of its profession (FO, chapter 7: the utility layer). Goals chosen by the
@@ -61,12 +61,19 @@ function carryWord(world: World, npcId: string, goal: Goal): void {
     return
   }
   const heard = heardBy(world, goal.target!)
+  const mine = heardBy(world, npcId)
   for (const id of goal.message!) {
     const fact = factById(world, id)
-    if (!fact || heard[id]) continue
+    if (!fact) continue
+    // Someone who comes all this way to tell you in person is heard out; more so when they saw it (M10.6).
+    const weight = IN_PERSON + (mine[id]?.from === 'witness' ? SAW_IT : 0)
+    if (heard[id]) {
+      // Heard it before and did not believe it: they think again (M10.6).
+      if (heard[id]!.stance) reconsider(world, goal.target!, fact, npcId, weight)
+      continue
+    }
     const h = (heard[id] = { level: 3, reliability: 0.9, from: npcId, t: world.now })
-    // Someone who comes all this way to tell you in person is heard out.
-    heardClaim(world, goal.target!, fact, h, 25)
+    heardClaim(world, goal.target!, fact, h, weight)
   }
   // Only now does the other know it; the register hears it was done (M10.2).
   delivered(world, goal)
@@ -496,6 +503,21 @@ export function usualPlace(world: World, npcId: string, at = world.now): { place
 }
 
 /** Where someone usually is now, doing what, and until when: a time fact for a conversation (M10.3: "Brannoc is back at six"). */
+/**
+ * Where someone has gone today, off their usual round (M10.6, Mirte at the
+ * market in Waagdam): another settlement than their day would put them in, or
+ * where they are walking to. What those who know their day know.
+ */
+export function goneTo(world: World, npcId: string): string | undefined {
+  const s = world.state.npcs[npcId]
+  if (!s || s.dead || s.absent) return undefined
+  const where = s.note?.where ?? s.location
+  const there = world.content.locations.get(where)
+  if (!there) return undefined
+  const usual = world.content.locations.get(usualPlace(world, npcId)?.place ?? world.npc(npcId).home)
+  return usual && there.area !== usual.area ? where : undefined
+}
+
 export function routineNow(world: World, npcId: string, at = world.now): { place: string; activity: ScheduleBlock['activity']; until: number } | undefined {
   const block = currentBlock(world, npcId, at)
   const usual = block ? usualPlace(world, npcId, at) : undefined

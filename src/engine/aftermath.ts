@@ -2,7 +2,6 @@ import { invite } from './social/invite'
 import { placeProp } from './props'
 import { welcomingIn } from './social/groups'
 import { agree } from './agreements'
-import { checkedClaims } from './claims'
 import { orderGoods } from './economy/ledger'
 import { arrive, startProject, templateFor } from './growth/growth'
 import type { Output } from './commands'
@@ -16,8 +15,8 @@ import { holds, type QuestHost } from './quests/engine'
 import type { Selector, Verb, VerbText } from './quests/planschema'
 import { planOf, runEffect, running, setAreaNews, startPlan, type PlanState, type StepState } from './quests/plans'
 import { setMood, shiftBond } from './social/deeds'
-import { causeOf, queueSignal, watchBelief } from './signals'
-import { askTrader, isTrader, mayChaseAway } from './belief'
+import { causeOf, queueSignal } from './signals'
+import { askTrader, isTrader, lookForYourself, mayChaseAway } from './belief'
 import { remember } from './npc/execute'
 import { setRank } from './social/rank'
 import { addCrowd } from './growth/crowds'
@@ -487,7 +486,9 @@ export function runVerb(world: World, ctx: PlanContext, verb: Verb, st: StepStat
     const to = one(world, ctx, v.to)
     if (!who || !to || who === to || !world.content.npcs.has(who) || !world.content.npcs.has(to) || !world.alive(who) || !world.alive(to)) return false
     const heard = world.state.news?.heard[who] ?? {}
-    const message = (world.state.news?.facts ?? []).filter((f) => heard[f.id] && heard[f.id]!.stance !== 'rejects' && (f.claim?.subject === v.about || f.about.includes(v.about))).map((f) => f.id)
+    // Not what the other already believes (M10.6: nobody walks to Sijbrand to tell him of a leak he is shoring).
+    const theirs = world.state.news?.heard[to] ?? {}
+    const message = (world.state.news?.facts ?? []).filter((f) => heard[f.id] && heard[f.id]!.stance !== 'rejects' && (f.claim?.subject === v.about || f.about.includes(v.about)) && !(theirs[f.id] && !theirs[f.id]!.stance)).map((f) => f.id)
     if (!message.length) return false
     const s = world.npcState(who)
     const goal: Goal = { id: `g${++world.state.goalSeq}`, type: 'Talk', target: to, priority: 1, source: 'ai', created: world.now, until: world.now + 2 * DAY, message }
@@ -730,28 +731,6 @@ export function mediateBetween(world: World, a: string, b: string, by: string): 
   const ctx: PlanContext = { plan: { plan: '', started: world.now, phase: 0, cause: '', groups: {} }, bind: {}, host: { pass: () => [] }, out: [] }
   mediate(world, ctx, [a, b], by, {})
   return bonds[a]?.[b]?.grudge === undefined && bonds[b]?.[a]?.grudge === undefined ? 'reconciled' : 'worse'
-}
-
-/** Someone goes to look at a place: the truth of it is what they believe now. */
-function lookForYourself(world: World, who: string, subject: string, key: string): void {
-  const store = world.state.news
-  if (!store) return
-  const facts = store.facts.filter((f) => f.claim?.subject === subject && f.claim.key === key)
-  const truth = [...facts].reverse().find((f) => f.truth !== false)
-  const mine = (store.heard[who] ??= {})
-  for (const f of facts) {
-    const h = mine[f.id]
-    if (!h) continue
-    const value = h.level === 1 && f.claim!.far !== undefined ? f.claim!.far : f.claim!.value
-    if (truth && value === truth.claim!.value) delete h.stance
-    else h.stance = 'rejects'
-  }
-  if (truth) {
-    mine[truth.id] = { level: 3, reliability: 1, from: 'witness', t: world.now }
-    watchBelief(world, who, truth, 'witness')
-  }
-  // What the stranger said about it, and was not so, is found out (M10.3).
-  checkedClaims(world, who, subject, key)
 }
 
 /** Trust that counts for making peace is a bond: a plain neighbour is no mediator. */

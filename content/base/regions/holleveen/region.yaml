@@ -95,7 +95,7 @@ regions:
         clear: 4
     # What you can see from afar, and how far (km).
     landmarks:
-      - { area: molenend, text: "the sails of De Zwaan turn above the reeds", range: 4 }
+      - { area: molenend, text: "the tall mill De Zwaan above the reeds", range: 4 }
       - { area: veenhoek, text: "the roofs and the peat smoke of Veenhoek", range: 3 }
       - { area: waagdam, text: "the tower of the Waag of Waagdam", range: 5 }
       - { area: kloosterveen, text: "the bell tower of the priory above the trees", range: 3 }
