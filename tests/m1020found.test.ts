@@ -49,4 +49,27 @@ describe('M10.20: what you found out', () => {
     const portraits = [...page.matchAll(/<figcaption>([^<]+)<small>/g)].map((m) => m[1])
     expect(portraits).toEqual(['Mirte Bakker'])
   })
+
+  it('what is still to find shows as question marks and numbers, never as names (Bram)', async () => {
+    const engine = await walked()
+    const book = discoveredBook(engine)
+    const journal = engine.state.player.journal ?? {}
+    const left = [...content.locations.values()].filter((l) => l.area === 'veenhoek' && journal[l.id] === undefined).length
+    expect(left).toBeGreaterThan(0)
+    expect(book).toMatch(new RegExp(`### Veenhoek\\n[\\s\\S]*?<!-- picture:unknown-${left} -->\\n\\nStill to find here: ${left} places\\.`))
+    const strangers = [...content.npcs.values()].filter((n) => journal[n.id] === undefined).length
+    expect(book).toContain(`Not yet met or heard of: ${strangers} people.`)
+    expect(book).toMatch(/Not yet come upon: \d+ quests\./)
+    // A secret Mirte has not told: that there is one; once told, the question mark goes.
+    const mirte = content.npcs.get('npc_mirte')!
+    expect(mirte.secrets.length).toBeGreaterThan(0)
+    expect(book).toMatch(/\*\*Mirte Bakker\*\*[\s\S]*?\? (Something not yet told|\d+ things not yet told)\./)
+    for (const secret of mirte.secrets) (engine.state.flags ??= {})[`secret:npc_mirte:${secret.id}`] = true
+    expect(discoveredBook(engine).split('**Mirte Bakker**')[1]!.split('**')[0]).not.toMatch(/not yet told/)
+    // On the page: a question mark in the gallery for each stranger, up to eight, and how many more.
+    const page = discoveredAtlasHtml(engine)
+    const gallery = page.split('id="people"')[1]!.split('<section')[0]!
+    expect(gallery.match(/<figure class="unknown"><div class="q">\?<\/div>/g)).toHaveLength(7)
+    expect(gallery).toContain(`<div class="q">+${strangers - 7}</div>`)
+  })
 })

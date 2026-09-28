@@ -1,6 +1,7 @@
 import type { Engine, JournalEntry } from './engine'
 import { DEFAULT_PALETTE } from './map/palette'
 import { hexMapData, type HexMapData } from './map/view'
+import { escapeHtml } from './markdown'
 import { hexMapSvg, worldAtlasHtml } from './worldatlas'
 
 // What you have found out (M10.20; Bram, 28 September 2026: "een export van
@@ -42,14 +43,29 @@ export function discoveredBook(engine: Engine): string {
   add('Where things stand', [...para(`It is ${world.date()}. You are at ${status.location}${status.area && status.area !== status.location ? `, in ${status.area}` : ''}, with ${status.money}.`)])
   if (hexMapData(world, { whole: true })?.hexes.length) add('The land as you have seen it', ['<!-- picture:seen -->', '', ...para('Only the land you have seen, and the places you know of; the rest is blank.')])
 
+  // What is still to find (M10.20; Bram: "zodat ze zien wat ze nog niet hebben ontdekt"): only how many, never what.
+  const { content } = world
+  const journal = world.state.player.journal ?? {}
+  const knows = (id: string) => journal[id] !== undefined
+  const flags = world.state.flags ?? {}
+  const unknown = (n: number, one: string, many: string, lead: string, tiles = true): string[] => (n > 0 ? [...(tiles ? [`<!-- picture:unknown-${n} -->`, ''] : []), `${lead} ${n} ${n === 1 ? one : many}.`, ''] : [])
+  const areaOf = (name: string) => [...content.areas.values()].find((a) => a.name === name)
+  const placesLeft = (areaId: string) => [...content.locations.values()].filter((l) => l.area === areaId && !knows(l.id)).length
+
   for (const [part, title] of PARTS) {
     const entries = status.journal[part]
     const body: string[] = part === 'people' && entries.length ? ['<!-- picture:portraits -->', ''] : []
     let group: string | undefined
+    const closeGroup = () => {
+      // Under an area the stranger knows: how many of its places are still to find.
+      const area = part === 'places' && group ? areaOf(group) : undefined
+      if (area) body.push(...unknown(placesLeft(area.id), 'place', 'places', 'Still to find here:'))
+    }
     for (const entry of entries as JournalEntry[]) {
       const page = engine.page(entry.id)
       if (!page) continue
       if (entry.group && entry.group !== group) {
+        closeGroup()
         group = entry.group
         body.push(`### ${group}`, '')
       }
@@ -59,9 +75,24 @@ export function discoveredBook(engine: Engine): string {
       const items = lines.filter((l) => l.startsWith('- '))
       for (const line of lines.filter((l) => !l.startsWith('- '))) body.push(line, '')
       if (items.length) body.push(...items, '')
+      // A secret this person has not told the stranger: that there is one, not what.
+      const untold = content.npcs.get(entry.id)?.secrets.filter((x) => !flags[`secret:${entry.id}:${x.id}`]).length ?? 0
+      if (untold) body.push(`? ${untold === 1 ? 'Something not yet told.' : `${untold} things not yet told.`}`, '')
       if (page.sources.length) body.push(`*Heard from: ${page.sources.join('; ')}.*`, '')
       if (page.links.length) body.push(`See also: ${page.links.map((l) => l.name).join(', ')}.`, '')
     }
+    closeGroup()
+    if (part === 'places') {
+      const areas = [...content.areas.values()].filter((a) => !knows(`area_${a.id}`) && !(a.topic && knows(a.topic)) && [...content.locations.values()].some((l) => l.area === a.id && !knows(l.id)) && ![...content.locations.values()].some((l) => l.area === a.id && knows(l.id)))
+      if (areas.length) body.push('### Beyond what you know', '', ...unknown(areas.length, 'part of the land', 'parts of the land', 'Not yet heard of:'))
+    }
+    // The people still to meet stand in the gallery as question marks; here only how many.
+    if (part === 'people') body.push(...unknown([...content.npcs.values()].filter((n) => !knows(n.id)).length, 'person', 'people', 'Not yet met or heard of:', false))
+    if (part === 'quests') {
+      const found = new Set(status.journal.quests.map((q) => q.id))
+      body.push(...unknown([...content.quests.values()].filter((q) => !found.has(`quest_${q.id}`)).length, 'quest', 'quests', 'Not yet come upon:'))
+    }
+    if (part === 'lore') body.push(...unknown([...content.topics.values()].filter((t) => t.kind === 'lore' && !knows(t.id)).length, 'story', 'stories', 'Not yet heard:'))
     add(title, body)
   }
 
@@ -92,6 +123,16 @@ function seenWindow(data: HexMapData, margin = 6): HexMapData {
   return { ...data, left: even, top, width: right - even + 1, height: top - bottom + 1 }
 }
 
+/** Question marks for what is still to find (M10.20): one each, up to eight, then how many more. */
+function unknownFigures(n: number): string {
+  const shown = Math.min(n, n > 8 ? 7 : 8)
+  return `${Array.from({ length: shown }, () => '<figure class="unknown"><div class="q">?</div><figcaption>?</figcaption></figure>').join('')}${n > shown ? `<figure class="unknown"><div class="q">+${n - shown}</div><figcaption>?</figcaption></figure>` : ''}`
+}
+
+function unknownTiles(n: number): string {
+  return n > 0 ? `<div class="unknowns">${unknownFigures(n)}</div>` : ''
+}
+
 /** What the stranger found out, as an atlas page (M10.20), with the pictures there are of what they know. */
 export function discoveredAtlasHtml(engine: Engine, pictures: (id: string) => string | undefined = () => undefined, written?: string): string {
   const world = engine.world
@@ -113,6 +154,13 @@ export function discoveredAtlasHtml(engine: Engine, pictures: (id: string) => st
     ],
     people: met,
     figures: (key) => {
+      const tiles = /^unknown-(\d+)$/.exec(key)
+      if (tiles) return unknownTiles(Number(tiles[1]))
+      if (key === 'portraits') {
+        const faces = met.map((id) => ({ npc: world.content.npcs.get(id)!, src: pictures(id) })).filter((f) => f.npc)
+        const strangers = [...world.content.npcs.values()].filter((n) => (world.state.player.journal ?? {})[n.id] === undefined).length
+        return `<div class="gallery">${faces.map((f) => (f.src ? `<figure><img src="${f.src}" alt="" loading="lazy"><figcaption>${escapeHtml(f.npc.name)}<small>${escapeHtml(f.npc.short)}</small></figcaption></figure>` : `<figure class="unknown"><div class="q">${escapeHtml(f.npc.name.charAt(0))}</div><figcaption>${escapeHtml(f.npc.name)}<small>${escapeHtml(f.npc.short)}</small></figcaption></figure>`)).join('')}${unknownFigures(strangers)}</div>`
+      }
       if (key !== 'seen') return undefined
       const data = hexMapData(world, { whole: true })
       return data ? hexMapSvg(seenWindow(data), palette, `The land ${who} has seen`) : ''

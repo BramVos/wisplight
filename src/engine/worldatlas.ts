@@ -247,6 +247,9 @@ code{font-family:var(--f-mono);font-size:.88em}
 .gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:16px;margin:12px 0 20px}
 .gallery figure{margin:0}.gallery img{width:100%;aspect-ratio:3/4;object-fit:cover;display:block;border:1px solid var(--rule)}
 .gallery figcaption{font-size:13.5px;margin-top:5px;line-height:1.25}.gallery small{display:block;color:var(--ink-3);font-size:12px}
+.unknowns{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:12px;margin:8px 0 14px;max-width:760px}
+figure.unknown{margin:0}figure.unknown .q{display:grid;place-items:center;aspect-ratio:3/4;border:1px dashed var(--rule);background:var(--paper);font-family:var(--f-display);font-size:44px;color:var(--ink-3)}
+.unknowns figure.unknown .q{aspect-ratio:4/3;font-size:34px}figure.unknown figcaption{font-size:13px;margin-top:5px;color:var(--ink-3)}
 .cards{display:grid;gap:10px;margin:8px 0 18px}
 .coins{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}.months{grid-template-columns:repeat(auto-fill,minmax(136px,1fr))}
 .card{border:1px solid var(--rule);background:var(--paper);padding:10px 12px;display:flex;flex-direction:column;gap:2px}
