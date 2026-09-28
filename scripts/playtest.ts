@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { argv, stdout } from 'node:process'
-import { Engine, type Output } from '../src/engine'
+import { Engine, MockLlm, type Output } from '../src/engine'
 import { loadContentFromDir } from '../src/node/content'
 
 // The playtest protocol per storyline (M9.4, docs/PLAYTEST.md): can the player
@@ -29,6 +29,12 @@ interface Line {
   after: Step[]
   /** Words that show the problem and its end in what the player sees. */
   words: RegExp
+  /**
+   * Played with the mock model (M10.22): for a line where the chronicler has
+   * a part (a district, the weave round), with the replies the mock gives;
+   * the models run after every step, as the app runs them in the background.
+   */
+  model?: boolean
 }
 
 const HOUR = 60
@@ -335,6 +341,36 @@ export const LINES: Line[] = [
     words: /scrap|damaged|mend|REPAIR|cracked|cold before you struck/i,
   },
   {
+    // M10.22: a line that begins in Veenhoek and runs on in a district of Graafhaven the game makes.
+    id: 'faraway',
+    world: 'base',
+    title: 'Van Veenhoek naar een wijk van Graafhaven (met het mockmodel)',
+    seed: 7,
+    model: true,
+    recognise: ['look', 'north', 'east', 'talk mirte', '2', 'What happened to the mill?', 'bye', 'journal'],
+    influence: [
+      { note: 'Go and see what the capital makes of it. Shortcut: to Oude Zijl, where the land ends to the west.' },
+      '@goto loc_oude_zijl_sluice',
+      'head west',
+      'head west',
+      { note: 'At the edge: go on to Graafhaven on foot.' },
+      '1',
+      { note: 'Shortcut: in through the gate to the market, in the late morning.' },
+      '@goto loc_graafhaven_market',
+      '@time 11',
+      { askAround: true },
+      { note: 'Doing something here made the first district: new ways lead off the market. Go in and meet the people there.' },
+      'look',
+      'north',
+      { askAround: true },
+      'north',
+      { askAround: true },
+      'journal',
+    ],
+    after: [{ wait: 1 * DAY }, 'look', { askAround: true }, 'journal'],
+    words: /flour|mill|Mirte|Graafhaven|cousin|word of it|Word for/i,
+  },
+  {
     // The test world (M10.17, tests/worlds/other): every milestone plays here too, to show it is generic.
     id: 'deepwell',
     world: 'other',
@@ -367,19 +403,23 @@ const say = (outputs: Output[]) => outputs.map((o) => o.text).join('\n')
 
 async function play(line: Line, act: boolean): Promise<string> {
   const content = await loadContentFromDir(worldDir(line.world), line.world)
-  const engine = new Engine(content, { seed: line.seed, builder: true })
+  const engine = new Engine(content, { seed: line.seed, builder: true, ...(line.model ? { llm: new MockLlm('good') } : {}) })
   const out: string[] = [say(engine.start())]
   const steps: [string, Step[]][] = [['RECOGNISE', line.recognise], ...(act ? [['INFLUENCE', line.influence] as [string, Step[]]] : []), ['AFTER', line.after]]
   for (const [phase, list] of steps) {
     out.push(`\n==== ${phase} (${engine.world.date()})`)
     for (const step of list) {
-      if (typeof step === 'string') out.push(`\n> ${step}${step.startsWith('@') ? '   [build command: a shortcut]' : ''}\n${say(await engine.handle(step))}`)
+      if (typeof step === 'string') {
+        out.push(`\n> ${step}${step.startsWith('@') ? '   [build command: a shortcut]' : ''}\n${say(await engine.handle(step))}`)
+        if (line.model) await engine.runModels()
+      }
       else if ('wait' in step) out.push(`\n[${step.wait / HOUR} hours pass]\n${say(engine.tick(step.wait))}`)
       else if ('askAround' in step) {
         // Whoever is here and awake: what's new?
         const here = engine.world.npcsAt(engine.state.player.location).filter((id) => engine.world.npcState(id).activity !== 'asleep')
         if (!here.length) out.push('\n# Nobody here to ask.')
         for (const id of here.slice(0, 3)) for (const c of [`talk ${engine.world.npc(id).short.toLowerCase()}`, '2', 'bye']) out.push(`\n> ${c}\n${say(await engine.handle(c))}`)
+        if (line.model) await engine.runModels()
       }
       else out.push(`\n# ${step.note}`)
     }

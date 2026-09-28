@@ -101,7 +101,7 @@ export class MockLlm implements LlmClient {
             : request.schemaName === 'far_place'
             ? this.farPlace(String(request.meta?.['name'] ?? 'the place'), (request.meta?.['named'] as { key: string; name: string; pronoun: string }[] | undefined) ?? [])
             : request.schemaName === 'weave'
-            ? this.weave((request.meta?.['fresh'] as string[] | undefined) ?? [], (request.meta?.['known'] as string[] | undefined) ?? [])
+            ? this.weave((request.meta?.['fresh'] as string[] | undefined) ?? [], (request.meta?.['known'] as string[] | undefined) ?? [], (request.meta?.['lines'] as string[] | undefined) ?? [])
             : request.schemaName === 'district'
             ? this.district(String(request.meta?.['town'] ?? 'the town'), String(request.meta?.['name'] ?? 'the district'))
             : request.schemaName === 'legends'
@@ -112,13 +112,14 @@ export class MockLlm implements LlmClient {
   }
 
   /** A weave round (M10.22): the first new person is kin of the first known, hides one thing, and has word for them. */
-  weave(fresh: string[], known: string[]): string {
+  weave(fresh: string[], known: string[], lines: string[] = []): string {
     const [a, b] = [fresh[0], known[0]]
-    if (!a || !b) return JSON.stringify({ bonds: [], secrets: [], thread: null })
+    if (!a || !b) return JSON.stringify({ bonds: [], secrets: [], thread: null, echo: null })
     return JSON.stringify({
       bonds: [{ a, b, role: 'kin', why: 'They are cousins on the mother\'s side, and have not seen each other since they were children.' }, { a: 'nobody', b, role: 'friend', why: 'Made up.' }],
       secrets: [{ who: a, text: 'Owes more than a year of rent and has told nobody.', hint: 'Always has an errand when the landlord comes by.' }],
       thread: { from: a, to: b, name: 'Word for a cousin', ask: 'If you go home that way, tell my cousin I am well, and that I still have the knife.', why: 'The two families fell out over an inheritance, and this is the first word in years.' },
+      echo: lines[0] ? { who: fresh[1] ?? a, line: lines[0], text: 'Word of it has come this far, and here someone knows the stranger by it.' } : null,
     })
   }
 

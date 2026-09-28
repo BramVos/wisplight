@@ -26,6 +26,8 @@ export interface WeaveReply {
   bonds: { a: string; b: string; role: string; why: string }[]
   secrets: { who: string; text: string; hint: string }[]
   thread?: { from: string; to: string; name: string; ask: string; why: string } | null
+  /** A new person in an open storyline (M10.22: a line across areas): a messenger, someone who heard of it, someone it touches. */
+  echo?: { who: string; line: string; text: string } | null
 }
 
 const MOST_BONDS = 4
@@ -70,10 +72,10 @@ export function weaveRequest(world: World, key: string): LlmRequest {
     const where = world.content.areas.get(world.content.locations.get(npc.home)?.area ?? '')?.name ?? ''
     return `  ${n}: ${npc.name}, ${world.content.professions.get(npc.profession)?.name ?? npc.profession}${where ? `, of ${where}` : ''}. ${npc.public_facts[0] ?? ''}`
   }
-  const lines = chronicleState(world)
-    .lines.filter((l) => l.status !== 'closed')
+  const open = chronicleState(world)
+    .lines.filter((l) => l.open && l.people.length)
     .slice(-5)
-    .map((l) => `  ${l.title}`)
+  const lines = open.map((l) => `  ${l.id}: ${l.title} (with ${l.people.slice(0, 3).map((p) => world.npc(p).name).join(', ')})`)
   const text = { type: 'string' }
   const object = (properties: Record<string, unknown>) => ({ type: 'object', additionalProperties: false, required: Object.keys(properties), properties })
   return {
@@ -85,6 +87,7 @@ export function weaveRequest(world: World, key: string): LlmRequest {
       `BONDS: at most ${MOST_BONDS}, each between one NEW person and one KNOWN person, by their ids, with a role from ROLES (what b is to a: "child" means b is a's child) and why, in one plain sentence the chronicle keeps. A niece among the bakers, a creditor, an old friend from before: small and believable, never a secret love or a crime unless the frame invites it.`,
       `SECRETS: at most ${MOST_SECRETS}, each for one NEW person: what they hide (one sentence) and a hint someone watchful might notice (one sentence).`,
       'THREAD: one at most, or null: a NEW person asks the stranger to go and see a KNOWN person from HOME (to carry word, a letter, a greeting), with a short name for it, what they say when asking (in their voice, one or two sentences), and why it matters. It must reach back to where the stranger came from.',
+      'ECHO: one at most, or null: a NEW person who has a part in one of the OPEN STORYLINES (a messenger from it, someone who heard of it and recognises the stranger, someone it touches), by the line\'s id, with what happens, in one sentence the chronicle keeps.',
       'Use only ids given below. JSON only.',
     ].join('\n'),
     prompt: [
@@ -102,9 +105,10 @@ export function weaveRequest(world: World, key: string): LlmRequest {
       bonds: { type: 'array', items: object({ a: text, b: text, role: text, why: text }) },
       secrets: { type: 'array', items: object({ who: text, text, hint: text }) },
       thread: { anyOf: [object({ from: text, to: text, name: text, ask: text, why: text }), { type: 'null' }] },
+      echo: { anyOf: [object({ who: text, line: text, text }), { type: 'null' }] },
     }),
     maxTokens: 1200,
-    meta: { weave: key, town, fresh, known },
+    meta: { weave: key, town, fresh, known, lines: open.map((l) => l.id) },
   }
 }
 
@@ -124,10 +128,10 @@ export function weaveReply(text: string): WeaveReply | null {
  * new person, checked as content; the thread as a visit a new person asks
  * of the stranger. Each goes into the chronicle with why. Returns what was kept.
  */
-export function applyWeave(world: World, key: string, reply: WeaveReply | null): { bonds: number; secrets: number; thread: boolean } {
+export function applyWeave(world: World, key: string, reply: WeaveReply | null): { bonds: number; secrets: number; thread: boolean; echo: boolean } {
   const g = growth(world)
   g.weavePending = (g.weavePending ?? []).filter((k) => k !== key)
-  const kept = { bonds: 0, secrets: 0, thread: false }
+  const kept = { bonds: 0, secrets: 0, thread: false, echo: false }
   if (!reply) return kept
   const { fresh } = sides(world, key)
   // The other side is someone who was there before, alive: checked on the world as it is, so a replay keeps the same.
@@ -169,6 +173,14 @@ export function applyWeave(world: World, key: string, reply: WeaveReply | null):
       recordFact(world, { kind: 'weave', about: [t.from, t.to], place: place(t.from), belang: 1, title: name, text: { precise: why, village: `${world.npc(t.from).name} of ${town} has word for ${world.npc(t.to).name}.`, far: `Someone in ${town} has word for home.` } })
       kept.thread = true
     }
+  }
+  // The echo: a fact with the line's pattern and one of its people, so it goes on that line, and the line runs on here.
+  const e = reply.echo
+  const line = e ? chronicleState(world).lines.find((l) => l.id === e.line && l.open && l.people.length) : undefined
+  const echo = e ? fit(e.text, 240) : undefined
+  if (e && line && echo && fresh.includes(e.who) && world.alive(e.who)) {
+    recordFact(world, { kind: 'weave', pattern: line.pattern, about: [e.who, line.people[0]!], place: place(e.who), belang: 1, title: line.title, text: { precise: echo, village: echo, far: `There is news from ${town}.` } })
+    kept.echo = line.people.includes(e.who)
   }
   return kept
 }

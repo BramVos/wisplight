@@ -7,6 +7,7 @@ import { standingOf } from './standing'
 import { heardClaim, provenWarnings, reconsider } from './belief'
 import type { Claim, Fact, Heard } from './state'
 import type { World } from './world'
+import { rideMinutes } from './map/passages'
 
 // News (design: lore and world change, "Wie weet wat"). A fact is written once
 // by the motor. Witnesses know it at once; after that it goes from person to
@@ -353,12 +354,12 @@ function newsArrives(world: World): void {
   for (let i = store.facts.length - 1; i >= 0 && world.now - store.facts[i]!.t <= 30 * DAY; i--) recent.push(store.facts[i]!)
   const fresh = recent.reverse().filter((f) => f.belang >= 2 && world.now - f.t <= (FORGET_AFTER[f.belang] ?? 30 * DAY))
   if (fresh.length === 0) return
-  const km = new Map<string, number>()
+  const km = new Map<string, { km: number; hours: number }>()
   const areaOf = (place: string) => world.content.locations.get(place)?.area ?? place
   const kmOf = (a: string, b: string) => {
     const key = `${areaOf(a)}|${areaOf(b)}`
     let v = km.get(key)
-    if (v === undefined) km.set(key, (v = areaKm(world, a, b)))
+    if (v === undefined) km.set(key, (v = reach(world, a, b)))
     return v
   }
   for (const id of Object.keys(world.state.npcs).sort()) {
@@ -370,9 +371,9 @@ function newsArrives(world: World): void {
     for (const fact of fresh) {
       if (heard[fact.id] || (!away && fact.belang < 4)) continue
       // Worked out once per area, not per person (M9.3).
-      const km = kmOf(fact.place, where)
+      const { km, hours } = kmOf(fact.place, where)
       if (km > REACH_KM[fact.belang]!) continue
-      if (world.now < fact.t + (1 + km / 4) * 60) continue
+      if (world.now < fact.t + hours * 60) continue
       const h: Heard = { level: km <= 10 ? 2 : 1, reliability: km <= 10 ? 0.8 : 0.6, from: 'news', t: world.now }
       heard[fact.id] = h
       heardClaim(world, id, fact, h)
@@ -409,6 +410,35 @@ function readBoards(world: World): void {
 
 /** How far news of each belang travels, in km. */
 const REACH_KM = [0, 0, 10, 30, 100, Infinity]
+
+/**
+ * How far news has to go between two places, and how many hours it takes: by
+ * the map at a walking pace; between places a line of transport joins where
+ * one is not on the map (M10.22: word reaches Havenmoor with the packet), as
+ * far as the ride goes (some 35 km a day) and as long as it takes.
+ */
+function reach(world: World, a: string, b: string): { km: number; hours: number } {
+  const area = (place: string) => world.content.locations.get(place)?.area
+  const pos = (place: string) => world.content.areas.get(area(place) ?? '')?.pos
+  if (!pos(a) || !pos(b)) {
+    const ride = rideBetween(world, area(a), area(b))
+    if (ride !== undefined) return { km: (ride / (24 * 60)) * 35, hours: ride / 60 }
+  }
+  const km = areaKm(world, a, b)
+  return { km, hours: 1 + km / 4 }
+}
+
+/** The ride between two areas on a line of transport that stops in both, if one does. */
+function rideBetween(world: World, a: string | undefined, b: string | undefined): number | undefined {
+  if (!a || !b || a === b) return undefined
+  const areaOfStop = (stop: string) => world.content.locations.get(stop)?.area ?? (world.state.growth?.far?.[stop] ? String(world.state.growth.far[stop]!.area['id']) : undefined)
+  for (const p of [...world.content.passages.values()].sort((x, y) => x.id.localeCompare(y.id))) {
+    const from = p.stops.find((s) => areaOfStop(s) === a)
+    const to = p.stops.find((s) => areaOfStop(s) === b)
+    if (from && to && from !== to) return rideMinutes(world, p, from, to)
+  }
+  return undefined
+}
 
 /** Between the areas of two places, in km; far beyond the region for a place that is not on the map. */
 function areaKm(world: World, a: string, b: string): number {

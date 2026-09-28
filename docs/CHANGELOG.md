@@ -1,5 +1,14 @@
 # Changelog
 
+## M10.22 deel: verhaallijnen over gebieden heen, 29 september 2026
+
+- **Een lijn uit Veenhoek loopt door in Graafhaven.** Verhaallijnen volgen mensen en geen gebied, dus dat kon al in principe. Nieuw is dat de weefronde ook een echo mag geven: één nieuwe persoon van de wijk krijgt een rol in een open verhaallijn (een bode, iemand die ervan hoorde en je herkent). Dat feit komt op die lijn, die dan plekken heeft in Veenhoek én in de wijk.
+- **Nieuws reist met het vervoer.** Een plek zonder positie op de kaart, zoals Havenmoor voor Skerrow, lag altijd buiten bereik van het nieuws. Nu komt groot nieuws er aan met het pakketschip, na de overtocht en niet eerder.
+- **Een wijk die gemaakt wordt, is geen nieuws.** Het feit staat in het logboek en de kroniek, maar niemand vertelt het en het komt op geen verhaallijn. Eerst begon Hester op "What's new?" over "the Dyke Gate and the fish market".
+- **Een nieuwe speeltest, `faraway`,** de eerste met het mockmodel: van Mirte en de molen via de westrand naar Graafhaven. Daar maak je de eerste wijk, Hester vraagt je Grietje thuis op te zoeken, en Joris kent een lijn uit Veenhoek. Het protocol in `docs/PLAYTEST.md` noemt hem.
+
+Testen: `npm run playtest -- faraway` en lees `docs/playtest/faraway.txt`. Tests in `tests/m1022weave.test.ts` en `tests/m1022lines.test.ts`.
+
 ## M10.22 deel: de weefronde na een wijk, 29 september 2026
 
 - **Na elke wijk weeft de kroniekverteller de nieuwe mensen in de wereld.** Eén aanroep (`weave`, hooguit 1.200 tokens, normale voorrang). Hij krijgt de nieuwe mensen van de wijk, de mensen die je kent (die van thuis eerst), waar je vandaan kwam en de open verhaallijnen. Hij stelt alleen verbindingen voor: hooguit vier banden tussen een nieuwe en een bestaande persoon, hooguit twee geheimen voor nieuwe mensen, en één draad terug naar huis.

@@ -20,7 +20,7 @@ Regels voor het script:
 
 Zelf spelen met een model, in de app: kies een lijn, begin een nieuw spel, en noteer per vraag ja, nee of met moeite, met de zin die het verschil maakte. Wat een model toevoegt of juist weglaat, is dan zichtbaar naast de transcripten hier.
 
-## De zes lijnen
+## De lijnen
 
 ### De Nethermarch
 
@@ -42,6 +42,13 @@ Zelf spelen met een model, in de app: kies een lijn, begin een nieuw spel, en no
 - Herkennen: eerst nee, nu met moeite. Niemand ontdekte het lek, dus niemand wist ervan (gerepareerd: Teunis vindt het, zoals in het scenario van M8.2). Over twaalf seeds bereikt het nieuws Veenhoek in de helft niet voor de doorbraak; de speler hoort het alleen van Teunis in Waagdam.
 - Invloed: beperkt. De speler kan Sijbrand nu waarschuwen ("tell sijbrand about the dyke" geeft door wat hij hoorde; dat kon niet). Maar een vreemdeling wordt niet geloofd, en Teunis gaat niet met een vreemdeling mee. Alleen met eerder opgebouwd vertrouwen lukt het.
 - Afloop: ja, na reparaties. Het water komt waar de speler staat, en het nieuws van de doorbraak wordt verteld; dat nieuws werd wel opgeschreven maar nooit getoond.
+
+**Van Veenhoek naar een wijk van Graafhaven** (`faraway`, seed 7, met het mockmodel, M10.22)
+
+- De enige lijn met een model: de wijk en de weefronde komen van de kroniekverteller, hier met de antwoorden van het mockmodel. Na elke stap draaien de modellen, zoals de app ze op de achtergrond draait.
+- Herkennen: zoals bij `flour`: Mirte en de molen.
+- Invloed: via de westrand verder naar Graafhaven, daar iemand iets vragen. De eerste wijk komt, met nieuwe wegen vanaf de markt. In de wijk vraagt Hester je om Grietje thuis op te zoeken (de draad naar huis), en Joris weet van een lijn uit Veenhoek (de echo). De band tussen Hester en Grietje staat in het dagboek.
+- Afloop: de lijn loopt door in de wijk. Zonder speler gebeurt er in Graafhaven niets: er is geen wijk.
 
 ### Skerrow
 

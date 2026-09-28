@@ -24,7 +24,7 @@ async function districtMade(engine: Engine): Promise<void> {
 }
 
 describe('M10.22: the weave round', () => {
-  it('weaves the new people of a district into the world: a bond with why, a secret, a thread home; nothing made up is kept', async () => {
+  it('weaves the new people of a district into the world: a bond with why, a secret, a thread home, a line that runs on here; nothing made up is kept', async () => {
     const llm = new MockLlm('good')
     const engine = new Engine(content, { seed: 11, builder: true, llm })
     await districtMade(engine)
@@ -50,7 +50,14 @@ describe('M10.22: the weave round', () => {
     expect(engine.state.news!.facts.filter((f) => f.kind === 'weave').map((f) => f.text.precise)).toEqual([
       "They are cousins on the mother's side, and have not seen each other since they were children.",
       'The two families fell out over an inheritance, and this is the first word in years.',
+      'Word of it has come this far, and here someone knows the stranger by it.',
     ])
+    // The echo: an open line from home runs on in the district, with a new person in it (M10.22: lines across areas).
+    const lines = (calls[0]!.meta as { lines: string[] }).lines
+    const line = engine.state.chronicle!.lines.find((l) => l.id === lines[0])!
+    expect(line.people).toContain(meta.fresh[1])
+    expect(line.places.some((p) => engine.content.locations.get(p)?.area === 'graafhaven')).toBe(true)
+    expect(line.places.some((p) => engine.content.locations.get(p)?.area !== 'graafhaven')).toBe(true)
     // Once only, and the log plays back to the same world.
     await engine.runModels()
     expect(llm.calls.filter((c) => c.schemaName === 'weave')).toHaveLength(1)

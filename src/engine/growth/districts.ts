@@ -298,11 +298,13 @@ export function applyDistrict(world: World, topic: string, id: string, words: Di
     if (world.aiLive && made.npcs.length) (g.weavePending ??= []).push(key)
     const q = quarters.find((d) => d.id === id)!
     const town = world.content.topics.get(topic)?.name ?? topic
+    // A change of the world, in the log and the chronicle; not news anyone tells, and no storyline (belang 0, no witnesses).
     recordFact(world, {
       kind: 'district',
       about: [topic],
       place: String(made.locations[0]?.['id'] ?? heartOf(world, topic)),
-      belang: 1,
+      belang: 0,
+      witnesses: [],
       title: `${q.name} of ${town}`,
       text: { precise: `${q.name} of ${town}: ${q.line}`, village: `${town} has ${q.name}, they say.`, far: `${town} is a big place.` },
     })
