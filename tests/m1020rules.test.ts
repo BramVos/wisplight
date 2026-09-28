@@ -42,6 +42,9 @@ describe('M10.20: a proposal adds to the rules', () => {
     await engine.handle('look')
     expect(engine.state.player.character).toBeUndefined()
     expect(engine.creationData()).toBeUndefined()
+    // A craft's skill of its own stays fine: skills are checked only where the world has them.
+    const crafted = draftResult(result.files, { changes: [{ kind: 'craft', id: 'field_electronics', yaml: 'id: field_electronics\nname: Field Electronics\nskill: electronics\nranks:\n  novice: { practise: [] }\n' }], files: [] })
+    expect(crafted.problems.filter((p) => /which is no skill/.test(p))).toEqual([])
     // The faith step says so.
     expect(worldStepRequest(files, 'faiths', 'Two faiths.').system).toContain('as kind patron')
   })
