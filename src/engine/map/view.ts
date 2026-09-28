@@ -279,7 +279,7 @@ function levelIndex(world: World, level: string): number {
  * own region, all of it known and clear, or, for a world without a region
  * map, a sample with a band for every terrain of the palette.
  */
-export function previewMapData(content: Content, palette: MapPalette): HexMapData {
+export function previewMapData(content: Content, palette: MapPalette, whole = false): HexMapData {
   const map = regionMap(content)
   const keys: string[] = []
   const keyOf = (k: string) => {
@@ -291,8 +291,9 @@ export function previewMapData(content: Content, palette: MapPalette): HexMapDat
   const ways: HexMapData['ways'] = []
   const places: HexMapData['places'] = []
   if (map) {
-    const width = Math.min(map.cols, 64)
-    const height = Math.min(map.rows, 40)
+    // A window around the start, or the whole region (the world book's map, M10.20).
+    const width = whole ? map.cols : Math.min(map.cols, 64)
+    const height = whole ? map.rows : Math.min(map.rows, 40)
     const start = map.places.get(content.locations.get(content.world.start.location)?.area ?? '') ?? { col: Math.floor(map.cols / 2), row: Math.floor(map.rows / 2) }
     const left = Math.max(0, Math.min(map.cols - width, start.col - Math.floor(width / 2)))
     const top = Math.min(map.rows - 1, Math.max(height - 1, start.row + Math.floor(height / 2)))

@@ -11,6 +11,7 @@ import { createProvider, type ModelInfo, type Provider, type ProviderId } from '
 import { SettingsStore, type Cipher, type ChosenRole, type PictureChoice, type SettingsSummary } from './settings'
 import { UsageStore, type UsageSummary } from './usage'
 import { picturePrice } from './pricing'
+import { cachedPictureIn } from '../worldbook'
 import { LlmError } from '../../engine/dialogue/llm'
 
 // Everything the settings screen and the game need from the AI side, without
@@ -189,10 +190,7 @@ export class AiService {
    */
   /** A picture already made, from disk only, never drawn now (M10.18: the world book shows what there is). */
   cachedPicture(content: Content, id: string): string | undefined {
-    const subject = pictureSubject(content, id)
-    if (!subject || subject.plain) return undefined
-    const file = join(this.options.dir, 'pictures', content.world.id.replace(/[^a-z0-9_-]/gi, ''), `${subject.id}-${subject.key}.jpg`)
-    return existsSync(file) ? `data:image/jpeg;base64,${readFileSync(file).toString('base64')}` : undefined
+    return cachedPictureIn(this.options.dir, content, id)
   }
 
   async picture(content: Content, id: string): Promise<string | undefined> {

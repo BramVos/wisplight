@@ -3,10 +3,10 @@
 // bold, italics and code), everything else escaped. A comment marks where a
 // picture goes; the caller says what it is.
 
-const escape = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+export const escapeHtml = (s: string): string => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 
 function inline(text: string): string {
-  return escape(text)
+  return escapeHtml(text)
     .replace(/`([^`]+)`/g, '<code>$1</code>')
     .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
     .replace(/(^|[^*])\*([^*\s][^*]*)\*/g, '$1<em>$2</em>')
@@ -27,7 +27,7 @@ export function markdownHtml(markdown: string, picture: (key: string) => string 
     } else if (line.startsWith('```')) {
       const body: string[] = []
       for (i++; i < lines.length && !lines[i]!.startsWith('```'); i++) body.push(lines[i]!)
-      out.push(`<pre>${escape(body.join('\n'))}</pre>`)
+      out.push(`<pre>${escapeHtml(body.join('\n'))}</pre>`)
       i++
     } else if (/^#{1,4} /.test(line)) {
       const level = line.indexOf(' ')
@@ -54,7 +54,7 @@ export function markdownHtml(markdown: string, picture: (key: string) => string 
 /** A whole page: a title, a quiet style that prints well, and the book. */
 export function htmlPage(title: string, body: string): string {
   return `<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><title>${escape(title)}</title>
+<html lang="en"><head><meta charset="utf-8"><title>${escapeHtml(title)}</title>
 <style>
 body { font-family: Georgia, 'Times New Roman', serif; max-width: 46rem; margin: 2rem auto; padding: 0 1rem; line-height: 1.5; color: #222; background: #fdfcf8; }
 h1, h2, h3 { font-weight: normal; } h2 { margin-top: 2.5rem; border-bottom: 1px solid #ccc; }

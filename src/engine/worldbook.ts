@@ -3,6 +3,8 @@ import { formatMoney } from './items'
 import { verbName } from './quests/verbs'
 import { SURFACE } from './map/palette'
 import { htmlPage, markdownHtml } from './markdown'
+import { designLog } from './designlog'
+import { WORLD_STEPS } from './worldguide'
 
 // The world book (M10.18; Bram, 28 September 2026): everything a world is,
 // written out of its content, so that every world has a book that is never
@@ -84,6 +86,8 @@ export function worldBook(content: Content, input: WorldBookInput = {}): string 
   // 2. The map of the land: the regions as the designer drew them.
   const regions = [...content.regions.values()]
   add('The map of the land', [
+    // Where the atlas page draws the region in the world's palette (M10.20); the plain page and a Markdown reader skip it.
+    ...(regions.length ? ['<!-- picture:map -->', ''] : []),
     ...regions.flatMap((r) => [`### ${r.name}`, '', ...para(`${r.size[0]} by ${r.size[1]} km, in hexes of ${r.hex * 1000} m; the open land between the places is ${place(r.area)}.`), ...block(r.zones), ...table(['Mark', 'Land'], Object.entries(r.legend))]),
     ...((w.map?.levels ?? []).filter((l) => l.id !== SURFACE).length ? para(`Levels: ${(w.map!.levels ?? []).map((l) => l.name).join(', ')}.`) : []),
   ])
@@ -167,10 +171,11 @@ export function worldBook(content: Content, input: WorldBookInput = {}): string 
   // 12. Coins, prices, measures and the calendar.
   const cal = w.calendar
   add('Coins, measures and calendar', [
-    ...(coins ? ['### Coins', '', ...table(['Coin', 'Short', 'Worth'], coins.map((u) => [u.name, u.short, u.value]))] : []),
+    // The atlas page shows the coins and the calendar as cards in place of the table and the line after the marker (M10.20).
+    ...(coins ? ['### Coins', '', '<!-- picture:coins -->', '', ...table(['Coin', 'Short', 'Worth'], coins.map((u) => [u.name, u.short, u.value]))] : []),
     ...(content.items.size && coins ? ['### Prices', '', ...table(['Thing', 'Worth'], [...content.items.values()].filter((i) => i.value > 0).sort((a, b) => a.name.localeCompare(b.name)).map((i) => [i.name, formatMoney(i.value, coins)]))] : []),
     ...(content.voice?.measures.length ? ['### Measures', '', ...para(content.voice.measures.join(', ') + '.')] : []),
-    ...(cal ? ['### Calendar', '', ...para(`Months: ${cal.months.join(', ')}. The week: ${cal.weekdays.join(', ')}${cal.era ? `. Years are counted ${cal.era}` : ''}.`)] : []),
+    ...(cal ? ['### Calendar', '', '<!-- picture:calendar -->', '', ...para(`Months: ${cal.months.join(', ')}. The week: ${cal.weekdays.join(', ')}${cal.era ? `. Years are counted ${cal.era}` : ''}.`)] : []),
     ...(w.bells.length ? ['### Bells', '', ...list(w.bells.map((b) => `${cap(b.name)} at ${place(b.at)}, at ${b.hours.join(', ')} o'clock`))] : []),
     ...(w.law ? ['### The law', '', ...para(`The law ${w.law.where} is kept by the ${w.law.officer}${w.law.npc ? ` (${person(w.law.npc)})` : ''}.`)] : []),
   ])
@@ -208,17 +213,38 @@ export function worldBook(content: Content, input: WorldBookInput = {}): string 
   const improvised = [...content.locations.values()].filter((l) => l.improvise).map((l) => `${l.name} (${l.improvise!.domain})`).concat([...content.objectTypes.values()].filter((t) => t.improvise).map((t) => `the ${t.name} (${t.improvise!.domain})`))
   add('The look and sound of the world', [
     ...(w.pictures?.style ? para(`Pictures: ${w.pictures.style}`) : []),
-    ...(w.map?.palette ? para(`The map calls its land ${Object.entries(w.map.palette.names).map(([k, n]) => `${n} (${k})`).join(', ')}.`) : []),
+    ...(w.map?.palette ? ['<!-- picture:palette -->', '', ...para(`The map calls its land ${Object.entries(w.map.palette.names).map(([k, n]) => `${n} (${k})`).join(', ')}.`)] : []),
     ...(improvised.length ? para(`Where an act the rules do not know may be improvised: ${improvised.join(', ')}.`) : []),
   ])
-  // The design log (M10.18): its notes and decisions, a level down; the answers still being written stay out.
+  // The design log (M10.18): which steps of the guide were taken and which left to the neutral default (M10.20),
+  // then its notes and decisions, a level down; the answers still being written stay out.
   const design = input.design?.trim().replace(/^#\s.*\n+/, '').replace(/^## Answers\n[\s\S]*?(?=^## |(?![\s\S]))/m, '').replace(/^(#+) /gm, '##$1 ').trim()
-  add('How this world was made', design ? [design, ''] : [])
+  add('How this world was made', design ? [...stepsTaken(input.design!), design, ''] : [])
 
   const lines = [`# ${w.name}: the world book`, '', `Written out of the content of ${w.name} (npm run worldbook ${input.folder ?? w.id}); the editor writes it again on every save. Do not edit it by hand.`, '']
   chapters.forEach((c, i) => lines.push(`## ${i + 1}. ${c.title}`, '', ...c.body))
   return lines.join('\n').replace(/\n{3,}/g, '\n\n').trim() + '\n'
 }
+
+/**
+ * The steps of the guide in a world's design log (M10.20): a step the
+ * designer skipped, or never took up, is simply empty, and the world has the
+ * neutral default the guide names for it. The last decision on a step counts;
+ * asking again with a new answer ("changed") decides nothing.
+ */
+function stepsTaken(designText: string): string[] {
+  const log = designLog(designText)
+  // A world not built by the steps (only notes, or the writing aid) has nothing to say here.
+  if (!log.decisions.some((d) => WORLD_STEPS.some((s) => s.title === d.step))) return []
+  const left = WORLD_STEPS.flatMap((step) => {
+    const last = [...log.decisions].reverse().find((d) => d.step === step.title && d.decision !== 'changed')
+    return last?.decision === 'accepted' ? [] : [`- **${step.title}** (${last?.decision === 'skipped' ? 'skipped' : last?.decision === 'rejected' ? 'proposal turned down' : 'not taken up'}): ${step.skipped}`]
+  })
+  return ['### The steps of the guide', '', ...(left.length ? ['Every step not listed here was taken. These were left empty, and the world has the neutral default:', '', ...left] : ['Every step of the guide was taken.']), '']
+}
+
+/** Markers only the atlas page draws (M10.20). */
+export const ATLAS_ONLY = ['map', 'coins', 'calendar', 'palette']
 
 /**
  * The world book as a page of HTML (M10.18), with the pictures there are: an
@@ -227,6 +253,8 @@ export function worldBook(content: Content, input: WorldBookInput = {}): string 
  */
 export function worldBookHtml(content: Content, markdown: string, pictures: (id: string) => string | undefined = () => undefined): string {
   const body = markdownHtml(markdown, (key) => {
+    // The map, the cards and the swatches are the atlas page's (M10.20): the plain page has the text.
+    if (ATLAS_ONLY.includes(key)) return undefined
     if (key !== 'portraits') {
       const src = pictures(key)
       return src ? `<figure><img src="${src}" alt=""></figure>` : undefined

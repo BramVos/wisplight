@@ -291,6 +291,8 @@ The old gentleman? He came before the Starfall, when this was a mountain and not
 
 ### Coins
 
+<!-- picture:coins -->
+
 | Coin | Short | Worth |
 | --- | --- | --- |
 | gold piece | gp | 100 |
@@ -335,6 +337,8 @@ The old gentleman? He came before the Starfall, when this was a mountain and not
 a fathom of rope, a cask of oil, a creel of fish.
 
 ### Calendar
+
+<!-- picture:calendar -->
 
 Months: Deepwinter, Thawmoon, Seedtide, Blossom, Brightsun, Midsummer, Highsun, Harvest, Leaffall, Mistmoon, Frostwane, Longnight, Starfall Days. The week: Moonday, Tidesday, Windsday, Thornsday, Fireday, Starday, Restday. Years are counted SF.
 
@@ -425,6 +429,8 @@ Death: You wake on your back on the shingle a day later, coughing up salt water.
 ## 19. The look and sound of the world
 
 Pictures: A small illustration in the manner of an old high-fantasy book plate, pen and ink with a light watercolour wash, sea greens and storm greys, a lone rocky island under a vast sky.
+
+<!-- picture:palette -->
 
 The map calls its land sea water (water), tide channel (channel), salt grass (fields), heather (heath), salt marsh (fen), cliffs (cliff), dune (dune), caves (tunnel), cliff tops (crown).
 

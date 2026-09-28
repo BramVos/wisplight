@@ -48,6 +48,8 @@ Type LOOK to look around. Type HELP if you are lost. You probably are.
 
 ## 2. The map of the land
 
+<!-- picture:map -->
+
 ### the Holleveen
 
 30 by 20 km, in hexes of 250 m; the open land between the places is the Holleveen.
@@ -1088,6 +1090,8 @@ Long before there was a Count, the free folk of the terps swore by Baduhenna in 
 
 ### Coins
 
+<!-- picture:coins -->
+
 | Coin | Short | Worth |
 | --- | --- | --- |
 | guilder | gl | 160 |
@@ -1152,6 +1156,8 @@ Long before there was a Count, the free folk of the terps swore by Baduhenna in 
 an ell of cloth, a pound of butter, a mudde of rye, a stack of turf.
 
 ### Calendar
+
+<!-- picture:calendar -->
 
 Months: Louwmaand, Sprokkelmaand, Lentemaand, Grasmaand, Bloeimaand, Zomermaand, Hooimaand, Oogstmaand, Herfstmaand, Wijnmaand, Slachtmaand, Wintermaand, Dijkdagen. The week: Maandag, Dinsdag, Woensdag, Donderdag, Vrijdag, Zaterdag, Rustdag. Years are counted AW.
 
@@ -1319,6 +1325,8 @@ Death: You wake a day later, cold to the bone, with the taste of earth in your m
 ## 19. The look and sound of the world
 
 Pictures: A small illustration in the manner of a 17th-century Dutch etching with a light ink wash, muted greys, browns and greens, fine lines, a low wet land under a wide grey sky.
+
+<!-- picture:palette -->
 
 The map calls its land fen (fen), boggy fen (bog), hummock (hummock), dry ridge (ridge), open water (water), channel (channel), woods (woods), heath (heath), fields (fields), tunnel (tunnel), crowns (crown).
 
