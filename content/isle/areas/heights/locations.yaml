@@ -111,6 +111,7 @@ locations:
         look: A long green mound, and the short grass on it is warm to the touch.
         verbs:
           dig: You kneel on the warm grass, and under your hands something breathes, very slow. You get up again.
+    pos: [1.56, 4.41]
 
   - id: loc_skerrow_headland
     name: The Headland
@@ -163,6 +164,7 @@ locations:
       text: "The squat stone tower stands at the very end of the island with the sea on three sides, and the great lamp behind its green glass is cold. From up here you see why the ships stopped coming: without that light, Skerrow is only rocks in the dark."
       night: At night the headland is all wind and the sound of the sea, and the tower is a black shape with no light in it. Somewhere out there a ship would have to guess where the rocks begin.
       far: "On the last headland stands a squat stone tower with a gallery of green glass: the Lamp of Skerrow, with no light in it."
+    pos: [2.31, 3.16]
 
   - id: loc_skerrow_mage_tower
     name: The Drowned Mage's Tower
@@ -200,3 +202,4 @@ locations:
     arrival:
       text: Half a tower of black stone stands against the sky, its top long since fallen into the sea. As you come closer the air begins to hum, faint as a finger on glass, and the hair on your arms stands up.
       far: On the last rise of the island stands half a tower of black stone, broken off like a tooth.
+    pos: [2.31, 4.09]

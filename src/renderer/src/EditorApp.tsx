@@ -1911,15 +1911,22 @@ function PalettePanel({ bridge, world, saved }: { bridge: EditorBridge; world: s
 
   const [signPreview, setSignPreview] = useState<PaletteView['preview']>()
   const [adding, setAdding] = useState('')
+  const [mapDraft, setMapDraft] = useState<EditorDraft>()
 
+  const load = useCallback(
+    () =>
+      bridge.palette(world).then((v) => {
+        setView(v)
+        setPalette(v.palette)
+        setChanged(false)
+        setSignPreview(undefined)
+      }),
+    [bridge, world],
+  )
   useEffect(() => {
-    void bridge.palette(world).then((v) => {
-      setView(v)
-      setPalette(v.palette)
-      setChanged(false)
-      setSignPreview(undefined)
-    })
-  }, [bridge, world])
+    setMapDraft(undefined)
+    void load()
+  }, [load])
   // Other signs than the saved ones are laid anew on the land (M10.20): the map shows them before saving.
   const signsKey = JSON.stringify(palette?.signs ?? null)
   useEffect(() => {
@@ -2000,6 +2007,29 @@ function PalettePanel({ bridge, world, saved }: { bridge: EditorBridge; world: s
       await saved()
     }
   }
+  // A first map from the places (M10.20), for a world without one: a proposal, saved only when accepted.
+  const makeMap = async () => {
+    setBusy(true)
+    try {
+      setMapDraft(await bridge.mapDraft(world))
+    } finally {
+      setBusy(false)
+    }
+  }
+  const acceptMap = async () => {
+    if (!mapDraft) return
+    setBusy(true)
+    try {
+      const result = await bridge.saveDraft(world, { changes: mapDraft.changes, world: '', files: [] })
+      if (!result.ok) return setMapDraft({ ...mapDraft, problems: result.problems })
+      setMapDraft(undefined)
+      setMessage('The map is saved. Paint the land in its drawing, or let the chronicler do it in the Palette step.')
+      await saved()
+      await load()
+    } finally {
+      setBusy(false)
+    }
+  }
   const propose = async () => {
     setBusy(true)
     const result = await bridge.proposePalette(world, ask)
@@ -2022,6 +2052,18 @@ function PalettePanel({ bridge, world, saved }: { bridge: EditorBridge; world: s
         ))}
       </div>
       {preview ? <HexMap data={preview} style={style} mode="map" height={420} label="The palette on a map of this world" /> : <p className="muted">The world does not load, so there is no map to try it on.</p>}
+      {view.region === false && (
+        <div className="map-draft">
+          <p className="muted small">This world has no region map yet, so the map above is a sample of the palette, and the game plays without one. The editor can lay one out from the places, their exits and minutes; you paint the land afterwards.</p>
+          {mapDraft ? (
+            <DraftView draft={mapDraft} busy={busy} accept={() => void acceptMap()} drop={() => setMapDraft(undefined)} />
+          ) : (
+            <button type="button" className="link" disabled={busy} onClick={() => void makeMap()}>
+              [Make a map from the places]
+            </button>
+          )}
+        </div>
+      )}
       {style === 'bw' ? (
         <p className="muted small">Black and white is the paper set in greys; change paper to change it.</p>
       ) : (

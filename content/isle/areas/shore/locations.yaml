@@ -68,6 +68,7 @@ locations:
         look: East, above the rocks, the harbour wall of the Hythe.
       - words: [pools, crabs, anemones]
         look: Pools as clear as window glass, with crabs sidling away from your shadow and anemones closing like fists.
+    pos: [2.06, 1.59]
 
   - id: loc_skerrow_cliff_path
     name: The Cliff Path
@@ -96,3 +97,4 @@ locations:
         look: A stand of pale trees on the rise to the north, bent by the wind.
       - words: [thrift, campion, sea campion]
         look: Thrift and sea campion grow along the cliff top, pink and white.
+    pos: [1.56, 2.22]

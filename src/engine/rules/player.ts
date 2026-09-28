@@ -673,15 +673,16 @@ export function nightOut(world: World): Output[] {
 }
 
 /** Sinking in soft ground: Athletics against DC 14, or you are Mired until you work free. */
-export function sink(world: World): string {
+/** Soft ground takes a leg; `ground` is what the world calls it there (M10.20: Skerrow's salt marsh is no fen). */
+export function sink(world: World, ground = 'fen'): string {
   const c = character(world)
   if (!c) return 'The ground gives way under you and you sink to the knee. It takes a while to work free.'
   if ((world.state.companions ?? []).some((m) => !m.away)) return 'The ground gives way under you and you sink to the thigh, but hands grab your collar and haul you out.'
   const result = playerCheck(world, 'athletics', 14)
   if (result.degree === 'success' || result.degree === 'critical success') return 'The ground gives way under you and you sink to the knee. It takes a while to work free.'
-  if (useBlessing(world.content, c, 'Unbroken', world.now, ONCE.day)) return 'The fen takes you to the waist, and something old and stubborn in you will not have it. You tear free.'
+  if (useBlessing(world.content, c, 'Unbroken', world.now, ONCE.day)) return `The ${ground} takes you to the waist, and something old and stubborn in you will not have it. You tear free.`
   c.conditions['mired'] = 1
-  return 'The fen takes you to the waist and holds on. You are Mired: STRUGGLE to work free.'
+  return `The ${ground} takes you to the waist and holds on. You are Mired: STRUGGLE to work free.`
 }
 
 /** STRUGGLE: Athletics against DC 13, ten minutes a try. */

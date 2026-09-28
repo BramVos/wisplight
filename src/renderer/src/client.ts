@@ -170,6 +170,8 @@ export interface EditorBridge {
   build(world: string, change?: { limit?: number; reset?: boolean }): Promise<BuildView & { adjusted: boolean }>
   /** The polish round (M10.20): only the descriptions of the places the Check names, or these; light: the player's lighter model. */
   polish(world: string, choice?: { ids?: string[]; light?: boolean }): Promise<EditorDraft>
+  /** A first map of a world without one (M10.20), from its places, exits and minutes: a proposal to accept. */
+  mapDraft(world: string): Promise<EditorDraft>
   /** The open proposal of a step (M10.20): read it (no third argument), keep it, or forget it (null). */
   openDraft(world: string, step: string, kept?: { draft: EditorDraft; asked: string } | null): Promise<{ draft: EditorDraft; asked: string; at: string } | undefined>
   /** Enhance with AI (after M10.17): the designer's answer to a step written out as a fuller brief, with what only they can decide. */
@@ -430,7 +432,7 @@ function contentFiles(): { path: string; text: string }[] {
  */
 export async function createEditor(): Promise<EditorBridge> {
   if (window.wisplight?.editor) return window.wisplight.editor
-  const { applyEdits, draftRequest, draftResult, editorView, entities, entityYaml, filesOfWorld, lineDiff, loadContent, MockLlm, newWorldFiles, paletteRequest, paletteView, readDraft, readPalette, readVoice, savePalette, saveVoice, simulate, voiceRequest, voiceYaml, withReturnExits, worldAtlasHtml, worldBook, worldsIn, worldStepRequest, worldFixRequest, mergeFix, polishRequest, readPolish, recheckDraft, descriptionCheck, enhanceRequest, readEnhance, hourlyBudget } = await import('../../engine')
+  const { applyEdits, draftRequest, draftResult, editorView, entities, entityYaml, filesOfWorld, lineDiff, loadContent, MockLlm, newWorldFiles, paletteRequest, paletteView, mapDraft, readDraft, readPalette, readVoice, savePalette, saveVoice, simulate, voiceRequest, voiceYaml, withReturnExits, worldAtlasHtml, worldBook, worldsIn, worldStepRequest, worldFixRequest, mergeFix, polishRequest, readPolish, recheckDraft, descriptionCheck, enhanceRequest, readEnhance, hourlyBudget } = await import('../../engine')
   let all = contentFiles()
   const builds: Record<string, BuildView> = {}
   const openDrafts = new Map<string, { draft: EditorDraft; asked: string; at: string }>()
@@ -470,6 +472,7 @@ export async function createEditor(): Promise<EditorBridge> {
     },
     simulate: async (world, days, seed) => simulate(loadContent(filesOfWorld(all, world)), days, seed),
     palette: async (world, palette) => paletteView(filesOfWorld(all, world), palette),
+    mapDraft: async (world) => shownDraft(mapDraft(filesOfWorld(all, world))),
     savePalette: async (world, palette) => {
       const files = filesOfWorld(all, world)
       const outcome = savePalette(files, palette)

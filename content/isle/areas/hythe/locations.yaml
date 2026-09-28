@@ -41,6 +41,7 @@ locations:
       - words: [nets, posts]
         look: Nets hang drying from every post, smelling of fish and weed.
         take: They are Brannoc's nets, and he would notice.
+    pos: [2.44, 1.59]
 
   - id: loc_skerrow_reed_cottage
     name: The Reeds' Cottage
@@ -70,6 +71,7 @@ locations:
         take: It is the boy's, and he is not finished with it.
       - words: [floats, shells]
         look: Floats and shells crowd every shelf.
+    pos: [2.44, 1.59]
 
   - id: loc_skerrow_green
     name: Skerrow Hythe, the Green

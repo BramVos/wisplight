@@ -67,6 +67,7 @@ export const INPUTS: Record<string, z.ZodType<unknown[]>> = {
   'editor:save-draft': z.tuple([world, data(5_000_000)]),
   'editor:palette': z.tuple([world, data(200_000).optional()]),
   'editor:save-palette': z.tuple([world, data(200_000)]),
+  'editor:map-draft': z.tuple([world]),
   'editor:propose-palette': z.tuple([world, text(20_000)]),
   'editor:voice': z.tuple([world]),
   'editor:save-voice': z.tuple([world, text(500_000)]),

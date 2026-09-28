@@ -296,7 +296,10 @@ export function hexName(world: World, map: RegionMap, hex: Hex): string {
     ? `On ${cell.way.name}`
     : onKnownRidge(world, cell)
       ? `On the ${named('ridge')}`
-      : ({ fen: `In the ${named('fen')}`, fields: `In the ${named('fields')}`, woods: `In the ${named('woods')}`, heath: `On the ${named('heath')}`, water: 'On the ice', road: 'On the road', canal: 'On the tow path', path: 'On a path' } as Record<string, string>)[cell.land] ?? `In the ${named(cell.land)}`
+      : cell.terrain
+        ? // A region's own terrain (M10.20): on open land and water, in what closes around you.
+          `${cell.land === 'heath' || cell.land === 'water' ? 'On' : 'In'} the ${named(cell.terrain)}`
+        : ({ fen: `In the ${named('fen')}`, fields: `In the ${named('fields')}`, woods: `In the ${named('woods')}`, heath: `On the ${named('heath')}`, water: 'On the ice', road: 'On the road', canal: 'On the tow path', path: 'On a path' } as Record<string, string>)[cell.land] ?? `In the ${named(cell.land)}`
   if (!where) return ground
   const name = areaName(world, where.area)
   if (where.km < 0.4) return `${ground}, just outside ${name}`
@@ -371,17 +374,20 @@ export function describeHex(world: World, hex: Hex): Output {
     return { kind: 'room', text: ['Somewhere in the mist', lines.join(' '), waysLine(world, map, hex)].join('\n') }
   }
   if (cell.way) {
+    // The way's own line (M10.20), else the Nethermarch's for its kind.
+    const own = map.region.paths.find((p) => p.name === cell.way!.name)?.text
     lines.push(
-      cell.way.kind === 'canal'
-        ? 'The tow path runs beside the grey water, rutted by the horses that pull the boats.'
-        : cell.way.kind === 'road'
-          ? `A cart road runs through here, ${cell.land === 'fen' ? 'raised on a bank above the wet' : 'rutted and grey'}.`
-          : `A narrow path of trodden earth winds on between the ${cell.land === 'fen' ? 'pools' : 'ditches'}.`,
+      own ??
+        (cell.way.kind === 'canal'
+          ? 'The tow path runs beside the grey water, rutted by the horses that pull the boats.'
+          : cell.way.kind === 'road'
+            ? `A cart road runs through here, ${cell.land === 'fen' ? 'raised on a bank above the wet' : 'rutted and grey'}.`
+            : `A narrow path of trodden earth winds on between the ${cell.land === 'fen' ? 'pools' : 'ditches'}.`),
     )
   } else if (onKnownRidge(world, cell)) {
     lines.push(`Under the sedge the ground is firm here: the ${terrainName(world.content.world.map?.palette, 'ridge')}, if you keep to it.`)
   } else {
-    lines.push(LAND[cell.land])
+    lines.push(landLine(world, map, cell))
   }
   const sign = map.sign(cell)
   if (sign?.text) lines.push(sign.text)
@@ -407,7 +413,7 @@ export function hexLocation(world: World, id: string): Location | undefined {
     area: map.region.area,
     tags,
     aliases: [],
-    description: { day: LAND[cell.land] },
+    description: { day: landLine(world, map, cell) },
     variants: [],
     exits: {},
     details: [],
@@ -419,6 +425,17 @@ export function hexLocation(world: World, id: string): Location | undefined {
     forage: (GROUND_OF[cell.land] ?? []).filter((r) => world.content.resources.get(r)?.gather),
     hidden: [],
   }
+}
+
+/**
+ * What the stranger reads on a hex's land: the region's own line for its
+ * terrain (M10.20), a plain line with its name when it has none, else the
+ * Nethermarch's line for the land.
+ */
+function landLine(world: World, map: RegionMap, cell: Cell): string {
+  if (!cell.terrain) return LAND[cell.land]
+  const own = map.region.lands?.[cell.terrain]?.text
+  return own ?? `The ${terrainName(world.content.world.map?.palette, cell.terrain)} lies all around you.`
 }
 
 /** The grounds of the economy that a kind of land is (M10.5). */
@@ -709,7 +726,7 @@ export function walk(world: World, plan: WalkPlan, pass: (minutes: number) => Ou
     }
     if (stepCell.bog) {
       minutes += 10
-      reason = sink(world)
+      reason = sink(world, terrainName(world.content.world.map?.palette, stepCell.terrain ?? 'fen'))
       break
     }
     const stop = map.sign(stepCell)?.stops

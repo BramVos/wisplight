@@ -69,7 +69,7 @@ Maren lifts a hand. "Go on, then."
 
 > journal
 People: Maren Holt, Wenna.
-Places: Skerrow Hythe, the Shore, Skerrow Hythe, the Harbour, The Headland, The Salt Kettle, The Tidepools, The Wreck Strand.
+Places: Skerrow, Skerrow Hythe, the Shore, Skerrow Hythe, the Harbour, The Headland, The Salt Kettle, The Tidepools, The Wreck Strand.
 Lore: the stranger in Skerrow Hythe, the death of Wenna Dray, Wenna to be given back to the Tidemother, the Grey Gull, news in Skerrow Hythe.
 
 ==== INFLUENCE (Windsday 3 Leaffall 412 SF, 14:02 (afternoon))
@@ -160,7 +160,7 @@ Pip lifts a hand. "Go on, then."
 
 > journal
 People: Maren Holt, Pip Reed, Wenna.
-Places: Skerrow Hythe, the Shore, Skerrow Hythe, the Green, Skerrow Hythe, the Harbour, The Headland, The Salt Kettle, The Tidepools, The Wreck Strand.
+Places: Skerrow, Skerrow Hythe, the Shore, Skerrow Hythe, the Green, Skerrow Hythe, the Harbour, The Headland, The Salt Kettle, The Tidepools, The Wreck Strand.
 Lore: the stranger in Skerrow Hythe, the death of Wenna Dray, Wenna to be given back to the Tidemother, the Grey Gull, news in Skerrow Hythe.
 
 # The burial is this afternoon on the headland (M10.7): go up, and see who comes.
@@ -387,7 +387,7 @@ Maren lifts a hand. "Go on, then."
 
 > journal
 People: Maren Holt, Wenna.
-Places: Skerrow Hythe, the Shore, Skerrow Hythe, the Harbour, The Headland, The Salt Kettle, The Tidepools, The Wreck Strand.
+Places: Skerrow, Skerrow Hythe, the Shore, Skerrow Hythe, the Harbour, The Headland, The Salt Kettle, The Tidepools, The Wreck Strand.
 Lore: the stranger in Skerrow Hythe, the death of Wenna Dray, Wenna to be given back to the Tidemother, the Grey Gull, news in Skerrow Hythe.
 
 ==== AFTER (Windsday 3 Leaffall 412 SF, 14:02 (afternoon))
@@ -418,7 +418,7 @@ Maren lifts a hand. "Go on, then."
 
 > journal
 People: Maren Holt, Wenna.
-Places: Skerrow Hythe, the Shore, Skerrow Hythe, the Harbour, The Headland, The Salt Kettle, The Tidepools, The Wreck Strand.
+Places: Skerrow, Skerrow Hythe, the Shore, Skerrow Hythe, the Harbour, The Headland, The Salt Kettle, The Tidepools, The Wreck Strand.
 Lore: the stranger in Skerrow Hythe, the death of Wenna Dray, Wenna to be given back to the Tidemother, the Grey Gull, news in Skerrow Hythe.
 
 # The burial is this afternoon on the headland (M10.7): go up, and see who comes.

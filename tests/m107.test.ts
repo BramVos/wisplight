@@ -51,7 +51,9 @@ describe('M10.7: Skerrow mourns', () => {
     await engine.handle('@time 12')
     // Brannoc's boy dies: his father grieves, and still goes up to the headland.
     die(engine.world, 'npc_pip', { cause: 'fell from the cliff path', place: 'loc_skerrow_cliff_path' })
-    engine.tick(60)
+    // Since Skerrow has a map (M10.20) news crosses the island at its pace: the shore is a km from the Hythe, an hour
+    // and a quarter, and news beyond the village is worked out on the hour, so Brannoc hears it in the second hour.
+    engine.tick(120)
     expect(mourning(engine.world, 'npc_brannoc')?.id).toBe('npc_pip')
     engine.tick(DAY + 3 * 60)
     const brannoc = engine.state.npcs['npc_brannoc']!

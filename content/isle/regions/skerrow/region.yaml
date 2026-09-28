@@ -1,0 +1,93 @@
+# Skerrow (M10.20): the island as a region map. The editor laid it out from
+# the places, their exits and minutes; painted after the island's own texts:
+# cliffs to the west and north over the Glass Sea, the heights under heather
+# with the barrow across the top, salt grass round the Hythe, dunes at the
+# Wreck Strand, salt marsh by the tide pools, the headland with the sea on
+# three sides, and the sea all round. One character is a hex, 250 m each way;
+# the top row is the north.
+
+regions:
+  - id: skerrow
+    name: Skerrow
+    area: skerrow
+    origin: [0, 0]
+    size: [4, 6]
+    hex: 0.25
+    seed: 5557
+    legend: { "~": water, .: fields, ^: heath, '"': fen, "#": cliff, "%": dune, ":": road, ",": path }
+    # Each land walks like one of the engine's, with the line the stranger reads there.
+    lands:
+      water: { like: water, text: "Grey sea heaves all around you, cold and deep, and the island looks small from here." }
+      fields: { like: fields, text: "Salt grass grows short and wiry here, bent flat by the wind off the sea." }
+      heath: { like: heath, text: "Heather and bare grey stone climb towards the sky, and the wind never lets up." }
+      fen: { like: fen, text: "Salt marsh squelches under you, cut by little creeks that fill and empty with the tide." }
+      cliff: { like: heath, text: "The ground ends in grey cliffs here; far below, the sea booms in the caves." }
+      dune: { like: heath, text: "Pale sand and marram grass shift under your feet, and the sea is loud beyond the dunes." }
+    zone: [0.25, 0.25]
+    zones: |
+      ~~~~~~~~~~~~~~~~
+      ~~~~~~~~~~~~~~~~
+      ~~~~~~~~~~~~~~~~
+      ~~~~~~~~~~~~~~~~
+      ~~~~~####~~~~~~~
+      ~~~~##^^^#~~~~~~
+      ~~~~#^^^^^~~~~~~
+      ~~~~#^^^^^^~~~~~
+      ~~~~#^^^^^^~~~~~
+      ~~~~#^^^^^^~~~~~
+      ~~~~#^^^^^^#~~~~
+      ~~~~#^^^^^^#~~~~
+      ~~~~#^^^^^^~~~~~
+      ~~~~#^^....~~~~~
+      ~~~~#^.....~~~~~
+      ~~~~###....~~~~~
+      ~~~~##""...~~~~~
+      ~~~~#%""...~~~~~
+      ~~~~~%%%"..~~~~~
+      ~~~~~~%%~~~~~~~~
+      ~~~~~~~~~~~~~~~~
+      ~~~~~~~~~~~~~~~~
+      ~~~~~~~~~~~~~~~~
+      ~~~~~~~~~~~~~~~~
+      ~~~~~~~~~~~~~~~~
+    paths:
+      - kind: path
+        name: the strand path
+        text: A steep sheep track climbs between the rocks from the strand to the cliff top.
+        via: [[1.56, 1.59], [1.56, 2.22]]
+      - kind: path
+        name: the shore rocks
+        text: A way over wet black rock picks along the shore, slippery with weed.
+        via: [[1.56, 1.59], [2.06, 1.59]]
+      - kind: path
+        name: the grove track
+        text: A sheep track climbs inland through the heather towards the pale trees.
+        via: [[1.56, 2.22], [1.56, 3.16]]
+      - kind: path
+        name: the cliff track
+        text: A worn track runs along the cliff top towards the smoke of the Hythe.
+        via: [[1.56, 2.22], [2.31, 2.22]]
+      - kind: path
+        name: the harbour rocks
+        text: Flat rocks lead along the water to the harbour wall.
+        via: [[2.06, 1.59], [2.44, 1.59]]
+      - kind: path
+        name: the barrow track
+        text: A faint track climbs the bare height towards the long green mound.
+        via: [[1.56, 3.16], [1.56, 4.41]]
+      - kind: path
+        name: the beacon track
+        text: A track crosses the heather towards the squat tower on the headland.
+        via: [[1.56, 3.16], [2.31, 3.16]]
+      - kind: path
+        name: the headland track
+        text: A track climbs north from the green, past the last cottage, towards the headland.
+        via: [[2.31, 2.22], [2.31, 3.16]]
+      - kind: road
+        name: the harbour steps
+        text: Stone steps and a cobbled slope go down between the cottages to the harbour.
+        via: [[2.31, 2.22], [2.44, 1.59]]
+      - kind: path
+        name: the tower path
+        text: A narrow path runs north along the cliff top to the broken tower.
+        via: [[2.31, 3.16], [2.31, 4.09]]

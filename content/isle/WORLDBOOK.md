@@ -47,6 +47,51 @@ Type LOOK to look around. Type HELP if you are lost. You are, rather.
 
 ## 2. The map of the land
 
+<!-- picture:map -->
+
+### Skerrow
+
+4 by 6 km, in hexes of 250 m, drawn a character to 250 by 250 m; the open land between the places is Skerrow.
+
+```map
+~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~
+~~~~~####~~~~~~~
+~~~~##^^^#~~~~~~
+~~~~#^^^^^~~~~~~
+~~~~#^^^^^^~~~~~
+~~~~#^^^^^^~~~~~
+~~~~#^^^^^^~~~~~
+~~~~#^^^^^^#~~~~
+~~~~#^^^^^^#~~~~
+~~~~#^^^^^^~~~~~
+~~~~#^^....~~~~~
+~~~~#^.....~~~~~
+~~~~###....~~~~~
+~~~~##""...~~~~~
+~~~~#%""...~~~~~
+~~~~~%%%"..~~~~~
+~~~~~~%%~~~~~~~~
+~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~
+```
+
+| Mark | Land | Walks like | What you read there |
+| --- | --- | --- | --- |
+| ~ | sea | water | Grey sea heaves all around you, cold and deep, and the island looks small from here. |
+| . | salt grass | fields | Salt grass grows short and wiry here, bent flat by the wind off the sea. |
+| ^ | heather | heath | Heather and bare grey stone climb towards the sky, and the wind never lets up. |
+| " | salt marsh | fen | Salt marsh squelches under you, cut by little creeks that fill and empty with the tide. |
+| # | cliffs | heath | The ground ends in grey cliffs here; far below, the sea booms in the caves. |
+| % | dune | heath | Pale sand and marram grass shift under your feet, and the sea is loud beyond the dunes. |
+| : | road |  |  |
+| , | path |  |  |
+
 Levels: the caves, ground level, the cliff tops.
 
 ## 3. History and lore
@@ -104,6 +149,7 @@ Levels: the caves, ground level, the cliff tops.
 
 | Area | Kind | What it is | Sound |
 | --- | --- | --- | --- |
+| Skerrow | wilderness | The open island between the hamlet, the shore and the heights, salt grass and heather and cliff, with the sea all round. |  |
 | Skerrow Hythe | hamlet | The only hamlet on Skerrow, a dozen stone cottages round a little harbour, with the Salt Kettle for an inn. | sea |
 | the Heights | wilderness | The high ground of Skerrow, with the silver grove, the wyrm's barrow, the beacon and the old tower. | wind |
 | the Shore | wilderness | The rocky south shore of Skerrow, where the currents throw up whatever the sea breaks. | surf |
@@ -434,6 +480,6 @@ Pictures: A small illustration in the manner of an old high-fantasy book plate, 
 
 <!-- picture:palette -->
 
-The map calls its land sea water (water), tide channel (channel), salt grass (fields), heather (heath), salt marsh (fen), cliffs (cliff), dune (dune), caves (tunnel), cliff tops (crown).
+The map calls its land sea (water), tide channel (channel), salt grass (fields), heather (heath), salt marsh (fen), cliffs (cliff), dune (dune), caves (tunnel), cliff tops (crown).
 
 Where an act the rules do not know may be improvised: The Silver Grove (offering), the waystone (lore).

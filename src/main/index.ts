@@ -4,7 +4,7 @@ import { appendFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFi
 import { tmpdir } from 'node:os'
 import { basename, dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { ContentError, discoveredAtlasHtml, draftRequest, readSaveFile, saveAbout, saveFileName, saveFileText, SAVE_FILE_EXTENSION, type SaveFile, draftResult, Engine, ENTITY_KINDS, lineDiff, MapPaletteSchema, paletteRequest, paletteView, readDraft, readPalette, readVoice, savePalette, saveVoice, voiceRequest, voiceYaml, worldStepRequest, worldFixRequest, mergeFix, polishRequest, readPolish, recheckDraft, descriptionCheck, enhanceRequest, readEnhance, type Content, type Edit, type EntityKind, type FileChange, type CheckpointedSave, type MapPalette, type Output, type SaveData } from '../engine'
+import { ContentError, discoveredAtlasHtml, draftRequest, mapDraft, readSaveFile, saveAbout, saveFileName, saveFileText, SAVE_FILE_EXTENSION, type SaveFile, draftResult, Engine, ENTITY_KINDS, lineDiff, MapPaletteSchema, paletteRequest, paletteView, readDraft, readPalette, readVoice, savePalette, saveVoice, voiceRequest, voiceYaml, worldStepRequest, worldFixRequest, mergeFix, polishRequest, readPolish, recheckDraft, descriptionCheck, enhanceRequest, readEnhance, type Content, type Edit, type EntityKind, type FileChange, type CheckpointedSave, type MapPalette, type Output, type SaveData } from '../engine'
 import { designUpdate, readDesignChange } from '../engine/designlog'
 import { ContentEditor } from '../node/editor'
 import { AppKnobs, type AppKnobId } from '../node/knobs'
@@ -801,6 +801,11 @@ handle('editor:palette', async (_event, world: unknown, palette: unknown) => {
   const files = await readContentFiles(contentDir(), worldOf(world))
   const parsed = palette ? MapPaletteSchema.safeParse(palette) : undefined
   return paletteView(files, parsed?.success ? parsed.data : undefined)
+})
+// A first map from the places (M10.20): the region, laid out from the exits and minutes, as a proposal to accept.
+handle('editor:map-draft', async (_event, world: unknown) => {
+  devOnly()
+  return shownDraft(mapDraft(await readContentFiles(contentDir(), worldOf(world))))
 })
 handle('editor:save-palette', async (_event, world: unknown, palette: unknown) => {
   devOnly()

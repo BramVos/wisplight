@@ -9,6 +9,7 @@ areas:
     aliases: [the hythe, hythe, the hamlet, the village]
     fame: 2
     summary: The only hamlet on Skerrow, a dozen stone cottages round a little harbour, with the Salt Kettle for an inn.
+    pos: [2.31, 2.22]
 
   - id: skerrow_shore
     name: the Shore
@@ -17,6 +18,7 @@ areas:
     aliases: [the shore, the strand, south shore]
     fame: 1
     summary: The rocky south shore of Skerrow, where the currents throw up whatever the sea breaks.
+    pos: [1.56, 1.59]
 
   - id: skerrow_heights
     name: the Heights
@@ -29,3 +31,12 @@ areas:
     barred:
       - when: [{ night: true }, { weather: storm }]
         text: The storm comes over the Heights in the dark so hard you cannot stand in it. You crouch against the rocks until it lets you go, back where you started.
+    pos: [1.56, 3.16]
+
+  # The open island between the places (M10.20): the wild of the region map.
+  - id: skerrow
+    name: Skerrow
+    kind: wilderness
+    aliases: [the island, skerrow]
+    summary: The open island between the hamlet, the shore and the heights, salt grass and heather and cliff, with the sea all round.
+    pos: [2, 3]

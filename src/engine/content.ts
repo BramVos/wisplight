@@ -3,7 +3,7 @@ import { parse } from 'yaml'
 import { OutlandSchema, ResourceSchema, RouteSchema, SettlementSchema, type Outland, type Resource, type Route, type Settlement } from './economy/schema'
 import { NamesSchema, NewcomerSchema, ProjectSchema, type Newcomer, type Project } from './growth/schema'
 import { z } from 'zod'
-import { WorldMapSchema } from './map/palette'
+import { DEFAULT_PALETTE, WorldMapSchema } from './map/palette'
 import { BellSchema, SoundSchema } from './sound'
 import { ImproviseSchema } from './improvise'
 import { CreatureSchema, EncounterSchema, RulesSchema, type Creature, type Effect, type Encounter, type Rules, type Talent } from './rules/schema'
@@ -465,6 +465,9 @@ export function areaTopicId(content: Pick<Content, 'areas'>, areaId: string): st
  * the generator's rules and the landmarks you can see from afar. The hexes
  * themselves are generated from it with a fixed seed.
  */
+/** What a character of a zone drawing may stand for, besides a region's own lands. */
+const REGION_KINDS = ['woods', 'fields', 'fen', 'water', 'heath', 'road', 'canal', 'path']
+
 export const RegionSchema = z.object({
   id: z.string().regex(/^[a-z0-9_]+$/),
   name: z.string(),
@@ -475,9 +478,19 @@ export const RegionSchema = z.object({
   size: z.tuple([z.number().positive(), z.number().positive()]),
   hex: z.number().positive(),
   seed: z.number().int(),
-  legend: z.record(z.string(), z.enum(['woods', 'fields', 'fen', 'water', 'heath', 'road', 'canal', 'path'])),
+  /** A character of the drawing to what lies there: one of the engine's lands (woods, fields, fen, water, heath), a way (road, canal, path), or a terrain of this region's own under `lands`. */
+  legend: z.record(z.string(), z.string()),
+  /**
+   * The region's own terrains (M10.20; found building The Quiet Reach: black
+   * basalt and tidal shallows are no fen): each walks like one of the engine's
+   * lands (its minutes, its sight, what swallows a leg), is coloured and named
+   * by its own key in the palette, and has the line the stranger reads there.
+   */
+  lands: z.record(z.string().regex(/^[a-z0-9_]+$/), z.object({ like: z.enum(['woods', 'fields', 'fen', 'water', 'heath']), text: z.string().optional() }).strict()).default({}),
   /** One character per zone, rows from north to south. */
   zones: z.string(),
+  /** The size of one character of the drawing in km, east to west and north to south (M10.20: a small island is drawn a hex a character); without it half a km by one. */
+  zone: z.tuple([z.number().positive(), z.number().positive()]).optional(),
   rules: z
     .array(
       z.discriminatedUnion('kind', [
@@ -499,6 +512,8 @@ export const RegionSchema = z.object({
         level: z.string().optional(),
         /** Known only to whoever knows this topic, as the hidden ridge (M10). */
         topic: z.string().optional(),
+        /** The line the stranger reads walking along it (M10.20); without it the Nethermarch's line for its kind. */
+        text: z.string().optional(),
       }),
     )
     .default([]),
@@ -1482,6 +1497,10 @@ function checkReferences(world: WorldDef | undefined, c: Omit<Content, 'world'>)
     for (const path of r.paths) for (const point of path.via) if (typeof point === 'string') area(point, `paths.${path.name}`)
     const rows = r.zones.split('\n').filter((line) => line.length > 0)
     if (rows.length === 0) problems.push(`region ${r.id}: the zone drawing is empty`)
+    // A character stands for an engine land, a way, or a terrain of the region's own (M10.20).
+    for (const [ch, what] of Object.entries(r.legend)) if (!REGION_KINDS.includes(what) && !r.lands[what]) problems.push(`region ${r.id}: the legend's ${JSON.stringify(ch)} is ${what}, which is no land (${REGION_KINDS.join(', ')}) and not under lands`)
+    const palette = world?.map?.palette ?? DEFAULT_PALETTE
+    for (const own of Object.keys(r.lands)) if (!palette.dark.terrain[own] || !palette.paper.terrain[own]) problems.push(`region ${r.id}: the land ${own} has no tints in the palette (map.palette.dark.terrain.${own} and paper.terrain.${own})`)
   }
   for (const q of c.quests.values()) {
     for (const who of [...q.givers, ...q.helpers, ...q.opponents]) npc(who, `quest ${q.id}`)

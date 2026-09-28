@@ -72,7 +72,7 @@ The Lamp of Skerrow, a bowl of bronze as wide as a cartwheel behind a lens of gr
 
 > journal
 People: Maren.
-Places: the Heights, the Shore, The Cliff Path, The Headland, The Silver Grove, The Tidepools, The Wreck Strand.
+Places: Skerrow, the Heights, the Shore, The Cliff Path, The Headland, The Silver Grove, The Tidepools, The Wreck Strand.
 Lore: the Grey Gull.
 
 ==== INFLUENCE (Windsday 3 Leaffall 412 SF, 07:47 (morning))
@@ -167,7 +167,7 @@ Garrick trims the great wick with hands that have stopped shaking, and you strik
 
 > journal
 People: Garrick Stone, Maren.
-Places: the Heights, Skerrow Hythe, the Shore, The Cliff Path, The Headland, The Salt Kettle, The Silver Grove, The Tidepools, The Wreck Strand.
+Places: Skerrow, the Heights, Skerrow Hythe, the Shore, The Cliff Path, The Headland, The Salt Kettle, The Silver Grove, The Tidepools, The Wreck Strand.
 Lore: the Grey Gull.
 
 ==== AFTER (Windsday 3 Leaffall 412 SF, 23:26 (night))
@@ -206,7 +206,7 @@ Here: Garrick the lightkeeper (staying at The Headland).
 
 > journal
 People: Garrick Stone, Maren.
-Places: the Heights, Skerrow Hythe, the Shore, The Cliff Path, The Headland, The Salt Kettle, The Silver Grove, The Tidepools, The Wreck Strand.
+Places: Skerrow, the Heights, Skerrow Hythe, the Shore, The Cliff Path, The Headland, The Salt Kettle, The Silver Grove, The Tidepools, The Wreck Strand.
 Lore: the Grey Gull.
 
 [960 hours pass]
@@ -401,7 +401,7 @@ The Lamp of Skerrow, a bowl of bronze as wide as a cartwheel behind a lens of gr
 
 > journal
 People: Maren.
-Places: the Heights, the Shore, The Cliff Path, The Headland, The Silver Grove, The Tidepools, The Wreck Strand.
+Places: Skerrow, the Heights, the Shore, The Cliff Path, The Headland, The Silver Grove, The Tidepools, The Wreck Strand.
 Lore: the Grey Gull.
 
 ==== AFTER (Windsday 3 Leaffall 412 SF, 07:47 (morning))
@@ -433,7 +433,7 @@ Here: Garrick the lightkeeper (asleep).
 
 > journal
 People: Maren.
-Places: the Heights, the Shore, The Cliff Path, The Headland, The Silver Grove, The Tidepools, The Wreck Strand.
+Places: Skerrow, the Heights, the Shore, The Cliff Path, The Headland, The Silver Grove, The Tidepools, The Wreck Strand.
 Lore: the Grey Gull.
 
 [960 hours pass]

@@ -352,17 +352,18 @@ export const WORLD_STEPS: readonly WorldStep[] = [
       'What signs lie on the land (a pool, a shaft, a wreck, a cairn), and which of them mean danger, or something nobody is sure of?',
       'In what style should pictures of people and places be drawn?',
     ],
-    fills: [{ kind: 'world', keys: ['map', 'pictures'] }],
+    fills: [{ kind: 'world', keys: ['map', 'pictures'] }, { kind: 'regions' }],
     optional: true,
-    skipped: 'The standard palette with the Nethermarch\'s signs on the land (pools, peat pits, willows, old walls, hummocks), and pictures in a plain illustration style.',
+    skipped: 'The standard palette with the Nethermarch\'s signs on the land (pools, peat pits, willows, old walls, hummocks), and pictures in a plain illustration style. A world without a region map plays by its exits, without a map; the Palette tab lays out a first one from the places.',
     checks: [
       'Every colour is #rrggbb.',
       'The names of the terrains read well in the game\'s texts ("In the salt marsh", "On the heath"): they name the hexes of the map.',
       'The colours for a visited place and for the trail stand out against the ground.',
       'Every sign has an id of this world\'s own, a colour in both styles, and a land it lies on; danger and uncertain are a meaning (`means`), not only a colour.',
       'The picture style fits the frame and names no living artist.',
+      'A painted region keeps its places, size and origin; its drawing keeps its rows and columns (one character is `zone` km, without it half a km by one) and only characters of its legend; every own land has a `like` and a line.',
     ],
     prompt:
-      'STEP: THE PALETTE. Agree the colours and the picture style with the designer. Propose in `world`: map with its palette (names for each terrain, used in the map\'s hex names and texts, and for the ways road, path and canal when this world calls them otherwise; signs: this world\'s own signs on the land, each with a name, a shape, the land it lies on and its share, the line walking past, and means danger or uncertain where colour alone would not say it; dark and paper styles: ground, unknown, label, label_shadow, terrain tints, ways, a glyph colour for every sign and for stairs, visited, trail) and pictures.style. Name the signs by what they are in this world, never by the Nethermarch\'s pool, peat_pit, willow, ruin or hummock unless they are those. Without signs the world keeps the Nethermarch\'s. The palette lives in world.yaml, not in a file of its own.',
+      'STEP: THE PALETTE. Agree the colours and the picture style with the designer. Propose in `world`: map with its palette (names for each terrain, used in the map\'s hex names and texts, and for the ways road, path and canal when this world calls them otherwise; signs: this world\'s own signs on the land, each with a name, a shape, the land it lies on and its share, the line walking past, and means danger or uncertain where colour alone would not say it; dark and paper styles: ground, unknown, label, label_shadow, terrain tints, ways, a glyph colour for every sign and for stairs, visited, trail) and pictures.style. Name the signs by what they are in this world, never by the Nethermarch\'s pool, peat_pit, willow, ruin or hummock unless they are those. Without signs the world keeps the Nethermarch\'s. The palette lives in world.yaml, not in a file of its own. When the world has a region map (the Palette tab lays out a first one from the places, their exits and minutes, all in one land), paint it as a change of kind region with merge: true: zones, the drawing with this world\'s lands where the designer\'s words put them (the sea, the shallows, the scrub); lands, each own terrain with like (woods, fields, fen, water or heath: how it walks) and text (the line the stranger reads there); and paths with a text each. Keep its places, size and origin; a place is moved by its area\'s pos, not in the drawing. Without a region, propose none, and say that the Palette tab makes one from the places.',
   },
 ]

@@ -178,13 +178,13 @@ function signIndex(map: RegionMap, cell: Cell): number {
   return cell.feature ? map.signs.findIndex(([id]) => id === cell.feature) + 1 : 0
 }
 
-/** The terrain a hex is coloured as: the ridge, a channel, soft fen, or a sign with a tint of its own (the hummock), else its land. */
+/** The terrain a hex is coloured as: the ridge, a channel, soft fen, or a sign with a tint of its own (the hummock), else the region's own terrain or its land. */
 function hexKeyOf(map: RegionMap, cell: Cell, palette: MapPalette, ridge: boolean): string {
   if (ridge) return 'ridge'
   if (cell.channel) return 'channel'
-  if (cell.land === 'fen' && cell.bog) return 'bog'
+  if (cell.land === 'fen' && cell.bog && !cell.terrain) return 'bog'
   if (cell.feature && map.sign(cell)?.firm && (palette.dark.terrain[cell.feature] ?? DEFAULT_PALETTE.dark.terrain[cell.feature])) return cell.feature
-  return cell.land
+  return cell.terrain ?? cell.land
 }
 
 export function hexMapData(world: World, options: { width?: number; height?: number; whole?: boolean; level?: string } = {}): HexMapData | undefined {

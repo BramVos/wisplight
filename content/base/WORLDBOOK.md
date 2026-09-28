@@ -83,7 +83,7 @@ Oude Zijl H========= Veenhoek o==. . . . . . .:::. . . . . .
 | T | woods |
 | . | fields |
 | " | fen |
-| ~ | water |
+| ~ | open water |
 | ^ | heath |
 | : | road |
 | = | canal |

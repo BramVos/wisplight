@@ -28,6 +28,12 @@ export const FIELD_NOTES: Record<string, string[]> = {
     '`map.palette.signs`: the signs on this world\'s land by an id of its own (`mine_shaft`, never the Nethermarch\'s `peat_pit`), at most seven; each needs a colour under `glyph` in the dark and the paper style. `means: danger` or `uncertain` adds a mark and a word, not only a colour. Left out, the world has the Nethermarch\'s pool, peat_pit, willow, ruin and hummock.',
     '`map.palette.names` also names the ways in the legend: `road`, `path` and `canal` (a tow path in the Nethermarch; `canal: tidal channel` elsewhere).',
   ],
+  // M10.20: a region of another world has its own lands, and the editor lays out a first one.
+  regions: [
+    '`zones`: one character is `zone` km east to west and north to south (without it half a km by one), the top row the north edge; every character is in `legend`.',
+    '`lands`: the region\'s own terrains by the key of their palette tints, each with `like` (woods, fields, fen, water or heath: its minutes, its sight, what swallows a leg) and `text` (the line the stranger reads there).',
+    '`paths[].text`: the line walking along it; without one, the Nethermarch\'s line for a road, tow path or path.',
+  ],
   npcs: ['`secrets`: `about` and `teaches` take ids: a topic, a person (an NPC id), a place (a location id) or an area (`area_<id>`).'],
   // M10.20: the transport step of The Quiet Reach wrote legs as "a-b".
   passages: ['`legs`: minutes between two of its stops that the map cannot measure, keyed `<stop>><stop>` with a `>` between the ids (`loc_quay>kestrel_landing: 90`).'],
@@ -46,7 +52,7 @@ export const KINDS: Record<string, KindText> = {
   news: { file: 'data/news.yaml', does: 'Rumours going round at the start.', missing: 'No rumours at the start.' },
   patterns: { file: 'data/patterns.yaml', does: 'Small stories the world may start by itself: a lost thing, a quarrel.', missing: 'No small stories start by themselves.' },
   quests: { file: 'data/quests.yaml', does: 'Written quests with their ways and endings.', missing: 'No written quests; requests still come up from what happens.' },
-  regions: { file: 'regions/<region>/region.yaml', does: 'The map of the land: terrain, ways, landmarks and where places lie on it.', missing: 'No map: the world is walked by its exits.' },
+  regions: { file: 'regions/<region>/region.yaml', does: 'The map of the land: terrain, ways, landmarks and where places lie on it, with the region\'s own lands (black basalt, open sea), each walking like one of the engine\'s.', missing: 'No map: the world is walked by its exits. The editor lays out a first one from the places, their exits and minutes (Palette tab).' },
   rules: { file: 'rules/rules.yaml', does: 'The rules of play: skills, ancestries, backgrounds, classes and talents, conditions and patrons.', missing: 'No character to make and no fights: the stranger talks, trades and walks.' },
   voice: { file: 'data/voice.yaml', does: 'How people speak: oaths per faith, rare sayings, how they call a stranger, time and measures, and what does not exist here.', missing: 'The fixed list of modern words is kept out, and nothing else.' },
   journey: { file: 'data/journey.yaml', does: 'Sentences for a journey of more than a few steps: per terrain, weather and the night, and what may happen on the way.', missing: 'A walk is told in one line.' },

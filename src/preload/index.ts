@@ -71,6 +71,7 @@ contextBridge.exposeInMainWorld('wisplight', {
     draft: use('editor:draft'),
     palette: use('editor:palette'),
     savePalette: use('editor:save-palette'),
+    mapDraft: use('editor:map-draft'),
     proposePalette: use('editor:propose-palette'),
     voice: use('editor:voice'),
     saveVoice: use('editor:save-voice'),

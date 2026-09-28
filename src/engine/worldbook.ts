@@ -1,7 +1,7 @@
 import type { Content } from './content'
 import { formatMoney } from './items'
 import { verbName } from './quests/verbs'
-import { SURFACE } from './map/palette'
+import { SURFACE, terrainName } from './map/palette'
 import { htmlPage, markdownHtml } from './markdown'
 import { designLog } from './designlog'
 import { WORLD_STEPS } from './worldguide'
@@ -88,7 +88,13 @@ export function worldBook(content: Content, input: WorldBookInput = {}): string 
   add('The map of the land', [
     // Where the atlas page draws the region in the world's palette (M10.20); the plain page and a Markdown reader skip it.
     ...(regions.length ? ['<!-- picture:map -->', ''] : []),
-    ...regions.flatMap((r) => [`### ${r.name}`, '', ...para(`${r.size[0]} by ${r.size[1]} km, in hexes of ${r.hex * 1000} m; the open land between the places is ${place(r.area)}.`), ...block(r.zones, 'map'), ...table(['Mark', 'Land'], Object.entries(r.legend))]),
+    ...regions.flatMap((r) => {
+      // The lands by this world's own names (M10.20), and for a region's own lands how they walk and what the stranger reads.
+      const own = Object.keys(r.lands ?? {}).length > 0
+      const rows = Object.entries(r.legend).map(([mark, land]) => [mark, terrainName(w.map?.palette, land), ...(own ? [r.lands?.[land]?.like ?? '', r.lands?.[land]?.text ?? ''] : [])])
+      const drawn = r.zone ? `, drawn a character to ${r.zone[0] * 1000} by ${r.zone[1] * 1000} m` : ''
+      return [`### ${r.name}`, '', ...para(`${r.size[0]} by ${r.size[1]} km, in hexes of ${r.hex * 1000} m${drawn}; the open land between the places is ${place(r.area)}.`), ...block(r.zones, 'map'), ...table(own ? ['Mark', 'Land', 'Walks like', 'What you read there'] : ['Mark', 'Land'], rows)]
+    }),
     ...((w.map?.levels ?? []).filter((l) => l.id !== SURFACE).length ? para(`Levels: ${(w.map!.levels ?? []).map((l) => l.name).join(', ')}.`) : []),
   ])
 

@@ -999,6 +999,8 @@ export interface PaletteView {
   palette: MapPalette
   /** Whether the world has a palette of its own in world.yaml. */
   own: boolean
+  /** Whether it has a region map (M10.20); without one the preview is a sample, and the editor offers a map from the places. */
+  region?: boolean
   levels: Level[]
   preview?: HexMapData
 }
@@ -1011,7 +1013,7 @@ export function paletteView(files: ContentFile[], palette?: MapPalette): Palette
   const content = safeLoad(files)
   const own = content?.world.map?.palette
   const shown = palette ?? own ?? DEFAULT_PALETTE
-  return { palette: shown, own: Boolean(own), levels: content?.world.map?.levels ?? [{ id: SURFACE, name: 'ground level' }], ...(content ? { preview: previewMapData(content, shown) } : {}) }
+  return { palette: shown, own: Boolean(own), levels: content?.world.map?.levels ?? [{ id: SURFACE, name: 'ground level' }], ...(content ? { preview: previewMapData(content, shown), region: content.regions.size > 0 } : {}) }
 }
 
 /**

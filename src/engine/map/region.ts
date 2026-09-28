@@ -15,8 +15,10 @@ export type Feature = string
 export interface Cell {
   col: number
   row: number
-  /** The land itself; a road or path lies on top of it. */
+  /** The land itself, as the engine walks it; a road or path lies on top of it. */
   land: Terrain
+  /** The region's own terrain here (M10.20), when its drawing names one: coloured and named by it, walked as its land. */
+  terrain?: string
   /** The main road, tow path or fen path through this hex, if any. */
   way?: { kind: 'road' | 'canal' | 'path'; name: string }
   /** Every way through this hex, with its place along that way: where two meet, both. */
@@ -111,13 +113,13 @@ export class RegionMap {
     return cell.feature ? this.signs.find(([id]) => id === cell.feature)?.[1] : undefined
   }
 
-  private fill(col: number, row: number, land: Terrain): Cell {
+  private fill(col: number, row: number, { land, terrain }: { land: Terrain; terrain?: string }): Cell {
     const r = (salt: number) => noise(this.region.seed, col, row, salt)
-    const cell: Cell = { col, row, land, bog: false }
+    const cell: Cell = { col, row, land, bog: false, ...(terrain ? { terrain } : {}) }
     const roll = r(1)
     let upTo = 0
     for (const [id, sign] of this.signs) {
-      const part = sign.on[land] ?? 0
+      const part = sign.on[terrain ?? land] ?? 0
       if (!part) continue
       // The shares as the generator always had them (0.1, 0.17, ...), so the same seed gives the same land.
       upTo = Math.round((upTo + part) * 1e9) / 1e9
@@ -254,6 +256,7 @@ export class RegionMap {
       if (t > 0.15 && t < 0.85 && d < 1 && noise(this.region.seed, cell.col, cell.row, 9) < 0.55) {
         cell.land = 'water'
         cell.channel = true
+        delete cell.terrain
         cell.feature = undefined
       }
     }
@@ -268,22 +271,25 @@ class Zones {
     this.rows = region.zones.split('\n').filter((line) => line.length > 0)
   }
 
-  at(x: number, y: number): Terrain {
+  at(x: number, y: number): { land: Terrain; terrain?: string } {
     const top = this.region.size[1]
-    const row = this.rows[Math.max(0, Math.min(this.rows.length - 1, Math.round(top - y)))] ?? ''
-    const col = Math.max(0, Math.floor(x / 0.5))
+    const [across, down] = this.region.zone ?? [0.5, 1]
+    const row = this.rows[Math.max(0, Math.min(this.rows.length - 1, Math.round((top - y) / down)))] ?? ''
+    const col = Math.max(0, Math.floor(x / across))
     return this.land(row, col)
   }
 
-  /** The land under a character; names, markers, gaps and lines take the land beside them. */
-  private land(row: string, col: number): Terrain {
+  /** The land under a character; names, markers, gaps and lines take the land beside them. A region's own terrain walks as its land. */
+  private land(row: string, col: number): { land: Terrain; terrain?: string } {
     for (let d = 0; d < row.length + 1; d++) {
       for (const c of [col - d, col + d]) {
         const kind = this.region.legend[row[c] ?? '']
-        if (kind && kind !== 'road' && kind !== 'canal' && kind !== 'path') return kind
+        if (!kind || kind === 'road' || kind === 'canal' || kind === 'path') continue
+        const own = this.region.lands?.[kind]
+        return own ? { land: own.like, terrain: kind } : { land: kind as Terrain }
       }
     }
-    return 'fields'
+    return { land: 'fields' }
   }
 }
 

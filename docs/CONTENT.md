@@ -304,9 +304,9 @@ A list; each has:
 
 ## regions (regions/<region>/region.yaml)
 
-The map of the land: terrain, ways, landmarks and where places lie on it.
+The map of the land: terrain, ways, landmarks and where places lie on it, with the region's own lands (black basalt, open sea), each walking like one of the engine's.
 
-When a world has none: No map: the world is walked by its exits.
+When a world has none: No map: the world is walked by its exits. The editor lays out a first one from the places, their exits and minutes (Palette tab).
 
 A list; each has:
 
@@ -319,11 +319,19 @@ A list; each has:
 | size | 2 values | yes |  |
 | hex | number | yes |  |
 | seed | number | yes |  |
-| legend | a map of names to one of woods, fields, fen, water, heath, road, canal, path | yes |  |
+| legend | a map of names to text | yes |  |
+| lands | a map of names to a map: like, text | no | {} |
 | zones | text | yes |  |
+| zone | 2 values | no |  |
 | rules | list of one of: a map \| a map \| a map | no | [] |
 | landmarks | list of a map: area, text, range | no | [] |
-| paths | list of a map: kind, name, via, level, topic | no | [] |
+| paths | list of a map: kind, name, via, level, topic, text | no | [] |
+
+`zones`: one character is `zone` km east to west and north to south (without it half a km by one), the top row the north edge; every character is in `legend`.
+
+`lands`: the region's own terrains by the key of their palette tints, each with `like` (woods, fields, fen, water or heath: its minutes, its sight, what swallows a leg) and `text` (the line the stranger reads there).
+
+`paths[].text`: the line walking along it; without one, the Nethermarch's line for a road, tow path or path.
 
 ## rules (rules/rules.yaml)
 

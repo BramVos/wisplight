@@ -136,7 +136,7 @@ world:
       - { id: surface, name: ground level }
       - { id: crown, name: the cliff tops }
     palette:
-      names: { water: sea water, channel: tide channel, fields: salt grass, heath: heather, fen: salt marsh, cliff: cliffs, dune: dune, tunnel: caves, crown: cliff tops }
+      names: { water: sea, channel: tide channel, fields: salt grass, heath: heather, fen: salt marsh, cliff: cliffs, dune: dune, tunnel: caves, crown: cliff tops }
       # Skerrow's own signs (M10.20), not the Nethermarch's peat pits: tide
       # pools in the salt marsh, gorse and old cairns on the heather, the grey
       # timbers of some wreck nobody names, and the sheer drops of the heights.
