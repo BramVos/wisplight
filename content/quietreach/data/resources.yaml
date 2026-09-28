@@ -1,0 +1,45 @@
+resources:
+  - id: coastal_beds
+    name: coastal growing beds
+    gives: [vegetables]
+    months: [5, 6, 7, 8, 9, 10]
+    amount: 12
+    gather:
+      item: vegetables
+      dc: 8
+      qty: 2
+      minutes: 30
+      text: You work along the rows as the rota tag asks, cutting only the ready greens and leaving the rest to grow.
+
+  - id: wrack_line
+    name: wrack line
+    gives: [salvaged_cable_sheath]
+    amount: 4
+    gather:
+      item: salvaged_cable_sheath
+      dc: 12
+      qty: 1
+      minutes: 40
+      text: "You pick through the weed on the shingle and pull free a length of cable sheathing. Under the grime there may be a serial number: someone may still own it."
+
+  - id: tide_pools
+    name: tide pools
+    gives: [organism_sample]
+    amount: 6
+    gather:
+      item: organism_sample
+      dc: 10
+      qty: 1
+      minutes: 20
+      text: You ease a tube into the cold water and seal something small and native inside it, then label it with the place and the time.
+
+  - id: basalt_outcrop
+    name: basalt outcrop
+    gives: [rock_sample]
+    amount: 8
+    gather:
+      item: rock_sample
+      dc: 8
+      qty: 1
+      minutes: 15
+      text: You chip a clean piece from the black rock, bag it and write the marker number on the label.

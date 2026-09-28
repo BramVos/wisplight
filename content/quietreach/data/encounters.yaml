@@ -1,0 +1,29 @@
+encounters:
+  - id: enc_sailback_nest
+    name: A sailback on the path
+    places: [loc_coastal_service_path]
+    chance: 0.12
+    again_after: 4
+    hours: [6, 20]
+    foes:
+      - { creature: sailback, count: 1, range: near }
+    opening: Fresh six-toed tracks cross the path, and a dry rattle comes from the rocks ahead. A sailback rises from beside a nest of wrack, crest high, and plants itself in your way.
+    surrender:
+      take: nothing
+      text: The sailback lowers its crest and backs off to its nest, and leaves the path to you.
+    flee_dc: 10
+    news: { title: A sailback on the coast path, belang: 1 }
+    tempts: false
+
+  - id: enc_faulty_drone
+    name: A drone on the wrong work order
+    places: [loc_ridge_shelter]
+    chance: 0.06
+    again_after: 7
+    foes:
+      - { creature: maintenance_drone, count: 1, range: near }
+    opening: A maintenance drone sits across the shelter door, its lamp blinking red where it should be green. It is working through a clearing routine on nothing at all, arms sweeping at the doorframe. It turns its sensor head towards you.
+    surrender: { take: nothing, text: "The drone stops mid-swing, lamp amber, and waits for an order that makes sense." }
+    flee_dc: 8
+    news: { title: A faulty drone at the Ridge Shelter, belang: 2 }
+    tempts: false

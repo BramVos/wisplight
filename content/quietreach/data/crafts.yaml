@@ -1,0 +1,17 @@
+crafts:
+  - id: field_electronics
+    name: Field Electronics
+    maker: npc_tessa_rook
+    skill: electronics
+    professions: [chief_engineer, field_mechanic, signal_technician]
+    techniques:
+      - { id: diagnosis, name: "Diagnosis: recognising damage, cleaning contacts, checking connections" }
+      - { id: cable_repair, name: Cable and connector repair }
+      - { id: fault_finding, name: Fault finding in linked systems }
+      - { id: repair_design, name: "Designing, testing and documenting a difficult repair" }
+    masterwork: A repair designed, tested and written up so clearly that another technician could repeat it from the notes alone, months from any help.
+    practice: [3, 8, 15]
+    per_day: 3
+    failure:
+      outcome: lost
+      why: The material went into a repair that did not hold. Slow down, and test before you trust it.

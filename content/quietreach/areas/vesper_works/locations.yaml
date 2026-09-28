@@ -1,0 +1,143 @@
+locations:
+  - id: loc_workshop
+    name: Workshop
+    area: vesper_works
+    tags: [public, work]
+    aliases: [the workshop, works bay, workbench]
+    summary: The workshop of Vesper Works, where equipment is repaired, prepared and signed out.
+    sound: { kind: workshop, level: 0.7, night: hum }
+    improvise:
+      domain: craft
+      may:
+        - { fact: true }
+      fallback: You turn it over in your hands, but without the right parts and a steadier bench you get no further than a guess.
+      takes: false
+    description:
+      day: The Workshop is high and cluttered, full of workbenches, tool racks and crates of salvaged parts, lit by hard white strip lamps. It smells of solder, cold metal and the damp that gets into everything on Nacre. At the public counter by the door, a clipboard lists what may be signed out and what is reserved for the Peregrine. At the back, the sealed hangar door is stencilled RESTRICTED. Passages run west to the Commons and southwest to the Arrival Lock.
+      night: At night the Workshop is lit by a single strip lamp over the counter, and the racks throw long shadows over the benches. A soldering iron ticks as it cools, and the smell of solder lingers. The clipboard still hangs on its hook. At the back the hangar door is sealed, its RESTRICTED stencil catching the light. Passages run west to the Commons and southwest to the Arrival Lock.
+    exits:
+      in: { to: loc_peregrine_hangar, minutes: 3 }
+      southwest: { to: loc_arrival_lock, minutes: 4 }
+      west: { to: loc_commons, minutes: 5 }
+    details:
+      - words: [workbenches, benches, workbench]
+        look: Steel benches scarred with burns and clamp marks, each with a vice, a magnifier on an arm and a half-finished job under a cloth.
+        take: The benches are bolted down, and the jobs on them belong to someone.
+      - words: [racks, tool racks, tools]
+        look: Pegboards of tools, each hanging inside its own painted outline. Several outlines are empty, and a note says SIGNED OUT.
+        take: Every tool here is signed in and out at the counter.
+      - words: [crates, parts, salvaged parts, spare parts]
+        look: Open crates of connectors, cable ends, circuit boards and seals salvaged from the old mine, sorted by someone patient into labelled bins.
+        take: Parts are scarce here, and they go out through the counter or not at all.
+      - { words: [lamps, strip lamps], look: Long white strip lamps that buzz faintly and show every scratch. }
+      - words: [counter, public counter]
+        look: A waist-high counter with a hatch, a sign-out tablet and a tray of labelled tags.
+      - words: [clipboard, list, sign-out list]
+        look: A battered clipboard on a hook, with a printed list and many handwritten changes.
+        take: The clipboard belongs on its hook, where everyone can check it.
+        verbs:
+          read: The list gives weatherproof suits, rope lines, hand lamps and portable diagnostic kits as available to sign out. Anything with a red dot is reserved for the Peregrine, and there are a great many red dots.
+      - words: [hangar door, door, restricted door]
+        look: A heavy sliding door with a keypad and the word RESTRICTED stencilled across it in faded yellow.
+      - words: [soldering iron, iron]
+        look: A soldering iron in its stand, its tip dull grey.
+        take: It is wired to the bench and signed to someone else.
+    objects:
+      - id: electronics_bench
+        type: electronics_bench
+        name: Electronics Bench
+        owner: npc_tessa_rook
+        staff: [npc_tessa_rook]
+        hours: 08-18
+        state: { broken: false }
+      - id: fabrication_bench
+        type: fabrication_bench
+        name: Fabrication Bench
+        owner: npc_tessa_rook
+        staff: [npc_tessa_rook]
+        hours: 08-18
+        state: { broken: false }
+    services:
+      - id: workshop_counter
+        sells:
+          water_filter: { stock: 2, target: 3, price: 900 }
+          seal_ring: { stock: 6, target: 6, price: 400 }
+          insulated_wire: { stock: 8, target: 8, price: 150 }
+          connector_parts: { stock: 10, target: 10, price: 120 }
+          cable_assembly: { stock: 3, target: 4, price: 600 }
+        buys: [cable_assembly, bracket, salvaged_cable_sheath]
+        provider: npc_tessa_rook
+        hours: 08-18
+      - id: equipment_issue
+        sells:
+          field_lamp: { stock: 3, target: 3, price: 3500 }
+          battery_cell: { stock: 10, target: 10, price: 400 }
+          measurement_cable: { stock: 2, target: 2, price: 900 }
+        buys: [measurement_cable, field_lamp]
+        provider: npc_tessa_rook
+        hours: 09-17
+
+  - id: loc_peregrine_hangar
+    name: Peregrine Hangar
+    area: vesper_works
+    tags: [restricted, landmark]
+    aliases: [hangar, the hangar]
+    summary: The locked hangar where the experimental ship Peregrine stands under maintenance.
+    sound: { kind: hum, level: 0.6 }
+    description:
+      day: The Peregrine Hangar is cold and cavernous, and the ship fills most of it, its hull squat and scarred on landing struts, with its maintenance panels hanging open. Cables snake from the panels to diagnostic carts, and the air hums so deep you feel it in your teeth. Towards the stern, a yellow barrier and a painted line mark off the drive section. A boarding ramp climbs to the ship's access airlock. The door out leads back to the Workshop.
+      night: At night the hangar lights are dimmed to a few floods, and the Peregrine is a dark bulk with its open panels glowing faintly from inside. The hum is lower now, but you still feel it. The yellow barrier by the drive section shines in the floodlight. The boarding ramp climbs into shadow towards the airlock. The door out leads back to the Workshop.
+    exits:
+      up: { to: loc_peregrine_common_deck, minutes: 2 }
+      out: { to: loc_workshop, minutes: 3 }
+    details:
+      - words: [ship, peregrine, the peregrine, hull, struts, landing struts]
+        look: A compact ship on four heavy struts, its hull pitted and patched. It was built for six people and for a journey no one has made before.
+        take: You might as well try to pocket the hangar.
+      - words: [panels, maintenance panels]
+        look: Hull panels swung open on hinges, showing packed conduits, tagged wiring and several empty sockets with 'AWAITING PART' written beside them.
+        take: They are part of the ship.
+      - words: [cables, carts, diagnostic carts]
+        look: Thick cables running from the panels to wheeled carts, whose screens scroll with numbers you cannot yet read.
+        take: Unplugging anything here without leave would be remembered.
+      - words: [barrier, yellow barrier, line, painted line, drive section, drive]
+        look: A waist-high yellow barrier and a line painted on the deck, closing off the stern. Behind it the hull plating is a different, darker metal, and a sign reads 'DRIVE SECTION. AUTHORISED PERSONNEL ONLY'.
+        verbs:
+          climb: You put a hand on the barrier and think better of it. Whatever lies beyond is not for someone on their first day.
+      - words: [ramp, boarding ramp]
+        look: A ribbed metal ramp climbing to the ship's side, with a handrail on one side only.
+      - words: [airlock, access airlock]
+        look: A small round airlock in the ship's flank, its outer door standing open onto a dim inner chamber.
+      - words: [door, workshop door]
+        look: The sliding door back to the Workshop, with its keypad on this side too.
+
+  - id: loc_peregrine_common_deck
+    name: Peregrine — Common Deck
+    area: vesper_works
+    tags: [ship, restricted]
+    aliases: [common deck, peregrine deck, briefing room, the ship]
+    summary: The first open compartment aboard the Peregrine, with its briefing table and cleared expedition data.
+    sound: quiet
+    description:
+      day: The Common Deck of the Peregrine is tight and curved, built for six, with a briefing table bolted to the deck and six chairs strapped down around it. A terminal set into the table glows with the expedition data cleared for the crew. The air is dry and recycled, tasting faintly of new plastic, and the hull ticks now and then as it settles. The ship stands on the ground for now, and the access airlock leads back down the ramp to the hangar.
+      night: At night the Common Deck is lit only by the terminal in the table, a pale square among the six strapped chairs. The ship is so quiet you can hear your own breathing, and the hull ticks in the cold. The air tastes of plastic and filters. The access airlock leads back down the ramp to the hangar.
+    exits:
+      down: { to: loc_peregrine_hangar, minutes: 2 }
+    details:
+      - words: [table, briefing table]
+        look: A low oval table bolted to the deck, with grab handles along its rim and a terminal set into its centre.
+        take: It is bolted to the ship.
+      - words: [chairs, chair, seats]
+        look: Six padded chairs, each strapped to rails in the deck with a harness folded on its seat.
+        verbs:
+          sit: You sit, and the harness buckle digs into your back. It is a chair for sitting still for a long time.
+      - words: [terminal, data, expedition data]
+        look: A flat screen set into the table, showing a menu headed CLEARED FOR CREW.
+        take: It is set into the table.
+        verbs:
+          read: The cleared files give crew lists, stores and a mission outline towards a destination marked only 'ECHO NINE (PROVISIONAL)'. Every section on the drive is marked RESTRICTED.
+          use: The terminal opens the cleared files and nothing else. Anything about the drive asks for a clearance you do not have.
+      - words: [airlock, access airlock]
+        look: The inner door of the small airlock, standing open onto the ramp.
+      - words: [hull, walls]
+        look: Curved inner walls of padded panels, with handholds everywhere, as if someone expected the floor to be the wrong way up.

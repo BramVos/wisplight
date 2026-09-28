@@ -1,0 +1,46 @@
+# Every id this world has committed (M9.1). An id is a key and never changes;
+# a name, label or description may. A thing that goes leaves a tombstone: gone,
+# or gone up in another (into). Kept by the editor and by npm run ids; do not
+# edit by hand.
+ids:
+  quietreach/areas/coastal_traverse/locations.yaml:
+    location: [loc_coastal_service_path, loc_ridge_shelter]
+  quietreach/areas/orison_ridge/locations.yaml:
+    location: [loc_orison_listening_room]
+  quietreach/areas/port_vesper/locations.yaml:
+    location: [loc_arrival_lock, loc_commons, loc_guest_quarters, loc_medical_bay]
+  quietreach/areas/port_vesper/npcs.yaml:
+    npc: [npc_mara_venn, npc_ilyan_sorell, npc_tessa_rook, npc_niko_serrin, npc_edda_vale, npc_sana_holt]
+  quietreach/areas/vesper_works/locations.yaml:
+    location: [loc_workshop, loc_peregrine_hangar, loc_peregrine_common_deck]
+  quietreach/data/aftermath.yaml:
+    aftermath: [am_holding_the_name, am_return_check, am_retrieval, am_count_first, am_open_stores, am_handover, am_released_for_use, am_safe_return, am_word_kept, am_passing_on, am_second_observation]
+  quietreach/data/areas.yaml:
+    area: [port_vesper, vesper_works, coastal_traverse, orison_ridge]
+  quietreach/data/crafts.yaml:
+    craft: [field_electronics]
+  quietreach/data/creatures.yaml:
+    creature: [sailback, maintenance_drone]
+  quietreach/data/encounters.yaml:
+    encounter: [enc_sailback_nest, enc_faulty_drone]
+  quietreach/data/factions.yaml:
+    faction: [vesper_maintenance_cooperative, peregrine_expedition_crew, keeping_circle]
+  quietreach/data/items.yaml:
+    item: [hot_meal, field_ration, herbal_tea, coffee, drinking_water, vegetables, cultured_protein, tea_herbs, grain, cooking_oil, growth_nutrients, insulated_wire, connector_parts, filter_media, polymer_stock, water_filter, seal_ring, bracket, cable_assembly, cable_assembly_poor, measurement_cable, measurement_cable_poor, measurement_cable_damaged, field_lamp, battery_cell, dressing_pack, field_medkit, salvaged_cable_sheath, rock_sample, organism_sample]
+  quietreach/data/object_types.yaml:
+    object_type: [electronics_bench, fabrication_bench, water_tap]
+  quietreach/data/passages.yaml:
+    passage: [ridge_crawler_up, ridge_crawler_down, coast_runner]
+  quietreach/data/professions.yaml:
+    profession: [villager, port_coordinator, research_lead, chief_engineer, signal_technician, pilot_navigator, field_mechanic, medic, steward, watch_first, watch_second, watch_night]
+  quietreach/data/resources.yaml:
+    resource: [coastal_beds, wrack_line, tide_pools, basalt_outcrop]
+  quietreach/data/settlements.yaml:
+    settlement: [port_vesper, vesper_works, coastal_traverse]
+  quietreach/data/topics.yaml:
+    topic: [night_of_the_open_door, winter_supplies, answer_before_the_question, vesper_settlement_compact, harbour_record, beltborn, nacreans, transit_families, kestrel_landing, meridian_anchorage, harrow_station, echo_nine, return_check, open_stores, safe_return, passing_on, second_observation, sailbacks, maintenance_drones]
+  quietreach/data/watchers.yaml:
+    watcher: [w_death, w_missing, w_injury, w_theft, w_shortage, w_departure, w_repair_electronics, w_repair_fabrication, w_repair_water, w_danger_past, w_signal_anomaly]
+tombstones:
+  - { kind: location, id: loc_first_place }
+  - { kind: area, id: first_area }

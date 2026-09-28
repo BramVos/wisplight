@@ -1,5 +1,22 @@
 # Changelog
 
+## M10.20 deel: The Quiet Reach in de app gebouwd, en wat de wereldbouw daarvan leerde, 28 september 2026
+
+- **The Quiet Reach staat erin.** Je twaalf hoofdstukken zijn stap voor stap in de editor van de app ingevoerd, met jouw instellingen (Opus 5.5 als kroniekverteller), zonder je tekst te veranderen en zonder Enhance. Alle twaalf stappen zijn geaccepteerd; de wereld laadt, speelt en haalt zijn contract. Wat het model weg liet, zelf koos of vroeg, en wat je nog moet bekijken, staat per stap in `docs/worldbuild/quiet-reach-report.md`. Kosten: $10,25 in 28 aanroepen, waarvan ongeveer de helft op pogingen die op een fout van de app strandden.
+- **Elke stap kent de precieze velden** van wat hij vult, uit de schema's: geneste velden, toegestane waarden, bereik van getallen en de vorm van teksten (openingstijden "07-12"), met korte noten waar een veld een id verwacht (een traject `van>naar`, een geheim over een persoon of plek).
+- **Een stap ziet wat hij mag veranderen** (de YAML van de bestaande plekken, mensen enzovoort), en **mag een ding aanvullen met alleen de velden die hij zet** (`merge: true`): de economie geeft de plekken nu diensten en werkbanken zonder ze helemaal uit te schrijven.
+- **Een voorstel dat niet laadt, kun je laten rechtzetten**: [Let the chronicler put it right] stuurt alleen de problemen terug, en alleen de verbeterde dingen komen terug. Bij Mensen kostte dat 8 seconden en $0,18 in plaats van een nieuw voorstel. Een herstelronde haalt nooit iets weg.
+- **Een eerste voorstel met plekken laadt**: de weg terug komt er vanzelf bij, ook tussen nieuwe plekken, en een voorstel mag de start verplaatsen en de eerste plek weggooien.
+- **Lange hoofdstukken worden niet meer afgekapt** (tot 48.000 tokens, tien minuten, via streaming), en een afgekapt antwoord telt mee in het AI-logboek en het budget; eerst stond het er als $0.
+- **Het vervoer stuurt zijn reiszinnen mee** (`data/journey.yaml` mag in een voorstel), en **groepen sprekers hebben eigen uitroepen** naast die van hun geloof: technici zeggen "Hull and vacuum", het havenvolk van Skerrow "tar and twine".
+- **Het ontwerplogboek** zet een beslist antwoord niet meer terug onder "Answers".
+
+Testen: open de editor, kies The Quiet Reach en blader door de stappen: elk staat op "saved", en het ontwerplogboek (`content/quietreach/DESIGN.md`) toont per stap wat er gevraagd, gezegd en besloten is. Speel The Quiet Reach: je begint in de Arrival Lock, de Commons ligt oostelijk. Het rapport noemt per stap wat je moet bekijken.
+
+Wat de editor en de kroniekverteller leerden: de precieze velden per stap (ook in het korte contract), `merge`, de herstelronde, `data/journey.yaml` als heel bestand, `oaths` op een stemgroep (in het contract, de stap Stem en `docs/NEW-WORLD.md`; Skerrow heeft er een, Deepwell houdt geen stemkit).
+
+Nog niet, en open onder M10.20: de startuitrusting van The Quiet Reach (de geldstap maakt geen dingen), patrons en doodsteksten in de regels, een wet zonder boete, een kaart (geen stap maakt die), paletsymbolen met eigen namen per wereld, een open voorstel dat een herstart overleeft, en het uurbudget: je zette $50, maar de app kapt stil af op $5. Kies of de wereldbouw buiten het uurbudget valt, een eigen grens krijgt of de grens omhoog gaat.
+
 ## M10.20 deel: het wereldboek en de saves, 28 september 2026
 
 - **Overgeslagen stappen in het wereldboek.** "How this world was made" zegt welke stappen van de gids zijn overgeslagen, afgewezen of nooit opgepakt, met de neutrale standaard die de wereld daarvoor heeft. Een ontwerplogboek zonder stappen zegt daar niets over.

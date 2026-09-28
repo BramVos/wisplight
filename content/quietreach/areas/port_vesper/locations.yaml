@@ -1,0 +1,211 @@
+locations:
+  - id: loc_arrival_lock
+    name: Arrival Lock
+    area: port_vesper
+    tags: [public, landmark]
+    aliases: [lock, airlock, arrival airlock, arrivals]
+    summary: The arrival airlock of Port Vesper, where newcomers and cargo come in off the landing pad.
+    description:
+      day: You stand in the Arrival Lock, its steel walls still dripping from the pumps and seawater pooling in the grooves of the floor grating. Cargo crates from the supply ship wait along one wall, each stamped with a cargo label from Harrow Station. The air is cold and tastes of salt and machine oil, and behind the panels a pressure pump thuds and settles. Beside the inner door stands a check-in desk with a scanner that reads assignments, and your pocket terminal chirps as it takes in the local map. A covered corridor leads east to the Commons, and a wider cargo passage runs northeast towards the Works.
+      night: The Arrival Lock is dim at night, lit only by the amber strip above the inner door, and water still gleams in the grooves of the floor grating. The cargo crates stand in a dark row along one wall, their labels unreadable in the gloom. You hear the pressure pump tick as it cools, and the cold smells of salt and oil. The check-in desk is unmanned, its scanner showing a single green light. The covered corridor leads east to the Commons, and the cargo passage runs northeast towards the Works.
+    exits:
+      east: { to: loc_commons, minutes: 3 }
+      northeast: { to: loc_workshop, minutes: 4 }
+    details:
+      - words: [wall, walls, steel walls, pumps]
+        look: Bare steel, beaded with water from the last pressure cycle, with a painted line at shoulder height that reads PRESSURE ZONE.
+      - words: [floor, grating, floor grating, water, seawater, wet floor]
+        look: Steel grating over a drain channel. Seawater from the pad has run in with the cargo and lies in the grooves, and the soles of your boots squeak on it.
+        take: You would need a bucket, and the drain will have it soon enough anyway.
+      - words: [crates, cargo crates, cargo, crate]
+        look: Grey composite crates, strapped in pairs and sealed with tamper tape. Some are marked MEDICAL, some FILTERS, and a few simply RESERVED.
+        take: The crates are sealed and signed for, and none of them is yours.
+        verbs: { open: "The tamper tape is intact, and breaking it on your first morning here would not make you friends." }
+      - words: [label, labels, cargo label, cargo labels]
+        look: Printed labels from Harrow Station with a consignment number, a weight and a destination code. Most read PORT VESPER / STORES; two read VESPER WORKS / HANGAR.
+        take: The labels are fused to the crates, and peeling one off would only get you questions.
+        verbs:
+          read: Most of the labels read PORT VESPER / STORES. Two, on the heaviest crates, read VESPER WORKS / HANGAR, with a clearance stamp you do not recognise.
+      - words: [pump, pressure pump, panels]
+        look: You cannot see the pump itself, only the grille where the panels meet, but you feel each thud through the soles of your feet.
+        take: It is bolted somewhere behind the wall, and it keeps the air in.
+      - words: [desk, check-in desk, counter]
+        look: A narrow desk of scuffed composite by the inner door, with a tablet stand, a coffee ring and a clip of printed arrival forms.
+        take: The desk is bolted to the deck.
+      - words: [scanner, assignment scanner, reader]
+        look: A palm-sized reader on a flexible arm. Its small screen asks for an assignment code or a contract chip.
+        take: It is cabled to the desk, and someone would miss it at once.
+        verbs:
+          use: The scanner reads your contract and shows it on its little screen, with the word PENDING beside it. It is waiting for someone to confirm it.
+      - words: [terminal, pocket terminal, map, local map]
+        look: Your own pocket terminal, scuffed from the voyage. It now holds a basic map of Port Vesper, the Works and a dotted coastal route to Orison Ridge.
+        verbs:
+          read: The map is plain but clear. East is the Commons, northeast the Works, and from the Commons an outside door gives onto the coastal path to Orison Ridge.
+      - words: [inner door, door]
+        look: A heavy pressure door, now standing open, its seals slick with condensation.
+      - words: [corridor, covered corridor]
+        look: A short, ribbed corridor with a handrail, running east towards the sound of voices.
+      - words: [cargo passage, passage]
+        look: A wider passage with scuffed floor tracks for trolleys, running northeast towards the Works.
+
+  - id: loc_commons
+    name: Commons
+    area: port_vesper
+    tags: [public, social]
+    aliases: [the Commons, dining hall, mess, canteen]
+    summary: The shared dining hall and meeting place of Port Vesper.
+    sound: { kind: crowd, level: 0.5, night: hum }
+    description:
+      day: The Commons is long and low, full of bolted tables and benches, warm after the lock and loud with the clatter of trays. The smell of reconstituted soup and strong tea hangs under the ceiling ducts. On the wall by the serving hatch, a shift roster hangs beside a board of arrival notices, both patched with handwritten corrections. At the far end an observation window looks out on grey swell and black rock. Doors lead north to the Guest Quarters and south to the Medical Bay, a covered connection runs east to the Works, the corridor west returns to the lock, and a heavy outside door opens onto the coast.
+      night: At night the Commons is half dark, the tables wiped and empty, and the ducts breathe a low, steady hum. A lamp still burns over the serving hatch, lighting the shift roster and the board of notices beside it. The observation window at the far end shows only black, with the port beacons blinking in the glass. You smell cold tea and disinfectant. The doors north and south, the connection east, the corridor west and the outside door to the coast all stand as they do by day.
+    exits:
+      north: { to: loc_guest_quarters, minutes: 2 }
+      south: { to: loc_medical_bay, minutes: 2 }
+      east: { to: loc_workshop, minutes: 5 }
+      out: { to: loc_coastal_service_path, minutes: 4 }
+      west: { to: loc_arrival_lock, minutes: 3 }
+    details:
+      - words: [tables, benches, table, bench]
+        look: Long composite tables and benches bolted to the deck in rows, their surfaces scratched with years of initials and tally marks.
+        take: They are bolted down, like almost everything here.
+      - words: [serving hatch, hatch]
+        look: A steel hatch in the wall, with a counter in front of it and trays stacked at one end.
+      - words: [roster, shift roster]
+        look: A printed grid of names and shifts, corrected in three different hands. Several names have been moved from the Works to the pad and back again this week.
+        take: The roster belongs to everyone here, and taking it would leave the whole port guessing.
+        verbs:
+          read: The roster gives shifts for the pad, the Works, the medical bay and the kitchen. Someone has pencilled 'RIDGE?' beside an empty slot and then crossed it out.
+      - words: [board, notices, arrival notices, notice board]
+        look: A cork board thick with notices about the supply ship, filter rations, a lost glove and the next ship due from Harrow Station, some of them weeks out of date.
+        take: You leave the notices where people can see them.
+        verbs:
+          read: The newest notice lists this morning's arrivals, your name among them, and asks new staff to report to the Medical Bay before any field trip.
+      - words: [window, observation window, glass]
+        look: A wide pane of thick glass, scratched at its edges, looking out on the swell and the black rock. At its foot, the deck is worn smooth where people have stood.
+        take: It is part of the hull.
+        verbs:
+          touch: The glass is cold under your palm. Around your hand you see the faint, overlapping marks of many other palms.
+      - words: [ducts, ceiling ducts]
+        look: Ribbed ducts along the ceiling, breathing warm air that carries every smell from the kitchen.
+      - words: [outside door, heavy door]
+        look: A heavy door with a small lock cycle of its own and a weather light beside it, now showing amber.
+      - words: [connection, covered connection]
+        look: A covered passage running east, with a sign reading VESPER WORKS.
+    objects:
+      - id: commons_tap
+        type: water_tap
+        name: water tap
+        description: A steel tap over a small basin beside the serving hatch, stencilled POTABLE, with a cup on a chain.
+    services:
+      - id: commons_hatch
+        sells:
+          field_ration: { stock: 10, target: 12, price: 600 }
+          herbal_tea: { stock: 20, target: 20, price: 50 }
+          coffee: { stock: 6, target: 8, price: 150 }
+        provider: npc_sana_holt
+        hours: 07-20
+      - id: breakfast
+        sells:
+          hot_meal: { stock: 20, target: 20, price: 400 }
+        provider: npc_sana_holt
+        hours: 07-09
+      - id: midday_meal
+        sells:
+          hot_meal: { stock: 20, target: 20, price: 400 }
+        provider: npc_sana_holt
+        hours: 12-14
+      - id: supper
+        sells:
+          hot_meal: { stock: 20, target: 20, price: 400 }
+        provider: npc_sana_holt
+        hours: 18-20
+
+  - id: loc_guest_quarters
+    name: Guest Quarters
+    area: port_vesper
+    tags: [lodging, rest]
+    aliases: [quarters, bunks, dormitory, my bunk]
+    summary: Shared sleeping quarters for visitors and newly arrived staff.
+    sound: quiet
+    description:
+      day: The Guest Quarters are narrow, lined with stacked bunks behind sliding doors, each with a small reading lamp and a curtain. Your own bunk is the third on the left, with a lockable luggage cabinet bolted beneath it. The air recycler ticks overhead, and the blankets smell faintly of disinfectant. A slip taped to the cabinet door says your first three nights are paid for. The door south leads back to the Commons.
+      night: In the Guest Quarters most curtains are drawn, and somewhere behind one someone breathes slowly in their sleep. Only a few reading lamps glow through the fabric. The air recycler ticks overhead, and the cold creeps in along the floor. Your own bunk waits, third on the left, above its luggage cabinet. The door south leads back to the Commons.
+    exits:
+      south: { to: loc_commons, minutes: 2 }
+    details:
+      - words: [bunks, bunk, beds, my bunk]
+        look: Bunks stacked two high, each behind its own sliding door. Yours has a thin mattress, a folded grey blanket and a pillow that has seen many visitors.
+        verbs: { sleep: Lie down when you are ready to rest. The bunk is yours for the nights that are paid. }
+      - words: [lamp, reading lamp, lamps]
+        look: A small clip lamp with a flexible neck and a dimmer worn smooth by thumbs.
+        take: It is wired into the bunk frame.
+        verbs: { use: "The lamp clicks on and gives a small, warm circle of light." }
+      - words: [curtain, curtains]
+        look: A heavy curtain of grey fabric that runs on a rail, the only privacy on offer.
+        take: It is riveted to its rail.
+        verbs: { close: "You draw the curtain, and the room shrinks to your bunk and the ticking overhead." }
+      - words: [cabinet, luggage cabinet, locker]
+        look: A steel cabinet bolted beneath your bunk, with a code lock keyed to your contract.
+        take: It is bolted to the deck.
+        verbs:
+          open: The cabinet takes your code and swings open on an empty steel shelf, waiting for whatever you want to keep safe.
+      - words: [slip, note, paper slip]
+        look: A slip of printed paper, taped to the cabinet door.
+        take: You leave the slip where it is. It is proof of your paid nights.
+        verbs:
+          read: GUEST QUARTERS, BUNK 3L. First three nights paid under contract. Further nights by arrangement with stores.
+      - words: [recycler, air recycler]
+        look: A grey box in the ceiling with a slotted face, ticking like a slow clock.
+      - words: [blankets, blanket]
+        look: Thin grey blankets, clean and rough, smelling of disinfectant.
+        take: The blankets belong to the quarters. You may use them, but not keep them.
+    objects:
+      - id: quarters_tap
+        type: water_tap
+        name: water tap
+        description: A small tap and basin by the door, stencilled POTABLE, with a cup on a chain.
+    services:
+      - { id: guest_bunks, lodging: 1000, provider: npc_mara_venn, hours: 07-22 }
+
+  - id: loc_medical_bay
+    name: Medical Bay
+    area: port_vesper
+    tags: [public, medical]
+    aliases: [medical, med bay, infirmary, clinic]
+    summary: Port Vesper's treatment room, with its medical supplies and the recovery cradle.
+    sound: { kind: quiet }
+    description:
+      day: Just inside the Medical Bay, three plastic chairs and a counter face a glass partition. Beyond the glass stand treatment couches, locked cabinets of supplies and, under a pale light, the long shell of the recovery cradle. Everything smells of antiseptic, and a monitor behind the counter keeps a soft, even beep. A notice on the partition asks visitors to wait to be seen and touch nothing past the glass. The door north leads back to the Commons.
+      night: The Medical Bay is lit low at night, the reception chairs empty and the glass partition a dark mirror. Past it, the recovery cradle sits in its pale pool of light. The monitor behind the counter beeps on, steady and alone, and the antiseptic smell is sharper in the stillness. The notice on the partition still asks you to wait to be seen. The door north leads back to the Commons.
+    exits:
+      north: { to: loc_commons, minutes: 2 }
+    details:
+      - words: [chairs, plastic chairs]
+        look: Three moulded plastic chairs, one with a crack mended with tape.
+        verbs: { sit: You sit and wait. The monitor goes on beeping. }
+      - words: [counter, reception]
+        look: A low counter with a sign-in tablet and a box of disposable gloves.
+      - words: [partition, glass partition, glass]
+        look: A clear partition from floor to ceiling, with a sliding door marked STAFF ONLY.
+      - words: [couches, treatment couches]
+        look: Two padded couches under jointed lamps, their covers smooth and tight.
+      - words: [cabinets, supplies, medical supplies, supply cabinets]
+        look: Steel cabinets with small windows and code locks. Through the glass you see dressings, ampoules and sealed trays.
+        take: The supplies are behind the partition and locked away, and they are not yours to take.
+      - words: [cradle, recovery cradle]
+        look: A long, closed shell of white composite on a heavy base, with a clear lid and a bank of dark indicators along its side. It is where people are brought back, when they can be.
+        take: It weighs more than a supply crate, and it is behind the glass.
+      - words: [monitor]
+        look: A small screen behind the counter showing a single flat line of status. Nobody is connected just now.
+      - words: [notice]
+        look: A laminated notice fixed to the partition.
+        take: It is glued to the glass.
+        verbs:
+          read: "PLEASE WAIT TO BE SEEN. Do not pass the partition or handle equipment. New arrivals: implant fitting and briefing before any field trip."
+    services:
+      - id: medical_supplies
+        sells:
+          dressing_pack: { stock: 10, target: 10, price: 300 }
+          field_medkit: { stock: 3, target: 3, price: 1500 }
+        provider: npc_edda_vale
+        hours: 08-18

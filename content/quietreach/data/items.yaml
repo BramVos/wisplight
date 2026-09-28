@@ -1,0 +1,255 @@
+items:
+  - id: hot_meal
+    name: hot meal
+    plural: hot meals
+    description: A tray with a bowl of vegetable and protein stew, a slab of grain bread and a smear of something green from the modules.
+    aliases: [meal, stew, tray]
+    tags: [food, meal]
+    value: 400
+    food: 60
+
+  - id: field_ration
+    name: field ration
+    plural: field rations
+    description: A day's supply of shelf-stable food in a grey foil pack, sealed in the Commons kitchen and stamped with the date.
+    aliases: [ration, ration pack]
+    tags: [food, ration]
+    value: 600
+    food: 50
+
+  - id: herbal_tea
+    name: cup of herbal tea
+    plural: cups of herbal tea
+    description: A dented mug of pale, bitter tea brewed from herbs grown in the modules.
+    aliases: [tea, herbal tea]
+    tags: [drink]
+    value: 50
+    food: 5
+
+  - id: coffee
+    name: cup of coffee
+    plural: cups of coffee
+    description: Real imported coffee, black and strong, poured carefully because there is never much of it.
+    aliases: [coffee]
+    tags: [drink, imported]
+    value: 150
+    food: 5
+
+  - id: drinking_water
+    name: pouch of drinking water
+    plural: pouches of drinking water
+    description: A soft, resealable pouch of purified seawater, faintly flat and tasting of the filters.
+    aliases: [water, water pouch]
+    tags: [drink, water]
+    value: 0
+    food: 5
+
+  - id: vegetables
+    name: bundle of vegetables
+    plural: bundles of vegetables
+    description: Salt-hardy greens and small roots from imported Earth stock, grown in the modules or the coastal beds.
+    aliases: [greens, roots, coastal vegetables]
+    tags: [food, produce]
+    value: 60
+    food: 15
+
+  - id: cultured_protein
+    name: block of cultured protein
+    plural: blocks of cultured protein
+    description: A pale, dense block of protein grown from cultures in the modules, wrapped in film.
+    aliases: [protein, protein block]
+    tags: [food, produce]
+    value: 80
+    food: 20
+
+  - id: tea_herbs
+    name: packet of tea herbs
+    plural: packets of tea herbs
+    description: Dried leaves from the growing modules, crumbled into a paper packet.
+    aliases: [herbs]
+    tags: [produce]
+    value: 20
+
+  - id: grain
+    name: sack of grain
+    plural: sacks of grain
+    description: A sealed sack of imported milled grain, stamped with a Harrow Station consignment number.
+    aliases: [flour, milled grain]
+    tags: [imported, supplies]
+    value: 50
+
+  - id: cooking_oil
+    name: tin of cooking oil
+    plural: tins of cooking oil
+    description: A squat imported tin of cooking oil, the lid resealed with tape.
+    aliases: [oil]
+    tags: [imported, supplies]
+    value: 80
+
+  - id: growth_nutrients
+    name: canister of growth nutrients
+    plural: canisters of growth nutrients
+    description: An imported canister of nutrient concentrate for the growing modules, marked with a dosing table.
+    aliases: [nutrients, nutrient canister]
+    tags: [imported, supplies]
+    value: 200
+
+  - id: insulated_wire
+    name: reel of insulated wire
+    plural: reels of insulated wire
+    description: A small reel of imported insulated wire, a few metres left on it.
+    aliases: [wire, reel]
+    tags: [material, imported]
+    value: 150
+
+  - id: connector_parts
+    name: bag of connector parts
+    plural: bags of connector parts
+    description: A labelled bag of connector housings, contacts and protective sheathing, some new, some salvaged.
+    aliases: [connectors, contacts, connector housings]
+    tags: [material]
+    value: 120
+
+  - id: filter_media
+    name: roll of filter media
+    plural: rolls of filter media
+    description: A vacuum-packed roll of imported membrane and filter media for the purification plant.
+    aliases: [membrane, filter roll]
+    tags: [material, imported]
+    value: 200
+
+  - id: polymer_stock
+    name: bar of polymer stock
+    plural: bars of polymer stock
+    description: A grey bar of printable polymer, stamped with its grade and the warning NOT PRESSURE RATED.
+    aliases: [polymer, feedstock]
+    tags: [material, imported]
+    value: 250
+
+  - id: water_filter
+    name: water filter cartridge
+    plural: water filter cartridges
+    description: A heavy cylindrical cartridge assembled in the Workshop, with a date and Tessa's initials written on the band.
+    aliases: [filter, cartridge]
+    tags: [equipment]
+    value: 900
+
+  - id: seal_ring
+    name: seal ring
+    plural: seal rings
+    description: A black polymer ring for hatch seals and housings, printed in the Workshop. Not for pressure doors.
+    aliases: [seal, gasket]
+    tags: [equipment]
+    value: 400
+
+  - id: bracket
+    name: bracket
+    plural: brackets
+    description: A plain printed bracket for mounting a housing or a cable run, still showing the faint layer lines.
+    aliases: [mount, housing]
+    tags: [equipment]
+    value: 300
+
+  - id: cable_assembly
+    name: cable assembly
+    plural: cable assemblies
+    description: A coiled length of cable with a moulded connector at each end, tested and tagged.
+    aliases: [cable, patch cable]
+    tags: [equipment]
+    value: 600
+    used: "{name} coils the cable and clips it to {their} belt, ready for the next job."
+
+  - id: cable_assembly_poor
+    name: faulty cable assembly
+    plural: faulty cable assemblies
+    description: A cable assembly whose connector flickers when you flex it. It might pass a quick look, but not a test.
+    aliases: [faulty cable, bad cable]
+    tags: [equipment]
+    value: 100
+    quality: poor
+    of: cable_assembly
+
+  - id: measurement_cable
+    name: measurement cable
+    plural: measurement cables
+    description: A shielded cable with probe clips at one end and an instrument plug at the other, its sheath marked in centimetres.
+    aliases: [probe cable, test lead]
+    tags: [equipment]
+    value: 900
+    used: "{name} plugs the cable into {their} instrument, watches the reading settle and gives a short nod."
+
+  - id: measurement_cable_poor
+    name: unreliable measurement cable
+    plural: unreliable measurement cables
+    description: A measurement cable that reads true one moment and drifts the next. The fault is still in there somewhere.
+    aliases: [unreliable cable]
+    tags: [equipment]
+    value: 150
+    quality: poor
+    of: measurement_cable
+
+  - id: measurement_cable_damaged
+    name: damaged measurement cable
+    plural: damaged measurement cables
+    description: A measurement cable with a crushed plug and a split in the shielding, tagged with Niko's name.
+    aliases: [broken cable, niko's cable]
+    tags: [equipment]
+    value: 100
+
+  - id: field_lamp
+    name: field lamp
+    plural: field lamps
+    description: A rugged hand lamp with a rubber grip and a wrist loop, its lens scratched from years of salt wind.
+    aliases: [lamp, hand lamp, torch]
+    tags: [light, equipment, imported]
+    value: 3500
+
+  - id: battery_cell
+    name: battery cell
+    plural: battery cells
+    description: A standard rechargeable cell with a charge gauge on its side, imported and much reused.
+    aliases: [battery, cell]
+    tags: [equipment, imported]
+    value: 400
+
+  - id: dressing_pack
+    name: dressing pack
+    plural: dressing packs
+    description: A sterile pack of dressings, tape and an antiseptic wipe, imported and dated.
+    aliases: [dressing, bandage]
+    tags: [medical, imported]
+    value: 300
+    remedy: { heal: 1d4 }
+
+  - id: field_medkit
+    name: field medkit
+    plural: field medkits
+    description: A sealed orange case of dressings, a splint and a few measured doses, issued by the Medical Bay with a signature.
+    aliases: [medkit, med kit]
+    tags: [medical, imported]
+    value: 1500
+    remedy: { heal: 2d4 }
+
+  - id: salvaged_cable_sheath
+    name: length of salvaged cable sheathing
+    plural: lengths of salvaged cable sheathing
+    description: A washed-up length of protective cable sheathing, scoured by salt. Sometimes a serial number shows through the grime.
+    aliases: [sheathing, salvage, cable sheath]
+    tags: [salvage, material]
+    value: 40
+
+  - id: rock_sample
+    name: rock sample
+    plural: rock samples
+    description: A chip of black volcanic rock in a labelled sample bag. For study, not for anything else.
+    aliases: [sample, rock]
+    tags: [sample, research]
+    value: 0
+
+  - id: organism_sample
+    name: organism sample
+    plural: organism samples
+    description: A sealed tube of tide-pool water with something small and native drifting in it. Not food, whatever it looks like.
+    aliases: [sample, specimen, tube]
+    tags: [sample, research]
+    value: 0

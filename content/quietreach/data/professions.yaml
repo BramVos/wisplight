@@ -1,0 +1,173 @@
+professions:
+  - id: villager
+    name: villager
+    schedule:
+      - from: 07:00
+        to: 18:00
+        activity: work
+      - from: 18:00
+        to: 22:00
+        activity: home
+      - from: 22:00
+        to: 07:00
+        activity: sleep
+
+  - id: port_coordinator
+    name: Port Coordinator
+    schedule:
+      - { from: 07:30, to: 12:00, activity: free, days: [Restday] }
+      - { from: 13:00, to: 18:00, activity: socialize, at: loc_commons, days: [Restday] }
+      - { from: 06:30, to: 07:00, activity: eat, at: loc_commons }
+      - { from: 12:30, to: 13:15, activity: eat, at: loc_commons }
+      - { from: 18:00, to: 19:00, activity: eat, at: loc_commons }
+      - { from: 07:00, to: 09:00, activity: work, at: loc_arrival_lock }
+      - { from: 09:00, to: 12:30, activity: work, at: loc_commons }
+      - { from: 13:15, to: 16:00, activity: work, at: loc_commons }
+      - { from: 16:00, to: 18:00, activity: free }
+      - { from: 19:00, to: 22:00, activity: socialize, at: loc_commons }
+      - { from: 22:00, to: 06:30, activity: sleep }
+
+  - id: research_lead
+    name: Research Lead
+    schedule:
+      - { from: 07:30, to: 12:00, activity: free, days: [Restday] }
+      - { from: 13:00, to: 18:00, activity: free, days: [Restday] }
+      - { from: 07:00, to: 07:30, activity: eat, at: loc_commons }
+      - { from: 12:00, to: 13:00, activity: eat, at: loc_ridge_shelter, days: [Primeday, Relay] }
+      - { from: 12:00, to: 13:00, activity: eat, at: loc_commons }
+      - { from: 18:00, to: 19:00, activity: eat, at: loc_commons }
+      - { from: 07:30, to: 09:00, activity: home }
+      - { from: 09:00, to: 12:00, activity: work, at: loc_orison_listening_room, days: [Primeday, Relay] }
+      - { from: 13:00, to: 17:00, activity: work, at: loc_orison_listening_room, days: [Primeday, Relay] }
+      - { from: 17:00, to: 18:00, activity: work, at: loc_commons, days: [Primeday, Relay] }
+      - { from: 09:00, to: 12:00, activity: work, at: loc_peregrine_common_deck }
+      - { from: 13:00, to: 18:00, activity: work, at: loc_commons }
+      - { from: 19:00, to: 23:00, activity: free }
+      - { from: 23:00, to: 07:00, activity: sleep }
+
+  - id: chief_engineer
+    name: Chief Engineer
+    schedule:
+      - { from: 07:30, to: 12:00, activity: free, days: [Restday] }
+      - { from: 13:00, to: 18:00, activity: socialize, at: loc_commons, days: [Restday] }
+      - { from: 06:30, to: 07:30, activity: eat, at: loc_commons }
+      - { from: 12:00, to: 13:00, activity: eat, at: loc_commons }
+      - { from: 18:00, to: 19:00, activity: eat, at: loc_commons }
+      - { from: 07:30, to: 08:00, activity: free }
+      - { from: 08:00, to: 12:00, activity: work, at: loc_workshop }
+      - { from: 13:00, to: 17:30, activity: work, at: loc_peregrine_hangar }
+      - { from: 17:30, to: 18:00, activity: work, at: loc_workshop }
+      - { from: 19:00, to: 22:00, activity: free }
+      - { from: 22:00, to: 06:30, activity: sleep }
+
+  - id: signal_technician
+    name: Signal Technician
+    schedule:
+      - { from: 07:30, to: 12:00, activity: free, days: [Restday] }
+      - { from: 13:00, to: 18:00, activity: socialize, at: loc_commons, days: [Restday] }
+      - { from: 06:30, to: 07:30, activity: eat, at: loc_commons }
+      - { from: 12:00, to: 12:30, activity: eat, at: loc_ridge_shelter }
+      - { from: 18:00, to: 19:00, activity: eat, at: loc_commons }
+      - { from: 07:30, to: 12:00, activity: work, at: loc_orison_listening_room }
+      - { from: 12:30, to: 16:30, activity: work, at: loc_orison_listening_room }
+      - { from: 16:30, to: 17:30, activity: work, at: loc_workshop }
+      - { from: 17:30, to: 18:00, activity: free }
+      - { from: 19:00, to: 22:00, activity: free }
+      - { from: 22:00, to: 06:30, activity: sleep }
+
+  - id: pilot_navigator
+    name: Pilot-Navigator
+    schedule:
+      - { from: 07:30, to: 12:00, activity: free, days: [Restday] }
+      - { from: 13:00, to: 18:00, activity: free, days: [Restday] }
+      - { from: 06:30, to: 07:30, activity: eat, at: loc_commons }
+      - { from: 12:00, to: 13:00, activity: eat, at: loc_commons }
+      - { from: 18:00, to: 19:00, activity: eat, at: loc_commons }
+      - { from: 07:30, to: 09:00, activity: free }
+      - { from: 09:00, to: 12:00, activity: work, at: loc_peregrine_common_deck }
+      - { from: 13:00, to: 15:00, activity: work, at: loc_peregrine_hangar, days: [Relay] }
+      - { from: 13:00, to: 18:00, activity: work, at: loc_peregrine_common_deck }
+      - { from: 19:00, to: 22:00, activity: free }
+      - { from: 22:00, to: 06:30, activity: sleep }
+
+  - id: field_mechanic
+    name: Field Mechanic
+    schedule:
+      - { from: 07:30, to: 12:00, activity: free, days: [Restday] }
+      - { from: 13:00, to: 18:00, activity: free, days: [Restday] }
+      - { from: 06:30, to: 07:30, activity: eat, at: loc_commons }
+      - { from: 12:00, to: 13:00, activity: eat, at: loc_ridge_shelter, days: [Primeday, Relay] }
+      - { from: 12:00, to: 13:00, activity: eat, at: loc_commons }
+      - { from: 18:00, to: 19:00, activity: eat, at: loc_commons }
+      - { from: 07:30, to: 12:00, activity: work, at: loc_coastal_service_path, days: [Primeday, Relay] }
+      - { from: 13:00, to: 15:30, activity: work, at: loc_coastal_service_path, days: [Primeday, Relay] }
+      - { from: 07:30, to: 12:00, activity: work, at: loc_workshop }
+      - { from: 13:00, to: 16:30, activity: work, at: loc_workshop }
+      - { from: 16:30, to: 18:00, activity: free }
+      - { from: 19:00, to: 22:00, activity: socialize, at: loc_commons }
+      - { from: 22:00, to: 06:30, activity: sleep }
+
+  - id: medic
+    name: Medic
+    schedule:
+      - { from: 07:30, to: 12:00, activity: free, days: [Restday] }
+      - { from: 13:00, to: 18:00, activity: free, days: [Restday] }
+      - { from: 06:30, to: 07:30, activity: eat, at: loc_commons }
+      - { from: 12:00, to: 13:00, activity: eat, at: loc_commons }
+      - { from: 18:00, to: 19:00, activity: eat, at: loc_commons }
+      - { from: 07:30, to: 08:00, activity: free }
+      - { from: 08:00, to: 12:00, activity: work, at: loc_medical_bay }
+      - { from: 13:00, to: 14:00, activity: home }
+      - { from: 14:00, to: 17:00, activity: work, at: loc_medical_bay }
+      - { from: 17:00, to: 18:00, activity: free }
+      - { from: 19:00, to: 22:00, activity: free }
+      - { from: 22:00, to: 06:30, activity: sleep }
+
+  - id: steward
+    name: Steward
+    schedule:
+      - { from: 05:30, to: 06:00, activity: eat, at: loc_commons }
+      - { from: 13:30, to: 14:00, activity: eat, at: loc_commons }
+      - { from: 19:00, to: 19:30, activity: eat, at: loc_commons }
+      - { from: 06:00, to: 10:00, activity: work, at: loc_commons }
+      - { from: 10:00, to: 11:00, activity: work, at: loc_guest_quarters }
+      - { from: 11:00, to: 13:30, activity: work, at: loc_commons }
+      - { from: 14:00, to: 17:00, activity: home }
+      - { from: 17:00, to: 19:00, activity: work, at: loc_commons }
+      - { from: 19:30, to: 21:30, activity: socialize, at: loc_commons }
+      - { from: 21:30, to: 05:30, activity: sleep }
+
+  - id: watch_first
+    name: First Watch
+    schedule:
+      - { from: 05:30, to: 06:00, activity: eat, at: loc_commons }
+      - { from: 14:00, to: 15:00, activity: eat, at: loc_commons }
+      - { from: 18:00, to: 19:00, activity: eat, at: loc_commons }
+      - { from: 06:00, to: 14:00, activity: work, at: loc_arrival_lock }
+      - { from: 15:00, to: 18:00, activity: free }
+      - { from: 19:00, to: 21:30, activity: free }
+      - { from: 21:30, to: 05:30, activity: sleep }
+
+  - id: watch_second
+    name: Second Watch
+    schedule:
+      - { from: 07:00, to: 07:30, activity: eat, at: loc_commons }
+      - { from: 12:00, to: 13:00, activity: eat, at: loc_commons }
+      - { from: 18:00, to: 18:30, activity: eat, at: loc_commons }
+      - { from: 07:30, to: 12:00, activity: free }
+      - { from: 13:00, to: 14:00, activity: free }
+      - { from: 14:00, to: 18:00, activity: work, at: loc_arrival_lock }
+      - { from: 18:30, to: 22:00, activity: work, at: loc_arrival_lock }
+      - { from: 22:00, to: 23:00, activity: free }
+      - { from: 23:00, to: 07:00, activity: sleep }
+
+  - id: watch_night
+    name: Night Watch
+    schedule:
+      - { from: 06:30, to: 07:30, activity: eat, at: loc_commons }
+      - { from: 18:00, to: 19:00, activity: eat, at: loc_commons }
+      - { from: 22:00, to: 06:00, activity: work, at: loc_arrival_lock }
+      - { from: 06:00, to: 06:30, activity: free }
+      - { from: 07:30, to: 15:00, activity: sleep }
+      - { from: 15:00, to: 18:00, activity: free }
+      - { from: 19:00, to: 22:00, activity: free }

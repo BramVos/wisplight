@@ -1,0 +1,248 @@
+npcs:
+  - id: npc_mara_venn
+    name: Mara Venn
+    short: the port coordinator
+    pronoun: she
+    age: 46
+    profession: port_coordinator
+    home: loc_guest_quarters
+    work: loc_arrival_lock
+    fame: 3
+    faith: keeping
+    appearance: A broad-shouldered Nacrean woman in a salt-stained port jacket, grey-streaked hair cropped short, a slate clipped to her belt and a marshal's band on her left sleeve.
+    personality: { warmth: 1, courage: 2, honesty: 2, temper: 0, curiosity: 0, diligence: 3 }
+    values: { community: 3, duty: 3, prudence: 2, discovery: -1 }
+    quirks:
+      - counts heads at every meal without seeming to
+      - keeps every agreement to the minute and expects the same
+    speech: Businesslike and plain. Short sentences about air, power, stock and access. She warms slowly, and only to people who keep their word.
+    aliases: [Mara, Venn, the marshal, the coordinator, Settlement Marshal]
+    public_facts:
+      - She is Port Coordinator and Settlement Marshal of Port Vesper.
+      - She meets every arrival at the Arrival Lock and does her administration in the Commons.
+      - She blocked the issue of emergency supplies that Dr Sorell had requested for a test.
+      - She wants the expedition to leave the colony enough to get through the winter.
+    examples:
+      - Contract. Thank you. Your bunk is in the Guest Quarters, and Sorell expects you at the next meal.
+      - Before you promise him anything, ask Tessa what it will cost.
+      - Heating parts are heating parts. They don't turn into research stock because someone writes that on a form.
+      - Count the people, not the lights. We learned that the hard way.
+    money: 18000
+    knows_areas: [port_vesper, vesper_works, coastal_traverse, orison_ridge]
+    relations:
+      - to: npc_ilyan_sorell
+        role: acquaintance
+        bond: -1
+        note: Distrusts his priorities since he asked for emergency supplies as though they were ordinary research stock.
+      - to: npc_sana_holt
+        role: friend
+        bond: 2
+        note: Trusts her with the running of the Commons and with people.
+      - { to: npc_tessa_rook, role: acquaintance, bond: 1, note: Relies on her figures. }
+      - { to: npc_edda_vale, role: neighbour, bond: 1 }
+      - { to: npc_niko_serrin, role: neighbour, bond: 1 }
+    hires:
+      - id: trail_cart
+        name: Trail Cart
+        aliases: [cart, the cart, electric cart, buggy]
+        price: 1200
+        hours: 8
+        where: at the Arrival Lock, from Mara Venn, who writes the hire contract; Tessa Rook hands the cart over at the Workshop
+        line: "Mara writes you into the hire contract: driver, vehicle, cargo, condition, return time. Maintenance track only, back to the Workshop on time, and Tessa gives you the safety talk before you touch it."
+        free_for_friends: false
+
+  - id: npc_ilyan_sorell
+    name: Dr Ilyan Sorell
+    short: the research lead
+    pronoun: he
+    age: 52
+    profession: research_lead
+    home: loc_guest_quarters
+    work: loc_peregrine_common_deck
+    fame: 3
+    faith: open_sky
+    appearance: A lean Beltborn man with close-cut silver hair, a station-pale face and quick hands that are always sketching diagrams in the air. He wears a long field coat with too many pockets.
+    personality: { warmth: 1, courage: 2, honesty: 0, temper: 1, curiosity: 3, diligence: 2 }
+    values: { discovery: 3, ambition: 2, prudence: -1, community: 0 }
+    quirks:
+      - talks about uncertainties as if they were details to be tidied later
+      - touches the observation glass before every field day
+    speech: Persuasive, fluent and impatient. He speaks in long sentences that run ahead of the listener, and he uses "we" when he means himself. He is sympathetic to the Open Sky rather than devout.
+    aliases: [Sorell, Ilyan, Dr Sorell, the research lead, the doctor]
+    public_facts:
+      - He leads the research programme at Port Vesper and hired the stranger.
+      - He works at the Orison Listening Room on field days, and does his analysis and holds his meetings on the Peregrine Common Deck.
+      - He wants the Peregrine to depart soon, and he says delay may lose a unique opportunity.
+      - Mara Venn blocked one of his supply requests.
+    examples:
+      - You're the specialist. Good. Sit down, eat something, and let me tell you why this cannot wait.
+      - Every week we argue about spare parts is a week the signal might stop.
+      - Tessa is right to be careful. She is also, forgive me, careful about everything.
+    money: 40000
+    knows_areas: [port_vesper, vesper_works, orison_ridge]
+    relations:
+      - { to: npc_mara_venn, role: acquaintance, bond: 0, note: Thinks her a necessary obstacle. }
+      - { to: npc_tessa_rook, role: acquaintance, bond: 1, note: Respects her work and resents her caution. }
+      - { to: npc_niko_serrin, role: acquaintance, bond: 1, note: Values the recording Niko found. }
+      - to: npc_edda_vale
+        role: acquaintance
+        bond: 0
+        note: Has pressed her on crew fitness, and got nowhere.
+    secrets:
+      - id: relabelled_requisition
+        text: He listed emergency heating and water parts as ordinary research stock so that he could use them in a Peregrine test.
+        hint: He changes the subject quickly when the blocked requisition comes up.
+        admission: Yes, I called them research stock. The test was research. I'd have replaced every one of them.
+        dc: 14
+
+  - id: npc_tessa_rook
+    name: Tessa Rook
+    short: the chief engineer
+    pronoun: she
+    age: 39
+    profession: chief_engineer
+    home: loc_guest_quarters
+    work: loc_workshop
+    fame: 2
+    appearance: A compact woman with burn-scarred forearms, dark hair tied back under a grease-marked band, and a Transit Families knotwork tag on her tool belt.
+    personality: { warmth: 0, courage: 2, honesty: 3, temper: 1, curiosity: 1, diligence: 3 }
+    values: { truth: 3, safety: 3, craft: 2, discovery: 0 }
+    quirks: [asks for the reading before she asks for the opinion, never signs anything standing up]
+    speech: Brief and precise. She uses numbers where others use adjectives, and holds no faith. She swears by hull and vacuum when pressed.
+    aliases: [Tessa, Rook, the engineer, the chief]
+    public_facts:
+      - She is chief engineer, in the Workshop in the mornings and in the Peregrine Hangar during tests.
+      - She comes from the Transit Families.
+      - She will not sign off on the Peregrine's safety on the strength of enthusiasm.
+      - She is hunting for substitute parts so that the ship and the settlement need not share the same stock.
+      - She is the one who approves new members of the Vesper Maintenance Cooperative.
+    examples:
+      - What did you measure? Not what you think. What you measured.
+      - A mistake you tell me about is a repair. A mistake you hide is a failure waiting.
+      - Hold pressure. Then we talk.
+    money: 15000
+    knows_areas: [port_vesper, vesper_works, coastal_traverse]
+    relations:
+      - to: npc_ilyan_sorell
+        role: acquaintance
+        bond: 0
+        note: Respects his knowledge. Doubts his safety margins.
+      - to: npc_niko_serrin
+        role: acquaintance
+        bond: 1
+        note: Thinks him careful and does not know why he avoids her.
+      - { to: npc_mara_venn, role: acquaintance, bond: 1 }
+
+  - id: npc_niko_serrin
+    name: Niko Serrin
+    short: the signal technician
+    pronoun: he
+    age: 28
+    profession: signal_technician
+    home: loc_guest_quarters
+    work: loc_orison_listening_room
+    fame: 2
+    appearance: A thin young Nacrean with shadowed eyes and a rain-dark knitted cap. His headset hangs round his neck, and a notebook swollen with damp sits in his breast pocket.
+    personality: { warmth: 1, courage: -1, honesty: 1, temper: 0, curiosity: 2, diligence: 2 }
+    values: { truth: 2, craft: 2, community: 1, safety: 1 }
+    quirks:
+      - rubs his eyes when he is tired, which is often
+      - writes down times twice, in the log and in his notebook
+    speech: Quiet and observant. He hedges his sentences, then corrects himself with an exact figure. He holds no faith, but he stands for every remembrance.
+    aliases: [Niko, Serrin, the technician, signal tech]
+    public_facts:
+      - He found the anomalous recording at the Orison Listening Room.
+      - He works up on the ridge by day and comes back by way of the Ridge Shelter.
+      - At a late meal he said part of the signal looked like a Peregrine test pattern.
+      - He sleeps badly, and it shows.
+    examples:
+      - I'm not saying it is the test pattern. I'm saying it looks like it. That's different.
+      - The station clock and the test rig were never synced. Not that I can prove, anyway.
+      - Deep water take it, the heater's gone again up there.
+    money: 6000
+    knows_areas: [port_vesper, coastal_traverse, orison_ridge]
+    relations:
+      - to: npc_tessa_rook
+        role: acquaintance
+        bond: 0
+        note: Cautious around her because of what he has not reported.
+      - { to: npc_sana_holt, role: friend, bond: 2, note: She saves him a meal when he comes in late. }
+      - to: npc_ilyan_sorell
+        role: acquaintance
+        bond: 0
+        note: Fears Sorell will make his find bigger than it is.
+    secrets:
+      - id: antenna_bypass
+        text: He fitted an unofficial bypass in the antenna system at Orison Ridge to keep the measurements running, and he never reported it.
+        hint: He goes quiet whenever someone mentions the antenna wiring or one of Tessa's inspections.
+        admission: I put a bypass in. The array was dropping out, and I'd have lost the recordings. I know I should have logged it.
+        dc: 13
+
+  - id: npc_edda_vale
+    name: Dr Edda Vale
+    short: the medic
+    pronoun: she
+    age: 44
+    profession: medic
+    home: loc_guest_quarters
+    work: loc_medical_bay
+    fame: 2
+    faith: keeping
+    appearance: A tall Beltborn woman in a pale medical tunic. Her fair hair is pinned up, and her reading lenses hang on a cord, with a steadiness about her that fills a room.
+    personality: { warmth: 1, courage: 2, honesty: 3, temper: -1, curiosity: 1, diligence: 3 }
+    values: { privacy: 3, duty: 3, truth: 2, ambition: -1 }
+    quirks:
+      - explains a procedure twice, the second time more slowly
+      - never discusses a patient in the corridor
+    speech: Calm and direct. She tells people the limits of what can be done without softening them. She is quietly of the Keeping.
+    aliases: [Edda, Vale, Dr Vale, the medic, the doctor]
+    public_facts:
+      - She runs the Medical Bay and its recovery cradle.
+      - She is usually at the evening meal in the Commons.
+      - Medical fitness for the expedition is her decision, and she has said so to Sorell.
+      - She keeps patient information to herself, even from the research lead.
+    examples:
+      - Your implant keeps a little of you. It cannot fetch your body back from the sea.
+      - Whether someone is fit to fly is my call. A departure date doesn't change a scan.
+      - If you're ever in the cradle, someone will sit with you and say your name. That's how it's done here.
+    money: 22000
+    knows_areas: [port_vesper, vesper_works]
+    relations:
+      - { to: npc_ilyan_sorell, role: acquaintance, bond: -1, note: Resists his pressure on crew fitness. }
+      - { to: npc_sana_holt, role: friend, bond: 1 }
+      - { to: npc_mara_venn, role: neighbour, bond: 1 }
+
+  - id: npc_sana_holt
+    name: Sana Holt
+    short: the steward
+    pronoun: she
+    age: 51
+    profession: steward
+    home: loc_guest_quarters
+    work: loc_commons
+    fame: 2
+    faith: keeping
+    appearance: A sturdy Nacrean woman with laughter lines, sleeves rolled to the elbow, and a ring of stores keys on a lanyard. A faded Transit Families ribbon is braided into her grey plait.
+    personality: { warmth: 3, courage: 1, honesty: 2, temper: -1, curiosity: 1, diligence: 2 }
+    values: { community: 3, privacy: 2, duty: 2, truth: 1 }
+    quirks:
+      - remembers everyone's name and how they take their tea
+      - will not repeat a confidence as news, however it is asked for
+    speech: "Warm and unhurried. She names people as she talks about them, and keeps a Coast turn of phrase: 'by my mother's hands'."
+    aliases: [Sana, Holt, the steward]
+    public_facts:
+      - She runs the Commons at mealtimes, and the Guest Quarters during cleaning and stock work.
+      - She has relatives among the Transit Families.
+      - She keeps the names for the Harbour Record and knows the story of the Night of the Open Door.
+      - She defends Niko when people grumble about him.
+    examples:
+      - You'll be the specialist. Sit, you look frozen. That's Mara's chair, that's Tessa's, and Niko's is the empty one. He's still up the ridge.
+      - Edda's in the Medical Bay till supper. Sorell's on the ship, you'll hear him before you see him.
+      - That's his to tell, love, not mine.
+    money: 8000
+    knows_areas: [port_vesper, vesper_works, coastal_traverse]
+    relations:
+      - { to: npc_mara_venn, role: friend, bond: 2 }
+      - { to: npc_niko_serrin, role: friend, bond: 2, note: Sees that he sleeps badly and does not know why. }
+      - { to: npc_edda_vale, role: friend, bond: 1 }
+      - { name: a cousin with the Transit Families, pronoun: they, role: kin, bond: 2, status: away }

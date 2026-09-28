@@ -1,0 +1,95 @@
+voice:
+  oaths:
+    keeping:
+      - "By the Remembered."
+      - "Keep their names."
+      - "Leave the dead their peace."
+    open_sky:
+      - "Witness us."
+      - "By the open sky."
+      - "May the dark be empty."
+  sayings:
+    - "A name is a responsibility."
+    - "Leave room for what you don't know."
+  groups:
+    - id: technicians
+      name: "Technicians and spacefarers"
+      professions: [chief_engineer, signal_technician, pilot_navigator, field_mechanic]
+      oaths:
+        - "Hull and vacuum."
+        - "Not on my ship."
+      sayings:
+        - "A green light isn't a second opinion."
+    - id: port_folk
+      name: "Port Vesper"
+      areas: [port_vesper, vesper_works]
+      oaths:
+        - "Hold pressure."
+      sayings:
+        - "Count the people, not the lights."
+    - id: coast_folk
+      name: "Coast folk"
+      areas: [coastal_traverse, orison_ridge]
+      oaths:
+        - "Salt in the seals."
+        - "Deep water take it."
+        - "By my mother's hands."
+      sayings:
+        - "The ridge keeps its own weather."
+  default_group: port_folk
+  address:
+    stranger:
+      - "the specialist"
+      - "our new arrival"
+      - "visitor"
+    known:
+      - "specialist"
+      - "technician"
+      - "researcher"
+    high:
+      - "Doctor"
+      - "Marshal"
+  time:
+    - "The Belt Standard Calendar and a twenty-four-hour clock. Terminals, contracts and rosters write it in full: 18 Rainfall, 186 CR — 07:30."
+    - "Exact appointments are spoken plainly: the crawler leaves at seven thirty."
+    - "Handovers and safety work use hundreds: report back by sixteen hundred."
+    - "Ordinary talk uses meals, handovers and weekdays: after breakfast, before evening handover, tomorrow, on Anchor."
+    - "Short spans in seconds, minutes and hours; long ones in days, five-day weeks and calendar months."
+    - "Relative time only as the clock supports it: three days ago when it was three days; otherwise a few days ago, or before the last supply flight."
+    - "A shift is a duty period, not a unit of time: watch teams work eight hours, other roles keep their own hours."
+  distance:
+    - "Metres and kilometres, or walking time: the shelter is about twenty minutes along the path."
+    - "By sight when there is no measure: you can see the ridge from here, when the cloud lifts."
+    - "Distance stays the same; the journey time changes with weather, transport and load."
+    - "Light-years measure distance, never duration."
+  measures:
+    - "Grams, kilograms, litres and degrees Celsius."
+    - "Exact values only when measured, documented or given by the engine: the cable is twelve metres long."
+    - "Otherwise a plain estimate that sounds like one: about, roughly, a couple of."
+  not_here:
+    - word: "magic, spells, mana, divine healing, telepathy"
+      instead: "equipment, medical treatment, beliefs and unexplained observations"
+    - word: "antigravity, gravity plates, inertial dampers"
+      instead: "Nacre's own gravity; weightlessness or the push of acceleration in space"
+    - word: "warp speed, hyperspace lanes, an everyday jumpgate"
+      instead: "the experimental drive, with its limits and uncertainties"
+    - word: "instant interstellar conversation, a live database reachable everywhere"
+      instead: "local radio, stored data and messages that take months to travel"
+    - word: "alien empire, known alien races, universal translator"
+      instead: "hypotheses about the signal and slow, careful research into what it means"
+    - word: "resurrection, respawning, an immortal cloned copy"
+      instead: "retrieval, clinical death, brain protection and recovery within medical limits"
+    - word: "quest giver"
+      instead: "the person who asked, the client"
+    - word: "NPC"
+      instead: "a person, a colonist, a crew member"
+    - word: "skill check"
+      instead: "a test, a try, a measurement"
+    - word: "level up"
+      instead: "training, experience"
+    - word: "inventory slots"
+      instead: "equipment, personal belongings, what you carry"
+    - word: "catastrophic communications anomaly"
+      instead: "a bad connection"
+    - word: "outsider"
+      instead: "visitor, the specialist; outsider only when someone means to sound distant or accusing"

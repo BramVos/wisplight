@@ -1,0 +1,198 @@
+topics:
+  - id: night_of_the_open_door
+    name: The Night of the Open Door
+    kind: lore
+    aliases: [Open Door, the open door, Count the people not the lights]
+    summary: Seventeen years ago a maintenance team was stranded in a winter storm, and a steward kept the outer reception module open until the last three came home.
+    details: A sensor reported that everyone was inside. The steward on duty did not believe it and kept the outer module accessible, and three people left behind reached the port through the storm. It is written in the Harbour Record. Versions differ on who first noticed they were missing. People still say "Count the people, not the lights."
+    story: The board said all in. Every light green. And the steward on the door looked at the green lights and then at the empty chairs, and kept the outer module open anyway, in that wind. Near dawn, three of them came in out of the snow. People will tell you who noticed first. Ask five and you'll get four names. What matters is someone counted the people, not the lights.
+    teller: npc_sana_holt
+    origin: port_vesper
+    fame: 3
+    known_by:
+      - npc_mara_venn
+      - npc_sana_holt
+      - npc_niko_serrin
+      - npc_tessa_rook
+      - npc_edda_vale
+      - npc_ilyan_sorell
+
+  - id: winter_supplies
+    name: The winter supplies
+    kind: fact
+    aliases: [spare parts, the stores, winter stock]
+    summary: The Peregrine needs the same spare parts as the settlement's heating and water systems, and there are not many.
+    details: Stocks are limited, and the forecast storm may delay the next supply delivery. Mara wants the settlement's stock kept apart from the ship's. Tessa is looking for substitute parts. Sorell wants to show that the ship needs less than people fear.
+    origin: port_vesper
+    fame: 2
+    known_by: [npc_mara_venn, npc_tessa_rook, npc_ilyan_sorell, npc_sana_holt]
+
+  - id: answer_before_the_question
+    name: An answer before the question
+    kind: lore
+    aliases: [the pattern match, the test pattern, the ship has already been somewhere]
+    summary: At a late meal Niko said part of the signal looks like a Peregrine test pattern that, by the logs, was sent only later.
+    details: What is established is small. The recordings exist, and two patterns match. The clocks of the listening station and the test installation were never shown to be synchronised. Some residents say the ship has already been somewhere. Others think it is a measurement error or tampering. Nothing is proven.
+    story: I said it looked like the test pattern. Looked like. The timestamps put ours after theirs, but the station clock drifts, and nobody ever synced it to the rig. So either I've found something or I've found a bad clock. Everyone's picked one already, and none of them was there when I found it.
+    teller: npc_niko_serrin
+    origin: port_vesper
+    fame: 2
+    known_by: [npc_niko_serrin, npc_sana_holt, npc_ilyan_sorell, npc_tessa_rook, npc_mara_venn]
+
+  - id: vesper_settlement_compact
+    name: The Vesper Settlement Compact
+    kind: fact
+    aliases: [the Compact, the law, the hearing]
+    summary: The local agreement under the Belt Charter that governs Port Vesper, Vesper Works and Orison Ridge, kept by the Settlement Marshal.
+    details: The Settlement Marshal controls access, investigates complaints and may take temporary measures, and the harbour watch on duty helps. Serious cases go to a hearing of three uninvolved residents. There is no death penalty, and nobody is put outside without protection. Debt may be worked off, and emergency care is never refused. Aboard ship on an expedition, the appointed captain holds authority, and that is not automatically the research lead.
+    origin: port_vesper
+    fame: 2
+    known_by: [npc_mara_venn, npc_sana_holt, npc_edda_vale, npc_tessa_rook]
+
+  - id: harbour_record
+    name: The Harbour Record
+    kind: lore
+    aliases: [the Record]
+    summary: The Harbour Record is where Port Vesper keeps the names of its dead, each with a short personal message.
+    details: When someone dies, a place is left empty at the evening meal, and each acquaintance shares one specific memory. The name and a message then go into the Record. The Night of the Open Door is written there too. Keeping the Record is one of the ways to help the Keeping Circle.
+    origin: port_vesper
+    fame: 2
+    known_by: [npc_sana_holt, npc_mara_venn, npc_edda_vale, npc_niko_serrin]
+
+  - id: beltborn
+    name: Beltborn
+    kind: lore
+    aliases: [Beltborn, station-born]
+    summary: People raised on the stations and ships of the Lantern Belt, used to shared services and strict maintenance rules.
+    details: Some Beltborn think planetary residents careless with resources. Origin says nothing sure about a person, and most distrust here comes from experience and conflicting interests.
+    everywhere: true
+    fame: 2
+
+  - id: nacreans
+    name: Nacreans
+    kind: lore
+    aliases: [Nacrean, locals, colonists]
+    summary: Nacreans are the local colonists and their descendants, who know the coast, the storms and the history of the settlement.
+    details: Some Nacreans distrust researchers who leave as soon as their project is finished. Origin says nothing sure about a person.
+    everywhere: true
+    fame: 2
+
+  - id: transit_families
+    name: The Transit Families
+    kind: lore
+    aliases: [Transit, Transit Families]
+    summary: Families who have moved between settlements for generations, hauling cargo, making repairs and trading.
+    details: Their changing residence is sometimes wrongly taken for a lack of loyalty. Many wear a knotwork tag or a ribbon of their family.
+    everywhere: true
+    fame: 2
+
+  - id: kestrel_landing
+    name: Kestrel Landing
+    kind: place
+    aliases: [Kestrel, the Landing]
+    summary: Kestrel Landing is another settlement on Nacre, a flight along the coast from Port Vesper, with a larger warehouse and a trade in parts.
+    details: The Coast Runner flies there on Primeday and Anchor at nine, ninety minutes each way when the weather allows, and comes back at three. People go there for parts and stock that Port Vesper cannot make for itself.
+    fame: 2
+    known_by:
+      - npc_mara_venn
+      - npc_tessa_rook
+      - npc_sana_holt
+      - npc_niko_serrin
+      - npc_edda_vale
+      - npc_ilyan_sorell
+
+  - id: meridian_anchorage
+    name: Meridian Anchorage
+    kind: place
+    aliases: [the Anchorage, orbit, the transfer station]
+    summary: Meridian Anchorage is a small transfer station in orbit around Nacre, where the larger transport ships dock.
+    details: Belt Tenders come and go from the Anchorage on no fixed day. Their arrivals are listed in advance in the port register at the Arrival Lock, and delays are common. Getting up there takes a booked conventional shuttle.
+    fame: 2
+    known_by:
+      - npc_mara_venn
+      - npc_tessa_rook
+      - npc_ilyan_sorell
+      - npc_sana_holt
+      - npc_edda_vale
+      - npc_niko_serrin
+
+  - id: harrow_station
+    name: Harrow Station
+    kind: place
+    aliases: [Harrow]
+    summary: Harrow Station is where the stranger comes from, elsewhere in the Lantern Belt, months away by slow ship.
+    details: The stranger signed the contract there. No short trip goes back; the next way home is a Belt Tender from the Anchorage, and a long journey after that.
+    fame: 1
+    known_by: [npc_mara_venn, npc_ilyan_sorell]
+
+  - id: echo_nine
+    name: Echo Nine
+    kind: place
+    aliases: [Echo 9, the destination]
+    summary: Echo Nine is a provisional name people use for wherever the signal seems to point. Nobody knows what is there, and nobody has been.
+    details: The name is only a placeholder. The only way anyone speaks of reaching it is the Peregrine, and only if the expedition is ever approved and actually departs.
+    fame: 1
+    known_by: [npc_ilyan_sorell, npc_niko_serrin, npc_tessa_rook]
+
+  - id: return_check
+    name: The Return Check
+    kind: lore
+    summary: Anyone going to Orison alone reports a destination and a time to check in. If that time passes, the watch tries the radio first.
+    details: A short delay means nothing yet. After half an hour, or if repeated calls fail, or on a real alarm, the watch looks at route, weather and last sighting. Only then does a search team go out, with the right gear; nobody is sent after the missing without that assessment.
+    story: The rule was written after the first years on the coast, when people went up the ridge after a friend in a storm and did not all come back. Now a pending-return marker goes up on the watch board, amber, and it is never turned into a death notice without proof.
+    origin: port_vesper
+    fame: 2
+
+  - id: open_stores
+    name: Open Stores
+    kind: lore
+    summary: When something runs short, a stock notice goes up saying what is scarce, what it is for and what can stand in for it.
+    details: Residents may lend parts or offer labour; giving stays voluntary. The emergency reserve opens only on the authority the Compact sets. When the stock is back, that is announced too, so nobody goes on worrying about it.
+    story: Mara Venn insists on the closing notice as firmly as the first. A shortage nobody declares over, she says, goes on eating at people long after the shelves are full.
+    origin: port_vesper
+    fame: 2
+
+  - id: safe_return
+    name: Departures and returns
+    kind: lore
+    summary: Whoever leaves hands over their work, borrowed tools and promises. Whoever comes back is asked what happened on the way.
+    details: Not every departure gets a ceremony. A dangerous journey that ends well may earn a shared meal at Commons, and sometimes a chair kept for the one who made it possible.
+    story: Old hands say the question on return matters more than the meal. Someone has to hear what the road was like, or the next one to go walks it blind.
+    origin: port_vesper
+    fame: 1
+
+  - id: passing_on
+    name: Passing on a craft
+    kind: lore
+    summary: On a coast months from spare parts, a skill taught is counted as worth more than a part given.
+    details: Whoever teaches properly, hands on until the work holds, is spoken of well at supper, and the story grows each time it is told.
+    story: There is an old saying at the benches that every repair you teach is one you will never be woken for at night.
+    origin: vesper_works
+    fame: 1
+
+  - id: second_observation
+    name: The second observation
+    kind: lore
+    summary: Whenever the Orison signal seems to change, the raw recording is kept and the instruments are checked before anyone believes it.
+    details: A single anomaly counts as nothing until a second observation confirms it. Only then does it change a research appointment or the expedition's preparations.
+    story: Among the technicians the rule has a blunt form. The first time, it is your cable. The second time, it might be the sky.
+    origin: orison_ridge
+    fame: 1
+
+  - id: sailbacks
+    name: Sailbacks
+    kind: lore
+    summary: Low, six-legged coastal animals with a ribbed crest along the back. They feed in the tidal zone and do not hunt people.
+    details: "The name is provisional. They are not edible for humans. A sailback near a nest or a feeding ground warns you first: tracks across the path, a dry rattle, the crest raised high. Keep your distance or go round it, and it usually lets you be."
+    story: The researchers argue whether the rattle is the crest itself or something in the throat. Everyone agrees that anyone who kills one for sport answers to the whole port.
+    origin: coastal_traverse
+    fame: 2
+
+  - id: maintenance_drones
+    name: Maintenance drones
+    kind: lore
+    summary: Tracked work drones that inspect and clear the coast path and the ridge. They are tools, and they follow their work orders.
+    details: A faulty drone does what a bad work order tells it, blocking a passage or tearing at something it takes for debris. Stop it by remote, cut its power or restrain it. Breaking it is the last resort, and the Cooperative will want to know why.
+    story: When a drone goes wrong, the first question in the Workshop is never sabotage. It is who wrote the last order, and when the unit was last serviced.
+    origin: vesper_works
+    fame: 2

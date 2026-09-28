@@ -1,0 +1,52 @@
+journey:
+  terrain:
+    coast:
+      - The service path runs between black rock and grey water, route markers glinting every fifty metres.
+      - Salt spray drifts up off the swell, and the rock underfoot is slick with it.
+      - The wrack line stinks of rotting weed, and the surf never quite stops talking.
+    ridge:
+      - The climb steepens, the cloud comes down to meet you, and your breath gets loud in your ears.
+      - Loose basalt shifts under your boots on the climb, and the wind finds every gap in your jacket.
+      - The antenna masts come and go in the cloud above, closer each time.
+    track:
+      - The maintenance track is scored with tread marks, puddles standing in the ruts.
+      - Cable ducts run beside the track, their inspection covers stencilled with numbers.
+    port:
+      - You cross the wet apron between modules, the hum of the recyclers following you.
+      - Deck plates ring under your boots, and a door seal hisses somewhere behind you.
+  weather:
+    clear:
+      - For once the cloud has lifted, and the whole black coast lies open to the grey sea.
+    overcast:
+      - Low cloud presses flat over everything, and the ridge above is lost in it.
+    rain:
+      - Rain comes in off the sea in thin, patient sheets, and runs off your hood into your collar.
+    fog:
+      - Sea mist closes in until the next route marker is only a guess.
+    storm:
+      - The wind shoves at you in gusts, spray bursts white over the rocks, and every step is work.
+    frost:
+      - Frost crusts the rocks and railings, and the cold aches in your fingers.
+    snow:
+      - Wet snow slants in off the sea, clotting on your sleeves and hiding the ruts.
+  night:
+    - Your lamp makes a small white room in the dark, and beyond it there is only the sound of the sea.
+    - The route markers glow faintly, one after another, leading on into nothing.
+    - Somewhere below, the port lights are a smudge in the rain, farther away than they should be.
+  on_the_way:
+    - text: "Fog swallows the next route marker. You can go on slowly, trust your navigation, or turn back to the shelter; either way it costs you time before the path is sure again."
+      where: road
+      minutes: 15
+    - text: "Near the Ridge Shelter a maintenance team is bent over a faulty relay cabinet, cursing the damp in the contacts. They look up as you pass: help, ask what they know, or walk on."
+      where: road
+      minutes: 10
+    - text: "On the climb to Orison the storm has thrown loose stone across the track. You pick a safe way through, or wait for the wind to ease, and lose a little time either way."
+      where: road
+      minutes: 20
+    - text: "A fellow traveller falls into step beside you and talks about what they saw last week, only what they saw themselves; ask more, make a time to talk, or let it rest."
+      where: any
+      minutes: 5
+    - text: "In the dark you miss a marker and fetch up at the old cable junction, a place you know. You get your bearings and turn back onto the path."
+      where: road
+      night: true
+      minutes: 15

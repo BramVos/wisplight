@@ -1,0 +1,76 @@
+passages:
+  - id: ridge_crawler_up
+    name: Ridge Crawler, up to Orison
+    kind: crawler
+    aliases: [Ridge Crawler, crawler, the Crawler, morning Crawler]
+    stops: [loc_arrival_lock, loc_workshop, loc_ridge_shelter, loc_orison_listening_room]
+    days: [Primeday, Span, Relay, Anchor]
+    departs: [07:30]
+    fare: 300
+    stop_minutes: 0
+    legs:
+      loc_arrival_lock>loc_workshop: 3
+      loc_workshop>loc_ridge_shelter: 9
+      loc_ridge_shelter>loc_orison_listening_room: 8
+    water: false
+    crew: a driver from the support team, who decides whether the track is safe
+    text: You duck into the Ridge Crawler's cramped cabin and your chip signs away {fare}. The tracks grind onto the maintenance track, rain runs sideways down the small windows, and the cabin smells of wet coats and warm electrics. After {duration} the driver brings the Crawler to a halt at {place}.
+    closed: The Crawler stays in its bay. The driver has looked at the track and will not take it up today; you can walk, wait or ask Mara for other transport.
+    off: No Crawler runs on Restday. The departure notice in the Arrival Lock says so in plain letters.
+    where: The Crawler waits on its apron outside the Arrival Lock at half past seven on workdays; Mara keeps the bookings and posts the departure notice.
+    sights:
+      - The walking path runs beside the track for a while, its route markers glinting wet, then drops away below you.
+      - Through the streaming window the Workshop's lit doorway slides past, and someone inside lifts a hand without looking up.
+      - The Ridge Shelter's squat roof appears out of the cloud, its relay cabinet blinking amber.
+      - Near the top the swell far below turns to a grey haze, and the antenna masts of Orison come up out of the mist.
+
+  - id: ridge_crawler_down
+    name: Ridge Crawler, down to the port
+    kind: crawler
+    aliases: [Ridge Crawler, crawler, the Crawler, evening Crawler, return Crawler]
+    stops: [loc_orison_listening_room, loc_ridge_shelter, loc_workshop, loc_arrival_lock]
+    days: [Primeday, Span, Relay, Anchor]
+    departs: [17:00]
+    fare: 300
+    stop_minutes: 0
+    legs:
+      loc_orison_listening_room>loc_ridge_shelter: 8
+      loc_ridge_shelter>loc_workshop: 9
+      loc_workshop>loc_arrival_lock: 3
+    water: false
+    crew: a driver from the support team, who decides whether the track is safe
+    text: You climb aboard for the ride down and your chip signs away {fare}. The Crawler tilts forward onto the descent, brakes whining, the heater breathing dry warmth at your ankles. After {duration} the tracks settle and the door opens at {place}.
+    closed: The Crawler will not come down tonight; the driver has called it off. You can walk the service path, wait at the shelter, or radio Mara for other transport.
+    off: No Crawler runs on Restday, and nobody comes up to fetch you unless you ask.
+    where: The Crawler stops outside the Orison Listening Room at five on workdays, engine idling, driver checking the time.
+    sights:
+      - The masts of Orison sink into the cloud behind you, one warning light still blinking.
+      - The Ridge Shelter goes by, a single lamp burning in its window.
+      - Below, the lights of Port Vesper come up through the rain, fewer than you expected.
+      - The Workshop door stands open, and the whine of a grinder carries across the wet apron.
+
+  - id: coast_runner
+    name: Coast Runner
+    kind: aircraft
+    aliases: [Coast Runner, the Runner, the flight, Kestrel flight]
+    stops: [loc_arrival_lock, kestrel_landing]
+    days: [Primeday, Anchor]
+    departs: [09:00]
+    fare: 2500
+    legs: { loc_arrival_lock>kestrel_landing: 90 }
+    water: false
+    crew: a pilot, who alone decides whether the flight can leave safely
+    when:
+      - not:
+          any:
+            - { weather: storm }
+            - { weather: fog }
+    text: You strap into one of the Coast Runner's few seats and your chip signs away {fare}. The electric rotors spin up to a rising hum, the pad falls away, and for {duration} the black coast unrolls beneath the low cloud until the aircraft sets down at {place}. It flies back at three in the afternoon.
+    closed: The Coast Runner is grounded. The pilot will not fly in this, and the fare is refunded or rebooked for the next flight.
+    off: The Coast Runner flies only on Primeday and Anchor, at nine from the Arrival Lock.
+    where: You board through the Arrival Lock; Mara takes the booking, and a booked seat is a seat held for you.
+    sights:
+      - The pad lights of Port Vesper shrink to a handful of sparks behind you.
+      - Below, the grey swell breaks white against a string of dark volcanic islands.
+      - The cloud closes in, and for a long while there is nothing but grey and the hum of the rotors.
+      - Far off, the wreckage of an old mining gantry stands rusting on a headland.

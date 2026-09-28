@@ -1,0 +1,82 @@
+settlements:
+  - id: port_vesper
+    people: 30
+    use: { hot_meal: 55, herbal_tea: 20, coffee: 2, drinking_water: 30, dressing_pack: 0.3 }
+    keep: { field_ration: 120, drinking_water: 150, dressing_pack: 20, grain: 80 }
+    stock:
+      grain: 400
+      cooking_oil: 40
+      coffee: 30
+      growth_nutrients: 60
+      field_ration: 60
+      dressing_pack: 40
+      field_medkit: 8
+      vegetables: 30
+      cultured_protein: 30
+      tea_herbs: 10
+    workshops:
+      - id: growing_modules
+        name: Growing Modules
+        at: loc_guest_quarters
+        makes: { vegetables: 12, cultured_protein: 10, tea_herbs: 3 }
+        uses: { drinking_water: 8, growth_nutrients: 1 }
+        workers: 3
+      - id: commons_kitchen
+        name: Commons Kitchen
+        at: loc_commons
+        makes: { hot_meal: 55, field_ration: 4, herbal_tea: 20 }
+        uses: { vegetables: 11, cultured_protein: 9, grain: 8, cooking_oil: 1, tea_herbs: 2, drinking_water: 20 }
+        workers: 2
+        named: [npc_sana_holt]
+
+  - id: vesper_works
+    people: 4
+    use: { battery_cell: 0.5, seal_ring: 0.5, bracket: 0.2 }
+    keep: { water_filter: 4, seal_ring: 10, connector_parts: 20 }
+    stock:
+      insulated_wire: 40
+      connector_parts: 60
+      filter_media: 12
+      polymer_stock: 30
+      battery_cell: 40
+      field_lamp: 6
+      measurement_cable: 4
+      water_filter: 6
+      seal_ring: 12
+    workshops:
+      - id: purification_plant
+        name: Purification Plant
+        at: loc_workshop
+        makes: { drinking_water: 60 }
+        uses: { water_filter: 0.2 }
+        workers: 1
+        named: [npc_tessa_rook]
+      - id: filter_assembly
+        name: Filter Assembly
+        at: loc_workshop
+        makes: { water_filter: 0.25 }
+        uses: { filter_media: 0.25 }
+        workers: 1
+      - id: electronics_work
+        name: Electronics Bench
+        at: loc_workshop
+        makes: { cable_assembly: 1 }
+        uses: { insulated_wire: 1, connector_parts: 1 }
+        requires:
+          object: loc_workshop/electronics_bench
+          state: { broken: false }
+        workers: 1
+        named: [npc_tessa_rook]
+      - id: fabrication
+        name: Fabrication Bench
+        at: loc_workshop
+        makes: { seal_ring: 1, bracket: 0.5 }
+        uses: { polymer_stock: 1 }
+        requires:
+          object: loc_workshop/fabrication_bench
+          state: { broken: false }
+        workers: 1
+
+  - id: coastal_traverse
+    people: 0
+    resources: [coastal_beds, wrack_line, tide_pools, basalt_outcrop]

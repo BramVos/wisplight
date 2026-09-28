@@ -1,0 +1,45 @@
+locations:
+  - id: loc_orison_listening_room
+    name: Orison Listening Room
+    area: orison_ridge
+    tags: [landmark, research]
+    aliases: [listening room, listening station, the station, control room]
+    summary: The failing control room of the old listening station, where the repeating signal is received and recorded.
+    sound: { kind: hum, level: 0.4, night: wind }
+    improvise:
+      domain: lore
+      may:
+        - { fact: true }
+      fallback: You study it for a long while, but without more data it stays a guess.
+      takes: false
+    description:
+      day: The Orison Listening Room is cramped, lined with receiving consoles, half of them dark and the rest flickering with fault codes. A rack of recording drives hums beside a desk where the maintenance logs lie in a binder swollen with damp. Through the wide window the antenna structure rises into the cloud, its cables groaning faintly in the wind. Every few minutes a speaker gives out the same short pattern of tones, and then falls silent. The stairs lead down the steep route to the Ridge Shelter.
+      night: At night the Orison Listening Room glows only with the fault codes on the consoles and the small lights of the drive rack. The antenna outside is a black shape against a blacker sky, and its cables groan in the wind. The binder of logs lies on the desk where it was left. Every few minutes the speaker plays the same short pattern of tones into the dark, and then goes quiet again. The stairs lead down to the Ridge Shelter.
+    exits:
+      down: { to: loc_ridge_shelter, minutes: 12 }
+    details:
+      - words: [consoles, receiving consoles, console, fault codes]
+        look: Old receiving consoles with worn keys and cracked screens. The live ones scroll fault codes that repeat, stop and begin again.
+        take: The consoles are built into the room.
+        verbs:
+          read: The fault codes point to power drops and missing frames in the recording. Most seem to start on the same day, some weeks ago.
+      - words: [rack, drives, recording drives, recordings, original recordings]
+        look: A tall rack of recording drives, each with a small status light. Several lights are amber and one is dark, and a handwritten tag on the rack reads ORIGINALS. DO NOT OVERWRITE.
+        take: The drives are clamped into the rack, and pulling one while it is running might destroy exactly what you came to recover.
+      - { words: [desk], look: "A metal desk with a cold mug, a pen on a string and the binder of logs." }
+      - words: [binder, logs, maintenance logs, log]
+        look: A thick binder of printed and handwritten maintenance logs, its pages curled with damp.
+        take: The logs are evidence of what happened here, and they belong in the station until you know what they show.
+        verbs:
+          read: The entries are dated and signed, in several hands. The last few are brief and hurried, and at least one page has been torn out close to the spine.
+      - words: [window, wide window]
+        look: A wide window of thick, salt-streaked glass, cold to the touch, looking up at the antenna.
+      - words: [antenna, antenna structure, cables, dish]
+        look: A lattice mast and dish rising into the low cloud, held by humming guy cables. One cable hangs slacker than the others.
+      - words: [speaker, tones, signal, pattern]
+        look: A small grey speaker above the consoles. The tones come in the same order each time, short and even, from somewhere no one has been. What they mean, if they mean anything, is what you are here to find out.
+        take: The speaker is screwed to the wall, and the signal is in the drives, not in the speaker.
+        verbs:
+          listen: You wait, and the tones come again, just as before. Hearing them once more tells you nothing new, but it is hard not to listen.
+      - words: [stairs]
+        look: Steel stairs leading down through a hatch to the steep route to the Ridge Shelter.

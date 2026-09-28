@@ -1,0 +1,84 @@
+locations:
+  - id: loc_coastal_service_path
+    name: Coastal Service Path
+    area: coastal_traverse
+    tags: [outdoor, route]
+    aliases: [service path, coast path, the path, walkway]
+    summary: An exposed walkway along the coast, following pipes and cable markers towards Orison Ridge.
+    sound: { kind: surf, level: 0.7, night: wind }
+    description:
+      day: The Coastal Service Path is a grated steel walkway laid along black volcanic rock above the grey swell, beside two insulated pipes. Cable markers stand every fifty metres, their orange caps dulled by salt, and a short marked side step leads down to fenced growing beds above the tideline. The wind comes straight off the sea, cold and wet, and the surf booms below you. Inland the walkway climbs northeast towards Orison Ridge and its shelter, and behind you the outside door leads back into the Commons.
+      night: At night the Coastal Service Path is a line of small lights, one on each cable marker, strung out into the dark. The pipes beside the walkway are cold and beaded with spray, and a reflector glints where the side step drops to the beds. You hear the surf more than you see it, booming below the rocks, and the wind pushes at your back. The markers lead northeast towards the Ridge Shelter, and the lit outside door of the Commons is behind you.
+    exits:
+      northeast: { to: loc_ridge_shelter, minutes: 18 }
+      in: { to: loc_commons, minutes: 4 }
+    details:
+      - words: [walkway, grating, path]
+        look: Steel grating bolted to the rock, slick with spray, with a single guide rail on the sea side.
+      - words: [pipes, insulated pipes]
+        look: Two fat pipes in grey insulation, running from the port up towards the ridge. One is marked HEAT, the other SIGNAL.
+        take: They are strapped to the rock and run all the way to the ridge.
+        verbs: { touch: The pipe marked HEAT is barely warm. The one marked SIGNAL is cold. }
+      - words: [markers, cable markers, marker, caps]
+        look: Short posts with orange caps, each stencilled with a number counting up towards the ridge. A few caps are cracked, and one is missing.
+        take: The marker is set in the rock and does not budge.
+      - words: [rock, volcanic rock, black rock]
+        look: Black, glassy rock, sharp where the sea has not worn it smooth.
+      - words: [sea, swell, surf, ocean]
+        look: Grey swell rolling in without end and breaking white on the rocks below.
+      - words: [door, outside door]
+        look: The outside door of the Commons, back along the path, its weather light glowing amber.
+      - words: [side step, access, marked access, reflector]
+        look: A few steel steps with a reflector post, dropping from the walkway to the beds and the shingle below.
+      - words: [beds, growing beds, coastal beds, fence]
+        look: Low beds of dark, sieved soil behind a salt-crusted mesh fence, planted in rows of hardy Earth greens. A tag on the gate reads 'HARVEST BY ROTA. TAKE WITHIN LIMIT.'
+        take: You would pick them, not carry the bed away. The rota and the limit are on the tag.
+        verbs: { read: HARVEST BY ROTA. TAKE WITHIN LIMIT. ASK SANA. }
+      - words: [wrack, wrack line, shingle, tideline]
+        look: A ragged line of weed, grit and the odd scrap of human salvage that the sea has thrown up on the shingle.
+      - words: [tide pools, pools]
+        look: Shallow pools in the black rock, cold and clear, where small native things move when your shadow falls on them.
+        verbs: { touch: The water is bitterly cold. Whatever lives here is not something you should eat. }
+    forage: [coastal_beds, wrack_line, tide_pools, basalt_outcrop]
+
+  - id: loc_ridge_shelter
+    name: Ridge Shelter
+    area: coastal_traverse
+    tags: [shelter, rest]
+    aliases: [shelter, the hut, maintenance shelter]
+    summary: A maintenance shelter where the coastal path meets the climb to the listening station.
+    sound: { kind: wind, level: 0.4 }
+    description:
+      day: The Ridge Shelter is squat and bolted to the rock where the path meets the climb, with a bench, a heater and a door that seals tight against the wind. An emergency radio sits on a shelf beside a route board chalked with conditions and times. Across from it a relay cabinet stands open, its casing buckled, and the smell of burnt insulation still hangs about it. Outside, a steep maintenance route climbs up to the listening station, and the service path runs back southwest towards Port Vesper.
+      night: At night the Ridge Shelter is a small box of warmth, its heater glowing orange beneath the bench. The wind drums on the walls, and the emergency radio hisses softly on its shelf. The route board and the open relay cabinet are shadows in the heater's glow, and the burnt smell lingers. Outside, the steep route climbs into the dark towards the station, and the path runs southwest towards Port Vesper.
+    exits:
+      up: { to: loc_orison_listening_room, minutes: 12 }
+      southwest: { to: loc_coastal_service_path, minutes: 18 }
+    details:
+      - words: [bench]
+        look: A steel bench along one wall, with a thin pad and a folded thermal blanket.
+        verbs: { sit: "You sit, and for a moment the wind is only a sound on the walls." }
+      - words: [heater]
+        look: A squat electric heater under the bench, its grille glowing faintly.
+        take: It is wired into the wall, and whoever comes in after you will need it.
+        verbs: { use: "The heater clicks up a notch, and warmth spreads over your shins." }
+      - words: [door, shelter door]
+        look: A heavy door with a rubber seal, which closes with a lever that you must lean on.
+      - words: [radio, emergency radio]
+        look: A rugged radio in an orange case, with a hand microphone on a coiled lead and a card of call codes taped beside it.
+        take: It is fixed to its shelf, and it may be someone's only way to call for help.
+        verbs: { use: "The radio hisses, and a faint carrier tone answers from Port Vesper. The line works, for now." }
+      - { words: [shelf], look: A narrow steel shelf holding the radio and a box of spare fuses. }
+      - words: [board, route board]
+        look: A board chalked with the path's markers, the time taken by the last few walkers and the weather they met.
+        take: The board is screwed to the wall.
+        verbs:
+          read: The last entries give 'PATH 18 MIN, DRY' and 'CLIMB 12 MIN'. The newest line, in a different hand, reads 'RELAY DOWN. DON'T TRUST THE TIMER'.
+      - words: [cabinet, relay cabinet, relay, casing]
+        look: A grey cabinet with its door hanging open and its casing bent outward, as if struck or heated from inside. The boards within are blackened, and one connector has been pulled loose.
+        take: What is left of the relay is still fixed in the cabinet, and it may matter just as it is.
+        verbs:
+          open: The door is already open. Inside, the boards are scorched, and one connector hangs loose from its socket.
+          repair: This needs parts and a steadier hand than a gloved one in a draughty hut, and perhaps a closer look first.
+      - words: [route, climb, maintenance route]
+        look: Steps and a chain rail cut into the rock, climbing steeply out of sight towards the station.

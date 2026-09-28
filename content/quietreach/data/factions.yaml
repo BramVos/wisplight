@@ -1,0 +1,40 @@
+factions:
+  - id: vesper_maintenance_cooperative
+    name: Vesper Maintenance Cooperative
+    seat: loc_workshop
+    wants: To keep Port Vesper's heat, water, air and machines running, with borrowed tools returned and mistakes reported.
+    stance: Practical. It favours evidence over enthusiasm and the settlement's needs over the ship's.
+    members: [npc_tessa_rook]
+    join:
+      at: [loc_workshop]
+      reputation: 10
+      says:
+        place: Joining is done in the Workshop, with an authorised member, for now Tessa.
+        reputation: First the safety instruction and one supervised job, done properly. Then Tessa signs you in.
+
+  - id: peregrine_expedition_crew
+    name: Peregrine Expedition Crew
+    seat: loc_peregrine_hangar
+    wants: To prepare the Peregrine and her crew for the expedition, and bring them back.
+    stance: Eager to depart, held back by engineering and medical sign-off.
+    members: [npc_ilyan_sorell]
+    join:
+      at: [loc_peregrine_common_deck]
+      tag: first_investigation_done
+      reputation: 20
+      says:
+        place: It is settled on the Common Deck, with a separate contract.
+        reputation: Finish the first investigation, understand the risks and consent to them, and take on a task you are trained for. Crew does not mean access to every system.
+
+  - id: keeping_circle
+    name: The Keeping Circle
+    seat: loc_commons
+    wants: To keep the names, work and promises of Port Vesper's people, living and dead.
+    stance: Open to anyone who helps, believer or not.
+    members: [npc_sana_holt, npc_mara_venn, npc_edda_vale]
+    join:
+      at: [loc_commons]
+      reputation: 5
+      says:
+        place: It happens in the Commons, where the meals and the remembrances are held.
+        reputation: Help with a meal, a vigil or the Harbour Record. Nobody asks what you believe. Keep other people's stories as they would want them kept.

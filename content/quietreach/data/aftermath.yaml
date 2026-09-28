@@ -1,0 +1,306 @@
+aftermath:
+  - id: am_holding_the_name
+    signal: death
+    topic: harbour_record
+    expires: 14
+    steps:
+      - id: word
+        do:
+          tell:
+            kind: death_word
+            title: A death in Port Vesper
+            precise: The death is confirmed and recorded. Those closest were told in person before anyone else heard it.
+            village: Someone from the port is dead. It is confirmed; nobody is calling it a rescue any more.
+            far: Word from Nacre says a colonist on the Vesper Coast has died.
+            belang: 4
+            about: [$who]
+      - id: grief
+        after: word
+        do:
+          mood: port_vesper
+          kind: grief
+          days: 3
+          line: Voices are low in the corridors, and people finish their work without being asked.
+      - id: empty_chair
+        after: word
+        at: { hour: 19 }
+        do:
+          feast: loc_commons
+          kind: burial
+          hours: 3
+          guests:
+            - { family_of: $who }
+      - id: plaque
+        after: empty_chair
+        do:
+          mark: loc_commons
+          text: On the memorial wall a new plaque has been fixed beside the others, the name cut clean into the metal.
+      - id: record
+        after: empty_chair
+        do:
+          thought: npc_sana_holt
+          text: A name and a message are waiting to go into the Harbour Record, and you promised to write them in carefully.
+          days: 5
+      - id: family
+        after: word
+        do:
+          thought: { family_of: $who }
+          text: Someone you loved is gone, and the empty chair at supper is still there each time you look.
+          days: 14
+
+  - id: am_return_check
+    signal: missing
+    topic: return_check
+    expires: 7
+    steps:
+      - id: overdue
+        wait: 0.5
+        do:
+          tell:
+            kind: overdue
+            title: A check-in overdue
+            precise: A check-in is more than half an hour late and repeated calls go unanswered. The watch is assessing route, weather and last sighting.
+            village: Someone is overdue from a trip out, and the radio is quiet.
+            far: A colonist on Nacre is said to be missing on the coast.
+            belang: 3
+            about: [$who]
+      - id: search
+        after: overdue
+        do: { goal: Visit, who: npc_mara_venn, target: $place, hours: 6 }
+      - id: ask_help
+        after: overdue
+        chance: 0.7
+        do:
+          seek_player: npc_mara_venn
+          line: Someone is overdue and not answering. I could use another pair of hands, on the radio or on the path. Your call.
+          hours: 6
+      - id: marker
+        after: overdue
+        do:
+          mark: loc_arrival_lock
+          text: A pending-return marker glows amber on the watch board by the inner door, a name and a time beside it.
+          days: 7
+      - id: unease
+        after: overdue
+        do:
+          mood: port_vesper
+          kind: threat
+          days: 1
+          line: People glance at the radio when they pass it, and nobody says the word missing aloud.
+      - id: kin
+        after: overdue
+        do:
+          thought: { family_of: $who }
+          text: They should have called in by now. A delay is not the same as a loss, you keep telling yourself.
+          days: 3
+
+  - id: am_retrieval
+    signal: injury
+    topic: return_check
+    expires: 5
+    steps:
+      - id: call_edda
+        do: { goal: Visit, who: npc_edda_vale, target: $place, hours: 4 }
+      - id: word
+        do:
+          tell:
+            kind: injury_word
+            title: Someone hurt and brought in
+            precise: The watch called Dr Vale and arranged a safe retrieval. Medical supplies were used, and someone will have to take over the injured person's work.
+            village: Someone was badly hurt and carried to the medical bay.
+            far: Someone on the Vesper Coast was hurt, badly or not, nobody out here knows.
+            belang: 2
+            about: [$who]
+      - id: stock
+        after: call_edda
+        do:
+          thought: npc_edda_vale
+          text: You used more dressings and medicine than you like to spend. Count what is left before the next one.
+          days: 4
+
+  - id: am_count_first
+    signal: theft
+    topic: vesper_settlement_compact
+    expires: 7
+    steps:
+      - id: recount
+        do:
+          thought: npc_mara_venn
+          text: Check the issue log and count the shelf again before anyone calls it theft.
+          days: 3
+      - id: word
+        after: recount
+        wait: 4
+        do:
+          tell:
+            kind: missing_materials
+            title: Materials unaccounted for
+            precise: After a recount the stores are still short. Mara is asking who saw what, and a repair may be delayed for the missing parts.
+            village: Parts have gone missing from the stores, and Mara is asking questions.
+            far: There is talk of theft at Port Vesper.
+            belang: 2
+            about: [$who]
+
+  - id: am_open_stores
+    signal: shortage
+    topic: open_stores
+    expires: 10
+    steps:
+      - id: notice
+        do:
+          tell:
+            kind: stock_notice
+            title: An Open Stores notice
+            precise: Mara has posted a stock notice listing what is scarce, what it is needed for and what can stand in for it. Loans of parts and offers of labour are welcome; nothing is compulsory.
+            village: There is a stock notice up. Something is running short, and they are asking who can lend.
+            far: Port Vesper is said to be short of supplies again.
+            belang: 2
+      - id: dearer
+        after: notice
+        do: { prices: $area, factor: 1.1, days: 5 }
+      - id: reserve
+        after: notice
+        do:
+          thought: npc_mara_venn
+          text: The emergency reserve stays sealed unless the Compact says otherwise. Announce it when the stock is back, so the worry does not linger.
+          days: 5
+
+  - id: am_handover
+    signal: departure
+    topic: safe_return
+    expires: 7
+    steps:
+      - id: word
+        do:
+          tell:
+            kind: departure
+            title: Someone has left
+            precise: Their work and borrowed tools have been handed over, and their bunk stands empty.
+            village: Someone has gone. Their place at work is empty.
+            far: Another colonist has left Nacre, or so it is said.
+            belang: 1
+            about: [$who]
+      - id: neighbours
+        after: word
+        do:
+          thought: { neighbours_of: $who }
+          text: There is one more empty bunk down the corridor, and their duties have to go to someone.
+          days: 5
+
+  - id: am_released_for_use
+    signal: repair
+    topic: open_stores
+    expires: 3
+    steps:
+      - id: word
+        do:
+          tell:
+            kind: released_for_use
+            title: Released for use
+            precise: The repair was checked, tested and released for use again, and the people who did it have been thanked by name.
+            village: It works again. Checked and signed off.
+            far: They say something broken at Port Vesper has been mended.
+            belang: 2
+            about: [$who]
+      - id: ease
+        after: word
+        do: { mood: $area, kind: feast, days: 1, line: "Work picks up again, and somebody is almost whistling." }
+
+  - id: am_safe_return
+    signal: danger_past
+    topic: safe_return
+    expires: 5
+    steps:
+      - id: word
+        do:
+          tell:
+            kind: danger_past
+            title: Back safe
+            precise: The danger is past, the route is open, and everyone is accounted for.
+            village: It is over, and everyone came back.
+            far: There was trouble on the Vesper Coast, and it passed.
+            grows:
+              - They say the stranger kept a cool head when it counted.
+              - They say the stranger went out in weather that turned the watch back.
+              - They say the stranger walked the ridge alone in the dark and brought everyone home.
+            belang: 2
+            about: [$who]
+      - id: meal
+        after: word
+        at: { hour: 19 }
+        do: { feast: loc_commons, hours: 3 }
+      - id: seat
+        after: word
+        do:
+          mark: loc_commons
+          text: At the long table one chair has a mug set before it, kept for the stranger.
+          days: 3
+
+  - id: am_word_kept
+    signal: made_good
+    topic: vesper_settlement_compact
+    expires: 5
+    steps:
+      - id: word
+        do:
+          tell:
+            kind: word_kept
+            title: A broken word made good
+            precise: The stranger made good on a promise they had let slip, late but in full.
+            village: The stranger kept their word in the end.
+            far: Someone on Nacre paid back what they owed.
+            grows:
+              - Late, but they came back and set it right.
+              - Not many here would have bothered, months from anywhere.
+            belang: 1
+            about: [$who]
+
+  - id: am_passing_on
+    signal: pupil_learnt
+    topic: passing_on
+    expires: 5
+    steps:
+      - id: word
+        do:
+          tell:
+            kind: craft_passed_on
+            title: A skill passed on
+            precise: The stranger taught a colonist a craft properly, hands on, until the work held.
+            village: The stranger has been teaching someone at the bench.
+            far: A newcomer at Port Vesper is said to teach their trade.
+            grows:
+              - They say the stranger showed it twice and never lost patience.
+              - They say what the stranger taught has already saved a part that was bound for the scrap bin.
+            belang: 1
+            about: [$who]
+      - id: pupil
+        after: word
+        do:
+          thought: $who
+          text: You can do it yourself now, what the stranger showed you, and that is worth more than a spare part.
+          days: 7
+
+  - id: am_second_observation
+    signal: signal_anomaly
+    topic: second_observation
+    expires: 7
+    steps:
+      - id: logged
+        do:
+          tell:
+            kind: anomaly_logged
+            title: An anomaly in the recordings
+            precise: A new anomaly in the Orison signal has been logged. The raw recording is preserved, the equipment is being checked, and a second observation is wanted before anyone draws a conclusion.
+            village: Something odd in the signal again. They are checking the instruments first.
+            far: Rumour says the listening station on Nacre heard something new.
+            belang: 2
+      - id: preserve
+        do:
+          thought: npc_niko_serrin
+          text: Preserve the raw recording, check the chain of instruments, and find a second observation before you believe any of it.
+          days: 5
+      - id: lead
+        do:
+          thought: npc_ilyan_sorell
+          text: One anomaly is not proof. The preparations wait on a second observation, however much you want to go.
+          days: 5

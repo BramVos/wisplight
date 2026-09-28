@@ -1,0 +1,55 @@
+watchers:
+  - id: w_death
+    signal: death
+    fact: { kind: death }
+    belang: 4
+
+  - id: w_missing
+    signal: missing
+    fact: { kind: missing }
+    belang: 3
+
+  - id: w_injury
+    signal: injury
+    fact: { kind: injury }
+    belang: 3
+
+  - id: w_theft
+    signal: theft
+    fact: { kind: theft }
+    belang: 2
+
+  - id: w_shortage
+    signal: shortage
+    probe: { shortage: 2 }
+    belang: 2
+
+  - id: w_departure
+    signal: departure
+    probe: { house_empty: 3 }
+    belang: 1
+
+  - id: w_repair_electronics
+    signal: repair
+    fact: { kind: repaired:electronics_bench }
+    belang: 2
+
+  - id: w_repair_fabrication
+    signal: repair
+    fact: { kind: repaired:fabrication_bench }
+    belang: 2
+
+  - id: w_repair_water
+    signal: repair
+    fact: { kind: repaired:water_tap }
+    belang: 2
+
+  - id: w_danger_past
+    signal: danger_past
+    fact: { key: state, value: normal, kind: danger }
+    belang: 2
+
+  - id: w_signal_anomaly
+    signal: signal_anomaly
+    fact: { kind: signal_anomaly }
+    belang: 2

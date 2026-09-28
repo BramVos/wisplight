@@ -1,0 +1,65 @@
+creatures:
+  - id: sailback
+    name: sailback
+    plural: sailbacks
+    kind: beast
+    level: 0
+    hp: 16
+    defence: 13
+    saves: { fortitude: 5, reflex: 4, will: 2 }
+    perception: 6
+    attacks:
+      - { name: crest lash, bonus: 5, damage: 1d6+1, kind: melee }
+    morale: { courage: -1, flees_below: 0.6 }
+    lore:
+      dc: 12
+      text: A sailback defends ground; it does not chase. Step back out of its reach and it lowers its crest.
+      topic: sailbacks
+    text: A low, six-legged animal the length of a grown arm, grey-green and slick with spray. A ribbed crest stands along its back and rattles as it shifts.
+    says:
+      hit: The sailback swings its crest sideways, hard as a slammed hatch.
+      flee: The sailback lowers its crest and scuttles off among the rocks.
+      down: The sailback sags against the stone, sides heaving, crest flat.
+
+  - id: maintenance_drone
+    name: maintenance drone
+    plural: maintenance drones
+    kind: beast
+    level: 1
+    hp: 24
+    defence: 15
+    saves: { fortitude: 7, reflex: 2, will: 0 }
+    perception: 4
+    attacks:
+      - { name: manipulator arm, bonus: 6, damage: 1d8, kind: melee }
+    morale: { never: true }
+    faction: vesper_maintenance_cooperative
+    reputation:
+      bound:
+        - faction: vesper_maintenance_cooperative
+          by: 2
+          why: shut down safely and left for the Workshop to find the fault
+      won:
+        - faction: vesper_maintenance_cooperative
+          by: -2
+          why: forced down rather than shut down, and damaged in the doing
+      killed:
+        - faction: vesper_maintenance_cooperative
+          by: -8
+          why: a working drone wrecked beyond repair, and the Cooperative must replace it
+        - { faction: peregrine_expedition_crew, by: -1, why: reckless with equipment the settlement cannot spare }
+      freed:
+        - faction: vesper_maintenance_cooperative
+          by: -1
+          why: a faulty drone left running on a route people use
+      paid:
+        - { faction: vesper_maintenance_cooperative, by: 0, why: a machine takes no payment }
+    lore:
+      dc: 11
+      text: Every unit has a red isolation switch under the rear housing plate. Reach it and the drone stops dead.
+      topic: maintenance_drones
+    text: A squat, tracked work drone, dented and rain-streaked, with two jointed manipulator arms and a status lamp blinking the wrong colour.
+    says:
+      hit: The drone's arm swings through its clearing routine and catches you.
+      surrender: The drone halts, lamp amber, waiting for an order.
+      down: The drone's tracks lock and its lamp goes dark with a falling whine.

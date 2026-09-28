@@ -1,0 +1,205 @@
+object_types:
+  - id: electronics_bench
+    name: Electronics Bench
+    description: An antistatic workbench with a grounding mat, measuring instruments on a shelf, hand tools in foam cut-outs and a protected test power supply set to a safe voltage.
+    aliases: [electronics bench, antistatic bench, test bench]
+    affordances:
+      - id: lesson
+        verb: learn
+        label: Take Tessa's supervised lesson (15 cr, three hours)
+        actors: [player]
+        access: public
+        fee: 1500
+        duration: 180
+        requires_state: { broken: false }
+        craft: field_electronics
+        technique: diagnosis
+        rank: novice
+        xp: 20
+        narrate_start: Tessa pulls a stool up to the bench and slides the practice lamp towards you.
+        player_text: Tessa talks you through the bench, the test supply and the difference between a dirty contact and a broken one. By the end your eyes ache and you know where to look first.
+        broken_text: The test supply is dead, and Tessa will not teach on a bench she cannot trust.
+      - id: examine_lamp
+        verb: examine
+        label: Examine the workshop's unreliable field lamp
+        actors: [player]
+        access: public
+        duration: 30
+        check: { dc: 8 }
+        craft: field_electronics
+        technique: diagnosis
+        rank: novice
+        xp: 5
+        player_text: "You open the lamp and follow the cable inch by inch until you find it: a kink near the grip where the copper has parted inside the insulation."
+      - id: repair_lamp
+        verb: repair
+        label: Repair the practice lamp's broken cable
+        actors: [player]
+        access: public
+        consumes: { insulated_wire: 1 }
+        duration: 60
+        requires_state: { broken: false }
+        check: { dc: 10 }
+        craft: field_electronics
+        technique: cable_repair
+        rank: novice
+        xp: 10
+        player_text: You cut out the bad section, splice in new wire and sleeve it. On the test supply the lamp comes on and stays on. It goes back on the shelf; it belongs to the workshop.
+        broken_text: The test supply is dead. Nothing gets tested on this bench until it is mended.
+        failure:
+          outcome: lost
+          why: You stripped too much insulation and the splice would not hold. Measure twice, cut once. Wire does not grow back.
+          critical: damaged
+      - id: make_cable
+        verb: make
+        label: Make up a cable assembly
+        actors: [player]
+        access: public
+        consumes: { insulated_wire: 1, connector_parts: 1 }
+        produces: { cable_assembly: 1 }
+        duration: 90
+        requires_state: { broken: false }
+        check: { dc: 12 }
+        craft: field_electronics
+        technique: cable_repair
+        rank: journeyman
+        xp: 15
+        player_text: You crimp, sleeve and test, and the meter reads clean from end to end.
+        broken_text: The test supply is dead. Nothing gets tested on this bench until it is mended.
+        failure:
+          outcome: poor
+          item: cable_assembly_poor
+          qty: 1
+          share: 0.5
+          why: The crimp was loose on one contact. It looks fine and it will fail in the cold. Test before you trust.
+          critical: leftover
+      - id: repair_measurement_cable
+        verb: repair
+        label: Repair a damaged measurement cable
+        actors: [player]
+        access: public
+        consumes: { measurement_cable_damaged: 1, connector_parts: 1 }
+        produces: { measurement_cable: 1 }
+        duration: 90
+        requires_state: { broken: false }
+        check: { dc: 13 }
+        craft: field_electronics
+        technique: cable_repair
+        rank: journeyman
+        xp: 20
+        player_text: You fit a new plug, patch the shielding and run it against the reference. The reading holds steady.
+        broken_text: The test supply is dead. Nothing gets tested on this bench until it is mended.
+        failure:
+          outcome: poor
+          item: measurement_cable_poor
+          qty: 1
+          why: You fixed the plug and missed the break in the shielding. The fault is still in there. Check the whole run, not just the obvious damage.
+          critical: damaged
+      - id: test_strip
+        verb: test
+        label: Test a faulty cable and strip it for parts
+        actors: [player]
+        access: public
+        consumes: { cable_assembly_poor: 1 }
+        produces: { connector_parts: 1 }
+        duration: 20
+        requires_state: { broken: false }
+        craft: field_electronics
+        technique: diagnosis
+        rank: novice
+        xp: 3
+        player_text: The meter finds the bad contact at once. You cut the connectors off and bag what can be used again.
+        broken_text: The test supply is dead. Nothing gets tested on this bench until it is mended.
+      - id: bench_work
+        verb: work
+        label: Work at the electronics bench
+        actors: [npc]
+        access: staff
+        duration: 120
+        satisfies: { work: 30 }
+        narrate_start: "{name} settles at the electronics bench and switches on the magnifier."
+    details:
+      - words: [instruments, meter, measuring instruments]
+        look: A multimeter, a small oscilloscope and a reference box, each with a calibration sticker in Tessa's hand.
+        take: They are signed to the bench, and Tessa counts them every evening.
+      - words: [test supply, power supply, supply]
+        look: A boxed power supply with a key switch and a dial locked at a safe test voltage. A fuse holder sits on the front.
+        take: It is bolted under the bench.
+      - words: [mat, grounding mat]
+        look: A grey antistatic mat with a wrist strap on a coiled lead.
+        verbs: { use: You clip the strap round your wrist. The bench is ready for you. }
+    repair:
+      consumes: { connector_parts: 1 }
+      duration: 60
+      sets: { broken: false }
+      narrate_end: The test supply hums back to life with a new fuse and a fresh contact.
+
+  - id: fabrication_bench
+    name: Fabrication Bench
+    description: A small enclosed printer and cutting bed for non-critical brackets, housings and seal rings, with a checked-designs folder chained to it.
+    aliases: [fabrication bench, printer, fabricator]
+    affordances:
+      - id: fabricate_bracket
+        verb: fabricate
+        label: Print a bracket
+        actors: [npc]
+        access: staff
+        consumes: { polymer_stock: 1 }
+        produces: { bracket: 1 }
+        duration: 120
+        requires_state: { broken: false }
+        satisfies: { work: 20 }
+        narrate_start: "{name} loads a bar of polymer and starts a bracket from the checked designs."
+      - id: fabricate_seals
+        verb: fabricate
+        label: Print seal rings
+        actors: [npc]
+        access: staff
+        consumes: { polymer_stock: 1 }
+        produces: { seal_ring: 2 }
+        duration: 120
+        requires_state: { broken: false }
+        satisfies: { work: 20 }
+        narrate_start: "{name} sets the fabricator printing seal rings."
+    details:
+      - words: [sign, warning]
+        look: A sign taped to the enclosure.
+        take: It is taped on for a reason.
+        verbs: { read: "NOT FOR PRESSURE, MEDICAL OR DRIVE PARTS. CHECKED DESIGNS ONLY." }
+      - words: [folder, designs, checked designs]
+        look: A ring folder of printed designs, each signed off, chained to the bench.
+        take: It is chained to the bench.
+        verbs:
+          read: Brackets, housings, cable clips and seal rings for hatches and cabinets. Nothing on the list holds pressure.
+    repair:
+      consumes: { connector_parts: 1 }
+      duration: 90
+      sets: { broken: false }
+      narrate_end: The fabricator runs a test pass and settles into its idle hum.
+
+  - id: water_tap
+    name: water tap
+    description: A steel tap over a small basin, stencilled POTABLE, with a cup on a chain.
+    aliases: [tap, basin, water, cup]
+    affordances:
+      - id: drink
+        verb: drink
+        label: Drink from the tap
+        actors: [player, npc]
+        access: public
+        duration: 2
+        satisfies: { hunger: 2 }
+        player_text: The water is cold and faintly flat, with the taste of the filters.
+      - id: fill
+        verb: fill
+        label: Fill a water pouch
+        actors: [player]
+        access: public
+        produces: { drinking_water: 1 }
+        duration: 2
+        player_text: You fill a pouch from the tap and seal it.
+    details:
+      - words: [cup, chained cup]
+        look: A dented steel cup on a short chain.
+        take: It is chained to the basin, so that it stays for the next person.
+        verbs: { drink: You drink a cupful. It tastes of cold metal and filters. }
