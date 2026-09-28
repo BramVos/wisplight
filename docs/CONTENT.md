@@ -167,6 +167,7 @@ A list; each has:
 | aliases | list of text | no | [] |
 | tags | list of text | no | [] |
 | value | number | yes |  |
+| used | text | no |  |
 | quality | one of poor | no |  |
 | of | text | no |  |
 | food | number | no |  |

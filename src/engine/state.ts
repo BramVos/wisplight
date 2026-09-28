@@ -276,6 +276,8 @@ export interface ChronicleState {
 }
 
 export interface NpcState {
+  /** Crafts learnt from the stranger (M10.14), by rank from 0 (novice). */
+  crafts?: Record<string, number>
   location: string
   money: number
   inventory: Counts
@@ -530,6 +532,10 @@ export interface PlayerState {
   lostPurse?: { location: string; amount: number; t: number }
   /** Died three times: the Grey Rider wants a price. */
   riderPrice?: boolean
+  /** Whom the stranger is teaching what (M10.14): lessons so far, and on which day the last. */
+  pupils?: Record<string, Record<string, { lessons: number; day: number }>>
+  /** What the stranger made and gave away, per person, and on which day a line about it was shown (M10.14). */
+  ownWork?: { given: Record<string, { item: string; t: number }[]>; seen: Record<string, number> }
   /** Lost in the mist since then (M10.14), until it lifts or a road or a place says where you are. */
   lost?: number
   /** Until when the player has a punt hired (M7.2; an old save; since M10.17 in `hired`). */
@@ -585,7 +591,8 @@ export interface Fact {
   /** False for a rumour that is simply not true. */
   truth?: boolean
   /** Level 3, 2 and 1: precise, as the village tells it, as it sounds far away. */
-  text: { precise: string; village: string; far: string }
+  /** A song or a story (M10.14): grows is how the village version gets bigger with each retelling, one step a teller. */
+  text: { precise: string; village: string; far: string; grows?: string[] }
   /** What it says in a form the systems can check (M8.1): who believes what follows from it. */
   claim?: Claim
   /** The facts that caused it (M9.2): what the plan, phase or aftermath that made it came from. */
@@ -611,6 +618,8 @@ export interface Heard {
   from: string
   t: number
   grown?: boolean
+  /** How many tellers it passed through since whoever saw it or first told it (M10.14): a song grows with them. */
+  hops?: number
   /** A claim the hearer doubts or rejects (M8.2); without it, they believe it. */
   stance?: 'doubts' | 'rejects'
   /** What the stranger said, found out to be wrong (M10.3): the consequence came once. */
@@ -757,6 +766,8 @@ export interface GameState {
   closed?: Record<string, string>
   /** Scarcity: what comes in of a thing, as a share of what came before. */
   market?: Record<string, number>
+  /** A spell of cheaper or dearer prices per area, until then (M10.14). */
+  prices?: Record<string, { factor: number; until: number }>
   /** The news of the day per area, set by an effect plan. */
   areaNews?: Record<string, string>
   /** The fight in progress (FO, chapter 12). */

@@ -1,8 +1,10 @@
 import type { Output } from './commands'
 import { callName, type Affordance, type Craft, type CraftFailure, type ObjectInstance, type ObjectType } from './content'
 import type { CheckResult } from './dialogue/checks'
-import { applyEffect } from './dialogue/relations'
+import { applyEffect, attitude } from './dialogue/relations'
+import { queueSignal } from './signals'
 import { add } from './items'
+import { recordFact } from './news'
 import { qtyName } from './npc/execute'
 import { objectKey } from './state'
 import type { World } from './world'
@@ -138,4 +140,128 @@ export function dryOut(world: World): void {
   if (!place || !place.tags.some((t) => ROOFED.includes(t))) return
   delete c.conditions['wet']
   world.notices.push('You have dried out, and the cold has gone out of you.')
+}
+
+// ---------------------------------------------------------------- good outcomes (M10.14)
+
+/** What the stranger made with their own hands and gave away: who has it, since when (M10.14). */
+function ownWork(world: World): { given: Record<string, { item: string; t: number }[]>; seen: Record<string, number> } {
+  return (world.state.player.ownWork ??= { given: {}, seen: {} })
+}
+
+/** Whether the stranger made this thing themselves and still counts it as theirs (M10.5). */
+export function isOwnWork(world: World, item: string): boolean {
+  return Object.values(world.state.player.crafts ?? {}).some((p) => (p.made?.[item] ?? 0) > 0)
+}
+
+/** The stranger gives something they made (M10.14): whoever has it uses it, and it shows. */
+export function gaveOwnWork(world: World, npcId: string, item: string): void {
+  const list = (ownWork(world).given[npcId] ??= [])
+  if (!list.some((g) => g.item === item)) list.push({ item, t: world.now })
+  if (list.length > 3) list.splice(0, list.length - 3)
+}
+
+/** Of what the stranger made for them, the first they still have. */
+function inUse(world: World, npcId: string): string | undefined {
+  const inventory = world.npcState(npcId).inventory
+  return (ownWork(world).given[npcId] ?? []).find((g) => (inventory[g.item] ?? 0) > 0)?.item
+}
+
+/** A line under a place (M10.14): someone here uses what the stranger made, once a day each, one a look. */
+export function ownWorkLines(world: World, location: string): string[] {
+  const state = ownWork(world)
+  const today = Math.floor(world.now / (24 * 60))
+  for (const id of world.npcsAt(location)) {
+    if (state.seen[id] === today || world.npcState(id).activity === 'asleep') continue
+    const item = inUse(world, id)
+    if (!item) continue
+    state.seen[id] = today
+    const def = world.content.items.get(item)
+    const name = def?.name ?? item
+    return [world.say(def?.used ?? `{name} has the ${name} you made close to hand, and it has seen use.`, id).replace('{item}', name)]
+  }
+  return []
+}
+
+/** For the prompt of whoever has it (M10.14): what they use that the stranger made them. */
+export function ownWorkPrompt(world: World, npcId: string): string | undefined {
+  const item = inUse(world, npcId)
+  return item ? `You have and use the ${world.content.items.get(item)?.name ?? item} the stranger made with their own hands and gave you. It may come up.` : undefined
+}
+
+/** Lessons a pupil needs, on as many days, before they can do it on their own. */
+export const LESSONS = 3
+
+/**
+ * TEACH <person> [craft] (M10.14): the stranger, a journeyman or better,
+ * teaches someone their craft, two hours a day. After three lessons on three
+ * days the pupil can do it on their own: a signal (pupil_learnt), and what
+ * follows is content. Whom the stranger teaches must think well enough of them.
+ */
+export function teach(world: World, pass: (minutes: number) => Output[], npcId: string | undefined, craftWords: string): Output[] {
+  if (!npcId) return [{ kind: 'error', text: 'Teach whom? They must be here.' }]
+  const npc = world.npc(npcId)
+  const name = callName(npc)
+  const mine = Object.entries(world.state.player.crafts ?? {}).filter(([id, p]) => world.content.crafts.has(id) && p.rank >= 1)
+  if (!mine.length) return [{ kind: 'error', text: 'You have no craft you know well enough to teach: a journeyman can, a novice cannot.' }]
+  const w = craftWords.toLowerCase().trim()
+  const pick = w ? mine.find(([id]) => id === w || world.content.crafts.get(id)!.name.toLowerCase() === w || world.content.crafts.get(id)!.maker.toLowerCase() === w) : mine.sort((a, b) => b[1].rank - a[1].rank)[0]
+  if (!pick) return [{ kind: 'error', text: `You know ${mine.map(([id]) => world.content.crafts.get(id)!.name).join(' and ')} well enough to teach, not that.` }]
+  const craft = world.content.crafts.get(pick[0])!
+  const s = world.npcState(npcId)
+  if (s.activity === 'asleep') return [{ kind: 'error', text: `${name} is asleep.` }]
+  if (craft.professions.includes(npc.profession) || (s.crafts?.[craft.id] ?? -1) >= 0) return [{ kind: 'error', text: `${name} knows ${craft.name} already.` }]
+  const lessons = ((world.state.player.pupils ??= {})[npcId] ??= {})
+  const p = (lessons[craft.id] ??= { lessons: 0, day: -1 })
+  const today = Math.floor(world.now / (24 * 60))
+  if (p.day === today) return [{ kind: 'error', text: `You taught ${name} today already. Tomorrow.` }]
+  const band = attitude(world, npcId).band
+  if (band === 'Hostile' || band === 'Unfriendly') return [{ kind: 'error', text: `${name} does not want to learn anything from you.` }]
+  const seen = pass(120)
+  p.lessons += 1
+  p.day = today
+  applyEffect(world, npcId, 'affinity', 2)
+  if (p.lessons < LESSONS) return [{ kind: 'narration', text: `You spend two hours showing ${name} how ${craft.name} is done. ${name} is getting the hang of it: lesson ${p.lessons} of ${LESSONS}.` }, ...seen]
+  // Learnt: they can do it on their own now. What follows is content.
+  ;(s.crafts ??= {})[craft.id] = 0
+  delete lessons[craft.id]
+  queueSignal(world, { kind: 'pupil_learnt', who: [npcId], place: s.location, cause: [], belang: 2, claim: { subject: npcId, key: 'craft', value: craft.name }, watcher: 'rules' })
+  return [{ kind: 'narration', text: `The third lesson. At the end ${name} does it without you, start to finish, and looks up grinning. ${name} can do ${craft.name} now, on ${npc.pronoun === 'she' ? 'her' : npc.pronoun === 'he' ? 'his' : 'their'} own.` }, ...seen]
+}
+
+/** For the prompt of a pupil (M10.14): the craft they learnt from the stranger. */
+export function pupilPrompt(world: World, npcId: string): string | undefined {
+  const learnt = Object.keys(world.state.npcs[npcId]?.crafts ?? {}).map((id) => world.content.crafts.get(id)?.name).filter(Boolean)
+  return learnt.length ? `The stranger taught you ${learnt.join(' and ')}; you can do it on your own now, and you are proud of it.` : undefined
+}
+
+/**
+ * The stranger gives someone what a repair of theirs needs (M10.14): the
+ * sailcloth for the mill. A small fact, so that when it turns again, the
+ * repair names the stranger, and what follows can thank them.
+ */
+export function helpedRepair(world: World, npcId: string, item: string): void {
+  const npc = world.npc(npcId)
+  const goals = world.content.professions.get(npc.profession)?.daily_goals ?? []
+  for (const g of goals) {
+    if (g.type !== 'Repair' || !('object' in g) || !g.object) continue
+    const [location, objectId] = g.object.split('/') as [string, string]
+    const found = world.object(location, objectId)
+    if (!found?.type.repair || !(item in found.type.repair.consumes)) continue
+    const thing = found.instance.name ?? `the ${found.type.name}`
+    recordFact(world, {
+      kind: 'helped_repair',
+      about: [npcId, 'player', location],
+      place: world.state.player.location,
+      belang: 1,
+      title: `the stranger bringing what ${thing} needs`,
+      text: { precise: `The stranger brought ${callName(npc)} what ${thing} needed to be mended.`, village: `The stranger's been helping ${callName(npc)} with ${thing}.`, far: `A stranger helping with a repair.` },
+    })
+    return
+  }
+}
+
+/** Whether the stranger helped with the repair of what stands at this place, lately (M10.14). */
+export function strangerHelped(world: World, location: string): boolean {
+  return (world.state.news?.facts ?? []).some((f) => f.kind === 'helped_repair' && f.about.includes(location) && world.now - f.t <= 30 * 24 * 60)
 }

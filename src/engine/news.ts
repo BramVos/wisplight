@@ -166,6 +166,9 @@ export function juiceNow(world: World, fact: Fact): number {
 
 /** The version someone tells, by how well they know it. */
 export function versionOf(fact: Fact, heard: Heard): string {
+  // A song or a story (M10.14): each retelling a little bigger, one step a teller, until the last.
+  const grows = fact.text.grows
+  if (grows?.length && (heard.hops ?? 0) >= 1) return grows[Math.min((heard.hops ?? 1) - 1, grows.length - 1)]!
   if (heard.level >= 3) return fact.text.precise
   if (heard.level === 2) return fact.text.village
   return fact.text.far
@@ -287,7 +290,7 @@ export function passOn(world: World, teller: string, listener: string, factId: s
   const theirs = heardBy(world, listener)
   if (!heard || !fact || theirs[factId] || !world.alive(listener)) return
   const grows = heard.grown || world.rng.next('news') < (world.npc(teller).quirks.includes('gossip') ? 0.25 : 0.1)
-  const h: Heard = { level: Math.max(1, heard.level - 1) as Heard['level'], reliability: Math.round(heard.reliability * 0.9 * 100) / 100, from: teller, t: world.now, grown: grows || undefined }
+  const h: Heard = { level: Math.max(1, heard.level - 1) as Heard['level'], reliability: Math.round(heard.reliability * 0.9 * 100) / 100, from: teller, t: world.now, grown: grows || undefined, hops: (heard.hops ?? 0) + 1 }
   theirs[factId] = h
   heardClaim(world, listener, fact, h)
   noticed(world, listener, fact)
@@ -329,7 +332,7 @@ function tell(world: World, teller: string, listener: string): void {
   for (const { fact, heard } of fresh) {
     // A gossip tells it bigger; anyone may, now and then.
     const grows = heard.grown || world.rng.next('news') < (world.npc(teller).quirks.includes('gossip') ? 0.25 : 0.1)
-    const h: Heard = { level: Math.max(1, heard.level - 1) as Heard['level'], reliability: Math.round(heard.reliability * 0.9 * 100) / 100, from: teller, t: world.now, grown: grows || undefined }
+    const h: Heard = { level: Math.max(1, heard.level - 1) as Heard['level'], reliability: Math.round(heard.reliability * 0.9 * 100) / 100, from: teller, t: world.now, grown: grows || undefined, hops: (heard.hops ?? 0) + 1 }
     theirs[fact.id] = h
     heardClaim(world, listener, fact, h)
     noticed(world, listener, fact)

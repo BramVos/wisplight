@@ -239,7 +239,11 @@ export class World {
     const target = service.sells[item]?.target ?? 1
     const stock = this.stock(locationId, service.id)[item] ?? 0
     const factor = Math.min(3, Math.max(0.5, Math.sqrt(target / Math.max(stock, 1))))
-    return Math.max(1, Math.round(base * factor))
+    // Prices in the area for a while (M10.14: the first market after the mill turns again).
+    const area = this.content.locations.get(locationId)?.area
+    const spell = area ? this.state.prices?.[area] : undefined
+    const now = spell && spell.until > this.now ? spell.factor : 1
+    return Math.max(1, Math.round(base * factor * now))
   }
 
   /** What a trader pays the player for an item. */

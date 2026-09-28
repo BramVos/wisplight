@@ -13,6 +13,7 @@ items:
     description: A sailor's knife with a cork grip, the blade dulled by salt.
     aliases: [blade, sailor's knife]
     value: 12
+    used: "{name} guts a fish with the knife you made, quick and clean."
     weapon: { damage: 1d4, light: true }
 
   - id: ship_biscuit

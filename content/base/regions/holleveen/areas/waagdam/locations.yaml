@@ -109,6 +109,8 @@ locations:
         demand:
           - { item: iron_nails, amount: 3, from: 8, to: 17 }
           - { item: lamp_oil, amount: 2, from: 8, to: 17 }
+        # M10.14: scrap from a failed piece goes on his heap, for a few duiten.
+        buys: [scrap_iron]
     details:
       - words: [hood, soot]
         look: A hood of brick over the forge, black with years of soot.

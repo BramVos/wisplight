@@ -1,3 +1,4 @@
+import { ownWorkPrompt, pupilPrompt } from '../outcomes'
 import { GameClock, weekdayName } from '../clock'
 import { tieTo } from '../people'
 import type { Npc } from '../content'
@@ -271,6 +272,9 @@ export function turnPrompt(world: World, ctx: TurnContext): string {
     ...sentTo(world, ctx.npcId),
     // The stranger lodges here (M10.13): the people of the place know them by name.
     ...(lodgerLine(world, ctx.npcId) ? [lodgerLine(world, ctx.npcId)!] : []),
+    // What they use that the stranger made them (M10.14).
+    ...(ownWorkPrompt(world, ctx.npcId) ? [ownWorkPrompt(world, ctx.npcId)!] : []),
+    ...(pupilPrompt(world, ctx.npcId) ? [pupilPrompt(world, ctx.npcId)!] : []),
     'KNOWLEDGE:',
     ...(ctx.packet.known.length === 0 ? ['  (nothing relevant beyond your own life)'] : []),
     ...ctx.packet.known.map((k) => `  ${k.topic} (level ${k.level}): ${k.facts.join(' ')}${k.news ? `\n  NEWS about it: ${k.news.join(' ')}` : ''}${k.story ? `\n  ${k.toldBy ? `STORY as ${k.toldBy} tells it. Retell it in your own words; the people in it are ${k.toldBy}'s family, not yours:` : 'STORY you may tell, in your own words:'}\n  ${k.story}` : ''}`),

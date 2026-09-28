@@ -229,3 +229,56 @@ aftermath:
       - id: empty_place
         when: [{ not: { same: [$a, npc_maren] } }]
         do: { thought: npc_maren, text: "{a} has gone off the island, and the Kettle is quieter for it. You mention it to anyone who asks.", days: 7 }
+
+  # M10.14: the Lamp burns again. The whole Hythe at the Salt Kettle, a cup kept for the stranger, goods
+  # are cheaper at the harbour for a few days, and a song goes round that grows with each teller.
+  - id: lamp_lit
+    signal: lamp_lit
+    topic: place
+    expires: 3
+    steps:
+      - id: seat
+        do: { mark: loc_skerrow_salt_kettle, text: "At the end of the long table a cup stands poured for the stranger, and nobody touches it.", days: 2 }
+      - id: gathering
+        at: { hour: 19 }
+        do: { feast: loc_skerrow_salt_kettle, hours: 4, guests: [npc_maren, npc_garrick, npc_wenna, npc_tamsin, npc_brannoc] }
+      - id: cheap
+        after: gathering
+        do: { prices: loc_skerrow_salt_kettle, factor: 0.9, days: 2 }
+      - id: song
+        after: gathering
+        do:
+          tell:
+            kind: song
+            about: [npc_garrick]
+            place: loc_skerrow_salt_kettle
+            belang: 2
+            title: the song of the stranger and the Lamp
+            precise: "At the Kettle they made a song of it: the stranger and Garrick lit the Lamp of Skerrow again."
+            village: "There's a song now, about the stranger who lit the Lamp."
+            far: "They sing on Skerrow of a light that came back."
+            grows:
+              - "They sing that the stranger climbed the headland in a gale to light the Lamp."
+              - "They sing that the stranger carried the oil up on their back and the gulls stood aside."
+              - "They sing that the stranger lit the Lamp with their bare hands, and the sea went quiet to watch."
+
+  # Someone learnt a craft from the stranger (M10.14).
+  - id: pupil_learnt
+    signal: pupil_learnt
+    about: first
+    topic: craft
+    expires: 1
+    steps:
+      - id: proud
+        do: { thought: $a, text: "You can do {value} on your own now; the stranger taught you.", days: 30 }
+      - id: word
+        do:
+          tell:
+            kind: pupil
+            about: [$a]
+            place: $place
+            belang: 1
+            title: "{a} learning {value} from the stranger"
+            precise: "{a} learnt {value} from the stranger, and can do it alone now."
+            village: "{a} can do {value} now. The stranger taught {a}, would you believe it."
+            far: "A stranger who teaches a trade."

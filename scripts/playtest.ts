@@ -310,6 +310,31 @@ export const LINES: Line[] = [
     words: /pitch|thief|stole|stolen|theft|Maren/i,
   },
   {
+    // M10.14: a failure leaves a situation, and the text says what now. Smithing badly at Hendrik's forge.
+    id: 'failure',
+    world: 'base',
+    title: 'Een mislukking die verder speelt: smeden bij Hendrik',
+    seed: 4,
+    recognise: [
+      'create warden heathborn peat_cutter name=Joost',
+      { note: 'Shortcut: peat from the sheds, then the smithy in Waagdam.' },
+      '@goto loc_peat_sheds',
+      '@time 9',
+      'buy 4 peat',
+      '@goto loc_waagdam_smithy',
+      'look',
+      'buy 4 bar iron',
+      'use forge nails',
+      'use forge nails',
+      'use forge nails',
+      'use forge nails',
+      'inventory',
+    ],
+    influence: [{ note: 'What is there to do about it: the scrap is worth something to the smith, and the next piece may come right.' }, 'list', 'sell scrap iron', 'buy bar iron', 'use forge nails'],
+    after: [{ wait: 1 * DAY }, 'look', 'inventory'],
+    words: /scrap|damaged|mend|REPAIR|cracked|cold before you struck/i,
+  },
+  {
     // The test world (M10.17, tests/worlds/other): every milestone plays here too, to show it is generic.
     id: 'deepwell',
     world: 'other',

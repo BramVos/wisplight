@@ -79,6 +79,8 @@ const FactTemplate = z
     precise: z.string(),
     village: z.string(),
     far: z.string(),
+    /** A song or a story (M10.14): the village version, bigger with each retelling; the last stays. */
+    grows: z.array(z.string()).optional(),
     belang: z.number().int().min(0).max(5).default(1),
     about: z.array(z.string()).default([]),
     place: SelectorSchema.optional(),
@@ -116,6 +118,11 @@ export const VerbSchema = z.union([
    * a line under the descriptions of its places, a line in the prompt of those there, and a colour on the map.
    */
   z.object({ mood: SelectorSchema, kind: z.enum(MOOD_KINDS), days: z.number().positive(), line: z.string(), prompt: z.string().optional() }).strict(),
+  /**
+   * Prices in an area go down or up for some days (M10.14): the first market after the mill turns again. The area of
+   * a place, or an area by id; the factor is on every price asked there, from half to half as much again.
+   */
+  z.object({ prices: SelectorSchema, factor: z.number().min(0.5).max(1.5), days: z.number().positive() }).strict(),
   /** Someone who fled or stayed away goes home. */
   z.object({ return: SelectorSchema }).strict(),
   /** Some go away together for a while: beyond the region, or to a far place in it. */

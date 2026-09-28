@@ -679,3 +679,93 @@ aftermath:
         do: { regard: [$a], to: player, affinity: 5 }
       - id: mind
         do: { thought: $a, text: "The stranger is {value} now. There may be work in that, or trouble.", days: 14 }
+
+  # M10.14: good outcomes. The first market after De Zwaan turns again: a feast on the market at Waagdam,
+  # flour and bread cheap for the day, and if the stranger brought what the mill needed, Harmen says so to
+  # anyone who talks of it, and a song goes round that gets bigger with every teller.
+  - id: mill_turning
+    signal: mill_turning
+    topic: place
+    expires: 8
+    steps:
+      - id: market
+        at: { hour: 9 }
+        when: [{ weekday: Woensdag }]
+        otherwise: wait
+        do: { feast: loc_waagdam_market, hours: 6, guests: [npc_harmen, npc_mirte, npc_lubbert] }
+      - id: cheap
+        after: market
+        do: { prices: loc_waagdam_market, factor: 0.8, days: 1 }
+      - id: glad
+        after: market
+        do: { mood: loc_waagdam_market, kind: feast, days: 1, line: "Flour is cheap today and the market smells of new bread: De Zwaan turns again.", prompt: "De Zwaan turns again and the market is glad of it; bread and flour are cheap today." }
+      - id: thanks
+        after: market
+        when: [{ fact: helped_repair }]
+        do: { thought: npc_harmen, text: "The stranger brought what De Zwaan needed to turn again. Say so to anyone who talks of the mill.", days: 14 }
+      - id: song
+        after: market
+        when: [{ fact: helped_repair }]
+        do:
+          tell:
+            kind: song
+            about: [npc_harmen]
+            place: loc_waagdam_market
+            belang: 2
+            title: the song of the stranger and De Zwaan
+            precise: "At the market someone made a song of it: the stranger brought what the mill needed, and Harmen set De Zwaan turning."
+            village: "There's a song going round about the stranger who brought De Zwaan its sails."
+            far: "They sing of a mill that turned again in the Holleveen."
+            grows:
+              - "They sing that the stranger carried the sails up to Molenend on their own back."
+              - "They sing that the stranger carried the sails through the fen in one night, in the rain, with the Haakman at their heels."
+              - "They sing that the stranger turned De Zwaan by hand until the wind came back."
+
+  # The dyke at Oude Zijl held (M10.14): a meal at the Drowned Goose for all who carried clay, Sijbrand the
+  # dyke-reeve speaks, and there is a seat kept for the stranger (a line at the Goose, not a summons).
+  - id: danger_passed
+    signal: danger_passed
+    topic: place
+    expires: 3
+    steps:
+      - id: seat
+        do: { mark: loc_goose_common, text: "A place is kept at the long table for the stranger, with a cup poured and a plate turned down.", days: 2 }
+      - id: meal
+        at: { hour: 19 }
+        do: { feast: loc_goose_common, hours: 4, guests: [npc_sijbrand, npc_trijntje, npc_gerrit, npc_jan_visser, npc_mirte] }
+      - id: speech
+        after: meal
+        do:
+          tell:
+            kind: speech
+            about: [npc_sijbrand]
+            place: loc_goose_common
+            belang: 2
+            title: Sijbrand's words at the Drowned Goose
+            precise: "Sijbrand stood on a bench at the Drowned Goose, named every hand that carried clay to the dyke, and raised his cup to them."
+            village: "Sijbrand made a speech at the Goose. He named everyone who was on the dyke."
+            far: "They held a feast in the Holleveen after a dyke held."
+            grows:
+              - "They say Sijbrand named every soul on the dyke, and wept like a child."
+              - "They say Sijbrand stood on the table and swore the dyke would stand a hundred years."
+
+  # Someone learnt a craft from the stranger (M10.14): they are proud of it, and the village hears.
+  - id: pupil_learnt
+    signal: pupil_learnt
+    about: first
+    topic: craft
+    expires: 1
+    steps:
+      - id: proud
+        do: { thought: $a, text: "You can do {value} on your own now; the stranger taught you.", days: 30 }
+      - id: word
+        do:
+          tell:
+            kind: pupil
+            about: [$a]
+            place: $place
+            belang: 1
+            title: "{a} learning {value} from the stranger"
+            precise: "{a} learnt {value} from the stranger, and can do it alone now."
+            village: "{a} can do {value} now. The stranger taught {a}, would you believe."
+            far: "A stranger who teaches a trade."

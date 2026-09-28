@@ -589,6 +589,15 @@ export function runVerb(world: World, ctx: PlanContext, verb: Verb, st: StepStat
     s.busyUntil = Math.min(s.busyUntil, world.now)
     return true
   }
+  if ('prices' in v) {
+    // Prices in an area for some days (M10.14): of a place's area, or an area by id.
+    const where = one(world, ctx, v.prices)
+    const area = where && (world.content.areas.has(where) ? where : world.content.locations.get(where)?.area)
+    if (!area) return false
+    ;(world.state.prices ??= {})[area] = { factor: v.factor, until: world.now + v.days * DAY }
+    st.where = where
+    return true
+  }
   if ('mood' in v) {
     // The mood of an area (M10.11): of a place's area, or an area by id.
     const where = one(world, ctx, v.mood)
@@ -622,7 +631,7 @@ function tell(world: World, ctx: PlanContext, t: Extract<Verb, { tell: unknown }
     place: world.content.locations.has(where) ? where : world.state.player.location,
     belang: t.belang,
     title: fill(world, t.title, vars),
-    text: { precise: fill(world, t.precise, vars), village: fill(world, t.village, vars), far: fill(world, t.far, vars) },
+    text: { precise: fill(world, t.precise, vars), village: fill(world, t.village, vars), far: fill(world, t.far, vars), ...(t.grows ? { grows: t.grows.map((g) => fill(world, g, vars)) } : {}) },
     ...(claim ? { claim } : {}),
     ...(finders ? { witnesses: finders } : {}),
   })

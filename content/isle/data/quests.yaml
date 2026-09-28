@@ -89,7 +89,7 @@ quests:
           - { stamp: beacon_lit }
           - { set: beacon_burning }
           - { relation: npc_garrick, affinity: 20, trust: 10 }
-          - fact: { title: the Lamp of Skerrow burns again, precise: The stranger and Garrick lit the Lamp of Skerrow on the headland again., village: "The beacon's lit! Garrick's back up his steps.", far: The light on Skerrow burns again., belang: 3, about: [the_beacon], place: loc_skerrow_headland }
+          - fact: { title: the Lamp of Skerrow burns again, precise: The stranger and Garrick lit the Lamp of Skerrow on the headland again., village: "The beacon's lit! Garrick's back up his steps.", far: The light on Skerrow burns again., belang: 3, about: [the_beacon], place: loc_skerrow_headland, kind: lamp_lit }
 
       # The waystone: the key from the barrow, and an elf who opens the way.
       - id: ask_tamsin_about_barrow

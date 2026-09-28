@@ -60,6 +60,8 @@ export const ItemSchema = z.object({
   aliases: z.array(z.string()).default([]),
   tags: z.array(z.string()).default([]),
   value: z.number().int().nonnegative(),
+  /** How someone uses it when the stranger made it and gave it to them (M10.14): "{name} cuts bread with the knife you made." */
+  used: z.string().optional(),
   /** A poorer make of another thing (M10.14): what a failed recipe leaves, of use for something else and worth less. */
   quality: z.enum(['poor']).optional(),
   of: z.string().optional(),
@@ -1499,7 +1501,7 @@ function checkReferences(world: WorldDef | undefined, c: Omit<Content, 'world'>)
 }
 
 /** Signals the systems give themselves, without a watcher in the content. */
-const CODE_SIGNALS = ['house_lost', 'plan_failed', 'doubt', 'stranger_unwelcome', 'recognised', 'plans_cross', 'warning_proven', 'broken_promise', 'promise_kept', 'request_open', 'theft_mended', 'craft_rank', 'made_good']
+const CODE_SIGNALS = ['house_lost', 'plan_failed', 'doubt', 'stranger_unwelcome', 'recognised', 'plans_cross', 'warning_proven', 'broken_promise', 'promise_kept', 'request_open', 'theft_mended', 'craft_rank', 'made_good', 'pupil_learnt']
 
 /** Every string in a step's verb that looks like an id. */
 function idsIn(value: unknown): string[] {

@@ -1,5 +1,23 @@
 # Changelog
 
+## M10.14 Goede afloop en mislukking die verder speelt, 28 september 2026
+
+- **Een mislukte poging laat iets achter.** Per ambacht zegt de content wat een mislukking oplevert: een minder product (verbrande broden, een stuk schroot, wat kleine vis, een dunne zalf: voorwerpen met `quality: poor`, bruikbaar voor iets anders en minder waard), een deel van het materiaal terug (malen, en in Deepwell het fabriceren), of een beschadigde werkplaats (een slechte misser aan de smidse of in de coracle). Is er een meester bij, dan zegt die wat er misging. Een beschadigde werkplaats kan niemand gebruiken tot hij hersteld is: REPAIR THE FORGE, of de eigenaar doet het de volgende ochtend en onthoudt wie het was. Hendrik koopt schroot voor zijn hoop.
+- **In het veld zegt de tekst wat er nu is.** Een slot dat klemt (de sleutel, FORCE, of een smid), een slot dat het hield, een deur die het hield terwijl het lawaai droeg. Verdwaald in de mist heet waar je bent "Somewhere in the mist" tot de mist optrekt of een weg of plek je vertelt waar je bent, met WAIT, WALK TO en HEAD als uitweg. Wie zich uit het veen worstelt is nat en koud: -1 op proeven tot een uur onder een dak.
+- **Een gebroken afspraak goedmaken.** Tegen wie je liet zitten kun je sorry zeggen (een proef tegen hoe die tegenover je staat en wie die is), uitleggen (kon je er niets aan doen en wist die dat niet, dan is het meteen begrepen) of aanbieden het alsnog te doen. Wie vijandig is, of opvliegend en voorgelogen, zegt nee tegen een tweede kans. Nagekomen, of met een geschenk dat waard is wat je beloofde, is het goedgemaakt; dat is een signaal met nasleep in beide werelden. Een belofte om iets te geven wordt nu ook gewoon ingelost door het te geven.
+- **Goed nieuws heeft een nasleep.** De eerste markt nadat De Zwaan weer draait: een feest op de markt van Waagdam, prijzen die dag lager, en als de speler het zeildoek bracht zegt Harmen dat tegen iedereen en gaat er een lied rond. Na de dijk bij Oude Zijl een maal in de Drowned Goose, Sijbrand spreekt, en er staat een plek voor de speler klaar. Op Skerrow na het ontsteken van de Lamp: de hele Hythe in de Salt Kettle, een beker voor de speler, goederen even goedkoper, en een lied.
+- **Een lied groeit.** Een feit kan versies hebben die bij elke verteller groter worden (`grows`); "the stranger carried the sails through the fen in one night, in the rain" komt drie vertellers later.
+- **Wat de speler maakt, zie je terug.** Geef je een mes dat je zelf smeedde, dan snijdt Mirte er haar brood mee, een keer per dag in de plekbeschrijving en altijd in wat ze weet.
+- **Leerlingen.** TEACH PIM SMITHING: een gezel of beter leert iemand zijn ambacht, twee uur per dag; na drie lessen op drie dagen kan de leerling het zelf, is er trots op, en het dorp hoort het.
+
+Werkwoord: `feast` dekte feest en maal, zonder code. Nieuw is alleen `prices` (prijzen in een gebied een paar dagen lager of hoger), omdat geen bestaand werkwoord de prijzen raakte: `market` verandert alleen de voorraad. Code kwam er verder voor nieuwe soorten toestand die voor elke gebeurtenis bruikbaar zijn: een beschadigde werkplaats, verdwaald zijn, nat en koud, het goedmaken van een afspraak, een lied dat groeit, en een ambacht dat een NPC van de speler leerde.
+
+Testen: smeed spijkers bij Hendrik tot er een mislukt (de speeltest "failure" doet het voor), geef Mirte een zelfgesmeed mes, beloof iemand iets en kom het niet na, zeg dan sorry of "I'll still do it". Tests in `tests/m1014.test.ts` (14), alle 749 groen, drie simulaties zonder problemen, speeltests (nieuw: "failure"; "cat" laat nu zien dat je verdwaald bent in de mist), rooktests van beide werelden.
+
+Wat de editor en de kroniekverteller leerden: `failure` bij ambachten en recepten, `quality`, `of` en `used` bij voorwerpen, `repair` als herstel door de speler, het werkwoord `prices`, `grows` bij een feit, de signalen `made_good` en `pupil_learnt`, en de toestand `wet`; het contract is bijgewerkt. Skerrow heeft er zijn eigen versie van; Deepwell heeft falen bij het fabriceren en laat voor de rest de neutrale standaard zien.
+
+Nog niet: een sprong als proef bestaat niet in het spel, dus die zit er niet in. Een leerling kan het ambacht zelf, maar werkt er nog niet vanzelf mee in de simulatie. Of de speler bij de dijk hielp weet het spel niet, dus de plek aan tafel staat er voor iedereen.
+
 ## Na M10.17: elke wereld haar eigen versie, de droge rug, en uitwerken met AI, 28 september 2026
 
 - **Skerrow en Deepwell spelen alles wat M10.17 content maakte, in hun eigen woorden.**

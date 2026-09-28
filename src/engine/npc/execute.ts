@@ -1,3 +1,4 @@
+import { strangerHelped } from '../outcomes'
 import { inSeason } from '../content'
 import { GameClock } from '../clock'
 import { minuteOfDay } from '../clock'
@@ -364,14 +365,16 @@ function repairedNews(world: World, npcId: string, key: string): void {
   const place = world.location(location)
   const area = world.content.areas.get(place.area)?.name ?? place.name
   const name = callName(world.npc(npcId))
+  // With what the stranger brought (M10.14), the stranger is in it too; the kind names the object, for watchers.
+  const helped = strangerHelped(world, location)
   recordFact(world, {
-    kind: 'repaired',
-    about: [location, npcId, areaTopicId(world.content, place.area)],
+    kind: `repaired:${found.type.id}`,
+    about: [location, npcId, areaTopicId(world.content, place.area), ...(helped ? ['player'] : [])],
     place: location,
     belang: found.type.id === 'windmill' ? 3 : 2,
     title: `${thing} working again`,
     text: {
-      precise: `${name} has mended ${thing} at ${area}; it works again.`,
+      precise: `${name} has mended ${thing} at ${area}${helped ? ', with what the stranger brought' : ''}; it works again.`,
       village: `${thing} at ${area} works again.`,
       far: `They say ${thing} at ${area} is working again.`,
     },

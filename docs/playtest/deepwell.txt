@@ -137,18 +137,16 @@ Ama comes from below, on her way to The Bunkrooms.
 Ama stops and gives you a nod, curious about the stranger.
 Ama nods to Pell.
 Ama walks on to the north.
-Ilse arrives from the south.
+Ilse comes from the south, on her way to The Bunkrooms.
 Ilse stops and looks you over.
 Ilse nods to Pell.
+Ilse walks on to the north.
 Ama arrives from the north.
-Ama nods to Ilse.
 Teo arrives from the east.
 Teo stops and gives you a nod, curious about the stranger.
 Ama nods to Teo.
-Ilse nods to Teo.
 Pell nods to Teo.
 Ama leaves north.
-Ilse leaves north.
 Pell leaves north.
 Teo leaves north.
 Pell arrives from the north.
@@ -289,18 +287,16 @@ Ama comes from below, on her way to The Bunkrooms.
 Ama stops and gives you a nod, curious about the stranger.
 Ama nods to Pell.
 Ama walks on to the north.
-Ilse arrives from the south.
+Ilse comes from the south, on her way to The Bunkrooms.
 Ilse stops and looks you over.
 Ilse nods to Pell.
+Ilse walks on to the north.
 Ama arrives from the north.
-Ama nods to Ilse.
 Teo arrives from the east.
 Teo stops and gives you a nod, curious about the stranger.
 Ama nods to Teo.
-Ilse nods to Teo.
 Pell nods to Teo.
 Ama leaves north.
-Ilse leaves north.
 Pell leaves north.
 Teo leaves north.
 Pell arrives from the north.

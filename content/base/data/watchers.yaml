@@ -148,3 +148,12 @@ watchers:
   - id: befriended
     signal: befriended
     probe: { befriended: 3 }
+
+  # M10.14: good news has an aftermath too. De Zwaan turns again (a mended windmill); the dyke held in time.
+  - id: mill_turning
+    signal: mill_turning
+    fact: { kind: "repaired:windmill" }
+
+  - id: danger_passed
+    signal: danger_passed
+    fact: { key: state, value: normal, kind: danger }

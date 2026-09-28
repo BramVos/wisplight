@@ -157,6 +157,8 @@ items:
     description: A plain working knife with a horn handle.
     tags: [tool, weapon]
     value: 48
+    # M10.14: made by the stranger and given away, it shows.
+    used: "{name} cuts {their} bread with the knife you made, and wipes it on {their} sleeve."
     weapon: { damage: 1d4, light: true, crit: bleeding, iron: true }
 
   - id: iron_nails

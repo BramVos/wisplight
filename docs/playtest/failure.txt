@@ -1,0 +1,240 @@
+Een mislukking die verder speelt: smeden bij Hendrik (base), seed 4
+
+######## THE PLAYER ACTS
+The barge from Graafhaven leaves you at the Veenhoek quay just as the light goes. The bargeman won't tie up. "Not after dark, not out here," he says, and poles away into the mist, taking his lantern with him.
+
+This is the Holleveen: peat and reed and black water, mile upon mile of it between the Great Dyke and the heath. The villages sit on the few dry places like cats on a fence. Peat smoke. A windmill standing still against a sky the colour of pewter, its sails torn to rags.
+
+Somewhere a dog barks. On the doorstep of the nearest house a grey cat watches you, very still, the way cats don't usually watch people.
+
+Type LOOK to look around. Type HELP if you are lost. You probably are.
+You ran goods past the Count's tolls until the tolls caught up with you in Graafhaven. The Holleveen is a good place to be forgotten, and Trijntje at the Drowned Goose asks no questions.
+You were told to ask for Trijntje the innkeeper at the Drowned Goose. The name is in your journal.
+Canal Quay
+Grey water slaps against the planks of the quay. A barge rope lies coiled by the mooring posts, and beside them stands a worn stone, waist-high, with a dog carved into it. Someone has put an apple on top. The Graafse Vaart runs east and west; the green is north and the peat sheds are south.
+Exits: north, east, west, south, southwest
+Across country you can head any way, or follow the tow path west to Oude Zijl, the tow path east to Waagdam, the peat road to Molenend, the fen path to the Kattenbroek, the priory path to Kloosterveen or the path to the Kabouterberg.
+The pace of events is normal. Type TEMPO CALM or TEMPO DRAMATIC for less or more happening in the world.
+
+==== RECOGNISE (Dinsdag 14 Herfstmaand 211 AW, 18:30 (evening))
+
+> create warden heathborn peat_cutter name=Joost
+You are Joost, a Heathborn Warden, once a peat-cutter. A protector in heavy armour who holds the line. Type SHEET to see yourself.
+You cut peat in the Holleveen as a boy, and you have come back now that the Count talks of draining it. Gerrit wrote that the Brotherhood needs every spade it can get.
+You were told to ask for Gerrit the peat-cutter in Veenhoek. The name is in your journal.
+
+# Shortcut: peat from the sheds, then the smithy in Waagdam.
+
+> @goto loc_peat_sheds   [build command: a shortcut]
+[build] You are at The Peat Sheds.
+The Peat Sheds
+Long open sheds where blocks of peat are stacked in airy walls to dry. Everything smells of earth and smoke, and your boots stick to the floor. The quay is north; west, the ground drops away to the cuttings.
+Exits: north, west
++10 experience: you found The Peat Sheds.
+
+> @time 9   [build command: a shortcut]
+[build] 870 minutes pass.
+There are no sacks of flour to be had in Veenhoek. People make do, and grumble about it.
+Wouter comes from the west, on his way to The Drowned Goose, Common Room.
+Wouter stops and looks you over.
+Wouter walks on to the north.
+Wouter comes from the north, on his way to Wouter's Hut.
+Wouter walks on to the west.
+Gerrit comes from the north, on his way to The Peat Cuttings.
+Gerrit walks on to the west.
+Jan comes from the north, on his way to The Peat Cuttings.
+Jan walks on to the west.
+
+> buy 4 peat
+You buy 4 baskets of peat from Gerrit for 1 st 4 d.
+Wouter comes from the west, on his way to Canal Quay.
+Wouter stops and looks you over.
+
+> @goto loc_waagdam_smithy   [build command: a shortcut]
+[build] You are at Hendrik's Smithy.
+Hendrik's Smithy
+Heat hits you in the doorway. The forge glows under a hood of soot, and the anvil rings under the smith's hammer. Lanterns, knives and coils of rope hang for sale along one wall. Gate Street is south.
+Exits: south
+Here: Hendrik the smith (at work).
+Sacks of flour are short in Waagdam. The merchants have put their prices up and talk of sending far afield.
++10 experience: you found Hendrik's Smithy.
++30 experience: you came to Waagdam.
+
+> look
+Hendrik's Smithy
+Heat hits you in the doorway. The forge glows under a hood of soot, and the anvil rings under the smith's hammer. Lanterns, knives and coils of rope hang for sale along one wall. Gate Street is south.
+Exits: south
+Here: Hendrik the smith (at work).
+
+> buy 4 bar iron
+You buy 4 bars of iron from Hendrik for 3 st.
+
+> use forge nails
+Hendrik wipes his hands. "Go on, then. Mind you leave it as you found it." You pay Hendrik 3 d.
+(Crafting 18 vs DC 11: success)
+You heat the bar, draw it out thin on the anvil's horn, cut it and head each nail in the nail-plate. Your ears ring. You have 2 handfuls of iron nails.
+Hendrik is asking twice the worth for bars of iron, and people say so.
++5 experience: drawing out nails.
+
+> use forge nails
+(Crafting 17 vs DC 11: success)
+You heat the bar, draw it out thin on the anvil's horn, cut it and head each nail in the nail-plate. Your ears ring. You have 2 handfuls of iron nails.
++5 experience: drawing out nails.
+
+> use forge nails
+(Crafting 12 vs DC 11: success)
+You heat the bar, draw it out thin on the anvil's horn, cut it and head each nail in the nail-plate. Your ears ring. You have 2 handfuls of iron nails.
++5 experience: drawing out nails.
+
+> use forge nails
+(Crafting 10 vs DC 11: failure)
+It doesn't come right. What you have is a piece of scrap iron: not what you meant, but not nothing.
+Hendrik looks at it. "You let the iron go cold before you struck, and it cracked. Strike while it glows orange, not red."
+
+> inventory
+You carry 2 apples, a chain shirt, 6 handfuls of iron nails, a round shield, a piece of scrap iron and a spear, and 9 st 1 d.
+
+==== INFLUENCE (Woensdag 15 Herfstmaand 211 AW, 13:04 (midday))
+
+# What is there to do about it: the scrap is worth something to the smith, and the next piece may come right.
+
+> list
+Hendrik sells: lantern 1 gl (2 left); jug of lamp oil 3 st (6 left); knife 6 st (3 left); handful of iron nails 1 st 1 d (8 left); coil of rope 1 st 4 d (4 left); bar of iron (sold out).
+Hendrik buys: piece of scrap iron for 1 d.
+
+> sell scrap iron
+You sell a piece of scrap iron to Hendrik for 1 d.
+
+> buy bar iron
+Hendrik has no bars of iron left.
+
+> use forge nails
+You need a bar of iron and a basket of peat for that.
+
+==== AFTER (Woensdag 15 Herfstmaand 211 AW, 13:06 (midday))
+
+[24 hours pass]
+
+
+> look
+Hendrik's Smithy
+Heat hits you in the doorway. The forge glows under a hood of soot, and the anvil rings under the smith's hammer. Lanterns, knives and coils of rope hang for sale along one wall. Gate Street is south.
+Exits: south
+Here: Hendrik the smith (at work).
+
+> inventory
+You carry 2 apples, a chain shirt, 6 handfuls of iron nails, a round shield and a spear, and 9 st 2 d.
+
+==== END (Donderdag 16 Herfstmaand 211 AW, 13:06 (midday))
+Quests: none
+
+######## CONTROL: THE PLAYER DOES NOTHING
+The barge from Graafhaven leaves you at the Veenhoek quay just as the light goes. The bargeman won't tie up. "Not after dark, not out here," he says, and poles away into the mist, taking his lantern with him.
+
+This is the Holleveen: peat and reed and black water, mile upon mile of it between the Great Dyke and the heath. The villages sit on the few dry places like cats on a fence. Peat smoke. A windmill standing still against a sky the colour of pewter, its sails torn to rags.
+
+Somewhere a dog barks. On the doorstep of the nearest house a grey cat watches you, very still, the way cats don't usually watch people.
+
+Type LOOK to look around. Type HELP if you are lost. You probably are.
+You ran goods past the Count's tolls until the tolls caught up with you in Graafhaven. The Holleveen is a good place to be forgotten, and Trijntje at the Drowned Goose asks no questions.
+You were told to ask for Trijntje the innkeeper at the Drowned Goose. The name is in your journal.
+Canal Quay
+Grey water slaps against the planks of the quay. A barge rope lies coiled by the mooring posts, and beside them stands a worn stone, waist-high, with a dog carved into it. Someone has put an apple on top. The Graafse Vaart runs east and west; the green is north and the peat sheds are south.
+Exits: north, east, west, south, southwest
+Across country you can head any way, or follow the tow path west to Oude Zijl, the tow path east to Waagdam, the peat road to Molenend, the fen path to the Kattenbroek, the priory path to Kloosterveen or the path to the Kabouterberg.
+The pace of events is normal. Type TEMPO CALM or TEMPO DRAMATIC for less or more happening in the world.
+
+==== RECOGNISE (Dinsdag 14 Herfstmaand 211 AW, 18:30 (evening))
+
+> create warden heathborn peat_cutter name=Joost
+You are Joost, a Heathborn Warden, once a peat-cutter. A protector in heavy armour who holds the line. Type SHEET to see yourself.
+You cut peat in the Holleveen as a boy, and you have come back now that the Count talks of draining it. Gerrit wrote that the Brotherhood needs every spade it can get.
+You were told to ask for Gerrit the peat-cutter in Veenhoek. The name is in your journal.
+
+# Shortcut: peat from the sheds, then the smithy in Waagdam.
+
+> @goto loc_peat_sheds   [build command: a shortcut]
+[build] You are at The Peat Sheds.
+The Peat Sheds
+Long open sheds where blocks of peat are stacked in airy walls to dry. Everything smells of earth and smoke, and your boots stick to the floor. The quay is north; west, the ground drops away to the cuttings.
+Exits: north, west
++10 experience: you found The Peat Sheds.
+
+> @time 9   [build command: a shortcut]
+[build] 870 minutes pass.
+There are no sacks of flour to be had in Veenhoek. People make do, and grumble about it.
+Wouter comes from the west, on his way to The Drowned Goose, Common Room.
+Wouter stops and looks you over.
+Wouter walks on to the north.
+Wouter comes from the north, on his way to Wouter's Hut.
+Wouter walks on to the west.
+Gerrit comes from the north, on his way to The Peat Cuttings.
+Gerrit walks on to the west.
+Jan comes from the north, on his way to The Peat Cuttings.
+Jan walks on to the west.
+
+> buy 4 peat
+You buy 4 baskets of peat from Gerrit for 1 st 4 d.
+Wouter comes from the west, on his way to Canal Quay.
+Wouter stops and looks you over.
+
+> @goto loc_waagdam_smithy   [build command: a shortcut]
+[build] You are at Hendrik's Smithy.
+Hendrik's Smithy
+Heat hits you in the doorway. The forge glows under a hood of soot, and the anvil rings under the smith's hammer. Lanterns, knives and coils of rope hang for sale along one wall. Gate Street is south.
+Exits: south
+Here: Hendrik the smith (at work).
+Sacks of flour are short in Waagdam. The merchants have put their prices up and talk of sending far afield.
++10 experience: you found Hendrik's Smithy.
++30 experience: you came to Waagdam.
+
+> look
+Hendrik's Smithy
+Heat hits you in the doorway. The forge glows under a hood of soot, and the anvil rings under the smith's hammer. Lanterns, knives and coils of rope hang for sale along one wall. Gate Street is south.
+Exits: south
+Here: Hendrik the smith (at work).
+
+> buy 4 bar iron
+You buy 4 bars of iron from Hendrik for 3 st.
+
+> use forge nails
+Hendrik wipes his hands. "Go on, then. Mind you leave it as you found it." You pay Hendrik 3 d.
+(Crafting 18 vs DC 11: success)
+You heat the bar, draw it out thin on the anvil's horn, cut it and head each nail in the nail-plate. Your ears ring. You have 2 handfuls of iron nails.
+Hendrik is asking twice the worth for bars of iron, and people say so.
++5 experience: drawing out nails.
+
+> use forge nails
+(Crafting 17 vs DC 11: success)
+You heat the bar, draw it out thin on the anvil's horn, cut it and head each nail in the nail-plate. Your ears ring. You have 2 handfuls of iron nails.
++5 experience: drawing out nails.
+
+> use forge nails
+(Crafting 12 vs DC 11: success)
+You heat the bar, draw it out thin on the anvil's horn, cut it and head each nail in the nail-plate. Your ears ring. You have 2 handfuls of iron nails.
++5 experience: drawing out nails.
+
+> use forge nails
+(Crafting 10 vs DC 11: failure)
+It doesn't come right. What you have is a piece of scrap iron: not what you meant, but not nothing.
+Hendrik looks at it. "You let the iron go cold before you struck, and it cracked. Strike while it glows orange, not red."
+
+> inventory
+You carry 2 apples, a chain shirt, 6 handfuls of iron nails, a round shield, a piece of scrap iron and a spear, and 9 st 1 d.
+
+==== AFTER (Woensdag 15 Herfstmaand 211 AW, 13:04 (midday))
+
+[24 hours pass]
+
+
+> look
+Hendrik's Smithy
+Heat hits you in the doorway. The forge glows under a hood of soot, and the anvil rings under the smith's hammer. Lanterns, knives and coils of rope hang for sale along one wall. Gate Street is south.
+Exits: south
+Here: Hendrik the smith (at work).
+
+> inventory
+You carry 2 apples, a chain shirt, 6 handfuls of iron nails, a round shield, a piece of scrap iron and a spear, and 9 st 1 d.
+
+==== END (Donderdag 16 Herfstmaand 211 AW, 13:04 (midday))
+Quests: none

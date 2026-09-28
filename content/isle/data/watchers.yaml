@@ -30,3 +30,8 @@ watchers:
     signal: departure
     fact: { kind: "aftermath:leave" }
     who: [$about]
+
+  # M10.14: good news has an aftermath too. The Lamp of Skerrow burns again.
+  - id: lamp_lit
+    signal: lamp_lit
+    fact: { kind: lamp_lit }

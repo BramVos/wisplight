@@ -5,7 +5,7 @@ import { describeSelf, descriptionNow, detailHere, lookThere, lookThing, scenery
 import { choose, MAX_OPTIONS, offer, type ChoiceOption } from './choice'
 import { force, objectHere, openObject, passLock, pick, takeFrom } from './social/access'
 import { craftCheck, craftOf, craftProgress, craftRank, craftTitle, interruption, learnFrom, ownWorkBonus, rankIndex, soldOwn, workplaceLeave } from './crafts'
-import { damagedBlock, failedMake, repair } from './outcomes'
+import { damagedBlock, failedMake, gaveOwnWork, helpedRepair, isOwnWork, ownWorkLines, repair, teach } from './outcomes'
 import { giftMakesGood } from './amends'
 import { keptByGift } from './agreements'
 import { gather, searchHere, track, treat } from './skills'
@@ -185,6 +185,13 @@ export function runCommand(host: CommandHost, command: Command): Output[] {
       return rent(host)
     case 'use':
       return use(host, command.args)
+    // TEACH <person> [craft] (M10.14): the stranger's craft, three lessons on three days.
+    case 'teach':
+    case 'leer': {
+      const [who = '', ...rest] = command.args
+      const npcId = findNpcHere(world, who) ?? findNpcHere(world, command.args.join(' '))
+      return teach(world, (m) => host.pass(m), npcId, npcId && findNpcHere(world, who) ? rest.join(' ') : '')
+    }
     // REPAIR <thing> (M10.14): mend what a failed attempt damaged.
     case 'repair':
     case 'mend':
@@ -315,6 +322,8 @@ export function describeRoom(world: World): Output {
     return activity && !['taking it easy', 'at home'].includes(activity) ? `${short} (${activity})` : short
   })
   if (people.length > 0) lines.push(`Here: ${people.join(', ')}.`)
+  // Someone here uses what the stranger made them (M10.14).
+  lines.push(...ownWorkLines(world, location.id))
   lines.push(...crowdLines(world, location.id))
   lines.push(...chatsAt(world, location.id))
   return { kind: 'room', text: lines.join('\n') }
@@ -582,6 +591,13 @@ function give(host: CommandHost, args: string[]): Output[] {
   const item = matchItem(world.content, name, Object.keys(inventory))
   if (!item) return [error(`You don't have "${name}".`)]
   const amount = qty === 'all' ? inventory[item]! : Math.min(qty, inventory[item]!)
+  // The stranger's own work (M10.14): whoever has it uses it, and it shows.
+  if (isOwnWork(world, item)) {
+    gaveOwnWork(world, npcId, item)
+    soldOwn(world, item, amount)
+  }
+  // What a repair of theirs needs (M10.14): the stranger helped, and it will be said.
+  helpedRepair(world, npcId, item)
   add(inventory, item, -amount)
   add(world.npcState(npcId).inventory, item, amount)
   world.emit('gift', world.state.player.location, `You give ${qtyName(world, item, amount)} to ${callName(world.npc(npcId))}.`)

@@ -255,24 +255,24 @@ Ways on: north, north-east, south-east, south, south-west, north-west.
 
 > walk to the kattenbroek
 You make your way towards the Kattenbroek for 8 minutes, over fen. The mist closes in and you lose your bearings.
-In the fen, near the Kattenbroek
-Wet ground and sedge stretch around you, cut by black pools. A black pool lies to one side, still as glass. Mist lies over everything and muffles every sound.
+Somewhere in the mist
+You have lost your bearings: the mist hides everything past arm's length, and every way looks the same. WAIT for it to lift, or WALK TO a place or HEAD a way and trust your feet; a road or a place will tell you where you are.
 Ways on: north, north-east, south-east, south, south-west, north-west.
 
 > struggle
 You are not stuck in anything.
 
 > look
-In the fen, near the Kattenbroek
-Wet ground and sedge stretch around you, cut by black pools. A black pool lies to one side, still as glass. Mist lies over everything and muffles every sound.
+Somewhere in the mist
+You have lost your bearings: the mist hides everything past arm's length, and every way looks the same. WAIT for it to lift, or WALK TO a place or HEAD a way and trust your feet; a road or a place will tell you where you are.
 Ways on: north, north-east, south-east, south, south-west, north-west.
 
 # Seen now, not reached: walk on to it, again if the mist turns you round, then on to the hut.
 
 > walk to the kattenbroek
 You make your way towards the Kattenbroek for 8 minutes, over fen.
-In the fen, near the Kattenbroek
-Wet ground and sedge stretch around you, cut by black pools. Mist lies over everything and muffles every sound. To the south-west, a dark wall of reed and alder.
+Somewhere in the mist
+You have lost your bearings: the mist hides everything past arm's length, and every way looks the same. WAIT for it to lift, or WALK TO a place or HEAD a way and trust your feet; a road or a place will tell you where you are.
 Ways on: north, north-east, south-east, south, south-west, north-west.
 Somewhere around here, they said. You see no sign of the Kattenbroek yet.
 
