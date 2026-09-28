@@ -4,7 +4,7 @@ import { DEFAULT_PALETTE, MapPaletteSchema, SURFACE, TERRAIN_ORDER, type Level, 
 import { previewMapData, type HexMapData } from './map/view'
 import { ContentError, loadContent, type Content, type ContentFile, type Direction } from './content'
 import { regionPreview, sceneryWarnings, warnings } from './builder'
-import { applyEdits, entities, ENTITY_KINDS, LISTS, parseEntityYaml, patchWorld, voiceYaml, worldPrefix, type Edit, type EditResult, type EntityKind, type FileChange, type Raw } from './edit'
+import { applyEdits, entities, entityYaml, ENTITY_KINDS, LISTS, parseEntityYaml, patchWorld, voiceYaml, worldPrefix, type Edit, type EditResult, type EntityKind, type FileChange, type Raw } from './edit'
 import { worldFrame } from './dialogue/prompt'
 import { suspectText, worldText, type SuspectText } from './safety'
 import type { LlmRequest } from './dialogue/llm'
@@ -654,6 +654,7 @@ export function worldStepRequest(files: ContentFile[], stepId: string, said: str
     return list.length ? `${LISTS[kind]}: ${list.map((e) => `${e.id} (${nameOf(kind, e.raw)})`).join(', ')}` : ''
   }).filter(Boolean)
   const order = WORLD_STEPS.map((s, i) => `${i + 1}. ${s.title}${s.id === step.id ? ' (NOW)' : ''}`).join(' ')
+  const standing = stepEntities(files, step.fills)
   return {
     role: 'chronicler',
     system: [
@@ -674,7 +675,7 @@ export function worldStepRequest(files: ContentFile[], stepId: string, said: str
       instruction,
       'Answer in JSON: say, questions, changes (entities as full YAML), world (YAML of the top-level world.yaml keys to set, or empty), files (CHRONICLER.md or data/voice.yaml whole, or none).',
     ].join('\n'),
-    prompt: [`WORLD.YAML NOW:`, worldFile?.text ?? '(none)', '', 'WHAT EXISTS:', ...index, '', `THE DESIGNER SAYS: ${said}`].join('\n'),
+    prompt: [`WORLD.YAML NOW:`, worldFile?.text ?? '(none)', '', 'WHAT EXISTS:', ...index, ...(standing ? ['', standing] : []), '', `THE DESIGNER SAYS: ${said}`].join('\n'),
     schemaName: 'world_step',
     schema: WORLD_STEP_SCHEMA,
     // A whole chapter answered in YAML (M10.20: Bram's People chapter holds eight people, their factions and the law;
@@ -683,6 +684,38 @@ export function worldStepRequest(files: ContentFile[], stepId: string, said: str
     timeoutMs: 600000,
     meta: { step: step.id, ask: said, prefix: worldPrefix(files), world: worldFacts(files) },
   }
+}
+
+/**
+ * What a step may change, as it stands (M10.20; the real run of The Quiet
+ * Reach, where the economy step could not give the places made in the places
+ * step their services and benches, because a change sends a thing whole and
+ * the chronicler saw only ids): the YAML of every thing of the kinds the step
+ * fills that the world already has. Past a limit, the rest by id only.
+ */
+export function stepEntities(files: ContentFile[], fills: readonly { kind: string }[], limit = 120_000): string {
+  const kinds = ENTITY_KINDS.filter((kind) => fills.some((f) => f.kind === LISTS[kind]))
+  const blocks: string[] = []
+  const left: string[] = []
+  let size = 0
+  for (const kind of kinds) {
+    for (const e of entities(files, kind)) {
+      const yaml = entityYaml(files, kind, e.id)
+      if (!yaml) continue
+      if (size + yaml.length > limit) {
+        left.push(`${kind} ${e.id}`)
+        continue
+      }
+      size += yaml.length
+      blocks.push(`--- ${kind} ${e.id}\n${yaml.trimEnd()}`)
+    }
+  }
+  if (!blocks.length && !left.length) return ''
+  return [
+    'WHAT THIS STEP MAY CHANGE, AS IT STANDS (a change sends a thing whole: to add to one, send it with every field and word you do not change kept as it is):',
+    ...blocks,
+    ...(left.length ? [`Too long to show here, by id only: ${left.join(', ')}.`] : []),
+  ].join('\n')
 }
 
 const ENHANCE_SCHEMA = {

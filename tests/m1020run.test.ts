@@ -71,6 +71,16 @@ describe('M10.20: the real run of a world', () => {
     expect(result.content!.locations.get('loc_commons')!.exits).toMatchObject({ south: { to: 'loc_arrival_lock', minutes: 2 } })
   })
 
+  it('shows a step the things it may change as they stand, so it can add to them', () => {
+    const files = newWorldFiles('quietreach', 'The Quiet Reach')
+    // The economy step fills places too (services, benches, forage): it sees the first place whole.
+    const economy = worldStepRequest(files, 'economy', 'Meals at the Commons.').prompt
+    expect(economy).toMatch(/WHAT THIS STEP MAY CHANGE, AS IT STANDS[^\n]*\n--- location loc_first_place\nid: loc_first_place\nname: The First Place/)
+    expect(economy).toContain('You stand in the first place of a new world.')
+    // A step that fills no kind of thing sees none.
+    expect(worldStepRequest(files, 'frame', 'Cold islands.').prompt).not.toContain('AS IT STANDS')
+  })
+
   it('puts right a proposal that did not load, with only what the chronicler corrects', () => {
     const files = newWorldFiles('quietreach', 'The Quiet Reach')
     const topic = (id: string, summary: string) => ({ kind: 'topic' as const, id, yaml: `id: ${id}\nname: ${id}\nkind: lore\nsummary: ${summary}\n` })
