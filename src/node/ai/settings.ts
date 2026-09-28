@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, renameSync, statSync, writeFileSync } from 'node:fs'
 import { dirname } from 'node:path'
 import type { LlmRole } from '../../engine/dialogue/llm'
 import { hourlyBudget, replyWithin } from '../../engine/aisettings'
@@ -61,12 +61,14 @@ export interface SettingsSummary {
 
 export class SettingsStore {
   private data: SettingsFile
+  private seen = 0
 
   constructor(
     private readonly path: string,
     private readonly cipher: Cipher,
   ) {
     this.data = this.read()
+    this.seen = this.stamp()
   }
 
   private read(): SettingsFile {
@@ -79,23 +81,54 @@ export class SettingsStore {
     }
   }
 
-  private write(): void {
+  /** When the file on disk last changed, to see another instance's change. */
+  private stamp(): number {
+    try {
+      return statSync(this.path).mtimeMs
+    } catch {
+      return 0
+    }
+  }
+
+  /**
+   * The settings as they stand on disk (M10.20; the build of The Quiet Reach,
+   * 28 September 2026: a second instance of the app still held $5 in memory
+   * and wrote its whole state back over Bram's $50). Read again whenever the
+   * file changed since this instance last saw it.
+   */
+  private get current(): SettingsFile {
+    const now = this.stamp()
+    if (now !== this.seen) {
+      this.data = this.read()
+      this.seen = now
+    }
+    return this.data
+  }
+
+  /** One change: the file read again, only this change made to it, and written back. */
+  private change(apply: (data: SettingsFile) => void): void {
+    const fresh = this.read()
+    apply(fresh)
     mkdirSync(dirname(this.path), { recursive: true })
     const temp = `${this.path}.tmp`
-    writeFileSync(temp, JSON.stringify(this.data, null, 2), { mode: 0o600 })
+    writeFileSync(temp, JSON.stringify(fresh, null, 2), { mode: 0o600 })
     renameSync(temp, this.path)
+    this.data = fresh
+    this.seen = this.stamp()
   }
 
   setKey(provider: ProviderId, key: string): void {
     const clean = key.trim()
     if (!clean) throw new Error('The key is empty.')
     if (!this.cipher.available()) throw new Error('Secure storage is not available on this computer, so the key cannot be saved safely.')
-    this.data.keys[provider] = this.cipher.encrypt(clean)
-    this.write()
+    const encoded = this.cipher.encrypt(clean)
+    this.change((d) => {
+      d.keys[provider] = encoded
+    })
   }
 
   key(provider: ProviderId): string | undefined {
-    const encoded = this.data.keys[provider]
+    const encoded = this.current.keys[provider]
     if (!encoded) return undefined
     try {
       return this.cipher.decrypt(encoded)
@@ -105,78 +138,86 @@ export class SettingsStore {
   }
 
   setModels(provider: ProviderId, ids: string[]): void {
-    ;(this.data.models ??= {})[provider] = { ids: [...ids].sort(), at: new Date().toISOString() }
-    this.write()
+    const list = { ids: [...ids].sort(), at: new Date().toISOString() }
+    this.change((d) => {
+      ;(d.models ??= {})[provider] = list
+    })
   }
 
   modelIds(provider: ProviderId): string[] | undefined {
-    return this.data.models?.[provider]?.ids
+    return this.current.models?.[provider]?.ids
   }
 
   /** Roles whose model has gone from the list of its provider. */
   missing(): ChosenRole[] {
     return CHOSEN_ROLES.filter((role) => {
-      const choice = this.data.roles[role]
+      const choice = this.current.roles[role]
       const ids = choice ? this.modelIds(choice.provider) : undefined
       return Boolean(choice && ids && !ids.includes(choice.model))
     })
   }
 
   removeKey(provider: ProviderId): void {
-    delete this.data.keys[provider]
-    delete this.data.models?.[provider]
-    for (const [role, choice] of Object.entries(this.data.roles)) {
-      if (choice?.provider === provider) delete this.data.roles[role as keyof SettingsFile['roles']]
-    }
-    this.write()
+    this.change((d) => {
+      delete d.keys[provider]
+      delete d.models?.[provider]
+      for (const [role, choice] of Object.entries(d.roles)) {
+        if (choice?.provider === provider) delete d.roles[role as keyof SettingsFile['roles']]
+      }
+    })
   }
 
   setRole(role: ChosenRole, choice: RoleChoice): void {
-    this.data.roles[role] = { provider: choice.provider, model: choice.model }
-    this.write()
+    this.change((d) => {
+      d.roles[role] = { provider: choice.provider, model: choice.model }
+    })
   }
 
   clearRole(role: ChosenRole): void {
-    delete this.data.roles[role]
-    this.write()
+    this.change((d) => {
+      delete d.roles[role]
+    })
   }
 
   role(role: LlmRole): RoleChoice | undefined {
-    return role === 'advisor' ? undefined : this.data.roles[role]
+    return role === 'advisor' ? undefined : this.current.roles[role]
   }
 
   get pictures(): PictureChoice | undefined {
-    return this.data.pictures
+    return this.current.pictures
   }
 
   setPictures(choice: PictureChoice | undefined): void {
-    if (choice) this.data.pictures = choice
-    else delete this.data.pictures
-    this.write()
+    this.change((d) => {
+      if (choice) d.pictures = choice
+      else delete d.pictures
+    })
   }
 
   get budgetUsdPerHour(): number {
-    return this.data.budgetUsdPerHour
+    return this.current.budgetUsdPerHour
   }
 
   /** The player's hourly budget as they set it (M10.20): only a slip of the keyboard is caught, and then it says so. */
   setBudget(usd: number): { usd: number; adjusted: boolean } {
     const kept = hourlyBudget(usd)
-    this.data.budgetUsdPerHour = kept.usd
-    this.write()
+    this.change((d) => {
+      d.budgetUsdPerHour = kept.usd
+    })
     return kept
   }
 
   get replyWithinSeconds(): number {
-    return this.data.replyWithinSeconds ?? REPLY_WITHIN_SECONDS
+    return this.current.replyWithinSeconds ?? REPLY_WITHIN_SECONDS
   }
 
   /** From three seconds to a minute; past it, the game's own line stands in. Says when it had to change the value. */
   setReplyWithin(seconds: number): { seconds: number; adjusted: boolean } {
     const kept = replyWithin(seconds)
     if (!Number.isFinite(seconds)) return { seconds: this.replyWithinSeconds, adjusted: true }
-    this.data.replyWithinSeconds = kept.seconds
-    this.write()
+    this.change((d) => {
+      d.replyWithinSeconds = kept.seconds
+    })
     return kept
   }
 
@@ -187,12 +228,12 @@ export class SettingsStore {
     }
     return {
       providers: { openai: describe('openai'), anthropic: describe('anthropic') },
-      roles: { ...this.data.roles },
-      budgetUsdPerHour: this.data.budgetUsdPerHour,
+      roles: { ...this.current.roles },
+      budgetUsdPerHour: this.current.budgetUsdPerHour,
       encryption: this.cipher.available(),
-      models: Object.fromEntries(Object.entries(this.data.models ?? {}).map(([id, list]) => [id, list?.ids ?? []])),
+      models: Object.fromEntries(Object.entries(this.current.models ?? {}).map(([id, list]) => [id, list?.ids ?? []])),
       missing: this.missing(),
-      ...(this.data.pictures ? { pictures: { ...this.data.pictures } } : {}),
+      ...(this.current.pictures ? { pictures: { ...this.current.pictures } } : {}),
       replyWithinSeconds: this.replyWithinSeconds,
     }
   }

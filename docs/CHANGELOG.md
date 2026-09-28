@@ -12,6 +12,7 @@
 - **Het ontwerplogboek** zet een beslist antwoord niet meer terug onder "Answers".
 - **Je budget blijft je budget.** Het uurbudget nam stil hoogstens $5 over; nu blijft staan wat je instelt, met één vraag boven $20 per uur ("Are you sure? This lets the app spend up to $50 an hour.") en een grens van $1000 alleen tegen typfouten. Wordt een waarde toch aangepast (ook de antwoordtijd, 3 tot 60 seconden), dan zegt het scherm dat. "The hourly budget is used up" zegt nu over hoeveel minuten er weer ruimte is.
 - **Een eigen budget per wereldbouw.** Boven de stappen staat "This build may spend up to $...", standaard je uurbudget, met wat de bouw tot nu toe kostte, en bij elke stap wat die stap kostte. De stappen tellen daar en niet in het uurbudget van het spel, dus een bouw wacht niet meer en je spel ook niet. [Count from zero] begint opnieuw te tellen met dezelfde grens.
+- **Twee vensters van de app overschrijven elkaars instellingen niet meer.** Elke wijziging leest het bestand opnieuw en schrijft alleen zichzelf, en een venster ziet wat het andere veranderde. De geïnstalleerde app draait één keer: een tweede start haalt de eerste naar voren. In ontwikkeling mogen er twee draaien (de editor naast het spel).
 
 Testen: open de editor, kies The Quiet Reach en blader door de stappen: elk staat op "saved", en het ontwerplogboek (`content/quietreach/DESIGN.md`) toont per stap wat er gevraagd, gezegd en besloten is. Speel The Quiet Reach: je begint in de Arrival Lock, de Commons ligt oostelijk. Het rapport noemt per stap wat je moet bekijken.
 

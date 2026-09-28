@@ -75,6 +75,20 @@ if (smokeData) {
   })
 }
 
+// One app at a time for a player (M10.20; the build of The Quiet Reach, 28 September 2026: an older
+// instance wrote its settings back over Bram's). A second start hands over to the first, which comes to
+// the front. In development two may run: npm run dev --watch restarts this process and could lose the
+// race for the lock, and the editor runs beside the game; the settings are written per change, so
+// neither overwrites the other. The checks and the smoke run have folders of their own.
+const handedOver = app.isPackaged && !smoke && !picturing && !checking && !logCheck && !builderCheck ? !app.requestSingleInstanceLock() : false
+if (handedOver) app.quit()
+app.on('second-instance', () => {
+  const open = BrowserWindow.getAllWindows().find((w) => !w.isDestroyed())
+  if (!open) return
+  if (open.isMinimized()) open.restore()
+  open.focus()
+})
+
 // API keys are encrypted with the operating system's key store before they reach the disk.
 const cipher: Cipher = smoke
   ? {
@@ -1082,6 +1096,8 @@ function createWindow(): void {
 }
 
 void app.whenReady().then(async () => {
+  // Handed over to the app that already runs: nothing to open here.
+  if (handedOver) return
   if (picturing) {
     const worlds = await listWorlds(contentDir())
     const contents = await Promise.all(worlds.map((w) => loadContentFromDir(contentDir(), w.folder)))
