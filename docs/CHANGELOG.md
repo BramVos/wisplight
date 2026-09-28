@@ -1,5 +1,19 @@
 # Changelog
 
+## M10.21 deel: een stad groeit per wijk, 29 september 2026
+
+- **Een verre stad heeft wijken, uit het wereldboek (hoofdstuk 6).** Graafhaven heeft de Dijkpoort met de vismarkt, de gildehuizen, het Graafshof, de Brandaris en de haven met de verdronken klokken. Zwolderkamp heeft de markt, de pakhuizen aan de Yssel en de lijnbaan. Stavermouth heeft de dichtgeslibde haven en het Vrouwezand. Havenmoor (bij Skerrow) heeft de kaden en de bovenstad.
+- **Een wijk komt pas als je er iets doet of erheen gaat.** Doorlopen maakt geen wijk. Doe je iets in de stad (iets kopen, iemand iets vragen, een bed huren, iets zeggen in een gesprek), dan komt de eerste wijk rond poort, markt en herberg. Vanaf de markt lopen dan straten naar de andere wijken. Loop je zo'n straat in, dan wordt die wijk gemaakt. Een wijk die er is, blijft.
+- **De kroniekverteller schrijft de woorden, de motor de vorm.** Eén aanroep per wijk (`district`, hooguit 3.000 tokens uitvoer): hooguit zes plekken en zes mensen, met de regels van de stappen Plekken en Mensen (drie tot vijf zinnen, hooguit zeventig woorden, een ander zintuig, een wenk naar een uitgang). Alles wordt als content gecontroleerd voordat het in de save komt. Woorden die de regels breken vallen weg; blijft er niets over, dan doet het sjabloon het. Zonder model: de straat met de regel uit het wereldboek, en in een andere wijk één bewoner.
+- **Gevonden en gerepareerd:** de weg naar Graafhaven vertrok uit Wouters palingweren in de Blackmere. Een randplek zonder eigen positie telde niet mee; nu telt de positie van zijn gebied, en vertrekt de weg bij de Oude Sluis in Oude Zijl.
+- **Ontwerpwijziging.** De roadmap zei: "gemaakt met dezelfde stappen Plekken en Mensen als de wereldbouw". Het werd één kleinere aanroep met de regels van die stappen, waarbij de motor de vorm vastlegt, zoals bij verre plekken sinds M9.1. Dat is goedkoper, en een wijk sluit zo altijd aan op de stad.
+
+Testen: speel de Nethermarch, ga naar Graafhaven (vanaf Oude Zijl naar het westen, bij de rand `1`), vraag in de markt iemand iets, en loop een van de nieuwe straten in. Tests in `tests/m1021districts.test.ts` (4).
+
+Nog niet: de vraag "dit kost ongeveer $0,80" boven jouw grens; die sluit ik aan zodra de andere sessie `asking.ts` heeft. De markt van een stad die niet met de streek handelt, verkoopt nog niets. De weefronde na een wijk komt in M10.22.
+
+Wat de editor en de kroniekverteller leerden: `districts` in het contract en in de stap Vervoer (met een controle); Check noemt een stad waarvan de wijken nooit te bereiken zijn, of een wijk die twee keer genoemd wordt. Het wereldboek heeft een tabel met verre plekken en hun wijken.
+
 ## M10.21 deel: de wereld groeit alleen waar jij iets doet, 29 september 2026
 
 - **De regel staat in het contract.** Niets maakt zichzelf. De wereld groeit alleen op drie momenten: je komt aan bij iets dat alleen een schets was, een lijn brengt je voorbij de kaart, of de kroniekverteller heeft 's nachts binnen zijn budget één plek of persoon nodig. Nooit omdat je alleen in de buurt loopt.

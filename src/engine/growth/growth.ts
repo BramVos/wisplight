@@ -1,5 +1,6 @@
 import { withProps } from '../props'
 import { withFarPlaces, type FarPlace } from './far'
+import { withDistricts } from './districts'
 import { addCrowd, endCrowd } from './crowds'
 import { isRestDay } from '../clock'
 import { callName, LocationSchema, lockedIds, NpcSchema, type Content, type Npc } from '../content'
@@ -44,6 +45,9 @@ export interface GrowthState {
   farPending?: string[]
   /** How a far place without a road is reached (M10.12): the passage and its stop, kept while the chronicler words it. */
   farVia?: Record<string, import('./far').FarVia>
+  /** The districts of far towns made in this game (M10.21), by town and district, and those waiting for the chronicler. */
+  districts?: Record<string, import('./districts').District>
+  districtPending?: string[]
 }
 
 export function growth(world: World): GrowthState {
@@ -60,6 +64,7 @@ function grownOnly(base: Content, state: GameState): Content {
   const g = state.growth
   const built = g ? Object.entries(g.projects).filter(([, p]) => p.done !== undefined).map(([id]) => base.projects.get(id)!).filter(Boolean) : []
   if (g?.far && Object.keys(g.far).length) base = withFarPlaces(base, state)
+  if (g?.districts && Object.keys(g.districts).length) base = withDistricts(base, state)
   // A settlement that changed rank (M9.1): its kind is the game's now.
   if (state.ranks && Object.keys(state.ranks).length) {
     const areas = new Map(base.areas)

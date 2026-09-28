@@ -30,6 +30,14 @@ export function warnings(content: Content): string[] {
   }
   for (const npc of content.npcs.values()) if (npc.public_facts.length === 0) out.push(`${npc.id}: no public facts, so nobody can tell anything about them`)
   for (const topic of content.topics.values()) if (!topic.origin && !topic.pos && !topic.everywhere && topic.kind !== 'person') out.push(`topic ${topic.id}: no origin, so nobody knows where it belongs`)
+  // A far town with districts (M10.21) is reached by a road (it has a place on the map) or a line; without either they never come to be.
+  for (const topic of content.topics.values()) {
+    if (!topic.districts.length) continue
+    const byLine = [...content.passages.values()].some((p) => p.stops.includes(topic.id))
+    if (!topic.pos && !byLine) out.push(`topic ${topic.id}: its districts can never be reached: it has no place on the map (pos) and no line stops there`)
+    const ids = topic.districts.map((d) => d.id)
+    for (const id of new Set(ids)) if (ids.filter((x) => x === id).length > 1) out.push(`topic ${topic.id}: the district ${id} is named twice`)
+  }
   // What lies beyond the map (M10.21): an edge without a line says only that nobody has told the stranger.
   for (const region of content.regions.values()) {
     const said = new Set((region.beyond ?? []).map((b) => b.side))

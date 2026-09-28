@@ -730,6 +730,23 @@ export const TopicSchema = z.object({
   audience: z.partialRecord(z.string(), z.number()).default({}),
   fame: z.number().int().min(0).max(5).default(2),
   known_by: z.array(z.string()).default([]),
+  /**
+   * A far town that grows by district (M10.21): the world book names its
+   * quarters. The first is where the stranger comes in; each is made playable
+   * only when they do something there (the first) or go there (the rest).
+   */
+  districts: z
+    .array(
+      z
+        .object({
+          id: z.string().regex(/^[a-z0-9_]+$/),
+          name: z.string(),
+          /** What it is, from the world book: the chronicler builds on it, and without a model it is the district's own line. */
+          line: z.string(),
+        })
+        .strict(),
+    )
+    .default([]),
 })
 export type Topic = z.infer<typeof TopicSchema>
 

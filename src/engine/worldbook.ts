@@ -105,6 +105,11 @@ export function worldBook(content: Content, input: WorldBookInput = {}): string 
       ]
     }),
     ...((w.map?.levels ?? []).filter((l) => l.id !== SURFACE).length ? para(`Levels: ${(w.map!.levels ?? []).map((l) => l.name).join(', ')}.`) : []),
+    // The far places beyond the map (M10.21): what people know, and a far town's districts, each made only when the stranger gets there.
+    ...(() => {
+      const far = [...content.topics.values()].filter((t) => t.kind === 'place' && !content.areas.has(t.id) && (t.pos || t.districts.length || [...content.passages.values()].some((p) => p.stops.includes(t.id)))).sort((a, b) => a.name.localeCompare(b.name))
+      return far.length ? ['### Far places', '', ...table(['Place', 'What people know', 'Districts'], far.map((t) => [t.name, t.summary, t.districts.map((d) => `${d.name}: ${d.line}`).join(' ')]))] : []
+    })(),
   ])
 
   // 3. History: the lore people tell.

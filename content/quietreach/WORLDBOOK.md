@@ -79,7 +79,15 @@ Do not invent:
 
 Pacing: play starts small, on Nacre, among the colonists, their everyday problems and the tensions between them. The Peregrine's expedition and what lies beyond are a later phase. Do not hurry the story there.
 
-## 2. History and lore
+## 2. The map of the land
+
+### Far places
+
+| Place | What people know | Districts |
+| --- | --- | --- |
+| Kestrel Landing | Kestrel Landing is another settlement on Nacre, a flight along the coast from Port Vesper, with a larger warehouse and a trade in parts. |  |
+
+## 3. History and lore
 
 | Topic | What people know |
 | --- | --- |
@@ -97,7 +105,7 @@ Pacing: play starts small, on Nacre, among the colonists, their everyday problem
 | The second observation | Whenever the Orison signal seems to change, the raw recording is kept and the instruments are checked before anyone believes it. |
 | The Transit Families | Families who have moved between settlements for generations, hauling cargo, making repairs and trading. |
 
-## 3. Powers
+## 4. Powers
 
 | Faction | Seat | Wants | Stands | Joining |
 | --- | --- | --- | --- | --- |
@@ -105,7 +113,7 @@ Pacing: play starts small, on Nacre, among the colonists, their everyday problem
 | Peregrine Expedition Crew | loc_peregrine_hangar | To prepare the Peregrine and her crew for the expedition, and bring them back. | Eager to depart, held back by engineering and medical sign-off. | at Peregrine — Common Deck |
 | The Keeping Circle | loc_commons | To keep the names, work and promises of Port Vesper's people, living and dead. | Open to anyone who helps, believer or not. | at Commons |
 
-## 4. Faith
+## 5. Faith
 
 | Faith | Patrons | Faction |
 | --- | --- | --- |
@@ -119,7 +127,7 @@ Pacing: play starts small, on Nacre, among the colonists, their everyday problem
 | The Remembered | The dead whom the living know by name. To the Keeping, a person stays part of the community for as long as others keep their name, their work and their promises; to call on the Remembered is to remember that you carry what they left unfinished. |  |
 | The Witness | A name the Open Sky gives to the supposed presence behind the universe; some of the faithful mean by it only their own conscience. To call on the Witness is to act as if someone is watching how humanity meets what it does not yet understand. |  |
 
-## 5. Towns and villages
+## 6. Towns and villages
 
 | Settlement | Kind | People | The ground | Workshops |
 | --- | --- | --- | --- | --- |
@@ -127,7 +135,7 @@ Pacing: play starts small, on Nacre, among the colonists, their everyday problem
 | Vesper Works | hamlet | 4 |  | purification_plant, filter_assembly, electronics_work, fabrication |
 | The Coastal Traverse | route | 0 | coastal_beds, wrack_line, tide_pools, basalt_outcrop |  |
 
-## 6. The starting region
+## 7. The starting region
 
 | Area | Kind | What it is | Sound |
 | --- | --- | --- | --- |
@@ -145,7 +153,7 @@ Pacing: play starts small, on Nacre, among the colonists, their everyday problem
 | Autumn | clear 100%, overcast 300%, rain 600%, fog 200%, storm 300%, frost 0%, snow 0% |
 | Winter | clear 100%, overcast 300%, rain 300%, fog 100%, storm 200%, frost 300%, snow 400% |
 
-## 7. Places
+## 8. Places
 
 ### Orison Ridge
 
@@ -223,7 +231,7 @@ Workbenches, tool racks and crates of salvaged parts crowd this high room under 
 
 Ways: in to Peregrine Hangar; southwest to Arrival Lock; west to Commons. Here: Electronics Bench, Fabrication Bench.
 
-## 8. People
+## 9. People
 
 | Name | Who | Age | Trade | Home |
 | --- | --- | --- | --- | --- |
@@ -256,7 +264,7 @@ Ways: in to Peregrine Hangar; southwest to Arrival Lock; west to Commons. Here: 
 - Sana Holt: friend Mara Venn, friend Niko Serrin, friend Dr Edda Vale, kin a cousin with the Transit Families
 - Tessa Rook: acquaintance Dr Ilyan Sorell, acquaintance Niko Serrin, acquaintance Mara Venn
 
-## 9. Secrets and stories
+## 10. Secrets and stories
 
 ### The Night of the Open Door
 
@@ -319,7 +327,7 @@ When a drone goes wrong, the first question in the Workshop is never sabotage. I
 | Dr Ilyan Sorell | He listed emergency heating and water parts as ordinary research stock so that he could use them in a Peregrine test. |
 | Niko Serrin | He fitted an unofficial bypass in the antenna system at Orison Ridge to keep the measurements running, and he never reported it. |
 
-## 10. Bestiary
+## 11. Bestiary
 
 | Creature | Kind | Level | Faction |
 | --- | --- | --- | --- |
@@ -333,7 +341,7 @@ When a drone goes wrong, the first question in the Workshop is never sabotage. I
 | A sailback on the path | Coastal Service Path | 1 sailback |
 | A drone on the wrong work order | Ridge Shelter | 1 maintenance drone |
 
-## 11. Coins, measures and calendar
+## 12. Coins, measures and calendar
 
 ### Coins
 
@@ -399,7 +407,7 @@ The law in Port Vesper is kept by the Settlement Marshal (Mara Venn).
 
 No fine buys off a death or a beating: the stranger is held 48 hours and heard. Three residents who had nothing to do with it hear the case at a formal hearing, and nobody who was part of it takes part. What they decide goes into the Compact's record, and you are let out under watch, until a ship can take the matter to a Charter port.
 
-## 12. Names and speech
+## 13. Names and speech
 
 ### Sayings
 
@@ -417,7 +425,7 @@ No fine buys off a death or a beating: the stranger is held 48 hours and heard. 
 
 magic, spells, mana, divine healing, telepathy, antigravity, gravity plates, inertial dampers, warp speed, hyperspace lanes, an everyday jumpgate, instant interstellar conversation, a live database reachable everywhere, alien empire, known alien races, universal translator, resurrection, respawning, an immortal cloned copy, quest giver, NPC, skill check, level up, inventory slots, catastrophic communications anomaly, outsider.
 
-## 13. Trades and crafts
+## 14. Trades and crafts
 
 | Trade | Works |
 | --- | --- |
@@ -440,7 +448,7 @@ magic, spells, mana, divine healing, telepathy, antigravity, gravity plates, ine
 | --- | --- | --- | --- |
 | Field Electronics | npc_tessa_rook | Diagnosis: recognising damage, cleaning contacts, checking connections, Cable and connector repair, Fault finding in linked systems, Designing, testing and documenting a difficult repair | lost |
 
-## 14. Transport
+## 15. Transport
 
 | Line | Kind | Stops | Days | Fare |
 | --- | --- | --- | --- | --- |
@@ -448,7 +456,7 @@ magic, spells, mana, divine healing, telepathy, antigravity, gravity plates, ine
 | Ridge Crawler, down to the port | crawler | Orison Listening Room, Ridge Shelter, Workshop, Arrival Lock | Primeday, Span, Relay, Anchor | 3 cr |
 | Coast Runner | aircraft | Arrival Lock, kestrel_landing | Primeday, Anchor | 25 cr |
 
-## 15. What happens when
+## 16. What happens when
 
 - When death: word goes round: "A death in Port Vesper"; Port Vesper takes a mood of grief for 3 days; a burial at Commons; a mark at Commons: "On the memorial wall a new plaque has been fixed beside the others, the name cut clean into the metal."; Sana Holt thinks: "A name and a message are waiting to go into the Harbour Record, and you promised to write them in carefully."; the family of each of them thinks: "Someone you loved is gone, and the empty chair at supper is still there each time you look.".
 - When missing: word goes round: "A check-in overdue"; goal Visit; seek player Mara Venn; a mark at Arrival Lock: "A pending-return marker glows amber on the watch board by the inner door, a name and a time beside it."; Port Vesper takes a mood of threat for 1 days; the family of each of them thinks: "They should have called in by now. A delay is not the same as a loss, you keep telling yourself.".
@@ -462,7 +470,7 @@ magic, spells, mana, divine healing, telepathy, antigravity, gravity plates, ine
 - When pupil learnt (a signal of the game itself): word goes round: "A skill passed on"; each of them thinks: "You can do it yourself now, what the stranger showed you, and that is worth more than a spare part.".
 - When signal anomaly: word goes round: "An anomaly in the recordings"; Niko Serrin thinks: "Preserve the raw recording, check the chain of instruments, and find a second observation before you believe any of it."; Dr Ilyan Sorell thinks: "One anomaly is not proof. The preparations wait on a second observation, however much you want to go.".
 
-## 16. The rules in short
+## 17. The rules in short
 
 Ancestries: . Classes: . Backgrounds: .
 
@@ -470,7 +478,7 @@ Conditions: .
 
 Death: You wake in the recovery cradle with a dry mouth and hands that will not quite close. The monitor chirps steadily beside you, and the air smells of antiseptic and warm plastic. Time has passed; the log by the cradle says how much, and who answered your implant's distress signal. You are weak, and you will need rest before you are yourself again.
 
-## 17. The look and sound of the world
+## 18. The look and sound of the world
 
 Pictures: Painted science-fiction concept art with a documentary feel: matte surfaces, fine brush texture, believable materials and restrained colours. Technology looks maintained, repaired and sometimes used for too long, with repaired seams, faded labels, scratches and personal belongings. Outdoors the light is cool: overcast skies, wet black rock, grey swell and sea mist. Indoors the light is warm: workbenches, the dining hall and inhabited cabins. Portraits show head and upper body in natural light against a quiet background. People vary in age, build, skin colour and appearance, and their origins show in clothing, habits and personal objects rather than in a fixed look. They wear practical workwear, repaired raincoats, medical wrap coats and safety vests, never tight uniform space suits. Each important character keeps the same identifying features in every image, and mood changes posture and expression, not the face. Places are shown at human scale from where a person could stand, with low buildings against a vast, cold landscape, vulnerable but inhabited. No neon, no holograms, no glowing interfaces beyond plain screen light. The picture shows exactly the state the text describes: damage stays damaged, empty rooms stay empty, and no doors, objects, weapons or clues are added that the world does not hold. Nothing alien, and nothing of Echo Nine, is shown unless the player has discovered it. The impression is of a cold, distant place where people have struggled to make something warm and habitable.
 
@@ -480,7 +488,7 @@ The map calls its land black basalt (volcanic), high rock (highland), open sea (
 
 Where an act the rules do not know may be improvised: Orison Listening Room (lore), Workshop (craft).
 
-## 18. How this world was made
+## 19. How this world was made
 
 ### The steps of the guide
 

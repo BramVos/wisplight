@@ -145,6 +145,13 @@ topics:
     fame: 5
     pos: [40, 110]
     summary: Graafhaven is the capital, a day west by barge along the Graafse Vaart, where the Count lives and the Brandaris burns every night.
+    # Its quarters (Wereldboek, chapter 6), each made playable only when the stranger does something there or goes there (M10.21).
+    districts:
+      - { id: gate, name: the Dyke Gate and the fish market, line: "Where the road from the fen comes in under the Great Dyke, with the fish market below the walls and an inn for carters and bargemen." }
+      - { id: guilds, name: the guild houses, line: "Tall guild houses round a square, where the Cog League's money is counted and lent, and everything costs double." }
+      - { id: court, name: the Count's court, line: "The Graafshof behind its own wall: clerks, guards and petitioners waiting in the rain for Count Aelbrecht III." }
+      - { id: brandaris, name: the Brandaris, line: "The lighthouse of the Lantern Church on the dyke, where Brand's lantern burns every night and the church keeps its books." }
+      - { id: harbour, name: the harbour, line: "Quays and warehouses by the grey sea; on storm nights, they say, the bells of the quarter that drowned in the Night of the Waterwolf ring under the water." }
 
   - id: zwolderkamp
     name: Zwolderkamp
@@ -153,6 +160,10 @@ topics:
     fame: 4
     pos: [185, 115]
     summary: Zwolderkamp is the merchant city of the Cog League, two days east by road. The Count owes them money.
+    districts:
+      - { id: gate, name: the west gate and the market, line: "Where the Oostweg comes in, with the market of lamp oil, nails and sailcloth, and an inn for the carters of the League." }
+      - { id: warehouses, name: the warehouses on the Yssel, line: "Brick warehouses along the river, where the League's goods come and go and everything costs a fifth more than at home." }
+      - { id: ropewalk, name: the ropewalk, line: "The long ropewalk by the walls, where at night, they say, the ghost of a ropemaker counts the fathoms." }
 
   - id: the_count
     name: the Count
@@ -169,6 +180,9 @@ topics:
     fame: 3
     pos: [125, 193]
     summary: Stavermouth is a silting port far up north, past the Zuyder Mere.
+    districts:
+      - { id: harbour, name: the silted harbour, line: "A harbour behind the Vrouwezand, half dry at low water, with empty warehouses and an inn that remembers better days." }
+      - { id: sandbank, name: the Vrouwezand, line: "The sandbank that grew from a shipload of grain thrown into the sea; at low water, they say, the Lady still walks it and begs for one grain." }
 
   - id: weeping_stone
     name: the Weeping Stone

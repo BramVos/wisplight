@@ -57,6 +57,9 @@ numbers:
     DUIT: 'world (moved): world.yaml money.units (M10.17); kept as the default for a world without coins'
     STUIVER: 'world (moved): world.yaml money.units (M10.17); kept as the default for a world without coins'
     GUILDER: 'world (moved): world.yaml money.units (M10.17); kept as the default for a world without coins'
+  src/engine/growth/districts.ts:
+    MOST_PLACES: 'code: a bound on what one district call may add, so the call stays small (cost)'
+    MOST_PEOPLE: 'code: a bound on what one district call may add, so the call stays small (cost)'
   src/engine/lod.ts:
     FULL_KM: 'code: how near the simulation counts every minute (speed)'
     NEAR_KM: 'code: how near a note on the map becomes a person again (speed)'

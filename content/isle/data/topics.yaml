@@ -66,6 +66,10 @@ topics:
     fame: 3
     summary: Havenmoor is the harbour town on the mainland, two days' sail east with a fair wind.
     details: Ships out of Havenmoor used to call at Skerrow every fortnight for fish and salt, as long as the beacon burned.
+    # Its quarters (M10.21): the quays the packet puts in at, and the town above them, each made only when the stranger gets that far.
+    districts:
+      - { id: quays, name: the quays, line: "The long quays where the packet from Skerrow puts in, among fish sheds, chandlers and a tavern for sailors." }
+      - { id: upper_town, name: the upper town, line: "Steep streets above the harbour, with the merchants' houses and a temple of the Tidemother that looks out to sea." }
 
   - id: the_tidemother
     name: the Tidemother

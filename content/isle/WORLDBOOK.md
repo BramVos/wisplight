@@ -101,6 +101,12 @@ Type LOOK to look around. Type HELP if you are lost. You are, rather.
 
 Levels: the caves, ground level, the cliff tops.
 
+### Far places
+
+| Place | What people know | Districts |
+| --- | --- | --- |
+| Havenmoor | Havenmoor is the harbour town on the mainland, two days' sail east with a fair wind. | the quays: The long quays where the packet from Skerrow puts in, among fish sheds, chandlers and a tavern for sailors. the upper town: Steep streets above the harbour, with the merchants' houses and a temple of the Tidemother that looks out to sea. |
+
 ## 3. History and lore
 
 | Topic | What people know |

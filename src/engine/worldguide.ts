@@ -310,9 +310,10 @@ export const WORLD_STEPS: readonly WorldStep[] = [
       'The fare is in the smallest coin; closed, off and where say it in the world\'s words.',
       'A thing for hire belongs to a person who is there to hand it over (where says where they are found); its price is in the smallest coin; crosses names water only if it floats.',
       'On the way, what may happen fits the land and the frame.',
+      'A far town with districts names each with an id of its own and a line; the first is where the stranger comes in.',
     ],
     prompt:
-      'STEP: TRANSPORT. Agree the lines of transport with the designer. Propose passages in `changes`: id, name, kind (any word: barge, coach, tram, shuttle), aliases, stops, days, hours or departs, fare, legs, water, crew, text with {fare}, {duration} and {place}, closed, where and a few sights on the way. What someone hires out goes on that person in `changes` as hires (id, name, aliases, price, hours, crosses, where, line, free_for_friends); HIRE <name> works with the owner present. A far place is a topic with kind place. Journey sentences per terrain, weather and night, and on_the_way (what may happen on a long walk), go in journey: data/journey.yaml whole in `files`, starting with journey:.',
+      'STEP: TRANSPORT. Agree the lines of transport with the designer. Propose passages in `changes`: id, name, kind (any word: barge, coach, tram, shuttle), aliases, stops, days, hours or departs, fare, legs, water, crew, text with {fare}, {duration} and {place}, closed, where and a few sights on the way. What someone hires out goes on that person in `changes` as hires (id, name, aliases, price, hours, crosses, where, line, free_for_friends); HIRE <name> works with the owner present. A far place is a topic with kind place; a far town may name its districts (id, name, line; the first where the stranger comes in), each made playable only when the stranger does something there or goes there. Journey sentences per terrain, weather and night, and on_the_way (what may happen on a long walk), go in journey: data/journey.yaml whole in `files`, starting with journey:.',
   },
   {
     id: 'watcher',

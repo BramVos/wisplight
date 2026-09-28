@@ -9,6 +9,7 @@ import { answerChoice, choose, MAX_OPTIONS, offer } from './choice'
 import { brawlAnswer, brawlShown } from './social/brawl'
 import { CHECKPOINT_ENTRIES, CHECKPOINT_MINUTES, contentVersion, type Checkpoint, type CheckpointedSave } from './checkpoint'
 import { applyFarPlace, farPlaceOf, farRequest, farWords, wantFarPlace, type FarWords } from './growth/far'
+import { applyDistrict, districtDue, districtRequest, districtWords, wantDistrict, type DistrictWords } from './growth/districts'
 import { crowdHere, nameOne } from './growth/crowds'
 import { applyLegendWords, legendRequest, legendsOf } from './legend'
 import { answerLookup, parseLookup } from './lookups'
@@ -108,6 +109,7 @@ export type LogEntry =
   | { t: number; k: 'outline'; topic: string; v: Outline | null }
   // A far place made playable (M9.1): the chronicler's words, or null for the template.
   | { t: number; k: 'far'; topic: string; v: FarWords | null }
+  | { t: number; k: 'district'; key: string; v: DistrictWords | null }
   // The legends of an old game this one began with (M9.1).
   | { t: number; k: 'legends'; v: LoreEntry[] }
   // The names the game began with (M9.1): playing the log back uses them, so a name changed later changes nothing.
@@ -531,7 +533,7 @@ export class Engine {
   /** Everything waiting for a model: goal choices and chronicler runs. */
   get modelsWaiting(): number {
     // A far place waiting for its words counts too (M10.21: alone, it never started the models).
-    return (this.state.brain?.pending.length ?? 0) + this.chroniclerWaiting + this.outlinesWaiting + (this.state.growth?.farPending?.length ?? 0)
+    return (this.state.brain?.pending.length ?? 0) + this.chroniclerWaiting + this.outlinesWaiting + (this.state.growth?.farPending?.length ?? 0) + (this.state.growth?.districtPending?.length ?? 0)
   }
 
   /** Lets the models do their waiting work in the background: goal choices first, they are short. */
@@ -540,6 +542,34 @@ export class Engine {
     await this.runChronicler()
     await this.runOutlines()
     await this.runFarPlaces()
+    await this.runDistricts()
+  }
+
+  /** Districts of far towns waiting for the chronicler's words (M10.21), one at a time. */
+  async runDistricts(): Promise<void> {
+    if (this.outlining) return
+    this.outlining = true
+    try {
+      const g = this.state.growth
+      while (g?.districtPending?.length) {
+        const key = g.districtPending[0]!
+        const [topic, id] = key.split(':') as [string, string]
+        const llm = this.llm
+        let words: DistrictWords | null = null
+        if (llm) {
+          try {
+            words = districtWords((await llm.complete({ ...districtRequest(this.world, key), priority: 'low' })).text)
+          } catch {
+            words = null
+          }
+        }
+        if (!g.districtPending.includes(key)) continue
+        this.record({ t: this.world.now, k: 'district', key, v: words })
+        if (!applyDistrict(this.world, topic, id, words)) g.districtPending = g.districtPending.filter((k) => k !== key)
+      }
+    } finally {
+      this.outlining = false
+    }
   }
 
   /** Far places waiting for the chronicler's words to be made playable (M9.1), one at a time. */
@@ -850,6 +880,14 @@ export class Engine {
     // A fight in front of the stranger (M10.3, left over): this move answers it first.
     const brawl = this.brawlMove(spoken)
     const outputs = brawl?.done ? brawl.out : [...(brawl?.out ?? []), ...(quest ?? (this.state.combat ? await this.inFight(text) : await this.route(text)))]
+    // A far town grows by district (M10.21): the first when the stranger does something there (buys, asks,
+    // rents a bed, says something in a talk), another when they go into it by its street.
+    const doing = !outputs.some((o) => o.kind === 'error') && (/^(?:buy|sell|rent|ask|tell|order|trade|haggle|work|take lodgings?|lodge)\b/i.test(text) || Boolean(talkBefore && this.state.talk))
+    const due = this.state.combat ? undefined : districtDue(this.world, doing)
+    if (due) {
+      const line = wantDistrict(this.world, due.topic, due.id)
+      if (line) outputs.push({ kind: 'system', text: line })
+    }
     const talk = this.state.talk
     if (talk && this.state.npcs[talk.npc]?.location !== this.state.player.location) this.state.talk = undefined
     this.dialogue.learn(this.state.player.location, areaTopicId(this.content, this.world.location(this.state.player.location).area))
@@ -1672,6 +1710,10 @@ export class Engine {
         } else if (entry.k === 'far') {
           this.log.push(entry)
           applyFarPlace(this.world, entry.topic, entry.v)
+        } else if (entry.k === 'district') {
+          this.log.push(entry)
+          const [topic, id] = entry.key.split(':') as [string, string]
+          applyDistrict(this.world, topic, id, entry.v)
         }
       }
     } finally {

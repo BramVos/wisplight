@@ -100,11 +100,28 @@ export class MockLlm implements LlmClient {
             ? this.outline(String(request.meta?.['name'] ?? 'the place'))
             : request.schemaName === 'far_place'
             ? this.farPlace(String(request.meta?.['name'] ?? 'the place'), (request.meta?.['named'] as { key: string; name: string; pronoun: string }[] | undefined) ?? [])
+            : request.schemaName === 'district'
+            ? this.district(String(request.meta?.['town'] ?? 'the town'), String(request.meta?.['name'] ?? 'the district'))
             : request.schemaName === 'legends'
             ? this.legends((request.meta?.['legends'] as string[] | undefined) ?? [])
             : this.chronicler(request.meta as unknown as ChronicleMeta, request.prompt)
           : this.other(request)
     return { text, provider: 'mock', model: 'mock-1', usage: { inputTokens: Math.round((request.system.length + request.prompt.length) / 4), outputTokens: Math.round(text.length / 4), cachedTokens: 0 }, latencyMs: 1 }
+  }
+
+  /** A district of a far town (M10.21): two places and two people, in the words a chronicler might use; invalid words in 'invalid' mode. */
+  district(town: string, name: string): string {
+    if (this.mode === 'invalid') return JSON.stringify({ places: [{ key: 'x', name: 'X', description: 'Too short.' }], people: [{ key: 'y', name: 'nobody', pronoun: 'it', looks: '', speech: '', fact: '', trade: 'none', at: 'x' }] })
+    return JSON.stringify({
+      places: [
+        { key: 'chandlery', name: 'The Chandlery', description: `You step into a chandler's shop in ${name} of ${town}, hung with rope, lanterns and tarred canvas. It smells of pitch and lamp oil. A boy sweeps shavings towards the door. The street is back the way you came.` },
+        { key: 'yard', name: 'The Cooper\'s Yard', near: 'chandlery', description: 'You stand in a yard stacked with barrels, some new and pale, some black with age. Somewhere a mallet knocks hoops onto a cask, steady as a clock. Rain has left puddles between the staves. The chandlery is back through the gate.' },
+      ],
+      people: [
+        { key: 'hester', name: 'Hester Vlieland', pronoun: 'she', looks: 'A square woman with a pencil behind her ear and tar on her cuffs.', speech: 'short, counts aloud', fact: 'Hester keeps the chandlery and knows every ship that owes her money.', trade: 'merchant', at: 'chandlery' },
+        { key: 'joris', name: 'Joris Kuipers', pronoun: 'he', looks: 'A broad man in a leather apron, with sawdust in his beard.', speech: 'slow, friendly', fact: 'Joris makes the best casks in the quarter, and says so.', trade: 'merchant', at: 'yard' },
+      ],
+    })
   }
 
   /** A voice kit proposal (M10.10): the kit as it stands, or a small one for each faith of the world. */

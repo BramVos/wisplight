@@ -98,6 +98,15 @@ Oude Zijl H========= Veenhoek o==. . . . . . .:::. . . . . .
 
 Levels: under the ground, ground level, the crowns.
 
+### Far places
+
+| Place | What people know | Districts |
+| --- | --- | --- |
+| Graafhaven | Graafhaven is the capital, a day west by barge along the Graafse Vaart, where the Count lives and the Brandaris burns every night. | the Dyke Gate and the fish market: Where the road from the fen comes in under the Great Dyke, with the fish market below the walls and an inn for carters and bargemen. the guild houses: Tall guild houses round a square, where the Cog League's money is counted and lent, and everything costs double. the Count's court: The Graafshof behind its own wall: clerks, guards and petitioners waiting in the rain for Count Aelbrecht III. the Brandaris: The lighthouse of the Lantern Church on the dyke, where Brand's lantern burns every night and the church keeps its books. the harbour: Quays and warehouses by the grey sea; on storm nights, they say, the bells of the quarter that drowned in the Night of the Waterwolf ring under the water. |
+| Hunnenloo | Hunnenloo is a town far away on the heath, among the giant-beds and the sheep. |  |
+| Stavermouth | Stavermouth is a silting port far up north, past the Zuyder Mere. | the silted harbour: A harbour behind the Vrouwezand, half dry at low water, with empty warehouses and an inn that remembers better days. the Vrouwezand: The sandbank that grew from a shipload of grain thrown into the sea; at low water, they say, the Lady still walks it and begs for one grain. |
+| Zwolderkamp | Zwolderkamp is the merchant city of the Cog League, two days east by road. The Count owes them money. | the west gate and the market: Where the Oostweg comes in, with the market of lamp oil, nails and sailcloth, and an inn for the carters of the League. the warehouses on the Yssel: Brick warehouses along the river, where the League's goods come and go and everything costs a fifth more than at home. the ropewalk: The long ropewalk by the walls, where at night, they say, the ghost of a ropemaker counts the fathoms. |
+
 ## 3. History and lore
 
 | Topic | What people know |

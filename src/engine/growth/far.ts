@@ -102,13 +102,15 @@ export function withFarPlaces(content: Content, state: GameState): Content {
  * the settlement it trades with), or else the edge nearest to it.
  */
 function edgeTowards(world: World, pos: readonly [number, number], outland?: string): { from: string; direction: Direction; km: number } | undefined {
-  const edges = [...world.content.locations.values()].filter((l) => l.tags.includes('edge') && l.pos).sort((a, b) => a.id.localeCompare(b.id))
+  // A place at the edge lies where it says, or where its area does (M10.21: Oude Zijl's sluice has no pos of its own, and the road to Graafhaven left from the Blackmere).
+  const at = (l: { pos?: readonly [number, number]; area: string }) => l.pos ?? world.content.areas.get(l.area)?.pos
+  const edges = [...world.content.locations.values()].filter((l) => l.tags.includes('edge') && at(l)).sort((a, b) => a.id.localeCompare(b.id))
   const routes = [...world.content.routes.values()].filter((r) => outland && r.from === outland)
   const trade = edges.filter((l) => routes.some((r) => r.toll?.at === l.id || r.to === l.area))
-  const near = (trade.length ? trade : edges).sort((a, b) => Math.hypot(a.pos![0] - pos[0], a.pos![1] - pos[1]) - Math.hypot(b.pos![0] - pos[0], b.pos![1] - pos[1]))
+  const near = (trade.length ? trade : edges).sort((a, b) => Math.hypot(at(a)![0] - pos[0], at(a)![1] - pos[1]) - Math.hypot(at(b)![0] - pos[0], at(b)![1] - pos[1]))
   for (const edge of near) {
-    const dx = pos[0] - edge.pos![0]
-    const dy = pos[1] - edge.pos![1]
+    const dx = pos[0] - at(edge)![0]
+    const dy = pos[1] - at(edge)![1]
     // The map's y runs south.
     const angle = (Math.atan2(dx, -dy) * 180) / Math.PI
     const winds: Direction[] = ['north', 'northeast', 'east', 'southeast', 'south', 'southwest', 'west', 'northwest']
@@ -123,7 +125,7 @@ function edgeTowards(world: World, pos: readonly [number, number], outland?: str
 }
 
 /** Ids for what the game makes: never one the world has, or ever had. */
-function freeId(world: World, stem: string, taken: Set<string>): string {
+export function freeId(world: World, stem: string, taken: Set<string>): string {
   const locked = lockedIds(world.base)
   const used = (id: string) => taken.has(id) || locked.has(id) || world.content.locations.has(id) || world.content.npcs.has(id) || world.content.areas.has(id)
   let id = stem
@@ -135,7 +137,7 @@ function freeId(world: World, stem: string, taken: Set<string>): string {
 const sentences = (text: string) => text.split(/(?<=[.!?])\s+/).filter((s) => s.trim()).length
 
 /** A description as the content rules want it: three to five sentences, in the second person. */
-function fitsRoom(text: string | undefined): text is string {
+export function fitsRoom(text: string | undefined): text is string {
   return Boolean(text && sentences(text) >= 3 && sentences(text) <= 5 && /\byou\b/i.test(text) && text.length < 900)
 }
 

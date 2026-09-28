@@ -244,6 +244,9 @@ A list; each has:
 | audience | a map of names to number | no | {} |
 | fame | number | no | 2 |
 | known_by | list of text | no | [] |
+| districts | list of a map: id, name, line | no | [] |
+
+`districts` (a far town, kind place): its quarters as the world book names them, each with an id, a name and a line; the first is where the stranger comes in. The game makes the first playable when the stranger does something there (buys, asks, rents a bed), and each other when they go into it by its street; without a model from templates and the line.
 
 ## news (data/news.yaml)
 
