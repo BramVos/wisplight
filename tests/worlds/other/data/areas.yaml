@@ -1,0 +1,17 @@
+# The two parts of Deepwell. No map drawing: you get about by the exits
+# between places, and by the tram to the Ice Works.
+
+areas:
+  - id: deepwell_domes
+    name: the Domes
+    kind: hamlet
+    aliases: [the domes, domes, deepwell, the colony, the settlement]
+    fame: 2
+    summary: The pressure domes of Deepwell under the ice, where the colony lives, eats and sleeps.
+
+  - id: ice_works
+    name: the Ice Works
+    kind: wilderness
+    aliases: [the ice works, ice works, the works, the mine]
+    fame: 1
+    summary: The mine at the end of the tram line, where the colony cuts ice for water, air and fuel.

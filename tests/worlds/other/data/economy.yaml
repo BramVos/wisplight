@@ -1,0 +1,28 @@
+# The economy of Deepwell: one ledger for the Domes. The scrap heap gives Teo
+# his metal, the vats give Pell the stew, and the face gives the colony its ice.
+
+resources:
+  - { id: scrap_heap, name: the scrap heap behind the Fab Shop, gives: [scrap_metal], amount: 400 }
+  - { id: algae_vats, name: the algae vats under the Commons, gives: [algae_stew] }
+  - { id: ice_face, name: the ice of the cutting face, gives: [ice_core] }
+
+settlements:
+  - id: deepwell_domes
+    tags: [colony, mine]
+    people: 300
+    income: 10
+    resources: [scrap_heap, algae_vats]
+    use: { algae_stew: 10, ice_core: 6 }
+    keep: { algae_stew: 20, ration_bar: 30, scrap_metal: 6, ice_core: 12 }
+    workshops:
+      - { id: salvage, name: salvage from the scrap heap, at: loc_deepwell_fab_shop, from: scrap_heap, makes: { scrap_metal: 2 }, workers: 1, named: [npc_teo_marsh] }
+      - { id: vats, name: the algae vats, at: loc_deepwell_commons, from: algae_vats, makes: { algae_stew: 20 }, workers: 1, named: [npc_pell_ostrander] }
+
+  # The Ice Works: nobody lives there, but the cutters go out every morning on the tram.
+  - id: ice_works
+    tags: [mine]
+    people: 0
+    resources: [ice_face]
+    keep: { ice_core: 12 }
+    workshops:
+      - { id: cutting, name: cutting at the face, at: loc_deepwell_cutting_face, from: ice_face, makes: { ice_core: 8 }, workers: 2, named: [npc_ama_okafor] }

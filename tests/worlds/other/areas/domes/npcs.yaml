@@ -1,0 +1,108 @@
+# The people of Deepwell who matter to a stranger in the first days.
+
+npcs:
+  - id: npc_ilse_varga
+    name: Ilse Varga
+    short: Ilse the warden
+    pronoun: she
+    age: 49
+    profession: warden
+    home: loc_deepwell_bunks
+    work: loc_deepwell_warden_office
+    fame: 2
+    appearance: A compact woman with cropped grey hair, a thermal jacket with WARDEN on the back, and a pressure gauge clipped to her collar.
+    personality: { warmth: 0, courage: 2, honesty: 2, temper: 0, curiosity: 1, diligence: 2 }
+    values: { law: 3, community: 2 }
+    quirks: [checks_the_air]
+    speech: "Clipped and exact. Quotes air figures when she is worried. Swears by the ice."
+    aliases: [ilse, varga, warden, the warden]
+    public_facts:
+      - Ilse Varga is the warden of Deepwell, and keeps the rules and the air figures.
+      - She came down with the second shuttle, thirty years ago.
+    examples:
+      - "Air's at ninety-one percent. That's fine. That's fine for now."
+      - "You want work, you see Teo. You want trouble, you see me."
+    money: 400
+    knows_areas: [deepwell_domes, ice_works]
+    relations:
+      - to: npc_teo_marsh
+        role: friend
+        bond: 1
+        note: He keeps the scrubbers running, and you keep his temper in check.
+      - to: npc_ama_okafor
+        role: neighbour
+        bond: 1
+
+  - id: npc_teo_marsh
+    name: Teo Marsh
+    short: Teo the fabricator
+    pronoun: he
+    age: 37
+    profession: fabricator
+    home: loc_deepwell_bunks
+    work: loc_deepwell_fab_shop
+    fame: 1
+    appearance: A lanky man with burn scars on both forearms, a magnifier pushed up on his forehead and solder under every nail.
+    personality: { warmth: 1, courage: 0, honesty: 1, temper: 1, curiosity: 2, diligence: 2 }
+    values: { craft: 3, freedom: 1 }
+    quirks: [talks_to_machines]
+    speech: "Fast, half to himself. Calls every machine 'she' and every person 'friend'."
+    aliases: [teo, marsh, fabricator, the fabricator]
+    public_facts:
+      - Teo Marsh runs the Fab Shop, where anything broken in Deepwell ends up.
+      - He is always short of scrap metal.
+    examples:
+      - "Bring me scrap and I'll teach you to make a patch kit. Fair trade."
+      - "She's not broken, she's sulking. Different thing."
+    money: 150
+    inventory: { scrap_metal: 3 }
+    knows_areas: [deepwell_domes, ice_works]
+    relations:
+      - to: npc_ilse_varga
+        role: friend
+        bond: 1
+
+  - id: npc_ama_okafor
+    name: Ama Okafor
+    short: Ama the ice cutter
+    pronoun: she
+    age: 28
+    profession: ice_cutter
+    home: loc_deepwell_bunks
+    work: loc_deepwell_cutting_face
+    fame: 1
+    appearance: A broad-shouldered young woman in a padded suit with the hood down, her cheeks red from the cold.
+    personality: { warmth: 2, courage: 2, honesty: 1, temper: 1, curiosity: 1, diligence: 1 }
+    values: { family: 2, community: 2 }
+    quirks: [hums_while_working]
+    speech: "Loud and cheerful, full of cutter slang. Swears by the ship."
+    aliases: [ama, okafor, cutter, ice cutter]
+    public_facts:
+      - Ama Okafor cuts ice at the Works, and takes the first tram every morning.
+    examples:
+      - "First run's at six. Miss it and you walk, and nobody walks twice."
+      - "By the ship, it's cold at the face today."
+    money: 60
+    knows_areas: [deepwell_domes, ice_works]
+
+  - id: npc_pell_ostrander
+    name: Pell Ostrander
+    short: Pell of the canteen
+    pronoun: they
+    age: 55
+    profession: cook
+    home: loc_deepwell_bunks
+    work: loc_deepwell_commons
+    fame: 1
+    appearance: A round, soft-spoken person in a stained apron, with a ladle in one hand and a tablet of ration counts in the other.
+    personality: { warmth: 2, courage: 0, honesty: 2, temper: -1, curiosity: 1, diligence: 2 }
+    values: { community: 3 }
+    quirks: [counts_rations]
+    speech: "Gentle and precise. Knows what everyone ate yesterday."
+    aliases: [pell, ostrander, cook, the cook, canteen]
+    public_facts:
+      - Pell Ostrander keeps the canteen in the Commons, and knows everyone in Deepwell by their order.
+    examples:
+      - "Stew's two chits. Bar's one. Water's free, and don't let anyone tell you otherwise."
+    money: 200
+    knows_areas: [deepwell_domes]

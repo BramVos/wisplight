@@ -1,0 +1,7 @@
+# The one watcher of Deepwell: warm towards the stranger for three days, with
+# something shared, and they are a friend. Its aftermath is in aftermath.yaml.
+
+watchers:
+  - id: befriended
+    signal: befriended
+    probe: { befriended: 3 }

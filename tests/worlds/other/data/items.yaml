@@ -1,0 +1,41 @@
+# Things in Deepwell. Prices are in chits (1 credit = 20 chits).
+
+items:
+  - id: ration_bar
+    name: ration bar
+    plural: ration bars
+    description: A dense brown bar in a foil wrapper, stamped with a batch number and a date nobody believes.
+    aliases: [bar, ration, rations, bars]
+    tags: [food]
+    value: 1
+    food: 20
+
+  - id: algae_stew
+    name: bowl of algae stew
+    plural: bowls of algae stew
+    description: Green, warm and filling, with a taste somewhere between spinach and the sea.
+    aliases: [stew, algae stew, bowl]
+    tags: [food]
+    value: 2
+    food: 40
+
+  - id: scrap_metal
+    name: piece of scrap metal
+    plural: pieces of scrap metal
+    description: A bent strip of hull alloy, good for something once, good for something again.
+    aliases: [scrap, scrap metal, metal]
+    value: 2
+
+  - id: patch_kit
+    name: patch kit
+    plural: patch kits
+    description: A flat tin with a sealant tube and three alloy patches, for a suit or a seal that has started to hiss.
+    aliases: [patch, kit, patch kits]
+    value: 8
+
+  - id: ice_core
+    name: ice core
+    plural: ice cores
+    description: A cylinder of blue-white ice as long as your forearm, cut clean from the face and already sweating.
+    aliases: [core, ice, cores]
+    value: 3

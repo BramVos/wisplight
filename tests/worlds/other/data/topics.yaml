@@ -1,0 +1,25 @@
+# What people in Deepwell can talk about.
+
+topics:
+  - id: long_patience
+    name: the Long Patience
+    kind: lore
+    aliases: [long patience, the long patience, the ship, colony ship, landfall]
+    everywhere: true
+    fame: 4
+    summary: The colony ship that brought the first settlers to Vessa, a hundred and forty years ago, and whose hull is still the heart of the Domes.
+    details: The Long Patience set down on the ice and never took off again. Her reactor still powers the Domes, and her hull plates are in every wall. People swear by her.
+    story: |
+      She came down slow, my gran said, slow as a snowflake, and the ice took her weight and held. Nobody ever meant to stay this long. But the reactor was good and the ice was full of water, and here we are. You're standing in her, more or less. Every plate you lean on was her skin once.
+    teller: npc_pell_ostrander
+    known_by: [npc_pell_ostrander, npc_ilse_varga]
+
+  - id: the_quota
+    name: the ice quota
+    kind: lore
+    aliases: [quota, the quota, ice quota, the cut]
+    origin: ice_works
+    fame: 2
+    summary: The Works has been short of its quota for weeks, and nobody in Deepwell says why.
+    details: The face is cutting slower than it should; the saws are old and the ice further in is harder. If the cut stays short, the melt tanks run low before the next shuttle.
+    known_by: [npc_ama_okafor, npc_ilse_varga]

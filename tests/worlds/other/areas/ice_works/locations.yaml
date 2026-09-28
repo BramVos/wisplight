@@ -1,0 +1,58 @@
+# The Ice Works: the end of the tram line, where Deepwell cuts its ice.
+
+locations:
+  - id: loc_deepwell_works_platform
+    name: The Works Platform
+    area: ice_works
+    tags: [public, route, edge]
+    aliases: [works platform, platform, tram stop, the works]
+    summary: The tram platform at the Ice Works, at the end of the line.
+    description:
+      day: |
+        The rail ends here against a buffer of packed ice, and the platform
+        opens into a hall full of sleds and hoses. Your breath smokes, and the
+        cold gets in through the seams of your clothes. A board lists the
+        day's cut in tonnes. The cutting face is further in; the service
+        tunnel runs back west to the Domes.
+    exits:
+      in: { to: loc_deepwell_cutting_face, minutes: 5 }
+      west: { to: loc_deepwell_platform, minutes: 150 }
+    details:
+      - words: [board, cut, tonnes]
+        look: A board with the day's cut chalked up in tonnes, and a target underlined twice. The cut is short of it.
+        verbs:
+          read: The day's cut, in tonnes, and a target underlined twice. The cut is short of it.
+      - words: [buffer, packed ice]
+        look: A buffer of packed ice at the end of the rail, dented where a tram came in too fast once.
+      - words: [hall]
+        look: A long hall cut out of the ice, with a roof of steel ribs and a floor of grit to stop the sleds sliding.
+      - words: [sleds, hoses]
+        look: Cargo sleds and coiled hoses, waiting for the ice to be cut.
+        take: They are the colony's, and far too heavy.
+
+  - id: loc_deepwell_cutting_face
+    name: The Cutting Face
+    area: ice_works
+    tags: [wilderness, workshop, hazard:cold]
+    aliases: [cutting face, the face, ice face, the mine]
+    summary: The wall of ice where the cutters work, lit by floodlamps.
+    description:
+      day: |
+        A wall of blue-white ice rises into the dark, scored with the tracks
+        of the cutters, and floodlamps throw your shadow huge across it. The
+        whine of a saw fills your ears, stops, and starts again. Chips of ice
+        crunch under your boots. The platform is back out.
+    exits:
+      out: { to: loc_deepwell_works_platform, minutes: 5 }
+    objects:
+      - { id: ice_saw, type: ice_saw }
+    details:
+      - words: [wall, ice, face]
+        look: Blue-white ice, clear in places to a depth you cannot guess. Old bubbles hang in it like frozen breath.
+        verbs:
+          climb: The ice is sheer and wet where the saw has been. You keep your boots on the floor.
+      - words: [floodlamps, lamps]
+        look: Floodlamps on poles, humming, with frost on their cages.
+      - words: [chips, chips of ice]
+        look: Chips of ice from the saw, crunching underfoot.
+        take: You pick up a chip and it melts in your glove. Real ice comes out in cores.

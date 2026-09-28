@@ -1,0 +1,13 @@
+# What follows a signal in Deepwell. One, for the one watcher.
+
+aftermath:
+  - id: befriended
+    signal: befriended
+    about: first
+    topic: friendship
+    expires: 1
+    steps:
+      - id: tie
+        do: { set_tie: [$a, player], role: friend, bond: 2 }
+      - id: mind
+        do: { thought: $a, text: "The stranger is a friend of yours now.", days: 14 }

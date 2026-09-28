@@ -1,0 +1,67 @@
+# Deepwell (M10.17): a test world that shares nothing with the Nethermarch
+# but the engine. Science fiction: a mining colony under the ice of Vessa, a
+# moon of the gas giant Oru, a hundred and forty years after Landfall. A week
+# of ten days, credits and chits for money, no faith, no weather under the
+# dome, and a maglev tram for transport. Small on purpose: what a world must
+# have, and what it may leave out.
+
+world:
+  id: deepwell
+  name: Deepwell
+  start:
+    location: loc_deepwell_airlock
+    year: 140
+    month: 8      # Thaw
+    day: 12
+    hour: 9
+    minute: 0
+  player:
+    money: 90     # 4 cr 10 ch: what was left on your transit card
+    inventory:
+      ration_bar: 2
+  # The names the game's own texts use for this world.
+  words:
+    land: the Oru system
+    region: Deepwell
+    from: the inner worlds
+  # No faith: nobody in Deepwell prays, and nobody swears by a god.
+  faiths: []
+  law:
+    where: in Deepwell
+    officer: warden
+    npc: npc_ilse_varga
+    office: loc_deepwell_warden_office
+  calendar:
+    era: AL
+    months: [Ignition, Burn, Coast, Approach, Capture, Descent, Landfall, Thaw, Drill, Yield, Refit, Longdark, Blackout Days]
+    weekdays: [Unday, Duoday, Triday, Quartday, Quintday, Sextday, Septday, Octday, Nonday, Decday]
+  money:
+    units:
+      - { short: cr, name: credit, value: 20 }
+      - { short: ch, name: chit, value: 1 }
+  # The fixed block every model call gets about this world.
+  frame: |
+    WORLD: The Oru system, far out from the inner worlds. Year 140 After Landfall, when the colony
+    ship Long Patience set down on Vessa, an ice moon of the gas giant Oru. No faster-than-light
+    travel, no aliens, no magic: pressure, cold, air and power are what matter. Money: credits and
+    chits (1 credit = 20 chits). There is no faith in Deepwell; people swear by the ship, the air
+    and the ice.
+    REGION: Deepwell, a mining colony of a few hundred people in pressure domes under the ice,
+    linked by tunnels and a maglev tram to the Ice Works. The last supply shuttle brought the stranger,
+    with a transit card and not much else.
+    PEOPLE speak plain English, clipped and practical, with shift-worker slang. They count time in
+    shifts and tram runs.
+  pictures:
+    style: A small illustration in the manner of a technical sketch, fine ink lines with a cold blue and amber wash, pressure domes under a ceiling of ice.
+  intro: |
+    The shuttle hatch sighs open, and the cold comes in before the light
+    does. You follow the other passengers down a ribbed gangway into an
+    airlock that smells of metal and old air.
+
+    Somewhere beyond the inner door a tram hums along its rail, and a voice
+    on a speaker reads out a list of shift numbers nobody listens to.
+
+    This is Deepwell, under the ice of Vessa. You came here for work, and
+    nobody has told you where to find it yet.
+
+    Type LOOK to look around. Type HELP if you are lost.

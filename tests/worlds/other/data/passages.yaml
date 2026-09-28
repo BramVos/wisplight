@@ -1,0 +1,22 @@
+# The one line of transport in Deepwell (M10.12): the maglev tram from the
+# Domes to the Ice Works, nine days out of ten.
+
+passages:
+  - id: works_tram
+    name: the Works tram
+    kind: maglev tram
+    aliases: [the tram, tram, maglev, the maglev, works tram]
+    stops: [loc_deepwell_platform, loc_deepwell_works_platform]
+    days: [Unday, Duoday, Triday, Quartday, Quintday, Sextday, Septday, Octday, Nonday]
+    hours: "06-22"
+    fare: 3
+    legs: { "loc_deepwell_platform>loc_deepwell_works_platform": 25 }
+    water: false
+    crew: conductor
+    text: "You tap your card for {fare}, and the tram slides off along its rail. After {duration} it stops at {place}."
+    closed: The tram runs from six to ten at night, Unday to Nonday. On Decday nothing runs.
+    where: The tram leaves from the platform under the Commons.
+    sights:
+      - The tunnel walls slide past, blue ice and old bubbles, lit by a lamp every fifty paces.
+      - A cargo sled passes the other way on the service track, loaded with cores.
+      - For a moment the tunnel opens into a cavern, and far below something glitters.

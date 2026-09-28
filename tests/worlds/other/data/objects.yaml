@@ -1,0 +1,47 @@
+# Objects in Deepwell, and what people can do with them.
+
+object_types:
+  - id: water_tap
+    name: water tap
+    aliases: [tap, water, fountain]
+    description: A steel tap on a pipe from the melt tanks, with a cup on a chain. The water is cold and tastes faintly of metal.
+    affordances:
+      - id: drink
+        verb: drink
+        label: drinking
+        actors: [player, npc]
+        access: public
+        duration: 2
+        player_text: The water is ice-cold and tastes of metal, and it is free.
+
+  - id: fab_bench
+    name: fabrication bench
+    aliases: [bench, fab bench, workbench]
+    description: A heavy bench scarred with burns, with a vice, a torch on a hose and a tray of tools.
+    affordances:
+      - id: make_patch_kit
+        verb: make
+        label: making patch kits
+        actors: [player, npc]
+        access: owner
+        craft: fabrication
+        technique: patch_kits
+        consumes: { scrap_metal: 2 }
+        produces: { patch_kit: 1 }
+        duration: 60
+        check: { dc: 12 }
+        xp: 5
+        player_text: You cut the scrap into patches, file the edges smooth and pack them in a tin with a tube of sealant.
+
+  - id: ice_saw
+    name: ice saw
+    aliases: [saw, cutter]
+    description: A long-armed saw on tracks, its blade as tall as you, with a cab for the cutter.
+    affordances:
+      - id: cut_ice
+        verb: cut
+        label: cutting ice
+        actors: [npc]
+        access: owner
+        produces: { ice_core: 4 }
+        duration: 180

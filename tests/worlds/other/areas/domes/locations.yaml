@@ -1,0 +1,175 @@
+# The Domes of Deepwell: where the colony lives, eats, sleeps and keeps the law.
+
+locations:
+  - id: loc_deepwell_airlock
+    name: The Shuttle Airlock
+    area: deepwell_domes
+    tags: [public, landmark, edge]
+    aliases: [airlock, the airlock, shuttle bay, gangway]
+    summary: The airlock where the supply shuttle docks, and where everyone new to Deepwell comes in.
+    description:
+      day: |
+        You stand in a ribbed steel airlock big enough for a cargo sled, its
+        walls furred with frost where the outer door meets the frame. The air
+        smells of metal and of other people's breath, used many times. A
+        faded poster of the [Long Patience] is taped beside the inner door. The
+        inner door opens east onto the Commons.
+    exits:
+      east: { to: loc_deepwell_commons, minutes: 1 }
+    details:
+      - words: [poster, faded poster, ship]
+        look: A faded poster of the Long Patience against a field of stars, with FROM THE INNER WORLDS TO VESSA printed along the bottom and a coffee ring over one engine.
+        take: It is taped to the wall, and somebody has kept it there for years.
+        verbs:
+          read: FROM THE INNER WORLDS TO VESSA, in letters worn almost white.
+      - words: [frost, outer door]
+        look: Frost furs the seam of the outer door, where the cold of the moon leans against the steel.
+
+  - id: loc_deepwell_commons
+    name: The Commons
+    area: deepwell_domes
+    tags: [public, social]
+    aliases: [commons, the commons, canteen, the canteen, mess, mess hall]
+    summary: The big central dome, where Deepwell eats, drinks and argues, with the canteen counter at one end.
+    description:
+      day: |
+        The Commons is a wide dome of ice held back by a mesh of steel, lit
+        by grow-lamps that turn everything faintly pink. Long tables fill the
+        floor, and a canteen counter runs along the back, where algae stew
+        steams in a heated trough. It smells of stew, coffee substitute and
+        warm plastic. The airlock is west, the bunks north, the Fab Shop east,
+        the warden's office south, and a stair goes down to the tram.
+      night: |
+        The grow-lamps are dimmed to a red glow, and the tables are empty but
+        for a cup or two. Somewhere a pump ticks in the wall. The bunks are
+        north; a stair goes down to the tram.
+    exits:
+      west: { to: loc_deepwell_airlock, minutes: 1 }
+      north: { to: loc_deepwell_bunks, minutes: 1 }
+      east: { to: loc_deepwell_fab_shop, minutes: 1 }
+      south: { to: loc_deepwell_warden_office, minutes: 1 }
+      down: { to: loc_deepwell_platform, minutes: 2 }
+    objects:
+      - { id: water_tap, type: water_tap }
+    services:
+      - id: canteen
+        provider: npc_pell_ostrander
+        hours: "06-22"
+        sells:
+          algae_stew: { stock: 20, target: 20 }
+          ration_bar: { stock: 30, target: 30 }
+        buys: [ice_core]
+        lodging: 12
+        supply:
+          - { item: algae_stew, amount: 20, every: day, at: 6 }
+          - { item: ration_bar, amount: 30, every: week, at: 6 }
+        demand:
+          - { item: algae_stew, amount: 8, from: 11, to: 20 }
+    details:
+      - words: [dome, ice, mesh, steel]
+        look: Above the lamps the dome is ice, grey-blue and very thick, held back by a mesh of steel. Where the mesh meets the floor, meltwater runs along a gutter.
+      - words: [grow-lamps, lamps]
+        look: Rows of grow-lamps hang from the mesh, meant for plants and used for people. Everyone in Deepwell looks a little pink.
+      - words: [tables, long tables]
+        look: Long tables of pressed fibre, bolted to the floor, with names and shift numbers scratched into them.
+      - words: [counter, trough, canteen counter]
+        look: A steel counter with a heated trough of algae stew and a rack of ration bars. Pell keeps it.
+      - words: [stair, stairs]
+        look: A steel stair spirals down through the floor to the tram platform, its treads worn bright in the middle.
+
+  - id: loc_deepwell_bunks
+    name: The Bunkrooms
+    area: deepwell_domes
+    tags: [private]
+    aliases: [bunks, bunkrooms, the bunks, dormitory, quarters]
+    summary: Rows of sleeping bunks in a low dome, where most of Deepwell sleeps in shifts.
+    description:
+      day: |
+        Bunks are stacked three high along a curving wall, each with a curtain
+        and a name card clipped to it. Half the curtains are drawn, and behind
+        them the day shift's night shift is snoring. The air is warm and close
+        and smells of socks. The Commons is south.
+    exits:
+      south: { to: loc_deepwell_commons, minutes: 1 }
+    details:
+      - words: [bunks, curtains, bunk]
+        look: Bunks three high, each with a curtain on a rail. Behind the drawn ones, somebody is sleeping off a shift.
+      - words: [wall, curving wall]
+        look: The curving wall of the dome, lined with insulation panels gone yellow with age. It is cold to the touch.
+      - words: [name card, name cards, cards]
+        look: A card clipped to each curtain with a name and a shift number. Some have been crossed out and written over more than once.
+        take: They are other people's cards, and other people's bunks.
+        verbs:
+          read: VARGA, WARDEN. MARSH, FAB. OKAFOR, ICE. OSTRANDER, CANTEEN. And a dozen more.
+
+  - id: loc_deepwell_fab_shop
+    name: The Fab Shop
+    area: deepwell_domes
+    tags: [workshop]
+    aliases: [fab shop, the fab shop, workshop, fabrication]
+    summary: Teo Marsh's workshop, where broken things are made to work again.
+    description:
+      day: |
+        Shelves of salvaged parts climb every wall of the Fab Shop, sorted
+        into bins with hand-written labels. A fabrication bench stands in the
+        middle under a hanging lamp, its surface scarred with burns. The air
+        tastes of hot solder and machine oil. The Commons is back to the west.
+    exits:
+      west: { to: loc_deepwell_commons, minutes: 1 }
+    objects:
+      - { id: fab_bench, type: fab_bench, owner: npc_teo_marsh }
+    details:
+      - words: [shelves, parts, bins, labels]
+        look: "Bins of salvaged parts from floor to ceiling, each labelled in marker: SEALS, VALVES, WIRE (GOOD), WIRE (BAD), and one just marked NO."
+        take: Every part is counted. Ask Teo, or make something at the bench.
+
+  - id: loc_deepwell_warden_office
+    name: The Warden's Office
+    area: deepwell_domes
+    tags: [private, law]
+    aliases: [warden's office, the office, office, warden]
+    summary: Where Ilse Varga keeps the colony's rules, its records and its one cell.
+    description:
+      day: |
+        A cramped office with a desk, a screen that flickers and a locker
+        marked EVIDENCE that nobody has opened in years. A single cell with a
+        steel door takes up one corner. It smells of coffee substitute and
+        disinfectant. The Commons is north.
+    exits:
+      north: { to: loc_deepwell_commons, minutes: 1 }
+    details:
+      - words: [desk, screen]
+        look: A desk with a flickering screen, showing the colony's air figures in green columns.
+        take: The screen is bolted to the desk, and the desk to the floor.
+      - words: [locker, evidence locker]
+        look: A grey locker stencilled EVIDENCE, with a seal across the door that nobody has broken in years.
+        verbs:
+          open: The seal is whole, and it is the warden's to break.
+      - words: [cell, steel door]
+        look: A single cell with a steel door and a bunk. It is empty.
+
+  - id: loc_deepwell_platform
+    name: The Dome Platform
+    area: deepwell_domes
+    tags: [public, route]
+    aliases: [platform, tram platform, the platform, tram stop]
+    summary: The tram platform under the Domes, where the maglev runs out to the Ice Works.
+    description:
+      day: |
+        A narrow platform runs beside a single rail in a tunnel cut through
+        the ice. When the tram is coming, the rail hums before you can see
+        anything. A timetable is painted on the wall in yellow. The stair goes
+        up to the Commons; a service tunnel runs east beside the rail, the
+        long way to the Ice Works on foot.
+    exits:
+      up: { to: loc_deepwell_commons, minutes: 2 }
+      east: { to: loc_deepwell_works_platform, minutes: 150 }
+    details:
+      - words: [timetable, yellow]
+        look: TRAM TO ICE WORKS, UNDAY TO NONDAY, 06 TO 22. FARE 3 CH. NO RUNS ON DECDAY. Someone has added AND DON'T ASK in marker.
+        verbs:
+          read: TRAM TO ICE WORKS, UNDAY TO NONDAY, 06 TO 22. FARE 3 CH. NO RUNS ON DECDAY.
+      - words: [rail, maglev]
+        look: A single rail of dark metal, cold enough to burn your hand. It hums when a tram is on the line.
+      - words: [service tunnel, tunnel]
+        look: A narrow service tunnel beside the rail, lit every fifty paces. Walking it to the Ice Works takes the best part of a shift.

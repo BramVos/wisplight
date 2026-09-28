@@ -1,0 +1,10 @@
+# The one craft of Deepwell: fabrication, learnt by doing at Teo's bench.
+
+crafts:
+  - id: fabrication
+    name: fabrication
+    maker: fabricator
+    skill: crafting
+    professions: [fabricator]
+    techniques:
+      - { id: patch_kits, name: patch kits }
