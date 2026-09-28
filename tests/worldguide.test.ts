@@ -39,6 +39,7 @@ describe('the guide for a new world', () => {
     expect(step('passages').prompt).toMatch(/hires/)
     expect(step('passages').fills.map((f) => f.kind)).toContain('journey')
     expect(step('calendar').fills).toContainEqual({ kind: 'world', keys: ['calendar', 'start', 'weather'] })
+    expect(step('calendar').prompt).toMatch(/start_weekday/)
     expect(step('palette').prompt).toMatch(/hex names/)
   })
 

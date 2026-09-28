@@ -88,13 +88,13 @@ export const WORLD_STEPS: readonly WorldStep[] = [
     skipped: 'The standard calendar, with the start as the builder made it, and no weather at all: no sky, no wind, nothing about it in the clock.',
     checks: [
       'There are exactly thirteen month names, all different.',
-      'Weekday names are all different; a week may have any number of days.',
+      'Weekday names are all different; a week may have any number of days; start_weekday, if given, is one of them.',
       'start.month is 1 to 13 and start.day fits the month (1 to 30, or 1 to 5 in the thirteenth).',
       'Market days, passage days and opening days elsewhere use these weekday names.',
       'With weather: seasons names a season for each of the thirteen months, every season has its chances, and lines (if any) say the sky in the world\'s own words.',
     ],
     prompt:
-      'STEP: THE CALENDAR AND THE WEATHER. Agree the era, the year, the months, the week and the weather with the designer. Propose in `world`: calendar (era, months as thirteen names, weekdays as the list of names), start (year, month, day, hour, minute of the first morning) and, only if there is weather, weather (seasons: one per month; chances per season; stay; prevailing wind; readers: the professions that read the sky; and lines, per kind of weather one sentence or a day and a night sentence, in the world\'s own words). The year arithmetic is fixed: twelve months of thirty days and a thirteenth of five. Leave weather out for a world under a dome or on a ship: it then has none.',
+      'STEP: THE CALENDAR AND THE WEATHER. Agree the era, the year, the months, the week and the weather with the designer. Propose in `world`: calendar (era, months as thirteen names, weekdays as the list of names, and start_weekday: the weekday of the first morning; left out, the story starts on the first day of the week), start (year, month, day, hour, minute of the first morning) and, only if there is weather, weather (seasons: one per month; chances per season; stay; prevailing wind; readers: the professions that read the sky; and lines, per kind of weather one sentence or a day and a night sentence, in the world\'s own words). The year arithmetic is fixed: twelve months of thirty days and a thirteenth of five. Leave weather out for a world under a dome or on a ship: it then has none.',
   },
   {
     id: 'money',
