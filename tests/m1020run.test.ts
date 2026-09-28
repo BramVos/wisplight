@@ -2,7 +2,7 @@ import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterAll, describe, expect, it } from 'vitest'
-import { draftResult, LlmError, newWorldFiles, WORLD_STEPS, worldStepRequest, type LlmRequest } from '../src/engine'
+import { draftResult, LlmError, mergeFix, newWorldFiles, readDraft, WORLD_STEPS, worldFixRequest, worldStepRequest, type LlmRequest } from '../src/engine'
 import { WEATHER_KINDS } from '../src/engine/weather'
 import { CostRegister } from '../src/node/ai/costs'
 import { Gateway } from '../src/node/ai/gateway'
@@ -69,6 +69,29 @@ describe('M10.20: the real run of a world', () => {
     const workshop = result.content!.locations.get('loc_workshop')!
     expect(workshop.exits).toMatchObject({ west: { to: 'loc_arrival_lock', minutes: 5 }, northwest: { to: 'loc_commons', minutes: 4 } })
     expect(result.content!.locations.get('loc_commons')!.exits).toMatchObject({ south: { to: 'loc_arrival_lock', minutes: 2 } })
+  })
+
+  it('puts right a proposal that did not load, with only what the chronicler corrects', () => {
+    const files = newWorldFiles('quietreach', 'The Quiet Reach')
+    const topic = (id: string, summary: string) => ({ kind: 'topic' as const, id, yaml: `id: ${id}\nname: ${id}\nkind: lore\nsummary: ${summary}\n` })
+    // One good topic, one with a line of YAML that does not read (People, try 2 of the real run).
+    const answer = JSON.stringify({ say: 'Two things people talk about.', questions: ['Is that right?'], changes: [topic('winter_supplies', 'Whether the stores last the winter.'), topic('night_of_the_open_door', 'The night: the door stood open.')], world: '', files: [] })
+    const draft = readDraft(files, answer)
+    expect(draft.problems.join()).toMatch(/night_of_the_open_door: Nested mappings/)
+    const request = worldFixRequest(files, 'people', 'Six people.', draft, draft.problems)
+    expect(request.prompt).toContain('--- topic winter_supplies')
+    expect(request.prompt).toMatch(/WHY IT DID NOT LOAD:\n- night_of_the_open_door: Nested mappings/)
+    expect(request.system).toContain('Correct only what the problems name')
+    expect(request.meta?.['fix']).toEqual(draft.problems)
+    // The chronicler sends back only the topic it corrects.
+    const fixed = mergeFix(files, draft, JSON.stringify({ say: 'Quoted the summary.', questions: [], changes: [topic('night_of_the_open_door', '"The night: the door stood open."')], world: '', files: [] }))
+    expect(fixed.problems).toEqual([])
+    expect(fixed.changes.map((c) => c.id)).toEqual(['winter_supplies', 'night_of_the_open_door'])
+    expect(fixed.say).toBe('Two things people talk about.\n\nPut right: Quoted the summary.')
+    expect(fixed.questions).toEqual(['Is that right?'])
+    expect(fixed.result?.content?.topics.get('night_of_the_open_door')?.summary).toBe('The night: the door stood open.')
+    // An answer out of form leaves the proposal as it was.
+    expect(mergeFix(files, draft, 'sorry').problems).toEqual(['The chronicler did not answer in the agreed form; the proposal is as it was.'])
   })
 
   it('counts a reply cut off at its limit in the budget and the log, with what it cost', async () => {

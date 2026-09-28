@@ -1184,7 +1184,7 @@ function ChroniclerPanel({ bridge, world, focus, initial, saved, open }: { bridg
 }
 
 /** A proposal of the chronicler: what it says and asks, what it changes as diffs, and accept or throw away. */
-function DraftView({ draft, busy, accept, drop }: { draft: EditorDraft; busy: boolean; accept: () => void; drop: () => void }) {
+function DraftView({ draft, busy, accept, drop, fix }: { draft: EditorDraft; busy: boolean; accept: () => void; drop: () => void; fix?: () => void }) {
   const parts = [
     ...draft.changes.map((c) => `${c.yaml.trim() ? '' : 'delete '}${c.kind.replace('_', ' ')} ${c.id}`),
     ...(draft.world ? [`world.yaml: ${Object.keys(parseEntityYaml(draft.world).raw ?? {}).join(', ')}`] : []),
@@ -1207,6 +1207,7 @@ function DraftView({ draft, busy, accept, drop }: { draft: EditorDraft; busy: bo
             {draft.problems.slice(0, 10).map((p) => (
               <li key={p}>{p}</li>
             ))}
+            {draft.problems.length > 10 && <li>and {draft.problems.length - 10} more</li>}
           </ul>
         </div>
       )}
@@ -1220,6 +1221,11 @@ function DraftView({ draft, busy, accept, drop }: { draft: EditorDraft; busy: bo
         {draft.diffs.length > 0 && draft.problems.length === 0 && (
           <button type="button" className="link" disabled={busy} onClick={accept}>
             [Accept and save]
+          </button>
+        )}
+        {fix && draft.problems.length > 0 && (draft.changes.length > 0 || draft.world) && (
+          <button type="button" className="link" disabled={busy} onClick={fix} title="The chronicler gets the problems and corrects only what they name">
+            [Let the chronicler put it right]
           </button>
         )}
         <button type="button" className="link" onClick={drop}>
@@ -1441,6 +1447,18 @@ function WorldSteps({ bridge, world, view, saved, existing = false }: { bridge: 
       setBusy(false)
     }
   }
+  // A proposal that did not load, put right (M10.20): only what the chronicler corrects is replaced.
+  const putRight = async () => {
+    if (!draft) return
+    setBusy(true)
+    try {
+      setDraft(await bridge.worldFix(world, step.id, askedFor || said.trim(), draft, draft.problems))
+    } catch (reason) {
+      setDraft({ ...draft, problems: [reason instanceof Error ? reason.message : String(reason), ...draft.problems] })
+    } finally {
+      setBusy(false)
+    }
+  }
   const accept = async () => {
     if (!draft) return
     setBusy(true)
@@ -1560,7 +1578,7 @@ function WorldSteps({ bridge, world, view, saved, existing = false }: { bridge: 
       </div>
       {draft && (
         <>
-          <DraftView draft={draft} busy={busy} accept={() => void accept()} drop={() => void drop()} />
+          <DraftView draft={draft} busy={busy} accept={() => void accept()} drop={() => void drop()} fix={() => void putRight()} />
           {!draft.problems.length && (
             <input className="small" value={why} onChange={(e) => setWhy(e.target.value)} placeholder="If you drop it or ask again: why? (optional, for the design log)" aria-label="Why you drop this proposal" />
           )}

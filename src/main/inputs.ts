@@ -54,6 +54,7 @@ export const INPUTS: Record<string, z.ZodType<unknown[]>> = {
   'editor:simulate': z.tuple([world, z.number().int().min(1).max(3650), z.number().finite()]),
   'editor:draft': z.tuple([world, text(100_000), z.object({ kind: z.enum(ENTITY_KINDS), id }).optional()]),
   'editor:world-step': z.tuple([world, text(200), text(100_000)]),
+  'editor:world-fix': z.tuple([world, text(200), text(100_000), data(5_000_000), z.array(text(2000)).max(500)]),
   'editor:enhance': z.tuple([world, text(200), text(100_000)]),
   'editor:design': z.tuple([world, data(200_000).optional()]),
   'editor:save-draft': z.tuple([world, data(5_000_000)]),

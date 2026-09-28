@@ -165,6 +165,8 @@ export class MockLlm implements LlmClient {
    */
   private worldStep(meta: Record<string, unknown>): string {
     if (this.mode === 'invalid') return 'Here is a lovely world for you.'
+    // Putting a proposal right (M10.20) takes a model: the mock corrects nothing, so the proposal stays as it was.
+    if (Array.isArray(meta['fix'])) return JSON.stringify({ say: 'Without a model nothing is put right.', questions: [], changes: [], world: '', files: [] })
     const said = String(meta['ask'] ?? '').trim()
     const facts = (meta['world'] as { name?: string; start?: string; startRaw?: Record<string, unknown>; ids?: Record<string, string[]> } | undefined) ?? {}
     const name = facts.name?.trim() || 'this world'

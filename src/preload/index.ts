@@ -71,6 +71,8 @@ contextBridge.exposeInMainWorld('wisplight', {
     proposeVoice: use('editor:propose-voice'),
     // Building a world step by step with the chronicler (M10.17), and saving a proposal with world keys and files.
     worldStep: use('editor:world-step'),
+    // A proposal that did not load, put right by the chronicler (M10.20): only what it corrects comes back.
+    worldFix: use('editor:world-fix'),
     // Enhance with AI: the answer to a step written out as a fuller brief (after M10.17).
     enhance: use('editor:enhance'),
     // The design log of a world (M10.18): read it, or write a note, an answer being written or a decision.

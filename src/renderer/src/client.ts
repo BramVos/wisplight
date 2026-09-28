@@ -152,6 +152,8 @@ export interface EditorBridge {
   worldBook(world: string): Promise<{ markdown: string; saved?: string }>
   /** One step of building a world with the chronicler (M10.17): its proposal, checked, nothing saved. */
   worldStep(world: string, step: string, said: string): Promise<EditorDraft>
+  /** A proposal that did not load, put right by the chronicler (M10.20): only what it corrects is replaced. */
+  worldFix(world: string, step: string, said: string, draft: Pick<EditorDraft, 'say' | 'questions' | 'changes' | 'world' | 'files'>, problems: string[]): Promise<EditorDraft>
   /** Enhance with AI (after M10.17): the designer's answer to a step written out as a fuller brief, with what only they can decide. */
   enhance(world: string, step: string, said: string): Promise<{ brief: string; open: string[]; problems: string[] }>
   /** The design log of a world (M10.18): as it stands, or after one change (a note, an answer being written, a decision). */
@@ -390,7 +392,7 @@ function contentFiles(): { path: string; text: string }[] {
  */
 export async function createEditor(): Promise<EditorBridge> {
   if (window.wisplight?.editor) return window.wisplight.editor
-  const { applyEdits, draftRequest, draftResult, editorView, entities, entityYaml, filesOfWorld, lineDiff, loadContent, MockLlm, newWorldFiles, paletteRequest, paletteView, readDraft, readPalette, readVoice, savePalette, saveVoice, simulate, voiceRequest, voiceYaml, withReturnExits, worldBook, worldBookHtml, worldsIn, worldStepRequest, enhanceRequest, readEnhance } = await import('../../engine')
+  const { applyEdits, draftRequest, draftResult, editorView, entities, entityYaml, filesOfWorld, lineDiff, loadContent, MockLlm, newWorldFiles, paletteRequest, paletteView, readDraft, readPalette, readVoice, savePalette, saveVoice, simulate, voiceRequest, voiceYaml, withReturnExits, worldBook, worldBookHtml, worldsIn, worldStepRequest, worldFixRequest, mergeFix, enhanceRequest, readEnhance } = await import('../../engine')
   let all = contentFiles()
   const shown = (changes: { path: string; before?: string; text: string }[]) => changes.map((c) => ({ path: c.path, fresh: c.before === undefined, lines: lineDiff(c.before ?? '', c.text) }))
   const shownDraft = (draft: ReturnType<typeof readDraft>): EditorDraft => ({
@@ -453,6 +455,10 @@ export async function createEditor(): Promise<EditorBridge> {
     worldStep: async (world, step, said) => {
       const files = filesOfWorld(all, world)
       return shownDraft(readDraft(files, (await new MockLlm().complete(worldStepRequest(files, step, said))).text))
+    },
+    worldFix: async (world, step, said, draft, problems) => {
+      const files = filesOfWorld(all, world)
+      return shownDraft(mergeFix(files, draft, (await new MockLlm().complete(worldFixRequest(files, step, said, draft, problems))).text))
     },
     enhance: async (world, step, said) => readEnhance((await new MockLlm().complete(enhanceRequest(filesOfWorld(all, world), step, said))).text),
     design: async (world, change) => {

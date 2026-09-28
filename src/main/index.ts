@@ -4,7 +4,7 @@ import { appendFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFi
 import { tmpdir } from 'node:os'
 import { basename, dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { ContentError, draftRequest, readSaveFile, saveAbout, saveFileName, saveFileText, SAVE_FILE_EXTENSION, type SaveFile, draftResult, Engine, worldBookHtml, ENTITY_KINDS, lineDiff, MapPaletteSchema, paletteRequest, paletteView, readDraft, readPalette, readVoice, savePalette, saveVoice, voiceRequest, voiceYaml, worldStepRequest, enhanceRequest, readEnhance, type Content, type Edit, type EntityKind, type FileChange, type CheckpointedSave, type MapPalette, type Output, type SaveData } from '../engine'
+import { ContentError, draftRequest, readSaveFile, saveAbout, saveFileName, saveFileText, SAVE_FILE_EXTENSION, type SaveFile, draftResult, Engine, worldBookHtml, ENTITY_KINDS, lineDiff, MapPaletteSchema, paletteRequest, paletteView, readDraft, readPalette, readVoice, savePalette, saveVoice, voiceRequest, voiceYaml, worldStepRequest, worldFixRequest, mergeFix, enhanceRequest, readEnhance, type Content, type Edit, type EntityKind, type FileChange, type CheckpointedSave, type MapPalette, type Output, type SaveData } from '../engine'
 import { designUpdate, readDesignChange } from '../engine/designlog'
 import { ContentEditor } from '../node/editor'
 import { checkInput } from './inputs'
@@ -634,6 +634,28 @@ handle('editor:world-step', async (_event, world: unknown, step: unknown, said: 
     return shownDraft(readDraft(files, (await llm.complete(worldStepRequest(files, String(step ?? ''), String(said ?? '').slice(0, 20000)))).text))
   } catch (error) {
     return { say: '', questions: [], changes: [], problems: [`The chronicler did not answer: ${error instanceof Error ? error.message : String(error)}`], diffs: [] }
+  }
+})
+// A proposal that did not load, put right (M10.20): the problems go back to the chronicler, and only what it corrects comes back.
+handle('editor:world-fix', async (_event, world: unknown, step: unknown, said: unknown, draft: unknown, problems: unknown) => {
+  devOnly()
+  await setup()
+  const llm = ai?.client()
+  const d = (draft && typeof draft === 'object' ? draft : {}) as { say?: unknown; questions?: unknown; changes?: unknown; world?: unknown; files?: unknown }
+  const proposal = {
+    say: String(d.say ?? ''),
+    questions: (Array.isArray(d.questions) ? d.questions : []).map(String),
+    changes: (Array.isArray(d.changes) ? d.changes : []).map((c: { kind?: unknown; id?: unknown; yaml?: unknown }) => ({ kind: kindOf(c.kind), id: String(c.id), yaml: String(c.yaml ?? '') })),
+    ...(typeof d.world === 'string' ? { world: d.world } : {}),
+    files: (Array.isArray(d.files) ? d.files : []).map((f: { path?: unknown; text?: unknown }) => ({ path: String(f.path ?? ''), text: String(f.text ?? '') })),
+  }
+  const why = (Array.isArray(problems) ? problems : []).map(String)
+  if (!llm) return { ...proposal, problems: ["The chronicler puts it right: connect a model in the game's Settings > AI first.", ...why], diffs: [] }
+  const files = await readContentFiles(contentDir(), worldOf(world))
+  try {
+    return shownDraft(mergeFix(files, proposal, (await llm.complete(worldFixRequest(files, String(step ?? ''), String(said ?? '').slice(0, 20000), proposal, why))).text))
+  } catch (error) {
+    return { ...proposal, problems: [`The chronicler did not answer: ${error instanceof Error ? error.message : String(error)}`, ...why], diffs: [] }
   }
 })
 // Enhance with AI (after M10.17): the designer's answer to a step, written out as a fuller brief; nothing is saved.
