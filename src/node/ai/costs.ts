@@ -84,6 +84,25 @@ export class CostRegister {
     return sum
   }
 
+  /**
+   * How long until a call of at most `bound` dollars fits in `budget` again,
+   * in milliseconds, as the oldest calls of the hour fall away (M10.20: "the
+   * hourly budget is used up" said nothing of when). Undefined when waiting
+   * will not do: the call alone costs more than the budget, or calls under
+   * way hold it.
+   */
+  roomInMs(bound: number, budget: number): number | undefined {
+    const since = this.now() - HOUR
+    const live = this.entries.filter((e) => e.t >= since).sort((a, b) => a.t - b.t)
+    let spent = live.reduce((sum, e) => sum + e.usd, 0) + this.reservedUsd()
+    if (spent + bound <= budget) return 0
+    for (const e of live) {
+      spent -= e.usd
+      if (spent + bound <= budget) return Math.max(0, e.t + HOUR - this.now())
+    }
+    return undefined
+  }
+
   /** Calls under way. */
   pending(): number {
     return this.reserved.size

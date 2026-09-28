@@ -5,6 +5,7 @@ import type { Content } from '../../engine/content'
 import type { LlmClient } from '../../engine/dialogue/llm'
 import { askAdvice, judgeTrials, testCall, trial, type Advice, type TrialResult, type TrialVerdict } from './advisor'
 import { CostRegister } from './costs'
+import { BuildStore } from './builds'
 import { type RoleActivity, Gateway, type GatewayStatus } from './gateway'
 import { AiLog, type AiLogEntry } from './log'
 import { createProvider, type ModelInfo, type Provider, type ProviderId } from './providers'
@@ -36,6 +37,8 @@ export class AiService {
   readonly usage: UsageStore
   readonly log: AiLog
   readonly gateway: Gateway
+  /** The budgets of world builds in the editor (M10.20). */
+  readonly builds: BuildStore
   private readonly providers = new Map<ProviderId, { key: string; provider: Provider }>()
   private readonly models = new Map<ProviderId, ModelInfo[]>()
   private readonly factory: (id: ProviderId, key: string) => Provider
@@ -47,6 +50,7 @@ export class AiService {
     this.settings = new SettingsStore(join(options.dir, 'settings.json'), options.cipher)
     this.usage = new UsageStore(join(options.dir, 'usage.json'))
     this.log = new AiLog(join(options.dir, 'logs', 'ai.jsonl'))
+    this.builds = new BuildStore(join(options.dir, 'builds.json'), () => this.settings.budgetUsdPerHour)
     this.factory = options.providerFactory ?? createProvider
     this.gateway = new Gateway({
       role: (role) => this.settings.role(role),
@@ -57,6 +61,7 @@ export class AiService {
       usage: this.usage,
       // The last hour's costs on disk (M9.3): the hourly budget holds after a restart.
       costs: new CostRegister(join(options.dir, 'costs.jsonl')),
+      builds: this.builds,
       onActivity: (activity) => this.onActivity?.(activity),
     })
   }

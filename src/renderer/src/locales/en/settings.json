@@ -87,6 +87,11 @@
       "label": "Budget per hour",
       "aria": "Budget per hour of play in dollars",
       "saved": "Budget saved.",
+      "adjusted": "Saved as ${usd} an hour: a budget is at least ${least} and at most ${most}, against a slip of the keyboard.",
+      "confirm": "Are you sure? This lets the app spend up to ${usd} an hour.",
+      "confirmAria": "Confirm a high hourly budget",
+      "yes": "Yes, save it",
+      "no": "No",
       "note": "At 80% the chronicler and the goals of NPCs without a quest role wait; at 100% dialogue falls back to set lines."
     },
     "replyWithin": {
@@ -94,6 +99,7 @@
       "aria": "How many seconds a spoken reply may take",
       "unit": "seconds",
       "saved": "Reply time saved.",
+      "adjusted": "Saved as {seconds} seconds: a reply may take from {least} to {most} seconds.",
       "note": "How long the dialogue model may take for a reply, both tries together. Past it, the game's own line stands in. Large models need about ten."
     }
   },

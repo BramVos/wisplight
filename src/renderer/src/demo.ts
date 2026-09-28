@@ -1,4 +1,5 @@
 import type { Content } from '../../engine'
+import { hourlyBudget, replyWithin } from '../../engine/aisettings'
 import { pictureSubject } from '../../engine/pictures'
 import type { LlmClient } from '../../engine/dialogue/llm'
 import { costUsd } from '../../node/ai/pricing'
@@ -197,10 +198,14 @@ export function demoBridge(_content: Content): AiBridge {
       return model
     },
     setBudget: async (usd) => {
-      state.budget = Math.max(0.01, Math.min(5, usd))
+      const kept = hourlyBudget(usd)
+      state.budget = kept.usd
+      return kept
     },
     setReplyWithin: async (seconds: number) => {
-      state.replyWithin = Math.round(Math.max(3, Math.min(60, seconds)))
+      const kept = replyWithin(seconds)
+      state.replyWithin = kept.seconds
+      return kept
     },
     setMonthBudget: async (usd) => {
       state.monthBudget = usd && usd > 0 ? usd : undefined

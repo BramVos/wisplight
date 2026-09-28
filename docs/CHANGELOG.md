@@ -10,12 +10,14 @@
 - **Lange hoofdstukken worden niet meer afgekapt** (tot 48.000 tokens, tien minuten, via streaming), en een afgekapt antwoord telt mee in het AI-logboek en het budget; eerst stond het er als $0.
 - **Het vervoer stuurt zijn reiszinnen mee** (`data/journey.yaml` mag in een voorstel), en **groepen sprekers hebben eigen uitroepen** naast die van hun geloof: technici zeggen "Hull and vacuum", het havenvolk van Skerrow "tar and twine".
 - **Het ontwerplogboek** zet een beslist antwoord niet meer terug onder "Answers".
+- **Je budget blijft je budget.** Het uurbudget nam stil hoogstens $5 over; nu blijft staan wat je instelt, met één vraag boven $20 per uur ("Are you sure? This lets the app spend up to $50 an hour.") en een grens van $1000 alleen tegen typfouten. Wordt een waarde toch aangepast (ook de antwoordtijd, 3 tot 60 seconden), dan zegt het scherm dat. "The hourly budget is used up" zegt nu over hoeveel minuten er weer ruimte is.
+- **Een eigen budget per wereldbouw.** Boven de stappen staat "This build may spend up to $...", standaard je uurbudget, met wat de bouw tot nu toe kostte, en bij elke stap wat die stap kostte. De stappen tellen daar en niet in het uurbudget van het spel, dus een bouw wacht niet meer en je spel ook niet. [Count from zero] begint opnieuw te tellen met dezelfde grens.
 
 Testen: open de editor, kies The Quiet Reach en blader door de stappen: elk staat op "saved", en het ontwerplogboek (`content/quietreach/DESIGN.md`) toont per stap wat er gevraagd, gezegd en besloten is. Speel The Quiet Reach: je begint in de Arrival Lock, de Commons ligt oostelijk. Het rapport noemt per stap wat je moet bekijken.
 
 Wat de editor en de kroniekverteller leerden: de precieze velden per stap (ook in het korte contract), `merge`, de herstelronde, `data/journey.yaml` als heel bestand, `oaths` op een stemgroep (in het contract, de stap Stem en `docs/NEW-WORLD.md`; Skerrow heeft er een, Deepwell houdt geen stemkit).
 
-Nog niet, en open onder M10.20: de startuitrusting van The Quiet Reach (de geldstap maakt geen dingen), patrons en doodsteksten in de regels, een wet zonder boete, een kaart (geen stap maakt die), paletsymbolen met eigen namen per wereld, een open voorstel dat een herstart overleeft, en het uurbudget: je zette $50, maar de app kapt stil af op $5. Kies of de wereldbouw buiten het uurbudget valt, een eigen grens krijgt of de grens omhoog gaat.
+Nog niet, en open onder M10.20: de startuitrusting van The Quiet Reach (de geldstap maakt geen dingen), patrons en doodsteksten in de regels, een wet zonder boete, een kaart (geen stap maakt die), paletsymbolen met eigen namen per wereld, en een open voorstel dat een herstart overleeft.
 
 ## M10.20 deel: het wereldboek en de saves, 28 september 2026
 

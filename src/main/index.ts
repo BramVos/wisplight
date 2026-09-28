@@ -669,6 +669,20 @@ handle('editor:world-fix', async (_event, world: unknown, step: unknown, said: u
     return { ...proposal, problems: [`The chronicler did not answer: ${error instanceof Error ? error.message : String(error)}`, ...why], diffs: [] }
   }
 })
+// What a world build may spend and has spent, per step (M10.20): read it, set the limit, or count from zero.
+handle('editor:build', async (_event, world: unknown, change: unknown) => {
+  devOnly()
+  await setup()
+  const w = worldOf(world)
+  const builds = service().builds
+  const c = (change && typeof change === 'object' ? change : {}) as { limit?: unknown; reset?: unknown }
+  if (c.reset === true) return { ...builds.reset(w), adjusted: false }
+  if (typeof c.limit === 'number') {
+    const set = builds.setLimit(w, c.limit)
+    return { ...set.view, adjusted: set.adjusted }
+  }
+  return { ...builds.view(w), adjusted: false }
+})
 // Enhance with AI (after M10.17): the designer's answer to a step, written out as a fuller brief; nothing is saved.
 handle('editor:enhance', async (_event, world: unknown, step: unknown, said: unknown) => {
   devOnly()

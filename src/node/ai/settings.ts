@@ -1,6 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs'
 import { dirname } from 'node:path'
 import type { LlmRole } from '../../engine/dialogue/llm'
+import { hourlyBudget, replyWithin } from '../../engine/aisettings'
 import type { ProviderId } from './providers'
 
 // Player settings. API keys are encrypted with the operating system's key
@@ -158,20 +159,25 @@ export class SettingsStore {
     return this.data.budgetUsdPerHour
   }
 
-  setBudget(usd: number): void {
-    this.data.budgetUsdPerHour = Math.max(0.01, Math.min(5, usd))
+  /** The player's hourly budget as they set it (M10.20): only a slip of the keyboard is caught, and then it says so. */
+  setBudget(usd: number): { usd: number; adjusted: boolean } {
+    const kept = hourlyBudget(usd)
+    this.data.budgetUsdPerHour = kept.usd
     this.write()
+    return kept
   }
 
   get replyWithinSeconds(): number {
     return this.data.replyWithinSeconds ?? REPLY_WITHIN_SECONDS
   }
 
-  /** From three seconds to a minute; past it, the game's own line stands in. */
-  setReplyWithin(seconds: number): void {
-    if (!Number.isFinite(seconds)) return
-    this.data.replyWithinSeconds = Math.round(Math.max(3, Math.min(60, seconds)))
+  /** From three seconds to a minute; past it, the game's own line stands in. Says when it had to change the value. */
+  setReplyWithin(seconds: number): { seconds: number; adjusted: boolean } {
+    const kept = replyWithin(seconds)
+    if (!Number.isFinite(seconds)) return { seconds: this.replyWithinSeconds, adjusted: true }
+    this.data.replyWithinSeconds = kept.seconds
     this.write()
+    return kept
   }
 
   summary(): SettingsSummary {

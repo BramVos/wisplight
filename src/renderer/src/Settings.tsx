@@ -3,6 +3,7 @@ import type { UsageTotals } from '../../node/ai/usage'
 import type { Advice, AiBridge, AiLogEntry, AiOverview, ModelInfo, ProviderId, TranscriptBridge, TrialResult } from './client'
 import { loadDisplay, saveDisplay, TEXT_SIZES, type Display } from './display'
 import { t, tn } from './i18n'
+import { BUDGET_CEILING_USD, BUDGET_CONFIRM_USD, BUDGET_FLOOR_USD, REPLY_WITHIN_SECONDS_RANGE } from '../../engine/aisettings'
 
 // Settings > AI, Usage and the AI log (FO, chapter 16). Keys are typed here,
 // sent to the main process once, and only ever shown masked afterwards.
@@ -221,6 +222,16 @@ function AiTab({ bridge, overview, refresh }: { bridge: AiBridge; overview: AiOv
   const [verdicts, setVerdicts] = useState<Partial<Record<Role, { chosen?: string; why: Record<string, { passed: boolean; why: string }> }>>>({})
   const [budget, setBudget] = useState(String(settings.budgetUsdPerHour))
   const [within, setWithin] = useState(String(settings.replyWithinSeconds ?? 10))
+  // A high hourly budget is asked about once before it is saved (M10.20); the player's value stands.
+  const [confirmBudget, setConfirmBudget] = useState(false)
+  const saveBudget = (usd: number) =>
+    void run(t('settings.ai.busyLabels.saving'), async () => {
+      setConfirmBudget(false)
+      const kept = await bridge.setBudget(usd)
+      await refresh()
+      setBudget(String(kept.usd))
+      setNote(kept.adjusted ? t('settings.ai.budget.adjusted', { usd: kept.usd, least: BUDGET_FLOOR_USD, most: BUDGET_CEILING_USD }) : t('settings.ai.budget.saved'))
+    })
 
   const connected = PROVIDERS.filter(({ id }) => settings.providers[id].configured)
   const options = connected.flatMap(({ id }) => (settings.models[id] ?? []).map((model) => ({ key: choiceKey(id, model), label: `${PROVIDER_NAMES[id]} · ${model}` })))
@@ -434,17 +445,49 @@ function AiTab({ bridge, overview, refresh }: { bridge: AiBridge; overview: AiOv
       <div className="row">
         <span className="label">{t('settings.ai.budget.label')}</span>
         <span>$</span>
-        <input className="amount" inputMode="decimal" value={budget} onChange={(event) => setBudget(event.target.value)} aria-label={t('settings.ai.budget.aria')} />
-        <button type="button" className="link" disabled={Boolean(busy) || !(Number(budget) > 0)} onClick={() => void run(t('settings.ai.busyLabels.saving'), async () => (await bridge.setBudget(Number(budget)), await refresh(), setNote(t('settings.ai.budget.saved'))))}>
+        <input
+          className="amount"
+          inputMode="decimal"
+          value={budget}
+          onChange={(event) => {
+            setBudget(event.target.value)
+            setConfirmBudget(false)
+          }}
+          aria-label={t('settings.ai.budget.aria')}
+        />
+        <button type="button" className="link" disabled={Boolean(busy) || !(Number(budget) > 0)} onClick={() => (Number(budget) > BUDGET_CONFIRM_USD && Number(budget) !== settings.budgetUsdPerHour ? setConfirmBudget(true) : saveBudget(Number(budget)))}>
           [{t('settings.ai.save')}]
         </button>
         <span className="muted">{t('settings.ai.budget.note')}</span>
       </div>
+      {confirmBudget && (
+        <div className="row warn small" role="alertdialog" aria-label={t('settings.ai.budget.confirmAria')}>
+          <span>{t('settings.ai.budget.confirm', { usd: Number(budget) })}</span>
+          <button type="button" className="link" disabled={Boolean(busy)} onClick={() => saveBudget(Number(budget))}>
+            [{t('settings.ai.budget.yes')}]
+          </button>
+          <button type="button" className="link" onClick={() => setConfirmBudget(false)}>
+            [{t('settings.ai.budget.no')}]
+          </button>
+        </div>
+      )}
       <div className="row">
         <span className="label">{t('settings.ai.replyWithin.label')}</span>
         <input className="amount" inputMode="numeric" value={within} onChange={(event) => setWithin(event.target.value)} aria-label={t('settings.ai.replyWithin.aria')} />
         <span>{t('settings.ai.replyWithin.unit')}</span>
-        <button type="button" className="link" disabled={Boolean(busy) || !(Number(within) > 0)} onClick={() => void run(t('settings.ai.busyLabels.saving'), async () => (await bridge.setReplyWithin(Number(within)), await refresh(), setNote(t('settings.ai.replyWithin.saved'))))}>
+        <button
+          type="button"
+          className="link"
+          disabled={Boolean(busy) || !(Number(within) > 0)}
+          onClick={() =>
+            void run(t('settings.ai.busyLabels.saving'), async () => {
+              const kept = await bridge.setReplyWithin(Number(within))
+              await refresh()
+              setWithin(String(kept.seconds))
+              setNote(kept.adjusted ? t('settings.ai.replyWithin.adjusted', { seconds: kept.seconds, least: REPLY_WITHIN_SECONDS_RANGE[0], most: REPLY_WITHIN_SECONDS_RANGE[1] }) : t('settings.ai.replyWithin.saved'))
+            })
+          }
+        >
           [{t('settings.ai.save')}]
         </button>
         <span className="muted">{t('settings.ai.replyWithin.note')}</span>

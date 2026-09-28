@@ -4,6 +4,7 @@ import type { DevSection, DevView } from '../../engine/dev'
 import type { Advice, TrialResult, TrialVerdict } from '../../node/ai/advisor'
 import type { AiLogEntry } from '../../node/ai/log'
 import type { ModelInfo, ProviderId } from '../../node/ai/providers'
+import type { BuildView } from '../../node/ai/builds'
 import type { AiOverview } from '../../node/ai/service'
 import type { ChosenRole } from '../../node/ai/settings'
 
@@ -59,9 +60,10 @@ export interface AiBridge {
   /** Tries the advised models for a role and chooses on the trial (M9.3). */
   compare(role: ChosenRole, choices: { provider: ProviderId; model: string }[]): Promise<{ results: TrialResult[]; verdicts: TrialVerdict[]; choice?: { provider: ProviderId; model: string } }>
   choose(role: ChosenRole, provider: ProviderId, model: string): Promise<string>
-  setBudget(usd: number): Promise<void>
+  /** The hourly budget as kept (M10.20): the player's value, unless it had to be changed, and then adjusted says so. */
+  setBudget(usd: number): Promise<{ usd: number; adjusted: boolean }>
   /** How long a spoken reply may take, in seconds (M10.8). */
-  setReplyWithin(seconds: number): Promise<void>
+  setReplyWithin(seconds: number): Promise<{ seconds: number; adjusted: boolean }>
   setMonthBudget(usd: number | null): Promise<void>
   setCredit(provider: ProviderId, usd: number | null): Promise<void>
   csv(): Promise<string>
@@ -154,6 +156,8 @@ export interface EditorBridge {
   worldStep(world: string, step: string, said: string): Promise<EditorDraft>
   /** A proposal that did not load, put right by the chronicler (M10.20): only what it corrects is replaced. */
   worldFix(world: string, step: string, said: string, draft: Pick<EditorDraft, 'say' | 'questions' | 'changes' | 'world' | 'files'>, problems: string[]): Promise<EditorDraft>
+  /** What this world build may spend and has spent, per step (M10.20); a limit to set, or counting from zero. */
+  build(world: string, change?: { limit?: number; reset?: boolean }): Promise<BuildView & { adjusted: boolean }>
   /** Enhance with AI (after M10.17): the designer's answer to a step written out as a fuller brief, with what only they can decide. */
   enhance(world: string, step: string, said: string): Promise<{ brief: string; open: string[]; problems: string[] }>
   /** The design log of a world (M10.18): as it stands, or after one change (a note, an answer being written, a decision). */
@@ -396,8 +400,9 @@ function contentFiles(): { path: string; text: string }[] {
  */
 export async function createEditor(): Promise<EditorBridge> {
   if (window.wisplight?.editor) return window.wisplight.editor
-  const { applyEdits, draftRequest, draftResult, editorView, entities, entityYaml, filesOfWorld, lineDiff, loadContent, MockLlm, newWorldFiles, paletteRequest, paletteView, readDraft, readPalette, readVoice, savePalette, saveVoice, simulate, voiceRequest, voiceYaml, withReturnExits, worldAtlasHtml, worldBook, worldsIn, worldStepRequest, worldFixRequest, mergeFix, enhanceRequest, readEnhance } = await import('../../engine')
+  const { applyEdits, draftRequest, draftResult, editorView, entities, entityYaml, filesOfWorld, lineDiff, loadContent, MockLlm, newWorldFiles, paletteRequest, paletteView, readDraft, readPalette, readVoice, savePalette, saveVoice, simulate, voiceRequest, voiceYaml, withReturnExits, worldAtlasHtml, worldBook, worldsIn, worldStepRequest, worldFixRequest, mergeFix, enhanceRequest, readEnhance, hourlyBudget } = await import('../../engine')
   let all = contentFiles()
+  const builds: Record<string, BuildView> = {}
   const shown = (changes: { path: string; before?: string; text: string }[]) => changes.map((c) => ({ path: c.path, fresh: c.before === undefined, lines: lineDiff(c.before ?? '', c.text) }))
   const shownDraft = (draft: ReturnType<typeof readDraft>): EditorDraft => ({
     say: draft.say,
@@ -459,6 +464,18 @@ export async function createEditor(): Promise<EditorBridge> {
     worldStep: async (world, step, said) => {
       const files = filesOfWorld(all, world)
       return shownDraft(readDraft(files, (await new MockLlm().complete(worldStepRequest(files, step, said))).text))
+    },
+    // The browser preview spends nothing: its builds are counted in memory, at the default of five dollars.
+    build: async (world, change) => {
+      const b = (builds[world] ??= { world, limitUsd: 5, own: false, spentUsd: 0, steps: {}, calls: 0 })
+      if (change?.reset) Object.assign(b, { spentUsd: 0, steps: {}, calls: 0 })
+      let adjusted = false
+      if (typeof change?.limit === 'number') {
+        const kept = hourlyBudget(change.limit)
+        Object.assign(b, { limitUsd: kept.usd, own: true })
+        adjusted = kept.adjusted
+      }
+      return { ...b, steps: { ...b.steps }, adjusted }
     },
     worldFix: async (world, step, said, draft, problems) => {
       const files = filesOfWorld(all, world)

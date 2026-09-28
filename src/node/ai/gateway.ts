@@ -6,6 +6,7 @@ import { picturePrice, priceOf, upperBoundUsd } from './pricing'
 import { BusyError, type PictureResponse, type Provider, type ProviderId, type RateLimit } from './providers'
 import type { PictureChoice, RoleChoice } from './settings'
 import type { UsageStore } from './usage'
+import type { BuildStore } from './builds'
 
 // Routes each call to the model the player chose for its role, with a time
 // limit, an hourly and a monthly budget, a pause when the provider's rate
@@ -43,6 +44,8 @@ export interface GatewayOptions {
   onActivity?: (activity: RoleActivity[]) => void
   /** How long a spoken reply may take over its tries (M10.8): the player's setting. */
   replyWithinMs?: () => number
+  /** The budgets of world builds (M10.20): the editor's steps count there, not in the hourly budget of the game. */
+  builds?: BuildStore
 }
 
 /** The roles shown as lights (M10.4): the editor's drafts are the builder's. */
@@ -149,10 +152,27 @@ export class Gateway implements LlmClient {
     // Everything else reserves the most it may cost first (M9.3), so calls at the same time stay within the budget together.
     const bound = upperBoundUsd(choice.model, request)
     let reservation: number | undefined
-    if (request.role !== 'advisor' && !override) {
+    let buildHold: number | undefined
+    // A step of a world build in the editor (M10.20) counts in the budget of that build, not in the game's hour.
+    const build = this.options.builds && EDITOR_SCHEMAS.has(request.schemaName) && typeof request.meta?.['prefix'] === 'string' && request.meta['prefix'] ? String(request.meta['prefix']).replace(/\/+$/, '') : undefined
+    const buildStep = build ? String(request.meta?.['step'] ?? (request.schemaName === 'builder_draft' ? 'writing aid' : request.schemaName)) : ''
+    if (build && request.role !== 'advisor' && !override) {
+      const builds = this.options.builds!
+      if (this.options.usage.monthBudgetSpent()) throw new LlmError('budget', 'the month budget is used up')
+      if (!builds.fits(build, bound ?? 0)) {
+        const view = builds.view(build)
+        throw new LlmError('budget', `this build has spent $${view.spentUsd.toFixed(2)} of the $${view.limitUsd.toFixed(2)} it may spend, and this step may cost up to $${(bound ?? 0).toFixed(2)}: raise what the build may spend in the editor`)
+      }
+      buildHold = builds.reserve(build, bound ?? 0)
+    } else if (request.role !== 'advisor' && !override) {
       const budget = this.options.budgetUsdPerHour()
       const spent = this.costs.spentLastHour() + this.costs.reservedUsd()
-      if (spent >= budget || spent + (bound ?? 0) > budget) throw new LlmError('budget', 'the hourly budget is used up')
+      if (spent >= budget || spent + (bound ?? 0) > budget) {
+        // Say when there is room again (M10.20), or that this call alone is more than the hour allows.
+        const wait = this.costs.roomInMs(bound ?? 0, budget)
+        const minutes = wait === undefined ? undefined : Math.max(1, Math.ceil(wait / 60000))
+        throw new LlmError('budget', minutes === undefined ? `the hourly budget is used up: this call may cost up to $${(bound ?? 0).toFixed(2)}, more than the $${budget.toFixed(2)} an hour allows` : `the hourly budget is used up; there is room again in about ${minutes} minute${minutes === 1 ? '' : 's'}`)
+      }
       if (request.priority === 'low' && spent + (bound ?? 0) >= LOW_PRIORITY_SHARE * budget) throw new LlmError('budget', 'the hourly budget is kept for conversations')
       if (this.options.usage.monthBudgetSpent()) throw new LlmError('budget', 'the month budget is used up')
       if (bound === undefined && this.costs.unpricedLastHour() + this.costs.pending() >= UNPRICED_CALLS_PER_HOUR) throw new LlmError('budget', `the price of ${choice.model} is not known: at most ${UNPRICED_CALLS_PER_HOUR} calls an hour`)
@@ -173,8 +193,9 @@ export class Gateway implements LlmClient {
       this.watch(health, response.rateLimit)
       const costUsd = this.options.usage.record(choice.provider, choice.model, response.usage, true, undefined, request.role)
       outcome = { ok: true, ...(costUsd !== undefined ? { costUsd } : {}) }
-      // What it really cost goes into the register, in place of what was reserved.
-      if (request.role !== 'advisor' && !override) this.costs.add({ usd: costUsd ?? 0, role: request.role, ...(costUsd === undefined ? { unpriced: true } : {}) })
+      // What it really cost goes into the register, in place of what was reserved; a build's step into its build.
+      if (build && buildHold !== undefined) this.options.builds!.add(build, buildStep, costUsd ?? 0)
+      else if (request.role !== 'advisor' && !override) this.costs.add({ usd: costUsd ?? 0, role: request.role, ...(costUsd === undefined ? { unpriced: true } : {}) })
       this.options.log.add({
         time: new Date(this.now()).toISOString(),
         role: request.role,
@@ -207,7 +228,8 @@ export class Gateway implements LlmClient {
       const costUsd = this.options.usage.record(choice.provider, choice.model, failure.usage, false, undefined, request.role)
       if (failure.usage) {
         outcome = { ok: false, ...(costUsd !== undefined ? { costUsd } : {}) }
-        if (request.role !== 'advisor' && !override) this.costs.add({ usd: costUsd ?? 0, role: request.role, ...(costUsd === undefined ? { unpriced: true } : {}) })
+        if (build && buildHold !== undefined) this.options.builds!.add(build, buildStep, costUsd ?? 0)
+        else if (request.role !== 'advisor' && !override) this.costs.add({ usd: costUsd ?? 0, role: request.role, ...(costUsd === undefined ? { unpriced: true } : {}) })
       }
       this.options.log.add({
         time: new Date(this.now()).toISOString(),
@@ -226,6 +248,7 @@ export class Gateway implements LlmClient {
     } finally {
       clearTimeout(timer)
       if (reservation !== undefined) this.costs.release(reservation)
+      if (buildHold !== undefined) this.options.builds!.release(buildHold)
       if (light) this.end(light, { at: this.now(), ms: this.now() - started, ...outcome })
     }
   }

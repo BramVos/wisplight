@@ -1383,6 +1383,25 @@ function WorldSteps({ bridge, world, view, saved, existing = false }: { bridge: 
   const [log, setLog] = useState<DesignLog>({ notes: [], answers: {}, decisions: [] })
   const [askedFor, setAskedFor] = useState('')
   const [why, setWhy] = useState('')
+  // What this build may spend and has spent, per step (M10.20): the steps do not wait on the game's hourly budget.
+  const [build, setBuild] = useState<Awaited<ReturnType<EditorBridge['build']>>>()
+  const [limit, setLimit] = useState('')
+  const [buildNote, setBuildNote] = useState<string>()
+  const counted = useCallback(
+    (change?: { limit?: number; reset?: boolean }) =>
+      bridge
+        .build(world, change)
+        .then((b) => {
+          setBuild(b)
+          setLimit(b.limitUsd.toFixed(2))
+          setBuildNote(b.adjusted ? `Saved as $${b.limitUsd.toFixed(2)}: a build may spend from $0.01 to $1000.` : undefined)
+        })
+        .catch(() => setBuild(undefined)),
+    [bridge, world],
+  )
+  useEffect(() => {
+    void counted()
+  }, [counted])
   const [note, setNote] = useState('')
   const step = WORLD_STEPS[at]!
   useEffect(() => {
@@ -1424,6 +1443,7 @@ function WorldSteps({ bridge, world, view, saved, existing = false }: { bridge: 
     setEnhanceProblems([])
     try {
       const result = await bridge.enhance(world, step.id, said.trim())
+      void counted()
       if (result.brief) {
         setBefore(said)
         setSaid(result.brief)
@@ -1445,6 +1465,7 @@ function WorldSteps({ bridge, world, view, saved, existing = false }: { bridge: 
     setWhy('')
     try {
       setDraft(await bridge.worldStep(world, step.id, said.trim()))
+      void counted()
     } catch (reason) {
       setDraft({ say: '', questions: [], changes: [], problems: [reason instanceof Error ? reason.message : String(reason)], diffs: [] })
     } finally {
@@ -1457,6 +1478,7 @@ function WorldSteps({ bridge, world, view, saved, existing = false }: { bridge: 
     setBusy(true)
     try {
       setDraft(await bridge.worldFix(world, step.id, askedFor || said.trim(), draft, draft.problems))
+      void counted()
     } catch (reason) {
       setDraft({ ...draft, problems: [reason instanceof Error ? reason.message : String(reason), ...draft.problems] })
     } finally {
@@ -1498,6 +1520,24 @@ function WorldSteps({ bridge, world, view, saved, existing = false }: { bridge: 
         Step by step: say in a few sentences what you want (or let [Enhance with AI] write it out further first), the chronicler proposes, and you accept, change your answer or skip. What you skip stays empty and works with its neutral
         default. Frame, places and people are needed; the rest may wait.
       </p>
+      {build && (
+        <div className="row small build-budget">
+          <span>This build may spend up to $</span>
+          <input className="amount" inputMode="decimal" value={limit} onChange={(e) => setLimit(e.target.value)} aria-label="What this build may spend, in dollars" />
+          <button type="button" className="link" disabled={busy || !(Number(limit) > 0) || Number(limit) === build.limitUsd} onClick={() => void counted({ limit: Number(limit) })}>
+            [Save]
+          </button>
+          <span className="muted">
+            {build.own ? '' : '(the hourly budget, until you set one) '}spent so far ${build.spentUsd.toFixed(2)} in {build.calls} call{build.calls === 1 ? '' : 's'}; the game's hourly budget is not touched.
+          </span>
+          {build.calls > 0 && (
+            <button type="button" className="link" disabled={busy} onClick={() => void counted({ reset: true })} title="Keeps the limit, and counts this build's spending from zero">
+              [Count from zero]
+            </button>
+          )}
+          {buildNote && <span className="warn">{buildNote}</span>}
+        </div>
+      )}
       <nav className="tabs step-tabs" aria-label="Steps">
         {WORLD_STEPS.map((s, i) => (
           <button key={s.id} type="button" className={i === at ? 'active' : ''} onClick={() => go(i)}>
@@ -1515,7 +1555,10 @@ function WorldSteps({ bridge, world, view, saved, existing = false }: { bridge: 
           <li key={q}>{q}</li>
         ))}
       </ul>
-      <p className="small muted">If you skip it: {step.skipped}</p>
+      <p className="small muted">
+        If you skip it: {step.skipped}
+        {build?.steps[step.id] ? ` This step has cost $${build.steps[step.id]!.toFixed(2)} so far.` : ''}
+      </p>
       <textarea rows={before === undefined ? 8 : 12} value={said} onChange={(e) => setSaid(e.target.value)} placeholder="Your answer, in a few sentences. Or: you choose." aria-label="Your answer to the chronicler" />
       {open.length > 0 && (
         <div className="small">
