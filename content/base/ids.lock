@@ -99,5 +99,8 @@ ids:
     creature: [rat_swarm, adder, feral_dog, great_pike, goat_rider, black_mathijs, veenlijk, kludde, reigerbeen, haakman, haakman_shallows]
     encounter: [goat_riders_toll, haakman_rises, goat_riders_camp, veenlijken_rise, goat_riders_guard]
   base/rules/rules.yaml:
+    ancestry: [dykelander, heathborn, fenfolk, changeling]
     background: [peat_cutter, eel_fisher, bargeman, lantern_novice, pedlar, dyke_worker, smuggler, herb_apprentice, knights_youngest, counts_soldier, clerk, surveyor]
+    condition: [frightened, bleeding, grabbed, prone, off_guard, sickened, fen_fever, mired, wet, cursed, catform, blinded, slowed]
+    patron: [lantern, nehalennia, grey_rider, holle, baduhenna]
 tombstones: []

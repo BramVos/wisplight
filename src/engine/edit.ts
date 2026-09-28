@@ -45,6 +45,11 @@ export const LISTS = {
   lodging: 'lodgings',
   // A list inside another (M10.9): the backgrounds of the character rules.
   background: 'rules.backgrounds',
+  // More lists in the rules (M10.20: the faith step asks for patrons, the signals step for conditions,
+  // the people step for ancestries; a world without characters may have them all the same).
+  patron: 'rules.patrons',
+  condition: 'rules.conditions',
+  ancestry: 'rules.ancestries',
 } as const
 export type EntityKind = keyof typeof LISTS
 export const ENTITY_KINDS = Object.keys(LISTS) as EntityKind[]
@@ -316,7 +321,12 @@ export function worldPrefix(files: ContentFile[]): string {
 }
 
 /** The file a new entity goes in: next to others of its kind and place. */
-export function homeFile(files: ContentFile[], kind: EntityKind, data: Raw): string {
+export /** The file that holds a world's rules (a top-level `rules:`), if it has one (M10.20). */
+function rulesFile(files: ContentFile[]): string | undefined {
+  return sorted(files).find((f) => isYaml(f.path) && /^rules:/m.test(f.text))?.path
+}
+
+function homeFile(files: ContentFile[], kind: EntityKind, data: Raw): string {
   const prefix = worldPrefix(files)
   const list = LISTS[kind]
   const locations = entities(files, 'location')
@@ -341,7 +351,8 @@ export function homeFile(files: ContentFile[], kind: EntityKind, data: Raw): str
     return `${areaDir(area)}npcs.yaml`
   }
   if (kind === 'region') return `${prefix}regions/${String(data['id'])}/region.yaml`
-  if (kind === 'background') return entities(files, kind)[0]?.file ?? `${prefix}rules/rules.yaml`
+  // A list inside the rules goes where the rules are, or starts rules/rules.yaml.
+  if (LISTS[kind].startsWith('rules.')) return [...entities(files, 'background'), ...entities(files, 'patron'), ...entities(files, 'condition'), ...entities(files, 'ancestry')][0]?.file ?? rulesFile(files) ?? `${prefix}rules/rules.yaml`
   const counts = new Map<string, number>()
   for (const e of entities(files, kind)) counts.set(e.file, (counts.get(e.file) ?? 0) + 1)
   const best = [...counts].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0]
@@ -536,6 +547,29 @@ export function voiceYaml(files: ContentFile[]): { file: string; yaml: string; o
 function tidy(text: string): string {
   const tight = tightenSeqs(text)
   return tight !== text && same(parse(tight), parse(text)) ? tight : text
+}
+
+/**
+ * Sets top-level keys of the rules from YAML (M10.20: the faith step proposes
+ * rules.death, which is a block and not a list): key by key into the `rules:`
+ * map of the world's rules file, which is made (rules/rules.yaml) when the
+ * world has none. A key the contract does not have is refused.
+ */
+export function patchRules(files: ContentFile[], yaml: string): { problems: string[]; files: ContentFile[]; change?: FileChange } {
+  const read = parseEntityYaml(yaml)
+  if (!read.raw) return { problems: [`rules: ${read.problem ?? 'nothing to set'}`], files }
+  const stray = unknownFields('rules', read.raw)
+  if (stray) return { problems: [`rules: ${stray}`], files }
+  const path = rulesFile(files) ?? `${worldPrefix(files)}rules/rules.yaml`
+  const file = files.find((f) => f.path === path)
+  const doc = file ? parseDocument(file.text) : new Document({ rules: {} })
+  const node = doc.get('rules', true)
+  if (isMap(node)) patchMap(doc, node, { ...(node.toJSON() as Raw), ...read.raw })
+  else doc.set('rules', makeNode(doc, read.raw, 0))
+  const text = tidy(doc.toString({ lineWidth: 0 }))
+  if (file && text === file.text) return { problems: [], files }
+  const next = file ? files.map((f) => (f === file ? { ...f, text } : f)) : [...files, { path, text }]
+  return { problems: [], files: next, change: { path, ...(file ? { before: file.text } : {}), text } }
 }
 
 /**

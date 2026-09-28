@@ -4,7 +4,7 @@ import { DEFAULT_PALETTE, MapPaletteSchema, SURFACE, TERRAIN_ORDER, type Level, 
 import { previewMapData, type HexMapData } from './map/view'
 import { ContentError, loadContent, type Content, type ContentFile, type Direction } from './content'
 import { descriptionCheck, placeMeasures, regionPreview, sceneryWarnings, warnings } from './builder'
-import { applyEdits, entities, entityYaml, ENTITY_KINDS, LISTS, locate, parseEntityYaml, patchWorld, voiceYaml, worldPrefix, type Edit, type EditResult, type EntityKind, type FileChange, type Raw } from './edit'
+import { applyEdits, entities, entityYaml, ENTITY_KINDS, LISTS, locate, parseEntityYaml, patchRules, patchWorld, voiceYaml, worldPrefix, type Edit, type EditResult, type EntityKind, type FileChange, type Raw } from './edit'
 import { worldFrame } from './dialogue/prompt'
 import { suspectText, worldText, type SuspectText } from './safety'
 import type { LlmRequest } from './dialogue/llm'
@@ -142,6 +142,9 @@ export const KIND_NAMES: Record<EntityKind, string> = {
   gesture: 'Gestures',
   lodging: 'Lodgings',
   background: 'Backgrounds',
+  patron: 'Patrons',
+  condition: 'Conditions',
+  ancestry: 'Ancestries',
 }
 
 export function editorView(files: ContentFile[]): EditorView {
@@ -429,6 +432,8 @@ export interface Draft {
   changes: DraftChange[]
   /** Top-level keys of world.yaml to set, as YAML (M10.17); empty for none. */
   world?: string
+  /** Top-level keys of the rules to set, as YAML (M10.20: rules.death, a block); empty for none. */
+  rules?: string
   /** Whole files: only CHRONICLER.md, data/voice.yaml and data/journey.yaml, next to world.yaml (M10.17, M10.20). */
   files?: { path: string; text: string }[]
   /** The proposal as edits, checked against the world. */
@@ -458,10 +463,11 @@ const DRAFT_SCHEMA = {
 /** The same with world.yaml keys and whole files (M10.17), for building a world step by step. */
 const WORLD_STEP_SCHEMA = {
   ...DRAFT_SCHEMA,
-  required: ['say', 'questions', 'changes', 'world', 'files'],
+  required: ['say', 'questions', 'changes', 'world', 'rules', 'files'],
   properties: {
     ...DRAFT_SCHEMA.properties,
     world: { type: 'string' },
+    rules: { type: 'string' },
     files: { type: 'array', items: { type: 'object', additionalProperties: false, required: ['path', 'text'], properties: { path: { type: 'string' }, text: { type: 'string' } } } },
   },
 }
@@ -474,7 +480,7 @@ const DRAFT_FILES = /^(?:CHRONICLER\.md|data\/voice\.yaml|data\/journey\.yaml)$/
  * A proposal as files (M10.17): the entities as edits, then the keys of
  * world.yaml, then whole files; checked by loading the world with all of it.
  */
-export function draftResult(files: ContentFile[], draft: Pick<Draft, 'changes' | 'world' | 'files'>): EditResult {
+export function draftResult(files: ContentFile[], draft: Pick<Draft, 'changes' | 'world' | 'rules' | 'files'>): EditResult {
   let next = files
   const problems: string[] = []
   const changes = new Map<string, FileChange>()
@@ -486,6 +492,13 @@ export function draftResult(files: ContentFile[], draft: Pick<Draft, 'changes' |
   // The world first (M10.20): a proposal that moves the start to a new place and deletes the old one loads only with both.
   if (draft.world?.trim()) {
     const patched = patchWorld(next, draft.world)
+    if (patched.problems.length) return { ok: false, problems: patched.problems, files, changes: [] }
+    next = patched.files
+    if (patched.change) note(patched.change)
+  }
+  // Keys of the rules (M10.20): death is a block, the lists come as changes.
+  if (draft.rules?.trim()) {
+    const patched = patchRules(next, draft.rules)
     if (patched.problems.length) return { ok: false, problems: patched.problems, files, changes: [] }
     next = patched.files
     if (patched.change) note(patched.change)
@@ -564,11 +577,11 @@ export function readDraft(files: ContentFile[], text: string): Draft {
   return parts ? checkedDraft(files, parts) : { say: '', questions: [], changes: [], problems: ['The chronicler did not answer in the agreed form.'] }
 }
 
-type DraftParts = Pick<Draft, 'say' | 'questions' | 'changes' | 'world' | 'files'>
+type DraftParts = Pick<Draft, 'say' | 'questions' | 'changes' | 'world' | 'rules' | 'files'>
 
 /** What the chronicler answered, read but not yet checked; undefined when it is not the agreed JSON. */
 function draftParts(text: string): DraftParts | undefined {
-  let parsed: { say?: unknown; questions?: unknown; changes?: unknown; world?: unknown; files?: unknown }
+  let parsed: { say?: unknown; questions?: unknown; changes?: unknown; world?: unknown; rules?: unknown; files?: unknown }
   try {
     parsed = JSON.parse(text.trim().replace(/^```(?:json)?\s*|\s*```$/g, '')) as typeof parsed
   } catch {
@@ -578,12 +591,14 @@ function draftParts(text: string): DraftParts | undefined {
     .filter((c): c is DraftChange => Boolean(c) && typeof c === 'object' && ENTITY_KINDS.includes((c as DraftChange).kind) && typeof (c as DraftChange).id === 'string')
     .map((c) => ({ kind: c.kind, id: c.id, yaml: typeof c.yaml === 'string' ? c.yaml : '', ...(c.merge === true ? { merge: true } : {}) }))
   const world = typeof parsed.world === 'string' && parsed.world.trim() ? parsed.world : undefined
+  const rules = typeof parsed.rules === 'string' && parsed.rules.trim() ? parsed.rules : undefined
   const whole = (Array.isArray(parsed.files) ? parsed.files : []).filter((f): f is { path: string; text: string } => Boolean(f) && typeof f === 'object' && typeof (f as { path?: unknown }).path === 'string' && typeof (f as { text?: unknown }).text === 'string')
   return {
     say: typeof parsed.say === 'string' ? parsed.say : '',
     questions: Array.isArray(parsed.questions) ? parsed.questions.filter((q): q is string => typeof q === 'string') : [],
     changes,
     ...(world ? { world } : {}),
+    ...(rules ? { rules } : {}),
     ...(whole.length ? { files: whole } : {}),
   }
 }
@@ -608,12 +623,13 @@ function checkedDraft(files: ContentFile[], parts: DraftParts): Draft {
  * corrects, which mergeFix puts into the proposal: cheaper than proposing the
  * chapter again, and the rest stays as the designer read it.
  */
-export function worldFixRequest(files: ContentFile[], stepId: string, said: string, draft: Pick<Draft, 'changes' | 'world' | 'files'>, problems: string[]): LlmRequest {
+export function worldFixRequest(files: ContentFile[], stepId: string, said: string, draft: Pick<Draft, 'changes' | 'world' | 'rules' | 'files'>, problems: string[]): LlmRequest {
   const base = worldStepRequest(files, stepId, said)
   const proposal = [
     'YOUR PROPOSAL AS IT STANDS:',
     ...draft.changes.map((c) => `--- ${c.kind} ${c.id}${c.merge ? ' (merge: only these fields)' : ''}\n${c.yaml.trim() || '(deleted)'}`),
     ...(draft.world?.trim() ? ['--- world', draft.world.trim()] : []),
+    ...(draft.rules?.trim() ? ['--- rules', draft.rules.trim()] : []),
     ...(draft.files ?? []).map((f) => `--- file ${f.path}: written whole, ${f.text.length} characters`),
   ]
   return {
@@ -621,7 +637,7 @@ export function worldFixRequest(files: ContentFile[], stepId: string, said: stri
     system: [
       base.system,
       '',
-      'PUTTING IT RIGHT: your proposal for this step did not load. Correct only what the problems name, and change nothing else: no new ideas, no other wording. Answer in the same JSON: say (one sentence: what you corrected), questions (none), changes (only the entities you correct, each whole, as full YAML; leave out every entity no problem touches), world (whole again only if a problem is in it, otherwise empty), files (none, unless a problem is in one).',
+      'PUTTING IT RIGHT: your proposal for this step did not load. Correct only what the problems name, and change nothing else: no new ideas, no other wording. Answer in the same JSON: say (one sentence: what you corrected), questions (none), changes (only the entities you correct, each whole, as full YAML; leave out every entity no problem touches), world and rules (whole again only if a problem is in them, otherwise empty), files (none, unless a problem is in one).',
     ].join('\n'),
     // Only why it did not load: an earlier failed call ("The chronicler did not answer: ...") is not the proposal's fault.
     prompt: [base.prompt, '', ...proposal, '', 'WHY IT DID NOT LOAD:', ...problems.filter((p) => !/^The chronicler (did not answer|puts it right)/.test(p)).map((p) => `- ${p}`)].join('\n'),
@@ -636,9 +652,9 @@ export function worldFixRequest(files: ContentFile[], stepId: string, said: stri
  * added, and world and files are replaced only where it gave them. What the
  * chronicler said and asked stays; what it corrected is added to the say.
  */
-export function mergeFix(files: ContentFile[], draft: Pick<Draft, 'say' | 'questions' | 'changes' | 'world' | 'files'>, text: string): Draft {
+export function mergeFix(files: ContentFile[], draft: Pick<Draft, 'say' | 'questions' | 'changes' | 'world' | 'rules' | 'files'>, text: string): Draft {
   const fix = draftParts(text)
-  const kept: DraftParts = { say: draft.say, questions: draft.questions, changes: draft.changes, ...(draft.world ? { world: draft.world } : {}), ...(draft.files ? { files: draft.files } : {}) }
+  const kept: DraftParts = { say: draft.say, questions: draft.questions, changes: draft.changes, ...(draft.world ? { world: draft.world } : {}), ...(draft.rules ? { rules: draft.rules } : {}), ...(draft.files ? { files: draft.files } : {}) }
   if (!fix) return { ...checkedDraft(files, kept), problems: ['The chronicler did not answer in the agreed form; the proposal is as it was.'] }
   const same = (a: DraftChange, b: DraftChange) => a.kind === b.kind && a.id === b.id
   // A correction never takes away (M10.20: a fix round answered with an empty change for a place, and its services went).
@@ -646,11 +662,13 @@ export function mergeFix(files: ContentFile[], draft: Pick<Draft, 'say' | 'quest
   const changes = [...draft.changes.map((c) => corrected.find((f) => same(f, c)) ?? c), ...corrected.filter((f) => !draft.changes.some((c) => same(c, f)))]
   const whole = [...(draft.files ?? []).map((f) => fix.files?.find((x) => x.path === f.path) ?? f), ...(fix.files ?? []).filter((x) => !(draft.files ?? []).some((f) => f.path === x.path))]
   const world = fix.world ?? draft.world
+  const rules = fix.rules ?? draft.rules
   return checkedDraft(files, {
     say: fix.say.trim() ? `${draft.say}\n\nPut right: ${fix.say.trim()}` : draft.say,
     questions: draft.questions,
     changes,
     ...(world ? { world } : {}),
+    ...(rules ? { rules } : {}),
     ...(whole.length ? { files: whole } : {}),
   })
 }
@@ -698,7 +716,7 @@ export function worldStepRequest(files: ContentFile[], stepId: string, said: str
       designPrompt(files),
       '',
       instruction,
-      'Answer in JSON: say, questions, changes (a new thing as full YAML; to add to or change a thing that exists, merge: true with only the fields you set, each of which replaces that field whole, so give a list whole; empty YAML without merge deletes), world (YAML of the top-level world.yaml keys to set, or empty), files (CHRONICLER.md, data/voice.yaml or data/journey.yaml whole, or none).',
+      'Answer in JSON: say, questions, changes (a new thing as full YAML; to add to or change a thing that exists, merge: true with only the fields you set, each of which replaces that field whole, so give a list whole; empty YAML without merge deletes), world (YAML of the top-level world.yaml keys to set, or empty), rules (YAML of the top-level keys of the rules to set, such as death, or empty; patrons, conditions and ancestries are changes), files (CHRONICLER.md, data/voice.yaml or data/journey.yaml whole, or none).',
     ].join('\n'),
     prompt: [`WORLD.YAML NOW:`, worldFile?.text ?? '(none)', '', 'WHAT EXISTS:', ...index, ...(standing ? ['', standing] : []), ...voiceNow, '', `THE DESIGNER SAYS: ${said}`].join('\n'),
     schemaName: 'world_step',

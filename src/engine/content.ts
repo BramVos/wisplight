@@ -1763,11 +1763,18 @@ export const KIND_MAPS = {
   lodging: 'lodgings',
   // A list in the rules (M10.9): a save's character names its background.
   background: 'rules',
+  // M10.20: more lists in the rules that a proposal may write.
+  patron: 'rules',
+  condition: 'rules',
+  ancestry: 'rules',
 } as const satisfies Record<string, keyof Content>
 
 /** Whether the content has a thing of this kind. */
 export function hasThing(c: Omit<Content, 'world'>, kind: string, id: string): boolean {
   if (kind === 'background') return Boolean(c.rules?.backgrounds.some((b) => b.id === id))
+  if (kind === 'patron') return Boolean(c.rules?.patrons.some((p) => p.id === id))
+  if (kind === 'condition') return Boolean(c.rules?.conditions.some((p) => p.id === id))
+  if (kind === 'ancestry') return Boolean(c.rules?.ancestries.some((p) => p.id === id))
   const key = (KIND_MAPS as Record<string, keyof Content>)[kind]
   const map = key ? (c as unknown as Record<string, unknown>)[key] : undefined
   return map instanceof Map && map.has(id)

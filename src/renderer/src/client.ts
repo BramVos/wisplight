@@ -101,6 +101,8 @@ export interface EditorDraft {
   changes: DraftChange[]
   /** Keys of world.yaml to set, as YAML, and whole files (M10.17). */
   world?: string
+  /** Keys of the rules to set, as YAML (M10.20: rules.death). */
+  rules?: string
   files?: { path: string; text: string }[]
   problems: string[]
   diffs: ShownChange[]
@@ -438,6 +440,7 @@ export async function createEditor(): Promise<EditorBridge> {
     questions: draft.questions,
     changes: draft.changes,
     ...(draft.world ? { world: draft.world } : {}),
+    ...(draft.rules ? { rules: draft.rules } : {}),
     ...(draft.files ? { files: draft.files } : {}),
     problems: draft.problems,
     diffs: draft.result?.ok ? shown(draft.result.changes) : [],

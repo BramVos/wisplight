@@ -58,7 +58,7 @@ import { beginFight, fightView, playerCommand } from './combat/flow'
 import { foeXp } from './combat/balance'
 import type { Arena } from './combat/combat'
 import type { Combat, Fighter } from './combat/types'
-import { maxHp, type CreationData } from './rules/character'
+import { hasCharacters, maxHp, type CreationData } from './rules/character'
 import { npcFighter } from './combat/npc'
 import { approve, arrived, campfire, companionOf, companions, fleeWith, leave, mend, order, partyLines, recruit, restParty, setStance, sharedFight, syncLevels, withPlayer } from './social/companions'
 import { confronting, found as foundStranger, seekers, settleGrievance } from './social/confront'
@@ -2078,7 +2078,7 @@ export class Engine {
 
   /** An encounter can start when the player comes to one of its places (FO, chapter 12, "Verloop"). */
   private maybeEncounter(from: string): Output[] {
-    if (this.state.combat || this.state.talk || !this.content.rules) return []
+    if (this.state.combat || this.state.talk || !hasCharacters(this.content)) return []
     const here = this.state.player.location
     const area = this.content.locations.get(here)?.area
     const hour = this.clock.parts.hour
@@ -2572,7 +2572,7 @@ export class Engine {
   /** What the creation screen needs: the rules and the gear's names (FO, chapter 11, "Personage maken"). */
   creationData(): CreationData | undefined {
     const rules = this.content.rules
-    if (!rules) return undefined
+    if (!rules || !hasCharacters(this.content)) return undefined
     const gear = new Set(rules.classes.flatMap((k) => Object.keys(k.gear)))
     return { rules, items: Object.fromEntries([...gear].map((id) => [id, this.content.items.get(id)!])), ...(this.content.world.knobs ? { knobs: this.content.world.knobs } : {}) }
   }

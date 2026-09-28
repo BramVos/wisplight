@@ -14,6 +14,7 @@ import {
   classOf,
   createCharacter,
   defence,
+  hasCharacters,
   equip,
   extraSkills,
   initiative,
@@ -67,7 +68,7 @@ export function readyMade(content: Content): CreationChoice {
 
 export function character(world: World): Character | undefined {
   const player = world.state.player
-  if (!player.character && world.content.rules) {
+  if (!player.character && hasCharacters(world.content)) {
     const made = createCharacter(world.content, readyMade(world.content))
     if ('character' in made) {
       player.character = made.character

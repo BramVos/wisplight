@@ -74,6 +74,16 @@ export const ROW_LEVEL = [1, 3, 5, 7]
 /** Weapons do one die more from these levels (weapon training). */
 export const WEAPON_DICE_AT = [4, 8]
 
+/**
+ * Whether a world plays with characters (M10.20): only when its rules have a
+ * class to make one from. The rules of a world without characters may still
+ * hold patrons, death and conditions (The Quiet Reach: two faiths and a
+ * medical return), without character creation or fights.
+ */
+export function hasCharacters(content: Pick<Content, 'rules'>): boolean {
+  return Boolean(content.rules?.classes.length)
+}
+
 export function rulesOf(content: Content): Rules {
   if (!content.rules) throw new Error('This content has no rules')
   return content.rules

@@ -136,11 +136,12 @@ const PatronSchema = z
     id: Id,
     name: z.string(),
     text: z.string(),
+    // Favour and blessings are for a world with characters; one without may name patrons all the same (M10.20).
     /** Deeds the patron likes, with the favour they give. */
-    values: z.record(z.string(), z.number().int()),
+    values: z.record(z.string(), z.number().int()).default({}),
     /** Deeds the patron forbids, with the favour they cost. */
-    forbids: z.record(z.string(), z.number().int()),
-    blessings: z.array(BlessingSchema),
+    forbids: z.record(z.string(), z.number().int()).default({}),
+    blessings: z.array(BlessingSchema).default([]),
     /** The deed swearing to this patron counts as, for companions who approve or not (M10.17). */
     sworn: z.string().optional(),
   })
@@ -182,13 +183,14 @@ const DeathSchema = z
 export const RulesSchema = z
   .object({
     xp_per_level: z.number().int().positive().default(1000),
-    skills: z.array(SkillSchema),
-    ancestries: z.array(AncestrySchema),
-    backgrounds: z.array(BackgroundSchema),
-    general_talents: z.array(TalentSchema),
-    conditions: z.array(ConditionSchema),
-    classes: z.array(ClassSchema),
-    patrons: z.array(PatronSchema),
+    // Every list may be left out (M10.20): a world without characters may still have patrons, death and conditions.
+    skills: z.array(SkillSchema).default([]),
+    ancestries: z.array(AncestrySchema).default([]),
+    backgrounds: z.array(BackgroundSchema).default([]),
+    general_talents: z.array(TalentSchema).default([]),
+    conditions: z.array(ConditionSchema).default([]),
+    classes: z.array(ClassSchema).default([]),
+    patrons: z.array(PatronSchema).default([]),
     /** The ready-made traveller for a game started without making a character (M9.1: per world). */
     ready_made: z
       .object({ name: z.string(), ancestry: Id, background: Id, class: Id, boosts: z.array(AttributeEnum), skills: z.array(Id), talent: Id })

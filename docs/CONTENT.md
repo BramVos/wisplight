@@ -332,13 +332,13 @@ One block with:
 | field | what | required | default |
 | --- | --- | --- | --- |
 | xp_per_level | number | no | 1000 |
-| skills | list of a map: id, name, attribute | yes |  |
-| ancestries | list of a map: id, name, text, attributes, hp, special, aptitude, immune, aliases, distrusted_by | yes |  |
-| backgrounds | list of a map: id, name, skills, talent, knows, topics, reason, contact, heard | yes |  |
-| general_talents | list of a map: id, name, text, effects | yes |  |
-| conditions | list of a map: id, name, text, max | yes |  |
-| classes | list of a map: id, name, text, key, hp, trained, armour, proficiency, gear, core, ... | yes |  |
-| patrons | list of a map: id, name, text, values, forbids, blessings, sworn | yes |  |
+| skills | list of a map: id, name, attribute | no | [] |
+| ancestries | list of a map: id, name, text, attributes, hp, special, aptitude, immune, aliases, distrusted_by | no | [] |
+| backgrounds | list of a map: id, name, skills, talent, knows, topics, reason, contact, heard | no | [] |
+| general_talents | list of a map: id, name, text, effects | no | [] |
+| conditions | list of a map: id, name, text, max | no | [] |
+| classes | list of a map: id, name, text, key, hp, trained, armour, proficiency, gear, core, ... | no | [] |
+| patrons | list of a map: id, name, text, values, forbids, blessings, sworn | no | [] |
 | ready_made | a map: name, ancestry, background, class, boosts, skills, talent | no |  |
 | suggest | a map of names to text | no |  |
 | death | a map: vision, guide, patron, wake, mark, rite_where, rite_done, rite_nothing, price | no |  |

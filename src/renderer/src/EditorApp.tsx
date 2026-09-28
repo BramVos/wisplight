@@ -1308,6 +1308,7 @@ function DraftView({ draft, busy, accept, drop, fix }: { draft: EditorDraft; bus
   const parts = [
     ...draft.changes.map((c) => `${c.yaml.trim() ? (c.merge ? 'add to ' : '') : 'delete '}${c.kind.replace('_', ' ')} ${c.id}`),
     ...(draft.world ? [`world.yaml: ${Object.keys(parseEntityYaml(draft.world).raw ?? {}).join(', ')}`] : []),
+    ...(draft.rules ? [`rules: ${Object.keys(parseEntityYaml(draft.rules).raw ?? {}).join(', ')}`] : []),
     ...(draft.files ?? []).map((f) => f.path),
   ]
   return (
