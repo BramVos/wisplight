@@ -31,6 +31,8 @@ export function EditorApp() {
   const [error, setError] = useState<string>()
   // What the contract tab asks the chronicler for (M10.17), put ready in its box.
   const [asking, setAsking] = useState<string>()
+  // Worlds made in this window: the step-by-step building opens on them at once (after Bram's first try, M10.17).
+  const [fresh, setFresh] = useState<string[]>([])
 
   useEffect(() => {
     document.title = 'Wisplight editor'
@@ -164,14 +166,18 @@ export function EditorApp() {
       {panel === 'chronicler' && <ChroniclerPanel key={asking ?? ''} bridge={bridge} world={world} focus={selected && !creating ? { kind, id: selected } : undefined} initial={asking} saved={refresh} open={open} />}
       {panel === 'world' && (
         <NewWorldPanel
+          key={world}
           bridge={bridge}
           world={world}
           view={view}
+          fresh={fresh.includes(world)}
           saved={refresh}
           made={async (folder) => {
             setWorlds(await bridge.worlds())
+            setFresh((f) => [...f, folder])
             setWorld(folder)
-            setPanel('edit')
+            setSelected(undefined)
+            setCreating(false)
           }}
         />
       )}
@@ -1269,34 +1275,56 @@ function ContractPanel({ view, propose }: { view: EditorView; propose: (ask: str
 
 // ---------------------------------------------------------------- a new world
 
-function NewWorldPanel({ bridge, world, view, saved, made }: { bridge: EditorBridge; world: string; view: EditorView; saved: () => Promise<void>; made: (folder: string) => Promise<void> }) {
+function NewWorldPanel({ bridge, world, view, fresh, saved, made }: { bridge: EditorBridge; world: string; view: EditorView; fresh: boolean; saved: () => Promise<void>; made: (folder: string) => Promise<void> }) {
   const [folder, setFolder] = useState('')
   const [name, setName] = useState('')
   const [problems, setProblems] = useState<string[]>([])
+  // An existing world is built further only when asked, with a warning: the proposals change its own files.
+  const [further, setFurther] = useState(false)
+  const named = view.world.name || world
   return (
     <div className="settings-body editor-page builder-fields">
-      <WorldSteps bridge={bridge} world={world} view={view} saved={saved} />
-      <h2>Or start a new world</h2>
-      <p className="muted small">
-        A new world gets its own folder in content/, with the smallest content that loads: one area, one place, and its own part of the chronicler&apos;s instruction. It shows up at once
-        when a new game asks which world.
-      </p>
-      <Field label="Folder (lower case, for example moorland)" value={folder} onChange={(v) => setFolder(v.toLowerCase().replace(/[^a-z0-9_]/g, ''))} />
-      <Field label="Name" value={name} onChange={setName} />
-      <button
-        type="button"
-        className="link"
-        disabled={!folder}
-        onClick={() =>
-          void bridge.newWorld(folder, name).then(async (result) => {
-            setProblems(result.problems)
-            if (result.ok) await made(folder)
-          })
-        }
-      >
-        [Make the world]
-      </button>
-      {problems.length > 0 && <p className="warn small">{problems.join(' ')}</p>}
+      {fresh ? (
+        <WorldSteps bridge={bridge} world={world} view={view} saved={saved} />
+      ) : (
+        <>
+          <h2>Start a new world</h2>
+          <p className="muted small">
+            A new world gets its own folder in content/, with the smallest content that loads: one area, one place, and its own part of the chronicler&apos;s instruction. Then you build
+            it step by step with the chronicler, here. It shows up at once when a new game asks which world.
+          </p>
+          <Field label="Folder (lower case, for example moorland)" value={folder} onChange={(v) => setFolder(v.toLowerCase().replace(/[^a-z0-9_]/g, ''))} />
+          <Field label="Name" value={name} onChange={setName} />
+          <button
+            type="button"
+            className="link"
+            disabled={!folder}
+            onClick={() =>
+              void bridge.newWorld(folder, name).then(async (result) => {
+                setProblems(result.problems)
+                if (result.ok) await made(folder)
+              })
+            }
+          >
+            [Make the world]
+          </button>
+          {problems.length > 0 && <p className="warn small">{problems.join(' ')}</p>}
+          <h2>Or build further on {named}</h2>
+          {further ? (
+            <WorldSteps bridge={bridge} world={world} view={view} saved={saved} existing />
+          ) : (
+            <p className="small">
+              <span className="muted">
+                The same steps work on the world that is open now. They change {named} itself, in its own files (content/{view.world.prefix || `${world}/`}); nothing is saved until you
+                accept a proposal.{' '}
+              </span>
+              <button type="button" className="link" onClick={() => setFurther(true)}>
+                [Build further on {named}]
+              </button>
+            </p>
+          )}
+        </>
+      )}
     </div>
   )
 }
@@ -1307,7 +1335,7 @@ function NewWorldPanel({ bridge, world, view, saved, made }: { bridge: EditorBri
  * the chronicler proposes, the editor shows it as a diff and saves only what
  * is accepted. A step skipped stays empty and works with its neutral default.
  */
-function WorldSteps({ bridge, world, view, saved }: { bridge: EditorBridge; world: string; view: EditorView; saved: () => Promise<void> }) {
+function WorldSteps({ bridge, world, view, saved, existing = false }: { bridge: EditorBridge; world: string; view: EditorView; saved: () => Promise<void>; existing?: boolean }) {
   const [at, setAt] = useState(0)
   const [said, setSaid] = useState('')
   const [draft, setDraft] = useState<EditorDraft>()
@@ -1347,6 +1375,11 @@ function WorldSteps({ bridge, world, view, saved }: { bridge: EditorBridge; worl
   return (
     <section className="world-steps">
       <h2>Build {view.world.name || world} with the chronicler</h2>
+      {existing && (
+        <p className="warn small">
+          This changes {view.world.name || world} itself (content/{view.world.prefix || `${world}/`}). Only what you accept is saved, and git keeps what was there before.
+        </p>
+      )}
       <p className="muted small">
         Step by step: say in a few sentences what you want, the chronicler proposes, and you accept, change your answer or skip. What you skip stays empty and works with its neutral
         default. Frame, places and people are needed; the rest may wait.
