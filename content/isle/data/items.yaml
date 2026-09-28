@@ -33,6 +33,18 @@ items:
     value: 4
     food: 35
 
+
+  # M10.14: what a failed attempt leaves, poorer and of use for something else.
+  - id: small_fry
+    name: handful of small fry
+    plural: handfuls of small fry
+    description: Sprats and a gurnard no longer than your finger. Bait, or a thin soup.
+    aliases: [small fry, sprats, fry]
+    tags: [food]
+    value: 1
+    food: 10
+    quality: poor
+    of: salt_fish
   - id: fish_stew
     name: bowl of fish stew
     plural: bowls of fish stew
@@ -94,6 +106,15 @@ items:
     remedy: { heal: 1d8, cures: [bleeding, sickened] }
 
   # M9.1: what Skerrow's own counters are made of.
+
+  - id: thin_salve
+    name: pot of thin salve
+    plural: pots of thin salve
+    description: A salve that boiled and split, runny and grey. It soothes a scrape; it heals nothing.
+    aliases: [thin salve, runny salve]
+    value: 3
+    quality: poor
+    of: kelp_salve
   - id: heather
     name: bundle of heather
     plural: bundles of heather

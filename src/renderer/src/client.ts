@@ -125,6 +125,8 @@ export interface EditorBridge {
   proposeVoice(world: string, ask: string): Promise<{ say: string; yaml?: string; problems: string[] }>
   /** One step of building a world with the chronicler (M10.17): its proposal, checked, nothing saved. */
   worldStep(world: string, step: string, said: string): Promise<EditorDraft>
+  /** Enhance with AI (after M10.17): the designer's answer to a step written out as a fuller brief, with what only they can decide. */
+  enhance(world: string, step: string, said: string): Promise<{ brief: string; open: string[]; problems: string[] }>
   /** Saves a proposal the designer accepts: entities, world.yaml keys and whole files. */
   saveDraft(world: string, draft: Pick<EditorDraft, 'changes' | 'world' | 'files'>): Promise<EditorSave>
 }
@@ -280,7 +282,7 @@ function contentFiles(): { path: string; text: string }[] {
  */
 export async function createEditor(): Promise<EditorBridge> {
   if (window.wisplight?.editor) return window.wisplight.editor
-  const { applyEdits, draftRequest, draftResult, editorView, entities, entityYaml, filesOfWorld, lineDiff, loadContent, MockLlm, newWorldFiles, paletteRequest, paletteView, readDraft, readPalette, readVoice, savePalette, saveVoice, simulate, voiceRequest, voiceYaml, withReturnExits, worldsIn, worldStepRequest } = await import('../../engine')
+  const { applyEdits, draftRequest, draftResult, editorView, entities, entityYaml, filesOfWorld, lineDiff, loadContent, MockLlm, newWorldFiles, paletteRequest, paletteView, readDraft, readPalette, readVoice, savePalette, saveVoice, simulate, voiceRequest, voiceYaml, withReturnExits, worldsIn, worldStepRequest, enhanceRequest, readEnhance } = await import('../../engine')
   let all = contentFiles()
   const shown = (changes: { path: string; before?: string; text: string }[]) => changes.map((c) => ({ path: c.path, fresh: c.before === undefined, lines: lineDiff(c.before ?? '', c.text) }))
   const shownDraft = (draft: ReturnType<typeof readDraft>): EditorDraft => ({
@@ -344,6 +346,7 @@ export async function createEditor(): Promise<EditorBridge> {
       const files = filesOfWorld(all, world)
       return shownDraft(readDraft(files, (await new MockLlm().complete(worldStepRequest(files, step, said))).text))
     },
+    enhance: async (world, step, said) => readEnhance((await new MockLlm().complete(enhanceRequest(filesOfWorld(all, world), step, said))).text),
     saveDraft: async (world, draft) => {
       const outcome = draftResult(filesOfWorld(all, world), draft)
       if (outcome.ok) {

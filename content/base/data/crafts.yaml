@@ -17,6 +17,11 @@ crafts:
       - { id: sweet_dough, name: sweet dough }
       - { id: feast_bread, name: feast bread }
     masterwork: a feast bread fit for a wedding
+    # What a failed batch leaves (M10.14): burnt loaves, good for the pigs; a bad one, nothing.
+    failure:
+      outcome: poor
+      item: burnt_loaf
+      why: "Your oven was too hot and you left them in too long; the crust burnt before the crumb was done. Feel the heat on your arm before the loaves go in."
 
   - id: smithing
     name: smithing
@@ -29,6 +34,13 @@ crafts:
       - { id: sheet_work, name: sheet work }
       - { id: lock_work, name: lock work }
     masterwork: a lock that nothing but its own key will open
+    # A cracked piece is scrap for the heap; a bad failure splits the bellows (the forge needs mending).
+    failure:
+      outcome: poor
+      item: scrap_iron
+      qty: 1
+      why: "You let the iron go cold before you struck, and it cracked. Strike while it glows orange, not red."
+      critical: damaged
 
   - id: milling
     name: milling
@@ -37,6 +49,11 @@ crafts:
     professions: [miller, horse_miller, miller_hand]
     techniques:
       - { id: grinding, name: grinding }
+    # Stones set too close: half the grain is dust, the rest can go through again.
+    failure:
+      outcome: leftover
+      share: 0.5
+      why: "You set the stones too close and ran them dry; half of it is crushed to nothing. Keep the hopper full and the stones a hair apart."
 
   - id: peat_cutting
     name: peat-cutting

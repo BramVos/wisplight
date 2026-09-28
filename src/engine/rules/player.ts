@@ -693,7 +693,14 @@ export function struggle(world: World, pass: (minutes: number) => Output[]): Out
   const seen = pass(10)
   if (result.degree === 'success' || result.degree === 'critical success') {
     delete c.conditions['mired']
-    return [{ kind: 'check', text: `(Athletics ${result.total} vs DC 13: ${result.degree})` }, { kind: 'narration', text: 'With a sound like a cow pulling out of a ditch, the fen lets you go. You are black to the hips.' }, ...seen]
+    // Out, but wet through and cold (M10.14), where the rules know the condition: until a fire or a roof dries you.
+    const wet = rulesOf(world.content).conditions.some((x) => x.id === 'wet')
+    if (wet) c.conditions['wet'] = 1
+    return [
+      { kind: 'check', text: `(Athletics ${result.total} vs DC 13: ${result.degree})` },
+      { kind: 'narration', text: `With a sound like a cow pulling out of a ditch, the fen lets you go. You are black to the hips.${wet ? ' And wet through, and cold: -1 on everything you try until you dry out by a fire or under a roof.' : ''}` },
+      ...seen,
+    ]
   }
   return [{ kind: 'check', text: `(Athletics ${result.total} vs DC 13: ${result.degree})` }, { kind: 'narration', text: 'You heave and sink a little deeper. The water is cold.' }, ...seen]
 }

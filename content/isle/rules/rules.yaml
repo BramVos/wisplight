@@ -81,6 +81,8 @@ rules:
     - { id: bleeding, name: Bleeding, text: "Takes its value in damage each round.", max: 5 }
     - { id: grabbed, name: Grabbed, text: "Cannot move; -2 on attacks." }
     - { id: prone, name: Prone, text: "-2 on attacks, easier to hit; standing up takes an action." }
+    # M10.14: out of the sea, soaked and cold, until an hour under a roof.
+    - { id: wet, name: Wet and cold, text: "-1 on checks until you dry out by a fire or under a roof." }
     - { id: off_guard, name: Off-guard, text: "-2 defence until the end of its next turn." }
     - { id: sickened, name: Sickened, text: "Cannot eat or drink; -1 on checks." }
     - { id: cursed, name: Cursed, text: "A curse with a rule of its own." }

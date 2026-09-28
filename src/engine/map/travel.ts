@@ -356,11 +356,29 @@ export function waysLine(world: World, map: RegionMap, hex: Hex): string {
   return `Ways on: ${open.join(', ') || 'none'}${shut.length ? `; deep water ${shut.join(', ')}` : ''}.`
 }
 
+/**
+ * Lost in the mist (M10.14): after the stranger lost their bearings, until the
+ * mist lifts or a road or a place tells them where they are. Clears itself.
+ */
+export function stillLost(world: World, cell: Cell | undefined): boolean {
+  if (world.state.player.lost === undefined) return false
+  if (weather(world) !== 'fog' || !cell || cell.way || cell.place) {
+    delete world.state.player.lost
+    return false
+  }
+  return true
+}
+
 export function describeHex(world: World, hex: Hex): Output {
   const map = regionMap(world.content)!
   const cell = map.cell(hex)!
   const night = new GameClock(world.now).isNight
   const lines: string[] = []
+  // Where you are, you cannot tell: what is now, and the ways on.
+  if (stillLost(world, cell)) {
+    lines.push('You have lost your bearings: the mist hides everything past arm\'s length, and every way looks the same. WAIT for it to lift, or WALK TO a place or HEAD a way and trust your feet; a road or a place will tell you where you are.')
+    return { kind: 'room', text: ['Somewhere in the mist', lines.join(' '), waysLine(world, map, hex)].join('\n') }
+  }
   if (cell.way) {
     lines.push(
       cell.way.kind === 'canal'
@@ -694,6 +712,7 @@ export function walk(world: World, plan: WalkPlan, pass: (minutes: number) => Ou
     }
     if (lost) {
       reason = 'The mist closes in and you lose your bearings.'
+      world.state.player.lost = world.now
       break
     }
     if (stepCell.bog) {

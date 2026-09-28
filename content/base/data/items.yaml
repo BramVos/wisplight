@@ -33,6 +33,18 @@ items:
     value: 2
     food: 35
 
+
+  # M10.14: what a failed batch leaves. Poorer, of use for something else, worth less.
+  - id: burnt_loaf
+    name: burnt loaf
+    plural: burnt loaves
+    aliases: [burnt bread, burnt loaves, verbrand brood]
+    description: A loaf burnt black outside and doughy within. The pigs won't mind, and hungry people won't either.
+    tags: [food]
+    value: 1
+    food: 10
+    quality: poor
+    of: rye_bread
   - id: peat
     name: basket of peat
     plural: baskets of peat
@@ -155,6 +167,15 @@ items:
     tags: [material, iron]
     value: 8
 
+
+  - id: scrap_iron
+    name: piece of scrap iron
+    plural: pieces of scrap iron
+    aliases: [scrap, scrap iron, schroot]
+    description: A twisted bit of iron that cracked under the hammer. A smith takes it for the scrap heap, and it can go back in the fire.
+    tags: [material, iron]
+    value: 3
+    quality: poor
   - id: surveyors_chain
     name: surveyor's chain
     plural: surveyor's chains

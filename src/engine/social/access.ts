@@ -154,7 +154,7 @@ export function force(world: World, words: string, direction?: string): Output[]
   const what = exit ? `the door of ${world.location(exit.to).name}` : theName(object!.name ?? world.content.objectTypes.get(object!.type)?.name ?? object!.id)
   const out: Output[] = [{ kind: 'check', text: `(Athletics ${check.total} vs DC ${dc}: ${check.degree})` }]
   if (won) (world.state.locks ??= {})[id] = 'broken'
-  out.push({ kind: 'narration', text: won ? `With a crack of splitting wood, ${what} gives.` : `You throw yourself at ${what}. It holds, and the noise carries.` })
+  out.push({ kind: 'narration', text: won ? `With a crack of splitting wood, ${what} gives.` : `You throw yourself at ${what}. It holds, and the noise carries: whoever is near knows now that someone was at it. Better go before they come, or come back with its key.` })
   // Loud either way: whoever is here or next door hears it.
   const owner = exit ? ownerOf(world, exit.to) : ownerOf(world, here, { object: object!.id })
   const heard = whoNoticed(world, here, [], owner.id ? { [owner.id]: 4 } : {}).noticed
@@ -187,7 +187,7 @@ export function pick(world: World, words: string, direction?: string): Output[] 
   const id = door ? exitLockId(here, door[0]) : objectLockId(here, object!.id)
   if (lockOpen(world, id)) return [{ kind: 'error', text: 'It is not locked.' }]
   const what = door ? `the door of ${world.location(door[1].to).name}` : theName(object!.name ?? world.content.objectTypes.get(object!.type)?.name ?? object!.id)
-  if (world.state.locks?.[id] === 'jammed') return [{ kind: 'error', text: `The lock of ${what} is jammed. Only its key, or force, will open it now.` }]
+  if (world.state.locks?.[id] === 'jammed') return [{ kind: 'error', text: `The lock of ${what} is jammed. Only its key, FORCE, or a smith who knows locks will open it now.` }]
   const tool = PICKS.find((i) => (world.state.player.inventory[i] ?? 0) > 0)
   if (!tool) return [{ kind: 'error', text: 'You have nothing thin and stiff enough to pick a lock with: a nail, a hook, the point of a knife.' }]
   const outdoors = !place.tags.some((t) => ['indoors', 'private', 'shop', 'social', 'workshop'].includes(t))
@@ -208,9 +208,10 @@ export function pick(world: World, words: string, direction?: string): Output[] 
     ;(world.state.locks ??= {})[id] = 'jammed'
     const lost = tool !== 'knife'
     if (lost) world.state.player.inventory[tool] = (world.state.player.inventory[tool] ?? 1) - 1
-    out.push({ kind: 'narration', text: `Something inside the lock of ${what} shifts the wrong way and sticks.${lost ? ` The ${tool1} snaps off in it.` : ''} It is jammed now.` })
+    // What is now (M10.14): a jammed lock, and the ways that are left.
+    out.push({ kind: 'narration', text: `Something inside the lock of ${what} shifts the wrong way and sticks.${lost ? ` The ${tool1} snaps off in it.` : ''} It is jammed now: no pick will turn it. Its key would, or FORCE, loud as that is, or a smith who knows locks.` })
   } else {
-    out.push({ kind: 'narration', text: `You work at the lock of ${what} with the ${tool1}, but the wards won't give.` })
+    out.push({ kind: 'narration', text: `You work at the lock of ${what} with the ${tool1}, but the wards won't give. The lock is as it was: you can try again, find its key, or leave it.` })
   }
   // Quiet, but not invisible: whoever sees the stranger at someone's lock knows what they saw.
   if (owner.id) {

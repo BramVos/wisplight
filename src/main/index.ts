@@ -4,7 +4,7 @@ import { appendFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFi
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { ContentError, draftRequest, draftResult, Engine, ENTITY_KINDS, lineDiff, MapPaletteSchema, paletteRequest, paletteView, readDraft, readPalette, readVoice, savePalette, saveVoice, voiceRequest, voiceYaml, worldStepRequest, type Content, type Edit, type EntityKind, type FileChange, type CheckpointedSave, type MapPalette, type Output, type SaveData } from '../engine'
+import { ContentError, draftRequest, draftResult, Engine, ENTITY_KINDS, lineDiff, MapPaletteSchema, paletteRequest, paletteView, readDraft, readPalette, readVoice, savePalette, saveVoice, voiceRequest, voiceYaml, worldStepRequest, enhanceRequest, readEnhance, type Content, type Edit, type EntityKind, type FileChange, type CheckpointedSave, type MapPalette, type Output, type SaveData } from '../engine'
 import { ContentEditor } from '../node/editor'
 import type { ProviderId } from '../node/ai/providers'
 import { AiService } from '../node/ai/service'
@@ -512,6 +512,19 @@ ipcMain.handle('editor:world-step', async (_event, world: unknown, step: unknown
     return shownDraft(readDraft(files, (await llm.complete(worldStepRequest(files, String(step ?? ''), String(said ?? '').slice(0, 4000)))).text))
   } catch (error) {
     return { say: '', questions: [], changes: [], problems: [`The chronicler did not answer: ${error instanceof Error ? error.message : String(error)}`], diffs: [] }
+  }
+})
+// Enhance with AI (after M10.17): the designer's answer to a step, written out as a fuller brief; nothing is saved.
+ipcMain.handle('editor:enhance', async (_event, world: unknown, step: unknown, said: unknown) => {
+  devOnly()
+  await setup()
+  const llm = ai?.client()
+  if (!llm) return { brief: '', open: [], problems: ["The chronicler writes it out with you: connect a model in the game's Settings > AI first."] }
+  const files = await readContentFiles(contentDir(), worldOf(world))
+  try {
+    return readEnhance((await llm.complete(enhanceRequest(files, String(step ?? ''), String(said ?? '').slice(0, 4000)))).text)
+  } catch (error) {
+    return { brief: '', open: [], problems: [`The chronicler did not answer: ${error instanceof Error ? error.message : String(error)}`] }
   }
 })
 ipcMain.handle('editor:save-draft', async (_event, world: unknown, draft: unknown) => {

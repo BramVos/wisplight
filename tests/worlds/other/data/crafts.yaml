@@ -8,3 +8,9 @@ crafts:
     professions: [fabricator]
     techniques:
       - { id: patch_kits, name: patch kits }
+    # What a spoilt patch leaves (M10.14): half the scrap back; a bad one burns out the torch head.
+    failure:
+      outcome: leftover
+      share: 0.5
+      why: "You cut across the grain of the alloy and it tore. Score it first, then snap it along the line."
+      critical: damaged

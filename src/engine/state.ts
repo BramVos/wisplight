@@ -526,6 +526,8 @@ export interface PlayerState {
   lostPurse?: { location: string; amount: number; t: number }
   /** Died three times: the Grey Rider wants a price. */
   riderPrice?: boolean
+  /** Lost in the mist since then (M10.14), until it lifts or a road or a place says where you are. */
+  lost?: number
   /** Until when the player has a punt hired (M7.2; an old save; since M10.17 in `hired`). */
   punt?: number
   /** What the player has hired, by the owner's hire id, and until when (M10.17). */

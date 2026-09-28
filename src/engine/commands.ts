@@ -5,6 +5,7 @@ import { describeSelf, descriptionNow, detailHere, lookThere, lookThing, scenery
 import { choose, MAX_OPTIONS, offer, type ChoiceOption } from './choice'
 import { force, objectHere, openObject, passLock, pick, takeFrom } from './social/access'
 import { craftCheck, craftOf, craftProgress, craftRank, craftTitle, interruption, learnFrom, ownWorkBonus, rankIndex, soldOwn, workplaceLeave } from './crafts'
+import { damagedBlock, failedMake, repair } from './outcomes'
 import { gather, searchHere, track, treat } from './skills'
 import { ownerOf, ownersHere } from './social/ownership'
 import { returnLent } from './agreements'
@@ -182,6 +183,13 @@ export function runCommand(host: CommandHost, command: Command): Output[] {
       return rent(host)
     case 'use':
       return use(host, command.args)
+    // REPAIR <thing> (M10.14): mend what a failed attempt damaged.
+    case 'repair':
+    case 'mend':
+    case 'fix':
+    case 'herstel':
+    case 'repareer':
+      return repair(world, (m) => host.pass(m), command.args.join(' '))
     // WORK [at <object>] (M8.5): an object's work for pay, as USE with the verb.
     case 'work':
       return use(host, ['work', ...command.args])
@@ -899,8 +907,8 @@ function makeWith(host: CommandHost, instance: ObjectInstance, type: ObjectType,
     const what = made.map(([i, q]) => qtyName(world, i, q)).join(' and ')
     out.push(text(`${affordance.player_text ?? `You ${affordance.verb} at the ${label(instance, type)}.`}${result.degree === 'critical success' ? ' It could hardly have gone better.' : ''} You have ${what}.`))
   } else {
-    const lost = Object.entries(affordance.consumes).map(([i, q]) => qtyName(world, i, q)).join(' and ')
-    out.push(text(result.degree === 'critical failure' ? `It goes wrong from the start, and you only see why at the end. ${capital(lost)} wasted.` : `It doesn't come right: nothing worth keeping.${lost ? ` ${capital(lost)} gone.` : ''}`))
+    // What the failure leaves (M10.14): a poorer thing, a damaged workplace, part of the material, or nothing.
+    out.push(...failedMake(world, instance, type, craft, affordance, result))
   }
   out.push(...learnFrom(world, craft, affordance, `${type.id}:${affordance.id}`, result))
   return [...out, ...seen]
@@ -914,6 +922,9 @@ function craftTime(world: World, affordance: Affordance): number {
 
 function cannotUse(world: World, here: string, instance: ObjectInstance, affordance: Affordance): string | undefined {
   const state = world.objectState(here, instance.id)
+  const type = world.content.objectTypes.get(instance.type)
+  const damaged = type ? damagedBlock(world, here, instance, type, affordance) : undefined
+  if (damaged) return damaged
   if (!inSeason(affordance, new GameClock(world.now).parts.month)) return `Not in ${world.calendar.months[new GameClock(world.now).parts.month - 1] ?? 'this month'}: that is done in ${affordance.months!.map((m) => world.calendar.months[m - 1]).join(', ')}.`
   if (!Object.entries(affordance.requires_state).every(([k, v]) => state[k] === v)) {
     return affordance.broken_text ?? `The ${instance.name ?? instance.type} can't be used right now.`

@@ -593,6 +593,80 @@ export function worldStepRequest(files: ContentFile[], stepId: string, said: str
   }
 }
 
+const ENHANCE_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['brief', 'open'],
+  properties: {
+    brief: { type: 'string' },
+    open: { type: 'array', items: { type: 'string' } },
+  },
+}
+
+/** What Enhance with AI gives back: the designer's answer written out, and what only the designer can decide. */
+export interface Enhanced {
+  brief: string
+  open: string[]
+  problems: string[]
+}
+
+/**
+ * Enhance with AI (after M10.17; Bram, 28 September 2026): the chronicler
+ * takes the designer's short answer to a step and writes it out as a fuller
+ * brief, in plain text, before anything is proposed. It keeps every choice
+ * the designer made, fills each question of the step they left open with a
+ * marked suggestion, and says what only the designer can decide. The brief
+ * goes back into the answer box to be changed at will; Propose then has
+ * enough to go on. Nothing is saved, and no content is made.
+ */
+export function enhanceRequest(files: ContentFile[], stepId: string, said: string): LlmRequest {
+  const step = WORLD_STEPS.find((s) => s.id === stepId) ?? WORLD_STEPS[0]!
+  const content = safeLoad(files)
+  const instruction = files.filter((f) => /(^|\/)CHRONICLER\.md$/.test(f.path)).sort((a, b) => a.path.localeCompare(b.path)).map((f) => f.text).join('\n\n')
+  const worldFile = files.find((f) => /(^|\/)world\.ya?ml$/.test(f.path))
+  const index = ENTITY_KINDS.map((kind) => {
+    const list = entities(files, kind)
+    return list.length ? `${LISTS[kind]}: ${list.map((e) => `${e.id} (${nameOf(kind, e.raw)})`).join(', ')}` : ''
+  }).filter(Boolean)
+  return {
+    role: 'chronicler',
+    system: [
+      'YOU HELP THE DESIGNER WRITE THEIR ANSWER FOR ONE STEP OF BUILDING A WORLD. You do not propose content yet: you write out what they said as a fuller brief, so that the proposal after it has enough to go on.',
+      '- Keep every choice the designer made, in meaning and in their names. Do not overrule them.',
+      '- For each question of the step they did not answer, add one concrete suggestion that fits the frame and what the world already has, marked "(suggestion)". Invent names only as suggestions.',
+      '- Write plain English with British spelling, in short lines or a few short paragraphs; no YAML, no ids. At most 250 words.',
+      '- Keep to the hard limits: nothing sexual involving minors, no hate against real groups, romance non-explicit.',
+      '- In `open`, list up to three things only the designer can decide.',
+      '',
+      `THE STEP: ${step.title}. ${step.prompt}`,
+      `ITS QUESTIONS: ${step.ask.join(' ')}`,
+      `IF IT IS SKIPPED: ${step.skipped}`,
+      '',
+      contractSummary(content),
+      '',
+      instruction,
+      'Answer in JSON: brief (the fuller answer, plain text), open (what only the designer can decide).',
+    ].join('\n'),
+    prompt: [`WORLD.YAML NOW:`, worldFile?.text ?? '(none)', '', 'WHAT EXISTS:', ...index, '', `THE DESIGNER WROTE: ${said}`].join('\n'),
+    schemaName: 'world_enhance',
+    schema: ENHANCE_SCHEMA,
+    maxTokens: 1200,
+    meta: { step: step.id, ask: said, asks: step.ask, prefix: worldPrefix(files) },
+  }
+}
+
+/** Reads the chronicler's brief; a reply out of form is a problem, never a crash. */
+export function readEnhance(text: string): Enhanced {
+  try {
+    const parsed = JSON.parse(text.trim().replace(/^```(?:json)?\s*|\s*```$/g, '')) as { brief?: unknown; open?: unknown }
+    const brief = typeof parsed.brief === 'string' ? parsed.brief.trim() : ''
+    const open = Array.isArray(parsed.open) ? parsed.open.filter((q): q is string => typeof q === 'string' && q.trim() !== '').slice(0, 3) : []
+    return brief ? { brief, open, problems: [] } : { brief: '', open, problems: ['The chronicler gave no brief back.'] }
+  } catch {
+    return { brief: '', open: [], problems: ['The chronicler did not answer in the agreed form.'] }
+  }
+}
+
 /** The edits a draft stands for, to save when the designer accepts it. */
 export function draftEdits(draft: Pick<Draft, 'changes'>): Edit[] {
   return draft.changes.map((c) => {

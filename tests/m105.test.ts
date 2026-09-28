@@ -327,8 +327,8 @@ describe('M10.5: the deeds of the other skills', () => {
     // A jammed lock: only the key or force.
     delete world.state.locks!['object:loc_waagdam_graanhandel/strongbox']
     rolls(engine, 1)
-    expect(said(await engine.handle('pick strongbox'))).toMatch(/It is jammed now\./)
-    expect(said(await engine.handle('pick strongbox'))).toMatch(/is jammed\. Only its key, or force, will open it now\./)
+    expect(said(await engine.handle('pick strongbox'))).toMatch(/It is jammed now: no pick will turn it/)
+    expect(said(await engine.handle('pick strongbox'))).toMatch(/is jammed\. Only its key, FORCE, or a smith who knows locks will open it now\./)
     // PICK <thing> is still taking it.
     world.state.ground[world.state.player.location] = { apple: 1 }
     expect(said(await engine.handle('pick apple'))).toMatch(/You pick up an apple\./)

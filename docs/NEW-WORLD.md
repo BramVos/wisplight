@@ -8,6 +8,10 @@ Zo maakt de kroniekverteller in de editor samen met jou een nieuwe wereld (M10.1
 - **Wat je weglaat, blijft weg.** Elke stap behalve kader, plekken en mensen mag je overslaan. De motor gebruikt dan een neutrale standaard, nooit een waarde uit een andere wereld: geen Graafhaven, geen stuivers en geen trekschuit in een wereld die niet de Nethermarch is.
 - **Het kader geldt.** Is het eenmaal afgesproken, dan houdt alles zich eraan. Sciencefiction heeft geen magie, een wereld zonder geloof heeft geen gebeden of eden bij een god, en een wereld zonder kaart loop je via de uitgangen.
 
+## Uitwerken met AI
+
+Weet je bij een stap maar half wat je wilt, schrijf dan een paar woorden en druk op [Enhance with AI]. De kroniekverteller werkt ze uit tot een bredere opzet: wat jij zei blijft staan, elke open vraag van de stap krijgt een suggestie (gemarkeerd als suggestie), en eronder staat wat alleen jij kunt beslissen. Er wordt niets opgeslagen. Pas de tekst aan, of ga met [Back to my words] terug naar wat je had, en druk dan op [Propose]. Het werkt bij een nieuwe wereld en bij verder bouwen aan een bestaande.
+
 ## De stappen
 
 | Stap | Wat hij vraagt | Wat het vult | Overgeslagen |

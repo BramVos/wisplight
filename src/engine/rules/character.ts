@@ -338,7 +338,7 @@ export function maxHp(content: Content, character: Character): number {
 
 /** The penalty every check takes from conditions: Frightened, Sickened, and a curse (M7.2). */
 export function conditionPenalty(conditions: Record<string, number>): number {
-  return (conditions['frightened'] ?? 0) + (conditions['sickened'] ? 1 : 0) + (conditions['cursed'] ? 2 : 0)
+  return (conditions['frightened'] ?? 0) + (conditions['sickened'] ? 1 : 0) + (conditions['cursed'] ? 2 : 0) + (conditions['wet'] ? 1 : 0)
 }
 
 /** An attribute as it stands now: Fen Fever takes a point of Might for every day it has lasted. */

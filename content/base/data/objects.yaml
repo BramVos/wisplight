@@ -338,6 +338,11 @@ object_types:
         xp: 30
         player_text: You file the wards one by one and fit them to a key of your own cutting. The bolt shoots home with a sound like a coin on a counter.
 
+    # M10.14: a bad failure at the forge splits the bellows; mended in an hour and a half, or by the smith the next morning.
+    repair:
+      consumes: {}
+      duration: 90
+      sets: { damaged: false }
   - id: scale
     name: great scale
     aliases: [scale, heksenwaag, waag, weegschaal]

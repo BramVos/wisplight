@@ -111,6 +111,11 @@ object_types:
         check: { dc: 12 }
         xp: 5
         player_text: You paddle the coracle out past the harbour wall, drop the hand lines over the side and feel for the tug. Back on the slip you gut and salt what you caught.
+    # M10.14: a torn hide, stitched and tallowed; or by Wenna in the morning.
+    repair:
+      consumes: {}
+      duration: 60
+      sets: { damaged: false }
 
   - id: boat
     name: boat

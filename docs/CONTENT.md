@@ -167,6 +167,8 @@ A list; each has:
 | aliases | list of text | no | [] |
 | tags | list of text | no | [] |
 | value | number | yes |  |
+| quality | one of poor | no |  |
+| of | text | no |  |
 | food | number | no |  |
 | weapon | a map: damage, kind, light, two_hands, crit, range, iron | no |  |
 | armour | a map: kind, defence, cap | no |  |
@@ -793,6 +795,7 @@ A list; each has:
 | masterwork | text | no |  |
 | practice | 3 values | no | [10,30,100] |
 | per_day | number | no | 5 |
+| failure | a map: outcome, item, qty, share, why, critical | no |  |
 
 ## props (data/props.yaml)
 

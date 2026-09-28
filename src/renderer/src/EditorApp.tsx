@@ -1342,12 +1342,36 @@ function WorldSteps({ bridge, world, view, saved, existing = false }: { bridge: 
   const [busy, setBusy] = useState(false)
   const [done, setDone] = useState<Record<string, 'saved' | 'skipped'>>({})
   const [outcome, setOutcome] = useState<EditorSave>()
+  // Enhance with AI (after M10.17): the answer written out by the chronicler, what is still open, and the words before it.
+  const [open, setOpen] = useState<string[]>([])
+  const [before, setBefore] = useState<string>()
+  const [enhanceProblems, setEnhanceProblems] = useState<string[]>([])
   const step = WORLD_STEPS[at]!
   const go = (index: number) => {
     setAt(Math.max(0, Math.min(WORLD_STEPS.length - 1, index)))
     setSaid('')
     setDraft(undefined)
     setOutcome(undefined)
+    setOpen([])
+    setBefore(undefined)
+    setEnhanceProblems([])
+  }
+  const enhance = async () => {
+    setBusy(true)
+    setEnhanceProblems([])
+    try {
+      const result = await bridge.enhance(world, step.id, said.trim())
+      if (result.brief) {
+        setBefore(said)
+        setSaid(result.brief)
+      }
+      setOpen(result.open)
+      setEnhanceProblems(result.problems)
+    } catch (reason) {
+      setEnhanceProblems([reason instanceof Error ? reason.message : String(reason)])
+    } finally {
+      setBusy(false)
+    }
   }
   const propose = async () => {
     setBusy(true)
@@ -1381,7 +1405,7 @@ function WorldSteps({ bridge, world, view, saved, existing = false }: { bridge: 
         </p>
       )}
       <p className="muted small">
-        Step by step: say in a few sentences what you want, the chronicler proposes, and you accept, change your answer or skip. What you skip stays empty and works with its neutral
+        Step by step: say in a few sentences what you want (or let [Enhance with AI] write it out further first), the chronicler proposes, and you accept, change your answer or skip. What you skip stays empty and works with its neutral
         default. Frame, places and people are needed; the rest may wait.
       </p>
       <nav className="tabs step-tabs" aria-label="Steps">
@@ -1402,8 +1426,46 @@ function WorldSteps({ bridge, world, view, saved, existing = false }: { bridge: 
         ))}
       </ul>
       <p className="small muted">If you skip it: {step.skipped}</p>
-      <textarea rows={4} value={said} onChange={(e) => setSaid(e.target.value)} placeholder="Your answer, in a few sentences. Or: you choose." aria-label="Your answer to the chronicler" />
+      <textarea rows={before === undefined ? 4 : 10} value={said} onChange={(e) => setSaid(e.target.value)} placeholder="Your answer, in a few sentences. Or: you choose." aria-label="Your answer to the chronicler" />
+      {open.length > 0 && (
+        <div className="small">
+          <p className="muted">Only you can decide:</p>
+          <ul className="check-list small">
+            {open.map((q) => (
+              <li key={q}>{q}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {enhanceProblems.map((p) => (
+        <p key={p} className="warn small">
+          {p}
+        </p>
+      ))}
       <div className="row">
+        <button
+          type="button"
+          className="link"
+          disabled={busy || !said.trim()}
+          onClick={() => void enhance()}
+          title="The chronicler writes your answer out: what you said stays, each open question gets a marked suggestion. Nothing is saved; change it as you like, then Propose."
+        >
+          [Enhance with AI]
+        </button>
+        {before !== undefined && (
+          <button
+            type="button"
+            className="link"
+            disabled={busy}
+            onClick={() => {
+              setSaid(before)
+              setBefore(undefined)
+              setOpen([])
+            }}
+          >
+            [Back to my words]
+          </button>
+        )}
         <button type="button" className="link" disabled={busy || !said.trim()} onClick={() => void propose()}>
           [Propose]
         </button>

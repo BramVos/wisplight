@@ -60,6 +60,9 @@ export const ItemSchema = z.object({
   aliases: z.array(z.string()).default([]),
   tags: z.array(z.string()).default([]),
   value: z.number().int().nonnegative(),
+  /** A poorer make of another thing (M10.14): what a failed recipe leaves, of use for something else and worth less. */
+  quality: z.enum(['poor']).optional(),
+  of: z.string().optional(),
   food: z.number().int().min(0).max(100).optional(),
   /** A weapon (FO, chapter 12): its damage die, and what a critical hit does. */
   weapon: z
@@ -92,6 +95,27 @@ export const ItemSchema = z.object({
 export type Item = z.infer<typeof ItemSchema>
 
 // ---------------------------------------------------------------- objects and affordances
+
+/**
+ * What a failed attempt at a recipe leaves (M10.14; the review of 28 September 2026: failure makes a new situation,
+ * not "material gone, try again"): a poorer thing (of use for something else, worth less), the workplace damaged so
+ * that it needs mending, or part of the material back. A critical failure may be worse: by default it is lost.
+ * Without it, the material is gone, as before.
+ */
+export const CraftFailureSchema = z
+  .object({
+    outcome: z.enum(['poor', 'damaged', 'leftover', 'lost']),
+    /** poor: the lesser thing it makes instead, and how many (default half of what the recipe makes, at least one). */
+    item: z.string().optional(),
+    qty: z.number().int().positive().optional(),
+    /** leftover: the share of the material that comes back. */
+    share: z.number().min(0).max(1).default(0.5),
+    /** What a master of the craft says is wrong with it. */
+    why: z.string().optional(),
+    critical: z.enum(['poor', 'damaged', 'leftover', 'lost']).default('lost'),
+  })
+  .strict()
+export type CraftFailure = z.infer<typeof CraftFailureSchema>
 
 export const AffordanceSchema = z.object({
   id: z.string(),
@@ -128,6 +152,8 @@ export const AffordanceSchema = z.object({
   rank: z.enum(['novice', 'journeyman', 'expert', 'master']).optional(),
   /** A piece that counts as a masterwork: done well, the craft may reach master (M10.5). */
   masterwork: z.boolean().optional(),
+  /** What a failed attempt at this recipe leaves, over the craft's own (M10.14). */
+  failure: CraftFailureSchema.optional(),
 })
 export type Affordance = z.infer<typeof AffordanceSchema>
 
@@ -156,6 +182,8 @@ export const CraftSchema = z
     practice: z.tuple([z.number().int().positive(), z.number().int().positive(), z.number().int().positive()]).default([10, 30, 100]),
     /** At most this much practice a day: the rest is only work. */
     per_day: z.number().int().positive().default(5),
+    /** What a failed attempt leaves, for every recipe of the craft that says nothing of its own (M10.14). */
+    failure: CraftFailureSchema.optional(),
   })
   .strict()
 export type Craft = z.infer<typeof CraftSchema>
@@ -1596,11 +1624,19 @@ function checkCrafts(c: Pick<Content, 'crafts' | 'professions' | 'objectTypes' |
     if (!c.objectTypes.has(p.type)) problems.push(`prop ${p.id}: ${p.type} is no object type`)
     for (const i of p.items) if (!c.items.has(i)) problems.push(`prop ${p.id}: ${i} is no item`)
   }
+  // What a failed recipe leaves (M10.14): the poorer thing must exist.
+  const failureRefs = (f: CraftFailure | undefined, where: string) => {
+    if (!f) return
+    if ((f.outcome === 'poor' || f.critical === 'poor') && !f.item) problems.push(`${where}: a poor outcome needs the item it makes`)
+    if (f.item && !c.items.has(f.item)) problems.push(`${where}: a failure makes ${f.item}, which is no item`)
+  }
+  for (const item of c.items.values()) if (item.of && !c.items.has(item.of)) problems.push(`item ${item.id}: a poorer make of ${item.of}, which is no item`)
   for (const craft of c.crafts.values()) {
     if (rules && !rules.skills.some((s) => s.id === craft.skill)) problems.push(`craft ${craft.id}: leans on ${craft.skill}, which is no skill`)
     for (const p of craft.professions) if (!c.professions.has(p)) problems.push(`craft ${craft.id}: the trade ${p} does not exist`)
     const [a, b, m] = craft.practice
     if (!(a < b && b < m)) problems.push(`craft ${craft.id}: practice must rise from journeyman to master`)
+    failureRefs(craft.failure, `craft ${craft.id}`)
   }
   for (const type of c.objectTypes.values()) {
     for (const a of type.affordances) {
@@ -1610,6 +1646,9 @@ function checkCrafts(c: Pick<Content, 'crafts' | 'professions' | 'objectTypes' |
       if (a.check && !a.check.skill && !a.craft) problems.push(`object type ${type.id}: ${a.id} has a check without a skill, and is no recipe of a craft`)
       if (a.check?.skill && rules && !rules.skills.some((s) => s.id === a.check!.skill)) problems.push(`object type ${type.id}: ${a.id} checks ${a.check.skill}, which is no skill`)
       if ((a.rank || a.masterwork || a.technique) && !a.craft) problems.push(`object type ${type.id}: ${a.id} has a rank, technique or masterwork but no craft`)
+      failureRefs(a.failure, `object type ${type.id}: ${a.id}`)
+      const failure = a.failure ?? craft?.failure
+      if ((failure?.outcome === 'damaged' || failure?.critical === 'damaged') && !type.repair) problems.push(`object type ${type.id}: a failed ${a.id} damages it, but it has no repair`)
     }
     if (type.inscription?.topic && !c.topics.has(type.inscription.topic)) problems.push(`object type ${type.id}: its inscription teaches ${type.inscription.topic}, which is no topic`)
   }

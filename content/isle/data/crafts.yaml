@@ -9,6 +9,12 @@ crafts:
     professions: [fisher, boatman]
     techniques:
       - { id: hand_lines, name: hand lines }
+    # What a bad day on the water leaves (M10.14): small fry; a very bad one tears the coracle's hide.
+    failure:
+      outcome: poor
+      item: small_fry
+      why: "You fished in the lee of the wall, where the gulls have had the best of it. Go out past the second rock, where the water turns green."
+      critical: damaged
 
   - id: salve_making
     name: salve-making
@@ -17,3 +23,7 @@ crafts:
     professions: [hedge_witch]
     techniques:
       - { id: kelp_salve, name: kelp salve }
+    failure:
+      outcome: poor
+      item: thin_salve
+      why: "You let it boil. Salve wants a slow heat, or the kelp gives up nothing but slime."

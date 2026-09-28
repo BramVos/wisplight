@@ -106,6 +106,8 @@ rules:
     - { id: sickened, name: Sickened, text: "Cannot eat or drink; -1 on checks." }
     - { id: fen_fever, name: Fen Fever, text: "A sickness: -1 Might each day until cured." }
     - { id: mired, name: Mired, text: "Stuck in the fen: no actions except getting free." }
+    # M10.14: out of the water, soaked and cold: -1 on checks until an hour under a roof.
+    - { id: wet, name: Wet and cold, text: "-1 on checks until you dry out by a fire or under a roof." }
     - { id: cursed, name: Cursed, text: "A curse with a rule of its own." }
     - { id: catform, name: Catform, text: "You are a cat: sneak +4, talk to cats, use no things, speak to no one." }
     - { id: blinded, name: Blinded, text: "-4 on attacks and Perception." }

@@ -27,6 +27,7 @@ import { noticeCoincidences } from './social/coincidence'
 import { homeDay } from './social/romance'
 import { crimesHour } from './social/crime'
 import { conditionsDay } from './rules/player'
+import { dryOut, mendOvernight } from './outcomes'
 import { debtsDue, weeklyDrift } from './social/deeds'
 import { realmsDay } from './social/realms'
 import { watchHour } from './signals'
@@ -103,8 +104,11 @@ function hourly(world: World): void {
     debtsDue(world)
     homeDay(world)
     conditionsDay(world)
+    // What the stranger damaged and left, its owner mends, and minds (M10.14).
+    mendOvernight(world)
   }
   pursue(world)
+  dryOut(world)
   seekHour(world)
   crimesHour(world)
   healWounds(world)

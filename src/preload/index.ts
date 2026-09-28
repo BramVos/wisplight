@@ -45,6 +45,8 @@ contextBridge.exposeInMainWorld('wisplight', {
     proposeVoice: (world: string, ask: string) => ipcRenderer.invoke('editor:propose-voice', world, ask),
     // Building a world step by step with the chronicler (M10.17), and saving a proposal with world keys and files.
     worldStep: (world: string, step: string, said: string) => ipcRenderer.invoke('editor:world-step', world, step, said),
+    // Enhance with AI: the answer to a step written out as a fuller brief (after M10.17).
+    enhance: (world: string, step: string, said: string) => ipcRenderer.invoke('editor:enhance', world, step, said),
     saveDraft: (world: string, draft: unknown) => ipcRenderer.invoke('editor:save-draft', world, draft),
   },
   // Under the bonnet (M10.1): only a development build has the dev menu.

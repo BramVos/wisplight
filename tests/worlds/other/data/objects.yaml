@@ -32,6 +32,11 @@ object_types:
         check: { dc: 12 }
         xp: 5
         player_text: You cut the scrap into patches, file the edges smooth and pack them in a tin with a tube of sealant.
+    # M10.14: a burnt-out torch head, swapped for one made of scrap; or by Teo in the morning.
+    repair:
+      consumes: { scrap_metal: 1 }
+      duration: 45
+      sets: { damaged: false }
 
   - id: ice_saw
     name: ice saw

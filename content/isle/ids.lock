@@ -28,7 +28,7 @@ ids:
   isle/data/factions.yaml:
     faction: [hythe_folk, tidemother_faithful, star_sailors, wreckers]
   isle/data/items.yaml:
-    item: [marens_key, knife, ship_biscuit, salt_fish, fish_stew, ale, sailcloth, pitch, lamp_oil, rope, rune_key, kelp_salve, heather, kelp, spear, iron_hook, staff, longbow, cutlass, quilted_coat, sealskin_jerkin, scale_vest, ring_shirt, round_shield, conch, diary, letters]
+    item: [marens_key, knife, ship_biscuit, salt_fish, small_fry, fish_stew, ale, sailcloth, pitch, lamp_oil, rope, rune_key, kelp_salve, thin_salve, heather, kelp, spear, iron_hook, staff, longbow, cutlass, quilted_coat, sealskin_jerkin, scale_vest, ring_shirt, round_shield, conch, diary, letters]
   isle/data/objects.yaml:
     object_type: [strongbox, well, silver_birch, bench, beacon, waystone, salve_pot, coracle, boat]
   isle/data/passages.yaml:

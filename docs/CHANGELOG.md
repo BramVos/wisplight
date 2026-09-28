@@ -1,5 +1,24 @@
 # Changelog
 
+## Na M10.17: elke wereld haar eigen versie, de droge rug, en uitwerken met AI, 28 september 2026
+
+- **Skerrow en Deepwell spelen alles wat M10.17 content maakte, in hun eigen woorden.**
+  - Skerrow heeft nu slaapzinnen, eigen woorden voor zijn munten ("crowns", "shillings"), de boetes van de headwoman, en groepen: het volk van de Hythe, de gelovigen van de Tidemother, de zeelui van de Old Stars en de wreckers. Er is een eigen dood aan de kust van de Tidemother, met een rite bij de oude berk. Wenna verhuurt haar coracle, en een nachtelijke storm stuurt je terug van de Heights.
+  - Deepwell heeft credits die men "creds" noemt, de koloniale raad en de ploeg van de ijssnijders (je tekent aan de ijswand voor een credit), een drukpak te huur bij Teo, en ijswerken die op Decday verzegeld zijn. Geloof, weer en wezens laat Deepwell bewust weg, zodat de tests de neutrale standaard blijven spelen.
+- **De regel is strenger.** Skerrow krijgt voortaan altijd een eigen versie van iets nieuws; Deepwell ook, tenzij het bewust de standaard laat zien.
+- **De droge rug.** Ken je hem, dan staat hij in de looptekst en in de keuzelijst van FOLLOW. FOLLOW THE RIDGE werkt ook vanaf de turfgraverij: je loopt er eerst naartoe. Splitst een weg of de rug, dan krijg je een keuzelijst met waar elke kant heen gaat ("2. south-east, towards the Kattenbroek"). Ken je hem niet, dan is het gewoon fen, zoals altijd.
+- **Uitwerken met AI.** In de editor staat bij elke stap van het wereldgesprek een knop [Enhance with AI]. De kroniekverteller werkt je korte antwoord uit tot een bredere opzet met gemarkeerde suggesties en open punten, en slaat niets op. Jij past het aan en drukt dan op [Propose]. Met [Back to my words] ga je terug naar je eigen tekst.
+
+Testen:
+- **Skerrow:** HIRE CORACLE bij Wenna in de haven.
+- **Deepwell:** JOIN THE CUTTERS CREW aan de ijswand.
+- **De rug:** leer hem kennen en typ FOLLOW THE RIDGE bij de turfgraverij.
+- **De editor:** schrijf bij een stap een halve zin en druk op [Enhance with AI].
+
+Tests staan in `tests/ownworlds.test.ts`, `tests/enhance.test.ts` en `tests/m10play.test.ts`.
+
+Nog niet: Skerrow heeft nog geen streekkaart, dus onderweg-gebeurtenissen en terreinnamen wachten daarop. Je eigen nieuwe werelden (`content/space` en `content/space2`, allebei "Planet Recon") staan niet in git. Twee oude tests rekenen alleen op de Nethermarch en Skerrow in `content/` en falen daardoor lokaal.
+
 ## M10.17 Elke wereld: het contract van de content, 28 september 2026
 
 - **Het contract.** `npm run content:contract` schrijft `docs/CONTENT.md` uit de schema's: per bestand en soort wat verplicht is, wat optioneel is, de standaard bij ontbreken en wat het spel ermee doet. Een test faalt als het document niet meer bij de schema's past. De editor weigert een veld dat niet in het contract staat, met de velden die er wel zijn.

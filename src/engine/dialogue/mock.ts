@@ -79,6 +79,8 @@ export class MockLlm implements LlmClient {
         ? this.draft(request.meta ?? {})
         : request.schemaName === 'world_step'
         ? this.worldStep(request.meta ?? {})
+        : request.schemaName === 'world_enhance'
+        ? this.enhance(request.meta ?? {})
         : request.schemaName === 'palette_draft'
         ? this.palette(request.meta ?? {})
         : request.schemaName === 'voice_draft'
@@ -127,6 +129,15 @@ export class MockLlm implements LlmClient {
    * view, a new hamlet with three people and a small story, joined to that
    * place; anything else gets a question back, as the working instruction asks.
    */
+  /** Enhance with AI (after M10.17): the designer's words kept, a marked suggestion for each other question of the step, and the first question back. */
+  private enhance(meta: Record<string, unknown>): string {
+    if (this.mode === 'invalid') return 'A much better answer.'
+    const said = String(meta['ask'] ?? '').trim()
+    const asks = (meta['asks'] as string[] | undefined) ?? []
+    const brief = [said, ...asks.slice(1).map((q) => `- ${q} (suggestion: keep it simple and close to what is already there)`)].join('\n')
+    return JSON.stringify({ brief, open: asks.length ? [asks[0]!] : [] })
+  }
+
   /** One step of building a world (M10.17): the frame, the calendar and the money from the designer's words; for the rest a question. */
   private worldStep(meta: Record<string, unknown>): string {
     if (this.mode === 'invalid') return 'Here is a lovely world for you.'
