@@ -212,6 +212,9 @@
     "rulesNote": "Lines the game wrote itself (greetings, set lines, a line standing in for a slow or refused answer) get a warmer tint in the log and the talk window. Only while an AI model is chosen.",
     "cards": "Show moments as cards",
     "cardsNote": "A place worth it the first time you reach it or see it rise from afar, and a tiding that changes things, come as a card over the log; the clock waits. Off, they are lines like any other.",
+    "sound": "Sound",
+    "volume": "Volume",
+    "soundNote": "A quiet sound of where you are (wind in the reeds, the sea, a fire) and a bell on the hours it rings; the bell is a line in the text too, so nothing needs sound to be understood. Silent in menus and when the game waits.",
     "mapStyle": "The map",
     "mapStyles": {
       "dark": "Dark",

@@ -590,10 +590,10 @@ Mislukking:
 
 Scope: opmerking uit de review van 28 september 2026, door Bram overgenomen: optionele omgevingsgeluiden, geen gesproken dialogen. Subtiel, uitschakelbaar, en nooit nodig om iets te begrijpen. Stemmen later apart beoordelen.
 
-- [ ] Een geluidslaag in de app (niet in de terminalclient): per plek een omgevingsgeluid uit de content (`sound:` op een plek of gebied: wind door riet, regen op een dak, de zee achter de herberg, de werkplaats), aangepast aan weer en dagdeel; vrije geluidsbestanden in `assets/sound/` met bronvermelding, of een eigen generator (ruis en toon) voor wat er niet is
-- [ ] Een klokslag van de kapel op de uren waarop de kapel luidt (uit `world.yaml`), hoorbaar in het dorp en gedempt daarbuiten, en tegelijk een regel in de tekst, zodat wie zonder geluid speelt hetzelfde weet
-- [ ] Een instelling voor volume en uit, standaard zacht; geluid stopt in menu's en pauze; geen geluid bij het laden, en nooit meer dan één omgevingsgeluid plus de klok tegelijk
-- [ ] Stemmen niet in deze mijlpaal: een beoordeling in het verslag (wachttijd, herhaling, hoe een stem een personage vastlegt) voordat Bram beslist
+- [x] Een geluidslaag in de app (niet in de terminalclient): per plek een omgevingsgeluid uit de content (`sound:` op een plek of gebied: wind door riet, regen op een dak, de zee achter de herberg, de werkplaats), aangepast aan weer en dagdeel; vrije geluidsbestanden in `assets/sound/` met bronvermelding, of een eigen generator (ruis en toon) voor wat er niet is
+- [x] Een klokslag van de kapel op de uren waarop de kapel luidt (uit `world.yaml`), hoorbaar in het dorp en gedempt daarbuiten, en tegelijk een regel in de tekst, zodat wie zonder geluid speelt hetzelfde weet
+- [x] Een instelling voor volume en uit, standaard zacht; geluid stopt in menu's en pauze; geen geluid bij het laden, en nooit meer dan één omgevingsgeluid plus de klok tegelijk
+- [x] Stemmen niet in deze mijlpaal: een beoordeling in het verslag (wachttijd, herhaling, hoe een stem een personage vastlegt) voordat Bram beslist
 
 ## M10.16 Improvisatie: als de regels geen weg weten
 

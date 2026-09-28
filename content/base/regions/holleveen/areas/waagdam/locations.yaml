@@ -75,6 +75,7 @@ locations:
   - id: loc_waagdam_smithy
     name: Hendrik's Smithy
     area: waagdam
+    sound: { kind: workshop, level: 0.5 }
     tags: [shop, workshop]
     aliases: [smithy, smith, smidse]
     summary: Hendrik Smid's smithy in Waagdam, selling tools, lanterns and iron nails.

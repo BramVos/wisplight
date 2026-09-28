@@ -137,6 +137,15 @@ function DisplayTab() {
         {t('settings.display.cards')}
       </label>
       <p className="muted small">{t('settings.display.cardsNote')}</p>
+      <label className="display-check">
+        <input type="checkbox" checked={display.sound} onChange={(event) => change({ ...display, sound: event.target.checked })} />
+        {t('settings.display.sound')}
+      </label>
+      <label className="display-check">
+        {t('settings.display.volume')}{' '}
+        <input type="range" min={0} max={1} step={0.05} value={display.volume} disabled={!display.sound} onChange={(event) => change({ ...display, volume: Number(event.target.value) })} aria-label={t('settings.display.volume')} />
+      </label>
+      <p className="muted small">{t('settings.display.soundNote')}</p>
       <p className="muted">{t('settings.display.keyboard')}</p>
     </div>
   )

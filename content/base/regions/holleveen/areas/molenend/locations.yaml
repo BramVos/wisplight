@@ -30,6 +30,7 @@ locations:
   - id: loc_molenend_mill
     name: The Mill De Zwaan
     area: molenend
+    sound: { kind: wind, level: 0.65 }
     tags: [workshop, landmark]
     aliases: [mill, de zwaan, windmill, molen]
     summary: De Zwaan, Harmen Molenaar's windmill, which grinds grain and pumps the polder dry. The storm of 8 Herfstmaand tore its sails.

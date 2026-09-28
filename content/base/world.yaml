@@ -81,6 +81,17 @@ world:
     lines:
       rain: Rain hisses on the reeds and runs down your neck.
       clear: { day: The sky is wide and pale over the flat land., night: Stars hang sharp and cold over the fen. }
+  # Bells (M10.15): the chapel of the Lantern in Veenhoek rings at six, noon and six; heard plainly in the
+  # village, far off at the mill, the Goose and out on the fen. A line in the text as well as a sound.
+  bells:
+    - id: chapel_bell
+      name: the chapel bell
+      at: loc_veenhoek_chapel
+      hours: [6, 12, 18]
+      heard: [veenhoek]
+      far: [molenend, drowned_goose, holleveen]
+      line: "The chapel bell rings for {hour}."
+      far_line: "Far off, the chapel bell of Veenhoek rings for {hour}."
   # Faiths (Wereldboek, chapter 5; M9.1): most are Lantern on Rustdag and the Old Powers when it comes to it.
   faiths:
     # Each faith swears by its own (M10.8): the oaths are in the voice kit, data/voice.yaml (M10.10).

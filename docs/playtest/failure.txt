@@ -44,6 +44,7 @@ Gerrit comes from the north, on his way to The Peat Cuttings.
 Gerrit walks on to the west.
 Jan comes from the north, on his way to The Peat Cuttings.
 Jan walks on to the west.
+The chapel bell rings for six.
 
 > buy 4 peat
 You buy 4 baskets of peat from Gerrit for 1 st 4 d.
@@ -172,6 +173,7 @@ Gerrit comes from the north, on his way to The Peat Cuttings.
 Gerrit walks on to the west.
 Jan comes from the north, on his way to The Peat Cuttings.
 Jan walks on to the west.
+The chapel bell rings for six.
 
 > buy 4 peat
 You buy 4 baskets of peat from Gerrit for 1 st 4 d.

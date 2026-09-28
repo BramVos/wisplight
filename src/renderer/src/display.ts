@@ -17,6 +17,9 @@ export interface Display {
   rules: boolean
   /** Moments as cards over the log (M10.11); off, they are lines like any other. */
   cards: boolean
+  /** Sound (M10.15): an ambient sound per place and a bell; on and soft by default. */
+  sound: boolean
+  volume: number
 }
 
 /** The text sizes; each label is a key in locales/<language>/settings.json. */
@@ -29,14 +32,15 @@ export const TEXT_SIZES = [
 ] as const
 
 const KEY = 'wisplight.display'
-const DEFAULT: Display = { scale: 1, contrast: 'normal', map: 'dark', rules: true, cards: true }
+const DEFAULT: Display = { scale: 1, contrast: 'normal', map: 'dark', rules: true, cards: true, sound: true, volume: 0.25 }
 const LOOKS: MapLook[] = ['dark', 'paper', 'bw']
 
 export function loadDisplay(): Display {
   try {
     const saved = JSON.parse(localStorage.getItem(KEY) ?? 'null') as Partial<Display> | null
     const scale = TEXT_SIZES.some((s) => s.scale === saved?.scale) ? saved!.scale! : DEFAULT.scale
-    return { scale, contrast: saved?.contrast === 'high' ? 'high' : 'normal', map: LOOKS.includes(saved?.map as MapLook) ? (saved!.map as MapLook) : 'dark', rules: saved?.rules !== false, cards: saved?.cards !== false }
+    const volume = typeof saved?.volume === 'number' ? Math.min(1, Math.max(0, saved.volume)) : DEFAULT.volume
+    return { scale, contrast: saved?.contrast === 'high' ? 'high' : 'normal', map: LOOKS.includes(saved?.map as MapLook) ? (saved!.map as MapLook) : 'dark', rules: saved?.rules !== false, cards: saved?.cards !== false, sound: saved?.sound !== false, volume }
   } catch {
     return DEFAULT
   }
@@ -79,6 +83,21 @@ export function useShowCards(): boolean {
     return () => window.removeEventListener('wisplight:display', changed)
   }, [])
   return on
+}
+
+/** Sound on or off and how loud (M10.15), kept up to date when it changes in Settings. */
+export function useSoundSetting(): { on: boolean; volume: number } {
+  const read = () => {
+    const d = loadDisplay()
+    return { on: d.sound, volume: d.volume }
+  }
+  const [setting, setSetting] = useState(read)
+  useEffect(() => {
+    const changed = () => setSetting(read())
+    window.addEventListener('wisplight:display', changed)
+    return () => window.removeEventListener('wisplight:display', changed)
+  }, [])
+  return setting
 }
 
 export function useShowRules(): boolean {

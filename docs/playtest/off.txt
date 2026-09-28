@@ -151,6 +151,7 @@ The Lamp of Skerrow is not a candle. It wants oil in the bowl and a lightkeeper 
 > wait 10 hours
 Garrick leaves south.
 Time passes. It is Windsday 3 Leaffall 412 SF, 20:16 (evening).
+Down at the Hythe, thin across the water, the harbour bell rings for six.
 
 > wait for garrick
 Garrick is here.
@@ -191,7 +192,11 @@ Elowen nods to Garrick.
 Elowen walks on to the south.
 Elowen comes from the south, on her way to The Drowned Mage's Tower.
 Elowen walks on to the north.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
 +400 experience: Off Skerrow.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
 
 > look
 The Headland
@@ -234,6 +239,86 @@ Tamsin comes from the west, on her way to Skerrow Hythe, the Green.
 Tamsin walks on to the south.
 Garrick arrives from the south.
 Garrick puts out the lamp and goes to bed.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
 
 > look
 The Headland
@@ -334,6 +419,10 @@ Tamsin comes from the west, on her way to Skerrow Hythe, the Green.
 Tamsin walks on to the south.
 Garrick arrives from the south.
 Garrick puts out the lamp and goes to bed.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
 
 > look
 The Headland
@@ -376,6 +465,86 @@ Tamsin comes from the west, on her way to Skerrow Hythe, the Green.
 Tamsin walks on to the south.
 Garrick arrives from the south.
 Garrick puts out the lamp and goes to bed.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
 
 > look
 The Headland

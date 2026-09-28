@@ -43,6 +43,7 @@ Wenna arrives from the west.
 Maren nods to Wenna.
 Wenna puts out the lamp and goes to bed.
 Maren puts out the lamp and goes to bed.
+The harbour bell rings for six, once for the boats.
 
 > look
 The Salt Kettle
@@ -60,6 +61,7 @@ You carry a cutlass, a knife, a pot of pitch, a sealskin jerkin and 2 ship's bis
 > wait 6 hours
 Wenna leaves west.
 Time passes. It is Thornsday 4 Leaffall 412 SF, 08:00 (morning).
+The harbour bell rings for six, once for the boats.
 
 > look
 The Salt Kettle
@@ -116,6 +118,8 @@ Maren nods to Wenna.
 Wenna puts out the lamp and goes to bed.
 Maren puts out the lamp and goes to bed.
 Wenna leaves west.
+The harbour bell rings for six, once for the boats.
+The harbour bell rings for six, once for the boats.
 
 > look
 The Salt Kettle
@@ -163,6 +167,12 @@ Maren nods to Wenna.
 Wenna puts out the lamp and goes to bed.
 Maren puts out the lamp and goes to bed.
 Wenna leaves west.
+The harbour bell rings for six, once for the boats.
+The harbour bell rings for six, once for the boats.
+The harbour bell rings for six, once for the boats.
+The harbour bell rings for six, once for the boats.
+The harbour bell rings for six, once for the boats.
+The harbour bell rings for six, once for the boats.
 
 > look
 The Salt Kettle
@@ -233,6 +243,7 @@ Wenna arrives from the west.
 Maren nods to Wenna.
 Wenna puts out the lamp and goes to bed.
 Maren puts out the lamp and goes to bed.
+The harbour bell rings for six, once for the boats.
 
 > look
 The Salt Kettle
@@ -250,6 +261,7 @@ You carry a cutlass, a knife, a pot of pitch, a sealskin jerkin and 2 ship's bis
 > wait 6 hours
 Wenna leaves west.
 Time passes. It is Thornsday 4 Leaffall 412 SF, 08:00 (morning).
+The harbour bell rings for six, once for the boats.
 
 > look
 The Salt Kettle
@@ -287,6 +299,8 @@ Maren nods to Wenna.
 Wenna puts out the lamp and goes to bed.
 Maren puts out the lamp and goes to bed.
 Wenna leaves west.
+The harbour bell rings for six, once for the boats.
+The harbour bell rings for six, once for the boats.
 
 > look
 The Salt Kettle
@@ -334,6 +348,12 @@ Maren nods to Wenna.
 Wenna puts out the lamp and goes to bed.
 Maren puts out the lamp and goes to bed.
 Wenna leaves west.
+The harbour bell rings for six, once for the boats.
+The harbour bell rings for six, once for the boats.
+The harbour bell rings for six, once for the boats.
+The harbour bell rings for six, once for the boats.
+The harbour bell rings for six, once for the boats.
+The harbour bell rings for six, once for the boats.
 
 > look
 The Salt Kettle

@@ -28,6 +28,7 @@ import { homeDay } from './social/romance'
 import { crimesHour } from './social/crime'
 import { conditionsDay } from './rules/player'
 import { dryOut, mendOvernight } from './outcomes'
+import { bellsHour } from './sound'
 import { debtsDue, weeklyDrift } from './social/deeds'
 import { realmsDay } from './social/realms'
 import { watchHour } from './signals'
@@ -109,6 +110,8 @@ function hourly(world: World): void {
   }
   pursue(world)
   dryOut(world)
+  // A bell on the hour, where it is heard (M10.15).
+  bellsHour(world)
   seekHour(world)
   crimesHour(world)
   healWounds(world)

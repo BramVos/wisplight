@@ -1,5 +1,19 @@
 # Changelog
 
+## M10.15 Geluid, bescheiden, 28 september 2026
+
+- **Een geluid per plek.** Elke plek of haar gebied zegt in de content wat je hoort (`sound:` wind, riet, regen, zee, branding, haardvuur, stemmen, werkplaats, water, vogels, gezoem of stilte). Buiten in de regen hoor je de regen, binnen de regen op het dak; 's nachts en in de mist is het zachter, en een plek kan 's nachts een ander geluid hebben (Veenhoek: vogels overdag, het riet 's nachts). De app maakt het geluid zelf uit ruis en toon; er is niets gedownload en er staan geen opnames in de repo.
+- **De klok.** De kapel van Veenhoek luidt om zes, twaalf en zes uur: in het dorp gewoon, bij de molen, de Goose en op het veen van ver. Op Skerrow luidt de havenklok bij dageraad en schemer. Elke klokslag is ook een regel in de tekst ("The chapel bell rings for noon."), zodat wie zonder geluid speelt hetzelfde weet. De klokken staan in `world.yaml`.
+- **Zacht en uit te zetten.** Onder Instellingen > Display: Sound aan of uit, en het volume, standaard zacht. Geen geluid in menu's, in het dagboek of als het spel wacht, niets tijdens het laden, en nooit meer dan één omgevingsgeluid plus de klok.
+
+Testen: speel met geluid aan en loop van de Green naar de Goose en de smidse in Waagdam; wacht tot twaalf uur in Veenhoek. Tests in `tests/m1015.test.ts` (4), alle 753 groen (twee tests die de werelden tellen falen alleen door de nieuwe, nog niet vastgelegde wereld `content/thequietreach`), drie simulaties zonder problemen, speeltests (nu met de klokslagen), build.
+
+Stemmen, een beoordeling voordat je beslist. Een stem per NPC voegt per antwoord een tweede rekenstap toe: bij een tekst-naar-spraakdienst meestal een tot drie seconden voordat je het eerste woord hoort, bovenop het wachten op het model; dat valt op in een gesprek dat nu vlot leest. Stemmen herhalen zich sneller dan tekst: dezelfde begroeting in dezelfde stem hoor je na een uur spelen, en dan klinkt de wereld kleiner. En een stem legt een personage vast: Mirte klinkt dan jong of oud, streng of warm, voor altijd, en wat de speler zich nu zelf voorstelt, verdwijnt. Mijn advies: geen stemmen voor gesprekken, hooguit later één verteller die een aankomst of een tijding voorleest, als proef die uit kan. Het kost per regel en loopt dan mee in het budget van de speler.
+
+Wat de editor en de kroniekverteller leerden: `sound` bij plekken en gebieden en `bells` in `world.yaml`; het contract is bijgewerkt. Skerrow heeft de zee, de branding, de wind en de havenklok; Deepwell zoemt en heeft geen klok, en een nieuwe wereld zonder geluid is stil (een test laat beide zien).
+
+Nog niet: de terminalclient heeft geen geluid, alleen de regel van de klok. Op de landkaart hoor je het geluid van het gebied dat voor het open land staat (in de Holleveen het riet); per terrein verschilt het nog niet, dat hoort bij het voorstel voor terrein als content.
+
 ## M10.14 Goede afloop en mislukking die verder speelt, 28 september 2026
 
 - **Een mislukte poging laat iets achter.** Per ambacht zegt de content wat een mislukking oplevert: een minder product (verbrande broden, een stuk schroot, wat kleine vis, een dunne zalf: voorwerpen met `quality: poor`, bruikbaar voor iets anders en minder waard), een deel van het materiaal terug (malen, en in Deepwell het fabriceren), of een beschadigde werkplaats (een slechte misser aan de smidse of in de coracle). Is er een meester bij, dan zegt die wat er misging. Een beschadigde werkplaats kan niemand gebruiken tot hij hersteld is: REPAIR THE FORGE, of de eigenaar doet het de volgende ochtend en onthoudt wie het was. Hendrik koopt schroot voor zijn hoop.

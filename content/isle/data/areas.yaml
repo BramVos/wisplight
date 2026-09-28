@@ -5,6 +5,7 @@ areas:
   - id: skerrow_hythe
     name: Skerrow Hythe
     kind: hamlet
+    sound: { kind: sea, level: 0.45 }
     aliases: [the hythe, hythe, the hamlet, the village]
     fame: 2
     summary: The only hamlet on Skerrow, a dozen stone cottages round a little harbour, with the Salt Kettle for an inn.
@@ -12,6 +13,7 @@ areas:
   - id: skerrow_shore
     name: the Shore
     kind: wilderness
+    sound: { kind: surf, level: 0.55 }
     aliases: [the shore, the strand, south shore]
     fame: 1
     summary: The rocky south shore of Skerrow, where the currents throw up whatever the sea breaks.
@@ -19,6 +21,7 @@ areas:
   - id: skerrow_heights
     name: the Heights
     kind: wilderness
+    sound: { kind: wind, level: 0.55 }
     aliases: [the heights, the uplands, the high ground]
     fame: 1
     summary: The high ground of Skerrow, with the silver grove, the wyrm's barrow, the beacon and the old tower.

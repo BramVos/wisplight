@@ -241,6 +241,7 @@ In the fen, near the Kattenbroek
 Wet ground and sedge stretch around you, cut by black pools. Mist lies over everything and muffles every sound. To the south-west, a dark wall of reed and alder.
 Ways on: north, north-east, south-east, south, south-west, north-west.
 Somewhere around here, they said. You see no sign of the Kattenbroek yet.
+The chapel bell rings for six.
 +30 experience: you came to the Holleveen.
 The Edge of the Kattenbroek, to the south-west
 The land ends in a dark wall of reed and alder, too even and too still. People from Veenhoek do not go that way unless they have to.
@@ -360,6 +361,30 @@ Jan arrives from the east.
 Fenna and Jan greet each other warmly.
 Grietje and Jan greet each other warmly.
 Jan and Pim greet each other warmly.
+The chapel bell rings for six.
+The chapel bell rings for six.
+The chapel bell rings for noon.
+The chapel bell rings for six.
+The chapel bell rings for six.
+The chapel bell rings for noon.
+The chapel bell rings for six.
+The chapel bell rings for six.
+The chapel bell rings for noon.
+The chapel bell rings for six.
+The chapel bell rings for six.
+The chapel bell rings for noon.
+The chapel bell rings for six.
+The chapel bell rings for six.
+The chapel bell rings for noon.
+The chapel bell rings for six.
+The chapel bell rings for six.
+The chapel bell rings for noon.
+The chapel bell rings for six.
+The chapel bell rings for six.
+The chapel bell rings for noon.
+The chapel bell rings for six.
+The chapel bell rings for six.
+The chapel bell rings for noon.
 
 > look
 Visser House, the doorstep
@@ -523,6 +548,30 @@ Jan arrives from the east.
 Grietje and Jan greet each other warmly.
 Jan and Pim greet each other warmly.
 Jan leaves east.
+The chapel bell rings for six.
+The chapel bell rings for noon.
+The chapel bell rings for six.
+The chapel bell rings for six.
+The chapel bell rings for noon.
+The chapel bell rings for six.
+The chapel bell rings for six.
+The chapel bell rings for noon.
+The chapel bell rings for six.
+The chapel bell rings for six.
+The chapel bell rings for noon.
+The chapel bell rings for six.
+The chapel bell rings for six.
+The chapel bell rings for noon.
+The chapel bell rings for six.
+The chapel bell rings for six.
+The chapel bell rings for noon.
+The chapel bell rings for six.
+The chapel bell rings for six.
+The chapel bell rings for noon.
+The chapel bell rings for six.
+The chapel bell rings for six.
+The chapel bell rings for noon.
+The chapel bell rings for six.
 
 > look
 Visser House, the doorstep

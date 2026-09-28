@@ -79,6 +79,16 @@ world:
       rain: Rain comes in off the sea and runs down your neck.
       fog: A sea mist lies over everything and muffles every sound but the surf.
       clear: { day: The sky is wide and pale over the water., night: Stars hang sharp and cold over the sea. }
+  # The harbour bell (M10.15): they count time by tides and bells. Rung at dawn and at dusk for the boats.
+  bells:
+    - id: harbour_bell
+      name: the harbour bell
+      at: loc_skerrow_harbour
+      hours: [6, 18]
+      heard: [skerrow_hythe]
+      far: [skerrow_shore, skerrow_heights]
+      line: "The harbour bell rings for {hour}, once for the boats."
+      far_line: "Down at the Hythe, thin across the water, the harbour bell rings for {hour}."
   money:
     units:
       - { short: gp, name: gold piece, aliases: [gold, crown, crowns], value: 100 }

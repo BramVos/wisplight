@@ -136,6 +136,8 @@ Tamsin arrives from the north.
 Tamsin stops and gives you a nod, curious about the stranger.
 Pip claps Tamsin on the shoulder.
 Tamsin leaves west.
+The harbour bell rings for six, once for the boats.
+The harbour bell rings for six, once for the boats.
 
 > look
 Skerrow Hythe, the Green
@@ -257,7 +259,19 @@ Maren puts out the lamp and goes to bed.
 Maren puts out the lamp and goes to bed.
 Maren puts out the lamp and goes to bed.
 Maren puts out the lamp and goes to bed.
+The harbour bell rings for six, once for the boats.
 That night at the Salt Kettle they sang the old ebb song for Wenna, and Maren poured the first cup into the fire.
+The harbour bell rings for six, once for the boats.
+The harbour bell rings for six, once for the boats.
+The harbour bell rings for six, once for the boats.
+The harbour bell rings for six, once for the boats.
+The harbour bell rings for six, once for the boats.
+The harbour bell rings for six, once for the boats.
+The harbour bell rings for six, once for the boats.
+The harbour bell rings for six, once for the boats.
+The harbour bell rings for six, once for the boats.
+The harbour bell rings for six, once for the boats.
+The harbour bell rings for six, once for the boats.
 
 # A week on: the headland again, and the Kettle.
 
@@ -380,6 +394,8 @@ Lore: the stranger in Skerrow Hythe, the death of Wenna Dray, Wenna to be given 
 
 [24 hours pass]
 Maren puts out the lamp and goes to bed.
+The harbour bell rings for six, once for the boats.
+The harbour bell rings for six, once for the boats.
 
 > look
 The Salt Kettle
@@ -449,6 +465,7 @@ Time passes. It is Thornsday 4 Leaffall 412 SF, 17:39 (afternoon).
 
 > wait 60
 Time passes. It is Thornsday 4 Leaffall 412 SF, 18:39 (evening).
+The harbour bell rings for six, once for the boats.
 
 > wait 60
 Time passes. It is Thornsday 4 Leaffall 412 SF, 19:39 (evening).
@@ -477,6 +494,18 @@ Maren puts out the lamp and goes to bed.
 Maren puts out the lamp and goes to bed.
 Maren puts out the lamp and goes to bed.
 That night at the Salt Kettle they sang the old ebb song for Wenna, and Maren poured the first cup into the fire.
+The harbour bell rings for six, once for the boats.
+The harbour bell rings for six, once for the boats.
+The harbour bell rings for six, once for the boats.
+The harbour bell rings for six, once for the boats.
+The harbour bell rings for six, once for the boats.
+The harbour bell rings for six, once for the boats.
+The harbour bell rings for six, once for the boats.
+The harbour bell rings for six, once for the boats.
+The harbour bell rings for six, once for the boats.
+The harbour bell rings for six, once for the boats.
+The harbour bell rings for six, once for the boats.
+The harbour bell rings for six, once for the boats.
 
 # A week on: the headland again, and the Kettle.
 

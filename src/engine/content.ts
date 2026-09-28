@@ -3,6 +3,7 @@ import { OutlandSchema, ResourceSchema, RouteSchema, SettlementSchema, type Outl
 import { NamesSchema, NewcomerSchema, ProjectSchema, type Newcomer, type Project } from './growth/schema'
 import { z } from 'zod'
 import { WorldMapSchema } from './map/palette'
+import { BellSchema, SoundSchema } from './sound'
 import { CreatureSchema, EncounterSchema, RulesSchema, type Creature, type Effect, type Encounter, type Rules, type Talent } from './rules/schema'
 import { ConditionSchema, QuestBodySchema } from './quests/schema'
 import { checkQuests } from './quests/check'
@@ -381,6 +382,8 @@ export const LocationSchema = z.object({
   summary: z.string().optional(),
   /** The faith a holy place belongs to (M10.17): a wedding here raises the standing of that faith's faction. */
   faith: z.string().optional(),
+  /** What you hear here (M10.15): wind in the reeds, the sea, the hearth; over its area's. */
+  sound: SoundSchema.optional(),
   description: z.object({ day: Prose, night: Prose.optional() }),
   /**
    * Other descriptions once a flag is set (the doorstep without the cat, once Fenna is home), or while conditions hold
@@ -430,6 +433,8 @@ export const AreaSchema = z.object({
   topic: z.string().optional(),
   /** Weekdays of the world's calendar with a market here (M10.6): "it's Woensdag, market day in Waagdam". */
   market_days: z.array(z.string()).default([]),
+  /** What you hear in the area's places that have no sound of their own (M10.15). */
+  sound: SoundSchema.optional(),
   /**
    * Places of the area barred while conditions hold (M10.17; before, the widow's mist over the Kattenbroek in code):
    * only for a stranger carrying something with this tag, or for anyone; with what they see.
@@ -885,6 +890,8 @@ export const WorldSchema = z.object({
   faiths: z
     .array(z.object({ id: z.string().regex(/^[a-z0-9_]+$/), name: z.string(), patrons: z.array(z.string()).default([]), oaths: z.array(z.string()).default([]), faction: z.string().optional() }).strict())
     .default([]),
+  /** Bells that ring on the hour (M10.15): heard plainly in some areas and far off in others, and a line in the text. */
+  bells: z.array(BellSchema).default([]),
 })
 export type WorldDef = z.infer<typeof WorldSchema>
 

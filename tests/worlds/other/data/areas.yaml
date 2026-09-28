@@ -5,6 +5,7 @@ areas:
   - id: deepwell_domes
     name: the Domes
     kind: hamlet
+    sound: { kind: hum, level: 0.35 }
     aliases: [the domes, domes, deepwell, the colony, the settlement]
     fame: 2
     summary: The pressure domes of Deepwell under the ice, where the colony lives, eats and sleeps.
@@ -12,6 +13,7 @@ areas:
   - id: ice_works
     name: the Ice Works
     kind: wilderness
+    sound: { kind: workshop, level: 0.4 }
     aliases: [the ice works, ice works, the works, the mine]
     fame: 1
     summary: The mine at the end of the tram line, where the colony cuts ice for water, air and fuel.

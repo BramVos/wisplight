@@ -1,3 +1,4 @@
+import { soundNow, type SoundNow } from './sound'
 import type { Archived } from './archive'
 import { knownName, knowsOfPerson, publicShort, seeFamily } from './acquaintance'
 import { entered } from './social/access'
@@ -158,6 +159,8 @@ export interface Status {
   lastTalk?: { npc: string; lines: TalkLine[] }
   /** The clock and the sky for the top right (M10.8): weekday, date, hour, sun, dusk or moon, and the weather. */
   clock: { weekday: string; date: string; time: string; light: 'day' | 'dusk' | 'night'; weather: string; wind: string }
+  /** What is to be heard here (M10.15), for the app; none where the content gives no sound. */
+  sound?: SoundNow
   journal: { quests: JournalEntry[]; people: JournalEntry[]; places: JournalEntry[]; lands: JournalEntry[]; factions: JournalEntry[]; events: JournalEntry[]; lore: JournalEntry[]; things: JournalEntry[] }
   /** The map round the player: rows of characters, and a class code per character (FO, chapter 4). */
   map?: { rows: string[]; classes: string[] }
@@ -1318,6 +1321,7 @@ export class Engine {
         : undefined,
       ...(!talk && this.lastTalk ? { lastTalk: this.lastTalk } : {}),
       clock: this.clockStatus(),
+      ...(soundNow(this.world) ? { sound: soundNow(this.world)! } : {}),
       journal: this.journal(),
       map: this.compactMap(),
       hexMap: hexMapData(this.world, { width: 51, height: 35 }),

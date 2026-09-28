@@ -35,6 +35,7 @@ One block with:
 | sketch | a map: bonds, domains | no |  |
 | newcomers_per_season | number | no | 6 |
 | faiths | list of a map: id, name, patrons, oaths, faction | no | [] |
+| bells | list of a map: id, name, at, hours, heard, far, line, far_line | no | [] |
 
 ## areas (data/areas.yaml)
 
@@ -55,6 +56,7 @@ A list; each has:
 | pos | 2 values | no |  |
 | topic | text | no |  |
 | market_days | list of text | no | [] |
+| sound | one of: one of wind, reeds, rain, sea, surf, hearth, crowd, workshop, ... \| a map: kind, level, night | no |  |
 | barred | list of a map: when, carrying, text | no | [] |
 
 ## locations (areas/<area>/locations.yaml)
@@ -74,6 +76,7 @@ A list; each has:
 | aliases | list of text | no | [] |
 | summary | text | no |  |
 | faith | text | no |  |
+| sound | one of: one of wind, reeds, rain, sea, surf, hearth, crowd, workshop, ... \| a map: kind, level, night | no |  |
 | description | a map: day, night | yes |  |
 | variants | list of a map: flag, when, day, night | no | [] |
 | exits | a map of names to a map: to, minutes, lock | no | {} |

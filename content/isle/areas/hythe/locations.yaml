@@ -108,6 +108,7 @@ locations:
   - id: loc_skerrow_salt_kettle
     name: The Salt Kettle
     area: skerrow_hythe
+    sound: { kind: hearth, level: 0.5 }
     tags: [public, social]
     aliases: [salt kettle, the kettle, kettle, inn, the inn, tavern]
     summary: The island's inn, one long smoky room kept by Maren Holt.

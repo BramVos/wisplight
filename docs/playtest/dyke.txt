@@ -76,6 +76,7 @@ Jan walks on to the south.
 Cornelis comes from the northeast, on his way to The Flooded Peat Pits.
 Cornelis walks on to the south.
 Time passes. It is Woensdag 15 Herfstmaand 211 AW, 09:33 (morning).
+The chapel bell rings for six.
 
 # Shortcut: ask the way and walk the hour to the market square of Waagdam.
 
@@ -308,6 +309,7 @@ Aaltje comes from the north, on her way to The Drowned Goose, Common Room.
 Aaltje walks on to the northeast.
 Wouter comes from the south, on his way to The Drowned Goose, Common Room.
 Wouter stops and looks you over.
+The chapel bell rings for six.
 
 > look
 Veenhoek, the Green
@@ -400,6 +402,7 @@ Jan walks on to the south.
 Cornelis comes from the northeast, on his way to The Flooded Peat Pits.
 Cornelis walks on to the south.
 Time passes. It is Woensdag 15 Herfstmaand 211 AW, 09:33 (morning).
+The chapel bell rings for six.
 
 # Shortcut: ask the way and walk the hour to the market square of Waagdam.
 
@@ -533,6 +536,7 @@ Grietje comes from the northeast, on her way to Visser House, the doorstep.
 Grietje walks on to the west.
 Wendela comes from the northeast, on her way to Chapel of the Lantern.
 Wendela walks on to the north.
+The chapel bell rings for noon.
 
 > look
 Veenhoek, the Green

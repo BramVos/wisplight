@@ -72,6 +72,7 @@ locations:
   - id: loc_veenhoek_chapel
     name: Chapel of the Lantern
     area: veenhoek
+    sound: quiet
     faith: lantern
     tags: [holy, public]
     aliases: [chapel, kapel]
@@ -170,6 +171,7 @@ locations:
   - id: loc_veenhoek_bakery
     name: The Bakery
     area: veenhoek
+    sound: { kind: hearth, level: 0.4 }
     tags: [shop]
     aliases: [bakery, bakkerij]
     summary: Mirte Bakker's bakery on the green of Veenhoek.

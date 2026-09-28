@@ -29,6 +29,7 @@ locations:
   - id: loc_goose_common
     name: The Drowned Goose, Common Room
     area: drowned_goose
+    sound: { kind: hearth, level: 0.5 }
     tags: [public, social]
     aliases: [common room, taproom, gelagkamer, inn, drowned goose]
     summary: The common room of the Drowned Goose inn, where Trijntje serves beer and stew and hears everything.

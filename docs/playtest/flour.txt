@@ -210,6 +210,12 @@ Mirte leaves west.
 Mirte comes from the west, on her way to Bakery Yard.
 Mirte stops and gives you a nod, curious about the stranger.
 Mirte walks on to the east.
+The chapel bell rings for noon.
+The chapel bell rings for six.
+The chapel bell rings for six.
+The chapel bell rings for noon.
+The chapel bell rings for six.
+The chapel bell rings for six.
 
 > journal
 People: Fenna Visser, Grietje, Harmen, Jan, Lubbert, Mirte Bakker, Trijntje, the Count.
@@ -222,6 +228,18 @@ Mirte leaves west.
 Mirte comes from the west, on her way to Bakery Yard.
 Mirte stops and gives you a nod, curious about the stranger.
 Mirte walks on to the east.
+The chapel bell rings for noon.
+The chapel bell rings for six.
+The chapel bell rings for six.
+The chapel bell rings for noon.
+The chapel bell rings for six.
+The chapel bell rings for six.
+The chapel bell rings for noon.
+The chapel bell rings for six.
+The chapel bell rings for six.
+The chapel bell rings for noon.
+The chapel bell rings for six.
+The chapel bell rings for six.
 
 > look
 The Bakery
@@ -297,6 +315,12 @@ Lore: the stranger in Veenhoek.
 
 [48 hours pass]
 There are no sacks of flour to be had in Veenhoek. People make do, and grumble about it.
+The chapel bell rings for six.
+The chapel bell rings for noon.
+The chapel bell rings for six.
+The chapel bell rings for six.
+The chapel bell rings for noon.
+The chapel bell rings for six.
 
 > journal
 People: Fenna Visser, Grietje, Harmen, Jan, Lubbert, Mirte Bakker, Trijntje, the Count.
@@ -305,6 +329,18 @@ Lore: the stranger in Veenhoek.
 
 [96 hours pass]
 Flour for Veenhoek: Market day passed. Market day came and went without flour. Veenhoek bought stale bread at the Goose, dear.
+The chapel bell rings for six.
+The chapel bell rings for noon.
+The chapel bell rings for six.
+The chapel bell rings for six.
+The chapel bell rings for noon.
+The chapel bell rings for six.
+The chapel bell rings for six.
+The chapel bell rings for noon.
+The chapel bell rings for six.
+The chapel bell rings for six.
+The chapel bell rings for noon.
+The chapel bell rings for six.
 
 > look
 The Bakery

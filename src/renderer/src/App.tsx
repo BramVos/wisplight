@@ -10,7 +10,8 @@ import { ConversationView, type TalkLine } from './ConversationView'
 import { JournalView } from './JournalView'
 import { runs } from './mapRuns'
 import { HexMap } from './HexMap'
-import { useMapLook, useShowCards, useShowRules } from './display'
+import { useMapLook, useShowCards, useShowRules, useSoundSetting } from './display'
+import { sound } from './sound'
 import { MomentCard } from './MomentCard'
 import { ClockPanel } from './Clock'
 import { Settings, usd, type SettingsTab } from './Settings'
@@ -167,6 +168,39 @@ export function App() {
   useEffect(() => {
     client?.hold(Boolean(settings) || ending || exporting || typing || Boolean(creation) || Boolean(journal) || Boolean(worlds) || dev || moments.length > 0)
   }, [client, settings, ending, exporting, typing, creation, journal, worlds, dev, moments.length])
+
+  // Sound (M10.15): what the engine says is to be heard here; silent in menus and while the game waits, and a bell
+  // only when it rings after the game has loaded. The browser lets it start at the first key or click.
+  const soundSetting = useSoundSetting()
+  useEffect(() => sound.configure(soundSetting.on, soundSetting.volume), [soundSetting.on, soundSetting.volume])
+  useEffect(() => {
+    const wake = () => sound.wake()
+    window.addEventListener('keydown', wake)
+    window.addEventListener('pointerdown', wake)
+    return () => {
+      window.removeEventListener('keydown', wake)
+      window.removeEventListener('pointerdown', wake)
+    }
+  }, [])
+  useEffect(() => {
+    sound.hold(Boolean(settings) || ending || exporting || Boolean(creation) || Boolean(journal) || Boolean(worlds) || dev || Boolean(status?.paused && !status.talk))
+  }, [settings, ending, exporting, creation, journal, worlds, dev, status?.paused, status?.talk])
+  const heardSound = status?.sound
+  useEffect(() => {
+    if (heardSound) sound.ambient(heardSound.kind, heardSound.level, heardSound.indoors)
+    else sound.ambient('quiet', 0, false)
+  }, [heardSound?.kind, heardSound?.level, heardSound?.indoors])
+  const lastBell = useRef<number | undefined>(undefined)
+  useEffect(() => {
+    const bell = heardSound?.bell
+    if (!bell) return
+    // The first status only notes the bell that rang before: nothing sounds while the game loads.
+    if (lastBell.current !== undefined && bell.t !== lastBell.current) sound.bell(bell.far)
+    lastBell.current = bell.t
+  }, [heardSound?.bell?.t])
+  useEffect(() => {
+    if (status && lastBell.current === undefined) lastBell.current = status.sound?.bell?.t ?? -1
+  }, [status])
 
   // Ctrl+Shift+D opens the dev menu in a development build.
   useEffect(() => {
