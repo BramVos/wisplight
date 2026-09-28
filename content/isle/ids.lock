@@ -14,7 +14,7 @@ ids:
   isle/areas/shore/locations.yaml:
     location: [loc_skerrow_wreck_strand, loc_skerrow_tidepools, loc_skerrow_cliff_path]
   isle/data/aftermath.yaml:
-    aftermath: [asked_about, request_open, befriended, theft_mended_own, theft_mended_caught, broken_promise, promise_kept, made_good, craft_rank, death, lost, departure, lamp_lit, pupil_learnt]
+    aftermath: [asked_about, request_open, befriended, theft_mended_own, theft_mended_caught, broken_promise, promise_kept, made_good, craft_rank, death, lost, departure, lamp_lit, pupil_learnt, grove_answers]
   isle/data/areas.yaml:
     area: [skerrow_hythe, skerrow_shore, skerrow_heights]
   isle/data/belonging.yaml:

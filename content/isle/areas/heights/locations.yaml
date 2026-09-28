@@ -4,6 +4,14 @@ locations:
   - id: loc_skerrow_silver_grove
     name: The Silver Grove
     area: skerrow_heights
+    # M10.16: gifts for the Tidemother, and words said among the birches.
+    improvise:
+      domain: offering
+      may:
+        - { standing: tidemother_faithful }
+        - { fact: true }
+      fallback: The birches stir, and then are still. The sea below says nothing you can make out.
+      takes: true
     tags: [public, holy]
     # The Tidemother's holy place (M10.17): a wedding here raises her faithful.
     faith: tidemother

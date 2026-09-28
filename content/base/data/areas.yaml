@@ -77,6 +77,7 @@ areas:
     name: the Kabouterberg
     kind: wilderness
     sound: { kind: wind, level: 0.5 }
+    improvise: { domain: spirit, may: [{ fact: true }], fallback: "The fields around the hill are quiet. Nothing stirs." }
     aliases: [kabouterberg, kabouter hill, the kabouter hill]
     fame: 1
     pos: [107, 102]
@@ -86,6 +87,7 @@ areas:
     name: the Blackmere
     kind: wilderness
     sound: { kind: water, level: 0.4, night: reeds }
+    improvise: { domain: spirit, may: [{ fact: true }], fallback: The Blackmere lies still and black. Nothing comes of it. }
     aliases: [blackmere, the black mere, zwarte meer]
     fame: 2
     pos: [114, 97]

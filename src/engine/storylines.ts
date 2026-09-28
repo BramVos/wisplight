@@ -182,7 +182,8 @@ export function nightly(world: World): void {
   if (minuteOfDay(world.now) !== 4 * 60) return
   const state = world.state.chronicle
   if (!state) return
-  const lines = state.lines.filter((l) => unreported(world, l).some((f) => f.belang >= 3)).map((l) => l.id)
+  // Big news, and what the stranger improvised (M10.16): the chronicler decides whether anything comes of it.
+  const lines = state.lines.filter((l) => unreported(world, l).some((f) => f.belang >= 3 || f.kind === 'improvised')).map((l) => l.id)
   // Signals that waited for the night (M8.3) go in the same run.
   const signals = (state.signals ?? []).splice(0)
   if (lines.length || signals.length) requestRun(world, 'night', lines, signals)

@@ -87,6 +87,8 @@ export class MockLlm implements LlmClient {
         ? this.voiceKit(request.meta ?? {})
         : request.schemaName === 'journey'
         ? JSON.stringify({ text: String(request.meta?.['journey'] ?? '') })
+        : request.schemaName === 'improvise'
+        ? this.improvise(request.meta ?? {})
         : request.schemaName === 'party_reply'
         ? this.party(request.meta as unknown as { party: { id: string; name: string; knows: string[] }[] })
         : request.role === 'voice'
@@ -136,6 +138,23 @@ export class MockLlm implements LlmClient {
     const asks = (meta['asks'] as string[] | undefined) ?? []
     const brief = [said, ...asks.slice(1).map((q) => `- ${q} (suggestion: keep it simple and close to what is already there)`)].join('\n')
     return JSON.stringify({ brief, open: asks.length ? [asks[0]!] : [] })
+  }
+
+  /**
+   * An improvisation (M10.16): a short narration, and the first effect the content allows, standing before the rest
+   * (an offering is felt before it is seen).
+   */
+  private improvise(meta: Record<string, unknown>): string {
+    if (this.mode === 'invalid') return 'Something happens, surely.'
+    const may = (meta['may'] as Record<string, unknown>[] | undefined) ?? []
+    const standing = may.find((m) => 'standing' in m) as { standing: string } | undefined
+    const first = may[0]
+    const effect = standing
+      ? { kind: 'standing', id: standing.standing, delta: 2, title: '' }
+      : first && 'fact' in first
+        ? { kind: 'fact', id: '', delta: 0, title: 'the stranger at an old place' }
+        : { kind: 'nothing', id: '', delta: 0, title: '' }
+    return JSON.stringify({ narration: `You ${String(meta['verb'] ?? 'do it')} and wait. For a moment nothing stirs. Then the air seems to settle, as if something had been noticed.`, effect, spent: meta['domain'] === 'offering' })
   }
 
   /** One step of building a world (M10.17): the frame, the calendar and the money from the designer's words; for the rest a question. */

@@ -766,6 +766,8 @@ export interface GameState {
   closed?: Record<string, string>
   /** Scarcity: what comes in of a thing, as a share of what came before. */
   market?: Record<string, number>
+  /** What the stranger improvised lately (M10.16): for the next act on the same thing, and for the chronicler. */
+  improvisations?: { t: number; target: string; act: string; narration: string; effect: string }[]
   /** The last bell the player heard (M10.15): when, and whether far off. */
   bell?: { t: number; far: boolean }
   /** A spell of cheaper or dearer prices per area, until then (M10.14). */

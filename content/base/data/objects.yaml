@@ -259,6 +259,14 @@ object_types:
         consumes: { apple: 1 }
         duration: 2
         player_text: You leave an apple on the stone. Somewhere across the water a dog barks once.
+    # M10.16: whatever else is done at the stone (a word to the dog, beer poured out) may be improvised.
+    improvise:
+      domain: spirit
+      may:
+        - { standing: water_spirits }
+        - { fact: true }
+      fallback: The carved dog looks past you, at the water. Nothing answers.
+      takes: true
 
   - id: bench
     name: bench

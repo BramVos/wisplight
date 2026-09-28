@@ -57,6 +57,7 @@ A list; each has:
 | topic | text | no |  |
 | market_days | list of text | no | [] |
 | sound | one of: one of wind, reeds, rain, sea, surf, hearth, crowd, workshop, ... \| a map: kind, level, night | no |  |
+| improvise | a map: domain, may, fallback, takes | no |  |
 | barred | list of a map: when, carrying, text | no | [] |
 
 ## locations (areas/<area>/locations.yaml)
@@ -77,6 +78,7 @@ A list; each has:
 | summary | text | no |  |
 | faith | text | no |  |
 | sound | one of: one of wind, reeds, rain, sea, surf, hearth, crowd, workshop, ... \| a map: kind, level, night | no |  |
+| improvise | a map: domain, may, fallback, takes | no |  |
 | description | a map: day, night | yes |  |
 | variants | list of a map: flag, when, day, night | no | [] |
 | exits | a map of names to a map: to, minutes, lock | no | {} |
@@ -196,6 +198,7 @@ A list; each has:
 | details | list of a map: words, look, take, verbs | no | [] |
 | inscription | a map: text, dc, look, topic | no |  |
 | repair | a map: consumes, duration, sets, narrate_end | no |  |
+| improvise | a map: domain, may, fallback, takes | no |  |
 
 ## topics (data/topics.yaml)
 

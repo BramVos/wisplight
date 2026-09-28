@@ -3,6 +3,15 @@ locations:
   - id: loc_kabouterberg
     name: The Kabouterberg
     area: kabouterberg
+    # M10.16: acts the rules do not know may be improvised here. Milk and bread for the kabouters: they notice.
+    improvise:
+      domain: offering
+      may:
+        - { standing: kabouters }
+        - { condition: [cursed] }
+        - { fact: true }
+      fallback: The hill keeps its silence. Whatever you meant by it, the kabouters keep their own counsel.
+      takes: true
     tags: [fae, landmark, edge]
     aliases: [kabouter hill, the hill]
     summary: A sandy hill with an old oak and a hollow in it, where people leave milk for the kabouters.
@@ -43,6 +52,15 @@ locations:
   - id: loc_kabouterberg_oak
     name: The Old Oak
     area: kabouterberg
+    # M10.16: acts the rules do not know may be improvised here. Milk and bread for the kabouters: they notice.
+    improvise:
+      domain: offering
+      may:
+        - { standing: kabouters }
+        - { condition: [cursed] }
+        - { fact: true }
+      fallback: The hill keeps its silence. Whatever you meant by it, the kabouters keep their own counsel.
+      takes: true
     tags: [fae]
     aliases: [old oak, oak, milk place, milk bowl]
     summary: The old oak on top of the Kabouterberg, with the milk place between its roots.

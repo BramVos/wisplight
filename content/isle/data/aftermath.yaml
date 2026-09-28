@@ -282,3 +282,14 @@ aftermath:
             precise: "{a} learnt {value} from the stranger, and can do it alone now."
             village: "{a} can do {value} now. The stranger taught {a}, would you believe it."
             far: "A stranger who teaches a trade."
+
+  # M10.16: what the stranger improvised in the silver grove, the birds of the grove answer at dusk.
+  - id: grove_answers
+    signal: improvised
+    event: loc_skerrow_silver_grove
+    topic: grove
+    expires: 2
+    steps:
+      - id: gulls
+        at: { hour: 19 }
+        do: { mark: loc_skerrow_silver_grove, text: "Gulls sit in the birches tonight, silent, every one of them facing the sea.", days: 1 }

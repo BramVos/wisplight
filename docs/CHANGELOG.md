@@ -1,5 +1,21 @@
 # Changelog
 
+## M10.16 Improvisatie: als de regels geen weg weten, 28 september 2026
+
+- **Waar het ertoe doet.** Een object, plek of gebied kan in de content `improvise` hebben: wat het kan betekenen (offer, vloek, geest, lore, ambacht), wat er hooguit mag gebeuren, en een eigen regel voor als er geen model is. In de Nethermarch: de Kabouterberg en de oude eik (melk voor de kabouters), de hondensteen op de kade, de Haaksteen in de Blackmere, en de Blackmere en de Kabouterberg als geheel met minder mogelijkheden. Op Skerrow: het zilveren bos en de waystone.
+- **Alleen als de regels geen antwoord hebben.** Een bekend werkwoord, een eigen regel van een ding ("That milk is not yours to drink"), een affordance of een duidelijke fout gaan voor. Pas als een handeling iets hier raakt dat `improvise` heeft, gaat ze naar het model: POUR MILK ON THE OAK, BOW TO THE STONE, LAY BREAD ON THE STONE.
+- **Het model vertelt, de motor beslist.** Twee tot vier zinnen in de stem van de wereld, en hooguit één effect uit wat de content toestaat: een voorwerp dat er al is, een toestand van het ding, een aandoening uit de regels, een beetje aanzien bij een geest, geloof of factie (hooguit drie), of een feit van weinig gewicht. Wat daarbuiten valt wordt geweigerd en alleen de zinnen blijven; de bewaker van M10.10 leest de tekst. Wat je aanbiedt verdwijnt alleen als het antwoord dat zegt en de content het toestaat. Een tweede handeling op hetzelfde ding gaat verder waar de vorige ophield.
+- **Geen aantal per dag.** Een improvisatie loopt als een gesprek (de rol voice, hetzelfde lampje en dezelfde voorrang) binnen je uur- en maandbudget. Is het budget op of is er geen model, dan krijg je de eigen regel van het ding en zegt het spel waarom.
+- **Een signaal als elk ander.** Elke improvisatie is het signaal `improvised`, met het ding als event. De kroniekverteller krijgt het in zijn nachtronde, met de lijn van het feit als dat er is, en beslist of er meer van komt; wat hij laat liggen, beantwoordt de content: bij de hondensteen blaft 's nachts een hond aan de overkant waar geen hond is, bij de Kabouterberg is de nap 's ochtends leeggelikt, in het zilveren bos zitten 's avonds zwijgende meeuwen in de berken.
+
+Werkwoord of toestand: er kwam code voor een nieuw soort handeling, geen voor een geval. De reacties per ding zijn content (een nasleep met `event`).
+
+Testen: ga met melk naar de Kabouterberg en POUR MILK ON THE OAK, daarna BOW TO THE OAK; bij de hondensteen op de kade POUR BEER ON THE STONE, en wacht een nacht. Zonder model krijg je de eigen regel. Tests in `tests/m1016.test.ts` (7), alle 758 groen (twee tests die de werelden tellen falen alleen door een nieuwe, nog niet vastgelegde wereld in `content/`), drie simulaties zonder problemen, speeltests en build. De test "de vierde improvisatie op een dag" is volgens het besluit over budgetten een test geworden dat vijf improvisaties op een dag alle vijf naar het model gaan, en dat een leeg budget de eigen regel geeft.
+
+Wat de editor en de kroniekverteller leerden: `improvise` bij objecttypen, objecten, plekken en gebieden (domain, may, fallback, takes), en het signaal `improvised` met het ding als event; het contract is bijgewerkt. Deepwell heeft geen improvisatie en laat het vaste antwoord zien (een test).
+
+Nog niet: een toestand als effect kan alleen op een object, niet op een plek. Een voorwerp dat verschijnt, komt in je hand; neerleggen op de plek kan nog niet.
+
 ## M10.15 Geluid, bescheiden, 28 september 2026
 
 - **Een geluid per plek.** Elke plek of haar gebied zegt in de content wat je hoort (`sound:` wind, riet, regen, zee, branding, haardvuur, stemmen, werkplaats, water, vogels, gezoem of stilte). Buiten in de regen hoor je de regen, binnen de regen op het dak; 's nachts en in de mist is het zachter, en een plek kan 's nachts een ander geluid hebben (Veenhoek: vogels overdag, het riet 's nachts). De app maakt het geluid zelf uit ruis en toon; er is niets gedownload en er staan geen opnames in de repo.

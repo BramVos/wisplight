@@ -7,6 +7,7 @@ import { force, objectHere, openObject, passLock, pick, takeFrom } from './socia
 import { craftCheck, craftOf, craftProgress, craftRank, craftTitle, interruption, learnFrom, ownWorkBonus, rankIndex, soldOwn, workplaceLeave } from './crafts'
 import { damagedBlock, failedMake, gaveOwnWork, helpedRepair, isOwnWork, ownWorkLines, repair, teach } from './outcomes'
 import { giftMakesGood } from './amends'
+import { improvisable, type Improvisable } from './improvise'
 import { keptByGift } from './agreements'
 import { gather, searchHere, track, treat } from './skills'
 import { ownerOf, ownersHere } from './social/ownership'
@@ -76,6 +77,8 @@ export interface Output {
   journey?: boolean
   /** What changed since your last visit (M10.13): with a model, the narrator may make one paragraph of it. */
   returning?: boolean
+  /** An act to improvise (M10.16): the engine asks the model, or gives the thing's own line. Never shown as such. */
+  improvise?: Improvisable
 }
 
 export interface CommandHost {
@@ -255,6 +258,9 @@ Lines here: ${lines.join(', ')}.` : HELP }]
       const said = command.raw.trim().split(/\s+/)[0]!.toLowerCase()
       const offered = world.location(world.state.player.location).objects.some((o) => world.content.objectTypes.get(o.type)?.affordances.some((a) => a.actors.includes('player') && a.verb === said))
       if (offered) return use(host, [said, ...command.args.filter((a) => !/^(?:from|at|on|with|in|the|a|an)$/i.test(a))])
+      // An act the rules do not know, on a thing that matters (M10.16): improvised, by the engine.
+      const imp = improvisable(world, command)
+      if (imp) return [{ kind: 'text', text: imp.def.fallback, improvise: imp }]
       // Any other verb on a thing the description names: it stays as it is (after the M10 playtest).
       const words = command.args.join(' ')
       const thing = words ? (detailHere(world, words)?.name ?? sceneryHere(world, words)?.name) : undefined

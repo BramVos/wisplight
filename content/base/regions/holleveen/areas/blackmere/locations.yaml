@@ -76,6 +76,15 @@ locations:
   - id: loc_blackmere_hookstone
     name: The Haaksteen
     area: blackmere
+    # M10.16: bread and beer for the Haakman, and whatever else the stranger thinks of.
+    improvise:
+      domain: offering
+      may:
+        - { standing: water_spirits }
+        - { condition: [cursed] }
+        - { fact: true }
+      fallback: The black water laps at the stone. If anything heard you, it keeps it to itself.
+      takes: true
     tags: [wilderness, haunted, fae]
     aliases: [haaksteen, hook stone, hookstone, offering stone]
     summary: A grey stone in the shallows of the Blackmere, where people leave bread and beer for the Haakman at the new moon.

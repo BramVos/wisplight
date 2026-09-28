@@ -769,3 +769,34 @@ aftermath:
             precise: "{a} learnt {value} from the stranger, and can do it alone now."
             village: "{a} can do {value} now. The stranger taught {a}, would you believe."
             far: "A stranger who teaches a trade."
+
+  # M10.16: what the stranger improvised at the dog stone, the dog answers in the night; at the Kabouterberg,
+  # the bowl is licked clean by morning. Content, as for any signal: the event is the thing it was done to.
+  - id: dog_stone_answers
+    signal: improvised
+    event: dog_stone
+    topic: dog_stone
+    expires: 2
+    steps:
+      - id: bark
+        at: { hour: 2 }
+        do:
+          tell:
+            kind: omen
+            about: [loc_veenhoek_quay]
+            place: loc_veenhoek_quay
+            belang: 1
+            title: a dog barking across the water in the night
+            precise: "In the night a dog barked across the water, three times, and there is no dog over there."
+            village: "Did you hear it in the night? A dog across the water, where there's no dog."
+            far: "Dogs barking at night in the Holleveen."
+
+  - id: kabouters_answer
+    signal: improvised
+    event: loc_kabouterberg
+    topic: kabouterberg
+    expires: 2
+    steps:
+      - id: licked
+        at: { hour: 6 }
+        do: { mark: loc_kabouterberg, text: "The bowl at the mouth of the hollow is empty this morning, and licked clean.", days: 1 }

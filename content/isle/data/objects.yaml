@@ -62,6 +62,12 @@ object_types:
       text: Runes of the mages of Aldmar. They name this stone and every stone it once opened to, the one above Havenmoor among them, and round the socket at its foot, one word over and over. Key.
       dc: 18
       topic: the_waystone
+    # M10.16: what else is done to the stone (a hand on the runes, a word spoken to it) may be improvised.
+    improvise:
+      domain: lore
+      may:
+        - { fact: true }
+      fallback: The runes crawl under your hand and will not hold still. The stone is only cold.
 
   # M10.5: Tamsin's pot on the hearth, where the salve is made.
   - id: salve_pot

@@ -1,3 +1,4 @@
+import { applyImprovisation, improviseFallback, improviseRequest, readImprovisation, type Improvisable } from './improvise'
 import { soundNow, type SoundNow } from './sound'
 import type { Archived } from './archive'
 import { knownName, knowsOfPerson, publicShort, seeFamily } from './acquaintance'
@@ -677,6 +678,31 @@ export class Engine {
     return done
   }
 
+  /**
+   * Improvisation (M10.16): the model tells what happens and may propose one
+   * effect, which the engine checks and carries out. Without a model, the
+   * thing's own line; when the call fails (the budget spent, too slow), the
+   * same line and why, as in a talk.
+   */
+  private async improvise(imp: Improvisable): Promise<Output[]> {
+    const recorder = this.recorder
+    if (!recorder || !this.world.aiLive) return improviseFallback(this.world, imp)
+    try {
+      const reply = await recorder.complete({ ...improviseRequest(this.world, imp), timeoutMs: 10000 })
+      const read = readImprovisation(this.world, imp, reply.text)
+      if (!read) {
+        recorder.report?.({ reason: 'invented', role: 'voice' })
+        return improviseFallback(this.world, imp, { kind: 'checks', message: 'the answer did not pass' })
+      }
+      // An effect outside what the content allows is refused; the narration stays (a noted rejection, not a failure).
+      if (read.refused) recorder.report?.({ reason: 'schema', role: 'voice', fixed: `effect refused: ${read.refused}` })
+      return applyImprovisation(this.world, imp, read.narration, read.effect, read.spent)
+    } catch (error) {
+      const kind = error instanceof LlmError ? error.kind : 'network'
+      return improviseFallback(this.world, imp, { kind, message: error instanceof Error ? error.message : String(error) })
+    }
+  }
+
   /** Records every model reply (or failure) in the log, for replays. */
   private get recorder(): LlmClient | undefined {
     const llm = this.llm
@@ -1196,6 +1222,9 @@ export class Engine {
       }
       default: {
         const outputs = runCommand(this.host, command)
+        // An act to improvise (M10.16): through the model, like a talk, within the player's budget.
+        const imp = outputs[0]?.improvise
+        if (imp) return this.improvise(imp)
         if (command.verb === 'examine') {
           const npc = findNpcHere(this.world, command.args.join(' '))
           if (npc) this.dialogue.learn(npc)

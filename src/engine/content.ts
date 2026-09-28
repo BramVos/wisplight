@@ -4,6 +4,7 @@ import { NamesSchema, NewcomerSchema, ProjectSchema, type Newcomer, type Project
 import { z } from 'zod'
 import { WorldMapSchema } from './map/palette'
 import { BellSchema, SoundSchema } from './sound'
+import { ImproviseSchema } from './improvise'
 import { CreatureSchema, EncounterSchema, RulesSchema, type Creature, type Effect, type Encounter, type Rules, type Talent } from './rules/schema'
 import { ConditionSchema, QuestBodySchema } from './quests/schema'
 import { checkQuests } from './quests/check'
@@ -309,6 +310,8 @@ export const ObjectTypeSchema = z.object({
       narrate_end: z.string().optional(),
     })
     .optional(),
+  /** An act the rules do not know, done to it, may be improvised (M10.16). */
+  improvise: z.lazy(() => ImproviseSchema).optional(),
 })
 export type ObjectType = z.infer<typeof ObjectTypeSchema>
 
@@ -327,6 +330,8 @@ export const ObjectInstanceSchema = z.object({
   state_text: z.record(z.string(), z.string()).default({}),
   /** A lock on it, and what it holds (M10.3): a chest, a strongbox. */
   lock: LockSchema.optional(),
+  /** This one in particular may be improvised on (M10.16), over its type's. */
+  improvise: z.lazy(() => ImproviseSchema).optional(),
   contents: z.record(z.string(), z.number().int().positive()).optional(),
 })
 export type ObjectInstance = z.infer<typeof ObjectInstanceSchema>
@@ -384,6 +389,8 @@ export const LocationSchema = z.object({
   faith: z.string().optional(),
   /** What you hear here (M10.15): wind in the reeds, the sea, the hearth; over its area's. */
   sound: SoundSchema.optional(),
+  /** An act the rules do not know, done here, may be improvised (M10.16): what it can mean and what may happen. */
+  improvise: z.lazy(() => ImproviseSchema).optional(),
   description: z.object({ day: Prose, night: Prose.optional() }),
   /**
    * Other descriptions once a flag is set (the doorstep without the cat, once Fenna is home), or while conditions hold
@@ -435,6 +442,8 @@ export const AreaSchema = z.object({
   market_days: z.array(z.string()).default([]),
   /** What you hear in the area's places that have no sound of their own (M10.15). */
   sound: SoundSchema.optional(),
+  /** Improvisation for everything in the area that has none of its own (M10.16), with a smaller may. */
+  improvise: z.lazy(() => ImproviseSchema).optional(),
   /**
    * Places of the area barred while conditions hold (M10.17; before, the widow's mist over the Kattenbroek in code):
    * only for a stranger carrying something with this tag, or for anyone; with what they see.
@@ -1508,7 +1517,7 @@ function checkReferences(world: WorldDef | undefined, c: Omit<Content, 'world'>)
 }
 
 /** Signals the systems give themselves, without a watcher in the content. */
-const CODE_SIGNALS = ['house_lost', 'plan_failed', 'doubt', 'stranger_unwelcome', 'recognised', 'plans_cross', 'warning_proven', 'broken_promise', 'promise_kept', 'request_open', 'theft_mended', 'craft_rank', 'made_good', 'pupil_learnt']
+const CODE_SIGNALS = ['house_lost', 'plan_failed', 'doubt', 'stranger_unwelcome', 'recognised', 'plans_cross', 'warning_proven', 'broken_promise', 'promise_kept', 'request_open', 'theft_mended', 'craft_rank', 'made_good', 'pupil_learnt', 'improvised']
 
 /** Every string in a step's verb that looks like an id. */
 function idsIn(value: unknown): string[] {

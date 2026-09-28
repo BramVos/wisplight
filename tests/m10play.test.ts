@@ -100,7 +100,8 @@ describe('what a description names', () => {
     expect(said(await engine.handle('drink milk'))).toMatch(/That milk is not yours to drink\./)
     expect(said(await engine.handle('take milk'))).toBe('You leave the bowl where it is. It was put there for the kabouters, not for you.')
     expect(said(await engine.handle('dig hill'))).toMatch(/Nobody digs in the Kabouterberg/)
-    expect(said(await engine.handle('kick oak'))).toBe('You think better of it, and leave the oak be.')
+    // The Kabouterberg matters (M10.16): an act the rules do not know is improvised; without a model, the hill's own line.
+    expect(said(await engine.handle('kick oak'))).toBe('The hill keeps its silence. Whatever you meant by it, the kabouters keep their own counsel.')
     expect(engine.state.player.inventory['milk'] ?? 0).toBe(0)
   })
 
