@@ -8,6 +8,8 @@ import { newNpcState, type GameState } from '../state'
 import type { World } from '../world'
 import { farPlaceOf, farTopicAt, fitsRoom, freeId, withFarPlaces } from './far'
 import { growth } from './growth'
+import { askOutput, mustAsk } from '../asking'
+import type { Output } from '../commands'
 import { sketchById, sketchNpc, sketchProfession } from '../sketches'
 
 // A far town grows by district, not all at once (M10.21; Bram, 28 September
@@ -354,19 +356,26 @@ export function districtDue(world: World, doing: boolean): { topic: string; id: 
 
 /**
  * A district wanted: made now from templates without a model, or waiting for
- * the chronicler, once. The line to show while it waits, if any.
+ * the chronicler, once. Above the player's threshold it asks first, as a
+ * choice in the game (M10.21, asking.ts): go on, not now (no district for the
+ * rest of the game day), or always. What to show: the question, or the line
+ * while it waits.
  */
-export function wantDistrict(world: World, topic: string, id: string): string | undefined {
+export function wantDistrict(world: World, topic: string, id: string): Output[] {
   const g = growth(world)
   const key = keyOf(topic, id)
-  if ((g.districts?.[key] && g.districts[key]!.by !== 'stub') || g.districtPending?.includes(key)) return undefined
+  if ((g.districts?.[key] && g.districts[key]!.by !== 'stub') || g.districtPending?.includes(key)) return []
   if (!world.aiLive) {
     applyDistrict(world, topic, id, null)
-    return undefined
+    return []
   }
-  ;(g.districtPending ??= []).push(key)
   const q = districtsOf(world.content, topic).find((d) => d.id === id)
-  return q ? `The chronicler is working out ${q.name} of ${world.content.topics.get(topic)?.name ?? topic}.` : undefined
+  const town = world.content.topics.get(topic)?.name ?? topic
+  const asked = q ? mustAsk(world, `district:${key}`, `Making ${q.name} of ${town} playable`, districtRequest(world, key), `district ${topic} ${id}`) : undefined
+  if (asked && 'declined' in asked) return []
+  if (asked) return askOutput(world, asked.ask)
+  ;(g.districtPending ??= []).push(key)
+  return q ? [{ kind: 'system', text: `The chronicler is working out ${q.name} of ${town}.` }] : []
 }
 
 /**

@@ -1,5 +1,9 @@
 # Changelog
 
+## M10.21 deel: de vraag voor een wijk, 29 september 2026
+
+- **Boven jouw grens vraagt een wijk het eerst.** Kost het maken van een wijk meer dan je instelling "Ask first above" (standaard $1), dan vraagt het spel het één keer: "Making the Dyke Gate and the fish market of Graafhaven playable costs about $0.80", met 1 Go on, 2 Not now en 3 Always. "Not now" betekent de rest van die speldag geen wijk en geen vraag. "Always" vraagt het nooit meer. Een wijk kost met Opus ongeveer $0,08, dus bij $1 vraagt hij niet. Zet de grens op $0,05 om het te zien. De vraag zelf is gebouwd door de andere sessie (`asking.ts`).
+
 ## M10.21 deel: één vraag boven een grens, 29 september 2026
 
 - **Kleine bedragen lopen gewoon.** Onder Instellingen > AI staat "Ask first above", standaard $1. Een aanroep die volgens de prijzen minder kost, loopt meteen en is zichtbaar in de lampjes van de statusbalk. Kost één aanroep meer, dan vraagt het spel het één keer, als keuze in het spel: "Making ... costs about $1.50 with the model you chose. 1. Go on 2. Not now 3. Always go on, and stop asking". Go on doet het meteen. Not now geldt voor de rest van de speldag. Always zet de instelling op nooit vragen; [Never ask] in de instellingen doet hetzelfde, en een bedrag zet het terug.

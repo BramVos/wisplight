@@ -99,6 +99,32 @@ describe('M10.21: a town grows by district', () => {
     expect(districts(plain)).toEqual([])
   })
 
+  it('asks once above the threshold before the chronicler makes a district: go on makes it, not now waits a day', async () => {
+    const mock = new MockLlm('good')
+    const pricey = { complete: (r: Parameters<MockLlm['complete']>[0]) => mock.complete(r), costOf: () => 0.8, askAboveUsd: () => 0.5 }
+    const engine = new Engine(content, { seed: 6, builder: true, llm: pricey })
+    await inGraafhaven(engine)
+    const asked = said(await engine.handle('ask lammert about the holleveen'))
+    expect(asked).toMatch(/Making the Dyke Gate and the fish market of Graafhaven playable costs about \$0\.80/)
+    expect(engine.state.growth?.districtPending ?? []).toEqual([])
+    await engine.handle('bye')
+    expect(said(await engine.handle('1'))).toMatch(/The chronicler is working out the Dyke Gate and the fish market of Graafhaven\./)
+    await engine.runModels()
+    expect(engine.state.growth!.districts!['graafhaven:gate']!.by).toBe('chronicler')
+    // Not now: no district for the rest of the day, and no question again that day.
+    const later = new Engine(content, { seed: 7, builder: true, llm: pricey })
+    await inGraafhaven(later)
+    await later.handle('ask lammert about the holleveen')
+    await later.handle('bye')
+    await later.handle('2')
+    expect(districts(later)).toEqual([])
+    expect(said(await later.handle('ask lammert about graafhaven'))).not.toMatch(/costs about/)
+    expect(districts(later)).toEqual([])
+    // The verb works only in the town it is about.
+    await later.handle('@goto loc_oude_zijl_sluice')
+    expect(said(await later.handle('district graafhaven court'))).toMatch(/There is nothing to make here/)
+  })
+
   it('names a town whose districts can never be reached under Check', () => {
     const topics = new Map(content.topics)
     topics.set('nowhere', { ...content.topics.get('graafhaven')!, id: 'nowhere', pos: undefined })

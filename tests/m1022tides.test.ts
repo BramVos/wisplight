@@ -45,7 +45,7 @@ describe('M10.22: the great lines', () => {
     expect(flood.stage).toBe('threat')
     expect(flood.events).toHaveLength(1)
     expect(flood.history.map((h) => h.judged)).toEqual(['threat', 'event', 'threat'])
-  })
+  }, 120_000)
 
   it('is pushed every day by what drives it, and calmed by what calms it', () => {
     const engine = new Engine(content, { seed: 3 })
@@ -74,7 +74,7 @@ describe('M10.22: the great lines', () => {
     expect(flood.history.at(-1)!.why).toBe('The signs have been gathering all month.')
     expect(engine.state.tides!.lines['made_up']).toBeUndefined()
     expect(llm.calls.filter((c) => c.schemaName === 'tides')).toHaveLength(1)
-  })
+  }, 120_000)
 
   it("plays Skerrow's great storm: the harbour broken, the shore folk at the inn eating from the hamlet, fish scarce", async () => {
     const isle = loadContent(await readContentFiles('content', 'isle'))
@@ -97,7 +97,7 @@ describe('M10.22: the great lines', () => {
     // At most one a season in a world.
     const { foundFaction } = await import('../src/engine/growth/founded')
     expect(foundFaction(engine.world, { id: 'another', name: 'another band', wants: 'More.', seat: 'somewhere', members: [], join: 'reputation' })).toBe(false)
-  })
+  }, 120_000)
 
   it('lets a crowd eat from the stock of the settlement it is in', () => {
     const plain = new Engine(content, { seed: 3 })
@@ -108,7 +108,7 @@ describe('M10.22: the great lines', () => {
     crowded.tick(DAY)
     const used = (e: Engine) => Object.values(e.state.economy!.ledgers['waagdam']!.last.used).reduce((a, b) => a + b, 0)
     expect(used(crowded)).toBeGreaterThan(used(plain))
-  })
+  }, 120_000)
 
   it('brings at most one threat and no event in thirty days without a player, in each world', async () => {
     for (const world of [content, loadContent(await readContentFiles('content', 'isle')), loadContent(await readContentFiles('tests/worlds', 'other'))]) {

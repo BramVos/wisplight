@@ -9,8 +9,8 @@ import { answerChoice, choose, MAX_OPTIONS, offer } from './choice'
 import { answerAsk } from './asking'
 import { brawlAnswer, brawlShown } from './social/brawl'
 import { CHECKPOINT_ENTRIES, CHECKPOINT_MINUTES, contentVersion, type Checkpoint, type CheckpointedSave } from './checkpoint'
-import { applyFarPlace, farPlaceOf, farRequest, farWords, wantFarPlace, type FarWords } from './growth/far'
-import { applyDistrict, districtDue, districtRequest, districtWords, wantDistrict, type DistrictWords } from './growth/districts'
+import { applyFarPlace, farPlaceOf, farRequest, farWords, wantFarPlace, type FarWords, farTopicAt } from './growth/far'
+import { applyDistrict, districtDue, districtRequest, districtsOf, districtWords, wantDistrict, type DistrictWords } from './growth/districts'
 import { applyWeave, weaveReply, weaveRequest, type WeaveReply } from './growth/weave'
 import { applyTides, tidesReply, tidesRequest, type TidesReply } from './tides'
 import { crowdHere, nameOne } from './growth/crowds'
@@ -973,10 +973,7 @@ export class Engine {
     // rents a bed, says something in a talk), another when they go into it by its street.
     const doing = !outputs.some((o) => o.kind === 'error') && (/^(?:buy|sell|rent|ask|tell|order|trade|haggle|work|take lodgings?|lodge)\b/i.test(text) || Boolean(talkBefore && this.state.talk))
     const due = this.state.combat ? undefined : districtDue(this.world, doing)
-    if (due) {
-      const line = wantDistrict(this.world, due.topic, due.id)
-      if (line) outputs.push({ kind: 'system', text: line })
-    }
+    if (due) outputs.push(...wantDistrict(this.world, due.topic, due.id))
     const talk = this.state.talk
     if (talk && this.state.npcs[talk.npc]?.location !== this.state.player.location) this.state.talk = undefined
     this.dialogue.learn(this.state.player.location, areaTopicId(this.content, this.world.location(this.state.player.location).area))
@@ -1062,6 +1059,12 @@ export class Engine {
         }
       }
       return [...heard, ...this.pass(2)]
+    }
+    // DISTRICT <town> <id> (M10.21): what "go on" runs after the question of cost; only where the stranger is, in that town.
+    const district = /^district\s+([a-z0-9_]+)\s+([a-z0-9_]+)$/.exec(text.trim())
+    if (district && !this.state.talk) {
+      const [, topic, id] = district as unknown as [string, string, string]
+      return farTopicAt(this.world, this.state.player.location) === topic && districtsOf(this.content, topic).some((d) => d.id === id) ? wantDistrict(this.world, topic, id) : [{ kind: 'error', text: 'There is nothing to make here.' }]
     }
     const peace = /^(?:mediate|make peace)\s+between\s+(.+?)\s+and\s+(.+)$/i.exec(text.trim())
     if (peace && !this.state.talk) return this.makePeace(peace[1]!, peace[2]!)
