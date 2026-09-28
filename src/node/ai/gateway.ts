@@ -14,6 +14,9 @@ import type { UsageStore } from './usage'
 // A reply of the voice within six seconds, or the set line (FO, chapter 18); the conversation may ask for less, for its second try.
 // The voice's own limit is the player's setting (replyWithinMs, M10.8), carried by each request; this is only a ceiling.
 const TIMEOUT_MS: Record<LlmRole, number> = { voice: 60000, brain: 10000, chronicler: 90000, advisor: 90000 }
+// The editor's own long answers (a world step with a chapter of YAML, M10.20) may ask for more time than their role, up to five minutes.
+const EDITOR_SCHEMAS = new Set(['world_step', 'world_enhance', 'builder_draft'])
+const EDITOR_TIMEOUT_MS = 300_000
 // From this share of the hourly budget on, calls of low priority wait: the chronicler, and goal choices of NPCs without a quest role (FO, chapter 16).
 const LOW_PRIORITY_SHARE = 0.8
 const FAILURES_BEFORE_COOLDOWN = 3
@@ -128,7 +131,8 @@ export class Gateway implements LlmClient {
   async complete(request: LlmRequest, override?: RoleChoice): Promise<LlmResponse> {
     const choice = override ?? this.options.role(request.role)
     if (!choice) throw new LlmError('config', `no model chosen for ${request.role}`)
-    const timeoutMs = Math.min(request.timeoutMs ?? Infinity, this.options.timeoutMs?.[request.role] ?? TIMEOUT_MS[request.role])
+    const roleTimeoutMs = this.options.timeoutMs?.[request.role] ?? TIMEOUT_MS[request.role]
+    const timeoutMs = EDITOR_SCHEMAS.has(request.schemaName) && request.timeoutMs ? Math.min(request.timeoutMs, EDITOR_TIMEOUT_MS) : Math.min(request.timeoutMs ?? Infinity, roleTimeoutMs)
     if (timeoutMs <= 0) throw new LlmError('timeout', 'no time left for this reply')
     const provider = this.options.provider(choice.provider)
     if (!provider) throw new LlmError('config', `no API key for ${choice.provider}`)

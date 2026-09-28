@@ -154,6 +154,20 @@ describe('gateway', () => {
     return { gateway, usage, log, dir }
   }
 
+  it("gives the editor's own long answers the time they ask for, up to five minutes; other calls keep their role's", async () => {
+    const late = fakeProvider('openai', [], (_m, _r, signal) => new Promise((resolve, reject) => {
+      const timer = setTimeout(() => resolve({ text: '{}', provider: 'openai', model: 'gpt-4.1-mini', usage: { inputTokens: 1, outputTokens: 1, cachedTokens: 0 }, latencyMs: 80 }), 80)
+      signal!.addEventListener('abort', () => {
+        clearTimeout(timer)
+        reject(new Error('aborted'))
+      })
+    }))
+    const { gateway } = setup(late)
+    const step: LlmRequest = { role: 'voice', system: 's', prompt: 'p', schemaName: 'world_step', schema: {}, maxTokens: 50, timeoutMs: 1000 }
+    await expect(gateway.complete(step)).resolves.toMatchObject({ text: '{}' })
+    await expect(gateway.complete({ ...step, schemaName: 'npc_reply' })).rejects.toMatchObject({ kind: 'timeout' })
+  })
+
   it('turns a slow reply into a timeout', async () => {
     const slow = fakeProvider('openai', [], (_m, _r, signal) => new Promise((_resolve, reject) => signal!.addEventListener('abort', () => reject(new Error('aborted')))))
     const { gateway } = setup(slow)
