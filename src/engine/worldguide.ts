@@ -126,18 +126,19 @@ export const WORLD_STEPS: readonly WorldStep[] = [
     ],
     fills: [
       { kind: 'world', keys: ['faiths'] },
-      { kind: 'rules', keys: ['death'] },
+      { kind: 'rules', keys: ['death', 'patrons'] },
     ],
     optional: true,
     skipped: 'No faith: nobody prays, and the voice swears by nothing holy; death is told in plain words, with no guide, no rite and no price.',
     checks: [
-      'Every faith has an id, a name and its patrons, and the frame mentions it.',
+      'Every faith has an id, a name and its patrons, and the frame mentions it; its faction, if it has one, exists (or is added in the people step), and every patron is in the rules with what swearing to them means (sworn).',
+      'A holy place names its faith (faith on the location), so that a wedding there raises that faith\'s faction.',
       'With no faith, faiths is an empty list and the frame says what people swear by.',
       'No real religion is mocked or used.',
       'Death fits the frame: a guide and a patron only where there is faith; {guide} and {lost} stand in the texts that need them; a price names a place and an item that exist.',
     ],
     prompt:
-      'STEP: FAITHS. Agree with the designer whether there is faith. Propose in `world`: faiths (id, name, patrons), or an empty list when there is none. Say in `say` what people swear by, for the voice step. If the designer wants death to have its own words, propose rules.death in `changes` (vision with {guide}, guide, patron, wake, mark with {lost}, rite_where, rite_done, rite_nothing, and a price only if the designer asks for one); otherwise leave it out and death reads plain.',
+      'STEP: FAITHS. Agree with the designer whether there is faith. Propose in `world`: faiths (id, name, patrons, and faction if the faith is also a group with a standing), or an empty list when there is none. Propose the patrons in the rules in `changes` (with sworn: the deed companions judge when the stranger swears to that patron), and give holy places their faith. Say in `say` what people swear by, for the voice step. If the designer wants death to have its own words, propose rules.death in `changes` (vision with {guide}, guide, patron, wake, mark with {lost}, rite_where, rite_done, rite_nothing, and a price only if the designer asks for one); otherwise leave it out and death reads plain.',
   },
   {
     id: 'places',
@@ -159,10 +160,11 @@ export const WORLD_STEPS: readonly WorldStep[] = [
       'Every thing a description brings in with "a" or "an" has a detail.',
       'The start location exists, and every place can be reached from it by exits.',
       'Places reached only by a line of transport also have a way on foot.',
+      'An area that is barred (a mist, a gate, a curse) says when, what lifts it (a condition that can come true, or an item tag that exists) and what turns the stranger back.',
       'Every [bracketed] topic exists or is added.',
     ],
     prompt:
-      'STEP: PLACES. Agree the areas and the places with the designer. Propose areas and locations in `changes` (each location with its area, tags, aliases, summary, description with day and, where it differs, night, exits with minutes, and details), and start.location in `world`. The builder adds the way back for every exit.',
+      'STEP: PLACES. Agree the areas and the places with the designer. Propose areas and locations in `changes` (an area that turns the stranger back while something holds gets barred: when, carrying and the text; each location with its area, tags, aliases, summary, description with day and, where it differs, night, exits with minutes, and details), and start.location in `world`. The builder adds the way back for every exit.',
   },
   {
     id: 'professions',
@@ -186,7 +188,7 @@ export const WORLD_STEPS: readonly WorldStep[] = [
     id: 'people',
     title: 'People',
     ask: [
-      'Who does the stranger meet first (three to six people): what do they do, where do they live and work?',
+      'Who does the stranger meet first (three to six people): what do they do, where do they live and work, and which peoples are they (and who distrusts whom)?',
       'Who keeps the law, where, and what do the worst and the least offences cost? Are there groups the stranger could join (a guild, an order, a crew), and on what terms?',
       'What do people here talk about: a story everyone knows, a worry, a rumour?',
     ],
@@ -194,6 +196,7 @@ export const WORLD_STEPS: readonly WorldStep[] = [
       { kind: 'npcs' },
       { kind: 'topics' },
       { kind: 'factions' },
+      { kind: 'rules', keys: ['ancestries'] },
       { kind: 'world', keys: ['law', 'names', 'standing'] },
     ],
     optional: false,
@@ -205,9 +208,10 @@ export const WORLD_STEPS: readonly WorldStep[] = [
       'A faction someone can join says how: never, hired, by reputation, or terms (patrons, places, a tag, a fee, a reputation, and what is said); standing.offices lists offices only if the world has them.',
       'Public facts are things a neighbour would know; examples are in the person\'s own speech.',
       'Relations point to people who exist, or are people outside the game with a role.',
+      'A person\'s patron is a patron in this world\'s rules; an ancestry\'s distrusted_by names quirks people have, and its aliases are words players use.',
     ],
     prompt:
-      'STEP: PEOPLE. Agree the first people, the law and what is talked about with the designer. Propose npcs in `changes` (name, short, pronoun, age, profession, home, work, appearance, personality, values, speech, aliases, public_facts, examples, money, knows_areas, relations) and topics (lore with a summary, details and, where someone tells it, a story in their voice). Propose law (where, officer, npc, office, and fines for murder, assault and the least offence if the designer names them), standing.offices (only if there are offices to hold) and names (she, he, family: ten names each for people the game makes later) in `world`, and factions in `changes` with how to join them (join) and, if it matters, where they stand (stance).',
+      'STEP: PEOPLE. Agree the first people, the law and what is talked about with the designer. Propose npcs in `changes` (name, short, pronoun, age, profession, home, work, appearance, personality, values, speech, aliases, public_facts, examples, money, knows_areas, relations) and topics (lore with a summary, details and, where someone tells it, a story in their voice). Propose law (where, officer, npc, office, and fines for murder, assault and the least offence if the designer names them), standing.offices (only if there are offices to hold) and names (she, he, family: ten names each for people the game makes later) in `world`, and factions in `changes` with how to join them (join) and, if it matters, where they stand (stance). Where the world has peoples of its own, propose the ancestries in the rules (with aliases, and distrusted_by: the quirks that cool towards them).',
   },
   {
     id: 'economy',
@@ -233,6 +237,7 @@ export const WORLD_STEPS: readonly WorldStep[] = [
       'Every workshop stands in the area of its settlement; work elsewhere has a ledger of its own.',
       'Every village, town, hamlet or inn has a ledger.',
       'Prices are in the smallest coin; a craft\'s object names the craft and the technique.',
+      'A lamp, torch or anything else that lights the way at night has the tag light.',
     ],
     prompt:
       'STEP: THE ECONOMY. Agree what is eaten, sold and made with the designer. Propose items, object_types (with affordances), the services on locations (sells, buys, lodging, supply), settlements (people, use, keep, workshops), resources and crafts in `changes`, as one proposal that closes: what is used is made or brought.',
@@ -266,24 +271,28 @@ export const WORLD_STEPS: readonly WorldStep[] = [
   },
   {
     id: 'watcher',
-    title: 'Signals',
+    title: 'Signals and dangers',
     ask: [
       'Which changes matter to people here: a death, a theft, a shortage, someone leaving?',
       'What does custom do when it happens: a wake, a search, a collection, a warning?',
+      'Are there creatures or dangers the stranger may fight, and which group minds when one is beaten, paid off, bound for the law or let go?',
     ],
     fills: [
       { kind: 'watchers' },
       { kind: 'aftermath' },
+      { kind: 'creatures' },
+      { kind: 'encounters' },
     ],
     optional: true,
-    skipped: 'Changes pass without a signal; people react only in talk.',
+    skipped: 'Changes pass without a signal and people react only in talk; there are no creatures to fight, and a fight touches no faction.',
     checks: [
       'Every watcher\'s signal has an aftermath with the same signal.',
       'Aftermath steps use the verbs the engine knows.',
       'The file keys are watchers: and aftermath:.',
+      'A creature with a faction says how that faction takes it when the creature is won, paid, bound or freed (reputation); an encounter that tempts a disloyal companion says so (tempts).',
     ],
     prompt:
-      'STEP: SIGNALS. Agree with the designer which changes are signals and what custom follows. Propose watchers and aftermath in `changes`: a watcher with its signal and what sets it off, and an aftermath with the same signal and its steps.',
+      'STEP: SIGNALS. Agree with the designer which changes are signals and what custom follows. Propose watchers and aftermath in `changes`: a watcher with its signal and what sets it off, and an aftermath with the same signal and its steps. If there are creatures, propose them and their encounters too: a creature\'s faction and reputation (for won, paid, bound, freed or killed: which faction, by how much, why; left out, beating one costs 5 with its faction, paying gains 2, binding costs 10 and letting go gains 3), and tempts on an encounter that may turn a disloyal companion.',
   },
   {
     id: 'voice',

@@ -33,7 +33,7 @@ describe('the guide for a new world', () => {
     const step = (id: string) => WORLD_STEPS.find((s) => s.id === id)!
     expect(step('frame').prompt).toMatch(/sleep with a sentence each for room, home and rough/)
     expect(step('money').prompt).toMatch(/aliases/)
-    expect(step('faiths').fills).toContainEqual({ kind: 'rules', keys: ['death'] })
+    expect(step('faiths').fills).toContainEqual({ kind: 'rules', keys: ['death', 'patrons'] })
     expect(step('people').fills.map((f) => f.kind)).toContain('factions')
     expect(step('people').prompt).toMatch(/fines/)
     expect(step('passages').prompt).toMatch(/hires/)
@@ -41,6 +41,12 @@ describe('the guide for a new world', () => {
     expect(step('calendar').fills).toContainEqual({ kind: 'world', keys: ['calendar', 'start', 'weather'] })
     expect(step('calendar').prompt).toMatch(/start_weekday/)
     expect(step('palette').prompt).toMatch(/hex names/)
+    expect(step('faiths').prompt).toMatch(/sworn/)
+    expect(step('places').prompt).toMatch(/barred/)
+    expect(step('people').fills).toContainEqual({ kind: 'rules', keys: ['ancestries'] })
+    expect(step('economy').checks.join(' ')).toMatch(/tag light/)
+    expect(step('watcher').fills.map((f) => f.kind)).toEqual(expect.arrayContaining(['creatures', 'encounters']))
+    expect(step('watcher').prompt).toMatch(/tempts/)
   })
 
   it('tells the chronicler to ask before inventing, never to borrow from another world, and what building Deepwell taught', () => {
