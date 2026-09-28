@@ -478,6 +478,14 @@ export interface PlayerState {
   contact?: string
   /** Moments the stranger had (M10.11): a card once per place and per tiding. */
   moments?: MomentsState
+  /** What a place was like when the stranger was last there (M10.13), for what changed when they come back. */
+  visits?: Record<string, { t: number; objects: Record<string, string>; state?: string; residents: string[] }>
+  /** Gestures people made (M10.13): how often each, the day of each person's last, and the last place one came at. */
+  gestures?: { given: Record<string, number>; days: Record<string, number>; at?: { location: string; t: number } }
+  /** The lodging rented by the week (M10.13): its id; the room itself is `lodging` until the week is out. */
+  lodgingId?: string
+  /** The stranger's chest in the room (M10.13). */
+  chest?: Counts
   /** Journeys of days the stranger made (M10.12): a line each in the journal. */
   journeys?: { t: number; from: string; to: string; by?: string; minutes: number }[]
   /** Crafts the stranger works at (M10.5), by craft. */

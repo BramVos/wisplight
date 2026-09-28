@@ -78,15 +78,15 @@ export function metOnTheWay(world: World, hexIds: string[]): string[] {
  * The narrator's request (M10.11): the paragraph reworded in the voice of the
  * world, one call, with nothing added and nothing left out.
  */
-export function journeyRequest(world: World, paragraph: string, frame: string): import('../dialogue/llm').LlmRequest {
+export function journeyRequest(world: World, paragraph: string, frame: string, kind: 'journey' | 'return' = 'journey'): import('../dialogue/llm').LlmRequest {
+  const task =
+    kind === 'return'
+      ? 'You are the narrator of a text game. The player comes back to a place they know; make these few lines about what changed since their last visit into one short paragraph in the voice of this world: one to three sentences, second person, present tense, plain words. Keep every fact; add nothing: no people, places, events or numbers that are not in it. JSON only.'
+      : 'You are the narrator of a text game. Reword the journey the player made in the voice of this world: two to five sentences, second person, present tense, plain words. Keep every fact: how long, over what, the weather, what was seen, who was passed, how it ended and where. Add nothing: no people, places, events or numbers that are not in it. JSON only.'
   return {
     role: 'chronicler',
-    system: [
-      frame,
-      '',
-      'You are the narrator of a text game. Reword the journey the player made in the voice of this world: two to five sentences, second person, present tense, plain words. Keep every fact: how long, over what, the weather, what was seen, who was passed, how it ended and where. Add nothing: no people, places, events or numbers that are not in it. JSON only.',
-    ].join('\n'),
-    prompt: `THE JOURNEY: ${paragraph}`,
+    system: [frame, '', task].join('\n'),
+    prompt: `${kind === 'return' ? 'WHAT CHANGED' : 'THE JOURNEY'}: ${paragraph}`,
     schemaName: 'journey',
     schema: { type: 'object', additionalProperties: false, required: ['text'], properties: { text: { type: 'string' } } },
     maxTokens: 300,

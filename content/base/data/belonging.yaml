@@ -1,0 +1,61 @@
+# Coming back, gestures and a place to belong (M10.13). What changed at a place
+# since your last visit, in a few lines; the small practical things people do
+# after something you shared (only from what was agreed and kept, or what they
+# remember of you, never from liking alone); and a room of your own.
+
+returning:
+  place:
+    normal: "{place} is itself again, as if nothing had happened here."
+    flooded: "The water has been here since you were: there is a line of mud on the walls at the height of your knee."
+    damaged: "Since you were last here, something has been broken at {place}."
+    destroyed: "There is little left of {place} since you were here last."
+    abandoned: "Nobody seems to have been here for days."
+    occupied: "Soldiers have come here since you were last here."
+    drained: "The water has gone from here since your last visit."
+    default: "{place} is not as you left it."
+  object:
+    "broken:false": "{object} has been mended since you were here; the new work is still pale."
+    "broken:true": "{object} is broken now."
+    default: "{object} is not as you left it."
+  came: "{name} lives or works here now."
+  gone: "{name} is not here any more."
+  dead: "{name} is gone; people here speak of {them} quietly."
+  agreement: "You remember: {what}."
+
+gestures:
+  - id: mirte_keeps_a_loaf
+    who: npc_mirte
+    at: shop
+    shared: { kept: any }
+    do: { give: rye_bread, qty: 1, line: "Mirte slides a small loaf across the counter with the rest. \"Kept one back for you. Don't argue.\"" }
+  - id: mirte_asks_after_fenna
+    who: npc_mirte
+    at: arrive
+    shared: { memory: fenna }
+    do: { ask: "Mirte stops kneading when she sees you. \"Any word of Fenna, since we talked?\"" }
+  - id: gerrit_says_where
+    who: npc_gerrit
+    at: leave
+    shared: { kept: any }
+    do: { warn: "Gerrit calls after you: \"I'm at the cuttings from first light, if you need me. The Goose after.\"" }
+  - id: gerrit_nods_at_the_dyke
+    who: npc_gerrit
+    at: arrive
+    shared: { memory: water_wolf }
+    do: { line: "Gerrit sees you and lifts his spade in greeting, as to one of the dyke crew." }
+  - id: trijntje_where_were_you
+    who: npc_trijntje
+    at: arrive
+    shared: { lodger: goose_room, away: 2 }
+    do: { line: "Trijntje looks up from the tap. \"There you are. Where did you get to? Your room's as you left it; nobody's been in.\"" }
+  - id: trijntje_first_one
+    who: npc_trijntje
+    at: shop
+    shared: { kept: any }
+    do: { give: beer, qty: 1, line: "Trijntje sets a mug in front of you before you ask. \"On the house. You kept your word.\"" }
+
+lodgings:
+  - id: goose_room
+    name: your room at the Drowned Goose
+    at: loc_goose_rooms
+    keeper: npc_trijntje

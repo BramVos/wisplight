@@ -28,7 +28,8 @@
     "party": "Your companions",
     "promises": "Your word and theirs",
     "lands": "How the lands stand",
-    "land": "The land map"
+    "land": "The land map",
+    "lodging": "Your lodging"
   },
   "index": {
     "within": "What lies within {km} km. ",

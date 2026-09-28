@@ -125,6 +125,8 @@ export const KIND_NAMES: Record<EntityKind, string> = {
   craft: 'Crafts',
   prop: 'Props the chronicler may place',
   passage: 'Passages',
+  gesture: 'Gestures',
+  lodging: 'Lodgings',
   background: 'Backgrounds',
 }
 

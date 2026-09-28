@@ -79,6 +79,9 @@ import { momentsNow } from './moments'
 import { journeyRequest } from './map/journeyText'
 import { strangeWords, voiceSummary } from './dialogue/voice'
 import { hasOurOaths, outOfCharacter, unknownNames, vocabularyOf, wordCount } from './dialogue/guard'
+import { noteVisit, returningOutput } from './returning'
+import { gestures } from './gestures'
+import { lodgingPage, putInChest, rentLodging, takeFromChest } from './lodgings'
 
 export type { Output, OutputKind } from './commands'
 
@@ -395,6 +398,8 @@ export class Engine {
       const lines = factionPage(this.world, id.slice(8))
       return lines ? { id, kind: 'lore', name: capitalise(this.content.factions.get(id.slice(8))!.name), lines, sources: [], links: [] } : undefined
     }
+    // A place to belong (M10.13).
+    if (id === 'lodging') return { id, kind: 'lore', name: 'Your lodging', lines: lodgingPage(this.world), sources: [], links: [] }
     if (id === 'promises') return { id, kind: 'lore', name: 'Your word and theirs', lines: promiseLines(this.world), sources: [], links: [] }
     if (id === 'party') return { id, kind: 'lore', name: 'Your companions', lines: partyLines(this.world).length ? [...partyLines(this.world), ...companions(this.world).flatMap((m) => m.approvals.slice(-3).map((a) => `  ${callName(this.world.npc(m.npc))}: ${a.text}`))] : ['You travel alone.'], sources: [], links: [] }
     if (id === 'sheet') {
@@ -715,10 +720,11 @@ export class Engine {
     const recorder = this.recorder
     if (!recorder || !this.world.aiLive) return
     for (const output of outputs) {
-      if (!output.journey) continue
+      if (!output.journey && !output.returning) continue
       try {
         const frame = [worldFrame(this.content), voiceSummary(this.content)].filter(Boolean).join('\n\n')
-        const reply = await recorder.complete({ ...journeyRequest(this.world, output.text, frame), timeoutMs: 8000 })
+        // A journey, or what changed since the last visit (M10.13): the same narrator, one call.
+        const reply = await recorder.complete({ ...journeyRequest(this.world, output.text, frame, output.returning ? 'return' : 'journey'), timeoutMs: 8000 })
         const text = String((JSON.parse(reply.text.trim().replace(/^```(?:json)?\s*|\s*```$/g, '')) as { text?: unknown }).text ?? '').trim()
         const words = vocabularyOf({ ...this.content, chronicler: undefined }, worldFrame(this.content), MONTHS, WEEKDAYS, output.text)
         const fine = text && wordCount(text) <= Math.max(110, wordCount(output.text) * 1.5) && !unknownNames(text, words).length && !strangeWords(this.world, text).length && !hasOurOaths(text) && !outOfCharacter(text)
@@ -824,6 +830,16 @@ export class Engine {
     settleRuns(this.world)
     settleChoices(this.world)
     outputs.push(...this.world.notices.splice(0).map((text) => ({ kind: 'system' as const, text })))
+    // Coming back and gestures (M10.13): what changed since the last visit, after the place's description; and what
+    // people who share something with the stranger do when they see them come, trade with them, or see them go.
+    const nowAt = this.state.player.location
+    if (before !== nowAt) {
+      const back = returningOutput(this.world, nowAt)
+      const room = outputs.findIndex((o) => o.kind === 'room')
+      outputs.splice(room >= 0 ? room + 1 : outputs.length, 0, ...back)
+      outputs.push(...gestures(this.world, 'leave', this.world.npcsAt(before)), ...gestures(this.world, 'arrive', this.world.npcsAt(nowAt)))
+    } else if (/^(?:list|buy|sell)\b/i.test(text.trim())) outputs.push(...gestures(this.world, 'shop', this.world.npcsAt(nowAt)))
+    noteVisit(this.world)
     // Moments (M10.11): a place worth it reached or seen, a tiding heard; a card once each.
     outputs.push(...momentsNow(this.world))
     // A journey in the voice of the world, when a model may help (M10.11); the rules' paragraph otherwise.
@@ -891,6 +907,13 @@ export class Engine {
     if (ride && rideWord && !this.state.talk && passagesNamed(this.world, rideWord).length) {
       return takePassage(this.world, { pass: (minutes) => this.pass(minutes) }, rideWord, (ride[2] ?? ride[4] ?? ride[5])?.toLowerCase().replace(/^the\s+/, '').trim())
     }
+    // A place to belong (M10.13): RENT THE ROOM FOR A WEEK, PUT <thing> IN THE CHEST, TAKE <thing> FROM THE CHEST.
+    if (!this.state.talk && /^(?:rent|take)\s+(?:the\s+|a\s+)?room\s+(?:for|by)\s+(?:a|the)\s+week$|^take\s+lodgings?$|^lodge\s+here$/i.test(text.trim())) return rentLodging(this.world)
+    const stow = /^(?:put|store|keep)\s+(?:the\s+|my\s+)?(.+?)\s+in\s+(?:the\s+|my\s+)?chest$/i.exec(text.trim())
+    if (stow && !this.state.talk && this.state.player.lodgingId) return putInChest(this.world, stow[1]!.toLowerCase())
+    const unstow = /^take\s+(?:the\s+|my\s+)?(.+?)\s+(?:from|out\s+of)\s+(?:the\s+|my\s+)?chest$/i.exec(text.trim())
+    const fromChest = unstow && !this.state.talk ? takeFromChest(this.world, unstow[1]!.toLowerCase()) : undefined
+    if (fromChest) return fromChest
     // A kind of transport this world has no line of: said so, as the barge always did.
     if (ride && rideWord && !this.state.talk && /^(?:barge|trekschuit|ferry|packet|coach|ship|cart)$/i.test(rideWord)) return [{ kind: 'error', text: `There is no ${rideWord.toLowerCase()} here.` }]
     const waitFor = /^wait\s+for\s+(?:the\s+)?(.+)$/i.exec(text.trim())

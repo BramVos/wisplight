@@ -402,6 +402,16 @@ function draw(canvas: HTMLCanvasElement, data: HexMapData, s: MapStyle, style: M
       ctx.arc(x, y - ik, 11 * ik, 0, 7)
       ctx.stroke()
     }
+    // Where you lodge (M10.13): a small roof above the place's sign.
+    if (p.lodging) {
+      ctx.fillStyle = marks.trail
+      ctx.beginPath()
+      ctx.moveTo(x - 5 * ik, y - 11 * ik)
+      ctx.lineTo(x, y - 16 * ik)
+      ctx.lineTo(x + 5 * ik, y - 11 * ik)
+      ctx.closePath()
+      ctx.fill()
+    }
     // A place you have been stands out (after the M10 playtest): its sign in its own colour, on a patch of shadow.
     if (p.status === 'visited') visitedMark(ctx, p.kind, x, y, s, marks.visited, ik)
     else placeIcon(ctx, p.kind, x, y, p.status, s.label, ik)

@@ -11,6 +11,7 @@ import type { World } from '../world'
 import { farPlaceOf, wantFarPlace } from '../growth/far'
 import { centre } from './hexgrid'
 import { duration, listOf } from './journeyText'
+import { journeyHome } from '../lodgings'
 import { regionMap } from './region'
 
 // Passages (M10.12; FO, chapters 4 and 7): lines of transport as content, in
@@ -229,7 +230,10 @@ export function journeyOfDays(world: World, host: PassageHost, how: { by?: Passa
     if (event?.extra) host.pass(event.extra)
   }
   ;(world.state.player.journeys ??= []).push({ t: world.now, from: how.fromName, to: how.toName, ...(how.by ? { by: how.by.name } : {}), minutes: how.minutes })
-  const text = [how.opening, ...lines, `You come to ${world.location(how.to).name}.`].join(' ')
+  // Where the stranger belongs (M10.13): the room they left their things in, or that waits for them on the way back.
+  const farAway = Boolean(world.content.areas.get(world.location(how.to).area)?.topic)
+  const home = journeyHome(world, farAway)
+  const text = [how.opening, ...(home && farAway ? [home] : []), ...lines, `You come to ${world.location(how.to).name}.`, ...(home && !farAway ? [home] : [])].join(' ')
   return [...checks, { kind: 'narration', text, journey: true }]
 }
 

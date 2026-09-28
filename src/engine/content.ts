@@ -12,6 +12,7 @@ import { RELATION_ROLES } from './roles'
 import { VoiceSchema, type Voice } from './dialogue/voiceSchema'
 import { PassageSchema, type Passage } from './map/passageSchema'
 import { WEEKDAYS } from './clock'
+import { GestureSchema, LodgingSchema, ReturningSchema, type Gesture, type Lodging, type Returning } from './belongSchema'
 
 // Content is plain YAML in content/. This module parses and validates it
 // without touching the file system, so it runs in Node and in the browser.
@@ -860,6 +861,10 @@ const FileSchema = z
     journey: JourneySchema.optional(),
     /** Lines of transport (M10.12): a barge, a coach, a ferry, with stops, days, fares and legs. */
     passages: z.array(PassageSchema).optional(),
+    /** Returning, gestures and a place to belong (M10.13). */
+    returning: ReturningSchema.optional(),
+    gestures: z.array(GestureSchema).optional(),
+    lodgings: z.array(LodgingSchema).optional(),
     factions: z.array(FactionSchema).optional(),
     realms: z.array(RealmSchema).optional(),
     tensions: z.array(TensionSchema).optional(),
@@ -912,6 +917,10 @@ export interface Content {
   journey?: Journey
   /** Lines of transport (M10.12). */
   passages: Map<string, Passage>
+  /** The words for what changed since a visit (M10.13); without them, nothing is said. */
+  returning?: Returning
+  gestures: Map<string, Gesture>
+  lodgings: Map<string, Lodging>
   creatures: Map<string, Creature>
   encounters: Map<string, Encounter>
   factions: Map<string, Faction>
@@ -991,12 +1000,15 @@ export function loadContent(files: ContentFile[]): Content {
     crafts: new Map<string, Craft>(),
     props: new Map<string, PropTemplate>(),
     passages: new Map<string, Passage>(),
+    gestures: new Map<string, Gesture>(),
+    lodgings: new Map<string, Lodging>(),
   }
 
   let chronicler: string | undefined
   let rules: Rules | undefined
   let voice: Voice | undefined
   let journey: Journey | undefined
+  let returning: Returning | undefined
   let lock: IdsLock | undefined
   for (const file of [...files].sort((a, b) => a.path.localeCompare(b.path))) {
     // The shared working instruction first (it sorts first), then the world's own part.
@@ -1055,6 +1067,12 @@ export function loadContent(files: ContentFile[]): Content {
     addAll(content.crafts, data.crafts, (v) => v.id, file.path, 'craft', problems)
     addAll(content.props, data.props, (v) => v.id, file.path, 'prop', problems)
     addAll(content.passages, data.passages, (v) => v.id, file.path, 'passage', problems)
+    addAll(content.gestures, data.gestures, (v) => v.id, file.path, 'gesture', problems)
+    addAll(content.lodgings, data.lodgings, (v) => v.id, file.path, 'lodging', problems)
+    if (data.returning) {
+      if (returning) problems.push(`${file.path}: the words for returning are defined twice`)
+      returning = data.returning
+    }
     if (data.rules) {
       if (rules) problems.push(`${file.path}: the rules are defined twice`)
       rules = data.rules
@@ -1078,6 +1096,12 @@ export function loadContent(files: ContentFile[]): Content {
   if (rules) for (const p of content.professions.values()) if (p.teaches && !rules.skills.some((s) => s.id === p.teaches)) problems.push(`profession ${p.id}: teaches ${p.teaches}, which is no skill`)
   problems.push(...checkCrafts(content, rules))
   if (world) problems.push(...checkVoice(voice, world, content))
+  // Gestures are of people of the world, and a lodging is a place with a keeper (M10.13).
+  for (const g of content.gestures.values()) if (!content.npcs.has(g.who)) problems.push(`gesture ${g.id}: unknown NPC ${g.who}`)
+  for (const l of content.lodgings.values()) {
+    if (!content.locations.has(l.at)) problems.push(`lodging ${l.id}: unknown location ${l.at}`)
+    if (!content.npcs.has(l.keeper)) problems.push(`lodging ${l.id}: unknown keeper ${l.keeper}`)
+  }
   // A passage stops at places of the world or far places it knows, on days of its calendar (M10.12).
   const weekdays = new Set<string>(world?.calendar?.weekdays ?? WEEKDAYS)
   for (const p of content.passages.values()) {
@@ -1094,7 +1118,7 @@ export function loadContent(files: ContentFile[]): Content {
     }
   }
   if (problems.length > 0 || !world) throw new ContentError(problems)
-  return { world, ...content, ...(rules ? { rules } : {}), ...(voice ? { voice } : {}), ...(journey ? { journey } : {}), ...(chronicler ? { chronicler } : {}), ...(lock ? { lock } : {}) }
+  return { world, ...content, ...(rules ? { rules } : {}), ...(voice ? { voice } : {}), ...(journey ? { journey } : {}), ...(returning ? { returning } : {}), ...(chronicler ? { chronicler } : {}), ...(lock ? { lock } : {}) }
 }
 
 /** The voice kit fits the world (M10.10): its faiths, areas, trades and groups are there; an NPC's own voice is a group. */
@@ -1546,6 +1570,8 @@ export const KIND_MAPS = {
   craft: 'crafts',
   prop: 'props',
   passage: 'passages',
+  gesture: 'gestures',
+  lodging: 'lodgings',
   // A list in the rules (M10.9): a save's character names its background.
   background: 'rules',
 } as const satisfies Record<string, keyof Content>

@@ -40,6 +40,8 @@ export const LISTS = {
   craft: 'crafts',
   prop: 'props',
   passage: 'passages',
+  gesture: 'gestures',
+  lodging: 'lodgings',
   // A list inside another (M10.9): the backgrounds of the character rules.
   background: 'rules.backgrounds',
 } as const

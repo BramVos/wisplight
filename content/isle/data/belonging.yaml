@@ -1,0 +1,41 @@
+# Coming back, gestures and a place to belong on Skerrow (M10.13).
+
+returning:
+  place:
+    normal: "{place} is itself again."
+    flooded: "The sea has been in here since you were; the floor is still wet and there is weed on the step."
+    damaged: "Something has been broken at {place} since you were here last."
+    destroyed: "There is little left of {place} since you were here last."
+    abandoned: "Nobody has been here for days."
+    default: "{place} is not as you left it."
+  object:
+    "broken:false": "{object} has been mended since you were here; the new work is still pale."
+    "broken:true": "{object} is broken now."
+    default: "{object} is not as you left it."
+  came: "{name} lives or works here now."
+  gone: "{name} is not here any more."
+  dead: "{name} is gone; people here speak of {them} quietly, and look at the sea."
+  agreement: "You remember: {what}."
+
+gestures:
+  - id: maren_your_bunk
+    who: npc_maren
+    at: arrive
+    shared: { lodger: kettle_loft, away: 2 }
+    do: { line: "Maren looks up from the kettle. \"Back, are you? Your bunk's where you left it, and the tide's been asking after you.\"" }
+  - id: maren_a_bowl
+    who: npc_maren
+    at: shop
+    shared: { kept: any }
+    do: { give: fish_stew, qty: 1, line: "Maren ladles out a bowl before you ask. \"You kept your word. Eat.\"" }
+  - id: tamsin_knew_you_would_come
+    who: npc_tamsin
+    at: arrive
+    shared: { kept: any }
+    do: { line: "Tamsin is already putting the kettle on when you come. \"Knew you'd come. The goats told me.\"" }
+
+lodgings:
+  - id: kettle_loft
+    name: your bunk in the loft of the Salt Kettle
+    at: loc_skerrow_salt_kettle
+    keeper: npc_maren

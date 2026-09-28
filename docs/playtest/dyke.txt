@@ -504,6 +504,7 @@ The village green is a patch of trampled grass around a stone well. Peat smoke h
 Brown water stands knee-deep here, cold and still. Whatever could float has floated away. People wade past with what they could carry, and nobody stops to talk.
 Exits: north, east, south, west, northeast
 Across country you can head any way, or follow the tow path west to Oude Zijl, the tow path east to Waagdam, the peat road to Molenend, the fen path to the Kattenbroek, the priory path to Kloosterveen or the path to the Kabouterberg.
+The water has been here since you were: there is a line of mud on the walls at the height of your knee.
 The dyke at Oude Zijl has broken, and the water is in Veenhoek.
 
 > look

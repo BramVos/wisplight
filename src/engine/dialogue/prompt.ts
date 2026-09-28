@@ -14,6 +14,7 @@ import { faithOf } from '../faith'
 import { forecastLine, readsTheSky, weather, wind, windWords } from '../weather'
 import { oathsFor, talkSeed, voiceLines } from './voice'
 import { moodOf } from '../quests/plans'
+import { lodgerLine } from '../lodgings'
 
 // Prompts for the voice role (FO, chapter 10). The system part is byte-for-byte
 // stable per NPC so providers can cache it; everything that changes goes in
@@ -275,6 +276,8 @@ export function turnPrompt(world: World, ctx: TurnContext): string {
     ...(tieTo(world, ctx.npcId, 'player')?.role === 'friend' ? ['THE STRANGER is your friend.'] : []),
     // Sent to you (M10.9): the stranger was told to ask for you, and why they came.
     ...sentTo(world, ctx.npcId),
+    // The stranger lodges here (M10.13): the people of the place know them by name.
+    ...(lodgerLine(world, ctx.npcId) ? [lodgerLine(world, ctx.npcId)!] : []),
     'KNOWLEDGE:',
     ...(ctx.packet.known.length === 0 ? ['  (nothing relevant beyond your own life)'] : []),
     ...ctx.packet.known.map((k) => `  ${k.topic} (level ${k.level}): ${k.facts.join(' ')}${k.news ? `\n  NEWS about it: ${k.news.join(' ')}` : ''}${k.story ? `\n  ${k.toldBy ? `STORY as ${k.toldBy} tells it. Retell it in your own words; the people in it are ${k.toldBy}'s family, not yours:` : 'STORY you may tell, in your own words:'}\n  ${k.story}` : ''}`),

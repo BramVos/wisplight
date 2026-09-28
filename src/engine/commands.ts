@@ -33,6 +33,7 @@ import { active } from './quests/engine'
 import { approve, restParty } from './social/companions'
 import { deed } from './social/deeds'
 import { recognisedSale, refusedTrade, returnStolen } from './social/crime'
+import { lodgingLines } from './lodgings'
 
 // Player commands that need no AI. Each returns lines of output; commands that
 // take time call `pass(minutes)`, which runs the world and returns what the
@@ -70,6 +71,8 @@ export interface Output {
   card?: Card
   /** A journey told in one paragraph (M10.11): with a model, the narrator may reword it. */
   journey?: boolean
+  /** What changed since your last visit (M10.13): with a model, the narrator may make one paragraph of it. */
+  returning?: boolean
 }
 
 export interface CommandHost {
@@ -83,11 +86,11 @@ export interface CommandHost {
 
 const HELP = [
   'Moving: north, south, east, west, up, down, in, out (n, s, e, w, ...). Also: go <place>, exits.',
-  'Across country: head <direction>, walk to <place>, follow <the tow path, the road, the fen path>. Map: map.',
+  'Across country: head <direction>, walk to <place>, follow <the tow path, the road, the fen path>. Map: map. Further: travel to <place> (on foot or by barge, coach, ferry), take the barge to <place>, wait for the coach.',
   'Looking: look (l), examine <thing or person> (x).',
   'Things: inventory (i), take, drop, give <thing> to <person>, use <object>, eat <food>, open <chest>, take <thing> from <chest>, pick <door or chest> (the lock), force <door or chest>. In a talk: ask <person> for <thing>.',
   'Crafts and skills: use <workplace> [what to make] (USE OVEN BAKE), treat <person or me>, gather [what], track <person>, search (here), read <inscription>. In a talk with a craftsman: teach me.',
-  'Trade: list (what is for sale here), buy <thing> [amount], sell <thing> [amount], rent a room.',
+  'Trade: list (what is for sale here), buy <thing> [amount], sell <thing> [amount], rent a room (a night), rent the room for a week (yours, with a chest: put <thing> in the chest, take <thing> from the chest).',
   'Work: work (for a day\'s pay), invest <amount>, loads (what there is to carry from here), haul <goods> to <place>, deliver.',
   'Time: time, wait [minutes], wait for <person>, sleep. At night: knock (on a door), wake <person>.',
   'Pace: tempo calm, tempo normal or tempo dramatic (how much happens in the world).',
@@ -285,6 +288,8 @@ export function describeRoom(world: World): Output {
   if (state) lines.push(state)
   const ground = world.state.ground[location.id]
   if (ground && Object.keys(ground).length > 0) lines.push(`On the ground: ${listItems(world.content, ground)}.`)
+  // Your room (M10.13): whose it is, and your chest.
+  lines.push(...lodgingLines(world, location.id))
   lines.push(exitLine(world))
   const people = world.npcsAt(location.id).map((id) => {
     const activity = world.npcState(id).activity
