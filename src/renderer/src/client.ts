@@ -168,6 +168,8 @@ export interface EditorBridge {
   build(world: string, change?: { limit?: number; reset?: boolean }): Promise<BuildView & { adjusted: boolean }>
   /** The polish round (M10.20): only the descriptions of the places the Check names, or these; light: the player's lighter model. */
   polish(world: string, choice?: { ids?: string[]; light?: boolean }): Promise<EditorDraft>
+  /** The open proposal of a step (M10.20): read it (no third argument), keep it, or forget it (null). */
+  openDraft(world: string, step: string, kept?: { draft: EditorDraft; asked: string } | null): Promise<{ draft: EditorDraft; asked: string; at: string } | undefined>
   /** Enhance with AI (after M10.17): the designer's answer to a step written out as a fuller brief, with what only they can decide. */
   enhance(world: string, step: string, said: string): Promise<{ brief: string; open: string[]; problems: string[] }>
   /** The design log of a world (M10.18): as it stands, or after one change (a note, an answer being written, a decision). */
@@ -429,6 +431,7 @@ export async function createEditor(): Promise<EditorBridge> {
   const { applyEdits, draftRequest, draftResult, editorView, entities, entityYaml, filesOfWorld, lineDiff, loadContent, MockLlm, newWorldFiles, paletteRequest, paletteView, readDraft, readPalette, readVoice, savePalette, saveVoice, simulate, voiceRequest, voiceYaml, withReturnExits, worldAtlasHtml, worldBook, worldsIn, worldStepRequest, worldFixRequest, mergeFix, polishRequest, readPolish, descriptionCheck, enhanceRequest, readEnhance, hourlyBudget } = await import('../../engine')
   let all = contentFiles()
   const builds: Record<string, BuildView> = {}
+  const openDrafts = new Map<string, { draft: EditorDraft; asked: string; at: string }>()
   const shown = (changes: { path: string; before?: string; text: string }[]) => changes.map((c) => ({ path: c.path, fresh: c.before === undefined, lines: lineDiff(c.before ?? '', c.text) }))
   const shownDraft = (draft: ReturnType<typeof readDraft>): EditorDraft => ({
     say: draft.say,
@@ -503,6 +506,14 @@ export async function createEditor(): Promise<EditorBridge> {
         adjusted = kept.adjusted
       }
       return { ...b, steps: { ...b.steps }, adjusted }
+    },
+    // The browser preview keeps open proposals in memory only.
+    openDraft: async (world, step, kept) => {
+      const key = `${world}/${step}`
+      if (kept === undefined) return openDrafts.get(key)
+      if (kept) openDrafts.set(key, { ...kept, at: new Date().toISOString() })
+      else openDrafts.delete(key)
+      return openDrafts.get(key)
     },
     polish: async (world, choice) => {
       const files = filesOfWorld(all, world)

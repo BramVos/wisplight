@@ -60,6 +60,7 @@ export const INPUTS: Record<string, z.ZodType<unknown[]>> = {
   'editor:world-step': z.tuple([world, text(200), text(100_000)]),
   'editor:world-fix': z.tuple([world, text(200), text(100_000), data(5_000_000), z.array(text(2000)).max(500)]),
   'editor:enhance': z.tuple([world, text(200), text(100_000)]),
+  'editor:open-draft': z.tuple([world, text(200), data(5_000_000).nullable().optional()]),
   'editor:polish': z.tuple([world, z.object({ ids: z.array(id).max(500).optional(), light: z.boolean().optional() }).strict().optional()]),
   'editor:build': z.tuple([world, z.object({ limit: amount.optional(), reset: z.boolean().optional() }).strict().optional()]),
   'editor:design': z.tuple([world, data(200_000).optional()]),

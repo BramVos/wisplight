@@ -1558,6 +1558,26 @@ function WorldSteps({ bridge, world, view, saved, existing = false }: { bridge: 
     if (decision !== 'changed') settled.current[step.title] = said
     return bridge.design(world, { decision: { step: step.title, decision, asked: from ? askedFor : said, say: from?.say ?? '', questions: from?.questions ?? [], changed: from ? changedBy(from) : [], reason } }).then(setLog)
   }
+  // An open proposal is kept per step (M10.20): it comes back after a restart, until it is accepted or thrown away.
+  const keep = (d: EditorDraft | undefined, asked = askedFor) => {
+    setDraft(d)
+    const worth = d && (d.changes.length > 0 || Boolean(d.world) || (d.files?.length ?? 0) > 0)
+    void bridge.openDraft(world, step.id, worth ? { draft: d!, asked } : null).catch(() => undefined)
+  }
+  useEffect(() => {
+    let live = true
+    void bridge
+      .openDraft(world, WORLD_STEPS[at]!.id)
+      .then((kept) => {
+        if (!live || !kept) return
+        setDraft(kept.draft)
+        setAskedFor(kept.asked)
+      })
+      .catch(() => undefined)
+    return () => {
+      live = false
+    }
+  }, [bridge, world, at])
   const go = (index: number) => {
     const next = Math.max(0, Math.min(WORLD_STEPS.length - 1, index))
     setAt(next)
@@ -1595,7 +1615,7 @@ function WorldSteps({ bridge, world, view, saved, existing = false }: { bridge: 
     setAskedFor(said.trim())
     setWhy('')
     try {
-      setDraft(await bridge.worldStep(world, step.id, said.trim()))
+      keep(await bridge.worldStep(world, step.id, said.trim()), said.trim())
       void counted()
     } catch (reason) {
       setDraft({ say: '', questions: [], changes: [], problems: [reason instanceof Error ? reason.message : String(reason)], diffs: [] })
@@ -1608,7 +1628,7 @@ function WorldSteps({ bridge, world, view, saved, existing = false }: { bridge: 
     if (!draft) return
     setBusy(true)
     try {
-      setDraft(await bridge.worldFix(world, step.id, askedFor || said.trim(), draft, draft.problems))
+      keep(await bridge.worldFix(world, step.id, askedFor || said.trim(), draft, draft.problems))
       void counted()
     } catch (reason) {
       setDraft({ ...draft, problems: [reason instanceof Error ? reason.message : String(reason), ...draft.problems] })
@@ -1625,13 +1645,13 @@ function WorldSteps({ bridge, world, view, saved, existing = false }: { bridge: 
     if (result.ok) {
       setDone((d) => ({ ...d, [step.id]: 'saved' }))
       await record('accepted', draft)
-      setDraft(undefined)
+      keep(undefined)
       await saved()
     }
   }
   const drop = async () => {
     if (draft && !draft.problems.length) await record('rejected', draft, why)
-    setDraft(undefined)
+    keep(undefined)
     setWhy('')
   }
   const decided = (id: string) => {

@@ -8,6 +8,7 @@ import { ContentError, discoveredAtlasHtml, draftRequest, readSaveFile, saveAbou
 import { designUpdate, readDesignChange } from '../engine/designlog'
 import { ContentEditor } from '../node/editor'
 import { AppKnobs, type AppKnobId } from '../node/knobs'
+import { DraftStore } from '../node/drafts'
 import { checkInput } from './inputs'
 import { cachedPictureIn, worldAtlasFor, worldBookFor, writeWorldBook } from '../node/worldbook'
 import type { ProviderId } from '../node/ai/providers'
@@ -693,6 +694,18 @@ handle('editor:world-fix', async (_event, world: unknown, step: unknown, said: u
   } catch (error) {
     return { ...proposal, problems: [`The chronicler did not answer: ${error instanceof Error ? error.message : String(error)}`, ...why], diffs: [] }
   }
+})
+// An open proposal of a world step, kept until it is accepted or thrown away (M10.20): it comes back after a restart.
+let draftStore: DraftStore | undefined
+const drafts = () => (draftStore ??= new DraftStore(join(app.getPath('userData'), 'drafts.json')))
+handle('editor:open-draft', (_event, world: unknown, step: unknown, kept: unknown) => {
+  devOnly()
+  const w = worldOf(world)
+  const s = String(step ?? '')
+  if (kept === undefined) return drafts().get(w, s)
+  const k = kept && typeof kept === 'object' ? (kept as { draft?: unknown; asked?: unknown }) : undefined
+  drafts().set(w, s, k?.draft ? { draft: k.draft, asked: String(k.asked ?? '') } : null)
+  return drafts().get(w, s)
 })
 // The polish round (M10.20): the chronicler rewrites only the descriptions of the places the Check names, or those picked.
 handle('editor:polish', async (_event, world: unknown, choice: unknown) => {
