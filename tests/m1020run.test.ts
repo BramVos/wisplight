@@ -125,6 +125,9 @@ describe('M10.20: the real run of a world', () => {
     expect(fixed.say).toBe('Two things people talk about.\n\nPut right: Quoted the summary.')
     expect(fixed.questions).toEqual(['Is that right?'])
     expect(fixed.result?.content?.topics.get('night_of_the_open_door')?.summary).toBe('The night: the door stood open.')
+    // A correction never takes away: an empty change in the answer is left out.
+    const emptied = mergeFix(files, draft, JSON.stringify({ say: 'Corrected.', questions: [], changes: [{ kind: 'topic', id: 'winter_supplies', yaml: '', merge: true }], world: '', files: [] }))
+    expect(emptied.changes.find((c) => c.id === 'winter_supplies')?.yaml).toContain('Whether the stores last the winter.')
     // An answer out of form leaves the proposal as it was.
     expect(mergeFix(files, draft, 'sorry').problems).toEqual(['The chronicler did not answer in the agreed form; the proposal is as it was.'])
   })

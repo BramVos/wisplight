@@ -634,7 +634,9 @@ export function mergeFix(files: ContentFile[], draft: Pick<Draft, 'say' | 'quest
   const kept: DraftParts = { say: draft.say, questions: draft.questions, changes: draft.changes, ...(draft.world ? { world: draft.world } : {}), ...(draft.files ? { files: draft.files } : {}) }
   if (!fix) return { ...checkedDraft(files, kept), problems: ['The chronicler did not answer in the agreed form; the proposal is as it was.'] }
   const same = (a: DraftChange, b: DraftChange) => a.kind === b.kind && a.id === b.id
-  const changes = [...draft.changes.map((c) => fix.changes.find((f) => same(f, c)) ?? c), ...fix.changes.filter((f) => !draft.changes.some((c) => same(c, f)))]
+  // A correction never takes away (M10.20: a fix round answered with an empty change for a place, and its services went).
+  const corrected = fix.changes.filter((f) => f.yaml.trim())
+  const changes = [...draft.changes.map((c) => corrected.find((f) => same(f, c)) ?? c), ...corrected.filter((f) => !draft.changes.some((c) => same(c, f)))]
   const whole = [...(draft.files ?? []).map((f) => fix.files?.find((x) => x.path === f.path) ?? f), ...(fix.files ?? []).filter((x) => !(draft.files ?? []).some((f) => f.path === x.path))]
   const world = fix.world ?? draft.world
   return checkedDraft(files, {
