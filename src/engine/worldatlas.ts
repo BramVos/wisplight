@@ -230,6 +230,7 @@ td{border-bottom:1px solid var(--rule);padding:6px 10px 6px 0;vertical-align:top
 pre{white-space:pre-wrap;background:var(--paper);border:1px solid var(--rule);padding:12px 14px;font-family:var(--f-body);font-size:15px;max-width:80ch}
 pre.map{white-space:pre;overflow-x:auto;font-family:var(--f-mono);font-size:13px;line-height:1.2;width:max-content;max-width:100%}
 code{font-family:var(--f-mono);font-size:.88em}
+blockquote{margin:6px 0 14px;padding:4px 0 4px 16px;border-left:3px solid var(--rule);color:var(--ink-2);max-width:80ch}blockquote p{margin:0 0 8px}blockquote table{font-size:13px}
 .cover-body{display:grid;grid-template-columns:1fr auto;gap:24px;padding:20px 28px}
 .cover-text{max-width:70ch;color:var(--ink-2)}.note{font-size:13px;color:var(--ink-3)}.lede{font-family:var(--f-display);font-size:21px;color:var(--ink)}
 .stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:10px;align-content:start;min-width:200px}

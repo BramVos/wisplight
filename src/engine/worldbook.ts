@@ -217,13 +217,58 @@ export function worldBook(content: Content, input: WorldBookInput = {}): string 
     ...(improvised.length ? para(`Where an act the rules do not know may be improvised: ${improvised.join(', ')}.`) : []),
   ])
   // The design log (M10.18): which steps of the guide were taken and which left to the neutral default (M10.20),
-  // then its notes and decisions, a level down; the answers still being written stay out.
-  const design = input.design?.trim().replace(/^#\s.*\n+/, '').replace(/^## Answers\n[\s\S]*?(?=^## |(?![\s\S]))/m, '').replace(/^(#+) /gm, '##$1 ').trim()
-  add('How this world was made', design ? [...stepsTaken(input.design!), design, ''] : [])
+  // then its notes and decisions; the answers still being written stay out.
+  add('How this world was made', input.design?.trim() ? designChapter(input.design) : [])
 
   const lines = [`# ${w.name}: the world book`, '', `Written out of the content of ${w.name} (npm run worldbook ${input.folder ?? w.id}); the editor writes it again on every save. Do not edit it by hand.`, '']
   chapters.forEach((c, i) => lines.push(`## ${i + 1}. ${c.title}`, '', ...c.body))
   return lines.join('\n').replace(/\n{3,}/g, '\n\n').trim() + '\n'
+}
+
+/**
+ * How the world was made, out of its design log (M10.18; laid out in M10.20
+ * after the first real build, The Quiet Reach): the steps taken, the
+ * designer's notes, and per decision what the designer wrote, as a quotation
+ * with its own tables, what the chronicler said and asked back, and what it
+ * changed. A log in no known shape is given as it is.
+ */
+function designChapter(designText: string): string[] {
+  const log = designLog(designText)
+  if (!log.notes.length && !log.decisions.length) {
+    const raw = designText.trim().replace(/^#\s.*\n+/, '').replace(/^## Answers\n[\s\S]*?(?=^## |(?![\s\S]))/m, '').replace(/^(#+) /gm, '##$1 ').trim()
+    return raw ? [raw, ''] : []
+  }
+  const out = [...stepsTaken(designText)]
+  if (log.notes.length) out.push('### Notes', '', ...log.notes.map((n) => `- ${n}`), '')
+  if (log.decisions.length) out.push('### Decisions', '')
+  for (const d of log.decisions) {
+    out.push(`#### ${d.step}: ${d.decision}, ${d.at}`, '')
+    if (d.asked.trim()) out.push('What the designer wrote:', '', ...quote(d.asked), '')
+    if (d.say.trim()) out.push('What the chronicler said:', '', ...quote(d.say), '')
+    if (d.questions.length) out.push('What it asked back:', '', ...d.questions.map((q) => `- ${q.replace(/\s*\n\s*/g, ' ')}`), '')
+    if (d.changed.length) out.push(`Changed: ${d.changed.join('; ')}.`, '')
+    if (d.reason.trim()) out.push(`Why: ${d.reason.trim()}`, '')
+  }
+  return out
+}
+
+/**
+ * Someone's text as a Markdown quotation: a line to a paragraph, rows of a
+ * table kept together, and nothing in it that could open a chapter or a
+ * code block of the book.
+ */
+function quote(text: string): string[] {
+  const out: string[] = []
+  let table = false
+  for (const raw of text.replace(/\r/g, '').split('\n')) {
+    const line = raw.trim()
+    if (!line) continue
+    const row = line.startsWith('|')
+    if (out.length && !(row && table)) out.push('>')
+    out.push(`> ${row ? line : line.replace(/^#+\s*(.+)$/, '**$1**').replace(/^```/, "'''")}`)
+    table = row
+  }
+  return out
 }
 
 /**

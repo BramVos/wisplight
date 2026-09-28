@@ -295,7 +295,7 @@ handle('engine:start', async (_event, world: unknown) => {
   lastInput = -Infinity
   const outputs = engine.start()
   opening = [...outputs]
-  if (store().any()) outputs.push(system('There is a saved game. Type CONTINUE to carry on exactly where you left off, LOAD for your last save, or NEW STRANGER to start a new character in that world (big events stay, small news is forgotten).'))
+  // A new game is a choice made in the world picker, which offers [Continue] and [Load a save...] (M10.20): no line about saves here.
   return reply(outputs)
 })
 

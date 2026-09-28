@@ -35,6 +35,11 @@ export function markdownHtml(markdown: string, picture: (key: string) => string 
       const level = line.indexOf(' ')
       out.push(`<h${level}>${inline(line.slice(level + 1))}</h${level}>`)
       i++
+    } else if (line.startsWith('>')) {
+      // A quotation (M10.20: what the designer wrote, in the world book), with its own tables and paragraphs.
+      const quoted: string[] = []
+      for (; i < lines.length && lines[i]!.startsWith('>'); i++) quoted.push(lines[i]!.replace(/^> ?/, ''))
+      out.push(`<blockquote>${markdownHtml(quoted.join('\n'), picture)}</blockquote>`)
     } else if (line.startsWith('|')) {
       const rows: string[][] = []
       for (; i < lines.length && lines[i]!.startsWith('|'); i++) if (!/^\|\s*---/.test(lines[i]!)) rows.push(lines[i]!.slice(1, -1).split(' | ').map((c) => c.trim()))
@@ -46,7 +51,7 @@ export function markdownHtml(markdown: string, picture: (key: string) => string 
       out.push(`<ul>${items.join('')}</ul>`)
     } else if (line.trim()) {
       const para: string[] = []
-      for (; i < lines.length && lines[i]!.trim() && !/^(#{1,4} |- |\||```|<!--)/.test(lines[i]!); i++) para.push(lines[i]!)
+      for (; i < lines.length && lines[i]!.trim() && !/^(#{1,4} |- |\||```|<!--|>)/.test(lines[i]!); i++) para.push(lines[i]!)
       out.push(`<p>${inline(para.join(' '))}</p>`)
     } else i++
   }
@@ -62,6 +67,7 @@ body { font-family: Georgia, 'Times New Roman', serif; max-width: 46rem; margin:
 h1, h2, h3 { font-weight: normal; } h2 { margin-top: 2.5rem; border-bottom: 1px solid #ccc; }
 table { border-collapse: collapse; width: 100%; margin: 1rem 0; font-size: 0.9rem; } th, td { border: 1px solid #ddd; padding: 0.3rem 0.5rem; text-align: left; vertical-align: top; }
 pre { white-space: pre-wrap; background: #f3f1ea; padding: 0.8rem; font-size: 0.85rem; }
+blockquote { border-left: 3px solid #ddd; margin: 0.6rem 0; padding: 0.1rem 0 0.1rem 1rem; color: #444; }
 pre.map { white-space: pre; overflow-x: auto; font-family: ui-monospace, Menlo, Consolas, monospace; line-height: 1.2; }
 figure { margin: 1rem 0; } figure img { max-width: 100%; } figure.portraits { display: flex; flex-wrap: wrap; gap: 0.8rem; } figure.portraits div { width: 8rem; font-size: 0.8rem; text-align: center; } figure.portraits img { width: 8rem; }
 </style></head><body>
