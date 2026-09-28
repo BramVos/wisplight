@@ -32,6 +32,7 @@ export const INPUTS: Record<string, z.ZodType<unknown[]>> = {
   'engine:log-size': z.tuple([scope.optional()]),
   'engine:export-log': z.tuple([scope.optional()]),
   'engine:export-chronicle': z.tuple([]),
+  'engine:export-discovered': z.tuple([]),
   // The saves (M10.20).
   'engine:saves': z.tuple([]),
   'engine:continue': z.tuple([z.union([world, z.literal('')]).optional()]),

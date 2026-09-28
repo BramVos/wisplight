@@ -117,7 +117,8 @@
     "continue": "Continue",
     "newGame": "New game",
     "load": "Load a save...",
-    "exportSave": "Export this save..."
+    "exportSave": "Export this save...",
+    "discovered": "What you found out"
   },
   "talk": {
     "thinking": "{name} thinks it over.",

@@ -29,6 +29,7 @@ contextBridge.exposeInMainWorld('wisplight', {
   logSize: use('engine:log-size'),
   exportLog: use('engine:export-log'),
   exportChronicle: use('engine:export-chronicle'),
+  exportDiscovered: use('engine:export-discovered'),
   // The saves (M10.20): continue a world, load one, name one, and a save as a file.
   saves: {
     list: use('engine:saves'),

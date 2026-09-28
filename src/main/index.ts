@@ -4,11 +4,11 @@ import { appendFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFi
 import { tmpdir } from 'node:os'
 import { basename, dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { ContentError, draftRequest, readSaveFile, saveAbout, saveFileName, saveFileText, SAVE_FILE_EXTENSION, type SaveFile, draftResult, Engine, worldBookHtml, ENTITY_KINDS, lineDiff, MapPaletteSchema, paletteRequest, paletteView, readDraft, readPalette, readVoice, savePalette, saveVoice, voiceRequest, voiceYaml, worldStepRequest, worldFixRequest, mergeFix, enhanceRequest, readEnhance, type Content, type Edit, type EntityKind, type FileChange, type CheckpointedSave, type MapPalette, type Output, type SaveData } from '../engine'
+import { ContentError, discoveredAtlasHtml, draftRequest, readSaveFile, saveAbout, saveFileName, saveFileText, SAVE_FILE_EXTENSION, type SaveFile, draftResult, Engine, worldBookHtml, ENTITY_KINDS, lineDiff, MapPaletteSchema, paletteRequest, paletteView, readDraft, readPalette, readVoice, savePalette, saveVoice, voiceRequest, voiceYaml, worldStepRequest, worldFixRequest, mergeFix, enhanceRequest, readEnhance, type Content, type Edit, type EntityKind, type FileChange, type CheckpointedSave, type MapPalette, type Output, type SaveData } from '../engine'
 import { designUpdate, readDesignChange } from '../engine/designlog'
 import { ContentEditor } from '../node/editor'
 import { checkInput } from './inputs'
-import { worldBookFor, writeWorldBook } from '../node/worldbook'
+import { cachedPictureIn, worldBookFor, writeWorldBook } from '../node/worldbook'
 import type { ProviderId } from '../node/ai/providers'
 import { AiService } from '../node/ai/service'
 import type { ChosenRole, Cipher } from '../node/ai/settings'
@@ -335,6 +335,17 @@ async function loadFrom(data: (SaveData & { createdAt?: string }) | undefined) {
   return reply([system('Game loaded.'), ...(await engine!.handle('look'))])
 }
 
+// Everything the player has found out (M10.20), as an atlas page with the pictures there are: never the whole world book.
+handle('engine:export-discovered', async () => {
+  if (!engine) return undefined
+  const who = (engine.state.player.character?.name ?? 'stranger').replace(/[^\w-]+/g, '-').toLowerCase()
+  const result = await dialog.showSaveDialog(window!, { title: 'Save what you found out', defaultPath: join(app.getPath('documents'), `${worldFolder}-${who}-found-out.html`), filters: [{ name: 'Web page', extensions: ['html'] }] })
+  if (result.canceled || !result.filePath) return undefined
+  const played = engine
+  const written = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+  writeFileSync(result.filePath, discoveredAtlasHtml(played, (id) => cachedPictureIn(app.getPath('userData'), played.content, id, { latest: true }), written), 'utf8')
+  return result.filePath
+})
 // The saves (M10.20): the list for the world picker and the load screen, continue a world, load one, name one,
 // and one save as a file to keep or bring back.
 handle('engine:saves', () => store().list().slice(0, 200))
@@ -981,6 +992,9 @@ function createWindow(): void {
             const back = await Engine.restore(content, trial.load('smoke')!)
             const same = JSON.stringify(back.state) === JSON.stringify(engine.state)
             smokeSay(`[smoke] save and load ${same ? 'exact' : 'DIFFERENT'} (${trial.sizes().checkpoints} checkpoint)`)
+            // What the player has found out (M10.20): the page is made, with the land as seen.
+            const found = discoveredAtlasHtml(engine)
+            smokeSay(`[smoke] what you found out: ${(found.match(/<h2>/g) ?? []).length} chapters${found.includes('class="region"') ? ', with the land as seen' : ''}`)
             trial.close()
           } finally {
             rmSync(dir, { recursive: true, force: true })

@@ -25,9 +25,11 @@ export function markdownHtml(markdown: string, picture: (key: string) => string 
       if (html) out.push(html)
       i++
     } else if (line.startsWith('```')) {
+      // A drawing (```map, the zones of a region) keeps its columns; text is prose kept as written.
+      const kind = /^```(\w+)/.exec(line)?.[1]
       const body: string[] = []
       for (i++; i < lines.length && !lines[i]!.startsWith('```'); i++) body.push(lines[i]!)
-      out.push(`<pre>${escapeHtml(body.join('\n'))}</pre>`)
+      out.push(`<pre${kind && kind !== 'text' ? ` class="${kind}"` : ''}>${escapeHtml(body.join('\n'))}</pre>`)
       i++
     } else if (/^#{1,4} /.test(line)) {
       const level = line.indexOf(' ')
@@ -60,6 +62,7 @@ body { font-family: Georgia, 'Times New Roman', serif; max-width: 46rem; margin:
 h1, h2, h3 { font-weight: normal; } h2 { margin-top: 2.5rem; border-bottom: 1px solid #ccc; }
 table { border-collapse: collapse; width: 100%; margin: 1rem 0; font-size: 0.9rem; } th, td { border: 1px solid #ddd; padding: 0.3rem 0.5rem; text-align: left; vertical-align: top; }
 pre { white-space: pre-wrap; background: #f3f1ea; padding: 0.8rem; font-size: 0.85rem; }
+pre.map { white-space: pre; overflow-x: auto; font-family: ui-monospace, Menlo, Consolas, monospace; line-height: 1.2; }
 figure { margin: 1rem 0; } figure img { max-width: 100%; } figure.portraits { display: flex; flex-wrap: wrap; gap: 0.8rem; } figure.portraits div { width: 8rem; font-size: 0.8rem; text-align: center; } figure.portraits img { width: 8rem; }
 </style></head><body>
 ${body}

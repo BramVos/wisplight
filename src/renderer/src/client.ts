@@ -185,6 +185,8 @@ export interface EngineClient {
   exportLog?(scope?: LogScope): Promise<string | undefined>
   /** What happened in this game, as Markdown (M10.18): saved where the player says, or downloaded in the preview. */
   exportChronicle?(): Promise<string | undefined>
+  /** Everything the player has found out (M10.20), as an atlas page: saved where the player says, or downloaded in the preview. */
+  exportDiscovered?(): Promise<string | undefined>
   /** The saves (M10.20): in the desktop app, and in the preview with ?mock=1 (in memory). */
   saves?: SavesBridge
   activity(): void
@@ -221,7 +223,7 @@ const IDLE_PAUSE_MS = 60_000
 export async function createClient(): Promise<EngineClient> {
   if (window.wisplight) return window.wisplight
 
-  const { DEFAULT_WORLD, Engine, filesOfWorld, loadContent, MockLlm, readSaveFile, saveAbout, saveFileName, saveFileText, worldsIn } = await import('../../engine')
+  const { DEFAULT_WORLD, discoveredAtlasHtml, Engine, filesOfWorld, loadContent, MockLlm, readSaveFile, saveAbout, saveFileName, saveFileText, worldsIn } = await import('../../engine')
   // Every world's files; a new game picks one of them (M8).
   const all = contentFiles()
   const worlds = worldsIn(all)
@@ -359,6 +361,8 @@ export async function createClient(): Promise<EngineClient> {
     creation: async () => engine.creationData(),
     end: async () => ({ chronicle: engine.chronicle() }),
     exportChronicle: async () => download('wisplight-chronicle.md', engine.chronicleMarkdown(), 'text/markdown'),
+    // The preview has no pictures on disk: the page has the text and the map.
+    exportDiscovered: async () => download(`${folder}-found-out.html`, discoveredAtlasHtml(engine, undefined, new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })), 'text/html'),
     ...(demo ? { saves: memorySaves } : {}),
     activity: () => {
       lastInput = Date.now()

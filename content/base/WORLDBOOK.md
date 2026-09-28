@@ -54,7 +54,7 @@ Type LOOK to look around. Type HELP if you are lost. You probably are.
 
 30 by 20 km, in hexes of 250 m; the open land between the places is the Holleveen.
 
-```text
+```map
 T T T T T T T T T T T T . . . . . . . . . . . ^ heath ^ : ^ ^
  T T T T T T T T T T T . . . . . . . . . . . . ^ ^ ^ ^ : ^ ^
 T T T T T T T T T T + Kloosterveen  . . .  Reuzenrust n ^ ^ ^

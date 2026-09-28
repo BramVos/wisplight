@@ -30,7 +30,7 @@ type Section = { title: string; body: string[] }
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 const cell = (s: unknown) => String(s ?? '').replace(/\|/g, '/').replace(/\s*\n\s*/g, ' ').trim()
 const table = (head: string[], rows: unknown[][]): string[] => (rows.length ? [`| ${head.join(' | ')} |`, `| ${head.map(() => '---').join(' | ')} |`, ...rows.map((r) => `| ${r.map(cell).join(' | ')} |`), ''] : [])
-const block = (text: string): string[] => ['```text', text.trim(), '```', '']
+const block = (text: string, kind = 'text'): string[] => ['```' + kind, text.trim(), '```', '']
 const list = (items: string[]): string[] => (items.length ? [...items.map((i) => `- ${i}`), ''] : [])
 const para = (text: string | undefined): string[] => (text && text.trim() ? [text.trim().replace(/\s*\n\s*/g, ' '), ''] : [])
 
@@ -88,7 +88,7 @@ export function worldBook(content: Content, input: WorldBookInput = {}): string 
   add('The map of the land', [
     // Where the atlas page draws the region in the world's palette (M10.20); the plain page and a Markdown reader skip it.
     ...(regions.length ? ['<!-- picture:map -->', ''] : []),
-    ...regions.flatMap((r) => [`### ${r.name}`, '', ...para(`${r.size[0]} by ${r.size[1]} km, in hexes of ${r.hex * 1000} m; the open land between the places is ${place(r.area)}.`), ...block(r.zones), ...table(['Mark', 'Land'], Object.entries(r.legend))]),
+    ...regions.flatMap((r) => [`### ${r.name}`, '', ...para(`${r.size[0]} by ${r.size[1]} km, in hexes of ${r.hex * 1000} m; the open land between the places is ${place(r.area)}.`), ...block(r.zones, 'map'), ...table(['Mark', 'Land'], Object.entries(r.legend))]),
     ...((w.map?.levels ?? []).filter((l) => l.id !== SURFACE).length ? para(`Levels: ${(w.map!.levels ?? []).map((l) => l.name).join(', ')}.`) : []),
   ])
 

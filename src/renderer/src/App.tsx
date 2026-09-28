@@ -615,6 +615,14 @@ export function App() {
               </button>
             </>
           )}
+          {client?.exportDiscovered && (
+            <>
+              {' '}
+              <button type="button" className="link" onClick={() => void client.exportDiscovered!().catch((reason: unknown) => setError(String(reason)))}>
+                [{t('app.menu.discovered')}]
+              </button>
+            </>
+          )}
           {client?.editor?.open && status?.builder && (
             <>
               {' '}

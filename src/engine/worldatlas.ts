@@ -1,7 +1,7 @@
 import type { Content } from './content'
 import { escapeHtml as esc, markdownHtml } from './markdown'
 import { DEFAULT_PALETTE, TERRAIN_ORDER, terrainName, type MapPalette, type MapStyle } from './map/palette'
-import { previewMapData } from './map/view'
+import { previewMapData, type HexMapData } from './map/view'
 
 // The world book as an atlas page (M10.20; Bram, 28 September 2026): the same
 // text as worldbook.ts, in the manner of the atlases in docs/ (a header with
@@ -19,6 +19,16 @@ const round = (n: number) => Math.round(n * 100) / 100
 export interface AtlasOptions {
   /** The date the page was written, for the header ("28 September 2026"). */
   written?: string
+  /** Another book in the same dress (M10.20): what it is called, beside the world's name ("the world book" when not given). */
+  book?: string
+  /** The line under the name on the cover; the world's own words when not given. */
+  lede?: string
+  /** The numbers on the cover: [how many, one, many]; the content's when not given. */
+  stats?: [number, string, string][]
+  /** Drawings of its own, by marker, before the world book's own. */
+  figures?: (key: string) => string | undefined
+  /** Only these people in the gallery of portraits (the people met); everyone when not given. */
+  people?: string[]
 }
 
 /** Where a hex lies in map units: flat-topped, odd columns half a hex north, as the game draws it. */
@@ -37,26 +47,22 @@ function nextTo(col: number, row: number): [number, number][] {
 }
 
 /**
- * The whole region as an SVG in the world's palette: paper by day, the dark
- * map in dark mode. One path per terrain and tint keeps the page light; the
- * ways are lines between the hexes they cross; the places carry their names.
+ * A map as an SVG in the world's palette (M10.20): paper by day, the dark map
+ * in dark mode. The window of the data is drawn whole, so a region seen in
+ * part keeps its shape, with the land not yet seen left blank. One path per
+ * terrain and tint keeps the page light; the ways are lines between the hexes
+ * they cross; the places carry their names.
  */
-function regionSvg(content: Content, palette: MapPalette): string {
-  const data = previewMapData(content, palette, true)
+export function hexMapSvg(data: HexMapData, palette: MapPalette, label: string): string {
   if (!data.hexes.length) return ''
   const hexes: { col: number; row: number; key: string; tint: number }[] = []
   for (let i = 0; i < data.hexes.length; i += 5) hexes.push({ col: data.hexes[i]!, row: data.hexes[i + 1]!, key: data.keys[data.hexes[i + 2]!]!, tint: data.hexes[i + 3]! })
-  let maxX = 0
-  let maxY = 0
-  for (const h of hexes) {
-    const [x, y] = hexPoint(h.col, h.row)
-    maxX = Math.max(maxX, x)
-    maxY = Math.max(maxY, y)
-  }
-  // North up: the screen's y runs the other way.
+  // The window, in map units; north up, so the screen's y runs the other way.
+  const top = data.top * SQRT3 + SQRT3 / 2
+  const bottom = (data.top - data.height + 1) * SQRT3
   const at = (col: number, row: number): [number, number] => {
     const [x, y] = hexPoint(col, row)
-    return [round(x + 1), round(maxY - y + 1)]
+    return [round(x - data.left * 1.5 + 1), round(top - y + 1)]
   }
   const tints = (style: MapStyle, key: string) => style.terrain[key] ?? DEFAULT_PALETTE[style === palette.dark ? 'dark' : 'paper'].terrain[key] ?? [style.unknown]
   const groups = new Map<string, string[]>()
@@ -69,18 +75,16 @@ function regionSvg(content: Content, palette: MapPalette): string {
     list.push(d)
     groups.set(cls, list)
   }
-  const style: string[] = []
-  const rule = (scheme: MapStyle) =>
+  const scheme = (style: MapStyle) =>
     [...groups.keys()]
       .map((cls) => {
         const [, key, tint] = /^t-(.+)-(\d+)$/.exec(cls)!
-        const list = tints(scheme, key!)
+        const list = tints(style, key!)
         return `.region .${cls}{fill:${list[Number(tint) % list.length]}}`
       })
-      .join('')
-  style.push(rule(palette.paper), `.region .way-road{stroke:${palette.paper.ways.road}}.region .way-path{stroke:${palette.paper.ways.path}}.region .way-canal{stroke:${palette.paper.ways.canal}}.region text{fill:${palette.paper.label};paint-order:stroke;stroke:${palette.paper.label_shadow}}`)
-  const dark = `${rule(palette.dark)}.region .way-road{stroke:${palette.dark.ways.road}}.region .way-path{stroke:${palette.dark.ways.path}}.region .way-canal{stroke:${palette.dark.ways.canal}}.region text{fill:${palette.dark.label};stroke:${palette.dark.label_shadow}}`
-  style.push(`@media (prefers-color-scheme: dark){${dark}}`)
+      .join('') +
+    `.region .way-road{stroke:${style.ways.road}}.region .way-path,.region .way-ridge{stroke:${style.ways.path}}.region .way-canal{stroke:${style.ways.canal}}.region text{fill:${style.label};stroke:${style.label_shadow}}.region .blank{fill:${style.unknown}}`
+  const style = `${scheme(palette.paper)}@media (prefers-color-scheme: dark){${scheme(palette.dark)}}`
   const ways = new Map(data.ways.map((w) => [`${w.c},${w.r}`, w.kind]))
   const lines: string[] = []
   for (const w of data.ways) {
@@ -91,16 +95,21 @@ function regionSvg(content: Content, palette: MapPalette): string {
       lines.push(`<line class="way-${w.kind}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`)
     }
   }
-  const width = round(maxX + 2)
+  const width = round((data.width - 1) * 1.5 + 2)
+  const height = round(top - bottom + 2)
   // A name near the right edge reads to the left of its place, so it stays on the map.
   const places = data.places.map((p) => {
     const [x, y] = at(p.c, p.r)
     const left = x > width * 0.8
     return `<circle cx="${x}" cy="${y}" r=".7"/><text x="${round(left ? x - 1.2 : x + 1.2)}" y="${round(y + 0.8)}"${left ? ' text-anchor="end"' : ''}>${esc(p.name)}</text>`
   })
-  const height = round(maxY + 2 + SQRT3 / 2)
   const legend = data.legend.map((l) => `<span><i class="sw" style="--c:${tints(palette.paper, l.key)[0]};--d:${tints(palette.dark, l.key)[0]}"></i>${esc(l.name)}</span>`).join('')
-  return `<figure class="region"><style>${style.join('')}</style><svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${esc(`The region of ${content.world.name}`)}">${[...groups].map(([cls, ds]) => `<path class="${cls}" d="${ds.join('')}"/>`).join('')}<g class="ways">${lines.join('')}</g><g class="places">${places.join('')}</g></svg><figcaption class="legend">${legend}</figcaption></figure>`
+  return `<figure class="region"><style>${style}</style><svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${esc(label)}" style="max-width:${Math.round(width * 12)}px"><rect class="blank" width="${width}" height="${height}"/>${[...groups].map(([cls, ds]) => `<path class="${cls}" d="${ds.join('')}"/>`).join('')}<g class="ways">${lines.join('')}</g><g class="places">${places.join('')}</g></svg><figcaption class="legend">${legend}</figcaption></figure>`
+}
+
+/** The whole region, as the designer drew it. */
+function regionSvg(content: Content, palette: MapPalette): string {
+  return hexMapSvg(previewMapData(content, palette, true), palette, `The region of ${content.world.name}`)
 }
 
 /** The coins as cards: the short mark big, the name, and what it is worth in the smallest coin. */
@@ -137,13 +146,20 @@ export function worldAtlasHtml(content: Content, markdown: string, pictures: (id
   const intro = parts[0]!.replace(/^# .*\n/, '').trim()
   const chapters: { n: string; title: string; body: string }[] = []
   for (let i = 1; i < parts.length; i += 3) chapters.push({ n: parts[i]!, title: parts[i + 1]!, body: parts[i + 2] ?? '' })
+  const book = options.book ?? 'the world book'
   const figure = (key: string): string | undefined => {
+    const own = options.figures?.(key)
+    if (own !== undefined) return own || undefined
     if (key === 'map') return regionSvg(content, palette) || undefined
     if (key === 'coins') return coinCards(content) || undefined
     if (key === 'calendar') return calendarCards(content) || undefined
     if (key === 'palette') return w.map?.palette ? paletteSwatches(palette) : undefined
     if (key === 'portraits') {
-      const shown = [...content.npcs.values()].sort((a, b) => a.name.localeCompare(b.name)).map((n) => ({ n, src: pictures(n.id) })).filter((p) => p.src)
+      const shown = [...content.npcs.values()]
+        .filter((n) => !options.people || options.people.includes(n.id))
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .map((n) => ({ n, src: pictures(n.id) }))
+        .filter((p) => p.src)
       return shown.length ? `<div class="gallery">${shown.map((p) => `<figure><img src="${p.src}" alt="" loading="lazy"><figcaption>${esc(p.n.name)}<small>${esc(p.n.short)}</small></figcaption></figure>`).join('')}</div>` : undefined
     }
     const src = pictures(key)
@@ -152,21 +168,29 @@ export function worldAtlasHtml(content: Content, markdown: string, pictures: (id
   const slug = (title: string) => title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
   const sheets = chapters.map((c) => {
     const body = markdownHtml(c.body, figure).replace(/<!--replaces-->\n<(table|p|ul)>[\s\S]*?<\/\1>/g, '')
-    return `<section class="sheet ch-${slug(c.title)}" id="${slug(c.title)}"><header class="sheet-head"><div class="folio">Chapter<strong>${esc(c.n)}</strong></div><h2>${esc(c.title)}</h2><div class="ref">${esc(w.name)}<br>the world book</div></header><div class="sheet-body">${body}</div></section>`
+    return `<section class="sheet ch-${slug(c.title)}" id="${slug(c.title)}"><header class="sheet-head"><div class="folio">Chapter<strong>${esc(c.n)}</strong></div><h2>${esc(c.title)}</h2><div class="ref">${esc(w.name)}<br>${esc(book)}</div></header><div class="sheet-body">${body}</div></section>`
   })
   const count = (n: number, one: string, many: string) => (n ? `<div><b>${n}</b>${n === 1 ? one : many}</div>` : '')
-  const stats = [count(content.areas.size, 'area', 'areas'), count(content.locations.size, 'place', 'places'), count(content.npcs.size, 'person', 'people'), count(content.factions.size, 'power', 'powers'), count(content.quests.size, 'quest', 'quests')].join('')
+  const numbers: [number, string, string][] = options.stats ?? [
+    [content.areas.size, 'area', 'areas'],
+    [content.locations.size, 'place', 'places'],
+    [content.npcs.size, 'person', 'people'],
+    [content.factions.size, 'power', 'powers'],
+    [content.quests.size, 'quest', 'quests'],
+  ]
+  const stats = numbers.map(([n, one, many]) => count(n, one, many)).join('')
+  const lede = options.lede ?? (w.words ? `The land is ${w.words.land}; play begins in ${w.words.region}; the stranger comes from ${w.words.from}.` : '')
   const toc = chapters.map((c) => `<a href="#${slug(c.title)}"><b>${esc(c.n)}</b>${esc(c.title)}</a>`).join('')
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${esc(`${w.name}: the world book`)}</title>
+<title>${esc(`${w.name}: ${book}`)}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>${ATLAS_CSS}</style></head><body>
 <div class="bar"><div class="bar-in"><span class="bar-name">${esc(w.name)}</span><nav>${chapters.map((c) => `<a href="#${slug(c.title)}"><b>${esc(c.n)}</b>${esc(c.title)}</a>`).join('')}</nav></div></div>
 <main class="wrap">
-<section class="sheet cover"><header class="sheet-head"><div class="folio">The world book</div><h1>${esc(w.name)}</h1><div class="ref">${options.written ? `Written ${esc(options.written)}` : ''}</div></header>
-<div class="cover-body"><div class="cover-text">${w.words ? `<p class="lede">The land is ${esc(w.words.land)}; play begins in ${esc(w.words.region)}; the stranger comes from ${esc(w.words.from)}.</p>` : ''}<div class="note">${markdownHtml(intro)}</div></div><div class="stats">${stats}</div></div>
+<section class="sheet cover"><header class="sheet-head"><div class="folio">${esc(book.charAt(0).toUpperCase() + book.slice(1))}</div><h1>${esc(w.name)}</h1><div class="ref">${options.written ? `Written ${esc(options.written)}` : ''}</div></header>
+<div class="cover-body"><div class="cover-text">${lede ? `<p class="lede">${esc(lede)}</p>` : ''}<div class="note">${markdownHtml(intro)}</div></div><div class="stats">${stats}</div></div>
 <nav class="toc">${toc}</nav></section>
 ${sheets.join('\n')}
 </main></body></html>
@@ -204,6 +228,7 @@ table{border-collapse:collapse;width:100%;margin:8px 0 18px;font-size:14px}
 th{font-family:var(--f-mono);font-size:10.5px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);text-align:left;border-bottom:1.5px solid var(--rule-strong);padding:6px 10px 6px 0}
 td{border-bottom:1px solid var(--rule);padding:6px 10px 6px 0;vertical-align:top}
 pre{white-space:pre-wrap;background:var(--paper);border:1px solid var(--rule);padding:12px 14px;font-family:var(--f-body);font-size:15px;max-width:80ch}
+pre.map{white-space:pre;overflow-x:auto;font-family:var(--f-mono);font-size:13px;line-height:1.2;width:max-content;max-width:100%}
 code{font-family:var(--f-mono);font-size:.88em}
 .cover-body{display:grid;grid-template-columns:1fr auto;gap:24px;padding:20px 28px}
 .cover-text{max-width:70ch;color:var(--ink-2)}.note{font-size:13px;color:var(--ink-3)}.lede{font-family:var(--f-display);font-size:21px;color:var(--ink)}
@@ -214,7 +239,7 @@ code{font-family:var(--f-mono);font-size:.88em}
 .toc a{font-size:14px}
 .region{margin:12px 0 18px}.region svg{width:100%;height:auto;display:block;border:1px solid var(--rule);background:var(--paper)}
 .region path{stroke:none}.region .ways line{stroke-width:.32;stroke-linecap:round}.region .places circle{fill:var(--wisp);stroke:var(--ink);stroke-width:.15}
-.region text{font-family:var(--f-sc);font-size:2.4px;stroke-width:.3px}
+.region text{font-family:var(--f-sc);font-size:2.4px;stroke-width:.3px;paint-order:stroke}
 .legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:8px;font-size:13px;color:var(--ink-2)}
 .legend .sw,.swatch i{display:inline-block;width:14px;height:14px;border:1px solid var(--rule);vertical-align:-2px;margin-right:6px;background:var(--c)}
 @media (prefers-color-scheme:dark){.legend .sw{background:var(--d)}}
