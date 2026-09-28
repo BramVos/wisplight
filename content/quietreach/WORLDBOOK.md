@@ -146,7 +146,7 @@ Pacing: play starts small, on Nacre, among the colonists, their everyday problem
 
 **Orison Listening Room** (landmark, research)
 
-The Orison Listening Room is cramped, lined with receiving consoles, half of them dark and the rest flickering with fault codes. A rack of recording drives hums beside a desk where the maintenance logs lie in a binder swollen with damp. Through the wide window the antenna structure rises into the cloud, its cables groaning faintly in the wind. Every few minutes a speaker gives out the same short pattern of tones, and then falls silent. The stairs lead down the steep route to the Ridge Shelter.
+Cramped and lined with receiving consoles, half dark and the rest flickering fault codes, this room hums with a rack of recording drives beside a desk where the maintenance logs lie in a damp-swollen binder. Through the wide window the antenna rises into cloud, cables groaning. A speaker gives the same short pattern of tones, then silence. Stairs lead down the steep route to [Ridge Shelter].
 
 Ways: down to Ridge Shelter.
 
@@ -156,25 +156,25 @@ Ways: down to Ridge Shelter.
 
 **Arrival Lock** (public, landmark)
 
-You stand in the Arrival Lock, its steel walls still dripping from the pumps and seawater pooling in the grooves of the floor grating. Cargo crates from the supply ship wait along one wall, each stamped with a cargo label from Harrow Station. The air is cold and tastes of salt and machine oil, and behind the panels a pressure pump thuds and settles. Beside the inner door stands a check-in desk with a scanner that reads assignments, and your pocket terminal chirps as it takes in the local map. A covered corridor leads east to the Commons, and a wider cargo passage runs northeast towards the Works.
+Steel walls drip from the pumps, and seawater pools in the grooves of the floor grating. Crates from the supply ship line one wall, each label stamped [Harrow Station]. The cold tastes of salt and oil; a pressure pump thuds behind the panels. By the inner door, a desk scanner reads assignments and your terminal chirps, taking the local map. A corridor leads east, a cargo passage northeast.
 
 Ways: east to Commons; northeast to Workshop.
 
 **Commons** (public, social)
 
-The Commons is long and low, full of bolted tables and benches, warm after the lock and loud with the clatter of trays. The smell of reconstituted soup and strong tea hangs under the ceiling ducts. On the wall by the serving hatch, a shift roster hangs beside a board of arrival notices, both patched with handwritten corrections. At the far end an observation window looks out on grey swell and black rock. Doors lead north to the Guest Quarters and south to the Medical Bay, a covered connection runs east to the Works, the corridor west returns to the lock, and a heavy outside door opens onto the coast.
+Bolted tables and benches fill a long, low hall, warm after the lock and loud with trays. The smell of soup and strong tea hangs under the ceiling ducts. By the serving hatch a shift roster and a board of arrival notices are patched with handwritten corrections. The far window looks out on grey swell and black rock. A heavy outside door opens onto the coast; a connection runs east.
 
 Ways: north to Guest Quarters; south to Medical Bay; east to Workshop; out to Coastal Service Path; west to Arrival Lock. Here: water tap.
 
 **Guest Quarters** (lodging, rest)
 
-The Guest Quarters are narrow, lined with stacked bunks behind sliding doors, each with a small reading lamp and a curtain. Your own bunk is the third on the left, with a lockable luggage cabinet bolted beneath it. The air recycler ticks overhead, and the blankets smell faintly of disinfectant. A slip taped to the cabinet door says your first three nights are paid for. The door south leads back to the Commons.
+Narrow bunks stack behind sliding doors, each with a small reading lamp and a curtain. Your own bunk, third on the left, has a lockable cabinet bolted beneath it. The air recycler ticks overhead, and the blankets smell faintly of disinfectant. A slip on the cabinet door says your first three nights are paid for. The door south leads back to the Commons.
 
 Ways: south to Commons. Here: water tap.
 
 **Medical Bay** (public, medical)
 
-Just inside the Medical Bay, three plastic chairs and a counter face a glass partition. Beyond the glass stand treatment couches, locked cabinets of supplies and, under a pale light, the long shell of the recovery cradle. Everything smells of antiseptic, and a monitor behind the counter keeps a soft, even beep. A notice on the partition asks visitors to wait to be seen and touch nothing past the glass. The door north leads back to the Commons.
+Three plastic chairs and a counter face a glass partition just inside the door. Beyond it stand treatment couches, locked cabinets and, under pale light, the long shell of the recovery cradle. Everything smells of antiseptic, and a monitor keeps a soft, even beep. A notice asks visitors to wait and touch nothing past the glass. The door north leads back to the Commons.
 
 Ways: north to Commons.
 
@@ -184,13 +184,13 @@ Ways: north to Commons.
 
 **Coastal Service Path** (outdoor, route)
 
-The Coastal Service Path is a grated steel walkway laid along black volcanic rock above the grey swell, beside two insulated pipes. Cable markers stand every fifty metres, their orange caps dulled by salt, and a short marked side step leads down to fenced growing beds above the tideline. The wind comes straight off the sea, cold and wet, and the surf booms below you. Inland the walkway climbs northeast towards Orison Ridge and its shelter, and behind you the outside door leads back into the Commons.
+Grated steel runs along black volcanic rock above the grey swell, beside two insulated pipes. Cable markers stand every fifty metres, salt-dulled, and a side step drops to fenced growing beds above the tideline, near wrack-strewn tide pools. Cold spray stings your face and the surf booms below. The walkway climbs northeast to [Ridge Shelter]; the Commons door waits behind you.
 
 Ways: northeast to Ridge Shelter; in to Commons.
 
 **Ridge Shelter** (shelter, rest)
 
-The Ridge Shelter is squat and bolted to the rock where the path meets the climb, with a bench, a heater and a door that seals tight against the wind. An emergency radio sits on a shelf beside a route board chalked with conditions and times. Across from it a relay cabinet stands open, its casing buckled, and the smell of burnt insulation still hangs about it. Outside, a steep maintenance route climbs up to the listening station, and the service path runs back southwest towards Port Vesper.
+Bolted to the rock where the path meets the climb, this box holds a bench, a heater and a door that seals tight against the wind. An emergency radio sits on a shelf beside a route board chalked with conditions. A relay cabinet stands open, casing buckled, smelling of burnt insulation. The route climbs up towards [Orison Ridge]; the path runs southwest to Port Vesper.
 
 Ways: up to Orison Listening Room; southwest to Coastal Service Path.
 
@@ -200,19 +200,19 @@ Ways: up to Orison Listening Room; southwest to Coastal Service Path.
 
 **Peregrine — Common Deck** (ship, restricted)
 
-The Common Deck of the Peregrine is tight and curved, built for six, with a briefing table bolted to the deck and six chairs strapped down around it. A terminal set into the table glows with the expedition data cleared for the crew. The air is dry and recycled, tasting faintly of new plastic, and the hull ticks now and then as it settles. The ship stands on the ground for now, and the access airlock leads back down the ramp to the hangar.
+Tight and curved, built for six, this deck holds a briefing table bolted down with six strapped chairs around it. A terminal in the table glows with expedition data cleared for the crew. The air is dry and recycled, tasting faintly of new plastic, and the hull ticks now and then as it settles. The airlock leads back down the ramp to the Hangar.
 
 Ways: down to Peregrine Hangar.
 
 **Peregrine Hangar** (restricted, landmark)
 
-The Peregrine Hangar is cold and cavernous, and the ship fills most of it, its hull squat and scarred on landing struts, with its maintenance panels hanging open. Cables snake from the panels to diagnostic carts, and the air hums so deep you feel it in your teeth. Towards the stern, a yellow barrier and a painted line mark off the drive section. A boarding ramp climbs to the ship's access airlock. The door out leads back to the Workshop.
+Cold and cavernous, this hangar is filled almost entirely by the ship, its scarred hull resting on landing struts with maintenance panels hanging open. Cables snake to diagnostic carts, and the air hums deep enough to feel in your teeth. A yellow barrier marks off the drive section towards the stern. A boarding ramp climbs to the airlock; the door out leads back to the Workshop.
 
 Ways: up to Peregrine — Common Deck; out to Workshop.
 
 **Workshop** (public, work)
 
-The Workshop is high and cluttered, full of workbenches, tool racks and crates of salvaged parts, lit by hard white strip lamps. It smells of solder, cold metal and the damp that gets into everything on Nacre. At the public counter by the door, a clipboard lists what may be signed out and what is reserved for the Peregrine. At the back, the sealed hangar door is stencilled RESTRICTED. Passages run west to the Commons and southwest to the Arrival Lock.
+Workbenches, tool racks and crates of salvaged parts crowd this high room under hard white lamps. Solder, cold metal and Nacre's damp hang in the air. At the counter by the door a clipboard lists what may be signed out and what is reserved for the [Peregrine]. The sealed hangar door at the back is stencilled RESTRICTED. Passages run west to Commons and southwest to Arrival Lock.
 
 Ways: in to Peregrine Hangar; southwest to Arrival Lock; west to Commons. Here: Electronics Bench, Fabrication Bench.
 
@@ -461,7 +461,9 @@ Where an act the rules do not know may be improvised: Orison Listening Room (lor
 
 ### The steps of the guide
 
-Every step of the guide was taken.
+Every step not listed here was taken. These were left empty, and the world has the neutral default:
+
+- **Places** (proposal turned down): A world needs at least one area and one place, the start; the builder's first place stays.
 
 ### Decisions
 
@@ -2109,3 +2111,132 @@ What it asked back:
 - Prices: shall I check the existing items and services against your table (for example `hot_meal` at 400, `coffee` and `herbal_tea` at 50, `field_ration` at 600) and propose corrections where they differ?
 
 Changed: world.yaml: money, player.
+
+#### Places: rejected, 2026-09-28 23:11
+
+What the designer wrote:
+
+> Initial play area the Vesper Coast
+>
+> Start with ten accessible locations in four areas. Together, they form a small research setting: meeting people, examining equipment, preparing the journey to the listening station and eventually gaining access to the Peregrine.
+>
+> Echo Nine becomes a new play area only during the expedition.
+>
+> | Area | Type | Character |
+> | Port Vesper | Settlement and spaceport | A compact colony of connected pressure modules with shared facilities. |
+> | Vesper Works | Workshop and research complex | Repairs, scarce parts and the Peregrine's locked hangar. |
+> | The Coastal Traverse | Wilderness and maintenance route | An exposed coastal route between the settlement and Orison Ridge. |
+> | Orison Ridge | Remote research station | The listening station where the strange signal is received. |
+>
+> The ten locations
+>
+> | # | Location | Area | What the player finds here |
+> | 1 | Arrival Lock | Port Vesper | Starting location. Arrival airlock, cargo labels, a wet floor and a staff member checking your assignment. Your pocket terminal receives the basic local map here. |
+> | 2 | Commons | Port Vesper | Shared dining hall and meeting place. Shift rosters hang beside arrival notices. Here you learn what is happening and who can help you further. |
+> | 3 | Guest Quarters | Port Vesper | Shared sleeping quarters, your bed and a lockable luggage cabinet. The first three nights are paid for. |
+> | 4 | Medical Bay | Port Vesper | Treatment, medical supplies and the recovery cradle. Your continuity implant is fitted and explained here before your first field trip. |
+> | 5 | Workshop | Vesper Works | Tools, spare parts and workbenches. The chief engineer prepares equipment and assesses what can safely be taken along. |
+> | 6 | Peregrine Hangar | Vesper Works | The experimental ship, with open maintenance panels and a restricted drive section. Access requires permission. |
+> | 7 | Peregrine — Common Deck | Vesper Works, later aboard ship | The first accessible ship compartment: a briefing table, strapped-down chairs and a terminal with cleared expedition data. The ship remains on the ground during this phase. |
+> | 8 | Coastal Service Path | The Coastal Traverse | A coastal path with pipes, cable markers and an ocean view. This is the first outdoor location where weather and equipment noticeably matter. |
+> | 9 | Ridge Shelter | The Coastal Traverse | A maintenance shelter near the climb to the station. An emergency radio, route board and damaged relay cabinet provide reasons to stop here. |
+> | 10 | Orison Listening Room | Orison Ridge | Receiving equipment, original signal recordings and maintenance logs. The antenna structure is visible through the window. The substantive investigation begins here. |
+>
+> Connections and journey times
+>
+> The times below are walking times in minutes in normal weather. They apply in both directions. These are connections between places; the map below is schematic.
+>
+> Guest Quarters                                  │ 2 Arrival Lock ── 3 ── Commons ────┤       │                          │ 2       │ 4                    Medical Bay       │                          │       │                    via Commons       │                          │ 5       └──────────────────── Workshop                                  │ 3  [permission]                           Peregrine Hangar                                  │ 2  [permission]                          Peregrine Common Deck  Commons ── 4 ── Coastal Service Path                          │ 18                     Ridge Shelter                          │ 12                  Orison Listening Room
+>
+> The complete connection list is authoritative:
+>
+> | From | To | Minutes | Conditions |
+> | Arrival Lock | Commons | 3 | Covered corridor. |
+> | Arrival Lock | Workshop | 4 | Covered cargo passage. |
+> | Commons | Guest Quarters | 2 | Inside the living modules. |
+> | Commons | Medical Bay | 2 | Inside the living modules. |
+> | Commons | Workshop | 5 | Covered connection. |
+> | Workshop | Peregrine Hangar | 3 | Restricted research zone; permission required. |
+> | Peregrine Hangar | Peregrine — Common Deck | 2 | Through the ship's access airlock; permission required. |
+> | Commons | Coastal Service Path | 4 | Through the outside door; the path itself is outdoors. |
+> | Coastal Service Path | Ridge Shelter | 18 | Exposed coastal path. |
+> | Ridge Shelter | Orison Listening Room | 12 | Steep maintenance route to the station. |
+>
+> From Commons to the listening station is normally a 34-minute walk. Research, conversations and rest take additional time.
+>
+> Access and initial exploration
+>
+> The arrivals officer directs you to Commons. Your contract grants access to the guest quarters, the public workshop counter and the listening station. The medical area has an accessible reception zone; you may not simply use its equipment or supplies.
+>
+> The hangar and ship are secured separately. An appointment with the research lead or an escort by the chief engineer may grant access. The first investigation at Orison Ridge must be possible without access to the ship.
+>
+> Weather and accessibility
+>
+> Indoor connections remain usable in bad weather. Rain, wind and ice may slow the two outdoor stages. The engine calculates the actual journey time; the Chronicler does not invent it.
+>
+> In dangerous weather, the exit provides a specific warning. Ridge Shelter offers a safe intermediate stop. If a route genuinely becomes impassable, waiting, returning or asking for help remains possible. A beginning player is not cut off without warning by the forecast storm.
+>
+> For the Chronicler
+>
+> Give every location three to five descriptive sentences: one recognisable feature, one sensory impression and clear exits. Named objects must at least be inspectable.
+>
+> Keep clues in fixed places and give characters reasons to move between locations. For example, let a strange measurement lead back to a maintenance log or device; do not change its contents afterwards to force the player along a particular route.
+>
+> When the Peregrine departs, the ship gains its own area with additional locations. Common Deck retains its identity and history, but its connection to the hangar disappears while the ship is not docked.
+
+What the chronicler said:
+
+> The ten places and four areas you listed already stand in the world with the right areas, exits and minutes, so this step only brings them up to the place rules. I rewrote every description, day and night, to keep them to at most 70 words and three to five sentences. None of them now opens with its own name, and no two open alike. Each has one hint at a way out instead of the full list of exits. Every thing brought in with 'a' or 'an' already has a detail, and I added no new objects that would need one. I added four bracketed topics, all of which already exist: [Harrow Station] on the cargo labels in the Arrival Lock, [winter supplies] in the talk at the Commons, [Sailbacks] on the path, where the sailback encounter already plays, and [Echo Nine] on the Common Deck terminal. The Listening Room gets no topic, because Echo Nine names the destination, not the signal, and I did not want to blur that. The Coastal Service Path gets a storm variant, so the exit warns you plainly and points to the Ridge Shelter or back to the Commons. Orison Ridge's existing storm bar stays as the one real block, with the shelter as the safe stop between. The Commons gets a small 'offering' improvise for a vigil or a touch at the observation window. It can only record a fact and takes nothing, because faith never changes what happens. The start stays at the Arrival Lock, and data/voice.yaml already gives its speaker groups these areas, so it needs no change. One thing I have left open on purpose: nothing yet keeps the stranger out of the hangar and the ship (see my questions).
+
+What it asked back:
+
+- Hangar permission: shall I lock the Workshop→Hangar exit and the Hangar→Common Deck exit with a key item such as a 'hangar access card'? Dr Sorell would issue it after an appointment, or Tessa Rook for an escorted visit. The locks would have no pick difficulty, so they cannot be forced. If yes, I will add the item and the two locks as a small follow-up.
+- The Harbour Record: where can the stranger see it? I would suggest a terminal beside the observation window in the Commons. Or should it stay somewhere you have not placed yet, and out of the descriptions for now?
+
+Changed: location loc_arrival_lock; location loc_commons; location loc_guest_quarters; location loc_medical_bay; location loc_workshop; location loc_peregrine_hangar; location loc_peregrine_common_deck; location loc_coastal_service_path; location loc_ridge_shelter; location loc_orison_listening_room.
+
+Why: Measurement only (M10.20): the places step with the place rules in its prompt, on Bram's chapter 5. 67 words on average against 88, 4 places with [brackets] against 0, none naming every way out or opening with its own name. It also added a storm variant and an improvise, so it is not taken; the polish round follows.
+
+#### Polish the places: accepted, 2026-09-28 23:19
+
+What the designer wrote:
+
+> loc_coastal_service_path, loc_ridge_shelter, loc_orison_listening_room, loc_arrival_lock, loc_commons, loc_guest_quarters, loc_medical_bay, loc_workshop, loc_peregrine_hangar, loc_peregrine_common_deck
+
+What the chronicler said:
+
+> Trimmed every description to fit the 70-word limit, kept all listed objects, exits and one non-visual sense each, added bracket topics where the place naturally raises them, and reworded openings so none repeats another's pattern.
+>
+> Worth a look: loc_arrival_lock no longer names "terminal"; loc_commons no longer names "outside door", "connection"; loc_workshop no longer names "soldering iron"; loc_workshop is still 73 words.
+
+Changed: location loc_coastal_service_path: description; location loc_ridge_shelter: description; location loc_orison_listening_room: description; location loc_guest_quarters: description; location loc_medical_bay: description; location loc_peregrine_hangar: description; location loc_peregrine_common_deck: description.
+
+Why: Left as they were: loc_arrival_lock, loc_commons, loc_workshop
+
+#### Polish the places: accepted, 2026-09-28 23:20
+
+What the designer wrote:
+
+> loc_arrival_lock, loc_commons, loc_workshop
+
+What the chronicler said:
+
+> Trimmed all three descriptions under 70 words, kept every listed object, wove in the required exits and topic brackets, added a non-visual sensory detail each, and avoided opening with the place's own name.
+>
+> Worth a look: loc_arrival_lock is still 71 words; loc_commons is still 81 words; loc_workshop no longer names "soldering iron".
+
+Changed: location loc_workshop: description.
+
+Why: Left as they were: loc_arrival_lock, loc_commons
+
+#### Polish the places: accepted, 2026-09-28 23:24
+
+What the designer wrote:
+
+> loc_arrival_lock, loc_commons
+
+What the chronicler said:
+
+> I cut all four descriptions to 70 words or fewer. Every listed thing stays, the Commons no longer opens with its own name, and each ends with a single exit hint instead of a list. I wrote the Works as the Workshop, its name in the world; night at the lock leaves out the terminal, as it did before.
+
+Changed: location loc_arrival_lock: description; location loc_commons: description.

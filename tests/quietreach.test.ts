@@ -1,6 +1,7 @@
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { Engine, MockLlm, warnings } from '../src/engine'
+import { placeMeasures } from '../src/engine/builder'
 import { contractView } from '../src/engine/contract'
 import { oathsFor } from '../src/engine/dialogue/voice'
 import { loadContentFromDir } from '../src/node/content'
@@ -43,13 +44,28 @@ describe('The Quiet Reach, as Bram built it in the app', () => {
     const out = [said(engine.start())]
     for (const c of ['look', 'wait', 'talk to mara', 'hello', 'bye', 'east', 'inventory', 'time']) out.push(said(await engine.handle(c)))
     expect(out[0]).toContain('This is Nacre, at the far edge of the Lantern Belt')
-    expect(out[1]).toMatch(/^Arrival Lock\nYou stand in the Arrival Lock/)
+    expect(out[1]).toMatch(/^Arrival Lock\nSteel walls drip from the pumps/)
     expect(out[2]).toMatch(/It is Primeday 18 Rainfall 186 CR, 08:\d\d/)
     expect(out[3]).toContain('You are talking with the port coordinator.')
     expect(out[6]).toMatch(/^Commons\n/)
     expect(out[7]).toBe('You carry 2 field rations, and 120 cr.')
     expect(engine.state.player.location).toBe('loc_commons')
     for (const text of out) expect(text).not.toMatch(NETHERMARCH)
+  })
+
+  it('reads by the place rules after the polish round (M10.20)', () => {
+    // Before: 88 words on average, no topic in [brackets], seven places opening with their own name.
+    const measures = placeMeasures(reach)
+    for (const m of measures) {
+      expect(m.words, m.id).toBeLessThanOrEqual(70)
+      expect(m.sentences, m.id).toBeGreaterThanOrEqual(3)
+      expect(m.sentences, m.id).toBeLessThanOrEqual(5)
+      expect(m.opensWithName, m.id).toBe(false)
+    }
+    expect(measures.filter((m) => m.brackets > 0).length).toBeGreaterThanOrEqual(5)
+    expect(new Set(measures.map((m) => m.opening)).size).toBe(measures.length)
+    // The fact of Bram's places table stays: the terminal takes in the local map at the lock.
+    expect(reach.locations.get('loc_arrival_lock')!.description.day).toMatch(/terminal chirps, taking the local map/)
   })
 
   it('swears by faith and by trade: Tessa by the hull, Sana by the Remembered', () => {

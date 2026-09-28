@@ -7,8 +7,10 @@ locations:
     summary: An exposed walkway along the coast, following pipes and cable markers towards Orison Ridge.
     sound: { kind: surf, level: 0.7, night: wind }
     description:
-      day: The Coastal Service Path is a grated steel walkway laid along black volcanic rock above the grey swell, beside two insulated pipes. Cable markers stand every fifty metres, their orange caps dulled by salt, and a short marked side step leads down to fenced growing beds above the tideline. The wind comes straight off the sea, cold and wet, and the surf booms below you. Inland the walkway climbs northeast towards Orison Ridge and its shelter, and behind you the outside door leads back into the Commons.
-      night: At night the Coastal Service Path is a line of small lights, one on each cable marker, strung out into the dark. The pipes beside the walkway are cold and beaded with spray, and a reflector glints where the side step drops to the beds. You hear the surf more than you see it, booming below the rocks, and the wind pushes at your back. The markers lead northeast towards the Ridge Shelter, and the lit outside door of the Commons is behind you.
+      day: |
+        Grated steel runs along black volcanic rock above the grey swell, beside two insulated pipes. Cable markers stand every fifty metres, salt-dulled, and a side step drops to fenced growing beds above the tideline, near wrack-strewn tide pools. Cold spray stings your face and the surf booms below. The walkway climbs northeast to [Ridge Shelter]; the Commons door waits behind you.
+      night: |
+        Small lights mark each cable marker, strung into the dark, and the pipes beside you are cold and beaded with spray. A reflector glints where the side step drops to the beds. You hear the surf more than see it, booming below the rocks. The markers lead northeast to Ridge Shelter; the lit door behind you is the Commons.
     exits:
       northeast: { to: loc_ridge_shelter, minutes: 18 }
       in: { to: loc_commons, minutes: 4 }
@@ -49,8 +51,10 @@ locations:
     summary: A maintenance shelter where the coastal path meets the climb to the listening station.
     sound: { kind: wind, level: 0.4 }
     description:
-      day: The Ridge Shelter is squat and bolted to the rock where the path meets the climb, with a bench, a heater and a door that seals tight against the wind. An emergency radio sits on a shelf beside a route board chalked with conditions and times. Across from it a relay cabinet stands open, its casing buckled, and the smell of burnt insulation still hangs about it. Outside, a steep maintenance route climbs up to the listening station, and the service path runs back southwest towards Port Vesper.
-      night: At night the Ridge Shelter is a small box of warmth, its heater glowing orange beneath the bench. The wind drums on the walls, and the emergency radio hisses softly on its shelf. The route board and the open relay cabinet are shadows in the heater's glow, and the burnt smell lingers. Outside, the steep route climbs into the dark towards the station, and the path runs southwest towards Port Vesper.
+      day: |
+        Bolted to the rock where the path meets the climb, this box holds a bench, a heater and a door that seals tight against the wind. An emergency radio sits on a shelf beside a route board chalked with conditions. A relay cabinet stands open, casing buckled, smelling of burnt insulation. The route climbs up towards [Orison Ridge]; the path runs southwest to Port Vesper.
+      night: |
+        The heater glows orange beneath the bench, and the wind drums on the walls. The radio hisses softly on its shelf. The route board and the open, buckled relay cabinet sit in shadow, the burnt smell lingering still. The steep route climbs into the dark towards the station; the path runs southwest towards Port Vesper.
     exits:
       up: { to: loc_orison_listening_room, minutes: 12 }
       southwest: { to: loc_coastal_service_path, minutes: 18 }

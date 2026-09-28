@@ -89,6 +89,31 @@ LOOK, WAIT, een gesprek met Mara, lopen naar de Commons, de inventaris en de tij
 
 De startuitrusting ontbreekt. Hangar en schip staan open. De geloven noemen patrons die niet bestaan. De boete voor moord. De kustbewoners zonder bewoners. Geen kaart. Daarnaast de vragen per stap hierboven; ze staan ook in het ontwerplogboek (`content/quietreach/DESIGN.md`), met per stap wat gevraagd, gezegd en besloten is.
 
+## Polijstronde van de plekken (28 september 2026, later op de avond)
+
+Op verzoek van de ontwerpsessie namens Bram: de plekken lazen goed, maar gemiddeld 88 woorden tegen 56 in de Nethermarch, zonder een enkel onderwerp tussen [haken], met twee plekken die elke uitgang opsomden en zeven die met hun eigen naam openden. De plekregels staan nu letterlijk in de stap Plekken, de Stem komt direct na het Kader, Check meet de beschrijvingen, en na de stappen is er een polijstronde die alleen beschrijvingen herschrijft (b5e40b4, 614a06f, b1522e3).
+
+**De meting.** De stap Plekken met de aangescherpte prompt, op Brams hoofdstuk 5 (Opus 5.5, 137 seconden, $0,53): gemiddeld 67 woorden, 4 plekken met [haken], geen enkele die alle uitgangen noemt of met zijn naam opent. Dat voorstel voegde ook zelf iets toe (een stormvariant, een improvisatie bij het raam), dus het is als meting weggegooid; de plekken die er stonden bleven staan.
+
+**De ronde.** Per model, op dezelfde tien plekken:
+
+| Poging | Model | Tijd | Kosten | Uitkomst |
+|---|---|---|---|---|
+| 1 | Sonnet 5 (het lichte model: Brams keuze voor het brein) | 32 s | $0,08 | Openingen goed, [haken] erbij, maar de lengte bleef: gemiddeld 86 woorden |
+| 2 | Opus 5.5 | 77 s | $0,27 | Afgekapt: 400 tokens per plek was te krap voor een model dat eerst denkt |
+| 3 | Sonnet 5, na "lengte eerst" in de prompt | 23 s | $0,08 | Gemiddeld 70 woorden, 4 plekken nog net te lang |
+| 4 | Opus 5.5, met meer ruimte | 98 s | $0,34 | Weer afgekapt: 12.000 tokens, vrijwel alles aan denken |
+| 5 | Sonnet 5 | 23 s | $0,04 | 7 van de 10 aangenomen |
+| 6 | Sonnet 5, de drie die over waren | 11 s | $0,02 | Workshop aangenomen |
+| 7 | Sonnet 5, de laatste twee | 11 s | $0,02 | Niets aangenomen: de Commons somde weer alle uitgangen op |
+| 8 | Opus 5.5, met 16.000 tokens denkruimte, Arrival Lock en Commons | 38 s | $0,17 | Beide aangenomen |
+
+Samen $1,55 inclusief de meting; wat werd aangenomen kostte ongeveer $0,23. Uitkomst voor de standaard: het lichte model is de juiste keuze voor deze ronde (vier keer goedkoper en meestal binnen de regels), met Opus als tweede keus voor de plekken die het lichte model niet rond krijgt, en dan met genoeg denkruimte.
+
+**Aangenomen** (per plek beoordeeld tegen Brams tabel en de plekregels): alle tien. Wat ik liet liggen en waarom: de Arrival Lock verloor eerst Brams feit dat de terminal daar de kaart binnenkrijgt, de Commons somde de uitgangen op of werd te lang, de Workshop was eerst 73 woorden. Die kwamen in latere pogingen goed. In de Workshop staat de soldeerbout alleen nog in de nachtbeschrijving; het detail om naar te kijken is gebleven.
+
+**Na de ronde:** 10 plekken, gemiddeld 65 woorden (geen boven de 70), 6 met een onderwerp tussen [haken], geen twee die hetzelfde openen, geen die met zijn eigen naam opent. Check noemt nog één plek die alle uitgangen noemt: de Workshop, waar "de verzegelde hangardeur" de hangar noemt; dat lees ik als een hint, niet als een opsomming. `tests/quietreach.test.ts` houdt dit vast.
+
 ## theouterreach
 
 Eerder vandaag stond er een `content/theouterreach`. Die bestond alleen uit de startbestanden van een nieuwe wereld (hij laadde, met één plek), omdat de app toen met een verouderd hoofdproces draaide en [Propose] weigerde (`No handler registered for 'editor:world-step'`). Hij is op Bram's verzoek naar de prullenbak gegaan. Sinds 672be88 zegt de app bij het opstarten meteen als het hoofdproces ouder is dan de interface.

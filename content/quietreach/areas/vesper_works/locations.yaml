@@ -13,8 +13,10 @@ locations:
       fallback: You turn it over in your hands, but without the right parts and a steadier bench you get no further than a guess.
       takes: false
     description:
-      day: The Workshop is high and cluttered, full of workbenches, tool racks and crates of salvaged parts, lit by hard white strip lamps. It smells of solder, cold metal and the damp that gets into everything on Nacre. At the public counter by the door, a clipboard lists what may be signed out and what is reserved for the Peregrine. At the back, the sealed hangar door is stencilled RESTRICTED. Passages run west to the Commons and southwest to the Arrival Lock.
-      night: At night the Workshop is lit by a single strip lamp over the counter, and the racks throw long shadows over the benches. A soldering iron ticks as it cools, and the smell of solder lingers. The clipboard still hangs on its hook. At the back the hangar door is sealed, its RESTRICTED stencil catching the light. Passages run west to the Commons and southwest to the Arrival Lock.
+      day: |
+        Workbenches, tool racks and crates of salvaged parts crowd this high room under hard white lamps. Solder, cold metal and Nacre's damp hang in the air. At the counter by the door a clipboard lists what may be signed out and what is reserved for the [Peregrine]. The sealed hangar door at the back is stencilled RESTRICTED. Passages run west to Commons and southwest to Arrival Lock.
+      night: |
+        A single strip lamp burns over the counter, and the racks throw long shadows across the benches. A soldering iron ticks as it cools, its smell still lingering. The clipboard hangs on its hook, untouched. At the back the hangar door stays sealed, its RESTRICTED stencil catching the light. Passages run west to Commons and southwest to Arrival Lock.
     exits:
       in: { to: loc_peregrine_hangar, minutes: 3 }
       southwest: { to: loc_arrival_lock, minutes: 4 }
@@ -85,8 +87,10 @@ locations:
     summary: The locked hangar where the experimental ship Peregrine stands under maintenance.
     sound: { kind: hum, level: 0.6 }
     description:
-      day: The Peregrine Hangar is cold and cavernous, and the ship fills most of it, its hull squat and scarred on landing struts, with its maintenance panels hanging open. Cables snake from the panels to diagnostic carts, and the air hums so deep you feel it in your teeth. Towards the stern, a yellow barrier and a painted line mark off the drive section. A boarding ramp climbs to the ship's access airlock. The door out leads back to the Workshop.
-      night: At night the hangar lights are dimmed to a few floods, and the Peregrine is a dark bulk with its open panels glowing faintly from inside. The hum is lower now, but you still feel it. The yellow barrier by the drive section shines in the floodlight. The boarding ramp climbs into shadow towards the airlock. The door out leads back to the Workshop.
+      day: |
+        Cold and cavernous, this hangar is filled almost entirely by the ship, its scarred hull resting on landing struts with maintenance panels hanging open. Cables snake to diagnostic carts, and the air hums deep enough to feel in your teeth. A yellow barrier marks off the drive section towards the stern. A boarding ramp climbs to the airlock; the door out leads back to the Workshop.
+      night: |
+        Dimmed to a few floods, the hangar holds the [Peregrine] as a dark bulk, its open panels glowing faintly from within. The hum is lower now but still felt. The yellow barrier by the drive section shines under the floodlight. The boarding ramp climbs into shadow towards the airlock; the door out leads back to the Workshop.
     exits:
       up: { to: loc_peregrine_common_deck, minutes: 2 }
       out: { to: loc_workshop, minutes: 3 }
@@ -119,8 +123,10 @@ locations:
     summary: The first open compartment aboard the Peregrine, with its briefing table and cleared expedition data.
     sound: quiet
     description:
-      day: The Common Deck of the Peregrine is tight and curved, built for six, with a briefing table bolted to the deck and six chairs strapped down around it. A terminal set into the table glows with the expedition data cleared for the crew. The air is dry and recycled, tasting faintly of new plastic, and the hull ticks now and then as it settles. The ship stands on the ground for now, and the access airlock leads back down the ramp to the hangar.
-      night: At night the Common Deck is lit only by the terminal in the table, a pale square among the six strapped chairs. The ship is so quiet you can hear your own breathing, and the hull ticks in the cold. The air tastes of plastic and filters. The access airlock leads back down the ramp to the hangar.
+      day: |
+        Tight and curved, built for six, this deck holds a briefing table bolted down with six strapped chairs around it. A terminal in the table glows with expedition data cleared for the crew. The air is dry and recycled, tasting faintly of new plastic, and the hull ticks now and then as it settles. The airlock leads back down the ramp to the Hangar.
+      night: |
+        Lit only by the terminal, a pale square among six strapped chairs, the deck is quiet enough to hear your own breathing. The hull ticks in the cold, and the air still tastes of plastic and filters. The airlock leads back down the ramp to the Hangar.
     exits:
       down: { to: loc_peregrine_hangar, minutes: 2 }
     details:

@@ -13,8 +13,10 @@ locations:
       fallback: You study it for a long while, but without more data it stays a guess.
       takes: false
     description:
-      day: The Orison Listening Room is cramped, lined with receiving consoles, half of them dark and the rest flickering with fault codes. A rack of recording drives hums beside a desk where the maintenance logs lie in a binder swollen with damp. Through the wide window the antenna structure rises into the cloud, its cables groaning faintly in the wind. Every few minutes a speaker gives out the same short pattern of tones, and then falls silent. The stairs lead down the steep route to the Ridge Shelter.
-      night: At night the Orison Listening Room glows only with the fault codes on the consoles and the small lights of the drive rack. The antenna outside is a black shape against a blacker sky, and its cables groan in the wind. The binder of logs lies on the desk where it was left. Every few minutes the speaker plays the same short pattern of tones into the dark, and then goes quiet again. The stairs lead down to the Ridge Shelter.
+      day: |
+        Cramped and lined with receiving consoles, half dark and the rest flickering fault codes, this room hums with a rack of recording drives beside a desk where the maintenance logs lie in a damp-swollen binder. Through the wide window the antenna rises into cloud, cables groaning. A speaker gives the same short pattern of tones, then silence. Stairs lead down the steep route to [Ridge Shelter].
+      night: |
+        Only fault codes and the drive rack's small lights light this room. The antenna outside is a black shape against black sky, its cables groaning in the wind. The logs lie in their binder where they were left. Every few minutes the speaker plays its pattern of tones into the dark, then falls quiet. The stairs lead down to Ridge Shelter.
     exits:
       down: { to: loc_ridge_shelter, minutes: 12 }
     details:
