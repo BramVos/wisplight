@@ -29,6 +29,15 @@ contextBridge.exposeInMainWorld('wisplight', {
   logSize: use('engine:log-size'),
   exportLog: use('engine:export-log'),
   exportChronicle: use('engine:export-chronicle'),
+  // The saves (M10.20): continue a world, load one, name one, and a save as a file.
+  saves: {
+    list: use('engine:saves'),
+    continueGame: use('engine:continue'),
+    load: use('engine:load-save'),
+    name: use('engine:name-save'),
+    exportSave: use('engine:export-save'),
+    importSave: use('engine:import-save'),
+  },
   activity: () => ipcRenderer.send('engine:activity'),
   hold: (on: boolean) => ipcRenderer.send('engine:hold', on),
   // The game hears when the content changed under it (the editor saved, or a file changed).

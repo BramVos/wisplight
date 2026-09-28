@@ -1,4 +1,4 @@
-import type { CreationData, DiffLine, DraftChange, Edit, EditorView, EntityKind, JournalPage, MapPalette, Output, PaletteView, Raw, SimReport, Status, WorldInfo } from '../../engine'
+import type { CreationData, DiffLine, DraftChange, Edit, EditorView, EntityKind, JournalPage, MapPalette, Output, PaletteView, Raw, SaveAbout, SaveData, SimReport, Status, WorldInfo } from '../../engine'
 import { designUpdate, type DesignChange, type DesignLog } from '../../engine/designlog'
 import type { DevSection, DevView } from '../../engine/dev'
 import type { Advice, TrialResult, TrialVerdict } from '../../node/ai/advisor'
@@ -105,6 +105,30 @@ export interface EditorDraft {
 }
 
 /** The editor (M8): the desktop app writes the files; the browser preview keeps them in memory. */
+/** A save as the world picker and the load screen show it (M10.20). */
+export interface SaveEntry {
+  id: number
+  slot: string
+  createdAt: string
+  gameMinutes: number
+  world: string
+  name?: string
+  about?: SaveAbout
+}
+
+/** The saves (M10.20): continue a world, load one, name one, and one as a file to keep or bring back. */
+export interface SavesBridge {
+  list(): Promise<SaveEntry[]>
+  /** The last save of a world (its folder), exactly where the game stopped. */
+  continueGame(world?: string): Promise<Reply>
+  load(id: number): Promise<Reply>
+  name(id: number, name?: string): Promise<void>
+  /** One save as a file; without an id, the game in play, saved first. Where it went, or nothing. */
+  exportSave(id?: number): Promise<string | undefined>
+  /** A save file read, checked and put in the list; or why not; nothing when the player cancelled. */
+  importSave(): Promise<{ id?: number; problem?: string } | undefined>
+}
+
 export interface EditorBridge {
   open?(): Promise<void>
   worlds(): Promise<WorldInfo[]>
@@ -159,6 +183,8 @@ export interface EngineClient {
   exportLog?(scope?: LogScope): Promise<string | undefined>
   /** What happened in this game, as Markdown (M10.18): saved where the player says, or downloaded in the preview. */
   exportChronicle?(): Promise<string | undefined>
+  /** The saves (M10.20): in the desktop app, and in the preview with ?mock=1 (in memory). */
+  saves?: SavesBridge
   activity(): void
   /** Stops the real-time clock while a menu is open. */
   hold(on: boolean): void
@@ -193,7 +219,7 @@ const IDLE_PAUSE_MS = 60_000
 export async function createClient(): Promise<EngineClient> {
   if (window.wisplight) return window.wisplight
 
-  const { DEFAULT_WORLD, Engine, filesOfWorld, loadContent, MockLlm, worldsIn } = await import('../../engine')
+  const { DEFAULT_WORLD, Engine, filesOfWorld, loadContent, MockLlm, readSaveFile, saveAbout, saveFileName, saveFileText, worldsIn } = await import('../../engine')
   // Every world's files; a new game picks one of them (M8).
   const all = contentFiles()
   const worlds = worldsIn(all)
@@ -226,6 +252,70 @@ export async function createClient(): Promise<EngineClient> {
     if (engine.modelsWaiting > 0) void engine.runModels()
   }
 
+  // The preview's saves (M10.20, ?mock=1): in memory, gone with the tab.
+  const kept: (SaveEntry & { data: SaveData })[] = []
+  const keep = (name?: string): number => {
+    const id = kept.length + 1
+    kept.unshift({ id, slot: 'manual', createdAt: new Date().toISOString(), gameMinutes: engine.world.now, world: content.world.id, ...(name ? { name } : {}), about: saveAbout(engine.world), data: { ...engine.save(), content: engine.saved().content } })
+    return id
+  }
+  const into = async (data: SaveData): Promise<Reply> => {
+    const world = worlds.find((w) => w.id === data.world)
+    if (!world) return { outputs: [{ kind: 'error', text: 'That world is not here.' }], status: status() }
+    if (world.folder !== folder) {
+      folder = world.folder
+      files = filesOfWorld(all, folder)
+      content = loadContent(files)
+    }
+    engine = await Engine.restore(content, data, llm)
+    engine.builder = true
+    return { outputs: [{ kind: 'system', text: 'Game loaded.' }, ...(await engine.handle('look'))], status: status() }
+  }
+  const memorySaves: SavesBridge = {
+    list: async () => kept.map(({ data: _, ...entry }) => entry),
+    continueGame: async (world) => {
+      const id = worlds.find((w) => w.folder === world)?.id
+      const last = kept.find((k) => !id || k.world === id)
+      return last ? into(last.data) : { outputs: [{ kind: 'error', text: 'There is no saved game yet.' }], status: status() }
+    },
+    load: async (id) => {
+      const save = kept.find((k) => k.id === id)
+      return save ? into(save.data) : { outputs: [{ kind: 'error', text: 'That save is gone.' }], status: status() }
+    },
+    name: async (id, name) => {
+      const save = kept.find((k) => k.id === id)
+      if (save) {
+        if (name?.trim()) save.name = name.trim().slice(0, 80)
+        else delete save.name
+      }
+    },
+    exportSave: async (id) => {
+      const target = id ?? keep()
+      const save = kept.find((k) => k.id === target)
+      if (!save) return undefined
+      const played = await Engine.restore(loadContent(filesOfWorld(all, worlds.find((w) => w.id === save.world)?.folder ?? folder)), save.data)
+      const text = saveFileText({ format: 'wisplight-save', version: 1, world: save.world, worldName: played.content.world.name, ...(save.data.content ? { content: save.data.content } : {}), ...(save.name ? { name: save.name } : {}), saved: save.createdAt, about: save.about ?? saveAbout(played.world), chronicle: played.chronicleMarkdown(), save: played.save() })
+      return download(saveFileName(worlds.find((w) => w.id === save.world)?.folder ?? folder, save.about ?? saveAbout(played.world), new Date(save.createdAt)), text, 'application/json')
+    },
+    importSave: () =>
+      new Promise((resolve) => {
+        const input = document.createElement('input')
+        input.type = 'file'
+        input.accept = '.wisplight,application/json'
+        input.onchange = async () => {
+          const file = input.files?.[0]
+          if (!file) return resolve(undefined)
+          const read = readSaveFile(await file.text())
+          if ('problem' in read) return resolve({ problem: read.problem })
+          if (!worlds.some((w) => w.id === read.file.world)) return resolve({ problem: `This save belongs to the world "${read.file.worldName}", which is not here.` })
+          const id = kept.length + 1
+          kept.unshift({ id, slot: 'manual', createdAt: new Date().toISOString(), gameMinutes: Number((read.file.save.state as { minutes?: number }).minutes ?? 0), world: read.file.world, name: file.name.replace(/\.wisplight$/i, '').slice(0, 80), about: read.file.about, data: read.file.save })
+          resolve({ id })
+        }
+        input.click()
+      }),
+  }
+
   setInterval(() => {
     if (paused()) return
     const reply = { outputs: engine.tick(1), status: status() }
@@ -246,6 +336,12 @@ export async function createClient(): Promise<EngineClient> {
     worlds: async () => worlds.map((w) => ({ ...w, current: w.folder === folder })),
     command: async (input) => {
       lastInput = Date.now()
+      // With ?mock=1 the preview keeps saves in memory (M10.20), so the load screen can be tried.
+      const named = demo && !engine.state.talk ? /^(?:save|bewaar)(?:\s+(.{1,80}))?$/i.exec(input.trim()) : undefined
+      if (named) {
+        keep(named[1]?.trim())
+        return { outputs: [{ kind: 'system', text: named[1] ? `Game saved as "${named[1].trim()}".` : 'Game saved.' }], status: status() }
+      }
       if (/^(save|load|bewaar|laad|continue|verder|log|logboek)(\s+(\d+|export))?$/i.test(input.trim())) {
         return { outputs: [{ kind: 'system', text: 'Saving, loading and the game log work in the desktop app.' }], status: status() }
       }
@@ -261,6 +357,7 @@ export async function createClient(): Promise<EngineClient> {
     creation: async () => engine.creationData(),
     end: async () => ({ chronicle: engine.chronicle() }),
     exportChronicle: async () => download('wisplight-chronicle.md', engine.chronicleMarkdown(), 'text/markdown'),
+    ...(demo ? { saves: memorySaves } : {}),
     activity: () => {
       lastInput = Date.now()
     },

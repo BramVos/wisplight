@@ -113,7 +113,11 @@
     "lookBack": "Look back",
     "exportLog": "Export log",
     "chronicle": "Chronicle",
-    "editor": "Editor"
+    "editor": "Editor",
+    "continue": "Continue",
+    "newGame": "New game",
+    "load": "Load a save...",
+    "exportSave": "Export this save..."
   },
   "talk": {
     "thinking": "{name} thinks it over.",

@@ -1,5 +1,19 @@
 # Changelog
 
+## M10.20 deel: het wereldboek en de saves, 28 september 2026
+
+- **Overgeslagen stappen in het wereldboek.** "How this world was made" zegt welke stappen van de gids zijn overgeslagen, afgewezen of nooit opgepakt, met de neutrale standaard die de wereld daarvoor heeft. Een ontwerplogboek zonder stappen zegt daar niets over.
+- **Het wereldboek als atlaspagina.** `npm run worldbook base --html` schrijft `out/worldbook/base.html`: dezelfde tekst als WORLDBOOK.md met een kopregel, een inhoudsopgave, de hele streek in het palet van de wereld, plaatjes bij de plekken, een portretgalerij, munten en kalender als kaartjes en het palet als kleurvakjes, licht en donker. Het boek neemt de nieuwste afbeelding van een plek, ook als die bij een oudere beschrijving hoort. De knop in de editor geeft nog de kale pagina, tot jij het voorbeeld van de Nethermarch goedkeurt.
+- **Doorgaan en laden op het hoofdscherm.** Heeft een wereld een save, dan toont de wereldkeuze eerst "[Continue]" met wie, waar en de speldag van de laatste save, dan "[New game]", dat eerst vraagt of je echt opnieuw begint, en "[Load a save...]". Het laadscherm toont de saves die je zelf maakte en de laatste automatische, elk met die gegevens. Het menu in het spel heeft "[Continue]", "[New game]", "[Load a save...]" en "[Export this save...]". De commando's werken zoals eerst.
+- **Een save als bestand.** "[Export...]" in het laadscherm en "[Export this save...]" in het menu schrijven een `.wisplight`-bestand, met wereld en contentversie, wie, waar en wanneer, de kroniek van het spel regel voor regel en de save zelf. "[Import a save...]" leest zo'n bestand, controleert het met zod en tegen de wereld, en zet het in de lijst onder de naam van het bestand.
+- **Saves met een naam.** `save <naam>` (niet midden in een gesprek) of "[Name...]" in het laadscherm. Een save met een naam ruimt het spel nooit op. De terminalclient kent `save export <pad>` en `load <pad>`.
+
+Testen: begin een spel, typ `save bij de kade`, loop verder en typ `save`, en open [Load a save...] in het menu. Kies [New game] en zie [Continue] bovenaan de wereld. Exporteer een save en importeer hem weer. Tests in `tests/m1020book.test.ts` (5) en `tests/m1020saves.test.ts` (3), alle 801 groen, drie simulaties, speeltests en build. De smoketest maakt nu ook een save met een naam en leest de lijst.
+
+Wat de editor en de kroniekverteller leerden: geen nieuwe velden in de content.
+
+Nog niet: een save verwijderen kan niet vanuit het laadscherm. In de webversie (`?mock=1`) staan saves alleen in het geheugen.
+
 ## M10.19 Veiligheid van de AI-laag, 28 september 2026
 
 - **Harde grenzen in elke aanroep.** Elke aanroep aan een model krijgt vooraan in het systeemdeel de harde grenzen van PEGI 18 (niets seksueels met minderjarigen, geen haat tegen echte groepen, romantiek blijft niet-expliciet) en de regel dat wereldtekst beschrijving is en nooit de regels verandert. Dat gebeurt op één plek, in de gateway, dus ook voor de schrijfhulp en de wereldstappen van de editor.

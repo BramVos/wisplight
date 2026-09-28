@@ -1,9 +1,10 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import type { Output } from '../../engine'
 import { StaleBanner } from './StaleBanner'
-import { createClient, type AiStatus, type CreationData, type EngineClient, type JournalPage, type Reply, type RoleLight, type WorldChoice } from './client'
+import { createClient, type AiStatus, type CreationData, type EngineClient, type JournalPage, type Reply, type RoleLight, type SaveEntry, type WorldChoice } from './client'
 import { CharacterCreation } from './CharacterCreation'
 import { WorldPicker } from './WorldPicker'
+import { SavesView } from './SavesView'
 import { FightPanel } from './FightPanel'
 import { EndView } from './EndView'
 import { LogExport } from './LogExport'
@@ -110,6 +111,10 @@ export function App() {
   const [creation, setCreation] = useState<CreationData>()
   // More than one world in the content folder (M8): a new game asks which.
   const [worlds, setWorlds] = useState<WorldChoice[]>()
+  // The saves (M10.20): for [Continue] and the load screen, of one world (its folder) or of all ('*').
+  const [saves, setSaves] = useState<SaveEntry[]>([])
+  const [loading, setLoading] = useState<string>()
+  const [pickerNote, setPickerNote] = useState<string>()
   const logRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -118,10 +123,13 @@ export function App() {
     createClient()
       .then(async (created) => {
         const choices = await created.worlds()
+        const kept = (await created.saves?.list()) ?? []
         if (cancelled) return
-        if (choices.length > 1) {
+        // One world with a save still asks (M10.20): continue it, start anew or load another.
+        if (choices.length > 1 || kept.length) {
           setClient(created)
           setWorlds(choices)
+          setSaves(kept)
           return
         }
         await begin(created)
@@ -131,6 +139,20 @@ export function App() {
       cancelled = true
     }
   }, [])
+
+  /** Into a game that was saved (M10.20): continued or loaded, from the world picker, the load screen or the menu. */
+  function enter(target: EngineClient, reply: Reply) {
+    setClient(target)
+    setWorlds(undefined)
+    setLoading(undefined)
+    setPickerNote(undefined)
+    setLines(reply.outputs.map(withId))
+    setStatus(reply.status)
+  }
+
+  async function refreshSaves(target: EngineClient) {
+    setSaves((await target.saves?.list()) ?? [])
+  }
 
   /** Starts a new game in a world, and opens the character screen when the world has rules (FO, chapter 11). */
   async function begin(target: EngineClient, world?: string) {
@@ -167,8 +189,8 @@ export function App() {
 
   // Menus stop the clock (FO, chapter 3); the dev menu too, so looking changes nothing; and a moment's card.
   useEffect(() => {
-    client?.hold(Boolean(settings) || ending || exporting || typing || Boolean(creation) || Boolean(journal) || Boolean(worlds) || dev || moments.length > 0)
-  }, [client, settings, ending, exporting, typing, creation, journal, worlds, dev, moments.length])
+    client?.hold(Boolean(settings) || ending || exporting || typing || Boolean(creation) || Boolean(journal) || Boolean(worlds) || Boolean(loading) || dev || moments.length > 0)
+  }, [client, settings, ending, exporting, typing, creation, journal, worlds, loading, dev, moments.length])
 
   // Sound (M10.15): what the engine says is to be heard here; silent in menus and while the game waits, and a bell
   // only when it rings after the game has loaded. The browser lets it start at the first key or click.
@@ -535,6 +557,42 @@ export function App() {
           {journalCount === 0 && <p className="muted">{t('app.journal.empty')}</p>}
         </section>
         <section>
+          {client?.saves && (
+            <>
+              <button type="button" className="link" onClick={() => void client.saves!.continueGame().then((reply) => enter(client, reply), (reason: unknown) => setError(String(reason)))}>
+                [{t('app.menu.continue')}]
+              </button>{' '}
+              <button
+                type="button"
+                className="link"
+                onClick={() =>
+                  void (async () => {
+                    await refreshSaves(client)
+                    setWorlds(await client.worlds())
+                  })()
+                }
+              >
+                [{t('app.menu.newGame')}]
+              </button>{' '}
+              <button
+                type="button"
+                className="link"
+                onClick={() =>
+                  void (async () => {
+                    await refreshSaves(client)
+                    setWorlds(await client.worlds())
+                    setLoading('*')
+                  })()
+                }
+              >
+                [{t('app.menu.load')}]
+              </button>{' '}
+              <button type="button" className="link" onClick={() => void client.saves!.exportSave().catch((reason: unknown) => setError(String(reason)))}>
+                [{t('app.menu.exportSave')}]
+              </button>
+              <br />
+            </>
+          )}
           <button type="button" className="link" onClick={() => setSettings('ai')}>
             [{t('app.menu.settings')}]
           </button>{' '}
@@ -640,7 +698,42 @@ export function App() {
         </label>
       </footer>
 
-      {worlds && client && <WorldPicker worlds={worlds} onPick={(folder) => void begin(client, folder).catch((reason: unknown) => setError(String(reason)))} />}
+      {worlds && client && !loading && (
+        <WorldPicker
+          worlds={worlds}
+          saves={saves}
+          onPick={(folder) => void begin(client, folder).catch((reason: unknown) => setError(String(reason)))}
+          {...(client.saves
+            ? {
+                onContinue: (folder: string) => void client.saves!.continueGame(folder).then((reply) => enter(client, reply), (reason: unknown) => setError(String(reason))),
+                onLoad: (folder: string) => setLoading(folder),
+                onImport: () =>
+                  void client.saves!.importSave().then(async (done) => {
+                    if (!done) return
+                    await refreshSaves(client)
+                    setPickerNote(done.problem ?? t('worlds.picker.imported', { name: (await client.saves!.list()).find((s) => s.id === done.id)?.name ?? '' }))
+                  }),
+              }
+            : {})}
+          {...(pickerNote ? { note: pickerNote } : {})}
+          {...(lines.length ? { onClose: () => setWorlds(undefined) } : {})}
+        />
+      )}
+      {loading && client?.saves && (
+        <SavesView
+          bridge={client.saves}
+          saves={saves}
+          worlds={worlds ?? []}
+          {...(loading !== '*' ? { world: loading } : {})}
+          onLoaded={(reply) => enter(client, reply)}
+          onChanged={() => void refreshSaves(client)}
+          onClose={() => {
+            setLoading(undefined)
+            // Opened from the menu: back to the game, not to the world picker.
+            if (lines.length) setWorlds(undefined)
+          }}
+        />
+      )}
       {creation && (
         <CharacterCreation
           data={creation}

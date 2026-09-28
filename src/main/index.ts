@@ -2,9 +2,9 @@ import { app, BrowserWindow, dialog, ipcMain, safeStorage, shell } from 'electro
 import { randomUUID } from 'node:crypto'
 import { appendFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, watch, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { dirname, join } from 'node:path'
+import { basename, dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { ContentError, draftRequest, draftResult, Engine, worldBookHtml, ENTITY_KINDS, lineDiff, MapPaletteSchema, paletteRequest, paletteView, readDraft, readPalette, readVoice, savePalette, saveVoice, voiceRequest, voiceYaml, worldStepRequest, enhanceRequest, readEnhance, type Content, type Edit, type EntityKind, type FileChange, type CheckpointedSave, type MapPalette, type Output, type SaveData } from '../engine'
+import { ContentError, draftRequest, readSaveFile, saveAbout, saveFileName, saveFileText, SAVE_FILE_EXTENSION, type SaveFile, draftResult, Engine, worldBookHtml, ENTITY_KINDS, lineDiff, MapPaletteSchema, paletteRequest, paletteView, readDraft, readPalette, readVoice, savePalette, saveVoice, voiceRequest, voiceYaml, worldStepRequest, enhanceRequest, readEnhance, type Content, type Edit, type EntityKind, type FileChange, type CheckpointedSave, type MapPalette, type Output, type SaveData } from '../engine'
 import { designUpdate, readDesignChange } from '../engine/designlog'
 import { ContentEditor } from '../node/editor'
 import { checkInput } from './inputs'
@@ -218,6 +218,11 @@ function snapshot(): CheckpointedSave {
   return { ...engine!.saved(), session: { ...where, logId: journal().position(where) } }
 }
 
+/** Saves the game in a slot, with who, where and the day (M10.20), and a name if the player gave one. */
+function keep(slot: string, name?: string): number {
+  return store().save(slot, snapshot(), 5, { about: saveAbout(engine!.world), ...(name ? { name } : {}) })
+}
+
 /** A save as a whole, its tail played (M9.3): a new stranger or a legend starts from the world as it was. */
 async function whole(data: SaveData): Promise<SaveData> {
   return data.tail?.length ? (await Engine.restore(content!, data)).save() : data
@@ -294,6 +299,93 @@ handle('engine:start', async (_event, world: unknown) => {
   return reply(outputs)
 })
 
+/** Carries on exactly where a save's game stopped: the save plus what the game log recorded after it. */
+async function continueFrom(data: SaveData | undefined) {
+  if (!data) return reply([{ kind: 'error', text: 'There is no saved game yet.' }])
+  const gone = await useWorldOf(data)
+  if (gone) return reply([{ kind: 'error', text: gone }])
+  if (!data.session) {
+    follow(await Engine.restore(content!, data, ai?.client()), journal().start(randomUUID()))
+  } else {
+    // The last save plus everything the log recorded after it: exactly where the game stopped.
+    const tail = journal().tail(data.session, data.session.logId)
+    const where = { game: data.session.game, branch: data.session.branch }
+    follow(await Engine.resume(content!, data, tail, ai?.client()), where)
+    journal().append(where, engine!.world.now, 'note', 'Continued')
+  }
+  return reply([system('You pick up where you left off.'), ...(await engine!.handle('look'))])
+}
+
+/** Loads a save as it was saved; what happened after it stays in the game log, on a branch of its own. */
+async function loadFrom(data: (SaveData & { createdAt?: string }) | undefined) {
+  if (!data) return reply([{ kind: 'error', text: 'There is no saved game yet.' }])
+  const gone = await useWorldOf(data)
+  if (gone) return reply([{ kind: 'error', text: gone }])
+  const loaded = await Engine.restore(content!, data, ai?.client())
+  if (!data.session) {
+    follow(loaded, journal().start(randomUUID()))
+  } else {
+    const from = { game: data.session.game, branch: data.session.branch }
+    // Anything that happened after this save stays in the log, on its own branch.
+    const where = journal().position(from) > data.session.logId ? journal().fork(from, data.session.logId) : from
+    follow(loaded, where)
+    journal().append(where, loaded.world.now, 'note', `Loaded the save of ${new Date(data.createdAt ?? Date.now()).toLocaleString('en-GB')}. What happened after it stays in the log.`)
+    if (where !== from) keep('auto')
+  }
+  return reply([system('Game loaded.'), ...(await engine!.handle('look'))])
+}
+
+// The saves (M10.20): the list for the world picker and the load screen, continue a world, load one, name one,
+// and one save as a file to keep or bring back.
+handle('engine:saves', () => store().list().slice(0, 200))
+handle('engine:continue', async (_event, world: unknown) => {
+  await setup()
+  const id = typeof world === 'string' && world ? (await listWorlds(contentDir())).find((w) => w.folder === world)?.id : undefined
+  return continueFrom(id ? store().latest(id) : store().latest())
+})
+handle('engine:load-save', async (_event, id: unknown) => {
+  await setup()
+  return loadFrom(store().loadId(Number(id)))
+})
+handle('engine:name-save', (_event, id: unknown, name: unknown) => store().rename(Number(id), typeof name === 'string' ? name : undefined))
+handle('engine:export-save', async (_event, id: unknown) => {
+  await setup()
+  // The game in play is saved first, so what is exported is what the player sees now.
+  const saveId = id === undefined || id === null ? (engine ? keep('manual') : undefined) : Number(id)
+  const row = saveId === undefined ? undefined : store().list().find((s) => s.id === saveId)
+  const data = saveId === undefined ? undefined : store().loadId(saveId)
+  if (!row || !data) return undefined
+  const folder = (await listWorlds(contentDir())).find((w) => w.id === data.world)?.folder
+  if (folder === undefined) return undefined
+  const saved = await worldContent(folder)
+  const played = await Engine.restore(saved, data)
+  const about = row.about ?? saveAbout(played.world)
+  const result = await dialog.showSaveDialog({ title: 'Export this save', defaultPath: join(app.getPath('documents'), saveFileName(folder, about, new Date(row.createdAt))), filters: [{ name: 'Wisplight save', extensions: [SAVE_FILE_EXTENSION] }] })
+  if (result.canceled || !result.filePath) return undefined
+  const file: SaveFile = { format: 'wisplight-save', version: 1, world: data.world, worldName: saved.world.name, ...(data.content ? { content: data.content } : {}), ...(row.name ? { name: row.name } : {}), saved: row.createdAt, about, chronicle: played.chronicleMarkdown(), save: played.save() }
+  writeFileSync(result.filePath, saveFileText(file), 'utf8')
+  return result.filePath
+})
+handle('engine:import-save', async () => {
+  await setup()
+  const chosen = await dialog.showOpenDialog({ title: 'Import a save', properties: ['openFile'], filters: [{ name: 'Wisplight save', extensions: [SAVE_FILE_EXTENSION] }] })
+  const path = chosen.canceled ? undefined : chosen.filePaths[0]
+  if (!path) return undefined
+  const read = readSaveFile(readFileSync(path, 'utf8'))
+  if ('problem' in read) return { problem: read.problem }
+  const world = (await listWorlds(contentDir())).find((w) => w.id === read.file.world)
+  if (!world) return { problem: `This save belongs to the world "${read.file.worldName}", which is not in the content folder.` }
+  // It must load: newer content loads it as an old save loads, with its tombstones.
+  try {
+    await Engine.restore(await worldContent(world.folder), read.file.save)
+  } catch (error) {
+    return { problem: `This save does not load in ${world.name}: ${error instanceof Error ? error.message : String(error)}` }
+  }
+  const name = basename(path).replace(/\.wisplight$/i, '').slice(0, 80)
+  const id = store().save('manual', read.file.save, 5, { name, about: read.file.about })
+  return { id }
+})
+
 handle('engine:command', async (_event, input: unknown) => {
   if (!engine || !content) throw new Error('Engine not started')
   lastInput = Date.now()
@@ -303,27 +395,14 @@ handle('engine:command', async (_event, input: unknown) => {
   const command = /^(save|bewaar|continue|verder|load|laad|log|logboek)(?:\s+(\d+|export))?$/i.exec(text)
   const verb = command?.[1]?.toLowerCase()
   const args = command?.[2] ? [command[2].toLowerCase()] : []
-  if (verb === 'save' || verb === 'bewaar') {
-    journal().append(ensureSession(), engine.world.now, 'note', 'Game saved')
-    store().save('manual', snapshot())
-    return reply([system('Game saved.')])
+  // SAVE with a name (M10.20), outside a talk: "save me!" said to someone is something to say.
+  const named = !engine.state.talk ? /^(?:save|bewaar)\s+(?!export\b|\d+$)(.{1,80})$/i.exec(text)?.[1]?.trim() : undefined
+  if (verb === 'save' || verb === 'bewaar' || named) {
+    journal().append(ensureSession(), engine.world.now, 'note', named ? `Game saved as "${named}"` : 'Game saved')
+    keep('manual', named)
+    return reply([system(named ? `Game saved as "${named}".` : 'Game saved.')])
   }
-  if (verb === 'continue' || verb === 'verder') {
-    const data = store().latest()
-    if (!data) return reply([{ kind: 'error', text: 'There is no saved game yet.' }])
-    const gone = await useWorldOf(data)
-    if (gone) return reply([{ kind: 'error', text: gone }])
-    if (!data.session) {
-      follow(await Engine.restore(content, data, ai?.client()), journal().start(randomUUID()))
-    } else {
-      // The last save plus everything the log recorded after it: exactly where the game stopped.
-      const tail = journal().tail(data.session, data.session.logId)
-      const where = { game: data.session.game, branch: data.session.branch }
-      follow(await Engine.resume(content, data, tail, ai?.client()), where)
-      journal().append(where, engine.world.now, 'note', 'Continued')
-    }
-    return reply([system('You pick up where you left off.'), ...(await engine.handle('look'))])
-  }
+  if (verb === 'continue' || verb === 'verder') return continueFrom(store().latest())
   if (/^(years later|new legend|jaren later)$/i.test(text)) {
     // A new game in the same world, with the old one as legend (M9.1).
     const data = store().latest()
@@ -346,24 +425,7 @@ handle('engine:command', async (_event, input: unknown) => {
     follow(next, journal().start(randomUUID()))
     return reply(outputs)
   }
-  if (verb === 'load' || verb === 'laad') {
-    const data = store().load('manual') ?? store().load('auto')
-    if (!data) return reply([{ kind: 'error', text: 'There is no saved game yet.' }])
-    const gone = await useWorldOf(data)
-    if (gone) return reply([{ kind: 'error', text: gone }])
-    const loaded = await Engine.restore(content, data, ai?.client())
-    if (!data.session) {
-      follow(loaded, journal().start(randomUUID()))
-    } else {
-      const from = { game: data.session.game, branch: data.session.branch }
-      // Anything that happened after this save stays in the log, on its own branch.
-      const where = journal().position(from) > data.session.logId ? journal().fork(from, data.session.logId) : from
-      follow(loaded, where)
-      journal().append(where, loaded.world.now, 'note', `Loaded the save of ${new Date((data as { createdAt?: string }).createdAt ?? Date.now()).toLocaleString('en-GB')}. What happened after it stays in the log.`)
-      if (where !== from) store().save('auto', snapshot())
-    }
-    return reply([system('Game loaded.'), ...(await engine.handle('look'))])
-  }
+  if (verb === 'load' || verb === 'laad') return loadFrom(store().load('manual') ?? store().load('auto'))
   if (verb === 'log' || verb === 'logboek') {
     const where = ensureSession()
     if (args[0] === 'export') {
@@ -382,7 +444,7 @@ handle('engine:command', async (_event, input: unknown) => {
   // After a journey the game saves (FO, chapter 18): an hour or more of the road is not lost.
   if (!smoke && engine.world.now - before >= SAVE_AFTER_MINUTES) {
     minutesSinceSave = 0
-    store().save('auto', snapshot())
+    keep('auto')
   }
   return reply(outputs)
 })
@@ -847,7 +909,7 @@ setInterval(() => {
   window.webContents.send('engine:tick', reply(outputs))
   if (!smoke && ++minutesSinceSave >= AUTOSAVE_EVERY) {
     minutesSinceSave = 0
-    store().save('auto', snapshot())
+    keep('auto')
   }
 }, 1000)
 
@@ -926,7 +988,11 @@ function createWindow(): void {
           `(async () => {
             const node = typeof require !== 'undefined' || typeof process !== 'undefined'
             const refused = await window.wisplight.start('../../etc').then(() => false, (e) => /Refused input on engine:start/.test(String(e)))
-            return (node ? 'NODE IN THE PAGE' : 'no node') + ', ' + (refused ? 'a path for a world refused' : 'A PATH FOR A WORLD ACCEPTED')
+            // A save with a name, and the list the world picker shows (M10.20).
+            await window.wisplight.command('save smoke')
+            const [kept] = await window.wisplight.saves.list()
+            const saves = kept ? 'saved "' + kept.name + '" at ' + (kept.about ? kept.about.place : 'NOWHERE') : 'NO SAVE LISTED'
+            return (node ? 'NODE IN THE PAGE' : 'no node') + ', ' + (refused ? 'a path for a world refused' : 'A PATH FOR A WORLD ACCEPTED') + ', ' + saves
           })()`,
         )
         smokeSay(`[smoke] sandbox ${(window!.webContents as unknown as { getLastWebPreferences?: () => { sandbox?: boolean } | null }).getLastWebPreferences?.()?.sandbox ? 'on' : 'OFF'}, ${gate}`)
@@ -994,6 +1060,6 @@ void app.whenReady().then(async () => {
 })
 
 app.on('window-all-closed', () => {
-  if (engine && session && !smoke) store().save('auto', snapshot())
+  if (engine && session && !smoke) keep('auto')
   if (process.platform !== 'darwin') app.quit()
 })

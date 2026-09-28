@@ -3,6 +3,32 @@
     "label": "Choose a world",
     "title": "Where does your story begin?",
     "hint": "Each world has its own people, places and story. A saved game opens in its own world.",
-    "begin": "Begin here"
+    "begin": "Begin here",
+    "continue": "Continue",
+    "newGame": "New game",
+    "load": "Load a save...",
+    "import": "Import a save...",
+    "confirm": "There is a saved game in this world. A new game leaves your saves as they are.",
+    "confirmYes": "Start a new game",
+    "cancel": "Cancel",
+    "imported": "Imported as \"{name}\".",
+    "back": "Back to the game"
+  },
+  "load": {
+    "label": "Load a save",
+    "title": "Load a save",
+    "in": "in {world}",
+    "manual": "Saved by hand",
+    "auto": "Saved on the way",
+    "saved": "saved {when}",
+    "load": "Load",
+    "export": "Export...",
+    "name": "Name...",
+    "setName": "Keep this name",
+    "namePlaceholder": "A name for this save",
+    "none": "No saves yet.",
+    "close": "Close",
+    "exported": "Saved as {path}",
+    "named": "A named save is kept however many saves come after it."
   }
 }
