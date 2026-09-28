@@ -5,7 +5,7 @@
 /** Ids are the caller's own. The chronicler shows the model short keys instead and maps them back. */
 export type Id = string
 
-export type CardKind = 'person' | 'place' | 'area' | 'lore' | 'request' | 'item' | 'realm' | 'signal' | 'event'
+export type CardKind = 'person' | 'place' | 'area' | 'lore' | 'request' | 'item' | 'realm' | 'signal' | 'event' | 'chance'
 
 /** Where a storyline stands, as the chronicler sees it: the caller can pace the world by it. */
 export type Phase = 'setup' | 'rising' | 'crisis' | 'resolution' | 'closed'
@@ -153,6 +153,12 @@ export interface ChronicleInput {
   verbs?: StepVerb[]
   /** Other storylines building up now, and how many came to a crisis this week (M8.3): the pace. */
   pace?: { building: { title: string; phase: Phase }[]; climaxes: number }
+  /** The player as the caller describes them (M10.5): what they can do, in words, no numbers. */
+  player?: Card
+  /** Situations that are there already in which a skill counts (M10.5), as cards of kind chance. */
+  chances?: Card[]
+  /** Templates of new objects a step place_prop may use (M10.5). */
+  props?: { id: Id; text: string }[]
 }
 
 // ---------------------------------------------------------------- what comes back, in the caller's ids

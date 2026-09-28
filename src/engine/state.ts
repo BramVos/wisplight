@@ -102,9 +102,10 @@ export interface AgreementTerms {
   facts?: string[]
   condition?: string
   delivered?: number
-  /** meet: from when, and who came. */
+  /** meet: from when, and who came; and a lock the one who comes opens there (M10.5: a smith called in). */
   at?: number
   came?: string[]
+  open?: string
   /** give: a thing or a sum, and the debt it pays; lend: the thing, which stays the lender's, and back by the due time. */
   item?: string
   amount?: number
@@ -408,6 +409,33 @@ export interface CraftProgress {
   made?: Record<string, number>
 }
 
+/**
+ * An object the chronicler placed (M10.5, place_prop): lasting world with a
+ * fixed id, an owner, what it holds, a place and a lock, and the storyline it
+ * belongs to. It follows its owner home and passes to an heir.
+ */
+export interface Prop {
+  id: string
+  template: string
+  name: string
+  location: string
+  owner?: string
+  line?: string
+  placed: number
+  lock?: { key: string; quality: 'crude' | 'common' | 'good' | 'fine' | 'masterwork'; material: 'wood' | 'iron' | 'brass' }
+  /** Money in it, from the owner's purse. */
+  money: number
+  /** What the owner believes is in it: a loss shows against this at the owner's fixed moment. */
+  expected: Record<string, number>
+  expectedMoney: number
+  /** The hour the owner looks in it. */
+  checks: number
+  /** The hint facts, in the owner's words. */
+  hints: string[]
+  /** When the owner found something missing. */
+  missed?: number
+}
+
 export interface PlayerState {
   /** Crafts the stranger works at (M10.5), by craft. */
   crafts?: Record<string, CraftProgress>
@@ -597,6 +625,11 @@ export interface GameState {
   wanted?: Record<string, { fine: number; since: number }>
   /** The player's companions (FO, chapter 13). */
   companions?: Companion[]
+  /** Objects the chronicler placed (M10.5), with the last id handed out. */
+  props?: { seq: number; list: Prop[] }
+  /** Existing chances the rules made visible (M10.5), by id, and when; and the news they put out, by area. */
+  chances?: Record<string, number>
+  chanceNews?: Record<string, string>
   /** Locks opened with their key, picked or broken (M10.3), or jammed by a bad pick (M10.5), by exit:<from>:<direction> or object:<location>/<object>. */
   locks?: Record<string, 'open' | 'broken' | 'jammed'>
   /** Conversation facts of today (M10.3): how many, and about whom. */

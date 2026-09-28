@@ -1,0 +1,22 @@
+# New objects the chronicler may place (M10.5; FO, chapter 11, "Gepland
+# (M10.5)"): first the locked chest. Only in its owner's home, where it fits;
+# what it holds comes from the list and the owner's purse, and the hints are
+# in the owner's words. How hard its lock is follows the lock's make.
+
+props:
+  - id: locked_chest
+    type: strongbox
+    name: "{owner}'s chest"
+    where: [private, shop]
+    lock: { quality: [common, good], material: [iron] }
+    items: [diary, letters]
+    max_items: 2
+    money: 0.3
+    check_hour: 21
+    hints:
+      - precise: "{owner} keeps {things} in a locked chest at {place}, and the key on {their} belt."
+        village: "{owner} keeps a chest under lock at {place}, they say."
+        far: "Someone keeps a locked chest."
+      - precise: "{owner} opens {their} chest every evening before bed, and counts what is in it."
+        village: "{owner} counts what is in {their} chest every night, they say."
+        far: "Someone who counts their things every night."

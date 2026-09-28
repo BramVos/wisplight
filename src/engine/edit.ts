@@ -38,6 +38,7 @@ export const LISTS = {
   newcomer: 'newcomers',
   project: 'projects',
   craft: 'crafts',
+  prop: 'props',
 } as const
 export type EntityKind = keyof typeof LISTS
 export const ENTITY_KINDS = Object.keys(LISTS) as EntityKind[]

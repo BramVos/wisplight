@@ -1,5 +1,34 @@
 # Changelog
 
+## M10.5 Ambacht en vaardigheid, 28 september 2026
+
+Deel A, ambachten en handelingen:
+- **Ambachten.** Zeven in de Nethermarch (bakken, smeden, malen, turfsteken, palingvissen, kuipen, stenen bakken) en twee op Skerrow (vissen, zalf maken). Bakken en smeden zijn helemaal uitgewerkt. Een recept noemt ambacht, techniek en moeilijkheid. USE OVEN BAKE is een proef: brood bij succes, het meel weg bij een misser.
+- **Groeien door te doen.** Novice, gezel, expert, meester. Een recept telt tot je het vijf keer goed deed, of zolang het moeilijker is dan je rang; hooguit vijf oefening per dag, en een flinke misser is ook een les. Gezel bij 10, expert bij 30 met een tweede techniek of een moeilijker recept, meester bij 100 met een meesterwerk: het feestbrood, of iets moeilijks van eigen hand voor iemand die erom vroeg.
+- **De werkplaats.** De oven is van Mirte. Zonder haar geen brood; met haar toestemming voor 2 duiten, vrienden gratis. Werk stopt als er iets tussenkomt, en over de helft is het materiaal bedorven.
+- **Een leermeester.** Een vakman die je vertrouwt, leert je zijn ambacht: een paar uur, vier oefening en een nieuwe techniek. Je bent daarna zijn leerling en mag die dag zijn werkplaats gebruiken, ook als hij er niet is.
+- **Een rang is meer dan een bonus.** Feestbrood en een slot smeden vragen expert, eigen werk verkoopt een tiende per rang beter, en het dorp hoort ervan (signaal craft_rank: de bakker denkt beter over je en heeft het in gedachten).
+- **De andere vaardigheden.** PICK (Thievery) op een slot, met een spijker of een mespunt; een slot is zo moeilijk als het gemaakt is, en donker en regen maken het erger. TREAT (Medicine) voor jezelf of een zieke. GATHER (Survival) waar de grond het geeft, en TRACK wie hier langskwam. SEARCH (Perception) vindt het begin van de droge rug bij de turfputten, of een vaatje olie op het strand van Skerrow. READ (Lore) leest het altaar, de waag, de put en de runen van de waystone.
+- **Busy Hands** werkt nu op ambachtswerk.
+
+Deel B, de kroniekschrijver:
+- Hij krijgt een kaart van de speler in woorden (klasse, vaardigheden vanaf getraind, ambachten) en de kansen die er al zijn in de plekken van de verhaallijn: een zieke, een kist op slot, oude letters, iets verborgens. Die maakt hij eerst zichtbaar.
+- Pas daarna plaatst hij met place_prop een gesloten kist, in het huis van iemand uit de verhaallijn. Het slot volgt het sjabloon, de inhoud komt uit een vaste lijst (dagboek, brieven) en een deel van de beurs van de eigenaar, en de hints zijn feiten in zijn woorden. Eén per verhaallijn, hooguit drie per speelweek.
+- Drie wegen naar de inhoud: zelf openen (stil, maar wie het ziet weet het), de smid laten komen (een afspraak; hij weet het en vertelt het verder), of de eigenaar overhalen (hij opent zelf en vertelt waarom, en jij belooft een wederdienst).
+- De kist is blijvende wereld: ze verhuist met de eigenaar en gaat naar een erfgenaam. Om negen uur 's avonds kijkt de eigenaar erin. Wat weg is merkt hij; wie het was weet hij alleen als iemand het zag. Een hint die niet meer klopt, krijgt in het dagboek "So it was then."
+- Zonder model zet de motor om de dag een kans in het nieuws van het gebied, als daar geen ander nieuws staat, en plaatst hij soms een kist bij een verhaallijn zonder kansen.
+
+Testen: in de bakkerstuin met Mirte erbij `use oven bake`, en SHEET toont je ambachten. Vraag Mirte "Could you teach me to bake?" als ze je mag. SEARCH bij de turfputten, READ ALTAR in de kapel, op Skerrow SEARCH op het strand en GATHER KELP bij de getijdenpoelen. PICK STRONGBOX bij Lubbert met een spijker op zak. Deel B zie je het best met een model; het scenario met Lubberts kist staat in de tests. Controles: `npm test` (566 tests), beide simulaties van 30 dagen, de uitspeelscripts, de rooktests en de editor (met de nieuwe lijsten Crafts en Props).
+
+Nog niet, en keuzes:
+- Kuipen heeft nog geen recept: er is geen werkbank en er zijn geen duigen.
+- Zelf openen is een daad en geen afspraak; de smid en de eigenaar zijn afspraken in het register.
+- Zonder model komen kansen alleen via het nieuws van het gebied, niet via een gedachte of een verzoek, en ze duwen ander nieuws niet weg.
+- Geld in een kist komt alleen uit de beurs van de eigenaar, niet van de nederzetting.
+- Een les duurt een paar uur, geen hele dag.
+
+Ontwerp: "Stand na M10.5" in het FO, hoofdstuk 11, met deze afwijkingen. Tests in `tests/m105.test.ts` (28).
+
 ## M10.4 Kleine verbeteringen, 28 september 2026
 
 Nieuw:

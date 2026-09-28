@@ -117,6 +117,7 @@ export const KIND_NAMES: Record<EntityKind, string> = {
   newcomer: 'Newcomers',
   project: 'Projects',
   craft: 'Crafts',
+  prop: 'Props the chronicler may place',
 }
 
 export function editorView(files: ContentFile[]): EditorView {

@@ -7,6 +7,7 @@ import { recordFact } from '../news'
 import { tieTo } from '../people'
 import { gainXp, playerCheck } from '../rules/player'
 import { weather } from '../weather'
+import { propById } from '../props'
 import type { World } from '../world'
 import { crime, whoNoticed } from './crime'
 import { householdOf, isSomeonesHome, ownerOf } from './ownership'
@@ -59,7 +60,7 @@ export function passLock(world: World, from: string, direction: string, lock: Pi
 }
 
 /** An object here by its name: a chest, a strongbox. */
-function objectHere(world: World, words: string): ObjectInstance | undefined {
+export function objectHere(world: World, words: string): ObjectInstance | undefined {
   const here = world.location(world.state.player.location)
   const w = words.toLowerCase().replace(/^(the|a|an)\s+/, '').trim()
   return here.objects.find((o) => {
@@ -89,7 +90,9 @@ export function openObject(world: World, words: string): Output[] {
     }
   }
   const inside = Object.entries(contentsOf(world, here, object)).filter(([, n]) => n > 0)
-  return [{ kind: 'text', text: inside.length ? `In ${theName(name)}: ${inside.map(([i, n]) => itemName(world.content, i, n)).join(', ')}.` : `${cap(theName(name))} is empty.` }]
+  const money = propById(world, object.id)?.money ?? 0
+  const list = [...inside.map(([i, n]) => itemName(world.content, i, n)), ...(money ? [world.money(money)] : [])]
+  return [{ kind: 'text', text: list.length ? `In ${theName(name)}: ${list.join(', ')}.` : `${cap(theName(name))} is empty.` }]
 }
 
 /**
@@ -103,17 +106,28 @@ export function takeFrom(world: World, thingWords: string, objectWords: string):
   const name = object.name ?? world.content.objectTypes.get(object.type)?.name ?? object.id
   if (object.lock && !lockOpen(world, objectLockId(here, object.id))) return [{ kind: 'error', text: `${cap(theName(name))} is locked.` }]
   const contents = contentsOf(world, here, object)
-  const item = matchItem(world.content, thingWords, Object.keys(contents).filter((i) => (contents[i] ?? 0) > 0))
-  if (!item) return [{ kind: 'error', text: `There is no ${thingWords} in ${theName(name)}.` }]
-  contents[item]! -= 1
-  world.state.player.inventory[item] = (world.state.player.inventory[item] ?? 0) + 1
-  const out: Output[] = [{ kind: 'text', text: `You take ${withArticle(itemName(world.content, item, 1))} from ${theName(name)}.` }]
+  // Money in a chest the chronicler placed (M10.5): from the owner's purse.
+  const prop = propById(world, object.id)
+  const money = prop && prop.money > 0 && /\b(money|coins?|purse|geld|munten)\b/i.test(thingWords) ? prop.money : 0
+  const item = money ? undefined : matchItem(world.content, thingWords, Object.keys(contents).filter((i) => (contents[i] ?? 0) > 0))
+  if (!item && !money) return [{ kind: 'error', text: `There is no ${thingWords} in ${theName(name)}.` }]
+  if (item) {
+    contents[item]! -= 1
+    world.state.player.inventory[item] = (world.state.player.inventory[item] ?? 0) + 1
+  } else {
+    prop!.money = 0
+    world.state.player.money += money
+  }
+  const out: Output[] = [{ kind: 'text', text: `You take ${item ? withArticle(itemName(world.content, item, 1)) : world.money(money)} from ${theName(name)}.` }]
   const owner = ownerOf(world, here, { object: object.id })
-  if (owner.kind === 'person' || owner.kind === 'household') {
+  // With the owner's leave (M10.5), it is no theft.
+  const leave = (world.state.player.permits?.[objectLockId(here, object.id)] ?? 0) > world.now
+  if (!leave && (owner.kind === 'person' || owner.kind === 'household')) {
     const seen = whoNoticed(world, here, [], owner.id ? { [owner.id]: 2 } : {})
     if (seen.noticed.length) out.push({ kind: 'narration', text: `${seen.noticed.map((w) => callName(world.npc(w))).join(' and ')} saw it.` })
     const who = owner.id ? callName(world.npc(owner.id)) : 'someone'
-    out.push(...crime(world, { kind: 'theft', place: here, ...(owner.id ? { victim: owner.id } : {}), item, value: world.basePrice(item), grave: false, witnesses: seen.noticed }, { title: `the stranger stole from ${who}`, precise: `The stranger took ${withArticle(itemName(world.content, item, 1))} from ${who}'s ${name}.`, village: `The stranger went into ${who}'s ${name}!`, far: 'A stranger has been stealing.' }))
+    const took = item ? withArticle(itemName(world.content, item, 1)) : world.money(money)
+    out.push(...crime(world, { kind: 'theft', place: here, ...(owner.id ? { victim: owner.id } : {}), ...(item ? { item } : {}), value: item ? world.basePrice(item) : money, grave: false, witnesses: seen.noticed }, { title: `the stranger stole from ${who}`, precise: `The stranger took ${took} from ${who}'s ${name}.`, village: `The stranger went into ${who}'s ${name}!`, far: 'A stranger has been stealing.' }))
   }
   return out
 }

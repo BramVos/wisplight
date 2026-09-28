@@ -1,3 +1,4 @@
+import { motorChance, propsHour } from './props'
 import { crowdsHour } from './growth/crowds'
 import { archiveDay } from './archive'
 import { agreementsTick } from './agreements'
@@ -78,6 +79,8 @@ function hourly(world: World): void {
   companionsHour(world)
   // Whoever holds a claim of the stranger and can see the truth, sees it (M10.3).
   claimsHour(world)
+  // Objects the chronicler placed: heirs, moving house, and the owner's look inside (M10.5).
+  propsHour(world)
   // What has been over for a month leaves the save for the game log (M9.1).
   if (minuteOfDay(world.now) === 4 * 60) {
     // Lines that took nothing new for two weeks sleep, or close when nothing is left open (M10.2).
@@ -85,6 +88,8 @@ function hourly(world: World): void {
     const archived = archiveDay(world)
     if (archived) world.archived.push(archived)
   }
+  // Without a model the rules make a chance near the stranger visible now and then (M10.5).
+  if (minuteOfDay(world.now) === 7 * 60 && !world.aiLive) motorChance(world)
   if (minuteOfDay(world.now) === 6 * 60) {
     debtsDue(world)
     homeDay(world)

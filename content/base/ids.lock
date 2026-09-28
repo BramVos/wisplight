@@ -23,7 +23,7 @@ ids:
   base/data/intentions.yaml:
     intention: [show_standing, keep_head_down, lend_money, ask_mediator, keep_away, have_it_out, ask_a_trader, let_it_be, warn_the_reeve, ask_the_stranger, welcome_back, look_away, lie_peace, grumble, send_for_more, hold_back, ask_the_stranger_to_fetch, sell_cheap, sit_on_it]
   base/data/items.yaml:
-    item: [lubberts_key, rye_grain, flour, rye_bread, peat, eel, smoked_eel, beer, hot_meal, apple, herbs, wool, yarn, sailcloth, lantern, lamp_oil, saw, knife, iron_nails, surveyors_chain, rope, spear, club, mace, hatchet, staff, short_bow, hunting_bow, hanger, sling, padded_coat, leather_jerkin, brigandine, chain_shirt, round_shield, milk, moon_water, cat_draught, measuring_chest, fen_charter_deed, toll_letter, aaltje_letter, barrel, clay, brick, apple_cake, feast_bread, bar_iron, iron_lock]
+    item: [lubberts_key, rye_grain, flour, rye_bread, peat, eel, smoked_eel, beer, hot_meal, apple, herbs, wool, yarn, sailcloth, lantern, lamp_oil, saw, knife, iron_nails, surveyors_chain, rope, spear, club, mace, hatchet, staff, short_bow, hunting_bow, hanger, sling, padded_coat, leather_jerkin, brigandine, chain_shirt, round_shield, milk, moon_water, cat_draught, measuring_chest, fen_charter_deed, toll_letter, aaltje_letter, barrel, clay, brick, apple_cake, feast_bread, bar_iron, iron_lock, diary, letters]
   base/data/news.yaml:
     news: [mill_before_winter]
   base/data/objects.yaml:
@@ -34,6 +34,8 @@ ids:
     plan: [dyke_breach, fen_closed, soldiers_come, war, dyke_leak, holleveen_survey, holleveen_stakes, the_haakman_counts]
   base/data/professions.yaml:
     profession: [baker, miller, peat_cutter, herbalist, eel_fisher, sister, schout, spinner, child, innkeeper, barmaid, grain_merchant, labourer, merchant, horse_miller, weighmaster, smith, pedlar, surveyor, mayor, notary, prior, dyke_reeve, miller_hand, witch, robber, spirit, cat, cooper, homemaker]
+  base/data/props.yaml:
+    prop: [locked_chest]
   base/data/quests.yaml:
     quest: [grey_cat_on_the_doorstep, the_vissers_to_safety, flour_for_veenhoek, the_surveyors_lights, what_the_haakman_wants, milk_for_the_kabouters, the_goat_riders_toll, the_white_womens_riddle, the_drainage_question, a_stall_at_the_market, the_honest_scale, the_brotherhoods_charter, the_apprentices_debt, a_boat_and_a_bride, the_bell_of_kloosterveen, the_road_to_graafhaven]
   base/data/topics.yaml:

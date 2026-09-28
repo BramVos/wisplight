@@ -3,6 +3,13 @@ import { describe, expect, it } from 'vitest'
 import { Engine } from '../src/engine'
 import { CRAFT_RANKS } from '../src/engine/content'
 import { craftBonus, craftProgress, interruption, MASTERED, recipeTier } from '../src/engine/crafts'
+import { buildInput } from '../src/engine/chronicler'
+import { startChroniclePlan } from '../src/engine/planning'
+import { chancesIn, motorChance, motorProp, placeProp } from '../src/engine/props'
+import { recordFact } from '../src/engine/news'
+import { requestRun } from '../src/engine/storylines'
+import { assignKeys, buildRequest } from '../src/chronicler'
+import { DEFAULT_LIMITS } from '../src/chronicler/types'
 import { relation } from '../src/engine/dialogue/relations'
 import { tieTo } from '../src/engine/people'
 import { lockDc } from '../src/engine/social/access'
@@ -433,5 +440,203 @@ describe('M10.5: the deeds of the other skills', () => {
       expect([...c.objectTypes.values()].flatMap((t) => t.affordances.filter((a) => a.craft && a.actors.includes('player'))).length, c.world.name).toBeGreaterThanOrEqual(min.recipes)
       expect(locations.some((l) => l.objects.some((o) => o.lock)), c.world.name).toBe(true)
     }
+  })
+})
+
+// Part B: the chronicler sees the stranger and the chances there are already,
+// and places one kind of new object where it fits: the locked chest.
+
+async function lubbertsLine(klass = 'create rascal changeling smuggler name=Tijl') {
+  const engine = new Engine(content, { seed: 7 })
+  await engine.handle(klass)
+  const world = engine.world
+  recordFact(world, { kind: 'quarrel', about: ['npc_lubbert', 'npc_dirck'], place: 'loc_waagdam_graanhandel', belang: 2, title: 'Lubbert and Dirck at odds', text: { precise: 'Lubbert and Dirck had words over the price of rye.', village: 'Lubbert and Dirck fell out over rye.', far: 'A quarrel over grain.' } })
+  const line = world.state.chronicle!.lines.find((l) => l.people.includes('npc_lubbert'))!
+  return { engine, world, line }
+}
+
+/** The chronicler's beat for a storyline: one step place_prop, as he would write it. */
+function placeByChronicler(engine: Engine, line: string, detail = 'locked_chest: diary'): string[] {
+  const problems: string[] = []
+  const ok = startChroniclePlan(engine.world, { line, name: "Lubbert's chest", phases: [], steps: [{ after: 0, verb: 'place_prop', who: ['npc_lubbert'], detail }] }, 1, problems)
+  expect(ok, problems.join('; ')).toBe(true)
+  engine.tick(60)
+  return problems
+}
+
+describe('M10.5: the chronicler sees the stranger and the chances', () => {
+  it('his overview has the stranger in words (class, skills of trained or more, crafts; no numbers), the chances there are already, and the templates', async () => {
+    const { engine, world, line } = await lubbertsLine()
+    craftProgress(world, 'baking').rank = 1
+    world.state.npcs['npc_dirck']!.sickUntil = world.now + 2 * DAY
+    const run = requestRun(world, 'night', [line.id])!
+    const input = buildInput(world, run)
+    expect(input.player?.text).toMatch(/^Tijl, a stranger: changeling rascal\. Trained in [a-z, ]*thievery/)
+    expect(input.player?.text).toMatch(/Crafts: journeyman baker\./)
+    expect(input.player?.text).not.toMatch(/\d/)
+    const chances = (input.chances ?? []).map((c) => c.text).join('\n')
+    expect(chances).toMatch(/Lubbert keeps his strongbox under lock at Lubbert's Grain Store: a sure hand, a smith, or Lubbert's leave opens it\. \(thievery\)/)
+    expect(chances).toMatch(/Dirck lies ill at .*\(medicine\)/)
+    expect(input.props?.map((p) => p.id)).toEqual(['locked_chest'])
+    expect(input.verbs?.some((v) => v.name === 'place_prop')).toBe(true)
+    const request = buildRequest(input, assignKeys(input), DEFAULT_LIMITS, [], 0)
+    expect(request.prompt).toMatch(/THE STRANGER\n {2}Tijl, a stranger/)
+    expect(request.prompt).toMatch(/CHANCES \(there already\)\n {2}c1 /)
+    expect(request.prompt).toMatch(/NEW OBJECTS \(for place_prop\)\n {2}locked_chest: a strongbox in the home of its owner; it may hold diary, bundle of letters, and some of their money/)
+    expect(request.system).toMatch(/Make one that fits a storyline visible first/)
+  })
+})
+
+describe('M10.5: place_prop and the locked chest', () => {
+  it("a step place_prop sets down a chest in its owner's home: a lock of its make, what it holds from the list and the purse, and hints in his words", async () => {
+    const { engine, world, line } = await lubbertsLine()
+    const purse = world.state.npcs['npc_lubbert']!.money
+    placeByChronicler(engine, line.id)
+    const prop = world.state.props!.list[0]!
+    expect(prop).toMatchObject({ id: 'prop_1', template: 'locked_chest', name: "Lubbert's chest", location: 'loc_waagdam_graanhandel', owner: 'npc_lubbert', line: line.id })
+    expect(['common', 'good']).toContain(prop.lock!.quality)
+    expect(world.location('loc_waagdam_graanhandel').objects.some((o) => o.id === 'prop_1' && o.lock)).toBe(true)
+    expect(world.state.ground['loc_waagdam_graanhandel/prop_1']).toMatchObject({ diary: 1 })
+    expect(world.state.npcs['npc_lubbert']!.money).toBe(purse - prop.money)
+    const hints = prop.hints.map((id) => world.state.news!.facts.find((f) => f.id === id)!)
+    expect(hints[0]!.text.precise).toMatch(/^Lubbert keeps a diary, a bundle of letters and money in a locked chest at Lubbert's Grain Store, and the key on his belt\.$/)
+    expect(hints[0]!.claim).toEqual({ subject: 'prop_1', key: 'holds', value: 'diary' })
+    expect(line.facts).toEqual(expect.arrayContaining(prop.hints))
+    // One per storyline; and it stays through a save.
+    placeByChronicler(engine, line.id, 'locked_chest: letters')
+    expect(world.state.props!.list).toHaveLength(1)
+    const again = new Engine(content, { seed: 7 })
+    again.state.props = structuredClone(world.state.props)
+    again.world.regrow()
+    expect(again.world.location('loc_waagdam_graanhandel').objects.some((o) => o.id === 'prop_1')).toBe(true)
+    // Someone with no part in the storyline gets none for it; no template, nothing.
+    expect(placeProp(world, 'locked_chest', 'npc_mirte', { line: line.id })).toEqual({ problem: 'npc_mirte has no part in that storyline' })
+    expect(placeProp(world, 'no_such', 'npc_mirte', {})).toHaveProperty('problem')
+    expect(placeProp(world, 'locked_chest', 'npc_mirte', {})).not.toHaveProperty('problem')
+  })
+
+  it('the rascal picks it and takes the diary unseen; at his fixed moment Lubbert finds it gone, and does not know who; the hint is what was true then', async () => {
+    const { engine, world, line } = await lubbertsLine()
+    placeByChronicler(engine, line.id)
+    world.state.player.location = 'loc_waagdam_graanhandel'
+    world.state.player.inventory['iron_nails'] = 1
+    for (const id of Object.keys(world.state.npcs)) if (world.state.npcs[id]!.location === 'loc_waagdam_graanhandel') world.state.npcs[id]!.location = 'loc_waagdam_market'
+    rolls(engine, 20)
+    expect(said(await engine.handle("pick lubbert's chest"))).toMatch(/It gives with a small click\./)
+    expect(said(await engine.handle("take diary from lubbert's chest"))).toMatch(/You take a diary from Lubbert's chest\./)
+    // Lubbert looks inside at nine in the evening, at home.
+    world.state.player.location = 'loc_waagdam_market'
+    const s = world.state.npcs['npc_lubbert']!
+    while (Math.floor(((world.now % DAY) + DAY) % DAY / 60) !== 20) engine.tick(60)
+    Object.assign(s, { location: 'loc_waagdam_graanhandel', activity: 'home', plan: [], busyUntil: world.now + 300 })
+    engine.tick(60)
+    const loss = world.state.news!.facts.find((f) => f.kind === 'prop_loss')
+    expect(loss?.text.precise).toMatch(/^Lubbert found his chest short: a diary gone\. He does not know who took it\.$/)
+    // The hint in the journal says what was true then.
+    const hint = world.state.props!.list[0]!.hints[0]!
+    world.state.news!.heard['player'] = { ...(world.state.news!.heard['player'] ?? {}), [hint]: { level: 3, reliability: 1, from: 'npc_lubbert', t: world.now } }
+    ;(world.state.player.journal ??= {})[hint] = world.now
+    expect(engine.page(hint)?.lines.join('\n')).toMatch(/So it was then\. It may not be so now\./)
+  })
+
+  it('the lock was forced, and someone saw: Lubbert knows it was the stranger', async () => {
+    const { engine, world, line } = await lubbertsLine('create warden heathborn peat_cutter name=Joost')
+    placeByChronicler(engine, line.id)
+    world.state.player.location = 'loc_waagdam_graanhandel'
+    for (const id of Object.keys(world.state.npcs)) if (world.state.npcs[id]!.location === 'loc_waagdam_graanhandel') world.state.npcs[id]!.location = 'loc_waagdam_market'
+    stay(engine, 'npc_dirck', 'loc_waagdam_graanhandel')
+    rolls(engine, 20)
+    await engine.handle("force lubbert's chest")
+    await engine.handle("take diary from lubbert's chest")
+    world.state.npcs['npc_dirck']!.location = 'loc_waagdam_market'
+    while (Math.floor(((world.now % DAY) + DAY) % DAY / 60) !== 20) engine.tick(60)
+    Object.assign(world.state.npcs['npc_lubbert']!, { location: 'loc_waagdam_graanhandel', activity: 'home', plan: [], busyUntil: world.now + 300 })
+    engine.tick(60)
+    const loss = world.state.news!.facts.find((f) => f.kind === 'prop_loss')
+    expect(loss?.text.precise).toMatch(/a diary gone, and the lock is broken\. Dirck saw the stranger at it\./)
+  })
+
+  it('a smith called in comes and opens it: reliable, but then he knows, and so will others', async () => {
+    const { engine, world, line } = await lubbertsLine('create warden heathborn peat_cutter name=Joost')
+    placeByChronicler(engine, line.id)
+    ;(world.state.player.seen ??= []).push('loc_waagdam_graanhandel')
+    world.state.player.location = 'loc_waagdam_smithy'
+    world.state.player.money = 200
+    stay(engine, 'npc_hendrik', 'loc_waagdam_smithy', 30)
+    await engine.handle('talk hendrik')
+    const out = said(await engine.handle("Could you open Lubbert's chest for me?"))
+    expect(out).toMatch(/Hendrik will meet you at Lubbert's Grain Store/)
+    const meeting = world.state.agreements!.list.find((a) => a.kind === 'meet' && a.by === 'npc_hendrik')!
+    expect(meeting.terms.open).toBe('object:loc_waagdam_graanhandel/prop_1')
+    await engine.handle('bye')
+    world.state.player.location = 'loc_waagdam_graanhandel'
+    for (let i = 0; i < 12 && meeting.status === 'open'; i++) engine.tick(10)
+    expect(meeting.status).toBe('kept')
+    expect(world.state.locks?.['object:loc_waagdam_graanhandel/prop_1']).toBe('open')
+    const opened = world.state.news!.facts.find((f) => f.kind === 'lock_opened')!
+    expect(opened.text.precise).toBe("Hendrik opened the lock of Lubbert's chest for the stranger.")
+    expect(world.state.news!.heard['npc_hendrik']?.[opened.id]).toBeDefined()
+  })
+
+  it('the owner persuaded opens it himself and says why; the stranger may take what they need, and owes him a good turn', async () => {
+    const { engine, world, line } = await lubbertsLine('create lanternbearer dykelander lantern_novice name=Brand')
+    placeByChronicler(engine, line.id)
+    world.state.player.location = 'loc_waagdam_graanhandel'
+    ;(world.state.player.seen ??= []).push('loc_waagdam_graanhandel')
+    stay(engine, 'npc_lubbert', 'loc_waagdam_graanhandel')
+    Object.assign(relation(engine.state, 'npc_lubbert'), { affinity: 30, trust: 30, familiarity: 40 })
+    await engine.handle('talk lubbert')
+    const out = said(await engine.handle('Would you open your chest for me?'))
+    expect(out).toMatch(/Lubbert unlocks it and lifts the lid for you\./)
+    expect(out).toMatch(/Lubbert tells you: Lubbert keeps a diary/)
+    expect(out).toMatch(/You give Lubbert your word/)
+    await engine.handle('bye')
+    const took = said(await engine.handle("take diary from lubbert's chest"))
+    expect(took).toMatch(/You take a diary/)
+    expect((world.state.crimes ?? []).some((c) => c.victim === 'npc_lubbert')).toBe(false)
+    expect(world.state.agreements!.list.some((a) => a.by === 'player' && a.to === 'npc_lubbert' && a.status === 'open')).toBe(true)
+  })
+
+  it('a placed chest is lasting world: it follows its owner to a new home and passes to an heir', async () => {
+    const { engine, world } = await lubbertsLine()
+    const made = placeProp(world, 'locked_chest', 'npc_mirte', {})
+    expect(made).not.toHaveProperty('problem')
+    const prop = made as { id: string }
+    // Mirte moves in over the bakery's neighbour: the chest goes along, contents and all.
+    const { setHome } = await import('../src/engine/layer')
+    setHome(world, 'npc_mirte', 'loc_visser_house')
+    engine.tick(60)
+    const moved = world.state.props!.list.find((p) => p.id === prop.id)!
+    expect(moved.location).toBe('loc_visser_house')
+    expect(world.location('loc_visser_house').objects.some((o) => o.id === prop.id)).toBe(true)
+    expect(Object.keys(world.state.ground[`loc_visser_house/${prop.id}`] ?? {})).not.toHaveLength(0)
+    // She dies: it passes to an heir, or to the house.
+    world.state.npcs['npc_mirte']!.dead = { t: world.now, fact: 'x' }
+    engine.tick(60)
+    expect(world.state.props!.list.find((p) => p.id === prop.id)!.owner).not.toBe('npc_mirte')
+  })
+})
+
+describe('M10.5: without a model', () => {
+  it('the rules make a chance near the stranger visible in the news of its area, and place a chest only where no chance is left', async () => {
+    const { engine, world, line } = await lubbertsLine()
+    world.state.player.location = 'loc_waagdam_graanhandel'
+    motorChance(world)
+    expect(Object.keys(world.state.chances ?? {})).toHaveLength(1)
+    expect(world.state.areaNews?.['waagdam']).toBeTruthy()
+    // Not again the next day: every other day.
+    const news = world.state.areaNews!['waagdam']
+    world.state.minutes += DAY
+    motorChance(world)
+    expect(Object.keys(world.state.chances ?? {})).toHaveLength(1)
+    expect(world.state.areaNews!['waagdam']).toBe(news)
+    // Chances left in the storyline's places: no chest.
+    for (let i = 0; i < 20; i++) motorProp(world, line)
+    expect(world.state.props?.list ?? []).toHaveLength(0)
+    // All chances made visible or used up: now and then a chest, never more than one for the line.
+    for (const c of chancesIn(world, ['waagdam'])) (world.state.chances ??= {})[c.id] = world.now
+    for (let i = 0; i < 30; i++) motorProp(world, line)
+    expect(world.state.props!.list.filter((p) => p.line === line.id)).toHaveLength(1)
+    void engine
   })
 })

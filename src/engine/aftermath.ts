@@ -1,3 +1,4 @@
+import { placeProp } from './props'
 import { welcomingIn } from './social/groups'
 import { agree } from './agreements'
 import { checkedClaims } from './claims'
@@ -337,6 +338,13 @@ export function runVerb(world: World, ctx: PlanContext, verb: Verb, st: StepStat
     return Boolean(people)
   }
   if ('build' in v) return startProject(world, v.build)
+  // A new object where it fits (M10.5): refused quietly when it does not; the step is done either way.
+  if ('place_prop' in v) {
+    const owner = one(world, ctx, v.owner)
+    if (!owner || !world.content.npcs.has(owner)) return true
+    placeProp(world, v.place_prop, owner, { ...(ctx.plan.line ? { line: ctx.plan.line } : {}), ...(v.items ? { items: v.items } : {}) })
+    return true
+  }
   if ('crowd' in v) {
     const at = one(world, ctx, v.at)
     if (!at || !world.content.locations.has(at)) return false

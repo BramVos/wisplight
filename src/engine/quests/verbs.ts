@@ -67,6 +67,7 @@ export const PERMISSIONS: Record<string, Permission> = {
   order: all('a settlement sends for goods that come in some days, at twice their worth'),
   arrive: rules('newcomers come to live in a free house and take up a trade nobody works', true),
   build: rules('a settlement begins a project: a new place or a workshop, with materials from its store', true),
+  place_prop: rules("a new object from a template of the content in its owner's home, with a lock as hard as its make, what it holds and hints in the owner's words; one per storyline, a few a week, and only after the chances that are there already (M10.5)", true),
   crowd: rules('a nameless group comes to a place for some days: refugees, workers; whom the player speaks to gets a name', true),
   rank: rules('a settlement takes a new rank (hamlet, village, town, city), paid from its purse; news of belang 4', true),
   // Places, groups, the market, realms.

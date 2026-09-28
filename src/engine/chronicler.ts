@@ -17,6 +17,7 @@ import { chronicleState, setLineStatus, unreported } from './storylines'
 import { chroniclerVerbs, extraCards, signalCards, startChroniclePlan, stepsFromOp, unplanned } from './planning'
 import { withoutReference } from './quests/reference'
 import { tradeLine } from './economy/ledger'
+import { chancesIn, motorProp, playerCard } from './props'
 import type { World } from './world'
 
 // The game's side of the chronicler (design: lore and world change). The
@@ -170,7 +171,16 @@ export function buildInput(world: World, run: ChronicleRun): ChronicleInput {
     verbs: chroniclerVerbs(),
     pace: { building: building(world, run), climaxes: climaxes(world) },
   }
-  extraCards(world, input, planning.people, planning.places, (id) => personCard(world, id, new Set([...cast, ...planning.people])), (id) => placeCard(world, id))
+  // What the stranger can do, the chances there are already, and what may be placed (M10.5).
+  const player = playerCard(world)
+  if (player) input.player = player
+  // The storyline's own places first, then where the stranger is.
+  const own = chancesIn(world, areas)
+  const chances = [...own, ...chancesIn(world, [world.location(world.state.player.location).area]).filter((c) => !own.some((o) => o.id === c.id))].slice(0, 6)
+  if (chances.length) input.chances = chances.map((c) => ({ id: c.id, kind: 'chance' as const, name: c.kind, text: `${c.text} (${c.skill})` }))
+  if (world.content.props.size) input.props = [...world.content.props.values()].map((p) => ({ id: p.id, text: `a ${world.content.objectTypes.get(p.type)?.name ?? p.type} in the home of its owner${p.items.length ? `; it may hold ${p.items.map((i) => itemName(world.content, i, 1)).join(', ')}` : ''}${p.money ? ', and some of their money' : ''}` }))
+  const chancePeople = chances.map((c) => c.who).filter((w): w is string => Boolean(w))
+  extraCards(world, input, [...planning.people, ...chancePeople], [...planning.places, ...chances.map((c) => c.place)], (id) => personCard(world, id, new Set([...cast, ...planning.people])), (id) => placeCard(world, id))
   return input
 }
 
@@ -540,6 +550,8 @@ export function applyOutput(world: World, run: ChronicleRun, output: ChronicleOu
       if (!out.news.some((n) => n.area === area) && (!old || world.now - old.t > 12 * 60)) state.news[area] = { text: fresh.at(-1)!.text.village, t: world.now }
     }
     line.reported = [...new Set([...line.reported, ...line.facts.filter((id) => seen.has(id))])]
+    // Without a model, the rules may place a thing for a storyline where no chance is left (M10.5).
+    if (by === 'template') motorProp(world, line)
   }
   state.runs++
   return problems

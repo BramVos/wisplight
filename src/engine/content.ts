@@ -175,6 +175,41 @@ export const LockSchema = z
   .strict()
 export type Lock = z.infer<typeof LockSchema>
 
+/**
+ * A template for a new object the chronicler may place (M10.5, place_prop):
+ * first the locked chest. The engine sets it down in the owner's home with a
+ * lock, what it holds of a bounded list and a share of the owner's purse, and
+ * hints in the owner's words. How hard the lock is follows the object.
+ */
+export const PropTemplateSchema = z
+  .object({
+    id: z.string().regex(/^[a-z0-9_]+$/),
+    /** The object type it is. */
+    type: z.string(),
+    /** Its name, with {owner}: "{owner}'s chest". */
+    name: z.string(),
+    /** Tags of the owner's home it fits: a chest stands in a house (private), not on the green. */
+    where: z.array(z.string()).min(1),
+    lock: z
+      .object({
+        quality: z.array(z.enum(['crude', 'common', 'good', 'fine', 'masterwork'])).min(1),
+        material: z.array(z.enum(['wood', 'iron', 'brass'])).min(1),
+      })
+      .strict()
+      .optional(),
+    /** What it may hold, besides money: the owner's own things of this kind. */
+    items: z.array(z.string()).default([]),
+    max_items: z.number().int().min(0).max(5).default(2),
+    /** At most this share of the owner's purse goes in it. */
+    money: z.number().min(0).max(1).default(0),
+    /** The owner's fixed moment to look in it, the hour: then a loss is found. */
+    check_hour: z.number().int().min(0).max(23).default(21),
+    /** Hints in the owner's words: {owner}, {their}, {things}, {place}. The first is where it is and what is in it. */
+    hints: z.array(z.object({ precise: z.string(), village: z.string(), far: z.string() }).strict()).min(1),
+  })
+  .strict()
+export type PropTemplate = z.infer<typeof PropTemplateSchema>
+
 /** Words on an object (M10.5): a rune stone, a carved lintel. Lore against the dc reads them. */
 export const InscriptionSchema = z
   .object({
@@ -742,6 +777,8 @@ const FileSchema = z
     projects: z.array(ProjectSchema).optional(),
     /** Crafts (M10.5): baking, smithing, fishing, with their techniques. */
     crafts: z.array(CraftSchema).optional(),
+    /** Templates of new objects the chronicler may place (M10.5). */
+    props: z.array(PropTemplateSchema).optional(),
   })
   .strict()
 
@@ -787,6 +824,8 @@ export interface Content {
   projects: Map<string, Project>
   /** Crafts (M10.5). */
   crafts: Map<string, Craft>
+  /** Templates of objects the chronicler may place (M10.5). */
+  props: Map<string, PropTemplate>
   /** Every id this world ever committed, and what became of those that went (M9.1, ids.lock). */
   lock?: IdsLock
   /** The chronicler's working instruction (content/CHRONICLER.md and the world's own), if there is one. */
@@ -840,6 +879,7 @@ export function loadContent(files: ContentFile[]): Content {
     newcomers: new Map<string, Newcomer>(),
     projects: new Map<string, Project>(),
     crafts: new Map<string, Craft>(),
+    props: new Map<string, PropTemplate>(),
   }
 
   let chronicler: string | undefined
@@ -900,6 +940,7 @@ export function loadContent(files: ContentFile[]): Content {
     addAll(content.newcomers, data.newcomers, (v) => v.id, file.path, 'newcomer', problems)
     addAll(content.projects, data.projects, (v) => v.id, file.path, 'project', problems)
     addAll(content.crafts, data.crafts, (v) => v.id, file.path, 'craft', problems)
+    addAll(content.props, data.props, (v) => v.id, file.path, 'prop', problems)
     if (data.rules) {
       if (rules) problems.push(`${file.path}: the rules are defined twice`)
       rules = data.rules
@@ -1269,8 +1310,12 @@ export type Tombstone = z.infer<typeof TombstoneSchema>
  * is had by trades that exist; a recipe names a craft that exists and one of
  * its techniques; a check without a skill is a recipe's.
  */
-function checkCrafts(c: Pick<Content, 'crafts' | 'professions' | 'objectTypes' | 'resources' | 'items' | 'locations' | 'topics'>, rules: Rules | undefined): string[] {
+function checkCrafts(c: Pick<Content, 'crafts' | 'professions' | 'objectTypes' | 'resources' | 'items' | 'locations' | 'topics' | 'props'>, rules: Rules | undefined): string[] {
   const problems: string[] = []
+  for (const p of c.props.values()) {
+    if (!c.objectTypes.has(p.type)) problems.push(`prop ${p.id}: ${p.type} is no object type`)
+    for (const i of p.items) if (!c.items.has(i)) problems.push(`prop ${p.id}: ${i} is no item`)
+  }
   for (const craft of c.crafts.values()) {
     if (rules && !rules.skills.some((s) => s.id === craft.skill)) problems.push(`craft ${craft.id}: leans on ${craft.skill}, which is no skill`)
     for (const p of craft.professions) if (!c.professions.has(p)) problems.push(`craft ${craft.id}: the trade ${p} does not exist`)
@@ -1342,6 +1387,7 @@ export const KIND_MAPS = {
   newcomer: 'newcomers',
   project: 'projects',
   craft: 'crafts',
+  prop: 'props',
 } as const satisfies Record<string, keyof Content>
 
 /** Whether the content has a thing of this kind. */

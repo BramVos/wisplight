@@ -1,3 +1,4 @@
+import { hintHolds } from './props'
 import type { SheetData } from './rules/player'
 import { personView, type PersonView } from './acquaintance'
 import { dayName, GameClock } from './clock'
@@ -118,6 +119,8 @@ export function journalPage(world: World, topics: TopicRegistry, id: string): Jo
     const fact = factById(world, id)!
     const h = heard[id]
     page.lines.push(h ? versionOf(fact, h) : fact.text.far)
+    // A hint that the world has overtaken (M10.5): what was true then.
+    if (hintHolds(world, fact) === false) page.lines.push('So it was then. It may not be so now.')
     if (h?.grown) page.lines.push('The way you heard it, it may have grown in the telling.')
     if (h && h.reliability < 0.7) page.lines.push("You're not sure it is true.")
     page.links.push(...fact.about.flatMap((topic) => link(topic, 'about')))

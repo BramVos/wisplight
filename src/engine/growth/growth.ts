@@ -1,3 +1,4 @@
+import { withProps } from '../props'
 import { withFarPlaces, type FarPlace } from './far'
 import { addCrowd, endCrowd } from './crowds'
 import { GameClock } from '../clock'
@@ -49,6 +50,11 @@ export function growth(world: World): GrowthState {
 
 /** The content of a game: the world's own, with the people who came and what was built. */
 export function grownContent(base: Content, state: GameState): Content {
+  // Objects the chronicler placed (M10.5) stand in their places like any other.
+  return withProps(grownOnly(base, state), state)
+}
+
+function grownOnly(base: Content, state: GameState): Content {
   const g = state.growth
   const built = g ? Object.entries(g.projects).filter(([, p]) => p.done !== undefined).map(([id]) => base.projects.get(id)!).filter(Boolean) : []
   if (g?.far && Object.keys(g.far).length) base = withFarPlaces(base, state)

@@ -18,7 +18,7 @@ import { favour, gainXp, XP } from './rules/player'
 export type RequestInput = Omit<Request, 'id' | 'created' | 'status' | 'qty'> & { qty?: number }
 
 /** Opens a request, unless the giver already has one open. */
-export function openRequest(world: World, input: RequestInput): Request | undefined {
+export function openRequest(world: World, input: RequestInput, opts: { asked?: boolean } = {}): Request | undefined {
   if (!world.alive(input.npc)) return undefined
   const same = world.state.requests.find((r) => r.npc === input.npc && r.status === 'open' && (r.item === input.item || !r.item) && r.target === input.target)
   if (same) return undefined
@@ -26,7 +26,8 @@ export function openRequest(world: World, input: RequestInput): Request | undefi
   request.reward ??= rewardFor(world, request)
   world.state.requests.push(request)
   // A request is a signal (M10.3): what follows is content, such as going to find the stranger to ask.
-  queueSignal(world, { kind: 'request_open', who: [request.npc], place: world.state.npcs[request.npc]?.location ?? world.npc(request.npc).home, cause: [], belang: 1, watcher: 'rules' })
+  // One put to the stranger at once, in a talk (M10.5), needs nobody to go and find them.
+  if (!opts.asked) queueSignal(world, { kind: 'request_open', who: [request.npc], place: world.state.npcs[request.npc]?.location ?? world.npc(request.npc).home, cause: [], belang: 1, watcher: 'rules' })
   return request
 }
 

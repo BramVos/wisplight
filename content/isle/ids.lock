@@ -23,11 +23,13 @@ ids:
     resource: [sea, heath, wreck, kelp]
     settlement: [skerrow_hythe, skerrow_heights]
   isle/data/items.yaml:
-    item: [marens_key, knife, ship_biscuit, salt_fish, fish_stew, ale, sailcloth, pitch, lamp_oil, rope, rune_key, kelp_salve, heather, kelp, spear, iron_hook, staff, longbow, cutlass, quilted_coat, sealskin_jerkin, scale_vest, ring_shirt, round_shield, conch]
+    item: [marens_key, knife, ship_biscuit, salt_fish, fish_stew, ale, sailcloth, pitch, lamp_oil, rope, rune_key, kelp_salve, heather, kelp, spear, iron_hook, staff, longbow, cutlass, quilted_coat, sealskin_jerkin, scale_vest, ring_shirt, round_shield, conch, diary, letters]
   isle/data/objects.yaml:
     object_type: [strongbox, well, silver_birch, bench, beacon, waystone, salve_pot, coracle, boat]
   isle/data/professions.yaml:
     profession: [innkeeper, fisher, boatman, child, hedge_witch, scholar, lightkeeper]
+  isle/data/props.yaml:
+    prop: [locked_chest]
   isle/data/quests.yaml:
     quest: [off_skerrow]
   isle/data/topics.yaml:

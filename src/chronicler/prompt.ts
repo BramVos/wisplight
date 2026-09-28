@@ -5,7 +5,7 @@ import type { Card, CardKind, ChronicleEvent, ChronicleInput, ChroniclerRequest,
 // catalogue, how to answer) comes first and never changes between runs, so
 // the providers cache it. People and places get short keys: p1, l1, ...
 
-const PREFIX: Record<CardKind | 'line', string> = { person: 'p', place: 'l', area: 'a', lore: 't', request: 'q', item: 'i', realm: 'r', line: 's', signal: 'g', event: 'e' }
+const PREFIX: Record<CardKind | 'line', string> = { person: 'p', place: 'l', area: 'a', lore: 't', request: 'q', item: 'i', realm: 'r', line: 's', signal: 'g', event: 'e', chance: 'c' }
 
 export class Keys {
   private readonly toKey = new Map<Id, string>()
@@ -64,6 +64,7 @@ export function assignKeys(input: ChronicleInput): Keys {
   for (const line of input.older ?? []) keys.add(line.id, 'line')
   for (const card of [...input.cards, ...input.lore, ...input.requests, ...input.areas, ...(input.realms ?? [])]) keys.add(card.id, card.kind)
   for (const signal of input.signals ?? []) keys.add(signal.id, 'signal')
+  for (const chance of input.chances ?? []) keys.add(chance.id, 'chance')
   // Events, so a claim can say which it rests on (M9.2).
   for (const line of input.lines) for (const event of [...line.events, ...line.earlier]) keys.add(event.id, 'event')
   return keys
@@ -82,7 +83,7 @@ export function systemPrompt(input: ChronicleInput, limits: Limits): string {
     ...(input.verbs?.length ? ['', 'VERBS', ...input.verbs.map((v) => `${v.name} (who: ${v.who}${v.target ? `; target: ${v.target.join(' or ')}` : ''}${v.detail ? `; detail: ${v.detail}` : ''}): ${v.text}`)] : []),
     '',
     'HOW TO ANSWER',
-    'The overview uses short keys: p person, l place, a area, t lore, q request, i item, s storyline, e event. Answer with JSON that matches the schema, in keys.',
+    'The overview uses short keys: p person, l place, a area, t lore, q request, i item, s storyline, e event, c chance. Answer with JSON that matches the schema, in keys.',
     `- lookup: up to ${limits.lookups} keys you need to know more about before you write, or questions: "knows <person key> <topic key>" (what they know of it), "why <storyline key>" (what caused it and what is still open), "bond <person key> <person key>", "near <place key>" (what happened there lately). Use it only when you truly need it; then leave everything else empty and you get the answers.`,
     `- lore: for each storyline with an event of belang 3 or more, one lore topic. name; summary (what anyone may have heard, one sentence); details (the core as the village tells it, up to ${limits.textWords} words); story (as a witness tells it, up to ${limits.storyWords} words); far (one line as it sounds far away, which may be wrong the way retold news goes wrong); teller (the witness whose story it is, or empty); links (keys of lore or people it connects to); claims: every thing the lore says happened, each on the event (key) it rests on: subject (a key), key, value. Keys: present (value yes: the subject was there), dead (yes or no), lives_at (value: a place or area key), owns (value: a place or item key), or the claim of the event itself. Lore without claims, or with a claim no event carries, is not kept.`,
     `- lines: update every storyline you were given. summary: at most ${limits.lineSummary} short lines. roles, hooks (open threads), next (what may follow), close (true when it is over).`,
@@ -97,6 +98,11 @@ export function systemPrompt(input: ChronicleInput, limits: Limits): string {
           '  For a SIGNAL TO PLAN FOR: a plan with signal (its key) and steps that settle it for everyone it is about; for a group, decide person by person (some may go home, some stay). Leave it out when custom is enough.',
           '  For any other storyline that is rising or in crisis: at most one beat, a plan with line and exactly one step: the next thing that happens. Never a death.',
           '- lines also have phase: setup, rising, crisis, resolution or closed.',
+        ]
+      : []),
+    ...(input.chances?.length || input.props?.length
+      ? [
+          '- CHANCES are there already; a skill counts in each. Make one that fits a storyline visible first: a thought, the news, a request. Not all should suit THE STRANGER. Only when none will do and it fits place, owner and history: one step place_prop.',
         ]
       : []),
     'A storyline with an arc goes on from the ones named there: tell them as one story, cause and effect, and keep the open threads of before. An event may say what it came from (because).',
@@ -120,6 +126,7 @@ export function userPrompt(input: ChronicleInput, keys: Keys, lookedUp: Card[], 
   const section = (title: string, rows: string[]) => {
     if (rows.length) lines.push(title, ...rows.map((r) => `  ${r}`))
   }
+  if (input.player) section('THE STRANGER', [input.player.text])
   section('CAST', byKind('person'))
   section('PLACES', byKind('place'))
   section('THINGS', byKind('item'))
@@ -127,6 +134,8 @@ export function userPrompt(input: ChronicleInput, keys: Keys, lookedUp: Card[], 
   section('REALMS', (input.realms ?? []).map((c) => cardLine(c, keys)))
   section('LORE THAT MAY RELATE', input.lore.map((c) => cardLine(c, keys)))
   section('OPEN REQUESTS', input.requests.map((c) => cardLine(c, keys)))
+  section('CHANCES (there already)', (input.chances ?? []).map((c) => cardLine(c, keys)))
+  section('NEW OBJECTS (for place_prop)', (input.props ?? []).map((p) => `${p.id}: ${p.text}`))
   section(
     'TEMPLATES',
     input.templates.map((t) => `${t.kind}${t.needs.length ? ` (needs ${t.needs.join(' and ')})` : ''}: ${t.text}`),

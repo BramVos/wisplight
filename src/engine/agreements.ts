@@ -1,3 +1,4 @@
+import { openedBy } from './props'
 import { z } from 'zod'
 import { callName } from './content'
 import { applyEffect } from './dialogue/relations'
@@ -58,7 +59,7 @@ export const AgreementInputSchema = z.discriminatedUnion('kind', [
   z.object({ ...Base, kind: z.literal('accompany'), terms: z.object({ until: z.number().optional(), untilPlace: z.string().optional(), wage: z.number().min(0), limits: z.array(z.string()), leaves: z.array(z.string()) }).strict() }).strict(),
   z.object({ ...Base, kind: z.literal('lead'), terms: z.object({ person: z.string().optional(), place: z.string(), waits: z.number().min(0).max(6 * 60).optional(), ifAbsent: z.enum(['wait', 'return', 'search']).optional(), ahead: z.boolean().optional(), bring: z.string().optional() }).strict() }).strict(),
   z.object({ ...Base, kind: z.literal('message'), terms: z.object({ recipient: z.string(), about: z.string(), facts: z.array(z.string()).min(1), condition: z.string().optional() }).strict() }).strict(),
-  z.object({ ...Base, kind: z.literal('meet'), terms: z.object({ place: z.string(), at: z.number().optional() }).strict() }).strict(),
+  z.object({ ...Base, kind: z.literal('meet'), terms: z.object({ place: z.string(), at: z.number().optional(), open: z.string().optional() }).strict() }).strict(),
   z.object({ ...Base, kind: z.literal('wait'), terms: z.object({ place: z.string(), person: z.string().optional() }).strict() }).strict(),
   z.object({ ...Base, kind: z.literal('give'), terms: z.object({ item: z.string().optional(), amount: z.number().positive().optional(), debt: z.string().optional() }).strict() }).strict(),
   z.object({ ...Base, kind: z.literal('lend'), terms: z.object({ item: z.string() }).strict() }).strict(),
@@ -567,7 +568,11 @@ function meet(world: World, a: Agreement): void {
   }
   if (world.now >= at - MEET_EARLY) for (const p of parties) if ((p === 'player' ? world.state.player.location : world.state.npcs[p]?.location) === place) came(a, p)
   const cameAll = parties.every((p) => (a.terms.came ?? []).includes(p))
-  if (cameAll) return settle(world, a, 'kept', `${nameOf(world, a.by)} and ${nameOf(world, a.to)} met at ${nameOf(world, place)}`)
+  if (cameAll) {
+    // A smith called in to open a lock does it now, and knows (M10.5).
+    if (a.terms.open && isNpc(world, a.by)) openedBy(world, a.by, a.terms.open, place)
+    return settle(world, a, 'kept', `${nameOf(world, a.by)} and ${nameOf(world, a.to)} met at ${nameOf(world, place)}${a.terms.open ? ', and the lock was opened' : ''}`)
+  }
   if (world.now < (a.due ?? at + MEET_LATE)) return
   const missing = parties.filter((p) => !(a.terms.came ?? []).includes(p))
   const who = missing[0]!

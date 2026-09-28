@@ -1,11 +1,13 @@
 import { agree, knowsTheDayOf, thinksIsAt, type AgreementInput } from '../agreements'
 import { minuteOfDay } from '../clock'
 import type { Output } from '../commands'
-import { areaTopicId, callName, type Craft } from '../content'
+import { areaTopicId, callName, type Craft, type ObjectInstance } from '../content'
+import { letOpen } from '../props'
+import { openRequest } from '../requests'
 import { craftOfTrade, craftRank, craftTitle, lesson } from '../crafts'
 import { itemName, withArticle } from '../items'
 import { routineNow } from '../npc/brain'
-import { tieTo } from '../people'
+import { isNear, ties, tieTo } from '../people'
 import { dangerOf } from '../social/companions'
 import { letIn } from '../social/access'
 import { isSomeonesHome } from '../social/ownership'
@@ -22,7 +24,7 @@ import { attitude, relation } from './relations'
 // model, the rules pick from the same offers, so the game can do it all
 // without AI. An offer that goes through is an agreement in the register.
 
-export type OfferKind = 'lead' | 'fetch' | 'wait' | 'meet' | 'give' | 'lend' | 'sell' | 'message' | 'ask' | 'teach' | 'let_in'
+export type OfferKind = 'lead' | 'fetch' | 'wait' | 'meet' | 'give' | 'lend' | 'sell' | 'message' | 'ask' | 'teach' | 'let_in' | 'open_lock' | 'let_open'
 
 export interface Offer {
   key: string
@@ -49,6 +51,8 @@ export interface Offer {
   favour?: string
   /** teach: the craft of the trade, for a day's lesson in it (M10.5). */
   craft?: string
+  /** open_lock, let_open: the lock, as object:<location>/<object> (M10.5). */
+  lock?: string
 }
 
 const DAY = 24 * 60
@@ -221,6 +225,8 @@ export function offersFor(world: World, npcId: string, topics: string[], text: s
     const ok = night ? band === 'Friendly' || band === 'Warm' || band === 'Devoted' : band !== 'Wary' && band !== 'Unfriendly' && band !== 'Hostile'
     offers.push({ key: 'let_in', kind: 'let_in', place: npc.home, what: `let the stranger into your home, ${night ? 'for a few hours' : 'for the day'}`, intent: 'come in', deed: `let the stranger into ${nameOf(world, npc.home)}`, decision: ok ? 'yes' : 'no', reasons: ok ? ['you do not mind the stranger'] : [night ? 'it is the middle of the night, and you hardly know the stranger' : 'you do not want the stranger in your house'] })
   }
+  // A lock (M10.5): a smith opens it for money and then knows; its owner opens it and says why, for a good turn.
+  if (/\b(open|unlock|lock|locked|chest|strongbox|box|kist|slot|key)\b/i.test(text)) offers.push(...lockOffers(world, npcId, text))
   if (/\b(teach|learn|show me how|leer me|leren)\b/i.test(text)) {
     const lesson = teachOffer(world, npcId)
     if (lesson) offers.push(lesson)
@@ -343,6 +349,62 @@ function craftLessonOffer(world: World, npcId: string, craft: Craft): Offer {
   return { key: `teach:${craft.id}`, kind: 'teach', skill: craft.skill, craft: craft.id, price, ...(pay || !favour ? {} : { favour: favour.id }), what: `teach the stranger ${craft.name} for a few hours, ${pay || !favour ? `for ${world.money(price)}` : 'for a favour'}`, intent: `learn ${craft.name} from you`, deed: `teach the stranger ${craft.name}`, decision, reasons }
 }
 
+/** A locked thing the stranger knows of: one of theirs for its owner; for a smith, the one named, or the nearest the stranger has seen. */
+function lockedThings(world: World): { lock: string; place: string; object: ObjectInstance }[] {
+  const seen = new Set(world.state.player.seen ?? [])
+  const out: { lock: string; place: string; object: ObjectInstance }[] = []
+  for (const place of seen) {
+    const loc = world.content.locations.get(place)
+    for (const object of loc?.objects ?? []) {
+      const lock = `object:${place}/${object.id}`
+      const state = world.state.locks?.[lock]
+      if (object.lock && state !== 'open' && state !== 'broken') out.push({ lock, place, object })
+    }
+  }
+  return out
+}
+
+/** A price for a smith's walk and work: a little for the lock, and for every quarter hour of the way. */
+function smithPrice(world: World, npcId: string, place: string): number {
+  const minutes = world.route(world.npcState(npcId).location, place)?.minutes ?? 60
+  return 12 + Math.ceil(minutes / 15) * 2
+}
+
+function lockOffers(world: World, npcId: string, text: string): Offer[] {
+  const npc = world.npc(npcId)
+  const band = attitude(world, npcId).band
+  const cold = band === 'Hostile' || band === 'Unfriendly' || band === 'Wary'
+  const words = text.toLowerCase()
+  // The one the words name first, then one the chronicler placed, then any.
+  const things = lockedThings(world).sort((a, b) => Number(words.includes((b.object.name ?? '').toLowerCase())) - Number(words.includes((a.object.name ?? '').toLowerCase())) || Number(b.object.id.startsWith('prop_')) - Number(a.object.id.startsWith('prop_')))
+  const nameOfThing = (t: { object: ObjectInstance }) => t.object.name ?? `the ${world.content.objectTypes.get(t.object.type)?.name ?? 'chest'}`
+  const offers: Offer[] = []
+  // Its owner: opens it and tells what is in it and why, if the stranger does a good turn in return.
+  const own = things.find((t) => t.object.owner === npcId)
+  if (own) {
+    const trusted = ['Friendly', 'Warm', 'Devoted'].includes(band) || relation(world.state, npcId).trust >= 15
+    const thing = nameOfThing(own).replace(/^.*?'s /, 'your ')
+    offers.push({ key: `let_open:${own.lock}`, kind: 'let_open', place: own.place, lock: own.lock, what: `open ${thing} for the stranger and tell them what is in it and why, if they do you a good turn in return`, intent: `see inside ${thing}`, deed: `open ${thing} for the stranger`, decision: trusted ? 'yes' : 'no', reasons: [trusted ? 'you trust the stranger enough, and a good turn is a good turn' : 'you do not know the stranger well enough to open it for them'] })
+  }
+  // A smith: comes to the lock and opens it, for money. Reliable, but then the smith knows.
+  if (craftOfTrade(world, npc.profession)?.id === 'smithing') {
+    const named = things.find((t) => words.includes((t.object.name ?? '').toLowerCase())) ?? things.find((t) => t.object.owner && words.includes(callName(world.npc(t.object.owner)).toLowerCase()))
+    const nearest = [...things].sort((a, b) => (world.route(world.npcState(npcId).location, a.place)?.minutes ?? 999) - (world.route(world.npcState(npcId).location, b.place)?.minutes ?? 999))[0]
+    const target = named ?? nearest
+    if (target && target.object.owner !== npcId) {
+      const price = smithPrice(world, npcId, target.place)
+      const owner = target.object.owner && world.content.npcs.has(target.object.owner) ? target.object.owner : undefined
+      const leave = (world.state.player.permits?.[target.lock] ?? 0) > world.now
+      const scruples = Boolean(owner) && !leave && npc.personality.honesty >= 2
+      const pay = world.state.player.money >= price
+      const decision = !cold && !scruples && pay ? 'yes' : 'no'
+      const reasons = cold ? ['you will not do the stranger a service'] : scruples ? [`it is ${callName(world.npc(owner!))}'s, and you will not open it without their say-so`] : pay ? [`it is your trade, and worth ${world.money(price)}; you will know what is in it, mind`] : [`the stranger cannot pay ${world.money(price)}`]
+      offers.push({ key: `open_lock:${target.lock}`, kind: 'open_lock', place: target.place, lock: target.lock, price, what: `go to ${nameOf(world, target.place)} and open the lock of ${nameOfThing(target)} for the stranger, for ${world.money(price)}`, intent: `have the lock of ${nameOfThing(target)} opened`, deed: `open the lock of ${nameOfThing(target)} for the stranger`, decision, reasons })
+    }
+  }
+  return offers
+}
+
 /** Days the stranger has to bring what someone asked for, once promised. */
 const ASK_DAYS = 3
 
@@ -383,6 +445,8 @@ function deedOf(world: World, o: Omit<Offer, 'decision' | 'reasons' | 'deed'>): 
     case 'ask':
     case 'teach':
     case 'let_in':
+    case 'open_lock':
+    case 'let_open':
       return o.what
   }
 }
@@ -426,6 +490,8 @@ export function askedFor(offers: Offer[], text: string): Offer | undefined {
   if (/\b(bring|fetch|get|call|haal|roep)\b.*\b(here|him|her|them|over)\b/.test(t) || /\b(fetch|haal)\b/.test(t)) return wants('fetch')[0]
   if (/\b(teach|learn|show me how|leer me|leren)\b/.test(t) && wants('teach')[0]) return wants('teach')[0]
   if (wants('let_in')[0]) return wants('let_in')[0]
+  // A lock (M10.5): the owner's own opening first; a smith's service when it is theirs.
+  if (/\b(open|unlock|lock|chest|strongbox|box|kist|slot)\b/.test(t) && (wants('let_open')[0] || wants('open_lock')[0])) return wants('let_open')[0] ?? wants('open_lock')[0]
   if (/\b(meet|see you|find you|afspreken|zie je)\b/.test(t) && wants('meet')[0]) return wants('meet')[0]
   if (/\b(tell|let .* know|pass .* on|word to|zeg|vertel)\b/.test(t) && wants('message')[0]) return wants('message')[0]
   if (/\b(lend|borrow|loan|leen|lenen)\b/.test(t) && wants('lend')[0]) return wants('lend')[0]
@@ -495,6 +561,32 @@ export function accept(world: World, npcId: string, offer: Offer): { outputs: Ou
       made.outcome = { t: world.now, text: `${name} let the stranger in` }
     }
     return { outputs: [{ kind: 'system', text: `${name} lets you in. You may be in ${nameOf(world, offer.place!)} until ${clockWords(world, until)}.` }], ends: false }
+  }
+  if (offer.kind === 'open_lock' && offer.lock && offer.place) {
+    // The smith's word to be there and open it: a meeting in the register, with the lock to open.
+    if (world.state.player.money < (offer.price ?? 0)) return { outputs: [{ kind: 'system', text: `You cannot pay ${world.money(offer.price ?? 0)}.` }], ends: false }
+    world.state.player.money -= offer.price ?? 0
+    world.npcState(npcId).money += offer.price ?? 0
+    const minutes = world.route(world.npcState(npcId).location, offer.place)?.minutes ?? 60
+    const at = world.now + minutes + 15
+    const made = agree(world, { ...base, kind: 'meet', due: at + 3 * 60, terms: { place: offer.place, at, open: offer.lock } })
+    if ('rejected' in made) return { outputs: [], ends: false }
+    return { outputs: [{ kind: 'system', text: `You pay ${name} ${world.money(offer.price ?? 0)}. ${name} will meet you at ${nameOf(world, offer.place)} ${clockWords(world, at)} and open it. It is in your journal.` }], ends: false }
+  }
+  if (offer.kind === 'let_open' && offer.lock && offer.place) {
+    const out = letOpen(world, npcId, offer.lock, offer.place)
+    // The good turn in return: what they have asked for already, or a visit to someone of theirs.
+    const open = world.state.requests.find((r) => r.npc === npcId && r.status === 'open')
+    const someone = (id: string | undefined) => Boolean(id && id !== npcId && world.content.npcs.has(id) && world.alive(id) && !world.npcState(id).absent)
+    const known = ties(world, npcId).filter((t) => someone(t.id))
+    const prop = offer.lock.split('/').at(-1) ?? ''
+    const line = world.state.props?.list.find((p) => p.id === prop)?.line
+    const inLine = world.state.chronicle?.lines.find((l) => l.id === line)?.people.find((p) => someone(p))
+    const kin = known.find((t) => isNear(t))?.id ?? inLine ?? known[0]?.id
+    const request = open ?? (kin ? openRequest(world, { npc: npcId, kind: 'visit', target: kin, source: 'motor' }, { asked: true }) : undefined)
+    const ask = request ? askOffer(world, npcId, request) : undefined
+    if (ask) out.push(...accept(world, npcId, ask).outputs)
+    return { outputs: out, ends: false }
   }
   if (offer.kind === 'teach' && offer.craft) {
     const craft = world.content.crafts.get(offer.craft)
@@ -579,6 +671,8 @@ export function offerLine(world: World, npcId: string, offer: Offer): string {
     ask: '"Good. I\'ll hold you to that."',
     let_in: '"Come in, then. Wipe your feet."',
     teach: '"Watch my hands, then. Like this."',
+    open_lock: `"${offer.price !== undefined ? world.money(offer.price) : 'A fair price'}, and I'll come and open it. It's my trade."`,
+    let_open: '"All right. I\'ll show you, and tell you why. But you\'ll do something for me in return."',
   }
   return `${callName(npc)}: ${said[offer.kind]}`
 }

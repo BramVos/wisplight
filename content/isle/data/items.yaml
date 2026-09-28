@@ -208,3 +208,20 @@ items:
     aliases: [conch, shell, horn]
     tags: [tool]
     value: 5
+
+  # M10.5: what a chest the chronicler places may hold.
+  - id: diary
+    name: diary
+    plural: diaries
+    aliases: [diary, journal book, dagboek, notebook]
+    description: A small book bound in worn leather, the pages full of a cramped private hand. Whose it is, it says inside the cover.
+    tags: [paper]
+    value: 2
+
+  - id: letters
+    name: bundle of letters
+    plural: bundles of letters
+    aliases: [letters, bundle, brieven]
+    description: Letters folded small and tied with a string, the seals broken long ago.
+    tags: [paper]
+    value: 1

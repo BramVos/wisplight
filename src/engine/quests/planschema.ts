@@ -143,6 +143,8 @@ export const VerbSchema = z.union([
   z.object({ arrive: z.string(), to: z.string() }).strict(),
   /** A project of the content begins: materials from the store, workdays, money. */
   z.object({ build: z.string() }).strict(),
+  /** A new object from a template of the content in its owner's home (M10.5): first the locked chest; items from its list. */
+  z.object({ place_prop: z.string(), owner: SelectorSchema, items: z.array(z.string()).optional() }).strict(),
   /** A nameless group comes to a place for some days (M9.1): refugees, workers. */
   z.object({ crowd: z.string(), one: z.string(), count: z.number().int().positive().max(200), at: SelectorSchema, from: z.string(), days: z.number().positive(), profession: z.string() }).strict(),
   /** A settlement takes a new rank, paid from its purse: news of belang 4 (M9.1). */

@@ -1,6 +1,6 @@
 import { inSeason } from './content'
 import { describeSelf, detailHere, lookThere, lookThing } from './looking'
-import { force, openObject, passLock, pick, takeFrom } from './social/access'
+import { force, objectHere, openObject, passLock, pick, takeFrom } from './social/access'
 import { craftCheck, craftOf, craftProgress, craftRank, craftTitle, interruption, learnFrom, ownWorkBonus, rankIndex, soldOwn, workplaceLeave } from './crafts'
 import { gather, searchHere, track, treat } from './skills'
 import { ownerOf, ownersHere } from './social/ownership'
@@ -90,7 +90,8 @@ export function runCommand(host: CommandHost, command: Command): Output[] {
     case 'take': {
       // TAKE <thing> FROM <chest> (M10.3): from an open chest; someone else's is theirs.
       const from = /^(.+?)\s+(?:from|out of|uit)\s+(.+)$/i.exec(command.args.join(' '))
-      if (from && !findNpcHere(world, from[2]!)) return takeFrom(world, from[1]!, from[2]!)
+      // A chest named after its owner is the chest, even with the owner standing by (M10.5).
+      if (from && (objectHere(world, from[2]!) || !findNpcHere(world, from[2]!))) return takeFrom(world, from[1]!, from[2]!)
       return each(command.args, (a) => take(host, a))
     }
     case 'open':
