@@ -503,6 +503,13 @@ export function runVerb(world: World, ctx: PlanContext, verb: Verb, st: StepStat
     s.busyUntil = Math.min(s.busyUntil, world.now)
     return true
   }
+  if ('fight' in v) {
+    const who = one(world, ctx, v.fight)
+    const target = one(world, ctx, v.target)
+    if (!who || !target || !world.content.npcs.has(who) || !world.content.npcs.has(target)) return false
+    const made = agree(world, { kind: 'attack', by: who, to: target, source: 'rules', what: `go for ${nameOf(world, target)} over ${fill(world, v.reason, ctx.bind)}`, terms: { target, reason: fill(world, v.reason, ctx.bind) } })
+    return !('rejected' in made)
+  }
   if ('invite' in v) {
     const who = one(world, ctx, v.invite)
     const to = one(world, ctx, v.to)

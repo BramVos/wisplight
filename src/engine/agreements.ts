@@ -1,3 +1,4 @@
+import { brawlTick } from './social/brawl'
 import { openedBy } from './props'
 import { z } from 'zod'
 import { callName } from './content'
@@ -159,9 +160,9 @@ export function agree(world: World, input: AgreementInput): Agreement | { reject
     if (a.terms.item === undefined && a.terms.amount === undefined) return { rejected: 'give what?' }
   }
   if (a.kind === 'attack') {
-    // The combat system fights with the player; between two others it has no fight yet.
-    if (a.terms.target !== 'player') return { rejected: 'the combat system only knows fights with the stranger' }
-    if (!isNpc(world, maker)) return { rejected: 'only someone of the world attacks the stranger' }
+    if (!isNpc(world, maker)) return { rejected: 'only someone of the world goes for someone' }
+    // Someone else than the stranger (M10.3, left over): the rules play it out; nobody dies of it.
+    if (a.terms.target !== 'player' && (!isNpc(world, a.terms.target) || a.terms.target === maker || !world.alive(a.terms.target))) return { rejected: `there is nobody ${a.terms.target} to fight` }
     // The rules checked their own gate already (a grievance, or the law's order); a conversation or a plan goes through it here.
     if (a.source !== 'rules' && !mayAttackFirst(world, maker, { provoked: true })) return { rejected: `${nameOf(world, maker)} is not one to go for the stranger` }
     due ??= world.now + ATTACK_LASTS
@@ -385,6 +386,13 @@ export function agreementsTick(world: World): void {
     } else if (a.kind === 'lead') lead(world, a)
     else if (a.kind === 'wait' && !a.part) waitFor(world, a)
     else if (a.kind === 'meet' && !a.part) meet(world, a)
+    else if (a.kind === 'attack' && a.terms.target !== 'player' && (a.due === undefined || world.now < a.due))
+      brawlTick(
+        world,
+        a,
+        (text) => settle(world, a, 'kept', text, { quiet: true }),
+        (place) => plan(world, a, a.by, visit(world, place, a.due ?? world.now + ATTACK_LASTS)),
+      )
     else if (a.kind === 'accompany') {
       // A companion who is no longer one without a word (an old path): the agreement ends, not in silence.
       if (!(world.state.companions ?? []).some((c) => c.agreement === a.id)) settle(world, a, 'cancelled', `${nameOf(world, a.by)} and the stranger parted`, { fault: 'world', quiet: true })

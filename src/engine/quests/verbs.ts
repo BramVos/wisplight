@@ -49,6 +49,7 @@ export const PERMISSIONS: Record<string, Permission> = {
   ask_around: all('someone asks a trader, or goes to look, whether a claim is true'),
   carry_word: all('someone walks to another to tell them what they know'),
   seek_player: all('someone goes to find the stranger, and opens a talk with a line'),
+  fight: rules("someone goes for someone else of the world, over a reason: hurt, gives in or runs, never dead; witnesses, a grudge, the law", true),
   invite: all('someone goes to find the stranger and asks them to come along somewhere: a yes is an agreement lead; a no, and they go alone or wait'),
   mediate: all('someone tries to make peace between two with a grudge'),
   recall: all('someone is known again from a memory'),

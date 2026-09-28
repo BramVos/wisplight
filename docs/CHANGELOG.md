@@ -1,5 +1,13 @@
 # Changelog
 
+## M10.3, de restpunten, 28 september 2026
+
+- **Meelopen op verzoek.** Een plan, een wachter of de kroniekschrijver kan zeggen: deze persoon vraagt de vreemdeling mee (het nieuwe werkwoord `invite`). Die zoekt je op en vraagt het zelf, bijvoorbeeld "Will you walk up to the mill with me?". Ja is de gewone afspraak `lead`. Nee, of geen antwoord als het gesprek voorbij is, en de persoon gaat alleen of wacht, zoals de stap zegt. Een kind vraagt het alleen thuis of met een ouder erbij, en niet verder dan een kind mag.
+- **Een gevecht tussen twee mensen van de wereld.** De afspraak `attack` mag nu ook iemand anders dan jou als doel hebben (het werkwoord `fight` voor plannen). Buiten beeld spelen de regels het in één keer uit met dezelfde vechters als het gevechtssysteem: de verliezer raakt gewond, geeft op of rent weg, maar niemand sterft eraan. Sta je erbij, dan is het een scène. Met PERSUADE of INTIMIDATE haal je ze uit elkaar (een proef), met ATTACK op een van de twee begint je eigen gevecht, en anders loopt het af. Omstanders zijn getuige, het is een feit over allebei, de verliezer houdt er een wrok aan over, en ziet de schout het of hoort hij het van een getuige, dan beboet hij wie begon.
+- **Beweringen die de stem leest.** Leest de regel geen bewering en is je zin geen vraag, dan mag de stem in dezelfde aanroep een bewering teruggeven: onderwerp, sleutel en waarde, alleen in de woorden van de wereld. De motor keurt die, boekt hem als gehoord "van de vreemdeling", en de houding (gelooft, twijfelt, verwerpt) klinkt in de volgende beurt door. Er komt geen tweede aanroep, en de grens per gesprek blijft.
+
+Testen: met een plan of het dev-menu iemand je laten meevragen, of twee mensen laten vechten waar je bij staat. Tests in `tests/m103later.test.ts` (13). De test uit M10.2 die een aanval op iemand anders weigerde, toetst nu de nieuwe regel.
+
 ## M10 De kaart in kleur en lagen, 28 september 2026
 
 Gebouwd na de goedkeuring van de voorstelpagina (28 september 2026, via de ontwerpsessie), met de aanpassingen die daarbij hoorden.

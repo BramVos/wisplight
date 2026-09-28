@@ -312,7 +312,8 @@ describe('M10.2: the register of agreements', () => {
     expect(attack.status).toBe('kept')
     expect(attack.outcome?.text).toMatch(/Gerrit went for the stranger/)
     // The combat system fights with the stranger; a death is never agreed.
-    expect(agree(engine.world, { kind: 'attack', by: 'npc_gerrit', to: 'npc_mirte', source: 'conversation', what: 'go for Mirte', terms: { target: 'npc_mirte', reason: 'spite' } })).toMatchObject({ rejected: expect.stringMatching(/only knows fights with the stranger/) })
+    // Since the M10.3 leftovers someone else of the world may be the target (the rules play it out); nobody may not.
+    expect(agree(engine.world, { kind: 'attack', by: 'npc_gerrit', to: 'npc_nobody', source: 'conversation', what: 'go for nobody', terms: { target: 'npc_nobody', reason: 'spite' } })).toMatchObject({ rejected: expect.stringMatching(/npc_nobody cannot be party to it/) })
     expect(agree(engine.world, { kind: 'intention', by: 'npc_gerrit', source: 'conversation', what: 'kill the stranger tonight', terms: { goal: 'Visit', target: 'loc_veenhoek_green' } })).toMatchObject({ rejected: expect.stringMatching(/never prescribes a death/) })
   }, 60_000)
 

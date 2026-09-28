@@ -666,6 +666,8 @@ export interface GameState {
   areaNews?: Record<string, string>
   /** The fight in progress (FO, chapter 12). */
   combat?: Combat
+  /** A fight between two people of the world in front of the stranger (M10.3, left over), waiting for their move. */
+  brawl?: import('./social/brawl').BrawlScene
   /** Progress clocks: threats and long jobs (FO, chapter 11). */
   clocks?: Record<string, Clock>
   brain?: {

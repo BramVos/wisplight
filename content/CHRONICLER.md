@@ -309,6 +309,8 @@ Watchers, the standard aftermath, intentions, fixed plans, quests and your own p
 - `ask_around` `{ ask_around: selector, about: [text, text] }`: Someone asks a trader, or goes to look, whether a claim is true. Rules yes, brain yes, chronicler yes.
 - `carry_word` `{ carry_word: selector, to: selector, about: text }`: Someone walks to another to tell them what they know. Rules yes, brain yes, chronicler yes.
 - `seek_player` `{ seek_player: selector, line: text, hours?: number = 24 }`: Someone goes to find the stranger, and opens a talk with a line. Rules yes, brain yes, chronicler yes.
+- `fight` `{ fight: selector, target: selector, reason: text }`: Someone goes for someone else of the world, over a reason: hurt, gives in or runs, never dead; witnesses, a grudge, the law. Rules yes, brain no, chronicler yes.
+- `invite` `{ invite: selector, to: selector, person?: selector, line?: text, otherwise?: alone | wait = "alone", hours?: number = 24 }`: Someone goes to find the stranger and asks them to come along somewhere: a yes is an agreement lead; a no, and they go alone or wait. Rules yes, brain yes, chronicler yes.
 - `chase_away` `{ chase_away: [selector, selector] }`: Someone the gates let through chases a stranger off. Rules yes, brain no, chronicler no.
 - `mediate` `{ mediate: [selector, selector], by?: selector }`: Someone tries to make peace between two with a grudge. Rules yes, brain yes, chronicler yes.
 - `recall` `{ recall: selector, of: selector }`: Someone is known again from a memory. Rules yes, brain yes, chronicler yes.

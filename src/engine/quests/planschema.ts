@@ -125,6 +125,8 @@ export const VerbSchema = z.union([
   z.object({ carry_word: SelectorSchema, to: SelectorSchema, about: z.string() }).strict(),
   // Someone with news, a request, thanks or a grievance about the stranger goes to find them (M10.3).
   z.object({ seek_player: SelectorSchema, line: z.string(), hours: z.number().positive().default(24) }).strict(),
+  // Someone goes for someone else of the world (M10.3, left over): an agreement attack; the rules play it out, nobody dies of it.
+  z.object({ fight: SelectorSchema, target: SelectorSchema, reason: z.string() }).strict(),
   // Someone asks the stranger to come along somewhere (M10.3, left over): they find them and offer to lead; no, and they go alone or wait.
   z.object({ invite: SelectorSchema, to: SelectorSchema, person: SelectorSchema.optional(), line: z.string().optional(), otherwise: z.enum(['alone', 'wait']).default('alone'), hours: z.number().positive().default(24) }).strict(),
   /** Someone the gates let through chases a stranger out of the village. */

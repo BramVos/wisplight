@@ -2,6 +2,7 @@ import type { Archived } from './archive'
 import { seeFamily } from './acquaintance'
 import { entered } from './social/access'
 import { inscribedHere, readInscription } from './skills'
+import { brawlAnswer, brawlShown } from './social/brawl'
 import { CHECKPOINT_ENTRIES, CHECKPOINT_MINUTES, contentVersion, type Checkpoint, type CheckpointedSave } from './checkpoint'
 import { applyFarPlace, farPlaceOf, farRequest, farWords, wantFarPlace, type FarWords } from './growth/far'
 import { crowdHere, nameOne } from './growth/crowds'
@@ -696,7 +697,9 @@ export class Engine {
       const named = spoken.replace(/^(ask|tell|show|give|persuade|convince)\s+(?=about\b|over\b|for\b|to\b|how\b)/i, `$1 ${callName(this.world.npc(partner)).toLowerCase()} `)
       if (named !== spoken) quest = questAction(this.world, this.questHost, named)
     }
-    const outputs = quest ?? (this.state.combat ? await this.inFight(text) : await this.route(text))
+    // A fight in front of the stranger (M10.3, left over): this move answers it first.
+    const brawl = this.brawlMove(spoken)
+    const outputs = brawl?.done ? brawl.out : [...(brawl?.out ?? []), ...(quest ?? (this.state.combat ? await this.inFight(text) : await this.route(text)))]
     const talk = this.state.talk
     if (talk && this.state.npcs[talk.npc]?.location !== this.state.player.location) this.state.talk = undefined
     this.dialogue.learn(this.state.player.location, areaTopicId(this.content, this.world.location(this.state.player.location).area))
@@ -719,7 +722,7 @@ export class Engine {
     outputs.push(...this.questsTick())
     // Whoever was robbed and sees their own thing on the stranger knows it now (M10.3).
     outputs.push(...stolenSeen(this.world))
-    outputs.push(...this.confrontations(), ...this.attacks(), ...this.sought())
+    outputs.push(...this.confrontations(), ...this.attacks(), ...this.sought(), ...brawlShown(this.world))
     settleRuns(this.world)
     settleChoices(this.world)
     outputs.push(...this.world.notices.splice(0).map((text) => ({ kind: 'system' as const, text })))
@@ -1046,7 +1049,7 @@ export class Engine {
     for (const listener of this.listeners) listener({ kind: 'replay', t: this.world.now, entry: { t: this.world.now, k: 'tick', v: minutes } })
     const passed = this.pass(minutes)
     noticeCarried(this.world)
-    const outputs = [...passed, ...this.questsTick(), ...this.confrontations(), ...this.attacks(), ...this.sought()]
+    const outputs = [...passed, ...this.questsTick(), ...this.confrontations(), ...this.attacks(), ...this.sought(), ...brawlShown(this.world)]
     outputs.push(...this.world.notices.splice(0).map((text) => ({ kind: 'system' as const, text })))
     return this.shown(outputs)
   }
@@ -1801,6 +1804,22 @@ export class Engine {
     if (!intent) return []
     intent.terms.fought = this.world.now
     return this.startNpcFight(intent.by, 'npc')
+  }
+
+  /**
+   * The stranger's move with a fight between two others in front of them
+   * (M10.3, left over): persuading or threatening them apart is the whole
+   * move (done); attacking one of them ends their fight before the
+   * stranger's own starts; anything else lets theirs run its course first.
+   */
+  private brawlMove(spoken: string): { out: Output[]; done: boolean } | undefined {
+    if (!this.state.brawl?.shown) return undefined
+    const command = parseCommand(spoken)
+    const words = command.args.join(' ').replace(/^(the|them|both)\s*/i, '')
+    const target = words ? findNpcHere(this.world, words) : undefined
+    const out = brawlAnswer(this.world, command.verb, target, (a, status, text) => settle(this.world, a, status, text, { quiet: true }))
+    if (!out) return undefined
+    return { out, done: command.verb === 'persuade' || command.verb === 'intimidate' }
   }
 
   /**
