@@ -38,7 +38,6 @@ describe('the guide for a new world', () => {
     expect(step('people').prompt).toMatch(/fines/)
     expect(step('passages').prompt).toMatch(/hires/)
     expect(step('passages').fills.map((f) => f.kind)).toContain('journey')
-    expect(step('calendar').fills).toContainEqual({ kind: 'world', keys: ['calendar', 'start', 'weather'] })
     expect(step('calendar').prompt).toMatch(/start_weekday/)
     expect(step('palette').prompt).toMatch(/hex names/)
     expect(step('faiths').prompt).toMatch(/sworn/)
@@ -52,6 +51,9 @@ describe('the guide for a new world', () => {
     expect(step('watcher').checks.join(' ')).toMatch(/made_good .* pupil_learnt/)
     expect(step('watcher').checks.join(' ')).toMatch(/tell with grows/)
     expect(step('watcher').fills).toContainEqual({ kind: 'rules', keys: ['conditions'] })
+    expect(step('calendar').fills).toContainEqual({ kind: 'world', keys: ['calendar', 'start', 'weather', 'bells'] })
+    expect(step('places').prompt).toMatch(/a sound/)
+    expect(step('places').checks.join(' ')).toMatch(/Left out: silence/)
   })
 
   it('tells the chronicler to ask before inventing, never to borrow from another world, and what building Deepwell taught', () => {

@@ -83,7 +83,7 @@ export const WORLD_STEPS: readonly WorldStep[] = [
       'Thirteen months (twelve of thirty days and five short days at the end), with names of your own or numbered; and how many days has a week, and what are they called?',
       'Is there weather where the story plays? If so, which seasons and what kind of weather in each; if not (a dome, a ship), it stays out on purpose.',
     ],
-    fills: [{ kind: 'world', keys: ['calendar', 'start', 'weather'] }],
+    fills: [{ kind: 'world', keys: ['calendar', 'start', 'weather', 'bells'] }],
     optional: true,
     skipped: 'The standard calendar, with the start as the builder made it, and no weather at all: no sky, no wind, nothing about it in the clock.',
     checks: [
@@ -92,9 +92,10 @@ export const WORLD_STEPS: readonly WorldStep[] = [
       'start.month is 1 to 13 and start.day fits the month (1 to 30, or 1 to 5 in the thirteenth).',
       'Market days, passage days and opening days elsewhere use these weekday names.',
       'With weather: seasons names a season for each of the thirteen months, every season has its chances, and lines (if any) say the sky in the world\'s own words.',
+      'A bell (or a siren, a horn, a call to prayer) hangs at a place that exists, rings at hours from 0 to 23, is heard in areas that exist, and has a line with {hour} ("six", "noon", "midnight"); left out, there are no bells.',
     ],
     prompt:
-      'STEP: THE CALENDAR AND THE WEATHER. Agree the era, the year, the months, the week and the weather with the designer. Propose in `world`: calendar (era, months as thirteen names, weekdays as the list of names, and start_weekday: the weekday of the first morning; left out, the story starts on the first day of the week), start (year, month, day, hour, minute of the first morning) and, only if there is weather, weather (seasons: one per month; chances per season; stay; prevailing wind; readers: the professions that read the sky; and lines, per kind of weather one sentence or a day and a night sentence, in the world\'s own words). The year arithmetic is fixed: twelve months of thirty days and a thirteenth of five. Leave weather out for a world under a dome or on a ship: it then has none.',
+      'STEP: THE CALENDAR AND THE WEATHER. Agree the era, the year, the months, the week and the weather with the designer. Propose in `world`: calendar (era, months as thirteen names, weekdays as the list of names, and start_weekday: the weekday of the first morning; left out, the story starts on the first day of the week), start (year, month, day, hour, minute of the first morning) and, only if there is weather, weather (seasons: one per month; chances per season; stay; prevailing wind; readers: the professions that read the sky; and lines, per kind of weather one sentence or a day and a night sentence, in the world\'s own words). The year arithmetic is fixed: twelve months of thirty days and a thirteenth of five. Leave weather out for a world under a dome or on a ship: it then has none. If time is rung out (a church bell, a harbour bell, a shift siren), propose bells in `world`: id, name, at (the place), hours, heard (the areas that hear it; default the area of at), far (areas that hear it faintly), line with {hour}, and far_line.',
   },
   {
     id: 'money',
@@ -162,9 +163,10 @@ export const WORLD_STEPS: readonly WorldStep[] = [
       'Places reached only by a line of transport also have a way on foot.',
       'An area that is barred (a mist, a gate, a curse) says when (conditions that can stop holding: the night, a storm, a weekday, a flag), whom it bars if not everyone (carrying: only someone with a thing of this tag, as the surveyor with his chains), and what turns the stranger back.',
       'Every [bracketed] topic exists or is added.',
+      'A place or an area may have a sound: a kind (wind, reeds, rain, sea, surf, hearth, crowd, workshop, water, birds, hum, quiet), or a kind with a level from 0 to 1 and another kind at night; a place\'s own sound wins over its area\'s, and the weather adds its own. Left out: silence. The app makes the sound itself, so no sound files are needed.',
     ],
     prompt:
-      'STEP: PLACES. Agree the areas and the places with the designer. Propose areas and locations in `changes` (an area that turns the stranger back while something holds gets barred: when, carrying if it bars only someone who carries a thing of that tag, and the text; each location with its area, tags, aliases, summary, description with day and, where it differs, night, exits with minutes, and details), and start.location in `world`. The builder adds the way back for every exit.',
+      'STEP: PLACES. Agree the areas and the places with the designer. Propose areas and locations in `changes` (an area that turns the stranger back while something holds gets barred: when, carrying if it bars only someone who carries a thing of that tag, and the text; each location with its area, tags, aliases, summary, description with day and, where it differs, night, exits with minutes, and details), and start.location in `world`. The builder adds the way back for every exit. Give areas, and places that sound different from their area (an inn, a workshop, a shore), a sound.',
   },
   {
     id: 'professions',
