@@ -11,12 +11,14 @@ voice:
   sayings:
     - "A name is a responsibility."
     - "Leave room for what you don't know."
+    - "Let us return with better questions."
   groups:
     - id: technicians
       name: "Technicians and spacefarers"
       professions: [chief_engineer, signal_technician, pilot_navigator, field_mechanic]
       oaths:
         - "Hull and vacuum."
+        - "Hold pressure."
         - "Not on my ship."
       sayings:
         - "A green light isn't a second opinion."

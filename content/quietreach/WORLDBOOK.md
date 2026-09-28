@@ -109,8 +109,15 @@ Pacing: play starts small, on Nacre, among the colonists, their everyday problem
 
 | Faith | Patrons | Faction |
 | --- | --- | --- |
-| The Keeping | the_remembered |  |
-| The Open Sky | the_witness |  |
+| The Keeping | The Remembered | The Keeping Circle |
+| The Open Sky | The Witness |  |
+
+### Patrons and blessings
+
+| Patron | What they are | Blessings |
+| --- | --- | --- |
+| The Remembered | The dead whom the living know by name. To the Keeping, a person stays part of the community for as long as others keep their name, their work and their promises; to call on the Remembered is to remember that you carry what they left unfinished. |  |
+| The Witness | A name the Open Sky gives to the supposed presence behind the universe; some of the faithful mean by it only their own conscience. To call on the Witness is to act as if someone is watching how humanity meets what it does not yet understand. |  |
 
 ## 5. Towns and villages
 
@@ -360,14 +367,21 @@ When a drone goes wrong, the first question in the Workshop is never sabotage. I
 | hot meal | 4 cr |
 | length of salvaged cable sheathing | 40 b |
 | measurement cable | 9 cr |
+| multitool | 15 cr |
 | packet of tea herbs | 20 b |
+| pair of sturdy boots | 20 cr |
+| pocket terminal | 60 cr |
 | reel of insulated wire | 1 cr 50 b |
+| refillable water bottle | 2 cr |
+| research bag | 8 cr |
 | roll of filter media | 2 cr |
 | sack of grain | 50 b |
 | seal ring | 4 cr |
+| short-range communicator | 25 cr |
 | tin of cooking oil | 80 b |
 | unreliable measurement cable | 1 cr 50 b |
 | water filter cartridge | 9 cr |
+| weatherproof coat | 30 cr |
 
 ### Measures
 
@@ -391,6 +405,7 @@ No fine buys off a death or a beating: the stranger is held 48 hours and heard. 
 
 - A name is a responsibility.
 - Leave room for what you don't know.
+- Let us return with better questions.
 
 ### How people address a stranger
 
@@ -447,17 +462,25 @@ magic, spells, mana, divine healing, telepathy, antigravity, gravity plates, ine
 - When pupil learnt (a signal of the game itself): word goes round: "A skill passed on"; each of them thinks: "You can do it yourself now, what the stranger showed you, and that is worth more than a spare part.".
 - When signal anomaly: word goes round: "An anomaly in the recordings"; Niko Serrin thinks: "Preserve the raw recording, check the chain of instruments, and find a second observation before you believe any of it."; Dr Ilyan Sorell thinks: "One anomaly is not proof. The preparations wait on a second observation, however much you want to go.".
 
-## 16. The look and sound of the world
+## 16. The rules in short
+
+Ancestries: . Classes: . Backgrounds: .
+
+Conditions: .
+
+Death: You wake in the recovery cradle with a dry mouth and hands that will not quite close. The monitor chirps steadily beside you, and the air smells of antiseptic and warm plastic. Time has passed; the log by the cradle says how much, and who answered your implant's distress signal. You are weak, and you will need rest before you are yourself again.
+
+## 17. The look and sound of the world
 
 Pictures: Painted science-fiction concept art with a documentary feel: matte surfaces, fine brush texture, believable materials and restrained colours. Technology looks maintained, repaired and sometimes used for too long, with repaired seams, faded labels, scratches and personal belongings. Outdoors the light is cool: overcast skies, wet black rock, grey swell and sea mist. Indoors the light is warm: workbenches, the dining hall and inhabited cabins. Portraits show head and upper body in natural light against a quiet background. People vary in age, build, skin colour and appearance, and their origins show in clothing, habits and personal objects rather than in a fixed look. They wear practical workwear, repaired raincoats, medical wrap coats and safety vests, never tight uniform space suits. Each important character keeps the same identifying features in every image, and mood changes posture and expression, not the face. Places are shown at human scale from where a person could stand, with low buildings against a vast, cold landscape, vulnerable but inhabited. No neon, no holograms, no glowing interfaces beyond plain screen light. The picture shows exactly the state the text describes: damage stays damaged, empty rooms stay empty, and no doors, objects, weapons or clues are added that the world does not hold. Nothing alien, and nothing of Echo Nine, is shown unless the player has discovered it. The impression is of a cold, distant place where people have struggled to make something warm and habitable.
 
 <!-- picture:palette -->
 
-The map calls its land black basalt (volcanic), high rock (highland), open sea (ocean), tidal shallows (shallows), coastal scrub (scrub), growing beds (beds).
+The map calls its land black basalt (volcanic), high rock (highland), open sea (ocean), tidal shallows (shallows), coastal scrub (scrub), growing beds (beds), tidal channel (canal).
 
 Where an act the rules do not know may be improvised: Orison Listening Room (lore), Workshop (craft).
 
-## 17. How this world was made
+## 18. How this world was made
 
 ### The steps of the guide
 
@@ -2240,3 +2263,167 @@ What the chronicler said:
 > I cut all four descriptions to 70 words or fewer. Every listed thing stays, the Commons no longer opens with its own name, and each ends with a single exit hint instead of a list. I wrote the Works as the Workshop, its name in the world; night at the lock leaves out the terminal, as it did before.
 
 Changed: location loc_arrival_lock: description; location loc_commons: description.
+
+#### Money: accepted, 2026-09-28 23:59
+
+What the designer wrote:
+
+> In the Lantern Belt, people pay with Belt credits. On Nacre, transactions are processed locally; a payment does not need to wait for confirmation from another star system.
+>
+> | Unit | Value | Use |
+> | Bit | Smallest unit | Small purchases and price differences. |
+> | Credit | 100 bits | Meals, wages, lodging and tools. |
+>
+> There is no separate larger denomination. Large amounts remain in credits, such as 1,200 credits for specialist equipment.
+>
+> A personal credit chip stores the available balance and signs payments. Shops and stations also accept standardised physical value tokens during power or network outages. Transferring funds to tokens reduces the chip’s balance by the same amount.
+>
+> Guide prices in Port Vesper
+>
+> | Good or service | Normal price |
+> | Hot drink | 50 bits |
+> | Simple hot meal | 4 credits |
+> | One day’s supply of field rations | 6 credits |
+> | Bed in shared sleeping quarters, per night | 8 credits |
+> | Small private cabin, per night | 15 credits |
+> | Day’s wage for general port work | 30 credits |
+> | Day’s wage for a skilled technician | 50 credits |
+> | Daily payment for specialist expedition work | 70 credits |
+>
+> These are baseline prices. Availability, relationships and disruptions may change them. Essential air in the settlement is a shared provision; nobody charges by the breath. Personal emergency supplies and specialist equipment do cost money.
+>
+> What the stranger has on arrival
+>
+> You carry 120 credits: the advance on your investigation contract. Your client has also paid for your first three nights in the shared guest quarters. This lets you get to know people and carry out research before everyday living costs become urgent.
+>
+> Your equipment consists of:
+>
+> A personal credit chip holding your balance.
+>
+> A pocket terminal containing your contract, a basic local map and notes. It works offline; it has no knowledge of hidden locations or secret files.
+>
+> A short-range communicator, usable within range of local relays. Coverage at Orison Ridge is unreliable.
+>
+> A simple multitool, suitable for minor maintenance; no substitute for specialist tools.
+>
+> A weatherproof coat and sturdy boots, sufficient for ordinary travel around Port Vesper.
+>
+> Two day rations and a refillable water bottle.
+>
+> A compact research bag for carrying materials and personal belongings.
+>
+> You begin without a firearm, spacesuit or access to the locked hangar.
+>
+> Contract arrangements
+>
+> Your contract provides 280 credits upon delivery of a useful investigation report, in addition to the advance. Payment depends on demonstrable research, not on a conclusion the client would like to hear.
+>
+> Necessary specialist equipment can be borrowed and is registered as the client’s property. Any journey aboard the Peregrine requires a separate agreement covering payment, risks and responsibilities. The player does not have to finance the experimental expedition personally.
+>
+> For the Chronicler: money creates choices between convenience, time, independence and favours. Allow enough financial room in the first few days to discover the mystery. Actually record rewards, purchases and loans; an NPC can only pay from available funds or an explicitly established budget.
+
+What the chronicler said:
+
+> Money was already agreed (credits of 100 bits, 120 credits to start), so the units and the purse stay exactly as they are. This proposal adds the starting kit you listed. The two day rations already exist as field_ration. Eight new items cover the rest: credit chip, pocket terminal, communicator, multitool, coat, boots, water bottle and research bag. All of them go into the stranger's inventory. Their values are my suggestion, in bits; change any you like. The credit chip has no resale value, because it is personal and signs only for its owner. Your guide prices for drinks, meals and rations already match the items (herbal tea 50, hot meal 400, field ration 600). The beds, cabins and wages are kept for the economy step. The three nights paid in the guest quarters and the 280-credit contract fee are also left for later steps. The fee is already in CHRONICLER.md.
+
+What it asked back:
+
+- The three prepaid nights: when we reach the economy step, should the guest-quarters bed be free to the stranger for nights one to three, then 8 credits a night?
+- Physical value tokens: should they become a carriable item now (for example a 'value token' worth 100 bits), or stay in the rules text until an outage matters?
+
+Changed: item credit_chip; item pocket_terminal; item communicator; item multitool; item weatherproof_coat; item sturdy_boots; item water_bottle; item research_bag; world.yaml: money, player.
+
+#### Faiths: accepted, 2026-09-29 00:06
+
+What the designer wrote:
+
+> In The Quiet Reach, different beliefs coexist. None has demonstrable supernatural power. People seek meaning in the long distances, their dependence on one another and the knowledge that a message sometimes reaches its recipient only after their death.
+>
+> | Belief | What people believe | Whom or what they call upon |
+> | The Keeping | A person remains part of the community as long as others preserve their name, work and promises. Remembering carries responsibility. | The Remembered: the dead whom people know by name. |
+> | The Open Sky | Humanity must leave room for what it does not yet understand. Discovery requires both curiosity and restraint. | The Witness, a name for the supposed presence behind the universe. Some mean only their own conscience. |
+> | No faith | Meaning comes from living people, craftsmanship and agreements made. | Crew, family, the ship or the reliability of technology. |
+>
+> These beliefs are not fixed moral camps. A believer can be reckless; a sceptic can respectfully take part in a remembrance ceremony.
+>
+> Customs on Nacre
+>
+> The Keeping is visible in Port Vesper. When someone dies, a place is left empty at the evening meal. Each acquaintance shares one specific memory. The name and a short personal message are entered in the Harbour Record.
+>
+> Followers of The Open Sky sometimes hold a silent vigil at an observation window. Before departure, they touch the window and say:
+>
+> “Let us return with better questions.”
+>
+> Both customs may also be followed by people who have no religious beliefs.
+>
+> Oaths and curses
+>
+> Use them sparingly and in keeping with the speaker.
+>
+> | Speaker | Examples |
+> | The Keeping | “By the Remembered.” · “Keep their names.” · “Leave the dead their peace.” |
+> | The Open Sky | “Witness us.” · “By the open sky.” · “May the dark be empty.” |
+> | Spacefarers and technicians | “Hull and vacuum.” · “Hold pressure.” · “Not on my ship.” |
+> | People of the Vesper Coast | “Deep water take it.” · “Salt in the seals.” · “By my mother's hands.” |
+>
+> Death and awakening through medical recovery
+>
+> The player's return is technological, with a clearly defined limit. There is no proven transfer of souls, time travel or unlimited copying of people.
+>
+> On arrival, the stranger receives a continuity implant as part of the assignment. It monitors vital functions and stores a limited amount of recent neurological data. In the event of fatal injury, it attempts to protect the brain and broadcasts a distress signal.
+>
+> A medical recovery cradle can bring someone back after a period of clinical death, provided the body is recovered in time and the brain remains sufficiently intact. The system does not create a new body or bring anyone back from nothing.
+>
+> Port Vesper has such an installation. The Peregrine has a smaller version.
+>
+> What the player sees
+>
+> During recovery, the player experiences a fragmentary space: a silent arrival hall, empty benches, rain behind frosted glass. It is an orientation environment constructed by the implant from memories. The image recurs, but small details may differ.
+>
+> A medical guidance voice, Morrow, helps the player awaken:
+>
+> “Stay with the voice. Your name first. Then where you last remember being.”
+>
+> Morrow is a specialised medical system. It knows what sensors, the implant and rescuers have recorded. It knows no hidden truth about the signal or Echo Nine.
+>
+> The price of returning
+>
+> Time passes. Retrieval and recovery may take hours or days. People continue acting; appointments may be missed.
+>
+> You awaken weakened. Temporary limitations require rest or treatment, without a prolonged spiral of punishment.
+>
+> Equipment stays wherever it ended up, unless someone has taken it. The journal records what is known about the retrieval.
+>
+> Recovery consumes medical supplies. The first treatment is covered by your assignment. Further treatments may create a debt or a request for replacement supplies. Emergency care is not refused because your balance is too low.
+>
+> The living crew keep a practical ritual: someone stays beside the cradle and speaks your name, location and one shared memory. The Keeping calls this Holding the Name. Doctors call it familiar orientation; to the people at the bedside, it may be both.
+>
+> Important for the Chronicler
+>
+> Death must not become free teleportation. Record who received the distress signal, how retrieval was possible, how much time passed and what was left behind. NPCs can be saved under the same medical conditions.
+>
+> Complete destruction of the body or brain is irreversible. The game must clearly warn in advance of such exceptional risks; in a forgiving game mode, play resumes from an earlier save. The Chronicler does not invent a miraculous rescue.
+>
+> The question that lingers after returning is personal: who made the effort to bring you back, and what does that mean for your bond?
+
+What the chronicler said:
+
+> This step fits your table to the world. Most of it was already settled in the frame, so the proposal is small.
+>
+> Faiths in world.yaml: The Keeping and The Open Sky stay as they are. I have given The Keeping its faction, keeping_circle, which already exists, so a remembrance or wedding the Keeping holds can count towards the Circle. The Open Sky has no faction; it is a way of looking, not an organised group. People with no faith are not a faith entry. The frame and the voice already say what they swear by.
+>
+> Patrons (changes): the_remembered and the_witness. Each has what it means to the faithful, and a sworn line companions will judge by. For the Remembered, that is keeping a promise made in a name. For the Witness, it is honest curiosity with restraint.
+>
+> What people swear by, for the voice: the Keeping by the Remembered and the names of the dead. The Open Sky by the Witness and the open sky. Spacefarers and technicians by the hull, the vacuum and holding pressure. Coast folk by deep water, salt and their mothers' hands. The faithless swear by their crew, family, ship or equipment that works. In voice.yaml I added "Hold pressure." to the technicians, as your table has it; Port Vesper keeps it too. I also added the Open Sky's departure words as a saying.
+>
+> Death (rules): medical and plain. The vision is the silent arrival hall, and Morrow is the guide, speaking your line. The wake is weak, with time lost. The mark says where your gear stayed. The rite is Holding the Name at the cradle. There is no patron in the death rules: the return is not religious, and Morrow is a medical system. I left out a price for now; see the question below.
+>
+> No location is marked holy yet. I did not want to pick one for you.
+
+What it asked back:
+
+- Holy place: should the Commons, where the empty place is left at the evening meal, carry faith: keeping? Or is there no holy place on Nacre, so no location raises the Keeping Circle?
+- Price of returning: the engine's price asks for an item handed in at a place, and it has a 'refused' text, which sits awkwardly with 'emergency care is never refused'. Leave the price out, so the cost is only time, weakness and lost gear? Or set a price of one field_medkit to be replaced at the Medical Bay, with the refused text saying the care was given anyway and the debt is noted?
+- Should the Harbour Record, now only a topic, one day become a place you can stand in (in the places step), or does it stay a record kept on the station's systems?
+
+Changed: patron the_remembered; patron the_witness; world.yaml: faiths; data/voice.yaml.

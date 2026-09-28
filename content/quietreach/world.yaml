@@ -10,7 +10,7 @@ world:
     minute: 0
   player:
     money: 12000
-    inventory: { field_ration: 2 }
+    inventory: { field_ration: 2, credit_chip: 1, pocket_terminal: 1, communicator: 1, multitool: 1, weatherproof_coat: 1, sturdy_boots: 1, water_bottle: 1, research_bag: 1 }
   words:
     land: Nacre
     region: Vesper Coast
@@ -102,7 +102,7 @@ world:
         aliases: [credits, Belt credit, Belt credits]
       - { short: b, name: bit, plural: bits, value: 1, aliases: [bits] }
   faiths:
-    - { id: keeping, name: The Keeping, patrons: [the_remembered] }
+    - { id: keeping, name: The Keeping, patrons: [the_remembered], faction: keeping_circle }
     - { id: open_sky, name: The Open Sky, patrons: [the_witness] }
   law:
     where: in Port Vesper

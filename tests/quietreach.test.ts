@@ -2,6 +2,7 @@ import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { Engine, MockLlm, warnings } from '../src/engine'
 import { placeMeasures } from '../src/engine/builder'
+import { hasCharacters } from '../src/engine/rules/character'
 import { contractView } from '../src/engine/contract'
 import { oathsFor } from '../src/engine/dialogue/voice'
 import { loadContentFromDir } from '../src/node/content'
@@ -48,7 +49,8 @@ describe('The Quiet Reach, as Bram built it in the app', () => {
     expect(out[2]).toMatch(/It is Primeday 18 Rainfall 186 CR, 08:\d\d/)
     expect(out[3]).toContain('You are talking with the port coordinator.')
     expect(out[6]).toMatch(/^Commons\n/)
-    expect(out[7]).toBe('You carry 2 field rations, and 120 cr.')
+    // The starting kit of Bram's money chapter (M10.20: proposed again once the money step could make items).
+    expect(out[7]).toBe('You carry a short-range communicator, a personal credit chip, 2 field rations, a multitool, a pocket terminal, a research bag, a pair of sturdy boots, a refillable water bottle and a weatherproof coat, and 120 cr.')
     expect(engine.state.player.location).toBe('loc_commons')
     for (const text of out) expect(text).not.toMatch(NETHERMARCH)
   })
@@ -66,6 +68,18 @@ describe('The Quiet Reach, as Bram built it in the app', () => {
     expect(new Set(measures.map((m) => m.opening)).size).toBe(measures.length)
     // The fact of Bram's places table stays: the terminal takes in the local map at the lock.
     expect(reach.locations.get('loc_arrival_lock')!.description.day).toMatch(/terminal chirps, taking the local map/)
+  })
+
+  it('has its patrons and a medical return in its rules, and still no characters (M10.20)', () => {
+    expect(reach.rules?.patrons.map((p) => p.id)).toEqual(['the_remembered', 'the_witness'])
+    expect(reach.world.faiths.find((f) => f.id === 'keeping')?.patrons).toEqual(['the_remembered'])
+    expect(reach.rules?.death).toMatchObject({ guide: 'Morrow' })
+    expect(reach.rules?.death?.vision).toContain('Stay with the voice. Your name first. Then where you last remember being.')
+    expect(reach.rules?.death?.price).toBeUndefined()
+    expect(hasCharacters(reach)).toBe(false)
+    const engine = new Engine(reach, { seed: 1 })
+    engine.start()
+    expect(engine.state.player.character).toBeUndefined()
   })
 
   it('swears by faith and by trade: Tessa by the hull, Sana by the Remembered', () => {

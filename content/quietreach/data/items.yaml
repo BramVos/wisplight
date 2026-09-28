@@ -253,3 +253,67 @@ items:
     aliases: [sample, specimen, tube]
     tags: [sample, research]
     value: 0
+
+  - id: credit_chip
+    name: personal credit chip
+    plural: personal credit chips
+    description: A thin, scuffed chip on a cord, keyed to your hand. It holds your balance and signs payments locally. It is worth nothing to anyone else.
+    aliases: [chip, credit chip]
+    tags: [personal, money]
+    value: 0
+
+  - id: pocket_terminal
+    name: pocket terminal
+    plural: pocket terminals
+    description: A palm-sized terminal in a rubberised case, its screen dimmed to save power. It holds your contract, a basic local map and your notes, and it works offline. It knows nothing of hidden places or sealed files.
+    aliases: [terminal, pad]
+    tags: [personal, equipment, imported]
+    value: 6000
+
+  - id: communicator
+    name: short-range communicator
+    plural: short-range communicators
+    description: A compact communicator with a stubby antenna and a clip for your collar. It works within range of the local relays. Up on Orison Ridge it drops to hiss and fragments.
+    aliases: [comm, radio, communicator]
+    tags: [personal, equipment, imported]
+    value: 2500
+
+  - id: multitool
+    name: multitool
+    plural: multitools
+    description: A folding multitool with pliers, drivers and a short blade, its grip worn smooth. It is good for small repairs, but it is no substitute for proper tools.
+    aliases: [tool, pliers]
+    tags: [personal, tool]
+    value: 1500
+
+  - id: weatherproof_coat
+    name: weatherproof coat
+    plural: weatherproof coats
+    description: A long grey coat of coated fabric with a deep hood and taped seams, repaired once at the elbow. It keeps out Nacre's rain, if not its cold.
+    aliases: [coat, raincoat]
+    tags: [personal, clothing]
+    value: 3000
+
+  - id: sturdy_boots
+    name: pair of sturdy boots
+    plural: pairs of sturdy boots
+    description: Heavy laced boots with thick treads, salt already whitening the seams. They are good for deck plates and paths, but not for climbing.
+    aliases: [boots]
+    tags: [personal, clothing]
+    value: 2000
+
+  - id: water_bottle
+    name: refillable water bottle
+    plural: refillable water bottles
+    description: A dented metal bottle with a screw cap on a short chain. It can be filled at any tap in the settlement.
+    aliases: [bottle, water bottle, flask]
+    tags: [personal, container]
+    value: 200
+
+  - id: research_bag
+    name: research bag
+    plural: research bags
+    description: A compact shoulder bag of waxed canvas, with padded pockets for sample bags, notes and personal belongings.
+    aliases: [bag, shoulder bag, satchel]
+    tags: [personal, container]
+    value: 800

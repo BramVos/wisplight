@@ -1,0 +1,19 @@
+rules:
+  death:
+    vision: "The dark gives way to a silent arrival hall. Empty benches stand in rows, and rain runs down frosted glass without a sound. A calm voice reaches you from nowhere in particular, the voice of {guide}: 'Stay with the voice. Your name first. Then where you last remember being.'"
+    guide: Morrow
+    wake: You wake in the recovery cradle with a dry mouth and hands that will not quite close. The monitor chirps steadily beside you, and the air smells of antiseptic and warm plastic. Time has passed; the log by the cradle says how much, and who answered your implant's distress signal. You are weak, and you will need rest before you are yourself again.
+    mark: "What you had with you when you fell stayed where it fell, unless someone has taken it since: {lost}."
+    rite_where: While you were under, someone sat by the cradle and spoke your name, where you are, and one memory you share. The Keeping calls it Holding the Name; the doctors call it familiar orientation.
+    rite_done: The cradle log notes who stayed beside you and for how long. Someone held your name while you were gone.
+    rite_nothing: The cradle log holds only the machines' readings. Nobody sat with you this time.
+  patrons:
+    - id: the_remembered
+      name: The Remembered
+      text: The dead whom the living know by name. To the Keeping, a person stays part of the community for as long as others keep their name, their work and their promises; to call on the Remembered is to remember that you carry what they left unfinished.
+      sworn: "Companions judge whether you keep faith with the dead and the living: a promise made in someone's name kept, their work finished or handed on, a name spoken and not forgotten. A broken word given by the Remembered weighs heavily with them."
+
+    - id: the_witness
+      name: The Witness
+      text: A name the Open Sky gives to the supposed presence behind the universe; some of the faithful mean by it only their own conscience. To call on the Witness is to act as if someone is watching how humanity meets what it does not yet understand.
+      sworn: "Companions judge whether you meet the unknown with curiosity and restraint: asking an honest question, recording what you saw as you saw it, and not forcing an answer or a door before you understand it. Recklessness, or twisting data to fit a wish, counts against you."
