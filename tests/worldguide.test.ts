@@ -54,6 +54,8 @@ describe('the guide for a new world', () => {
     expect(step('calendar').fills).toContainEqual({ kind: 'world', keys: ['calendar', 'start', 'weather', 'bells'] })
     expect(step('places').prompt).toMatch(/a sound/)
     expect(step('places').checks.join(' ')).toMatch(/Left out: silence/)
+    expect(step('places').checks.join(' ')).toMatch(/improvise: a domain \(offering, curse, spirit, lore or craft\)/)
+    expect(step('watcher').checks.join(' ')).toMatch(/signal improvised/)
   })
 
   it('tells the chronicler to ask before inventing, never to borrow from another world, and what building Deepwell taught', () => {
