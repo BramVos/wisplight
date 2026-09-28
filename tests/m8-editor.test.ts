@@ -173,7 +173,10 @@ describe('M8: the editor on disk', () => {
     const editor = new ContentEditor(dir)
     expect((await editor.createWorld('moorland', 'The Moorland')).ok).toBe(true)
     expect((await editor.createWorld('moorland', 'Again')).ok).toBe(false)
-    expect((await listWorlds(dir)).map((w) => w.folder)).toEqual(['base', 'isle', 'moorland'])
+    // The copy may hold worlds being made in the editor too: the Nethermarch first, and the new one among them.
+    const folders = (await listWorlds(dir)).map((w) => w.folder)
+    expect(folders[0]).toBe('base')
+    expect(folders).toEqual(expect.arrayContaining(['isle', 'moorland']))
     const files: ContentFile[] = await readContentFiles(dir, 'moorland')
     const engine = new Engine(loadContent(files), { seed: 1 })
     expect(text(engine.start())).toContain('You arrive in The Moorland.')

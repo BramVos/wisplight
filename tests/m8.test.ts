@@ -26,11 +26,10 @@ const outcome = (engine: Engine) => engine.state.questlog?.['off_skerrow']?.outc
 
 describe('M8: more than one world', () => {
   it('lists the worlds in the content folder, the Nethermarch first', async () => {
-    const worlds = await listWorlds(root)
-    expect(worlds.map((w) => [w.folder, w.id, w.name])).toEqual([
-      ['base', 'nethermarch', 'The Nethermarch'],
-      ['isle', 'skerrow', 'Skerrow'],
-    ])
+    const worlds = (await listWorlds(root)).map((w) => [w.folder, w.id, w.name])
+    // Worlds being made in the editor may be there too; they do not fail the test.
+    expect(worlds[0]).toEqual(['base', 'nethermarch', 'The Nethermarch'])
+    expect(worlds).toContainEqual(['isle', 'skerrow', 'Skerrow'])
   })
 
   it('loads each world on its own, with the shared instruction and its own part', async () => {

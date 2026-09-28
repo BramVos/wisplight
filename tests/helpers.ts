@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process'
 import { resolve } from 'node:path'
 import { Engine, GameClock, type Content } from '../src/engine'
 import { loadContentFromDir } from '../src/node/content'
@@ -25,4 +26,20 @@ export function withNpc(id: string, change: (npc: ReturnType<Content['npcs']['ge
 
 export function eventsBy(engine: Engine, actor: string): string[] {
   return engine.state.events.filter((e) => e.actor === actor).map((e) => e.text)
+}
+
+/**
+ * The worlds of the repository: the folders under content/ whose world.yaml
+ * git knows. A world being made in the editor, or left half made, is not
+ * one of them, and the tests leave it alone (Bram, 28 September 2026: new
+ * worlds and worlds in the making must not fail the tests); the editor's
+ * Check is for those. Without git (a copy of the folder), every world counts.
+ */
+export function committedWorlds(): Set<string> | undefined {
+  try {
+    const listed = execFileSync('git', ['ls-files', '--', 'content'], { cwd: resolve(import.meta.dirname, '..'), encoding: 'utf8' })
+    return new Set(listed.split('\n').map((line) => /^content\/([^/]+)\/world\.ya?ml$/.exec(line)?.[1]).filter((folder): folder is string => Boolean(folder)))
+  } catch {
+    return undefined
+  }
 }
