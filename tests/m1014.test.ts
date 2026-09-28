@@ -111,3 +111,68 @@ describe('M10.14: a failure in the field leaves the situation you are in', () =>
     expect(c.conditions['wet']).toBeUndefined()
   })
 })
+
+describe('M10.14: a missed agreement can be explained or made good', () => {
+  /** The stranger promised Mirte a basket of peat and let the day go by. */
+  async function letMirteDown() {
+    const { agree } = await import('../src/engine/agreements')
+    const engine = await stranger(11)
+    const world = engine.world
+    world.state.player.location = 'loc_bakery_yard'
+    stay(engine, 'npc_mirte', 'loc_bakery_yard', 3 * DAY)
+    const a = agree(world, { kind: 'give', by: 'player', to: 'npc_mirte', source: 'conversation', what: 'bring Mirte a basket of peat', due: world.now + 60, terms: { item: 'peat' } }) as import('../src/engine/state').Agreement
+    engine.tick(120)
+    expect(a).toMatchObject({ status: 'missed', judged: 'let_down' })
+    stay(engine, 'npc_mirte', 'loc_bakery_yard', 3 * DAY)
+    return { engine, world, a }
+  }
+
+  it('sorry, by the rules: a check against how Mirte stands and who she is; then a second go, and kept, it is made good', async () => {
+    const { engine, world, a } = await letMirteDown()
+    const before = relation(world.state, 'npc_mirte').affinity
+    await engine.handle('talk mirte')
+    rolls(engine, 20)
+    const sorry = said(await engine.handle("I'm sorry, I let you down."))
+    expect(sorry).toMatch(/\(Persuasion \d+ vs DC \d+: (critical )?success\)/)
+    expect(sorry).toMatch(/"All right\. Will you still do it, then\?"/)
+    expect(a.amends?.how).toBe('apologised')
+    expect(relation(world.state, 'npc_mirte').affinity).toBeGreaterThan(before)
+    const again = said(await engine.handle("I'll still do it, I promise."))
+    expect(again).toMatch(/Two days, then\. I'll believe it when I see it\./)
+    expect(again).toMatch(/You have given Mirte your word again/)
+    const redo = world.state.agreements!.list.find((x) => x.remakes === a.id)!
+    expect(redo).toMatchObject({ status: 'open', kind: 'give', by: 'player', to: 'npc_mirte' })
+    await engine.handle('bye')
+    world.state.player.inventory['peat'] = 1
+    const gave = said(await engine.handle('give peat to mirte'))
+    expect(gave, gave).toMatch(/You give/)
+    expect(redo.status).toBe('kept')
+    expect(a.amends?.how).toBe('made_good')
+    engine.tick(60)
+    expect(world.state.news?.facts.some((f) => f.kind === 'made_good' && f.about.includes('npc_mirte'))).toBe(true)
+    expect(world.state.npcs['npc_mirte']!.thoughts?.map((t) => t.text)).toContain('The stranger let you down once, over bring Mirte a basket of peat, and made it good.')
+  })
+
+  it('explained: not the stranger\'s fault, and she did not know; now she does, with no check at all', async () => {
+    const { engine, a } = await letMirteDown()
+    a.outcome = { ...a.outcome!, fault: 'world', text: 'the mill stood still all week' }
+    await engine.handle('talk mirte')
+    const out = said(await engine.handle("Let me explain: I couldn't get any, the mill stood still."))
+    expect(out).not.toMatch(/Persuasion/)
+    expect(out).toMatch(/I didn't know that\. Well, then\. No harm meant\./)
+    expect(a.judged).toBe('understood')
+  })
+
+  it('a gift worth what was promised makes it good too; whom it was for decides, and a hostile one says no to a second go', async () => {
+    const { engine, world, a } = await letMirteDown()
+    world.state.player.inventory['rye_bread'] = 30
+    expect(said(await engine.handle('give 30 bread to mirte'))).toMatch(/That makes it good\. We'll say no more about it\./)
+    expect(a.amends?.how).toBe('made_good')
+    const next = await letMirteDown()
+    relation(next.world.state, 'npc_mirte').affinity = -90
+    relation(next.world.state, 'npc_mirte').trust = -90
+    await next.engine.handle('talk mirte')
+    expect(said(await next.engine.handle("Let me make it up to you."))).toMatch(/And wait for you again\? No\./)
+    expect(next.a.amends?.how).toBe('refused')
+  })
+})

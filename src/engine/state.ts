@@ -152,6 +152,10 @@ export interface Agreement {
   interruptions?: { t: number; why: string; then: 'pause' | 'reroute' | 'end'; back: boolean; resumed?: number }[]
   /** Part of a larger agreement: a wait while travelling with the player. */
   part?: string
+  /** A second go at one the stranger did not keep (M10.14): kept, it makes that one good. */
+  remakes?: string
+  /** What the stranger did about letting them down (M10.14): said sorry, explained, offered it again, made it good, or was refused. */
+  amends?: { how: 'apologised' | 'explained' | 'redo' | 'made_good' | 'refused'; t: number; redo?: string }
 }
 
 /**

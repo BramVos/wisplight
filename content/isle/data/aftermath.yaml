@@ -104,6 +104,28 @@ aftermath:
             far: "A stranger who keeps their word."
 
 
+  # The stranger made good a word they had broken (M10.14): done late, or paid for. Whom it was for
+  # thinks better of it; the village hears that it came right in the end.
+  - id: made_good
+    signal: made_good
+    about: first
+    topic: promise
+    expires: 1
+    steps:
+      - id: regard
+        do: { regard: [$a], to: player, affinity: 3 }
+      - id: word
+        do:
+          tell:
+            kind: made_good
+            about: [$a]
+            place: $place
+            belang: 1
+            title: "the stranger making good their word to {a}"
+            precise: "The stranger let {a} down over {value}, and made it good after all."
+            village: "The stranger came back and set it right with {a}. Late, but they did."
+            far: "A stranger who makes good what they owe."
+
   # The stranger reached a rank in a craft (M10.5): someone of the trade near takes note,
   # thinks better of them, and has it on their mind: a signal for the brain to work with.
   - id: craft_rank

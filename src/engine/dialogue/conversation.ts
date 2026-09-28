@@ -1,3 +1,4 @@
+import { amendsIn } from '../amends'
 import { asksAge, knownName, knowsOfPerson, learnTie, learnWork, publicShort, toldAge } from '../acquaintance'
 import type { Output } from '../commands'
 import { parseMoney } from '../items'
@@ -622,13 +623,15 @@ export class Dialogue {
     const claimable = !claim && !options.check && !/\?\s*$/.test(text) && (talk.claims ?? 0) < MAX_CLAIMS ? [...new Set([...topics, ...this.topics.recognise(text)])].filter((t) => t !== npcId && (world.content.npcs.has(t) || world.content.locations.has(t))) : []
     // Flirting in free talk goes by the same formula as FLIRT (M10.3); the voice words what it decided.
     const flirted = act === 'Flirt' && !options.check ? flirtIn(world, npcId) : undefined
+    // Sorry, the reasons, or a second go, to whom the stranger let down (M10.14): the engine decides, the voice words it.
+    const amended = (act === 'Apologize' || act === 'Explain' || act === 'MakeGood') && !options.check ? amendsIn(world, npcId, act) : undefined
     // An insult, a threat or a lie found out: the engine decides the reaction; the voice words it (M10.3).
     const provoked = provocation(act, { ...(options.caughtLie ? { caughtLie: true } : {}), ...(options.check ? { failedThreat: !succeeded(options.check) } : {}) })
     const reaction = provoked ? react(world, npcId, provoked) : undefined
     // "Come with me to the dyke" (M10.6): somewhere or to someone is a lead on offer, not joining the stranger's travels.
     const leads = act === 'Recruit' && !options.check ? offersFor(world, npcId, topics, text).filter((o) => o.kind === 'lead') : []
     const recruiting = act === 'Recruit' && leads.length === 0
-    const decision = [recruiting ? recruitDecision(world, npcId, band.band) : undefined, believed, reaction?.decision, flirted?.decision].filter(Boolean).join(' ') || undefined
+    const decision = [recruiting ? recruitDecision(world, npcId, band.band) : undefined, believed, reaction?.decision, flirted?.decision, amended?.decision].filter(Boolean).join(' ') || undefined
     const offered = options.echo || options.check ? [] : (this.questOptions?.(npcId) ?? [])
     // What this person can do for the player now (M10.3): the game decides, the voice chooses and words it.
     const offers = options.check || options.secret || recruiting ? [] : leads.length ? leads : offersFor(world, npcId, topics, text)
@@ -656,6 +659,8 @@ export class Dialogue {
         ? reactionLine(world, npcId, reaction.reaction)
         : flirted
           ? flirted.line
+          : amended
+          ? amended.line
           : asked
           ? offerLine(world, npcId, asked)
           : said
@@ -779,7 +784,8 @@ export class Dialogue {
       return [...echo, { kind: 'speech', text: shown, ...(reply ? { source: 'model' as const } : {}) }, ...failure, ...offerOut]
     }
     const ends = reply?.ends_conversation === true
-    return [...echo, { kind: 'speech', text: shown, ...(reply ? { source: 'model' as const } : {}) }, ...going, ...failure, ...offerOut, ...(ends ? this.closeNow() : this.maybeClose())]
+    const amends = amended?.outputs ?? []
+    return [...echo, ...amends.filter((o) => o.kind === 'check'), { kind: 'speech', text: shown, ...(reply ? { source: 'model' as const } : {}) }, ...amends.filter((o) => o.kind !== 'check'), ...going, ...failure, ...offerOut, ...(ends ? this.closeNow() : this.maybeClose())]
   }
 
   /** YES or NO to what the NPC proposed (M10.3): only a yes makes it happen. */

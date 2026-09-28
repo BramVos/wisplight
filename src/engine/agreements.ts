@@ -56,6 +56,8 @@ const Base = {
   /** Something said that the maker knows to be untrue: recorded as a bluff, if they are one who lies. */
   bluff: z.string().optional(),
   part: z.string().optional(),
+  /** A second go at one not kept (M10.14). */
+  remakes: z.string().optional(),
 }
 /** What may be proposed, per kind. The terms the engine works out itself (belief, arrival, delivery) are not input. */
 export const AgreementInputSchema = z.discriminatedUnion('kind', [
@@ -200,6 +202,7 @@ export function agree(world: World, input: AgreementInput): Agreement | { reject
     ...(deceit ? { deceit } : {}),
     effects: [],
     ...(a.part ? { part: a.part } : {}),
+    ...(a.remakes ? { remakes: a.remakes } : {}),
   }
   register.list.push(agreement)
   // One choice, every effect it needs: a plan, a note in the player's journal, an expectation.
@@ -282,6 +285,9 @@ export function settle(world: World, agreement: Agreement, status: Exclude<Agree
   }
   for (const part of agreements(world).filter((a) => a.part === agreement.id && a.status === 'open')) settle(world, part, status === 'kept' ? 'kept' : 'cancelled', text, { quiet: true, told: true })
   judge(world, agreement, opts.late ?? false)
+  // A second go kept makes the first good (M10.14).
+  const first = agreement.remakes ? agreementById(world, agreement.remakes) : undefined
+  if (first && status === 'kept') madeGood(world, first)
   // The stranger's word kept or broken is a signal (M10.3): what follows is content (broken_promise, promise_kept).
   if (agreement.by === 'player' && agreement.known && isNpc(world, agreement.to) && world.alive(agreement.to) && (agreement.kind === 'give' || agreement.kind === 'lend' || agreement.kind === 'meet' || agreement.kind === 'errand')) {
     const kept = status === 'kept' && !opts.late
@@ -289,6 +295,30 @@ export function settle(world: World, agreement: Agreement, status: Exclude<Agree
     if (kept || broken) queueSignal(world, { kind: kept ? 'promise_kept' : 'broken_promise', who: [agreement.to], place: world.state.npcs[agreement.to]!.location, cause: [], belang: kept ? 1 : 2, claim: { subject: agreement.to, key: 'promise', value: promisePhrase(world, agreement) }, watcher: 'rules' })
   }
   if (!opts.quiet && (agreement.by === 'player' || agreement.to === 'player') && agreement.kind !== 'accompany') world.notices.push(`${capitalise(toPlayer(text))}.`)
+}
+
+/**
+ * The stranger gives what they gave their word to give (M10.14): that word is
+ * kept, whether or not someone asked for the thing first.
+ */
+export function keptByGift(world: World, npcId: string, item: string): void {
+  const word = agreements(world).find((a) => a.status === 'open' && a.by === 'player' && a.to === npcId && a.kind === 'give' && (!a.terms.item || a.terms.item === item))
+  if (word) settle(world, word, 'kept', `the stranger gave ${nameOf(world, npcId)} what was promised`, { quiet: true })
+}
+
+/**
+ * Made good (M10.14): an agreement the stranger did not keep is settled after
+ * all, done late or paid for. Whom it was for thinks better of it, and gives the
+ * signal made_good; what follows is content.
+ */
+export function madeGood(world: World, a: Agreement): void {
+  a.amends = { how: 'made_good', t: world.now }
+  a.judged = 'understood'
+  const npcId = a.to
+  if (!npcId || !isNpc(world, npcId) || !world.alive(npcId)) return
+  const s = world.npcState(npcId)
+  s.thoughts = [...(s.thoughts ?? []).filter((th) => th.until > world.now && !th.text.includes(a.what)), { text: `The stranger let you down once, over ${a.what}, and made it good.`, t: world.now, until: world.now + 14 * DAY }].slice(-3)
+  queueSignal(world, { kind: 'made_good', who: [npcId], place: s.location, cause: [], belang: 1, claim: { subject: npcId, key: 'promise', value: a.what }, watcher: 'rules' })
 }
 
 /** What the other makes of it: only of what they knew of, and only by what they know of why. */

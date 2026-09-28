@@ -26,6 +26,9 @@ export const ACTS = [
   'Compliment',
   'Flirt',
   'Apologize',
+  // Making amends for a broken word (M10.14): telling why, or offering to make it good.
+  'Explain',
+  'MakeGood',
   'Insult',
   'OffTopic',
 ] as const
@@ -43,7 +46,9 @@ const RULES: { act: Act; pattern: RegExp }[] = [
   { act: 'Farewell', pattern: /^(bye|goodbye|farewell|good night|see you|dag|doei|tot ziens|tot later|welterusten)\b/i },
   { act: 'Insult', pattern: /\b(idiot|fool|stupid|ugly|shut up|hag|liar|coward|sukkel|idioot|stom|lelijk|kop dicht|lafaard)\b/i },
   { act: 'Intimidate', pattern: /\b(or else|you'?ll regret|you will regret|i'?ll hurt you|i will hurt you|i'?ll kill you|i will kill you|i'?ll break your|watch your back|or you'?ll be sorry|anders krijg je|je zult het berouwen)\b/i },
+  { act: 'MakeGood', pattern: /\b(make (it|this|that) (up to you|right|good)|make amends|i'?ll still (do|bring|fetch|come|get)|i will still (do|bring|fetch|come|get)|i'?ll do it after all|let me make (it )?up|goedmaken|alsnog)\b/i },
   { act: 'Apologize', pattern: /\b(sorry|apologi[sz]e|forgive me|my apologies|excuse me|pardon|het spijt me|excuses)\b/i },
+  { act: 'Explain', pattern: /\b(let me explain|i couldn'?t (come|make it|get)|i could not|i was (held up|kept|delayed|ill|sick|stopped)|it wasn'?t my fault|the reason (is|was)|what happened was|ik kon niet|het kwam doordat|laat me uitleggen)\b/i },
   { act: 'Flirt', pattern: /\b(beautiful|pretty eyes|lovely eyes|handsome|kiss|lovely smile|mooie ogen|knap|zoen|kus)\b/i },
   { act: 'Compliment', pattern: /\b(thank you|thanks|well done|good bread|kind of you|bedankt|dank je|dank u|lekker|goed gedaan)\b/i },
   // A wish or a hope is said, not asked (M10.8): "I hope you can make the Count understand, good sir."
@@ -75,6 +80,8 @@ export function tierFor(act: Act): Tier {
     case 'Farewell':
     case 'Compliment':
     case 'Apologize':
+    case 'Explain':
+    case 'MakeGood':
     case 'Insult':
     case 'Flirt':
     case 'OffTopic':

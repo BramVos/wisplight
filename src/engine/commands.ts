@@ -6,6 +6,8 @@ import { choose, MAX_OPTIONS, offer, type ChoiceOption } from './choice'
 import { force, objectHere, openObject, passLock, pick, takeFrom } from './social/access'
 import { craftCheck, craftOf, craftProgress, craftRank, craftTitle, interruption, learnFrom, ownWorkBonus, rankIndex, soldOwn, workplaceLeave } from './crafts'
 import { damagedBlock, failedMake, repair } from './outcomes'
+import { giftMakesGood } from './amends'
+import { keptByGift } from './agreements'
 import { gather, searchHere, track, treat } from './skills'
 import { ownerOf, ownersHere } from './social/ownership'
 import { returnLent } from './agreements'
@@ -584,7 +586,10 @@ function give(host: CommandHost, args: string[]): Output[] {
   add(world.npcState(npcId).inventory, item, amount)
   world.emit('gift', world.state.player.location, `You give ${qtyName(world, item, amount)} to ${callName(world.npc(npcId))}.`)
   world.state.seenSeq = world.state.eventSeq
-  const returned = returnStolen(world, npcId, item) ?? returnLent(world, npcId, item) ?? giveBack(world, npcId, item) ?? fulfil(world, npcId, item, amount)
+  // Last: given to whom the stranger let down, worth what was promised, it makes it good (M10.14).
+  const returned = returnStolen(world, npcId, item) ?? returnLent(world, npcId, item) ?? giveBack(world, npcId, item) ?? fulfil(world, npcId, item, amount) ?? giftMakesGood(world, npcId, world.basePrice(item) * amount)?.[0]?.text
+  // A word to give it is kept with the gift, asked for or not (M10.14).
+  keptByGift(world, npcId, item)
   if (!returned) {
     // A gift moves someone a little, less with every gift that week (FO, chapter 8).
     deed(world, npcId, 'gift', { amount: world.basePrice(item) * amount })

@@ -368,6 +368,28 @@ aftermath:
             village: "That stranger keeps their word, {a} says."
             far: "A stranger who keeps their word."
 
+  # The stranger made good a word they had broken (M10.14): done late, or paid for. Whom it was for
+  # thinks better of it; the village hears that it came right in the end.
+  - id: made_good
+    signal: made_good
+    about: first
+    topic: promise
+    expires: 1
+    steps:
+      - id: regard
+        do: { regard: [$a], to: player, affinity: 3 }
+      - id: word
+        do:
+          tell:
+            kind: made_good
+            about: [$a]
+            place: $place
+            belang: 1
+            title: "the stranger making good their word to {a}"
+            precise: "The stranger let {a} down over {value}, and made it good after all."
+            village: "That stranger came back and made it right with {a}. Late, but they did."
+            far: "A stranger who makes good what they owe."
+
   # Heard that a workshop works again (M10.3): whose trade takes in what it makes goes there, today.
   # Told the mill turns when it does not, the baker walks to Molenend for nothing, and sees it for herself.
   - id: heard_working
