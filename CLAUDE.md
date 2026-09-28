@@ -55,7 +55,7 @@ Whenever a change adds to or changes what a world can hold (a new kind, field or
 
 - The editor can create and edit it: a form or a YAML template for the kind, the palette or world tab where it belongs, and a line under Check when it can go wrong.
 - The chronicler knows it: the contract `docs/CONTENT.md` is regenerated from the schemas (M10.17), the short contract in the writing aid's prompt (`draftRequest` in `src/engine/editor.ts`) covers it, and the world guide (`src/engine/worldguide.ts`, with `docs/NEW-WORLD.md` for people) says in which step it comes up, what the chronicler asks the designer, what happens when it is left out, and what to check.
-- Skerrow and the test world Deepwell (`tests/worlds/other`) either get it or show the neutral default in a test.
+- Skerrow always gets its own small version, in its own words, so every feature plays in a second world with real values. The test world Deepwell (`tests/worlds/other`) gets one too, unless it deliberately leaves the thing out to show the neutral default (as it has no faith and no weather); then a test plays that default.
 - The milestone report says what the editor and the chronicler learnt.
 
 ## Definition of done

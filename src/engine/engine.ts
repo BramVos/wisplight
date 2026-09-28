@@ -40,7 +40,8 @@ import { journeyOfDays, journeyLines, passagesNamed, takePassage, waitForPassage
 import { duration } from './map/journeyText'
 import { mapText, mapView, type MapView } from './map/view'
 import { regionMap } from './map/region'
-import { canSetOut, followWay, hasSeen, hexName, hexOfId, isHexId, landmarkIn, look, playerHex, routeBetween, trailEndsAt, tread, type WalkPlan, walk, waysFrom, windOf } from './map/travel'
+import { terrainName } from './map/palette'
+import { canSetOut, followWay, hasSeen, hexName, hexOfId, isHexId, knownRidgeNear, landmarkIn, look, playerHex, routeBetween, trailEndsAt, tread, type WalkPlan, walk, waysFrom, windOf } from './map/travel'
 import { knownRequests, requestName } from './requests'
 import { recordFact, seedNews } from './news'
 import { parseCommand, parseDirection } from './parser'
@@ -1166,6 +1167,15 @@ export class Engine {
         // A way named exactly, with its wind or the ridge: off you go, by the name it has from here.
         if (way && (wind || way === 'ridge')) {
           const from = playerHex(this.world)
+          // The ridge a little way off (after the M10 playtest: it leaves the peat cuttings): walk to it, then follow it.
+          const near = way === 'ridge' && from ? knownRidgeNear(this.world, from) : undefined
+          if (near) {
+            const name = `the ${terrainName(this.content.world.map?.palette, 'ridge')}`
+            const first = this.walkPlan({ kind: 'to', target: near, name })
+            const now = playerHex(this.world)
+            if (!now || now.col !== near.col || now.row !== near.row) return first
+            return [...first, ...this.walkPlan({ kind: 'follow', way })]
+          }
           const label = from && wind ? waysFrom(this.world, from).find((o) => o.way === way && o.wind === wind)?.label : undefined
           return this.walkPlan({ kind: 'follow', way, ...(wind ? { wind } : {}), ...(label ? { label } : {}) })
         }

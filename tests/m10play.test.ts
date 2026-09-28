@@ -204,3 +204,24 @@ describe('the trail', () => {
     expect(markColours(mapStyle(undefined, 'bw'), 'bw').visited).toBe('#000000')
   })
 })
+
+describe('the dry ridge, known and not (after the M10 playtest)', () => {
+  it('is just fen to whoever does not know it: nothing names it, and walking still goes everywhere', async () => {
+    const engine = at('loc_peat_cuttings')
+    expect(said(await engine.handle('look'))).not.toMatch(/ridge/)
+    expect(said(await engine.handle('follow the ridge'))).toBe("You don't know of any ridge here.")
+    expect(said(await engine.handle('follow'))).not.toMatch(/ridge/)
+  })
+
+  it('is walked to from a little way off, and asks which way, with where each leads', async () => {
+    const engine = at('loc_peat_cuttings')
+    engine.state.player.journal = { ...(engine.state.player.journal ?? {}), the_dry_ridge: engine.world.now }
+    expect(said(await engine.handle('look'))).toMatch(/or the dry ridge\./)
+    const out = said(await engine.handle('follow the ridge'))
+    expect(out).toMatch(/You make your way towards the dry ridge/)
+    expect(out).toMatch(/Follow the dry ridge which way\?\n {2}1\. north, towards Veenhoek\n {2}2\. south-east, towards the Kattenbroek/)
+    await engine.handle('2')
+    const map = regionMap(content)!
+    expect(map.cell(playerHex(engine.world)!)!.hidden).toBe('the_dry_ridge')
+  })
+})

@@ -9,6 +9,7 @@ import { centre, distance, type Hex, hexAt, HEX_DIRECTIONS, type HexDirection, h
 import { journeyParagraph, metOnTheWay, tellsJourneys } from './journeyText'
 import { type Cell, regionMap, type RegionMap } from './region'
 import { terrainName } from './palette'
+import { offer } from '../choice'
 
 // Walking across the region (FO, chapter 4, "Lopen en automatisch doorlopen"):
 // hex by hex until there is something to decide, with one running text in
@@ -513,6 +514,41 @@ export function entranceOn(world: World, map: RegionMap, hex: Hex): string | und
   return here.sort((a, b) => score(b) - score(a) || a.id.localeCompare(b.id))[0]?.id
 }
 
+/**
+ * The nearest hex of a ridge the stranger knows, within reach but not here or
+ * next door (after the M10 playtest): FOLLOW THE RIDGE walks there first. The
+ * story has it leave the peat cuttings, two hexes off its line.
+ */
+export function knownRidgeNear(world: World, at: Hex, reach = 3): Hex | undefined {
+  const map = regionMap(world.content)
+  if (!map) return undefined
+  const on = (h: Hex) => {
+    const cell = map.cell(h)
+    return Boolean(cell && onKnownRidge(world, cell))
+  }
+  if (on(at) || neighbours(at).some((n) => on(n.hex))) return undefined
+  let best: Hex | undefined
+  let nearest = Infinity
+  for (let dc = -reach; dc <= reach; dc++) {
+    for (let dr = -reach - 1; dr <= reach + 1; dr++) {
+      const h = { col: at.col + dc, row: at.row + dr }
+      const d = distance(at, h)
+      if (d > reach || d >= nearest || !on(h)) continue
+      nearest = d
+      best = h
+    }
+  }
+  return best
+}
+
+/** A ridge the stranger knows, here, next door or within reach: a way to follow, by its name in this world. */
+function ridgeHere(world: World, at: Hex): boolean {
+  const map = regionMap(world.content)
+  const cell = map?.cell(at)
+  if (!map || !cell) return false
+  return onKnownRidge(world, cell) || neighbours(at).some((n) => map.cell(n.hex) && onKnownRidge(world, map.cell(n.hex)!)) || knownRidgeNear(world, at) !== undefined
+}
+
 function matchesWay(world: World, cell: Cell, way: string): boolean {
   if (way === 'ridge') return onKnownRidge(world, cell)
   return (cell.ways ?? []).some((w) => w.kind === way || w.name === way)
@@ -562,6 +598,7 @@ export function walk(world: World, plan: WalkPlan, pass: (minutes: number) => Ou
   let reason = ''
   let arrived: string | undefined
   let strayAt: number | undefined
+  let forked: Output[] | undefined
   // Following on from the last walk, keep the way you were going.
   let heading: HexDirection | undefined = plan.kind === 'follow' ? (mapState(world).heading as HexDirection | undefined) : undefined
 
@@ -598,7 +635,16 @@ export function walk(world: World, plan: WalkPlan, pass: (minutes: number) => Ou
         break
       }
       if (options.length > 1) {
-        reason = `The way goes ${options.map((c) => pretty(c.direction)).join(' and ')} from here. Say which: follow ${plan.way === 'ridge' ? 'the ridge' : 'it'} ${pretty(options[0]!.direction)}.`
+        // Which way (after the M10 playtest): a choice, each way with where it leads, answered with a number.
+        const what = plan.way === 'ridge' ? `the ${terrainName(world.content.world.map?.palette, 'ridge')}` : 'it'
+        const choice = offer(
+          world,
+          `Follow ${what} which way?`,
+          options.map((o) => ({ label: `${pretty(o.direction)}${towards(world, map, at, plan.way, o.direction)}`, command: `follow ${plan.way === 'ridge' ? 'ridge' : plan.way} ${o.direction}` })),
+        )
+        if (steps === 0) return choice
+        forked = choice
+        reason = 'Here the way forks.'
         break
       }
       direction = options[0]!.direction
@@ -687,7 +733,26 @@ export function walk(world: World, plan: WalkPlan, pass: (minutes: number) => Ou
     return { outputs: [{ kind: 'narration', text, journey: true }], minutes, at: world.state.player.location }
   }
   const summary = `${how} for ${duration(minutes)}${over.length ? `, over ${list(over)}` : ''}.${reason ? ` ${reason}` : ''}${arrived ? ` You come to ${world.location(arrived).name}.` : ''}`
-  return { outputs: [{ kind: 'narration', text: summary }], minutes, at: world.state.player.location }
+  return { outputs: [{ kind: 'narration', text: summary }, ...(forked ?? [])], minutes, at: world.state.player.location }
+}
+
+/** Where a way leads in a direction from here: ", towards the Kattenbroek", or nothing when it is not clear. */
+function towards(world: World, map: RegionMap, at: Hex, way: string, direction: HexDirection): string {
+  const areaName = (area: string) => world.content.areas.get(area)?.name ?? area
+  if (way === 'ridge') {
+    const here = centre(at, map.size)
+    for (const rule of map.region.rules) {
+      if (rule.kind !== 'hidden_path') continue
+      const end = [rule.from, rule.to].find((area) => {
+        const hex = map.places.get(area)
+        return hex && sameGeneralWay(direction, windBetween(here, centre(hex, map.size)))
+      })
+      if (end) return `, towards ${areaName(end)}`
+    }
+    return ''
+  }
+  const to = waysFrom(world, at).find((w) => w.way === way && w.wind && sameGeneralWay(direction, w.wind))?.to
+  return to ? `, towards ${to}` : ''
 }
 
 const OPPOSITE: Record<HexDirection, HexDirection> = { north: 'south', northeast: 'southwest', southeast: 'northwest', south: 'north', southwest: 'northeast', northwest: 'southeast' }
@@ -776,6 +841,8 @@ export function waysFrom(world: World, at: Hex): { label: string; way: string; w
       }
     }
   }
+  // A ridge the stranger knows (after the M10 playtest): a way to follow too, by its name in this world.
+  if (ridgeHere(world, at)) out.push({ label: `the ${terrainName(world.content.world.map?.palette, 'ridge')}`, way: 'ridge' })
   return out
 }
 
