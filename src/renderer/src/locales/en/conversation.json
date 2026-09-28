@@ -2,10 +2,12 @@
   "dialog": "Talking with {name}",
   "head": {
     "journal": "Journal",
-    "goodbye": "Goodbye"
+    "goodbye": "Goodbye",
+    "close": "Close"
   },
   "log": {
-    "thinking": "{name} thinks it over."
+    "thinking": "{name} thinks it over.",
+    "over": "The conversation is over."
   },
   "quick": {
     "who": "Who are you?",

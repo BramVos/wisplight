@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { Engine } from '../src/engine'
 import { relation } from '../src/engine/dialogue/relations'
 import { loadContentFromDir } from '../src/node/content'
+import { Transcript, TRANSCRIPT_MAX_BYTES } from '../src/node/transcript'
 import { content } from './helpers'
 
 // Milestone M10.4 (docs/ROADMAP.md): small improvements from the Skerrow
@@ -75,5 +76,62 @@ describe('M10.4: family on a card', () => {
     const after = engine.page('npc_brannoc')
     expect([...(after?.lines ?? []), ...(after?.links ?? []).map((l) => `${l.id} ${l.name}`)].join('\n')).toMatch(/Pip|npc_pip/)
     expect(after?.lines.join('\n')).not.toMatch(/Family: unknown/)
+  })
+})
+
+describe('M10.4: the transcript', () => {
+  /** A disk in memory, for the transcript's writes. */
+  function disk(fail = false) {
+    const files = new Map<string, string>()
+    return {
+      files,
+      fs: {
+        appendFile: async (path: string, data: string) => {
+          if (fail) throw new Error('no room on the disk')
+          files.set(path, (files.get(path) ?? '') + data)
+        },
+        stat: async (path: string) => {
+          if (!files.has(path)) throw new Error('none')
+          return { size: Buffer.byteLength(files.get(path)!) }
+        },
+        mkdir: async () => undefined,
+      },
+    }
+  }
+
+  it('writes what you see as Markdown: your input, speech as a quote, system lines in italics, a heading per day and place', async () => {
+    const { files, fs } = disk()
+    const t = new Transcript({ enabled: true, folder: '/tmp/t' }, () => undefined, fs, () => '2026-09-28')
+    t.begin('isle', 'a1b2c3d4-e5f6')
+    t.record('talk pip', [{ kind: 'speech', text: 'Pip nods. "Morning."' }, { kind: 'system', text: 'You are talking with Pip.' }], { time: 'Windsday 3 Leaffall 412 SF, 07:20 (morning)', location: 'The Wreck Strand' })
+    t.record('east', [{ kind: 'room', text: 'The Tidepools\nFlat shelves of rock.' }], { time: 'Windsday 3 Leaffall 412 SF, 07:31 (morning)', location: 'The Tidepools' })
+    await t.flush()
+    const text = files.get('/tmp/t/isle-a1b2c3d4-e5f-2026-09-28.md')!
+    expect(text).toMatch(/## Windsday 3 Leaffall 412 SF\n/)
+    expect(text).toMatch(/### The Wreck Strand\n/)
+    expect(text).toMatch(/`> talk pip`/)
+    expect(text).toMatch(/> Pip nods\. "Morning\."/)
+    expect(text).toMatch(/\*You are talking with Pip\.\*/)
+    expect(text).toMatch(/### The Tidepools\n[\s\S]*The Tidepools\nFlat shelves of rock\./)
+    expect(text.match(/## Windsday/g)).toHaveLength(1)
+  })
+
+  it('goes on in a next file past a few megabytes, and turns itself off with one notice when writing fails', async () => {
+    const { files, fs } = disk()
+    const t = new Transcript({ enabled: true, folder: '/tmp/t' }, () => undefined, fs, () => '2026-09-28')
+    t.begin('base', 'game')
+    files.set('/tmp/t/base-game-2026-09-28.md', 'x'.repeat(TRANSCRIPT_MAX_BYTES))
+    t.record('look', [{ kind: 'text', text: 'A room.' }], { time: 'Day, 10:00', location: 'Here' })
+    await t.flush()
+    expect(files.get('/tmp/t/base-game-2026-09-28-2.md')).toMatch(/A room\./)
+    const broken = disk(true)
+    const notices: string[] = []
+    const off = new Transcript({ enabled: true, folder: '/tmp/t' }, (m) => notices.push(m), broken.fs, () => '2026-09-28')
+    off.record('look', [{ kind: 'text', text: 'A room.' }], { time: 'Day, 10:00', location: 'Here' })
+    await off.flush()
+    off.record('look', [{ kind: 'text', text: 'Again.' }], { time: 'Day, 10:01', location: 'Here' })
+    await off.flush()
+    expect(notices).toEqual(['no room on the disk'])
+    expect(off.enabled).toBe(false)
   })
 })

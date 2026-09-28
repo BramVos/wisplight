@@ -5,7 +5,7 @@ import type { Content } from '../../engine/content'
 import type { LlmClient } from '../../engine/dialogue/llm'
 import { askAdvice, judgeTrials, testCall, trial, type Advice, type TrialResult, type TrialVerdict } from './advisor'
 import { CostRegister } from './costs'
-import { Gateway, type GatewayStatus } from './gateway'
+import { type RoleActivity, Gateway, type GatewayStatus } from './gateway'
 import { AiLog, type AiLogEntry } from './log'
 import { createProvider, type ModelInfo, type Provider, type ProviderId } from './providers'
 import { SettingsStore, type Cipher, type ChosenRole, type PictureChoice, type SettingsSummary } from './settings'
@@ -37,6 +37,9 @@ export class AiService {
   private readonly models = new Map<ProviderId, ModelInfo[]>()
   private readonly factory: (id: ProviderId, key: string) => Provider
 
+  /** Told when a role's light changes (M10.4). */
+  onActivity?: (activity: RoleActivity[]) => void
+
   constructor(private readonly options: AiServiceOptions) {
     this.settings = new SettingsStore(join(options.dir, 'settings.json'), options.cipher)
     this.usage = new UsageStore(join(options.dir, 'usage.json'))
@@ -50,6 +53,7 @@ export class AiService {
       usage: this.usage,
       // The last hour's costs on disk (M9.3): the hourly budget holds after a restart.
       costs: new CostRegister(join(options.dir, 'costs.jsonl')),
+      onActivity: (activity) => this.onActivity?.(activity),
     })
   }
 

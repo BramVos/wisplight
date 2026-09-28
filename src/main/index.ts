@@ -1,6 +1,6 @@
 import { app, BrowserWindow, dialog, ipcMain, safeStorage, shell } from 'electron'
 import { randomUUID } from 'node:crypto'
-import { appendFileSync, existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, watch } from 'node:fs'
+import { appendFileSync, existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, watch, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -12,6 +12,7 @@ import type { ChosenRole, Cipher } from '../node/ai/settings'
 import { DEFAULT_WORLD, listWorlds, loadContentFromDir, readContentFiles } from '../node/content'
 import { format, GameLog, PART_BYTES, type LogScope, type Session } from '../node/gamelog'
 import { SaveStore } from '../node/savegame'
+import { Transcript, type TranscriptSettings } from '../node/transcript'
 import { aiCheck, BUILDER_CHECK_SCRIPT, keyCheck, LOG_CHECK_SCRIPT, prepareBuilderCheck, prepareKeyCheck, prepareLogCheck } from './checks'
 
 // The engine runs in the main process for now; the design moves it to a
@@ -93,6 +94,10 @@ function setup(): Promise<void> {
   ready ??= (async () => {
     content = await worldContent(DEFAULT_WORLD)
     ai = new AiService({ dir: app.getPath('userData'), cipher, content })
+    // The lights in the status bar (M10.4): every start and end of a call.
+    ai.onActivity = (roles) => {
+      if (window && !window.isDestroyed()) window.webContents.send('ai:activity', roles)
+    }
     watchContent()
     // At start-up: are the chosen models still offered? In the background; Settings shows the answer.
     if (!process.env['WISPLIGHT_SMOKE']) void ai.refreshModels().catch(() => undefined)
@@ -114,13 +119,48 @@ function aiStatus() {
     hourPercent: status.hourBudgetUsd ? Math.round((status.hourSpentUsd / status.hourBudgetUsd) * 100) : 0,
     monthLeftPercent: usage.monthLeftPercent,
     busy: status.busy,
+    roles: ai.gateway.activity(),
     coolingDown: status.coolingDown,
     budgetSpent: status.monthBudgetSpent || status.hourSpentUsd >= status.hourBudgetUsd,
   }
 }
 
+// ---------------------------------------------------------------- the transcript (M10.4)
+
+const transcriptFile = () => join(app.getPath('userData'), 'transcript.json')
+function transcriptSettings(): TranscriptSettings {
+  const fallback = { enabled: false, folder: join(app.getPath('documents'), 'Wisplight transcripts') }
+  try {
+    return { ...fallback, ...(JSON.parse(readFileSync(transcriptFile(), 'utf8')) as Partial<TranscriptSettings>) }
+  } catch {
+    return fallback
+  }
+}
+function saveTranscriptSettings(settings: TranscriptSettings): void {
+  writeFileSync(transcriptFile(), JSON.stringify(settings, null, 2))
+}
+/** A notice for the next reply: the transcript could not be written and is off now. */
+let transcriptNotice: string | undefined
+let transcript: Transcript | undefined
+function scribe(): Transcript {
+  transcript ??= new Transcript(smoke ? { enabled: false, folder: '' } : transcriptSettings(), (message) => {
+    saveTranscriptSettings({ ...transcriptSettings(), enabled: false })
+    transcriptNotice = `The transcript could not be written (${message}), and is off now. Settings > Transcript.`
+  })
+  return transcript
+}
+/** What was typed, for the transcript's next lines. */
+let typed: string | undefined
+
 function reply(outputs: Output[]) {
-  return { outputs, status: { ...engine!.status(), paused: paused(), ai: aiStatus() } }
+  const status = { ...engine!.status(), paused: paused(), ai: aiStatus() }
+  // Everything shown goes into the transcript, if it is on; to disk in the background at the end of the turn.
+  const shown = transcriptNotice ? [...outputs, system(transcriptNotice)] : outputs
+  transcriptNotice = undefined
+  scribe().record(typed, shown, { time: status.time, location: status.location })
+  typed = undefined
+  void scribe().flush()
+  return { outputs: shown, status }
 }
 
 function store(): SaveStore {
@@ -145,6 +185,7 @@ function follow(next: Engine, where: Session): void {
   // The world builder's @ commands are for playtesting in a development build.
   next.builder = !app.isPackaged
   session = where
+  scribe().begin(worldFolder, where.game)
   unfollow = next.onLog((line) => journal().write(where, line))
   // What went to the archive is read back from this game's log (M10.2): the lookups and the chronicler find it there.
   next.world.archive = { fact: (id) => journal().archivedFact(where, id) }
@@ -219,6 +260,7 @@ ipcMain.handle('engine:command', async (_event, input: unknown) => {
   if (!engine || !content) throw new Error('Engine not started')
   lastInput = Date.now()
   const text = String(input).trim().slice(0, 500)
+  typed = text
   // Only the bare command: "Save me!" in a conversation is something to say, not a menu action.
   const command = /^(save|bewaar|continue|verder|load|laad|log|logboek)(?:\s+(\d+|export))?$/i.exec(text)
   const verb = command?.[1]?.toLowerCase()
@@ -308,6 +350,18 @@ ipcMain.handle('engine:command', async (_event, input: unknown) => {
 })
 
 ipcMain.handle('engine:page', (_event, id: unknown) => engine?.page(String(id)))
+// The transcript's settings (M10.4): on or off, and the folder.
+ipcMain.handle('transcript:get', () => transcriptSettings())
+ipcMain.handle('transcript:set', (_event, enabled: unknown, folder: unknown) => {
+  const settings = { enabled: Boolean(enabled), folder: String(folder ?? '') || transcriptSettings().folder }
+  saveTranscriptSettings(settings)
+  scribe().configure(settings)
+  return settings
+})
+ipcMain.handle('transcript:choose', async () => {
+  const chosen = await dialog.showOpenDialog({ properties: ['openDirectory', 'createDirectory'], defaultPath: transcriptSettings().folder })
+  return chosen.canceled ? undefined : chosen.filePaths[0]
+})
 // Under the bonnet (M10.1): a production build does not bundle the dev view at all.
 if (import.meta.env.DEV) {
   ipcMain.handle('dev:view', async (_event, section: unknown, focus: unknown) => {
@@ -357,11 +411,12 @@ async function exportLog(where: Session, scope: LogScope = { kind: 'all' }): Pro
 const contentDir = () => (builderCheck ? join(builderCheck, 'content') : join(app.getAppPath(), 'content'))
 
 /** The running game carries on with the new content, keeping its log. */
-function adopt(next: Content): void {
+/** Plays on with changed content. Only a change the file watcher saw is announced, with its file (M10.4). */
+function adopt(next: Content, file?: string): void {
   content = next
   worldContents.set(worldFolder, next)
   if (engine) follow(engine.withContent(next), session ?? ensureSession())
-  if (window && !window.isDestroyed()) window.webContents.send('builder:reloaded')
+  if (window && !window.isDestroyed()) window.webContents.send('builder:reloaded', file ? { file } : {})
 }
 
 // ---------------------------------------------------------------- the editor (M8; development builds only)
@@ -492,7 +547,7 @@ function watchContent(): void {
       if (changed === 'CHRONICLER.md') worldContents.clear()
       reloadTimer = setTimeout(() => {
         loadContentFromDir(contentDir(), worldFolder)
-          .then((next) => adopt(next))
+          .then((next) => adopt(next, String(file).replace(/\\/g, '/')))
           .catch((error: unknown) => {
             const problems = error instanceof ContentError ? error.problems.slice(0, 5).join('; ') : String(error)
             if (window && !window.isDestroyed()) window.webContents.send('builder:problem', `The content did not load after ${String(file)} changed: ${problems}`)

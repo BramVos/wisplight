@@ -4,7 +4,8 @@
     "ai": "AI",
     "usage": "Usage",
     "log": "AI log",
-    "display": "Display"
+    "display": "Display",
+    "transcript": "Transcript"
   },
   "close": "Close",
   "desktopOnly": "AI settings work in the desktop app. In the browser preview, open the page with ?mock=1 to try them with made-up data.",
@@ -196,5 +197,11 @@
       "high": "High"
     },
     "keyboard": "Everything can be done with the keyboard: type commands, Tab through the buttons, Escape closes a window. The story is read out by a screen reader as it comes. Nothing in the game needs quick reflexes: the clock stops while you type, in a fight, and in any window like this one."
+  },
+  "transcript": {
+    "on": "Write a transcript of every game",
+    "folder": "Folder:",
+    "choose": "Choose a folder",
+    "how": "Everything you see goes into a Markdown file: what you type, speech as quotes, the game's own lines in italics, a heading for each game day and each place. One file per game and per day, only ever added to; a large one goes on in a second file."
   }
 }

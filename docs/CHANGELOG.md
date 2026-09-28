@@ -1,5 +1,24 @@
 # Changelog
 
+## M10.4 Kleine verbeteringen, 28 september 2026
+
+Nieuw:
+- **Meer dingen tegelijk.** GET ALL pakt alles wat hier ligt, GET CASK, SAILCLOTH AND ROPE meerdere dingen. DROP, BUY en SELL werken ook met lijstjes; DROP ALL legt neer wat je draagt maar niet wat je vasthoudt of aanhebt, SELL ALL verkoopt wat iemand hier inkoopt.
+- **Jezelf bekijken.** LOOK ME (of LOOK AT ME, L ME) vertelt hoe je eruitziet, wat je vasthoudt en draagt, en hoe je eraan toe bent: gewond, moe na achttien uur op, koortsig, doorweekt in de regen. Hoe je eruitziet geef je bij het maken op (CREATE ... look=...); anders zegt het spel het van je volk. Het personageblad zegt het ook.
+- **Rondkijken.** LOOK SOUTH en LOOK AT THE TIDEPOOLS zeggen wat die kant op ligt en hoe ver. LOOK <ding> zegt waar het is (in je rugzak, in je hand, hier), en wat bij een object hoort komt eerst: de appel op de oude steen aan de kade is niet de appel in je zak, en pakken kan niet.
+- **Familie op de kaart.** Iemands familie staat er pas als je het hoorde of zag: gevraagd, verteld, of een kind naast een ouder. Anders "Family: unknown".
+- **Klikken op woorden.** Een linkerklik op een opgelicht woord opent de dagboekpagina als je die kent, en kijkt er anders naar. Een rechterklik opent een klein menu: bekijken, vragen, waar is, ga naar.
+- **Het gespreksvenster.** Het houdt de focus, ook na elk antwoord. Na afloop blijft het staan met het laatste antwoord en "The conversation is over."; Escape of [Close] sluit het.
+- **Lampjes per AI-rol.** Rechtsonder vijf lampjes (stem, brein, kroniekschrijver, illustrator, bouwer) die groen oplichten tijdens een aanroep; wijs je er een aan, dan zie je de laatste kosten en tijd.
+- **Editormelding.** Een bestand dat buiten het spel verandert wordt bij naam gemeld ("... changed on disk"). Opslaan in de editor zelf laat alleen de plek opnieuw zien. De knop [Editor] staat er in een ontwikkelbuild.
+- **Transcript.** Instellingen > Transcript: aan of uit, en een map. Alles wat je ziet gaat als Markdown naar `<wereld>-<spel>-<datum>.md`: jouw invoer als `> ...`, spraak als citaat, de regels van het spel cursief, een kop per speeldag en per plek. Een bestand per spel en per dag, alleen bijschrijvend, in de achtergrond; boven drie megabyte gaat het verder in `-2.md`. Lukt schrijven niet, dan gaat het transcript uit met een melding.
+
+Testen: `get all` op het strand van Skerrow; `look me`; `look east`; aan de kade in Veenhoek `look apple` met een appel op zak. Rechtsklik op een woord tussen haken. Instellingen > Transcript aanzetten en een tijdje spelen. Controles: `npm test` (538 tests), de rooktests van beide werelden en de editor, en de lampjes, het menu en het gespreksvenster in de browser bekeken.
+
+Nog niet: het lampje van de bouwer gaat alleen aan voor de schrijfhulp in de editor.
+
+Ontwerp: "Stand na M10.4" in het FO, met één afwijking van de roadmap: het transcript heeft een eigen gebufferde schrijver in de achtergrond in plaats van die van het spellogboek. Tests in `tests/m104.test.ts`.
+
 ## M10.3 Levende gesprekken, 28 september 2026
 
 Nieuw:

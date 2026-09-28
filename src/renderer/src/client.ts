@@ -21,6 +21,14 @@ export interface AiStatus {
   busy: boolean
   coolingDown: boolean
   budgetSpent: boolean
+  /** A light per role (M10.4): busy now, and the last call. */
+  roles?: RoleLight[]
+}
+
+export interface RoleLight {
+  role: 'voice' | 'brain' | 'chronicler' | 'illustrator' | 'builder'
+  busy: boolean
+  last?: { at: number; costUsd?: number; ms: number; ok: boolean }
 }
 
 export interface Reply {
@@ -29,7 +37,16 @@ export interface Reply {
 }
 
 /** Settings > AI. Keys go in and never come back out. */
+/** The transcript's settings in the desktop app (M10.4). */
+export interface TranscriptBridge {
+  get(): Promise<{ enabled: boolean; folder: string }>
+  set(enabled: boolean, folder: string): Promise<{ enabled: boolean; folder: string }>
+  choose(): Promise<string | undefined>
+}
+
 export interface AiBridge {
+  /** The lights, as they change (M10.4). */
+  onActivity?(listener: (roles: RoleLight[]) => void): () => void
   overview(): Promise<AiOverview>
   connect(provider: ProviderId, key: string): Promise<{ models: number }>
   disconnect(provider: ProviderId): Promise<void>
@@ -55,7 +72,7 @@ export interface AiBridge {
 
 /** The game hears when the content changed under it: the editor saved, or a file changed on disk. */
 export interface ContentEvents {
-  onReload(listener: () => void): () => void
+  onReload(listener: (change: { file?: string }) => void): () => void
   onProblem(listener: (text: string) => void): () => void
 }
 
@@ -119,6 +136,7 @@ export interface EngineClient {
   onTick(listener: (reply: Reply) => void): () => void
   /** Only in the desktop app, or in the browser preview with ?mock=1. */
   ai?: AiBridge
+  transcript?: TranscriptBridge
   /** Content changes while playing (development builds, and the preview). */
   builder?: ContentEvents
   /** The editor, in its own window (development builds) or tab (the preview). */
@@ -158,7 +176,7 @@ export async function createClient(): Promise<EngineClient> {
   let engine = new Engine(content, { seed: 1, llm, builder: true })
   const bridge = demo?.demoBridge(content)
   // In the preview the editor opens in a tab of its own, and keeps its changes in memory.
-  const reloads = new Set<() => void>()
+  const reloads = new Set<(change: { file?: string }) => void>()
   const builder: ContentEvents = {
     onReload: (listener) => {
       reloads.add(listener)

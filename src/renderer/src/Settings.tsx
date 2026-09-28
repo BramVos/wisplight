@@ -1,6 +1,6 @@
 import { Fragment, useCallback, useEffect, useState } from 'react'
 import type { UsageTotals } from '../../node/ai/usage'
-import type { Advice, AiBridge, AiLogEntry, AiOverview, ModelInfo, ProviderId, TrialResult } from './client'
+import type { Advice, AiBridge, AiLogEntry, AiOverview, ModelInfo, ProviderId, TranscriptBridge, TrialResult } from './client'
 import { loadDisplay, saveDisplay, TEXT_SIZES, type Display } from './display'
 import { t, tn } from './i18n'
 
@@ -8,7 +8,7 @@ import { t, tn } from './i18n'
 // sent to the main process once, and only ever shown masked afterwards.
 // Settings > Display (M9.4): text size and contrast.
 
-export type SettingsTab = 'ai' | 'usage' | 'log' | 'display'
+export type SettingsTab = 'ai' | 'usage' | 'log' | 'display' | 'transcript'
 
 const PROVIDERS: { id: ProviderId; name: string; hint: string }[] = [
   { id: 'openai', name: 'OpenAI', hint: 'sk-...' },
@@ -32,7 +32,7 @@ const message = (error: unknown) => (error instanceof Error ? error.message.repl
 // so the texts check of M9.4 does not take "=> Promise<" for words on screen.
 type Work = { (): Promise<void> }
 
-export function Settings({ bridge, tab, onTab, onClose }: { bridge?: AiBridge; tab: SettingsTab; onTab: (tab: SettingsTab) => void; onClose: () => void }) {
+export function Settings({ bridge, transcript, tab, onTab, onClose }: { bridge?: AiBridge; transcript?: TranscriptBridge; tab: SettingsTab; onTab: (tab: SettingsTab) => void; onClose: () => void }) {
   const [overview, setOverview] = useState<AiOverview>()
   const [error, setError] = useState<string>()
 
@@ -61,9 +61,9 @@ export function Settings({ bridge, tab, onTab, onClose }: { bridge?: AiBridge; t
         <header className="panel-head">
           <h2>{t('settings.title')}</h2>
           <nav className="tabs">
-            {(['ai', 'usage', 'log', 'display'] as const).map((id) => (
+            {(['ai', 'usage', 'log', 'display', 'transcript'] as const).map((id) => (
               <button key={id} type="button" className={tab === id ? 'active' : ''} onClick={() => onTab(id)}>
-                {id === 'ai' ? t('settings.tabs.ai') : id === 'usage' ? t('settings.tabs.usage') : id === 'log' ? t('settings.tabs.log') : t('settings.tabs.display')}
+                {id === 'ai' ? t('settings.tabs.ai') : id === 'usage' ? t('settings.tabs.usage') : id === 'log' ? t('settings.tabs.log') : id === 'display' ? t('settings.tabs.display') : t('settings.tabs.transcript')}
               </button>
             ))}
           </nav>
@@ -73,6 +73,8 @@ export function Settings({ bridge, tab, onTab, onClose }: { bridge?: AiBridge; t
         </header>
         {tab === 'display' ? (
           <DisplayTab />
+        ) : tab === 'transcript' ? (
+          transcript ? <TranscriptTab bridge={transcript} /> : <p className="muted">{t('settings.desktopOnly')}</p>
         ) : !bridge ? (
           <p className="muted">{t('settings.desktopOnly')}</p>
         ) : !overview ? (
@@ -117,6 +119,35 @@ function DisplayTab() {
         ))}
       </fieldset>
       <p className="muted">{t('settings.display.keyboard')}</p>
+    </div>
+  )
+}
+
+// Settings > Transcript (M10.4): everything on screen as Markdown, in a folder of your choice.
+function TranscriptTab({ bridge }: { bridge: TranscriptBridge }) {
+  const [settings, setSettings] = useState<{ enabled: boolean; folder: string }>()
+  const [error, setError] = useState<string>()
+  useEffect(() => {
+    void bridge.get().then(setSettings, (reason: unknown) => setError(message(reason)))
+  }, [bridge])
+  const change: (enabled: boolean, folder: string) => void = (enabled, folder) => {
+    void bridge.set(enabled, folder).then(setSettings, (reason: unknown) => setError(message(reason)))
+  }
+  if (!settings) return <p className="muted">{error ?? t('settings.loading')}</p>
+  return (
+    <div className="settings-body">
+      <label className="display-choice">
+        <input type="checkbox" checked={settings.enabled} onChange={(event) => change(event.target.checked, settings.folder)} />
+        {t('settings.transcript.on')}
+      </label>
+      <p>
+        {t('settings.transcript.folder')} <code>{settings.folder}</code>{' '}
+        <button type="button" className="link" onClick={() => void bridge.choose().then((folder) => folder && change(settings.enabled, folder))}>
+          [{t('settings.transcript.choose')}]
+        </button>
+      </p>
+      <p className="muted">{t('settings.transcript.how')}</p>
+      {error && <p className="error">{error}</p>}
     </div>
   )
 }

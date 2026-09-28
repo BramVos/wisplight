@@ -29,6 +29,8 @@ export function ConversationView({
   render,
   onSend,
   onJournal,
+  ended = false,
+  onClose,
 }: {
   talk: Talk
   lines: TalkLine[]
@@ -40,6 +42,9 @@ export function ConversationView({
   render: (text: string) => ReactNode
   onSend: (text: string) => void
   onJournal: () => void
+  /** The talk is over (M10.4): the last answer stays in view until the window is closed. */
+  ended?: boolean
+  onClose?: () => void
 }) {
   const [text, setText] = useState('')
   const [query, setQuery] = useState('')
@@ -47,19 +52,26 @@ export function ConversationView({
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const logRef = useRef<HTMLDivElement>(null)
 
+  const closeRef = useRef<HTMLButtonElement>(null)
+  // The window keeps the focus (M10.4): back in the input after every answer, on Close once it is over.
   useEffect(() => {
-    inputRef.current?.focus()
-  }, [talk.npc])
+    if (ended) closeRef.current?.focus()
+    else if (!busy) inputRef.current?.focus()
+  }, [talk.npc, busy, ended])
 
   useEffect(() => {
     logRef.current?.scrollTo({ top: logRef.current.scrollHeight })
   }, [lines, busy])
 
   useEffect(() => {
-    const onKey = (event: globalThis.KeyboardEvent) => event.key === 'Escape' && onSend('bye')
+    const onKey = (event: globalThis.KeyboardEvent) => {
+      if (event.key !== 'Escape') return
+      if (ended) onClose?.()
+      else onSend('bye')
+    }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [onSend])
+  }, [onSend, onClose, ended])
 
   const say = () => {
     const words = text.trim()
@@ -122,9 +134,15 @@ export function ConversationView({
           <button type="button" className="link" onClick={onJournal}>
             [{t('conversation.head.journal')}]
           </button>
-          <button type="button" className="link" disabled={busy} onClick={() => onSend('bye')}>
-            [{t('conversation.head.goodbye')}]
-          </button>
+          {ended ? (
+            <button type="button" className="link" ref={closeRef} onClick={() => onClose?.()}>
+              [{t('conversation.head.close')}]
+            </button>
+          ) : (
+            <button type="button" className="link" disabled={busy} onClick={() => onSend('bye')}>
+              [{t('conversation.head.goodbye')}]
+            </button>
+          )}
         </header>
         <div className="talk-body">
           <div className="talk-main">
@@ -135,34 +153,39 @@ export function ConversationView({
                 </p>
               ))}
               {busy && <p className="line thinking">{t('conversation.log.thinking', { name: talk.call })}</p>}
+              {ended && <p className="line system">{t('conversation.log.over')}</p>}
             </div>
-            <div className="talk-quick">
-              {quick.map(([n, label]) => (
-                <button key={n} type="button" className="link" disabled={busy} onClick={() => onSend(String(n))}>
-                  {label}
-                </button>
-              ))}
-              <button type="button" className="link" disabled={busy} onClick={() => onSend('list')}>
-                {t('conversation.quick.trade')}
-              </button>
-              <span className="muted small">{t('conversation.quick.orTry')}</span>
-              {acts.map(([act, label]) => (
-                <button key={act} type="button" className="link" disabled={busy} onClick={() => prefill(`${act} `)}>
-                  {label}
-                </button>
-              ))}
-            </div>
-            <textarea
-              ref={inputRef}
-              className="talk-input"
-              value={text}
-              rows={2}
-              onChange={(event) => setText(event.target.value)}
-              onKeyDown={onKeyDown}
-              placeholder={t('conversation.input.placeholder', { name: talk.call })}
-              aria-label={t('conversation.input.label', { name: talk.call })}
-              spellCheck
-            />
+            {!ended && (
+              <>
+                <div className="talk-quick">
+                  {quick.map(([n, label]) => (
+                    <button key={n} type="button" className="link" disabled={busy} onClick={() => onSend(String(n))}>
+                      {label}
+                    </button>
+                  ))}
+                  <button type="button" className="link" disabled={busy} onClick={() => onSend('list')}>
+                    {t('conversation.quick.trade')}
+                  </button>
+                  <span className="muted small">{t('conversation.quick.orTry')}</span>
+                  {acts.map(([act, label]) => (
+                    <button key={act} type="button" className="link" disabled={busy} onClick={() => prefill(`${act} `)}>
+                      {label}
+                    </button>
+                  ))}
+                </div>
+                <textarea
+                  ref={inputRef}
+                  className="talk-input"
+                  value={text}
+                  rows={2}
+                  onChange={(event) => setText(event.target.value)}
+                  onKeyDown={onKeyDown}
+                  placeholder={t('conversation.input.placeholder', { name: talk.call })}
+                  aria-label={t('conversation.input.label', { name: talk.call })}
+                  spellCheck
+                />
+              </>
+            )}
           </div>
           <aside className="talk-topics" aria-label={t('conversation.topics.label')}>
             <section className="talk-about" aria-label={t('conversation.about.label', { name: talk.call })}>

@@ -16,8 +16,8 @@ contextBridge.exposeInMainWorld('wisplight', {
   hold: (on: boolean) => ipcRenderer.send('engine:hold', on),
   // The game hears when the content changed under it (the editor saved, or a file changed).
   builder: {
-    onReload: (listener: () => void) => {
-      const handler = () => listener()
+    onReload: (listener: (change: { file?: string }) => void) => {
+      const handler = (_event: IpcRendererEvent, change?: { file?: string }) => listener(change ?? {})
       ipcRenderer.on('builder:reloaded', handler)
       return () => ipcRenderer.removeListener('builder:reloaded', handler)
     },
@@ -45,7 +45,19 @@ contextBridge.exposeInMainWorld('wisplight', {
     ipcRenderer.on('engine:tick', handler)
     return () => ipcRenderer.removeListener('engine:tick', handler)
   },
+  // The transcript (M10.4): on or off, and a folder.
+  transcript: {
+    get: () => ipcRenderer.invoke('transcript:get'),
+    set: (enabled: boolean, folder: string) => ipcRenderer.invoke('transcript:set', enabled, folder),
+    choose: () => ipcRenderer.invoke('transcript:choose'),
+  },
   ai: {
+    // The lights of the roles (M10.4): a call starts or ends.
+    onActivity: (listener: (roles: unknown) => void) => {
+      const handler = (_event: IpcRendererEvent, roles: unknown) => listener(roles)
+      ipcRenderer.on('ai:activity', handler)
+      return () => ipcRenderer.removeListener('ai:activity', handler)
+    },
     overview: () => ipcRenderer.invoke('ai:overview'),
     connect: (provider: string, key: string) => ipcRenderer.invoke('ai:connect', provider, key),
     disconnect: (provider: string) => ipcRenderer.invoke('ai:disconnect', provider),

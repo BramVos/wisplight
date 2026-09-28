@@ -387,15 +387,15 @@ Commando's en interface:
 - [x] `look me`, `look at me` en `l me` geven een beschrijving van jezelf: uiterlijk uit de personage-aanmaak, wat je draagt, en hoe je eraan toe bent (gewond, moe, doorweekt), ook in het personageblad
 - [x] `look south` en `look at tidepools` geven de korte omschrijving van wat die kant op ligt en de weg erheen; een plek die in de beschrijving oplicht, is dus altijd te bekijken
 - [x] `look <ding>` zegt waar het is ("in your pack") en kijkt ook naar objecten hier: `look apple` bij de hondensteen beschrijft de appel op de steen, niet de appel in je zak; `get` op iets wat bij een object hoort (een offer op de steen) geeft een zinnige regel uit de content in plaats van "er is geen appel hier"
-- [ ] Rechtermuisknop op een opgelicht woord opent een klein menu (bekijken, vragen, waar is, ga naar); linkermuisknop opent de dagboekpagina als je die kent, en anders bekijken als het iets hier is (nu: in een gesprek altijd "ask about", daarbuiten de dagboekpagina of het invoerveld)
-- [ ] Het gespreksvenster houdt de focus (Escape sluit), en het antwoord verschijnt waar je typte; eindigt het gesprek, dan blijft het laatste antwoord in beeld met een regel dat het gesprek voorbij is
+- [x] Rechtermuisknop op een opgelicht woord opent een klein menu (bekijken, vragen, waar is, ga naar); linkermuisknop opent de dagboekpagina als je die kent, en anders bekijken als het iets hier is (nu: in een gesprek altijd "ask about", daarbuiten de dagboekpagina of het invoerveld)
+- [x] Het gespreksvenster houdt de focus (Escape sluit), en het antwoord verschijnt waar je typte; eindigt het gesprek, dan blijft het laatste antwoord in beeld met een regel dat het gesprek voorbij is
 - [x] Familie op een personagekaart staat er pas als je het gehoord of gezien hebt (gevraagd, verteld, of kind naast ouder), anders "familie: onbekend"; nu is elke niet-privéband dorpskennis zodra je iemand hebt ontmoet
-- [ ] De melding "The world was changed in the editor" noemt het bestand en zegt "op schijf gewijzigd"; ze komt van de bestandswachter en niet van je eigen spel
-- [ ] Rechtsonder een rij lampjes per AI-rol (stem, brein, kroniekschrijver, illustrator, bouwer) die groen oplichten tijdens een aanroep, met de laatste kosten en tijd bij aanwijzen; nu is er één "AI busy"
-- [ ] In een ontwikkelbuild opent een menu-item of knop de editor vanuit het spel; nu alleen `npm run editor` of `--editor`
-- [ ] Een tab Transcript in de instellingen: aan of uit, en een map. Staat hij aan, dan schrijft het spel alles wat je op het scherm ziet (jouw invoer als `> ...`, spraak als citaat, systeemregels cursief, een kop per speeldag en per plek) als Markdown naar `<wereld>-<spel>-<datum>.md`, één bestand per spel en per echte dag, alleen bijschrijvend
-- [ ] Het transcript vertraagt het spel niet: de regels gaan gebufferd en asynchroon naar schijf via de schrijver van het spellogboek, met een flush aan het eind van elke beurt; boven een paar megabyte gaat het verder in een vervolgbestand (`-2.md`), en een fout bij het schrijven zet het transcript uit met één melding
-- [ ] Alles wat er al was, speelt hetzelfde: het hele testpakket, de simulaties, de uitspeelscripts van beide werelden, en oude saves
+- [x] De melding "The world was changed in the editor" noemt het bestand en zegt "op schijf gewijzigd"; ze komt van de bestandswachter en niet van je eigen spel
+- [x] Rechtsonder een rij lampjes per AI-rol (stem, brein, kroniekschrijver, illustrator, bouwer) die groen oplichten tijdens een aanroep, met de laatste kosten en tijd bij aanwijzen; nu is er één "AI busy"
+- [x] In een ontwikkelbuild opent een menu-item of knop de editor vanuit het spel; nu alleen `npm run editor` of `--editor`
+- [x] Een tab Transcript in de instellingen: aan of uit, en een map. Staat hij aan, dan schrijft het spel alles wat je op het scherm ziet (jouw invoer als `> ...`, spraak als citaat, systeemregels cursief, een kop per speeldag en per plek) als Markdown naar `<wereld>-<spel>-<datum>.md`, één bestand per spel en per echte dag, alleen bijschrijvend
+- [x] Het transcript vertraagt het spel niet: de regels gaan gebufferd en asynchroon naar schijf via de schrijver van het spellogboek, met een flush aan het eind van elke beurt; boven een paar megabyte gaat het verder in een vervolgbestand (`-2.md`), en een fout bij het schrijven zet het transcript uit met één melding
+- [x] Alles wat er al was, speelt hetzelfde: het hele testpakket, de simulaties, de uitspeelscripts van beide werelden, en oude saves
 
 ## M10.5 Ambacht en vaardigheid
 

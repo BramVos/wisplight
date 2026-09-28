@@ -7,10 +7,22 @@
     "busy": "AI {cost}  busy",
     "noConnection": "AI {cost}  no connection",
     "budgetSpent": "AI {cost}  budget used, set lines",
-    "title": "AI cost and usage"
+    "title": "AI cost and usage",
+    "lights": "What the AI is doing, per role",
+    "role": {
+      "voice": "Voice",
+      "brain": "Brain",
+      "chronicler": "Chronicler",
+      "illustrator": "Illustrator",
+      "builder": "Builder"
+    },
+    "lightBusy": "{role}: working now",
+    "lightNone": "{role}: no call yet",
+    "lightLast": "{role}: last call {cost}, {seconds} s, {ago} min ago{ok}",
+    "lightFailed": " (failed)"
   },
   "editor": {
-    "changed": "The world was changed in the editor."
+    "changedOnDisk": "{file} changed on disk. The world is loaded again."
   },
   "character": {
     "stats": "{hp}/{maxHp} hp, {xp}/{next} xp",
@@ -68,5 +80,12 @@
     "label": "Command",
     "idle": "type a command, or HELP",
     "talking": "say something to {name}, pick a number, or BYE"
+  },
+  "topicMenu": {
+    "label": "What to do with {topic}",
+    "look": "Look",
+    "ask": "Ask about",
+    "where": "Where is",
+    "go": "Go to"
   }
 }

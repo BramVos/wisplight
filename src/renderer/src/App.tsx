@@ -1,6 +1,6 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import type { Output } from '../../engine'
-import { createClient, type AiStatus, type CreationData, type EngineClient, type JournalPage, type Reply, type WorldChoice } from './client'
+import { createClient, type AiStatus, type CreationData, type EngineClient, type JournalPage, type Reply, type RoleLight, type WorldChoice } from './client'
 import { CharacterCreation } from './CharacterCreation'
 import { WorldPicker } from './WorldPicker'
 import { FightPanel } from './FightPanel'
@@ -22,10 +22,21 @@ let nextId = 0
 const withId = (output: Output): Line => ({ ...output, id: nextId++ })
 
 // Words in [brackets] are topics: coloured and clickable, as in the design (FO, chapter 9).
-function renderText(text: string, onTopic: (topic: string) => void) {
+// A right click opens a small menu of what to do with it (M10.4).
+function renderText(text: string, onTopic: (topic: string) => void, onMenu?: (topic: string, x: number, y: number) => void) {
   return text.split(/(\[[^\]]+\])/g).map((part, index) =>
     part.startsWith('[') && part.endsWith(']') ? (
-      <button key={index} type="button" className="topic" onClick={() => onTopic(part.slice(1, -1))}>
+      <button
+        key={index}
+        type="button"
+        className="topic"
+        onClick={() => onTopic(part.slice(1, -1))}
+        onContextMenu={(event) => {
+          if (!onMenu) return
+          event.preventDefault()
+          onMenu(part.slice(1, -1), event.clientX, event.clientY)
+        }}
+      >
         {part.slice(1, -1)}
       </button>
     ) : (
@@ -48,6 +59,15 @@ function aiLabel(ai: AiStatus): { text: string; tone: '' | 'warn' | 'over' } {
   return { text: ai.monthLeftPercent !== undefined ? t('app.ai.monthLeft', { cost, percent: ai.monthLeftPercent }) : t('app.ai.cost', { cost }), tone: low ? 'warn' : '' }
 }
 
+/** What a role's light says when you point at it (M10.4): the role, and the last call. */
+function lightTitle(light: RoleLight): string {
+  const role = t(`app.ai.role.${light.role}`)
+  if (light.busy) return t('app.ai.lightBusy', { role })
+  if (!light.last) return t('app.ai.lightNone', { role })
+  const ago = Math.max(0, Math.round((Date.now() - light.last.at) / 60000))
+  return t('app.ai.lightLast', { role, cost: light.last.costUsd !== undefined ? usd(light.last.costUsd) : '?', seconds: (light.last.ms / 1000).toFixed(1), ago, ok: light.last.ok ? '' : t('app.ai.lightFailed') })
+}
+
 const JOURNAL_KEYS: (keyof Status['journal'])[] = ['quests', 'people', 'places', 'lands', 'factions', 'events', 'lore', 'things']
 
 export function App() {
@@ -67,6 +87,13 @@ export function App() {
   const [journal, setJournal] = useState<{ start?: string; nearby?: boolean }>()
   // Where the conversation in progress began in the log: its window shows the lines from there.
   const [talkFrom, setTalkFrom] = useState<number>()
+  // The talk that just ended (M10.4): its window stays until closed, with the last answer in view.
+  const [ended, setEnded] = useState<{ talk: NonNullable<Status['talk']>; from: number }>()
+  const lastTalk = useRef<NonNullable<Status['talk']> | undefined>(undefined)
+  // The lights per role (M10.4), as calls start and end.
+  const [lights, setLights] = useState<RoleLight[]>()
+  // A topic's menu, at the pointer (M10.4).
+  const [menu, setMenu] = useState<{ topic: string; x: number; y: number }>()
   const [portrait, setPortrait] = useState<string>()
   // The journal page of the person you talk to, refreshed after every answer (age, where seen).
   const [about, setAbout] = useState<JournalPage>()
@@ -135,13 +162,18 @@ export function App() {
     return () => window.removeEventListener('keydown', onKey)
   }, [client])
 
+  // The lights come on and go off as calls start and end (M10.4).
+  useEffect(() => client?.ai?.onActivity?.((roles) => setLights(roles)), [client])
+
   // What the editor saves is in the game at once: show the place again (FO, chapter 15).
   useEffect(() => {
     if (!client?.builder) return
-    const offReload = client.builder.onReload(() => {
+    const offReload = client.builder.onReload((change) => {
       void client.command('look').then((reply) => {
         setStatus(reply.status)
-        setLines((previous) => [...previous, withId({ kind: 'system', text: t('app.editor.changed') }), ...reply.outputs.map(withId)].slice(-400))
+        // Only a change on disk the file watcher saw is announced, with its file (M10.4); the editor's own saves just show the place again.
+        const notice = change.file ? [withId({ kind: 'system', text: t('app.editor.changedOnDisk', { file: change.file }) })] : []
+        setLines((previous) => [...previous, ...notice, ...reply.outputs.map(withId)].slice(-400))
       })
     })
     const offProblem = client.builder.onProblem((text) => setLines((previous) => [...previous, withId({ kind: 'error', text })].slice(-400)))
@@ -151,6 +183,7 @@ export function App() {
     }
   }, [client])
 
+  const talkOpen = useRef(false)
   const send = useCallback(
     async (text: string) => {
       if (!client || !text || waiting) return
@@ -162,13 +195,15 @@ export function App() {
         const reply = await client.command(text)
         setLines((previous) => [...previous, ...reply.outputs.map(withId)].slice(-400))
         setStatus(reply.status)
+        talkOpen.current = Boolean(reply.status.talk)
         // A new stranger in the same world makes their character first (M7.2).
         if (/^(new stranger|carry on|nieuwe vreemdeling|years later|new legend|jaren later)$/i.test(text) && reply.status.character && !reply.status.character.made) setCreation(await client.creation())
       } catch (reason) {
         setLines((previous) => [...previous, withId({ kind: 'error', text: String(reason) })])
       } finally {
         setWaiting(false)
-        inputRef.current?.focus()
+        // The conversation window keeps the focus while it is open (M10.4).
+        if (!talkOpen.current) inputRef.current?.focus()
       }
     },
     [client, waiting],
@@ -206,9 +241,14 @@ export function App() {
   const talk = status?.talk
   useEffect(() => {
     if (!talk) {
+      // Over: the window stays with the last answer, until it is closed (M10.4).
+      if (talkFrom !== undefined && lastTalk.current) setEnded({ talk: lastTalk.current, from: talkFrom })
+      talkOpen.current = Boolean(talkFrom !== undefined && lastTalk.current)
       setTalkFrom(undefined)
       return
     }
+    lastTalk.current = talk
+    setEnded(undefined)
     setTalkFrom((from) => from ?? [...lines].reverse().find((l) => l.kind === 'input')?.id ?? lines.at(-1)?.id ?? 0)
     setPortrait(undefined)
     if (client?.picture) void client.picture(talk.npc).then(setPortrait)
@@ -228,22 +268,29 @@ export function App() {
     }
   }, [client, talk?.npc, waiting])
   const openPage = (id?: string) => setJournal(id ? { start: id } : {})
-  // A topic in the text: ask about it in a conversation; otherwise open its journal page, if known.
+  // A topic in the text (M10.4): its journal page if you know it, else a look at it if it is here.
   const onTopic = (topic: string) => {
-    if (talk) {
-      void send(`ask about ${topic}`)
-      return
-    }
+    setMenu(undefined)
     const known = status ? JOURNAL_KEYS.flatMap((key) => status.journal[key]).find((e) => e.name.toLowerCase() === topic.toLowerCase()) : undefined
     if (known) {
       openPage(known.id)
       return
     }
-    setInput(`ask about ${topic}`)
+    void send(`look ${topic}`)
+  }
+  const onMenu = (topic: string, x: number, y: number) => setMenu({ topic, x, y })
+  const fromMenu = (command: string) => {
+    setMenu(undefined)
+    void send(command)
+  }
+  const closeEnded = () => {
+    setEnded(undefined)
+    talkOpen.current = false
     inputRef.current?.focus()
   }
 
   const ai = status?.ai ? aiLabel(status.ai) : undefined
+  const roles = lights ?? status?.ai?.roles
   const journalCount = status ? JOURNAL_KEYS.reduce((sum, key) => sum + status.journal[key].length, 0) : 0
   const openQuests = status?.journal.quests.filter((q) => q.group === 'Open') ?? []
 
@@ -253,7 +300,7 @@ export function App() {
         {error && <p className="line error">{error}</p>}
         {lines.map((line) => (
           <p key={line.id} className={`line ${line.kind}`}>
-            {line.kind === 'input' ? `> ${line.text.replace(/^"/, '')}` : renderText(line.text, onTopic)}
+            {line.kind === 'input' ? `> ${line.text.replace(/^"/, '')}` : renderText(line.text, onTopic, onMenu)}
           </p>
         ))}
         {waiting && talk && <p className="line thinking">{t('app.talk.thinking', { name: talk.call })}</p>}
@@ -442,6 +489,13 @@ export function App() {
           <button type="button" className="link journal-button" onClick={() => openPage()} title={t('app.status.journalTitle')}>
             [{t('app.status.journal')}]
           </button>
+          {ai && roles && (
+            <span className="ai-lights" aria-label={t('app.ai.lights')}>
+              {roles.map((r) => (
+                <span key={r.role} className={`ai-light${r.busy ? ' on' : ''}${r.last && !r.last.ok ? ' failed' : ''}`} title={lightTitle(r)} aria-label={lightTitle(r)} />
+              ))}
+            </span>
+          )}
           {ai && (
             <button type="button" className={`link ai ${ai.tone}`} onClick={() => setSettings('usage')} title={t('app.ai.title')}>
               {ai.text}
@@ -485,10 +539,44 @@ export function App() {
           busy={waiting}
           portrait={portrait}
           about={about}
-          render={(text) => renderText(text, onTopic)}
+          render={(text) => renderText(text, onTopic, onMenu)}
           onSend={(text) => void send(text)}
           onJournal={() => setJournal({ nearby: true })}
         />
+      )}
+      {!talk && ended && status && (
+        <ConversationView
+          talk={ended.talk}
+          lines={lines.filter((l) => l.id >= ended.from) as TalkLine[]}
+          journal={status.journal}
+          busy={false}
+          about={about}
+          render={(text) => renderText(text, onTopic, onMenu)}
+          onSend={(text) => void send(text)}
+          onJournal={() => setJournal({ nearby: true })}
+          ended
+          onClose={closeEnded}
+        />
+      )}
+      {menu && (
+        <div className="overlay topic-menu-backdrop" onClick={() => setMenu(undefined)} onContextMenu={(event) => (event.preventDefault(), setMenu(undefined))}>
+          <div className="topic-menu" role="menu" aria-label={t('app.topicMenu.label', { topic: menu.topic })} style={{ left: menu.x, top: menu.y }} onClick={(event) => event.stopPropagation()}>
+            <button type="button" role="menuitem" className="link" autoFocus onClick={() => fromMenu(`look ${menu.topic}`)}>
+              {t('app.topicMenu.look')}
+            </button>
+            <button type="button" role="menuitem" className="link" onClick={() => fromMenu(`ask about ${menu.topic}`)}>
+              {t('app.topicMenu.ask')}
+            </button>
+            <button type="button" role="menuitem" className="link" onClick={() => fromMenu(`where is ${menu.topic}`)}>
+              {t('app.topicMenu.where')}
+            </button>
+            {!talk && (
+              <button type="button" role="menuitem" className="link" onClick={() => fromMenu(`walk to ${menu.topic}`)}>
+                {t('app.topicMenu.go')}
+              </button>
+            )}
+          </div>
+        </div>
       )}
       {journal && client && status && (
         <JournalView
@@ -509,7 +597,7 @@ export function App() {
       )}
       {ending && client && <EndView client={client} onClose={() => setEnding(false)} />}
       {exporting && client && <LogExport client={client} onClose={() => setExporting(false)} />}
-      {settings && <Settings bridge={client?.ai} tab={settings} onTab={setSettings} onClose={() => setSettings(undefined)} />}
+      {settings && <Settings bridge={client?.ai} transcript={client?.transcript} tab={settings} onTab={setSettings} onClose={() => setSettings(undefined)} />}
       {DevMenu && dev && client && (
         <Suspense fallback={null}>
           <DevMenu

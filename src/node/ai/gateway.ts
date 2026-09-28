@@ -33,6 +33,19 @@ export interface GatewayOptions {
   now?: () => number
   /** Tests use short time limits. */
   timeoutMs?: Partial<Record<LlmRole | 'illustrator', number>>
+  /** Told when a call starts or ends, per role (M10.4: the lights in the status bar). */
+  onActivity?: (activity: RoleActivity[]) => void
+}
+
+/** The roles shown as lights (M10.4): the editor's drafts are the builder's. */
+export const LIGHT_ROLES = ['voice', 'brain', 'chronicler', 'illustrator', 'builder'] as const
+export type LightRole = (typeof LIGHT_ROLES)[number]
+
+/** A role's light: calls under way, and the last call: when, what it cost, how long, whether it worked. */
+export interface RoleActivity {
+  role: LightRole
+  busy: boolean
+  last?: { at: number; costUsd?: number; ms: number; ok: boolean }
 }
 
 export interface GatewayStatus {
@@ -58,6 +71,8 @@ export class Gateway implements LlmClient {
   private readonly health = new Map<ProviderId, ProviderHealth>()
   private last?: RoleChoice
   private readonly costs: CostRegister
+  private readonly inFlight = new Map<LightRole, number>()
+  private readonly lastCall = new Map<LightRole, NonNullable<RoleActivity['last']>>()
 
   constructor(private readonly options: GatewayOptions) {
     this.costs = options.costs ?? new CostRegister(undefined, () => this.now())
@@ -65,6 +80,22 @@ export class Gateway implements LlmClient {
 
   private now(): number {
     return this.options.now?.() ?? Date.now()
+  }
+
+  /** The lights (M10.4): per role, busy or not, and the last call. */
+  activity(): RoleActivity[] {
+    return LIGHT_ROLES.map((role) => ({ role, busy: (this.inFlight.get(role) ?? 0) > 0, ...(this.lastCall.has(role) ? { last: this.lastCall.get(role)! } : {}) }))
+  }
+
+  private begin(role: LightRole): void {
+    this.inFlight.set(role, (this.inFlight.get(role) ?? 0) + 1)
+    this.options.onActivity?.(this.activity())
+  }
+
+  private end(role: LightRole, last: NonNullable<RoleActivity['last']>): void {
+    this.inFlight.set(role, Math.max(0, (this.inFlight.get(role) ?? 0) - 1))
+    this.lastCall.set(role, last)
+    this.options.onActivity?.(this.activity())
   }
 
   private healthOf(provider: ProviderId): ProviderHealth {
@@ -120,12 +151,17 @@ export class Gateway implements LlmClient {
     const controller = new AbortController()
     const timer = setTimeout(() => controller.abort(), timeoutMs)
     const started = this.now()
+    // The light of this role (M10.4): the editor's drafts are the builder's, advice is nobody's.
+    const light: LightRole | undefined = request.schemaName === 'builder_draft' ? 'builder' : request.role === 'advisor' ? undefined : request.role
+    let outcome: { costUsd?: number; ok: boolean } = { ok: false }
+    if (light) this.begin(light)
     try {
       const response = await provider.complete(choice.model, request, controller.signal)
       health.failures = 0
       this.last = choice
       this.watch(health, response.rateLimit)
       const costUsd = this.options.usage.record(choice.provider, choice.model, response.usage, true, undefined, request.role)
+      outcome = { ok: true, ...(costUsd !== undefined ? { costUsd } : {}) }
       // What it really cost goes into the register, in place of what was reserved.
       if (request.role !== 'advisor' && !override) this.costs.add({ usd: costUsd ?? 0, role: request.role, ...(costUsd === undefined ? { unpriced: true } : {}) })
       this.options.log.add({
@@ -175,6 +211,7 @@ export class Gateway implements LlmClient {
     } finally {
       clearTimeout(timer)
       if (reservation !== undefined) this.costs.release(reservation)
+      if (light) this.end(light, { at: this.now(), ms: this.now() - started, ...outcome })
     }
   }
 
@@ -196,9 +233,12 @@ export class Gateway implements LlmClient {
     const timer = setTimeout(() => controller.abort(), this.options.timeoutMs?.illustrator ?? 120_000)
     const started = this.now()
     const price = picturePrice(choice.model, choice.quality)
+    let outcome: { costUsd?: number; ok: boolean } = { ok: false }
+    if (!trial) this.begin('illustrator')
     try {
       const picture = await provider.picture(choice.model, prompt, choice.quality, controller.signal)
       const costUsd = this.options.usage.record(choice.provider, choice.model, undefined, true, price, 'illustrator')
+      outcome = { ok: true, ...(costUsd !== undefined ? { costUsd } : {}) }
       if (!trial) this.costs.add({ usd: costUsd ?? 0, role: 'illustrator' })
       this.options.log.add({ time: new Date(this.now()).toISOString(), role: 'illustrator', provider: choice.provider, model: choice.model, ok: true, latencyMs: picture.latencyMs, inputTokens: 0, outputTokens: 0, cachedTokens: 0, costUsd, prompt, response: `(a picture, ${Math.round((picture.base64.length * 3) / 4 / 1024)} kB)` })
       return picture
@@ -209,6 +249,7 @@ export class Gateway implements LlmClient {
       throw failure
     } finally {
       clearTimeout(timer)
+      if (!trial) this.end('illustrator', { at: this.now(), ms: this.now() - started, ...outcome })
     }
   }
 

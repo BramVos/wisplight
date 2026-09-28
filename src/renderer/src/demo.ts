@@ -3,7 +3,7 @@ import { pictureSubject } from '../../engine/pictures'
 import type { LlmClient } from '../../engine/dialogue/llm'
 import { costUsd } from '../../node/ai/pricing'
 import type { UsageSummary, UsageTotals } from '../../node/ai/usage'
-import type { AiBridge, AiLogEntry, AiStatus, ChosenRole, ModelInfo, ProviderId, TrialResult } from './client'
+import type { AiBridge, AiLogEntry, AiStatus, ChosenRole, ModelInfo, ProviderId, RoleLight, TrialResult } from './client'
 
 // Browser preview only (npm run web, then open /?mock=1). Made-up data behind
 // the same bridge the desktop app uses, so the settings screen can be checked
@@ -43,10 +43,20 @@ async function demoTrial(provider: ProviderId, model: string, role: ChosenRole):
   return { provider, model, role, runs: answers + leaks, answers, valid, retries: leaks, fallbacks: 0, leaks, factualErrors: 0, characterBreaks: 0, averageLatencyMs: model.includes('nano') ? 800 : 1900, maxLatencyMs: model.includes('nano') ? 1400 : 3100, inputTokens: 14800, outputTokens: 930, costUsd: cost, costPerUsableUsd: cost / valid, costPerHourUsd: perHour, errors: leaks ? ['reply: failed the leak check'] : [] }
 }
 
+/** The lights of the preview (M10.4): which role is busy, and its last call. */
+const lights: RoleLight[] = (['voice', 'brain', 'chronicler', 'illustrator', 'builder'] as const).map((role) => ({ role, busy: false }))
+const lightListeners = new Set<(roles: RoleLight[]) => void>()
+const shine = () => lightListeners.forEach((listener) => listener(lights.map((l) => ({ ...l }))))
+
 /** The mock model with a short delay, so the "thinking" line shows, and with its usage counted. */
 export function slowMock(llm: LlmClient): LlmClient {
   return {
     complete: async (request) => {
+      const light = lights.find((l) => l.role === (request.schemaName === 'builder_draft' ? 'builder' : request.role))
+      if (light) {
+        light.busy = true
+        shine()
+      }
       await wait(700)
       const response = await llm.complete(request)
       const usage = { ...response.usage, cachedTokens: Math.round(response.usage.inputTokens * 0.6) }
@@ -60,6 +70,11 @@ export function slowMock(llm: LlmClient): LlmClient {
       }
       if (state.credit.openai) state.credit.openai.spent += cost
       state.log.unshift({ time: new Date().toISOString(), role: request.role, provider: 'mock', model: DEMO_MODEL, ok: true, latencyMs: 700, ...usage, costUsd: cost, prompt: request.prompt, response: response.text })
+      if (light) {
+        light.busy = false
+        light.last = { at: Date.now(), costUsd: cost, ms: 700, ok: true }
+        shine()
+      }
       return { ...response, model: DEMO_MODEL, usage }
     },
   }
@@ -75,6 +90,7 @@ export function demoStatus(): AiStatus {
     busy: false,
     coolingDown: false,
     budgetSpent: spent >= state.budget,
+    roles: lights.map((l) => ({ ...l })),
   }
 }
 
@@ -103,6 +119,10 @@ function usage(): UsageSummary {
 
 export function demoBridge(_content: Content): AiBridge {
   return {
+    onActivity: (listener) => {
+      lightListeners.add(listener)
+      return () => lightListeners.delete(listener)
+    },
     overview: async () => ({
       settings: {
         providers: {
