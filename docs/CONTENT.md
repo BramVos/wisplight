@@ -352,7 +352,7 @@ One block with:
 | --- | --- | --- | --- |
 | oaths | a map of names to list of text | no | {} |
 | sayings | list of text | no | [] |
-| groups | list of a map: id, name, sayings, areas, professions | no | [] |
+| groups | list of a map: id, name, sayings, oaths, areas, professions | no | [] |
 | default_group | text | no |  |
 | address | a map: stranger, known, friend, high | no | {"stranger":[],"known":[],"friend":[]... |
 | time | list of text | no | [] |

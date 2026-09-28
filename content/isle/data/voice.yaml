@@ -20,6 +20,7 @@ voice:
       sayings:
         - Mend the net before you need it.
         - A rope is only as good as its last knot.
+      oaths: ["tar and twine"]
     - id: heights
       name: the old ones of the heights
       areas: [skerrow_heights]

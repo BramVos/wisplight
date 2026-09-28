@@ -1223,7 +1223,7 @@ function DraftView({ draft, busy, accept, drop, fix }: { draft: EditorDraft; bus
             [Accept and save]
           </button>
         )}
-        {fix && draft.problems.length > 0 && (draft.changes.length > 0 || draft.world) && (
+        {fix && draft.problems.length > 0 && (draft.changes.length > 0 || draft.world || (draft.files?.length ?? 0) > 0) && (
           <button type="button" className="link" disabled={busy} onClick={fix} title="The chronicler gets the problems and corrects only what they name">
             [Let the chronicler put it right]
           </button>

@@ -31,11 +31,12 @@ export function groupOf(world: World, npcId: string): Group | undefined {
   return byId(npc.voice) ?? kit.groups.find((g) => g.professions.includes(npc.profession)) ?? kit.groups.find((g) => area !== undefined && g.areas.includes(area)) ?? byId(kit.default_group)
 }
 
-/** What a speaker swears by: their faith's oaths from the kit, or from world.yaml as before. */
+/** What a speaker swears by: their faith's oaths from the kit, or from world.yaml as before, and their group's own. */
 export function oathsFor(world: World, npcId: string): string[] {
   const faith = faithOf(world, npcId)
   const kit = kitOf(world)?.oaths[faith ?? '']
-  return kit?.length ? kit : (world.content.world.faiths.find((f) => f.id === faith)?.oaths ?? [])
+  const own = kit?.length ? kit : (world.content.world.faiths.find((f) => f.id === faith)?.oaths ?? [])
+  return [...new Set([...own, ...(groupOf(world, npcId)?.oaths ?? [])])]
 }
 
 /** A small seeded pick: the same talk gives the same lines, another talk others. */
@@ -117,7 +118,7 @@ export function flourishes(world: Pick<World, 'content'>, reply: string): number
   const plain = (t: string) => t.toLowerCase().replace(/[^\p{L}\s']/gu, ' ').replace(/\s+/g, ' ').trim()
   const said = plain(reply)
   const sayings = [...kit.sayings, ...kit.groups.flatMap((g) => g.sayings)]
-  const oaths = [...new Set(Object.values(kit.oaths).flat())]
+  const oaths = [...new Set([...Object.values(kit.oaths).flat(), ...kit.groups.flatMap((g) => g.oaths)])]
   const count = (t: string) => {
     const words = plain(t).split(' ')
     const head = words.slice(0, Math.min(5, words.length)).join(' ')
@@ -196,7 +197,7 @@ export function strayNumbers(reply: string, given: string): string[] {
 export function voiceSummary(content: { voice?: Voice; world: { faiths: { oaths: string[] }[] } }): string {
   const kit = content.voice
   if (!kit) return ''
-  const oaths = [...new Set(Object.values(kit.oaths).flat())].slice(0, 6)
+  const oaths = [...new Set([...Object.values(kit.oaths).flat(), ...kit.groups.flatMap((g) => g.oaths)])].slice(0, 6)
   const sayings = [...kit.sayings, ...kit.groups.flatMap((g) => g.sayings)].slice(0, 4)
   const absent = kit.not_here.filter((n) => !/^\p{Lu}/u.test(n.word)).slice(0, 10)
   return [

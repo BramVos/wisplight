@@ -25,6 +25,8 @@ export const VoiceSchema = z
             id: Id,
             name: z.string(),
             sayings: z.array(z.string()).default([]),
+            /** What this group exclaims, next to the oaths of their faith (M10.20: the technicians of The Quiet Reach say "Hull and vacuum"). */
+            oaths: z.array(z.string()).default([]),
             /** Who lives in these areas speaks so, unless their trade puts them in another group. */
             areas: z.array(z.string()).default([]),
             professions: z.array(z.string()).default([]),

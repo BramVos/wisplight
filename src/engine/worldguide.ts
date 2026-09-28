@@ -322,7 +322,7 @@ export const WORLD_STEPS: readonly WorldStep[] = [
       'Sayings are rare and short.',
     ],
     prompt:
-      'STEP: THE VOICE. Agree how people speak with the designer. Propose data/voice.yaml in `files`, in the shape the builder shows for voice, with the oaths, sayings, forms of address, time and measures, and the words that do not exist here.',
+      'STEP: THE VOICE. Agree how people speak with the designer. Propose data/voice.yaml in `files`, in the shape the builder shows for voice, with the oaths (keyed by faith id only), sayings, groups (by the areas people live in or their professions, each with its own sayings and oaths: what technicians or coast folk exclaim goes on their group), forms of address, time and measures, and the words that do not exist here.',
   },
   {
     id: 'palette',

@@ -2,7 +2,9 @@ import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterAll, describe, expect, it } from 'vitest'
-import { draftResult, LlmError, mergeFix, newWorldFiles, readDraft, WORLD_STEPS, worldFixRequest, worldStepRequest, type LlmRequest } from '../src/engine'
+import { draftResult, Engine, LlmError, mergeFix, newWorldFiles, readDraft, WORLD_STEPS, worldFixRequest, worldStepRequest, type LlmRequest } from '../src/engine'
+import { oathsFor } from '../src/engine/dialogue/voice'
+import { loadContentFromDir } from '../src/node/content'
 import { WEATHER_KINDS } from '../src/engine/weather'
 import { CostRegister } from '../src/node/ai/costs'
 import { Gateway } from '../src/node/ai/gateway'
@@ -112,6 +114,15 @@ describe('M10.20: the real run of a world', () => {
     const transport = worldStepRequest(files, 'passages', 'A crawler to the ridge.').system
     expect(transport).toContain('data/journey.yaml whole in `files`')
     expect(transport).toContain('keyed `<stop>><stop>` with a `>` between the ids')
+  })
+
+  it('gives a group of speakers its own oaths, next to those of their faith', async () => {
+    // The Quiet Reach: technicians say "Hull and vacuum", whatever they believe. On Skerrow the harbour folk say "tar and twine".
+    const engine = new Engine(await loadContentFromDir(join(import.meta.dirname, '../content'), 'isle'), { seed: 1 })
+    expect(oathsFor(engine.world, 'npc_maren')).toContain('tar and twine')
+    const voice = worldStepRequest(newWorldFiles('quietreach', 'The Quiet Reach'), 'voice', 'Technicians say hull and vacuum.').system
+    expect(voice).toMatch(/groups\?: list of \{[^}]*oaths\?: list of text/)
+    expect(voice).toContain('what technicians or coast folk exclaim goes on their group')
   })
 
   it('puts right a proposal that did not load, with only what the chronicler corrects', () => {
