@@ -155,6 +155,8 @@ A list; each has:
 | relations | list of a map: to, name, pronoun, role, bond, status, private, owes, note | no | [] |
 | secrets | list of a map: id, text, hint, admission, dc, teaches, about | no | [] |
 
+`secrets`: `about` and `teaches` take ids: a topic, a person (an NPC id), a place (a location id) or an area (`area_<id>`).
+
 ## items (data/items.yaml)
 
 Things that can be carried, eaten, worn, bought and sold.

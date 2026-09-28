@@ -657,9 +657,9 @@ export const NpcSchema = z.object({
         hint: z.string(),
         admission: z.string().optional(),
         dc: z.number().int().default(18),
-        /** A topic the player learns when the secret is told: the dry ridge. */
+        /** What the player learns when the secret is told (the dry ridge): a topic, person, place or area_<id> (M10.20). */
         teaches: z.string().optional(),
-        /** Asked about one of these by someone it holds dear (Warm or better), the NPC tells it freely (FO, chapter 8). */
+        /** Asked about one of these by someone it holds dear (Warm or better), the NPC tells it freely (FO, chapter 8): topics, people, places or area_<id> (M10.20). */
         about: z.array(z.string()).default([]),
       }),
     )
@@ -1426,10 +1426,13 @@ function checkReferences(world: WorldDef | undefined, c: Omit<Content, 'world'>)
       if (r.to === n.id) problems.push(`${n.id}: relation to itself`)
     }
   }
+  // What a secret is about, and what it teaches (M10.20, found building The Quiet Reach): a topic, or a person, a place
+  // or an area (area_<id>), which the game knows as topics too.
+  const subject = (id: string) => c.topics.has(id) || c.npcs.has(id) || c.locations.has(id) || (id.startsWith('area_') && c.areas.has(id.slice(5)))
   for (const n of c.npcs.values()) {
     for (const secret of n.secrets) {
-      if (secret.teaches && !c.topics.has(secret.teaches)) problems.push(`${n.id}.secrets.${secret.id}: teaches unknown topic ${secret.teaches}`)
-      for (const t of secret.about) if (!c.topics.has(t)) problems.push(`${n.id}.secrets.${secret.id}: about unknown topic ${t}`)
+      if (secret.teaches && !subject(secret.teaches)) problems.push(`${n.id}.secrets.${secret.id}: teaches ${secret.teaches}, which is no topic, person, place or area_<id>`)
+      for (const t of secret.about) if (!subject(t)) problems.push(`${n.id}.secrets.${secret.id}: about ${t}, which is no topic, person, place or area_<id>`)
     }
   }
   for (const a of c.areas.values()) if (a.topic && !c.topics.has(a.topic)) problems.push(`area ${a.id}: unknown topic ${a.topic}`)

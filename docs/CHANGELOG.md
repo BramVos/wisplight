@@ -7,10 +7,11 @@
 - **Doorgaan en laden op het hoofdscherm.** Heeft een wereld een save, dan toont de wereldkeuze eerst "[Continue]" met wie, waar en de speldag van de laatste save, dan "[New game]", dat eerst vraagt of je echt opnieuw begint, en "[Load a save...]". Het laadscherm toont de saves die je zelf maakte en de laatste automatische, elk met die gegevens. Het menu in het spel heeft "[Continue]", "[New game]", "[Load a save...]" en "[Export this save...]". De commando's werken zoals eerst.
 - **Een save als bestand.** "[Export...]" in het laadscherm en "[Export this save...]" in het menu schrijven een `.wisplight`-bestand, met wereld en contentversie, wie, waar en wanneer, de kroniek van het spel regel voor regel en de save zelf. "[Import a save...]" leest zo'n bestand, controleert het met zod en tegen de wereld, en zet het in de lijst onder de naam van het bestand.
 - **Saves met een naam.** `save <naam>` (niet midden in een gesprek) of "[Name...]" in het laadscherm. Een save met een naam ruimt het spel nooit op. De terminalclient kent `save export <pad>` en `load <pad>`.
+- **Een geheim over een persoon of een plek.** `about` en `teaches` van een geheim mogen nu ook een persoon, een plek of een gebied (`area_<id>`) zijn, zoals het spel ze al als onderwerp kent. Bij The Quiet Reach viel een voorstel om zo'n geheim. Het contract, de exacte velden van de stap People en de schrijfhulp zeggen het erbij. In Deepwell heeft Teo een geheim over Ilse dat de werkkamer van de warden leert.
 
-Testen: begin een spel, typ `save bij de kade`, loop verder en typ `save`, en open [Load a save...] in het menu. Kies [New game] en zie [Continue] bovenaan de wereld. Exporteer een save en importeer hem weer. Tests in `tests/m1020book.test.ts` (5) en `tests/m1020saves.test.ts` (3), alle 801 groen, drie simulaties, speeltests en build. De smoketest maakt nu ook een save met een naam en leest de lijst.
+Testen: begin een spel, typ `save bij de kade`, loop verder en typ `save`, en open [Load a save...] in het menu. Kies [New game] en zie [Continue] bovenaan de wereld. Exporteer een save en importeer hem weer. Tests in `tests/m1020book.test.ts` (5), `tests/m1020saves.test.ts` (3) en `tests/m1020secrets.test.ts` (2), alle 806 groen, drie simulaties, speeltests en build. De smoketest maakt nu ook een save met een naam en leest de lijst.
 
-Wat de editor en de kroniekverteller leerden: geen nieuwe velden in de content.
+Wat de editor en de kroniekverteller leerden: geen nieuwe velden, wel een bredere waarde: bij `secrets` zegt het contract nu wat `about` en `teaches` mogen zijn, en dat komt in de stap People en in de schrijfhulp.
 
 Nog niet: een save verwijderen kan niet vanuit het laadscherm. In de webversie (`?mock=1`) staan saves alleen in het geheugen.
 

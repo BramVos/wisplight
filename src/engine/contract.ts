@@ -17,6 +17,14 @@ interface KindText {
   missing: string
 }
 
+/**
+ * What a field may hold where its type does not say it (M10.20): for the
+ * contract, the fields of a world step and the writing aid's short contract.
+ */
+export const FIELD_NOTES: Record<string, string[]> = {
+  npcs: ['`secrets`: `about` and `teaches` take ids: a topic, a person (an NPC id), a place (a location id) or an area (`area_<id>`).'],
+}
+
 /** Every kind of content, in the order a new world is best filled in. */
 export const KINDS: Record<string, KindText> = {
   world: { file: 'world.yaml', does: 'The frame of the world: its name and start, the frame every model call gets, the calendar, coins, law, faiths, towns, weather, map and palette, and the words its texts use for the land and the region.', missing: 'A world has exactly one. What it leaves out takes the neutral default: "the land", "the region", a law without an officer, no faith, the standard calendar, coins and palette.' },
@@ -225,7 +233,7 @@ export function stepFields(fills: readonly { kind: string; keys?: string[] }[]):
     const fields = def(s).shape ?? {}
     const names = (fill.keys ?? Object.keys(fields)).filter((name) => fields[name])
     if (!names.length) continue
-    lines.push(`${fill.kind}${list ? ', each one' : ''}:`, ...names.map((name) => `  ${name}${unwrap(fields[name]!).optional ? '?' : ''}: ${shapeOf(fields[name]!, 1, named)}`))
+    lines.push(`${fill.kind}${list ? ', each one' : ''}:`, ...names.map((name) => `  ${name}${unwrap(fields[name]!).optional ? '?' : ''}: ${shapeOf(fields[name]!, 1, named)}`), ...(FIELD_NOTES[fill.kind] ?? []).map((note) => `  Note: ${note}`))
   }
   if (!lines.length) return ''
   const shapes = [...named].map(([text, name]) => `${name}: ${text}`)
@@ -262,7 +270,7 @@ export function contractMarkdown(): string {
     if (text) lines.push(text.does, '', `When a world has none: ${text.missing}`, '')
     lines.push(isList(key) ? 'A list; each has:' : 'One block with:', '', '| field | what | required | default |', '| --- | --- | --- | --- |')
     for (const f of fieldsOf(key)) lines.push(`| ${f.name} | ${f.kind.replace(/\|/g, '\\|')} | ${f.required ? 'yes' : 'no'} | ${f.fallback === undefined ? '' : show(f.fallback).replace(/\|/g, '\\|')} |`)
-    lines.push('')
+    lines.push('', ...(FIELD_NOTES[key] ?? []).flatMap((note) => [note, '']))
   }
   return `${lines.join('\n').trimEnd()}\n`
 }
@@ -326,7 +334,7 @@ export function contractView(content: Content | undefined): { key: string; file:
 export function contractSummary(content: Content | undefined): string {
   return [
     'WHAT A WORLD CAN HAVE (the content contract; propose nothing outside it, and only fields it names):',
-    ...contractView(content).map((k) => `- ${k.key} (${k.file}): ${k.does} ${k.count ? `This world has ${k.list ? k.count : 'it'}.` : `Empty now: ${k.missing}`}`),
+    ...contractView(content).map((k) => `- ${k.key} (${k.file}): ${k.does} ${k.count ? `This world has ${k.list ? k.count : 'it'}.` : `Empty now: ${k.missing}`}${(FIELD_NOTES[k.key] ?? []).map((note) => ` Note: ${note}`).join('')}`),
   ].join('\n')
 }
 

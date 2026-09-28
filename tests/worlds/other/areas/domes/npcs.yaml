@@ -70,6 +70,13 @@ npcs:
       - to: npc_ilse_varga
         role: friend
         bond: 1
+    # A secret about a person and a place (M10.20): about and teaches take people and places, not only topics.
+    secrets:
+      - id: second_key
+        text: '"I cut Ilse a second key to the warden''s office. She says it is for emergencies. It is for the nights she cannot face the bunks."'
+        hint: He looks at his hands when the warden's office comes up.
+        about: [npc_ilse_varga, loc_deepwell_warden_office]
+        teaches: loc_deepwell_warden_office
 
   - id: npc_ama_okafor
     name: Ama Okafor
