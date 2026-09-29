@@ -421,6 +421,8 @@ export interface PastTalkLine {
   t: number
   you: boolean
   text: string
+  /** The talk it was in, by when it began (M10.29 R): an older talk leaves the ring whole. Older lines have none. */
+  talk?: number
 }
 
 export interface TalkLine {

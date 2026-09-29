@@ -12,7 +12,7 @@ import { isNear, noun, ties } from './people'
 import { askLine, requestName } from './requests'
 import { outlineLines, outlineOf } from './outlines'
 import type { World } from './world'
-import { talksByDay } from './pasttalks'
+import { historyOf, lastSaid } from './pasttalks'
 import { knownFrom } from './rules/player'
 import { sketchById, sketches, sketchLines } from './sketches'
 
@@ -38,6 +38,8 @@ export interface JournalPage {
   map?: { rows: string[]; classes: string[] }
   /** For a person: what the player saw and was told, laid out (acquaintance.ts). */
   person?: PersonView
+  /** For a person (M10.29 R): every talk as it went, by day, the newest first; the History tab. */
+  history?: { day: string; talks: { you: boolean; text: string }[][] }[]
   /** The frames of the game (M10.24): the world, its lands and great lines, the dials and the play mode. */
   frames?: import('./frames').FramesView
   /** For the character sheet: the numbers, for the interface to lay out. */
@@ -109,9 +111,21 @@ export function journalPage(world: World, topics: TopicRegistry, id: string): Jo
     if (view.age) page.lines.push(view.age.known ? `${view.age.text} years old.` : `Looks ${view.age.text.replace(/\?$/, '')} years old, you would guess.`)
     if (view.lastSeen) page.lines.push(`Last seen at ${view.lastSeen.where}, ${view.lastSeen.ago}.`)
     if (view.often.length) page.lines.push(`Often at ${view.often.join(', ')}.`)
-    // Earlier talks (M10.29 J): what was said, by day, never for the model.
-    const talks = talksByDay(world, npc.id)
-    if (talks.length) page.lines.push('Last talks:', ...talks)
+    // What they told you, and what stands between you (M10.29 R: the About tab).
+    const toldYou = Object.entries(heard)
+      .filter(([, h]) => h.from === npc.id)
+      .map(([id, h]) => ({ fact: factById(world, id), h }))
+      .filter((x): x is { fact: NonNullable<typeof x.fact>; h: typeof x.h } => Boolean(x.fact))
+      .slice(-3)
+    for (const { fact, h } of toldYou) page.lines.push(`${callName(npc)} told you: ${versionOf(fact, h)}`)
+    const between = (world.state.agreements?.list ?? []).filter((a) => (a.by === npc.id && a.to === 'player') || (a.by === 'player' && a.to === npc.id)).slice(-4)
+    for (const a of between) page.lines.push(`Between you: ${a.by === 'player' ? 'you' : callName(npc)} to ${a.what}${a.status === 'open' ? '' : ` (${a.status})`}.`)
+    for (const r of world.state.requests.filter((r) => r.npc === npc.id && r.status === 'open')) page.lines.push(`${callName(npc)} asked you: ${r.name ?? r.kind ?? 'a favour'}.`)
+    const last = lastSaid(world, npc.id)
+    if (last) page.lines.push(`Last time: ${last}`)
+    // Every talk as it went, by day (M10.29 R: the History tab), never for the model.
+    const history = historyOf(world, npc.id)
+    if (history.length) page.history = history.map((d) => ({ day: d.day, talks: d.talks.map((t) => t.map((l) => ({ you: l.you, text: l.text }))) }))
   } else if (entry.kind === 'place' && entry.ref) {
     page.kind = 'place'
     const location = content.locations.get(entry.ref)!

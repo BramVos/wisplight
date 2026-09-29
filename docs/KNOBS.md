@@ -20,7 +20,7 @@ A world sets any of these in `world.yaml` under `knobs:`, by id: one number, or 
 | talk.support_dc | How much easier a persuasion is for each person who stands by it. | DC | 4 | 0 to 10 | dialogue/conversation.ts |
 | talk.facts_per_day | How many things said in talks become facts that go round, in a day. | facts | 3 | 0 to 20 | dialogue/aftertalk.ts |
 | talk.words | How many words a reply may have, by how much the moment asks for. | words | short 15, normal 50, explain 90, story 180 | 5 to 400 | dialogue/acts.ts |
-| talk.kept_lines | How many lines of earlier talks the game keeps per person, for the talk window and the journal (never for the model). | lines | 40 | 0 to 400 | engine.ts |
+| talk.kept_lines | How many lines of earlier talks the game keeps per person, for the talk window and the journal (never for the model); an older talk leaves whole. | lines | 200 | 0 to 1000 | engine.ts |
 | talk.party_words | How many words each companion says when the stranger asks the group. | words | 25 | 5 to 80 | dialogue/party.ts |
 | belief.openness | How open a place is to a stranger, by the kind of place: 0 closed, 1 open. | share | city 0.9, town 0.8, inn 0.7, village 0.5, route 0.5, hamlet 0.3, wilderness 0.2 | 0 to 1 | belief.ts |
 | belief.in_person | What someone who comes to tell you to your face adds to their word. | weight | 25 | 0 to 100 | belief.ts |

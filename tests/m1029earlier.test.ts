@@ -41,9 +41,29 @@ describe('M10.29 J: earlier talks', () => {
     await engine.handle('And today?')
     const prompt = llm.calls.filter((c) => c.schemaName === 'npc_reply').at(-1)!
     expect([prompt.prompt, ...(prompt.turns ?? []).map((t) => t.text)].join('\n')).not.toMatch(/What bread do you have today/)
+    // Her page (M10.29 R): About says where you left it; History has every talk, by day, the newest first.
     const page = engine.page('npc_mirte')!
-    expect(page.lines).toContain('Last talks:')
-    expect(page.lines.join('\n')).toMatch(/\n {2}You: "What bread do you have today\?"/)
+    expect(page.lines.some((l) => /^Last time: /.test(l))).toBe(true)
+    expect(page.history![0]!.talks.at(-1)!.length).toBeGreaterThan(0)
+    const older = page.history!.flatMap((d) => d.talks).flat()
+    expect(older).toContainEqual({ you: true, text: 'What bread do you have today?' })
+    const text = (await engine.handle('journal mirte history')).map((o) => o.text).join('\n')
+    expect(text).toMatch(/every talk:\n\w+ \d+:/)
+    expect(text).toMatch(/ {2}You: "What bread do you have today\?"/)
+    expect((await engine.handle('journal mirte')).map((o) => o.text).join('\n')).toMatch(/JOURNAL mirte HISTORY/)
+    expect((await engine.handle('help')).map((o) => o.text).join('\n')).toMatch(/journal <person> history/)
+  }, 60_000)
+
+  it('lets an older talk leave the ring whole', async () => {
+    const few: Content = { ...content, world: { ...content.world, knobs: { ...content.world.knobs, 'talk.kept_lines': 5 } } }
+    const { engine } = await twoTalks(few)
+    await engine.handle('And today, what is new?')
+    const ring = engine.state.pastTalks!['npc_mirte']!
+    expect(ring.length).toBeLessThanOrEqual(5)
+    // Only whole talks: the first line kept is the first line of its talk.
+    const first = ring[0]!.talk
+    expect(ring.filter((l) => l.talk === first).length).toBe(ring.filter((l) => l.talk === first).length)
+    expect(new Set(ring.map((l) => l.talk)).size).toBe(1)
   }, 60_000)
 
   it('keeps at most the knob of lines, and none at nought', async () => {

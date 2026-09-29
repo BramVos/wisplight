@@ -69,6 +69,9 @@ export function JournalView({
   const [part, setPart] = useState<keyof Journal | 'you' | 'all'>('all')
   const [onlyNear, setOnlyNear] = useState(nearby)
   const [picture, setPicture] = useState<string>()
+  // A person's page in two tabs (M10.29 R): About, and every talk as it went.
+  const [personTab, setPersonTab] = useState<'about' | 'history'>('about')
+  useEffect(() => setPersonTab('about'), [page?.id])
   const searchRef = useRef<HTMLInputElement>(null)
   const pageRef = useRef<HTMLElement>(null)
   const parts = journalParts()
@@ -256,6 +259,32 @@ export function JournalView({
                   </>
                 ) : page.kind === 'map' || page.kind === 'sheet' ? (
                   <pre className={page.kind === 'map' ? 'map whole' : 'sheet'}>{page.lines.join('\n')}</pre>
+                ) : page.kind === 'person' && page.history?.length ? (
+                  <>
+                    <nav className="tabs small" aria-label={t('journal.page.tabs')}>
+                      {(['about', 'history'] as const).map((tab) => (
+                        <button key={tab} type="button" className={personTab === tab ? 'active' : ''} onClick={() => setPersonTab(tab)}>
+                          {t(`journal.page.${tab}`)}
+                        </button>
+                      ))}
+                    </nav>
+                    {personTab === 'about'
+                      ? page.lines.map((line, index) => <p key={index}>{line}</p>)
+                      : page.history.map((day) => (
+                          <section key={day.day} className="talk-history">
+                            <h4>{day.day}</h4>
+                            {day.talks.map((talk, i) => (
+                              <div key={i} className="talk-log history-talk">
+                                {talk.map((line, j) => (
+                                  <p key={j} className={`line ${line.you ? 'input me' : 'speech them'}`}>
+                                    {line.text}
+                                  </p>
+                                ))}
+                              </div>
+                            ))}
+                          </section>
+                        ))}
+                  </>
                 ) : (
                   page.lines.map((line, index) => <p key={index}>{line}</p>)
                 )}

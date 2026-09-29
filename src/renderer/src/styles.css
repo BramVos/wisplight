@@ -399,6 +399,13 @@ body {
   text-align: center;
 }
 
+/* Every talk with someone, on their page (M10.29 R): one block a talk, a line between talks. */
+.history-talk {
+  border-bottom: 1px dashed var(--line);
+  margin-bottom: 10px;
+  padding-bottom: 4px;
+}
+
 /* The talk before this one (M10.29 J): faded, above the new one. */
 .talk-earlier {
   border-bottom: 1px dashed var(--line);

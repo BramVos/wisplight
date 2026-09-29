@@ -30,7 +30,7 @@ export function talkDay(world: World, t: number): string {
 }
 
 /** A turn of a talk into the ring of that person: the stranger's words and what they said back, within the knob. */
-export function keepPastLines(world: World, npcId: string, typed: string, outputs: Output[]): void {
+export function keepPastLines(world: World, npcId: string, typed: string, outputs: Output[], began?: number): void {
   const most = knob(world, 'talk.kept_lines')
   const all = (world.state.pastTalks ??= {})
   if (most <= 0) {
@@ -38,10 +38,38 @@ export function keepPastLines(world: World, npcId: string, typed: string, output
     return
   }
   const ring = (all[npcId] ??= [])
+  const talk = began !== undefined ? { talk: began } : {}
   const words = typed.trim().replace(/^['"]/, '')
-  if (words && !NOT_WORDS.test(words)) ring.push({ t: world.now, you: true, text: words })
-  for (const o of outputs) if (o.kind === 'speech') ring.push({ t: world.now, you: false, text: o.text })
-  if (ring.length > most) ring.splice(0, ring.length - most)
+  if (words && !NOT_WORDS.test(words)) ring.push({ t: world.now, you: true, text: words, ...talk })
+  for (const o of outputs) if (o.kind === 'speech') ring.push({ t: world.now, you: false, text: o.text, ...talk })
+  // Over the knob, the oldest talk leaves whole (M10.29 R); a talk longer than the knob by itself loses its first lines.
+  while (ring.length > most) {
+    const oldest = ring[0]!.talk
+    const whole = ring.findIndex((l) => l.talk !== oldest)
+    ring.splice(0, whole > 0 && oldest !== undefined ? whole : ring.length - most)
+  }
+}
+
+/** The talks of a person by day, the newest day first (M10.29 R): each talk its lines in order. */
+export function historyOf(world: World, npcId: string): { day: string; talks: PastTalkLine[][] }[] {
+  const ring = world.state.pastTalks?.[npcId] ?? []
+  const days: { day: string; talks: PastTalkLine[][] }[] = []
+  let last: number | undefined
+  for (const line of ring) {
+    const day = talkDay(world, line.t)
+    let entry = days.at(-1)
+    if (!entry || entry.day !== day) days.push((entry = { day, talks: [] }))
+    const key = line.talk ?? line.t
+    if (!entry.talks.length || key !== last) entry.talks.push([])
+    entry.talks.at(-1)!.push(line)
+    last = key
+  }
+  return days.reverse()
+}
+
+/** What the person said last, for the journal (M10.29 R): a reminder of where you left it. */
+export function lastSaid(world: World, npcId: string): string | undefined {
+  return [...(world.state.pastTalks?.[npcId] ?? [])].reverse().find((l) => !l.you)?.text
 }
 
 /** The last lines of the talk before the one begun at `began`, with its day; nothing when there was none. */

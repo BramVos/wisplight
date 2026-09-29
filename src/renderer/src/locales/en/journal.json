@@ -55,7 +55,10 @@
     "map": "Where {name} is: the star",
     "heardFrom": "Heard from: {sources}",
     "ask": "Ask {name} about this",
-    "asText": "The map as text"
+    "asText": "The map as text",
+    "about": "About",
+    "history": "History",
+    "tabs": "About this person, or every talk"
   },
   "wishes": {
     "placeholder": "more mysteries, no war this season",

@@ -1362,7 +1362,7 @@ export class Engine {
     for (const o of outputs) if (o.kind !== 'room') list.push({ id: ++id, kind: o.kind, text: o.text, ...(o.source ? { source: o.source } : {}) })
     if (list.length > MAX_TALK_LINES) list.splice(0, list.length - MAX_TALK_LINES)
     this.lastTalk = this.state.talk ? undefined : before && before !== this.state.talk ? { npc: before.npc, lines: list } : this.lastTalk
-    keepPastLines(this.world, into.npc, typed, outputs)
+    keepPastLines(this.world, into.npc, typed, outputs, into.began)
   }
 
   /**
@@ -1378,6 +1378,22 @@ export class Engine {
     if (!page) return [{ kind: 'narration', text: 'You know nothing of that.' }]
     const lines = page.lines.filter((l) => l.trim()).slice(0, 4)
     return [{ kind: 'narration', text: `${page.name}: ${lines.join(' ')}` }]
+  }
+
+  /** A page of the journal as text (M10.29 R): its lines and links, or for a person with HISTORY every talk by day. */
+  private journalText(args: string[]): Output[] {
+    const history = /^history$/i.test(args.at(-1) ?? '')
+    const words = (history ? args.slice(0, -1) : args).join(' ')
+    const id = /^why( you are here)?$/i.test(words) ? 'why' : this.topics.find(words)
+    const page = id ? this.page(id) : undefined
+    if (!page) return [{ kind: 'error', text: 'Your journal has nothing of that.' }]
+    if (history) {
+      if (page.kind !== 'person') return [{ kind: 'error', text: `${page.name} is no person to have talked with.` }]
+      if (!page.history?.length) return [{ kind: 'system', text: `You have not talked with ${page.name} yet.` }]
+      const lines = page.history.flatMap((d) => [`${d.day}:`, ...d.talks.flatMap((talk, i) => [...(i ? ['  ...'] : []), ...talk.map((l) => `  ${l.you ? `You: "${l.text}"` : l.text}`)])])
+      return [{ kind: 'system', text: [`${page.name}, every talk:`, ...lines].join('\n') }]
+    }
+    return [{ kind: 'system', text: [page.name, ...page.lines, ...page.links.map((l) => `${l.label}: ${l.name}`), ...(page.history?.length ? ['(JOURNAL ' + words + ' HISTORY: every talk)'] : [])].join('\n') }]
   }
 
   private async route(text: string): Promise<Output[]> {
@@ -1596,7 +1612,8 @@ export class Engine {
       }
       case 'journal':
       case 'topics':
-        return [this.dialogue.journal()]
+        // JOURNAL <name> [HISTORY] (M10.29 R): a page as the terminal reads it; about a person, or every talk with them.
+        return command.args.length ? this.journalText(command.args) : [this.dialogue.journal()]
       case 'head': {
         const wind = windOf(command.args.join('-')) ?? windOf(command.args[0])
         if (!wind) return [{ kind: 'error', text: 'Head which way? For example: head south-east.' }]
