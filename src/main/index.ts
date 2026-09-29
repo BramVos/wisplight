@@ -4,7 +4,7 @@ import { appendFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFi
 import { tmpdir } from 'node:os'
 import { basename, dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { ContentError, discoveredAtlasHtml, draftRequest, mapDraft, readSaveFile, saveAbout, saveFileName, saveFileText, SAVE_FILE_EXTENSION, type SaveFile, draftResult, Engine, ENTITY_KINDS, lineDiff, MapPaletteSchema, paletteRequest, paletteView, readDraft, readPalette, readVoice, savePalette, saveVoice, voiceRequest, voiceYaml, landsIn, landYaml, saveLand, worldStepRequest, worldFixRequest, mergeFix, polishRequest, readPolish, recheckDraft, descriptionCheck, enhanceRequest, readEnhance, type Content, type Edit, type EntityKind, type FileChange, type CheckpointedSave, type MapPalette, type Output, type SaveData, type PlayMode } from '../engine'
+import { ContentError, discoveredAtlasHtml, draftRequest, mapDraft, mapStepRequest, readMapStep, readSaveFile, saveAbout, saveFileName, saveFileText, SAVE_FILE_EXTENSION, type SaveFile, draftResult, Engine, ENTITY_KINDS, lineDiff, MapPaletteSchema, paletteRequest, paletteView, readDraft, readPalette, readVoice, savePalette, saveVoice, voiceRequest, voiceYaml, landsIn, landYaml, saveLand, worldStepRequest, worldFixRequest, mergeFix, polishRequest, readPolish, recheckDraft, descriptionCheck, enhanceRequest, readEnhance, type Content, type Edit, type EntityKind, type FileChange, type CheckpointedSave, type MapPalette, type Output, type SaveData, type PlayMode } from '../engine'
 import { designUpdate, readDesignChange } from '../engine/designlog'
 import { ContentEditor } from '../node/editor'
 import { AppKnobs, type AppKnobId } from '../node/knobs'
@@ -823,6 +823,20 @@ handle('editor:palette', async (_event, world: unknown, palette: unknown) => {
 handle('editor:map-draft', async (_event, world: unknown) => {
   devOnly()
   return shownDraft(mapDraft(await readContentFiles(contentDir(), worldOf(world))))
+})
+// The map after the world steps (M10.25): laid out from the places and painted by the Palette step, as one proposal.
+handle('editor:map-step', async (_event, world: unknown, said: unknown) => {
+  devOnly()
+  await setup()
+  const llm = smoke ? new MockLlm() : ai?.client()
+  if (!llm) return { say: '', questions: [], changes: [], problems: ["The chronicler paints the map with you: connect a model in the game's Settings > AI first."], diffs: [] }
+  const files = await readContentFiles(contentDir(), worldOf(world))
+  const { layout, request } = mapStepRequest(files, String(said ?? '').slice(0, 20000))
+  try {
+    return shownDraft(readMapStep(files, layout, (await llm.complete(request)).text))
+  } catch (error) {
+    return { say: '', questions: [], changes: [], problems: [`The chronicler did not answer: ${error instanceof Error ? error.message : String(error)}`], diffs: [] }
+  }
 })
 handle('editor:save-palette', async (_event, world: unknown, palette: unknown) => {
   devOnly()

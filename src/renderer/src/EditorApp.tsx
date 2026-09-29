@@ -1860,6 +1860,7 @@ function WorldSteps({ bridge, world, view, saved, existing = false }: { bridge: 
         </>
       )}
       {outcome && (outcome.ok ? <p className="ok small">Saved. {outcome.changes.length} files changed.</p> : <SaveResult result={outcome} />)}
+      {!land && at === steps.length - 1 && <MapStep bridge={bridge} world={world} said={log.answers['Palette'] ?? said} saved={saved} counted={() => void counted()} record={(decision, from) => bridge.design(world, { decision: { step: 'Map', decision, asked: log.answers['Palette'] ?? said, say: from?.say ?? '', questions: from?.questions ?? [], changed: from ? changedBy(from) : [], reason: '' } }).then(setLog)} />}
       <PolishPlaces bridge={bridge} world={world} view={view} saved={saved} counted={() => void counted()} />
       <h3>Notes for this world</h3>
       <p className="muted small">
@@ -1909,6 +1910,60 @@ function changedBy(draft: EditorDraft): string[] {
  * greys), and a map to try it on. The writing aid proposes a palette from the
  * world's frame on request; nothing is saved until you save.
  */
+/**
+ * The map after the world steps (M10.25; Bram, 29 September 2026: the map
+ * belongs to the world build): after the last step the editor offers to lay
+ * the region map out from the places and have the Palette step paint it, as
+ * one proposal with a diff, as the steps have.
+ */
+function MapStep({ bridge, world, said, saved, counted, record }: { bridge: EditorBridge; world: string; said: string; saved: () => Promise<void>; counted: () => void; record: (decision: 'accepted' | 'rejected', from?: EditorDraft) => Promise<unknown> }) {
+  const [draft, setDraft] = useState<EditorDraft>()
+  const [busy, setBusy] = useState(false)
+  const [outcome, setOutcome] = useState<EditorSave>()
+  const make = async () => {
+    setBusy(true)
+    setOutcome(undefined)
+    try {
+      setDraft(await bridge.mapStep(world, said))
+      counted()
+    } catch (reason) {
+      setDraft({ say: '', questions: [], changes: [], problems: [reason instanceof Error ? reason.message : String(reason)], diffs: [] })
+    } finally {
+      setBusy(false)
+    }
+  }
+  const accept = async () => {
+    if (!draft) return
+    setBusy(true)
+    const result = await bridge.saveDraft(world, draft)
+    setBusy(false)
+    setOutcome(result)
+    if (result.ok) {
+      await record('accepted', draft)
+      setDraft(undefined)
+      await saved()
+    }
+  }
+  const drop = async () => {
+    if (draft && !draft.problems.length) await record('rejected', draft)
+    setDraft(undefined)
+  }
+  return (
+    <section className="map-step">
+      <h3>Then: the map</h3>
+      <p className="muted small">
+        The chronicler lays the region map out from the places, their exits and minutes, and paints it in the Palette step from your words (the land, the water, what lies beyond each edge). It comes as one proposal: nothing is saved until you accept it.
+      </p>
+      <button type="button" className="link" disabled={busy} onClick={() => void make()}>
+        [Lay out the map and paint it]
+      </button>
+      {busy && <span className="muted small"> The chronicler is painting...</span>}
+      {draft && <DraftView draft={draft} busy={busy} accept={() => void accept()} drop={() => void drop()} />}
+      {outcome && (outcome.ok ? <p className="ok small">Saved. {outcome.changes.length} files changed.</p> : <SaveResult result={outcome} />)}
+    </section>
+  )
+}
+
 /**
  * The frames of a world on one view (M10.24): its lands and how well they know
  * each other, its great lines, and the knobs it sets. The player sees the same

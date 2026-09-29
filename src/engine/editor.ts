@@ -1,3 +1,4 @@
+import { mapDraft } from './map/regiondraft'
 import { economyOverview, type SettlementView } from './economy/ledger'
 import { parseDocument, stringify } from 'yaml'
 import { DEFAULT_PALETTE, LANDS, MapPaletteSchema, MAX_SIGNS, SIGN_SHAPES, signsOf, SURFACE, TERRAIN_ORDER, type Level, type MapPalette } from './map/palette'
@@ -1295,4 +1296,53 @@ export function readVoice(text: string): { say: string; yaml?: string; problems:
   const raw = read && Object.keys(read).length === 1 && read['voice'] && typeof read['voice'] === 'object' ? (read['voice'] as Record<string, unknown>) : read
   const kit = raw ? VoiceSchema.safeParse(raw) : undefined
   return { say: typeof parsed.say === 'string' ? parsed.say : '', ...(kit?.success ? { yaml: raw === read ? yaml : stringify(raw, { lineWidth: 0 }) } : {}), problems: kit?.success ? [] : kit ? kit.error.issues.slice(0, 5).map((i) => `voice ${i.path.join('.')}: ${i.message}`) : ['The proposal is no YAML.'] }
+}
+
+// ---------------------------------------------------------------- the map after the world steps (M10.25)
+
+/**
+ * The map belongs to the world build (M10.25; Bram, 29 September 2026): after
+ * the last step the editor offers to lay the region map out from the places
+ * (mapDraft, without a model) and to have the Palette step paint it, as one
+ * proposal with a diff. What the layout proposes, and the Palette step's
+ * request over the world with it; a world that has its map is only painted.
+ */
+export function mapStepRequest(files: ContentFile[], said: string): { layout: Draft; request: LlmRequest } {
+  const layout = mapDraft(files)
+  const laid = layout.result?.ok ? layout.result.files : files
+  const brief = [said.trim(), 'Paint the region map just laid out from the places: its zones and drawing, its own lands, paths and what lies beyond each edge, from the words above and the places.'].filter(Boolean).join('\n\n')
+  const request = worldStepRequest(laid, 'palette', brief)
+  return { layout, request: { ...request, meta: { ...request.meta, map: true } } }
+}
+
+/**
+ * The layout and the painting as one proposal, checked against the world as
+ * it is: a thing both change is one change, the painting's fields over the
+ * layout's, whole where the layout made it.
+ */
+export function readMapStep(files: ContentFile[], layout: Draft, text: string): Draft {
+  const laid = layout.result?.ok ? layout.result.files : files
+  const painted = readDraft(laid, text)
+  const key = (c: DraftChange) => `${c.kind}:${c.id}`
+  const byKey = new Map(layout.changes.map((c) => [key(c), c]))
+  for (const c of painted.changes) {
+    const had = byKey.get(key(c))
+    if (!had || !c.yaml.trim()) {
+      byKey.set(key(c), c)
+      continue
+    }
+    const a = parseEntityYaml(had.yaml).raw ?? {}
+    const b = parseEntityYaml(c.yaml).raw ?? {}
+    byKey.set(key(c), { kind: c.kind, id: c.id, yaml: stringify({ ...(c.merge ? a : {}), ...b }), ...(had.merge && c.merge ? { merge: true } : {}) })
+  }
+  // The layout's own first line sends the designer to the Palette step; here that step is part of it.
+  const notes = layout.say.split('\n').slice(1).join('\n').trim()
+  const lead = layout.changes.length ? 'The map, laid out from the places, their exits and minutes, and painted in the Palette step from your words.' : ''
+  return recheckDraft(files, {
+    say: [lead, notes, painted.say].filter(Boolean).join('\n\n'),
+    questions: painted.questions,
+    changes: [...byKey.values()],
+    ...(painted.world ? { world: painted.world } : {}),
+    ...(painted.files?.length ? { files: painted.files } : {}),
+  })
 }
