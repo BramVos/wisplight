@@ -13,6 +13,8 @@ Wat de editor en de kroniekverteller leerden: de kroniekverteller kent de regels
 
 Bewust anders: het ontwerplogboek van een spel staat in de save en niet in een bestand naast het `DESIGN.md` van de wereld, want het hoort bij dat ene spel.
 
+Gevonden en hersteld (melding van de ontwerpsessie): de test die in de editor elke soort bewerkt en terugzet, haalde op een machine met vier kernen de minuut niet meer. Het laden van de Nethermarch kostte 125 ms, voor bijna 60 procent het lezen van de YAML van alle bestanden, bij elke bewerking opnieuw. De controles zelf kosten weinig; de wereld is gewoon gegroeid. De lader leest nu elk bestand één keer per tekst en bewaart het resultaat bevroren, zodat geen enkele lading kan veranderen wat een volgende leest. Laden kost nu 35 ms, die test 27 in plaats van 63 seconden, en de hele suite 39 in plaats van 62. De editor merkt het bij elke bewerking.
+
 ## M10.21 af: het wereldboek groeit aan de rand, 29 september 2026
 
 - **Verder het onbekende in.** Aan een kaartrand waar niemand je iets heeft verteld, biedt het spel met een model naast "terug" ook "Go on into the unknown" (`EXPLORE <kant>`). Eén aanroep van de nieuwe soort `expansion` schetst dan één nieuwe streek of één nieuw land die kant op. Dat komt uit wat het wereldboek al suggereert en blijft binnen het kader: een naam, wat men weet, een verhaal, twee tot vier wijken, hoeveel dagen lopen, en bij een land het eigen kader (met de WORLD-regels van de wereld ervoor) en wat je bij de grens merkt. Wat klopt, komt als laag in de save: je kent het meteen, en het is canon voor elke volgende ronde. Ga je erheen, dan maken de lagen van M10.21 het speelbaar, en een geschetst land krijgt zijn stem van de landschrijver (M10.23) zodra je binnenkomt.

@@ -43,6 +43,8 @@ numbers:
     DAYS_PER_YEAR: 'world: calendar.days_per_month (the shape of the year; now twelve months of thirty days and five)'
   src/engine/combat/flow.ts:
     POS: 'code: the order of the positions in a fight, not a number to tune'
+  src/engine/content.ts:
+    PARSED_KEPT: 'code: how many files the loader keeps read, by their text (memory; M10.24)'
   src/engine/dialogue/acts.ts:
     TIER_TOKENS: 'code: the tokens a reply may use follow from its words (technique)'
   src/engine/dialogue/conversation.ts:

@@ -1110,6 +1110,37 @@ export const FactionSchema = z
   .strict()
 export type Faction = z.infer<typeof FactionSchema>
 
+/**
+ * Each file's YAML read once per text (M10.24; the design session found the
+ * editor's round-trip test over its minute on a four-core machine): the editor
+ * and the tests load the whole world after every edit, and all but one file
+ * are as they were. The result is frozen, so no load can change what another
+ * reads; the schemas copy what they keep.
+ */
+const PARSED_KEPT = 600
+const parsedTexts = new Map<string, unknown>()
+function parsedOnce(text: string): unknown {
+  if (parsedTexts.has(text)) {
+    const hit = parsedTexts.get(text)
+    // The newest last, so the oldest goes first.
+    parsedTexts.delete(text)
+    parsedTexts.set(text, hit)
+    return hit
+  }
+  const doc = frozen(parse(text))
+  parsedTexts.set(text, doc)
+  if (parsedTexts.size > PARSED_KEPT) parsedTexts.delete(parsedTexts.keys().next().value as string)
+  return doc
+}
+
+function frozen<T>(value: T): T {
+  if (value && typeof value === 'object' && !Object.isFrozen(value)) {
+    Object.freeze(value)
+    for (const v of Object.values(value)) frozen(v)
+  }
+  return value
+}
+
 /** Sentences for a journey (M10.11): chosen by the rules, seeded, per terrain, weather and time of day. */
 export const JourneySchema = z
   .object({
@@ -1331,7 +1362,7 @@ export function loadContent(files: ContentFile[]): Content {
     }
     let doc: unknown
     try {
-      doc = parse(file.text)
+      doc = parsedOnce(file.text)
     } catch (error) {
       problems.push(`${file.path}: invalid YAML (${(error as Error).message})`)
       continue
