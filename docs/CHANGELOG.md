@@ -1,5 +1,20 @@
 # Changelog
 
+## Wat er op je sleutel liep, 29 september 2026 (antwoord op je vraag over $4,14)
+
+Alles wat ik liet lopen staat stil tot jij "ga" zegt. Het tegoed zakte tussen 17:10 en 17:34 met $4,14, maar Anthropic boekt met vertraging. Het ging om mijn proefritten van 16:47 tot 17:30 (14:47Z tot 15:30Z). Die staan in `ai.jsonl` en in het kostenregister van de app, maar zonder kolom die zegt dat ze van een proefrit komen. Daarom zag je in de app alleen je eigen gesprekken.
+
+| Tijd (lokaal) | Wat | Kosten |
+|---|---|---|
+| 16:37 tot 16:47 | drie testaanroepen na de storing (Opus, een paar tokens) | ongeveer $0,01 |
+| 16:47 tot 16:50 | de kaart als tabel gemeten, Sonnet 5 en Haiku 4.5, 10 aanroepen | $0,157 |
+| 16:50 tot 17:03 | het bewijs `outline`, eerste poging, liep vast op een fout (hersteld in 99d9d75) | $1,62 |
+| 17:07 tot 17:09 | de kaart nog eens gemeten, Sonnet 5, 5 aanroepen | $0,108 |
+| 17:09 tot 17:28 | het bewijs `outline`, opnieuw, 189 aanroepen | $2,24 |
+| samen | | ongeveer $4,14 |
+
+Wat nog zou lopen, `full` op de Holleveen (ongeveer $3,30), heb ik gestopt voordat het begon. Voor elke volgende betaalde ronde vraag ik het je eerst. Voortaan schrijft alles wat op je sleutel loopt in hetzelfde log met een kolom `source`, en zegt het vooraf wat het hoogstens kost (M10.26, eerst gebouwd).
+
 ## M10.26 af: afbeeldingen per wereld, en de kaart goedkoper, 29 september 2026
 
 - **Een wereld zegt of ze afbeeldingen wil.** `pictures.wanted` staat naast `pictures.style` in `world.yaml`, en staat standaard uit. De stap Palet vraagt het, met de prijs per plek en per portret bij het beeldmodel uit Instellingen > AI. Staat het aan, dan maakt de editor na de laatste stap, en na elke stap die plekken of mensen toevoegt, de afbeeldingen van wat nieuw is. Per afbeelding zegt hij wat ze kostte. Zonder beeldmodel zegt hij dat en maakt hij niets. Skerrow en The Quiet Reach willen afbeeldingen, en Deepwell laat het weg.
