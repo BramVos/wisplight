@@ -1,6 +1,6 @@
 import { knob } from '../knobs'
 import { amendsIn } from '../amends'
-import { asksAge, knownName, knowsOfPerson, learnTie, learnWork, publicShort, toldAge } from '../acquaintance'
+import { asksAge, knownName, knowsOfPerson, learnTie, learnWork, publicShort, saysOwnAge, toldAge } from '../acquaintance'
 import type { Output } from '../commands'
 
 import { areaTopicId, callName } from '../content'
@@ -15,8 +15,8 @@ import { approve, companionOf, offer, recruit } from '../social/companions'
 import { silenceWitness, witnessed } from '../social/crime'
 import { partyTalk } from './party'
 import { closingLine, fallbackReply } from './fallback'
-import { fitLength, leakedNames, looksLikeInjection, outOfCharacter, promises, swearRight, unknownNames, vocabularyOf } from './guard'
-import { accept, askedFor, askOffer, dayLines, kinOf, offerLine, offerLines, offersFor, proposal, proposalText, type Offer } from './offers'
+import { deedKinds, fitLength, leakedNames, looksLikeInjection, outOfCharacter, promises, saysNothing, swearRight, unknownNames, vocabularyOf } from './guard'
+import { accept, askedFor, askOffer, dayLines, kinOf, offerLine, offerLines, offersFor, proposal, proposalText, spokenMeet, type Offer } from './offers'
 import { accepted, declined, inviteOffer } from '../social/invite'
 import { CLAIM_KEYS, claimValid, claimWords, parseClaim, playerSays } from '../claims'
 import { afterChoice, doAfter, talkFact } from './aftertalk'
@@ -705,8 +705,8 @@ export class Dialogue {
     }
     const rel = relation(world.state, npcId)
     rel.familiarity = Math.min(100, rel.familiarity + 2)
-    // Asked their age and they answered: the journal knows it from now on.
-    if (reply && asksAge(world, npcId, text)) toldAge(world, npcId)
+    // Asked their age and they answered, or they said it themselves about themselves (M10.29): known from now on.
+    if (reply && (asksAge(world, npcId, text) || saysOwnAge(world, npcId, replyText, act === 'AskAboutSelf' || /\b(age|old|years|born)\b/i.test(text)))) toldAge(world, npcId)
     // Asked who they are or what they do: the stranger knows their trade now, unless they keep it hidden (M10.8).
     if ((act === 'AskWork' || act === 'AskAboutSelf') && !npc.hidden) learnWork(world, npcId)
 
@@ -727,7 +727,11 @@ export class Dialogue {
     this.hearFrom(npcId, told)
     this.learn(...told, ...packet.known.map((k) => k.topic), ...mentioned, ...(packet.referral && replyText.includes(packet.referral.call) ? [packet.referral.npc] : []))
     const memory = (world.npcState(npcId).memory ??= [])
-    memory.push({ t: world.now, note: reply?.memory_note || `The stranger talked to me${topics[0] ? ` about ${this.topics.name(topics[0])}` : ''}.`, topics, valence: 0 })
+    // A memory holds only what happened (M10.29, Bram's playtest: "I showed the stranger the bunk", never shown): a deed
+    // it claims needs its agreement in the register, or the note is the plain one.
+    const claimed = reply?.memory_note ? deedKinds(reply.memory_note) : []
+    const borne = !claimed.length || (world.state.agreements?.list ?? []).some((a) => claimed.includes(a.kind) && ((a.by === npcId && a.to === 'player') || (a.by === 'player' && a.to === npcId)))
+    memory.push({ t: world.now, note: (borne && reply?.memory_note) || `The stranger talked to me${topics[0] ? ` about ${this.topics.name(topics[0])}` : ''}.`, topics, valence: 0 })
     if (memory.length > 30) memory.splice(0, memory.length - 30)
 
     // One thing the NPC does after the talk, from the voice (M10.3).
@@ -768,7 +772,8 @@ export class Dialogue {
       offerOut.push(...done.outputs)
       offerEnds = done.ends
     } else if (!asked && !reaction) {
-      const proposed = reply ? offers.find((o) => o.key === reply.propose && o.decision === 'yes') : proposal(offers, act)
+      // What they propose: an offer they chose, or a meeting they named in their own words (M10.29).
+      const proposed = reply ? (offers.find((o) => o.key === reply.propose && o.decision === 'yes') ?? (promises(replyText) ? spokenMeet(world, npcId, replyText, this.topics.recognise(replyText)) : undefined)) : proposal(offers, act)
       if (proposed) {
         talk.proposal = proposed
         offerOut.push({ kind: 'system', text: proposalText(world, npcId, proposed) })
@@ -999,6 +1004,12 @@ export class Dialogue {
         prompt += `\nNOTE: your last reply used ${strange.map((w) => `"${w}"`).join(', ')}, which ${strange.length === 1 ? 'does' : 'do'} not exist in this world. Answer again without ${strange.length === 1 ? 'it' : 'them'}.`
         continue
       }
+      // A reply is words (M10.29, Bram's playtest: "Sana smiles warmly." and the bunk question never answered).
+      if (saysNothing(fitted, [callName(world.npc(npcId)), world.npc(npcId).name, world.npc(npcId).short])) {
+        this.refused('schema', llm)
+        prompt += '\nNOTE: your last reply said nothing aloud. Answer again with what you say, in double quotes.'
+        continue
+      }
       if (outOfCharacter(fitted)) {
         this.refused('character', llm)
         prompt += '\nNOTE: your last reply stepped out of the world. Answer again as yourself, in plain speech.'
@@ -1013,7 +1024,9 @@ export class Dialogue {
       }
       // A promise the game did not offer never stands in the text (M10.3): the deed hangs on a chosen yes.
       const doing = offers.find((o) => o.key === reply.action && o.decision === 'yes') ?? offers.find((o) => o.key === reply.propose && o.decision === 'yes')
-      if (promises(fitted) && !doing && !ctx.decision && reply.quest_action === 'none') {
+      // A time the speaker keeps in their own words is a meeting they propose (M10.29), when they are willing.
+      const spoken = promises(fitted) && !doing ? spokenMeet(world, npcId, fitted, this.topics.recognise(fitted)) : undefined
+      if (promises(fitted) && !doing && !spoken && !ctx.decision && reply.quest_action === 'none') {
         this.refused('promise', llm)
         prompt += '\nNOTE: your last reply promised to do something the game did not offer. Answer again without promising it: choose an OFFER with decision yes, or say what you can and cannot do.'
         continue

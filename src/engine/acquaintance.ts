@@ -71,6 +71,27 @@ export function toldAge(world: World, npcId: string): void {
   if (typeof age === 'number') note(world, npcId).age = { value: age, t: world.now }
 }
 
+const UNITS = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen']
+const TENS = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety']
+
+/** A number up to ninety-nine as words: "twenty-eight" (with a space or a hyphen). */
+function numberWords(n: number): string | undefined {
+  if (n <= 0 || n >= 100) return undefined
+  if (n < 20) return UNITS[n]
+  return `${TENS[Math.floor(n / 10)]}${n % 10 ? `[- ]${UNITS[n % 10]}` : ''}`
+}
+
+/**
+ * Whether someone said their own age in a reply (M10.29, Bram's playtest: Niko said "28" and the card still said
+ * "ask"): the number, in digits or words, in a turn about them or about age.
+ */
+export function saysOwnAge(world: World, npcId: string, reply: string, about: boolean): boolean {
+  const age = world.npc(npcId).age
+  if (typeof age !== 'number' || !about) return false
+  const words = numberWords(age)
+  return new RegExp(`\\b(?:${age}${words ? `|${words}` : ''})\\b`, 'i').test(reply)
+}
+
 /** Whether the player's words ask for someone's age, and the person is willing to say. */
 export function asksAge(world: World, npcId: string, text: string): boolean {
   if (!/\b(how old|your age|hoe oud|je leeftijd|uw leeftijd)\b/i.test(text)) return false

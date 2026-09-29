@@ -72,27 +72,50 @@ export function clockWords(world: World, t: number): string {
   return days <= 0 ? hhmm : days === 1 ? `tomorrow at ${hhmm}` : `in ${days} days at ${hhmm}`
 }
 
+/** Hours in words, English and Dutch, to twenty-three (M10.29: "I'll be done at seventeen thirty"). */
+const HOUR_WORDS: Record<string, number> = {
+  one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10, eleven: 11, twelve: 12,
+  thirteen: 13, fourteen: 14, fifteen: 15, sixteen: 16, seventeen: 17, eighteen: 18, nineteen: 19, twenty: 20, 'twenty-one': 21, 'twenty one': 21, 'twenty-two': 22, 'twenty two': 22, 'twenty-three': 23, 'twenty three': 23,
+  een: 1, twee: 2, drie: 3, vier: 4, vijf: 5, zes: 6, zeven: 7, acht: 8, negen: 9, tien: 10, elf: 11, twaalf: 12,
+}
+const MINUTE_WORDS: Record<string, number> = { "o'clock": 0, oclock: 0, 'oh five': 5, ten: 10, fifteen: 15, twenty: 20, thirty: 30, 'forty-five': 45, 'forty five': 45, fifty: 50 }
+const alternation = (words: string[]) => [...words].sort((a, b) => b.length - a.length).map((w) => w.replace(/'/g, "'?")).join('|')
+
 /**
- * When the player's words set a time: "tomorrow at noon", "tonight", "at six",
- * "in two hours". The next such moment from now, or nothing.
+ * When the words set a time: "tomorrow at noon", "tonight", "at six", "in
+ * two hours"; since M10.29 also minutes and spoken hours ("at seventeen
+ * thirty", "at 17:30", "half past five"). The player's words, or the
+ * speaker's own. The next such moment from now, or nothing.
  */
 export function parseWhen(text: string, now: number): number | undefined {
   const t = text.toLowerCase()
   const day = Math.floor(now / DAY) * DAY
-  const numbers: Record<string, number> = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10, eleven: 11, twelve: 12, een: 1, twee: 2, drie: 3, vier: 4, vijf: 5, zes: 6, zeven: 7, acht: 8, negen: 9, tien: 10, elf: 11, twaalf: 12 }
+  const numbers: Record<string, number> = HOUR_WORDS
   const inHours = /\bin (an|one|a|two|three|four|\d+) hours?\b/.exec(t)
   if (inHours) return now + (inHours[1] === 'an' || inHours[1] === 'a' ? 1 : (numbers[inHours[1]!] ?? Number(inHours[1]))) * 60
   const tomorrow = /\b(tomorrow|morgen)\b/.test(t)
   let hour: number | undefined
-  const at = /\bat (\d{1,2}|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)(?:[:.](\d{2}))?(?: o'?clock)?\b/.exec(t)
-  if (at) hour = numbers[at[1]!] ?? Number(at[1])
+  let minute = 0
+  const hours = alternation(Object.keys(HOUR_WORDS))
+  const at = new RegExp(`\\bat (\\d{1,2}|${hours})(?:[:.](\\d{2})|\\s+(${alternation(Object.keys(MINUTE_WORDS))}))?(?: o'?clock)?\\b`).exec(t)
+  if (at) {
+    hour = numbers[at[1]!] ?? Number(at[1])
+    minute = at[2] ? Number(at[2]) : at[3] ? (MINUTE_WORDS[at[3].replace(/'/g, "'")] ?? MINUTE_WORDS[at[3]] ?? 0) : 0
+  }
+  const past = new RegExp(`\\b(half|quarter) (past|to) (\\d{1,2}|${hours})\\b`).exec(t)
+  if (past) {
+    const h = numbers[past[3]!] ?? Number(past[3])
+    const m = past[1] === 'half' ? 30 : 15
+    hour = past[2] === 'past' ? h : h - 1
+    minute = past[2] === 'past' ? m : 60 - m
+  }
   if (/\b(noon|midday|middag)\b/.test(t)) hour = 12
   else if (/\b(tonight|this evening|vanavond|evening)\b/.test(t) && hour === undefined) hour = 19
   else if (/\b(morning|ochtend)\b/.test(t) && hour === undefined) hour = 9
-  if (hour === undefined) return tomorrow ? day + DAY + 9 * 60 : undefined
+  if (hour === undefined || hour > 23 || minute > 59) return tomorrow ? day + DAY + 9 * 60 : undefined
   const base = tomorrow ? day + DAY : day
   // "At six": the next six o'clock, morning or evening, that is still to come.
-  const candidates = (hour < 12 ? [hour, hour + 12] : [hour]).map((h) => base + (h % 24) * 60)
+  const candidates = (hour < 12 ? [hour, hour + 12] : [hour]).map((h) => base + (h % 24) * 60 + minute)
   const next = candidates.filter((c) => c > now).sort((a, b) => a - b)[0]
   return next ?? candidates[0]! + DAY
 }
@@ -133,7 +156,7 @@ function placeOf(world: World, topic: string): string | undefined {
  * Whether this person would do it, and why, in plain words: the attitude and
  * trust, their work and day, the danger and the distance, and their age.
  */
-function willing(world: World, npcId: string, kind: OfferKind, to?: string): { yes: boolean; reasons: string[] } {
+function willing(world: World, npcId: string, kind: OfferKind, to?: string, when?: number): { yes: boolean; reasons: string[] } {
   const npc = world.npc(npcId)
   const band = attitude(world, npcId)
   const trust = relation(world.state, npcId).trust
@@ -150,7 +173,8 @@ function willing(world: World, npcId: string, kind: OfferKind, to?: string): { y
   const urgent = danger ? `${danger.title}, and that cannot wait` : to && kind === 'lead' && atStake(world, npcId, to, 'state') ? `you want to see ${nameOf(world, to)} for yourself` : undefined
   if (urgent) score += 20
   const day = routineNow(world, npcId)
-  if (day?.activity === 'work' && kind !== 'give' && kind !== 'message' && !urgent) {
+  // A meeting after their work is not in its way (M10.29: the time they name themselves).
+  if (day?.activity === 'work' && kind !== 'give' && kind !== 'message' && !urgent && !(when !== undefined && when >= day.until)) {
     score -= 30
     reasons.push(`you are at work until ${clockWords(world, day.until)}`)
   }
@@ -265,6 +289,24 @@ export function offersFor(world: World, npcId: string, topics: string[], text: s
   return offers.slice(0, knob(world, 'talk.max_offers'))
 }
 
+
+/**
+ * A meeting the speaker proposes in their own words (M10.29, Bram's playtest: "I'll be done at seventeen thirty, you
+ * know where the common room is?" made no appointment): the time they name, at a place they name that they know, or
+ * where they are. Only when they are willing; the player's yes makes it an agreement, which takes them there like any
+ * meeting and counts as their word and the stranger's.
+ */
+export function spokenMeet(world: World, npcId: string, said: string, topics: string[]): Offer | undefined {
+  const at = parseWhen(said, world.now)
+  if (at === undefined) return undefined
+  const here = world.npcState(npcId).location
+  const known = world.knownLocations(npcId)
+  const place = topics.map((t) => placeOf(world, t)).find((p): p is string => Boolean(p && known.has(p))) ?? here
+  const w = willing(world, npcId, 'meet', place, at)
+  if (!w.yes) return undefined
+  const o = place === here ? { key: `meet:${here}`, kind: 'meet' as const, place: here, at, what: `meet the stranger here, ${clockWords(world, at)}`, intent: 'meet here then' } : { key: `meet:${place}`, kind: 'meet' as const, place, at, what: `meet the stranger at ${nameOf(world, place)}, ${clockWords(world, at)}`, intent: `meet at ${nameOf(world, place)} then` }
+  return { ...o, deed: deedOf(world, o), decision: 'yes', reasons: w.reasons }
+}
 
 /** Whether someone needs a thing themselves (what the brain knows): the only tool of their work, or what their trade uses. */
 function needs(world: World, npcId: string, item: string): boolean {

@@ -35,8 +35,11 @@ export function fallbackReply(world: World, npcId: string, act: Act, packet: Pac
   }
 
   switch (act) {
-    case 'Greet':
-      return cold ? `${name} gives you a short nod.` : warm ? `${name} smiles. ${quote('There you are again.')}` : `${name} nods. ${quote(timeGreeting(world.now))}`
+    case 'Greet': {
+      // Someone they have hardly spoken with is new to them (M10.29, Bram's playtest): never "there you are again".
+      const met = relation(world.state, npcId).familiarity >= 6
+      return cold ? `${name} gives you a short nod.` : warm ? `${name} smiles. ${quote(met ? 'There you are again.' : `${timeGreeting(world.now)} You'll be new here.`)}` : `${name} nods. ${quote(timeGreeting(world.now))}`
+    }
     case 'Farewell':
       return `${name} lifts a hand. ${quote(warm ? 'Mind how you go.' : 'Go on, then.')}`
     case 'Insult':

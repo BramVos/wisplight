@@ -1,5 +1,22 @@
 # Changelog
 
+## M10.29 deel: wat de spreker van je weet, en woorden zijn geen daden, 29 september 2026
+
+Uit je speeltest van The Quiet Reach, bevindingen 5, 10, 12, 13, 23 en 24.
+
+- **Geen "There you are again" bij een eerste gesprek.** De begroeting uit de regels kijkt nu ook naar hoe goed iemand je kent. Wie je nauwelijks kent, zegt "Good evening. You'll be new here."
+- **Geen gedeeld verleden met een vreemdeling.** De stem hoort nu dat jullie niets samen gedaan hebben buiten de herinneringen en dit gesprek. Een herinnering als "I showed the stranger the bunk" wordt alleen bewaard als die afspraak echt in het register staat; anders onthoudt de persoon alleen dat je sprak.
+- **Een antwoord is woorden.** "Sana smiles warmly." zonder iets te zeggen wordt opnieuw gevraagd.
+- **De leeftijd die iemand zelf noemt, telt.** Zegt Niko "28" over zichzelf, dan staat het op het kaartje. De schatting ("about 25 to 35?") is daar nu zelf de knop om het te vragen; het losse woord "ask" is weg.
+- **Woorden zijn geen daden.** De bewaker vangt nu ook "hands you", "here, take it", "I'll be done at", "see you at", "I'll point you right" en "come on". Staat daar geen aanbod achter, dan vraagt het spel het antwoord opnieuw. Een oude fout ging mee: "I'll tell you what I know" gold als belofte.
+- **Tessa's "I'll be done at seventeen thirty" wordt een afspraak.** Noemt iemand zelf een tijd en een plek, dan zie je "Tessa offers to meet you at the Commons, 17:30. YES to agree". Met ja staat de afspraak in het register: ze gaat erheen, en een gemiste afspraak is een gebroken woord aan beide kanten. Dat ze nu nog aan het werk is, staat een afspraak na haar werk niet in de weg. De tijd verstaat ook "seventeen thirty", "17:30", "half past five" en "quarter to seven".
+
+Testen: begin een nieuw spel en praat met iemand die je nog niet kent. Vraag Tessa of Niko later iets af te spreken, en kijk op het kaartje naar de leeftijd. Tests in `tests/m1029talk.test.ts`.
+
+Niet gedaan: het notitieboek van Niko als voorwerp, en "bunk", "sleep" en "bed" als woorden voor de Guest Quarters. Dat is content en hoort bij E.
+
+Ontwerp: functioneel ontwerp, bij "gesprekken die de wereld raken" (M10.3), alinea "Stand na M10.29: wat de spreker van je weet, en woorden zijn geen daden".
+
 ## M10.27 af: de kosten omlaag, 29 september 2026
 
 Een uur spelen met jouw modellen kost nu ongeveer $0,51 in plaats van $0,97. De tabel per soort staat in `docs/worldbuild/cost-measure.md`, onder "Een uur spelen voor en na M10.27". Het doel was $0,44. Wat overblijft is vooral het gesprek, en dat is M10.28.

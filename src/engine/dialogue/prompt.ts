@@ -196,7 +196,9 @@ export function listener(world: World, npcId: string): string {
   const who =
     rel.familiarity < 6 ? 'a stranger' : rel.familiarity < 20 ? 'someone you have spoken with once or twice' : rel.familiarity < 50 ? 'someone you know' : 'someone you know well'
   const trust = rel.trust >= 30 ? ', and you trust them' : rel.trust <= -10 ? ", and you don't trust them" : ''
-  return `the player is ${who}${trust}`
+  // A stranger has no past with them (M10.29, Bram's playtest: "I showed you this morning" to someone never met).
+  const none = rel.familiarity < 6 ? '. You do not know them: you have done nothing together, and nothing has happened between you that is not in MEMORIES or CONVERSATION SO FAR' : ''
+  return `the player is ${who}${trust}${none}`
 }
 
 /** What the chronicler left on the NPC's mind: a debt to the dead, a grudge. */

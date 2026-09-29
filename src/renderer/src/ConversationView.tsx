@@ -239,14 +239,13 @@ export function ConversationView({
                   <>
                     <dt>{t('conversation.about.age')}</dt>
                     <dd>
-                      {about.person.age.text}
-                      {!about.person.age.known && (
-                        <>
-                          {' '}
-                          <button type="button" className="link small" disabled={busy} onClick={() => onSend(`"${t('conversation.about.askAge')}`)} title={t('conversation.about.askTitle')}>
-                            {t('conversation.about.ask')}
-                          </button>
-                        </>
+                      {/* A guess is the button itself (M10.29, Bram's playtest: the word "ask" was noise); a known age is text. */}
+                      {about.person.age.known ? (
+                        about.person.age.text
+                      ) : (
+                        <button type="button" className="link" disabled={busy} onClick={() => onSend(`"${t('conversation.about.askAge')}`)} title={t('conversation.about.askTitle')}>
+                          {about.person.age.text}
+                        </button>
                       )}
                     </dd>
                   </>

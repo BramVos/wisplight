@@ -39,12 +39,42 @@ export function outOfCharacter(text: string): boolean {
 }
 
 // A promise of something done (M10.3): taking, showing, fetching, waiting, meeting, giving, carrying word.
-// "I'll tell you" is talk, not a deed; "I'll tell my father" is.
-const PROMISE = /\b(?:i'?ll|i will|i can|let me|i'?m going to|i shall)\s+(?:\w+\s+)?(?:take|show|lead|bring|fetch|walk|wait|meet|give|carry|come with|go with|tell (?:him|her|them|my|your|\p{Lu}))|\bfollow me\b|\bcome with me\b/iu
+// "I'll tell you" is talk, not a deed; "I'll tell my father" is. Since M10.29 (Bram's playtest) also a time the
+// speaker keeps ("I'll be done at", "see you at"), pointing the way ("I'll point you right", "come on", "this way"),
+// and a deed told as done now ("hands you", "gives you", "here, take it"): words are never deeds.
+const PROMISE =
+  /\b(?:i'?ll|i will|i can|let me|i'?m going to|i shall)\s+(?:\w+\s+)?(?:take|show|lead|bring|fetch|walk|wait|meet|give|carry|point|see you (?:to|there|at|in)|be (?:done|there|free|back|finished) (?:at|by|in|around)|come (?:with|by|back|for you|and find)|go with|tell (?:him|her|them|my|your))|\bfollow me\b|\bcome with me\b|\bcome on\b|\bthis way\b|\bsee you (?:at|in|there|by|tonight|tomorrow)\b|\b(?:hands?|gives?|passes?|slides?|holds? out|pushes|presses)\s+(?:you|the stranger)\b|\bhere,? take (?:it|this|these)\b/iu
+// "I'll tell Harmen": a name, capitalised. Apart, because with the i flag \p{Lu} takes any letter, and "I'll tell you"
+// was a promise (found in M10.29).
+const TELL_NAME = /\b(?:I'?ll|I will|I can|[Ll]et me|I'?m going to|I shall)\s+(?:\w+\s+)?tell \p{Lu}/u
 
 /** Whether a reply promises to do something for the player. */
 export function promises(text: string): boolean {
-  return PROMISE.test(text)
+  return PROMISE.test(text) || TELL_NAME.test(text)
+}
+
+/**
+ * Whether a reply says nothing aloud (M10.29, Bram's playtest: "Sana smiles warmly." and the question unanswered): no
+ * words between quotes, and only an action of the speaker's own ("Sana smiles", "She nods"). Words without their
+ * quotes are still speech.
+ */
+export function saysNothing(text: string, speaker: string[]): boolean {
+  // An opening quote before a word is speech, also when a long reply was cut before its closing quote.
+  if (/["“]\s*\p{L}/u.test(text)) return false
+  const starts = [...speaker, 'she', 'he', 'they'].map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+  return new RegExp(`^\\s*(?:${starts.join('|')})\\b`, 'i').test(text)
+}
+
+// A deed a memory claims was done (M10.29, Bram's playtest: "I showed the stranger the bunk", never shown): the kinds
+// of agreement that would bear it out.
+const DEEDS: { words: RegExp; kinds: string[] }[] = [
+  { words: /\b(?:showed|led|walked|guided|took (?:the stranger|them|him|her) (?:to|round|down|up))\b/i, kinds: ['lead', 'accompany'] },
+  { words: /\b(?:gave|handed|lent|loaned|brought|passed)\b/i, kinds: ['give', 'lend', 'errand'] },
+]
+
+/** The kinds of agreement a memory note's deed needs, or none when it claims no deed. */
+export function deedKinds(note: string): string[] {
+  return DEEDS.filter((d) => d.words.test(note)).flatMap((d) => d.kinds)
 }
 
 export function wordCount(text: string): number {

@@ -25,6 +25,7 @@ describe('M10.27: a talk line, shorter', () => {
     const rules = shared.slice(shared.indexOf('Rules:'), shared.indexOf('[[WORLD TEXT]]'))
     for (const rule of ['never mention an AI', 'WORD LIMIT', 'double quotes', 'KNOWLEDGE, SCENE and the character card', 'REFERRAL', 'of your own making: only what KNOWLEDGE gives', 'Numbers, ages, prices, dates and distances', '"a few" or "some"', 'Never invent places, people, items, prices or quests', 'PEOPLE YOU KNOW', 'new_kind', 'SOMEONE NEW', 'Never agree to come along', 'DECISION', 'PLAYER SAYS', 'Dutch', 'ATTITUDE', 'No, not today', 'YOUR PEOPLE', 'LISTENER', 'PRIVATE', 'CHECK', 'effects', 'mentioned_topics', 'JSON']) expect(rules, rule).toContain(rule)
     const schema = JSON.stringify(replyJsonSchema(['loc_molenend_mill', 'npc_harmen', 'npc_mirte'], [], [{ key: 'lead:loc_molenend_mill', decision: 'no' }], true))
-    expect(rules.length + schema.length).toBeLessThanOrEqual(Math.floor(5016 * 0.8))
+    // A fifth fewer in M10.27; M10.29 gave the memory note back one clause (only what was said or done in this talk).
+    expect(rules.length + schema.length).toBeLessThanOrEqual(Math.floor(5016 * 0.81))
   })
 })
