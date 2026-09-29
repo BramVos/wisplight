@@ -262,7 +262,14 @@ export async function trialRun(ai: AiService, kinds: string, contentRoot: string
       ok = (await regionTrial(ai, contentRoot, appPath, { capUsd: cap, setting: env('SETTING') as RegionSetting | '', world: env('WORLD'), record: env('RECORD') === '1' }, say)) && ok
       continue
     }
-    ok = (await kindTrial(ai, kind, contentRoot, join(appPath, 'tests/fixtures/model', kind), env('RECORD') === '1', say)) && ok
+    // The cap said at the start holds over every kind asked for (M10.27): what this trial spent so far, in the usage.
+    if (ai.usage.summary().session.costUsd >= cap) {
+      say(`${kind}: not tried, the cap of $${cap.toFixed(2)} is spent`)
+      ok = false
+      continue
+    }
+    const effort = env('EFFORT')
+    ok = (await kindTrial(ai, kind, contentRoot, join(appPath, 'tests/fixtures/model', kind), env('RECORD') === '1', say, { ...(effort === 'low' || effort === 'medium' || effort === 'high' ? { effort } : {}), times: Number(env('TIMES')) || 1, capUsd: cap })) && ok
   }
   return ok
 }
@@ -337,6 +344,8 @@ interface KindRecord {
   kind: string
   about: string
   model: string
+  /** The effort asked for in a trial (M10.27); without it, the kind's own. */
+  effort?: string
   provider: string
   date: string
   usage: { inputTokens: number; cachedTokens: number; outputTokens: number }
@@ -350,9 +359,18 @@ interface KindRecord {
  * chose for its role, read as the game reads it. With record, the reply is
  * kept under tests/fixtures/model/<kind>/<date>-<model>.json.
  */
-export async function kindTrial(ai: AiService, kind: string, contentRoot: string, fixtures: string, record: boolean, say: (line: string) => void): Promise<boolean> {
+export async function kindTrial(ai: AiService, kind: string, contentRoot: string, fixtures: string, record: boolean, say: (line: string) => void, how: { effort?: 'low' | 'medium' | 'high'; times?: number; capUsd?: number } = {}): Promise<boolean> {
   const started = Date.now()
   let entry: KindRecord
+  // Kept as a fixture: a later trial of the same model on the same day beside the earlier one (M10.27): -r2, -r3.
+  const keep = (e: KindRecord) => {
+    if (!record) return
+    mkdirSync(fixtures, { recursive: true })
+    const stem = `${e.date}-${e.model.replace(/[^a-z0-9.-]/gi, '_')}`
+    let file = join(fixtures, `${stem}.json`)
+    for (let round = 2; existsSync(file); round++) file = join(fixtures, `${stem}-r${round}.json`)
+    writeFileSync(file, `${JSON.stringify(e, null, 2)}\n`)
+  }
   if (kind === 'model_advice' || kind === 'test_call') {
     // The advice and the test call are the app's own: tried through the same functions the settings use.
     const roles = ai.overview().settings.roles
@@ -383,19 +401,33 @@ export async function kindTrial(ai: AiService, kind: string, contentRoot: string
       say(`${kind}: no situation for this kind`)
       return false
     }
-    try {
-      const response = await ai.gateway.complete(situation.request)
-      entry = { kind, about: situation.about, model: response.model, provider: response.provider, date: today(), usage: { inputTokens: response.usage.inputTokens, cachedTokens: response.usage.cachedTokens, outputTokens: response.usage.outputTokens }, reply: response.text, problems: situation.check(response.text) }
-      say(`${kind}: ${response.model}, in ${response.usage.inputTokens}, out ${response.usage.outputTokens}, $${(costUsd(response.model, response.usage) ?? 0).toFixed(4)}`)
-    } catch (error) {
-      say(`${kind}: stopped: ${error instanceof Error ? error.message : String(error)}`)
-      return false
+    // An effort asked for (M10.27: low measured against the recorded medium), as often as asked; each reply kept.
+    const request = how.effort ? { ...situation.request, effort: how.effort } : situation.request
+    const times = Math.max(1, Math.min(how.times ?? 1, 5))
+    let all = true
+    for (let n = 1; n <= times; n++) {
+      if (how.capUsd !== undefined && ai.usage.summary().session.costUsd >= how.capUsd) {
+        say(`${kind} #${n}: not asked, the cap of $${how.capUsd.toFixed(2)} is spent`)
+        break
+      }
+      try {
+        const response = await ai.gateway.complete(request)
+        const usd = costUsd(response.model, response.usage) ?? 0
+        const e: KindRecord = { kind, about: situation.about, model: response.model, provider: response.provider, date: today(), ...(how.effort ? { effort: how.effort } : {}), usage: { inputTokens: response.usage.inputTokens, cachedTokens: response.usage.cachedTokens, outputTokens: response.usage.outputTokens }, reply: response.text, problems: situation.check(response.text) }
+        say(`${kind}${times > 1 ? ` #${n}` : ''}${how.effort ? ` at ${how.effort}` : ''}: ${response.model}, in ${response.usage.inputTokens}, out ${response.usage.outputTokens}, $${usd.toFixed(4)}; ${e.problems.length ? `the game would not use it: ${e.problems.slice(0, 3).join('; ')}` : 'the game takes it'}`)
+        all = all && e.problems.length === 0
+        if (n < times) keep(e)
+        entry = e
+      } catch (error) {
+        say(`${kind}: stopped: ${error instanceof Error ? error.message : String(error)}`)
+        return false
+      }
     }
+    if (!all) say(`${kind}: not every reply was taken`)
+    // Nothing asked (the cap was spent before the first): nothing to keep.
+    if (!entry!) return false
   }
-  say(`${kind}: ${entry.problems.length ? `the game would not use it: ${entry.problems.slice(0, 3).join('; ')}` : 'the game takes it'} (${Math.round((Date.now() - started) / 1000)}s)`)
-  if (record) {
-    mkdirSync(fixtures, { recursive: true })
-    writeFileSync(join(fixtures, `${entry.date}-${entry.model.replace(/[^a-z0-9.-]/gi, '_')}.json`), `${JSON.stringify(entry, null, 2)}\n`)
-  }
-  return entry.problems.length === 0
+  say(`${kind}: ${entry!.problems.length ? `the game would not use it: ${entry!.problems.slice(0, 3).join('; ')}` : 'the game takes it'} (${Math.round((Date.now() - started) / 1000)}s)`)
+  keep(entry!)
+  return entry!.problems.length === 0
 }
