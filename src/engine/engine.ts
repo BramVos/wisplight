@@ -22,6 +22,7 @@ import { applyLand, landRequest, landWords, wantLand, type LandWords } from './g
 import { applyDistrict, districtDue, districtRequest, districtsOf, districtWords, wantDistrict, type DistrictWords } from './growth/districts'
 import { applyWeave, weaveReply, weaveRequest, type WeaveReply } from './growth/weave'
 import { arrivedAt, buildingLine, onTheWay, setOff } from './growth/underway'
+import { readSpark, sparkRequest } from './spark'
 import { applyTides, tidesReply, tidesRequest, tidesState, type TidesReply } from './tides'
 import { crowdHere, nameOne } from './growth/crowds'
 import { applyLegendWords, legendRequest, legendsOf } from './legend'
@@ -1060,8 +1061,14 @@ export class Engine {
         const llm = this.llm
         if (llm) {
           try {
-            const model = { complete: async (r: ChroniclerRequest) => llm.complete({ ...(r as LlmRequest), priority: 'low' }) }
-            ;({ output, problems, offered } = await writeRun(this.world, run, model))
+            if (run.reason === 'spark') {
+              // The spark of a quiet night (M10.27): one small call on the brain, read as one beat of a storyline.
+              const { request, keys } = sparkRequest(this.world, run)
+              ;({ output, problems } = readSpark((await llm.complete({ ...request, priority: 'low' })).text, keys))
+            } else {
+              const model = { complete: async (r: ChroniclerRequest) => llm.complete({ ...(r as LlmRequest), priority: 'low' }) }
+              ;({ output, problems, offered } = await writeRun(this.world, run, model))
+            }
           } catch (error) {
             problems = [error instanceof Error ? error.message : String(error)]
           }

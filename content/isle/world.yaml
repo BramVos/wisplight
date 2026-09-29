@@ -110,6 +110,11 @@ world:
     headland went out in the storm, and no ship has called since. The stranger was washed up from
     the wreck of the Grey Gull, and the winter storms will soon close the sea.
     PEOPLE speak plain English with a salt turn of phrase. They count time by tides and bells.
+  # A knob of this world (M10.27): on the island the winter nights are long and little
+  # comes over the water, so a quiet night brings something unexpected more slowly;
+  # by the fourth quiet night in a row, something always does.
+  knobs:
+    story.quiet_ladder: { first: 0.1, second: 0.2, third: 0.4, fourth: 1 }
   # How well the lands know each other (M10.23): the white boat runs to Ynys Wen,
   # so word and wares go back and forth, in the boat's time.
   reach:

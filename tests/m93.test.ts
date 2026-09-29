@@ -393,9 +393,10 @@ describe('M9.3: the model trial', () => {
 
   it('tries the brain on goal choices and the chronicler on a drowning and a theft, with the game checks', async () => {
     const brain = await trial(gateway(temp(), mocked('good'), 10), content, 'openai', 'gpt-4.1-mini', 'brain')
-    // Three goal choices, and since M10.20 the brain's other kinds once each: a line overheard, a second look at lore.
-    expect(brain.answers).toBe(5)
-    expect(brain.valid).toBe(5)
+    // Three goal choices, and since M10.20 the brain's other kinds once each: a line overheard, a second look at lore,
+    // and the spark of a quiet night (M10.27).
+    expect(brain.answers).toBe(6)
+    expect(brain.valid).toBe(6)
     const chronicler = await trial(gateway(temp(), mocked('good'), 10), content, 'openai', 'gpt-4.1-mini', 'chronicler')
     // A drowning and a theft, then a journey, a far place, a district, a region's story (M10.25), a weave, the great lines (M10.22), a round at the edge (M10.21), a legend and an outline.
     expect(chronicler).toMatchObject({ answers: 11, valid: 11, leaks: 0, factualErrors: 0 })

@@ -480,6 +480,7 @@ Mirte stops and gives you a nod, curious about the stranger.
 Mirte and Teunis pass each other without a word.
 Mirte heaves a sack of rye onto the horse mill, and the grey horse plods off round its circle.
 Mirte leaves west.
+The old people say a blow is coming in from the sea, and the eel men have pulled their traps.
 
 > look
 The Horse Mill

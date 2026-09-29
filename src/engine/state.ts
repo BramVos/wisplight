@@ -247,7 +247,8 @@ export interface LoreEntry {
 export interface ChronicleRun {
   id: string
   t: number
-  reason: 'night' | 'urgent'
+  /** The night round, a run that cannot wait, or the spark of a quiet night (M10.27). */
+  reason: 'night' | 'urgent' | 'spark'
   lines: string[]
   /** Signals to plan for in this run (M8.3). */
   signals?: string[]
@@ -277,6 +278,8 @@ export interface ChronicleState {
   signals?: string[]
   /** The game day of the last run that could not wait for the night (M10.22): one a day at most. */
   urgentDay?: number
+  /** Quiet nights in a row, for the ladder of the spark (M10.27). */
+  quiet?: number
 }
 
 export interface NpcState {

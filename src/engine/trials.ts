@@ -29,6 +29,7 @@ import { outlineInput } from './outlines'
 import { parseCommand } from './parser'
 import { crossesLimits, worldText } from './safety'
 import { judged, judgeRequest } from './truth'
+import { readSpark, sparkLines, sparkRequest } from './spark'
 import { buildInput } from './chronicler'
 import { assignKeys, buildRequest, DEFAULT_LIMITS } from '../chronicler'
 
@@ -223,6 +224,13 @@ const SITUATION_BUILDS: Record<string, Build> = {
     const keys = assignKeys(input)
     const request: LlmRequest = { ...buildRequest(input, keys, DEFAULT_LIMITS, [], 0), priority: 'low' }
     return { about: 'the night after a drowning', request, check: (text) => readReply(text, keys, input, DEFAULT_LIMITS).problems }
+  },
+  spark: async ({ base }) => {
+    // A quiet night after a drowning (M10.27): the storyline is open, and nothing new came of it.
+    const engine = (await chroniclerTrial(base)).find((e) => e.state.chronicle?.pending[0])!
+    const run = { id: 'run_spark', t: engine.world.now, reason: 'spark' as const, lines: sparkLines(engine.world).map((l) => l.id) }
+    const { request, keys } = sparkRequest(engine.world, run)
+    return { about: 'a quiet night after a drowning', request, check: (text) => readSpark(text, keys).problems }
   },
   lore_check: async () => {
     const op = { name: 'The night the dyke broke', summary: 'Harmen drowned in the Blackmere the night the dyke broke.', details: 'Mirte saw it from the bakery.', story: 'The dyke broke in the night and the water took Harmen before anyone could reach him. Mirte saw it from the bakery.', far: 'A man drowned in the marsh.' }

@@ -689,6 +689,12 @@ export class MockLlm implements LlmClient {
     }
     // One line in a chat the player overhears (M9.1).
     if (request.schemaName === 'chat_line') return this.mode === 'invalid' ? 'Hmm.' : JSON.stringify({ line: `Is that so? Well, I never heard the like of it.` })
+    // The spark of a quiet night (M10.27): something stays on the first person's mind, from the first storyline.
+    if (request.schemaName === 'spark') {
+      if (this.mode === 'invalid') return 'Something happens.'
+      const meta = request.meta as { lines: string[]; people: string[] }
+      return JSON.stringify({ line: meta.lines[0] ?? 'none', verb: 'thought', who: meta.people[0] ?? 'none', target: 'none', detail: 'You keep thinking about what happened, and you would like to talk it over with someone.' })
+    }
     if (!('goals' in properties)) return '{}'
     const meta = request.meta as { places?: string[]; people?: string[]; npc?: string; lookups?: boolean } | undefined
     // Questions first, when a test wants them (M9.3).

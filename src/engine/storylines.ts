@@ -203,16 +203,17 @@ export function unreported(world: World, line: Storyline): Fact[] {
   return line.facts.filter((id) => !line.reported.includes(id)).map((id) => factById(world, id)).filter((f): f is Fact => Boolean(f))
 }
 
-/** At 04:00: every storyline with unseen news of belang 3 or more goes to the chronicler in one run. */
-export function nightly(world: World): void {
-  if (minuteOfDay(world.now) !== 4 * 60) return
+/** At 04:00: every storyline with unseen news of belang 3 or more goes to the chronicler in one run. Says whether one did. */
+export function nightly(world: World): boolean {
+  if (minuteOfDay(world.now) !== 4 * 60) return false
   const state = world.state.chronicle
-  if (!state) return
+  if (!state) return false
   // Big news, and what the stranger improvised (M10.16): the chronicler decides whether anything comes of it.
   const lines = state.lines.filter((l) => unreported(world, l).some((f) => f.belang >= 3 || f.kind === 'improvised')).map((l) => l.id)
   // Signals that waited for the night (M8.3) go in the same run.
   const signals = (state.signals ?? []).splice(0)
   if (lines.length || signals.length) requestRun(world, 'night', lines, signals)
+  return Boolean(lines.length || signals.length)
 }
 
 /** The areas of a line: where its places are. */

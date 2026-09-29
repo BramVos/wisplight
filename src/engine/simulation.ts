@@ -1,4 +1,5 @@
 import { pulseDay } from './pulse'
+import { quietNight } from './spark'
 import { trimNightSignals } from './planning'
 import { knob } from './knobs'
 import { invitesHour } from './social/invite'
@@ -88,9 +89,11 @@ function hourly(world: World): void {
   storyHour(world)
   // One queue (M10.22): the night run takes the most important signals; the rest wait a night.
   const later = trimNightSignals(world)
-  nightly(world)
+  const news = nightly(world)
   // The pulse (M10.24): the world looks the stranger up, also when they do not travel.
   pulseDay(world)
+  // A quiet night (M10.27): a chance of a spark that rises with each quiet night in a row.
+  quietNight(world, news)
   if (later.length) world.state.chronicle!.signals = [...(world.state.chronicle!.signals ?? []), ...later]
   weatherHour(world)
   companionsHour(world)

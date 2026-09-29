@@ -40,6 +40,7 @@ export const MODEL_KINDS: readonly ModelKind[] = [
   { kind: 'chronicle', role: 'chronicler', does: 'The nightly round: lore, requests and storylines from the day.', when: 'night' },
   { kind: 'tides', role: 'chronicler', does: 'The great lines judged on the first of the month: nothing, a threat or the event, within what the rules allow.', when: 'night', effort: 'low' },
   { kind: 'lore_check', role: 'brain', does: 'A second look at big lore: what it says that no fact says.', when: 'night' },
+  { kind: 'spark', role: 'brain', does: 'The spark of a quiet night: one unexpected thing that follows from the open storylines, near the stranger.', when: 'night' },
   { kind: 'legends', role: 'chronicler', does: 'Old lore retold as a legend.', when: 'night', effort: 'low' },
   { kind: 'outline', role: 'chronicler', does: 'The outline of a far place: a few people, an inn, a market, what goes on there (since M10.21 when the stranger talks or stays the night there).', when: 'play', effort: 'low' },
   { kind: 'builder_draft', role: 'chronicler', does: 'The writing aid in the editor proposes changes to a world.', when: 'editor' },

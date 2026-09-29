@@ -81,6 +81,8 @@ export const KNOBS = {
   'story.signals_per_night': n('How many signals the chronicler takes in one night run, the most important first; the rest wait a night.', 'signals', 12, 1, 50, 'planning.ts'),
   'story.urgent_belang': n('From what belang news calls the chronicler by day instead of in the night run; at most once a game day.', 'belang', 4, 3, 6, 'storylines.ts'),
   'story.hooks_per_week': n('How many hooks at least reach the stranger near where they are in a week: a request, a visitor, a tiding, a letter; the night round or the rule brings one when none came for so long (0: never).', 'hooks', 2, 0, 14, 'pulse.ts'),
+  'story.quiet_ladder': t('The chance of a spark on a quiet night (one unexpected thing that follows from the open storylines), by how many quiet nights came in a row; a step further when the stranger\'s quest stands still.', 'share', { first: 0.125, second: 0.25, third: 0.5, fourth: 1 }, 0, 1, 'spark.ts'),
+  'story.stuck_days': n('After this many days without the stranger\'s quest moving on, a quiet night counts a step further on the ladder of the spark.', 'days', 3, 1, 60, 'spark.ts'),
   'story.hook_days': n('How long something new a night brought lies waiting for the player in the think play mode, when they did not take it up.', 'days', 7, 1, 60, 'modes.ts'),
   'story.climaxes': n('How many storylines may be in crisis at once.', 'storylines', 2, 1, 10, 'chronicler.ts'),
   'sketches.per_day': n('How many people named in passing may come to be in a day.', 'people', 2, 0, 20, 'sketches.ts'),
