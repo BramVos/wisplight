@@ -20,6 +20,7 @@ import { ledgerOf, settlementAt } from './economy/ledger'
 import { gainXp, playerCheck } from './rules/player'
 import { GameClock, isOpenAt, MINUTES_PER_DAY, parseHours, startOfDay } from './clock'
 import { knob } from './knobs'
+import { carried, doWithCarried } from './carried'
 import { callName, firstName as untitledName, type Affordance, type Direction, type Npc, type ObjectInstance, type ObjectType, type Service } from './content'
 import { add, hasAll, itemName, listItems, matchItem, withArticle } from './items'
 import { applyEffect } from './dialogue/relations'
@@ -139,6 +140,11 @@ export function runCommand(host: CommandHost, command: Command): Output[] {
     case 'take': {
       // TAKE <thing> FROM <chest> (M10.3): from an open chest; someone else's is theirs.
       const from = /^(.+?)\s+(?:from|out of|uit)\s+(.+)$/i.exec(command.args.join(' '))
+      // TAKE X FROM PACK (M10.29): what you carry is carried already.
+      if (from && /^(?:my\s+|your\s+|the\s+)?(pack|bag|backpack|inventory|pocket|rugzak|tas)$/i.test(from[2]!)) {
+        const mine = carried(world, from[1]!)
+        return [mine ? text(`You already carry the ${itemName(world.content, mine)}.`) : error(`You don't carry that.`)]
+      }
       // A chest named after its owner is the chest, even with the owner standing by (M10.5).
       if (from && (objectHere(world, from[2]!) || !findNpcHere(world, from[2]!))) return takeFrom(world, from[1]!, from[2]!)
       return each(command.args, (a) => take(host, a))
@@ -830,6 +836,9 @@ function use(host: CommandHost, args: string[]): Output[] {
     const seen = host.pass(10)
     return [text(`You use ${withArticle(itemName(world.content, remedy))}.${cured.length ? ` It helps: no more ${cured.map((n) => n.replace(/_/g, ' ')).join(' or ')}.` : ' You feel a little better, if only in spirit.'}`), ...seen]
   }
+  // A thing in the pack comes before the room (M10.29): its own line for using it, else what it can do.
+  const mine = carried(world, words)
+  if (mine) return [text(doWithCarried(world, mine, 'use')), ...host.pass(1)]
   const candidates = world.location(here).objects.flatMap((instance) => {
     const type = world.content.objectTypes.get(instance.type)
     return type ? [{ instance, type }] : []

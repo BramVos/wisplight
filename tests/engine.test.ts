@@ -12,7 +12,8 @@ describe('parser', () => {
 
   it('maps verb aliases, speech and phrasings', () => {
     expect(parseCommand('kijk').verb).toBe('look')
-    expect(parseCommand('look at the oven')).toMatchObject({ verb: 'examine', args: ['the', 'oven'] })
+    // A leading article names nothing (M10.29 N).
+    expect(parseCommand('look at the oven')).toMatchObject({ verb: 'examine', args: ['oven'] })
     expect(parseCommand('pick up knife')).toMatchObject({ verb: 'take', args: ['knife'] })
     expect(parseCommand('koop brood')).toMatchObject({ verb: 'buy', args: ['brood'] })
     expect(parseCommand("'Good evening")).toMatchObject({ verb: 'say', args: ['Good evening'] })

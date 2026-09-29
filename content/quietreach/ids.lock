@@ -26,7 +26,7 @@ ids:
   quietreach/data/factions.yaml:
     faction: [vesper_maintenance_cooperative, peregrine_expedition_crew, keeping_circle]
   quietreach/data/items.yaml:
-    item: [hot_meal, field_ration, herbal_tea, coffee, drinking_water, vegetables, cultured_protein, tea_herbs, grain, cooking_oil, growth_nutrients, insulated_wire, connector_parts, filter_media, polymer_stock, water_filter, seal_ring, bracket, cable_assembly, cable_assembly_poor, measurement_cable, measurement_cable_poor, measurement_cable_damaged, field_lamp, battery_cell, dressing_pack, field_medkit, salvaged_cable_sheath, rock_sample, organism_sample, credit_chip, pocket_terminal, communicator, multitool, weatherproof_coat, sturdy_boots, water_bottle, research_bag]
+    item: [hot_meal, field_ration, herbal_tea, coffee, drinking_water, vegetables, cultured_protein, tea_herbs, grain, cooking_oil, growth_nutrients, insulated_wire, connector_parts, filter_media, polymer_stock, water_filter, seal_ring, bracket, cable_assembly, cable_assembly_poor, measurement_cable, measurement_cable_poor, measurement_cable_damaged, field_lamp, battery_cell, dressing_pack, field_medkit, salvaged_cable_sheath, rock_sample, organism_sample, credit_chip, pocket_terminal, communicator, multitool, weatherproof_coat, sturdy_boots, water_bottle, research_bag, niko_notebook]
   quietreach/data/object_types.yaml:
     object_type: [electronics_bench, fabrication_bench, water_tap]
   quietreach/data/passages.yaml:

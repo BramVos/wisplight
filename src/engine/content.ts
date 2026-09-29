@@ -66,6 +66,8 @@ export const ItemSchema = z.object({
   value: z.number().int().nonnegative(),
   /** How someone uses it when the stranger made it and gave it to them (M10.14): "{name} cuts bread with the knife you made." */
   used: z.string().optional(),
+  /** What using, reading or opening it says when the stranger carries it (M10.29), as a detail's verbs: { use: "...", read: "..." }. */
+  verbs: z.record(z.string(), z.string()).optional(),
   /** A poorer make of another thing (M10.14): what a failed recipe leaves, of use for something else and worth less. */
   quality: z.enum(['poor']).optional(),
   of: z.string().optional(),

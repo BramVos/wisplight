@@ -160,6 +160,8 @@ npcs:
       - I'm not saying it is the test pattern. I'm saying it looks like it. That's different.
       - The station clock and the test rig were never synced. Not that I can prove, anyway.
       - Deep water take it, the heater's gone again up there.
+    # The notebook in his breast pocket is a thing he can give (M10.29).
+    inventory: { niko_notebook: 1 }
     money: 6000
     knows_areas: [port_vesper, coastal_traverse, orison_ridge]
     relations:

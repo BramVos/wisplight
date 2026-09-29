@@ -227,6 +227,9 @@ export function parseDirection(word: string | undefined): Direction | undefined 
   return word ? DIRECTION_ALIASES[word.toLowerCase()] : undefined
 }
 
+/** The verbs about a thing, whose first word may be an article to skip. */
+const THING_VERBS = new Set(['examine', 'use', 'take', 'drop', 'give', 'eat', 'wield', 'insight', 'buy', 'sell', 'open', 'repair'])
+
 export function parseCommand(input: string): Command {
   const raw = input.trim()
   if (raw.startsWith("'") || raw.startsWith('"')) {
@@ -254,8 +257,10 @@ export function parseCommand(input: string): Command {
     const target = parseDirection(rest[0])
     return { verb, args: target ? [target] : rest, raw }
   }
-  if (verb === 'look' && rest.length > 0) return { verb: 'examine', args: rest, raw }
   if (verb === 'say') return { verb, args: [rest.join(' ')], raw }
+  // "use a personal credit chip", "read the diary" (M10.29 N): a leading article names nothing.
+  if (THING_VERBS.has(verb === 'look' ? 'examine' : verb) && rest.length > 1 && /^(a|an|the|some|een|de|het)$/i.test(rest[0]!)) rest = rest.slice(1)
+  if (verb === 'look' && rest.length > 0) return { verb: 'examine', args: rest, raw }
   return { verb, args: rest, raw }
 }
 

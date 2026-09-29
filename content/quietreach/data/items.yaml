@@ -261,6 +261,9 @@ items:
     aliases: [chip, credit chip]
     tags: [personal, money]
     value: 0
+    # What using it says (M10.29): the chip pays when you buy.
+    verbs:
+      use: The chip warms against your palm and a thin line of light shows your balance. It pays by itself when you BUY something.
 
   - id: pocket_terminal
     name: pocket terminal
@@ -269,6 +272,9 @@ items:
     aliases: [terminal, pad]
     tags: [personal, equipment, imported]
     value: 6000
+    verbs:
+      use: The screen wakes. Your contract, a basic map of Port Vesper and your own notes, nothing more; the map is the one on your screen, and the notes are your JOURNAL.
+      read: "Your contract, in the flat language of Harrow Station: recover the recordings from the Orison listening station, find the fault, check the data for tampering, and report to Dr Ilyan Sorell on arrival."
 
   - id: communicator
     name: short-range communicator
@@ -277,6 +283,8 @@ items:
     aliases: [comm, radio, communicator]
     tags: [personal, equipment, imported]
     value: 2500
+    verbs:
+      use: You thumb the call key. The relay hums and the settlement channel answers with the station clock and a weather line; nobody is asking for you. Up on the ridge it would give you only hiss.
 
   - id: multitool
     name: multitool
@@ -317,3 +325,15 @@ items:
     aliases: [bag, shoulder bag, satchel]
     tags: [personal, container]
     value: 800
+
+  # Niko's own (M10.29, Bram's playtest): he gave it and nothing arrived, as it was only words in his looks.
+  - id: niko_notebook
+    name: Niko's notebook
+    plural: notebooks
+    description: A small notebook swollen with damp, its pages full of times written twice, once in the station log's format and once in Niko's own quick hand.
+    aliases: [notebook, niko's notebook, damp notebook]
+    tags: [paper, personal]
+    value: 50
+    verbs:
+      read: "Page after page of times, each written twice. Near the end the second time no longer matches the first: the station clock and the test rig drift apart by a few seconds a night, and on one page Niko has underlined 'not the test pattern' three times."
+

@@ -1,3 +1,4 @@
+import { carried, couldLine, thingVerbs } from './carried'
 import type { Output } from './commands'
 import { parseDirection } from './parser'
 import { itemName, matchItem, withArticle } from './items'
@@ -99,16 +100,23 @@ export function lookThere(world: World, words: string): Output | undefined {
  */
 export function lookThing(world: World, words: string): Output | undefined {
   const here = world.state.player.location
-  const detail = detailHere(world, words)
-  if (detail) return text(detail.look)
   const inventory = world.state.player.inventory
   const ground = world.state.ground[here] ?? {}
   const gear = world.state.player.character?.gear
-  const item = matchItem(world.content, words, new Set([...Object.keys(inventory).filter((i) => (inventory[i] ?? 0) > 0), ...Object.keys(ground).filter((i) => (ground[i] ?? 0) > 0)]))
-  if (!item) return undefined
-  const def = world.content.items.get(item)!
-  const where = gear && [gear.weapon, gear.shield].includes(item) ? 'in your hand' : gear?.armour === item ? 'you wear it' : (inventory[item] ?? 0) > 0 ? 'in your pack' : 'here'
-  return text(`${capital(withArticle(itemName(world.content, item, 1)))} (${where}). ${def.description}`)
+  const described = (item: string) => {
+    const def = world.content.items.get(item)!
+    const where = gear && [gear.weapon, gear.shield].includes(item) ? 'in your hand' : gear?.armour === item ? 'you wear it' : (inventory[item] ?? 0) > 0 ? 'in your pack' : 'here'
+    // What you can do with a thing you carry (M10.29 N): its own verbs and the ones that fit it.
+    const could = (inventory[item] ?? 0) > 0 ? ` ${couldLine(thingVerbs(world, item))}` : ''
+    return text(`${capital(withArticle(itemName(world.content, item, 1)))} (${where}). ${def.description}${could}`)
+  }
+  // What you carry comes first (M10.29: "l terminal" found the room before the pack).
+  const mine = carried(world, words)
+  if (mine) return described(mine)
+  const detail = detailHere(world, words)
+  if (detail) return text(detail.look)
+  const item = matchItem(world.content, words, Object.keys(ground).filter((i) => (ground[i] ?? 0) > 0))
+  return item ? described(item) : undefined
 }
 
 /** A thing a description names, found by its words (M10.4; places too after the M10 playtest). */

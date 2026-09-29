@@ -89,9 +89,18 @@ export function matchItem(content: Content, text: string, among?: Iterable<strin
     const names = [id.replace(/_/g, ' '), def.name, def.plural ?? `${def.name}s`, ...def.aliases].map((n) => n.toLowerCase())
     if (names.includes(wanted)) return id
   }
+  // Part of a name, from the start of a word (M10.29: "on" found the field ration inside its name).
+  const starts = new RegExp(`(^|\\s)${wanted.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`)
   for (const id of ids) {
     const def = content.items.get(id)
-    if (def && (def.name.toLowerCase().includes(wanted) || def.aliases.some((a) => a.toLowerCase().includes(wanted)))) return id
+    if (def && (starts.test(def.name.toLowerCase()) || def.aliases.some((a) => starts.test(a.toLowerCase())))) return id
+  }
+  // Words from what it looks like (M10.29: "the scuffed chip on a cord"), when there are a few of them.
+  if (wanted.split(/\s+/).length >= 2) {
+    for (const id of ids) {
+      const def = content.items.get(id)
+      if (def && def.description.toLowerCase().includes(wanted)) return id
+    }
   }
   return undefined
 }

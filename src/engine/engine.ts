@@ -1,6 +1,7 @@
 import { applyFull, fullDue, fullFixRequest, fullLayer, fullRequest, mergeFull, readFull, wantFull, type FullRound } from './growth/regionfull'
 import { applyStory, storyDue, storyReady, storyReply, storyRequest, wantStory, type StoryReply } from './growth/regionstory'
 import { wishLines } from './wishes'
+import { carried, doWithCarried } from './carried'
 import { framesLines, framesView, secondsPerGameMinute } from './frames'
 import { knob } from './knobs'
 import { applyImprovisation, improviseFallback, improviseRequest, readImprovisation, type Improvisable } from './improvise'
@@ -1552,6 +1553,9 @@ export class Engine {
         // READ <stone> (M10.5): words on an object here, before reading a person.
         const inscribed = /^read\b/i.test(command.raw) ? inscribedHere(this.world, command.args.join(' ')) : undefined
         if (inscribed) return readInscription(this.host, inscribed)
+        // READ <a thing you carry> (M10.29 N): the thing, before reading a person.
+        const mine = /^read\b/i.test(command.raw) && command.args.length ? carried(this.world, command.args.join(' ')) : undefined
+        if (mine) return [{ kind: 'text', text: doWithCarried(this.world, mine, 'read') }]
         const npc = command.args.length ? findNpcHere(this.world, command.args.join(' ')) : (talk?.npc ?? this.onlyNpcHere())
         if (!npc) return [{ kind: 'error', text: 'Read whom?' }]
         return this.dialogue.insight(npc)

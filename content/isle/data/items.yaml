@@ -230,6 +230,9 @@ items:
     aliases: [conch, shell, horn]
     tags: [tool]
     value: 5
+    # What blowing it does (M10.29): the island's own sound.
+    verbs:
+      use: You blow the conch. The sound rolls out over the water like the tide turning, and somewhere down on the shingle a gull answers.
 
   # M10.5: what a chest the chronicler places may hold.
   - id: diary

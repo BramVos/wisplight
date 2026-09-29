@@ -199,6 +199,7 @@ A list; each has:
 | tags | list of text | no | [] |
 | value | number | yes |  |
 | used | text | no |  |
+| verbs | a map of names to text | no |  |
 | quality | one of poor | no |  |
 | of | text | no |  |
 | food | number | no |  |

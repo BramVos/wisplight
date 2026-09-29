@@ -54,11 +54,13 @@ describe('M10.4: commands', () => {
     world.state.player.inventory['apple'] = 1
     world.state.player.location = 'loc_veenhoek_green'
     expect(said(await engine.handle('look apple'))).toMatch(/\(in your pack\)/)
-    // On the quay, by the old stone with the dog on it.
+    // On the quay, by the old stone with the dog on it: what you carry comes first (M10.29 E), then the stone's apple.
     world.state.player.location = 'loc_veenhoek_quay'
+    expect(said(await engine.handle('look apple'))).toMatch(/\(in your pack\)/)
+    world.state.player.inventory['apple'] = 0
     expect(said(await engine.handle('look apple'))).toMatch(/An apple on top of the stone, left for the dog/)
     expect(said(await engine.handle('get apple'))).toMatch(/You leave it be\. It isn't yours/)
-    expect(world.state.player.inventory['apple']).toBe(1)
+    expect(world.state.player.inventory['apple']).toBe(0)
   })
 })
 
