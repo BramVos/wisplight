@@ -56,6 +56,7 @@ npm run stutter    # the longest waits of the interface as the app plays (-- --e
 Whenever a change adds to or changes what a world can hold (a new kind, field or file, or a new neutral default), the editor and the chronicler in the editor learn it in the same change:
 
 - The editor can create and edit it: a form or a YAML template for the kind, the palette or world tab where it belongs, and a line under Check when it can go wrong.
+- Every field has a description in its zod schema (`describe`), which `docs/CONTENT.md` carries, and a check: a field that refers to an id checks that it exists, and a text field the player sees never holds an id (M10.29 M: the chronicler once put an npc id in a craft's `maker`).
 - The chronicler knows it: the contract `docs/CONTENT.md` is regenerated from the schemas (M10.17), the short contract in the writing aid's prompt (`draftRequest` in `src/engine/editor.ts`) covers it, and the world guide (`src/engine/worldguide.ts`, with `docs/NEW-WORLD.md` for people) says in which step it comes up, what the chronicler asks the designer, what happens when it is left out, and what to check.
 - Skerrow always gets its own small version, in its own words, so every feature plays in a second world with real values. The test world Deepwell (`tests/worlds/other`) gets one too, unless it deliberately leaves the thing out to show the neutral default (as it has no faith and no weather); then a test plays that default.
 - The milestone report says what the editor and the chronicler learnt.
