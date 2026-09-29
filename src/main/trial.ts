@@ -249,7 +249,7 @@ export async function trialRun(ai: AiService, kinds: string, contentRoot: string
       continue
     }
     if (kind === 'region_play') {
-      ok = (await regionTrial(ai, contentRoot, appPath, { capUsd: cap, setting: env('SETTING') as RegionSetting | '', record: env('RECORD') === '1' }, say)) && ok
+      ok = (await regionTrial(ai, contentRoot, appPath, { capUsd: cap, setting: env('SETTING') as RegionSetting | '', world: env('WORLD'), record: env('RECORD') === '1' }, say)) && ok
       continue
     }
     ok = (await kindTrial(ai, kind, contentRoot, join(appPath, 'tests/fixtures/model', kind), env('RECORD') === '1', say)) && ok
@@ -264,18 +264,18 @@ export async function trialRun(ai: AiService, kinds: string, contentRoot: string
  * src/node/regionplay.ts). Within the cap over all of it. Each setting's
  * tally is kept in docs/playtest/region-<world>-<setting>.json, and the
  * comparison is made from every tally there, so settings played in separate
- * hours (--setting) make one report. With record, the replies of the calls
+ * hours (--setting, and --world for one world) make one report. With record, the replies of the calls
  * that build the region (REGION_KINDS) become fixtures under
  * tests/fixtures/model/<kind>/, read again as its kind's situation reads it.
  */
-export async function regionTrial(ai: TrialAi, contentRoot: string, appPath: string, how: { capUsd: number; setting: RegionSetting | ''; record: boolean }, say: (line: string) => void): Promise<boolean> {
+export async function regionTrial(ai: TrialAi, contentRoot: string, appPath: string, how: { capUsd: number; setting: RegionSetting | ''; world?: string; record: boolean }, say: (line: string) => void): Promise<boolean> {
   const dir = join(appPath, 'docs/playtest')
   mkdirSync(dir, { recursive: true })
   const base = await loadContentFromDir(contentRoot, 'base')
   const isle = await readContentFiles(contentRoot, 'isle')
   let spent = 0
   let all = true
-  for (const world of ['base', 'isle'] as const) {
+  for (const world of (['base', 'isle'] as const).filter((w) => !how.world || w === how.world)) {
     const content = world === 'base' ? base : await loadContentFromDir(contentRoot, 'isle')
     const settings = REGION_SETTINGS.filter((s) => (how.setting ? s === how.setting : world === 'base' || s === 'story'))
     for (const setting of settings) {

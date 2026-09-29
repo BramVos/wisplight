@@ -267,6 +267,16 @@ export function soundsLikeSpeech(verb: string, text: string): boolean {
   return false
 }
 
+/**
+ * A call that was never sent (the hour's budget, a rate limit, the cool-down
+ * after failures) or found no connection cost nothing (M10.25): a round of a
+ * new region waits for it without spending a try. The played proof lost a
+ * full build so when the laptop was closed on the way.
+ */
+function waitsFree(error: unknown): boolean {
+  return error instanceof LlmError && !error.usage && (error.kind === 'network' || error.kind === 'busy' || error.kind === 'budget')
+}
+
 export class Engine {
   readonly world: World
   readonly topics: TopicRegistry
@@ -815,8 +825,9 @@ export class Engine {
         if (llm) {
           try {
             reply = storyReply((await llm.complete({ ...storyRequest(this.world, topic), priority: 'low' })).text)
-          } catch {
-            // No answer (the hour's budget, the network): it waits for a later run, three times at most.
+          } catch (error) {
+            // No answer (the hour's budget, the network): it waits for a later run, three paid tries at most.
+            if (waitsFree(error)) continue
             const tries = (this.fullTries.get(`story:${topic}`) ?? 0) + 1
             this.fullTries.set(`story:${topic}`, tries)
             if (tries < 3) continue
@@ -832,7 +843,7 @@ export class Engine {
     }
   }
 
-  /** How often a round of a full build or a region's story found no answer (M10.25), in this session: three times, then it is given up. */
+  /** How often a round of a full build or a region's story found no answer that may have cost something (M10.25), in this session: three times, then it is given up. */
   private readonly fullTries = new Map<string, number>()
 
   /**
@@ -857,8 +868,9 @@ export class Engine {
           try {
             draft = readFull(this.world, topic, round, (await llm.complete(request)).text)
           } catch (error) {
-            // No answer (the hour's budget, the network): the round waits for a later run, three times at most,
+            // No answer (the hour's budget, the network): the round waits for a later run, three paid tries at most,
             // and the rounds after it wait with it, since they build on it (M10.25: the played proof lost its places so).
+            if (waitsFree(error)) break
             const tries = (this.fullTries.get(key) ?? 0) + 1
             this.fullTries.set(key, tries)
             if (tries < 3) break

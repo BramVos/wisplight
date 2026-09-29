@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { checkContent, discoveredBook, Engine, MockLlm } from '../src/engine'
+import { checkContent, discoveredBook, Engine, LlmError, MockLlm } from '../src/engine'
 import { regionRounds } from '../src/engine/growth/rounds'
 import { FULL_ROUNDS } from '../src/engine/growth/regionfull'
 import { regionMap } from '../src/engine/map/region'
@@ -102,6 +102,34 @@ describe('M10.25: a new region built in full', () => {
     expect(full.rounds!['places']).toEqual({ kept: true })
     // A round in play counts in the game's hour, not as a build in the editor.
     expect(mock.calls.filter((c) => c.schemaName === 'world_step').every((c) => c.meta?.['prefix'] === '')).toBe(true)
+  }, 120_000)
+
+  it('keeps waiting without spending its tries while there is no connection (the laptop closed on the way)', async () => {
+    const mock = new MockLlm('good')
+    let offline = true
+    let refused = 0
+    const llm = {
+      complete: async (r: Parameters<MockLlm['complete']>[0]) => {
+        if (offline && r.schemaName === 'world_step') {
+          refused++
+          throw new LlmError('network', 'Connection error.')
+        }
+        return mock.complete(r)
+      },
+    }
+    const engine = new Engine(content, { seed: 3, builder: true, llm })
+    await toTheSaltings(engine, 'full')
+    for (let i = 0; i < 5; i++) await engine.runModels()
+    expect(refused).toBeGreaterThanOrEqual(5)
+    expect(engine.state.growth!.fulls?.['grey_saltings']?.rounds ?? {}).toEqual({})
+    expect(engine.state.growth!.fullPending!.length).toBe(FULL_ROUNDS.length)
+    // The connection is back: the build goes on where it was.
+    offline = false
+    for (let i = 0; i < 4; i++) {
+      await engine.runModels()
+      await engine.handle('look')
+    }
+    expect([...engine.state.growth!.fulls!['grey_saltings']!.done].sort()).toEqual([...FULL_ROUNDS].sort())
   }, 120_000)
 
   it('asks once for the whole build, above the player\'s threshold', async () => {

@@ -3,7 +3,7 @@ import { existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 
 // npm run trial -- --kind <kind>[,<kind>] [--cap <dollars>] [--steps a,b] [--same-model] [--record] [--doc <file>] [--build <name>] [--out <dir>]
-// npm run trial -- --kind region_play [--setting outline|story|full] [--cap <dollars>] [--record]: a new region played per setting (M10.25)
+// npm run trial -- --kind region_play [--setting outline|story|full] [--world base|isle] [--cap <dollars>] [--record]: a new region played per setting (M10.25)
 //
 // Tries a kind of model call for real (M10.20), in the app, with the key and
 // the models the player chose under Settings > AI: never in CI, never with a
@@ -28,7 +28,7 @@ if (!existsSync(resolve(root, 'out/main/index.js'))) {
   process.exit(2)
 }
 const env: Record<string, string> = { ...process.env as Record<string, string>, WISPLIGHT_TRIAL: kind }
-for (const [flag, name] of [['cap', 'CAP'], ['steps', 'STEPS'], ['doc', 'DOC'], ['build', 'BUILD'], ['out', 'OUT'], ['name', 'NAME'], ['setting', 'SETTING']] as const) {
+for (const [flag, name] of [['cap', 'CAP'], ['steps', 'STEPS'], ['doc', 'DOC'], ['build', 'BUILD'], ['out', 'OUT'], ['name', 'NAME'], ['setting', 'SETTING'], ['world', 'WORLD']] as const) {
   if (value(flag)) env[`WISPLIGHT_TRIAL_${name}`] = flag === 'doc' || flag === 'out' ? resolve(value(flag)) : value(flag)
 }
 if (args.includes('--same-model')) env['WISPLIGHT_TRIAL_SAME_MODEL'] = '1'
