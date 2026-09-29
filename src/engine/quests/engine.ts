@@ -333,10 +333,47 @@ function route(world: World, host: QuestHost, questId: string, to: string, out: 
 
 // ---------------------------------------------------------------- the course of a quest
 
-export function startQuest(world: World, host: QuestHost, questId: string): Output[] {
+/**
+ * The region a quest plays in (M10.30): the far place its first place lies in,
+ * or the home region. Its first place: where it begins, where its first deed
+ * is done, or the home of its first giver.
+ */
+export function questRegion(world: World, quest: Quest): string {
+  const place = [...(quest.starts?.at ?? []), ...(quest.actions ?? []).flatMap((a) => a.at), ...quest.givers.map((g) => world.content.npcs.get(g)?.home ?? '')].find(Boolean)
+  const area = place ? (world.content.locations.get(place)?.area ?? (world.content.areas.has(place) ? place : undefined)) : undefined
+  const far = area ? Object.values(world.state.growth?.far ?? {}).find((f) => String(f.area['id']) === area) : undefined
+  return far?.topic ?? 'home'
+}
+
+/** The quests running in a region beside the main line (M10.30). */
+export function activeIn(world: World, region: string): string[] {
+  return Object.entries(questlog(world))
+    .filter(([id, q]) => !q.ended && world.content.quests.get(id)?.kind !== 'main' && questRegion(world, world.content.quests.get(id)!) === region)
+    .map(([id]) => id)
+}
+
+/**
+ * Whether a quest may begin now (M10.30, Bram: not five at once): the main
+ * line always, another only while fewer than the knob story.quests_active run
+ * in its region. One that would not wake again by itself (begun by another
+ * quest, or at the start) waits its turn.
+ */
+function mayStart(world: World, quest: Quest): boolean {
+  if (quest.kind === 'main' || activeIn(world, questRegion(world, quest)).length < knob(world, 'story.quests_active')) return true
+  const s = quest.starts
+  const wakesAgain = Boolean(s && (s.talk.length || s.at.length || s.when.length) && !s.at_start)
+  const waiting = (world.state.questsWaiting ??= [])
+  if (!wakesAgain && !waiting.includes(quest.id)) waiting.push(quest.id)
+  return false
+}
+
+/** Begins a quest; `force` (the build command @quest) past the region's limit. */
+export function startQuest(world: World, host: QuestHost, questId: string, force = false): Output[] {
   const quest = world.content.quests.get(questId)
   const log = questlog(world)
   if (!quest || log[questId] || !quest.stages?.length) return []
+  if (!force && !mayStart(world, quest)) return []
+  if (world.state.questsWaiting) world.state.questsWaiting = world.state.questsWaiting.filter((id) => id !== questId)
   const first = quest.stages[0]!
   log[questId] = { stage: first.id, started: world.now, stageAt: world.now, path: [first.id], done: [] }
   const out: Output[] = []
@@ -442,8 +479,13 @@ export function evaluate(world: World, host: QuestHost): Output[] {
       // A quest with a person or a place to begin at waits for them; the conditions are its gate.
       if (s && s.when.length && !s.talk.length && !s.at.length && !s.at_start && allHold(world, s.when)) {
         out.push(...startQuest(world, host, quest.id))
-        changed = true
+        if (questlog(world)[quest.id]) changed = true
       }
+    }
+    // A quest that waited for a place in its region (M10.30), the oldest first, once one has ended.
+    for (const id of [...(world.state.questsWaiting ?? [])]) {
+      out.push(...startQuest(world, host, id))
+      if (questlog(world)[id]) changed = true
     }
     if (!changed) break
   }

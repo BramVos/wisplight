@@ -89,6 +89,7 @@ export const KNOBS = {
   'story.stuck_days': n('After this many days without the stranger\'s quest moving on, a quiet night counts a step further on the ladder of the spark.', 'days', 3, 1, 60, 'spark.ts'),
   'story.hook_days': n('How long something new a night brought lies waiting for the player in the think play mode, when they did not take it up.', 'days', 7, 1, 60, 'modes.ts'),
   'story.climaxes': n('How many storylines may be in crisis at once.', 'storylines', 2, 1, 10, 'chronicler.ts'),
+  'story.quests_active': n('How many quests may run at once in a region, beside the main line: one that would begin above it waits till one ends.', 'quests', 2, 1, 10, 'quests/engine.ts'),
   'sketches.per_day': n('How many people named in passing may come to be in a day.', 'people', 2, 0, 20, 'sketches.ts'),
   'sketches.per_speaker': n('How many people one speaker may name in passing.', 'people', 3, 0, 20, 'sketches.ts'),
   'sketches.per_area_season': n('How many people named in passing an area may have in a season.', 'people', 6, 0, 100, 'sketches.ts'),

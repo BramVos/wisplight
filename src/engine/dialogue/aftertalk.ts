@@ -70,6 +70,65 @@ export function talkFact(world: World, npcId: string, topics: string[], act: Act
   return fact
 }
 
+/** Someone asking the stranger to do something, in their words or their note (M10.30): "could you go and check", "I need you to". */
+const ASKS = /\b(?:could|would|can|will) you\b[^.?!]{0,60}?\b(?:go|bring|fetch|find|recover|retrieve|check|take|help|get|speak|talk|ask|carry|fix|repair|meet|see to|deliver|search|look into)\b|\bI need you to\b|\bI(?:'d| would) like you to\b|\bI want you to\b/i
+const ASKED = /\bI asked (?:the stranger|them|him|her|you) to\b/i
+
+/**
+ * The stranger was asked to do something (M10.30, Bram's log: Ilyan asked for
+ * the recordings and nothing held it): a fact of belang 3, so the night round
+ * sees it as it sees a request of the world, and may make a quest of it. Once
+ * a day per person, with whoever was there as witnesses.
+ */
+export function askedOfStranger(world: World, npcId: string, reply: string, note?: string): Fact | undefined {
+  const match = ASKS.exec(reply) ?? (note && ASKED.test(note) ? { index: 0, 0: note } : null)
+  if (!match) return undefined
+  const day = Math.floor(world.now / DAY)
+  const count = (world.state.talkFacts ??= { day, people: [] })
+  if (count.day !== day) Object.assign(count, { day, people: [], asked: [] })
+  if ((count.asked ??= []).includes(npcId)) return undefined
+  count.asked.push(npcId)
+  const who = callName(world.npc(npcId))
+  // The sentence the ask stands in, as said.
+  const text = ASKS.test(reply) ? reply : note!
+  const start = Math.max(text.lastIndexOf('.', match.index) + 1, text.lastIndexOf('?', match.index) + 1, text.lastIndexOf('!', match.index) + 1)
+  const end = text.slice(match.index).search(/[.?!]/)
+  const said = text.slice(start, end < 0 ? undefined : match.index + end + 1).replace(/^["'\s]+|["'\s]+$/g, '').slice(0, 200)
+  const here = world.state.player.location
+  const fact = recordFact(world, {
+    kind: 'asked_stranger',
+    about: [npcId],
+    place: here,
+    belang: 3,
+    title: `${who} asking the stranger for help`,
+    text: { precise: `${who} asked the stranger: "${said}"`, village: `${who} has asked the stranger for help.`, far: 'A stranger was asked for help.' },
+    witnesses: [npcId, ...world.npcsAt(here).filter((id) => id !== npcId && world.npcState(id).activity !== 'asleep')],
+  })
+  delete heardBy(world, 'player')[fact.id]
+  if (world.state.player.journal) delete world.state.player.journal[fact.id]
+  return fact
+}
+
+/**
+ * Someone told the stranger a secret (M10.30): a fact of belang 3 that nobody
+ * else heard, so it does not go round, but the night round sees it.
+ */
+export function confided(world: World, npcId: string, secret: { text: string; about: string[] }): Fact {
+  const who = callName(world.npc(npcId))
+  const fact = recordFact(world, {
+    kind: 'confided',
+    about: [npcId, ...secret.about.filter((id) => world.content.npcs.has(id) && id !== npcId)],
+    place: world.state.player.location,
+    belang: 3,
+    title: `${who} confiding in the stranger`,
+    text: { precise: `${who} told the stranger a secret: ${secret.text}`, village: `${who} and the stranger talked a long while, low.`, far: 'Someone confided in a stranger.' },
+    witnesses: [],
+  })
+  delete heardBy(world, 'player')[fact.id]
+  if (world.state.player.journal) delete world.state.player.journal[fact.id]
+  return fact
+}
+
 /** What the NPC does after the talk, by rules: a child or a curious one tells family who were asked about. */
 export function afterChoice(world: World, npcId: string, facts: string[]): { kind: 'tell' | 'visit'; target: string } | undefined {
   const npc = world.npc(npcId)

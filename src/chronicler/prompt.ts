@@ -133,6 +133,7 @@ export function systemPrompt(input: ChronicleInput, limits: Limits): string {
         ]
       : []),
     'A storyline with an arc goes on from the ones named there: tell them as one story, cause and effect, and keep the open threads of before. An event may say what it came from (because).',
+    'talks under a storyline are what its people remember of their talks with the stranger since your last round, in their own words: what they asked of the stranger, told them or kept back. They are not events; use them to keep the open threads and requests true to what was said.',
     'Rules: only facts from the overview; never invent what happened, who was there or when. Use only names from the overview. A rumour marked untrue stays a rumour. Things marked PRIVATE may go into thoughts, never into lore or news. Plain words, the tone of the world.',
   ].join('\n')
 }
@@ -192,6 +193,7 @@ export function userPrompt(input: ChronicleInput, keys: Keys, lookedUp: Card[], 
     if (line.next) lines.push(`    you expected: ${line.next}`)
     if (line.events.length) lines.push('    new:', ...line.events.map((e) => `      ${eventLine(e, keys)}`))
     if (line.earlier.length) lines.push('    earlier:', ...line.earlier.map((e) => `      ${eventLine(e, keys)}`))
+    if (line.talks?.length) lines.push('    talks:', ...line.talks.map((t) => `      ${t}`))
   }
   section('LOOKED UP', lookedUp.map((c) => cardLine(c, keys)))
   lines.push(lookupsLeft > 0 ? `Write the chronicle now, or look up at most ${lookupsLeft} keys first.` : 'Write the chronicle now. No more lookups.')

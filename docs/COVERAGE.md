@@ -49,7 +49,7 @@ Every kind puts what stays the same first and what changes after it (M10.26). A 
 | `journey` | claude-haiku-4-5-20251001 | 558 | none | - | - | 4,096 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `improvise` | claude-haiku-4-5-20251001 | 935 | none | - | - | 4,096 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `npc_goals` | claude-sonnet-5 | 1,460 | one, an hour | 1,072 | - | 1,024 | the next call 73% |
-| `chronicle` | claude-opus-5-5 | 5,449 | none | - | - | 512 | not marked: nothing reads it back in time, so a mark would only pay a write |
+| `chronicle` | claude-opus-5-5 | 5,518 | none | - | - | 512 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `spark` | claude-sonnet-5 | 853 | none | - | - | 1,024 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `read_score` | - | 557 | none | - | - | - | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `lore_check` | claude-sonnet-5 | 386 | none | - | - | 1,024 | not marked: nothing reads it back in time, so a mark would only pay a write |
@@ -64,7 +64,7 @@ Every kind puts what stays the same first and what changes after it (M10.26). A 
 | `tides` | claude-opus-5-5 | 645 | none | - | - | 512 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `builder_draft` | claude-opus-5-5 | 14,409 | one, an hour | 9,167 | - | 512 | the next call 64% |
 | `world_step` | claude-opus-5-5 | 7,605 | shared and own, an hour | 5,684 | 5,524 | 512 | the next call 75%; one about someone or something else 73% |
-| `world_enhance` | claude-opus-5-5 | 17,096 | one, an hour | 8,881 | - | 512 | the next call 52% |
+| `world_enhance` | claude-opus-5-5 | 17,124 | one, an hour | 8,881 | - | 512 | the next call 52% |
 | `world_polish` | claude-sonnet-5 | 11,333 | none | - | - | 1,024 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `map_paint` | claude-haiku-4-5-20251001 | 1,456 | one, an hour | 1,442 | - | 4,096 | nothing: the fixed part is under the minimum |
 | `palette_draft` | claude-opus-5-5 | 10,000 | none | - | - | 512 | not marked: nothing reads it back in time, so a mark would only pay a write |

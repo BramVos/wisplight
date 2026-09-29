@@ -2574,7 +2574,7 @@ export class Engine {
       case 'quest': {
         const id = rest[0] ?? ''
         if (!this.content.quests.get(id)?.stages?.length) return [{ kind: 'error', text: `@quest <id>: ${[...this.content.quests.values()].filter((q) => q.stages?.length).map((q) => q.id).join(', ')}` }]
-        return [...startQuest(this.world, this.questHost, id), ...this.pass(0)]
+        return [...startQuest(this.world, this.questHost, id, true), ...this.pass(0)]
       }
       case 'plan': {
         const id = rest[0] ?? ''

@@ -124,6 +124,8 @@ world:
     clock.seconds_per_minute: 5
     # Three spoilt tries in a row at the same work, and it rests an hour and a half (M10.29).
     crafts.fail_cooldown: { after: 3, minutes: 90 }
+    # A small island has room for one matter at a time beside getting off it (M10.30).
+    story.quests_active: 1
   # How well the lands know each other (M10.23): the white boat runs to Ynys Wen,
   # so word and wares go back and forth, in the boat's time.
   reach:

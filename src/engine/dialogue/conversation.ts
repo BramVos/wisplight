@@ -20,7 +20,7 @@ import { byRule } from './byrule'
 import { accept, askedFor, askOffer, dayLines, kinOf, offerLine, offerLines, offersFor, proposal, proposalText, spokenMeet, type Offer } from './offers'
 import { accepted, declined, inviteOffer } from '../social/invite'
 import { claimValid, claimWords, parseClaim, playerSays } from '../claims'
-import { afterChoice, doAfter, talkFact } from './aftertalk'
+import { afterChoice, askedOfStranger, confided, doAfter, talkFact } from './aftertalk'
 import { provocation, react, walkAway, type Reaction } from './reactions'
 import { flirt } from '../social/romance'
 import { tieTo } from '../people'
@@ -280,6 +280,8 @@ export class Dialogue {
     learnWork(this.world, npcId)
     gainXp(this.world, knob(this.world, 'rules.xp').secret, `${callName(this.world.npc(npcId))} told you a secret`)
     if (secret.teaches) this.teach(npcId, secret.teaches)
+    // Heard by nobody else, and never carried home after the talk, but the night round sees it (M10.30).
+    confided(this.world, npcId, secret)
     return { secret: secret.text, admission: secret.admission }
   }
 
@@ -757,8 +759,13 @@ export class Dialogue {
     // it claims needs its agreement in the register, or the note is the plain one.
     const claimed = reply?.memory_note ? deedKinds(reply.memory_note) : []
     const borne = !claimed.length || (world.state.agreements?.list ?? []).some((a) => claimed.includes(a.kind) && ((a.by === npcId && a.to === 'player') || (a.by === 'player' && a.to === npcId)))
-    memory.push({ t: world.now, note: (borne && reply?.memory_note) || `The stranger talked to me${topics[0] ? ` about ${this.topics.name(topics[0])}` : ''}.`, topics, valence: 0 })
+    // A note in the speaker's own words is a talk the night round may see (M10.30); the stock note says nothing new.
+    const own = borne && reply?.memory_note ? reply.memory_note : undefined
+    memory.push({ t: world.now, note: own ?? `The stranger talked to me${topics[0] ? ` about ${this.topics.name(topics[0])}` : ''}.`, topics, valence: 0, ...(own ? { talk: true as const } : {}) })
     if (memory.length > 30) memory.splice(0, memory.length - 30)
+    // Asked the stranger to do something (M10.30): news of weight, for the night round.
+    const askedFact = reply ? askedOfStranger(world, npcId, replyText, own) : undefined
+    if (askedFact) (talk.facts ??= []).push(askedFact.id)
 
     // One thing the NPC does after the talk, from the voice (M10.3).
     // Someone or somewhere they know (M10.28: the schema no longer lists them, so the engine checks).

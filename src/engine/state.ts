@@ -223,6 +223,8 @@ export interface Storyline {
   dormantSince?: number
   /** When it woke again, and by which fact (M10.2). */
   resumed?: { t: number; by: string }[]
+  /** When a round last told of it (M10.30): the talks since then go with the next round. */
+  told?: number
 }
 
 /** A lore topic that came into being in this game (design, "Opslag": de kroniek). */
@@ -371,6 +373,8 @@ export interface MemoryRecord {
   note: string
   topics: string[]
   valence: number
+  /** Written after a talk with the stranger, in the speaker's words (M10.30): the night round sees it. */
+  talk?: true
 }
 
 export interface TalkState {
@@ -786,7 +790,9 @@ export interface GameState {
   /** Locks opened with their key, picked or broken (M10.3), or jammed by a bad pick (M10.5), by exit:<from>:<direction> or object:<location>/<object>. */
   locks?: Record<string, 'open' | 'broken' | 'jammed'>
   /** Conversation facts of today (M10.3): how many, and about whom. */
-  talkFacts?: { day: number; people: string[] }
+  /** Quests that would have begun while their region had its fill (M10.30), and do not wake again by themselves. */
+  questsWaiting?: string[]
+  talkFacts?: { day: number; people: string[]; /** Who asked the stranger to do something today (M10.30): one fact each. */ asked?: string[] }
   /** The register of agreements (M10.2): who promised whom what, by when, and how it went. */
   agreements?: { seq: number; list: Agreement[] }
   /** Romance per NPC (FO, chapter 8). */

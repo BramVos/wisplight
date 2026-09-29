@@ -84,6 +84,12 @@ export interface ChronicleLine {
   earlier: ChronicleEvent[]
   /** The storylines this one goes on from, oldest first (M9.2): one arc, told as one story. */
   arc?: { title: string; summary: string[] }[]
+  /**
+   * What the line's people remember of their talks with the stranger since the
+   * last round (M10.30), in their own words, the newest last and at most ten:
+   * "Ilyan (Primeday 18): I asked the stranger to recover the recordings."
+   */
+  talks?: string[]
 }
 
 /** A kind of request the caller can check and reward: fetch, deliver, recover, ... */

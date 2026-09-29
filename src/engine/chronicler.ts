@@ -88,6 +88,33 @@ function eventOf(world: World, fact: Fact): ChronicleEvent {
   return { id: fact.id, when: when(world, fact.t), place: fact.place, who, witnesses, belang: fact.belang, text: fact.text.precise, ...(fact.truth === false ? { untrue: true } : {}), ...(because.length ? { because } : {}) }
 }
 
+/** How many remembered talks a storyline takes to the night round (M10.30). */
+const TALKS_PER_LINE = 10
+
+/**
+ * What the line's people remember of their talks with the stranger since the
+ * last round told of it (M10.30, Bram: not the whole history, and a quest in
+ * the making such as Ilyan's shows): the notes in their own words of a talk
+ * with one of its people, or about one of its people, places or subjects.
+ */
+export function talksOf(world: World, line: Storyline, facts: Fact[]): string[] {
+  const since = line.told ?? Math.min(...facts.map((f) => f.t), world.now)
+  const people = new Set([...line.people, ...line.roles.map((r) => r.who)])
+  const touched = new Set([...people, ...line.places, ...facts.flatMap((f) => f.about)])
+  const notes: { t: number; text: string }[] = []
+  for (const [id, npc] of Object.entries(world.state.npcs)) {
+    if (!world.content.npcs.has(id)) continue
+    for (const m of npc.memory ?? []) {
+      if (!m.talk || m.t <= since || !(people.has(id) || m.topics.some((t) => touched.has(t)))) continue
+      notes.push({ t: m.t, text: `${callName(world.npc(id))} (${when(world, m.t)}): ${m.note}` })
+    }
+  }
+  return notes
+    .sort((a, b) => a.t - b.t)
+    .slice(-TALKS_PER_LINE)
+    .map((n) => n.text)
+}
+
 export function buildInput(world: World, run: ChronicleRun): ChronicleInput {
   const state = chronicleState(world)
   const lines = run.lines.map((id) => state.lines.find((l) => l.id === id)).filter((l): l is Storyline => Boolean(l))
@@ -108,6 +135,7 @@ export function buildInput(world: World, run: ChronicleRun): ChronicleInput {
       .slice(-3)
       .map((f) => eventOf(world, f)),
     ...(arcOf(state, line).length ? { arc: arcOf(state, line) } : {}),
+    ...(talksOf(world, line, facts(line)).length ? { talks: talksOf(world, line, facts(line)) } : {}),
   }))
 
   const cast = new Set<string>()
@@ -598,6 +626,8 @@ export function applyOutput(world: World, run: ChronicleRun, output: ChronicleOu
       if (!out.news.some((n) => n.area === area) && (!old || world.now - old.t > 12 * 60)) state.news[area] = { text: fresh.at(-1)!.text.village, t: world.now }
     }
     line.reported = [...new Set([...line.reported, ...line.facts.filter((id) => seen.has(id))])]
+    // Told now (M10.30): the talks from here on go with the next round.
+    line.told = world.now
     // Without a model, the rules may place a thing for a storyline where no chance is left (M10.5).
     if (by === 'template') motorProp(world, line)
   }
