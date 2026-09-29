@@ -22,7 +22,7 @@
 - **Minuten op de weg naar iets wat gebouwd is.** Een plek die een project bouwt, kreeg altijd een weg van één minuut. Nu zegt het project hoe ver het is, en anders is het drie minuten, zoals bij een wijk. De steenbakkerij van Waagdam ligt zes minuten van de haven. Een save waarin iets al gebouwd was, houdt zijn ene minuut.
 - **Alle antwoorden bewaard.** Elk antwoord staat met jouw vraag ervoor in `docs/playtest/voice/2026-09-29-claude-haiku-4-5-20251001.md` en `docs/playtest/voice/2026-09-29-gpt-5-mini.md`, om naast elkaar te lezen. Het modeladvies onder Instellingen > AI toont de vergelijking bij de stem.
 
-Je stem staat op Haiku 4.5. Toen de meting klaar was stond hij al zo, omgezet in de app om 21:41, en je zei ja op Haiku. Het advies is Haiku. De uiteindelijke keuze blijft open tot de ontwerpsessie de bewaarde antwoorden gelezen heeft.
+Je stem staat op Haiku 4.5, en dat blijft zo. Toen de meting klaar was stond hij al zo, omgezet in de app om 21:41, en je zei ja op Haiku. De ontwerpsessie las daarna de bewaarde antwoorden en bevestigde de keuze. Bij gpt-5-mini werden 13 van de 24 antwoorden een vaste regel of liepen ze uit de tijd. Het verzon namen en prijzen in het gesprek, liet Mirte in bijna elke regel het meel van haar handen vegen, en kostte per regel hetzelfde.
 
 Kosten per nieuwe soort aanroep: de leesscore (`read_score`) kost op Sonnet 5 (low) $0,004 tot $0,013 per reeks, afhankelijk van hoeveel antwoorden ze leest. Ze gaat naar het brein, omdat het een begrensd oordeel is; ze komt alleen in een meting voor, niet in het spel.
 
