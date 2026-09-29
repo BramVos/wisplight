@@ -18,6 +18,7 @@ import { oathsFor, talkSeed, voiceLines } from './voice'
 import { moodOf } from '../quests/plans'
 import { lodgerLine } from '../lodgings'
 import { worldText } from '../safety'
+import { backgroundNow, knownFrom } from '../rules/player'
 
 // Prompts for the voice role (FO, chapter 10). The system part is byte-for-byte
 // stable per NPC so providers can cache it; everything that changes goes in
@@ -221,10 +222,12 @@ function peopleKnown(world: World, npcId: string, focus: string[]): string {
 
 /** The stranger was told to ask for this NPC when they came (M10.9): what brought them, in their own words. */
 function sentTo(world: World, npcId: string): string[] {
-  if (world.state.player.contact !== npcId) return []
-  const c = world.state.player.character
-  const reason = c && world.content.rules?.backgrounds.find((b) => b.id === c.background)?.reason
-  return [`THE STRANGER was told to ask for you when they came.${reason ? ` What brought them, in their words: "${reason}"` : ''}`]
+  // Someone the stranger knows from before, by their background (M10.29 C): how, as the stranger would put it.
+  const from = knownFrom(world, npcId)
+  const known = from === undefined ? [] : [`YOU KNOW THE STRANGER from before${from ? ` (as they would put it: ${from})` : ''}.`]
+  if (world.state.player.contact !== npcId) return known
+  const reason = backgroundNow(world)?.reason
+  return [...known, `THE STRANGER was told to ask for you when they came.${reason ? ` What brought them, in their words: "${reason}"` : ''}`]
 }
 
 /** Who the player is to this NPC: a stranger, or someone known and perhaps trusted. */

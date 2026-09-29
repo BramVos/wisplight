@@ -1,6 +1,7 @@
 Het verdwenen meisje (base), seed 7
 
 ######## THE PLAYER ACTS
+The Nethermarch
 The barge from Graafhaven leaves you at the Veenhoek quay just as the light goes. The bargeman won't tie up. "Not after dark, not out here," he says, and poles away into the mist, taking his lantern with him.
 
 This is the Holleveen: peat and reed and black water, mile upon mile of it between the Great Dyke and the heath. The villages sit on the few dry places like cats on a fence. Peat smoke. A windmill standing still against a sky the colour of pewter, its sails torn to rags.
@@ -10,6 +11,7 @@ Somewhere a dog barks. On the doorstep of the nearest house a grey cat watches y
 Type LOOK to look around. Type HELP if you are lost. You probably are.
 You ran goods past the Count's tolls until the tolls caught up with you in Graafhaven. The Holleveen is a good place to be forgotten, and Trijntje at the Drowned Goose asks no questions.
 You were told to ask for Trijntje the innkeeper at the Drowned Goose. The name is in your journal.
+Why you are here is in your journal.
 Canal Quay
 Grey water slaps against the planks of the quay. A barge rope lies coiled by the mooring posts, and beside them stands a worn stone, waist-high, with a dog carved into it. Someone has put an apple on top. The Graafse Vaart runs east and west; the green is north and the peat sheds are south.
 Exits: north, east, west, south, southwest
@@ -90,7 +92,7 @@ Mirte nods slowly. "[Fenna Visser], fifteen, the daughter of [Jan] and [Grietje]
 Mirte lifts a hand. "Go on, then."
 
 > journal
-People: Fenna Visser, Grietje, Jan, Lubbert, Mirte Bakker, Trijntje, the Count.
+People: Fenna Visser, Grietje, Jan, Lubbert, Mirte Bakker, Trijntje Kroes, the Count.
 Places: Veenhoek, Waagdam, the Kattenbroek, The Mill De Zwaan, The Bakery, Veenhoek, the Green, Canal Quay, Visser House, the doorstep, The Market Square, Waagdam, the West Gate.
 Lore: the stranger in Veenhoek.
 
@@ -326,7 +328,7 @@ The Grey Cat on the Doorstep: Honest. Fenna is home, and one day a week all wint
 +400 experience: The Grey Cat on the Doorstep.
 
 > journal
-People: Fenna Visser, Aaltje Hendriks, Grietje, Jan, Lubbert, Mirte Bakker, Trijntje, Wouter, the Count.
+People: Fenna Visser, Aaltje Hendriks, Grietje, Jan, Lubbert, Mirte Bakker, Trijntje Kroes, Wouter, the Count.
 Places: the Holleveen, Veenhoek, Waagdam, the Kattenbroek, Aaltje's Cottage, Chapel Lane, The Edge of the Kattenbroek, Below the Hut on Stilts, The Black Pools, The Mill De Zwaan, The Bakery, Veenhoek, the Green, Canal Quay, Visser House, the doorstep, The Market Square, Waagdam, the West Gate.
 Lore: the Cat-Widow of the Kattenbroek, the stranger in Veenhoek, the grey cat.
 
@@ -422,7 +424,7 @@ Exits: east
 Here: Fenna Visser (eating), Grietje Visser (eating), Pim (eating).
 
 > journal
-People: Fenna Visser, Aaltje Hendriks, Grietje, Jan, Lubbert, Mirte Bakker, Trijntje, Wouter, the Count.
+People: Fenna Visser, Aaltje Hendriks, Grietje, Jan, Lubbert, Mirte Bakker, Trijntje Kroes, Wouter, the Count.
 Places: the Holleveen, Reuzenrust, Veenhoek, Waagdam, the Kattenbroek, Aaltje's Cottage, Chapel Lane, The Edge of the Kattenbroek, Below the Hut on Stilts, The Black Pools, The Mill De Zwaan, The Road to Hunnenloo, The Bakery, Veenhoek, the Green, Canal Quay, Visser House, the doorstep, The Market Square, Waagdam, the West Gate.
 Lore: the Cat-Widow of the Kattenbroek, the stranger in Veenhoek, the grey cat.
 
@@ -430,6 +432,7 @@ Lore: the Cat-Widow of the Kattenbroek, the stranger in Veenhoek, the grey cat.
 Quests: grey_cat_on_the_doorstep: honest; flour_for_veenhoek: market_day_passed; the_white_womens_riddle: open, stage the_riddle
 
 ######## CONTROL: THE PLAYER DOES NOTHING
+The Nethermarch
 The barge from Graafhaven leaves you at the Veenhoek quay just as the light goes. The bargeman won't tie up. "Not after dark, not out here," he says, and poles away into the mist, taking his lantern with him.
 
 This is the Holleveen: peat and reed and black water, mile upon mile of it between the Great Dyke and the heath. The villages sit on the few dry places like cats on a fence. Peat smoke. A windmill standing still against a sky the colour of pewter, its sails torn to rags.
@@ -439,6 +442,7 @@ Somewhere a dog barks. On the doorstep of the nearest house a grey cat watches y
 Type LOOK to look around. Type HELP if you are lost. You probably are.
 You ran goods past the Count's tolls until the tolls caught up with you in Graafhaven. The Holleveen is a good place to be forgotten, and Trijntje at the Drowned Goose asks no questions.
 You were told to ask for Trijntje the innkeeper at the Drowned Goose. The name is in your journal.
+Why you are here is in your journal.
 Canal Quay
 Grey water slaps against the planks of the quay. A barge rope lies coiled by the mooring posts, and beside them stands a worn stone, waist-high, with a dog carved into it. Someone has put an apple on top. The Graafse Vaart runs east and west; the green is north and the peat sheds are south.
 Exits: north, east, west, south, southwest
@@ -519,7 +523,7 @@ Mirte nods slowly. "[Fenna Visser], fifteen, the daughter of [Jan] and [Grietje]
 Mirte lifts a hand. "Go on, then."
 
 > journal
-People: Fenna Visser, Grietje, Jan, Lubbert, Mirte Bakker, Trijntje, the Count.
+People: Fenna Visser, Grietje, Jan, Lubbert, Mirte Bakker, Trijntje Kroes, the Count.
 Places: Veenhoek, Waagdam, the Kattenbroek, The Mill De Zwaan, The Bakery, Veenhoek, the Green, Canal Quay, Visser House, the doorstep, The Market Square, Waagdam, the West Gate.
 Lore: the stranger in Veenhoek.
 
@@ -610,7 +614,7 @@ Exits: east
 Here: Pim (playing).
 
 > journal
-People: Fenna Visser, Grietje, Jan, Lubbert, Mirte Bakker, Trijntje, the Count.
+People: Fenna Visser, Grietje, Jan, Lubbert, Mirte Bakker, Trijntje Kroes, the Count.
 Places: Reuzenrust, Veenhoek, Waagdam, the Kattenbroek, The Mill De Zwaan, The Road to Hunnenloo, The Bakery, Veenhoek, the Green, Canal Quay, Visser House, the doorstep, The Market Square, Waagdam, the West Gate.
 Lore: the stranger in Veenhoek.
 

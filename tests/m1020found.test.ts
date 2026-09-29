@@ -47,7 +47,8 @@ describe('M10.20: what you found out', () => {
     expect(page).toMatch(/<figure class="region"><style>[^<]*<\/style><svg [^>]*aria-label="The land Traveller has seen"/)
     expect(page).toMatch(/<text [^>]*>Veenhoek<\/text>/)
     const portraits = [...page.matchAll(/<figcaption>([^<]+)<small>/g)].map((m) => m[1])
-    expect(portraits).toEqual(['Mirte Bakker'])
+    // Trijntje too since M10.29 C: the ready-made traveller knows her from before.
+    expect(portraits).toEqual(['Mirte Bakker', 'Trijntje Kroes'])
   })
 
   it('what is still to find shows as question marks and numbers, never as names (Bram)', async () => {

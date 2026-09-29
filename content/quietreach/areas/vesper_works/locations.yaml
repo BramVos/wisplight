@@ -91,6 +91,9 @@ locations:
         Cold and cavernous, this hangar is filled almost entirely by the ship, its scarred hull resting on landing struts with maintenance panels hanging open. Cables snake to diagnostic carts, and the air hums deep enough to feel in your teeth. A yellow barrier marks off the drive section towards the stern. A boarding ramp climbs to the airlock; the door out leads back to the Workshop.
       night: |
         Dimmed to a few floods, the hangar holds the [Peregrine] as a dark bulk, its open panels glowing faintly from within. The hum is lower now but still felt. The yellow barrier by the drive section shines under the floodlight. The boarding ramp climbs into shadow towards the airlock; the door out leads back to the Workshop.
+    arrival:
+      text: "The Peregrine fills the hangar almost wall to wall, her scarred hull on its struts and her panels hanging open. The hum of her diagnostics goes into your teeth, and a yellow barrier keeps everyone away from the drive."
+      far: "Beyond the Workshop the roof of the hangar rises above the rest of Port Vesper, the one building here big enough to hold a ship."
     exits:
       up: { to: loc_peregrine_common_deck, minutes: 2 }
       out: { to: loc_workshop, minutes: 3 }

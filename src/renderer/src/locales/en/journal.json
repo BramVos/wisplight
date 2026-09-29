@@ -26,6 +26,7 @@
   },
   "you": {
     "sheet": "Your character",
+    "why": "Why you are here",
     "map": "The whole map",
     "party": "Your companions",
     "promises": "Your word and theirs",

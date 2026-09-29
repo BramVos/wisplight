@@ -43,11 +43,15 @@ describe('clock', () => {
 describe('engine', () => {
   it('starts on the quay with the intro', () => {
     const outputs = newEngine().start()
+    // The intro as a moment card (M10.29 C).
+    expect(outputs[0]).toMatchObject({ kind: 'card', card: { kind: 'intro' } })
     expect(outputs[0]?.text).toContain('The barge from Graafhaven')
-    // Then why you are here (M10.9), and whom you were told to ask for, before the place itself.
+    // Then why you are here (M10.9), whom you were told to ask for and whom you know (M10.29 C), before the place itself.
     expect(outputs[1]?.text).toMatch(/^You ran goods past the Count's tolls/)
     expect(outputs[2]?.text).toMatch(/You were told to ask for Trijntje/)
-    expect(outputs[3]?.text).toContain('Canal Quay')
+    // Trijntje, known from before, is the contact already named.
+    expect(outputs[3]?.text).toBe('Why you are here is in your journal.')
+    expect(outputs[4]?.text).toContain('Canal Quay')
     expect(outputs.at(-1)?.text).toContain('TEMPO CALM')
   })
 

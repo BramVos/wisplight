@@ -96,7 +96,7 @@ import { breakOff, chatLine, chatLineRequest, listen, longListen } from './chatt
 import { realmLines, realmPage } from './social/realms'
 import { bearing, kmFromPlayer, posOf, posOfLocation } from './nearby'
 import { carryOver } from './legacy'
-import { arrival, character, type Clock, clockLine, createCommand, creationHelp, equipCommand, favour, findPurse, gainXp, greyRider, leaveSheaf, levelCommand, makeCharacter, patronCommand, pray, rest, rite, sheetData, sheetLines, struggle, trainCommand } from './rules/player'
+import { arrival, character, chooseBackground, whyLines, type Clock, clockLine, createCommand, creationHelp, equipCommand, favour, findPurse, gainXp, greyRider, leaveSheaf, levelCommand, makeCharacter, patronCommand, pray, rest, rite, sheetData, sheetLines, struggle, trainCommand } from './rules/player'
 import { sketchById } from './sketches'
 import { momentsNow } from './moments'
 import { journeyRequest } from './map/journeyText'
@@ -470,6 +470,8 @@ export class Engine {
     if (id === 'tides') return { id, kind: 'lore', name: 'The great lines', lines: tidesPage(this.world), sources: [], links: [] }
     // What waits for the player by the play mode (M10.24): hooks of a night, proposals.
     if (id === 'waiting') return { id, kind: 'lore', name: 'What waits for you', lines: waitingLines(this.world), sources: [], links: [] }
+    // Why you are here (M10.29 C): the intro, the reason, whom to ask for, who knows you.
+    if (id === 'why') return { id, kind: 'lore', name: 'Why you are here', ...whyLines(this.world), sources: [] }
     // A word to the chronicler (M10.24): the player's lines and what came of each.
     if (id === 'wishes') return { id, kind: 'lore', name: 'A word to the chronicler', lines: wishLines(this.world, Boolean(this.llm)), sources: [], links: [] }
     // The frames of this game (M10.24): for the screen at the start, and Settings after.
@@ -1146,8 +1148,12 @@ export class Engine {
   start(): Output[] {
     wakePulse(this.world)
     const intro = this.content.world.intro?.trim()
+    // The world's intro as a moment (M10.29 C), with the picture of where it begins and a way to "Why you are here".
+    // The card without the hint to type LOOK, which the log keeps below it.
+    const told = intro?.replace(/\n*\s*Type LOOK\b[^\n]*$/i, '').trim()
+    const card = intro ? { kind: 'intro' as const, title: this.content.world.name, text: told || intro, picture: this.state.player.location, link: 'why' } : undefined
     const outputs: Output[] = [
-      ...(intro ? [{ kind: 'text' as const, text: intro }] : []),
+      ...(card ? [{ kind: 'card' as const, text: `${card.title}\n${intro}`, card }] : []),
       // Why you are here (M10.9), after the world's own opening.
       ...arrival(this.world),
       describeRoom(this.world),
@@ -1359,6 +1365,9 @@ export class Engine {
     // Stuck in the fen, or a cat for a while (M7.2): some things cannot be done.
     const held = this.heldBack(text)
     if (held) return held
+    // Who the stranger came as, in a world without classes (M10.29 C); outside a talk, where it could be words.
+    const background = this.state.talk ? undefined : /^background\s+(.+?)\s*$/i.exec(text.trim())
+    if (background) return chooseBackground(this.world, background[1]!)
     const hire = /^(?:hire|rent|borrow)\s+(?:a\s+|an\s+|the\s+)?(.+?)\s*$/i.exec(text.trim())
     if (hire) {
       const hired = this.hire(hire[1]!)

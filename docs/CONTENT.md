@@ -112,6 +112,8 @@ A list; each has:
 | details | list of a map: words, look, take, verbs | no | [] |
 | arrival | a map: text, mist, night, storm, far | no |  |
 
+`arrival`: two or three sentences for the first time the stranger reaches it (with `night`, `mist` or `storm` where it reads otherwise then, and `far` for how a landmark looks from afar): on the start place, and on every gate or landmark. Left out, a place gets no card.
+
 ## professions (data/professions.yaml)
 
 What people do all day: the hours of work, home and sleep that move them about.
@@ -380,6 +382,8 @@ One block with:
 | ready_made | a map: name, ancestry, background, class, boosts, skills, talent | no |  |
 | suggest | a map of names to text | no |  |
 | death | a map: vision, guide, patron, wake, mark, rite_where, rite_done, rite_nothing, price | no |  |
+
+`backgrounds`: who the stranger may have come as (two to five): `reason` (two sentences in the second person, with this world's names), `contact` (whom they were told to ask for), `heard` (a topic in the journal from the start), `topics`, and `knows`: people who know them from before, each an NPC id or `{ who, how }` with how, as the stranger would say it ("your shipmate on the Harrow crossing"). `skills` (two) and `talent` only where the world has classes; a world without them leaves both out, and the stranger comes as the first background until they choose another with BACKGROUND. Left out altogether, the stranger has no reason to be here and knows nobody.
 
 ## voice (data/voice.yaml)
 

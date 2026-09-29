@@ -90,10 +90,14 @@ const BackgroundSchema = z
   .object({
     id: Id,
     name: z.string(),
-    skills: z.array(Id).length(2),
-    talent: Id,
-    /** People who know you from before, and topics already in your journal. */
-    knows: z.array(z.string()).default([]),
+    /** Two skills and a talent where the world has classes; a world without them (The Quiet Reach) leaves them out (M10.29 C). */
+    skills: z.array(Id).refine((a) => a.length === 0 || a.length === 2, 'two skills').default([]),
+    talent: Id.or(z.literal('')).default(''),
+    /**
+     * People who know you from before, and topics already in your journal. A person may come with how you know
+     * each other (M10.29 C): { who: npc_tessa_rook, how: your shipmate on the Harrow crossing }.
+     */
+    knows: z.array(z.union([z.string(), z.object({ who: z.string(), how: z.string() }).strict()])).default([]),
     topics: z.array(z.string()).default([]),
     /**
      * Why you are here (M10.9): two sentences in the second person, with the world's own names; whom you were told to
@@ -104,6 +108,11 @@ const BackgroundSchema = z
     heard: z.string().optional(),
   })
   .strict()
+
+/** The people a background knows from before, each with how, where the world says it (M10.29 C). */
+export function knownPeople(b: { knows: (string | { who: string; how: string })[] }): { who: string; how?: string }[] {
+  return b.knows.map((k) => (typeof k === 'string' ? { who: k } : k))
+}
 
 const TreeSchema = z.object({ id: Id, name: z.string(), talents: z.array(TalentSchema).length(4) }).strict()
 

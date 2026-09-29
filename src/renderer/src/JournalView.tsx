@@ -26,6 +26,8 @@ const journalParts = (): { key: keyof Journal; title: string }[] => [
 ]
 
 const yours = () => [
+  // Why you are here (M10.29 C): the intro, the reason, whom to ask for.
+  { id: 'why', name: t('journal.you.why') },
   { id: 'sheet', name: t('journal.you.sheet') },
   { id: 'map', name: t('journal.you.map') },
   { id: 'land', name: t('journal.you.land') },

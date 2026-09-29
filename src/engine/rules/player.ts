@@ -1,5 +1,5 @@
 import { craftLines } from '../crafts'
-import type { Content } from '../content'
+import { callName, type Content } from '../content'
 import { selfGear, selfState } from '../looking'
 import type { Output } from '../commands'
 import { check as rollCheck, PLAYER_BONUS, type CheckResult } from '../dialogue/checks'
@@ -38,7 +38,7 @@ import {
   type CreationChoice,
   type LevelChoice,
 } from './character'
-import { ATTRIBUTES, SAVES, type Attribute, type Death } from './schema'
+import { ATTRIBUTES, knownPeople, SAVES, type Attribute, type Background, type Death } from './schema'
 import { approve, syncLevels } from '../social/companions'
 
 // The character in the world (FO, chapter 11): making one, checks with real
@@ -188,13 +188,8 @@ export function makeCharacter(world: World, choice: CreationChoice): Output[] {
   player.character = c
   giveGear(world, c, true)
   const background = rulesOf(world.content).backgrounds.find((b) => b.id === c.background)!
-  for (const npc of background.knows) {
-    const r = relation(world.state, npc)
-    r.familiarity = Math.max(r.familiarity, 30)
-    r.affinity = Math.max(r.affinity, 10)
-  }
   const journal = (player.journal ??= {})
-  for (const topic of [...background.topics, ...background.knows]) journal[topic] ??= world.now
+  for (const topic of background.topics) journal[topic] ??= world.now
   const k = classOf(world.content, c.class)
   const a = rulesOf(world.content).ancestries.find((x) => x.id === c.ancestry)!
   const was = background.name.charAt(0).toLowerCase() + background.name.slice(1)
@@ -711,12 +706,74 @@ export function struggle(world: World, pass: (minutes: number) => Output[]): Out
  * such; and what they heard that brought them, in the journal from the start.
  * Nothing for a background without a reason (an old save plays on as it was).
  */
+/**
+ * The stranger's background now (M10.29 C): the character's, or in a world
+ * without classes the one chosen with BACKGROUND, else the first.
+ */
+export function backgroundNow(world: World): Background | undefined {
+  const all = world.content.rules?.backgrounds ?? []
+  const id = world.state.player.character?.background ?? (hasCharacters(world.content) ? undefined : (world.state.player.background ?? all[0]?.id))
+  return all.find((b) => b.id === id)
+}
+
+/** How the stranger knows someone from before, by their background (M10.29 C): the words, or '' when they just do. */
+export function knownFrom(world: World, npcId: string): string | undefined {
+  const background = backgroundNow(world)
+  const known = background ? knownPeople(background).find((k) => k.who === npcId) : undefined
+  return known ? (known.how ?? '') : undefined
+}
+
+/** A background's name in a sentence: "a systems engineer", "an expedition medic"; a name of its own stays as it is. */
+function asOne(name: string): string {
+  if (/^(?:a|an|the)\s/i.test(name)) return name.charAt(0).toLowerCase() + name.slice(1)
+  const lower = name.charAt(0).toLowerCase() + name.slice(1)
+  return `${/^[aeiou]/i.test(name) ? 'an' : 'a'} ${lower}`
+}
+
+/**
+ * BACKGROUND <name> (M10.29 C): who the stranger is, in a world without
+ * classes (The Quiet Reach's specialists). The first is theirs until they
+ * choose; once chosen, it stays.
+ */
+export function chooseBackground(world: World, words: string): Output[] {
+  const all = world.content.rules?.backgrounds ?? []
+  if (hasCharacters(world.content)) return [{ kind: 'error', text: 'Your background comes with who you are: CREATE says more.' }]
+  if (!all.length) return [{ kind: 'error', text: 'This world gives the stranger no background to choose.' }]
+  const w = words.trim().toLowerCase().replace(/^(?:an?|the)\s+/, '')
+  const found = all.find((b) => b.id === w || b.name.toLowerCase() === w) ?? all.find((b) => b.name.toLowerCase().includes(w) || b.id.includes(w.replace(/\s+/g, '_')))
+  if (!found) return [{ kind: 'error', text: `Choose one of: ${all.map((b) => b.name).join(', ')}.` }]
+  const chosen = world.state.player.background
+  if (chosen && chosen !== found.id) return [{ kind: 'error', text: `You came as ${asOne(all.find((b) => b.id === chosen)?.name ?? chosen)}; that does not change now.` }]
+  world.state.player.background = found.id
+  return [{ kind: 'system', text: `You came as ${asOne(found.name)}.` }, ...arrival(world)]
+}
+
+/**
+ * The page "Why you are here" (M10.29 C): the world's intro, the reason, whom
+ * you were told to ask for, what you heard, who knows you from before, and in
+ * a world without classes who else you could have come as.
+ */
+export function whyLines(world: World): { lines: string[]; links: { id: string; name: string; label: string }[] } {
+  const background = backgroundNow(world)
+  const lines = (world.content.world.intro ?? '').split(/\n\s*\n/).map((p) => p.replace(/\s+/g, ' ').trim()).filter((p) => p && !/^Type LOOK\b/.test(p))
+  const links: { id: string; name: string; label: string }[] = []
+  if (background?.reason) lines.push('', background.reason)
+  const named = (id: string) => (world.content.npcs.has(id) ? callName(world.npc(id)) : world.content.topics.get(id)?.name ?? world.content.locations.get(id)?.name ?? id)
+  if (background?.contact && world.content.npcs.has(background.contact)) links.push({ id: background.contact, name: named(background.contact), label: 'ask for' })
+  if (background?.heard) links.push({ id: background.heard, name: named(background.heard), label: 'you heard of' })
+  for (const k of background ? knownPeople(background) : []) if (world.content.npcs.has(k.who)) links.push({ id: k.who, name: named(k.who), label: k.how ?? 'known from before' })
+  const all = world.content.rules?.backgrounds ?? []
+  if (!hasCharacters(world.content) && all.length > 1 && !world.state.player.background) {
+    lines.push('', `You came as ${asOne(background?.name ?? all[0]!.name)}. You could have come as someone else; say which, before you settle in:`, ...all.filter((b) => b !== background).map((b) => `  BACKGROUND ${b.name}${b.reason ? `: ${/^[^.!?]*[.!?]/.exec(b.reason)?.[0] ?? b.reason}` : ''}`))
+  }
+  return { lines, links }
+}
+
 export function arrival(world: World): Output[] {
-  const c = character(world)
-  const background = c ? world.content.rules?.backgrounds.find((b) => b.id === c.background) : undefined
-  if (!background?.reason) return []
+  const background = backgroundNow(world)
+  if (!background) return []
   const journal = (world.state.player.journal ??= {})
-  const out: Output[] = [{ kind: 'text', text: background.reason }]
+  const out: Output[] = background.reason ? [{ kind: 'text', text: background.reason }] : []
   if (background.heard && (world.content.topics.has(background.heard) || world.content.npcs.has(background.heard) || world.content.locations.has(background.heard))) journal[background.heard] ??= world.now
   const contact = background.contact && world.content.npcs.has(background.contact) ? world.npc(background.contact) : undefined
   if (contact) {
@@ -729,5 +786,17 @@ export function arrival(world: World): Output[] {
     const where = area && area.kind !== 'wilderness' && area.kind !== 'route' ? ` ${area.kind === 'inn' ? 'at' : 'in'} ${area.name.replace(/^The /, 'the ')}` : ''
     out.push({ kind: 'system', text: `You were told to ask for ${contact.short}${where}. The name is in your journal.` })
   }
+  // Who knows you from before (M10.29 C), once, and why: ready-made or made, a world with classes or without.
+  const known = knownPeople(background).filter((k) => world.content.npcs.has(k.who))
+  for (const { who } of known) {
+    const r = relation(world.state, who)
+    r.familiarity = Math.max(r.familiarity, 30)
+    r.affinity = Math.max(r.affinity, 10)
+    journal[who] ??= world.now
+  }
+  // The contact is named above already, unless there is how you know them.
+  const told = known.filter((k) => k.how || k.who !== contact?.id)
+  if (told.length) out.push({ kind: 'system', text: `You know ${told.map((k) => `${callName(world.npc(k.who))}${k.how ? `, ${k.how}` : ''}`).join('; ')}.` })
+  if (background.reason || contact || known.length) out.push({ kind: 'system', text: 'Why you are here is in your journal.' })
   return out
 }

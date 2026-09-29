@@ -38,6 +38,10 @@ export const FIELD_NOTES: Record<string, string[]> = {
   ],
   // M10.28: an adopted place had a way in of one minute, whatever the world said about it.
   projects: ['`link.minutes`: the minutes on foot from the place it links from, as far as it really lies (a yard next door two or three, a works down the road ten); left out, three.'],
+  // M10.29 C: the moment a place is worth.
+  locations: ['`arrival`: two or three sentences for the first time the stranger reaches it (with `night`, `mist` or `storm` where it reads otherwise then, and `far` for how a landmark looks from afar): on the start place, and on every gate or landmark. Left out, a place gets no card.'],
+  // M10.29 C: who knows the stranger from before, and a world without classes.
+  rules: ['`backgrounds`: who the stranger may have come as (two to five): `reason` (two sentences in the second person, with this world\'s names), `contact` (whom they were told to ask for), `heard` (a topic in the journal from the start), `topics`, and `knows`: people who know them from before, each an NPC id or `{ who, how }` with how, as the stranger would say it ("your shipmate on the Harrow crossing"). `skills` (two) and `talent` only where the world has classes; a world without them leaves both out, and the stranger comes as the first background until they choose another with BACKGROUND. Left out altogether, the stranger has no reason to be here and knows nobody.'],
   npcs: [
     '`secrets`: `about` and `teaches` take ids: a topic, a person (an NPC id), a place (a location id) or an area (`area_<id>`).',
     // M10.29: Dr Ilyan Sorell was "Dr" in every line.

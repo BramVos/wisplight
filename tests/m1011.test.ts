@@ -50,7 +50,8 @@ describe('M10.11: arriving at a place worth it', () => {
   it('a new game on Skerrow begins with the wreck; an old save does not light up what it knew', async () => {
     const engine = new Engine(isle, { seed: 1 })
     const start = engine.start()
-    expect(cards(start)).toEqual([expect.objectContaining({ kind: 'arrival', title: 'The Wreck Strand' })])
+    // The world's intro first (M10.29 C), then the wreck.
+    expect(cards(start)).toEqual([expect.objectContaining({ kind: 'intro' }), expect.objectContaining({ kind: 'arrival', title: 'The Wreck Strand' })])
     // An old save: no moments yet, and the stranger stands where a card would have been.
     const old = Engine.fromSave(isle, engine.save())
     old.state.player.moments = undefined

@@ -1,6 +1,7 @@
 Van Veenhoek naar een wijk van Graafhaven (met het mockmodel) (base), seed 7
 
 ######## THE PLAYER ACTS
+The Nethermarch
 The barge from Graafhaven leaves you at the Veenhoek quay just as the light goes. The bargeman won't tie up. "Not after dark, not out here," he says, and poles away into the mist, taking his lantern with him.
 
 This is the Holleveen: peat and reed and black water, mile upon mile of it between the Great Dyke and the heath. The villages sit on the few dry places like cats on a fence. Peat smoke. A windmill standing still against a sky the colour of pewter, its sails torn to rags.
@@ -10,6 +11,7 @@ Somewhere a dog barks. On the doorstep of the nearest house a grey cat watches y
 Type LOOK to look around. Type HELP if you are lost. You probably are.
 You ran goods past the Count's tolls until the tolls caught up with you in Graafhaven. The Holleveen is a good place to be forgotten, and Trijntje at the Drowned Goose asks no questions.
 You were told to ask for Trijntje the innkeeper at the Drowned Goose. The name is in your journal.
+Why you are here is in your journal.
 Canal Quay
 Grey water slaps against the planks of the quay. A barge rope lies coiled by the mooring posts, and beside them stands a worn stone, waist-high, with a dog carved into it. Someone has put an apple on top. The Graafse Vaart runs east and west; the green is north and the peat sheds are south.
 Exits: north, east, west, south, southwest
@@ -58,7 +60,7 @@ Mirte looks up. "[De Zwaan], [Harmen Molenaar]'s [windmill], which grinds grain 
 Mirte lifts a hand. "Go on, then."
 
 > journal
-People: Fenna Visser, Grietje, Harmen, Jan, Lubbert, Mirte Bakker, Trijntje, the Count.
+People: Fenna Visser, Grietje, Harmen, Jan, Lubbert, Mirte Bakker, Trijntje Kroes, the Count.
 Places: Veenhoek, Waagdam, the Kattenbroek, Molenend, the Lane, The Mill De Zwaan, The Peat Road, The Bakery, Veenhoek, the Green, Canal Quay, The Market Square, Waagdam, the West Gate.
 Lore: the stranger in Veenhoek.
 
@@ -183,7 +185,7 @@ Joris looks up. "Word of it has come this far, and here someone knows the strang
 Joris lifts a hand. "Go on, then."
 
 > journal
-People: Fenna Visser, Grietje, Harmen, Hendrikje Hofstede, Hester Vlieland, Jan, Joris Kuipers, Lubbert, Mirte Bakker, Trijntje, the Count.
+People: Fenna Visser, Grietje, Harmen, Hendrikje Hofstede, Hester Vlieland, Jan, Joris Kuipers, Lubbert, Mirte Bakker, Trijntje Kroes, the Count.
 Places: the Holleveen, Oude Zijl, Veenhoek, Waagdam, Graafhaven, the Kattenbroek, The Gate of Graafhaven, The Chandlery, The Cooper's Yard, The Market of Graafhaven, Molenend, the Lane, The Mill De Zwaan, The Old Sluice, The Peat Road, The Bakery, Veenhoek, the Green, Canal Quay, The Market Square, Waagdam, the West Gate.
 Lore: the stranger in Veenhoek, Hester Vlieland and Grietje Visser, Word for a cousin, Harmen needing bolts of sailcloth, the stranger in Oude Zijl, the stranger in Graafhaven.
 
@@ -211,7 +213,7 @@ Joris looks up. "Word of it has come this far, and here someone knows the strang
 Joris lifts a hand. "Go on, then."
 
 > journal
-People: Fenna Visser, Grietje, Harmen, Hendrikje Hofstede, Hester Vlieland, Jan, Joris Kuipers, Lubbert, Mirte Bakker, Trijntje, the Count.
+People: Fenna Visser, Grietje, Harmen, Hendrikje Hofstede, Hester Vlieland, Jan, Joris Kuipers, Lubbert, Mirte Bakker, Trijntje Kroes, the Count.
 Places: the Holleveen, Oude Zijl, Veenhoek, Waagdam, Graafhaven, the Kattenbroek, The Gate of Graafhaven, The Chandlery, The Cooper's Yard, The Market of Graafhaven, Molenend, the Lane, The Mill De Zwaan, The Old Sluice, The Peat Road, The Bakery, Veenhoek, the Green, Canal Quay, The Market Square, Waagdam, the West Gate.
 Lore: the stranger in Veenhoek, Hester Vlieland and Grietje Visser, Word for a cousin, Harmen needing bolts of sailcloth, the stranger in Oude Zijl, the stranger in Graafhaven.
 
@@ -219,6 +221,7 @@ Lore: the stranger in Veenhoek, Hester Vlieland and Grietje Visser, Word for a c
 Quests: flour_for_veenhoek: open, stage no_flour
 
 ######## CONTROL: THE PLAYER DOES NOTHING
+The Nethermarch
 The barge from Graafhaven leaves you at the Veenhoek quay just as the light goes. The bargeman won't tie up. "Not after dark, not out here," he says, and poles away into the mist, taking his lantern with him.
 
 This is the Holleveen: peat and reed and black water, mile upon mile of it between the Great Dyke and the heath. The villages sit on the few dry places like cats on a fence. Peat smoke. A windmill standing still against a sky the colour of pewter, its sails torn to rags.
@@ -228,6 +231,7 @@ Somewhere a dog barks. On the doorstep of the nearest house a grey cat watches y
 Type LOOK to look around. Type HELP if you are lost. You probably are.
 You ran goods past the Count's tolls until the tolls caught up with you in Graafhaven. The Holleveen is a good place to be forgotten, and Trijntje at the Drowned Goose asks no questions.
 You were told to ask for Trijntje the innkeeper at the Drowned Goose. The name is in your journal.
+Why you are here is in your journal.
 Canal Quay
 Grey water slaps against the planks of the quay. A barge rope lies coiled by the mooring posts, and beside them stands a worn stone, waist-high, with a dog carved into it. Someone has put an apple on top. The Graafse Vaart runs east and west; the green is north and the peat sheds are south.
 Exits: north, east, west, south, southwest
@@ -276,7 +280,7 @@ Mirte looks up. "[De Zwaan], [Harmen Molenaar]'s [windmill], which grinds grain 
 Mirte lifts a hand. "Go on, then."
 
 > journal
-People: Fenna Visser, Grietje, Harmen, Jan, Lubbert, Mirte Bakker, Trijntje, the Count.
+People: Fenna Visser, Grietje, Harmen, Jan, Lubbert, Mirte Bakker, Trijntje Kroes, the Count.
 Places: Veenhoek, Waagdam, the Kattenbroek, Molenend, the Lane, The Mill De Zwaan, The Peat Road, The Bakery, Veenhoek, the Green, Canal Quay, The Market Square, Waagdam, the West Gate.
 Lore: the stranger in Veenhoek.
 
@@ -308,7 +312,7 @@ Mirte looks up. "The [mill] at [Molenend] is finished, they say. (You heard it f
 Mirte lifts a hand. "Go on, then."
 
 > journal
-People: Fenna Visser, Gerrit, Grietje, Harmen, Jan, Lubbert, Mirte Bakker, Trijntje, the Count.
+People: Fenna Visser, Gerrit, Grietje, Harmen, Jan, Lubbert, Mirte Bakker, Trijntje Kroes, the Count.
 Places: Molenend, Veenhoek, Waagdam, the Kattenbroek, Molenend, the Lane, The Mill De Zwaan, The Peat Road, The Bakery, Veenhoek, the Green, Canal Quay, The Market Square, Waagdam, the West Gate.
 Lore: the stranger in Veenhoek, the mill not turning before winter.
 

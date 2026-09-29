@@ -11,6 +11,8 @@ locations:
         Grated steel runs along black volcanic rock above the grey swell, beside two insulated pipes. Cable markers stand every fifty metres, salt-dulled, and a side step drops to fenced growing beds above the tideline, near wrack-strewn tide pools. Cold spray stings your face and the surf booms below. The walkway climbs northeast to [Ridge Shelter]; the Commons door waits behind you.
       night: |
         Small lights mark each cable marker, strung into the dark, and the pipes beside you are cold and beaded with spray. A reflector glints where the side step drops to the beds. You hear the surf more than see it, booming below the rocks. The markers lead northeast to Ridge Shelter; the lit door behind you is the Commons.
+    arrival:
+      text: "The walkway runs out along the black rock with the grey swell booming below, two pipes and a line of cable markers leading the way. Up ahead, where the markers climb, is Orison Ridge."
     exits:
       northeast: { to: loc_ridge_shelter, minutes: 18 }
       in: { to: loc_commons, minutes: 4 }

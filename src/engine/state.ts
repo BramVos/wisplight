@@ -512,6 +512,8 @@ export interface MomentsState {
 export interface PlayerState {
   /** Whom the stranger was told to ask for when they came (M10.9), by their background. */
   contact?: string
+  /** The background of a stranger in a world without classes (M10.29 C): chosen with BACKGROUND; left out, the first. */
+  background?: string
   /** The tongues of lands the stranger learnt, and how many exchanges in each they have had (M10.23). */
   languages?: string[]
   tongues?: Record<string, number>

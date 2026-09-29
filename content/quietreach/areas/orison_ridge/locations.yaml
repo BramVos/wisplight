@@ -17,6 +17,9 @@ locations:
         Cramped and lined with receiving consoles, half dark and the rest flickering fault codes, this room hums with a rack of recording drives beside a desk where the maintenance logs lie in a damp-swollen binder. Through the wide window the antenna rises into cloud, cables groaning. A speaker gives the same short pattern of tones, then silence. Stairs lead down the steep route to [Ridge Shelter].
       night: |
         Only fault codes and the drive rack's small lights light this room. The antenna outside is a black shape against black sky, its cables groaning in the wind. The logs lie in their binder where they were left. Every few minutes the speaker plays its pattern of tones into the dark, then falls quiet. The stairs lead down to Ridge Shelter.
+    arrival:
+      text: "Half the consoles are dark and the rest flicker fault codes, and through the window the antenna climbs into cloud. Then the speaker gives its short pattern of tones, and the silence after it, and you understand why nobody here sleeps well."
+      far: "High on Orison Ridge the antenna of the listening station stands against the cloud, its cables groaning in the wind."
     exits:
       down: { to: loc_ridge_shelter, minutes: 12 }
     details:

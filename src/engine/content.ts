@@ -6,7 +6,7 @@ import { z } from 'zod'
 import { DEFAULT_PALETTE, MapPaletteSchema, WorldMapSchema } from './map/palette'
 import { BellSchema, SoundSchema } from './sound'
 import { ImproviseSchema } from './improvise'
-import { CreatureSchema, EncounterSchema, RulesSchema, type Creature, type Effect, type Encounter, type Rules, type Talent } from './rules/schema'
+import { CreatureSchema, EncounterSchema, knownPeople, RulesSchema, type Creature, type Effect, type Encounter, type Rules, type Talent } from './rules/schema'
 import { ConditionSchema, QuestBodySchema } from './quests/schema'
 import { checkQuests } from './quests/check'
 import { AftermathSchema, IntentionSchema, PlanSchema, VerbTextSchema, WatcherSchema, type Aftermath, type Intention, type Plan, type VerbText, type Watcher } from './quests/planschema'
@@ -1650,8 +1650,10 @@ function checkRules(rules: Rules, c: Omit<Content, 'world'>): string[] {
   }
   for (const b of rules.backgrounds) {
     for (const s of b.skills) skill(s, `background ${b.id}`)
-    if (!rules.general_talents.some((t) => t.id === b.talent)) problems.push(`rules background ${b.id}: unknown general talent ${b.talent}`)
-    for (const who of b.knows) if (!c.npcs.has(who)) problems.push(`rules background ${b.id}: unknown NPC ${who}`)
+    // Skills and a talent where there are classes to take them; none in a world without (M10.29 C).
+    if (rules.classes.length && b.skills.length !== 2) problems.push(`rules background ${b.id}: two skills, since this world has classes`)
+    if ((rules.classes.length || b.talent) && !rules.general_talents.some((t) => t.id === b.talent)) problems.push(`rules background ${b.id}: unknown general talent ${b.talent || '(none)'}`)
+    for (const { who } of knownPeople(b)) if (!c.npcs.has(who)) problems.push(`rules background ${b.id}: unknown NPC ${who}`)
     for (const topic of b.topics) if (!c.topics.has(topic)) problems.push(`rules background ${b.id}: unknown topic ${topic}`)
     // Whom you were told to ask for, and what you heard (M10.9).
     if (b.contact && !c.npcs.has(b.contact)) problems.push(`rules background ${b.id}: the contact ${b.contact} is no NPC`)

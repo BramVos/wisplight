@@ -13,6 +13,7 @@ import { askLine, requestName } from './requests'
 import { outlineLines, outlineOf } from './outlines'
 import type { World } from './world'
 import { talksByDay } from './pasttalks'
+import { knownFrom } from './rules/player'
 import { sketchById, sketches, sketchLines } from './sketches'
 
 // The journal as a reference book (design: lore and world change, "Wat de
@@ -72,6 +73,9 @@ export function journalPage(world: World, topics: TopicRegistry, id: string): Jo
     page.name = knownName(world, npc.id)
     const met = (world.state.relations?.[npc.id]?.familiarity ?? 0) > 0
     page.lines.push(`${publicShort(world, npc.id)}.`)
+    // Who knows the stranger from before, by their background (M10.29 C).
+    const from = knownFrom(world, npc.id)
+    if (from !== undefined) page.lines.push(`You know ${callName(npc)} from before${from ? `: ${from}` : ''}.`)
     // A hidden trade (M10.8): the cover, until the stranger knows better.
     if (npc.hidden && npc.cover && !knowsWork(world, npc.id)) page.lines.push(`As far as you know, ${npc.cover}.`)
     else if (met || page.sources.length > 0) page.lines.push(...npc.public_facts)

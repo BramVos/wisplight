@@ -59,7 +59,12 @@ export function MomentCard({ card, client, onClose, onPage }: { card: Card; clie
         {picture ? <img src={picture} alt="" className="moment-picture" /> : <Drawing kind={card.kind} />}
         <p className="moment-kind">{t(`app.moment.${card.kind}`)}</p>
         <h2>{card.title}</h2>
-        <p className="moment-text">{card.text}</p>
+        {/* Paragraphs as the text has them (M10.29 C: the intro of a world has several). */}
+        {card.text.split(/\n\s*\n/).map((part, i) => (
+          <p key={i} className="moment-text">
+            {part}
+          </p>
+        ))}
         {card.from && <p className="moment-from muted">{card.from}</p>}
         <div className="moment-actions">
           {card.link && onPage && (

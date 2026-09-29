@@ -754,7 +754,9 @@ function templateFor(kind: EntityKind, view: EditorView): Raw {
     case 'background': {
       // M10.9: why you came, whom to ask for first, and what you heard.
       const contact = view.lists.npc[0]?.id
-      return { id: 'new_background', name: 'New background', skills: ['athletics', 'perception'], talent: 'haggler', knows: contact ? [contact] : [], topics: [], reason: 'Why you came here, in two sentences in the second person, with the names of this world.', ...(contact ? { contact } : {}) }
+      // M10.29 C: who knows you from before, with how; skills and a talent only where the world has classes (ancestries go with them).
+      const classes = (view.lists.ancestry ?? []).length > 0
+      return { id: 'new_background', name: 'New background', ...(classes ? { skills: ['athletics', 'perception'], talent: 'haggler' } : {}), knows: contact ? [{ who: contact, how: 'how you know each other, as the stranger would say it' }] : [], topics: [], reason: 'Why you came here, in two sentences in the second person, with the names of this world.', ...(contact ? { contact } : {}) }
     }
     default:
       return { id: `new_${kind}` }

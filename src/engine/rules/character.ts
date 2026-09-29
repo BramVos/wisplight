@@ -192,7 +192,7 @@ export function createCharacter(content: Content, choice: CreationChoice): { cha
     skillPoints: 0,
     practice: {},
     talents: [klass.core.id, choice.talent],
-    general: [background.talent],
+    general: [background.talent].filter(Boolean),
     hp: 0,
     conditions: {},
     gear: {},

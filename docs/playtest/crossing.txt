@@ -1,6 +1,7 @@
 Met de witte boot naar de Westelijke Eilanden en terug (isle), seed 7
 
 ######## THE PLAYER ACTS
+Skerrow
 Cold water, then stones. You wake on your face on a strand of black shingle, with the sea still pulling at your boots. Of the Grey Gull there is not much left: a broken mast, a spill of cordage, a cask rolling in the surf. Of her crew there is nothing at all.
 
 Gulls argue overhead. Somewhere beyond the rocks a bell rings once, thin and far, and then stops. There are people on this island, then.
@@ -10,6 +11,7 @@ This is Skerrow, though you do not know it yet. No ship has called here since th
 Type LOOK to look around. Type HELP if you are lost. You are, rather.
 You were born to wreckers on another island and ran from them on the Grey Gull, and now a wreck has put you ashore after all. Maren at the Salt Kettle takes in what the sea brings.
 You were told to ask for Maren of the Salt Kettle in Skerrow Hythe. The name is in your journal.
+Why you are here is in your journal.
 The Wreck Strand
 You stand on a strand of black shingle where the sea throws up what is left of the [Grey Gull]: a broken mast, a spill of wet rope, a cask rolling in the shallows. The stones clatter and hiss with every wave, and the air tastes of salt and tar. Gulls quarrel over something you would rather not look at. North, a path climbs the low cliff; east, the rocks give way to the [Tidepools].
 On the ground: a cask of lamp oil, a coil of rope and a bolt of sailcloth.
@@ -28,7 +30,7 @@ On the ground: a cask of lamp oil, a coil of rope and a bolt of sailcloth.
 Exits: north, east
 
 > journal
-People: Maren.
+People: Maren Holt.
 Places: Skerrow, the Shore, The Headland, The Tidepools, The Wreck Strand.
 Lore: the Grey Gull.
 
@@ -369,7 +371,7 @@ Wenna nods slowly. "The [long hall of Ynys Wen closed its doors to the east for 
 Wenna lifts a hand. "Go on, then."
 
 > journal
-People: Brannoc Reed, Eluned Silverstrand, Maren, Wenna Dray.
+People: Brannoc Reed, Eluned Silverstrand, Maren Holt, Wenna Dray.
 Places: Skerrow, Skerrow Hythe, the Shore, Ynys Wen, Skerrow Hythe, the Harbour, The Headland, The Tidepools, The Wreck Strand, The Long Hall of Ynys Wen, Ynys Wen, the Landing.
 Lore: The long hall of Ynys Wen closed its doors to the east for a season, Off Skerrow: A ship for the light, the stranger in Skerrow Hythe, the stranger in Ynys Wen, the stranger crossed into the Western Isles, the long hall of Ynys Wen closed its doors to the east for a season, the stranger crossed into the Sundered Isles, the Grey Gull.
 
@@ -377,6 +379,7 @@ Lore: The long hall of Ynys Wen closed its doors to the east for a season, Off S
 Quests: off_skerrow: a_ship_for_the_light
 
 ######## CONTROL: THE PLAYER DOES NOTHING
+Skerrow
 Cold water, then stones. You wake on your face on a strand of black shingle, with the sea still pulling at your boots. Of the Grey Gull there is not much left: a broken mast, a spill of cordage, a cask rolling in the surf. Of her crew there is nothing at all.
 
 Gulls argue overhead. Somewhere beyond the rocks a bell rings once, thin and far, and then stops. There are people on this island, then.
@@ -386,6 +389,7 @@ This is Skerrow, though you do not know it yet. No ship has called here since th
 Type LOOK to look around. Type HELP if you are lost. You are, rather.
 You were born to wreckers on another island and ran from them on the Grey Gull, and now a wreck has put you ashore after all. Maren at the Salt Kettle takes in what the sea brings.
 You were told to ask for Maren of the Salt Kettle in Skerrow Hythe. The name is in your journal.
+Why you are here is in your journal.
 The Wreck Strand
 You stand on a strand of black shingle where the sea throws up what is left of the [Grey Gull]: a broken mast, a spill of wet rope, a cask rolling in the shallows. The stones clatter and hiss with every wave, and the air tastes of salt and tar. Gulls quarrel over something you would rather not look at. North, a path climbs the low cliff; east, the rocks give way to the [Tidepools].
 On the ground: a cask of lamp oil, a coil of rope and a bolt of sailcloth.
@@ -404,7 +408,7 @@ On the ground: a cask of lamp oil, a coil of rope and a bolt of sailcloth.
 Exits: north, east
 
 > journal
-People: Maren.
+People: Maren Holt.
 Places: Skerrow, the Shore, The Headland, The Tidepools, The Wreck Strand.
 Lore: the Grey Gull.
 
@@ -423,7 +427,7 @@ Exits: north, east
 # Nobody here to ask.
 
 > journal
-People: Maren.
+People: Maren Holt.
 Places: Skerrow, the Shore, The Headland, The Tidepools, The Wreck Strand.
 Lore: the Grey Gull.
 

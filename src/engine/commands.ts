@@ -57,7 +57,7 @@ export type OutputKind = 'room' | 'text' | 'system' | 'error' | 'narration' | 's
  * terminal; the interface shows the card.
  */
 export interface Card {
-  kind: 'arrival' | 'sighting' | 'tidings'
+  kind: 'arrival' | 'sighting' | 'tidings' | 'intro'
   title: string
   text: string
   /** The place a picture is of, when there is one. */
