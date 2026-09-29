@@ -11,7 +11,7 @@ export interface Measured {
 export const MEASURED: Record<string, Measured> = {
   builder_draft: { inputTokens: 19676, outputTokens: 2288, model: 'claude-opus-5-5', date: '2026-09-29' },
   chat_line: { inputTokens: 977, outputTokens: 35, model: 'claude-sonnet-5', date: '2026-09-29' },
-  chronicle: { inputTokens: 12032, outputTokens: 2243, model: 'claude-opus-5-5', date: '2026-09-29' },
+  chronicle: { inputTokens: 10082, outputTokens: 1706, model: 'claude-opus-5-5', date: '2026-09-29' },
   district: { inputTokens: 3321, outputTokens: 1518, model: 'claude-opus-5-5', date: '2026-09-29' },
   expansion: { inputTokens: 7490, outputTokens: 607, model: 'claude-opus-5-5', date: '2026-09-29' },
   far_place: { inputTokens: 1956, outputTokens: 736, model: 'claude-opus-5-5', date: '2026-09-29' },
@@ -28,6 +28,7 @@ export const MEASURED: Record<string, Measured> = {
   palette_draft: { inputTokens: 16971, outputTokens: 1847, model: 'claude-opus-5-5', date: '2026-09-29' },
   party_reply: { inputTokens: 1071, outputTokens: 84, model: 'claude-haiku-4-5-20251001', date: '2026-09-29' },
   region_story: { inputTokens: 24451, outputTokens: 2017, model: 'claude-opus-5-5', date: '2026-09-29' },
+  spark: { inputTokens: 1893, outputTokens: 73, model: 'claude-sonnet-5', date: '2026-09-29' },
   test_call: { inputTokens: 540, outputTokens: 9, model: 'claude-opus-5-5', date: '2026-09-29' },
   tides: { inputTokens: 1280, outputTokens: 267, model: 'claude-opus-5-5', date: '2026-09-29' },
   voice_draft: { inputTokens: 14267, outputTokens: 1329, model: 'claude-opus-5-5', date: '2026-09-29' },

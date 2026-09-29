@@ -59,8 +59,10 @@ describe('M10.27: the costs down, per kind', () => {
     const ask = (schemaName: string, effort?: 'medium') => ai.gateway.complete({ role: 'chronicler', system: 's', prompt: 'p', schemaName, schema: {}, maxTokens: 50, ...(effort ? { effort } : {}) })
     await ask('weave')
     await ask('weave', 'medium')
+    // The night round at low as well, since its measurement (M10.27 (2)); a kind with no effort of its own sends none.
     await ask('chronicle')
-    expect(seen.slice(-3).map((r) => r.effort)).toEqual(['low', 'medium', undefined])
+    await ask('builder_draft')
+    expect(seen.slice(-4).map((r) => r.effort)).toEqual(['low', 'medium', 'low', undefined])
   })
 
   it("sends the journey to the conversations' model, and keeps the great lines with the chronicler", () => {

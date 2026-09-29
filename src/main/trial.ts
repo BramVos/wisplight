@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os'
 import { basename, join, relative } from 'node:path'
 import { chapterStep, documentChapters, faithfulness, mergeFix, newWorldFiles, playWorldStep, readDraft, worldFixRequest, worldStepRequest, WORLD_STEPS, type ContentFile, type LlmRequest, type WorldStep } from '../engine'
 import { LlmError, type LlmResponse } from '../engine/dialogue/llm'
-import { askAdvice, testCall } from '../node/ai/advisor'
+import { askAdvice, testCall, trial } from '../node/ai/advisor'
 import { costUsd } from '../node/ai/pricing'
 import { listWorlds, loadContentFromDir, readContentFiles } from '../node/content'
 import { MODEL_KINDS } from '../engine/modelkinds'
@@ -257,6 +257,22 @@ export async function trialRun(ai: AiService, kinds: string, contentRoot: string
       // The map painted as a table with each model asked for (M10.26): --models a,b --times n.
       const models = env('MODELS').split(',').map((m) => m.trim()).filter(Boolean)
       ok = (await mapTrial(ai, contentRoot, appPath, { models: models.length ? models : ['claude-sonnet-5', 'claude-haiku-4-5-20251001'], times: Math.max(1, Math.min(Number(env('TIMES')) || 2, 5)), record: env('RECORD') === '1', capUsd: cap }, say)) && ok
+      continue
+    }
+    if (kind === 'voice_set') {
+      // The talk on the situation set (M10.27): as the settings try a voice model, with the rules' character score.
+      const chosen = ai.overview().settings.roles.voice
+      if (!chosen) {
+        say('voice_set: no model chosen for the voice under Settings > AI')
+        ok = false
+        continue
+      }
+      const content = await loadContentFromDir(contentRoot, 'base')
+      for (let n = 1; n <= Math.max(1, Math.min(Number(env('TIMES')) || 1, 10)); n++) {
+        const r = await trial(ai.gateway, content, chosen.provider, chosen.model, 'voice')
+        const usd = costUsd(r.model, { inputTokens: r.inputTokens, outputTokens: r.outputTokens, cachedTokens: 0 }) ?? 0
+        say(`voice_set #${n}: ${r.model}, ${r.answers} answers, ${r.valid} valid, ${r.retries} retries, ${r.fallbacks} set lines, character ${r.characterScore?.toFixed(3) ?? '-'}, leaks ${r.leaks}, invented ${r.factualErrors}, breaks ${r.characterBreaks}, in ${r.inputTokens}, out ${r.outputTokens}, $${usd.toFixed(4)}${r.errors.length ? `; ${r.errors.join('; ')}` : ''}`)
+      }
       continue
     }
     if (kind === 'region_play') {

@@ -1,0 +1,14 @@
+{
+  "kind": "spark",
+  "about": "a quiet night after a drowning",
+  "model": "claude-sonnet-5",
+  "provider": "anthropic",
+  "date": "2026-09-29",
+  "usage": {
+    "inputTokens": 1893,
+    "cachedTokens": 0,
+    "outputTokens": 76
+  },
+  "reply": "{\"line\":\"s1\",\"verb\":\"thought\",\"who\":\"p7\",\"target\":\"l7\",\"detail\":\"That mill's sails haven't turned since Harmen died, and if no one takes it in hand before winter the grain will spoil where it stands.\"}",
+  "problems": []
+}

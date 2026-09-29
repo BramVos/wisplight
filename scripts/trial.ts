@@ -4,6 +4,7 @@ import { resolve } from 'node:path'
 
 // npm run trial -- --kind <kind>[,<kind>] [--cap <dollars>] [--steps a,b] [--same-model] [--record] [--doc <file>] [--build <name>] [--out <dir>]
 // npm run trial -- --kind <kind> [--effort low|medium|high] [--times n] [--record]: a kind at an effort, n times, each reply kept (M10.27)
+// npm run trial -- --kind voice_set [--times n]: the talk on the situation set, as the settings try a voice model, with the character score (M10.27)
 // npm run trial -- --kind region_play [--setting outline|story|full] [--world base|isle] [--cap <dollars>] [--record]: a new region played per setting (M10.25)
 // npm run trial -- --kind map_measure [--models a,b] [--times n] [--record]: the map painted as a table with each model (M10.26)
 //

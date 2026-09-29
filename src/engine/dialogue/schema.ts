@@ -116,7 +116,7 @@ export function replyJsonSchema(allowedTopics: string[], questActions: string[] 
           },
         },
       },
-      memory_note: { type: 'string', description: 'One short sentence the character will remember, in the first person.' },
+      memory_note: { type: 'string', description: 'One short sentence you will remember, first person.' },
       ends_conversation: { type: 'boolean' },
       keep_talking: { type: 'string', enum: [...KEEP_TALKING], description: 'What this talk is still about between you, or no.' },
     },
