@@ -79,6 +79,25 @@ export function speaksAsOther(text: string, speaker: string[], others: string[])
   return [...others].sort((a, b) => b.length - a.length).find((n) => n && new RegExp(`^${escape(n)}\\s+\\p{Ll}`, 'u').test(lead))
 }
 
+/**
+ * Whether a reply recites a story it was given (M10.28, the read score: four
+ * people told the Haakman almost word for word): ten words or more in a row
+ * as the story has them, and not also as a fact of it (a fact may be said as
+ * given).
+ */
+export function recites(reply: string, story: string, facts = '', run = 10): boolean {
+  const words = (t: string) => t.toLowerCase().replace(/[^\p{L}\p{N}\s']/gu, ' ').split(/\s+/).filter(Boolean)
+  const runs = (t: string) => {
+    const w = words(t)
+    return new Set(Array.from({ length: Math.max(0, w.length - run + 1) }, (_, i) => w.slice(i, i + run).join(' ')))
+  }
+  const given = runs(facts)
+  const told = [...runs(story)].filter((g) => !given.has(g))
+  if (!told.length) return false
+  const said = runs(reply)
+  return told.some((g) => said.has(g))
+}
+
 // A deed a memory claims was done (M10.29, Bram's playtest: "I showed the stranger the bunk", never shown): the kinds
 // of agreement that would bear it out.
 const DEEDS: { words: RegExp; kinds: string[] }[] = [

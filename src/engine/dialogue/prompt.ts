@@ -341,14 +341,32 @@ export function turnSections(world: World, ctx: TurnContext, voice: 'all' | 'tal
   add('ownwork', ownWorkPrompt(world, ctx.npcId))
   add('pupil', pupilPrompt(world, ctx.npcId))
   if (ctx.packet.known.length === 0) add('k:', '  (nothing relevant beyond your own life)')
-  for (const k of ctx.packet.known) add(`k:${k.topic}`, `  ${k.topic} (level ${k.level}): ${k.facts.join(' ')}${k.news ? `\n  NEWS about it: ${k.news.join(' ')}` : ''}${k.story ? `\n  ${k.toldBy ? `STORY as ${k.toldBy} tells it. Retell it in your own words; the people in it are ${k.toldBy}'s family, not yours:` : 'STORY you may tell, in your own words:'}\n  ${k.story}` : ''}`)
+  for (const k of ctx.packet.known) add(`k:${k.topic}`, `  ${k.topic} (level ${k.level}): ${k.facts.join(' ')}${k.news ? `\n  NEWS about it: ${k.news.join(' ')}` : ''}${k.story ? `\n  ${k.toldBy ? `STORY as ${k.toldBy} tells it; the people in it are ${k.toldBy}'s family, not yours. ${TELL_IT}` : `STORY you know. ${TELL_IT}`}\n  ${k.story}` : ''}`)
   if (ctx.packet.unknown.length) add('unknown', `UNKNOWN to you: ${ctx.packet.unknown.map((u) => u.name).join(', ')}.`, true)
   if (ctx.packet.referral) add('referral', `REFERRAL: ${ctx.packet.referral.npc} (${ctx.packet.referral.name}) may know more.`, true)
   if (ctx.secret) add('secret', `SECRET you now admit, reluctantly: ${ctx.secret}`, true)
   if (ctx.check) add('check', `CHECK: the player tried to ${ctx.check.about}. Result: ${ctx.check.degree}.`, true)
   if (ctx.decision) add('decision', `DECISION (made by the game, follow it): ${ctx.decision}`, true)
   if (ctx.memories.length) add('memories', `MEMORIES of the player: ${ctx.memories.join(' ')}`)
+  // A question back now and then (M10.28, the read score: the talk seldom went on by itself), where it fits the speaker.
+  if (asksBack(world, ctx)) add('hook', 'THIS TIME: end with a question back to the stranger, or a hook they could ask about next, in your own way.', true)
   return parts
+}
+
+/** How a story is told (M10.28, the read score: four people told the Haakman almost word for word). */
+const TELL_IT = 'Never recite it: tell it shorter, in your own words, with one thing of your own (where you heard it, what you make of it, or one of your people in it):'
+
+/**
+ * Whether this answer ends with a question back or a hook (M10.28): about one
+ * in three, by the talk's seed and its turns, never from someone wary or
+ * hostile, someone incurious and cold, or at a goodbye.
+ */
+export function asksBack(world: World, ctx: Pick<TurnContext, 'npcId' | 'act' | 'attitude'>): boolean {
+  const talk = world.state.talk?.npc === ctx.npcId ? world.state.talk : undefined
+  if (!talk || talk.leaving || ctx.act === 'Farewell' || ['Wary', 'Unfriendly', 'Hostile'].includes(ctx.attitude.band)) return false
+  const p = world.npc(ctx.npcId).personality
+  if (p.curiosity < 0 && p.warmth < 1) return false
+  return (talkSeed(ctx.npcId, talk.began ?? 0) + (talk.turns ?? 0)) % 3 === 0
 }
 
 /** The act, the word limit and the player's words: the end of every turn's message. */

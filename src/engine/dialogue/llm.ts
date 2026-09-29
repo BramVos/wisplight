@@ -92,7 +92,7 @@ export interface LlmRejection {
    * Why (M10.19 adds three): injection, the player's words read as an instruction and never went to the model;
    * limits, the reply crossed the hard limits (PEGI 18); bounds, an effect outside what the game allows was refused.
    */
-  reason: 'schema' | 'anachronism' | 'character' | 'leak' | 'invented' | 'goal' | 'promise' | 'oath' | 'not_here' | 'number' | 'injection' | 'limits' | 'bounds'
+  reason: 'schema' | 'anachronism' | 'character' | 'leak' | 'invented' | 'goal' | 'promise' | 'oath' | 'not_here' | 'number' | 'injection' | 'limits' | 'bounds' | 'address'
   /** Whose reply it was; the voice when not given. */
   role?: LlmRole
   /**

@@ -15,7 +15,7 @@ import { approve, companionOf, offer, recruit } from '../social/companions'
 import { silenceWitness, witnessed } from '../social/crime'
 import { partyTalk } from './party'
 import { closingLine, fallbackReply } from './fallback'
-import { deedKinds, fitLength, leakedNames, looksLikeInjection, outOfCharacter, promises, saysNothing, speaksAsOther, swearRight, unknownNames, vocabularyOf } from './guard'
+import { deedKinds, fitLength, leakedNames, looksLikeInjection, outOfCharacter, promises, recites, saysNothing, speaksAsOther, swearRight, unknownNames, vocabularyOf } from './guard'
 import { byRule } from './byrule'
 import { accept, askedFor, askOffer, dayLines, kinOf, offerLine, offerLines, offersFor, proposal, proposalText, spokenMeet, type Offer } from './offers'
 import { accepted, declined, inviteOffer } from '../social/invite'
@@ -37,7 +37,7 @@ import { routineNow } from '../npc/brain'
 import { parseReply, TALK_REPLY_SCHEMA, type Reply } from './schema'
 import type { TopicRegistry } from './topics'
 import { checkSketch, namesSomeone, registerSketch, sketchBonds, sketchOpen, sketchPlaces, sketchRoom, type NamedPerson } from '../sketches'
-import { fixNotHere, flourishes, strangeWords, strayNumbers } from './voice'
+import { addressIn, addressWords, fixNotHere, flourishes, keepAddress, strangeWords, strayNumbers } from './voice'
 import { acrossTongues, languageBarrier } from '../language'
 
 /** A reply comes within this many milliseconds, both tries together, or the NPC says a set line (FO, chapter 18). */
@@ -619,6 +619,12 @@ export class Dialogue {
     // 2. Topics and act by rules.
     this.syncNews()
     let topics = options.topics ?? [...new Set([...this.topics.recognise(text), ...kinOf(world, npcId, text)])]
+    // "Is it far?" after a place was named (M10.28): the place the speaker named last, with its walking time.
+    if (!options.topics && /\b(?:far|how long|how do i get|which way|get there|where is it|walk)\b/i.test(text) && !topics.some((t) => this.topics.kind(t) === 'place')) {
+      const last = [...talk.history].reverse().find((h) => h.speaker === 'npc')?.text
+      const named = last ? this.topics.recognise(last).filter((t) => this.topics.kind(t) === 'place' && world.content.locations.has(t)) : []
+      if (named.length) topics = [...topics, named[0]!]
+    }
     const act = options.act ?? classify(text, topics.length)
     if (act === 'AskRumors' && topics.length === 0) topics = this.rumours(npcId)
     const packet = this.knowledge.packet(npcId, topics, act === 'AskStory' || act === 'AskAbout')
@@ -768,6 +774,11 @@ export class Dialogue {
     talk.history.push({ speaker: 'player', text }, { speaker: 'npc', text: replyText })
     if (talk.history.length > 12) talk.history.splice(0, talk.history.length - 12)
     this.heard(talk, text, replyText)
+    // How the speaker calls the stranger: what their first answer in this band used stays (M10.28).
+    if (reply && (!talk.address || talk.address.band !== band.band)) {
+      const word = addressIn(replyText, addressWords(world, npcId))
+      talk.address = word ? { word, band: band.band } : undefined
+    }
     talk.turnsLeft--
     talk.turns = (talk.turns ?? 0) + 1
     // A talk goes on while it is about something (M10.8): past the turns it starts with, one more each time, up to a
@@ -1031,7 +1042,10 @@ export class Dialogue {
       const trimmed = fitLength(reply.reply, knob(world, 'talk.words')[ctx.tier])
       const sworn = swearRight(trimmed, oathsOf(world, npcId))
       // What does not exist here gives way to what people say instead (M10.10): potatoes are turnips, Sunday is Rustdag.
-      const { text: fitted, fixed } = fixNotHere(world, sworn)
+      const { text: plain, fixed } = fixNotHere(world, sworn)
+      // The form of address this talk keeps (M10.28), while the attitude stays in its band.
+      const kept = talk?.address && talk.address.band === ctx.band.band ? keepAddress(plain, talk.address.word, addressWords(world, npcId)) : { text: plain }
+      const fitted = kept.text
       const strange = strangeWords(world, fitted)
       if (strange.length) {
         this.refused('anachronism', llm)
@@ -1049,6 +1063,12 @@ export class Dialogue {
       if (other) {
         this.refused('character', llm, `voiced as ${other}`)
         prompt += `\nNOTE: your last reply spoke as ${other}. You are ${callName(world.npc(npcId))}: answer again as ${callName(world.npc(npcId))}.`
+        continue
+      }
+      // A story told in the speaker's own words, never recited (M10.28, the read score: four people told the Haakman alike).
+      if (ctx.packet.known.some((k) => k.story && recites(fitted, k.story, k.facts.join(' ')))) {
+        this.refused('character', llm, 'recited the story')
+        prompt += '\nNOTE: your last reply recited the STORY. Tell it again shorter, in your own words, with one thing of your own.'
         continue
       }
       if (outOfCharacter(fitted)) {
@@ -1104,6 +1124,7 @@ export class Dialogue {
       // Kept (M10.10): what the guard put right in place, and a number nobody gave (noted, not changed), in the AI log.
       if (sworn !== trimmed) this.guarded('oath', llm, 'our oath put right')
       for (const f of fixed) this.guarded('not_here', llm, f)
+      if (kept.was) this.guarded('address', llm, `${kept.was} > ${talk!.address!.word}`)
       for (const n of strayNumbers(fitted, `${block.shared}\n${block.block}\n${(talk?.thread ?? []).map((t) => t.text).join('\n')}\n${prompt}\n${text}`)) this.guarded('number', llm, `${n} was not given`)
       return { ...reply, reply: fitted }
     }
@@ -1132,7 +1153,7 @@ export class Dialogue {
   }
 
   /** Counts what the guard did (M10.10), for the dev menu; what it put right or noted also goes to the AI log. */
-  private guarded(what: 'anachronism' | 'oath' | 'not_here' | 'number' | 'injection', llm?: LlmClient, fixed?: string): void {
+  private guarded(what: 'anachronism' | 'oath' | 'not_here' | 'number' | 'injection' | 'address', llm?: LlmClient, fixed?: string): void {
     this.world.guard[what] = (this.world.guard[what] ?? 0) + 1
     if (llm && fixed) llm.report?.({ reason: what, fixed })
   }

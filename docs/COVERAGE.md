@@ -43,7 +43,7 @@ Every kind puts what stays the same first and what changes after it (M10.26). A 
 
 | Kind | Model | In | Mark | Fixed part | Shared by every call | Minimum | Read from the cache |
 |---|---|---|---|---|---|---|---|
-| `npc_reply` | claude-haiku-4-5-20251001 | 6,379 | shared and own, an hour | 5,807 | 1,051 | 4,096 | the next line in these parts 91% for an hour, whoever speaks, and within a talk all that was said before it |
+| `npc_reply` | claude-haiku-4-5-20251001 | 6,410 | shared and own, an hour | 5,807 | 1,051 | 4,096 | the next line in these parts 91% for an hour, whoever speaks, and within a talk all that was said before it |
 | `party_reply` | claude-haiku-4-5-20251001 | 714 | none | - | - | 4,096 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `chat_line` | claude-haiku-4-5-20251001 | 528 | none | - | - | 4,096 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `journey` | claude-haiku-4-5-20251001 | 558 | none | - | - | 4,096 | not marked: nothing reads it back in time, so a mark would only pay a write |

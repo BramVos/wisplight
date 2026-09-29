@@ -540,7 +540,8 @@ export class MockLlm implements LlmClient {
     const known = meta.known[0]
     if (meta.secret) speech = meta.secret
     else if (meta.check && /failure/.test(meta.check)) speech = "I don't think so."
-    else if (meta.act === 'AskStory' && known?.story && !known.toldBy) speech = known.story
+    // In its own words, never recited (M10.28): the opening of the story, and a word of its own.
+    else if (meta.act === 'AskStory' && known?.story && !known.toldBy) speech = `${known.story.split(/\s+/).slice(0, 9).join(' ').replace(/[,;:.]$/, '')}, they say. That is how my gran told it.`
     else if (known) speech = known.facts.slice(0, 2).join(' ')
     else if (meta.unknown.length) speech = `Can't say I know.${meta.referral ? ` Ask ${meta.referral.call}.` : ''}`
     else if (meta.act === 'Greet') speech = 'Evening to you.'

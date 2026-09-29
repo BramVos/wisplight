@@ -103,18 +103,50 @@ export function voiceLines(world: World, npcId: string, seed: number, flourished
   if (!kit) return []
   const group = groupOf(world, npcId)
   const saying = !flourished && seed % 3 === 0 ? pick([...(group?.sayings ?? []), ...kit.sayings], 1, seed)[0] : undefined
-  const address = addressFor(world, npcId, seed)
-  const telling = [kit.time.length ? `time ${pick(kit.time, 3, seed + 1).join(', ')}` : '', kit.distance.length ? `distance ${pick(kit.distance, 2, seed + 2).join(', ')}` : '', ...(part === 'all' ? landTelling(world) : [])].filter(Boolean)
+  // The form of address this talk began with stays (M10.28, the read score: Mirte went from lamb to neighbour to friend).
+  const talk = world.state.talk?.npc === npcId ? world.state.talk : undefined
+  const address = talk?.address ? undefined : addressFor(world, npcId, seed)
+  // Words for time and distance are how people say them, never a time or a distance of their own (M10.28: "an hour's
+  // walk" to the inn, then "half an hour").
+  const words = [kit.time.length ? `time ${pick(kit.time, 3, seed + 1).join(', ')}` : '', kit.distance.length ? `distance ${pick(kit.distance, 2, seed + 2).join(', ')}` : ''].filter(Boolean)
+  const telling = part === 'all' ? landTelling(world) : []
   return [
     flourished
       ? 'VOICE: you used a saying or an oath in this talk already; no more of either.'
       : saying
         ? `VOICE: a saying of ${group ? group.name : 'your people'}, only if it truly fits and at most once in this talk (most talks have none): "${saying}"`
         : '',
-    address ? `If you call the stranger anything, it is "${address}", or their name once you know it.` : '',
+    talk?.address ? `You call the stranger "${talk.address.word}" in this talk, every time, until your attitude changes.` : address ? `If you call the stranger anything, it is "${address}" (or what your card says you call people), the same all through this talk, or their name once you know it.` : '',
+    words.length ? `How people here say it, only for a time or a distance you were given: ${words.join('; ')}.` : '',
     telling.length ? `When it comes up: ${telling.join('; ')}.` : '',
     ...(part === 'all' ? notHereLine(world) : []),
   ].filter(Boolean)
+}
+
+/**
+ * The words a speaker may call the stranger (M10.28): the forms of the voice
+ * kit, and what their card says they call people ("Calls people 'lamb'").
+ */
+export function addressWords(world: World, npcId: string): string[] {
+  const kit = kitOf(world)
+  const forms = kit ? [...kit.address.stranger, ...kit.address.known, ...kit.address.friend, ...kit.address.high].flatMap((f) => f.split('/').map((p) => p.trim())) : []
+  const speech = world.npc(npcId).speech ?? ''
+  const own = [...speech.matchAll(/\bcalls? (?:people|everyone|folk|strangers)[^'"]*['"]([^'"]+)['"]/gi)].map((m) => m[1]!.trim())
+  return [...new Set([...own, ...forms])].filter((w) => w && w.length > 1)
+}
+
+/** The form of address a reply uses (M10.28): one of the words, spoken to the stranger ("lamb," or ", lamb."). */
+export function addressIn(reply: string, words: string[]): string | undefined {
+  const spoken = (w: string) => new RegExp(`(?:["“]|[,;]\\s)${escape(w)}(?=[,.!?;"”])|["“]${escape(w)},`, 'i')
+  return words.find((w) => spoken(w).test(reply))
+}
+
+/** A reply with another form of address put back to the one this talk keeps (M10.28), and which it was; unchanged when there is none. */
+export function keepAddress(reply: string, kept: string, words: string[]): { text: string; was?: string } {
+  const other = words.find((w) => w.toLowerCase() !== kept.toLowerCase() && addressIn(reply, [w]))
+  if (!other) return { text: reply }
+  const text = reply.replace(new RegExp(`((?:["“]|[,;]\\s))${escape(other)}(?=[,.!?;"”])`, 'gi'), (_m, lead: string) => `${lead}${kept}`)
+  return { text, was: other }
 }
 
 /** Measures and money the land's way (M10.23: the coins where the stranger is): the same for every speaker there. */

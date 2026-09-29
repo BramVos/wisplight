@@ -411,6 +411,8 @@ export interface TalkState {
   thread?: { role: 'user' | 'assistant'; text: string }[]
   /** What the voice was told so far in this talk, by part (M10.28): a later turn tells only what is new or changed. */
   sent?: Record<string, string>
+  /** How the speaker calls the stranger in this talk (M10.28): the word their first answer used, until the attitude changes band. */
+  address?: { word: string; band: string }
 }
 
 /** A line of a conversation as the engine keeps it (M10.8): what was typed, and what came back. */

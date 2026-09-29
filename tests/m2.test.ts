@@ -166,10 +166,10 @@ describe('M2: talking', () => {
 
   it("lets only Wouter tell his gran's story as his own; others retell it", async () => {
     const aaltje = await runSituation(content, SITUATIONS.find((s) => s.id === 'aaltje_story')!, new MockLlm('good'))
-    expect(aaltje.requests[0]!.prompt).toMatch(/STORY as Wouter the eel-fisher tells it\. Retell it in your own words; the people in it are Wouter the eel-fisher's family, not yours:/)
+    expect(aaltje.requests[0]!.prompt).toMatch(/STORY as Wouter the eel-fisher tells it; the people in it are Wouter the eel-fisher's family, not yours\. Never recite it/)
     expect(speechOf(aaltje.outputs).join(' ')).not.toMatch(/My gran/)
     const wouter = await runSituation(content, SITUATIONS.find((s) => s.id === 'wouter_story')!, new MockLlm('good'))
-    expect(wouter.requests[0]!.prompt).toMatch(/STORY you may tell, in your own words:\n  My gran fished the Blackmere/)
+    expect(wouter.requests[0]!.prompt).toMatch(/STORY you know\. Never recite it: tell it shorter, in your own words, with one thing of your own \(where you heard it, what you make of it, or one of your people in it\):\n  My gran fished the Blackmere/)
   })
 
   it('asks for the story when the player says "Tell me the story of ..."', async () => {

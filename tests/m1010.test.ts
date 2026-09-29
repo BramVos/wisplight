@@ -82,7 +82,8 @@ describe('M10.10: character is not a trick of sayings', () => {
     expect(withSaying).toBeLessThan(35)
     for (const lines of talks) {
       // At most four lines in the prompt, and never more than one saying.
-      expect(lines.length).toBeLessThanOrEqual(4)
+      // Five since M10.28: the words for time and distance apart from money and measures.
+      expect(lines.length).toBeLessThanOrEqual(5)
       expect(lines.join(' ').match(/"[^"]+"/g)?.filter((q) => /[.!]"$/.test(q)).length ?? 0).toBeLessThanOrEqual(1)
     }
     const after = block(talks.findIndex((lines) => lines.some((l) => /^VOICE: a saying/.test(l))), true)
@@ -113,7 +114,9 @@ describe('M10.10: character is not a trick of sayings', () => {
     engine.state.talk = { npc: 'npc_mirte', turnsLeft: 4, history: [], effects: 0, revealed: [], began: 0 }
     const prompt = turnPrompt(engine.world, { npcId: 'npc_mirte', act: 'SmallTalk', tier: 'short', attitude: { band: 'Neutral', score: 0 }, mood: 'calm', packet: { known: [], unknown: [] }, memories: [], history: [], playerText: 'Hello' } as never)
     expect(prompt).toMatch(/If you call the stranger anything, it is "(stranger|traveller)"/)
-    expect(prompt).toMatch(/When it comes up: time .*; money in guilders, stuivers, duiten\./)
+    // Time and distance as people say them, never a time or distance of their own (M10.28); money and measures when it comes up.
+    expect(prompt).toMatch(/How people here say it, only for a time or a distance you were given: time .*; distance /)
+    expect(prompt).toMatch(/When it comes up: .*money in guilders, stuivers, duiten\./)
     expect(prompt).toMatch(/Not here: o'clock \(say bells\), potatoes \(say turnips\), potato \(say turnip\), tobacco/)
     expect(systemPrompt(engine.world, 'npc_mirte')).toMatch(/Numbers, ages, prices, dates and distances only as given, said as given/)
   })
