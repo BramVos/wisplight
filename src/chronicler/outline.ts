@@ -42,20 +42,23 @@ export function outlineRequest(input: OutlineInput): ChroniclerRequest {
   const text = { type: 'string' }
   const object = (properties: Record<string, unknown>) => ({ type: 'object', additionalProperties: false, required: Object.keys(properties), properties })
   const named = { type: 'array', items: object({ name: text, text }) }
+  const system = [
+    'You are the chronicler of a living world. Here you work a far place out to its outline, so the game can speak of it and later make it playable.',
+    '',
+    input.instruction.trim(),
+    '',
+    'WORLD',
+    input.world.trim(),
+    '',
+    'HOW TO ANSWER',
+    'JSON only. summary: two sentences. areas: two to four parts of the place. places: three to eight, each with a kind and one line. routes: how you get there and on, one line each. people: important people as roles (the lord, the harbour master), never with names of living people from elsewhere. dangers: one line each. lore: one or two local stories, a line each.',
+    'What is KNOWN is true and comes first; never contradict it. New names are allowed here, but never one of the TAKEN names. Plain words, the tone of the world, late-medieval.',
+  ].join('\n')
   return {
     role: 'chronicler',
-    system: [
-      'You are the chronicler of a living world. Here you work a far place out to its outline, so the game can speak of it and later make it playable.',
-      '',
-      input.instruction.trim(),
-      '',
-      'WORLD',
-      input.world.trim(),
-      '',
-      'HOW TO ANSWER',
-      'JSON only. summary: two sentences. areas: two to four parts of the place. places: three to eight, each with a kind and one line. routes: how you get there and on, one line each. people: important people as roles (the lord, the harbour master), never with names of living people from elsewhere. dangers: one line each. lore: one or two local stories, a line each.',
-      'What is KNOWN is true and comes first; never contradict it. New names are allowed here, but never one of the TAKEN names. Plain words, the tone of the world, late-medieval.',
-    ].join('\n'),
+    system,
+    // The same for every far place of a world: all of it may be cached.
+    cacheBreak: system.length,
     prompt: [
       `PLACE: ${input.place.name}, a ${input.place.kind}. ${input.place.where}`,
       'KNOWN:',

@@ -18,6 +18,8 @@ export interface AiLogEntry {
   inputTokens: number
   outputTokens: number
   cachedTokens: number
+  /** Why nothing came from the cache (M10.26): the fixed part under the model's minimum, or written for the next call. */
+  cache?: string
   costUsd?: number
   prompt: string
   response: string

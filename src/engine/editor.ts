@@ -12,7 +12,7 @@ import { frameOf } from './lands'
 import { worldFrames } from './frames'
 import { worldFixedPart } from './worldfixed'
 import { suspectText, worldText, type SuspectText } from './safety'
-import type { LlmRequest } from './dialogue/llm'
+import { cachedSystem, type LlmRequest } from './dialogue/llm'
 import { voiceSummary } from './dialogue/voice'
 import { contractState, contractSummary, contractView, fieldsOf, requiredFields, stepFields } from './contract'
 import { LAND_NOTES, LAND_STEPS, landFills, landGuide, PLACE_RULES, REGION_STEPS, regionFills, regionGuide, STEP_CALLS, stepMaxTokens, WORLD_GUIDE, WORLD_STEPS } from './worldguide'
@@ -599,21 +599,27 @@ export function draftRequest(files: ContentFile[], ask: string, focus?: { kind: 
   const shown = focus ? entities(files, focus.kind).find((e) => e.id === focus.id) : undefined
   return {
     role: 'chronicler',
-    system: [
-      instruction,
+    // The world and the task first, cached from one request to the next (M10.26); what it has and what the designer
+    // decided change as the world grows, so they come after the mark.
+    ...cachedSystem(
+      [
+        instruction,
+        '',
+        content ? worldText(worldFrame(content)) : '',
+        // The world's voice (M10.10): new content comes in the same voice.
+        content ? voiceSummary(content) : '',
+        '',
+        'YOU ARE IN THE WORLD BUILDER. Answer the designer with a proposal: every entity to add or change in full YAML (one mapping with its id, as it would stand in its list), or an empty yaml to delete it. The builder shows it as a diff, checks it, and saves only what the designer accepts. Use only ids that exist or that you add in the same proposal. If a choice belongs to the designer, ask in questions and propose nothing for it. JSON only.',
+      ].join('\n'),
       '',
-      content ? worldText(worldFrame(content)) : '',
-      // The world's voice (M10.10): new content comes in the same voice.
-      content ? voiceSummary(content) : '',
-      '',
-      // What a world can have (M10.17): the contract in short, with what this world has and what is still empty.
-      contractSummary(content),
-      '',
-      // What the designer said and decided before (M10.18): not proposed again.
-      designPrompt(files),
-      '',
-      'YOU ARE IN THE WORLD BUILDER. Answer the designer with a proposal: every entity to add or change in full YAML (one mapping with its id, as it would stand in its list), or an empty yaml to delete it. The builder shows it as a diff, checks it, and saves only what the designer accepts. Use only ids that exist or that you add in the same proposal. If a choice belongs to the designer, ask in questions and propose nothing for it. JSON only.',
-    ].join('\n'),
+      [
+        // What a world can have (M10.17): the contract in short, with what this world has and what is still empty.
+        contractSummary(content),
+        '',
+        // What the designer said and decided before (M10.18): not proposed again.
+        designPrompt(files),
+      ].join('\n'),
+    ),
     prompt: [`WHAT EXISTS:`, ...index, ...(shown ? ['', `IN VIEW (${focus!.kind} ${focus!.id}):`, stringify(shown.raw)] : []), '', `THE DESIGNER ASKS: ${ask}`].join('\n'),
     schemaName: 'builder_draft',
     schema: DRAFT_SCHEMA,
@@ -809,6 +815,8 @@ export function worldStepRequest(files: ContentFile[], stepId: string, said: str
     role: 'chronicler',
     system: fixed + changing,
     cacheBreak: fixed.length,
+    // The world's own fixed part is marked on its own too, so the story round of a region reads it from the cache (M10.26).
+    cacheShared: worldFixedPart(content, instruction).length,
     cacheHour: true,
     prompt: [...where, '', contractState(content), '', 'WHAT EXISTS:', ...index, ...(standing ? ['', standing] : []), ...voiceNow, '', `THE DESIGNER SAYS: ${said}`].join('\n'),
     schemaName: 'world_step',
@@ -946,7 +954,7 @@ export function polishRequest(files: ContentFile[], ids?: string[], light = true
   return {
     role: 'chronicler',
     ...(light ? { tier: 'light' as const } : {}),
-    system: [
+    ...cachedSystem([
       'YOU POLISH THE DESCRIPTIONS OF THE PLACES OF A WORLD, in the voice of that world. The designer built it step by step; you rewrite only what a place says, so it reads by the rules below.',
       '- Length first: every description, day and night, at most 70 words. Count them; where a place says how many are too many, cut at least that many. A description over 70 words is not taken.',
       '- Change only the day and night descriptions. Keep every fact, clue, person and thing the description names that the world relies on: the things listed per place stay in the text, and so do the way the place looks and works. Invent nothing: no new object, person, clue or way out.',
@@ -960,7 +968,7 @@ export function polishRequest(files: ContentFile[], ids?: string[], light = true
       '',
       instruction,
       'Answer in JSON: say (one or two sentences on what you changed), places (id, day, night: only the places you rewrite).',
-    ].join('\n'),
+    ].join('\n')),
     prompt: ['WHAT CAN BE ASKED ABOUT (for [brackets]):', askable.join(', '), '', 'THE PLACES TO POLISH:', ...lines].join('\n'),
     schemaName: 'world_polish',
     schema: POLISH_SCHEMA,
@@ -1050,27 +1058,33 @@ export function enhanceRequest(files: ContentFile[], stepId: string, said: strin
   }).filter(Boolean)
   return {
     role: 'chronicler',
-    system: [
-      'YOU HELP THE DESIGNER WRITE THEIR ANSWER FOR ONE STEP OF BUILDING A WORLD. You do not propose content yet: you write out what they said as a fuller brief, so that the proposal after it has enough to go on.',
-      '- Keep every choice the designer made, in meaning and in their names. Do not overrule them.',
-      '- For each question of the step they did not answer, add one concrete suggestion that fits the frame and what the world already has, marked "(suggestion)". Invent names only as suggestions.',
-      '- Write plain English with British spelling, in short lines or a few short paragraphs; no YAML, no ids. At most 250 words.',
-      '- Keep to the hard limits: nothing sexual involving minors, no hate against real groups, romance non-explicit.',
-      '- In `open`, list up to three things only the designer can decide.',
+    // The task and the world's own guide first, the same for every step (M10.26); the step and what the world has now after the mark.
+    ...cachedSystem(
+      [
+        'YOU HELP THE DESIGNER WRITE THEIR ANSWER FOR ONE STEP OF BUILDING A WORLD. You do not propose content yet: you write out what they said as a fuller brief, so that the proposal after it has enough to go on.',
+        '- Keep every choice the designer made, in meaning and in their names. Do not overrule them.',
+        '- For each question of the step they did not answer, add one concrete suggestion that fits the frame and what the world already has, marked "(suggestion)". Invent names only as suggestions.',
+        '- Write plain English with British spelling, in short lines or a few short paragraphs; no YAML, no ids. At most 250 words.',
+        '- Keep to the hard limits: nothing sexual involving minors, no hate against real groups, romance non-explicit.',
+        '- In `open`, list up to three things only the designer can decide.',
+        'Answer in JSON: brief (the fuller answer, plain text), open (what only the designer can decide).',
+        '',
+        instruction,
+      ].join('\n'),
       '',
-      ...(land ? [`It is the step for a land of this world, ${landsIn(files).find((l) => l.id === land)?.name ?? land}: what the land leaves open it takes from the world, and the calendar is the world's.`] : []),
-      `THE STEP: ${step.title}. ${step.prompt}`,
-      ...(land && LAND_NOTES[step.id] ? [LAND_NOTES[step.id]!.replaceAll('<id>', land)] : []),
-      `ITS QUESTIONS: ${step.ask.join(' ')}`,
-      `IF IT IS SKIPPED: ${step.skipped}`,
-      '',
-      contractSummary(content),
-      '',
-      designPrompt(files),
-      '',
-      instruction,
-      'Answer in JSON: brief (the fuller answer, plain text), open (what only the designer can decide).',
-    ].join('\n'),
+      [
+        '',
+        ...(land ? [`It is the step for a land of this world, ${landsIn(files).find((l) => l.id === land)?.name ?? land}: what the land leaves open it takes from the world, and the calendar is the world's.`] : []),
+        `THE STEP: ${step.title}. ${step.prompt}`,
+        ...(land && LAND_NOTES[step.id] ? [LAND_NOTES[step.id]!.replaceAll('<id>', land)] : []),
+        `ITS QUESTIONS: ${step.ask.join(' ')}`,
+        `IF IT IS SKIPPED: ${step.skipped}`,
+        '',
+        contractSummary(content),
+        '',
+        designPrompt(files),
+      ].join('\n'),
+    ),
     prompt: [`WORLD.YAML NOW:`, worldFile?.text ?? '(none)', ...(land ? ['', `LANDS/${land.toUpperCase()}/LAND.YAML NOW:`, landYaml(files, land).yaml] : []), '', 'WHAT EXISTS:', ...index, '', `THE DESIGNER WROTE: ${said}`].join('\n'),
     schemaName: 'world_enhance',
     schema: ENHANCE_SCHEMA,
@@ -1219,14 +1233,14 @@ export function paletteRequest(files: ContentFile[], ask: string): LlmRequest {
   const terrains = [...new Set([...Object.keys(current.dark.terrain), ...TERRAIN_ORDER])]
   return {
     role: 'chronicler',
-    system: [
+    ...cachedSystem([
       instruction,
       '',
       content ? worldText(worldFrame(content)) : '',
       '',
       'YOU ARE IN THE WORLD BUILDER, AT THE MAP PALETTE. Propose colours for the map of this world that fit its frame: muted, in the spirit of Dwarf Fortress and Brogue, three or four close tints for every terrain (the seed of each hex picks one), boggy ground darker, dry ground lighter, water in two tones (open water and channel), ways in warm parchment. One set for the dark style and one for paper; black and white is made from paper. Give the legend names of the terrains as this world would say them, and of the ways under the same names (road, path, and canal, which is a tow path in the Nethermarch and may be a tidal channel or a cable run elsewhere). Colours as #rrggbb. JSON only.',
       `SIGNS ON THE LAND: a world names its own under palette.signs, at most ${MAX_SIGNS}, by an id of its own (a mine shaft is mine_shaft, never the Nethermarch's peat_pit): a name for the legend, a shape (${SIGN_SHAPES.join(', ')}), the land it lies on with its share of those hexes (on: { fen: 0.1 } is one hex in ten; a land is ${LANDS.join(', ')} or a terrain of the palette), the line the stranger reads walking past (text), and means: danger or means: uncertain where a colour alone would not say it (the map adds ! or ? and the legend the word). firm: true for firm ground, wet: true for water in the ground, stops for a line where a walk stops to look. Give every sign a colour under glyph in both styles by its id, and stairs; peat_edge is the rim of a pit-shaped sign. Leave signs out to keep the Nethermarch's pool, peat_pit, willow, ruin and hummock.`,
-    ].join('\n'),
+    ].join('\n')),
     prompt: [`THE PALETTE NOW:`, JSON.stringify(current), '', `TERRAINS: ${terrains.join(', ')}`, `SIGNS NOW: ${signsOf(current).map(([id, sign]) => `${id} (${sign.name}, ${sign.shape}${sign.means ? `, ${sign.means}` : ''})`).join(', ')}`, '', `THE DESIGNER ASKS: ${ask || 'a palette that fits this world'}`].join('\n'),
     schemaName: 'palette_draft',
     schema: PALETTE_SCHEMA,
@@ -1268,7 +1282,7 @@ export function voiceRequest(files: ContentFile[], ask: string, land?: string): 
   const trades = content ? [...content.professions.keys()].join(', ') : ''
   return {
     role: 'chronicler',
-    system: [
+    ...cachedSystem([
       instruction,
       '',
       content ? worldText(worldFrame(content, land)) : '',
@@ -1276,7 +1290,7 @@ export function voiceRequest(files: ContentFile[], ask: string, land?: string): 
       'YOU ARE IN THE WORLD BUILDER, AT THE VOICE KIT. Propose how people in this world speak, as YAML with these keys: oaths (per faith id, two or three each), sayings (three or four of the whole region), groups (id, name, areas, professions, two or three sayings each), default_group, address (stranger, known, friend, high; "she/he/they" forms allowed), time, distance, measures, and not_here (word, and instead when people here have a word for it; weekdays and months of our world with this world\'s own). Sayings are rare in play: make them few and good. JSON only, with the YAML as a string: the fields below at its top, with or without voice: above them.',
       // The exact fields (M10.20: the real trial of this call wrote each time phrase as a map where the kit has a line of text).
       stepFields([{ kind: 'voice' }]),
-    ].join('\n'),
+    ].join('\n')),
     prompt: [`FAITHS: ${faiths}`, `AREAS: ${areas}`, `TRADES: ${trades}`, '', 'THE KIT NOW:', now || '(none yet)', '', `THE DESIGNER ASKS: ${ask || 'a voice kit that fits this world'}`].join('\n'),
     schemaName: 'voice_draft',
     schema: VOICE_SCHEMA,

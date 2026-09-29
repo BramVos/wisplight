@@ -963,7 +963,8 @@ export function LogTab({ bridge }: { bridge: AiBridge }) {
               <td>
                 {entry.inputTokens}/{entry.outputTokens}
               </td>
-              <td>{entry.inputTokens ? `${Math.round((100 * entry.cachedTokens) / entry.inputTokens)}%` : ''}</td>
+              {/* Why nothing came from the cache, in place of a bare 0% (M10.26). */}
+              <td>{entry.inputTokens ? (entry.cache && !entry.cachedTokens ? entry.cache : `${Math.round((100 * entry.cachedTokens) / entry.inputTokens)}%`) : ''}</td>
               <td className="num">{entry.ok ? usd(entry.costUsd, 4) : ''}</td>
             </tr>
           ))}

@@ -274,12 +274,15 @@ export function jsonOf(text: string): string {
  * reads the guide and the contract from the cache instead of writing them
  * again with its own step and log.
  */
-export function systemBlocks(request: Pick<LlmRequest, 'system' | 'cacheBreak' | 'cacheHour'>, tail?: string): { type: 'text'; text: string; cache_control?: { type: 'ephemeral'; ttl?: '1h' } }[] {
-  const cut = Math.max(0, Math.min(request.cacheBreak ?? request.system.length, request.system.length))
-  const fixed = request.system.slice(0, cut)
+export function systemBlocks(request: Pick<LlmRequest, 'system' | 'cacheBreak' | 'cacheShared' | 'cacheHour'>, tail?: string): { type: 'text'; text: string; cache_control?: { type: 'ephemeral'; ttl?: '1h' } }[] {
+  const at = (n: number) => Math.max(0, Math.min(n, request.system.length))
+  const cut = at(request.cacheBreak ?? request.system.length)
+  // What every call of the kind shares, marked on its own (M10.26): someone new reads it from the cache.
+  const shared = request.cacheShared !== undefined ? Math.min(at(request.cacheShared), cut) : 0
   const rest = `${request.system.slice(cut)}${tail ? `\n\n${tail}` : ''}`
+  const mark = { type: 'ephemeral' as const, ...(request.cacheHour ? { ttl: '1h' as const } : {}) }
   return [
-    ...(fixed.trim() ? [{ type: 'text' as const, text: fixed, cache_control: { type: 'ephemeral' as const, ...(request.cacheHour ? { ttl: '1h' as const } : {}) } }] : []),
+    ...[request.system.slice(0, shared), request.system.slice(shared, cut)].filter((part) => part.trim()).map((text) => ({ type: 'text' as const, text, cache_control: mark })),
     ...(rest.trim() ? [{ type: 'text' as const, text: rest }] : []),
   ]
 }

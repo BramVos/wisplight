@@ -25,9 +25,9 @@ import { flirt } from '../social/romance'
 import { tieTo } from '../people'
 import type { Claim } from '../state'
 import type { Knowledge, Packet } from './knowledge'
-import { LlmError, type LlmClient, type LlmRejection } from './llm'
+import { cachedSystem, LlmError, type LlmClient, type LlmRejection } from './llm'
 import { crossesLimits } from '../safety'
-import { oathsOf, peopleIds, systemPrompt, turnPrompt, worldFrame } from './prompt'
+import { oathsOf, peopleIds, systemParts, systemPrompt, turnPrompt, worldFrame } from './prompt'
 import { attitude, applyEffect, moodOf, relation, type Attitude } from './relations'
 import { askLine, askNow, knownRequests, requestName, visited } from '../requests'
 import { questsOf } from '../life'
@@ -947,13 +947,15 @@ export class Dialogue {
     // A reply comes within its time or not at all, over both tries (FO, chapter 18; ten seconds unless set otherwise, M10.8): then the set line.
     const within = llm.replyWithinMs?.() ?? REPLY_WITHIN_MS
     const started = Date.now()
+    // The rules and the frame first, cached for everyone who speaks here; the character after it (M10.26).
+    const parts = systemParts(world, npcId)
     for (let attempt = 0; attempt < 2; attempt++) {
       let raw: string
       try {
         raw = (
           await llm.complete({
             role: 'voice',
-            system: systemPrompt(world, npcId),
+            ...cachedSystem(parts.shared, parts.own),
             prompt,
             schemaName: 'npc_reply',
             schema: replyJsonSchema(allowedTopics, offered.map((o) => o.key), offers, !talk?.after, ctx.claimable?.length ? { subjects: ctx.claimable, keys: CLAIM_KEYS } : undefined, sketch),

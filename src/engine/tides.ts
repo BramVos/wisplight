@@ -1,5 +1,5 @@
 import { GameClock } from './clock'
-import type { LlmRequest } from './dialogue/llm'
+import { cachedSystem, type LlmRequest } from './dialogue/llm'
 import { worldFrame } from './dialogue/prompt'
 import { ledgerOf } from './economy/ledger'
 import { knob } from './knobs'
@@ -155,12 +155,12 @@ export function tidesRequest(world: World): LlmRequest {
   const object = (properties: Record<string, unknown>) => ({ type: 'object', additionalProperties: false, required: Object.keys(properties), properties })
   return {
     role: 'chronicler',
-    system: [
+    ...cachedSystem([
       worldText(worldFrame(world.content)),
       '',
       'Once a month you judge the great lines of this world: the great dangers that grow in the background, with or without the stranger. For each line choose one thing from what it ALLOWS: nothing, threat (people feel it coming: a mood, news, prices up) or event (it breaks now: the world plays it out). Choose the event only where the line has truly come to it; a world where great things happen every month is a poorer world. Say why in one plain sentence.',
       'JSON only.',
-    ].join('\n'),
+    ].join('\n')),
     prompt: [
       'LINES:',
       ...[...world.content.tides.values()].map((t) => {

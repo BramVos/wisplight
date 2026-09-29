@@ -1,5 +1,5 @@
 import { knob } from './knobs'
-import type { LlmRequest } from './dialogue/llm'
+import { cachedSystem, type LlmRequest } from './dialogue/llm'
 import type { Output } from './commands'
 import { callName } from './content'
 import { attitude } from './dialogue/relations'
@@ -207,7 +207,8 @@ export function chatLineRequest(world: World, chat: Chat, frame: string): LlmReq
   const teller = world.npc(chat.teller)
   return {
     role: 'brain',
-    system: `${frame}\n\nYou write one line of speech in a text game: what a villager says back in a chat the player overhears. One sentence, at most 20 words, in their own voice. Only what the line itself says; no names but the two of them. JSON only.`,
+    // The frame and the task, the same for every chat here (M10.26); the two of them and the line after.
+    ...cachedSystem(`${frame}\n\nYou write one line of speech in a text game: what a villager says back in a chat the player overhears. One sentence, at most 20 words, in their own voice. Only what the line itself says; no names but the two of them. JSON only.`),
     prompt: `${listener.name} (${listener.short}; ${listener.speech ?? 'plain speech'}) hears ${callName(teller)} say: "${chat.said}"\nWhat does ${callName(listener)} say back?`,
     schemaName: 'chat_line',
     schema: { type: 'object', additionalProperties: false, required: ['line'], properties: { line: { type: 'string' } } },

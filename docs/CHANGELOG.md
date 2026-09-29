@@ -1,5 +1,17 @@
 # Changelog
 
+## M10.26 deel: de cache op elke soort aanroep, 29 september 2026
+
+- **Wat er mis was.** Elke aanroep had al een cachemarkering, over het hele systeemdeel. Het ging op twee plekken mis. Bij sommige soorten stond iets wisselends vóór de markering: de kaart van een personage, de doelen die nu openstaan, het ontwerplogboek. En een model cachet niets onder zijn minimum: Haiku 4.5 pas vanaf 4.096 tokens, Sonnet 5 vanaf 1.024, Opus 5.5 vanaf 512. Een gesprek op Haiku is in zijn geheel zo'n 3.000 tokens, dus daar kwam nooit iets uit de cache.
+- **Het vaste deel voorop.** Elke soort zet nu voorop wat gelijk blijft, met de markering erna, en wat wisselt erachter. Waar een soort een deel heeft dat elke aanroep deelt (de regels en het kader vóór de kaart van een spreker of personage), krijgt dat een eigen markering, zodat ook iemand nieuw het uit de cache leest. De doelkeuze van een personage, de soort met de meeste aanroepen, heeft daarvoor de hele lijst van doelen in het gedeelde deel; welke er nu openstaan komt erna. Dat gedeelde deel is zo'n 1.100 tokens, net boven het minimum van Sonnet. De verhaalronde van een streek leest het vaste deel dat de wereldbouw van een volle streek al schreef.
+- **Het logboek zegt waarom.** Waar niets uit de cache kwam, staat in de kolom cache in plaats van 0% bijvoorbeeld "under the minimum: about 1,450 of 4,096", of "written for the next call". Het spel vult een deel niet kunstmatig aan om het minimum te halen.
+- **De meting.** `docs/COVERAGE.md` heeft een tabel per soort: het model van de laatste echte opname, het vaste deel, het gedeelde deel, het minimum en wat een volgende aanroep uit de cache leest. Met Opus leest de nachtronde de volgende keer zo'n 80% uit de cache, de doelkeuze op Sonnet 80% (iemand anders 73%), en een gesprek op Haiku niets.
+
+Testen: speel even met een model en open Instellingen > AI log: de kolom cache. Tests in `tests/m1026cache.test.ts`; `npm run coverage` maakt de tabel.
+
+Wat dit voor je keuze betekent: met Haiku als stem wordt een gesprek nooit gecachet, met Sonnet 5 wel (het vaste deel van zo'n 1.460 tokens). Welke goedkoper uitkomt hangt af van hoeveel je praat; dat zou ik eerst meten voordat je iets verandert.
+
+Ontwerp: functioneel ontwerp, hoofdstuk over wat de AI kost, alinea "Stand na M10.26: de cache per soort aanroep".
 ## M10.25 af: een nieuwe streek met een eigen verhaal, 29 september 2026
 
 - **De verhaalronde.** Een verre plek of een streek die aan de rand ontstond, was speelbaar maar dun. Zodra de vreemdeling er iets doet, schrijft de kroniekverteller in één aanroep van de nieuwe soort `region_story` wat er te beleven valt: één quest van twee of drie stadia bij de mensen die er zijn, twee gewoonten op de standaardnasleep van de wereld, een verhaal over de plek en een geheim voor één op de drie mensen. De motor legt de vorm vast (ids, vlaggen, stadia, voorwaarden), houdt alleen wat past en controleert het geheel als content. Een daad met iemand erbij gebeurt waar die persoon woont of werkt. In `Meedenken` wacht de quest als haak, in `Regisseur` is het geheel een voorstel. Zonder model krijgt de streek één gewoonte uit de standaardset. De wijkronde geeft zelf al één op de drie mensen een geheim.

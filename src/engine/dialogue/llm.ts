@@ -36,9 +36,17 @@ export interface LlmRequest {
    * Where the part of `system` that stays the same from call to call ends
    * (M10.20: the world steps, whose guide, contract and working instruction
    * stay the same for twelve steps while the step and the design log change).
-   * The providers cache up to here; without it, the whole system part.
+   * The providers cache up to here; without it, the whole system part. Every
+   * kind of call sets it (M10.26), after the part it keeps the same.
    */
   cacheBreak?: number
+  /**
+   * Where the part every call of the kind shares ends, before cacheBreak
+   * (M10.26): the frame and the rules, before what belongs to one speaker or
+   * one person. A second mark goes there, so someone new reads the shared
+   * part from the cache, and the next turn with the same one reads it all.
+   */
+  cacheShared?: number
   /** Keep that part an hour rather than five minutes (M10.20: a designer reads a proposal for minutes between two steps). */
   cacheHour?: boolean
   /** How hard the model thinks, where the model lets itself be told (M10.20): low for a table, medium for a story. Without it, the provider's default. */
@@ -112,4 +120,21 @@ export class LlmError extends Error {
     super(message)
     this.name = 'LlmError'
   }
+}
+
+/** About how many tokens a text is (M10.26: for the cache's minimum and the measure), four characters a token as the mock counts. */
+export function tokensAbout(text: string): number {
+  return Math.ceil(text.length / 4)
+}
+
+/**
+ * A system part built from what stays the same (M10.26; CLAUDE.md: the
+ * stable part first, with a cache mark): what every call of the kind shares,
+ * then what belongs to one speaker or subject, then what changes from call
+ * to call; with the marks where the first two end.
+ */
+export function cachedSystem(shared: string, own = '', changing = ''): Pick<LlmRequest, 'system' | 'cacheBreak' | 'cacheShared'> {
+  const mine = own ? `\n${own}` : ''
+  const rest = changing ? `\n${changing}` : ''
+  return { system: `${shared}${mine}${rest}`, cacheBreak: shared.length + mine.length, ...(mine ? { cacheShared: shared.length } : {}) }
 }

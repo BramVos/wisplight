@@ -3,7 +3,7 @@ import { LlmError, type LlmClient, type LlmRejection, type LlmRequest, type LlmR
 import { withSafety } from '../../engine/safety'
 import type { AiLog } from './log'
 import { CostRegister, type SpendBySource, type SpendSource } from './costs'
-import { picturePrice, priceOf, typicalUsd, upperBoundUsd } from './pricing'
+import { cacheNote, picturePrice, priceOf, typicalUsd, upperBoundUsd } from './pricing'
 import { BusyError, type PictureResponse, type Provider, type ProviderId, type RateLimit } from './providers'
 import type { PictureChoice, RoleChoice } from './settings'
 import type { UsageStore } from './usage'
@@ -255,6 +255,8 @@ export class Gateway implements LlmClient {
         latencyMs: response.latencyMs,
         ...response.usage,
         costUsd,
+        // Why nothing came from the cache, in place of a bare 0% (M10.26).
+        ...(cacheNote(request, response.model, response.usage) ? { cache: cacheNote(request, response.model, response.usage)! } : {}),
         prompt: request.prompt,
         response: response.text,
       })

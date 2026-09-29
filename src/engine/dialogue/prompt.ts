@@ -95,6 +95,17 @@ export function describePersonality(npc: Npc): string {
 }
 
 export function systemPrompt(world: World, npcId: string): string {
+  const { shared, own } = systemParts(world, npcId)
+  return `${shared}\n${own}`
+}
+
+/**
+ * The conversation's system part in two (M10.26): what every speaker in this
+ * land shares (the rules and the frame), cached on its own so someone new
+ * reads it from the cache; and the character card of this one, the same for
+ * every turn of the talk.
+ */
+export function systemParts(world: World, npcId: string): { shared: string; own: string } {
   const npc = world.npc(npcId)
   const profession = world.content.professions.get(npc.profession)?.name ?? npc.profession
   const values = Object.entries(npc.values)
@@ -102,9 +113,6 @@ export function systemPrompt(world: World, npcId: string): string {
     .map(([k]) => k)
   // The frame and the character card are world text (M10.19): who this is and how they speak, never a change to the rules.
   const card = [
-    // The frame of the land the stranger is in (M10.23).
-    worldFrame(world.content, world.land),
-    '',
     'CHARACTER',
     `Name: ${npc.name}, known as ${npc.short}. Age ${npc.age}. ${profession}.`,
     // A hidden trade (M10.8): the stranger is not told it by its keeper.
@@ -124,7 +132,8 @@ export function systemPrompt(world: World, npcId: string): string {
   ]
     .filter(Boolean)
     .join('\n')
-  return [world.frame.frame ? `You voice one character in a text role-playing game set in ${world.words.land}.` : NO_FRAME, RULES, worldText(card)].join('\n')
+  // The frame of the land the stranger is in (M10.23), with the rules: the same for everyone who speaks here.
+  return { shared: [world.frame.frame ? `You voice one character in a text role-playing game set in ${world.words.land}.` : NO_FRAME, RULES, worldText(worldFrame(world.content, world.land))].join('\n'), own: worldText(card) }
 }
 
 /**

@@ -42,7 +42,12 @@ export function withSafety(request: LlmRequest): LlmRequest {
   if (request.system.startsWith(HARD_LIMITS)) return request
   const front = `${HARD_LIMITS}\n\n${CONTENT_RULE}\n\n`
   // The limits are the same for every call, so they belong to the part that is cached (M10.20).
-  return { ...request, system: `${front}${request.system}`, ...(request.cacheBreak !== undefined ? { cacheBreak: request.cacheBreak + front.length } : {}) }
+  return {
+    ...request,
+    system: `${front}${request.system}`,
+    ...(request.cacheBreak !== undefined ? { cacheBreak: request.cacheBreak + front.length } : {}),
+    ...(request.cacheShared !== undefined ? { cacheShared: request.cacheShared + front.length } : {}),
+  }
 }
 
 // The hard limits in a reply (M10.19). The providers filter as well, but the

@@ -1,6 +1,6 @@
 import { frameOf, landOfArea } from '../lands'
 import { AreaSchema, checkContent, lockedIds, LocationSchema, NpcSchema, type Content, type Direction } from '../content'
-import type { LlmRequest } from '../dialogue/llm'
+import { cachedSystem, type LlmRequest } from '../dialogue/llm'
 import { worldFrame } from '../dialogue/prompt'
 import { worldText } from '../safety'
 import { SettlementSchema } from '../economy/schema'
@@ -383,7 +383,7 @@ export function farRequest(world: World, topic: string): LlmRequest {
   const object = (properties: Record<string, unknown>) => ({ type: 'object', additionalProperties: false, required: Object.keys(properties), properties })
   return {
     role: 'chronicler',
-    system: [
+    ...cachedSystem([
       // The world's voice (M10.10): the people of the far place talk like the world.
       // In another land, its frame and voice (M10.23).
       worldText([worldFrame(world.content, t.land), voiceSummary(world.content, t.land)].filter(Boolean).join('\n\n')),
@@ -392,7 +392,7 @@ export function farRequest(world: World, topic: string): LlmRequest {
       'Places: gate (where the road comes in, or the quay where the ship comes in when it lies over the sea), market, inn. Each description: three to five sentences, second person, present tense, one sense that is not sight, and a hint at a way out. Plain words, late-medieval, the tone of the world.',
       'People: merchant (sells at the market), innkeeper. A full name that fits the place, she or he, what people see first (one sentence), how they speak (a few words), one thing anyone may know of them.',
       'Never contradict what is KNOWN. Never use a TAKEN name. JSON only.',
-    ].join('\n'),
+    ].join('\n')),
     prompt: [
       `PLACE: ${t.name}. ${t.summary}`,
       'KNOWN:',

@@ -6,7 +6,7 @@ import type { World } from '../world'
 import { swearRight, unknownNames, vocabularyOf, wordCount } from './guard'
 import { fixNotHere, oathsFor, strangeWords } from './voice'
 import type { Knowledge } from './knowledge'
-import type { LlmClient } from './llm'
+import { cachedSystem, type LlmClient } from './llm'
 import { describePersonality, worldFrame } from './prompt'
 import { worldText } from '../safety'
 import type { TopicRegistry } from './topics'
@@ -60,7 +60,8 @@ async function ask(llm: LlmClient, cards: { id: string; name: string; card: stri
   try {
     const reply = await llm.complete({
       role: 'voice',
-      system,
+      // The same for every question to the group in this land (M10.26); the companions' cards change with the party.
+      ...cachedSystem(system),
       prompt,
       schemaName: 'party_reply',
       schema: {

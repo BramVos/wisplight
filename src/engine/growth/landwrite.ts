@@ -1,7 +1,7 @@
 import { askOutput, mustAsk } from '../asking'
 import type { Output } from '../commands'
 import { checkContent, LandSchema, type Content, type Land } from '../content'
-import type { LlmRequest } from '../dialogue/llm'
+import { cachedSystem, type LlmRequest } from '../dialogue/llm'
 import { worldFrame } from '../dialogue/prompt'
 import { voiceSummary } from '../dialogue/voice'
 import { VoiceSchema } from '../dialogue/voiceSchema'
@@ -77,7 +77,7 @@ export function landRequest(world: World, id: string): LlmRequest {
   const object = (properties: Record<string, unknown>, optional: string[] = []) => ({ type: 'object', additionalProperties: false, required: Object.keys(properties).filter((k) => !optional.includes(k)), properties })
   return {
     role: 'chronicler',
-    system: [
+    ...cachedSystem([
       ...(content.chronicler ? [worldGuide(withoutReference(content.chronicler)), ''] : []),
       worldText(worldFrame(content, id)),
       '',
@@ -88,7 +88,7 @@ export function landRequest(world: World, id: string): LlmRequest {
       'LAW: where the law holds ("in X" or "on X") and the title of who keeps it.',
       'VOICE: oaths per faith (by the FAITHS ids only, two each), three sayings, how people call a stranger, someone they know, a friend and someone above them (address: stranger, known, friend, high; one or two forms each), three ways to tell time, two of distance, two measures, and not_here: words of our world or of the home land that do not belong here, each with instead where people here have a word for it.',
       'Plain words, in the tone of the frame. JSON only.',
-    ].join('\n'),
+    ].join('\n')),
     prompt: [
       `LAND: ${land.name} (${id})`,
       ...(areas.length ? [`ITS AREAS: ${areas.map((a) => `${a.name}: ${a.summary}`).join(' ')}`] : []),

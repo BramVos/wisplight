@@ -4,7 +4,7 @@ import type { Output } from './commands'
 import type { Command } from './parser'
 import type { ObjectInstance, ObjectType } from './content'
 import { detailHere, sceneryHere } from './looking'
-import type { LlmRequest } from './dialogue/llm'
+import { cachedSystem, type LlmRequest } from './dialogue/llm'
 import { worldFrame } from './dialogue/prompt'
 import { strangeWords, voiceSummary } from './dialogue/voice'
 import { hasOurOaths, outOfCharacter, vocabularyOf } from './dialogue/guard'
@@ -180,10 +180,13 @@ export function improviseRequest(world: World, imp: Improvisable): LlmRequest {
   const lore = [...world.content.topics.values()].filter((t) => known[t.id] !== undefined && (t.id === imp.target.id || imp.target.description.toLowerCase().includes(t.name.toLowerCase()))).slice(0, 3)
   return {
     role: 'voice',
-    system: [
-      worldText([worldFrame(world.content, world.land), voiceSummary(world.content, world.land)].filter(Boolean).join('\n\n')),
-      'YOU TELL WHAT HAPPENS when the stranger does something the game has no rule for, to a thing that matters. Two to four sentences, second person, present tense, in the voice of this world. Tell only what the stranger sees, hears and feels; never explain, never promise, name nobody who is not given here. Then at most one effect, only from MAY, or nothing: most acts change nothing that lasts. JSON only.',
-    ].join('\n\n'),
+    // The frame, the voice and the task: the same for every act in this land (M10.26); the thing and the act after.
+    ...cachedSystem(
+      [
+        worldText([worldFrame(world.content, world.land), voiceSummary(world.content, world.land)].filter(Boolean).join('\n\n')),
+        'YOU TELL WHAT HAPPENS when the stranger does something the game has no rule for, to a thing that matters. Two to four sentences, second person, present tense, in the voice of this world. Tell only what the stranger sees, hears and feels; never explain, never promise, name nobody who is not given here. Then at most one effect, only from MAY, or nothing: most acts change nothing that lasts. JSON only.',
+      ].join('\n\n'),
+    ),
     prompt: [
       `THE THING: ${imp.target.name}. ${imp.target.description.trim()}`,
       `WHAT IT CAN MEAN: ${imp.def.domain}.`,

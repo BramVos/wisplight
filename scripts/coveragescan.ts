@@ -1,6 +1,10 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { MODEL_KINDS, type ModelKind } from '../src/engine/modelkinds'
+import { tokensAbout } from '../src/engine/dialogue/llm'
+import { withSafety } from '../src/engine/safety'
+import { kindSituation, SITUATION_KINDS, type TrialWorlds } from '../src/engine/trials'
+import { cacheMinimum } from '../src/node/ai/pricing'
 
 // docs/COVERAGE.md (M10.20): per kind of model call, whether a test answers it
 // with the mock model, which real replies are recorded as fixtures (with date
@@ -69,7 +73,52 @@ export function coverage(root: string): { rows: CoverageRow[]; unlisted: string[
   return { rows, unlisted: code.filter((c) => !MODEL_KINDS.some((k) => k.kind === c)), stale: MODEL_KINDS.filter((k) => !code.includes(k.kind)).map((k) => k.kind) }
 }
 
-export function coverageMarkdown(rows: CoverageRow[]): string {
+/** What a kind of call keeps the same from call to call, and what the next call reads from the cache (M10.26). */
+export interface CacheMeasure {
+  kind: string
+  /** The model its latest recorded real reply came from, whose minimum counts; none without a recording. */
+  model?: string
+  input: number
+  /** The part before the cache mark: the same for the next call with this subject. */
+  fixed: number
+  /** The part every call of the kind shares, marked on its own (a new speaker reads it): where there is one. */
+  shared?: number
+  minimum?: number
+}
+
+/**
+ * The cache per kind (M10.26): its fixed situation as the gateway sends it
+ * (the hard limits in front), in tokens about: the fixed part, the part every
+ * call shares, and the minimum of the model it runs on.
+ */
+export async function cacheMeasures(worlds: TrialWorlds, rows: CoverageRow[]): Promise<CacheMeasure[]> {
+  const out: CacheMeasure[] = []
+  for (const kind of SITUATION_KINDS) {
+    const situation = await kindSituation(kind, worlds)
+    if (!situation) continue
+    const r = withSafety(situation.request)
+    const model = rows.find((row) => row.kind === kind)?.recorded[0]?.model.split(', ')[0]
+    out.push({
+      kind,
+      ...(model ? { model, minimum: cacheMinimum(model) } : {}),
+      input: tokensAbout(r.system + r.prompt),
+      fixed: tokensAbout(r.system.slice(0, r.cacheBreak ?? r.system.length)),
+      ...(r.cacheShared !== undefined ? { shared: tokensAbout(r.system.slice(0, r.cacheShared)) } : {}),
+    })
+  }
+  return out
+}
+
+/** What the next call reads from the cache, in words: a share, or why nothing. */
+export function cacheRead(m: CacheMeasure): string {
+  if (!m.minimum) return 'no recorded model yet'
+  const pct = (n: number) => `${Math.round((100 * n) / m.input)}%`
+  if (m.fixed < m.minimum) return 'nothing: the fixed part is under the minimum'
+  const next = `the next call ${pct(m.fixed)}`
+  return m.shared !== undefined ? `${next}; one about someone or something else ${m.shared >= m.minimum ? pct(m.shared) : 'nothing (the shared part is under the minimum)'}` : next
+}
+
+export function coverageMarkdown(rows: CoverageRow[], cache: CacheMeasure[] = []): string {
   const lines = [
     '# Coverage of the model calls',
     '',
@@ -83,6 +132,18 @@ export function coverageMarkdown(rows: CoverageRow[]): string {
     '|---|---|---|---|---|---|---|',
     ...rows.map((r) => `| \`${r.kind}\` | ${r.role} | ${r.when} | ${r.does} | ${r.tests.length ? r.tests.map((t) => t.replace('tests/', '')).join(', ') : 'none'} | ${r.recorded.length ? r.recorded.map((x) => `${x.model} (${x.where})`).join('; ') : 'none'} | ${r.recorded[0]?.date ?? 'never'} |`),
     '',
+    ...(cache.length
+      ? [
+          '## The cache per kind',
+          '',
+          'Every kind puts what stays the same first, with a cache mark after it, and what changes after the mark (M10.26). A kind that has a part every call shares (the rules and the frame, before one speaker\'s card) marks that too, so someone new reads it from the cache. A model caches nothing shorter than its minimum (Haiku 4.5 4,096 tokens, Sonnet 5 1,024, Opus 5.5 512); the game does not pad a part to reach it, and the log says so in place of 0%. Measured on each kind\'s fixed situation as the gateway sends it, in tokens about (four characters a token), against the model of its latest recorded real reply.',
+          '',
+          '| Kind | Model | In | Fixed part | Shared by every call | Minimum | Read from the cache |',
+          '|---|---|---|---|---|---|---|',
+          ...cache.map((m) => `| \`${m.kind}\` | ${m.model ?? '-'} | ${m.input.toLocaleString('en-GB')} | ${m.fixed.toLocaleString('en-GB')} | ${m.shared !== undefined ? m.shared.toLocaleString('en-GB') : '-'} | ${m.minimum?.toLocaleString('en-GB') ?? '-'} | ${cacheRead(m)} |`),
+          '',
+        ]
+      : []),
   ]
   return lines.join('\n')
 }

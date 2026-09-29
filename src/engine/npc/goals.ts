@@ -1,7 +1,7 @@
 import { knob } from '../knobs'
 import { GameClock, startOfDay } from '../clock'
 import { callName } from '../content'
-import type { LlmRequest } from '../dialogue/llm'
+import { cachedSystem, type LlmRequest } from '../dialogue/llm'
 import { describePersonality, peopleIds, relevantPeople, worldFrame } from '../dialogue/prompt'
 import { worldText } from '../safety'
 import { goalJsonSchema, GoalReplySchema } from '../dialogue/schema'
@@ -208,6 +208,15 @@ const SYSTEM = [
   'Reply with JSON that matches the schema, and nothing else.',
 ].join('\n')
 
+/**
+ * The whole catalogue, the same for everyone (M10.26): in the part that is
+ * cached for every choice in a land, so that part reaches what the brain's
+ * model caches; which of them are open to one person now goes after the mark.
+ */
+function catalogueLines(): string[] {
+  return Object.entries(GOAL_CATALOGUE).map(([type, e]) => `  ${type} (${e.target === 'none' ? 'target none' : `target: ${e.target === 'place' ? 'a place key' : e.target === 'person' ? 'a person key' : e.target}`}): ${e.text}`)
+}
+
 /** The goals of the catalogue this NPC could choose at all: those whose gate is shut are not offered (M8.2). */
 function openGoals(world: World, npcId: string, people: string[]): string[] {
   return Object.entries(GOAL_CATALOGUE)
@@ -260,12 +269,9 @@ export function goalRequest(world: World, choice: GoalChoice, answers?: string[]
       .join(', ') || 'getting by'}.`,
     peopleLine(world, npcId) ?? '',
     standingLine(world, npcId) ?? '',
-    'GOALS YOU MAY CHOOSE:',
-    ...goals.map((type) => {
-      const e = GOAL_CATALOGUE[type]!
-      return `  ${type} (${e.target === 'none' ? 'target none' : `target: ${e.target === 'place' ? 'a place key' : e.target === 'person' ? 'a person key' : e.target}`}): ${e.text}`
-    }),
   ].filter(Boolean)
+  // What they may choose now changes with who is about (M10.26: after the cache mark); the schema holds them to it.
+  const choosable = [`GOALS YOU MAY CHOOSE NOW: ${goals.join(', ')}.`]
   const signal = choice.signal ? signalOf(world, choice.signal) : undefined
   const intentions = signal ? offered(world, signal, npcId) : []
   const lines = [
@@ -299,8 +305,9 @@ export function goalRequest(world: World, choice: GoalChoice, answers?: string[]
   keys['self'] = npcId
   return {
     role: 'brain',
-    // The frame of the land they live in (M10.23).
-    system: [SYSTEM, '', worldText([worldFrame(world.content, landOfNpc(world, npcId)), '', ...card].join('\n'))].join('\n'),
+    // The rules and the frame of the land they live in (M10.23), cached for everyone of that land; their card, the
+    // same for each of their choices; and what they may choose now (M10.26).
+    ...cachedSystem([SYSTEM, '', 'THE GOALS:', ...catalogueLines(), '', worldText(worldFrame(world.content, landOfNpc(world, npcId)))].join('\n'), worldText(card.join('\n')), choosable.join('\n')),
     prompt: lines.join('\n'),
     schemaName: 'npc_goals',
     schema: withLookup(intentions.length ? (withIntention(base, intentions.map((i) => i.id), Object.keys(keys)) as typeof base) : base) as typeof base,

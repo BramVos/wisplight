@@ -1,7 +1,7 @@
 import { askOutput, mustAsk } from '../asking'
 import type { Output } from '../commands'
 import { callName, checkContent, lockedIds, NpcSchema, QuestSchema, TopicSchema, type Content, type Location, type Npc } from '../content'
-import type { LlmRequest } from '../dialogue/llm'
+import { cachedSystem, type LlmRequest } from '../dialogue/llm'
 import { worldFrame } from '../dialogue/prompt'
 import { voiceSummary } from '../dialogue/voice'
 import { knob } from '../knobs'
@@ -189,14 +189,16 @@ export function storyRequest(world: World, topic: string): LlmRequest {
   const key = keyed(people, places)
   const text = { type: 'string' }
   const object = (properties: Record<string, unknown>) => ({ type: 'object', additionalProperties: false, required: Object.keys(properties), properties })
-  const system = [worldFixedPart(content, content.chronicler ?? ''), '', STORY_RULES].join('\n')
+  // The world's fixed part, the same as the world steps of a full build read (M10.26: cached for both), then the rules of the story.
+  const fixed = worldFixedPart(content, content.chronicler ?? '')
+  const system = cachedSystem(fixed, `\n${STORY_RULES}`)
   const quarters = districtsOf(content, topic)
   const secretsNow = (n: Npc) => (n.secrets.length ? ' (has a secret)' : '')
   const aftermath = standardAftermath(content)
   const skills = (content.rules?.skills ?? []).map((s) => s.id)
   return {
     role: 'chronicler',
-    system,
+    ...system,
     prompt: [
       // The frame of the land the region lies in (M10.23), as description, never as instruction.
       worldText([worldFrame(content, t?.land), voiceSummary(content, t?.land)].filter(Boolean).join('\n\n')),

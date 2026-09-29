@@ -1,5 +1,5 @@
 import { checkContent, RELATION_ROLES, type RelationRole } from '../content'
-import type { LlmRequest } from '../dialogue/llm'
+import { cachedSystem, type LlmRequest } from '../dialogue/llm'
 import { worldFrame } from '../dialogue/prompt'
 import { knowsOfPerson } from '../acquaintance'
 import { isRole, setTie } from '../layer'
@@ -81,7 +81,7 @@ export function weaveRequest(world: World, key: string): LlmRequest {
   const object = (properties: Record<string, unknown>) => ({ type: 'object', additionalProperties: false, required: Object.keys(properties), properties })
   return {
     role: 'chronicler',
-    system: [
+    ...cachedSystem([
       // The frame of the land the district is in (M10.23).
       worldText(worldFrame(world.content, world.content.topics.get(topic)?.land)),
       '',
@@ -91,7 +91,7 @@ export function weaveRequest(world: World, key: string): LlmRequest {
       'THREAD: one at most, or null: a NEW person asks the stranger to go and see a KNOWN person from HOME (to carry word, a letter, a greeting), with a short name for it, what they say when asking (in their voice, one or two sentences), and why it matters. It must reach back to where the stranger came from.',
       'ECHO: one at most, or null: a NEW person who has a part in one of the OPEN STORYLINES (a messenger from it, someone who heard of it and recognises the stranger, someone it touches), by the line\'s id, with what happens, in one sentence the chronicle keeps.',
       'Use only ids given below. JSON only.',
-    ].join('\n'),
+    ].join('\n')),
     prompt: [
       `TOWN: ${town}, ${quarter}.`,
       'NEW (just met):',

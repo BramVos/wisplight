@@ -3,6 +3,8 @@
 // advice gets this table instead of guessing (FO, chapter 16). Update it with
 // the game; unknown models show "price unknown".
 
+import { tokensAbout, type LlmRequest } from '../../engine/dialogue/llm'
+
 export const PRICING_AS_OF = '2026-09'
 
 export interface Price {
@@ -94,4 +96,31 @@ const PICTURES: Record<string, Partial<Record<'low' | 'medium', number>>> = {
 export function picturePrice(model: string, quality: 'low' | 'medium'): number | undefined {
   const undated = model.replace(/-\d{4}-\d{2}-\d{2}$/, '')
   return PICTURES[model]?.[quality] ?? PICTURES[undated]?.[quality]
+}
+
+/**
+ * The shortest prefix a model caches, in tokens (Claude API documentation,
+ * prompt caching, 29 September 2026): anything shorter is silently not
+ * cached, mark or not. OpenAI caches a prefix of 1,024 tokens and more by
+ * itself. M10.26: the log and the measure say so, instead of a bare 0%.
+ */
+export function cacheMinimum(model: string): number {
+  if (/haiku-4-5|opus-4-5|opus-4-6/.test(model)) return 4096
+  if (/opus-4-7|haiku-3-5|mythos-preview/.test(model)) return 2048
+  if (/opus-5|fable|mythos-5/.test(model)) return 512
+  return 1024
+}
+
+/**
+ * Why a call read nothing from the cache (M10.26), for the log in place of a
+ * bare 0%: its fixed part is shorter than the model caches, or it was the
+ * first with that part and wrote it for the next. Nothing when it read from
+ * the cache, or when there is nothing to say.
+ */
+export function cacheNote(request: Pick<LlmRequest, 'system' | 'cacheBreak'>, model: string, usage: { cachedTokens: number; cacheWriteTokens?: number }): string | undefined {
+  if (usage.cachedTokens > 0) return undefined
+  const fixed = tokensAbout(request.system.slice(0, request.cacheBreak ?? request.system.length))
+  const least = cacheMinimum(model)
+  if (fixed < least) return `under the minimum: about ${fixed.toLocaleString('en-GB')} of ${least.toLocaleString('en-GB')}`
+  return usage.cacheWriteTokens ? 'written for the next call' : undefined
 }

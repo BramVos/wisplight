@@ -5,7 +5,7 @@ import { MockLlm } from '../src/engine/dialogue/mock'
 import { MODEL_KINDS } from '../src/engine/modelkinds'
 import { kindSituation, schemaProblems, SITUATION_KINDS, type TrialWorlds } from '../src/engine/trials'
 import { loadContentFromDir, readContentFiles } from '../src/node/content'
-import { coverage, coverageMarkdown } from '../scripts/coveragescan'
+import { cacheMeasures, coverage, coverageMarkdown } from '../scripts/coveragescan'
 
 // M10.20: every kind of model call is tried, and that is written down
 // (docs/COVERAGE.md). Each kind has a fixed situation; the mock answers it
@@ -58,7 +58,8 @@ describe('M10.20: every kind of model call has a row, a situation and a test', (
     expect(schemaProblems(schema, [])).toEqual(['reply is array, not object'])
   })
 
-  it('docs/COVERAGE.md is what npm run coverage writes', () => {
-    expect(readFileSync(resolve(root, 'docs/COVERAGE.md'), 'utf8')).toBe(coverageMarkdown(coverage(root).rows))
-  })
+  it('docs/COVERAGE.md is what npm run coverage writes', async () => {
+    const rows = coverage(root).rows
+    expect(readFileSync(resolve(root, 'docs/COVERAGE.md'), 'utf8')).toBe(coverageMarkdown(rows, await cacheMeasures(worlds, rows)))
+  }, 120_000)
 })

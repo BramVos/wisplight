@@ -296,6 +296,8 @@ export interface ChronicleOutput {
 export interface ChroniclerRequest {
   role: 'chronicler'
   system: string
+  /** Where the part of system that stays the same from call to call ends: a model host may cache up to here. */
+  cacheBreak?: number
   prompt: string
   schemaName: string
   schema: Record<string, unknown>

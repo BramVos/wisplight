@@ -1,8 +1,9 @@
 import type { Content, PlayMode } from '../../engine'
 import { hourlyBudget, replyWithin } from '../../engine/aisettings'
 import { pictureSubject } from '../../engine/pictures'
-import type { LlmClient } from '../../engine/dialogue/llm'
-import { costUsd } from '../../node/ai/pricing'
+import { tokensAbout, type LlmClient } from '../../engine/dialogue/llm'
+import { withSafety } from '../../engine/safety'
+import { cacheMinimum, cacheNote, costUsd } from '../../node/ai/pricing'
 import type { UsageSummary, UsageTotals } from '../../node/ai/usage'
 import type { AiBridge, AiLogEntry, AiStatus, ChosenRole, ModelInfo, ProviderId, RoleLight, TrialResult } from './client'
 import { guidePrice } from '../../node/ai/guideprice'
@@ -65,7 +66,11 @@ export function slowMock(llm: LlmClient): LlmClient {
       }
       await wait(700)
       const response = await llm.complete(request)
-      const usage = { ...response.usage, cachedTokens: Math.round(response.usage.inputTokens * 0.6) }
+      // A fixed part under the model's minimum is not cached, and the log says so (M10.26).
+      const sent = withSafety(request)
+      const under = tokensAbout(sent.system.slice(0, sent.cacheBreak ?? sent.system.length)) < cacheMinimum(DEMO_MODEL)
+      const usage = { ...response.usage, cachedTokens: under ? 0 : Math.round(response.usage.inputTokens * 0.6) }
+      const note = cacheNote(sent, DEMO_MODEL, usage)
       const cost = costUsd('gpt-4.1-mini', usage) ?? 0
       for (const totals of [state.session, state.month]) {
         totals.calls++
@@ -75,7 +80,7 @@ export function slowMock(llm: LlmClient): LlmClient {
         totals.costUsd += cost
       }
       if (state.credit.openai) state.credit.openai.spent += cost
-      state.log.unshift({ time: new Date().toISOString(), role: request.role, provider: 'mock', model: DEMO_MODEL, ok: true, latencyMs: 700, ...usage, costUsd: cost, prompt: request.prompt, response: response.text })
+      state.log.unshift({ time: new Date().toISOString(), role: request.role, provider: 'mock', model: DEMO_MODEL, ok: true, latencyMs: 700, ...usage, ...(note ? { cache: note } : {}), costUsd: cost, prompt: request.prompt, response: response.text })
       if (light) {
         light.busy = false
         light.last = { at: Date.now(), costUsd: cost, ms: 700, ok: true }
