@@ -1,5 +1,33 @@
 # Changelog
 
+## M10.29 deel: waarom je hier bent, wat iedereen weet, eerdere gesprekken, de weg en luisteren, 29 september 2026
+
+- **Waarom je hier bent (C).** De intro van de wereld komt bij een nieuw spel als kaart. Het dagboek heeft een pagina Why you are here met de intro, je reden, wie je moet vragen en wat je hoorde. Wie je van vroeger kent, zegt het spel één keer bij aankomst, met hoe ("you worked a winter together in the infirmary at Harrow Station"); zijn pagina zegt het, en hij weet het zelf ook. The Quiet Reach heeft nu de vijf specialismen uit je kader, allemaal door Sorell gestuurd. Je bent eerst systems engineer; `background signal linguist` (of een ander) kiest één keer. Vijf plekken hebben een aankomstkaart: de sluis, de Commons, de hangar, de luisterkamer en het kustpad.
+- **Wat iedereen weet (P).** De Nacreans, de Beltborn, de Transit Families, het Compact en het Belt-krediet staan vanaf het begin in je dagboek onder What you know of the world. `recall nacreans` (of `remember`) zegt wat je ervan weet. In de editor is het een vinkje in een nieuw formulier voor onderwerpen, en Check noemt een volk of het geld zonder onderwerp.
+- **Eerdere gesprekken (J).** Het gespreksvenster toont het vorige gesprek vervaagd bovenaan, en de persoonspagina heeft Last talks per dag. Niets daarvan gaat naar het model.
+- **De weg (H).** Vraag je de weg of naar iemand, dan krijgt de spreker de richting en de looptijd, of waar hij denkt dat die persoon nu is. Een kade of deur verzinnen mag niet meer. Sana zet Sorell niet meer vast op het schip.
+- **Luisteren (L).** De eerste keer dat twee mensen praten staat er "(LISTEN to catch it.)", en HELP noemt het.
+- **Je sessies van vandaag (Q).** Die staan nagekeken in `docs/playtest/sessions-2026-09-29-analysis.md`. Eén fout heb ik meteen hersteld: zes antwoorden van Mara die met "He'll" begonnen, werden weggegooid als "zegt niets hardop".
+
+Testen: begin The Quiet Reach en kijk naar de kaart, `journal` en Why you are here. Probeer `background expedition medic`, praat met Edda, en typ `recall credits`. Praat twee keer met iemand en kijk bovenin het venster. Vraag `how do I get to the hangar?`. Tests in `tests/m1029why.test.ts`, `m1029recall.test.ts`, `m1029earlier.test.ts`, `m1029way.test.ts` en `m1029listen.test.ts`.
+
+Bekende gaten: er is geen apart keuzescherm voor een achtergrond in een wereld zonder klassen, alleen BACKGROUND en de pagina. De Nethermarch en Skerrow hebben nog geen onderwerpen voor al hun volken en munten (Skerrow wel); Check noemt ze.
+
+Wat de editor en de kroniekverteller leerden: `knows` met `how` en achtergronden zonder vaardigheden (sjabloon, contract, stap Mensen); `arrival` in de stap Plekken; `common` in de stap Kader, het contract en het formulier; de knop `talk.kept_lines` staat vanzelf bij de knoppen. Skerrow heeft zijn eigen versie van alles, Deepwell speelt de standaard.
+
+Ontwerp: functioneel ontwerp, alinea "Stand na M10.29: waarom je hier bent, wat iedereen weet, eerdere gesprekken, de weg en luisteren".
+
+## M10.28 deel: één schema per soort, en de regels van het gesprek, 29 september 2026
+
+- **Eén antwoordschema per soort aanroep.** Dat is nu een regel in `CLAUDE.md`. Anthropic zet het schema vóór het vaste deel in de cache, dus een schema dat per zin verandert, liet de helft van de zinnen niets uit de cache lezen. Na de fix kostte het gesprek van twintig zinnen $0,049 in plaats van $0,19. Het groepsgesprek, de vonk en de nachtronde zijn ook omgezet, en een test bouwt elke soort in twee situaties.
+- **Regels na de leesscore.** Een verhaal vertel je in eigen woorden; opzeggen wordt opnieuw gevraagd. Ongeveer één antwoord op drie eindigt met een wedervraag, als het bij iemand past. De aanspreekvorm blijft het hele gesprek dezelfde. Tijd en afstand uit de stemkit zijn stijl, en "is it far?" krijgt de looptijd van de laatst genoemde plek.
+
+Testen: praat met Mirte over de Haakman en daarna over brood; let op "lamb" en op een vraag terug. Tests in `tests/m1028schema.test.ts` en `tests/m1028talkrules.test.ts`.
+
+Bekende gaten: de herhaling van de metingen op Haiku (de situatieset en het gesprek van twintig zinnen met de nieuwe regels, en Skerrow voor het opvullen van het blok) wacht op je akkoord, samen ongeveer $0,17.
+
+Ontwerp: functioneel ontwerp, alinea "Stand na M10.28: één schema per soort, en de regels van het gesprek na de leesscore".
+
 ## M10.28 deel: hoe snel de dag gaat, gpt-5-mini tegen Haiku, en wat de regels zelf beantwoorden, 29 september 2026
 
 - **Hoe snel de dag gaat.** Een spelminuut duurt nu 1 tot 8 echte seconden, en standaard 4, een dag van anderhalf uur. Voorheen was het 1 seconde, een dag van 24 minuten. Een wereld zet haar eigen snelheid bij de stap Kalender: The Quiet Reach 4, Skerrow 5. Op het kaderscherm staat een schuif "How fast the day goes" met de daglengte, wat een uur ongeveer kost, en een knop terug naar de snelheid van de wereld. In de terminal is het `FRAMES CLOCK 8`. Slapen, wachten en reizen springen zoals altijd.
