@@ -1,5 +1,8 @@
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { Engine, LlmError, type Content, type LlmClient, type LlmRequest, type LlmResponse, type Output, type Quest } from '../engine'
 import { farTopicAt } from '../engine/growth/far'
+import { FULL_ROUNDS, fullOf } from '../engine/growth/regionfull'
 import { regionMap } from '../engine/map/region'
 
 // The played proof of a new region (M10.25 (4); Bram, 29 September 2026: has
@@ -44,7 +47,19 @@ export interface RegionTally {
   /** How long the arrival waited, in real seconds, and how many rounds the models took. */
   waitedSecs: number
   days: number
+  /** The rounds of a region built in full, in order: kept, or why not; a round that never got an answer says so. */
+  full?: { round: string; kept: boolean; problems?: string[] }[]
+  /** When it was played, and on which model (the first call's), so settings played in separate hours stay apart. */
+  date?: string
+  model?: string
 }
+
+/**
+ * The kinds of call that build a region (M10.25): only these are recorded as
+ * fixtures; the talks, goals and nights of the three days are not what the
+ * proof is about.
+ */
+export const REGION_KINDS = ['expansion', 'far_place', 'outline', 'district', 'weave', 'region_story', 'world_step', 'world_polish', 'land']
 
 /**
  * A client that measures every call it passes on: kind, model, tokens, cost,
@@ -372,6 +387,7 @@ function tallyOf(engine: Engine, play: RegionPlay, topic: string | undefined, ca
   const revealed = new Set(Object.keys(engine.state.flags ?? {}).filter((f) => f.startsWith('secret:')))
   const quests = topic ? regionQuests(engine, topic) : []
   const t = topic ? engine.content.topics.get(topic) : undefined
+  const full = topic && play.setting === 'full' ? fullOf(engine.world, topic) : undefined
   return {
     world: play.world,
     setting: play.setting,
@@ -392,7 +408,29 @@ function tallyOf(engine: Engine, play: RegionPlay, topic: string | undefined, ca
     calls,
     waitedSecs,
     days: play.days ?? 3,
+    ...(topic && play.setting === 'full' ? { full: FULL_ROUNDS.map((round) => ({ round, ...(full?.rounds?.[round] ?? { kept: false, problems: [full?.done.includes(round) ? 'done, nothing kept' : 'no answer'] }) })) } : {}),
+    date: new Date().toLocaleDateString('sv-SE'),
+    model: calls[0]?.model ?? 'none',
   }
+}
+
+/** Where the tally of one setting is kept: docs/playtest/<stem>-<world>-<setting>.json. */
+const tallyPath = (dir: string, stem: string, world: string, setting: RegionSetting) => join(dir, `${stem}-${world}-${setting}.json`)
+
+/** Keeps the tally of one setting on disk, without the replies, so settings played in separate hours make one report. */
+export function keepTally(dir: string, stem: string, tally: RegionTally): void {
+  const lean = { ...tally, calls: tally.calls.map(({ reply: _, ...call }) => call) }
+  writeFileSync(tallyPath(dir, stem, tally.world, tally.setting), `${JSON.stringify(lean, null, 2)}\n`)
+}
+
+/** The tallies kept for a world, in the order of the dial. */
+export function keptTallies(dir: string, stem: string, world: string): RegionTally[] {
+  return REGION_SETTINGS.map((setting) => tallyPath(dir, stem, world, setting))
+    .filter((path) => existsSync(path))
+    .map((path) => {
+      const t = JSON.parse(readFileSync(path, 'utf8')) as RegionTally
+      return { ...t, calls: t.calls.map((c) => ({ ...c, reply: c.reply ?? '' })) }
+    })
 }
 
 const money = (usd: number | undefined) => (usd === undefined ? 'n/a' : `$${usd.toFixed(3)}`)
@@ -402,16 +440,17 @@ const money = (usd: number | undefined) => (usd === undefined ? 'n/a' : `$${usd.
  * places, people, the quest, secrets, watchers and cost, side by side, and
  * what each call kind cost.
  */
-export function regionReport(tallies: RegionTally[], how: { title: string; model: string; date: string; mock: boolean }): string {
+export function regionReport(tallies: RegionTally[], how: { title: string; mock: boolean }): string {
   const col = (f: (t: RegionTally) => string) => `| ${tallies.map(f).join(' | ')} |`
   const cost = (t: RegionTally) => (t.calls.some((c) => c.costUsd === undefined) ? undefined : t.calls.reduce((n, c) => n + (c.costUsd ?? 0), 0))
   const lines = [
     `# ${how.title}`,
     '',
-    `${how.date}, ${how.mock ? 'met het mockmodel (de vorm, niet de kwaliteit)' : `met ${how.model}`}. Per stand van de vierde draaiknop een nieuw spel: naar de rand, verder het onbekende in, naar wat de ronde schetst, en daar ${tallies[0]?.days ?? 3} speldagen gespeeld volgens \`docs/PLAYTEST.md\`. De transcripten staan ernaast.`,
+    `${how.mock ? 'Met het mockmodel (de vorm, niet de kwaliteit).' : 'Met de modellen van de speler.'} Per stand van de vierde draaiknop een nieuw spel: naar de rand, verder het onbekende in, naar wat de ronde schetst, en daar ${tallies[0]?.days ?? 3} speldagen gespeeld volgens \`docs/PLAYTEST.md\`. Elke stand kan in een eigen uur gespeeld zijn; de tabel zegt wanneer en met welk model. De transcripten staan ernaast.`,
     '',
     `| | ${tallies.map((t) => `\`${t.setting}\``).join(' | ')} |`,
     `|---|${tallies.map(() => '---').join('|')}|`,
+    `| Gespeeld ${col((t) => `${t.date ?? '?'}, ${how.mock ? 'mock' : (t.model ?? '?')}`)}`,
     `| Streek ${col((t) => t.region?.name ?? '(geen)')}`,
     `| Plekken ${col((t) => String(t.places.count))}`,
     `| Woorden per beschrijving ${col((t) => String(t.places.words))}`,
@@ -436,6 +475,7 @@ export function regionReport(tallies: RegionTally[], how: { title: string; model
     for (const q of t.quests) lines.push(`Quest ${q.name} (${q.stages} stadia): ${q.outcome ? `gehaald, ${q.outcome}` : q.started ? `begonnen, stadium ${q.stage}` : 'niet begonnen'}${q.problems.length ? `; wat niet klopt: ${q.problems.join('; ')}` : ''}.`, '')
     if (t.watchers.made.length) lines.push(`Wachters: ${t.watchers.made.map((w) => `${w}${t.watchers.fired.includes(w) ? ' (ging af)' : ''}`).join(', ')}.`, '')
     if (t.lore.length) lines.push(`Lore: ${t.lore.join(', ')}.`, '')
+    if (t.full) lines.push(`Rondes van \`full\`: ${t.full.map((r) => `${r.round} ${r.kept ? 'bewaard' : r.problems?.length ? `niet bewaard (${r.problems.slice(0, 3).join('; ')})` : 'niets bewaard'}`).join('; ')}.`, '')
     const kinds = [...new Set(t.calls.map((c) => c.kind))]
     if (kinds.length) {
       lines.push('| Soort | Aanroepen | In | Gecachet | Uit | Kosten |', '|---|---|---|---|---|---|')

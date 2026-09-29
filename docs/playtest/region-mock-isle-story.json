@@ -1,0 +1,467 @@
+{
+  "world": "isle",
+  "setting": "story",
+  "region": {
+    "id": "grey_saltings",
+    "name": "the Grey Saltings",
+    "summary": "Salt flats south of the edge, where a few families boil sea water for salt."
+  },
+  "places": {
+    "count": 8,
+    "words": 48.1,
+    "hooks": 0,
+    "exits": 1.8,
+    "names": [
+      "The Chandlery",
+      "The Cooper's Yard",
+      "The creek landing",
+      "The Chandlery",
+      "The Cooper's Yard",
+      "The Quay of the Grey Saltings",
+      "The Carters' Inn",
+      "The Market of the Grey Saltings"
+    ]
+  },
+  "people": {
+    "count": 4,
+    "withSecret": 2,
+    "names": [
+      "Tressa Carne",
+      "Hedyn Tregear",
+      "Hester Vlieland",
+      "Joris Kuipers"
+    ]
+  },
+  "quests": [
+    {
+      "id": "story_grey_saltings",
+      "name": "The Missing Tally",
+      "stages": 2,
+      "problems": [],
+      "started": true,
+      "outcome": "done"
+    }
+  ],
+  "secrets": {
+    "count": 3,
+    "hinted": 1,
+    "found": 0
+  },
+  "watchers": {
+    "made": [
+      "story_grey_saltings_befriended"
+    ],
+    "fired": [
+      "story_grey_saltings_befriended"
+    ]
+  },
+  "lore": [
+    "The Road into the Grey Saltings"
+  ],
+  "calls": [
+    {
+      "kind": "expansion",
+      "model": "mock-1",
+      "inputTokens": 3804,
+      "cachedTokens": 0,
+      "outputTokens": 190,
+      "ms": 0
+    },
+    {
+      "kind": "journey",
+      "model": "mock-1",
+      "inputTokens": 506,
+      "cachedTokens": 0,
+      "outputTokens": 53,
+      "ms": 0
+    },
+    {
+      "kind": "npc_goals",
+      "model": "mock-1",
+      "inputTokens": 951,
+      "cachedTokens": 0,
+      "outputTokens": 55,
+      "ms": 0
+    },
+    {
+      "kind": "npc_goals",
+      "model": "mock-1",
+      "inputTokens": 942,
+      "cachedTokens": 0,
+      "outputTokens": 54,
+      "ms": 0
+    },
+    {
+      "kind": "npc_goals",
+      "model": "mock-1",
+      "inputTokens": 964,
+      "cachedTokens": 0,
+      "outputTokens": 55,
+      "ms": 0
+    },
+    {
+      "kind": "npc_goals",
+      "model": "mock-1",
+      "inputTokens": 1011,
+      "cachedTokens": 0,
+      "outputTokens": 54,
+      "ms": 0
+    },
+    {
+      "kind": "npc_goals",
+      "model": "mock-1",
+      "inputTokens": 1038,
+      "cachedTokens": 0,
+      "outputTokens": 54,
+      "ms": 0
+    },
+    {
+      "kind": "npc_goals",
+      "model": "mock-1",
+      "inputTokens": 949,
+      "cachedTokens": 0,
+      "outputTokens": 54,
+      "ms": 0
+    },
+    {
+      "kind": "npc_goals",
+      "model": "mock-1",
+      "inputTokens": 916,
+      "cachedTokens": 0,
+      "outputTokens": 55,
+      "ms": 0
+    },
+    {
+      "kind": "district",
+      "model": "mock-1",
+      "inputTokens": 971,
+      "cachedTokens": 0,
+      "outputTokens": 363,
+      "ms": 0
+    },
+    {
+      "kind": "region_story",
+      "model": "mock-1",
+      "inputTokens": 14488,
+      "cachedTokens": 0,
+      "outputTokens": 392,
+      "ms": 0
+    },
+    {
+      "kind": "weave",
+      "model": "mock-1",
+      "inputTokens": 800,
+      "cachedTokens": 0,
+      "outputTokens": 184,
+      "ms": 0
+    },
+    {
+      "kind": "npc_goals",
+      "model": "mock-1",
+      "inputTokens": 991,
+      "cachedTokens": 0,
+      "outputTokens": 60,
+      "ms": 0
+    },
+    {
+      "kind": "npc_goals",
+      "model": "mock-1",
+      "inputTokens": 1048,
+      "cachedTokens": 0,
+      "outputTokens": 54,
+      "ms": 0
+    },
+    {
+      "kind": "npc_goals",
+      "model": "mock-1",
+      "inputTokens": 947,
+      "cachedTokens": 0,
+      "outputTokens": 54,
+      "ms": 0
+    },
+    {
+      "kind": "outline",
+      "model": "mock-1",
+      "inputTokens": 3923,
+      "cachedTokens": 0,
+      "outputTokens": 194,
+      "ms": 0
+    },
+    {
+      "kind": "npc_reply",
+      "model": "mock-1",
+      "inputTokens": 1418,
+      "cachedTokens": 0,
+      "outputTokens": 50,
+      "ms": 0
+    },
+    {
+      "kind": "npc_reply",
+      "model": "mock-1",
+      "inputTokens": 1587,
+      "cachedTokens": 0,
+      "outputTokens": 95,
+      "ms": 0
+    },
+    {
+      "kind": "npc_reply",
+      "model": "mock-1",
+      "inputTokens": 1441,
+      "cachedTokens": 0,
+      "outputTokens": 49,
+      "ms": 0
+    },
+    {
+      "kind": "npc_reply",
+      "model": "mock-1",
+      "inputTokens": 1487,
+      "cachedTokens": 0,
+      "outputTokens": 49,
+      "ms": 0
+    },
+    {
+      "kind": "district",
+      "model": "mock-1",
+      "inputTokens": 973,
+      "cachedTokens": 0,
+      "outputTokens": 364,
+      "ms": 0
+    },
+    {
+      "kind": "npc_goals",
+      "model": "mock-1",
+      "inputTokens": 952,
+      "cachedTokens": 0,
+      "outputTokens": 54,
+      "ms": 0
+    },
+    {
+      "kind": "npc_goals",
+      "model": "mock-1",
+      "inputTokens": 923,
+      "cachedTokens": 0,
+      "outputTokens": 55,
+      "ms": 0
+    },
+    {
+      "kind": "npc_goals",
+      "model": "mock-1",
+      "inputTokens": 1045,
+      "cachedTokens": 0,
+      "outputTokens": 54,
+      "ms": 0
+    },
+    {
+      "kind": "npc_goals",
+      "model": "mock-1",
+      "inputTokens": 967,
+      "cachedTokens": 0,
+      "outputTokens": 55,
+      "ms": 0
+    },
+    {
+      "kind": "npc_goals",
+      "model": "mock-1",
+      "inputTokens": 951,
+      "cachedTokens": 0,
+      "outputTokens": 55,
+      "ms": 0
+    },
+    {
+      "kind": "npc_goals",
+      "model": "mock-1",
+      "inputTokens": 940,
+      "cachedTokens": 0,
+      "outputTokens": 60,
+      "ms": 0
+    },
+    {
+      "kind": "npc_goals",
+      "model": "mock-1",
+      "inputTokens": 1047,
+      "cachedTokens": 0,
+      "outputTokens": 54,
+      "ms": 0
+    },
+    {
+      "kind": "npc_goals",
+      "model": "mock-1",
+      "inputTokens": 1019,
+      "cachedTokens": 0,
+      "outputTokens": 60,
+      "ms": 0
+    },
+    {
+      "kind": "npc_goals",
+      "model": "mock-1",
+      "inputTokens": 949,
+      "cachedTokens": 0,
+      "outputTokens": 54,
+      "ms": 0
+    },
+    {
+      "kind": "npc_goals",
+      "model": "mock-1",
+      "inputTokens": 1040,
+      "cachedTokens": 0,
+      "outputTokens": 54,
+      "ms": 0
+    },
+    {
+      "kind": "npc_goals",
+      "model": "mock-1",
+      "inputTokens": 965,
+      "cachedTokens": 0,
+      "outputTokens": 55,
+      "ms": 0
+    },
+    {
+      "kind": "npc_goals",
+      "model": "mock-1",
+      "inputTokens": 951,
+      "cachedTokens": 0,
+      "outputTokens": 55,
+      "ms": 0
+    },
+    {
+      "kind": "npc_goals",
+      "model": "mock-1",
+      "inputTokens": 943,
+      "cachedTokens": 0,
+      "outputTokens": 54,
+      "ms": 0
+    },
+    {
+      "kind": "npc_goals",
+      "model": "mock-1",
+      "inputTokens": 917,
+      "cachedTokens": 0,
+      "outputTokens": 55,
+      "ms": 0
+    },
+    {
+      "kind": "npc_goals",
+      "model": "mock-1",
+      "inputTokens": 964,
+      "cachedTokens": 0,
+      "outputTokens": 60,
+      "ms": 0
+    },
+    {
+      "kind": "npc_goals",
+      "model": "mock-1",
+      "inputTokens": 979,
+      "cachedTokens": 0,
+      "outputTokens": 60,
+      "ms": 0
+    },
+    {
+      "kind": "npc_goals",
+      "model": "mock-1",
+      "inputTokens": 959,
+      "cachedTokens": 0,
+      "outputTokens": 60,
+      "ms": 0
+    },
+    {
+      "kind": "chronicle",
+      "model": "mock-1",
+      "inputTokens": 5475,
+      "cachedTokens": 0,
+      "outputTokens": 18,
+      "ms": 0
+    },
+    {
+      "kind": "npc_goals",
+      "model": "mock-1",
+      "inputTokens": 1042,
+      "cachedTokens": 0,
+      "outputTokens": 54,
+      "ms": 0
+    },
+    {
+      "kind": "npc_goals",
+      "model": "mock-1",
+      "inputTokens": 980,
+      "cachedTokens": 0,
+      "outputTokens": 60,
+      "ms": 0
+    },
+    {
+      "kind": "npc_goals",
+      "model": "mock-1",
+      "inputTokens": 938,
+      "cachedTokens": 0,
+      "outputTokens": 54,
+      "ms": 0
+    },
+    {
+      "kind": "npc_goals",
+      "model": "mock-1",
+      "inputTokens": 961,
+      "cachedTokens": 0,
+      "outputTokens": 55,
+      "ms": 0
+    },
+    {
+      "kind": "npc_goals",
+      "model": "mock-1",
+      "inputTokens": 950,
+      "cachedTokens": 0,
+      "outputTokens": 55,
+      "ms": 0
+    },
+    {
+      "kind": "npc_goals",
+      "model": "mock-1",
+      "inputTokens": 945,
+      "cachedTokens": 0,
+      "outputTokens": 54,
+      "ms": 0
+    },
+    {
+      "kind": "npc_goals",
+      "model": "mock-1",
+      "inputTokens": 1000,
+      "cachedTokens": 0,
+      "outputTokens": 60,
+      "ms": 0
+    },
+    {
+      "kind": "npc_goals",
+      "model": "mock-1",
+      "inputTokens": 1035,
+      "cachedTokens": 0,
+      "outputTokens": 54,
+      "ms": 0
+    },
+    {
+      "kind": "npc_goals",
+      "model": "mock-1",
+      "inputTokens": 912,
+      "cachedTokens": 0,
+      "outputTokens": 55,
+      "ms": 0
+    },
+    {
+      "kind": "npc_goals",
+      "model": "mock-1",
+      "inputTokens": 981,
+      "cachedTokens": 0,
+      "outputTokens": 60,
+      "ms": 0
+    },
+    {
+      "kind": "npc_goals",
+      "model": "mock-1",
+      "inputTokens": 958,
+      "cachedTokens": 0,
+      "outputTokens": 60,
+      "ms": 0
+    }
+  ],
+  "waitedSecs": 0,
+  "days": 3,
+  "date": "2026-09-29",
+  "model": "mock-1"
+}

@@ -1,9 +1,10 @@
 # Een nieuwe streek over de zee van Skerrow (mock)
 
-2026-09-29, met het mockmodel (de vorm, niet de kwaliteit). Per stand van de vierde draaiknop een nieuw spel: naar de rand, verder het onbekende in, naar wat de ronde schetst, en daar 3 speldagen gespeeld volgens `docs/PLAYTEST.md`. De transcripten staan ernaast.
+Met het mockmodel (de vorm, niet de kwaliteit). Per stand van de vierde draaiknop een nieuw spel: naar de rand, verder het onbekende in, naar wat de ronde schetst, en daar 3 speldagen gespeeld volgens `docs/PLAYTEST.md`. Elke stand kan in een eigen uur gespeeld zijn; de tabel zegt wanneer en met welk model. De transcripten staan ernaast.
 
 | | `story` |
 |---|---|
+| Gespeeld | 2026-09-29, mock |
 | Streek | the Grey Saltings |
 | Plekken | 8 |
 | Woorden per beschrijving | 48.1 |

@@ -7,7 +7,7 @@ import { askAdvice, testCall } from '../node/ai/advisor'
 import { costUsd } from '../node/ai/pricing'
 import { listWorlds, loadContentFromDir, readContentFiles } from '../node/content'
 import { kindSituation } from '../engine/trials'
-import { measuring, playRegion, regionReport, REGION_SETTINGS, type RegionSetting, type RegionTally } from '../node/regionplay'
+import { keepTally, keptTallies, measuring, playRegion, REGION_KINDS, regionReport, REGION_SETTINGS, type RegionSetting } from '../node/regionplay'
 import type { BuildStore } from '../node/ai/builds'
 import type { AiService } from '../node/ai/service'
 
@@ -233,10 +233,12 @@ export async function trialRun(ai: AiService, kinds: string, contentRoot: string
  * The played proof of a new region (M10.25 (4)), with the player's models:
  * the Holleveen's south edge explored once per setting of the fourth dial,
  * and Skerrow over the sea at `story`, three game days each (the harness in
- * src/node/regionplay.ts). Within the cap over all of it. Transcripts and the
- * comparison go to docs/playtest/region-*; with record, every reply as a
- * fixture under tests/fixtures/model/<kind>/, read again as its kind's
- * situation reads it.
+ * src/node/regionplay.ts). Within the cap over all of it. Each setting's
+ * tally is kept in docs/playtest/region-<world>-<setting>.json, and the
+ * comparison is made from every tally there, so settings played in separate
+ * hours (--setting) make one report. With record, the replies of the calls
+ * that build the region (REGION_KINDS) become fixtures under
+ * tests/fixtures/model/<kind>/, read again as its kind's situation reads it.
  */
 export async function regionTrial(ai: TrialAi, contentRoot: string, appPath: string, how: { capUsd: number; setting: RegionSetting | ''; record: boolean }, say: (line: string) => void): Promise<boolean> {
   const dir = join(appPath, 'docs/playtest')
@@ -248,19 +250,19 @@ export async function regionTrial(ai: TrialAi, contentRoot: string, appPath: str
   for (const world of ['base', 'isle'] as const) {
     const content = world === 'base' ? base : await loadContentFromDir(contentRoot, 'isle')
     const settings = REGION_SETTINGS.filter((s) => (how.setting ? s === how.setting : world === 'base' || s === 'story'))
-    const tallies: RegionTally[] = []
     for (const setting of settings) {
       const llm = measuring(ai.gateway, { price: costUsd, capUsd: Math.max(0, how.capUsd - spent) })
       const started = Date.now()
       const { transcript, tally } = await playRegion({ content, world, setting, llm, seed: 7 })
       const cost = llm.calls.reduce((n, c) => n + (c.costUsd ?? 0), 0)
       spent += cost
-      tallies.push(tally)
+      keepTally(dir, 'region', tally)
       writeFileSync(join(dir, `region-${world}-${setting}.txt`), `${world === 'base' ? 'The Holleveen, south edge' : 'Skerrow, over the sea'}; the dial at ${setting}; seed 7; ${llm.calls[0]?.model ?? 'no model'}\n${transcript}\n`)
       say(`${world} ${setting}: ${tally.region?.name ?? 'nothing charted'}, ${tally.places.count} places, ${tally.people.count} people, ${tally.quests.length} quests, ${llm.calls.length} calls, $${cost.toFixed(3)}, ${Math.round((Date.now() - started) / 1000)}s`)
       if (!tally.region) all = false
       if (how.record) {
         for (const [n, call] of llm.calls.entries()) {
+          if (!REGION_KINDS.includes(call.kind)) continue
           const situation = await kindSituation(call.kind, { base, isle })
           const entry = { kind: call.kind, about: `region play: ${world}, the dial at ${setting}, call ${n + 1}`, model: call.model, provider: '', date: today(), usage: { inputTokens: call.inputTokens, cachedTokens: call.cachedTokens, outputTokens: call.outputTokens }, reply: call.reply, problems: situation ? situation.check(call.reply) : [] }
           const folder = join(appPath, 'tests/fixtures/model', call.kind)
@@ -273,7 +275,8 @@ export async function regionTrial(ai: TrialAi, contentRoot: string, appPath: str
         break
       }
     }
-    if (!how.setting && tallies.length) writeFileSync(join(dir, `region-${world}.md`), `${regionReport(tallies, { title: world === 'base' ? 'Een nieuwe streek ten zuiden van de Holleveen, per stand' : 'Een nieuwe streek over de zee van Skerrow', model: tallies.flatMap((t) => t.calls)[0]?.model ?? '', date: today(), mock: false })}\n`)
+    const kept = keptTallies(dir, 'region', world)
+    if (kept.length) writeFileSync(join(dir, `region-${world}.md`), `${regionReport(kept, { title: world === 'base' ? 'Een nieuwe streek ten zuiden van de Holleveen, per stand' : 'Een nieuwe streek over de zee van Skerrow', mock: false })}\n`)
     if (spent >= how.capUsd) break
   }
   say(`total: $${spent.toFixed(3)}`)

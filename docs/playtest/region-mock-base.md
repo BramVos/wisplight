@@ -1,9 +1,10 @@
 # Een nieuwe streek ten zuiden van de Holleveen, per stand (mock)
 
-2026-09-29, met het mockmodel (de vorm, niet de kwaliteit). Per stand van de vierde draaiknop een nieuw spel: naar de rand, verder het onbekende in, naar wat de ronde schetst, en daar 3 speldagen gespeeld volgens `docs/PLAYTEST.md`. De transcripten staan ernaast.
+Met het mockmodel (de vorm, niet de kwaliteit). Per stand van de vierde draaiknop een nieuw spel: naar de rand, verder het onbekende in, naar wat de ronde schetst, en daar 3 speldagen gespeeld volgens `docs/PLAYTEST.md`. Elke stand kan in een eigen uur gespeeld zijn; de tabel zegt wanneer en met welk model. De transcripten staan ernaast.
 
 | | `outline` | `story` | `full` |
 |---|---|---|---|
+| Gespeeld | 2026-09-29, mock | 2026-09-29, mock | 2026-09-29, mock |
 | Streek | the Grey Saltings | the Grey Saltings | the Grey Saltings |
 | Plekken | 8 | 8 | 9 |
 | Woorden per beschrijving | 49.8 | 49.8 | 47.9 |
@@ -79,6 +80,8 @@ Wachters: story_grey_saltings_befriended (ging af).
 
 Lore: The Road into the Grey Saltings.
 
+Rondes van `full`: places bewaard; polish niets bewaard; professions bewaard; people bewaard; economy bewaard; watcher niets bewaard.
+
 | Soort | Aanroepen | In | Gecachet | Uit | Kosten |
 |---|---|---|---|---|---|
 | `expansion` | 1 | 4421 | 0 | 190 | n/a |
@@ -86,7 +89,7 @@ Lore: The Road into the Grey Saltings.
 | `npc_goals` | 80 | 85382 | 0 | 4441 | n/a |
 | `chronicle` | 3 | 17717 | 0 | 257 | n/a |
 | `district` | 2 | 2584 | 0 | 728 | n/a |
-| `world_step` | 5 | 103731 | 0 | 465 | n/a |
+| `world_step` | 5 | 103813 | 0 | 465 | n/a |
 | `world_polish` | 1 | 10359 | 0 | 15 | n/a |
 | `region_story` | 1 | 14685 | 0 | 394 | n/a |
 | `weave` | 1 | 772 | 0 | 219 | n/a |
