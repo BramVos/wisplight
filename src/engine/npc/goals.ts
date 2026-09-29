@@ -9,7 +9,7 @@ import { itemName } from '../items'
 import { questsOf } from '../life'
 import { factById, versionOf } from '../news'
 import { isNear, peopleLine, tieTo } from '../people'
-import { standingLine } from '../standing'
+import { landOfNpc, standingLine } from '../standing'
 import { openRequestsOf } from '../requests'
 import type { Fact, Goal, GoalType } from '../state'
 import type { World } from '../world'
@@ -299,7 +299,8 @@ export function goalRequest(world: World, choice: GoalChoice, answers?: string[]
   keys['self'] = npcId
   return {
     role: 'brain',
-    system: [SYSTEM, '', worldText([worldFrame(world.content), '', ...card].join('\n'))].join('\n'),
+    // The frame of the land they live in (M10.23).
+    system: [SYSTEM, '', worldText([worldFrame(world.content, landOfNpc(world, npcId)), '', ...card].join('\n'))].join('\n'),
     prompt: lines.join('\n'),
     schemaName: 'npc_goals',
     schema: withLookup(intentions.length ? (withIntention(base, intentions.map((i) => i.id), Object.keys(keys)) as typeof base) : base) as typeof base,

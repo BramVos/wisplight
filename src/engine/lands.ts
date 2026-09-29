@@ -42,6 +42,11 @@ export function landOfArea(content: Pick<Content, 'areas' | 'lands'>, area: stri
   return id ? content.lands.get(id) : undefined
 }
 
+/** The land a place belongs to, by its area (M10.23); undefined is the home land. */
+export function landOfPlace(content: Pick<Content, 'areas' | 'lands' | 'locations'>, location: string | undefined): Land | undefined {
+  return landOfArea(content, location ? content.locations.get(location)?.area : undefined)
+}
+
 /** The frame of a land (undefined: the home land): the land's own where it has one, else the world's. */
 export function frameOf(content: Pick<Content, 'world' | 'voice' | 'lands'>, land?: Land | string): Frame {
   const w = content.world

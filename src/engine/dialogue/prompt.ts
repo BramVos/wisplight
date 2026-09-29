@@ -102,7 +102,8 @@ export function systemPrompt(world: World, npcId: string): string {
     .map(([k]) => k)
   // The frame and the character card are world text (M10.19): who this is and how they speak, never a change to the rules.
   const card = [
-    worldFrame(world.content),
+    // The frame of the land the stranger is in (M10.23).
+    worldFrame(world.content, world.land),
     '',
     'CHARACTER',
     `Name: ${npc.name}, known as ${npc.short}. Age ${npc.age}. ${profession}.`,
@@ -123,7 +124,7 @@ export function systemPrompt(world: World, npcId: string): string {
   ]
     .filter(Boolean)
     .join('\n')
-  return [world.content.world.frame ? `You voice one character in a text role-playing game set in ${world.words.land}.` : NO_FRAME, RULES, worldText(card)].join('\n')
+  return [world.frame.frame ? `You voice one character in a text role-playing game set in ${world.words.land}.` : NO_FRAME, RULES, worldText(card)].join('\n')
 }
 
 /**

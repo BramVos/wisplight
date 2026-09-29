@@ -2,11 +2,11 @@ import { callName } from '../content'
 import { queueSignal } from '../signals'
 import { ownerOf } from './ownership'
 import type { Output } from '../commands'
-import { itemName, matchItem, withArticle } from '../items'
+import { DEFAULT_MONEY, itemName, matchItem, withArticle } from '../items'
 import { recordFact } from '../news'
 import { remember } from '../npc/execute'
 import { playerCheck } from '../rules/player'
-import { upper, type World } from '../world'
+import { upper, wordsOf, type World, type WorldWords } from '../world'
 import { approve } from './companions'
 import { applyEffect } from '../dialogue/relations'
 import { deed, setMood, shiftBond } from './deeds'
@@ -64,7 +64,23 @@ export function lawCell(world: World): string | undefined {
 
 export function lawAt(world: World, location: string): string {
   const area = world.content.locations.get(location)?.area
-  return world.content.world.towns.find((t) => t.area === area)?.id ?? LAND_LAW
+  // A town's own, else the law of the land it is in (M10.23: a land's law is kept by the land's id).
+  return world.content.world.towns.find((t) => t.area === area)?.id ?? world.content.areas.get(area ?? '')?.land ?? LAND_LAW
+}
+
+/** Whether a law is a land's (M10.23: the home land's, or another land's), not a town's. */
+export function isLandLaw(world: World, law: string): boolean {
+  return law === LAND_LAW || world.content.lands.has(law)
+}
+
+/** The law of a land by its id, in words (M10.23): another land's, or the home land's. */
+export function lawOf(world: World, law: string): WorldWords['law'] {
+  return wordsOf(world.content, world.content.lands.get(law)).law
+}
+
+/** The id of the law of the land the stranger is in (M10.23). */
+export function landLawHere(world: World): string {
+  return world.land ?? LAND_LAW
 }
 
 /** A town with rights of its own, by the id of its law. */
@@ -106,8 +122,9 @@ export function whoNoticed(world: World, place: string, except: string[] = [], e
  * the second coin. In the Nethermarch that is twenty guilders, five guilders and two stuivers, as before.
  */
 export function fineFor(world: World, kind: Crime['kind'], value: number): number {
-  const own = world.content.world.law?.fines
-  const coins = world.coins
+  // The law of the land the stranger is in (M10.23); a fine by the coins is by the world's, as every price.
+  const own = world.frame.law?.fines
+  const coins = world.content.world.money?.units ?? DEFAULT_MONEY
   const large = coins[0]!.value
   const small = (coins[1] ?? coins[0]!).value
   if (heardFor(world, kind)) return 0
@@ -118,7 +135,7 @@ export function fineFor(world: World, kind: Crime['kind'], value: number): numbe
 
 /** Whether no fine buys a crime off in this world, but a hearing (world.yaml law.fines: "hearing", M10.20). */
 export function heardFor(world: World, kind: Crime['kind']): boolean {
-  const own = world.content.world.law?.fines
+  const own = world.frame.law?.fines
   return (kind === 'murder' && own?.murder === 'hearing') || (kind === 'assault' && own?.assault === 'hearing')
 }
 
@@ -234,10 +251,10 @@ function caughtInTheAct(world: World, entry: Crime): Output[] {
   const victim = entry.victim!
   const here = entry.place
   const name = callName(world.npc(victim))
-  const officer = world.words.law.npc
+  const officer = lawOf(world, entry.law).npc
   const out: Output[] = []
   // The law is here: it steps in, now.
-  if (officer && officer !== victim && world.content.npcs.has(officer) && world.npcsAt(here).includes(officer) && world.npcState(officer).activity !== 'asleep' && entry.law === LAND_LAW) {
+  if (officer && officer !== victim && world.content.npcs.has(officer) && world.npcsAt(here).includes(officer) && world.npcState(officer).activity !== 'asleep' && isLandLaw(world, entry.law)) {
     // Reported by the one who saw it: the fine and the law's grievance follow below, and he is here to have it out.
     if (!entry.witnesses.includes(officer)) entry.witnesses.push(officer)
     out.push({ kind: 'narration', text: `${callName(world.npc(officer))} steps in between you and ${name}.` })
@@ -528,8 +545,8 @@ export function crimesHour(world: World): void {
     // Suspicion is no proof (M10.3): the stranger suspected, the village is colder, and that is all.
     if (crime.suspect === 'player') coolVillage(world, crime)
     // The schout goes to look, if it is his to look into.
-    const officerId = world.words.law.npc
-    const schout = officerId && world.content.npcs.has(officerId) && world.alive(officerId) && crime.law === LAND_LAW ? world.state.npcs[officerId] : undefined
+    const officerId = isLandLaw(world, crime.law) ? lawOf(world, crime.law).npc : undefined
+    const schout = officerId && world.content.npcs.has(officerId) && world.alive(officerId) ? world.state.npcs[officerId] : undefined
     if (schout && !schout.following) {
       schout.goals = schout.goals.filter((g) => g.id !== `investigate_${crime.id}`)
       schout.goals.push({ id: `investigate_${crime.id}`, type: 'Investigate', target: crime.place, priority: 1, source: 'ai', created: world.now, until: world.now + 24 * HOUR })

@@ -6,7 +6,7 @@ import { MINUTES_PER_DAY } from './clock'
 import type { NpcState } from './state'
 import { nameOf, planLines } from './aftermath'
 import { planOf } from './quests/plans'
-import { standingName, standingOf } from './standing'
+import { landOfNpc, standingName, standingOf } from './standing'
 
 // Playtest tools of the editor (M8, FO chapter 15, "Speeltest"): the world
 // runs a week or a month without a player, and the report says what went
@@ -209,7 +209,7 @@ function lifeOf(engine: Engine, id: string): string[] {
   const world = engine.world
   const now = world.npc(id)
   const was = world.content.npcs.get(id)!
-  const lines = [`Lives at ${world.location(now.home).name}${now.home !== was.home ? ` (moved from ${world.location(was.home).name})` : ''}.`, `${standingName(world, standingOf(world, id)).replace(/^./, (c) => c.toUpperCase())}.`]
+  const lines = [`Lives at ${world.location(now.home).name}${now.home !== was.home ? ` (moved from ${world.location(was.home).name})` : ''}.`, `${standingName(world, standingOf(world, id), landOfNpc(world, id)).replace(/^./, (c) => c.toUpperCase())}.`]
   lines.push(now.work ? `Works at ${world.location(now.work).name}${now.work !== was.work ? ' (new)' : ''}.` : `No work${was.work ? ` (left ${world.location(was.work).name})` : ''}.`)
   if (now.household !== was.household) lines.push(now.household ? `Household ${now.household} now.` : 'No household any more.')
   for (const [other, change] of Object.entries(world.state.layer?.ties?.[id] ?? {})) lines.push(change ? `${nameOf(world, other)}: ${change.role} since ${world.date(change.t).split(',')[0]}.` : `No tie with ${nameOf(world, other)} any more.`)

@@ -1,3 +1,4 @@
+import { frameOf } from '../lands'
 import { checkContent, LocationSchema, NpcSchema, type Content, type Direction } from '../content'
 import type { LlmRequest } from '../dialogue/llm'
 import { worldFrame } from '../dialogue/prompt'
@@ -222,7 +223,7 @@ export function makeDistrict(world: World, topic: string, id: string, words: Dis
   }
   // Only what passed counts as the chronicler's; without any, another district gets one person who lives there, from the world's names.
   const theirs = placed.size > 0 || npcs.length > 0
-  const pool = world.content.world.names
+  const pool = frameOf(world.content, world.content.topics.get(topic)?.land).names
   if (!theirs && !first && pool) {
     const pronoun: 'she' | 'he' = rng(0, 1) ? 'she' : 'he'
     const full = `${pool[pronoun][rng(0, pool[pronoun].length - 1)]} ${pool.family[rng(0, pool.family.length - 1)]}`
@@ -399,7 +400,8 @@ export function districtRequest(world: World, key: string): LlmRequest {
   return {
     role: 'chronicler',
     system: [
-      worldText([worldFrame(world.content), voiceSummary(world.content)].filter(Boolean).join('\n\n')),
+      // The frame of the land the town is in (M10.23).
+      worldText([worldFrame(world.content, world.content.topics.get(topic)?.land), voiceSummary(world.content, world.content.topics.get(topic)?.land)].filter(Boolean).join('\n\n')),
       '',
       'You make one district of a far town playable in a text game: you name and describe its places and people. The shape is fixed by the game; you write the words. Never contradict what is known of the town; use no name that is TAKEN.',
       `PLACES: up to ${MOST_PLACES}, each with a key, a name, a description, and near: the key of the place it lies next to (or leave it out: next to the way in). A description has three to five sentences and at most seventy words, second person, present tense, one sense that is not sight, a hint at one way out rather than a list, and never opens with its own name. Plain words, in the tone of the world.`,

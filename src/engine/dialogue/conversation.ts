@@ -2,7 +2,7 @@ import { knob } from '../knobs'
 import { amendsIn } from '../amends'
 import { asksAge, knownName, knowsOfPerson, learnTie, learnWork, publicShort, toldAge } from '../acquaintance'
 import type { Output } from '../commands'
-import { parseMoney } from '../items'
+
 import { areaTopicId, callName } from '../content'
 import { factById, heardBy, newsAbout, playerTells } from '../news'
 import type { Fact, FarName, TalkState } from '../state'
@@ -101,7 +101,7 @@ export class Dialogue {
   /** Every word the world's content uses, for spotting names the model made up. */
   private vocabulary(): Set<string> {
     // The chronicler's instruction is not the world: its examples are no names of it.
-    this.words ??= vocabularyOf({ ...this.world.content, chronicler: undefined }, worldFrame(this.world.content), this.world.calendar.months, this.world.calendar.weekdays, (this.world.state.lore?.far ?? []).map((f) => f.name), (this.world.state.lore?.people ?? []).map((p) => p.name), (this.world.state.chronicle?.lore ?? []).map((l) => l.name))
+    this.words ??= vocabularyOf({ ...this.world.content, chronicler: undefined }, worldFrame(this.world.content, this.world.land), this.world.calendar.months, this.world.calendar.weekdays, (this.world.state.lore?.far ?? []).map((f) => f.name), (this.world.state.lore?.people ?? []).map((p) => p.name), (this.world.state.chronicle?.lore ?? []).map((l) => l.name))
     return this.words
   }
 
@@ -373,11 +373,11 @@ export class Dialogue {
     let about: string
 
     if (kind === 'bribe') {
-      const amount = parseMoney(text, world.coins)
+      const amount = world.parseMoney(text)
       if (!amount) return [{ kind: 'error', text: `Bribe with how much? For example: BRIBE ${callName(npc).toUpperCase()} 2 ${(world.coins[1] ?? world.coins[0]!).plural?.toUpperCase() ?? `${(world.coins[1] ?? world.coins[0]!).name.toUpperCase()}S`}.` }]
       if (amount > world.state.player.money) return [{ kind: 'error', text: `You only have ${world.money(world.state.player.money)}.` }]
       // Each small coin of the world makes it easier (M10.17: the world's second coin, not the Nethermarch's stuiver).
-      const small = world.coins[1]?.value ?? world.coins[0]!.value
+      const small = world.coinWorth(world.coins[1] ?? world.coins[0]!)
       result = playerCheck(world, 'persuasion', dcFor(18 - Math.floor(amount / small), band, npc.personality.honesty * 2))
       about = `bribe them with ${world.money(amount)}`
       if (succeeded(result)) {
@@ -927,7 +927,7 @@ export class Dialogue {
       prompt += `\nCLAIM: if the stranger's words just said something is so about ${ctx.claimable.map((id) => `${id} (${this.topics.name(id)})`).join(', ')}, put it in claim: subject the id; key at (value: the place id where they are${places.length ? `, one of ${places.join(', ')}` : ''}), alive (yes or no), state (of a place: normal, flooded, damaged, occupied, leaking) or working (of a place: yes or no). Otherwise subject none. Only what the stranger said, never what you think.`
     }
     if (sketch) {
-      const domains = world.content.world.sketch?.domains ?? 'your family, your trade or your past'
+      const domains = world.frame.sketch?.domains ?? 'your family, your trade or your past'
       prompt += `\nSOMEONE NEW: this talk touches ${domains}. If it fits, you may name one person of your own who is in none of your lists: your ${sketch.bonds.join(', ')}, living in one of ${sketch.places.join(', ')}. A first name only, in one sentence, and put them in person. Otherwise person.name is empty and bond none.`
     }
     if (offered.length) {

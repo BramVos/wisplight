@@ -1,3 +1,4 @@
+import { frameOf } from '../lands'
 import { GameClock } from '../clock'
 import type { Content } from '../content'
 import { weather } from '../weather'
@@ -207,7 +208,8 @@ export function hexMapData(world: World, options: { width?: number; height?: num
   const fresh = freshBits(world, map)
   const trail = trailBits(world, map)
   const range = you ? sight(world, map, map.cell(you)!) : 0
-  const palette = world.content.world.map?.palette ?? DEFAULT_PALETTE
+  // The palette of the land the region lies in (M10.23): the map changes colour at the border.
+  const palette = frameOf(world.content, map.region.land).palette ?? DEFAULT_PALETTE
   const misty = ['fog', 'storm'].includes(weather(world))
   const light: HexMapData['light'] = misty ? 'mist' : new GameClock(world.now).isNight ? 'night' : 'day'
   const keys: string[] = []

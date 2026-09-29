@@ -1,3 +1,4 @@
+import { frameOf } from '../lands'
 import { withProps } from '../props'
 import { withFarPlaces, type FarPlace } from './far'
 import { withDistricts } from './districts'
@@ -148,7 +149,8 @@ const fillText = (text: string, vars: Record<string, string>, pronoun: 'she' | '
 export function arrive(world: World, templateId: string, settlement: string): string[] | undefined {
   const t = world.content.newcomers.get(templateId)
   const s = world.content.settlements.get(settlement)
-  const names = world.content.world.names
+  // Names of the land the settlement is in (M10.23).
+  const names = frameOf(world.content, world.content.areas.get(settlement)?.land).names
   if (!t || !s || !names) return undefined
   const g = growth(world)
   const season = Math.floor(world.now / SEASON)

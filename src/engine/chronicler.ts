@@ -161,7 +161,8 @@ export function buildInput(world: World, run: ChronicleRun): ChronicleInput {
     // The world's own guide and its frame (M10.19): they shape tone and lore, never the rules.
     instruction: world.content.chronicler ? worldGuide(withoutReference(world.content.chronicler)) : FALLBACK_INSTRUCTION,
     // With the world's voice (M10.10): oaths, sayings, time and what is not here, so lore comes in the same voice.
-    world: worldText([worldFrame(world.content), voiceSummary(world.content)].filter(Boolean).join('\n\n')),
+    // The frame of the land the stranger is in (M10.23).
+    world: worldText([worldFrame(world.content, world.land), voiceSummary(world.content, world.land)].filter(Boolean).join('\n\n')),
     catalogue: catalogue(world),
     now: when(world, world.now),
     lines: chronicleLines,
@@ -328,7 +329,7 @@ export function lookupCards(world: World, ids: string[]): Card[] {
 function vocabulary(world: World): Set<string> {
   return vocabularyOf(
     { ...world.content, chronicler: undefined },
-    worldFrame(world.content),
+    worldFrame(world.content, world.land),
     world.calendar.months,
     world.calendar.weekdays,
     (world.state.lore?.far ?? []).map((f) => f.name),

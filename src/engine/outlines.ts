@@ -72,7 +72,8 @@ export function outlineInput(world: World, topic: string): OutlineInput {
     .map((o) => ({ name: o.name, text: o.summary }))
   return {
     instruction: world.content.chronicler ? worldGuide(withoutReference(world.content.chronicler)) : '',
-    world: worldText([worldFrame(world.content), voiceSummary(world.content)].filter(Boolean).join('\n\n')),
+    // The frame of the land the far place is in (M10.23).
+    world: worldText([worldFrame(world.content, t.land), voiceSummary(world.content, t.land)].filter(Boolean).join('\n\n')),
     place: { id: topic, name: t.name, kind: t.kind === 'place' ? 'place' : t.kind, where: farWhere(world, topic) ?? '', known: [t.summary, t.details, t.story, ...[...world.content.outlands.values()].filter((o) => o.topic === topic).map((o) => tradeLine(world, o.id))].filter((x): x is string => Boolean(x)) },
     taken: [...taken].sort(),
     neighbours,

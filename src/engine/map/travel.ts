@@ -293,7 +293,7 @@ export function hexName(world: World, map: RegionMap, hex: Hex): string {
   const cell = map.cell(hex)!
   const where = nearest(map, hex)
   // The land by the world's own name for it (M10.17: Skerrow's salt marsh is no fen).
-  const named = (land: string) => terrainName(world.content.world.map?.palette, land)
+  const named = (land: string) => terrainName(world.frame.palette, land)
   const ground = cell.way
     ? `On ${cell.way.name}`
     : onKnownRidge(world, cell)
@@ -387,7 +387,7 @@ export function describeHex(world: World, hex: Hex): Output {
             : `A narrow path of trodden earth winds on between the ${cell.land === 'fen' ? 'pools' : 'ditches'}.`),
     )
   } else if (onKnownRidge(world, cell)) {
-    lines.push(`Under the sedge the ground is firm here: the ${terrainName(world.content.world.map?.palette, 'ridge')}, if you keep to it.`)
+    lines.push(`Under the sedge the ground is firm here: the ${terrainName(world.frame.palette, 'ridge')}, if you keep to it.`)
   } else {
     lines.push(landLine(world, map, cell))
   }
@@ -437,7 +437,7 @@ export function hexLocation(world: World, id: string): Location | undefined {
 function landLine(world: World, map: RegionMap, cell: Cell): string {
   if (!cell.terrain) return LAND[cell.land]
   const own = map.region.lands?.[cell.terrain]?.text
-  return own ?? `The ${terrainName(world.content.world.map?.palette, cell.terrain)} lies all around you.`
+  return own ?? `The ${terrainName(world.frame.palette, cell.terrain)} lies all around you.`
 }
 
 /** The grounds of the economy that a kind of land is (M10.5). */
@@ -674,7 +674,7 @@ export function walk(world: World, plan: WalkPlan, pass: (minutes: number) => Ou
       }
       if (options.length > 1) {
         // Which way (after the M10 playtest): a choice, each way with where it leads, answered with a number.
-        const what = plan.way === 'ridge' ? `the ${terrainName(world.content.world.map?.palette, 'ridge')}` : 'it'
+        const what = plan.way === 'ridge' ? `the ${terrainName(world.frame.palette, 'ridge')}` : 'it'
         const choice = offer(
           world,
           `Follow ${what} which way?`,
@@ -738,7 +738,7 @@ export function walk(world: World, plan: WalkPlan, pass: (minutes: number) => Ou
     }
     if (stepCell.bog) {
       minutes += 10
-      reason = sink(world, terrainName(world.content.world.map?.palette, stepCell.terrain ?? 'fen'))
+      reason = sink(world, terrainName(world.frame.palette, stepCell.terrain ?? 'fen'))
       break
     }
     const stop = map.sign(stepCell)?.stops
@@ -764,7 +764,7 @@ export function walk(world: World, plan: WalkPlan, pass: (minutes: number) => Ou
   if (weather(world) === 'fog' && startWeather !== 'fog' && !reason) reason = 'A mist has come up while you walked.'
   const how = plan.kind === 'head' ? `You head ${pretty(plan.wind)}` : plan.kind === 'to' ? `You make your way towards ${plan.name}` : `You follow ${plan.way === 'ridge' ? 'the dry ridge' : (plan.label ?? plan.way)}`
   // The way you follow is said once, by where it leads (after the M10 playtest); "over" names the rest.
-  const over = [...lands].filter((l) => !(plan.kind === 'follow' && l === plan.way)).map((l) => (l === 'water' ? (frozen(world) ? 'the ice' : 'open water, poling') : ['fen', 'fields', 'woods', 'heath'].includes(l) ? terrainName(world.content.world.map?.palette, l) : l))
+  const over = [...lands].filter((l) => !(plan.kind === 'follow' && l === plan.way)).map((l) => (l === 'water' ? (frozen(world) ? 'the ice' : 'open water, poling') : ['fen', 'fields', 'woods', 'heath'].includes(l) ? terrainName(world.frame.palette, l) : l))
   // A walk of more than three steps is told in one paragraph (M10.11), where the world has the sentences for it.
   if (steps > 3 && tellsJourneys(world)) {
     const met = metOnTheWay(world, [...trail].flatMap((key) => {
@@ -967,7 +967,7 @@ export function waysFrom(world: World, at: Hex): { label: string; way: string; w
     }
   }
   // A ridge the stranger knows (after the M10 playtest): a way to follow too, by its name in this world.
-  if (ridgeHere(world, at)) out.push({ label: `the ${terrainName(world.content.world.map?.palette, 'ridge')}`, way: 'ridge' })
+  if (ridgeHere(world, at)) out.push({ label: `the ${terrainName(world.frame.palette, 'ridge')}`, way: 'ridge' })
   return out
 }
 

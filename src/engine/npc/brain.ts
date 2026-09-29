@@ -12,7 +12,7 @@ import { isFailure, Planner } from './planner'
 import { unreported } from './acts'
 import { callName } from '../content'
 import { standingOf } from '../standing'
-import { LAND_LAW } from '../social/crime'
+import { isLandLaw, lawOf } from '../social/crime'
 import { factById, heardBy } from '../news'
 import { heardClaim, reconsider } from '../belief'
 
@@ -339,8 +339,8 @@ function nearestWhere(world: World, npcId: string, test: (location: string) => b
 /** Who keeps a law: the members of the faction that keeps it, or the officer of the land's law (world.yaml). */
 function lawOfficer(world: World, law: string): string | undefined {
   const faction = [...world.content.factions.values()].find((f) => f.law === law)
-  const officer = world.words.law.npc
-  return faction?.members.find((id) => world.alive(id)) ?? (law === LAND_LAW && officer && world.alive(officer) ? officer : undefined)
+  const officer = isLandLaw(world, law) ? lawOf(world, law).npc : undefined
+  return faction?.members.find((id) => world.alive(id)) ?? (officer && world.alive(officer) ? officer : undefined)
 }
 
 /** The nearest known place with this tag, from home (M8.2: the tags play and holy, not the Nethermarch's ids). */

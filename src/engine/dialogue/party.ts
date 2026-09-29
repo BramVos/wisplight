@@ -39,7 +39,7 @@ export async function partyTalk(world: World, topics: TopicRegistry, knowledge: 
     const fixed = fixNotHere(world, swearRight(line, oathsFor(world, id))).text
     return strangeWords(world, fixed).length ? undefined : fixed
   }
-  const lines = llm ? await ask(llm, cards, question, vocabulary, words, worldText(worldFrame(world.content)), fit, knob(world, 'talk.party_words')) : undefined
+  const lines = llm ? await ask(llm, cards, question, vocabulary, words, worldText(worldFrame(world.content, world.land)), fit, knob(world, 'talk.party_words')) : undefined
   return [
     { kind: 'text', text: `You: "${question}"` },
     ...cards.map((card, i) => ({ kind: 'speech' as const, text: `${card.name}: "${lines?.[i] ?? fallback(world, card, topic ? topics.name(topic) : undefined)}"`, ...(lines?.[i] ? { source: 'model' as const } : {}) })),

@@ -1,3 +1,4 @@
+import { frameOf } from './lands'
 import { knob } from './knobs'
 import { GameClock } from './clock'
 import { callName, type RelationRole } from './content'
@@ -50,7 +51,8 @@ export function sketchById(world: World, id: string): SketchFigure | undefined {
 
 /** The world's bonds for someone new, as what they are to the speaker. */
 export function sketchBonds(world: World): Record<string, RelationRole> {
-  return world.content.world.sketch?.bonds ?? DEFAULT_BONDS
+  // The bonds of the land the stranger is in (M10.23).
+  return world.frame.sketch?.bonds ?? DEFAULT_BONDS
 }
 
 /**
@@ -180,7 +182,8 @@ export function sketchFacts(world: World, s: SketchFigure, npcId: string): strin
  */
 export function sketchNpc(world: World, s: SketchFigure, at: { id: string; home: string; work: string; area: string; profession: string }, words?: { name?: string; looks?: string; speech?: string; fact?: string }): Record<string, unknown> {
   const rng = (lo: number, hi: number) => world.rng.int('growth', lo, hi)
-  const family = world.content.world.names?.family ?? ['Smit']
+  // Family names of the land they live in (M10.23).
+  const family = frameOf(world.content, world.content.areas.get(at.area)?.land).names?.family ?? ['Smit']
   const surname = words?.name?.trim().split(/\s+/).slice(1).join(' ')
   const fullName = surname && /^[\p{L}' -]{2,30}$/u.test(surname) ? `${s.name} ${surname}` : `${s.name} ${family[rng(0, family.length - 1)]}`
   const pronoun = s.pronoun === 'they' ? (rng(0, 1) ? 'she' : 'he') : s.pronoun

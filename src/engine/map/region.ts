@@ -1,3 +1,4 @@
+import { frameOf } from '../lands'
 import type { Content, Region } from '../content'
 import { centre, distance, type Hex, hexAt, hexKey, line, neighbours } from './hexgrid'
 import { signsOf, type Sign } from './palette'
@@ -57,7 +58,8 @@ export class RegionMap {
     readonly region: Region,
   ) {
     this.size = region.hex
-    this.signs = signsOf(content.world.map?.palette)
+    // The signs of the land the region lies in (M10.23), else the world's.
+    this.signs = signsOf(frameOf(content, region.land).palette)
     this.firm = this.signs.find(([, sign]) => sign.firm)?.[0]
     this.cols = Math.round(region.size[0] / region.hex)
     this.rows = Math.round(region.size[1] / region.hex)

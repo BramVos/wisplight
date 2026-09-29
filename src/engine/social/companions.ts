@@ -1,5 +1,5 @@
 import { knob } from '../knobs'
-import { LAND_LAW } from './crime'
+import { landLawHere } from './crime'
 import { minuteOfDay } from '../clock'
 import type { Output } from '../commands'
 import { areaTopicId, callName } from '../content'
@@ -113,7 +113,7 @@ export function offer(world: World, npcId: string, destination?: string): Offer 
   const rep = world.state.reputation ?? {}
   const factions = [...world.content.factions.values()].filter((f) => f.members.includes(npcId))
   if ((patron && patron === npc.patron) || factions.some((f) => (rep[f.id] ?? 0) >= 20)) goalMatch = 1
-  if ((world.state.wanted?.[LAND_LAW] && (npc.values['law'] ?? 0) >= 1) || factions.some((f) => (rep[f.id] ?? 0) < -20)) goalMatch = -1
+  if ((world.state.wanted?.[landLawHere(world)] && (npc.values['law'] ?? 0) >= 1) || factions.some((f) => (rep[f.id] ?? 0) < -20)) goalMatch = -1
   const danger = destination ? dangerOf(world, destination, npcId) : 1
   const duty = npc.work ? Math.max(0, npc.personality.diligence) * 5 : 0
   const family = Math.max(0, npc.values['family'] ?? 0) * 5

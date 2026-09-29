@@ -1,3 +1,4 @@
+import { frameOf, landOfPlace } from '../lands'
 import { lockedIds, NpcSchema, type Npc } from '../content'
 import { recordFact } from '../news'
 import { newNpcState } from '../state'
@@ -73,7 +74,8 @@ export function crowdHere(world: World, words: string): Crowd | undefined {
  * has no names to give.
  */
 export function nameOne(world: World, crowd: Crowd): string | undefined {
-  const names = world.content.world.names
+  // Names of the land the group is in (M10.23).
+  const names = frameOf(world.content, landOfPlace(world.content, crowd.at)).names
   if (!names || crowd.count <= 0 || !world.content.professions.has(crowd.profession) || !world.content.locations.has(crowd.at)) return undefined
   const rng = (lo: number, hi: number) => world.rng.int('growth', lo, hi)
   const pick = <T>(list: T[]): T => list[rng(0, list.length - 1)]!

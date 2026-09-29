@@ -1,3 +1,4 @@
+import { allFaiths } from '../lands'
 import type { Output } from '../commands'
 import { callName } from '../content'
 import { applyEffect, attitude, relation } from '../dialogue/relations'
@@ -107,7 +108,7 @@ export function marry(world: World, npcId: string): Output[] {
   const spouse = world.npc(npcId)
   const family = familyOf(world, npcId)
   // The faith of the holy place, and the faction that stands for it (M10.17; before, the Lantern by the place's name).
-  const faction = world.content.world.faiths.find((f) => f.id === here.faith)?.faction
+  const faction = allFaiths(world.content).find((f) => f.id === here.faith)?.faction
   if (faction) repute(world, faction, 5, 'your wedding')
   return [
     { kind: 'narration', text: `Before ${here.name} and whoever came to see it, you and ${name} are bound. Someone has brought beer.` },

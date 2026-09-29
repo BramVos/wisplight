@@ -81,7 +81,8 @@ export function weaveRequest(world: World, key: string): LlmRequest {
   return {
     role: 'chronicler',
     system: [
-      worldText(worldFrame(world.content)),
+      // The frame of the land the district is in (M10.23).
+      worldText(worldFrame(world.content, world.content.topics.get(topic)?.land)),
       '',
       'You weave new people of a far town into a text game that already has people. You propose connections only, never new places or people.',
       `BONDS: at most ${MOST_BONDS}, each between one NEW person and one KNOWN person, by their ids, with a role from ROLES (what b is to a: "child" means b is a's child) and why, in one plain sentence the chronicle keeps. A niece among the bakers, a creditor, an old friend from before: small and believable, never a secret love or a crime unless the frame invites it.`,

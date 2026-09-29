@@ -1,3 +1,4 @@
+import { allFaiths, frameOf, landOfPlace } from './lands'
 import type { World } from './world'
 
 // Faith per person (M9.1; design "Wrijving in een dorp", Wereldboek chapter 5).
@@ -7,12 +8,14 @@ import type { World } from './world'
 
 /** Someone's faith, or undefined in a world that names none. */
 export function faithOf(world: World, npcId: string): string | undefined {
-  const faiths = world.content.world.faiths
-  if (!faiths.length || !world.content.npcs.has(npcId)) return undefined
+  if (!world.content.npcs.has(npcId)) return undefined
   const npc = world.npc(npcId)
   if (npc.faith) return npc.faith
+  // The faiths of the land they live in (M10.23): its first is what most there hold.
+  const faiths = frameOf(world.content, landOfPlace(world.content, npc.home)).faiths
+  if (!faiths.length) return undefined
   const patron = npc.patron
-  return (patron && faiths.find((f) => f.patrons.includes(patron))?.id) ?? faiths[0]!.id
+  return (patron && (faiths.find((f) => f.patrons.includes(patron)) ?? allFaiths(world.content).find((f) => f.patrons.includes(patron)))?.id) ?? faiths[0]!.id
 }
 
 /** What most of these people hold. */

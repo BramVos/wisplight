@@ -1,3 +1,4 @@
+import { allFaiths } from '../lands'
 import { missing, mourning } from '../people'
 import type { GameState } from '../state'
 import type { World } from '../world'
@@ -70,7 +71,7 @@ export function situation(world: World, npcId: string): number {
 
 /** The faith a patron belongs to, by the world's faiths; the patron itself when no faith names it. */
 function faithOfPatron(world: World, patron: string): string {
-  return world.content.world.faiths.find((f) => f.patrons.includes(patron))?.id ?? patron
+  return allFaiths(world.content).find((f) => f.patrons.includes(patron))?.id ?? patron
 }
 
 export function band(score: number): Attitude {

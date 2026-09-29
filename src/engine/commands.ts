@@ -685,7 +685,7 @@ function goldAtTheWell(world: World): Output[] {
   }
   // The largest coin of the world (M10.17): in the Nethermarch a guilder.
   const coin = world.coins[0]!
-  world.state.player.money += coin.value
+  world.state.player.money += world.coinWorth(coin)
   return [{ kind: 'narration', text: `When you wake there is a ${coin.name} in your shoe, bright as if it came out of a well.` }]
 }
 

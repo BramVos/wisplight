@@ -1,3 +1,4 @@
+import { allFaiths } from './lands'
 import { knob } from './knobs'
 import { callName } from './content'
 import { attitude, relation, situation } from './dialogue/relations'
@@ -5,7 +6,7 @@ import type { Engine } from './engine'
 import { faithOf } from './faith'
 import { npcSnapshot, type NpcSnapshot } from './playtest'
 import { planOf, stepHeld } from './quests/plans'
-import { householdKey, householdPurses, middlePurse, standingName, standingOf } from './standing'
+import { householdKey, householdPurses, landOfNpc, landPurses, middlePurse, standingName, standingOf } from './standing'
 import { nameOf } from './aftermath'
 
 // Under the bonnet (M10.1; roadmap, "Onder de motorkap"): what the dev menu
@@ -102,9 +103,9 @@ function person(engine: Engine, id: string): DevPerson {
   const facts = world.state.news?.facts ?? []
   return {
     ...npcSnapshot(engine, id),
-    ...(faithOf(world, id) ? { faith: world.content.world.faiths.find((f) => f.id === faithOf(world, id))?.name ?? faithOf(world, id) } : {}),
+    ...(faithOf(world, id) ? { faith: allFaiths(world.content).find((f) => f.id === faithOf(world, id))?.name ?? faithOf(world, id) } : {}),
     sliders: [
-      { name: 'standing', value: standingName(world, level), why: `household purse ${purse} against the middle of ${Math.round(middlePurse(world, purses))}${level >= 3 && purse < middlePurse(world, purses) * 1.5 ? ', one up for an office' : ''}` },
+      { name: 'standing', value: standingName(world, level, landOfNpc(world, id)), why: `household purse ${purse} against the middle of ${Math.round(middlePurse(world, landPurses(world, landOfNpc(world, id), purses)))}${level >= 3 && purse < middlePurse(world, landPurses(world, landOfNpc(world, id), purses)) * 1.5 ? ', one up for an office' : ''}` },
       { name: 'attitude to the player', value: `${att.band} (${att.score})`, why: `affinity ${rel.affinity} + half the trust ${round(rel.trust / 2)} + warmth ${npc.personality.warmth * 5}${mood && mood.until > world.now ? ` + mood ${mood.value} (${mood.reason})` : ''} + the situation ${situation(world, id)}` },
       { name: 'bond with the player', value: `affinity ${rel.affinity}, trust ${rel.trust}, fear ${rel.fear}`, why: 'from what the player said and did (dialogue and deeds)' },
       { name: 'familiarity with the player', value: String(rel.familiarity), why: 'grows with every talk, sinks after four weeks apart' },

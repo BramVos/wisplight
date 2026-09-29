@@ -2,8 +2,10 @@ import type { Archived } from './archive'
 import { grownContent } from './growth/growth'
 import { calendarOf, GameClock, isOpenAt, type Calendar } from './clock'
 import { callName, type Content, type Direction, type Land, type Location, type Npc, type ObjectInstance, type ObjectType, type Service } from './content'
-import { DEFAULT_MONEY, formatMoney, type MoneyUnit } from './items'
+import { formatMoney, parseMoney, type MoneyUnit } from './items'
+import { frameOf, type Frame } from './lands'
 import { mergeNpc, staffOf } from './layer'
+import { regionMap } from './map/region'
 import { hexLocation, isHexId } from './map/travel'
 import { Rng } from './rng'
 import { objectKey, serviceKey, type Fact, type GameState, type NpcState, type WorldEvent } from './state'
@@ -124,9 +126,30 @@ export class World {
     return this.state.minutes
   }
 
-  /** The names this world's texts use: the land, the region, the law (M8). */
+  /** The land the stranger is in (M10.23): undefined for the world's home land. */
+  get land(): string | undefined {
+    return this.content.areas.get(this.areaHere() ?? '')?.land
+  }
+
+  /** The area the stranger is in, without making a hex a place (naming a hex asks for the land's palette). */
+  private areaHere(): string | undefined {
+    const at = this.state.player.location
+    return this.content.locations.get(at)?.area ?? (isHexId(at) ? regionMap(this.content)?.region.area : undefined)
+  }
+
+  /** The land the area the stranger is in shades into (M10.23; the world's id for the home land), if it does. */
+  get blend(): string | undefined {
+    return this.content.areas.get(this.areaHere() ?? '')?.blend
+  }
+
+  /** The frame the stranger plays under (M10.23): the land's where they are, else the world's. */
+  get frame(): Frame {
+    return frameOf(this.content, this.land)
+  }
+
+  /** The names this world's texts use: the land, the region, the law (M8); in a land, the land's (M10.23). */
   get words(): WorldWords {
-    return wordsOf(this.content)
+    return wordsOf(this.content, this.frame.land)
   }
 
   private anchored?: Calendar
@@ -135,13 +158,27 @@ export class World {
     return (this.anchored ??= calendarOf(this.content.world))
   }
 
+  /** The coins where the stranger is (M10.23: a land's own), largest first. */
   get coins(): readonly MoneyUnit[] {
-    return this.content.world.money?.units ?? DEFAULT_MONEY
+    return this.frame.coins
   }
 
-  /** An amount of money in this world's coins. */
+  /** An amount of money in the world's smallest coin, told in the coins where the stranger is (M10.23: at the land's rate). */
   money(amount: number): string {
-    return formatMoney(amount, this.coins)
+    const f = this.frame
+    return formatMoney(amount * f.rate, f.coins)
+  }
+
+  /** An amount the stranger names in the coins where they are, in the world's smallest coin (M10.23): rounded up, never short. */
+  parseMoney(text: string): number | undefined {
+    const f = this.frame
+    const amount = parseMoney(text, f.coins)
+    return amount === undefined ? undefined : Math.ceil(amount / f.rate)
+  }
+
+  /** What a coin where the stranger is is worth in the world's smallest coin (M10.23), at least one. */
+  coinWorth(unit: MoneyUnit): number {
+    return Math.max(1, Math.ceil(unit.value / this.frame.rate))
   }
 
   /** The date and time as this world writes them. */

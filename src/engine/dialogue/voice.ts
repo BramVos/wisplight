@@ -1,5 +1,6 @@
 import { faithOf } from '../faith'
-import { DEFAULT_MONEY } from '../items'
+import type { Content } from '../content'
+import { allFaiths, frameOf } from '../lands'
 import { middlePurse } from '../standing'
 import type { World } from '../world'
 import { relation } from './relations'
@@ -17,8 +18,20 @@ type Group = Voice['groups'][number]
 /** The small fixed core every world keeps: a percent sign, and a model speaking of models (markup and emoji are out of character). */
 const CORE = /%|\bAI\b|\b(?:chatgpt|openai|anthropic|claude|gpt-?\d)\b/i
 
-export function kitOf(world: Pick<World, 'content'>): Voice | undefined {
-  return world.content.voice
+/**
+ * The kit where the stranger is (M10.23): the land's own, else the world's.
+ * Where an area blends with another land, people there have the sayings and
+ * oaths of both kits.
+ */
+export function kitOf(world: Pick<World, 'content'> & { land?: string; blend?: string }): Voice | undefined {
+  const own = frameOf(world.content, world.land).voice
+  const blend = world.blend
+  if (!blend) return own
+  const other = frameOf(world.content, blend === world.content.world.id ? undefined : blend).voice
+  if (!own || !other || own === other) return own ?? other
+  const oaths = { ...other.oaths }
+  for (const [faith, list] of Object.entries(own.oaths)) oaths[faith] = [...new Set([...list, ...(other.oaths[faith] ?? [])])]
+  return { ...own, oaths, sayings: [...own.sayings, ...other.sayings], groups: [...own.groups, ...other.groups.filter((g) => !own.groups.some((o) => o.id === g.id))] }
 }
 
 /** The group a speaker talks like: their own voice, their trade, where they live, or everyone else's. */
@@ -35,7 +48,7 @@ export function groupOf(world: World, npcId: string): Group | undefined {
 export function oathsFor(world: World, npcId: string): string[] {
   const faith = faithOf(world, npcId)
   const kit = kitOf(world)?.oaths[faith ?? '']
-  const own = kit?.length ? kit : (world.content.world.faiths.find((f) => f.id === faith)?.oaths ?? [])
+  const own = kit?.length ? kit : (allFaiths(world.content).find((f) => f.id === faith)?.oaths ?? [])
   return [...new Set([...own, ...(groupOf(world, npcId)?.oaths ?? [])])]
 }
 
@@ -91,7 +104,8 @@ export function voiceLines(world: World, npcId: string, seed: number, flourished
   const group = groupOf(world, npcId)
   const saying = !flourished && seed % 3 === 0 ? pick([...(group?.sayings ?? []), ...kit.sayings], 1, seed)[0] : undefined
   const address = addressFor(world, npcId, seed)
-  const money = (world.content.world.money?.units ?? DEFAULT_MONEY).map((u) => u.plural ?? `${u.name}s`)
+  // The coins where the stranger is (M10.23).
+  const money = world.coins.map((u) => u.plural ?? `${u.name}s`)
   const telling = [
     kit.time.length ? `time ${pick(kit.time, 3, seed + 1).join(', ')}` : '',
     kit.distance.length ? `distance ${pick(kit.distance, 2, seed + 2).join(', ')}` : '',
@@ -194,8 +208,9 @@ export function strayNumbers(reply: string, given: string): string[] {
 }
 
 /** The kit in a few lines for the chronicler and the writing help (M10.10), so new content comes in the same voice. */
-export function voiceSummary(content: { voice?: Voice; world: { faiths: { oaths: string[] }[] } }): string {
-  const kit = content.voice
+export function voiceSummary(content: Pick<Content, 'voice' | 'world' | 'lands'>, land?: string): string {
+  // A land's own kit (M10.23), else the world's.
+  const kit = frameOf(content, land).voice
   if (!kit) return ''
   const oaths = [...new Set([...Object.values(kit.oaths).flat(), ...kit.groups.flatMap((g) => g.oaths)])].slice(0, 6)
   const sayings = [...kit.sayings, ...kit.groups.flatMap((g) => g.sayings)].slice(0, 4)

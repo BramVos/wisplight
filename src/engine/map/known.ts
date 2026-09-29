@@ -205,7 +205,8 @@ export function landMapData(world: World): LandMapData | undefined {
     you: here,
     places,
     routes,
-    palette: world.content.world.map?.palette ?? DEFAULT_PALETTE,
+    // The palette of the land the stranger is in (M10.23).
+    palette: world.frame.palette ?? DEFAULT_PALETTE,
     ...(leaving.length ? { leaving } : {}),
   }
 }

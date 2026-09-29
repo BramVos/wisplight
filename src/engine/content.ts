@@ -1092,7 +1092,7 @@ export const FactionSchema = z
           .strict(),
       ])
       .default('never'),
-    /** The law this faction keeps: the land's (count), or a town's from world.yaml. */
+    /** The law this faction keeps: the home land's (count), a town's from world.yaml, or another land's by its id (M10.23). */
     law: z.string().optional(),
   })
   .strict()
@@ -1489,7 +1489,11 @@ function checkLands(world: WorldDef, c: Omit<Content, 'world'>): string[] {
     if (a.blend !== world.id) land(a.blend, `area ${a.id}.blend`)
     if (a.blend && a.blend === (a.land ?? world.id)) problems.push(`area ${a.id}: it blends with ${a.blend}, the land it is in`)
   }
-  for (const r of c.regions.values()) land(r.land, `region ${r.id}.land`)
+  for (const r of c.regions.values()) {
+    land(r.land, `region ${r.id}.land`)
+    // The open land of a region is of the region's land.
+    if (c.areas.has(r.area) && c.areas.get(r.area)?.land !== r.land) problems.push(`region ${r.id}: it lies in ${r.land ?? 'the home land'}, and its area ${r.area} in ${c.areas.get(r.area)?.land ?? 'the home land'}`)
+  }
   for (const t of c.topics.values()) land(t.land, `topic ${t.id}.land`)
   // A border is content, never distance (M10.23): a way from one land into another goes through a border area.
   const landOfPlace = (id: string) => c.areas.get(c.locations.get(id)?.area ?? '')?.land
@@ -1697,14 +1701,16 @@ function checkReferences(world: WorldDef | undefined, c: Omit<Content, 'world'>)
     if (rows.length === 0) problems.push(`region ${r.id}: the zone drawing is empty`)
     // A character stands for an engine land, a way, or a terrain of the region's own (M10.20).
     for (const [ch, what] of Object.entries(r.legend)) if (!REGION_KINDS.includes(what) && !r.lands[what]) problems.push(`region ${r.id}: the legend's ${JSON.stringify(ch)} is ${what}, which is no land (${REGION_KINDS.join(', ')}) and not under lands`)
-    const palette = world?.map?.palette ?? DEFAULT_PALETTE
+    // The palette of the land the region lies in (M10.23), else the world's.
+    const palette = (r.land ? c.lands.get(r.land)?.palette : undefined) ?? world?.map?.palette ?? DEFAULT_PALETTE
     for (const own of Object.keys(r.lands)) if (!palette.dark.terrain[own] || !palette.paper.terrain[own]) problems.push(`region ${r.id}: the land ${own} has no tints in the palette (map.palette.dark.terrain.${own} and paper.terrain.${own})`)
   }
   for (const q of c.quests.values()) {
     for (const who of [...q.givers, ...q.helpers, ...q.opponents]) npc(who, `quest ${q.id}`)
   }
   for (const f of c.factions.values()) {
-    if (f.law && f.law !== 'count' && !world?.towns.some((t) => t.id === f.law)) problems.push(`faction ${f.id}: unknown law ${f.law}`)
+    // The land's law ('count'), a town's, or another land's by its id (M10.23).
+    if (f.law && f.law !== 'count' && !world?.towns.some((t) => t.id === f.law) && !c.lands.has(f.law)) problems.push(`faction ${f.id}: unknown law ${f.law}`)
     for (const m of f.members) npc(m, `faction ${f.id}.members`)
     for (const s of f.seats) if (!c.locations.has(s.at) && !c.areas.has(s.at)) problems.push(`faction ${f.id}.seats: ${s.at} is no place or area`)
     for (const other of [...f.allies, ...f.rivals]) if (!c.factions.has(other)) problems.push(`faction ${f.id}: unknown faction ${other}`)

@@ -34,7 +34,7 @@ import { applyChoice, fromKeys, goalRequest, settleChoices } from './npc/goals'
 import { LlmError, type LlmClient, type LlmRequest, type LlmResponse } from './dialogue/llm'
 import { attitude, relation } from './dialogue/relations'
 import { TopicRegistry } from './dialogue/topics'
-import { add, itemName, matchItem, parseMoney } from './items'
+import { add, itemName, matchItem } from './items'
 import { chronicleMarkdown, chronicleText } from './chronicle'
 import { journalPage, type JournalPage } from './journal'
 import { die } from './life'
@@ -67,7 +67,7 @@ import { hasCharacters, maxHp, type CreationData } from './rules/character'
 import { npcFighter } from './combat/npc'
 import { approve, arrived, campfire, companionOf, companions, fleeWith, leave, mend, order, partyLines, recruit, restParty, setStance, sharedFight, syncLevels, withPlayer } from './social/companions'
 import { confronting, found as foundStranger, seekers, settleGrievance } from './social/confront'
-import { crime, hearing, LAND_LAW, payFine, payFor, steal, stolenSeen, surrenderTo, townLaw } from './social/crime'
+import { crime, hearing, landLawHere, lawOf, payFine, payFor, steal, stolenSeen, surrenderTo, townLaw } from './social/crime'
 import { deed, noticeCarried, seedBonds } from './social/deeds'
 import { factionLines, factionPage, join, rankOf, repute } from './social/factions'
 import { fightsBack, mayAttackFirst, mayLend } from './social/gates'
@@ -913,11 +913,11 @@ export class Engine {
     for (const output of outputs) {
       if (!output.journey && !output.returning) continue
       try {
-        const frame = worldText([worldFrame(this.content), voiceSummary(this.content)].filter(Boolean).join('\n\n'))
+        const frame = worldText([worldFrame(this.content, this.world.land), voiceSummary(this.content, this.world.land)].filter(Boolean).join('\n\n'))
         // A journey, or what changed since the last visit (M10.13): the same narrator, one call.
         const reply = await recorder.complete({ ...journeyRequest(this.world, output.text, frame, output.returning ? 'return' : 'journey'), timeoutMs: 8000 })
         const text = String((JSON.parse(reply.text.trim().replace(/^```(?:json)?\s*|\s*```$/g, '')) as { text?: unknown }).text ?? '').trim()
-        const words = vocabularyOf({ ...this.content, chronicler: undefined }, worldFrame(this.content), this.world.calendar.months, this.world.calendar.weekdays, output.text)
+        const words = vocabularyOf({ ...this.content, chronicler: undefined }, worldFrame(this.content, this.world.land), this.world.calendar.months, this.world.calendar.weekdays, output.text)
         const limit = text ? crossesLimits(text, words) : undefined
         const fine = text && !limit && wordCount(text) <= Math.max(110, wordCount(output.text) * 1.5) && !unknownNames(text, words).length && !strangeWords(this.world, text).length && !hasOurOaths(text) && !outOfCharacter(text)
         if (fine) output.text = text
@@ -1091,7 +1091,7 @@ export class Engine {
       const recorder = this.recorder
       if (chat && recorder && this.world.aiLive) {
         try {
-          const reply = await recorder.complete(chatLineRequest(this.world, chat, worldText(worldFrame(this.content))))
+          const reply = await recorder.complete(chatLineRequest(this.world, chat, worldText(worldFrame(this.content, this.world.land))))
           heard.push(...chatLine(this.world, chat, reply.text))
         } catch {
           // Optional: the template is enough.
@@ -1388,7 +1388,7 @@ export class Engine {
           // The ridge a little way off (after the M10 playtest: it leaves the peat cuttings): walk to it, then follow it.
           const near = way === 'ridge' && from ? knownRidgeNear(this.world, from) : undefined
           if (near) {
-            const name = `the ${terrainName(this.content.world.map?.palette, 'ridge')}`
+            const name = `the ${terrainName(this.world.frame.palette, 'ridge')}`
             const first = this.walkPlan({ kind: 'to', target: near, name })
             const now = playerHex(this.world)
             if (!now || now.col !== near.col || now.row !== near.row) return first
@@ -1662,7 +1662,7 @@ export class Engine {
     const members = this.state.memberships ?? []
     const known = [...this.content.factions.values()].filter((f) => rep[f.id] !== undefined || members.includes(f.id))
     if (known.length) out.factions = known.map((f) => ({ id: f.id, name: f.name, rank: rankOf(rep[f.id] ?? 0), score: rep[f.id] ?? 0, member: members.includes(f.id) }))
-    const wanted = Object.entries(this.state.wanted ?? {}).map(([law, w]) => `${upper((townLaw(this.world, law)?.where ?? this.world.words.law.where).replace(/^(in|on|at) /, ''))}: ${[w.fine > 0 ? this.world.money(w.fine) : '', w.hearing?.length ? 'a hearing' : ''].filter(Boolean).join(' and ')}`)
+    const wanted = Object.entries(this.state.wanted ?? {}).map(([law, w]) => `${upper((townLaw(this.world, law)?.where ?? lawOf(this.world, law).where).replace(/^(in|on|at) /, ''))}: ${[w.fine > 0 ? this.world.money(w.fine) : '', w.hearing?.length ? 'a hearing' : ''].filter(Boolean).join(' and ')}`)
     if (wanted.length) out.wanted = wanted
     if (c && this.content.rules) {
       const klass = this.content.rules.classes.find((k) => k.id === c.class)
@@ -2425,7 +2425,7 @@ export class Engine {
       const g = this.world.npcState(id).grievance!
       const law = g.reason === 'the law'
       const name = callName(this.world.npc(id))
-      if (law && !this.state.wanted?.[LAND_LAW]) {
+      if (law && !this.state.wanted?.[landLawHere(this.world)]) {
         settleGrievance(this.world, id)
         continue
       }
@@ -2443,7 +2443,7 @@ export class Engine {
         g.quiet = this.world.now + 6 * 60
         this.world.npcState(id).goals = this.world.npcState(id).goals.filter((goal) => goal.id !== `confront_${id}`)
         // No fine buys a hearing off (M10.20): then the stranger is to give themselves up.
-        out.push({ kind: 'system', text: this.state.wanted?.[LAND_LAW]?.hearing?.length ? 'GIVE YOURSELF UP, or face the consequences.' : 'PAY FINE, or face the consequences.' })
+        out.push({ kind: 'system', text: this.state.wanted?.[landLawHere(this.world)]?.hearing?.length ? 'GIVE YOURSELF UP, or face the consequences.' : 'PAY FINE, or face the consequences.' })
       } else settleGrievance(this.world, id)
       if (!this.state.talk) this.dialogue.start(id, true)
     }
@@ -2465,7 +2465,7 @@ export class Engine {
   /** BORROW <amount> FROM <person>: Warm and trust 30 or more (FO, chapter 8); the debt is due in a week. */
   private borrow(words: string): Output[] {
     const m = /^(.+?)\s+from\s+(.+)$/i.exec(words)
-    const amount = m ? parseMoney(m[1]!, this.world.coins) : undefined
+    const amount = m ? this.world.parseMoney(m[1]!) : undefined
     const npc = m ? findNpcHere(this.world, m[2]!) : undefined
     if (!m || !amount || !npc) return [{ kind: 'error', text: `BORROW <amount> FROM <person>, for example: borrow 5 ${this.world.coins[1]?.plural ?? `${(this.world.coins[1] ?? this.world.coins[0]!).name}s`} from ${this.world.content.npcs.has('npc_mirte') ? 'mirte' : 'a friend'}.` }]
     const name = callName(this.world.npc(npc))
@@ -2487,7 +2487,7 @@ export class Engine {
     const npc = findNpcHere(this.world, who)
     const debt = npc ? (this.state.ledger ?? []).find((d) => d.from === 'player' && d.to === npc) : undefined
     if (!npc || !debt) return [{ kind: 'error', text: 'You owe nobody here anything.' }]
-    const amount = Math.min(debt.amount, parseMoney(rest.join(' '), this.world.coins) ?? debt.amount)
+    const amount = Math.min(debt.amount, this.world.parseMoney(rest.join(' ')) ?? debt.amount)
     if (this.state.player.money < amount) return [{ kind: 'error', text: `You only have ${this.world.money(this.state.player.money)}.` }]
     this.state.player.money -= amount
     this.world.npcState(npc).money += amount
@@ -2724,7 +2724,7 @@ export class Engine {
     const about = [...this.foeFactions(held), areaTopicId(this.content, place.area)].filter((t) => this.content.topics.has(t))
     const officer = this.world.words.law.officer
     // The faction that keeps the land's law (M10.17: the Count's men in the Nethermarch), and what the prisoners are called.
-    const law = [...this.content.factions.values()].find((f) => f.law === LAND_LAW)?.id
+    const law = [...this.content.factions.values()].find((f) => f.law === landLawHere(this.world))?.id
     const kind = held.map((f) => (f.creature ? this.content.creatures.get(f.creature)?.name : undefined)).find(Boolean) ?? 'robber'
     const a = /^[aeiou]/i.test(kind) ? 'an' : 'a'
     this.state.combat = undefined
