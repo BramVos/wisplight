@@ -85,6 +85,24 @@ export function quietNight(world: World, news: boolean): void {
   rulePulse(world, p.fired.at(-1)?.kind as HookKind | undefined)
 }
 
+/**
+ * The spark's reply, the same every night (M10.28: a schema that changes from
+ * call to call breaks what the cache holds). The keys are in the prompt;
+ * readSpark takes only those.
+ */
+export const SPARK_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['line', 'verb', 'who', 'target', 'detail'],
+  properties: {
+    line: { type: 'string', description: 'A key from STORYLINES.' },
+    verb: { type: 'string', enum: [...SPARK_VERBS] },
+    who: { type: 'string', description: 'A key from PEOPLE, or none.' },
+    target: { type: 'string', description: 'A key from PEOPLE, PLACES or AREAS, or none.' },
+    detail: { type: 'string' },
+  },
+}
+
 /** The short keys of a spark: storylines, people, places and areas, so the model answers in keys. */
 interface SparkKeys {
   lines: Record<string, string>
@@ -120,8 +138,6 @@ export function sparkRequest(world: World, run: ChronicleRun): { request: LlmReq
   const [lineKey, personKey, placeKey, areaKey] = [back(keys.lines), back(keys.people), back(keys.places), back(keys.areas)]
   const tides = [...world.content.tides.values()].map((t) => `${t.name}: ${tideState(world, t.id).stage}`)
   const lately = (world.state.pulse?.fired ?? []).slice(-3).map((f) => f.kind)
-  const text = { type: 'string' }
-  const one = (values: string[]) => ({ type: 'string', enum: values.length ? values : ['none'] })
   return {
     keys,
     request: {
@@ -152,18 +168,7 @@ export function sparkRequest(world: World, run: ChronicleRun): { request: LlmReq
         ...(lately.length ? [`LATELY THE STRANGER GOT: ${lately.join(', ')}. Bring something else.`] : []),
       ].join('\n'),
       schemaName: 'spark',
-      schema: {
-        type: 'object',
-        additionalProperties: false,
-        required: ['line', 'verb', 'who', 'target', 'detail'],
-        properties: {
-          line: one(Object.keys(keys.lines)),
-          verb: { type: 'string', enum: [...SPARK_VERBS] },
-          who: one(['none', ...Object.keys(keys.people)]),
-          target: one(['none', ...Object.keys(keys.people), ...Object.keys(keys.places), ...Object.keys(keys.areas)]),
-          detail: text,
-        },
-      },
+      schema: SPARK_SCHEMA,
       maxTokens: 250,
       meta: { lines: Object.keys(keys.lines), people: Object.keys(keys.people), places: Object.keys(keys.places), areas: Object.keys(keys.areas) },
     },

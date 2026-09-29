@@ -199,104 +199,82 @@ export function userPrompt(input: ChronicleInput, keys: Keys, lookedUp: Card[], 
 }
 
 const text = { type: 'string' }
-const keysOf = (list: string[]) => ({ type: 'string', enum: list.length ? list : [''] })
+// A key of the overview (p1, l2, s1, ...) or empty: the prompt lists them and the reader takes only those it gave
+// (M10.28: the lists were enums, and a schema that changes from night to night breaks what the cache holds).
+const key = { type: 'string' }
+const object = (properties: Record<string, unknown>) => ({ type: 'object', additionalProperties: false, required: Object.keys(properties), properties })
 
-/** The reply schema, built per call with exactly the keys of this overview. */
-export function replySchema(input: ChronicleInput, keys: Keys, lookupsLeft: number): Record<string, unknown> {
-  const people = keys.of('person')
-  const lines = input.lines.map((l) => keys.key(l.id, 'line')!)
-  const linkable = [...keys.of('lore'), ...people, ...keys.of('place')]
-  const lookupable = [...people, ...keys.of('place'), ...keys.of('lore'), ...keys.of('line'), ...keys.of('item')]
-  const object = (properties: Record<string, unknown>) => ({ type: 'object', additionalProperties: false, required: Object.keys(properties), properties })
-  return object({
-    lookup: { type: 'array', items: lookupsLeft > 0 ? { type: 'string', description: `a key (${lookupable.slice(0, 3).join(', ')}, ...) or a question: knows p1 t1, why s1, bond p1 p2, near l1` } : keysOf([]) },
-    lore: {
-      type: 'array',
-      items: object({
-        line: keysOf(lines),
-        name: text,
-        summary: text,
-        details: text,
-        story: text,
-        far: text,
-        teller: keysOf(['', ...people]),
-        links: { type: 'array', items: keysOf(linkable) },
-        claims: { type: 'array', items: object({ event: keysOf(keys.of('event')), subject: keysOf([...people, ...keys.of('place'), ...keys.of('item'), ...keys.of('area')]), key: text, value: text }) },
-      }),
-    },
-    lines: {
-      type: 'array',
-      items: object({
-        line: keysOf(lines),
-        summary: { type: 'array', items: text },
-        roles: { type: 'array', items: object({ role: text, who: keysOf(people) }) },
-        hooks: { type: 'array', items: text },
-        next: text,
-        close: { type: 'boolean' },
-        ...(input.verbs?.length ? { phase: { type: 'string', enum: ['setup', 'rising', 'crisis', 'resolution', 'closed'] } } : {}),
-      }),
-    },
-    quests: {
-      type: 'array',
-      items: object({
-        request: keysOf(['', ...keys.of('request')]),
-        line: keysOf(lines),
-        template: keysOf(input.templates.map((t) => t.kind)),
-        giver: keysOf(people),
-        item: keysOf(['', ...keys.of('item')]),
-        target: keysOf(['', ...people]),
-        name: text,
-        ask: text,
-        stakes: text,
-      }),
-    },
-    thoughts: { type: 'array', items: object({ who: keysOf(people), text }) },
-    news: { type: 'array', items: object({ area: keysOf(keys.of('area')), text }) },
-    ...(input.named?.length ? { named: { type: 'array', items: object({ who: keysOf(keys.of('named')), how: { type: 'string', enum: ['letter', 'visit'] }, text }) } } : {}),
-    ...(input.wishes?.length ? { heard: { type: 'array', items: object({ note: keysOf(input.wishes.map((w) => w.id)), did: text }) } } : {}),
-    ...(input.realms?.length ? { tensions: { type: 'array', items: object({ between: { type: 'array', items: keysOf(keys.of('realm')) }, delta: { type: 'integer' }, why: text }) } } : {}),
-    // Only when something may be planned (M10.27: the plans part was 2,128 characters of every night's schema).
-    ...(mayPlanNow(input)
-      ? {
-          plans: {
+/**
+ * The reply schema of a night round (M10.28): the same every night and in
+ * every world. The keys, the storylines, the verbs and the templates are in
+ * the prompt; the reader takes only what it gave, and leaves out what was not
+ * asked tonight (a plan when nothing may be planned, a phase without verbs,
+ * a lookup when none are left).
+ */
+export const CHRONICLE_SCHEMA: Record<string, unknown> = object({
+  lookup: { type: 'array', items: { type: 'string', description: 'a key (p1, l1, ...) or a question: knows p1 t1, why s1, bond p1 p2, near l1; only while LOOKUPS are left' } },
+  lore: {
+    type: 'array',
+    items: object({
+      line: key,
+      name: text,
+      summary: text,
+      details: text,
+      story: text,
+      far: text,
+      teller: key,
+      links: { type: 'array', items: key },
+      claims: { type: 'array', items: object({ event: key, subject: key, key: text, value: text }) },
+    }),
+  },
+  lines: {
+    type: 'array',
+    items: object({
+      line: key,
+      summary: { type: 'array', items: text },
+      roles: { type: 'array', items: object({ role: text, who: key }) },
+      hooks: { type: 'array', items: text },
+      next: text,
+      close: { type: 'boolean' },
+      phase: { type: 'string', enum: ['', 'setup', 'rising', 'crisis', 'resolution', 'closed'] },
+    }),
+  },
+  quests: {
+    type: 'array',
+    items: object({ request: key, line: key, template: key, giver: key, item: key, target: key, name: text, ask: text, stakes: text }),
+  },
+  thoughts: { type: 'array', items: object({ who: key, text }) },
+  news: { type: 'array', items: object({ area: key, text }) },
+  named: { type: 'array', items: object({ who: key, how: { type: 'string', enum: ['letter', 'visit'] }, text }) },
+  heard: { type: 'array', items: object({ note: key, did: text }) },
+  tensions: { type: 'array', items: object({ between: { type: 'array', items: key }, delta: { type: 'integer' }, why: text }) },
+  plans: {
+    type: 'array',
+    items: object({
+      line: key,
+      signal: key,
+      name: text,
+      phases: {
+        type: 'array',
+        items: object({
+          after: { type: 'integer' },
+          effects: {
             type: 'array',
-            items: object({
-              line: keysOf(['', ...(input.verbs?.length ? lines : (input.mayPlan ?? []).map((id) => keys.key(id, 'line')!).filter(Boolean))]),
-              signal: keysOf(['', ...keys.of('signal')]),
-              name: text,
-              phases: {
-                type: 'array',
-                items: object({
-                  after: { type: 'integer' },
-                  effects: {
-                    type: 'array',
-                    items: {
-                      anyOf: [
-                        object({ place: keysOf(keys.of('place')), state: { type: 'string', enum: ['flooded', 'damaged', 'destroyed', 'abandoned', 'occupied', 'normal'] } }),
-                        object({ news: text, area: keysOf(keys.of('area')) }),
-                        object({ market: keysOf(keys.of('item')), factor: { type: 'number' } }),
-                        object({ flee: keysOf(keys.of('area')), to: keysOf(keys.of('place')), days: { type: 'integer' } }),
-                      ],
-                    },
-                  },
-                }),
-              },
-              steps: {
-                type: 'array',
-                items: object({
-                  after: { type: 'integer' },
-                  verb: keysOf((input.verbs ?? []).map((v) => v.name)),
-                  who: { type: 'array', items: keysOf(people) },
-                  target: keysOf(['', ...people, ...keys.of('place'), ...keys.of('area'), ...keys.of('item')]),
-                  detail: text,
-                }),
-              },
-            }),
+            items: {
+              anyOf: [
+                object({ place: key, state: { type: 'string', enum: ['flooded', 'damaged', 'destroyed', 'abandoned', 'occupied', 'normal'] } }),
+                object({ news: text, area: key }),
+                object({ market: key, factor: { type: 'number' } }),
+                object({ flee: key, to: key, days: { type: 'integer' } }),
+              ],
+            },
           },
-        }
-      : {}),
-  })
-}
+        }),
+      },
+      steps: { type: 'array', items: object({ after: { type: 'integer' }, verb: key, who: { type: 'array', items: key }, target: key, detail: text }) },
+    }),
+  },
+})
 
 export function buildRequest(input: ChronicleInput, keys: Keys, limits: Limits, lookedUp: Card[], lookupsLeft: number): ChroniclerRequest {
   return {
@@ -307,7 +285,7 @@ export function buildRequest(input: ChronicleInput, keys: Keys, limits: Limits, 
     cacheBreak: 0,
     prompt: userPrompt(input, keys, lookedUp, lookupsLeft),
     schemaName: 'chronicle',
-    schema: replySchema(input, keys, lookupsLeft),
+    schema: CHRONICLE_SCHEMA,
     maxTokens: limits.maxTokens,
     meta: mockMeta(input, keys, lookupsLeft),
   }

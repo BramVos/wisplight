@@ -32,7 +32,7 @@ export async function chronicle(input: ChronicleInput, model: ChroniclerModel, l
     usage.inputTokens += reply.usage.inputTokens
     usage.outputTokens += reply.usage.outputTokens
     usage.cachedTokens += reply.usage.cachedTokens
-    const read = readReply(reply.text, keys, input, limits)
+    const read = readReply(reply.text, keys, input, limits, lookupsLeft)
     if (read.lookups.length && lookup && lookupsLeft > 0) {
       for (const card of await lookup(read.lookups)) {
         // What the answers hold together is bounded too.

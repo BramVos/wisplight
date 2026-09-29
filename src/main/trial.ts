@@ -14,7 +14,7 @@ import { mapTrial } from './maptrial'
 import { keepTally, keptTallies, measuring, playRegion, REGION_KINDS, regionReport, REGION_SETTINGS, type RegionSetting } from '../node/regionplay'
 import type { BuildStore } from '../node/ai/builds'
 import type { AiService } from '../node/ai/service'
-import { blockKept, playTwenty } from '../node/talktrial'
+import { blockKept, playTwenty, TWENTY_ANYWHERE, TWENTY_LINES } from '../node/talktrial'
 
 /** What a trial needs of the AI service: the gateway and the build budgets (a test gives it the mock). */
 export type TrialAi = { builds: Pick<BuildStore, 'reset' | 'setLimit'>; gateway: { complete(request: LlmRequest): Promise<LlmResponse> } }
@@ -286,7 +286,7 @@ export async function trialRun(ai: AiService, kinds: string, contentRoot: string
       continue
     }
     if (kind === 'talk_twenty' || kind === 'keep_warm') {
-      ok = (await talkTrial(ai, kind, contentRoot, { model: env('MODEL'), capUsd: cap, appPath, read: env('READ') !== '0' }, say)) && ok
+      ok = (await talkTrial(ai, kind, contentRoot, { model: env('MODEL'), capUsd: cap, appPath, read: env('READ') !== '0', world: env('WORLD'), npc: env('NPC') }, say)) && ok
       continue
     }
     if (kind === 'region_play') {
@@ -316,13 +316,21 @@ function providerOf(model: string): 'openai' | 'anthropic' {
  * from the cache, wrote to it and cost; or whether a ping keeps the block of
  * a place stays in the cache (keep_warm: a line, and one after six minutes).
  */
-export async function talkTrial(ai: AiService, kind: 'talk_twenty' | 'keep_warm', contentRoot: string, how: { model: string; capUsd: number; appPath?: string; read?: boolean }, say: (line: string) => void): Promise<boolean> {
+export async function talkTrial(ai: AiService, kind: 'talk_twenty' | 'keep_warm', contentRoot: string, how: { model: string; capUsd: number; appPath?: string; read?: boolean; world?: string; npc?: string }, say: (line: string) => void): Promise<boolean> {
   const chosen = ai.overview().settings.roles.voice
   if (!chosen) {
     say(`${kind}: no model chosen for the voice under Settings > AI`)
     return false
   }
-  const content = await loadContentFromDir(contentRoot, 'base')
+  // Another world with --world (M10.28: whether a small world reaches the cache's minimum), with someone of its own and lines that fit anywhere.
+  const world = how.world || 'base'
+  const content = await loadContentFromDir(contentRoot, world)
+  const npc = how.npc || (world === 'base' ? 'npc_mirte' : world === 'isle' ? 'npc_maren' : [...content.npcs.values()].find((n) => n.household && !n.child)?.id)
+  if (!npc || !content.npcs.has(npc)) {
+    say(`${kind}: nobody to talk to in ${world}; name someone with --npc`)
+    return false
+  }
+  const twenty = world === 'base' && npc === 'npc_mirte' ? TWENTY_LINES : TWENTY_ANYWHERE
   const model = (response: LlmResponse) => response.model
   const other = how.model && how.model !== chosen.model ? { provider: providerOf(how.model), model: how.model } : undefined
   const llm = other ? { complete: (r: LlmRequest) => ai.gateway.complete(r, other), report: ai.gateway.report.bind(ai.gateway) } : ai.gateway
@@ -337,6 +345,8 @@ export async function talkTrial(ai: AiService, kind: 'talk_twenty' | 'keep_warm'
   try {
     lines = await playTwenty(content, llm, {
       model,
+      npc,
+      lines: twenty,
       onLine: (m, n) => {
         spent += m.costUsd
         say(`line ${n}: ${m.calls} call${m.calls === 1 ? '' : 's'}${m.rejected.length ? ` (asked again: ${m.rejected.join(', ')})` : ''}, in ${m.inputTokens} (read ${m.cachedTokens}, written ${m.cacheWriteTokens}), out ${m.outputTokens}, $${m.costUsd.toFixed(4)}, ${(m.latencyMs / 1000).toFixed(1)}s; "${m.line}" -> ${m.said.slice(0, 120)}`)

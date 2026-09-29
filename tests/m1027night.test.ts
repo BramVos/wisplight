@@ -21,7 +21,8 @@ async function nightInput(): Promise<ChronicleInput> {
 }
 
 const request = (input: ChronicleInput) => buildRequest(input, assignKeys(input), DEFAULT_LIMITS, [], DEFAULT_LIMITS.lookups)
-const plansIn = (input: ChronicleInput) => Boolean((request(input).schema['properties'] as Record<string, unknown>)['plans'])
+// Since M10.28 the schema is the same every night: the prompt asks for plans, and the reader takes them, only when something may be planned.
+const plansIn = (input: ChronicleInput) => /^- plans:/m.test(request(input).system)
 
 describe('M10.27: the night round, cheaper', () => {
   it('reads the guide for a round in the game: without the sections for the world builder, the world\'s own part whole', async () => {

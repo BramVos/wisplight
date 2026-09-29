@@ -60,7 +60,7 @@ describe('M10.24: a word to the chronicler', () => {
     await engine.runChronicler()
     const call = chronicleCalls(mock).at(-1)!
     expect(call.prompt).not.toMatch(/THE PLAYER'S WORDS/)
-    expect(JSON.stringify(call.schema)).not.toMatch(/"heard"/)
+    // The schema is the same every night since M10.28; without words the prompt asks nothing of them.
     for (const w of ['more of the fen', 'fewer deaths', 'a love story', 'more of the eels']) await engine.handle(`chronicler ${w}`)
     // The newest three are read.
     expect(activeWishes(engine.world).map((w) => w.text)).toEqual(['fewer deaths', 'a love story', 'more of the eels'])

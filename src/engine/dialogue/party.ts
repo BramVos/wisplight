@@ -46,6 +46,18 @@ export async function partyTalk(world: World, topics: TopicRegistry, knowledge: 
   ]
 }
 
+/**
+ * The reply of a group, the same for every group (M10.28: a schema that
+ * changes from call to call breaks what the cache holds). The ids go in the
+ * prompt; a line from someone who is not in the group is not read.
+ */
+export const PARTY_REPLY_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['lines'],
+  properties: { lines: { type: 'array', items: { type: 'object', additionalProperties: false, required: ['speaker', 'text'], properties: { speaker: { type: 'string', description: 'The id of a companion from COMPANIONS.' }, text: { type: 'string' } } } } },
+}
+
 async function ask(llm: LlmClient, cards: { id: string; name: string; card: string; knows: string[] }[], question: string, vocabulary: Set<string>, playerWords: string, frame: string, fit: (id: string, line: string) => string | undefined, partyWords: number): Promise<(string | undefined)[] | undefined> {
   const system = [
     'You speak for several companions of the player in a late-medieval world, in English, each in their own voice.',
@@ -65,12 +77,7 @@ async function ask(llm: LlmClient, cards: { id: string; name: string; card: stri
       ...cachedSystem(system, '', '', 'none'),
       prompt,
       schemaName: 'party_reply',
-      schema: {
-        type: 'object',
-        additionalProperties: false,
-        required: ['lines'],
-        properties: { lines: { type: 'array', items: { type: 'object', additionalProperties: false, required: ['speaker', 'text'], properties: { speaker: { type: 'string', enum: cards.map((c) => c.id) }, text: { type: 'string' } } } } },
-      },
+      schema: PARTY_REPLY_SCHEMA,
       maxTokens: 120 + 60 * cards.length,
       meta: { party: cards.map((c) => ({ id: c.id, name: c.name, knows: c.knows })) },
     })

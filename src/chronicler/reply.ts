@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import type { Keys } from './prompt'
+import { mayPlanNow, type Keys } from './prompt'
 import { lookupId, parseLookup } from './lookup'
 import { PHASES, type CardKind, type ChronicleInput, type ChronicleOutput, type Limits, type LineOp, type LoreOp, type NamedOp, type NewsOp, type Phase, type PlanEffectOp, type PlanOp, type QuestOp, type StepOp, type ThoughtOp } from './types'
 
@@ -87,7 +87,7 @@ export function within(text: string, max: number): string | undefined {
   return kept || undefined
 }
 
-export function readReply(text: string, keys: Keys, input: ChronicleInput, limits: Limits): ReadReply {
+export function readReply(text: string, keys: Keys, input: ChronicleInput, limits: Limits, lookupsLeft = Infinity): ReadReply {
   const problems: string[] = []
   const output: ChronicleOutput = { lore: [], lines: [], quests: [], thoughts: [], news: [] }
   let json: unknown
@@ -101,7 +101,8 @@ export function readReply(text: string, keys: Keys, input: ChronicleInput, limit
   const reply = parsed.data
 
   // A key to know more about, or a question (M9.3): knows <person> <topic>, why <storyline>, bond <person> <person>, near <place>.
-  const lookups = reply.lookup
+  // None when none are left (M10.28: the schema is the same every night, so it no longer says so).
+  const lookups = (lookupsLeft > 0 ? reply.lookup : [])
     .map((k) => {
       const q = parseLookup(k, (key) => keys.id(key))
       return q ? lookupId(q) : keys.id(k)
@@ -161,7 +162,8 @@ export function readReply(text: string, keys: Keys, input: ChronicleInput, limit
       next: within(note.next, limits.textWords) ?? '',
       close: note.close,
     }
-    if (PHASES.includes(note.phase as Phase)) op.phase = note.phase as Phase
+    // A phase only where the caller gave verbs (M10.28: the fixed schema always has the field).
+    if (input.verbs?.length && PHASES.includes(note.phase as Phase)) op.phase = note.phase as Phase
     output.lines.push(op)
   }
 
@@ -236,7 +238,8 @@ export function readReply(text: string, keys: Keys, input: ChronicleInput, limit
   // Plans: for storylines marked PLAN (phases and steps), for signals to plan for (steps),
   // and one beat for any other storyline of the run (one step); in the caller's verbs, within bounds.
   const beaten = new Set<string>()
-  for (const plan of reply.plans) {
+  // Only on a night when something may be planned (M10.27, M10.28: the fixed schema always has the field).
+  for (const plan of mayPlanNow(input) ? reply.plans : []) {
     const where = `plan "${plan.name}"`
     const signal = plan.signal ? as(plan.signal, 'signal') : undefined
     const line = plan.line ? as(plan.line, 'line') : undefined

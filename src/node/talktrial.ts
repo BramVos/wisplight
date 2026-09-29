@@ -32,6 +32,30 @@ export const TWENTY_LINES = [
   'Goodbye for now.',
 ]
 
+/** Twenty lines for someone in any other world (M10.28: the measure on Skerrow), from a greeting to goodbye. */
+export const TWENTY_ANYWHERE = [
+  'Good day.',
+  'What do you do here?',
+  'How long have you been at it?',
+  'What is there to eat around here?',
+  'What does that cost?',
+  'Who else lives near here?',
+  'Is there any news?',
+  'Tell me an old story of this place.',
+  'Do you believe it yourself?',
+  'Where can I sleep tonight?',
+  'Is it far from here?',
+  'Who runs it?',
+  'What is it like here in winter?',
+  'Do you have family here?',
+  'Where are they now?',
+  'What do people here do for work?',
+  'Is there anything I could help with?',
+  'What should a stranger be careful of here?',
+  'Thank you, that is kind of you.',
+  'Goodbye for now.',
+]
+
 /** What one line of the talk cost: every call it took, the tries the guard asked for included. */
 export interface LineMeasure {
   line: string
@@ -94,10 +118,14 @@ class LineMeter implements LlmClient {
   }
 }
 
+const DAY = 24 * 60
+
 /** A game at Veenhoek with the baker, late in the morning of the second day, the stranger beside her. */
 function begin(content: Content, llm: LlmClient, npc: string, seed: number): Engine {
   const engine = new Engine(content, { seed })
-  engine.tick(GameClock.from(211, 9, 15, 11, 0).minutes - engine.world.now)
+  // Late morning of the second day: in the Nethermarch as the measures before, elsewhere at the next eleven o'clock after a day.
+  const at = GameClock.from(211, 9, 15, 11, 0).minutes
+  engine.tick(at > engine.world.now ? at - engine.world.now : DAY + ((11 * 60 - (engine.world.now % DAY) + DAY) % DAY))
   engine.setLlm(llm)
   const s = engine.state.npcs[npc]!
   engine.state.player.location = s.location

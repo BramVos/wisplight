@@ -7,7 +7,7 @@ import { turnMessage, youLines } from '../src/engine/dialogue/prompt'
 import { callName } from '../src/engine/content'
 import { readContentFiles } from '../src/node/content'
 import { messagesOf, systemBlocks } from '../src/node/ai/providers'
-import { playTwenty } from '../src/node/talktrial'
+import { playTwenty, TWENTY_ANYWHERE } from '../src/node/talktrial'
 import { content, withNpc } from './helpers'
 
 // M10.28 (1) to (3), Bram's ideas of 29 September 2026: one cached block per
@@ -208,5 +208,13 @@ describe('M10.28: the measure of a talk of twenty lines', () => {
     // Every call of the talk behind the same block.
     const systems = new Set(replies(llm).map((c) => c.system))
     expect(systems.size).toBe(1)
+  }, 60_000)
+
+  it('plays twenty lines anywhere: Maren of the Salt Kettle on Skerrow', async () => {
+    const isle = loadContent(await readContentFiles('content', 'isle'))
+    const llm = new MockLlm('good')
+    const lines = await playTwenty(isle, llm, { npc: 'npc_maren', lines: TWENTY_ANYWHERE, model: () => 'claude-haiku-4-5-20251001' })
+    expect(lines.filter((l) => l.calls > 0).length).toBeGreaterThanOrEqual(15)
+    expect(replies(llm)[0]!.prompt).toMatch(/YOU ARE: Maren/)
   }, 60_000)
 })

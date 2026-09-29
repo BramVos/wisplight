@@ -56,7 +56,11 @@ export interface TrialWorlds {
   isle: ContentFile[]
 }
 
-type Build = (worlds: TrialWorlds) => Promise<KindSituation>
+/**
+ * The situation of a kind; `variant` 1 is a second one, other people or another night (M10.28: the schema test
+ * builds each kind twice and wants the same schema).
+ */
+type Build = (worlds: TrialWorlds, variant: number) => Promise<KindSituation>
 
 /** The first call of one kind in a game played with the mock, and a check that plays the reply as the game would. */
 /**
@@ -134,15 +138,16 @@ function checked(request: LlmRequest, text: string, read: (value: unknown) => st
 
 
 const SITUATION_BUILDS: Record<string, Build> = {
-  npc_reply: async ({ base }) => {
-    const situation = SITUATIONS.find((s) => s.id === 'mirte_local') ?? SITUATIONS[0]!
+  npc_reply: async ({ base }, variant) => {
+    const situation = SITUATIONS.find((s) => s.id === (variant ? 'gerrit_far' : 'mirte_local')) ?? SITUATIONS[0]!
     const request = await captured('npc_reply', async (llm) => void (await runSituation(base, situation, llm)))
     return { about: `a conversation (${situation.id})`, request, check: (text) => (parseReply(text) ? limits(text) : ['the reply does not match the reply schema']) }
   },
-  party_reply: async ({ base }) => {
+  party_reply: async ({ base }, variant) => {
     const request = await captured('party_reply', async (llm) => {
       const engine = new Engine(base, { seed: 1, llm })
-      for (const [id, name] of [['npc_wouter', 'wouter'], ['npc_gerrit', 'gerrit']] as const) {
+      const party: [string, string][] = [['npc_wouter', 'wouter'], ['npc_gerrit', 'gerrit'], ...(variant ? ([['npc_aaltje', 'aaltje']] as [string, string][]) : [])]
+      for (const [id, name] of party) {
         Object.assign(relation(engine.state, id), { affinity: 60, trust: 40 })
         Object.assign(engine.state.npcs[id]!, { location: engine.state.player.location, activity: 'standing about', busyUntil: engine.world.now + 600, plan: [] })
         await engine.handle(`recruit ${name}`)
@@ -151,7 +156,7 @@ const SITUATION_BUILDS: Record<string, Build> = {
     })
     return { about: 'two companions answer together about the Haakman', request, check: (text) => checked(request, text) }
   },
-  chat_line: async ({ base }) => {
+  chat_line: async ({ base }, variant) => {
     let context: { engine: Engine } | undefined
     const request = await captured('chat_line', async (llm) => {
       const engine = new Engine(base, { seed: 28, builder: true, llm })
@@ -159,7 +164,9 @@ const SITUATION_BUILDS: Record<string, Build> = {
       engine.tick(GameClock.from(211, 9, 15, 14, 0).minutes - engine.world.now)
       await engine.handle('@goto loc_veenhoek_green')
       const here = engine.state.player.location
-      const fact = recordFact(engine.world, { kind: 'rumour', about: ['npc_harmen'], place: 'loc_waagdam_market', belang: 2, title: 'the mill', text: { precise: 'Harmen has sold the mill, they say.', village: 'Harmen has sold the mill!', far: 'A mill was sold.' }, witnesses: [] })
+      const fact = variant
+        ? recordFact(engine.world, { kind: 'rumour', about: ['npc_harmen'], place: 'loc_waagdam_market', belang: 2, title: 'the sails', text: { precise: 'Harmen has ordered new sails from Waagdam, they say.', village: 'Harmen has new sails coming!', far: 'A miller ordered sails.' }, witnesses: [] })
+        : recordFact(engine.world, { kind: 'rumour', about: ['npc_harmen'], place: 'loc_waagdam_market', belang: 2, title: 'the mill', text: { precise: 'Harmen has sold the mill, they say.', village: 'Harmen has sold the mill!', far: 'A mill was sold.' }, witnesses: [] })
       engine.state.news!.heard['npc_mirte']![fact.id] = { level: 3, reliability: 1, from: 'witness', t: engine.world.now }
       for (const id of ['npc_mirte', 'npc_grietje_visser']) Object.assign(engine.state.npcs[id]!, { location: 'loc_veenhoek_bakery', plan: [{ kind: 'move', to: here }], busyUntil: engine.world.now, goals: [] })
       engine.state.bonds!['npc_mirte']!['npc_grietje_visser'] = { affinity: 50, trust: 50, fear: 0, familiarity: 80 }
@@ -183,12 +190,12 @@ const SITUATION_BUILDS: Record<string, Build> = {
     const request = journeyRequest(engine.world, paragraph, worldText(worldFrame(base)))
     return { about: 'an hour on foot along the dyke', request, check: (text) => checked(request, text, (v) => (typeof (v as { text?: unknown }).text === 'string' && (v as { text: string }).text.trim() ? [] : ['no paragraph in the reply'])) }
   },
-  improvise: async ({ base }) => {
+  improvise: async ({ base }, variant) => {
     const engine = new Engine(base, { seed: 31, builder: true })
     engine.start()
     await engine.handle('@goto loc_kabouterberg')
     engine.state.player.inventory['milk'] = 2
-    const imp = improvisable(engine.world, parseCommand('pour milk on the oak'))
+    const imp = improvisable(engine.world, parseCommand(variant ? 'sing to the oak' : 'pour milk on the oak'))
     if (!imp) throw new Error('no place to improvise in this world')
     const request = improviseRequest(engine.world, imp)
     return {
@@ -200,9 +207,9 @@ const SITUATION_BUILDS: Record<string, Build> = {
       },
     }
   },
-  npc_goals: async ({ base }) => {
+  npc_goals: async ({ base }, variant) => {
     const engine = brainTrial(base)
-    const choice = engine.state.brain?.pending[0]
+    const choice = engine.state.brain?.pending[variant] ?? engine.state.brain?.pending[0]
     if (!choice) throw new Error('no goal choice waiting')
     const request = goalRequest(engine.world, choice)
     const keys = (request.meta?.['keys'] ?? undefined) as Record<string, string> | undefined
@@ -217,8 +224,8 @@ const SITUATION_BUILDS: Record<string, Build> = {
       },
     }
   },
-  chronicle: async ({ base }) => {
-    const engine = (await chroniclerTrial(base)).find((e) => e.state.chronicle?.pending[0])
+  chronicle: async ({ base }, variant) => {
+    const engine = (await chroniclerTrial(base)).filter((e) => e.state.chronicle?.pending[0])[variant]
     const run = engine?.state.chronicle?.pending[0]
     if (!engine || !run) throw new Error('no chronicle run waiting')
     const input = buildInput(engine.world, run)
@@ -226,14 +233,14 @@ const SITUATION_BUILDS: Record<string, Build> = {
     const request: LlmRequest = { ...buildRequest(input, keys, DEFAULT_LIMITS, [], 0), priority: 'low' }
     return { about: 'the night after a drowning', request, check: (text) => readReply(text, keys, input, DEFAULT_LIMITS).problems }
   },
-  spark: async ({ base }) => {
+  spark: async ({ base }, variant) => {
     // A quiet night after a drowning (M10.27): the storyline is open, and nothing new came of it.
-    const engine = (await chroniclerTrial(base)).find((e) => e.state.chronicle?.pending[0])!
+    const engine = (await chroniclerTrial(base)).filter((e) => e.state.chronicle?.pending[0])[variant]!
     const run = { id: 'run_spark', t: engine.world.now, reason: 'spark' as const, lines: sparkLines(engine.world).map((l) => l.id) }
     const { request, keys } = sparkRequest(engine.world, run)
     return { about: 'a quiet night after a drowning', request, check: (text) => readSpark(text, keys).problems }
   },
-  read_score: async ({ base }) => {
+  read_score: async ({ base }, variant) => {
     // Three answers of Mirte to read (M10.28): one good, one flat, one that talks like anyone.
     const mirte = base.npcs.get('npc_mirte')!
     const card = `${mirte.name}, ${mirte.short}.${mirte.speech ? ` Speech: ${mirte.speech}` : ''}`
@@ -242,11 +249,13 @@ const SITUATION_BUILDS: Record<string, Build> = {
       { card, said: 'Is the mill working?', answer: 'Mirte says. "No."' },
       { card, said: 'Tell me about the village.', answer: '"Great question! The village is a wonderful place with many interesting features and friendly people."' },
     ]
-    const request = readScoreRequest(items)
-    return { about: 'three answers of Mirte to read', request, check: (text) => (readScoreReply(text, items.length) ? [] : ['the read score could not be read']) }
+    const request = readScoreRequest(variant ? items.slice(0, 2) : items)
+    return { about: 'three answers of Mirte to read', request, check: (text) => (readScoreReply(text, variant ? 2 : items.length) ? [] : ['the read score could not be read']) }
   },
-  lore_check: async () => {
-    const op = { name: 'The night the dyke broke', summary: 'Harmen drowned in the Blackmere the night the dyke broke.', details: 'Mirte saw it from the bakery.', story: 'The dyke broke in the night and the water took Harmen before anyone could reach him. Mirte saw it from the bakery.', far: 'A man drowned in the marsh.' }
+  lore_check: async (_worlds, variant) => {
+    const op = variant
+      ? { name: 'The sails of De Zwaan', summary: 'Harmen sold the torn sails of De Zwaan to a carter from Waagdam.', details: 'Mirte says he got a poor price.', story: 'After the storm Harmen sold the torn sails to a carter from Waagdam, for less than they were worth.', far: 'A miller sold his sails.' }
+      : { name: 'The night the dyke broke', summary: 'Harmen drowned in the Blackmere the night the dyke broke.', details: 'Mirte saw it from the bakery.', story: 'The dyke broke in the night and the water took Harmen before anyone could reach him. Mirte saw it from the bakery.', far: 'A man drowned in the marsh.' }
     const events = [{ id: 'e1', when: 'day 15, night', place: 'the Blackmere', who: ['Harmen'], witnesses: ['Mirte'], belang: 4, text: 'Harmen drowned in the Blackmere when the dyke broke.' }]
     const request = judgeRequest(op, events as Parameters<typeof judgeRequest>[1])
     return { about: 'a second look at the lore of a drowning', request, check: (text) => (judged(text) ? [] : ['the second look could not be read']) }
@@ -286,17 +295,17 @@ const SITUATION_BUILDS: Record<string, Build> = {
     const request = farRequest(engine.world, far)
     return { about: `a far place made playable (${far})`, request, check: (text) => (farWords(text) ? limits(text) : ['the names and lines could not be read']) }
   },
-  district: async ({ base }) => {
+  district: async ({ base }, variant) => {
     const request = await captured('district', async (llm) => {
-      const engine = new Engine(base, { seed: 6, builder: true, llm })
+      const engine = new Engine(base, { seed: 6 + variant, builder: true, llm })
       await doneInGraafhaven(engine)
       await engine.runModels()
     })
     return { about: 'the gate district of Graafhaven, the first time the stranger does something there', request, check: (text) => (districtWords(text) ? checked(request, text) : ['the names and lines could not be read']) }
   },
-  region_story: async ({ base }) => {
+  region_story: async ({ base }, variant) => {
     const request = await captured('region_story', async (llm) => {
-      const engine = new Engine(base, { seed: 6, builder: true, llm })
+      const engine = new Engine(base, { seed: 6 + variant, builder: true, llm })
       await doneInGraafhaven(engine)
       await engine.handle('bye')
       await engine.runModels()
@@ -305,9 +314,9 @@ const SITUATION_BUILDS: Record<string, Build> = {
     })
     return { about: "the story of Graafhaven, once its gate district is made and the stranger is there", request, check: (text) => (storyReply(text) ? checked(request, text) : ['the story could not be read']) }
   },
-  weave: async ({ base }) => {
+  weave: async ({ base }, variant) => {
     const request = await captured('weave', async (llm) => {
-      const engine = new Engine(base, { seed: 11, builder: true, llm })
+      const engine = new Engine(base, { seed: 11 + variant, builder: true, llm })
       await doneInGraafhaven(engine)
       await engine.handle('bye')
       await engine.runModels()
@@ -321,8 +330,10 @@ const SITUATION_BUILDS: Record<string, Build> = {
     const request = expansionRequest(engine.world, { key: 'trial', wind: 'south', from: [region.origin[0] + region.size[0] / 2, region.origin[1]], region: region.id, t: engine.world.now })
     return { about: `the stranger goes on into the unknown south of ${region.name}`, request, check: (text) => (expansionReply(text) ? checked(request, text) : ['the outline could not be read']) }
   },
-  land: async ({ isle }) => {
-    const content = loadContent(framedOnly(isle, 'western_isles'))
+  land: async ({ isle }, variant) => {
+    // A second situation: the same land told in other words.
+    const framed = framedOnly(isle, 'western_isles').map((f) => (variant && f.path.endsWith('lands/western_isles/land.yaml') ? { ...f, text: f.text.replace(/frame: (\|-?\n\s*|>-?\n\s*)?/, (m) => `${m}Wind and grey water all round. `) } : f))
+    const content = loadContent(framed)
     const request = await captured('land', async (llm) => {
       const engine = new Engine(content, { seed: 7, builder: true, llm })
       engine.start()
@@ -342,9 +353,9 @@ const SITUATION_BUILDS: Record<string, Build> = {
     const request = draftRequest(isle, 'A small hamlet near here, with three people and a story.', { kind: 'location', id: 'loc_skerrow_green' })
     return { about: 'the writing aid asked for a hamlet in Skerrow', request, check: (text) => readDraft(isle, text).problems }
   },
-  world_step: async () => {
+  world_step: async (_worlds, variant) => {
     const files = newWorldFiles('trial', 'Trial')
-    const request = worldStepRequest(files, 'calendar', 'Thirteen months of thirty days; winter is long, and a storm season runs from the ninth month to the eleventh.')
+    const request = variant ? worldStepRequest(files, 'money', 'Copper bits and silver marks, ten bits to the mark; a meal is two bits.') : worldStepRequest(files, 'calendar', 'Thirteen months of thirty days; winter is long, and a storm season runs from the ninth month to the eleventh.')
     return { about: 'the calendar step of a new world', request, check: (text) => readDraft(files, text).problems }
   },
   world_enhance: async ({ isle }) => {
@@ -355,10 +366,10 @@ const SITUATION_BUILDS: Record<string, Build> = {
     const request = polishRequest(isle)
     return { about: 'the polish round of Skerrow\'s places', request, check: (text) => readPolish(isle, text).problems }
   },
-  map_paint: async ({ isle }) => {
+  map_paint: async ({ isle }, variant) => {
     // Skerrow without its map, laid out from its places and painted from what its world says of the island.
     const files = withoutMap(isle)
-    const said = 'A small, rocky island in a grey sea: black shingle on the strand, heather and grey stone on the heights, a salt marsh behind the harbour, and the beacon on the headland.'
+    const said = variant ? 'A windswept island of grey rock, a harbour to the east and marsh behind it.' : 'A small, rocky island in a grey sea: black shingle on the strand, heather and grey stone on the heights, a salt marsh behind the harbour, and the beacon on the headland.'
     const { layout, request } = mapStepRequest(files, said)
     return { about: 'the map of Skerrow, laid out from its places and painted as a table', request: request!, check: (text) => readMapStep(files, layout, text).problems }
   },
@@ -392,7 +403,7 @@ function farTopic(content: Content): string {
 /** The kinds with a situation in the engine; model_advice and test_call are tried in the app's own code. */
 export const SITUATION_KINDS = Object.keys(SITUATION_BUILDS)
 
-export async function kindSituation(kind: string, worlds: TrialWorlds): Promise<KindSituation | undefined> {
+export async function kindSituation(kind: string, worlds: TrialWorlds, variant = 0): Promise<KindSituation | undefined> {
   const build = SITUATION_BUILDS[kind]
-  return build ? build(worlds) : undefined
+  return build ? build(worlds, variant) : undefined
 }
