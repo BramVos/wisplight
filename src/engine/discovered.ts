@@ -96,6 +96,21 @@ export function discoveredBook(engine: Engine): string {
     add(title, body)
   }
 
+  // Beyond the book (M10.21): what the rounds at the edge charted in this game, with how each came about;
+  // canon for this game from then on, and for the designer a proposal for the world book.
+  const charted = Object.values(world.state.growth?.expansions?.made ?? {}).sort((a, b) => a.t - b.t)
+  add(
+    'Beyond the book',
+    charted.flatMap(({ ask, outline: o, t }) => [
+      `### ${o.name.charAt(0).toUpperCase()}${o.name.slice(1)}`,
+      '',
+      ...para(`${o.kind === 'land' ? 'A land of its own' : 'A region'}, ${o.days} day${o.days === 1 ? '' : 's'} ${ask.wind} of the edge. ${o.summary} ${o.details}`),
+      ...(o.story ? para(o.story) : []),
+      ...para(`Its quarters: ${o.districts.map((d) => `${d.name} (${d.line})`).join('; ')}.`),
+      ...para(`How it came about: charted on ${world.date(t)}, when the stranger went on into the unknown. ${o.why}`),
+    ]),
+  )
+
   const head = [`# ${world.content.world.name}: what ${who} found out`, '', `Everything found out so far in this game, from the journal: what the stranger saw, heard or was told, and nothing else.`, '']
   chapters.forEach((c, i) => head.push(`## ${i + 1}. ${c.title}`, '', ...c.body))
   return head.join('\n').replace(/\n{3,}/g, '\n\n').trim() + '\n'

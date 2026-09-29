@@ -7,8 +7,8 @@ import { recordFact } from '../news'
 import { worldText } from '../safety'
 import { newNpcState, type GameState } from '../state'
 import type { World } from '../world'
-import { farPlaceOf, farTopicAt, fitsRoom, freeId, withFarPlaces } from './far'
-import { growth } from './growth'
+import { farPlaceOf, farTopicAt, fitsRoom, freeId } from './far'
+import { grownContent, growth } from './growth'
 import { askOutput, mustAsk } from '../asking'
 import type { Output } from '../commands'
 import { sketchById, sketchNpc, sketchProfession } from '../sketches'
@@ -304,7 +304,8 @@ export function applyDistrict(world: World, topic: string, id: string, words: Di
     const state = { ...world.state, growth: { ...g, districts: next } }
     let content: Content
     try {
-      content = withDistricts(withFarPlaces(world.base, state), state)
+      // Checked on the whole game's content, as far places are.
+      content = grownContent(world.base, state)
     } catch {
       continue
     }

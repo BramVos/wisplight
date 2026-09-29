@@ -8,7 +8,7 @@ import { recordFact } from '../news'
 import { newNpcState, type GameState } from '../state'
 import { outlineOf } from '../outlines'
 import type { World } from '../world'
-import { growth } from './growth'
+import { grownContent, growth } from './growth'
 import { sketchById, sketchNpc, sketchPhrase, sketchProfession } from '../sketches'
 import { voiceSummary } from '../dialogue/voice'
 
@@ -314,7 +314,8 @@ export function applyFarPlace(world: World, topic: string, words: FarWords | nul
     const state = { ...world.state, growth: { ...g, far: { ...(g.far ?? {}), [topic]: made } } }
     let next: Content
     try {
-      next = withFarPlaces(world.base, state)
+      // Checked on the whole game's content (M10.21: a far place a round at the edge charted is in no base).
+      next = grownContent(world.base, state)
     } catch {
       continue
     }

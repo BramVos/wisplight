@@ -4,6 +4,7 @@ import type { Output } from './commands'
 import { offer } from './choice'
 import { knob } from './knobs'
 import { callName } from './content'
+import { applyExpansion, type ExpansionAsk, type ExpansionOutline } from './growth/expansion'
 import { applyWeave, type WeaveReply } from './growth/weave'
 import { sketchById } from './sketches'
 import type { ChronicleRun, Offered } from './state'
@@ -53,13 +54,15 @@ export interface HeldHook {
 export interface Proposal {
   id: string
   t: number
-  kind: 'chronicle' | 'weave' | 'tides'
+  kind: 'chronicle' | 'weave' | 'tides' | 'expansion'
   run?: ChronicleRun
   offered?: Offered
   output?: ChronicleOutput | null
   key?: string
   weave?: WeaveReply | null
   tides?: TidesReply | null
+  /** What a round at the edge would chart (M10.21). */
+  expansion?: { ask: ExpansionAsk; outline: ExpansionOutline }
   /** The changes, one a line, as the player reads them. */
   lines: string[]
 }
@@ -166,6 +169,12 @@ function weaveLines(world: World, reply: WeaveReply | null): string[] {
   ]
 }
 
+function expansionLines(e: Proposal['expansion']): string[] {
+  if (!e) return ['(nothing)']
+  const o = e.outline
+  return [`+ ${o.kind === 'land' ? 'a land' : 'a region'} ${e.ask.wind}, ${o.days} day${o.days === 1 ? '' : 's'} on: ${o.name}. ${o.summary}`, ...o.districts.map((d) => `+ quarter: ${d.name}. ${d.line}`), `  why: ${o.why}`]
+}
+
 function tidesLines(world: World, reply: TidesReply | null): string[] {
   return (reply?.lines ?? []).map((l) => `~ ${world.content.tides.get(l.id)?.name ?? l.id}: ${l.judged}. ${l.why}`)
 }
@@ -174,7 +183,7 @@ function tidesLines(world: World, reply: TidesReply | null): string[] {
 export function propose(world: World, p: Omit<Proposal, 'id' | 't' | 'lines'>): boolean {
   if (playModeOf(world) !== 'direct') return false
   const m = modes(world)
-  const lines = p.kind === 'chronicle' ? chronicleLines(world, p.output ?? emptyOutput()) : p.kind === 'weave' ? weaveLines(world, p.weave ?? null) : tidesLines(world, p.tides ?? null)
+  const lines = p.kind === 'chronicle' ? chronicleLines(world, p.output ?? emptyOutput()) : p.kind === 'weave' ? weaveLines(world, p.weave ?? null) : p.kind === 'expansion' ? expansionLines(p.expansion) : tidesLines(world, p.tides ?? null)
   m.proposals.push({ ...p, id: `proposal_${++m.seq}`, t: world.now, lines })
   return true
 }
@@ -183,7 +192,7 @@ export function propose(world: World, p: Omit<Proposal, 'id' | 't' | 'lines'>): 
 export function proposalsText(world: World): Output[] {
   const waiting = world.state.modes?.proposals ?? []
   if (!waiting.length) return [{ kind: 'text', text: 'The chronicler proposes nothing just now.' }]
-  const what = { chronicle: 'The night round', weave: 'The new people of a district', tides: "The month's judgement of the great lines" }
+  const what = { chronicle: 'The night round', weave: 'The new people of a district', tides: "The month's judgement of the great lines", expansion: 'What lies beyond the edge' }
   return [{ kind: 'text', text: [`The chronicler proposes (ACCEPT or REJECT, the first first):`, ...waiting.flatMap((p) => [`${what[p.kind]} (${p.id}):`, ...p.lines.map((l) => `  ${l}`)])].join('\n') }]
 }
 
@@ -200,6 +209,7 @@ export function decide(world: World, accept: boolean, id?: string): Output[] {
   if (p.kind === 'chronicle' && p.run) applyOutput(world, p.run, accept ? (p.output ?? null) : null, accept && p.output ? 'chronicler' : 'template', p.offered)
   else if (p.kind === 'weave' && p.key) applyWeave(world, p.key, accept ? (p.weave ?? null) : null)
   else if (p.kind === 'tides') applyTides(world, accept ? (p.tides ?? null) : null)
+  else if (p.kind === 'expansion' && p.expansion && accept) applyExpansion(world, p.expansion.ask, p.expansion.outline)
   return [{ kind: 'system', text: accept ? 'Done as proposed.' : 'Not that: the world takes its own course.' }]
 }
 

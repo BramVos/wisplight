@@ -57,6 +57,8 @@ numbers:
     DUIT: 'world (moved): world.yaml money.units (M10.17); kept as the default for a world without coins'
     STUIVER: 'world (moved): world.yaml money.units (M10.17); kept as the default for a world without coins'
     GUILDER: 'world (moved): world.yaml money.units (M10.17); kept as the default for a world without coins'
+  src/engine/growth/expansion.ts:
+    KM_PER_DAY: 'code: the pace a far place''s road is laid out at, as in far.ts, so a charted place lies as far as the days it names'
   src/engine/growth/districts.ts:
     MOST_PLACES: 'code: a bound on what one district call may add, so the call stays small (cost)'
     MOST_PEOPLE: 'code: a bound on what one district call may add, so the call stays small (cost)'

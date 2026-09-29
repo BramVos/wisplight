@@ -106,6 +106,8 @@ export class MockLlm implements LlmClient {
             ? this.weave((request.meta?.['fresh'] as string[] | undefined) ?? [], (request.meta?.['known'] as string[] | undefined) ?? [], (request.meta?.['lines'] as string[] | undefined) ?? [])
             : request.schemaName === 'district'
             ? this.district(String(request.meta?.['town'] ?? 'the town'), String(request.meta?.['name'] ?? 'the district'), (request.meta?.['factions'] as string[] | undefined) ?? [])
+            : request.schemaName === 'expansion'
+            ? this.expansion(String(request.meta?.['wind'] ?? 'south'), Number(request.meta?.['count'] ?? 1))
             : request.schemaName === 'land'
             ? this.land(String(request.meta?.['name'] ?? 'the land'), (request.meta?.['faiths'] as string[] | undefined) ?? [])
             : request.schemaName === 'legends'
@@ -118,6 +120,44 @@ export class MockLlm implements LlmClient {
   /** The month's judgement of the great lines (M10.22): the furthest each may go, and one made-up line that must be dropped. */
   tides(allowed: Record<string, string[]>): string {
     return JSON.stringify({ lines: [...Object.entries(allowed).map(([id, may]) => ({ id, judged: may.at(-1) ?? 'nothing', why: 'The signs have been gathering all month.' })), { id: 'made_up', judged: 'event', why: 'Because.' }] })
+  }
+
+  /**
+   * What lies beyond the edge (M10.21): a region of salt flats, and in think
+   * mode a land of its own as the second choice. In 'invalid' mode a name
+   * that is taken and quarters too few, which must be refused.
+   */
+  expansion(wind: string, count: number): string {
+    if (this.mode === 'invalid') return JSON.stringify({ outlines: [{ id: 'x', name: 'Veenhoek', kind: 'region', summary: 'A place.', details: 'A place.', days: 9, districts: [{ id: 'a', name: 'A', line: 'A.' }], why: 'Because.' }] })
+    const saltings = {
+      id: 'grey_saltings',
+      name: 'the Grey Saltings',
+      kind: 'region',
+      summary: `Salt flats ${wind} of the edge, where a few families boil sea water for salt.`,
+      details: 'The flats are cut by creeks that fill twice a day. The salt boilers live in huts on stilts and trade with whoever comes.',
+      story: 'They say the first boiler found the flats by following a white heron that never landed.',
+      days: 2,
+      districts: [
+        { id: 'boiling_huts', name: 'the boiling huts', line: 'Huts on stilts round the salt pans, where the fires never quite go out.' },
+        { id: 'creek_landing', name: 'the creek landing', line: 'A landing of black posts where the salt barges tie up at high water.' },
+      ],
+      why: 'The world book says the salt comes into the land from beyond its edge.',
+    }
+    const amber = {
+      id: 'amber_coast',
+      name: 'the Amber Coast',
+      kind: 'land',
+      summary: `A coast of dunes ${wind} of the edge, with its own lords and its own coin.`,
+      details: 'Its people gather amber on the beaches after storms and sell it by weight. They are proud, and slow to trust a stranger.',
+      days: 4,
+      districts: [
+        { id: 'dune_gate', name: 'the dune gate', line: 'A gate in a wall of turf across the only road into the dunes.' },
+        { id: 'amber_market', name: 'the amber market', line: 'Stalls under sailcloth where amber is weighed on brass scales.' },
+      ],
+      land: { frame: 'LAND: The Amber Coast, a land of dunes and amber gatherers under its own lords.\nREGION: The dune gate and the amber market behind it.\nPEOPLE speak plainly and weigh every word as they weigh amber.', crossing: 'At the dune gate a guard weighs your purse in his hand before he lets you through.' },
+      why: 'The tales from afar speak of amber from beyond the edge.',
+    }
+    return JSON.stringify({ outlines: count > 1 ? [saltings, amber] : [saltings] })
   }
 
   /**

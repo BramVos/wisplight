@@ -16,6 +16,7 @@ import { recordFact } from './news'
 import { districtWords } from './growth/districts'
 import { weaveReply } from './growth/weave'
 import { landWords } from './growth/landwrite'
+import { expansionReply, expansionRequest } from './growth/expansion'
 import { tideState, tidesReply, tidesRequest } from './tides'
 import { farRequest, farWords } from './growth/far'
 import { improvisable, improviseRequest, readImprovisation } from './improvise'
@@ -278,6 +279,12 @@ const SITUATION_BUILDS: Record<string, Build> = {
       await engine.runModels()
     })
     return { about: 'the new people of Graafhaven\'s gate district woven into the world', request, check: (text) => (weaveReply(text) ? checked(request, text) : ['the weave could not be read']) }
+  },
+  expansion: async ({ base }) => {
+    const engine = new Engine(base, { seed: 1 })
+    const region = [...base.regions.values()][0]!
+    const request = expansionRequest(engine.world, { key: 'trial', wind: 'south', from: [region.origin[0] + region.size[0] / 2, region.origin[1]], region: region.id, t: engine.world.now })
+    return { about: `the stranger goes on into the unknown south of ${region.name}`, request, check: (text) => (expansionReply(text) ? checked(request, text) : ['the outline could not be read']) }
   },
   land: async ({ isle }) => {
     const content = loadContent(framedOnly(isle, 'western_isles'))

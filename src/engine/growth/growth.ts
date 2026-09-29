@@ -1,3 +1,4 @@
+import { withExpansions } from './expansion'
 import { withLands } from './landwrite'
 import { frameOf } from '../lands'
 import { withProps } from '../props'
@@ -52,6 +53,8 @@ export interface GrowthState {
   districtPending?: string[]
   /** Districts whose new people the chronicler still weaves into the world (M10.22). */
   weavePending?: string[]
+  /** What the rounds at the edge charted (M10.21): new regions and lands, what waits, and a choice in think mode. */
+  expansions?: import('./expansion').ExpansionsState
   /** What the chronicler wrote for lands the designer only framed (M10.23), by land, and those waiting for it. */
   lands?: Record<string, Record<string, unknown>>
   landPending?: string[]
@@ -73,7 +76,9 @@ export function grownContent(base: Content, state: GameState): Content {
 function grownOnly(base: Content, state: GameState): Content {
   const g = state.growth
   const built = g ? Object.entries(g.projects).filter(([, p]) => p.done !== undefined).map(([id]) => base.projects.get(id)!).filter(Boolean) : []
-  // The lands the chronicler wrote (M10.23) first: what grows in them speaks by them.
+  // What the rounds at the edge charted (M10.21) first: new far places and lands, canon from then on.
+  if (g?.expansions && Object.keys(g.expansions.made).length) base = withExpansions(base, state)
+  // The lands the chronicler wrote (M10.23): what grows in them speaks by them.
   if (g?.lands && Object.keys(g.lands).length) base = withLands(base, state)
   if (g?.far && Object.keys(g.far).length) base = withFarPlaces(base, state)
   if (g?.districts && Object.keys(g.districts).length) base = withDistricts(base, state)

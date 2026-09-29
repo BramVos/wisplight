@@ -24,6 +24,7 @@ export const MODEL_KINDS: readonly ModelKind[] = [
   { kind: 'npc_goals', role: 'brain', does: 'A person chooses a goal where the rules leave a choice.', when: 'play' },
   { kind: 'far_place', role: 'chronicler', does: 'A far place becomes playable (an old save that still waits for one; since M10.21 a far place comes from templates).', when: 'play' },
   { kind: 'district', role: 'chronicler', does: 'A district of a far town becomes playable when the stranger does something there or goes into it.', when: 'play' },
+  { kind: 'expansion', role: 'chronicler', does: 'What lies beyond the edge of the world book, charted when the stranger goes on into the unknown: one region or one land.', when: 'play' },
   { kind: 'land', role: 'chronicler', does: 'A land the designer only framed: how its people speak, their names, coins and law, when the stranger first comes in.', when: 'play' },
   { kind: 'weave', role: 'chronicler', does: 'The new people of a district woven into the world: bonds, a secret, a thread home.', when: 'play' },
   { kind: 'chronicle', role: 'chronicler', does: 'The nightly round: lore, requests and storylines from the day.', when: 'night' },

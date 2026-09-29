@@ -836,9 +836,14 @@ function liesBeyond(map: RegionMap, side: Side, pos: readonly [number, number]):
 export function beyondEdge(world: World, map: RegionMap, side: Side): Output[] {
   const own = map.region.beyond?.find((b) => b.side === side)
   // Without a line for this edge, the far places the stranger knows of that way (neutral: nobody has said more).
-  const toward = own
-    ? own.toward
-    : [...world.content.topics.values()].filter((t) => t.kind === 'place' && t.pos && !map.inside(map.hexOf(t.pos)) && (world.state.player.journal ?? {})[t.id] !== undefined && liesBeyond(map, side, t.pos)).map((t) => t.id)
+  // What a round at the edge charted this way (M10.21) is known from then on, beside the world book's own.
+  const charted = Object.values(world.state.growth?.expansions?.made ?? {}).filter((m) => m.ask.region === map.region.id && m.ask.wind === side).map((m) => m.outline.id)
+  const toward = [
+    ...(own
+      ? own.toward
+      : [...world.content.topics.values()].filter((t) => t.kind === 'place' && t.pos && !map.inside(map.hexOf(t.pos)) && (world.state.player.journal ?? {})[t.id] !== undefined && liesBeyond(map, side, t.pos)).map((t) => t.id)),
+    ...charted,
+  ].filter((id, i, all) => all.indexOf(id) === i)
   const text = own?.text ?? `Beyond it the land runs on ${SIDE_WIND[side]}, and nobody has told you yet what lies that way.`
   const here = playerHex(world)
   const from = here ? map.posOf(here) : map.national([map.region.size[0] / 2, map.region.size[1] / 2])
@@ -856,6 +861,8 @@ export function beyondEdge(world: World, map: RegionMap, side: Side): Output[] {
     }
     for (const way of waysTo(world, topic)) if (way.how === 'passage') options.push({ label: way.label, command: way.command })
   }
+  // Nothing known that way (M10.21): with a model the stranger may go on into the unknown, and the chronicler charts it.
+  if (!options.length && world.aiLive) return [{ kind: 'text', text }, ...offer(world, 'Go on, or turn back?', [{ label: `Go on into the unknown, ${SIDE_WIND[side]}`, command: `explore ${side}` }, { label: `Turn back ${TURN_BACK[side]}`, command: `head ${TURN_BACK[side]}` }])]
   if (!options.length) return [{ kind: 'text', text }]
   options.push({ label: `Turn back ${TURN_BACK[side]}`, command: `head ${TURN_BACK[side]}` })
   return [{ kind: 'text', text }, ...offer(world, 'Go on, or turn back?', options)]

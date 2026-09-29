@@ -11,6 +11,7 @@ import { withoutReference } from '../quests/reference'
 import { worldGuide, worldText } from '../safety'
 import type { GameState } from '../state'
 import type { World } from '../world'
+import { withExpansions } from './expansion'
 import { growth } from './growth'
 
 // A land the designer only framed (M10.23; roadmap: "the chronicler writes
@@ -32,6 +33,11 @@ export interface LandWords {
   voice?: Record<string, unknown>
 }
 
+/** A land as it was before the chronicler wrote it: the designer's, or one a round at the edge charted (M10.21). */
+function designed(world: World, id: string): Land | undefined {
+  return world.base.lands.get(id) ?? withExpansions(world.base, world.state).lands.get(id)
+}
+
 /** A land that has its frame and no voice or names of its own: the chronicler may write the rest. */
 export function unwritten(land: Land | undefined): boolean {
   return Boolean(land && !land.voice && !land.names)
@@ -44,7 +50,7 @@ export function unwritten(land: Land | undefined): boolean {
  * world's voice, names, coins and law.
  */
 export function wantLand(world: World, id: string): Output[] {
-  const land = world.base.lands.get(id)
+  const land = designed(world, id)
   const g = growth(world)
   if (!world.aiLive || !unwritten(land) || g.lands?.[id] || g.landPending?.includes(id)) return []
   const asked = mustAsk(world, `land:${id}`, `Writing how people live in ${land!.name}`, landRequest(world, id), `land ${id}`)
@@ -136,7 +142,7 @@ export function landWords(text: string): LandWords | null {
 export function applyLand(world: World, id: string, words: LandWords | null): boolean {
   const g = growth(world)
   g.landPending = (g.landPending ?? []).filter((x) => x !== id)
-  const land = world.base.lands.get(id)
+  const land = designed(world, id)
   if (!words || !land || g.lands?.[id]) return false
   const shape = LandSchema.shape
   const own: Record<string, unknown> = {}

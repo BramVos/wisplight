@@ -11,6 +11,7 @@ import { brawlAnswer, brawlShown } from './social/brawl'
 import { CHECKPOINT_ENTRIES, CHECKPOINT_MINUTES, contentVersion, type Checkpoint, type CheckpointedSave } from './checkpoint'
 import { applyFarPlace, farPlaceOf, farRequest, farWords, wantFarPlace, type FarWords, farTopicAt } from './growth/far'
 import { crossBorder } from './borders'
+import { chartChoice, expansionChoice, expansionReply, expansionRequest, settleExpansion, soundOutlines, unpend, wantExpansion, type ExpansionAsk, type ExpansionReply } from './growth/expansion'
 import { wakePulse } from './pulse'
 import { decide, holdHooks, hookChoice, morningHooks, PLAY_MODES, playModeOf, propose, proposalsText, takeHook, waitingLines, type PlayMode } from './modes'
 import { applyLand, landRequest, landWords, wantLand, type LandWords } from './growth/landwrite'
@@ -54,7 +55,7 @@ import { duration } from './map/journeyText'
 import { mapText, mapView, type MapView } from './map/view'
 import { regionMap } from './map/region'
 import { terrainName } from './map/palette'
-import { canSetOut, edgeOf, followWay, hasSeen, hexName, hexOfId, isHexId, knownRidgeNear, landmarkIn, look, playerHex, routeBetween, trailEndsAt, tread, type WalkPlan, walk, waysFrom, windOf } from './map/travel'
+import { canSetOut, edgeOf, followWay, hasSeen, hexLocation, hexName, hexOfId, isHexId, knownRidgeNear, landmarkIn, look, playerHex, routeBetween, trailEndsAt, tread, type WalkPlan, walk, waysFrom, windOf } from './map/travel'
 import { knownRequests, requestName } from './requests'
 import { recordFact, seedNews } from './news'
 import { parseCommand, parseDirection } from './parser'
@@ -122,6 +123,8 @@ export type LogEntry =
   | { t: number; k: 'weave'; key: string; v: WeaveReply | null }
   // What the chronicler wrote for a land the designer only framed (M10.23), or null.
   | { t: number; k: 'land'; id: string; v: LandWords | null }
+  // What a round at the edge charted (M10.21), or null.
+  | { t: number; k: 'expansion'; key: string; v: ExpansionReply | null }
   // The player's play mode, when it changed (M10.24).
   | { t: number; k: 'mode'; v: PlayMode }
   | { t: number; k: 'tides'; v: TidesReply | null }
@@ -344,6 +347,11 @@ export class Engine {
     for (const location of this.world.content.locations.values()) {
       if (this.topics.entries.has(location.id)) continue
       this.topics.addDuringPlay({ id: location.id, kind: 'place', name: location.name, ref: location.id, aliases: [location.name, ...location.aliases] })
+    }
+    // What a round at the edge charted (M10.21): a far place to name like any.
+    for (const topic of this.world.content.topics.values()) {
+      if (this.topics.entries.has(topic.id) || topic.kind !== 'place') continue
+      this.topics.addDuringPlay({ id: topic.id, kind: 'place', name: topic.name, aliases: [topic.name, ...topic.aliases] })
     }
   }
 
@@ -587,7 +595,7 @@ export class Engine {
   /** Everything waiting for a model: goal choices and chronicler runs. */
   get modelsWaiting(): number {
     // A far place waiting for its words counts too (M10.21: alone, it never started the models).
-    return (this.state.brain?.pending.length ?? 0) + this.chroniclerWaiting + this.outlinesWaiting + (this.state.growth?.farPending?.length ?? 0) + (this.state.growth?.districtPending?.length ?? 0) + (this.state.growth?.landPending?.length ?? 0) + (this.state.growth?.weavePending?.length ?? 0) + (this.state.tides?.pending ? 1 : 0)
+    return (this.state.brain?.pending.length ?? 0) + this.chroniclerWaiting + this.outlinesWaiting + (this.state.growth?.farPending?.length ?? 0) + (this.state.growth?.districtPending?.length ?? 0) + (this.state.growth?.landPending?.length ?? 0) + (this.state.growth?.expansions?.pending.length ?? 0) + (this.state.growth?.weavePending?.length ?? 0) + (this.state.tides?.pending ? 1 : 0)
   }
 
   /** Lets the models do their waiting work in the background: goal choices first, they are short. */
@@ -603,6 +611,7 @@ export class Engine {
     await this.runOutlines()
     await this.runFarPlaces()
     await this.runLands()
+    await this.runExpansions()
     await this.runDistricts()
     await this.runWeaves()
     const tides = pace.tides === false ? false : await this.runTides()
@@ -714,6 +723,39 @@ export class Engine {
     } finally {
       this.outlining = false
     }
+  }
+
+  /** Rounds at the edge of the world book (M10.21), one at a time. */
+  async runExpansions(): Promise<void> {
+    if (this.outlining) return
+    this.outlining = true
+    try {
+      const e = this.state.growth?.expansions
+      while (e?.pending.length) {
+        const ask = e.pending[0]!
+        const llm = this.llm
+        let reply: ExpansionReply | null = null
+        if (llm) {
+          try {
+            reply = expansionReply((await llm.complete(expansionRequest(this.world, ask))).text)
+          } catch {
+            reply = null
+          }
+        }
+        if (!e.pending.some((p) => p.key === ask.key)) continue
+        this.record({ t: this.world.now, k: 'expansion', key: ask.key, v: reply })
+        this.settleExpansionRun(ask, reply)
+      }
+    } finally {
+      this.outlining = false
+    }
+  }
+
+  /** A round's answer by the play mode (M10.24): in direct mode the outline waits as a proposal. */
+  private settleExpansionRun(ask: ExpansionAsk, reply: ExpansionReply | null): void {
+    const outline = playModeOf(this.world) === 'direct' ? soundOutlines(this.world, reply)[0] : undefined
+    if (outline && propose(this.world, { kind: 'expansion', expansion: { ask, outline } })) unpend(this.world, ask.key)
+    else settleExpansion(this.world, ask, reply)
   }
 
   /** Lands the designer only framed, waiting for the chronicler to write the rest (M10.23), one at a time. */
@@ -1138,6 +1180,8 @@ export class Engine {
     outputs.push(...momentsNow(this.world))
     // What a night brought, in think mode (M10.24): put to the player in the morning, once, after the rest.
     outputs.push(...morningHooks(this.world))
+    // Two notions of what lies beyond the edge, in think mode (M10.21): the player's choice.
+    outputs.push(...expansionChoice(this.world))
     // A journey in the voice of the world, when a model may help (M10.11); the rules' paragraph otherwise.
     await this.narrate(outputs)
     const shown = this.shown(outputs)
@@ -1200,6 +1244,16 @@ export class Engine {
     if (!this.state.talk && (said === 'proposals' || said === 'proposal')) return proposalsText(this.world)
     const verdict = /^(accept|reject)(?:\s+(proposal_\d+))?$/.exec(said)
     if (verdict && !this.state.talk && this.state.modes?.proposals.length) return decide(this.world, verdict[1] === 'accept', verdict[2])
+    // EXPLORE <side> (M10.21): into the unknown from the edge of the map, where nobody has told the stranger what lies beyond.
+    const explore = /^explore\s+(north|east|south|west)$/.exec(said)
+    if (explore && !this.state.talk) {
+      const map = regionMap(this.content)
+      const hex = playerHex(this.world)
+      if (!map || !hex || edgeOf(map, hex) !== explore[1]) return [{ kind: 'error', text: 'You can go into the unknown only from the edge of the map, on that side.' }]
+      return wantExpansion(this.world, { wind: explore[1] as ExpansionAsk['wind'], from: map.posOf(hex), region: map.region.id })
+    }
+    const chart = /^chart\s+([a-z0-9_]+)$/.exec(said)
+    if (chart && !this.state.talk && this.state.growth?.expansions?.choice) return chartChoice(this.world, chart[1]!)
     // LAND <id> (M10.23): what "go on" runs after the question of cost; only in that land.
     const written = /^land\s+([a-z0-9_]+)$/.exec(text.trim())
     if (written && !this.state.talk) return this.world.land === written[1] ? wantLand(this.world, written[1]!) : [{ kind: 'error', text: 'There is nothing to write here.' }]
@@ -1962,6 +2016,10 @@ export class Engine {
         } else if (entry.k === 'land') {
           this.log.push(entry)
           applyLand(this.world, entry.id, entry.v)
+        } else if (entry.k === 'expansion') {
+          this.log.push(entry)
+          const ask = this.state.growth?.expansions?.pending.find((p) => p.key === entry.key)
+          if (ask) this.settleExpansionRun(ask, entry.v)
         } else if (entry.k === 'due') {
           this.log.push(entry)
           this.dueTides()
@@ -2381,6 +2439,8 @@ export class Engine {
     const w = words.trim().toLowerCase()
     if (!w) return undefined
     if (this.content.locations.has(w)) return w
+    // A hex of the region map (M10.21: to test the edge of the map), as hex:col,row.
+    if (isHexId(w) && hexLocation(this.world, w)) return w
     return [...this.content.locations.values()].find((l) => l.name.toLowerCase() === w || l.aliases.includes(w))?.id ?? [...this.content.locations.values()].find((l) => l.name.toLowerCase().includes(w))?.id
   }
 

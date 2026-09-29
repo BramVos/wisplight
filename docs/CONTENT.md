@@ -12,7 +12,7 @@ Nothing in a world makes itself. During play it grows only at three moments, nev
 2. A line of transport (M10.12) takes them to a place beyond the map.
 3. At night the chronicler needs one place or person for a storyline, within its budget.
 
-A far place grows in layers, each only when needed: the sketch, a name and a line from the world book, costs nothing; arriving makes it playable from templates, without a model; the outline, one small call, comes when the stranger talks to someone there or stays the night; a second visit costs nothing. Beyond the last land the world book names, nothing is made: the edge of the map says what lies beyond (a region's `beyond`), and past the far places the known world ends.
+A far place grows in layers, each only when needed: the sketch, a name and a line from the world book, costs nothing; arriving makes it playable from templates, without a model; the outline, one small call, comes when the stranger talks to someone there or stays the night; a second visit costs nothing. Beyond the last land the world book names, nothing is made by walking near: the edge of the map says what lies beyond (a region's `beyond`), and past the far places the known world ends. Only when the stranger chooses to go on into the unknown there, with a model connected, does one round chart one new region or land that way, from what the world book suggests and within the frame (M10.21); by the play mode it is charted at once, chosen from two, or proposed.
 
 ## world (world.yaml)
 
