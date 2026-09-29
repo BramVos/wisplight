@@ -2093,3 +2093,15 @@ pre.sheet {
 .prose li ul {
   margin: 2px 0 0;
 }
+
+/* The frames of a game (M10.24): each dial or mode a small block, the choices on one line. */
+.frames .frames-dial {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin: 0 0 0.7rem;
+}
+.frames .frames-dial .row {
+  flex-wrap: wrap;
+  gap: 0.2rem 1rem;
+}

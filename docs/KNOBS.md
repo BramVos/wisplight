@@ -159,6 +159,7 @@ Safety or technique: the reason is why it is no knob.
 | TIER_TOKENS | src/engine/dialogue/acts.ts | `{ short: 320, normal: 450, explain: 560, story: 850 }` | the tokens a reply may use follow from its words (technique) |  |
 | TALK_AT | src/engine/dialogue/testset.ts | `{ day: 15, hour: 11 }` | the moment the trial of a model is played at (a test fixture) |  |
 | MAX_TALK_LINES | src/engine/engine.ts | `160` | the lines a talk keeps for its window (memory) |  |
+| GROWTH | src/engine/frames.ts | `{ little: 0.5, much: 2 }` | the growth dial of the frames screen (M10.24) as a factor on the world's own growth knobs; the knobs themselves are the world's |  |
 | MOST_PLACES | src/engine/growth/districts.ts | `6` | a bound on what one district call may add, so the call stays small (cost) |  |
 | MOST_PEOPLE | src/engine/growth/districts.ts | `6` | a bound on what one district call may add, so the call stays small (cost) |  |
 | MOST_SEATS | src/engine/growth/districts.ts | `2` | a bound on the seats of factions one district may hold (a town brings no new factions, and few new seats) |  |

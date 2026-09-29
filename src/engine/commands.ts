@@ -1,3 +1,4 @@
+import { framesLines, setFrame } from './frames'
 import { lookSky } from './weather'
 import { publicShort } from './acquaintance'
 import { inSeason } from './content'
@@ -100,7 +101,7 @@ const HELP = [
   'Trade: list (what is for sale here), buy <thing> [amount], sell <thing> [amount], rent a room (a night), rent the room for a week (yours, with a chest: put <thing> in the chest, take <thing> from the chest).',
   'Work: work (for a day\'s pay), invest <amount>, loads (what there is to carry from here), haul <goods> to <place>, deliver.',
   'Time: time, wait [minutes], wait for <person>, sleep. At night: knock (on a door), wake <person>.',
-  'Pace: tempo calm, tempo normal or tempo dramatic (how much happens in the world).',
+  'Pace: tempo calm, tempo normal or tempo dramatic (how much happens in the world). The frames of this game: frames (the world, its lands and great lines, and three dials to set).',
   'What waits (by the play mode in the settings): hooks (what a night brought, to take up or let lie), proposals, accept, reject.',
   "Talking: talk <person>, ask <person> about <topic>, say <text> or 'text.",
   'You: sheet, create (make your character), level up, train <skill>, wield <weapon>, wear <armour>, devote to <patron>, pray, rite. Your word and theirs: promises.',
@@ -247,6 +248,12 @@ export function runCommand(host: CommandHost, command: Command): Output[] {
       return [text(`It is ${clockText(world)}.`)]
     case 'tempo':
       return tempo(world, command.args[0])
+    // The frames of this game (M10.24): what it is played under, and its three dials.
+    case 'frames': {
+      if (!command.args.length) return [text(framesLines(world).join('\n'))]
+      const set = setFrame(world, command.args[0], command.args.slice(1).join(' '))
+      return [set.ok ? { kind: 'system', text: set.text } : error(set.text)]
+    }
     case 'wake':
       return wake(host, command.args)
     case 'knock':

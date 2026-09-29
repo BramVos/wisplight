@@ -1712,6 +1712,7 @@ function WorldSteps({ bridge, world, view, saved, existing = false }: { bridge: 
   return (
     <section className="world-steps">
       <h2>Build {land ? landName : view.world.name || world} with the chronicler</h2>
+      <WorldFramesBlock view={view} />
       {lands.length > 0 && (
         <p className="row small">
           <label>
@@ -1908,6 +1909,41 @@ function changedBy(draft: EditorDraft): string[] {
  * greys), and a map to try it on. The writing aid proposes a palette from the
  * world's frame on request; nothing is saved until you save.
  */
+/**
+ * The frames of a world on one view (M10.24): its lands and how well they know
+ * each other, its great lines, and the knobs it sets. The player sees the same
+ * at the start of a game, with the dials and the play mode beside them.
+ */
+function WorldFramesBlock({ view }: { view: EditorView }) {
+  const { lands, lines } = view.frames
+  const knobs = Object.keys(view.knobs)
+  const reach = { none: 'unknown to each other', rumour: 'known by rumour', trade: 'joined by trade', close: 'close neighbours' }
+  return (
+    <details className="small world-frames">
+      <summary>
+        The frames of {view.world.name || view.world.id}: {lands.length ? `${lands.length} other land${lands.length === 1 ? '' : 's'}` : 'one land'}, {lines.length} great line{lines.length === 1 ? '' : 's'},{' '}
+        {knobs.length ? `${knobs.length} knob${knobs.length === 1 ? '' : 's'} of its own` : 'every knob at its default'}
+      </summary>
+      <ul className="check-list">
+        {lands.map((l) => (
+          <li key={l.id}>
+            {l.name}: {reach[l.reach]}
+            {l.why ? ` (${l.why})` : ''}
+            {l.tongue ? `; they speak ${l.tongue}` : ''}
+          </li>
+        ))}
+        {lines.map((l) => (
+          <li key={l.id}>
+            {l.name} ({l.kind}): driven by {l.driven}
+          </li>
+        ))}
+        {knobs.length > 0 && <li>Knobs: {knobs.join(', ')}</li>}
+      </ul>
+      <p className="muted">The lands are the Lands tab and step, the great lines the Signals step, the knobs the Knobs tab. The player sees the same at the start of a game, with three dials for how the world moves, the play mode, the budget and when to ask.</p>
+    </details>
+  )
+}
+
 /**
  * The lands of a world (M10.23): another land of the same world, with a frame
  * of its own. Each is a folder, lands/<land>/: its land.yaml (edited here as

@@ -1,3 +1,4 @@
+import { framesLines, framesView } from './frames'
 import { knob } from './knobs'
 import { applyImprovisation, improviseFallback, improviseRequest, readImprovisation, type Improvisable } from './improvise'
 import { soundNow, type SoundNow } from './sound'
@@ -448,6 +449,8 @@ export class Engine {
     if (id === 'tides') return { id, kind: 'lore', name: 'The great lines', lines: tidesPage(this.world), sources: [], links: [] }
     // What waits for the player by the play mode (M10.24): hooks of a night, proposals.
     if (id === 'waiting') return { id, kind: 'lore', name: 'What waits for you', lines: waitingLines(this.world), sources: [], links: [] }
+    // The frames of this game (M10.24): for the screen at the start, and Settings after.
+    if (id === 'frames') return { id, kind: 'lore', name: 'The frames of this game', lines: framesLines(this.world), sources: [], links: [], frames: framesView(this.world) }
     if (id === 'factions') return { id, kind: 'lore', name: 'Factions', lines: factionLines(this.world).length ? factionLines(this.world) : ['No faction knows you yet.'], sources: [], links: [] }
     if (id === 'lands') return { id, kind: 'lore', name: 'The lands', lines: realmLines(this.world), sources: [], links: [] }
     if (id.startsWith('realm_')) {

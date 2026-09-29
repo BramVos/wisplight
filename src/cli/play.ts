@@ -41,6 +41,8 @@ const print = (outputs: Output[]) => {
 }
 
 print(engine.start())
+// The frames once (M10.24): what this game is played under, and how to set its dials.
+print([{ kind: 'system', text: 'The frames of this game (its lands, great lines and how the world moves): type FRAMES.' }])
 const rl = createInterface({ input: stdin, output: stdout, terminal: stdin.isTTY })
 rl.setPrompt('\n> ')
 rl.prompt()

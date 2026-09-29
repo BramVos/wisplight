@@ -115,11 +115,13 @@ export type KnobValue<K extends KnobId> = Def<K> extends { default: infer D } ? 
  * `knobs:`, or the default. A table takes the world's entries over the
  * default's, so a world may change one row.
  */
-export function knob<K extends KnobId>(world: { content: { world: Pick<WorldDef, 'knobs'> } }, id: K): KnobValue<K> {
+export function knob<K extends KnobId>(world: { content: { world: Pick<WorldDef, 'knobs'> }; state?: { knobs?: Record<string, number> } }, id: K): KnobValue<K> {
   const def = KNOBS[id] as KnobDef
   // A part of a world without its frame (the character screen's) plays by the defaults.
   const own = world.content.world?.knobs?.[id]
-  if (typeof def.default === 'number') return (typeof own === 'number' ? own : def.default) as unknown as KnobValue<K>
+  // A game may set a knob of its own over the world's (M10.24: the dials of the frames screen).
+  const game = world.state?.knobs?.[id]
+  if (typeof def.default === 'number') return (typeof game === 'number' ? game : typeof own === 'number' ? own : def.default) as unknown as KnobValue<K>
   return { ...def.default, ...(own && typeof own === 'object' ? own : {}) } as unknown as KnobValue<K>
 }
 

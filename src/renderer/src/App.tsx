@@ -1,8 +1,9 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react'
-import type { Output } from '../../engine'
+import type { FramesView as FramesPage, Output } from '../../engine'
 import { StaleBanner } from './StaleBanner'
 import { createClient, type AiStatus, type CreationData, type EngineClient, type JournalPage, type Reply, type RoleLight, type SaveEntry, type WorldChoice } from './client'
 import { CharacterCreation } from './CharacterCreation'
+import { FramesView } from './FramesView'
 import { WorldPicker } from './WorldPicker'
 import { SavesView } from './SavesView'
 import { FightPanel } from './FightPanel'
@@ -90,6 +91,8 @@ export function App() {
   const [error, setError] = useState<string>()
   const [waiting, setWaiting] = useState(false)
   const [settings, setSettings] = useState<SettingsTab>()
+  // The frames of the game (M10.24), open at the start of a game and from Settings.
+  const [frames, setFrames] = useState<FramesPage>()
   const [dev, setDev] = useState(false)
   // The journal window, open at a page or at its index (FO, chapter 2); near things first in a conversation.
   const [journal, setJournal] = useState<{ start?: string; nearby?: boolean }>()
@@ -163,6 +166,14 @@ export function App() {
     setStatus(reply.status)
     const c = reply.status.character
     if (c && !c.made && c.xp === 0) setCreation(await target.creation())
+    // The frames once (M10.24): after the character, or at once in a world without one.
+    else await showFrames(target)
+  }
+
+  /** The frames screen of the game in play (M10.24): at the start of a game, and from Settings after. */
+  async function showFrames(target: EngineClient) {
+    const page = await target.page('frames')
+    if (page?.frames) setFrames(page.frames)
   }
 
   useEffect(() => {
@@ -747,11 +758,13 @@ export function App() {
           data={creation}
           onSkip={(tempo) => {
             setCreation(undefined)
-            if (tempo !== 'normal') void send(`tempo ${tempo}`)
+            void (tempo !== 'normal' ? send(`tempo ${tempo}`) : Promise.resolve()).then(() => client && showFrames(client))
           }}
           onCreate={(command, tempo) => {
             setCreation(undefined)
-            void send(command).then(() => (tempo !== 'normal' ? send(`tempo ${tempo}`) : undefined))
+            void send(command)
+              .then(() => (tempo !== 'normal' ? send(`tempo ${tempo}`) : undefined))
+              .then(() => client && showFrames(client))
           }}
         />
       )}
@@ -842,7 +855,39 @@ export function App() {
       )}
       {ending && client && <EndView client={client} onClose={() => setEnding(false)} />}
       {exporting && client && <LogExport client={client} onClose={() => setExporting(false)} />}
-      {settings && <Settings bridge={client?.ai} transcript={client?.transcript} knobs={client?.knobs} tab={settings} onTab={setSettings} onClose={() => setSettings(undefined)} />}
+      {frames && client && (
+        <FramesView
+          frames={frames}
+          {...(client.ai ? { ai: client.ai } : {})}
+          onDial={async (dial, choice) => {
+            // A dial is a command, so the log keeps it for a replay; the screen shows the choice, the scrollback not.
+            await client.command(`frames ${dial} ${choice}`)
+            return (await client.page('frames'))?.frames
+          }}
+          onClose={() => {
+            setFrames(undefined)
+            inputRef.current?.focus()
+          }}
+        />
+      )}
+      {settings && (
+        <Settings
+          bridge={client?.ai}
+          transcript={client?.transcript}
+          knobs={client?.knobs}
+          tab={settings}
+          onTab={setSettings}
+          onClose={() => setSettings(undefined)}
+          {...(client && status && !creation
+            ? {
+                onFrames: () => {
+                  setSettings(undefined)
+                  void showFrames(client)
+                },
+              }
+            : {})}
+        />
+      )}
       {DevMenu && dev && client && (
         <Suspense fallback={null}>
           <DevMenu

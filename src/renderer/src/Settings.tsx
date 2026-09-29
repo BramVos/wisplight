@@ -5,6 +5,7 @@ import type { AppKnobView } from '../../engine'
 import { loadDisplay, saveDisplay, TEXT_SIZES, type Display } from './display'
 import { t, tn } from './i18n'
 import { BUDGET_CEILING_USD, BUDGET_CONFIRM_USD, BUDGET_FLOOR_USD, REPLY_WITHIN_SECONDS_RANGE } from '../../engine/aisettings'
+import { PLAY_MODES } from '../../engine/modes'
 
 // Settings > AI, Usage and the AI log (FO, chapter 16). Keys are typed here,
 // sent to the main process once, and only ever shown masked afterwards.
@@ -34,7 +35,24 @@ const message = (error: unknown) => (error instanceof Error ? error.message.repl
 // so the texts check of M9.4 does not take "=> Promise<" for words on screen.
 type Work = { (): Promise<void> }
 
-export function Settings({ bridge, transcript, knobs, tab, onTab, onClose }: { bridge?: AiBridge; transcript?: TranscriptBridge; knobs?: AppKnobsBridge; tab: SettingsTab; onTab: (tab: SettingsTab) => void; onClose: () => void }) {
+export function Settings({
+  bridge,
+  transcript,
+  knobs,
+  tab,
+  onTab,
+  onClose,
+  onFrames,
+}: {
+  bridge?: AiBridge
+  transcript?: TranscriptBridge
+  knobs?: AppKnobsBridge
+  tab: SettingsTab
+  onTab: (tab: SettingsTab) => void
+  onClose: () => void
+  /** The frames screen of the game in play (M10.24), when there is one. */
+  onFrames?: () => void
+}) {
   const [overview, setOverview] = useState<AiOverview>()
   const [error, setError] = useState<string>()
 
@@ -84,7 +102,7 @@ export function Settings({ bridge, transcript, knobs, tab, onTab, onClose }: { b
         ) : !overview ? (
           <p className="muted">{error ?? t('settings.loading')}</p>
         ) : tab === 'ai' ? (
-          <AiTab bridge={bridge} overview={overview} refresh={refresh} />
+          <AiTab bridge={bridge} overview={overview} refresh={refresh} {...(onFrames ? { onFrames } : {})} />
         ) : tab === 'usage' ? (
           <UsageTab bridge={bridge} overview={overview} refresh={refresh} />
         ) : (
@@ -211,7 +229,7 @@ function trialText(trial: TrialResult | string | undefined): string | undefined 
 
 // Settings > AI (FO, chapter 16). The player picks a model per role from the
 // lists the keys gave, at any time; advice and trials are there when wanted.
-function AiTab({ bridge, overview, refresh }: { bridge: AiBridge; overview: AiOverview; refresh: Work }) {
+function AiTab({ bridge, overview, refresh, onFrames }: { bridge: AiBridge; overview: AiOverview; refresh: Work; onFrames?: () => void }) {
   const { settings } = overview
   const [keys, setKeys] = useState<Record<ProviderId, string>>({ openai: '', anthropic: '' })
   const [busy, setBusy] = useState<string>()
@@ -519,6 +537,33 @@ function AiTab({ bridge, overview, refresh }: { bridge: AiBridge; overview: AiOv
           [{t('settings.ai.askAbove.always')}]
         </button>
         <span className="muted">{settings.askAboveUsd === null ? t('settings.ai.askAbove.noteNever') : t('settings.ai.askAbove.note')}</span>
+      </div>
+      {/* How the world goes on (M10.24), and the frames of the game in play. */}
+      <div className="row" role="radiogroup" aria-label={t('settings.ai.playMode.label')}>
+        <span className="label">{t('settings.ai.playMode.label')}</span>
+        {PLAY_MODES.map((m) => (
+          <label key={m}>
+            <input
+              type="radio"
+              name="settings-play-mode"
+              checked={settings.playMode === m}
+              disabled={Boolean(busy)}
+              onChange={() =>
+                void run(t('settings.ai.busyLabels.saving'), async () => {
+                  await bridge.setPlayMode(m)
+                  await refresh()
+                })
+              }
+            />{' '}
+            {t(`frames.modes.${m}`)}
+          </label>
+        ))}
+        <span className="muted">{t(`frames.modeSays.${settings.playMode}`)}</span>
+        {onFrames && (
+          <button type="button" className="link" onClick={onFrames}>
+            [{t('frames.open')}]
+          </button>
+        )}
       </div>
       <div className="row">
         <span className="label">{t('settings.ai.replyWithin.label')}</span>

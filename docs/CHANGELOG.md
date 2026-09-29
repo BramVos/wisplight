@@ -1,5 +1,19 @@
 # Changelog
 
+## M10.24 deel: de kaders één keer, 29 september 2026
+
+- **Eén scherm aan het begin van een spel.** Na het personage (of meteen, in een wereld zonder personage) staat alles bij elkaar waaronder je speelt. Bovenaan de wereld en waar je begint. Dan de andere landen en hoe goed ze elkaar kennen, met hun taal. Dan de grote lijnen en wat ze voedt. Daaronder drie draaiknoppen: hoeveel er vanzelf gebeurt (het tempo), hoe vaak een verhaallijn je komt zoeken, en hoeveel de wereld per seizoen groeit. Verder de speelstand, en wat het mag kosten: het budget per uur en vanaf welk bedrag het spel eerst vraagt. Met [Play] ben je weg, en het spel vraagt er niet meer om.
+- **De draaiknoppen zijn knoppen van dit spel.** Ze liggen over die van de wereld (`state.knobs`) en staan in de save. Je zet ze met het commando `FRAMES`, dus de log houdt ze bij en een herhaling zet ze ook. "Vaak" verlaagt de drempel waarop nieuws de kroniekverteller overdag roept met één stap, en verdubbelt de haken van de polsslag per week. "Zelden" doet het omgekeerde. Groei "weinig" of "veel" halveert of verdubbelt de mensen die terloops ontstaan en de dingen die de kroniekverteller neerzet.
+- **Later in de instellingen.** Onder AI staat nu de speelstand, met een knop naar hetzelfde kaderscherm. In de terminal typ je `FRAMES`.
+- **In de editor** staan boven het bouwen van een wereld haar kaders: de landen met hun bereik, de grote lijnen en de knoppen die de wereld zelf zet.
+- **Gevonden en hersteld:** nieuws riep de kroniekverteller overdag pas vanaf belang 4, ook als de wereld `story.urgent_belang` lager zette. Nu volgt het de knop.
+
+Testen: begin een nieuw spel op Skerrow. Na het personage komt het kaderscherm, met de Western Isles, de grote storm en de draaiknoppen. Zet er een paar en druk op [Play]; open daarna Instellingen > AI > [The frames of this game]. In de terminal: `npm run play` en dan `frames`. Tests in `tests/m1024framescreen.test.ts`.
+
+Wat de editor en de kroniekverteller leerden: de editor toont de kaders van een wereld boven de stappen. Een wereld kan er niets nieuws door bevatten: de draaiknoppen zijn van het spel, niet van de wereld. Het contract veranderde daarom niet.
+
+Bewust anders: de knoppen zijn drie draaiknoppen met elk drie standen, geen vrije getallen. De kaders van de wereld zelf (het kader, de landen, de grote lijnen) toont het scherm maar verandert het niet; dat doe je in de editor.
+
 ## M10.24 deel: drie speelstanden, de polsslag, en de wereld blijft heel, 29 september 2026
 
 - **Drie speelstanden, één instelling.** De stand geldt voor de kroniekverteller, de weefronde en de maandbeoordeling van de grote lijnen, nooit voor gesprekken of improvisatie. `Doorspelen` is de standaard en werkt zoals het al werkte. Bij `Meedenken` wacht wat een nacht nieuw begint (een verzoek, een brief of een bezoek) tot de ochtend. Dan krijg je het één keer als keuze in de wereld: je pakt er een of geen op, en de rest blijft een week liggen (`HOOKS` toont ze weer; knop `story.hook_days`). Bij `Regisseur` wordt wat de kroniekverteller, de weefronde of de beoordeling wil doen eerst een voorstel, met een lijst van wijzigingen (`PROPOSALS`). Neem je het aan, dan gebeurt het zoals voorgesteld. Wijs je het af, dan doen de regels het zoals zonder model. Het dagboek heeft onder You de pagina "What waits for you". De stand staat in de instellingen, en een lopend spel volgt hem bij de volgende modelronde; de log bewaart elke wissel. Het scherm om hem te kiezen komt van de andere sessie (M10.24 (1)).

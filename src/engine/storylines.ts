@@ -157,7 +157,8 @@ export function onFact(world: World, fact: Fact): void {
   }
   // The death of someone with a quest role ends or changes that quest: the chronicler writes now.
   const questDeath = fact.kind === 'death' && people.some((p) => questsOf(world, p).length > 0)
-  if (fact.belang >= 4 || questDeath) urgentRun(world, questDeath ? Math.max(fact.belang, knob(world, 'story.urgent_belang')) : fact.belang, [target.id])
+  // From the knob (M10.24: a game may set it lower with the frames' dial), not a fixed 4.
+  if (fact.belang >= knob(world, 'story.urgent_belang') || questDeath) urgentRun(world, questDeath ? Math.max(fact.belang, knob(world, 'story.urgent_belang')) : fact.belang, [target.id])
 }
 
 /**

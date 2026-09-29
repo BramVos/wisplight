@@ -36,6 +36,8 @@ export interface JournalPage {
   map?: { rows: string[]; classes: string[] }
   /** For a person: what the player saw and was told, laid out (acquaintance.ts). */
   person?: PersonView
+  /** The frames of the game (M10.24): the world, its lands and great lines, the dials and the play mode. */
+  frames?: import('./frames').FramesView
   /** For the character sheet: the numbers, for the interface to lay out. */
   sheet?: SheetData
   /** The region in colour (M10), and the land beyond it. */

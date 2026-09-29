@@ -7,6 +7,7 @@ import { descriptionCheck, placeMeasures, regionPreview, sceneryWarnings, warnin
 import { applyEdits, entities, entityYaml, ENTITY_KINDS, landHome, landOfFile, landsIn, landYaml, LISTS, locate, parseEntityYaml, patchLand, patchRules, patchWorld, voiceYaml, worldPrefix, type Edit, type EditResult, type EntityKind, type FileChange, type Raw } from './edit'
 import { worldFrame } from './dialogue/prompt'
 import { frameOf } from './lands'
+import { worldFrames } from './frames'
 import { suspectText, worldText, type SuspectText } from './safety'
 import type { LlmRequest } from './dialogue/llm'
 import { voiceSummary } from './dialogue/voice'
@@ -65,6 +66,8 @@ export interface EditorView {
   contract: ReturnType<typeof contractView>
   /** The keys world.yaml can have, and whether this world sets each; the rest take the neutral default. */
   worldKeys: { key: string; set: boolean }[]
+  /** The frames the world sets (M10.24): its lands and how they know each other, and its great lines. */
+  frames: ReturnType<typeof worldFrames>
 }
 
 /** A place on the editor's map: its own position, or near its area's when it has none. */
@@ -195,6 +198,7 @@ export function editorView(files: ContentFile[]): EditorView {
     files: files.map((f) => f.path).sort(),
     maps: content ? Object.fromEntries([...content.regions.keys()].map((id) => [id, regionPreview(content, id) ?? ''])) : {},
     places: mapPlaces(files),
+    frames: content ? worldFrames(content) : { lands: [], lines: [] },
   }
 }
 

@@ -771,6 +771,10 @@ export interface GameState {
   pulse?: import('./pulse').PulseState
   /** How the chronicler, the weave and the great lines go on (M10.24): without it, continue. */
   playMode?: import('./modes').PlayMode
+  /** Knobs of this game over the world's own (M10.24: the dials of the frames screen), by knob id. */
+  knobs?: Record<string, number>
+  /** What the player chose on the frames screen (M10.24), where a dial is more than one knob. */
+  frames?: { lines?: 'often' | 'seldom'; growth?: 'little' | 'much' }
   /** What waits for the player in think and direct mode (M10.24): hooks of a night, proposals. */
   modes?: import('./modes').ModesState
   /** NPCs a companion is distracting, until when. */

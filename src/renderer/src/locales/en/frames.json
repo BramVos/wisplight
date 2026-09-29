@@ -1,0 +1,46 @@
+{
+  "title": "The frames of this game",
+  "label": "The frames of this game",
+  "hint": "Set once, then play. All of it can be changed later in Settings.",
+  "world": "you begin in {region}, in {land}.",
+  "lands": "The lands",
+  "reach": {
+    "none": "unknown to each other",
+    "rumour": "known by rumour",
+    "trade": "joined by trade",
+    "close": "close neighbours"
+  },
+  "tongue": "they speak {tongue}",
+  "lines": "The great lines",
+  "linesNone": "This world has no great lines: nothing great happens by itself.",
+  "stage": {
+    "calm": "calm",
+    "threat": "a threat",
+    "event": "broken"
+  },
+  "driven": "driven by {what}",
+  "dials": "How the world moves",
+  "cost": "What it may cost",
+  "budget": "At most per hour of play",
+  "budgetAria": "The most the game may spend in an hour, in dollars",
+  "budgetConfirm": "${usd} an hour is a lot. Save it all the same?",
+  "askAbove": "Ask me first above, for one call",
+  "askAboveAria": "From what cost of one call the game asks first, in dollars",
+  "askNever": "never ask",
+  "save": "Save",
+  "saved": "Saved.",
+  "noModel": "No model is connected: the world goes on by the rules, and costs nothing. Connect one in Settings > AI.",
+  "mode": "Play mode",
+  "modes": {
+    "continue": "Play on",
+    "think": "Think along",
+    "direct": "Direct"
+  },
+  "modeSays": {
+    "continue": "The world goes on by itself: what the chronicler brings, the chronicle tells.",
+    "think": "What a night brings that is new waits for you in the morning: take it up, or let it lie a week.",
+    "direct": "What the chronicler would do waits for you as a proposal: accept or reject it."
+  },
+  "play": "Play",
+  "open": "The frames of this game"
+}

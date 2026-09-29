@@ -119,6 +119,9 @@
       "hour": "An hour of play with these models costs about {hour}: {conversations} for 40 lines of talk, {goals} for 25 goal choices, {night} for the night's round.",
       "place": "A new place in a far town costs about {place} once, when you first do something there.",
       "parts": "An hour of play with these models: {conversations} for 40 lines of talk, {goals} for 25 goal choices, {night} for the night's round."
+    },
+    "playMode": {
+      "label": "Play mode"
     }
   },
   "pictures": {

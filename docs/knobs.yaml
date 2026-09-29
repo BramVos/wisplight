@@ -51,6 +51,8 @@ numbers:
     TALK_AT: 'code: the moment the trial of a model is played at (a test fixture)'
   src/engine/engine.ts:
     MAX_TALK_LINES: 'code: the lines a talk keeps for its window (memory)'
+  src/engine/frames.ts:
+    GROWTH: 'code: the growth dial of the frames screen (M10.24) as a factor on the world''s own growth knobs; the knobs themselves are the world''s'
   src/engine/growth/growth.ts:
     SEASON: 'world: calendar.season (follows the shape of the year)'
   src/engine/items.ts:
