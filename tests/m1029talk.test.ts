@@ -88,7 +88,7 @@ describe('M10.29 A: what the speaker knows of the stranger', () => {
 
   it('takes an age the person says of themselves as told', async () => {
     const age = content.npcs.get('npc_mirte')!.age
-    const { engine } = await talk(scripted(`Mirte laughs. "Me? I'm ${age}, and I've baked since I was twelve."`), 'Who are you?')
+    const { engine } = await talk(scripted(`Mirte laughs. "Me? I'm ${age}, and I've baked since I was twelve."`), 'Tell me about yourself, how old are you?')
     expect(engine.state.player.people?.['npc_mirte']?.age?.value).toBe(age)
   })
 })

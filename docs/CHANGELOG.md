@@ -1,6 +1,6 @@
 # Changelog
 
-## M10.28 deel: hoe snel de dag gaat, en gpt-5-mini tegen Haiku, 29 september 2026
+## M10.28 deel: hoe snel de dag gaat, gpt-5-mini tegen Haiku, en wat de regels zelf beantwoorden, 29 september 2026
 
 - **Hoe snel de dag gaat.** Een spelminuut duurt nu 1 tot 8 echte seconden, en standaard 4, een dag van anderhalf uur. Voorheen was het 1 seconde, een dag van 24 minuten. Een wereld zet haar eigen snelheid bij de stap Kalender: The Quiet Reach 4, Skerrow 5. Op het kaderscherm staat een schuif "How fast the day goes" met de daglengte, wat een uur ongeveer kost, en een knop terug naar de snelheid van de wereld. In de terminal is het `FRAMES CLOCK 8`. Slapen, wachten en reizen springen zoals altijd.
 - **Wat een uur kost, per stand.** Met jouw modellen en het nieuwe gesprek: ongeveer $0,42 bij 1 seconde, $0,19 bij 4 en $0,15 bij 8. De doelkeuzes en de nachtronde lopen mee met de klok, het praten niet. De richtprijs in de instellingen rekent nu ook wat uit de cache komt.
@@ -11,6 +11,14 @@
   - Per gespreksregel kosten ze bijna hetzelfde: $0,0022 tegen $0,0020.
   - De vier kleine soorten (flarden, groepen, improviseren, reizen) werken op allebei.
 - **Een leesscore naast de karakterscore.** Sonnet leest elke reeks antwoorden. Het geeft per antwoord 0 tot 3 punten op vier vragen en noemt de drie zwakste. Over een heel gesprek scoort Haiku 0,76 en gpt-5-mini 0,71; gpt-5-mini begint bijna elke regel met "Mirte wipes her hands". Beide stellen weinig vragen terug.
+- **Wat de regels zelf beantwoorden.** De motor beantwoordt nu zelf zonder de stem aan te roepen:
+  - een groet;
+  - een ja of nee na iets wat geen vraag was;
+  - kopen of verkopen wat te koop is;
+  - dezelfde vraag nog een keer in dezelfde woorden ("As I said: ...");
+  - wie iemand is of wat hij doet.
+
+  Zo'n regel staat in het AI-logboek als "by rule" en kost niets. In de twintig vaste regels met Mirte zijn het er drie; de verwachte een op de vier haal je alleen in een gesprek met meer groeten en ja-nee.
 - **Alle antwoorden bewaard.** Elk antwoord staat met jouw vraag ervoor in `docs/playtest/voice/2026-09-29-claude-haiku-4-5-20251001.md` en `docs/playtest/voice/2026-09-29-gpt-5-mini.md`, om naast elkaar te lezen. Het modeladvies onder Instellingen > AI toont de vergelijking bij de stem.
 
 Je stem staat op Haiku 4.5. Toen de meting klaar was stond hij al zo, omgezet in de app om 21:41, en je zei ja op Haiku. Het advies is Haiku. De uiteindelijke keuze blijft open tot de ontwerpsessie de bewaarde antwoorden gelezen heeft.
@@ -20,8 +28,9 @@ Kosten per nieuwe soort aanroep: de leesscore (`read_score`) kost op Sonnet 5 (l
 Testen:
 - Open het kaderscherm (Instellingen > [The frames of this game]) en schuif "How fast the day goes". Kijk hoe snel de klok rechtsboven loopt.
 - Open Instellingen > AI. Onder VOICE staat wat er gemeten is.
+- Zeg in een gesprek "Good morning." en vraag twee keer hetzelfde. Kijk daarna onder Instellingen > AI log: die regels staan er als "by rule".
 - Lees de twee bestanden in `docs/playtest/voice/` naast elkaar.
-- Tests staan in `tests/m1028clock.test.ts` en `tests/m1028read.test.ts`.
+- Tests staan in `tests/m1028clock.test.ts`, `tests/m1028read.test.ts` en `tests/m1028byrule.test.ts`.
 
 Bekende gaten: gpt-5-mini is gemeten op denkinspanning low. De stand minimal zou sneller kunnen zijn, maar is niet gemeten. De leesscore van de situatieset rust bij gpt-5-mini alleen op de antwoorden die doorkwamen.
 

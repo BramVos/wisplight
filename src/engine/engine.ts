@@ -1134,6 +1134,8 @@ export class Engine {
         }
       },
       report: (rejection) => llm.report?.(rejection),
+      // A line the rules answered (M10.28), for the AI log.
+      byRule: (note) => llm.byRule?.(note),
       // The time a spoken reply may take, as the player set it (M10.8).
       ...(llm.replyWithinMs ? { replyWithinMs: () => llm.replyWithinMs!() } : {}),
     }

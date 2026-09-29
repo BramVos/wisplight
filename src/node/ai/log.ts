@@ -70,6 +70,11 @@ export class AiLog {
     this.add({ time, role, provider: 'guard', model: '-', ok: false, error: `held back: ${reason}`, latencyMs: 0, inputTokens: 0, outputTokens: 0, cachedTokens: 0, prompt: text, response: '', rejected: [reason] })
   }
 
+  /** A line the rules answered without a model (M10.28): in the log beside the calls, at no cost. */
+  byRule(role: string, why: string, said: string, time: string, source: SpendSource): void {
+    this.add({ time, source, role, provider: 'rules', model: 'by rule', ok: true, latencyMs: 0, inputTokens: 0, outputTokens: 0, cachedTokens: 0, costUsd: 0, prompt: said, response: why })
+  }
+
   /** The guard put something right in the last reply of this role, or noted it (M10.10). */
   fix(role: string, what: string): void {
     const last = [...this.entries].reverse().find((e) => e.role === role && e.ok)

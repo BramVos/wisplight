@@ -253,3 +253,25 @@ Aanbeveling per soort:
 - **Advies:** de stem op Haiku 4.5. gpt-5-mini is pas een kandidaat als hij sneller antwoordt dan de tijd voor een antwoord. Denkinspanning `minimal` bij OpenAI zou dat kunnen doen, maar is niet gemeten.
 
 Het modeladvies onder Instellingen > AI toont deze vergelijking bij de stem. De keuze blijft bij Bram. Op het moment van meten stond zijn stem op gpt-5-mini.
+
+## Wat de regels zelf beantwoorden (M10.28, 29 september 2026)
+
+Sommige regels gaan niet meer naar de stem. De motor beantwoordt ze zelf met de sjablonen van de wereld:
+
+- een groet van hooguit zes woorden;
+- een ja of nee na iets wat geen vraag was;
+- kopen of verkopen wat te koop is;
+- dezelfde vraag in dezelfde woorden eerder in het gesprek ("As I said: ...");
+- wie iemand is of wat hij doet.
+
+Draagt de beurt iets wat de stem moet verwoorden, dan gaat de regel altijd naar de stem. Dat geldt voor een controle, een geheim, een bewering van de speler, een reactie, een opdracht om aan te bieden of een regel die de stem zou kunnen lezen.
+
+Gemeten met het mockmodel:
+
+- **Twintig vaste regels met Mirte:** drie gaan zonder aanroep: de groet, de prijs van roggebrood en het afscheid.
+- **Speeltest `faraway`:** geen van de negen regels, want die gesprekken zijn allemaal vragen naar nieuws.
+
+De verwachte een op de vier haalt alleen een gesprek met meer groeten, ja-nee en handel. Een regel kost ongeveer $0,0022, dus drie op twintig scheelt ongeveer $0,013 per honderd regels. De grote besparing op het gesprek komt van het blok per gebied.
+
+Het AI-logboek toont zo'n regel als "by rule", zonder kosten.
+

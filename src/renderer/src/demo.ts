@@ -89,6 +89,10 @@ export function slowMock(llm: LlmClient): LlmClient {
       }
       return { ...response, model: DEMO_MODEL, usage }
     },
+    // A line the rules answered (M10.28): in the log as "by rule", at no cost.
+    byRule: (note) => {
+      state.log.unshift({ time: new Date().toISOString(), role: note.role, provider: 'rules', model: 'by rule', ok: true, latencyMs: 0, inputTokens: 0, outputTokens: 0, cachedTokens: 0, costUsd: 0, prompt: note.said, response: note.why })
+    },
     // As the AI log does (M10.8, M10.10): a reply thrown away, or put right by the guard, beside its call.
     report: (rejection) => {
       const last = state.log.find((e) => e.role === (rejection.role ?? 'voice'))

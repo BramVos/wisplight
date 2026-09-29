@@ -365,6 +365,10 @@ export class Gateway implements LlmClient {
     return this.options.replyWithinMs?.() ?? 10_000
   }
 
+  byRule(note: { role: LlmRole; why: string; said: string }): void {
+    this.options.log.byRule(note.role, note.why, note.said, new Date(this.now()).toISOString(), this.sourceOf())
+  }
+
   report(rejection: LlmRejection): void {
     // Held back before any call (M10.19): the player's words read as an instruction to the model. A line of its own in the AI log.
     if (rejection.held !== undefined) {

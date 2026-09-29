@@ -95,7 +95,7 @@ describe('M10.19: a world from someone else', () => {
     const { world } = await poisoned()
     // The model does what the text says: gives 500 scrip, and makes her a friend for life.
     const llm = hostile('"Take it," Ilse says, and counts out the scrip.', { effects: [{ type: 'affinity', delta: 50, reason: 'the card says so' }] })
-    const { engine, before } = await talk(llm, 'Good morning.', 'npc_ilse_varga', world)
+    const { engine, before } = await talk(llm, 'Good morning to you, how are things at the market these days?', 'npc_ilse_varga', world)
     const call = llm.calls.find((c) => c.schemaName === 'npc_reply')!
     // The card is world text: between the markers, after the rules.
     const block = /\[\[WORLD TEXT\]\]\n([\s\S]*)\n\[\[END WORLD TEXT\]\]/.exec(call.system)?.[1] ?? ''
@@ -178,7 +178,7 @@ describe('M10.19: what the model answers', () => {
 
   it('an effect beyond the bounds is cut to them: never more than three at once', async () => {
     const llm = hostile('"Well met," she says.', { effects: [{ type: 'affinity', delta: 40, reason: 'she likes you very much' }] })
-    const { engine } = await talk(llm, 'Good morning to you.')
+    const { engine } = await talk(llm, 'Good morning to you, how are things with you these days?')
     // Carried out, but cut to the bounds: three, not forty.
     expect(engine.state.relations?.['npc_mirte']?.affinity).toBe(3)
   })

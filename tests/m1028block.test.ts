@@ -54,7 +54,7 @@ describe('M10.28 (1): one cached block per area', () => {
   it('is the same block for everyone who speaks in it, and for every line, byte for byte', async () => {
     const llm = new MockLlm('good')
     const engine = await talkWith(llm)
-    await engine.handle('Good morning.')
+    await engine.handle('How are you today?')
     await engine.handle('What happened to the mill?')
     await engine.handle('bye')
     const harmen = engine.state.npcs['npc_harmen']!
@@ -62,7 +62,7 @@ describe('M10.28 (1): one cached block per area', () => {
     harmen.activity = 'standing about'
     harmen.plan = []
     await engine.handle('talk harmen')
-    await engine.handle('Good morning.')
+    await engine.handle('How are you today?')
     const calls = replies(llm)
     expect(calls.length).toBeGreaterThanOrEqual(3)
     for (const call of calls) {
@@ -101,7 +101,7 @@ describe('M10.28 (1): one cached block per area', () => {
     s.activity = 'standing about'
     s.plan = []
     await engine.handle(`talk ${callName(stranger).toLowerCase()}`)
-    await engine.handle('Good morning.')
+    await engine.handle('How are you today?')
     const prompt = replies(llm).at(-1)!.prompt
     expect(prompt).toMatch(/You are not of these parts: of the places and people above you know only what KNOWLEDGE and PEOPLE YOU KNOW give\.\nYOUR CARD\nName: /)
   })
@@ -142,14 +142,14 @@ describe('M10.28 (2): the talk as messages', () => {
   it('sends the talk so far as turns, only ever added to, and a later line tells only what is new', async () => {
     const llm = new MockLlm('good')
     const engine = await talkWith(llm)
-    await engine.handle('Good morning.')
+    await engine.handle('How are you today?')
     await engine.handle('What happened to the mill?')
     await engine.handle('Who is the miller?')
     const [first, second, third] = replies(llm)
     expect(first!.turns).toEqual([])
     expect(first!.prompt).toMatch(/SCENE: .*\n/)
     expect(first!.prompt).toMatch(/AFTER THE TALK: /)
-    expect(first!.prompt).toMatch(/PLAYER SAYS: <<Good morning\.>>$/)
+    expect(first!.prompt).toMatch(/PLAYER SAYS: <<How are you today\?>>$/)
     // The second: the first as it was told, with what was said back; then only what changed.
     expect(second!.turns!.map((t) => t.role)).toEqual(['user', 'assistant'])
     expect(second!.turns![0]!.text).toBe(first!.prompt)

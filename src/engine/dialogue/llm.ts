@@ -117,6 +117,8 @@ export interface LlmClient {
   /** How the world goes on (M10.24): the player's play mode. */
   playMode?(): import('../modes').PlayMode
   report?(rejection: LlmRejection): void
+  /** A line the rules answered without a call (M10.28): kept in the AI log as "by rule", at no cost. */
+  byRule?(note: { role: LlmRole; why: string; said: string }): void
   /** How long a spoken reply may take, over its tries, in milliseconds (M10.8): the player's setting at the model. */
   replyWithinMs?(): number
 }

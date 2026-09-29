@@ -68,7 +68,8 @@ describe('M10.8: stock lines that fit, and why they stood in', () => {
     stay(engine, 'npc_gerrit', engine.state.player.location)
     const greeting = await engine.handle('talk gerrit')
     expect(greeting.find((o) => o.kind === 'speech')?.source).toBe('rules')
-    const reply = await engine.handle('"What do you do all day?')
+    // A question the rules cannot answer (M10.28: what they do is on the card, and the rules say it).
+    const reply = await engine.handle('"What is the weather doing?')
     expect(reply.find((o) => o.kind === 'speech')?.source).toBe('model')
     const offline = new Engine(content, { seed: 4 })
     stay(offline, 'npc_gerrit', offline.state.player.location)

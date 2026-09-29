@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { argv, stdout } from 'node:process'
-import { Engine, MockLlm, type Output } from '../src/engine'
+import { Engine, MockLlm, type LlmClient, type Output } from '../src/engine'
 import { loadContentFromDir } from '../src/node/content'
 
 // The playtest protocol per storyline (M9.4, docs/PLAYTEST.md): can the player
@@ -441,9 +441,20 @@ function worldDir(world: string): string {
 
 const say = (outputs: Output[]) => outputs.map((o) => o.text).join('\n')
 
+/** The lines of talk a storyline sent to the voice, and those the rules answered without a call (M10.28). */
+const talked = { voice: 0, rule: 0 }
+
 async function play(line: Line, act: boolean): Promise<string> {
   const content = await loadContentFromDir(worldDir(line.world), line.world)
-  const engine = new Engine(content, { seed: line.seed, builder: true, ...(line.model ? { llm: new MockLlm('good') } : {}) })
+  const mock = new MockLlm('good')
+  const counted: LlmClient = {
+    complete: (request) => {
+      if (request.schemaName === 'npc_reply') talked.voice++
+      return mock.complete(request)
+    },
+    byRule: () => void talked.rule++,
+  }
+  const engine = new Engine(content, { seed: line.seed, builder: true, ...(line.model ? { llm: counted } : {}) })
   const out: string[] = [say(engine.start())]
   const steps: [string, Step[]][] = [['RECOGNISE', line.recognise], ...(act ? [['INFLUENCE', line.influence] as [string, Step[]]] : []), ['AFTER', line.after]]
   for (const [phase, list] of steps) {
@@ -473,9 +484,12 @@ const only = argv[2]
 const dir = resolve(import.meta.dirname, '../docs/playtest')
 mkdirSync(dir, { recursive: true })
 for (const line of LINES.filter((l) => !only || l.id === only)) {
+  talked.voice = talked.rule = 0
   const acted = await play(line, true)
   const control = await play(line, false)
+  // With the voice in play, how many lines the rules answered without a call (M10.28 (4): about one in four expected).
+  const byRule = line.model && talked.voice + talked.rule ? `; ${talked.rule} of ${talked.voice + talked.rule} lines of talk by rule (${Math.round((100 * talked.rule) / (talked.voice + talked.rule))}%)` : ''
   writeFileSync(resolve(dir, `${line.id}.txt`), `${line.title} (${line.world}), seed ${line.seed}\n\n######## THE PLAYER ACTS\n${acted}\n\n######## CONTROL: THE PLAYER DOES NOTHING\n${control}\n`)
   const first = acted.split('\n').findIndex((l) => line.words.test(l) && !l.startsWith('>'))
-  stdout.write(`${line.id}: transcript written; the problem is first named on line ${first + 1}\n`)
+  stdout.write(`${line.id}: transcript written; the problem is first named on line ${first + 1}${byRule}\n`)
 }

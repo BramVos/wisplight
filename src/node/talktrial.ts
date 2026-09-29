@@ -1,4 +1,4 @@
-import { Engine, GameClock, type Content, type LlmClient, type LlmRejection, type LlmRequest, type LlmResponse } from '../engine'
+import { Engine, GameClock, type Content, type LlmClient, type LlmRejection, type LlmRequest, type LlmRole, type LlmResponse } from '../engine'
 import { callName } from '../engine/content'
 import { costUsd } from './ai/pricing'
 
@@ -44,6 +44,8 @@ export interface LineMeasure {
   outputTokens: number
   costUsd: number
   latencyMs: number
+  /** Why the rules answered it without a call (M10.28 (4)). */
+  byRule?: string
 }
 
 /** A client that passes every call on and books it to the line being said. */
@@ -72,6 +74,13 @@ class LineMeter implements LlmClient {
       m.latencyMs += response.latencyMs
     }
     return response
+  }
+
+  /** A line the rules answered (M10.28 (4)): on to the log, and booked to the line as the rules'. */
+  byRule(note: { role: LlmRole; why: string; said: string }): void {
+    const m = this.current()
+    if (m) m.byRule = note.why
+    this.llm.byRule?.(note)
   }
 
   report(rejection: LlmRejection): void {

@@ -16,6 +16,7 @@ import { silenceWitness, witnessed } from '../social/crime'
 import { partyTalk } from './party'
 import { closingLine, fallbackReply } from './fallback'
 import { deedKinds, fitLength, leakedNames, looksLikeInjection, outOfCharacter, promises, saysNothing, speaksAsOther, swearRight, unknownNames, vocabularyOf } from './guard'
+import { byRule } from './byrule'
 import { accept, askedFor, askOffer, dayLines, kinOf, offerLine, offerLines, offersFor, proposal, proposalText, spokenMeet, type Offer } from './offers'
 import { accepted, declined, inviteOffer } from '../social/invite'
 import { claimValid, claimWords, parseClaim, playerSays } from '../claims'
@@ -654,7 +655,11 @@ export class Dialogue {
     // Asked about someone who matters: news with witnesses, before anyone answers (M10.3).
     const made = talkFact(world, npcId, topics, act)
     if (made) (talk.facts ??= []).push(made.id)
-    const reply = await this.callModel(npcId, text, { act, tier, packet, band, memories, check: options.check, secret: options.secret, decision, spokenTopics: this.topics.recognise(text), offered, offers, claimable })
+    // No model for what the rules can do (M10.28): a greeting, a yes or no, a trade, the same question again, the card.
+    const busy = Boolean(options.check || options.secret || said || decision || reaction || flirted || amended || offered.length || claimable.length)
+    const rule = this.llm() ? byRule(world, npcId, { act, text, topics, history: talk.history, offers, busy }) : undefined
+    if (rule) this.llm()?.byRule?.({ role: 'voice', why: rule.why, said: text })
+    const reply = rule ? undefined : await this.callModel(npcId, text, { act, tier, packet, band, memories, check: options.check, secret: options.secret, decision, spokenTopics: this.topics.recognise(text), offered, offers, claimable })
     // A claim the voice read: the engine judges it and books it as heard from the stranger; the stance sounds next turn.
     const read = reply?.claim && reply.claim.subject !== 'none' && claimable.includes(reply.claim.subject) ? { subject: reply.claim.subject, key: reply.claim.key, value: reply.claim.value } : undefined
     if (read && claimValid(world, read) && (talk.claims = (talk.claims ?? 0) + 1) <= knob(this.world, 'talk.max_claims')) {
@@ -670,7 +675,9 @@ export class Dialogue {
     }
     // The offer the player asked for: the voice's choice, or by the rules without a model.
     const asked = reply ? offers.find((o) => o.key === reply.action) : askedFor(offers, text)
-    const replyText = reply
+    const replyText = rule?.line
+      ? rule.line
+      : reply
       ? reply.reply
       : reaction
         ? reactionLine(world, npcId, reaction.reaction)
@@ -802,17 +809,17 @@ export class Dialogue {
       this.wrapUp(talk)
       world.state.talk = undefined
       const gone = reaction.reaction === 'walk_away' ? [{ kind: 'narration' as const, text: walkAway(world, npcId) }] : []
-      return [...echo, { kind: 'speech', text: shown, ...(reply ? { source: 'model' as const } : {}) }, ...failure, ...gone]
+      return [...echo, { kind: 'speech', text: shown, ...(reply ? { source: 'model' as const } : rule ? { source: 'rules' as const } : {}) }, ...failure, ...gone]
     }
     // Off to do it: the talk ends there, without a closing line.
     if (offerEnds) {
       this.wrapUp(talk)
       world.state.talk = undefined
-      return [...echo, { kind: 'speech', text: shown, ...(reply ? { source: 'model' as const } : {}) }, ...failure, ...offerOut]
+      return [...echo, { kind: 'speech', text: shown, ...(reply ? { source: 'model' as const } : rule ? { source: 'rules' as const } : {}) }, ...failure, ...offerOut]
     }
     const ends = reply?.ends_conversation === true
     const amends = amended?.outputs ?? []
-    return [...echo, ...amends.filter((o) => o.kind === 'check'), { kind: 'speech', text: shown, ...(reply ? { source: 'model' as const } : {}) }, ...amends.filter((o) => o.kind !== 'check'), ...going, ...failure, ...offerOut, ...(ends ? this.closeNow() : this.maybeClose())]
+    return [...echo, ...amends.filter((o) => o.kind === 'check'), { kind: 'speech', text: shown, ...(reply ? { source: 'model' as const } : rule ? { source: 'rules' as const } : {}) }, ...amends.filter((o) => o.kind !== 'check'), ...going, ...failure, ...offerOut, ...(ends ? this.closeNow() : this.maybeClose())]
   }
 
   /** YES or NO to what the NPC proposed (M10.3): only a yes makes it happen. */
