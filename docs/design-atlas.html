@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Visual snapshot of the functional design (FO) as of 26 September 2026. The FO in Claude Docs is the spec; this file is a reading aid for people and may be out of date. Published copy: https://claude.ai/artifact/EHLFayAyc3mukwHqyyP1Ef -->
+<!-- Visual snapshot of the functional design (FO) as of 29 September 2026, covering the milestones up to and including M10.25 as planned. The FO in Claude Docs is the spec; this file is a reading aid for people and may be out of date. Published copy: https://claude.ai/artifact/EHLFayAyc3mukwHqyyP1Ef -->
 <html lang="nl">
 <head>
 <meta charset="utf-8">
@@ -130,6 +130,7 @@ table.t .r{text-align:right;font-variant-numeric:tabular-nums}
 .chip.b{border-color:var(--water);color:var(--water);background:var(--water-soft)}
 .chip.r{border-color:var(--danger);color:var(--danger);background:var(--danger-soft)}
 .chip.g{border-color:var(--reed);color:var(--reed);background:var(--reed-soft)}
+.chips.wrap .chip{white-space:normal;text-align:left}
 
 /* svg */
 svg{display:block;max-width:100%;height:auto}
@@ -271,6 +272,14 @@ svg .rulef{fill:var(--rule)}
       <a href="#blad-16"><b>16</b>Kosten</a>
       <a href="#blad-17"><b>17</b>Commando's</a>
       <a href="#blad-18"><b>18</b>Fasering</a>
+      <a href="#blad-19"><b>19</b>Contract</a>
+      <a href="#blad-20"><b>20</b>Veilig en geknopt</a>
+      <a href="#blad-21"><b>21</b>Wereldbouw gemeten</a>
+      <a href="#blad-22"><b>22</b>Groei</a>
+      <a href="#blad-23"><b>23</b>Grote lijnen</a>
+      <a href="#blad-24"><b>24</b>Landen</a>
+      <a href="#blad-25"><b>25</b>Doorspelen</a>
+      <a href="#blad-26"><b>26</b>Nieuwe streek</a>
     </nav>
   </div>
 </header>
@@ -281,7 +290,7 @@ svg .rulef{fill:var(--rule)}
 <section class="sheet" id="blad-00" aria-label="Titelblad">
   <div class="cover">
     <div class="cover-l">
-      <div class="folio">Functioneel ontwerp in bladen · momentopname 26 september 2026 · Bram Vos</div>
+      <div class="folio">Functioneel ontwerp in bladen · momentopname 29 september 2026 · tot en met M10.25 zoals gepland · Bram Vos</div>
       <h1>Wisp<span>light</span></h1>
       <p class="lede">Een single-player tekst-RPG voor Mac en Windows in de Nethermarch, een laag en nat land vol Laaglandse folklore. Elke NPC wordt door AI geleid. <mark>De AI kiest doelen en schrijft dialoog; de spelsystemen voeren alles daarna uit zonder tokens.</mark></p>
       <div class="statrow">
@@ -291,6 +300,7 @@ svg .rulef{fill:var(--rule)}
         <div class="stat"><span class="big num">10</span><span class="small">geschreven quests, plus verzoeken uit NPC-doelen</span></div>
       </div>
       <p class="tiny"><b>Momentopname.</b> Het functioneel ontwerp in Claude Docs is leidend; bij verschil geldt het FO. Het spel is Engelstalig. Deze bladen zijn Nederlands; voorbeelden uit het spel staan in het Engels. Namen en lore komen uit het Wereldboek: de Nethermarch.</p>
+      <p class="tiny"><b>Bijgewerkt op 29 september 2026.</b> De bladen 01 tot 18 zijn de stand van 26 september. De bladen 19 tot 26 beschrijven wat daarna kwam, van het contract van de content (M10.17) tot de nieuwe streek met een eigen verhaal (M10.25, zoals gepland). Naast de Nethermarch spelen nu Skerrow en de proefwereld Deepwell, en Brams eigen wereld The Quiet Reach is in de app gebouwd.</p>
     </div>
     <div class="cover-r">
       <canvas id="hexmap" aria-label="Schets van de streekkaart van de Holleveen: 120 bij 80 hexen van 250 meter"></canvas>
@@ -344,6 +354,14 @@ svg .rulef{fill:var(--rule)}
     <a href="#blad-16"><b>16</b><span>AI-kosten</span><em>Rollen, prijzen, budget</em></a>
     <a href="#blad-17"><b>17</b><span>Commando-kaart</span><em>Alle commando's op één blad</em></a>
     <a href="#blad-18"><b>18</b><span>Fasering en besluiten</span><em>Poorten, eisen, besluiten</em></a>
+    <a href="#blad-19"><b>19</b><span>Het contract van de content</span><em>Standaarden, wereldboek, ontwerplogboek</em></a>
+    <a href="#blad-20"><b>20</b><span>Veilig en geknopt</span><em>Grenzen in elke aanroep, de knoppenlaag</em></a>
+    <a href="#blad-21"><b>21</b><span>De wereldbouw gemeten</span><em>Cache, opnames, dekking, kaart, tekens</em></a>
+    <a href="#blad-22"><b>22</b><span>De wereld groeit waar jij komt</span><em>Rand, lagen, wijken, de vraag, de wenk</em></a>
+    <a href="#blad-23"><b>23</b><span>Verbindingen en grote lijnen</span><em>Weefronde, getijden, cadans, meewegen</em></a>
+    <a href="#blad-24"><b>24</b><span>Een ander land</span><em>Laag, grens, bereik, taal, bouwen</em></a>
+    <a href="#blad-25"><b>25</b><span>Doorspelen</span><em>Kaders, speelstanden, polsslag, jouw woord</em></a>
+    <a href="#blad-26"><b>26</b><span>Een nieuwe streek met verhaal</span><em>M10.25 zoals gepland</em></a>
   </nav>
 </section>
 
@@ -815,7 +833,10 @@ your nose."                                                    <span class="pn">
         <tr><td class="k">Gezien</td><td>Precies, zonder details</td><td>Binnen je zicht</td></tr>
         <tr><td class="k">Gehoord</td><td>Vage zone met <b>?</b></td><td>NPC, boek, gerucht</td></tr>
         <tr><td class="k">Op een kaart</td><td>Zoals de kaartmaker tekende</td><td>Kaart van Cornelis</td></tr>
+        <tr><td class="k">Rand <span class="tiny">M10.21</span></td><td>Stippellijn, met erachter wat je kent: "← Graafhaven"</td><td>Het wereldboek, per rand</td></tr>
+        <tr><td class="k">Verre plek <span class="tiny">M10.21</span></td><td>Vraagteken op de landkaart zolang hij alleen een naam is</td><td>Schets, nog niet bezocht</td></tr>
       </table></div>
+      <p class="note">Blad 22 zegt wat er gebeurt als je over de rand loopt.</p>
     </div>
 
     <div class="p c5">
@@ -1292,7 +1313,7 @@ Allowed goals: Obtain, Produce, Sell, ...
     </div>
     <div class="p c6 end">
       <h3>Romance: het systeem beslist, de AI verwoordt</h3>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;font-size:12.5px">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:4px;font-size:12.5px">
         <div style="background:var(--wisp-soft);padding:8px"><b>Interesse</b><br><span class="small">Hartelijk, vertrouwdheid ≥ 40</span></div>
         <div style="background:color-mix(in srgb,var(--wisp) 30%,var(--sheet));padding:8px"><b>Verkering</b><br><span class="small">Vertrouwen ≥ 40 + gedeelde gebeurtenis</span></div>
         <div style="background:color-mix(in srgb,var(--wisp) 50%,var(--sheet));padding:8px"><b>Relatie</b><br><span class="small">Affiniteit 75, vertrouwen 60, of band 2</span></div>
@@ -1542,7 +1563,11 @@ TIER: normal, 50 words.</pre>
         <tr><td class="k">AI wijzigt de wereld</td><td>De AI stelt alleen voor; het systeem voert uit en begrenst</td><td><span class="chip w">na</span></td></tr>
         <tr><td class="k">Andere taal</td><td>Nederlands wordt begrepen; anders: "You've a strange tongue, friend."</td><td><span class="chip b">voor</span></td></tr>
         <tr><td class="k">Storing</td><td>Time-out na 6 s, dan sjabloon; na 3 storingen op rij het terugvalmodel</td><td><span class="chip r">gateway</span></td></tr>
+        <tr><td class="k">Harde grenzen <span class="tiny">M10.19</span></td><td>PEGI 18 en de regel "wereldtekst is beschrijving" staan vooraan in het systeemdeel van elke aanroep, ook voor de schrijfhulp en de wereldstappen</td><td><span class="chip r">gateway</span></td></tr>
+        <tr><td class="k">Wereldtekst van een ander <span class="tiny">M10.19</span></td><td>Kader, NPC-kaart en CHRONICLER.md in een eigen blok; content die als instructie leest staat onder Check</td><td><span class="chip">opbouw</span></td></tr>
+        <tr><td class="k">Weigering zichtbaar <span class="tiny">M10.19</span></td><td>Het AI-logboek noemt per aanroep de reden: injectie, schema, grenzen, rol, PEGI met welke grens</td><td><span class="chip w">na</span></td></tr>
       </table></div>
+      <p class="note">Blad 20 werkt de veiligheid van de AI-laag uit.</p>
     </div>
     <div class="p c4 end">
       <h3>Wachttijd</h3>
@@ -2134,6 +2159,10 @@ Round 2.  <span class="t">Momentum +1</span></pre>
         <tr><td class="k">Kennis</td><td>Verhaal zonder oorsprong of bekendheid</td></tr>
         <tr><td class="k">Quests</td><td>Minder dan drie oplossingen; onbereikbaar stadium</td></tr>
         <tr><td class="k">Taal</td><td>Spelfouten, verboden moderne woorden</td></tr>
+        <tr><td class="k">Contract <span class="tiny">M10.17</span></td><td>Een veld dat niet in het contract staat, met de velden die er wel zijn</td></tr>
+        <tr><td class="k">Instructietaal <span class="tiny">M10.19</span></td><td>Content die leest als een opdracht aan het model</td></tr>
+        <tr><td class="k">Beschrijvingen <span class="tiny">M10.20</span></td><td>Woorden, haken, uitgangen als opsomming</td></tr>
+        <tr><td class="k">Knoppen <span class="tiny">M10.20</span></td><td>Onbekende knop, verkeerde vorm, waarde buiten de grenzen</td></tr>
       </table></div>
       <p class="note">In een release blokkeren fouten het laden. Tijdens het ontwikkelen staan ze klikbaar in het validatiepaneel.</p>
     </div>
@@ -2165,8 +2194,13 @@ Round 2.  <span class="t">Momentum +1</span></pre>
         <dt>Quests</dt><dd>Rollen, stadia, voorwaarden en effecten; controle op drie oplossingen</dd>
         <dt>Objecten</dt><dd>Affordances, recepten, schema's, beroepsdoelen</dd>
         <dt>Validatie</dt><dd>Alle fouten en waarschuwingen, klikbaar</dd>
+        <dt>Contract <span class="tiny">M10.17</span></dt><dd>Per soort of de wereld hem heeft, met "Let the chronicler propose" bij wat leeg is; het wereldboek als webpagina</dd>
+        <dt>New world <span class="tiny">M10.17</span></dt><dd>Twaalf stappen met de kroniekverteller, van kader tot palet; sinds M10.23 ook per land</dd>
+        <dt>Knobs <span class="tiny">M10.20</span></dt><dd>De 72 spelregels die per wereld mogen verschillen</dd>
+        <dt>Palette <span class="tiny">M10.20</span></dt><dd>Tekens op het land en "[Make a map from the places]"</dd>
+        <dt>Landen <span class="tiny">M10.23</span></dt><dd>Per land zijn YAML en stemkit</dd>
       </dl>
-      <p class="small" style="margin-top:8px">Schema's leveren aanvulling en foutmeldingen, in de bouwer en in VS Code.</p>
+      <p class="small" style="margin-top:8px">Schema's leveren aanvulling en foutmeldingen, in de bouwer en in VS Code. De bladen 19 tot 21 en 24 werken de nieuwe tabbladen uit.</p>
     </div>
 
     <div class="p c4">
@@ -2216,8 +2250,9 @@ Round 2.  <span class="t">Momentum +1</span></pre>
         <tr><td class="k">Brein</td><td>Doelkeuze in JSON</td><td>Iets als GPT-4.1-nano</td></tr>
         <tr><td class="k">Adviseur</td><td>Eenmalig modeladvies bij koppelen</td><td>Het capabelste model van de aanbieder</td></tr>
         <tr><td class="k">Schrijfhulp</td><td>Concepten in de bouwer</td><td>Een sterk model naar keuze</td></tr>
+        <tr><td class="k">Kroniekverteller <span class="tiny">M3.1 en later</span></td><td>Nachtronde, omtrek, wijk, weefronde, grote lijnen, uitbreiding, land, wereldstappen</td><td>Iets als Opus 5.5 of Sonnet 5</td></tr>
       </table></div>
-      <p class="small" style="margin-top:8px">Elke rol heeft een modelprofiel: aanbieder, exacte model-id, max tokens, time-out, terugvalmodel. Stem en brein mogen bij verschillende aanbieders liggen.</p>
+      <p class="small" style="margin-top:8px">Elke rol heeft een modelprofiel: aanbieder, exacte model-id, max tokens, time-out, terugvalmodel. Stem en brein mogen bij verschillende aanbieders liggen. Sinds M10.20 kiest elke soort aanroep haar model en denkinspanning op een meting (blad 21).</p>
     </div>
     <div class="p c8 end">
       <h3>Kosten per speeluur, zonder caching</h3>
@@ -2312,10 +2347,22 @@ Round 2.  <span class="t">Momentum +1</span></pre>
         <div class="card"><h5>Vaste kop voorop</h5><p>Byte-gelijk, zonder tijdstempels of ongesorteerde JSON, zodat caching werkt.</p></div>
         <div class="card"><h5>Korte uitvoer</h5><p>Lengteniveaus en max_tokens per aanroep.</p></div>
         <div class="card"><h5>Vooraf geschreven</h5><p>Beschrijvingen, groeten en terugvalteksten kosten niets tijdens het spelen.</p></div>
+        <div class="card" style="border-color:var(--wisp)"><h5>Alleen waar jij komt</h5><p>Sinds M10.21 groeit de wereld alleen waar je iets doet, in lagen die elk goedkoper zijn dan de volgende (blad 22).</p></div>
       </div>
     </div>
+
+    <div class="p c12 end">
+      <h3>Sinds M10.20: wat het echt kost, en de vraag boven een grens</h3>
+      <div class="statrow" style="margin-bottom:10px">
+        <div class="stat"><span class="big">≈ $0,49</span><span class="small">richtprijs per speeluur met Haiku, Sonnet en Opus 5.5: 40 regels gesprek, 25 doelkeuzes en één nachtronde</span></div>
+        <div class="stat"><span class="big">≈ $0,16</span><span class="small">een nieuwe plek in een verre stad: omtrek, eerste wijk en weefronde</span></div>
+        <div class="stat"><span class="big">$1</span><span class="small">"Ask first above": daaronder loopt een aanroep gewoon, daarboven vraagt het spel één keer</span></div>
+        <div class="stat"><span class="big">$2,84</span><span class="small">een wereldbouw van twaalf stappen, gemeten op The Quiet Reach; eerst $10,09</span></div>
+      </div>
+      <p class="small">De richtprijs staat onder Instellingen › AI en komt uit de tokens van de opgenomen echte antwoorden en de prijzen van de modellen die je koos. Een model zonder bekende prijs zegt dat. De grens voor een vraag staat ernaast; het uurbudget blijft wat je instelt, met één bevestiging boven $20 per uur. Blad 21 en 22 werken het uit.</p>
+    </div>
   </div>
-  <div class="foot"><span><b>Modellen vergelijken</b>Een vaste testset van 200 situaties met automatische controles (schema, kennislek, lengte, verboden woorden) en een sterker model als beoordelaar. Draait bij elke modelwissel en na elke wijziging aan de vaste regels.</span></div>
+  <div class="foot"><span><b>Modellen vergelijken</b>Een vaste testset van 200 situaties met automatische controles (schema, kennislek, lengte, verboden woorden) en een sterker model als beoordelaar. Draait bij elke modelwissel en na elke wijziging aan de vaste regels. Sinds M10.20 heeft elke soort aanroep een vaste proefsituatie en een opgenomen echt antwoord (blad 21).</span></div>
 </section>
 
 <!-- ============ 17 COMMANDO'S ============ -->
@@ -2338,6 +2385,11 @@ Round 2.  <span class="t">Momentum +1</span></pre>
     <div class="p c3"><h3>Personage</h3><p class="small"><code>score</code> <code>sc</code> <code>skills</code> <code>inventory</code> <code>i</code></p><p class="small"><code>equip</code> <code>remove</code></p><p class="small"><code>journal</code> <code>j</code> <code>topics</code> <code>quests</code></p><p class="small"><code>rest</code> <code>sleep</code> <code>wait</code> · <code>pray</code> <code>offer</code></p></div>
     <div class="p c3"><h3>Systeem</h3><p class="small"><code>save</code> <code>load</code> <code>time</code></p><p class="small"><code>settings</code> <code>help</code> <code>pause</code></p><p class="small"><span class="mono">help ask</span></p></div>
     <div class="p c3 end"><h3>Nederlands</h3><p class="small"><code>kijk</code> <code>pak</code> <code>zeg</code></p><p class="small"><code>praat met</code> <code>vraag … over …</code></p><p class="tiny">In de bouwmodus komen de <code>@</code>-commando's van blad 15 erbij.</p></div>
+    <div class="p c12 end" style="padding-bottom:6px"><h3><span class="n">+</span> Sinds 26 september 2026</h3></div>
+    <div class="p c3"><h3>Groei <span class="tiny">M10.21, M10.25</span></h3><p class="small"><code>explore &lt;kant&gt;</code> · verder het onbekende in</p><p class="small"><code>explore by sea</code> · in een haven</p><p class="small"><code>chart</code> · kies een omtrek (Meedenken)</p><p class="small"><code>arrive</code> · meteen naar binnen terwijl de kroniekverteller nog bouwt</p></div>
+    <div class="p c3"><h3>Doorspelen <span class="tiny">M10.24</span></h3><p class="small"><code>frames</code> · de kaders van dit spel</p><p class="small"><code>hooks</code> · wat er op je wacht (Meedenken)</p><p class="small"><code>proposals</code> <code>accept</code> <code>reject</code> · Regisseur</p><p class="small"><code>chronicler &lt;regel&gt;</code> <code>chronicler forget</code></p></div>
+    <div class="p c3"><h3>In de wereld <span class="tiny">M10.17, M10.22</span></h3><p class="small"><code>hire</code> · <span class="mono">hire punt</span></p><p class="small"><code>join</code> · <span class="mono">join the burghers of waagdam</span></p><p class="small"><code>mediate between</code> · twee partijen aan één tafel</p><p class="small"><code>give yourself up</code> · zitting in plaats van boete</p></div>
+    <div class="p c3 end"><h3>Saves <span class="tiny">M10.20</span></h3><p class="small"><code>continue</code> <code>save &lt;naam&gt;</code></p><p class="small"><code>save export &lt;pad&gt;</code> <code>load &lt;pad&gt;</code> · terminal</p><p class="small"><code>tempo</code> · snelle klok</p><p class="tiny">Ontwikkelversie: <code>@goto</code> <code>@fact</code> <code>@kill</code> <code>@learn</code>.</p></div>
   </div>
 </section>
 
@@ -2419,8 +2471,790 @@ Round 2.  <span class="t">Momentum +1</span></pre>
         <tr><td class="k">Licentie</td><td>Nog niet van toepassing; alle rechten voorbehouden</td></tr>
       </table></div>
     </div>
+
+    <div class="p c12 end">
+      <h3>Mijlpalen sinds deze momentopname · 28 en 29 september 2026</h3>
+      <div class="tw"><table class="t small">
+        <tr><th>Mijlpaal</th><th>Wat het bracht</th><th>Blad</th></tr>
+        <tr><td class="k">M10.17</td><td>Het contract van de content en de neutrale standaarden; wat in code stond, werd content; de kroniekverteller als wereldbouwer in twaalf stappen; Deepwell</td><td><a href="#blad-19">19</a></td></tr>
+        <tr><td class="k">M10.18</td><td>Het wereldboek per wereld uit de content, de kroniek per spel, het ontwerplogboek</td><td><a href="#blad-19">19</a></td></tr>
+        <tr><td class="k">M10.19</td><td>Veiligheid van de AI-laag: harde grenzen in elke aanroep, wereldtekst in een eigen blok, Electron dichter, weigeringen zichtbaar</td><td><a href="#blad-20">20</a></td></tr>
+        <tr><td class="k">M10.20</td><td>De knoppenlaag, de wereldbouw goedkoper met een gecacht vast deel, echte antwoorden als opnames, elke soort aanroep beproefd, een kaart uit de plekken, tekens per wereld</td><td><a href="#blad-20">20</a>, <a href="#blad-21">21</a></td></tr>
+        <tr><td class="k">M10.21</td><td>De rand van de streek, de wereld groeit alleen waar je iets doet, wijken, de vraag boven een grens, de richtprijs, de wenk bij het vertrek, het wereldboek groeit aan de rand</td><td><a href="#blad-22">22</a></td></tr>
+        <tr><td class="k">M10.22</td><td>De weefronde, verhaallijnen over gebieden heen, zetels, de grote lijnen, één cadans en wachtrij met een rem in echte tijd, de speler weegt mee en bemiddelt</td><td><a href="#blad-23">23</a></td></tr>
+        <tr><td class="k">M10.23</td><td>Een land als laag met grens, bereik en taal; een land bouwen met dezelfde stappen; een land dat de kroniekverteller schrijft</td><td><a href="#blad-24">24</a></td></tr>
+        <tr><td class="k">M10.24</td><td>Het kaderscherm met drie draaiknoppen, drie speelstanden, de polsslag, de wereld blijft heel, een woord aan de kroniekverteller</td><td><a href="#blad-25">25</a></td></tr>
+        <tr><td class="k">M10.25 <span class="tiny">gepland</span></td><td>De verhaalronde bij aankomst, een vierde draaiknop met de prijs ernaast, onderweg wordt de wereld gebouwd (af), het gespeelde bewijs, de kaart als stap van de wereldbouw</td><td><a href="#blad-26">26</a></td></tr>
+      </table></div>
+    </div>
   </div>
-  <div class="foot"><span><b>Open vragen</b>Er zijn nu geen open vragen. Nieuwe vragen komen per mijlpaal in docs/CHANGELOG.md.</span><span><b>Bron</b>Functioneel ontwerp: Wisplight, stand 26 september 2026. Prijzen en licenties kunnen veranderen; controleer ze vóór een release.</span></div>
+  <div class="foot"><span><b>Open vragen</b>Er zijn nu geen open vragen. Nieuwe vragen komen per mijlpaal in docs/CHANGELOG.md. Geparkeerd bij M10.20: de vorm van het jaar per wereld (twaalf maanden van dertig dagen plus vijf blijft vast; Bram beslist wanneer een wereld erom vraagt).</span><span><b>Bron</b>Functioneel ontwerp: Wisplight, stand 26 september 2026, aangevuld op 29 september 2026 uit docs/CHANGELOG.md en docs/ROADMAP.md tot en met M10.25 zoals gepland. Prijzen en licenties kunnen veranderen; controleer ze vóór een release.</span></div>
+</section>
+
+<!-- ============ 19 CONTRACT ============ -->
+<section class="sheet" id="blad-19">
+  <div class="sheet-head">
+    <div class="folio">Blad<strong>19</strong></div>
+    <div><h2>Het contract van de content</h2><p class="thesis">Wat een wereld kan bevatten, staat in één document dat uit de schema's wordt geschreven. Wat een wereld weglaat, werkt zonder Nethermarch. Elke wereld heeft een wereldboek uit haar content, een ontwerplogboek van hoe ze gemaakt is, en elk spel zijn eigen kroniek.</p></div>
+    <div class="ref">Changelog 28 sep 2026<br>M10.17 · M10.18</div>
+  </div>
+  <div class="grid">
+    <div class="p c7">
+      <h3>Eén bron, drie lezers</h3>
+      <div class="svgw">
+      <svg viewBox="0 0 640 230" role="img" aria-label="De zod-schema's schrijven het contract docs/CONTENT.md; de editor, de schrijfhulp en de wereldgids lezen het">
+        <g font-size="13" text-anchor="middle">
+          <rect x="10" y="80" width="150" height="70" rx="4" class="sys"/><text x="85" y="108" font-weight="700">Schema's (zod)</text><text x="85" y="126" font-size="11.5" class="mid">per bestand en soort</text>
+          <rect x="230" y="80" width="170" height="70" rx="4" class="ai" stroke-width="2"/><text x="315" y="104" font-weight="700" class="mono">docs/CONTENT.md</text><text x="315" y="122" font-size="11.5" class="mid">verplicht, optioneel,</text><text x="315" y="137" font-size="11.5" class="mid">standaard, wat het spel doet</text>
+          <rect x="470" y="10" width="160" height="50" rx="4" class="box"/><text x="550" y="32" font-weight="700">Editor</text><text x="550" y="48" font-size="11" class="mid">weigert een vreemd veld</text>
+          <rect x="470" y="90" width="160" height="50" rx="4" class="box"/><text x="550" y="112" font-weight="700">Schrijfhulp</text><text x="550" y="128" font-size="11" class="mid">het contract in het kort</text>
+          <rect x="470" y="170" width="160" height="50" rx="4" class="box"/><text x="550" y="192" font-weight="700">Wereldgids</text><text x="550" y="208" font-size="11" class="mid">welke stap, welke vraag</text>
+        </g>
+        <g class="ln" stroke-width="1.4"><path d="M160 115 H226" marker-end="url(#ah)"/><path d="M400 115 H466" marker-end="url(#ah)"/><path d="M400 100 C 430 100 440 35 466 35" marker-end="url(#ah)"/><path d="M400 130 C 430 130 440 195 466 195" marker-end="url(#ah)"/></g>
+        <text x="190" y="102" text-anchor="middle" font-size="10.5" class="dim mono">npm run</text><text x="190" y="114" text-anchor="middle" font-size="10.5" class="dim mono">content:contract</text>
+        <text x="10" y="200" font-size="11.5" class="dim">Een test faalt zodra het document niet meer bij de schema's past.</text>
+      </svg>
+      </div>
+      <p class="small">Het contract zegt per soort wat verplicht is, wat optioneel is, wat de standaard is als het ontbreekt en wat het spel ermee doet. <mark>Een wereld die iets weglaat, krijgt geen Nethermarch maar een neutrale standaard.</mark></p>
+    </div>
+    <div class="p c5 end">
+      <h3>Neutrale standaarden: wat een wereld weglaat</h3>
+      <div class="tw"><table class="t small">
+        <tr><th>Zonder</th><th>Dan</th></tr>
+        <tr><td class="k mono">words</td><td>"the land", "the region", "far away"</td></tr>
+        <tr><td class="k mono">calendar</td><td>Gewone maanden en weekdagen; de week begint op de startdatum, of op <code>start_weekday</code></td></tr>
+        <tr><td class="k mono">money</td><td>Eén munt, "c"</td></tr>
+        <tr><td class="k mono">weather</td><td>Geen weer: geen lucht, geen wind, niets in de klok</td></tr>
+        <tr><td class="k mono">voice</td><td>Geen lijst met anachronismen, alleen de vaste kern; in Deepwell is een computer gewoon een woord</td></tr>
+        <tr><td class="k mono">journey</td><td>Onderweg gebeurt er niets</td></tr>
+        <tr><td class="k mono">rules.death</td><td>Sterven in gewone woorden, zonder prijs</td></tr>
+        <tr><td class="k mono">faith</td><td>Geen geloof; Deepwell speelt die standaard in de tests</td></tr>
+      </table></div>
+    </div>
+
+    <div class="p c4">
+      <h3>Wat in code stond, is content</h3>
+      <div class="chips"><span class="chip w">hires</span><span class="chip w">join met voorwaarden</span><span class="chip">weather.lines</span><span class="chip">words.sleep</span><span class="chip">rules.death</span><span class="chip">law.fines</span><span class="chip">standing.offices</span><span class="chip">calendar.start_weekday</span><span class="chip">money.units[].aliases</span><span class="chip">terreinnamen uit het palet</span><span class="chip">bestiarium: faction</span><span class="chip">tempts</span><span class="chip">barred</span><span class="chip">sworn</span><span class="chip">aliases, distrusted_by</span><span class="chip">tag light</span></div>
+      <p class="small" style="margin-top:10px">De punt van Wouter is een <code>hires</code>; het stadsrecht aan de Waag en de novicen van de Lantaarn zijn voorwaarden in <code>factions.yaml</code>; de Grijze Ruiter staat in <code>rules.death</code>. De vaste teksten zeggen geen duiten, fen, peat of schout meer. <b>De Nethermarch doet precies wat hij deed.</b></p>
+    </div>
+    <div class="p c4">
+      <h3>Twaalf stappen met de kroniekverteller</h3>
+      <ol class="steps small">
+        <li>Kader</li>
+        <li>Stem <span class="tiny">(sinds M10.20 direct na het kader)</span></li>
+        <li>Kalender en weer</li>
+        <li>Munten</li>
+        <li>Geloof</li>
+        <li>Plekken</li>
+        <li>Beroepen</li>
+        <li>Mensen</li>
+        <li>Economie</li>
+        <li>Vervoer</li>
+        <li>Signalen</li>
+        <li>Palet</li>
+      </ol>
+      <p class="small" style="margin-top:8px">Je zegt in een paar zinnen wat je wilt, hij stelt voor, de editor toont het als diff en bewaart alleen wat je aanneemt. Een overgeslagen stap is gewoon leeg: de gids zegt wat de standaard dan is.</p>
+    </div>
+    <div class="p c4 end">
+      <h3>Deepwell, de tweede proefwereld</h3>
+      <div class="card">
+        <h5>Deepwell</h5>
+        <div class="sub">tests/worlds/other · sciencefiction onder het ijs</div>
+        <p>Een week van tien dagen, credits en chits, een magneettram, de koloniale raad en de ploeg van de ijssnijders. Geen geloof, geen weer, geen wezens.</p>
+        <p class="tiny">Wat Deepwell weglaat, laat het bewust weg: zo spelen de tests de neutrale standaard. Skerrow krijgt van elk nieuw ding altijd een eigen versie.</p>
+      </div>
+      <p class="note">De architectuurtest speelt elke wereld een dag; de simulatie en de speeltest kennen "deepwell".</p>
+    </div>
+
+    <div class="p c7">
+      <h3>Drie documenten per wereld <span class="tiny">M10.18</span></h3>
+      <div class="cards" style="grid-template-columns:repeat(auto-fit,minmax(190px,1fr))">
+        <div class="card"><h5>WORLDBOOK.md</h5><div class="sub">uit de content · bij elke opslag</div><p>De wereld, de kaart, geschiedenis en lore, machten, geloven, dorpen, plekken, mensen, geheimen, bestiarium, munten en kalender, quests, namen, ambachten, vervoer, wat er gebeurt als, de regels in het kort. Een soort die een wereld niet heeft, geeft geen hoofdstuk.</p><p class="tiny">Ook als webpagina en, sinds M10.20, als atlaspagina in de stijl van dit document.</p></div>
+        <div class="card"><h5>DESIGN.md</h5><div class="sub">het ontwerplogboek</div><p>Je antwoord per stap, zodra getypt. Elk besluit met datum: wat je vroeg, wat de kroniekverteller zei en terugvroeg, wat het voorstel veranderde, en je reden. Notities over waarom de wereld is zoals hij is.</p><p class="tiny">Het laatste hoofdstuk van het wereldboek: "How this world was made".</p></div>
+        <div class="card" style="border-color:var(--wisp)"><h5>De kroniek van een spel</h5><div class="sub">menu [Chronicle] · nooit in de content</div><p>Gebeurtenissen, verre plekken, terloops genoemde mensen, improvisaties, de verhalen van de kroniekverteller en de verhaallijnen. Later ook de grote lijnen, het nieuws tussen landen en jouw woorden aan de kroniekverteller.</p></div>
+      </div>
+    </div>
+    <div class="p c5 end">
+      <h3>Het logboek leest mee</h3>
+<pre class="screen" style="font-size:11.5px;white-space:pre-wrap">## Faith · accepted · 28 Sep 2026
+<span class="d">You wrote:</span> "There are two patrons here, the
+  Remembered and the Witness. No temples."
+<span class="d">Chronicler:</span> proposed rules.patrons and one
+  faction; asked what a burial looks like.
+<span class="d">Changed:</span> rules.patrons +2, factions +1
+<span class="d">Reason:</span> <span class="t">"keep both, drop the festival"</span></pre>
+      <p class="small" style="margin-top:8px">De kroniekverteller leest de notities en de laatste besluiten bij elke stap, bij [Enhance with AI] en bij de schrijfhulp, zodat hij niet opnieuw voorstelt wat je afwees. Een geplakt document met eigen kopjes breekt het logboek niet.</p>
+      <p class="note">Voorbeeld met verzonnen waarden. Voor de Nethermarch blijft het wereldboek in Claude Docs de bron.</p>
+    </div>
+  </div>
+  <div class="foot"><span><b>Toets</b>Een wereld zonder Nethermarch-woorden speelt: "the land", "the region", "far away".</span><span><b>Voor mensen</b>docs/NEW-WORLD.md; de stappen en vragen staan in src/engine/worldguide.ts.</span></div>
+</section>
+
+<!-- ============ 20 VEILIG EN GEKNOPT ============ -->
+<section class="sheet" id="blad-20">
+  <div class="sheet-head">
+    <div class="folio">Blad<strong>20</strong></div>
+    <div><h2>Veilig en geknopt</h2><p class="thesis">De harde grenzen staan op één plek, vooraan in elke aanroep, en de bewaker kent ze. Tekst uit een wereld van een ander is beschrijving en verandert nooit de regels. En elke spelregel die per wereld mag verschillen, is een knop met een standaard en grenzen.</p></div>
+    <div class="ref">Changelog 28 sep 2026<br>M10.19 · M10.20</div>
+  </div>
+  <div class="grid">
+    <div class="p c8">
+      <h3>De weg van een antwoord, met de grenzen erbij</h3>
+      <div class="svgw">
+      <svg viewBox="0 0 700 200" role="img" aria-label="Gateway zet de harde grenzen vooraan, het model antwoordt, de bewaker keurt, één nieuwe poging, dan de vaste regel; de reden staat in het AI-logboek">
+        <g font-size="12.5" text-anchor="middle">
+          <rect x="6" y="40" width="150" height="70" rx="4" class="red"/><text x="81" y="64" font-weight="700">Gateway</text><text x="81" y="82" font-size="11" class="mid">PEGI 18 en "wereldtekst</text><text x="81" y="96" font-size="11" class="mid">is beschrijving" vooraan</text>
+          <rect x="186" y="40" width="120" height="70" rx="4" class="ai" stroke-width="2"/><text x="246" y="70" font-weight="700">Model</text><text x="246" y="88" font-size="11" class="mid">stem, brein, kroniek, editor</text>
+          <rect x="336" y="40" width="150" height="70" rx="4" class="sys"/><text x="411" y="64" font-weight="700">Bewaker</text><text x="411" y="82" font-size="11" class="mid">schema, namen, rol,</text><text x="411" y="96" font-size="11" class="mid">grenzen, link of HTML</text>
+          <rect x="516" y="10" width="178" height="50" rx="4" class="reed"/><text x="605" y="40" font-weight="700">Naar de speler</text>
+          <rect x="516" y="100" width="178" height="50" rx="4" class="boxs"/><text x="605" y="122" font-weight="700">Eén nieuwe poging</text><text x="605" y="140" font-size="11" class="mid">daarna de vaste regel</text>
+        </g>
+        <g class="ln" stroke-width="1.3"><path d="M156 75 H182" marker-end="url(#ah)"/><path d="M306 75 H332" marker-end="url(#ah)"/><path d="M486 62 C 500 62 500 35 512 35" marker-end="url(#ah)"/><path d="M486 88 C 500 88 500 125 512 125" marker-end="url(#ah)"/></g>
+        <path d="M605 150 V176 H246 V114" class="lnd" stroke-dasharray="4 3" marker-end="url(#ahd)"/>
+        <text x="420" y="172" text-anchor="middle" font-size="11" class="mid">de reden in het AI-logboek: injectie, schema, grenzen, rol, PEGI met welke grens</text>
+      </svg>
+      </div>
+      <p class="small">Dat geldt voor gesprekken, improvisaties, reisteksten en de lore, het nieuws en de gedachten van de kroniekverteller. <mark>Lore die leest als een instructie aan een model wordt niet bewaard,</mark> want die komt later in andere prompts terecht. De karakterscore van een model telt afgewezen antwoorden mee.</p>
+    </div>
+    <div class="p c4 end">
+      <h3>Electron dichter</h3>
+      <ul class="ticks small">
+        <li>Beide vensters draaien in de sandbox; de preload is CommonJS.</li>
+        <li>Elk IPC-kanaal heeft een zod-schema (<code>src/main/inputs.ts</code>) dat de argumenten keurt voordat een handler ze ziet.</li>
+        <li>Alleen de eigen pagina van de app mag aanroepen; een venster kan niet wegnavigeren of een nieuw venster openen.</li>
+        <li>De map voor de transcriptie kan alleen een map zijn die je in het dialoogvenster koos.</li>
+      </ul>
+      <p class="note">De smoke test laat het zien: sandbox aan, geen Node in de pagina, een pad als wereldnaam geweigerd.</p>
+    </div>
+
+    <div class="p c4">
+      <h3>Weigeringen zichtbaar</h3>
+<pre class="screen" style="font-size:11px">Settings › AI › Log
+21:14 npc_reply   Mirte   <span class="t">held back: injection</span>
+      "Ignore your previous instructions"
+21:15 npc_reply   Mirte   ok    1.2 s
+21:31 chronicle   night   retry: PEGI
+      then ok    4.8 s
+21:40 improvise   Gerrit  <span class="t">out of role: link</span>
+      fixed line used</pre>
+      <p class="small" style="margin-top:8px">Woorden van de speler die nooit naar het model gingen, staan als eigen regel met de tekst. Het dev-menu telt de weigeringen per reden.</p>
+    </div>
+    <div class="p c4">
+      <h3>Een wereld van een ander</h3>
+      <p class="small">Het kader, de kaart van een personage en <code>CHRONICLER.md</code> staan in de prompt in een eigen blok wereldtekst. Wie een wereld deelt, kan er dus geen opdracht aan het model in verstoppen.</p>
+      <p class="small">Tekst in de content die leest als een instructie ("ignore all previous rules", "from now on you must") staat in de editor onder Check, en het dev-menu telt hem bij het laden.</p>
+      <p class="quote">"Been at Trijntje's gin already, have you?"</p>
+      <p class="tiny">De sjabloonregel van blad 01 bij een injectie blijft; nieuw is dat de reden in het log staat.</p>
+    </div>
+    <div class="p c4 end">
+      <h3>Nog niet</h3>
+      <ul class="ticks no small">
+        <li>De PEGI-toets is een net van woorden en geen garantie; een valse treffer kost een nieuwe poging.</li>
+        <li>Afbeeldingen krijgen de grenzen niet in hun prompt; daar filtert de aanbieder van het beeldmodel.</li>
+        <li>De plekbeschrijvingen in het overzicht van de kroniekverteller staan niet in een eigen blok; de regel in het systeemdeel dekt ze wel.</li>
+      </ul>
+    </div>
+
+    <div class="p c7">
+      <h3>Eén laag voor knoppen <span class="tiny">M10.20</span></h3>
+      <div class="tw"><table class="t small">
+        <tr><th>Laag</th><th>Waar</th><th>Voorbeelden</th></tr>
+        <tr><td class="k">Wereldknop <span class="tiny">72</span></td><td><code>knobs:</code> in <code>world.yaml</code>; tabblad Knobs in de editor; alleen wat afwijkt wordt bewaard</td><td class="mono small">talk.max_turns · story.urgent_belang · story.signals_per_night · story.hooks_per_week · story.hook_days · tides.decay · tides.cooldown_days · growth.new_faction_days · lands.exchange_cut</td></tr>
+        <tr><td class="k">Appknop</td><td>Instellingen › Advanced; <code>knobs.json</code>, per sleutel geschreven</td><td class="small">automatisch opslaan, de pauze na stilte, de regels van het AI-logboek, het aandeel van het uurbudget voor gesprekken, hoe lang de editor, een persoon en de kroniekverteller op het model mogen wachten; sinds M10.22 de rem in echte tijd</td></tr>
+        <tr><td class="k">Knop van dit spel <span class="tiny">M10.24</span></td><td>De drie draaiknoppen op het kaderscherm, over die van de wereld heen (<code>state.knobs</code>), gezet met <code>FRAMES</code></td><td class="small">tempo, hoe vaak een verhaallijn je zoekt, hoeveel de wereld per seizoen groeit (blad 25)</td></tr>
+      </table></div>
+      <p class="small" style="margin-top:8px">Elke knop heeft een omschrijving in gewone taal, een eenheid, een standaard en grenzen. De lader keurt een onbekende knop, een verkeerde vorm en een waarde buiten de grenzen af. <b>De standaarden zijn de oude waarden:</b> alle tests, de simulaties en de speeltest-transcripties bleven gelijk. Deepwell houdt vijf dagen voorraad aan in plaats van drie.</p>
+    </div>
+    <div class="p c5 end">
+      <h3>De inventaris van harde getallen</h3>
+      <div class="statrow" style="margin-bottom:10px">
+        <div class="stat"><span class="big num">178</span><span class="small">vaste getallen in de code, elk met een plaats</span></div>
+        <div class="stat"><span class="big num">81</span><span class="small">spelregels: naar de content, met een neutrale standaard</span></div>
+        <div class="stat"><span class="big num">10</span><span class="small">gedrag van de app: naar de instellingen</span></div>
+        <div class="stat"><span class="big num">45</span><span class="small">blijven code, met een reden</span></div>
+        <div class="stat"><span class="big num">42</span><span class="small">eenheden van tijd</span></div>
+      </div>
+      <p class="small"><code>npm run knobs</code> schrijft <code>docs/KNOBS.md</code>; het register staat in <code>docs/knobs.yaml</code>. Een test faalt bij een nieuw getal zonder plaats.</p>
+      <p class="note">Geen knop: de vorm van het jaar. Twaalf maanden van dertig dagen plus vijf blijft vast tot een wereld erom vraagt; de stap Kalender zegt dat erbij (M10.25).</p>
+    </div>
+  </div>
+  <div class="foot"><span><b>Toets</b>tests/redteam.test.ts (14): injectie, grenzen, rol en schema, met de reden in het log.</span><span><b>Zie ook</b>blad 10 (guardrails), 16 (budget), 25 (de knoppen van dit spel)</span></div>
+</section>
+
+<!-- ============ 21 WERELDBOUW GEMETEN ============ -->
+<section class="sheet" id="blad-21">
+  <div class="sheet-head">
+    <div class="folio">Blad<strong>21</strong></div>
+    <div><h2>De wereldbouw gemeten</h2><p class="thesis">Brams eerste echte bouw, The Quiet Reach, kostte tien dollar en liet zien waar het rammelde. Daarna is elke stap frugaal gebouwd en gemeten: het vaste deel voorop in de cache, per stap alleen wat de stap nodig heeft, een eigen maximum en een eigen inspanning. De echte antwoorden zijn opgenomen, en elke soort aanroep heeft een proef.</p></div>
+    <div class="ref">Changelog 28–29 sep 2026<br>M10.20</div>
+  </div>
+  <div class="grid">
+    <div class="p c8">
+      <h3>Een wereldstap: het vaste deel voorop, een uur in de cache</h3>
+      <div class="svgw">
+      <svg viewBox="0 0 700 160" role="img" aria-label="Opbouw van een wereldstap: het vaste deel van ongeveer 19.000 tokens gecachet, dan het ingekorte ontwerplogboek, dan alleen wat de stap nodig heeft, dan het antwoord met een eigen maximum">
+        <rect x="10" y="30" width="400" height="40" style="fill:var(--wisp)" opacity=".9"/>
+        <rect x="410" y="30" width="80" height="40" class="waterf" opacity=".35"/>
+        <rect x="490" y="30" width="110" height="40" class="waterf" opacity=".55"/>
+        <rect x="600" y="30" width="90" height="40" class="redf" opacity=".6"/>
+        <g font-size="12" font-weight="700" text-anchor="middle">
+          <text x="210" y="55" style="fill:#1b1606">gids · contract · CHRONICLER.md</text>
+          <text x="450" y="55">logboek</text><text x="545" y="55">de stap</text><text x="645" y="55" style="fill:#fff">antwoord</text>
+        </g>
+        <path d="M10 22 H410" style="stroke:var(--wisp)" stroke-width="2"/><text x="10" y="16" font-size="11" class="mid">vast, byte-gelijk, een uur in de cache: ~19.000 tokens, daarna een twintigste van de prijs</text>
+        <g font-size="11" class="mid">
+          <rect x="10" y="88" width="10" height="10" class="waterf" opacity=".35"/><text x="26" y="97">logboek: alleen de besluiten en notities, zonder de volledige antwoorden</text>
+          <rect x="10" y="110" width="10" height="10" class="waterf" opacity=".55"/><text x="26" y="119">de stap: alleen de sleutels van world.yaml en de soorten die hij nodig heeft, de tekst van de ontwerper één keer</text>
+          <rect x="10" y="132" width="10" height="10" class="redf" opacity=".6"/><text x="26" y="141">antwoord: een eigen maximum per stap, dat meegroeit met je hoofdstuk</text>
+        </g>
+      </svg>
+      </div>
+      <div class="hbars" style="margin-top:6px">
+        <div class="hbar"><span>The Quiet Reach, 28 sep</span><span class="track"><span class="fill" style="width:100%"></span></span><span class="v">$10,09</span></div>
+        <div class="hbar"><span><b>Dezelfde twaalf stappen, 29 sep</b></span><span class="track"><span class="fill w" style="width:28.1%"></span></span><span class="v">$2,84</span></div>
+      </div>
+      <p class="small" style="margin-top:8px">Gemeten op Brams hoofdstukken met zijn sleutel en modellen: alle twaalf stappen laden, drie hadden één herstelronde nodig. Eerst stond het stapdeel vóór de vaste delen, zodat elke stap 18.000 tokens naar de cache schreef en er nooit uit las. Verslag: <code>docs/worldbuild/cost-measure.md</code>.</p>
+    </div>
+    <div class="p c4 end">
+      <h3>Per stap een model en een inspanning</h3>
+      <div class="tw"><table class="t small">
+        <tr><th>Stap</th><th>Model</th><th>Denken</th></tr>
+        <tr><td><b>Stem, Kalender, Geld, Vervoer</b></td><td>het brein (bij Bram Sonnet 5, de helft van Opus)</td><td>laag</td></tr>
+        <tr><td><b>Palet</b></td><td>de kroniekverteller; op Sonnet laadde het niet</td><td>laag</td></tr>
+        <tr><td><b>Kader, Geloof, Beroepen, Economie</b></td><td>de kroniekverteller</td><td></td></tr>
+        <tr><td><b>Plekken, Mensen, Signalen</b></td><td>de kroniekverteller</td><td>midden</td></tr>
+      </table></div>
+      <p class="note">Plekken is met 26.000 tokens uitvoer de duurste stap. Haiku is voor de tabelstappen niet geprobeerd; het doel was al gehaald. De metingen kostten samen ongeveer $7,90.</p>
+    </div>
+
+    <div class="p c4">
+      <h3>Echte antwoorden als opnames</h3>
+      <ul class="ticks small">
+        <li>De bouw van The Quiet Reach staat per stap in <code>tests/fixtures/worldbuild/quiet-reach/</code>, zonder sleutel of bedragen; een test speelt de twaalf stappen na tot een wereld die laadt en speelt.</li>
+        <li>Een fuzztest zet willekeurige, volgens het schema geldige dingen van elke soort in Deepwell en Skerrow: elk laadt, of de controle zegt precies waarom. Nooit een crash.</li>
+        <li>De smoke test van de editor doet één wereldstap via de echte IPC.</li>
+      </ul>
+      <p class="note">Waarom: elke test gebruikte het mockmodel, dat drie stappen kende en altijd hetzelfde zei. De echte bouw was de eerste keer dat de controles een voorstel zagen dat het spel niet zelf had gemaakt.</p>
+    </div>
+    <div class="p c4">
+      <h3>Elke soort aanroep beproefd</h3>
+      <div class="chips" style="margin-bottom:8px"><span class="chip b">npc_reply</span><span class="chip b">party_reply</span><span class="chip b">chat_line</span><span class="chip b">npc_goals</span><span class="chip b">journey</span><span class="chip b">improvise</span><span class="chip w">chronicle</span><span class="chip w">lore_check</span><span class="chip w">legends</span><span class="chip w">tides</span><span class="chip g">outline</span><span class="chip g">far_place</span><span class="chip g">district</span><span class="chip g">weave</span><span class="chip g">expansion</span><span class="chip g">land</span><span class="chip">builder_draft</span><span class="chip">world_step</span><span class="chip">world_enhance</span><span class="chip">world_fix</span><span class="chip">palette_draft</span><span class="chip">voice_draft</span><span class="chip">model_advice</span><span class="chip">test_call</span></div>
+      <p class="small"><code>npm run trial -- --kind &lt;soort&gt;</code> speelt met jouw sleutel een vaste situatie, leest het antwoord zoals het spel het leest en bewaart het met <code>--record</code>. Nooit in CI. <code>docs/COVERAGE.md</code> toont per soort de mocktest en het laatste echte antwoord; een test faalt als de code een soort aanroept die er niet in staat.</p>
+      <p class="tiny">Blauw: spel. Geel: nacht. Groen: groei. Bij het afsluiten van M10.23 waren het er 23; <code>expansion</code> kwam er daarna bij.</p>
+    </div>
+    <div class="p c4 end">
+      <h3>Gevonden met een echt model</h3>
+      <ul class="ticks small">
+        <li>Anthropic weigerde het schema van de nachtronde als te groot: die ronde liep bij Bram nooit via Opus. Ook de map van het palet en een <code>maxItems</code> in de doelen van het brein.</li>
+        <li>De providers passen het schema nu aan wat ze aankunnen. Lukt dat niet, dan vraagt de app één keer zonder grammatica, met het schema als tekst, en controleert het antwoord zoals altijd.</li>
+        <li>OpenAI vraagt alleen nog strikt waar dat mag.</li>
+        <li>Een stemkit zonder hoofdsleutel <code>voice:</code> krijgt die er vanzelf boven; een herstelronde op een aanvulling blijft een aanvulling.</li>
+      </ul>
+    </div>
+
+    <div class="p c6">
+      <h3>Een kaart uit de plekken</h3>
+<pre class="screen" style="font-size:11.5px">+-- Palette: Skerrow --------------------------------+
+| <span class="c">[Make a map from the places]</span>                       |
+|   ~ ~ ~ ~ ^ ^ ^ ~ ~ ~     laid out from exits:     |
+|   ~ ^ ^ H , , , , ~ ~     direction, and as far    |
+|   ~ ^ , , <span class="t">@</span> , , W ~ ~     as the minutes go       |
+|   ~ ~ , , | , , , ~ ~     (4 min per hex)          |
+|   ~ ~ ~ S , , ~ ~ ~ ~                              |
+| Check: 1 place only reachable by in/out, 1 loop    |
+|   where minutes and map differ, 3 terrains to paint|
+|                         <span class="c">[Accept and save]</span> [Discard]|
++----------------------------------------------------+</pre>
+      <p class="small" style="margin-top:8px">De editor legt de plekken neer zoals hun uitgangen zeggen, trekt een pad langs elke uitgang en maakt al het open land één terrein van het palet. Het komt als voorstel met diff. <b>Een streek heeft eigen terreinen</b> (<code>lands</code>): zwart basalt of open zee loopt als bos, veld, veen, water of heide, met eigen minuten, zicht en een eigen regel voor de vreemdeling. Een kleine streek wordt per hex getekend (<code>zone</code>). De stap Palet schildert daarna een bestaande streek.</p>
+      <p class="tiny">Skerrow heeft nu een kaart: kliffen in het westen en noorden, heide op de Heights, zoutgras rond de Hythe, duinen bij de Wreck Strand. Nieuws gaat er nu op het tempo van de kaart. The Quiet Reach doet Bram zelf. In M10.25 wordt dit een stap van de wereldbouw (blad 26).</p>
+    </div>
+    <div class="p c6 end">
+      <h3>Tekens op het land per wereld</h3>
+      <div class="tw"><table class="t small">
+        <tr><th>Wereld</th><th>Tekens</th></tr>
+        <tr><td class="k">Nethermarch</td><td>poel, veenput, wilg, oude muur, bult (de standaard; de kaart is vak voor vak gelijk gebleven)</td></tr>
+        <tr><td class="k">Skerrow</td><td>tide pool, gorse, old cairn, wreck timbers <span class="chip" style="font-size:11px;padding:0 6px">?</span>, sheer drop <span class="chip r" style="font-size:11px;padding:0 6px">!</span></td></tr>
+        <tr><td class="k">The Quiet Reach</td><td>tide pool, old mine shaft <span class="chip r" style="font-size:11px;padding:0 6px">!</span>, native growth, abandoned structure <span class="chip" style="font-size:11px;padding:0 6px">?</span>, basalt knoll; het kanaal heet tidal channel</td></tr>
+        <tr><td class="k">Deepwell</td><td>bewust de standaard</td></tr>
+      </table></div>
+      <p class="small" style="margin-top:8px">Hooguit zeven tekens per palet, elk met een naam voor de legenda, een vorm (poel, put, boom, ruïne, bult, pluk, rots, waarschuwing, vraagteken), het land waarop het ligt met zijn aandeel (<code>fen: 0.1</code> is één vak op tien), de regel die de vreemdeling leest, en of het stevige grond is, water in de grond, of een plek waar een wandeling stilstaat. <code>means: danger</code> of <code>uncertain</code> zet een ! of ? ernaast. Een teken krijgt een eigen id en leent nooit de veenput van de Nethermarch.</p>
+    </div>
+
+    <div class="p c12 end">
+      <h3>Ook in M10.20</h3>
+      <div class="chips wrap"><span class="chip">The Quiet Reach in de app gebouwd: $10,25 in 28 aanroepen</span><span class="chip">herstelronde [Let the chronicler put it right]: 8 seconden en $0,18</span><span class="chip">polijstronde voor plekken: van 88 naar 65 woorden</span><span class="chip">merge: true vult alleen de velden die een stap zet</span><span class="chip">een open voorstel overleeft een herstart</span><span class="chip">eigen budget per bouw</span><span class="chip">saves als .wisplight-bestand, met een naam</span><span class="chip">[Continue] en [Load a save...] op het hoofdscherm</span><span class="chip">"What you found out" als atlaspagina, met vraagtekens voor wat je nog niet vond</span><span class="chip">een wet zonder boete: zitting in de cel, GIVE YOURSELF UP</span><span class="chip">een geheim over een persoon of een plek</span><span class="chip">twee vensters overschrijven elkaar niet meer</span><span class="chip">de uitleg van de kroniekverteller als opgemaakte tekst</span></div>
+    </div>
+  </div>
+  <div class="foot"><span><b>Regel</b>Elke soort aanroep is frugaal gebouwd en gemeten: het vaste deel voorop met een cachemarkering, alleen wat de aanroep gebruikt, een maxTokens per soort, en model en inspanning gekozen op een meting tegen opgenomen echte antwoorden.</span></div>
+</section>
+
+<!-- ============ 22 GROEI ============ -->
+<section class="sheet" id="blad-22">
+  <div class="sheet-head">
+    <div class="folio">Blad<strong>22</strong></div>
+    <div><h2>De wereld groeit alleen waar jij komt</h2><p class="thesis">Niets maakt zichzelf. Aan de rand van de kaart hoor je wat het wereldboek daar zegt. Wie ergens doorheen loopt, krijgt sjablonen; wie iemand aanspreekt, een omtrek; wie iets doet, een wijk. Elke laag is goedkoper dan de volgende, en een tweede bezoek kost niets.</p></div>
+    <div class="ref">Changelog 29 sep 2026<br>M10.21</div>
+  </div>
+  <div class="grid">
+    <div class="p c7">
+      <h3>Lagen naar betrokkenheid, niet naar aankomst</h3>
+      <div class="svgw">
+      <svg viewBox="0 0 780 250" role="img" aria-label="Vier lagen: schets bij aankomst gratis, omtrek bij aanspreken of overnachten, wijk bij iets doen, weefronde na een wijk; in M10.25 de verhaalronde">
+        <g>
+          <rect x="10" y="160" width="180" height="50" class="boxs"/>
+          <rect x="205" y="130" width="180" height="80" style="fill:var(--wisp)" opacity=".2"/>
+          <rect x="400" y="90" width="180" height="120" style="fill:var(--wisp)" opacity=".45"/>
+          <rect x="595" y="50" width="180" height="160" style="fill:var(--wisp)" opacity=".8"/>
+        </g>
+        <g font-size="13">
+          <text x="20" y="182" font-weight="700">Schets</text><text x="20" y="199" font-size="11" class="mid">aankomst · sjablonen</text>
+          <text x="215" y="152" font-weight="700">Omtrek</text><text x="215" y="170" font-size="11" class="mid">iemand aanspreken</text><text x="215" y="184" font-size="11" class="mid">of een nacht blijven</text>
+          <text x="410" y="112" font-weight="700">Wijk</text><text x="410" y="130" font-size="11" class="mid">iets doen: kopen, vragen,</text><text x="410" y="144" font-size="11" class="mid">een bed huren, iets zeggen</text><text x="410" y="158" font-size="11" class="mid">hooguit 6 plekken, 6 mensen</text>
+          <text x="605" y="72" font-weight="700" style="fill:#1b1606">Weefronde</text><text x="605" y="90" font-size="11" style="fill:#1b1606">na elke wijk: banden,</text><text x="605" y="104" font-size="11" style="fill:#1b1606">geheimen, één draad thuis</text>
+          <text x="605" y="130" font-size="11" style="fill:#1b1606" font-style="italic">M10.25: de verhaalronde</text>
+        </g>
+        <g font-size="11.5" class="mono">
+          <text x="20" y="232">gratis</text><text x="215" y="232">outline ≤ 1.400 tokens</text><text x="410" y="232">district ≤ 3.000 · ≈ $0,08</text><text x="605" y="232">weave ≤ 1.200 · ≈ 2 ct</text>
+        </g>
+        <path d="M10 214 H775" class="lnd"/>
+        <text x="20" y="30" font-size="12" font-weight="700">Doorlopen kost niets.</text>
+        <text x="20" y="46" font-size="11" class="mid">Poort, markt en herberg, een koopman en een waard: zonder aanroep, ook met een model.</text>
+      </svg>
+      </div>
+      <p class="small">De regel staat in het contract (<code>GROWTH_RULE</code>): de wereld groeit alleen als je aankomt bij iets dat alleen een schets was, als een lijn je voorbij de kaart brengt, of als de kroniekverteller 's nachts binnen zijn budget één plek of persoon nodig heeft. <mark>Nooit omdat je alleen in de buurt loopt.</mark></p>
+    </div>
+    <div class="p c5 end">
+      <h3>De doorrenner</h3>
+      <p class="small">Wat als iemand als een idioot steeds verder naar het noorden rent? Een test loopt dertig dagen elke dag naar het noorden. Resultaat: alleen Stavermouth, uit sjablonen, en geen enkele aanroep die iets maakt.</p>
+      <p class="quote">"North of Stavermouth, the world as far as anyone has told you runs out."</p>
+      <p class="small">Drie remmen, geen van alle een muur: het wereldboek bepaalt de bekende wereld; de lagen volgen wat je doet en niet waar je aankomt; en de wereld zelf kost dagen, eten, geld en slaap, met een grens die een gezicht heeft (blad 24).</p>
+      <p class="note">Ontwerpwijziging: de roadmap zei eerst dat de omtrek komt zodra je vertrekt en de speelbare plek met een aanroep bij aankomst. Het FO en het ontwerp voor lore volgen nu de lagen naar betrokkenheid.</p>
+    </div>
+
+    <div class="p c6">
+      <h3>De rand van de streek</h3>
+<pre class="screen" style="font-size:11.5px"><span class="c">&gt; head west</span>
+The dyke ends at the Oude Sluis. Beyond it the peat gives
+way to open water. <span class="t">Graafhaven</span> lies two days west, on foot
+across the land or by tow barge from Oude Zijl.
+  <span class="t">1</span> go on to Graafhaven      <span class="t">2</span> turn back
+  <span class="t">3</span> Go on into the unknown   <span class="d">(with a model)</span></pre>
+      <div class="tw" style="margin-top:8px"><table class="t small">
+        <tr><th>Holleveen</th><th>Wat het wereldboek zegt</th></tr>
+        <tr><td class="k">West</td><td>Graafhaven, twee dagen te voet of met de trekschuit uit Oude Zijl</td></tr>
+        <tr><td class="k">Noord</td><td>Stavermouth</td></tr>
+        <tr><td class="k">Oost</td><td>Zwolderkamp en Hunnenloo</td></tr>
+        <tr><td class="k">Zuid</td><td>Alleen de delta en het verdronken Saeftinge: "No road you know of goes that way"</td></tr>
+      </table></div>
+      <p class="small" style="margin-top:8px">Niets wordt gemaakt door ernaar te kijken. Skerrow heeft vier randen in eigen woorden: Havenmoor twee dagen varen met het pakketschip, de Glass Sea, het verdronken Aldmar. Verder gaan begint meteen vanaf de rand, niet eerst terug naar het dorp.</p>
+    </div>
+    <div class="p c6 end">
+      <h3>Een stad groeit per wijk</h3>
+      <div class="tw"><table class="t small">
+        <tr><th>Stad</th><th>Wijken uit het wereldboek</th></tr>
+        <tr><td class="k">Graafhaven</td><td>de Dijkpoort met de vismarkt, de gildehuizen, het Graafshof, de Brandaris, de haven met de verdronken klokken</td></tr>
+        <tr><td class="k">Zwolderkamp</td><td>de markt, de pakhuizen aan de Yssel, de lijnbaan</td></tr>
+        <tr><td class="k">Stavermouth</td><td>de dichtgeslibde haven, het Vrouwezand</td></tr>
+        <tr><td class="k">Havenmoor <span class="tiny">Skerrow</span></td><td>de kaden, de bovenstad</td></tr>
+      </table></div>
+      <p class="small" style="margin-top:8px">Doe je iets in de stad, dan komt de eerste wijk rond poort, markt en herberg. Vanaf de markt lopen straten naar de andere wijken; loop je zo'n straat in, dan wordt die wijk gemaakt. Een wijk die er is, blijft. <b>De kroniekverteller schrijft de woorden, de motor de vorm:</b> plekken van drie tot vijf zinnen met een ander zintuig en een wenk naar een uitgang, alles gecontroleerd als content. Zonder model: de straat met de regel uit het wereldboek, en in een andere wijk één bewoner.</p>
+      <p class="tiny">Een wijk krijgt hooguit twee zetels van bestaande facties, nooit een nieuwe (blad 23). Een wijk die gemaakt wordt, is geen nieuws.</p>
+    </div>
+
+    <div class="p c4">
+      <h3>Eén vraag boven een grens</h3>
+<pre class="screen" style="font-size:11px;white-space:pre-wrap">Making the Dyke Gate and the fish market of Graafhaven playable costs about $0.80 with the model you chose.
+  <span class="t">1</span> Go on
+  <span class="t">2</span> Not now
+  <span class="t">3</span> Always go on, and stop asking</pre>
+      <p class="small" style="margin-top:8px">Onder Instellingen › AI staat "Ask first above", standaard $1. Een aanroep die volgens de prijzen minder kost, loopt meteen en is zichtbaar in de lampjes van de statusbalk. De prijs komt van de gateway: de invoer tegen de volle prijs en de helft van wat de aanroep mag schrijven. "Not now" geldt de rest van de speldag; "Always" zet de instelling op nooit vragen. Een replay stelt dezelfde vraag.</p>
+      <p class="note">Een wijk kost met Opus ongeveer $0,08, dus bij $1 vraagt hij niet. Zet de grens op $0,05 om het te zien. Het mockmodel heeft geen prijs en vraagt nooit.</p>
+    </div>
+    <div class="p c4">
+      <h3>De wenk bij het vertrek</h3>
+<pre class="screen" style="font-size:11px;white-space:pre-wrap">Wouter, as you set off: "Before we go. <span class="t">Aaltje</span> waits for you. And you promised <span class="t">Mirte</span>: bread for market day, within 2 days. Away, you will miss it, and it will be remembered."</pre>
+      <p class="small" style="margin-top:8px">Wie de streek verlaat met open draden, krijgt één wenk: de twee zwaarste draden met de naam en de stand erbij. Een open quest ("In 30 days it goes on without you"), een verzoek, je woord, of een schuld. Een belofte die onderweg vervalt, weegt het zwaarst.</p>
+      <p class="small">In de wereld, nooit een venster: een metgezel zegt het, anders is het je eigen gedachte. Geen vraag en niets houdt je tegen. Het dagboek toont hetzelfde onder de landkaart: "What you leave open if you go now:".</p>
+      <p class="tiny">Uit de sjablonen, niet door de stem, zodat hij altijd hetzelfde leest en niets kost.</p>
+    </div>
+    <div class="p c4 end">
+      <h3>Het wereldboek groeit aan de rand</h3>
+      <p class="small">Aan een rand waar niemand je iets heeft verteld, biedt het spel met een model "Go on into the unknown" (<code>EXPLORE &lt;kant&gt;</code>). Eén aanroep van de soort <code>expansion</code> schetst dan één nieuwe streek of één nieuw land die kant op: een naam, wat men weet, een verhaal, twee tot vier wijken, hoeveel dagen lopen, en bij een land het eigen kader en wat je bij de grens merkt.</p>
+      <ul class="ticks small">
+        <li>Uit wat het wereldboek al suggereert, binnen het kader. Komt als laag in de save en is canon voor elke volgende ronde.</li>
+        <li>Inspraak volgens de speelstand: in Doorspelen meteen, in Meedenken kies je uit twee omtrekken (<code>CHART</code>) of geen, in Regisseur een voorstel (blad 25).</li>
+        <li>Ook in een haven: <code>explore by sea</code>, en er komt een boot heen.</li>
+        <li>Eén ronde tegelijk; boven je drempel wordt eerst gevraagd. De export heeft een hoofdstuk "Beyond the book".</li>
+      </ul>
+      <p class="note">Ongeveer 3.500 tokens in en 1.000 uit, een paar cent per ronde. Bewust alleen de omtrek: de lagen hierboven doen de rest als je gaat, dus er komt niets dat je nooit ziet.</p>
+    </div>
+  </div>
+  <div class="foot"><span><b>Toets</b>Dertig dagen naar het noorden: alleen sjablonen, geen aanroep die iets maakt, kosten nul.</span><span><b>Zie ook</b>blad 04 (de kaart), 16 (de richtprijs), 23 (de weefronde), 26 (de verhaalronde)</span></div>
+</section>
+
+<!-- ============ 23 GROTE LIJNEN ============ -->
+<section class="sheet" id="blad-23">
+  <div class="sheet-head">
+    <div class="folio">Blad<strong>23</strong></div>
+    <div><h2>Verbindingen en de grote lijnen</h2><p class="thesis">Na een wijk weeft de kroniekverteller de nieuwe mensen in de wereld. Grote gevaren groeien op de achtergrond als druk die elke dag optelt en eens per maand wordt beoordeeld. Alles gaat door één wachtrij en één cadans, met een rem in echte tijd, en jouw daden duwen mee.</p></div>
+    <div class="ref">Changelog 29 sep 2026<br>M10.22</div>
+  </div>
+  <div class="grid">
+    <div class="p c6">
+      <h3>De weefronde na een wijk</h3>
+      <div class="svgw">
+      <svg viewBox="0 0 640 230" role="img" aria-label="De weefronde stelt banden, geheimen en één draad naar huis voor tussen de nieuwe mensen van de wijk en de mensen die je kent">
+        <rect x="10" y="30" width="160" height="150" rx="4" class="ai"/><text x="90" y="54" text-anchor="middle" font-size="13" font-weight="700">Nieuwe mensen</text><text x="90" y="70" text-anchor="middle" font-size="11" class="mid">van de wijk</text>
+        <rect x="470" y="30" width="160" height="150" rx="4" class="sys"/><text x="550" y="54" text-anchor="middle" font-size="13" font-weight="700">Wie je kent</text><text x="550" y="70" text-anchor="middle" font-size="11" class="mid">die van thuis eerst</text>
+        <g font-size="11.5">
+          <text x="24" y="98">Hester, vishandel</text><text x="24" y="118">Joris, klerk</text><text x="24" y="138">een bode</text>
+          <text x="484" y="98">Mirte, bakker</text><text x="484" y="118">Grietje Visser</text><text x="484" y="138">Aaltje</text>
+        </g>
+        <g class="ln" stroke-width="1.3"><path d="M170 96 H466" marker-start="url(#ah)" marker-end="url(#ah)"/><path d="M170 146 H466" marker-end="url(#ah)"/></g>
+        <path d="M170 121 H466" style="stroke:var(--wisp)" fill="none" stroke-width="2" marker-end="url(#ahw)"/>
+        <g font-size="10.5" text-anchor="middle" class="mid">
+          <text x="318" y="88">band, hooguit vier: "nicht van"</text>
+          <text x="318" y="113" style="fill:var(--wisp)" font-weight="700">één draad naar huis: "tell my cousin I am well"</text>
+          <text x="318" y="138">echo: een rol in een open verhaallijn</text>
+        </g>
+        <text x="24" y="168" font-size="10.5" class="dim">geheim, hooguit twee</text>
+        <text x="10" y="206" font-size="11" class="dim">Eén aanroep weave, hooguit 1.200 tokens, normale voorrang.</text>
+        <text x="10" y="222" font-size="11" class="dim">Alleen verbindingen, geen nieuwe plekken.</text>
+      </svg>
+      </div>
+      <p class="small"><b>De motor keurt alles.</b> Een band blijft alleen tussen een nieuwe en een bestaande, levende persoon zonder band, met een rol uit de lijst; hij komt aan beide kanten, met het "waarom" als notitie en als feit in de kroniek. Een geheim wordt eerst gecontroleerd. Wat niet klopt, valt weg. Mensen die in een gesprek genoemd zijn en in de stad wonen, worden zonder model mensen van haar eerste wijk.</p>
+    </div>
+    <div class="p c6 end">
+      <h3>Zetels, nieuwe facties en lijnen over gebieden heen</h3>
+      <div class="tw"><table class="t small">
+        <tr><th>Factie</th><th>Zetel en wat ze daar wil</th></tr>
+        <tr><td class="k">De Graaf</td><td>Het schoutshuis: "the survey finished, the peat-cutters quiet"</td></tr>
+        <tr><td class="k">De Lantaarn</td><td>De kapel van Veenhoek en de priorij</td></tr>
+        <tr><td class="k">Oude Sterren <span class="tiny">Skerrow</span></td><td>De zeelieden bij de haven</td></tr>
+        <tr><td class="k">Deepwell</td><td>Bewust geen: de neutrale standaard</td></tr>
+      </table></div>
+      <p class="small" style="margin-top:8px"><code>seats</code> is content. Een wijk krijgt hooguit twee zetels van bestaande facties; een verzonnen factie valt weg. <b>Een nieuwe factie ontstaat alleen uit een plan</b> (het werkwoord <code>found_faction</code>, hooguit één per seizoen per wereld): op Skerrow vormen de bootploegen van de Hythe zich na de grote storm om de havenmuur te herbouwen, met Brannoc als eerste lid.</p>
+      <p class="small">Verhaallijnen volgen mensen en geen gebied. Nieuws reist met het vervoer, dus ook naar een plek zonder positie op de kaart, zoals Havenmoor: groot nieuws komt er met het pakketschip, niet eerder. De speeltest <code>faraway</code> speelt één lijn van Mirte en de molen naar een wijk van Graafhaven, waar Joris de lijn uit Veenhoek kent.</p>
+    </div>
+
+    <div class="p c8">
+      <h3>De grote lijnen: druk die optelt, eens per maand beoordeeld</h3>
+      <div class="svgw">
+      <svg viewBox="0 0 700 240" role="img" aria-label="Druk van een grote lijn over vier maanden, met het dreigingspunt en de drempel; op de eerste van elke maand een beoordeling; na de gebeurtenis een afkoeling">
+        <g style="stroke:var(--rule)" stroke-width="1"><path d="M50 30 V190"/><path d="M50 190 H680"/></g>
+        <path d="M50 120 H680" style="stroke:var(--wisp)" stroke-width="1.5" stroke-dasharray="5 4"/><text x="54" y="114" font-size="11" style="fill:var(--wisp)" font-weight="700">dreigingspunt</text>
+        <path d="M50 60 H680" style="stroke:var(--danger)" stroke-width="1.5" stroke-dasharray="5 4"/><text x="54" y="54" font-size="11" style="fill:var(--danger)" font-weight="700">drempel</text>
+        <polyline fill="none" style="stroke:var(--ink)" stroke-width="2.2" stroke-linejoin="round" points="50,178 90,170 130,166 170,150 210,140 250,128 290,116 330,110 370,98 410,84 450,70 490,58 530,150 570,158 610,152 650,146 680,142"/>
+        <g font-size="10" class="mono dim" text-anchor="middle"><text x="130" y="206">1e</text><text x="290" y="206">1e</text><text x="450" y="206">1e</text><text x="610" y="206">1e</text></g>
+        <g><rect x="122" y="158" width="16" height="16" transform="rotate(45 130 166)" class="box" stroke-width="1.5"/><rect x="282" y="108" width="16" height="16" transform="rotate(45 290 116)" class="ai" stroke-width="2"/><rect x="442" y="62" width="16" height="16" transform="rotate(45 450 70)" class="ai" stroke-width="2"/><rect x="602" y="144" width="16" height="16" transform="rotate(45 610 152)" class="box" stroke-width="1.5"/></g>
+        <g font-size="11" text-anchor="middle">
+          <text x="130" y="228">niets</text><text x="290" y="228" font-weight="700">dreiging</text><text x="450" y="228" font-weight="700" style="fill:var(--danger)">gebeurtenis</text><text x="610" y="228" class="mid">afkoeling</text>
+        </g>
+        <text x="272" y="98" text-anchor="end" font-size="10.5" class="mid">stemming "threat", nieuws,</text><text x="272" y="110" text-anchor="end" font-size="10.5" class="mid">iets hogere prijzen</text>
+        <text x="500" y="38" font-size="10.5" class="mid">een plan uit de content: dyke_leak</text>
+        <text x="510" y="176" font-size="10.5" class="mid">91 dagen (tides.cooldown_days)</text>
+        <text x="60" y="160" font-size="10" class="dim">de druk zakt elke dag iets (tides.decay)</text>
+      </svg>
+      </div>
+      <p class="small">Een lijn (de soort <code>tides</code>) heeft gebieden, drijfveren, een dreigingspunt, een drempel, wat een dreiging doet en het plan dat de gebeurtenis speelt. Drijfveren zijn een seizoen, spanning tussen rijken, een tekort in het grootboek, een vlag of feiten van een soort; een negatief gewicht kalmeert. Bij de overstroming duwt de herfst en de winter harder, en een bemande dijk kalmeert. <mark>Met een model kiest de kroniekverteller (één aanroep, hooguit 600 tokens), maar alleen uit wat de regels toestaan.</mark> Zonder model beslist de regel. Hooguit één gebeurtenis per seizoen per lijn. De gebeurtenis zelf speelt de motor: een plan met een feit van belang 5, tik voor tik zonder model; vluchtelingen (<code>crowd</code>) eten uit de voorraad waar ze terechtkomen.</p>
+    </div>
+    <div class="p c4 end">
+      <h3>Per wereld</h3>
+      <div class="tw"><table class="t small">
+        <tr><td class="k">Nethermarch</td><td>De grote overstroming: het lek in de Grote Dijk, en de doorbraak als niemand op tijd stut. En de onrust van de veensteekers, want de Broederschap en de mannen van de Graaf zijn rivalen (<code>peat_strike</code>).</td></tr>
+        <tr><td class="k">Skerrow</td><td>De grote storm: de haven kapot, de strandbewoners in de Salt Kettle, zoute vis schaars. Een tafel voor Maren en Garrick over de olie van de Lamp.</td></tr>
+        <tr><td class="k">Deepwell</td><td>De lange duisternis, gevoed door tekorten. Geen bemiddeling: de neutrale standaard.</td></tr>
+        <tr><td class="k">The Quiet Reach</td><td>Bewust nog geen lijn; dat is Brams wereld, en een lijn kan erbij in de stap Signalen.</td></tr>
+      </table></div>
+      <p class="note">In dertig dagen zonder speler komt er per wereld hooguit één dreiging en geen gebeurtenis. Een test bewijst dat.</p>
+    </div>
+
+    <div class="p c7">
+      <h3>Eén cadans, één wachtrij, met een rem in echte tijd</h3>
+      <div class="tw"><table class="t small">
+        <tr><th>Ronde</th><th>Wanneer in speltijd</th><th>Rem in echte tijd</th></tr>
+        <tr><td class="k">Nachtronde</td><td>Eén per speldag; wat later op de nacht binnenkomt, gaat in dezelfde ronde. De twaalf belangrijkste signalen (<code>story.signals_per_night</code>); de rest wacht één nacht en gaat daarna terug naar de regels</td><td>Hooguit elke 20 minuten; de eerste van een sessie nooit tegengehouden</td></tr>
+        <tr><td class="k">Overdag</td><td>Hooguit één ronde per speldag, alleen bij nieuws vanaf <code>story.urgent_belang</code> (standaard 4: een dood in het dorp)</td><td>Dezelfde rem</td></tr>
+        <tr><td class="k">Maandbeoordeling</td><td>De grote lijnen op de eerste van elke maand, een eigen aanroep op het moment van de nachtronde</td><td>Hooguit elke 2 uur; minstens eens per 10 sessies als de maanden uitblijven</td></tr>
+        <tr><td class="k">Weefronde</td><td>Eén per wijk, meteen na de wijk</td><td>Twee wijken op één dag zijn zeldzaam</td></tr>
+      </table></div>
+      <p class="small" style="margin-top:8px">De drie getallen zijn appknoppen onder Instellingen › Advanced; de app houdt in <code>pace.json</code> bij wanneer ze liepen. Het dev-menu toont onder Cadence de wachtrij, of de ronde van vandaag al gebruikt is, en wanneer de volgende mag. Een replay doet hetzelfde: een beoordeling die de app afdwingt, staat in het logboek.</p>
+      <p class="tiny">Bewust anders dan de roadmap: overdag vanaf belang 4 en niet 5, als knop, omdat een dood in het dorp quests en mensen dezelfde dag verandert en 22 scenario's daarop rusten.</p>
+    </div>
+    <div class="p c5 end">
+      <h3>De speler weegt mee, twee kanten op</h3>
+      <p class="small">Een drijfveer met <code>by: player</code> telt wat jij doet, en je misdaden tellen mee: per lijn en per dag hooguit tien punten omhoog of omlaag. Wie een reeks misdaden tegen schout Everhard begaat, duwt de onrust van de veensteekers over de drempel, en de Broederschap legt het werk neer.</p>
+      <p class="small"><b>Wie aanzien heeft, brengt de twee kanten aan één tafel.</b> Staat de lijn op haar dreiging, zijn beiden aanwezig en ben je lid van een van hun facties of vertrouwen ze je allebei, dan doet <code>MEDIATE BETWEEN</code> het. Persuade en Insight beslissen; waar de wereld die vaardigheden niet kent, beslist het vertrouwen. Bij de volgende beoordeling zegt de kroniek wat de doorslag gaf.</p>
+      <p class="quote">"after the stranger brought Gerrit of the peat-cutters and Schout Everhard to one table"</p>
+      <p class="small"><b>In zicht:</b> het dagboek heeft onder You de pagina "The great lines"; de landkaart kleurt de rand van de streek als een lijn dreigt of gebroken is; de kroniek van het spel heeft een deel THE GREAT LINES met elke beoordeling, ook de maanden waarin niets kwam.</p>
+    </div>
+  </div>
+  <div class="foot"><span><b>Principe</b>De AI plant en verbindt; de motor speelt. Een grote gebeurtenis is een plan uit de content, en de kroniekverteller komt er maar twee keer aan te pas: de spoedronde op de dag zelf en de gewone nachtronde erna.</span></div>
+</section>
+
+<!-- ============ 24 LANDEN ============ -->
+<section class="sheet" id="blad-24">
+  <div class="sheet-head">
+    <div class="folio">Blad<strong>24</strong></div>
+    <div><h2>Een ander land: dezelfde wereld, een eigen dynamiek</h2><p class="thesis">Een wereld mag naast haar thuisland andere landen hebben, elk een laag in de content met een eigen kader, munten, wet en desnoods taal. Een grens is content, nooit afstand. Hoe goed twee landen elkaar kennen, stuurt het nieuws, de handel en de banden. Een land bouw je met dezelfde stappen, of de kroniekverteller schrijft het als je binnenkomt.</p></div>
+    <div class="ref">Changelog 29 sep 2026<br>M10.23</div>
+  </div>
+  <div class="grid">
+    <div class="p c5">
+      <h3>Een land als laag</h3>
+      <svg viewBox="0 0 400 250" role="img" aria-label="Een land ligt als laag over de wereld: wat het weglaat, neemt het van de wereld; de kalender en de klok altijd">
+        <rect x="10" y="160" width="380" height="64" class="sys"/><text x="24" y="184" font-size="13" font-weight="700">world.yaml · de wereld</text><text x="24" y="202" font-size="11" class="mid">kader, stem, kalender en klok, geloven,</text><text x="24" y="216" font-size="11" class="mid">munten, wet, palet</text>
+        <rect x="40" y="84" width="320" height="66" class="ai"/><text x="54" y="106" font-size="13" font-weight="700" class="mono">lands/&lt;land&gt;/land.yaml</text><text x="54" y="124" font-size="11" class="mid">kader, woorden, namen, geloven,</text><text x="54" y="138" font-size="11" class="mid">munten met koers, wet, stand, palet</text>
+        <rect x="70" y="20" width="260" height="54" class="boxs" stroke-dasharray="4 3"/><text x="84" y="42" font-size="12" class="mid">voice.yaml, gebieden, plekken, mensen</text><text x="84" y="60" font-size="11" class="dim">van het land, in zijn eigen map</text>
+        <text x="10" y="244" font-size="11" class="dim">Wat een land weglaat, komt van de wereld; kalender en klok altijd.</text>
+      </svg>
+      <p class="small" style="margin-top:8px">Beschermheiligen, volken, condities en reiszinnen blijven van de wereld. Prijzen blijven overal in de kleinste munt van de wereld; een land noemt ze in zijn eigen munten tegen een hele koers.</p>
+    </div>
+    <div class="p c7 end">
+      <h3>De grens is content, nooit afstand</h3>
+<pre class="screen" style="font-size:11.5px;white-space:pre-wrap"><span class="c">&gt; take the white boat</span>
+<span class="d">[Restday, 09:00. The Lamp burns.]</span> The white boat grounds on pale sand. <span class="t">Ynys Wen</span>.
+A woman on the shore looks you over. "<span class="t">Child of the short years</span>," she says, and something you do not follow.
+Your shillings are changed for rings and beads; the changer keeps a part. Here <span class="t">Eluned</span> is the law.
+<span class="d">[the crossing is noted in the chronicle]</span></pre>
+      <ul class="ticks small" style="margin-top:10px">
+        <li>Elke weg van het ene land naar het andere gaat door een gebied met <code>border: true</code>; anders laadt de wereld niet. Een gebied met <code>blend</code> mengt twee landen: gezegden uit beide kits, en er wordt niets gewisseld.</li>
+        <li>Bij de oversteek zie je de eigen regel van het land, je geld wordt gewisseld (de wisselaar houdt 2 procent, knop <code>lands.exchange_cut</code>), en de kroniek noteert het.</li>
+        <li><b>Wie in een land is, speelt onder zijn kader.</b> De stem, de kroniekverteller en de verteller krijgen het kader en de stemkit van het land; de bewaker leest wat daar niet bestaat; bedragen staan in zijn munten; zijn wet geldt, met een eigen dienaar en boetes. Wie thuis gezocht wordt, is dat daar niet, en je stand begint er opnieuw. Mensen die daar ontstaan, krijgen de namen en het geloof van het land; de kaart krijgt zijn palet.</li>
+      </ul>
+    </div>
+
+    <div class="p c4">
+      <h3>Bereik: hoe goed landen elkaar kennen</h3>
+      <div class="tw"><table class="t small">
+        <tr><th>Bereik</th><th>Nieuws</th><th>Handel en familie</th></tr>
+        <tr><td class="k mono">none</td><td>Nooit over de grens</td><td>Niets</td></tr>
+        <tr><td class="k mono">rumour</td><td>Alleen het grootste nieuws, na vier weken</td><td>Geen waren</td></tr>
+        <tr><td class="k mono">trade</td><td>Na minstens een week, of de tijd van de lijn</td><td>Routes vervoeren waren; de weefronde legt een band over de grens</td></tr>
+        <tr><td class="k mono">close</td><td>Als binnen één land</td><td>Dagelijks verkeer</td></tr>
+      </table></div>
+      <p class="small" style="margin-top:8px"><code>reach:</code> per paar landen in <code>world.yaml</code>. Staat er niets, dan leidt het spel het af: close waar een weg te voet de grens over gaat, trade langs een lijn of route, anders none. Over de grens hoor je de verre versie. De kroniek heeft een deel NEWS BETWEEN THE LANDS. Eén grote lijn mag twee landen verbinden.</p>
+    </div>
+    <div class="p c4">
+      <h3>Een eigen taal, optioneel</h3>
+      <p class="small">Een land mag <code>language</code> hebben (<code>name</code>, <code>learn</code>, <code>speakers</code>). Wie de taal niet kent, krijgt van de mensen daar een groet, gebaren, en de namen en getallen uit wat hij zei. <b>De regels schrijven dat, zonder model,</b> dus een barrière kost niets en leest altijd hetzelfde.</p>
+      <p class="small">Elke uitwisseling leert je iets, en Lore helpt. Na genoeg gesprekken: "You find you can follow the Old Tongue now". Wie de taal spreekt en meegaat, tolkt. Handel gaat door, met gebaren en getallen. Zonder <code>language</code> spreekt iedereen jouw taal.</p>
+      <p class="tiny">De Western Isles spreken de Oude Taal; Elowen van Skerrow ook. De Kessler Claim heeft geen eigen taal; een test speelt die standaard.</p>
+    </div>
+    <div class="p c4 end">
+      <h3>Per wereld</h3>
+      <div class="cards" style="grid-template-columns:1fr">
+        <div class="card"><h5>Skerrow · de Westelijke Eilanden</h5><div class="sub">van de elfen · bereik trade · de Oude Taal</div><p>De witte boot vaart op Restday naar Ynys Wen zodra de Lamp brandt. Je heet er "child of the short years", betaalt in ringen en kralen, en Eluned is de wet.</p></div>
+        <div class="card"><h5>Deepwell · de Kessler Claim</h5><div class="sub">bedrijfsconcessie · bereik close · geen taal</div><p>Achter een luik oostelijk van de Ice Works, met scrip, "contractor" en een boete die zelfs een dode afkoopt.</p></div>
+        <div class="card"><h5>Nethermarch</h5><div class="sub">nog geen tweede land in de content</div><p>Het wereldboek in Claude Docs noemt Rijkland en Flemmark als landen (hoofdstuk 2, Landen).</p></div>
+      </div>
+    </div>
+
+    <div class="p c6">
+      <h3>Een land bouwen met dezelfde stappen</h3>
+      <p class="small">Boven de stappen in de editor kies je of je de wereld bouwt of een van haar landen. Een land krijgt <b>elf stappen</b>: Kalender en Landen horen bij de wereld. Het kader van de wereld staat in de vraag als achtergrond. Wat een stap in de wereld zou zetten, komt in het <code>land.yaml</code> van het land; bij het kader horen daar ook <code>crossing</code> en, als het land een eigen taal heeft, <code>language</code>; bij het geld een wisselkoers. Wat nieuw is, komt in de map van het land, de stemkit ook.</p>
+      <p class="small">Antwoorden, besluiten en open voorstellen staan per land in het ontwerplogboek. <mark>Het vaste, gecachte deel van de vraag is hetzelfde als bij de wereld,</mark> dus na de wereld kost een land alleen het deel per stap.</p>
+      <p class="small">Nieuw in de wereldgids: de stap <b>Landen</b>, na Kader en Stem. Welke landen er zijn, welke gebieden erbij horen, waar de grenzen liggen en hoe goed de landen elkaar kennen. Zonder deze stap is de wereld één land. Een land heeft geen eigen <code>CHRONICLER.md</code>: de stap Kader voegt een eigen sectie toe aan die van de wereld.</p>
+    </div>
+    <div class="p c6 end">
+      <h3>Een land dat de kroniekverteller schrijft</h3>
+      <p class="small">Een land met alleen een kader speelt meteen, met de stem, namen, munten en wet van de wereld. Kom je er voor het eerst binnen met een model, dan schrijft één aanroep van de soort <code>land</code> wat het eigen maakt: hoe mensen spreken en je aanspreken, namen, munten met een koers, wie de wet houdt, en wat je bij de grens merkt.</p>
+      <ul class="ticks small">
+        <li>Eén keer per land per spel, en boven je drempel eerst gevraagd.</li>
+        <li>Het spel houdt per veld wat klopt: eden alleen bij de geloven van het land. Wat de ontwerper later schrijft, gaat voor.</li>
+        <li>Een geschetst land (blad 22) krijgt zo zijn stem zodra je binnenkomt.</li>
+      </ul>
+      <div class="statrow" style="margin-top:10px">
+        <div class="stat"><span class="big">≈ 3 ct</span><span class="small">3.900 tokens in, 800 uit, Opus 5.5 met maxTokens 1500; de opname kostte $0,06</span></div>
+      </div>
+      <p class="note">Dat model, omdat het blijvende content is die het hele land kleurt.</p>
+    </div>
+  </div>
+  <div class="foot"><span><b>Speeltest</b><code>npm run playtest -- crossing</code>: de witte boot heen en terug, een groet in de Oude Taal zonder woorden gemeen, de taal geleerd, een gebeurtenis op Ynys Wen, en terug op Skerrow het nieuws na een week van horen zeggen.</span></div>
+</section>
+
+<!-- ============ 25 DOORSPELEN ============ -->
+<section class="sheet" id="blad-25">
+  <div class="sheet-head">
+    <div class="folio">Blad<strong>25</strong></div>
+    <div><h2>Doorspelen: de kaders één keer, daarna komt de wereld naar je toe</h2><p class="thesis">Eén scherm aan het begin van een spel, en daarna vraagt het spel er niet meer om. Drie draaiknoppen, een speelstand en wat het mag kosten. Terwijl je speelt, zoekt de wereld je op. Wie inspraak wil, krijgt die in de wereld, of met één zin aan de kroniekverteller.</p></div>
+    <div class="ref">Changelog 29 sep 2026<br>M10.24</div>
+  </div>
+  <div class="grid">
+    <div class="p c7">
+      <h3>Het kaderscherm</h3>
+<pre class="screen" style="font-size:11px">+-- The frames of this game -------------------------------------+
+| World: Skerrow. You begin at the Hythe.                        |
+| Lands: the Western Isles (trade), who speak the Old Tongue     |
+| Great lines: the great storm, fed by autumn and the Lamp's oil |
+|                                                                |
+| How much happens by itself    ( ) quiet   <span class="t">(o)</span> usual  ( ) dramatic|
+| How often a storyline seeks you ( ) seldom <span class="t">(o)</span> usual  ( ) often |
+| How much the world grows a season ( ) little <span class="t">(o)</span> usual ( ) much |
+| How full a new region is built  ( ) outline <span class="t">(o)</span> story  ( ) full |
+|   <span class="d">(the fourth dial, M10.25 as planned; the price per region beside it)</span> |
+| Play mode   <span class="t">(o)</span> Play on   ( ) Think along   ( ) Director        |
+| Budget per hour of play [ $0.50 ]   Ask first above [ $1.00 ]  |
+|                                                       <span class="c">[Play]</span>   |
++----------------------------------------------------------------+</pre>
+      <p class="small" style="margin-top:8px">Na het personage, of meteen in een wereld zonder personage. Bovenaan wat de wereld zelf zet en wat het scherm toont maar niet wijzigt: het kader, de landen met hun bereik en taal, en de grote lijnen. Later vind je hetzelfde scherm onder Instellingen › AI, en in de terminal met <code>FRAMES</code>. In de editor staan de kaders van een wereld boven de stappen.</p>
+    </div>
+    <div class="p c5 end">
+      <h3>Drie draaiknoppen, elk drie standen</h3>
+      <div class="tw"><table class="t small">
+        <tr><th>Knop</th><th>Wat de stand doet</th></tr>
+        <tr><td class="k">Hoeveel er vanzelf gebeurt</td><td>Het tempo van de verhalenmotor: rustig, gewoon, dramatisch</td></tr>
+        <tr><td class="k">Hoe vaak een verhaallijn je zoekt</td><td>"Vaak" verlaagt de drempel waarop nieuws de kroniekverteller overdag roept met één stap, en verdubbelt de haken van de polsslag per week. "Zelden" doet het omgekeerde.</td></tr>
+        <tr><td class="k">Hoeveel de wereld per seizoen groeit</td><td>"Weinig" of "veel" halveert of verdubbelt de mensen die terloops ontstaan en de dingen die de kroniekverteller neerzet.</td></tr>
+      </table></div>
+      <p class="small" style="margin-top:8px">Het zijn knoppen van dit spel, over die van de wereld heen (<code>state.knobs</code>), en ze staan in de save. Je zet ze met het commando <code>FRAMES</code>, dus de log houdt ze bij en een herhaling zet ze ook. Geen vrije getallen.</p>
+      <p class="note">M10.25 voegt de vierde knop toe: hoe vol een nieuwe streek wordt gebouwd, met de prijs ernaast (blad 26).</p>
+    </div>
+
+    <div class="p c12 end">
+      <h3>Drie speelstanden, één instelling</h3>
+      <div class="cards" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))">
+        <div class="card" style="border-color:var(--wisp)"><h5>Doorspelen</h5><div class="sub">standaard</div><p>De kroniekverteller genereert binnen de kaders en het budget, nooit een vraag onder de grens. Wat hij maakt, staat in de kroniek van het spel, zodat je achteraf kunt lezen wat er kwam en waarom.</p></div>
+        <div class="card"><h5>Meedenken</h5><div class="sub">de keuze in de wereld</div><p>Wat een nacht nieuw begint (een verzoek, een brief, een bezoek) wacht tot de ochtend. Dan krijg je het één keer als keuze in de wereld: je pakt er een of geen op, en de rest blijft een week liggen (<code>HOOKS</code>, knop <code>story.hook_days</code>). Bij een uitbreiding kies je uit twee omtrekken (<code>CHART</code>).</p></div>
+        <div class="card"><h5>Regisseur</h5><div class="sub">voorstel met wijzigingen</div><p>Wat de kroniekverteller, de weefronde of de maandbeoordeling wil doen, wordt eerst een voorstel met een lijst van wijzigingen (<code>PROPOSALS</code>). <code>accept</code> doet het zoals voorgesteld; <code>reject</code> laat de regels het doen zoals zonder model.</p></div>
+      </div>
+      <p class="small" style="margin-top:10px">De stand geldt voor de kroniekverteller, de weefronde en de maandbeoordeling van de grote lijnen, <b>nooit voor gesprekken of improvisatie</b>. Een lopend spel volgt hem bij de volgende modelronde; de log bewaart elke wissel. Het dagboek heeft onder You de pagina "What waits for you". In Meedenken komen alleen de nieuwe haken van een nachtronde als keuze; de draad van de weefronde en de grote lijnen komen zoals ze komen, omdat ze volgen uit waar je zelf heen ging.</p>
+    </div>
+
+    <div class="p c6">
+      <h3>De polsslag</h3>
+      <div class="svgw">
+      <svg viewBox="0 0 560 150" role="img" aria-label="Een week met twee haken van de polsslag bij de speler in de buurt, nooit twee van dezelfde soort achter elkaar">
+        <path d="M20 70 H540" class="ln" stroke-width="1.5"/>
+        <g font-size="10" class="mono dim" text-anchor="middle"><text x="20" y="90">ma</text><text x="94" y="90">di</text><text x="168" y="90">wo</text><text x="242" y="90">do</text><text x="316" y="90">vr</text><text x="390" y="90">za</text><text x="464" y="90">rustdag</text><text x="538" y="90">ma</text></g>
+        <circle cx="168" cy="70" r="8" class="wispf"/><circle cx="390" cy="70" r="8" class="wispf"/>
+        <g font-size="11.5" text-anchor="middle">
+          <text x="168" y="44" font-weight="700">een bezoeker</text><text x="168" y="30" font-size="10.5" class="mid">Kobus de marskramer</text>
+          <text x="390" y="44" font-weight="700">een brief</text><text x="390" y="30" font-size="10.5" class="mid">uit een open verhaallijn</text>
+        </g>
+        <text x="20" y="118" font-size="11" class="mid">hooks_per_week 2 · een verzoek, een bezoeker, een tijding, een brief of een gebaar</text>
+        <text x="20" y="132" font-size="11" class="mid">nooit twee van dezelfde soort achter elkaar</text>
+        <text x="20" y="146" font-size="11" class="dim">Wie dagen wegwacht met WAIT, speelt niet en wordt niet opgezocht.</text>
+      </svg>
+      </div>
+      <p class="small">Terwijl je speelt, zoekt de wereld je op, ook als je niet reist. Met een model vraagt de nachtronde erom, uit de open verhaallijnen bij jou in de buurt; het kost geen eigen aanroep. Komt er niets, of is er geen model, dan zet de regel een <b>polswachter</b> uit de content in gang: in de Nethermarch Kobus, praat over het weer en een boodschap; op Skerrow Tamsin, een zeil aan de horizon en een boodschap. Deepwell heeft er geen: daar blijft het stil.</p>
+    </div>
+    <div class="p c3">
+      <h3>De wereld blijft heel</h3>
+      <p class="small"><code>npm run sim -- --model</code> speelt dertig dagen in Doorspelen met het mockmodel en controleert daarna vier dingen:</p>
+      <ul class="ticks small">
+        <li>Wat groeide, doorstaat dezelfde controles als geschreven content.</li>
+        <li>Het bleef binnen de seizoensgrenzen.</li>
+        <li>Het nam geen vastgelegd of begraven id.</li>
+        <li>Het spel slaat nog op en laadt.</li>
+      </ul>
+      <p class="note">Een test doet hetzelfde voor de Nethermarch en Skerrow.</p>
+    </div>
+    <div class="p c3 end">
+      <h3>Een woord aan de kroniekverteller</h3>
+<pre class="screen" style="font-size:11px;white-space:pre-wrap"><span class="c">&gt; chronicler more about the fen, no war this season</span>
+Noted for the next round.
+
+<span class="d">A word to the chronicler</span>
+"more about the fen, no war this season"
+  <span class="t">heard:</span> kept the flood quiet;
+  sent Kobus with fen talk.</pre>
+      <p class="small" style="margin-top:8px">Eén regel in gewone taal, in het dagboek onder You of met <code>CHRONICLER</code>. Geen menu, geen schuifjes. De regel komt in de save; de kroniekverteller leest de nieuwste drie bij elke ronde, in elke stand, en zegt per regel in één zin wat hij ermee deed. Hooguit 200 tekens; een regel die op een instructie lijkt, weigert het spel. <code>CHRONICLER FORGET</code> zet ze opzij. Ze veranderen nooit wat er gebeurde.</p>
+    </div>
+  </div>
+  <div class="foot"><span><b>Uitgangspunt</b>De meeste spelers willen niet gevraagd worden. Alles van M10.16 tot M10.23 genereert op momenten die je zelf veroorzaakt; dit blad is de andere kant: de wereld die uit zichzelf iets brengt, binnen de kaders.</span></div>
+</section>
+
+<!-- ============ 26 NIEUWE STREEK ============ -->
+<section class="sheet" id="blad-26">
+  <div class="sheet-head">
+    <div class="folio">Blad<strong>26</strong></div>
+    <div><h2>Een nieuwe streek met een eigen verhaal</h2><p class="thesis">Zoals gepland op 29 september 2026. Een streek die aan de rand ontstaat, is speelbaar maar dun waar het verhaal zit. Daarom schrijft de kroniekverteller bij aankomst een verhaalronde, kiest de speler met een vierde draaiknop hoe vol een nieuwe streek wordt, en wordt er gebouwd terwijl je reist. Eén deel is af.</p></div>
+    <div class="ref">Roadmap M10.25<br>Changelog 29 sep 2026</div>
+  </div>
+  <div class="grid">
+    <div class="p c7">
+      <h3>De verhaalronde bij aankomst <span class="tiny">gepland</span></h3>
+      <div class="svgw">
+      <svg viewBox="0 0 700 215" role="img" aria-label="Zodra de eerste wijk speelbaar is, schrijft één aanroep region_story een quest, twee wachters, één loreonderwerp en geheimen; de motor keurt en legt het als laag in de save">
+        <g font-size="12.5" text-anchor="middle">
+          <rect x="6" y="60" width="136" height="70" rx="4" class="boxs"/><text x="74" y="88" font-weight="700">Eerste wijk</text><text x="74" y="106" font-size="11" class="mid">speelbaar gemaakt</text>
+          <rect x="172" y="40" width="170" height="110" rx="4" class="ai" stroke-width="2"/><text x="257" y="62" font-weight="700" class="mono">region_story</text><text x="257" y="82" font-size="11">1 quest, 2 of 3 stadia</text><text x="257" y="97" font-size="11">2 wachters met nasleep</text><text x="257" y="112" font-size="11">1 onderwerp van lore</text><text x="257" y="127" font-size="11">geheim bij 1 op 3 mensen</text>
+          <rect x="372" y="60" width="150" height="70" rx="4" class="sys"/><text x="447" y="84" font-weight="700">Motor</text><text x="447" y="101" font-size="11" class="mid">vorm, checkContent,</text><text x="447" y="115" font-size="11" class="mid">ids met tombstoneregel</text>
+          <rect x="552" y="60" width="142" height="70" rx="4" class="reed"/><text x="623" y="84" font-weight="700">Laag in de save</text><text x="623" y="101" font-size="11" class="mid">de kroniek zegt</text><text x="623" y="115" font-size="11" class="mid">waarom het kwam</text>
+        </g>
+        <g class="ln" stroke-width="1.3"><path d="M142 95 H168" marker-end="url(#ah)"/><path d="M342 95 H368" marker-end="url(#ah)"/><path d="M522 95 H548" marker-end="url(#ah)"/></g>
+        <text x="6" y="176" font-size="11" class="mid">Meedenken: de quest als keuze in de wereld. Regisseur: als voorstel.</text>
+        <text x="6" y="191" font-size="11" class="mid">Zonder model: één wachter uit de standaardset, geen quest.</text>
+        <text x="6" y="208" font-size="11" class="dim">Het vaste, gecachte deel van de wereldbouw voorop. Doel: een paar dubbeltjes per streek.</text>
+      </svg>
+      </div>
+      <p class="small"><b>Waarom:</b> de Holleveen heeft 88 plekken, 31 mensen van wie 13 met een geheim, quests met 17 stadia en 64 plannen, 31 wachters met nasleep, 35 onderwerpen van lore en 38 voorwerpen. Een geschetste streek krijgt een poort, een markt en een herberg, per wijk hoogstens zes plekken en zes mensen, en van de weefronde hoogstens vier banden, twee geheimen en één draad naar huis. Voor een uitstapje genoeg, voor weken een decor met figuranten. De wijkronde geeft voortaan zelf al één op de drie mensen een geheim.</p>
+    </div>
+    <div class="p c5 end">
+      <h3>De vierde draaiknop <span class="tiny">gepland</span></h3>
+      <div class="tw"><table class="t small">
+        <tr><th>Stand</th><th>Wat je krijgt</th></tr>
+        <tr><td class="k mono">outline</td><td>Wat er nu is: de omtrek, en de rest als je er komt</td></tr>
+        <tr><td class="k mono">story</td><td>De omtrek plus de verhaalronde; standaard zodra er een model is</td></tr>
+        <tr><td class="k mono">full</td><td>De wereldbouw in het klein: de stappen Plekken, Beroepen, Mensen, Economie, Signalen en Verhaal over de streek, met de omtrek en het kader als antwoorden van de ontwerper, dezelfde controles en dezelfde polijstronde</td></tr>
+      </table></div>
+      <p class="small" style="margin-top:8px">"How full a new region is built", op het kaderscherm en onder Instellingen › AI, met naast elke stand de geschatte prijs per streek met het gekozen model. Een knop van dit spel (<code>FRAMES REGION OUTLINE|STORY|FULL</code>), dus in de log en in een herhaling. De drempel en de vraag van blad 22 blijven gelden, en de statusbalk telt wat een streek kostte.</p>
+      <p class="note">Voor wie geld geen punt is, de keuze om een nieuwe streek helemaal te laten bouwen. Er komt geen nieuwe prompttekst per stap bij.</p>
+    </div>
+
+    <div class="p c6">
+      <h3>Onderweg wordt de wereld gebouwd <span class="chip g" style="font-size:11px;padding:0 7px">af</span></h3>
+<pre class="screen" style="font-size:11.5px"><span class="c">&gt; head south</span>
+You leave the last peat cutting behind. <span class="d">[2 days]</span>
+<span class="t">While you travel, the chronicler is laying out the Grey Saltings.</span>
+<span class="c">&gt; look</span>
+You are not there yet.
+<span class="c">&gt; arrive</span>
+The reeds open on a grey shore. <span class="t">The Grey Saltings.</span></pre>
+      <ul class="ticks small" style="margin-top:10px">
+        <li>Reis je naar een streek die in het spel ontstond, dan vraagt het spel bij vertrek al wat de vierde draaiknop wil: de eerste wijk en de verhaalronde. Ook de woorden van een land dat alleen een kader heeft.</li>
+        <li>Een reis speelt in speltijd in één commando, dus in echte tijd lopen de aanroepen erna. De aankomst komt zodra alles klaar is, in de minuut daarna. Tot dan gaan het dagboek, wachten, opslaan en de kaders door; de klok staat niet stil na een minuut niets typen.</li>
+        <li>Met <code>ARRIVE</code> ga je meteen naar binnen, en wat nog niet af is verschijnt als het klaar is. Mislukt een aanroep, dan komt de aankomst met de sjablonen.</li>
+        <li>Een wijk waar je heen loopt wacht op dezelfde manier. Door een verre plek uit het wereldboek trekken kost nog steeds niets.</li>
+      </ul>
+      <p class="tiny">Gevonden en hersteld: de weg naar een verre plek ging de verkeerde kant op van noord en zuid; de plekken uit het wereldboek liggen oost en west, dus daar merkte niemand het.</p>
+    </div>
+    <div class="p c6 end">
+      <h3>Het gespeelde bewijs <span class="tiny">gepland; het harnas is af</span></h3>
+      <p class="small">De vraag van Bram: is al getest dat de kroniekverteller een goede nieuwe streek kan bouwen? De opgenomen echte antwoorden (Opus 5.5: <code>expansion</code> de Driewater uit Flemmark en het verdronken Saeftinge, <code>far_place</code>, <code>district</code>, <code>weave</code>, <code>land</code>) laden en lezen als de Nethermarch, maar niemand heeft nog dagen in zo'n streek gespeeld.</p>
+      <ul class="ticks small">
+        <li><code>npm run regionplay</code> speelt met het mockmodel de zuidrand van de Holleveen één keer per stand, en Skerrow over de zee in <code>story</code>, elk drie speldagen volgens <code>docs/PLAYTEST.md</code>. Het verslag zet per stand naast elkaar: plekken (woorden, haken, uitgangen), mensen, geheimen, de quest en wat eraan niet klopt, wachters, lore, aanroepen en kosten.</li>
+        <li>De echte run met Brams sleutel: <code>npm run trial -- --kind region_play --record</code>, zodra <code>full</code> klaar is. Het verslag zegt welke stand de standaard is en waarom.</li>
+        <li>Deepwell heeft geen kaart en dus geen rand: daar speelt een test de verhaalronde met het mockmodel voor een verre plek.</li>
+      </ul>
+      <p class="tiny">Het harnas vond al een quest van de verhaalronde die niet te halen was: iemand moest op de markt zijn waar hij nooit komt.</p>
+    </div>
+
+    <div class="p c4">
+      <h3>De kaart hoort bij de wereldbouw <span class="tiny">gepland</span></h3>
+      <p class="small">Na de laatste stap biedt de editor zelf aan de streekkaart neer te leggen uit de plekken (nu alleen een knop onder Palette, blad 21) en daarna de stap Palet te laten schilderen, als één vervolgstap met een voorstel en diff zoals de andere stappen. De wereldgids noemt het bij de stap Palet.</p>
+      <p class="note">Zo krijgt The Quiet Reach zijn kaart, neergelegd en geschilderd naar Brams eigen teksten: zee, getijdeplassen, struikgewas.</p>
+    </div>
+    <div class="p c4">
+      <h3>De editor en de kroniekverteller weten het</h3>
+      <ul class="ticks small">
+        <li>Het contract verandert alleen als de verhaalronde een nieuw veld nodig heeft: quests, wachters, lore en geheimen zijn bestaande soorten.</li>
+        <li>De stap Signalen zegt dat een streek die in het spel ontstaat haar wachters uit de standaardnasleep krijgt.</li>
+        <li><code>docs/NEW-WORLD.md</code> noemt de draaiknop en wat elke stand kost.</li>
+        <li>"Beyond the book" toont per streek in welke stand ze gebouwd werd en wat de verhaalronde schreef.</li>
+      </ul>
+    </div>
+    <div class="p c4 end">
+      <h3>Ook op de lijst</h3>
+      <ul class="ticks no small">
+        <li>Brams document gaat uit de publieke repo; de proefrit leest het uit de opnames of uit een pad buiten de repo (<code>WISPLIGHT_DOC</code>).</li>
+        <li>De stap Kalender zegt dat het jaar vast twaalf maanden van dertig dagen plus vijf losse dagen heeft; alleen de namen en de seizoenen per maand zijn vrij.</li>
+        <li>De milestone-rapportage zegt per nieuwe soort aanroep wat ze kost en waarom dat model en die inspanning.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="foot"><span><b>Gepland, geen spec</b>Dit blad volgt docs/ROADMAP.md van 29 september 2026. Wat af is, staat erbij; de rest kan bij het bouwen nog veranderen, en dan wint het ontwerp in Claude Docs.</span></div>
 </section>
 
 </div>
