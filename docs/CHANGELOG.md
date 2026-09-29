@@ -1,5 +1,27 @@
 # Changelog
 
+## M10.30 deel: wat mensen per stadium weten, en wat je nu kunt doen, 30 september 2026
+
+- **Ieder zijn eigen stuk (2).** Een stadium van een quest zegt per persoon wat die weet en mag zeggen (`knows`). Dat gaat naar de stem, met de regel dat dit alles is wat ze ervan weet. Improviseren op een plek van de quest krijgt dezelfde regels. Zo vertellen Niko en Tessa straks niet elk hun eigen plot.
+- **Wat een verhaal verborgen houdt.** Een quest kan waarheden hebben (`truths`), met de woorden waaraan je ze herkent en vanaf welk stadium of welke voorwaarde ze gezegd mogen worden. Noemt een antwoord of een improvisatie er eerder een, dan vraagt de bewaker opnieuw. Wat het spel die spreker zelf gaf, mag wel: de eigen regel, een geheim dat die persoon je vertelde, of een ander deel van het gesprek. Jouw eigen gok telt niet.
+- **Wat je nu kunt doen (3).** Een stadium heeft een `goal`. De questpagina eindigt met "Now: Find out what happened to Fenna Visser.", en `quests` (of `opdrachten`) toont wat openstaat en wat voorbij is, met de verzoeken erbij. `journal grey cat` vindt de pagina van een quest.
+- **Waar het al in zit.** De grijze kat in de Nethermarch: Grietje, Jan, Pim en de weduwe hebben elk hun stuk, en niemand zegt dat de kat Fenna is voordat jij het ontdekt hebt. De weduwe zegt het pas als ze haar geheim prijsgeeft. Op Skerrow weet elke eilandbewoner een stuk van hoe je wegkomt, en de sleutel blijft in de grafheuvel tot je hem hebt. Deepwell speelt zonder, zoals voorheen.
+- **De gespreksregels opnieuw gemeten.** Met je akkoord, voor $0,13 op Haiku: 24 van 24 bruikbaar, karakterscore 0,982 / 1,000 / 1,000 (zoals zonder de regels) en een hogere leesscore (0,75 tot 0,85). Mirte blijft twintig zinnen lang "lamb" zeggen. De regels blijven.
+
+Testen:
+- Start de Nethermarch, praat met Grietje in het Vissershuis en vraag naar Fenna. Typ daarna `quests` en open de quest in het dagboek.
+- Vraag Grietje of Jan of de kat Fenna is: ze weten het niet. Met een model zie je in het AI-logboek een afgewezen antwoord als het model het toch zegt.
+- Op Skerrow: `quests`, en vraag Maren hoe je van het eiland komt.
+- Test in `tests/m1030story.test.ts`.
+
+Kosten: geen nieuwe soort aanroep. Wie een regel in een stadium heeft, krijgt die één keer per gesprek, een zin of twee. Het contract voor de kroniekverteller wordt ongeveer 240 tokens langer (in het deel dat in de cache staat).
+
+Bekende gaten: The Quiet Reach heeft nog geen quests, dus daar merk je het pas met punt 4 (de stap Verhalen van de andere sessie en een run op je sleutel). De wereldgids en `docs/NEW-WORLD.md` leren de velden met die stap.
+
+Wat de editor en de kroniekverteller leerden: het sjabloon voor een quest heeft `goal`, `knows` en `truths`; onder Check staat een fout bij `knows` van iemand die niet bestaat, bij een waarheid met een onbekend stadium of een kapot patroon, en een waarschuwing als het verzoek of een dagboekregel een waarheid al te vroeg zegt; het contract (`docs/CONTENT.md` en de korte versie voor de schrijfhulp) beschrijft de drie velden.
+
+Ontwerp: functioneel ontwerp, bij de quests, alinea "Stand na M10.30: wat mensen per stadium weten, wat een verhaal verborgen houdt, en wat je nu kunt doen".
+
 ## M10.29 deel: verder spelen met de laatste regels in beeld, 29 september 2026
 
 - **Verder spelen.** Na een herstart was het venster leeg op "You pick up where you left off.". Nu staan bij Continue en bij het laden van een save eerst de laatste regels van je spel in beeld: wat je typte en wat het spel zei, de gesprekken meegerekend. Ze staan vervaagd, met de dag erboven ("Earlier, Primeday 18:") en een stippellijn eronder. Bij een geladen save zijn het de regels tot aan die save.
@@ -49,7 +71,7 @@ Testen:
 
 Kosten: geen nieuwe soort aanroep. History gaat nooit naar het model; de save wordt per persoon hooguit 200 regels groter.
 
-Bekende gaten: regels uit een save van voor vandaag weten niet bij welk gesprek ze horen. History neemt daarom regels die binnen twintig minuten na elkaar vielen samen als één gesprek. De schone herhaling van de gespreksregels op Haiku (ongeveer $0,16) wacht nog op je akkoord.
+Bekende gaten: regels uit een save van voor vandaag weten niet bij welk gesprek ze horen. History neemt daarom regels die binnen twintig minuten na elkaar vielen samen als één gesprek.
 
 Wat de editor en de kroniekverteller leerden: niets, want een wereld kan niets nieuws bevatten. De knop `talk.kept_lines` staat met zijn nieuwe standaard in `docs/KNOBS.md`.
 
