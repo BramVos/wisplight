@@ -149,8 +149,15 @@ export function runCommand(host: CommandHost, command: Command): Output[] {
       if (from && (objectHere(world, from[2]!) || !findNpcHere(world, from[2]!))) return takeFrom(world, from[1]!, from[2]!)
       return each(command.args, (a) => take(host, a))
     }
-    case 'open':
-      return openObject(world, command.args.join(' '))
+    case 'open': {
+      // What cannot be opened says what can be done with it (M10.29 T: "open cab" for a cabinet the room only names).
+      const words = command.args.join(' ')
+      if (!objectHere(world, words) || carried(world, words)) {
+        const could = couldInstead(world, 'open', words)
+        if (could) return [text(could)]
+      }
+      return openObject(world, words)
+    }
     // PICK <door or chest> (M10.5): the lock; PICK <thing> is still taking it.
     case 'pick': {
       const direction = parseDirection(command.args[0])
@@ -223,10 +230,14 @@ export function runCommand(host: CommandHost, command: Command): Output[] {
       engageFarPlace(world)
       return sleep(host)
     case 'wait': {
-      // WAIT FOR SIJBRAND (M9.4): up to ten hours, until that one is here.
-      if (/^(for|op)$/i.test(command.args[0] ?? '') && command.args.length > 1) {
-        const who = findNpcAnywhere(world, command.args.slice(1).join(' '))
-        if (!who) return [error(`Wait for whom? Nobody called "${command.args.slice(1).join(' ')}".`)]
+      // WAIT FOR SIJBRAND (M9.4): up to ten hours, until that one is here. WAIT NIKO is the same, by a whole name
+      // (M10.29 T: it counted as ten minutes).
+      const named = command.args.join(' ').toLowerCase()
+      const byName = !/^(for|op)$/i.test(command.args[0] ?? '') && !Number(command.args[0]) && [...world.content.npcs.keys()].some((id) => namesOf(world.npc(id)).includes(named))
+      if ((/^(for|op)$/i.test(command.args[0] ?? '') && command.args.length > 1) || byName) {
+        const words = byName ? command.args.join(' ') : command.args.slice(1).join(' ')
+        const who = findNpcAnywhere(world, words)
+        if (!who) return [error(`Wait for whom? Nobody called "${words}".`)]
         // Here and awake: someone asleep here is waited for until they wake.
         const ready = () => world.npcsAt(world.state.player.location).includes(who) && world.npcState(who).activity !== 'asleep'
         if (ready()) return [text(`${callName(world.npc(who))} is here.`)]
@@ -285,6 +296,10 @@ Lines here: ${lines.join(', ')}.` : HELP }]
       // An act the rules do not know, on a thing that matters (M10.16): improvised, by the engine.
       const imp = improvisable(world, command)
       if (imp) return [{ kind: 'text', text: imp.def.fallback, improvise: imp }]
+      // Any other verb on someone or something here, or in the pack: what can be done instead (M10.29 T and N: "poke
+      // edda", "operate scanner").
+      const could = couldInstead(world, said, command.args.join(' '))
+      if (could) return [text(could)]
       // Any other verb on a thing the description names: it stays as it is (after the M10 playtest).
       const words = command.args.join(' ')
       const thing = words ? (detailHere(world, words)?.name ?? sceneryHere(world, words)?.name) : undefined
@@ -394,6 +409,34 @@ function lookOptions(world: World): ChoiceOption[] {
   const details = [...(place?.details ?? []), ...world.location(here).objects.flatMap((o) => world.content.objectTypes.get(o.type)?.details ?? [])].map((d) => d.words[0]!)
   const ground = Object.keys(world.state.ground[here] ?? {}).filter((i) => (world.state.ground[here]![i] ?? 0) > 0).map((i) => itemName(world.content, i, 1))
   return [...new Set([...people, ...objects, ...details, ...ground])].map((name) => ({ label: name, command: `look ${name}` }))
+}
+
+/**
+ * A verb the game has no rule for, on someone here, an object here or a thing
+ * in the pack (M10.29 T): that it cannot be done, and what can be.
+ */
+export function couldInstead(world: World, verb: string, words: string): string | undefined {
+  if (!words.trim()) return undefined
+  const npcId = findNpcHere(world, words)
+  if (npcId) {
+    const who = callName(world.npc(npcId))
+    return world.say(`You can't ${verb} ${who}. You could talk to {them}, look at {them} or give {them} something.`, npcId)
+  }
+  const mine = carried(world, words)
+  if (mine) return doWithCarried(world, mine, verb)
+  const or = (list: string[]) => (list.length < 2 ? list.join('') : `${list.slice(0, -1).join(', ')} or ${list.at(-1)}`)
+  const object = findObjectHere(world, words)
+  if (object) {
+    const name = label(object.instance, object.type)
+    const uses = object.type.affordances.filter((a) => a.actors.includes('player')).map((a) => `USE ${name.toUpperCase()} ${a.verb.toUpperCase()}`)
+    if (verb === 'read') return `There is nothing to read on the ${name}.`
+    return `You can't ${verb} the ${name}. You could ${or([...uses, 'look at it'])}.`
+  }
+  // A thing the description names: it stays as it is (after the M10 playtest), and what it does have a line for.
+  const detail = detailHere(world, words)
+  if (detail && verb === 'read') return `There is nothing to read on ${detail.name}.`
+  if (detail) return `You think better of it, and leave ${detail.name} be. You could ${or(['look at it', ...Object.keys(detail.verbs ?? {}).map((v) => `${v} it`)])}.`
+  return undefined
 }
 
 /**
@@ -867,7 +910,7 @@ function use(host: CommandHost, args: string[]): Output[] {
     return type ? [{ instance, type }] : []
   })
   const verbHere = (type: ObjectType) => type.affordances.some((a) => a.actors.includes('player') && words.split(/\s+/).includes(a.verb))
-  const object = candidates.find(({ instance, type }) => nameMatches(words, instance, type)) ?? (candidates.length === 1 && !words ? candidates[0] : undefined) ?? candidates.find(({ type }) => verbHere(type))
+  const object = candidates.find(({ instance, type }) => nameMatches(words, instance, type)) ?? candidates.find(({ instance, type }) => shortMatches(world, words, instance, type)) ?? (candidates.length === 1 && !words ? candidates[0] : undefined) ?? candidates.find(({ type }) => verbHere(type))
   if (!object) {
     const usable = candidates.filter(({ type }) => type.affordances.some((a) => a.actors.includes('player')))
     return pickOrOffer(host, words, 'Use what?', usable.map(({ instance, type }) => ({ label: label(instance, type), command: `use ${label(instance, type)}` })), words ? `There is no "${words}" here to use.` : 'There is nothing here to use.')
@@ -1105,6 +1148,10 @@ function findObjectHere(world: World, words: string): { instance: ObjectInstance
     const type = world.content.objectTypes.get(instance.type)
     if (type && nameMatches(wanted, instance, type)) return { instance, type }
   }
+  for (const instance of world.location(world.state.player.location).objects) {
+    const type = world.content.objectTypes.get(instance.type)
+    if (type && shortMatches(world, wanted, instance, type)) return { instance, type }
+  }
   return undefined
 }
 
@@ -1114,6 +1161,18 @@ function nameMatches(words: string, instance: ObjectInstance, type: ObjectType):
   // A whole word of the name (M10.8): "count" is no counter.
   const first = words.split(' ')[0]!
   return names.some((name) => words.includes(name) || name.split(/\s+/).some((w) => w === first || w === `${first}s` || `${w}s` === first || w.replace(/'s$/, '') === first))
+}
+
+/**
+ * A name cut short from the start of a word, three letters or more (M10.29 T:
+ * "open cab" for the cabinet), unless the word is someone's name in this world
+ * (M10.8: "count" is no counter).
+ */
+function shortMatches(world: World, words: string, instance: ObjectInstance, type: ObjectType): boolean {
+  const first = words.trim().toLowerCase().split(/\s+/)[0] ?? ''
+  if (first.length < 3 || findNpcAnywhere(world, first)) return false
+  const names = [instance.name, type.name, ...type.aliases].filter(Boolean).map((n) => n!.toLowerCase())
+  return names.some((name) => name.split(/\s+/).some((w) => w.startsWith(first)))
 }
 
 function premisesOf(world: World, location: string): string[] {

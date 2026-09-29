@@ -64,10 +64,10 @@ export function passLock(world: World, from: string, direction: string, lock: Pi
 export function objectHere(world: World, words: string): ObjectInstance | undefined {
   const here = world.location(world.state.player.location)
   const w = words.toLowerCase().replace(/^(the|a|an)\s+/, '').trim()
-  return here.objects.find((o) => {
-    const type = world.content.objectTypes.get(o.type)
-    return [o.name, o.id, type?.name, ...(type?.aliases ?? [])].some((n) => n && n.toLowerCase() === w)
-  })
+  const names = (o: ObjectInstance) => [o.name, o.id, world.content.objectTypes.get(o.type)?.name, ...(world.content.objectTypes.get(o.type)?.aliases ?? [])].filter((n): n is string => Boolean(n)).map((n) => n.toLowerCase())
+  // A name cut short from the start of a word, three letters or more (M10.29 T: "open cab" for the cabinet).
+  const starts = new RegExp(`(^|\\s)${w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`)
+  return here.objects.find((o) => names(o).includes(w)) ?? (w.length >= 3 ? here.objects.find((o) => names(o).some((n) => starts.test(n))) : undefined)
 }
 
 /** What a chest holds, kept on the ground under its own key. */

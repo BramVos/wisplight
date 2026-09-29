@@ -48,8 +48,19 @@ export function offer(world: World, question: string, options: ChoiceOption[]): 
  * choice is gone.
  */
 export function answerChoice(world: World, input: string): { run: string } | { error: string } | undefined {
-  const choice = world.state.choice
   const text = input.trim()
+  // A verb with a number from the list, "l 8" (M10.29 T): the verb on that option, also one command after the list
+  // was set aside.
+  const last = world.state.lastChoice
+  world.state.lastChoice = undefined
+  const numbered = /^(\S.*?)\s+(\d+)$/.exec(text)
+  const list = world.state.choice ?? last
+  const option = numbered && list ? list.options[Number(numbered[2]) - 1] : undefined
+  if (numbered && option) {
+    world.state.choice = undefined
+    return { run: `${numbered[1]} ${option.label}` }
+  }
+  const choice = world.state.choice
   const number = /^\d+$/.test(text) ? Number(text) : undefined
   if (!choice) return number === undefined ? undefined : { error: 'There is nothing to choose from just now.' }
   if (number !== undefined) {
@@ -60,7 +71,9 @@ export function answerChoice(world: World, input: string): { run: string } | { e
   }
   world.state.choice = undefined
   const fitting = best(choice.options, normal(text))
-  return fitting.length === 1 ? { run: fitting[0]!.command } : undefined
+  if (fitting.length === 1) return { run: fitting[0]!.command }
+  world.state.lastChoice = choice
+  return undefined
 }
 
 /** The options the words fit best: every word found in the label, else most words found. */

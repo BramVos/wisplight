@@ -1,5 +1,23 @@
 # Changelog
 
+## M10.29 deel: de commando's uit je log, 29 september 2026
+
+De ontwerpsessie las je log van vandaag. Dit zijn de dingen die aan de commando's lagen:
+- **`wait niko`** betekent nu `wait for niko`. Het telde als tien minuten wachten.
+- **FOLLOW binnen.** Op een plek zonder rand, zoals Ridge Shelter, bood FOLLOW de paden aan en weigerde ze daarna. Nu noemt het per weg de uitgang ernaartoe ("the path to Orison Ridge north: up from here"), en je kiest met een nummer. Een pad dat naar de plek zelf heet, heet naar zijn richting.
+- **`hold`** zei "This world has no rules for characters". In een wereld zonder personages antwoorden die werkwoorden nu zoals elk onbekend werkwoord.
+- **Wat je wel kunt.** `poke tessa`, `touch edda`, `operate cabinet`: een werkwoord dat het spel niet kent, op iemand of iets wat er is, zegt nu wat je wel kunt ("You could talk to her, look at her or give her something."). `read` op iets zonder tekst zegt dat er niets op staat.
+- **Afgekorte namen.** "open cab" vindt het kastje. Een woordbegin van drie letters of meer telt, behalve als het iemands naam is.
+- **`l 8`** kiest nummer 8 uit de lijst die net openstond, ook als je er één andere opdracht tussen typte.
+
+Testen: ga in The Quiet Reach naar Ridge Shelter en typ `follow`, `open cab`, `read cab` en `hold`. Typ in de Workshop `l x`, dan `time` en dan `l 2`. De tests staan in `tests/m1029small.test.ts`.
+
+Bekende gaten: een afgekorte naam werkt voor voorwerpen en details, niet voor mensen. `talk ma` vindt Mara nog op de oude manier, en met twee mensen die erop passen vraagt het spel wie je bedoelt.
+
+Wat de editor en de kroniekverteller leerden: niets nieuws; dit zijn regels van de motor die voor elke wereld gelden.
+
+Ontwerp: functioneel ontwerp, bij het dagboek, alinea "Stand na M10.29: Tab, de cursor en de kleine dingen van de commando's".
+
 ## M10.29 deel: de persoonspagina in twee tabbladen, en drie dingen uit je log, 29 september 2026
 
 - **About en History (R).** De persoonspagina in het dagboek heeft nu twee tabbladen. About is wat je van iemand weet: het kaartje, wat die persoon je vertelde ("Sana told you: ..."), wat er tussen jullie staat ("Between you: ..."), wat ze je vroeg, en de laatste regel van het laatste gesprek ("Last time: ..."). History heeft elk gesprek zoals het ging, per dag met de nieuwste bovenaan, één blok per gesprek. De ring houdt nu 200 regels per persoon in plaats van 40, en een ouder gesprek valt er als geheel uit. Niets daarvan gaat naar het model. In de terminal geeft `journal sana` de pagina en `journal sana history` elk gesprek; HELP noemt beide.

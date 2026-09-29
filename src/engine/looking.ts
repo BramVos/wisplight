@@ -141,7 +141,10 @@ export function detailHere(world: World, words: string): DetailFound | undefined
   const all = [...(place?.details ?? []), ...world.location(world.state.player.location).objects.flatMap((o) => world.content.objectTypes.get(o.type)?.details ?? [])]
   const last = wanted.split(/\s+/).at(-1)!
   const anyWord = (w: string) => !DETAIL_STOP.has(last) && w.toLowerCase().split(/\s+/).includes(last)
-  const found = all.find((d) => d.words.some((w) => w.toLowerCase() === wanted)) ?? all.find((d) => d.words.some((w) => w.toLowerCase() === last)) ?? all.find((d) => d.words.some(anyWord))
+  // Last, a word cut short, three letters or more, that is nobody's name (M10.29 T: "cab" for the cabinet; M10.8: "count" is no counter).
+  const someone = [...world.content.npcs.values()].some((n) => n.name.toLowerCase().split(/\s+/).includes(last))
+  const cutShort = (w: string) => last.length >= 3 && !someone && w.toLowerCase().split(/\s+/).some((x) => x.startsWith(last))
+  const found = all.find((d) => d.words.some((w) => w.toLowerCase() === wanted)) ?? all.find((d) => d.words.some((w) => w.toLowerCase() === last)) ?? all.find((d) => d.words.some(anyWord)) ?? all.find((d) => d.words.some(cutShort))
   return found ? { name: `the ${found.words[0]}`, look: found.look, take: found.take, verbs: found.verbs } : undefined
 }
 

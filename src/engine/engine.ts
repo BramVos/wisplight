@@ -34,7 +34,7 @@ import { followTombstones, followTombstonesInLog, nameBook, withNames, type Name
 import { shiftTension, tensionOf } from './social/realms'
 import { grownContent, invest } from './growth/growth'
 import { GameClock, weekdayName } from './clock'
-import { completionsHere, describeRoom, detailVerb, findNpcAnywhere, findNpcHere, runCommand, whichOfThem, type CommandHost, type Output } from './commands'
+import { completionsHere, couldInstead, describeRoom, detailVerb, findNpcAnywhere, findNpcHere, runCommand, whichOfThem, type CommandHost, type Output } from './commands'
 import { areaTopicId, callName, firstName, type Content, type Quest } from './content'
 import { Dialogue, QUICK_OPTIONS } from './dialogue/conversation'
 import { Knowledge } from './dialogue/knowledge'
@@ -178,6 +178,9 @@ export type GameLogLine =
   | { kind: 'replay'; t: number; entry: LogEntry }
   /** What left the save for good (M9.1): the game log is its archive. */
   | { kind: 'archive'; t: number; archived: Archived }
+
+/** The verbs of the rules for characters (FO, chapter 11). */
+const CHARACTER_VERBS = new Set(['create', 'level', 'train', 'wield', 'devote', 'rite'])
 
 export interface JournalEntry {
   id: string
@@ -1541,6 +1544,9 @@ export class Engine {
     if (own) return [{ kind: 'text', text: own }]
     const which = whichOfThem(this.world, command)
     if (which) return which
+    // A verb of the rules for characters in a world without them (M10.29 T: HOLD said "This world has no rules for
+    // characters"): as any verb the world does not know.
+    if (CHARACTER_VERBS.has(command.verb) && !hasCharacters(this.content)) return [{ kind: 'error', text: `You can't "${command.raw}" here. Type HELP for a list of commands.` }]
     switch (command.verb) {
       case 'talk': {
         if (/^(party|group|everyone|all)$/i.test(command.args.join(' '))) return this.dialogue.party('')
@@ -1607,6 +1613,9 @@ export class Engine {
         const mine = /^read\b/i.test(command.raw) && command.args.length ? carried(this.world, command.args.join(' ')) : undefined
         if (mine) return [{ kind: 'text', text: doWithCarried(this.world, mine, 'read') }]
         const npc = command.args.length ? findNpcHere(this.world, command.args.join(' ')) : (talk?.npc ?? this.onlyNpcHere())
+        // READ <a thing here with nothing written on it> (M10.29 T: "read cab" said "Read whom?").
+        const thing = !npc && /^read\b/i.test(command.raw) ? couldInstead(this.world, 'read', command.args.join(' ')) : undefined
+        if (thing) return [{ kind: 'text', text: thing }]
         if (!npc) return [{ kind: 'error', text: 'Read whom?' }]
         return this.dialogue.insight(npc)
       }
@@ -1787,6 +1796,23 @@ export class Engine {
         // Otherwise the ways from here, by where they lead (after the M10 playtest): one that fits is followed, several are a choice.
         const map = regionMap(this.content)
         const hex = map ? playerHex(this.world) : undefined
+        // Inside, with no edge to set out from (M10.29 T: FOLLOW at Ridge Shelter offered the paths, then refused them):
+        // the exit that leads to each way.
+        const here = this.state.player.location
+        if (hex && !canSetOut(this.world, here)) {
+          const exits = Object.entries(this.world.location(here).exits) as [string, { to: string }][]
+          const out = waysFrom(this.world, hex).flatMap((o) => {
+            const wind = o.wind?.replace('-', '')
+            // Where it leads: by its end, or the place a way "to" names; else by its wind.
+            const to = (o.to ?? o.way.replace(/^the (path|road|tow path) to /i, '')).toLowerCase()
+            const leads = (e: { to: string }) => [this.world.location(e.to).name, this.content.areas.get(this.world.location(e.to).area)?.name ?? ''].some((n) => n.toLowerCase() === to)
+            const exit = exits.find(([, e]) => leads(e)) ?? exits.find(([dir]) => wind && (dir === wind || dir.includes(wind) || wind.includes(dir)))
+            return exit ? [{ label: `${o.label}: ${exit[0]} from here`, command: `go ${exit[0]}` }] : []
+          })
+          const ways = exits.map(([dir]) => dir).join(', ')
+          if (!out.length) return [{ kind: 'error', text: `No way to follow starts in here. The ways out: ${ways}.` }]
+          return offer(this.world, 'Which way? From in here you go out first:', out)
+        }
         const options = hex ? waysFrom(this.world, hex).map((o) => ({ label: o.label, command: `follow ${o.way}${o.wind ? ` ${o.wind}` : ''}` })) : []
         if (way) {
           const along = options.filter((o) => o.command.startsWith(`follow ${way}`))

@@ -953,6 +953,9 @@ export function waysFrom(world: World, at: Hex): { label: string; way: string; w
       })
       const kind = path.kind === 'canal' ? 'tow path' : path.kind
       const generic = /^the (path|road|tow path) to /i.test(path.name)
+      // A way named for the place you stand in goes by where it runs (M10.29 T: "the path to Ridge Shelter", at Ridge Shelter).
+      const standing = world.location(world.state.player.location).name.toLowerCase()
+      const toHere = generic && path.name.toLowerCase().endsWith(` to ${standing}`)
       const sides = [stops.filter((st) => st.index >= 0 && st.index < k && st.area !== here).reverse(), stops.filter((st) => st.index > k && st.area !== here)]
       const ends = [k > 0 ? { stops: sides[0]!, hex: line[Math.max(0, k - 3)] } : undefined, k < line.length - 1 ? { stops: sides[1]!, hex: line[Math.min(line.length - 1, k + 3)] } : undefined].filter((e): e is { stops: typeof stops; hex: Hex | undefined } => Boolean(e))
       for (const end of ends) {
@@ -964,7 +967,9 @@ export function waysFrom(world: World, at: Hex): { label: string; way: string; w
         const label = generic
           ? name
             ? `the ${kind} to ${name}`
-            : `${path.name} ${toward}`.trim()
+            : toHere
+              ? `the ${kind} ${toward}`.trim()
+              : `${path.name} ${toward}`.trim()
           : ends.length > 1
             ? `${path.name} ${toward}${name ? ` to ${name}` : ''}`.replace(/\s+/g, ' ').trim()
             : name && !path.name.toLowerCase().includes(name.toLowerCase())
