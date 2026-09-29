@@ -21,6 +21,7 @@ export const APP_KNOBS = {
   chronicler_timeout_seconds: { about: 'How long one night run of the chronicler may take.', unit: 'seconds', default: 90, min: 20, max: 600 },
   night_round_minutes: { about: 'The chronicler\'s night round comes at most this often in real play, however fast the game\'s clock runs; the first of a session is never held.', unit: 'minutes', default: 20, min: 1, max: 480 },
   tides_round_minutes: { about: 'The great lines are judged at most this often in real play.', unit: 'minutes', default: 120, min: 10, max: 1440 },
+  ai_log_full: { about: 'Every model call written out whole, prompt and answer uncut, to logs/ai-<game>-<date>.md beside the story log (1 is on). The file grows large: several megabytes an hour of play.', unit: 'on (1) or off (0)', default: 0, min: 0, max: 1 },
   recall_lines: { about: 'How many lines of the game before are shown, faded, when you pick a game up again or load it.', unit: 'lines', default: 40, min: 0, max: 400 },
   tides_every_sessions: { about: 'When the months of the game do not come, the great lines are judged at least once in this many sessions.', unit: 'sessions', default: 10, min: 1, max: 100 },
 } as const satisfies Record<string, AppKnobDef>

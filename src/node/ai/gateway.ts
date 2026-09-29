@@ -2,7 +2,7 @@ import type { PlayMode } from '../../engine/modes'
 import { LlmError, type LlmClient, type LlmRejection, type LlmRequest, type LlmResponse, type LlmRole } from '../../engine/dialogue/llm'
 import { withSafety } from '../../engine/safety'
 import { MODEL_KINDS } from '../../engine/modelkinds'
-import type { AiLog } from './log'
+import type { AiLog, WholeCall } from './log'
 import { CostRegister, type SpendBySource, type SpendSource } from './costs'
 import { cacheNote, picturePrice, priceOf, typicalUsd, upperBoundUsd } from './pricing'
 import { BusyError, type PictureResponse, type Provider, type ProviderId, type RateLimit } from './providers'
@@ -257,6 +257,7 @@ export class Gateway implements LlmClient {
         time: new Date(this.now()).toISOString(),
         source,
         role: request.role,
+        kind: request.schemaName,
         provider: choice.provider,
         model: response.model,
         ok: true,
@@ -267,7 +268,7 @@ export class Gateway implements LlmClient {
         ...(cacheNote(request, response.model, response.usage) ? { cache: cacheNote(request, response.model, response.usage)! } : {}),
         prompt: request.prompt,
         response: response.text,
-      })
+      }, whole(request))
       const { rateLimit: _, ...reply } = response
       return reply
     } catch (error) {
@@ -295,6 +296,7 @@ export class Gateway implements LlmClient {
         time: new Date(this.now()).toISOString(),
         source,
         role: request.role,
+        kind: request.schemaName,
         provider: choice.provider,
         model: choice.model,
         ok: false,
@@ -304,7 +306,7 @@ export class Gateway implements LlmClient {
         ...(costUsd !== undefined ? { costUsd } : {}),
         prompt: request.prompt,
         response: '',
-      })
+      }, whole(request))
       throw failure
     } finally {
       clearTimeout(timer)
@@ -391,4 +393,9 @@ export class Gateway implements LlmClient {
     const empty = limit.requestsRemaining === 0 || (limit.tokensRemaining !== undefined && limit.tokensRemaining < LOW_TOKENS)
     if (empty) health.busyUntil = Math.max(health.busyUntil, limit.resetAt ?? this.now() + 10_000)
   }
+}
+
+/** The whole of a request for the full AI log (M10.29 U): the fixed part, a talk's turns and the prompt. */
+function whole(request: LlmRequest): WholeCall {
+  return { system: request.system, ...(request.turns?.length ? { turns: request.turns } : {}), prompt: request.prompt }
 }

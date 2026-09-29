@@ -223,6 +223,8 @@ function follow(next: Engine, where: Session): void {
   // The world builder's @ commands are for playtesting in a development build.
   next.builder = !app.isPackaged
   session = where
+  // Its model calls go to its own full AI log, when that is on (M10.29 U).
+  ai?.setGame(where.game)
   scribe().begin(worldFolder, where.game)
   unfollow = next.onLog((line) => journal().write(where, line))
   journal().calendar = next.world.calendar
@@ -566,6 +568,9 @@ async function exportLog(where: Session, scope: LogScope = { kind: 'all' }): Pro
   })
   if (result.canceled || !result.filePath) return undefined
   journal().exportTo(where, result.filePath, scope)
+  // The model calls of the same stretch, whole, as a second file beside it (M10.29 U), when the full AI log was on.
+  const calls = ai?.fullLog(where.game, journal().firstAt(where, scope))
+  if (calls) writeFileSync(`${result.filePath.replace(/\.(txt|zip)$/i, '')}-ai.md`, calls, { encoding: 'utf8', mode: 0o600 })
   return result.filePath
 }
 

@@ -1,5 +1,5 @@
-import { appendFileSync, closeSync, existsSync, mkdirSync, openSync, readSync, statSync } from 'node:fs'
-import { dirname } from 'node:path'
+import { appendFileSync, closeSync, existsSync, mkdirSync, openSync, readdirSync, readFileSync, readSync, statSync } from 'node:fs'
+import { dirname, join } from 'node:path'
 import type { SpendSource } from './costs'
 
 // Every model call, for the AI log in the world builder and for debugging
@@ -7,6 +7,8 @@ import type { SpendSource } from './costs'
 
 export interface AiLogEntry {
   time: string
+  /** The kind of call (M10.29 U): the schema it answers, talk_reply, npc_goals, world_step. */
+  kind?: string
   /** Where the call came from (M10.26): the game, the editor, a trial or a picture run; a line from before is the game's. */
   source?: SpendSource
   role: string
@@ -38,23 +40,93 @@ export interface GuardCount {
 
 const KEEP = 200
 
+/** The whole of a call (M10.29 U): the fixed part, the turns of a talk and the prompt, for the full log. */
+export interface WholeCall {
+  system?: string
+  turns?: { role: string; text: string }[]
+  prompt: string
+}
+
+/** A name as part of a file name: letters, digits and dashes. */
+function fileSafe(name: string): string {
+  return name.replace(/[^A-Za-z0-9-]+/g, '-').slice(0, 60) || 'game'
+}
+
+/** The full log of a game, or of another source (the editor, a trial), for the day of a call: ai-<game>-<date>.md. */
+export function fullLogFile(dir: string, game: string, time: string): string {
+  return join(dir, `ai-${fileSafe(game)}-${time.slice(0, 10)}.md`)
+}
+
+/** A game's full log from a moment on (M10.29 U: `log export` takes it along beside the story log), or none. */
+export function fullLogOf(dir: string, game: string, since?: string): string | undefined {
+  if (!existsSync(dir)) return undefined
+  const prefix = `ai-${fileSafe(game)}-`
+  const days = readdirSync(dir).filter((f) => f.startsWith(prefix) && f.endsWith('.md') && (!since || f.slice(prefix.length, -3) >= since.slice(0, 10))).sort()
+  const calls = days.flatMap((f) => readFileSync(join(dir, f), 'utf8').split(/^(?=## \d{4}-)/m)).filter((block) => block.startsWith('## ') && (!since || block.slice(3, 27) >= since))
+  return calls.length ? `# The model calls of this game${since ? ` since ${since}` : ''}\n\n${calls.join('')}` : undefined
+}
+
+/** Anything that looks like a key never reaches the full log, whatever a prompt held. */
+const KEYLIKE = /\b(?:sk-[A-Za-z0-9_-]{16,}|sk-ant-[A-Za-z0-9_-]{16,}|AIza[0-9A-Za-z_-]{20,})\b/g
+const unkeyed = (text: string) => text.replace(KEYLIKE, '[a key]')
+
+/** One call in the full log, as Markdown, readable beside the story log. */
+export function fullBlock(entry: AiLogEntry, whole?: WholeCall): string {
+  const cache = [`in ${entry.inputTokens}`, `read from the cache ${entry.cachedTokens}`, ...(entry.cache ? [entry.cache] : [])].join(', ')
+  const cost = entry.costUsd === undefined ? 'unpriced' : `$${entry.costUsd.toFixed(4)}`
+  const parts = [
+    `## ${entry.time}  ${entry.role}  ${entry.kind ?? '-'}`,
+    '',
+    `Model: ${entry.provider}/${entry.model}; ${entry.ok ? 'answered' : `failed (${entry.error ?? 'no reason'})`}; ${cost}; out ${entry.outputTokens}; cache: ${cache}; ${(entry.latencyMs / 1000).toFixed(1)} s.`,
+    ...(whole?.system ? ['', '### The fixed part', '', whole.system] : []),
+    ...(whole?.turns?.length ? ['', '### The talk so far', '', ...whole.turns.map((t) => `${t.role}: ${t.text}`)] : []),
+    '',
+    '### Prompt',
+    '',
+    whole?.prompt ?? entry.prompt,
+    '',
+    '### Answer',
+    '',
+    entry.response || '(none)',
+    '',
+    '',
+  ]
+  return unkeyed(parts.join('\n'))
+}
+
 export class AiLog {
   private readonly entries: AiLogEntry[] = []
+  /** The full log a role's last call went to (M10.29 U), for what the guard does with it afterwards. */
+  private readonly lastFull = new Map<string, string>()
 
   constructor(
     private readonly path?: string,
     /** How many calls are kept (M10.20: the player's app knob). */
     private readonly keep: () => number = () => KEEP,
+    /** Where a call goes whole (M10.29 U: the knob ai_log_full), or nowhere. */
+    private readonly full?: (entry: AiLogEntry) => string | undefined,
   ) {
     if (path) mkdirSync(dirname(path), { recursive: true })
   }
 
-  add(entry: AiLogEntry): void {
+  add(entry: AiLogEntry, whole?: WholeCall): void {
     const trimmed = { ...entry, prompt: entry.prompt.slice(0, 4000), response: entry.response.slice(0, 2000) }
     this.entries.push(trimmed)
     const keep = this.keep()
     if (this.entries.length > keep) this.entries.splice(0, this.entries.length - keep)
     if (this.path) appendFileSync(this.path, `${JSON.stringify(trimmed)}\n`, { mode: 0o600 })
+    const file = this.full?.(entry)
+    if (file) {
+      mkdirSync(dirname(file), { recursive: true })
+      appendFileSync(file, fullBlock(entry, whole), { mode: 0o600 })
+      this.lastFull.set(entry.role, file)
+    }
+  }
+
+  /** What the guard did with the last call of a role, under it in the full log. */
+  private guardNote(role: string, note: string): void {
+    const file = this.lastFull.get(role)
+    if (file && this.full) appendFileSync(file, `Guard (${role}): ${unkeyed(note)}\n\n`, { mode: 0o600 })
   }
 
   /** The engine threw away the last reply of this role (M10.8): the reason goes with that call. */
@@ -63,6 +135,7 @@ export class AiLog {
     if (!last) return
     ;(last.rejected ??= []).push(reason)
     if (this.path) appendFileSync(this.path, `${JSON.stringify({ time: last.time, role, rejected: reason })}\n`, { mode: 0o600 })
+    this.guardNote(role, `threw the answer away: ${reason}`)
   }
 
   /** Text the guard held back before any call (M10.19): a line of its own, with the reason and the text, cut like a prompt. */
@@ -81,6 +154,7 @@ export class AiLog {
     if (!last) return
     ;(last.fixed ??= []).push(what)
     if (this.path) appendFileSync(this.path, `${JSON.stringify({ time: last.time, role, fixed: what })}\n`, { mode: 0o600 })
+    this.guardNote(role, `put right: ${what}`)
   }
 
   /** Per model, how often the guard threw a reply away or put one right, and why (M10.10), over the calls kept here. */

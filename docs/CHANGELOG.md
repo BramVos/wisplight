@@ -1,5 +1,21 @@
 # Changelog
 
+## M10.29 deel: het AI-logboek als bestand, 30 september 2026
+
+- **Elke aanroep heel.** Onder Instellingen > Advanced staat de knop `ai_log_full`. Staat die op 1, dan schrijft de app elke aanroep van een model onafgekapt weg naar `logs/ai-<spel>-<datum>.md` in de map van de app, één bestand per spel en per dag. Per aanroep staan erin: de tijd, de soort, het model, de kosten, de cache, de seconden, het vaste deel, het gesprek tot nu toe, de prompt en het antwoord. Wat de bewaker met het antwoord deed, staat eronder. Een sleutel komt er nooit in.
+- **Voor jou staat hij aan.** Ik heb hem in je `knobs.json` op 1 gezet. Het bestand groeit met enkele megabytes per uur spelen; zet hem op 0 als je het niet meer nodig hebt.
+- **Met de export mee.** `log export` schrijft naast het verhaallog een tweede bestand (`<naam>-ai.md`) met de aanroepen van dezelfde periode.
+
+Testen: speel een kwartier met je sleutel. Open `~/Library/Application Support/Wisplight/logs/` en lees het bestand van vandaag naast `log export`. De test staat in `tests/m1029ailog.test.ts`.
+
+Kosten: geen; het is alleen schrijven.
+
+Bekende gaten: de periode van de export wordt vertaald naar echte tijd, vanaf de eerste regel van het verhaallog in die periode. Aanroepen die ervoor vielen maar bij dezelfde speldag horen, komen niet mee.
+
+Wat de editor en de kroniekverteller leerden: niets; dit is de app. Een aanroep uit de editor komt, met de knop aan, in een eigen bestand (`ai-editor-<datum>.md`).
+
+Ontwerp: functioneel ontwerp, bij het dagboek, alinea "Stand na M10.29: het AI-logboek als bestand naast het verhaallog".
+
 ## M10.29 deel: een plattegrond van hier, 30 september 2026
 
 - **De plattegrond.** In een dorp, stad, gehucht of herberg met meer dan één plek staat boven de kaart een plattegrond van de plekken die je kent. Noord is boven. Waar je bent, is gevuld. Een plek waar je alleen van hoorde, is grijs met een vraagteken. Een weg die je nog niet nam, is een stippellijn. Klik op een plek waar je was, en je loopt erheen.

@@ -132,6 +132,12 @@ export class GameLog {
     }
   }
 
+  /** When the first line of this part of the story was written, in real time (M10.29 U: the AI log goes with it). */
+  firstAt(session: Session, scope: LogScope = { kind: 'all' }): string | undefined {
+    for (const row of this.rows(session, READABLE, 0, scope)) return (this.db.prepare('SELECT at FROM gamelog WHERE id = ?').get(row.id) as { at?: string } | undefined)?.at
+    return undefined
+  }
+
   /** What a replay needs after a save: the recorded input, time and model replies. */
   tail(session: Session, afterId: number): LogEntry[] {
     return [...this.rows(session, ['replay'], afterId)].map((row) => JSON.parse(row.text) as LogEntry)

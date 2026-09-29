@@ -9,7 +9,7 @@ import { CostRegister, type SpendSource } from './costs'
 import { BuildStore } from './builds'
 import { guidePrice, type GuidePrice } from './guideprice'
 import { type RoleActivity, Gateway, type GatewayStatus } from './gateway'
-import { AiLog, type AiLogEntry } from './log'
+import { AiLog, fullLogFile, fullLogOf, type AiLogEntry } from './log'
 import { createProvider, type ModelInfo, type Provider, type ProviderId } from './providers'
 import { SettingsStore, type Cipher, type ChosenRole, type PictureChoice, type SettingsSummary } from './settings'
 import { UsageStore, type UsageSummary } from './usage'
@@ -57,10 +57,31 @@ export class AiService {
   /** Told when a role's light changes (M10.4). */
   onActivity?: (activity: RoleActivity[]) => void
 
+  /** The game being played (M10.29 U): its calls go to its own full log. */
+  private game?: string
+
+  /** The game now being played, for the full AI log. */
+  setGame(game: string | undefined): void {
+    this.game = game
+  }
+
+  /**
+   * A game's full AI log from a moment on (M10.29 U: `log export` takes it
+   * along beside the story log), or none when there is none.
+   */
+  fullLog(game: string, since?: string): string | undefined {
+    return fullLogOf(join(this.options.dir, 'logs'), game, since)
+  }
+
   constructor(private readonly options: AiServiceOptions) {
     this.settings = new SettingsStore(join(options.dir, 'settings.json'), options.cipher)
     this.usage = new UsageStore(join(options.dir, 'usage.json'))
-    this.log = new AiLog(join(options.dir, 'logs', 'ai.jsonl'), () => options.knobs?.get('ai_log_keep') ?? 200)
+    this.log = new AiLog(
+      join(options.dir, 'logs', 'ai.jsonl'),
+      () => options.knobs?.get('ai_log_keep') ?? 200,
+      // Every call whole, per game and per day (M10.29 U), while the knob is on.
+      (entry) => (options.knobs?.get('ai_log_full') ? fullLogFile(join(options.dir, 'logs'), !entry.source || entry.source === 'game' ? (this.game ?? 'game') : entry.source, entry.time) : undefined),
+    )
     this.builds = new BuildStore(join(options.dir, 'builds.json'), () => this.settings.budgetUsdPerHour)
     this.factory = options.providerFactory ?? createProvider
     this.gateway = new Gateway({
