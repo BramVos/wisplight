@@ -126,7 +126,7 @@ export type LogEntry =
   | { t: number; k: 'far'; topic: string; v: FarWords | null }
   | { t: number; k: 'district'; key: string; v: DistrictWords | null }
   | { t: number; k: 'story'; topic: string; v: StoryReply | null }
-  | { t: number; k: 'full'; topic: string; round: FullRound; v: Record<string, Record<string, unknown>[]> | null }
+  | { t: number; k: 'full'; topic: string; round: FullRound; v: Record<string, Record<string, unknown>[]> | null; problems?: string[] }
   | { t: number; k: 'weave'; key: string; v: WeaveReply | null }
   // What the chronicler wrote for a land the designer only framed (M10.23), or null.
   | { t: number; k: 'land'; id: string; v: LandWords | null }
@@ -816,6 +816,10 @@ export class Engine {
           try {
             reply = storyReply((await llm.complete({ ...storyRequest(this.world, topic), priority: 'low' })).text)
           } catch {
+            // No answer (the hour's budget, the network): it waits for a later run, three times at most.
+            const tries = (this.fullTries.get(`story:${topic}`) ?? 0) + 1
+            this.fullTries.set(`story:${topic}`, tries)
+            if (tries < 3) continue
             reply = null
           }
         }
@@ -827,6 +831,9 @@ export class Engine {
       this.outlining = false
     }
   }
+
+  /** How often a round of a full build or a region's story found no answer (M10.25), in this session: three times, then it is given up. */
+  private readonly fullTries = new Map<string, number>()
 
   /**
    * The rounds of regions built in full (M10.25), one at a time, in order: a
@@ -843,23 +850,37 @@ export class Engine {
         const [topic, round] = key.split(':') as [string, FullRound]
         const llm = this.llm
         let layer: Record<string, Record<string, unknown>[]> | null = null
+        let problems: string[] = []
         const request = fullRequest(this.world, topic, round)
         if (llm && request) {
+          let draft
           try {
-            let draft = readFull(this.world, topic, round, (await llm.complete(request)).text)
-            for (let fix = 0; fix < 2 && draft.problems.length; fix++) {
+            draft = readFull(this.world, topic, round, (await llm.complete(request)).text)
+          } catch (error) {
+            // No answer (the hour's budget, the network): the round waits for a later run, three times at most,
+            // and the rounds after it wait with it, since they build on it (M10.25: the played proof lost its places so).
+            const tries = (this.fullTries.get(key) ?? 0) + 1
+            this.fullTries.set(key, tries)
+            if (tries < 3) break
+            problems = [`no answer: ${error instanceof Error ? error.message : String(error)}`]
+          }
+          try {
+            for (let fix = 0; draft && fix < 2 && draft.problems.length; fix++) {
               const again = fullFixRequest(this.world, topic, round, draft)
               if (!again) break
               draft = mergeFull(this.world, topic, draft, (await llm.complete(again)).text)
             }
-            layer = draft.problems.length ? null : (fullLayer(this.world, topic, draft) ?? null)
           } catch {
-            layer = null
+            // A fix round without an answer: what there is is judged as it stands.
+          }
+          if (draft) {
+            problems = draft.problems
+            layer = draft.problems.length ? null : (fullLayer(this.world, topic, draft) ?? null)
           }
         }
         if (!g.fullPending.includes(key)) continue
-        this.record({ t: this.world.now, k: 'full', topic, round, v: layer })
-        applyFull(this.world, topic, round, layer)
+        this.record({ t: this.world.now, k: 'full', topic, round, v: layer, ...(problems.length ? { problems: problems.slice(0, 5) } : {}) })
+        applyFull(this.world, topic, round, layer, problems)
       }
     } finally {
       this.outlining = false
@@ -2155,7 +2176,7 @@ export class Engine {
           this.settleStory(entry.topic, entry.v)
         } else if (entry.k === 'full') {
           this.log.push(entry)
-          applyFull(this.world, entry.topic, entry.round, entry.v)
+          applyFull(this.world, entry.topic, entry.round, entry.v, entry.problems)
         } else if (entry.k === 'mode') {
           this.log.push(entry)
           this.state.playMode = entry.v

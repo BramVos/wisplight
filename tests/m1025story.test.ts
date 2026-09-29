@@ -1,5 +1,9 @@
+import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { checkContent, Engine, MockLlm } from '../src/engine'
+import { checkContent, Engine, loadContent, MockLlm } from '../src/engine'
+import { wantFarPlace } from '../src/engine/growth/far'
+import { wantOutline } from '../src/engine/outlines'
+import { readContentFiles } from '../src/node/content'
 import { regionOf } from '../src/engine/growth/regionstory'
 import { questlog } from '../src/engine/quests/engine'
 import { content } from './helpers'
@@ -120,6 +124,34 @@ describe('M10.25: the story round at arrival', () => {
     const proposal = direct.state.modes!.proposals.find((p) => p.kind === 'story')!
     await direct.handle(`reject ${proposal.id}`)
     expect(direct.state.growth!.stories!['graafhaven']!.by).toBe('rules')
+  })
+
+  it('plays for a far place of Deepwell, a world without a map, reached by its tram', async () => {
+    // Deepwell names no far place; this test gives it one at the end of the tram, and nothing else.
+    const files = await readContentFiles(resolve(import.meta.dirname, 'worlds'), 'other')
+    const far = { path: 'other/data/rimward.yaml', text: 'topics:\n  - id: rimward\n    name: Rimward Station\n    kind: place\n    summary: A mining station at the rim of the crater, where the ice trains turn back.\n' }
+    const deepwell = loadContent([...files, far])
+    const llm = new MockLlm('good')
+    const engine = new Engine(deepwell, { seed: 2, builder: true, llm })
+    engine.start()
+    wantFarPlace(engine.world, 'rimward', { from: 'loc_deepwell_works_platform', minutes: 180, by: 'works_tram', water: false })
+    const gate = String(engine.state.growth!.far!['rimward']!.locations[0]!['id'])
+    await engine.handle(`@goto ${gate}`)
+    // Passing through costs nothing: no story until the place is worked out, when the stranger talks or stays there.
+    await engine.handle('look')
+    expect(engine.state.growth?.storyPending ?? []).toEqual([])
+    wantOutline(engine.world, 'rimward')
+    await engine.runModels()
+    await engine.handle('look')
+    await engine.runModels()
+    const story = engine.state.growth!.stories!['rimward']!
+    expect(story.by).toBe('chronicler')
+    expect(story.quest).toBeDefined()
+    // Deepwell has one standard aftermath (befriended): the watcher uses it.
+    expect(story.watchers.map((w) => w['signal'])).toEqual(['befriended'])
+    // Two people there, so one secret.
+    expect(Object.keys(story.secrets).length + [...engine.content.npcs.values()].filter((n) => n.secrets.length && engine.content.locations.get(n.home)?.area === String(engine.state.growth!.far!['rimward']!.area['id'])).length).toBeGreaterThanOrEqual(1)
+    expect(checkContent(engine.content)).toEqual([])
   })
 
   it('writes nothing when the game builds new regions to their outline only', async () => {

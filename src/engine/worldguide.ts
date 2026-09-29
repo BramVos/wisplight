@@ -364,6 +364,7 @@ export const WORLD_STEPS: readonly WorldStep[] = [
       'Where the land has bogs, the rules may have the condition wet (wet and cold, until an hour under a roof), set when the stranger struggles out of one.',
       'An improvised act sends the signal improvised, with the thing\'s id as event (an object type, a place or an area); an aftermath with signal improvised and that event is how a spirit answers.',
       'A great line names areas and a plan that exist, drivers that can push it (a season of this world, a realm, a settlement, a flag), and a threshold above its threat; its plan plays the event with effects the engine knows.',
+      'A region that comes into the game while it is played (a far place, a region charted at the edge) gets its customs from this standard aftermath (M10.25): give some aftermath steps that work anywhere, by $a and $place and no named place or person, so a new region can use them; one that names a place of this world stays there.',
       'Where the stranger can weigh in on a great line, its drivers name their deeds (a fact by player: a crime against someone, a reconciliation), and a line between two sides may name mediation: the two people who can sit at one table, how much it eases (at most 10) and told, what the chronicle says afterwards.',
     ],
     prompt:

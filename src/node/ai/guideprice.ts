@@ -25,7 +25,8 @@ export interface GuidePrice {
   /**
    * A new region, by how full it is built (M10.25): outline its first
    * district and the weave of its people; story that and the story round;
-   * full also the world build in small, once a run of it is measured.
+   * full also the world build's five steps and the polish round, once a
+   * region run of them is measured.
    */
   region?: { outline?: number; story?: number; full?: number }
 }
@@ -58,7 +59,10 @@ export function guidePrice(role: (role: LlmRole) => RoleChoice | undefined, meas
   if (guide.conversations !== undefined && guide.goals !== undefined && guide.night !== undefined) guide.hour = guide.conversations + guide.goals + guide.night
   const outline = sum(['district', 'weave'])
   const story = sum(['district', 'weave', 'region_story'])
-  const full = sum(['district', 'weave', 'region_story', 'region_full'])
+  // In full the world build's five steps run over the region, and its polish round (M10.25).
+  const step = one('world_step')
+  const polish = one('world_polish')
+  const full = story !== undefined && step !== undefined && polish !== undefined ? story + 5 * step + polish : undefined
   if (outline !== undefined) guide.region = { outline, ...(story !== undefined ? { story } : {}), ...(full !== undefined ? { full } : {}) }
   return guide
 }

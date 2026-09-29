@@ -133,7 +133,7 @@ export class MockLlm implements LlmClient {
     const skills = (meta['skills'] as string[] | undefined) ?? []
     const name = String(meta['name'] ?? 'the place')
     const [a, b] = people
-    const c = people.slice(2).find((p) => !p.secret)
+    const c = people.slice(2).find((p) => !p.secret) ?? people.slice(1).find((p) => !p.secret)
     const [here, there] = [places[0] ?? '', places[1] ?? places[0] ?? '']
     return JSON.stringify({
       why: `${name} lives by what comes in on its road, and not all of it is honest.`,

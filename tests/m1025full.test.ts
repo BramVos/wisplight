@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { checkContent, Engine, MockLlm } from '../src/engine'
+import { checkContent, discoveredBook, Engine, MockLlm } from '../src/engine'
 import { regionRounds } from '../src/engine/growth/rounds'
 import { FULL_ROUNDS } from '../src/engine/growth/regionfull'
 import { regionMap } from '../src/engine/map/region'
@@ -68,10 +68,40 @@ describe('M10.25: a new region built in full', () => {
     expect(engine.state.growth!.stories!['grey_saltings']).toBeDefined()
     expect(checkContent(engine.content)).toEqual([])
     expect(engine.chronicle()).toMatch(/the Grey Saltings built in full/i)
+    // The game's own book says how full it was built and what the story round wrote, never its secrets.
+    expect(discoveredBook(engine)).toMatch(/### The Grey Saltings[\s\S]*Built in full: \d+ places, \d+ people and what they live by[\s\S]*Its story round wrote a matter to take up \(The Missing Tally\)/)
     // The log plays back to the same region, without the model.
     const replayed = await Engine.replay(content, 3, engine.save().log)
     expect(replayed.state.growth!.fulls).toEqual(engine.state.growth!.fulls)
     expect(replayed.content.npcs.has(`npc_wobbe_${area}`)).toBe(true)
+  }, 120_000)
+
+  it('keeps a round waiting when it gets no answer (the hour\'s budget), and the rounds after it with it', async () => {
+    const mock = new MockLlm('good')
+    let refused = 0
+    const llm = {
+      complete: async (r: Parameters<MockLlm['complete']>[0]) => {
+        if (r.schemaName === 'world_step' && r.meta?.['step'] === 'places' && refused < 1) {
+          refused++
+          throw new Error('the hourly budget is used up')
+        }
+        return mock.complete(r)
+      },
+    }
+    const engine = new Engine(content, { seed: 3, builder: true, llm })
+    await toTheSaltings(engine, 'full')
+    await engine.runModels()
+    // The places found no answer: nothing of the build is done yet, all of it still waits.
+    expect(engine.state.growth!.fulls?.['grey_saltings']?.done ?? []).toEqual([])
+    expect(engine.state.growth!.fullPending!.length).toBe(FULL_ROUNDS.length)
+    for (let i = 0; i < 3; i++) {
+      await engine.runModels()
+      await engine.handle('look')
+    }
+    const full = engine.state.growth!.fulls!['grey_saltings']!
+    expect(full.rounds!['places']).toEqual({ kept: true })
+    // A round in play counts in the game's hour, not as a build in the editor.
+    expect(mock.calls.filter((c) => c.schemaName === 'world_step').every((c) => c.meta?.['prefix'] === '')).toBe(true)
   }, 120_000)
 
   it('asks once for the whole build, above the player\'s threshold', async () => {

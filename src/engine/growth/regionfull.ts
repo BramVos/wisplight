@@ -34,6 +34,8 @@ export interface RegionFull {
   done: string[]
   entities: Record<string, Raw[]>
   t: number
+  /** What came of each round: kept, or why not (M10.25: the played proof needs to see it). */
+  rounds?: Record<string, { kept: boolean; problems?: string[] }>
 }
 
 /** The kinds a region's build may keep: its own things, never the world's keys, rules, factions or lines. */
@@ -117,7 +119,8 @@ export function fullRequest(world: World, topic: string, round: FullRound): LlmR
   if (!scope) return undefined
   const { files } = filesOf(world, topic)
   const base = round === 'polish' ? polishRequest(files, toPolish(world, scope.area), true) : worldStepRequest(files, round, regionBrief(world, topic), undefined, scope)
-  return { ...base, priority: 'low', meta: { ...(base.meta ?? {}), full: topic, round } }
+  // A round in play counts in the game's hour, not as a build in the editor (the gateway takes a prefix for one).
+  return { ...base, priority: 'low', meta: { ...(base.meta ?? {}), prefix: '', full: topic, round } }
 }
 
 /** A step's answer read and checked on the game's files; the region's file takes what is new. */
@@ -167,7 +170,7 @@ export function fullLayer(world: World, topic: string, draft: Draft): Record<str
  * content still checks; the round is done either way, so it is not asked
  * again. Returns whether it was kept.
  */
-export function applyFull(world: World, topic: string, round: FullRound, layer: Record<string, Raw[]> | null): boolean {
+export function applyFull(world: World, topic: string, round: FullRound, layer: Record<string, Raw[]> | null, problems: string[] = []): boolean {
   const g = growth(world)
   g.fullPending = (g.fullPending ?? []).filter((k) => k !== `${topic}:${round}`)
   const had = g.fulls?.[topic] ?? { done: [], entities: {}, t: world.now }
@@ -188,7 +191,8 @@ export function applyFull(world: World, topic: string, round: FullRound, layer: 
       kept = false
     }
   }
-  ;(g.fulls ??= {})[topic] = kept ? next : { ...had, done }
+  const rounds = { ...(had.rounds ?? {}), [round]: { kept, ...(problems.length ? { problems: problems.slice(0, 5) } : {}) } }
+  ;(g.fulls ??= {})[topic] = kept ? { ...next, rounds } : { ...had, done, rounds }
   if (kept) {
     world.regrow()
     for (const raw of layer!['npcs'] ?? []) {
@@ -238,7 +242,7 @@ export function fullFixRequest(world: World, topic: string, round: FullRound, dr
   if (!scope || round === 'polish') return undefined
   const { files } = filesOf(world, topic)
   const base = worldFixRequest(files, round, regionBrief(world, topic), draft, draft.problems, scope)
-  return { ...base, priority: 'low', meta: { ...(base.meta ?? {}), full: topic, round } }
+  return { ...base, priority: 'low', meta: { ...(base.meta ?? {}), prefix: '', full: topic, round } }
 }
 
 /** A round with the chronicler's corrections put in, checked again on the game's files. */

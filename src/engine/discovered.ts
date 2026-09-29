@@ -1,3 +1,4 @@
+import type { World } from './world'
 import type { Engine, JournalEntry } from './engine'
 import { DEFAULT_PALETTE } from './map/palette'
 import { hexMapData, type HexMapData } from './map/view'
@@ -108,6 +109,8 @@ export function discoveredBook(engine: Engine): string {
       ...(o.story ? para(o.story) : []),
       ...para(`Its quarters: ${o.districts.map((d) => `${d.name} (${d.line})`).join('; ')}.`),
       ...para(`How it came about: charted on ${world.date(t)}, when the stranger went on into the unknown. ${o.why}`),
+      // How full it was built, and what the story round wrote (M10.25): what came of it, never its secrets.
+      ...para(builtLine(world, o.id)),
     ]),
   )
 
@@ -181,4 +184,20 @@ export function discoveredAtlasHtml(engine: Engine, pictures: (id: string) => st
       return data ? hexMapSvg(seenWindow(data), palette, `The land ${who} has seen`) : ''
     },
   })
+}
+
+/** How full a charted region was built (M10.25), and what its story round wrote, in a line for the book. */
+function builtLine(world: World, topic: string): string {
+  const g = world.state.growth
+  const full = g?.fulls?.[topic]
+  const story = g?.stories?.[topic]
+  const count = (key: string) => (full?.entities[key] ?? []).length
+  const setting = full ? `Built in full: ${count('locations')} places, ${count('npcs')} people and what they live by, by the world build's own steps.` : story?.by === 'chronicler' ? 'Built with its story.' : 'Built to its outline.'
+  if (!story) return setting
+  const quest = story.quest ? `a matter to take up (${String(story.quest['name'])})` : undefined
+  const lore = story.lore ? `a tale (${String(story.lore['name'])})` : undefined
+  const customs = story.watchers.length ? `${story.watchers.length} custom${story.watchers.length === 1 ? '' : 's'}` : undefined
+  const secrets = Object.keys(story.secrets).length ? `secrets for ${Object.keys(story.secrets).length} of its people` : undefined
+  const wrote = [quest, customs, lore, secrets].filter(Boolean)
+  return `${setting}${wrote.length ? ` Its story round wrote ${wrote.join(', ').replace(/, ([^,]*)$/, ' and $1')}.` : ''}`
 }
