@@ -676,13 +676,18 @@ export function agreementLines(world: World, npcId: string): string[] {
   return lines.slice(0, 4)
 }
 
+/** One open agreement with the player, as the journal says it (and the hint at departure, M10.21). */
+export function promiseLine(world: World, a: Agreement): string {
+  return a.by === 'player' ? `You promised ${nameOf(world, a.to)}: ${a.what}${when(world, a.due)}.` : `${capitalise(nameOf(world, a.by))} agreed: ${toPlayer(a.what)}${when(world, a.due)}.`
+}
+
 /** The journal page "Your word and theirs": what is open with the player, and how the last ones went. */
 export function promiseLines(world: World): string[] {
   const withPlayer = agreements(world).filter((a) => (a.by === 'player' || a.to === 'player') && !a.part)
   const open = withPlayer.filter((a) => a.status === 'open')
   const done = withPlayer.filter((a) => a.status !== 'open' && world.now - (a.outcome?.t ?? 0) < 14 * DAY).slice(-6)
   const lines: string[] = []
-  for (const a of open) lines.push(a.by === 'player' ? `You promised ${nameOf(world, a.to)}: ${a.what}${when(world, a.due)}.` : `${capitalise(nameOf(world, a.by))} agreed: ${toPlayer(a.what)}${when(world, a.due)}.`)
+  for (const a of open) lines.push(promiseLine(world, a))
   if (done.length) lines.push('', 'How it went:', ...done.map((a) => `  ${capitalise(toPlayer(a.what))}: ${toPlayer(a.outcome!.text)} (${STATUS[a.status]}).`))
   return lines.length ? lines : ['You have given nobody your word, and nobody has given you theirs.']
 }

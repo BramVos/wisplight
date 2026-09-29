@@ -9,6 +9,7 @@ import { areaTopicId } from '../content'
 import type { Passage } from './passageSchema'
 import { weather, weatherLine } from '../weather'
 import type { World } from '../world'
+import { departureHint } from '../leaving'
 import { farPlaceOf, wantFarPlace } from '../growth/far'
 import { centre } from './hexgrid'
 import { duration, listOf } from './journeyText'
@@ -227,6 +228,9 @@ export function journeyOfDays(world: World, host: PassageHost, how: { by?: Passa
   const days = Math.max(1, Math.ceil(how.minutes / DAY))
   const lines: string[] = []
   const checks: Output[] = []
+  // Leaving the region with threads open (M10.21): one hint, before the days go by and quests and promises lapse.
+  const farOf = (id: string) => Boolean(world.content.areas.get(world.location(id).area)?.topic)
+  const hint = farOf(how.to) && !farOf(world.state.player.location) ? departureHint(world, how.minutes) : undefined
   // Away from everyone: where the stranger is going is where they are, for the world at home.
   world.state.player.location = how.to
   let left = how.minutes
@@ -244,7 +248,7 @@ export function journeyOfDays(world: World, host: PassageHost, how: { by?: Passa
   const farAway = Boolean(world.content.areas.get(world.location(how.to).area)?.topic)
   const home = journeyHome(world, farAway)
   const text = [how.opening, ...(home && farAway ? [home] : []), ...lines, `You come to ${world.location(how.to).name}.`, ...(home && !farAway ? [home] : [])].join(' ')
-  return [...checks, { kind: 'narration', text, journey: true }]
+  return [...(hint ? [hint] : []), ...checks, { kind: 'narration', text, journey: true }]
 }
 
 function dayOnTheWay(world: World, p: Passage | undefined): { text?: string; check?: Output; extra?: number } | undefined {

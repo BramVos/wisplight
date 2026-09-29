@@ -45,7 +45,8 @@
     "land": {
       "pick": "Pick a place to see how to get there:",
       "waysTo": "Ways to {name}:",
-      "noWay": "You know of no way there yet."
+      "noWay": "You know of no way there yet.",
+      "leaving": "What you leave open if you go now:"
     },
     "title": "Map",
     "label": "Map of the land around you",

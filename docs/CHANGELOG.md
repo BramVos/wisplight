@@ -1,5 +1,15 @@
 # Changelog
 
+## M10.21 deel: de wenk bij het vertrek, 29 september 2026
+
+- **Wie de streek verlaat met open draden, krijgt één wenk.** Het maakt niet uit of je over de rand van de kaart gaat of een lijn neemt. De wenk bestaat uit de twee zwaarste draden, met de naam en de stand erbij: een open quest (met "In 30 days it goes on without you" als hij verloopt), een verzoek ("Aaltje waits for you"), je woord ("You promised Mirte: ..., within 2 days", met "Away, you will miss it, and it will be remembered" als het onderweg vervalt) of een schuld. Een belofte die onderweg vervalt, weegt het zwaarst.
+- **In de wereld, nooit een venster.** Reist er een metgezel mee, dan zegt die het ("Wouter, as you set off: "Before we go. ..."). Anders is het je eigen gedachte. Er komt geen vraag en niets houdt je tegen: één wenk per vertrek. De weg terug naar de streek geeft geen wenk.
+- **Het dagboek toont hetzelfde** onder de landkaart als je een bestemming kiest: "What you leave open if you go now:".
+
+Testen: neem een quest aan (bijvoorbeeld de grijze kat van Grietje) en loop vanaf Oude Zijl naar het westen tot de rand, en kies `1`. Of kijk in het dagboek onder You > The land map en kies een bestemming. Tests in `tests/m1021leaving.test.ts`. In de speeltest `faraway` staat de wenk nu bij het vertrek naar Graafhaven.
+
+Bewust anders: de wenk komt uit de sjablonen en niet door de stem van een model, zodat hij altijd hetzelfde leest en niets kost. De waard of schipper zegt hem niet, omdat de vervoerder in de content een woord is en geen persoon die je kent. Een uitbreidingsronde bestaat nog niet (M10.24), dus die geeft ook geen wenk.
+
 ## M10.22 deel: één cadans, één wachtrij, met een rem in echte tijd, 29 september 2026
 
 - **Eén nachtronde wacht tegelijk.** Wat later op de nacht binnenkomt, gaat in dezelfde ronde. Een nachtronde neemt de twaalf belangrijkste signalen (de wereldknop `story.signals_per_night`). De rest wacht één nacht en gaat daarna terug naar de regels, zodat niets eeuwig wacht.

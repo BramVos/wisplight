@@ -96,6 +96,7 @@ Ways on: north, north-east, south-east, south.
 # At the edge: go on to Graafhaven on foot.
 
 > 1
+As you set off, you think of what you leave behind. Flour for Veenhoek: Mirte needs flour for Veenhoek's bread before market day on Zaterdag. The mill stands still for want of sailcloth, and Lubbert in Waagdam asks double.
 (Survival 2 vs DC 12: failure)
 You leave the Holleveen behind and go on across country for Graafhaven. It takes a day and 20 hours. On the first day, a hard stretch of the way costs you half a day and most of your temper. On the second day, mist lies over everything and muffles every sound. You come to The Gate of Graafhaven.
 The Gate of Graafhaven

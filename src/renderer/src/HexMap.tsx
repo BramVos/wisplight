@@ -1034,6 +1034,16 @@ export function LandMap({ data, style, label: ariaLabel, onCommand }: { data: La
             </button>
           ))}
           {chosen && !chosen.ways?.length && <p className="muted small">{t('app.map.land.noWay')}</p>}
+          {chosen && Boolean(data.leaving?.length) && (
+            <div className="land-leaving small">
+              <p className="muted">{t('app.map.land.leaving')}</p>
+              <ul>
+                {data.leaving!.map((line) => (
+                  <li key={line}>{line}</li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       )}
     </div>

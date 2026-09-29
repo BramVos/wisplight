@@ -1,4 +1,5 @@
 import type { World } from '../world'
+import { openThreads } from '../leaving'
 import { centre, type Hex, hexAt } from './hexgrid'
 import { noise, regionMap, type RegionMap } from './region'
 import { DEFAULT_PALETTE, type MapPalette } from './palette'
@@ -165,6 +166,8 @@ export interface LandMapData {
   places: { name: string; x: number; y: number; topic?: string; ways?: { label: string; command: string }[]; level: 'sketch' | 'outline' | 'place' }[]
   routes: { name: string; from: [number, number]; to: [number, number] }[]
   palette: MapPalette
+  /** The threads the stranger would leave open by setting off (M10.21, the hint at departure), heaviest first. */
+  leaving?: string[]
 }
 
 export function landMapData(world: World): LandMapData | undefined {
@@ -196,11 +199,13 @@ export function landMapData(world: World): LandMapData | undefined {
     if (from && to) routes.push({ name: route.name, from, to })
   }
   const here = map.posOf(playerHexOr(world, map))
+  const leaving = openThreads(world).slice(0, 4).map((t) => (t.then ? `${t.text} ${t.then}` : t.text))
   return {
     region: { name: map.region.name, x: region.origin[0], y: region.origin[1], w: region.size[0], h: region.size[1] },
     you: here,
     places,
     routes,
     palette: world.content.world.map?.palette ?? DEFAULT_PALETTE,
+    ...(leaving.length ? { leaving } : {}),
   }
 }
