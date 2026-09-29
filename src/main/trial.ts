@@ -104,8 +104,9 @@ export async function buildTrial(ai: TrialAi, trial: BuildTrial, root: string, s
       say(`${step.id}: no chapter, skipped`)
       continue
     }
-    const name = `${String(i + 1).padStart(2, '0')}-${step.id}.json`
-    const kept = join(trial.fixtures, name)
+    // A recording is found by its step, whatever number it had when the guide had fewer steps (M10.23 added Lands).
+    const had = existsSync(trial.fixtures) ? readdirSync(trial.fixtures).find((f) => f.endsWith(`-${step.id}.json`)) : undefined
+    const kept = join(trial.fixtures, had ?? `${String(i + 1).padStart(2, '0')}-${step.id}.json`)
     if (trial.steps.length && !trial.steps.includes(step.id)) {
       if (!existsSync(kept)) {
         say(`${step.id}: not asked and no recorded reply; stopped`)

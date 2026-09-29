@@ -476,7 +476,7 @@ const WORLD_STEP_SCHEMA = {
 
 /** The files a proposal may write whole, next to world.yaml. */
 // The journey too (M10.20): the transport step fills it, and in The Quiet Reach it had no way to send it.
-const DRAFT_FILES = /^(?:CHRONICLER\.md|data\/voice\.yaml|data\/journey\.yaml)$/
+const DRAFT_FILES = /^(?:CHRONICLER\.md|data\/voice\.yaml|data\/journey\.yaml|lands\/[a-z0-9_]+\/(?:land|voice)\.yaml)$/
 
 /**
  * A whole data file with its top-level key put back when the proposal left it
@@ -522,6 +522,21 @@ export function draftResult(files: ContentFile[], draft: Pick<Draft, 'changes' |
     next = patched.files
     if (patched.change) note(patched.change)
   }
+  const prefix = worldPrefix(files)
+  const pathOf = (file: { path: string }) => file.path.replace(/^\/+/, '').replace(new RegExp(`^${prefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`), '')
+  // A new land's own files first (M10.23): the areas, the reach and the rest may name it.
+  const landFirst = (file: { path: string }) => /^lands\//.test(pathOf(file))
+  const whole = [...(draft.files ?? []).filter(landFirst), ...(draft.files ?? []).filter((f) => !landFirst(f))]
+  const put = (file: { path: string; text: string }) => {
+    const path = pathOf(file)
+    const full = `${prefix}${path}`
+    const text = rootedFile(path, file.text)
+    const before = next.find((f) => f.path === full)
+    if (before?.text === text) return
+    next = before ? next.map((f) => (f === before ? { ...f, text } : f)) : [...next, { path: full, text }]
+    note({ path: full, ...(before ? { before: before.text } : {}), text })
+  }
+  for (const file of whole.filter(landFirst)) if (DRAFT_FILES.test(pathOf(file))) put(file)
   // The builder adds the way back for every exit, as the world guide tells the chronicler.
   const edits = withReturnExits(next, draftEdits(draft, next))
   if (edits.length) {
@@ -530,19 +545,12 @@ export function draftResult(files: ContentFile[], draft: Pick<Draft, 'changes' |
     if (!applied.ok) return { ...applied, changes: [...changes.values()] }
     next = applied.files
   }
-  const prefix = worldPrefix(files)
-  for (const file of draft.files ?? []) {
-    const path = file.path.replace(/^\/+/, '').replace(new RegExp(`^${prefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`), '')
-    if (!DRAFT_FILES.test(path)) {
-      problems.push(`${file.path}: a proposal may write only CHRONICLER.md, data/voice.yaml and data/journey.yaml whole; the rest goes in world or changes.`)
+  for (const file of whole.filter((f) => !landFirst(f) || !DRAFT_FILES.test(pathOf(f)))) {
+    if (!DRAFT_FILES.test(pathOf(file))) {
+      problems.push(`${file.path}: a proposal may write only CHRONICLER.md, data/voice.yaml, data/journey.yaml and a land's lands/<id>/land.yaml and voice.yaml whole; the rest goes in world or changes.`)
       continue
     }
-    const full = `${prefix}${path}`
-    const text = rootedFile(path, file.text)
-    const before = next.find((f) => f.path === full)
-    if (before?.text === text) continue
-    next = before ? next.map((f) => (f === before ? { ...f, text } : f)) : [...next, { path: full, text }]
-    note({ path: full, ...(before ? { before: before.text } : {}), text })
+    put(file)
   }
   if (problems.length) return { ok: false, problems, files: next, changes: [...changes.values()] }
   try {
@@ -743,7 +751,7 @@ export function worldStepRequest(files: ContentFile[], stepId: string, said: str
     requiredFields(),
     '',
     instruction,
-    'Answer in JSON: say, questions, changes (a new thing as full YAML; to add to or change a thing that exists, merge: true with only the fields you set, each of which replaces that field whole, so give a list whole; empty YAML without merge deletes), world (YAML of the top-level world.yaml keys to set, or empty), rules (YAML of the top-level keys of the rules to set, such as death, or empty; patrons, conditions and ancestries are changes), files (CHRONICLER.md, data/voice.yaml under its key voice:, or data/journey.yaml under its key journey:, each whole, or none).',
+    'Answer in JSON: say, questions, changes (a new thing as full YAML; to add to or change a thing that exists, merge: true with only the fields you set, each of which replaces that field whole, so give a list whole; empty YAML without merge deletes), world (YAML of the top-level world.yaml keys to set, or empty), rules (YAML of the top-level keys of the rules to set, such as death, or empty; patrons, conditions and ancestries are changes), files (CHRONICLER.md, data/voice.yaml under its key voice:, data/journey.yaml under its key journey:, or for a land lands/<id>/land.yaml under land: and lands/<id>/voice.yaml, each whole, or none).',
     '',
   ].join('\n')
   const changing = [

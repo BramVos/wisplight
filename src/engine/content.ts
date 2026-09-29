@@ -1004,6 +1004,12 @@ export const WorldSchema = z.object({
    * or for a table the rows that differ.
    */
   knobs: z.record(z.string(), z.union([z.number(), z.record(z.string(), z.number())])).optional(),
+  /**
+   * How well two lands know each other (M10.23): none, rumour, trade or close,
+   * per pair (the home land is the world's id). A pair without an entry has
+   * trade where a line of transport or a route joins them, and none otherwise.
+   */
+  reach: z.array(z.object({ between: z.tuple([z.string(), z.string()]), reach: z.enum(['none', 'rumour', 'trade', 'close']), why: z.string().optional() }).strict()).default([]),
 })
 export type WorldDef = z.infer<typeof WorldSchema>
 
@@ -1483,6 +1489,11 @@ function checkLands(world: WorldDef, c: Omit<Content, 'world'>): string[] {
   const land = (id: string | undefined, where: string) => {
     if (id && !c.lands.has(id)) problems.push(`${where}: unknown land ${id}`)
   }
+  // How well lands know each other (M10.23): lands of this world, the home land by the world's id.
+  for (const r of world.reach ?? []) {
+    for (const l of r.between) if (l !== world.id) land(l, 'world.reach')
+    if (r.between[0] === r.between[1]) problems.push(`world.reach: ${r.between[0]} with itself`)
+  }
   for (const a of c.areas.values()) {
     land(a.land, `area ${a.id}.land`)
     // A blend names a land, or the home land by the world's id.
@@ -1721,7 +1732,7 @@ function checkReferences(world: WorldDef | undefined, c: Omit<Content, 'world'>)
     for (const a of tide.areas) if (!c.areas.has(a)) problems.push(`tide ${tide.id}: unknown area ${a}`)
     if (!c.plans.has(tide.plan)) problems.push(`tide ${tide.id}: unknown plan ${tide.plan}`)
     if (tide.threshold <= tide.threat) problems.push(`tide ${tide.id}: the threshold (${tide.threshold}) must be above the threat (${tide.threat})`)
-    // The two at the table (M10.22): people of the world, and two of them.
+    // (M10.22) The two at the table: people of the world, and two of them.
     if (tide.mediation) {
       for (const n of tide.mediation.between) if (!c.npcs.has(n)) problems.push(`tide ${tide.id}: mediation between ${n}, who is no person`)
       if (tide.mediation.between[0] === tide.mediation.between[1]) problems.push(`tide ${tide.id}: mediation needs two different people`)

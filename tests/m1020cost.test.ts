@@ -36,7 +36,8 @@ describe('M10.20: the world steps are cached and measured', () => {
     expect(first).not.toContain('THE STEPS:')
     expect(first).not.toContain('WHAT THE DESIGNER HAS SAID AND DECIDED BEFORE')
     expect(first).not.toMatch(/This world has \d+|Empty now:/)
-    expect(requests[5]!.system.slice(requests[5]!.cacheBreak)).toContain('HOW A PLACE READS')
+    const places = requests[WORLD_STEPS.findIndex((s) => s.id === 'places')]!
+    expect(places.system.slice(places.cacheBreak)).toContain('HOW A PLACE READS')
     // A world with one more place reads the same cached part; its counts go with the step.
     const more = [...files, { path: 'quietreach/areas/extra.yaml', text: 'locations:\n  - id: loc_extra\n    name: Extra\n    area: nacre\n    description: { day: A room. }\n' }]
     expect(fixed(worldStepRequest(more, 'people', 'x'))).toBe(first)
@@ -134,7 +135,8 @@ describe('M10.20: the world steps are cached and measured', () => {
     expect(lines.filter((l) => /does not load|stopped/.test(l))).toEqual([])
     expect(ok).toBe(true)
     expect(limits).toEqual([3])
-    expect(readdirSync(join(dir, 'fixtures'))).toEqual([...WORLD_STEPS.map((s, i) => `${String(i + 1).padStart(2, '0')}-${s.id}.json`), 'build.json'])
+    // Bram's document has no chapter on lands (M10.23): that step is skipped, and one land it is.
+    expect(readdirSync(join(dir, 'fixtures'))).toEqual([...WORLD_STEPS.map((s, i) => `${String(i + 1).padStart(2, '0')}-${s.id}.json`).filter((f) => !f.endsWith('-lands.json')), 'build.json'])
     const frame = JSON.parse(readFileSync(join(dir, 'fixtures/01-frame.json'), 'utf8')) as Record<string, unknown>
     expect(frame).toMatchObject({ build: 'reach_trial', step: 'frame', chapter: 'Frame', model: 'mock-1', provider: 'mock' })
     expect(JSON.stringify(frame)).not.toMatch(/usd|cost/i)

@@ -7,6 +7,7 @@ import { standingOf } from './standing'
 import { heardClaim, provenWarnings, reconsider } from './belief'
 import type { Claim, Fact, Heard } from './state'
 import type { World } from './world'
+import { landIdOf, reachOf } from './reach'
 import { rideMinutes } from './map/passages'
 
 // News (design: lore and world change, "Wie weet wat"). A fact is written once
@@ -356,6 +357,11 @@ function newsArrives(world: World): void {
   if (fresh.length === 0) return
   const km = new Map<string, { km: number; hours: number }>()
   const areaOf = (place: string) => world.content.locations.get(place)?.area ?? place
+  const landsOf = (a: string, b: string): [string, string] | undefined => {
+    const la = landIdOf(world.content, areaOf(a))
+    const lb = landIdOf(world.content, areaOf(b))
+    return la === lb ? undefined : [la, lb]
+  }
   const kmOf = (a: string, b: string) => {
     const key = `${areaOf(a)}|${areaOf(b)}`
     let v = km.get(key)
@@ -372,9 +378,17 @@ function newsArrives(world: World): void {
       if (heard[fact.id] || (!away && fact.belang < 4)) continue
       // Worked out once per area, not per person (M9.3).
       const { km, hours } = kmOf(fact.place, where)
-      if (km > REACH_KM[fact.belang]!) continue
-      if (world.now < fact.t + hours * 60) continue
-      const h: Heard = { level: km <= 10 ? 2 : 1, reliability: km <= 10 ? 0.8 : 0.6, from: 'news', t: world.now }
+      // Between two lands (M10.23), news goes as far as they know each other: none never, a rumour only
+      // of the greatest news and after a month, trade in weeks, close as within one land.
+      const between = landsOf(fact.place, where)
+      const known = between ? reachOf(world.content, between[0], between[1]) : 'close'
+      if (known === 'none' || (known === 'rumour' && fact.belang < 5)) continue
+      const late = known === 'rumour' ? 28 * 24 : known === 'trade' ? 7 * 24 : 0
+      if (known === 'close' && km > REACH_KM[fact.belang]!) continue
+      if (world.now < fact.t + Math.max(hours, late) * 60) continue
+      const h: Heard = { level: km <= 10 && !between ? 2 : 1, reliability: km <= 10 && !between ? 0.8 : 0.6, from: 'news', t: world.now }
+      // What one land heard of another, and how late (M10.23): for the chronicle of the game.
+      if (between) (store.landHeard ??= {})[`${fact.id}>${between[1]}`] ??= world.now
       heard[fact.id] = h
       heardClaim(world, id, fact, h)
       if (!away) noticed(world, id, fact)

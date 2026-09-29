@@ -2,6 +2,7 @@ import { GameClock } from './clock'
 import { callName } from './content'
 import { requestName } from './requests'
 import { tidesChronicle } from './tidepages'
+import { frameOf } from './lands'
 import type { World } from './world'
 
 // The true chronicle of a game (design: lore and world change, "Wat de speler
@@ -37,6 +38,18 @@ export function chronicleText(world: World, start: number): string {
       for (const text of [entry.story || entry.details || entry.summary, entry.far && `Far away they say: ${entry.far}`]) if (text) lines.push(`  ${text}`)
       lines.push('')
     }
+  }
+  // What one land heard of another, and how late (M10.23).
+  const across = Object.entries(world.state.news?.landHeard ?? {}).sort((a, b) => a[1] - b[1])
+  if (across.length) {
+    lines.push('NEWS BETWEEN THE LANDS')
+    for (const [key, t] of across) {
+      const [factId, land] = key.split('>') as [string, string]
+      const fact = world.state.news?.facts.find((f) => f.id === factId)
+      if (!fact) continue
+      lines.push(`  ${capital(fact.title)}: heard in ${frameOf(world.content, land === world.content.world.id ? undefined : land).name} on ${new GameClock(t).short(world.calendar)}, ${Math.max(0, Math.round((t - fact.t) / (24 * 60)))} days after.`)
+    }
+    lines.push('')
   }
   // Every judgement of the great lines (M10.22), also the months nothing came of it.
   const tides = tidesChronicle(world)

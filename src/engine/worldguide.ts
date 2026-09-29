@@ -9,7 +9,7 @@
 // Nethermarch but the engine.
 
 export interface WorldStep {
-  id: 'frame' | 'calendar' | 'money' | 'faiths' | 'voice' | 'palette' | 'places' | 'people' | 'professions' | 'passages' | 'economy' | 'watcher'
+  id: 'frame' | 'voice' | 'lands' | 'calendar' | 'money' | 'faiths' | 'palette' | 'places' | 'people' | 'professions' | 'passages' | 'economy' | 'watcher'
   /** A short English label for the editor tab. */
   title: string
   /** What to ask the designer, in order; at most three. */
@@ -114,6 +114,26 @@ export const WORLD_STEPS: readonly WorldStep[] = [
     ],
     prompt:
       'STEP: THE VOICE. Agree how people speak with the designer. Propose data/voice.yaml in `files`, in the shape the builder shows for voice, with the oaths (keyed by faith id only), sayings, groups (by the areas people live in or their professions, each with its own sayings and oaths: what technicians or coast folk exclaim goes on their group), forms of address, time and measures, and the words that do not exist here. This step comes right after the frame (M10.20), so every place and person after it is written in this voice: faiths, places and professions do not exist yet, so oaths keyed by faith wait for the faith step, and a group names its areas and professions once the places and professions steps have made them (until then a group has only its name, sayings and oaths).',
+  },
+  {
+    id: 'lands',
+    title: 'Lands',
+    ask: [
+      'Is it all one land, or are there other lands with a frame of their own: another tongue, other coins, another law?',
+      'Which areas or regions belong to each, and where are the borders: a bridge, a pass, a toll house, a harbour?',
+      'How well do the lands know each other: not at all, by rumour, by trade, or close with daily traffic?',
+    ],
+    fills: [{ kind: 'land' }, { kind: 'areas', keys: ['land', 'border', 'blend'] }, { kind: 'world', keys: ['reach'] }],
+    optional: true,
+    skipped: 'One land: the world is its home land and every area is of it. Between lands the reach is worked out from the content: close where a way on foot crosses, trade along a line of transport or a route, and none elsewhere.',
+    checks: [
+      'Only lands the designer or the world book names: what they do not assign stays the home land, and no land is guessed.',
+      'Every new land is a whole file lands/<id>/land.yaml under the key land:, with id (its folder), name and frame; what it leaves out it takes from the world, the calendar always.',
+      'A border is an area with border: true, where the crossing can be shown; an area of another land has land: <id>, and one that shades into its neighbour has blend: <land>.',
+      'reach names lands of this world, the home land by the world id, with none, rumour, trade or close.',
+    ],
+    prompt:
+      'STEP: LANDS. Agree with the designer which lands there are besides the home land (the world itself), which areas belong to each, where the borders are and how well the lands know each other. Propose each new land in `files` as lands/<id>/land.yaml, whole, under the key land: (id, name, frame, and only what differs from the world: words, names, faiths, money with units and rate, law, standing, sketch, palette), and its voice kit as lands/<id>/voice.yaml if its people speak otherwise. Give areas their land, border or blend as changes of kind area with merge: true. Put reach in `world`: a list of { between: [land, land], reach: none | rumour | trade | close, why }. A land nobody names is not made: without this step the world is one land.',
   },
   {
     id: 'calendar',
@@ -395,6 +415,7 @@ export interface StepCall {
 
 export const STEP_CALLS: Record<WorldStep['id'], StepCall> = {
   frame: { maxTokens: 4000, effort: 'medium', light: false, world: [], sees: [] },
+  lands: { maxTokens: 8000, effort: 'medium', light: false, world: ['words'], sees: ['areas', 'regions', 'passages', 'routes'] },
   voice: { maxTokens: 8000, effort: 'low', light: true, world: ['faiths', 'names'], sees: ['areas', 'professions', 'npcs'] },
   calendar: { maxTokens: 8000, effort: 'low', light: true, world: [], sees: [] },
   money: { maxTokens: 8000, effort: 'low', light: true, world: [], sees: ['items'] },

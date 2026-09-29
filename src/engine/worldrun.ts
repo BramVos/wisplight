@@ -45,6 +45,7 @@ const TITLES: [RegExp, WorldStep['id']][] = [
   [/transport|passage|travel|journey|route/i, 'passages'],
   [/signal|danger|watcher|threat/i, 'watcher'],
   [/palette|colour|color|map|picture/i, 'palette'],
+  [/\blands?\b|borders?|realms?|countr/i, 'lands'],
   [/place|location|setting/i, 'places'],
 ]
 

@@ -1,5 +1,18 @@
 # Changelog
 
+## M10.23 deel: landen kennen elkaar in graden, nieuws tussen landen, en de stap Landen, 29 september 2026
+
+- **Hoe goed twee landen elkaar kennen, staat in de content.** In world.yaml staat `reach:` per paar landen, met none, rumour, trade of close. Het thuisland heet naar de id van de wereld. Staat er niets, dan leidt het spel het af: close waar een weg te voet de grens over gaat, trade langs een lijn of route, en anders none. Skerrow zet trade met de Western Isles (de witte boot). Deepwell zet niets en krijgt close, omdat je te voet naar de Kessler Claim loopt.
+- **Het bereik stuurt het nieuws.** Bij none komt er nooit nieuws over de grens. Bij rumour komt alleen het grootste nieuws, na vier weken. Bij trade duurt het minstens een week, of de tijd van de lijn. Bij close gaat het als binnen één land. Over de grens hoor je de verre versie. De kroniek van het spel heeft een deel NEWS BETWEEN THE LANDS: wat het ene land van het andere hoorde, op welke dag en hoeveel dagen later.
+- **Het bereik stuurt ook handel en familie.** Routes tussen landen vervoeren pas waren vanaf trade. De weefronde legt een band over de grens pas vanaf trade.
+- **De grote lijnen per land.** De maandvraag noemt bij elke lijn de landen van haar gebieden, en één lijn mag er twee verbinden.
+- **De stap Landen in de wereldgids**, na Kader en Stem. Welke landen er zijn, welke gebieden erbij horen, waar de grenzen liggen, en hoe goed de landen elkaar kennen. Een voorstel mag `lands/<id>/land.yaml` en `voice.yaml` heel schrijven. De bestanden van een nieuw land gaan erin vóór de wijzigingen die het noemen. Zonder deze stap is de wereld één land.
+
+Testen: speel Skerrow, neem de witte boot naar Ynys Wen en kijk na een week in de kroniek van het spel. Of doe in de editor de stap Landen. Tests in `tests/m1023reach.test.ts` en `tests/m1023lands.test.ts`.
+
+Wat de editor en de kroniekverteller leerden: `reach` staat in het contract. De stap Landen heeft zijn exacte velden, controles en een neutrale standaard, en het mockmodel beantwoordt hem. Check noemt een bereik none tussen twee landen waar een lijn tussen loopt. `docs/NEW-WORLD.md` heeft een rij voor Landen.
+
+Bewust anders: de kroniekverteller krijgt alleen de namen die een verhaallijn hem aanbiedt. Hij verbindt twee landen dus alleen waar wat er gebeurde dat al deed, zonder eigen poort. De wereldbouw per land (dezelfde stappen, gescoped op een land) volgt apart.
 ## M10.23 deel: een ander land, met een grens en een eigen kader, 29 september 2026
 
 - **Een land is een laag in de content.** Naast haar thuisland mag een wereld andere landen hebben, elk in `content/<wereld>/lands/<land>/`. Daarin staat een `land.yaml` met het kader dat elke modelaanroep daar krijgt, en eigen woorden, namen, geloven, munten tegen een koers, wet, stand, schets, beeldstijl en palet. Er kan een eigen `voice.yaml` naast staan, met de gebieden, plaatsen en mensen van het land. Wat een land weglaat, neemt het van de wereld; de kalender en de klok altijd.

@@ -4,6 +4,7 @@ import { recordFact } from '../news'
 import type { Content } from '../content'
 import type { World } from '../world'
 import type { Route, Settlement } from './schema'
+import { landsTrade } from '../reach'
 
 // The ledger of a settlement (M8.4; design: signalen en nasleep, "Economie").
 // Once a game day, before the shops open: the workshops make what their hands
@@ -108,6 +109,8 @@ export const wholesale = (world: World, item: string) => Math.floor(value(world,
 export function routeOpen(world: World, route: Route): boolean {
   const state = world.state.economy?.routes[route.id]
   if (state?.closed ?? route.closed) return false
+  // Between two lands only where they trade (M10.23).
+  if (!landsTrade(world.content, route)) return false
   if (route.via) {
     const key = [...route.via].sort().join('|')
     if (world.state.closed?.[key]) return false

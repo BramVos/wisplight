@@ -10,6 +10,7 @@ import { tensionOf } from './social/realms'
 import type { Driver, Tide } from './tideschema'
 import { season } from './weather'
 import type { World } from './world'
+import { frameOf, landOfArea } from './lands'
 
 // The great lines (M10.22; Bram, 28 September 2026). A layer that thinks per
 // month, not per night: per great danger of a world (a war between two
@@ -164,7 +165,9 @@ export function tidesRequest(world: World): LlmRequest {
       'LINES:',
       ...[...world.content.tides.values()].map((t) => {
         const st = tideState(world, t.id)
-        return `  ${t.id}: ${t.name} (${t.kind}, in ${t.areas.map((a) => world.content.areas.get(a)?.name ?? a).join(', ')}). Pressure ${Math.round(st.pressure)}; it may threaten from ${t.threat} and break from ${t.threshold}. Now: ${st.stage}. Pushed lately by: ${st.moved.join('; ') || 'nothing'}. ALLOWS: ${allowed(world, t).join(', ')}.`
+        // Per land (M10.23): a line strikes in the lands of its areas, and may join two.
+        const lands = [...new Set(t.areas.map((a) => frameOf(world.content, landOfArea(world.content, a)).name))]
+        return `  ${t.id}: ${t.name} (${t.kind}, in ${t.areas.map((a) => world.content.areas.get(a)?.name ?? a).join(', ')}${world.content.lands.size ? `; ${lands.join(' and ')}` : ''}). Pressure ${Math.round(st.pressure)}; it may threaten from ${t.threat} and break from ${t.threshold}. Now: ${st.stage}. Pushed lately by: ${st.moved.join('; ') || 'nothing'}. ALLOWS: ${allowed(world, t).join(', ')}.`
       }),
       ...(big.length ? ['BIG NEWS OF THE MONTH:', ...big] : []),
     ].join('\n'),

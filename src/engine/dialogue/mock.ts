@@ -249,6 +249,9 @@ export class MockLlm implements LlmClient {
           world: stringify({ words: { land: name, region: name, from: 'far away' }, frame: `WORLD: ${firstLine || name}.\nREGION: ${name}, where the story begins.\nPEOPLE speak plain English.\n` }),
           files: [{ path: 'CHRONICLER.md', text: `## This world: ${name}\n\n- Keep to the frame: ${firstLine || name}.\n- Never invent a name the designer did not agree.\n` }],
         })
+      case 'lands':
+        // One land unless the designer names another (M10.23): the mock makes none, and the world stays whole.
+        return reply(`${name} stays one land: the world is its home land, and the reach between lands is worked out from its ways.`, {})
       case 'calendar': {
         const era = /\bera\b\s*[:=]?\s*([A-Za-z]{1,6})\b/i.exec(said)?.[1] ?? 'AL'
         const named = rows.map((r) => r[0]!).filter((c) => /^[A-Z][A-Za-z' -]{1,24}$/.test(c) && !HEADER.test(c))

@@ -110,6 +110,10 @@ world:
     headland went out in the storm, and no ship has called since. The stranger was washed up from
     the wreck of the Grey Gull, and the winter storms will soon close the sea.
     PEOPLE speak plain English with a salt turn of phrase. They count time by tides and bells.
+  # How well the lands know each other (M10.23): the white boat runs to Ynys Wen,
+  # so word and wares go back and forth, in the boat's time.
+  reach:
+    - { between: [skerrow, western_isles], reach: trade, why: The white boat runs between the harbour and Ynys Wen. }
   pictures:
     style: A small illustration in the manner of an old high-fantasy book plate, pen and ink with a light watercolour wash, sea greens and storm greys, a lone rocky island under a vast sky.
   intro: |

@@ -11,6 +11,7 @@ import { chronicleState } from '../storylines'
 import type { World } from '../world'
 import { districtOf, districtsOf } from './districts'
 import { growth } from './growth'
+import { atLeast, reachBetween } from '../reach'
 
 // The weave round (M10.22; Bram, 28 September 2026: does the chronicler come
 // by after a district to lay connections, family across districts, storylines
@@ -144,6 +145,8 @@ export function applyWeave(world: World, key: string, reply: WeaveReply | null):
     const pair = (fresh.includes(b.a) && before(b.b)) || (fresh.includes(b.b) && before(b.a)) ? [b.a, b.b] : undefined
     const why = fit(b.why, 240)
     if (!pair || !why || !isRole(b.role) || tieTo(world, b.a, b.b) || tieTo(world, b.b, b.a)) continue
+    // Family over a border only where the two lands trade (M10.23).
+    if (!atLeast(reachBetween(world.content, world.npc(b.a).home, world.npc(b.b).home), 'trade')) continue
     setTie(world, b.a, b.b, b.role as RelationRole, 1, why)
     recordFact(world, { kind: 'weave', about: [b.a, b.b], place: place(b.a), belang: 1, title: `${world.npc(b.a).name} and ${world.npc(b.b).name}`, text: { precise: why, village: why, far: `${world.npc(b.a).name} has people far away.` } })
     kept.bonds++

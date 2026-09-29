@@ -5,6 +5,7 @@ import { gainXp } from '../rules/player'
 import type { World } from '../world'
 import { aimOf, economy, placeOf, settlementAt } from './ledger'
 import type { Route } from './schema'
+import { landsTrade } from '../reach'
 
 // Hauling (M9.1; design: signalen en nasleep, "Werk, investeren, vervoeren").
 // Where a settlement has more of something than it keeps, and the other end
@@ -53,7 +54,7 @@ export function loadsHere(world: World): LoadOffer[] {
     ...(r.from === s.id ? [[r.to, r.carries] as [string, Record<string, number>]] : []),
     ...(r.to === s.id && world.content.settlements.has(r.from) ? [[r.from, r.returns] as [string, Record<string, number>]] : []),
   ]
-  for (const r of [...world.content.routes.values()].sort((a, b) => a.id.localeCompare(b.id))) {
+  for (const r of [...world.content.routes.values()].sort((a, b) => a.id.localeCompare(b.id)).filter((x) => landsTrade(world.content, x))) {
     for (const [to, carried] of lanes(r)) {
       const there = world.content.settlements.get(to)
       const theirs = state.ledgers[to]

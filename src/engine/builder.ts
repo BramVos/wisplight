@@ -1,6 +1,7 @@
 import type { Content } from './content'
 import { regionMap } from './map/region'
 import { questWarnings } from './quests/check'
+import { landIdOf } from './reach'
 
 // The checks the editor shows beside the errors (FO, chapter 15, "Schema's en
 // validatie"), and the region as the generator draws it. Edits themselves are
@@ -49,6 +50,16 @@ export function warnings(content: Content): string[] {
   }
   // A great line nothing can push (M10.22) never comes.
   for (const tide of content.tides.values()) if (!tide.drivers.some((d) => d.weight > 0)) out.push(`tide ${tide.id}: nothing pushes it (every driver's weight is 0 or less), so it never comes`)
+  // Two lands that know nothing of each other while a line of transport runs between them (M10.23).
+  for (const r of content.world.reach ?? []) {
+    if (r.reach !== 'none') continue
+    const [a, b] = r.between
+    const joined = [...content.passages.values()].some((p) => {
+      const lands = new Set(p.stops.map((stop) => landIdOf(content, content.locations.get(stop)?.area)))
+      return lands.has(a) && lands.has(b)
+    })
+    if (joined) out.push(`world.reach: ${a} and ${b} know nothing of each other (none), yet a line of transport runs between them`)
+  }
   // Two at one table who are on the same side (M10.22): there is nothing to settle between them.
   for (const tide of content.tides.values()) {
     const [a, b] = tide.mediation?.between ?? []

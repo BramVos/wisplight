@@ -24,6 +24,7 @@ const CHAPTERS: Record<string, string> = {
   passages: 'A ferry runs out to Gull Rock.',
   watcher: 'When someone becomes a friend.',
   voice: 'They swear by the sea.',
+  lands: 'It is all one land.',
   palette: 'Grey ink and a cold blue wash.',
 }
 

@@ -211,7 +211,7 @@ describe('M10.19: a proposal in the editor', () => {
     const files = await readContentFiles(join(import.meta.dirname, '../content'), 'base')
     const path = draftResult(files, { changes: [], files: [{ path: '../../../etc/passwd', text: 'root' }] })
     expect(path.ok).toBe(false)
-    expect(path.problems.join(' ')).toMatch(/may write only CHRONICLER\.md, data\/voice\.yaml and data\/journey\.yaml/)
+    expect(path.problems.join(' ')).toMatch(/may write only CHRONICLER\.md, data\/voice\.yaml, data\/journey\.yaml and a land's lands\/<id>\/land\.yaml and voice\.yaml/)
     const outside = draftResult(files, { changes: [], files: [{ path: 'base/../isle/CHRONICLER.md', text: 'x' }] })
     expect(outside.ok).toBe(false)
     // An id is a key (M9.1): gone from the lock without a tombstone, the world does not load.

@@ -704,7 +704,8 @@ export interface GameState {
   /** Story patterns in play, and the pacing (design: lore and world change). */
   stories?: StoriesState
   /** Facts and who heard them; "player" is the player. */
-  news?: { seq: number; facts: Fact[]; heard: Record<string, Record<string, Heard>> }
+  /** landHeard (M10.23): when news first reached another land, by `<fact>><land>`, for the chronicle. */
+  news?: { seq: number; facts: Fact[]; heard: Record<string, Record<string, Heard>>; landHeard?: Record<string, number> }
   /** The fact a waiting plan comes from (M9.2): a war, a big event the chronicler planned for. */
   pendingCauses?: Record<string, string>
   /** Nameless groups (M9.1): a number at a place, no simulation per person. */

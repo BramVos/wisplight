@@ -8,7 +8,7 @@ import { WORLD_GUIDE, WORLD_STEPS } from '../src/engine/worldguide'
 
 describe('the guide for a new world', () => {
   it('has every step once, in the order a world is built: the voice right after the frame (M10.20)', () => {
-    expect(WORLD_STEPS.map((s) => s.id)).toEqual(['frame', 'voice', 'calendar', 'money', 'faiths', 'places', 'professions', 'people', 'economy', 'passages', 'watcher', 'palette'])
+    expect(WORLD_STEPS.map((s) => s.id)).toEqual(['frame', 'voice', 'lands', 'calendar', 'money', 'faiths', 'places', 'professions', 'people', 'economy', 'passages', 'watcher', 'palette'])
   })
 
   it('asks at most three things per step, and says what happens when a step is skipped', () => {
