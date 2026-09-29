@@ -177,7 +177,11 @@ export function ConversationView({
     <div className="overlay talk-overlay" role="dialog" aria-modal="true" aria-label={t('conversation.dialog', { name: talk.name })}>
       <div className="panel talk">
         <header className="panel-head">
-          <h2>{talk.name}</h2>
+          <h2>
+            {/* Their colour (M10.29 I), as on the plan of here and their journal page. */}
+            {talk.colour && <span className="person-dot" style={{ background: talk.colour }} aria-hidden="true" />}
+            {talk.name}
+          </h2>
           <span className="muted small">{talk.attitude}</span>
           <span className="spacer" />
           <button type="button" className="link" onClick={onJournal}>

@@ -573,6 +573,7 @@ function PersonFields({ raw, view, isNew, onChange }: { raw: Raw; view: EditorVi
       {isNew && <Field label="Id (npc_...)" value={String(raw['id'] ?? '')} onChange={(v) => set('id', v)} />}
       <Field label="Name" value={String(raw['name'] ?? '')} onChange={(v) => set('name', v)} />
       <Field label="Called (when not the first name)" value={String(raw['call'] ?? '')} onChange={(v) => set('call', v || undefined)} />
+      <Field label="Colour (#rrggbb; left out, one from the id)" value={String(raw['colour'] ?? '')} onChange={(v) => set('colour', v || undefined)} />
       <Field label="Known as" value={String(raw['short'] ?? '')} onChange={(v) => set('short', v)} />
       <div className="row">
         <label>

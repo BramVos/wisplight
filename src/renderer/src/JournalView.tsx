@@ -225,7 +225,11 @@ export function JournalView({
               <p className="muted">{t('journal.page.empty')}</p>
             ) : (
               <>
-                <h3>{page.name}</h3>
+                <h3>
+                  {page.name}
+                  {/* Their colour (M10.29 I), top right, as on the plan of here and in the talk window. */}
+                  {page.kind === 'person' && page.person?.colour && <span className="person-dot page-dot" style={{ background: page.person.colour }} aria-hidden="true" />}
+                </h3>
                 {picture && <img className="page-picture" src={picture} alt={t('journal.page.picture', { name: page.name })} />}
                 {page.map && (
                   <pre className="map page-map" aria-label={t('journal.page.map', { name: page.name })}>
@@ -238,6 +242,12 @@ export function JournalView({
                         ))}
                       </div>
                     ))}
+                  </pre>
+                )}
+                {/* The plan of a settlement as you know it, as text (M10.29 I). */}
+                {page.planText && (
+                  <pre className="plan-text" aria-label={t('journal.page.plan', { name: page.name })}>
+                    {page.planText.join('\n')}
                   </pre>
                 )}
                 {page.sheet ? (

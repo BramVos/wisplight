@@ -1,3 +1,5 @@
+import { personColour } from './colour'
+import { planHere } from './plan'
 import { applyFull, fullDue, fullFixRequest, fullLayer, fullRequest, mergeFull, readFull, wantFull, type FullRound } from './growth/regionfull'
 import { applyStory, storyDue, storyReady, storyReply, storyRequest, wantStory, type StoryReply } from './growth/regionstory'
 import { wishLines } from './wishes'
@@ -34,7 +36,7 @@ import { followTombstones, followTombstonesInLog, nameBook, withNames, type Name
 import { shiftTension, tensionOf } from './social/realms'
 import { grownContent, invest } from './growth/growth'
 import { GameClock, weekdayName } from './clock'
-import { completionsHere, couldInstead, describeRoom, detailVerb, findNpcAnywhere, findNpcHere, runCommand, whichOfThem, type CommandHost, type Output } from './commands'
+import { completionsHere, couldInstead, describeRoom, detailVerb, findNpcAnywhere, findNpcHere, runCommand, walkWithin, whichOfThem, type CommandHost, type Output } from './commands'
 import { areaTopicId, callName, firstName, type Content, type Quest } from './content'
 import { Dialogue, QUICK_OPTIONS } from './dialogue/conversation'
 import { Knowledge } from './dialogue/knowledge'
@@ -203,7 +205,7 @@ export interface Status {
   paused: boolean
   /** A development build: the @ commands work and the editor can be opened. */
   builder?: boolean
-  talk?: { npc: string; name: string; call: string; attitude: string; turnsLeft: number; options: string[]; proposal?: string; pronoun: 'she' | 'he' | 'they'; lines: TalkLine[]; earlier?: EarlierTalk }
+  talk?: { npc: string; name: string; call: string; colour?: string; attitude: string; turnsLeft: number; options: string[]; proposal?: string; pronoun: 'she' | 'he' | 'they'; lines: TalkLine[]; earlier?: EarlierTalk }
   /** The talk that just ended (M10.8): its lines, for the window that stays until closed. */
   lastTalk?: { npc: string; lines: TalkLine[] }
   /** The clock and the sky for the top right (M10.8): weekday, date, hour, sun, dusk or moon, and the weather. */
@@ -213,6 +215,8 @@ export interface Status {
   journal: { quests: JournalEntry[]; people: JournalEntry[]; places: JournalEntry[]; lands: JournalEntry[]; factions: JournalEntry[]; events: JournalEntry[]; lore: JournalEntry[]; things: JournalEntry[] }
   /** The words Tab completes from (M10.29 K): the journal's names, who and what is here, the ways out, the pack. */
   completions?: string[]
+  /** The plan of this settlement as the stranger knows it (M10.29 I), for the side panel; none outside one. */
+  plan?: import('./plan').PlanData
   /** The map round the player: rows of characters, and a class code per character (FO, chapter 4). */
   map?: { rows: string[]; classes: string[] }
   /** The map round the player in colour (M10): the hexes the player knows, for the interface to draw. */
@@ -1648,6 +1652,9 @@ export class Engine {
       case 'walk': {
         const to = /^(?:to|naar|towards|richting)\s+(.+)$/i.exec(command.args.join(' '))
         if (!to) return runCommand(this.host, { verb: 'go', args: command.args, raw: command.raw })
+        // WALK TO a place of this settlement you have seen (M10.29 I: a click on the plan of here), by its exits.
+        const within = walkWithin(this.host, to[1]!)
+        if (within) return within
         // WALK TO 42,17 (after the M10 playtest): a hex you have seen, as a click on the minimap sends it.
         const spot = /^(\d+)\s*,\s*(\d+)$/.exec(to[1]!.trim())
         if (spot) return this.walkToHex({ col: Number(spot[1]), row: Number(spot[2]) })
@@ -1974,6 +1981,7 @@ export class Engine {
     // On the way to a region still being laid out (M10.25), the stranger is not there yet.
     const underway = this.state.growth?.underway
     const journal = this.journal()
+    const plan = planHere(this.world)
     return {
       location: underway?.held ? `On the way to ${underway.name}` : location.name,
       area: this.content.areas.get(location.area)?.name ?? location.area,
@@ -1983,12 +1991,13 @@ export class Engine {
       paused: false,
       ...(this.builder ? { builder: true } : {}),
       talk: talk
-        ? { npc: talk.npc, name: knownShort(this.world, talk.npc), call: callName(this.world.npc(talk.npc)), attitude: attitude(this.world, talk.npc).band, turnsLeft: talk.turnsLeft, options: QUICK_OPTIONS, ...(talk.proposal ? { proposal: this.dialogue.proposalNow()! } : {}), pronoun: this.world.npc(talk.npc).pronoun, lines: talk.lines ?? [], ...(earlierTalk(this.world, talk.npc, talk.began) ? { earlier: earlierTalk(this.world, talk.npc, talk.began)! } : {}) }
+        ? { npc: talk.npc, name: knownShort(this.world, talk.npc), call: callName(this.world.npc(talk.npc)), colour: personColour(this.world, talk.npc), attitude: attitude(this.world, talk.npc).band, turnsLeft: talk.turnsLeft, options: QUICK_OPTIONS, ...(talk.proposal ? { proposal: this.dialogue.proposalNow()! } : {}), pronoun: this.world.npc(talk.npc).pronoun, lines: talk.lines ?? [], ...(earlierTalk(this.world, talk.npc, talk.began) ? { earlier: earlierTalk(this.world, talk.npc, talk.began)! } : {}) }
         : undefined,
       ...(!talk && this.lastTalk ? { lastTalk: this.lastTalk } : {}),
       clock: this.clockStatus(),
       ...(soundNow(this.world) ? { sound: soundNow(this.world)! } : {}),
       journal,
+      ...(plan ? { plan } : {}),
       completions: completionsHere(this.world, Object.values(journal).flatMap((part) => part.map((e) => e.name))),
       map: this.compactMap(),
       hexMap: hexMapData(this.world, { width: 51, height: 35 }),

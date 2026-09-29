@@ -19,6 +19,7 @@ import { MomentCard } from './MomentCard'
 import { ClockPanel } from './Clock'
 import { Settings, usd, type SettingsTab } from './Settings'
 import { complete } from './complete'
+import { PlanView } from './PlanView'
 import { t, tn } from './i18n'
 
 // Under the bonnet (M10.1): only a development build bundles the dev menu; a production build has no trace of it.
@@ -501,6 +502,13 @@ export function App() {
             {/* Where you are, under the picture (M10.29): the picture is the area's, the name the place's. */}
             <figcaption>{status.location === status.area ? status.location : `${status.location}, ${status.area}`}</figcaption>
           </figure>
+        )}
+        {/* The plan of here (M10.29 I), above the map, in a settlement of more than one place. */}
+        {status?.plan && (
+          <section>
+            <h2>{t('app.plan.title')}</h2>
+            <PlanView plan={status.plan} onWalk={waiting ? undefined : (command) => void send(command)} />
+          </section>
         )}
         <section>
           <h2>{t('app.map.title')}</h2>

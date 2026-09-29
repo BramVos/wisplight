@@ -1,3 +1,4 @@
+import { planOf, planText } from './plan'
 import type { HexMapData } from './map/view'
 import type { LandMapData } from './map/known'
 import { hintHolds } from './props'
@@ -44,6 +45,8 @@ export interface JournalPage {
   frames?: import('./frames').FramesView
   /** For the character sheet: the numbers, for the interface to lay out. */
   sheet?: SheetData
+  /** The plan of a settlement as the stranger knows it, as text (M10.29 I): on its area's page. */
+  planText?: string[]
   /** The region in colour (M10), and the land beyond it. */
   hexMap?: HexMapData
   land?: LandMapData
@@ -155,6 +158,9 @@ export function journalPage(world: World, topics: TopicRegistry, id: string): Jo
     for (const location of places.filter((l) => seen.has(l.id))) page.links.push(...link(location.id, 'place'))
     for (const location of places.filter((l) => !seen.has(l.id))) page.links.push(...link(location.id, 'heard of'))
     for (const other of content.npcs.values()) if (world.location(other.home).area === area.id) page.links.push(...link(other.id, 'lives here'))
+    // The plan of it as the stranger knows it, as text (M10.29 I), for a settlement of more than one place.
+    const plan = planOf(world, area.id)
+    if (plan) page.planText = planText(plan)
   } else if (id.startsWith('fact_')) {
     page.kind = 'event'
     const fact = factById(world, id)!

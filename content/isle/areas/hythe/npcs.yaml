@@ -3,6 +3,7 @@
 npcs:
   - id: npc_maren
     name: Maren Holt
+    colour: '#c8643c'
     short: Maren of the Salt Kettle
     pronoun: she
     age: 54

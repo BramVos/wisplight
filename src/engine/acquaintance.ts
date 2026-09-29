@@ -1,3 +1,4 @@
+import { personColour } from './colour'
 import { callName } from './content'
 import { attitude, relation } from './dialogue/relations'
 import type { PersonNote } from './state'
@@ -119,6 +120,8 @@ export interface PersonView {
   lastSeen?: { where: string; ago: string }
   often: string[]
   met: boolean
+  /** Their colour (M10.29 I), as on the plan of here and in the talk window. */
+  colour: string
 }
 
 /** What the player knows of someone, for the journal and the conversation window. */
@@ -126,7 +129,7 @@ export function personView(world: World, npcId: string): PersonView {
   const npc = world.npc(npcId)
   const n = world.state.player.people?.[npcId]
   const met = relation(world.state, npcId).familiarity > 0
-  const view: PersonView = { name: callName(npc), often: [], met }
+  const view: PersonView = { name: callName(npc), often: [], met, colour: personColour(world, npcId) }
   const age = npc.age
   if (typeof age === 'number') {
     if (n?.age) view.age = { text: String(n.age.value + Math.floor((world.now - n.age.t) / YEAR)), known: true }

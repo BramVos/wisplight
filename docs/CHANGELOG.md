@@ -1,5 +1,20 @@
 # Changelog
 
+## M10.29 deel: een plattegrond van hier, 30 september 2026
+
+- **De plattegrond.** In een dorp, stad, gehucht of herberg met meer dan één plek staat boven de kaart een plattegrond van de plekken die je kent. Noord is boven. Waar je bent, is gevuld. Een plek waar je alleen van hoorde, is grijs met een vraagteken. Een weg die je nog niet nam, is een stippellijn. Klik op een plek waar je was, en je loopt erheen.
+- **Mensen in kleur.** Wie je sprak, staat als gekleurde stip bij de plek waar je die persoon het laatst zag. Dezelfde kleur staat rechtsboven op de pagina van die persoon in het dagboek en bij de naam in het gespreksvenster. De kleur komt uit het spel zelf; een wereld mag er per persoon een kiezen.
+- **Als tekst.** `plan` geeft de plattegrond als tekening in tekst. Dezelfde tekening staat op de pagina van het gebied in je dagboek.
+- **Lopen binnen.** `walk to <plek>` loopt nu ook binnen een nederzetting naar een plek waar je was, langs de uitgangen.
+
+Testen: begin The Quiet Reach en kijk rechts boven de kaart. Loop naar de Commons, de Guest Quarters en de Medical Bay, en klik op de Arrival Lock. Praat met Sana en kijk naar de stip. Typ `plan`, en open Port Vesper in je dagboek. De test staat in `tests/m1029plan.test.ts`.
+
+Bekende gaten: de stip komt pas als het spel heeft vastgelegd dat je iemand zag. Dat gebeurt elk kwartier dat jullie op dezelfde plek zijn, niet op het moment dat het gesprek begint. De Workshop hoort bij een ander gebied (Vesper Works) en staat daarom niet op de plattegrond van Port Vesper, alleen als stippellijn naar het oosten.
+
+Wat de editor en de kroniekverteller leerden: het personenformulier heeft een veld Colour, de stap Mensen van de wereldgids noemt `colour` (met een regel onder de controles), en `docs/NEW-WORLD.md` zegt wat er gebeurt als je hem weglaat. Het contract beschrijft het veld. Maren op Skerrow heeft een eigen kleur; Deepwell laat hem weg, en een test speelt de kleur uit het id.
+
+Ontwerp: functioneel ontwerp, bij het dagboek, alinea "Stand na M10.29: een plattegrond van hier".
+
 ## M10.30 deel: wat mensen per stadium weten, en wat je nu kunt doen, 30 september 2026
 
 - **Ieder zijn eigen stuk (2).** Een stadium van een quest zegt per persoon wat die weet en mag zeggen (`knows`). Dat gaat naar de stem, met de regel dat dit alles is wat ze ervan weet. Improviseren op een plek van de quest krijgt dezelfde regels. Zo vertellen Niko en Tessa straks niet elk hun eigen plot.

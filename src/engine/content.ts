@@ -524,6 +524,7 @@ export const NpcSchema = z.object({
   quirks: z.array(z.string()).default([]).describe('Traits the rules know, each of which changes what they do: greedy, spirit.'),
   speech: z.string().optional().describe('How they talk, for the voice: short words, long silences, a saying they keep coming back to.'),
   voice: z.string().optional().describe('Their group in the world\'s voice kit (M10.10), when not by where they live or what they do.'),
+  colour: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional().describe('Their colour, as #rrggbb (M10.29 I): the dot on the plan of here, on their journal page and by their name in the talk window; without it, one the engine derives from their id.'),
   aliases: z.array(z.string()).default([]).describe('Other words the player may use for them.'),
   public_facts: z.array(z.string()).default([]).describe('What anyone may know about them, one sentence each.'),
   examples: z.array(z.string()).default([]).describe('Lines they might say, in their own voice: the voice follows their tone.'),

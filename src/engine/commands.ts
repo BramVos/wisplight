@@ -1,3 +1,4 @@
+import { planHere, planText } from './plan'
 import { tellChronicler } from './wishes'
 import { framesLines, setFrame } from './frames'
 import { lookSky } from './weather'
@@ -105,7 +106,7 @@ export interface CommandHost {
 }
 
 const HELP = [
-  'Moving: north, south, east, west, up, down, in, out (n, s, e, w, ...). Also: go <place>, exits.',
+  'Moving: north, south, east, west, up, down, in, out (n, s, e, w, ...). Also: go <place>, exits, walk to <a place of here you have seen>, plan (the plan of this settlement as you know it).',
   'Across country: head <direction>, walk to <place>, follow <a road or path>. Map: map. Further: travel to <place> (on foot, or by a line that runs there), take <the line> to <place>, wait for <the line>, hire <what someone hires out>.',
   'Looking: look (l), examine <thing or person> (x). What you know of something: recall <topic> (what everyone here knows is in your journal from the start). Your journal: journal, journal <name> (a page), journal <person> history (every talk with them), quests (what you took up, and what to do now).',
   'Things: inventory (i), take, drop, give <thing> to <person>, use <object>, eat <food>, open <chest>, take <thing> from <chest>, pick <door or chest> (the lock), force <door or chest>. In a talk: ask <person> for <thing>.',
@@ -291,6 +292,11 @@ export function runCommand(host: CommandHost, command: Command): Output[] {
       return wake(host, command.args)
     case 'knock':
       return knock(host, command.args)
+    case 'plan': {
+      // PLAN (M10.29 I): the plan of this settlement as you know it, as the side panel draws it.
+      const plan = planHere(world)
+      return [{ kind: 'system', text: plan ? planText(plan).join('\n') : 'There is no plan of here: a plan is drawn in a settlement of more than one place. The map shows the land.' }]
+    }
     case 'help': {
       // The lines of this world by name (M10.17), so the help speaks of the barge where there is one, and the tram in Deepwell.
       const lines = [...world.content.passages.values()].map((p) => p.name)
@@ -418,6 +424,45 @@ function lookOptions(world: World): ChoiceOption[] {
   const details = [...(place?.details ?? []), ...world.location(here).objects.flatMap((o) => world.content.objectTypes.get(o.type)?.details ?? [])].map((d) => d.words[0]!)
   const ground = Object.keys(world.state.ground[here] ?? {}).filter((i) => (world.state.ground[here]![i] ?? 0) > 0).map((i) => itemName(world.content, i, 1))
   return [...new Set([...people, ...objects, ...details, ...ground])].map((name) => ({ label: name, command: `look ${name}` }))
+}
+
+/**
+ * WALK TO a place of this settlement you have seen (M10.29 I: a click on the
+ * plan of here): the way along the exits through places you have seen, a GO
+ * a step, so locks, shut doors and time count as they always do. Only the
+ * room you come to is described; none when there is no such place or way.
+ */
+export function walkWithin(host: CommandHost, words: string): Output[] | undefined {
+  const { world } = host
+  const here = world.state.player.location
+  const area = world.content.locations.get(here)?.area
+  const wanted = words.toLowerCase().replace(/^(the|a|an)\s+/, '').trim()
+  const seen = new Set([...(world.state.player.seen ?? []), here])
+  const target = [...world.content.locations.values()].find((l) => l.area === area && seen.has(l.id) && [l.name, ...l.aliases].some((n) => n.toLowerCase().replace(/^the\s+/, '') === wanted))
+  if (!target || target.id === here) return target ? [describeRoom(world)] : undefined
+  // The shortest way through seen places, by exits.
+  const from = new Map<string, [string, Direction]>()
+  const queue = [here]
+  while (queue.length && !from.has(target.id)) {
+    const at = queue.shift()!
+    for (const [dir, exit] of Object.entries(world.location(at).exits) as [Direction, { to: string }][]) {
+      if (from.has(exit.to) || exit.to === here || !seen.has(exit.to)) continue
+      from.set(exit.to, [at, dir])
+      queue.push(exit.to)
+    }
+  }
+  if (!from.has(target.id)) return [error(`You know no way to ${target.name} from here.`)]
+  const steps: Direction[] = []
+  for (let at = target.id; at !== here; at = from.get(at)![0]) steps.unshift(from.get(at)![1])
+  const out: Output[] = []
+  for (const [i, dir] of steps.entries()) {
+    const before = world.state.player.location
+    const went = runCommand(host, { verb: 'go', args: [dir], raw: `go ${dir}` })
+    const moved = world.state.player.location !== before
+    out.push(...went.filter((o) => !moved || i === steps.length - 1 || o.kind !== 'room'))
+    if (!moved) break
+  }
+  return out
 }
 
 /**

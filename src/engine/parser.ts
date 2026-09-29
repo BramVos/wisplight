@@ -158,6 +158,8 @@ const VERB_ALIASES: Record<string, string> = {
   loop: 'walk',
   follow: 'follow',
   volg: 'follow',
+  plan: 'plan',
+  plattegrond: 'plan',
   travel: 'travel',
   reis: 'travel',
   map: 'map',

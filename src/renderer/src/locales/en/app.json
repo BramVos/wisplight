@@ -152,5 +152,15 @@
     "where": "Where is",
     "go": "Go to"
   },
-  "earlier": "Earlier, {when}:"
+  "earlier": "Earlier, {when}:",
+  "plan": {
+    "title": "Here",
+    "label": "The plan of {name} as you know it",
+    "walk": "Walk to {name}",
+    "heard": "{name}: only heard of",
+    "known": {
+      "one": "{count} place known",
+      "other": "{count} places known"
+    }
+  }
 }

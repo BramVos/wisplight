@@ -14,7 +14,7 @@ import { loadContentFromDir, readContentFiles } from '../src/node/content'
 const root = join(import.meta.dirname, '../content')
 
 /** Keys that hold an id or a code for the interface, never words for the player. */
-const KEYS = new Set(['id', 'npc', 'scene', 'location', 'area', 'kind', 'source', 'pronoun', 'light', 'map', 'hexMap', 'land', 'classes', 'rows', 'improvise', 'sound', 'picture'])
+const KEYS = new Set(['id', 'npc', 'scene', 'location', 'area', 'kind', 'source', 'pronoun', 'light', 'map', 'hexMap', 'land', 'classes', 'rows', 'improvise', 'sound', 'picture', 'from', 'to'])
 
 /** Every string a value shows the player, leaving out the keys that hold ids. */
 function shown(value: unknown, out: string[] = []): string[] {

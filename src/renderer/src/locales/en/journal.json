@@ -58,7 +58,8 @@
     "asText": "The map as text",
     "about": "About",
     "history": "History",
-    "tabs": "About this person, or every talk"
+    "tabs": "About this person, or every talk",
+    "plan": "The plan of {name} as you know it"
   },
   "wishes": {
     "placeholder": "more mysteries, no war this season",

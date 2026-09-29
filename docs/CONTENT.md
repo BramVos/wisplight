@@ -160,6 +160,7 @@ A list; each has:
 | quirks | Traits the rules know, each of which changes what they do: greedy, spirit. | list of text | no | [] |
 | speech | How they talk, for the voice: short words, long silences, a saying they keep coming back to. | text | no |  |
 | voice | Their group in the world's voice kit (M10.10), when not by where they live or what they do. | text | no |  |
+| colour | Their colour, as #rrggbb (M10.29 I): the dot on the plan of here, on their journal page and by their name in the talk window; without it, one the engine derives from their id. | text | no |  |
 | aliases | Other words the player may use for them. | list of text | no | [] |
 | public_facts | What anyone may know about them, one sentence each. | list of text | no | [] |
 | examples | Lines they might say, in their own voice: the voice follows their tone. | list of text | no | [] |

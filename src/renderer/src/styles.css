@@ -1888,6 +1888,88 @@ pre.sheet {
   font-size: calc(13px * var(--text-scale));
 }
 
+/* The plan of here (M10.29 I): boxes of the places you know, above the map in the side panel. */
+.plan {
+  margin: 0 0 6px;
+}
+.plan svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  font-family: var(--font);
+}
+.plan-way {
+  stroke: var(--muted);
+  stroke-width: 1.5;
+}
+.plan-stub {
+  stroke: var(--muted);
+  stroke-width: 1.5;
+  stroke-dasharray: 3 3;
+}
+.plan-place rect {
+  fill: var(--panel);
+  stroke: var(--text);
+  stroke-width: 1.2;
+}
+.plan-place text {
+  fill: var(--text);
+  font-size: 10px;
+  text-anchor: middle;
+}
+.plan-place text.small {
+  font-size: 9px;
+}
+.plan-place.here rect {
+  fill: var(--room);
+  stroke: var(--room);
+}
+.plan-place.here text {
+  fill: var(--bg);
+}
+.plan-place.heard rect {
+  fill: none;
+  stroke: var(--muted);
+  stroke-dasharray: 3 2;
+}
+.plan-place.heard text {
+  fill: var(--muted);
+}
+.plan-place.walkable {
+  cursor: pointer;
+}
+.plan-place.walkable:hover rect {
+  stroke: var(--topic);
+}
+.plan-place text.plan-word {
+  fill: var(--muted);
+  font-size: 8px;
+  text-anchor: end;
+}
+.plan-person {
+  stroke: var(--bg);
+  stroke-width: 1;
+}
+.plan-text {
+  font-size: calc(12px * var(--text-scale));
+  line-height: 1.35;
+  white-space: pre;
+  overflow-x: auto;
+}
+/* A person's colour (M10.29 I): by their name in the talk window, and top right on their journal page. */
+.person-dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+.person-dot.page-dot {
+  float: right;
+  margin: 6px 0 0 8px;
+}
+
 /* The game before a continue or a load (M10.29 S): faded like the talk before (M10.29 J), a dashed line under it. */
 .line.earlier {
   opacity: 0.55;
