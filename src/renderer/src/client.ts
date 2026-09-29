@@ -400,8 +400,13 @@ export async function createClient(): Promise<EngineClient> {
       }),
   }
 
+  // A game minute every so many real seconds, as in the app (M10.28).
+  let realSeconds = 0
   setInterval(() => {
     if (paused()) return
+    realSeconds += 1
+    if (realSeconds < engine.secondsPerGameMinute()) return
+    realSeconds -= engine.secondsPerGameMinute()
     const reply = { outputs: engine.tick(1), status: status() }
     chronicler()
     for (const listener of listeners) listener(reply)

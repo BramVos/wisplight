@@ -1,7 +1,7 @@
 import { applyFull, fullDue, fullFixRequest, fullLayer, fullRequest, mergeFull, readFull, wantFull, type FullRound } from './growth/regionfull'
 import { applyStory, storyDue, storyReady, storyReply, storyRequest, wantStory, type StoryReply } from './growth/regionstory'
 import { wishLines } from './wishes'
-import { framesLines, framesView } from './frames'
+import { framesLines, framesView, secondsPerGameMinute } from './frames'
 import { knob } from './knobs'
 import { applyImprovisation, improviseFallback, improviseRequest, readImprovisation, type Improvisable } from './improvise'
 import { soundNow, type SoundNow } from './sound'
@@ -1827,6 +1827,11 @@ export class Engine {
   private onlyNpcHere(): string | undefined {
     const here = this.world.npcsAt(this.state.player.location)
     return here.length === 1 ? here[0] : undefined
+  }
+
+  /** How many real seconds the real-time clock waits for a game minute (M10.28: the dial How fast the day goes). */
+  secondsPerGameMinute(): number {
+    return secondsPerGameMinute(this.world)
   }
 
   /** Lets game time pass without a command (the real-time clock). Returns what the player sees. */

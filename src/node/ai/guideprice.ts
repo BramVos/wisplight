@@ -1,7 +1,8 @@
 import type { LlmRole } from '../../engine/dialogue/llm'
 import { MODEL_KINDS } from '../../engine/modelkinds'
 import { MEASURED, type Measured } from './measured'
-import { MEASURED_PER_HOUR } from './frequency'
+import { KNOBS } from '../../engine/knobs'
+import { measuredPerHour } from './frequency'
 import { CALLS_PER_HOUR, priceOf } from './pricing'
 import type { RoleChoice } from './settings'
 
@@ -29,6 +30,8 @@ export interface GuidePrice {
    * guide's own hour counted 25 goal choices where 45 to 80 came.
    */
   measuredHour?: number
+  /** The hour as measured by how many real seconds a game minute lasts, 1 to 8 (M10.28); measuredHour is at the default, 4. */
+  measuredByClock?: Partial<Record<number, number>>
   /**
    * A new region, by how full it is built (M10.25): outline its first
    * district and the weave of its people; story that and the story round;
@@ -69,8 +72,12 @@ export function guidePrice(role: (role: LlmRole) => RoleChoice | undefined, meas
   const place = sum(['outline', 'district', 'weave'])
   if (place !== undefined) guide.place = place
   if (guide.conversations !== undefined && guide.goals !== undefined && guide.night !== undefined) guide.hour = guide.conversations + guide.goals + guide.night
-  const measuredParts = Object.entries(MEASURED_PER_HOUR).map(([kind, n]) => [one(kind), n] as const)
-  if (measuredParts.every(([usd]) => usd !== undefined)) guide.measuredHour = measuredParts.reduce((sum, [usd, n]) => sum + usd! * n, 0)
+  const clock = KNOBS['clock.seconds_per_minute']
+  for (let seconds = clock.min; seconds <= clock.max; seconds++) {
+    const parts = Object.entries(measuredPerHour(seconds)).map(([kind, n]) => [one(kind), n] as const)
+    if (parts.every(([usd]) => usd !== undefined)) (guide.measuredByClock ??= {})[seconds] = parts.reduce((sum, [usd, n]) => sum + usd! * n, 0)
+  }
+  if (guide.measuredByClock?.[clock.default] !== undefined) guide.measuredHour = guide.measuredByClock[clock.default]
   const outline = sum(['district', 'weave'])
   const story = sum(['district', 'weave', 'region_story'])
   // In full the world build's five steps run over the region, and its polish round (M10.25).

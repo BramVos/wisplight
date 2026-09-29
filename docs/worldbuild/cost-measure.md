@@ -156,3 +156,29 @@ Het doel van $0,44 is niet gehaald: $0,51. Wat overblijft is vooral het gesprek 
 De richtprijs onder Instellingen > AI toont nu "an hour as it was measured", op de modellen waar elke soort echt heen gaat. Bij Brams modellen is dat $0,58. Dat is iets hoger dan de tabel, want die regel rekent niet met de cache en leest voor het gesprek nog het antwoord van voor de kortere regels. Daaronder staat wat het vorige uur echt kostte op de sleutel.
 
 De metingen kostten samen $1,70: de inspanning per soort $0,918, de nachtronde $0,49, de gesprekken $0,28 en de vonk $0,01.
+
+## Het uur bij elke stand van de klok (M10.28, 29 september 2026)
+
+Sinds M10.28 is de snelheid van de klok een knop, `clock.seconds_per_minute`: het aantal echte seconden dat een spelminuut duurt, van 1 tot 8.
+
+- **1 seconde:** een dag duurt 24 minuten, zoals voorheen.
+- **4 seconden:** een dag duurt anderhalf uur. Dit is de standaard.
+- **8 seconden:** een dag duurt ruim drie uur.
+
+De wereld geeft haar eigen waarde bij de stap Kalender. The Quiet Reach neemt 4, Skerrow 5. De speler draait hem per spel bij op het kaderscherm.
+
+Wat per speldag komt, loopt mee met de klok: de doelkeuzes, de nachtronde en haar tweede blik. Wat de speler zelf doet, loopt niet mee: praten, reizen en een daad die de regels niet kennen.
+
+Het gedeelde deel van de doelkeuzes staat sinds M10.28 een uur in de cache. Bij 4 komt een keuze ongeveer elke zeven minuten, en de cache van vijf minuten was dan steeds verlopen. Met een uur is er één schrijfbeurt per uur (twee keer de invoerprijs) en wordt de rest gelezen. Dat is bij elke stand goedkoper.
+
+| Soort | 1 seconde | 4 seconden | 8 seconden |
+|---|---|---|---|
+| `npc_reply` (40 per uur) | $0,171 | $0,171 | $0,171 |
+| `npc_goals` | 31 per uur, $0,203 | 8 per uur, $0,055 | 4 per uur, $0,030 |
+| `chronicle` en `lore_check` | 1,5 per uur, $0,111 | 0,38 per uur, $0,028 | 0,19 per uur, $0,014 |
+| De rest (reizen, improviseren, groepen, flarden) | $0,014 | $0,014 | $0,014 |
+| **Een uur** | **ongeveer $0,50** | **ongeveer $0,27** | **ongeveer $0,23** |
+
+Bij 4 en 8 seconden is het gesprek meer dan de helft van het uur. De rij voor het gesprek staat hier nog zoals in M10.27. De andere sessie meet in M10.28 wat het gecachete blok per gebied en het gesprek als berichten eraan doen.
+
+De richtprijs in de app rekent zonder cache. Onder Instellingen > AI noemt hij bij Brams modellen ongeveer $0,30 bij 4 seconden, met $0,57 bij 1 en $0,25 bij 8 erachter. Op het kaderscherm staat onder de schuif wat een uur bij de gekozen stand ongeveer kost.

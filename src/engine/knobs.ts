@@ -16,6 +16,8 @@ const n = (about: string, unit: string, def: number, min: number, max: number, f
 const t = <T extends Record<string, number>>(about: string, unit: string, def: T, min: number, max: number, from: string, keys: 'fixed' | 'open' = 'fixed'): Table & { default: T } => ({ about, unit, default: def, min, max, from, keys })
 
 export const KNOBS = {
+  // ---- the clock (M10.28: the world's own pace, which the player turns per game on the frames screen)
+  'clock.seconds_per_minute': n('How many real seconds a game minute lasts while the clock runs: 1 is a day in 24 minutes, 4 a day in an hour and a half, 8 a day in three hours. Sleeping, waiting and travelling jump.', 'seconds', 4, 1, 8, 'frames.ts'),
   // ---- a talk
   'talk.max_effect': n('How much one talk may change how someone feels about the stranger, up or down, in all.', 'points', 5, 0, 30, 'dialogue/conversation.ts'),
   'talk.max_turns': n('A talk ends after this many turns, however much it is about.', 'turns', 20, 3, 100, 'dialogue/conversation.ts'),

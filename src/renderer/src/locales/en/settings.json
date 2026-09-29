@@ -124,7 +124,7 @@
     "guide": {
       "label": "Guide price",
       "hour": "An hour of play as the guide counts it, with these models: about {hour}: {conversations} for 40 lines of talk, {goals} for 25 goal choices, {night} for the night's round.",
-      "measured": "An hour as it was measured, with goal choices, nights and journeys as they really come: about {usd}.",
+      "measured": "An hour as it was measured, with goal choices, nights and journeys as they really come: about {usd} at 4 real seconds a game minute (at 1 second about {brisk}, at 8 about {calm}; set per game on the frames screen).",
       "lastHour": "The last hour really cost {usd} on your key.",
       "place": "A new place in a far town costs about {place} once, when you first do something there.",
       "parts": "An hour of play with these models: {conversations} for 40 lines of talk, {goals} for 25 goal choices, {night} for the night's round."

@@ -1152,8 +1152,14 @@ function paceSession(next: Engine): void {
   if (pacer().startSession().tidesDue) next.judgeTidesNow()
 }
 
+// The real-time clock: a game minute every so many real seconds, by the dial How fast the day goes (M10.28); a paused
+// second does not count towards the next minute.
+let realSeconds = 0
 setInterval(() => {
   if (!engine || !window || window.isDestroyed() || paused()) return
+  realSeconds += 1
+  if (realSeconds < engine.secondsPerGameMinute()) return
+  realSeconds -= engine.secondsPerGameMinute()
   const outputs = engine.tick(1)
   chronicler()
   window.webContents.send('engine:tick', reply(outputs))

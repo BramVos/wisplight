@@ -63,7 +63,7 @@ describe('M10.26: the cache mark on every kind of call', () => {
     // A talk: turns with one person, and someone new reads the rules and the frame. A goal choice: many people, the
     // shared part only. The world steps and the writing aid: a designer comes back within the hour. The rest is made
     // once per place, night or line, and nothing reads it back in five minutes.
-    expect(marks).toMatchObject({ npc_reply: 'both', npc_goals: 'one', world_step: 'both, an hour', builder_draft: 'one, an hour', world_enhance: 'one, an hour' })
+    expect(marks).toMatchObject({ npc_reply: 'both', npc_goals: 'one, an hour', world_step: 'both, an hour', builder_draft: 'one, an hour', world_enhance: 'one, an hour' })
     for (const kind of ['party_reply', 'chat_line', 'journey', 'improvise', 'chronicle', 'lore_check', 'legends', 'outline', 'far_place', 'district', 'weave', 'expansion', 'land', 'tides', 'world_polish', 'palette_draft', 'voice_draft', 'region_story']) expect(marks[kind], kind).toBe('none')
   }, 120_000)
 

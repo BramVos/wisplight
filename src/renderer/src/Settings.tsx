@@ -501,7 +501,7 @@ function AiTab({ bridge, overview, refresh, onFrames, region }: { bridge: AiBrid
         <div className="row small">
           <span className="label" />
           <span>
-            {t('settings.ai.guide.measured', { usd: usd(overview.guide.measuredHour) })}
+            {t('settings.ai.guide.measured', { usd: usd(overview.guide.measuredHour), brisk: usd(overview.guide.measuredByClock?.[1]), calm: usd(overview.guide.measuredByClock?.[8]) })}
             {overview.status.spent ? ` ${t('settings.ai.guide.lastHour', { usd: usd(overview.status.spent.hour.all, 2) })}` : ''}
           </span>
         </div>

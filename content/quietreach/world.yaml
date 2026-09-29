@@ -48,6 +48,11 @@ world:
       - Longdark
       - Intercalary
     weekdays: [Primeday, Span, Relay, Anchor, Restday]
+  # How fast the day goes (M10.28): a game minute in four real seconds, a day in an
+  # hour and a half, so the station's shifts do not flick past; Bram turns it to 8
+  # if the ridge walks and the long watches want it slower.
+  knobs:
+    clock.seconds_per_minute: 4
   weather:
     seasons:
       - Winter

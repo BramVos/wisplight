@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { BUDGET_CONFIRM_USD, PLAY_MODES, type FramesView as Frames, type PlayMode } from '../../engine'
 import type { AiBridge } from './client'
-import { t } from './i18n'
+import { t, tn } from './i18n'
 
 // The frames once (M10.24; Bram, 28 September 2026): at the start of a game
 // what it is played under stands on one screen, and after that it is out of
@@ -20,6 +20,8 @@ export function FramesView({ frames, ai, onDial, onClose }: { frames: Frames; ai
   const [note, setNote] = useState<string>()
   // What a new region costs by how full it is built (M10.25), with the models chosen.
   const [prices, setPrices] = useState<Partial<Record<string, number>>>({})
+  // What an hour costs by how fast the day goes (M10.28), with the models chosen.
+  const [hours, setHours] = useState<Partial<Record<string, number>>>({})
 
   useEffect(() => {
     if (!ai) return
@@ -33,6 +35,7 @@ export function FramesView({ frames, ai, onDial, onClose }: { frames: Frames; ai
         setMode(o.settings.playMode)
         setConnected(Object.values(o.settings.providers).some((p) => p.configured))
         setPrices(o.guide?.region ?? {})
+        setHours(o.guide?.measuredByClock ?? {})
       })
       .catch(() => undefined)
     return () => {
@@ -114,14 +117,28 @@ export function FramesView({ frames, ai, onDial, onClose }: { frames: Frames; ai
             {view.dials.map((d) => (
               <div key={d.id} className="frames-dial">
                 <div>{d.name}</div>
-                <div className="row small" role="radiogroup" aria-label={d.name}>
-                  {d.choices.map((c) => (
-                    <label key={c.id}>
-                      <input type="radio" name={`dial-${d.id}`} aria-label={c.name} checked={d.chosen === c.id} onChange={() => void dial(d.id, c.id)} /> {c.name}
-                      {d.id === 'region' && <span className="muted"> {regionPrice(c.id, prices, connected)}</span>}
-                    </label>
-                  ))}
-                </div>
+                {d.slider ? (
+                  // How fast the day goes (M10.28): whole seconds a game minute, from the world's own pace.
+                  <div className="row small">
+                    <input type="range" min={d.slider.min} max={d.slider.max} step={1} value={d.slider.value} aria-label={d.name} onChange={(e) => void dial(d.id, e.target.value)} />
+                    <span>{tn('frames.clockValue', d.slider.value)}</span>
+                    {d.slider.value !== d.slider.world && (
+                      <button type="button" className="link" onClick={() => void dial(d.id, 'world')}>
+                        [{t('frames.clockWorld', { count: d.slider.world })}]
+                      </button>
+                    )}
+                    {connected && hours[d.slider.value] !== undefined && <span className="muted"> {t('frames.clockPrice', { usd: hours[d.slider.value]! < 0.01 ? '<0.01' : hours[d.slider.value]!.toFixed(2) })}</span>}
+                  </div>
+                ) : (
+                  <div className="row small" role="radiogroup" aria-label={d.name}>
+                    {d.choices.map((c) => (
+                      <label key={c.id}>
+                        <input type="radio" name={`dial-${d.id}`} aria-label={c.name} checked={d.chosen === c.id} onChange={() => void dial(d.id, c.id)} /> {c.name}
+                        {d.id === 'region' && <span className="muted"> {regionPrice(c.id, prices, connected)}</span>}
+                      </label>
+                    ))}
+                  </div>
+                )}
                 <div className="muted small">{d.about}</div>
               </div>
             ))}

@@ -51,7 +51,8 @@ describe('the guide for a new world', () => {
     expect(step('watcher').checks.join(' ')).toMatch(/made_good .* pupil_learnt/)
     expect(step('watcher').checks.join(' ')).toMatch(/tell with grows/)
     expect(step('watcher').fills).toContainEqual({ kind: 'rules', keys: ['conditions'] })
-    expect(step('calendar').fills).toContainEqual({ kind: 'world', keys: ['calendar', 'start', 'weather', 'bells'] })
+    // And the pace of the clock (M10.28), as a knob of the world.
+    expect(step('calendar').fills).toContainEqual({ kind: 'world', keys: ['calendar', 'start', 'weather', 'bells', 'knobs'] })
     expect(step('places').prompt).toMatch(/a sound/)
     expect(step('places').checks.join(' ')).toMatch(/Left out: silence/)
     expect(step('places').checks.join(' ')).toMatch(/improvise: a domain \(offering, curse, spirit, lore or craft\)/)

@@ -49,5 +49,11 @@
     "free": "(nothing extra)",
     "noModel": "(needs a model)"
   },
-  "region": "How full a new region is built"
+  "region": "How full a new region is built",
+  "clockPrice": "(about ${usd} an hour)",
+  "clockValue": {
+    "one": "{count} second a game minute",
+    "other": "{count} seconds a game minute"
+  },
+  "clockWorld": "back to this world's own, {count}"
 }

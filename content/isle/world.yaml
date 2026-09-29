@@ -116,9 +116,12 @@ world:
   # And on so small an island a kilometre is near enough (M10.27): those within it
   # of the stranger ask the model what they want; a cottage on the far shore
   # chooses by the rules, unless the stranger is there or a story holds it.
+  # The island keeps slow time by tides and bells (M10.28): a game minute lasts five
+  # real seconds, a day two hours.
   knobs:
     story.quiet_ladder: { first: 0.1, second: 0.2, third: 0.4, fourth: 1 }
     people.model_km: 1
+    clock.seconds_per_minute: 5
   # How well the lands know each other (M10.23): the white boat runs to Ynys Wen,
   # so word and wares go back and forth, in the boat's time.
   reach:

@@ -15,9 +15,10 @@ import type { World } from './world'
 // how much the world grows in a season) and the play mode; the budget and
 // the threshold for asking are the app's and sit beside them on the screen.
 // The dials are knobs of this game (state.knobs over the world's own), set
-// by the command FRAMES, so a replay sets them as the game did.
+// by the command FRAMES, so a replay sets them as the game did. Since M10.28
+// a fifth: how fast the day goes.
 
-export type DialId = 'events' | 'lines' | 'growth' | 'region'
+export type DialId = 'events' | 'lines' | 'growth' | 'region' | 'clock'
 
 export interface Dial {
   id: DialId
@@ -25,6 +26,8 @@ export interface Dial {
   about: string
   choices: { id: string; name: string }[]
   chosen: string
+  /** A dial of whole steps instead of choices (M10.28: how fast the day goes), from the world's own value. */
+  slider?: { min: number; max: number; value: number; world: number }
 }
 
 export interface FramesView {
@@ -93,6 +96,15 @@ function dials(world: World): Dial[] {
       ],
       chosen: chosen.growth ?? 'world',
     },
+    // How fast the day goes (M10.28): a slider from the world's own pace; sleeping, waiting and travelling jump as before.
+    {
+      id: 'clock',
+      name: 'How fast the day goes',
+      about: `A game minute lasts ${secondsPerGameMinute(world)} real ${secondsPerGameMinute(world) === 1 ? 'second' : 'seconds'}: a day in ${dayLength(secondsPerGameMinute(world))}. At 1 people come and go as you watch; at 8 a day lasts three hours. Sleeping, waiting and travelling jump as ever; a line of talk takes a minute.`,
+      choices: [],
+      chosen: String(secondsPerGameMinute(world)),
+      slider: { min: KNOBS['clock.seconds_per_minute'].min, max: KNOBS['clock.seconds_per_minute'].max, value: secondsPerGameMinute(world), world: worlds(world, 'clock.seconds_per_minute') },
+    },
     // How full a new region is built (M10.25): the price of each stands beside it on the screen.
     {
       id: 'region',
@@ -147,6 +159,27 @@ export function regionSetting(world: Pick<World, 'state' | 'aiLive'>): RegionSet
   return world.state.frames?.region ?? (world.aiLive ? 'story' : 'outline')
 }
 
+/**
+ * How fast the day goes (M10.28; Bram, 29 September 2026: at a game minute a
+ * real second people flew in and out, and the brain and the night round ran
+ * often per real hour): the knob clock.seconds_per_minute, the real seconds a
+ * game minute lasts, 1 to 8 in whole steps. The world gives its default in
+ * world.yaml (4 when it says nothing); the player turns it per game on the
+ * frames screen, FRAMES CLOCK 4 in the terminal, so the log keeps it.
+ */
+export function secondsPerGameMinute(world: Pick<World, 'content' | 'state'>): number {
+  return knob(world, 'clock.seconds_per_minute')
+}
+
+/** How long a game day lasts in real time at so many seconds a game minute: "24 minutes", "1 hour 36 minutes". */
+export function dayLength(seconds: number): string {
+  const minutes = Math.round(24 * seconds)
+  const hours = Math.floor(minutes / 60)
+  const rest = minutes % 60
+  const h = hours === 1 ? '1 hour' : `${hours} hours`
+  return hours === 0 ? `${minutes} minutes` : rest === 0 ? h : `${h} ${rest} minutes`
+}
+
 /** The frames of a game, for the screen and the terminal. */
 export function framesView(world: World): FramesView {
   const { lands, lines } = worldFrames(world.content)
@@ -171,7 +204,11 @@ export function framesLines(world: World): string[] {
     ...(view.lines.length ? ['', 'The great lines:', ...view.lines.map((l) => `  ${l.name} (${l.kind}): ${l.stage === 'calm' ? 'calm' : l.stage === 'threat' ? 'a threat' : 'broken'}; driven by ${l.driven}.`)] : []),
     '',
     'How the world moves:',
-    ...view.dials.map((d) => `  ${d.name}: ${d.choices.find((c) => c.id === d.chosen)?.name ?? d.chosen} (FRAMES ${d.id.toUpperCase()} ${d.choices.map((c) => c.id.toUpperCase()).join(', ')}).`),
+    ...view.dials.map((d) =>
+      d.slider
+        ? `  ${d.name}: ${d.slider.value} ${d.slider.value === 1 ? 'second' : 'seconds'} a game minute, a day in ${dayLength(d.slider.value)}; this world's own is ${d.slider.world} (FRAMES ${d.id.toUpperCase()} ${d.slider.min} to ${d.slider.max}).`
+        : `  ${d.name}: ${d.choices.find((c) => c.id === d.chosen)?.name ?? d.chosen} (FRAMES ${d.id.toUpperCase()} ${d.choices.map((c) => c.id.toUpperCase()).join(', ')}).`,
+    ),
     '',
     `Play mode: ${MODES[view.mode]}. The play mode, the budget and when the game asks before a costly call are in Settings.`,
   ]
@@ -183,8 +220,16 @@ export function framesLines(world: World): string[] {
  */
 export function setFrame(world: World, dial: string | undefined, choice: string | undefined): { text: string; ok: boolean } {
   const d = dials(world).find((x) => x.id === dial?.toLowerCase())
+  // The clock takes a number of seconds, or WORLD for the world's own pace (M10.28).
+  if (d?.slider) {
+    const worldsOwn = choice?.toLowerCase() === 'world'
+    const n = worldsOwn ? d.slider.world : Number(choice)
+    if (!Number.isInteger(n) || n < d.slider.min || n > d.slider.max) return { ok: false, text: `FRAMES CLOCK and a number of seconds a game minute, ${d.slider.min} to ${d.slider.max}, or WORLD for this world's own (${d.slider.world}).` }
+    setKnob(world, 'clock.seconds_per_minute', n)
+    return { ok: true, text: `${d.name}: ${n} ${n === 1 ? 'second' : 'seconds'} a game minute, a day in ${dayLength(n)}.` }
+  }
   const c = d?.choices.find((x) => x.id === choice?.toLowerCase() || x.name === choice?.toLowerCase())
-  if (!d || !c) return { ok: false, text: 'FRAMES EVENTS CALM, NORMAL or DRAMATIC; FRAMES LINES OFTEN, WORLD or SELDOM; FRAMES GROWTH LITTLE, WORLD or MUCH; FRAMES REGION OUTLINE, STORY or FULL.' }
+  if (!d || !c) return { ok: false, text: 'FRAMES EVENTS CALM, NORMAL or DRAMATIC; FRAMES LINES OFTEN, WORLD or SELDOM; FRAMES GROWTH LITTLE, WORLD or MUCH; FRAMES REGION OUTLINE, STORY or FULL; FRAMES CLOCK 1 to 8.' }
   if (d.id === 'events') stories(world).tempo = c.id as Tempo
   const frames = (world.state.frames ??= {})
   if (d.id === 'lines') {

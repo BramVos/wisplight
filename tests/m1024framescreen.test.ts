@@ -26,6 +26,7 @@ describe('M10.24: the frames of a game', () => {
       ['events', 'normal'],
       ['lines', 'world'],
       ['growth', 'world'],
+      ['clock', '5'],
       ['region', 'outline'],
     ])
     expect(view.mode).toBe('continue')
@@ -49,7 +50,7 @@ describe('M10.24: the frames of a game', () => {
     await engine.handle('frames growth little')
     expect([knob(world, 'sketches.per_day'), knob(world, 'sketches.per_area_season'), knob(world, 'props.per_week')]).toEqual([1, 3, 2])
     await engine.handle('frames events dramatic')
-    expect(framesView(world).dials.map((d) => d.chosen)).toEqual(['dramatic', 'seldom', 'little', 'outline'])
+    expect(framesView(world).dials.map((d) => d.chosen)).toEqual(['dramatic', 'seldom', 'little', '5', 'outline'])
     await engine.handle('frames lines world')
     await engine.handle('frames growth world')
     expect(world.state.knobs).toEqual({})
@@ -76,10 +77,12 @@ describe('M10.24: the frames of a game', () => {
     engine.start()
     await engine.handle('frames lines often')
     await engine.handle('frames growth much')
+    // How fast the day goes (M10.28) is a dial of this game too, in the log.
+    await engine.handle('frames clock 8')
     expect(Engine.fromSave(content, engine.save()).world.state.knobs).toEqual(engine.world.state.knobs)
     const again = await Engine.replay(content, 3, engine.save().log)
-    expect(again.world.state.knobs).toEqual({ 'story.urgent_belang': 3, 'story.hooks_per_week': 4, 'sketches.per_day': 4, 'sketches.per_area_season': 12, 'props.per_week': 6 })
-    expect(framesView(again.world).dials.map((d) => d.chosen)).toEqual(['normal', 'often', 'much', 'outline'])
+    expect(again.world.state.knobs).toEqual({ 'story.urgent_belang': 3, 'story.hooks_per_week': 4, 'sketches.per_day': 4, 'sketches.per_area_season': 12, 'props.per_week': 6, 'clock.seconds_per_minute': 8 })
+    expect(framesView(again.world).dials.map((d) => d.chosen)).toEqual(['normal', 'often', 'much', '8', 'outline'])
   })
 
   it('shows each world as it is: the Nethermarch has no second land, Deepwell a land next door and the long dark', async () => {

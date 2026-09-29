@@ -610,8 +610,11 @@ export function patchWorld(files: ContentFile[], yaml: string): { problems: stri
   if (!file) return { problems: ['world: this world has no world.yaml'], files }
   const doc = parseDocument(file.text)
   const node = doc.get('world', true)
-  // Only the keys given: the rest of the world stays as it is.
-  if (isMap(node)) patchMap(doc, node, { ...(node.toJSON() as Raw), ...read.raw })
+  // Only the keys given: the rest of the world stays as it is. The knobs merge (M10.28: the Calendar step sets the
+  // pace of the clock and leaves the knobs a later step set, or the designer, where they are).
+  const before = isMap(node) ? (node.toJSON() as Raw) : {}
+  const knobs = before['knobs'] && read.raw['knobs'] && typeof read.raw['knobs'] === 'object' ? { knobs: { ...(before['knobs'] as Raw), ...(read.raw['knobs'] as Raw) } } : {}
+  if (isMap(node)) patchMap(doc, node, { ...before, ...read.raw, ...knobs })
   else doc.set('world', makeNode(doc, read.raw, 0))
   const text = tidy(doc.toString({ lineWidth: 0 }))
   if (text === file.text) return { problems: [], files }

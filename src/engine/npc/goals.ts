@@ -327,7 +327,9 @@ export function goalRequest(world: World, choice: GoalChoice, answers?: string[]
     role: 'brain',
     // The rules and the frame of the land they live in (M10.23), cached for everyone of that land; their card; and
     // what they may choose now (M10.26). Only the shared part is marked (M10.27): the same person rarely chooses twice
-    // in five minutes, so a mark after the card would only pay a write.
+    // in five minutes, so a mark after the card would only pay a write. Kept an hour (M10.28): at the normal clock a
+    // choice comes about every seven minutes, past the five of a plain mark; one write an hour and the rest read.
+    cacheHour: true,
     ...cachedSystem([SYSTEM, '', 'THE GOALS:', ...catalogueLines(), '', worldText(worldFrame(world.content, landOfNpc(world, npcId)))].join('\n'), worldText(card.join('\n')), choosable.join('\n'), 'shared'),
     prompt: lines.join('\n'),
     schemaName: 'npc_goals',
