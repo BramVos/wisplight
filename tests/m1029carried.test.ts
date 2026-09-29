@@ -37,6 +37,10 @@ describe('M10.29 E and N: the things you carry', () => {
 
   it('looks at a way before the pack: "l s" is south, never the short-range communicator (Bram\'s sessions of 29 September)', async () => {
     const engine = stranger()
+    // Mara in the room is no south either.
+    const mara = engine.state.npcs['npc_mara_venn']!
+    mara.location = engine.state.player.location
+    mara.activity = 'standing about'
     expect(await said(engine, 'l e')).toMatch(/^To the east:/)
     expect(await said(engine, 'l s')).toBe('You see no way south from here.')
     expect(await said(engine, 'l w')).toBe('You see no way west from here.')

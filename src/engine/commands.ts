@@ -401,6 +401,14 @@ function examineHere(world: World, target: string): Output | undefined {
   // LOOK ME (M10.4): yourself, as others see you.
   if (/^(me|myself|self|yourself|mij|mezelf|mijzelf)$/i.test(target.trim())) return describeSelf(world)
   const here = world.state.player.location
+  // A direction is a way, never a person or a thing in the pack (M10.29: "l s" found the short-range communicator,
+  // "l w" the coat, and with Mara in the room, Mara).
+  const direction = parseDirection(target.trim())
+  if (direction) {
+    const there = lookThere(world, target)
+    if (there || isHexId(here) || canSetOut(world, here)) return there
+    return text(`You see no way ${direction} from here.`)
+  }
   const npcId = findNpcHere(world, target)
   if (npcId) {
     const npc = world.npc(npcId)
@@ -423,13 +431,6 @@ function examineHere(world: World, target: string): Output | undefined {
     }
     const read = pinned.length ? ` Among the notes, newer than the rest: ${pinned.map((f) => `"${f.text.precise}"`).join(' ')}` : ''
     return text(`${object.instance.description ?? object.type.description}${notes.length ? ` ${notes.join(' ')}` : ''}${read}${hint}`)
-  }
-  // A direction is a way, never a thing in the pack (M10.29: "l s" found the short-range communicator, "l w" the coat).
-  const direction = parseDirection(target.trim())
-  if (direction) {
-    const there = lookThere(world, target)
-    if (there || isHexId(here) || canSetOut(world, here)) return there
-    return text(`You see no way ${direction} from here.`)
   }
   // What belongs to an object here comes first (the apple on the stone), then what you carry and what lies here, with where (M10.4).
   const thing = lookThing(world, target)

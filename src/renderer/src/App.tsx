@@ -332,6 +332,13 @@ export function App() {
   }
 
   const talk = status?.talk
+  // The input has the focus whenever nothing lies over the game (M10.29 O): at the start, and after every screen,
+  // settings, the frames, the journal, a card, a closed talk, the end, the picker. An open talk keeps its own.
+  const covered = Boolean(settings || frames || journal || ended || menu || about || ending || exporting || creation || worlds || loading || moments[0] || talk)
+  const playing = Boolean(status)
+  useEffect(() => {
+    if (!covered && playing) inputRef.current?.focus()
+  }, [covered, playing])
   const showRules = useShowRules()
   // The talk as it stands, every answer: its lines go to the window that stays when it is over.
   useEffect(() => {

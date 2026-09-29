@@ -1196,6 +1196,23 @@ function createWindow(): void {
           })()`,
         )
         smokeSay(`[smoke] ${room}`)
+        // The input has the focus once nothing lies over the game (M10.29 O): after the frames screen and the cards.
+        const focus: string = await window!.webContents.executeJavaScript(
+          `(async () => {
+            for (let i = 0; i < 6; i++) {
+              const cover = [...document.querySelectorAll('button')].find((b) => ['[Play]', '[Go on]'].includes(b.textContent.trim()))
+              if (!cover) break
+              cover.click()
+              await new Promise((r) => setTimeout(r, 300))
+            }
+            const active = document.activeElement
+            // A screen still open over the game (making a character) keeps the focus in its own first field.
+            const dialog = active && active.closest('[role="dialog"]')
+            if (dialog) return 'in its own field on ' + dialog.getAttribute('aria-label')
+            return active && active.getAttribute('aria-label') === 'Command' ? 'in the input' : 'ELSEWHERE: ' + (active ? active.tagName + ' ' + (active.textContent || '').trim().slice(0, 40) : 'nothing')
+          })()`,
+        )
+        smokeSay(`[smoke] focus ${focus}`)
         // Saving (M9.3): a checkpoint and a tail, in a store of its own, load as exactly the same world.
         if (engine && content) {
           const dir = mkdtempSync(join(tmpdir(), 'wisplight-smoke-'))
