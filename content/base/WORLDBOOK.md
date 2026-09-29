@@ -174,6 +174,7 @@ Levels: under the ground, ground level, the crowns.
 | Line | What | Where | Pushed by | Threatens, breaks |
 | --- | --- | --- | --- | --- |
 | The great flood | flood | Oude Zijl, Veenhoek, Molenend | autumn (+1), winter (+2), dyke_shored (-3) | 40, 90: water through the Great Dyke |
+| The peat-cutters' unrest | uprising | Veenhoek | facts of crime (+8), facts of crime (+2), facts of reconciled (-4), winter (+1) | 30, 60: the peat-cutters down tools |
 
 ## 5. Faith
 

@@ -1721,6 +1721,11 @@ function checkReferences(world: WorldDef | undefined, c: Omit<Content, 'world'>)
     for (const a of tide.areas) if (!c.areas.has(a)) problems.push(`tide ${tide.id}: unknown area ${a}`)
     if (!c.plans.has(tide.plan)) problems.push(`tide ${tide.id}: unknown plan ${tide.plan}`)
     if (tide.threshold <= tide.threat) problems.push(`tide ${tide.id}: the threshold (${tide.threshold}) must be above the threat (${tide.threat})`)
+    // The two at the table (M10.22): people of the world, and two of them.
+    if (tide.mediation) {
+      for (const n of tide.mediation.between) if (!c.npcs.has(n)) problems.push(`tide ${tide.id}: mediation between ${n}, who is no person`)
+      if (tide.mediation.between[0] === tide.mediation.between[1]) problems.push(`tide ${tide.id}: mediation needs two different people`)
+    }
     const seasons = world?.weather?.seasons
     for (const d of tide.drivers) {
       if ('tension' in d) for (const r of d.tension) if (!c.realms.has(r)) problems.push(`tide ${tide.id}: unknown realm ${r}`)

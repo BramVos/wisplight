@@ -67,7 +67,8 @@ function push(world: World, d: Driver): { weight: number; what: string } | undef
         (!d.fact.kind || f.kind === d.fact.kind || f.pattern === d.fact.kind) &&
         (d.fact.belang === undefined || f.belang >= d.fact.belang) &&
         (!d.fact.about || f.about.includes(d.fact.about)) &&
-        (!d.fact.by || f.by === 'player' || f.about.includes('player')),
+        // The stranger's: what they put about, what is about them, and their crimes (M10.22: crime.ts records only the stranger's).
+        (!d.fact.by || f.by === 'player' || f.about.includes('player') || f.kind === 'crime'),
     )
     return facts.length ? { weight: facts.length * d.weight, what: facts.map((f) => f.title).join('; ') } : undefined
   }
@@ -95,7 +96,11 @@ export function tidesDay(world: World): void {
   for (const tide of lines) {
     const st = tideState(world, tide.id)
     const pushed = tide.drivers.map((d) => push(world, d)).filter((p): p is { weight: number; what: string } => Boolean(p))
-    const add = pushed.reduce((sum, p) => sum + p.weight, 0)
+    // What the stranger's deeds push (M10.22) moves a line at most ten points a day either way, the rule for a shift.
+    const byPlayer = tide.drivers.map((d, i) => ('fact' in d && d.fact.by === 'player' ? i : -1)).filter((i) => i >= 0)
+    const theirs = tide.drivers.map((d) => push(world, d)).reduce((sum, p, i) => sum + (p && byPlayer.includes(i) ? p.weight : 0), 0)
+    const rest = pushed.reduce((sum, p) => sum + p.weight, 0) - theirs
+    const add = rest + Math.max(-10, Math.min(10, theirs))
     st.pressure = Math.max(0, Math.round((st.pressure * (1 - decay) + add) * 100) / 100)
     if (pushed.length) st.moved = pushed.map((p) => p.what)
   }
@@ -201,7 +206,8 @@ export function applyTides(world: World, reply: TidesReply | null): void {
     const said = reply?.lines.find((l) => l.id === tide.id)
     const theirs = said && may.includes(said.judged as Judged) ? (said.judged as Judged) : undefined
     const judged = theirs ?? byRule(world, tide)
-    const why = theirs && typeof said!.why === 'string' && said!.why.trim() && said!.why.length < 240 ? said!.why.trim() : `pressure ${Math.round(st.pressure)} of ${tide.threshold}`
+    // What tipped it goes with the rule's words (M10.22): the chronicle says afterwards what moved the line.
+    const why = theirs && typeof said!.why === 'string' && said!.why.trim() && said!.why.length < 240 ? said!.why.trim() : `pressure ${Math.round(st.pressure)} of ${tide.threshold}${st.moved.length ? `, after ${st.moved.join('; ')}` : ''}`
     st.history.push({ t: world.now, judged, pressure: st.pressure, why })
     if (st.history.length > 24) st.history.splice(0, st.history.length - 24)
     const where = placeIn(world, tide.areas[0]!)

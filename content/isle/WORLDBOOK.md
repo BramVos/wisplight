@@ -172,7 +172,7 @@ of the short years". They count time by seasons and tides, never by bells.
 
 | Line | What | Where | Pushed by | Threatens, breaks |
 | --- | --- | --- | --- | --- |
-| The great storm | storm | Skerrow Hythe, the Shore | autumn (+1), winter (+2), beacon_burning (-1) | 40, 90: the great storm |
+| The great storm | storm | Skerrow Hythe, the Shore | autumn (+1), winter (+2), beacon_burning (-1), facts of crime (+6) | 40, 90: the great storm |
 
 ## 6. Faith
 

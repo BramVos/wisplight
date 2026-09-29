@@ -12,6 +12,8 @@ tides:
       - { season: winter, weight: 2 }
       # A lit Lamp brings ships and help: the island is less alone with the sea.
       - { flag: beacon_burning, weight: -1 }
+      # The stranger weighs in (M10.22): a crime against the lightkeeper leaves the Lamp without its keeper.
+      - { fact: { kind: crime, about: npc_garrick, by: player }, weight: 6 }
     threat: 40
     threshold: 90
     threatens:
@@ -25,3 +27,10 @@ tides:
       precise: A great storm came in off the Glass Sea and broke over the harbour wall of Skerrow Hythe.
       village: The storm's on us, the sea is over the harbour wall!
       far: A great storm struck the island of Skerrow.
+    # Maren keeps the Hythe's word on the Lamp's oil, and Garrick keeps the Lamp:
+    # brought to one table, the Hythe and the headland agree on the oil, and the
+    # island is less alone when the storm comes (M10.22).
+    mediation:
+      between: [npc_maren, npc_garrick]
+      eases: 8
+      told: the stranger brought Maren of the Salt Kettle and Garrick the lightkeeper to one table about the Lamp's oil

@@ -52,6 +52,12 @@ export const TideSchema = z
     breaks: z.object({ title: z.string(), precise: z.string(), village: z.string(), far: z.string() }).strict(),
     /** Days after an event before it may break again (without: the knob tides.cooldown_days). */
     cooldown: z.number().int().positive().optional(),
+    /**
+     * Who the stranger may bring to one table once the line stands at its threat (M10.22): the two
+     * people of its two sides, how much a good outcome eases it (at most ten, the rule for a shift),
+     * and what the chronicle says afterwards.
+     */
+    mediation: z.object({ between: z.tuple([z.string(), z.string()]), eases: z.number().positive().max(10).default(10), told: z.string() }).strict().optional(),
   })
   .strict()
 export type Tide = z.infer<typeof TideSchema>

@@ -973,6 +973,15 @@ export function LandMap({ data, style, label: ariaLabel, onCommand }: { data: La
     ctx.lineWidth = 1
     ctx.strokeRect(rx, ry, data.region.w * k, data.region.h * k)
     label(ctx, data.region.name, rx + 2, ry + 10, s, width)
+    // A great line under a threat, or broken (M10.22): the region's border in the colour of danger, and the line named.
+    if (data.tense?.length) {
+      ctx.strokeStyle = data.tense.some((t) => t.stage === 'event') ? '#d0493a' : '#e0a040'
+      ctx.lineWidth = 3
+      ctx.setLineDash([6, 3])
+      ctx.strokeRect(rx - 2, ry - 2, data.region.w * k + 4, data.region.h * k + 4)
+      ctx.setLineDash([])
+      data.tense.forEach((t, i) => label(ctx, `${t.name}: ${t.stage === 'event' ? 'broken' : 'a threat'}`, rx + 2, ry + data.region.h * k - 6 - i * 12, s, width))
+    }
     ctx.setLineDash([4, 3])
     ctx.lineWidth = 1.4
     for (const r of data.routes) {

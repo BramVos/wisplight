@@ -640,8 +640,11 @@ A list; each has:
 | plan | text | yes |  |
 | breaks | a map: title, precise, village, far | yes |  |
 | cooldown | number | no |  |
+| mediation | a map: between, eases, told | no |  |
 
 `drivers`: each pushes the line every day it holds, by its weight (negative calms): `season` (a season of this world), `tension` with `at_least` (two realms), `short` (a settlement short of an item or anything), `flag`, or `fact` (the facts of the day of a kind, a belang, about someone, or by the stranger). The pressure loses a little every day. From `threat` it may threaten, from `threshold` break; the event is `plan`, a plan of the content, with `breaks` as its fact of belang 5; at most one event a season, then `cooldown` days.
+
+`mediation` (optional, M10.22): `between` two people of the two sides, `eases` (at most 10) and `told` (what the chronicle says): once the line stands at its threat, the stranger with standing (a faction of either side, or the trust of both) may bring the two to one table with MEDIATE BETWEEN; Persuade and Insight decide where the world has those skills, and the outcome shifts the pressure. What the stranger's deeds push (drivers `by: player`, their crimes too) moves a line at most ten a day.
 
 ## aftermath (data/aftermath.yaml)
 

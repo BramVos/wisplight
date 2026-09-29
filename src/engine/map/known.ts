@@ -1,5 +1,6 @@
 import type { World } from '../world'
 import { openThreads } from '../leaving'
+import { tenseLines } from '../tidepages'
 import { centre, type Hex, hexAt } from './hexgrid'
 import { noise, regionMap, type RegionMap } from './region'
 import { DEFAULT_PALETTE, type MapPalette } from './palette'
@@ -168,6 +169,8 @@ export interface LandMapData {
   palette: MapPalette
   /** The threads the stranger would leave open by setting off (M10.21, the hint at departure), heaviest first. */
   leaving?: string[]
+  /** Great lines under a threat or just broken (M10.22): the map colours the region's border. */
+  tense?: { name: string; stage: 'threat' | 'event' }[]
 }
 
 export function landMapData(world: World): LandMapData | undefined {
@@ -200,6 +203,7 @@ export function landMapData(world: World): LandMapData | undefined {
   }
   const here = map.posOf(playerHexOr(world, map))
   const leaving = openThreads(world).slice(0, 4).map((t) => (t.then ? `${t.text} ${t.then}` : t.text))
+  const tense = tenseLines(world)
   return {
     region: { name: map.region.name, x: region.origin[0], y: region.origin[1], w: region.size[0], h: region.size[1] },
     you: here,
@@ -208,5 +212,6 @@ export function landMapData(world: World): LandMapData | undefined {
     // The palette of the land the stranger is in (M10.23).
     palette: world.frame.palette ?? DEFAULT_PALETTE,
     ...(leaving.length ? { leaving } : {}),
+    ...(tense.length ? { tense } : {}),
   }
 }

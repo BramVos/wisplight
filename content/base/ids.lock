@@ -36,7 +36,7 @@ ids:
   base/data/patterns.yaml:
     pattern: [lost_thing, quarrel, theft, fever, appeldag]
   base/data/plans.yaml:
-    plan: [dyke_muster, dyke_breach, cat_taken_in, fen_closed, soldiers_come, war, dyke_leak, holleveen_survey, holleveen_stakes, the_haakman_counts]
+    plan: [dyke_muster, dyke_breach, cat_taken_in, fen_closed, soldiers_come, war, dyke_leak, holleveen_survey, holleveen_stakes, the_haakman_counts, peat_strike]
   base/data/professions.yaml:
     profession: [baker, miller, peat_cutter, herbalist, eel_fisher, sister, schout, spinner, child, innkeeper, barmaid, grain_merchant, labourer, merchant, horse_miller, weighmaster, smith, pedlar, surveyor, mayor, notary, prior, dyke_reeve, miller_hand, witch, robber, spirit, cat, cooper, homemaker]
   base/data/props.yaml:
@@ -44,7 +44,7 @@ ids:
   base/data/quests.yaml:
     quest: [grey_cat_on_the_doorstep, the_vissers_to_safety, flour_for_veenhoek, the_surveyors_lights, what_the_haakman_wants, milk_for_the_kabouters, the_goat_riders_toll, the_white_womens_riddle, the_drainage_question, a_stall_at_the_market, the_honest_scale, the_brotherhoods_charter, the_apprentices_debt, a_boat_and_a_bride, the_bell_of_kloosterveen, the_road_to_graafhaven]
   base/data/tides.yaml:
-    tide: [great_flood]
+    tide: [great_flood, peat_unrest]
   base/data/topics.yaml:
     topic: [the_storm, fenna, grey_cat, kattenbroek, cat_widow, haakman, water_wolf, saint_brand, last_sheaf, witches_scale, drainage, surveyor, graafhaven, zwolderkamp, the_count, stavermouth, weeping_stone, hunnenloo, the_dry_ridge, goat_riders, who_will_not_dyke, mother_holles_featherbed, reynard_the_fox, drowned_bells_of_saeftinge, lord_halewijn, the_waylost, tall_pier, lady_of_stavermouth, white_women, surveyors_lights, lights_over_harmens_field, kabouter_milk, fen_charter, ringed_oak]
   base/data/watchers.yaml:

@@ -1,6 +1,7 @@
 import { GameClock } from './clock'
 import { callName } from './content'
 import { requestName } from './requests'
+import { tidesChronicle } from './tidepages'
 import type { World } from './world'
 
 // The true chronicle of a game (design: lore and world change, "Wat de speler
@@ -37,6 +38,9 @@ export function chronicleText(world: World, start: number): string {
       lines.push('')
     }
   }
+  // Every judgement of the great lines (M10.22), also the months nothing came of it.
+  const tides = tidesChronicle(world)
+  if (tides.length) lines.push('THE GREAT LINES', ...tides, '')
   const asked = world.state.requests.filter((r) => r.asked !== undefined || r.source === 'chronicler')
   if (asked.length) {
     lines.push('WHAT PEOPLE ASKED OF YOU')

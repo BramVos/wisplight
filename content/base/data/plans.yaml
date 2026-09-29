@@ -426,3 +426,26 @@ plans:
         every: 2
         when: [{ clock_full: haakman_revenge }]
         do: { set: haakman_revenge_done }
+
+  # The peat-cutters down tools (M10.22, the great line peat_unrest): the
+  # Brotherhood stands before the schout's house for a day, Veenhoek is on edge,
+  # and peat is dear until it is settled.
+  - id: peat_strike
+    name: the peat-cutters down tools
+    topic: peat
+    expires: 7
+    groups:
+      cutters: { npcs: [npc_gerrit, npc_jan_visser] }
+    steps:
+      - id: struck
+        do: { set: peat_strike }
+      - id: news
+        after: struck
+        do: { news: "The peat-cutters have downed their spades and stand before the schout's house. No peat is cut today.", area: veenhoek }
+      - id: edge
+        after: struck
+        do: { mood: veenhoek, kind: threat, days: 3, line: "Men with folded arms stand before the schout's house, and people cross the green quickly.", prompt: "The peat-cutters have downed tools against the Count's share; the village waits to see what the schout will do." }
+      - id: stand
+        after: struck
+        each: cutters
+        do: { goal: Confront, who: $who, target: npc_everhard, priority: 0.8, hours: 8 }

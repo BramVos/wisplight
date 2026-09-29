@@ -31,7 +31,8 @@
     "promises": "Your word and theirs",
     "lands": "How the lands stand",
     "land": "The land map",
-    "lodging": "Your lodging"
+    "lodging": "Your lodging",
+    "tides": "The great lines"
   },
   "index": {
     "within": "What lies within {km} km. ",

@@ -36,6 +36,8 @@ import { attitude, relation } from './dialogue/relations'
 import { TopicRegistry } from './dialogue/topics'
 import { add, itemName, matchItem } from './items'
 import { chronicleMarkdown, chronicleText } from './chronicle'
+import { tidesPage } from './tidepages'
+import { mediateTide, tideBetween } from './tidemediation'
 import { journalPage, type JournalPage } from './journal'
 import { die } from './life'
 import { agree, agreements, leadAhead, openAgreements, promiseLines, settle } from './agreements'
@@ -427,6 +429,8 @@ export class Engine {
       const page = questPage(this.world, id.slice(6))
       return page ? { id, kind: 'quest', name: page.name, lines: page.lines, sources: [], links: [] } : undefined
     }
+    // The great lines (M10.22): where each stands, what moved it, and its judgements.
+    if (id === 'tides') return { id, kind: 'lore', name: 'The great lines', lines: tidesPage(this.world), sources: [], links: [] }
     if (id === 'factions') return { id, kind: 'lore', name: 'Factions', lines: factionLines(this.world).length ? factionLines(this.world) : ['No faction knows you yet.'], sources: [], links: [] }
     if (id === 'lands') return { id, kind: 'lore', name: 'The lands', lines: realmLines(this.world), sources: [], links: [] }
     if (id.startsWith('realm_')) {
@@ -2195,6 +2199,9 @@ export class Engine {
     if (!a || !b || a === b) return [{ kind: 'error', text: 'Make peace between whom?' }]
     const here = this.world.npcsAt(this.state.player.location)
     if (!here.includes(a) && !here.includes(b)) return [{ kind: 'error', text: `You would have to find ${callName(this.world.npc(a))} or ${callName(this.world.npc(b))} first.` }]
+    // The two sides of a great line under a threat (M10.22): the table the content names.
+    const tide = tideBetween(this.world, a, b)
+    if (tide) return [...mediateTide(this.world, tide, a, b), ...this.pass(60)]
     const outcome = mediateBetween(this.world, a, b, 'player')
     const [na, nb] = [callName(this.world.npc(a)), callName(this.world.npc(b))]
     if (outcome === 'none') {

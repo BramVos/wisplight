@@ -32,3 +32,36 @@ tides:
       village: They say the Great Dyke is leaking by Oude Zijl.
       far: The Great Dyke in the Holleveen is leaking.
     cooldown: 180
+
+  # The peat-cutters and the Count's men are old rivals (data/factions.yaml): the
+  # Brotherhood cuts the peat, and the schout takes the Count's share of every
+  # barge. What the stranger does weighs in (M10.22): a crime against the schout
+  # sharpens it, any crime a little; bringing Gerrit and Schout Everhard to one
+  # table calms it. When it breaks, the cutters down tools (plan peat_strike).
+  - id: peat_unrest
+    name: the peat-cutters' unrest
+    kind: uprising
+    areas: [veenhoek]
+    drivers:
+      - { fact: { kind: crime, about: npc_everhard, by: player }, weight: 8 }
+      - { fact: { kind: crime, by: player }, weight: 2 }
+      - { fact: { kind: reconciled, about: npc_gerrit }, weight: -4 }
+      - { season: winter, weight: 1 }
+    threat: 30
+    threshold: 60
+    threatens:
+      line: The peat-cutters stand about in knots and stop talking when the schout passes.
+      news: The Brotherhood says the Count's share is too much this year, and Schout Everhard says a bargain is a bargain.
+      prices: 1.1
+      days: 10
+    plan: peat_strike
+    breaks:
+      title: the peat-cutters down tools
+      precise: The Brotherhood of Peat-cutters has laid down its spades and stands before the schout's house, and no peat is cut for the Count.
+      village: The cutters have downed tools! They're standing outside Everhard's door.
+      far: Peat-cutters in the Holleveen have stopped work against their count.
+    cooldown: 120
+    mediation:
+      between: [npc_gerrit, npc_everhard]
+      eases: 10
+      told: the stranger brought Gerrit of the peat-cutters and Schout Everhard to one table

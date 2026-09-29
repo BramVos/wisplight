@@ -49,6 +49,14 @@ export function warnings(content: Content): string[] {
   }
   // A great line nothing can push (M10.22) never comes.
   for (const tide of content.tides.values()) if (!tide.drivers.some((d) => d.weight > 0)) out.push(`tide ${tide.id}: nothing pushes it (every driver's weight is 0 or less), so it never comes`)
+  // Two at one table who are on the same side (M10.22): there is nothing to settle between them.
+  for (const tide of content.tides.values()) {
+    const [a, b] = tide.mediation?.between ?? []
+    if (!a || !b) continue
+    const sides = (id: string) => [...content.factions.values()].filter((f) => f.members.includes(id)).map((f) => f.id)
+    const shared = sides(a).filter((f) => sides(b).includes(f))
+    if (shared.length) out.push(`tide ${tide.id}: the two at the table are on the same side (both of ${shared.join(', ')}), so a mediation settles nothing`)
+  }
   // What lies beyond the map (M10.21): an edge without a line says only that nobody has told the stranger.
   for (const region of content.regions.values()) {
     const said = new Set((region.beyond ?? []).map((b) => b.side))

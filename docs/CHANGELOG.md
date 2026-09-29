@@ -1,5 +1,19 @@
 # Changelog
 
+## M10.22 af: de speler weegt mee, en de grote lijnen in zicht, 29 september 2026
+
+- **Je daden duwen een grote lijn.** Dat regelt de content: een drijfveer met `by: player` telt wat jij doet, en je misdaden tellen mee. Per lijn en per dag gaat dat hooguit tien punten omhoog of omlaag, de bestaande regel voor een verschuiving. Wie een reeks misdaden tegen schout Everhard begaat, duwt de onrust van de veensteekers over de drempel, en de Broederschap legt het werk neer (plan `peat_strike`).
+- **Wie aanzien heeft, brengt de twee kanten aan één tafel.** Een lijn kan `mediation` hebben: wie er aan tafel zitten, hoeveel het verlicht en wat de kroniek erover zegt. Staat de lijn op haar dreiging, zijn beiden aanwezig en ben je lid van een van hun facties of vertrouwen ze je allebei, dan doet MEDIATE BETWEEN het. Persuade en Insight beslissen; waar de wereld die vaardigheden niet kent, beslist het vertrouwen. De uitkomst verschuift de spanning. Bij de volgende beoordeling zegt de kroniek wat de doorslag gaf ("after the stranger brought Gerrit of the peat-cutters and Schout Everhard to one table").
+- **In zicht.** Het dagboek heeft onder You de pagina "The great lines": per lijn de stand, wat hem bewoog en de laatste beoordelingen. De landkaart kleurt de rand van de streek als een lijn dreigt of gebroken is, met de naam erbij. De kroniek van het spel heeft een deel THE GREAT LINES met elke beoordeling, ook de maanden waarin er niets kwam.
+- **Niet te vaak.** Een test laat dertig dagen zonder speler lopen in de Nethermarch, Skerrow en Deepwell: hooguit één dreiging en geen gebeurtenis.
+- **Per wereld.** De Nethermarch kreeg een tweede lijn, de onrust van de veensteekers, want de Broederschap en de mannen van de Graaf zijn rivalen in de content. Skerrow kreeg een tafel voor Maren en Garrick over de olie van de Lamp, en een misdaad tegen de vuurtorenwachter scherpt de storm aan. Deepwell heeft geen van beide; een test speelt die neutrale standaard.
+
+Testen: begaan een paar misdaden in Veenhoek en kijk in het dagboek onder You > The great lines. Of zet, met het dev-menu of een snelle klok, de onrust op haar dreiging en doe `mediate between gerrit and everhard` met beiden bij je. Tests in `tests/m1022weigh.test.ts`.
+
+Wat de editor en de kroniekverteller leerden: `mediation` staat in het contract en in de stap Signalen, en Check noemt twee aan tafel die aan dezelfde kant staan. `docs/NEW-WORLD.md` zegt waar de vreemdeling meeweegt.
+
+Bewust anders: de afspraak `meet` met beide partijen is de afspraak die er al was. De bemiddeling vraagt alleen dat beiden er zijn, hoe je dat ook regelt.
+
 ## M10.21 deel: de wenk bij het vertrek, 29 september 2026
 
 - **Wie de streek verlaat met open draden, krijgt één wenk.** Het maakt niet uit of je over de rand van de kaart gaat of een lijn neemt. De wenk bestaat uit de twee zwaarste draden, met de naam en de stand erbij: een open quest (met "In 30 days it goes on without you" als hij verloopt), een verzoek ("Aaltje waits for you"), je woord ("You promised Mirte: ..., within 2 days", met "Away, you will miss it, and it will be remembered" als het onderweg vervalt) of een schuld. Een belofte die onderweg vervalt, weegt het zwaarst.
