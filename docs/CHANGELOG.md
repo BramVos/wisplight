@@ -1,5 +1,22 @@
 # Changelog
 
+## M10.28 af: wat een uur en een zin kosten, 30 september 2026
+
+Alle tien punten van M10.28 zijn af. De delen staan hieronder in drie stukken "M10.28 deel"; dit is de optelsom.
+
+- **Een uur spelen** kost met jouw modellen ongeveer $0,42 bij 1 seconde per spelminuut, $0,19 bij 4 (de standaard) en $0,15 bij 8. Na M10.27 was het $0,51 bij 1 seconde.
+- **Een zin in een gesprek** kost $0,0021 in plaats van $0,0035. Dat komt van het gesprek per gebied als berichten, een uur in de cache, één antwoordschema per soort en de zinnen die de motor zelf beantwoordt.
+- **De stem blijft Haiku 4.5.** gpt-5-mini gaf 11 van de 24 bruikbare antwoorden en was trager.
+- **De regels van het gesprek** zijn opnieuw gemeten en blijven: 24 van de 24 antwoorden bruikbaar, karakter 0,98 tot 1,00, leesscore 0,75 tot 0,85 (was 0,76).
+
+Testen: speel een uur met je sleutel op de standaardklok en kijk onder Instellingen > AI wat het kostte. Het zou rond $0,19 moeten liggen.
+
+Bekende gaten: de prijzen per uur zijn opgeteld uit gemeten aanroepen maal hoe vaak ze komen (`docs/worldbuild/cost-measure.md`), niet uit een uur echt spelen. Een echt uur met veel praten kost meer, een uur reizen minder.
+
+Wat de editor en de kroniekverteller leerden: de klok als wereldknop in de stap Kalender, en minuten op een weg naar iets wat gebouwd wordt (zie de delen).
+
+Ontwerp: functioneel ontwerp, de vier alinea's "Stand na M10.28" (het gesprek per gebied; hoe snel de dag gaat en de stem vergeleken; wat de regels zelf beantwoorden; één schema per soort en de regels van het gesprek).
+
 ## M10.29 deel: het AI-logboek als bestand, 30 september 2026
 
 - **Elke aanroep heel.** Onder Instellingen > Advanced staat de knop `ai_log_full`. Staat die op 1, dan schrijft de app elke aanroep van een model onafgekapt weg naar `logs/ai-<spel>-<datum>.md` in de map van de app, één bestand per spel en per dag. Per aanroep staan erin: de tijd, de soort, het model, de kosten, de cache, de seconden, het vaste deel, het gesprek tot nu toe, de prompt en het antwoord. Wat de bewaker met het antwoord deed, staat eronder. Een sleutel komt er nooit in.
@@ -163,7 +180,7 @@ Ontwerp: functioneel ontwerp, alinea "Stand na M10.29: waarom je hier bent, wat 
 
 Testen: praat met Mirte over de Haakman en daarna over brood; let op "lamb" en op een vraag terug. Tests in `tests/m1028schema.test.ts` en `tests/m1028talkrules.test.ts`.
 
-Bekende gaten: de herhaling van de metingen op Haiku (de situatieset en het gesprek van twintig zinnen met de nieuwe regels, en Skerrow voor het opvullen van het blok) wacht op je akkoord, samen ongeveer $0,17.
+Bekende gaten: geen meer. De herhaling op Haiku is gedaan met je akkoord ($0,13, f87f887): 24 van de 24 antwoorden bruikbaar, karakter 0,98 tot 1,00, leesscore 0,75 tot 0,85. De regels blijven. Skerrow hoeft zijn blok niet op te vullen (cfdabb7).
 
 Ontwerp: functioneel ontwerp, alinea "Stand na M10.28: één schema per soort, en de regels van het gesprek na de leesscore".
 
