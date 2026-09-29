@@ -1,9 +1,9 @@
-import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { appendFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { basename, join, relative } from 'node:path'
-import { chapterStep, documentChapters, faithfulness, mergeFix, newWorldFiles, playWorldStep, readDraft, worldFixRequest, worldStepRequest, WORLD_STEPS, type ContentFile, type LlmRequest, type WorldStep } from '../engine'
+import { chapterStep, documentChapters, faithfulness, mergeFix, newWorldFiles, playWorldStep, readDraft, worldFixRequest, worldStepRequest, WORLD_STEPS, type Content, type ContentFile, type LlmRequest, type WorldStep } from '../engine'
 import { LlmError, type LlmResponse } from '../engine/dialogue/llm'
-import { askAdvice, testCall, trial } from '../node/ai/advisor'
+import { askAdvice, readScore, testCall, trial, type KeptAnswer } from '../node/ai/advisor'
 import { costUsd } from '../node/ai/pricing'
 import { openAiStrict } from '../node/ai/providers'
 import { listWorlds, loadContentFromDir, readContentFiles } from '../node/content'
@@ -277,12 +277,16 @@ export async function trialRun(ai: AiService, kinds: string, contentRoot: string
         const r = await trial(ai.gateway, content, provider, model, 'voice')
         // What it cost as billed, the cache read and written included (M10.28); without a price, at the full input price.
         const usd = r.costUsd ?? costUsd(r.model, { inputTokens: r.inputTokens, outputTokens: r.outputTokens, cachedTokens: 0 }) ?? 0
-        say(`voice_set #${n}: ${r.model}, ${r.answers} answers, ${r.valid} valid, ${r.retries} retries, ${r.fallbacks} set lines, character ${r.characterScore?.toFixed(3) ?? '-'}, leaks ${r.leaks}, invented ${r.factualErrors}, breaks ${r.characterBreaks}, in ${r.inputTokens} (read ${r.cachedTokens ?? 0}), out ${r.outputTokens}, $${usd.toFixed(4)}${r.errors.length ? `; ${r.errors.join('; ')}` : ''}`)
+        // Every answer kept, and how the series reads (M10.28: the rules score words and facts, not how a line reads).
+        const read = r.kept && env('READ') !== '0' ? await readScore(ai.gateway, content, r.kept).catch(() => undefined) : undefined
+        const counts = `${r.answers} answers, ${r.valid} valid, ${r.retries} retries, ${r.fallbacks} set lines, character ${r.characterScore?.toFixed(3) ?? '-'}, leaks ${r.leaks}, invented ${r.factualErrors}, breaks ${r.characterBreaks}, ${(r.averageLatencyMs / 1000).toFixed(1)}s an answer (at most ${(r.maxLatencyMs / 1000).toFixed(1)}s)`
+        if (r.kept) keepAnswers(appPath, content, r.model, `The situation set, series ${n}`, r.kept, `${counts}, $${usd.toFixed(4)}`, read)
+        say(`voice_set #${n}: ${r.model}, ${counts}, in ${r.inputTokens} (read ${r.cachedTokens ?? 0}), out ${r.outputTokens}, $${usd.toFixed(4)}${read ? `; read ${read.score.toFixed(3)} (${read.model}, $${read.costUsd.toFixed(4)})` : ''}${r.errors.length ? `; ${r.errors.join('; ')}` : ''}`)
       }
       continue
     }
     if (kind === 'talk_twenty' || kind === 'keep_warm') {
-      ok = (await talkTrial(ai, kind, contentRoot, { model: env('MODEL'), capUsd: cap }, say)) && ok
+      ok = (await talkTrial(ai, kind, contentRoot, { model: env('MODEL'), capUsd: cap, appPath, read: env('READ') !== '0' }, say)) && ok
       continue
     }
     if (kind === 'region_play') {
@@ -312,7 +316,7 @@ function providerOf(model: string): 'openai' | 'anthropic' {
  * from the cache, wrote to it and cost; or whether a ping keeps the block of
  * a place stays in the cache (keep_warm: a line, and one after six minutes).
  */
-export async function talkTrial(ai: AiService, kind: 'talk_twenty' | 'keep_warm', contentRoot: string, how: { model: string; capUsd: number }, say: (line: string) => void): Promise<boolean> {
+export async function talkTrial(ai: AiService, kind: 'talk_twenty' | 'keep_warm', contentRoot: string, how: { model: string; capUsd: number; appPath?: string; read?: boolean }, say: (line: string) => void): Promise<boolean> {
   const chosen = ai.overview().settings.roles.voice
   if (!chosen) {
     say(`${kind}: no model chosen for the voice under Settings > AI`)
@@ -347,6 +351,14 @@ export async function talkTrial(ai: AiService, kind: 'talk_twenty' | 'keep_warm'
   const rest = asked.slice(1)
   const each = (f: (l: (typeof asked)[number]) => number) => asked.reduce((n, l) => n + f(l), 0)
   say(`talk_twenty: ${other?.model ?? chosen.model}, ${asked.length} lines asked, $${spent.toFixed(4)} in all; the first $${(asked[0]?.costUsd ?? 0).toFixed(4)}, the rest $${(rest.reduce((n, l) => n + l.costUsd, 0) / Math.max(1, rest.length)).toFixed(4)} a line on average; read ${each((l) => l.cachedTokens)} of ${each((l) => l.inputTokens)} input tokens from the cache, wrote ${each((l) => l.cacheWriteTokens)}; ${(each((l) => l.latencyMs) / Math.max(1, asked.length) / 1000).toFixed(1)}s a line`)
+  // Every line kept, and how the talk reads (M10.28).
+  if (how.appPath) {
+    const kept: KeptAnswer[] = lines.map((l) => ({ npc: 'npc_mirte', said: l.line, answer: l.said, byModel: l.calls > 0 }))
+    const read = how.read ? await readScore(ai.gateway, content, kept).catch(() => undefined) : undefined
+    const used = other?.model ?? chosen.model
+    keepAnswers(how.appPath, content, used, 'A talk of twenty lines with Mirte', kept, `${asked.length} lines asked, $${spent.toFixed(4)}, ${(each((l) => l.latencyMs) / Math.max(1, asked.length) / 1000).toFixed(1)}s a line`, read)
+    if (read) say(`talk_twenty: read ${read.score.toFixed(3)} (${read.model}, $${read.costUsd.toFixed(4)})`)
+  }
   return true
 }
 
@@ -510,4 +522,24 @@ export async function kindTrial(ai: AiService, kind: string, contentRoot: string
   say(`${kind}: ${entry!.problems.length ? `the game would not use it: ${entry!.problems.slice(0, 3).join('; ')}` : 'the game takes it'} (${Math.round((Date.now() - started) / 1000)}s)`)
   keep(entry!)
   return entry!.problems.length === 0
+}
+
+/**
+ * The answers of a voice series kept side by side per model (M10.28; Bram:
+ * the rules score words and facts, not how the lines read, so the answers
+ * themselves are kept to be read): docs/playtest/voice/<date>-<model>.md, a
+ * section a series, the model's answers numbered as the read score names them.
+ */
+function keepAnswers(appPath: string, content: Content, model: string, title: string, answers: KeptAnswer[], counts: string, read?: Awaited<ReturnType<typeof readScore>>): void {
+  const dir = join(appPath, 'docs/playtest/voice')
+  mkdirSync(dir, { recursive: true })
+  const file = join(dir, `${today()}-${model.replace(/[^a-z0-9.-]/gi, '_')}.md`)
+  const head = existsSync(file) ? '' : `# The voice on ${model}, ${today()}\n\nEvery answer of the comparison of M10.28 (5), with the player's line before it, as the player read it. The model's answers are numbered as the read score names them; a line the rules answered is marked (rules).\n`
+  let n = 0
+  const name = (npc: string) => content.npcs.get(npc)?.name ?? npc
+  const lines = answers.map((a) => (a.byModel ? `${++n}. ${name(a.npc)}. The player: "${a.said}"\n   ${a.answer}` : `- ${name(a.npc)}. The player: "${a.said}"\n   ${a.answer} (rules)`))
+  const scored = read
+    ? [`Read score ${read.score.toFixed(2)} (0 to 1; per question 0 to 3: this person ${read.byQuestion.person.toFixed(1)}, natural ${read.byQuestion.natural.toFixed(1)}, answers and adds ${read.byQuestion.answers.toFixed(1)}, keeps it going ${read.byQuestion.onward.toFixed(1)}), read by ${read.model}.`, ...read.weakest.map((w) => `Weakest: ${w.n}, ${w.why}`)]
+    : []
+  appendFileSync(file, `${head}\n## ${title}\n\n${counts}.\n${scored.length ? `\n${scored.join('\n')}\n` : ''}\n${lines.join('\n')}\n`)
 }

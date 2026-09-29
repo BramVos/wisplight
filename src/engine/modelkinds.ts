@@ -54,4 +54,5 @@ export const MODEL_KINDS: readonly ModelKind[] = [
   { kind: 'voice_draft', role: 'chronicler', does: 'The voice kit of a world.', when: 'editor', effort: 'low' },
   { kind: 'model_advice', role: 'advisor', does: 'Which models to choose for the roles.', when: 'settings' },
   { kind: 'test_call', role: 'advisor', does: 'A short call to see that a chosen model answers.', when: 'settings' },
+  { kind: 'read_score', role: 'brain', does: 'How a series of a voice model\'s answers reads: 0 to 3 on four questions per answer, and the three weakest (M10.28, beside the character score).', when: 'settings', effort: 'low' },
 ]

@@ -65,7 +65,7 @@ describe('M10.26: the cache mark on every kind of call', () => {
     // once per place, night or line, and nothing reads it back in five minutes.
     // The area block of a talk is kept an hour since M10.28 (a ping could not keep it).
     expect(marks).toMatchObject({ npc_reply: 'both, an hour', npc_goals: 'one, an hour', world_step: 'both, an hour', builder_draft: 'one, an hour', world_enhance: 'one, an hour' })
-    for (const kind of ['party_reply', 'chat_line', 'journey', 'improvise', 'chronicle', 'lore_check', 'legends', 'outline', 'far_place', 'district', 'weave', 'expansion', 'land', 'tides', 'world_polish', 'palette_draft', 'voice_draft', 'region_story']) expect(marks[kind], kind).toBe('none')
+    for (const kind of ['party_reply', 'chat_line', 'journey', 'improvise', 'chronicle', 'lore_check', 'legends', 'outline', 'far_place', 'district', 'weave', 'expansion', 'land', 'tides', 'world_polish', 'palette_draft', 'voice_draft', 'region_story', 'read_score']) expect(marks[kind], kind).toBe('none')
   }, 120_000)
 
   it('keeps the part before the mark the same from call to call in a played game', async () => {

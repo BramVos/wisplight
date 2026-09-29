@@ -689,6 +689,12 @@ export class MockLlm implements LlmClient {
     }
     // One line in a chat the player overhears (M9.1).
     if (request.schemaName === 'chat_line') return this.mode === 'invalid' ? 'Hmm.' : JSON.stringify({ line: `Is that so? Well, I never heard the like of it.` })
+    // The read score (M10.28): every answer mostly fine, the last one weakest.
+    if (request.schemaName === 'read_score') {
+      if (this.mode === 'invalid') return 'They read well.'
+      const count = (request.meta as { count: number }).count
+      return JSON.stringify({ answers: Array.from({ length: count }, (_, i) => ({ n: i + 1, person: 2, natural: 2, answers: 2, onward: i === count - 1 ? 0 : 1 })), weakest: [{ n: count, why: 'It stops the talk dead.' }] })
+    }
     // The spark of a quiet night (M10.27): something stays on the first person's mind, from the first storyline.
     if (request.schemaName === 'spark') {
       if (this.mode === 'invalid') return 'Something happens.'

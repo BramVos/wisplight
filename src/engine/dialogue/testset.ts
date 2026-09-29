@@ -67,6 +67,8 @@ const TALK_AT = { day: 15, hour: 11 }
 export interface SituationRun {
   situation: Situation
   outputs: Output[]
+  /** Each line the player said and what came back (M10.28: the answers kept, to be read side by side). */
+  turns: { said: string; outputs: Output[] }[]
   requests: LlmRequest[]
   replies: string[]
 }
@@ -91,13 +93,16 @@ export async function runSituation(content: Content, situation: Situation, llm: 
   const name = callName(content.npcs.get(situation.npc)!).toLowerCase()
   onLine?.(`talk ${name}`)
   const outputs: Output[] = [...(await engine.handle(`talk ${name}`))]
+  const turns: SituationRun['turns'] = []
   for (const line of situation.lines) {
     onLine?.(line)
-    outputs.push(...(await engine.handle(line)))
+    const said = await engine.handle(line)
+    turns.push({ said: line, outputs: said })
+    outputs.push(...said)
   }
   onLine?.('bye')
   outputs.push(...(await engine.handle('bye')))
-  return { situation, outputs, requests, replies }
+  return { situation, outputs, turns, requests, replies }
 }
 
 /**

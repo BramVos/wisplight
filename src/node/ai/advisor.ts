@@ -3,6 +3,7 @@ import { hasAnachronism, outOfCharacter } from '../../engine/dialogue/guard'
 import { sentText, type LlmClient, type LlmRejection, type LlmRequest, type LlmResponse } from '../../engine/dialogue/llm'
 import { parseReply } from '../../engine/dialogue/schema'
 import { brainTrial, chroniclerTrial, runSituation, trialSituations } from '../../engine/dialogue/testset'
+import { answerOf, readCard, readScoreReply, readScoreRequest, type ReadScore } from '../../engine/dialogue/readscore'
 import { characterChecks, characterScore } from '../../engine/dialogue/voice'
 import { MODEL_KINDS } from '../../engine/modelkinds'
 import { kindSituation } from '../../engine/trials'
@@ -76,6 +77,17 @@ export interface TrialResult {
   /** The cost of a usable answer times the answers in an hour of play. */
   costPerHourUsd?: number
   errors: string[]
+  /** Every answer of a voice trial with the player's line before it (M10.28: kept, to be read side by side). */
+  kept?: KeptAnswer[]
+}
+
+/** One answer of a voice trial, as the player read it. */
+export interface KeptAnswer {
+  npc: string
+  said: string
+  answer: string
+  /** False when the rules answered (a greeting, a set line after a failed reply). */
+  byModel: boolean
 }
 
 /** How a model came out of its trial, and why (M9.3). */
@@ -281,8 +293,10 @@ export async function trial(gateway: Gateway, content: Content, provider: Provid
   }
   if (role === 'voice') {
     // Every line the player says is an answer the game wants; a line without a call (a greeting from the rules) is not counted.
+    const kept: KeptAnswer[] = (result.kept = [])
     for (const situation of trialSituations(content, count)) {
-      await runSituation(content, situation, meter, 7, () => meter.answer++)
+      const run = await runSituation(content, situation, meter, 7, () => meter.answer++)
+      for (const turn of run.turns) kept.push({ npc: situation.npc, said: turn.said, ...answerOf(turn.outputs) })
     }
     const byAnswer = new Map<number, Call[]>()
     for (const call of meter.calls) byAnswer.set(call.answer, [...(byAnswer.get(call.answer) ?? []), call])
@@ -417,4 +431,17 @@ export function judgeTrials(results: TrialResult[]): { choice?: TrialResult; ver
     return { model: r.model, provider: r.provider, passed: reasons.length === 0, why: reasons.length ? reasons.join(', ') : `${r.valid} of ${r.answers} usable, ${price}` }
   })
   return { ...(choice ? { choice } : {}), verdicts }
+}
+
+/**
+ * How a series of answers reads (M10.28; Bram: the situation set scores words
+ * and facts, not whether the lines read well): one call on the brain's model
+ * at low effort; undefined when it could not be read.
+ */
+export async function readScore(gateway: Pick<Gateway, 'complete'>, content: Content, answers: KeptAnswer[]): Promise<(ReadScore & { model: string; costUsd: number }) | undefined> {
+  const items = answers.filter((a) => a.byModel).map((a) => ({ card: readCard(content, a.npc), said: a.said, answer: a.answer }))
+  if (!items.length) return undefined
+  const response = await gateway.complete(readScoreRequest(items))
+  const read = readScoreReply(response.text, items.length)
+  return read ? { ...read, model: response.model, costUsd: costUsd(response.model, response.usage) ?? 0 } : undefined
 }

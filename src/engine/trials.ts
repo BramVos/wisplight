@@ -30,6 +30,7 @@ import { parseCommand } from './parser'
 import { crossesLimits, worldText } from './safety'
 import { judged, judgeRequest } from './truth'
 import { readSpark, sparkLines, sparkRequest } from './spark'
+import { readScoreReply, readScoreRequest } from './dialogue/readscore'
 import { buildInput } from './chronicler'
 import { assignKeys, buildRequest, DEFAULT_LIMITS } from '../chronicler'
 
@@ -231,6 +232,18 @@ const SITUATION_BUILDS: Record<string, Build> = {
     const run = { id: 'run_spark', t: engine.world.now, reason: 'spark' as const, lines: sparkLines(engine.world).map((l) => l.id) }
     const { request, keys } = sparkRequest(engine.world, run)
     return { about: 'a quiet night after a drowning', request, check: (text) => readSpark(text, keys).problems }
+  },
+  read_score: async ({ base }) => {
+    // Three answers of Mirte to read (M10.28): one good, one flat, one that talks like anyone.
+    const mirte = base.npcs.get('npc_mirte')!
+    const card = `${mirte.name}, ${mirte.short}.${mirte.speech ? ` Speech: ${mirte.speech}` : ''}`
+    const items = [
+      { card, said: 'What do you bake here?', answer: 'Mirte wipes her hands on her apron. "Rye, mostly, and a fen loaf on Saturdays. You look like you could do with one. Where are you headed?"' },
+      { card, said: 'Is the mill working?', answer: 'Mirte says. "No."' },
+      { card, said: 'Tell me about the village.', answer: '"Great question! The village is a wonderful place with many interesting features and friendly people."' },
+    ]
+    const request = readScoreRequest(items)
+    return { about: 'three answers of Mirte to read', request, check: (text) => (readScoreReply(text, items.length) ? [] : ['the read score could not be read']) }
   },
   lore_check: async () => {
     const op = { name: 'The night the dyke broke', summary: 'Harmen drowned in the Blackmere the night the dyke broke.', details: 'Mirte saw it from the bakery.', story: 'The dyke broke in the night and the water took Harmen before anyone could reach him. Mirte saw it from the bakery.', far: 'A man drowned in the marsh.' }
