@@ -193,9 +193,17 @@ export function takePassage(world: World, host: PassageHost, word: string, desti
   const minutes = rideMinutes(world, p, here, to)
   if (far) return journeyByPassage(world, host, p, here, to, minutes, fare)
   world.state.player.money -= fare
-  host.pass(minutes)
+  // Told in the coins where it is paid (M10.23), before the ride takes the stranger into another land.
+  const paid = world.money(fare)
+  // On board, not on the quay: no bell of the place left behind is heard on the way (M10.23: the white boat).
+  world.riding = true
+  try {
+    host.pass(minutes)
+  } finally {
+    world.riding = false
+  }
   world.state.player.location = stopLocation(world, to)!
-  return [{ kind: 'narration', text: fill(p.text, { fare: world.money(fare), duration: duration(minutes), place: world.location(world.state.player.location).name }) }]
+  return [{ kind: 'narration', text: fill(p.text, { fare: paid, duration: duration(minutes), place: world.location(world.state.player.location).name }) }]
 }
 
 /** WAIT FOR THE BARGE: until it goes from this stop; the clock runs as with any wait. */

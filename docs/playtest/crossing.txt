@@ -1,0 +1,406 @@
+Met de witte boot naar de Westelijke Eilanden en terug (isle), seed 7
+
+######## THE PLAYER ACTS
+Cold water, then stones. You wake on your face on a strand of black shingle, with the sea still pulling at your boots. Of the Grey Gull there is not much left: a broken mast, a spill of cordage, a cask rolling in the surf. Of her crew there is nothing at all.
+
+Gulls argue overhead. Somewhere beyond the rocks a bell rings once, thin and far, and then stops. There are people on this island, then.
+
+This is Skerrow, though you do not know it yet. No ship has called here since the light went out.
+
+Type LOOK to look around. Type HELP if you are lost. You are, rather.
+You were born to wreckers on another island and ran from them on the Grey Gull, and now a wreck has put you ashore after all. Maren at the Salt Kettle takes in what the sea brings.
+You were told to ask for Maren of the Salt Kettle in Skerrow Hythe. The name is in your journal.
+The Wreck Strand
+You stand on a strand of black shingle where the sea throws up what is left of the [Grey Gull]: a broken mast, a spill of wet rope, a cask rolling in the shallows. The stones clatter and hiss with every wave, and the air tastes of salt and tar. Gulls quarrel over something you would rather not look at. North, a path climbs the low cliff; east, the rocks give way to the [Tidepools].
+On the ground: a cask of lamp oil, a coil of rope and a bolt of sailcloth.
+Exits: north, east
+The Wreck Strand
+You come to on black shingle with the sea still pulling at your boots. Around you lies what is left of the Grey Gull, a mast, rope, a cask turning in the shallows, and nobody else.
+The pace of events is normal. Type TEMPO CALM or TEMPO DRAMATIC for less or more happening in the world.
+New quest: Off Skerrow. The Grey Gull broke on the rocks of Skerrow, and you alone came ashore. No ship calls since the beacon on the headland went out, and the winter storms will soon close the sea. Find a way off the island.
+
+==== RECOGNISE (Windsday 3 Leaffall 412 SF, 07:10 (morning))
+
+> look
+The Wreck Strand
+You stand on a strand of black shingle where the sea throws up what is left of the [Grey Gull]: a broken mast, a spill of wet rope, a cask rolling in the shallows. The stones clatter and hiss with every wave, and the air tastes of salt and tar. Gulls quarrel over something you would rather not look at. North, a path climbs the low cliff; east, the rocks give way to the [Tidepools].
+On the ground: a cask of lamp oil, a coil of rope and a bolt of sailcloth.
+Exits: north, east
+
+> journal
+People: Maren.
+Places: Skerrow, the Shore, The Headland, The Tidepools, The Wreck Strand.
+Lore: the Grey Gull.
+
+==== INFLUENCE (Windsday 3 Leaffall 412 SF, 07:10 (morning))
+
+# Shortcut: the Lamp burns again, and the elves' white boat calls at the harbour on Restday. Take it west.
+
+> @flag beacon_burning   [build command: a shortcut]
+[build] Flag beacon_burning.
+Off Skerrow: A ship for the light. Two nights after the Lamp of Skerrow was lit again, the Heron out of Havenmoor stands in to the Hythe to see what the light is about. Her master takes you across for the price of your story, and Skerrow has ships again.
++400 experience: Off Skerrow.
+
+> @goto loc_skerrow_harbour   [build command: a shortcut]
+[build] You are at Skerrow Hythe, the Harbour.
+Skerrow Hythe, the Harbour
+A curved wall of piled stone keeps the sea out of a harbour no bigger than a barn floor. Brannoc's boat, the Kittiwake, lies on the slip with her mast bare, and nets hang drying from every post. It smells of fish, wet rope and woodsmoke. Steps go up north to the green; west, the rocks lead back to the [Tidepools], and a low door by the slip opens into a cottage.
+Exits: north, west, in
++10 experience: you found Skerrow Hythe, the Harbour.
++30 experience: you came to Skerrow Hythe.
+
+> @money 200   [build command: a shortcut]
+[build] You have 2 gp.
+
+> @skip 4   [build command: a shortcut]
+[build] 4 days pass.
+Brannoc arrives from inside.
+Wenna arrives from the north.
+Wenna hoists the coracle onto her back and walks it down to the water.
+Brannoc nods to Wenna.
+Pip comes from inside, on his way to Skerrow Hythe, the Green.
+Pip stops and gives you a nod, curious about the stranger.
+Brannoc and Pip greet each other warmly.
+Pip nods to Wenna.
+Pip walks on to the north.
+Wenna comes back up the slip with a string of pollock, and sets to gutting and salting them.
+Wenna sets out 7 salt fish for sale.
+Brannoc goes inside.
+Wenna leaves north.
+Pip comes from the north, on his way to The Reeds' Cottage.
+Pip walks on inside.
+Pip comes from inside, on his way to Skerrow Hythe, the Green.
+Pip walks on to the north.
+Brannoc arrives from inside.
+Wenna arrives from the north.
+Brannoc nods to Wenna.
+Wenna leaves north.
+Brannoc goes inside.
+Pip comes from the north, on his way to The Reeds' Cottage.
+Pip stops and gives you a nod, curious about the stranger.
+Pip walks on inside.
+Brannoc comes from inside, on his way to Skerrow Hythe, the Green.
+Brannoc walks on to the north.
+Brannoc comes from the north, on his way to The Reeds' Cottage.
+Brannoc walks on inside.
+Wenna arrives from the north.
+Brannoc arrives from inside.
+Brannoc nods to Wenna.
+Pip comes from inside, on his way to Skerrow Hythe, the Green.
+Pip stops and gives you a nod, curious about the stranger.
+Brannoc and Pip greet each other warmly.
+Pip nods to Wenna.
+Pip walks on to the north.
+Brannoc goes inside.
+Wenna leaves north.
+Pip comes from the north, on his way to The Reeds' Cottage.
+Pip walks on inside.
+Pip comes from inside, on his way to Skerrow Hythe, the Green.
+Pip walks on to the north.
+Brannoc arrives from inside.
+Wenna arrives from the north.
+Brannoc nods to Wenna.
+Wenna leaves north.
+Brannoc goes inside.
+Pip comes from the north, on his way to The Reeds' Cottage.
+Pip stops and gives you a nod, curious about the stranger.
+Pip walks on inside.
+Brannoc comes from inside, on his way to Skerrow Hythe, the Green.
+Brannoc walks on to the north.
+Brannoc comes from the north, on his way to The Reeds' Cottage.
+Brannoc walks on inside.
+Wenna arrives from the north.
+Brannoc arrives from inside.
+Brannoc nods to Wenna.
+Pip comes from inside, on his way to Skerrow Hythe, the Green.
+Pip stops and gives you a nod, curious about the stranger.
+Brannoc and Pip greet each other warmly.
+Pip nods to Wenna.
+Pip walks on to the north.
+Brannoc goes inside.
+Wenna leaves north.
+Pip comes from the north, on his way to The Reeds' Cottage.
+Pip walks on inside.
+Pip comes from inside, on his way to Skerrow Hythe, the Green.
+Pip walks on to the north.
+Brannoc arrives from inside.
+Wenna arrives from the north.
+Brannoc nods to Wenna.
+Wenna leaves north.
+Brannoc goes inside.
+Pip comes from the north, on his way to The Reeds' Cottage.
+Pip stops and gives you a nod, curious about the stranger.
+Pip walks on inside.
+Brannoc comes from inside, on his way to Skerrow Hythe, the Green.
+Brannoc walks on to the north.
+Brannoc comes from the north, on his way to The Reeds' Cottage.
+Brannoc walks on inside.
+Wenna arrives from the north.
+Brannoc arrives from inside.
+Brannoc nods to Wenna.
+Pip comes from inside, on his way to Skerrow Hythe, the Green.
+Pip stops and gives you a nod, curious about the stranger.
+Brannoc and Pip greet each other warmly.
+Pip nods to Wenna.
+Pip walks on to the north.
+Brannoc goes inside.
+Wenna leaves north.
+Pip comes from the north, on his way to The Reeds' Cottage.
+Pip walks on inside.
+Pip comes from inside, on his way to Skerrow Hythe, the Green.
+Pip walks on to the north.
+Brannoc arrives from inside.
+Wenna arrives from the north.
+Brannoc nods to Wenna.
+Wenna leaves north.
+Brannoc goes inside.
+Pip comes from the north, on his way to The Reeds' Cottage.
+Pip stops and gives you a nod, curious about the stranger.
+Pip walks on inside.
+Brannoc comes from inside, on his way to Skerrow Hythe, the Green.
+Brannoc walks on to the north.
+Brannoc comes from the north, on his way to The Reeds' Cottage.
+Brannoc walks on inside.
+Wenna arrives from the north.
+Brannoc arrives from inside.
+Brannoc nods to Wenna.
+The harbour bell rings for six, once for the boats.
+The harbour bell rings for six, once for the boats.
+The harbour bell rings for six, once for the boats.
+The harbour bell rings for six, once for the boats.
+The harbour bell rings for six, once for the boats.
+The harbour bell rings for six, once for the boats.
+The harbour bell rings for six, once for the boats.
+The harbour bell rings for six, once for the boats.
+
+> @time 8   [build command: a shortcut]
+[build] 50 minutes pass.
+Pip comes from inside, on his way to Skerrow Hythe, the Green.
+Pip stops and gives you a nod, curious about the stranger.
+Brannoc and Pip greet each other warmly.
+Pip nods to Wenna.
+Pip walks on to the north.
+
+> take the white boat
+You pay 4 sp, and the elves make room for you in the stern without a word. After a day the white boat grounds on sand at Ynys Wen, the Landing.
+You are in the Western Isles now. At the landing an elf takes your coin without a word of bargaining and counts glass beads into your hand for it. Nobody here calls you stranger; you are a child of the short years, and they speak to you slowly, as if you might not follow. The changer changes your 1 gp 6 sp into 15 ring 14 bead, and keeps 6 bead for it.
++10 experience: you found Ynys Wen, the Landing.
++30 experience: you came to Ynys Wen.
+
+> look
+Ynys Wen, the Landing
+A landing of white stone runs out over a strand so pale it hurts your eyes, and the sea is clear enough to count the pebbles under it. The air smells of salt and of some flower you cannot name. Nobody hurries here. A path of flat stones goes up north to the [long hall].
+Exits: north
+Here: Gwion of the white boat (at work).
+
+> north
+The Long Hall of Ynys Wen
+The hall is longer than any building on Skerrow, and so quiet you hear your own breath. Light falls in pale bars through tall windows onto a floor of white stone, and the smell of beeswax hangs in the air. Elves sit along the walls and look at you without curiosity. The landing is back south.
+Exits: south
+Here: Eluned the steward (at work).
++10 experience: you found The Long Hall of Ynys Wen.
+
+> talk eluned
+You are talking with Eluned the steward. Type what you want to say, pick a number, or BYE to stop.
+Eluned nods. "Morning."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> Where am I?
+Eluned shrugs. "You have come a long way, child of the short years. Sit. There is no hurry here."
+
+> bye
+Eluned lifts a hand. "Go on, then."
+
+> inventory
+You carry a cutlass, a knife, a sealskin jerkin and 2 ship's biscuits, and 15 ring 14 bead.
+
+# Wait for the white boat back, the next Restday, and cross home.
+
+> south
+Ynys Wen, the Landing
+A landing of white stone runs out over a strand so pale it hurts your eyes, and the sea is clear enough to count the pebbles under it. The air smells of salt and of some flower you cannot name. Nobody hurries here. A path of flat stones goes up north to the [long hall].
+Exits: north
+Here: Gwion of the white boat (at work).
+
+> @skip 5   [build command: a shortcut]
+[build] 5 days pass.
+Gwion leaves north.
+Gwion arrives from the north.
+Gwion stops and gives you a nod, curious about the stranger.
+Gwion leaves north.
+Gwion arrives from the north.
+Gwion stops and gives you a nod, curious about the stranger.
+Gwion leaves north.
+Gwion arrives from the north.
+Gwion stops and gives you a nod, curious about the stranger.
+Gwion leaves north.
+Gwion arrives from the north.
+Gwion stops and gives you a nod, curious about the stranger.
+Gwion leaves north.
+Gwion arrives from the north.
+Gwion stops and gives you a nod, curious about the stranger.
+Gwion leaves north.
+Gwion arrives from the north.
+Gwion stops and gives you a nod, curious about the stranger.
+Gwion leaves north.
+Gwion arrives from the north.
+Gwion stops and gives you a nod, curious about the stranger.
+Gwion leaves north.
+Gwion arrives from the north.
+Gwion stops and gives you a nod, curious about the stranger.
+Gwion leaves north.
+Gwion arrives from the north.
+Gwion stops and gives you a nod, curious about the stranger.
+Gwion leaves north.
+Gwion arrives from the north.
+Gwion stops and gives you a nod, curious about the stranger.
+
+> @time 8   [build command: a shortcut]
+[build] 1370 minutes pass.
+Gwion leaves north.
+Gwion arrives from the north.
+Gwion stops and gives you a nod, curious about the stranger.
+Gwion leaves north.
+Gwion arrives from the north.
+Gwion stops and gives you a nod, curious about the stranger.
+
+> take the white boat
+You pay 4 ring, and the elves make room for you in the stern without a word. After a day the white boat grounds on sand at Skerrow Hythe, the Harbour.
+You are back in the Sundered Isles. The changer changes your 11 ring 14 bead into 1 gp 1 sp 5 cp, and keeps 2 cp for it.
+Maren keeps her strongbox at The Salt Kettle under lock, and the key close.
+
+> look
+Skerrow Hythe, the Harbour
+A curved wall of piled stone keeps the sea out of a harbour no bigger than a barn floor. Brannoc's boat, the Kittiwake, lies on the slip with her mast bare, and nets hang drying from every post. It smells of fish, wet rope and woodsmoke. Steps go up north to the green; west, the rocks lead back to the [Tidepools], and a low door by the slip opens into a cottage.
+Exits: north, west, in
+Here: Brannoc the boatman (at work), a fisherwoman (at work).
+
+> inventory
+You carry a cutlass, a knife, a sealskin jerkin and 2 ship's biscuits, and 1 gp 1 sp 5 cp.
+
+==== AFTER (Moonday 15 Leaffall 412 SF, 09:00 (morning))
+
+[24 hours pass]
+Brannoc goes inside.
+Wenna leaves north.
+Pip comes from the north, on his way to The Reeds' Cottage.
+Pip stops and gives you a nod, curious about the stranger.
+Pip walks on inside.
+Brannoc arrives from inside.
+Wenna arrives from the north.
+Pip comes from inside, on his way to Skerrow Hythe, the Green.
+Brannoc and Pip greet each other warmly.
+Brannoc nods to Wenna.
+Pip nods to Wenna.
+Pip walks on to the north.
+Wenna leaves north.
+Brannoc goes inside.
+Pip comes from the north, on his way to The Reeds' Cottage.
+Pip stops and gives you a nod, curious about the stranger.
+Pip walks on inside.
+Brannoc comes from inside, on his way to Skerrow Hythe, the Green.
+Brannoc walks on to the north.
+Brannoc comes from the north, on his way to The Reeds' Cottage.
+Brannoc walks on inside.
+Wenna arrives from the north.
+Brannoc arrives from inside.
+Brannoc nods to Wenna.
+Pip comes from inside, on his way to Skerrow Hythe, the Green.
+Pip stops and gives you a nod, curious about the stranger.
+Brannoc and Pip greet each other warmly.
+Pip nods to Wenna.
+Pip walks on to the north.
+The harbour bell rings for six, once for the boats.
+The harbour bell rings for six, once for the boats.
+
+> look
+Skerrow Hythe, the Harbour
+A curved wall of piled stone keeps the sea out of a harbour no bigger than a barn floor. Brannoc's boat, the Kittiwake, lies on the slip with her mast bare, and nets hang drying from every post. It smells of fish, wet rope and woodsmoke. Steps go up north to the green; west, the rocks lead back to the [Tidepools], and a low door by the slip opens into a cottage.
+Exits: north, west, in
+Here: Brannoc the boatman (at work), a fisherwoman (at work).
+
+> talk brannoc the boatman
+You are talking with Brannoc the boatman. Type what you want to say, pick a number, or BYE to stop.
+Brannoc nods. "Morning."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+Brannoc scratches an ear. "Two nights after the Lamp of [Skerrow] was lit again, the Heron out of Havenmoor stands in to [the Hythe] to see what the light is about. Her master takes you across for the price of your story, and Skerrow has ships again. (You heard it from Wenna.)"
+
+> bye
+Brannoc lifts a hand. "Go on, then."
+
+> talk a fisherwoman
+You are talking with a fisherwoman. Type what you want to say, pick a number, or BYE to stop.
+Wenna nods. "Morning."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+Wenna nods slowly. "Two nights after the Lamp of [Skerrow] was lit again, the Heron out of [Havenmoor] stands in to [the Hythe] to see what the light is about. Her master takes you across for the price of your story, and Skerrow has ships again. (You saw it yourself.)"
+
+> bye
+Wenna lifts a hand. "Go on, then."
+
+> journal
+People: Brannoc Reed, Eluned Silverstrand, Maren, Wenna Dray.
+Places: Skerrow, Skerrow Hythe, the Shore, Ynys Wen, Havenmoor, Skerrow Hythe, the Harbour, The Headland, The Tidepools, The Wreck Strand, The Long Hall of Ynys Wen, Ynys Wen, the Landing.
+Lore: Off Skerrow: A ship for the light, the stranger in Skerrow Hythe, the stranger in Ynys Wen, the stranger crossed into the Western Isles, the stranger crossed into the Sundered Isles, the Grey Gull.
+
+==== END (Tidesday 16 Leaffall 412 SF, 09:04 (morning))
+Quests: off_skerrow: a_ship_for_the_light
+
+######## CONTROL: THE PLAYER DOES NOTHING
+Cold water, then stones. You wake on your face on a strand of black shingle, with the sea still pulling at your boots. Of the Grey Gull there is not much left: a broken mast, a spill of cordage, a cask rolling in the surf. Of her crew there is nothing at all.
+
+Gulls argue overhead. Somewhere beyond the rocks a bell rings once, thin and far, and then stops. There are people on this island, then.
+
+This is Skerrow, though you do not know it yet. No ship has called here since the light went out.
+
+Type LOOK to look around. Type HELP if you are lost. You are, rather.
+You were born to wreckers on another island and ran from them on the Grey Gull, and now a wreck has put you ashore after all. Maren at the Salt Kettle takes in what the sea brings.
+You were told to ask for Maren of the Salt Kettle in Skerrow Hythe. The name is in your journal.
+The Wreck Strand
+You stand on a strand of black shingle where the sea throws up what is left of the [Grey Gull]: a broken mast, a spill of wet rope, a cask rolling in the shallows. The stones clatter and hiss with every wave, and the air tastes of salt and tar. Gulls quarrel over something you would rather not look at. North, a path climbs the low cliff; east, the rocks give way to the [Tidepools].
+On the ground: a cask of lamp oil, a coil of rope and a bolt of sailcloth.
+Exits: north, east
+The Wreck Strand
+You come to on black shingle with the sea still pulling at your boots. Around you lies what is left of the Grey Gull, a mast, rope, a cask turning in the shallows, and nobody else.
+The pace of events is normal. Type TEMPO CALM or TEMPO DRAMATIC for less or more happening in the world.
+New quest: Off Skerrow. The Grey Gull broke on the rocks of Skerrow, and you alone came ashore. No ship calls since the beacon on the headland went out, and the winter storms will soon close the sea. Find a way off the island.
+
+==== RECOGNISE (Windsday 3 Leaffall 412 SF, 07:10 (morning))
+
+> look
+The Wreck Strand
+You stand on a strand of black shingle where the sea throws up what is left of the [Grey Gull]: a broken mast, a spill of wet rope, a cask rolling in the shallows. The stones clatter and hiss with every wave, and the air tastes of salt and tar. Gulls quarrel over something you would rather not look at. North, a path climbs the low cliff; east, the rocks give way to the [Tidepools].
+On the ground: a cask of lamp oil, a coil of rope and a bolt of sailcloth.
+Exits: north, east
+
+> journal
+People: Maren.
+Places: Skerrow, the Shore, The Headland, The Tidepools, The Wreck Strand.
+Lore: the Grey Gull.
+
+==== AFTER (Windsday 3 Leaffall 412 SF, 07:10 (morning))
+
+[24 hours pass]
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+Down at the Hythe, thin across the water, the harbour bell rings for six.
+
+> look
+The Wreck Strand
+You stand on a strand of black shingle where the sea throws up what is left of the [Grey Gull]: a broken mast, a spill of wet rope, a cask rolling in the shallows. The stones clatter and hiss with every wave, and the air tastes of salt and tar. Gulls quarrel over something you would rather not look at. North, a path climbs the low cliff; east, the rocks give way to the [Tidepools].
+On the ground: a cask of lamp oil, a coil of rope and a bolt of sailcloth.
+Exits: north, east
+
+# Nobody here to ask.
+
+> journal
+People: Maren.
+Places: Skerrow, the Shore, The Headland, The Tidepools, The Wreck Strand.
+Lore: the Grey Gull.
+
+==== END (Thornsday 4 Leaffall 412 SF, 07:10 (morning))
+Quests: off_skerrow: open, stage stranded

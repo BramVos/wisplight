@@ -109,7 +109,7 @@ function lastBell(world: World): SoundNow | undefined {
  */
 export function bellsHour(world: World): void {
   const bells = world.content.world.bells
-  if (!bells.length || minuteOfDay(world.now) % 60 !== 0) return
+  if (!bells.length || world.riding || minuteOfDay(world.now) % 60 !== 0) return
   const hour = new GameClock(world.now).parts.hour
   const place = world.content.locations.get(world.state.player.location)
   if (!place) return

@@ -85,6 +85,8 @@ export class World {
    * which asks its client and keeps the answer in the log. Not saved.
    */
   costAsk?: (id: string, request: import('./dialogue/llm').LlmRequest) => number | undefined
+  /** On board a line of transport between two stops (M10.23): the stranger is not at the quay they left. Not saved. */
+  riding = false
   /** Things the player should be told after this command: experience, a patron's mood. Not saved. */
   notices: string[] = []
   /** Deaths since the engine last looked, for the quests (not saved: handled in the same step). */
