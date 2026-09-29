@@ -15,6 +15,7 @@ import { worldFixedPart } from '../worldfixed'
 import { districtOf, districtsOf } from './districts'
 import { farPlaceOf } from './far'
 import { outlineOf } from '../outlines'
+import { fullDone } from './regionfull'
 import { grownContent, growth } from './growth'
 
 // A new region with a story of its own (M10.25; Bram, 29 September 2026: is
@@ -93,6 +94,8 @@ export function regionOf(world: World, topic: string): { area: string; places: L
  */
 export function storyReady(world: World, topic: string): boolean {
   if (!farPlaceOf(world, topic)) return false
+  // Built in full (M10.25): the story comes last, after the steps.
+  if (world.state.frames?.region === 'full' && chartedInPlay(world, topic) && !fullDone(world, topic)) return false
   const first = districtsOf(world.content, topic)[0]
   if (!first) return Boolean(outlineOf(world, topic)) || chartedInPlay(world, topic)
   const d = districtOf(world, topic, first.id)
@@ -323,11 +326,15 @@ export function makeStory(world: World, topic: string, reply: StoryReply | null)
       stages.push({ id: `s${i + 1}`, text: fit(s.text, 240)!, next })
       const withWho = person(s.with)
       const skill = s.skill && skills.has(s.skill.trim()) ? s.skill.trim() : undefined
+      // Someone who must be there is met where they live or work (M10.25: the harness found a deed at the market
+      // with an innkeeper who never leaves the inn): the deed moves to them, or it could never be done.
+      const who = withWho ? world.content.npcs.get(withWho) : undefined
+      const where = who && ![who.home, who.work].includes(place(s.at)) ? (who.work && region.places.some((l) => l.id === who.work) ? who.work : who.home) : place(s.at)!
       actions.push({
         id: `a${i + 1}`,
         say: [sayPattern(s.say)!],
         intent: fit(s.say, 80)!,
-        at: [place(s.at)!],
+        at: [where],
         ...(withWho ? { with: withWho } : {}),
         when: [...(i > 0 ? [{ flag: `${id}_${i}` }] : []), { not_flag: flag }],
         ...(skill ? { check: { skill, dc: STORY_DC }, fail_text: 'It does not come right this time. You may try again.' } : {}),

@@ -18,6 +18,8 @@ export function FramesView({ frames, ai, onDial, onClose }: { frames: Frames; ai
   const [connected, setConnected] = useState(true)
   const [confirm, setConfirm] = useState(false)
   const [note, setNote] = useState<string>()
+  // What a new region costs by how full it is built (M10.25), with the models chosen.
+  const [prices, setPrices] = useState<Partial<Record<string, number>>>({})
 
   useEffect(() => {
     if (!ai) return
@@ -30,6 +32,7 @@ export function FramesView({ frames, ai, onDial, onClose }: { frames: Frames; ai
         setAskAbove(o.settings.askAboveUsd === null ? '' : String(o.settings.askAboveUsd))
         setMode(o.settings.playMode)
         setConnected(Object.values(o.settings.providers).some((p) => p.configured))
+        setPrices(o.guide?.region ?? {})
       })
       .catch(() => undefined)
     return () => {
@@ -115,6 +118,7 @@ export function FramesView({ frames, ai, onDial, onClose }: { frames: Frames; ai
                   {d.choices.map((c) => (
                     <label key={c.id}>
                       <input type="radio" name={`dial-${d.id}`} aria-label={c.name} checked={d.chosen === c.id} onChange={() => void dial(d.id, c.id)} /> {c.name}
+                      {d.id === 'region' && <span className="muted"> {regionPrice(c.id, prices, connected)}</span>}
                     </label>
                   ))}
                 </div>
@@ -180,4 +184,11 @@ export function FramesView({ frames, ai, onDial, onClose }: { frames: Frames; ai
       </div>
     </div>
   )
+}
+
+/** The price of a new region beside its setting (M10.25): measured with the models chosen, or why there is none. */
+export function regionPrice(setting: string, prices: Partial<Record<string, number>>, connected: boolean): string {
+  if (!connected) return setting === 'outline' ? t('frames.regionPrice.free') : t('frames.regionPrice.noModel')
+  const usd = prices[setting]
+  return usd === undefined ? t('frames.regionPrice.unknown') : t('frames.regionPrice.about', { usd: usd < 0.01 ? '<0.01' : usd.toFixed(2) })
 }

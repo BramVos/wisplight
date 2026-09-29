@@ -160,6 +160,29 @@ export class MockLlm implements LlmClient {
     })
   }
 
+  /**
+   * A step of a region built in play (M10.25): a back lane off its first
+   * place, a trade, someone who lives there, a thing they sell, and a custom.
+   */
+  private regionStep(step: string, area: string, facts: { name?: string; start?: string; ids?: Record<string, string[]> }): string {
+    const reply = (say: string, changes: { kind: string; id: string; yaml: string; merge?: boolean }[]) => JSON.stringify({ say, questions: [], changes, world: '', rules: '', files: [] })
+    const first = facts.start ?? ''
+    const lane = `loc_${area}_back_lane`
+    const trade = `${area}_netmender`
+    switch (step) {
+      case 'places':
+        return reply('A back lane off the first place.', [{ kind: 'location', id: lane, yaml: stringify({ id: lane, name: 'The Back Lane', area, tags: ['public'], description: { day: 'You walk a narrow lane between leaning sheds, where nets hang drying on poles. It smells of tar and old fish. A dog watches you from a doorway. The way back is west.' }, exits: { west: { to: first, minutes: 3 } } }) }])
+      case 'professions':
+        return reply('Net-menders.', [{ kind: 'profession', id: trade, yaml: stringify({ id: trade, name: 'net-mender', schedule: [{ from: '07:00', to: '08:00', activity: 'eat' }, { from: '08:00', to: '18:00', activity: 'work' }, { from: '18:00', to: '22:00', activity: 'home' }, { from: '22:00', to: '07:00', activity: 'sleep' }] }) }])
+      case 'people':
+        return reply('A net-mender in the back lane.', [{ kind: 'npc', id: `npc_wobbe_${area}`, yaml: stringify({ id: `npc_wobbe_${area}`, name: 'Wobbe Tjalma', short: 'Wobbe the net-mender', pronoun: 'he', age: 50, profession: (facts.ids?.['profession'] ?? []).includes(trade) ? trade : (facts.ids?.['profession']?.[0] ?? trade), home: facts.ids?.['location']?.includes(lane) ? lane : first, appearance: 'A stooped man with a netting needle behind his ear.', personality: { warmth: 1, courage: 0, honesty: 1, temper: 0, curiosity: 1, diligence: 2 }, public_facts: ['Wobbe mends every net in the place.'] }) }])
+      case 'economy':
+        return reply('Mended nets for sale.', [{ kind: 'item', id: `${area}_mended_net`, yaml: stringify({ id: `${area}_mended_net`, name: 'mended net', description: 'A fishing net, patched with new twine.', value: 12, tags: ['tool'] }) }])
+      default:
+        return reply('Nothing more to add here.', [])
+    }
+  }
+
   /** The month's judgement of the great lines (M10.22): the furthest each may go, and one made-up line that must be dropped. */
   tides(allowed: Record<string, string[]>): string {
     return JSON.stringify({ lines: [...Object.entries(allowed).map(([id, may]) => ({ id, judged: may.at(-1) ?? 'nothing', why: 'The signs have been gathering all month.' })), { id: 'made_up', judged: 'event', why: 'Because.' }] })
@@ -328,6 +351,9 @@ export class MockLlm implements LlmClient {
     const firstLine = (said.split('\n').find((l) => l.trim()) ?? '').replace(/^[#\-*\s]+/, '').trim()
     // A land's build (M10.23): the same steps, with the land's name and its own places in the facts.
     const land = typeof meta['land'] === 'string' ? meta['land'] : undefined
+    // A region built in play (M10.25): one small thing of each step, in the region, joined to its first place.
+    const region = typeof meta['region'] === 'string' ? meta['region'] : undefined
+    if (region) return this.regionStep(String(meta['step']), region, facts)
     switch (meta['step']) {
       case 'frame':
         if (land)

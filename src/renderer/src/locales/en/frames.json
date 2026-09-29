@@ -42,5 +42,12 @@
     "direct": "What the chronicler would do waits for you as a proposal: accept or reject it."
   },
   "play": "Play",
-  "open": "The frames of this game"
+  "open": "The frames of this game",
+  "regionPrice": {
+    "about": "(about ${usd} a region)",
+    "unknown": "(no price measured yet)",
+    "free": "(nothing extra)",
+    "noModel": "(needs a model)"
+  },
+  "region": "How full a new region is built"
 }

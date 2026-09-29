@@ -13,7 +13,7 @@ import { suspectText, worldText, type SuspectText } from './safety'
 import type { LlmRequest } from './dialogue/llm'
 import { voiceSummary } from './dialogue/voice'
 import { contractState, contractSummary, contractView, fieldsOf, requiredFields, stepFields } from './contract'
-import { LAND_NOTES, LAND_STEPS, landFills, landGuide, PLACE_RULES, STEP_CALLS, stepMaxTokens, WORLD_GUIDE, WORLD_STEPS } from './worldguide'
+import { LAND_NOTES, LAND_STEPS, landFills, landGuide, PLACE_RULES, REGION_STEPS, regionFills, regionGuide, STEP_CALLS, stepMaxTokens, WORLD_GUIDE, WORLD_STEPS } from './worldguide'
 import { designPrompt } from './designlog'
 import { VoiceSchema } from './dialogue/voiceSchema'
 
@@ -445,6 +445,8 @@ export interface Draft {
   files?: { path: string; text: string }[]
   /** The land whose build it is (M10.23): `world` then sets its land.yaml, and what is new goes in its folder. */
   land?: string
+  /** A region built in play (M10.25): everything new goes into this one file. */
+  into?: string
   /** The proposal as edits, checked against the world. */
   result?: EditResult
   problems: string[]
@@ -508,7 +510,7 @@ export function rootedFile(path: string, text: string): string {
  * A proposal as files (M10.17): the entities as edits, then the keys of
  * world.yaml, then whole files; checked by loading the world with all of it.
  */
-export function draftResult(files: ContentFile[], draft: Pick<Draft, 'changes' | 'world' | 'rules' | 'files' | 'land'>): EditResult {
+export function draftResult(files: ContentFile[], draft: Pick<Draft, 'changes' | 'world' | 'rules' | 'files' | 'land' | 'into'>): EditResult {
   let next = files
   const problems: string[] = []
   const changes = new Map<string, FileChange>()
@@ -553,7 +555,9 @@ export function draftResult(files: ContentFile[], draft: Pick<Draft, 'changes' |
   // The builder adds the way back for every exit, as the world guide tells the chronicler.
   const edits = withReturnExits(next, draftEdits(draft, next)).map((edit) => {
     // What a land's build makes goes in the land's folder (M10.23).
-    const file = land && edit.data && !edit.file && !locate(next, edit.kind, edit.id) ? landHome(next, land, edit.kind, edit.data) : undefined
+    const fresh = edit.data && !edit.file && !locate(next, edit.kind, edit.id)
+    // A region built in play (M10.25): what is new goes into its own file, but the lists of the rules stay where the rules are.
+    const file = fresh && draft.into && !LISTS[edit.kind].startsWith('rules.') ? draft.into : land && fresh ? landHome(next, land, edit.kind, edit.data!) : undefined
     return file ? { ...edit, file } : edit
   })
   if (edits.length) {
@@ -622,7 +626,7 @@ export function readDraft(files: ContentFile[], text: string, land?: string): Dr
   return parts ? checkedDraft(files, { ...parts, ...(land ? { land } : {}) }) : { say: '', questions: [], changes: [], ...(land ? { land } : {}), problems: ['The chronicler did not answer in the agreed form.'] }
 }
 
-type DraftParts = Pick<Draft, 'say' | 'questions' | 'changes' | 'world' | 'rules' | 'files' | 'land'>
+type DraftParts = Pick<Draft, 'say' | 'questions' | 'changes' | 'world' | 'rules' | 'files' | 'land' | 'into'>
 
 /** What the chronicler answered, read but not yet checked; undefined when it is not the agreed JSON. */
 function draftParts(text: string): DraftParts | undefined {
@@ -677,8 +681,8 @@ function checkedDraft(files: ContentFile[], parts: DraftParts): Draft {
  * corrects, which mergeFix puts into the proposal: cheaper than proposing the
  * chapter again, and the rest stays as the designer read it.
  */
-export function worldFixRequest(files: ContentFile[], stepId: string, said: string, draft: Pick<Draft, 'changes' | 'world' | 'rules' | 'files' | 'land'>, problems: string[]): LlmRequest {
-  const base = worldStepRequest(files, stepId, said, draft.land)
+export function worldFixRequest(files: ContentFile[], stepId: string, said: string, draft: Pick<Draft, 'changes' | 'world' | 'rules' | 'files' | 'land'>, problems: string[], region?: RegionScope): LlmRequest {
+  const base = worldStepRequest(files, stepId, said, draft.land, region)
   const proposal = [
     'YOUR PROPOSAL AS IT STANDS:',
     ...draft.changes.map((c) => `--- ${c.kind} ${c.id}${c.merge ? ' (merge: only these fields)' : ''}\n${c.yaml.trim() || '(deleted)'}`),
@@ -706,9 +710,9 @@ export function worldFixRequest(files: ContentFile[], stepId: string, said: stri
  * added, and world and files are replaced only where it gave them. What the
  * chronicler said and asked stays; what it corrected is added to the say.
  */
-export function mergeFix(files: ContentFile[], draft: Pick<Draft, 'say' | 'questions' | 'changes' | 'world' | 'rules' | 'files' | 'land'>, text: string): Draft {
+export function mergeFix(files: ContentFile[], draft: Pick<Draft, 'say' | 'questions' | 'changes' | 'world' | 'rules' | 'files' | 'land' | 'into'>, text: string): Draft {
   const fix = draftParts(text)
-  const land = draft.land ? { land: draft.land } : {}
+  const land = { ...(draft.land ? { land: draft.land } : {}), ...(draft.into ? { into: draft.into } : {}) }
   const kept: DraftParts = { say: draft.say, questions: draft.questions, changes: draft.changes, ...(draft.world ? { world: draft.world } : {}), ...(draft.rules ? { rules: draft.rules } : {}), ...(draft.files ? { files: draft.files } : {}), ...land }
   if (!fix) return { ...checkedDraft(files, kept), problems: ['The chronicler did not answer in the agreed form; the proposal is as it was.'] }
   const same = (a: DraftChange, b: DraftChange) => a.kind === b.kind && a.id === b.id
@@ -743,10 +747,11 @@ export function mergeFix(files: ContentFile[], draft: Pick<Draft, 'say' | 'quest
  * With a land (M10.23), the same step for that land: its land.yaml in place of
  * world.yaml, the world's frame as the background, and what the land has.
  */
-export function worldStepRequest(files: ContentFile[], stepId: string, said: string, land?: string): LlmRequest {
-  const steps = land ? LAND_STEPS : WORLD_STEPS
+export function worldStepRequest(files: ContentFile[], stepId: string, said: string, land?: string, region?: RegionScope): LlmRequest {
+  // A region built in play (M10.25): the steps that fill a region, over its area.
+  const steps = region ? WORLD_STEPS.filter((s) => REGION_STEPS.includes(s.id)) : land ? LAND_STEPS : WORLD_STEPS
   const step = steps.find((s) => s.id === stepId) ?? steps[0]!
-  const fills = land ? landFills(step) : step.fills
+  const fills = region ? regionFills(step) : land ? landFills(step) : step.fills
   const call = STEP_CALLS[step.id]
   const content = safeLoad(files)
   const instruction = files.filter((f) => /(^|\/)CHRONICLER\.md$/.test(f.path)).sort((a, b) => a.path.localeCompare(b.path)).map((f) => f.text).join('\n\n')
@@ -759,7 +764,7 @@ export function worldStepRequest(files: ContentFile[], stepId: string, said: str
   }).filter(Boolean)
   const order = steps.map((s, i) => `${i + 1}. ${s.title}${s.id === step.id ? ' (NOW)' : ''}`).join(' ')
   // A land's build is shown what the land has, in full; the world's things only by id (M10.23).
-  const standing = stepEntities(files, fills, undefined, land ? (e) => ofLand(files, land, e) : undefined)
+  const standing = stepEntities(files, fills, undefined, region ? (e) => ofRegion(files, region.area, e) : land ? (e) => ofLand(files, land, e) : undefined)
   // The voice kit as it stands, for a step that fills it and must send it back whole (M10.20: the voice
   // step comes second, and faiths, places and professions add their part), and the voice itself where
   // places and people are written, so they are in it from the start. A land's own kit in a land's build.
@@ -777,7 +782,7 @@ export function worldStepRequest(files: ContentFile[], stepId: string, said: str
   ].join('\n')
   const landName = land ? (content?.lands.get(land)?.name ?? landsIn(files).find((l) => l.id === land)?.name ?? land) : ''
   const changing = [
-    ...(land ? [landGuide(landName, land), ''] : []),
+    ...(region ? [regionGuide(region.name, region.area), ''] : land ? [landGuide(landName, land), ''] : []),
     `THE STEPS: ${order}`,
     step.prompt,
     ...(land && LAND_NOTES[step.id] ? [LAND_NOTES[step.id]!.replaceAll('<id>', land).replaceAll("<the land's name>", landName)] : []),
@@ -810,8 +815,21 @@ export function worldStepRequest(files: ContentFile[], stepId: string, said: str
     effort: call.effort,
     ...(call.light ? { tier: 'light' as const } : {}),
     timeoutMs: 600000,
-    meta: { step: step.id, ask: said, prefix: worldPrefix(files), world: worldFacts(files, land), ...(land ? { land } : {}) },
+    meta: { step: step.id, ask: said, prefix: worldPrefix(files), world: worldFacts(files, land, region?.area), ...(land ? { land } : {}), ...(region ? { region: region.area } : {}) },
   }
+}
+
+/** A region a step builds in play (M10.25): its area, and its name. */
+export interface RegionScope {
+  area: string
+  name: string
+}
+
+/** Whether a thing of the world is the region's (M10.25): the area itself, a place in it, someone living there, its settlement. */
+function ofRegion(files: ContentFile[], area: string, e: { id: string; file: string; raw: Raw }): boolean {
+  if (e.id === area || e.raw['area'] === area) return true
+  const home = typeof e.raw['home'] === 'string' ? entities(files, 'location').find((l) => l.id === e.raw['home']) : undefined
+  return home?.raw['area'] === area
 }
 
 /** Whether a thing of the world is the land's (M10.23): in its folder, of one of its areas, or said to be. */
@@ -847,7 +865,7 @@ export function worldKeys(text: string, keys: string[]): string {
  * the chronicler saw only ids): the YAML of every thing of the kinds the step
  * fills that the world already has. Past a limit, the rest by id only.
  */
-export function stepEntities(files: ContentFile[], fills: readonly { kind: string }[], limit = 120_000, only?: (e: { file: string; raw: Raw }) => boolean): string {
+export function stepEntities(files: ContentFile[], fills: readonly { kind: string }[], limit = 120_000, only?: (e: { id: string; file: string; raw: Raw }) => boolean): string {
   const kinds = ENTITY_KINDS.filter((kind) => fills.some((f) => f.kind === LISTS[kind]))
   const blocks: string[] = []
   const left: string[] = []
@@ -1070,14 +1088,14 @@ export function readEnhance(text: string): Enhanced {
 }
 
 /** What a world has, by id, for the mock chronicler to build on (M10.20): its name, its start, and the ids per kind. */
-function worldFacts(files: ContentFile[], land?: string): { name: string; start: string; startRaw?: Raw; ids: Record<string, string[]> } {
+function worldFacts(files: ContentFile[], land?: string, area?: string): { name: string; start: string; startRaw?: Raw; ids: Record<string, string[]> } {
   const content = safeLoad(files)
-  // A land's build (M10.23): its own areas, places and people, its first place for the start; the rest is shared.
-  const own = (kind: EntityKind) => entities(files, kind).filter((e) => !land || !['area', 'location', 'npc'].includes(kind) || ofLand(files, land, e))
+  // A land's build (M10.23), or a region's in play (M10.25): its own areas, places and people, its first place for the start; the rest is shared.
+  const own = (kind: EntityKind) => entities(files, kind).filter((e) => !['area', 'location', 'npc'].includes(kind) || (area ? ofRegion(files, area, e) : !land || ofLand(files, land, e)))
   const ids = Object.fromEntries((['area', 'location', 'npc', 'profession', 'item', 'object_type', 'faction'] as const).map((kind) => [kind, own(kind).map((e) => e.id)]))
-  const start = land ? (ids['location']?.[0] ?? '') : (content?.world.start.location ?? '')
+  const start = land || area ? (ids['location']?.[0] ?? '') : (content?.world.start.location ?? '')
   const startRaw = entities(files, 'location').find((e) => e.id === start)?.raw
-  const name = land ? (content?.lands.get(land)?.name ?? landsIn(files).find((l) => l.id === land)?.name ?? land) : (content?.world.name ?? '')
+  const name = area ? (content?.areas.get(area)?.name ?? area) : land ? (content?.lands.get(land)?.name ?? landsIn(files).find((l) => l.id === land)?.name ?? land) : (content?.world.name ?? '')
   return { name, start, ...(startRaw ? { startRaw } : {}), ids }
 }
 

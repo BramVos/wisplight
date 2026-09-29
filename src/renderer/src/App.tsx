@@ -93,6 +93,12 @@ export function App() {
   const [settings, setSettings] = useState<SettingsTab>()
   // The frames of the game (M10.24), open at the start of a game and from Settings.
   const [frames, setFrames] = useState<FramesPage>()
+  // How full a new region is built in this game (M10.25), for the row under Settings > AI.
+  const [regionNow, setRegionNow] = useState<string>()
+  useEffect(() => {
+    if (!settings || !client) return
+    void client.page('frames').then((page) => setRegionNow(page?.frames?.dials.find((d) => d.id === 'region')?.chosen))
+  }, [settings, client])
   const [dev, setDev] = useState(false)
   // The journal window, open at a page or at its index (FO, chapter 2); near things first in a conversation.
   const [journal, setJournal] = useState<{ start?: string; nearby?: boolean }>()
@@ -885,6 +891,17 @@ export function App() {
                   setSettings(undefined)
                   void showFrames(client)
                 },
+                ...(regionNow
+                  ? {
+                      region: {
+                        chosen: regionNow,
+                        set: async (choice: string) => {
+                          await client.command(`frames region ${choice}`)
+                          setRegionNow(choice)
+                        },
+                      },
+                    }
+                  : {}),
               }
             : {})}
         />

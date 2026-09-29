@@ -490,3 +490,28 @@ export function landGuide(name: string, id: string): string {
     `In this build \`world\` holds the keys of lands/${id}/land.yaml to set, never world.yaml: the world's frame is the background, and what the land leaves out it takes from the world. The calendar, the clock, the start, the rules and the journey sentences are the world's. What is new here (areas, places, people, professions, passages, items) is written into the land's folder; things of the world it shares (a profession, a faith, a faction) are used by their ids and not made again.`,
   ].join('\n')
 }
+
+// ---------------------------------------------------------------- a region built in full, in play (M10.25)
+
+/**
+ * The world build in small over a region that grew in play (M10.25; Bram,
+ * 29 September 2026: for whoever does not mind the cost, a new region built
+ * as a designer would, while the stranger travels). The steps of the world
+ * build that fill a region, in their order; the world guide, the contract and
+ * the steps' own text are the same, and the region's outline and the frame
+ * stand for the designer's answer.
+ */
+export const REGION_STEPS: readonly WorldStep['id'][] = ['places', 'professions', 'people', 'economy', 'watcher']
+
+/** What a step fills over a region: the kinds of things, never the world's keys, its rules, its voice or its journey sentences. */
+export function regionFills(step: WorldStep): WorldStep['fills'] {
+  return step.fills.filter((f) => !['world', 'rules', 'voice', 'journey', 'land'].includes(f.kind))
+}
+
+/** The general part for a region's build in play, after the world guide: what it is and what stays the world's. */
+export function regionGuide(name: string, area: string): string {
+  return [
+    `IN PLAY: YOU ARE BUILDING ONE REGION OF THIS WORLD: ${name} (area ${area}), which came into the game while it was played. There is no designer to ask: THE DESIGNER SAYS below is the region's outline and the frame. Choose within them and the world book, and say in say what you chose; ask no questions.`,
+    `Build only this region: its places have area ${area} (or a new area of it), its people live and work there, and what else you make (trades, goods, a settlement, watchers and their aftermath, creatures) belongs to it. What the world already has, use by its id and leave as it is: world and rules stay empty, no files, no new faction.`,
+  ].join('\n')
+}

@@ -22,6 +22,12 @@ export interface GuidePrice {
   place?: number
   /** The three together, for an hour. */
   hour?: number
+  /**
+   * A new region, by how full it is built (M10.25): outline its first
+   * district and the weave of its people; story that and the story round;
+   * full also the world build in small, once a run of it is measured.
+   */
+  region?: { outline?: number; story?: number; full?: number }
 }
 
 /** What one call of a kind costs on a model, by its measured tokens; undefined without a price or a measurement. */
@@ -50,5 +56,9 @@ export function guidePrice(role: (role: LlmRole) => RoleChoice | undefined, meas
   const place = sum(['outline', 'district', 'weave'])
   if (place !== undefined) guide.place = place
   if (guide.conversations !== undefined && guide.goals !== undefined && guide.night !== undefined) guide.hour = guide.conversations + guide.goals + guide.night
+  const outline = sum(['district', 'weave'])
+  const story = sum(['district', 'weave', 'region_story'])
+  const full = sum(['district', 'weave', 'region_story', 'region_full'])
+  if (outline !== undefined) guide.region = { outline, ...(story !== undefined ? { story } : {}), ...(full !== undefined ? { full } : {}) }
   return guide
 }

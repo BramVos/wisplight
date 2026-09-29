@@ -5,6 +5,7 @@ import { withProps } from '../props'
 import { withFarPlaces, type FarPlace } from './far'
 import { withDistricts } from './districts'
 import { withStories } from './regionstory'
+import { withFulls } from './regionfull'
 import { addCrowd, endCrowd } from './crowds'
 import { isRestDay } from '../clock'
 import { callName, FactionSchema, LocationSchema, lockedIds, NpcSchema, type Content, type Npc } from '../content'
@@ -64,6 +65,9 @@ export interface GrowthState {
   storyPending?: string[]
   /** A region or district being laid out while the stranger travels there (M10.25), and the arrival kept back until it is. */
   underway?: import('./underway').Underway
+  /** Regions built in full (M10.25), by topic, and the rounds waiting for the chronicler (topic:round). */
+  fulls?: Record<string, import('./regionfull').RegionFull>
+  fullPending?: string[]
   /** Factions formed in play (M10.22), as raw content, and when each formed: at most one a season. */
   factions?: Record<string, unknown>[]
   founded?: number[]
@@ -88,6 +92,8 @@ function grownOnly(base: Content, state: GameState): Content {
   if (g?.lands && Object.keys(g.lands).length) base = withLands(base, state)
   if (g?.far && Object.keys(g.far).length) base = withFarPlaces(base, state)
   if (g?.districts && Object.keys(g.districts).length) base = withDistricts(base, state)
+  // Regions built in full (M10.25): what the world build's steps made there, over the far place and its districts.
+  if (g?.fulls && Object.keys(g.fulls).length) base = withFulls(base, state)
   // The stories of those regions (M10.25): their quests, watchers, lore and secrets.
   if (g?.stories && Object.keys(g.stories).length) base = withStories(base, state)
   // Factions formed in play (M10.22): content like any.

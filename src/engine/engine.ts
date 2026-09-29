@@ -1,3 +1,4 @@
+import { applyFull, fullDue, fullFixRequest, fullLayer, fullRequest, mergeFull, readFull, wantFull, type FullRound } from './growth/regionfull'
 import { applyStory, storyDue, storyReady, storyReply, storyRequest, wantStory, type StoryReply } from './growth/regionstory'
 import { wishLines } from './wishes'
 import { framesLines, framesView } from './frames'
@@ -125,6 +126,7 @@ export type LogEntry =
   | { t: number; k: 'far'; topic: string; v: FarWords | null }
   | { t: number; k: 'district'; key: string; v: DistrictWords | null }
   | { t: number; k: 'story'; topic: string; v: StoryReply | null }
+  | { t: number; k: 'full'; topic: string; round: FullRound; v: Record<string, Record<string, unknown>[]> | null }
   | { t: number; k: 'weave'; key: string; v: WeaveReply | null }
   // What the chronicler wrote for a land the designer only framed (M10.23), or null.
   | { t: number; k: 'land'; id: string; v: LandWords | null }
@@ -606,7 +608,7 @@ export class Engine {
   /** Everything waiting for a model: goal choices and chronicler runs. */
   get modelsWaiting(): number {
     // A far place waiting for its words counts too (M10.21: alone, it never started the models).
-    return (this.state.brain?.pending.length ?? 0) + this.chroniclerWaiting + this.outlinesWaiting + (this.state.growth?.farPending?.length ?? 0) + (this.state.growth?.districtPending?.length ?? 0) + (this.state.growth?.landPending?.length ?? 0) + (this.state.growth?.expansions?.pending.length ?? 0) + (this.state.growth?.weavePending?.length ?? 0) + (this.state.growth?.storyPending?.length ?? 0) + (this.state.tides?.pending ? 1 : 0)
+    return (this.state.brain?.pending.length ?? 0) + this.chroniclerWaiting + this.outlinesWaiting + (this.state.growth?.farPending?.length ?? 0) + (this.state.growth?.districtPending?.length ?? 0) + (this.state.growth?.landPending?.length ?? 0) + (this.state.growth?.expansions?.pending.length ?? 0) + (this.state.growth?.weavePending?.length ?? 0) + (this.state.growth?.storyPending?.length ?? 0) + (this.state.growth?.fullPending?.length ?? 0) + (this.state.tides?.pending ? 1 : 0)
   }
 
   /** Lets the models do their waiting work in the background: goal choices first, they are short. */
@@ -624,6 +626,7 @@ export class Engine {
     await this.runLands()
     await this.runExpansions()
     await this.runDistricts()
+    await this.runFull()
     await this.runStories()
     await this.runWeaves()
     const tides = pace.tides === false ? false : await this.runTides()
@@ -819,6 +822,44 @@ export class Engine {
         if (!g.storyPending.includes(topic)) continue
         this.record({ t: this.world.now, k: 'story', topic, v: reply })
         this.settleStory(topic, reply)
+      }
+    } finally {
+      this.outlining = false
+    }
+  }
+
+  /**
+   * The rounds of regions built in full (M10.25), one at a time, in order: a
+   * step of the world build over the region (put right up to twice when it
+   * does not load), or its polish round. What it kept is in the log.
+   */
+  async runFull(): Promise<void> {
+    if (this.outlining) return
+    this.outlining = true
+    try {
+      const g = this.state.growth
+      while (g?.fullPending?.length) {
+        const key = g.fullPending[0]!
+        const [topic, round] = key.split(':') as [string, FullRound]
+        const llm = this.llm
+        let layer: Record<string, Record<string, unknown>[]> | null = null
+        const request = fullRequest(this.world, topic, round)
+        if (llm && request) {
+          try {
+            let draft = readFull(this.world, topic, round, (await llm.complete(request)).text)
+            for (let fix = 0; fix < 2 && draft.problems.length; fix++) {
+              const again = fullFixRequest(this.world, topic, round, draft)
+              if (!again) break
+              draft = mergeFull(this.world, topic, draft, (await llm.complete(again)).text)
+            }
+            layer = draft.problems.length ? null : (fullLayer(this.world, topic, draft) ?? null)
+          } catch {
+            layer = null
+          }
+        }
+        if (!g.fullPending.includes(key)) continue
+        this.record({ t: this.world.now, k: 'full', topic, round, v: layer })
+        applyFull(this.world, topic, round, layer)
       }
     } finally {
       this.outlining = false
@@ -1193,6 +1234,9 @@ export class Engine {
     const due = this.state.combat ? undefined : districtDue(this.world, doing)
     if (due) outputs.push(...wantDistrict(this.world, due.topic, due.id))
     // A new region's story (M10.25): once it is made and the stranger is there, by the setting of this game.
+    // A region built in full (M10.25): its rounds, asked for once, when the stranger is there and they did not start at departure.
+    const full = this.state.combat ? undefined : fullDue(this.world)
+    if (full) outputs.push(...wantFull(this.world, full))
     const story = this.state.combat ? undefined : storyDue(this.world)
     if (story) outputs.push(...wantStory(this.world, story))
     const talk = this.state.talk
@@ -1297,6 +1341,9 @@ export class Engine {
       const [, topic, id] = district as unknown as [string, string, string]
       return farTopicAt(this.world, this.state.player.location) === topic && districtsOf(this.content, topic).some((d) => d.id === id) ? wantDistrict(this.world, topic, id) : [{ kind: 'error', text: 'There is nothing to make here.' }]
     }
+    // BUILD <topic> (M10.25): what "go on" runs after the question of cost for a region built in full.
+    const buildCmd = /^build\s+([a-z0-9_]+)$/.exec(text.trim())
+    if (buildCmd && !this.state.talk) return wantFull(this.world, buildCmd[1]!)
     // STORY <topic> (M10.25): what "go on" runs after the question of cost; only in that region.
     const storyCmd = /^story\s+([a-z0-9_]+)$/.exec(text.trim())
     if (storyCmd && !this.state.talk) return storyDue(this.world) === storyCmd[1] || (farTopicAt(this.world, this.state.player.location) === storyCmd[1] && storyReady(this.world, storyCmd[1]!)) ? wantStory(this.world, storyCmd[1]!) : [{ kind: 'error', text: 'There is nothing to write here.' }]
@@ -2106,6 +2153,9 @@ export class Engine {
         } else if (entry.k === 'story') {
           this.log.push(entry)
           this.settleStory(entry.topic, entry.v)
+        } else if (entry.k === 'full') {
+          this.log.push(entry)
+          applyFull(this.world, entry.topic, entry.round, entry.v)
         } else if (entry.k === 'mode') {
           this.log.push(entry)
           this.state.playMode = entry.v

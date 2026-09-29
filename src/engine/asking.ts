@@ -40,12 +40,14 @@ function asking(world: World) {
  * the player said not now today; do without the model. Otherwise the
  * question, now open, to be shown with askOutput.
  */
-export function mustAsk(world: World, id: string, what: string, request: LlmRequest, then?: string): { ask: CostAsk } | { declined: true } | undefined {
+export function mustAsk(world: World, id: string, what: string, request: LlmRequest, then?: string, times = 1): { ask: CostAsk } | { declined: true } | undefined {
   const a = world.state.asking
   if (a?.agreed[id]) return undefined
   if (a?.declined[id] === dayOf(world)) return { declined: true }
-  const usd = world.costAsk?.(id, request)
-  if (usd === undefined) return undefined
+  // A build of several rounds (M10.25: a region in full) is asked for once, at the price of all of them.
+  const one = world.costAsk?.(id, request)
+  if (one === undefined) return undefined
+  const usd = one * times
   const ask: CostAsk = { id, what, usd, ...(then ? { then } : {}) }
   asking(world).open = ask
   return { ask }

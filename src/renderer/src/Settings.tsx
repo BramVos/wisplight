@@ -6,6 +6,7 @@ import { loadDisplay, saveDisplay, TEXT_SIZES, type Display } from './display'
 import { t, tn } from './i18n'
 import { BUDGET_CEILING_USD, BUDGET_CONFIRM_USD, BUDGET_FLOOR_USD, REPLY_WITHIN_SECONDS_RANGE } from '../../engine/aisettings'
 import { PLAY_MODES } from '../../engine/modes'
+import { regionPrice } from './FramesView'
 
 // Settings > AI, Usage and the AI log (FO, chapter 16). Keys are typed here,
 // sent to the main process once, and only ever shown masked afterwards.
@@ -43,6 +44,7 @@ export function Settings({
   onTab,
   onClose,
   onFrames,
+  region,
 }: {
   bridge?: AiBridge
   transcript?: TranscriptBridge
@@ -52,6 +54,8 @@ export function Settings({
   onClose: () => void
   /** The frames screen of the game in play (M10.24), when there is one. */
   onFrames?: () => void
+  /** How full a new region is built in the game in play (M10.25), and a way to set it. */
+  region?: RegionControl
 }) {
   const [overview, setOverview] = useState<AiOverview>()
   const [error, setError] = useState<string>()
@@ -102,7 +106,7 @@ export function Settings({
         ) : !overview ? (
           <p className="muted">{error ?? t('settings.loading')}</p>
         ) : tab === 'ai' ? (
-          <AiTab bridge={bridge} overview={overview} refresh={refresh} {...(onFrames ? { onFrames } : {})} />
+          <AiTab bridge={bridge} overview={overview} refresh={refresh} {...(onFrames ? { onFrames } : {})} {...(region ? { region } : {})} />
         ) : tab === 'usage' ? (
           <UsageTab bridge={bridge} overview={overview} refresh={refresh} />
         ) : (
@@ -229,7 +233,8 @@ function trialText(trial: TrialResult | string | undefined): string | undefined 
 
 // Settings > AI (FO, chapter 16). The player picks a model per role from the
 // lists the keys gave, at any time; advice and trials are there when wanted.
-function AiTab({ bridge, overview, refresh, onFrames }: { bridge: AiBridge; overview: AiOverview; refresh: Work; onFrames?: () => void }) {
+function AiTab({ bridge, overview, refresh, onFrames, region }: { bridge: AiBridge; overview: AiOverview; refresh: Work; onFrames?: () => void; region?: RegionControl }) {
+  const [regionNow, setRegionNow] = useState(region?.chosen)
   const { settings } = overview
   const [keys, setKeys] = useState<Record<ProviderId, string>>({ openai: '', anthropic: '' })
   const [busy, setBusy] = useState<string>()
@@ -565,6 +570,25 @@ function AiTab({ bridge, overview, refresh, onFrames }: { bridge: AiBridge; over
           </button>
         )}
       </div>
+      {/* How full a new region is built (M10.25): a knob of the game in play, with the price of each. */}
+      {region && (
+        <div className="row" role="radiogroup" aria-label={t('frames.region')}>
+          <span className="label">{t('frames.region')}</span>
+          {(['outline', 'story', 'full'] as const).map((r) => (
+            <label key={r}>
+              <input
+                type="radio"
+                name="settings-region"
+                checked={regionNow === r}
+                onChange={() =>
+                  void region.set(r).then(() => setRegionNow(r))
+                }
+              />{' '}
+              {r} <span className="muted">{regionPrice(r, overview.guide?.region ?? {}, Object.values(settings.providers).some((p) => p.configured))}</span>
+            </label>
+          ))}
+        </div>
+      )}
       <div className="row">
         <span className="label">{t('settings.ai.replyWithin.label')}</span>
         <input className="amount" inputMode="numeric" value={within} onChange={(event) => setWithin(event.target.value)} aria-label={t('settings.ai.replyWithin.aria')} />
@@ -992,3 +1016,9 @@ function AdvancedTab({ bridge }: { bridge: AppKnobsBridge }) {
     </div>
   )
 }
+/** How full a new region is built in the game in play (M10.25), and a way to set it. */
+interface RegionControl {
+  chosen: string
+  set(choice: string): Promise<void>
+}
+
