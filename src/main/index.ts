@@ -4,7 +4,7 @@ import { appendFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFi
 import { tmpdir } from 'node:os'
 import { basename, dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { ContentError, wantsPictures, discoveredAtlasHtml, draftRequest, mapDraft, mapStepRequest, mapFixRequest, readMapStep, readSaveFile, saveAbout, saveFileName, saveFileText, SAVE_FILE_EXTENSION, type SaveFile, draftResult, Engine, ENTITY_KINDS, lineDiff, MapPaletteSchema, paletteRequest, paletteView, readDraft, readPalette, readVoice, savePalette, saveVoice, voiceRequest, voiceYaml, landsIn, landYaml, saveLand, worldStepRequest, worldFixRequest, mergeFix, polishRequest, readPolish, recheckDraft, descriptionCheck, enhanceRequest, readEnhance, type Content, type Edit, type EntityKind, type FileChange, type CheckpointedSave, type MapPalette, type Output, type SaveData, type PlayMode } from '../engine'
+import { ContentError, wantsPictures, discoveredAtlasHtml, draftRequest, mapDraft, mapStepRequest, mapFixRequest, readMapStep, readSaveFile, saveAbout, saveFileName, saveFileText, SAVE_FILE_EXTENSION, type SaveFile, type EarlierLines, draftResult, Engine, ENTITY_KINDS, lineDiff, MapPaletteSchema, paletteRequest, paletteView, readDraft, readPalette, readVoice, savePalette, saveVoice, voiceRequest, voiceYaml, landsIn, landYaml, saveLand, worldStepRequest, worldFixRequest, mergeFix, polishRequest, readPolish, recheckDraft, descriptionCheck, enhanceRequest, readEnhance, type Content, type Edit, type EntityKind, type FileChange, type CheckpointedSave, type MapPalette, type Output, type SaveData, type PlayMode } from '../engine'
 import { designUpdate, readDesignChange } from '../engine/designlog'
 import { ContentEditor } from '../node/editor'
 import { AppKnobs, type AppKnobId } from '../node/knobs'
@@ -189,7 +189,7 @@ function scribe(): Transcript {
 /** What was typed, for the transcript's next lines. */
 let typed: string | undefined
 
-function reply(outputs: Output[]) {
+function reply(outputs: Output[], earlier?: EarlierLines) {
   const status = { ...engine!.status(), paused: paused(), ai: aiStatus() }
   // Everything shown goes into the transcript, if it is on; to disk in the background at the end of the turn.
   const shown = transcriptNotice ? [...outputs, system(transcriptNotice)] : outputs
@@ -197,7 +197,7 @@ function reply(outputs: Output[]) {
   scribe().record(typed, shown, { time: status.time, location: status.location })
   typed = undefined
   void scribe().flush()
-  return { outputs: shown, status }
+  return { outputs: shown, status, ...(earlier ? { earlier } : {}) }
 }
 
 function store(): SaveStore {
@@ -344,7 +344,9 @@ async function continueFrom(data: SaveData | undefined) {
     follow(await Engine.resume(content!, data, tail, ai?.client()), where)
     journal().append(where, engine!.world.now, 'note', 'Continued')
   }
-  return reply([system('You pick up where you left off.'), ...(await engine!.handle('look'))])
+  // The game before, faded above (M10.29 S): the window was empty on "You pick up where you left off."
+  const earlier = data.session ? journal().earlier({ game: data.session.game, branch: data.session.branch }, appKnobs().get('recall_lines'), engine!.world.calendar) : undefined
+  return reply([system('You pick up where you left off.'), ...(await engine!.handle('look'))], earlier)
 }
 
 /** Loads a save as it was saved; what happened after it stays in the game log, on a branch of its own. */
@@ -353,6 +355,7 @@ async function loadFrom(data: (SaveData & { createdAt?: string }) | undefined) {
   const gone = await useWorldOf(data)
   if (gone) return reply([{ kind: 'error', text: gone }])
   const loaded = await Engine.restore(content!, data, ai?.client())
+  let earlier: EarlierLines | undefined
   if (!data.session) {
     follow(loaded, journal().start(randomUUID()))
   } else {
@@ -362,8 +365,9 @@ async function loadFrom(data: (SaveData & { createdAt?: string }) | undefined) {
     follow(loaded, where)
     journal().append(where, loaded.world.now, 'note', `Loaded the save of ${new Date(data.createdAt ?? Date.now()).toLocaleString('en-GB')}. What happened after it stays in the log.`)
     if (where !== from) keep('auto')
+    earlier = journal().earlier(where, appKnobs().get('recall_lines'), loaded.world.calendar)
   }
-  return reply([system('Game loaded.'), ...(await engine!.handle('look'))])
+  return reply([system('Game loaded.'), ...(await engine!.handle('look'))], earlier)
 }
 
 // Everything the player has found out (M10.20), as an atlas page with the pictures there are: never the whole world book.
@@ -1260,7 +1264,10 @@ function createWindow(): void {
             await window.wisplight.command('save smoke')
             const [kept] = await window.wisplight.saves.list()
             const saves = kept ? 'saved "' + kept.name + '" at ' + (kept.about ? kept.about.place : 'NOWHERE') : 'NO SAVE LISTED'
-            return (node ? 'NODE IN THE PAGE' : 'no node') + ', ' + (refused ? 'a path for a world refused' : 'A PATH FOR A WORLD ACCEPTED') + ', ' + saves
+            // Picked up again (M10.29 S): the game before comes along, read from the end of the log.
+            const back = await window.wisplight.saves.continueGame()
+            const earlier = back.earlier ? 'continued with ' + back.earlier.lines.length + ' lines from ' + back.earlier.when : 'CONTINUED WITHOUT THE LINES BEFORE'
+            return (node ? 'NODE IN THE PAGE' : 'no node') + ', ' + (refused ? 'a path for a world refused' : 'A PATH FOR A WORLD ACCEPTED') + ', ' + saves + ', ' + earlier
           })()`,
         )
         smokeSay(`[smoke] app knob: autosave every ${appKnobs().get('autosave_every_minutes')} minutes`)

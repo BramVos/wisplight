@@ -1,4 +1,4 @@
-import type { AppKnobView, CreationData, DiffLine, DraftChange, Edit, EditorView, EntityKind, JournalPage, MapPalette, Output, PaletteView, PlayMode, Raw, SaveAbout, SaveData, SimReport, Status, WorldInfo } from '../../engine'
+import type { AppKnobView, CreationData, DiffLine, DraftChange, EarlierLines, Edit, EditorView, EntityKind, JournalPage, MapPalette, Output, PaletteView, PlayMode, Raw, SaveAbout, SaveData, SimReport, Status, WorldInfo } from '../../engine'
 import { designUpdate, type DesignChange, type DesignLog } from '../../engine/designlog'
 import type { DevSection, DevView } from '../../engine/dev'
 import type { Advice, TrialResult, TrialVerdict } from '../../node/ai/advisor'
@@ -36,6 +36,8 @@ export interface RoleLight {
 export interface Reply {
   outputs: Output[]
   status: Status & { ai?: AiStatus }
+  /** The game before, faded above, when a game is picked up again or loaded (M10.29 S). */
+  earlier?: EarlierLines
 }
 
 /** Settings > AI. Keys go in and never come back out. */
@@ -288,7 +290,7 @@ const IDLE_PAUSE_MS = 60_000
 export async function createClient(): Promise<EngineClient> {
   if (window.wisplight) return window.wisplight
 
-  const { APP_KNOBS, DEFAULT_WORLD, discoveredAtlasHtml, Engine, filesOfWorld, loadContent, MockLlm, readSaveFile, saveAbout, saveFileName, saveFileText, worldsIn } = await import('../../engine')
+  const { APP_KNOBS, DEFAULT_WORLD, discoveredAtlasHtml, Engine, filesOfWorld, GameClock, loadContent, MockLlm, readSaveFile, saveAbout, saveFileName, saveFileText, weekdayName, worldsIn } = await import('../../engine')
   // Every world's files; a new game picks one of them (M8).
   const all = contentFiles()
   const worlds = worldsIn(all)
@@ -336,14 +338,18 @@ export async function createClient(): Promise<EngineClient> {
     },
   }
 
-  // The preview's saves (M10.20, ?mock=1): in memory, gone with the tab.
-  const kept: (SaveEntry & { data: SaveData })[] = []
+  // The preview's saves (M10.20, ?mock=1): in memory, gone with the tab; with the lines shown before each, as the
+  // game log would give them (M10.29 S).
+  const shown: { you: boolean; text: string; t: number }[] = []
+  const kept: (SaveEntry & { data: SaveData; earlier?: EarlierLines })[] = []
   const keep = (name?: string): number => {
     const id = kept.length + 1
-    kept.unshift({ id, slot: 'manual', createdAt: new Date().toISOString(), gameMinutes: engine.world.now, world: content.world.id, ...(name ? { name } : {}), about: saveAbout(engine.world), data: { ...engine.save(), content: engine.saved().content } })
+    const last = shown.slice(-(knobValues['recall_lines'] ?? APP_KNOBS.recall_lines.default))
+    const earlier = last.length ? { when: `${weekdayName(last[0]!.t, engine.world.calendar)} ${new GameClock(last[0]!.t).parts.day}`, lines: last.map(({ you, text }) => ({ you, text })) } : undefined
+    kept.unshift({ id, slot: 'manual', createdAt: new Date().toISOString(), gameMinutes: engine.world.now, world: content.world.id, ...(name ? { name } : {}), about: saveAbout(engine.world), data: { ...engine.save(), content: engine.saved().content }, ...(earlier ? { earlier } : {}) })
     return id
   }
-  const into = async (data: SaveData): Promise<Reply> => {
+  const into = async (data: SaveData, earlier?: EarlierLines): Promise<Reply> => {
     const world = worlds.find((w) => w.id === data.world)
     if (!world) return { outputs: [{ kind: 'error', text: 'That world is not here.' }], status: status() }
     if (world.folder !== folder) {
@@ -353,18 +359,18 @@ export async function createClient(): Promise<EngineClient> {
     }
     engine = await Engine.restore(content, data, llm)
     engine.builder = true
-    return { outputs: [{ kind: 'system', text: 'Game loaded.' }, ...(await engine.handle('look'))], status: status() }
+    return { outputs: [{ kind: 'system', text: 'Game loaded.' }, ...(await engine.handle('look'))], status: status(), ...(earlier ? { earlier } : {}) }
   }
   const memorySaves: SavesBridge = {
     list: async () => kept.map(({ data: _, ...entry }) => entry),
     continueGame: async (world) => {
       const id = worlds.find((w) => w.folder === world)?.id
       const last = kept.find((k) => !id || k.world === id)
-      return last ? into(last.data) : { outputs: [{ kind: 'error', text: 'There is no saved game yet.' }], status: status() }
+      return last ? into(last.data, last.earlier) : { outputs: [{ kind: 'error', text: 'There is no saved game yet.' }], status: status() }
     },
     load: async (id) => {
       const save = kept.find((k) => k.id === id)
-      return save ? into(save.data) : { outputs: [{ kind: 'error', text: 'That save is gone.' }], status: status() }
+      return save ? into(save.data, save.earlier) : { outputs: [{ kind: 'error', text: 'That save is gone.' }], status: status() }
     },
     name: async (id, name) => {
       const save = kept.find((k) => k.id === id)
@@ -435,6 +441,8 @@ export async function createClient(): Promise<EngineClient> {
         return { outputs: [{ kind: 'system', text: 'Saving, loading and the game log work in the desktop app.' }], status: status() }
       }
       const outputs = await engine.handle(input)
+      if (demo) shown.push({ you: true, text: input, t: engine.world.now }, ...outputs.filter((o) => o.text.trim()).map((o) => ({ you: false, text: o.text, t: engine.world.now })))
+      if (shown.length > 800) shown.splice(0, shown.length - 800)
       chronicler()
       return { outputs, status: status() }
     },

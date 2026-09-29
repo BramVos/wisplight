@@ -24,11 +24,20 @@ import { t, tn } from './i18n'
 // Under the bonnet (M10.1): only a development build bundles the dev menu; a production build has no trace of it.
 const DevMenu = import.meta.env.DEV ? lazy(() => import('./dev/DevMenu')) : undefined
 
-type Line = (Output & { id: number }) | { id: number; kind: 'input'; text: string }
+/** A line of the log; the game before a continue or a load shows faded (M10.29 S), with its day above. */
+type Line = ((Output & { id: number }) | { id: number; kind: 'input'; text: string }) & { earlier?: 'head' | 'line' | 'last' }
 type Status = Reply['status']
 
 let nextId = 0
 const withId = (output: Output): Line => ({ ...output, id: nextId++ })
+
+/** The game before a continue or a load (M10.29 S): a day line, then its last lines, faded. */
+function earlierLines(reply: Reply): Line[] {
+  const earlier = reply.earlier
+  if (!earlier?.lines.length) return []
+  const lines = earlier.lines.map((l, i): Line => ({ id: nextId++, kind: l.you ? 'input' : 'text', text: l.text, earlier: i === earlier.lines.length - 1 ? 'last' : 'line' }))
+  return [{ id: nextId++, kind: 'system', text: t('app.earlier', { when: earlier.when }), earlier: 'head' }, ...lines]
+}
 
 // Words in [brackets] are topics: coloured and clickable, as in the design (FO, chapter 9).
 // A right click opens a small menu of what to do with it (M10.4).
@@ -158,7 +167,7 @@ export function App() {
     setWorlds(undefined)
     setLoading(undefined)
     setPickerNote(undefined)
-    setLines(reply.outputs.map(withId))
+    setLines([...earlierLines(reply), ...reply.outputs.map(withId)])
     setStatus(reply.status)
   }
 
@@ -444,7 +453,7 @@ export function App() {
         <StaleBanner />
         {error && <p className="line error">{error}</p>}
         {lines.map((line) => (
-          <p key={line.id} className={`line ${line.kind}${showRules && line.kind === 'speech' && line.source === 'rules' ? ' rules' : ''}`}>
+          <p key={line.id} className={`line ${line.kind}${showRules && line.kind === 'speech' && line.source === 'rules' ? ' rules' : ''}${line.earlier ? ` earlier earlier-${line.earlier}` : ''}`}>
             {line.kind === 'input' ? `> ${line.text.replace(/^"/, '')}` : renderText(line.text, onTopic, onMenu)}
           </p>
         ))}

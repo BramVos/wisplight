@@ -1888,6 +1888,16 @@ pre.sheet {
   font-size: calc(13px * var(--text-scale));
 }
 
+/* The game before a continue or a load (M10.29 S): faded like the talk before (M10.29 J), a dashed line under it. */
+.line.earlier {
+  opacity: 0.55;
+}
+.line.earlier-last {
+  border-bottom: 1px dashed var(--line);
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+}
+
 /* What Tab could complete to (M10.29 K), until the next key: one quiet line above the prompt. */
 .completions {
   padding: 4px 0 2px;

@@ -1,5 +1,21 @@
 # Changelog
 
+## M10.29 deel: verder spelen met de laatste regels in beeld, 29 september 2026
+
+- **Verder spelen.** Na een herstart was het venster leeg op "You pick up where you left off.". Nu staan bij Continue en bij het laden van een save eerst de laatste regels van je spel in beeld: wat je typte en wat het spel zei, de gesprekken meegerekend. Ze staan vervaagd, met de dag erboven ("Earlier, Primeday 18:") en een stippellijn eronder. Bij een geladen save zijn het de regels tot aan die save.
+- **Hoeveel regels.** Standaard 40. Je zet het onder Instellingen > Advanced bij `recall_lines`; 0 zet het uit.
+- **Ook in de terminal.** `npm run play` houdt nu een eigen log bij en toont die regels bij LOAD.
+
+Testen: speel een paar minuten, sluit de app en start hem opnieuw met Continue. Of laad een oudere save via [Load a save...]. De test staat in `tests/m1029resume.test.ts`.
+
+Kosten: geen; er komt geen model aan te pas. Het log wordt van achteren gelezen, dus een spel van maanden opent even snel.
+
+Bekende gaten: in de browserversie (`npm run web`) is er geen log op schijf. Alleen de saves in het geheugen van `?mock=1` geven de regels mee. De knop heet `recall_lines` en niet `screen.recall_lines`, omdat de andere appknoppen ook platte namen hebben.
+
+Wat de editor en de kroniekverteller leerden: niets; dit is de app, niet een wereld.
+
+Ontwerp: functioneel ontwerp, bij het dagboek, alinea "Stand na M10.29: verder spelen met de laatste regels in beeld".
+
 ## M10.29 deel: de commando's uit je log, 29 september 2026
 
 De ontwerpsessie las je log van vandaag. Dit zijn de dingen die aan de commando's lagen:

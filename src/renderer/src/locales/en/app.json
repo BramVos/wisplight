@@ -151,5 +151,6 @@
     "ask": "Ask about",
     "where": "Where is",
     "go": "Go to"
-  }
+  },
+  "earlier": "Earlier, {when}:"
 }

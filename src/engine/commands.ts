@@ -86,6 +86,15 @@ export interface Output {
   improvise?: Improvisable
 }
 
+/**
+ * The game before, faded above where it is picked up again (M10.29 S): the
+ * last lines typed and shown, and the day the first of them fell on.
+ */
+export interface EarlierLines {
+  when: string
+  lines: { you: boolean; text: string }[]
+}
+
 export interface CommandHost {
   world: World
   pass(minutes: number): Output[]

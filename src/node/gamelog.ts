@@ -1,7 +1,7 @@
 import { closeSync, mkdirSync, openSync, rmSync, writeSync } from 'node:fs'
 import { dirname } from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
-import { DEFAULT_CALENDAR, GameClock, weekdayName, type Calendar, type Fact, type GameLogLine, type LogEntry } from '../engine'
+import { DEFAULT_CALENDAR, GameClock, weekdayName, type Calendar, type EarlierLines, type Fact, type GameLogLine, type LogEntry } from '../engine'
 import type { Archived } from '../engine/archive'
 import { ZipWriter } from './zip'
 
@@ -152,15 +152,28 @@ export class GameLog {
   }
 
   /** The story so far as the player saw it, the last `count` lines, read from the end. */
-  recent(session: Session, count = 40): LogLine[] {
-    const marks = READABLE.map(() => '?').join(', ')
+  recent(session: Session, count = 40, kinds: readonly string[] = READABLE): LogLine[] {
+    const marks = kinds.map(() => '?').join(', ')
     const query = this.db.prepare(`SELECT id, t, kind, text FROM gamelog WHERE game = ? AND branch = ? AND id <= ? AND kind IN (${marks}) ORDER BY id DESC LIMIT ?`)
     const newestFirst: LogLine[] = []
     for (const { branch, upTo } of this.lineage(session)) {
       if (newestFirst.length >= count) break
-      newestFirst.push(...(query.all(session.game, branch, upTo, ...READABLE, count - newestFirst.length) as unknown as LogLine[]))
+      newestFirst.push(...(query.all(session.game, branch, upTo, ...kinds, count - newestFirst.length) as unknown as LogLine[]))
     }
     return newestFirst.reverse()
+  }
+
+  /**
+   * The game before, to show faded where it is picked up again (M10.29 S):
+   * the last lines typed and shown, read from the end with a LIMIT, so a game
+   * of months opens as fast; none when there are none, or none are wanted.
+   */
+  earlier(session: Session, count: number, calendar: Calendar = DEFAULT_CALENDAR): EarlierLines | undefined {
+    if (count <= 0) return undefined
+    const lines = this.recent(session, count, ['in', 'out']).filter((l) => l.text.trim())
+    if (!lines.length) return undefined
+    const t = lines[0]!.t
+    return { when: `${weekdayName(t, calendar)} ${new GameClock(t).parts.day}`, lines: lines.map((l) => ({ you: l.kind === 'in', text: l.text })) }
   }
 
   /** The whole story as plain text. Only for short logs and tests; the app exports with `exportTo`. */
