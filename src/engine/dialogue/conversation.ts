@@ -1066,7 +1066,8 @@ export class Dialogue {
         continue
       }
       // A story told in the speaker's own words, never recited (M10.28, the read score: four people told the Haakman alike).
-      if (ctx.packet.known.some((k) => k.story && recites(fitted, k.story, k.facts.join(' ')))) {
+      // Someone else's story (toldBy): their own they may tell as they always do.
+      if (ctx.packet.known.some((k) => k.story && k.toldBy && recites(fitted, k.story, k.facts.join(' ')))) {
         this.refused('character', llm, 'recited the story')
         prompt += '\nNOTE: your last reply recited the STORY. Tell it again shorter, in your own words, with one thing of your own.'
         continue

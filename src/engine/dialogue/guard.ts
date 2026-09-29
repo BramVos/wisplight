@@ -88,21 +88,23 @@ export function speaksAsOther(text: string, speaker: string[], others: string[])
 
 /**
  * Whether a reply recites a story it was given (M10.28, the read score: four
- * people told the Haakman almost word for word): ten words or more in a row
- * as the story has them, and not also as a fact of it (a fact may be said as
- * given).
+ * people told the Haakman almost word for word): most of the reply, more
+ * than `share`, in runs of eight words or more as the story has them, and
+ * not also as a fact of it (a fact may be said as given). A striking line
+ * kept inside a telling of one's own is no recital (measured on Haiku, 29
+ * September 2026: "grey as a heron, with teeth like water-weed" in seventeen
+ * tellings of their own).
  */
-export function recites(reply: string, story: string, facts = '', run = 10): boolean {
+export function recites(reply: string, story: string, facts = '', share = 0.6, run = 8): boolean {
   const words = (t: string) => t.toLowerCase().replace(/[^\p{L}\p{N}\s']/gu, ' ').split(/\s+/).filter(Boolean)
-  const runs = (t: string) => {
-    const w = words(t)
-    return new Set(Array.from({ length: Math.max(0, w.length - run + 1) }, (_, i) => w.slice(i, i + run).join(' ')))
-  }
-  const given = runs(facts)
-  const told = [...runs(story)].filter((g) => !given.has(g))
-  if (!told.length) return false
-  const said = runs(reply)
-  return told.some((g) => said.has(g))
+  const runs = (w: string[]) => new Set(Array.from({ length: Math.max(0, w.length - run + 1) }, (_, i) => w.slice(i, i + run).join(' ')))
+  const given = runs(words(facts))
+  const told = new Set([...runs(words(story))].filter((g) => !given.has(g)))
+  const said = words(reply)
+  if (!told.size || said.length < run) return false
+  const copied = new Array<boolean>(said.length).fill(false)
+  for (let i = 0; i + run <= said.length; i++) if (told.has(said.slice(i, i + run).join(' '))) for (let j = i; j < i + run; j++) copied[j] = true
+  return copied.filter(Boolean).length / said.length > share
 }
 
 // A deed a memory claims was done (M10.29, Bram's playtest: "I showed the stranger the bunk", never shown): the kinds

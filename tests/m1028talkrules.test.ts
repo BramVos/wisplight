@@ -50,6 +50,8 @@ describe('M10.28: the rules of the talk after the read score', () => {
     const story = 'The Haakman lives in the deep water of the Blackmere. He is grey as a heron, with teeth like water-weed, and he takes children who go too near the edge.'
     expect(recites('Mirte shivers. "The Haakman lives in the deep water of the Blackmere. He is grey as a heron, with teeth like water-weed."', story)).toBe(true)
     expect(recites('Mirte shivers. "My gran said he waits under the Blackmere, grey as a heron. I keep the children well back from it."', story)).toBe(false)
+    // A striking line kept inside a telling of one's own is no recital (seventeen such tellings on Haiku, 29 September 2026).
+    expect(recites('Ah, you want the Haakman? My teacher Kaatje knew him better than most. She said he is grey as a heron, with teeth like water-weed, and he takes children who go too near. I keep mine well back.', story)).toBe(false)
     const haakman = [...content.topics.values()].find((t) => /haakman/i.test(t.name) && t.story)
     expect(haakman).toBeDefined()
     if (!haakman) return
