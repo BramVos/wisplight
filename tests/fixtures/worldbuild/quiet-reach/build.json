@@ -1,5 +1,5 @@
 {
   "folder": "quietreach_trial",
   "name": "The Quiet Reach",
-  "document": "docs/worldbuild/quiet-reach-prompts.md"
+  "document": "tests/fixtures/worldbuild/quiet-reach"
 }

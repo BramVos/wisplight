@@ -4,7 +4,7 @@ import { join, resolve } from 'node:path'
 import { afterAll, describe, expect, it } from 'vitest'
 import { chapterStep, documentChapters, draftResult, faithfulness, mergeFix, newWorldFiles, readDraft, rootedFile, STEP_CALLS, stepMaxTokens, withSafety, worldFixRequest, worldKeys, worldStepRequest, WORLD_STEPS, type LlmRequest } from '../src/engine'
 import { MockLlm } from '../src/engine/dialogue/mock'
-import { buildTrial } from '../src/main/trial'
+import { buildTrial, recordedDocument } from '../src/main/trial'
 import { costUsd } from '../src/node/ai/pricing'
 import { systemBlocks, takesEffort } from '../src/node/ai/providers'
 import { readContentFiles } from '../src/node/content'
@@ -20,6 +20,8 @@ afterAll(() => {
   for (const dir of folders) rmSync(dir, { recursive: true, force: true })
 })
 const fixed = (r: LlmRequest) => r.system.slice(0, r.cacheBreak)
+// Bram's document of The Quiet Reach, as the recordings of its build keep it (M10.25: his own text is not in the repo).
+const reach = () => recordedDocument(resolve(root, 'tests/fixtures/worldbuild/quiet-reach'))!
 
 describe('M10.20: the world steps are cached and measured', () => {
   it('puts what stays the same first, the same for every step and after every step', async () => {
@@ -88,10 +90,16 @@ describe('M10.20: the world steps are cached and measured', () => {
   })
 
   it('reads a designer\'s document in chapters and finds the step of each, in the old order too', () => {
-    const doc = readFileSync(resolve(root, 'docs/worldbuild/quiet-reach-prompts.md'), 'utf8')
-    const chapters = documentChapters(doc)
+    // Bram's twelve chapters, in the order he wrote them.
+    const titles = ['Frame', 'Calendar and weather', 'Currency', 'Faith and belief', 'Places', 'Professions', 'People', 'Economy', 'Transport', 'Signals and dangers', 'Voice', 'Palette']
+    const chapters = documentChapters(titles.map((t, i) => `${i + 1} ${t}\nWhat the designer says.`).join('\n\n'))
     expect(chapters.map((c) => chapterStep(c.title))).toEqual(['frame', 'calendar', 'money', 'faiths', 'places', 'professions', 'people', 'economy', 'passages', 'watcher', 'voice', 'palette'])
     expect(chapters[3]!.title).toBe('Faith and belief')
+    // The same chapters again from the recordings, in the order of the steps, each with the text it was played with.
+    const recorded = documentChapters(reach())
+    expect(recorded.map((c) => c.title).sort()).toEqual([...titles].sort())
+    expect(recorded.map((c) => chapterStep(c.title))).toEqual(WORLD_STEPS.map((s) => s.id).filter((s) => s !== 'lands'))
+    expect(recorded.find((c) => c.title === 'Frame')!.text).toMatch(/^Genre, tone and boundaries\nThe world is called The Quiet Reach/)
     const faith = faithfulness('The coin is the Belt credit. It has 100 bits.', { say: '', changes: [{ kind: 'item', id: 'x', yaml: 'name: credit\nprice: 100' }] })
     expect(faith).toEqual({ named: 2, kept: 1, missing: ['Belt'] })
   })
@@ -128,7 +136,7 @@ describe('M10.20: the world steps are cached and measured', () => {
     const mock = new MockLlm()
     const limits: number[] = []
     const ai = { builds: { reset: () => ({}) as never, setLimit: (_w: string, usd: number) => (limits.push(usd), {}) as never }, gateway: mock }
-    const document = readFileSync(resolve(root, 'docs/worldbuild/quiet-reach-prompts.md'), 'utf8')
+    const document = reach()
     const lines: string[] = []
     const trial = { document, folder: 'reach_trial', name: 'The Quiet Reach', fixtures: join(dir, 'fixtures'), out: join(dir, 'out'), capUsd: 3, steps: [], sameModel: false, record: true }
     const ok = await buildTrial(ai, trial, resolve(root, 'content'), (line) => lines.push(line))

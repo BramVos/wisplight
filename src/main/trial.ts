@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join, relative } from 'node:path'
+import { basename, join, relative } from 'node:path'
 import { chapterStep, documentChapters, faithfulness, mergeFix, newWorldFiles, playWorldStep, readDraft, worldFixRequest, worldStepRequest, WORLD_STEPS, type ContentFile, type LlmRequest, type WorldStep } from '../engine'
 import { LlmError, type LlmResponse } from '../engine/dialogue/llm'
 import { askAdvice, testCall } from '../node/ai/advisor'
@@ -182,6 +182,24 @@ export async function buildTrial(ai: TrialAi, trial: BuildTrial, root: string, s
   return all
 }
 
+/**
+ * A designer's document as the recordings of its build keep it (M10.25; Bram,
+ * 29 September 2026: his own text is not for the public repo). Each step's
+ * fixture carries the chapter it was played with, its title and its text, so
+ * the chapters in the order of the steps are the document again. Undefined
+ * when the build has no recordings.
+ */
+export function recordedDocument(fixtures: string): string | undefined {
+  const steps = existsSync(fixtures) ? readdirSync(fixtures).filter((f) => /^\d+-[a-z_]+\.json$/.test(f)).sort() : []
+  if (!steps.length) return undefined
+  return steps
+    .map((f, i) => {
+      const step = JSON.parse(readFileSync(join(fixtures, f), 'utf8')) as Fixture
+      return `${i + 1} ${step.chapter}\n${step.said}`
+    })
+    .join('\n\n')
+}
+
 /** The recorded builds, for the coverage table: tests/fixtures/worldbuild/<build>/<nn>-<step>.json. */
 export function recordedBuilds(dir: string): string[] {
   return existsSync(dir) ? readdirSync(dir).filter((d) => !d.startsWith('.')) : []
@@ -190,7 +208,8 @@ export function recordedBuilds(dir: string): string[] {
 /**
  * The trial asked for in WISPLIGHT_TRIAL: a kind of model call, or several
  * separated by commas. The world build takes its settings from
- * WISPLIGHT_TRIAL_DOC, _BUILD, _CAP (dollars, default 1), _STEPS, _SAME_MODEL,
+ * WISPLIGHT_DOC (or WISPLIGHT_TRIAL_DOC, a document outside the repo; without
+ * it, the chapters its recordings keep), WISPLIGHT_TRIAL_BUILD, _CAP (dollars, default 1), _STEPS, _SAME_MODEL,
  * _RECORD and _OUT, which npm run trial sets from its arguments.
  */
 export async function trialRun(ai: AiService, kinds: string, contentRoot: string, appPath: string, say: (line: string) => void): Promise<boolean> {
@@ -199,16 +218,25 @@ export async function trialRun(ai: AiService, kinds: string, contentRoot: string
   let ok = true
   for (const kind of kinds.split(',').map((k) => k.trim()).filter(Boolean)) {
     if (kind === 'world_step') {
-      const document = env('DOC') || join(appPath, 'docs/worldbuild/quiet-reach-prompts.md')
       const build = env('BUILD') || 'quiet-reach'
+      const fixtures = join(appPath, 'tests/fixtures/worldbuild', build)
+      // The designer's document: a file outside the repo (WISPLIGHT_DOC, or --doc), or the chapters the build's
+      // recordings keep (M10.25: Bram's own text is not in the public repo). The record names only the file, never its folder.
+      const file = process.env['WISPLIGHT_DOC'] || env('DOC')
+      const document = file ? readFileSync(file, 'utf8') : recordedDocument(fixtures)
+      if (!document) {
+        say(`world_step: no document; give one with --doc <file outside the repo>, or record ${build} first`)
+        ok = false
+        continue
+      }
       ok = (await buildTrial(
         ai,
         {
-          document: readFileSync(document, 'utf8'),
-          documentPath: relative(appPath, document),
+          document,
+          documentPath: file ? basename(file) : relative(appPath, fixtures),
           folder: `${build.replace(/[^a-z0-9]/g, '')}_trial`,
           name: env('NAME') || 'The Quiet Reach',
-          fixtures: join(appPath, 'tests/fixtures/worldbuild', build),
+          fixtures,
           out: env('OUT') || join(tmpdir(), 'wisplight-trial-out', build),
           capUsd: cap,
           steps: env('STEPS').split(',').map((s) => s.trim()).filter(Boolean),

@@ -1,6 +1,6 @@
 # De wereldbouw goedkoper, en elke soort aanroep echt beproefd
 
-Verslag van 29 september 2026 (M10.20). Bram's twaalf hoofdstukken van The Quiet Reach (`quiet-reach-prompts.md`) zijn opnieuw gebouwd, nu met `npm run trial -- --kind world_step`: de app speelt het document stap voor stap zoals de editor, met Bram's sleutel en modellen, in een wereld die alleen in het geheugen bestaat en binnen een eigen bouwbudget. Een voorstel dat niet laadt krijgt de herstelronde, zoals de knop in de editor. Elk antwoord is opgenomen als fixture in `tests/fixtures/worldbuild/quiet-reach/`, en `tests/m1020fixtures.test.ts` speelt de hele bouw daarmee na.
+Verslag van 29 september 2026 (M10.20). Bram's twaalf hoofdstukken van The Quiet Reach zijn opnieuw gebouwd (zijn eigen tekst staat niet in de repo; elk hoofdstuk staat in de fixture van zijn stap in `tests/fixtures/worldbuild/quiet-reach/`, in het veld `said`), nu met `npm run trial -- --kind world_step`: de app speelt het document stap voor stap zoals de editor, met Bram's sleutel en modellen, in een wereld die alleen in het geheugen bestaat en binnen een eigen bouwbudget. Een voorstel dat niet laadt krijgt de herstelronde, zoals de knop in de editor. Elk antwoord is opgenomen als fixture in `tests/fixtures/worldbuild/quiet-reach/`, en `tests/m1020fixtures.test.ts` speelt de hele bouw daarmee na.
 
 ## Uitkomst
 
