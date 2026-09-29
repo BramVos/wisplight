@@ -15,7 +15,7 @@ import { approve, companionOf, offer, recruit } from '../social/companions'
 import { silenceWitness, witnessed } from '../social/crime'
 import { partyTalk } from './party'
 import { closingLine, fallbackReply } from './fallback'
-import { deedKinds, fitLength, leakedNames, looksLikeInjection, outOfCharacter, promises, recites, saysNothing, speaksAsOther, swearRight, unknownNames, vocabularyOf } from './guard'
+import { deedKinds, fitLength, leakedNames, looksLikeInjection, outOfCharacter, promises, recites, saysNothing, speaksAsOther, swearRight, talksOfSelf, unknownNames, vocabularyOf } from './guard'
 import { byRule } from './byrule'
 import { accept, askedFor, askOffer, dayLines, kinOf, offerLine, offerLines, offersFor, proposal, proposalText, spokenMeet, type Offer } from './offers'
 import { accepted, declined, inviteOffer } from '../social/invite'
@@ -1063,6 +1063,12 @@ export class Dialogue {
       if (other) {
         this.refused('character', llm, `voiced as ${other}`)
         prompt += `\nNOTE: your last reply spoke as ${other}. You are ${callName(world.npc(npcId))}: answer again as ${callName(world.npc(npcId))}.`
+        continue
+      }
+      // The speaker as "I" (M10.29 T): never their own name as someone else doing something.
+      if (talksOfSelf(fitted, [callName(world.npc(npcId)), world.npc(npcId).name])) {
+        this.refused('character', llm, 'spoke of self as another')
+        prompt += `\nNOTE: your last reply spoke of ${callName(world.npc(npcId))} as of someone else. You are ${callName(world.npc(npcId))}: say I. Answer again.`
         continue
       }
       // A story told in the speaker's own words, never recited (M10.28, the read score: four people told the Haakman alike).

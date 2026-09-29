@@ -107,6 +107,22 @@ export function recites(reply: string, story: string, facts = '', share = 0.6, r
   return copied.filter(Boolean).length / said.length > share
 }
 
+/**
+ * Whether the speaker speaks of themselves as of someone else (M10.29 T,
+ * Bram's log: "Niko didn't mention it. He's been worried", from Niko): their
+ * own name as the one doing something in what they say (the words in quotes,
+ * or the whole reply when it has none). "I'm Niko" and "my name is Niko" are
+ * fine, and so is the action before the words ("Niko shrugs.").
+ */
+export function talksOfSelf(text: string, names: string[]): boolean {
+  const quoted = [...text.matchAll(/["“]([^"”]*)["”]?/g)].map((m) => m[1]!)
+  const speech = /["“]/.test(text) ? quoted.join(' ') : text
+  const escape = (w: string) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const verbs = "didn't|doesn't|isn't|wasn't|hasn't|won't|is|was|has|had|been|said|says|will|would|can|could|should|must|thinks|thought|knows|knew|wants|wanted|went|goes|did|does|never|always"
+  // "Niko is my name" names them; "Niko is worried" is them spoken of.
+  return names.filter(Boolean).some((n) => new RegExp(`\\b${escape(n)}(?:'s)?\\s+(?:${verbs})\\b(?!\\s+(?:my|the) name)`).test(speech))
+}
+
 // A deed a memory claims was done (M10.29, Bram's playtest: "I showed the stranger the bunk", never shown): the kinds
 // of agreement that would bear it out.
 const DEEDS: { words: RegExp; kinds: string[] }[] = [

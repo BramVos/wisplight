@@ -181,7 +181,7 @@ export function improviseRequest(world: World, imp: Improvisable): LlmRequest {
     ...cachedSystem(
       [
         worldText([worldFrame(world.content, world.land), voiceSummary(world.content, world.land)].filter(Boolean).join('\n\n')),
-        'YOU TELL WHAT HAPPENS when the stranger does something the game has no rule for, to a thing that matters. Two to four sentences, second person, present tense, in the voice of this world. Tell only what the stranger sees, hears and feels; never explain, never promise, name nobody who is not given here. Then at most one effect, only from MAY, or nothing: most acts change nothing that lasts. JSON only.',
+        'YOU TELL WHAT HAPPENS when the stranger does something the game has no rule for, to a thing that matters. Two to four sentences, second person, present tense, in the voice of this world. Tell only what the stranger sees, hears and feels now; never what happened here before or why (no past events, repairs, causes or findings), never whether something is whole, complete or tampered with unless THE THING says so, never explain, never promise, name nobody who is not given here. Then at most one effect, only from MAY, or nothing: most acts change nothing that lasts. JSON only.',
       ].join('\n\n'),
       '',
       '',

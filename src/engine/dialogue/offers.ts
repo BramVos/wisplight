@@ -79,6 +79,16 @@ const HOUR_WORDS: Record<string, number> = {
   een: 1, twee: 2, drie: 3, vier: 4, vijf: 5, zes: 6, zeven: 7, acht: 8, negen: 9, tien: 10, elf: 11, twaalf: 12,
 }
 const MINUTE_WORDS: Record<string, number> = { "o'clock": 0, oclock: 0, 'oh five': 5, ten: 10, fifteen: 15, twenty: 20, thirty: 30, 'forty-five': 45, 'forty five': 45, fifty: 50 }
+/** Minutes in words, for "in ten minutes" (M10.29 T). */
+const SOON_MINUTES: Record<string, number> = { 'a few': 5, 'a couple of': 2, two: 2, three: 3, five: 5, ten: 10, fifteen: 15, twenty: 20, 'twenty-five': 25, 'twenty five': 25, thirty: 30, forty: 40, 'forty-five': 45, 'forty five': 45, fifty: 50 }
+
+/** The next time it is this hour, today or tomorrow; with `tomorrow`, the day after. */
+function nextHour(now: number, hour: number, tomorrow: boolean): number {
+  const day = Math.floor(now / DAY) * DAY + (tomorrow ? DAY : 0)
+  const at = day + hour * 60
+  return at > now ? at : at + DAY
+}
+
 const alternation = (words: string[]) => [...words].sort((a, b) => b.length - a.length).map((w) => w.replace(/'/g, "'?")).join('|')
 
 /**
@@ -87,12 +97,20 @@ const alternation = (words: string[]) => [...words].sort((a, b) => b.length - a.
  * thirty", "at 17:30", "half past five"). The player's words, or the
  * speaker's own. The next such moment from now, or nothing.
  */
-export function parseWhen(text: string, now: number): number | undefined {
+export function parseWhen(text: string, now: number, own: { until?: number } = {}): number | undefined {
   const t = text.toLowerCase()
   const day = Math.floor(now / DAY) * DAY
   const numbers: Record<string, number> = HOUR_WORDS
   const inHours = /\bin (an|one|a|two|three|four|\d+) hours?\b/.exec(t)
   if (inHours) return now + (inHours[1] === 'an' || inHours[1] === 'a' ? 1 : (numbers[inHours[1]!] ?? Number(inHours[1]))) * 60
+  // A time in the speaker's own words (M10.29 T: Ilyan's "in ten minutes" made no meeting): from now, or from their day.
+  if (/\bin half an hour\b/.test(t)) return now + 30
+  if (/\bin a quarter of an hour\b/.test(t)) return now + 15
+  const inMinutes = new RegExp(`\\bin (\\d+|${alternation(Object.keys(SOON_MINUTES))}) minutes?\\b`).exec(t)
+  if (inMinutes) return now + (SOON_MINUTES[inMinutes[1]!] ?? Number(inMinutes[1]))
+  if (/\b(?:after|when) (?:my|the) (?:shift|work|day)\b|\bwhen i'?m (?:done|finished|through)\b|\bafter work\b/.test(t) && own.until !== undefined && own.until > now) return own.until
+  if (/\bat (?:first light|dawn|daybreak|sunrise)\b/.test(t)) return nextHour(now, 6, /\b(tomorrow|morgen)\b/.test(t))
+  if (/\bat (?:dusk|sundown|sunset|nightfall)\b/.test(t)) return nextHour(now, 19, /\b(tomorrow|morgen)\b/.test(t))
   const tomorrow = /\b(tomorrow|morgen)\b/.test(t)
   let hour: number | undefined
   let minute = 0
@@ -297,7 +315,8 @@ export function offersFor(world: World, npcId: string, topics: string[], text: s
  * meeting and counts as their word and the stranger's.
  */
 export function spokenMeet(world: World, npcId: string, said: string, topics: string[]): Offer | undefined {
-  const at = parseWhen(said, world.now)
+  // Their own day counts for "after my shift" (M10.29 T).
+  const at = parseWhen(said, world.now, { until: routineNow(world, npcId)?.until })
   if (at === undefined) return undefined
   const here = world.npcState(npcId).location
   const known = world.knownLocations(npcId)

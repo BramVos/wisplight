@@ -47,7 +47,7 @@ Every kind puts what stays the same first and what changes after it (M10.26). A 
 | `party_reply` | claude-haiku-4-5-20251001 | 714 | none | - | - | 4,096 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `chat_line` | claude-haiku-4-5-20251001 | 528 | none | - | - | 4,096 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `journey` | claude-haiku-4-5-20251001 | 558 | none | - | - | 4,096 | not marked: nothing reads it back in time, so a mark would only pay a write |
-| `improvise` | claude-haiku-4-5-20251001 | 891 | none | - | - | 4,096 | not marked: nothing reads it back in time, so a mark would only pay a write |
+| `improvise` | claude-haiku-4-5-20251001 | 935 | none | - | - | 4,096 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `npc_goals` | claude-sonnet-5 | 1,460 | one, an hour | 1,072 | - | 1,024 | the next call 73% |
 | `chronicle` | claude-opus-5-5 | 5,449 | none | - | - | 512 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `spark` | claude-sonnet-5 | 853 | none | - | - | 1,024 | not marked: nothing reads it back in time, so a mark would only pay a write |

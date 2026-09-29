@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import { Engine, type LlmClient, type LlmRejection, type LlmRequest } from '../src/engine'
 import { fallbackReply } from '../src/engine/dialogue/fallback'
-import { deedKinds, promises, saysNothing } from '../src/engine/dialogue/guard'
+import { deedKinds, promises, saysNothing, talksOfSelf } from '../src/engine/dialogue/guard'
+import { improvisable, improviseRequest } from '../src/engine/improvise'
+import { parseCommand } from '../src/engine/parser'
 import { parseWhen } from '../src/engine/dialogue/offers'
 import { listener } from '../src/engine/dialogue/prompt'
 import { relation } from '../src/engine/dialogue/relations'
@@ -122,5 +124,38 @@ describe('M10.29 B: words are never deeds', () => {
     const meeting = (engine.state.agreements?.list ?? []).find((a) => a.kind === 'meet' && a.by === 'npc_mirte')
     expect(meeting).toBeDefined()
     expect(meeting!.terms.place).toBeDefined()
+  })
+})
+
+describe('M10.29 T: a time in the speaker\'s words, a speaker as I, and improvising without a past', () => {
+  it('reads "in ten minutes", "after my shift" and "at first light" as a time', () => {
+    const nine = 10 * DAY + 9 * 60
+    expect(parseWhen('Meet me at the hangar in ten minutes.', nine)! - nine).toBe(10)
+    expect(parseWhen('in half an hour', nine)! - nine).toBe(30)
+    expect(parseWhen('in a few minutes', nine)! - nine).toBe(5)
+    expect(parseWhen("I'll come after my shift", nine, { until: 10 * DAY + 17 * 60 })).toBe(10 * DAY + 17 * 60)
+    expect(parseWhen("I'll come after my shift", nine)).toBeUndefined()
+    expect(parseWhen('at first light', nine)).toBe(11 * DAY + 6 * 60)
+  })
+
+  it('asks again for a speaker who speaks of themselves as another', async () => {
+    expect(talksOfSelf('"Niko didn\'t mention it. He\'s been worried."', ['Niko'])).toBe(true)
+    expect(talksOfSelf("Niko's been at the ridge all week.", ['Niko'])).toBe(true)
+    expect(talksOfSelf('Niko shrugs. "I didn\'t mention it."', ['Niko'])).toBe(false)
+    expect(talksOfSelf('"Niko is my name, and the signal is my job."', ['Niko'])).toBe(false)
+    const llm = scripted('Mirte laughs. "Mirte has baked since she was twelve."', 'Mirte laughs. "I have baked since I was twelve."')
+    const { out } = await talk(llm, 'How long have you baked?')
+    expect(llm.reports.map((r) => `${r.reason} ${r.detail ?? ''}`)).toContain('character spoke of self as another')
+    expect(out).toMatch(/I have baked since I was twelve/)
+  })
+
+  it('tells an improvised act without a past', () => {
+    const engine = new Engine(content, { seed: 31, builder: true })
+    engine.start()
+    return engine.handle('@goto loc_kabouterberg').then(() => {
+      engine.state.player.inventory['milk'] = 2
+      const imp = improvisable(engine.world, parseCommand('pour milk on the oak'))!
+      expect(improviseRequest(engine.world, imp).system).toMatch(/never what happened here before or why/)
+    })
   })
 })
