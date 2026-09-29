@@ -1,5 +1,8 @@
+import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { Engine, MINUTES_PER_DAY, MockLlm, type LlmRequest } from '../src/engine'
+import { knob } from '../src/engine/knobs'
+import { loadContentFromDir } from '../src/node/content'
 import { asksModel } from '../src/engine/npc/goals'
 import { GOALS_PER_GAME_DAY } from '../src/node/ai/frequency'
 import { content } from './helpers'
@@ -58,6 +61,17 @@ describe('M10.27: fewer goal choices go to the model', () => {
     chronicle.lines.pop()
     ;(world.state.plans ??= []).push({ plan: 'x', started: 0, phase: 0, cause: '', groups: {}, bind: { who: far } })
     expect(asksModel(world, far)).toBe(true)
+  })
+
+  it('takes the distance from the world: Skerrow a kilometre, Deepwell the neutral 1.5', async () => {
+    const isle = await loadContentFromDir(join(import.meta.dirname, '../content'), 'isle')
+    const deepwell = await loadContentFromDir(join(import.meta.dirname, 'worlds'), 'other')
+    expect(knob({ content: isle }, 'people.model_km')).toBe(1)
+    expect(knob({ content: deepwell }, 'people.model_km')).toBe(1.5)
+    const engine = new Engine(isle, { seed: 1, llm: new MockLlm('good') })
+    engine.start()
+    // The people of the hamlet where the stranger wakes still ask the model.
+    expect(Object.keys(engine.world.state.npcs).some((id) => asksModel(engine.world, id))).toBe(true)
   })
 
   it('halves the goal choices of three days, and the rules still give the rest their day', async () => {

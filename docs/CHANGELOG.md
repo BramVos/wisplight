@@ -1,5 +1,30 @@
 # Changelog
 
+## M10.27 af: de kosten omlaag, 29 september 2026
+
+Een uur spelen met jouw modellen kost nu ongeveer $0,51 in plaats van $0,97. De tabel per soort staat in `docs/worldbuild/cost-measure.md`, onder "Een uur spelen voor en na M10.27". Het doel was $0,44. Wat overblijft is vooral het gesprek, en dat is M10.28.
+
+- **Minder doelkeuzes.** Alleen mensen dicht bij je vragen het model wat ze willen: binnen 1,5 km, in jouw gebied, in een open verhaallijn of bij naam in een plan. De anderen kiezen op de regels, zoals iemand ver weg al deed. In drie speldagen gaat het van 139 naar 69 keuzes, en het dorp blijft even druk. Het deel dat alle mensen delen komt nu uit de cache. Dat scheelt $0,37 per uur. Een wereld kan de afstand zetten met de knop `people.model_km`; Skerrow zet hem op 1 km.
+- **De nachtronde.** Ze leest een kortere gids en neemt het plandeel alleen mee als er iets te plannen valt. Ze draait nu op low, want daar is ze gemeten even vol als op medium: $0,072 in plaats van $0,091. Een stille nacht doet geen hele ronde meer, maar heeft een oplopende kans op een vonk: één klein onverwacht ding uit je open verhaallijnen, zoals een bezoeker, een tijding of een verzoek. De kans is 1 op 8, dan 1 op 4, dan 1 op 2 en dan altijd, en ze stijgt sneller als je al drie dagen niet verder komt in je opdracht. Zonder model doet de polswachter hetzelfde op die ladder. Skerrow klimt langzamer.
+- **Elke soort een eigen inspanning.** Alle tien soorten die een tabel invullen draaien op low, gemeten op jouw sleutel: twee keer achter elkaar geladen en even vol. Een wijk werd 39% goedkoper, het palet 24% en de uitbreiding 22%.
+- **Lichtere modellen waar de motor toch alles keurt.** De reistekst gaat naar het stemmodel: op Haiku $0,0010 in plaats van $0,0053, en even trouw. De grote lijnen zijn op het brein geprobeerd, maar blijven bij Opus. Sonnet liet twee keer de vloed en het veenoproer in dezelfde maand breken, terwijl de besparing maar $0,006 per spelmaand was.
+- **De gespreksregel.** Regels en schema zijn samen 20% korter. De lijst van 27 soorten handelingen is weg, want die bepaalt de motor zelf. Op Haiku bleven de antwoorden even bruikbaar en de bewaker greep even vaak in. Per regel scheelt het ongeveer 9%.
+- **Een cachemarkering alleen waar een tweede aanroep hem terugleest.** Het gaat om het gedeelde deel van de doelkeuzes, een gesprek per persoon en de schrijfhulp. Nergens anders wordt nog een koude schrijfbeurt betaald.
+- **De richtprijs klopt.** Onder Instellingen > AI staan twee regels: een uur zoals de gids het telt, en een uur zoals het gemeten is (bij jou $0,58, iets hoger dan de tabel omdat die regel de cache niet meerekent). Daaronder staat wat het vorige uur echt kostte. De reservering vooraf rekent het denken van Opus en het schema mee, zodat het uurbudget niet stilletjes overschreden wordt.
+
+Kosten per nieuwe soort aanroep: de vonk (`spark`) kost op Sonnet 5 ongeveer $0,0045. Hij gaat naar het brein, omdat het één kleine, begrensde keuze is uit wat de motor aanbiedt, en de motor keurt hem als elke haak. Er komt hooguit één per stille nacht. De metingen op jouw sleutel kostten samen $1,70.
+
+Testen:
+- Instellingen > AI: de twee regels van de richtprijs en wat het vorige uur kostte. Speel een uur en vergelijk.
+- Speel een paar dagen niets bijzonders in een dorp: na een paar stille nachten komt er iets onverwachts naar je toe.
+- In het AI-logboek staan nu ongeveer half zo veel doelkeuzes (soort npc_goals) per uur als voorheen.
+
+Bekende gaten: de regel "as it was measured" in de instellingen rekent zonder cache, en voor het gesprek met het antwoord van vóór de kortere regels. Hij valt dus iets hoger uit dan de werkelijkheid. Het doel van $0,44 per uur komt pas met M10.28.
+
+Wat de editor en de kroniekverteller leerden: de stap Mensen in de wereldgids en `docs/NEW-WORLD.md` noemen `people.model_km`, de stap Signalen noemt `story.quiet_ladder`, en beide staan onder Knobs in de editor. Skerrow zet ze allebei (1 km, en een langzamere ladder). Deepwell laat ze weg en speelt de standaard; een test laat zien dat die voor `people.model_km` 1,5 km is. De vonk is een soort in de tabel van soorten, met een situatie, een mockantwoord en twee echte opnames.
+
+Ontwerp: functioneel ontwerp, hoofdstuk 16, de alinea's "Stand na M10.27: minder doelkeuzes, een inspanning en een model per soort, en het uur zoals het gemeten is" en "Stand na M10.27: de nachtronde, de gespreksregel en de cachemarkering", en bij de alinea over de pols (M10.24) "Stand na M10.27: de vonk van een stille nacht".
+
 ## M10.26 deel: de cache op elke soort aanroep, 29 september 2026
 
 - **Wat er mis was.** Elke aanroep had al een cachemarkering, over het hele systeemdeel. Het ging op twee plekken mis. Bij sommige soorten stond iets wisselends vóór de markering: de kaart van een personage, de doelen die nu openstaan, het ontwerplogboek. En een model cachet niets onder zijn minimum: Haiku 4.5 pas vanaf 4.096 tokens, Sonnet 5 vanaf 1.024, Opus 5.5 vanaf 512. Een gesprek op Haiku is in zijn geheel zo'n 3.000 tokens, dus daar kwam nooit iets uit de cache.

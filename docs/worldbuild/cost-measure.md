@@ -127,3 +127,32 @@ Alles laadt twee keer op rij, dus geen soort blijft op medium. Trouw is per antw
 **De reservering vooraf.** Een model dat altijd denkt (Opus 5.5, Fable en Mythos) krijgt van de gateway 4.000 denktokens bovenop `maxTokens`, en het schema van de uitvoer telt als invoer. `upperBoundUsd` rekent beide nu mee (`mostOut` en `sent` in `src/node/ai/pricing.ts`), zodat het uurbudget niet stilletjes overschreden wordt.
 
 De meting kostte $0,897 voor elf soorten twee keer, en $0,021 voor de grote lijnen op Opus low: samen $0,918, binnen de dollar die Bram gaf.
+
+## Een uur spelen voor en na M10.27 (29 september 2026)
+
+Met Brams modellen: Haiku 4.5 voor de stem, Sonnet 5 voor het brein en Opus 5.5 voor de kroniekverteller. Voor is de doorlichting van `docs/worldbuild/cost-audit.md` met de opgenomen antwoorden van toen. Na zijn de antwoorden die in M10.27 op Brams sleutel zijn opgenomen. Een soort die niet elk uur komt (een wijk, een omtrek, de wereldbouw) staat per aanroep in de tabel hierboven.
+
+| Soort | Model | Aanroepen per uur | In, waarvan uit de cache | Uit | Per aanroep | Per uur |
+|---|---|---|---|---|---|---|
+| `npc_reply` | Haiku 4.5 | 40 en 40 | 3.481 en ongeveer 3.150, niets (onder het minimum) | 244 | $0,0047 en $0,0043 | $0,188 en $0,171 |
+| `npc_goals` | Sonnet 5 | 63 en 31 | 2.850, voor elke aanroep 2.850 geschreven, na 1.072 gelezen bij drie van de vier | 264 | $0,0093 en $0,0070 | $0,588 en $0,218 |
+| `chronicle` | Opus 5.5, medium en low | 1,5 en hooguit 1,5 | 12.032 en 10.082, voor elk systeemdeel geschreven, na niets | 2.243 en 1.448 tot 1.706 | $0,101 en $0,072 | $0,151 en $0,108 |
+| `journey` | Opus 5.5 en Haiku 4.5 | 6 en 6 | 1.001 en 751, niets | 67 en 47 | $0,0053 en $0,0010 | $0,032 en $0,006 |
+| `lore_check` | Sonnet 5 | 1,5 | 727, niets | 40 | $0,0019 | $0,003 |
+| `improvise` | Haiku 4.5 | 2 | 1.338, niets | 121 | $0,0019 | $0,004 |
+| `party_reply` en `chat_line` | Haiku 4.5 en Sonnet 5 | 1 en 1 | - | - | - | $0,004 |
+| `spark` (nieuw) | Sonnet 5 | hooguit één per stille nacht | 1.893, niets | 73 tot 76 | $0,0045 | minder dan $0,005 |
+| **Een uur** | | | | | | **$0,97 en ongeveer $0,51** |
+
+Wat het deed, van groot naar klein:
+
+- **Minder doelkeuzes** ($0,37 per uur). Alleen mensen dicht bij de speler, in zijn gebied, in een open verhaallijn of in een plan vragen het model. Gemeten in drie speldagen met het mockmodel: 139 keuzes, nu 69. Het gedeelde deel van een keuze leest nu uit de cache, waar elke aanroep het vroeger opnieuw schreef.
+- **De nachtronde** ($0,04 per uur). Ze leest een kortere gids en neemt het plandeel alleen mee als er iets te plannen valt. Een nacht zonder nieuws doet geen hele ronde meer, maar klimt de ladder naar een vonk. Op low is ze even vol als op medium: zes keer dezelfde opbouw (lore, een lijn, een of twee quests, twee gedachten, twee nieuwsregels, een plan), gemeten met `npm run trial -- --kind chronicle --effort low --times 3` en hetzelfde op medium. De meting in het uur rekent met 1,5 rondes. Een stille nacht die geen vonk krijgt, kost niets.
+- **De reistekst op Haiku** ($0,03 per uur).
+- **De gespreksregel** ($0,02 per uur). Regels en schema samen zijn 20% korter, van 5.016 naar 4.012 tekens. Gemeten met `npm run trial -- --kind voice_set`: drie reeksen van acht antwoorden met de nieuwe regels en drie met de oude, op Haiku. Bruikbaar waren 23 van 24 bij beide, de bewaker greep één keer per reeks in, en de karakterscore was 0,968 tegen 0,987. De twee afwijzingen gingen over namen en kennis. Die twee regels zijn weer expliciet gemaakt, en daarna kwam een reeks acht van acht uit, met karakterscore 1,000. Per regel scheelt het ongeveer 9% invoer.
+
+Het doel van $0,44 is niet gehaald: $0,51. Wat overblijft is vooral het gesprek ($0,17) en de doelkeuzes ($0,22). Het gesprek komt in M10.28: een gecachet blok per gebied, het gesprek als berichten en regels in plaats van het model voor kleine antwoorden. Het doel daar is $0,0015 per regel, en dat brengt het uur onder de $0,40.
+
+De richtprijs onder Instellingen > AI toont nu "an hour as it was measured", op de modellen waar elke soort echt heen gaat. Bij Brams modellen is dat $0,58. Dat is iets hoger dan de tabel, want die regel rekent niet met de cache en leest voor het gesprek nog het antwoord van voor de kortere regels. Daaronder staat wat het vorige uur echt kostte op de sleutel.
+
+De metingen kostten samen $1,70: de inspanning per soort $0,918, de nachtronde $0,49, de gesprekken $0,28 en de vonk $0,01.

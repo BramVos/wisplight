@@ -62,7 +62,7 @@ Every kind puts what stays the same first and what changes after it (M10.26). A 
 | `tides` | claude-opus-5-5 | 645 | none | - | - | 512 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `builder_draft` | claude-opus-5-5 | 13,689 | one, an hour | 9,134 | - | 512 | the next call 67% |
 | `world_step` | claude-opus-5-5 | 6,535 | shared and own, an hour | 5,024 | 4,864 | 512 | the next call 77%; one about someone or something else 74% |
-| `world_enhance` | claude-opus-5-5 | 16,270 | one, an hour | 8,881 | - | 512 | the next call 55% |
+| `world_enhance` | claude-opus-5-5 | 16,335 | one, an hour | 8,881 | - | 512 | the next call 54% |
 | `world_polish` | claude-sonnet-5 | 11,319 | none | - | - | 1,024 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `map_paint` | claude-haiku-4-5-20251001 | 1,456 | one, an hour | 1,442 | - | 4,096 | nothing: the fixed part is under the minimum |
 | `palette_draft` | claude-opus-5-5 | 10,000 | none | - | - | 512 | not marked: nothing reads it back in time, so a mark would only pay a write |
