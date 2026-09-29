@@ -1,5 +1,33 @@
 # Changelog
 
+## M10.25 af: een nieuwe streek met een eigen verhaal, 29 september 2026
+
+- **De verhaalronde.** Een verre plek of een streek die aan de rand ontstond, was speelbaar maar dun. Zodra de vreemdeling er iets doet, schrijft de kroniekverteller in één aanroep van de nieuwe soort `region_story` wat er te beleven valt: één quest van twee of drie stadia bij de mensen die er zijn, twee gewoonten op de standaardnasleep van de wereld, een verhaal over de plek en een geheim voor één op de drie mensen. De motor legt de vorm vast (ids, vlaggen, stadia, voorwaarden), houdt alleen wat past en controleert het geheel als content. Een daad met iemand erbij gebeurt waar die persoon woont of werkt. In `Meedenken` wacht de quest als haak, in `Regisseur` is het geheel een voorstel. Zonder model krijgt de streek één gewoonte uit de standaardset. De wijkronde geeft zelf al één op de drie mensen een geheim.
+- **Hoe vol een nieuwe streek wordt, kies je zelf.** Een vierde draaiknop op het kaderscherm en onder Instellingen > AI, met de prijs per streek: `outline`, `story` (de standaard met een model) of `full`. In `full` lopen de stappen Plekken, Beroepen, Mensen, Economie en Signalen van de wereldbouw over de streek, met een herstelronde en de polijstronde, en daarna het verhaal. Je krijgt één vraag voor de hele bouw. Een ronde zonder antwoord wacht; een poging die niets kostte (geen verbinding, het uurbudget) telt niet mee.
+- **Onderweg wordt de wereld gebouwd** (de entry van de andere sessie hieronder).
+- **De kaart hoort bij de wereldbouw.** Na de laatste stap legt de editor de kaart neer uit de plekken en laat hij haar schilderen. The Quiet Reach kreeg zo in de app de kaart van de Vesper Coast, uit jouw hoofdstuk Palet. Sinds M10.26 schildert het lichtere model de kaart als tabel.
+- **Het gespeelde bewijs.** De Holleveen in alle drie de standen, en Skerrow over de zee in `story`, elk drie speldagen met jouw modellen. De verslagen staan in `docs/playtest/region-base.md` en `region-isle.md`, en de uitkomst in `docs/playtest/region-proof-plan.md`. **`story` blijft de standaard:** voor ongeveer $0,16 per streek krijgt ze een quest die een nieuwe speler in beide werelden in drie dagen haalde, een gewoonte die afging en een verhaal over de plek. `outline` gaf dertien plekken en twintig mensen, en niets om te doen. `full` voegt voor ongeveer $2,70 beroepen, lore, een schepsel en acht wachters toe. De quest in `full` is niet gespeeld, want het harnas bleef toen in een gevecht steken (hersteld). Je koos om zonder nieuwe ronde af te sluiten.
+- **De streken om te bekijken.** Elke streek die het bewijs liet ontstaan, staat genummerd in een kopie van zijn wereld: `content/base_proofs` en `content/isle_proofs`, te openen in de editor. Ze staan niet in git en niet in een installer.
+
+Kosten per nieuwe soort aanroep: `region_story` op Opus 5.5 met medium denkwerk kost ongeveer $0,16 per streek (24.000 tokens in, 2.000 uit). Waarom dat model: het is een verhaal met een quest die moet kloppen, en de echte antwoorden laadden alle vier in één keer. De rondes van `full` zijn stappen van de wereldbouw (`world_step`, gemeten in M10.20) en kostten samen ongeveer $2,26 per streek. Het bewijs kostte in totaal ongeveer $17,93.
+
+Testen: kies onder Instellingen > AI de stand bij "How full a new region is built". Ga naar de zuidrand van de Holleveen (in een ontwikkelversie `@goto hex:60,0`), `explore south`, `head south`, en speel een paar dagen in de nieuwe streek. Kijk in het dagboek naar de quest. Open de kopie "The Nethermarch, with the proof regions" in de editor om de streken van het bewijs te zien.
+
+Gevonden en hersteld door het bewijs:
+
+- Een dichtgeklapte laptop liet de rondes van `full` opgeven (acb2494).
+- De Economie raadde de vaardigheden, en het harnas kende geen gevechten (389f4cb).
+- Een plan-doel van de nachtronde met een persoon als plek liet het spel vastlopen op "Unknown location npc_cornelis". Een doel heeft nu een doelwit van zijn eigen soort, en een oud doel in een save wordt losgelaten (99d9d75).
+- Een proefrit stond niet in het log van de app en telde niet mee in het uur van het spel (0435b6c, M10.26).
+
+Wat de editor en de kroniekverteller leerden: het contract veranderde niet, want quests, wachters, lore en geheimen bestonden al. De stap Signalen vraagt om nasleep die overal werkt. De stappen die vaardigheden noemen, krijgen hun id's. `docs/NEW-WORLD.md` heeft het deel "Een streek die tijdens het spel ontstaat" en noemt de kaart na de laatste stap.
+
+Bewust anders: een verre plek uit het wereldboek wordt niet bij vertrek opgebouwd, zodat doorlopen niets kost. Zonder model laat de regel de eerste bruikbare nasleep van de wereld afgaan als de vreemdeling de streek binnenkomt.
+
+Je document: `docs/worldbuild/quiet-reach-prompts.md` is uit de repo; de proefrit leest je antwoorden uit de fixtures. Het bestand staat nog in de geschiedenis van git. Alleen een force push haalt het daar weg, en dat is jouw beslissing.
+
+Ontwerp: FO hoofdstuk 4, de alinea's "Onderweg wordt de wereld gebouwd", "Een nieuwe streek met een eigen verhaal" en "De kaart hoort bij de wereldbouw" (M10.25).
+
 ## M10.26 deel: alles op je sleutel in één logboek en één budget, 29 september 2026
 
 - **Eén logboek.** Het AI-log van de app laat nu ook de aanroepen zien van een proefrit, de editor en een run met afbeeldingen, met een kolom "from" (game, editor, trial, pictures). Het leest het gedeelde bestand in plaats van alleen wat de app zelf deed. Zo had je de $4,14 van vanmiddag wel gezien.
