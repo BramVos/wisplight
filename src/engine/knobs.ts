@@ -67,6 +67,7 @@ export const KNOBS = {
   // ---- crafts, economy
   'crafts.mastered_after': n('Past this many successes a recipe is routine and teaches no more.', 'successes', 5, 1, 50, 'crafts.ts'),
   'crafts.lesson_practice': n('The practice a day\'s lesson from a master gives.', 'practice', 4, 0, 20, 'crafts.ts'),
+  'crafts.fail_cooldown': t('After so many failed tries in a row at the same work, it rests so many minutes before the next (M10.29); 0 tries is off.', 'tries / minutes', { after: 0, minutes: 0 }, 0, 1440, 'commands.ts'),
   'crafts.lessons': n('The lessons a pupil needs, on as many days, before they can do it on their own.', 'lessons', 3, 1, 20, 'outcomes.ts'),
   'economy.max_load': n('What the stranger can carry in one go, in units of the goods.', 'units', 20, 1, 500, 'economy/haul.ts'),
   'economy.ledger_hour': n('The hour a settlement counts its goods, before the counters fill.', 'hour', 5, 0, 23, 'economy/ledger.ts'),

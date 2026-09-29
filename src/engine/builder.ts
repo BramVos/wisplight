@@ -31,6 +31,15 @@ export function warnings(content: Content): string[] {
     const sentences = location.description.day.split(/(?<=[.!?])\s+/).filter((s) => s.trim()).length
     if (sentences < 3 || sentences > 5) out.push(`${location.id}: the day description has ${sentences} sentences; three to five read best`)
   }
+  // Work whose text names someone who need not be there (M10.29: Tessa taught a lesson from across the station).
+  for (const type of content.objectTypes.values()) {
+    for (const a of type.affordances) {
+      if (a.with || a.access === 'staff' || !a.actors.includes('player')) continue
+      const words = [a.label, a.narrate_start ?? '', a.player_text ?? ''].join(' ')
+      const named = [...content.npcs.values()].find((n) => new RegExp(`\\b(${[n.name, callName(n)].map((x) => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})\\b`).test(words))
+      if (named) out.push(`${type.id} ${a.id}: the text names ${callName(named)}; set with: ${named.id} so they must be there, or access: staff`)
+    }
+  }
   // A name that starts with a title and says nobody what to call them (M10.29: Dr Ilyan Sorell was "Dr" everywhere).
   for (const npc of content.npcs.values()) {
     const first = npc.name.split(' ')[0] ?? ''

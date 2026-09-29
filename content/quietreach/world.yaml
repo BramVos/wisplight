@@ -53,6 +53,8 @@ world:
   # if the ridge walks and the long watches want it slower.
   knobs:
     clock.seconds_per_minute: 4
+    # Three failed tries in a row at a bench, and it rests an hour (M10.29).
+    crafts.fail_cooldown: { after: 3, minutes: 60 }
   weather:
     seasons:
       - Winter

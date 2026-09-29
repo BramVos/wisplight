@@ -917,6 +917,7 @@ A list; each has:
 | practice | 3 values | no | [10,30,100] |
 | per_day | number | no | 5 |
 | failure | a map: outcome, item, qty, share, why, critical | no |  |
+| cooldown_text | text | no |  |
 
 ## props (data/props.yaml)
 

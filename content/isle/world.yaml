@@ -122,6 +122,8 @@ world:
     story.quiet_ladder: { first: 0.1, second: 0.2, third: 0.4, fourth: 1 }
     people.model_km: 1
     clock.seconds_per_minute: 5
+    # Three spoilt tries in a row at the same work, and it rests an hour and a half (M10.29).
+    crafts.fail_cooldown: { after: 3, minutes: 90 }
   # How well the lands know each other (M10.23): the white boat runs to Ynys Wen,
   # so word and wares go back and forth, in the boat's time.
   reach:

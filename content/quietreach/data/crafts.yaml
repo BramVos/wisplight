@@ -12,6 +12,8 @@ crafts:
     masterwork: A repair designed, tested and written up so clearly that another technician could repeat it from the notes alone, months from any help.
     practice: [3, 8, 15]
     per_day: 3
+    # After three failed tries in a row the bench rests (M10.29, crafts.fail_cooldown in world.yaml).
+    cooldown_text: The soldering iron has overheated and the test lamp flickers. Let the bench cool before you try again.
     failure:
       outcome: lost
       why: The material went into a repair that did not hold. Slow down, and test before you trust it.

@@ -457,6 +457,8 @@ export interface CraftProgress {
   best: number
   /** Practice gained today: [day, amount]. */
   today?: [number, number]
+  /** Failed tries in a row per recipe, and until when it rests (M10.29, crafts.fail_cooldown). */
+  fails?: Record<string, { n: number; until?: number }>
   /** The masterwork, once made: what makes master possible. */
   masterwork?: string
   /** Things made by the stranger's own hand and not yet sold: they fetch more. */

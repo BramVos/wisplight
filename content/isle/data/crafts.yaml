@@ -27,3 +27,5 @@ crafts:
       outcome: poor
       item: thin_salve
       why: "You let it boil. Salve wants a slow heat, or the kelp gives up nothing but slime."
+    # The hearth needs rest after too many spoilt pots (M10.29, crafts.fail_cooldown in world.yaml).
+    cooldown_text: The pot has scorched black and the hearth is too hot. Let the fire die down before you try again.

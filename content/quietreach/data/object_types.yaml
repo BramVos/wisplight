@@ -12,6 +12,8 @@ object_types:
         fee: 1500
         duration: 180
         requires_state: { broken: false }
+        # Tessa teaches it herself: she must be at the bench (M10.29).
+        with: npc_tessa_rook
         craft: field_electronics
         technique: diagnosis
         rank: novice

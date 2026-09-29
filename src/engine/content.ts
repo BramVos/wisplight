@@ -151,6 +151,10 @@ export const AffordanceSchema = z.object({
   xp: z.number().int().positive().optional(),
   /** Only in these months (1 to 13), as the ground allows: peat is cut in summer (M9.1). */
   months: z.array(z.number().int().min(1).max(13)).optional(),
+  /** Who must be here and awake for it (M10.29: Tessa taught a lesson from across the station): a person's id. */
+  with: z.string().optional(),
+  /** What is said when it is tried again too soon after failing, in the world's own words (M10.29): over the craft's. */
+  cooldown_text: z.string().optional(),
   /** A recipe of a craft (M10.5): which craft, and which of its techniques. */
   craft: z.string().optional(),
   technique: z.string().optional(),
@@ -190,6 +194,8 @@ export const CraftSchema = z
     per_day: z.number().int().positive().default(5),
     /** What a failed attempt leaves, for every recipe of the craft that says nothing of its own (M10.14). */
     failure: CraftFailureSchema.optional(),
+    /** What is said when a recipe is tried again too soon after failing (M10.29, the knob crafts.fail_cooldown): "the iron has overheated". */
+    cooldown_text: z.string().optional(),
   })
   .strict()
 export type Craft = z.infer<typeof CraftSchema>
@@ -1987,7 +1993,7 @@ function noSkill(rules: Rules): string {
   return `which is no skill (the skills: ${rules.skills.map((s) => s.id).join(', ')})`
 }
 
-function checkCrafts(c: Pick<Content,'crafts' | 'professions' | 'objectTypes' | 'resources' | 'items' | 'locations' | 'topics' | 'props'>, rules: Rules | undefined): string[] {
+function checkCrafts(c: Pick<Content,'crafts' | 'professions' | 'objectTypes' | 'resources' | 'items' | 'locations' | 'topics' | 'props' | 'npcs'>, rules: Rules | undefined): string[] {
   const problems: string[] = []
   for (const p of c.props.values()) {
     if (!c.objectTypes.has(p.type)) problems.push(`prop ${p.id}: ${p.type} is no object type`)
@@ -2016,6 +2022,7 @@ function checkCrafts(c: Pick<Content,'crafts' | 'professions' | 'objectTypes' | 
       if (a.check && !a.check.skill && !a.craft) problems.push(`object type ${type.id}: ${a.id} has a check without a skill, and is no recipe of a craft`)
       if (a.check?.skill && rules?.skills.length && !rules.skills.some((s) => s.id === a.check!.skill)) problems.push(`object type ${type.id}: ${a.id} checks ${a.check.skill}, ${noSkill(rules)}`)
       if ((a.rank || a.masterwork || a.technique) && !a.craft) problems.push(`object type ${type.id}: ${a.id} has a rank, technique or masterwork but no craft`)
+      if (a.with && !c.npcs.has(a.with)) problems.push(`object type ${type.id}: ${a.id} is done with ${a.with}, who is nobody in this world`)
       failureRefs(a.failure, `object type ${type.id}: ${a.id}`)
       const failure = a.failure ?? craft?.failure
       if ((failure?.outcome === 'damaged' || failure?.critical === 'damaged') && !type.repair) problems.push(`object type ${type.id}: a failed ${a.id} damages it, but it has no repair`)

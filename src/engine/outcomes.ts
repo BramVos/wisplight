@@ -36,6 +36,9 @@ function objectName(instance: ObjectInstance, type: ObjectType): string {
  * degree: the material is already used up when this is called.
  */
 export function failedMake(world: World, instance: ObjectInstance, type: ObjectType, craft: Craft, affordance: Affordance, result: CheckResult): Output[] {
+  // Work that makes and uses nothing (M10.29: examining, a lesson) is no recipe: the craft's material failure is not its.
+  const makes = Object.keys(affordance.produces ?? {}).length + Object.keys(affordance.consumes ?? {}).length > 0
+  if (!makes && !affordance.failure) return [{ kind: 'text', text: result.degree === 'critical failure' ? 'You go at it the wrong way from the start, and see it only at the end.' : 'Nothing comes of it this time.' }]
   const failure: CraftFailure | undefined = affordance.failure ?? craft.failure
   const critical = result.degree === 'critical failure'
   const outcome = !failure ? 'lost' : critical ? failure.critical : failure.outcome

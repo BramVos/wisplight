@@ -19,6 +19,7 @@ import { blessed } from './rules/blessings'
 import { ledgerOf, settlementAt } from './economy/ledger'
 import { gainXp, playerCheck } from './rules/player'
 import { GameClock, isOpenAt, MINUTES_PER_DAY, parseHours, startOfDay } from './clock'
+import { knob } from './knobs'
 import { callName, firstName as untitledName, type Affordance, type Direction, type Npc, type ObjectInstance, type ObjectType, type Service } from './content'
 import { add, hasAll, itemName, listItems, matchItem, withArticle } from './items'
 import { applyEffect } from './dialogue/relations'
@@ -928,6 +929,13 @@ function makeWith(host: CommandHost, instance: ObjectInstance, type: ObjectType,
   const rank = craftRank(world, craft.id)
   const needs = rankIndex(affordance.rank)
   if (rank < needs) return [error(`${capital(affordance.label)} is work for ${craftTitle(craft, needs)}. You are ${craftTitle(craft, rank)}.`)]
+  // Tried too often in a row and failed (M10.29, the knob crafts.fail_cooldown): it rests a while first.
+  const key = `${type.id}:${affordance.id}`
+  const resting = craftProgress(world, craft.id).fails?.[key]?.until
+  if (resting !== undefined && world.now < resting) {
+    const left = Math.ceil((resting - world.now) / 5) * 5
+    return [text(`${affordance.cooldown_text ?? craft.cooldown_text ?? 'You have failed at it too often in a row; let it rest a while.'} (About ${left} minutes.)`)]
+  }
   const minutes = craftTime(world, affordance)
   const start = world.now
   const seen = host.passUntil ? host.passUntil(minutes, () => interruption(world, here, instance)) : host.pass(minutes)
@@ -950,12 +958,21 @@ function makeWith(host: CommandHost, instance: ObjectInstance, type: ObjectType,
       mine[item] = (mine[item] ?? 0) + qty
     }
     const what = made.map(([i, q]) => qtyName(world, i, q)).join(' and ')
-    out.push(text(`${affordance.player_text ?? `You ${affordance.verb} at the ${label(instance, type)}.`}${result.degree === 'critical success' ? ' It could hardly have gone better.' : ''} You have ${what}.`))
+    // Work that makes nothing (M10.29: examining, a lesson) says only what happened, never "You have ."
+    out.push(text(`${affordance.player_text ?? `You ${affordance.verb} at the ${label(instance, type)}.`}${result.degree === 'critical success' ? ' It could hardly have gone better.' : ''}${made.length ? ` You have ${what}.` : ''}`))
   } else {
     // What the failure leaves (M10.14): a poorer thing, a damaged workplace, part of the material, or nothing.
     out.push(...failedMake(world, instance, type, craft, affordance, result))
   }
   out.push(...learnFrom(world, craft, affordance, `${type.id}:${affordance.id}`, result))
+  // Failures in a row (M10.29): past the knob's number, a rest; a success clears the count.
+  const fails = (craftProgress(world, craft.id).fails ??= {})
+  const cooldown = knob(world, 'crafts.fail_cooldown')
+  if (well) delete fails[key]
+  else {
+    const n = (fails[key]?.n ?? 0) + 1
+    fails[key] = cooldown.after > 0 && n >= cooldown.after ? { n: 0, until: world.now + cooldown.minutes } : { n }
+  }
   return [...out, ...seen]
 }
 
@@ -975,6 +992,13 @@ function cannotUse(world: World, here: string, instance: ObjectInstance, afforda
     return affordance.broken_text ?? `The ${instance.name ?? instance.type} can't be used right now.`
   }
   if (instance.provider && !world.objectOpen(here, instance)) return `Nobody is here to work it for you right now.`
+  // Done with someone (M10.29: a lesson with its master): they are here and awake, or it waits.
+  if (affordance.with && world.content.npcs.has(affordance.with)) {
+    const who = world.npcState(affordance.with)
+    const name = callName(world.npc(affordance.with))
+    if (!world.alive(affordance.with) || who.location !== here) return `${name} is not here.`
+    if (who.activity === 'asleep') return `${name} is asleep.`
+  }
   if (!hasAll(world.state.player.inventory, affordance.consumes)) {
     return `You need ${Object.entries(affordance.consumes).map(([i, q]) => qtyName(world, i, q)).join(' and ')} for that.`
   }
