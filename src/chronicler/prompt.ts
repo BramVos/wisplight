@@ -71,7 +71,18 @@ export function assignKeys(input: ChronicleInput): Keys {
   return keys
 }
 
+/**
+ * Whether a round may plan anything: a storyline marked PLAN, a signal to plan
+ * for, or, with verbs, a storyline rising or in crisis that may get its next
+ * beat. Without any of these the plans part of the answer, its instructions
+ * and its verbs stay out of the call.
+ */
+export function mayPlanNow(input: ChronicleInput): boolean {
+  return Boolean(input.mayPlan?.length || input.signals?.length || (input.verbs?.length && input.lines.some((l) => l.phase === 'rising' || l.phase === 'crisis')))
+}
+
 export function systemPrompt(input: ChronicleInput, limits: Limits): string {
+  const planning = mayPlanNow(input)
   return [
     'You are the chronicler of a living world. The world runs by its own rules; you do not decide what happened or who knows it.',
     'You turn what happened into lore, keep a short note per storyline, work out requests for the player from open threads, and write the news of the day.',
@@ -81,7 +92,7 @@ export function systemPrompt(input: ChronicleInput, limits: Limits): string {
     'WORLD',
     input.world.trim(),
     ...(input.catalogue ? ['', 'CATALOGUE', input.catalogue.trim()] : []),
-    ...(input.verbs?.length ? ['', 'VERBS', ...input.verbs.map((v) => `${v.name} (who: ${v.who}${v.target ? `; target: ${v.target.join(' or ')}` : ''}${v.detail ? `; detail: ${v.detail}` : ''}): ${v.text}`)] : []),
+    ...(planning && input.verbs?.length ? ['', 'VERBS', ...input.verbs.map((v) => `${v.name} (who: ${v.who}${v.target ? `; target: ${v.target.join(' or ')}` : ''}${v.detail ? `; detail: ${v.detail}` : ''}): ${v.text}`)] : []),
     '',
     'HOW TO ANSWER',
     'The overview uses short keys: p person, l place, a area, t lore, q request, i item, s storyline, e event, c chance. Answer with JSON that matches the schema, in keys.',
@@ -92,15 +103,20 @@ export function systemPrompt(input: ChronicleInput, limits: Limits): string {
     `- thoughts: at most ${limits.thoughts}. Something that stays on one person's mind, one sentence addressed to them: "You still owe Harmen three guilders."`,
     '- news: one line per area where something happened, as people there would say it.',
     '- tensions: at most one, and only when what happened would really change how two REALMS stand: between (two realm keys), delta (-5 to 5, positive is worse), why (a short clause).',
-    '- plans: only for storylines marked PLAN, and only when the event has consequences the world should feel: a name and up to 3 phases (after: hours from now, 0 to 240), each with effects: {place, state} for places of the storyline (flooded, damaged, destroyed, abandoned, occupied, normal), {news, area}, {market (an item key), factor 0.5 to 1.5}, {flee (an area key), to (a place key), days 1 to 14}. At most 10 effects in all. Leave plans empty when nothing lasting follows.',
-    ...(input.verbs?.length
+    ...(planning
+      ? [
+          '- plans: only for storylines marked PLAN, and only when the event has consequences the world should feel: a name and up to 3 phases (after: hours from now, 0 to 240), each with effects: {place, state} for places of the storyline (flooded, damaged, destroyed, abandoned, occupied, normal), {news, area}, {market (an item key), factor 0.5 to 1.5}, {flee (an area key), to (a place key), days 1 to 14}. At most 10 effects in all. Leave plans empty when nothing lasting follows.',
+        ]
+      : []),
+    ...(planning && input.verbs?.length
       ? [
           '- plans may also have steps: {after (hours from now, 0 to 720), verb (from VERBS), who (person keys; each does it), target (a key, or empty), detail (as the verb says)}. At most 10 steps.',
           '  For a SIGNAL TO PLAN FOR: a plan with signal (its key) and steps that settle it for everyone it is about; for a group, decide person by person (some may go home, some stay). Leave it out when custom is enough.',
           '  For any other storyline that is rising or in crisis: at most one beat, a plan with line and exactly one step: the next thing that happens. Never a death.',
-          '- lines also have phase: setup, rising, crisis, resolution or closed.',
         ]
       : []),
+    // The phase of a storyline is the pace of the world (M8.3): asked every round the verbs are known, plans or not.
+    ...(input.verbs?.length ? ['- lines also have phase: setup, rising, crisis, resolution or closed.'] : []),
     ...(input.chances?.length || input.props?.length
       ? [
           '- CHANCES are there already; a skill counts in each. Make one that fits a storyline visible first: a thought, the news, a request. Not all should suit THE STRANGER. Only when none will do and it fits place, owner and history: one step place_prop.',
@@ -239,7 +255,8 @@ export function replySchema(input: ChronicleInput, keys: Keys, lookupsLeft: numb
     ...(input.named?.length ? { named: { type: 'array', items: object({ who: keysOf(keys.of('named')), how: { type: 'string', enum: ['letter', 'visit'] }, text }) } } : {}),
     ...(input.wishes?.length ? { heard: { type: 'array', items: object({ note: keysOf(input.wishes.map((w) => w.id)), did: text }) } } : {}),
     ...(input.realms?.length ? { tensions: { type: 'array', items: object({ between: { type: 'array', items: keysOf(keys.of('realm')) }, delta: { type: 'integer' }, why: text }) } } : {}),
-    ...(input.mayPlan?.length || input.verbs?.length
+    // Only when something may be planned (M10.27: the plans part was 2,128 characters of every night's schema).
+    ...(mayPlanNow(input)
       ? {
           plans: {
             type: 'array',

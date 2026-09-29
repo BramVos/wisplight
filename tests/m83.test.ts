@@ -218,6 +218,8 @@ describe('M8.3: a storyline builds up, and the pace weighs it', () => {
     expect(engine.state.plans!.filter((p) => p.source === 'chronicler' && p.topic === 'beat')).toHaveLength(1)
     expect(problems.join(' ')).toMatch(/one beat per storyline/)
     const fire = lines.find((l) => l.title === 'the fire')!
+    // More of the fire on the same line, so the next run has news (M10.27: a run with nothing new makes no call).
+    fire.facts.push(news(engine, 'fire', 'npc_gerrit', 'loc_veenhoek_green')!.id)
     requestRun(engine.world, 'urgent', [fire.id])
     expect((await engine.runChronicler()).flatMap((r) => r.problems).join(' ')).toMatch(/the line has a beat still to come/)
     engine.tick(DAY + 60)

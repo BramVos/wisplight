@@ -7,7 +7,7 @@ import { cachedSystem, type LlmRequest } from '../dialogue/llm'
 import { worldFrame } from '../dialogue/prompt'
 import { voiceSummary } from '../dialogue/voice'
 import { recordFact } from '../news'
-import { withoutReference } from '../quests/reference'
+import { playGuide } from '../quests/reference'
 import { crossesLimits, readsAsInstruction, worldGuide, worldText } from '../safety'
 import type { GameState } from '../state'
 import type { World } from '../world'
@@ -116,7 +116,7 @@ export function expansionRequest(world: World, ask: ExpansionAsk): LlmRequest {
   return {
     role: 'chronicler',
     ...cachedSystem([
-      ...(content.chronicler ? [worldGuide(withoutReference(content.chronicler)), ''] : []),
+      ...(content.chronicler ? [worldGuide(playGuide(content.chronicler)), ''] : []),
       worldText([worldFrame(content), voiceSummary(content)].filter(Boolean).join('\n\n')),
       '',
       'The stranger has walked to the edge of what the world book knows and wants to go on. You chart what lies that way: one new region, or one new land with a frame of its own. Grow it from what the world book already suggests (its neighbours, routes, realms, tensions and tales from afar); never contradict it, and never change the frame: no new genre, no magic or thing the frame does not allow, nothing of our world.',

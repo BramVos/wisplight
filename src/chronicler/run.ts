@@ -20,6 +20,9 @@ export async function chronicle(input: ChronicleInput, model: ChroniclerModel, l
   const usage: ChroniclerUsage = { inputTokens: 0, outputTokens: 0, cachedTokens: 0 }
   const lookedUp: Card[] = []
   let calls = 0
+  // Nothing new (M10.27): no event on any storyline, no signal to plan for, no hook asked for. Then there is nothing to
+  // write, and no call: a night whose news an earlier round already told stays quiet.
+  if (!input.lines.some((l) => l.events.length) && !input.signals?.length && !input.pulse) return { output: emptyOutput(), problems: [], calls, usage }
   for (let round = 0; ; round++) {
     // The whole run has a budget over all its rounds (M9.3): once spent, he writes with what he has.
     const spent = usage.inputTokens + usage.outputTokens

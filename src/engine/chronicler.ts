@@ -19,7 +19,7 @@ import { judged, judgeRequest, loreProblem } from './truth'
 import { answerLookup, lookupFromId } from './lookups'
 import { chronicleState, setLineStatus, unreported } from './storylines'
 import { chroniclerVerbs, extraCards, signalCards, startChroniclePlan, stepsFromOp, unplanned } from './planning'
-import { withoutReference } from './quests/reference'
+import { playGuide } from './quests/reference'
 import { tradeLine } from './economy/ledger'
 import { chancesIn, motorProp, playerCard } from './props'
 import type { World } from './world'
@@ -161,7 +161,7 @@ export function buildInput(world: World, run: ChronicleRun): ChronicleInput {
   const planning = signalCards(world, run.signals ?? [])
   const input: ChronicleInput = {
     // The world's own guide and its frame (M10.19): they shape tone and lore, never the rules.
-    instruction: world.content.chronicler ? worldGuide(withoutReference(world.content.chronicler)) : FALLBACK_INSTRUCTION,
+    instruction: world.content.chronicler ? worldGuide(playGuide(world.content.chronicler)) : FALLBACK_INSTRUCTION,
     // With the world's voice (M10.10): oaths, sayings, time and what is not here, so lore comes in the same voice.
     // The frame of the land the stranger is in (M10.23).
     world: worldText([worldFrame(world.content, world.land), voiceSummary(world.content, world.land)].filter(Boolean).join('\n\n')),

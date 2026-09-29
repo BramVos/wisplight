@@ -171,6 +171,22 @@ export function withoutReference(text: string): string {
   return start < 0 || end < start ? text : `${text.slice(0, start).trimEnd()}\n${text.slice(end + REFERENCE_END.length)}`
 }
 
+/** Sections of the working instruction for the world builder only (M10.27): where content lives, ids, the pieces, sparring. */
+const BUILDER_SECTIONS = ['Where everything lives', 'Ids', 'The pieces', 'Sparring in the editor']
+
+/**
+ * The working instruction for a round in the game (M10.27: the night round
+ * read 14,000 characters of it every night): without its reference part and
+ * without the sections only the world builder needs. What the world adds
+ * under its own headings stays whole.
+ */
+export function playGuide(text: string): string {
+  return withoutReference(text)
+    .split(/\n(?=## )/)
+    .filter((part) => !BUILDER_SECTIONS.some((heading) => part.startsWith(`## ${heading}\n`)))
+    .join('\n')
+}
+
 /** CHRONICLER.md with its reference part written anew (appended at the end the first time). */
 export function withReference(text: string): string {
   const start = text.indexOf(REFERENCE_START)

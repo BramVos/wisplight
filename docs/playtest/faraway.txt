@@ -184,7 +184,7 @@ Joris lifts a hand. "Go on, then."
 > journal
 People: Fenna Visser, Grietje, Harmen, Hendrikje Hofstede, Hester Vlieland, Jan, Joris Kuipers, Lubbert, Mirte Bakker, Trijntje, the Count.
 Places: the Holleveen, Oude Zijl, Veenhoek, Waagdam, Graafhaven, the Kattenbroek, The Gate of Graafhaven, The Chandlery, The Cooper's Yard, The Market of Graafhaven, Molenend, the Lane, The Mill De Zwaan, The Old Sluice, The Peat Road, The Bakery, Veenhoek, the Green, Canal Quay, The Market Square, Waagdam, the West Gate.
-Lore: the stranger in Veenhoek, Hester Vlieland and Grietje Visser, Word for a cousin, Jan's lost coil of rope, the stranger in Oude Zijl, the stranger in Graafhaven.
+Lore: the stranger in Veenhoek, Hester Vlieland and Grietje Visser, Word for a cousin, Harmen needing bolts of sailcloth, the stranger in Oude Zijl, the stranger in Graafhaven.
 
 ==== AFTER (Vrijdag 17 Herfstmaand 211 AW, 11:12 (morning))
 
@@ -204,8 +204,7 @@ Joris nods. "Morning."
 
 > 2
 You: "What's new around here?"
-Joris nods slowly. "[Jan] has his coil of rope back. (You heard it from [Hester].)"
-(The AI's answers did not pass the checks; this is the game's own line from what Joris knows.)
+Joris looks up. "Word of it has come this far, and here someone knows the stranger by it. (You saw it yourself.)"
 
 > bye
 Joris lifts a hand. "Go on, then."
@@ -213,7 +212,7 @@ Joris lifts a hand. "Go on, then."
 > journal
 People: Fenna Visser, Grietje, Harmen, Hendrikje Hofstede, Hester Vlieland, Jan, Joris Kuipers, Lubbert, Mirte Bakker, Trijntje, the Count.
 Places: the Holleveen, Oude Zijl, Veenhoek, Waagdam, Graafhaven, the Kattenbroek, The Gate of Graafhaven, The Chandlery, The Cooper's Yard, The Market of Graafhaven, Molenend, the Lane, The Mill De Zwaan, The Old Sluice, The Peat Road, The Bakery, Veenhoek, the Green, Canal Quay, The Market Square, Waagdam, the West Gate.
-Lore: the stranger in Veenhoek, Hester Vlieland and Grietje Visser, Word for a cousin, Jan's lost coil of rope, Grietje finding Jan's coil of rope, the stranger in Oude Zijl, the stranger in Graafhaven.
+Lore: the stranger in Veenhoek, Hester Vlieland and Grietje Visser, Word for a cousin, Harmen needing bolts of sailcloth, the stranger in Oude Zijl, the stranger in Graafhaven.
 
 ==== END (Zaterdag 18 Herfstmaand 211 AW, 11:14 (morning))
 Quests: flour_for_veenhoek: open, stage no_flour
@@ -302,14 +301,14 @@ Mirte nods. "Evening."
 
 > 2
 You: "What's new around here?"
-Mirte looks up. "The [mill] won't turn again before winter, they say. (You heard it from Kobus. You are fairly sure.)"
+Mirte looks up. "The [mill] at Molenend is finished, they say. (You heard it from Gerrit. You are fairly sure. The way you heard it, it was bigger than this.)"
 
 > bye
 Mirte lifts a hand. "Go on, then."
 
 > journal
-People: Fenna Visser, Grietje, Harmen, Jan, Kobus, Lubbert, Mirte Bakker, Trijntje, the Count.
-Places: Veenhoek, Waagdam, the Kattenbroek, Molenend, the Lane, The Mill De Zwaan, The Peat Road, The Bakery, Veenhoek, the Green, Canal Quay, The Market Square, Waagdam, the West Gate.
+People: Fenna Visser, Gerrit, Grietje, Harmen, Jan, Lubbert, Mirte Bakker, Trijntje, the Count.
+Places: Molenend, Veenhoek, Waagdam, the Kattenbroek, Molenend, the Lane, The Mill De Zwaan, The Peat Road, The Bakery, Veenhoek, the Green, Canal Quay, The Market Square, Waagdam, the West Gate.
 Lore: the stranger in Veenhoek, the mill not turning before winter.
 
 ==== END (Woensdag 15 Herfstmaand 211 AW, 18:37 (evening))

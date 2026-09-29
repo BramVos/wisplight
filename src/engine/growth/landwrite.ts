@@ -7,7 +7,7 @@ import { voiceSummary } from '../dialogue/voice'
 import { VoiceSchema } from '../dialogue/voiceSchema'
 import { frameOf } from '../lands'
 import { recordFact } from '../news'
-import { withoutReference } from '../quests/reference'
+import { playGuide } from '../quests/reference'
 import { worldGuide, worldText } from '../safety'
 import type { GameState } from '../state'
 import type { World } from '../world'
@@ -78,7 +78,7 @@ export function landRequest(world: World, id: string): LlmRequest {
   return {
     role: 'chronicler',
     ...cachedSystem([
-      ...(content.chronicler ? [worldGuide(withoutReference(content.chronicler)), ''] : []),
+      ...(content.chronicler ? [worldGuide(playGuide(content.chronicler)), ''] : []),
       worldText(worldFrame(content, id)),
       '',
       'You write how people live in one land of this world, from its frame above: the frame is the truth, and you add nothing it does not allow. The land must sound like itself and not like the home land, whose voice is given for contrast.',
