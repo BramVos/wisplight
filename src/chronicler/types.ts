@@ -161,6 +161,8 @@ export interface ChronicleInput {
   props?: { id: Id; text: string }[]
   /** People spoken of in talks who are not in the world yet (M10.9): a storyline may bring one, by a letter or a visit. */
   named?: Card[]
+  /** The pulse (M10.24): the stranger has had nothing new near them for days; bring one hook, as it says. */
+  pulse?: string
 }
 
 // ---------------------------------------------------------------- what comes back, in the caller's ids

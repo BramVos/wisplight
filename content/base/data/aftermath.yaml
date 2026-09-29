@@ -800,3 +800,41 @@ aftermath:
       - id: licked
         at: { hour: 6 }
         do: { mark: loc_kabouterberg, text: "The bowl at the mouth of the hollow is empty this morning, and licked clean.", days: 1 }
+
+  # The pulse (M10.24): Kobus the pedlar comes by with his pack and the news of the roads.
+  - id: pulse_pedlar
+    signal: pulse_pedlar
+    about: first
+    topic: pedlar
+    expires: 1
+    steps:
+      - id: seek
+        do: { seek_player: npc_kobus, line: "Needles, thread, a bit of news from the heath road? You look like someone who could use all three.", hours: 24 }
+
+  # The pulse: weather on its way, the talk of the place.
+  - id: pulse_weather
+    signal: pulse_weather
+    about: first
+    topic: weather
+    expires: 1
+    steps:
+      - id: talk
+        do:
+          tell:
+            kind: weather
+            place: $place
+            belang: 2
+            title: "a blow coming in from the sea"
+            precise: "The old people say a blow is coming in from the sea, and the eel men have pulled their traps."
+            village: "There is weather on the way, they say. The eel men have pulled their traps."
+            far: "Weather is coming in over the fen."
+
+  # The pulse: someone near the stranger has an errand for them.
+  - id: pulse_errand
+    signal: pulse_errand
+    about: first
+    topic: errand
+    expires: 1
+    steps:
+      - id: ask
+        do: { request: $a, kind: visit, target: { family_of: $a }, name: "Word to kin", ask: "If you go that way, would you look in on my people? It has been a while, and I cannot get away." }

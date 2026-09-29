@@ -143,6 +143,8 @@ export function userPrompt(input: ChronicleInput, keys: Keys, lookedUp: Card[], 
   section('CHANCES (there already)', (input.chances ?? []).map((c) => cardLine(c, keys)))
   section('NEW OBJECTS (for place_prop)', (input.props ?? []).map((p) => `${p.id}: ${p.text}`))
   section('NAMED (spoken of in talks, not met yet)', (input.named ?? []).map((c) => cardLine(c, keys)))
+  // The pulse (M10.24): in the changing part, so the fixed part stays cached.
+  section('PULSE', input.pulse ? [input.pulse] : [])
   section(
     'TEMPLATES',
     input.templates.map((t) => `${t.kind}${t.needs.length ? ` (needs ${t.needs.join(' and ')})` : ''}: ${t.text}`),

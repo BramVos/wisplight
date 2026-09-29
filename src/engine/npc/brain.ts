@@ -41,6 +41,8 @@ export function think(world: World, npcId: string): void {
       npc.plan.shift()
       if (npc.plan.length === 0) finishGoal(world, npcId, true)
     } else if (result === 'failed') {
+      // A counter that failed a hungry buyer is not tried again for a while (M10.24): home, then.
+      if (step.kind === 'buy' && !npc.planGoal) npc.foodTried = { location: step.location, until: world.now + 6 * 60 }
       npc.plan = []
       replanOrFail(world, npcId)
     }
@@ -117,6 +119,13 @@ function choose(world: World, npcId: string): boolean {
   const def = world.npc(npcId)
 
   if (npc.needs.hunger < 15) return setPlan(world, npcId, eatPlan(world, npcId))
+  // Hours from home and getting hungry, with food at hand: eat before the next long walk (M10.24).
+  if (npc.needs.hunger < 30 && !npc.planGoal) {
+    // No way by the exits (a hut in the reed maze, reached across country) is far too.
+    const away = npc.location === def.home ? 0 : (world.route(npc.location, def.home)?.minutes ?? Infinity)
+    const shop = away > 120 ? foodNear(world, npcId, 60) : undefined
+    if (shop) return setPlan(world, npcId, [...goTo(world, npcId, shop.location), { kind: 'buy', location: shop.location, service: shop.service, item: shop.item, qty: Math.min(3, Math.ceil(60 / shop.food)) }, { kind: 'eat' }])
+  }
   // A fever keeps you in bed; a feast day brings the village together.
   if (npc.sickUntil !== undefined && world.now < npc.sickUntil) {
     return setPlan(world, npcId, [...goHome(world, npcId), { kind: 'spend', minutes: 60, activity: 'idle', label: 'ill in bed' }])
@@ -444,7 +453,42 @@ function departLater(world: World, npcId: string, steps: Step[]): Step[] {
 function eatPlan(world: World, npcId: string): Step[] {
   const npc = world.npcState(npcId)
   const hasFood = Object.keys(npc.inventory).some((item) => (world.content.items.get(item)?.food ?? 0) > 0)
-  return hasFood ? [{ kind: 'eat' }] : [...goHome(world, npcId), { kind: 'eat' }]
+  if (hasFood) return [{ kind: 'eat' }]
+  // Hours from home, something to eat from the nearest open counter they can pay (found in the M10.24 simulation with
+  // a model's goals: the hermit of the reed maze walked five hours home from the inn, hungry, with money in his purse).
+  const home = world.npc(npcId).home
+  const toHome = npc.location === home ? 0 : (world.route(npc.location, home)?.minutes ?? Infinity)
+  const shop = toHome > 180 ? foodNear(world, npcId, toHome) : undefined
+  // Enough for the way home too: one to eat now, the rest in the pack for when hunger comes again.
+  if (shop) return [...goTo(world, npcId, shop.location), { kind: 'buy', location: shop.location, service: shop.service, item: shop.item, qty: Math.min(3, Math.ceil(60 / shop.food)) }, { kind: 'eat' }]
+  return [...goHome(world, npcId), { kind: 'eat' }]
+}
+
+/** The nearest open counter with food someone can pay, nearer than a limit, among the places they know: its most filling food. */
+function foodNear(world: World, npcId: string, within: number): { location: string; service: string; item: string; food: number } | undefined {
+  const npc = world.npcState(npcId)
+  let best: { location: string; service: string; item: string; food: number; minutes: number } | undefined
+  // Where they stand counts too, known or not (the hermit of the reed maze at the Goose).
+  for (const id of [...new Set([npc.location, ...world.knownLocations(npcId)])].sort()) {
+    if (npc.foodTried && npc.foodTried.location === id && npc.foodTried.until > world.now) continue
+    const minutes = id === npc.location ? 0 : (world.route(npc.location, id)?.minutes ?? Infinity)
+    if (minutes >= within || (best && minutes >= best.minutes)) continue
+    for (const service of world.content.locations.get(id)?.services ?? []) {
+      const sold = world.service(id, service.id)
+      // Open now and still when they get there.
+      if (!sold || sold.provider === npcId || !world.serviceOpen(id, sold) || !world.serviceOpen(id, sold, world.now + minutes)) continue
+      const stock = world.stock(id, service.id)
+      const food = Object.keys(sold.sells)
+        .map((i) => ({ item: i, food: world.content.items.get(i)?.food ?? 0 }))
+        .filter((f) => f.food > 0 && (stock[f.item] ?? 0) > 0 && world.price(id, sold, f.item) <= npc.money)
+        .sort((a, b) => b.food - a.food || a.item.localeCompare(b.item))[0]
+      if (food) {
+        best = { location: id, service: service.id, item: food.item, food: food.food, minutes }
+        break
+      }
+    }
+  }
+  return best && { location: best.location, service: best.service, item: best.item, food: best.food }
 }
 
 function goHome(world: World, npcId: string): Step[] {

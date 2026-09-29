@@ -620,10 +620,12 @@ A list; each has:
 | fact | a map: key, value, not, kind | no |  |
 | belief | a map: key, value, kind | no |  |
 | when | list of one of: a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map | no |  |
-| probe | one of: a map: house_empty \| a map: standing_rise \| a map: grudge \| a map: strangers_stay \| a map: friction \| a map: shortage \| a map: surplus \| a map: price_doubled \| a map: missing_trade \| a map: befriended | no |  |
+| probe | one of: a map: house_empty \| a map: standing_rise \| a map: grudge \| a map: strangers_stay \| a map: friction \| a map: shortage \| a map: surplus \| a map: price_doubled \| a map: missing_trade \| a map: befriended \| a map: pulse | no |  |
 | who | list of text | no |  |
 | place | text | no |  |
 | belang | number | no |  |
+
+`probe: { pulse: <kind> }` (visitor, tiding, request, letter, gesture or place): never by itself. When the stranger has had nothing new near them for days (the knob story.hooks_per_week) and the chronicler brought nothing, the rule sets off one of these where the stranger is, never two of a kind in a row; its aftermath plays it with $a someone near them and $place where they are.
 
 ## tides (data/tides.yaml)
 

@@ -1,4 +1,5 @@
 import { knob } from './knobs'
+import { pulseText } from './pulse'
 import { chronicle, emptyOutput, type Card, type ChronicleEvent, type ChronicleInput, type ChronicleLine, type ChronicleOutput, type ChroniclerModel, type ChroniclerRequest, type PlanOp, type QuestTemplate } from '../chronicler'
 import { PlanSchema, type Plan, type PlanEffect } from './quests/planschema'
 import { shiftTension } from './social/realms'
@@ -190,6 +191,8 @@ export function buildInput(world: World, run: ChronicleRun): ChronicleInput {
   // People spoken of in talks (M10.9), of the cast or the places of the storyline: one may come by a letter or a visit.
   const named = sketches(world).filter((sk) => !sk.npc && (cast.has(sk.of) || areas.includes(sk.place.replace(/^area_/, '')))).slice(0, 4)
   if (named.length) input.named = named.map((sk) => ({ id: sk.id, kind: 'named' as const, name: sk.name, text: `${sketchPhrase(world, sk)}. "${sk.line}"` }))
+  // Asked by the pulse (M10.24): one hook near the stranger.
+  if (run.pulse) input.pulse = pulseText(world, run.pulse)
   const chancePeople = chances.map((c) => c.who).filter((w): w is string => Boolean(w))
   extraCards(world, input, [...planning.people, ...chancePeople], [...planning.places, ...chances.map((c) => c.place)], (id) => personCard(world, id, new Set([...cast, ...planning.people])), (id) => placeCard(world, id))
   return input

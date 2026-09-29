@@ -1,13 +1,17 @@
 import { existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { argv, stdout } from 'node:process'
-import { Engine, MINUTES_PER_DAY, type WorldEvent } from '../engine'
+import { checkContent, Engine, lockedIds, MINUTES_PER_DAY, MockLlm, type WorldEvent } from '../engine'
 import { loadContentFromDir } from '../node/content'
 import { mayBeStuck } from '../engine/playtest'
 
 // Runs the region without a player and reports what happened:
-//   npm run sim -- --days 7 [--seed 3] [--follow npc_mirte] [--quiet] [--world isle | --world other]
+//   npm run sim -- --days 7 [--seed 3] [--follow npc_mirte] [--quiet] [--world isle | --world other] [--model]
 // Exits with code 1 when an invariant breaks (a crash, a starving or stuck NPC).
+// With --model (M10.24) it plays on in the continue mode with the mock model:
+// the chronicler, the weave and the great lines run after every hour, and at
+// the end the world must still be whole: the grown content passes the checks,
+// growth kept to its limits, no new id took a tombstone's, and a save loads.
 
 const args = argv.slice(2)
 const option = (name: string, fallback: string) => {
@@ -19,11 +23,13 @@ const seed = Number(option('seed', '1'))
 const follow = option('follow', '')
 const quiet = args.includes('--quiet')
 const worldFolder = option('world', 'base')
+const withModel = args.includes('--model')
 
 // A world from content/, or a test world from tests/worlds (M10.17: --world other is Deepwell).
 const contentRoot = resolve(import.meta.dirname, '../../content')
 const content = await loadContentFromDir(existsSync(resolve(contentRoot, worldFolder)) ? contentRoot : resolve(import.meta.dirname, '../../tests/worlds'), worldFolder)
-const engine = new Engine(content, { seed })
+const engine = new Engine(content, { seed, ...(withModel ? { llm: new MockLlm('good') } : {}) })
+if (withModel) engine.setPlayMode('continue')
 const world = engine.world
 const problems: string[] = []
 const lastMove = new Map<string, { location: string; activity: string; since: number }>()
@@ -37,6 +43,7 @@ for (let day = 1; day <= days; day++) {
   for (let hour = 0; hour < 24; hour++) {
     try {
       engine.tick(60)
+      if (withModel) await engine.runModels()
     } catch (error) {
       problems.push(`Crash on day ${day}, hour ${hour}: ${(error as Error).stack}`)
       break
@@ -79,6 +86,22 @@ for (let day = 1; day <= days; day++) {
     .map(([id, n]) => `${id} ${JSON.stringify(n.needs)}`)
   if (low.length) print(`  low needs: ${low.join(' | ')}`)
   if (world.now % MINUTES_PER_DAY !== 0 && !quiet) print('')
+}
+
+// Within the frames (M10.24): what grew is content like any, within its limits, and the game still saves and loads.
+if (withModel) {
+  problems.push(...checkContent(engine.content).map((p) => `grown content: ${p}`))
+  const g = engine.state.growth
+  if ((g?.season?.arrived ?? 0) > content.world.newcomers_per_season) problems.push(`${g!.season!.arrived} newcomers this season, over ${content.world.newcomers_per_season}`)
+  const locked = lockedIds(content)
+  const grown = [...engine.content.npcs.keys(), ...engine.content.locations.keys(), ...engine.content.areas.keys()].filter((id) => !content.npcs.has(id) && !content.locations.has(id) && !content.areas.has(id))
+  for (const id of grown) if (locked.has(id)) problems.push(`${id}: grown in play with a committed or buried id`)
+  try {
+    Engine.fromSave(content, engine.save())
+  } catch (error) {
+    problems.push(`the save does not load: ${(error as Error).message}`)
+  }
+  stdout.write(`\nWith the mock model: ${grown.length} grown, ${engine.state.chronicle?.lore.length ?? 0} lore, ${engine.state.requests.length} requests, ${engine.state.pulse?.fired.length ?? 0} pulses.\n`)
 }
 
 const unique = [...new Set(problems)]

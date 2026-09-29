@@ -14,7 +14,7 @@ ids:
   isle/areas/shore/locations.yaml:
     location: [loc_skerrow_wreck_strand, loc_skerrow_tidepools, loc_skerrow_cliff_path]
   isle/data/aftermath.yaml:
-    aftermath: [asked_about, request_open, befriended, theft_mended_own, theft_mended_caught, broken_promise, promise_kept, made_good, craft_rank, death, lost, departure, lamp_lit, pupil_learnt, grove_answers]
+    aftermath: [asked_about, request_open, befriended, theft_mended_own, theft_mended_caught, broken_promise, promise_kept, made_good, craft_rank, death, lost, departure, lamp_lit, pupil_learnt, grove_answers, pulse_tamsin, pulse_sail, pulse_errand]
   isle/data/areas.yaml:
     area: [skerrow_hythe, skerrow_shore, skerrow_heights, skerrow]
   isle/data/belonging.yaml:
@@ -46,7 +46,7 @@ ids:
   isle/data/topics.yaml:
     topic: [the_starfall, old_skarth, the_waystone, the_beacon, grey_gull, havenmoor, the_tidemother]
   isle/data/watchers.yaml:
-    watcher: [asked_about, befriended, death, lost, departure, lamp_lit]
+    watcher: [asked_about, befriended, death, lost, departure, lamp_lit, pulse_tamsin, pulse_sail, pulse_errand]
   isle/lands/western_isles/areas/ynys_wen/locations.yaml:
     location: [loc_ynys_wen_landing, loc_ynys_wen_hall]
   isle/lands/western_isles/areas/ynys_wen/npcs.yaml:

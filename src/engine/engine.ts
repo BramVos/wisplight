@@ -11,6 +11,7 @@ import { brawlAnswer, brawlShown } from './social/brawl'
 import { CHECKPOINT_ENTRIES, CHECKPOINT_MINUTES, contentVersion, type Checkpoint, type CheckpointedSave } from './checkpoint'
 import { applyFarPlace, farPlaceOf, farRequest, farWords, wantFarPlace, type FarWords, farTopicAt } from './growth/far'
 import { crossBorder } from './borders'
+import { wakePulse } from './pulse'
 import { decide, holdHooks, hookChoice, morningHooks, PLAY_MODES, playModeOf, propose, proposalsText, takeHook, waitingLines, type PlayMode } from './modes'
 import { applyLand, landRequest, landWords, wantLand, type LandWords } from './growth/landwrite'
 import { applyDistrict, districtDue, districtRequest, districtsOf, districtWords, wantDistrict, type DistrictWords } from './growth/districts'
@@ -967,6 +968,7 @@ export class Engine {
   }
 
   start(): Output[] {
+    wakePulse(this.world)
     const intro = this.content.world.intro?.trim()
     const outputs: Output[] = [
       ...(intro ? [{ kind: 'text' as const, text: intro }] : []),
@@ -1072,6 +1074,8 @@ export class Engine {
       text = done.run
     }
     for (const listener of this.listeners) listener({ kind: 'in', t: this.world.now, text })
+    // The stranger plays (M10.24): the pulse looks them up from now on, also in a game begun before it.
+    wakePulse(this.world)
     const before = this.state.player.location
     const talkBefore = this.state.talk
     // A line in quotes is speech (the conversation window sends them so), but it can still be a quest's own words.
@@ -1606,6 +1610,13 @@ export class Engine {
     for (const listener of this.listeners) listener({ kind: 'replay', t: this.world.now, entry: { t: this.world.now, k: 'tick', v: minutes } })
     const passed = this.pass(minutes)
     noticeCarried(this.world)
+    // A talk the stranger never answered (M10.24; found when the pulse sent a visitor to a stranger who did nothing,
+    // and the visitor stood there until they starved): after half an hour they go about their business.
+    const idle = this.state.talk
+    if (idle?.opened && !idle.history.some((h) => h.speaker === 'player') && this.world.now - (idle.began ?? this.world.now) >= 30) {
+      passed.push({ kind: 'narration', text: this.world.say('{name} waits a while for an answer, then goes about {their} business.', idle.npc) })
+      this.dialogue.end(false)
+    }
     const outputs = [...passed, ...this.questsTick(), ...this.confrontations(), ...this.attacks(), ...this.sought(), ...brawlShown(this.world)]
     outputs.push(...this.world.notices.splice(0).map((text) => ({ kind: 'system' as const, text })))
     // A tiding that came while time ran (M10.11): something seen, someone who told it.

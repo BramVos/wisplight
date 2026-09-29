@@ -293,3 +293,41 @@ aftermath:
       - id: gulls
         at: { hour: 19 }
         do: { mark: loc_skerrow_silver_grove, text: "Gulls sit in the birches tonight, silent, every one of them facing the sea.", days: 1 }
+
+  # The pulse (M10.24): Tamsin comes down from the heights with her basket, and finds the stranger.
+  - id: pulse_tamsin
+    signal: pulse_tamsin
+    about: first
+    topic: hedge_witch
+    expires: 1
+    steps:
+      - id: seek
+        do: { seek_player: npc_tamsin, line: "The gulls said you were still here. Sit a moment; the island has been talking about you.", hours: 24 }
+
+  # The pulse: a sail far out, the talk of the hamlet.
+  - id: pulse_sail
+    signal: pulse_sail
+    about: first
+    topic: sail
+    expires: 1
+    steps:
+      - id: talk
+        do:
+          tell:
+            kind: sighting
+            place: $place
+            belang: 2
+            title: "a sail far out to the south"
+            precise: "Wenna saw a sail far out to the south at first light, going west, and nobody knows whose."
+            village: "There was a sail out to the south this morning, they say."
+            far: "A ship was seen off Skerrow."
+
+  # The pulse: someone near the stranger has an errand for them.
+  - id: pulse_errand
+    signal: pulse_errand
+    about: first
+    topic: errand
+    expires: 1
+    steps:
+      - id: ask
+        do: { request: $a, kind: visit, target: { family_of: $a }, name: "Word to kin", ask: "If you go up that way, would you look in on my people? The wind has kept me down here." }

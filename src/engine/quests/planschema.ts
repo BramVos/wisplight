@@ -29,6 +29,9 @@ export type Selector =
   | { stayer: [Selector, Selector] }
   | { welcoming: Selector }
 
+/** The kinds of hook that reach the stranger (M10.24, the pulse). */
+export const HOOK_KINDS = ['request', 'visitor', 'tiding', 'gesture', 'letter', 'place'] as const
+
 /** The moods an area can be in (M10.11). */
 export const MOOD_KINDS = ['panic', 'grief', 'feast', 'threat'] as const
 export type MoodKind = (typeof MOOD_KINDS)[number]
@@ -264,6 +267,13 @@ export const WatcherSchema = z
         z.object({ missing_trade: z.number().int().positive() }).strict(),
         /** Warm towards the stranger for so many days, with something shared (a secret, a favour done, a journey, a gift) (M10.3): $a the new friend. */
         z.object({ befriended: z.number().positive() }).strict(),
+        /**
+         * Never by itself (M10.24): the pulse sets it off when the stranger has had
+         * nothing near them for too long and the chronicler brought nothing; $a
+         * someone near the stranger, $place where the stranger is. Its kind is the
+         * kind of hook it brings, never two of one kind in a row.
+         */
+        z.object({ pulse: z.enum(HOOK_KINDS) }).strict(),
       ])
       .optional(),
     /** Who it is about; for a fact, by default the subject and the value of its claim. */

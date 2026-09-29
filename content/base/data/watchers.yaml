@@ -157,3 +157,19 @@ watchers:
   - id: danger_passed
     signal: danger_passed
     fact: { key: state, value: normal, kind: danger }
+
+  # The pulse (M10.24): never by themselves. When the stranger has had nothing new
+  # near them for days and the chronicler brought nothing, the rule sets one of
+  # these off where they are, never two of a kind in a row: Kobus the pedlar
+  # comes by, weather is on its way, someone near has an errand.
+  - id: pulse_pedlar
+    signal: pulse_pedlar
+    probe: { pulse: visitor }
+
+  - id: pulse_weather
+    signal: pulse_weather
+    probe: { pulse: tiding }
+
+  - id: pulse_errand
+    signal: pulse_errand
+    probe: { pulse: request }

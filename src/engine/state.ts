@@ -251,6 +251,8 @@ export interface ChronicleRun {
   lines: string[]
   /** Signals to plan for in this run (M8.3). */
   signals?: string[]
+  /** Asked by the pulse (M10.24): bring one hook near the stranger, in this area, not of this kind. */
+  pulse?: { area: string; avoid?: string }
 }
 
 /**
@@ -278,6 +280,8 @@ export interface ChronicleState {
 }
 
 export interface NpcState {
+  /** A counter that could not sell a hungry buyer food (M10.24), not tried again until then. */
+  foodTried?: { location: string; until: number }
   /** Crafts learnt from the stranger (M10.14), by rank from 0 (novice). */
   crafts?: Record<string, number>
   location: string
@@ -368,6 +372,8 @@ export interface MemoryRecord {
 
 export interface TalkState {
   npc: string
+  /** They came to the stranger (M10.3): a talk the stranger never answers ends by itself (M10.24). */
+  opened?: boolean
   turnsLeft: number
   history: { speaker: 'player' | 'npc'; text: string }[]
   effects: number
@@ -761,6 +767,8 @@ export interface GameState {
   tension?: Record<string, number>
   /** The great lines (M10.22): where each stands, and a month's judgement waiting for the chronicler. */
   tides?: import('./tides').TidesState
+  /** The pulse (M10.24): the hooks it brought and whether it asked the night round. */
+  pulse?: import('./pulse').PulseState
   /** How the chronicler, the weave and the great lines go on (M10.24): without it, continue. */
   playMode?: import('./modes').PlayMode
   /** What waits for the player in think and direct mode (M10.24): hooks of a night, proposals. */

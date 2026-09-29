@@ -544,6 +544,9 @@ o'clock, potatoes, potato, tobacco, coffee, chocolate, gun, guns, pistol, musket
 - When lamp lit: a mark at The Salt Kettle: "At the end of the long table a cup stands poured for the stranger, and nobody touches it."; a feast at The Salt Kettle; prices at The Salt Kettle times 0.9 for 2 days; word goes round: "the song of the stranger and the Lamp".
 - When pupil learnt (a signal of the game itself): A thinks: "You can do {value} on your own now; the stranger taught you."; word goes round: "{a} learning {value} from the stranger".
 - When improvised (The Silver Grove) (a signal of the game itself): a mark at The Silver Grove: "Gulls sit in the birches tonight, silent, every one of them facing the sea.".
+- When pulse tamsin: seek player Tamsin Hale.
+- When pulse sail: word goes round: "a sail far out to the south".
+- When pulse errand: request A.
 
 ## 19. The rules in short
 

@@ -1336,6 +1336,9 @@ o'clock, potatoes, potato, tobacco, cigarette, cigar, coffee, chocolate, tomatoe
 - When pupil learnt (a signal of the game itself): A thinks: "You can do {value} on your own now; the stranger taught you."; word goes round: "{a} learning {value} from the stranger".
 - When improvised (old stone) (a signal of the game itself): word goes round: "a dog barking across the water in the night".
 - When improvised (The Kabouterberg) (a signal of the game itself): a mark at The Kabouterberg: "The bowl at the mouth of the hollow is empty this morning, and licked clean.".
+- When pulse pedlar: seek player Kobus.
+- When pulse weather: word goes round: "a blow coming in from the sea".
+- When pulse errand: request A.
 
 ## 18. The rules in short
 

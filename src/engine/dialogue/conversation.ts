@@ -123,7 +123,7 @@ export class Dialogue {
     if (band === 'Warm' || band === 'Devoted') turns += 2
     if (band === 'Wary' || band === 'Unfriendly' || band === 'Hostile') turns -= 3
     if (/at work|baking|cutting|grinding|seeing to|spinning/.test(world.npcState(npcId).activity)) turns -= 2
-    world.state.talk = { npc: npcId, turnsLeft: Math.max(2, turns), history: [], effects: 0, revealed: [], began: world.now }
+    world.state.talk = { npc: npcId, turnsLeft: Math.max(2, turns), history: [], effects: 0, revealed: [], began: world.now, ...(opened ? { opened: true } : {}) }
     rel.familiarity = Math.min(100, rel.familiarity + 1)
     this.learn(npcId)
     if (silent) return []

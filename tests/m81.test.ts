@@ -230,8 +230,8 @@ describe('M8.1: Skerrow plays as before', () => {
   it('has what conversations need (M10.3) and mourning (M10.7), and without the stranger gives no signals', async () => {
     const isle = loadContent(await readContentFiles(root, 'isle'))
     // Death, loss and departure (M10.7) only fire when someone dies, is lost or leaves; two quiet days give none.
-    // And good news (M10.14): the Lamp lit again.
-    expect([...isle.watchers.keys()]).toEqual(['asked_about', 'befriended', 'death', 'lost', 'departure', 'lamp_lit'])
+    // And good news (M10.14): the Lamp lit again. The pulse's own (M10.24) fire only when the stranger plays and nothing came.
+    expect([...isle.watchers.keys()]).toEqual(['asked_about', 'befriended', 'death', 'lost', 'departure', 'lamp_lit', 'pulse_tamsin', 'pulse_sail', 'pulse_errand'])
     const engine = new Engine(isle, { seed: 12 })
     engine.tick(2 * DAY)
     expect(engine.state.signals?.log ?? []).toEqual([])

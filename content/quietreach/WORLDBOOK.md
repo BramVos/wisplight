@@ -494,6 +494,7 @@ Where an act the rules do not know may be improvised: Orison Listening Room (lor
 
 Every step not listed here was taken. These were left empty, and the world has the neutral default:
 
+- **Lands** (not taken up): One land: the world is its home land and every area is of it. Between lands the reach is worked out from the content: close where a way on foot crosses, trade along a line of transport or a route, and none elsewhere.
 - **Places** (proposal turned down): A world needs at least one area and one place, the start; the builder's first place stays.
 
 ### Decisions

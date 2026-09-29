@@ -35,3 +35,18 @@ watchers:
   - id: lamp_lit
     signal: lamp_lit
     fact: { kind: lamp_lit }
+
+  # The pulse (M10.24): never by themselves. When the stranger has had nothing new
+  # near them for days, the rule sets one of these off where they are: Tamsin comes
+  # down from the heights, a sail is seen, someone near has an errand.
+  - id: pulse_tamsin
+    signal: pulse_tamsin
+    probe: { pulse: visitor }
+
+  - id: pulse_sail
+    signal: pulse_sail
+    probe: { pulse: tiding }
+
+  - id: pulse_errand
+    signal: pulse_errand
+    probe: { pulse: request }

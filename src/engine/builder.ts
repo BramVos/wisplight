@@ -31,6 +31,10 @@ export function warnings(content: Content): string[] {
     const sentences = location.description.day.split(/(?<=[.!?])\s+/).filter((s) => s.trim()).length
     if (sentences < 3 || sentences > 5) out.push(`${location.id}: the day description has ${sentences} sentences; three to five read best`)
   }
+  // A pulse watcher (M10.24) whose signal no aftermath plays: when it fires, nothing reaches the stranger.
+  for (const w of content.watchers.values()) {
+    if (w.probe && 'pulse' in w.probe && ![...content.aftermath.values()].some((a) => a.signal === w.signal)) out.push(`watcher ${w.id}: the pulse sets off ${w.signal}, and no aftermath plays it, so nothing reaches the stranger`)
+  }
   // A land (M10.23) nobody can be in, or cross into: no area of it and no far place, or no border.
   for (const land of content.lands.values()) {
     const areas = [...content.areas.values()].filter((a) => a.land === land.id)
