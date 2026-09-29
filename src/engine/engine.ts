@@ -36,7 +36,7 @@ import { followTombstones, followTombstonesInLog, nameBook, withNames, type Name
 import { shiftTension, tensionOf } from './social/realms'
 import { grownContent, invest } from './growth/growth'
 import { GameClock, weekdayName } from './clock'
-import { completionsHere, couldInstead, describeRoom, detailVerb, findNpcAnywhere, findNpcHere, runCommand, walkWithin, whichOfThem, type CommandHost, type Output } from './commands'
+import { completionsHere, couldInstead, describeRoom, detailVerb, findNpcAnywhere, findNpcHere, runCommand, walkByExits, walkOut, walkWithin, whichOfThem, type CommandHost, type Output } from './commands'
 import { areaTopicId, callName, firstName, type Content, type Quest } from './content'
 import { Dialogue, QUICK_OPTIONS } from './dialogue/conversation'
 import { Knowledge } from './dialogue/knowledge'
@@ -2439,9 +2439,14 @@ export class Engine {
   }
 
   private walkPlan(plan: WalkPlan, place?: KnownPlace): Output[] {
+    // A place a few doors away is reached by its doors (M10.29 V), not round the outside.
+    const byExits = place && this.content.locations.has(place.topic) ? walkByExits(this.host, place.topic) : undefined
+    if (byExits) return byExits
+    // From indoors, out first (M10.29 V: WALK TO 5,6 in the Workshop): along the exits to where you can set out.
+    const out = walkOut(this.host) ?? []
     const result = walk(this.world, plan, (minutes) => this.pass(minutes))
-    if (Array.isArray(result)) return result
-    const outputs = [...result.outputs, describeRoom(this.world)]
+    if (Array.isArray(result)) return [...out, ...result]
+    const outputs = [...out, ...result.outputs, describeRoom(this.world)]
     // Walking to a place you only heard of ends where the tellers said it was.
     if (place?.status === 'heard' && isHexId(this.state.player.location)) {
       const again = knownPlace(this.world, place.topic)

@@ -54,6 +54,7 @@ numbers:
     TIER_TOKENS: 'code: the tokens a reply may use follow from its words (technique)'
   src/engine/dialogue/conversation.ts:
     REPLY_WITHIN_MS: 'settings (moved): the reply time the player sets (M10.8); this is its default'
+    LINK_RETRY_MS: 'code: after a failed call for want of a connection, how long the rules answer before the talk asks the model again quietly (M10.29 V, safety)'
   src/engine/dialogue/testset.ts:
     TALK_AT: 'code: the moment the trial of a model is played at (a test fixture)'
   src/engine/engine.ts:
@@ -133,7 +134,7 @@ numbers:
     EDITOR_TIMEOUT_MS: 'settings (moved): the app knob editor_timeout_seconds; this is its default'
     LOW_PRIORITY_SHARE: 'settings (moved): the app knob conversation_share; this is its default'
     FAILURES_BEFORE_COOLDOWN: 'code: three failures and the connection cools down (safety)'
-    COOLDOWN_MS: 'code: how long the connection cools down (safety)'
+    COOLDOWN_MS: 'code: how long the connection cools down, thirty seconds like the talk (M10.29 V; safety)'
     LOW_TOKENS: 'code: below this the next call would hit the rate limit (technique)'
     UNPRICED_CALLS_PER_HOUR: 'code: a model without a known price is called at most this often an hour (safety of cost)'
   src/node/ai/log.ts:

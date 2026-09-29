@@ -41,9 +41,10 @@ export function outOfCharacter(text: string): boolean {
 // A promise of something done (M10.3): taking, showing, fetching, waiting, meeting, giving, carrying word.
 // "I'll tell you" is talk, not a deed; "I'll tell my father" is. Since M10.29 (Bram's playtest) also a time the
 // speaker keeps ("I'll be done at", "see you at"), pointing the way ("I'll point you right", "come on", "this way"),
-// and a deed told as done now ("hands you", "gives you", "here, take it"): words are never deeds.
+// and a deed told as done now ("hands you", "gives you", "here, take it", and M10.29 V a thing handed across in words: "slides his
+// notebook across", "holds out a ration bar", never a hand held out): words are never deeds.
 const PROMISE =
-  /\b(?:i'?ll|i will|i can|let me|i'?m going to|i shall)\s+(?:\w+\s+)?(?:take|show|lead|bring|fetch|walk|wait|meet|give|carry|point|see you (?:to|there|at|in)|be (?:done|there|free|back|finished) (?:at|by|in|around)|come (?:with|by|back|for you|and find)|go with|tell (?:him|her|them|my|your))|\bfollow me\b|\bcome with me\b|\bcome on\b|\bthis way\b|\bsee you (?:at|in|there|by|tonight|tomorrow)\b|\b(?:hands?|gives?|passes?|slides?|holds? out|pushes|presses)\s+(?:you|the stranger)\b|\bhere,? take (?:it|this|these)\b/iu
+  /\b(?:i'?ll|i will|i can|let me|i'?m going to|i shall)\s+(?:\w+\s+)?(?:take|show|lead|bring|fetch|walk|wait|meet|give|carry|point|see you (?:to|there|at|in)|be (?:done|there|free|back|finished) (?:at|by|in|around)|come (?:with|by|back|for you|and find)|go with|tell (?:him|her|them|my|your))|\bfollow me\b|\bcome with me\b|\bcome on\b|\bthis way\b|\bsee you (?:at|in|there|by|tonight|tomorrow)\b|\b(?:hands?|gives?|passes?|slides?|holds? out|pushes|presses)\s+(?:you|the stranger)\b|\bhere,? take (?:it|this|these)\b|\b(?:hands?|gives?|passes?|slides?|pushes|presses|tosses|offers)\s+(?:(?:his|her|their|my|a|an|the|this|that|its|one|some)\s+)?(?:[\w'-]+\s+){0,2}?[\w'-]+\s+(?:across|over|to you|towards? you|into your hands?)\b|\bholds? out (?:a|an|the|his|her|their|one)\s+(?!hands?\b)[\w'-]+/iu
 // "I'll tell Harmen": a name, capitalised. Apart, because with the i flag \p{Lu} takes any letter, and "I'll tell you"
 // was a promise (found in M10.29).
 const TELL_NAME = /\b(?:I'?ll|I will|I can|[Ll]et me|I'?m going to|I shall)\s+(?:\w+\s+)?tell \p{Lu}/u

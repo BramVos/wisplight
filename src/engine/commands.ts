@@ -319,7 +319,7 @@ Lines here: ${lines.join(', ')}.` : HELP }]
       const words = command.args.join(' ')
       const thing = words ? (detailHere(world, words)?.name ?? sceneryHere(world, words)?.name) : undefined
       if (thing) return [text(`You think better of it, and leave ${thing} be.`)]
-      return [error(`You can't "${command.raw}" here. Type HELP for a list of commands.`)]
+      return [error(`You can't "${command.raw}" here. ${whatHere(world)}`)]
     }
   }
 }
@@ -438,7 +438,13 @@ export function walkWithin(host: CommandHost, words: string): Output[] | undefin
   const area = world.content.locations.get(here)?.area
   const wanted = words.toLowerCase().replace(/^(the|a|an)\s+/, '').trim()
   const seen = new Set([...(world.state.player.seen ?? []), here])
-  const target = [...world.content.locations.values()].find((l) => l.area === area && seen.has(l.id) && [l.name, ...l.aliases].some((n) => n.toLowerCase().replace(/^the\s+/, '') === wanted))
+  const mine = [...world.content.locations.values()].filter((l) => l.area === area && seen.has(l.id))
+  // By its name, then by the words of its names or of what it is (M10.29 V: WALK TO COMMON ROOM for the Commons), unless
+  // the words are the name of an area or a topic (WALK TO THE KATTENBROEK at its edge is being there already).
+  const named = [...world.content.areas.values(), ...world.content.topics.values()].some((t) => t.name.toLowerCase().replace(/^the\s+/, '') === wanted)
+  const target =
+    mine.find((l) => [l.name, ...l.aliases].some((n) => n.toLowerCase().replace(/^the\s+/, '') === wanted)) ??
+    (named ? undefined : (mine.find((l) => placeWords(wanted, [l.name, ...l.aliases])) ?? mine.find((l) => placeWords(wanted, [l.summary ?? '']))))
   if (!target || target.id === here) return target ? [describeRoom(world)] : undefined
   // The shortest way through seen places, by exits.
   const from = new Map<string, [string, Direction]>()
@@ -460,6 +466,66 @@ export function walkWithin(host: CommandHost, words: string): Output[] | undefin
     const went = runCommand(host, { verb: 'go', args: [dir], raw: `go ${dir}` })
     const moved = world.state.player.location !== before
     out.push(...went.filter((o) => !moved || i === steps.length - 1 || o.kind !== 'room'))
+    if (!moved) break
+  }
+  return out
+}
+
+/**
+ * Out to the nearest place to strike out across country from, along the exits,
+ * a GO a step (M10.29 V, Bram's log: WALK TO 5,6 in the Workshop said to go
+ * out first). Nothing when you can set out here; undefined when no way leads out.
+ */
+export function walkOut(host: CommandHost): Output[] | undefined {
+  const { world } = host
+  const open = (id: string) => isHexId(id) || canSetOut(world, id)
+  if (open(world.state.player.location)) return []
+  const steps = exitsTo(world, open)
+  return steps ? goSteps(host, steps, false) : undefined
+}
+
+/** WALK TO a place a few exits away (M10.29 V: the Workshop is a door east of the Commons, not a walk round outside): by the exits. */
+export function walkByExits(host: CommandHost, target: string, most = 6): Output[] | undefined {
+  const steps = exitsTo(host.world, (id) => id === target, most)
+  return steps?.length ? goSteps(host, steps, true) : undefined
+}
+
+/** The shortest way by exits from where the stranger stands to the first place that fits, at most so many steps. */
+function exitsTo(world: World, fits: (id: string) => boolean, most = 12): Direction[] | undefined {
+  const here = world.state.player.location
+  const from = new Map<string, [string, Direction]>()
+  const depth = new Map<string, number>([[here, 0]])
+  const queue = [here]
+  let found: string | undefined
+  while (queue.length && !found) {
+    const at = queue.shift()!
+    if (depth.get(at)! >= most || isHexId(at)) continue
+    for (const [dir, exit] of Object.entries(world.location(at).exits) as [Direction, { to: string }][]) {
+      if (from.has(exit.to) || exit.to === here) continue
+      from.set(exit.to, [at, dir])
+      depth.set(exit.to, depth.get(at)! + 1)
+      if (fits(exit.to)) {
+        found = exit.to
+        break
+      }
+      queue.push(exit.to)
+    }
+  }
+  if (!found) return undefined
+  const steps: Direction[] = []
+  for (let at = found; at !== here; at = from.get(at)![0]) steps.unshift(from.get(at)![1])
+  return steps
+}
+
+/** GO a step at a time, so locks, shut doors and time count; the room at the end described, when `last`. */
+function goSteps(host: CommandHost, steps: Direction[], last: boolean): Output[] {
+  const { world } = host
+  const out: Output[] = []
+  for (const [i, dir] of steps.entries()) {
+    const before = world.state.player.location
+    const went = runCommand(host, { verb: 'go', args: [dir], raw: `go ${dir}` })
+    const moved = world.state.player.location !== before
+    out.push(...went.filter((o) => o.kind !== 'room' || !moved || (last && i === steps.length - 1)))
     if (!moved) break
   }
   return out
@@ -560,12 +626,22 @@ function go(host: CommandHost, args: string[]): Output[] {
   let direction = parseDirection(args[0])
   if (!direction && args.length > 0) {
     const wanted = args.join(' ').toLowerCase().replace(/^(the|to)\s+/, '')
-    direction = (Object.entries(location.exits) as [Direction, { to: string }][]).find(([, exit]) => {
+    const exits = Object.entries(location.exits) as [Direction, { to: string }][]
+    direction = exits.find(([, exit]) => {
       const target = world.location(exit.to)
       return [target.name, ...target.aliases].some((name) => name.toLowerCase().includes(wanted))
     })?.[0]
+    // By the words of its name, its other names, then what it is (M10.29 V: GO COMMON ROOM for the Commons).
+    direction ??= exits.find(([, exit]) => placeWords(wanted, [world.location(exit.to).name, ...world.location(exit.to).aliases]))?.[0]
+    direction ??= exits.find(([, exit]) => placeWords(wanted, [world.location(exit.to).summary ?? '']))?.[0]
   }
+  if (!direction && args.length > 0 && placeWords(args.join(' '), [location.name, ...location.aliases])) return [text(`You are here already: ${location.name}.`)]
   if (!direction) return [error('Go where? Try a direction such as north, or the name of a place you can see.')]
+  // Out where there is no door called out (M10.29 V): the way that leads out onto the land.
+  if (direction === 'out' && !location.exits.out) {
+    const open = (Object.entries(location.exits) as [Direction, { to: string }][]).find(([, exit]) => isHexId(exit.to) || canSetOut(world, exit.to) || (world.content.locations.get(exit.to)?.tags ?? []).includes('outdoor'))
+    if (open) direction = open[0]
+  }
   const exit = location.exits[direction]
   // Out on the land, or at the edge of a place, a direction is one hex that way (FO, chapter 4).
   if (!exit && (isHexId(player.location) || canSetOut(world, player.location)) && direction !== 'up' && direction !== 'down' && direction !== 'in' && direction !== 'out') {
@@ -585,6 +661,44 @@ function go(host: CommandHost, args: string[]): Output[] {
   player.location = exit.to
   const seen = host.pass(exit.minutes)
   return [...(lock.text ? [text(lock.text)] : []), describeRoom(world), ...seen]
+}
+
+/**
+ * What can be done here, for a verb the game does not know (M10.29 V, Bram's log: SIT and FLY got only "Type
+ * HELP"): the ways on, who is here to talk to, and what the things here are for.
+ */
+function whatHere(world: World): string {
+  const here = world.state.player.location
+  const ways = Object.keys(world.location(here).exits)
+  const people = world.npcsAt(here).map((id) => (knowsOfPerson(world, id) ? callName(world.npc(id)) : publicShort(world, id)))
+  const uses = world
+    .location(here)
+    .objects.flatMap((o) => {
+      const type = world.content.objectTypes.get(o.type)
+      const verbs = type?.affordances.filter((a) => a.actors.includes('player')).map((a) => a.verb) ?? []
+      return verbs.length ? [`use ${(o.name ?? type!.name).toLowerCase()} (${verbs.join(', ')})`] : []
+    })
+    .slice(0, 3)
+  const open = !ways.length && (isHexId(here) || canSetOut(world, here)) ? 'head any way, or walk to a place you know' : ''
+  const could = [ways.length ? `go ${listWords(ways, 'or')}` : open, people.length ? `talk to ${listWords(people, 'or')}` : '', ...uses].filter(Boolean)
+  return `${could.length ? `Here you could ${listWords(could, 'or')}. ` : ''}HELP lists every command.`
+}
+
+const listWords = (words: string[], last: string) => (words.length < 2 ? (words[0] ?? '') : `${words.slice(0, -1).join(', ')} ${last} ${words.at(-1)}`)
+
+/** Words for a room that say nothing of which one (M10.29 V). */
+const ANY_ROOM = new Set(['room', 'place', 'area', 'bit', 'spot', 'the', 'a', 'an', 'of'])
+
+const stem = (word: string) => (word.length > 3 ? word.replace(/(?:es|s)$/, '') : word)
+
+/** Whether every telling word of what the stranger typed stands in one of the names, each as a word or its plural (M10.29 V). */
+export function placeWords(wanted: string, names: string[]): boolean {
+  const words = wanted.toLowerCase().split(/[^\p{L}\p{N}'-]+/u).filter((w) => w && !ANY_ROOM.has(w)).map(stem)
+  if (!words.length) return false
+  return names.some((name) => {
+    const own = new Set(name.toLowerCase().split(/[^\p{L}\p{N}'-]+/u).filter(Boolean).map(stem))
+    return words.every((w) => own.has(w))
+  })
 }
 
 // ---------------------------------------------------------------- doors and sleepers

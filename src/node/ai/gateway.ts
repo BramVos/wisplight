@@ -25,7 +25,8 @@ const EDITOR_TIMEOUT_MS = 600_000
 // From this share of the hourly budget on, calls of low priority wait: the chronicler, and goal choices of NPCs without a quest role (FO, chapter 16).
 const LOW_PRIORITY_SHARE = 0.8
 const FAILURES_BEFORE_COOLDOWN = 3
-const COOLDOWN_MS = 2 * 60 * 1000
+// Thirty seconds (M10.29 V, a provider outage in Bram's log): the talk tries again quietly after as long.
+const COOLDOWN_MS = 30 * 1000
 // Below this many tokens left in the window, the next reply would likely hit a 429.
 const LOW_TOKENS = 4000
 // A model without a known price (M9.3): its tokens are counted, and it may be called this often an hour without the player's say.

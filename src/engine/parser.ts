@@ -48,10 +48,15 @@ const DIRECTION_ALIASES: Record<string, Direction> = {
   in: 'in',
   enter: 'in',
   binnen: 'in',
+  inside: 'in',
+  indoors: 'in',
   out: 'out',
   leave: 'out',
   uit: 'out',
   buiten: 'out',
+  // GO OUTSIDE (M10.29 V, Bram's log: it asked "Go where?" in the Commons, with a way out).
+  outside: 'out',
+  outdoors: 'out',
 }
 
 const VERB_ALIASES: Record<string, string> = {

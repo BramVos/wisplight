@@ -92,6 +92,10 @@ export class Dialogue {
   private chosen?: string
   /** Why the model gave no usable reply in the last turn, if it was asked. */
   private lastFailure?: { kind: string; message: string }
+  /** The link to the model is down (M10.29 V, a provider outage in Bram's log): when to try again, and whether the stranger was told. */
+  private link?: { retryAt: number; told: boolean }
+  /** The link came back since the last reply: said once. */
+  private linkBack = false
   /** What the voice was told this turn (M10.28), for the thread once the turn is done: the first telling, before any NOTE. */
   private asked?: { text: string; sent: Record<string, string> }
   /** The topics of the last turn (M10.8): asked about, said, or known and told; a waiting quest starts on them. */
@@ -810,7 +814,12 @@ export class Dialogue {
       }
     }
     // When the model was asked and gave nothing usable, say so, so a stock line is not mistaken for an answer.
-    const failure: Output[] = !reply && this.lastFailure ? [{ kind: 'system', text: stockNotice(this.lastFailure, callName(npc)) }] : []
+    // An outage is said once, as a line of the game (M10.29 V): the next lines of the rules say nothing more, and its end is said too.
+    const outage = this.lastFailure && (this.lastFailure.kind === 'network' || this.lastFailure.kind === 'busy' || this.lastFailure.kind === 'down')
+    const notice = !reply && this.lastFailure ? (outage ? (this.link && !this.link.told ? LINK_DOWN : undefined) : stockNotice(this.lastFailure, callName(npc))) : undefined
+    if (outage && this.link) this.link.told = true
+    const failure: Output[] = notice ? [{ kind: 'system', text: notice }] : reply && this.linkBack ? [{ kind: 'system', text: LINK_BACK }] : []
+    if (reply) this.linkBack = false
     if (!reply && this.lastFailure) {
       // Why a stock line stood in, for the dev menu (M10.8); the AI log has the call itself.
       world.stockLines.push({ t: world.now, npc: npcId, reason: `${this.lastFailure.kind}: ${this.lastFailure.message}` })
@@ -995,6 +1004,11 @@ export class Dialogue {
     // A reply comes within its time or not at all, over both tries (FO, chapter 18; ten seconds unless set otherwise, M10.8): then the set line.
     const within = llm.replyWithinMs?.() ?? REPLY_WITHIN_MS
     const started = Date.now()
+    // The link is down (M10.29 V): the rules answer, without asking, until it is time to try again quietly.
+    if (this.link && Date.now() < this.link.retryAt) {
+      this.lastFailure = { kind: 'down', message: 'the link to the model is down' }
+      return undefined
+    }
     for (let attempt = 0; attempt < 2; attempt++) {
       let raw: string
       try {
@@ -1032,7 +1046,13 @@ export class Dialogue {
         ).text
       } catch (error) {
         this.lastFailure = { kind: error instanceof LlmError ? error.kind : 'network', message: error instanceof Error ? error.message : String(error) }
+        if (this.lastFailure.kind === 'network' || this.lastFailure.kind === 'busy') this.link = { retryAt: Date.now() + LINK_RETRY_MS, told: this.link?.told ?? false }
         return undefined
+      }
+      // An answer: the link is up again, if it was down.
+      if (this.link) {
+        this.link = undefined
+        this.linkBack = true
       }
       const reply = parseReply(raw)
       if (!reply) {
@@ -1228,6 +1248,12 @@ function claimLine(world: World, npcId: string, stance: 'believes' | 'doubts' | 
  * What the player is told when a stock line stands in for the model (M10.8): what happened, and that the line is the
  * game's own, from what the speaker knows, so it is not taken for an answer.
  */
+/** After a failed call for want of a connection, how long the rules answer before the model is asked again (M10.29 V). */
+const LINK_RETRY_MS = 30_000
+/** What the stranger reads when the model cannot be reached, and when it can again (M10.29 V): the game's words, no technical reason. */
+export const LINK_DOWN = 'The link to the model is down. Until it is back, people answer from what the game knows of them.'
+export const LINK_BACK = 'The link to the model is back.'
+
 export function stockNotice(failure: { kind: string; message: string }, name: string): string {
   const own = `this is the game's own line from what ${name} knows`
   if (failure.kind === 'timeout') return `(The AI took too long; ${own}.)`
