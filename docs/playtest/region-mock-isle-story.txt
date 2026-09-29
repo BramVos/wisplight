@@ -254,59 +254,6 @@ You stand in the market of the Grey Saltings, among stalls of cloth, salt and po
 Exits: out, in, north, east
 Here: Tressa the innkeeper (at work).
 
-> wait for hedyn the innkeeper
-Tressa goes inside.
-Hester arrives from the north.
-Hester stops and gives you a nod, curious about the stranger.
-Joris arrives from the north.
-Joris stops and looks you over.
-Tressa arrives from inside.
-Tressa stops and gives you a nod, curious about the stranger.
-Hester nods to Joris.
-Hester nods to Tressa.
-Joris nods to Tressa.
-Hester leaves north.
-Joris leaves north.
-Tressa goes inside.
-Hedyn has not come. It is Restday 7 Leaffall 412 SF, 00:55 (night).
-
-> ask hedyn about tally
-Hedyn isn't here.
-
-[31 hours pass: the night, to eight the next morning]
-Tressa arrives from inside.
-Tressa stops and gives you a nod, curious about the stranger.
-Tressa goes inside.
-Tressa arrives from inside.
-Tressa stops and gives you a nod, curious about the stranger.
-Tressa goes inside.
-Hester arrives from the north.
-Hester stops and gives you a nod, curious about the stranger.
-Tressa arrives from inside.
-Joris arrives from the north.
-Joris stops and looks you over.
-Hester nods to Joris.
-Hester nods to Tressa.
-Joris nods to Tressa.
-Hester leaves north.
-Joris leaves north.
-Tressa goes inside.
-Tressa arrives from inside.
-Tressa stops and gives you a nod, curious about the stranger.
-
-==== DAY 2 (Moonday 8 Leaffall 412 SF, 08:00 (morning))
-
-> look
-The Market of the Grey Saltings
-You stand in the market of the Grey Saltings, among stalls of cloth, salt and pots. Traders shout their prices over each other, and you smell pitch and hot fat from the cookshops. Nobody here has heard of Skerrow or cares what happens there. An inn stands at the corner, and the gate is back out.
-Exits: out, in, north, east
-Here: Tressa the innkeeper (at work).
-
-> journal
-People: Hester Vlieland, Joris Kuipers, Maren, Tressa Carne.
-Places: Skerrow, Skerrow Hythe, the Shore, the Grey Saltings, The Chandlery, The Cooper's Yard, The creek landing, The Chandlery, The Cooper's Yard, The Quay of the Grey Saltings, The Market of the Grey Saltings, Skerrow Hythe, the Harbour, The Headland, The Tidepools, The Wreck Strand.
-Lore: the stranger in Skerrow Hythe, the Grey Saltings charted, the passage to the Grey Saltings, the stranger in the Grey Saltings, the story of the Grey Saltings, Hester Vlieland and Brannoc Reed, Word for a cousin, the Grey Gull, the Tidemother.
-
 > in
 The Carters' Inn
 You duck into a low inn where carters from half the land sit over their beer. It is warm in here, and loud, and it smells of wet wool and onions. The innkeeper keeps an eye on the door and another on the purses. The market is back out.
@@ -314,81 +261,68 @@ Exits: out
 Here: Hedyn the innkeeper (at work).
 +10 experience: you found The Carters' Inn.
 
-> talk hedyn the innkeeper
-You are talking with Hedyn the innkeeper. Type what you want to say, pick a number, or BYE to stop.
-Hedyn nods. "Morning."
-1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
-
-> 2
-You: "What's new around here?"
-Hedyn looks up. "[Hester Vlieland] has people far away. (You heard it from [Tressa]. You are fairly sure.)"
-
-> insight
-(Insight 12 vs DC 15: failure)
-You can't read anything behind Hedyn's face.
-
-> bye
-Hedyn lifts a hand. "Go on, then."
-
-# The journal: Half the tally is found; someone kept the other half.
-
-> out
-The Market of the Grey Saltings
-You stand in the market of the Grey Saltings, among stalls of cloth, salt and pots. Traders shout their prices over each other, and you smell pitch and hot fat from the cookshops. Nobody here has heard of Skerrow or cares what happens there. An inn stands at the corner, and the gate is back out.
-Exits: out, in, north, east
-Here: Tressa the innkeeper (at work).
-
-> wait for hedyn the innkeeper
-Hedyn is here.
-Tressa leaves north.
-Hedyn comes from inside, on his way to The Chandlery.
-Hedyn stops and looks you over.
-It is Moonday 8 Leaffall 412 SF, 08:34 (morning).
-
 > ask hedyn about tally
 With a sigh the other half comes out of an apron pocket. "I only meant to keep it safe."
 The Missing Tally: The tally made whole. The two halves fit, and the carters pay what they owe.
 +200 experience: The Missing Tally.
 
-[23 hours pass: the night, to eight the next morning]
-Hedyn walks on to the north.
-Hedyn comes from the north, on his way to The Carters' Inn.
-Hedyn walks on inside.
-Tressa arrives from the north.
-Tressa goes inside.
-Tressa arrives from inside.
+[17 hours pass: the night, to eight the next morning]
+Tressa arrives from outside.
 Tressa stops and gives you a nod, curious about the stranger.
-Tressa goes inside.
-Hester arrives from the north.
-Hester stops and gives you a nod, curious about the stranger.
-Joris arrives from the north.
-Joris stops and looks you over.
-Hester nods to Joris.
-Tressa arrives from inside.
-Hester nods to Tressa.
-Joris nods to Tressa.
-Hester leaves north.
-Joris leaves north.
-Tressa goes inside.
-Tressa arrives from inside.
-Tressa stops and gives you a nod, curious about the stranger.
+Hedyn nods to Tressa.
+Tressa goes outside.
+Tressa arrives from outside.
+Hedyn nods to Tressa.
+Hedyn puts out the lamp and goes to bed.
+Tressa puts out the lamp and goes to bed.
+Tressa goes outside.
 
-==== DAY 3 (Tidesday 9 Leaffall 412 SF, 08:00 (morning))
+==== DAY 2 (Restday 7 Leaffall 412 SF, 08:00 (morning))
 
 > look
-The Market of the Grey Saltings
-You stand in the market of the Grey Saltings, among stalls of cloth, salt and pots. Traders shout their prices over each other, and you smell pitch and hot fat from the cookshops. Nobody here has heard of Skerrow or cares what happens there. An inn stands at the corner, and the gate is back out.
-Exits: out, in, north, east
-Here: Tressa the innkeeper (at work).
+The Carters' Inn
+You duck into a low inn where carters from half the land sit over their beer. It is warm in here, and loud, and it smells of wet wool and onions. The innkeeper keeps an eye on the door and another on the purses. The market is back out.
+Exits: out
+Here: Hedyn the innkeeper (at work).
 
 > journal
-People: Hedyn Tregear, Hester Vlieland, Joris Kuipers, Maren, Tressa Carne.
+People: Hester Vlieland, Joris Kuipers, Maren, Tressa Carne.
+Places: Skerrow, Skerrow Hythe, the Shore, the Grey Saltings, The Chandlery, The Cooper's Yard, The creek landing, The Chandlery, The Cooper's Yard, The Quay of the Grey Saltings, The Carters' Inn, The Market of the Grey Saltings, Skerrow Hythe, the Harbour, The Headland, The Tidepools, The Wreck Strand.
+Lore: the stranger in Skerrow Hythe, the Grey Saltings charted, the passage to the Grey Saltings, the stranger in the Grey Saltings, the story of the Grey Saltings, Hester Vlieland and Brannoc Reed, Word for a cousin, the creek landing of the Grey Saltings, the Grey Gull, the Tidemother.
+
+[24 hours pass: the night, to eight the next morning]
+Hedyn goes outside.
+Hedyn arrives from outside.
+Tressa arrives from outside.
+Tressa stops and gives you a nod, curious about the stranger.
+Hedyn nods to Tressa.
+Tressa goes outside.
+Tressa arrives from outside.
+Tressa stops and gives you a nod, curious about the stranger.
+Hedyn nods to Tressa.
+Tressa goes outside.
+Tressa arrives from outside.
+Hedyn nods to Tressa.
+Hedyn puts out the lamp and goes to bed.
+Tressa puts out the lamp and goes to bed.
+Tressa goes outside.
+
+==== DAY 3 (Moonday 8 Leaffall 412 SF, 08:00 (morning))
+
+> look
+The Carters' Inn
+You duck into a low inn where carters from half the land sit over their beer. It is warm in here, and loud, and it smells of wet wool and onions. The innkeeper keeps an eye on the door and another on the purses. The market is back out.
+Exits: out
+Here: Hedyn the innkeeper (at work).
+
+> journal
+People: Hester Vlieland, Joris Kuipers, Maren, Tressa Carne.
 Places: Skerrow, Skerrow Hythe, the Shore, the Grey Saltings, The Chandlery, The Cooper's Yard, The creek landing, The Chandlery, The Cooper's Yard, The Quay of the Grey Saltings, The Carters' Inn, The Market of the Grey Saltings, Skerrow Hythe, the Harbour, The Headland, The Tidepools, The Wreck Strand.
 Lore: the stranger in Skerrow Hythe, the Grey Saltings charted, the passage to the Grey Saltings, the stranger in the Grey Saltings, the story of the Grey Saltings, Hester Vlieland and Brannoc Reed, Word for a cousin, the creek landing of the Grey Saltings, the Grey Gull, the Tidemother.
 
 > journal
-People: Hedyn Tregear, Hester Vlieland, Joris Kuipers, Maren, Tressa Carne.
+People: Hester Vlieland, Joris Kuipers, Maren, Tressa Carne.
 Places: Skerrow, Skerrow Hythe, the Shore, the Grey Saltings, The Chandlery, The Cooper's Yard, The creek landing, The Chandlery, The Cooper's Yard, The Quay of the Grey Saltings, The Carters' Inn, The Market of the Grey Saltings, Skerrow Hythe, the Harbour, The Headland, The Tidepools, The Wreck Strand.
 Lore: the stranger in Skerrow Hythe, the Grey Saltings charted, the passage to the Grey Saltings, the stranger in the Grey Saltings, the story of the Grey Saltings, Hester Vlieland and Brannoc Reed, Word for a cousin, the creek landing of the Grey Saltings, the Grey Gull, the Tidemother.
 
-==== END (Tidesday 9 Leaffall 412 SF, 08:00 (morning))
+==== END (Moonday 8 Leaffall 412 SF, 08:00 (morning))

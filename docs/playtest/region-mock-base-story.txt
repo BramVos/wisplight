@@ -206,73 +206,59 @@ The Market of the Grey Saltings
 You stand in the market of the Grey Saltings, among stalls of cloth, salt and pots. Traders shout their prices over each other, and you smell pitch and hot fat from the cookshops. Nobody here has heard of the Holleveen or cares what happens there. An inn stands at the corner, and the gate is back out.
 Exits: out, in, north, east
 
-> wait for hessel the innkeeper
-Hendrikje arrives from inside.
-Hendrikje stops and gives you a nod, curious about the stranger.
-Hessel has not come. It is Vrijdag 17 Herfstmaand 211 AW, 08:25 (morning).
+> in
+The Carters' Inn
+You duck into a low inn where carters from half the land sit over their beer. It is warm in here, and loud, and it smells of wet wool and onions. The innkeeper keeps an eye on the door and another on the purses. The market is back out.
+Exits: out
+Here: Hendrikje the merchant (asleep), Hessel the innkeeper (at work).
 
 > ask hessel about tally
-Hessel isn't here.
+With a sigh the other half comes out of an apron pocket. "I only meant to keep it safe."
+The Missing Tally: The tally made whole. The two halves fit, and the carters pay what they owe.
++200 experience: The Missing Tally.
+
+[9 hours pass: the night, to eight the next morning]
+Hessel puts out the lamp and goes to bed.
+Hendrikje goes outside.
+Hendrikje arrives from outside.
+Hendrikje stops and gives you a nod, curious about the stranger.
+Hendrikje nods to Hessel.
+Hendrikje goes outside.
+
+==== DAY 2 (Vrijdag 17 Herfstmaand 211 AW, 08:00 (morning))
+
+> look
+The Carters' Inn
+You duck into a low inn where carters from half the land sit over their beer. It is warm in here, and loud, and it smells of wet wool and onions. The innkeeper keeps an eye on the door and another on the purses. The market is back out.
+Exits: out
+Here: Hessel the innkeeper (at work).
+
+> journal
+People: Hester Vlieland, Joris Kuipers, Trijntje, the Count.
+Places: the Holleveen, Veenhoek, the Grey Saltings, The Chandlery, The Cooper's Yard, The creek landing, The Chandlery, The Cooper's Yard, The Gate of the Grey Saltings, The Carters' Inn, The Market of the Grey Saltings, Canal Quay.
+Lore: the stranger in Veenhoek, the story of the Grey Saltings, Hester Vlieland and Trijntje Kroes, Word for a cousin, the mill not turning before winter, the creek landing of the Grey Saltings, The Missing Tally: The tally made whole, the Grey Saltings charted, the stranger in the Grey Saltings.
 
 [24 hours pass: the night, to eight the next morning]
-Hester leaves north.
-Joris leaves north.
-Hendrikje arrives from inside.
-Hendrikje stops and gives you a nod, curious about the stranger.
+Hendrikje puts out the lamp and goes to bed.
+Hessel puts out the lamp and goes to bed.
+Hendrikje goes outside.
 
-==== DAY 2 (Zaterdag 18 Herfstmaand 211 AW, 08:00 (morning))
-
-> look
-The Market of the Grey Saltings
-You stand in the market of the Grey Saltings, among stalls of cloth, salt and pots. Traders shout their prices over each other, and you smell pitch and hot fat from the cookshops. Nobody here has heard of the Holleveen or cares what happens there. An inn stands at the corner, and the gate is back out.
-Exits: out, in, north, east
-Here: Hendrikje the merchant (at work).
-
-> journal
-People: Hester Vlieland, Joris Kuipers, Trijntje, the Count.
-Places: the Holleveen, Veenhoek, the Grey Saltings, The Chandlery, The Cooper's Yard, The creek landing, The Chandlery, The Cooper's Yard, The Gate of the Grey Saltings, The Carters' Inn, The Market of the Grey Saltings, Canal Quay.
-Lore: the stranger in Veenhoek, the story of the Grey Saltings, Hester Vlieland and Trijntje Kroes, Word for a cousin, the mill not turning before winter, the creek landing of the Grey Saltings, the Grey Saltings charted, the stranger in the Grey Saltings.
-
-# The journal: Half the tally is found; someone kept the other half.
-
-> wait for hessel the innkeeper
-Hendrikje goes inside.
-Hessel has not come. It is Zaterdag 18 Herfstmaand 211 AW, 18:00 (evening).
-
-> ask hessel about tally
-Hessel isn't here.
-
-[14 hours pass: the night, to eight the next morning]
-Hester leaves north.
-Joris leaves north.
-Hendrikje arrives from inside.
-Hendrikje stops and gives you a nod, curious about the stranger.
-
-==== DAY 3 (Rustdag 19 Herfstmaand 211 AW, 08:00 (morning))
+==== DAY 3 (Zaterdag 18 Herfstmaand 211 AW, 08:00 (morning))
 
 > look
-The Market of the Grey Saltings
-You stand in the market of the Grey Saltings, among stalls of cloth, salt and pots. Traders shout their prices over each other, and you smell pitch and hot fat from the cookshops. Nobody here has heard of the Holleveen or cares what happens there. An inn stands at the corner, and the gate is back out.
-Exits: out, in, north, east
-Here: Hendrikje the merchant (at work).
+The Carters' Inn
+You duck into a low inn where carters from half the land sit over their beer. It is warm in here, and loud, and it smells of wet wool and onions. The innkeeper keeps an eye on the door and another on the purses. The market is back out.
+Exits: out
+Here: Hessel the innkeeper (at work).
 
 > journal
 People: Hester Vlieland, Joris Kuipers, Trijntje, the Count.
 Places: the Holleveen, Veenhoek, the Grey Saltings, The Chandlery, The Cooper's Yard, The creek landing, The Chandlery, The Cooper's Yard, The Gate of the Grey Saltings, The Carters' Inn, The Market of the Grey Saltings, Canal Quay.
-Lore: the stranger in Veenhoek, the story of the Grey Saltings, Hester Vlieland and Trijntje Kroes, Word for a cousin, the mill not turning before winter, the creek landing of the Grey Saltings, the Grey Saltings charted, the stranger in the Grey Saltings.
-
-# The journal: Half the tally is found; someone kept the other half.
-
-> wait for hessel the innkeeper
-Hendrikje goes inside.
-Hessel has not come. It is Rustdag 19 Herfstmaand 211 AW, 18:00 (evening).
-
-> ask hessel about tally
-Hessel isn't here.
+Lore: the stranger in Veenhoek, the story of the Grey Saltings, Hester Vlieland and Trijntje Kroes, Word for a cousin, the mill not turning before winter, the creek landing of the Grey Saltings, The Missing Tally: The tally made whole, the Grey Saltings charted, Hendrikje and Traveller are friend, the stranger in the Grey Saltings.
 
 > journal
 People: Hester Vlieland, Joris Kuipers, Trijntje, the Count.
 Places: the Holleveen, Veenhoek, the Grey Saltings, The Chandlery, The Cooper's Yard, The creek landing, The Chandlery, The Cooper's Yard, The Gate of the Grey Saltings, The Carters' Inn, The Market of the Grey Saltings, Canal Quay.
-Lore: the stranger in Veenhoek, the story of the Grey Saltings, Hester Vlieland and Trijntje Kroes, Word for a cousin, the mill not turning before winter, the creek landing of the Grey Saltings, the Grey Saltings charted, the stranger in the Grey Saltings.
+Lore: the stranger in Veenhoek, the story of the Grey Saltings, Hester Vlieland and Trijntje Kroes, Word for a cousin, the mill not turning before winter, the creek landing of the Grey Saltings, The Missing Tally: The tally made whole, the Grey Saltings charted, Hendrikje and Traveller are friend, the stranger in the Grey Saltings.
 
-==== END (Rustdag 19 Herfstmaand 211 AW, 18:00 (evening))
+==== END (Zaterdag 18 Herfstmaand 211 AW, 08:00 (morning))

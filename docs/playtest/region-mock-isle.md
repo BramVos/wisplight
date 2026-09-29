@@ -16,7 +16,7 @@
 | Geheimen: hint gezien, gevonden | 1, 0 van 3 |
 | Wachters (afgegaan) | 1 (1) |
 | Onderwerpen van lore | 1 |
-| Aanroepen | 68 |
+| Aanroepen | 50 |
 | Kosten | n/a |
 | Wachten bij aankomst | 0 s |
 
@@ -28,7 +28,7 @@ Plekken: The Chandlery, The Cooper's Yard, The creek landing, The Chandlery, The
 
 Mensen: Tressa Carne, Hedyn Tregear, Hester Vlieland, Joris Kuipers.
 
-Quest The Missing Tally (2 stadia): gehaald, done; wat niet klopt: a2: Hedyn Tregear must be at The Market of the Grey Saltings, where he neither lives nor works.
+Quest The Missing Tally (2 stadia): gehaald, done.
 
 Wachters: story_grey_saltings_befriended (ging af).
 
@@ -38,11 +38,11 @@ Lore: The Road into the Grey Saltings.
 |---|---|---|---|---|---|
 | `expansion` | 1 | 3804 | 0 | 190 | n/a |
 | `journey` | 1 | 506 | 0 | 53 | n/a |
-| `npc_goals` | 55 | 53480 | 0 | 3071 | n/a |
+| `npc_goals` | 38 | 36970 | 0 | 2124 | n/a |
 | `district` | 2 | 1944 | 0 | 727 | n/a |
 | `region_story` | 1 | 14488 | 0 | 392 | n/a |
 | `weave` | 1 | 800 | 0 | 184 | n/a |
 | `outline` | 1 | 3923 | 0 | 194 | n/a |
-| `npc_reply` | 5 | 7384 | 0 | 330 | n/a |
+| `npc_reply` | 4 | 5933 | 0 | 243 | n/a |
 | `chronicle` | 1 | 5475 | 0 | 18 | n/a |
 
