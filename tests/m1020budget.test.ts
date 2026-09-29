@@ -57,7 +57,7 @@ describe('M10.20: the budget is the player\'s', () => {
     await expect(gateway(temp(), 0.001).complete({ ...talk, maxTokens: 100_000 })).rejects.toMatchObject({ message: expect.stringMatching(/^the hourly budget is used up: this call may cost up to \$\d+\.\d\d, more than the \$0\.00 an hour allows$/) })
   })
 
-  it('counts a world build in its own budget, per step, and leaves the game\'s hour alone', async () => {
+  it('counts a world build in its own budget, per step, and in the key\'s hour as well (M10.26)', async () => {
     const dir = temp()
     const builds = new BuildStore(join(dir, 'builds.json'), () => 0.1)
     const g = gateway(dir, 0.1, builds)
@@ -67,7 +67,9 @@ describe('M10.20: the budget is the player\'s', () => {
     await g.complete(step('reach', 'places'))
     expect(builds.view('reach')).toMatchObject({ limitUsd: 0.1, own: false, calls: 1 })
     expect(builds.view('reach').steps['places']).toBeCloseTo(0.1, 6)
-    expect(g.status().hourSpentUsd).toBeCloseTo(0.1, 6)
+    // M10.26: everything on the key counts in the one hour, as the editor's; the build still goes by its own limit.
+    expect(g.status().hourSpentUsd).toBeCloseTo(0.2, 6)
+    expect(g.status().spent!.hour).toMatchObject({ editor: expect.closeTo(0.1, 6), game: expect.closeTo(0.1, 6) })
     // Past its own limit a build stops, and says how to go on.
     await expect(g.complete(step('reach', 'people'))).rejects.toMatchObject({ kind: 'budget', message: expect.stringMatching(/^this build has spent \$0\.10 of the \$0\.10 it may spend.*raise what the build may spend in the editor$/) })
     expect(builds.setLimit('reach', 50)).toMatchObject({ adjusted: false, view: { limitUsd: 50, own: true } })

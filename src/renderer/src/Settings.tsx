@@ -487,6 +487,7 @@ function AiTab({ bridge, overview, refresh, onFrames, region }: { bridge: AiBrid
         </button>
         <span className="muted">{t('settings.ai.budget.note')}</span>
       </div>
+      {overview.status.spent && <SpentOnKey spent={overview.status.spent} />}
       {overview.guide && (overview.guide.conversations ?? overview.guide.goals ?? overview.guide.night) !== undefined && (
         <div className="row small">
           <span className="label">{t('settings.ai.guide.label')}</span>
@@ -633,6 +634,28 @@ function Totals({ label, totals }: { label: string; totals: UsageTotals }) {
       <td>{t('settings.usage.output', { tokens: tokens(totals.outputTokens) })}</td>
       <td className="num">{usd(totals.costUsd)}</td>
     </tr>
+  )
+}
+
+/**
+ * What was spent on the key this hour and today, per source (M10.26: Bram's
+ * credit fell while the game's log showed only its own talks): the game, the
+ * editor, a trial and a picture run all count in the one budget.
+ */
+function SpentOnKey({ spent }: { spent: NonNullable<AiOverview['status']['spent']> }) {
+  const parts = (by: typeof spent.hour) =>
+    (['game', 'editor', 'trial', 'pictures'] as const)
+      .filter((source) => by[source] > 0)
+      .map((source) => t('settings.ai.spent.part', { source: t(`settings.log.sources.${source}`), usd: usd(by[source], 2) }))
+      .join(', ')
+  return (
+    <div className="row small">
+      <span className="label">{t('settings.ai.spent.label')}</span>
+      <span>
+        {t('settings.ai.spent.hour', { usd: usd(spent.hour.all, 2), parts: parts(spent.hour) || t('settings.ai.spent.nothing') })}{' '}
+        {t('settings.ai.spent.today', { usd: usd(spent.today.all, 2), parts: parts(spent.today) || t('settings.ai.spent.nothing') })}
+      </span>
+    </div>
   )
 }
 
@@ -913,6 +936,7 @@ export function LogTab({ bridge }: { bridge: AiBridge }) {
         <thead>
           <tr>
             <th scope="col">{t('settings.log.columns.time')}</th>
+            <th scope="col">{t('settings.log.columns.source')}</th>
             <th scope="col">{t('settings.log.columns.role')}</th>
             <th scope="col">{t('settings.log.columns.model')}</th>
             <th scope="col">{t('settings.log.columns.result')}</th>
@@ -928,6 +952,7 @@ export function LogTab({ bridge }: { bridge: AiBridge }) {
           {entries.slice(0, 50).map((entry, index) => (
             <tr key={`${entry.time}-${index}`} onClick={() => setOpen(open === index ? undefined : index)} className="clickable">
               <td>{new Date(entry.time).toLocaleTimeString('en-GB')}</td>
+              <td>{t(`settings.log.sources.${entry.source ?? 'game'}`)}</td>
               <td>{entry.role}</td>
               <td className="mono">{entry.model}</td>
               <td className={entry.ok && !entry.rejected?.length ? 'ok' : 'warn'}>

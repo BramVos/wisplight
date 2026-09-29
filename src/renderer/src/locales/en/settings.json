@@ -95,6 +95,13 @@
       "no": "No",
       "note": "At 80% the chronicler and the goals of NPCs without a quest role wait; at 100% dialogue falls back to set lines."
     },
+    "spent": {
+      "label": "On your key",
+      "hour": "this hour {usd} ({parts});",
+      "today": "today {usd} ({parts}). The game, the editor, a trial and a picture run count in the same budget.",
+      "part": "{source} {usd}",
+      "nothing": "nothing"
+    },
     "replyWithin": {
       "label": "Reply time",
       "aria": "How many seconds a spoken reply may take",
@@ -204,9 +211,10 @@
     "listPrices": "Amounts are worked out from list prices. The invoice from the provider is what counts."
   },
   "log": {
-    "none": "No model calls yet in this session.",
+    "none": "No model calls in the log yet.",
     "columns": {
       "time": "time",
+      "source": "from",
       "role": "role",
       "model": "model",
       "result": "result",
@@ -214,6 +222,12 @@
       "tokens": "tokens",
       "cache": "cache",
       "cost": "cost"
+    },
+    "sources": {
+      "game": "game",
+      "editor": "editor",
+      "trial": "trial",
+      "pictures": "pictures"
     },
     "ok": "ok",
     "rejected": "thrown away: {reasons}",

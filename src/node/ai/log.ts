@@ -1,11 +1,14 @@
-import { appendFileSync, mkdirSync } from 'node:fs'
+import { appendFileSync, closeSync, existsSync, mkdirSync, openSync, readSync, statSync } from 'node:fs'
 import { dirname } from 'node:path'
+import type { SpendSource } from './costs'
 
 // Every model call, for the AI log in the world builder and for debugging
 // (FO, chapter 15). Prompts are truncated; API keys never get here.
 
 export interface AiLogEntry {
   time: string
+  /** Where the call came from (M10.26): the game, the editor, a trial or a picture run; a line from before is the game's. */
+  source?: SpendSource
   role: string
   provider: string
   model: string
@@ -87,8 +90,44 @@ export class AiLog {
     return [...out.values()]
   }
 
+  /**
+   * The last calls, newest first: from the file, so a trial, the editor or a
+   * picture run in another process shows too (M10.26), each with its source;
+   * without a file, this process's own.
+   */
   recent(count = 50): AiLogEntry[] {
-    return this.entries.slice(-count).reverse()
+    if (!this.path || !existsSync(this.path)) return this.entries.slice(-count).reverse()
+    const size = statSync(this.path).size
+    // A call's line is at most some 6 kB (prompt and reply are cut); read enough of the end for the count asked.
+    const length = Math.min(size, count * 7000)
+    const buffer = Buffer.alloc(length)
+    const fd = openSync(this.path, 'r')
+    try {
+      readSync(fd, buffer, 0, length, size - length)
+    } finally {
+      closeSync(fd)
+    }
+    const lines = buffer.toString('utf8').split('\n')
+    if (length < size) lines.shift()
+    const calls: AiLogEntry[] = []
+    for (const line of lines) {
+      if (!line.trim()) continue
+      let e: Partial<AiLogEntry> & { rejected?: string | string[]; fixed?: string | string[] }
+      try {
+        e = JSON.parse(line) as typeof e
+      } catch {
+        continue
+      }
+      // A reason added to an earlier call (reject, fix): with that call.
+      if (!('provider' in e)) {
+        const call = [...calls].reverse().find((c) => c.time === e.time && c.role === e.role)
+        if (call && typeof e.rejected === 'string') (call.rejected ??= []).push(e.rejected)
+        if (call && typeof e.fixed === 'string') (call.fixed ??= []).push(e.fixed)
+        continue
+      }
+      calls.push(e as AiLogEntry)
+    }
+    return calls.slice(-count).reverse()
   }
 
   /** Spend in the last hour of real time. */

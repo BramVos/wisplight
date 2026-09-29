@@ -4,7 +4,7 @@ import { pictureSubject } from '../../engine/pictures'
 import type { Content } from '../../engine/content'
 import type { LlmClient } from '../../engine/dialogue/llm'
 import { askAdvice, judgeTrials, testCall, trial, type Advice, type TrialResult, type TrialVerdict } from './advisor'
-import { CostRegister } from './costs'
+import { CostRegister, type SpendSource } from './costs'
 import { BuildStore } from './builds'
 import { guidePrice, type GuidePrice } from './guideprice'
 import { type RoleActivity, Gateway, type GatewayStatus } from './gateway'
@@ -28,6 +28,8 @@ export interface AiServiceOptions {
   providerFactory?: (id: ProviderId, key: string) => Provider
   /** The app's knobs (M10.20); without them, the defaults. */
   knobs?: AppKnobs
+  /** Where the calls of this process come from (M10.26): a trial or a picture run; without it, the game (and its editor). */
+  source?: SpendSource
 }
 
 export interface AiOverview {
@@ -71,6 +73,7 @@ export class AiService {
       // The last hour's costs on disk (M9.3): the hourly budget holds after a restart.
       costs: new CostRegister(join(options.dir, 'costs.jsonl')),
       builds: this.builds,
+      ...(options.source ? { source: () => options.source! } : {}),
       onActivity: (activity) => this.onActivity?.(activity),
       ...(options.knobs
         ? {
@@ -283,7 +286,7 @@ export class AiService {
    * the model chosen under Settings > AI, until the next one would pass the
    * cap. Kept where the game looks for them; the costs are counted as any.
    */
-  async drawAll(contents: Content[], capUsd: number, say: (line: string) => void): Promise<{ made: number; kept: number; failed: number; costUsd: number; stopped?: string }> {
+  async drawAll(contents: Content[], capUsd: number, say: (line: string) => void, source?: SpendSource): Promise<{ made: number; kept: number; failed: number; costUsd: number; stopped?: string }> {
     const result: { made: number; kept: number; failed: number; costUsd: number; stopped?: string } = { made: 0, kept: 0, failed: 0, costUsd: 0 }
     const choice = this.settings.pictures
     if (!choice) return { ...result, stopped: 'pictures are off under Settings > AI' }
@@ -304,7 +307,7 @@ export class AiService {
         }
         reserved += price
         try {
-          const picture = await this.gateway.picture(job.prompt, choice, false, { batch: true })
+          const picture = await this.gateway.picture(job.prompt, choice, false, { batch: true, ...(source ? { source } : {}) })
           mkdirSync(join(job.file, '..'), { recursive: true })
           writeFileSync(job.file, Buffer.from(picture.base64, 'base64'))
           result.made++

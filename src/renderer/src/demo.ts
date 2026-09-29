@@ -158,7 +158,17 @@ export function demoBridge(_content: Content): AiBridge {
         replyWithinSeconds: state.replyWithin,
       },
       usage: usage(),
-      status: { busy: false, coolingDown: false, hourSpentUsd: state.session.costUsd, hourReservedUsd: 0, hourBudgetUsd: state.budget, monthBudgetSpent: false, unpriced: [] },
+      status: {
+        busy: false,
+        coolingDown: false,
+        hourSpentUsd: state.session.costUsd,
+        // The preview's own game only, plus a trial and the editor as they would show (M10.26).
+        spent: { hour: { game: state.session.costUsd, editor: 0.12, trial: 0.4, pictures: 0, all: state.session.costUsd + 0.52 }, today: { game: state.session.costUsd, editor: 0.3, trial: 2.24, pictures: 0.03, all: state.session.costUsd + 2.57 } },
+        hourReservedUsd: 0,
+        hourBudgetUsd: state.budget,
+        monthBudgetSpent: false,
+        unpriced: [],
+      },
     }),
     connect: async (provider, key) => {
       await wait(500)

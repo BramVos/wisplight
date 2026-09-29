@@ -217,6 +217,8 @@ export function recordedBuilds(dir: string): string[] {
 export async function trialRun(ai: AiService, kinds: string, contentRoot: string, appPath: string, say: (line: string) => void): Promise<boolean> {
   const env = (name: string) => process.env[`WISPLIGHT_TRIAL_${name}`] ?? ''
   const cap = Math.max(0.01, Math.min(Number(env('CAP')) || 1, 20))
+  // Said before anything is spent (M10.26): on the player's key, in the game's log and budget, and at most this.
+  say(`on the player's key, in the same AI log and hourly budget as the game (source: trial): at most $${cap.toFixed(2)} for ${kinds}`)
   let ok = true
   for (const kind of kinds.split(',').map((k) => k.trim()).filter(Boolean)) {
     if (kind === 'world_step') {
@@ -253,7 +255,7 @@ export async function trialRun(ai: AiService, kinds: string, contentRoot: string
     if (kind === 'map_measure') {
       // The map painted as a table with each model asked for (M10.26): --models a,b --times n.
       const models = env('MODELS').split(',').map((m) => m.trim()).filter(Boolean)
-      ok = (await mapTrial(ai, contentRoot, appPath, { models: models.length ? models : ['claude-sonnet-5', 'claude-haiku-4-5-20251001'], times: Math.max(1, Math.min(Number(env('TIMES')) || 2, 5)), record: env('RECORD') === '1' }, say)) && ok
+      ok = (await mapTrial(ai, contentRoot, appPath, { models: models.length ? models : ['claude-sonnet-5', 'claude-haiku-4-5-20251001'], times: Math.max(1, Math.min(Number(env('TIMES')) || 2, 5)), record: env('RECORD') === '1', capUsd: cap }, say)) && ok
       continue
     }
     if (kind === 'region_play') {
@@ -292,7 +294,7 @@ export async function regionTrial(ai: TrialAi, contentRoot: string, appPath: str
       const { transcript, tally, content: grown } = await playRegion({ content, world, setting, llm, seed: 7 })
       const cost = llm.calls.reduce((n, c) => n + (c.costUsd ?? 0), 0)
       spent += cost
-      keepTally(dir, 'region', tally)
+      keepTally(dir, 'region', { ...tally, capUsd: Math.max(0, how.capUsd - (spent - cost)) })
       const where = world === 'base' ? 'The Holleveen, south edge' : 'Skerrow, over the sea'
       writeFileSync(join(dir, `region-${world}-${setting}.txt`), `${where}; the dial at ${setting}; seed 7; ${llm.calls[0]?.model ?? 'no model'}\n${transcript}\n`)
       say(`${world} ${setting}: ${tally.region?.name ?? 'nothing charted'}, ${tally.places.count} places, ${tally.people.count} people, ${tally.quests.length} quests, ${llm.calls.length} calls, $${cost.toFixed(3)}, ${Math.round((Date.now() - started) / 1000)}s`)

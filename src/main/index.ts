@@ -647,9 +647,14 @@ handle('editor:draw-pictures', async (event, world: unknown, cap: unknown) => {
   const content = await loadContentFromDir(contentDir(), worldOf(world))
   // The cap in euros, kept in dollars as if a dollar were a euro, which is below it (as WISPLIGHT_PICTURES does).
   const capUsd = Math.max(0, Math.min(Number(cap) || 0, 50))
-  return service().drawAll([content], capUsd, (line) => {
-    if (!event.sender.isDestroyed()) event.sender.send('editor:pictures-line', line)
-  })
+  return service().drawAll(
+    [content],
+    capUsd,
+    (line) => {
+      if (!event.sender.isDestroyed()) event.sender.send('editor:pictures-line', line)
+    },
+    'editor',
+  )
 })
 handle('editor:view', (_event, world: unknown) => devOnly().view(worldOf(world)))
 handle('editor:entity', (_event, world: unknown, kind: unknown, id: unknown) => devOnly().entity(worldOf(world), kindOf(kind), String(id)))
@@ -1278,7 +1283,8 @@ void app.whenReady().then(async () => {
   if (picturing) {
     const worlds = await listWorlds(contentDir())
     const contents = await Promise.all(worlds.map((w) => loadContentFromDir(contentDir(), w.folder)))
-    const service = new AiService({ dir: playerData, cipher, content: contents[0]! })
+    // A picture run is on the player's key: in the same log and budget, as pictures (M10.26).
+    const service = new AiService({ dir: playerData, cipher, content: contents[0]!, source: 'pictures' })
     const ok = await picturesRun(service, contents, Number(picturing) || 5).catch((error: unknown) => {
       console.log(`[pictures] stopped: ${error instanceof Error ? error.message : String(error)}`)
       return false
@@ -1289,7 +1295,8 @@ void app.whenReady().then(async () => {
   if (trialing) {
     const worlds = await listWorlds(contentDir())
     const first = await loadContentFromDir(contentDir(), worlds[0]!.folder)
-    const service = new AiService({ dir: playerData, cipher, content: first })
+    // A trial is on the player's key: in the same log and budget, as a trial (M10.26).
+    const service = new AiService({ dir: playerData, cipher, content: first, source: 'trial' })
     const ok = await trialRun(service, trialing, contentDir(), app.getAppPath(), (line) => console.log(`[trial] ${line}`)).catch((error: unknown) => {
       console.log(`[trial] stopped: ${error instanceof Error ? (error.stack ?? error.message).split('\n').slice(0, 5).join(' | ') : String(error)}`)
       return false

@@ -49,7 +49,7 @@ function agreement(painted: RegionMap, own: RegionMap): number {
 
 const providerOf = (model: string): ProviderId => (model.startsWith('gpt') || model.startsWith('o') ? 'openai' : 'anthropic')
 
-export async function mapTrial(ai: AiService, contentRoot: string, appPath: string, how: { models: string[]; times: number; record: boolean }, say: (line: string) => void): Promise<boolean> {
+export async function mapTrial(ai: AiService, contentRoot: string, appPath: string, how: { models: string[]; times: number; record: boolean; capUsd: number }, say: (line: string) => void): Promise<boolean> {
   const quiet = join(appPath, 'tests/fixtures/worldbuild/quiet-reach/12-palette.json')
   const worlds: { id: string; said: string; files: ContentFile[]; own: Content }[] = []
   for (const [id, said] of [
@@ -66,6 +66,12 @@ export async function mapTrial(ai: AiService, contentRoot: string, appPath: stri
     const asked = fix ? mapFixRequest(world.files, world.said, tables.get(`${world.id}:${model}`)!, fix) : request
     if (!asked) {
       say(`${world.id}: nothing to paint`)
+      return
+    }
+    // The cap said at the start (M10.26): no call once what it has spent reaches it.
+    const spent = runs.reduce((a, r) => a + r.costUsd, 0)
+    if (spent >= how.capUsd) {
+      say(`${world.id} ${model}: not asked, the cap of $${how.capUsd.toFixed(2)} is spent`)
       return
     }
     const started = Date.now()

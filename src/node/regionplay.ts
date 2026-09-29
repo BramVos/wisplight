@@ -52,6 +52,8 @@ export interface RegionTally {
   /** When it was played, and on which model (the first call's), so settings played in separate hours stay apart. */
   date?: string
   model?: string
+  /** The most it could cost on the player's key, said at its start (M10.26). */
+  capUsd?: number
 }
 
 /**
@@ -494,6 +496,7 @@ export function regionReport(tallies: RegionTally[], how: { title: string; mock:
     `| Onderwerpen van lore ${col((t) => String(t.lore.length))}`,
     `| Aanroepen ${col((t) => String(t.calls.length))}`,
     `| Kosten ${col((t) => money(cost(t)))}`,
+    `| Hooguit, vooraf gezegd ${col((t) => (t.capUsd === undefined ? '-' : money(t.capUsd)))}`,
     `| Wachten bij aankomst ${col((t) => `${t.waitedSecs} s`)}`,
     '',
   ]

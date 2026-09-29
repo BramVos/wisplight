@@ -2,7 +2,7 @@ import type { PlayMode } from '../../engine/modes'
 import { LlmError, type LlmClient, type LlmRejection, type LlmRequest, type LlmResponse, type LlmRole } from '../../engine/dialogue/llm'
 import { withSafety } from '../../engine/safety'
 import type { AiLog } from './log'
-import { CostRegister } from './costs'
+import { CostRegister, type SpendBySource, type SpendSource } from './costs'
 import { picturePrice, priceOf, typicalUsd, upperBoundUsd } from './pricing'
 import { BusyError, type PictureResponse, type Provider, type ProviderId, type RateLimit } from './providers'
 import type { PictureChoice, RoleChoice } from './settings'
@@ -55,6 +55,12 @@ export interface GatewayOptions {
   playMode?: () => PlayMode
   /** The app's knobs (M10.20): time limits per role, the editor's own, and the share of the hour kept for conversations. */
   knobs?: () => { timeoutMs?: Partial<Record<LlmRole, number>>; editorTimeoutMs?: number; conversationShare?: number }
+  /**
+   * Where the calls of this process come from (M10.26): the game unless it is
+   * a trial or a picture run. In the game, a step of a world build and the
+   * editor's drafts are the editor's.
+   */
+  source?: () => SpendSource
 }
 
 /** The roles shown as lights (M10.4): the editor's drafts are the builder's. */
@@ -72,6 +78,8 @@ export interface GatewayStatus {
   busy: boolean
   coolingDown: boolean
   hourSpentUsd: number
+  /** What was spent on the key this hour and today, per source (M10.26): the game, the editor, a trial, a picture run. */
+  spent?: { hour: SpendBySource; today: SpendBySource }
   /** What calls under way may still cost (M9.3). */
   hourReservedUsd: number
   hourBudgetUsd: number
@@ -118,6 +126,14 @@ export class Gateway implements LlmClient {
     this.options.onActivity?.(this.activity())
   }
 
+  /** Where a call comes from (M10.26), for the log, the register and the month. */
+  private sourceOf(request?: LlmRequest): SpendSource {
+    const own = this.options.source?.() ?? 'game'
+    if (own !== 'game' || !request) return own
+    const prefix = request.meta?.['prefix']
+    return (EDITOR_SCHEMAS.has(request.schemaName) && typeof prefix === 'string' && prefix) || request.schemaName === 'palette_draft' || request.schemaName === 'voice_draft' ? 'editor' : 'game'
+  }
+
   private healthOf(provider: ProviderId): ProviderHealth {
     let health = this.health.get(provider)
     if (!health) this.health.set(provider, (health = { failures: 0, coolingUntil: 0, busyUntil: 0 }))
@@ -132,6 +148,7 @@ export class Gateway implements LlmClient {
       busy: this.now() < health.busyUntil,
       coolingDown: this.now() < health.coolingUntil,
       hourSpentUsd: this.costs.spentLastHour(),
+      spent: this.costs.spent(),
       hourReservedUsd: this.costs.reservedUsd(),
       hourBudgetUsd: this.options.budgetUsdPerHour(),
       monthBudgetSpent: this.options.usage.monthBudgetSpent(),
@@ -173,16 +190,18 @@ export class Gateway implements LlmClient {
     const provider = this.options.provider(choice.provider)
     if (!provider) throw new LlmError('config', `no API key for ${choice.provider}`)
     const health = this.healthOf(choice.provider)
+    const source = this.sourceOf(request)
     if (!override) {
       if (this.now() < health.busyUntil) throw new LlmError('busy', 'waiting for the rate limit to reset')
       if (this.now() < health.coolingUntil) throw new LlmError('network', 'cooling down after repeated failures')
-    }
+    } else if (source === 'trial' && this.options.usage.monthBudgetSpent()) throw new LlmError('budget', 'the month budget is used up')
     // Setup calls with an explicit model (advice, trials, the test call when saving) are the player's own choice.
     // Everything else reserves the most it may cost first (M9.3), so calls at the same time stay within the budget together.
     const bound = upperBoundUsd(choice.model, request)
     let reservation: number | undefined
     let buildHold: number | undefined
-    // A step of a world build in the editor (M10.20) counts in the budget of that build, not in the game's hour.
+    // A step of a world build in the editor (M10.20) goes by the budget of that build, never waiting for the game's hour;
+    // since M10.26 what it spends counts in that hour all the same, as the editor's, since it is on the same key.
     const build = this.options.builds && EDITOR_SCHEMAS.has(request.schemaName) && typeof request.meta?.['prefix'] === 'string' && request.meta['prefix'] ? String(request.meta['prefix']).replace(/\/+$/, '') : undefined
     const buildStep = build ? String(request.meta?.['step'] ?? (request.schemaName === 'builder_draft' ? 'writing aid' : request.schemaName)) : ''
     if (build && request.role !== 'advisor' && !override) {
@@ -220,13 +239,15 @@ export class Gateway implements LlmClient {
       health.failures = 0
       this.last = choice
       this.watch(health, response.rateLimit)
-      const costUsd = this.options.usage.record(choice.provider, choice.model, response.usage, true, undefined, request.role)
+      const costUsd = this.options.usage.record(choice.provider, choice.model, response.usage, true, undefined, request.role, source)
       outcome = { ok: true, ...(costUsd !== undefined ? { costUsd } : {}) }
-      // What it really cost goes into the register, in place of what was reserved; a build's step into its build.
+      // What it really cost goes into the register, in place of what was reserved; a build's step into its build as well.
+      // Every call on the key counts in the one register (M10.26): a build, a trial with its own model, the advice.
       if (build && buildHold !== undefined) this.options.builds!.add(build, buildStep, costUsd ?? 0)
-      else if (request.role !== 'advisor' && !override) this.costs.add({ usd: costUsd ?? 0, role: request.role, ...(costUsd === undefined ? { unpriced: true } : {}) })
+      this.costs.add({ usd: costUsd ?? 0, role: request.role, source, ...(costUsd === undefined ? { unpriced: true } : {}) })
       this.options.log.add({
         time: new Date(this.now()).toISOString(),
+        source,
         role: request.role,
         provider: choice.provider,
         model: response.model,
@@ -254,14 +275,15 @@ export class Gateway implements LlmClient {
         health.failures = 0
       }
       // A reply cut off at its limit (M10.20) was paid for: it counts in the budgets and the log like any other.
-      const costUsd = this.options.usage.record(choice.provider, choice.model, failure.usage, false, undefined, request.role)
+      const costUsd = this.options.usage.record(choice.provider, choice.model, failure.usage, false, undefined, request.role, source)
       if (failure.usage) {
         outcome = { ok: false, ...(costUsd !== undefined ? { costUsd } : {}) }
         if (build && buildHold !== undefined) this.options.builds!.add(build, buildStep, costUsd ?? 0)
-        else if (request.role !== 'advisor' && !override) this.costs.add({ usd: costUsd ?? 0, role: request.role, ...(costUsd === undefined ? { unpriced: true } : {}) })
+        this.costs.add({ usd: costUsd ?? 0, role: request.role, source, ...(costUsd === undefined ? { unpriced: true } : {}) })
       }
       this.options.log.add({
         time: new Date(this.now()).toISOString(),
+        source,
         role: request.role,
         provider: choice.provider,
         model: choice.model,
@@ -288,7 +310,8 @@ export class Gateway implements LlmClient {
    * chronicler does: pictures are nice to have. A trial in the settings skips
    * the budget, as a trial of a text model does.
    */
-  async picture(prompt: string, choice: PictureChoice, trial = false, options: { batch?: boolean } = {}): Promise<PictureResponse> {
+  async picture(prompt: string, choice: PictureChoice, trial = false, options: { batch?: boolean; source?: SpendSource } = {}): Promise<PictureResponse> {
+    const source = options.source ?? this.sourceOf()
     const provider = this.options.provider(choice.provider)
     if (!provider?.picture) throw new LlmError('config', `${choice.provider} makes no pictures`)
     if (!trial) {
@@ -305,15 +328,16 @@ export class Gateway implements LlmClient {
     if (!trial) this.begin('illustrator')
     try {
       const picture = await provider.picture(choice.model, prompt, choice.quality, controller.signal)
-      const costUsd = this.options.usage.record(choice.provider, choice.model, undefined, true, price, 'illustrator')
+      const costUsd = this.options.usage.record(choice.provider, choice.model, undefined, true, price, 'illustrator', source)
       outcome = { ok: true, ...(costUsd !== undefined ? { costUsd } : {}) }
-      if (!trial) this.costs.add({ usd: costUsd ?? 0, role: 'illustrator' })
-      this.options.log.add({ time: new Date(this.now()).toISOString(), role: 'illustrator', provider: choice.provider, model: choice.model, ok: true, latencyMs: picture.latencyMs, inputTokens: 0, outputTokens: 0, cachedTokens: 0, costUsd, prompt, response: `(a picture, ${Math.round((picture.base64.length * 3) / 4 / 1024)} kB)` })
+      // A trial picture in the settings is on the key as well (M10.26).
+      this.costs.add({ usd: costUsd ?? 0, role: 'illustrator', source })
+      this.options.log.add({ time: new Date(this.now()).toISOString(), source, role: 'illustrator', provider: choice.provider, model: choice.model, ok: true, latencyMs: picture.latencyMs, inputTokens: 0, outputTokens: 0, cachedTokens: 0, costUsd, prompt, response: `(a picture, ${Math.round((picture.base64.length * 3) / 4 / 1024)} kB)` })
       return picture
     } catch (error) {
       const failure = controller.signal.aborted ? new LlmError('timeout', 'the picture took too long') : error instanceof LlmError ? error : new LlmError('network', String(error))
       this.options.usage.record(choice.provider, choice.model, undefined, false)
-      this.options.log.add({ time: new Date(this.now()).toISOString(), role: 'illustrator', provider: choice.provider, model: choice.model, ok: false, error: `${failure.kind}: ${failure.message}`, latencyMs: this.now() - started, inputTokens: 0, outputTokens: 0, cachedTokens: 0, prompt, response: '' })
+      this.options.log.add({ time: new Date(this.now()).toISOString(), source, role: 'illustrator', provider: choice.provider, model: choice.model, ok: false, error: `${failure.kind}: ${failure.message}`, latencyMs: this.now() - started, inputTokens: 0, outputTokens: 0, cachedTokens: 0, prompt, response: '' })
       throw failure
     } finally {
       clearTimeout(timer)

@@ -1,5 +1,18 @@
 # Changelog
 
+## M10.26 deel: alles op je sleutel in één logboek en één budget, 29 september 2026
+
+- **Eén logboek.** Het AI-log van de app laat nu ook de aanroepen zien van een proefrit, de editor en een run met afbeeldingen, met een kolom "from" (game, editor, trial, pictures). Het leest het gedeelde bestand in plaats van alleen wat de app zelf deed. Zo had je de $4,14 van vanmiddag wel gezien.
+- **Eén budget.** Het kostenregister en het gebruik per maand zijn gedeeld tussen processen: een proefrit die naast je spel loopt, telt mee in hetzelfde uur en dezelfde maand, en elk proces leest wat de andere schreven. Een proefrit met een vast model telt nu ook mee, net als de testaanroep bij het kiezen van een model. Een stap van de wereldbouw gaat nog steeds volgens de grens van zijn eigen bouw en wacht niet op je uur, maar wat hij uitgeeft telt nu mee in dat uur, als editor.
+- **Wat er op je sleutel ging.** Onder Instellingen > AI staat onder het uurbudget "On your key": dit uur en vandaag, met per bron wat het kostte.
+- **Vooraf gezegd.** Een proefrit (`npm run trial`) zegt bij de start dat hij op jouw sleutel loopt en wat hij hoogstens kost. Het verslag van het gespeelde bewijs heeft een regel "Hooguit, vooraf gezegd", en de meting van de kaart stopt bij haar grens.
+
+Testen: open Instellingen > AI en kijk onder het uurbudget. Speel even en open het tabblad AI log: de kolom "from". Tests in `tests/m1026key.test.ts`; `tests/m1020budget.test.ts` zegt nu dat een bouw in het uur meetelt.
+
+Bewust anders: in M10.20 koos je dat de wereldbouw niet in het uurbudget telt. De bouw wacht nog steeds niet op het uur, maar het uur ziet nu wat de bouw uitgaf. Anders is het uurbudget geen grens voor je sleutel.
+
+Ontwerp: FO, de alinea "Eén logboek en één budget voor de sleutel (M10.26)" onder "Afbeeldingen per wereld (M10.26)" (hoofdstuk Instellingen).
+
 ## Wat er op je sleutel liep, 29 september 2026 (antwoord op je vraag over $4,14)
 
 Alles wat ik liet lopen staat stil tot jij "ga" zegt. Het tegoed zakte tussen 17:10 en 17:34 met $4,14, maar Anthropic boekt met vertraging. Het ging om mijn proefritten van 16:47 tot 17:30 (14:47Z tot 15:30Z). Die staan in `ai.jsonl` en in het kostenregister van de app, maar zonder kolom die zegt dat ze van een proefrit komen. Daarom zag je in de app alleen je eigen gesprekken.

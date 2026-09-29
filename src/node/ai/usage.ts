@@ -2,6 +2,7 @@ import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from '
 import { dirname } from 'node:path'
 import type { LlmUsage } from '../../engine/dialogue/llm'
 import { costUsd } from './pricing'
+import type { SpendSource } from './costs'
 import type { ProviderId } from './providers'
 
 // What the AI costs, per session, day, month and model (FO, chapter 16,
@@ -48,6 +49,8 @@ interface UsageFile {
   days: Record<string, Record<string, UsageTotals>>
   /** Local date -> role -> totals (M9.3): the cache share per role. */
   roles?: Record<string, Record<string, UsageTotals>>
+  /** Local date -> where the calls came from -> totals (M10.26): the game, the editor, a trial, a picture run. */
+  sources?: Record<string, Partial<Record<SpendSource, UsageTotals>>>
   monthBudgetUsd?: number
   credit: Partial<Record<ProviderId, Credit>>
 }
@@ -130,8 +133,18 @@ export class UsageStore {
     renameSync(temp, this.path)
   }
 
+  /**
+   * What another process wrote since (M10.26: a trial or a picture run beside
+   * the game): read again before each change, so every process adds to the
+   * same days and the month budget counts them all.
+   */
+  private fresh(): void {
+    this.data = this.read()
+  }
+
   /** One call: its tokens and cost. A picture has a price of its own instead of tokens. */
-  record(provider: ProviderId, model: string, usage: LlmUsage | undefined, ok: boolean, fixedCostUsd?: number, role?: string): number | undefined {
+  record(provider: ProviderId, model: string, usage: LlmUsage | undefined, ok: boolean, fixedCostUsd?: number, role?: string, source?: SpendSource): number | undefined {
+    this.fresh()
     const cost = fixedCostUsd ?? (usage ? costUsd(model, usage) : undefined)
     const entry: UsageTotals = {
       calls: 1,
@@ -148,6 +161,7 @@ export class UsageStore {
     const models = (this.data.days[day] ??= {})
     add((models[`${provider}/${model}`] ??= emptyTotals()), entry)
     if (role) add(((this.data.roles ??= {})[day] ??= {})[role] ??= emptyTotals(), entry)
+    add(((this.data.sources ??= {})[day] ??= {})[source ?? 'game'] ??= emptyTotals(), entry)
     add(this.session, entry)
     this.prune()
     this.write()
@@ -159,10 +173,12 @@ export class UsageStore {
     for (const day of days.slice(0, Math.max(0, days.length - KEEP_DAYS))) {
       delete this.data.days[day]
       delete this.data.roles?.[day]
+      delete this.data.sources?.[day]
     }
   }
 
   reject(provider: ProviderId, model: string): void {
+    this.fresh()
     const day = localDate(this.now())
     const models = (this.data.days[day] ??= {})
     ;(models[`${provider}/${model}`] ??= emptyTotals()).rejected++
@@ -171,11 +187,13 @@ export class UsageStore {
   }
 
   setMonthBudget(usd: number | undefined): void {
+    this.fresh()
     this.data.monthBudgetUsd = usd && usd > 0 ? Math.min(usd, 1000) : undefined
     this.write()
   }
 
   setCredit(provider: ProviderId, amountUsd: number | undefined): void {
+    this.fresh()
     if (amountUsd === undefined || !(amountUsd > 0)) delete this.data.credit[provider]
     else this.data.credit[provider] = { amountUsd, enteredAt: this.now().toISOString(), spentBefore: this.providerSpend(provider) }
     this.write()
@@ -185,8 +203,9 @@ export class UsageStore {
     return this.totals((day) => day.startsWith(localDate(this.now()).slice(0, 7))).costUsd
   }
 
-  /** True when a month budget is set and used up. */
+  /** True when a month budget is set and used up, by any process on the key. */
   monthBudgetSpent(): boolean {
+    this.fresh()
     return this.data.monthBudgetUsd !== undefined && this.monthCost() >= this.data.monthBudgetUsd
   }
 
@@ -207,6 +226,7 @@ export class UsageStore {
   }
 
   summary(): UsageSummary {
+    this.fresh()
     const today = localDate(this.now())
     const month = today.slice(0, 7)
     const byModel = new Map<string, ModelUsage>()
