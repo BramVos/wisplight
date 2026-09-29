@@ -1,5 +1,28 @@
 # Changelog
 
+## M10.28 deel: gesprekken per gebied, als berichten, een uur in de cache, 29 september 2026
+
+- **Eén blok per gebied.** Het vaste deel van een gesprek zijn nu de regels, het kader, de stemkit van het land, het gebied met zijn plekken (wat elke plek is en wie er wat verkoopt) en de kaarten van iedereen die er woont, met huis en werk. Dat weet elke bewoner zeker. Kleine gebieden delen een blok met hun buren: het Nethermarch heeft er twee, The Quiet Reach één. Wie spreekt en zijn eigen mensen staan in het gesprek zelf. Iemand van verder weg brengt zijn kaart mee en weet van hier alleen wat hem verteld is. Spreekt een antwoord als iemand anders uit het blok ("Harmen scowls."), dan vraagt de bewaker opnieuw.
+- **Het gesprek als berichten.** Elke eerdere zin staat in de cache. Een nieuwe zin stuurt alleen wat nieuw of veranderd is: je woorden, nieuwe kennis en de keuzes van die beurt.
+- **Eén schema voor elke zin.** De eerste meting liet zien dat Anthropic het antwoordschema vóór het blok in de cache zet. Dat schema noemde per zin andere onderwerpen, dus las de helft van de zinnen niets: $0,19 voor twintig zinnen. Nu is er één vast schema en controleert de engine de sleutels.
+- **Een uur in plaats van pings.** De ping die het blok warm zou houden, raakt een andere plek in de cache, want een leeg verzoek mag geen schema dragen. Het blok staat daarom een uur in de cache, zonder pings. De pingknop is weer weg. Onder Usage staan nu de kosten per rol.
+
+Gemeten op Haiku, $0,34 van je $0,50:
+
+- Twintig zinnen met Mirte kostten $0,049. De eerste zin kost $0,012, daarna $0,0021 per zin, tegen $0,0035 voorheen.
+- 94% van de invoer komt uit de cache, en een zin duurt 2 à 3 seconden in plaats van 5 à 6.
+- De situatieset gaf 24 van 24 bruikbare antwoorden, met karakterscore 1,000, 1,000 en 0,982.
+- Zes minuten later las een zin het blok nog uit de cache.
+- Een uur spelen bij de standaardklok komt zo op ongeveer $0,20 in plaats van $0,27. Het verslag staat in `docs/worldbuild/cost-measure.md`.
+
+Testen: speel een gesprek met Haiku als stem en kijk in het AI-logboek. De eerste zin in een streek schrijft het blok, daarna lees je "read" op bijna alles. Loop naar een buurdorp: in dezelfde groep leest de eerste zin daar het blok ook. Zelf meten kan met `npm run trial -- --kind talk_twenty --model claude-haiku-4-5-20251001`. Tests in `tests/m1028block.test.ts`.
+
+Bekende gaten: Skerrow en Deepwell zijn samen te klein voor het minimum van Haiku. Daar gaat de cache pas vanaf de tweede of derde zin van een gesprek werken. De eerste zin in een streek betaalt de schrijfbeurt voor een uur ($0,018), ook als je er maar één ding vraagt.
+
+Wat de editor en de kroniekverteller leerden: de stap Plekken van de wereldgids en `docs/NEW-WORLD.md` zeggen dat de samenvatting van een gebied en een plek nu in elk gesprek daar meegaat, dus één gewone zin die klopt.
+
+Ontwerp: functioneel ontwerp, bij de kosten en de cache, alinea "Stand na M10.28: het gesprek per gebied, als berichten, een uur in de cache".
+
 ## M10.29 deel: namen, het dagboek en de kleine dingen van de interface, 29 september 2026
 
 Uit je speeltest van The Quiet Reach, bevindingen 1, 2, 3, 3a, 8, 11, 18, 20 en 21.

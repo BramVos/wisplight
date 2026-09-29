@@ -182,3 +182,34 @@ Het gedeelde deel van de doelkeuzes staat sinds M10.28 een uur in de cache. Bij 
 Bij 4 en 8 seconden is het gesprek meer dan de helft van het uur. De rij voor het gesprek staat hier nog zoals in M10.27. De andere sessie meet in M10.28 wat het gecachete blok per gebied en het gesprek als berichten eraan doen.
 
 De richtprijs in de app rekent zonder cache. Onder Instellingen > AI noemt hij bij Brams modellen ongeveer $0,30 bij 4 seconden, met $0,57 bij 1 en $0,25 bij 8 erachter. Op het kaderscherm staat onder de schuif wat een uur bij de gekozen stand ongeveer kost.
+
+## Het gesprek per gebied, als berichten, een uur in de cache (M10.28, 29 september 2026)
+
+Gemeten op Brams sleutel met Haiku 4.5 (`npm run trial -- --kind talk_twenty|voice_set|keep_warm --model claude-haiku-4-5-20251001`). De drie metingen kostten samen $0,34, binnen de grens van $0,50 die Bram gaf.
+
+**Voor.** In Brams eigen log lazen 383 gesprekszinnen op Haiku niets uit de cache. Het vaste deel (regels, kader en de kaart van één spreker) was ongeveer 1.300 tokens, ver onder de ondergrens van 4.096. Een zin kostte ongeveer $0,0035, met 2.800 tokens invoer.
+
+**Na.** Het vaste deel is nu één blok per gebied: de regels, het kader, de stemkit van het land, het gebied met zijn plekken en de kaarten van wie er woont. Kleine gebieden delen een blok met hun buren. Het gesprek gaat als berichten, en een volgende zin zegt alleen wat nieuw is. Een gesprek van twintig zinnen met Mirte (19 met het model, de groet aan het eind komt uit de regels):
+
+| | Voor het vaste schema | Na |
+|---|---|---|
+| Het hele gesprek | $0,193 | $0,049 |
+| De eerste zin | $0,011 | $0,012 |
+| De andere zinnen, gemiddeld | $0,010 | $0,0021 |
+| Invoer uit de cache | 42% | 94% |
+| Tijd per zin | 5 à 6 s | 2 à 3 s |
+
+**Wat de eerste meting liet zien.** Anthropic zet het schema van het antwoord in de cache vóór het systeemdeel. Het schema van een gespreksregel noemde per zin de toegestane onderwerpen, aanbiedingen en questacties, en veranderde dus bijna elke zin. Een zin las alleen uit de cache als zijn schema gelijk was aan dat van de zin ervoor: elf van de negentien schreven het hele blok opnieuw. Het gesprek heeft nu één vast schema (`TALK_REPLY_SCHEMA`). De sleutels staan in het bericht, en de engine controleert ze zoals voorheen. Dat verklaart ook waarom Sonnet in M10.27 maar 23 van 62 keer uit de cache las. De andere sessie heeft de doelkeuzes daarom ook één schema gegeven.
+
+**De situatieset**, drie reeksen van acht antwoorden, tegen M10.27:
+
+| | M10.27 (oude regels, drie reeksen) | M10.28 |
+|---|---|---|
+| Bruikbaar | 23 van 24 | 24 van 24 |
+| Ingrepen van de bewaker | één per reeks | één in drie reeksen (een belofte) |
+| Karakterscore | 0,968 tot 0,987 | 1,000, 1,000 en 0,982 |
+| Kosten per reeks | | $0,017 tot $0,022 |
+
+**De cache warm houden.** De ping van de roadmap (een leeg verzoek met `max_tokens: 0`, vlak voor de vijf minuten) werkt niet voor gesprekken. Een leeg verzoek mag geen schema dragen, en het schema staat vóór het blok in de cache. De ping schreef daarom een eigen ingang van 7.025 tokens, het blok zonder de ongeveer 1.900 tokens van het schema, voor $0,0088. De zin erna las niets. Zoals de roadmap voor dat geval zegt, staat het blok nu een uur in de cache, en er gaan geen pings. Gemeten: een zin met Harmen zes minuten na een zin met Mirte las 8.367 van de 8.989 tokens uit de cache. De eerste zin in een streek betaalt de schrijfbeurt voor een uur (ongeveer 8.900 tokens tegen twee keer de invoerprijs, $0,018). Daarna leest elke zin daar het blok, zolang er binnen het uur gesproken wordt, met of zonder open venster. Het einde van het gesprek blijft vijf minuten in de cache, want de zinnen van één gesprek volgen elkaar sneller op.
+
+**Het uur.** Met 40 gesprekszinnen per uur kost het gesprek nu ongeveer 40 × $0,0021 plus één of twee blokken voor een uur, samen ongeveer $0,10 tot $0,12 in plaats van $0,17. Bij de standaardklok (4 seconden) komt een uur spelen daarmee op ongeveer $0,20 in plaats van $0,27.
