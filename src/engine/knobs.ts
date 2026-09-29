@@ -68,6 +68,7 @@ export const KNOBS = {
   'economy.max_load': n('What the stranger can carry in one go, in units of the goods.', 'units', 20, 1, 500, 'economy/haul.ts'),
   'economy.ledger_hour': n('The hour a settlement counts its goods, before the counters fill.', 'hour', 5, 0, 23, 'economy/ledger.ts'),
   'growth.new_faction_days': n('Days that must pass between two factions formed in play in a world: at most one a season.', 'days', 91, 7, 3650, 'growth/founded.ts'),
+  'lands.exchange_cut': n('What the changer keeps when the stranger\'s money is changed at a border into another land\'s coins.', 'share', 0.02, 0, 0.5, 'borders.ts'),
   'tides.decay': n('What a great line loses of its pressure each day that nothing pushes it: the world calms.', 'share', 0.02, 0, 0.5, 'tides.ts'),
   'tides.cooldown_days': n('Days after a great event before the same line may break again (a line may set its own).', 'days', 91, 7, 3650, 'tides.ts'),
   'economy.days_of_use': n('How many days of use of a good a settlement aims to hold, when it names no keep.', 'days', 3, 1, 60, 'economy/ledger.ts'),

@@ -10,6 +10,7 @@ import { answerAsk } from './asking'
 import { brawlAnswer, brawlShown } from './social/brawl'
 import { CHECKPOINT_ENTRIES, CHECKPOINT_MINUTES, contentVersion, type Checkpoint, type CheckpointedSave } from './checkpoint'
 import { applyFarPlace, farPlaceOf, farRequest, farWords, wantFarPlace, type FarWords, farTopicAt } from './growth/far'
+import { crossBorder } from './borders'
 import { applyDistrict, districtDue, districtRequest, districtsOf, districtWords, wantDistrict, type DistrictWords } from './growth/districts'
 import { applyWeave, weaveReply, weaveRequest, type WeaveReply } from './growth/weave'
 import { applyTides, tidesReply, tidesRequest, tidesState, type TidesReply } from './tides'
@@ -1021,6 +1022,8 @@ export class Engine {
     seeFamily(this.world)
     if (before !== this.state.player.location) {
       arrived(this.world)
+      // Into another land (M10.23): the crossing at its border, the money changed, and a line in the chronicle.
+      outputs.push(...crossBorder(this.world, before))
       // Into someone's home without leave (M10.3): trespass, if someone of the house sees it.
       outputs.push(...entered(this.world, this.state.player.location))
       outputs.push(...triggers(this.world, this.questHost, { at: this.state.player.location }))

@@ -459,7 +459,7 @@ export const AreaSchema = z.object({
    * where the scene shows it and the chronicle keeps it.
    */
   border: z.boolean().default(false),
-  /** A land it shades into (M10.23): people here have sayings from both kits, and both coins are good. */
+  /** A land it shades into (M10.23; the home land by the world's id): people here have sayings from both kits, and both coins are good. */
   blend: z.string().optional(),
 })
 export type Area = z.infer<typeof AreaSchema>
@@ -1485,11 +1485,28 @@ function checkLands(world: WorldDef, c: Omit<Content, 'world'>): string[] {
   }
   for (const a of c.areas.values()) {
     land(a.land, `area ${a.id}.land`)
-    land(a.blend, `area ${a.id}.blend`)
-    if (a.blend && a.blend === a.land) problems.push(`area ${a.id}: it blends with ${a.blend}, the land it is in`)
+    // A blend names a land, or the home land by the world's id.
+    if (a.blend !== world.id) land(a.blend, `area ${a.id}.blend`)
+    if (a.blend && a.blend === (a.land ?? world.id)) problems.push(`area ${a.id}: it blends with ${a.blend}, the land it is in`)
   }
   for (const r of c.regions.values()) land(r.land, `region ${r.id}.land`)
   for (const t of c.topics.values()) land(t.land, `topic ${t.id}.land`)
+  // A border is content, never distance (M10.23): a way from one land into another goes through a border area.
+  const landOfPlace = (id: string) => c.areas.get(c.locations.get(id)?.area ?? '')?.land
+  const crosses = (a: string, b: string) => {
+    const [x, y] = [c.locations.get(a), c.locations.get(b)]
+    if (!x || !y || landOfPlace(a) === landOfPlace(b)) return false
+    return !c.areas.get(x.area)?.border && !c.areas.get(y.area)?.border
+  }
+  const named = (id: string | undefined) => (id ? `the land ${id}` : 'the home land')
+  for (const l of c.locations.values()) {
+    for (const [dir, exit] of Object.entries(l.exits)) {
+      if (exit && crosses(l.id, exit.to)) problems.push(`${l.id}: the way ${dir} to ${exit.to} crosses from ${named(landOfPlace(l.id))} into ${named(landOfPlace(exit.to))}, and neither area is a border (border: true)`)
+    }
+  }
+  for (const p of c.passages.values()) {
+    for (const [i, a] of p.stops.entries()) for (const b of p.stops.slice(i + 1)) if (crosses(a, b)) problems.push(`passage ${p.id}: ${a} and ${b} are in different lands, and neither area is a border (border: true)`)
+  }
   for (const l of c.lands.values()) {
     if (l.id === world.id) problems.push(`land ${l.id}: the world's own id; the home land needs no folder`)
     if (l.realm && !c.realms.has(l.realm)) problems.push(`land ${l.id}: unknown realm ${l.realm}`)

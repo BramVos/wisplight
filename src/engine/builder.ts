@@ -30,6 +30,13 @@ export function warnings(content: Content): string[] {
     const sentences = location.description.day.split(/(?<=[.!?])\s+/).filter((s) => s.trim()).length
     if (sentences < 3 || sentences > 5) out.push(`${location.id}: the day description has ${sentences} sentences; three to five read best`)
   }
+  // A land (M10.23) nobody can be in, or cross into: no area of it and no far place, or no border.
+  for (const land of content.lands.values()) {
+    const areas = [...content.areas.values()].filter((a) => a.land === land.id)
+    const far = [...content.topics.values()].some((t) => t.kind === 'place' && t.land === land.id && !content.areas.has(t.id))
+    if (!areas.length && !far) out.push(`land ${land.id}: no area and no far place is of it, so nobody can ever be there`)
+    else if (areas.length && !areas.some((a) => a.border) && !far) out.push(`land ${land.id}: none of its areas is a border (border: true), so nobody can cross into it`)
+  }
   for (const npc of content.npcs.values()) if (npc.public_facts.length === 0) out.push(`${npc.id}: no public facts, so nobody can tell anything about them`)
   for (const topic of content.topics.values()) if (!topic.origin && !topic.pos && !topic.everywhere && topic.kind !== 'person') out.push(`topic ${topic.id}: no origin, so nobody knows where it belongs`)
   // A far town with districts (M10.21) is reached by a road (it has a place on the map) or a line; without either they never come to be.

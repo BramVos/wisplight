@@ -513,6 +513,8 @@ export interface PlayerState {
   /** The news of each area the player has been told (M9.4): told once, and again when it changes. */
   areaNewsTold?: Record<string, string>
   location: string
+  /** The land the stranger is in (M10.23), when not the world's home land: for the scene when they cross a border. */
+  land?: string
   money: number
   inventory: Counts
   lodging?: { location: string; until: number }

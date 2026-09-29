@@ -425,7 +425,7 @@ A land lives in its own folder, `lands/<land>/`: its `land.yaml` (under `land:`,
 
 What a land leaves out it takes from the world: the calendar and the clock always, and prices, which are in the world's smallest coin everywhere. `money.rate` is how many of the land's smallest coin one of the world's smallest buys (a whole number); the land tells prices in its own coins, and they are changed at the border. A land without `law` has the world's kind of officer, without the world's officer or office.
 
-The stranger crosses into a land only at a border: an area with `border: true` (a bridge, a pass, a toll house, a harbour), where `crossing` is told. An area with `blend: <land>` shades into that land: sayings of both kits, and both coins good.
+The stranger crosses into a land only at a border: an area with `border: true` (a bridge, a pass, a toll house, a harbour), where `crossing` is told. An area with `blend: <land>` shades into that land (the home land by the world's id): sayings of both kits, and both coins good.
 
 ## journey (data/journey.yaml)
 

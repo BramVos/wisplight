@@ -1,3 +1,4 @@
+import { landOfArea } from '../lands'
 import { AreaSchema, checkContent, lockedIds, LocationSchema, NpcSchema, type Content, type Direction } from '../content'
 import type { LlmRequest } from '../dialogue/llm'
 import { worldFrame } from '../dialogue/prompt'
@@ -284,7 +285,8 @@ export function makeFarPlace(world: World, topic: string, words: FarWords | null
     topic,
     by: words ? 'chronicler' : 'template',
     t: world.now,
-    area: { id: areaId, name, kind: 'town', aliases: t.aliases, summary: outline?.summary ?? t.summary, fame: t.fame, pos: t.pos, topic },
+    // A far place of another land (M10.23) is of that land, and where the stranger comes into it from elsewhere, a border.
+    area: { id: areaId, name, kind: 'town', aliases: t.aliases, summary: outline?.summary ?? t.summary, fame: t.fame, pos: t.pos, topic, ...(t.land ? { land: t.land, border: landOfArea(world.content, world.location(edge.from).area)?.id !== t.land } : {}) },
     locations,
     npcs: [merchant, keeper, ...sketched],
     ...(named.length ? { sketches: Object.fromEntries(named.map((sk, i) => [sk.id, String(sketched[i]!['id'])])) } : {}),
