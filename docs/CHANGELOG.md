@@ -1,5 +1,18 @@
 # Changelog
 
+## M10.21 deel: het wereldboek groeit aan de rand, 29 september 2026
+
+- **Verder het onbekende in.** Aan een kaartrand waar niemand je iets heeft verteld, biedt het spel met een model naast "terug" ook "Go on into the unknown" (`EXPLORE <kant>`). Eén aanroep van de nieuwe soort `expansion` schetst dan één nieuwe streek of één nieuw land die kant op. Dat komt uit wat het wereldboek al suggereert en blijft binnen het kader: een naam, wat men weet, een verhaal, twee tot vier wijken, hoeveel dagen lopen, en bij een land het eigen kader (met de WORLD-regels van de wereld ervoor) en wat je bij de grens merkt. Wat klopt, komt als laag in de save: je kent het meteen, en het is canon voor elke volgende ronde. Ga je erheen, dan maken de lagen van M10.21 het speelbaar, en een geschetst land krijgt zijn stem van de landschrijver (M10.23) zodra je binnenkomt.
+- **Inspraak volgens de speelstand.** In `Doorspelen` komt het er meteen. In `Meedenken` kies je in de wereld uit twee omtrekken (`CHART`), of geen van beide. In `Regisseur` staat het als voorstel met de wijzigingen. Zonder model blijft de rand de rand. Er is één ronde tegelijk, en boven je drempel wordt eerst gevraagd.
+- **Voorbij het boek.** De export van wat je ontdekte heeft een hoofdstuk "Beyond the book" met elke geschetste plek en hoe die erbij kwam. Voor de Nethermarch is dat de aanvulling die ik je zou voorleggen voor het wereldboek in Claude Docs.
+
+Testen: ga met een model naar de zuidrand van de Holleveen (in een ontwikkelversie `@goto hex:60,0`, dan `head south`) en kies "Go on into the unknown". Daarna wijst de rand de weg naar wat er kwam. Tests in `tests/m1021expansion.test.ts`, ook op Skerrow; Deepwell heeft geen kaart en dus geen rand. Kosten: ongeveer 3.500 tokens in en 1.000 uit bij de kroniekverteller, een paar cent per ronde. De rest (wijken, weefronde, stem van het land) kost pas iets als je er echt heen gaat. Een echt antwoord moet nog worden opgenomen.
+
+Nog niet af: de ronde begint nu alleen aan de kaartrand. De vraag in de haven naar wat er achter de zee ligt, en een lijn naar een streek die alleen een naam is, beginnen er nog geen. Ook zet een nieuw land nog geen eigen grote lijn. Het bereik tussen landen volgt wel meteen uit de content, want er loopt een weg te voet. Daarom staat dit roadmappunt nog open.
+
+Gevonden en hersteld: een verre plek en een wijk werden gecontroleerd tegen de basisinhoud van de wereld, zonder wat er eerder in het spel groeide. Een geschetste plek of een geschreven land faalde daardoor. Nu wordt tegen de hele inhoud van het spel gecontroleerd.
+
+Bewust anders: de roadmap noemt een wereldbouw in het klein van twee tot vier dollar. Ik liet de ronde alleen de omtrek schrijven. De lagen die er al zijn, doen de rest op het moment dat je gaat. Dat is goedkoper, en er komt niets dat je nooit ziet.
 ## M10.24 deel: de kaders één keer, 29 september 2026
 
 - **Eén scherm aan het begin van een spel.** Na het personage (of meteen, in een wereld zonder personage) staat alles bij elkaar waaronder je speelt. Bovenaan de wereld en waar je begint. Dan de andere landen en hoe goed ze elkaar kennen, met hun taal. Dan de grote lijnen en wat ze voedt. Daaronder drie draaiknoppen: hoeveel er vanzelf gebeurt (het tempo), hoe vaak een verhaallijn je komt zoeken, en hoeveel de wereld per seizoen groeit. Verder de speelstand, en wat het mag kosten: het budget per uur en vanaf welk bedrag het spel eerst vraagt. Met [Play] ben je weg, en het spel vraagt er niet meer om.
