@@ -1,4 +1,4 @@
-import type { Content } from '../../engine'
+import type { Content, PlayMode } from '../../engine'
 import { hourlyBudget, replyWithin } from '../../engine/aisettings'
 import { pictureSubject } from '../../engine/pictures'
 import type { LlmClient } from '../../engine/dialogue/llm'
@@ -26,6 +26,7 @@ const state = {
   budget: 0.1,
   replyWithin: 10,
   askAbove: 1 as number | null,
+  playMode: 'continue' as PlayMode,
   pictures: undefined as { provider: ProviderId; model: string; quality: 'low' | 'medium' } | undefined,
   monthBudget: 5 as number | undefined,
   credit: { openai: { amountUsd: 10, enteredAt: '2026-09-02T09:00:00.000Z', spent: 0 } } as Partial<Record<ProviderId, { amountUsd: number; enteredAt: string; spent: number }>>,
@@ -147,6 +148,7 @@ export function demoBridge(_content: Content): AiBridge {
         roles: { ...state.roles },
         budgetUsdPerHour: state.budget,
         askAboveUsd: state.askAbove,
+        playMode: state.playMode,
         encryption: true,
         models: Object.fromEntries((['openai', 'anthropic'] as const).filter((p) => state.keys[p]).map((p) => [p, MODELS[p].map((m) => m.id)])),
         missing: [],
@@ -210,6 +212,10 @@ export function demoBridge(_content: Content): AiBridge {
       const kept = usd === null ? { usd: null, adjusted: false } : hourlyBudget(usd)
       state.askAbove = kept.usd
       return kept
+    },
+    setPlayMode: async (mode) => {
+      state.playMode = mode
+      return mode
     },
     setReplyWithin: async (seconds: number) => {
       const kept = replyWithin(seconds)

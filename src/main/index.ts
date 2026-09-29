@@ -4,7 +4,7 @@ import { appendFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFi
 import { tmpdir } from 'node:os'
 import { basename, dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { ContentError, discoveredAtlasHtml, draftRequest, mapDraft, readSaveFile, saveAbout, saveFileName, saveFileText, SAVE_FILE_EXTENSION, type SaveFile, draftResult, Engine, ENTITY_KINDS, lineDiff, MapPaletteSchema, paletteRequest, paletteView, readDraft, readPalette, readVoice, savePalette, saveVoice, voiceRequest, voiceYaml, landsIn, landYaml, saveLand, worldStepRequest, worldFixRequest, mergeFix, polishRequest, readPolish, recheckDraft, descriptionCheck, enhanceRequest, readEnhance, type Content, type Edit, type EntityKind, type FileChange, type CheckpointedSave, type MapPalette, type Output, type SaveData } from '../engine'
+import { ContentError, discoveredAtlasHtml, draftRequest, mapDraft, readSaveFile, saveAbout, saveFileName, saveFileText, SAVE_FILE_EXTENSION, type SaveFile, draftResult, Engine, ENTITY_KINDS, lineDiff, MapPaletteSchema, paletteRequest, paletteView, readDraft, readPalette, readVoice, savePalette, saveVoice, voiceRequest, voiceYaml, landsIn, landYaml, saveLand, worldStepRequest, worldFixRequest, mergeFix, polishRequest, readPolish, recheckDraft, descriptionCheck, enhanceRequest, readEnhance, type Content, type Edit, type EntityKind, type FileChange, type CheckpointedSave, type MapPalette, type Output, type SaveData, type PlayMode } from '../engine'
 import { designUpdate, readDesignChange } from '../engine/designlog'
 import { ContentEditor } from '../node/editor'
 import { AppKnobs, type AppKnobId } from '../node/knobs'
@@ -1030,6 +1030,8 @@ handle('ai:choose', async (_event, which: unknown, id: unknown, model: unknown) 
 handle('ai:budget', (_event, usd: unknown) => service().settings.setBudget(Number(usd)))
 handle('ai:reply-within', (_event, seconds: unknown) => service().settings.setReplyWithin(Number(seconds)))
 handle('ai:ask-above', (_event, usd: unknown) => service().settings.setAskAbove(usd === null ? null : Number(usd)))
+// How the world goes on (M10.24): continue, think or direct; the running game follows at its next models round.
+handle('ai:play-mode', (_event, mode: unknown) => service().settings.setPlayMode(mode as PlayMode))
 handle('ai:month-budget', (_event, usd: unknown) => service().usage.setMonthBudget(amount(usd)))
 handle('ai:credit', (_event, id: unknown, usd: unknown) => service().usage.setCredit(provider(id), amount(usd)))
 handle('ai:csv', () => service().usage.csv())

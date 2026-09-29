@@ -95,6 +95,8 @@ export interface LlmClient {
   askAboveUsd?(): number
   /** The player chose "always": no more questions about cost. */
   askNever?(): void
+  /** How the world goes on (M10.24): the player's play mode. */
+  playMode?(): import('../modes').PlayMode
   report?(rejection: LlmRejection): void
   /** How long a spoken reply may take, over its tries, in milliseconds (M10.8): the player's setting at the model. */
   replyWithinMs?(): number

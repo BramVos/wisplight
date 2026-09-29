@@ -1,3 +1,4 @@
+import { PLAY_MODES, type PlayMode } from '../../engine/modes'
 import { existsSync, mkdirSync, readFileSync, renameSync, statSync, writeFileSync } from 'node:fs'
 import { dirname } from 'node:path'
 import type { LlmRole } from '../../engine/dialogue/llm'
@@ -37,6 +38,8 @@ interface SettingsFile {
   replyWithinSeconds?: number
   /** From what cost of one call the game asks first (M10.21), in dollars; null after "always". */
   askAboveUsd?: number | null
+  /** How the world goes on (M10.24): continue unless the player chooses think or direct. */
+  playMode?: PlayMode
 }
 
 /** The threshold for a question about cost unless the player sets one (M10.21, the roadmap): one dollar. */
@@ -64,6 +67,8 @@ export interface SettingsSummary {
   replyWithinSeconds: number
   /** From what cost of one call the game asks first; null: never. */
   askAboveUsd: number | null
+  /** How the world goes on (M10.24). */
+  playMode: PlayMode
 }
 
 export class SettingsStore {
@@ -229,6 +234,21 @@ export class SettingsStore {
     return kept
   }
 
+  /** How the world goes on (M10.24): continue unless the player chose otherwise. */
+  get playMode(): PlayMode {
+    const set = this.current.playMode
+    return set && PLAY_MODES.includes(set) ? set : 'continue'
+  }
+
+  /** Sets the play mode (M10.24); anything else keeps what there was. */
+  setPlayMode(mode: PlayMode): PlayMode {
+    if (!PLAY_MODES.includes(mode)) return this.playMode
+    this.change((d) => {
+      d.playMode = mode
+    })
+    return mode
+  }
+
   get replyWithinSeconds(): number {
     return this.current.replyWithinSeconds ?? REPLY_WITHIN_SECONDS
   }
@@ -253,6 +273,7 @@ export class SettingsStore {
       roles: { ...this.current.roles },
       budgetUsdPerHour: this.current.budgetUsdPerHour,
       askAboveUsd: this.current.askAboveUsd === null ? null : (this.current.askAboveUsd ?? ASK_ABOVE_USD),
+      playMode: this.playMode,
       encryption: this.cipher.available(),
       models: Object.fromEntries(Object.entries(this.current.models ?? {}).map(([id, list]) => [id, list?.ids ?? []])),
       missing: this.missing(),

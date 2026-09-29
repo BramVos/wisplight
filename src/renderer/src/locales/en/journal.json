@@ -32,7 +32,8 @@
     "lands": "How the lands stand",
     "land": "The land map",
     "lodging": "Your lodging",
-    "tides": "The great lines"
+    "tides": "The great lines",
+    "waiting": "What waits for you"
   },
   "index": {
     "within": "What lies within {km} km. ",

@@ -130,6 +130,8 @@ contextBridge.exposeInMainWorld('wisplight', {
     setBudget: use('ai:budget'),
     setReplyWithin: use('ai:reply-within'),
     setAskAbove: use('ai:ask-above'),
+    // How the world goes on (M10.24).
+    setPlayMode: use('ai:play-mode'),
     setMonthBudget: use('ai:month-budget'),
     setCredit: use('ai:credit'),
     csv: use('ai:csv'),

@@ -761,6 +761,10 @@ export interface GameState {
   tension?: Record<string, number>
   /** The great lines (M10.22): where each stands, and a month's judgement waiting for the chronicler. */
   tides?: import('./tides').TidesState
+  /** How the chronicler, the weave and the great lines go on (M10.24): without it, continue. */
+  playMode?: import('./modes').PlayMode
+  /** What waits for the player in think and direct mode (M10.24): hooks of a night, proposals. */
+  modes?: import('./modes').ModesState
   /** NPCs a companion is distracting, until when. */
   distracted?: Record<string, number>
   /** Coincidences already noticed, so each is told once. */

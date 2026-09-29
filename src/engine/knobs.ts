@@ -79,6 +79,7 @@ export const KNOBS = {
   'tides.mediation_dc': n('How hard it is to bring the two sides of a great line to one table: the DC of the Persuade and Insight checks.', 'DC', 14, 5, 30, 'tidemediation.ts'),
   'story.signals_per_night': n('How many signals the chronicler takes in one night run, the most important first; the rest wait a night.', 'signals', 12, 1, 50, 'planning.ts'),
   'story.urgent_belang': n('From what belang news calls the chronicler by day instead of in the night run; at most once a game day.', 'belang', 4, 3, 6, 'storylines.ts'),
+  'story.hook_days': n('How long something new a night brought lies waiting for the player in the think play mode, when they did not take it up.', 'days', 7, 1, 60, 'modes.ts'),
   'story.climaxes': n('How many storylines may be in crisis at once.', 'storylines', 2, 1, 10, 'chronicler.ts'),
   'sketches.per_day': n('How many people named in passing may come to be in a day.', 'people', 2, 0, 20, 'sketches.ts'),
   'sketches.per_speaker': n('How many people one speaker may name in passing.', 'people', 3, 0, 20, 'sketches.ts'),

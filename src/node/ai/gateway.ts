@@ -1,3 +1,4 @@
+import type { PlayMode } from '../../engine/modes'
 import { LlmError, type LlmClient, type LlmRejection, type LlmRequest, type LlmResponse, type LlmRole } from '../../engine/dialogue/llm'
 import { withSafety } from '../../engine/safety'
 import type { AiLog } from './log'
@@ -50,6 +51,8 @@ export interface GatewayOptions {
   askAboveUsd?: () => number
   /** The player chose "always" in a question about cost. */
   askNever?: () => void
+  /** How the world goes on (M10.24): the player's play mode. */
+  playMode?: () => PlayMode
   /** The app's knobs (M10.20): time limits per role, the editor's own, and the share of the hour kept for conversations. */
   knobs?: () => { timeoutMs?: Partial<Record<LlmRole, number>>; editorTimeoutMs?: number; conversationShare?: number }
 }
@@ -147,6 +150,10 @@ export class Gateway implements LlmClient {
 
   askAboveUsd(): number {
     return this.options.askAboveUsd?.() ?? Infinity
+  }
+
+  playMode(): PlayMode {
+    return this.options.playMode?.() ?? 'continue'
   }
 
   askNever(): void {

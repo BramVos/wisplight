@@ -64,6 +64,7 @@ export class AiService {
       budgetUsdPerHour: () => this.settings.budgetUsdPerHour,
       askAboveUsd: () => this.settings.askAboveUsd,
       askNever: () => void this.settings.setAskAbove(null),
+      playMode: () => this.settings.playMode,
       replyWithinMs: () => this.settings.replyWithinSeconds * 1000,
       log: this.log,
       usage: this.usage,

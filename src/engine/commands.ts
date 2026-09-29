@@ -101,6 +101,7 @@ const HELP = [
   'Work: work (for a day\'s pay), invest <amount>, loads (what there is to carry from here), haul <goods> to <place>, deliver.',
   'Time: time, wait [minutes], wait for <person>, sleep. At night: knock (on a door), wake <person>.',
   'Pace: tempo calm, tempo normal or tempo dramatic (how much happens in the world).',
+  'What waits (by the play mode in the settings): hooks (what a night brought, to take up or let lie), proposals, accept, reject.',
   "Talking: talk <person>, ask <person> about <topic>, say <text> or 'text.",
   'You: sheet, create (make your character), level up, train <skill>, wield <weapon>, wear <armour>, devote to <patron>, pray, rite. Your word and theirs: promises.',
   'Fights: strike, advance, step back, raise shield, use herbs, recall, talk, flee, surrender, end. HELP in a fight says more.',

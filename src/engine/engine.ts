@@ -11,6 +11,7 @@ import { brawlAnswer, brawlShown } from './social/brawl'
 import { CHECKPOINT_ENTRIES, CHECKPOINT_MINUTES, contentVersion, type Checkpoint, type CheckpointedSave } from './checkpoint'
 import { applyFarPlace, farPlaceOf, farRequest, farWords, wantFarPlace, type FarWords, farTopicAt } from './growth/far'
 import { crossBorder } from './borders'
+import { decide, holdHooks, hookChoice, morningHooks, PLAY_MODES, playModeOf, propose, proposalsText, takeHook, waitingLines, type PlayMode } from './modes'
 import { applyLand, landRequest, landWords, wantLand, type LandWords } from './growth/landwrite'
 import { applyDistrict, districtDue, districtRequest, districtsOf, districtWords, wantDistrict, type DistrictWords } from './growth/districts'
 import { applyWeave, weaveReply, weaveRequest, type WeaveReply } from './growth/weave'
@@ -120,6 +121,8 @@ export type LogEntry =
   | { t: number; k: 'weave'; key: string; v: WeaveReply | null }
   // What the chronicler wrote for a land the designer only framed (M10.23), or null.
   | { t: number; k: 'land'; id: string; v: LandWords | null }
+  // The player's play mode, when it changed (M10.24).
+  | { t: number; k: 'mode'; v: PlayMode }
   | { t: number; k: 'tides'; v: TidesReply | null }
   // A question about cost put to the player (M10.21), so a replay puts the same one.
   | { t: number; k: 'ask'; id: string; usd: number }
@@ -434,6 +437,8 @@ export class Engine {
     }
     // The great lines (M10.22): where each stands, what moved it, and its judgements.
     if (id === 'tides') return { id, kind: 'lore', name: 'The great lines', lines: tidesPage(this.world), sources: [], links: [] }
+    // What waits for the player by the play mode (M10.24): hooks of a night, proposals.
+    if (id === 'waiting') return { id, kind: 'lore', name: 'What waits for you', lines: waitingLines(this.world), sources: [], links: [] }
     if (id === 'factions') return { id, kind: 'lore', name: 'Factions', lines: factionLines(this.world).length ? factionLines(this.world) : ['No faction knows you yet.'], sources: [], links: [] }
     if (id === 'lands') return { id, kind: 'lore', name: 'The lands', lines: realmLines(this.world), sources: [], links: [] }
     if (id.startsWith('realm_')) {
@@ -591,6 +596,7 @@ export class Engine {
    * without it they run. Says whether they ran.
    */
   async runModels(pace: Pace = {}): Promise<{ night: boolean; tides: boolean }> {
+    this.syncPlayMode()
     await this.runBrain()
     const night = (await this.runChronicler(pace)).some((r) => r.reason === 'night')
     await this.runOutlines()
@@ -619,6 +625,47 @@ export class Engine {
     else applyTides(this.world, null)
   }
 
+  /** The play mode (M10.24): set by the host or a test; kept in the log, so a replay goes on the same way. */
+  setPlayMode(mode: PlayMode): void {
+    if (playModeOf(this.world) === mode) return
+    this.record({ t: this.world.now, k: 'mode', v: mode })
+    this.state.playMode = mode
+  }
+
+  /** The player's play mode from the settings, as the model client knows it (M10.24). */
+  private syncPlayMode(): void {
+    const want = this.llm?.playMode?.()
+    if (want && PLAY_MODES.includes(want)) this.setPlayMode(want)
+  }
+
+  /**
+   * A night round's answer, by the play mode (M10.24): in direct mode it waits
+   * as a proposal; in think mode its new hooks wait for the morning; else, and
+   * without a model's answer, it is applied now.
+   */
+  private settleRun(run: ChronicleRun, output: ChronicleOutput | null, offered?: Offered): string[] {
+    if (output && propose(this.world, { kind: 'chronicle', run, output, ...(offered ? { offered } : {}) })) {
+      const st = this.state.chronicle!
+      st.pending = st.pending.filter((r) => r.id !== run.id)
+      return []
+    }
+    return applyRun(this.world, run.id, output ? holdHooks(this.world, run, output, offered) : output, undefined, offered)
+  }
+
+  /** The weave round's answer, by the play mode (M10.24): in direct mode a proposal. */
+  private settleWeave(key: string, reply: WeaveReply | null): void {
+    if (reply && propose(this.world, { kind: 'weave', key, weave: reply })) {
+      const g = this.state.growth!
+      g.weavePending = (g.weavePending ?? []).filter((k) => k !== key)
+    } else applyWeave(this.world, key, reply)
+  }
+
+  /** The month's judgement, by the play mode (M10.24): in direct mode a proposal. */
+  private settleTides(reply: TidesReply | null): void {
+    if (reply && propose(this.world, { kind: 'tides', tides: reply })) tidesState(this.world).pending = false
+    else applyTides(this.world, reply)
+  }
+
   /** The month's judgement of the great lines (M10.22), one call for all of them. Says whether it ran. */
   async runTides(): Promise<boolean> {
     if (this.outlining || !this.state.tides?.pending) return false
@@ -635,7 +682,7 @@ export class Engine {
       }
       if (!this.state.tides?.pending) return false
       this.record({ t: this.world.now, k: 'tides', v: reply })
-      applyTides(this.world, reply)
+      this.settleTides(reply)
       return true
     } finally {
       this.outlining = false
@@ -661,7 +708,7 @@ export class Engine {
         }
         if (!g.weavePending.includes(key)) continue
         this.record({ t: this.world.now, k: 'weave', key, v: reply })
-        applyWeave(this.world, key, reply)
+        this.settleWeave(key, reply)
       }
     } finally {
       this.outlining = false
@@ -856,7 +903,7 @@ export class Engine {
         // The run may have been settled meanwhile (the model was switched off).
         if (!this.state.chronicle?.pending.some((r) => r.id === run.id)) continue
         this.record({ t: this.world.now, k: 'chron', run: run.id, v: output, ...(offered ? { offered } : {}) })
-        problems.push(...applyRun(this.world, run.id, output, undefined, offered))
+        problems.push(...this.settleRun(run, output, offered))
         // For the dev menu (M10.1): what the run got, gave and had refused. Not saved.
         this.devRuns.push({ run: run.id, t: this.world.now, lines: run.lines, offered: offered ?? { facts: [], allowed: [] }, output, problems: [...problems] })
         if (this.devRuns.length > 20) this.devRuns.shift()
@@ -1085,6 +1132,8 @@ export class Engine {
     noteVisit(this.world)
     // Moments (M10.11): a place worth it reached or seen, a tiding heard; a card once each.
     outputs.push(...momentsNow(this.world))
+    // What a night brought, in think mode (M10.24): put to the player in the morning, once, after the rest.
+    outputs.push(...morningHooks(this.world))
     // A journey in the voice of the world, when a model may help (M10.11); the rules' paragraph otherwise.
     await this.narrate(outputs)
     const shown = this.shown(outputs)
@@ -1139,6 +1188,14 @@ export class Engine {
       const [, topic, id] = district as unknown as [string, string, string]
       return farTopicAt(this.world, this.state.player.location) === topic && districtsOf(this.content, topic).some((d) => d.id === id) ? wantDistrict(this.world, topic, id) : [{ kind: 'error', text: 'There is nothing to make here.' }]
     }
+    // The play modes (M10.24): hooks of a night that wait (think), and proposals (direct).
+    const said = text.trim().toLowerCase()
+    if (!this.state.talk && (said === 'hooks' || said === 'hooks later')) return said === 'hooks' ? hookChoice(this.world) : [{ kind: 'text', text: 'It can wait. HOOKS shows it again, for a week.' }]
+    const hook = /^hook\s+(hook_\d+)$/.exec(said)
+    if (hook && !this.state.talk) return takeHook(this.world, hook[1]!)
+    if (!this.state.talk && (said === 'proposals' || said === 'proposal')) return proposalsText(this.world)
+    const verdict = /^(accept|reject)(?:\s+(proposal_\d+))?$/.exec(said)
+    if (verdict && !this.state.talk && this.state.modes?.proposals.length) return decide(this.world, verdict[1] === 'accept', verdict[2])
     // LAND <id> (M10.23): what "go on" runs after the question of cost; only in that land.
     const written = /^land\s+([a-z0-9_]+)$/.exec(text.trim())
     if (written && !this.state.talk) return this.world.land === written[1] ? wantLand(this.world, written[1]!) : [{ kind: 'error', text: 'There is nothing to write here.' }]
@@ -1864,7 +1921,9 @@ export class Engine {
         else if (entry.k === 'llm') this.setLlm(entry.v === 'on' ? recorded : undefined)
         else if (entry.k === 'chron') {
           this.log.push(entry)
-          applyRun(this.world, entry.run, entry.v, undefined, entry.offered)
+          const run = this.state.chronicle?.pending.find((r) => r.id === entry.run)
+          if (run) this.settleRun(run, entry.v, entry.offered)
+          else applyRun(this.world, entry.run, entry.v, undefined, entry.offered)
           this.dialogue.syncNews()
         } else if (entry.k === 'goals') {
           this.log.push(entry)
@@ -1885,7 +1944,10 @@ export class Engine {
           applyDistrict(this.world, topic, id, entry.v)
         } else if (entry.k === 'weave') {
           this.log.push(entry)
-          applyWeave(this.world, entry.key, entry.v)
+          this.settleWeave(entry.key, entry.v)
+        } else if (entry.k === 'mode') {
+          this.log.push(entry)
+          this.state.playMode = entry.v
         } else if (entry.k === 'land') {
           this.log.push(entry)
           applyLand(this.world, entry.id, entry.v)
@@ -1894,7 +1956,7 @@ export class Engine {
           this.dueTides()
         } else if (entry.k === 'tides') {
           this.log.push(entry)
-          applyTides(this.world, entry.v)
+          this.settleTides(entry.v)
         }
       }
     } finally {

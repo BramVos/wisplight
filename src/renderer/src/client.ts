@@ -1,4 +1,4 @@
-import type { AppKnobView, CreationData, DiffLine, DraftChange, Edit, EditorView, EntityKind, JournalPage, MapPalette, Output, PaletteView, Raw, SaveAbout, SaveData, SimReport, Status, WorldInfo } from '../../engine'
+import type { AppKnobView, CreationData, DiffLine, DraftChange, Edit, EditorView, EntityKind, JournalPage, MapPalette, Output, PaletteView, PlayMode, Raw, SaveAbout, SaveData, SimReport, Status, WorldInfo } from '../../engine'
 import { designUpdate, type DesignChange, type DesignLog } from '../../engine/designlog'
 import type { DevSection, DevView } from '../../engine/dev'
 import type { Advice, TrialResult, TrialVerdict } from '../../node/ai/advisor'
@@ -64,6 +64,8 @@ export interface AiBridge {
   setBudget(usd: number): Promise<{ usd: number; adjusted: boolean }>
   /** From what cost of one call the game asks first (M10.21); null: never ask. */
   setAskAbove(usd: number | null): Promise<{ usd: number | null; adjusted: boolean }>
+  /** How the world goes on (M10.24): continue, think or direct. */
+  setPlayMode(mode: PlayMode): Promise<PlayMode>
   /** How long a spoken reply may take, in seconds (M10.8). */
   setReplyWithin(seconds: number): Promise<{ seconds: number; adjusted: boolean }>
   setMonthBudget(usd: number | null): Promise<void>
