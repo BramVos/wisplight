@@ -1,0 +1,14 @@
+{
+  "kind": "expansion",
+  "about": "the stranger goes on into the unknown south of the Holleveen",
+  "model": "claude-opus-5-5",
+  "provider": "anthropic",
+  "date": "2026-09-29",
+  "usage": {
+    "inputTokens": 7490,
+    "cachedTokens": 0,
+    "outputTokens": 1249
+  },
+  "reply": "{\"outlines\":[{\"id\":\"driewater\",\"name\":\"the Driewater\",\"kind\":\"region\",\"summary\":\"The Driewater is the wide, wet river country south of the Holleveen, where the Three Rivers braid together before the border with Flemmark.\",\"details\":\"It is a land of willow islands, ferries and mudflats, where the fields flood each winter and folk keep their cows on mounds. The Count takes a toll at every ferry, and the lords of Flemmark watch from the far bank, so smugglers do better trade than honest bargemen. Down where the rivers meet the Grey Sea, the drowned towers of Saeftinge stand out of the mud at low tide.\",\"story\":\"They say that on a still night, when the tide runs out, a ferryman on the Driewater once heard the bells of Saeftinge ringing under his flat-boat. He leaned over to listen and saw lamps burning in the water, and a hand in a rich man's sleeve held up a purse of old silver for passage. He would not take it, and poled home as fast as he could. Next morning his boat was full of river weed and salt, and he never ferried after dark again. 'Water always finds the weakest board,' he told anyone who asked, and would say no more.\",\"days\":3,\"districts\":[{\"id\":\"loc_veerhuis_landing\",\"name\":\"Veerhuis Landing\",\"line\":\"A ferry house and a muddy landing on the first river, where the Count's toll-man counts stuivers by lamplight and the road from the north ends.\"},{\"id\":\"loc_de_grienden\",\"name\":\"the Grienden\",\"line\":\"Low willow islands cut each spring for baskets and dyke-mats, reached by punt, where herons outnumber people.\"},{\"id\":\"loc_tolkamer\",\"name\":\"the Tolkamer\",\"line\":\"A walled toll house on the last river, looking across the water at Flemmark, busy with barges by day and quiet boats by night.\"},{\"id\":\"loc_drowned_flats\",\"name\":\"the Drowned Flats\",\"line\":\"Grey mud and salt marsh at the mouth of the rivers, where the stumps of Saeftinge's towers show at low tide and no one stays past dusk.\"}],\"why\":\"It grows from Flemmark lying south beyond the Three Rivers and from the tale of drowned Saeftinge, the richest city of the delta.\"}]}",
+  "problems": []
+}

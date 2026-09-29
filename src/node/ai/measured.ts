@@ -13,6 +13,7 @@ export const MEASURED: Record<string, Measured> = {
   chat_line: { inputTokens: 977, outputTokens: 35, model: 'claude-sonnet-5', date: '2026-09-29' },
   chronicle: { inputTokens: 12032, outputTokens: 2243, model: 'claude-opus-5-5', date: '2026-09-29' },
   district: { inputTokens: 3137, outputTokens: 3071, model: 'claude-opus-5-5', date: '2026-09-29' },
+  expansion: { inputTokens: 7490, outputTokens: 1249, model: 'claude-opus-5-5', date: '2026-09-29' },
   far_place: { inputTokens: 1956, outputTokens: 820, model: 'claude-opus-5-5', date: '2026-09-29' },
   improvise: { inputTokens: 1338, outputTokens: 121, model: 'claude-haiku-4-5-20251001', date: '2026-09-29' },
   journey: { inputTokens: 1001, outputTokens: 67, model: 'claude-opus-5-5', date: '2026-09-29' },
