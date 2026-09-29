@@ -233,7 +233,12 @@ function pursueOwnGoal(world: World, npcId: string, goal: Goal): boolean {
       return start(departLater(world, npcId, result.steps))
     }
     case 'Visit':
-      return start([...goTo(world, npcId, goal.target!), { kind: 'spend', minutes: 45, activity: world.location(goal.target!).tags.includes('social') ? 'socialize' : 'idle', label: `visiting ${world.location(goal.target!).name}` }])
+      // A place that is none (a save from before M10.25 may hold a person here): the goal is let go.
+      if (!goal.target || !world.content.locations.has(goal.target)) {
+        npc.goals = npc.goals.filter((g) => g !== goal)
+        return false
+      }
+      return start([...goTo(world, npcId, goal.target), { kind: 'spend', minutes: 45, activity: world.location(goal.target).tags.includes('social') ? 'socialize' : 'idle', label: `visiting ${world.location(goal.target).name}` }])
     case 'Talk': {
       const other = world.state.npcs[goal.target!]
       if (!other || other.dead) return start([])

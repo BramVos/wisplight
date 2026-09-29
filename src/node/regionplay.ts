@@ -128,18 +128,30 @@ export async function playRegion(play: RegionPlay): Promise<{ transcript: string
     }
     waited += (Date.now() - started) / 1000
   }
+  /**
+   * What stopped the game, in the transcript, and play goes on (M10.25: the played proof at outline lost its three
+   * days to one error in the night round; the app shows such an error and goes on too).
+   */
+  const guarded = async <T>(what: string, work: () => Promise<T>): Promise<T | undefined> => {
+    try {
+      return await work()
+    } catch (error) {
+      out.push(`\n[the game stopped on ${what}: ${error instanceof Error ? (error.stack ?? error.message).split('\n').slice(0, 4).join(' | ') : String(error)}]`)
+      return undefined
+    }
+  }
   /** A command as the player types it; the models run after it, as the app runs them in the background. */
   const type = async (command: string, why?: string): Promise<string> => {
-    const shown = say(await engine.handle(command))
+    const shown = say((await guarded(command, () => engine.handle(command))) ?? [])
     out.push(`\n> ${command}${command.startsWith('@') ? `   [build command: a shortcut${why ? `, ${why}` : ''}]` : ''}\n${shown}`)
-    await outOfFight(engine, out)
-    await engine.runModels()
-    await settle()
+    await guarded('a fight', () => outOfFight(engine, out))
+    await guarded('the models', () => engine.runModels())
+    await guarded('the arrival', settle)
     return shown
   }
   const pass = async (minutes: number, why: string) => {
-    out.push(`\n[${Math.round(minutes / 60)} hours pass: ${why}]\n${say(engine.tick(minutes))}`)
-    await engine.runModels()
+    out.push(`\n[${Math.round(minutes / 60)} hours pass: ${why}]\n${say((await guarded('the time passing', async () => engine.tick(minutes))) ?? [])}`)
+    await guarded('the models', () => engine.runModels())
   }
 
   out.push(`\n==== THE DIAL: ${play.setting}`)

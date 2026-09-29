@@ -169,6 +169,9 @@ export function stepsFromOp(world: World, op: StepOp, n: number, problems: strin
       const entry = GOAL_CATALOGUE[op.detail ?? '']
       if (!entry) return (problems.push(`goal: ${op.detail} is not a goal`), [])
       if (entry.target !== 'none' && !op.target) return (problems.push(`goal ${op.detail}: needs a target`), [])
+      // The target of the goal's own kind (M10.25: the played proof crashed on a Visit with a person as its place).
+      const fits = entry.target === 'none' || (entry.target === 'place' ? Boolean(place(op.target)) : entry.target === 'person' ? Boolean(person(op.target)) : entry.target === 'item' || entry.target === 'mine' ? world.content.items.has(op.target!) : true)
+      if (!fits) return (problems.push(`goal ${op.detail}: its target must be a ${entry.target}`), [])
       return each((who) => ({ goal: op.detail, who, ...(op.target && entry.target !== 'none' ? { target: op.target } : {}) }))
     }
     case 'thought':
