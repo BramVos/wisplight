@@ -611,7 +611,7 @@ export function draftRequest(files: ContentFile[], ask: string, focus?: { kind: 
         // The world's voice (M10.10): new content comes in the same voice.
         content ? voiceSummary(content) : '',
         '',
-        'YOU ARE IN THE WORLD BUILDER. Answer the designer with a proposal: every entity to add or change in full YAML (one mapping with its id, as it would stand in its list), or an empty yaml to delete it. The builder shows it as a diff, checks it, and saves only what the designer accepts. Use only ids that exist or that you add in the same proposal. If a choice belongs to the designer, ask in questions and propose nothing for it. JSON only.',
+        'YOU ARE IN THE WORLD BUILDER. Answer the designer with a proposal: every entity to add or change in full YAML (one mapping with its id, as it would stand in its list), or an empty yaml to delete it. The builder shows it as a diff, checks it, and saves only what the designer accepts. Use only ids that exist or that you add in the same proposal, and only in fields that point at something: a name, a maker, a description or a line the player reads is words, never an id (M10.29). If a choice belongs to the designer, ask in questions and propose nothing for it. JSON only.',
       ].join('\n'),
       '',
       [

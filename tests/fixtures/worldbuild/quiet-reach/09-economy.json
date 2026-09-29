@@ -14,5 +14,10 @@
     "cachedTokens": 37852,
     "cacheWriteTokens": 0,
     "outputTokens": 12517
+  },
+  "hand": {
+    "note": "Written by hand, not by a model (M10.29 M): the recorded build put Tessa's id in the craft's maker, which the content check now sends back; this is the correction the chronicler is asked for.",
+    "because": "craft field_electronics: maker holds npc_tessa_rook, an id; write it in words",
+    "fix": "{\"say\": \"The maker is the word for who does the craft, not a person: a field technician.\", \"questions\": [], \"changes\": [{\"kind\": \"craft\", \"id\": \"field_electronics\", \"yaml\": \"id: field_electronics\\nname: Field Electronics\\nmaker: field technician\\nskill: craft\\nprofessions: [chief_engineer, field_mechanic, signal_technician]\\ntechniques:\\n  - { id: inspect_contacts, name: recognise damage and clean contacts }\\n  - { id: repair_connectors, name: repair cables and standard connectors }\\n  - { id: fault_isolation, name: isolate faults in linked systems }\\n  - { id: documented_repair, name: \\\"design, test and document a difficult repair\\\" }\\nmasterwork: A repair that passes every test and comes with a log someone else can follow.\\npractice: [3, 6, 10]\\nper_day: 2\\nfailure: { outcome: leftover, share: 0.5, why: \\\"Slow down. Measure twice, cut once, and test before anyone trusts it.\\\", critical: damaged }\\n\"}], \"world\": \"\", \"files\": []}"
   }
 }

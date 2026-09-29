@@ -16,20 +16,11 @@ export const MapStyleSchema = z
     unknown: Colour,
     label: Colour,
     label_shadow: Colour,
-    /** Tints per terrain: the engine's lands (fen, water, woods, heath, fields), their kinds (bog, hummock, ridge, channel), a level's own (tunnel, crown), and any a world names. */
-    terrain: z.record(z.string(), Tints),
+    terrain: z.record(z.string(), Tints).describe('Tints per terrain: the engine\'s lands (fen, water, woods, heath, fields), their kinds (bog, hummock, ridge, channel), a level\'s own (tunnel, crown), and any a world names.'),
     ways: z.object({ road: Colour, path: Colour, canal: Colour }).strict(),
-    /**
-     * The colour of each sign on the land, by the sign's id (M10.20), and of
-     * `stairs`, the way up or down. `peat_edge` is the rim of a pit-shaped
-     * sign (the name is the Nethermarch's, kept so every world still loads);
-     * without it the rim is the sign's own colour, a little lighter.
-     */
-    glyph: z.record(z.string(), Colour).refine((g) => typeof g['stairs'] === 'string', { message: 'needs a colour for stairs, the way up or down' }),
-    /** A place you have been (after the M10 playtest): its marker, in a colour that stands out. A palette without one takes the default's. */
-    visited: Colour.optional(),
-    /** The thin line of the way you walked. */
-    trail: Colour.optional(),
+    glyph: z.record(z.string(), Colour).refine((g) => typeof g['stairs'] === 'string', { message: 'needs a colour for stairs, the way up or down' }).describe('The colour of each sign on the land, by the sign\'s id (M10.20), and of `stairs`, the way up or down. `peat_edge` is the rim of a pit-shaped sign (the name is the Nethermarch\'s, kept so every world still loads); without it the rim is the sign\'s own colour, a little lighter.'),
+    visited: Colour.optional().describe('A place you have been (after the M10 playtest): its marker, in a colour that stands out. A palette without one takes the default\'s.'),
+    trail: Colour.optional().describe('The thin line of the way you walked.'),
   })
   .strict()
 export type MapStyle = z.infer<typeof MapStyleSchema>
@@ -52,32 +43,24 @@ export const SignSchema = z
   .object({
     name: z.string().min(1),
     shape: z.enum(SIGN_SHAPES),
-    /** More than a colour can say: the map adds a mark (! or ?) and the legend the word. */
-    means: z.enum(['danger', 'uncertain']).optional(),
-    /** On which land it lies, and on what share of those hexes (0 to 1): `{ fen: 0.1 }`. */
-    on: z.record(z.string(), z.number().min(0).max(1)).default({}),
-    /** The line the stranger reads walking through its hex. */
-    text: z.string().optional(),
-    /** Firm ground: quicker to cross, never soft, and what a hidden path turns wet ground into. */
-    firm: z.boolean().optional(),
-    /** Water in the ground: a way laid across it fills it in. */
-    wet: z.boolean().optional(),
-    /** A walk stops here to look, with this line. */
-    stops: z.string().optional(),
+    means: z.enum(['danger', 'uncertain']).optional().describe('More than a colour can say: the map adds a mark (! or ?) and the legend the word.'),
+    on: z.record(z.string(), z.number().min(0).max(1)).default({}).describe('On which land it lies, and on what share of those hexes (0 to 1): `{ fen: 0.1 }`.'),
+    text: z.string().optional().describe('The line the stranger reads walking through its hex.'),
+    firm: z.boolean().optional().describe('Firm ground: quicker to cross, never soft, and what a hidden path turns wet ground into.'),
+    wet: z.boolean().optional().describe('Water in the ground: a way laid across it fills it in.'),
+    stops: z.string().optional().describe('A walk stops here to look, with this line.'),
   })
   .strict()
 export type Sign = z.infer<typeof SignSchema>
 
 export const MapPaletteSchema = z
   .object({
-    /** What the legend calls each terrain in this world. */
-    names: z.record(z.string(), z.string()).default({}),
-    /** The signs on this world's land, in order (M10.20); without them the Nethermarch's five. */
+    names: z.record(z.string(), z.string()).default({}).describe('What the legend calls each terrain in this world.'),
     signs: z
       .record(z.string().regex(/^[a-z0-9_]+$/), SignSchema)
       .refine((s) => Object.keys(s).length <= MAX_SIGNS, { message: `at most ${MAX_SIGNS} signs: the map keeps a sign in three bits of a hex` })
       .refine((s) => !('stairs' in s), { message: 'stairs is the way up or down, not a sign on the land' })
-      .optional(),
+      .optional().describe('The signs on this world\'s land, in order (M10.20); without them the Nethermarch\'s five.'),
     dark: MapStyleSchema,
     paper: MapStyleSchema,
   })
@@ -96,8 +79,7 @@ export const SURFACE = 'surface'
 export const WorldMapSchema = z
   .object({
     palette: MapPaletteSchema.optional(),
-    /** The levels, from below to above; the surface is always there. */
-    levels: z.array(LevelSchema).default([{ id: SURFACE, name: 'ground level' }]),
+    levels: z.array(LevelSchema).default([{ id: SURFACE, name: 'ground level' }]).describe('The levels, from below to above; the surface is always there.'),
   })
   .strict()
 export type WorldMap = z.infer<typeof WorldMapSchema>

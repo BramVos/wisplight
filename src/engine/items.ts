@@ -89,8 +89,9 @@ export function matchItem(content: Content, text: string, among?: Iterable<strin
     const names = [id.replace(/_/g, ' '), def.name, def.plural ?? `${def.name}s`, ...def.aliases].map((n) => n.toLowerCase())
     if (names.includes(wanted)) return id
   }
-  // Part of a name, from the start of a word (M10.29: "on" found the field ration inside its name).
-  const starts = new RegExp(`(^|\\s)${wanted.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`)
+  // Part of a name, from the start of a word (M10.29: "on" found the field ration inside its name), of three letters or
+  // more; a shorter one only as a whole word ("s" is south, never the short-range communicator).
+  const starts = new RegExp(`(^|\\s)${wanted.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}${wanted.length < 3 ? '(\\s|$)' : ''}`)
   for (const id of ids) {
     const def = content.items.get(id)
     if (def && (starts.test(def.name.toLowerCase()) || def.aliases.some((a) => starts.test(a.toLowerCase())))) return id

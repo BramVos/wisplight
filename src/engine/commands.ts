@@ -405,7 +405,7 @@ function examineHere(world: World, target: string): Output | undefined {
   if (npcId) {
     const npc = world.npc(npcId)
     const activity = world.npcState(npcId).activity
-    return text(`${publicShort(world, npcId)}. ${npc.appearance}${activity ? ` ${capital(world.say('{they}', npcId))} ${isOrAre(npc)} ${activity}.` : ''}`)
+    return text(`${capital(publicShort(world, npcId))}. ${npc.appearance}${activity ? ` ${capital(world.say('{they}', npcId))} ${isOrAre(npc)} ${activity}.` : ''}`)
   }
   const object = findObjectHere(world, target)
   if (object) {
@@ -423,6 +423,13 @@ function examineHere(world: World, target: string): Output | undefined {
     }
     const read = pinned.length ? ` Among the notes, newer than the rest: ${pinned.map((f) => `"${f.text.precise}"`).join(' ')}` : ''
     return text(`${object.instance.description ?? object.type.description}${notes.length ? ` ${notes.join(' ')}` : ''}${read}${hint}`)
+  }
+  // A direction is a way, never a thing in the pack (M10.29: "l s" found the short-range communicator, "l w" the coat).
+  const direction = parseDirection(target.trim())
+  if (direction) {
+    const there = lookThere(world, target)
+    if (there || isHexId(here) || canSetOut(world, here)) return there
+    return text(`You see no way ${direction} from here.`)
   }
   // What belongs to an object here comes first (the apple on the stone), then what you carry and what lies here, with where (M10.4).
   const thing = lookThing(world, target)
@@ -1044,13 +1051,32 @@ export function findNpcAnywhere(world: World, words: string): string | undefined
 }
 
 export function findNpcHere(world: World, words: string): string | undefined {
+  return npcsFitting(world, words)[0]
+}
+
+/** Everyone here the words fit equally well: by a whole name first, else by the start of one. */
+function npcsFitting(world: World, words: string): string[] {
   const wanted = words.trim().toLowerCase().replace(/^(the|de|het)\s+/, '')
-  if (!wanted) return undefined
+  if (!wanted) return []
   const here = world.npcsAt(world.state.player.location)
-  return (
-    here.find((id) => namesOf(world.npc(id)).some((name) => name === wanted)) ??
-    here.find((id) => namesOf(world.npc(id)).some((name) => name.startsWith(wanted) || name.includes(` ${wanted}`)))
-  )
+  const whole = here.filter((id) => namesOf(world.npc(id)).some((name) => name === wanted))
+  return whole.length ? whole : here.filter((id) => namesOf(world.npc(id)).some((name) => name.startsWith(wanted) || name.includes(` ${wanted}`)))
+}
+
+/** Commands aimed at one person here. */
+const AT_ONE = new Set(['talk', 'examine', 'follow', 'attack'])
+
+/**
+ * Which of them (M10.29: "talk dr" with both doctors in the room took the
+ * first): when the words fit several people here alike, the game asks.
+ */
+export function whichOfThem(world: World, command: Command): Output[] | undefined {
+  if (!AT_ONE.has(command.verb)) return undefined
+  const words = command.verb === 'talk' ? command.args.join(' ').split(/\s+(?:about|over|naar)\s+/i)[0]! : command.args.join(' ')
+  const fitting = npcsFitting(world, words)
+  if (fitting.length < 2) return undefined
+  const verb = command.verb === 'examine' ? 'look' : command.verb
+  return offer(world, 'Which of them do you mean?', fitting.map((id) => ({ label: world.npc(id).name, command: `${verb} ${world.npc(id).name}` })))
 }
 
 export function namesOf(npc: Npc): string[] {

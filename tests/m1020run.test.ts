@@ -55,7 +55,7 @@ describe('M10.20: the real run of a world', () => {
     const place = (id: string, exits: Record<string, { to: string; minutes?: number }>) => ({
       kind: 'location' as const,
       id,
-      yaml: `id: ${id}\nname: ${id}\narea: port_vesper\ndescription:\n  day: You stand here. It smells of salt. A way leads on.\nexits: ${JSON.stringify(exits)}\n`,
+      yaml: `id: ${id}\nname: ${id.slice(4).replace(/_/g, ' ')}\narea: port_vesper\ndescription:\n  day: You stand here. It smells of salt. A way leads on.\nexits: ${JSON.stringify(exits)}\n`,
     })
     const result = draftResult(files, {
       changes: [
@@ -127,7 +127,7 @@ describe('M10.20: the real run of a world', () => {
 
   it('puts right a proposal that did not load, with only what the chronicler corrects', () => {
     const files = newWorldFiles('quietreach', 'The Quiet Reach')
-    const topic = (id: string, summary: string) => ({ kind: 'topic' as const, id, yaml: `id: ${id}\nname: ${id}\nkind: lore\nsummary: ${summary}\n` })
+    const topic = (id: string, summary: string) => ({ kind: 'topic' as const, id, yaml: `id: ${id}\nname: ${id.replace(/_/g, ' ')}\nkind: lore\nsummary: ${summary}\n` })
     // One good topic, one with a line of YAML that does not read (People, try 2 of the real run).
     const answer = JSON.stringify({ say: 'Two things people talk about.', questions: ['Is that right?'], changes: [topic('winter_supplies', 'Whether the stores last the winter.'), topic('night_of_the_open_door', 'The night: the door stood open.')], world: '', files: [] })
     const draft = readDraft(files, answer)

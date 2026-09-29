@@ -9,6 +9,7 @@ import { callName } from './content'
 import { leakedNames, unknownNames, vocabularyOf } from './dialogue/guard'
 import { worldFrame } from './dialogue/prompt'
 import { crossesLimits, readsAsInstruction, worldGuide, worldText } from './safety'
+import { idWordsIn } from './idwords'
 import { itemName, remedyItem } from './items'
 import { questsOf } from './life'
 import { factById, factOrArchived } from './news'
@@ -411,6 +412,12 @@ export function applyOutput(world: World, run: ChronicleRun, output: ChronicleOu
       // Lore goes into other prompts later (what people know): text that reads as an instruction to a model is never kept (M10.19).
       if (readsAsInstruction(text)) {
         problems.push(`${what}: reads like an instruction to a model`)
+        return false
+      }
+      // Never an id in a line the player reads (M10.29 M).
+      const ids = idWordsIn(text)
+      if (ids.length) {
+        problems.push(`${what}: holds ${ids.join(', ')}, an id; write it in words`)
         return false
       }
       const invented = unknownNames(text, words)

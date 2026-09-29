@@ -72,17 +72,13 @@ const AncestrySchema = z
     id: Id,
     name: z.string(),
     text: z.string(),
-    /** choice: that many +1s the player places freely. */
-    attributes: z.partialRecord(z.enum([...ATTRIBUTES, 'choice']), z.number().int()),
+    attributes: z.partialRecord(z.enum([...ATTRIBUTES, 'choice']), z.number().int()).describe('choice: that many +1s the player places freely.'),
     hp: z.number().int().positive(),
     special: z.string(),
-    /** A skill with +1 is cheaper to raise, one with -1 dearer (after DCSS). */
-    aptitude: z.record(z.string(), z.number().int().min(-1).max(1)).default({}),
+    aptitude: z.record(z.string(), z.number().int().min(-1).max(1)).default({}).describe('A skill with +1 is cheaper to raise, one with -1 dearer (after DCSS).'),
     immune: z.array(z.string()).default([]),
-    /** Other words for it in CREATE (M10.17): "veenvolk". */
-    aliases: z.array(z.string()).default([]),
-    /** NPCs with one of these quirks trust it less (the old customs and a changeling). */
-    distrusted_by: z.array(z.string()).default([]),
+    aliases: z.array(z.string()).default([]).describe('Other words for it in CREATE (M10.17): "veenvolk".'),
+    distrusted_by: z.array(z.string()).default([]).describe('NPCs with one of these quirks trust it less (the old customs and a changeling).'),
   })
   .strict()
 
@@ -90,20 +86,11 @@ const BackgroundSchema = z
   .object({
     id: Id,
     name: z.string(),
-    /** Two skills and a talent where the world has classes; a world without them (The Quiet Reach) leaves them out (M10.29 C). */
-    skills: z.array(Id).refine((a) => a.length === 0 || a.length === 2, 'two skills').default([]),
-    talent: Id.or(z.literal('')).default(''),
-    /**
-     * People who know you from before, and topics already in your journal. A person may come with how you know
-     * each other (M10.29 C): { who: npc_tessa_rook, how: your shipmate on the Harrow crossing }.
-     */
-    knows: z.array(z.union([z.string(), z.object({ who: z.string(), how: z.string() }).strict()])).default([]),
+    skills: z.array(Id).refine((a) => a.length === 0 || a.length === 2, 'two skills').default([]).describe('Two skills where the world has classes; a world without them (The Quiet Reach) leaves them out (M10.29 C).'),
+    talent: Id.or(z.literal('')).default('').describe('A talent where the world has classes; left out in a world without them.'),
+    knows: z.array(z.union([z.string(), z.object({ who: z.string(), how: z.string() }).strict()])).default([]).describe('People who know you from before, and topics already in your journal. A person may come with how you know each other (M10.29 C): { who: <person id>, how: your shipmate on the Harrow crossing }.'),
     topics: z.array(z.string()).default([]),
-    /**
-     * Why you are here (M10.9): two sentences in the second person, with the world's own names; whom you were told to
-     * ask for first (an NPC); and what you heard that brought you (a topic, in the journal from the start).
-     */
-    reason: z.string().optional(),
+    reason: z.string().optional().describe('Why you are here (M10.9): two sentences in the second person, with the world\'s own names; whom you were told to ask for first (an NPC); and what you heard that brought you (a topic, in the journal from the start).'),
     contact: z.string().optional(),
     heard: z.string().optional(),
   })
@@ -125,16 +112,14 @@ const ClassSchema = z
     hp: z.number().int().positive(),
     trained: z.array(Id),
     armour: z.enum(['none', 'light', 'medium', 'heavy']),
-    /** The levels at which attack, class DC and defence become trained, expert and master (+2, +4, +6). */
     proficiency: z
       .object({ attack: z.array(z.number().int().min(1).max(10)), class_dc: z.array(z.number().int().min(1).max(10)), defence: z.array(z.number().int().min(1).max(10)) })
       .strict()
-      .default({ attack: [1], class_dc: [1], defence: [1] }),
+      .default({ attack: [1], class_dc: [1], defence: [1] }).describe('The levels at which attack, class DC and defence become trained, expert and master (+2, +4, +6).'),
     gear: z.record(z.string(), z.number().int().positive()).default({}),
     core: TalentSchema,
     trees: z.array(TreeSchema).length(3),
-    /** Keeps its distance in a fight, whatever it holds (M9.1; was a list of Nethermarch classes in the code). */
-    keeps_range: z.boolean().default(false),
+    keeps_range: z.boolean().default(false).describe('Keeps its distance in a fight, whatever it holds (M9.1; was a list of Nethermarch classes in the code).'),
   })
   .strict()
 
@@ -146,13 +131,10 @@ const PatronSchema = z
     name: z.string(),
     text: z.string(),
     // Favour and blessings are for a world with characters; one without may name patrons all the same (M10.20).
-    /** Deeds the patron likes, with the favour they give. */
-    values: z.record(z.string(), z.number().int()).default({}),
-    /** Deeds the patron forbids, with the favour they cost. */
-    forbids: z.record(z.string(), z.number().int()).default({}),
+    values: z.record(z.string(), z.number().int()).default({}).describe('Deeds the patron likes, with the favour they give.'),
+    forbids: z.record(z.string(), z.number().int()).default({}).describe('Deeds the patron forbids, with the favour they cost.'),
     blessings: z.array(BlessingSchema).default([]),
-    /** The deed swearing to this patron counts as, for companions who approve or not (M10.17). */
-    sworn: z.string().optional(),
+    sworn: z.string().optional().describe('The deed swearing to this patron counts as, for companions who approve or not (M10.17).'),
   })
   .strict()
 
@@ -160,19 +142,14 @@ const ConditionSchema = z.object({ id: Id, name: z.string(), text: z.string(), m
 
 const DeathSchema = z
   .object({
-    /** The walk while dead; {guide} is the patron who sends you back, or the guide. */
-    vision: z.string(),
+    vision: z.string().describe('The walk while dead; {guide} is the patron who sends you back, or the guide.'),
     guide: z.string(),
-    /** The patron who is death's own guide (the Grey Rider): sworn to them, the guide sends you back, not a patron by name. */
-    patron: z.string().optional(),
+    patron: z.string().optional().describe('The patron who is death\'s own guide (the Grey Rider): sworn to them, the guide sends you back, not a patron by name.'),
     wake: z.string(),
-    /** The mark: {lost} is the line about the purse, or nothing. */
-    mark: z.string(),
-    /** Where a rite lifts it, when the stranger tries elsewhere; what the rite says; and when nothing is to lift. */
-    rite_where: z.string(),
+    mark: z.string().describe('The mark: {lost} is the line about the purse, or nothing.'),
+    rite_where: z.string().describe('Where a rite lifts it, when the stranger tries elsewhere; what the rite says; and when nothing is to lift.'),
     rite_done: z.string(),
     rite_nothing: z.string(),
-    /** After the third death: a price before the rite takes again (an item, left at a place with this tag or name). */
     price: z
       .object({
         warn: z.string(),
@@ -185,33 +162,27 @@ const DeathSchema = z
         nothing: z.string(),
       })
       .strict()
-      .optional(),
+      .optional().describe('After the third death: a price before the rite takes again (an item, left at a place with this tag or name).'),
   })
   .strict()
 
 export const RulesSchema = z
   .object({
-    xp_per_level: z.number().int().positive().default(1000),
+    xp_per_level: z.number().int().positive().default(1000).describe('Experience needed for each level: level n is reached at (n - 1) times this.'),
     // Every list may be left out (M10.20): a world without characters may still have patrons, death and conditions.
-    skills: z.array(SkillSchema).default([]),
-    ancestries: z.array(AncestrySchema).default([]),
-    backgrounds: z.array(BackgroundSchema).default([]),
-    general_talents: z.array(TalentSchema).default([]),
-    conditions: z.array(ConditionSchema).default([]),
-    classes: z.array(ClassSchema).default([]),
-    patrons: z.array(PatronSchema).default([]),
-    /** The ready-made traveller for a game started without making a character (M9.1: per world). */
+    skills: z.array(SkillSchema).default([]).describe('The skills of a character, each with its attribute.'),
+    ancestries: z.array(AncestrySchema).default([]).describe('Where a character can come from, with what it gives.'),
+    backgrounds: z.array(BackgroundSchema).default([]).describe('What a character did before, with what it gives.'),
+    general_talents: z.array(TalentSchema).default([]).describe('Talents any character may take.'),
+    conditions: z.array(ConditionSchema).default([]).describe('Conditions a character can suffer (hurt, sick, cursed) and what they do.'),
+    classes: z.array(ClassSchema).default([]).describe('The classes of a character, with what each gives by level.'),
+    patrons: z.array(PatronSchema).default([]).describe('The patrons a character may follow, and what each gives.'),
     ready_made: z
       .object({ name: z.string(), ancestry: Id, background: Id, class: Id, boosts: z.array(AttributeEnum), skills: z.array(Id), talent: Id })
       .strict()
-      .optional(),
-    /** For a suggested character: the ancestry for each key attribute (M9.1: per world); without it, the one that gives the key most. */
-    suggest: z.partialRecord(AttributeEnum, Id).optional(),
-    /**
-     * What death is like in this world (M10.17; the Way of the Grey Rider in the Nethermarch): the vision, the waking,
-     * the mark and how a rite lifts it, and the price after the third time. Without it, plain words and no price.
-     */
-    death: DeathSchema.optional(),
+      .optional().describe('The ready-made traveller for a game started without making a character (M9.1: per world).'),
+    suggest: z.partialRecord(AttributeEnum, Id).optional().describe('For a suggested character: the ancestry for each key attribute (M9.1: per world); without it, the one that gives the key most.'),
+    death: DeathSchema.optional().describe('What death is like in this world (M10.17; the Way of the Grey Rider in the Nethermarch): the vision, the waking, the mark and how a rite lifts it, and the price after the third time. Without it, plain words and no price.'),
   })
   .strict()
 export type Rules = z.infer<typeof RulesSchema>
@@ -229,28 +200,24 @@ const AttackSchema = z
     bonus: z.number().int(),
     damage: Dice,
     kind: z.enum(['melee', 'ranged']).default('melee'),
-    /** What a critical hit does besides double damage. */
-    crit: z.string().optional(),
-    /** An effect on every hit, with a save against its DC. */
-    effect: z.object({ condition: Id, value: z.number().int().default(1), save: SaveEnum, dc: z.number().int() }).strict().optional(),
+    crit: z.string().optional().describe('What a critical hit does besides double damage.'),
+    effect: z.object({ condition: Id, value: z.number().int().default(1), save: SaveEnum, dc: z.number().int() }).strict().optional().describe('An effect on every hit, with a save against its DC.'),
   })
   .strict()
 
 export const CreatureSchema = z
   .object({
-    id: Id,
-    name: z.string(),
-    plural: z.string().optional(),
-    kind: z.enum(['beast', 'human', 'spirit', 'undead', 'fey']),
-    level: z.number().int().min(-1).max(20),
-    hp: z.number().int().positive(),
-    defence: z.number().int(),
-    /** Saves; missing ones are level + 3. */
-    saves: z.partialRecord(SaveEnum, z.number().int()).default({}),
-    perception: z.number().int().optional(),
-    attacks: z.array(AttackSchema).default([]),
-    abilities: z.array(AbilitySchema.extend({ id: Id, name: z.string(), dc: z.number().int().optional() }).strict()).default([]),
-    /** How it holds up: courage from -2 to 3, fleeing below a share of its hit points, giving up. */
+    id: Id.describe('The creature\'s id: a key, never changed once committed, and never shown to the player.'),
+    name: z.string().describe('Its name as the player sees it.'),
+    plural: z.string().optional().describe('Its name for more than one, when adding an s is wrong.'),
+    kind: z.enum(['beast', 'human', 'spirit', 'undead', 'fey']).describe('What it is: beast, human, spirit, undead or fey.'),
+    level: z.number().int().min(-1).max(20).describe('Its level, from -1 to 20: how hard it is to beat.'),
+    hp: z.number().int().positive().describe('Its hit points.'),
+    defence: z.number().int().describe('Its defence: what an attack must reach to hit it.'),
+    saves: z.partialRecord(SaveEnum, z.number().int()).default({}).describe('Saves; missing ones are level + 3.'),
+    perception: z.number().int().optional().describe('Its perception, for who acts first; left out, its level plus 4.'),
+    attacks: z.array(AttackSchema).default([]).describe('Its attacks: bonus, damage and what a hit does.'),
+    abilities: z.array(AbilitySchema.extend({ id: Id, name: z.string(), dc: z.number().int().optional() }).strict()).default([]).describe('What else it can do in a fight, each with a name and a difficulty to resist.'),
     morale: z
       .object({
         courage: z.number().int().min(-2).max(3).default(0),
@@ -259,59 +226,41 @@ export const CreatureSchema = z
         never: z.boolean().default(false),
       })
       .strict()
-      .default({ courage: 0, surrenders: false, never: false }),
-    immune: z.array(z.string()).default([]),
-    /** Things that hurt it more: iron, fire, light. */
-    weak: z.record(z.string(), z.number()).default({}),
-    /**
-     * The faction it belongs to (M10.17, before the Goat-Riders by name in code): beating it costs standing with that
-     * faction, paying it gains a little, binding one for the law costs, letting one go gains; and the fact of a fight is
-     * about that faction's topic, when there is one.
-     */
-    faction: z.string().optional(),
-    /** Further reputation per outcome of a fight with it: "you stood up to the Goat-Riders" with the village. */
+      .default({ courage: 0, surrenders: false, never: false }).describe('How it holds up: courage from -2 to 3, fleeing below a share of its hit points, giving up.'),
+    immune: z.array(z.string()).default([]).describe('Damage and conditions that do nothing to it.'),
+    weak: z.record(z.string(), z.number()).default({}).describe('Things that hurt it more: iron, fire, light.'),
+    faction: z.string().optional().describe('The faction it belongs to (M10.17, before the Goat-Riders by name in code): beating it costs standing with that faction, paying it gains a little, binding one for the law costs, letting one go gains; and the fact of a fight is about that faction\'s topic, when there is one.'),
     reputation: z
       .partialRecord(z.enum(['won', 'paid', 'bound', 'freed', 'killed']), z.array(z.object({ faction: z.string(), by: z.number().int(), why: z.string() }).strict()))
-      .default({}),
-    /** What the stories say (Recall): a Lore DC, and the weakness it tells. */
-    lore: z.object({ dc: z.number().int(), text: z.string(), topic: z.string().optional() }).strict().optional(),
-    text: z.string(),
-    /** Words for the fight: how it attacks, how it flees, how it gives up. */
-    says: z.object({ hit: z.string().optional(), flee: z.string().optional(), surrender: z.string().optional(), down: z.string().optional() }).strict().default({}),
+      .default({}).describe('Further reputation per outcome of a fight with it: "you stood up to the Goat-Riders" with the village.'),
+    lore: z.object({ dc: z.number().int(), text: z.string(), topic: z.string().optional() }).strict().optional().describe('What the stories say (Recall): a Lore DC, and the weakness it tells.'),
+    text: z.string().describe('What the stranger sees of it, in a sentence or two.'),
+    says: z.object({ hit: z.string().optional(), flee: z.string().optional(), surrender: z.string().optional(), down: z.string().optional() }).strict().default({}).describe('Words for the fight: how it attacks, how it flees, how it gives up.'),
   })
   .strict()
 export type Creature = z.infer<typeof CreatureSchema>
 
 export const EncounterSchema = z
   .object({
-    id: Id,
-    name: z.string(),
-    /** Where it can happen: locations, or area ids for the hexes of a region. */
-    places: z.array(z.string()).min(1),
-    /** The chance each time the player comes there, and how many days before it can happen again. */
-    chance: z.number().min(0).max(1).default(0.25),
-    again_after: z.number().int().min(0).default(3),
-    hours: z.tuple([z.number().int().min(0).max(23), z.number().int().min(0).max(24)]).optional(),
+    id: Id.describe('The encounter\'s id: a key, never changed once committed, and never shown to the player.'),
+    name: z.string().describe('What it is, in a few words.'),
+    places: z.array(z.string()).min(1).describe('Where it can happen: locations, or area ids for the hexes of a region.'),
+    chance: z.number().min(0).max(1).default(0.25).describe('The chance each time the player comes there.'),
+    again_after: z.number().int().min(0).default(3).describe('Days before it can happen again.'),
+    hours: z.tuple([z.number().int().min(0).max(23), z.number().int().min(0).max(24)]).optional().describe('Only between these hours: from, to.'),
     foes: z
       .array(z.object({ creature: Id, count: z.number().int().min(1).default(1), range: z.enum(RANGES).default('near'), joins: z.number().int().min(1).optional() }).strict())
-      .min(1),
-    opening: z.string(),
-    /** A demand before blows: pay and it ends. */
-    demand: z.object({ amount: z.number().int().positive(), text: z.string(), paid: z.string() }).strict().optional(),
-    /** What happens if the player gives up. */
-    surrender: z.object({ take: z.enum(['half_money', 'all_money', 'nothing']), text: z.string() }).strict(),
-    flee_dc: z.number().int().default(15),
-    /** The fact the village hears afterwards; {outcome} is filled in. */
-    news: z.object({ title: z.string(), belang: z.number().int().min(0).max(5).default(2) }).strict().optional(),
-    /** Only while this flag is set (the fen without its keeper), or never while this one is (the trick unmasked). */
-    when_flag: z.string().optional(),
-    unless_flag: z.string().optional(),
-    /** A flag set when the player wins (for quests). */
-    win_flag: z.string().optional(),
-    /** With a load on the way (M9.1): how likely then, and what share of the load they take from whoever gives in. */
-    load: z.object({ chance: z.number().min(0).max(1), take: z.number().min(0).max(1) }).strict().optional(),
-    /** Once met, a disloyal companion may hear an offer from this side (M10.17, before the Goat-Riders' toll by name). */
-    tempts: z.boolean().default(false),
+      .min(1).describe('Who it is: creatures, how many, how near, and when more join.'),
+    opening: z.string().describe('What the stranger reads when it starts.'),
+    demand: z.object({ amount: z.number().int().positive(), text: z.string(), paid: z.string() }).strict().optional().describe('A demand before blows: pay and it ends.'),
+    surrender: z.object({ take: z.enum(['half_money', 'all_money', 'nothing']), text: z.string() }).strict().describe('What happens if the player gives up.'),
+    flee_dc: z.number().int().default(15).describe('How hard it is to get away.'),
+    news: z.object({ title: z.string(), belang: z.number().int().min(0).max(5).default(2) }).strict().optional().describe('The fact the village hears afterwards; {outcome} is filled in.'),
+    when_flag: z.string().optional().describe('Only while this flag is set (the fen without its keeper).'),
+    unless_flag: z.string().optional().describe('Never while this flag is set (the trick unmasked).'),
+    win_flag: z.string().optional().describe('A flag set when the player wins (for quests).'),
+    load: z.object({ chance: z.number().min(0).max(1), take: z.number().min(0).max(1) }).strict().optional().describe('With a load on the way (M9.1): how likely then, and what share of the load they take from whoever gives in.'),
+    tempts: z.boolean().default(false).describe('Once met, a disloyal companion may hear an offer from this side (M10.17, before the Goat-Riders\' toll by name).'),
   })
   .strict()
 export type Encounter = z.infer<typeof EncounterSchema>

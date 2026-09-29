@@ -35,6 +35,22 @@ describe('M10.29 E and N: the things you carry', () => {
     expect(await said(engine, 'l on')).not.toMatch(/field ration/)
   })
 
+  it('looks at a way before the pack: "l s" is south, never the short-range communicator (Bram\'s sessions of 29 September)', async () => {
+    const engine = stranger()
+    expect(await said(engine, 'l e')).toMatch(/^To the east:/)
+    expect(await said(engine, 'l s')).toBe('You see no way south from here.')
+    expect(await said(engine, 'l w')).toBe('You see no way west from here.')
+    // Three letters or more find a word's start; fewer only a whole word.
+    expect(await said(engine, 'l coa')).toMatch(/^A weatherproof coat \(in your pack\)/)
+  })
+
+  it('uses a light you carry: it lights the way (a bought lamp did nothing)', async () => {
+    const engine = stranger()
+    engine.state.player.inventory['field_lamp'] = 1
+    expect(await said(engine, 'use lamp')).toBe('The field lamp lights your way in the dark while you carry it.')
+    expect(await said(engine, 'l lamp')).toMatch(/You could use it or give it\.$/)
+  })
+
   it('reads a thing in the pack before a person, and takes nothing out of a pack it is already in', async () => {
     const engine = stranger()
     engine.state.player.location = 'loc_commons'

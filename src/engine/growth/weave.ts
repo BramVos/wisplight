@@ -1,3 +1,4 @@
+import { idWordsIn } from '../idwords'
 import { checkContent, RELATION_ROLES, type RelationRole } from '../content'
 import { cachedSystem, type LlmRequest } from '../dialogue/llm'
 import { worldFrame } from '../dialogue/prompt'
@@ -40,7 +41,8 @@ const MOST_KNOWN = 16
 function fit(text: unknown, most: number): string | undefined {
   if (typeof text !== 'string') return undefined
   const t = text.trim()
-  if (!t || t.length > most || crossesLimits(t) || readsAsInstruction(t)) return undefined
+  // Never an id in a line the player reads (M10.29 M).
+  if (!t || t.length > most || crossesLimits(t) || readsAsInstruction(t) || idWordsIn(t).length) return undefined
   return t
 }
 

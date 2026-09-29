@@ -1,5 +1,32 @@
 # Changelog
 
+## M10.29 deel: de werkbank, wat je draagt, en nooit een id in tekst, 29 september 2026
+
+- **De werkbank.** Werk dat niets maakt, zoals een lamp nakijken, zegt geen "You have ." meer. Mislukt het, dan staat er "Nothing comes of it this time." en geen verhaal over verspild materiaal. Een les bij Tessa kan alleen als Tessa aan de bank staat en wakker is ("Tessa is not here."). Na drie mislukkingen op rij is de soldeerbout oververhit en rust het werk een uur. Op Skerrow rust het zalf maken anderhalf uur na drie mislukkingen.
+- **Wat je draagt.** Gebruiken, lezen, pakken en kijken zoeken eerst in je rugzak, dus `use short-range communicator`, `read terminal` en `get pocket terminal from pack` werken. Kijken naar iets wat je draagt, zegt wat je ermee kunt. Niko heeft zijn notitieboek echt bij zich, en je kunt het lezen zodra het van jou is. Een lamp die je draagt, kun je gebruiken.
+- **Uit je sessies van vandaag.** `l s` en `l w` gaven de communicator en de jas in plaats van de richting. Dat kwam door de rugzak-eerst van hierboven en is hersteld: een richting gaat voor, en een woord van één of twee letters vindt alleen een heel woord. `talk dr` en `look dr` met beide dokters in de kamer vragen nu wie je bedoelt. Kijken naar iemand begint met een hoofdletter.
+- **Nooit een id in tekst.** "The stranger is a journeyman npc_tessa_rook now" komt niet meer voor. Het ambacht van The Quiet Reach heeft als maker "field technician", en de titel van een ambacht valt nooit meer terug op een id. De contentcontrole weigert een id in elk tekstveld dat je leest, ook in de stemkit. De groei en de kroniekverteller laten zo'n tekst niet door, en de wereldbouw stuurt zo'n voorstel terug met de reden. De test las zijn eigen opnames na en vond dezelfde fout in een streek van de Nethermarch (`maker: npc_trees_driestromen`).
+- **Elk veld zegt wat erin hoort.** Alle 457 velden van alle soorten hebben nu een beschrijving in het schema. `docs/CONTENT.md` toont die in een eigen kolom, en de kroniekverteller krijgt ze bij elke stap van de wereldbouw achter de velden. Een nieuw veld zonder beschrijving laat de tests falen.
+
+Testen:
+- Start The Quiet Reach en typ `use short-range communicator`, `l terminal`, `read terminal`, `l s` en `l e`.
+- Ga naar de werkbank in de Workshop, probeer `use electronics bench learn` met en zonder Tessa erbij, en laat het werk drie keer mislukken.
+- Zet beide dokters in één kamer (of wacht tot ze samen eten in de Commons) en typ `talk dr`.
+- Lees de kolom "what it holds" in `docs/CONTENT.md`.
+- Tests staan in `tests/m1029bench.test.ts`, `tests/m1029carried.test.ts`, `tests/m1029ids.test.ts` en `tests/m1029names.test.ts`.
+
+Kosten: er is geen nieuwe soort aanroep. De stappen van de wereldbouw worden 2.000 tot 6.000 tekens langer door de beschrijvingen, ongeveer 11% over een hele wereldbouw. Dat is een paar procent van de $2,84 die The Quiet Reach kostte, en het zijn precies de woorden die de fout met `maker` hadden voorkomen.
+
+Bekende gaten: de opgenomen wereldbouw van The Quiet Reach heeft in de stap Economie nu een correctie die met de hand is geschreven (in de fixture gemarkeerd als `hand`), omdat er geen echt antwoord op de nieuwe terugvraag is opgenomen. Een verwijzing naar een id die niet bestaat, wordt gecontroleerd waar dat al gebeurde, niet opnieuw voor elk veld.
+
+Wat de editor en de kroniekverteller leerden:
+- Onder Check staat een regel bij werk waarvan de tekst iemand noemt zonder `with` of `access: staff`, en een regel bij elk id in een tekst.
+- De stap Economie van de wereldgids en `docs/NEW-WORLD.md` zeggen wat `maker` is, wat `with` doet, en wat `crafts.fail_cooldown` met `cooldown_text` doet. De stap Mensen zegt dat een item `verbs` kan hebben.
+- De schrijfhulp weet dat een naam, maker, beschrijving of regel woorden zijn en nooit een id.
+- Skerrow heeft een rusttijd voor het zalf maken en een hoorn die je kunt blazen.
+
+Ontwerp: functioneel ontwerp, bij het dagboek, alinea "Stand na M10.29: de werkbank, wat je draagt, en nooit een id in tekst".
+
 ## M10.29 deel: waarom je hier bent, wat iedereen weet, eerdere gesprekken, de weg en luisteren, 29 september 2026
 
 - **Waarom je hier bent (C).** De intro van de wereld komt bij een nieuw spel als kaart. Het dagboek heeft een pagina Why you are here met de intro, je reden, wie je moet vragen en wat je hoorde. Wie je van vroeger kent, zegt het spel één keer bij aankomst, met hoe ("you worked a winter together in the infirmary at Harrow Station"); zijn pagina zegt het, en hij weet het zelf ook. The Quiet Reach heeft nu de vijf specialismen uit je kader, allemaal door Sorell gestuurd. Je bent eerst systems engineer; `background signal linguist` (of een ander) kiest één keer. Vijf plekken hebben een aankomstkaart: de sluis, de Commons, de hangar, de luisterkamer en het kustpad.

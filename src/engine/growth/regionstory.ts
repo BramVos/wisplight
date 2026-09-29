@@ -1,3 +1,4 @@
+import { idWordsIn } from '../idwords'
 import { askOutput, mustAsk } from '../asking'
 import type { Output } from '../commands'
 import { callName, checkContent, lockedIds, NpcSchema, QuestSchema, TopicSchema, type Content, type Location, type Npc } from '../content'
@@ -267,7 +268,8 @@ export function storyReply(text: string): StoryReply | null {
 function fit(text: unknown, most: number): string | undefined {
   if (typeof text !== 'string') return undefined
   const t = text.trim().replace(/\s+/g, ' ')
-  if (!t || t.length > most || crossesLimits(t) || readsAsInstruction(t)) return undefined
+  // Never an id in a line the player reads (M10.29 M).
+  if (!t || t.length > most || crossesLimits(t) || readsAsInstruction(t) || idWordsIn(t).length) return undefined
   return t
 }
 

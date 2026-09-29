@@ -166,8 +166,7 @@ const FactText = z
     belang: z.number().int().min(0).max(5).default(2),
     about: z.array(z.string()).default([]),
     place: z.string().optional(),
-    /** Its own kind, for watchers (M8.1); otherwise quest:<id>. */
-    kind: z.string().regex(/^[a-z0-9_:]+$/).optional(),
+    kind: z.string().regex(/^[a-z0-9_:]+$/).optional().describe('Its own kind, for watchers (M8.1); otherwise quest:<id>.'),
     claim: ClaimSchema.optional(),
   })
   .strict()
@@ -221,26 +220,19 @@ export type QuestEffect = z.infer<typeof QuestEffectSchema>
 export const QuestActionSchema = z
   .object({
     id: Id,
-    /** What the player types: regular expressions, matched against the whole command. */
-    say: z.array(z.string()).min(1),
-    /** What the player does, in plain words, for the voice to recognise in free speech (M7.2). */
-    intent: z.string().optional(),
-    /** Where it can be done: location or area ids; empty means anywhere. */
-    at: z.array(z.string()).default([]),
-    /** Someone who must be there. */
-    with: z.string().optional(),
+    say: z.array(z.string()).min(1).describe('What the player types: regular expressions, matched against the whole command.'),
+    intent: z.string().optional().describe('What the player does, in plain words, for the voice to recognise in free speech (M7.2).'),
+    at: z.array(z.string()).default([]).describe('Where it can be done: location or area ids; empty means anywhere.'),
+    with: z.string().optional().describe('Someone who must be there.'),
     when: z.array(ConditionSchema).default([]),
-    /** Said when the conditions are not met. */
-    not_yet: z.string().optional(),
+    not_yet: z.string().optional().describe('Said when the conditions are not met.'),
     check: z.object({ skill: z.string(), dc: z.number().int() }).strict().optional(),
     effects: z.array(QuestEffectSchema).default([]),
     fail: z.array(QuestEffectSchema).default([]),
     text: z.string(),
     fail_text: z.string().optional(),
-    /** Minutes it takes. */
-    minutes: z.number().int().min(0).default(5),
-    /** Once only. */
-    once: z.boolean().default(true),
+    minutes: z.number().int().min(0).default(5).describe('Minutes it takes.'),
+    once: z.boolean().default(true).describe('Once only.'),
   })
   .strict()
 export type QuestAction = z.infer<typeof QuestActionSchema>
@@ -248,8 +240,7 @@ export type QuestAction = z.infer<typeof QuestActionSchema>
 export const StageSchema = z
   .object({
     id: Id,
-    /** The journal line for this stage. */
-    text: z.string(),
+    text: z.string().describe('The journal line for this stage.'),
     on_enter: z.array(QuestEffectSchema).default([]),
     next: z.array(z.object({ when: z.array(ConditionSchema).min(1), to: z.string(), effects: z.array(QuestEffectSchema).default([]) }).strict()).default([]),
   })
@@ -260,40 +251,28 @@ export const OutcomeSchema = z
     id: Id,
     name: z.string(),
     text: z.string(),
-    /** A real way to solve it (the design rule asks for three); otherwise a failure or a turn of events. */
-    solution: z.boolean().default(true),
-    /** Reached by itself when these hold, in any stage. */
-    when: z.array(ConditionSchema).default([]),
+    solution: z.boolean().default(true).describe('A real way to solve it (the design rule asks for three); otherwise a failure or a turn of events.'),
+    when: z.array(ConditionSchema).default([]).describe('Reached by itself when these hold, in any stage.'),
     effects: z.array(QuestEffectSchema).default([]),
   })
   .strict()
 
 export const QuestBodySchema = z
   .object({
-    /** How it begins: talking to one of these, a place, or conditions. */
     starts: z
       .object({ talk: z.array(z.string()).default([]), at: z.array(z.string()).default([]), when: z.array(ConditionSchema).default([]), at_start: z.boolean().default(false) })
       .strict()
-      .default({ talk: [], at: [], when: [], at_start: false }),
-    /** What the giver says when it begins. */
-    ask: z.string().optional(),
-    stages: z.array(StageSchema).default([]),
-    actions: z.array(QuestActionSchema).default([]),
-    outcomes: z.array(OutcomeSchema).default([]),
-    /** A death of someone with a part: to an outcome or a stage (design: quests react to the world). */
-    on_death: z.record(z.string(), z.string()).default({}),
-    /** A place destroyed or flooded: to an outcome or a stage. */
-    on_place: z.record(z.string(), z.string()).default({}),
-    /** A clock that runs by itself while the quest is on: the widow's patience. */
-    timer: z.object({ clock: z.string(), every_hours: z.number().int().positive(), unless: z.array(ConditionSchema).default([]) }).strict().optional(),
-    /**
-     * Without the player (M10.6): so many days after it began (or after the game began, when the player never took it
-     * up), and only while the player is far from its people and places, the world settles it itself: the effects, and
-     * the quest is over (lapsed). Near, it waits for the player.
-     */
+      .default({ talk: [], at: [], when: [], at_start: false }).describe('How it begins: talking to one of these, a place, or conditions.'),
+    ask: z.string().optional().describe('What the giver says when it begins.'),
+    stages: z.array(StageSchema).default([]).describe('The stages in order: what the journal says at each, and when it is reached.'),
+    actions: z.array(QuestActionSchema).default([]).describe('What the stranger can do in it besides talking (give, show, use), and what that does.'),
+    outcomes: z.array(OutcomeSchema).default([]).describe('The ways it can end: when, what the journal says, and what follows.'),
+    on_death: z.record(z.string(), z.string()).default({}).describe('A death of someone with a part: to an outcome or a stage (design: quests react to the world).'),
+    on_place: z.record(z.string(), z.string()).default({}).describe('A place destroyed or flooded: to an outcome or a stage.'),
+    timer: z.object({ clock: z.string(), every_hours: z.number().int().positive(), unless: z.array(ConditionSchema).default([]) }).strict().optional().describe('A clock that runs by itself while the quest is on: the widow\'s patience.'),
     lapses: z
       .object({ after_days: z.number().positive(), when_far: z.boolean().default(true), text: z.string().optional(), effects: z.array(QuestEffectSchema).default([]) })
       .strict()
-      .optional(),
+      .optional().describe('Without the player (M10.6): so many days after it began (or after the game began, when the player never took it up), and only while the player is far from its people and places, the world settles it itself: the effects, and the quest is over (lapsed). Near, it waits for the player.'),
   })
   .partial()

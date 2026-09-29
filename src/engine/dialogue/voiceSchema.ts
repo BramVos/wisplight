@@ -13,11 +13,8 @@ const Address = z.array(z.string()).default([])
 
 export const VoiceSchema = z
   .object({
-    /** Exclamations and oaths per faith (the faith ids of world.yaml): the only ones people here swear by. */
-    oaths: z.record(z.string(), z.array(z.string())).default({}),
-    /** Sayings and proverbs of the whole region. */
-    sayings: z.array(z.string()).default([]),
-    /** Groups who speak their own way: by where they live or what they do, or an NPC's own `voice`. */
+    oaths: z.record(z.string(), z.array(z.string())).default({}).describe('Exclamations and oaths per faith (the faith ids of world.yaml): the only ones people here swear by.'),
+    sayings: z.array(z.string()).default([]).describe('Sayings and proverbs of the whole region.'),
     groups: z
       .array(
         z
@@ -25,29 +22,19 @@ export const VoiceSchema = z
             id: Id,
             name: z.string(),
             sayings: z.array(z.string()).default([]),
-            /** What this group exclaims, next to the oaths of their faith (M10.20: the technicians of The Quiet Reach say "Hull and vacuum"). */
-            oaths: z.array(z.string()).default([]),
-            /** Who lives in these areas speaks so, unless their trade puts them in another group. */
-            areas: z.array(z.string()).default([]),
+            oaths: z.array(z.string()).default([]).describe('What this group exclaims, next to the oaths of their faith (M10.20: the technicians of The Quiet Reach say "Hull and vacuum").'),
+            areas: z.array(z.string()).default([]).describe('Who lives in these areas speaks so, unless their trade puts them in another group.'),
             professions: z.array(z.string()).default([]),
           })
           .strict(),
       )
-      .default([]),
-    /** The group of everyone else. */
-    default_group: z.string().optional(),
-    /** How people call the listener: a stranger, someone they know, a friend, someone of standing. */
-    address: z.object({ stranger: Address, known: Address, friend: Address, high: Address }).strict().default({ stranger: [], known: [], friend: [], high: [] }),
-    /** How time and distance are told here, and the measures people use; money comes from world.yaml. */
-    time: z.array(z.string()).default([]),
-    distance: z.array(z.string()).default([]),
-    measures: z.array(z.string()).default([]),
-    /**
-     * What does not exist here, and what people say instead. A word with a
-     * capital (a month, a weekday) is only that word with its capital; one
-     * without an alternative makes the game ask the reply again.
-     */
-    not_here: z.array(z.object({ word: z.string().min(1), instead: z.string().optional() }).strict()).default([]),
+      .default([]).describe('Groups who speak their own way: by where they live or what they do, or an NPC\'s own `voice`.'),
+    default_group: z.string().optional().describe('The group of everyone else.'),
+    address: z.object({ stranger: Address, known: Address, friend: Address, high: Address }).strict().default({ stranger: [], known: [], friend: [], high: [] }).describe('How people call the listener: a stranger, someone they know, a friend, someone of standing.'),
+    time: z.array(z.string()).default([]).describe('How people here tell the time: "at the third bell". Money comes from world.yaml.'),
+    distance: z.array(z.string()).default([]).describe('How people here tell distance: "an hour\'s walk", "two locks on".'),
+    measures: z.array(z.string()).default([]).describe('The measures people here use for weight, length and volume.'),
+    not_here: z.array(z.object({ word: z.string().min(1), instead: z.string().optional() }).strict()).default([]).describe('What does not exist here, and what people say instead. A word with a capital (a month, a weekday) is only that word with its capital; one without an alternative makes the game ask the reply again.'),
   })
   .strict()
 export type Voice = z.infer<typeof VoiceSchema>

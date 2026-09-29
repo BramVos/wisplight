@@ -110,4 +110,19 @@ describe('M10.29 F: in the talk and in the room', () => {
     const after = (await engine.handle('look')).map((o) => o.text).join('\n')
     expect(after).toMatch(/Here: .*Mara Venn, /)
   })
+
+  it('asks which of them when the words fit several people here alike: "talk dr" with both doctors in the room', async () => {
+    const engine = new Engine(quiet, { seed: 1 })
+    engine.start()
+    engine.state.player.location = 'loc_commons'
+    for (const id of ['npc_ilyan_sorell', 'npc_edda_vale']) stay(engine, id)
+    const asked = (await engine.handle('talk dr')).map((o) => o.text).join('\n')
+    expect(asked).toMatch(/^Which of them do you mean\?\n {2}1\. Dr Edda Vale\n {2}2\. Dr Ilyan Sorell/)
+    expect((await engine.handle('2')).map((o) => o.text).join('\n')).toMatch(/You are talking with the research lead\./)
+    await engine.handle('bye')
+    expect((await engine.handle('look dr')).map((o) => o.text).join('\n')).toMatch(/^Which of them do you mean\?/)
+    expect((await engine.handle('1')).map((o) => o.text).join('\n')).toMatch(/^The medic\. /)
+    // A whole name is never asked about.
+    expect((await engine.handle('talk ilyan')).map((o) => o.text).join('\n')).toMatch(/You are talking with the research lead\./)
+  })
 })

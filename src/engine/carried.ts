@@ -18,7 +18,7 @@ export function thingVerbs(world: World, item: string): string[] {
   const def = world.content.items.get(item)
   if (!def) return []
   const own = Object.keys(def.verbs ?? {})
-  const standard = [...(def.remedy ? ['use'] : []), ...(def.food !== undefined ? ['eat'] : []), ...(def.weapon ? ['wield'] : []), ...(def.armour ? ['wear'] : []), 'give']
+  const standard = [...(def.remedy || def.tags.includes('light') ? ['use'] : []), ...(def.food !== undefined ? ['eat'] : []), ...(def.weapon ? ['wield'] : []), ...(def.armour ? ['wear'] : []), 'give']
   return [...new Set([...own, ...standard])]
 }
 
@@ -33,6 +33,8 @@ export function doWithCarried(world: World, item: string, verb: string): string 
   const def = world.content.items.get(item)!
   const line = def.verbs?.[verb]
   if (line) return line
+  // A light you carry lights the way by itself (M10.29: "use lamp" after buying it did nothing).
+  if (verb === 'use' && def.tags.includes('light')) return `The ${itemName(world.content, item)} lights your way in the dark while you carry it.`
   const verbs = thingVerbs(world, item).filter((v) => v !== verb && v !== 'give')
   const name = itemName(world.content, item)
   if (verbs.length) return `You can't ${verb} the ${name}. ${couldLine([...verbs, 'give'])}`

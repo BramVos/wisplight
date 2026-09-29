@@ -1,3 +1,4 @@
+import { idWordsIn } from './idwords'
 import { knobProblems } from './knobs'
 import { parse } from 'yaml'
 import { OutlandSchema, ResourceSchema, RouteSchema, SettlementSchema, type Outland, type Resource, type Route, type Settlement } from './economy/schema'
@@ -57,38 +58,30 @@ const Weekday = z.string().min(1)
 // ---------------------------------------------------------------- items
 
 export const ItemSchema = z.object({
-  id: z.string().regex(/^[a-z0-9_]+$/),
-  name: z.string(),
-  plural: z.string().optional(),
-  description: z.string(),
-  aliases: z.array(z.string()).default([]),
-  tags: z.array(z.string()).default([]),
-  value: z.number().int().nonnegative(),
-  /** How someone uses it when the stranger made it and gave it to them (M10.14): "{name} cuts bread with the knife you made." */
-  used: z.string().optional(),
-  /** What using, reading or opening it says when the stranger carries it (M10.29), as a detail's verbs: { use: "...", read: "..." }. */
-  verbs: z.record(z.string(), z.string()).optional(),
-  /** A poorer make of another thing (M10.14): what a failed recipe leaves, of use for something else and worth less. */
-  quality: z.enum(['poor']).optional(),
-  of: z.string().optional(),
-  food: z.number().int().min(0).max(100).optional(),
-  /** A weapon (FO, chapter 12): its damage die, and what a critical hit does. */
+  id: z.string().regex(/^[a-z0-9_]+$/).describe('The item\'s id: a key, never changed once committed, and never shown to the player.'),
+  name: z.string().describe('Its name as the player sees it: "a loaf of bread" reads "loaf of bread".'),
+  plural: z.string().optional().describe('Its name for more than one, when adding an s is wrong: "loaves of bread".'),
+  description: z.string().describe('What the stranger sees when they look at it, in a sentence or two.'),
+  aliases: z.array(z.string()).default([]).describe('Other words the player may use for it.'),
+  tags: z.array(z.string()).default([]).describe('What kind of thing it is, for rules and conditions: food, tool, light (a lamp or torch that lights the way at night).'),
+  value: z.number().int().nonnegative().describe('What it is worth, in the smallest coin: shops buy and sell from it.'),
+  used: z.string().optional().describe('How someone uses it when the stranger made it and gave it to them (M10.14): "{name} cuts bread with the knife you made."'),
+  verbs: z.record(z.string(), z.string()).optional().describe('What using, reading or opening it says when the stranger carries it (M10.29), as a detail\'s verbs: { use: "...", read: "..." }.'),
+  quality: z.enum(['poor']).optional().describe('A poorer make of another thing (M10.14): what a failed recipe leaves, of use for something else and worth less.'),
+  of: z.string().optional().describe('For a poorer make (quality poor): the item it is a poorer version of.'),
+  food: z.number().int().min(0).max(100).optional().describe('How much a meal of it fills, from 0 to 100; left out, it cannot be eaten.'),
   weapon: z
     .object({
       damage: z.string().regex(/^\d+d\d+$/),
       kind: z.enum(['melee', 'ranged', 'thrown']).default('melee'),
       light: z.boolean().default(false),
       two_hands: z.boolean().default(false),
-      /** A critical hit: axes make bleed, clubs knock down, spears keep at a distance. */
-      crit: z.enum(['bleeding', 'prone', 'push', 'none']).default('none'),
-      /** How far a ranged weapon reaches. */
-      range: z.enum(['near', 'far']).default('far'),
-      /** Iron or cold iron: some spirits cannot bear it. */
-      iron: z.boolean().default(false),
+      crit: z.enum(['bleeding', 'prone', 'push', 'none']).default('none').describe('A critical hit: axes make bleed, clubs knock down, spears keep at a distance.'),
+      range: z.enum(['near', 'far']).default('far').describe('How far a ranged weapon reaches.'),
+      iron: z.boolean().default(false).describe('Iron or cold iron: some spirits cannot bear it.'),
     })
     .strict()
-    .optional(),
-  /** Armour or a shield: the defence it gives, and how much Grace still counts in it. */
+    .optional().describe('A weapon (FO, chapter 12): its damage die, and what a critical hit does.'),
   armour: z
     .object({
       kind: z.enum(['light', 'medium', 'heavy', 'shield']),
@@ -96,9 +89,8 @@ export const ItemSchema = z.object({
       cap: z.number().int().min(0).max(6).default(6),
     })
     .strict()
-    .optional(),
-  /** A remedy: what using it heals or cures (FO, chapter 11, "Aandoeningen"). */
-  remedy: z.object({ heal: z.string().regex(/^\d+d\d+([+-]\d+)?$/).optional(), cures: z.array(z.string()).default([]) }).strict().optional(),
+    .optional().describe('Armour or a shield: the defence it gives, and how much Grace still counts in it.'),
+  remedy: z.object({ heal: z.string().regex(/^\d+d\d+([+-]\d+)?$/).optional(), cures: z.array(z.string()).default([]) }).strict().optional().describe('A remedy: what using it heals or cures (FO, chapter 11, "Aandoeningen").'),
 })
 export type Item = z.infer<typeof ItemSchema>
 
@@ -113,13 +105,10 @@ export type Item = z.infer<typeof ItemSchema>
 export const CraftFailureSchema = z
   .object({
     outcome: z.enum(['poor', 'damaged', 'leftover', 'lost']),
-    /** poor: the lesser thing it makes instead, and how many (default half of what the recipe makes, at least one). */
-    item: z.string().optional(),
+    item: z.string().optional().describe('poor: the lesser thing it makes instead, and how many (default half of what the recipe makes, at least one).'),
     qty: z.number().int().positive().optional(),
-    /** leftover: the share of the material that comes back. */
-    share: z.number().min(0).max(1).default(0.5),
-    /** What a master of the craft says is wrong with it. */
-    why: z.string().optional(),
+    share: z.number().min(0).max(1).default(0.5).describe('leftover: the share of the material that comes back.'),
+    why: z.string().optional().describe('What a master of the craft says is wrong with it.'),
     critical: z.enum(['poor', 'damaged', 'leftover', 'lost']).default('lost'),
   })
   .strict()
@@ -141,31 +130,17 @@ export const AffordanceSchema = z.object({
   narrate_end: z.string().optional(),
   player_text: z.string().optional(),
   broken_text: z.string().optional(),
-  /** Work for pay (M8.5): what the owner pays the player for it; what is made then goes into the owner's store, not the player's pocket. */
-  wage: z.number().int().positive().optional(),
-  /**
-   * A check of the player's: failed, half the work and half the pay (M8.5). A
-   * recipe of a craft (M10.5) needs only the difficulty: the craft says which
-   * skill it leans on.
-   */
-  check: z.object({ skill: z.string().optional(), dc: z.number().int() }).strict().optional(),
-  /** Experience for doing it well: work is a trade you get better at (M8.5). */
-  xp: z.number().int().positive().optional(),
-  /** Only in these months (1 to 13), as the ground allows: peat is cut in summer (M9.1). */
-  months: z.array(z.number().int().min(1).max(13)).optional(),
-  /** Who must be here and awake for it (M10.29: Tessa taught a lesson from across the station): a person's id. */
-  with: z.string().optional(),
-  /** What is said when it is tried again too soon after failing, in the world's own words (M10.29): over the craft's. */
-  cooldown_text: z.string().optional(),
-  /** A recipe of a craft (M10.5): which craft, and which of its techniques. */
-  craft: z.string().optional(),
+  wage: z.number().int().positive().optional().describe('Work for pay (M8.5): what the owner pays the player for it; what is made then goes into the owner\'s store, not the player\'s pocket.'),
+  check: z.object({ skill: z.string().optional(), dc: z.number().int() }).strict().optional().describe('A check of the player\'s: failed, half the work and half the pay (M8.5). A recipe of a craft (M10.5) needs only the difficulty: the craft says which skill it leans on.'),
+  xp: z.number().int().positive().optional().describe('Experience for doing it well: work is a trade you get better at (M8.5).'),
+  months: z.array(z.number().int().min(1).max(13)).optional().describe('Only in these months (1 to 13), as the ground allows: peat is cut in summer (M9.1).'),
+  with: z.string().optional().describe('Who must be here and awake for it (M10.29: Tessa taught a lesson from across the station): a person\'s id.'),
+  cooldown_text: z.string().optional().describe('What is said when it is tried again too soon after failing, in the world\'s own words (M10.29): over the craft\'s.'),
+  craft: z.string().optional().describe('A recipe of a craft (M10.5): which craft, and which of its techniques.'),
   technique: z.string().optional(),
-  /** The rank in the craft it takes: feast bread is for an expert baker (M10.5). */
-  rank: z.enum(['novice', 'journeyman', 'expert', 'master']).optional(),
-  /** A piece that counts as a masterwork: done well, the craft may reach master (M10.5). */
-  masterwork: z.boolean().optional(),
-  /** What a failed attempt at this recipe leaves, over the craft's own (M10.14). */
-  failure: CraftFailureSchema.optional(),
+  rank: z.enum(['novice', 'journeyman', 'expert', 'master']).optional().describe('The rank in the craft it takes: feast bread is for an expert baker (M10.5).'),
+  masterwork: z.boolean().optional().describe('A piece that counts as a masterwork: done well, the craft may reach master (M10.5).'),
+  failure: CraftFailureSchema.optional().describe('What a failed attempt at this recipe leaves, over the craft\'s own (M10.14).'),
 })
 export type Affordance = z.infer<typeof AffordanceSchema>
 
@@ -179,25 +154,17 @@ export const CRAFT_RANKS = ['novice', 'journeyman', 'expert', 'master'] as const
  */
 export const CraftSchema = z
   .object({
-    id: z.string().regex(/^[a-z0-9_]+$/),
-    name: z.string(),
-    /** What someone of the craft is called: a baker, a smith. */
-    maker: z.string(),
-    /** The skill it leans on at the start. */
-    skill: z.string(),
-    /** The trades that have it: they teach it. */
-    professions: z.array(z.string()).default([]),
-    techniques: z.array(z.object({ id: z.string().regex(/^[a-z0-9_]+$/), name: z.string() }).strict()).default([]),
-    /** What a masterwork of this craft is, in words, for the sheet and the chronicler. */
-    masterwork: z.string().optional(),
-    /** Practice for journeyman, expert and master: first balance values. */
-    practice: z.tuple([z.number().int().positive(), z.number().int().positive(), z.number().int().positive()]).default([10, 30, 100]),
-    /** At most this much practice a day: the rest is only work. */
-    per_day: z.number().int().positive().default(5),
-    /** What a failed attempt leaves, for every recipe of the craft that says nothing of its own (M10.14). */
-    failure: CraftFailureSchema.optional(),
-    /** What is said when a recipe is tried again too soon after failing (M10.29, the knob crafts.fail_cooldown): "the iron has overheated". */
-    cooldown_text: z.string().optional(),
+    id: z.string().regex(/^[a-z0-9_]+$/).describe('The craft\'s id: a key, never changed once committed, and never shown to the player.'),
+    name: z.string().describe('Its name as the player sees it: "Baking", "Field Electronics".'),
+    maker: z.string().describe('What someone of the craft is called, in words: a baker, a smith, a field technician. Never an id: the stranger reads "You are a journeyman baker now".'),
+    skill: z.string().describe('The skill it leans on at the start.'),
+    professions: z.array(z.string()).default([]).describe('The trades that have it: they teach it.'),
+    techniques: z.array(z.object({ id: z.string().regex(/^[a-z0-9_]+$/), name: z.string() }).strict()).default([]).describe('What can be learnt of it, each with an id and a name; a recipe names the technique it practises.'),
+    masterwork: z.string().optional().describe('What a masterwork of this craft is, in words, for the sheet and the chronicler.'),
+    practice: z.tuple([z.number().int().positive(), z.number().int().positive(), z.number().int().positive()]).default([10, 30, 100]).describe('Practice for journeyman, expert and master: first balance values.'),
+    per_day: z.number().int().positive().default(5).describe('At most this much practice a day: the rest is only work.'),
+    failure: CraftFailureSchema.optional().describe('What a failed attempt leaves, for every recipe of the craft that says nothing of its own (M10.14).'),
+    cooldown_text: z.string().optional().describe('What is said when a recipe is tried again too soon after failing (M10.29, the knob crafts.fail_cooldown): "the iron has overheated".'),
   })
   .strict()
 export type Craft = z.infer<typeof CraftSchema>
@@ -231,29 +198,22 @@ export type Lock = z.infer<typeof LockSchema>
  */
 export const PropTemplateSchema = z
   .object({
-    id: z.string().regex(/^[a-z0-9_]+$/),
-    /** The object type it is. */
-    type: z.string(),
-    /** Its name, with {owner}: "{owner}'s chest". */
-    name: z.string(),
-    /** Tags of the owner's home it fits: a chest stands in a house (private), not on the green. */
-    where: z.array(z.string()).min(1),
+    id: z.string().regex(/^[a-z0-9_]+$/).describe('The template\'s id: a key, never changed once committed, and never shown to the player.'),
+    type: z.string().describe('The object type it is.'),
+    name: z.string().describe('Its name, with {owner}: "{owner}\'s chest".'),
+    where: z.array(z.string()).min(1).describe('Tags of the owner\'s home it fits: a chest stands in a house (private), not on the green.'),
     lock: z
       .object({
         quality: z.array(z.enum(['crude', 'common', 'good', 'fine', 'masterwork'])).min(1),
         material: z.array(z.enum(['wood', 'iron', 'brass'])).min(1),
       })
       .strict()
-      .optional(),
-    /** What it may hold, besides money: the owner's own things of this kind. */
-    items: z.array(z.string()).default([]),
-    max_items: z.number().int().min(0).max(5).default(2),
-    /** At most this share of the owner's purse goes in it. */
-    money: z.number().min(0).max(1).default(0),
-    /** The owner's fixed moment to look in it, the hour: then a loss is found. */
-    check_hour: z.number().int().min(0).max(23).default(21),
-    /** Hints in the owner's words: {owner}, {their}, {things}, {place}. The first is where it is and what is in it. */
-    hints: z.array(z.object({ precise: z.string(), village: z.string(), far: z.string() }).strict()).min(1),
+      .optional().describe('The lock it may have: the qualities and materials to choose from; left out, no lock.'),
+    items: z.array(z.string()).default([]).describe('What it may hold, besides money: the owner\'s own things of this kind.'),
+    max_items: z.number().int().min(0).max(5).default(2).describe('At most this many things in it, besides money.'),
+    money: z.number().min(0).max(1).default(0).describe('At most this share of the owner\'s purse goes in it.'),
+    check_hour: z.number().int().min(0).max(23).default(21).describe('The owner\'s fixed moment to look in it, the hour: then a loss is found.'),
+    hints: z.array(z.object({ precise: z.string(), village: z.string(), far: z.string() }).strict()).min(1).describe('Hints in the owner\'s words: {owner}, {their}, {things}, {place}. The first is where it is and what is in it.'),
   })
   .strict()
 export type PropTemplate = z.infer<typeof PropTemplateSchema>
@@ -270,8 +230,7 @@ export const DetailSchema = z
     words: z.array(z.string()).min(1),
     look: z.string(),
     take: z.string().optional(),
-    /** Lines for other verbs: { drink: "...", climb: "..." }. */
-    verbs: z.record(z.string(), z.string()).optional(),
+    verbs: z.record(z.string(), z.string()).optional().describe('Lines for other verbs: { drink: "...", climb: "..." }.'),
   })
   .strict()
 export type Detail = z.infer<typeof DetailSchema>
@@ -281,10 +240,8 @@ export const InscriptionSchema = z
   .object({
     text: z.string().describe('What it says, once read.'),
     dc: z.number().int().min(5).max(30).default(15),
-    /** What it looks like before it is read. */
-    look: z.string().optional(),
-    /** A topic learnt by reading it: it goes in the journal. */
-    topic: z.string().optional(),
+    look: z.string().optional().describe('What it looks like before it is read.'),
+    topic: z.string().optional().describe('A topic learnt by reading it: it goes in the journal.'),
   })
   .strict()
 
@@ -294,24 +251,20 @@ export const HiddenSchema = z
     id: z.string().regex(/^[a-z0-9_]+$/),
     dc: z.number().int().min(5).max(30).default(15),
     text: z.string().describe('What the stranger finds.'),
-    /** A thing that lies there, found: it is on the ground. */
-    item: z.string().optional(),
+    item: z.string().optional().describe('A thing that lies there, found: it is on the ground.'),
     qty: z.number().int().positive().default(1),
-    /** A topic learnt by finding it. */
-    topic: z.string().optional(),
+    topic: z.string().optional().describe('A topic learnt by finding it.'),
   })
   .strict()
 
 export const ObjectTypeSchema = z.object({
-  id: z.string().regex(/^[a-z0-9_]+$/),
-  name: z.string(),
-  description: z.string(),
-  aliases: z.array(z.string()).default([]),
-  affordances: z.array(AffordanceSchema).default([]),
-  /** Things that belong to it (M10.4): the apple on the old stone. LOOK tells of it, TAKE answers with its own line. */
-  details: z.array(z.lazy(() => DetailSchema)).default([]),
-  /** Words carved or written on it (M10.5): READ it. */
-  inscription: InscriptionSchema.optional(),
+  id: z.string().regex(/^[a-z0-9_]+$/).describe('The object type\'s id: a key, never changed once committed, and never shown to the player.'),
+  name: z.string().describe('Its name as the player sees it: "electronics bench", "oven".'),
+  description: z.string().describe('What the stranger sees when they look at it.'),
+  aliases: z.array(z.string()).default([]).describe('Other words the player may use for it.'),
+  affordances: z.array(AffordanceSchema).default([]).describe('What can be done with it (USE <object> <affordance>): work, lessons, repairs, recipes of a craft, each with its time, check and outcome.'),
+  details: z.array(z.lazy(() => DetailSchema)).default([]).describe('Things that belong to it (M10.4): the apple on the old stone. LOOK tells of it, TAKE answers with its own line.'),
+  inscription: InscriptionSchema.optional().describe('Words carved or written on it (M10.5): READ it.'),
   repair: z
     .object({
       consumes: ItemCounts,
@@ -319,9 +272,8 @@ export const ObjectTypeSchema = z.object({
       sets: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])),
       narrate_end: z.string().optional(),
     })
-    .optional(),
-  /** An act the rules do not know, done to it, may be improvised (M10.16). */
-  improvise: z.lazy(() => ImproviseSchema).optional(),
+    .optional().describe('How it is mended once damaged: what mending takes and how long, what state it is in afterwards, and the words for it.'),
+  improvise: z.lazy(() => ImproviseSchema).optional().describe('An act the rules do not know, done to it, may be improvised (M10.16).'),
 })
 export type ObjectType = z.infer<typeof ObjectTypeSchema>
 
@@ -338,10 +290,8 @@ export const ObjectInstanceSchema = z.object({
   days: z.array(Weekday).optional(),
   state: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])).default({}),
   state_text: z.record(z.string(), z.string()).default({}),
-  /** A lock on it, and what it holds (M10.3): a chest, a strongbox. */
-  lock: LockSchema.optional(),
-  /** This one in particular may be improvised on (M10.16), over its type's. */
-  improvise: z.lazy(() => ImproviseSchema).optional(),
+  lock: LockSchema.optional().describe('A lock on it, and what it holds (M10.3): a chest, a strongbox.'),
+  improvise: z.lazy(() => ImproviseSchema).optional().describe('This one in particular may be improvised on (M10.16), over its type\'s.'),
   contents: z.record(z.string(), z.number().int().positive()).optional(),
 })
 export type ObjectInstance = z.infer<typeof ObjectInstanceSchema>
@@ -389,23 +339,16 @@ const Exit = z.object({
 })
 
 export const LocationSchema = z.object({
-  id: Id('loc'),
-  name: z.string(),
-  area: z.string(),
-  tags: z.array(z.string()).default([]),
-  aliases: z.array(z.string()).default([]),
-  summary: z.string().optional(),
-  /** The faith a holy place belongs to (M10.17): a wedding here raises the standing of that faith's faction. */
-  faith: z.string().optional(),
-  /** What you hear here (M10.15): wind in the reeds, the sea, the hearth; over its area's. */
-  sound: SoundSchema.optional(),
-  /** An act the rules do not know, done here, may be improvised (M10.16): what it can mean and what may happen. */
-  improvise: z.lazy(() => ImproviseSchema).optional(),
-  description: z.object({ day: Prose, night: Prose.optional() }),
-  /**
-   * Other descriptions once a flag is set (the doorstep without the cat, once Fenna is home), or while conditions hold
-   * (M10.6: the mill turning again once De Zwaan is mended). The last that fits is shown.
-   */
+  id: Id('loc').describe('The location\'s id, starting with loc_: a key, never changed once committed, and never shown to the player.'),
+  name: z.string().describe('Its name as the player sees it at the top of the description.'),
+  area: z.string().describe('The area it belongs to.'),
+  tags: z.array(z.string()).default([]).describe('What kind of place it is, for rules and conditions: private (a home), public, route, landmark, edge.'),
+  aliases: z.array(z.string()).default([]).describe('Other words the player may use for it.'),
+  summary: z.string().optional().describe('What it is in a few words, for the journal and the map; left out, the first sentence of the description.'),
+  faith: z.string().optional().describe('The faith a holy place belongs to (M10.17): a wedding here raises the standing of that faith\'s faction.'),
+  sound: SoundSchema.optional().describe('What you hear here (M10.15): wind in the reeds, the sea, the hearth; over its area\'s.'),
+  improvise: z.lazy(() => ImproviseSchema).optional().describe('An act the rules do not know, done here, may be improvised (M10.16): what it can mean and what may happen.'),
+  description: z.object({ day: Prose, night: Prose.optional() }).describe('What the stranger sees: three to five sentences, second person, present tense, one sense other than sight, a hint at an exit; by day, and at night when it reads otherwise.'),
   variants: z
     .array(
       z
@@ -413,62 +356,37 @@ export const LocationSchema = z.object({
         .strict()
         .refine((v) => v.flag !== undefined || v.when.length > 0, 'a variant needs a flag or conditions (when)'),
     )
-    .default([]),
-  exits: z.partialRecord(z.enum(DIRECTIONS), Exit).default({}),
-  objects: z.array(ObjectInstanceSchema).default([]),
-  services: z.array(ServiceSchema).default([]),
-  items: z.record(z.string(), z.number().int().positive()).default({}),
-  /** Where on the map of the land it lies, in km, when not at its area's position (a tow path, a weir). */
-  pos: z.tuple([z.number(), z.number()]).optional(),
-  /** Grounds of the zone that can be gathered from here (M10.5): the fen's herbs, the shore's kelp. */
-  forage: z.array(z.string()).default([]),
-  /** What lies hidden here (M10.5): SEARCH finds it. */
-  hidden: z.array(HiddenSchema).default([]),
-  /** Things the description names that you can look at and handle (after the M10 playtest): the hollow, the bowl of milk. */
-  details: z.array(DetailSchema).default([]),
-  /**
-   * A place worth a moment (M10.11): two or three sentences for the first
-   * time you reach it, in mist, at night or in a storm if it reads otherwise
-   * then, and how it looks when it comes into view from afar (a landmark).
-   */
-  arrival: z.object({ text: z.string(), mist: z.string().optional(), night: z.string().optional(), storm: z.string().optional(), far: z.string().optional() }).strict().optional(),
+    .default([]).describe('Other descriptions once a flag is set (the doorstep without the cat, once Fenna is home), or while conditions hold (M10.6: the mill turning again once De Zwaan is mended). The last that fits is shown.'),
+  exits: z.partialRecord(z.enum(DIRECTIONS), Exit).default({}).describe('The ways out, per direction: the location it leads to, the minutes on foot, and a lock if there is one.'),
+  objects: z.array(ObjectInstanceSchema).default([]).describe('The objects that stand here, each of an object type, with their own state and owner.'),
+  services: z.array(ServiceSchema).default([]).describe('What can be bought, sold, hired or rented here, from whom, and when.'),
+  items: z.record(z.string(), z.number().int().positive()).default({}).describe('Things lying here at the start, by item id and count.'),
+  pos: z.tuple([z.number(), z.number()]).optional().describe('Where on the map of the land it lies, in km, when not at its area\'s position (a tow path, a weir).'),
+  forage: z.array(z.string()).default([]).describe('Grounds of the zone that can be gathered from here (M10.5): the fen\'s herbs, the shore\'s kelp.'),
+  hidden: z.array(HiddenSchema).default([]).describe('What lies hidden here (M10.5): SEARCH finds it.'),
+  details: z.array(DetailSchema).default([]).describe('Things the description names that you can look at and handle (after the M10 playtest): the hollow, the bowl of milk.'),
+  arrival: z.object({ text: z.string(), mist: z.string().optional(), night: z.string().optional(), storm: z.string().optional(), far: z.string().optional() }).strict().optional().describe('A place worth a moment (M10.11): two or three sentences for the first time you reach it, in mist, at night or in a storm if it reads otherwise then, and how it looks when it comes into view from afar (a landmark).'),
 })
 export type Location = z.infer<typeof LocationSchema>
 
 const Position = z.tuple([z.number(), z.number()])
 
 export const AreaSchema = z.object({
-  id: z.string().regex(/^[a-z0-9_]+$/),
-  name: z.string(),
-  kind: z.enum(['village', 'town', 'city', 'hamlet', 'inn', 'route', 'wilderness']),
-  aliases: z.array(z.string()).default([]),
-  summary: z.string(),
-  fame: z.number().int().min(0).max(5).default(1),
-  /** Position on the map of the land, in km (Wereldboek, chapter 2). */
-  pos: Position.optional(),
-  /** Known in conversation through this lore topic instead of by its own name (the Kattenbroek). */
-  topic: z.string().optional(),
-  /** Weekdays of the world's calendar with a market here (M10.6): "it's Woensdag, market day in Waagdam". */
-  market_days: z.array(z.string()).default([]),
-  /** What you hear in the area's places that have no sound of their own (M10.15). */
-  sound: SoundSchema.optional(),
-  /** Improvisation for everything in the area that has none of its own (M10.16), with a smaller may. */
-  improvise: z.lazy(() => ImproviseSchema).optional(),
-  /**
-   * Places of the area barred while conditions hold (M10.17; before, the widow's mist over the Kattenbroek in code):
-   * only for a stranger carrying something with this tag, or for anyone; with what they see.
-   */
-  barred: z.array(z.object({ when: z.array(ConditionSchema).default([]), carrying: z.string().optional(), text: z.string() }).strict()).default([]),
-  /** The land it belongs to (M10.23); without one the world's home land, and an area in lands/<land>/ belongs to that land. */
-  land: z.string().optional(),
-  /**
-   * A border (M10.23): a bridge, a pass, a toll house, a harbour, where one
-   * land meets another. The stranger crosses into a land only at a border,
-   * where the scene shows it and the chronicle keeps it.
-   */
-  border: z.boolean().default(false),
-  /** A land it shades into (M10.23; the home land by the world's id): people here have sayings from both kits, and both coins are good. */
-  blend: z.string().optional(),
+  id: z.string().regex(/^[a-z0-9_]+$/).describe('The area\'s id: a key, never changed once committed, and never shown to the player.'),
+  name: z.string().describe('The area\'s name as the player sees it: a village, a town, a stretch of fen.'),
+  kind: z.enum(['village', 'town', 'city', 'hamlet', 'inn', 'route', 'wilderness']).describe('What kind of place it is: village, town, city, hamlet, inn, route or wilderness.'),
+  aliases: z.array(z.string()).default([]).describe('Other words the player may use for it.'),
+  summary: z.string().describe('What it is in a sentence, as people speak of it and the journal shows it.'),
+  fame: z.number().int().min(0).max(5).default(1).describe('How well known it is, from 0 to 5: the higher, the farther away people know of it.'),
+  pos: Position.optional().describe('Position on the map of the land, in km (Wereldboek, chapter 2).'),
+  topic: z.string().optional().describe('Known in conversation through this lore topic instead of by its own name (the Kattenbroek).'),
+  market_days: z.array(z.string()).default([]).describe('Weekdays of the world\'s calendar with a market here (M10.6): "it\'s Woensdag, market day in Waagdam".'),
+  sound: SoundSchema.optional().describe('What you hear in the area\'s places that have no sound of their own (M10.15).'),
+  improvise: z.lazy(() => ImproviseSchema).optional().describe('Improvisation for everything in the area that has none of its own (M10.16), with a smaller may.'),
+  barred: z.array(z.object({ when: z.array(ConditionSchema).default([]), carrying: z.string().optional(), text: z.string() }).strict()).default([]).describe('Places of the area barred while conditions hold (M10.17; before, the widow\'s mist over the Kattenbroek in code): only for a stranger carrying something with this tag, or for anyone; with what they see.'),
+  land: z.string().optional().describe('The land it belongs to (M10.23); without one the world\'s home land, and an area in lands/<land>/ belongs to that land.'),
+  border: z.boolean().default(false).describe('A border (M10.23): a bridge, a pass, a toll house, a harbour, where one land meets another. The stranger crosses into a land only at a border, where the scene shows it and the chronicle keeps it.'),
+  blend: z.string().optional().describe('A land it shades into (M10.23; the home land by the world\'s id): people here have sayings from both kits, and both coins are good.'),
 })
 export type Area = z.infer<typeof AreaSchema>
 
@@ -488,30 +406,18 @@ export function areaTopicId(content: Pick<Content, 'areas'>, areaId: string): st
 const REGION_KINDS = ['woods', 'fields', 'fen', 'water', 'heath', 'road', 'canal', 'path']
 
 export const RegionSchema = z.object({
-  id: z.string().regex(/^[a-z0-9_]+$/),
-  name: z.string(),
-  /** The land it lies in (M10.23), when not the world's home land: its palette colours the map. */
-  land: z.string().optional(),
-  /** The area that stands for the open land between the places. */
-  area: z.string(),
-  /** Where the south-west corner lies on the map of the land, in km. */
-  origin: z.tuple([z.number(), z.number()]),
-  size: z.tuple([z.number().positive(), z.number().positive()]),
-  hex: z.number().positive(),
-  seed: z.number().int(),
-  /** A character of the drawing to what lies there: one of the engine's lands (woods, fields, fen, water, heath), a way (road, canal, path), or a terrain of this region's own under `lands`. */
-  legend: z.record(z.string(), z.string()),
-  /**
-   * The region's own terrains (M10.20; found building The Quiet Reach: black
-   * basalt and tidal shallows are no fen): each walks like one of the engine's
-   * lands (its minutes, its sight, what swallows a leg), is coloured and named
-   * by its own key in the palette, and has the line the stranger reads there.
-   */
-  lands: z.record(z.string().regex(/^[a-z0-9_]+$/), z.object({ like: z.enum(['woods', 'fields', 'fen', 'water', 'heath']), text: z.string().optional() }).strict()).default({}),
-  /** One character per zone, rows from north to south. */
-  zones: z.string(),
-  /** The size of one character of the drawing in km, east to west and north to south (M10.20: a small island is drawn a hex a character); without it half a km by one. */
-  zone: z.tuple([z.number().positive(), z.number().positive()]).optional(),
+  id: z.string().regex(/^[a-z0-9_]+$/).describe('The region\'s id: a key, never changed once committed, and never shown to the player.'),
+  name: z.string().describe('The region\'s name as the player sees it on the map.'),
+  land: z.string().optional().describe('The land it lies in (M10.23), when not the world\'s home land: its palette colours the map.'),
+  area: z.string().describe('The area that stands for the open land between the places.'),
+  origin: z.tuple([z.number(), z.number()]).describe('Where the south-west corner lies on the map of the land, in km.'),
+  size: z.tuple([z.number().positive(), z.number().positive()]).describe('How large the map is, in km, east to west and north to south.'),
+  hex: z.number().positive().describe('How wide a hex of the map is, in km.'),
+  seed: z.number().int().describe('The seed that draws the hexes from the zones: the same seed, the same map.'),
+  legend: z.record(z.string(), z.string()).describe('A character of the drawing to what lies there: one of the engine\'s lands (woods, fields, fen, water, heath), a way (road, canal, path), or a terrain of this region\'s own under `lands`.'),
+  lands: z.record(z.string().regex(/^[a-z0-9_]+$/), z.object({ like: z.enum(['woods', 'fields', 'fen', 'water', 'heath']), text: z.string().optional() }).strict()).default({}).describe('The region\'s own terrains (M10.20; found building The Quiet Reach: black basalt and tidal shallows are no fen): each walks like one of the engine\'s lands (its minutes, its sight, what swallows a leg), is coloured and named by its own key in the palette, and has the line the stranger reads there.'),
+  zones: z.string().describe('One character per zone, rows from north to south.'),
+  zone: z.tuple([z.number().positive(), z.number().positive()]).optional().describe('The size of one character of the drawing in km, east to west and north to south (M10.20: a small island is drawn a hex a character); without it half a km by one.'),
   rules: z
     .array(
       z.discriminatedUnion('kind', [
@@ -520,43 +426,31 @@ export const RegionSchema = z.object({
         z.object({ kind: z.literal('channels'), from: z.string(), to: z.string() }),
       ]),
     )
-    .default([]),
-  landmarks: z.array(z.object({ area: z.string(), text: z.string(), range: z.number().positive() })).default([]),
-  /**
-   * What lies beyond each edge of the map (M10.21): the line the stranger reads
-   * on walking up to it, from the world book, and the far places that way,
-   * which they may go on to (on foot in days, or by a line). An edge without
-   * one says that nobody has told them yet; beyond the last land the world
-   * book names, nothing is made.
-   */
+    .default([]).describe('Rules of the map: hidden paths known only through a topic, how far one sees from an area, channels between waters.'),
+  landmarks: z.array(z.object({ area: z.string(), text: z.string(), range: z.number().positive() })).default([]).describe('What can be seen from afar: an area, the line the stranger reads, and from how many km.'),
   beyond: z
     .array(
       z
         .object({
           side: z.enum(['north', 'east', 'south', 'west']),
           text: z.string(),
-          /** Far places that way, by topic. */
-          toward: z.array(z.string()).default([]),
+          toward: z.array(z.string()).default([]).describe('Far places that way, by topic.'),
         })
         .strict(),
     )
-    .default([]),
-  /** Roads, tow paths and fen paths as lines through the zones: areas or points in km from the south-west corner. */
+    .default([]).describe('What lies beyond each edge of the map (M10.21): the line the stranger reads on walking up to it, from the world book, and the far places that way, which they may go on to (on foot in days, or by a line). An edge without one says that nobody has told them yet; beyond the last land the world book names, nothing is made.'),
   paths: z
     .array(
       z.object({
         kind: z.enum(['road', 'canal', 'path']),
         name: z.string(),
         via: z.array(z.union([z.string(), z.tuple([z.number(), z.number()])])).min(2),
-        /** A way on another level (M10): a tunnel under the ground, a walk through the crowns. Its ends lead up or down. */
-        level: z.string().optional(),
-        /** Known only to whoever knows this topic, as the hidden ridge (M10). */
-        topic: z.string().optional(),
-        /** The line the stranger reads walking along it (M10.20); without it the Nethermarch's line for its kind. */
-        text: z.string().optional(),
+        level: z.string().optional().describe('A way on another level (M10): a tunnel under the ground, a walk through the crowns. Its ends lead up or down.'),
+        topic: z.string().optional().describe('Known only to whoever knows this topic, as the hidden ridge (M10).'),
+        text: z.string().optional().describe('The line the stranger reads walking along it (M10.20); without it the Nethermarch\'s line for its kind.'),
       }),
     )
-    .default([]),
+    .default([]).describe('Roads, tow paths and fen paths as lines through the zones: areas or points in km from the south-west corner.'),
 })
 export type Region = z.infer<typeof RegionSchema>
 
@@ -582,12 +476,11 @@ const DailyGoal = z.object({
 export type DailyGoal = z.infer<typeof DailyGoal>
 
 export const ProfessionSchema = z.object({
-  id: z.string().regex(/^[a-z0-9_]+$/),
-  name: z.string(),
-  schedule: z.array(ScheduleBlock),
-  daily_goals: z.array(DailyGoal).default([]),
-  /** The skill this trade can teach someone, for a price or a favour (M10.3, the offer teach). */
-  teaches: z.string().optional(),
+  id: z.string().regex(/^[a-z0-9_]+$/).describe('The trade\'s id: a key, never changed once committed, and never shown to the player.'),
+  name: z.string().describe('The trade\'s name as the player sees it: "baker", "chief engineer".'),
+  schedule: z.array(ScheduleBlock).describe('The working day of someone in this trade: blocks of hours with where they are and what they do.'),
+  daily_goals: z.array(DailyGoal).default([]).describe('What someone in this trade sets out to do each day, besides the schedule.'),
+  teaches: z.string().optional().describe('The skill this trade can teach someone, for a price or a favour (M10.3, the offer teach).'),
 })
 export type Profession = z.infer<typeof ProfessionSchema>
 
@@ -597,94 +490,67 @@ export { RELATION_ROLES, type RelationRole } from './roles'
 
 export const RelationSchema = z
   .object({
-    /** An NPC, or a topic for someone the game only tells about (Fenna, the widow). */
-    to: z.string().optional(),
-    /** Someone who is not in the game at all, as the Wereldboek names them: "Joris", "her little brother". */
-    name: z.string().optional(),
+    to: z.string().optional().describe('An NPC, or a topic for someone the game only tells about (Fenna, the widow).'),
+    name: z.string().optional().describe('Someone who is not in the game at all, as the Wereldboek names them: "Joris", "her little brother".'),
     pronoun: z.enum(['she', 'he', 'they']).optional(),
     role: z.enum(RELATION_ROLES),
-    /** How close: -3 bitter, 0 plain, 3 would give their life for them. */
-    bond: Axis.default(2),
-    /** For people outside the simulation; NPCs have their own state. */
-    status: z.enum(['alive', 'dead', 'missing', 'away']).default('alive'),
-    /** Not spoken of to people the NPC does not trust. */
-    private: z.boolean().default(false),
-    /** Money this NPC owes the other, in duiten: the ledger of debts (FO, chapter 8). */
-    owes: z.number().int().positive().optional(),
+    bond: Axis.default(2).describe('How close: -3 bitter, 0 plain, 3 would give their life for them.'),
+    status: z.enum(['alive', 'dead', 'missing', 'away']).default('alive').describe('For people outside the simulation; NPCs have their own state.'),
+    private: z.boolean().default(false).describe('Not spoken of to people the NPC does not trust.'),
+    owes: z.number().int().positive().optional().describe('Money this NPC owes the other, in duiten: the ledger of debts (FO, chapter 8).'),
     note: z.string().optional(),
   })
   .refine((r) => Boolean(r.to) !== Boolean(r.name), { message: 'a relation needs either to or name' })
 export type RelationDef = z.infer<typeof RelationSchema>
 
 export const NpcSchema = z.object({
-  id: Id('npc'),
-  name: z.string(),
-  /** The name people use for them in running text (M10.29), where it is not the first word of the name: "Ilyan" for Dr Ilyan Sorell. */
-  call: z.string().optional(),
-  short: z.string(),
-  pronoun: z.enum(['she', 'he', 'they']),
-  age: z.number().int().nonnegative(),
-  profession: z.string(),
-  /**
-   * The profession is hidden (M10.8): the stranger sees the cover and the public short name until they know for
-   * sure (a secret of theirs found out), Tamsin the hedge-witch as "an old woman who keeps goats".
-   */
-  hidden: z.boolean().default(false),
-  cover: z.string().optional(),
-  short_public: z.string().optional(),
-  home: z.string(),
-  work: z.string().optional(),
-  household: z.string().optional(),
-  fame: z.number().int().min(0).max(5).default(0),
-  appearance: z.string(),
-  personality: z.object({ warmth: Axis, courage: Axis, honesty: Axis, temper: Axis, curiosity: Axis, diligence: Axis }),
-  values: z.record(z.string(), Axis).default({}),
-  quirks: z.array(z.string()).default([]),
-  speech: z.string().optional(),
-  /** Their group in the world's voice kit (M10.10), when not by where they live or what they do. */
-  voice: z.string().optional(),
-  aliases: z.array(z.string()).default([]),
-  public_facts: z.array(z.string()).default([]),
-  examples: z.array(z.string()).default([]),
-  money: z.number().int().nonnegative().default(0),
-  inventory: ItemCounts,
-  knows_areas: z.array(z.string()).default([]),
-  child: z.boolean().default(false),
+  id: Id('npc').describe('The person\'s id, starting with npc_: a key, never changed once committed, and never shown to the player.'),
+  name: z.string().describe('Their full name as the player sees it.'),
+  call: z.string().optional().describe('The name people use for them in running text (M10.29), where it is not the first word of the name: "Ilyan" for Dr Ilyan Sorell.'),
+  short: z.string().describe('Who they are in a few words, as running text names them after a first meeting: "the chief engineer".'),
+  pronoun: z.enum(['she', 'he', 'they']).describe('she, he or they.'),
+  age: z.number().int().nonnegative().describe('Their age in years.'),
+  profession: z.string().describe('Their trade: a profession of the world, which sets their working day.'),
+  hidden: z.boolean().default(false).describe('The profession is hidden (M10.8): the stranger sees the cover and the public short name until they know for sure (a secret of theirs found out), Tamsin the hedge-witch as "an old woman who keeps goats".'),
+  cover: z.string().optional().describe('With a hidden profession: the trade they seem to have.'),
+  short_public: z.string().optional().describe('With a hidden profession: who they seem to be, in a few words, until the stranger knows better.'),
+  home: z.string().describe('The location where they live and sleep.'),
+  work: z.string().optional().describe('The location where they work, when it is not their home.'),
+  household: z.string().optional().describe('A key shared by everyone of one household (hh_kroes); left out, a household of their own.'),
+  fame: z.number().int().min(0).max(5).default(0).describe('How well known they are, from 0 to 5: the higher, the farther away people know of them.'),
+  appearance: z.string().describe('What the stranger sees of them, in a sentence or two.'),
+  personality: z.object({ warmth: Axis, courage: Axis, honesty: Axis, temper: Axis, curiosity: Axis, diligence: Axis }).describe('Their character on six axes from -3 to 3: warmth, courage, honesty, temper, curiosity and diligence.'),
+  values: z.record(z.string(), Axis).default({}).describe('What matters to them, from -3 to 3, by name: law, wealth, tradition, family.'),
+  quirks: z.array(z.string()).default([]).describe('Traits the rules know, each of which changes what they do: greedy, spirit.'),
+  speech: z.string().optional().describe('How they talk, for the voice: short words, long silences, a saying they keep coming back to.'),
+  voice: z.string().optional().describe('Their group in the world\'s voice kit (M10.10), when not by where they live or what they do.'),
+  aliases: z.array(z.string()).default([]).describe('Other words the player may use for them.'),
+  public_facts: z.array(z.string()).default([]).describe('What anyone may know about them, one sentence each.'),
+  examples: z.array(z.string()).default([]).describe('Lines they might say, in their own voice: the voice follows their tone.'),
+  money: z.number().int().nonnegative().default(0).describe('What they have at the start, in the smallest coin.'),
+  inventory: ItemCounts.describe('What they carry at the start, by item id and count.'),
+  knows_areas: z.array(z.string()).default([]).describe('Areas they know well besides their own: people and places there they can tell of.'),
+  child: z.boolean().default(false).describe('A child: other rules for fights, work and what they may do.'),
   /** The patron the NPC follows (Wereldboek, chapter 4): followers of the same are a step friendlier. */
-  /** A patron of the world's rules (M10.17: any world's, no longer the Nethermarch's five). */
-  patron: z.string().optional(),
-  /** Class and level in a fight (FO, chapter 12); others fight as ordinary folk. */
-  fighter: z.object({ class: z.string(), level: z.number().int().min(1).max(10) }).strict().optional(),
-  /** Can travel with the player (FO, chapter 13): daily wage in duiten, what they think of deeds, and the talk at the fire. */
+  patron: z.string().optional().describe('A patron of the world\'s rules (M10.17: any world\'s, no longer the Nethermarch\'s five).'),
+  fighter: z.object({ class: z.string(), level: z.number().int().min(1).max(10) }).strict().optional().describe('Class and level in a fight (FO, chapter 12); others fight as ordinary folk.'),
   companion: z
     .object({
       wage: z.number().int().nonnegative(),
       approves: z.array(z.string()).default([]),
       disapproves: z.array(z.string()).default([]),
-      /** Places (areas or locations) they will not set foot in. */
-      limits: z.array(z.string()).default([]),
+      limits: z.array(z.string()).default([]).describe('Places (areas or locations) they will not set foot in.'),
       campfire: z.array(z.string()).default([]),
-      /** Walks slowly: travel with them takes longer. */
-      slow: z.boolean().default(false),
-      /** The personal quest that opens at bond 3. */
-      quest: z.string().optional(),
+      slow: z.boolean().default(false).describe('Walks slowly: travel with them takes longer.'),
+      quest: z.string().optional().describe('The personal quest that opens at bond 3.'),
     })
     .strict()
-    .optional(),
-  /** A portrait of their own, or the plain figure of someone generic (after the M7 playtest). */
-  portrait: z.enum(['unique', 'generic']).default('unique'),
-  /** Not in the world at the start: under a curse, found or freed by a quest. */
-  absent: z.boolean().default(false),
-  /** Their faith, one of the world's (M9.1); without it, from their patron, or what most people hold. */
-  faith: z.string().optional(),
-  /** Fights with the numbers of a creature from the bestiary (the Haakman, Black Mathijs). */
-  creature: z.string().optional(),
-  /** Open to romance (FO, chapter 8; Wereldboek, "Romance"): with whom, from which attitude. */
-  romance: z.object({ open_to: z.enum(['anyone', 'women', 'men', 'nobody']), from: z.enum(['Friendly', 'Warm']).default('Warm'), note: z.string().optional() }).strict().optional(),
-  /**
-   * What this person hires out (M10.17, before M7.2's punt of Wouter in code): a punt, a horse, a skiff, a sled.
-   * HIRE <name> with the owner there; for the hours given it lets the stranger cross what it crosses. A friend pays nothing.
-   */
+    .optional().describe('Can travel with the player (FO, chapter 13): daily wage in duiten, what they think of deeds, and the talk at the fire.'),
+  portrait: z.enum(['unique', 'generic']).default('unique').describe('A portrait of their own, or the plain figure of someone generic (after the M7 playtest).'),
+  absent: z.boolean().default(false).describe('Not in the world at the start: under a curse, found or freed by a quest.'),
+  faith: z.string().optional().describe('Their faith, one of the world\'s (M9.1); without it, from their patron, or what most people hold.'),
+  creature: z.string().optional().describe('Fights with the numbers of a creature from the bestiary (the Haakman, Black Mathijs).'),
+  romance: z.object({ open_to: z.enum(['anyone', 'women', 'men', 'nobody']), from: z.enum(['Friendly', 'Warm']).default('Warm'), note: z.string().optional() }).strict().optional().describe('Open to romance (FO, chapter 8; Wereldboek, "Romance"): with whom, from which attitude.'),
   hires: z
     .array(
       z
@@ -692,21 +558,17 @@ export const NpcSchema = z.object({
           id: z.string().regex(/^[a-z0-9_]+$/),
           name: z.string(),
           aliases: z.array(z.string()).default([]),
-          /** The price for the hire, in the smallest coin. */
-          price: z.number().int().nonnegative(),
+          price: z.number().int().nonnegative().describe('The price for the hire, in the smallest coin.'),
           hours: z.number().positive().default(12),
-          /** What it lets the stranger cross that stops a walker: open water and channels. */
-          crosses: z.array(z.enum(['water'])).default([]),
-          /** Where the owner is found, when the stranger asks elsewhere: "the eel-fisher, at his hut south of the peat cuttings". */
-          where: z.string().optional(),
-          /** What the owner says on handing it over. */
-          line: z.string().optional(),
+          crosses: z.array(z.enum(['water'])).default([]).describe('What it lets the stranger cross that stops a walker: open water and channels.'),
+          where: z.string().optional().describe('Where the owner is found, when the stranger asks elsewhere: "the eel-fisher, at his hut south of the peat cuttings".'),
+          line: z.string().optional().describe('What the owner says on handing it over.'),
           free_for_friends: z.boolean().default(true),
         })
         .strict(),
     )
-    .default([]),
-  relations: z.array(RelationSchema).default([]),
+    .default([]).describe('What this person hires out (M10.17, before M7.2\'s punt of Wouter in code): a punt, a horse, a skiff, a sled. HIRE <name> with the owner there; for the hours given it lets the stranger cross what it crosses. A friend pays nothing.'),
+  relations: z.array(RelationSchema).default([]).describe('Who they are bound to and how: kin, friends, rivals, masters, with how close they are.'),
   secrets: z
     .array(
       z.object({
@@ -715,13 +577,11 @@ export const NpcSchema = z.object({
         hint: z.string(),
         admission: z.string().optional(),
         dc: z.number().int().default(18),
-        /** What the player learns when the secret is told (the dry ridge): a topic, person, place or area_<id> (M10.20). */
-        teaches: z.string().optional(),
-        /** Asked about one of these by someone it holds dear (Warm or better), the NPC tells it freely (FO, chapter 8): topics, people, places or area_<id> (M10.20). */
-        about: z.array(z.string()).default([]),
+        teaches: z.string().optional().describe('What the player learns when the secret is told (the dry ridge): a topic, person, place or area_<id> (M10.20).'),
+        about: z.array(z.string()).default([]).describe('Asked about one of these by someone it holds dear (Warm or better), the NPC tells it freely (FO, chapter 8): topics, people, places or area_<id> (M10.20).'),
       }),
     )
-    .default([]),
+    .default([]).describe('What they keep to themselves: the secret, a hint at it, what they say when it comes out, how hard it is to get out of them, and what it teaches.'),
 })
 export type Npc = z.infer<typeof NpcSchema>
 
@@ -747,51 +607,34 @@ export function callName(npc: { name: string; call?: string }): string {
 // ---------------------------------------------------------------- topics (lore and facts)
 
 export const TopicSchema = z.object({
-  id: z.string().regex(/^[a-z0-9_]+$/),
-  name: z.string(),
-  kind: z.enum(['lore', 'fact', 'place', 'person']),
-  aliases: z.array(z.string()).default([]),
-  summary: z.string(),
-  details: z.string().optional(),
-  story: Prose.optional(),
-  /** Whose telling the story is, when it is told in the first person. */
-  teller: z.string().optional(),
-  origin: z.string().optional(),
-  /** Where the topic belongs on the map, when it is not an area of the content. */
-  pos: Position.optional(),
-  /** What everyone talks about when asked what's new (M8.2: content, not a list in the code). */
-  standing_talk: z.boolean().default(false),
-  /** Known the same everywhere, like a custom of the whole countryside. */
-  everywhere: z.boolean().default(false),
-  /**
-   * What everyone in this world knows (M10.29 P: Mara is "a Nacrean woman", and the stranger could not know what that
-   * is): its peoples, its money, its calendar, its law, its faiths, its great places. In the stranger's journal from
-   * the start, under What you know of the world, and every person knows it.
-   */
-  common: z.boolean().default(false),
-  /** Extra chance for some listeners: profession ids, quirks or "child". */
-  audience: z.partialRecord(z.string(), z.number()).default({}),
-  fame: z.number().int().min(0).max(5).default(2),
-  known_by: z.array(z.string()).default([]),
-  /** The land a far place lies in (M10.23): what grows there in play is of that land. */
-  land: z.string().optional(),
-  /**
-   * A far town that grows by district (M10.21): the world book names its
-   * quarters. The first is where the stranger comes in; each is made playable
-   * only when they do something there (the first) or go there (the rest).
-   */
+  id: z.string().regex(/^[a-z0-9_]+$/).describe('The topic\'s id: a key, never changed once committed, and never shown to the player.'),
+  name: z.string().describe('Its name as the player sees it in the journal and in [brackets] in talk.'),
+  kind: z.enum(['lore', 'fact', 'place', 'person']).describe('What it is: lore (a story or custom), fact, a place, or a person the game only tells about.'),
+  aliases: z.array(z.string()).default([]).describe('Other words the player may use for it.'),
+  summary: z.string().describe('What it is in a sentence: what someone who knows a little says.'),
+  details: z.string().optional().describe('What someone who knows it well says besides the summary.'),
+  story: Prose.optional().describe('The whole story, as someone who knows it best tells it.'),
+  teller: z.string().optional().describe('Whose telling the story is, when it is told in the first person.'),
+  origin: z.string().optional().describe('Where it comes from: an area or a location; people near it know it better.'),
+  pos: Position.optional().describe('Where the topic belongs on the map, when it is not an area of the content.'),
+  standing_talk: z.boolean().default(false).describe('What everyone talks about when asked what\'s new (M8.2: content, not a list in the code).'),
+  everywhere: z.boolean().default(false).describe('Known the same everywhere, like a custom of the whole countryside.'),
+  common: z.boolean().default(false).describe('What everyone in this world knows (M10.29 P: Mara is "a Nacrean woman", and the stranger could not know what that is): its peoples, its money, its calendar, its law, its faiths, its great places. In the stranger\'s journal from the start, under What you know of the world, and every person knows it.'),
+  audience: z.partialRecord(z.string(), z.number()).default({}).describe('Extra chance for some listeners: profession ids, quirks or "child".'),
+  fame: z.number().int().min(0).max(5).default(2).describe('How well known it is, from 0 to 5: the higher, the farther away people know of it.'),
+  known_by: z.array(z.string()).default([]).describe('People who know it well at the start, whatever the distance.'),
+  land: z.string().optional().describe('The land a far place lies in (M10.23): what grows there in play is of that land.'),
   districts: z
     .array(
       z
         .object({
           id: z.string().regex(/^[a-z0-9_]+$/),
           name: z.string(),
-          /** What it is, from the world book: the chronicler builds on it, and without a model it is the district's own line. */
-          line: z.string(),
+          line: z.string().describe('What it is, from the world book: the chronicler builds on it, and without a model it is the district\'s own line.'),
         })
         .strict(),
     )
-    .default([]),
+    .default([]).describe('A far town that grows by district (M10.21): the world book names its quarters. The first is where the stranger comes in; each is made playable only when they do something there (the first) or go there (the rest).'),
 })
 export type Topic = z.infer<typeof TopicSchema>
 
@@ -802,36 +645,29 @@ export type Topic = z.infer<typeof TopicSchema>
  * says which piece of the motor plays it, the rest is data for that kind.
  */
 export const PatternSchema = z.object({
-  id: z.string().regex(/^[a-z0-9_]+$/),
-  kind: z.enum(['lost_thing', 'quarrel', 'theft', 'sickness', 'feast']),
-  belang: z.number().int().min(0).max(5),
-  /** How often the pacing engine picks it, against the other patterns. */
-  weight: z.number().nonnegative().default(1),
-  /** lost_thing: what can go missing. theft: what can be stolen. */
-  items: z.array(z.string()).default([]),
-  /** quarrel: what people fall out about. */
-  reasons: z.array(z.string()).default([]),
-  /** feast: the day it falls on, and where people gather. */
-  date: z.object({ month: z.number().int().min(1).max(13), day: z.number().int().min(1).max(30) }).optional(),
-  place: z.string().optional(),
-  /** Texts with {owner}, {thing}, {place}, {a}, {b}, {reason}, {victim}, {goods}, {name}. */
-  text: z.object({ title: z.string(), precise: z.string(), village: z.string(), far: z.string() }),
-  /** A line the player sees when it happens in front of them. */
-  scene: z.string().optional(),
+  id: z.string().regex(/^[a-z0-9_]+$/).describe('The pattern\'s id: a key, never changed once committed, and never shown to the player.'),
+  kind: z.enum(['lost_thing', 'quarrel', 'theft', 'sickness', 'feast']).describe('What kind of story it plays: lost_thing, quarrel, theft, sickness or feast.'),
+  belang: z.number().int().min(0).max(5).describe('How much it matters when it happens, from 0 to 5: the higher, the faster and farther the news goes.'),
+  weight: z.number().nonnegative().default(1).describe('How often the pacing engine picks it, against the other patterns.'),
+  items: z.array(z.string()).default([]).describe('lost_thing: what can go missing. theft: what can be stolen.'),
+  reasons: z.array(z.string()).default([]).describe('quarrel: what people fall out about.'),
+  date: z.object({ month: z.number().int().min(1).max(13), day: z.number().int().min(1).max(30) }).optional().describe('feast: the day it falls on.'),
+  place: z.string().optional().describe('Where it happens (feast: where people gather); left out, where the people it is about are.'),
+  text: z.object({ title: z.string(), precise: z.string(), village: z.string(), far: z.string() }).describe('Texts with {owner}, {thing}, {place}, {a}, {b}, {reason}, {victim}, {goods}, {name}.'),
+  scene: z.string().optional().describe('A line the player sees when it happens in front of them.'),
 })
 export type Pattern = z.infer<typeof PatternSchema>
 
 /** Rumours that are already going round when a game starts, true or not (design: lore and world change). */
 export const NewsSchema = z.object({
-  id: z.string().regex(/^[a-z0-9_]+$/),
-  title: z.string(),
-  about: z.array(z.string()).default([]),
-  place: z.string(),
-  belang: z.number().int().min(0).max(5),
-  truth: z.boolean().default(true),
-  /** Who knows it at the start, and from whom: an NPC id or "witness". */
-  known_by: z.partialRecord(z.string(), z.string()).default({}),
-  text: z.object({ precise: z.string(), village: z.string(), far: z.string() }),
+  id: z.string().regex(/^[a-z0-9_]+$/).describe('The rumour\'s id: a key, never changed once committed, and never shown to the player.'),
+  title: z.string().describe('What it is about in a few words, for the journal.'),
+  about: z.array(z.string()).default([]).describe('The people it is about.'),
+  place: z.string().describe('Where it happened: a location.'),
+  belang: z.number().int().min(0).max(5).describe('How much it matters, from 0 to 5: the higher, the faster and farther it goes round.'),
+  truth: z.boolean().default(true).describe('Whether it is true; a false rumour is told as if it were.'),
+  known_by: z.partialRecord(z.string(), z.string()).default({}).describe('Who knows it at the start, and from whom: an NPC id or "witness".'),
+  text: z.object({ precise: z.string(), village: z.string(), far: z.string() }).describe('How it is told: precise (by someone who was there), village (as it goes round) and far (as it reaches other places).'),
 })
 export type News = z.infer<typeof NewsSchema>
 
@@ -842,14 +678,13 @@ export type News = z.infer<typeof NewsSchema>
  */
 export const QuestSchema = z
   .object({
-    id: z.string().regex(/^[a-z0-9_]+$/),
-    name: z.string(),
-    kind: z.enum(['main', 'request', 'mystery', 'bargain', 'threat', 'discovery', 'conflict', 'social', 'trial', 'personal']),
-    summary: z.string(),
-    /** NPC ids. People who are not in the content yet stay out until they are. */
-    givers: z.array(z.string()).default([]),
-    helpers: z.array(z.string()).default([]),
-    opponents: z.array(z.string()).default([]),
+    id: z.string().regex(/^[a-z0-9_]+$/).describe('The quest\'s id: a key, never changed once committed, and never shown to the player.'),
+    name: z.string().describe('Its name as the player sees it in the journal.'),
+    kind: z.enum(['main', 'request', 'mystery', 'bargain', 'threat', 'discovery', 'conflict', 'social', 'trial', 'personal']).describe('What kind of quest it is: main, request, mystery, bargain, threat, discovery, conflict, social, trial or personal.'),
+    summary: z.string().describe('What it is about in a sentence, for the journal.'),
+    givers: z.array(z.string()).default([]).describe('NPC ids. People who are not in the content yet stay out until they are.'),
+    helpers: z.array(z.string()).default([]).describe('People who help the stranger in it; their death changes the quest.'),
+    opponents: z.array(z.string()).default([]).describe('People who stand against the stranger in it; their death changes the quest.'),
   })
   .extend(QuestBodySchema.shape)
 export type Quest = z.infer<typeof QuestSchema>
@@ -861,15 +696,11 @@ const KnowledgeModifierSchema = z.object({
   min_age: z.number().int().optional(),
   kinds: z.array(z.enum(['person', 'place', 'area', 'lore', 'fact'])).optional(),
   topics: z.array(z.string()).optional(),
-  /** Only for people who sell one of these items. */
-  sells: z.array(z.string()).optional(),
-  /** Treat the topic as this much more famous. */
-  fame: z.number().int().default(0),
+  sells: z.array(z.string()).optional().describe('Only for people who sell one of these items.'),
+  fame: z.number().int().default(0).describe('Treat the topic as this much more famous.'),
   factor: z.number().positive().default(1),
-  /** Raise the highest level the distance allows. */
-  level: z.number().int().default(0),
-  /** Know it at least this well. */
-  min_level: z.number().int().min(0).max(3).default(0),
+  level: z.number().int().default(0).describe('Raise the highest level the distance allows.'),
+  min_level: z.number().int().min(0).max(3).default(0).describe('Know it at least this well.'),
 })
 export type KnowledgeModifier = z.infer<typeof KnowledgeModifierSchema>
 
@@ -883,11 +714,9 @@ const FO_CHANCES = [
 ]
 
 export const KnowledgeRulesSchema = z.object({
-  /** Per fame 0 to 5: same settlement, up to 10 km, 30 km, 100 km, farther. */
-  chance: z.array(z.array(z.number().min(0).max(1)).length(5)).length(6).default(FO_CHANCES),
+  chance: z.array(z.array(z.number().min(0).max(1)).length(5)).length(6).default(FO_CHANCES).describe('Per fame 0 to 5: same settlement, up to 10 km, 30 km, 100 km, farther.'),
   bands_km: z.tuple([z.number(), z.number(), z.number()]).default([10, 30, 100]),
-  /** The highest level per distance band. */
-  max_level: z.array(z.number().int().min(0).max(3)).length(5).default([3, 3, 2, 2, 1]),
+  max_level: z.array(z.number().int().min(0).max(3)).length(5).default([3, 3, 2, 2, 1]).describe('The highest level per distance band.'),
   modifiers: z.array(KnowledgeModifierSchema).default([]),
 })
 export type KnowledgeRules = z.infer<typeof KnowledgeRulesSchema>
@@ -898,8 +727,7 @@ const WordsSchema = z
     land: z.string(),
     region: z.string(),
     from: z.string(),
-    /** How a night's sleep reads here (M10.17): in a room, at home with a spouse, and rough; each a sentence. */
-    sleep: z.object({ room: z.string().optional(), home: z.string().optional(), rough: z.string().optional() }).strict().optional(),
+    sleep: z.object({ room: z.string().optional(), home: z.string().optional(), rough: z.string().optional() }).strict().optional().describe('How a night\'s sleep reads here (M10.17): in a room, at home with a spouse, and rough; each a sentence.'),
   })
   .strict()
 
@@ -914,10 +742,6 @@ const LawSchema = z
     npc: z.string().optional(),
     office: z.string().optional(),
     lord: z.string().optional(),
-    /**
-     * Fines in the smallest coin (M10.17): for a death, a beating, and the least for a theft; else by the world's coins.
-     * A death or a beating may be "hearing" instead (M10.20): no fine buys it off; the stranger is held and heard.
-     */
     fines: z
       .object({
         murder: z.union([z.number().int().positive(), z.literal('hearing')]).optional(),
@@ -925,8 +749,7 @@ const LawSchema = z
         least: z.number().int().positive().optional(),
       })
       .strict()
-      .optional(),
-    /** What a hearing is in this world (M10.20): how long the stranger is held first, and the words for being held and heard. */
+      .optional().describe('Fines in the smallest coin (M10.17): for a death, a beating, and the least for a theft; else by the world\'s coins. A death or a beating may be "hearing" instead (M10.20): no fine buys it off; the stranger is held and heard.'),
     hearing: z
       .object({
         hours: z.number().int().min(1).max(336).default(24),
@@ -934,7 +757,7 @@ const LawSchema = z
         heard: z.string().optional(),
       })
       .strict()
-      .optional(),
+      .optional().describe('What a hearing is in this world (M10.20): how long the stranger is held first, and the words for being held and heard.'),
   })
   .strict()
 
@@ -948,9 +771,9 @@ const SketchSchema = z.object({ bonds: z.record(z.string(), z.enum(RELATION_ROLE
 const FaithsSchema = z.array(z.object({ id: z.string().regex(/^[a-z0-9_]+$/), name: z.string(), patrons: z.array(z.string()).default([]), oaths: z.array(z.string()).default([]), faction: z.string().optional() }).strict())
 
 export const WorldSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  intro: Prose.optional(),
+  id: z.string().describe('The world\'s id: the name of its folder under content/, never changed once committed.'),
+  name: z.string().describe('The world\'s name as the player sees it: "The Quiet Reach".'),
+  intro: Prose.optional().describe('What the stranger reads when a new game starts, before the first place: who they are and why they are here.'),
   start: z.object({
     location: z.string(),
     year: z.number().int().nonnegative(),
@@ -958,45 +781,28 @@ export const WorldSchema = z.object({
     day: z.number().int().min(1).max(30),
     hour: z.number().int().min(0).max(23),
     minute: z.number().int().min(0).max(59).default(0),
-  }),
-  player: z.object({ money: z.number().int().nonnegative(), inventory: ItemCounts }),
-  knowledge: KnowledgeRulesSchema.default(KnowledgeRulesSchema.parse({})),
-  /** The fixed block every model call gets about this world (FO, chapter 10); without it, a plain one that names no world (M10.17). */
-  frame: z.string().optional(),
-  /**
-   * How pictures of places and people look in this world (after the M7 playtest): one style for all of them.
-   * wanted (M10.26): the editor makes the pictures of what is new after the steps; left out, it makes none
-   * unless asked. In a game the player's own switch decides, since the player pays.
-   */
-  pictures: z.object({ style: z.string().optional(), wanted: z.boolean().optional() }).strict().optional(),
-  /** The map of this world (M10): its palette, and its levels from below to above. */
-  map: WorldMapSchema.optional(),
-  /** The names the game's own texts use (M8): the land, the region you play in, where the stranger comes from. */
-  words: WordsSchema.optional(),
-  /** Names for the calendar (M8): thirteen months (the last one five days), seven weekdays, and the era after the year. */
+  }).describe('Where and when a new game starts: a location, and the year, month, day, hour and minute of the world\'s calendar.'),
+  player: z.object({ money: z.number().int().nonnegative(), inventory: ItemCounts }).describe('What the stranger has at the start: money in the smallest coin, and things by item id and count.'),
+  knowledge: KnowledgeRulesSchema.default(KnowledgeRulesSchema.parse({})).describe('How likely people are to know a topic, by its fame and how far away it is (FO, chapter 5); left out, the standard chances.'),
+  frame: z.string().optional().describe('The fixed block every model call gets about this world (FO, chapter 10); without it, a plain one that names no world (M10.17).'),
+  pictures: z.object({ style: z.string().optional(), wanted: z.boolean().optional() }).strict().optional().describe('How pictures of places and people look in this world (after the M7 playtest): one style for all of them. wanted (M10.26): the editor makes the pictures of what is new after the steps; left out, it makes none unless asked. In a game the player\'s own switch decides, since the player pays.'),
+  map: WorldMapSchema.optional().describe('The map of this world (M10): its palette, and its levels from below to above.'),
+  words: WordsSchema.optional().describe('The names the game\'s own texts use (M8): the land, the region you play in, where the stranger comes from.'),
   // Thirteen months (twelve of thirty days and the short thirteenth), and a week of as many days as it names (M10.17).
-  calendar: z.object({ era: z.string(), months: z.array(z.string()).length(13), weekdays: z.array(z.string()).min(1), start_weekday: z.string().optional() }).strict().optional(),
-  /**
-   * The weather of this world (M10.8): the season of each month, the chances of each weather per season, how likely
-   * the sky stays as it is for another part of the day, where the wind mostly comes from, and who reads the sky.
-   */
+  calendar: z.object({ era: z.string(), months: z.array(z.string()).length(13), weekdays: z.array(z.string()).min(1), start_weekday: z.string().optional() }).strict().optional().describe('Names for the calendar (M8): thirteen months (the last one five days), seven weekdays, and the era after the year.'),
   weather: z
     .object({
       seasons: z.array(z.string()).length(13),
       chances: z.record(z.string(), z.partialRecord(z.enum(['clear', 'overcast', 'rain', 'fog', 'storm', 'frost', 'snow']), z.number().min(0))),
       stay: z.number().min(0).max(1).optional(),
       prevailing: z.enum(['north', 'north-east', 'east', 'south-east', 'south', 'south-west', 'west', 'north-west']).optional(),
-      /** The sky in this world's words (M10.17), per kind of weather: one sentence, or one for the day and one for the night. */
-      lines: z.partialRecord(z.enum(['clear', 'overcast', 'rain', 'fog', 'storm', 'frost', 'snow']), z.union([z.string(), z.object({ day: z.string(), night: z.string().optional() }).strict()])).optional(),
+      lines: z.partialRecord(z.enum(['clear', 'overcast', 'rain', 'fog', 'storm', 'frost', 'snow']), z.union([z.string(), z.object({ day: z.string(), night: z.string().optional() }).strict()])).optional().describe('The sky in this world\'s words (M10.17), per kind of weather: one sentence, or one for the day and one for the night.'),
       readers: z.array(z.string()).default([]),
     })
     .strict()
-    .optional(),
-  /** The coins (M8), largest first; prices in the content are in the smallest. */
-  money: z.object({ units: CoinsSchema }).strict().optional(),
-  /** Who keeps the law (M8): wanted "in" where, the officer's title, and the NPC and place to pay fines. */
-  law: LawSchema.optional(),
-  /** Towns with rights of their own (M8.2): their own fines, officer and place to pay, and maybe no trade with someone wanted. */
+    .optional().describe('The weather of this world (M10.8): the season of each month, the chances of each weather per season, how likely the sky stays as it is for another part of the day, where the wind mostly comes from, and who reads the sky.'),
+  money: z.object({ units: CoinsSchema }).strict().optional().describe('The coins (M8), largest first; prices in the content are in the smallest.'),
+  law: LawSchema.optional().describe('Who keeps the law (M8): wanted "in" where, the officer\'s title, and the NPC and place to pay fines.'),
   towns: z
     .array(
       z
@@ -1011,39 +817,18 @@ export const WorldSchema = z.object({
         })
         .strict(),
     )
-    .default([]),
-  /** The five standings in this world's words, lowest first, and the trades that are an office (M8.2). */
-  standing: StandingSchema.optional(),
-  /** Plans that run from the first day (M8.3): the opponents who do not wait for the player. */
-  plans: z.array(z.string()).default([]),
-  /** Names for people who come during a game (M8.5). */
-  names: NamesSchema.optional(),
-  /**
-   * Sketch figures (M10.9): the bonds a speaker may name someone new by, as
-   * what that someone is to them ("cousin": kin, "old master": teacher), and
-   * the domains a talk must be in for it (family, trade, the speaker's past).
-   */
-  sketch: SketchSchema.optional(),
-  /** At most so many newcomers a season (M8.5). */
-  newcomers_per_season: z.number().int().min(0).default(6),
+    .default([]).describe('Towns with rights of their own (M8.2): their own fines, officer and place to pay, and maybe no trade with someone wanted.'),
+  standing: StandingSchema.optional().describe('The five standings in this world\'s words, lowest first, and the trades that are an office (M8.2).'),
+  plans: z.array(z.string()).default([]).describe('Plans that run from the first day (M8.3): the opponents who do not wait for the player.'),
+  names: NamesSchema.optional().describe('Names for people who come during a game (M8.5).'),
+  sketch: SketchSchema.optional().describe('Sketch figures (M10.9): the bonds a speaker may name someone new by, as what that someone is to them ("cousin": kin, "old master": teacher), and the domains a talk must be in for it (family, trade, the speaker\'s past).'),
+  newcomers_per_season: z.number().int().min(0).default(6).describe('At most so many newcomers a season (M8.5).'),
   /** The faiths of this world (M9.1): the first is what most people hold; a faith may go with patrons of the rules. */
   // Each faith swears by its own (M10.8): "Saint Brand's light", "Holle take it"; the guard puts these in place of ours.
-  /** The faiths (M9.1); with the faction that stands for each, whose standing a wedding at its holy place raises (M10.17). */
-  faiths: FaithsSchema.default([]),
-  /** Bells that ring on the hour (M10.15): heard plainly in some areas and far off in others, and a line in the text. */
-  bells: z.array(BellSchema).default([]),
-  /**
-   * The knobs of this world (M10.20): rules of play set otherwise than the
-   * default, by the knob's id (src/engine/knobs.ts, docs/KNOBS.md): one number,
-   * or for a table the rows that differ.
-   */
-  knobs: z.record(z.string(), z.union([z.number(), z.record(z.string(), z.number())])).optional(),
-  /**
-   * How well two lands know each other (M10.23): none, rumour, trade or close,
-   * per pair (the home land is the world's id). A pair without an entry has
-   * trade where a line of transport or a route joins them, and none otherwise.
-   */
-  reach: z.array(z.object({ between: z.tuple([z.string(), z.string()]), reach: z.enum(['none', 'rumour', 'trade', 'close']), why: z.string().optional() }).strict()).default([]),
+  faiths: FaithsSchema.default([]).describe('The faiths (M9.1); with the faction that stands for each, whose standing a wedding at its holy place raises (M10.17).'),
+  bells: z.array(BellSchema).default([]).describe('Bells that ring on the hour (M10.15): heard plainly in some areas and far off in others, and a line in the text.'),
+  knobs: z.record(z.string(), z.union([z.number(), z.record(z.string(), z.number())])).optional().describe('The knobs of this world (M10.20): rules of play set otherwise than the default, by the knob\'s id (src/engine/knobs.ts, docs/KNOBS.md): one number, or for a table the rows that differ.'),
+  reach: z.array(z.object({ between: z.tuple([z.string(), z.string()]), reach: z.enum(['none', 'rumour', 'trade', 'close']), why: z.string().optional() }).strict()).default([]).describe('How well two lands know each other (M10.23): none, rumour, trade or close, per pair (the home land is the world\'s id). A pair without an entry has trade where a line of transport or a route joins them, and none otherwise.'),
 })
 export type WorldDef = z.infer<typeof WorldSchema>
 
@@ -1059,37 +844,21 @@ export type WorldDef = z.infer<typeof WorldSchema>
  */
 export const LandSchema = z
   .object({
-    id: z.string().regex(/^[a-z0-9_]+$/),
-    name: z.string(),
-    /** The realm of the world's realms that rules it, when one does. */
-    realm: z.string().optional(),
-    /** The fixed block every model call gets while the stranger is in this land, in place of the world's. */
-    frame: z.string(),
-    /**
-     * A tongue of its own (M10.23, optional): whoever does not know it gets greetings, gestures, names
-     * and numbers from its people and no more, until they learn it (so many exchanges, fewer with Lore)
-     * or bring someone who speaks it; `speakers` are people from elsewhere who do.
-     */
-    language: z.object({ name: z.string(), learn: z.number().int().min(1).max(500).default(30), speakers: z.array(z.string()).default([]) }).strict().optional(),
-    /** What the stranger notices crossing into it, told at the border: another way of address, other money on the table. */
-    crossing: z.string().optional(),
-    /** Its own words for the game's texts; without them its name, and the stranger comes from the world's land. */
-    words: WordsSchema.partial().optional(),
-    names: NamesSchema.optional(),
-    faiths: FaithsSchema.optional(),
-    /**
-     * Its own coins, largest first, and the rate: how many of its smallest
-     * coin one of the world's smallest buys (a whole number, so every sum
-     * comes out even). Prices stay in the world's smallest coin; the land
-     * tells them in its own, and the coins are changed at the border.
-     */
-    money: z.object({ units: CoinsSchema, rate: z.number().int().positive() }).strict().optional(),
-    law: LawSchema.optional(),
-    standing: StandingSchema.optional(),
-    sketch: SketchSchema.optional(),
-    pictures: z.object({ style: z.string() }).strict().optional(),
-    /** The colours and signs of its map; its levels are the world's. */
-    palette: MapPaletteSchema.optional(),
+    id: z.string().regex(/^[a-z0-9_]+$/).describe('The land\'s id: the name of its folder under lands/, never changed once committed.'),
+    name: z.string().describe('The land\'s name as the player sees it.'),
+    realm: z.string().optional().describe('The realm of the world\'s realms that rules it, when one does.'),
+    frame: z.string().describe('The fixed block every model call gets while the stranger is in this land, in place of the world\'s.'),
+    language: z.object({ name: z.string(), learn: z.number().int().min(1).max(500).default(30), speakers: z.array(z.string()).default([]) }).strict().optional().describe('A tongue of its own (M10.23, optional): whoever does not know it gets greetings, gestures, names and numbers from its people and no more, until they learn it (so many exchanges, fewer with Lore) or bring someone who speaks it; `speakers` are people from elsewhere who do.'),
+    crossing: z.string().optional().describe('What the stranger notices crossing into it, told at the border: another way of address, other money on the table.'),
+    words: WordsSchema.partial().optional().describe('Its own words for the game\'s texts; without them its name, and the stranger comes from the world\'s land.'),
+    names: NamesSchema.optional().describe('Names for people who come to this land during a game; without them, the world\'s.'),
+    faiths: FaithsSchema.optional().describe('The faiths of this land; without them, the world\'s.'),
+    money: z.object({ units: CoinsSchema, rate: z.number().int().positive() }).strict().optional().describe('Its own coins, largest first, and the rate: how many of its smallest coin one of the world\'s smallest buys (a whole number, so every sum comes out even). Prices stay in the world\'s smallest coin; the land tells them in its own, and the coins are changed at the border.'),
+    law: LawSchema.optional().describe('Who keeps the law in this land: where one is wanted, the officer\'s title, and where fines are paid; without it, the world\'s.'),
+    standing: StandingSchema.optional().describe('The five standings in this land\'s words, lowest first, and the trades that are an office; without them, the world\'s.'),
+    sketch: SketchSchema.optional().describe('The bonds a speaker in this land may name someone new by, and the domains a talk must be in for it; without them, the world\'s.'),
+    pictures: z.object({ style: z.string() }).strict().optional().describe('How pictures of this land look (a style for the picture model); without it, the world\'s.'),
+    palette: MapPaletteSchema.optional().describe('The colours and signs of its map; its levels are the world\'s.'),
   })
   .strict()
 export type Land = z.infer<typeof LandSchema> & {
@@ -1101,27 +870,15 @@ export type Land = z.infer<typeof LandSchema> & {
 
 export const FactionSchema = z
   .object({
-    id: z.string().regex(/^[a-z0-9_]+$/),
-    name: z.string(),
-    seat: z.string(),
-    wants: z.string(),
-    /**
-     * Where else they sit (M10.22): a place (a location or an area) with what
-     * they want there. A new town brings no new factions: a district gets a
-     * seat of one the world has (the guild's hall in Graafhaven).
-     */
-    seats: z.array(z.object({ at: z.string(), wants: z.string() }).strict()).default([]),
-    /** Where they stand on what divides the land: "for the drainage". */
-    stance: z.string().optional(),
-    members: z.array(z.string()).default([]),
-    allies: z.array(z.string()).default([]),
-    rivals: z.array(z.string()).default([]),
-    /**
-     * How the player can join: never, hired (they hire, they do not enlist), by reputation, or on terms (M10.17, before
-     * that the Lantern, the Old Faith and the town rights at the Waag were in code): sworn to one of some patrons or to
-     * none of others, at some places or a place with a tag, for a fee, from a reputation; with what is said when the
-     * stranger falls short.
-     */
+    id: z.string().regex(/^[a-z0-9_]+$/).describe('The faction\'s id: a key, never changed once committed, and never shown to the player.'),
+    name: z.string().describe('Its name as the player sees it.'),
+    seat: z.string().describe('Where it sits: a location or an area.'),
+    wants: z.string().describe('What it wants, in a sentence.'),
+    seats: z.array(z.object({ at: z.string(), wants: z.string() }).strict()).default([]).describe('Where else they sit (M10.22): a place (a location or an area) with what they want there. A new town brings no new factions: a district gets a seat of one the world has (the guild\'s hall in Graafhaven).'),
+    stance: z.string().optional().describe('Where they stand on what divides the land: "for the drainage".'),
+    members: z.array(z.string()).default([]).describe('The people who belong to it.'),
+    allies: z.array(z.string()).default([]).describe('The factions it stands with.'),
+    rivals: z.array(z.string()).default([]).describe('The factions it stands against.'),
     join: z
       .union([
         z.enum(['never', 'hired', 'reputation']),
@@ -1137,9 +894,8 @@ export const FactionSchema = z
           })
           .strict(),
       ])
-      .default('never'),
-    /** The law this faction keeps: the home land's (count), a town's from world.yaml, or another land's by its id (M10.23). */
-    law: z.string().optional(),
+      .default('never').describe('How the player can join: never, hired (they hire, they do not enlist), by reputation, or on terms (M10.17, before that the Lantern, the Old Faith and the town rights at the Waag were in code): sworn to one of some patrons or to none of others, at some places or a place with a tag, for a fee, from a reputation; with what is said when the stranger falls short.'),
+    law: z.string().optional().describe('The law this faction keeps: the home land\'s (count), a town\'s from world.yaml, or another land\'s by its id (M10.23).'),
   })
   .strict()
 export type Faction = z.infer<typeof FactionSchema>
@@ -1178,21 +934,18 @@ function frozen<T>(value: T): T {
 /** Sentences for a journey (M10.11): chosen by the rules, seeded, per terrain, weather and time of day. */
 export const JourneySchema = z
   .object({
-    /** Per kind of land (fen, fields, heath, woods, water) and way (canal, road, path, ridge). */
-    terrain: z.record(z.string(), z.array(z.string())).default({}),
-    /** Per weather (clear, overcast, rain, fog, storm, frost, snow). */
-    weather: z.record(z.string(), z.array(z.string())).default({}),
-    night: z.array(z.string()).default([]),
-    /** What may happen on a journey over known ground (FO, chapter 4, "Snelreizen"). */
-    on_the_way: z.array(z.object({ text: z.string(), where: z.enum(['canal', 'road', 'fen', 'any']), night: z.boolean().optional(), minutes: z.number().int().positive().optional() }).strict()).default([]),
+    terrain: z.record(z.string(), z.array(z.string())).default({}).describe('Per kind of land (fen, fields, heath, woods, water) and way (canal, road, path, ridge).'),
+    weather: z.record(z.string(), z.array(z.string())).default({}).describe('Per weather (clear, overcast, rain, fog, storm, frost, snow).'),
+    night: z.array(z.string()).default([]).describe('Sentences for a journey at night, whatever the land or weather.'),
+    on_the_way: z.array(z.object({ text: z.string(), where: z.enum(['canal', 'road', 'fen', 'any']), night: z.boolean().optional(), minutes: z.number().int().positive().optional() }).strict()).default([]).describe('What may happen on a journey over known ground (FO, chapter 4, "Snelreizen").'),
   })
   .strict()
 export type Journey = z.infer<typeof JourneySchema>
 
-export const RealmSchema = z.object({ id: z.string().regex(/^[a-z0-9_]+$/), name: z.string(), ruler: z.string(), capital: z.string() }).strict()
+export const RealmSchema = z.object({ id: z.string().regex(/^[a-z0-9_]+$/).describe('The realm\'s id: a key, never changed once committed, and never shown to the player.'), name: z.string().describe('Its name as the player sees it.'), ruler: z.string().describe('Who rules it, in words: "Count Aelbrecht".'), capital: z.string().describe('Where it is ruled from, in words.') }).strict()
 export type Realm = z.infer<typeof RealmSchema>
 
-export const TensionSchema = z.object({ between: z.tuple([z.string(), z.string()]), tension: z.number().int().min(0).max(100), why: z.string() }).strict()
+export const TensionSchema = z.object({ between: z.tuple([z.string(), z.string()]).describe('The two realms or factions it is between.'), tension: z.number().int().min(0).max(100).describe('How high it runs, from 0 (at peace) to 100 (at war).'), why: z.string().describe('What it is about, in a sentence.') }).strict()
 export type Tension = z.infer<typeof TensionSchema>
 
 // ---------------------------------------------------------------- loading
@@ -1491,6 +1244,8 @@ export function loadContent(files: ContentFile[]): Content {
   if (rules?.skills.length) for (const p of content.professions.values()) if (p.teaches && !rules.skills.some((s) => s.id === p.teaches)) problems.push(`profession ${p.id}: teaches ${p.teaches}, ${noSkill(rules)}`)
   problems.push(...checkCrafts(content, rules))
   if (world) problems.push(...checkVoice(voice, world, content, content.lands.values()))
+  // Never an id in a text the player sees (M10.29 M: a craft's maker held Tessa's id).
+  problems.push(...checkTextIds({ ...content, voice }, world))
   // Gestures are of people of the world, and a lodging is a place with a keeper (M10.13).
   for (const g of content.gestures.values()) if (!content.npcs.has(g.who)) problems.push(`gesture ${g.id}: unknown NPC ${g.who}`)
   for (const l of content.lodgings.values()) {
@@ -1610,7 +1365,7 @@ function checkLands(world: WorldDef, c: Omit<Content, 'world'>): string[] {
  * makes (a far place made playable) must pass them as if it had been written.
  */
 export function checkContent(c: Content): string[] {
-  return [...checkReferences(c.world, c), ...checkQuests(c), ...(c.rules ? checkRules(c.rules, c) : [])]
+  return [...checkReferences(c.world, c), ...checkQuests(c), ...(c.rules ? checkRules(c.rules, c) : []), ...checkTextIds(c, c.world)]
 }
 
 function safeParse(text: string): unknown {
@@ -2145,3 +1900,43 @@ export function lockedIds(c: Pick<Content, 'lock'>): Set<string> {
   for (const t of c.lock?.tombstones ?? []) out.add(t.id)
   return out
 }
+
+/** The fields whose words the player reads (M10.29 M): names, descriptions, lines, texts of every kind. */
+const PLAYER_TEXT = new Set(['name', 'plural', 'maker', 'summary', 'description', 'day', 'night', 'look', 'take', 'text', 'line', 'lines', 'player_text', 'narrate_start', 'narrate_end', 'broken_text', 'cooldown_text', 'short', 'short_public', 'cover', 'appearance', 'speech', 'examples', 'public_facts', 'precise', 'village', 'far', 'story', 'details', 'title', 'label', 'intro', 'frame', 'used', 'why', 'news', 'arrival', 'masterwork', 'verbs', 'said', 'greeting', 'farewell'])
+
+/** Fields that hold words in one kind and an id in another: checked only where they are words. */
+const EITHER = new Set(['take', 'short', 'text', 'line', 'lines', 'news', 'far', 'said'])
+
+/**
+ * Never an id in a text the player sees (M10.29 M): every field of every kind
+ * whose words are read, walked for a word with the prefix of a kind of id or
+ * an id of this world with an underscore in it.
+ */
+export function checkTextIds(c: Omit<Content, 'world'>, world?: WorldDef): string[] {
+  const ids = new Set<string>()
+  for (const map of [c.npcs, c.locations, c.items, c.crafts, c.objectTypes, c.areas, c.topics, c.quests, c.professions, c.factions, c.regions, c.lands, c.passages, c.creatures, c.tides, c.plans, c.watchers, c.aftermath]) for (const id of map.keys()) if (id.includes('_')) ids.add(id)
+  const problems: string[] = []
+  const walk = (where: string, value: unknown, text: boolean, field: string) => {
+    if (typeof value === 'string') {
+      if (!text) return
+      // A field that is words in one kind and a reference in another (a quest's take, a great line's short): words only.
+      if (EITHER.has(field) && !/\s/.test(value.trim())) return
+      const found = idWordsIn(value, ids)
+      if (found.length) problems.push(`${where}: ${field} holds ${found.join(', ')}, an id; write it in words`)
+    } else if (Array.isArray(value)) value.forEach((v) => walk(where, v, text, field))
+    else if (value && typeof value === 'object') for (const [k, v] of Object.entries(value)) walk(where, v, text || PLAYER_TEXT.has(k), text ? field : k)
+  }
+  const kinds: [string, ReadonlyMap<string, unknown>][] = [['npc', c.npcs], ['location', c.locations], ['item', c.items], ['craft', c.crafts], ['object type', c.objectTypes], ['area', c.areas], ['topic', c.topics], ['quest', c.quests], ['profession', c.professions], ['faction', c.factions], ['land', c.lands], ['passage', c.passages], ['creature', c.creatures], ['watcher', c.watchers], ['aftermath', c.aftermath], ['tide', c.tides]]
+  for (const [kind, map] of kinds) for (const [id, entity] of map) walk(`${kind} ${id}`, entity, false, '')
+  if (world) for (const key of ['name', 'intro', 'frame'] as const) walk('world', world[key], true, key)
+  // The voice kits, the world's and each land's: every word of them may be spoken, save the ids it sorts people by.
+  const kit = (where: string, voice: Voice | undefined) => {
+    if (!voice) return
+    for (const [k, v] of Object.entries(voice)) if (k !== 'default_group' && k !== 'groups') walk(where, v, true, k)
+    for (const g of voice.groups) for (const k of ['name', 'sayings', 'oaths'] as const) walk(`${where} group ${g.id}`, g[k], true, k)
+  }
+  kit('voice kit', c.voice)
+  for (const land of c.lands.values()) kit(`voice kit of ${land.id}`, land.voice)
+  return problems
+}
+

@@ -25,39 +25,25 @@ export type Driver = z.infer<typeof DriverSchema>
 
 export const TideSchema = z
   .object({
-    id: z.string().regex(/^[a-z0-9_]+$/),
-    name: z.string(),
-    /** What it is, in a word the chronicler and the journal use: war, flood, famine, plague, uprising, storm. */
-    kind: z.string(),
-    /** The areas it strikes: its threat and its news are there. */
-    areas: z.array(z.string()).min(1),
-    drivers: z.array(DriverSchema).min(1),
-    /** From this pressure it may threaten. */
-    threat: z.number().positive(),
-    /** From this pressure it may break. */
-    threshold: z.number().positive(),
-    /** What a threat does: a mood of threat in its areas with this line, news, and prices up a little. */
+    id: z.string().regex(/^[a-z0-9_]+$/).describe('The great line\'s id: a key, never changed once committed, and never shown to the player.'),
+    name: z.string().describe('Its name as the player sees it in the journal: "the war in the south".'),
+    kind: z.string().describe('What it is, in a word the chronicler and the journal use: war, flood, famine, plague, uprising, storm.'),
+    areas: z.array(z.string()).min(1).describe('The areas it strikes: its threat and its news are there.'),
+    drivers: z.array(DriverSchema).min(1).describe('What pushes it each day it holds (a fact, a shortage, a flag), with a weight; a negative weight calms it.'),
+    threat: z.number().positive().describe('From this pressure it may threaten.'),
+    threshold: z.number().positive().describe('From this pressure it may break.'),
     threatens: z
       .object({
         line: z.string(),
         news: z.string(),
-        /** Prices in its areas, for as long as the mood lasts; 1 leaves them. */
-        prices: z.number().min(1).max(2).default(1.2),
+        prices: z.number().min(1).max(2).default(1.2).describe('Prices in its areas, for as long as the mood lasts; 1 leaves them.'),
         days: z.number().int().positive().default(14),
       })
-      .strict(),
-    /** The plan of the content that plays the event, run by the engine. */
-    plan: z.string(),
-    /** What is said when it breaks: the fact of belang 5. */
-    breaks: z.object({ title: z.string(), precise: z.string(), village: z.string(), far: z.string() }).strict(),
-    /** Days after an event before it may break again (without: the knob tides.cooldown_days). */
-    cooldown: z.number().int().positive().optional(),
-    /**
-     * Who the stranger may bring to one table once the line stands at its threat (M10.22): the two
-     * people of its two sides, how much a good outcome eases it (at most ten, the rule for a shift),
-     * and what the chronicle says afterwards.
-     */
-    mediation: z.object({ between: z.tuple([z.string(), z.string()]), eases: z.number().positive().max(10).default(10), told: z.string() }).strict().optional(),
+      .strict().describe('What a threat does: a mood of threat in its areas with this line, news, and prices up a little.'),
+    plan: z.string().describe('The plan of the content that plays the event, run by the engine.'),
+    breaks: z.object({ title: z.string(), precise: z.string(), village: z.string(), far: z.string() }).strict().describe('What is said when it breaks: the fact of belang 5.'),
+    cooldown: z.number().int().positive().optional().describe('Days after an event before it may break again (without: the knob tides.cooldown_days).'),
+    mediation: z.object({ between: z.tuple([z.string(), z.string()]), eases: z.number().positive().max(10).default(10), told: z.string() }).strict().optional().describe('Who the stranger may bring to one table once the line stands at its threat (M10.22): the two people of its two sides, how much a good outcome eases it (at most ten, the rule for a shift), and what the chronicle says afterwards.'),
   })
   .strict()
 export type Tide = z.infer<typeof TideSchema>

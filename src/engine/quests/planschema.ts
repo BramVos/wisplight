@@ -82,14 +82,12 @@ const FactTemplate = z
     precise: z.string(),
     village: z.string(),
     far: z.string(),
-    /** A song or a story (M10.14): the village version, bigger with each retelling; the last stays. */
-    grows: z.array(z.string()).optional(),
+    grows: z.array(z.string()).optional().describe('A song or a story (M10.14): the village version, bigger with each retelling; the last stays.'),
     belang: z.number().int().min(0).max(5).default(1),
     about: z.array(z.string()).default([]),
     place: SelectorSchema.optional(),
     claim: ClaimSchema.optional(),
-    /** Only these saw it (M9.4): a leak someone came upon; without it, everyone at the place. */
-    witnesses: z.array(z.string()).optional(),
+    witnesses: z.array(z.string()).optional().describe('Only these saw it (M9.4): a leak someone came upon; without it, everyone at the place.'),
   })
   .strict()
 
@@ -217,18 +215,14 @@ export type Step = z.infer<typeof StepSchema>
 
 export const PlanSchema = z
   .object({
-    id: Id,
-    name: z.string(),
-    /** The groups by area: everyone who lives there, alive and not travelling with the player. */
-    groups: z.record(z.string(), GroupSchema).default({}),
-    phases: z.array(z.object({ after: z.number().int().min(0), effects: z.array(PlanEffectSchema) }).strict()).default([]),
-    /** At most this many effects in each phase (design: a plan has a maximum). */
-    max_effects: z.number().int().positive().default(30),
-    steps: z.array(StepSchema).max(30).default([]),
-    /** Days after which what is left of the plan lapses. */
-    expires: z.number().positive().optional(),
-    /** What it is about: one plan per person per topic. */
-    topic: z.string().optional(),
+    id: Id.describe('The plan\'s id: a key, never changed once committed, and never shown to the player.'),
+    name: z.string().describe('What the plan is, in a few words.'),
+    groups: z.record(z.string(), GroupSchema).default({}).describe('The groups by area: everyone who lives there, alive and not travelling with the player.'),
+    phases: z.array(z.object({ after: z.number().int().min(0), effects: z.array(PlanEffectSchema) }).strict()).default([]).describe('Phases in order: after so many days, what happens (effects on people, places and the world).'),
+    max_effects: z.number().int().positive().default(30).describe('At most this many effects in each phase (design: a plan has a maximum).'),
+    steps: z.array(StepSchema).max(30).default([]).describe('Steps in order: what people do, and when, with the news each step makes.'),
+    expires: z.number().positive().optional().describe('Days after which what is left of the plan lapses.'),
+    topic: z.string().optional().describe('What it is about: one plan per person per topic.'),
   })
   .strict()
   .refine((p) => p.phases.length + p.steps.length > 0, { message: 'a plan needs phases or steps' })
@@ -237,16 +231,12 @@ export type Plan = z.infer<typeof PlanSchema>
 /** When a change in the world is a signal (M8.1): one of a new fact, conditions that come true, or a state the system works out. */
 export const WatcherSchema = z
   .object({
-    id: Id,
-    signal: Id,
-    event: Id.optional(),
-    /** A new fact with a claim of this key, and of this value or kind if given. Its people: $subject, $value, $about. */
-    fact: z.object({ key: z.string().optional(), value: z.union([z.string(), z.array(z.string())]).optional(), not: z.union([z.string(), z.array(z.string())]).optional(), kind: z.string().optional() }).strict().optional(),
-    /** Someone comes to believe a claim of this key (and value or kind): $a who believes it, $b who told them (M8.2). */
-    belief: z.object({ key: z.string(), value: z.union([z.string(), z.array(z.string())]).optional(), kind: z.string().optional() }).strict().optional(),
-    /** Conditions that come true: a signal each time they do. */
-    when: z.array(ConditionSchema).optional(),
-    /** A state the system works out: a house nobody has lived in for so many days ($place), a household that rose so many standings ($a and the rest of it). */
+    id: Id.describe('The watcher\'s id: a key, never changed once committed, and never shown to the player.'),
+    signal: Id.describe('The signal it gives: the aftermath and intentions of this signal follow.'),
+    event: Id.optional().describe('A name for what happened, for an aftermath that answers only this event of the signal.'),
+    fact: z.object({ key: z.string().optional(), value: z.union([z.string(), z.array(z.string())]).optional(), not: z.union([z.string(), z.array(z.string())]).optional(), kind: z.string().optional() }).strict().optional().describe('A new fact with a claim of this key, and of this value or kind if given. Its people: $subject, $value, $about.'),
+    belief: z.object({ key: z.string(), value: z.union([z.string(), z.array(z.string())]).optional(), kind: z.string().optional() }).strict().optional().describe('Someone comes to believe a claim of this key (and value or kind): $a who believes it, $b who told them (M8.2).'),
+    when: z.array(ConditionSchema).optional().describe('Conditions that come true: a signal each time they do.'),
     probe: z
       .union([
         z.object({ house_empty: z.number().positive() }).strict(),
@@ -275,11 +265,10 @@ export const WatcherSchema = z
          */
         z.object({ pulse: z.enum(HOOK_KINDS) }).strict(),
       ])
-      .optional(),
-    /** Who it is about; for a fact, by default the subject and the value of its claim. */
-    who: z.array(z.string()).optional(),
-    place: z.string().optional(),
-    belang: z.number().int().min(0).max(5).optional(),
+      .optional().describe('A state the system works out: a house nobody has lived in for so many days ($place), a household that rose so many standings ($a and the rest of it).'),
+    who: z.array(z.string()).optional().describe('Who it is about; for a fact, by default the subject and the value of its claim.'),
+    place: z.string().optional().describe('Where it happens, when the conditions do not say.'),
+    belang: z.number().int().min(0).max(5).optional().describe('How much it matters, from 0 to 5; left out, that of the fact.'),
   })
   .strict()
   .refine((w) => [w.fact, w.belief, w.when, w.probe].filter(Boolean).length === 1, { message: 'a watcher watches one of fact, belief, when or probe' })
@@ -288,20 +277,16 @@ export type Watcher = z.infer<typeof WatcherSchema>
 /** What follows a signal by the rules, always, also without AI (M8.1). */
 export const AftermathSchema = z
   .object({
-    id: Id,
-    signal: Id,
-    event: Id.optional(),
-    /** Only when these hold, with the bindings of the signal. */
-    when: z.array(ConditionSchema).default([]),
-    /** One plan per person per topic: a second signal about the same does not start a second plan. */
-    topic: Id,
-    expires: z.number().positive().default(30),
-    groups: z.record(z.string(), GroupSchema).default({}),
-    steps: z.array(StepSchema).min(1).max(30),
-    /** The brain of $a may plan this for themselves and their household instead (M8.2); this is what happens without it. */
-    brain: z.boolean().default(false),
-    /** Whom it is about, for one plan per person and topic: all people of the signal, or only the first ($a; the second only told them). */
-    about: z.enum(['all', 'first']).default('all'),
+    id: Id.describe('The aftermath\'s id: a key, never changed once committed, and never shown to the player.'),
+    signal: Id.describe('The signal it follows.'),
+    event: Id.optional().describe('Only for this event of the signal; left out, for every event.'),
+    when: z.array(ConditionSchema).default([]).describe('Only when these hold, with the bindings of the signal.'),
+    topic: Id.describe('One plan per person per topic: a second signal about the same does not start a second plan.'),
+    expires: z.number().positive().default(30).describe('Days after which what is left of it lapses.'),
+    groups: z.record(z.string(), GroupSchema).default({}).describe('The groups it moves, by area: everyone who lives there, alive and not travelling with the stranger.'),
+    steps: z.array(StepSchema).min(1).max(30).describe('What follows, step by step: what people do, and when, with the news each step makes.'),
+    brain: z.boolean().default(false).describe('The brain of $a may plan this for themselves and their household instead (M8.2); this is what happens without it.'),
+    about: z.enum(['all', 'first']).default('all').describe('Whom it is about, for one plan per person and topic: all people of the signal, or only the first ($a; the second only told them).'),
   })
   .strict()
 export type Aftermath = z.infer<typeof AftermathSchema>
@@ -314,23 +299,22 @@ export type Aftermath = z.infer<typeof AftermathSchema>
  */
 export const IntentionSchema = z
   .object({
-    id: Id,
-    signal: Id,
-    event: Id.optional(),
-    when: z.array(ConditionSchema).default([]),
-    topic: Id,
-    expires: z.number().positive().default(14),
-    groups: z.record(z.string(), GroupSchema).default({}),
-    about: z.enum(['all', 'first']).default('first'),
+    id: Id.describe('The intention\'s id: a key, never changed once committed, and never shown to the player.'),
+    signal: Id.describe('The signal it answers.'),
+    event: Id.optional().describe('Only for this event of the signal; left out, for every event.'),
+    when: z.array(ConditionSchema).default([]).describe('Who may choose it: conditions with $a the one who chooses.'),
+    topic: Id.describe('What it is about: one plan per person per topic.'),
+    expires: z.number().positive().default(14).describe('Days after which what is left of it lapses.'),
+    groups: z.record(z.string(), GroupSchema).default({}).describe('The groups it moves, by area: everyone who lives there, alive and not travelling with the stranger.'),
+    about: z.enum(['all', 'first']).default('first').describe('Whom it is about: all people of the signal, or only the first ($a).'),
     choice: z
       .object({
         name: z.string(),
         line: z.string(),
-        /** Bindings the brain fills: a person it knows, a place it knows, or a free house. */
-        open: z.record(Id, z.enum(['person', 'place', 'house'])).default({}),
+        open: z.record(Id, z.enum(['person', 'place', 'house'])).default({}).describe('Bindings the brain fills: a person it knows, a place it knows, or a free house.'),
       })
-      .strict(),
-    steps: z.array(StepSchema).min(1).max(20),
+      .strict().describe('What the brain chooses from: a name, one line, and the bindings it fills in (a person, a place, a house).'),
+    steps: z.array(StepSchema).min(1).max(20).describe('What follows once it is chosen, step by step.'),
   })
   .strict()
 export type Intention = z.infer<typeof IntentionSchema>
@@ -338,12 +322,12 @@ export type Intention = z.infer<typeof IntentionSchema>
 /** The news a verb makes when a step is done: belang and three versions (M8.1). A world can word them its own way. */
 export const VerbTextSchema = z
   .object({
-    id: z.enum(['set_tie', 'end_tie', 'move_home', 'join_household', 'leave_household', 'set_work', 'quit_work', 'hire', 'feast', 'return', 'leave']),
-    belang: z.number().int().min(0).max(5),
-    title: z.string(),
-    precise: z.string(),
-    village: z.string(),
-    far: z.string(),
+    id: z.enum(['set_tie', 'end_tie', 'move_home', 'join_household', 'leave_household', 'set_work', 'quit_work', 'hire', 'feast', 'return', 'leave']).describe('The verb whose news this is: set_tie, move_home, set_work, feast and the rest.'),
+    belang: z.number().int().min(0).max(5).describe('How much the news matters, from 0 to 5.'),
+    title: z.string().describe('The news in a few words, for the journal.'),
+    precise: z.string().describe('How someone who was there tells it.'),
+    village: z.string().describe('How it goes round the village.'),
+    far: z.string().describe('How it reaches other places.'),
   })
   .strict()
 export type VerbText = z.infer<typeof VerbTextSchema>

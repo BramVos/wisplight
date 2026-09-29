@@ -43,14 +43,10 @@ const MaySchema = z.union([
 
 export const ImproviseSchema = z
   .object({
-    /** What it can mean: an offering, a curse, a spirit, lore, a craft. */
-    domain: z.enum(['offering', 'curse', 'spirit', 'lore', 'craft']),
-    /** What may happen at most, one of these per act; nothing else. */
-    may: z.array(MaySchema).default([]),
-    /** The line without a model, or with the budget spent: short, and no effect. */
-    fallback: z.string(),
-    /** Whether what the stranger offers may be spent (the milk poured out): only when the answer says so too. */
-    takes: z.boolean().default(false),
+    domain: z.enum(['offering', 'curse', 'spirit', 'lore', 'craft']).describe('What it can mean: an offering, a curse, a spirit, lore, a craft.'),
+    may: z.array(MaySchema).default([]).describe('What may happen at most, one of these per act; nothing else.'),
+    fallback: z.string().describe('The line without a model, or with the budget spent: short, and no effect.'),
+    takes: z.boolean().default(false).describe('Whether what the stranger offers may be spent (the milk poured out): only when the answer says so too.'),
   })
   .strict()
 export type Improvise = z.infer<typeof ImproviseSchema>

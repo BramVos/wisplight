@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { Engine, loadContent, recordFact, type Content } from '../src/engine'
-import { contractMarkdown, unknownFields } from '../src/engine/contract'
+import { contractMarkdown, undescribedFields, unknownFields } from '../src/engine/contract'
 import { applyEdits } from '../src/engine/edit'
 import { draftResult, editorView, newWorldFiles, readDraft, worldStepRequest } from '../src/engine/editor'
 import { WORLD_STEPS } from '../src/engine/worldguide'
@@ -46,6 +46,11 @@ const COMMANDS = ['look', 'help', 'wait', 'sleep', 'journal', 'time', 'inventory
 describe('M10.17: the contract', () => {
   it('docs/CONTENT.md is what the schemas say (npm run content:contract)', () => {
     expect(readFileSync(resolve(import.meta.dirname, '../docs/CONTENT.md'), 'utf8')).toBe(contractMarkdown())
+  })
+
+  it('says what every field of every kind holds, from its zod description (M10.29 M): a field without one fails', () => {
+    expect(undescribedFields()).toEqual([])
+    expect(contractMarkdown()).toMatch(/\| maker \| What someone of the craft is called, in words: .* Never an id/)
   })
 
   it('refuses a field the contract does not have, with the fields there are', () => {

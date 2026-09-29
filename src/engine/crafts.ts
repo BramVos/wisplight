@@ -1,3 +1,4 @@
+import { looksLikeId } from './idwords'
 import { knob } from './knobs'
 import { minuteOfDay } from './clock'
 import type { Output } from './commands'
@@ -43,9 +44,9 @@ export function craftRank(world: World, craft: string): number {
   return world.state.player.crafts?.[craft]?.rank ?? 0
 }
 
-/** "a journeyman baker". */
+/** "a journeyman baker"; never an id (M10.29 M): a maker that is one gives "a journeyman in field electronics". */
 export function craftTitle(craft: Craft, rank: number): string {
-  const name = `${CRAFT_RANKS[rank]} ${craft.maker}`
+  const name = looksLikeId(craft.maker) ? `${CRAFT_RANKS[rank]} in ${craft.name.toLowerCase()}` : `${CRAFT_RANKS[rank]} ${craft.maker}`
   return `${/^[aeiou]/i.test(name) ? 'an' : 'a'} ${name}`
 }
 

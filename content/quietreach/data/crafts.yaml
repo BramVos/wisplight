@@ -1,7 +1,7 @@
 crafts:
   - id: field_electronics
     name: Field Electronics
-    maker: npc_tessa_rook
+    maker: field technician
     skill: electronics
     professions: [chief_engineer, field_mechanic, signal_technician]
     techniques:

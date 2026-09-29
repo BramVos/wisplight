@@ -12,6 +12,7 @@
   "reply": "{\"say\":\"I set the osier-weaving craft's skill to Survival, in place of Craft, which is not a skill of this world.\",\"questions\":[],\"changes\":[{\"kind\":\"craft\",\"id\":\"osier_weaving\",\"yaml\":\"id: osier_weaving\\nname: osier-weaving\\nmaker: npc_trees_driestromen\\nskill: Survival\\nprofessions: [osier_cutter]\\ntechniques:\\n  - id: eel_pot\\n    name: the eel-pot\\nmasterwork: an eel-pot so tight the Wilgenwaard hangs it at the weirs for the Haakman\\npractice: [3, 8, 16]\\nper_day: 3\\nfailure:\\n  outcome: poor\\n  item: split_eel_pot\\n  qty: 1\\n  why: Dry rods split. Keep them in the trough until your hands are wet to the elbow.\\n  critical: leftover\\n\"}],\"world\":\"\",\"rules\":\"\",\"files\":[]}",
   "problems": [
     "craft osier_weaving: the trade osier_cutter does not exist",
-    "craft osier_weaving: a failure makes split_eel_pot, which is no item"
+    "craft osier_weaving: a failure makes split_eel_pot, which is no item",
+    "craft osier_weaving: maker holds npc_trees_driestromen, an id; write it in words"
   ]
 }

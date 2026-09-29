@@ -1,3 +1,4 @@
+import { idWordsIn } from '../idwords'
 import { frameOf } from '../lands'
 import { checkContent, LocationSchema, NpcSchema, type Content, type Direction } from '../content'
 import { cachedSystem, type LlmRequest } from '../dialogue/llm'
@@ -118,7 +119,7 @@ function heartOf(world: Pick<World, 'state'>, topic: string): string | undefined
 }
 
 /** A secret or its hint as the content wants it: one sentence or two, within the limits, and no instruction to a model. */
-const secretFits = (text: unknown): text is string => typeof text === 'string' && text.trim().length > 0 && text.length <= 240 && !crossesLimits(text) && !readsAsInstruction(text)
+const secretFits = (text: unknown): text is string => typeof text === 'string' && text.trim().length > 0 && text.length <= 240 && !crossesLimits(text) && !readsAsInstruction(text) && !idWordsIn(text).length
 
 /** A description as the content rules want it, or the template's. */
 const room = (text: string | undefined, fallback: string) => (fitsRoom(text) ? text : fallback)
@@ -218,7 +219,9 @@ export function makeDistrict(world: World, topic: string, id: string, words: Dis
     const trade = w.trade && world.content.professions.has(w.trade) ? w.trade : trades.includes('merchant') ? 'merchant' : trades[0]!
     const hid = w.secret && secretsLeft > 0 && secretFits(w.secret.text) && secretFits(w.secret.hint) ? { text: w.secret.text.trim(), hint: w.secret.hint.trim() } : undefined
     if (hid) secretsLeft--
-    person(w.name, w.pronoun, trade, at, w.looks && w.looks.length < 300 ? w.looks : `Someone of ${t.name}, busy with their own affairs.`, w.fact && w.fact.length < 200 ? w.fact : `${w.name.split(' ')[0]} lives in ${q.name} of ${t.name}.`, w.speech && w.speech.length < 200 ? w.speech : undefined, hid)
+    // Never an id in what the player reads of them (M10.29 M): such a line gives way to the template.
+    const clean = (s: string | undefined, most: number) => (s && s.length < most && !idWordsIn(s).length ? s : undefined)
+    person(w.name, w.pronoun, trade, at, clean(w.looks, 300) ?? `Someone of ${t.name}, busy with their own affairs.`, clean(w.fact, 200) ?? `${w.name.split(' ')[0]} lives in ${q.name} of ${t.name}.`, clean(w.speech, 200), hid)
   }
   // People named in talks who live in this town and are no people yet (M10.9) become people of its first district, two at most, as they were spoken of (M10.22).
   const sketched: Record<string, string> = {}

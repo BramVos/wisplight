@@ -1,3 +1,4 @@
+import { idWordsIn } from '../idwords'
 import { askOutput, mustAsk } from '../asking'
 import type { Output } from '../commands'
 import { offer } from '../choice'
@@ -195,6 +196,8 @@ function sound(world: World, o: ExpansionOutline): string | undefined {
     if (t.length > 900) return 'a text too long'
     if (crossesLimits(t)) return 'crosses the hard limits'
     if (readsAsInstruction(t)) return 'reads like an instruction to a model'
+    // Never an id in a line the player reads (M10.29 M).
+    if (idWordsIn(t).length) return `holds ${idWordsIn(t).join(', ')}, an id; write it in words`
   }
   return undefined
 }

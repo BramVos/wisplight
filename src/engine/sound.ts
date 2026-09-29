@@ -20,8 +20,7 @@ export const SoundSchema = z.union([
   z
     .object({
       kind: z.enum(SOUND_KINDS),
-      /** How loud, from 0 to 1, before the player's own volume. */
-      level: z.number().min(0).max(1).default(0.5),
+      level: z.number().min(0).max(1).default(0.5).describe('How loud, from 0 to 1, before the player\'s own volume.'),
       night: z.enum(SOUND_KINDS).optional(),
     })
     .strict(),
@@ -39,10 +38,8 @@ export const BellSchema = z
     name: z.string(),
     at: z.string(),
     hours: z.array(z.number().int().min(0).max(23)).min(1),
-    /** Where it is heard plainly; without it, the area of the place it hangs in. */
-    heard: z.array(z.string()).default([]),
-    /** Where it is heard far off, muffled. */
-    far: z.array(z.string()).default([]),
+    heard: z.array(z.string()).default([]).describe('Where it is heard plainly; without it, the area of the place it hangs in.'),
+    far: z.array(z.string()).default([]).describe('Where it is heard far off, muffled.'),
     line: z.string(),
     far_line: z.string().optional(),
   })

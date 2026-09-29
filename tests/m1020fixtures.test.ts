@@ -23,6 +23,8 @@ interface Fixture {
   date: string
   reply: string
   fix?: string | string[]
+  /** A correction written by hand, never by a model (M10.29 M): a later check sends the recorded reply back, and this is what it asks for. */
+  hand?: { note: string; because: string; fix: string }
 }
 
 const builds = existsSync(dir) ? readdirSync(dir).filter((d) => existsSync(join(dir, d, 'build.json'))) : []
@@ -46,7 +48,10 @@ describe('M10.20: the recorded real world builds play again', () => {
         // No key and no cost in a recording; the reply is the model's own JSON.
         expect(JSON.stringify(fixture)).not.toMatch(/sk-[A-Za-z0-9]{10}|"costUsd"|"usd"/)
         expect(readDraft(files, fixture.reply).problems).not.toContain('The chronicler did not answer in the agreed form.')
-        const played = playWorldStep(files, fixture.step, fixture.said, fixture.reply, fixture.fix)
+        const recorded = fixture.fix === undefined ? [] : Array.isArray(fixture.fix) ? fixture.fix : [fixture.fix]
+        // A step a later check sends back is sent back with the check's own rule, and then put right by hand.
+        if (fixture.hand) expect(playWorldStep(files, fixture.step, fixture.said, fixture.reply, recorded).draft.problems, fixture.step).toContain(fixture.hand.because)
+        const played = playWorldStep(files, fixture.step, fixture.said, fixture.reply, [...recorded, ...(fixture.hand ? [fixture.hand.fix] : [])])
         outcome.push(`${fixture.step}: ${played.accepted ? 'loads' : played.draft.problems.slice(0, 2).join('; ')}`)
         files = played.files
       }

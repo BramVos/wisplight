@@ -174,8 +174,30 @@ export function kindOf(s: Schema, depth = 0): string {
 export interface Field {
   name: string
   kind: string
+  /** What it holds, from the schema's zod description (M10.29 M): every field has one. */
+  description?: string
   required: boolean
   fallback?: unknown
+}
+
+/**
+ * What a field holds, from its zod description at whatever wrapper it was
+ * given (M10.29 M: `maker` said only "text", and the chronicler put a
+ * person's id in it): outermost first, through optional, default and lazy.
+ */
+export function describedAs(s: Schema): string | undefined {
+  for (let x: Schema | undefined = s, i = 0; x && i < 10; i++) {
+    if (x.description) return x.description
+    const d = def(x)
+    x = d.type === 'lazy' ? d.getter!() : ['optional', 'default', 'prefault', 'nullable'].includes(d.type) ? d.innerType : d.type === 'pipe' ? d.in : undefined
+  }
+  return undefined
+}
+
+/** Every field of every kind that says nothing of what it holds: "items.value". None, or a test fails. */
+export function undescribedFields(): string[] {
+  const shape = (FileSchema as unknown as { shape: Record<string, Schema> }).shape
+  return Object.keys(shape).flatMap((key) => fieldsOf(key).filter((f) => !f.description).map((f) => `${key}.${f.name}`))
 }
 
 /** The fields of one entity of a kind (the item of its list, or the object itself). */
@@ -188,7 +210,8 @@ export function fieldsOf(key: string): Field[] {
   if (d.type !== 'object') return []
   return Object.entries(d.shape ?? {}).map(([name, field]) => {
     const u = unwrap(field)
-    return { name, kind: kindOf(field), required: !u.optional, ...(u.fallback !== undefined ? { fallback: u.fallback } : {}) }
+    const description = describedAs(field)
+    return { name, kind: kindOf(field), ...(description ? { description } : {}), required: !u.optional, ...(u.fallback !== undefined ? { fallback: u.fallback } : {}) }
   })
 }
 
@@ -280,11 +303,13 @@ export function stepFields(fills: readonly { kind: string; keys?: string[] }[]):
     const fields = def(s).shape ?? {}
     const names = (fill.keys ?? Object.keys(fields)).filter((name) => fields[name])
     if (!names.length) continue
-    lines.push(`${fill.kind}${list ? ', each one' : ''}:`, ...names.map((name) => `  ${name}${unwrap(fields[name]!).optional ? '?' : ''}: ${shapeOf(fields[name]!, 1, named)}`), ...(FIELD_NOTES[fill.kind] ?? []).map((note) => `  Note: ${note}`))
+    // What each field holds after it, as a YAML comment (M10.29 M: `maker` got a person's id when it said only "text").
+    const line = (name: string) => `  ${name}${unwrap(fields[name]!).optional ? '?' : ''}: ${shapeOf(fields[name]!, 1, named)}${describedAs(fields[name]!) ? `  # ${describedAs(fields[name]!)}` : ''}`
+    lines.push(`${fill.kind}${list ? ', each one' : ''}:`, ...names.map(line), ...(FIELD_NOTES[fill.kind] ?? []).map((note) => `  Note: ${note}`))
   }
   if (!lines.length) return ''
   const shapes = [...named].map(([text, name]) => `${name}: ${text}`)
-  return ['THE EXACT FIELDS OF WHAT THIS STEP FILLS (write these names and no others; "?" marks a field that may be left out):', ...lines, ...shapes].join('\n')
+  return ['THE EXACT FIELDS OF WHAT THIS STEP FILLS (write these names and no others; "?" marks a field that may be left out; after "#" what the field holds):', ...lines, ...shapes].join('\n')
 }
 
 /** Whether a kind is a list of entities with ids, or one block. */
@@ -334,8 +359,9 @@ export function contractMarkdown(): string {
     const text = KINDS[key]
     lines.push(`## ${key}${text ? ` (${text.file})` : ''}`, '')
     if (text) lines.push(text.does, '', `When a world has none: ${text.missing}`, '')
-    lines.push(isList(key) ? 'A list; each has:' : 'One block with:', '', '| field | what | required | default |', '| --- | --- | --- | --- |')
-    for (const f of fieldsOf(key)) lines.push(`| ${f.name} | ${f.kind.replace(/\|/g, '\\|')} | ${f.required ? 'yes' : 'no'} | ${f.fallback === undefined ? '' : show(f.fallback).replace(/\|/g, '\\|')} |`)
+    lines.push(isList(key) ? 'A list; each has:' : 'One block with:', '', '| field | what it holds | kind | required | default |', '| --- | --- | --- | --- | --- |')
+    const cell = (text: string) => text.replace(/\|/g, '\\|')
+    for (const f of fieldsOf(key)) lines.push(`| ${f.name} | ${cell(f.description ?? '')} | ${cell(f.kind)} | ${f.required ? 'yes' : 'no'} | ${f.fallback === undefined ? '' : cell(show(f.fallback))} |`)
     lines.push('', ...(FIELD_NOTES[key] ?? []).flatMap((note) => [note, '']))
   }
   return `${lines.join('\n').trimEnd()}\n`

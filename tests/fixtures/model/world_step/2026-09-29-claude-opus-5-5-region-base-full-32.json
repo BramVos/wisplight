@@ -20,6 +20,7 @@
     "ids.lock: the location loc_driestromen_wilgenwaard (in trial/areas//locations.yaml) is missing, and there is no tombstone for it",
     "ids.lock: the location loc_driestromen_schorren (in trial/areas//locations.yaml) is missing, and there is no tombstone for it",
     "craft osier_weaving: the trade osier_cutter does not exist",
-    "craft osier_weaving: a failure makes split_eel_pot, which is no item"
+    "craft osier_weaving: a failure makes split_eel_pot, which is no item",
+    "craft osier_weaving: maker holds npc_trees_driestromen, an id; write it in words"
   ]
 }
