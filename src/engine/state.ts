@@ -484,6 +484,9 @@ export interface MomentsState {
 export interface PlayerState {
   /** Whom the stranger was told to ask for when they came (M10.9), by their background. */
   contact?: string
+  /** The tongues of lands the stranger learnt, and how many exchanges in each they have had (M10.23). */
+  languages?: string[]
+  tongues?: Record<string, number>
   /** Moments the stranger had (M10.11): a card once per place and per tiding. */
   moments?: MomentsState
   /** What a place was like when the stranger was last there (M10.13), for what changed when they come back. */

@@ -138,8 +138,8 @@ LAND: The Western Isles, where the elves live: few, long-lived and slow to speak
 Aldmar before it drowned, and they do not speak of it to strangers.
 REGION: Ynys Wen, the nearest of the Western Isles to Skerrow, a low white island with one
 landing and one long hall, where strangers from the east are received and seldom let further.
-PEOPLE speak plain English, slowly and formally, with long silences, and call a stranger "child
-of the short years". They count time by seasons and tides, never by bells.
+PEOPLE speak the Old Tongue of the isles; with a stranger who has learnt it they speak it slowly
+and formally, with long silences, and call a stranger "child of the short years". They count time by seasons and tides, never by bells.
 ```
 
 ## 4. History and lore

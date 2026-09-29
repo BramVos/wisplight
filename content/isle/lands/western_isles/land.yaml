@@ -17,6 +17,12 @@ land:
       room: You sleep in a narrow bed in the guest room of the long hall, with the sea breathing somewhere below the window.
       rough: You sleep in the lee of a white dune, and the wind lays a thin coat of sand over you by morning.
   # The fixed block every model call gets here, in place of Skerrow's.
+  # Their own tongue (M10.23): a stranger from the east has none of it at first, and learns it by
+  # talking; Elowen, the elf who lives on Skerrow, speaks it and can go along.
+  language:
+    name: the Old Tongue
+    learn: 20
+    speakers: [npc_elowen]
   frame: |
     WORLD: The Sundered Isles, a scatter of islands in the Glass Sea. Year 412 of the Starfall,
     the night the sky broke and the empire of Aldmar drowned. Magic is real but rare. Money here:
@@ -26,8 +32,8 @@ land:
     Aldmar before it drowned, and they do not speak of it to strangers.
     REGION: Ynys Wen, the nearest of the Western Isles to Skerrow, a low white island with one
     landing and one long hall, where strangers from the east are received and seldom let further.
-    PEOPLE speak plain English, slowly and formally, with long silences, and call a stranger "child
-    of the short years". They count time by seasons and tides, never by bells.
+    PEOPLE speak the Old Tongue of the isles; with a stranger who has learnt it they speak it slowly
+    and formally, with long silences, and call a stranger "child of the short years". They count time by seasons and tides, never by bells.
   # What the stranger notices crossing in, told at the landing.
   crossing: At the landing an elf takes your coin without a word of bargaining and counts glass beads into your hand for it. Nobody here calls you stranger; you are a child of the short years, and they speak to you slowly, as if you might not follow.
   # The elves hold to the Old Stars, the world's own faith, and to nothing else.

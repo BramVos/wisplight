@@ -1,5 +1,17 @@
 # Changelog
 
+## M10.23 deel: een eigen taal, en de oversteek met nieuws, 29 september 2026
+
+- **Een land mag een eigen taal hebben** (`language` in land.yaml: `name`, `learn`, `speakers`). Wie de taal niet kent, krijgt van de mensen daar een groet, gebaren, en de namen en getallen uit wat hij zei. De regels schrijven dat, zonder model, dus een barrière kost niets. Elke uitwisseling leert je iets, en Lore helpt. Na genoeg gesprekken zegt het spel "You find you can follow the Old Tongue now". Wie de taal spreekt en met je meegaat, tolkt: iemand uit dat land of een van zijn `speakers`. Handel gaat gewoon door, met gebaren en getallen. Zonder `language` spreekt iedereen jouw taal, zoals voorheen.
+- **De Western Isles spreken de Oude Taal.** Elowen van Skerrow spreekt haar ook. Deepwell's Kessler Claim heeft geen eigen taal; een test speelt die neutrale standaard.
+- **De speeltest `crossing`** toont nu de hele oversteek. Eerst de witte boot en een groet in de Oude Taal zonder woorden gemeen. Dan de taal geleerd (het bouwcommando `@learn western_isles`) en het gesprek in de andere stem. Dan een gebeurtenis op Ynys Wen (`@fact 4 ...`, een nieuw bouwcommando voor speeltesten). Terug op Skerrow heeft Brannoc het nieuws na een week van horen zeggen.
+
+Testen: speel Skerrow, neem de witte boot en praat met Eluned of Gwion. Of lees `docs/playtest/crossing.txt`. Tests in `tests/m1023language.test.ts`.
+
+Wat de editor en de kroniekverteller leerden: `language` staat in het contract bij het land, in de stap Landen en in `docs/NEW-WORLD.md`. Een `speaker` die niet bestaat, weigert de lader.
+
+Bewust anders: zolang je de taal niet kent, schrijven de regels wat je verstaat, niet de stem van een model. Dat kost niets en het leest altijd hetzelfde.
+
 ## M10.23 deel: landen kennen elkaar in graden, nieuws tussen landen, en de stap Landen, 29 september 2026
 
 - **Hoe goed twee landen elkaar kennen, staat in de content.** In world.yaml staat `reach:` per paar landen, met none, rumour, trade of close. Het thuisland heet naar de id van de wereld. Staat er niets, dan leidt het spel het af: close waar een weg te voet de grens over gaat, trade langs een lijn of route, en anders none. Skerrow zet trade met de Western Isles (de witte boot). Deepwell zet niets en krijgt close, omdat je te voet naar de Kessler Claim loopt.

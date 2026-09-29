@@ -1031,6 +1031,12 @@ export const LandSchema = z
     realm: z.string().optional(),
     /** The fixed block every model call gets while the stranger is in this land, in place of the world's. */
     frame: z.string(),
+    /**
+     * A tongue of its own (M10.23, optional): whoever does not know it gets greetings, gestures, names
+     * and numbers from its people and no more, until they learn it (so many exchanges, fewer with Lore)
+     * or bring someone who speaks it; `speakers` are people from elsewhere who do.
+     */
+    language: z.object({ name: z.string(), learn: z.number().int().min(1).max(500).default(30), speakers: z.array(z.string()).default([]) }).strict().optional(),
     /** What the stranger notices crossing into it, told at the border: another way of address, other money on the table. */
     crossing: z.string().optional(),
     /** Its own words for the game's texts; without them its name, and the stranger comes from the world's land. */
@@ -1489,6 +1495,8 @@ function checkLands(world: WorldDef, c: Omit<Content, 'world'>): string[] {
   const land = (id: string | undefined, where: string) => {
     if (id && !c.lands.has(id)) problems.push(`${where}: unknown land ${id}`)
   }
+  // Who speaks a land's tongue from elsewhere (M10.23): people of this world.
+  for (const l of c.lands.values()) for (const who of l.language?.speakers ?? []) if (!c.npcs.has(who)) problems.push(`land ${l.id}.language.speakers: unknown person ${who}`)
   // How well lands know each other (M10.23): lands of this world, the home land by the world's id.
   for (const r of world.reach ?? []) {
     for (const l of r.between) if (l !== world.id) land(l, 'world.reach')

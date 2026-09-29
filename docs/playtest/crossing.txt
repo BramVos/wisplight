@@ -202,6 +202,22 @@ Here: Eluned the steward (at work).
 
 > talk eluned
 You are talking with Eluned the steward. Type what you want to say, pick a number, or BYE to stop.
+Eluned greets you in the Old Tongue. You have none of it, beyond the greeting.
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> Where am I?
+Eluned speaks in the Old Tongue, and you have no words in common: only hands, and a patient look.
+
+> bye
+Eluned lifts a hand. "Go on, then."
+
+# Shortcut: the stranger has learnt the Old Tongue (M10.23: the isles have a tongue of their own; talking teaches it, or someone who speaks it goes along).
+
+> @learn western_isles   [build command: a shortcut]
+[build] You know the Old Tongue.
+
+> talk eluned
+You are talking with Eluned the steward. Type what you want to say, pick a number, or BYE to stop.
 Eluned nods. "Morning."
 1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
 
@@ -210,6 +226,14 @@ Eluned shrugs. "You have come a long way, child of the short years. Sit. There i
 
 > bye
 Eluned lifts a hand. "Go on, then."
+
+# Something happens on Ynys Wen while the stranger is there; the news goes east only with the boat, in a week at the least.
+
+> @fact 4 the long hall of Ynys Wen closed its doors to the east for a season   [build command: a shortcut]
+[build] News of belang 4: The long hall of Ynys Wen closed its doors to the east for a season.
+The long hall of Ynys Wen closed its doors to the east for a season
+The long hall of Ynys Wen closed its doors to the east for a season.
+(you saw it yourself)
 
 > inventory
 You carry a cutlass, a knife, a sealskin jerkin and 2 ship's biscuits, and 15 ring 14 bead.
@@ -256,7 +280,7 @@ Gwion arrives from the north.
 Gwion stops and gives you a nod, curious about the stranger.
 
 > @time 8   [build command: a shortcut]
-[build] 1370 minutes pass.
+[build] 1368 minutes pass.
 Gwion leaves north.
 Gwion arrives from the north.
 Gwion stops and gives you a nod, curious about the stranger.
@@ -326,7 +350,8 @@ Brannoc nods. "Morning."
 
 > 2
 You: "What's new around here?"
-Brannoc scratches an ear. "Two nights after the Lamp of [Skerrow] was lit again, the Heron out of Havenmoor stands in to [the Hythe] to see what the light is about. Her master takes you across for the price of your story, and Skerrow has ships again. (You heard it from Wenna.)"
+Brannoc scratches an ear. "The long hall of Ynys Wen closed its doors to the east for a season. (It is going round; you heard it from people passing through. You are not sure it is true.)"
++10 experience: you learned of The long hall of Ynys Wen closed its doors to the east for a season.
 
 > bye
 Brannoc lifts a hand. "Go on, then."
@@ -338,15 +363,15 @@ Wenna nods. "Morning."
 
 > 2
 You: "What's new around here?"
-Wenna nods slowly. "Two nights after the Lamp of [Skerrow] was lit again, the Heron out of [Havenmoor] stands in to [the Hythe] to see what the light is about. Her master takes you across for the price of your story, and Skerrow has ships again. (You saw it yourself.)"
+Wenna nods slowly. "The [long hall of Ynys Wen closed its doors to the east for a season]. (It is going round; you heard it from people passing through. You are not sure it is true.)"
 
 > bye
 Wenna lifts a hand. "Go on, then."
 
 > journal
 People: Brannoc Reed, Eluned Silverstrand, Maren, Wenna Dray.
-Places: Skerrow, Skerrow Hythe, the Shore, Ynys Wen, Havenmoor, Skerrow Hythe, the Harbour, The Headland, The Tidepools, The Wreck Strand, The Long Hall of Ynys Wen, Ynys Wen, the Landing.
-Lore: Off Skerrow: A ship for the light, the stranger in Skerrow Hythe, the stranger in Ynys Wen, the stranger crossed into the Western Isles, the stranger crossed into the Sundered Isles, the Grey Gull.
+Places: Skerrow, Skerrow Hythe, the Shore, Ynys Wen, Skerrow Hythe, the Harbour, The Headland, The Tidepools, The Wreck Strand, The Long Hall of Ynys Wen, Ynys Wen, the Landing.
+Lore: The long hall of Ynys Wen closed its doors to the east for a season, Off Skerrow: A ship for the light, the stranger in Skerrow Hythe, the stranger in Ynys Wen, the stranger crossed into the Western Isles, the long hall of Ynys Wen closed its doors to the east for a season, the stranger crossed into the Sundered Isles, the Grey Gull.
 
 ==== END (Tidesday 16 Leaffall 412 SF, 09:04 (morning))
 Quests: off_skerrow: a_ship_for_the_light

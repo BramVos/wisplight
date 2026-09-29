@@ -8,7 +8,7 @@ Every kind of model call the game makes, whether a test answers it with the mock
 
 | Kind | Role | When | What it is for | Mock test | Recorded real replies | Last real trial |
 |---|---|---|---|---|---|---|
-| `npc_reply` | voice | play | A person answers the stranger in a conversation. | ai.test.ts, m1021guide.test.ts, m103later.test.ts, redteam.test.ts | claude-haiku-4-5-20251001 (tests/fixtures/model/npc_reply/2026-09-29-claude-haiku-4-5-20251001.json) | 2026-09-29 |
+| `npc_reply` | voice | play | A person answers the stranger in a conversation. | ai.test.ts, m1021guide.test.ts, m1023language.test.ts, m103later.test.ts, redteam.test.ts | claude-haiku-4-5-20251001 (tests/fixtures/model/npc_reply/2026-09-29-claude-haiku-4-5-20251001.json) | 2026-09-29 |
 | `party_reply` | voice | play | Two or more people answer the stranger together. | none | claude-haiku-4-5-20251001 (tests/fixtures/model/party_reply/2026-09-29-claude-haiku-4-5-20251001.json) | 2026-09-29 |
 | `chat_line` | brain | play | A line between two people the stranger overhears. | none | claude-sonnet-5 (tests/fixtures/model/chat_line/2026-09-29-claude-sonnet-5.json) | 2026-09-29 |
 | `journey` | chronicler | play | The paragraph of a journey on foot or by passage. | worldguide.test.ts | claude-opus-5-5 (tests/fixtures/model/journey/2026-09-29-claude-opus-5-5.json) | 2026-09-29 |

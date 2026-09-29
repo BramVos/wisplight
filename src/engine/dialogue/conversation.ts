@@ -36,6 +36,7 @@ import { parseReply, replyJsonSchema, type Reply } from './schema'
 import type { TopicRegistry } from './topics'
 import { checkSketch, namesSomeone, registerSketch, sketchBonds, sketchOpen, sketchPlaces, sketchRoom, type NamedPerson } from '../sketches'
 import { fixNotHere, flourishes, strangeWords, strayNumbers } from './voice'
+import { acrossTongues, languageBarrier } from '../language'
 
 /** A reply comes within this many milliseconds, both tries together, or the NPC says a set line (FO, chapter 18). */
 /** How long a spoken reply may take over both tries (M10.8: ten seconds, unless the player sets it at the model). */
@@ -128,7 +129,9 @@ export class Dialogue {
     if (silent) return []
     // A friend of the stranger greets them as one (M10.3).
     const friend = tieTo(world, npcId, 'player')?.role === 'friend'
-    const greeting = opened ? undefined : friend ? world.say('{name} lights up. "There you are, friend."', npcId) : fallbackReply(world, npcId, 'Greet', { known: [], unknown: [] }, band)
+    // In a tongue the stranger does not know (M10.23), the greeting is all that gets through.
+    const tongue = languageBarrier(world, npcId)
+    const greeting = opened ? undefined : tongue ? `${callName(npc)} greets you in ${tongue.name}. You have none of it, beyond the greeting.` : friend ? world.say('{name} lights up. "There you are, friend."', npcId) : fallbackReply(world, npcId, 'Greet', { known: [], unknown: [] }, band)
     // Going to see someone may be what another asked of the player.
     const visits = visited(world, npcId).map((r) => ({ kind: 'narration' as const, text: `You have looked in on ${callName(npc)}, as ${callName(world.npc(r.npc))} asked.` }))
     // Someone who needs help asks the player, once, when they next talk (FO, chapter 14).
@@ -591,6 +594,13 @@ export class Dialogue {
     const talk = this.talk!
     const echo: Output[] = options.echo ? [{ kind: 'text', text: `You: "${text}"` }] : []
     const band = attitude(world, npcId)
+
+    // 0. A tongue the stranger does not know (M10.23): what they make out, by the rules, and a step towards learning it.
+    const barrier = languageBarrier(world, npcId)
+    if (barrier) {
+      talk.turnsLeft--
+      return [...echo, ...acrossTongues(world, npcId, barrier, text).map((line) => ({ kind: 'narration' as const, text: line })), ...this.maybeClose()]
+    }
 
     // 1. Injection and meta talk never reach the model.
     if (looksLikeInjection(text)) {

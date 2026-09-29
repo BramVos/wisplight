@@ -2074,6 +2074,23 @@ export class Engine {
         rel.familiarity = Math.max(rel.familiarity, 40)
         return [{ kind: 'system', text: `[build] ${callName(this.world.npc(npcId))}: affinity ${rel.affinity}, trust ${rel.trust}, ${attitude(this.world, npcId).band}.` }]
       }
+      case 'fact': {
+        // @fact 4 the long hall of Ynys Wen closed its doors: news of that belang, here and now, for playtests (M10.23).
+        const belang = Math.max(0, Math.min(5, Number(rest[0]) || 0))
+        const title = rest.slice(1).join(' ').trim()
+        if (!title) return [{ kind: 'error', text: '@fact <belang 0-5> <what happened>' }]
+        const said = `${title.charAt(0).toUpperCase()}${title.slice(1)}.`
+        recordFact(this.world, { kind: 'built', about: [], place: this.state.player.location, belang, title, text: { precise: said, village: said, far: said } })
+        return [{ kind: 'system', text: `[build] News of belang ${belang}: ${said}` }]
+      }
+      case 'learn': {
+        // @learn western_isles: the stranger knows that land's tongue (M10.23), as if learnt by talking.
+        const land = this.content.lands.get(rest.join('_').toLowerCase())
+        if (!land?.language) return [{ kind: 'error', text: `@learn which land's tongue? ${[...this.content.lands.values()].filter((l) => l.language).map((l) => l.id).join(', ') || 'No land here has one.'}` }]
+        const known = (this.state.player.languages ??= [])
+        if (!known.includes(land.id)) known.push(land.id)
+        return [{ kind: 'system', text: `[build] You know ${land.language.name}.` }]
+      }
       case 'xp': {
         gainXp(this.world, Number(rest[0]) || 0, 'the world builder says so')
         return this.world.notices.splice(0).map((text) => ({ kind: 'system' as const, text }))
