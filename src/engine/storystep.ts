@@ -1,0 +1,208 @@
+import { stringify } from 'yaml'
+import { callName, loadContent, lockedIds, type Content, type ContentFile, type Location, type Npc } from './content'
+import { cachedSystem, type LlmRequest } from './dialogue/llm'
+import { worldFrame } from './dialogue/prompt'
+import { voiceSummary } from './dialogue/voice'
+import { recheckDraft, type Draft, type DraftChange } from './editor'
+import { worldPrefix } from './edit'
+import { storyReply, storySchema } from './growth/regionstory'
+import { questFromSketch, readSketch, SKETCH_KINDS, type QuestSketch } from './quests/sketch'
+import { worldText } from './safety'
+import { worldFixedPart } from './worldfixed'
+
+// The step Stories of the world build (M10.30; the form set out with Bram on
+// 29 September 2026, after the Nethermarch: a main line from the stranger's
+// task, two or three small lines per settlement, and a personal line for the
+// people who matter most). The Quiet Reach had no quest at all, so every voice
+// made the plot up as it talked and nothing could be solved. The chronicler
+// takes the stories from the world itself: the frame, the task, what people
+// want, hide and are bound by, the places. Of the designer the step asks only
+// the hidden truth, what they do not want, and whether they write a line
+// themselves; the truth goes into CHRONICLER.md. The story round of a region
+// (region_story, M10.25) is the motor, a call for each settlement, one for the
+// land between and one for the main line, so no new kind of call comes in:
+// each writes quest sketches (quests/sketch.ts) and the engine builds them.
+// How much follows the region dial of M10.25: outline one small line a place,
+// story the main line besides, full the personal lines too.
+
+/** How full the stories are: the three settings of the region dial (M10.25). */
+export type StoryFullness = 'outline' | 'story' | 'full'
+
+/** One call of the step: a settlement, the land between the settlements, or the main line over the whole world. */
+export interface StoryScope {
+  id: string
+  name: string
+  kind: 'place' | 'land' | 'main'
+  areas: string[]
+}
+
+/** Kinds of area that are a settlement: a scope of their own. */
+const SETTLED = new Set(['village', 'town', 'city', 'hamlet', 'inn'])
+
+/** The calls of the step for a world, at this fullness: a settlement each, the land between, and the main line. */
+export function storyScopes(content: Content, fullness: StoryFullness): StoryScope[] {
+  const areas = [...content.areas.values()].filter((a) => [...content.locations.values()].some((l) => l.area === a.id))
+  const lived = (id: string) => [...content.npcs.values()].some((n) => !n.absent && content.locations.get(n.home)?.area === id)
+  const scopes: StoryScope[] = areas.filter((a) => SETTLED.has(a.kind) && lived(a.id)).map((a) => ({ id: a.id, name: a.name, kind: 'place' as const, areas: [a.id] }))
+  const between = areas.filter((a) => !SETTLED.has(a.kind)).map((a) => a.id)
+  if (between.length && between.some(lived)) scopes.push({ id: 'between', name: `the land between the settlements of ${content.world.name}`, kind: 'land', areas: between })
+  if (fullness !== 'outline') scopes.push({ id: 'main', name: content.world.name, kind: 'main', areas: areas.map((a) => a.id) })
+  return scopes
+}
+
+/** The people and places a scope shows, in the order the prompt keys them; the main line sees the best known. */
+function scopeCast(content: Content, scope: StoryScope): { people: Npc[]; places: Location[] } {
+  const inScope = (l: string) => scope.areas.includes(content.locations.get(l)?.area ?? '')
+  const people = [...content.npcs.values()].filter((n) => !n.absent && inScope(n.home))
+  const places = [...content.locations.values()].filter((l) => scope.areas.includes(l.area))
+  if (scope.kind !== 'main') return { people, places }
+  const byFame = [...people].sort((a, b) => b.fame - a.fame || a.id.localeCompare(b.id)).slice(0, 30)
+  return { people: byFame, places: places.slice(0, 40) }
+}
+
+/** The keys of a scope's people and places: p1, p2 ... and l1, l2 ..., both ways. */
+function keysOf(cast: { people: Npc[]; places: Location[] }): { person: Map<string, string>; place: Map<string, string>; id: Map<string, string> } {
+  const person = new Map(cast.people.map((n, i) => [n.id, `p${i + 1}`]))
+  const place = new Map(cast.places.map((l, i) => [l.id, `l${i + 1}`]))
+  const id = new Map<string, string>([...[...person].map(([a, b]) => [b, a] as [string, string]), ...[...place].map(([a, b]) => [b, a] as [string, string])])
+  return { person, place, id }
+}
+
+/** The rules of the step: the same for every call, so they are cached with the fixed part of the world build. */
+export const STORY_STEP_RULES = [
+  'THE STEP STORIES OF THE WORLD BUILD. You write the storylines of this world, as quests that lie ready until the stranger meets them: by talking to someone, by coming somewhere, or from the start. Take them from the world itself: the frame, the stranger\'s task, what the people want, hide and are bound by, the places and their things. The designer has given only the hidden truth, what they do not want, and perhaps a line of their own: keep to it, and never let a line say the hidden truth before its stage.',
+  `A LINE (put every line in QUESTS, leave QUEST null): a name, a kind (${SKETCH_KINDS.join(', ')}), a summary (one sentence), the giver (by key: the one who asks, or whose matter it is), what they say when asking (one or two sentences in their voice), the stages, and an outcome (a name, and one or two sentences of what came of it). Each stage has its journal line (text), what the stranger can do now (goal, one line: "Ask Tessa about the coupling"), the one deed that completes it (say: the command the player types, three to six plain words, a verb first; at: the key of a place; with: the key of a person who must be there, or empty; skill: one of SKILLS where the deed asks for it, or empty; done: one or two sentences of what the deed brings), and knows: for each person of the line, one sentence with their name of what they know at this stage and may say ("Tessa knows the coupling was never synced; she does not know who took the pages"). What a person does not know, they do not say.`,
+  'SIZES: small (one person and one place, one or two stages), middle (two or three people, two places or a thing, two stages), large (the main line: three to five stages, across the settlements, with more people). Choose the size by what the matter is.',
+  'THE MAIN LINE (kind main, begins start): from the stranger\'s task, three to five stages across the world; its truths: what the story keeps hidden, each with the words a reply would give it away by (plain phrases, three letters or more: "cut the recordings") and the stage from which it may be said (a number; leave the last stage for the whole truth); and lapses: what the world does if the stranger does nothing (after how many game days, and the line that says what came of it: the recordings are wiped, the supply ship leaves without them).',
+  'HOW A LINE BEGINS: talk (when its giver is spoken to, the default), place (when the stranger comes to the place of its first deed: a discovery), or start (the main line).',
+  'SMALL LINES: different kinds in one place (a request, a mystery, a bargain, a discovery, something social, a trial, a conflict), each the matter of one of the people there. A PERSONAL LINE is a line of kind personal about one of the people who matter most there: what they want or fear, from their secret or their bonds.',
+  'No death of someone the designer named, no war where they said none, no fight, no money out of nothing; believable, and it can be done with what is there. WATCHERS: none. LORE: null. SECRETS: none. WHY: one sentence of what the lines grow from.',
+  'Use only keys given. JSON only.',
+].join('\n')
+
+/** What a scope asks for, at a fullness: one small line, two or three, the main line, and the personal lines. */
+function asked(scope: StoryScope, fullness: StoryFullness): string {
+  if (scope.kind === 'main') return 'WRITE: the main line only (kind main, begins start), three to five stages, from the stranger\'s task and the hidden truth; with truths.'
+  const small = fullness === 'outline' ? 'one small line' : 'two or three small lines of different kinds'
+  const personal = fullness === 'full' ? ', and one personal line for each of the one or two people here who matter most' : ''
+  return `WRITE: ${small}${personal}; no main line.`
+}
+
+/** The call of the step for one scope: the world build's fixed part first (cached), the rules, then the scope. */
+export function storiesRequest(files: ContentFile[], scope: StoryScope, fullness: StoryFullness, said: string): LlmRequest {
+  const content = loadContent(files)
+  const instruction = files.filter((f) => /(^|\/)CHRONICLER\.md$/.test(f.path)).map((f) => f.text).join('\n\n')
+  const cast = scopeCast(content, scope)
+  const key = keysOf(cast)
+  const name = (id: string) => (content.npcs.has(id) ? callName(content.npcs.get(id)!) : (content.topics.get(id)?.name ?? id))
+  const reasons = (content.rules?.backgrounds ?? []).map((b) => b.reason).filter((r): r is string => Boolean(r)).slice(0, 2)
+  const skills = (content.rules?.skills ?? []).map((s) => s.id)
+  const person = (n: Npc) => {
+    const bonds = n.relations.filter((r) => r.to && key.person.has(r.to)).map((r) => `${r.role} of ${key.person.get(r.to!)}`)
+    return [
+      `  ${key.person.get(n.id)} ${n.name}, ${content.professions.get(n.profession)?.name ?? n.profession}, at ${key.place.get(n.home) ?? name(n.home)}.`,
+      n.public_facts[0] ?? '',
+      n.secrets[0] ? `Hides: ${n.secrets[0].text}` : '',
+      bonds.length ? `Bound: ${bonds.join(', ')}.` : '',
+    ]
+      .filter(Boolean)
+      .join(' ')
+  }
+  // What every call of the step shares after the world build's fixed part: the rules, the world, the task and the
+  // designer's words, marked so the second call of the step reads it from the cache.
+  const step = [
+    STORY_STEP_RULES,
+    '',
+    worldText([worldFrame(content), voiceSummary(content)].filter(Boolean).join('\n\n')),
+    '',
+    `THE STRANGER'S TASK: ${[content.world.intro ?? '', ...reasons].filter(Boolean).join(' ') || 'none given'}`,
+    `THE DESIGNER SAYS (the hidden truth, what they do not want, a line of their own): ${said.trim() || 'nothing: you choose'}`,
+    `STORIES THERE ARE ALREADY: ${[...content.quests.values()].map((q) => q.name).join('; ') || 'none'}`,
+  ].join('\n')
+  return {
+    role: 'chronicler',
+    ...cachedSystem(worldFixedPart(content, instruction), step, '', 'both'),
+    prompt: [
+      `${scope.kind === 'main' ? 'THE WHOLE WORLD' : scope.kind === 'land' ? 'THE LAND BETWEEN' : 'THE SETTLEMENT'}: ${scope.name}. ${scope.areas.map((a) => content.areas.get(a)?.summary ?? '').filter(Boolean).join(' ')}`,
+      'PLACES:',
+      ...cast.places.map((l) => `  ${key.place.get(l.id)} ${l.name}: ${l.summary ?? l.description.day.split(/(?<=[.!?])\s/)[0]}`),
+      'PEOPLE:',
+      ...cast.people.map(person),
+      `SKILLS: ${skills.length ? skills.join(', ') : 'none'}`,
+      '',
+      asked(scope, fullness),
+    ].join('\n'),
+    schemaName: 'region_story',
+    schema: storySchema(),
+    maxTokens: scope.kind === 'main' ? 5000 : fullness === 'full' ? 6000 : fullness === 'story' ? 4000 : 2500,
+    effort: 'medium',
+    meta: { stories: scope.kind, fullness, name: scope.name, people: cast.people.map((n) => ({ key: key.person.get(n.id), name: n.name, secret: n.secrets.length > 0 })), places: cast.places.map((l) => key.place.get(l.id)), skills, aftermath: [] },
+  }
+}
+
+/** An id for a new line: never one the world has or ever had. */
+function freeId(content: Content, name: string, taken: Set<string>): string {
+  const locked = lockedIds(content)
+  const stem = `story_${name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '').slice(0, 40) || 'line'}`
+  let id = stem
+  for (let n = 2; taken.has(id) || locked.has(id) || content.quests.has(id); n++) id = `${stem}_${n}`
+  taken.add(id)
+  return id
+}
+
+/** The truth the designer gave, as a section of the world's CHRONICLER.md: it goes in before anything is written of it. */
+function withTruth(files: ContentFile[], said: string): { path: string; text: string }[] {
+  if (!said.trim()) return []
+  const own = files.find((f) => f.path === `${worldPrefix(files)}CHRONICLER.md`)?.text ?? ''
+  const section = `## The hidden truth of the stories\n\n${said.trim()}\n`
+  if (own.includes(section)) return []
+  return [{ path: 'CHRONICLER.md', text: `${own.trimEnd()}${own.trim() ? '\n\n' : ''}${section}` }]
+}
+
+/**
+ * The step's replies read into one proposal: each line built by the engine
+ * from its sketch (quests/sketch.ts), what did not fit left out and named,
+ * the designer's truth in CHRONICLER.md, and the whole checked like any step.
+ */
+export function readStories(files: ContentFile[], said: string, parts: { scope: StoryScope; text: string }[]): Draft {
+  const content = loadContent(files)
+  const taken = new Set<string>()
+  const changes: DraftChange[] = []
+  const made: string[] = []
+  const left: string[] = []
+  const problems: string[] = []
+  const skills = new Set((content.rules?.skills ?? []).map((s) => s.id))
+  for (const { scope, text } of parts) {
+    const reply = storyReply(text)
+    if (!reply) {
+      problems.push(`The stories for ${scope.name} could not be read.`)
+      continue
+    }
+    const cast = scopeCast(content, scope)
+    const key = keysOf(cast)
+    const person = (k: string | undefined) => (k ? key.id.get(k.trim()) : undefined)
+    const sketches = [reply.quest, ...(reply.quests ?? [])].map(readSketch).filter((s): s is QuestSketch => Boolean(s))
+    for (const sketch of sketches) {
+      const main = sketch.kind === 'main'
+      const id = freeId(content, sketch.name, taken)
+      const quest = questFromSketch({ content }, sketch, id, {
+        person: (k) => (person(k) && content.npcs.has(person(k)!) ? person(k) : undefined),
+        place: (k) => (person(k) && content.locations.has(person(k)!) ? person(k) : undefined),
+        places: cast.places,
+        skills,
+        dc: 12,
+        minStages: main ? 2 : 1,
+        mostStages: main ? 5 : 3,
+      })
+      if (!quest) {
+        left.push(sketch.name)
+        continue
+      }
+      changes.push({ kind: 'quest', id, yaml: stringify(quest) })
+      made.push(`${quest['name'] as string} (${scope.name})`)
+    }
+  }
+  const say = [`${made.length} storylines: ${made.join('; ') || 'none'}.`, ...(left.length ? [`Left out, too little of them fit: ${left.join('; ')}.`] : [])].join(' ')
+  const draft = recheckDraft(files, { say, questions: [], changes, files: withTruth(files, said) })
+  return problems.length ? { ...draft, problems: [...problems, ...draft.problems] } : draft
+}

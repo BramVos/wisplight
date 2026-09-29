@@ -10,6 +10,8 @@ import { landIdOf } from './reach'
 /** Things that load but deserve a look (FO, chapter 15, "Schema's en validatie"). */
 export function warnings(content: Content): string[] {
   const out: string[] = [...questWarnings(content)]
+  // A world with people and no storyline (M10.30: The Quiet Reach had none, so every voice made the plot up as it talked).
+  if (!content.quests.size && content.npcs.size) out.push('This world has no stories: people make the plot up as they talk, and nothing can be solved. The step Stories of the world build writes them.')
   // Reachability over exits from the start, and from every edge on the region map (reached across country);
   // a line of transport (M10.23: the white boat to another land) takes the stranger from one of its stops to the others.
   const roots = [content.world.start.location, ...[...content.locations.values()].filter((l) => l.tags.includes('edge') && (l.pos ?? content.areas.get(l.area)?.pos)).map((l) => l.id)]

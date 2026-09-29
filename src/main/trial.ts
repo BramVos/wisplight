@@ -1,7 +1,7 @@
 import { appendFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { basename, join, relative } from 'node:path'
-import { chapterStep, documentChapters, faithfulness, mergeFix, newWorldFiles, playWorldStep, readDraft, worldFixRequest, worldStepRequest, WORLD_STEPS, type Content, type ContentFile, type LlmRequest, type WorldStep } from '../engine'
+import { chapterStep, documentChapters, faithfulness, mergeFix, newWorldFiles, playWorldStep, readDraft, worldFixRequest, worldStepRequest, WORLD_STEPS, DOCUMENT_STEPS, type Content, type ContentFile, type LlmRequest, type WorldStep } from '../engine'
 import { LlmError, type LlmResponse } from '../engine/dialogue/llm'
 import { askAdvice, readScore, testCall, trial, type KeptAnswer } from '../node/ai/advisor'
 import { costUsd } from '../node/ai/pricing'
@@ -104,7 +104,7 @@ export async function buildTrial(ai: TrialAi, trial: BuildTrial, root: string, s
   }
   const measures: StepMeasure[] = []
   let all = true
-  for (const [i, step] of WORLD_STEPS.entries()) {
+  for (const [i, step] of DOCUMENT_STEPS.entries()) {
     const chapter = said.get(step.id)
     if (!chapter) {
       say(`${step.id}: no chapter, skipped`)

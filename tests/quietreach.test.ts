@@ -29,8 +29,8 @@ describe('The Quiet Reach, as Bram built it in the app', () => {
     expect([...reach.npcs.keys()]).toEqual(['npc_mara_venn', 'npc_ilyan_sorell', 'npc_tessa_rook', 'npc_niko_serrin', 'npc_edda_vale', 'npc_sana_holt'])
     expect(reach.passages.size).toBe(3)
     expect(reach.world.law).toMatchObject({ npc: 'npc_mara_venn' })
-    // The imports wait for the supply ship, and the far places have no origin yet: nothing else.
-    expect(warnings(reach).filter((w) => !/made nowhere and brought by no route|no origin, so nobody knows where it belongs/.test(w))).toEqual([])
+    // The imports wait for the supply ship, the far places have no origin yet, and it has no stories yet (M10.30): nothing else.
+    expect(warnings(reach).filter((w) => !/made nowhere and brought by no route|no origin, so nobody knows where it belongs|has no stories/.test(w))).toEqual([])
   })
 
   it('keeps its contract: every kind is filled or takes its neutral default', () => {

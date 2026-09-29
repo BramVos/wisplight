@@ -2,7 +2,7 @@ import { mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { afterAll, describe, expect, it } from 'vitest'
-import { chapterStep, documentChapters, draftResult, faithfulness, mergeFix, newWorldFiles, readDraft, rootedFile, STEP_CALLS, stepMaxTokens, withSafety, worldFixRequest, worldKeys, worldStepRequest, WORLD_STEPS, type LlmRequest } from '../src/engine'
+import { chapterStep, documentChapters, DOCUMENT_STEPS, draftResult, faithfulness, mergeFix, newWorldFiles, readDraft, rootedFile, STEP_CALLS, stepMaxTokens, withSafety, worldFixRequest, worldKeys, worldStepRequest, WORLD_STEPS, type LlmRequest } from '../src/engine'
 import { MockLlm } from '../src/engine/dialogue/mock'
 import { buildTrial, recordedDocument } from '../src/main/trial'
 import { costUsd } from '../src/node/ai/pricing'
@@ -98,7 +98,7 @@ describe('M10.20: the world steps are cached and measured', () => {
     // The same chapters again from the recordings, in the order of the steps, each with the text it was played with.
     const recorded = documentChapters(reach())
     expect(recorded.map((c) => c.title).sort()).toEqual([...titles].sort())
-    expect(recorded.map((c) => chapterStep(c.title))).toEqual(WORLD_STEPS.map((s) => s.id).filter((s) => s !== 'lands'))
+    expect(recorded.map((c) => chapterStep(c.title))).toEqual(DOCUMENT_STEPS.map((s) => s.id).filter((s) => s !== 'lands'))
     expect(recorded.find((c) => c.title === 'Frame')!.text).toMatch(/^Genre, tone and boundaries\nThe world is called The Quiet Reach/)
     const faith = faithfulness('The coin is the Belt credit. It has 100 bits.', { say: '', changes: [{ kind: 'item', id: 'x', yaml: 'name: credit\nprice: 100' }] })
     expect(faith).toEqual({ named: 2, kept: 1, missing: ['Belt'] })
@@ -144,7 +144,7 @@ describe('M10.20: the world steps are cached and measured', () => {
     expect(ok).toBe(true)
     expect(limits).toEqual([3])
     // Bram's document has no chapter on lands (M10.23): that step is skipped, and one land it is.
-    expect(readdirSync(join(dir, 'fixtures'))).toEqual([...WORLD_STEPS.map((s, i) => `${String(i + 1).padStart(2, '0')}-${s.id}.json`).filter((f) => !f.endsWith('-lands.json')), 'build.json'])
+    expect(readdirSync(join(dir, 'fixtures'))).toEqual([...DOCUMENT_STEPS.map((s, i) => `${String(i + 1).padStart(2, '0')}-${s.id}.json`).filter((f) => !f.endsWith('-lands.json')), 'build.json'])
     const frame = JSON.parse(readFileSync(join(dir, 'fixtures/01-frame.json'), 'utf8')) as Record<string, unknown>
     expect(frame).toMatchObject({ build: 'reach_trial', step: 'frame', chapter: 'Frame', model: 'mock-1', provider: 'mock' })
     expect(JSON.stringify(frame)).not.toMatch(/usd|cost/i)

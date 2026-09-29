@@ -137,6 +137,8 @@ export class MockLlm implements LlmClient {
     const [a, b] = people
     const c = people.slice(2).find((p) => !p.secret) ?? people.slice(1).find((p) => !p.secret)
     const [here, there] = [places[0] ?? '', places[1] ?? places[0] ?? '']
+    // The step Stories of the world build (M10.30): lines in `quests`, with goals, who knows what, and for the main line a truth.
+    if (meta['stories']) return this.storyStep(String(meta['stories']), String(meta['fullness'] ?? 'story'), people, places, name)
     return JSON.stringify({
       why: `${name} lives by what comes in on its road, and not all of it is honest.`,
       quest: a
@@ -160,6 +162,51 @@ export class MockLlm implements LlmClient {
       lore: { name: `The Road into ${name}`, summary: `Every cart that comes into ${name} pays at the post.`, details: 'The post is older than anyone living. The toll was once a single copper.', story: 'My grandmother said the post was put there by a carter who paid with his last coin, and cursed the road.', teller: a?.key ?? '' },
       secrets: c ? [{ who: c.key, text: `${c.name.split(' ')[0]} once took a cart's toll and kept it.`, hint: 'Their eyes go to the toll post whenever it is mentioned.' }] : [],
     })
+  }
+
+  /** The lines of the step Stories (M10.30) for one scope: the main line, or small and personal lines of one place. */
+  private storyStep(scope: string, fullness: string, people: { key: string; name: string }[], places: string[], name: string): string {
+    const [a, b, c] = [people[0], people[1] ?? people[0], people[2] ?? people[1] ?? people[0]]
+    const at = (i: number) => places[i % Math.max(1, places.length)] ?? ''
+    const first = (p?: { name: string }) => (p?.name ?? 'someone').split(' ')[0]!
+    const stage = (text: string, say: string, place: string, who: { key: string; name: string } | undefined, done: string, goal: string, knows: { key: string; name: string }[]) => ({
+      text,
+      goal,
+      say,
+      at: place,
+      with: who?.key ?? '',
+      skill: '',
+      done,
+      knows: knows.map((k) => ({ who: k.key, line: `${first(k)} knows only what ${first(k)} saw, and says no more.` })),
+    })
+    const line = (kind: string, giver: { key: string; name: string }, title: string, stages: ReturnType<typeof stage>[], extra: Record<string, unknown> = {}) => ({
+      name: title,
+      kind,
+      summary: `${first(giver)} has a matter in ${name}.`,
+      giver: giver.key,
+      ask: 'Would you see to it? I cannot do it myself.',
+      stages,
+      outcome: { name: `${title} settled`, text: 'It comes right in the end, and people say so.' },
+      ...extra,
+    })
+    const quests = !a
+      ? []
+      : scope === 'main'
+        ? [
+            line('main', a, 'The Long Silence', [
+              stage('Something went quiet that should not have.', 'ask about the silence', at(0), a, 'You learn when it began.', `Ask ${first(a)} when it began.`, [a]),
+              stage('Someone kept a record of it.', 'look for the ledger', at(1), undefined, 'A ledger, with a page cut out.', 'Find the ledger.', [a, b!]),
+              stage('The cut page says who.', `ask ${first(b).toLowerCase()} about the page`, at(2), b, 'The page is found, and with it the name.', `Ask ${first(b)} about the missing page.`, [b!]),
+            ], { begins: 'start', lapses: { days: 30, text: 'The silence settles, and nobody asks about it any more.' }, truths: [{ text: `${first(b)} cut the page from the ledger.`, words: ['cut the page', 'took the page'], from: 3 }] }),
+          ]
+        : [
+            line('request', a, `${first(a)}'s Errand`, [stage(`${first(a)} needs something fetched.`, 'fetch the parcel', at(1), undefined, 'The parcel is in your hands.', 'Fetch the parcel.', [a])]),
+            ...(fullness !== 'outline'
+              ? [line('mystery', b!, 'The Moved Crate', [stage('A crate was moved in the night.', 'search the store', at(0), undefined, 'Marks lead to the door.', 'Search the store.', [b!]), stage('The marks lead out.', `ask ${first(a).toLowerCase()} about the crate`, at(0), a, 'It was only moved for the damp.', `Ask ${first(a)} about the crate.`, [a, b!])])]
+              : []),
+            ...(fullness === 'full' ? [line('personal', c!, `What ${first(c)} Keeps`, [stage(`${first(c)} keeps something to themselves.`, `talk to ${first(c).toLowerCase()} about home`, at(0), c, `${first(c)} tells you, a little.`, `Talk to ${first(c)} about home.`, [c!])])] : []),
+          ]
+    return JSON.stringify({ why: `The lines of ${name} grow from what its people want and keep.`, quest: null, quests, watchers: [], lore: null, secrets: [] })
   }
 
   /**

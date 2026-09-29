@@ -1,5 +1,22 @@
 # Changelog
 
+## M10.30 deel: de stap Verhalen, 30 september 2026
+
+- **Een stap Verhalen in de wereldbouw.** Na Signalen staat nu de stap Stories. Die vraagt je maar drie dingen: de verborgen waarheid van de hoofdlijn, wat je niet wilt, en of je zelf een lijn wilt schrijven. Je antwoord komt in `CHRONICLER.md`. De rest haalt de kroniekverteller uit je wereld: de opdracht van de vreemdeling, en wat de mensen willen, verbergen en aan wie ze vastzitten.
+- **Hoe vol.** In de stap kies je omtrek (één kleine lijn per nederzetting), verhaal (ook de hoofdlijn) of vol (ook een persoonlijke lijn voor wie het meest telt). Dat zijn dezelfde drie standen als de verhaalknop in het spel.
+- **Wat eruit komt.** Quests zoals die van de Nethermarch, als voorstel om te accepteren. Elk stadium zegt wat je nu kunt doen en wat elke betrokkene weet. De hoofdlijn begint bij de start, houdt zijn waarheid verborgen tot het juiste stadium, en loopt af als je niets doet.
+- **Onder Check.** Een wereld zonder quests krijgt nu de regel "This world has no stories". The Quiet Reach krijgt die dus, tot punt 4 zijn verhalen maakt.
+
+Testen: open de editor (`npm run editor`), kies The Quiet Reach, New world, [Build further on The Quiet Reach] en stap 13, Stories. Zonder sleutel werkt het niet in de app; in de browser (`npm run web` met `?editor=1&mock=1`) zie je een voorstel met de mock. De tests staan in `tests/m1030stories.test.ts` en `tests/m1030sketch.test.ts`.
+
+Kosten: geen nieuwe soort aanroep; de stap gebruikt de streekronde. Voor The Quiet Reach zijn dat bij "verhaal" twee aanroepen (Port Vesper en de hoofdlijn), naar schatting samen $0,30, en bij "vol" ongeveer $0,40. Het echte getal komt met punt 4, als jij akkoord geeft om de verhalen van The Quiet Reach op je sleutel te maken.
+
+Bekende gaten: een klok voor de hoofdlijn (`timer`) schrijft de stap nog niet, alleen wat er gebeurt als je niets doet (`lapses`). Een quest die de controle niet haalt, gaat nog niet terug naar het model; dat is punt 6. De Nethermarch en Skerrow houden hun geschreven quests.
+
+Wat de editor en de kroniekverteller leerden: de stap Stories met zijn vragen, zijn controles en de keuze voor hoe vol; de wereldgids en `docs/NEW-WORLD.md` beschrijven hem, ook de knop `story.quests_active`. De questvorm voor een model (`quests/sketch.ts`) is er één voor de streekronde, de stap en de nachtronde.
+
+Ontwerp: functioneel ontwerp, bij het dagboek, alinea "Stand na M10.30: de stap Verhalen in de wereldbouw".
+
 ## M10.29 af: wat je speeltest van The Quiet Reach opleverde, 30 september 2026
 
 Alle tweeëntwintig punten van M10.29 (A tot en met V) zijn af. De delen staan hieronder in tien stukken "M10.29 deel"; dit is het overzicht.

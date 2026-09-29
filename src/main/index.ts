@@ -4,7 +4,7 @@ import { appendFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFi
 import { tmpdir } from 'node:os'
 import { basename, dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { ContentError, wantsPictures, discoveredAtlasHtml, draftRequest, mapDraft, mapStepRequest, mapFixRequest, readMapStep, readSaveFile, saveAbout, saveFileName, saveFileText, SAVE_FILE_EXTENSION, type SaveFile, type EarlierLines, draftResult, Engine, ENTITY_KINDS, lineDiff, MapPaletteSchema, paletteRequest, paletteView, readDraft, readPalette, readVoice, savePalette, saveVoice, voiceRequest, voiceYaml, landsIn, landYaml, saveLand, worldStepRequest, worldFixRequest, mergeFix, polishRequest, readPolish, recheckDraft, descriptionCheck, enhanceRequest, readEnhance, type Content, type Edit, type EntityKind, type FileChange, type CheckpointedSave, type MapPalette, type Output, type SaveData, type PlayMode } from '../engine'
+import { ContentError, loadContent, wantsPictures, discoveredAtlasHtml, draftRequest, mapDraft, mapStepRequest, mapFixRequest, readMapStep, readSaveFile, saveAbout, saveFileName, saveFileText, SAVE_FILE_EXTENSION, type SaveFile, type EarlierLines, draftResult, Engine, ENTITY_KINDS, lineDiff, MapPaletteSchema, paletteRequest, paletteView, readDraft, readPalette, readVoice, savePalette, saveVoice, voiceRequest, voiceYaml, landsIn, landYaml, saveLand, worldStepRequest, worldFixRequest, mergeFix, polishRequest, readPolish, recheckDraft, descriptionCheck, enhanceRequest, readEnhance, type Content, type Edit, type EntityKind, type FileChange, type CheckpointedSave, type MapPalette, type Output, type SaveData, type PlayMode } from '../engine'
 import { designUpdate, readDesignChange } from '../engine/designlog'
 import { ContentEditor } from '../node/editor'
 import { AppKnobs, type AppKnobId } from '../node/knobs'
@@ -14,6 +14,7 @@ import { cachedPictureIn, worldAtlasFor, worldBookFor, writeWorldBook } from '..
 import type { ProviderId } from '../node/ai/providers'
 import { AiService } from '../node/ai/service'
 import type { ChosenRole, Cipher } from '../node/ai/settings'
+import { readStories, storiesRequest, storyScopes, type StoryScope } from '../engine/storystep'
 import { DEFAULT_WORLD, listWorlds, loadContentFromDir, readContentFiles } from '../node/content'
 import { format, GameLog, PART_BYTES, type LogScope, type Session } from '../node/gamelog'
 import { SaveStore } from '../node/savegame'
@@ -872,6 +873,23 @@ handle('editor:map-step', async (_event, world: unknown, said: unknown) => {
     return { say: '', questions: [], changes: [], problems: [`The chronicler did not answer: ${error instanceof Error ? error.message : String(error)}`], diffs: [] }
   }
 })
+// The step Stories (M10.30): the story round for each settlement, the land between and the main line, as one proposal.
+handle('editor:story-step', async (_event, world: unknown, said: unknown, fullness: unknown) => {
+  devOnly()
+  await setup()
+  const llm = smoke ? new MockLlm() : ai?.client()
+  if (!llm) return { say: '', questions: [], changes: [], problems: ["The chronicler writes the stories with you: connect a model in the game's Settings > AI first."], diffs: [] }
+  const files = await readContentFiles(contentDir(), worldOf(world))
+  const how = fullness === 'outline' || fullness === 'full' ? fullness : 'story'
+  const words = String(said ?? '').slice(0, 20000)
+  const parts: { scope: StoryScope; text: string }[] = []
+  for (const scope of storyScopes(loadContent(files), how)) {
+    // A scope whose call fails is named in the proposal; the others still come.
+    const text = await llm.complete(storiesRequest(files, scope, how, words)).then((r) => r.text, () => '')
+    parts.push({ scope, text })
+  }
+  return shownDraft(readStories(files, words, parts))
+})
 // The map painted again (M10.26): the table as it stood and what stood wrong, the instruction and the world from the cache.
 handle('editor:map-fix', async (_event, world: unknown, said: unknown, table: unknown, wrong: unknown) => {
   devOnly()
@@ -997,7 +1015,10 @@ function openEditor(): void {
             const place = await window.wisplight.editor.entity('isle', 'location', 'loc_skerrow_harbour')
             const step = await window.wisplight.editor.worldStep('isle', 'voice', 'People swear by the tide and the tar; a stranger is called friend.')
             const loads = step.problems.length ? 'DOES NOT LOAD: ' + step.problems.slice(0, 2).join('; ') : 'loads'
-            return head + ' | ' + (place ? place.file : 'NO ENTITY') + ' | world step: ' + (step.world || step.changes.length || (step.files || []).length ? 'a proposal' : 'NO PROPOSAL') + ', ' + loads
+            // The step Stories (M10.30): the story round per settlement and the main line, on the mock.
+            const stories = await window.wisplight.editor.storyStep('quietreach', 'No deaths.', 'story')
+            const lines = stories.changes.filter((c) => c.kind === 'quest').length + ' storylines, ' + (stories.problems.length ? 'DOES NOT LOAD: ' + stories.problems.slice(0, 2).join('; ') : 'loads')
+            return head + ' | ' + (place ? place.file : 'NO ENTITY') + ' | world step: ' + (step.world || step.changes.length || (step.files || []).length ? 'a proposal' : 'NO PROPOSAL') + ', ' + loads + ' | stories: ' + lines
           })()`,
         )
         smokeSay(`[smoke-editor] ${seen}`)

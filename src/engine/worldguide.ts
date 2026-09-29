@@ -9,7 +9,7 @@
 // Nethermarch but the engine.
 
 export interface WorldStep {
-  id: 'frame' | 'voice' | 'lands' | 'calendar' | 'money' | 'faiths' | 'palette' | 'places' | 'people' | 'professions' | 'passages' | 'economy' | 'watcher'
+  id: 'frame' | 'voice' | 'lands' | 'calendar' | 'money' | 'faiths' | 'palette' | 'places' | 'people' | 'professions' | 'passages' | 'economy' | 'watcher' | 'stories'
   /** A short English label for the editor tab. */
   title: string
   /** What to ask the designer, in order; at most three. */
@@ -375,6 +375,26 @@ export const WORLD_STEPS: readonly WorldStep[] = [
       'STEP: SIGNALS. Agree with the designer which changes are signals and what custom follows. Propose watchers and aftermath in `changes`: a watcher with its signal and what sets it off, and an aftermath with the same signal and its steps. If there are creatures, propose them and their encounters too: a creature\'s faction and reputation (for won, paid, bound, freed or killed: which faction, by how much, why; left out, beating one costs 5 with its faction, paying gains 2, binding costs 10 and letting go gains 3), and tempts on an encounter that may turn a disloyal companion. Good news gets its custom as well: a repair, a danger past, a promise made good (made_good) or a craft passed on (pupil_learnt) may bring a feast, better prices for a while, a mood, a seat kept for the stranger, or a song that grows with each teller. Where the land has bogs, the rules may have the condition wet (in `changes` as kind condition). Where the places step gave something improvise, an aftermath on the signal improvised with that thing\'s id as event lets it answer (the stone grows warm, the kabouters leave something). If the world has a great danger that may come with or without the stranger (a war, a flood, a famine, a plague, a storm), propose it as a great line (kind tide): areas, drivers (a season, a tension between realms, a settlement short of something, a flag, facts of a kind; a negative weight calms it), a threat and a threshold, what a threat says (line, news, prices, days), breaks (the fact when it comes) and a plan (kind plan, with phases of effects: place states, news, mood, market, flee, and steps with verbs such as crowd for people who shelter elsewhere, or found_faction for a movement that forms from it, at most one a season) that plays it. And the pulse (M10.24): two or three watchers with probe pulse (visitor, tiding, request, letter, gesture or place), each with an aftermath that plays near the stranger ($a someone near them, $place where they are): someone who seeks them out, weather or news talked of, an errand. They fire only when the stranger has had nothing new near them for days and the chronicler brought nothing; left out, a quiet stretch without a model stays quiet. A quiet night (no news) also climbs a ladder of chances of one small unexpected thing from the open storylines (M10.27: the knob story.quiet_ladder, 1 in 8, 1 in 4, 1 in 2 and then always; a slow, lonely world may climb it more slowly); without a model these watchers are what it brings. Every term here (the days of a request, of a threat, of a plan\'s phases, a quest\'s deadline) is in game days: a game day lasts 24 real minutes at 1 second a game minute, an hour and a half at 4 (the default, M10.28) and three hours at 8, as the Calendar step set clock.seconds_per_minute and the player turned it; sleeping, waiting and travelling jump, so say days where the designer thinks in days, never real minutes.',
   },
   {
+    id: 'stories',
+    title: 'Stories',
+    ask: [
+      'What is the hidden truth of the main story: who did it, what is really behind it, what is the signal?',
+      'What do you not want in the stories: no war, no death of someone, nothing of a kind?',
+      'Is there a line you want to write yourself, or a person whose story matters most to you?',
+    ],
+    fills: [{ kind: 'quests' }],
+    optional: true,
+    skipped: 'No storylines: people make the plot up as they talk, nothing is written down, and there is nothing to solve. Check says so.',
+    checks: [
+      'The main line comes from the stranger\'s task, begins at the start, and keeps its truths hidden until their stage.',
+      'Each settlement has two or three small lines of different kinds, each the matter of one of its people.',
+      'Every stage says what the stranger can do now (goal) and what each person of the line knows and may say (knows).',
+      'Every deed can be done with what is there: the place exists, the person lives or works there, the skill is one of the rules\'.',
+    ],
+    prompt:
+      'STEP: STORIES. The chronicler writes the storylines from the world itself, not from questions: the frame, the stranger\'s task (the intro and the reasons of the backgrounds), what people want, hide and are bound by, the places and their things. Of the designer it asks only the hidden truth (who did it, what is really behind it, what the signal is), what they do not want, and whether they write a line themselves; the truth goes into CHRONICLER.md before anything is written. The motor is the story round of a region (region_story): a call for each settlement, one for the land between and one for the main line, each writing quests as sketches (a stage: its journal line, what to do now, the one deed, and what each person knows), which the engine builds into quests that lie ready until a talk, a place or the start wakes them. How many follows the region dial: outline one small line a settlement; story the main line besides (three to five stages across the world, with truths); full a personal line for the people who matter most too. A quest that is also written by hand keeps its own; the world build writes only what is not there. Not five at once: the world knob story.quests_active (2 a region; a small world may set 1) caps how many lines are awake at once in a region, and a line that would wake above it waits until one ends; the main line does not count.',
+  },
+  {
     id: 'palette',
     title: 'Palette',
     ask: [
@@ -432,6 +452,8 @@ export const STEP_CALLS: Record<WorldStep['id'], StepCall> = {
   economy: { maxTokens: 8000, effort: 'low', light: false, world: ['money', 'calendar'] },
   passages: { maxTokens: 8000, effort: 'low', light: true, world: ['money', 'calendar', 'names'] },
   watcher: { maxTokens: 8000, effort: 'medium', light: false, world: ['weather', 'calendar', 'law'] },
+  // The step Stories runs the story round per scope (M10.30), not a world step: its limits are in storystep.ts.
+  stories: { maxTokens: 6000, effort: 'medium', light: false, world: [] },
   palette: { maxTokens: 8000, effort: 'low', light: false, world: ['names'], sees: ['areas', 'locations', 'regions'] },
 }
 
@@ -453,7 +475,13 @@ export function stepMaxTokens(stepId: WorldStep['id'], said: string): number {
  * The calendar and the clock are always the world's, and the lands are laid
  * out from the world, so those two steps are not a land's; the rest are.
  */
-export const LAND_STEPS: readonly WorldStep[] = WORLD_STEPS.filter((s) => s.id !== 'lands' && s.id !== 'calendar')
+/**
+ * The steps a designer's document plays through the world step call (the trial build, M10.20): every step but
+ * Stories, which runs the story round of each settlement instead (M10.30).
+ */
+export const DOCUMENT_STEPS: readonly WorldStep[] = WORLD_STEPS.filter((s) => s.id !== 'stories')
+
+export const LAND_STEPS: readonly WorldStep[] = WORLD_STEPS.filter((s) => s.id !== 'lands' && s.id !== 'calendar' && s.id !== 'stories')
 
 /** The keys of world.yaml a land has in its land.yaml under its own name (a land's map levels are the world's; only its palette is its own). */
 const LAND_KEYS: Record<string, string> = { name: 'name', frame: 'frame', words: 'words', money: 'money', faiths: 'faiths', law: 'law', names: 'names', standing: 'standing', map: 'palette', pictures: 'pictures' }

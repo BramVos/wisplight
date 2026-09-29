@@ -1673,6 +1673,8 @@ function WorldSteps({ bridge, world, view, saved, existing = false }: { bridge: 
   const titled = (s: { title: string }) => (land ? `${landName}: ${s.title}` : s.title)
   const kept = (id: string) => (land ? `${land}/${id}` : id)
   const [said, setSaid] = useState('')
+  // How full the step Stories writes (M10.30): the region dial's three settings, the same words as in play.
+  const [fullness, setFullness] = useState<'outline' | 'story' | 'full'>('story')
   const [draft, setDraft] = useState<EditorDraft>()
   const [busy, setBusy] = useState(false)
   const [done, setDone] = useState<Record<string, 'saved' | 'skipped'>>({})
@@ -1790,7 +1792,7 @@ function WorldSteps({ bridge, world, view, saved, existing = false }: { bridge: 
     setAskedFor(said.trim())
     setWhy('')
     try {
-      keep(await bridge.worldStep(world, step.id, said.trim(), land || undefined), said.trim())
+      keep(step.id === 'stories' ? await bridge.storyStep(world, said.trim(), fullness) : await bridge.worldStep(world, step.id, said.trim(), land || undefined), said.trim())
       void counted()
     } catch (reason) {
       setDraft({ say: '', questions: [], changes: [], problems: [reason instanceof Error ? reason.message : String(reason)], diffs: [] })
@@ -1916,6 +1918,19 @@ function WorldSteps({ bridge, world, view, saved, existing = false }: { bridge: 
         {build?.steps[step.id] ? ` This step has cost $${build.steps[step.id]!.toFixed(2)} so far.` : ''}
       </p>
       <textarea rows={before === undefined ? 8 : 12} value={said} onChange={(e) => setSaid(e.target.value)} placeholder="Your answer, in a few sentences. Or: you choose." aria-label="Your answer to the chronicler" />
+      {step.id === 'stories' && (
+        <p className="row small">
+          <label>
+            How full:{' '}
+            <select value={fullness} onChange={(e) => setFullness(e.target.value as 'outline' | 'story' | 'full')} aria-label="How full the stories are">
+              <option value="outline">outline: one small line a settlement</option>
+              <option value="story">story: and the main line</option>
+              <option value="full">full: and a personal line for the people who matter most</option>
+            </select>
+          </label>{' '}
+          <span className="muted">A call of the chronicler for each settlement, one for the land between, and one for the main line.</span>
+        </p>
+      )}
       {open.length > 0 && (
         <div className="small">
           <p className="muted">Only you can decide:</p>
@@ -1981,7 +1996,7 @@ function WorldSteps({ bridge, world, view, saved, existing = false }: { bridge: 
       </div>
       {draft && (
         <>
-          <DraftView draft={draft} busy={busy} accept={() => void accept()} drop={() => void drop()} fix={() => void putRight()} />
+          <DraftView draft={draft} busy={busy} accept={() => void accept()} drop={() => void drop()} {...(step.id === 'stories' ? {} : { fix: () => void putRight() })} />
           {!draft.problems.length && (
             <input className="small" value={why} onChange={(e) => setWhy(e.target.value)} placeholder="If you drop it or ask again: why? (optional, for the design log)" aria-label="Why you drop this proposal" />
           )}

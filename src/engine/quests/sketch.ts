@@ -46,8 +46,10 @@ export interface QuestSketch {
   ask: string
   stages: SketchStage[]
   outcome: { name: string; text: string }
-  /** How it begins: when the giver is spoken to (talk, the default), or from the start of the game (start: the main line). */
+  /** How it begins: when the giver is spoken to (talk, the default), when the stranger comes to the first deed's place (place), or from the start of the game (start: the main line). */
   begins?: string
+  /** What the world does when the stranger does nothing (M10.30): after so many days, far from its people, it lapses with this line. */
+  lapses?: { days: number; text: string }
   /** What the story keeps hidden until a stage (M10.30): the words that give it away, and the stage from which it may be said. */
   truths?: { text: string; words: string[]; from: number }[]
 }
@@ -78,10 +80,11 @@ export function sketchSchema(): Record<string, unknown> {
         items: object({ text, say: text, at: text, with: text, skill: text, done: text, goal: text, knows: { type: 'array', items: object({ who: text, line: text }) } }, ['goal', 'knows']),
       },
       outcome: object({ name: text, text }),
-      begins: { type: 'string', enum: ['talk', 'start'] },
+      begins: { type: 'string', enum: ['talk', 'place', 'start'] },
+      lapses: object({ days: { type: 'integer' }, text }),
       truths: { type: 'array', items: object({ text, words: { type: 'array', items: text }, from: { type: 'integer' } }) },
     },
-    ['begins', 'truths'],
+    ['begins', 'lapses', 'truths'],
   )
 }
 
@@ -181,17 +184,22 @@ export function questFromSketch(world: Pick<World, 'content'>, sketch: QuestSket
     // Without a stage it may be said from, it stays hidden until the quest has ended.
     return said && words.length ? [{ text: said, words, ...(from ? { from } : {}) }] : []
   })
+  const lapseText = fit(sketch.lapses?.text, 300)
+  const lapses = lapseText && Number.isInteger(sketch.lapses?.days) && sketch.lapses!.days >= 1 && sketch.lapses!.days <= 120 ? { after_days: sketch.lapses!.days, when_far: true, text: lapseText } : undefined
   return {
     id,
     name,
     kind: (SKETCH_KINDS as readonly string[]).includes(sketch.kind) ? sketch.kind : 'request',
     summary,
     givers: [giver],
-    starts: sketch.begins === 'start' ? { at_start: true } : { talk: [giver] },
+    // It lies ready until the start, a talk with the giver, or the first deed's place wakes it.
+    starts: sketch.begins === 'start' ? { at_start: true } : sketch.begins === 'place' ? { at: [scope.place(good[0]!.at)!], talk: [giver] } : { talk: [giver] },
     ask,
     stages,
     actions,
     outcomes: [{ id: 'done', name: end, text: endText, when: [{ flag: `${id}_${good.length}` }] }],
     ...(truths.length ? { truths } : {}),
+    // What the world does when nobody takes it up: it lapses, far from its people, after so many days.
+    ...(lapses ? { lapses } : {}),
   }
 }

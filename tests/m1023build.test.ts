@@ -24,7 +24,7 @@ const reply = (part: Record<string, unknown>) => JSON.stringify({ say: 'As you s
 
 describe('M10.23: the world build per land', () => {
   it('has every step of a world but the calendar and the lands, and a land\'s keys where the world\'s were', () => {
-    expect(LAND_STEPS.map((s) => s.id)).toEqual(WORLD_STEPS.map((s) => s.id).filter((id) => id !== 'calendar' && id !== 'lands'))
+    expect(LAND_STEPS.map((s) => s.id)).toEqual(WORLD_STEPS.map((s) => s.id).filter((id) => id !== 'calendar' && id !== 'lands' && id !== 'stories'))
     const step = (id: string) => LAND_STEPS.find((s) => s.id === id)!
     expect(landFills(step('frame'))).toEqual([{ kind: 'land', keys: ['name', 'frame', 'words', 'crossing', 'language'] }])
     expect(landFills(step('money'))).toContainEqual({ kind: 'land', keys: ['money'] })

@@ -56,6 +56,9 @@ describe('M10.30: the quest sketch', () => {
     const small: QuestSketch = { ...signal, kind: 'request', begins: undefined, stages: [signal.stages[0]!], truths: [] }
     const one = questFromSketch({ content: quiet }, small, 'story_small', scope(1))!
     expect(one).toMatchObject({ starts: { talk: ['npc_ilyan_sorell'] } })
+    // A discovery wakes where its first deed is; what the world does if nobody takes it up is a lapse.
+    const found = questFromSketch({ content: quiet }, { ...small, begins: 'place', lapses: { days: 20, text: 'The station falls silent for good.' } }, 'story_found', scope(1))!
+    expect(found).toMatchObject({ starts: { at: ['loc_orison_listening_room'] }, lapses: { after_days: 20, when_far: true, text: 'The station falls silent for good.' } })
     expect(questFromSketch({ content: quiet }, small, 'story_small', scope(2))).toBeUndefined()
     expect(questFromSketch({ content: quiet }, { ...small, giver: 'p9' }, 'story_small', scope(1))).toBeUndefined()
   })

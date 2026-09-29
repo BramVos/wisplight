@@ -74,6 +74,7 @@ export const INPUTS: Record<string, z.ZodType<unknown[]>> = {
   'editor:save-palette': z.tuple([world, data(200_000)]),
   'editor:map-draft': z.tuple([world]),
   'editor:map-step': z.tuple([world, text(100_000)]),
+  'editor:story-step': z.tuple([world, text(100_000), z.enum(['outline', 'story', 'full'])]),
   'editor:map-fix': z.tuple([world, text(100_000), text(100_000), z.array(text(2000)).max(20)]),
   'editor:propose-palette': z.tuple([world, text(20_000)]),
   // A land's voice kit (M10.23) by the land's id; without one the world's.

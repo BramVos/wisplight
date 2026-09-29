@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { draftResult, Engine, loadContent, MockLlm, newWorldFiles, readDraft, warnings, WORLD_STEPS, worldStepRequest, type ContentFile } from '../src/engine'
+import { DOCUMENT_STEPS, draftResult, Engine, loadContent, MockLlm, newWorldFiles, readDraft, warnings, WORLD_STEPS, worldStepRequest, type ContentFile } from '../src/engine'
 
 // M10.20: building a world, the second round. Bram's first real world (The
 // Quiet Reach) came as twelve chapters with tables and lists. The mock
@@ -32,7 +32,7 @@ describe('M10.20: building a world, all twelve steps', () => {
   it('builds a world from chapters with tables and lists, step by step, that loads, plays and keeps its name', async () => {
     const mock = new MockLlm('good')
     let files: ContentFile[] = newWorldFiles('quietreach', 'The Quiet Reach')
-    for (const step of WORLD_STEPS) {
+    for (const step of DOCUMENT_STEPS) {
       const request = worldStepRequest(files, step.id, CHAPTERS[step.id]!)
       // Pasted tables stay rows in the prompt.
       if (step.id === 'calendar') expect(request.prompt).toContain('| Frostmere | 30 |\n| Thawing | 30 |')
@@ -52,8 +52,9 @@ describe('M10.20: building a world, all twelve steps', () => {
     expect(world.npcs.get('npc_ada_wren')).toMatchObject({ pronoun: 'she', profession: 'keeper' })
     expect(world.items.get('fish_stew')?.tags).toContain('food')
     expect(world.passages.size).toBe(1)
-    // A people or the money with no topic (M10.29 P) is a hint for the chronicler, not a fault of the recorded build.
-    expect(warnings(world).filter((w) => !/ledger|made nowhere|^money: |^ancestry /.test(w))).toEqual([])
+    // A people or the money with no topic (M10.29 P) is a hint for the chronicler, not a fault of the recorded build;
+    // the stories come with their own step (M10.30).
+    expect(warnings(world).filter((w) => !/ledger|made nowhere|^money: |^ancestry |has no stories/.test(w))).toEqual([])
     const game = new Engine(world, { seed: 3 })
     game.start()
     expect(game.status().time).toMatch(/^Oneday 1 Frostmere 1 QR/)

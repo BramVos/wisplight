@@ -215,6 +215,8 @@ export interface EditorBridge {
   mapDraft(world: string): Promise<EditorDraft>
   /** The map after the world steps (M10.25): laid out from the places and painted, one proposal. */
   mapStep(world: string, said: string): Promise<EditorDraft>
+  /** The step Stories (M10.30): the story round per settlement and the main line, as one proposal. */
+  storyStep(world: string, said: string, fullness: 'outline' | 'story' | 'full'): Promise<EditorDraft>
   /** The map painted again (M10.26): the table as it stood and what stood wrong; the cached part is read again. */
   mapFix(world: string, said: string, table: string, wrong: string[]): Promise<EditorDraft>
   /** The open proposal of a step (M10.20): read it (no third argument), keep it, or forget it (null). */
@@ -537,6 +539,13 @@ export async function createEditor(): Promise<EditorBridge> {
       if (!request) return shownDraft(layout.problems.length ? layout : { ...layout, problems: ['There is no region map to paint: the world has no places with exits to lay out.'] })
       const table = (await new MockLlm().complete(request)).text
       return { ...shownDraft(readMapStep(files, layout, table)), table }
+    },
+    storyStep: async (world, said, fullness) => {
+      const files = filesOfWorld(all, world)
+      const { readStories, storiesRequest, storyScopes } = await import('../../engine/storystep')
+      const parts = []
+      for (const scope of storyScopes(loadContent(files), fullness)) parts.push({ scope, text: (await new MockLlm().complete(storiesRequest(files, scope, fullness, said))).text })
+      return shownDraft(readStories(files, said, parts))
     },
     mapFix: async (world, said, table, wrong) => {
       const files = filesOfWorld(all, world)

@@ -44,6 +44,7 @@ const TITLES: [RegExp, WorldStep['id']][] = [
   [/econom|trade|market/i, 'economy'],
   [/transport|passage|travel|journey|route/i, 'passages'],
   [/signal|danger|watcher|threat/i, 'watcher'],
+  [/stor(y|ies)|quests?|plot|verhal/i, 'stories'],
   [/palette|colour|color|map|picture/i, 'palette'],
   [/\blands?\b|borders?|realms?|countr/i, 'lands'],
   [/place|location|setting/i, 'places'],
