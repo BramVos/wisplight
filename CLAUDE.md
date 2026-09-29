@@ -68,3 +68,5 @@ The repo uses a local git identity (BramVos with the GitHub noreply address) so 
 ## Milestone reports
 
 At the end of a milestone, add an entry at the top of `docs/CHANGELOG.md` in Dutch: what is new, what Bram can test and how, known gaps, and design changes. Keep it short. Ask Bram for a playtest before starting the next milestone, unless he asked for several milestones in a row.
+
+Every entry ends with a line `Ontwerp:` that names the chapter of the functional design or of the lore design (in Claude Docs) that was brought up to date for it, or says `geen wijziging` when the milestone changed nothing in the design. A milestone that adds a mechanism the design does not describe (a new kind of state, screen, round or call) gets a "Stand na M<n>" paragraph in the relevant chapter before the entry is written, never afterwards. The design session (Claude in Bram's design conversation) checks this at every milestone and writes the paragraph itself when it is missing.
