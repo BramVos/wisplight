@@ -1,0 +1,14 @@
+{
+  "kind": "weave",
+  "about": "region play: isle, the dial at story, call 12",
+  "model": "claude-opus-5-5",
+  "provider": "",
+  "date": "2026-09-29",
+  "usage": {
+    "inputTokens": 2737,
+    "cachedTokens": 0,
+    "outputTokens": 829
+  },
+  "reply": "{\"bonds\":[{\"a\":\"npc_ysolde_brannock_holm_staked_sands\",\"b\":\"npc_maren\",\"role\":\"friend\",\"why\":\"When Ysolde kept the Skerrow Lamp as a girl, Maren's mother kept the Salt Kettle, and the two girls grew up sharing the headland path.\"},{\"a\":\"npc_denzil_brannock_holm_staked_sands\",\"b\":\"npc_brannoc\",\"role\":\"kin\",\"why\":\"Denzil and Brannoc are cousins on their mothers' side, and Denzil learned to pull an oar in the Kittiwake before she was Brannoc's.\"},{\"a\":\"npc_loveday_brannock_holm_staked_sands\",\"b\":\"npc_wenna\",\"role\":\"acquaintance\",\"why\":\"Loveday and Wenna once shared a fish-trade at the midsummer market and still argue by letter over whose water runs the better mackerel.\"},{\"a\":\"npc_kitto_brannock_holm_staked_sands\",\"b\":\"npc_pip\",\"role\":\"friend\",\"why\":\"Kitto and Pip met one summer when Brannoc rowed across with salt, and they swore by the Old Stars to be shore-brothers.\"}],\"secrets\":[{\"who\":\"npc_ysolde_brannock_holm_staked_sands\",\"text\":\"Ysolde let the Skerrow Lamp go dark one night in her youth, and a boat was lost on the rocks for it, which is why she left the island and never went back.\",\"hint\":\"She will not look toward Skerrow's headland, and her hand shakes whenever someone speaks of the beacon going out.\"},{\"who\":\"npc_jory_brannock_holm_staked_sands\",\"text\":\"Jory has lost his certainty of the old line, and three stakes on the far ridge are set by guesswork rather than knowledge.\",\"hint\":\"He walks the far ridge alone at low water and mutters over the stakes there, counting paces twice.\"}],\"thread\":{\"from\":\"npc_ysolde_brannock_holm_staked_sands\",\"to\":\"npc_maren\",\"name\":\"Word for the Salt Kettle\",\"ask\":\"If the sea lets you home, go to Maren Holt at the Salt Kettle and tell her Ysolde Carrow still rings true, and knows how to light the Skerrow Lamp again. Tell her I'm sorry it took a wreck to make me say so.\",\"why\":\"The beacon on Skerrow's headland is dark and no ship will call before the winter storms, and Ysolde may know how to rekindle it.\"},\"echo\":null}",
+  "problems": []
+}

@@ -1,0 +1,14 @@
+{
+  "kind": "expansion",
+  "about": "region play: isle, the dial at story, call 1",
+  "model": "claude-opus-5-5",
+  "provider": "",
+  "date": "2026-09-29",
+  "usage": {
+    "inputTokens": 6439,
+    "cachedTokens": 0,
+    "outputTokens": 1306
+  },
+  "reply": "{\"outlines\":[{\"id\":\"brannock_holm\",\"name\":\"Brannock Holm\",\"kind\":\"region\",\"summary\":\"A low, grey tidal island south of Skerrow, reached on foot only at the deepest ebb, along a ridge of sand marked with old stakes.\",\"details\":\"Brannock Holm lies flat and wet, all salt grass, pans and sheep, with the broken tower of an Aldmar mage standing half in the sea at its southern end. Holm folk once rowed their salt across to Skerrow Hythe for fish and rope. Since the beacon went out, no boat has come either way, and they too feel the winter closing in.\",\"story\":\"They say the tower sank to its waist on the night of the Starfall, and the mage inside never came up the stair again. On still nights a pale light shows in its drowned windows. Old Holm wives say the Tidemother keeps a lamp burning there for those the sea has taken, and that anyone who follows it down the stair is kept too.\",\"days\":1,\"districts\":[{\"id\":\"staked_sands\",\"name\":\"the Staked Sands\",\"line\":\"A long ridge of wet sand bared at spring ebb, marked by leaning tarred stakes; you must be across before the turn of the tide.\"},{\"id\":\"pannock\",\"name\":\"Pannock\",\"line\":\"A huddle of turf-roofed cottages among shallow salt pans, where smoke from the boiling sheds hangs low and sheep crop the grass to the doorsteps.\"},{\"id\":\"drowned_stair\",\"name\":\"the Drowned Stair\",\"line\":\"The broken Aldmar tower at the southern point, its carved steps winding down into green water, where no Holm child is let go alone.\"}],\"why\":\"It grows from the world book's drowned Aldmar and its ruined mage towers, and from the saying \\\"No light, no ships; no ships, no salt\\\", giving Skerrow a salt-making neighbour who is cut off by the dark beacon too.\"}]}",
+  "problems": []
+}

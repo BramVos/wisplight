@@ -1,0 +1,14 @@
+{
+  "kind": "expansion",
+  "about": "region play: base, the dial at full, call 1",
+  "model": "claude-opus-5-5",
+  "provider": "",
+  "date": "2026-09-29",
+  "usage": {
+    "inputTokens": 7490,
+    "cachedTokens": 0,
+    "outputTokens": 1356
+  },
+  "reply": "{\"outlines\":[{\"id\":\"driestromen\",\"name\":\"the Driestromen\",\"kind\":\"region\",\"summary\":\"The Driestromen is the land of the Three Rivers, south of the Holleveen, where the Count's realm runs out in ferries, willow islands and tidal mud before Flemmark begins.\",\"details\":\"Three broad rivers wind to the Grey Sea here, and between them lie low islands of willow and reed, each ringed by its own small dyke. Ferrymen, eel-fishers and toll-clerks live off the water, and the Count's toll on every barge bound for Flemmark is hated as much as the Holleveen hates his drainage. At low tide, folk on the seaward islands say they can hear the drowned bells of Saeftinge ringing out across the mud.\",\"story\":\"They tell of a ferryman on the middle river who was hailed one night by a rider on a grey horse. The rider paid in old silver that no one could name, and asked to be set down on the Flemmark bank. Halfway over, the ferryman looked back and saw no rider in his boat, only wet hoofprints on the boards and a single coin. Next morning the river rose and took three dykes. Since then no ferryman on the Three Rivers will cross after the lamps are lit if a grey horse waits on the bank, whatever the fare.\",\"days\":2,\"districts\":[{\"id\":\"veerdijk\",\"name\":\"the Veerdijk\",\"line\":\"A long dyke road down from the Holleveen that ends at a ferry house, a bell on a post and a flat boat on a rope over the first river.\"},{\"id\":\"wilgenwaard\",\"name\":\"the Wilgenwaard\",\"line\":\"Willow islands between the first and second rivers, with eel-weirs, osier beds and houses on mounds that stand dry when the water comes.\"},{\"id\":\"tolwaard\",\"name\":\"the Tolwaard\",\"line\":\"An island on the third river where the Count's toll house and chain face the Flemmark bank, and smugglers wait for a moonless night.\"},{\"id\":\"schorren\",\"name\":\"the Schorren\",\"line\":\"Salt marsh and tidal mud to seaward, where the eel-folk say the drowned bells of Saeftinge ring under the water at low tide.\"}],\"why\":\"It grows from Flemmark lying south beyond the Three Rivers, from the drowned city of Saeftinge in the delta, and from the Count's hunger for money that already sets the Holleveen against him.\"}]}",
+  "problems": []
+}

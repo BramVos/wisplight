@@ -1,0 +1,14 @@
+{
+  "kind": "weave",
+  "about": "region play: base, the dial at story, call 122",
+  "model": "claude-opus-5-5",
+  "provider": "",
+  "date": "2026-09-29",
+  "usage": {
+    "inputTokens": 3725,
+    "cachedTokens": 0,
+    "outputTokens": 1530
+  },
+  "reply": "{\"bonds\":[{\"a\":\"npc_baukje_driestromen_tolburcht\",\"b\":\"npc_tijs_driestromen_veerhuizen\",\"role\":\"teacher\",\"why\":\"Baukje learned to raise and hoop a cask in Tijs Hoepman's shed before the tower took her on.\"},{\"a\":\"npc_sieger_driestromen_tolburcht\",\"b\":\"npc_joost_driestromen_veerhuizen\",\"role\":\"friend\",\"why\":\"Sieger and Joost drink together at the Smoking Eel whenever the winch and the ferry both stand idle.\"},{\"a\":\"npc_machteld_driestromen_tolburcht\",\"b\":\"npc_gosse_driestromen_griendwaarden\",\"role\":\"acquaintance\",\"why\":\"Gosse brings Machteld his tick-book twice a year to have the worst debts written up as proper notes.\"},{\"a\":\"npc_ruurd_driestromen_tolburcht\",\"b\":\"npc_tjitske_driestromen_griendwaarden\",\"role\":\"employee\",\"why\":\"Ruurd pays Tjitske a duit a time to carry his summonses out to the island huts.\"}],\"secrets\":[{\"who\":\"npc_arend_driestromen_tolburcht\",\"text\":\"Every spring Arend lets a barge from the fens pass short-counted, because its skipper pulled his drowning son from the river years ago.\",\"hint\":\"On one day each spring the weighmaster's tally for the fen barges comes out suspiciously round.\"},{\"who\":\"npc_machteld_driestromen_tolburcht\",\"text\":\"Machteld quietly loses the papers for fines laid on the poorest peat-cutter families.\",\"hint\":\"Her fire is lit on warm days, and the ash in the grate has the curl of burnt parchment.\"}],\"thread\":{\"from\":\"npc_arend_driestromen_tolburcht\",\"to\":\"npc_trijntje\",\"name\":\"The Goose's Ale Tally\",\"ask\":\"You're from Veenhoek? Then take this chit to Trijntje Kroes at the Drowned Goose. Her last load of ale was overcharged by four stuivers, and I'll not have it said the tower cheats.\",\"why\":\"An honest refund from the Count's own weighmaster is rare enough that Trijntje will want to hear how it came about.\"},\"echo\":{\"who\":\"npc_baukje_driestromen_tolburcht\",\"line\":\"line_18\",\"text\":\"Baukje remembers a young woman on an upriver barge two days ago who asked her the way back to the Drowned Goose in Veenhoek and gave her name as Geesje.\"}}",
+  "problems": []
+}

@@ -1,0 +1,14 @@
+{
+  "kind": "weave",
+  "about": "region play: base, the dial at story, call 27",
+  "model": "claude-opus-5-5",
+  "provider": "",
+  "date": "2026-09-29",
+  "usage": {
+    "inputTokens": 2682,
+    "cachedTokens": 0,
+    "outputTokens": 689
+  },
+  "reply": "{\"bonds\":[{\"a\":\"npc_marretje_driestromen_veerhuizen\",\"b\":\"npc_trijntje\",\"role\":\"friend\",\"why\":\"Marretje and Trijntje learned the innkeeping trade together as girls, serving ale at the same market-hall, and still trade recipes by carter.\"},{\"a\":\"npc_tijs_driestromen_veerhuizen\",\"b\":\"npc_trijntje\",\"role\":\"debtor\",\"why\":\"Trijntje still owes Tijs four guilders for a dozen ale-casks he coopered for the Drowned Goose two summers back.\"}],\"secrets\":[{\"who\":\"npc_reinier_driestromen_veerhuizen\",\"text\":\"Reinier has quietly promised the Count's surveyors free passage on the ferry in return for a share of the drained land in the Holleveen.\",\"hint\":\"He waves certain well-booted strangers onto the ferry without the toll and will not meet Joost's eye when he does it.\"},{\"who\":\"npc_wybe_driestromen_veerhuizen\",\"text\":\"Wybe once saw a pale woman walking on the water at the Kattenbroek and has set his traps there ever since as a kind of bargain with her.\",\"hint\":\"He leaves the smallest eel of every catch on the bank before he comes home, and never says why.\"}],\"thread\":{\"from\":\"npc_marretje_driestromen_veerhuizen\",\"to\":\"npc_trijntje\",\"name\":\"Marretje's eel-smoking recipe\",\"ask\":\"You're from Veenhoek? Then take this folded paper to Trijntje at the Drowned Goose. It's the alder-and-juniper smoke she's been begging me for, and tell her she still owes me a letter.\",\"why\":\"It renews an old friendship between two innkeepers and gives the stranger a warm welcome waiting at home.\"},\"echo\":{\"who\":\"npc_tijs_driestromen_veerhuizen\",\"line\":\"line_4\",\"text\":\"Tijs mentions that a Waagdam barge-master who buys his barrels also carries bolts of sailcloth, and he offers to put in a word for Harmen's mill.\"}}",
+  "problems": []
+}

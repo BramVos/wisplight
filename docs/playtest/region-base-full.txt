@@ -1,0 +1,367 @@
+The Holleveen, south edge; the dial at full; seed 7; claude-opus-5-5
+The barge from Graafhaven leaves you at the Veenhoek quay just as the light goes. The bargeman won't tie up. "Not after dark, not out here," he says, and poles away into the mist, taking his lantern with him.
+
+This is the Holleveen: peat and reed and black water, mile upon mile of it between the Great Dyke and the heath. The villages sit on the few dry places like cats on a fence. Peat smoke. A windmill standing still against a sky the colour of pewter, its sails torn to rags.
+
+Somewhere a dog barks. On the doorstep of the nearest house a grey cat watches you, very still, the way cats don't usually watch people.
+
+Type LOOK to look around. Type HELP if you are lost. You probably are.
+You ran goods past the Count's tolls until the tolls caught up with you in Graafhaven. The Holleveen is a good place to be forgotten, and Trijntje at the Drowned Goose asks no questions.
+You were told to ask for Trijntje the innkeeper at the Drowned Goose. The name is in your journal.
+Canal Quay
+Grey water slaps against the planks of the quay. A barge rope lies coiled by the mooring posts, and beside them stands a worn stone, waist-high, with a dog carved into it. Someone has put an apple on top. The Graafse Vaart runs east and west; the green is north and the peat sheds are south.
+Exits: north, east, west, south, southwest
+Across country you can head any way, or follow the tow path west to Oude Zijl, the tow path east to Waagdam, the peat road to Molenend, the fen path to the Kattenbroek, the priory path to Kloosterveen or the path to the Kabouterberg.
+The pace of events is normal. Type TEMPO CALM or TEMPO DRAMATIC for less or more happening in the world.
+
+==== THE DIAL: full
+
+> frames region full
+How full a new region is built: full.
+
+# To the south edge of the Holleveen, in the middle, and on into the unknown.
+
+> @goto hex:60,0   [build command: a shortcut, to the edge of the map]
+[build] You are at In the fen, about 8 km south-west of the Blackmere.
+In the fen, about 8 km south-west of the Blackmere
+Wet ground and sedge stretch around you, cut by black pools. Low grey cloud sits on the land.
+Ways on: north, north-east, north-west.
++30 experience: you came to the Holleveen.
+
+> explore south
+The chronicler is working out what lies south.
+
+==== SET OFF FOR the Driestromen (Dinsdag 14 Herfstmaand 211 AW, 18:30 (evening))
+
+> head south
+You have come to the edge of the Holleveen.
+South, the fen goes on into reed and black water, and beyond it lies the delta of the Three Rivers, where drowned Saeftinge shows at low tide. No road you know of goes that way.
+Go on, or turn back?
+  1. Go on to the Driestromen on foot, about 2 days south
+  2. Turn back north
+What lies south, as far as you can make out: the Driestromen. The Driestromen is the land of the Three Rivers, south of the Holleveen, where the Count's realm runs out in ferries, willow islands and tidal mud before Flemmark begins. Head south at the edge to go on.
+
+> 1
+(Survival 2 vs DC 12: failure)
+You leave the Holleveen behind and go on across country for the Driestromen. It takes a day and 21 hours.
+While you travel, the chronicler is laying out the Driestromen.
+
+[a minute passes while the chronicler lays it out]
+On the first day, a hard stretch of the way costs you half a day's walking and most of your temper, and you curse it by the Grey Rider more than once. On the second day, mist lies over everything like wet wool and swallows every sound, so that even your own steps seem far off. At last you come to the Gate of the Driestromen.
+The Gate of the Driestromen
+You come to the gate of the Driestromen after 2 days on the road from the Holleveen. The walls are higher than any you have seen at home, and the air smells of tar, smoke and wet stone. Carts stand in line to be let in, and the gatekeepers call out to each other in a quick, flat speech. The market lies ahead, and the road back to the Holleveen runs northeast.
+Exits: northeast, in
++10 experience: you found The Gate of the Driestromen.
++30 experience: you came to the Driestromen.
+
+==== DAY 1 (Donderdag 16 Herfstmaand 211 AW, 21:31 (evening))
+
+> look
+The Gate of the Driestromen
+Walls of tarred brick stand higher than any in the Holleveen, and a wooden lantern for Saint Brand hangs in the arch. Carts wait in line to be let in, and the gatekeepers call to each other in quick, flat voices. The air smells of tar, smoke and river mud. The market opens just inside, and the long road north runs back along the dyke.
+Exits: northeast, in
+
+> journal
+People: Trijntje, the Count.
+Places: the Holleveen, Veenhoek, the Driestromen, The Gate of the Driestromen, Canal Quay.
+Lore: the stranger in Veenhoek, the Driestromen charted, the stranger in the Driestromen.
+
+> in
+The Market of the Driestromen
+Stalls of salt, cloth and eel-pots crowd the worn brick square, and traders shout their prices over each other. Pitch and hot fat drift from the cookshops. On a post in the middle a toll board lists what [the Count] takes on every barge, and someone has scratched the numbers out. The Carters' Inn leans at the corner, and the gate is back out.
+Exits: out, in, northeast, west, north, east, south, northwest
+Here: Marretje the eel-fisher (chatting).
+Sister walks on to the northwest.
++10 experience: you found The Market of the Driestromen.
+
+> talk marretje the eel-fisher
+You are talking with Marretje the eel-fisher. Type what you want to say, pick a number, or BYE to stop.
+Marretje gives you a short nod.
+"You're bound back to Veenhoek? Then tell Trijntje at the Goose that Marretje wants her four guilders for the eels, and that the next cask comes only when they're paid."
+New in your journal: Marretje's eel money.
+Marretje asks you to look in on Trijntje. YES to give your word, NO to decline.
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+Squints at you. "New? There's talk [the Count] means to drain [the Holleveen]—turn good fen to farmland. Folk are angry about it. That's news enough. You hear different in Graafhaven?"
+
+> insight
+(Insight 6 vs DC 15: failure)
+You can't read anything behind Marretje's face.
+
+> bye
+Marretje lifts a hand. "Go on, then."
+
+> northwest
+The River Chapel
+Whitewashed walls rise from a mound so the floor stays dry when the rivers come, and ten steps lead up to the door. Inside it is cool and smells of candle tallow and river damp. A great lantern hangs from the roof beam for Saint Brand, and beneath it a wooden board carries a tally of every flood. The market is down the steps to the southeast.
+Exits: southeast
+Here: Sister Adelheid of the River Chapel (getting ready for bed).
++10 experience: you found The River Chapel.
+
+> talk sister adelheid of the river chapel
+You are talking with Sister Adelheid of the River Chapel. Type what you want to say, pick a number, or BYE to stop.
+Sister nods. "Evening."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+Sits on her cot and looks up from her prayer book. "News? There's the girl missing from the fens—[Marretje]'s daughter. Folk are worried. [The Count]'s drainage scheme sits poorly with the fen folk too. Beyond that, traveller, I hear only what the river brings."
+
+> insight
+(Insight 4 vs DC 15: critical failure)
+You can't read anything behind Sister's face.
+
+> bye
+Sister lifts a hand. "Go on, then."
+
+> southeast
+The Market of the Driestromen
+Stalls of salt, cloth and eel-pots crowd the worn brick square, and traders shout their prices over each other. Pitch and hot fat drift from the cookshops. On a post in the middle a toll board lists what [the Count] takes on every barge, and someone has scratched the numbers out. The Carters' Inn leans at the corner, and the gate is back out.
+Exits: out, in, northeast, west, north, east, south, northwest
+Here: Marretje the eel-fisher (chatting).
+
+> in
+The Carters' Inn
+Beams hang so low you duck under them, and carters from half the land sit over their beer at long tables. It is warm and loud, and it smells of wet wool, onions and spilt ale. Over the hearth hangs an old ferry oar, black with smoke, carved with the names of drowned men. The market is back out.
+Exits: out
+Here: Hendrikje the merchant, Hessel the innkeeper (at work).
++10 experience: you found The Carters' Inn.
+
+> talk hendrikje the merchant
+You are talking with Hendrikje the merchant. Type what you want to say, pick a number, or BYE to stop.
+Hendrikje nods. "Evening."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+Hessel's set out the ale, so you'll hear the news soon enough. A [storm] took Harmen's mill—De Zwaan—and now the flour's scarce and dear. "By the Lantern, it's grim for folk who bake." Leans back in her chair. "What brings you through [the Holleveen], traveller?"
++10 experience: you learned of Saint Brand.
+
+> insight
+(Insight 21 vs DC 15: success)
+You can't read anything behind Hendrikje's face.
+
+> bye
+Hendrikje lifts a hand. "Go on, then."
+
+> talk hessel the innkeeper
+You are talking with Hessel the innkeeper. Type what you want to say, pick a number, or BYE to stop.
+Hessel nods. "Evening."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+leans on the counter. "[The Count]'s raised the chain-toll again. Carters are cursing him from here to the fens. And there's talk—a girl missing out [Holleveen] way. Bad business."
+
+> insight
+(Insight 12 vs DC 14: failure)
+You can't read anything behind Hessel's face.
+
+> bye
+Hessel lifts a hand. "Go on, then."
+
+> out
+The Market of the Driestromen
+Stalls of salt, cloth and eel-pots crowd the worn brick square, and traders shout their prices over each other. Pitch and hot fat drift from the cookshops. On a post in the middle a toll board lists what [the Count] takes on every barge, and someone has scratched the numbers out. The Carters' Inn leans at the corner, and the gate is back out.
+Exits: out, in, northeast, west, north, east, south, northwest
+Here: Marretje the eel-fisher (chatting).
+
+> northeast
+While you walk, the chronicler is laying out the Schorren of the Driestromen.
+
+[a minute passes while the chronicler lays it out]
+The Schorren
+Beyond the last dyke the land gives up and becomes salt marsh, grey-green samphire and creeks of shining mud. The wind off the Grey Sea tastes of salt, and gulls wheel crying overhead. Eel-folk huts stand on stilts along a plank walk, nets hung between them to dry. Out on the flats to the east, they say, you can hear the drowned bells of Saeftinge.
+Exits: southwest, east
++10 experience: you found The Schorren.
+
+> talk geertje the labourer
+You are talking with Geertje the labourer. Type what you want to say, pick a number, or BYE to stop.
+Geertje gives you a short nod.
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+Narrows her eyes in the fog. "New? Nothing good. A girl missing from the fens—they're saying a witch took her, or the water. You heard that much in [Graafhaven], I'd wager."
+
+> insight
+(Insight 12 vs DC 16: failure)
+You can't read anything behind Geertje's face.
+
+> bye
+Geertje lifts a hand. "Go on, then."
+
+> east
+The Bell Flats
+Out here the dark has no edge, and the tide creeps in with a sound like breath. The mud is colder than by day, and every step sinks deeper. The oak pole stands a thin black stroke against the sky, its little bells silent. The lantern of the Schorren glimmers back to the west.
+Exits: west
++10 experience: you found The Bell Flats.
+
+> west
+The Schorren
+The marsh is black, and the creeks catch what little light the sky has. The tide whispers as it fills them. A lantern swings on the last stilt hut along the plank walk. The eel-folk do not go out on the mud at night; the market is back southwest.
+Exits: southwest, east
+Here: Geertje the labourer (asleep).
+
+> southwest
+The Market of the Driestromen
+The stalls are folded and roped under tarred canvas, and the square is empty but for cats and a watchman's lamp. The smell of fish and pitch has sunk into the brick. The toll board of [the Count] still stands on its post, pale in the lamplight. Light and noise spill from the Carters' Inn at the corner.
+Exits: out, in, northeast, west, north, east, south, northwest
+
+> west
+While you walk, the chronicler is laying out the Tolwaard of the Driestromen.
+
+> talk barend the toll-watchman
+The Tolwaard
+Lamps burn in the toll house windows, and a watchman walks the moored barges with a pike. The chain lies across the black water and groans when the current leans. On a moonless night, the boatmen say, a skiff can slip under it where it sags. The bridge back to the market is east.
+Exits: east, in
+Here: Barend the toll-watchman (at work).
+A flat boat without a lamp noses into the reeds, and two figures step out with boathooks when they see you.
+You never saw us. Five stuivers says you never did.
+PAY, REFUSE (and fight), TALK <words> to talk your way past, or FLEE.
++10 experience: you found The Tolwaard.
+(Persuasion 6 vs Will DC 14: failure)
+The first Tolwaard smuggler laughs. "Brave words."
+Round 1. Initiative: the first Tolwaard smuggler 17, the second Tolwaard smuggler 16, you 4.
+The first Tolwaard smuggler steps in, engaged with you.
+(The first Tolwaard smuggler's boathook 20 vs defence 16: hit)
+Keep your lamp down, fool! 8 damage.
+(The first Tolwaard smuggler's boathook 9 vs defence 16: miss)
+Keep your lamp down, fool! It misses.
+The second Tolwaard smuggler steps in, engaged with you.
+(The second Tolwaard smuggler's boathook 18 vs defence 16: hit)
+Keep your lamp down, fool! 6 damage.
+(The second Tolwaard smuggler's boathook 2 vs defence 16: miss)
+Keep your lamp down, fool! It misses.
+3 actions left.
+
+> talk hilde the labourer
+(Intimidation 23 vs the first Tolwaard smuggler's Will DC 13: critical success)
+Enough. Take the tub and let me go.
+(Intimidation 8 vs the second Tolwaard smuggler's Will DC 13: failure)
+The second Tolwaard smuggler laughs at you.
+2 actions left.
+
+# The journal or a talk names Marretje Snoek: go and see her.
+
+> east
+You are in a fight. In a fight: STRIKE foe, ADVANCE / STEP BACK, RAISE SHIELD, TAKE COVER, USE <herbs>, RECALL foe, TALK (demand surrender), GRAPPLE / SHOVE / TRIP <foe>, BREAK FREE, STAND, your abilities by name, TOGETHER <companion> ON <foe> (a joint strike, 2 actions, from band 1), FLEE (2 actions), SURRENDER, SUBDUE (fight not to kill), END (end your turn).
+2 actions left.
+
+> talk marretje the eel-fisher
+(Intimidation 5 vs the second Tolwaard smuggler's Will DC 13: critical failure)
+The second Tolwaard smuggler laughs at you.
+1 action left.
+
+[9 hours pass: the night, to eight the next morning]
+
+
+==== DAY 2 (Donderdag 16 Herfstmaand 211 AW, 22:36 (night))
+
+> look
+Round 1. 1 action left.
+  Traveller                  3/17 
+  The first Tolwaard smuggler  16/16 surrendered engaged
+  The second Tolwaard smuggler  16/16  engaged
+
+> journal
+You are in a fight. In a fight: STRIKE foe, ADVANCE / STEP BACK, RAISE SHIELD, TAKE COVER, USE <herbs>, RECALL foe, TALK (demand surrender), GRAPPLE / SHOVE / TRIP <foe>, BREAK FREE, STAND, your abilities by name, TOGETHER <companion> ON <foe> (a joint strike, 2 actions, from band 1), FLEE (2 actions), SURRENDER, SUBDUE (fight not to kill), END (end your turn).
+1 action left.
+
+> in
+You are in a fight. In a fight: STRIKE foe, ADVANCE / STEP BACK, RAISE SHIELD, TAKE COVER, USE <herbs>, RECALL foe, TALK (demand surrender), GRAPPLE / SHOVE / TRIP <foe>, BREAK FREE, STAND, your abilities by name, TOGETHER <companion> ON <foe> (a joint strike, 2 actions, from band 1), FLEE (2 actions), SURRENDER, SUBDUE (fight not to kill), END (end your turn).
+1 action left.
+
+> in
+You are in a fight. In a fight: STRIKE foe, ADVANCE / STEP BACK, RAISE SHIELD, TAKE COVER, USE <herbs>, RECALL foe, TALK (demand surrender), GRAPPLE / SHOVE / TRIP <foe>, BREAK FREE, STAND, your abilities by name, TOGETHER <companion> ON <foe> (a joint strike, 2 actions, from band 1), FLEE (2 actions), SURRENDER, SUBDUE (fight not to kill), END (end your turn).
+1 action left.
+
+> in
+You are in a fight. In a fight: STRIKE foe, ADVANCE / STEP BACK, RAISE SHIELD, TAKE COVER, USE <herbs>, RECALL foe, TALK (demand surrender), GRAPPLE / SHOVE / TRIP <foe>, BREAK FREE, STAND, your abilities by name, TOGETHER <companion> ON <foe> (a joint strike, 2 actions, from band 1), FLEE (2 actions), SURRENDER, SUBDUE (fight not to kill), END (end your turn).
+1 action left.
+
+> in
+You are in a fight. In a fight: STRIKE foe, ADVANCE / STEP BACK, RAISE SHIELD, TAKE COVER, USE <herbs>, RECALL foe, TALK (demand surrender), GRAPPLE / SHOVE / TRIP <foe>, BREAK FREE, STAND, your abilities by name, TOGETHER <companion> ON <foe> (a joint strike, 2 actions, from band 1), FLEE (2 actions), SURRENDER, SUBDUE (fight not to kill), END (end your turn).
+1 action left.
+
+> in
+You are in a fight. In a fight: STRIKE foe, ADVANCE / STEP BACK, RAISE SHIELD, TAKE COVER, USE <herbs>, RECALL foe, TALK (demand surrender), GRAPPLE / SHOVE / TRIP <foe>, BREAK FREE, STAND, your abilities by name, TOGETHER <companion> ON <foe> (a joint strike, 2 actions, from band 1), FLEE (2 actions), SURRENDER, SUBDUE (fight not to kill), END (end your turn).
+1 action left.
+
+> in
+You are in a fight. In a fight: STRIKE foe, ADVANCE / STEP BACK, RAISE SHIELD, TAKE COVER, USE <herbs>, RECALL foe, TALK (demand surrender), GRAPPLE / SHOVE / TRIP <foe>, BREAK FREE, STAND, your abilities by name, TOGETHER <companion> ON <foe> (a joint strike, 2 actions, from band 1), FLEE (2 actions), SURRENDER, SUBDUE (fight not to kill), END (end your turn).
+1 action left.
+
+# The journal or a talk names Marretje Snoek: go and see her.
+
+> east
+You are in a fight. In a fight: STRIKE foe, ADVANCE / STEP BACK, RAISE SHIELD, TAKE COVER, USE <herbs>, RECALL foe, TALK (demand surrender), GRAPPLE / SHOVE / TRIP <foe>, BREAK FREE, STAND, your abilities by name, TOGETHER <companion> ON <foe> (a joint strike, 2 actions, from band 1), FLEE (2 actions), SURRENDER, SUBDUE (fight not to kill), END (end your turn).
+1 action left.
+
+> talk marretje the eel-fisher
+(Intimidation 15 vs the second Tolwaard smuggler's Will DC 13: success)
+The second Tolwaard smuggler is Frightened 1.
+Round 2. Momentum +1.
+(The second Tolwaard smuggler's boathook 11 vs defence 16: miss)
+Keep your lamp down, fool! It misses.
+(The second Tolwaard smuggler's boathook 2 vs defence 16: miss)
+Keep your lamp down, fool! It misses.
+3 actions left.
+
+[9 hours pass: the night, to eight the next morning]
+
+
+==== DAY 3 (Donderdag 16 Herfstmaand 211 AW, 22:36 (night))
+
+> look
+Round 2. Momentum +1. 3 actions left.
+  Traveller                  3/17 
+  The first Tolwaard smuggler  16/16 surrendered engaged
+  The second Tolwaard smuggler  16/16  engaged
+
+> journal
+You are in a fight. In a fight: STRIKE foe, ADVANCE / STEP BACK, RAISE SHIELD, TAKE COVER, USE <herbs>, RECALL foe, TALK (demand surrender), GRAPPLE / SHOVE / TRIP <foe>, BREAK FREE, STAND, your abilities by name, TOGETHER <companion> ON <foe> (a joint strike, 2 actions, from band 1), FLEE (2 actions), SURRENDER, SUBDUE (fight not to kill), END (end your turn).
+3 actions left.
+
+> in
+You are in a fight. In a fight: STRIKE foe, ADVANCE / STEP BACK, RAISE SHIELD, TAKE COVER, USE <herbs>, RECALL foe, TALK (demand surrender), GRAPPLE / SHOVE / TRIP <foe>, BREAK FREE, STAND, your abilities by name, TOGETHER <companion> ON <foe> (a joint strike, 2 actions, from band 1), FLEE (2 actions), SURRENDER, SUBDUE (fight not to kill), END (end your turn).
+3 actions left.
+
+> in
+You are in a fight. In a fight: STRIKE foe, ADVANCE / STEP BACK, RAISE SHIELD, TAKE COVER, USE <herbs>, RECALL foe, TALK (demand surrender), GRAPPLE / SHOVE / TRIP <foe>, BREAK FREE, STAND, your abilities by name, TOGETHER <companion> ON <foe> (a joint strike, 2 actions, from band 1), FLEE (2 actions), SURRENDER, SUBDUE (fight not to kill), END (end your turn).
+3 actions left.
+
+> in
+You are in a fight. In a fight: STRIKE foe, ADVANCE / STEP BACK, RAISE SHIELD, TAKE COVER, USE <herbs>, RECALL foe, TALK (demand surrender), GRAPPLE / SHOVE / TRIP <foe>, BREAK FREE, STAND, your abilities by name, TOGETHER <companion> ON <foe> (a joint strike, 2 actions, from band 1), FLEE (2 actions), SURRENDER, SUBDUE (fight not to kill), END (end your turn).
+3 actions left.
+
+> in
+You are in a fight. In a fight: STRIKE foe, ADVANCE / STEP BACK, RAISE SHIELD, TAKE COVER, USE <herbs>, RECALL foe, TALK (demand surrender), GRAPPLE / SHOVE / TRIP <foe>, BREAK FREE, STAND, your abilities by name, TOGETHER <companion> ON <foe> (a joint strike, 2 actions, from band 1), FLEE (2 actions), SURRENDER, SUBDUE (fight not to kill), END (end your turn).
+3 actions left.
+
+> in
+You are in a fight. In a fight: STRIKE foe, ADVANCE / STEP BACK, RAISE SHIELD, TAKE COVER, USE <herbs>, RECALL foe, TALK (demand surrender), GRAPPLE / SHOVE / TRIP <foe>, BREAK FREE, STAND, your abilities by name, TOGETHER <companion> ON <foe> (a joint strike, 2 actions, from band 1), FLEE (2 actions), SURRENDER, SUBDUE (fight not to kill), END (end your turn).
+3 actions left.
+
+> in
+You are in a fight. In a fight: STRIKE foe, ADVANCE / STEP BACK, RAISE SHIELD, TAKE COVER, USE <herbs>, RECALL foe, TALK (demand surrender), GRAPPLE / SHOVE / TRIP <foe>, BREAK FREE, STAND, your abilities by name, TOGETHER <companion> ON <foe> (a joint strike, 2 actions, from band 1), FLEE (2 actions), SURRENDER, SUBDUE (fight not to kill), END (end your turn).
+3 actions left.
+
+# The journal or a talk names Marretje Snoek: go and see her.
+
+> east
+You are in a fight. In a fight: STRIKE foe, ADVANCE / STEP BACK, RAISE SHIELD, TAKE COVER, USE <herbs>, RECALL foe, TALK (demand surrender), GRAPPLE / SHOVE / TRIP <foe>, BREAK FREE, STAND, your abilities by name, TOGETHER <companion> ON <foe> (a joint strike, 2 actions, from band 1), FLEE (2 actions), SURRENDER, SUBDUE (fight not to kill), END (end your turn).
+3 actions left.
+
+> talk marretje the eel-fisher
+(Intimidation 18 vs the second Tolwaard smuggler's Will DC 13: success)
+The second Tolwaard smuggler is Frightened 1.
+2 actions left.
+
+> journal
+You are in a fight. In a fight: STRIKE foe, ADVANCE / STEP BACK, RAISE SHIELD, TAKE COVER, USE <herbs>, RECALL foe, TALK (demand surrender), GRAPPLE / SHOVE / TRIP <foe>, BREAK FREE, STAND, your abilities by name, TOGETHER <companion> ON <foe> (a joint strike, 2 actions, from band 1), FLEE (2 actions), SURRENDER, SUBDUE (fight not to kill), END (end your turn).
+2 actions left.
+
+==== END (Donderdag 16 Herfstmaand 211 AW, 22:36 (night))

@@ -1,0 +1,14 @@
+{
+  "kind": "weave",
+  "about": "region play: base, the dial at story, call 56",
+  "model": "claude-opus-5-5",
+  "provider": "",
+  "date": "2026-09-29",
+  "usage": {
+    "inputTokens": 3394,
+    "cachedTokens": 1880,
+    "outputTokens": 1856
+  },
+  "reply": "{\"bonds\":[{\"a\":\"npc_hiske_driestromen_schorrekant\",\"b\":\"npc_wybe_driestromen_veerhuizen\",\"role\":\"rival\",\"why\":\"Hiske and Wybe have argued for years over whose water gives the fattest eels, the Bell Creek or the Kattenbroek.\"},{\"a\":\"npc_wobbe_driestromen_schorrekant\",\"b\":\"npc_jelle_driestromen_griendwaarden\",\"role\":\"debtor\",\"why\":\"Jelle takes Wobbe's salt up the three rivers on credit and still owes him for last autumn's sacks.\"},{\"a\":\"npc_rinske_driestromen_schorrekant\",\"b\":\"npc_minke_driestromen_griendwaarden\",\"role\":\"friend\",\"why\":\"Rinske and Minke trade willow bark for sea-lavender and sit together at the herb market every spring.\"},{\"a\":\"npc_wiebe_driestromen_schorrekant\",\"b\":\"npc_tjitske_driestromen_griendwaarden\",\"role\":\"kin\",\"why\":\"Wiebe and Tjitske are cousins and swap knowledge of marsh paths and island paths when the families meet.\"}],\"secrets\":[{\"who\":\"npc_tammo_driestromen_schorrekant\",\"text\":\"Tammo has not walked his own stretch of the Seawall Watch in months and has hidden that the dyke near the Bell Creek is weakening.\",\"hint\":\"His boots are always clean and dry, though he claims to walk the wall every night.\"},{\"who\":\"npc_wiebe_driestromen_schorrekant\",\"text\":\"Wiebe leaves a crust of bread every evening at the mud's edge where the drowned village lies, because he once heard the bell answer him.\",\"hint\":\"He goes quiet and looks toward the flats whenever anyone mentions Lieuwe the Ringer.\"}],\"thread\":{\"from\":\"npc_rinske_driestromen_schorrekant\",\"to\":\"npc_trijntje\",\"name\":\"A charm for the Drowned Goose\",\"ask\":\"You're bound back to Veenhoek? Take this charm against drowning to Trijntje Kroes at the Drowned Goose. She sent for one last winter and I never found a carrier I trusted.\",\"why\":\"Trijntje asked for it when the water rose, and Rinske fears she has gone too long without it.\"},\"echo\":{\"who\":\"npc_hiske_driestromen_schorrekant\",\"line\":\"line_12\",\"text\":\"Hiske tells the stranger she has seen Wybe Palinck's punt tied up beside Dieuwke Snoek's traps in the Bell Creek at dawn, well before Dieuwke came to check them.\"}}",
+  "problems": []
+}

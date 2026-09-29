@@ -1,0 +1,14 @@
+{
+  "kind": "weave",
+  "about": "region play: base, the dial at full, call 62",
+  "model": "claude-opus-5-5",
+  "provider": "",
+  "date": "2026-09-29",
+  "usage": {
+    "inputTokens": 2710,
+    "cachedTokens": 1880,
+    "outputTokens": 1033
+  },
+  "reply": "{\"bonds\":[{\"a\":\"npc_hilde_driestromen_tolwaard\",\"b\":\"npc_geertje_driestromen_schorren\",\"role\":\"friend\",\"why\":\"Hilde and Geertje have hauled sacks along the same quays since they were girls, and each knows the doors of the other's quarter nearly as well as her own.\"},{\"a\":\"npc_hilde_driestromen_tolwaard\",\"b\":\"npc_hessel_driestromen\",\"role\":\"employer\",\"why\":\"On market days Hessel pays Hilde a few stuivers to roll barrels and carry water at the inn.\"},{\"a\":\"npc_hilde_driestromen_tolwaard\",\"b\":\"npc_sister_driestromen_veerdijk\",\"role\":\"acquaintance\",\"why\":\"Hilde brings Sister Adelheid lamp oil from the barges and tells her the names of drowned folk she hears on the quays.\"}],\"secrets\":[{\"who\":\"npc_hilde_driestromen_tolwaard\",\"text\":\"Hilde owes Hendrikje Hofstede two guilders from last winter and has not paid back a duit of it.\",\"hint\":\"She always takes the long way round the market so she never passes Hendrikje's stall.\"}],\"thread\":null,\"echo\":{\"who\":\"npc_hilde_driestromen_tolwaard\",\"line\":\"line_11\",\"text\":\"Hilde has heard the Tolwaard talk about Geertje and Hessel Postma, and she asks the stranger straight out whether they have come about that business with Hendrikje.\"}}",
+  "problems": []
+}

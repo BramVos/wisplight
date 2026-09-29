@@ -1,0 +1,14 @@
+{
+  "kind": "expansion",
+  "about": "region play: base, the dial at story, call 1",
+  "model": "claude-opus-5-5",
+  "provider": "",
+  "date": "2026-09-29",
+  "usage": {
+    "inputTokens": 7490,
+    "cachedTokens": 0,
+    "outputTokens": 1354
+  },
+  "reply": "{\"outlines\":[{\"id\":\"driestromen\",\"name\":\"the Driestromen\",\"kind\":\"region\",\"summary\":\"The Driestromen is the wide, wet country where three great rivers braid together on their way to the Grey Sea, the last of the Nethermarch before Flemmark.\",\"details\":\"It is a land of ferries, willow islands and shifting sandbanks, where no road runs straight for long and every crossing costs a toll to someone. The Count keeps a toll tower on the middle river, and his men and the Flemish boatmen watch each other across the water. Smugglers know the backwaters better than either of them, and at low tide on the southern marsh you can see the stumps of drowned towers far out in the mud.\",\"story\":\"They say the three rivers were once three sisters who fled the Night of the Water Wolf hand in hand, and the flood caught them and laid them down side by side. The two outer sisters lie quiet, but the middle one never forgave the others for letting go of her hand. Every year at the autumn tide she takes one boat for herself, and the ferrymen will not cross her after the lamps are lit without a duit thrown in for the Haakman and a prayer to the Lantern.\",\"days\":2,\"districts\":[{\"id\":\"veerhuizen\",\"name\":\"Veerhuizen\",\"line\":\"A huddle of ferry houses on a dyke at the first river, where the ferryman's bell calls you across and a tavern smells of eel smoke and wet rope.\"},{\"id\":\"tolburcht\",\"name\":\"the Tolburcht\",\"line\":\"The Count's squat brick toll tower on the middle river, with a chain across the water and clerks who count every barrel twice.\"},{\"id\":\"griendwaarden\",\"name\":\"the Griendwaarden\",\"line\":\"Low willow islands where the osier cutters live in reed huts, weave baskets and fish traps, and ask no questions of boats that pass by night.\"},{\"id\":\"schorrekant\",\"name\":\"the Schorrekant\",\"line\":\"The salt marsh on the southern edge, where the last river meets the tide and on still evenings folk swear they hear drowned bells under the mud.\"}],\"why\":\"It grows from the world book's note that Flemmark's capital lies south beyond the Three Rivers, and from the delta tale of the drowned bells of Saeftinge.\"}]}",
+  "problems": []
+}

@@ -1,0 +1,17 @@
+{
+  "kind": "world_polish",
+  "about": "region play: base, the dial at full, call 27",
+  "model": "claude-sonnet-5",
+  "provider": "",
+  "date": "2026-09-29",
+  "usage": {
+    "inputTokens": 16610,
+    "cachedTokens": 0,
+    "outputTokens": 542
+  },
+  "reply": "{\"say\":\"Trimmed both to fit the 70-word limit while keeping every listed thing, the sensory beat, the exit hint and the bracketed topics.\",\"places\":[{\"id\":\"loc_driestromen_bell_flats\",\"day\":\"The mud stretches grey and wet as far as you can see, cut by creeks that fill and empty with the tide. It sucks at your boots and chills you through. A leaning pole of black oak rises from the flats, hung with little bells and rags. When the wind drops you think you hear [the drowned bells of Saeftinge] far off. The plank walk to the Schorren lies west.\",\"night\":\"Out here the dark has no edge, and the tide creeps in with a sound like breath. The mud is colder than by day, and every step sinks deeper. The oak pole stands a thin black stroke against the sky, its little bells silent. The lantern of the Schorren glimmers back to the west.\"},{\"id\":\"loc_driestromen_middle_ferry\",\"day\":\"At the end of the osier path a jetty of grey planks runs into the middle river, broader and faster than the first. A ferryman's punt lies tied there, and a rope sings across the water to the far bank. Wind off the river cuts through your coat. People step over a hoofprint cut in the first plank, and ferrymen tell of [the Grey Rider's fare].\",\"night\":\"The jetty runs into darkness, the river loud beneath it. The punt is tied fast; the ferryman has gone home, and nobody crosses after the lamps are lit. Cold comes up off the water through the planks. The hoofprint in the first plank holds a little rainwater, and the osier path runs back northeast.\"}]}",
+  "problems": [
+    "loc_driestromen_bell_flats: no such place",
+    "loc_driestromen_middle_ferry: no such place"
+  ]
+}

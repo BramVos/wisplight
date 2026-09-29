@@ -1,0 +1,14 @@
+{
+  "kind": "expansion",
+  "about": "region play: base, the dial at outline, call 1",
+  "model": "claude-opus-5-5",
+  "provider": "",
+  "date": "2026-09-29",
+  "usage": {
+    "inputTokens": 7490,
+    "cachedTokens": 0,
+    "outputTokens": 1097
+  },
+  "reply": "{\"outlines\":[{\"id\":\"driestroom\",\"name\":\"the Driestroom\",\"kind\":\"region\",\"summary\":\"The Driestroom is the river country south of the Holleveen, where the Three Rivers meet and the Count's land ends at the Flemmark shore.\",\"details\":\"It is a land of high river dykes, willow meadows that drown every winter, and ferries that are the only way across. The Count keeps toll-houses on the near bank and the lords of Flemmark keep theirs on the far one, so every barge pays twice and many would rather pay a smuggler once. When the ice goes out in spring, the whole country watches the dykes by lamplight.\",\"story\":\"They say the Three Rivers were three sisters who quarrelled over one bed, and that every spring they still fight for it, so the ice piles up like a wall and the water climbs the dykes. The river folk hang a lantern on every dyke-house at the ice-going, one for each sister, so none can say she was not welcome. A dyke-reeve once hung only two, to save the oil, and by morning his house stood in the water to the roof. Since then no one grudges the third lantern.\",\"days\":3,\"districts\":[{\"id\":\"veerdam\",\"name\":\"Veerdam\",\"line\":\"A ferry village on the river dyke, all tarred boats, a toll-house and a tavern where you wait for the ferryman's bell.\"},{\"id\":\"de_waarden\",\"name\":\"the Waarden\",\"line\":\"Willow meadows between the summer dyke and the river, grazed in summer, under water in winter, where eel-men and basket-weavers live on mounds.\"},{\"id\":\"schenkweerd\",\"name\":\"Schenkweerd\",\"line\":\"A walled toll town on an island where the rivers meet, with a chain across the water and Flemmark's banners in sight on the other shore.\"}],\"why\":\"It grows from the realm of Flemmark, whose capital lies south beyond the Three Rivers, and from the world's dykes, tolls and quarrels over water and money.\"}]}",
+  "problems": []
+}

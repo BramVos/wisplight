@@ -1,0 +1,14 @@
+{
+  "kind": "weave",
+  "about": "region play: base, the dial at outline, call 36",
+  "model": "claude-opus-5-5",
+  "provider": "",
+  "date": "2026-09-29",
+  "usage": {
+    "inputTokens": 2800,
+    "cachedTokens": 0,
+    "outputTokens": 1601
+  },
+  "reply": "{\"bonds\":[{\"a\":\"npc_rinske_driestroom_veerdam\",\"b\":\"npc_hessel_driestroom\",\"role\":\"friend\",\"why\":\"Rinske and Hessel learned the trade together as serving-hands at the same inn, and they still send each other word of what ale is dear and which travellers are trouble.\"},{\"a\":\"npc_machteld_driestroom_veerdam\",\"b\":\"npc_hendrikje_driestroom\",\"role\":\"debtor\",\"why\":\"Hendrikje owes Machteld three guilders in weighing dues from last autumn's barges and has promised to pay them at Saint Brand's fair.\"},{\"a\":\"npc_wiebe_driestroom_veerdam\",\"b\":\"npc_trijntje\",\"role\":\"kin\",\"why\":\"Trijntje Kroes is Wiebe's cousin on his mother's side, and every cask in the Drowned Goose's cellar came from his yard.\"}],\"secrets\":[{\"who\":\"npc_joost_driestroom_veerdam\",\"text\":\"One foggy evening Joost ferried a hooded woman across, and when he reached the far bank the boat was empty but for wet footprints.\",\"hint\":\"When the evening bell rings he touches the ferry's stern post and whispers something that sounds like Nehalennia's name.\"},{\"who\":\"npc_tjerk_driestroom_veerdam\",\"text\":\"Tjerk has quietly made copies of the Count's survey maps to prove the new polder will flood Veerdam.\",\"hint\":\"His fingers are often stained with fresh ink, and he never lets anyone near the rolled papers in his coat.\"}],\"thread\":{\"from\":\"npc_rinske_driestroom_veerdam\",\"to\":\"npc_hessel_driestroom\",\"name\":\"Rinske's letter to Hessel\",\"ask\":\"You're going back Veenhoek way? Then take this to Hessel Postma for me, and tell him Rinske says the river's rising and he should lay in his barrels early.\",\"why\":\"Rinske fears the Count's polder will send the water down on both their inns, and Hessel is the one friend back home who will act on her warning.\"},\"echo\":{\"who\":\"npc_machteld_driestroom_veerdam\",\"line\":\"line_9\",\"text\":\"Machteld weighed a barge hired by the surveyor Cornelis de Wit that carried no goods, only saddles and goat-tack, and she tells the stranger she has not forgotten it.\"}}",
+  "problems": []
+}

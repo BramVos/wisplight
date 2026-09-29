@@ -1,0 +1,14 @@
+{
+  "kind": "weave",
+  "about": "region play: base, the dial at outline, call 58",
+  "model": "claude-opus-5-5",
+  "provider": "",
+  "date": "2026-09-29",
+  "usage": {
+    "inputTokens": 3194,
+    "cachedTokens": 1880,
+    "outputTokens": 1766
+  },
+  "reply": "{\"bonds\":[{\"a\":\"npc_lysbet_driestroom_schenkweerd\",\"b\":\"npc_wessel_driestroom_de_waarden\",\"role\":\"teacher\",\"why\":\"Lysbet learned the names of the eddies as a girl in the bow of Wessel Aalbers's boat, and still sends him the first eel of every spring.\"},{\"a\":\"npc_lysbet_driestroom_schenkweerd\",\"b\":\"npc_marritje_driestroom_de_waarden\",\"role\":\"creditor\",\"why\":\"Lysbet bought six of Marritje Wilgenhof's traps on credit last autumn and still owes her four stuivers for them.\"},{\"a\":\"npc_floris_driestroom_schenkweerd\",\"b\":\"npc_hessel_driestroom\",\"role\":\"debtor\",\"why\":\"Hessel Postma takes his beer casks from Floris and settles the bill only when the barges come in, so he is always a season behind.\"},{\"a\":\"npc_ewout_driestroom_schenkweerd\",\"b\":\"npc_roelof_driestroom_de_waarden\",\"role\":\"employer\",\"why\":\"Roelof Dijkema hires Ewout to forge the iron ties for the sluice gates on the summer dyke.\"}],\"secrets\":[{\"who\":\"npc_reinier_driestroom_schenkweerd\",\"text\":\"Once, years ago, his scales were a full stuiver wrong, and he quietly paid the difference from his own purse so no one would ever know.\",\"hint\":\"He checks the brass weights against each other every morning, twice, and goes pale if anyone jokes about a crooked scale.\"},{\"who\":\"npc_sister_driestroom_schenkweerd\",\"text\":\"Her eyes are failing, and she climbs the chapel tower each night by counting the steps in the dark.\",\"hint\":\"Her lips move silently on the tower stair, and she touches the wall at every turn as if greeting an old friend.\"}],\"thread\":{\"from\":\"npc_floris_driestroom_schenkweerd\",\"to\":\"npc_hendrikje_driestroom\",\"name\":\"The herring barrels for Hendrikje\",\"ask\":\"You're going back Veenhoek way? Tell Hendrikje Hofstede her dozen herring barrels will come on the first barge after the thaw, and not a day sooner. I'd not have her think I've forgotten her.\",\"why\":\"Hendrikje has been waiting on the order all winter, and a word from Floris keeps her from taking her trade to another cooper.\"},\"echo\":{\"who\":\"npc_baukje_driestroom_schenkweerd\",\"line\":\"line_14\",\"text\":\"Baukje Stroomer has heard from a bargeman that Hessel Postma and Rinske de Boer had words over Machteld Tolenaar, and she asks the stranger, as one who knows Hessel, whether it is true.\"}}",
+  "problems": []
+}

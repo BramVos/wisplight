@@ -1,0 +1,721 @@
+Skerrow, over the sea; the dial at story; seed 7; claude-opus-5-5
+Cold water, then stones. You wake on your face on a strand of black shingle, with the sea still pulling at your boots. Of the Grey Gull there is not much left: a broken mast, a spill of cordage, a cask rolling in the surf. Of her crew there is nothing at all.
+
+Gulls argue overhead. Somewhere beyond the rocks a bell rings once, thin and far, and then stops. There are people on this island, then.
+
+This is Skerrow, though you do not know it yet. No ship has called here since the light went out.
+
+Type LOOK to look around. Type HELP if you are lost. You are, rather.
+You were born to wreckers on another island and ran from them on the Grey Gull, and now a wreck has put you ashore after all. Maren at the Salt Kettle takes in what the sea brings.
+You were told to ask for Maren of the Salt Kettle in Skerrow Hythe. The name is in your journal.
+The Wreck Strand
+You stand on a strand of black shingle where the sea throws up what is left of the [Grey Gull]: a broken mast, a spill of wet rope, a cask rolling in the shallows. The stones clatter and hiss with every wave, and the air tastes of salt and tar. Gulls quarrel over something you would rather not look at. North, a path climbs the low cliff; east, the rocks give way to the [Tidepools].
+On the ground: a cask of lamp oil, a coil of rope and a bolt of sailcloth.
+Exits: north, east
+The Wreck Strand
+You come to on black shingle with the sea still pulling at your boots. Around you lies what is left of the Grey Gull, a mast, rope, a cask turning in the shallows, and nobody else.
+The pace of events is normal. Type TEMPO CALM or TEMPO DRAMATIC for less or more happening in the world.
+New quest: Off Skerrow. The Grey Gull broke on the rocks of Skerrow, and you alone came ashore. No ship calls since the beacon on the headland went out, and the winter storms will soon close the sea. Find a way off the island.
+
+==== THE DIAL: story
+
+> frames region story
+How full a new region is built: story.
+
+# To the harbour of Skerrow, to ask what lies beyond the sea.
+
+> @goto loc_skerrow_harbour   [build command: a shortcut, to the harbour]
+[build] You are at Skerrow Hythe, the Harbour.
+Skerrow Hythe, the Harbour
+A curved wall of piled stone keeps the sea out of a harbour no bigger than a barn floor. Brannoc's boat, the Kittiwake, lies on the slip with her mast bare, and nets hang drying from every post. It smells of fish, wet rope and woodsmoke. Steps go up north to the green; west, the rocks lead back to the [Tidepools], and a low door by the slip opens into a cottage.
+Exits: north, west, in
++10 experience: you found Skerrow Hythe, the Harbour.
++30 experience: you came to Skerrow Hythe.
+
+> what lies beyond the sea?
+Nobody on the quay can tell you what lies past where the boats go.
+Will you look for a skipper who will sail further?
+  1. Find a skipper who will sail further out
+  2. Let it be
+
+> 1
+The chronicler is working out what lies south.
+
+==== SET OFF FOR Brannock Holm (Windsday 3 Leaffall 412 SF, 07:10 (morning))
+
+> @money 200   [build command: a shortcut, the fare]
+[build] You have 2 gp.
+What lies across the water south, as the skippers tell it: Brannock Holm. A low, grey tidal island south of Skerrow, reached on foot only at the deepest ebb, along a ridge of sand marked with old stakes. A boat goes there from Skerrow Hythe, the Harbour.
+
+> @time 7   [build command: a shortcut, the boat sails at eight]
+[build] 1430 minutes pass.
+Brannoc arrives from inside.
+Wenna arrives from the north.
+Wenna hoists the coracle onto her back and walks it down to the water.
+Brannoc nods to Wenna.
+Pip comes from inside, on his way to Skerrow Hythe, the Green.
+Pip stops and gives you a nod, curious about the stranger.
+Brannoc and Pip greet each other warmly.
+Pip nods to Wenna.
+Pip walks on to the north.
+Wenna comes back up the slip with a string of pollock, and sets to gutting and salting them.
+Wenna sets out 7 salt fish for sale.
+Brannoc goes inside.
+Wenna leaves north.
+Pip comes from the north, on his way to The Reeds' Cottage.
+Pip walks on inside.
+Pip comes from inside, on his way to Skerrow Hythe, the Green.
+Pip walks on to the north.
+Brannoc arrives from inside.
+Wenna arrives from the north.
+Brannoc nods to Wenna.
+Wenna leaves north.
+Brannoc goes inside.
+Pip comes from the north, on his way to The Reeds' Cottage.
+Pip stops and gives you a nod, curious about the stranger.
+Pip walks on inside.
+Brannoc comes from inside, on his way to Skerrow Hythe, the Green.
+Brannoc walks on to the north.
+Brannoc comes from the north, on his way to The Reeds' Cottage.
+Brannoc walks on inside.
+Wenna arrives from the north.
+Brannoc arrives from inside.
+Brannoc nods to Wenna.
+The harbour bell rings for six, once for the boats.
+The harbour bell rings for six, once for the boats.
+
+> take the boat to Brannock Holm
+As you set off, you think of what you leave behind. Off Skerrow: The Grey Gull broke on the rocks of Skerrow, and you alone came ashore. No ship calls since the beacon on the headland went out, and the winter storms will soon close the sea. Find a way off the island.
+(Survival 2 vs DC 12: failure)
+You pay 1 sp and travel by the boat to Brannock Holm from Skerrow Hythe to Brannock Holm. It takes a day.
+While you travel, the chronicler is laying out Brannock Holm.
+
+[a minute passes while the chronicler lays it out]
+On the first day, a hard stretch of the way costs you half a day and most of your temper, tar and twine. By the time the going eases, the day is well spent and your patience thinner still. At last you come to the Quay of Brannock Holm.
++10 experience: you found The Quay of Brannock Holm.
++30 experience: you came to Brannock Holm.
+
+==== DAY 1 (Fireday 5 Leaffall 412 SF, 14:01 (afternoon))
+
+> look
+The Quay of Brannock Holm
+You step ashore on the quay of Brannock Holm after a day at sea. The quay is crowded with barrels and nets, and the air smells of tar, fish and wet stone. Gulls scream over the masts, and the dockhands call out to each other in a quick, flat speech. The market lies ahead, and the ships leave from here.
+Exits: in
+
+> journal
+People: Maren.
+Places: Skerrow, Skerrow Hythe, the Shore, Brannock Holm, The Quay of Brannock Holm, Skerrow Hythe, the Harbour, The Headland, The Tidepools, The Wreck Strand.
+Lore: the Grey Gull.
+
+> in
+The Market of Brannock Holm
+You stand in the market of Brannock Holm, among stalls of cloth, salt and pots. Traders shout their prices over each other, and you smell pitch and hot fat from the cookshops. Nobody here has heard of Skerrow or cares what happens there. An inn stands at the corner, and the gate is back out.
+Exits: out, in, west, south, north, east
+Here: Tressa the innkeeper (at work).
++10 experience: you found The Market of Brannock Holm.
+
+> talk tressa the innkeeper
+You are talking with Tressa the innkeeper. Type what you want to say, pick a number, or BYE to stop.
+Tressa nods. "Afternoon."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+Sets down a bundle of dried fish. "New? Well, the beacon's dark since the storm, and that's brought worry. You're the stranger from [the wreck], then? Folk are talking of little else. What brings you to these rocks, honoured one?"
+
+> insight
+(Insight 6 vs DC 15: failure)
+You can't read anything behind Tressa's face.
+
+> bye
+Tressa lifts a hand. "Go on, then."
+
+> west
+While you walk, the chronicler is laying out the Drowned Stair of Brannock Holm.
+
+[a minute passes while the chronicler lays it out]
+The Drowned Stair
+You come into the Drowned Stair of Brannock Holm. The broken Aldmar tower at the southern point, its carved steps winding down into green water, where no Holm child is let go alone. The street is full of people who know where they are going, and it smells of smoke and wet stone. The market is back east.
+Exits: east
++10 experience: you found The Drowned Stair.
+
+> talk jenifer the hedge-witch
+You are talking with Jenifer the hedge-witch. Type what you want to say, pick a number, or BYE to stop.
+Jenifer nods. "Afternoon."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+Sets down her work and looks at you sidelong. "New? Not much reaches us here, honoured one. The beacon's dark since the storm, and no ships calling. What news do you carry from the wider world?"
+
+> insight
+(Insight 4 vs DC 15: critical failure)
+You can't read anything behind Jenifer's face.
+
+> bye
+Jenifer lifts a hand. "Go on, then."
+
+> north
+The Stair Head
+Carved steps curl away beneath your feet, worn hollow by feet long drowned. Wind comes up the stairwell smelling of weed and cold stone. A rope rail, tarred and new, runs down toward the ruin's dark mouth. Behind you the market's noise thins to a murmur.
+Exits: south, north, east
+Here: Morvoren the child.
++10 experience: you found The Stair Head.
+
+> talk morvoren the child
+You are talking with Morvoren the child. Type what you want to say, pick a number, or BYE to stop.
+Morvoren nods. "Afternoon."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+Leans against the stone, picking at her nails. "New? Nothing much stirs here at all, honoured one. The beacon's dark since the storm, and no ships coming now til spring thaw. You're the first soul washed up in a tide's age."
+
+> insight
+(Insight 21 vs DC 15: success)
+You can't read anything behind Morvoren's face.
+
+> bye
+Morvoren lifts a hand. "Go on, then."
+
+> north
+The Broken Hall
+You stand in a round chamber open to the sky where the roof fell at the Starfall. Star-charts are cut into the walls, and your fingers find the grooves still sharp. Water drips somewhere with a slow, patient sound. A narrow arch on the seaward side leads down again.
+Exits: south, north, east
+Here: Petroc the lightkeeper (eating).
++10 experience: you found The Broken Hall.
+
+> talk petroc the lightkeeper
+You are talking with Petroc the lightkeeper. Type what you want to say, pick a number, or BYE to stop.
+Petroc gives you a short nod.
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+Looks up from his bowl, milky eye narrowing. "New? Not much stirs here. The sea's been angry, and ships know better than to call. What brings you asking, honoured one?"
+
+> insight
+(Insight 12 vs DC 16: failure)
+You can't read anything behind Petroc's face.
+
+> bye
+Petroc lifts a hand. "Go on, then."
+
+> north
+The Green Landing
+The steps go on beneath the water, pale and clear for a few turns, then lost in green. The sea slaps at the stone, and the air tastes of salt and iron. Boats tie up here to rings older than the Holm. Above you, the stair climbs back toward the broken hall.
+Exits: south
+Here: Colan the boatman (at work).
++10 experience: you found The Green Landing.
+
+> talk colan the boatman
+You are talking with Colan the boatman. Type what you want to say, pick a number, or BYE to stop.
+Colan nods. "Afternoon."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+Colan glances up from mending net. "New? Not much, honoured one. The beacon's dark since the storm, and no ships calling. Winter's closing in hard. You heard any news from out there?"
+
+> insight
+(Insight 12 vs DC 16: failure)
+You can't read anything behind Colan's face.
+
+> bye
+Colan lifts a hand. "Go on, then."
+
+> south
+The Broken Hall
+You stand in a round chamber open to the sky where the roof fell at the Starfall. Star-charts are cut into the walls, and your fingers find the grooves still sharp. Water drips somewhere with a slow, patient sound. A narrow arch on the seaward side leads down again.
+Exits: south, north, east
+Here: Petroc the lightkeeper (eating).
+
+> east
+The Rune Loft
+A ladder brings you into a cramped loft wedged in the tower's wall. Paper, candle-ends and chalk rubbings crowd every ledge, and the place smells of tallow and damp ink. Wind whistles through a crack in the old stones. The ladder is the only way down.
+Exits: west
+Here: Ebrel the scholar (at work).
++10 experience: you found The Rune Loft.
+
+> talk ebrel the scholar
+You are talking with Ebrel the scholar. Type what you want to say, pick a number, or BYE to stop.
+Ebrel nods. "Afternoon."
+"When you go back over to the Hythe, tell Maren Holt I've not forgotten her, nor the room she kept for me. Give her this letter before the storms close the sea, for I'd not have her think me drowned."
+New in your journal: Word for the Salt Kettle.
+Ebrel asks you to look in on Maren. YES to give your word, NO to decline.
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+Looks up from her notes, adjusting her spectacles. "New? Nothing good. The beacon's dark, no ships call, and winter's coming hard. Have you heard anything from beyond the islands, honoured one? The wider world sends no word here."
+
+> insight
+(Insight 9 vs DC 16: failure)
+You can't read anything behind Ebrel's face.
+
+> bye
+Ebrel lifts a hand. "Go on, then."
+
+# The journal or a talk names Ysolde Carrow: go and see her.
+
+> west
+The Broken Hall
+You stand in a round chamber open to the sky where the roof fell at the Starfall. Star-charts are cut into the walls, and your fingers find the grooves still sharp. Water drips somewhere with a slow, patient sound. A narrow arch on the seaward side leads down again.
+Exits: south, north, east
+Here: Petroc the lightkeeper (eating).
+
+> south
+The Stair Head
+Carved steps curl away beneath your feet, worn hollow by feet long drowned. Wind comes up the stairwell smelling of weed and cold stone. A rope rail, tarred and new, runs down toward the ruin's dark mouth. Behind you the market's noise thins to a murmur.
+Exits: south, north, east
+Here: Morvoren the child (chatting).
+
+> south
+The Drowned Stair
+You come into the Drowned Stair of Brannock Holm. The broken Aldmar tower at the southern point, its carved steps winding down into green water, where no Holm child is let go alone. The street is full of people who know where they are going, and it smells of smoke and wet stone. The market is back east.
+Exits: east, north
+Here: Jenifer the hedge-witch (at work).
+
+> east
+The Market of Brannock Holm
+You stand in the market of Brannock Holm, among stalls of cloth, salt and pots. Traders shout their prices over each other, and you smell pitch and hot fat from the cookshops. Nobody here has heard of Skerrow or cares what happens there. An inn stands at the corner, and the gate is back out.
+Exits: out, in, west, south, north, east
+Here: Tressa the innkeeper (at work).
+
+> east
+The Tide Bell
+A tall post of black oak holds a green bronze bell above the ridge, its rope knotted and salt-stiff. When the wind leans on it, it gives a low hum you feel in your teeth. A plank bench and a slate of chalked tide-marks sit below. Onward, a stilted hut stands halfway across the sands.
+Exits: west, north
+Here: Ysolde the lightkeeper.
++10 experience: you found The Tide Bell.
+
+> talk ysolde the lightkeeper
+You are talking with Ysolde the lightkeeper. Type what you want to say, pick a number, or BYE to stop.
+Ysolde nods. "Afternoon."
+"If the sea lets you home, go to Maren Holt at the Salt Kettle and tell her Ysolde Carrow still rings true, and knows how to light the Skerrow Lamp again. Tell her I'm sorry it took a wreck to make me say so."
+New in your journal: Word for the Salt Kettle.
+Ysolde asks you to look in on Maren. YES to give your word, NO to decline.
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+Ysolde: Forty years I trimmed the Lamp, and I know a light when I see one. That glow down the Drowned Stair is no ghost's candle, whatever the wives say. Find out what burns there, and come and tell me before the tide turns on you.
+New quest: The Light in the Drowned Windows. Loveday Trebilcock walks the sands at every ebb. Ask her what she has seen of the light.
+
+> bye
+Ysolde lifts a hand. "Go on, then."
+
+# The journal: Loveday Trebilcock walks the sands at every ebb. Ask her what she has seen of the light.
+
+> west
+The Market of Brannock Holm
+You stand in the market of Brannock Holm, among stalls of cloth, salt and pots. Traders shout their prices over each other, and you smell pitch and hot fat from the cookshops. Nobody here has heard of Skerrow or cares what happens there. An inn stands at the corner, and the gate is back out.
+Exits: out, in, west, south, north, east
+Here: Tressa the innkeeper (at work).
+
+> north
+The Stake Head
+Wet sand runs out before you in a long grey ridge, and the first tarred stake leans over you like a tired man. The wind carries the reek of pitch and weed, and gulls cry somewhere out on the flats. Old knife-cuts on the stake count the tides of those who crossed. Further along the ridge, a shed smokes where the stakes are made.
+Exits: south
+Here: Jory the steward (at work), Kitto the child (chatting), Loveday the fisher (at work), Morwen the hedge-witch (at work).
++10 experience: you found The Stake Head.
+
+> ask loveday about light
+(Insight 10 vs DC 12: failure)
+It does not come right this time. You may try again.
+
+> south
+The Market of Brannock Holm
+You stand in the market of Brannock Holm, among stalls of cloth, salt and pots. Traders shout their prices over each other, and you smell pitch and hot fat from the cookshops. Nobody here has heard of Skerrow or cares what happens there. An inn stands at the corner, and the gate is back out.
+Exits: out, in, west, south, north, east
+Here: Tressa the innkeeper (at work).
+
+> east
+The Tide Bell
+A tall post of black oak holds a green bronze bell above the ridge, its rope knotted and salt-stiff. When the wind leans on it, it gives a low hum you feel in your teeth. A plank bench and a slate of chalked tide-marks sit below. Onward, a stilted hut stands halfway across the sands.
+Exits: west, north
+Here: Ysolde the lightkeeper.
+
+> tell ysolde of glass
+You: "Let me tell you about ysolde of glass."
+She sets down her cup and meets your eye. "I don't know of any Ysolde of Glass, honoured one. There's only me—Ysolde Carrow. Were you dreaming of [the wreck]?"
+
+[17 hours pass: the night, to eight the next morning]
+Colan comes from the west, on his way to The Refuge Hut.
+Colan walks on to the north.
+Colan comes from the north, on his way to The Green Landing.
+Colan walks on to the west.
+Denzil comes from the north, on his way to The Market of Brannock Holm.
+Denzil walks on to the west.
+Denzil comes from the west, on his way to The Refuge Hut.
+Denzil walks on to the north.
+
+==== DAY 2 (Starday 6 Leaffall 412 SF, 08:00 (morning))
+
+> look
+The Tide Bell
+A tall post of black oak holds a green bronze bell above the ridge, its rope knotted and salt-stiff. When the wind leans on it, it gives a low hum you feel in your teeth. A plank bench and a slate of chalked tide-marks sit below. Onward, a stilted hut stands halfway across the sands.
+Exits: west, north
+Here: Ysolde the lightkeeper.
+
+> journal
+People: Colan Tremayne, Ebrel Nance, Jenifer Pascoe, Loveday, Maren, Morvoren Jago, Petroc Rowe, Tressa Carne, Ysolde Carrow.
+Places: Skerrow, Skerrow Hythe, the Shore, Brannock Holm, The Drowned Stair, The Green Landing, The Rune Loft, The Stair Head, The Broken Hall, The Quay of Brannock Holm, The Market of Brannock Holm, The Stake Head, The Tide Bell, Skerrow Hythe, the Harbour, The Headland, The Tidepools, The Wreck Strand.
+Lore: the stranger in Skerrow Hythe, Word for the Salt Kettle, the Drowned Stair of Brannock Holm, Ebrel Nance and Maren Holt, Colan Tremayne and Brannoc Reed, Morvoren Jago and Pip Reed, Word for the Salt Kettle, Denzil Hosken and Brannoc Reed, Brannock Holm charted, the passage to Brannock Holm, the stranger in Brannock Holm, the story of Brannock Holm, Ysolde Carrow and Maren Holt, the Grey Gull.
+
+> north
+The Refuge Hut
+A hut on four tarred legs stands high above the sand, with a ladder that creaks under any weight. Up inside, the boards smell of damp rope and old lamp oil, and the wind whistles through the cracks. Hooks, a coil of line and a shuttered window face the open sea. From the top rung, you can see a ring of white stones on the Holm side.
+Exits: south
+Here: Denzil the boatman (at work).
++10 experience: you found The Refuge Hut.
+
+> talk denzil the boatman
+You are talking with Denzil the boatman. Type what you want to say, pick a number, or BYE to stop.
+Denzil nods. "Morning."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+Denzil sets down a coil of rope. "News? Well, there's word from [Brannock Holm] that I've not heard the whole of yet. And folk say [Tressa] knows somewhat of a man with folk far away, but I don't know his name. What've you heard, honoured one?"
+
+> insight
+(Insight 7 vs DC 16: failure)
+You can't read anything behind Denzil's face.
+
+> bye
+Denzil lifts a hand. "Go on, then."
+
+> south
+The Tide Bell
+A tall post of black oak holds a green bronze bell above the ridge, its rope knotted and salt-stiff. When the wind leans on it, it gives a low hum you feel in your teeth. A plank bench and a slate of chalked tide-marks sit below. Onward, a stilted hut stands halfway across the sands.
+Exits: west, north
+Here: Ysolde the lightkeeper (getting ready for bed).
+
+> west
+The Market of Brannock Holm
+You stand in the market of Brannock Holm, among stalls of cloth, salt and pots. Traders shout their prices over each other, and you smell pitch and hot fat from the cookshops. Nobody here has heard of Skerrow or cares what happens there. An inn stands at the corner, and the gate is back out.
+Exits: out, in, west, south, north, east
+Here: Tressa the innkeeper (at work).
+
+> in
+The Carters' Inn
+You duck into a low inn where carters from half the land sit over their beer. It is warm in here, and loud, and it smells of wet wool and onions. The innkeeper keeps an eye on the door and another on the purses. The market is back out.
+Exits: out
+Here: Hedyn the innkeeper (at work).
++10 experience: you found The Carters' Inn.
+
+> talk hedyn the innkeeper
+You are talking with Hedyn the innkeeper. Type what you want to say, pick a number, or BYE to stop.
+Hedyn nods. "Morning."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+Shifts weight, glancing toward the window at the gale. "New? Rain, wind, and no ships calling. [Harbour]'s dead as last season's nets. You've heard whispers in your time—what's news where you come from, honoured one?"
+
+> insight
+(Insight 18 vs DC 15: success)
+You can't read anything behind Hedyn's face.
+
+> bye
+Hedyn lifts a hand. "Go on, then."
+
+> out
+The Market of Brannock Holm
+You stand in the market of Brannock Holm, among stalls of cloth, salt and pots. Traders shout their prices over each other, and you smell pitch and hot fat from the cookshops. Nobody here has heard of Skerrow or cares what happens there. An inn stands at the corner, and the gate is back out.
+Exits: out, in, west, south, north, east
+Here: Tressa the innkeeper (at work).
+
+> south
+While you walk, the chronicler is laying out Pannock of Brannock Holm.
+
+[a minute passes while the chronicler lays it out]
+Pannock
+You come into Pannock of Brannock Holm. A huddle of turf-roofed cottages among shallow salt pans, where smoke from the boiling sheds hangs low and sheep crop the grass to the doorsteps. The street is full of people who know where they are going, and it smells of smoke and wet stone. The market is back north.
+Exits: north
++10 experience: you found Pannock.
+
+> talk jowan the child
+You are talking with Jowan the child. Type what you want to say, pick a number, or BYE to stop.
+Jowan nods. "Morning."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+Shifts the lamb to his other arm. "New? Nothing much till the stranger came off [the wreck]. Storm took the beacon out. Folk are worried the sea won't open again till spring."
+
+> insight
+(Insight 21 vs DC 15: success)
+You can't read anything behind Jowan's face.
+
+> bye
+Jowan lifts a hand. "Go on, then."
+
+> talk kerra the fisher
+You are talking with Kerra the fisher. Type what you want to say, pick a number, or BYE to stop.
+Kerra nods. "Morning."
+"You're from the Hythe? Then you'll know Wenna Dray, who fishes in a coracle. Take her this pouch of Pannock salt and tell her Kerra says the sea still owes us both."
+New in your journal: Salt for Wenna.
+Kerra asks you to look in on Wenna. YES to give your word, NO to decline.
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+Shrugs. "Rain keeps most folk indoors. The beacon's still dark—that troubles me more than gossip. You hear anything down at [the Hythe]?"
+
+> insight
+(Insight 16 vs DC 15: success)
+You can't read anything behind Kerra's face.
+
+> bye
+Kerra lifts a hand. "Go on, then."
+
+> east
+The Boiling Sheds
+Low sheds of tarred planks crowd together here, their doors propped open on iron pans that seethe over peat fires. The air bites your throat with brine and smoke, and your eyes sting before you have taken three steps. Salt crusts every beam like frost. Past the last shed, a path of trodden ash leads out toward the flat, shining pans.
+Exits: west, north
+Here: Clemo the boatman (at work).
++10 experience: you found The Boiling Sheds.
+
+> talk clemo the boatman
+You are talking with Clemo the boatman. Type what you want to say, pick a number, or BYE to stop.
+Clemo nods. "Morning."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+Clemo shifts a log in the fire pit, not looking up. "New? North wind's holding fierce, honoured one. Keeps the ships off. Folk are waiting—stores running thin before the spring run. [Colan] says the ebb flats'll be treacherous till the gale turns."
+
+> insight
+(Insight 4 vs DC 16: critical failure)
+You can't read anything behind Clemo's face.
+
+> bye
+Clemo lifts a hand. "Go on, then."
+
+> north
+The Salt Store
+Thick turf walls and a single stout door keep the damp from the heaped sacks within. It is dry and close, and the smell of salt is so sharp you can taste it on your lips. Tally sticks hang by the door, notched in long rows. Back out the door, the smoke of the sheds shows you the way.
+Exits: south
+Here: Hendra the steward (at work).
++10 experience: you found The Salt Store.
+
+> talk hendra the steward
+You are talking with Hendra the steward. Type what you want to say, pick a number, or BYE to stop.
+Hendra nods. "Morning."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+Eyes up from the tally sticks. "New? The beacon's dark, the ships don't call, and winter's coming hard. You'd know better than I would, honoured one—where did your vessel break?"
+
+> insight
+(Insight 16 vs DC 16: success)
+A few of her tally sticks bear notches cut in a different hand and hidden at the back of the row.
+
+> persuade You can tell me. It stays between us.
+Hendra sets down her stick and meets your eye steady. "There's nothing to tell that matters. You're here, [your ship]'s gone. That's all there is."
+
+> bye
+Hendra lifts a hand. "Go on, then."
+
+> south
+The Boiling Sheds
+Low sheds of tarred planks crowd together here, their doors propped open on iron pans that seethe over peat fires. The air bites your throat with brine and smoke, and your eyes sting before you have taken three steps. Salt crusts every beam like frost. Past the last shed, a path of trodden ash leads out toward the flat, shining pans.
+Exits: west, north
+Here: Clemo the boatman (at work).
+
+> west
+Pannock
+You come into Pannock of Brannock Holm. A huddle of turf-roofed cottages among shallow salt pans, where smoke from the boiling sheds hangs low and sheep crop the grass to the doorsteps. The street is full of people who know where they are going, and it smells of smoke and wet stone. The market is back north.
+Exits: north, east, south
+Here: Jowan the child, Kerra the fisher (at work), Mabyn the scholar (eating).
+
+> south
+The Low Row
+Turf-roofed cottages sit shoulder to shoulder here, so low you must stoop at every lintel. Peat smoke seeps through the thatch, and somewhere a kettle chatters on a hearth. Nets and fleeces dry on the walls between the doors. At the row's far end, a path slips back between the sheds toward the market.
+Exits: north
+Here: Demelza the hedge-witch (at work).
++10 experience: you found The Low Row.
+
+> talk demelza the hedge-witch
+You are talking with Demelza the hedge-witch. Type what you want to say, pick a number, or BYE to stop.
+Demelza nods. "Morning."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+Demelza shakes her head. "Nothing you would care about."
+(The AI's answers did not pass the checks; this is the game's own line from what Demelza knows.)
+
+> insight
+(Insight 7 vs DC 16: failure)
+You can't read anything behind Demelza's face.
+
+> bye
+Demelza lifts a hand. "Go on, then."
+
+# The journal: Loveday Trebilcock walks the sands at every ebb. Ask her what she has seen of the light.
+
+> north
+Pannock
+You come into Pannock of Brannock Holm. A huddle of turf-roofed cottages among shallow salt pans, where smoke from the boiling sheds hangs low and sheep crop the grass to the doorsteps. The street is full of people who know where they are going, and it smells of smoke and wet stone. The market is back north.
+Exits: north, east, south
+Here: Jowan the child, Kerra the fisher (at work), Mabyn the scholar (eating).
+
+> north
+The Market of Brannock Holm
+You stand in the market of Brannock Holm, among stalls of cloth, salt and pots. Traders shout their prices over each other, and you smell pitch and hot fat from the cookshops. Nobody here has heard of Skerrow or cares what happens there. An inn stands at the corner, and the gate is back out.
+Exits: out, in, west, south, north, east
+Here: Clemo the boatman (on the way to The Refuge Hut), Jowan the child (stopping to look at the stranger), Mabyn the scholar (on the way to The Drowned Stair), Tressa the innkeeper (at work).
+Jowan comes from the south, on his way to The Stake Head.
+Jowan stops and looks you over.
+Mabyn comes from the south, on her way to The Drowned Stair.
+Jowan nods to Mabyn.
+Jowan nods to Tressa.
+Mabyn nods to Tressa.
+Clemo comes from the south, on his way to The Refuge Hut.
+
+> north
+The Stake Head
+Wet sand runs out before you in a long grey ridge, and the first tarred stake leans over you like a tired man. The wind carries the reek of pitch and weed, and gulls cry somewhere out on the flats. Old knife-cuts on the stake count the tides of those who crossed. Further along the ridge, a shed smokes where the stakes are made.
+Exits: south
+Here: Jory the steward (at work), Kitto the child, Loveday the fisher (at work), Morwen the hedge-witch (at work).
+
+> ask loveday about light
+(Insight 12 vs DC 12: success)
+Loveday admits she has seen it many times from the far stakes, always on still nights with a clear moon, and always green, never the gold of flame.
+The Light in the Drowned Windows: Go down to the Drowned Stair on a still night and watch the windows for yourself.
+
+# The journal: Go down to the Drowned Stair on a still night and watch the windows for yourself.
+
+> south
+The Market of Brannock Holm
+You stand in the market of Brannock Holm, among stalls of cloth, salt and pots. Traders shout their prices over each other, and you smell pitch and hot fat from the cookshops. Nobody here has heard of Skerrow or cares what happens there. An inn stands at the corner, and the gate is back out.
+Exits: out, in, west, south, north, east
+Here: Tressa the innkeeper (at work).
+Jowan walks on to the north.
+
+> west
+The Drowned Stair
+You come into the Drowned Stair of Brannock Holm. The broken Aldmar tower at the southern point, its carved steps winding down into green water, where no Holm child is let go alone. The street is full of people who know where they are going, and it smells of smoke and wet stone. The market is back east.
+Exits: east, north
+Here: Jenifer the hedge-witch (talking with Mabyn), Mabyn the scholar (talking with Jenifer).
+Mabyn and Jenifer stand talking.
+Jenifer and Mabyn stand talking in The Drowned Stair.
+
+> watch drowned windows
+(Perception 13 vs DC 12: success)
+When the moon clears the cloud, the light wakes: it is the moon itself, caught and thrown back by a thick disc of old glass set in a sill just under the water.
+The Light in the Drowned Windows: Take word of the glass back to Ysolde at the Tide Bell.
+
+# The journal: Take word of the glass back to Ysolde at the Tide Bell.
+
+> east
+The Market of Brannock Holm
+You stand in the market of Brannock Holm, among stalls of cloth, salt and pots. Traders shout their prices over each other, and you smell pitch and hot fat from the cookshops. Nobody here has heard of Skerrow or cares what happens there. An inn stands at the corner, and the gate is back out.
+Exits: out, in, west, south, north, east
+Here: Mabyn the scholar (on the way to Pannock), Tressa the innkeeper (at work).
+Mabyn comes from the west, on her way to Pannock.
+
+> east
+The Tide Bell
+A tall post of black oak holds a green bronze bell above the ridge, its rope knotted and salt-stiff. When the wind leans on it, it gives a low hum you feel in your teeth. A plank bench and a slate of chalked tide-marks sit below. Onward, a stilted hut stands halfway across the sands.
+Exits: west, north
+Here: Ysolde the lightkeeper (asleep).
+
+> tell ysolde of glass
+(Lore 8 vs DC 12: failure)
+It does not come right this time. You may try again.
+Clemo comes from the north, on his way to The Boiling Sheds.
+
+[23 hours pass: the night, to eight the next morning]
+Denzil comes from the north, on his way to The Market of Brannock Holm.
+Denzil stops and gives you a nod, curious about the stranger.
+Denzil nods to Ysolde.
+Denzil walks on to the west.
+Denzil comes from the west, on his way to The Refuge Hut.
+Denzil walks on to the north.
+Ysolde leaves west.
+Denzil comes from the north, on his way to The Market of Brannock Holm.
+Denzil stops and gives you a nod, curious about the stranger.
+Denzil walks on to the west.
+Ysolde arrives from the west.
+Ysolde puts out the lamp and goes to bed.
+Denzil comes from the west, on his way to The Refuge Hut.
+Denzil walks on to the north.
+Ysolde puts out the lamp and goes to bed.
+
+==== DAY 3 (Restday 7 Leaffall 412 SF, 08:00 (morning))
+
+> look
+The Tide Bell
+A tall post of black oak holds a green bronze bell above the ridge, its rope knotted and salt-stiff. When the wind leans on it, it gives a low hum you feel in your teeth. A plank bench and a slate of chalked tide-marks sit below. Onward, a stilted hut stands halfway across the sands.
+Exits: west, north
+Here: Ysolde the lightkeeper (asleep).
+
+> journal
+People: Clemo Vosper, Colan Tremayne, Demelza Rodda, Denzil Hosken, Ebrel Nance, Hedyn Tregear, Hendra Keverne, Jenifer Pascoe, Jowan Tresize, Kerra Menhenick, Loveday, Maren, Morvoren Jago, Petroc Rowe, Tressa Carne, Ysolde Carrow.
+Places: Skerrow, Skerrow Hythe, the Shore, Brannock Holm, The Drowned Stair, The Green Landing, The Rune Loft, The Stair Head, The Broken Hall, The Quay of Brannock Holm, The Carters' Inn, The Market of Brannock Holm, Pannock, The Boiling Sheds, The Low Row, The Salt Store, The Refuge Hut, The Stake Head, The Tide Bell, Skerrow Hythe, the Harbour, The Headland, The Tidepools, The Wreck Strand.
+Lore: the stranger in Skerrow Hythe, Word for the Salt Kettle, the Drowned Stair of Brannock Holm, Ebrel Nance and Maren Holt, Colan Tremayne and Brannoc Reed, Morvoren Jago and Pip Reed, Word for the Salt Kettle, Denzil Hosken and Brannoc Reed, Brannock Holm charted, Pannock of Brannock Holm, Clemo Vosper and Colan Tremayne, Mabyn Treloar and Jenifer Pascoe, Jowan Tresize and Kitto Rosewarne, Hendra Keverne and Hedyn Tregear, Salt for Wenna, Denzil Hosken and Brannoc Reed, the passage to Brannock Holm, the stranger in Brannock Holm, the story of Brannock Holm, Ysolde Carrow and Maren Holt, the Grey Gull.
+
+> west
+The Market of Brannock Holm
+You stand in the market of Brannock Holm, among stalls of cloth, salt and pots. Traders shout their prices over each other, and you smell pitch and hot fat from the cookshops. Nobody here has heard of Skerrow or cares what happens there. An inn stands at the corner, and the gate is back out.
+Exits: out, in, west, south, north, east
+Here: Jory the steward (chatting), Treeve the steward (chatting), Tressa the innkeeper (at work).
+
+> west
+The Drowned Stair
+You come into the Drowned Stair of Brannock Holm. The broken Aldmar tower at the southern point, its carved steps winding down into green water, where no Holm child is let go alone. The street is full of people who know where they are going, and it smells of smoke and wet stone. The market is back east.
+Exits: east, north
+Here: Jenifer the hedge-witch (at work).
+
+> north
+The Stair Head
+Carved steps curl away beneath your feet, worn hollow by feet long drowned. Wind comes up the stairwell smelling of weed and cold stone. A rope rail, tarred and new, runs down toward the ruin's dark mouth. Behind you the market's noise thins to a murmur.
+Exits: south, north, east
+Here: Morvoren the child.
+
+> east
+The Warden's Hut
+You duck into a low hut of turf and wreck-timber built against the tower's foot. Peat smoke stings your eyes, and a kettle ticks on the hearth. A slate by the door keeps tally of who has gone down the stair and who came back. The door opens onto the stair head.
+Exits: west
++10 experience: you found The Warden's Hut.
+
+# The journal: Take word of the glass back to Ysolde at the Tide Bell.
+
+> west
+The Stair Head
+Carved steps curl away beneath your feet, worn hollow by feet long drowned. Wind comes up the stairwell smelling of weed and cold stone. A rope rail, tarred and new, runs down toward the ruin's dark mouth. Behind you the market's noise thins to a murmur.
+Exits: south, north, east
+Here: Morvoren the child.
+
+> south
+The Drowned Stair
+You come into the Drowned Stair of Brannock Holm. The broken Aldmar tower at the southern point, its carved steps winding down into green water, where no Holm child is let go alone. The street is full of people who know where they are going, and it smells of smoke and wet stone. The market is back east.
+Exits: east, north
+Here: Jenifer the hedge-witch (at work).
+
+> east
+The Market of Brannock Holm
+You stand in the market of Brannock Holm, among stalls of cloth, salt and pots. Traders shout their prices over each other, and you smell pitch and hot fat from the cookshops. Nobody here has heard of Skerrow or cares what happens there. An inn stands at the corner, and the gate is back out.
+Exits: out, in, west, south, north, east
+Here: Jory the steward (chatting), Treeve the steward (chatting), Tressa the innkeeper (at work).
+
+> east
+The Tide Bell
+A tall post of black oak holds a green bronze bell above the ridge, its rope knotted and salt-stiff. When the wind leans on it, it gives a low hum you feel in your teeth. A plank bench and a slate of chalked tide-marks sit below. Onward, a stilted hut stands halfway across the sands.
+Exits: west, north
+Here: Ysolde the lightkeeper (asleep).
+
+> tell ysolde of glass
+(Lore 21 vs DC 12: critical success)
+Ysolde goes very still, then nods. Aldmar glass, she says, the same kind that once sat in the Lamp of Skerrow, before it cracked.
+The Light in the Drowned Windows: Old Glass, Old Light. Ysolde knows now that no lamp of the drowned burns in the tower, only Aldmar glass holding the moon. She has begun to reckon the spring ebbs, wondering whether the glass could be brought up the stair and set on the headland again.
++200 experience: The Light in the Drowned Windows.
+
+> journal
+People: Clemo Vosper, Colan Tremayne, Demelza Rodda, Denzil Hosken, Ebrel Nance, Hedyn Tregear, Hendra Keverne, Jenifer Pascoe, Jowan Tresize, Kerra Menhenick, Loveday, Maren, Morvoren Jago, Petroc Rowe, Tressa Carne, Ysolde Carrow.
+Places: Skerrow, Skerrow Hythe, the Shore, Brannock Holm, The Drowned Stair, The Green Landing, The Rune Loft, The Stair Head, The Broken Hall, The Warden's Hut, The Quay of Brannock Holm, The Carters' Inn, The Market of Brannock Holm, Pannock, The Boiling Sheds, The Low Row, The Salt Store, The Refuge Hut, The Stake Head, The Tide Bell, Skerrow Hythe, the Harbour, The Headland, The Tidepools, The Wreck Strand.
+Lore: the stranger in Skerrow Hythe, Word for the Salt Kettle, the Drowned Stair of Brannock Holm, Ebrel Nance and Maren Holt, Colan Tremayne and Brannoc Reed, Morvoren Jago and Pip Reed, Word for the Salt Kettle, Denzil Hosken and Brannoc Reed, Brannock Holm charted, Pannock of Brannock Holm, Clemo Vosper and Colan Tremayne, Mabyn Treloar and Jenifer Pascoe, Jowan Tresize and Kitto Rosewarne, Hendra Keverne and Hedyn Tregear, Salt for Wenna, Denzil Hosken and Brannoc Reed, the passage to Brannock Holm, the stranger in Brannock Holm, the story of Brannock Holm, Ysolde Carrow and Maren Holt, the Grey Gull.
+
+==== END (Restday 7 Leaffall 412 SF, 08:31 (morning))

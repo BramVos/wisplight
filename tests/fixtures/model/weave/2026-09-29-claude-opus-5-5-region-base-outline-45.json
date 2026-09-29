@@ -1,0 +1,14 @@
+{
+  "kind": "weave",
+  "about": "region play: base, the dial at outline, call 45",
+  "model": "claude-opus-5-5",
+  "provider": "",
+  "date": "2026-09-29",
+  "usage": {
+    "inputTokens": 2821,
+    "cachedTokens": 1880,
+    "outputTokens": 1416
+  },
+  "reply": "{\"bonds\":[{\"a\":\"npc_wessel_driestroom_de_waarden\",\"b\":\"npc_hessel_driestroom\",\"role\":\"acquaintance\",\"why\":\"Wessel brings smoked eel to Hessel's inn every market day, and Hessel pays him in beer as often as in stuivers.\"},{\"a\":\"npc_marritje_driestroom_de_waarden\",\"b\":\"npc_hendrikje_driestroom\",\"role\":\"creditor\",\"why\":\"Hendrikje sold a dozen of Marritje's eel traps on credit last spring and still owes her four guilders from it.\"},{\"a\":\"npc_roelof_driestroom_de_waarden\",\"b\":\"npc_hessel_driestroom\",\"role\":\"neighbour\",\"why\":\"Roelof's house stands on the next mound to Hessel's inn, and they share the one plank bridge over the ditch.\"},{\"a\":\"npc_sietske_driestroom_de_waarden\",\"b\":\"npc_trijntje\",\"role\":\"friend\",\"why\":\"Sietske and Trijntje were girls together before Sietske married onto the river, and they still send each other word by barge.\"}],\"secrets\":[{\"who\":\"npc_wessel_driestroom_de_waarden\",\"text\":\"Wessel sets his night lines in the Count's reserved water below the sluice, where no man may fish.\",\"hint\":\"His best eels come in on mornings after moonless nights, and he never says which eddy they came from.\"},{\"who\":\"npc_roelof_driestroom_de_waarden\",\"text\":\"Roelof has let his own cousin's mound off its share of the summer dyke for three years running.\",\"hint\":\"The stretch of dyke below the Dijkema mound is always the last to be mended and the first to leak.\"}],\"thread\":{\"from\":\"npc_sietske_driestroom_de_waarden\",\"to\":\"npc_trijntje\",\"name\":\"Salve for Trijntje\",\"ask\":\"You'll pass the Drowned Goose on your way home? Give Trijntje this pot of salve for her hands and tell her Sietske hasn't forgotten her.\",\"why\":\"Sietske hasn't seen her oldest friend in years, and word carried by a known face means more than one sent by barge.\"},\"echo\":{\"who\":\"npc_roelof_driestroom_de_waarden\",\"line\":\"line_14\",\"text\":\"Roelof has heard talk of the trouble between Rinske de Boer and his neighbour Hessel Postma, and he quietly asks the stranger what they know of it.\"}}",
+  "problems": []
+}

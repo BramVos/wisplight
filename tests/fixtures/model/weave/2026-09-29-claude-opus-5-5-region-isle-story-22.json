@@ -1,0 +1,14 @@
+{
+  "kind": "weave",
+  "about": "region play: isle, the dial at story, call 22",
+  "model": "claude-opus-5-5",
+  "provider": "",
+  "date": "2026-09-29",
+  "usage": {
+    "inputTokens": 2929,
+    "cachedTokens": 1897,
+    "outputTokens": 916
+  },
+  "reply": "{\"bonds\":[{\"a\":\"npc_ebrel_brannock_holm_drowned_stair\",\"b\":\"npc_maren\",\"role\":\"friend\",\"why\":\"Ebrel lodged at the Salt Kettle as a girl before she crossed to the Holm, and Maren still keeps her old room shut against the day she comes home.\"},{\"a\":\"npc_colan_brannock_holm_drowned_stair\",\"b\":\"npc_brannoc\",\"role\":\"friend\",\"why\":\"Colan and Brannoc learned the currents round the point together as young men, and each swears the other is the second-best boatman in the Glass Sea.\"},{\"a\":\"npc_treeve_brannock_holm_drowned_stair\",\"b\":\"npc_tressa_brannock_holm\",\"role\":\"neighbour\",\"why\":\"Treeve's tally-hut stands hard by Tressa's stall, and she brings him hot broth on the nights the causeway goes under.\"},{\"a\":\"npc_morvoren_brannock_holm_drowned_stair\",\"b\":\"npc_pip\",\"role\":\"friend\",\"why\":\"Morvoren met Pip one summer when Brannoc brought the Kittiwake over, and the two of them spent a whole low tide hunting crabs under the stair.\"}],\"secrets\":[{\"who\":\"npc_petroc_brannock_holm_drowned_stair\",\"text\":\"Petroc let the Holm's lamp go dark one storm night in his youth, and he has always believed a ship was lost for it.\",\"hint\":\"He will not look toward the headland when the wind turns, and he trims every candle in the inn as though a life hung on it.\"},{\"who\":\"npc_ebrel_brannock_holm_drowned_stair\",\"text\":\"Ebrel has read enough of the tower's runes to think the Skerrow beacon could be lit again by the old Aldmar art, but she fears what else the words might wake.\",\"hint\":\"Her notes break off at the same rune on every page, and she flinches when anyone speaks of the barrows.\"}],\"thread\":{\"from\":\"npc_ebrel_brannock_holm_drowned_stair\",\"to\":\"npc_maren\",\"name\":\"Word for the Salt Kettle\",\"ask\":\"When you go back over to the Hythe, tell Maren Holt I've not forgotten her, nor the room she kept for me. Give her this letter before the storms close the sea, for I'd not have her think me drowned.\",\"why\":\"Maren has heard nothing from Ebrel in years, and the letter may carry news of the tower runes that bears on the dark beacon.\"},\"echo\":{\"who\":\"npc_colan_brannock_holm_drowned_stair\",\"line\":\"line_3\",\"text\":\"Colan tells the stranger that Denzil Hosken came asking for passage round the point with hard words about Brannoc Reed, and he would like to know what lies between the two men before he takes the fare.\"}}",
+  "problems": []
+}

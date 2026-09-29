@@ -1,0 +1,1143 @@
+{
+  "world": "isle",
+  "setting": "story",
+  "region": {
+    "id": "brannock_holm",
+    "name": "Brannock Holm",
+    "summary": "A low, grey tidal island south of Skerrow, reached on foot only at the deepest ebb, along a ridge of sand marked with old stakes."
+  },
+  "places": {
+    "count": 16,
+    "words": 55.3,
+    "hooks": 0,
+    "exits": 1.9,
+    "names": [
+      "The Drowned Stair",
+      "The Green Landing",
+      "The Rune Loft",
+      "The Stair Head",
+      "The Broken Hall",
+      "The Warden's Hut",
+      "The Quay of Brannock Holm",
+      "The Carters' Inn",
+      "The Market of Brannock Holm",
+      "Pannock",
+      "The Boiling Sheds",
+      "The Low Row",
+      "The Salt Store",
+      "The Refuge Hut",
+      "The Stake Head",
+      "The Tide Bell"
+    ]
+  },
+  "people": {
+    "count": 20,
+    "withSecret": 10,
+    "names": [
+      "Tressa Carne",
+      "Hedyn Tregear",
+      "Treeve Angove",
+      "Ebrel Nance",
+      "Jenifer Pascoe",
+      "Colan Tremayne",
+      "Morvoren Jago",
+      "Petroc Rowe",
+      "Hendra Keverne",
+      "Demelza Rodda",
+      "Jowan Tresize",
+      "Kerra Menhenick",
+      "Clemo Vosper",
+      "Mabyn Treloar",
+      "Jory Penhallow",
+      "Loveday Trebilcock",
+      "Kitto Rosewarne",
+      "Ysolde Carrow",
+      "Denzil Hosken",
+      "Morwen Tidy"
+    ]
+  },
+  "quests": [
+    {
+      "id": "story_brannock_holm",
+      "name": "The Light in the Drowned Windows",
+      "stages": 3,
+      "problems": [],
+      "started": true,
+      "outcome": "done"
+    }
+  ],
+  "secrets": {
+    "count": 13,
+    "hinted": 1,
+    "found": 0
+  },
+  "watchers": {
+    "made": [
+      "story_brannock_holm_request_open",
+      "story_brannock_holm_befriended"
+    ],
+    "fired": []
+  },
+  "lore": [
+    "The Tidemother's Lamp"
+  ],
+  "calls": [
+    {
+      "kind": "expansion",
+      "model": "claude-opus-5-5",
+      "inputTokens": 6439,
+      "cachedTokens": 0,
+      "outputTokens": 1306,
+      "costUsd": 0.058155,
+      "ms": 19875
+    },
+    {
+      "kind": "journey",
+      "model": "claude-opus-5-5",
+      "inputTokens": 1266,
+      "cachedTokens": 0,
+      "outputTokens": 82,
+      "costUsd": 0.007912,
+      "ms": 2874
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2440,
+      "cachedTokens": 0,
+      "outputTokens": 231,
+      "costUsd": 0.0082645,
+      "ms": 5484
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2505,
+      "cachedTokens": 0,
+      "outputTokens": 196,
+      "costUsd": 0.008048,
+      "ms": 6053
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2633,
+      "cachedTokens": 0,
+      "outputTokens": 257,
+      "costUsd": 0.008954,
+      "ms": 6539
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2694,
+      "cachedTokens": 0,
+      "outputTokens": 182,
+      "costUsd": 0.0083515,
+      "ms": 4036
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2720,
+      "cachedTokens": 0,
+      "outputTokens": 250,
+      "costUsd": 0.009099,
+      "ms": 5569
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2328,
+      "cachedTokens": 0,
+      "outputTokens": 225,
+      "costUsd": 0.0079595,
+      "ms": 4351
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2546,
+      "cachedTokens": 0,
+      "outputTokens": 274,
+      "costUsd": 0.0089145,
+      "ms": 6106
+    },
+    {
+      "kind": "district",
+      "model": "claude-opus-5-5",
+      "inputTokens": 2723,
+      "cachedTokens": 0,
+      "outputTokens": 3882,
+      "costUsd": 0.090699,
+      "ms": 46544
+    },
+    {
+      "kind": "region_story",
+      "model": "claude-opus-5-5",
+      "inputTokens": 23500,
+      "cachedTokens": 0,
+      "outputTokens": 2125,
+      "costUsd": 0.157891,
+      "ms": 33156
+    },
+    {
+      "kind": "weave",
+      "model": "claude-opus-5-5",
+      "inputTokens": 2737,
+      "cachedTokens": 0,
+      "outputTokens": 829,
+      "costUsd": 0.029425,
+      "ms": 11976
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2488,
+      "cachedTokens": 0,
+      "outputTokens": 237,
+      "costUsd": 0.008417,
+      "ms": 3496
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2504,
+      "cachedTokens": 0,
+      "outputTokens": 182,
+      "costUsd": 0.007873,
+      "ms": 4914
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2578,
+      "cachedTokens": 0,
+      "outputTokens": 225,
+      "costUsd": 0.008487,
+      "ms": 4469
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2576,
+      "cachedTokens": 0,
+      "outputTokens": 268,
+      "costUsd": 0.0089135,
+      "ms": 3985
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2507,
+      "cachedTokens": 0,
+      "outputTokens": 214,
+      "costUsd": 0.008201,
+      "ms": 4608
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2548,
+      "cachedTokens": 0,
+      "outputTokens": 253,
+      "costUsd": 0.0087035,
+      "ms": 4400
+    },
+    {
+      "kind": "outline",
+      "model": "claude-opus-5-5",
+      "inputTokens": 7111,
+      "cachedTokens": 0,
+      "outputTokens": 1946,
+      "costUsd": 0.073663,
+      "ms": 35209
+    },
+    {
+      "kind": "npc_reply",
+      "model": "claude-haiku-4-5-20251001",
+      "inputTokens": 2982,
+      "cachedTokens": 0,
+      "outputTokens": 138,
+      "costUsd": 0.003672,
+      "ms": 5792
+    },
+    {
+      "kind": "district",
+      "model": "claude-opus-5-5",
+      "inputTokens": 2800,
+      "cachedTokens": 2167,
+      "outputTokens": 4001,
+      "costUsd": 0.0829854,
+      "ms": 48851
+    },
+    {
+      "kind": "weave",
+      "model": "claude-opus-5-5",
+      "inputTokens": 2929,
+      "cachedTokens": 1897,
+      "outputTokens": 916,
+      "costUsd": 0.0228274,
+      "ms": 13260
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2642,
+      "cachedTokens": 0,
+      "outputTokens": 221,
+      "costUsd": 0.008584,
+      "ms": 4400
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2625,
+      "cachedTokens": 0,
+      "outputTokens": 262,
+      "costUsd": 0.0089615,
+      "ms": 5764
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2567,
+      "cachedTokens": 0,
+      "outputTokens": 227,
+      "costUsd": 0.008488,
+      "ms": 3935
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2560,
+      "cachedTokens": 0,
+      "outputTokens": 256,
+      "costUsd": 0.008765,
+      "ms": 5668
+    },
+    {
+      "kind": "npc_reply",
+      "model": "claude-haiku-4-5-20251001",
+      "inputTokens": 2912,
+      "cachedTokens": 0,
+      "outputTokens": 146,
+      "costUsd": 0.003642,
+      "ms": 5373
+    },
+    {
+      "kind": "npc_reply",
+      "model": "claude-haiku-4-5-20251001",
+      "inputTokens": 2933,
+      "cachedTokens": 0,
+      "outputTokens": 120,
+      "costUsd": 0.003533,
+      "ms": 2506
+    },
+    {
+      "kind": "npc_reply",
+      "model": "claude-haiku-4-5-20251001",
+      "inputTokens": 2992,
+      "cachedTokens": 0,
+      "outputTokens": 144,
+      "costUsd": 0.003712,
+      "ms": 6004
+    },
+    {
+      "kind": "npc_reply",
+      "model": "claude-haiku-4-5-20251001",
+      "inputTokens": 3025,
+      "cachedTokens": 0,
+      "outputTokens": 128,
+      "costUsd": 0.003665,
+      "ms": 5674
+    },
+    {
+      "kind": "npc_reply",
+      "model": "claude-haiku-4-5-20251001",
+      "inputTokens": 3189,
+      "cachedTokens": 0,
+      "outputTokens": 140,
+      "costUsd": 0.003889,
+      "ms": 5697
+    },
+    {
+      "kind": "npc_reply",
+      "model": "claude-haiku-4-5-20251001",
+      "inputTokens": 3210,
+      "cachedTokens": 0,
+      "outputTokens": 122,
+      "costUsd": 0.00382,
+      "ms": 2781
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2902,
+      "cachedTokens": 0,
+      "outputTokens": 274,
+      "costUsd": 0.0097765,
+      "ms": 6347
+    },
+    {
+      "kind": "npc_reply",
+      "model": "claude-haiku-4-5-20251001",
+      "inputTokens": 3256,
+      "cachedTokens": 0,
+      "outputTokens": 142,
+      "costUsd": 0.003966,
+      "ms": 5306
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2490,
+      "cachedTokens": 0,
+      "outputTokens": 285,
+      "costUsd": 0.008904,
+      "ms": 4998
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2700,
+      "cachedTokens": 0,
+      "outputTokens": 210,
+      "costUsd": 0.0086185,
+      "ms": 3502
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2554,
+      "cachedTokens": 2165,
+      "outputTokens": 244,
+      "costUsd": 0.003651,
+      "ms": 4342
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2604,
+      "cachedTokens": 0,
+      "outputTokens": 219,
+      "costUsd": 0.008503,
+      "ms": 5233
+    },
+    {
+      "kind": "npc_reply",
+      "model": "claude-haiku-4-5-20251001",
+      "inputTokens": 3800,
+      "cachedTokens": 0,
+      "outputTokens": 199,
+      "costUsd": 0.004795,
+      "ms": 6402
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2973,
+      "cachedTokens": 0,
+      "outputTokens": 158,
+      "costUsd": 0.0087675,
+      "ms": 3515
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2324,
+      "cachedTokens": 0,
+      "outputTokens": 188,
+      "costUsd": 0.0075815,
+      "ms": 4233
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2660,
+      "cachedTokens": 0,
+      "outputTokens": 223,
+      "costUsd": 0.008657,
+      "ms": 5642
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2764,
+      "cachedTokens": 0,
+      "outputTokens": 167,
+      "costUsd": 0.0083095,
+      "ms": 5009
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2556,
+      "cachedTokens": 2170,
+      "outputTokens": 157,
+      "costUsd": 0.002776,
+      "ms": 3619
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2610,
+      "cachedTokens": 0,
+      "outputTokens": 160,
+      "costUsd": 0.007895,
+      "ms": 3050
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2693,
+      "cachedTokens": 0,
+      "outputTokens": 196,
+      "costUsd": 0.008454,
+      "ms": 4629
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2684,
+      "cachedTokens": 0,
+      "outputTokens": 224,
+      "costUsd": 0.008719,
+      "ms": 4653
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2613,
+      "cachedTokens": 0,
+      "outputTokens": 259,
+      "costUsd": 0.008893,
+      "ms": 4583
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2566,
+      "cachedTokens": 2168,
+      "outputTokens": 178,
+      "costUsd": 0.0030096,
+      "ms": 3442
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2890,
+      "cachedTokens": 0,
+      "outputTokens": 265,
+      "costUsd": 0.0096595,
+      "ms": 5272
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2628,
+      "cachedTokens": 0,
+      "outputTokens": 267,
+      "costUsd": 0.0090275,
+      "ms": 6065
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2768,
+      "cachedTokens": 0,
+      "outputTokens": 243,
+      "costUsd": 0.0090785,
+      "ms": 5308
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2656,
+      "cachedTokens": 2237,
+      "outputTokens": 246,
+      "costUsd": 0.0037454000000000003,
+      "ms": 5078
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2586,
+      "cachedTokens": 0,
+      "outputTokens": 242,
+      "costUsd": 0.0086805,
+      "ms": 7655
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2565,
+      "cachedTokens": 0,
+      "outputTokens": 240,
+      "costUsd": 0.008638,
+      "ms": 4811
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2506,
+      "cachedTokens": 0,
+      "outputTokens": 192,
+      "costUsd": 0.0079875,
+      "ms": 3777
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2701,
+      "cachedTokens": 0,
+      "outputTokens": 225,
+      "costUsd": 0.008759,
+      "ms": 5836
+    },
+    {
+      "kind": "chronicle",
+      "model": "claude-opus-5-5",
+      "inputTokens": 9918,
+      "cachedTokens": 0,
+      "outputTokens": 399,
+      "costUsd": 0.055152,
+      "ms": 7081
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2634,
+      "cachedTokens": 0,
+      "outputTokens": 256,
+      "costUsd": 0.0089205,
+      "ms": 4957
+    },
+    {
+      "kind": "npc_reply",
+      "model": "claude-haiku-4-5-20251001",
+      "inputTokens": 3132,
+      "cachedTokens": 0,
+      "outputTokens": 195,
+      "costUsd": 0.004107,
+      "ms": 5674
+    },
+    {
+      "kind": "npc_reply",
+      "model": "claude-haiku-4-5-20251001",
+      "inputTokens": 3182,
+      "cachedTokens": 0,
+      "outputTokens": 148,
+      "costUsd": 0.003922,
+      "ms": 2982
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2581,
+      "cachedTokens": 2210,
+      "outputTokens": 183,
+      "costUsd": 0.003014,
+      "ms": 4128
+    },
+    {
+      "kind": "npc_reply",
+      "model": "claude-haiku-4-5-20251001",
+      "inputTokens": 3029,
+      "cachedTokens": 0,
+      "outputTokens": 159,
+      "costUsd": 0.003824,
+      "ms": 5446
+    },
+    {
+      "kind": "district",
+      "model": "claude-opus-5-5",
+      "inputTokens": 2902,
+      "cachedTokens": 2167,
+      "outputTokens": 3520,
+      "costUsd": 0.07377339999999999,
+      "ms": 39825
+    },
+    {
+      "kind": "weave",
+      "model": "claude-opus-5-5",
+      "inputTokens": 3798,
+      "cachedTokens": 1897,
+      "outputTokens": 838,
+      "costUsd": 0.024743400000000002,
+      "ms": 5820
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2653,
+      "cachedTokens": 0,
+      "outputTokens": 243,
+      "costUsd": 0.008824,
+      "ms": 4578
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2579,
+      "cachedTokens": 0,
+      "outputTokens": 164,
+      "costUsd": 0.0078835,
+      "ms": 4582
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2714,
+      "cachedTokens": 0,
+      "outputTokens": 186,
+      "costUsd": 0.0083805,
+      "ms": 4557
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2661,
+      "cachedTokens": 0,
+      "outputTokens": 241,
+      "costUsd": 0.0087995,
+      "ms": 3534
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2732,
+      "cachedTokens": 0,
+      "outputTokens": 210,
+      "costUsd": 0.0086675,
+      "ms": 3098
+    },
+    {
+      "kind": "npc_reply",
+      "model": "claude-haiku-4-5-20251001",
+      "inputTokens": 3166,
+      "cachedTokens": 0,
+      "outputTokens": 121,
+      "costUsd": 0.003771,
+      "ms": 5761
+    },
+    {
+      "kind": "npc_reply",
+      "model": "claude-haiku-4-5-20251001",
+      "inputTokens": 3193,
+      "cachedTokens": 0,
+      "outputTokens": 199,
+      "costUsd": 0.004188,
+      "ms": 3307
+    },
+    {
+      "kind": "npc_reply",
+      "model": "claude-haiku-4-5-20251001",
+      "inputTokens": 3238,
+      "cachedTokens": 0,
+      "outputTokens": 107,
+      "costUsd": 0.003773,
+      "ms": 2581
+    },
+    {
+      "kind": "npc_reply",
+      "model": "claude-haiku-4-5-20251001",
+      "inputTokens": 3174,
+      "cachedTokens": 0,
+      "outputTokens": 138,
+      "costUsd": 0.003864,
+      "ms": 6050
+    },
+    {
+      "kind": "npc_reply",
+      "model": "claude-haiku-4-5-20251001",
+      "inputTokens": 3195,
+      "cachedTokens": 0,
+      "outputTokens": 173,
+      "costUsd": 0.00406,
+      "ms": 3482
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2816,
+      "cachedTokens": 0,
+      "outputTokens": 241,
+      "costUsd": 0.0091635,
+      "ms": 4968
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2666,
+      "cachedTokens": 2203,
+      "outputTokens": 239,
+      "costUsd": 0.0037565999999999997,
+      "ms": 5316
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2893,
+      "cachedTokens": 2459,
+      "outputTokens": 261,
+      "costUsd": 0.0039698,
+      "ms": 4890
+    },
+    {
+      "kind": "npc_reply",
+      "model": "claude-haiku-4-5-20251001",
+      "inputTokens": 3087,
+      "cachedTokens": 0,
+      "outputTokens": 129,
+      "costUsd": 0.003732,
+      "ms": 5607
+    },
+    {
+      "kind": "npc_reply",
+      "model": "claude-haiku-4-5-20251001",
+      "inputTokens": 3108,
+      "cachedTokens": 0,
+      "outputTokens": 132,
+      "costUsd": 0.003768,
+      "ms": 3043
+    },
+    {
+      "kind": "npc_reply",
+      "model": "claude-haiku-4-5-20251001",
+      "inputTokens": 3140,
+      "cachedTokens": 0,
+      "outputTokens": 123,
+      "costUsd": 0.003755,
+      "ms": 5097
+    },
+    {
+      "kind": "npc_reply",
+      "model": "claude-haiku-4-5-20251001",
+      "inputTokens": 2998,
+      "cachedTokens": 0,
+      "outputTokens": 141,
+      "costUsd": 0.003703,
+      "ms": 6244
+    },
+    {
+      "kind": "npc_reply",
+      "model": "claude-haiku-4-5-20251001",
+      "inputTokens": 3019,
+      "cachedTokens": 0,
+      "outputTokens": 154,
+      "costUsd": 0.003789,
+      "ms": 2997
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2568,
+      "cachedTokens": 0,
+      "outputTokens": 239,
+      "costUsd": 0.008617,
+      "ms": 5592
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2681,
+      "cachedTokens": 0,
+      "outputTokens": 228,
+      "costUsd": 0.0087525,
+      "ms": 4734
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2741,
+      "cachedTokens": 0,
+      "outputTokens": 235,
+      "costUsd": 0.008936,
+      "ms": 4548
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2689,
+      "cachedTokens": 0,
+      "outputTokens": 168,
+      "costUsd": 0.00815,
+      "ms": 4928
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2732,
+      "cachedTokens": 0,
+      "outputTokens": 235,
+      "costUsd": 0.0089305,
+      "ms": 5337
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2836,
+      "cachedTokens": 0,
+      "outputTokens": 252,
+      "costUsd": 0.009329,
+      "ms": 4895
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2812,
+      "cachedTokens": 0,
+      "outputTokens": 240,
+      "costUsd": 0.009158,
+      "ms": 5618
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2620,
+      "cachedTokens": 0,
+      "outputTokens": 238,
+      "costUsd": 0.008734,
+      "ms": 5490
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2796,
+      "cachedTokens": 0,
+      "outputTokens": 176,
+      "costUsd": 0.008476,
+      "ms": 4039
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2769,
+      "cachedTokens": 0,
+      "outputTokens": 212,
+      "costUsd": 0.0087685,
+      "ms": 4716
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2807,
+      "cachedTokens": 0,
+      "outputTokens": 227,
+      "costUsd": 0.0090245,
+      "ms": 4478
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2801,
+      "cachedTokens": 0,
+      "outputTokens": 260,
+      "costUsd": 0.0093325,
+      "ms": 4484
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2790,
+      "cachedTokens": 0,
+      "outputTokens": 255,
+      "costUsd": 0.0092455,
+      "ms": 6022
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 3023,
+      "cachedTokens": 0,
+      "outputTokens": 255,
+      "costUsd": 0.009857,
+      "ms": 5427
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2514,
+      "cachedTokens": 0,
+      "outputTokens": 276,
+      "costUsd": 0.008862,
+      "ms": 4865
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2758,
+      "cachedTokens": 0,
+      "outputTokens": 165,
+      "costUsd": 0.0082605,
+      "ms": 3741
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2581,
+      "cachedTokens": 2171,
+      "outputTokens": 187,
+      "costUsd": 0.0031241999999999997,
+      "ms": 4020
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2542,
+      "cachedTokens": 2182,
+      "outputTokens": 254,
+      "costUsd": 0.0036964000000000003,
+      "ms": 5213
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2377,
+      "cachedTokens": 0,
+      "outputTokens": 172,
+      "costUsd": 0.0075275,
+      "ms": 3228
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2623,
+      "cachedTokens": 0,
+      "outputTokens": 228,
+      "costUsd": 0.008623,
+      "ms": 4726
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2822,
+      "cachedTokens": 0,
+      "outputTokens": 192,
+      "costUsd": 0.0086995,
+      "ms": 4994
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2999,
+      "cachedTokens": 0,
+      "outputTokens": 201,
+      "costUsd": 0.0092495,
+      "ms": 4376
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2844,
+      "cachedTokens": 0,
+      "outputTokens": 244,
+      "costUsd": 0.009288,
+      "ms": 5003
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2389,
+      "cachedTokens": 0,
+      "outputTokens": 179,
+      "costUsd": 0.0076295,
+      "ms": 5591
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2727,
+      "cachedTokens": 0,
+      "outputTokens": 235,
+      "costUsd": 0.008911,
+      "ms": 4042
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2720,
+      "cachedTokens": 0,
+      "outputTokens": 235,
+      "costUsd": 0.008886,
+      "ms": 3539
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2833,
+      "cachedTokens": 0,
+      "outputTokens": 274,
+      "costUsd": 0.00956,
+      "ms": 4054
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2636,
+      "cachedTokens": 0,
+      "outputTokens": 219,
+      "costUsd": 0.008573,
+      "ms": 5411
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2640,
+      "cachedTokens": 2194,
+      "outputTokens": 252,
+      "costUsd": 0.0038508,
+      "ms": 5190
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2819,
+      "cachedTokens": 2261,
+      "outputTokens": 219,
+      "costUsd": 0.0037581999999999997,
+      "ms": 4282
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2552,
+      "cachedTokens": 2148,
+      "outputTokens": 246,
+      "costUsd": 0.0036976,
+      "ms": 4854
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2874,
+      "cachedTokens": 0,
+      "outputTokens": 253,
+      "costUsd": 0.0094085,
+      "ms": 4659
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2576,
+      "cachedTokens": 2182,
+      "outputTokens": 252,
+      "costUsd": 0.0037444,
+      "ms": 4661
+    },
+    {
+      "kind": "npc_goals",
+      "model": "claude-sonnet-5",
+      "inputTokens": 2953,
+      "cachedTokens": 2281,
+      "outputTokens": 323,
+      "costUsd": 0.005030199999999999,
+      "ms": 5441
+    }
+  ],
+  "waitedSecs": 0,
+  "days": 3,
+  "date": "2026-09-29",
+  "model": "claude-opus-5-5"
+}

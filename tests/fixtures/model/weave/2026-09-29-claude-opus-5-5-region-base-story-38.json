@@ -1,0 +1,14 @@
+{
+  "kind": "weave",
+  "about": "region play: base, the dial at story, call 38",
+  "model": "claude-opus-5-5",
+  "provider": "",
+  "date": "2026-09-29",
+  "usage": {
+    "inputTokens": 2791,
+    "cachedTokens": 1880,
+    "outputTokens": 1377
+  },
+  "reply": "{\"bonds\":[{\"a\":\"npc_dieuwke_driestromen_griendwaarden\",\"b\":\"npc_wybe_driestromen_veerhuizen\",\"role\":\"rival\",\"why\":\"Dieuwke and Wybe both sell eels to the Eel Smokehouse, and each claims the other's traps are set too close to their own.\"},{\"a\":\"npc_gosse_driestromen_griendwaarden\",\"b\":\"npc_trijntje\",\"role\":\"friend\",\"why\":\"Gosse and Trijntje learned the trade side by side as young potboys at a tavern in town, and still send each other word when a barge goes that way.\"},{\"a\":\"npc_jelle_driestromen_griendwaarden\",\"b\":\"npc_wybe_driestromen_veerhuizen\",\"role\":\"debtor\",\"why\":\"Wybe owes Jelle six stuivers for salt he took on credit for last autumn's eel pickling.\"},{\"a\":\"npc_tjitske_driestromen_griendwaarden\",\"b\":\"npc_wybe_driestromen_veerhuizen\",\"role\":\"neighbour\",\"why\":\"Wybe's hut stands on the next island over from the Rietmans', and Tjitske often carries his messages for a duit.\"}],\"secrets\":[{\"who\":\"npc_dieuwke_driestromen_griendwaarden\",\"text\":\"Dieuwke has quietly been setting her own traps in the Kattenbroek at night, though she tells everyone the place is cursed.\",\"hint\":\"Her boots are sometimes caked with the black mud that only lies on the Kattenbroek banks.\"},{\"who\":\"npc_minke_driestromen_griendwaarden\",\"text\":\"Minke leaves offerings of milk and bread at the Old Pollard for Mother Holle, which the Lantern priest would call witchcraft.\",\"hint\":\"Crumbs and a small wooden bowl can be found tucked among the roots of the Old Pollard at dawn.\"}],\"thread\":{\"from\":\"npc_gosse_driestromen_griendwaarden\",\"to\":\"npc_trijntje\",\"name\":\"Word for the Drowned Goose\",\"ask\":\"You're from Veenhoek? Then tell Trijntje at the Drowned Goose that old Gosse still keeps a stool warm for her, and ask her if she still owes me that barrel of Driestromen ale she swore she'd pay for.\",\"why\":\"Gosse hasn't heard from his old friend in two years and fears the troubles in the Holleveen have hit her inn hard.\"},\"echo\":{\"who\":\"npc_jelle_driestromen_griendwaarden\",\"line\":\"line_4\",\"text\":\"Jelle the pedlar has heard that Harmen Molenaar is looking for sailcloth, and says he knows a weaver's widow downriver with three bolts she would sell for the right price.\"}}",
+  "problems": []
+}

@@ -1,0 +1,14 @@
+{
+  "kind": "weave",
+  "about": "region play: isle, the dial at story, call 65",
+  "model": "claude-opus-5-5",
+  "provider": "",
+  "date": "2026-09-29",
+  "usage": {
+    "inputTokens": 3798,
+    "cachedTokens": 1897,
+    "outputTokens": 838
+  },
+  "reply": "{\"bonds\":[{\"a\":\"npc_clemo_brannock_holm_pannock\",\"b\":\"npc_colan_brannock_holm_drowned_stair\",\"role\":\"kin\",\"why\":\"Clemo and Colan are cousins who share a winter mooring and quarrel over tides like brothers.\"},{\"a\":\"npc_mabyn_brannock_holm_pannock\",\"b\":\"npc_jenifer_brannock_holm_drowned_stair\",\"role\":\"teacher\",\"why\":\"Mabyn learned the names of the drowned at Jenifer's knee, and now writes down what Jenifer taught her to say aloud.\"},{\"a\":\"npc_jowan_brannock_holm_pannock\",\"b\":\"npc_kitto_brannock_holm_staked_sands\",\"role\":\"friend\",\"why\":\"Jowan and Kitto race each other across the flats when the ewes stray onto the sands.\"},{\"a\":\"npc_hendra_brannock_holm_pannock\",\"b\":\"npc_hedyn_brannock_holm\",\"role\":\"debtor\",\"why\":\"Hedyn owes Hendra for three sacks of salt taken on tally for the inn's winter brine.\"}],\"secrets\":[{\"who\":\"npc_demelza_brannock_holm_pannock\",\"text\":\"Demelza's boat-charms are only knotted twine and prayer, for she lost her true craft the night her own brother drowned.\",\"hint\":\"She never looks at the charms as she ties them, and her hands shake near the water.\"},{\"who\":\"npc_hendra_brannock_holm_pannock\",\"text\":\"Hendra cut an extra notch on the tally sticks last autumn to cover salt she gave away to a starving family.\",\"hint\":\"One of her sticks has a fresher cut than the rest, and she keeps it apart.\"}],\"thread\":{\"from\":\"npc_kerra_brannock_holm_pannock\",\"to\":\"npc_wenna\",\"name\":\"Salt for Wenna\",\"ask\":\"You're from the Hythe? Then you'll know Wenna Dray, who fishes in a coracle. Take her this pouch of Pannock salt and tell her Kerra says the sea still owes us both.\",\"why\":\"Kerra and Wenna fished together as girls before Kerra came to the Holm, and the salt is a promise that the old friendship stands.\"},\"echo\":{\"who\":\"npc_clemo_brannock_holm_pannock\",\"line\":\"line_3\",\"text\":\"Clemo tells the stranger that Denzil has been asking every boatman on the flats whether Brannoc Reed's Kittiwake could ever make the crossing from Skerrow.\"}}",
+  "problems": []
+}

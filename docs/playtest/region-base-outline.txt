@@ -1,0 +1,491 @@
+The Holleveen, south edge; the dial at outline; seed 7; claude-opus-5-5
+The barge from Graafhaven leaves you at the Veenhoek quay just as the light goes. The bargeman won't tie up. "Not after dark, not out here," he says, and poles away into the mist, taking his lantern with him.
+
+This is the Holleveen: peat and reed and black water, mile upon mile of it between the Great Dyke and the heath. The villages sit on the few dry places like cats on a fence. Peat smoke. A windmill standing still against a sky the colour of pewter, its sails torn to rags.
+
+Somewhere a dog barks. On the doorstep of the nearest house a grey cat watches you, very still, the way cats don't usually watch people.
+
+Type LOOK to look around. Type HELP if you are lost. You probably are.
+You ran goods past the Count's tolls until the tolls caught up with you in Graafhaven. The Holleveen is a good place to be forgotten, and Trijntje at the Drowned Goose asks no questions.
+You were told to ask for Trijntje the innkeeper at the Drowned Goose. The name is in your journal.
+Canal Quay
+Grey water slaps against the planks of the quay. A barge rope lies coiled by the mooring posts, and beside them stands a worn stone, waist-high, with a dog carved into it. Someone has put an apple on top. The Graafse Vaart runs east and west; the green is north and the peat sheds are south.
+Exits: north, east, west, south, southwest
+Across country you can head any way, or follow the tow path west to Oude Zijl, the tow path east to Waagdam, the peat road to Molenend, the fen path to the Kattenbroek, the priory path to Kloosterveen or the path to the Kabouterberg.
+The pace of events is normal. Type TEMPO CALM or TEMPO DRAMATIC for less or more happening in the world.
+
+==== THE DIAL: outline
+
+> frames region outline
+How full a new region is built: outline.
+
+# To the south edge of the Holleveen, in the middle, and on into the unknown.
+
+> @goto hex:60,0   [build command: a shortcut, to the edge of the map]
+[build] You are at In the fen, about 8 km south-west of the Blackmere.
+In the fen, about 8 km south-west of the Blackmere
+Wet ground and sedge stretch around you, cut by black pools. Low grey cloud sits on the land.
+Ways on: north, north-east, north-west.
++30 experience: you came to the Holleveen.
+
+> explore south
+The chronicler is working out what lies south.
+
+==== SET OFF FOR the Driestroom (Dinsdag 14 Herfstmaand 211 AW, 18:30 (evening))
+
+> head south
+You have come to the edge of the Holleveen.
+South, the fen goes on into reed and black water, and beyond it lies the delta of the Three Rivers, where drowned Saeftinge shows at low tide. No road you know of goes that way.
+Go on, or turn back?
+  1. Go on to the Driestroom on foot, about 3 days south
+  2. Turn back north
+What lies south, as far as you can make out: the Driestroom. The Driestroom is the river country south of the Holleveen, where the Three Rivers meet and the Count's land ends at the Flemmark shore. Head south at the edge to go on.
+
+> 1
+(Survival 2 vs DC 12: failure)
+You leave the Holleveen behind you and strike out across country for the Driestroom, a journey of two days and twenty-one hours. On the first day a hard stretch of the way costs you half a day's walk and most of your temper. On the second day mist lies over everything, so thick that it swallows every sound. At last you come to the Gate of the Driestroom.
+The Gate of the Driestroom
+You come to the gate of the Driestroom after 3 days on the road from the Holleveen. The walls are higher than any you have seen at home, and the air smells of tar, smoke and wet stone. Carts stand in line to be let in, and the gatekeepers call out to each other in a quick, flat speech. The market lies ahead, and the road back to the Holleveen runs northeast.
+Exits: northeast, in
++10 experience: you found The Gate of the Driestroom.
++30 experience: you came to the Driestroom.
+
+==== DAY 1 (Vrijdag 17 Herfstmaand 211 AW, 21:30 (evening))
+
+> look
+The Gate of the Driestroom
+You come to the gate of the Driestroom after 3 days on the road from the Holleveen. The walls are higher than any you have seen at home, and the air smells of tar, smoke and wet stone. Carts stand in line to be let in, and the gatekeepers call out to each other in a quick, flat speech. The market lies ahead, and the road back to the Holleveen runs northeast.
+Exits: northeast, in
+
+> journal
+People: Trijntje, the Count.
+Places: the Holleveen, Veenhoek, the Driestroom, The Gate of the Driestroom, Canal Quay.
+Lore: the stranger in Veenhoek, the stranger in the Driestroom, the Driestroom charted.
+
+> in
+The Market of the Driestroom
+You stand in the market of the Driestroom, among stalls of cloth, salt and pots. Traders shout their prices over each other, and you smell pitch and hot fat from the cookshops. Nobody here has heard of the Holleveen or cares what happens there. An inn stands at the corner, and the gate is back out.
+Exits: out, in
++10 experience: you found The Market of the Driestroom.
+
+> in
+The Carters' Inn
+You duck into a low inn where carters from half the land sit over their beer. It is warm in here, and loud, and it smells of wet wool and onions. The innkeeper keeps an eye on the door and another on the purses. The market is back out.
+Exits: out
+Here: Hendrikje the merchant, Hessel the innkeeper (at work).
++10 experience: you found The Carters' Inn.
+
+> talk hendrikje the merchant
+You are talking with Hendrikje the merchant. Type what you want to say, pick a number, or BYE to stop.
+Hendrikje nods. "Evening."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+Hessel here might know better than me. I keep to my stall. Though folk talk of [the Count]'s draining scheme—worries the fen folk something fierce. Is that the sort of news you mean?
+The chronicler is working out Veerdam of the Driestroom.
+
+> insight
+(Insight 6 vs DC 15: failure)
+You can't read anything behind Hendrikje's face.
+
+> bye
+Hendrikje lifts a hand. "Go on, then."
+
+> talk hessel the innkeeper
+You are talking with Hessel the innkeeper. Type what you want to say, pick a number, or BYE to stop.
+Hessel nods. "Evening."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+wipes a cup. "News? Little enough. Trade's been slow with the weather turning. You come from far, stranger? What brings you to the Carters' this evening?"
+
+> insight
+(Insight 4 vs DC 15: critical failure)
+You can't read anything behind Hessel's face.
+
+> bye
+Hessel lifts a hand. "Go on, then."
+
+> out
+The Market of the Driestroom
+You stand in the market of the Driestroom, among stalls of cloth, salt and pots. Traders shout their prices over each other, and you smell pitch and hot fat from the cookshops. Nobody here has heard of the Holleveen or cares what happens there. An inn stands at the corner, and the gate is back out.
+Exits: out, in, south, west, north, east
+
+> south
+While you walk, the chronicler is laying out the Waarden of the Driestroom.
+
+[a minute passes while the chronicler lays it out]
+The Waarden
+You come into the Waarden of the Driestroom. Willow meadows between the summer dyke and the river, grazed in summer, under water in winter, where eel-men and basket-weavers live on mounds. The street is full of people who know where they are going, and it smells of smoke and wet stone. The market is back north.
+Exits: north
++10 experience: you found The Waarden.
+Wessel leaves north.
+
+> talk marritje the homemaker
+You are talking with Marritje the homemaker. Type what you want to say, pick a number, or BYE to stop.
+Marritje nods. "Evening."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+Sets down her comb and turns from the bed. "New? Well, traveller, the talk's all of the missing girl and [the Count]'s draining scheme. Folk are worried sick. Beyond that—" pauses, "—I couldn't say. What brings you asking?"
+
+> insight
+(Insight 21 vs DC 15: success)
+You can't read anything behind Marritje's face.
+
+> bye
+Marritje lifts a hand. "Go on, then."
+
+> talk sietske the herbalist
+You are talking with Sietske the herbalist. Type what you want to say, pick a number, or BYE to stop.
+Sietske nods. "Evening."
+"You'll pass the Drowned Goose on your way home? Give Trijntje this pot of salve for her hands and tell her Sietske hasn't forgotten her."
+New in your journal: Salve for Trijntje.
+Sietske asks you to look in on Trijntje. YES to give your word, NO to decline.
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+Sietske nods slowly. "Wessel brings smoked eel to [Hessel]'s [inn] every [market] day, and Hessel pays him in beer as often as in stuivers. (You saw it yourself.)"
+(The AI's answers did not pass the checks; this is the game's own line from what Sietske knows.)
+
+> insight
+(Insight 12 vs DC 16: failure)
+You can't read anything behind Sietske's face.
+
+> bye
+Sietske lifts a hand. "Go on, then."
+
+> south
+The Summer Dyke
+A grassy bank, knee-high to a man at its lowest, keeps the summer river out of the meadows. Fresh stakes and new boards mark where it was mended last spring. Cattle have churned its foot to mud, and you smell dung and wet grass. The path along the top runs back toward the market.
+Exits: north
+Here: Roelof the heemraad (getting ready for bed).
++10 experience: you found The Summer Dyke.
+
+> talk roelof the heemraad
+You are talking with Roelof the heemraad. Type what you want to say, pick a number, or BYE to stop.
+Roelof nods. "Evening."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+Roelof thinks a moment. "Roelof's house stands on the next mound to [Hessel]'s [inn], and they share the one plank bridge over the ditch. (You saw it yourself.)"
+(The AI's answers did not pass the checks; this is the game's own line from what Roelof knows.)
+
+> insight
+(Insight 12 vs DC 16: failure)
+You can't read anything behind Roelof's face.
+
+> bye
+Roelof lifts a hand. "Go on, then."
+
+> north
+The Waarden
+You come into the Waarden of the Driestroom. Willow meadows between the summer dyke and the river, grazed in summer, under water in winter, where eel-men and basket-weavers live on mounds. The street is full of people who know where they are going, and it smells of smoke and wet stone. The market is back north.
+Exits: north, east, south
+Here: Marritje the homemaker (asleep), Sietske the herbalist (asleep), Snoek the cat.
+Marritje puts out the lamp and goes to bed.
+Sietske puts out the lamp and goes to bed.
+
+> east
+The Withy Beds
+Pollard willows stand in crooked ranks, their heads bristling with new rods. The ground squelches under you and the frogs go quiet as you pass. Cut withies lie in bundles tied with bark, waiting to be carried. Somewhere beyond the trees you hear women singing over their work.
+Exits: west
+Here: Dirkje the child (asleep).
++10 experience: you found The Withy Beds.
+
+> west
+The Waarden
+You come into the Waarden of the Driestroom. Willow meadows between the summer dyke and the river, grazed in summer, under water in winter, where eel-men and basket-weavers live on mounds. The street is full of people who know where they are going, and it smells of smoke and wet stone. The market is back north.
+Exits: north, east, south
+Here: Marritje the homemaker (asleep), Sietske the herbalist (asleep), Snoek the cat.
+
+> north
+The Market of the Driestroom
+You stand in the market of the Driestroom, among stalls of cloth, salt and pots. Traders shout their prices over each other, and you smell pitch and hot fat from the cookshops. Nobody here has heard of the Holleveen or cares what happens there. An inn stands at the corner, and the gate is back out.
+Exits: out, in, south, west, north, east
+Wessel leaves south.
+
+> west
+While you walk, the chronicler is laying out Schenkweerd of the Driestroom.
+
+[a minute passes while the chronicler lays it out]
+Schenkweerd
+You come into Schenkweerd of the Driestroom. A walled toll town on an island where the rivers meet, with a chain across the water and Flemmark's banners in sight on the other shore. The street is full of people who know where they are going, and it smells of smoke and wet stone. The market is back east.
+Exits: east
++10 experience: you found Schenkweerd.
+
+> talk ewout the smith
+You are talking with Ewout the smith. Type what you want to say, pick a number, or BYE to stop.
+Ewout nods. "Evening."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+Ewout sets down his tunic and scratches his beard. "Not much stirs in dark like this. There's a girl missing—folk say she went into the fen. That troubles me. You hear news from the road?"
+
+> insight
+(Insight 9 vs DC 15: failure)
+You can't read anything behind Ewout's face.
+
+> bye
+Ewout lifts a hand. "Go on, then."
+
+> talk lysbet the eel-fisher
+You are talking with Lysbet the eel-fisher. Type what you want to say, pick a number, or BYE to stop.
+Lysbet nods. "Evening."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+She pulls off her oilskin and hangs it to dry. "New? Same as ever—[the Count]'s draining scheme, folk getting angrier. The wind's turning north, so the fishing should turn good." She pauses, then adds quietly, "Nothing new. Nothing at all."
+
+> insight
+(Insight 10 vs DC 16: failure)
+You can't read anything behind Lysbet's face.
+
+> bye
+Lysbet lifts a hand. "Go on, then."
+
+[10 hours pass: the night, to eight the next morning]
+Floris comes from the west, on his way to The Market of the Driestroom.
+Floris stops and looks you over.
+Ewout nods to Floris.
+Floris nods to Lysbet.
+Floris walks on to the east.
+
+==== DAY 2 (Zaterdag 18 Herfstmaand 211 AW, 08:00 (morning))
+
+> look
+Schenkweerd
+You come into Schenkweerd of the Driestroom. A walled toll town on an island where the rivers meet, with a chain across the water and Flemmark's banners in sight on the other shore. The street is full of people who know where they are going, and it smells of smoke and wet stone. The market is back east.
+Exits: east, north, south, west
+Here: Ewout the smith (at work), Lysbet the eel-fisher (at work).
+
+> journal
+People: Ewout Kettinga, Hendrikje Hofstede, Hessel Postma, Lysbet Aalvanger, Marritje Wilgenhof, Roelof Dijkema, Sietske Rietveld, Trijntje, Wessel, the Count.
+Places: the Holleveen, Veenhoek, the Driestroom, The Waarden, The Summer Dyke, The Withy Beds, The Gate of the Driestroom, The Carters' Inn, The Market of the Driestroom, Schenkweerd, Canal Quay.
+Lore: the stranger in Veenhoek, the stranger in the Driestroom, the Driestroom charted, the Waarden of the Driestroom, Wessel Aalbers and Hessel Postma, Marritje Wilgenhof and Hendrikje Hofstede, Roelof Dijkema and Hessel Postma, Sietske Rietveld and Trijntje Kroes, Salve for Trijntje, Rinske de Boer and Hessel Postma, Schenkweerd of the Driestroom, Lysbet Aalvanger and Wessel Aalbers, Lysbet Aalvanger and Marritje Wilgenhof, Ewout Kettinga and Roelof Dijkema.
+
+> west
+The Broken Oar
+This low taproom leans on the town wall, its beams hung with oars and old nets. Bargemen and toll-clerks share the long benches, and the talk is loud and full of river news. You smell small beer, smoked eel and peat smoke from the hearth. A back door opens toward the cooper's yard.
+Exits: east, north
+Here: Baukje the innkeeper (at work).
++10 experience: you found The Broken Oar.
+
+> talk baukje the innkeeper
+You are talking with Baukje the innkeeper. Type what you want to say, pick a number, or BYE to stop.
+Baukje nods. "Morning."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+Sets down her ladle and leans on the bar. "Oh, there's always something! [The Count]'s still set on draining the fens—folk aren't happy about it. And young [Hendrikje]'s waiting on a cooper's order, getting anxious. What brings you through, traveller?"
+
+> insight
+(Insight 7 vs DC 15: failure)
+You can't read anything behind Baukje's face.
+
+> bye
+Baukje lifts a hand. "Go on, then."
+
+> north
+Saint Brand's Chapel on the Point
+At the island's narrow tip, a small chapel of white stone keeps a lantern burning in its tower for the boatmen. Inside it is hushed, and you smell beeswax and damp stone. Votive boats of wood and tin hang by the altar, one for every soul the rivers took. The path back runs along the wall to the taproom.
+Exits: south
+Here: Sister the sister of the Lantern (at work).
++10 experience: you found Saint Brand's Chapel on the Point.
+
+> talk sister the sister of the lantern
+You are talking with Sister the sister of the Lantern. Type what you want to say, pick a number, or BYE to stop.
+Sister nods. "Morning."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+She pauses in her sweeping. "There's a girl missing from the fens, they say. The peat-cutters are angry about [the Count]'s draining scheme. Beyond that, stranger, folk keep their own counsel."
+
+> insight
+(Insight 18 vs DC 16: success)
+Her lips move silently on the tower stair, and she touches the wall at every turn as if greeting an old friend.
+
+> persuade You can tell me. It stays between us.
+She resumes sweeping, unhurried. "Stranger, I keep the light for the boatmen and tend the chapel. I hear what folk say, but I've no more to tell. The missing girl troubles us all—pray for her if you're moved to."
+
+> bye
+Sister lifts a hand. "Go on, then."
+
+> south
+The Broken Oar
+This low taproom leans on the town wall, its beams hung with oars and old nets. Bargemen and toll-clerks share the long benches, and the talk is loud and full of river news. You smell small beer, smoked eel and peat smoke from the hearth. A back door opens toward the cooper's yard.
+Exits: east, north
+Here: Baukje the innkeeper (at work).
+
+> east
+Schenkweerd
+You come into Schenkweerd of the Driestroom. A walled toll town on an island where the rivers meet, with a chain across the water and Flemmark's banners in sight on the other shore. The street is full of people who know where they are going, and it smells of smoke and wet stone. The market is back east.
+Exits: east, north, south, west
+Here: Ewout the smith (at work), Lysbet the eel-fisher (at work).
+
+> south
+The Flemmark Watch
+You stand on the wall walk where the three rivers spread wide and grey below you. Across the water, Flemmark's banners snap on their poles, and you hear their drums at the changing of the watch. The wind is cold and tastes of salt from the far sea. Worn stone steps lead down to the water gate.
+Exits: north
++10 experience: you found The Flemmark Watch.
+
+> north
+Schenkweerd
+You come into Schenkweerd of the Driestroom. A walled toll town on an island where the rivers meet, with a chain across the water and Flemmark's banners in sight on the other shore. The street is full of people who know where they are going, and it smells of smoke and wet stone. The market is back east.
+Exits: east, north, south, west
+Here: Ewout the smith (at work), Lysbet the eel-fisher (at work).
+
+> north
+The Toll House
+Behind a long counter, the scales and the toll-board of painted rates take up half the room. Barge-masters argue in two tongues while stuivers clink into an iron-bound chest. You smell wet wool, sealing wax and lamp oil. A side door opens onto the quay where the barges wait their turn.
+Exits: south
+Here: Reinier the weighmaster.
++10 experience: you found The Toll House.
+
+> talk reinier the weighmaster
+You are talking with Reinier the weighmaster. Type what you want to say, pick a number, or BYE to stop.
+Reinier nods. "Morning."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+Looks up from his bread. "Nothing much. [The Count]'s men are about the fen, taking measurements. Folk are worried—about the draining scheme, and a girl gone missing from the marshes. You come from Graafhaven, do you know aught of that?"
+
+> insight
+(Insight 21 vs DC 16: success)
+His coat is new and fine, too fine for a weighmaster's pay.
+
+> persuade You can tell me. It stays between us.
+Sets down his bread and studies you a moment. "There's little enough to tell a stranger. A girl from the fen villages—I don't know her name. Gone three days now. The marshes are treacherous; folk disappear."
+
+> bye
+Reinier lifts a hand. "Go on, then."
+
+> south
+Schenkweerd
+You come into Schenkweerd of the Driestroom. A walled toll town on an island where the rivers meet, with a chain across the water and Flemmark's banners in sight on the other shore. The street is full of people who know where they are going, and it smells of smoke and wet stone. The market is back east.
+Exits: east, north, south, west
+Here: Ewout the smith (at work), Floris the cooper (on the way to The Broken Oar), Lysbet the eel-fisher (at work).
+Floris comes from the east, on his way to The Broken Oar.
+
+> east
+The Market of the Driestroom
+You stand in the market of the Driestroom, among stalls of cloth, salt and pots. Traders shout their prices over each other, and you smell pitch and hot fat from the cookshops. Nobody here has heard of the Holleveen or cares what happens there. An inn stands at the corner, and the gate is back out.
+Exits: out, in, south, west, north, east
+Here: Hendrikje the merchant (talking with Marritje), Marritje the homemaker (talking with Hendrikje), Snoek the cat (chatting).
+Marritje and Hendrikje stand talking.
+Marritje has hard words with Hendrikje, and does not lower her voice.
+Hendrikje and Marritje stand talking in The Market of the Driestroom.
+
+> north
+The Ferry Landing
+Tarred planks run down the dyke into brown water where three rivers pull against each other. The ferry-bell hangs from a gallows post, its rope greased and frayed. You smell river mud, tar and wet rope, and hear the current slap under the jetty. Up the dyke steps, lamplight glows in a low tavern window.
+Exits: south
+Here: Joost the labourer (at work), Machteld the weighmaster (resting at home), Rinske the innkeeper (at work), Sister the sister of the Lantern (at work), Wiebe the cooper (at work).
++10 experience: you found The Ferry Landing.
+
+> talk joost the labourer
+You are talking with Joost the labourer. Type what you want to say, pick a number, or BYE to stop.
+Joost nods. "Morning."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+Joost scratches an ear. "Rinske and [Hessel] learned the trade together as serving-hands at the same [inn], and they still send each other word of what ale is dear and which travellers are trouble. (You saw it yourself.)"
+(The AI took too long; this is the game's own line from what Joost knows.)
+
+> insight
+(Insight 16 vs DC 16: success)
+He looks hard at the far shore whenever the Holleveen is mentioned, and touches the Lantern sign at his collar.
+
+> persuade You can tell me. It stays between us.
+Joost nods slowly. "There's nothing to tell. Work, the ferry, the dykes. That's all there is."
+
+> bye
+Joost lifts a hand. "Go on, then."
+
+> talk machteld the weighmaster
+You are talking with Machteld the weighmaster. Type what you want to say, pick a number, or BYE to stop.
+Machteld nods. "Morning."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+Machteld nods slowly. "[Rinske] and [Hessel] learned the trade together as serving-hands at the same [inn], and they still send each other word of what ale is dear and which travellers are trouble. (You saw it yourself.)"
+(The AI's answers did not pass the checks; this is the game's own line from what Machteld knows.)
+
+> insight
+(Insight 4 vs DC 16: critical failure)
+You can't read anything behind Machteld's face.
+
+> bye
+Machteld lifts a hand. "Go on, then."
+
+> south
+The Market of the Driestroom
+You stand in the market of the Driestroom, among stalls of cloth, salt and pots. Traders shout their prices over each other, and you smell pitch and hot fat from the cookshops. Nobody here has heard of the Holleveen or cares what happens there. An inn stands at the corner, and the gate is back out.
+Exits: out, in, south, west, north, east
+Here: Hendrikje the merchant (talking with Marritje), Marritje the homemaker (talking with Hendrikje), Snoek the cat (chatting).
+Hendrikje has hard words with Marritje, and does not lower her voice.
+Marritje has hard words with Hendrikje, and does not lower her voice.
+
+> east
+The Sluice-Keeper's House
+Where a side stream cuts through the dyke, a timber sluice gate groans in its frame. The house beside it is crowded with racks of tally sticks and mud-caked spades. Cold water roars under the floorboards, and you feel it through your soles. A plank walk along the dyke leads back to the chapel.
+Exits: west
+Here: Tjerk the heemraad (at work).
++10 experience: you found The Sluice-Keeper's House.
+
+> talk tjerk the heemraad
+You are talking with Tjerk the heemraad. Type what you want to say, pick a number, or BYE to stop.
+Tjerk nods. "Morning."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+He looks up from his ledger. "New? Water levels are high. The dykes hold. What brings you to Veerdam, stranger?"
+
+> insight
+(Insight 16 vs DC 16: success)
+His fingers are often stained with fresh ink, and he never lets anyone near the rolled papers in his coat.
+
+> persuade You can tell me. It stays between us.
+He sets down his pen and meets your eye. "Stranger, I've known you five breaths. What stays between us stays between us when I know who you are and what you want."
+
+> bye
+Tjerk lifts a hand. "Go on, then."
+
+[23 hours pass: the night, to eight the next morning]
+Tjerk puts out the lamp and goes to bed.
+Tjerk leaves west.
+Tjerk arrives from the west.
+Tjerk stops and gives you a nod, curious about the stranger.
+
+==== DAY 3 (Rustdag 19 Herfstmaand 211 AW, 08:00 (morning))
+
+> look
+The Sluice-Keeper's House
+Where a side stream cuts through the dyke, a timber sluice gate groans in its frame. The house beside it is crowded with racks of tally sticks and mud-caked spades. Cold water roars under the floorboards, and you feel it through your soles. A plank walk along the dyke leads back to the chapel.
+Exits: west
+Here: Tjerk the heemraad (at work).
+
+> journal
+People: Baukje Stroomer, Ewout Kettinga, Floris, Hendrikje Hofstede, Hessel Postma, Joost Veerman, Lysbet Aalvanger, Machteld Tolenaar, Marritje Wilgenhof, Reinier Vosbergen, Rinske, Roelof Dijkema, Sietske Rietveld, Sister Gerberga, Tjerk Sluis, Trijntje, Wessel, the Count.
+Places: the Holleveen, Veenhoek, the Driestroom, Graafhaven, The Waarden, The Summer Dyke, The Withy Beds, The Gate of the Driestroom, The Carters' Inn, The Market of the Driestroom, Schenkweerd, The Broken Oar, Saint Brand's Chapel on the Point, The Flemmark Watch, The Toll House, The Ferry Landing, The Sluice-Keeper's House, Canal Quay.
+Lore: the stranger in Veenhoek, the stranger in the Driestroom, Rinske de Boer and Hessel Postma, Machteld Tolenaar and Hendrikje Hofstede, the Driestroom charted, the Waarden of the Driestroom, Wessel Aalbers and Hessel Postma, Marritje Wilgenhof and Hendrikje Hofstede, Roelof Dijkema and Hessel Postma, Sietske Rietveld and Trijntje Kroes, Salve for Trijntje, Rinske de Boer and Hessel Postma, Schenkweerd of the Driestroom, Lysbet Aalvanger and Wessel Aalbers, Lysbet Aalvanger and Marritje Wilgenhof, Floris Duigman and Hessel Postma, Ewout Kettinga and Roelof Dijkema, The herring barrels for Hendrikje, Marritje and Hendrikje quarrelling, Hendrikje and Marritje quarrelling, Marritje and Hendrikje quarrelling.
+
+> journal
+People: Baukje Stroomer, Ewout Kettinga, Floris, Hendrikje Hofstede, Hessel Postma, Joost Veerman, Lysbet Aalvanger, Machteld Tolenaar, Marritje Wilgenhof, Reinier Vosbergen, Rinske, Roelof Dijkema, Sietske Rietveld, Sister Gerberga, Tjerk Sluis, Trijntje, Wessel, the Count.
+Places: the Holleveen, Veenhoek, the Driestroom, Graafhaven, The Waarden, The Summer Dyke, The Withy Beds, The Gate of the Driestroom, The Carters' Inn, The Market of the Driestroom, Schenkweerd, The Broken Oar, Saint Brand's Chapel on the Point, The Flemmark Watch, The Toll House, The Ferry Landing, The Sluice-Keeper's House, Canal Quay.
+Lore: the stranger in Veenhoek, the stranger in the Driestroom, Rinske de Boer and Hessel Postma, Machteld Tolenaar and Hendrikje Hofstede, the Driestroom charted, the Waarden of the Driestroom, Wessel Aalbers and Hessel Postma, Marritje Wilgenhof and Hendrikje Hofstede, Roelof Dijkema and Hessel Postma, Sietske Rietveld and Trijntje Kroes, Salve for Trijntje, Rinske de Boer and Hessel Postma, Schenkweerd of the Driestroom, Lysbet Aalvanger and Wessel Aalbers, Lysbet Aalvanger and Marritje Wilgenhof, Floris Duigman and Hessel Postma, Ewout Kettinga and Roelof Dijkema, The herring barrels for Hendrikje, Marritje and Hendrikje quarrelling, Hendrikje and Marritje quarrelling, Marritje and Hendrikje quarrelling.
+
+==== END (Rustdag 19 Herfstmaand 211 AW, 08:00 (morning))

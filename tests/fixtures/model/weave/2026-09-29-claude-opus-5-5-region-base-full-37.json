@@ -1,0 +1,14 @@
+{
+  "kind": "weave",
+  "about": "region play: base, the dial at full, call 37",
+  "model": "claude-opus-5-5",
+  "provider": "",
+  "date": "2026-09-29",
+  "usage": {
+    "inputTokens": 2702,
+    "cachedTokens": 0,
+    "outputTokens": 736
+  },
+  "reply": "{\"bonds\":[{\"a\":\"npc_marretje_driestromen_veerdijk\",\"b\":\"npc_trijntje\",\"role\":\"acquaintance\",\"why\":\"Marretje has sent smoked eels to the Drowned Goose for years, and Trijntje still owes her for the last cask.\"},{\"a\":\"npc_wessel_driestromen_veerdijk\",\"b\":\"npc_trijntje\",\"role\":\"friend\",\"why\":\"Wessel and Trijntje were young together on the Veenhoek fen before he went downriver to take the ferry.\"},{\"a\":\"npc_joost_driestromen_veerdijk\",\"b\":\"npc_trijntje\",\"role\":\"acquaintance\",\"why\":\"Joost made the beer casks that stand behind the bar of the Drowned Goose, and he still asks after them.\"}],\"secrets\":[{\"who\":\"npc_folkert_driestromen_veerdijk\",\"text\":\"Folkert has taken the Count's silver to leave the Veerdijk sluice open when the draining of the Holleveen begins.\",\"hint\":\"He wears a new silver buckle that no dyke dues could have paid for, and he stops talking when the fen folk mention the Count.\"},{\"who\":\"npc_marretje_driestromen_veerdijk\",\"text\":\"Marretje saw a pale woman walking on the water on a full-moon night, and she has not fished under a full moon since.\",\"hint\":\"She crosses herself with the Lantern sign, and then with an older sign, whenever the river mist comes up white.\"}],\"thread\":{\"from\":\"npc_marretje_driestromen_veerdijk\",\"to\":\"npc_trijntje\",\"name\":\"Marretje's eel money\",\"ask\":\"You're bound back to Veenhoek? Then tell Trijntje at the Goose that Marretje wants her four guilders for the eels, and that the next cask comes only when they're paid.\",\"why\":\"The debt stands between two women who have done fair trade for years, and a word carried in person could settle it before it sours.\"},\"echo\":{\"who\":\"npc_joost_driestromen_veerdijk\",\"line\":\"line_4\",\"text\":\"Joost heard from a carter that a miller up in Veenhoek wants sailcloth, and he tells the stranger that a sailmaker's widow on the Veerdijk has bolts to sell.\"}}",
+  "problems": []
+}
