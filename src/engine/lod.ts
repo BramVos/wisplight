@@ -23,7 +23,7 @@ export const COARSE_EVERY = 15
 
 export type Note = NonNullable<NpcState['note']>
 
-function kmBetween(world: World, a: string, b: string): number | undefined {
+export function kmBetween(world: World, a: string, b: string): number | undefined {
   const map = regionMap(world.content)
   if (!map) return undefined
   const ha = placeHex(world, a)

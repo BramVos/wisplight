@@ -174,6 +174,8 @@ export function tidesRequest(world: World): LlmRequest {
     schemaName: 'tides',
     schema: object({ lines: { type: 'array', items: object({ id: text, judged: text, why: text }) } }),
     maxTokens: 600,
+    // A bounded judgement within what each line allows (M10.27): the brain's model will do.
+    tier: 'light',
     meta: { tides: [...world.content.tides.keys()], allowed: Object.fromEntries([...world.content.tides.values()].map((t) => [t.id, allowed(world, t)])) },
   }
 }

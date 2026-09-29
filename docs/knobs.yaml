@@ -133,6 +133,9 @@ numbers:
     UNPRICED_CALLS_PER_HOUR: 'code: a model without a known price is called at most this often an hour (safety of cost)'
   src/node/ai/log.ts:
     KEEP: 'settings (moved): the app knob ai_log_keep; this is its default'
+  src/node/ai/frequency.ts:
+    GAME_DAYS_PER_HOUR: 'code: game days in an hour of play, measured (M10.27), for the guide price as measured (an estimate, not a rule)'
+    GOALS_PER_GAME_DAY: 'code: the goal choices that go to the model in a game day, measured in the simulation (M10.27; tests/m1027goals.test.ts keeps it true)'
   src/node/ai/pricing.ts:
     CALLS_PER_HOUR: 'code: the calls of an hour of play, to estimate what a model costs (an estimate, not a rule)'
   src/node/ai/settings.ts:

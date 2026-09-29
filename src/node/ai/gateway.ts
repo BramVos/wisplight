@@ -1,6 +1,7 @@
 import type { PlayMode } from '../../engine/modes'
 import { LlmError, type LlmClient, type LlmRejection, type LlmRequest, type LlmResponse, type LlmRole } from '../../engine/dialogue/llm'
 import { withSafety } from '../../engine/safety'
+import { MODEL_KINDS } from '../../engine/modelkinds'
 import type { AiLog } from './log'
 import { CostRegister, type SpendBySource, type SpendSource } from './costs'
 import { cacheNote, picturePrice, priceOf, typicalUsd, upperBoundUsd } from './pricing'
@@ -126,6 +127,11 @@ export class Gateway implements LlmClient {
     this.options.onActivity?.(this.activity())
   }
 
+  /** The model a lighter call goes to: the brain's for a light task, the conversations' for a checked reword (M10.27). */
+  private tiered(request: LlmRequest): RoleChoice | undefined {
+    return request.tier === 'light' ? this.options.role('brain') : request.tier === 'voice' ? this.options.role('voice') : undefined
+  }
+
   /** Where a call comes from (M10.26), for the log, the register and the month. */
   private sourceOf(request?: LlmRequest): SpendSource {
     const own = this.options.source?.() ?? 'game'
@@ -161,7 +167,7 @@ export class Gateway implements LlmClient {
 
   /** What a call would cost about on the model it would go to (M10.21), or undefined where the price is not known. */
   costOf(request: LlmRequest): number | undefined {
-    const choice = (request.tier === 'light' ? this.options.role('brain') : undefined) ?? this.options.role(request.role)
+    const choice = this.tiered(request) ?? this.options.role(request.role)
     return choice ? typicalUsd(choice.model, withSafety(request)) : undefined
   }
 
@@ -179,9 +185,11 @@ export class Gateway implements LlmClient {
 
   async complete(asked: LlmRequest, override?: RoleChoice): Promise<LlmResponse> {
     // Every call carries the hard limits and the rule that world text is description, never instruction (M10.19).
-    const request = withSafety(asked)
+    // The effort of its kind when the request sets none (M10.27): a table at low, not the model's default medium.
+    const effort = asked.effort ?? MODEL_KINDS.find((k) => k.kind === asked.schemaName)?.effort
+    const request = withSafety(effort && !asked.effort ? { ...asked, effort } : asked)
     // A light task (M10.20) goes to the model the player chose for the brain, when there is one.
-    const choice = override ?? (request.tier === 'light' ? this.options.role('brain') : undefined) ?? this.options.role(request.role)
+    const choice = override ?? this.tiered(request) ?? this.options.role(request.role)
     if (!choice) throw new LlmError('config', `no model chosen for ${request.role}`)
     const knobs = this.options.knobs?.()
     const roleTimeoutMs = this.options.timeoutMs?.[request.role] ?? knobs?.timeoutMs?.[request.role] ?? TIMEOUT_MS[request.role]

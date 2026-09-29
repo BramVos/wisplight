@@ -1,6 +1,7 @@
 import type { LlmRole } from '../../engine/dialogue/llm'
 import { MODEL_KINDS } from '../../engine/modelkinds'
 import { MEASURED, type Measured } from './measured'
+import { MEASURED_PER_HOUR } from './frequency'
 import { CALLS_PER_HOUR, priceOf } from './pricing'
 import type { RoleChoice } from './settings'
 
@@ -23,6 +24,12 @@ export interface GuidePrice {
   /** The three together, for an hour. */
   hour?: number
   /**
+   * An hour as it was measured (M10.27): every kind at the pace it really
+   * comes (src/node/ai/frequency.ts), on the model it really goes to; the
+   * guide's own hour counted 25 goal choices where 45 to 80 came.
+   */
+  measuredHour?: number
+  /**
    * A new region, by how full it is built (M10.25): outline its first
    * district and the weave of its people; story that and the story round;
    * full also the world build's five steps and the polish round, once a
@@ -40,7 +47,12 @@ function callUsd(kind: string, model: string | undefined, measured: Record<strin
 }
 
 export function guidePrice(role: (role: LlmRole) => RoleChoice | undefined, measured: Record<string, Measured> = MEASURED): GuidePrice {
-  const model = (kind: string) => role(MODEL_KINDS.find((k) => k.kind === kind)?.role ?? 'chronicler')?.model
+  // The model a kind really goes to (M10.27): its tier's, the brain's or the conversations', else its role's own.
+  const model = (kind: string) => {
+    const row = MODEL_KINDS.find((k) => k.kind === kind)
+    const tiered = row?.tier === 'light' ? role('brain') : row?.tier === 'voice' ? role('voice') : undefined
+    return (tiered ?? role(row?.role ?? 'chronicler'))?.model
+  }
   const one = (kind: string) => callUsd(kind, model(kind), measured)
   const sum = (kinds: string[]) => {
     const parts = kinds.map(one)
@@ -57,6 +69,8 @@ export function guidePrice(role: (role: LlmRole) => RoleChoice | undefined, meas
   const place = sum(['outline', 'district', 'weave'])
   if (place !== undefined) guide.place = place
   if (guide.conversations !== undefined && guide.goals !== undefined && guide.night !== undefined) guide.hour = guide.conversations + guide.goals + guide.night
+  const measuredParts = Object.entries(MEASURED_PER_HOUR).map(([kind, n]) => [one(kind), n] as const)
+  if (measuredParts.every(([usd]) => usd !== undefined)) guide.measuredHour = measuredParts.reduce((sum, [usd, n]) => sum + usd! * n, 0)
   const outline = sum(['district', 'weave'])
   const story = sum(['district', 'weave', 'region_story'])
   // In full the world build's five steps run over the region, and its polish round (M10.25).

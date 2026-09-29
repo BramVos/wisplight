@@ -497,6 +497,15 @@ function AiTab({ bridge, overview, refresh, onFrames, region }: { bridge: AiBrid
           </span>
         </div>
       )}
+      {overview.guide?.measuredHour !== undefined && (
+        <div className="row small">
+          <span className="label" />
+          <span>
+            {t('settings.ai.guide.measured', { usd: usd(overview.guide.measuredHour) })}
+            {overview.status.spent ? ` ${t('settings.ai.guide.lastHour', { usd: usd(overview.status.spent.hour.all, 2) })}` : ''}
+          </span>
+        </div>
+      )}
       {confirmBudget && (
         <div className="row warn small" role="alertdialog" aria-label={t('settings.ai.budget.confirmAria')}>
           <span>{t('settings.ai.budget.confirm', { usd: Number(budget) })}</span>

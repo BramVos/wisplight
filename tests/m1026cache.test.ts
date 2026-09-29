@@ -76,7 +76,8 @@ describe('M10.26: the cache mark on every kind of call', () => {
     const of = (kind: string) => seen.filter((r) => r.schemaName === kind)
     // Everyone's goals share the rules, the whole catalogue and the frame, and only that is marked.
     const goals = of('npc_goals')
-    expect(goals.length).toBeGreaterThan(10)
+    // Enough to compare (M10.27: only people near the player or in a story ask the model now).
+    expect(goals.length).toBeGreaterThan(5)
     expect(new Set(goals.map(fixedOf)).size).toBe(1)
     expect(goals.every((r) => r.cacheShared === undefined)).toBe(true)
     // A talk: the same rules and frame for every speaker, the same card for every turn with one.

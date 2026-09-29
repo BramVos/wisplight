@@ -60,11 +60,25 @@ export function costUsd(model: string, usage: { inputTokens: number; outputToken
  * token at the full price (a guess of 3.5 characters a token) and the most it
  * may answer. Undefined for a model without a known price.
  */
-export function upperBoundUsd(model: string, request: { system: string; prompt: string; maxTokens: number }): number | undefined {
+/** Models that always think (M10.27): the provider gives them 4,000 tokens more than asked, for the thinking, billed as output. */
+export const ALWAYS_THINKS = /fable|mythos|opus-5-5/
+
+/** The tokens a call may write at most: what it asks, and on a model that always thinks the room for the thinking. */
+export function mostOut(model: string, maxTokens: number): number {
+  return maxTokens + (ALWAYS_THINKS.test(model) ? 4000 : 0)
+}
+
+/** The characters a call sends: system, prompt, and the schema of its answer, which is billed as input too (M10.27). */
+function sent(request: { system: string; prompt: string; schema?: unknown }): number {
+  return request.system.length + request.prompt.length + (request.schema ? JSON.stringify(request.schema).length : 0)
+}
+
+export function upperBoundUsd(model: string, request: { system: string; prompt: string; maxTokens: number; schema?: unknown }): number | undefined {
   const price = priceOf(model)
   if (!price) return undefined
-  const input = Math.ceil((request.system.length + request.prompt.length) / 3.5)
-  return (input * Math.max(price.input, price.cacheWrite ?? 0) + request.maxTokens * price.output) / 1_000_000
+  const input = Math.ceil(sent(request) / 3.5)
+  // The most it may cost, thinking included (M10.27: the budget reserved without it and could be passed quietly).
+  return (input * Math.max(price.input, price.cacheWrite ?? 0) + mostOut(model, request.maxTokens) * price.output) / 1_000_000
 }
 
 /**
@@ -72,10 +86,10 @@ export function upperBoundUsd(model: string, request: { system: string; prompt: 
  * input at the full price, and half the most it may write, as replies tend
  * to run. Undefined for a model without a known price.
  */
-export function typicalUsd(model: string, request: { system: string; prompt: string; maxTokens: number }): number | undefined {
+export function typicalUsd(model: string, request: { system: string; prompt: string; maxTokens: number; schema?: unknown }): number | undefined {
   const price = priceOf(model)
   if (!price) return undefined
-  const input = Math.ceil((request.system.length + request.prompt.length) / 3.5)
+  const input = Math.ceil(sent(request) / 3.5)
   return (input * price.input + (request.maxTokens / 2) * price.output) / 1_000_000
 }
 

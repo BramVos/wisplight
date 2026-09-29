@@ -29,9 +29,11 @@ export interface LlmRequest {
   /**
    * A lighter model will do (M10.20: the polish round of place descriptions):
    * the model the player chose for the brain, where there is one, in place of
-   * the role's own. The player's choice, not a model named in the code.
+   * the role's own. The player's choice, not a model named in the code. voice
+   * (M10.27): the model of the conversations, for a reword the engine checks
+   * word for word (the journey).
    */
-  tier?: 'light'
+  tier?: 'light' | 'voice'
   /**
    * Where the part of `system` that stays the same from call to call ends
    * (M10.20: the world steps, whose guide, contract and working instruction

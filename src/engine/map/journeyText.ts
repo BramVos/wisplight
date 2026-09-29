@@ -92,6 +92,8 @@ export function journeyRequest(world: World, paragraph: string, frame: string, k
     schema: { type: 'object', additionalProperties: false, required: ['text'], properties: { text: { type: 'string' } } },
     maxTokens: 300,
     priority: 'low',
+    // A reword the engine checks word for word (M10.27): the conversations' model, not the chronicler's.
+    tier: 'voice',
     meta: { journey: paragraph },
   }
 }

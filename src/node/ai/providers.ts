@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import OpenAI from 'openai'
 import { LlmError, type LlmRequest, type LlmResponse } from '../../engine/dialogue/llm'
+import { ALWAYS_THINKS } from './pricing'
 
 // The two providers of version 1 (FO, chapter 16). Both return raw JSON text;
 // the engine validates it.
@@ -139,7 +140,7 @@ export function anthropicProvider(apiKey: string, given?: Pick<Anthropic, 'messa
       const started = Date.now()
       // Thinking eats into max_tokens. Turn it off where the model allows it; where it is
       // always on, leave room for it (Claude API documentation, thinking and effort).
-      const alwaysThinks = /fable|mythos|opus-5-5/.test(model)
+      const alwaysThinks = ALWAYS_THINKS.test(model)
       const thinkingByDefault = /opus-5|sonnet-5/.test(model) && !alwaysThinks
       const effort = request.effort && takesEffort(model) ? { effort: request.effort } : {}
       // Streamed (M10.20): the SDK refuses a long answer in one piece, and a world step may write a whole chapter of YAML.

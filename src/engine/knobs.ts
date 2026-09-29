@@ -42,6 +42,7 @@ export const KNOBS = {
   'people.goals_per_day': n('How many times a day a person may take up something new of their own.', 'goals', 6, 0, 50, 'npc/goals.ts'),
   'people.goals_at_once': n('How many goals of their own a person pursues at once.', 'goals', 3, 1, 10, 'npc/goals.ts'),
   'people.goal_rest_hours': n('How long a person rests before choosing a goal of their own again.', 'hours', 5, 0, 48, 'npc/goals.ts'),
+  'people.model_km': n('How near the player a person asks the model for their choices; further off they choose by the rules, unless they are in the player\'s area, an open storyline or a plan names them.', 'km', 1.5, 0, 8, 'npc/goals.ts'),
   'people.ask_again_days': n('How soon a person asks themselves again what they want, when nothing new happened.', 'days', 3, 0.25, 30, 'npc/brain.ts'),
   'people.far_km': n('Beyond this, a newcomer is from far off.', 'km', 30, 1, 1000, 'signals.ts'),
   'people.seen_in_a_crowd': n('How many of those around someone they notice in a quarter of an hour.', 'people', 24, 1, 200, 'simulation.ts'),

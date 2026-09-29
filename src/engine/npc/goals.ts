@@ -14,7 +14,7 @@ import { openRequestsOf } from '../requests'
 import type { Fact, Goal, GoalType } from '../state'
 import type { World } from '../world'
 import { allowAct, type ActKind } from './acts'
-import { tierOf } from '../lod'
+import { kmBetween, tierOf } from '../lod'
 import { applyIntention, backToRules, intentionLines, offered, signalOf, withIntention } from './intentions'
 
 // The AI's choice of goals (FO, chapter 7): the model says what an NPC wants,
@@ -82,6 +82,24 @@ function brain(world: World) {
 }
 
 /**
+ * Whether a person asks the model for a choice (M10.27: the goal choices drove
+ * the bill, 45 to 80 an hour where the guide counted 25, from everyone within
+ * eight km): near the player (the knob people.model_km), in the player's area,
+ * in an open storyline, or named in a running plan. A plan of the content
+ * that holds whole areas as its groups does not count, or everyone would.
+ */
+export function asksModel(world: World, npcId: string): boolean {
+  const here = world.npcState(npcId).location
+  const player = world.state.player.location
+  const km = kmBetween(world, here, player)
+  if (km !== undefined && km <= knob(world, 'people.model_km')) return true
+  const area = world.content.locations.get(here)?.area
+  if (area && area === world.content.locations.get(player)?.area) return true
+  if (world.state.chronicle?.lines.some((l) => l.open && (l.people.includes(npcId) || l.roles.some((r) => r.who === npcId)))) return true
+  return (world.state.plans ?? []).some((p) => p.ended === undefined && (p.subjects?.includes(npcId) || Object.values(p.bind ?? {}).includes(npcId)))
+}
+
+/**
  * A decision moment: goes to the AI when a model is connected and the day's
  * budget allows. A finished goal only asks again after a rest of five hours,
  * so an NPC thinks two to four times a day (FO, chapter 7); news that concerns
@@ -91,6 +109,8 @@ export function triggerChoice(world: World, npcId: string, trigger: string, kind
   if (!world.aiLive || !world.alive(npcId) || world.npc(npcId).child) return false
   // Far from the player the rules decide: no model for someone coarse or a note (M8.2, after the review).
   if (tierOf(world, npcId) !== 'full') return false
+  // Near enough to matter, or in a story (M10.27); the others choose by the rules as a person far off always did.
+  if (!asksModel(world, npcId)) return false
   const state = brain(world)
   if (kind === 'signal') {
     // A signal is its own reason to think, within the day's maximum for signals.
