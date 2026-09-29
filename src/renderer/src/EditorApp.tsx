@@ -17,7 +17,7 @@ import { createEditor, type DiffLine, type Edit, type EditorBridge, type EditorD
 // playtest without the player with an NPC inspector, and the chronicler,
 // whose proposals are shown as a change and saved only when accepted.
 
-type Panel = 'edit' | 'map' | 'palette' | 'voice' | 'knobs' | 'check' | 'contract' | 'playtest' | 'reference' | 'chronicler' | 'world'
+type Panel = 'edit' | 'map' | 'palette' | 'voice' | 'lands' | 'knobs' | 'check' | 'contract' | 'playtest' | 'reference' | 'chronicler' | 'world'
 
 const DIRECTIONS = ['north', 'northeast', 'east', 'southeast', 'south', 'southwest', 'west', 'northwest', 'up', 'down', 'in', 'out']
 const AXES = ['warmth', 'courage', 'honesty', 'temper', 'curiosity', 'diligence'] as const
@@ -105,6 +105,7 @@ export function EditorApp() {
               ['map', 'Map'],
               ['palette', 'Palette'],
               ['voice', 'Voice'],
+              ['lands', 'Lands'],
               ['knobs', 'Knobs'],
               ['check', `Check${view.problems.length ? ` (${view.problems.length} errors)` : view.warnings.length ? ` (${view.warnings.length})` : ''}`],
               ['contract', 'Contract'],
@@ -162,6 +163,7 @@ export function EditorApp() {
       {panel === 'map' && <MapPanel bridge={bridge} world={world} view={view} saved={refresh} open={open} />}
       {panel === 'palette' && <PalettePanel bridge={bridge} world={world} saved={refresh} />}
       {panel === 'voice' && <VoicePanel bridge={bridge} world={world} saved={refresh} />}
+      {panel === 'lands' && <LandsPanel bridge={bridge} world={world} saved={refresh} />}
       {panel === 'knobs' && <KnobsPanel bridge={bridge} world={world} view={view} saved={refresh} />}
       {panel === 'check' && <CheckPanel view={view} open={open} />}
       {panel === 'playtest' && <PlaytestPanel bridge={bridge} world={world} />}
@@ -1864,12 +1866,120 @@ function changedBy(draft: EditorDraft): string[] {
  * world's frame on request; nothing is saved until you save.
  */
 /**
+ * The lands of a world (M10.23): another land of the same world, with a frame
+ * of its own. Each is a folder, lands/<land>/: its land.yaml (edited here as
+ * YAML, checked with the whole world, written field by field) and its voice
+ * kit. Its areas, people and factions are made under Edit, with `land:` on
+ * the area; the rest the land takes from the world.
+ */
+function LandsPanel({ bridge, world, saved }: { bridge: EditorBridge; world: string; saved: () => Promise<void> }) {
+  const [lands, setLands] = useState<{ id: string; name: string; file: string }[]>()
+  const [chosen, setChosen] = useState<string>()
+  const [fresh, setFresh] = useState('')
+  const [land, setLand] = useState<{ file: string; yaml: string; own: boolean }>()
+  const [yaml, setYaml] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [message, setMessage] = useState<string>()
+
+  const list = async () => {
+    const found = await bridge.lands(world)
+    setLands(found)
+    return found
+  }
+  useEffect(() => {
+    setChosen(undefined)
+    setLand(undefined)
+    void bridge.lands(world).then((found) => {
+      setLands(found)
+      setChosen(found[0]?.id)
+    })
+  }, [bridge, world])
+  useEffect(() => {
+    if (!chosen) return
+    void bridge.land(world, chosen).then((l) => {
+      setLand(l)
+      setYaml(l.yaml)
+      setMessage(undefined)
+    })
+  }, [bridge, world, chosen])
+
+  if (!lands) return <div className="editor-page"><p className="muted">Loading the lands...</p></div>
+  const save = async () => {
+    if (!chosen || !land) return
+    setBusy(true)
+    const result = await bridge.saveLand(world, chosen, yaml)
+    setBusy(false)
+    setMessage(result.ok ? (result.changes.length ? `Saved in ${land.file}.` : 'Nothing changed.') : result.problems.join('; '))
+    if (result.ok) {
+      setLand({ ...land, yaml, own: true })
+      await list()
+      await saved()
+    }
+  }
+  const start = () => {
+    const id = fresh.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '')
+    if (!id) return
+    setFresh('')
+    setChosen(id)
+  }
+  return (
+    <div className="editor-page lands-panel">
+      <h2>Lands</h2>
+      <p className="muted small">
+        A land is another part of the same world with a frame of its own: the frame every model call gets there, its voice kit, faiths, coins at a rate to the world's, law, names, standing and palette. Whoever is in it plays under its frame. The stranger crosses into it only at a border: an area with <code>border: true</code> (a bridge, a pass, a harbour). Its areas are made under Edit, with <code>land:</code> on the area. What a land leaves out, it takes from the world; the calendar and the clock are always the world's.
+      </p>
+      <div className="row">
+        {lands.length ? (
+          <label className="field">
+            Land
+            <select value={chosen ?? ''} onChange={(e) => setChosen(e.target.value)}>
+              {!lands.some((l) => l.id === chosen) && chosen && <option value={chosen}>{chosen} (new)</option>}
+              {lands.map((l) => (
+                <option key={l.id} value={l.id}>
+                  {l.name} ({l.id})
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : (
+          <p className="muted small">This world has one land: the world itself.</p>
+        )}
+        <label className="field">
+          A new land
+          <input value={fresh} onChange={(e) => setFresh(e.target.value)} placeholder="its id, as its folder: far_coast" />
+        </label>
+        <button type="button" className="link" disabled={!fresh.trim()} onClick={start}>
+          [Start it]
+        </button>
+      </div>
+      {chosen && land && (
+        <>
+          <p className="muted small">{land.own ? `In ${land.file}.` : `A new land: saving writes ${land.file}.`}</p>
+          <textarea className="yaml-box" value={yaml} onChange={(e) => setYaml(e.target.value)} spellCheck={false} rows={Math.min(40, Math.max(14, yaml.split('\n').length + 2))} aria-label="The land as YAML" />
+          <div className="row">
+            {/* A new land may be saved as its template stands. */}
+            <button type="button" className="link" disabled={busy || (land.own && yaml === land.yaml)} onClick={() => void save()}>
+              [Save]
+            </button>
+            <button type="button" className="link" disabled={busy || yaml === land.yaml} onClick={() => setYaml(land.yaml)}>
+              [Undo changes]
+            </button>
+          </div>
+          {message && <p className={message.startsWith('Saved') || message.startsWith('Nothing') ? 'muted' : 'warn'}>{message}</p>}
+          {land.own && <VoicePanel key={chosen} bridge={bridge} world={world} saved={saved} land={chosen} />}
+        </>
+      )}
+    </div>
+  )
+}
+
+/**
  * The voice kit (M10.10): how people in this world swear, what they say, how
  * they call a stranger, how they tell time, and what is not here. Edited as
  * YAML, checked with the whole world, written field by field; the writing aid
  * can propose one from the world's frame and CHRONICLER.md.
  */
-function VoicePanel({ bridge, world, saved }: { bridge: EditorBridge; world: string; saved: () => Promise<void> }) {
+function VoicePanel({ bridge, world, saved, land }: { bridge: EditorBridge; world: string; saved: () => Promise<void>; land?: string }) {
   const [kit, setKit] = useState<{ file: string; yaml: string; own: boolean }>()
   const [yaml, setYaml] = useState('')
   const [ask, setAsk] = useState('')
@@ -1877,17 +1987,17 @@ function VoicePanel({ bridge, world, saved }: { bridge: EditorBridge; world: str
   const [message, setMessage] = useState<string>()
 
   useEffect(() => {
-    void bridge.voice(world).then((k) => {
+    void bridge.voice(world, land).then((k) => {
       setKit(k)
       setYaml(k.yaml)
       setMessage(undefined)
     })
-  }, [bridge, world])
+  }, [bridge, world, land])
 
   if (!kit) return <div className="editor-page"><p className="muted">Loading the voice kit...</p></div>
   const save = async () => {
     setBusy(true)
-    const result = await bridge.saveVoice(world, yaml)
+    const result = await bridge.saveVoice(world, yaml, land)
     setBusy(false)
     setMessage(result.ok ? (result.changes.length ? `Saved in ${kit.file}.` : 'Nothing changed.') : result.problems.join('; '))
     if (result.ok) {
@@ -1897,16 +2007,22 @@ function VoicePanel({ bridge, world, saved }: { bridge: EditorBridge; world: str
   }
   const propose = async () => {
     setBusy(true)
-    const result = await bridge.proposeVoice(world, ask)
+    const result = await bridge.proposeVoice(world, ask, land)
     setBusy(false)
     if (result.yaml) setYaml(result.yaml)
     setMessage(result.yaml ? `${result.say} (Not saved yet: look at it, change what you like, then save.)` : result.problems.join('; '))
   }
   return (
-    <div className="editor-page voice-panel">
-      <h2>The voice kit</h2>
+    <div className={land ? 'voice-panel' : 'editor-page voice-panel'}>
+      {land ? <h3>Its voice kit</h3> : <h2>The voice kit</h2>}
       <p className="muted small">
-        {kit.own ? `This world's kit, in ${kit.file}.` : `This world has no kit yet: the guard keeps its fixed list. Saving writes ${kit.file}.`} Oaths per faith, sayings of the region and of groups, how people call the stranger, time, distance and measures, and what is not here (with what people say instead). Sayings are rare in play: at most once in a talk, in one talk of three. Character shows in what people care about, steer away from, remember and dare to say.
+        {land
+          ? kit.own
+            ? `This land's own kit, in ${kit.file}: people here speak by it, not by the world's.`
+            : `This land has no kit of its own: its people speak by the world's. Saving writes ${kit.file}.`
+          : kit.own
+            ? `This world's kit, in ${kit.file}.`
+            : `This world has no kit yet: the guard keeps its fixed list. Saving writes ${kit.file}.`} Oaths per faith, sayings of the region and of groups, how people call the stranger, time, distance and measures, and what is not here (with what people say instead). Sayings are rare in play: at most once in a talk, in one talk of three. Character shows in what people care about, steer away from, remember and dare to say.
       </p>
       <textarea className="yaml-box" value={yaml} onChange={(e) => setYaml(e.target.value)} spellCheck={false} rows={Math.min(40, Math.max(16, yaml.split('\n').length + 2))} aria-label="The voice kit as YAML" />
       <div className="row">

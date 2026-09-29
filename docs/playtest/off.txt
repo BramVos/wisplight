@@ -210,8 +210,6 @@ Places: Skerrow, the Heights, Skerrow Hythe, the Shore, The Cliff Path, The Head
 Lore: the Grey Gull.
 
 [960 hours pass]
-Garrick arrives from the south.
-Garrick puts out the lamp and goes to bed.
 Tamsin comes from the west, on her way to Skerrow Hythe, the Green.
 Tamsin stops and gives you a nod, curious about the stranger.
 Garrick nods to Tamsin.
@@ -438,9 +436,6 @@ Lore: the Grey Gull.
 
 [960 hours pass]
 Off Skerrow: Winter closes the sea. The first of the winter gales closes the Glass Sea. No boat will cross now until spring; you winter on Skerrow, among the fishers and the gulls.
-Tamsin comes from the west, on her way to Skerrow Hythe, the Green.
-Tamsin stops and gives you a nod, curious about the stranger.
-Garrick nods to Tamsin.
 Tamsin walks on to the south.
 Garrick leaves south.
 Tamsin comes from the west, on her way to Skerrow Hythe, the Green.

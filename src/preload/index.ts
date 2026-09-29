@@ -75,6 +75,10 @@ contextBridge.exposeInMainWorld('wisplight', {
     proposePalette: use('editor:propose-palette'),
     voice: use('editor:voice'),
     saveVoice: use('editor:save-voice'),
+    // The lands of a world (M10.23).
+    lands: use('editor:lands'),
+    land: use('editor:land'),
+    saveLand: use('editor:save-land'),
     proposeVoice: use('editor:propose-voice'),
     // Building a world step by step with the chronicler (M10.17), and saving a proposal with world keys and files.
     worldStep: use('editor:world-step'),

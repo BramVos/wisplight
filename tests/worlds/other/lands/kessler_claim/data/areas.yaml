@@ -1,0 +1,12 @@
+# The part of the Kessler Claim the stranger can reach (M10.23): its gate is
+# the border, and an area in this folder is of the land.
+
+areas:
+  - id: claim_gate
+    name: the Claim Gate
+    kind: hamlet
+    border: true
+    sound: { kind: hum, level: 0.3 }
+    aliases: [the claim gate, claim gate, the claim, the gate, kessler, the kessler claim]
+    fame: 1
+    summary: The pressure lock and checkpoint of the Kessler Claim, where the service tunnel from the Ice Works comes out, with a Combine canteen beside it.

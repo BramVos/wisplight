@@ -9,22 +9,24 @@ import { questWarnings } from './quests/check'
 /** Things that load but deserve a look (FO, chapter 15, "Schema's en validatie"). */
 export function warnings(content: Content): string[] {
   const out: string[] = [...questWarnings(content)]
-  // Reachability over exits from the start, and from every edge on the region map (reached across country).
+  // Reachability over exits from the start, and from every edge on the region map (reached across country);
+  // a line of transport (M10.23: the white boat to another land) takes the stranger from one of its stops to the others.
   const roots = [content.world.start.location, ...[...content.locations.values()].filter((l) => l.tags.includes('edge') && (l.pos ?? content.areas.get(l.area)?.pos)).map((l) => l.id)]
   const reached = new Set<string>(roots)
   const queue = [...roots]
+  const reach = (to: string) => {
+    if (reached.has(to) || !content.locations.has(to)) return
+    reached.add(to)
+    queue.push(to)
+  }
   while (queue.length) {
     const id = queue.shift()!
-    for (const exit of Object.values(content.locations.get(id)?.exits ?? {})) {
-      if (exit && !reached.has(exit.to)) {
-        reached.add(exit.to)
-        queue.push(exit.to)
-      }
-    }
+    for (const exit of Object.values(content.locations.get(id)?.exits ?? {})) if (exit) reach(exit.to)
+    for (const line of content.passages.values()) if (line.stops.includes(id)) line.stops.forEach(reach)
   }
   for (const location of content.locations.values()) {
     const onMap = location.pos ?? content.areas.get(location.area)?.pos
-    if (!reached.has(location.id)) out.push(`${location.id}: cannot be reached from the start, by exits or across country${onMap ? '' : ' (and it has no place on the map)'}`)
+    if (!reached.has(location.id)) out.push(`${location.id}: cannot be reached from the start, by exits, lines or across country${onMap ? '' : ' (and it has no place on the map)'}`)
     const sentences = location.description.day.split(/(?<=[.!?])\s+/).filter((s) => s.trim()).length
     if (sentences < 3 || sentences > 5) out.push(`${location.id}: the day description has ${sentences} sentences; three to five read best`)
   }

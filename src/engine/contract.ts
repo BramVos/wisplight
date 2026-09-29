@@ -43,6 +43,12 @@ export const FIELD_NOTES: Record<string, string[]> = {
   factions: ['`seats`: where else a faction sits, each a place (a location or an area) with what it wants there. A town that grows in play brings no new factions: a district may get a seat of one the world has; a new faction comes only from a storyline or a great line.'],
   // M10.21: a far town grows by district.
   topics: ['`districts` (a far town, kind place): its quarters as the world book names them, each with an id, a name and a line; the first is where the stranger comes in. The game makes the first playable when the stranger does something there (buys, asks, rents a bed), and each other when they go into it by its street; without a model from templates and the line.'],
+  // M10.23: another land, the same world, its own frame.
+  land: [
+    'A land lives in its own folder, `lands/<land>/`: its `land.yaml` (under `land:`, with the id of its folder), a `voice.yaml` of its own if its people speak otherwise, and its areas, places, people, factions, trades and beasts in files beside them, which play like the world\'s. An area in the folder belongs to the land; elsewhere `land:` on the area says so, and without it an area is of the home land (the world itself). A region (`land:`) is coloured by its land\'s palette, and a far place (a topic of kind place, `land:`) makes what grows there of that land.',
+    'What a land leaves out it takes from the world: the calendar and the clock always, and prices, which are in the world\'s smallest coin everywhere. `money.rate` is how many of the land\'s smallest coin one of the world\'s smallest buys (a whole number); the land tells prices in its own coins, and they are changed at the border. A land without `law` has the world\'s kind of officer, without the world\'s officer or office.',
+    'The stranger crosses into a land only at a border: an area with `border: true` (a bridge, a pass, a toll house, a harbour), where `crossing` is told. An area with `blend: <land>` shades into that land: sayings of both kits, and both coins good.',
+  ],
   // M10.20: the transport step of The Quiet Reach wrote legs as "a-b".
   passages: ['`legs`: minutes between two of its stops that the map cannot measure, keyed `<stop>><stop>` with a `>` between the ids (`loc_quay>kestrel_landing: 90`).'],
 }
@@ -63,6 +69,7 @@ export const KINDS: Record<string, KindText> = {
   regions: { file: 'regions/<region>/region.yaml', does: 'The map of the land: terrain, ways, landmarks and where places lie on it, with the region\'s own lands (black basalt, open sea), each walking like one of the engine\'s.', missing: 'No map: the world is walked by its exits. The editor lays out a first one from the places, their exits and minutes (Palette tab).' },
   rules: { file: 'rules/rules.yaml', does: 'The rules of play: skills, ancestries, backgrounds, classes and talents, conditions and patrons.', missing: 'No character to make and no fights: the stranger talks, trades and walks.' },
   voice: { file: 'data/voice.yaml', does: 'How people speak: oaths per faith, rare sayings, how they call a stranger, time and measures, and what does not exist here.', missing: 'The fixed list of modern words is kept out, and nothing else.' },
+  land: { file: 'lands/<land>/land.yaml', does: 'Another land of the same world with a frame of its own: the frame every model call gets there, its voice kit, faiths, coins at a rate, law, names, standing and palette; its areas, people and factions in its folder. Whoever is in it plays under its frame.', missing: 'One land: the world is its home land, and every area is of it.' },
   journey: { file: 'data/journey.yaml', does: 'Sentences for a journey of more than a few steps: per terrain, weather and the night, and what may happen on the way.', missing: 'A walk is told in one line.' },
   passages: { file: 'data/passages.yaml', does: 'Lines of transport (a barge, a coach, a ferry, a spaceship): stops, days and departures, fares and legs.', missing: 'No lines: the stranger walks.' },
   returning: { file: 'data/belonging.yaml', does: 'The words for what changed at a place since the stranger was last there.', missing: 'Nothing is said when the stranger comes back.' },
@@ -337,6 +344,7 @@ function countOf(content: Content, key: string): number {
     regions: content.regions,
     rules: content.rules,
     voice: content.voice,
+    land: content.lands,
     journey: content.journey,
     passages: content.passages,
     returning: content.returning,
@@ -346,6 +354,7 @@ function countOf(content: Content, key: string): number {
     realms: content.realms,
     tensions: content.tensions,
     plans: content.plans,
+    tides: content.tides,
     watchers: content.watchers,
     aftermath: content.aftermath,
     intentions: content.intentions,

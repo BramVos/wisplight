@@ -1,3 +1,4 @@
+import { frameOf } from './lands'
 import type { Content } from './content'
 import { formatMoney } from './items'
 import { verbName } from './quests/verbs'
@@ -111,6 +112,33 @@ export function worldBook(content: Content, input: WorldBookInput = {}): string 
       return far.length ? ['### Far places', '', ...table(['Place', 'What people know', 'Districts'], far.map((t) => [t.name, t.summary, t.districts.map((d) => `${d.name}: ${d.line}`).join(' ')]))] : []
     })(),
   ])
+
+  // The lands (M10.23): per land a part, with its own frame; the home land is the world.
+  const lands = [...content.lands.values()]
+  add('Lands', lands.length ? [
+    ...para(`Besides ${w.words?.land ?? w.name} itself, the home land, this world has ${lands.length === 1 ? 'one other land, with a frame of its own' : `${lands.length} other lands, each with a frame of its own`}. Whoever is in a land plays under its frame; the stranger crosses into one only at a border, and takes their time along: the calendar and the clock are the world's.`),
+    ...lands.flatMap((l) => {
+      const f = frameOf(content, l)
+      const areas = [...content.areas.values()].filter((a) => a.land === l.id)
+      const borders = areas.filter((a) => a.border)
+      const blends = [...content.areas.values()].filter((a) => a.blend === l.id)
+      return [
+        `### ${cap(l.name)}`,
+        '',
+        ...(l.realm ? para(`Ruled as ${content.realms.get(l.realm)?.name ?? l.realm}.`) : []),
+        ...table(['Area', 'Kind', 'What it is'], areas.map((a) => [`${a.name}${a.border ? ' (border)' : ''}`, a.kind, a.summary])),
+        ...(borders.length ? para(`The stranger crosses in at ${borders.map((a) => a.name).join(' or ')}.${l.crossing ? ` ${l.crossing}` : ''}`) : []),
+        ...(blends.length ? para(`It shades into ${blends.map((a) => a.name).join(', ')}, where both kits are spoken and both coins are good.`) : []),
+        ...(l.money ? para(`Coins: ${l.money.units.map((u) => `${u.name} (${u.short}, ${u.value})`).join(', ')}; one of the world's smallest coin buys ${l.money.rate} of its smallest. Prices stay in the world's coin and are told in these.`) : []),
+        ...(l.faiths ? para(l.faiths.length ? `Faith: ${l.faiths.map((x) => x.name).join(', ')}.` : 'No faith.') : []),
+        ...(l.law ? para(`The law ${l.law.where} is kept by the ${l.law.officer}${l.law.npc ? ` (${person(l.law.npc)})` : ''}.`) : para(`The law: the world's kind, ${f.law ? `a ${f.law.officer}` : 'without an officer'}, of its own.`)),
+        ...(l.voice?.address.stranger.length ? para(`A stranger is called ${l.voice.address.stranger.join(' or ')}.`) : []),
+        '#### The frame every model call gets here',
+        '',
+        ...block(l.frame),
+      ]
+    }),
+  ] : [])
 
   // 3. History: the lore people tell.
   const lore = [...content.topics.values()].filter((t) => t.kind === 'lore').sort((a, b) => a.name.localeCompare(b.name))

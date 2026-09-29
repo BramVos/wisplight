@@ -331,9 +331,17 @@ function homeFile(files: ContentFile[], kind: EntityKind, data: Raw): string {
   const prefix = worldPrefix(files)
   const list = LISTS[kind]
   const locations = entities(files, 'location')
+  // The land an area is of (M10.23): by its `land:`, or the land folder it is written in.
+  const landOf = (area: string): string | undefined => {
+    const a = entities(files, 'area').find((e) => e.id === area)
+    return a ? (typeof a.raw['land'] === 'string' ? a.raw['land'] : landOfFile(a.file)) : undefined
+  }
   const areaDir = (area: string): string | undefined => {
     const inArea = locations.find((l) => l.raw['area'] === area)
     if (inArea) return inArea.file.replace(/[^/]+$/, '')
+    // A new area of a land: in the land's folder.
+    const land = landOf(area)
+    if (land) return `${prefix}lands/${land}/areas/${area}/`
     // A new area: a folder beside the other areas' folders.
     const other = locations.find((l) => /\/areas\/[^/]+\/[^/]+$/.test(l.file))
     return other ? other.file.replace(/[^/]+\/[^/]+$/, `${area}/`) : `${prefix}areas/${area}/`
@@ -352,6 +360,11 @@ function homeFile(files: ContentFile[], kind: EntityKind, data: Raw): string {
     return `${areaDir(area)}npcs.yaml`
   }
   if (kind === 'region') return `${prefix}regions/${String(data['id'])}/region.yaml`
+  // An area of a land goes with the land's other areas, or starts its folder's list (M10.23).
+  if (kind === 'area' && typeof data['land'] === 'string') {
+    const land = data['land']
+    return entities(files, 'area').find((e) => landOfFile(e.file) === land)?.file ?? `${prefix}lands/${land}/data/areas.yaml`
+  }
   // A list inside the rules goes where the rules are, or starts rules/rules.yaml.
   if (LISTS[kind].startsWith('rules.')) return [...entities(files, 'background'), ...entities(files, 'patron'), ...entities(files, 'condition'), ...entities(files, 'ancestry')][0]?.file ?? rulesFile(files) ?? `${prefix}rules/rules.yaml`
   const counts = new Map<string, number>()
@@ -534,10 +547,19 @@ export function adoptPlaceEdits(project: Raw, from?: Raw): Edit[] {
 
 // ---------------------------------------------------------------- the voice kit (M10.10)
 
-/** Where a world's voice kit is written, and as the editor shows it: the YAML under `voice:`, without that line. */
-export function voiceYaml(files: ContentFile[]): { file: string; yaml: string; own: boolean } {
-  const file = sorted(files).find((f) => isYaml(f.path) && /^voice:/m.test(f.text))
-  if (!file) return { file: `${worldPrefix(files)}data/voice.yaml`, yaml: '', own: false }
+/** The land whose folder a file is in (M10.23), or undefined for the world's own files. */
+export function landOfFile(path: string): string | undefined {
+  return path.match(/(?:^|\/)lands\/([a-z0-9_]+)\//)?.[1]
+}
+
+/**
+ * Where a voice kit is written, and as the editor shows it: the YAML under
+ * `voice:`, without that line. The world's kit, or a land's (M10.23), in
+ * lands/<land>/voice.yaml.
+ */
+export function voiceYaml(files: ContentFile[], land?: string): { file: string; yaml: string; own: boolean } {
+  const file = sorted(files).find((f) => isYaml(f.path) && landOfFile(f.path) === land && /^voice:/m.test(f.text))
+  if (!file) return { file: land ? `${worldPrefix(files)}lands/${land}/voice.yaml` : `${worldPrefix(files)}data/voice.yaml`, yaml: '', own: false }
   const node = parseDocument(file.text).get('voice', true)
   if (!isMap(node)) return { file: file.path, yaml: '', own: true }
   const doc = new Document(node)
@@ -601,10 +623,10 @@ export function patchWorld(files: ContentFile[], yaml: string): { problems: stri
  * into the kit where it stands, so the comments around it stay; a world
  * without one gets data/voice.yaml. Checked by loading the whole world.
  */
-export function saveVoice(files: ContentFile[], yaml: string): { ok: boolean; problems: string[]; changes: FileChange[] } {
+export function saveVoice(files: ContentFile[], yaml: string, land?: string): { ok: boolean; problems: string[]; changes: FileChange[] } {
   const read = parseEntityYaml(yaml)
   if (!read.raw) return { ok: false, problems: [read.problem ?? 'the voice kit is empty'], changes: [] }
-  const { file: path } = voiceYaml(files)
+  const { file: path } = voiceYaml(files, land)
   const file = files.find((f) => f.path === path)
   let text: string
   if (file) {
@@ -617,7 +639,85 @@ export function saveVoice(files: ContentFile[], yaml: string): { ok: boolean; pr
     const doc = new Document()
     doc.contents = doc.createNode({}) as YAMLMap
     ;(doc.contents as YAMLMap).set('voice', makeNode(doc, read.raw, 0))
-    text = `# How people in this world speak (M10.10): the voice kit.\n${tidy(doc.toString({ lineWidth: 0 }))}`
+    text = `# How people ${land ? 'in this land' : 'in this world'} speak (M10.10): the voice kit.\n${tidy(doc.toString({ lineWidth: 0 }))}`
+  }
+  if (file?.text === text) return { ok: true, problems: [], changes: [] }
+  const next = file ? files.map((f) => (f === file ? { ...f, text } : f)) : [...files, { path, text }]
+  try {
+    loadContent(next)
+  } catch (error) {
+    return { ok: false, problems: error instanceof ContentError ? error.problems : [String(error)], changes: [] }
+  }
+  return { ok: true, problems: [], changes: [{ path, ...(file ? { before: file.text } : {}), text }] }
+}
+
+// ---------------------------------------------------------------- lands (M10.23)
+
+/** The lands of a world, as the editor lists them. */
+export function landsIn(files: ContentFile[]): { id: string; name: string; file: string }[] {
+  const found: { id: string; name: string; file: string }[] = []
+  for (const f of sorted(files)) {
+    const id = landOfFile(f.path)
+    if (!id || !isYaml(f.path) || !/^land:/m.test(f.text)) continue
+    const data = (parse(f.text) as { land?: { name?: unknown } } | null)?.land
+    found.push({ id, name: typeof data?.name === 'string' ? data.name : id, file: f.path })
+  }
+  return found
+}
+
+/** A new land as the editor first shows it: what a land must have, and a word on the rest. */
+function landTemplate(id: string): string {
+  return [
+    `id: ${id}`,
+    `name: ${id.replace(/_/g, ' ')}`,
+    '# The fixed block every model call gets while the stranger is in this land.',
+    'frame: |',
+    '  WORLD: What the whole world is, as in world.yaml.',
+    '  LAND: What this land is, and how it differs from the home land.',
+    '  REGION: Where the stranger comes in.',
+    '  PEOPLE: How people here speak, and how they count time.',
+    '# What the stranger notices crossing in, told at the border.',
+    'crossing: Another way of address, other money on the table.',
+    '# Left out, the world\'s: words, names, faiths, money (with a rate), law, standing, sketch, pictures, palette.',
+    '',
+  ].join('\n')
+}
+
+/** A land's land.yaml as the editor shows it: the YAML under `land:`; a land not there yet gets a template. */
+export function landYaml(files: ContentFile[], id: string): { file: string; yaml: string; own: boolean } {
+  const path = `${worldPrefix(files)}lands/${id}/land.yaml`
+  const file = files.find((f) => f.path === path)
+  const node = file ? parseDocument(file.text).get('land', true) : undefined
+  if (!file || !isMap(node)) return { file: path, yaml: landTemplate(id), own: false }
+  return { file: path, yaml: tidy(new Document(node).toString({ lineWidth: 0 })), own: true }
+}
+
+/**
+ * Writes a land from the editor's YAML box (M10.23): field by field into
+ * lands/<id>/land.yaml, so the comments around it stay; a new land gets its
+ * folder. The id is the folder's. Checked by loading the whole world.
+ */
+export function saveLand(files: ContentFile[], id: string, yaml: string): { ok: boolean; problems: string[]; changes: FileChange[] } {
+  if (!/^[a-z0-9_]+$/.test(id)) return { ok: false, problems: [`"${id}" is no id: small letters, digits and _`], changes: [] }
+  const read = parseEntityYaml(yaml)
+  if (!read.raw) return { ok: false, problems: [read.problem ?? 'the land is empty'], changes: [] }
+  const stray = unknownFields('land', read.raw)
+  if (stray) return { ok: false, problems: [`land: ${stray}`], changes: [] }
+  const raw = { ...read.raw, id }
+  const { file: path } = landYaml(files, id)
+  const file = files.find((f) => f.path === path)
+  let text: string
+  if (file) {
+    const doc = parseDocument(file.text)
+    const node = doc.get('land', true)
+    if (isMap(node)) patchMap(doc, node, raw)
+    else doc.set('land', makeNode(doc, raw, 0))
+    text = tidy(doc.toString({ lineWidth: 0 }))
+  } else {
+    const doc = new Document()
+    doc.contents = doc.createNode({}) as YAMLMap
+    ;(doc.contents as YAMLMap).set('land', makeNode(doc, raw, 0))
+    text = `# A land of this world (M10.23): its own frame. Its areas, people and voice kit go in this folder.\n${tidy(doc.toString({ lineWidth: 0 }))}`
   }
   if (file?.text === text) return { ok: true, problems: [], changes: [] }
   const next = file ? files.map((f) => (f === file ? { ...f, text } : f)) : [...files, { path, text }]

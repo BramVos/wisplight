@@ -107,7 +107,42 @@ Levels: the caves, ground level, the cliff tops.
 | --- | --- | --- |
 | Havenmoor | Havenmoor is the harbour town on the mainland, two days' sail east with a fair wind. | the quays: The long quays where the packet from Skerrow puts in, among fish sheds, chandlers and a tavern for sailors. the upper town: Steep streets above the harbour, with the merchants' houses and a temple of the Tidemother that looks out to sea. |
 
-## 3. History and lore
+## 3. Lands
+
+Besides the Sundered Isles itself, the home land, this world has one other land, with a frame of its own. Whoever is in a land plays under its frame; the stranger crosses into one only at a border, and takes their time along: the calendar and the clock are the world's.
+
+### The Western Isles
+
+| Area | Kind | What it is |
+| --- | --- | --- |
+| Ynys Wen (border) | hamlet | The nearest of the Western Isles to Skerrow, a low white island with a stone landing and the long hall of the elves. |
+
+The stranger crosses in at Ynys Wen. At the landing an elf takes your coin without a word of bargaining and counts glass beads into your hand for it. Nobody here calls you stranger; you are a child of the short years, and they speak to you slowly, as if you might not follow.
+
+Coins: silver ring (ring, 20), glass bead (bead, 1); one of the world's smallest coin buys 2 of its smallest. Prices stay in the world's coin and are told in these.
+
+Faith: the Old Stars.
+
+The law on the Western Isles is kept by the steward (Eluned Silverstrand).
+
+A stranger is called child of the short years.
+
+#### The frame every model call gets here
+
+```text
+WORLD: The Sundered Isles, a scatter of islands in the Glass Sea. Year 412 of the Starfall,
+the night the sky broke and the empire of Aldmar drowned. Magic is real but rare. Money here:
+silver rings and glass beads (1 ring = 20 beads); the elves take a copper piece of the east
+for two beads. Faith: the elves keep to the Old Stars and do not swear by the Tidemother.
+LAND: The Western Isles, where the elves live: few, long-lived and slow to speak. They remember
+Aldmar before it drowned, and they do not speak of it to strangers.
+REGION: Ynys Wen, the nearest of the Western Isles to Skerrow, a low white island with one
+landing and one long hall, where strangers from the east are received and seldom let further.
+PEOPLE speak plain English, slowly and formally, with long silences, and call a stranger "child
+of the short years". They count time by seasons and tides, never by bells.
+```
+
+## 4. History and lore
 
 | Topic | What people know |
 | --- | --- |
@@ -116,7 +151,7 @@ Levels: the caves, ground level, the cliff tops.
 | the Tidemother | The Tidemother is the sea itself; she gives the fish and the wrecks, and she takes back what she likes. |
 | the waystone | In the ruined tower on the heights stands a waystone of Aldmar, a ring of black stone taller than a man. |
 
-## 4. Powers
+## 5. Powers
 
 | Faction | Seat | Wants | Stands | Joining |
 | --- | --- | --- | --- | --- |
@@ -139,7 +174,7 @@ Levels: the caves, ground level, the cliff tops.
 | --- | --- | --- | --- | --- |
 | The great storm | storm | Skerrow Hythe, the Shore | autumn (+1), winter (+2), beacon_burning (-1) | 40, 90: the great storm |
 
-## 5. Faith
+## 6. Faith
 
 | Faith | Patrons | Faction |
 | --- | --- | --- |
@@ -157,14 +192,15 @@ Levels: the caves, ground level, the cliff tops.
 
 - The Silver Grove (the Tidemother)
 
-## 6. Towns and villages
+## 7. Towns and villages
 
 | Settlement | Kind | People | The ground | Workshops |
 | --- | --- | --- | --- | --- |
 | Skerrow Hythe | hamlet | 30 | sea, heath, wreck | brewhouse, ale_brewing, salvage, inshore_fishing, kettle_kitchen |
 | the Heights | wilderness | 0 | kelp | kelp_gathering, salve_still |
+| Ynys Wen | hamlet | 12 | white_shallows | shallows_fishing |
 
-## 7. The starting region
+## 8. The starting region
 
 | Area | Kind | What it is | Sound |
 | --- | --- | --- | --- |
@@ -172,6 +208,7 @@ Levels: the caves, ground level, the cliff tops.
 | Skerrow Hythe | hamlet | The only hamlet on Skerrow, a dozen stone cottages round a little harbour, with the Salt Kettle for an inn. | sea |
 | the Heights | wilderness | The high ground of Skerrow, with the silver grove, the wyrm's barrow, the beacon and the old tower. | wind |
 | the Shore | wilderness | The rocky south shore of Skerrow, where the currents throw up whatever the sea breaks. | surf |
+| Ynys Wen | hamlet | The nearest of the Western Isles to Skerrow, a low white island with a stone landing and the long hall of the elves. | sea |
 
 ### Seasons and weather
 
@@ -182,7 +219,7 @@ Levels: the caves, ground level, the cliff tops.
 | autumn | clear 10%, overcast 25%, rain 25%, fog 30%, storm 10% |
 | winter | clear 15%, overcast 35%, rain 20%, fog 15%, storm 10%, frost 5% |
 
-## 8. Places
+## 9. Places
 
 ### Skerrow Hythe
 
@@ -268,13 +305,31 @@ You stand on a strand of black shingle where the sea throws up what is left of t
 
 Ways: north to The Cliff Path; east to The Tidepools.
 
-## 9. People
+### Ynys Wen
+
+<!-- picture:area_ynys_wen -->
+
+**The Long Hall of Ynys Wen** (public, law)
+
+The hall is longer than any building on Skerrow, and so quiet you hear your own breath. Light falls in pale bars through tall windows onto a floor of white stone, and the smell of beeswax hangs in the air. Elves sit along the walls and look at you without curiosity. The landing is back south.
+
+Ways: south to Ynys Wen, the Landing.
+
+**Ynys Wen, the Landing** (public, route)
+
+A landing of white stone runs out over a strand so pale it hurts your eyes, and the sea is clear enough to count the pebbles under it. The air smells of salt and of some flower you cannot name. Nobody hurries here. A path of flat stones goes up north to the [long hall].
+
+Ways: north to The Long Hall of Ynys Wen.
+
+## 10. People
 
 | Name | Who | Age | Trade | Home |
 | --- | --- | --- | --- | --- |
 | Brannoc Reed | Brannoc the boatman | 41 | boatman | The Reeds' Cottage |
 | Elowen | Elowen the elf | 312 | scholar | The Drowned Mage's Tower |
+| Eluned Silverstrand | Eluned the steward | 340 | steward | The Long Hall of Ynys Wen |
 | Garrick Stone | Garrick the lightkeeper | 63 | lightkeeper | The Headland |
+| Gwion Whitesand | Gwion of the white boat | 212 | boatman | The Long Hall of Ynys Wen |
 | Maren Holt | Maren of the Salt Kettle | 54 | innkeeper | The Salt Kettle |
 | Pip Reed | Pip, the boatman's boy | 10 | child | The Reeds' Cottage |
 | Tamsin Hale | Old Tamsin the hedge-witch | 74 | hedge-witch | Tamsin's Hut |
@@ -288,7 +343,9 @@ Ways: north to The Cliff Path; east to The Tidepools.
 | --- | --- | --- |
 | Brannoc Reed | family 3, craft 2 | superstitious |
 | Elowen | knowledge 3, freedom 1 | aloof |
+| Eluned Silverstrand | tradition 3, law 2 | long_silences |
 | Garrick Stone | duty 3 | drinker |
+| Gwion Whitesand | freedom 2, community 1 |  |
 | Maren Holt | community 3, law 2, tradition 1 | counts_every_coin |
 | Pip Reed | adventure 3, family 2 | collector |
 | Tamsin Hale | tradition 3, faith 2 | storyteller |
@@ -299,12 +356,13 @@ Ways: north to The Cliff Path; east to The Tidepools.
 - Brannoc Reed: child Pip Reed, spouse Ysolde, neighbour Maren Holt
 - Elowen: acquaintance Tamsin Hale
 - Garrick Stone: friend Maren Holt
+- Gwion Whitesand: kin Eluned Silverstrand
 - Maren Holt: spouse Tobin, friend Garrick Stone, neighbour Brannoc Reed, employer Wenna Dray
 - Pip Reed: parent Brannoc Reed, friend Tamsin Hale
 - Tamsin Hale: friend Pip Reed, acquaintance Elowen
 - Wenna Dray: employee Maren Holt
 
-## 10. Secrets and stories
+## 11. Secrets and stories
 
 ### the Starfall
 
@@ -327,7 +385,7 @@ The old gentleman? He came before the Starfall, when this was a mountain and not
 | Maren Holt | When the store shed lost its roof, Maren saved two casks of the beacon's oil from the sea, and she sells them to anyone who can pay. |
 | Pip Reed | Pip has crept into the wyrm's barrow at noon, when Tamsin says the wyrm sleeps soundest, and seen a black key on a stone shelf. |
 
-## 11. Bestiary
+## 12. Bestiary
 
 | Creature | Kind | Level | Faction |
 | --- | --- | --- | --- |
@@ -352,7 +410,7 @@ The old gentleman? He came before the Starfall, when this was a mountain and not
 | The wight at the tower | The Drowned Mage's Tower | 1 barrow-wight |
 | Old Skarth wakes | The Wyrm Barrow | 1 Old Skarth |
 
-## 12. Coins, measures and calendar
+## 13. Coins, measures and calendar
 
 ### Coins
 
@@ -417,13 +475,13 @@ The law on Skerrow is kept by the headwoman (Maren Holt).
 
 No fine buys off a death: the stranger is held 24 hours and heard. In the morning the island gathers on the shingle, every household that can walk, and the headwoman asks what happened. They hear you and they hear the dead one's kin, and at the end they let you go, because the sea will judge you in its own time.
 
-## 13. Quests
+## 14. Quests
 
 | Quest | What it is about | Given by | Ways it ends |
 | --- | --- | --- | --- |
 | Off Skerrow | Stranded on Skerrow after the wreck of the Grey Gull, the stranger has to find a way off the island before winter. | Maren Holt | In the Kittiwake; A ship for the light; Through the waystone; Winter closes the sea |
 
-## 14. Names and speech
+## 15. Names and speech
 
 ### Sayings
 
@@ -442,7 +500,7 @@ No fine buys off a death: the stranger is held 24 hours and heard. In the mornin
 
 o'clock, potatoes, potato, tobacco, coffee, chocolate, gun, guns, pistol, musket, gunpowder, pocket watch, okay, ok, photograph, percent, awesome, dude, police, weekend, dollars, dollar, pennies, penny, cents, internet, online, website, email, phone, computer, robot, television, electricity, plastic, hashtag, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday, January, February, April, June, July, August, September, October, November, December.
 
-## 15. Trades and crafts
+## 16. Trades and crafts
 
 | Trade | Works |
 | --- | --- |
@@ -453,6 +511,7 @@ o'clock, potatoes, potato, tobacco, coffee, chocolate, gun, guns, pistol, musket
 | hedge-witch | 07:30-12:00, 13:00-17:00 |
 | scholar | 08:30-13:00, 13:30-19:00, 19:30-23:30 |
 | lightkeeper | 10:00-14:00 |
+| steward | 08:00-19:00 |
 
 ### Crafts
 
@@ -461,13 +520,14 @@ o'clock, potatoes, potato, tobacco, coffee, chocolate, gun, guns, pistol, musket
 | fishing | fisher | hand lines | poor (handful of small fry) |
 | salve-making | salve-maker | kelp salve | poor (pot of thin salve) |
 
-## 16. Transport
+## 17. Transport
 
 | Line | Kind | Stops | Days | Fare |
 | --- | --- | --- | --- | --- |
 | the Havenmoor packet | ferry | Skerrow Hythe, the Harbour, havenmoor | Tidesday, Starday | 3 sp |
+| the white boat | boat | Skerrow Hythe, the Harbour, Ynys Wen, the Landing | Restday | 4 sp |
 
-## 17. What happens when
+## 18. What happens when
 
 - When asked about: seek player A.
 - When request open (a signal of the game itself): seek player A.
@@ -485,7 +545,7 @@ o'clock, potatoes, potato, tobacco, coffee, chocolate, gun, guns, pistol, musket
 - When pupil learnt (a signal of the game itself): A thinks: "You can do {value} on your own now; the stranger taught you."; word goes round: "{a} learning {value} from the stranger".
 - When improvised (The Silver Grove) (a signal of the game itself): a mark at The Silver Grove: "Gulls sit in the birches tonight, silent, every one of them facing the sea.".
 
-## 18. The rules in short
+## 19. The rules in short
 
 Ancestries: Islander, Mainlander, Elf of the western isles. Classes: Shieldhand, Harpooner, Knave, Hedge-witch, Runecaster, Tidecaller. Backgrounds: castaway, fisher, lamp hand, witch apprentice, rune reader, wreckers child, havenmoor guard, merchants clerk, fugitive, merchant.
 
@@ -493,7 +553,7 @@ Conditions: Frightened, Bleeding, Grabbed, Prone, Wet and cold, Off-guard, Sicke
 
 Death: You wake on your back on the shingle a day later, coughing up salt water.
 
-## 19. The look and sound of the world
+## 20. The look and sound of the world
 
 Pictures: A small illustration in the manner of an old high-fantasy book plate, pen and ink with a light watercolour wash, sea greens and storm greys, a lone rocky island under a vast sky.
 

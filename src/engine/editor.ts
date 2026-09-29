@@ -6,6 +6,7 @@ import { ContentError, loadContent, type Content, type ContentFile, type Directi
 import { descriptionCheck, placeMeasures, regionPreview, sceneryWarnings, warnings } from './builder'
 import { applyEdits, entities, entityYaml, ENTITY_KINDS, LISTS, locate, parseEntityYaml, patchRules, patchWorld, voiceYaml, worldPrefix, type Edit, type EditResult, type EntityKind, type FileChange, type Raw } from './edit'
 import { worldFrame } from './dialogue/prompt'
+import { frameOf } from './lands'
 import { suspectText, worldText, type SuspectText } from './safety'
 import type { LlmRequest } from './dialogue/llm'
 import { voiceSummary } from './dialogue/voice'
@@ -1184,19 +1185,21 @@ const VOICE_SCHEMA = { type: 'object', additionalProperties: false, required: ['
  * Rare sayings, plain speech: character shows in what people care about, not
  * in a trick of proverbs.
  */
-export function voiceRequest(files: ContentFile[], ask: string): LlmRequest {
+export function voiceRequest(files: ContentFile[], ask: string, land?: string): LlmRequest {
   const content = safeLoad(files)
   const instruction = files.filter((f) => /(^|\/)CHRONICLER\.md$/.test(f.path)).sort((a, b) => a.path.localeCompare(b.path)).map((f) => f.text).join('\n\n')
-  const now = voiceYaml(files).yaml
-  const faiths = content?.world.faiths.map((f) => `${f.id} (${f.name})`).join(', ') ?? ''
-  const areas = content ? [...content.areas.values()].map((a) => `${a.id} (${a.name}, ${a.kind})`).join(', ') : ''
+  // A land's kit (M10.23): from the land's frame and faiths, for the areas of the land.
+  const now = voiceYaml(files, land).yaml
+  const held = content ? frameOf(content, land).faiths : []
+  const faiths = held.map((f) => `${f.id} (${f.name})`).join(', ')
+  const areas = content ? [...content.areas.values()].filter((a) => a.land === land).map((a) => `${a.id} (${a.name}, ${a.kind})`).join(', ') : ''
   const trades = content ? [...content.professions.keys()].join(', ') : ''
   return {
     role: 'chronicler',
     system: [
       instruction,
       '',
-      content ? worldText(worldFrame(content)) : '',
+      content ? worldText(worldFrame(content, land)) : '',
       '',
       'YOU ARE IN THE WORLD BUILDER, AT THE VOICE KIT. Propose how people in this world speak, as YAML with these keys: oaths (per faith id, two or three each), sayings (three or four of the whole region), groups (id, name, areas, professions, two or three sayings each), default_group, address (stranger, known, friend, high; "she/he/they" forms allowed), time, distance, measures, and not_here (word, and instead when people here have a word for it; weekdays and months of our world with this world\'s own). Sayings are rare in play: make them few and good. JSON only, with the YAML as a string: the fields below at its top, with or without voice: above them.',
       // The exact fields (M10.20: the real trial of this call wrote each time phrase as a map where the kit has a line of text).
@@ -1206,7 +1209,7 @@ export function voiceRequest(files: ContentFile[], ask: string): LlmRequest {
     schemaName: 'voice_draft',
     schema: VOICE_SCHEMA,
     maxTokens: 3000,
-    meta: { voice: now, faiths: content?.world.faiths.map((f) => f.id) ?? [], ask },
+    meta: { voice: now, faiths: held.map((f) => f.id), ask, ...(land ? { land } : {}) },
   }
 }
 

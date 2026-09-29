@@ -4,7 +4,7 @@ import { appendFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFi
 import { tmpdir } from 'node:os'
 import { basename, dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { ContentError, discoveredAtlasHtml, draftRequest, mapDraft, readSaveFile, saveAbout, saveFileName, saveFileText, SAVE_FILE_EXTENSION, type SaveFile, draftResult, Engine, ENTITY_KINDS, lineDiff, MapPaletteSchema, paletteRequest, paletteView, readDraft, readPalette, readVoice, savePalette, saveVoice, voiceRequest, voiceYaml, worldStepRequest, worldFixRequest, mergeFix, polishRequest, readPolish, recheckDraft, descriptionCheck, enhanceRequest, readEnhance, type Content, type Edit, type EntityKind, type FileChange, type CheckpointedSave, type MapPalette, type Output, type SaveData } from '../engine'
+import { ContentError, discoveredAtlasHtml, draftRequest, mapDraft, readSaveFile, saveAbout, saveFileName, saveFileText, SAVE_FILE_EXTENSION, type SaveFile, draftResult, Engine, ENTITY_KINDS, lineDiff, MapPaletteSchema, paletteRequest, paletteView, readDraft, readPalette, readVoice, savePalette, saveVoice, voiceRequest, voiceYaml, landsIn, landYaml, saveLand, worldStepRequest, worldFixRequest, mergeFix, polishRequest, readPolish, recheckDraft, descriptionCheck, enhanceRequest, readEnhance, type Content, type Edit, type EntityKind, type FileChange, type CheckpointedSave, type MapPalette, type Output, type SaveData } from '../engine'
 import { designUpdate, readDesignChange } from '../engine/designlog'
 import { ContentEditor } from '../node/editor'
 import { AppKnobs, type AppKnobId } from '../node/knobs'
@@ -839,14 +839,14 @@ handle('editor:propose-palette', async (_event, world: unknown, ask: unknown) =>
   }
 })
 // The voice kit of a world (M10.10): read, written into its file, or proposed by the writing aid.
-handle('editor:voice', async (_event, world: unknown) => {
+handle('editor:voice', async (_event, world: unknown, land: unknown) => {
   devOnly()
-  return voiceYaml(await readContentFiles(contentDir(), worldOf(world)))
+  return voiceYaml(await readContentFiles(contentDir(), worldOf(world)), typeof land === 'string' ? land : undefined)
 })
-handle('editor:save-voice', async (_event, world: unknown, yaml: unknown) => {
+handle('editor:save-voice', async (_event, world: unknown, yaml: unknown, land: unknown) => {
   devOnly()
   const files = await readContentFiles(contentDir(), worldOf(world))
-  const outcome = saveVoice(files, String(yaml ?? ''))
+  const outcome = saveVoice(files, String(yaml ?? ''), typeof land === 'string' ? land : undefined)
   if (!outcome.ok) return { ok: false, problems: outcome.problems, warnings: [], changes: [] }
   ignoreWatchUntil = Date.now() + 1500
   for (const change of outcome.changes) {
@@ -856,14 +856,36 @@ handle('editor:save-voice', async (_event, world: unknown, yaml: unknown) => {
   afterEdit(worldOf(world))
   return { ok: true, problems: [], warnings: [], changes: shown(outcome.changes) }
 })
-handle('editor:propose-voice', async (_event, world: unknown, ask: unknown) => {
+// The lands of a world (M10.23): listed, read as YAML, and written into lands/<land>/land.yaml.
+handle('editor:lands', async (_event, world: unknown) => {
+  devOnly()
+  return landsIn(await readContentFiles(contentDir(), worldOf(world)))
+})
+handle('editor:land', async (_event, world: unknown, land: unknown) => {
+  devOnly()
+  return landYaml(await readContentFiles(contentDir(), worldOf(world)), String(land))
+})
+handle('editor:save-land', async (_event, world: unknown, land: unknown, yaml: unknown) => {
+  devOnly()
+  const files = await readContentFiles(contentDir(), worldOf(world))
+  const outcome = saveLand(files, String(land), String(yaml ?? ''))
+  if (!outcome.ok) return { ok: false, problems: outcome.problems, warnings: [], changes: [] }
+  ignoreWatchUntil = Date.now() + 1500
+  for (const change of outcome.changes) {
+    mkdirSync(dirname(join(contentDir(), change.path)), { recursive: true })
+    writeFileSync(join(contentDir(), change.path), change.text, 'utf8')
+  }
+  afterEdit(worldOf(world))
+  return { ok: true, problems: [], warnings: [], changes: shown(outcome.changes) }
+})
+handle('editor:propose-voice', async (_event, world: unknown, ask: unknown, land: unknown) => {
   devOnly()
   await setup()
   const llm = ai?.client()
   if (!llm) return { say: '', problems: ["The writing aid needs a model: connect one in the game's Settings > AI first."] }
   const files = await readContentFiles(contentDir(), worldOf(world))
   try {
-    return readVoice((await llm.complete(voiceRequest(files, String(ask ?? '').slice(0, 1000)))).text)
+    return readVoice((await llm.complete(voiceRequest(files, String(ask ?? '').slice(0, 1000), typeof land === 'string' ? land : undefined))).text)
   } catch (error) {
     return { say: '', problems: [`The writing aid did not answer: ${error instanceof Error ? error.message : String(error)}`] }
   }

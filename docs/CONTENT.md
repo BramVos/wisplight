@@ -76,6 +76,9 @@ A list; each has:
 | sound | one of: one of wind, reeds, rain, sea, surf, hearth, crowd, workshop, ... \| a map: kind, level, night | no |  |
 | improvise | a map: domain, may, fallback, takes | no |  |
 | barred | list of a map: when, carrying, text | no | [] |
+| land | text | no |  |
+| border | yes or no | no | false |
+| blend | text | no |  |
 
 ## locations (areas/<area>/locations.yaml)
 
@@ -244,6 +247,7 @@ A list; each has:
 | audience | a map of names to number | no | {} |
 | fame | number | no | 2 |
 | known_by | list of text | no | [] |
+| land | text | no |  |
 | districts | list of a map: id, name, line | no | [] |
 
 `districts` (a far town, kind place): its quarters as the world book names them, each with an id, a name and a line; the first is where the stranger comes in. The game makes the first playable when the stranger does something there (buys, asks, rents a bed), and each other when they go into it by its street; without a model from templates and the line.
@@ -327,6 +331,7 @@ A list; each has:
 | --- | --- | --- | --- |
 | id | text | yes |  |
 | name | text | yes |  |
+| land | text | no |  |
 | area | text | yes |  |
 | origin | 2 values | yes |  |
 | size | 2 values | yes |  |
@@ -390,6 +395,37 @@ One block with:
 | distance | list of text | no | [] |
 | measures | list of text | no | [] |
 | not_here | list of a map: word, instead | no | [] |
+
+## land (lands/<land>/land.yaml)
+
+Another land of the same world with a frame of its own: the frame every model call gets there, its voice kit, faiths, coins at a rate, law, names, standing and palette; its areas, people and factions in its folder. Whoever is in it plays under its frame.
+
+When a world has none: One land: the world is its home land, and every area is of it.
+
+One block with:
+
+| field | what | required | default |
+| --- | --- | --- | --- |
+| id | text | yes |  |
+| name | text | yes |  |
+| realm | text | no |  |
+| frame | text | yes |  |
+| crossing | text | no |  |
+| words | a map: land, region, from, sleep | no |  |
+| names | a map: she, he, family | no |  |
+| faiths | list of a map: id, name, patrons, oaths, faction | no |  |
+| money | a map: units, rate | no |  |
+| law | a map: where, officer, npc, office, lord, fines, hearing | no |  |
+| standing | a map: names, offices | no |  |
+| sketch | a map: bonds, domains | no |  |
+| pictures | a map: style | no |  |
+| palette | a map: names, signs, dark, paper | no |  |
+
+A land lives in its own folder, `lands/<land>/`: its `land.yaml` (under `land:`, with the id of its folder), a `voice.yaml` of its own if its people speak otherwise, and its areas, places, people, factions, trades and beasts in files beside them, which play like the world's. An area in the folder belongs to the land; elsewhere `land:` on the area says so, and without it an area is of the home land (the world itself). A region (`land:`) is coloured by its land's palette, and a far place (a topic of kind place, `land:`) makes what grows there of that land.
+
+What a land leaves out it takes from the world: the calendar and the clock always, and prices, which are in the world's smallest coin everywhere. `money.rate` is how many of the land's smallest coin one of the world's smallest buys (a whole number); the land tells prices in its own coins, and they are changed at the border. A land without `law` has the world's kind of officer, without the world's officer or office.
+
+The stranger crosses into a land only at a border: an area with `border: true` (a bridge, a pass, a toll house, a harbour), where `crossing` is told. An area with `blend: <land>` shades into that land: sayings of both kits, and both coins good.
 
 ## journey (data/journey.yaml)
 

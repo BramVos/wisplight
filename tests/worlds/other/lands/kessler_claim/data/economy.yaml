@@ -1,0 +1,17 @@
+# The ledger of the Claim Gate (M10.23): the Combine prints what its
+# contractors eat in a kitchen behind the canteen, and keeps a store of
+# ration bars.
+
+resources:
+  - { id: print_kitchen, name: the Combine's print kitchen, gives: [ration_bar] }
+
+settlements:
+  - id: claim_gate
+    tags: [company_town]
+    people: 40
+    income: 8
+    resources: [print_kitchen]
+    use: { ration_bar: 6 }
+    keep: { ration_bar: 30 }
+    workshops:
+      - { id: printing, name: the print kitchen, at: loc_claim_canteen, from: print_kitchen, makes: { ration_bar: 8 }, workers: 1 }

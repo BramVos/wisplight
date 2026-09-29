@@ -1,0 +1,54 @@
+# The elves of Ynys Wen who receive a stranger (M10.23).
+
+npcs:
+  - id: npc_eluned
+    name: Eluned Silverstrand
+    short: Eluned the steward
+    pronoun: she
+    age: 340
+    profession: steward
+    home: loc_ynys_wen_hall
+    work: loc_ynys_wen_hall
+    faith: old_stars
+    fame: 2
+    appearance: A tall elf with silver-white hair to her waist, a grey gown without ornament, and eyes that look through you to something further off.
+    personality: { warmth: 0, courage: 1, honesty: 2, temper: -1, curiosity: 1, diligence: 2 }
+    values: { tradition: 3, law: 2 }
+    quirks: [long_silences]
+    speech: "Slow, formal and sparing. Leaves long silences, and answers a question with another. Calls the stranger 'child of the short years'. Swears under the old light."
+    aliases: [eluned, steward, the steward, silverstrand]
+    public_facts:
+      - Eluned Silverstrand is the steward of the long hall on Ynys Wen, and receives strangers from the east.
+      - She saw Aldmar before it drowned, and will not speak of it.
+    examples:
+      - "You have come a long way, child of the short years. Sit. There is no hurry here."
+      - "Beads, not copper. The copper stays at the landing."
+    money: 800
+    knows_areas: [ynys_wen]
+
+  - id: npc_gwion
+    name: Gwion Whitesand
+    short: Gwion of the white boat
+    pronoun: he
+    age: 212
+    profession: boatman
+    home: loc_ynys_wen_hall
+    work: loc_ynys_wen_landing
+    faith: old_stars
+    fame: 1
+    appearance: A lean elf with brown, salt-cracked hands and a sailor's squint, the only one on the island who seems to find anything funny.
+    personality: { warmth: 1, courage: 2, honesty: 1, temper: 0, curiosity: 2, diligence: 1 }
+    values: { freedom: 2, community: 1 }
+    speech: "Few words, but a dry joke now and then. The only elf who asks questions about Skerrow. Swears by the Old Stars."
+    aliases: [gwion, boatman, the boatman, whitesand]
+    public_facts:
+      - Gwion Whitesand sails the white boat between Ynys Wen and Skerrow.
+    examples:
+      - "Your island's lamp is lit again. We saw it from the water. So we came."
+    money: 120
+    knows_areas: [ynys_wen, skerrow_hythe]
+    relations:
+      - to: npc_eluned
+        role: kin
+        bond: 1
+        note: Your mother's sister, who thinks you spend too long among the short-lived.

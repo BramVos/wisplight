@@ -159,9 +159,13 @@ export interface EditorBridge {
   /** The writing aid's proposal for a palette, from the world's frame; nothing is saved. */
   proposePalette(world: string, ask: string): Promise<{ say: string; palette?: MapPalette; problems: string[] }>
   /** The voice kit (M10.10): as it stands under `voice:`, written back field by field, or proposed by the writing aid. */
-  voice(world: string): Promise<{ file: string; yaml: string; own: boolean }>
-  saveVoice(world: string, yaml: string): Promise<EditorSave>
-  proposeVoice(world: string, ask: string): Promise<{ say: string; yaml?: string; problems: string[] }>
+  voice(world: string, land?: string): Promise<{ file: string; yaml: string; own: boolean }>
+  saveVoice(world: string, yaml: string, land?: string): Promise<EditorSave>
+  /** The lands of a world (M10.23): the list, one land as YAML (a template for a new one), and saving it into lands/<land>/land.yaml. */
+  lands(world: string): Promise<{ id: string; name: string; file: string }[]>
+  land(world: string, land: string): Promise<{ file: string; yaml: string; own: boolean }>
+  saveLand(world: string, land: string, yaml: string): Promise<EditorSave>
+  proposeVoice(world: string, ask: string, land?: string): Promise<{ say: string; yaml?: string; problems: string[] }>
   /** The world book (M10.18): written next to the content, and saved as HTML with the pictures there are. */
   worldBook(world: string): Promise<{ markdown: string; saved?: string }>
   /** One step of building a world with the chronicler (M10.17): its proposal, checked, nothing saved. */
@@ -434,7 +438,7 @@ function contentFiles(): { path: string; text: string }[] {
  */
 export async function createEditor(): Promise<EditorBridge> {
   if (window.wisplight?.editor) return window.wisplight.editor
-  const { applyEdits, draftRequest, draftResult, editorView, entities, entityYaml, filesOfWorld, lineDiff, loadContent, MockLlm, newWorldFiles, paletteRequest, paletteView, mapDraft, readDraft, readPalette, readVoice, savePalette, saveVoice, simulate, voiceRequest, voiceYaml, withReturnExits, worldAtlasHtml, worldBook, worldsIn, worldStepRequest, worldFixRequest, mergeFix, polishRequest, readPolish, recheckDraft, descriptionCheck, enhanceRequest, readEnhance, hourlyBudget } = await import('../../engine')
+  const { applyEdits, draftRequest, draftResult, editorView, entities, entityYaml, filesOfWorld, lineDiff, loadContent, MockLlm, newWorldFiles, paletteRequest, paletteView, mapDraft, readDraft, readPalette, readVoice, savePalette, saveVoice, simulate, voiceRequest, voiceYaml, landsIn, landYaml, saveLand, withReturnExits, worldAtlasHtml, worldBook, worldsIn, worldStepRequest, worldFixRequest, mergeFix, polishRequest, readPolish, recheckDraft, descriptionCheck, enhanceRequest, readEnhance, hourlyBudget } = await import('../../engine')
   let all = contentFiles()
   const builds: Record<string, BuildView> = {}
   const openDrafts = new Map<string, { draft: EditorDraft; asked: string; at: string }>()
@@ -485,16 +489,26 @@ export async function createEditor(): Promise<EditorBridge> {
       return { ok: outcome.ok, problems: outcome.problems, warnings: [], changes: shown(outcome.changes) }
     },
     proposePalette: async (world, ask) => readPalette((await new MockLlm().complete(paletteRequest(filesOfWorld(all, world), ask))).text),
-    voice: async (world) => voiceYaml(filesOfWorld(all, world)),
-    saveVoice: async (world, yaml) => {
-      const outcome = saveVoice(filesOfWorld(all, world), yaml)
+    voice: async (world, land) => voiceYaml(filesOfWorld(all, world), land),
+    lands: async (world) => landsIn(filesOfWorld(all, world)),
+    land: async (world, land) => landYaml(filesOfWorld(all, world), land),
+    saveLand: async (world, land, yaml) => {
+      const outcome = saveLand(filesOfWorld(all, world), land, yaml)
       if (outcome.ok) {
         const changed = new Map(outcome.changes.map((c) => [c.path, c.text]))
         all = [...all.map((f) => (changed.has(f.path) ? { ...f, text: changed.get(f.path)! } : f)), ...outcome.changes.filter((c) => !all.some((f) => f.path === c.path)).map((c) => ({ path: c.path, text: c.text }))]
       }
       return { ok: outcome.ok, problems: outcome.problems, warnings: [], changes: shown(outcome.changes) }
     },
-    proposeVoice: async (world, ask) => readVoice((await new MockLlm().complete(voiceRequest(filesOfWorld(all, world), ask))).text),
+    saveVoice: async (world, yaml, land) => {
+      const outcome = saveVoice(filesOfWorld(all, world), yaml, land)
+      if (outcome.ok) {
+        const changed = new Map(outcome.changes.map((c) => [c.path, c.text]))
+        all = [...all.map((f) => (changed.has(f.path) ? { ...f, text: changed.get(f.path)! } : f)), ...outcome.changes.filter((c) => !all.some((f) => f.path === c.path)).map((c) => ({ path: c.path, text: c.text }))]
+      }
+      return { ok: outcome.ok, problems: outcome.problems, warnings: [], changes: shown(outcome.changes) }
+    },
+    proposeVoice: async (world, ask, land) => readVoice((await new MockLlm().complete(voiceRequest(filesOfWorld(all, world), ask, land))).text),
     draft: async (world, ask, focus) => {
       const files = filesOfWorld(all, world)
       return shownDraft(readDraft(files, (await new MockLlm().complete(draftRequest(files, ask, focus))).text))

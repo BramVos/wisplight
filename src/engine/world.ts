@@ -1,7 +1,7 @@
 import type { Archived } from './archive'
 import { grownContent } from './growth/growth'
 import { calendarOf, GameClock, isOpenAt, type Calendar } from './clock'
-import { callName, type Content, type Direction, type Location, type Npc, type ObjectInstance, type ObjectType, type Service } from './content'
+import { callName, type Content, type Direction, type Land, type Location, type Npc, type ObjectInstance, type ObjectType, type Service } from './content'
 import { DEFAULT_MONEY, formatMoney, type MoneyUnit } from './items'
 import { mergeNpc, staffOf } from './layer'
 import { hexLocation, isHexId } from './map/travel'
@@ -42,10 +42,20 @@ const NEUTRAL_WORDS: WorldWords = {
   },
 }
 
-/** The words of a world, from its content. */
-export function wordsOf(content: Pick<Content, 'world'>): WorldWords {
+/** The words of a world, from its content; in a land (M10.23), the land's own over the world's. */
+export function wordsOf(content: Pick<Content, 'world'>, land?: Land): WorldWords {
   const w = content.world
-  return { ...NEUTRAL_WORDS, ...w.words, sleep: { ...NEUTRAL_WORDS.sleep, ...w.words?.sleep }, law: w.law ?? (w.words ? { where: `in ${w.words.region}`, officer: 'watch' } : NEUTRAL_WORDS.law) }
+  const home: WorldWords = { ...NEUTRAL_WORDS, ...w.words, sleep: { ...NEUTRAL_WORDS.sleep, ...w.words?.sleep }, law: w.law ?? (w.words ? { where: `in ${w.words.region}`, officer: 'watch' } : NEUTRAL_WORDS.law) }
+  if (!land) return home
+  // In a land the stranger comes from the world's land, and a land without a law of its own has the world's kind of officer, there.
+  const own = land.words
+  return {
+    land: own?.land ?? land.name,
+    region: own?.region ?? land.name,
+    from: own?.from ?? home.land,
+    sleep: { ...home.sleep, ...own?.sleep },
+    law: land.law ?? { ...home.law, where: `in ${land.name}`, npc: undefined, office: undefined },
+  }
 }
 
 /** The first letter up: "The Holleveen". */

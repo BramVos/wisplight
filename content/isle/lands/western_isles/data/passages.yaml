@@ -1,0 +1,25 @@
+# The white boat (M10.23): the elves' boat calls at Skerrow Hythe once a week
+# while the Lamp burns, and takes a passenger west to Ynys Wen, across the
+# border between the two lands.
+
+passages:
+  - id: white_boat
+    name: the white boat
+    kind: boat
+    aliases: [the white boat, white boat, the elves' boat, the elven boat]
+    stops: [loc_skerrow_harbour, loc_ynys_wen_landing]
+    days: [Restday]
+    departs: ["09:00"]
+    fare: 40
+    legs: { "loc_skerrow_harbour>loc_ynys_wen_landing": 1440 }
+    water: true
+    crew: boatman
+    when: [{ flag: beacon_burning }]
+    text: "You pay {fare}, and the elves make room for you in the stern without a word. After {duration} the white boat grounds on sand at {place}."
+    closed: The white boat calls on Restday at nine in the morning, and sails west again within the hour.
+    off: The elves' boat has not come since the Lamp went out. Light it, and it may come again.
+    where: The white boat lies off the harbour of Skerrow Hythe, or at the landing of Ynys Wen.
+    sights:
+      - The elves at the oars do not speak, and they do not tire.
+      - Skerrow sinks behind you into the grey, and for half a day there is nothing but water.
+      - A low white line comes up out of the sea ahead, and slowly becomes an island.

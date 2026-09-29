@@ -1,0 +1,47 @@
+# The Claim Gate (M10.23): where the stranger crosses into the Kessler Claim.
+
+locations:
+  - id: loc_claim_gate
+    name: The Claim Gate
+    area: claim_gate
+    tags: [public, route, law]
+    aliases: [claim gate, gate, checkpoint, lock, the lock]
+    summary: The pressure lock and checkpoint of the Kessler Claim, clean and bright and watched.
+    description:
+      day: |
+        After the grit of the Ice Works the gate is startlingly clean: white
+        panels, yellow lines on the floor, and a camera on every corner. The
+        air is warmer and smells faintly of something floral pumped in
+        through the vents. A counter with a scrip machine stands by the inner
+        door. The canteen is through the door north, and the hatch back west
+        goes to the Ice Works.
+    exits:
+      west: { to: loc_deepwell_works_platform, minutes: 40 }
+      north: { to: loc_claim_canteen, minutes: 1 }
+    details:
+      - words: [machine, scrip machine, counter]
+        look: A machine that takes Deepwell chits and prints Combine scrip, two for one, with a cheerful chime each time.
+      - words: [cameras, camera]
+        look: Small black domes on every corner. One of them turns to follow you.
+
+  - id: loc_claim_canteen
+    name: The Combine Canteen
+    area: claim_gate
+    tags: [public]
+    aliases: [canteen, combine canteen, mess]
+    summary: A bright company canteen where contractors eat in silence between rotations.
+    description:
+      day: |
+        Long white tables, a serving hatch, and a screen on the wall that
+        shows the quota for the rotation in large green numbers. It smells of
+        reheated protein and that same floral air. Contractors eat quickly,
+        without talking much. The gate is back south.
+    exits:
+      south: { to: loc_claim_gate, minutes: 1 }
+    details:
+      - words: [hatch, serving hatch]
+        look: A serving hatch in the wall, where trays of printed ration bars slide out from the kitchen behind.
+      - words: [tables, long white tables]
+        look: Long white tables, wiped clean between every sitting, with a number stencilled at each place.
+      - words: [screen, quota, numbers]
+        look: The quota for this rotation, in large green numbers, and under it a smaller line in yellow saying how far behind it the Claim is.

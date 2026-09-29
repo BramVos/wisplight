@@ -1,0 +1,17 @@
+# The ledger of Ynys Wen (M10.23): a few elves in a long hall, who fish a
+# little and keep what they need. A land keeps its own ledgers, in the
+# world's reckoning.
+
+resources:
+  - { id: white_shallows, name: the white shallows, gives: [salt_fish] }
+
+settlements:
+  - id: ynys_wen
+    tags: [elven_hall, harbour]
+    people: 12
+    income: 3
+    resources: [white_shallows]
+    use: { salt_fish: 2 }
+    keep: { salt_fish: 6 }
+    workshops:
+      - { id: shallows_fishing, name: fishing in the white shallows, at: loc_ynys_wen_landing, from: white_shallows, makes: { salt_fish: 3 }, workers: 1, named: [npc_gwion] }

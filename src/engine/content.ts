@@ -3,7 +3,7 @@ import { parse } from 'yaml'
 import { OutlandSchema, ResourceSchema, RouteSchema, SettlementSchema, type Outland, type Resource, type Route, type Settlement } from './economy/schema'
 import { NamesSchema, NewcomerSchema, ProjectSchema, type Newcomer, type Project } from './growth/schema'
 import { z } from 'zod'
-import { DEFAULT_PALETTE, WorldMapSchema } from './map/palette'
+import { DEFAULT_PALETTE, MapPaletteSchema, WorldMapSchema } from './map/palette'
 import { BellSchema, SoundSchema } from './sound'
 import { ImproviseSchema } from './improvise'
 import { CreatureSchema, EncounterSchema, RulesSchema, type Creature, type Effect, type Encounter, type Rules, type Talent } from './rules/schema'
@@ -451,6 +451,16 @@ export const AreaSchema = z.object({
    * only for a stranger carrying something with this tag, or for anyone; with what they see.
    */
   barred: z.array(z.object({ when: z.array(ConditionSchema).default([]), carrying: z.string().optional(), text: z.string() }).strict()).default([]),
+  /** The land it belongs to (M10.23); without one the world's home land, and an area in lands/<land>/ belongs to that land. */
+  land: z.string().optional(),
+  /**
+   * A border (M10.23): a bridge, a pass, a toll house, a harbour, where one
+   * land meets another. The stranger crosses into a land only at a border,
+   * where the scene shows it and the chronicle keeps it.
+   */
+  border: z.boolean().default(false),
+  /** A land it shades into (M10.23): people here have sayings from both kits, and both coins are good. */
+  blend: z.string().optional(),
 })
 export type Area = z.infer<typeof AreaSchema>
 
@@ -472,6 +482,8 @@ const REGION_KINDS = ['woods', 'fields', 'fen', 'water', 'heath', 'road', 'canal
 export const RegionSchema = z.object({
   id: z.string().regex(/^[a-z0-9_]+$/),
   name: z.string(),
+  /** The land it lies in (M10.23), when not the world's home land: its palette colours the map. */
+  land: z.string().optional(),
   /** The area that stands for the open land between the places. */
   area: z.string(),
   /** Where the south-west corner lies on the map of the land, in km. */
@@ -731,6 +743,8 @@ export const TopicSchema = z.object({
   audience: z.partialRecord(z.string(), z.number()).default({}),
   fame: z.number().int().min(0).max(5).default(2),
   known_by: z.array(z.string()).default([]),
+  /** The land a far place lies in (M10.23): what grows there in play is of that land. */
+  land: z.string().optional(),
   /**
    * A far town that grows by district (M10.21): the world book names its
    * quarters. The first is where the stranger comes in; each is made playable
@@ -848,6 +862,61 @@ export const KnowledgeRulesSchema = z.object({
 })
 export type KnowledgeRules = z.infer<typeof KnowledgeRulesSchema>
 
+/** The names the game's own texts use (M8): the land, the region you play in, where the stranger comes from. */
+const WordsSchema = z
+  .object({
+    land: z.string(),
+    region: z.string(),
+    from: z.string(),
+    /** How a night's sleep reads here (M10.17): in a room, at home with a spouse, and rough; each a sentence. */
+    sleep: z.object({ room: z.string().optional(), home: z.string().optional(), rough: z.string().optional() }).strict().optional(),
+  })
+  .strict()
+
+/** The coins (M8), largest first; prices in the content are in the smallest. */
+const CoinsSchema = z.array(z.object({ short: z.string(), name: z.string(), plural: z.string().optional(), aliases: z.array(z.string()).default([]), value: z.number().int().positive() }).strict()).min(1)
+
+/** Who keeps the law (M8): wanted "in" where, the officer's title, and the NPC and place to pay fines. */
+const LawSchema = z
+  .object({
+    where: z.string(),
+    officer: z.string(),
+    npc: z.string().optional(),
+    office: z.string().optional(),
+    lord: z.string().optional(),
+    /**
+     * Fines in the smallest coin (M10.17): for a death, a beating, and the least for a theft; else by the world's coins.
+     * A death or a beating may be "hearing" instead (M10.20): no fine buys it off; the stranger is held and heard.
+     */
+    fines: z
+      .object({
+        murder: z.union([z.number().int().positive(), z.literal('hearing')]).optional(),
+        assault: z.union([z.number().int().positive(), z.literal('hearing')]).optional(),
+        least: z.number().int().positive().optional(),
+      })
+      .strict()
+      .optional(),
+    /** What a hearing is in this world (M10.20): how long the stranger is held first, and the words for being held and heard. */
+    hearing: z
+      .object({
+        hours: z.number().int().min(1).max(336).default(24),
+        held: z.string().optional(),
+        heard: z.string().optional(),
+      })
+      .strict()
+      .optional(),
+  })
+  .strict()
+
+/** The five standings in this world's words, lowest first, and the trades that are an office (M8.2). */
+const StandingSchema = z.object({ names: z.array(z.string()).length(5), offices: z.array(z.string()).default([]) }).strict()
+
+/** The bonds a speaker may name someone new by, and the domains a talk must be in for it (M10.9). */
+const SketchSchema = z.object({ bonds: z.record(z.string(), z.enum(RELATION_ROLES)), domains: z.string().optional() }).strict()
+
+/** The faiths (M9.1); with the faction that stands for each (M10.17). */
+const FaithsSchema = z.array(z.object({ id: z.string().regex(/^[a-z0-9_]+$/), name: z.string(), patrons: z.array(z.string()).default([]), oaths: z.array(z.string()).default([]), faction: z.string().optional() }).strict())
+
 export const WorldSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -869,16 +938,7 @@ export const WorldSchema = z.object({
   /** The map of this world (M10): its palette, and its levels from below to above. */
   map: WorldMapSchema.optional(),
   /** The names the game's own texts use (M8): the land, the region you play in, where the stranger comes from. */
-  words: z
-    .object({
-      land: z.string(),
-      region: z.string(),
-      from: z.string(),
-      /** How a night's sleep reads here (M10.17): in a room, at home with a spouse, and rough; each a sentence. */
-      sleep: z.object({ room: z.string().optional(), home: z.string().optional(), rough: z.string().optional() }).strict().optional(),
-    })
-    .strict()
-    .optional(),
+  words: WordsSchema.optional(),
   /** Names for the calendar (M8): thirteen months (the last one five days), seven weekdays, and the era after the year. */
   // Thirteen months (twelve of thirty days and the short thirteenth), and a week of as many days as it names (M10.17).
   calendar: z.object({ era: z.string(), months: z.array(z.string()).length(13), weekdays: z.array(z.string()).min(1), start_weekday: z.string().optional() }).strict().optional(),
@@ -899,42 +959,9 @@ export const WorldSchema = z.object({
     .strict()
     .optional(),
   /** The coins (M8), largest first; prices in the content are in the smallest. */
-  money: z
-    .object({ units: z.array(z.object({ short: z.string(), name: z.string(), plural: z.string().optional(), aliases: z.array(z.string()).default([]), value: z.number().int().positive() }).strict()).min(1) })
-    .strict()
-    .optional(),
+  money: z.object({ units: CoinsSchema }).strict().optional(),
   /** Who keeps the law (M8): wanted "in" where, the officer's title, and the NPC and place to pay fines. */
-  law: z
-    .object({
-      where: z.string(),
-      officer: z.string(),
-      npc: z.string().optional(),
-      office: z.string().optional(),
-      lord: z.string().optional(),
-      /**
-       * Fines in the smallest coin (M10.17): for a death, a beating, and the least for a theft; else by the world's coins.
-       * A death or a beating may be "hearing" instead (M10.20): no fine buys it off; the stranger is held and heard.
-       */
-      fines: z
-        .object({
-          murder: z.union([z.number().int().positive(), z.literal('hearing')]).optional(),
-          assault: z.union([z.number().int().positive(), z.literal('hearing')]).optional(),
-          least: z.number().int().positive().optional(),
-        })
-        .strict()
-        .optional(),
-      /** What a hearing is in this world (M10.20): how long the stranger is held first, and the words for being held and heard. */
-      hearing: z
-        .object({
-          hours: z.number().int().min(1).max(336).default(24),
-          held: z.string().optional(),
-          heard: z.string().optional(),
-        })
-        .strict()
-        .optional(),
-    })
-    .strict()
-    .optional(),
+  law: LawSchema.optional(),
   /** Towns with rights of their own (M8.2): their own fines, officer and place to pay, and maybe no trade with someone wanted. */
   towns: z
     .array(
@@ -952,7 +979,7 @@ export const WorldSchema = z.object({
     )
     .default([]),
   /** The five standings in this world's words, lowest first, and the trades that are an office (M8.2). */
-  standing: z.object({ names: z.array(z.string()).length(5), offices: z.array(z.string()).default([]) }).strict().optional(),
+  standing: StandingSchema.optional(),
   /** Plans that run from the first day (M8.3): the opponents who do not wait for the player. */
   plans: z.array(z.string()).default([]),
   /** Names for people who come during a game (M8.5). */
@@ -962,15 +989,13 @@ export const WorldSchema = z.object({
    * what that someone is to them ("cousin": kin, "old master": teacher), and
    * the domains a talk must be in for it (family, trade, the speaker's past).
    */
-  sketch: z.object({ bonds: z.record(z.string(), z.enum(RELATION_ROLES)), domains: z.string().optional() }).strict().optional(),
+  sketch: SketchSchema.optional(),
   /** At most so many newcomers a season (M8.5). */
   newcomers_per_season: z.number().int().min(0).default(6),
   /** The faiths of this world (M9.1): the first is what most people hold; a faith may go with patrons of the rules. */
   // Each faith swears by its own (M10.8): "Saint Brand's light", "Holle take it"; the guard puts these in place of ours.
   /** The faiths (M9.1); with the faction that stands for each, whose standing a wedding at its holy place raises (M10.17). */
-  faiths: z
-    .array(z.object({ id: z.string().regex(/^[a-z0-9_]+$/), name: z.string(), patrons: z.array(z.string()).default([]), oaths: z.array(z.string()).default([]), faction: z.string().optional() }).strict())
-    .default([]),
+  faiths: FaithsSchema.default([]),
   /** Bells that ring on the hour (M10.15): heard plainly in some areas and far off in others, and a line in the text. */
   bells: z.array(BellSchema).default([]),
   /**
@@ -981,6 +1006,50 @@ export const WorldSchema = z.object({
   knobs: z.record(z.string(), z.union([z.number(), z.record(z.string(), z.number())])).optional(),
 })
 export type WorldDef = z.infer<typeof WorldSchema>
+
+/**
+ * A land (M10.23; Bram, 28 September 2026: what happens when the stranger
+ * goes to another continent, with a dynamic of its own?): the same world, its
+ * own frame. A land lives in content/<world>/lands/<land>/: its land.yaml,
+ * maybe a voice.yaml, and the areas, people, factions and realms, trades,
+ * crafts and beasts of its own, which play like the world's. What a land
+ * does not have it takes from the world: always the calendar and the clock
+ * (the stranger takes their time along), and prices in the content, which
+ * are in the world's smallest coin wherever they are paid.
+ */
+export const LandSchema = z
+  .object({
+    id: z.string().regex(/^[a-z0-9_]+$/),
+    name: z.string(),
+    /** The realm of the world's realms that rules it, when one does. */
+    realm: z.string().optional(),
+    /** The fixed block every model call gets while the stranger is in this land, in place of the world's. */
+    frame: z.string(),
+    /** What the stranger notices crossing into it, told at the border: another way of address, other money on the table. */
+    crossing: z.string().optional(),
+    /** Its own words for the game's texts; without them its name, and the stranger comes from the world's land. */
+    words: WordsSchema.partial().optional(),
+    names: NamesSchema.optional(),
+    faiths: FaithsSchema.optional(),
+    /**
+     * Its own coins, largest first, and the rate: how many of its smallest
+     * coin one of the world's smallest buys (a whole number, so every sum
+     * comes out even). Prices stay in the world's smallest coin; the land
+     * tells them in its own, and the coins are changed at the border.
+     */
+    money: z.object({ units: CoinsSchema, rate: z.number().int().positive() }).strict().optional(),
+    law: LawSchema.optional(),
+    standing: StandingSchema.optional(),
+    sketch: SketchSchema.optional(),
+    pictures: z.object({ style: z.string() }).strict().optional(),
+    /** The colours and signs of its map; its levels are the world's. */
+    palette: MapPaletteSchema.optional(),
+  })
+  .strict()
+export type Land = z.infer<typeof LandSchema> & {
+  /** How people of this land speak (its lands/<land>/voice.yaml); without one, the world's kit. */
+  voice?: Voice
+}
 
 // ---------------------------------------------------------------- factions and realms
 
@@ -1054,6 +1123,8 @@ export type Tension = z.infer<typeof TensionSchema>
 export const FileSchema = z
   .object({
     world: WorldSchema.optional(),
+    /** A land of the world (M10.23), in lands/<land>/land.yaml. */
+    land: LandSchema.optional(),
     items: z.array(ItemSchema).optional(),
     object_types: z.array(ObjectTypeSchema).optional(),
     professions: z.array(ProfessionSchema).optional(),
@@ -1126,6 +1197,8 @@ export interface Content {
   rules?: Rules
   /** How people here speak (M10.10); a world without one keeps the old fixed guard. */
   voice?: Voice
+  /** The lands of the world besides its home land (M10.23), each with its own frame. */
+  lands: Map<string, Land>
   /** Sentences for journeys (M10.11); a world without them keeps the one line of before. */
   journey?: Journey
   /** Lines of transport (M10.12). */
@@ -1218,7 +1291,10 @@ export function loadContent(files: ContentFile[]): Content {
     passages: new Map<string, Passage>(),
     gestures: new Map<string, Gesture>(),
     lodgings: new Map<string, Lodging>(),
+    lands: new Map<string, Land>(),
   }
+  /** The voice kits of the lands (M10.23), by the folder they are in. */
+  const landVoices = new Map<string, Voice>()
 
   let chronicler: string | undefined
   let rules: Rules | undefined
@@ -1254,6 +1330,19 @@ export function loadContent(files: ContentFile[]): Content {
       continue
     }
     const data = result.data
+    // A land's own folder (M10.23): what is in it is of that land, unless it says otherwise.
+    const inLand = file.path.match(/(?:^|\/)lands\/([a-z0-9_]+)\//)?.[1]
+    if (inLand) {
+      for (const key of ['world', 'rules', 'journey', 'returning'] as const) if (data[key]) problems.push(`${file.path}: a land has no ${key} of its own; it is the world's`)
+      for (const a of data.areas ?? []) a.land ??= inLand
+      for (const r of data.regions ?? []) r.land ??= inLand
+      for (const t of data.topics ?? []) if (t.kind === 'place') t.land ??= inLand
+    }
+    if (data.land) {
+      if (data.land.id !== inLand) problems.push(`${file.path}: the land ${data.land.id} belongs in lands/${data.land.id}/land.yaml`)
+      else if (content.lands.has(data.land.id)) problems.push(`${file.path}: duplicate land id ${data.land.id}`)
+      else content.lands.set(data.land.id, data.land)
+    }
     if (data.world) worlds.push(data.world)
     addAll(content.items, data.items, (v) => v.id, file.path, 'item', problems)
     addAll(content.objectTypes, data.object_types, (v) => v.id, file.path, 'object type', problems)
@@ -1296,7 +1385,10 @@ export function loadContent(files: ContentFile[]): Content {
       if (rules) problems.push(`${file.path}: the rules are defined twice`)
       rules = data.rules
     }
-    if (data.voice) {
+    if (data.voice && inLand) {
+      if (landVoices.has(inLand)) problems.push(`${file.path}: the voice kit of ${inLand} is defined twice`)
+      landVoices.set(inLand, data.voice)
+    } else if (data.voice) {
       if (voice) problems.push(`${file.path}: the voice kit is defined twice`)
       voice = data.voice
     }
@@ -1306,6 +1398,12 @@ export function loadContent(files: ContentFile[]): Content {
     }
   }
 
+  // Each land's voice kit to its land (M10.23).
+  for (const [id, kit] of landVoices) {
+    const land = content.lands.get(id)
+    if (!land) problems.push(`lands/${id}: a voice kit without a land.yaml`)
+    else land.voice = kit
+  }
   const world = worlds[0]
   if (worlds.length !== 1) problems.push(`expected exactly one world, found ${worlds.length}`)
   problems.push(...checkReferences(world, { ...content, ...(rules ? { rules } : {}), ...(lock ? { lock } : {}) }))
@@ -1315,7 +1413,7 @@ export function loadContent(files: ContentFile[]): Content {
   // Skills only where the world has them (M10.20): the rules of a world without characters may hold only patrons and death.
   if (rules?.skills.length) for (const p of content.professions.values()) if (p.teaches && !rules.skills.some((s) => s.id === p.teaches)) problems.push(`profession ${p.id}: teaches ${p.teaches}, which is no skill`)
   problems.push(...checkCrafts(content, rules))
-  if (world) problems.push(...checkVoice(voice, world, content))
+  if (world) problems.push(...checkVoice(voice, world, content, content.lands.values()))
   // Gestures are of people of the world, and a lodging is a place with a keeper (M10.13).
   for (const g of content.gestures.values()) if (!content.npcs.has(g.who)) problems.push(`gesture ${g.id}: unknown NPC ${g.who}`)
   for (const l of content.lodgings.values()) {
@@ -1358,9 +1456,10 @@ export function loadContent(files: ContentFile[]): Content {
 }
 
 /** The voice kit fits the world (M10.10): its faiths, areas, trades and groups are there; an NPC's own voice is a group. */
-function checkVoice(voice: Voice | undefined, world: WorldDef, c: Pick<Content, 'areas' | 'professions' | 'npcs'>): string[] {
+function checkVoice(voice: Voice | undefined, world: WorldDef, c: Pick<Content, 'areas' | 'professions' | 'npcs'>, lands: Iterable<Land> = []): string[] {
   const problems: string[] = []
-  const groups = new Set((voice?.groups ?? []).map((g) => g.id))
+  // A person of a land may speak as a group of their land's kit (M10.23).
+  const groups = new Set([voice, ...[...lands].map((l) => l.voice)].flatMap((k) => k?.groups ?? []).map((g) => g.id))
   for (const n of c.npcs.values()) if (n.voice && !groups.has(n.voice)) problems.push(`${n.id}: voice ${n.voice} is no group of the voice kit`)
   if (!voice) return problems
   const faiths = new Set(world.faiths.map((f) => f.id))
@@ -1370,6 +1469,34 @@ function checkVoice(voice: Voice | undefined, world: WorldDef, c: Pick<Content, 
     for (const p of g.professions) if (!c.professions.has(p)) problems.push(`voice.groups.${g.id}: unknown profession ${p}`)
   }
   if (voice.default_group && !groups.has(voice.default_group)) problems.push(`voice.default_group: ${voice.default_group} is no group`)
+  return problems
+}
+
+/**
+ * The lands fit the world (M10.23): every land named is there, a land is not
+ * the home land by another name, its realm and law are known, and its voice
+ * kit fits its faiths. A land may hold a faith of the world by its id: one id
+ * is one faith, wherever it is held.
+ */
+function checkLands(world: WorldDef, c: Omit<Content, 'world'>): string[] {
+  const problems: string[] = []
+  const land = (id: string | undefined, where: string) => {
+    if (id && !c.lands.has(id)) problems.push(`${where}: unknown land ${id}`)
+  }
+  for (const a of c.areas.values()) {
+    land(a.land, `area ${a.id}.land`)
+    land(a.blend, `area ${a.id}.blend`)
+    if (a.blend && a.blend === a.land) problems.push(`area ${a.id}: it blends with ${a.blend}, the land it is in`)
+  }
+  for (const r of c.regions.values()) land(r.land, `region ${r.id}.land`)
+  for (const t of c.topics.values()) land(t.land, `topic ${t.id}.land`)
+  for (const l of c.lands.values()) {
+    if (l.id === world.id) problems.push(`land ${l.id}: the world's own id; the home land needs no folder`)
+    if (l.realm && !c.realms.has(l.realm)) problems.push(`land ${l.id}: unknown realm ${l.realm}`)
+    if (l.law?.npc && !c.npcs.has(l.law.npc)) problems.push(`land ${l.id}.law: unknown NPC ${l.law.npc}`)
+    if (l.law?.office && !c.locations.has(l.law.office)) problems.push(`land ${l.id}.law: unknown location ${l.law.office}`)
+    if (l.voice) problems.push(...checkVoice(l.voice, { ...world, faiths: [...world.faiths, ...(l.faiths ?? [])] }, { ...c, npcs: new Map() }).map((p) => `land ${l.id}: ${p}`))
+  }
   return problems
 }
 
@@ -1466,9 +1593,11 @@ function checkReferences(world: WorldDef | undefined, c: Omit<Content, 'world'>)
       for (const o of t.offices) location(o, `world.towns.${t.id}.offices`)
     }
     for (const id of world.plans) if (!c.plans.has(id)) problems.push(`world.plans: unknown plan ${id}`)
-    const faiths = new Set(world.faiths.map((f) => f.id))
+    // The faiths of the world and of its lands (M10.23): one id is one faith.
+    const faiths = new Set([...world.faiths, ...[...c.lands.values()].flatMap((l) => l.faiths ?? [])].map((f) => f.id))
     for (const n of c.npcs.values()) if (n.faith && !faiths.has(n.faith)) problems.push(`${n.id}: unknown faith ${n.faith}`)
     for (const o of c.outlands.values()) if (o.faith && !faiths.has(o.faith)) problems.push(`outland ${o.id}: unknown faith ${o.faith}`)
+    problems.push(...checkLands(world, c))
   }
   problems.push(...checkEconomy(c))
   problems.push(...checkGrowth(c))

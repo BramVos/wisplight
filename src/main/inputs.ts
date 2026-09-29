@@ -11,6 +11,8 @@ import { APP_KNOBS, ENTITY_KINDS, type AppKnobId } from '../engine'
 const world = z.string().regex(/^[a-z0-9_-]{1,64}$/)
 const id = z.string().min(1).max(200)
 const text = (max: number) => z.string().max(max)
+/** The id of a land (M10.23): its folder under lands/. */
+const landId = z.string().regex(/^[a-z0-9_]{1,64}$/)
 const provider = z.enum(['openai', 'anthropic'])
 const role = z.enum(['voice', 'brain', 'chronicler'])
 const model = z.string().min(1).max(200)
@@ -69,9 +71,14 @@ export const INPUTS: Record<string, z.ZodType<unknown[]>> = {
   'editor:save-palette': z.tuple([world, data(200_000)]),
   'editor:map-draft': z.tuple([world]),
   'editor:propose-palette': z.tuple([world, text(20_000)]),
-  'editor:voice': z.tuple([world]),
-  'editor:save-voice': z.tuple([world, text(500_000)]),
-  'editor:propose-voice': z.tuple([world, text(20_000)]),
+  // A land's voice kit (M10.23) by the land's id; without one the world's.
+  'editor:voice': z.tuple([world, landId.optional()]),
+  'editor:save-voice': z.tuple([world, text(500_000), landId.optional()]),
+  // The lands of a world (M10.23): the list, one land's YAML, and saving it.
+  'editor:lands': z.tuple([world]),
+  'editor:land': z.tuple([world, landId]),
+  'editor:save-land': z.tuple([world, landId, text(200_000)]),
+  'editor:propose-voice': z.tuple([world, text(20_000), landId.optional()]),
   'ai:overview': z.tuple([]),
   'ai:connect': z.tuple([provider, z.string().min(1).max(500)]),
   'ai:disconnect': z.tuple([provider]),

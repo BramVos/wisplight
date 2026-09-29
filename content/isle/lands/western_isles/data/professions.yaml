@@ -1,0 +1,11 @@
+# What the elves of Ynys Wen do all day (M10.23).
+
+professions:
+  - id: steward
+    name: steward
+    schedule:
+      - { from: "07:00", to: "08:00", activity: eat }
+      - { from: "08:00", to: "19:00", activity: work }
+      - { from: "19:00", to: "20:00", activity: eat }
+      - { from: "20:00", to: "22:00", activity: pray }
+      - { from: "22:00", to: "07:00", activity: sleep }

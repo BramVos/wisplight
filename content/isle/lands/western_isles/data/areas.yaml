@@ -1,0 +1,12 @@
+# The part of the Western Isles the stranger can reach (M10.23): one island,
+# and its landing is the border. An area in this folder is of the land.
+
+areas:
+  - id: ynys_wen
+    name: Ynys Wen
+    kind: hamlet
+    border: true
+    sound: { kind: sea, level: 0.35 }
+    aliases: [ynys wen, the white isle, the isle, the western isles]
+    fame: 2
+    summary: The nearest of the Western Isles to Skerrow, a low white island with a stone landing and the long hall of the elves.

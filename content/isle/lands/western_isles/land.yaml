@@ -1,0 +1,65 @@
+# The Western Isles (M10.23): Skerrow's second land, to show that a land is
+# generic. The same world, the Sundered Isles, under another frame: the elves
+# of the western isles, few and long-lived and slow to speak, with their own
+# coins, their own law and their own way of address. The white boat carries
+# the stranger from Skerrow Hythe to Ynys Wen, the nearest of the isles, and
+# no further: the rest of the Western Isles are for later.
+
+land:
+  id: western_isles
+  name: the Western Isles
+  # The words the game's own texts use while the stranger is here.
+  words:
+    land: the Western Isles
+    region: Ynys Wen
+    from: the eastern isles
+    sleep:
+      room: You sleep in a narrow bed in the guest room of the long hall, with the sea breathing somewhere below the window.
+      rough: You sleep in the lee of a white dune, and the wind lays a thin coat of sand over you by morning.
+  # The fixed block every model call gets here, in place of Skerrow's.
+  frame: |
+    WORLD: The Sundered Isles, a scatter of islands in the Glass Sea. Year 412 of the Starfall,
+    the night the sky broke and the empire of Aldmar drowned. Magic is real but rare. Money here:
+    silver rings and glass beads (1 ring = 20 beads); the elves take a copper piece of the east
+    for two beads. Faith: the elves keep to the Old Stars and do not swear by the Tidemother.
+    LAND: The Western Isles, where the elves live: few, long-lived and slow to speak. They remember
+    Aldmar before it drowned, and they do not speak of it to strangers.
+    REGION: Ynys Wen, the nearest of the Western Isles to Skerrow, a low white island with one
+    landing and one long hall, where strangers from the east are received and seldom let further.
+    PEOPLE speak plain English, slowly and formally, with long silences, and call a stranger "child
+    of the short years". They count time by seasons and tides, never by bells.
+  # What the stranger notices crossing in, told at the landing.
+  crossing: At the landing an elf takes your coin without a word of bargaining and counts glass beads into your hand for it. Nobody here calls you stranger; you are a child of the short years, and they speak to you slowly, as if you might not follow.
+  # The elves hold to the Old Stars, the world's own faith, and to nothing else.
+  faiths:
+    - { id: old_stars, name: the Old Stars, patrons: [old_stars], faction: star_sailors }
+  money:
+    units:
+      - { short: ring, name: silver ring, aliases: [rings], value: 20 }
+      - { short: bead, name: glass bead, aliases: [beads], value: 1 }
+    # Two beads to one copper piece of the east.
+    rate: 2
+  law:
+    where: on the Western Isles
+    officer: steward
+    npc: npc_eluned
+    office: loc_ynys_wen_hall
+    # In copper pieces, as every price in this world; told here in beads. A death is heard by the elders.
+    fines: { murder: hearing, assault: 400, least: 40 }
+    hearing:
+      hours: 48
+      held: The steward's people bring you to a room of white stone above the landing and leave the door unbarred. Nobody on Ynys Wen needs bars.
+      heard: At dusk the elders of the hall sit in a half-circle and hear you out in silence, for a long time. Then the steward says you may go, and that the isle will remember.
+  standing:
+    names: [unremembered, a guest, a friend of the hall, well regarded, remembered]
+    offices: [steward]
+  # Names for people a game makes here.
+  names:
+    she: [Eluned, Rhian, Olwen, Gwenith, Seren, Angharad, Nia, Morfudd]
+    he: [Emrys, Idris, Caradoc, Gwion, Cadell, Rhodri, Iorwerth, Meurig]
+    family: [Ashwater, Greyleaf, Longmere, Silverstrand, Mistholm, Whitesand]
+  sketch:
+    domains: your kin, the long years before the Starfall, or the sea
+    bonds: { kinsman: kin, kinswoman: kin, old teacher: teacher, friend of long years: friend, sister-son: kin, sister-daughter: kin }
+  pictures:
+    style: A small illustration in the manner of an old high-fantasy book plate, pen and ink with a pale wash of silver, sea blue and white sand, a long hall of white stone under a wide sky.

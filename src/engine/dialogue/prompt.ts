@@ -67,9 +67,10 @@ const RULES = `Rules:
 export const WORLD_FRAME = `WORLD: a world of its own, with its own names, money and customs. Nothing of our world
 exists here unless the world says so. PEOPLE speak plain English.`
 
-/** The frame of the world in play: its own (world.yaml, frame), or a neutral one. */
-export function worldFrame(content: { world: { frame?: string } }): string {
-  return content.world.frame?.trim() || WORLD_FRAME
+/** The frame of the world in play: its own (world.yaml, frame), or a neutral one; in a land (M10.23), the land's. */
+export function worldFrame(content: { world: { frame?: string }; lands?: Map<string, { frame: string }> }, land?: string): string {
+  const own = land ? content.lands?.get(land)?.frame : undefined
+  return own?.trim() || content.world.frame?.trim() || WORLD_FRAME
 }
 
 const TRAITS: Record<string, [string, string]> = {

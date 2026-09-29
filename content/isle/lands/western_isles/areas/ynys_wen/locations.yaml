@@ -1,0 +1,57 @@
+# Ynys Wen (M10.23): the landing, where the stranger crosses into the Western
+# Isles, and the long hall above it.
+
+locations:
+  - id: loc_ynys_wen_landing
+    name: Ynys Wen, the Landing
+    area: ynys_wen
+    tags: [public, route]
+    aliases: [landing, the landing, strand, white strand, quay]
+    summary: A landing of white stone on a strand of white sand, where the elves' boat comes in.
+    description:
+      day: |
+        A landing of white stone runs out over a strand so pale it hurts your
+        eyes, and the sea is clear enough to count the pebbles under it. The
+        air smells of salt and of some flower you cannot name. Nobody hurries
+        here. A path of flat stones goes up north to the [long hall].
+      night: |
+        The white sand holds the last of the light long after the sky has
+        gone dark, and the sea whispers against the stone. Somewhere up the
+        path a lamp burns in a window of the long hall, to the north.
+    exits:
+      north: { to: loc_ynys_wen_hall, minutes: 4 }
+    details:
+      - words: [sand, strand, white sand]
+        look: Sand as white as salt, fine and dry, without a single shell broken on it.
+        take: It runs through your fingers and is gone.
+      - words: [stone, landing]
+        look: White stone, fitted so close that no blade would go between two blocks, and worn smooth by more years than you can guess.
+      - words: [path, flat stones]
+        look: A path of flat white stones going up from the landing to the long hall, each one set level with the sand.
+
+  - id: loc_ynys_wen_hall
+    name: The Long Hall of Ynys Wen
+    area: ynys_wen
+    tags: [public, law]
+    aliases: [long hall, hall, the hall, guest hall]
+    summary: The long hall of white stone where the elves of Ynys Wen receive strangers from the east.
+    description:
+      day: |
+        The hall is longer than any building on Skerrow, and so quiet you
+        hear your own breath. Light falls in pale bars through tall windows
+        onto a floor of white stone, and the smell of beeswax hangs in the
+        air. Elves sit along the walls and look at you without curiosity. The
+        landing is back south.
+      night: |
+        Lamps of pale glass burn along the walls, and the elves who sit
+        beneath them do not seem to sleep. Your steps sound too loud on the
+        stone. The door south goes down to the landing.
+    exits:
+      south: { to: loc_ynys_wen_landing, minutes: 4 }
+    details:
+      - words: [floor, white stone, bars of light]
+        look: A floor of white stone, so smooth that the light from the windows lies on it in pale bars.
+      - words: [windows, tall windows]
+        look: Tall, narrow windows of old glass, a little blue, looking out to the west where the other isles must be.
+      - words: [lamps, pale glass]
+        look: Lamps of pale glass that burn without smoke, with a light more silver than yellow.

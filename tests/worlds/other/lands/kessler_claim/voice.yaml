@@ -1,0 +1,32 @@
+# How people on the Kessler Claim speak (M10.23): company words, in place of
+# Deepwell's shift slang while the stranger is here.
+
+voice:
+  sayings:
+    - The Combine provides.
+    - Clock in, clock out, clock paid.
+    - Quota first, questions after.
+
+  groups:
+    - id: claim
+      name: the Combine's contractors
+      areas: [claim_gate]
+  default_group: claim
+
+  address:
+    stranger: [contractor]
+    known: [colleague]
+    friend: [partner]
+    high: [supervisor]
+
+  time: [this rotation, next rotation, by quota day, at the changeover]
+  distance: [a lock cycle away, two segments down the tunnel]
+  measures: [a quota tonne, a scrip card, an air ration]
+
+  # Deepwell's words, which the Combine does not use.
+  not_here:
+    - { word: shift, instead: rotation }
+    - { word: shifts, instead: rotations }
+    - { word: chits, instead: scrip }
+    - { word: chit, instead: scrip }
+    - { word: council, instead: management }

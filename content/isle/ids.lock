@@ -47,6 +47,19 @@ ids:
     topic: [the_starfall, old_skarth, the_waystone, the_beacon, grey_gull, havenmoor, the_tidemother]
   isle/data/watchers.yaml:
     watcher: [asked_about, befriended, death, lost, departure, lamp_lit]
+  isle/lands/western_isles/areas/ynys_wen/locations.yaml:
+    location: [loc_ynys_wen_landing, loc_ynys_wen_hall]
+  isle/lands/western_isles/areas/ynys_wen/npcs.yaml:
+    npc: [npc_eluned, npc_gwion]
+  isle/lands/western_isles/data/areas.yaml:
+    area: [ynys_wen]
+  isle/lands/western_isles/data/economy.yaml:
+    resource: [white_shallows]
+    settlement: [ynys_wen]
+  isle/lands/western_isles/data/passages.yaml:
+    passage: [white_boat]
+  isle/lands/western_isles/data/professions.yaml:
+    profession: [steward]
   isle/regions/skerrow/region.yaml:
     region: [skerrow]
   isle/rules/bestiary.yaml:

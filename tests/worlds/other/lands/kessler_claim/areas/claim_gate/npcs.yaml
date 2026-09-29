@@ -1,0 +1,24 @@
+# The Combine's people at the gate (M10.23).
+
+npcs:
+  - id: npc_rook_adeyemi
+    name: Rook Adeyemi
+    short: Rook the security officer
+    pronoun: he
+    age: 41
+    profession: security_officer
+    home: loc_claim_canteen
+    work: loc_claim_gate
+    fame: 1
+    appearance: A broad man in a pressed grey Combine uniform with a yellow armband, a scanner on his belt and a smile that never reaches his eyes.
+    personality: { warmth: 0, courage: 1, honesty: 1, temper: 0, curiosity: 0, diligence: 2 }
+    values: { law: 3, wealth: 1 }
+    speech: "Polite, careful, in company words. Calls everyone contractor. Quotes the rulebook by number."
+    aliases: [rook, adeyemi, security, the officer, security officer]
+    public_facts:
+      - Rook Adeyemi is the security officer at the Claim Gate of the Kessler Combine.
+    examples:
+      - "Welcome to the Kessler Claim, contractor. Scrip machine's on your left."
+      - "Section four, paragraph two. I don't write them, I just read them."
+    money: 300
+    knows_areas: [claim_gate, ice_works]

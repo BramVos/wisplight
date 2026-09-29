@@ -13,10 +13,13 @@ locations:
         opens into a hall full of sleds and hoses. Your breath smokes, and the
         cold gets in through the seams of your clothes. A board lists the
         day's cut in tonnes. The cutting face is further in; the service
-        tunnel runs back west to the Domes.
+        tunnel runs back west to the Domes, and a hatch stencilled KESSLER
+        leads east to the Claim.
     exits:
       in: { to: loc_deepwell_cutting_face, minutes: 5 }
       west: { to: loc_deepwell_platform, minutes: 150 }
+      # To the Kessler Claim (M10.23): another land, through its gate.
+      east: { to: loc_claim_gate, minutes: 40 }
     details:
       - words: [board, cut, tonnes]
         look: A board with the day's cut chalked up in tonnes, and a target underlined twice. The cut is short of it.
@@ -26,6 +29,8 @@ locations:
         look: A buffer of packed ice at the end of the rail, dented where a tram came in too fast once.
       - words: [hall]
         look: A long hall cut out of the ice, with a roof of steel ribs and a floor of grit to stop the sleds sliding.
+      - words: [hatch, kessler]
+        look: A heavy pressure hatch with KESSLER COMBINE stencilled across it in yellow, and under it, smaller, AUTHORISED CONTRACTORS ONLY. It is not locked.
       - words: [sleds, hoses]
         look: Cargo sleds and coiled hoses, waiting for the ice to be cut.
         take: They are the colony's, and far too heavy.

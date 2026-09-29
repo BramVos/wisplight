@@ -1,0 +1,48 @@
+# The Kessler Claim (M10.23): Deepwell's second land. The same moon, another
+# frame: a mining concession of the Kessler Combine on the far side of the
+# ridge, reached through a hatch at the Ice Works. The Combine owns the air,
+# the bunks and the store, and pays in its own scrip. No faith here either,
+# and no weather: a land that leaves them out keeps the world's none.
+
+land:
+  id: kessler_claim
+  name: the Kessler Claim
+  words:
+    land: the Kessler Claim
+    region: the Claim
+    from: Deepwell
+    sleep:
+      room: You sleep in a Combine rest pod, and a soft voice wishes you a productive rotation when it opens.
+      rough: You sleep on a bench by the lock with your coat for a blanket, and a security drone looks at you twice in the night.
+  frame: |
+    WORLD: The Oru system, far out from the inner worlds. Year 140 After Landfall, on Vessa, an ice
+    moon of the gas giant Oru. No faster-than-light travel, no aliens, no magic.
+    LAND: The Kessler Claim, a mining concession of the Kessler Combine on the far side of the ridge
+    from Deepwell. The Combine owns the ice, the air, the bunks and the store, and pays in its own
+    scrip; a chit of Deepwell buys two scrip at the gate. There is no faith; people swear by the
+    Combine and the quota.
+    REGION: The Claim Gate, the pressure lock and checkpoint where the service tunnel from the Ice
+    Works comes out, with a Combine canteen beside it.
+    PEOPLE speak plain English, polite and careful, in company words: contractors, rotations,
+    quota, the Combine. They count time in rotations and quota days.
+  crossing: At the gate a machine takes your chits and prints Combine scrip for them, two for one, and a voice thanks you for choosing the Kessler Combine. Nobody calls you anything but contractor.
+  money:
+    units:
+      - { short: sc, name: scrip, plural: scrip, aliases: [kessler scrip, combine scrip], value: 1 }
+    rate: 2
+  # The Combine fines everything, even a death; it does not hear anybody.
+  law:
+    where: on the Kessler Claim
+    officer: security officer
+    npc: npc_rook_adeyemi
+    office: loc_claim_gate
+    fines: { murder: 6000, assault: 200, least: 25 }
+  standing:
+    names: [probationary, contractor, rated contractor, supervisor, management]
+    offices: [security_officer]
+  names:
+    she: [Adaeze, Mirela, Tanvi, Josefin, Keiko, Lorna]
+    he: [Rook, Anton, Desmond, Ravi, Tomasz, Obi]
+    family: [Adeyemi, Lindqvist, Moreau, Tanaka, Okonkwo, Kessler]
+  pictures:
+    style: A small illustration in the manner of a technical sketch, fine ink lines with a hard white and safety-yellow wash, a company checkpoint under a ceiling of ice.

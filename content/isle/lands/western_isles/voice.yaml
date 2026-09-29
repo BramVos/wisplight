@@ -1,0 +1,42 @@
+# How the elves of the Western Isles speak (M10.23): their own voice kit, in
+# place of Skerrow's while the stranger is here. Few words, and old ones.
+
+voice:
+  oaths:
+    old_stars: ["under the old light", "by the Old Stars"]
+
+  sayings:
+    - What is slow is not lost.
+    - The sea forgets. We do not.
+    - A short life speaks quickly.
+
+  groups:
+    - id: hall
+      name: the people of the long hall
+      areas: [ynys_wen]
+      sayings:
+        - A guest is received once, and remembered always.
+  default_group: hall
+
+  address:
+    stranger: [child of the short years]
+    known: [guest]
+    friend: [friend of the hall]
+    high: [elder]
+
+  time: [at the turning of the season, when the tide has turned twice, in a few of your years]
+  distance: [a day's sail, a morning's row, a walk along the white strand]
+  measures: [a string of beads, a ring of silver, a jar of oil]
+
+  not_here:
+    - { word: "o'clock", instead: tides }
+    - { word: bell, instead: tide }
+    - { word: bells, instead: tides }
+    - { word: hurry, instead: go }
+    - { word: potatoes }
+    - { word: tobacco }
+    - { word: coffee }
+    - { word: gun }
+    - { word: okay, instead: it is well }
+    - { word: ok, instead: it is well }
+    - { word: percent, instead: in a hundred }

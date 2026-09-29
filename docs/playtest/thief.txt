@@ -141,10 +141,6 @@ Maren lifts a hand. "Go on, then."
 
 [72 hours pass]
 Wenna arrives from the west.
-Wenna stops and gives you a nod, curious about the stranger.
-Maren nods to Wenna.
-Wenna leaves west.
-Wenna arrives from the west.
 Maren nods to Wenna.
 Wenna puts out the lamp and goes to bed.
 Maren puts out the lamp and goes to bed.
@@ -321,10 +317,6 @@ Maren thinks a moment. "A pot of pitch went missing from Maren at [The Salt Kett
 Maren lifts a hand. "Go on, then."
 
 [72 hours pass]
-Wenna arrives from the west.
-Wenna stops and gives you a nod, curious about the stranger.
-Maren nods to Wenna.
-Wenna leaves west.
 Wenna arrives from the west.
 Maren nods to Wenna.
 Wenna puts out the lamp and goes to bed.
