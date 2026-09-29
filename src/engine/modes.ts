@@ -1,3 +1,4 @@
+import { applyStory, releaseStory, storyLines, type StoryReply } from './growth/regionstory'
 import { emptyOutput, type ChronicleOutput, type NamedOp, type QuestOp } from '../chronicler'
 import { applyOutput } from './chronicler'
 import type { Output } from './commands'
@@ -41,10 +42,12 @@ export interface HeldHook {
   t: number
   until: number
   /** The run it came from, as it was, and what it was offered: applied as that run when taken. */
-  run: ChronicleRun
+  run?: ChronicleRun
   offered?: Offered
   quest?: QuestOp
   named?: NamedOp
+  /** A region's quest, held (M10.25): taken up, it comes into the world. */
+  story?: string
   label: string
   /** Put to the player once, in the morning. */
   shown?: boolean
@@ -54,7 +57,7 @@ export interface HeldHook {
 export interface Proposal {
   id: string
   t: number
-  kind: 'chronicle' | 'weave' | 'tides' | 'expansion'
+  kind: 'chronicle' | 'weave' | 'tides' | 'expansion' | 'story'
   run?: ChronicleRun
   offered?: Offered
   output?: ChronicleOutput | null
@@ -63,6 +66,8 @@ export interface Proposal {
   tides?: TidesReply | null
   /** What a round at the edge would chart (M10.21). */
   expansion?: { ask: ExpansionAsk; outline: ExpansionOutline }
+  /** What a region's story round would make (M10.25). */
+  story?: { topic: string; reply: StoryReply }
   /** The changes, one a line, as the player reads them. */
   lines: string[]
 }
@@ -137,6 +142,12 @@ export function takeHook(world: World, id: string): Output[] {
   const hook = waitingHooks(world).find((h) => h.id === id)
   if (!m || !hook) return [{ kind: 'error', text: 'That is no longer waiting.' }]
   m.hooks = m.hooks.filter((h) => h !== hook)
+  // A region's quest (M10.25): it comes into the world, and its giver asks.
+  if (hook.story) {
+    const ask = releaseStory(world, hook.story)
+    return [{ kind: 'narration', text: ask ? `${hook.label.split(' wants a word')[0]} will be glad to see you: "${ask}"` : 'It came to nothing after all: the moment has passed.' }]
+  }
+  if (!hook.run) return [{ kind: 'text', text: 'It came to nothing after all: the moment has passed.' }]
   const problems = applyOutput(world, hook.run, { ...emptyOutput(), quests: hook.quest ? [hook.quest] : [], named: hook.named ? [hook.named] : [] }, 'chronicler', hook.offered)
   if (problems.length) return [{ kind: 'text', text: 'It came to nothing after all: the moment has passed.' }]
   const request = hook.quest ? world.state.requests.find((r) => r.npc === hook.quest!.giver && r.status === 'open' && r.name === hook.quest!.name) : undefined
@@ -183,7 +194,7 @@ function tidesLines(world: World, reply: TidesReply | null): string[] {
 export function propose(world: World, p: Omit<Proposal, 'id' | 't' | 'lines'>): boolean {
   if (playModeOf(world) !== 'direct') return false
   const m = modes(world)
-  const lines = p.kind === 'chronicle' ? chronicleLines(world, p.output ?? emptyOutput()) : p.kind === 'weave' ? weaveLines(world, p.weave ?? null) : p.kind === 'expansion' ? expansionLines(p.expansion) : tidesLines(world, p.tides ?? null)
+  const lines = p.kind === 'chronicle' ? chronicleLines(world, p.output ?? emptyOutput()) : p.kind === 'weave' ? weaveLines(world, p.weave ?? null) : p.kind === 'expansion' ? expansionLines(p.expansion) : p.kind === 'story' && p.story ? storyLines(world, p.story.topic, p.story.reply) : tidesLines(world, p.tides ?? null)
   m.proposals.push({ ...p, id: `proposal_${++m.seq}`, t: world.now, lines })
   return true
 }
@@ -192,7 +203,7 @@ export function propose(world: World, p: Omit<Proposal, 'id' | 't' | 'lines'>): 
 export function proposalsText(world: World): Output[] {
   const waiting = world.state.modes?.proposals ?? []
   if (!waiting.length) return [{ kind: 'text', text: 'The chronicler proposes nothing just now.' }]
-  const what = { chronicle: 'The night round', weave: 'The new people of a district', tides: "The month's judgement of the great lines", expansion: 'What lies beyond the edge' }
+  const what = { chronicle: 'The night round', weave: 'The new people of a district', tides: "The month's judgement of the great lines", expansion: 'What lies beyond the edge', story: 'The story of a new region' }
   return [{ kind: 'text', text: [`The chronicler proposes (ACCEPT or REJECT, the first first):`, ...waiting.flatMap((p) => [`${what[p.kind]} (${p.id}):`, ...p.lines.map((l) => `  ${l}`)])].join('\n') }]
 }
 
@@ -210,6 +221,8 @@ export function decide(world: World, accept: boolean, id?: string): Output[] {
   else if (p.kind === 'weave' && p.key) applyWeave(world, p.key, accept ? (p.weave ?? null) : null)
   else if (p.kind === 'tides') applyTides(world, accept ? (p.tides ?? null) : null)
   else if (p.kind === 'expansion' && p.expansion && accept) applyExpansion(world, p.expansion.ask, p.expansion.outline)
+  // A region's story (M10.25): accepted as written; rejected, the rules give it one watcher and no quest.
+  else if (p.kind === 'story' && p.story) applyStory(world, p.story.topic, accept ? p.story.reply : null)
   return [{ kind: 'system', text: accept ? 'Done as proposed.' : 'Not that: the world takes its own course.' }]
 }
 

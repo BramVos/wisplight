@@ -1,3 +1,4 @@
+import { storyReply } from './growth/regionstory'
 import { outlineRequest, readOutline } from '../chronicler/outline'
 import { readReply } from '../chronicler/reply'
 import { chatLine, chatLineRequest, longListen } from './chatter'
@@ -269,6 +270,17 @@ const SITUATION_BUILDS: Record<string, Build> = {
       await engine.runModels()
     })
     return { about: 'the gate district of Graafhaven, the first time the stranger does something there', request, check: (text) => (districtWords(text) ? checked(request, text) : ['the names and lines could not be read']) }
+  },
+  region_story: async ({ base }) => {
+    const request = await captured('region_story', async (llm) => {
+      const engine = new Engine(base, { seed: 6, builder: true, llm })
+      await doneInGraafhaven(engine)
+      await engine.handle('bye')
+      await engine.runModels()
+      await engine.handle('look')
+      await engine.runModels()
+    })
+    return { about: "the story of Graafhaven, once its gate district is made and the stranger is there", request, check: (text) => (storyReply(text) ? checked(request, text) : ['the story could not be read']) }
   },
   weave: async ({ base }) => {
     const request = await captured('weave', async (llm) => {

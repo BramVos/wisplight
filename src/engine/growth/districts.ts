@@ -4,7 +4,7 @@ import type { LlmRequest } from '../dialogue/llm'
 import { worldFrame } from '../dialogue/prompt'
 import { voiceSummary } from '../dialogue/voice'
 import { recordFact } from '../news'
-import { worldText } from '../safety'
+import { crossesLimits, readsAsInstruction, worldText } from '../safety'
 import { newNpcState, type GameState } from '../state'
 import type { World } from '../world'
 import { farPlaceOf, farTopicAt, fitsRoom, freeId } from './far'
@@ -52,7 +52,8 @@ export interface District {
 /** What the chronicler writes for a district: names and words, never the shape. */
 export interface DistrictWords {
   places: { key: string; name: string; description: string; near?: string }[]
-  people: { key: string; name: string; pronoun: string; looks: string; speech: string; fact: string; trade?: string; at?: string }[]
+  /** For about one in three of the people, a secret and its hint (M10.25). */
+  people: { key: string; name: string; pronoun: string; looks: string; speech: string; fact: string; trade?: string; at?: string; secret?: { text: string; hint: string } | null }[]
   /** Factions of the world that sit here (M10.22): never a new one. */
   seats?: { faction: string; at: string; wants: string }[]
 }
@@ -116,6 +117,9 @@ function heartOf(world: Pick<World, 'state'>, topic: string): string | undefined
   return far ? String((far.locations[1] ?? far.locations[0])!['id']) : undefined
 }
 
+/** A secret or its hint as the content wants it: one sentence or two, within the limits, and no instruction to a model. */
+const secretFits = (text: unknown): text is string => typeof text === 'string' && text.trim().length > 0 && text.length <= 240 && !crossesLimits(text) && !readsAsInstruction(text)
+
 /** A description as the content rules want it, or the template's. */
 const room = (text: string | undefined, fallback: string) => (fitsRoom(text) ? text : fallback)
 
@@ -178,7 +182,7 @@ export function makeDistrict(world: World, topic: string, id: string, words: Dis
   const names = new Set([...world.content.npcs.values()].map((n) => n.name))
   const rng = (lo: number, hi: number) => world.rng.int('growth', lo, hi)
   const npcs: Record<string, unknown>[] = []
-  const person = (name: string, pronoun: 'she' | 'he', trade: string, at: string, looks: string, fact: string, speech?: string) => {
+  const person = (name: string, pronoun: 'she' | 'he', trade: string, at: string, looks: string, fact: string, speech?: string, secret?: { text: string; hint: string }) => {
     const firstName = name.split(' ')[0]!
     const job = world.content.professions.get(trade)?.name ?? trade
     npcs.push({
@@ -196,19 +200,25 @@ export function makeDistrict(world: World, topic: string, id: string, words: Dis
       aliases: [firstName.toLowerCase(), job],
       public_facts: [fact],
       ...(speech ? { speech } : {}),
+      ...(secret ? { secrets: [{ id: 'own_1', text: secret.text, hint: secret.hint, dc: 16, about: [] }] } : {}),
       money: 30,
       inventory: {},
       knows_areas: [area],
       portrait: 'generic',
     })
   }
-  for (const w of (words?.people ?? []).slice(0, MOST_PEOPLE)) {
+  const people = (words?.people ?? []).slice(0, MOST_PEOPLE)
+  // A secret for about one in three of them (M10.25), no more.
+  let secretsLeft = Math.ceil(people.length / 3)
+  for (const w of people) {
     const good = w.name && w.name.length < 40 && /^[A-Z][\p{L}'-]+(?: [\p{L}'-]+){0,2}$/u.test(w.name) && !names.has(w.name)
     if (!good || (w.pronoun !== 'she' && w.pronoun !== 'he')) continue
     names.add(w.name)
     const at = (w.at && placed.get(w.at)) || String(locations[0]?.['id'] ?? entrance)
     const trade = w.trade && world.content.professions.has(w.trade) ? w.trade : trades.includes('merchant') ? 'merchant' : trades[0]!
-    person(w.name, w.pronoun, trade, at, w.looks && w.looks.length < 300 ? w.looks : `Someone of ${t.name}, busy with their own affairs.`, w.fact && w.fact.length < 200 ? w.fact : `${w.name.split(' ')[0]} lives in ${q.name} of ${t.name}.`, w.speech && w.speech.length < 200 ? w.speech : undefined)
+    const hid = w.secret && secretsLeft > 0 && secretFits(w.secret.text) && secretFits(w.secret.hint) ? { text: w.secret.text.trim(), hint: w.secret.hint.trim() } : undefined
+    if (hid) secretsLeft--
+    person(w.name, w.pronoun, trade, at, w.looks && w.looks.length < 300 ? w.looks : `Someone of ${t.name}, busy with their own affairs.`, w.fact && w.fact.length < 200 ? w.fact : `${w.name.split(' ')[0]} lives in ${q.name} of ${t.name}.`, w.speech && w.speech.length < 200 ? w.speech : undefined, hid)
   }
   // People named in talks who live in this town and are no people yet (M10.9) become people of its first district, two at most, as they were spoken of (M10.22).
   const sketched: Record<string, string> = {}
@@ -406,7 +416,7 @@ export function districtRequest(world: World, key: string): LlmRequest {
       '',
       'You make one district of a far town playable in a text game: you name and describe its places and people. The shape is fixed by the game; you write the words. Never contradict what is known of the town; use no name that is TAKEN.',
       `PLACES: up to ${MOST_PLACES}, each with a key, a name, a description, and near: the key of the place it lies next to (or leave it out: next to the way in). A description has three to five sentences and at most seventy words, second person, present tense, one sense that is not sight, a hint at one way out rather than a list, and never opens with its own name. Plain words, in the tone of the world.`,
-      `PEOPLE: up to ${MOST_PEOPLE}, each with a key, a full name that fits the town, she or he, what people see first (one sentence), how they speak (a few words), one thing anyone may know of them, a trade from TRADES, and at: the key of the place they live and work.`,
+      `PEOPLE: up to ${MOST_PEOPLE}, each with a key, a full name that fits the town, she or he, what people see first (one sentence), how they speak (a few words), one thing anyone may know of them, a trade from TRADES, and at: the key of the place they live and work. For about one in three of them, a secret: what they hide (one sentence) and a hint someone watchful might notice (one sentence); for the rest, null.`,
       `SEATS: up to ${MOST_SEATS}, where one of the FACTIONS has a hall, a church or an office at one of your places (by the place's key), with what they want in this town (one sentence). Never a faction that is not listed: a new town brings no new factions.`,
       'JSON only.',
     ].join('\n'),
@@ -422,7 +432,7 @@ export function districtRequest(world: World, key: string): LlmRequest {
     schemaName: 'district',
     schema: object({
       places: { type: 'array', items: object({ key: text, name: text, description: text, near: text }, ['near']) },
-      people: { type: 'array', items: object({ key: text, name: text, pronoun: text, looks: text, speech: text, fact: text, trade: text, at: text }) },
+      people: { type: 'array', items: object({ key: text, name: text, pronoun: text, looks: text, speech: text, fact: text, trade: text, at: text, secret: { anyOf: [object({ text, hint: text }), { type: 'null' }] } }, ['secret']) },
       seats: { type: 'array', items: object({ faction: text, at: text, wants: text }) },
     }),
     maxTokens: 3000,

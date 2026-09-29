@@ -110,11 +110,54 @@ export class MockLlm implements LlmClient {
             ? this.expansion(String(request.meta?.['wind'] ?? 'south'), Number(request.meta?.['count'] ?? 1))
             : request.schemaName === 'land'
             ? this.land(String(request.meta?.['name'] ?? 'the land'), (request.meta?.['faiths'] as string[] | undefined) ?? [])
+            : request.schemaName === 'region_story'
+            ? this.regionStory(request.meta ?? {})
             : request.schemaName === 'legends'
             ? this.legends((request.meta?.['legends'] as string[] | undefined) ?? [])
             : this.chronicler(request.meta as unknown as ChronicleMeta, request.prompt)
           : this.other(request)
     return { text, provider: 'mock', model: 'mock-1', usage: { inputTokens: Math.round((request.system.length + request.prompt.length) / 4), outputTokens: Math.round(text.length / 4), cachedTokens: 0 }, latencyMs: 1 }
+  }
+
+  /**
+   * The story of a new region (M10.25): a quest of two stages with the first
+   * two people, a watcher on the first standard signal, lore, and a secret for
+   * the third person; and one watcher on a signal the world does not have,
+   * which must be dropped. 'invalid' answers in prose.
+   */
+  regionStory(meta: Record<string, unknown>): string {
+    if (this.mode === 'invalid') return 'A fine story for the place.'
+    const people = (meta['people'] as { key: string; name: string; secret?: boolean }[] | undefined) ?? []
+    const places = (meta['places'] as string[] | undefined) ?? []
+    const signals = (meta['aftermath'] as string[] | undefined) ?? []
+    const skills = (meta['skills'] as string[] | undefined) ?? []
+    const name = String(meta['name'] ?? 'the place')
+    const [a, b] = people
+    const c = people.slice(2).find((p) => !p.secret)
+    const [here, there] = [places[0] ?? '', places[1] ?? places[0] ?? '']
+    return JSON.stringify({
+      why: `${name} lives by what comes in on its road, and not all of it is honest.`,
+      quest: a
+        ? {
+            name: 'The Missing Tally',
+            kind: 'mystery',
+            summary: `${a.name} has lost the tally of what the carters owe.`,
+            giver: a.key,
+            ask: 'The tally stick is gone, and without it every carter swears he owes nothing. Would you look for it?',
+            stages: [
+              { text: `${a.name.split(' ')[0]} lost the tally; it was last seen by the door.`, say: 'search the doorway', at: here, with: '', skill: skills.includes('perception') ? 'perception' : '', done: 'Under the step you find notches cut in a bit of willow: half a tally, snapped clean.' },
+              { text: 'Half the tally is found; someone kept the other half.', say: `ask ${(b ?? a).name.split(' ')[0]!.toLowerCase()} about the tally`, at: there, with: (b ?? a).key, skill: '', done: 'With a sigh the other half comes out of an apron pocket. "I only meant to keep it safe."' },
+            ],
+            outcome: { name: 'The tally made whole', text: 'The two halves fit, and the carters pay what they owe.' },
+          }
+        : null,
+      watchers: [
+        ...(signals[0] && a ? [{ signal: signals[0], on: 'done', who: [a.key], why: 'A debt settled is talked about.' }] : []),
+        { signal: 'no_such_signal', on: 'taken', who: [a?.key ?? 'p1'], why: 'Made up.' },
+      ],
+      lore: { name: `The Road into ${name}`, summary: `Every cart that comes into ${name} pays at the post.`, details: 'The post is older than anyone living. The toll was once a single copper.', story: 'My grandmother said the post was put there by a carter who paid with his last coin, and cursed the road.', teller: a?.key ?? '' },
+      secrets: c ? [{ who: c.key, text: `${c.name.split(' ')[0]} once took a cart's toll and kept it.`, hint: 'Their eyes go to the toll post whenever it is mentioned.' }] : [],
+    })
   }
 
   /** The month's judgement of the great lines (M10.22): the furthest each may go, and one made-up line that must be dropped. */
@@ -206,7 +249,7 @@ export class MockLlm implements LlmClient {
       ],
       people: [
         { key: 'hester', name: 'Hester Vlieland', pronoun: 'she', looks: 'A square woman with a pencil behind her ear and tar on her cuffs.', speech: 'short, counts aloud', fact: 'Hester keeps the chandlery and knows every ship that owes her money.', trade: 'merchant', at: 'chandlery' },
-        { key: 'joris', name: 'Joris Kuipers', pronoun: 'he', looks: 'A broad man in a leather apron, with sawdust in his beard.', speech: 'slow, friendly', fact: 'Joris makes the best casks in the quarter, and says so.', trade: 'merchant', at: 'yard' },
+        { key: 'joris', name: 'Joris Kuipers', pronoun: 'he', looks: 'A broad man in a leather apron, with sawdust in his beard.', speech: 'slow, friendly', fact: 'Joris makes the best casks in the quarter, and says so.', trade: 'merchant', at: 'yard', secret: { text: 'Joris waters the ale he sells by the cask.', hint: 'His casks are always a little lighter than they look.' } },
       ],
       seats: [...(factions[0] ? [{ faction: factions[0], at: 'chandlery', wants: 'A say in who supplies the ships, and a share of what they pay.' }] : []), { faction: 'made_up_league', at: 'yard', wants: 'Everything.' }],
     })

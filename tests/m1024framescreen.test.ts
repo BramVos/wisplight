@@ -26,6 +26,7 @@ describe('M10.24: the frames of a game', () => {
       ['events', 'normal'],
       ['lines', 'world'],
       ['growth', 'world'],
+      ['region', 'outline'],
     ])
     expect(view.mode).toBe('continue')
     const said = await text(engine, 'frames')
@@ -48,7 +49,7 @@ describe('M10.24: the frames of a game', () => {
     await engine.handle('frames growth little')
     expect([knob(world, 'sketches.per_day'), knob(world, 'sketches.per_area_season'), knob(world, 'props.per_week')]).toEqual([1, 3, 2])
     await engine.handle('frames events dramatic')
-    expect(framesView(world).dials.map((d) => d.chosen)).toEqual(['dramatic', 'seldom', 'little'])
+    expect(framesView(world).dials.map((d) => d.chosen)).toEqual(['dramatic', 'seldom', 'little', 'outline'])
     await engine.handle('frames lines world')
     await engine.handle('frames growth world')
     expect(world.state.knobs).toEqual({})
@@ -78,7 +79,7 @@ describe('M10.24: the frames of a game', () => {
     expect(Engine.fromSave(content, engine.save()).world.state.knobs).toEqual(engine.world.state.knobs)
     const again = await Engine.replay(content, 3, engine.save().log)
     expect(again.world.state.knobs).toEqual({ 'story.urgent_belang': 3, 'story.hooks_per_week': 4, 'sketches.per_day': 4, 'sketches.per_area_season': 12, 'props.per_week': 6 })
-    expect(framesView(again.world).dials.map((d) => d.chosen)).toEqual(['normal', 'often', 'much'])
+    expect(framesView(again.world).dials.map((d) => d.chosen)).toEqual(['normal', 'often', 'much', 'outline'])
   })
 
   it('shows each world as it is: the Nethermarch has no second land, Deepwell a land next door and the long dark', async () => {

@@ -26,6 +26,7 @@ export const MODEL_KINDS: readonly ModelKind[] = [
   { kind: 'district', role: 'chronicler', does: 'A district of a far town becomes playable when the stranger does something there or goes into it.', when: 'play' },
   { kind: 'expansion', role: 'chronicler', does: 'What lies beyond the edge of the world book, charted when the stranger goes on into the unknown: one region or one land.', when: 'play' },
   { kind: 'land', role: 'chronicler', does: 'A land the designer only framed: how its people speak, their names, coins and law, when the stranger first comes in.', when: 'play' },
+  { kind: 'region_story', role: 'chronicler', does: 'The story of a new region at arrival: a quest of two or three stages, watchers on the world\'s standard aftermath, lore and secrets.', when: 'play' },
   { kind: 'weave', role: 'chronicler', does: 'The new people of a district woven into the world: bonds, a secret, a thread home.', when: 'play' },
   { kind: 'chronicle', role: 'chronicler', does: 'The nightly round: lore, requests and storylines from the day.', when: 'night' },
   { kind: 'tides', role: 'chronicler', does: 'The great lines judged on the first of the month: nothing, a threat or the event, within what the rules allow.', when: 'night' },

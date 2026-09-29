@@ -4,6 +4,7 @@ import { frameOf } from '../lands'
 import { withProps } from '../props'
 import { withFarPlaces, type FarPlace } from './far'
 import { withDistricts } from './districts'
+import { withStories } from './regionstory'
 import { addCrowd, endCrowd } from './crowds'
 import { isRestDay } from '../clock'
 import { callName, FactionSchema, LocationSchema, lockedIds, NpcSchema, type Content, type Npc } from '../content'
@@ -58,6 +59,9 @@ export interface GrowthState {
   /** What the chronicler wrote for lands the designer only framed (M10.23), by land, and those waiting for it. */
   lands?: Record<string, Record<string, unknown>>
   landPending?: string[]
+  /** The stories of regions made in play (M10.25), by topic, and those waiting for the chronicler. */
+  stories?: Record<string, import('./regionstory').RegionStory>
+  storyPending?: string[]
   /** Factions formed in play (M10.22), as raw content, and when each formed: at most one a season. */
   factions?: Record<string, unknown>[]
   founded?: number[]
@@ -82,6 +86,8 @@ function grownOnly(base: Content, state: GameState): Content {
   if (g?.lands && Object.keys(g.lands).length) base = withLands(base, state)
   if (g?.far && Object.keys(g.far).length) base = withFarPlaces(base, state)
   if (g?.districts && Object.keys(g.districts).length) base = withDistricts(base, state)
+  // The stories of those regions (M10.25): their quests, watchers, lore and secrets.
+  if (g?.stories && Object.keys(g.stories).length) base = withStories(base, state)
   // Factions formed in play (M10.22): content like any.
   if (g?.factions?.length) {
     const factions = new Map(base.factions)

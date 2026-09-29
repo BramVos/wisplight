@@ -776,7 +776,7 @@ export interface GameState {
   /** Knobs of this game over the world's own (M10.24: the dials of the frames screen), by knob id. */
   knobs?: Record<string, number>
   /** What the player chose on the frames screen (M10.24), where a dial is more than one knob. */
-  frames?: { lines?: 'often' | 'seldom'; growth?: 'little' | 'much' }
+  frames?: { lines?: 'often' | 'seldom'; growth?: 'little' | 'much'; region?: import('./frames').RegionSetting }
   /** What waits for the player in think and direct mode (M10.24): hooks of a night, proposals. */
   modes?: import('./modes').ModesState
   /** NPCs a companion is distracting, until when. */

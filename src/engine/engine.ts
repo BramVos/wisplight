@@ -1,3 +1,4 @@
+import { applyStory, storyDue, storyReady, storyReply, storyRequest, wantStory, type StoryReply } from './growth/regionstory'
 import { wishLines } from './wishes'
 import { framesLines, framesView } from './frames'
 import { knob } from './knobs'
@@ -122,6 +123,7 @@ export type LogEntry =
   // A far place made playable (M9.1): the chronicler's words, or null for the template.
   | { t: number; k: 'far'; topic: string; v: FarWords | null }
   | { t: number; k: 'district'; key: string; v: DistrictWords | null }
+  | { t: number; k: 'story'; topic: string; v: StoryReply | null }
   | { t: number; k: 'weave'; key: string; v: WeaveReply | null }
   // What the chronicler wrote for a land the designer only framed (M10.23), or null.
   | { t: number; k: 'land'; id: string; v: LandWords | null }
@@ -601,7 +603,7 @@ export class Engine {
   /** Everything waiting for a model: goal choices and chronicler runs. */
   get modelsWaiting(): number {
     // A far place waiting for its words counts too (M10.21: alone, it never started the models).
-    return (this.state.brain?.pending.length ?? 0) + this.chroniclerWaiting + this.outlinesWaiting + (this.state.growth?.farPending?.length ?? 0) + (this.state.growth?.districtPending?.length ?? 0) + (this.state.growth?.landPending?.length ?? 0) + (this.state.growth?.expansions?.pending.length ?? 0) + (this.state.growth?.weavePending?.length ?? 0) + (this.state.tides?.pending ? 1 : 0)
+    return (this.state.brain?.pending.length ?? 0) + this.chroniclerWaiting + this.outlinesWaiting + (this.state.growth?.farPending?.length ?? 0) + (this.state.growth?.districtPending?.length ?? 0) + (this.state.growth?.landPending?.length ?? 0) + (this.state.growth?.expansions?.pending.length ?? 0) + (this.state.growth?.weavePending?.length ?? 0) + (this.state.growth?.storyPending?.length ?? 0) + (this.state.tides?.pending ? 1 : 0)
   }
 
   /** Lets the models do their waiting work in the background: goal choices first, they are short. */
@@ -619,6 +621,7 @@ export class Engine {
     await this.runLands()
     await this.runExpansions()
     await this.runDistricts()
+    await this.runStories()
     await this.runWeaves()
     const tides = pace.tides === false ? false : await this.runTides()
     return { night, tides }
@@ -788,6 +791,43 @@ export class Engine {
     } finally {
       this.outlining = false
     }
+  }
+
+  /**
+   * The stories of new regions (M10.25), one at a time; a town's waits for its
+   * first district, and comes at a later round.
+   */
+  async runStories(): Promise<void> {
+    if (this.outlining) return
+    this.outlining = true
+    try {
+      const g = this.state.growth
+      for (const topic of [...(g?.storyPending ?? [])]) {
+        if (!g?.storyPending?.includes(topic) || !storyReady(this.world, topic)) continue
+        const llm = this.llm
+        let reply: StoryReply | null = null
+        if (llm) {
+          try {
+            reply = storyReply((await llm.complete({ ...storyRequest(this.world, topic), priority: 'low' })).text)
+          } catch {
+            reply = null
+          }
+        }
+        if (!g.storyPending.includes(topic)) continue
+        this.record({ t: this.world.now, k: 'story', topic, v: reply })
+        this.settleStory(topic, reply)
+      }
+    } finally {
+      this.outlining = false
+    }
+  }
+
+  /** A region's story by the play mode (M10.24): in direct mode a proposal; else kept, its quest held in think mode. */
+  private settleStory(topic: string, reply: StoryReply | null): void {
+    if (reply && propose(this.world, { kind: 'story', story: { topic, reply } })) {
+      const g = this.state.growth!
+      g.storyPending = (g.storyPending ?? []).filter((x) => x !== topic)
+    } else applyStory(this.world, topic, reply)
   }
 
   /** Districts of far towns waiting for the chronicler's words (M10.21), one at a time. */
@@ -1144,6 +1184,9 @@ export class Engine {
     const doing = !outputs.some((o) => o.kind === 'error') && (/^(?:buy|sell|rent|ask|tell|order|trade|haggle|work|take lodgings?|lodge)\b/i.test(text) || Boolean(talkBefore && this.state.talk))
     const due = this.state.combat ? undefined : districtDue(this.world, doing)
     if (due) outputs.push(...wantDistrict(this.world, due.topic, due.id))
+    // A new region's story (M10.25): once it is made and the stranger is there, by the setting of this game.
+    const story = this.state.combat ? undefined : storyDue(this.world)
+    if (story) outputs.push(...wantStory(this.world, story))
     const talk = this.state.talk
     if (talk && this.state.npcs[talk.npc]?.location !== this.state.player.location) this.state.talk = undefined
     this.dialogue.learn(this.state.player.location, areaTopicId(this.content, this.world.location(this.state.player.location).area))
@@ -1242,6 +1285,9 @@ export class Engine {
       const [, topic, id] = district as unknown as [string, string, string]
       return farTopicAt(this.world, this.state.player.location) === topic && districtsOf(this.content, topic).some((d) => d.id === id) ? wantDistrict(this.world, topic, id) : [{ kind: 'error', text: 'There is nothing to make here.' }]
     }
+    // STORY <topic> (M10.25): what "go on" runs after the question of cost; only in that region.
+    const storyCmd = /^story\s+([a-z0-9_]+)$/.exec(text.trim())
+    if (storyCmd && !this.state.talk) return storyDue(this.world) === storyCmd[1] || (farTopicAt(this.world, this.state.player.location) === storyCmd[1] && storyReady(this.world, storyCmd[1]!)) ? wantStory(this.world, storyCmd[1]!) : [{ kind: 'error', text: 'There is nothing to write here.' }]
     // The play modes (M10.24): hooks of a night that wait (think), and proposals (direct).
     const said = text.trim().toLowerCase()
     if (!this.state.talk && (said === 'hooks' || said === 'hooks later')) return said === 'hooks' ? hookChoice(this.world) : [{ kind: 'text', text: 'It can wait. HOOKS shows it again, for a week.' }]
@@ -2041,6 +2087,9 @@ export class Engine {
         } else if (entry.k === 'weave') {
           this.log.push(entry)
           this.settleWeave(entry.key, entry.v)
+        } else if (entry.k === 'story') {
+          this.log.push(entry)
+          this.settleStory(entry.topic, entry.v)
         } else if (entry.k === 'mode') {
           this.log.push(entry)
           this.state.playMode = entry.v

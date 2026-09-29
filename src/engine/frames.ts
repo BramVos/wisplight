@@ -17,7 +17,7 @@ import type { World } from './world'
 // The dials are knobs of this game (state.knobs over the world's own), set
 // by the command FRAMES, so a replay sets them as the game did.
 
-export type DialId = 'events' | 'lines' | 'growth'
+export type DialId = 'events' | 'lines' | 'growth' | 'region'
 
 export interface Dial {
   id: DialId
@@ -93,6 +93,18 @@ function dials(world: World): Dial[] {
       ],
       chosen: chosen.growth ?? 'world',
     },
+    // How full a new region is built (M10.25): the price of each stands beside it on the screen.
+    {
+      id: 'region',
+      name: 'How full a new region is built',
+      about: 'Outline: what there is, and the rest when you come there. Story: a quest, customs, lore and secrets at arrival. Full: the world build in small, while you travel.',
+      choices: [
+        { id: 'outline', name: 'outline' },
+        { id: 'story', name: 'story' },
+        { id: 'full', name: 'full' },
+      ],
+      chosen: regionSetting(world),
+    },
   ]
 }
 
@@ -120,6 +132,19 @@ export function worldFrames(content: Content): Pick<FramesView, 'lands'> & { lin
   })
   const lines = [...content.tides.values()].map((tide) => ({ id: tide.id, name: tide.name, kind: tide.kind, driven: driven(content, tide.drivers) }))
   return { lands, lines }
+}
+
+/**
+ * How full a new region is built (M10.25; Bram, 29 September 2026): outline,
+ * what there was (the outline, and the rest when the stranger comes there);
+ * story, the outline and the story round (the default with a model); full,
+ * the world build in small over the region. A knob of this game.
+ */
+export type RegionSetting = 'outline' | 'story' | 'full'
+export const REGION_SETTINGS: readonly RegionSetting[] = ['outline', 'story', 'full']
+
+export function regionSetting(world: Pick<World, 'state' | 'aiLive'>): RegionSetting {
+  return world.state.frames?.region ?? (world.aiLive ? 'story' : 'outline')
 }
 
 /** The frames of a game, for the screen and the terminal. */
@@ -159,7 +184,7 @@ export function framesLines(world: World): string[] {
 export function setFrame(world: World, dial: string | undefined, choice: string | undefined): { text: string; ok: boolean } {
   const d = dials(world).find((x) => x.id === dial?.toLowerCase())
   const c = d?.choices.find((x) => x.id === choice?.toLowerCase() || x.name === choice?.toLowerCase())
-  if (!d || !c) return { ok: false, text: 'FRAMES EVENTS CALM, NORMAL or DRAMATIC; FRAMES LINES OFTEN, WORLD or SELDOM; FRAMES GROWTH LITTLE, WORLD or MUCH.' }
+  if (!d || !c) return { ok: false, text: 'FRAMES EVENTS CALM, NORMAL or DRAMATIC; FRAMES LINES OFTEN, WORLD or SELDOM; FRAMES GROWTH LITTLE, WORLD or MUCH; FRAMES REGION OUTLINE, STORY or FULL.' }
   if (d.id === 'events') stories(world).tempo = c.id as Tempo
   const frames = (world.state.frames ??= {})
   if (d.id === 'lines') {
@@ -175,5 +200,6 @@ export function setFrame(world: World, dial: string | undefined, choice: string 
     if (factor) frames.growth = c.id as 'little' | 'much'
     else delete frames.growth
   }
+  if (d.id === 'region') frames.region = c.id as RegionSetting
   return { ok: true, text: `${d.name}: ${c.name}.` }
 }

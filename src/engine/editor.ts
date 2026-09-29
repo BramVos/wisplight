@@ -8,6 +8,7 @@ import { applyEdits, entities, entityYaml, ENTITY_KINDS, landHome, landOfFile, l
 import { worldFrame } from './dialogue/prompt'
 import { frameOf } from './lands'
 import { worldFrames } from './frames'
+import { worldFixedPart } from './worldfixed'
 import { suspectText, worldText, type SuspectText } from './safety'
 import type { LlmRequest } from './dialogue/llm'
 import { voiceSummary } from './dialogue/voice'
@@ -770,12 +771,7 @@ export function worldStepRequest(files: ContentFile[], stepId: string, said: str
   // first, so each of twelve steps wrote some 18,000 tokens to the cache and never read them back).
   // A land's build shares it with the world's.
   const fixed = [
-    WORLD_GUIDE,
-    '',
-    contractSummary(content, false),
-    requiredFields(),
-    '',
-    instruction,
+    worldFixedPart(content, instruction),
     'Answer in JSON: say, questions, changes (a new thing as full YAML; to add to or change a thing that exists, merge: true with only the fields you set, each of which replaces that field whole, so give a list whole; empty YAML without merge deletes), world (YAML of the top-level world.yaml keys to set, or empty), rules (YAML of the top-level keys of the rules to set, such as death, or empty; patrons, conditions and ancestries are changes), files (CHRONICLER.md, data/voice.yaml under its key voice:, data/journey.yaml under its key journey:, or for a land lands/<id>/land.yaml under land: and lands/<id>/voice.yaml, each whole, or none).',
     '',
   ].join('\n')
