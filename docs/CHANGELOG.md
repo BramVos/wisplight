@@ -1,5 +1,23 @@
 # Changelog
 
+## M10.29 deel: namen, het dagboek en de kleine dingen van de interface, 29 september 2026
+
+Uit je speeltest van The Quiet Reach, bevindingen 1, 2, 3, 3a, 8, 11, 18, 20 en 21.
+
+- **Dr Ilyan Sorell heet niet meer "Dr".** De naam die mensen gebruiken slaat een titel over (Dr, Mr, Mrs, Ms, Prof, Sir, Dame, Fr, Capt). Een persoon kan ook `call` hebben, de naam waarmee men iemand noemt. The Quiet Reach zet Ilyan en Edda, Skerrow Old Tamsin. Onder Check staat een regel als een naam met een titel begint en er geen `call` is.
+- **Je ziet de naam zodra je iemand gesproken hebt.** Het gespreksvenster en de regel Here: tonen dan "Mara Venn, the port coordinator (at work)". Daarvoor staat er alleen de rol.
+- **Haken de eerste keer.** Noemt iemand een plek of persoon die hij kent, dan staat die meteen tussen haken, en niet pas de volgende keer. Mara's "guest quarters" en "medical bay" kun je dus meteen volgen.
+- **Eén regel per verkoper.** De Commons zegt nu "Sana sells field rations, cups of herbal tea, cups of coffee and hot meals here, 07-20; hot meals 07-09, 12-14, 18-20." in plaats van drie keer "Sana sells hot meals here."
+- **Wat je alleen van horen kent.** Een plek waar je nog niet stond, staat in het dagboek als "(heard of)", na de plekken waar je wel was. "The ship" in een gesprek wijst niet meer naar het gesloten dek van de Peregrine, en "landing pad" is de sluis.
+- **Niet door een deur kijken.** `l hangar` in de Workshop toont nu de hangardeur. Kijken door een uitgang naar een plek waar je nooit stond, geeft de richting, wat je vanaf hier ziet en de looptijd. De naam komt pas als je ervan hoorde, en hoe het er is pas als je er was.
+- **Klein.** Onder de afbeelding staat de naam van de plek. De klok staat stil zolang het venster van een afgelopen gesprek open is. Elke keuzelijst zegt hoe je eruit komt: "(a number, the name, or anything else to leave it)", want x is examine.
+
+Testen: begin The Quiet Reach, praat met Mara en kijk daarna naar de regel Here:. Open de Commons in het dagboek, en Dr Sorell. Ga naar de Workshop en typ `l hangar` en `look in`. Laat een gesprek open staan na bye en kijk naar de klok. Tests in `tests/m1029names.test.ts` en `tests/m1029look.test.ts`.
+
+Wat de editor en de kroniekverteller leerden: `call` staat in het formulier van een persoon, onder Check, in het contract (`docs/CONTENT.md`), in de stap Mensen van de wereldgids en in `docs/NEW-WORLD.md`. Skerrow heeft Old Tamsin, Deepwell speelt de standaard.
+
+Ontwerp: functioneel ontwerp, bij het dagboek, alinea "Stand na M10.29: namen, het dagboek en kijken door een uitgang".
+
 ## M10.29 deel: wat de spreker van je weet, en woorden zijn geen daden, 29 september 2026
 
 Uit je speeltest van The Quiet Reach, bevindingen 5, 10, 12, 13, 23 en 24.
