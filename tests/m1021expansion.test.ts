@@ -109,4 +109,29 @@ describe('M10.21: a round at the edge of the world book', () => {
     deepwell.start()
     expect(text(await deepwell.handle('explore north'))).toMatch(/only from the edge of the map/)
   })
+
+  it("asked at a harbour what lies beyond the sea, a skipper may be found: the round charts a place across the water, and a boat goes there", async () => {
+    const isle = loadContent(await readContentFiles('content', 'isle'))
+    const engine = new Engine(isle, { seed: 3, builder: true, llm: new MockLlm('good') })
+    engine.start()
+    await engine.handle('@goto loc_skerrow_harbour')
+    const asked = text(await engine.handle('what lies beyond the sea?'))
+    expect(asked).toMatch(/Will you look for a skipper who will sail further\?\n {2}1\. Find a skipper who will sail further out/)
+    expect(text(await engine.handle('1'))).toMatch(/The chronicler is working out what lies (north|east|south|west)\./)
+    await engine.runModels()
+    const boat = engine.content.passages.get('grey_saltings_boat')!
+    expect(boat).toMatchObject({ stops: ['loc_skerrow_harbour', 'grey_saltings'], water: true })
+    expect(text(await engine.handle('look'))).toMatch(/What lies across the water .*: the Grey Saltings\. .*A boat goes there from Skerrow Hythe, the Harbour\./)
+    // The boat takes the stranger there, and it is made playable on arrival.
+    await engine.handle('@money 200')
+    await engine.handle('@time 7')
+    expect(text(await engine.handle('take the boat to the grey saltings'))).toMatch(/travel by the boat to the Grey Saltings from Skerrow Hythe to the Grey Saltings\. It takes 2 days\./)
+    expect(engine.state.growth!.far!['grey_saltings']).toBeDefined()
+    // Without a model the quay has no more to say.
+    const plain = new Engine(isle, { seed: 3, builder: true })
+    plain.start()
+    await plain.handle('@goto loc_skerrow_harbour')
+    expect(text(await plain.handle('what lies beyond the sea?'))).toMatch(/Nobody on the quay can tell you what lies past where the boats go\./)
+    expect(plain.state.choice).toBeUndefined()
+  })
 })

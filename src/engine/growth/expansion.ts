@@ -2,6 +2,7 @@ import { askOutput, mustAsk } from '../asking'
 import type { Output } from '../commands'
 import { offer } from '../choice'
 import { checkContent, LandSchema, lockedIds, TopicSchema, type Content } from '../content'
+import { PassageSchema } from '../map/passageSchema'
 import type { LlmRequest } from '../dialogue/llm'
 import { worldFrame } from '../dialogue/prompt'
 import { voiceSummary } from '../dialogue/voice'
@@ -38,6 +39,8 @@ export interface ExpansionAsk {
   from: readonly [number, number]
   /** The region whose edge it is. */
   region: string
+  /** Asked at a harbour (M10.21: what lies beyond the sea): a boat from there goes to what is charted. */
+  by?: { from: string }
   t: number
 }
 
@@ -122,7 +125,9 @@ export function expansionRequest(world: World, ask: ExpansionAsk): LlmRequest {
       'Plain words, in the tone of the world. JSON only.',
     ].join('\n'),
     prompt: [
-      `THE EDGE: ${ask.wind} of ${content.regions.get(ask.region)?.name ?? ask.region}, at ${Math.round(ask.from[0])}, ${Math.round(ask.from[1])} km.`,
+      ask.by
+        ? `THE HARBOUR: ${content.locations.get(ask.by.from)?.name ?? ask.by.from}, looking out to sea ${ask.wind}, at ${Math.round(ask.from[0])}, ${Math.round(ask.from[1])} km: chart what lies across the water that way.`
+        : `THE EDGE: ${ask.wind} of ${content.regions.get(ask.region)?.name ?? ask.region}, at ${Math.round(ask.from[0])}, ${Math.round(ask.from[1])} km.`,
       ...(places.length ? ['KNOWN PLACES:', ...places.map((p) => `  ${p}`)] : []),
       ...(lands.length ? [`OTHER LANDS: ${lands.join('; ')}`] : []),
       ...(realms.length ? ['REALMS:', ...realms.map((r) => `  ${r}`)] : []),
@@ -263,16 +268,17 @@ export function applyExpansion(world: World, ask: ExpansionAsk, outline: Expansi
   }
   ;(world.state.player.journal ??= {})[outline.id] = world.now
   recordFact(world, { kind: 'expansion', about: [], place: world.state.player.location, belang: 0, witnesses: [], title: `${outline.name} charted`, text: { precise: `${outline.name}: ${outline.why}`, village: '', far: '' } })
-  world.notices.push(`What lies ${ask.wind}, as far as you can make out: ${outline.name}. ${outline.summary} Head ${ask.wind} at the edge to go on.`)
+  world.notices.push(ask.by ? `What lies across the water ${ask.wind}, as the skippers tell it: ${outline.name}. ${outline.summary} A boat goes there from ${world.content.locations.get(ask.by.from)?.name ?? 'the harbour'}.` : `What lies ${ask.wind}, as far as you can make out: ${outline.name}. ${outline.summary} Head ${ask.wind} at the edge to go on.`)
   return true
 }
 
-/** The content with what the rounds charted in this game (M10.21): far places, and new lands with their frames. */
+/** The content with what the rounds charted in this game (M10.21): far places, new lands with their frames, and a boat from the harbour. */
 export function withExpansions(content: Content, state: GameState): Content {
   const made = state.growth?.expansions?.made
   if (!made || !Object.keys(made).length) return content
   const topics = new Map(content.topics)
   const lands = new Map(content.lands)
+  const passages = new Map(content.passages)
   for (const { ask, outline } of Object.values(made)) {
     const [dx, dy] = WIND_STEP[ask.wind]
     const km = outline.days * KM_PER_DAY
@@ -295,6 +301,30 @@ export function withExpansions(content: Content, state: GameState): Content {
       ...(outline.kind === 'land' && lands.has(outline.id) ? { land: outline.id } : {}),
     })
     if (topic.success) topics.set(outline.id, topic.data)
+    // Charted from a harbour: a skipper who knows the way takes the stranger there, and back.
+    if (ask.by && !passages.has(`${outline.id}_boat`) && content.locations.has(ask.by.from)) {
+      const boat = PassageSchema.safeParse({
+        id: `${outline.id}_boat`,
+        name: `the boat to ${outline.name}`,
+        kind: 'boat',
+        aliases: [`the boat to ${outline.name}`, `boat to ${outline.name}`],
+        stops: [ask.by.from, outline.id],
+        departs: ['08:00'],
+        fare: outline.days * 10,
+        legs: { [`${ask.by.from}>${outline.id}`]: outline.days * 24 * 60 },
+        water: true,
+        crew: 'skipper',
+        text: 'You pay {fare}, and a skipper who knows the way takes you out past the last marks. After {duration} you come ashore at {place}.',
+        closed: 'The skipper sails at eight in the morning, when the tide serves.',
+        where: `The boat to ${outline.name} leaves from ${content.locations.get(ask.by.from)!.name}.`,
+      })
+      if (boat.success) passages.set(boat.data.id, boat.data)
+    }
   }
-  return { ...content, topics, lands }
+  return { ...content, topics, lands, passages }
+}
+
+/** Whether a line over water stops here (M10.21): a harbour, where one may ask what lies beyond the sea. */
+export function seaStop(content: Pick<Content, 'passages'>, location: string): boolean {
+  return [...content.passages.values()].some((p) => p.water && p.stops.includes(location))
 }

@@ -12,7 +12,7 @@ import { brawlAnswer, brawlShown } from './social/brawl'
 import { CHECKPOINT_ENTRIES, CHECKPOINT_MINUTES, contentVersion, type Checkpoint, type CheckpointedSave } from './checkpoint'
 import { applyFarPlace, farPlaceOf, farRequest, farWords, wantFarPlace, type FarWords, farTopicAt } from './growth/far'
 import { crossBorder } from './borders'
-import { chartChoice, expansionChoice, expansionReply, expansionRequest, settleExpansion, soundOutlines, unpend, wantExpansion, type ExpansionAsk, type ExpansionReply } from './growth/expansion'
+import { chartChoice, expansionChoice, expansionReply, expansionRequest, seaStop, settleExpansion, soundOutlines, unpend, wantExpansion, type ExpansionAsk, type ExpansionReply } from './growth/expansion'
 import { wakePulse } from './pulse'
 import { decide, holdHooks, hookChoice, morningHooks, PLAY_MODES, playModeOf, propose, proposalsText, takeHook, waitingLines, type PlayMode } from './modes'
 import { applyLand, landRequest, landWords, wantLand, type LandWords } from './growth/landwrite'
@@ -1254,6 +1254,31 @@ export class Engine {
       const hex = playerHex(this.world)
       if (!map || !hex || edgeOf(map, hex) !== explore[1]) return [{ kind: 'error', text: 'You can go into the unknown only from the edge of the map, on that side.' }]
       return wantExpansion(this.world, { wind: explore[1] as ExpansionAsk['wind'], from: map.posOf(hex), region: map.region.id })
+    }
+    // What lies beyond the sea, asked at a harbour (M10.21): with a model, a skipper may be found who will go further.
+    if (/\b(?:beyond|across|over|past|behind)\s+(?:the\s+)?(?:sea|water|waves|horizon|ocean)\b/.test(said) && /\?|\bwhat\b|\bwho\b|\banything\b|\bwhere\b/.test(said) && seaStop(this.content, this.state.player.location)) {
+      const partner = this.state.talk?.npc
+      const answer: Output = partner
+        ? { kind: 'speech', text: `${callName(this.world.npc(partner))}: "Past where the boats go? Nobody from here has been, and nobody who went came back to say."` }
+        : { kind: 'narration', text: 'Nobody on the quay can tell you what lies past where the boats go.' }
+      if (!this.world.aiLive) return [answer]
+      return [answer, ...offer(this.world, 'Will you look for a skipper who will sail further?', [{ label: 'Find a skipper who will sail further out', command: 'explore by sea' }, { label: 'Let it be', command: 'explore none' }])]
+    }
+    if (said === 'explore none') return [{ kind: 'text', text: 'You let it be. The sea keeps its secrets for now.' }]
+    if (said === 'explore by sea' && !this.state.talk) {
+      const here = this.state.player.location
+      if (!seaStop(this.content, here)) return [{ kind: 'error', text: 'You need a harbour for that, where boats go out.' }]
+      const map = regionMap(this.content)
+      const at = this.content.locations.get(here)
+      const pos = at?.pos ?? this.content.areas.get(at?.area ?? '')?.pos ?? [0, 0]
+      // Out to sea towards the nearest edge of the map.
+      let wind: ExpansionAsk['wind'] = 'west'
+      if (map) {
+        const hex = map.hexOf(pos)
+        const gaps: [ExpansionAsk['wind'], number][] = [['west', hex.col], ['east', map.cols - 1 - hex.col], ['south', hex.row], ['north', map.rows - 1 - hex.row]]
+        wind = gaps.sort((a, b) => a[1] - b[1])[0]![0]
+      }
+      return wantExpansion(this.world, { wind, from: pos, region: map?.region.id ?? '', by: { from: here } })
     }
     const chart = /^chart\s+([a-z0-9_]+)$/.exec(said)
     if (chart && !this.state.talk && this.state.growth?.expansions?.choice) return chartChoice(this.world, chart[1]!)

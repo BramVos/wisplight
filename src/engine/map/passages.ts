@@ -166,7 +166,10 @@ export function takePassage(world: World, host: PassageHost, word: string, desti
   const named = passagesNamed(world, word)
   const kind = named[0]?.kind ?? word
   if (!named.length) return [{ kind: 'error', text: `There is no ${word} here.` }]
-  const p = named.find((x) => stopHere(world, x)) ?? named[0]!
+  // Of the lines here, the one that goes where the stranger names (M10.21: the boat to a charted place beside the elves' boat).
+  const fromHere = named.filter((x) => stopHere(world, x))
+  const goingTo = destination
+  const p = (goingTo ? fromHere.find((x) => x.stops.some((st) => stopFits(world, st, goingTo))) : undefined) ?? fromHere[0] ?? named[0]!
   const here = stopHere(world, p)
   const names = p.stops.map((s) => stopName(world, s))
   if (!here) return [{ kind: 'error', text: p.where ?? `The ${kind} stops at ${listOf(names)}.` }]

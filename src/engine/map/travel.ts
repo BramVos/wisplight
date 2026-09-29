@@ -837,7 +837,8 @@ export function beyondEdge(world: World, map: RegionMap, side: Side): Output[] {
   const own = map.region.beyond?.find((b) => b.side === side)
   // Without a line for this edge, the far places the stranger knows of that way (neutral: nobody has said more).
   // What a round at the edge charted this way (M10.21) is known from then on, beside the world book's own.
-  const charted = Object.values(world.state.growth?.expansions?.made ?? {}).filter((m) => m.ask.region === map.region.id && m.ask.wind === side).map((m) => m.outline.id)
+  // (What was charted from a harbour is reached by its boat, not from the edge.)
+  const charted = Object.values(world.state.growth?.expansions?.made ?? {}).filter((m) => m.ask.region === map.region.id && m.ask.wind === side && !m.ask.by).map((m) => m.outline.id)
   const toward = [
     ...(own
       ? own.toward
