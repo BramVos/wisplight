@@ -296,4 +296,22 @@ Twee regels van de bewaker waren te streng, en beide zijn meteen bijgesteld:
 - Het verbod op opzeggen keurde 17 verhalen af die juist in eigen woorden waren ("I heard it from Wouter", "my teacher Kaatje"), omdat ze het ene opvallende beeld van het verhaal overnamen: grijs als een reiger, met tanden als waterwier. Opzeggen is nu pas meer dan 60% van het antwoord overgenomen uit andermans verhaal. Opnieuw beoordeeld op de antwoorden van deze meting keurt de regel van de 27 verhaalantwoorden er geen enkele meer af.
 - De controle op de spreker las de tekst vóór het eerste aanhalingsteken als een handeling. Haiku antwoordt vaak zonder aanhalingstekens, dus "Brannoc the boatman and his boy live by the slip" van Maren gold als Brannoc die iets doet. In Brams eigen spel gebeurde hetzelfde met "Tessa said that? I-". Zonder aanhalingstekens is een antwoord nu spraak.
 
-De leesscore ging omhoog (0,71 tot 0,89 tegen 0,76), de karakterscore omlaag door de afgekeurde antwoorden. Een schone herhaling met de bijgestelde regels (de situatieset drie keer en het gesprek van twintig zinnen in de Nethermarch, ongeveer $0,16) wacht op Brams akkoord.
+De leesscore ging omhoog (0,71 tot 0,89 tegen 0,76), de karakterscore omlaag door de afgekeurde antwoorden. **De regels van het gesprek, schone herhaling.** Met de bijgestelde regels, op Brams akkoord, voor $0,13 samen (Haiku $0,093, de leesscore op Sonnet 5 $0,039). De situatieset drie keer:
+
+| | Vóór de regels | Eerste versie | Bijgesteld |
+|---|---|---|---|
+| Bruikbaar | 24 van 24 | 15 van 24 | 24 van 24 |
+| Vaste regels | 0 | 9 | 0 |
+| Opnieuw gevraagd | één belofte | | één antwoord zonder te lezen tekst of zonder gesproken woorden |
+| Karakterscore | 1,000 / 1,000 / 0,982 | 0,931 / 0,903 / 0,917 | 0,982 / 1,000 / 1,000 |
+| Leesscore | 0,76 | 0,771 / 0,750 / 0,889 | 0,750 / 0,819 / 0,847 |
+| Kosten per reeks | $0,017 tot $0,022 | | $0,016 tot $0,025 |
+
+Het gesprek van twintig zinnen met Mirte kostte $0,034 (17 zinnen met het model, drie uit de regels), $0,0020 per zin na de eerste, met 98% van de invoer uit de cache en een leesscore van 0,804. Wat de regels moesten doen:
+
+- **De aanspreekvorm** blijft "lamb" in alle zeventien antwoorden. Eerder ging Mirte van lamb naar neighbour naar friend.
+- **De wedervraag** komt in ongeveer een op de vier antwoorden ("Are you far from your own people, lamb?"), niet meer in bijna elk.
+- **De afstand** naar de Drowned Goose noemt ze één keer, een half uur naar het oosten, en die verandert niet.
+- **Het verhaal van de Haakman** vertelt ze kort, met het ene beeld uit de lore en daarna iets van haarzelf ("I keep to the bakery and away from deep water").
+
+Niets is verzonnen: haar man Joris, het jaagpad en de weekdagen Maandag en Vrijdag staan in de content. De trouw blijft dus gelijk en de leesscore gaat omhoog; de regels blijven.
