@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { stringify } from 'yaml'
-import { adoptPlaceEdits, DEFAULT_SIGNS, ENTITY_KINDS, exitTowards, KIND_NAMES, KNOBS, languageReference, markColours, MAX_SIGNS, parseEntityYaml, SIGN_SHAPES, signsOf, WORLD_STEPS, type KnobDef, type MapPlace, type ReferenceEntry, type Sign } from '../../engine'
+import { adoptPlaceEdits, DEFAULT_SIGNS, ENTITY_KINDS, exitTowards, KIND_NAMES, KNOBS, languageReference, markColours, MAX_SIGNS, parseEntityYaml, SIGN_SHAPES, signsOf, LAND_STEPS, WORLD_STEPS, type KnobDef, type MapPlace, type ReferenceEntry, type Sign } from '../../engine'
 import { StaleBanner } from './StaleBanner'
 import { inline, Prose } from './Prose'
 import type { DesignLog } from '../../engine/designlog'
@@ -1338,7 +1338,7 @@ function PolishPlaces({ bridge, world, view, saved, counted }: { bridge: EditorB
 function DraftView({ draft, busy, accept, drop, fix }: { draft: EditorDraft; busy: boolean; accept: () => void; drop: () => void; fix?: () => void }) {
   const parts = [
     ...draft.changes.map((c) => `${c.yaml.trim() ? (c.merge ? 'add to ' : '') : 'delete '}${c.kind.replace('_', ' ')} ${c.id}`),
-    ...(draft.world ? [`world.yaml: ${Object.keys(parseEntityYaml(draft.world).raw ?? {}).join(', ')}`] : []),
+    ...(draft.world ? [`${draft.land ? `lands/${draft.land}/land.yaml` : 'world.yaml'}: ${Object.keys(parseEntityYaml(draft.world).raw ?? {}).join(', ')}`] : []),
     ...(draft.rules ? [`rules: ${Object.keys(parseEntityYaml(draft.rules).raw ?? {}).join(', ')}`] : []),
     ...(draft.files ?? []).map((f) => f.path),
   ]
@@ -1534,6 +1534,20 @@ function NewWorldPanel({ bridge, world, view, fresh, saved, made }: { bridge: Ed
  */
 function WorldSteps({ bridge, world, view, saved, existing = false }: { bridge: EditorBridge; world: string; view: EditorView; saved: () => Promise<void>; existing?: boolean }) {
   const [at, setAt] = useState(0)
+  // Whose build it is (M10.23): the world's, or one of its lands', with the same steps but the calendar and the lands.
+  const [land, setLand] = useState('')
+  const [lands, setLands] = useState<{ id: string; name: string }[]>([])
+  useEffect(() => {
+    void bridge
+      .lands(world)
+      .then(setLands)
+      .catch(() => setLands([]))
+  }, [bridge, world])
+  const steps = land ? LAND_STEPS : WORLD_STEPS
+  const landName = lands.find((l) => l.id === land)?.name ?? land
+  // A land's answers and decisions go in the same design log, under the land's name; its open proposals are kept apart.
+  const titled = (s: { title: string }) => (land ? `${landName}: ${s.title}` : s.title)
+  const kept = (id: string) => (land ? `${land}/${id}` : id)
   const [said, setSaid] = useState('')
   const [draft, setDraft] = useState<EditorDraft>()
   const [busy, setBusy] = useState(false)
@@ -1567,13 +1581,13 @@ function WorldSteps({ bridge, world, view, saved, existing = false }: { bridge: 
     void counted()
   }, [counted])
   const [note, setNote] = useState('')
-  const step = WORLD_STEPS[at]!
+  const step = steps[Math.min(at, steps.length - 1)]!
   useEffect(() => {
     let live = true
     void bridge.design(world).then((l) => {
       if (!live) return
       setLog(l)
-      setSaid((s) => s || l.answers[WORLD_STEPS[0]!.title] || '')
+      setSaid((s) => s || l.answers[titled(steps[0]!)] || '')
     })
     return () => {
       live = false
@@ -1582,25 +1596,26 @@ function WorldSteps({ bridge, world, view, saved, existing = false }: { bridge: 
   // A decision clears the step's answer from the log, since the decision holds it now: the same words are not written back.
   const settled = useRef<Record<string, string>>({})
   // What is typed is kept (M10.20: nothing the designer writes is lost), a moment after the typing stops.
+  const title = titled(step)
   useEffect(() => {
-    if ((log.answers[step.title] ?? '') === said || settled.current[step.title] === said) return
-    const timer = setTimeout(() => void bridge.design(world, { answer: { step: step.title, text: said } }).then(setLog), 800)
+    if ((log.answers[title] ?? '') === said || settled.current[title] === said) return
+    const timer = setTimeout(() => void bridge.design(world, { answer: { step: title, text: said } }).then(setLog), 800)
     return () => clearTimeout(timer)
-  }, [said, step.title, world, bridge, log.answers])
+  }, [said, title, world, bridge, log.answers])
   const record = (decision: 'accepted' | 'changed' | 'rejected' | 'skipped', from?: EditorDraft, reason = '') => {
-    if (decision !== 'changed') settled.current[step.title] = said
-    return bridge.design(world, { decision: { step: step.title, decision, asked: from ? askedFor : said, say: from?.say ?? '', questions: from?.questions ?? [], changed: from ? changedBy(from) : [], reason } }).then(setLog)
+    if (decision !== 'changed') settled.current[title] = said
+    return bridge.design(world, { decision: { step: title, decision, asked: from ? askedFor : said, say: from?.say ?? '', questions: from?.questions ?? [], changed: from ? changedBy(from) : [], reason } }).then(setLog)
   }
   // An open proposal is kept per step (M10.20): it comes back after a restart, until it is accepted or thrown away.
   const keep = (d: EditorDraft | undefined, asked = askedFor) => {
     setDraft(d)
     const worth = d && (d.changes.length > 0 || Boolean(d.world) || (d.files?.length ?? 0) > 0)
-    void bridge.openDraft(world, step.id, worth ? { draft: d!, asked } : null).catch(() => undefined)
+    void bridge.openDraft(world, kept(step.id), worth ? { draft: d!, asked } : null).catch(() => undefined)
   }
   useEffect(() => {
     let live = true
     void bridge
-      .openDraft(world, WORLD_STEPS[at]!.id)
+      .openDraft(world, kept(steps[Math.min(at, steps.length - 1)]!.id))
       .then((kept) => {
         if (!live || !kept) return
         setDraft(kept.draft)
@@ -1610,11 +1625,12 @@ function WorldSteps({ bridge, world, view, saved, existing = false }: { bridge: 
     return () => {
       live = false
     }
-  }, [bridge, world, at])
-  const go = (index: number) => {
-    const next = Math.max(0, Math.min(WORLD_STEPS.length - 1, index))
+  }, [bridge, world, at, land])
+  const go = (index: number, list = steps, of = land) => {
+    const next = Math.max(0, Math.min(list.length - 1, index))
     setAt(next)
-    setSaid(log.answers[WORLD_STEPS[next]!.title] ?? '')
+    const name = lands.find((l) => l.id === of)?.name ?? of
+    setSaid(log.answers[of ? `${name}: ${list[next]!.title}` : list[next]!.title] ?? '')
     setDraft(undefined)
     setOutcome(undefined)
     setOpen([])
@@ -1626,7 +1642,7 @@ function WorldSteps({ bridge, world, view, saved, existing = false }: { bridge: 
     setBusy(true)
     setEnhanceProblems([])
     try {
-      const result = await bridge.enhance(world, step.id, said.trim())
+      const result = await bridge.enhance(world, step.id, said.trim(), land || undefined)
       void counted()
       if (result.brief) {
         setBefore(said)
@@ -1648,7 +1664,7 @@ function WorldSteps({ bridge, world, view, saved, existing = false }: { bridge: 
     setAskedFor(said.trim())
     setWhy('')
     try {
-      keep(await bridge.worldStep(world, step.id, said.trim()), said.trim())
+      keep(await bridge.worldStep(world, step.id, said.trim(), land || undefined), said.trim())
       void counted()
     } catch (reason) {
       setDraft({ say: '', questions: [], changes: [], problems: [reason instanceof Error ? reason.message : String(reason)], diffs: [] })
@@ -1676,7 +1692,7 @@ function WorldSteps({ bridge, world, view, saved, existing = false }: { bridge: 
     setBusy(false)
     setOutcome(result)
     if (result.ok) {
-      setDone((d) => ({ ...d, [step.id]: 'saved' }))
+      setDone((d) => ({ ...d, [kept(step.id)]: 'saved' }))
       await record('accepted', draft)
       keep(undefined)
       await saved()
@@ -1688,16 +1704,43 @@ function WorldSteps({ bridge, world, view, saved, existing = false }: { bridge: 
     setWhy('')
   }
   const decided = (id: string) => {
-    const title = WORLD_STEPS.find((s) => s.id === id)?.title
-    const last = [...log.decisions].reverse().find((d) => d.step === title && d.decision !== 'changed')
-    return done[id] ?? (last?.decision === 'accepted' ? 'saved' : last?.decision === 'skipped' ? 'skipped' : undefined)
+    const found = steps.find((s) => s.id === id)
+    const named = found ? titled(found) : undefined
+    const last = [...log.decisions].reverse().find((d) => d.step === named && d.decision !== 'changed')
+    return done[kept(id)] ?? (last?.decision === 'accepted' ? 'saved' : last?.decision === 'skipped' ? 'skipped' : undefined)
   }
   return (
     <section className="world-steps">
-      <h2>Build {view.world.name || world} with the chronicler</h2>
+      <h2>Build {land ? landName : view.world.name || world} with the chronicler</h2>
+      {lands.length > 0 && (
+        <p className="row small">
+          <label>
+            Build{' '}
+            <select
+              value={land}
+              disabled={busy}
+              aria-label="Whose build it is: the world, or one of its lands"
+              onChange={(e) => {
+                const next = e.target.value
+                setLand(next)
+                go(0, next ? LAND_STEPS : WORLD_STEPS, next)
+              }}
+            >
+              <option value="">{view.world.name || world}, the whole world</option>
+              {lands.map((l) => (
+                <option key={l.id} value={l.id}>
+                  {l.name}, a land of it
+                </option>
+              ))}
+            </select>
+          </label>
+          {land && <span className="muted">The same steps for this land, with the world as the background: its keys go in its land.yaml and what is new in its folder. The calendar and the clock stay the world's.</span>}
+        </p>
+      )}
       {existing && (
         <p className="warn small">
-          This changes {view.world.name || world} itself (content/{view.world.prefix || `${world}/`}). Only what you accept is saved, and git keeps what was there before.
+          This changes {land ? landName : view.world.name || world} itself (content/{view.world.prefix || `${world}/`}
+          {land ? `lands/${land}/` : ''}). Only what you accept is saved, and git keeps what was there before.
         </p>
       )}
       <p className="muted small">
@@ -1723,7 +1766,7 @@ function WorldSteps({ bridge, world, view, saved, existing = false }: { bridge: 
         </div>
       )}
       <nav className="tabs step-tabs" aria-label="Steps">
-        {WORLD_STEPS.map((s, i) => (
+        {steps.map((s, i) => (
           <button key={s.id} type="button" className={i === at ? 'active' : ''} onClick={() => go(i)}>
             {i + 1}. {s.title}
             {decided(s.id) === 'saved' ? ' (saved)' : decided(s.id) === 'skipped' ? ' (skipped)' : s.optional ? '' : ' *'}
@@ -1800,7 +1843,7 @@ function WorldSteps({ bridge, world, view, saved, existing = false }: { bridge: 
             [Skip this step]
           </button>
         )}
-        {at < WORLD_STEPS.length - 1 && (
+        {at < steps.length - 1 && (
           <button type="button" className="link" disabled={busy} onClick={() => go(at + 1)}>
             [Next step]
           </button>
@@ -1854,7 +1897,7 @@ function WorldSteps({ bridge, world, view, saved, existing = false }: { bridge: 
 /** What a proposal touched, for the design log: entities by kind and id, the world keys and whole files. */
 function changedBy(draft: EditorDraft): string[] {
   const out = draft.changes.map((c) => `${c.kind} ${c.id}${c.yaml.trim() ? '' : ' (removed)'}`)
-  if (draft.world?.trim()) out.push(`world.yaml: ${draft.world.split('\n').filter((l) => /^[a-z_]+:/.test(l)).map((l) => l.split(':')[0]).join(', ') || 'keys'}`)
+  if (draft.world?.trim()) out.push(`${draft.land ? `lands/${draft.land}/land.yaml` : 'world.yaml'}: ${draft.world.split('\n').filter((l) => /^[a-z_]+:/.test(l)).map((l) => l.split(':')[0]).join(', ') || 'keys'}`)
   for (const f of draft.files ?? []) out.push(f.path)
   return out
 }

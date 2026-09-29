@@ -703,7 +703,19 @@ export function saveLand(files: ContentFile[], id: string, yaml: string): { ok: 
   if (!read.raw) return { ok: false, problems: [read.problem ?? 'the land is empty'], changes: [] }
   const stray = unknownFields('land', read.raw)
   if (stray) return { ok: false, problems: [`land: ${stray}`], changes: [] }
-  const raw = { ...read.raw, id }
+  const change = landText(files, id, { ...read.raw, id })
+  if (!change) return { ok: true, problems: [], changes: [] }
+  const next = change.before !== undefined ? files.map((f) => (f.path === change.path ? { ...f, text: change.text } : f)) : [...files, { path: change.path, text: change.text }]
+  try {
+    loadContent(next)
+  } catch (error) {
+    return { ok: false, problems: error instanceof ContentError ? error.problems : [String(error)], changes: [] }
+  }
+  return { ok: true, problems: [], changes: [change] }
+}
+
+/** lands/<id>/land.yaml with the land set to raw, field by field so the comments stay; undefined when nothing changes. */
+function landText(files: ContentFile[], id: string, raw: Raw): FileChange | undefined {
   const { file: path } = landYaml(files, id)
   const file = files.find((f) => f.path === path)
   let text: string
@@ -719,12 +731,39 @@ export function saveLand(files: ContentFile[], id: string, yaml: string): { ok: 
     ;(doc.contents as YAMLMap).set('land', makeNode(doc, raw, 0))
     text = `# A land of this world (M10.23): its own frame. Its areas, people and voice kit go in this folder.\n${tidy(doc.toString({ lineWidth: 0 }))}`
   }
-  if (file?.text === text) return { ok: true, problems: [], changes: [] }
-  const next = file ? files.map((f) => (f === file ? { ...f, text } : f)) : [...files, { path, text }]
-  try {
-    loadContent(next)
-  } catch (error) {
-    return { ok: false, problems: error instanceof ContentError ? error.problems : [String(error)], changes: [] }
-  }
-  return { ok: true, problems: [], changes: [{ path, ...(file ? { before: file.text } : {}), text }] }
+  if (file?.text === text) return undefined
+  return { path, ...(file ? { before: file.text } : {}), text }
+}
+
+/**
+ * The keys of a land set from a proposal of its build (M10.23), as patchWorld
+ * does for world.yaml: only the keys given, the rest of the land as it is.
+ * Checked when the whole proposal is loaded.
+ */
+export function patchLand(files: ContentFile[], id: string, yaml: string): { problems: string[]; files: ContentFile[]; change?: FileChange } {
+  const read = parseEntityYaml(yaml)
+  if (!read.raw) return { problems: [`land: ${read.problem ?? 'nothing to set'}`], files }
+  const stray = unknownFields('land', read.raw)
+  if (stray) return { problems: [`land: ${stray}`], files }
+  const { file: path } = landYaml(files, id)
+  const had = files.find((f) => f.path === path)
+  const node = had ? parseDocument(had.text).get('land', true) : undefined
+  const change = landText(files, id, { ...(isMap(node) ? (node.toJSON() as Raw) : {}), ...read.raw, id })
+  if (!change) return { problems: [], files }
+  return { problems: [], files: had ? files.map((f) => (f === had ? { ...f, text: change.text } : f)) : [...files, { path, text: change.text }], change }
+}
+
+/**
+ * Where a new thing of a land's build goes (M10.23): into the land's folder,
+ * beside the land's other things of its kind. Places and people follow their
+ * area, and the lists of the rules are the world's: those are left to homeFile.
+ */
+export function landHome(files: ContentFile[], land: string, kind: EntityKind, data: Raw): string | undefined {
+  if (kind === 'location' || kind === 'npc' || LISTS[kind].startsWith('rules.')) return undefined
+  const prefix = worldPrefix(files)
+  if (kind === 'region') return `${prefix}lands/${land}/regions/${String(data['id'])}/region.yaml`
+  const counts = new Map<string, number>()
+  for (const e of entities(files, kind)) if (landOfFile(e.file) === land) counts.set(e.file, (counts.get(e.file) ?? 0) + 1)
+  const best = [...counts].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0]
+  return best ? best[0] : `${prefix}lands/${land}/data/${LISTS[kind]}.yaml`
 }

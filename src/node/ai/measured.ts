@@ -16,6 +16,7 @@ export const MEASURED: Record<string, Measured> = {
   far_place: { inputTokens: 1956, outputTokens: 820, model: 'claude-opus-5-5', date: '2026-09-29' },
   improvise: { inputTokens: 1338, outputTokens: 121, model: 'claude-haiku-4-5-20251001', date: '2026-09-29' },
   journey: { inputTokens: 1001, outputTokens: 67, model: 'claude-opus-5-5', date: '2026-09-29' },
+  land: { inputTokens: 6579, outputTokens: 1267, model: 'claude-opus-5-5', date: '2026-09-29' },
   legends: { inputTokens: 1310, outputTokens: 439, model: 'claude-opus-5-5', date: '2026-09-29' },
   lore_check: { inputTokens: 727, outputTokens: 40, model: 'claude-sonnet-5', date: '2026-09-29' },
   model_advice: { inputTokens: 3389, outputTokens: 584, model: 'claude-sonnet-5', date: '2026-09-29' },

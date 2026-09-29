@@ -243,8 +243,14 @@ export class MockLlm implements LlmClient {
     const reply = (say: string, part: { changes?: { kind: string; id: string; yaml: string }[]; world?: string; files?: { path: string; text: string }[] }, questions: string[] = []) =>
       JSON.stringify({ say, questions, changes: part.changes ?? [], world: part.world ?? '', files: part.files ?? [] })
     const firstLine = (said.split('\n').find((l) => l.trim()) ?? '').replace(/^[#\-*\s]+/, '').trim()
+    // A land's build (M10.23): the same steps, with the land's name and its own places in the facts.
+    const land = typeof meta['land'] === 'string' ? meta['land'] : undefined
     switch (meta['step']) {
       case 'frame':
+        if (land)
+          return reply(`A frame for ${name} from your words; the rest it takes from the world.`, {
+            world: stringify({ words: { land: name, region: name, from: 'the lands beyond' }, frame: `LAND: ${name}. ${firstLine || name}.\nPEOPLE speak plain English.\n`, crossing: `You cross into ${name}, and the talk around you changes.` }),
+          })
         return reply(`A frame for ${name} from your words.`, {
           world: stringify({ words: { land: name, region: name, from: 'far away' }, frame: `WORLD: ${firstLine || name}.\nREGION: ${name}, where the story begins.\nPEOPLE speak plain English.\n` }),
           files: [{ path: 'CHRONICLER.md', text: `## This world: ${name}\n\n- Keep to the frame: ${firstLine || name}.\n- Never invent a name the designer did not agree.\n` }],
@@ -261,9 +267,9 @@ export class MockLlm implements LlmClient {
         return reply(`${weekdays.length} days a week and ${named.length >= 13 ? 'your' : 'numbered'} months.`, { world: stringify({ calendar: { era, months, weekdays } }) })
       }
       case 'money': {
-        if (/credit|chit/i.test(said)) return reply('Credits and chits.', { world: 'money:\n  units:\n    - { short: cr, name: credit, value: 20 }\n    - { short: ch, name: chit, value: 1 }\n' })
+        if (/credit|chit/i.test(said)) return reply('Credits and chits.', { world: `money:\n  units:\n    - { short: cr, name: credit, value: 20 }\n    - { short: ch, name: chit, value: 1 }\n${land ? '  rate: 1\n' : ''}` })
         const coins = rows.map((r) => ({ name: r[0]!.toLowerCase(), value: Number(r.slice(1).join(' ').match(/\d+/)?.[0] ?? NaN) })).filter((c) => /^[a-z' -]{2,20}$/.test(c.name) && !HEADER.test(c.name) && c.value > 0)
-        if (!coins.length) return reply('One plain coin, until you name others.', { world: 'money:\n  units:\n    - { short: c, name: coin, value: 1 }\n' })
+        if (!coins.length) return reply('One plain coin, until you name others.', { world: `money:\n  units:\n    - { short: c, name: coin, value: 1 }\n${land ? '  rate: 1\n' : ''}` })
         const smallest = Math.min(...coins.map((c) => c.value))
         const used = new Set<string>()
         const units = coins
@@ -274,7 +280,9 @@ export class MockLlm implements LlmClient {
             used.add(short)
             return { short, name: c.name, value: Math.max(1, Math.round(c.value / smallest)) }
           })
-        return reply(`${units.length} coins, the ${units.at(-1)!.name} the smallest.`, { world: stringify({ money: { units } }) })
+        // A land's coins change at the border at a whole rate (M10.23).
+        const rate = Number(/\brate\b\D{0,12}(\d+)/i.exec(said)?.[1] ?? 2) || 2
+        return reply(`${units.length} coins, the ${units.at(-1)!.name} the smallest.`, { world: stringify({ money: land ? { units, rate } : { units } }) })
       }
       case 'faiths': {
         if (/no faith|nobody prays|no gods?|none/i.test(said) || !rows.length) return reply('No faith: nobody prays here.', { world: 'faiths: []\n' })

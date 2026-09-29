@@ -1,5 +1,19 @@
 # Changelog
 
+## M10.23 af: een land bouwen met dezelfde stappen, 29 september 2026
+
+- **De wereldbouw loopt per land.** Boven de stappen in de editor kies je nu of je de wereld bouwt of een van haar landen. Een land krijgt elf stappen: Kalender en Landen horen bij de wereld. Het kader van de wereld staat in de vraag als achtergrond, met het `land.yaml` van het land waar anders `world.yaml` staat. Wat een stap in de wereld zou zetten (kader, geld, geloven, wet, namen, stand, palet, beeldstijl) komt in het `land.yaml` van het land. Bij het kader horen daar ook `crossing` en, als het land een eigen taal heeft, `language`. Bij het geld hoort een wisselkoers.
+- **Wat nieuw is, komt in de map van het land.** Gebieden, plekken, mensen, beroepen, lijnen en de streek van het land gaan naar `lands/<land>/`. De stemkit gaat naar die van het land, ook als het model `data/voice.yaml` schreef. Beschermheiligen, volken, condities en reiszinnen blijven van de wereld.
+- **Antwoorden, besluiten en open voorstellen staan per land** in het ontwerplogboek, onder de naam van het land. Een voorstel dat niet laadt, zet de kroniekverteller recht zonder dat het land verloren gaat.
+- **Het vaste, gecachte deel van de vraag is hetzelfde als bij de wereld.** Na de wereld kost een land dus alleen het deel per stap.
+- **De dekking is compleet**: van alle 23 soorten modelaanroepen staat een echt antwoord in `tests/fixtures/model/`, nu ook van `land` (Opus 5.5, $0,06, en het spel neemt het over).
+
+Testen: open in de editor een wereld met een tweede land (Skerrow of Deepwell), tab New world, [Build further], kies het land boven de stappen en doe bijvoorbeeld Geld met een tabel van munten en "rate 3". Tests in `tests/m1023build.test.ts`.
+
+Wat de editor en de kroniekverteller leerden: de keuze van het land en de elf stappen in de editor; de landgids (`landGuide`, `LAND_STEPS`, `landFills`, `LAND_NOTES` in `src/engine/worldguide.ts`) met per stap wat voor een land anders is; het mockmodel bouwt een land; en in `docs/NEW-WORLD.md` het deel "Een land bouwen". Het contract zelf veranderde niet.
+
+Bewust anders: een land heeft geen eigen `CHRONICLER.md`. Wat de kroniekverteller over een land moet weten, voegt de stap Kader als eigen sectie toe aan die van de wereld, zodat alle modelaanroepen het blijven lezen.
+
 ## M10.23 deel: een eigen taal, en de oversteek met nieuws, 29 september 2026
 
 - **Een land mag een eigen taal hebben** (`language` in land.yaml: `name`, `learn`, `speakers`). Wie de taal niet kent, krijgt van de mensen daar een groet, gebaren, en de namen en getallen uit wat hij zei. De regels schrijven dat, zonder model, dus een barrière kost niets. Elke uitwisseling leert je iets, en Lore helpt. Na genoeg gesprekken zegt het spel "You find you can follow the Old Tongue now". Wie de taal spreekt en met je meegaat, tolkt: iemand uit dat land of een van zijn `speakers`. Handel gaat gewoon door, met gebaren en getallen. Zonder `language` spreekt iedereen jouw taal, zoals voorheen.

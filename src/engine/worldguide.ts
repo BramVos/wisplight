@@ -438,3 +438,55 @@ export const STEP_CALLS: Record<WorldStep['id'], StepCall> = {
 export function stepMaxTokens(stepId: WorldStep['id'], said: string): number {
   return Math.min(48000, STEP_CALLS[stepId].maxTokens + 6 * Math.ceil(said.length / 4))
 }
+
+// ---------------------------------------------------------------- a land's own build (M10.23)
+
+/**
+ * The world build of M10.17 for one land (M10.23; Bram, 28 September 2026:
+ * the same steps, scoped to the land, with the world book as the source).
+ * The calendar and the clock are always the world's, and the lands are laid
+ * out from the world, so those two steps are not a land's; the rest are.
+ */
+export const LAND_STEPS: readonly WorldStep[] = WORLD_STEPS.filter((s) => s.id !== 'lands' && s.id !== 'calendar')
+
+/** The keys of world.yaml a land has in its land.yaml under its own name (a land's map levels are the world's; only its palette is its own). */
+const LAND_KEYS: Record<string, string> = { name: 'name', frame: 'frame', words: 'words', money: 'money', faiths: 'faiths', law: 'law', names: 'names', standing: 'standing', map: 'palette', pictures: 'pictures' }
+
+/** What a step of a land's build fills: world keys become the land's, and what only the world has stays out. */
+export function landFills(step: WorldStep): WorldStep['fills'] {
+  return step.fills.flatMap((fill): WorldStep['fills'] => {
+    if (fill.kind === 'world') {
+      const keys = [...(fill.keys ?? []).map((k) => LAND_KEYS[k]).filter((k): k is string => Boolean(k)), ...(step.id === 'frame' ? ['crossing', 'language'] : [])]
+      return keys.length ? [{ kind: 'land', keys }] : []
+    }
+    // Death is the world's; its patrons, peoples and conditions are one list for all its lands.
+    if (fill.kind === 'rules') {
+      const keys = (fill.keys ?? []).filter((k) => k !== 'death')
+      return keys.length ? [{ kind: 'rules', keys }] : []
+    }
+    // The journey sentences are the world's.
+    return fill.kind === 'journey' ? [] : [fill]
+  })
+}
+
+/** Per step, what is different when it is a land's. */
+export const LAND_NOTES: Partial<Record<WorldStep['id'], string>> = {
+  frame:
+    'FOR THIS LAND: in `world` its name, its frame (WORLD as in the world\'s frame, then LAND: this land, REGION: where the stranger comes in, and PEOPLE: how they speak and count time), words (land, region, from: what they call where the stranger comes from, sleep), crossing (one or two sentences: what the stranger notices crossing in) and language only if its people speak a tongue the stranger does not know (name, learn: exchanges to learn it, speakers: people from elsewhere who speak it). No intro: the story begins in the world. If the land has something the chronicler must keep to, add a section "## <the land\'s name>" to CHRONICLER.md and send it whole, the rest as it was.',
+  voice: 'FOR THIS LAND: its voice kit is lands/<id>/voice.yaml, whole, under voice:, and only if its people speak otherwise than the world\'s; left out, they speak as the world does.',
+  money:
+    'FOR THIS LAND: in `world` money with units (its own coins, largest first, the smallest with value 1) and rate: how many of its smallest coin one of the world\'s smallest buys, a whole number. Prices stay in the world\'s smallest coin and are told in the land\'s. No player: the stranger arrives with what they carry.',
+  faiths: 'FOR THIS LAND: in `world` the faiths its people keep (a faith it shares with the world keeps the world\'s id); left out, the world\'s. The patrons are the world\'s list and are added there as changes. Death is the world\'s.',
+  places: 'FOR THIS LAND: its areas and places; a new area is this land\'s by its folder. The start stays the world\'s. A border place (a landing, a pass, a toll house) is where the crossing is told; an area of the border gets border: true.',
+  people: 'FOR THIS LAND: in `world` its law (the officer a person of this land, the office a place in it; left out, the world\'s kind of law without its officer), names and standing.',
+  passages: 'FOR THIS LAND: lines within the land and the way over its border. The journey sentences are the world\'s.',
+  palette: 'FOR THIS LAND: in `world` palette (its colours and signs; the levels of the map are the world\'s) and pictures.style; a region of this land as a change of kind region.',
+}
+
+/** The general part for a land's build, after the world guide: what it is and what stays the world's. */
+export function landGuide(name: string, id: string): string {
+  return [
+    `YOU ARE BUILDING A LAND OF THIS WORLD: ${name} (${id}), with the designer, one step at a time, in the same way as a world. The world book and the world as it stands are the source: keep what they say of this land, and fill in only what they leave open.`,
+    `In this build \`world\` holds the keys of lands/${id}/land.yaml to set, never world.yaml: the world's frame is the background, and what the land leaves out it takes from the world. The calendar, the clock, the start, the rules and the journey sentences are the world's. What is new here (areas, places, people, professions, passages, items) is written into the land's folder; things of the world it shares (a profession, a faith, a faction) are used by their ids and not made again.`,
+  ].join('\n')
+}

@@ -664,12 +664,15 @@ const shownDraft = (draft: ReturnType<typeof readDraft>) => ({
   ...(draft.world ? { world: draft.world } : {}),
   ...(draft.rules ? { rules: draft.rules } : {}),
   ...(draft.files ? { files: draft.files } : {}),
+  ...(draft.land ? { land: draft.land } : {}),
   problems: draft.problems,
   diffs: draft.result?.ok ? shown(draft.result.changes) : [],
   ...(draft.result?.content && draft.changes.some((c) => c.kind === 'location') ? { descriptions: descriptionCheck(draft.result.content, new Set(draft.changes.filter((c) => c.kind === 'location').map((c) => c.id))) } : {}),
 })
 // A step of building a world with the chronicler (M10.17), and saving what the designer accepts.
-handle('editor:world-step', async (_event, world: unknown, step: unknown, said: unknown) => {
+/** The land of a world build (M10.23), when it is one: a land's id, or nothing. */
+const landOf = (value: unknown): { land?: string } => (typeof value === 'string' && /^[a-z0-9_]{1,64}$/.test(value) ? { land: value } : {})
+handle('editor:world-step', async (_event, world: unknown, step: unknown, said: unknown, land: unknown) => {
   devOnly()
   await setup()
   // The smoke check takes one step with the mock model (M10.20), so the app's side of a world build is covered too.
@@ -678,7 +681,8 @@ handle('editor:world-step', async (_event, world: unknown, step: unknown, said: 
   const files = await readContentFiles(contentDir(), worldOf(world))
   try {
     // A whole chapter with tables fits (M10.20: Bram's chapters are longer than 4000 characters).
-    return shownDraft(readDraft(files, (await llm.complete(worldStepRequest(files, String(step ?? ''), String(said ?? '').slice(0, 20000)))).text))
+    const { land: id } = landOf(land)
+    return shownDraft(readDraft(files, (await llm.complete(worldStepRequest(files, String(step ?? ''), String(said ?? '').slice(0, 20000), id))).text, id))
   } catch (error) {
     return { say: '', questions: [], changes: [], problems: [`The chronicler did not answer: ${error instanceof Error ? error.message : String(error)}`], diffs: [] }
   }
@@ -688,7 +692,7 @@ handle('editor:world-fix', async (_event, world: unknown, step: unknown, said: u
   devOnly()
   await setup()
   const llm = ai?.client()
-  const d = (draft && typeof draft === 'object' ? draft : {}) as { say?: unknown; questions?: unknown; changes?: unknown; world?: unknown; rules?: unknown; files?: unknown }
+  const d = (draft && typeof draft === 'object' ? draft : {}) as { say?: unknown; questions?: unknown; changes?: unknown; world?: unknown; rules?: unknown; files?: unknown; land?: unknown }
   const proposal = {
     say: String(d.say ?? ''),
     questions: (Array.isArray(d.questions) ? d.questions : []).map(String),
@@ -696,6 +700,7 @@ handle('editor:world-fix', async (_event, world: unknown, step: unknown, said: u
     ...(typeof d.world === 'string' ? { world: d.world } : {}),
     ...(typeof d.rules === 'string' ? { rules: d.rules } : {}),
     files: (Array.isArray(d.files) ? d.files : []).map((f: { path?: unknown; text?: unknown }) => ({ path: String(f.path ?? ''), text: String(f.text ?? '') })),
+    ...landOf(d.land),
   }
   const why = (Array.isArray(problems) ? problems : []).map(String)
   if (!llm) return { ...proposal, problems: ["The chronicler puts it right: connect a model in the game's Settings > AI first.", ...why], diffs: [] }
@@ -717,7 +722,7 @@ handle('editor:open-draft', async (_event, world: unknown, step: unknown, kept: 
     // Checked again against the world as it is now: it may have changed since.
     const got = drafts().get(w, s)
     if (!got) return undefined
-    const d = (got.draft && typeof got.draft === 'object' ? got.draft : {}) as { say?: unknown; questions?: unknown; changes?: unknown; world?: unknown; rules?: unknown; files?: unknown }
+    const d = (got.draft && typeof got.draft === 'object' ? got.draft : {}) as { say?: unknown; questions?: unknown; changes?: unknown; world?: unknown; rules?: unknown; files?: unknown; land?: unknown }
     const files = await readContentFiles(contentDir(), w)
     const parts = {
       say: String(d.say ?? ''),
@@ -726,6 +731,7 @@ handle('editor:open-draft', async (_event, world: unknown, step: unknown, kept: 
       ...(typeof d.world === 'string' ? { world: d.world } : {}),
       ...(typeof d.rules === 'string' ? { rules: d.rules } : {}),
       files: (Array.isArray(d.files) ? d.files : []).map((f: { path?: unknown; text?: unknown }) => ({ path: String(f.path ?? ''), text: String(f.text ?? '') })),
+      ...landOf(d.land),
     }
     return { ...got, draft: shownDraft(recheckDraft(files, parts)) }
   }
@@ -763,14 +769,14 @@ handle('editor:build', async (_event, world: unknown, change: unknown) => {
   return { ...builds.view(w), adjusted: false }
 })
 // Enhance with AI (after M10.17): the designer's answer to a step, written out as a fuller brief; nothing is saved.
-handle('editor:enhance', async (_event, world: unknown, step: unknown, said: unknown) => {
+handle('editor:enhance', async (_event, world: unknown, step: unknown, said: unknown, land: unknown) => {
   devOnly()
   await setup()
   const llm = ai?.client()
   if (!llm) return { brief: '', open: [], problems: ["The chronicler writes it out with you: connect a model in the game's Settings > AI first."] }
   const files = await readContentFiles(contentDir(), worldOf(world))
   try {
-    return readEnhance((await llm.complete(enhanceRequest(files, String(step ?? ''), String(said ?? '').slice(0, 20000)))).text)
+    return readEnhance((await llm.complete(enhanceRequest(files, String(step ?? ''), String(said ?? '').slice(0, 20000), landOf(land).land))).text)
   } catch (error) {
     return { brief: '', open: [], problems: [`The chronicler did not answer: ${error instanceof Error ? error.message : String(error)}`] }
   }
@@ -790,11 +796,11 @@ handle('editor:design', async (_event, world: unknown, change: unknown) => {
 })
 handle('editor:save-draft', async (_event, world: unknown, draft: unknown) => {
   devOnly()
-  const d = (draft && typeof draft === 'object' ? draft : {}) as { changes?: unknown; world?: unknown; rules?: unknown; files?: unknown }
+  const d = (draft && typeof draft === 'object' ? draft : {}) as { changes?: unknown; world?: unknown; rules?: unknown; files?: unknown; land?: unknown }
   const files = await readContentFiles(contentDir(), worldOf(world))
   const changes = (Array.isArray(d.changes) ? d.changes : []).map((c: { kind?: unknown; id?: unknown; yaml?: unknown; merge?: unknown }) => ({ kind: kindOf(c.kind), id: String(c.id), yaml: String(c.yaml ?? ''), ...(c.merge === true ? { merge: true } : {}) }))
   const whole = (Array.isArray(d.files) ? d.files : []).map((f: { path?: unknown; text?: unknown }) => ({ path: String(f.path ?? ''), text: String(f.text ?? '') }))
-  const outcome = draftResult(files, { changes, ...(typeof d.world === 'string' ? { world: d.world } : {}), ...(typeof d.rules === 'string' ? { rules: d.rules } : {}), files: whole })
+  const outcome = draftResult(files, { changes, ...(typeof d.world === 'string' ? { world: d.world } : {}), ...(typeof d.rules === 'string' ? { rules: d.rules } : {}), files: whole, ...landOf(d.land) })
   if (!outcome.ok) return { ok: false, problems: outcome.problems, warnings: [], changes: [] }
   ignoreWatchUntil = Date.now() + 1500
   for (const change of outcome.changes) {

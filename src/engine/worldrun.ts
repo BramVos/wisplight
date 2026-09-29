@@ -56,9 +56,9 @@ export function chapterStep(title: string): WorldStep['id'] | undefined {
 }
 
 /** What a proposal changed, as the editor writes it in the design log. */
-export function changedBy(draft: Pick<Draft, 'changes' | 'world' | 'files'>): string[] {
+export function changedBy(draft: Pick<Draft, 'changes' | 'world' | 'files' | 'land'>): string[] {
   const out = draft.changes.map((c) => `${c.kind} ${c.id}${c.yaml.trim() ? '' : ' (removed)'}`)
-  if (draft.world?.trim()) out.push(`world.yaml: ${draft.world.split('\n').filter((l) => /^[a-z_]+:/.test(l)).map((l) => l.split(':')[0]).join(', ') || 'keys'}`)
+  if (draft.world?.trim()) out.push(`${draft.land ? `lands/${draft.land}/land.yaml` : 'world.yaml'}: ${draft.world.split('\n').filter((l) => /^[a-z_]+:/.test(l)).map((l) => l.split(':')[0]).join(', ') || 'keys'}`)
   for (const f of draft.files ?? []) out.push(f.path)
   return out
 }

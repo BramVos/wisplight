@@ -108,6 +108,8 @@ export interface EditorDraft {
   /** Keys of the rules to set, as YAML (M10.20: rules.death). */
   rules?: string
   files?: { path: string; text: string }[]
+  /** The land whose build it is (M10.23); none for the world's own. */
+  land?: string
   problems: string[]
   diffs: ShownChange[]
   /** How the proposal's places read against the place rules, before it is accepted (M10.20). */
@@ -171,9 +173,9 @@ export interface EditorBridge {
   /** The world book (M10.18): written next to the content, and saved as HTML with the pictures there are. */
   worldBook(world: string): Promise<{ markdown: string; saved?: string }>
   /** One step of building a world with the chronicler (M10.17): its proposal, checked, nothing saved. */
-  worldStep(world: string, step: string, said: string): Promise<EditorDraft>
+  worldStep(world: string, step: string, said: string, land?: string): Promise<EditorDraft>
   /** A proposal that did not load, put right by the chronicler (M10.20): only what it corrects is replaced. */
-  worldFix(world: string, step: string, said: string, draft: Pick<EditorDraft, 'say' | 'questions' | 'changes' | 'world' | 'files'>, problems: string[]): Promise<EditorDraft>
+  worldFix(world: string, step: string, said: string, draft: Pick<EditorDraft, 'say' | 'questions' | 'changes' | 'world' | 'files' | 'land'>, problems: string[]): Promise<EditorDraft>
   /** What this world build may spend and has spent, per step (M10.20); a limit to set, or counting from zero. */
   build(world: string, change?: { limit?: number; reset?: boolean }): Promise<BuildView & { adjusted: boolean }>
   /** The polish round (M10.20): only the descriptions of the places the Check names, or these; light: the player's lighter model. */
@@ -183,11 +185,11 @@ export interface EditorBridge {
   /** The open proposal of a step (M10.20): read it (no third argument), keep it, or forget it (null). */
   openDraft(world: string, step: string, kept?: { draft: EditorDraft; asked: string } | null): Promise<{ draft: EditorDraft; asked: string; at: string } | undefined>
   /** Enhance with AI (after M10.17): the designer's answer to a step written out as a fuller brief, with what only they can decide. */
-  enhance(world: string, step: string, said: string): Promise<{ brief: string; open: string[]; problems: string[] }>
+  enhance(world: string, step: string, said: string, land?: string): Promise<{ brief: string; open: string[]; problems: string[] }>
   /** The design log of a world (M10.18): as it stands, or after one change (a note, an answer being written, a decision). */
   design(world: string, change?: DesignChange): Promise<DesignLog>
   /** Saves a proposal the designer accepts: entities, world.yaml keys and whole files. */
-  saveDraft(world: string, draft: Pick<EditorDraft, 'changes' | 'world' | 'files'>): Promise<EditorSave>
+  saveDraft(world: string, draft: Pick<EditorDraft, 'changes' | 'world' | 'files' | 'land'>): Promise<EditorSave>
 }
 
 export interface EngineClient {
@@ -452,6 +454,7 @@ export async function createEditor(): Promise<EditorBridge> {
     ...(draft.world ? { world: draft.world } : {}),
     ...(draft.rules ? { rules: draft.rules } : {}),
     ...(draft.files ? { files: draft.files } : {}),
+    ...(draft.land ? { land: draft.land } : {}),
     problems: draft.problems,
     diffs: draft.result?.ok ? shown(draft.result.changes) : [],
     ...(draft.result?.content && draft.changes.some((c) => c.kind === 'location') ? { descriptions: descriptionCheck(draft.result.content, new Set(draft.changes.filter((c) => c.kind === 'location').map((c) => c.id))) } : {}),
@@ -515,9 +518,9 @@ export async function createEditor(): Promise<EditorBridge> {
       const files = filesOfWorld(all, world)
       return shownDraft(readDraft(files, (await new MockLlm().complete(draftRequest(files, ask, focus))).text))
     },
-    worldStep: async (world, step, said) => {
+    worldStep: async (world, step, said, land) => {
       const files = filesOfWorld(all, world)
-      return shownDraft(readDraft(files, (await new MockLlm().complete(worldStepRequest(files, step, said))).text))
+      return shownDraft(readDraft(files, (await new MockLlm().complete(worldStepRequest(files, step, said, land))).text, land))
     },
     // The browser preview spends nothing: its builds are counted in memory, at the default of five dollars.
     build: async (world, change) => {
@@ -550,7 +553,7 @@ export async function createEditor(): Promise<EditorBridge> {
       const files = filesOfWorld(all, world)
       return shownDraft(mergeFix(files, draft, (await new MockLlm().complete(worldFixRequest(files, step, said, draft, problems))).text))
     },
-    enhance: async (world, step, said) => readEnhance((await new MockLlm().complete(enhanceRequest(filesOfWorld(all, world), step, said))).text),
+    enhance: async (world, step, said, land) => readEnhance((await new MockLlm().complete(enhanceRequest(filesOfWorld(all, world), step, said, land))).text),
     design: async (world, change) => {
       const next = designUpdate(filesOfWorld(all, world), change)
       if (!next) return { notes: [], answers: {}, decisions: [] }
