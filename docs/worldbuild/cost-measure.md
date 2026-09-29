@@ -275,3 +275,25 @@ De verwachte een op de vier haalt alleen een gesprek met meer groeten, ja-nee en
 
 Het AI-logboek toont zo'n regel als "by rule", zonder kosten.
 
+
+## Een kleine wereld en de regels van het gesprek (M10.28, 29 september 2026)
+
+Gemeten op Brams sleutel met Haiku 4.5, voor $0,16 samen (Haiku $0,13, de leesscore op Sonnet 5 $0,03).
+
+**Skerrow heeft geen opvulling nodig.** Twintig zinnen met Maren van de Salt Kettle (`talk_twenty --world isle`): de eerste twee beantwoordden de regels, de eerste modelzin schreef 6.006 tokens, en elke volgende zin las ze uit de cache. De twintig zinnen kostten $0,037, een zin na de eerste $0,0015, en 94% van de invoer kwam uit de cache. Het minimum van 4.096 tokens telt het hele voorvoegsel, en daarin zit ook het antwoordschema (ongeveer 1.900 tokens) en de harde grenzen. Heel Skerrow (ongeveer 3.300 van onze schattokens) komt daardoor ruim over het minimum. Deepwell, de kleinste testwereld, zit met ongeveer 2.300 schattokens naar dezelfde verhouding op ongeveer 4.800 echte tokens, ook erboven. Opvullen zou alleen een grotere schrijfbeurt kosten, dus het blijft uit.
+
+**De regels van het gesprek, eerste meting.** De situatieset drie keer, met de nieuwe regels (een verhaal in eigen woorden, een wedervraag, een vaste aanspreekvorm, afstanden alleen als gegeven):
+
+| | Vóór de regels | Met de regels, eerste versie |
+|---|---|---|
+| Bruikbaar | 24 van 24 | 15 van 24 |
+| Vaste regels | 0 | 9 |
+| Karakterscore | 1,000 / 1,000 / 0,982 | 0,931 / 0,903 / 0,917 |
+| Leesscore | 0,76 | 0,771 / 0,750 / 0,889 |
+
+Twee regels van de bewaker waren te streng, en beide zijn meteen bijgesteld:
+
+- Het verbod op opzeggen keurde 17 verhalen af die juist in eigen woorden waren ("I heard it from Wouter", "my teacher Kaatje"), omdat ze het ene opvallende beeld van het verhaal overnamen: grijs als een reiger, met tanden als waterwier. Opzeggen is nu pas meer dan 60% van het antwoord overgenomen uit andermans verhaal. Opnieuw beoordeeld op de antwoorden van deze meting keurt de regel van de 27 verhaalantwoorden er geen enkele meer af.
+- De controle op de spreker las de tekst vóór het eerste aanhalingsteken als een handeling. Haiku antwoordt vaak zonder aanhalingstekens, dus "Brannoc the boatman and his boy live by the slip" van Maren gold als Brannoc die iets doet. In Brams eigen spel gebeurde hetzelfde met "Tessa said that? I-". Zonder aanhalingstekens is een antwoord nu spraak.
+
+De leesscore ging omhoog (0,71 tot 0,89 tegen 0,76), de karakterscore omlaag door de afgekeurde antwoorden. Een schone herhaling met de bijgestelde regels (de situatieset drie keer en het gesprek van twintig zinnen in de Nethermarch, ongeveer $0,16) wacht op Brams akkoord.
