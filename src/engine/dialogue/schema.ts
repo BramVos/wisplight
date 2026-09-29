@@ -11,7 +11,8 @@ export const FAR_KINDS = ['city', 'land', 'sea', 'river', 'lake'] as const
 export const KEEP_TALKING = ['no', 'quest', 'request', 'news', 'offer', 'story'] as const
 
 export const ReplySchema = z.object({
-  act: z.enum(ACTS),
+  // The act is the engine's own (it classifies what the player said); older recorded replies still carry one (M10.27).
+  act: z.enum(ACTS).optional(),
   reply: z.string().min(1),
   // Older recorded replies have no names; they still replay.
   names: z.array(z.object({ text: z.string(), new_kind: z.enum(['none', ...FAR_KINDS]) })).default([]),
@@ -40,7 +41,7 @@ export function replyJsonSchema(allowedTopics: string[], questActions: string[] 
   return {
     type: 'object',
     additionalProperties: false,
-    required: ['act', 'reply', 'names', 'mentioned_topics', 'effects', 'memory_note', 'ends_conversation', 'keep_talking', ...(questActions.length ? ['quest_action'] : []), ...(offers.length ? ['action', 'propose'] : []), ...(after ? ['after'] : []), ...(sketch ? ['person'] : [])],
+    required: ['reply', 'names', 'mentioned_topics', 'effects', 'memory_note', 'ends_conversation', 'keep_talking', ...(questActions.length ? ['quest_action'] : []), ...(offers.length ? ['action', 'propose'] : []), ...(after ? ['after'] : []), ...(sketch ? ['person'] : [])],
     properties: {
       ...(sketch
         ? {
@@ -88,11 +89,12 @@ export function replyJsonSchema(allowedTopics: string[], questActions: string[] 
             propose: { type: 'string', enum: ['none', ...yes], description: 'An offer with decision yes that you suggest yourself, or none.' },
           }
         : {}),
-      act: { type: 'string', enum: [...ACTS] },
-      reply: { type: 'string', description: 'What the player sees: an optional short action, then speech in double quotes.' },
+      // No act (M10.27): the engine classifies what the player said and gives it in the prompt; 27 values on every line
+      // for nothing the game reads.
+      reply: { type: 'string', description: 'As it appears on screen.' },
       names: {
         type: 'array',
-        description: 'Every name of a person, place or thing in reply, as written.',
+        description: 'Every name in reply.',
         items: {
           type: 'object',
           additionalProperties: false,
@@ -116,7 +118,7 @@ export function replyJsonSchema(allowedTopics: string[], questActions: string[] 
       },
       memory_note: { type: 'string', description: 'One short sentence the character will remember, in the first person.' },
       ends_conversation: { type: 'boolean' },
-      keep_talking: { type: 'string', enum: [...KEEP_TALKING], description: 'Whether this talk is still about something between you (a quest, a request, news, an offer, a story), or no.' },
+      keep_talking: { type: 'string', enum: [...KEEP_TALKING], description: 'What this talk is still about between you, or no.' },
     },
   }
 }

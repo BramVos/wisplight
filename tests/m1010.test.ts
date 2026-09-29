@@ -92,7 +92,7 @@ describe('M10.10: character is not a trick of sayings', () => {
   it('shows character in what someone dares and steers away from, and says a plain answer is often best', () => {
     const engine = new Engine(content, { seed: 1 })
     const mirte = systemPrompt(engine.world, 'npc_mirte')
-    expect(mirte).toMatch(/Most replies are plain: "No, not today" is often the best answer\./)
+    expect(mirte).toMatch(/Most replies are plain \("No, not today"\)/)
     expect(mirte).toMatch(/What you dare: You speak your mind to your equals/)
     expect(mirte).toMatch(/What others notice in you, which you do not explain: She tenses up whenever Harmen's name comes up\./)
     // The secret itself stays out.
@@ -115,7 +115,7 @@ describe('M10.10: character is not a trick of sayings', () => {
     expect(prompt).toMatch(/If you call the stranger anything, it is "(stranger|traveller)"/)
     expect(prompt).toMatch(/When it comes up: time .*; money in guilders, stuivers, duiten\./)
     expect(prompt).toMatch(/Not here: o'clock \(say bells\), potatoes \(say turnips\), potato \(say turnip\), tobacco/)
-    expect(systemPrompt(engine.world, 'npc_mirte')).toMatch(/Numbers, ages, prices, dates and distances only as given here/)
+    expect(systemPrompt(engine.world, 'npc_mirte')).toMatch(/Numbers, ages, prices, dates and distances only as given, said as given/)
   })
 })
 

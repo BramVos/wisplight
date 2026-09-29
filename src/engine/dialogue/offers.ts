@@ -480,7 +480,7 @@ export function offerLines(world: World, npcId: string, offers: Offer[]): string
   return [
     'OFFERS (what you can do for the stranger now; the game decided each):',
     ...offers.map((o) => `  ${o.key}: ${o.what}. DECISION: ${o.decision}, because ${o.reasons.join('; ')}.`),
-    'If the player asks for one of these, put its key in action and follow the DECISION: a yes you do, a no you refuse with the reason. You may also propose one with DECISION yes (propose); it happens only if the player agrees. Never promise anything that is not a yes here.',
+    'Asked for one, put its key in action and follow its DECISION: a yes you do, a no you refuse with the reason. You may propose a yes yourself (propose); it happens only if the player agrees. Promise nothing that is not a yes here.',
   ]
 }
 

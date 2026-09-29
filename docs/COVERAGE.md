@@ -41,7 +41,7 @@ Every kind puts what stays the same first and what changes after it (M10.26). A 
 
 | Kind | Model | In | Mark | Fixed part | Shared by every call | Minimum | Read from the cache |
 |---|---|---|---|---|---|---|---|
-| `npc_reply` | claude-haiku-4-5-20251001 | 1,983 | shared and own | 1,462 | 1,150 | 4,096 | nothing: the fixed part is under the minimum |
+| `npc_reply` | claude-haiku-4-5-20251001 | 1,812 | shared and own | 1,311 | 999 | 4,096 | nothing: the fixed part is under the minimum |
 | `party_reply` | claude-haiku-4-5-20251001 | 714 | none | - | - | 4,096 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `chat_line` | claude-sonnet-5 | 528 | none | - | - | 1,024 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `journey` | claude-opus-5-5 | 558 | none | - | - | 512 | not marked: nothing reads it back in time, so a mark would only pay a write |

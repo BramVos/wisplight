@@ -931,7 +931,7 @@ export class Dialogue {
     const days = dayLines(world, npcId, [...ctx.packet.known.map((k) => k.topic), ...offers.flatMap((o) => (o.person ? [o.person] : []))])
     if (days.length) prompt += `\n${days.join('\n')}`
     if (offers.length) prompt += `\n${offerLines(world, npcId, offers).join('\n')}`
-    if (talk && !talk.after) prompt += '\nAFTER THE TALK: if this talk makes you want to do one thing of your own later (tell someone of your own people, or go somewhere), put it in after; at most once in a talk. Otherwise after.kind is none.'
+    if (talk && !talk.after) prompt += '\nAFTER THE TALK: one thing of your own you want to do later (tell one of your people, or go somewhere), in after; at most once a talk. Otherwise after.kind none.'
     if (ctx.claimable?.length) {
       const places = ctx.claimable.filter((id) => world.content.locations.has(id))
       prompt += `\nCLAIM: if the stranger's words just said something is so about ${ctx.claimable.map((id) => `${id} (${this.topics.name(id)})`).join(', ')}, put it in claim: subject the id; key at (value: the place id where they are${places.length ? `, one of ${places.join(', ')}` : ''}), alive (yes or no), state (of a place: normal, flooded, damaged, occupied, leaking) or working (of a place: yes or no). Otherwise subject none. Only what the stranger said, never what you think.`
