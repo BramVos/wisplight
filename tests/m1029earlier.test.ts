@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { Engine, MockLlm, type Content } from '../src/engine'
+import { historyOf } from '../src/engine/pasttalks'
 import { content } from './helpers'
 
 // M10.29 J (Bram's playtest: what did she say yesterday?): per person a ring
@@ -61,10 +62,24 @@ describe('M10.29 J: earlier talks', () => {
     const ring = engine.state.pastTalks!['npc_mirte']!
     expect(ring.length).toBeLessThanOrEqual(5)
     // Only whole talks: the first line kept is the first line of its talk.
-    const first = ring[0]!.talk
-    expect(ring.filter((l) => l.talk === first).length).toBe(ring.filter((l) => l.talk === first).length)
     expect(new Set(ring.map((l) => l.talk)).size).toBe(1)
   }, 60_000)
+
+  it('groups the lines of an old save, which have no talk, by how close they were said', () => {
+    const engine = new Engine(content, { seed: 4 })
+    const t = engine.world.now
+    engine.state.pastTalks = {
+      npc_mirte: [
+        { t, you: true, text: 'Morning.' },
+        { t, you: false, text: 'Mirte nods.' },
+        { t: t + 2, you: true, text: 'Any rye?' },
+        { t: t + 2, you: false, text: 'Mirte: "Tomorrow."' },
+        { t: t + 300, you: true, text: 'Back again.' },
+      ],
+    }
+    const talks = historyOf(engine.world, 'npc_mirte').flatMap((d) => d.talks)
+    expect(talks.map((talk) => talk.length)).toEqual([4, 1])
+  })
 
   it('keeps at most the knob of lines, and none at nought', async () => {
     const few: Content = { ...content, world: { ...content.world, knobs: { ...content.world.knobs, 'talk.kept_lines': 3 } } }

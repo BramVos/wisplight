@@ -47,6 +47,7 @@ numbers:
     PARSED_KEPT: 'code: how many files the loader keeps read, by their text (memory; M10.24)'
   src/engine/pasttalks.ts:
     EARLIER_LINES: 'code: how many lines of the talk before the talk window shows, faded (M10.29 J, the window)'
+    OLD_TALK_GAP: 'code: the minutes between two lines of an old save that still make one talk (M10.29 R, saves from before)'
   src/engine/dialogue/block.ts:
     BLOCK_FLOOR: 'code: the size an area block is filled to, above Haiku''s cache minimum of 4,096 tokens (M10.28, technique)'
   src/engine/dialogue/acts.ts:

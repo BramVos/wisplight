@@ -21,6 +21,9 @@ export interface EarlierTalk {
 /** How many lines of the talk before the window shows. */
 const EARLIER_LINES = 6
 
+/** Lines of an old save (no talk) within this many minutes of each other are one talk. */
+const OLD_TALK_GAP = 20
+
 /** A command, not words: TALK itself, a goodbye, a number of the quick options. */
 const NOT_WORDS = /^(?:talk|bye|goodbye|farewell|\d+)\b/i
 
@@ -55,14 +58,17 @@ export function historyOf(world: World, npcId: string): { day: string; talks: Pa
   const ring = world.state.pastTalks?.[npcId] ?? []
   const days: { day: string; talks: PastTalkLine[][] }[] = []
   let last: number | undefined
+  let lastT = -Infinity
   for (const line of ring) {
     const day = talkDay(world, line.t)
     let entry = days.at(-1)
     if (!entry || entry.day !== day) days.push((entry = { day, talks: [] }))
-    const key = line.talk ?? line.t
+    // A line from before R has no talk: it goes with the one before when that was said shortly before.
+    const key = line.talk ?? (last !== undefined && line.t - lastT <= OLD_TALK_GAP ? last : line.t)
     if (!entry.talks.length || key !== last) entry.talks.push([])
     entry.talks.at(-1)!.push(line)
     last = key
+    lastT = line.t
   }
   return days.reverse()
 }

@@ -1,5 +1,26 @@
 # Changelog
 
+## M10.29 deel: de persoonspagina in twee tabbladen, en drie dingen uit je log, 29 september 2026
+
+- **About en History (R).** De persoonspagina in het dagboek heeft nu twee tabbladen. About is wat je van iemand weet: het kaartje, wat die persoon je vertelde ("Sana told you: ..."), wat er tussen jullie staat ("Between you: ..."), wat ze je vroeg, en de laatste regel van het laatste gesprek ("Last time: ..."). History heeft elk gesprek zoals het ging, per dag met de nieuwste bovenaan, één blok per gesprek. De ring houdt nu 200 regels per persoon in plaats van 40, en een ouder gesprek valt er als geheel uit. Niets daarvan gaat naar het model. In de terminal geeft `journal sana` de pagina en `journal sana history` elk gesprek; HELP noemt beide.
+- **Een tijd in de woorden van de spreker (T d).** "Meet me at the hangar in ten minutes" wordt nu een afspraak, net als "in half an hour", "at first light", "at dusk" en "after my shift". Dat laatste rekent vanaf het rooster van de spreker.
+- **Een spreker die over zichzelf praat als over een ander (T e).** "Niko didn't mention it. He's been worried", gezegd door Niko, wordt afgewezen en opnieuw gevraagd.
+- **Improviseren verzint geen verleden (T i).** `check antenna` zegt wat je ziet, niet wat er drie weken geleden gebeurde of waarom. Wat een verhaal op dat moment vrijgeeft, komt met M10.30.
+
+Testen:
+- Praat twee keer met iemand, open het dagboek, kies die persoon en klik op History.
+- Typ `journal <naam>` en `journal <naam> history`.
+- Laat iemand een afspraak voorstellen "in ten minutes" of "after my shift" en zeg ja; kijk bij `promises`.
+- Tests staan in `tests/m1029earlier.test.ts` en `tests/m1029talk.test.ts`.
+
+Kosten: geen nieuwe soort aanroep. History gaat nooit naar het model; de save wordt per persoon hooguit 200 regels groter.
+
+Bekende gaten: regels uit een save van voor vandaag weten niet bij welk gesprek ze horen. History neemt daarom regels die binnen twintig minuten na elkaar vielen samen als één gesprek. De schone herhaling van de gespreksregels op Haiku (ongeveer $0,16) wacht nog op je akkoord.
+
+Wat de editor en de kroniekverteller leerden: niets, want een wereld kan niets nieuws bevatten. De knop `talk.kept_lines` staat met zijn nieuwe standaard in `docs/KNOBS.md`.
+
+Ontwerp: functioneel ontwerp, bij het dagboek, alinea "Stand na M10.29: de persoonspagina in twee tabbladen".
+
 ## M10.29 deel: de werkbank, wat je draagt, nooit een id in tekst, de cursor en Tab, 29 september 2026
 
 - **De werkbank.** Werk dat niets maakt, zoals een lamp nakijken, zegt geen "You have ." meer. Mislukt het, dan staat er "Nothing comes of it this time." en geen verhaal over verspild materiaal. Een les bij Tessa kan alleen als Tessa aan de bank staat en wakker is ("Tessa is not here."). Na drie mislukkingen op rij is de soldeerbout oververhit en rust het werk een uur. Op Skerrow rust het zalf maken anderhalf uur na drie mislukkingen.
