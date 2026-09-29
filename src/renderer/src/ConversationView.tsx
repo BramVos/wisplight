@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
 import type { JournalPage, Reply } from './client'
+import { complete } from './complete'
 import { useShowRules } from './display'
 import { t, tn } from './i18n'
 import figure from './assets/portraits/figure.svg'
@@ -45,6 +46,7 @@ export function ConversationView({
   ended = false,
   onClose,
   covered = false,
+  completions = [],
 }: {
   talk: Talk
   lines: TalkLine[]
@@ -61,8 +63,12 @@ export function ConversationView({
   onClose?: () => void
   /** A window lies over this one (the journal): Escape is for that one (M10.8). */
   covered?: boolean
+  /** The names Tab completes from (M10.29 K), as in the main input. */
+  completions?: string[]
 }) {
   const [text, setText] = useState('')
+  // The names Tab could complete to (M10.29 K), until the next key.
+  const [completing, setCompleting] = useState<string[]>([])
   // What was said in this talk, for the arrow keys (M10.8): the main input keeps only commands.
   const [said, setSaid] = useState<string[]>([])
   const [back, setBack] = useState(-1)
@@ -109,6 +115,15 @@ export function ConversationView({
   }
 
   const onKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
+    // Tab completes the last word (M10.29 K); Shift-Tab still moves the focus.
+    if (event.key === 'Tab' && !event.shiftKey && !event.altKey && !event.ctrlKey && !event.metaKey) {
+      event.preventDefault()
+      const done = complete(text, completions)
+      setText(done.text)
+      setCompleting(done.options)
+      return
+    }
+    setCompleting([])
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault()
       say()
@@ -222,6 +237,11 @@ export function ConversationView({
                     </button>
                   ))}
                 </div>
+                {completing.length > 1 && (
+                  <div className="completions" aria-live="polite">
+                    {completing.join(', ')}
+                  </div>
+                )}
                 <textarea
                   ref={inputRef}
                   className="talk-input"

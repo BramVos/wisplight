@@ -1,7 +1,7 @@
 import { tellChronicler } from './wishes'
 import { framesLines, setFrame } from './frames'
 import { lookSky } from './weather'
-import { knownShort, publicShort } from './acquaintance'
+import { knownName, knownShort, knowsOfPerson, publicShort } from './acquaintance'
 import { inSeason } from './content'
 import { describeSelf, descriptionNow, detailHere, lookThere, lookThing, sceneryHere } from './looking'
 import { choose, MAX_OPTIONS, offer, type ChoiceOption } from './choice'
@@ -394,6 +394,21 @@ function lookOptions(world: World): ChoiceOption[] {
   const details = [...(place?.details ?? []), ...world.location(here).objects.flatMap((o) => world.content.objectTypes.get(o.type)?.details ?? [])].map((d) => d.words[0]!)
   const ground = Object.keys(world.state.ground[here] ?? {}).filter((i) => (world.state.ground[here]![i] ?? 0) > 0).map((i) => itemName(world.content, i, 1))
   return [...new Set([...people, ...objects, ...details, ...ground])].map((name) => ({ label: name, command: `look ${name}` }))
+}
+
+/**
+ * The words Tab completes from (M10.29 K): the names in the journal, the
+ * people here as the stranger knows them (the name once heard, else what they
+ * look like they do), the ways out, the objects and details of this place,
+ * and the things here and in the pack.
+ */
+export function completionsHere(world: World, journal: string[]): string[] {
+  const here = world.state.player.location
+  const people = world.npcsAt(here).flatMap((id) => (knowsOfPerson(world, id) ? [knownName(world, id), callName(world.npc(id))] : [publicShort(world, id).replace(/^(the|a|an)\s+/i, '')]))
+  const things = lookOptions(world).map((o) => o.label).filter((name) => !world.npcsAt(here).some((id) => callName(world.npc(id)) === name))
+  const pack = Object.entries(world.state.player.inventory).filter(([, n]) => n > 0).map(([id]) => itemName(world.content, id, 1))
+  const seen = new Set<string>()
+  return [...journal, ...people, ...Object.keys(world.location(here).exits), ...things, ...pack].filter((word) => word && !seen.has(word.toLowerCase()) && seen.add(word.toLowerCase()))
 }
 
 function examineHere(world: World, target: string): Output | undefined {

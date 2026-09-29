@@ -18,6 +18,7 @@ import { sound } from './sound'
 import { MomentCard } from './MomentCard'
 import { ClockPanel } from './Clock'
 import { Settings, usd, type SettingsTab } from './Settings'
+import { complete } from './complete'
 import { t, tn } from './i18n'
 
 // Under the bonnet (M10.1): only a development build bundles the dev menu; a production build has no trace of it.
@@ -84,6 +85,8 @@ export function App() {
   const [lines, setLines] = useState<Line[]>([])
   const [status, setStatus] = useState<Status>()
   const [input, setInput] = useState('')
+  // The names Tab could complete to (M10.29 K), until the next key.
+  const [completing, setCompleting] = useState<string[]>([])
   // The world waits while you type (after the M8 playtest).
   const typing = input.trim().length > 0
   const [history, setHistory] = useState<string[]>([])
@@ -321,6 +324,15 @@ export function App() {
 
   const onKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     client?.activity()
+    // Tab completes the last word (M10.29 K); Shift-Tab still moves the focus.
+    if (event.key === 'Tab' && !event.shiftKey && !event.altKey && !event.ctrlKey && !event.metaKey) {
+      event.preventDefault()
+      const done = complete(input, status?.completions ?? [])
+      setInput(done.text)
+      setCompleting(done.options)
+      return
+    }
+    setCompleting([])
     if (event.key === 'Enter') {
       submit()
     } else if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
@@ -720,6 +732,11 @@ export function App() {
             ))}
           </div>
         )}
+        {completing.length > 1 && (
+          <div className="completions" aria-live="polite">
+            {completing.join(', ')}
+          </div>
+        )}
         <label className="prompt">
           <span aria-hidden="true">{'>'}</span>
           <input
@@ -798,6 +815,7 @@ export function App() {
           onSend={(text) => void send(text, true)}
           onJournal={() => setJournal({ nearby: true })}
           covered={Boolean(journal)}
+          completions={status.completions}
         />
       )}
       {!talk && ended && status && (

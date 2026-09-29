@@ -34,7 +34,7 @@ import { followTombstones, followTombstonesInLog, nameBook, withNames, type Name
 import { shiftTension, tensionOf } from './social/realms'
 import { grownContent, invest } from './growth/growth'
 import { GameClock, weekdayName } from './clock'
-import { describeRoom, detailVerb, findNpcAnywhere, findNpcHere, runCommand, whichOfThem, type CommandHost, type Output } from './commands'
+import { completionsHere, describeRoom, detailVerb, findNpcAnywhere, findNpcHere, runCommand, whichOfThem, type CommandHost, type Output } from './commands'
 import { areaTopicId, callName, firstName, type Content, type Quest } from './content'
 import { Dialogue, QUICK_OPTIONS } from './dialogue/conversation'
 import { Knowledge } from './dialogue/knowledge'
@@ -208,6 +208,8 @@ export interface Status {
   /** What is to be heard here (M10.15), for the app; none where the content gives no sound. */
   sound?: SoundNow
   journal: { quests: JournalEntry[]; people: JournalEntry[]; places: JournalEntry[]; lands: JournalEntry[]; factions: JournalEntry[]; events: JournalEntry[]; lore: JournalEntry[]; things: JournalEntry[] }
+  /** The words Tab completes from (M10.29 K): the journal's names, who and what is here, the ways out, the pack. */
+  completions?: string[]
   /** The map round the player: rows of characters, and a class code per character (FO, chapter 4). */
   map?: { rows: string[]; classes: string[] }
   /** The map round the player in colour (M10): the hexes the player knows, for the interface to draw. */
@@ -1909,6 +1911,7 @@ export class Engine {
     for (const lore of this.state.chronicle?.lore ?? []) if (lore.facts.some((f) => heard[f])) this.dialogue.learn(lore.id)
     // On the way to a region still being laid out (M10.25), the stranger is not there yet.
     const underway = this.state.growth?.underway
+    const journal = this.journal()
     return {
       location: underway?.held ? `On the way to ${underway.name}` : location.name,
       area: this.content.areas.get(location.area)?.name ?? location.area,
@@ -1923,7 +1926,8 @@ export class Engine {
       ...(!talk && this.lastTalk ? { lastTalk: this.lastTalk } : {}),
       clock: this.clockStatus(),
       ...(soundNow(this.world) ? { sound: soundNow(this.world)! } : {}),
-      journal: this.journal(),
+      journal,
+      completions: completionsHere(this.world, Object.values(journal).flatMap((part) => part.map((e) => e.name))),
       map: this.compactMap(),
       hexMap: hexMapData(this.world, { width: 51, height: 35 }),
       ...(this.state.choice && !this.state.talk ? { choice: { question: this.state.choice.question, options: this.state.choice.options.map((o) => o.label) } } : {}),

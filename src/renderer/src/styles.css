@@ -1881,6 +1881,13 @@ pre.sheet {
   font-size: calc(13px * var(--text-scale));
 }
 
+/* What Tab could complete to (M10.29 K), until the next key: one quiet line above the prompt. */
+.completions {
+  padding: 4px 0 2px;
+  color: var(--muted);
+  font-size: calc(13px * var(--text-scale));
+}
+
 /* The picture of where you are (after the M10 playtest): the area's, above the minimap. */
 .scene {
   margin: 0 0 12px;
