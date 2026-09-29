@@ -52,7 +52,8 @@ describe('M10.20: building a world, all twelve steps', () => {
     expect(world.npcs.get('npc_ada_wren')).toMatchObject({ pronoun: 'she', profession: 'keeper' })
     expect(world.items.get('fish_stew')?.tags).toContain('food')
     expect(world.passages.size).toBe(1)
-    expect(warnings(world).filter((w) => !/ledger|made nowhere/.test(w))).toEqual([])
+    // A people or the money with no topic (M10.29 P) is a hint for the chronicler, not a fault of the recorded build.
+    expect(warnings(world).filter((w) => !/ledger|made nowhere|^money: |^ancestry /.test(w))).toEqual([])
     const game = new Engine(world, { seed: 3 })
     game.start()
     expect(game.status().time).toMatch(/^Oneday 1 Frostmere 1 QR/)

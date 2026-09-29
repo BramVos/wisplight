@@ -75,7 +75,7 @@ The Lamp of Skerrow, a bowl of bronze as wide as a cartwheel behind a lens of gr
 > journal
 People: Maren Holt.
 Places: Skerrow, the Heights, the Shore, The Cliff Path, The Headland, The Silver Grove, The Tidepools, The Wreck Strand.
-Lore: the Grey Gull.
+Lore: the coin of the isles, the Grey Gull, the folk of the isles, the tide, the Tidemother.
 
 ==== INFLUENCE (Windsday 3 Leaffall 412 SF, 07:47 (morning))
 
@@ -170,7 +170,7 @@ Garrick trims the great wick with hands that have stopped shaking, and you strik
 > journal
 People: Garrick Stone, Maren Holt.
 Places: Skerrow, the Heights, Skerrow Hythe, the Shore, The Cliff Path, The Headland, The Salt Kettle, The Silver Grove, The Tidepools, The Wreck Strand.
-Lore: the Grey Gull.
+Lore: the coin of the isles, the Grey Gull, the folk of the isles, the tide, the Tidemother.
 
 ==== AFTER (Windsday 3 Leaffall 412 SF, 23:26 (night))
 
@@ -209,7 +209,7 @@ Here: Garrick Stone, Garrick the lightkeeper (staying at The Headland).
 > journal
 People: Garrick Stone, Maren Holt.
 Places: Skerrow, the Heights, Skerrow Hythe, the Shore, The Cliff Path, The Headland, The Salt Kettle, The Silver Grove, The Tidepools, The Wreck Strand.
-Lore: the Grey Gull.
+Lore: the coin of the isles, the Grey Gull, the folk of the isles, the tide, the Tidemother.
 
 [960 hours pass]
 Old Tamsin comes from the west, on her way to Skerrow Hythe, the Green.
@@ -404,7 +404,7 @@ The Lamp of Skerrow, a bowl of bronze as wide as a cartwheel behind a lens of gr
 > journal
 People: Maren Holt.
 Places: Skerrow, the Heights, the Shore, The Cliff Path, The Headland, The Silver Grove, The Tidepools, The Wreck Strand.
-Lore: the Grey Gull.
+Lore: the coin of the isles, the Grey Gull, the folk of the isles, the tide, the Tidemother.
 
 ==== AFTER (Windsday 3 Leaffall 412 SF, 07:47 (morning))
 
@@ -436,7 +436,7 @@ Here: Garrick the lightkeeper (asleep).
 > journal
 People: Maren Holt.
 Places: Skerrow, the Heights, the Shore, The Cliff Path, The Headland, The Silver Grove, The Tidepools, The Wreck Strand.
-Lore: the Grey Gull.
+Lore: the coin of the isles, the Grey Gull, the folk of the isles, the tide, the Tidemother.
 
 [960 hours pass]
 Off Skerrow: Winter closes the sea. The first of the winter gales closes the Glass Sea. No boat will cross now until spring; you winter on Skerrow, among the fishers and the gulls.

@@ -147,7 +147,10 @@ and formally, with long silences, and call a stranger "child of the short years"
 | Topic | What people know |
 | --- | --- |
 | Old Skarth | They say a wyrm called Old Skarth sleeps under the long barrow on the heights, and has since before the Starfall. |
+| the coin of the isles | On the Sundered Isles people pay in gold, silver and copper pieces, ten copper to the silver and ten silver to the gold. |
+| the folk of the isles | Islanders are born on the Sundered Isles and live by the sea; mainlanders come over from Havenmoor for trade or a post; and now and then an elf of the western isles is seen, old and quiet, keeping to herself. |
 | the Starfall | Four hundred and twelve years ago the sky broke, stars fell into the sea, and the empire of Aldmar drowned. |
+| the tide | On Skerrow the tide rules the day; the strand floods twice between dawn and dawn, and at low water the tidepools and the wreck lie open. |
 | the Tidemother | The Tidemother is the sea itself; she gives the fish and the wrecks, and she takes back what she likes. |
 | the waystone | In the ruined tower on the heights stands a waystone of Aldmar, a ring of black stone taller than a man. |
 

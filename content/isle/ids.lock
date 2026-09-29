@@ -44,7 +44,7 @@ ids:
   isle/data/tides.yaml:
     tide: [great_storm]
   isle/data/topics.yaml:
-    topic: [the_starfall, old_skarth, the_waystone, the_beacon, grey_gull, havenmoor, the_tidemother]
+    topic: [the_starfall, old_skarth, the_waystone, the_beacon, grey_gull, havenmoor, the_tidemother, the_tide, coin_of_the_isles, the_isles_folk]
   isle/data/watchers.yaml:
     watcher: [asked_about, befriended, death, lost, departure, lamp_lit, pulse_tamsin, pulse_sail, pulse_errand]
   isle/lands/western_isles/areas/ynys_wen/locations.yaml:

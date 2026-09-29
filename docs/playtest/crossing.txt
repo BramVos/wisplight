@@ -32,7 +32,7 @@ Exits: north, east
 > journal
 People: Maren Holt.
 Places: Skerrow, the Shore, The Headland, The Tidepools, The Wreck Strand.
-Lore: the Grey Gull.
+Lore: the coin of the isles, the Grey Gull, the folk of the isles, the tide, the Tidemother.
 
 ==== INFLUENCE (Windsday 3 Leaffall 412 SF, 07:10 (morning))
 
@@ -373,7 +373,7 @@ Wenna lifts a hand. "Go on, then."
 > journal
 People: Brannoc Reed, Eluned Silverstrand, Maren Holt, Wenna Dray.
 Places: Skerrow, Skerrow Hythe, the Shore, Ynys Wen, Skerrow Hythe, the Harbour, The Headland, The Tidepools, The Wreck Strand, The Long Hall of Ynys Wen, Ynys Wen, the Landing.
-Lore: The long hall of Ynys Wen closed its doors to the east for a season, Off Skerrow: A ship for the light, the stranger in Skerrow Hythe, the stranger in Ynys Wen, the stranger crossed into the Western Isles, the long hall of Ynys Wen closed its doors to the east for a season, the stranger crossed into the Sundered Isles, the Grey Gull.
+Lore: The long hall of Ynys Wen closed its doors to the east for a season, the coin of the isles, Off Skerrow: A ship for the light, the stranger in Skerrow Hythe, the stranger in Ynys Wen, the stranger crossed into the Western Isles, the long hall of Ynys Wen closed its doors to the east for a season, the stranger crossed into the Sundered Isles, the Grey Gull, the folk of the isles, the tide, the Tidemother.
 
 ==== END (Tidesday 16 Leaffall 412 SF, 09:04 (morning))
 Quests: off_skerrow: a_ship_for_the_light
@@ -410,7 +410,7 @@ Exits: north, east
 > journal
 People: Maren Holt.
 Places: Skerrow, the Shore, The Headland, The Tidepools, The Wreck Strand.
-Lore: the Grey Gull.
+Lore: the coin of the isles, the Grey Gull, the folk of the isles, the tide, the Tidemother.
 
 ==== AFTER (Windsday 3 Leaffall 412 SF, 07:10 (morning))
 
@@ -429,7 +429,7 @@ Exits: north, east
 > journal
 People: Maren Holt.
 Places: Skerrow, the Shore, The Headland, The Tidepools, The Wreck Strand.
-Lore: the Grey Gull.
+Lore: the coin of the isles, the Grey Gull, the folk of the isles, the tide, the Tidemother.
 
 ==== END (Thornsday 4 Leaffall 412 SF, 07:10 (morning))
 Quests: off_skerrow: open, stage stranded

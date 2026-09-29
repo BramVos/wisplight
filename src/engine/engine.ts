@@ -96,7 +96,7 @@ import { breakOff, chatLine, chatLineRequest, listen, longListen } from './chatt
 import { realmLines, realmPage } from './social/realms'
 import { bearing, kmFromPlayer, posOf, posOfLocation } from './nearby'
 import { carryOver } from './legacy'
-import { arrival, character, chooseBackground, whyLines, type Clock, clockLine, createCommand, creationHelp, equipCommand, favour, findPurse, gainXp, greyRider, leaveSheaf, levelCommand, makeCharacter, patronCommand, pray, rest, rite, sheetData, sheetLines, struggle, trainCommand } from './rules/player'
+import { arrival, backgroundNow, character, chooseBackground, whyLines, type Clock, clockLine, createCommand, creationHelp, equipCommand, favour, findPurse, gainXp, greyRider, leaveSheaf, levelCommand, makeCharacter, patronCommand, pray, rest, rite, sheetData, sheetLines, struggle, trainCommand } from './rules/player'
 import { sketchById } from './sketches'
 import { momentsNow } from './moments'
 import { journeyRequest } from './map/journeyText'
@@ -1147,6 +1147,9 @@ export class Engine {
 
   start(): Output[] {
     wakePulse(this.world)
+    // What everyone in this world knows (M10.29 P), in the journal from the start.
+    const journal = (this.state.player.journal ??= {})
+    for (const topic of this.content.topics.values()) if (topic.common) journal[topic.id] ??= this.world.now
     const intro = this.content.world.intro?.trim()
     // The world's intro as a moment (M10.29 C), with the picture of where it begins and a way to "Why you are here".
     // The card without the hint to type LOOK, which the log keeps below it.
@@ -1360,11 +1363,29 @@ export class Engine {
     keepPastLines(this.world, into.npc, typed, outputs)
   }
 
+  /**
+   * RECALL <topic> (M10.29 P; Bram: what is a Nacrean?): what the stranger
+   * knows of it, from their journal (what everyone here knows is there from
+   * the start): the first lines of its page and what they heard of it; else
+   * that they know nothing of it.
+   */
+  private recall(words: string): Output[] {
+    const id = this.topics.find(words)
+    const known = id !== undefined && (this.state.player.journal ?? {})[id] !== undefined
+    const page = known ? journalPage(this.world, this.topics, id!) : undefined
+    if (!page) return [{ kind: 'narration', text: 'You know nothing of that.' }]
+    const lines = page.lines.filter((l) => l.trim()).slice(0, 4)
+    return [{ kind: 'narration', text: `${page.name}: ${lines.join(' ')}` }]
+  }
+
   private async route(text: string): Promise<Output[]> {
     if (text.startsWith('@')) return this.build(text.slice(1))
     // Stuck in the fen, or a cat for a while (M7.2): some things cannot be done.
     const held = this.heldBack(text)
     if (held) return held
+    // RECALL <topic> (M10.29 P): what the stranger knows of it; in a fight RECALL is the fight's own.
+    const recalled = this.state.talk || this.state.combat ? undefined : /^(?:recall|remember)\s+(?:about\s+)?(.+?)\s*$/i.exec(text.trim())
+    if (recalled) return this.recall(recalled[1]!)
     // Who the stranger came as, in a world without classes (M10.29 C); outside a talk, where it could be words.
     const background = this.state.talk ? undefined : /^background\s+(.+?)\s*$/i.exec(text.trim())
     if (background) return chooseBackground(this.world, background[1]!)
@@ -1965,7 +1986,7 @@ export class Engine {
         const heardOnly = kind === 'place' && entry?.ref !== undefined && this.content.locations.has(entry.ref) && !(this.state.player.seen ?? []).includes(entry.ref)
         const shown = heardOnly ? `${name} (heard of)` : name
         places.push({ id, name: shown, ...far, ...also, group: g.group, order: `${g.order}${first ? '0' : heardOnly ? '2' : '1'}${name.toLowerCase()}` })
-      } else if (kind === 'lore' || kind === 'fact') journal.lore.push({ id, name, ...far, ...also })
+      } else if (kind === 'lore' || kind === 'fact') journal.lore.push({ id, name, ...far, ...also, ...(this.content.topics.get(id)?.common || backgroundNow(this.world)?.topics.includes(id) ? { group: 'What you know of the world' } : {}) })
       else if (kind === 'item') journal.things.push({ id, name })
     }
     const strip = ({ id, name, group, km, aliases }: JournalEntry) => ({ id, name, ...(group ? { group } : {}), ...(km === undefined ? {} : { km }), ...(aliases ? { aliases } : {}) })

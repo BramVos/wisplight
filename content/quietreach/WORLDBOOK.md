@@ -140,6 +140,7 @@ Pacing: play starts small, on Nacre, among the colonists, their everyday problem
 | Topic | What people know |
 | --- | --- |
 | An answer before the question | At a late meal Niko said part of the signal looks like a Peregrine test pattern that, by the logs, was sent only later. |
+| Belt credits | People in the Lantern Belt pay in Belt credits, a hundred bits to the credit, with no larger coin; a personal credit chip holds the balance and signs payments. |
 | Beltborn | People raised on the stations and ships of the Lantern Belt, used to shared services and strict maintenance rules. |
 | Departures and returns | Whoever leaves hands over their work, borrowed tools and promises. Whoever comes back is asked what happened on the way. |
 | Maintenance drones | Tracked work drones that inspect and clear the coast path and the ridge. They are tools, and they follow their work orders. |
@@ -425,6 +426,7 @@ When a drone goes wrong, the first question in the Workshop is never sabotage. I
 | length of salvaged cable sheathing | 40 b |
 | measurement cable | 9 cr |
 | multitool | 15 cr |
+| Niko's notebook | 50 b |
 | packet of tea herbs | 20 b |
 | pair of sturdy boots | 20 cr |
 | pocket terminal | 60 cr |
@@ -521,7 +523,7 @@ magic, spells, mana, divine healing, telepathy, antigravity, gravity plates, ine
 
 ## 17. The rules in short
 
-Ancestries: . Classes: . Backgrounds: .
+Ancestries: . Classes: . Backgrounds: systems engineer, signal linguist, navigator, expedition medic, expedition hand.
 
 Conditions: .
 

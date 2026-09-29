@@ -38,6 +38,9 @@ export interface Packet {
   referral?: { npc: string; name: string; call: string; topic: string }
 }
 
+/** A sentence with a capital first letter. */
+const upper = (text: string) => text.charAt(0).toUpperCase() + text.slice(1)
+
 /** How long a walk is, in words: a few steps, about twenty minutes' walk, about an hour's walk. */
 export function walkWords(minutes: number): string {
   return minutes < 5 ? 'a few steps' : minutes < 60 ? `about ${roundTo(minutes, 5)} minutes' walk` : `about ${hours(minutes)} walk`
@@ -132,6 +135,8 @@ export class Knowledge {
     const topic = this.world.content.topics.get(topicId)
     if (!topic) return 0
     if (topic.known_by.includes(npcId)) return 3
+    // What everyone in this world knows (M10.29 P): its peoples, money, law and faiths.
+    if (topic.common) return Math.max(2, this.chanceLevel(npcId, topicId, topic.kind === 'person' ? 'person' : topic.kind === 'place' ? 'place' : topic.kind, topic.fame, topic.pos, true, { audience: topic.audience })) as Level
     const origin = this.areaOf(topic.origin)
     const sameArea = origin !== undefined && this.ownAreas(npcId).has(origin)
     const pos = topic.pos ?? (origin ? this.areaPos(origin) : undefined)
@@ -290,7 +295,8 @@ export class Knowledge {
           for (const service of location.services) {
             const seller = content.npcs.get(service.provider)?.short
             const goods = Object.keys(service.sells).map((i) => itemName(content, i, 2).replace(/^2 /, ''))
-            if (seller && goods.length) facts.push(`${seller} sells ${goods.join(' and ')} there.`)
+            // A sentence starts with a capital (M10.29: "the chief engineer sells ..." reached the talk as it was).
+            if (seller && goods.length) facts.push(upper(`${seller} sells ${goods.join(' and ')} there.`))
           }
           break
         }
@@ -408,7 +414,7 @@ export class Knowledge {
         if (!(item in service.sells)) continue
         const seller = this.world.content.npcs.get(service.provider)
         const price = this.world.price(location.id, service, item)
-        if (seller) result.push(`${seller.short} sells ${itemName(this.world.content, item, 2).replace(/^2 /, '')} at ${location.name}, about ${this.world.money(price)} each.`)
+        if (seller) result.push(upper(`${seller.short} sells ${itemName(this.world.content, item, 2).replace(/^2 /, '')} at ${location.name}, about ${this.world.money(price)} each.`))
       }
     }
     return result

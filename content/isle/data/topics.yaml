@@ -74,8 +74,38 @@ topics:
   - id: the_tidemother
     name: the Tidemother
     kind: lore
+    common: true
     aliases: [tidemother, the tidemother, the sea goddess, the mother]
     everywhere: true
     fame: 3
     summary: The Tidemother is the sea itself; she gives the fish and the wrecks, and she takes back what she likes.
     details: Fishers throw the first fish of the day back to her. What the sea brings ashore is hers to give, and nobody on Skerrow begrudges a stranger what came off their own ship.
+
+  # What everyone on the isles knows (M10.29 P): the tide and the coin.
+  - id: the_tide
+    name: the tide
+    kind: lore
+    common: true
+    everywhere: true
+    aliases: [tide, tides, the tides, high water, low water]
+    summary: On Skerrow the tide rules the day; the strand floods twice between dawn and dawn, and at low water the tidepools and the wreck lie open.
+    details: The Tidemother's law says what the sea leaves at low water is hers to give, and whoever waits too long on the strand learns how fast she takes it back.
+    fame: 3
+  - id: coin_of_the_isles
+    name: the coin of the isles
+    kind: lore
+    common: true
+    everywhere: true
+    aliases: [gold piece, gold pieces, silver piece, silver pieces, copper piece, copper pieces, crowns, shillings, coppers]
+    summary: On the Sundered Isles people pay in gold, silver and copper pieces, ten copper to the silver and ten silver to the gold.
+    details: Fishers on Skerrow often pay one another in fish and favours; coin is for the packet, the chandler and the Salt Kettle.
+    fame: 3
+  - id: the_isles_folk
+    name: the folk of the isles
+    kind: lore
+    common: true
+    everywhere: true
+    aliases: [islanders, islander, mainlanders, mainlander, elves, elf, the western elves]
+    summary: Islanders are born on the Sundered Isles and live by the sea; mainlanders come over from Havenmoor for trade or a post; and now and then an elf of the western isles is seen, old and quiet, keeping to herself.
+    details: Islanders say a mainlander can tell the weather from a book but not from the gulls, and nobody on Skerrow asks an elf her age.
+    fame: 3

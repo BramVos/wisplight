@@ -286,7 +286,7 @@ function QuestTable({ view }: { view: EditorView }) {
 
 function EntityEditor({ bridge, world, view, kind, id, saved }: { bridge: EditorBridge; world: string; view: EditorView; kind: EntityKind; id?: string; saved: (id?: string) => Promise<void> }) {
   const [loaded, setLoaded] = useState<{ raw: Raw; yaml: string; file: string }>()
-  const [mode, setMode] = useState<'form' | 'yaml'>(kind === 'location' || kind === 'npc' ? 'form' : 'yaml')
+  const [mode, setMode] = useState<'form' | 'yaml'>(kind === 'location' || kind === 'npc' || kind === 'topic' ? 'form' : 'yaml')
   const [raw, setRaw] = useState<Raw>()
   const [yaml, setYaml] = useState('')
   const [result, setResult] = useState<EditorSave & { written?: boolean }>()
@@ -355,7 +355,7 @@ function EntityEditor({ bridge, world, view, kind, id, saved }: { bridge: Editor
   }
 
   if (!raw) return <p className="muted">Loading...</p>
-  const hasForm = kind === 'location' || kind === 'npc'
+  const hasForm = kind === 'location' || kind === 'npc' || kind === 'topic'
   return (
     <div className="settings-body">
       <header className="row">
@@ -375,6 +375,7 @@ function EntityEditor({ bridge, world, view, kind, id, saved }: { bridge: Editor
       </header>
       {mode === 'form' && kind === 'location' && <PlaceFields raw={raw} view={view} isNew={!id} onChange={setRaw} />}
       {mode === 'form' && kind === 'npc' && <PersonFields raw={raw} view={view} isNew={!id} onChange={setRaw} />}
+      {mode === 'form' && kind === 'topic' && <TopicFields raw={raw} isNew={!id} onChange={setRaw} />}
       {mode === 'yaml' && (
         <>
           <textarea className="yaml-box" rows={Math.min(40, Math.max(12, yaml.split('\n').length + 2))} value={yaml} onChange={(event) => setYaml(event.target.value)} spellCheck={false} aria-label="YAML" />
@@ -532,6 +533,33 @@ function PlaceFields({ raw, view, isNew, onChange }: { raw: Raw; view: EditorVie
         <p className="muted small">The place on the other side gets the way back when it has none, and loses it when the exit goes (not for places tagged one_way).</p>
       </fieldset>
       <p className="muted small">Objects, shops and things lying about: in YAML.</p>
+    </div>
+  )
+}
+
+/** A topic (M10.29 P): its name, kind, what most people know and more, and whether everyone in this world knows it. */
+function TopicFields({ raw, isNew, onChange }: { raw: Raw; isNew: boolean; onChange: (raw: Raw) => void }) {
+  const set = (field: string, value: unknown) => onChange(clean({ ...raw, [field]: value }))
+  return (
+    <div className="builder-fields">
+      {isNew && <Field label="Id" value={String(raw['id'] ?? '')} onChange={(v) => set('id', v)} />}
+      <Field label="Name" value={String(raw['name'] ?? '')} onChange={(v) => set('name', v)} />
+      <label>
+        Kind
+        <select value={String(raw['kind'] ?? 'lore')} onChange={(e) => set('kind', e.target.value)}>
+          {['lore', 'fact', 'place', 'person'].map((k) => (
+            <option key={k} value={k}>
+              {k}
+            </option>
+          ))}
+        </select>
+      </label>
+      <Field label="What most people know" value={String(raw['summary'] ?? '')} onChange={(v) => set('summary', v)} />
+      <Field label="What those who know it well can add" value={String(raw['details'] ?? '')} onChange={(v) => set('details', v || undefined)} />
+      <label className="row">
+        <input type="checkbox" checked={Boolean(raw['common'])} onChange={(e) => set('common', e.target.checked || undefined)} /> Everyone in this world knows it (a people, the money, the law, a faith, a great place): in the stranger&apos;s journal from the start
+      </label>
+      <p className="muted small">A story, where it is told, its place on the map and districts: in YAML.</p>
     </div>
   )
 }

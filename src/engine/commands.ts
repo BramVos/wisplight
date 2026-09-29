@@ -98,7 +98,7 @@ export interface CommandHost {
 const HELP = [
   'Moving: north, south, east, west, up, down, in, out (n, s, e, w, ...). Also: go <place>, exits.',
   'Across country: head <direction>, walk to <place>, follow <a road or path>. Map: map. Further: travel to <place> (on foot, or by a line that runs there), take <the line> to <place>, wait for <the line>, hire <what someone hires out>.',
-  'Looking: look (l), examine <thing or person> (x).',
+  'Looking: look (l), examine <thing or person> (x). What you know of something: recall <topic> (what everyone here knows is in your journal from the start).',
   'Things: inventory (i), take, drop, give <thing> to <person>, use <object>, eat <food>, open <chest>, take <thing> from <chest>, pick <door or chest> (the lock), force <door or chest>. In a talk: ask <person> for <thing>.',
   'Crafts and skills: use <workplace> [what to make] (USE OVEN BAKE), treat <person or me>, gather [what], track <person>, search (here), read <inscription>. In a talk with a craftsman: teach me.',
   'Trade: list (what is for sale here), buy <thing> [amount], sell <thing> [amount], rent a room (a night), rent the room for a week (yours, with a chest: put <thing> in the chest, take <thing> from the chest).',

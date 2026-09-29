@@ -42,6 +42,7 @@ topics:
   - id: vesper_settlement_compact
     name: The Vesper Settlement Compact
     kind: fact
+    common: true
     aliases: [the Compact, the law, the hearing]
     summary: The local agreement under the Belt Charter that governs Port Vesper, Vesper Works and Orison Ridge, kept by the Settlement Marshal.
     details: The Settlement Marshal controls access, investigates complaints and may take temporary measures, and the harbour watch on duty helps. Serious cases go to a hearing of three uninvolved residents. There is no death penalty, and nobody is put outside without protection. Debt may be worked off, and emergency care is never refused. Aboard ship on an expedition, the appointed captain holds authority, and that is not automatically the research lead.
@@ -62,6 +63,7 @@ topics:
   - id: beltborn
     name: Beltborn
     kind: lore
+    common: true
     aliases: [Beltborn, station-born]
     summary: People raised on the stations and ships of the Lantern Belt, used to shared services and strict maintenance rules.
     details: Some Beltborn think planetary residents careless with resources. Origin says nothing sure about a person, and most distrust here comes from experience and conflicting interests.
@@ -71,6 +73,7 @@ topics:
   - id: nacreans
     name: Nacreans
     kind: lore
+    common: true
     aliases: [Nacrean, locals, colonists]
     summary: Nacreans are the local colonists and their descendants, who know the coast, the storms and the history of the settlement.
     details: Some Nacreans distrust researchers who leave as soon as their project is finished. Origin says nothing sure about a person.
@@ -80,6 +83,7 @@ topics:
   - id: transit_families
     name: The Transit Families
     kind: lore
+    common: true
     aliases: [Transit, Transit Families]
     summary: Families who have moved between settlements for generations, hauling cargo, making repairs and trading.
     details: Their changing residence is sometimes wrongly taken for a lack of loyalty. Many wear a knotwork tag or a ribbon of their family.
@@ -196,3 +200,14 @@ topics:
     story: When a drone goes wrong, the first question in the Workshop is never sabotage. It is who wrote the last order, and when the unit was last serviced.
     origin: vesper_works
     fame: 2
+
+  # What everyone in the Lantern Belt knows (M10.29 P): the money.
+  - id: belt_credits
+    name: Belt credits
+    kind: lore
+    common: true
+    everywhere: true
+    aliases: [credits, credit, bits, bit, belt credit, credit chip]
+    summary: People in the Lantern Belt pay in Belt credits, a hundred bits to the credit, with no larger coin; a personal credit chip holds the balance and signs payments.
+    details: When the power or the network is down, shops and stations take standardised physical value tokens instead. Air in a settlement is a shared provision, and nobody charges for it.
+    fame: 3

@@ -57,7 +57,16 @@ export function warnings(content: Content): string[] {
     else if (areas.length && !areas.some((a) => a.border) && !far) out.push(`land ${land.id}: none of its areas is a border (border: true), so nobody can cross into it`)
   }
   for (const npc of content.npcs.values()) if (npc.public_facts.length === 0) out.push(`${npc.id}: no public facts, so nobody can tell anything about them`)
-  for (const topic of content.topics.values()) if (!topic.origin && !topic.pos && !topic.everywhere && topic.kind !== 'person') out.push(`topic ${topic.id}: no origin, so nobody knows where it belongs`)
+  for (const topic of content.topics.values()) if (!topic.origin && !topic.pos && !topic.everywhere && !topic.common && topic.kind !== 'person') out.push(`topic ${topic.id}: no origin, so nobody knows where it belongs`)
+  // A people or a coin of the world that no topic tells of (M10.29 P: Mara is "a Nacrean woman", and the stranger could
+  // not know what a Nacrean is): a topic for it, with common: true when everyone here knows it.
+  const told = (word: string) => {
+    const w = new RegExp(`\\b${word.toLowerCase().replace(/s$/, '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`)
+    return [...content.topics.values()].some((t) => [t.name, ...t.aliases, t.summary].some((n) => w.test(n.toLowerCase())))
+  }
+  for (const a of content.rules?.ancestries ?? []) if (!told(a.name)) out.push(`ancestry ${a.id}: no topic tells what ${a.name} are; add one with common: true, so the stranger knows it from the start`)
+  const coins = content.world.money?.units ?? []
+  if (coins.length && !coins.some((c) => told(c.name))) out.push(`money: no topic tells of the ${coins.map((c) => c.plural ?? `${c.name}s`).join(', ')}; add one with common: true, so the stranger knows the money from the start`)
   // A far town with districts (M10.21) is reached by a road (it has a place on the map) or a line; without either they never come to be.
   for (const topic of content.topics.values()) {
     if (!topic.districts.length) continue

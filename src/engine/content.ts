@@ -763,6 +763,12 @@ export const TopicSchema = z.object({
   standing_talk: z.boolean().default(false),
   /** Known the same everywhere, like a custom of the whole countryside. */
   everywhere: z.boolean().default(false),
+  /**
+   * What everyone in this world knows (M10.29 P: Mara is "a Nacrean woman", and the stranger could not know what that
+   * is): its peoples, its money, its calendar, its law, its faiths, its great places. In the stranger's journal from
+   * the start, under What you know of the world, and every person knows it.
+   */
+  common: z.boolean().default(false),
   /** Extra chance for some listeners: profession ids, quirks or "child". */
   audience: z.partialRecord(z.string(), z.number()).default({}),
   fame: z.number().int().min(0).max(5).default(2),
