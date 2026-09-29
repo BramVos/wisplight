@@ -339,7 +339,11 @@ function route(world: World, host: QuestHost, questId: string, to: string, out: 
  * is done, or the home of its first giver.
  */
 export function questRegion(world: World, quest: Quest): string {
-  const place = [...(quest.starts?.at ?? []), ...(quest.actions ?? []).flatMap((a) => a.at), ...quest.givers.map((g) => world.content.npcs.get(g)?.home ?? '')].find(Boolean)
+  return regionOfPlace(world, [...(quest.starts?.at ?? []), ...(quest.actions ?? []).flatMap((a) => a.at), ...quest.givers.map((g) => world.content.npcs.get(g)?.home ?? '')].find(Boolean))
+}
+
+/** The region a place or area lies in (M10.30): a far place grown in play, or the home region. */
+export function regionOfPlace(world: World, place: string | undefined): string {
   const area = place ? (world.content.locations.get(place)?.area ?? (world.content.areas.has(place) ? place : undefined)) : undefined
   const far = area ? Object.values(world.state.growth?.far ?? {}).find((f) => String(f.area['id']) === area) : undefined
   return far?.topic ?? 'home'

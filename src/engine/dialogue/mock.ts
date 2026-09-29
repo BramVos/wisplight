@@ -114,6 +114,8 @@ export class MockLlm implements LlmClient {
             ? this.land(String(request.meta?.['name'] ?? 'the land'), (request.meta?.['faiths'] as string[] | undefined) ?? [])
             : request.schemaName === 'region_story'
             ? this.regionStory(request.meta ?? {})
+            : request.schemaName === 'night_quest'
+            ? this.nightQuest(request.meta ?? {})
             : request.schemaName === 'legends'
             ? this.legends((request.meta?.['legends'] as string[] | undefined) ?? [])
             : this.chronicler(request.meta as unknown as ChronicleMeta, request.prompt)
@@ -127,6 +129,33 @@ export class MockLlm implements LlmClient {
    * the third person; and one watcher on a signal the world does not have,
    * which must be dropped. 'invalid' answers in prose.
    */
+  nightQuest(meta: Record<string, unknown>): string {
+    if (this.mode === 'invalid') return 'A quest, surely.'
+    const people = (meta['people'] as { key: string; name: string }[] | undefined) ?? []
+    const places = (meta['places'] as string[] | undefined) ?? []
+    const asker = people.find((p) => p.key === meta['asker']) ?? people[0]
+    const other = people.find((p) => p !== asker)
+    if (!asker || !places.length) return JSON.stringify({ make: false, why: 'Nothing to make of it.' })
+    const first = asker.name.split(' ')[0]!
+    return JSON.stringify({
+      make: true,
+      why: `${first} asked, and meant it.`,
+      quest: {
+        name: `What ${first} Asked`,
+        kind: 'request',
+        summary: `${first} wants the stranger to look into a matter that worries them.`,
+        giver: asker.key,
+        ask: 'You said you would help. Go and look, and tell me what you find.',
+        stages: [
+          { text: `${first} asked you to look into it.`, goal: 'Look round where it happened.', say: 'look round the place', at: places[0]!, with: '', skill: '', done: 'You find signs that someone has been here before you.', knows: [{ who: asker.key, line: `${first} knows what they asked, and no more.` }] },
+          { text: 'There were signs; someone else knows more.', goal: `Tell ${first} what you found.`, say: `tell ${first.toLowerCase()} what you found`, at: places[1] ?? places[0]!, with: asker.key, skill: '', done: `${first} listens, and nods slowly.`, knows: other ? [{ who: other.key, line: `${other.name.split(' ')[0]} saw someone there, late.` }] : [] },
+        ],
+        outcome: { name: 'Looked into', text: `${first} knows now, and is easier for it.` },
+        truths: other ? [{ text: `${other.name.split(' ')[0]} was there that night.`, words: [`${other.name.split(' ')[0]!.toLowerCase()} was there`], from: 2 }] : [],
+      },
+    })
+  }
+
   regionStory(meta: Record<string, unknown>): string {
     if (this.mode === 'invalid') return 'A fine story for the place.'
     const people = (meta['people'] as { key: string; name: string; secret?: boolean }[] | undefined) ?? []

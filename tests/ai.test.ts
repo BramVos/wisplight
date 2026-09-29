@@ -377,8 +377,8 @@ describe('AI service', () => {
     const { ai } = service()
     await ai.connect('openai', TEST_KEY)
     const trial = await ai.trial('openai', 'gpt-4.1-mini-2025-04-14', 'chronicler')
-    // A drowning and a theft, and since M10.20 the chronicler's other kinds in play once each (M10.25: the story of a new region too).
-    expect(trial).toMatchObject({ role: 'chronicler', runs: 11 })
+    // A drowning and a theft, and since M10.20 the chronicler's other kinds in play once each (M10.25: the story of a new region too; M10.30: the quest of the night round).
+    expect(trial).toMatchObject({ role: 'chronicler', runs: 12 })
     expect(trial.valid).toBeGreaterThanOrEqual(2)
     expect(await ai.choose('chronicler', 'openai', 'gpt-4.1-mini-2025-04-14')).toBe('gpt-4.1-mini-2025-04-14')
     expect(ai.settings.role('chronicler')).toEqual({ provider: 'openai', model: 'gpt-4.1-mini-2025-04-14' })

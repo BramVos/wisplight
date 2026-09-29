@@ -40,6 +40,7 @@ export const MODEL_KINDS: readonly ModelKind[] = [
   // Low since M10.27: three rounds at low and three at medium on the drowning; the game took all six, the same lore,
   // lines, thoughts and news, a request fewer at times, and 21% less ($0.072 against $0.091).
   { kind: 'chronicle', role: 'chronicler', does: 'The nightly round: lore, requests and storylines from the day.', when: 'night', effort: 'low' },
+  { kind: 'night_quest', role: 'chronicler', does: 'A quest in the making: after the night round, someone asked the stranger to do something and no quest holds it; one quest in the form of the step Stories, or none.', when: 'night' },
   { kind: 'tides', role: 'chronicler', does: 'The great lines judged on the first of the month: nothing, a threat or the event, within what the rules allow.', when: 'night', effort: 'low' },
   { kind: 'lore_check', role: 'brain', does: 'A second look at big lore: what it says that no fact says.', when: 'night' },
   { kind: 'spark', role: 'brain', does: 'The spark of a quiet night: one unexpected thing that follows from the open storylines, near the stranger.', when: 'night' },

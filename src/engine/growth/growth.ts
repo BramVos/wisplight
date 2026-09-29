@@ -14,6 +14,7 @@ import { recordFact } from '../news'
 import { newNpcState, objectKey, serviceKey, type GameState } from '../state'
 import type { World } from '../world'
 import type { Newcomer } from './schema'
+import { withMadeQuests } from '../nightquest'
 
 // Growth (M8.5; design: signalen en nasleep, "Groei"). What a game adds to its
 // world is kept in the game state and laid over the content: people who came
@@ -98,6 +99,8 @@ function grownOnly(base: Content, state: GameState): Content {
   if (g?.fulls && Object.keys(g.fulls).length) base = withFulls(base, state)
   // The stories of those regions (M10.25): their quests, watchers, lore and secrets.
   if (g?.stories && Object.keys(g.stories).length) base = withStories(base, state)
+  // Quests the night round made in play (M10.30).
+  if (state.made?.quests.length) base = withMadeQuests(base, state)
   // Factions formed in play (M10.22): content like any.
   if (g?.factions?.length) {
     const factions = new Map(base.factions)

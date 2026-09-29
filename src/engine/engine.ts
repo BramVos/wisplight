@@ -70,7 +70,7 @@ import { knownRequests, requestName } from './requests'
 import { recordFact, seedNews } from './news'
 import { parseCommand, parseDirection } from './parser'
 import { advance } from './simulation'
-import { createInitialState, fitStateToContent, type ChronicleRun, type GameState, type LoreEntry, type Offered, type TalkLine, type TalkState, type WorldEvent } from './state'
+import { createInitialState, fitStateToContent, type ChronicleRun, type GameState, type LoreEntry, type NightQuestWant, type Offered, type TalkLine, type TalkState, type WorldEvent } from './state'
 import { hasWeather, weather, wind, windWords, type WeatherKind } from './weather'
 export type { TalkLine } from './state'
 import { chronicleState } from './storylines'
@@ -108,6 +108,7 @@ import { crossesLimits, suspectText, worldText } from './safety'
 import { noteVisit, returningOutput } from './returning'
 import { gestures } from './gestures'
 import { lodgingPage, putInChest, rentLodging, takeFromChest } from './lodgings'
+import { applyNightQuest, nightQuestReply, nightQuestRequest, questWanted, type NightQuestReply } from './nightquest'
 
 export type { Output, OutputKind } from './commands'
 
@@ -131,6 +132,7 @@ export type LogEntry =
   | { t: number; k: 'far'; topic: string; v: FarWords | null }
   | { t: number; k: 'district'; key: string; v: DistrictWords | null }
   | { t: number; k: 'story'; topic: string; v: StoryReply | null }
+  | { t: number; k: 'nightquest'; want: NightQuestWant; v: NightQuestReply | null }
   | { t: number; k: 'full'; topic: string; round: FullRound; v: Record<string, Record<string, unknown>[]> | null; problems?: string[] }
   | { t: number; k: 'weave'; key: string; v: WeaveReply | null }
   // What the chronicler wrote for a land the designer only framed (M10.23), or null.
@@ -632,7 +634,7 @@ export class Engine {
   /** Everything waiting for a model: goal choices and chronicler runs. */
   get modelsWaiting(): number {
     // A far place waiting for its words counts too (M10.21: alone, it never started the models).
-    return (this.state.brain?.pending.length ?? 0) + this.chroniclerWaiting + this.outlinesWaiting + (this.state.growth?.farPending?.length ?? 0) + (this.state.growth?.districtPending?.length ?? 0) + (this.state.growth?.landPending?.length ?? 0) + (this.state.growth?.expansions?.pending.length ?? 0) + (this.state.growth?.weavePending?.length ?? 0) + (this.state.growth?.storyPending?.length ?? 0) + (this.state.growth?.fullPending?.length ?? 0) + (this.state.tides?.pending ? 1 : 0)
+    return (this.state.brain?.pending.length ?? 0) + this.chroniclerWaiting + this.outlinesWaiting + (this.state.growth?.farPending?.length ?? 0) + (this.state.growth?.districtPending?.length ?? 0) + (this.state.growth?.landPending?.length ?? 0) + (this.state.growth?.expansions?.pending.length ?? 0) + (this.state.growth?.weavePending?.length ?? 0) + (this.state.growth?.storyPending?.length ?? 0) + (this.state.growth?.fullPending?.length ?? 0) + (this.state.tides?.pending ? 1 : 0) + (this.state.made?.pending ? 1 : 0)
   }
 
   /** Lets the models do their waiting work in the background: goal choices first, they are short. */
@@ -645,6 +647,7 @@ export class Engine {
     this.syncPlayMode()
     await this.runBrain()
     const night = (await this.runChronicler(pace)).some((r) => r.reason === 'night')
+    await this.runNightQuest(night)
     await this.runOutlines()
     await this.runFarPlaces()
     await this.runLands()
@@ -914,6 +917,50 @@ export class Engine {
   }
 
   /** A region's story by the play mode (M10.24): in direct mode a proposal; else kept, its quest held in think mode. */
+  /**
+   * The night's quest (M10.30 (7)): after a night round, an ask of the
+   * stranger with no quest to hold it may become one, one a night, under the
+   * region's limit. It waits for a model; in the log, so a replay makes the same.
+   */
+  async runNightQuest(night: boolean): Promise<void> {
+    if (this.makingQuest) return
+    const made = this.state.made
+    if (!made?.pending) {
+      const want = night && this.llm ? questWanted(this.world) : undefined
+      if (!want) return
+      ;(this.state.made ??= { quests: [] }).pending = want
+    }
+    const want = this.state.made!.pending!
+    const llm = this.llm
+    if (!llm) return
+    this.makingQuest = true
+    try {
+      let reply: NightQuestReply | null = null
+      try {
+        reply = nightQuestReply((await llm.complete({ ...nightQuestRequest(this.world, want), priority: 'low' })).text)
+      } catch (error) {
+        // No answer that cost nothing (the hour's budget, the network): it waits for the next run.
+        if (waitsFree(error)) return
+        reply = null
+      }
+      if (this.state.made?.pending !== want) return
+      this.record({ t: this.world.now, k: 'nightquest', want, v: reply })
+      this.settleNightQuest(want, reply)
+    } finally {
+      this.makingQuest = false
+    }
+  }
+
+  private makingQuest = false
+
+  private settleNightQuest(want: NightQuestWant, reply: NightQuestReply | null): void {
+    if (reply?.make && propose(this.world, { kind: 'made', made: { want, reply } })) {
+      const m = this.state.made!
+      m.pending = undefined
+      m.day = Math.floor(this.world.now / (24 * 60))
+    } else applyNightQuest(this.world, want, reply)
+  }
+
   private settleStory(topic: string, reply: StoryReply | null): void {
     if (reply && propose(this.world, { kind: 'story', story: { topic, reply } })) {
       const g = this.state.growth!
@@ -2316,6 +2363,9 @@ export class Engine {
         } else if (entry.k === 'story') {
           this.log.push(entry)
           this.settleStory(entry.topic, entry.v)
+        } else if (entry.k === 'nightquest') {
+          this.log.push(entry)
+          this.settleNightQuest(entry.want, entry.v)
         } else if (entry.k === 'full') {
           this.log.push(entry)
           applyFull(this.world, entry.topic, entry.round, entry.v, entry.problems)

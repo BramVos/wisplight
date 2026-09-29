@@ -368,6 +368,25 @@ export interface NpcState {
   sightings?: Record<string, { where: string; t: number }>
 }
 
+/** An ask of the stranger the night round may make a quest of (M10.30): its storyline, the fact, and the keys the call gave. */
+export interface NightQuestWant {
+  line: string
+  asked: string
+  /** Key to id, as the prompt named them (p1, l1, ...). */
+  keys: Record<string, string>
+}
+
+/** A quest the night round made in play (M10.30): content like any written quest, held while it waits as a hook. */
+export interface MadeQuest {
+  id: string
+  line: string
+  asked: string
+  quest: Record<string, unknown>
+  t: number
+  why: string
+  held?: boolean
+}
+
 export interface MemoryRecord {
   t: number
   note: string
@@ -792,6 +811,8 @@ export interface GameState {
   /** Conversation facts of today (M10.3): how many, and about whom. */
   /** Quests that would have begun while their region had its fill (M10.30), and do not wake again by themselves. */
   questsWaiting?: string[]
+  /** Quests the night round made in play (M10.30 (7)), the night it last made or tried one, and the ask it is working on. */
+  made?: { quests: MadeQuest[]; day?: number; pending?: NightQuestWant; declined?: string[] }
   talkFacts?: { day: number; people: string[]; /** Who asked the stranger to do something today (M10.30): one fact each. */ asked?: string[] }
   /** The register of agreements (M10.2): who promised whom what, by when, and how it went. */
   agreements?: { seq: number; list: Agreement[] }
