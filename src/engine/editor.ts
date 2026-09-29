@@ -790,6 +790,8 @@ export function worldStepRequest(files: ContentFile[], stepId: string, said: str
     // The place rules word for word where descriptions are written (M10.20); other steps do not carry them.
     ...(step.id === 'places' ? [PLACE_RULES] : []),
     ...(voiceOf ? [voiceOf] : []),
+    // The skills by id where a step names them (M10.25: a region's economy step guessed Craft and Survival).
+    ...(content?.rules?.skills.length && fills.some((f) => ['professions', 'crafts', 'object_types'].includes(f.kind)) ? [`THE SKILLS (their ids, for teaches, a craft's skill and a check): ${content.rules.skills.map((s) => s.id).join(', ')}`] : []),
     `ASK THE DESIGNER, if they have not said: ${step.ask.join(' ')}`,
     `CHECK BEFORE YOU PROPOSE: ${step.checks.join(' ')}`,
     `IF THE DESIGNER SKIPS THIS STEP: ${step.skipped}`,

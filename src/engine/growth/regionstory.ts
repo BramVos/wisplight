@@ -371,7 +371,9 @@ export function makeStory(world: World, topic: string, reply: StoryReply | null)
     for (const w of (reply?.watchers ?? []).slice(0, MOST_WATCHERS)) {
       const who = w.who.map(person).filter((x): x is string => Boolean(x)).slice(0, 2)
       if (!signals.has(w.signal) || !who.length || (w.on !== 'taken' && w.on !== 'done') || !fit(w.why, 300)) continue
-      story.watchers.push({ id: freeKey(world, `story_${slug}_${w.signal}`, taken), signal: w.signal, when: [w.on === 'taken' ? { stage: `${questId}:s1` } : { outcome: `${questId}:done` }], who, ...(heart ? { place: heart } : {}), belang: 2 })
+      // A signal of the region's own full build carries its name already (M10.25: story_driestromen_driestromen_...).
+      const own = w.signal.startsWith(`${slug}_`) ? w.signal.slice(slug.length + 1) : w.signal
+      story.watchers.push({ id: freeKey(world, `story_${slug}_${own}`, taken), signal: w.signal, when: [w.on === 'taken' ? { stage: `${questId}:s1` } : { outcome: `${questId}:done` }], who, ...(heart ? { place: heart } : {}), belang: 2 })
     }
   }
   // Without a model (or without a watcher that fits): one of the world's standard set, when the stranger comes into the region.

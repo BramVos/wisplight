@@ -1454,7 +1454,7 @@ export function loadContent(files: ContentFile[]): Content {
   if (rules) problems.push(...checkRules(rules, content))
   // What a trade teaches is a skill of the rules (M10.3).
   // Skills only where the world has them (M10.20): the rules of a world without characters may hold only patrons and death.
-  if (rules?.skills.length) for (const p of content.professions.values()) if (p.teaches && !rules.skills.some((s) => s.id === p.teaches)) problems.push(`profession ${p.id}: teaches ${p.teaches}, which is no skill`)
+  if (rules?.skills.length) for (const p of content.professions.values()) if (p.teaches && !rules.skills.some((s) => s.id === p.teaches)) problems.push(`profession ${p.id}: teaches ${p.teaches}, ${noSkill(rules)}`)
   problems.push(...checkCrafts(content, rules))
   if (world) problems.push(...checkVoice(voice, world, content, content.lands.values()))
   // Gestures are of people of the world, and a lodging is a place with a keeper (M10.13).
@@ -1962,7 +1962,12 @@ export type Tombstone = z.infer<typeof TombstoneSchema>
  * is had by trades that exist; a recipe names a craft that exists and one of
  * its techniques; a check without a skill is a recipe's.
  */
-function checkCrafts(c: Pick<Content, 'crafts' | 'professions' | 'objectTypes' | 'resources' | 'items' | 'locations' | 'topics' | 'props'>, rules: Rules | undefined): string[] {
+/** Why a skill is refused, with the skills there are (M10.25: a region's economy step wrote Craft, then Survival, and the fix round did not know the ids). */
+function noSkill(rules: Rules): string {
+  return `which is no skill (the skills: ${rules.skills.map((s) => s.id).join(', ')})`
+}
+
+function checkCrafts(c: Pick<Content,'crafts' | 'professions' | 'objectTypes' | 'resources' | 'items' | 'locations' | 'topics' | 'props'>, rules: Rules | undefined): string[] {
   const problems: string[] = []
   for (const p of c.props.values()) {
     if (!c.objectTypes.has(p.type)) problems.push(`prop ${p.id}: ${p.type} is no object type`)
@@ -1977,7 +1982,7 @@ function checkCrafts(c: Pick<Content, 'crafts' | 'professions' | 'objectTypes' |
   }
   for (const item of c.items.values()) if (item.of && !c.items.has(item.of)) problems.push(`item ${item.id}: a poorer make of ${item.of}, which is no item`)
   for (const craft of c.crafts.values()) {
-    if (rules?.skills.length && !rules.skills.some((s) => s.id === craft.skill)) problems.push(`craft ${craft.id}: leans on ${craft.skill}, which is no skill`)
+    if (rules?.skills.length && !rules.skills.some((s) => s.id === craft.skill)) problems.push(`craft ${craft.id}: leans on ${craft.skill}, ${noSkill(rules)}`)
     for (const p of craft.professions) if (!c.professions.has(p)) problems.push(`craft ${craft.id}: the trade ${p} does not exist`)
     const [a, b, m] = craft.practice
     if (!(a < b && b < m)) problems.push(`craft ${craft.id}: practice must rise from journeyman to master`)
@@ -1989,7 +1994,7 @@ function checkCrafts(c: Pick<Content, 'crafts' | 'professions' | 'objectTypes' |
       if (a.craft && !craft) problems.push(`object type ${type.id}: ${a.id} is a recipe of ${a.craft}, which is no craft`)
       if (craft && a.technique && !craft.techniques.some((t) => t.id === a.technique)) problems.push(`object type ${type.id}: ${a.id} uses the technique ${a.technique}, which ${craft.id} does not have`)
       if (a.check && !a.check.skill && !a.craft) problems.push(`object type ${type.id}: ${a.id} has a check without a skill, and is no recipe of a craft`)
-      if (a.check?.skill && rules?.skills.length && !rules.skills.some((s) => s.id === a.check!.skill)) problems.push(`object type ${type.id}: ${a.id} checks ${a.check.skill}, which is no skill`)
+      if (a.check?.skill && rules?.skills.length && !rules.skills.some((s) => s.id === a.check!.skill)) problems.push(`object type ${type.id}: ${a.id} checks ${a.check.skill}, ${noSkill(rules)}`)
       if ((a.rank || a.masterwork || a.technique) && !a.craft) problems.push(`object type ${type.id}: ${a.id} has a rank, technique or masterwork but no craft`)
       failureRefs(a.failure, `object type ${type.id}: ${a.id}`)
       const failure = a.failure ?? craft?.failure

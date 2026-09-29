@@ -292,7 +292,10 @@ export async function regionTrial(ai: TrialAi, contentRoot: string, appPath: str
         for (const [n, call] of llm.calls.entries()) {
           if (!REGION_KINDS.includes(call.kind)) continue
           const situation = await kindSituation(call.kind, { base, isle })
-          const entry = { kind: call.kind, about: `region play: ${world}, the dial at ${setting}, call ${n + 1}`, model: call.model, provider: '', date: today(), usage: { inputTokens: call.inputTokens, cachedTokens: call.cachedTokens, outputTokens: call.outputTokens }, reply: call.reply, problems: situation ? situation.check(call.reply) : [] }
+          // A step of the world build or its polish round is read again in its kind's fixed situation, not the region's:
+          // what the region kept of it is in the report.
+          const judged = call.kind === 'world_step' || call.kind === 'world_polish' ? `; problems as its kind's fixed situation reads it, what the region kept is in docs/playtest/region-${world}.md` : ''
+          const entry = { kind: call.kind, about: `region play: ${world}, the dial at ${setting}, call ${n + 1}${judged}`, model: call.model, provider: '', date: today(), usage: { inputTokens: call.inputTokens, cachedTokens: call.cachedTokens, outputTokens: call.outputTokens }, reply: call.reply, problems: situation ? situation.check(call.reply) : [] }
           const folder = join(appPath, 'tests/fixtures/model', call.kind)
           mkdirSync(folder, { recursive: true })
           writeFileSync(join(folder, `${entry.date}-${call.model.replace(/[^a-z0-9.-]/gi, '_')}-region-${world}-${setting}-${String(n + 1).padStart(2, '0')}.json`), `${JSON.stringify(entry, null, 2)}\n`)

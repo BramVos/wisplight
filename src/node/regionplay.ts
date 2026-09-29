@@ -132,6 +132,7 @@ export async function playRegion(play: RegionPlay): Promise<{ transcript: string
   const type = async (command: string, why?: string): Promise<string> => {
     const shown = say(await engine.handle(command))
     out.push(`\n> ${command}${command.startsWith('@') ? `   [build command: a shortcut${why ? `, ${why}` : ''}]` : ''}\n${shown}`)
+    await outOfFight(engine, out)
     await engine.runModels()
     await settle()
     return shown
@@ -209,6 +210,21 @@ export async function playRegion(play: RegionPlay): Promise<{ transcript: string
   const tally = tallyOf(engine, play, topic, measured.calls, waitedSecs, hinted)
   out.push(`\n==== END (${engine.world.date()})`)
   return { transcript: out.join('\n'), tally }
+}
+
+/**
+ * Out of a fight, as a new player who came to see the region (M10.25: the played proof of full met smugglers
+ * at the Tolwaard, and every command after it was a blow): pay a demand, else run, and give up when running fails.
+ */
+export async function outOfFight(engine: Engine, out: string[]): Promise<void> {
+  for (let n = 0; n < 12 && engine.state.combat && !engine.state.combat.over; n++) {
+    const combat = engine.state.combat
+    const command = combat.parley ? (engine.state.player.money >= combat.parley.amount ? 'pay' : 'flee') : n < 8 ? 'flee' : 'surrender'
+    const shown = say(await engine.handle(command))
+    out.push(`\n> ${command}   [in a fight]\n${shown}`)
+    // Too few actions left to run: end the turn, and run in the next.
+    if (/END to end your turn/.test(shown)) out.push(`\n> end   [in a fight]\n${say(await engine.handle('end'))}`)
+  }
 }
 
 type Type = (command: string, why?: string) => Promise<string>
