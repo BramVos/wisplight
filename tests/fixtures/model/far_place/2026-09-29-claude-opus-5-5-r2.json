@@ -1,0 +1,15 @@
+{
+  "kind": "far_place",
+  "about": "a far place made playable (zwolderkamp)",
+  "model": "claude-opus-5-5",
+  "provider": "anthropic",
+  "date": "2026-09-29",
+  "effort": "low",
+  "usage": {
+    "inputTokens": 1956,
+    "cachedTokens": 0,
+    "outputTokens": 736
+  },
+  "reply": "{\"places\":[{\"key\":\"gate\",\"name\":\"The Holle Gate\",\"description\":\"You come in under a squat brick gatehouse where the road from the west meets the city wall, and a toll-clerk counts stuivers into an iron box. The air smells of wet mortar and horse dung, and the clink of coin rings off the arch. Carts of the Cog League wait in a long line, their drivers cursing the Count's unpaid debts. Beyond the gate the street runs straight to the market square, and a towpath slips off to the left along the canal toward the barges.\"},{\"key\":\"market\",\"name\":\"The Weighhouse Market\",\"description\":\"You stand in a broad cobbled square before the tall Weighhouse, where the League's scales judge every bale and cask. Merchants shout prices over one another, and the sharp smell of salt herring and wet wool fills your nose. Guild banners hang from the gables, and a Lantern chapel bell marks the hours of trade. Narrow lanes run off every side, and the widest one leads down to the inn by the harbour basin.\"},{\"key\":\"inn\",\"name\":\"The Gilded Cog\",\"description\":\"You step into a low, smoky room with a ship's cog carved above the hearth and painted gold. Beer and turnip stew warm the air, and the floorboards creak underfoot with every step. League clerks and bargemen talk debts and drainage in low voices at the long tables. A back door opens onto the harbour quay, and the front door leads back up to the market.\"}],\"people\":[{\"key\":\"merchant\",\"name\":\"Reinout Kistemaker\",\"pronoun\":\"he\",\"looks\":\"A lean man in a fur-trimmed coat, a brass counting-board always under his arm.\",\"speech\":\"Quick and dry, every sentence ends in a price.\",\"fact\":\"He holds a share of the Count's debt and says openly he wants it paid in drained land.\"},{\"key\":\"innkeeper\",\"name\":\"Marijke Tapper\",\"pronoun\":\"she\",\"looks\":\"A broad, red-cheeked woman with keys jangling at her belt and flour on her sleeves.\",\"speech\":\"Loud and warm, full of sayings like 'Water always finds the weakest board.'\",\"fact\":\"She was born in the Holleveen and quietly feeds any fen folk who come to town.\"}]}",
+  "problems": []
+}

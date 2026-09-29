@@ -96,3 +96,34 @@ De eerste antwoorden brachten drie dingen aan het licht, en de lezer doet nu wat
 Een tweede ronde met Sonnet 5 na die drie verbeteringen laadde vijf van vijf: twee kaarten van elke wereld en de tweede poging. De namen waren kaal, er stond geen naam in een tekening en niets hoefde op maat. Een kaart kostte $0,030 tot $0,031, uit de cache $0,014 tot $0,018, en de tweede poging $0,016. Die ronde kostte $0,108. De antwoorden hebben `-r2` in hun naam.
 
 De opgenomen antwoorden staan in `tests/fixtures/model/map_paint/` (Skerrow) en `tests/fixtures/worldbuild/quiet-reach-map/`. `tests/m1026map.test.ts` leest die met de lezer van nu, die milder is dan bij het opnemen. Het oordeel van toen staat erbij als `recordedProblems`. Brams hoofdstuk noemt geen windrichting voor de zee. Oost en west zijn dus allebei trouw aan de tekst, en de overeenkomst met de aangenomen kaart (ongeveer 40%) zegt daarom weinig over fouten. De eerste meting kostte $0,157 en de tweede $0,108.
+
+## Inspanning per soort en lichtere modellen (M10.27, 29 september 2026)
+
+Tot M10.27 zetten alleen `region_story`, `map_paint` en de wereldstappen een inspanning. Elke andere aanroep op Opus 5.5 draaide op de standaard van het model, medium, en het denken telt als uitvoer. Nu heeft elke soort in de tabel van soorten (`MODEL_KINDS` in `src/engine/modelkinds.ts`) een eigen inspanning, en de gateway neemt die als het verzoek er zelf geen noemt. Twee soorten gaan naar een lichter model: de reistekst naar het model van de gesprekken, en de grote lijnen zijn geprobeerd op het brein.
+
+Gemeten met `npm run trial -- --kind <soorten> --times 2 --record --cap 1` op Brams sleutel: elke soort twee keer in zijn vaste situatie, gelezen zoals het spel leest. Voor is het opgenomen antwoord van M10.20 (medium), na zijn de twee nieuwe (`-r2` en `-r3` in `tests/fixtures/model/<soort>/`, met `effort` in het bestand).
+
+| Soort | Model | Voor | Na, twee keer | Uit, voor en na | Laadt |
+|---|---|---|---|---|---|
+| `palette_draft` | Opus 5.5, low | $0,140 | $0,105 en $0,109 | 3.633, 1.847 en 2.057 | 2 van 2 |
+| `voice_draft` | Opus 5.5, low | $0,099 | $0,084 en $0,087 | 2.122, 1.329 en 1.474 | 2 van 2 |
+| `outline` | Opus 5.5, low | $0,063 | $0,060 en $0,060 | 1.512, 1.385 en 1.380 | 2 van 2 |
+| `district` | Opus 5.5, low | $0,074 | $0,044 en $0,047 | 3.071, 1.518 en 1.671 | 2 van 2 |
+| `expansion` | Opus 5.5, low | $0,055 | $0,042 en $0,043 | 1.249, 607 en 658 | 2 van 2 |
+| `land` | Opus 5.5, low | $0,052 | $0,044 en $0,043 | 1.267, 900 en 853 | 2 van 2 |
+| `weave` | Opus 5.5, low | $0,023 | $0,022 en $0,024 | 668, 622 en 715 | 2 van 2 |
+| `far_place` | Opus 5.5, low | $0,024 | $0,023 en $0,024 | 820, 736 en 822 | 2 van 2 |
+| `legends` | Opus 5.5, low | $0,014 | $0,014 en $0,014 | 439, 434 en 428 | 2 van 2 |
+| `tides` | Opus 5.5, low | $0,010 | $0,011 en $0,011 | 254, 267 en 286 | 2 van 2 |
+| `journey` | Haiku 4.5 (was Opus) | $0,0053 | $0,0010 en $0,0010 | 67, 43 en 47 | 2 van 2 |
+| `tides` op het brein | Sonnet 5, low | $0,0099 | $0,0040 en $0,0039 | 254, 148 en 134 | 2 van 2, niet genomen |
+
+Alles laadt twee keer op rij, dus geen soort blijft op medium. Trouw is per antwoord nagelezen tegen het antwoord op medium. Een wijk op low heeft vijf of zes plekken en mensen en twee zetels, zoals op medium. Een omtrek heeft vier gebieden, zeven plekken en vier of vijf mensen, een land dezelfde velden en stemregels, en een weving drie banden en een of twee geheimen. Het palet heeft dezelfde vier velden. Waar het denken het meeste woog, daalt de prijs het meest: de wijk met 39%, het palet met 24% en de uitbreiding met 22%. Bij de weving, de legende, de verre plek en de grote lijnen dacht Opus op medium al nauwelijks, en daar blijft de prijs gelijk.
+
+**De reistekst op Haiku.** De motor keurt elk woord van een reistekst: een plek of een uur dat niet klopt, blijft liggen en de tekst van de motor komt ervoor in de plaats. Haiku schreef twee keer twee zinnen met het dijkpad, de wind over het water, het riet en de sluis rond de middag, zoals Opus dat deed. Het kost een vijfde, en met vier tot acht reizen per uur scheelt dat $0,017 tot $0,034 per uur. De speeltest `faraway` speelt met het mockmodel en blijft groen.
+
+**De grote lijnen blijven bij de kroniekverteller.** In de situatie staan twee grote lijnen allebei op druk 95, voorbij de grens waarop ze mogen breken, en nog kalm. Sonnet koos twee keer voor beide lijnen "event": de vloed en het veenoproer in dezelfde maand. Opus liet de vloed twee keer eerst dreigen ("de dijken zijn stil geweest, dus eerst kwel en gezwollen sloten") en liet het oproer breken, met de plannen van de graaf en het vermiste meisje als reden. Opus deed dat op medium en op low. De opdracht zegt dat een wereld waarin elke maand iets groots gebeurt een armere wereld is, en dat volgt Sonnet niet. De besparing zou ongeveer $0,006 per spelmaand zijn, dus de grote lijnen blijven bij de kroniekverteller, op low. De antwoorden van Sonnet staan erbij als meting.
+
+**De reservering vooraf.** Een model dat altijd denkt (Opus 5.5, Fable en Mythos) krijgt van de gateway 4.000 denktokens bovenop `maxTokens`, en het schema van de uitvoer telt als invoer. `upperBoundUsd` rekent beide nu mee (`mostOut` en `sent` in `src/node/ai/pricing.ts`), zodat het uurbudget niet stilletjes overschreden wordt.
+
+De meting kostte $0,897 voor elf soorten twee keer, en $0,021 voor de grote lijnen op Opus low: samen $0,918, binnen de dollar die Bram gaf.

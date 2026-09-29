@@ -1,0 +1,15 @@
+{
+  "kind": "weave",
+  "about": "the new people of Graafhaven's gate district woven into the world",
+  "model": "claude-opus-5-5",
+  "provider": "anthropic",
+  "date": "2026-09-29",
+  "effort": "low",
+  "usage": {
+    "inputTokens": 2404,
+    "cachedTokens": 0,
+    "outputTokens": 622
+  },
+  "reply": "{\"bonds\":[{\"a\":\"npc_hester_graafhaven_gate\",\"b\":\"npc_wobbina_graafhaven\",\"role\":\"neighbour\",\"why\":\"Hester's chandlery stands two doors from Wobbina's stall, and they have traded gossip across the lane for years.\"},{\"a\":\"npc_joris_graafhaven_gate\",\"b\":\"npc_trijntje\",\"role\":\"debtor\",\"why\":\"Trijntje Kroes still owes Joris for a dozen ale casks sent up to the Drowned Goose last spring.\"},{\"a\":\"npc_joris_graafhaven_gate\",\"b\":\"npc_wobbina_graafhaven\",\"role\":\"rival\",\"why\":\"Wobbina sells cheap secondhand casks from her stall, and Joris never tires of saying they leak.\"}],\"secrets\":[{\"who\":\"npc_hester_graafhaven_gate\",\"text\":\"Hester has quietly lent money to the Count's surveyors for the draining of the Holleveen, and she stands to profit if it goes ahead.\",\"hint\":\"She falls silent when the fen folk's grievances come up, and her ledger has a page she always turns past quickly.\"}],\"thread\":{\"from\":\"npc_joris_graafhaven_gate\",\"to\":\"npc_trijntje\",\"name\":\"The unpaid casks\",\"ask\":\"You're from up Veenhoek way? Then tell Trijntje at the Goose that Joris hasn't forgotten his dozen casks, and ask her kindly to send what she owes before the frost.\",\"why\":\"Joris will not send more casks inland until he is paid, and the Drowned Goose may run dry by winter.\"},\"echo\":{\"who\":\"npc_hester_graafhaven_gate\",\"line\":\"line_4\",\"text\":\"Hester has heard that Harmen Molenaar of Veenhoek needs sailcloth, and she offers the stranger a price on good bolts if they will carry them home to him.\"}}",
+  "problems": []
+}

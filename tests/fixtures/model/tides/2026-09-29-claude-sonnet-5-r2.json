@@ -1,0 +1,15 @@
+{
+  "kind": "tides",
+  "about": "the great lines of the Nethermarch on the first of a month, the great flood at its threshold",
+  "model": "claude-sonnet-5",
+  "provider": "anthropic",
+  "date": "2026-09-29",
+  "effort": "low",
+  "usage": {
+    "inputTokens": 1278,
+    "cachedTokens": 0,
+    "outputTokens": 134
+  },
+  "reply": "{\"lines\":[{\"id\":\"great_flood\",\"judged\":\"event\",\"why\":\"Pressure sits at 95, far past the break threshold of 90, so the dykes give way and the flood breaks now.\"},{\"id\":\"peat_unrest\",\"judged\":\"event\",\"why\":\"Pressure at 95 is well beyond the break threshold of 60, so the peat-cutters' long grievance finally erupts into open uprising.\"}]}",
+  "problems": []
+}

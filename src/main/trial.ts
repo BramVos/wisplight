@@ -6,6 +6,7 @@ import { LlmError, type LlmResponse } from '../engine/dialogue/llm'
 import { askAdvice, testCall } from '../node/ai/advisor'
 import { costUsd } from '../node/ai/pricing'
 import { listWorlds, loadContentFromDir, readContentFiles } from '../node/content'
+import { MODEL_KINDS } from '../engine/modelkinds'
 import { kindSituation } from '../engine/trials'
 import { keepRegion } from '../node/proofworld'
 import { mapTrial } from './maptrial'
@@ -344,7 +345,7 @@ interface KindRecord {
   kind: string
   about: string
   model: string
-  /** The effort asked for in a trial (M10.27); without it, the kind's own. */
+  /** The effort it was made at (M10.27): asked for in the trial, or else the kind's own. */
   effort?: string
   provider: string
   date: string
@@ -403,6 +404,7 @@ export async function kindTrial(ai: AiService, kind: string, contentRoot: string
     }
     // An effort asked for (M10.27: low measured against the recorded medium), as often as asked; each reply kept.
     const request = how.effort ? { ...situation.request, effort: how.effort } : situation.request
+    const effort = request.effort ?? MODEL_KINDS.find((k) => k.kind === kind)?.effort
     const times = Math.max(1, Math.min(how.times ?? 1, 5))
     let all = true
     for (let n = 1; n <= times; n++) {
@@ -413,7 +415,7 @@ export async function kindTrial(ai: AiService, kind: string, contentRoot: string
       try {
         const response = await ai.gateway.complete(request)
         const usd = costUsd(response.model, response.usage) ?? 0
-        const e: KindRecord = { kind, about: situation.about, model: response.model, provider: response.provider, date: today(), ...(how.effort ? { effort: how.effort } : {}), usage: { inputTokens: response.usage.inputTokens, cachedTokens: response.usage.cachedTokens, outputTokens: response.usage.outputTokens }, reply: response.text, problems: situation.check(response.text) }
+        const e: KindRecord = { kind, about: situation.about, model: response.model, provider: response.provider, date: today(), ...(effort ? { effort } : {}), usage: { inputTokens: response.usage.inputTokens, cachedTokens: response.usage.cachedTokens, outputTokens: response.usage.outputTokens }, reply: response.text, problems: situation.check(response.text) }
         say(`${kind}${times > 1 ? ` #${n}` : ''}${how.effort ? ` at ${how.effort}` : ''}: ${response.model}, in ${response.usage.inputTokens}, out ${response.usage.outputTokens}, $${usd.toFixed(4)}; ${e.problems.length ? `the game would not use it: ${e.problems.slice(0, 3).join('; ')}` : 'the game takes it'}`)
         all = all && e.problems.length === 0
         if (n < times) keep(e)

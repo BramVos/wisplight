@@ -38,7 +38,7 @@ export const MODEL_KINDS: readonly ModelKind[] = [
   { kind: 'region_story', role: 'chronicler', does: 'The story of a new region at arrival: a quest of two or three stages, watchers on the world\'s standard aftermath, lore and secrets.', when: 'play' },
   { kind: 'weave', role: 'chronicler', does: 'The new people of a district woven into the world: bonds, a secret, a thread home.', when: 'play', effort: 'low' },
   { kind: 'chronicle', role: 'chronicler', does: 'The nightly round: lore, requests and storylines from the day.', when: 'night' },
-  { kind: 'tides', role: 'chronicler', does: 'The great lines judged on the first of the month: nothing, a threat or the event, within what the rules allow.', when: 'night', tier: 'light', effort: 'low' },
+  { kind: 'tides', role: 'chronicler', does: 'The great lines judged on the first of the month: nothing, a threat or the event, within what the rules allow.', when: 'night', effort: 'low' },
   { kind: 'lore_check', role: 'brain', does: 'A second look at big lore: what it says that no fact says.', when: 'night' },
   { kind: 'legends', role: 'chronicler', does: 'Old lore retold as a legend.', when: 'night', effort: 'low' },
   { kind: 'outline', role: 'chronicler', does: 'The outline of a far place: a few people, an inn, a market, what goes on there (since M10.21 when the stranger talks or stays the night there).', when: 'play', effort: 'low' },

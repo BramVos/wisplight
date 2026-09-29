@@ -1,0 +1,14 @@
+{
+  "kind": "journey",
+  "about": "an hour on foot along the dyke",
+  "model": "claude-haiku-4-5-20251001",
+  "provider": "anthropic",
+  "date": "2026-09-29",
+  "usage": {
+    "inputTokens": 751,
+    "cachedTokens": 0,
+    "outputTokens": 43
+  },
+  "reply": "{\"text\": \"You walk the dyke path west for an hour with the wind off the water pressing the reeds flat around you. By noon the sluice comes into view ahead.\"}",
+  "problems": []
+}

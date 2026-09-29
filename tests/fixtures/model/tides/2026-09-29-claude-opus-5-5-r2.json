@@ -1,0 +1,15 @@
+{
+  "kind": "tides",
+  "about": "the great lines of the Nethermarch on the first of a month, the great flood at its threshold",
+  "model": "claude-opus-5-5",
+  "provider": "anthropic",
+  "date": "2026-09-29",
+  "effort": "low",
+  "usage": {
+    "inputTokens": 1280,
+    "cachedTokens": 0,
+    "outputTokens": 267
+  },
+  "reply": "{\"lines\":[{\"id\":\"great_flood\",\"judged\":\"threat\",\"why\":\"The pressure is near breaking, but the waters are still calm, so the fen should first see rising water, groaning dykes and worried millers before the flood comes.\"},{\"id\":\"peat_unrest\",\"judged\":\"event\",\"why\":\"With the drainage plans and the missing girl, the peat-cutters' anger stands far past breaking, and Veenhoek rises now.\"}]}",
+  "problems": []
+}

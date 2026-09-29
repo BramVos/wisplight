@@ -1,0 +1,15 @@
+{
+  "kind": "expansion",
+  "about": "the stranger goes on into the unknown south of the Holleveen",
+  "model": "claude-opus-5-5",
+  "provider": "anthropic",
+  "date": "2026-09-29",
+  "effort": "low",
+  "usage": {
+    "inputTokens": 7490,
+    "cachedTokens": 0,
+    "outputTokens": 658
+  },
+  "reply": "{\"outlines\":[{\"id\":\"three_rivers_marches\",\"name\":\"the Driestroom\",\"kind\":\"region\",\"summary\":\"The Driestroom is the wet borderland south of the Holleveen, where three great rivers braid together before Flemmark begins.\",\"details\":\"It is a country of willow islands, ferries and toll-dykes, where the Count's men and the lords of Flemmark both claim the tolls and neither quite rules. Eel-men, ferrymen and smugglers live on the river islands, and a barge can pass three toll-posts in a morning. Folk here swear by Nehalennia's nets more than by the Lantern.\",\"story\":\"They say the three rivers were once three sisters who quarrelled over one drowned sweetheart, and that on still nights you can hear them arguing where the waters meet. A ferryman who answers them is never seen again, but his boat comes back to the landing, dry inside.\",\"days\":3,\"districts\":[{\"id\":\"driestroom_tolldyke\",\"name\":\"the Northern Toll-Dyke\",\"line\":\"A long dyke with a toll-house and a chain across the water, where the Count's toll-keeper eyes every stranger coming down from the Holleveen.\"},{\"id\":\"driestroom_willow_isles\",\"name\":\"the Willow Isles\",\"line\":\"Low islands of pollard willows and eel-traps, reached only by punt, where the eel-men keep to themselves.\"},{\"id\":\"driestroom_ferry_meet\",\"name\":\"the Sisters' Meet\",\"line\":\"The place where the three rivers join, with a ferry, a tavern on stilts and a small shrine to Nehalennia hung with old nets.\"},{\"id\":\"driestroom_southern_bank\",\"name\":\"the Flemmark Bank\",\"line\":\"The far shore, where the lords of Flemmark keep their own toll and their own soldiers in blue and gold.\"}],\"why\":\"It grows from Flemmark's capital lying south beyond the Three Rivers, and from the wet borderland that must sit between the Holleveen and that realm.\"}]}",
+  "problems": []
+}

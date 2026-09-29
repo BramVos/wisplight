@@ -1,0 +1,15 @@
+{
+  "kind": "land",
+  "about": "Skerrow's Western Isles with only their frame, the first time the stranger comes in",
+  "model": "claude-opus-5-5",
+  "provider": "anthropic",
+  "date": "2026-09-29",
+  "effort": "low",
+  "usage": {
+    "inputTokens": 6579,
+    "cachedTokens": 0,
+    "outputTokens": 900
+  },
+  "reply": "{\"crossing\":\"On the white stone of the landing no one hurries you: an elf waits in long silence, then greets you slowly in the Old Tongue as child of the short years. When you pay, it is silver rings and glass beads laid on the table, and your eastern copper is weighed as two beads a piece.\",\"names\":{\"she\":[\"Ilwen\",\"Saerin\",\"Nimhael\",\"Aerith\",\"Lenwe\",\"Ithryn\"],\"he\":[\"Caelir\",\"Thandor\",\"Elroth\",\"Mireth\",\"Aldwen\",\"Senhael\"],\"family\":[\"of the Long Hall\",\"Starwatch\",\"Whitestrand\",\"Aldmaren\",\"Nightreed\",\"Glassmere\"]},\"money\":{\"units\":[{\"short\":\"ring\",\"name\":\"silver ring\",\"value\":20},{\"short\":\"bead\",\"name\":\"glass bead\",\"value\":1}],\"rate\":2},\"law\":{\"where\":\"on Ynys Wen\",\"officer\":\"Keeper of the Long Hall\"},\"voice\":{\"oaths\":{\"old_stars\":[\"by the Old Stars\",\"the stars remember\"]},\"sayings\":[\"What the sea took, the stars still see.\",\"A short life speaks quickly; a long one waits for the tide.\",\"Let the stranger rest at the landing; the hall is not reached in one season.\"],\"address\":{\"stranger\":[\"child of the short years\",\"guest from the east\"],\"known\":[\"guest of the landing\",\"you who have come before\"],\"friend\":[\"hall-friend\",\"one who shares the silence\"],\"high\":[\"Keeper\",\"elder of the hall\"]},\"time\":[\"at the turn of the tide\",\"when the season turns\",\"under the first stars\"],\"distance\":[\"a tide's rowing\",\"from the landing to the hall\"],\"measures\":[\"a cup of the hall\",\"a length of rope\"],\"not_here\":[{\"word\":\"o'clock\",\"instead\":\"at the turn of the tide\"},{\"word\":\"by the harbour bell\",\"instead\":\"under the first stars\"},{\"word\":\"bells\",\"instead\":\"tides\"},{\"word\":\"by the Tidemother\"},{\"word\":\"Tidemother keep us\",\"instead\":\"by the Old Stars\"},{\"word\":\"tar and twine\"},{\"word\":\"gold piece\",\"instead\":\"silver ring\"},{\"word\":\"potatoes\",\"instead\":\"turnips\"},{\"word\":\"tobacco\"},{\"word\":\"coffee\"},{\"word\":\"chocolate\"},{\"word\":\"gun\"},{\"word\":\"pistol\"},{\"word\":\"musket\"}]}}",
+  "problems": []
+}

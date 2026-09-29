@@ -1,0 +1,15 @@
+{
+  "kind": "far_place",
+  "about": "a far place made playable (zwolderkamp)",
+  "model": "claude-opus-5-5",
+  "provider": "anthropic",
+  "date": "2026-09-29",
+  "effort": "low",
+  "usage": {
+    "inputTokens": 1956,
+    "cachedTokens": 0,
+    "outputTokens": 822
+  },
+  "reply": "{\"places\":[{\"key\":\"gate\",\"name\":\"The Holle Gate\",\"description\":\"You come in off the east road through a squat brick gatehouse, its oak doors studded with iron and painted with the red cog of the League. Tollmen in blue tabards weigh every cart on a great beam scale, and the air smells of wet horse, tar and river mud. Beyond the arch the street runs straight toward the market spire, but a narrow towpath slips off to the left along the town moat, where barges wait to go downriver.\"},{\"key\":\"market\",\"name\":\"The Cog Market\",\"description\":\"You stand in a wide square of worn cobbles under the tall weighhouse, where the League's clerks call out prices from its steps. Stalls of salt fish, cheeses, bolts of wool and sacks of rye crowd together, and the cry of the herring-wives rings over the clatter of barrows. The chapel bell of Saint Brand tolls the hours above it all, and money changes hands in guilders, stuivers and duiten faster than you can count. Lanes lead off on every side, and the broadest runs down to the river quays.\"},{\"key\":\"inn\",\"name\":\"The Gilded Scale\",\"description\":\"You duck under a low beam into a warm taproom of smoke-dark wood, where merchants from three countries argue over their ale. The smell of turnip stew and fresh rye bread hangs thick by the hearth, and a peat fire hisses in the grate. Upstairs are rooms for those with coin, and a back door opens onto the yard where carters harness their horses before first light.\"}],\"people\":[{\"key\":\"merchant\",\"name\":\"Wobbe Lakenkoper\",\"pronoun\":\"he\",\"looks\":\"A round, red-cheeked man in a fur-trimmed coat, with a brass measuring rod always tucked under one arm.\",\"speech\":\"Quick and cheerful, counting on his fingers as he talks, and ends every bargain with \\\"Better half an egg than an empty shell.\\\"\",\"fact\":\"He sells good wool cloth and claims he once lent the Count's steward ten guilders that were never paid back.\"},{\"key\":\"innkeeper\",\"name\":\"Hille Brouwers\",\"pronoun\":\"she\",\"looks\":\"A tall, broad-shouldered widow with iron-grey braids and a leather apron heavy with keys.\",\"speech\":\"Slow and dry, few words, a sharp \\\"by the Lantern\\\" when someone gets out of hand.\",\"fact\":\"She hears every rumour the League's merchants bring in, and sells the best of them for the price of a meal.\"}]}",
+  "problems": []
+}

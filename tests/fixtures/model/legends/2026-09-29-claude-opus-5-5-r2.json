@@ -1,0 +1,15 @@
+{
+  "kind": "legends",
+  "about": "the lore of a drowning retold as a legend, years later",
+  "model": "claude-opus-5-5",
+  "provider": "anthropic",
+  "date": "2026-09-29",
+  "effort": "low",
+  "usage": {
+    "inputTokens": 1310,
+    "cachedTokens": 0,
+    "outputTokens": 434
+  },
+  "reply": "{\"legends\":[{\"id\":\"chr_legend_1\",\"name\":\"The Baker's Drowned Oven\",\"summary\":\"On the night the dyke broke, the baker waded into the Blackmere with a rope and hauled the miller out of the black water. To this day she says he owes her a sack of flour for it.\",\"details\":\"The water came over the green so fast that the baker's oven was drowned to the chimney, and still she went in after the miller while the sister of the Lantern rang the bell all night. Some say the bell kept the Grey Rider from taking him; the baker says it was her rope and her arms.\",\"story\":\"You want to know why the baker's bread has a crack across the top? That's for the night the dyke broke, when the Blackmere came over the green and put out her oven like a candle. She heard the miller shouting in the dark, tied a rope round the pump and went in up to her neck, and the sister of the Lantern rang that bell till the rope burned her hands, so the baker would know which way was home. She pulled him out blue and coughing peat, and he swore on Saint Brand he'd bring her a sack of his best flour. That was years ago, and she's still waiting, and she'll tell you so herself.\",\"far\":\"Somewhere by the Grey Sea, they say, a woman with a rope once dragged a man back from the drowned land, and he owes her flour still.\"}]}",
+  "problems": []
+}

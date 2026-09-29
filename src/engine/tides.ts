@@ -174,8 +174,7 @@ export function tidesRequest(world: World): LlmRequest {
     schemaName: 'tides',
     schema: object({ lines: { type: 'array', items: object({ id: text, judged: text, why: text }) } }),
     maxTokens: 600,
-    // A bounded judgement within what each line allows (M10.27): the brain's model will do.
-    tier: 'light',
+    // Stays with the chronicler (M10.27): on the brain's model Sonnet broke both lines in the same month, twice, where Opus let the flood threaten first; the brain saved $0.006 a game month.
     meta: { tides: [...world.content.tides.keys()], allowed: Object.fromEntries([...world.content.tides.values()].map((t) => [t.id, allowed(world, t)])) },
   }
 }

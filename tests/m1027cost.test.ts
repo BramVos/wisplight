@@ -6,6 +6,7 @@ import { afterAll, describe, expect, it } from 'vitest'
 import type { LlmRequest } from '../src/engine'
 import { MODEL_KINDS } from '../src/engine/modelkinds'
 import { journeyRequest } from '../src/engine/map/journeyText'
+import { tidesRequest } from '../src/engine/tides'
 import { MEASURED_PER_HOUR } from '../src/node/ai/frequency'
 import { guidePrice } from '../src/node/ai/guideprice'
 import { mostOut, priceOf, upperBoundUsd } from '../src/node/ai/pricing'
@@ -62,11 +63,13 @@ describe('M10.27: the costs down, per kind', () => {
     expect(seen.slice(-3).map((r) => r.effort)).toEqual(['low', 'medium', undefined])
   })
 
-  it("sends the journey to the conversations' model and the great lines to the brain's", () => {
+  it("sends the journey to the conversations' model, and keeps the great lines with the chronicler", () => {
     const engine = new Engine(content, { seed: 1 })
     engine.start()
     expect(journeyRequest(engine.world, 'You walk.', 'frame').tier).toBe('voice')
-    expect(MODEL_KINDS.find((k) => k.kind === 'tides')?.tier).toBe('light')
+    // Measured on Bram's key: the brain's model broke two great lines in one month where the chronicler's let one threaten first.
+    expect(MODEL_KINDS.find((k) => k.kind === 'tides')?.tier).toBeUndefined()
+    expect(tidesRequest(engine.world).tier).toBeUndefined()
   })
 
   it('prices an hour as the guide counts it and as it was measured, each kind on the model it goes to', () => {

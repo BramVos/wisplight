@@ -1,0 +1,15 @@
+{
+  "kind": "legends",
+  "about": "the lore of a drowning retold as a legend, years later",
+  "model": "claude-opus-5-5",
+  "provider": "anthropic",
+  "date": "2026-09-29",
+  "effort": "low",
+  "usage": {
+    "inputTokens": 1310,
+    "cachedTokens": 0,
+    "outputTokens": 428
+  },
+  "reply": "{\"legends\":[{\"id\":\"chr_legend_1\",\"name\":\"The Baker's Drowned Oven\",\"summary\":\"On the night the dyke broke and the Blackmere came over the green, the baker went into the black water with a rope and pulled the miller out alive. To this day she says he owes her a sack of flour.\",\"details\":\"The water rose so high that it filled the baker's oven, and folk say the bread she baked in it afterwards always tasted faintly of the mere. All that night the sister of the Lantern rang the bell without stopping, and some say it was the bell that kept the Blackmere from taking them both.\",\"story\":\"It was the night the dyke broke, and the water came over the green like a grey horse running. The miller was caught out by the Blackmere and went under, and not a man moved, but the baker tied a rope round her middle and went in after him. The sister of the Lantern rang the bell all night so the baker could find her way back by the sound, and at the last bell she came up out of the dark dragging the miller by the collar. He lived, and she has told him every market day since that he still owes her a sack of flour. He has never paid it, and she says she'll have it off his grave if she must.\",\"far\":\"In the low lands by the Grey Sea they tell of a baker who fought the flood with a rope, while a bell rang all night, over a debt of flour.\"}]}",
+  "problems": []
+}

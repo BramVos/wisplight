@@ -1,0 +1,15 @@
+{
+  "kind": "weave",
+  "about": "the new people of Graafhaven's gate district woven into the world",
+  "model": "claude-opus-5-5",
+  "provider": "anthropic",
+  "date": "2026-09-29",
+  "effort": "low",
+  "usage": {
+    "inputTokens": 2404,
+    "cachedTokens": 0,
+    "outputTokens": 715
+  },
+  "reply": "{\"bonds\":[{\"a\":\"npc_hester_graafhaven_gate\",\"b\":\"npc_wobbina_graafhaven\",\"role\":\"neighbour\",\"why\":\"Hester's chandlery stands three doors from Wobbina's stall, and the two women have traded gossip across the fish market for years.\"},{\"a\":\"npc_joris_graafhaven_gate\",\"b\":\"npc_trijntje\",\"role\":\"debtor\",\"why\":\"Trijntje Kroes still owes Joris for a cartload of ale casks sent up to the Drowned Goose last spring.\"},{\"a\":\"npc_joris_graafhaven_gate\",\"b\":\"npc_hester_graafhaven_gate\",\"role\":\"rival\",\"why\":\"Joris and Hester both sell to the same ship's masters and each thinks the other overcharges.\"}],\"secrets\":[{\"who\":\"npc_hester_graafhaven_gate\",\"text\":\"Hester has quietly lent money to the Count's surveyors, and she stands to profit if the Holleveen is drained.\",\"hint\":\"She keeps a rolled map of the fen under her counter and covers it quickly when fen folk come in.\"},{\"who\":\"npc_joris_graafhaven_gate\",\"text\":\"Joris has been buying cheap staves from a yard that cuts them green, and some of his famous casks will leak by winter.\",\"hint\":\"There is a smell of damp, unseasoned oak in the back of his shop that a real cooper should never allow.\"}],\"thread\":{\"from\":\"npc_joris_graafhaven_gate\",\"to\":\"npc_trijntje\",\"name\":\"The Goose's Cask Debt\",\"ask\":\"You're from Veenhoek? Then tell Trijntje Kroes at the Drowned Goose that Joris Kuipers wants his four guilders, or at least a letter saying when.\",\"why\":\"Joris is short of coin himself, and a friendly word from home might settle the matter before he sends someone less friendly.\"},\"echo\":{\"who\":\"npc_hester_graafhaven_gate\",\"line\":\"line_4\",\"text\":\"Hester hears that Harmen Molenaar of Veenhoek needs sailcloth and says she has three bolts in her loft, at a price, if the stranger will carry them home.\"}}",
+  "problems": []
+}

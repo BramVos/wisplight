@@ -1,0 +1,15 @@
+{
+  "kind": "land",
+  "about": "Skerrow's Western Isles with only their frame, the first time the stranger comes in",
+  "model": "claude-opus-5-5",
+  "provider": "anthropic",
+  "date": "2026-09-29",
+  "effort": "low",
+  "usage": {
+    "inputTokens": 6579,
+    "cachedTokens": 0,
+    "outputTokens": 853
+  },
+  "reply": "{\"crossing\":\"On the white stone of the landing no one hurries to greet you; they wait a long silence and then call you child of the short years. When you pay, it is with silver rings and small glass beads, and they weigh your copper in their palms before they take it at two beads the piece.\",\"names\":{\"she\":[\"Elowen\",\"Nimue\",\"Ilaria\",\"Saelis\",\"Morwen\",\"Aerin\"],\"he\":[\"Caelan\",\"Taliesin\",\"Ithrin\",\"Elidor\",\"Faelar\",\"Rhoswen\"],\"family\":[\"of the Long Hall\",\"Whitestrand\",\"Starwatch\",\"of the Low Tide\",\"Silverfern\",\"of the Drowned Shore\"]},\"money\":{\"units\":[{\"short\":\"r\",\"name\":\"silver ring\",\"value\":20},{\"short\":\"b\",\"name\":\"glass bead\",\"value\":1}],\"rate\":2},\"law\":{\"where\":\"on Ynys Wen\",\"officer\":\"Keeper of the Long Hall\"},\"voice\":{\"oaths\":{\"old_stars\":[\"by the Old Stars\",\"the stars remember\"]},\"sayings\":[\"What drowned is not spoken of to strangers.\",\"A season is a short word; a life is a longer one.\",\"The tide returns what it keeps, in its own time.\"],\"address\":{\"stranger\":[\"child of the short years\",\"stranger from the east\"],\"known\":[\"guest of the hall\",\"one who has come before\"],\"friend\":[\"friend of long seasons\",\"hall-kin\"],\"high\":[\"Keeper\",\"elder of the hall\"]},\"time\":[\"at the turn of the tide\",\"in the waning of the season\",\"when the Old Stars rise\"],\"distance\":[\"a tide's rowing\",\"from the landing to the long hall\"],\"measures\":[\"a handspan\",\"a bowl of salt\"],\"not_here\":[{\"word\":\"bell\",\"instead\":\"tide\"},{\"word\":\"o'clock\",\"instead\":\"at the turn of the tide\"},{\"word\":\"by the Tidemother\",\"instead\":\"by the Old Stars\"},{\"word\":\"Tidemother keep us\",\"instead\":\"the stars remember\"},{\"word\":\"gold piece\",\"instead\":\"silver ring\"},{\"word\":\"potato\",\"instead\":\"turnip\"},{\"word\":\"tobacco\"},{\"word\":\"coffee\"},{\"word\":\"gun\"},{\"word\":\"musket\"}]}}",
+  "problems": []
+}
