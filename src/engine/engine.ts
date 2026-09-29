@@ -49,6 +49,7 @@ import { chronicleMarkdown, chronicleText } from './chronicle'
 import { tidesPage } from './tidepages'
 import { mediateTide, tideBetween } from './tidemediation'
 import { journalPage, type JournalPage } from './journal'
+import { earlierTalk, keepPastLines, type EarlierTalk } from './pasttalks'
 import { die } from './life'
 import { agree, agreements, leadAhead, openAgreements, promiseLines, settle } from './agreements'
 import { goAway, tierOf } from './lod'
@@ -198,7 +199,7 @@ export interface Status {
   paused: boolean
   /** A development build: the @ commands work and the editor can be opened. */
   builder?: boolean
-  talk?: { npc: string; name: string; call: string; attitude: string; turnsLeft: number; options: string[]; proposal?: string; pronoun: 'she' | 'he' | 'they'; lines: TalkLine[] }
+  talk?: { npc: string; name: string; call: string; attitude: string; turnsLeft: number; options: string[]; proposal?: string; pronoun: 'she' | 'he' | 'they'; lines: TalkLine[]; earlier?: EarlierTalk }
   /** The talk that just ended (M10.8): its lines, for the window that stays until closed. */
   lastTalk?: { npc: string; lines: TalkLine[] }
   /** The clock and the sky for the top right (M10.8): weekday, date, hour, sun, dusk or moon, and the weather. */
@@ -1349,6 +1350,7 @@ export class Engine {
     for (const o of outputs) if (o.kind !== 'room') list.push({ id: ++id, kind: o.kind, text: o.text, ...(o.source ? { source: o.source } : {}) })
     if (list.length > MAX_TALK_LINES) list.splice(0, list.length - MAX_TALK_LINES)
     this.lastTalk = this.state.talk ? undefined : before && before !== this.state.talk ? { npc: before.npc, lines: list } : this.lastTalk
+    keepPastLines(this.world, into.npc, typed, outputs)
   }
 
   private async route(text: string): Promise<Output[]> {
@@ -1880,7 +1882,7 @@ export class Engine {
       paused: false,
       ...(this.builder ? { builder: true } : {}),
       talk: talk
-        ? { npc: talk.npc, name: knownShort(this.world, talk.npc), call: callName(this.world.npc(talk.npc)), attitude: attitude(this.world, talk.npc).band, turnsLeft: talk.turnsLeft, options: QUICK_OPTIONS, ...(talk.proposal ? { proposal: this.dialogue.proposalNow()! } : {}), pronoun: this.world.npc(talk.npc).pronoun, lines: talk.lines ?? [] }
+        ? { npc: talk.npc, name: knownShort(this.world, talk.npc), call: callName(this.world.npc(talk.npc)), attitude: attitude(this.world, talk.npc).band, turnsLeft: talk.turnsLeft, options: QUICK_OPTIONS, ...(talk.proposal ? { proposal: this.dialogue.proposalNow()! } : {}), pronoun: this.world.npc(talk.npc).pronoun, lines: talk.lines ?? [], ...(earlierTalk(this.world, talk.npc, talk.began) ? { earlier: earlierTalk(this.world, talk.npc, talk.began)! } : {}) }
         : undefined,
       ...(!talk && this.lastTalk ? { lastTalk: this.lastTalk } : {}),
       clock: this.clockStatus(),

@@ -399,6 +399,13 @@ body {
   text-align: center;
 }
 
+/* The talk before this one (M10.29 J): faded, above the new one. */
+.talk-earlier {
+  border-bottom: 1px dashed var(--line);
+  margin-bottom: 10px;
+  opacity: 0.55;
+}
+
 /* The day, the hour and the sky at the top right (M10.8). */
 .clock {
   border-bottom: 1px solid var(--line);

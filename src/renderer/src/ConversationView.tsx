@@ -181,6 +181,17 @@ export function ConversationView({
         <div className="talk-body">
           <div className="talk-main">
             <div className="talk-log" ref={logRef} aria-live="polite">
+              {/* The talk before this one, faded (M10.29 J): what was said then, kept by the game. */}
+              {talk.earlier && (
+                <div className="talk-earlier">
+                  <p className="line aside">{t('conversation.log.earlier', { when: talk.earlier.when })}</p>
+                  {talk.earlier.lines.map((line, i) => (
+                    <p key={`earlier-${i}`} className={`line ${line.you ? 'input me' : 'speech them'}`}>
+                      {line.you ? line.text : render(line.text)}
+                    </p>
+                  ))}
+                </div>
+              )}
               {lines
                 .filter((line) => !OPTIONS.test(line.text))
                 // What you typed, when the game says it back ("You: ..."), shows once; TALK itself is the window.

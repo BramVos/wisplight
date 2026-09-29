@@ -28,6 +28,7 @@ export const KNOBS = {
   'talk.support_dc': n('How much easier a persuasion is for each person who stands by it.', 'DC', 4, 0, 10, 'dialogue/conversation.ts'),
   'talk.facts_per_day': n('How many things said in talks become facts that go round, in a day.', 'facts', 3, 0, 20, 'dialogue/aftertalk.ts'),
   'talk.words': t('How many words a reply may have, by how much the moment asks for.', 'words', { short: 15, normal: 50, explain: 90, story: 180 }, 5, 400, 'dialogue/acts.ts'),
+  'talk.kept_lines': n('How many lines of earlier talks the game keeps per person, for the talk window and the journal (never for the model).', 'lines', 40, 0, 400, 'engine.ts'),
   'talk.party_words': n('How many words each companion says when the stranger asks the group.', 'words', 25, 5, 80, 'dialogue/party.ts'),
   // ---- what people believe and know
   'belief.openness': t('How open a place is to a stranger, by the kind of place: 0 closed, 1 open.', 'share', { city: 0.9, town: 0.8, inn: 0.7, village: 0.5, route: 0.5, hamlet: 0.3, wilderness: 0.2 }, 0, 1, 'belief.ts', 'open'),

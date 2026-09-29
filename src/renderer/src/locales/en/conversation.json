@@ -8,7 +8,8 @@
   "log": {
     "thinking": "{name} thinks it over.",
     "over": "The conversation is over.",
-    "rules": "The game's own line, not the AI's"
+    "rules": "The game's own line, not the AI's",
+    "earlier": "Earlier, {when}:"
   },
   "quick": {
     "who": "Who are you?",

@@ -12,6 +12,7 @@ import { isNear, noun, ties } from './people'
 import { askLine, requestName } from './requests'
 import { outlineLines, outlineOf } from './outlines'
 import type { World } from './world'
+import { talksByDay } from './pasttalks'
 import { sketchById, sketches, sketchLines } from './sketches'
 
 // The journal as a reference book (design: lore and world change, "Wat de
@@ -104,6 +105,9 @@ export function journalPage(world: World, topics: TopicRegistry, id: string): Jo
     if (view.age) page.lines.push(view.age.known ? `${view.age.text} years old.` : `Looks ${view.age.text.replace(/\?$/, '')} years old, you would guess.`)
     if (view.lastSeen) page.lines.push(`Last seen at ${view.lastSeen.where}, ${view.lastSeen.ago}.`)
     if (view.often.length) page.lines.push(`Often at ${view.often.join(', ')}.`)
+    // Earlier talks (M10.29 J): what was said, by day, never for the model.
+    const talks = talksByDay(world, npc.id)
+    if (talks.length) page.lines.push('Last talks:', ...talks)
   } else if (entry.kind === 'place' && entry.ref) {
     page.kind = 'place'
     const location = content.locations.get(entry.ref)!

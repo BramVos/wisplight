@@ -416,6 +416,13 @@ export interface TalkState {
 }
 
 /** A line of a conversation as the engine keeps it (M10.8): what was typed, and what came back. */
+/** A line of an earlier talk (M10.29 J): when, whether the stranger said it, and the words. */
+export interface PastTalkLine {
+  t: number
+  you: boolean
+  text: string
+}
+
 export interface TalkLine {
   id: number
   kind: 'room' | 'text' | 'system' | 'error' | 'narration' | 'speech' | 'check' | 'input' | 'card'
@@ -848,6 +855,8 @@ export interface GameState {
   /** Greetings and chats where the player is (M8.2): when each pair last greeted, and the chats going on. */
   /** hinted (M10.29): the stranger was told once that LISTEN catches what two people say. */
   chatter?: { greeted: Record<string, number>; chats: import('./chatter').Chat[]; hinted?: boolean }
+  /** The lines of earlier talks per person (M10.29 J), a ring of the knob talk.kept_lines: for the talk window and the journal. */
+  pastTalks?: Record<string, PastTalkLine[]>
   /** People who band together for or against newcomers (M8.3). */
   groups?: Group[]
   /** The ledgers of the settlements, the routes and goods sent for (M8.4). */
