@@ -1,4 +1,3 @@
-import { idWordsIn } from '../idwords'
 import { askOutput, mustAsk } from '../asking'
 import type { Output } from '../commands'
 import { callName, checkContent, lockedIds, NpcSchema, QuestSchema, TopicSchema, type Content, type Location, type Npc } from '../content'
@@ -9,10 +8,11 @@ import { knob } from '../knobs'
 import { playModeOf } from '../modes'
 import { recordFact } from '../news'
 import { WatcherSchema } from '../quests/planschema'
-import { crossesLimits, readsAsInstruction, worldText } from '../safety'
+import { worldText } from '../safety'
 import type { GameState } from '../state'
 import type { World } from '../world'
 import { worldFixedPart } from '../worldfixed'
+import { fit, questFromSketch, sketchSchema, type QuestSketch } from '../quests/sketch'
 import { districtOf, districtsOf } from './districts'
 import { farPlaceOf } from './far'
 import { outlineOf } from '../outlines'
@@ -37,18 +37,10 @@ type Raw = Record<string, unknown>
 export interface StoryReply {
   /** One sentence: what of the region and the world the story grows from. */
   why: string
-  quest: {
-    name: string
-    kind: string
-    summary: string
-    /** The key of the one who asks. */
-    giver: string
-    /** What they say when asking, in their voice. */
-    ask: string
-    /** Two or three stages, each done by one deed of the stranger. */
-    stages: { text: string; say: string; at: string; with: string; skill: string; done: string }[]
-    outcome: { name: string; text: string }
-  } | null
+  /** The one quest of a region in play: two or three stages, each done by one deed of the stranger (quests/sketch.ts). */
+  quest: QuestSketch | null
+  /** More lines at once (M10.30: the step Stories of the world build); the region in play writes only `quest`. */
+  quests?: QuestSketch[]
   /** Up to two: a signal of the world's standard aftermath, when (the quest taken up, or done), and whom it is about. */
   watchers: { signal: string; on: string; who: string[]; why: string }[]
   lore: { name: string; summary: string; details: string; story: string; teller: string } | null
@@ -218,30 +210,30 @@ export function storyRequest(world: World, topic: string): LlmRequest {
       `SKILLS: ${skills.length ? skills.join(', ') : 'none'}`,
     ].join('\n'),
     schemaName: 'region_story',
-    schema: object({
-      why: text,
-      quest: {
-        anyOf: [
-          object({
-            name: text,
-            kind: { type: 'string', enum: [...QUEST_KINDS] },
-            summary: text,
-            giver: text,
-            ask: text,
-            stages: { type: 'array', items: object({ text, say: text, at: text, with: text, skill: text, done: text }) },
-            outcome: object({ name: text, text }),
-          }),
-          { type: 'null' },
-        ],
-      },
-      watchers: { type: 'array', items: object({ signal: text, on: { type: 'string', enum: ['taken', 'done'] }, who: { type: 'array', items: text }, why: text }) },
-      lore: { anyOf: [object({ name: text, summary: text, details: text, story: text, teller: text }), { type: 'null' }] },
-      secrets: { type: 'array', items: object({ who: text, text, hint: text }) },
-    }),
+    schema: storySchema(),
     maxTokens: 2500,
     effort: 'medium',
     meta: { story: topic, name: t?.name ?? topic, people: people.map((n) => ({ key: key.person.get(n.id), name: n.name, secret: n.secrets.length > 0 })), places: places.map((l) => key.place.get(l.id)), aftermath: aftermath.map((a) => a.signal), skills },
   }
+}
+
+/**
+ * The schema of the story round: one for the kind (M10.28), whoever writes
+ * it. `quests` came with M10.30 (the step Stories of the world build writes
+ * several lines at once); it is optional, so replies from before still read.
+ */
+export function storySchema(): Record<string, unknown> {
+  const text = { type: 'string' }
+  const object = (properties: Record<string, unknown>) => ({ type: 'object', additionalProperties: false, required: Object.keys(properties), properties })
+  const all = object({
+    why: text,
+    quest: { anyOf: [sketchSchema(), { type: 'null' }] },
+    quests: { type: 'array', items: sketchSchema() },
+    watchers: { type: 'array', items: object({ signal: text, on: { type: 'string', enum: ['taken', 'done'] }, who: { type: 'array', items: text }, why: text }) },
+    lore: { anyOf: [object({ name: text, summary: text, details: text, story: text, teller: text }), { type: 'null' }] },
+    secrets: { type: 'array', items: object({ who: text, text, hint: text }) },
+  })
+  return { ...all, required: all.required.filter((k) => k !== 'quests') }
 }
 
 /** The keys of a region's people and places, in the order the prompt gives them. */
@@ -263,28 +255,6 @@ export function storyReply(text: string): StoryReply | null {
 }
 
 // ---------------------------------------------------------------- the shape
-
-/** A line of the chronicler's, when it is fit to keep: short, within the limits, and no instruction to a model. */
-function fit(text: unknown, most: number): string | undefined {
-  if (typeof text !== 'string') return undefined
-  const t = text.trim().replace(/\s+/g, ' ')
-  // Never an id in a line the player reads (M10.29 M).
-  if (!t || t.length > most || crossesLimits(t) || readsAsInstruction(t) || idWordsIn(t).length) return undefined
-  return t
-}
-
-/** A command as a pattern: the words in order, "the", "a" and "an" optional, and any spacing. */
-export function sayPattern(say: string): string | undefined {
-  const words = say
-    .toLowerCase()
-    .replace(/[^a-z0-9' ]/g, ' ')
-    .split(/\s+/)
-    .filter(Boolean)
-  const content = words.filter((w) => !['the', 'a', 'an'].includes(w))
-  if (content.length < 2 || content.length > 7) return undefined
-  const escape = (w: string) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-  return content.map(escape).join(' (?:(?:the|a|an) )?')
-}
 
 /** An id for something the game makes: never one the world has or ever had. */
 function freeKey(world: World, stem: string, taken: Set<string>): string {
@@ -316,58 +286,16 @@ export function makeStory(world: World, topic: string, reply: StoryReply | null)
   const heart = region.places[0]?.id
   const story: RegionStory = { topic, by: reply ? 'chronicler' : 'rules', t: world.now, watchers: [], secrets: {}, why: fit(reply?.why, 300) ?? `${world.content.topics.get(topic)?.name ?? topic} came into the game, and with it what its people live with.` }
 
-  // The quest: stages that follow each other, each done by one deed, and one way it ends.
+  // The quest: stages that follow each other, each done by one deed, and one way it ends (quests/sketch.ts).
   let questId: string | undefined
   const q = reply?.quest
-  const giver = person(q?.giver)
-  if (q && giver) {
+  if (q && person(q.giver)) {
     const skills = new Set((world.content.rules?.skills ?? []).map((s) => s.id))
     const id = freeKey(world, `story_${slug}`, taken)
-    const stages: Raw[] = []
-    const actions: Raw[] = []
-    const good = q.stages.slice(0, MOST_STAGES).filter((s) => fit(s.text, 240) && fit(s.done, 400) && sayPattern(s.say) && place(s.at))
-    good.forEach((s, i) => {
-      const flag = `${id}_${i + 1}`
-      const next = i + 1 < good.length ? [{ when: [{ flag }], to: `s${i + 2}` }] : []
-      stages.push({ id: `s${i + 1}`, text: fit(s.text, 240)!, next })
-      const withWho = person(s.with)
-      const skill = s.skill && skills.has(s.skill.trim()) ? s.skill.trim() : undefined
-      // Someone who must be there is met where they live or work (M10.25: the harness found a deed at the market
-      // with an innkeeper who never leaves the inn): the deed moves to them, or it could never be done.
-      const who = withWho ? world.content.npcs.get(withWho) : undefined
-      const where = who && ![who.home, who.work].includes(place(s.at)) ? (who.work && region.places.some((l) => l.id === who.work) ? who.work : who.home) : place(s.at)!
-      actions.push({
-        id: `a${i + 1}`,
-        say: [sayPattern(s.say)!],
-        intent: fit(s.say, 80)!,
-        at: [where],
-        ...(withWho ? { with: withWho } : {}),
-        when: [...(i > 0 ? [{ flag: `${id}_${i}` }] : []), { not_flag: flag }],
-        ...(skill ? { check: { skill, dc: STORY_DC }, fail_text: 'It does not come right this time. You may try again.' } : {}),
-        effects: [{ set: flag }],
-        text: fit(s.done, 400)!,
-        once: false,
-      })
-    })
-    const name = fit(q.name, 80)
-    const summary = fit(q.summary, 240)
-    const ask = fit(q.ask, 400)
-    const end = fit(q.outcome?.name, 80)
-    const endText = fit(q.outcome?.text, 400)
-    if (good.length >= 2 && name && summary && ask && end && endText) {
+    const quest = questFromSketch(world, q, id, { person, place, places: region.places, skills, dc: STORY_DC, minStages: 2, mostStages: MOST_STAGES })
+    if (quest) {
       questId = id
-      story.quest = {
-        id,
-        name,
-        kind: (QUEST_KINDS as readonly string[]).includes(q.kind) ? q.kind : 'request',
-        summary,
-        givers: [giver],
-        starts: { talk: [giver] },
-        ask,
-        stages,
-        actions,
-        outcomes: [{ id: 'done', name: end, text: endText, when: [{ flag: `${id}_${good.length}` }] }],
-      }
+      story.quest = quest
     }
   }
 
