@@ -1,5 +1,21 @@
 # Changelog
 
+## M10.30 deel: de kroniekverteller maakt een quest in het spel, 30 september 2026
+
+- **Een verzoek wordt een quest (7).** Vraagt iemand je in een gesprek iets te doen ("Could you go and look at them for me?"), dan is dat een feit van gewicht 3, en dat wekt de nachtronde. Heeft die persoon geen eigen quest of verzoek lopen en is er plek in de streek, dan schrijft de kroniekverteller na de nachtronde één quest: stadia, wat je per stadium moet doen, wat ieder weet en wat het verhaal verborgen houdt. Dat gebeurt hooguit één keer per nacht en nooit twee keer voor hetzelfde verzoek. Bij Doorspelen staat de quest meteen in de wereld en vraagt de persoon het je de volgende keer dat je praat. Bij Meedenken komt hij als haak in de ochtend, bij Regisseur als voorstel. Zo pakt het spel een opdracht als die van Ilyan op, ook in een wereld die zijn verhalen al heeft.
+- **Niet vijf door elkaar.** De wereldknop `story.quests_active` (standaard 2) begrenst hoeveel quests er per streek tegelijk lopen, naast de hoofdlijn. Een quest die daarboven zou beginnen, wacht. Skerrow zet hem op 1.
+- **Wat de nachtronde ziet.** Per verhaallijn krijgt de ronde de herinneringen van gesprekken sinds de vorige ronde die de lijn raken, de nieuwste tien, in de woorden van de mensen zelf. De hele geschiedenis gaat er niet in. Een geheim dat iemand je vertelt, is ook een feit van gewicht 3, maar niemand anders hoort het, dus het gaat niet rond.
+
+Testen: praat in The Quiet Reach met Ilyan tot hij je vraagt de opnamen op te halen, slaap een nacht, en praat dan weer met hem. Met het mockmodel gaat het net zo met Harmen in de Nethermarch. Tests in `tests/m1030night.test.ts` en `tests/m1030made.test.ts`.
+
+Kosten: één nieuwe soort aanroep, `night_quest`, voor de kroniekverteller. Die leest alleen het eigen deel van `CHRONICLER.md`, niet de werkinstructie die elke wereld deelt: ongeveer 1.500 tokens in de Nethermarch en 3.300 in The Quiet Reach. Met Opus 5.5 schat ik 3 à 4 cent per quest, hooguit één per speelnacht. De nachtronde zelf wordt 69 tokens langer. Een echte meting van model en inspanning (drie antwoorden, ongeveer $0,12 op je sleutel) wacht op je akkoord.
+
+Bekende gaten: een verzoek herkent het spel aan de woorden ("could you", "I need you to") of aan de notitie van de spreker, niet aan betekenis. De Quiet Reach heeft nog geen geschreven verhalen, dus daar is dit voorlopig de enige manier waarop Ilyans opdracht een quest wordt.
+
+Wat de editor en de kroniekverteller leerden: de knop `story.quests_active` staat onder Knobs en in `docs/KNOBS.md`, en de stap Verhalen noemt hem (andere sessie). De quest van de nachtronde gebruikt dezelfde vorm als de stap Verhalen, dus er is niets nieuws voor de wereld zelf.
+
+Ontwerp: functioneel ontwerp, bij de quests, alinea "Stand na M10.30: de kroniekverteller maakt een quest in het spel".
+
 ## M10.30 deel: de stap Verhalen, 30 september 2026
 
 - **Een stap Verhalen in de wereldbouw.** Na Signalen staat nu de stap Stories. Die vraagt je maar drie dingen: de verborgen waarheid van de hoofdlijn, wat je niet wilt, en of je zelf een lijn wilt schrijven. Je antwoord komt in `CHRONICLER.md`. De rest haalt de kroniekverteller uit je wereld: de opdracht van de vreemdeling, en wat de mensen willen, verbergen en aan wie ze vastzitten.
