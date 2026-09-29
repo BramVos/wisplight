@@ -25,11 +25,22 @@ quests:
     stages:
       - id: missing
         text: Fenna Visser is missing. Her mother Grietje asks you to find out what happened. A grey cat with one white paw sits on the doorstep and will not leave.
+        goal: Find out what happened to Fenna Visser.
+        # What each of them knows and may say (M10.30); the widow keeps hers as a secret.
+        knows:
+          npc_grietje_visser: Grietje knows Fenna went into the Kattenbroek for bog myrtle and never came home, and that the grey cat came to the door the same morning and looks at her with Fenna's eyes. She does not know what became of her girl.
+          npc_jan_visser: Jan knows Fenna went into the Kattenbroek and did not come back. He says the fen took her, and he blames the widow who lives there.
+          npc_pim: Pim knows his sister went towards the cat fen, and he knows a secret way there over the hard ground from the cuttings. He does not know what became of her.
+          npc_kaatje: Kaatje knows what became of Fenna Visser and keeps it to herself; only her secret, once she tells it, says it.
         next:
           - when: [{ any: [{ flag: cat_is_fenna }, { flag: "secret:npc_kaatje:fenna_lied" }] }]
             to: the_cat_is_fenna
       - id: the_cat_is_fenna
         text: The grey cat is Fenna, turned by the widow of the Kattenbroek. You could pay the widow's price, break the curse, burn the witch with Jan, or find a way to talk to the cat.
+        goal: Pay the widow's price, break the curse, or find another way to bring Fenna home.
+        knows:
+          npc_grietje_visser: Grietje knows the grey cat is her Fenna, turned by the widow of the Kattenbroek, and she will give anything to have her back.
+          npc_jan_visser: Jan knows the widow turned his girl into a cat, and he wants her hut burnt.
         on_enter:
           - { set: cat_is_fenna }
           - { learn: cat_widow }
@@ -39,6 +50,7 @@ quests:
             to: the_widows_price
       - id: the_widows_price
         text: "The widow Kaatje names her price for Fenna: the Count's survey must lie still for seven days, or someone must bring her the measuring chest of Jacob van Dam."
+        goal: Keep the Count's survey still for seven days, or bring the widow Jacob van Dam's measuring chest.
         on_enter:
           - { set: widow_price_known }
           - { text: "The widow looks at you a long time. \"The girl lied to me. A lie is a debt, and debts are paid. Here is mine: that surveyor's chains lie still for seven days. Or bring me the chest of the one who came before him, Jacob van Dam. Then she can go home.\"" }
@@ -46,6 +58,11 @@ quests:
         text: Water stands in the Vissers' house. Wherever Grietje goes now, the grey cat goes with her.
         on_enter:
           - { start: the_vissers_to_safety }
+    # What the story keeps hidden (M10.30): nobody says the cat is Fenna before the stranger has found it out.
+    truths:
+      - text: The grey cat on the Vissers' doorstep is Fenna, cursed by the widow of the Kattenbroek.
+        words: ['cat\b.{0,40}\b(?:is|was) (?:our |your |little |that )?fenna', 'fenna (?:is|was|became|turned into) (?:the|a|that) (?:grey )?cat', 'turned (?:her|fenna|the girl) into a cat']
+        from: the_cat_is_fenna
     actions:
       # Finding out: Lore DC 16, or through Aaltje.
       - id: study_cat

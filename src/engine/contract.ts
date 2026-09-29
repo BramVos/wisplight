@@ -22,6 +22,11 @@ interface KindText {
  * contract, the fields of a world step and the writing aid's short contract.
  */
 export const FIELD_NOTES: Record<string, string[]> = {
+  // M10.30: people told their own plot of the recordings in The Quiet Reach; a stage says what each knows.
+  quests: [
+    'A stage may have `goal`, what the stranger can do now in one line for the journal and QUESTS ("Recover the recordings from the Listening Room"), and `knows`, per person with a part (npc id) what they know of the story at this stage and may say, a sentence with their name ("Tessa knows the coupling was never synced; she does not know who took the pages."). That goes to their voice as all they know of it, and to an improvisation at a place of the story; a person without a line talks as before.',
+    'A quest may have `truths`: what the story keeps hidden (`text`), how a reply would name it (`words`, patterns as in an action\'s say) and when people may say it (`from` a stage, or `when` conditions hold; without either, once it has ended). Before that the guard refuses a reply or an improvisation that names it, unless the game gave it to the speaker: their knows line, or a secret they told. Keep a truth out of the ask and out of the journal lines before its stage.',
+  ],
   world: [
     '`knobs`: rules of play set otherwise than the default, by the id of a knob (docs/KNOBS.md): `talk.max_turns: 30`; for a table only the rows that differ.',
     // M10.20: the palette step of The Quiet Reach borrowed peat_pit for a mine shaft.

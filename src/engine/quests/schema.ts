@@ -241,6 +241,11 @@ export const StageSchema = z
   .object({
     id: Id,
     text: z.string().describe('The journal line for this stage.'),
+    goal: z.string().optional().describe('What the stranger can do now, one line for the journal and QUESTS ("Recover the recordings from the Listening Room"). Without it the journal shows only what happened.'),
+    knows: z
+      .record(z.string(), z.string())
+      .optional()
+      .describe('Per person with a part (npc id): what they know of the story at this stage and may say, one or two sentences with their name ("Tessa knows the coupling was never synced; she does not know who took the pages."). It goes to their voice, and to an improvisation at a place of the story, as all that is known of it. Without it a person talks as before.'),
     on_enter: z.array(QuestEffectSchema).default([]),
     next: z.array(z.object({ when: z.array(ConditionSchema).min(1), to: z.string(), effects: z.array(QuestEffectSchema).default([]) }).strict()).default([]),
   })
@@ -257,6 +262,20 @@ export const OutcomeSchema = z
   })
   .strict()
 
+/** What a story keeps hidden (M10.30): no reply and no improvisation names it before its stage. */
+export const TruthSchema = z
+  .object({
+    text: z.string().describe('The hidden truth in a sentence, for the designer and the chronicler; never sent to a voice.'),
+    words: z
+      .array(z.string())
+      .min(1)
+      .describe('How a reply would name it: phrases or patterns as in an action\'s say, found anywhere in a reply, case ignored ("the cat is fenna", "fenna.{0,30}cursed").'),
+    from: z.string().optional().describe('The stage from which people may say it; without, only once the quest has ended. Someone whose knows line at the stage names it may say it too.'),
+    when: z.array(ConditionSchema).default([]).describe('Or once these hold, as anywhere in a quest (the stranger has the key: { flag: has_key }).'),
+  })
+  .strict()
+export type Truth = z.infer<typeof TruthSchema>
+
 export const QuestBodySchema = z
   .object({
     starts: z
@@ -267,6 +286,7 @@ export const QuestBodySchema = z
     stages: z.array(StageSchema).default([]).describe('The stages in order: what the journal says at each, and when it is reached.'),
     actions: z.array(QuestActionSchema).default([]).describe('What the stranger can do in it besides talking (give, show, use), and what that does.'),
     outcomes: z.array(OutcomeSchema).default([]).describe('The ways it can end: when, what the journal says, and what follows.'),
+    truths: z.array(TruthSchema).default([]).describe('What the story keeps hidden (M10.30): the guard refuses a reply or an improvisation that names one before its stage, so people do not each tell their own plot.'),
     on_death: z.record(z.string(), z.string()).default({}).describe('A death of someone with a part: to an outcome or a stage (design: quests react to the world).'),
     on_place: z.record(z.string(), z.string()).default({}).describe('A place destroyed or flooded: to an outcome or a stage.'),
     timer: z.object({ clock: z.string(), every_hours: z.number().int().positive(), unless: z.array(ConditionSchema).default([]) }).strict().optional().describe('A clock that runs by itself while the quest is on: the widow\'s patience.'),

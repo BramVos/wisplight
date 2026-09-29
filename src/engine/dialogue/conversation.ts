@@ -33,6 +33,7 @@ import { oathsOf, peopleIds, turnEnd, turnMessage, turnSections, worldFrame, you
 import { attitude, applyEffect, moodOf, relation, type Attitude } from './relations'
 import { askLine, askNow, knownRequests, requestName, visited } from '../requests'
 import { questsOf } from '../life'
+import { hiddenNamed } from '../quests/knows'
 import { routineNow } from '../npc/brain'
 import { parseReply, TALK_REPLY_SCHEMA, type Reply } from './schema'
 import type { TopicRegistry } from './topics'
@@ -1114,6 +1115,13 @@ export class Dialogue {
       if (personProblem) {
         this.refused('invented', llm)
         prompt += `\nNOTE: ${personProblem} Answer again.`
+        continue
+      }
+      // A hidden truth of a story before its stage gives it out (M10.30), unless the game gave it to the speaker in this talk.
+      const hidden = hiddenNamed(world, fitted, npcId, `${Object.values(message.sent).join('\n')}\n${prompt.replace(/PLAYER SAYS: <<[^>]*>>/g, '')}`)
+      if (hidden) {
+        this.refused('leak', llm, `named what ${hidden} keeps hidden`)
+        prompt += `\nNOTE: your last reply told something of ${hidden} that nobody here knows yet. Answer again with only what you know.`
         continue
       }
       const leaks = leakedNames(said, this.topics.properNames(), allowedNames)

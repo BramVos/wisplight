@@ -497,7 +497,7 @@ magic, spells, mana, divine healing, telepathy, antigravity, gravity plates, ine
 
 | Craft | Maker | Techniques | A failure leaves |
 | --- | --- | --- | --- |
-| Field Electronics | npc_tessa_rook | Diagnosis: recognising damage, cleaning contacts, checking connections, Cable and connector repair, Fault finding in linked systems, Designing, testing and documenting a difficult repair | lost |
+| Field Electronics | field technician | Diagnosis: recognising damage, cleaning contacts, checking connections, Cable and connector repair, Fault finding in linked systems, Designing, testing and documenting a difficult repair | lost |
 
 ## 15. Transport
 

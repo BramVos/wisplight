@@ -201,6 +201,8 @@ const VERB_ALIASES: Record<string, string> = {
   party: 'party',
   group: 'party',
   promises: 'promises',
+  quests: 'quests',
+  opdrachten: 'quests',
   open: 'open',
   unlock: 'open',
   force: 'force',

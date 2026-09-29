@@ -14,6 +14,14 @@ quests:
     stages:
       - id: stranded
         text: The Grey Gull broke on the rocks of Skerrow, and you alone came ashore. No ship calls since the beacon on the headland went out, and the winter storms will soon close the sea. Find a way off the island.
+        goal: Find a way off Skerrow before the winter storms close the sea.
+        # What people know of it and may say (M10.30): each their own piece, so nobody makes up a way off.
+        knows:
+          npc_maren: Maren knows no ship has called since the beacon on the headland went dark, and that Brannoc's Kittiwake is the only boat on Skerrow that could make the crossing. She does not know what the tower or the barrow hold.
+          npc_brannoc: Brannoc knows the Kittiwake wants a new sail and a pot of pitch before she could cross to Havenmoor.
+          npc_garrick: Garrick knows the Lamp of Skerrow wants three casks of oil in its bowl and a keeper at the wick, and that ships would stand in to its light.
+          npc_tamsin: Old Tamsin knows the old gentleman sleeps in the barrow on the heights, soundest by day, and how a careful body goes in and comes out again.
+          npc_elowen: Elowen knows the waystone in her tower could open a way to the mainland, but it sleeps without its key.
         on_enter: [{ learn: grey_gull }]
     actions:
       # Brannoc's boat: a sail from the wreck, pitch from the Kettle, and a man who has to be brave.
@@ -130,6 +138,11 @@ quests:
         minutes: 30
         text: 'Elowen takes the key as if it might break. She fits it into the socket at the foot of the ring and speaks a long word that you forget as soon as you hear it. The runes wake one after another, and the ring fills with a grey light like the sea at dawn. "Havenmoor," she says, "or near it. Go, before I change my mind about following you."'
         effects: [{ take: rune_key }, { set: waystone_open }, { relation: npc_elowen, affinity: 20, trust: 20 }]
+    # What the island keeps hidden (M10.30): only Elowen and Pip know it, as their secrets, until the stranger has the key.
+    truths:
+      - text: The rune key of the waystone lies in the wyrm's barrow, on a stone shelf by Old Skarth's tail.
+        words: ['key.{0,60}(?:barrow|skarth|wyrm|old gentleman)', '(?:barrow|skarth|wyrm|old gentleman).{0,60}key']
+        when: [{ flag: has_key }]
     outcomes:
       - id: in_the_kittiwake
         name: In the Kittiwake

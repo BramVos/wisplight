@@ -321,13 +321,18 @@ A list; each has:
 | opponents | People who stand against the stranger in it; their death changes the quest. | list of text | no | [] |
 | starts | How it begins: talking to one of these, a place, or conditions. | a map: talk, at, when, at_start | no | {"talk":[],"at":[],"when":[],"at_star... |
 | ask | What the giver says when it begins. | text | no |  |
-| stages | The stages in order: what the journal says at each, and when it is reached. | list of a map: id, text, on_enter, next | no | [] |
+| stages | The stages in order: what the journal says at each, and when it is reached. | list of a map: id, text, goal, knows, on_enter, next | no | [] |
 | actions | What the stranger can do in it besides talking (give, show, use), and what that does. | list of a map: id, say, intent, at, with, when, not_yet, check, effects, fail, ... | no | [] |
 | outcomes | The ways it can end: when, what the journal says, and what follows. | list of a map: id, name, text, solution, when, effects | no | [] |
+| truths | What the story keeps hidden (M10.30): the guard refuses a reply or an improvisation that names one before its stage, so people do not each tell their own plot. | list of a map: text, words, from, when | no | [] |
 | on_death | A death of someone with a part: to an outcome or a stage (design: quests react to the world). | a map of names to text | no | {} |
 | on_place | A place destroyed or flooded: to an outcome or a stage. | a map of names to text | no | {} |
 | timer | A clock that runs by itself while the quest is on: the widow's patience. | a map: clock, every_hours, unless | no |  |
 | lapses | Without the player (M10.6): so many days after it began (or after the game began, when the player never took it up), and only while the player is far from its people and places, the world settles it itself: the effects, and the quest is over (lapsed). Near, it waits for the player. | a map: after_days, when_far, text, effects | no |  |
+
+A stage may have `goal`, what the stranger can do now in one line for the journal and QUESTS ("Recover the recordings from the Listening Room"), and `knows`, per person with a part (npc id) what they know of the story at this stage and may say, a sentence with their name ("Tessa knows the coupling was never synced; she does not know who took the pages."). That goes to their voice as all they know of it, and to an improvisation at a place of the story; a person without a line talks as before.
+
+A quest may have `truths`: what the story keeps hidden (`text`), how a reply would name it (`words`, patterns as in an action's say) and when people may say it (`from` a stage, or `when` conditions hold; without either, once it has ended). Before that the guard refuses a reply or an improvisation that names it, unless the game gave it to the speaker: their knows line, or a secret they told. Keep a truth out of the ask and out of the journal lines before its stage.
 
 ## regions (regions/<region>/region.yaml)
 

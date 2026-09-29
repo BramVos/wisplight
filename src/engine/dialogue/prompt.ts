@@ -19,6 +19,7 @@ import { moodOf } from '../quests/plans'
 import { lodgerLine } from '../lodgings'
 import { worldText } from '../safety'
 import { backgroundNow, knownFrom } from '../rules/player'
+import { storyLines } from '../quests/knows'
 
 // Prompts for the voice role (FO, chapter 10). The system part is byte-for-byte
 // stable per NPC so providers can cache it; everything that changes goes in
@@ -327,6 +328,8 @@ export function turnSections(world: World, ctx: TurnContext, voice: 'all' | 'tal
   add('people', `PEOPLE YOU KNOW: ${peopleKnown(world, ctx.npcId, ctx.packet.known.map((k) => k.topic))}.`)
   add('now', peopleNow(world, ctx.npcId))
   add('mind', onYourMind(world, ctx.npcId))
+  // What the speaker knows of a story at its stage (M10.30): all they know of it, so people do not each tell their own plot.
+  add('story', storyLines(world, ctx.npcId))
   add('requests', requestLines(world, ctx.npcId))
   // The register first (M10.2): agreements with the player and a few of their own, without a model.
   add('agreements', agreementLines(world, ctx.npcId))

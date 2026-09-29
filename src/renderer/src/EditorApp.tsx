@@ -674,6 +674,7 @@ function templateFor(kind: EntityKind, view: EditorView): Raw {
   const area = view.lists.area[0]?.id ?? 'first_area'
   const place = view.lists.location[0]?.id ?? 'loc_first_place'
   const trade = view.lists.profession[0]?.id ?? 'villager'
+  const person = view.lists.npc[0]?.id ?? 'npc_first_person'
   switch (kind) {
     case 'location':
       return { id: 'loc_new_place', name: 'A New Place', area, tags: ['public'], description: { day: 'Three to five sentences, in the second person. Something you hear or smell. A hint at an exit.\n' }, exits: { north: { to: place } } }
@@ -709,7 +710,8 @@ function templateFor(kind: EntityKind, view: EditorView): Raw {
         givers: [],
         starts: { talk: [] },
         ask: 'What the giver says when it begins.',
-        stages: [{ id: 'begun', text: 'The journal line while it runs.' }],
+        stages: [{ id: 'begun', text: 'The journal line while it runs.', goal: 'What the stranger can do now.', knows: { [person]: 'What this person knows of it now and may say, with their name.' } }],
+        truths: [{ text: 'What the story keeps hidden until it ends, for you and the chronicler.', words: ['how a reply would name it'] }],
         actions: [{ id: 'first_way', say: ['do the first thing'], text: 'What happens.', effects: [{ set: 'first_way_done' }] }],
         outcomes: [
           { id: 'first', name: 'The first way', text: 'How it ends this way.', when: [{ flag: 'first_way_done' }] },

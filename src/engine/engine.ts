@@ -86,7 +86,7 @@ import { deed, noticeCarried, seedBonds } from './social/deeds'
 import { factionLines, factionPage, join, rankOf, repute } from './social/factions'
 import { fightsBack, mayAttackFirst, mayLend } from './social/gates'
 import { flirt, marry } from './social/romance'
-import { conversationActions, evaluate, expireConditions, questAction, questlog, questPage, questsOnDeath, runQuestAction, setPlaceState, startQuest, talkStarts, triggers, type QuestHost } from './quests/engine'
+import { conversationActions, evaluate, expireConditions, questAction, questLines, questlog, questPage, questsOnDeath, runQuestAction, setPlaceState, startQuest, talkStarts, triggers, type QuestHost } from './quests/engine'
 import { PlaceState } from './quests/schema'
 import { plansDue, startPlan, startWorldPlans, tellAreaNews } from './quests/plans'
 import { primeWatchers, processSignals, queueSignal } from './signals'
@@ -1383,12 +1383,29 @@ export class Engine {
     return [{ kind: 'narration', text: `${page.name}: ${lines.join(' ')}` }]
   }
 
+  /** QUESTS (M10.30): the quests and requests taken up, open ones with where they stand and what to do now. */
+  private questsText(): string {
+    const { open, over } = questLines(this.world)
+    for (const request of knownRequests(this.world)) {
+      const line = `  ${requestName(this.world, request)}`
+      if (request.status === 'done') over.push(`${line}: done.`)
+      else if (request.status === 'failed') over.push(`${line}: too late.`)
+      else open.push(line)
+    }
+    if (!open.length && !over.length) return 'You have taken nothing up yet. Talk to people: some will ask you for something.'
+    return [...(open.length ? ['Open:', ...open] : []), ...(over.length ? ['Over:', ...over] : [])].join('\n')
+  }
+
   /** A page of the journal as text (M10.29 R): its lines and links, or for a person with HISTORY every talk by day. */
   private journalText(args: string[]): Output[] {
     const history = /^history$/i.test(args.at(-1) ?? '')
     const words = (history ? args.slice(0, -1) : args).join(' ')
     const id = /^why( you are here)?$/i.test(words) ? 'why' : this.topics.find(words)
-    const page = id ? this.page(id) : undefined
+    // A quest by its name (M10.30): JOURNAL THE GREY CAT, when no page of the journal goes by those words.
+    const quest = () => Object.keys(questlog(this.world)).find((q) => words && this.content.quests.get(q)?.name.toLowerCase().includes(words.toLowerCase()))
+    const found = id ? this.page(id) : undefined
+    const questId = found ? undefined : quest()
+    const page = found ?? (questId ? this.page(`quest_${questId}`) : undefined)
     if (!page) return [{ kind: 'error', text: 'Your journal has nothing of that.' }]
     if (history) {
       if (page.kind !== 'person') return [{ kind: 'error', text: `${page.name} is no person to have talked with.` }]
@@ -1736,6 +1753,8 @@ export class Engine {
       }
       case 'promises':
         return [{ kind: 'system', text: promiseLines(this.world).join('\n') }]
+      case 'quests':
+        return [{ kind: 'system', text: this.questsText() }]
       case 'party': {
         const words = command.args.join(' ').replace(/^(about|over)\s+/i, '')
         if (!command.args.length) return [{ kind: 'system', text: partyLines(this.world).join('\n') || 'You travel alone.' }]

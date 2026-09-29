@@ -637,6 +637,9 @@ export function questPage(world: World, questId: string): { name: string; lines:
     const s = quest.stages?.find((x) => x.id === id)
     if (s) lines.push(`- ${s.text}`)
   }
+  // What the stranger can do now (M10.30), while it is open.
+  const goal = q.ended ? undefined : quest.stages?.find((s) => s.id === q.stage)?.goal
+  if (goal) lines.push(`Now: ${goal}`)
   const clock = Object.values(world.state.clocks ?? {}).find((c) => (c as Clock).id.startsWith(questId) || (quest.stages ?? []).some((s) => s.on_enter.some((e) => 'clock' in e && e.clock.id === (c as Clock).id))) as Clock | undefined
   if (clock && !q.ended) lines.push(`${clock.name}: ${clock.filled}/${clock.size}.`)
   if (q.ended) {
@@ -644,6 +647,24 @@ export function questPage(world: World, questId: string): { name: string; lines:
     lines.push(o ? `${o.name}. ${o.text}` : q.outcome === 'lapsed' ? `Settled without you. ${quest.lapses?.text ?? ''}`.trim() : 'It is over.')
   }
   return { name: quest.name, lines }
+}
+
+/** QUESTS (M10.30): each quest taken up with where it stands and what to do now, the open ones first. */
+export function questLines(world: World): { open: string[]; over: string[] } {
+  const open: string[] = []
+  const over: string[] = []
+  for (const [id, q] of Object.entries(questlog(world)).sort((a, b) => a[1].started - b[1].started)) {
+    const quest = world.content.quests.get(id)
+    if (!quest) continue
+    if (q.ended) {
+      const o = quest.outcomes?.find((x) => x.id === q.outcome)
+      over.push(`  ${quest.name}: ${o?.name ?? (q.outcome === 'lapsed' ? 'settled without you' : 'over')}.`)
+      continue
+    }
+    const stage = quest.stages?.find((s) => s.id === q.stage)
+    open.push(`  ${quest.name}: ${stage?.text.trim() ?? ''}${stage?.goal ? ` Now: ${stage.goal}` : ''}`)
+  }
+  return { open, over }
 }
 
 /** Player conditions with a time on them wear off. */

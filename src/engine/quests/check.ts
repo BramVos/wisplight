@@ -121,10 +121,25 @@ export function checkQuests(c: Refs): string[] {
     for (const x of q.starts?.when ?? []) condition(x, `${w}.starts`)
     for (const s of q.stages) {
       for (const e of s.on_enter) effect(e, `${w}.${s.id}`, stages, outcomes)
+      // What people know per stage (M10.30): someone of this world.
+      for (const who of Object.keys(s.knows ?? {})) npc(who, `${w}.${s.id}.knows`)
       for (const n of s.next) {
         target(n.to, `${w}.${s.id}.next`)
         for (const x of n.when) condition(x, `${w}.${s.id}.next`)
         for (const e of n.effects) effect(e, `${w}.${s.id}.next`, stages, outcomes)
+      }
+    }
+    // What the story keeps hidden (M10.30): patterns that compile, and a stage that gives it out.
+    for (const [i, truth] of (q.truths ?? []).entries()) {
+      const where = `${w}.truths.${i + 1}`
+      if (truth.from && !stages.has(truth.from)) problems.push(`${where}: unknown stage ${truth.from}`)
+      for (const x of truth.when) condition(x, where)
+      for (const p of truth.words) {
+        try {
+          new RegExp(p, 'i')
+        } catch {
+          problems.push(`${where}: bad pattern ${p}`)
+        }
       }
     }
     for (const a of q.actions ?? []) {
@@ -177,6 +192,19 @@ export function questWarnings(c: Refs): string[] {
     if (!q.stages?.length) continue
     const solutions = (q.outcomes ?? []).filter((o) => o.solution).length
     if (solutions < 3) warnings.push(`quest ${q.id}: ${solutions} solution${solutions === 1 ? '' : 's'}, the design asks for at least three`)
+    // A hidden truth (M10.30) the giver's words or a journal line before its stage already say.
+    for (const [i, truth] of (q.truths ?? []).entries()) {
+      const until = truth.from ? q.stages.findIndex((s) => s.id === truth.from) : q.stages.length
+      const early = [q.ask ?? '', ...q.stages.slice(0, Math.max(0, until)).map((s) => s.text)]
+      const says = (text: string) => truth.words.some((w) => {
+        try {
+          return new RegExp(w, 'i').test(text)
+        } catch {
+          return false
+        }
+      })
+      if (early.some(says)) warnings.push(`quest ${q.id}: truth ${i + 1} ("${truth.text}") is in the ask or a journal line before its stage, so the stranger reads it before anyone may say it`)
+    }
   }
   return warnings
 }
