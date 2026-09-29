@@ -1,5 +1,29 @@
 # Changelog
 
+## M10.29 af: wat je speeltest van The Quiet Reach opleverde, 30 september 2026
+
+Alle tweeëntwintig punten van M10.29 (A tot en met V) zijn af. De delen staan hieronder in tien stukken "M10.29 deel"; dit is het overzicht.
+
+- **Gesprekken die kloppen.** Wie je niet kent, begroet je als nieuw. Woorden zijn geen daden: een belofte, een overhandigd ding of een tijd zonder aanbod wordt opnieuw gevraagd, en een tijd die de spreker zelf noemt ("in ten minutes", "after my shift") wordt een afspraak. Een spreker praat over zichzelf als ik, en improviseren verzint geen verleden.
+- **Het dagboek.** Waarom je hier bent en wie je van vroeger kent. Wat iedereen weet, met RECALL. Per persoon About en History met elk gesprek. Plekken met wat ze verkopen, en namen zonder titel.
+- **Commando's.** Wat je draagt komt eerst, Tab vult aan, en GO en WALK TO verstaan jouw woorden ("go outside", "go common room", "walk to 5,6" van binnen). Een onbekend werkwoord zegt wat wel kan.
+- **Het scherm.** Een plattegrond van hier boven de streekkaart, de laatste regels in beeld na een herstart, de cursor in het invoerveld, en de klok stil zolang een afgelopen gesprek openstaat.
+- **Achter de schermen.** Het AI-logboek kan als volledig bestand naast het verhaallog, een storing wordt één keer gemeld, en je sessies van 29 september zijn nagekeken (`docs/playtest/sessions-2026-09-29-analysis.md`).
+
+Testen, in deze volgorde, in een nieuw spel in The Quiet Reach:
+- Lees de kaart bij aankomst en open Why you are here in het dagboek.
+- Praat twee keer met Sana en kijk op haar pagina onder History.
+- Loop door Port Vesper met de plattegrond, typ `go outside` en `walk to 5,6`, en druk Tab na "l poc".
+- Sluit de app en kies Continue: je ziet de laatste regels.
+
+Kosten: M10.29 voegde geen soort aanroep toe en liep niets op je sleutel. De metingen van vandaag horen bij M10.28.
+
+Bekende gaten: The Quiet Reach heeft nog geen quests, dus Ilyans opdracht staat nog nergens als verhaal. Dat komt met M10.30: de kennis per stadium en de zichtbare opdracht zijn al gebouwd, de stap Verhalen en een run op je sleutel volgen. Tot er iets nieuws gebeurt, volgen de mensen daar hun rooster.
+
+Wat de editor en de kroniekverteller leerden: achtergronden met `knows` en `how`, `common` op een onderwerp, `with` op een affordance, `verbs` op een item, `colour` op een persoon, `call` bij een titel, een beschrijving bij elk veld, en de controle op een id in tekst (zie de delen).
+
+Ontwerp: functioneel ontwerp, de tien alinea's "Stand na M10.29".
+
 ## M10.29 deel: een storing één keer, gaan met jouw woorden, en een overhandigd ding, 30 september 2026
 
 - **Een storing één keer (V a).** Toen de provider van 16:14 tot 16:36 elke aanroep weigerde, kreeg je vier keer dezelfde vaste regel met de technische reden erbij. Nu zegt het gesprek één keer: "The link to the model is down. Until it is back, people answer from what the game knows of them." Daarna antwoorden de regels dertig seconden lang zonder het model te vragen, en dan probeert het gesprek het stil opnieuw. Werkt het weer, dan staat er één keer "The link to the model is back." De gateway koelt nu dertig seconden af in plaats van twee minuten. In de terminal gaat het net zo.
