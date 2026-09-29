@@ -36,7 +36,7 @@ describe('choices', () => {
     expect(choose(engine.world, '', 'Talk to whom?', options.slice(0, 1), 'nobody')).toEqual({ run: 'talk mirte' })
     expect(choose(engine.world, '', 'Talk to whom?', [], 'There is nobody here but you.')).toEqual({ show: [{ kind: 'error', text: 'There is nobody here but you.' }] })
     const shown = choose(engine.world, 'kees', 'Talk to whom?', options, 'nobody')
-    expect('show' in shown && said(shown.show)).toBe('Talk to whom?\n  1. Mirte\n  2. Saartje')
+    expect('show' in shown && said(shown.show)).toBe('Talk to whom?\n  1. Mirte\n  2. Saartje\n(a number, the name, or anything else to leave it)')
     expect(answerChoice(engine.world, '3')).toEqual({ error: 'Choose a number from 1 to 2, or type something else.' })
     expect(answerChoice(engine.world, 'saartje')).toEqual({ run: 'talk saartje' })
     expect(answerChoice(engine.world, '1')).toEqual({ error: 'There is nothing to choose from just now.' })

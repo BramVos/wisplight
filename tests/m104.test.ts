@@ -41,6 +41,9 @@ describe('M10.4: commands', () => {
 
   it('LOOK SOUTH and LOOK AT THE TIDEPOOLS tell what lies that way and the way there', async () => {
     const engine = new Engine(isle, { seed: 7 })
+    // Heard of and not yet seen (M10.29): the name and the way, not what it is like.
+    expect(said(await engine.handle('look east'))).toMatch(/^To the east: The Tidepools, as you have heard; you have not been there\. .*It is (a few steps|\d+ minutes on foot)\./)
+    ;(engine.state.player.seen ??= []).push('loc_skerrow_tidepools')
     expect(said(await engine.handle('look east'))).toMatch(/^To the east: The Tidepools\. .+ It is (a few steps|\d+ minutes on foot)\./)
     expect(said(await engine.handle('look at the tidepools'))).toMatch(/^To the east: The Tidepools\./)
   })

@@ -204,10 +204,12 @@ export function App() {
     if (showCards && fresh.length) setMoments((previous) => [...previous, ...fresh.map((l) => (l as Output).card!)])
   }, [lines, showCards])
 
-  // Menus stop the clock (FO, chapter 3); the dev menu too, so looking changes nothing; and a moment's card.
+  // Menus stop the clock (FO, chapter 3); the dev menu too, so looking changes nothing; and a moment's card; and
+  // the window of a talk that ended, while it stays open (M10.29: the clock ran on for two hours behind it).
+  const endedOpen = Boolean(ended) && !status?.talk
   useEffect(() => {
-    client?.hold(Boolean(settings) || ending || exporting || typing || Boolean(creation) || Boolean(journal) || Boolean(worlds) || Boolean(loading) || dev || moments.length > 0)
-  }, [client, settings, ending, exporting, typing, creation, journal, worlds, loading, dev, moments.length])
+    client?.hold(Boolean(settings) || ending || exporting || typing || Boolean(creation) || Boolean(journal) || Boolean(worlds) || Boolean(loading) || dev || moments.length > 0 || endedOpen)
+  }, [client, settings, ending, exporting, typing, creation, journal, worlds, loading, dev, moments.length, endedOpen])
 
   // Sound (M10.15): what the engine says is to be heard here; silent in menus and while the game waits, and a bell
   // only when it rings after the game has loaded. The browser lets it start at the first key or click.
@@ -468,6 +470,8 @@ export function App() {
         {scene && status && (
           <figure className="scene">
             <img src={scene} alt={t('app.scene', { name: status.area })} />
+            {/* Where you are, under the picture (M10.29): the picture is the area's, the name the place's. */}
+            <figcaption>{status.location === status.area ? status.location : `${status.location}, ${status.area}`}</figcaption>
           </figure>
         )}
         <section>

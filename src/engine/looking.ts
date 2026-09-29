@@ -64,7 +64,11 @@ export function selfState(world: World): string {
 
 /**
  * LOOK SOUTH, LOOK AT THE TIDEPOOLS: what lies that way, in short, and the
- * way there. Nothing when the words name no way out or place in sight.
+ * way there. Nothing when the words name no way out or place in sight. A
+ * place the stranger has never stood in shows only what can be seen from
+ * here (M10.29: looking at the hangar told of the ship behind its sealed
+ * door): the way, a thing of this place its names find (the hangar door),
+ * and its name only when they have heard of it.
  */
 export function lookThere(world: World, words: string): Output | undefined {
   const here = world.content.locations.get(world.state.player.location)
@@ -79,9 +83,14 @@ export function lookThere(world: World, words: string): Output | undefined {
   if (!found) return undefined
   const [dir, exit] = found
   const target = world.location(exit.to)
-  const about = target.summary ?? firstSentence(target.description.day)
   const way = exit.minutes <= 1 ? 'a few steps' : exit.minutes < 60 ? `${exit.minutes} minutes on foot` : `${Math.round(exit.minutes / 60)} hours on foot`
-  return text(`${dir === 'in' || dir === 'out' || dir === 'up' || dir === 'down' ? capital(dir) : `To the ${dir}`}: ${target.name}. ${about} It is ${way}.`)
+  const heading = dir === 'in' || dir === 'out' || dir === 'up' || dir === 'down' ? capital(dir) : `To the ${dir}`
+  const player = world.state.player
+  if ((player.seen ?? []).includes(target.id)) return text(`${heading}: ${target.name}. ${target.summary ?? firstSentence(target.description.day)} It is ${way}.`)
+  const door = [target.name, ...target.aliases].map((n) => detailHere(world, n)).find((d) => d !== undefined)
+  const seenFromHere = door ? `${door.look} ` : ''
+  if (player.journal?.[target.id] !== undefined) return text(`${heading}: ${target.name}, as you have heard; you have not been there. ${seenFromHere}It is ${way}.`)
+  return text(`${heading}: ${seenFromHere || 'a way you have not taken yet. '}It is ${way}.`)
 }
 
 /**
@@ -114,7 +123,8 @@ export interface DetailFound {
 /**
  * A thing of this place or of an object here, by the words for it: the
  * hollow between the roots, the apple on the stone. "The wooden bowl" finds
- * the bowl by its last word.
+ * the bowl by its last word, and "hangar" the hangar door by any word of its
+ * name (M10.29), after every whole name.
  */
 export function detailHere(world: World, words: string): DetailFound | undefined {
   const wanted = words.toLowerCase().replace(/^(the|a|an|some|de|het|een)\s+/, '').trim()
@@ -122,9 +132,13 @@ export function detailHere(world: World, words: string): DetailFound | undefined
   const place = world.content.locations.get(world.state.player.location)
   const all = [...(place?.details ?? []), ...world.location(world.state.player.location).objects.flatMap((o) => world.content.objectTypes.get(o.type)?.details ?? [])]
   const last = wanted.split(/\s+/).at(-1)!
-  const found = all.find((d) => d.words.some((w) => w.toLowerCase() === wanted)) ?? all.find((d) => d.words.some((w) => w.toLowerCase() === last))
+  const anyWord = (w: string) => !DETAIL_STOP.has(last) && w.toLowerCase().split(/\s+/).includes(last)
+  const found = all.find((d) => d.words.some((w) => w.toLowerCase() === wanted)) ?? all.find((d) => d.words.some((w) => w.toLowerCase() === last)) ?? all.find((d) => d.words.some(anyWord))
   return found ? { name: `the ${found.words[0]}`, look: found.look, take: found.take, verbs: found.verbs } : undefined
 }
+
+/** Small words that name no thing on their own: "of" does not find the bowl of milk. */
+const DETAIL_STOP = new Set(['of', 'the', 'a', 'an', 'and', 'on', 'in', 'at', 'to', 'with', 'by', 'for', 'from', 'up', 'down', 'out'])
 
 /** The description of a place as it reads now: its variant, by day or night. */
 export function descriptionNow(world: World, location: Location): string {

@@ -34,11 +34,11 @@ export function choose(world: World, words: string, question: string, options: C
   return { show: offer(world, question, options) }
 }
 
-/** Puts a choice to the player: numbered, kept until the next command. */
+/** Puts a choice to the player: numbered, kept until the next command, and how to leave it (M10.29: x is examine, not a way out). */
 export function offer(world: World, question: string, options: ChoiceOption[]): Output[] {
   const list = options.slice(0, MAX_OPTIONS)
   world.state.choice = { question, options: list, t: world.now }
-  return [{ kind: 'system', text: [question, ...list.map((o, i) => `  ${i + 1}. ${o.label}`)].join('\n') }]
+  return [{ kind: 'system', text: [question, ...list.map((o, i) => `  ${i + 1}. ${o.label}`), '(a number, the name, or anything else to leave it)'].join('\n') }]
 }
 
 /**

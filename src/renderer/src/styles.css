@@ -1878,6 +1878,11 @@ pre.sheet {
   object-fit: cover;
   border-radius: 3px;
 }
+.scene figcaption {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: calc(12px * var(--text-scale));
+}
 
 /* Moments (M10.11): a card over the log for a place worth it or a tiding; in the log, a line with a mark. */
 .line.card {

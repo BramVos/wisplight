@@ -43,7 +43,7 @@ describe('M10.21: ask once above the threshold', () => {
     expect(asked && 'ask' in asked ? asked.ask : undefined).toMatchObject({ id: 'district:graafhaven:harbour', usd: 1.5, then: 'look' })
     expect(askOpen(engine.world)?.id).toBe('district:graafhaven:harbour')
     const shown = askOutput(engine.world, (asked as { ask: Parameters<typeof askOutput>[1] }).ask)
-    expect(shown[0]!.text).toBe('Making the harbour district of Graafhaven playable costs about $1.50 with the model you chose.\n  1. Go on\n  2. Not now\n  3. Always go on, and stop asking')
+    expect(shown[0]!.text).toBe('Making the harbour district of Graafhaven playable costs about $1.50 with the model you chose.\n  1. Go on\n  2. Not now\n  3. Always go on, and stop asking\n(a number, the name, or anything else to leave it)')
     const out = await engine.handle('1')
     expect(out.some((o) => o.kind === 'room' || /Canal Quay|quay/i.test(o.text))).toBe(true)
     expect(askOpen(engine.world)).toBeUndefined()
