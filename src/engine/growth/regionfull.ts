@@ -23,58 +23,19 @@ import { grownContent, growth } from './growth'
 // what a step makes that belongs to the region is kept as a layer of the
 // save, checked with the whole game's content. The story round comes last.
 
-type Raw = Record<string, unknown>
-
-/** The rounds of a region built in full, in order: the places polished right after they are made. */
-export const FULL_ROUNDS = ['places', 'polish', 'professions', 'people', 'economy', 'watcher'] as const
-export type FullRound = (typeof FULL_ROUNDS)[number]
-
-/** What the full build made for a region, by list, and which rounds are done. */
-export interface RegionFull {
-  done: string[]
-  entities: Record<string, Raw[]>
-  t: number
-  /** What came of each round: kept, or why not (M10.25: the played proof needs to see it). */
-  rounds?: Record<string, { kept: boolean; problems?: string[] }>
-}
 
 /** The kinds a region's build may keep: its own things, never the world's keys, rules, factions or lines. */
 const KEPT = ['areas', 'locations', 'npcs', 'professions', 'items', 'object_types', 'settlements', 'resources', 'crafts', 'topics', 'watchers', 'aftermath', 'creatures', 'encounters', 'quests'] as const
 const PREFIX = 'game/'
 
-export function fullOf(world: Pick<World, 'state'>, topic: string): RegionFull | undefined {
-  return world.state.growth?.fulls?.[topic]
-}
-
-/** Whether every round of a region's full build is done. */
-export function fullDone(world: Pick<World, 'state'>, topic: string): boolean {
-  const done = fullOf(world, topic)?.done ?? []
-  return FULL_ROUNDS.every((r) => done.includes(r))
-}
-
-/** The rounds of a region's full build still to do, in order. */
-export function fullLeft(world: Pick<World, 'state'>, topic: string): FullRound[] {
-  const done = fullOf(world, topic)?.done ?? []
-  return FULL_ROUNDS.filter((r) => !done.includes(r))
-}
-
 // ---------------------------------------------------------------- the layer
 
-/** The full builds of regions, for the content of a game: their things, over what was there. */
-export function withFulls(content: Content, state: GameState): Content {
-  const all = Object.entries(state.growth?.fulls ?? {}).sort(([a], [b]) => a.localeCompare(b))
-  if (!all.some(([, f]) => Object.keys(f.entities).length)) return content
-  const next = { ...content } as Record<string, unknown>
-  const shape = (FileSchema as unknown as { shape: Record<string, { parse: (v: unknown) => unknown }> }).shape
-  for (const [key, name] of CONTENT_LISTS) {
-    const raws = all.flatMap(([, f]) => f.entities[key] ?? [])
-    if (!raws.length) continue
-    const map = new Map(content[name] as Map<string, { id: string }>)
-    for (const item of shape[key]!.parse(raws) as { id: string }[]) map.set(item.id, item)
-    next[name] = map
-  }
-  return next as unknown as Content
-}
+// In fulllayer.ts, which the content of a game loads without the editor (M10.26: growth.ts importing this file
+// made a cycle through editor.ts, and scripts that load edit.ts first stopped on it).
+export { FULL_ROUNDS, fullDone, fullLeft, fullOf, withFulls, type FullRound, type RegionFull } from './fulllayer'
+import { FULL_ROUNDS, fullDone, fullLeft, fullOf, type FullRound, type RegionFull } from './fulllayer'
+
+type Raw = Record<string, unknown>
 
 // ---------------------------------------------------------------- the request
 

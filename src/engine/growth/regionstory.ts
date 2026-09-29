@@ -15,7 +15,7 @@ import { worldFixedPart } from '../worldfixed'
 import { districtOf, districtsOf } from './districts'
 import { farPlaceOf } from './far'
 import { outlineOf } from '../outlines'
-import { fullDone } from './regionfull'
+import { fullDone } from './fulllayer'
 import { grownContent, growth } from './growth'
 
 // A new region with a story of its own (M10.25; Bram, 29 September 2026: is
