@@ -1,6 +1,6 @@
 import { askOutput, mustAsk } from '../asking'
 import type { Output } from '../commands'
-import { checkContent, FileSchema, type Content, type ContentFile } from '../content'
+import { checkContent, ContentError, FileSchema, type Content, type ContentFile } from '../content'
 import { CONTENT_LISTS, contentFilesOf } from '../contentfiles'
 import type { LlmRequest } from '../dialogue/llm'
 import { worldFrame } from '../dialogue/prompt'
@@ -185,10 +185,16 @@ export function applyFull(world: World, topic: string, round: FullRound, layer: 
   const state = { ...world.state, growth: { ...g, fulls: { ...(g.fulls ?? {}), [topic]: next } } }
   let kept = Boolean(layer && Object.keys(layer).length)
   if (kept) {
+    // Why a layer is not kept, for the proof and the dev view: what the whole game's content says of it.
     try {
-      if (checkContent(grownContent(world.base, state)).length) kept = false
-    } catch {
+      const wrong = checkContent(grownContent(world.base, state))
+      if (wrong.length) {
+        kept = false
+        problems = [...problems, ...wrong.slice(0, 5)]
+      }
+    } catch (error) {
       kept = false
+      problems = [...problems, error instanceof ContentError ? error.problems.slice(0, 5).join('; ') : String(error)]
     }
   }
   const rounds = { ...(had.rounds ?? {}), [round]: { kept, ...(problems.length ? { problems: problems.slice(0, 5) } : {}) } }
