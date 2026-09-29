@@ -112,8 +112,9 @@ function edgeTowards(world: World, pos: readonly [number, number], outland?: str
   for (const edge of near) {
     const dx = pos[0] - at(edge)![0]
     const dy = pos[1] - at(edge)![1]
-    // The map's y runs south.
-    const angle = (Math.atan2(dx, -dy) * 180) / Math.PI
+    // The map's y runs north (Stavermouth, north of the Holleveen, has the larger y); found in the M10.25 region play,
+    // where a region charted south had its road leave the edge northwards and its gate send the stranger back south.
+    const angle = (Math.atan2(dx, dy) * 180) / Math.PI
     const winds: Direction[] = ['north', 'northeast', 'east', 'southeast', 'south', 'southwest', 'west', 'northwest']
     const first = Math.round(((angle + 360) % 360) / 45) % 8
     // The nearest wind the edge has free; a gate that has its east way open takes it.

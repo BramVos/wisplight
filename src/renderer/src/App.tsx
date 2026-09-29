@@ -677,6 +677,7 @@ export function App() {
             {status ? `${status.location}  |  ${status.time}  |  ${status.money}${status.paused && !status.talk ? `  |  ${t('app.status.paused')}` : ''}` : t('app.status.loading')}
           </span>
           {status?.wanted && <span className="wanted">{t('app.status.wanted', { crimes: status.wanted.join('; ') })}</span>}
+          {status?.building && <span className="building">{status.building}</span>}
           <button type="button" className="link journal-button" onClick={() => openPage()} title={t('app.status.journalTitle')}>
             [{t('app.status.journal')}]
           </button>

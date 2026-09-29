@@ -1,0 +1,235 @@
+The Holleveen, south edge; the dial at outline; seed 7; the mock model
+The barge from Graafhaven leaves you at the Veenhoek quay just as the light goes. The bargeman won't tie up. "Not after dark, not out here," he says, and poles away into the mist, taking his lantern with him.
+
+This is the Holleveen: peat and reed and black water, mile upon mile of it between the Great Dyke and the heath. The villages sit on the few dry places like cats on a fence. Peat smoke. A windmill standing still against a sky the colour of pewter, its sails torn to rags.
+
+Somewhere a dog barks. On the doorstep of the nearest house a grey cat watches you, very still, the way cats don't usually watch people.
+
+Type LOOK to look around. Type HELP if you are lost. You probably are.
+You ran goods past the Count's tolls until the tolls caught up with you in Graafhaven. The Holleveen is a good place to be forgotten, and Trijntje at the Drowned Goose asks no questions.
+You were told to ask for Trijntje the innkeeper at the Drowned Goose. The name is in your journal.
+Canal Quay
+Grey water slaps against the planks of the quay. A barge rope lies coiled by the mooring posts, and beside them stands a worn stone, waist-high, with a dog carved into it. Someone has put an apple on top. The Graafse Vaart runs east and west; the green is north and the peat sheds are south.
+Exits: north, east, west, south, southwest
+Across country you can head any way, or follow the tow path west to Oude Zijl, the tow path east to Waagdam, the peat road to Molenend, the fen path to the Kattenbroek, the priory path to Kloosterveen or the path to the Kabouterberg.
+The pace of events is normal. Type TEMPO CALM or TEMPO DRAMATIC for less or more happening in the world.
+
+==== THE DIAL: outline
+
+> frames region outline
+How full a new region is built: outline.
+
+# To the south edge of the Holleveen, in the middle, and on into the unknown.
+
+> @goto hex:60,0   [build command: a shortcut, to the edge of the map]
+[build] You are at In the fen, about 8 km south-west of the Blackmere.
+In the fen, about 8 km south-west of the Blackmere
+Wet ground and sedge stretch around you, cut by black pools. Low grey cloud sits on the land.
+Ways on: north, north-east, north-west.
++30 experience: you came to the Holleveen.
+
+> explore south
+The chronicler is working out what lies south.
+
+==== SET OFF FOR the Grey Saltings (Dinsdag 14 Herfstmaand 211 AW, 18:30 (evening))
+
+> head south
+You have come to the edge of the Holleveen.
+South, the fen goes on into reed and black water, and beyond it lies the delta of the Three Rivers, where drowned Saeftinge shows at low tide. No road you know of goes that way.
+Go on, or turn back?
+  1. Go on to the Grey Saltings on foot, about 2 days south
+  2. Turn back north
+What lies south, as far as you can make out: the Grey Saltings. Salt flats south of the edge, where a few families boil sea water for salt. Head south at the edge to go on.
+
+> 1
+(Survival 2 vs DC 12: failure)
+You leave the Holleveen behind and go on across country for the Grey Saltings. It takes a day and 21 hours. On the first day, a hard stretch of the way costs you half a day and most of your temper. On the second day, mist lies over everything and muffles every sound. You come to The Gate of the Grey Saltings.
+The Gate of the Grey Saltings
+You come to the gate of the Grey Saltings after 2 days on the road from the Holleveen. The walls are higher than any you have seen at home, and the air smells of tar, smoke and wet stone. Carts stand in line to be let in, and the gatekeepers call out to each other in a quick, flat speech. The market lies ahead, and the road back to the Holleveen runs northeast.
+Exits: northeast, in
++10 experience: you found The Gate of the Grey Saltings.
++30 experience: you came to the Grey Saltings.
+
+==== DAY 1 (Donderdag 16 Herfstmaand 211 AW, 21:30 (evening))
+
+> look
+The Gate of the Grey Saltings
+You come to the gate of the Grey Saltings after 2 days on the road from the Holleveen. The walls are higher than any you have seen at home, and the air smells of tar, smoke and wet stone. Carts stand in line to be let in, and the gatekeepers call out to each other in a quick, flat speech. The market lies ahead, and the road back to the Holleveen runs northeast.
+Exits: northeast, in
+
+> journal
+People: Trijntje, the Count.
+Places: the Holleveen, Veenhoek, the Grey Saltings, The Gate of the Grey Saltings, Canal Quay.
+Lore: the stranger in Veenhoek, the Grey Saltings charted, the stranger in the Grey Saltings.
+
+> in
+The Market of the Grey Saltings
+You stand in the market of the Grey Saltings, among stalls of cloth, salt and pots. Traders shout their prices over each other, and you smell pitch and hot fat from the cookshops. Nobody here has heard of the Holleveen or cares what happens there. An inn stands at the corner, and the gate is back out.
+Exits: out, in
++10 experience: you found The Market of the Grey Saltings.
+
+> in
+The Carters' Inn
+You duck into a low inn where carters from half the land sit over their beer. It is warm in here, and loud, and it smells of wet wool and onions. The innkeeper keeps an eye on the door and another on the purses. The market is back out.
+Exits: out
+Here: Hendrikje the merchant, Hessel the innkeeper (at work).
++10 experience: you found The Carters' Inn.
+
+> talk hendrikje the merchant
+You are talking with Hendrikje the merchant. Type what you want to say, pick a number, or BYE to stop.
+Hendrikje nods. "Evening."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+Hendrikje looks up. "Mm. That so?"
+The chronicler is working out the boiling huts of the Grey Saltings.
+
+> insight
+(Insight 6 vs DC 15: failure)
+You can't read anything behind Hendrikje's face.
+
+> bye
+Hendrikje lifts a hand. "Go on, then."
+
+> talk hessel the innkeeper
+You are talking with Hessel the innkeeper. Type what you want to say, pick a number, or BYE to stop.
+Hessel nods. "Evening."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+Hessel looks up. "[The Count] wants to drain [the Holleveen] and make a [polder] of it. A surveyor from Graafhaven has been measuring the fen since spring. The peat-cutters are furious; the miller thinks it will be good for trade."
+
+> insight
+(Insight 4 vs DC 15: critical failure)
+You can't read anything behind Hessel's face.
+
+> bye
+Hessel lifts a hand. "Go on, then."
+
+> out
+The Market of the Grey Saltings
+You stand in the market of the Grey Saltings, among stalls of cloth, salt and pots. Traders shout their prices over each other, and you smell pitch and hot fat from the cookshops. Nobody here has heard of the Holleveen or cares what happens there. An inn stands at the corner, and the gate is back out.
+Exits: out, in, north, east
+
+> north
+The Chandlery
+You step into a chandler's shop in the boiling huts of the Grey Saltings, hung with rope, lanterns and tarred canvas. It smells of pitch and lamp oil. A boy sweeps shavings towards the door. The street is back the way you came.
+Exits: south, north
+Here: Hester the merchant.
++10 experience: you found The Chandlery.
+
+> talk hester the merchant
+You are talking with Hester the merchant. Type what you want to say, pick a number, or BYE to stop.
+Hester nods. "Evening."
+"If you go home that way, tell my cousin I am well, and that I still have the knife."
+New in your journal: Word for a cousin.
+Hester asks you to look in on Hendrikje. YES to give your word, NO to decline.
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+Hester looks up. "They are cousins on the mother's side, and have not seen each other since they were children. (You saw it yourself.)"
+
+> insight
+(Insight 21 vs DC 16: success)
+Always has an errand when the landlord comes by.
+
+> persuade You can tell me. It stays between us.
+Hester looks up. "Mm. That so?"
+
+> bye
+Hester lifts a hand. "Go on, then."
+
+> north
+The Cooper's Yard
+You stand in a yard stacked with barrels, some new and pale, some black with age. Somewhere a mallet knocks hoops onto a cask, steady as a clock. Rain has left puddles between the staves. The chandlery is back through the gate.
+Exits: south
+Here: Joris the merchant.
++10 experience: you found The Cooper's Yard.
+
+> talk joris the merchant
+You are talking with Joris the merchant. Type what you want to say, pick a number, or BYE to stop.
+Joris nods. "Evening."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+Joris looks up. "Word of it has come this far, and here someone knows the stranger by it. (You saw it yourself.)"
+
+> insight
+(Insight 12 vs DC 16: failure)
+You can't read anything behind Joris's face.
+
+> bye
+Joris lifts a hand. "Go on, then."
+
+> south
+The Chandlery
+You step into a chandler's shop in the boiling huts of the Grey Saltings, hung with rope, lanterns and tarred canvas. It smells of pitch and lamp oil. A boy sweeps shavings towards the door. The street is back the way you came.
+Exits: south, north
+Here: Hester the merchant.
+
+> south
+The Market of the Grey Saltings
+You stand in the market of the Grey Saltings, among stalls of cloth, salt and pots. Traders shout their prices over each other, and you smell pitch and hot fat from the cookshops. Nobody here has heard of the Holleveen or cares what happens there. An inn stands at the corner, and the gate is back out.
+Exits: out, in, north, east
+
+> east
+While you walk, the chronicler is laying out the creek landing of the Grey Saltings.
+
+[a minute passes while the chronicler lays it out]
+The creek landing
+You come into the creek landing of the Grey Saltings. A landing of black posts where the salt barges tie up at high water. The street is full of people who know where they are going, and it smells of smoke and wet stone. The market is back west.
+Exits: west
++10 experience: you found The creek landing.
+
+> north
+The Chandlery
+You step into a chandler's shop in the creek landing of the Grey Saltings, hung with rope, lanterns and tarred canvas. It smells of pitch and lamp oil. A boy sweeps shavings towards the door. The street is back the way you came.
+Exits: south, north
++10 experience: you found The Chandlery.
+
+[10 hours pass: the night, to eight the next morning]
+
+
+==== DAY 2 (Vrijdag 17 Herfstmaand 211 AW, 08:00 (morning))
+
+> look
+The Chandlery
+You step into a chandler's shop in the creek landing of the Grey Saltings, hung with rope, lanterns and tarred canvas. It smells of pitch and lamp oil. A boy sweeps shavings towards the door. The street is back the way you came.
+Exits: south, north
+
+> journal
+People: Hendrikje Hofstede, Hessel Postma, Hester Vlieland, Joris Kuipers, Trijntje, the Count.
+Places: the Holleveen, Veenhoek, Graafhaven, the Grey Saltings, The Chandlery, The Cooper's Yard, The creek landing, The Chandlery, The Gate of the Grey Saltings, The Carters' Inn, The Market of the Grey Saltings, Canal Quay.
+Lore: the drainage of the Holleveen, the stranger in Veenhoek, Hester Vlieland and Hendrikje Hofstede, Word for a cousin, the mill not turning before winter, the creek landing of the Grey Saltings, the Grey Saltings charted, the stranger in the Grey Saltings.
+
+> north
+The Cooper's Yard
+You stand in a yard stacked with barrels, some new and pale, some black with age. Somewhere a mallet knocks hoops onto a cask, steady as a clock. Rain has left puddles between the staves. The chandlery is back through the gate.
+Exits: south
++10 experience: you found The Cooper's Yard.
+
+[24 hours pass: the night, to eight the next morning]
+
+
+==== DAY 3 (Zaterdag 18 Herfstmaand 211 AW, 08:00 (morning))
+
+> look
+The Cooper's Yard
+You stand in a yard stacked with barrels, some new and pale, some black with age. Somewhere a mallet knocks hoops onto a cask, steady as a clock. Rain has left puddles between the staves. The chandlery is back through the gate.
+Exits: south
+
+> journal
+People: Hendrikje Hofstede, Hessel Postma, Hester Vlieland, Joris Kuipers, Trijntje, the Count.
+Places: the Holleveen, Veenhoek, Graafhaven, the Grey Saltings, The Chandlery, The Cooper's Yard, The creek landing, The Chandlery, The Cooper's Yard, The Gate of the Grey Saltings, The Carters' Inn, The Market of the Grey Saltings, Canal Quay.
+Lore: the drainage of the Holleveen, the stranger in Veenhoek, Hester Vlieland and Hendrikje Hofstede, Word for a cousin, the mill not turning before winter, the creek landing of the Grey Saltings, the Grey Saltings charted, the stranger in the Grey Saltings.
+
+> journal
+People: Hendrikje Hofstede, Hessel Postma, Hester Vlieland, Joris Kuipers, Trijntje, the Count.
+Places: the Holleveen, Veenhoek, Graafhaven, the Grey Saltings, The Chandlery, The Cooper's Yard, The creek landing, The Chandlery, The Cooper's Yard, The Gate of the Grey Saltings, The Carters' Inn, The Market of the Grey Saltings, Canal Quay.
+Lore: the drainage of the Holleveen, the stranger in Veenhoek, Hester Vlieland and Hendrikje Hofstede, Word for a cousin, the mill not turning before winter, the creek landing of the Grey Saltings, the Grey Saltings charted, the stranger in the Grey Saltings.
+
+==== END (Zaterdag 18 Herfstmaand 211 AW, 08:00 (morning))

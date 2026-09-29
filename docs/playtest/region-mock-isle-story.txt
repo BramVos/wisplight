@@ -1,0 +1,394 @@
+Skerrow, over the sea; the dial at story; seed 7; the mock model
+Cold water, then stones. You wake on your face on a strand of black shingle, with the sea still pulling at your boots. Of the Grey Gull there is not much left: a broken mast, a spill of cordage, a cask rolling in the surf. Of her crew there is nothing at all.
+
+Gulls argue overhead. Somewhere beyond the rocks a bell rings once, thin and far, and then stops. There are people on this island, then.
+
+This is Skerrow, though you do not know it yet. No ship has called here since the light went out.
+
+Type LOOK to look around. Type HELP if you are lost. You are, rather.
+You were born to wreckers on another island and ran from them on the Grey Gull, and now a wreck has put you ashore after all. Maren at the Salt Kettle takes in what the sea brings.
+You were told to ask for Maren of the Salt Kettle in Skerrow Hythe. The name is in your journal.
+The Wreck Strand
+You stand on a strand of black shingle where the sea throws up what is left of the [Grey Gull]: a broken mast, a spill of wet rope, a cask rolling in the shallows. The stones clatter and hiss with every wave, and the air tastes of salt and tar. Gulls quarrel over something you would rather not look at. North, a path climbs the low cliff; east, the rocks give way to the [Tidepools].
+On the ground: a cask of lamp oil, a coil of rope and a bolt of sailcloth.
+Exits: north, east
+The Wreck Strand
+You come to on black shingle with the sea still pulling at your boots. Around you lies what is left of the Grey Gull, a mast, rope, a cask turning in the shallows, and nobody else.
+The pace of events is normal. Type TEMPO CALM or TEMPO DRAMATIC for less or more happening in the world.
+New quest: Off Skerrow. The Grey Gull broke on the rocks of Skerrow, and you alone came ashore. No ship calls since the beacon on the headland went out, and the winter storms will soon close the sea. Find a way off the island.
+
+==== THE DIAL: story
+
+> frames region story
+How full a new region is built: story.
+
+# To the harbour of Skerrow, to ask what lies beyond the sea.
+
+> @goto loc_skerrow_harbour   [build command: a shortcut, to the harbour]
+[build] You are at Skerrow Hythe, the Harbour.
+Skerrow Hythe, the Harbour
+A curved wall of piled stone keeps the sea out of a harbour no bigger than a barn floor. Brannoc's boat, the Kittiwake, lies on the slip with her mast bare, and nets hang drying from every post. It smells of fish, wet rope and woodsmoke. Steps go up north to the green; west, the rocks lead back to the [Tidepools], and a low door by the slip opens into a cottage.
+Exits: north, west, in
++10 experience: you found Skerrow Hythe, the Harbour.
++30 experience: you came to Skerrow Hythe.
+
+> what lies beyond the sea?
+Nobody on the quay can tell you what lies past where the boats go.
+Will you look for a skipper who will sail further?
+  1. Find a skipper who will sail further out
+  2. Let it be
+
+> 1
+The chronicler is working out what lies south.
+
+==== SET OFF FOR the Grey Saltings (Windsday 3 Leaffall 412 SF, 07:10 (morning))
+
+> @money 200   [build command: a shortcut, the fare]
+[build] You have 2 gp.
+What lies across the water south, as the skippers tell it: the Grey Saltings. Salt flats south of the edge, where a few families boil sea water for salt. A boat goes there from Skerrow Hythe, the Harbour.
+
+> @time 7   [build command: a shortcut, the boat sails at eight]
+[build] 1430 minutes pass.
+Brannoc arrives from inside.
+Wenna arrives from the north.
+Wenna hoists the coracle onto her back and walks it down to the water.
+Brannoc nods to Wenna.
+Pip comes from inside, on his way to Skerrow Hythe, the Green.
+Pip stops and gives you a nod, curious about the stranger.
+Brannoc and Pip greet each other warmly.
+Pip nods to Wenna.
+Pip walks on to the north.
+Wenna comes back up the slip with a string of pollock, and sets to gutting and salting them.
+Wenna sets out 7 salt fish for sale.
+Brannoc goes inside.
+Wenna leaves north.
+Pip comes from the north, on his way to The Reeds' Cottage.
+Pip walks on inside.
+Pip comes from inside, on his way to Skerrow Hythe, the Green.
+Pip walks on to the north.
+Brannoc arrives from inside.
+Wenna arrives from the north.
+Brannoc nods to Wenna.
+Wenna leaves north.
+Brannoc goes inside.
+Pip comes from the north, on his way to The Reeds' Cottage.
+Pip stops and gives you a nod, curious about the stranger.
+Pip walks on inside.
+Brannoc comes from inside, on his way to Skerrow Hythe, the Green.
+Brannoc walks on to the north.
+Brannoc comes from the north, on his way to The Reeds' Cottage.
+Brannoc walks on inside.
+Wenna arrives from the north.
+Brannoc arrives from inside.
+Brannoc nods to Wenna.
+The harbour bell rings for six, once for the boats.
+The harbour bell rings for six, once for the boats.
+
+> take the boat to Grey Saltings
+As you set off, you think of what you leave behind. Off Skerrow: The Grey Gull broke on the rocks of Skerrow, and you alone came ashore. No ship calls since the beacon on the headland went out, and the winter storms will soon close the sea. Find a way off the island.
+(Survival 2 vs DC 12: failure)
+You pay 2 sp and travel by the boat to the Grey Saltings from Skerrow Hythe to the Grey Saltings. It takes 2 days.
+While you travel, the chronicler is laying out the Grey Saltings.
+
+[a minute passes while the chronicler lays it out]
+On the first day, a hard stretch of the way costs you half a day and most of your temper. On the second day, rain comes in off the sea and runs down your neck. You come to The Quay of the Grey Saltings.
++10 experience: you found The Quay of the Grey Saltings.
++30 experience: you came to the Grey Saltings.
+
+==== DAY 1 (Starday 6 Leaffall 412 SF, 14:01 (afternoon))
+
+> look
+The Quay of the Grey Saltings
+You step ashore on the quay of the Grey Saltings after 2 days at sea. The quay is crowded with barrels and nets, and the air smells of tar, fish and wet stone. Gulls scream over the masts, and the dockhands call out to each other in a quick, flat speech. The market lies ahead, and the ships leave from here.
+Exits: in
+
+> journal
+People: Maren.
+Places: Skerrow, Skerrow Hythe, the Shore, the Grey Saltings, The Quay of the Grey Saltings, Skerrow Hythe, the Harbour, The Headland, The Tidepools, The Wreck Strand.
+Lore: the Grey Gull.
+
+> in
+The Market of the Grey Saltings
+You stand in the market of the Grey Saltings, among stalls of cloth, salt and pots. Traders shout their prices over each other, and you smell pitch and hot fat from the cookshops. Nobody here has heard of Skerrow or cares what happens there. An inn stands at the corner, and the gate is back out.
+Exits: out, in, north, east
+Here: Tressa the innkeeper (at work).
++10 experience: you found The Market of the Grey Saltings.
+
+> talk tressa the innkeeper
+You are talking with Tressa the innkeeper. Type what you want to say, pick a number, or BYE to stop.
+Tressa nods. "Afternoon."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+Tressa: The tally stick is gone, and without it every carter swears he owes nothing. Would you look for it?
+New quest: The Missing Tally. Tressa lost the tally; it was last seen by the door.
+
+> 2
+You: "What's new around here?"
+Tressa looks up. "Mm. That so?"
+
+> insight
+(Insight 6 vs DC 15: failure)
+You can't read anything behind Tressa's face.
+
+> bye
+Tressa lifts a hand. "Go on, then."
+
+> north
+The Chandlery
+You step into a chandler's shop in the boiling huts of the Grey Saltings, hung with rope, lanterns and tarred canvas. It smells of pitch and lamp oil. A boy sweeps shavings towards the door. The street is back the way you came.
+Exits: south, north
+Here: Hester the boatman (at work).
++10 experience: you found The Chandlery.
+
+> talk hester the boatman
+You are talking with Hester the boatman. Type what you want to say, pick a number, or BYE to stop.
+Hester nods. "Afternoon."
+"If you go home that way, tell my cousin I am well, and that I still have the knife."
+New in your journal: Word for a cousin.
+Hester asks you to look in on Brannoc. YES to give your word, NO to decline.
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+Hester looks up. "They are cousins on the mother's side, and have not seen each other since they were children. (You saw it yourself.)"
++10 experience: you learned of the Tidemother.
+
+> insight
+(Insight 4 vs DC 16: critical failure)
+You can't read anything behind Hester's face.
+
+> bye
+Hester lifts a hand. "Go on, then."
+
+> north
+The Cooper's Yard
+You stand in a yard stacked with barrels, some new and pale, some black with age. Somewhere a mallet knocks hoops onto a cask, steady as a clock. Rain has left puddles between the staves. The chandlery is back through the gate.
+Exits: south
+Here: Joris the boatman (at work).
++10 experience: you found The Cooper's Yard.
+
+> talk joris the boatman
+You are talking with Joris the boatman. Type what you want to say, pick a number, or BYE to stop.
+Joris nods. "Afternoon."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+Joris looks up. "Mm. That so?"
+
+> insight
+(Insight 21 vs DC 16: success)
+His casks are always a little lighter than they look.
+
+> persuade You can tell me. It stays between us.
+Joris looks up. "Mm. That so?"
+
+> bye
+Joris lifts a hand. "Go on, then."
+
+> south
+The Chandlery
+You step into a chandler's shop in the boiling huts of the Grey Saltings, hung with rope, lanterns and tarred canvas. It smells of pitch and lamp oil. A boy sweeps shavings towards the door. The street is back the way you came.
+Exits: south, north
+Here: Hester the boatman (at work).
+
+> south
+The Market of the Grey Saltings
+You stand in the market of the Grey Saltings, among stalls of cloth, salt and pots. Traders shout their prices over each other, and you smell pitch and hot fat from the cookshops. Nobody here has heard of Skerrow or cares what happens there. An inn stands at the corner, and the gate is back out.
+Exits: out, in, north, east
+Here: Tressa the innkeeper (at work).
+
+> east
+While you walk, the chronicler is laying out the creek landing of the Grey Saltings.
+
+[a minute passes while the chronicler lays it out]
+The creek landing
+You come into the creek landing of the Grey Saltings. A landing of black posts where the salt barges tie up at high water. The street is full of people who know where they are going, and it smells of smoke and wet stone. The market is back west.
+Exits: west
++10 experience: you found The creek landing.
+
+> north
+The Chandlery
+You step into a chandler's shop in the creek landing of the Grey Saltings, hung with rope, lanterns and tarred canvas. It smells of pitch and lamp oil. A boy sweeps shavings towards the door. The street is back the way you came.
+Exits: south, north
++10 experience: you found The Chandlery.
+
+> north
+The Cooper's Yard
+You stand in a yard stacked with barrels, some new and pale, some black with age. Somewhere a mallet knocks hoops onto a cask, steady as a clock. Rain has left puddles between the staves. The chandlery is back through the gate.
+Exits: south
++10 experience: you found The Cooper's Yard.
+
+# The journal: Tressa lost the tally; it was last seen by the door.
+
+> south
+The Chandlery
+You step into a chandler's shop in the creek landing of the Grey Saltings, hung with rope, lanterns and tarred canvas. It smells of pitch and lamp oil. A boy sweeps shavings towards the door. The street is back the way you came.
+Exits: south, north
+
+> south
+The creek landing
+You come into the creek landing of the Grey Saltings. A landing of black posts where the salt barges tie up at high water. The street is full of people who know where they are going, and it smells of smoke and wet stone. The market is back west.
+Exits: west, north
+
+> west
+The Market of the Grey Saltings
+You stand in the market of the Grey Saltings, among stalls of cloth, salt and pots. Traders shout their prices over each other, and you smell pitch and hot fat from the cookshops. Nobody here has heard of Skerrow or cares what happens there. An inn stands at the corner, and the gate is back out.
+Exits: out, in, north, east
+Here: Tressa the innkeeper (at work).
+
+> out
+The Quay of the Grey Saltings
+You step ashore on the quay of the Grey Saltings after 2 days at sea. The quay is crowded with barrels and nets, and the air smells of tar, fish and wet stone. Gulls scream over the masts, and the dockhands call out to each other in a quick, flat speech. The market lies ahead, and the ships leave from here.
+Exits: in
+
+> search doorway
+(Perception 12 vs DC 12: success)
+Under the step you find notches cut in a bit of willow: half a tally, snapped clean.
+The Missing Tally: Half the tally is found; someone kept the other half.
+
+# The journal: Half the tally is found; someone kept the other half.
+
+> in
+The Market of the Grey Saltings
+You stand in the market of the Grey Saltings, among stalls of cloth, salt and pots. Traders shout their prices over each other, and you smell pitch and hot fat from the cookshops. Nobody here has heard of Skerrow or cares what happens there. An inn stands at the corner, and the gate is back out.
+Exits: out, in, north, east
+Here: Tressa the innkeeper (at work).
+
+> wait for hedyn the innkeeper
+Tressa goes inside.
+Hester arrives from the north.
+Hester stops and gives you a nod, curious about the stranger.
+Joris arrives from the north.
+Joris stops and looks you over.
+Tressa arrives from inside.
+Tressa stops and gives you a nod, curious about the stranger.
+Hester nods to Joris.
+Hester nods to Tressa.
+Joris nods to Tressa.
+Hester leaves north.
+Joris leaves north.
+Tressa goes inside.
+Hedyn has not come. It is Restday 7 Leaffall 412 SF, 00:55 (night).
+
+> ask hedyn about tally
+Hedyn isn't here.
+
+[31 hours pass: the night, to eight the next morning]
+Tressa arrives from inside.
+Tressa stops and gives you a nod, curious about the stranger.
+Tressa goes inside.
+Tressa arrives from inside.
+Tressa stops and gives you a nod, curious about the stranger.
+Tressa goes inside.
+Hester arrives from the north.
+Hester stops and gives you a nod, curious about the stranger.
+Tressa arrives from inside.
+Joris arrives from the north.
+Joris stops and looks you over.
+Hester nods to Joris.
+Hester nods to Tressa.
+Joris nods to Tressa.
+Hester leaves north.
+Joris leaves north.
+Tressa goes inside.
+Tressa arrives from inside.
+Tressa stops and gives you a nod, curious about the stranger.
+
+==== DAY 2 (Moonday 8 Leaffall 412 SF, 08:00 (morning))
+
+> look
+The Market of the Grey Saltings
+You stand in the market of the Grey Saltings, among stalls of cloth, salt and pots. Traders shout their prices over each other, and you smell pitch and hot fat from the cookshops. Nobody here has heard of Skerrow or cares what happens there. An inn stands at the corner, and the gate is back out.
+Exits: out, in, north, east
+Here: Tressa the innkeeper (at work).
+
+> journal
+People: Hester Vlieland, Joris Kuipers, Maren, Tressa Carne.
+Places: Skerrow, Skerrow Hythe, the Shore, the Grey Saltings, The Chandlery, The Cooper's Yard, The creek landing, The Chandlery, The Cooper's Yard, The Quay of the Grey Saltings, The Market of the Grey Saltings, Skerrow Hythe, the Harbour, The Headland, The Tidepools, The Wreck Strand.
+Lore: the stranger in Skerrow Hythe, the Grey Saltings charted, the passage to the Grey Saltings, the stranger in the Grey Saltings, the story of the Grey Saltings, Hester Vlieland and Brannoc Reed, Word for a cousin, the Grey Gull, the Tidemother.
+
+> in
+The Carters' Inn
+You duck into a low inn where carters from half the land sit over their beer. It is warm in here, and loud, and it smells of wet wool and onions. The innkeeper keeps an eye on the door and another on the purses. The market is back out.
+Exits: out
+Here: Hedyn the innkeeper (at work).
++10 experience: you found The Carters' Inn.
+
+> talk hedyn the innkeeper
+You are talking with Hedyn the innkeeper. Type what you want to say, pick a number, or BYE to stop.
+Hedyn nods. "Morning."
+1 Who are you?   2 What's new around here?   3 What do you do here?   4 What do you know about ...   5 Where can I find ...   6 Can you help me with ...   7 Trade   8 Will you come with me?
+
+> 2
+You: "What's new around here?"
+Hedyn looks up. "[Hester Vlieland] has people far away. (You heard it from [Tressa]. You are fairly sure.)"
+
+> insight
+(Insight 12 vs DC 15: failure)
+You can't read anything behind Hedyn's face.
+
+> bye
+Hedyn lifts a hand. "Go on, then."
+
+# The journal: Half the tally is found; someone kept the other half.
+
+> out
+The Market of the Grey Saltings
+You stand in the market of the Grey Saltings, among stalls of cloth, salt and pots. Traders shout their prices over each other, and you smell pitch and hot fat from the cookshops. Nobody here has heard of Skerrow or cares what happens there. An inn stands at the corner, and the gate is back out.
+Exits: out, in, north, east
+Here: Tressa the innkeeper (at work).
+
+> wait for hedyn the innkeeper
+Hedyn is here.
+Tressa leaves north.
+Hedyn comes from inside, on his way to The Chandlery.
+Hedyn stops and looks you over.
+It is Moonday 8 Leaffall 412 SF, 08:34 (morning).
+
+> ask hedyn about tally
+With a sigh the other half comes out of an apron pocket. "I only meant to keep it safe."
+The Missing Tally: The tally made whole. The two halves fit, and the carters pay what they owe.
++200 experience: The Missing Tally.
+
+[23 hours pass: the night, to eight the next morning]
+Hedyn walks on to the north.
+Hedyn comes from the north, on his way to The Carters' Inn.
+Hedyn walks on inside.
+Tressa arrives from the north.
+Tressa goes inside.
+Tressa arrives from inside.
+Tressa stops and gives you a nod, curious about the stranger.
+Tressa goes inside.
+Hester arrives from the north.
+Hester stops and gives you a nod, curious about the stranger.
+Joris arrives from the north.
+Joris stops and looks you over.
+Hester nods to Joris.
+Tressa arrives from inside.
+Hester nods to Tressa.
+Joris nods to Tressa.
+Hester leaves north.
+Joris leaves north.
+Tressa goes inside.
+Tressa arrives from inside.
+Tressa stops and gives you a nod, curious about the stranger.
+
+==== DAY 3 (Tidesday 9 Leaffall 412 SF, 08:00 (morning))
+
+> look
+The Market of the Grey Saltings
+You stand in the market of the Grey Saltings, among stalls of cloth, salt and pots. Traders shout their prices over each other, and you smell pitch and hot fat from the cookshops. Nobody here has heard of Skerrow or cares what happens there. An inn stands at the corner, and the gate is back out.
+Exits: out, in, north, east
+Here: Tressa the innkeeper (at work).
+
+> journal
+People: Hedyn Tregear, Hester Vlieland, Joris Kuipers, Maren, Tressa Carne.
+Places: Skerrow, Skerrow Hythe, the Shore, the Grey Saltings, The Chandlery, The Cooper's Yard, The creek landing, The Chandlery, The Cooper's Yard, The Quay of the Grey Saltings, The Carters' Inn, The Market of the Grey Saltings, Skerrow Hythe, the Harbour, The Headland, The Tidepools, The Wreck Strand.
+Lore: the stranger in Skerrow Hythe, the Grey Saltings charted, the passage to the Grey Saltings, the stranger in the Grey Saltings, the story of the Grey Saltings, Hester Vlieland and Brannoc Reed, Word for a cousin, the creek landing of the Grey Saltings, the Grey Gull, the Tidemother.
+
+> journal
+People: Hedyn Tregear, Hester Vlieland, Joris Kuipers, Maren, Tressa Carne.
+Places: Skerrow, Skerrow Hythe, the Shore, the Grey Saltings, The Chandlery, The Cooper's Yard, The creek landing, The Chandlery, The Cooper's Yard, The Quay of the Grey Saltings, The Carters' Inn, The Market of the Grey Saltings, Skerrow Hythe, the Harbour, The Headland, The Tidepools, The Wreck Strand.
+Lore: the stranger in Skerrow Hythe, the Grey Saltings charted, the passage to the Grey Saltings, the stranger in the Grey Saltings, the story of the Grey Saltings, Hester Vlieland and Brannoc Reed, Word for a cousin, the creek landing of the Grey Saltings, the Grey Gull, the Tidemother.
+
+==== END (Tidesday 9 Leaffall 412 SF, 08:00 (morning))

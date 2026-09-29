@@ -62,6 +62,8 @@ export interface GrowthState {
   /** The stories of regions made in play (M10.25), by topic, and those waiting for the chronicler. */
   stories?: Record<string, import('./regionstory').RegionStory>
   storyPending?: string[]
+  /** A region or district being laid out while the stranger travels there (M10.25), and the arrival kept back until it is. */
+  underway?: import('./underway').Underway
   /** Factions formed in play (M10.22), as raw content, and when each formed: at most one a season. */
   factions?: Record<string, unknown>[]
   founded?: number[]

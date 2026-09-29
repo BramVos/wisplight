@@ -39,6 +39,9 @@ describe('M10.21: a round at the edge of the world book', () => {
     const go = engine.state.choice!.options.findIndex((o) => /Grey Saltings/.test(o.label)) + 1
     await engine.handle(String(go))
     expect(engine.state.growth!.far!['grey_saltings']).toBeDefined()
+    // South of the edge, the road leaves southwards and runs back north (M10.25: the map's y runs north).
+    expect(engine.state.growth!.far!['grey_saltings']!.link.direction).toMatch(/^south/)
+    expect((engine.state.growth!.far!['grey_saltings']!.locations[0]!['description'] as { day: string }).day).toMatch(/the road back to the Holleveen runs north/)
     // The game's own book has it, beyond the book, with how it came about.
     expect(discoveredBook(engine)).toMatch(/## \d+\. Beyond the book[\s\S]*### The Grey Saltings[\s\S]*How it came about: charted on .*The world book says the salt comes into the land/)
     // Once: a second round waits for nothing, and the log plays back to the same world.

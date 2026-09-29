@@ -142,7 +142,9 @@ function setup(): Promise<void> {
 
 // The clock stands still in conversations and menus, and after a minute without input.
 function paused(): boolean {
-  return Boolean(engine?.state.combat) || held || Boolean(engine?.state.talk) || Date.now() - lastInput > appKnobs().get('idle_pause_seconds') * 1000
+  // An arrival the chronicler is laying out (M10.25) is no idleness: the clock and the models go on until it comes.
+  const idle = Date.now() - lastInput > appKnobs().get('idle_pause_seconds') * 1000 && !engine?.state.growth?.underway?.held
+  return Boolean(engine?.state.combat) || held || Boolean(engine?.state.talk) || idle
 }
 
 function aiStatus() {

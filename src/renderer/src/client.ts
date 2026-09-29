@@ -280,7 +280,8 @@ export async function createClient(): Promise<EngineClient> {
   let lastInput = -Infinity
   let held = false
   const listeners = new Set<(reply: Reply) => void>()
-  const paused = () => held || Boolean(engine.state.talk) || Boolean(engine.state.combat) || Date.now() - lastInput > IDLE_PAUSE_MS
+  // An arrival the chronicler is laying out (M10.25) is no idleness: the clock and the models go on until it comes.
+  const paused = () => held || Boolean(engine.state.talk) || Boolean(engine.state.combat) || (Date.now() - lastInput > IDLE_PAUSE_MS && !engine.state.growth?.underway?.held)
   const status = (): Reply['status'] => ({ ...engine.status(), paused: paused(), ai: bridge ? demo!.demoStatus() : undefined })
 
   // The chronicler writes in the background, as in the desktop app.

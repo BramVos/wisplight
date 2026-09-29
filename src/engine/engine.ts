@@ -20,6 +20,7 @@ import { decide, holdHooks, hookChoice, morningHooks, PLAY_MODES, playModeOf, pr
 import { applyLand, landRequest, landWords, wantLand, type LandWords } from './growth/landwrite'
 import { applyDistrict, districtDue, districtRequest, districtsOf, districtWords, wantDistrict, type DistrictWords } from './growth/districts'
 import { applyWeave, weaveReply, weaveRequest, type WeaveReply } from './growth/weave'
+import { arrivedAt, buildingLine, onTheWay, setOff } from './growth/underway'
 import { applyTides, tidesReply, tidesRequest, tidesState, type TidesReply } from './tides'
 import { crowdHere, nameOne } from './growth/crowds'
 import { applyLegendWords, legendRequest, legendsOf } from './legend'
@@ -208,6 +209,8 @@ export interface Status {
   hexMap?: HexMapData
   /** A world without a map of its own (Skerrow): its name, so the panel says so instead of promising one (M10.8). */
   mapless?: string
+  /** A region or district the chronicler is laying out while the stranger travels there (M10.25): the line for the status bar. */
+  building?: string
   /** A choice the game put to the player (after the M10 playtest): answered with a number, or a click. */
   choice?: { question: string; options: string[] }
   /** The character in short, for the side panel (FO, chapter 11). */
@@ -1164,6 +1167,11 @@ export class Engine {
     for (const listener of this.listeners) listener({ kind: 'in', t: this.world.now, text })
     // The stranger plays (M10.24): the pulse looks them up from now on, also in a game begun before it.
     wakePulse(this.world)
+    // On the way to a region the chronicler is laying out (M10.25): the arrival once it is done; until then, only
+    // what needs no new place, or ARRIVE.
+    const came = arrivedAt(this.world)
+    const onTheRoad = onTheWay(this.world, text)
+    if (onTheRoad) return this.shown([...came, ...onTheRoad])
     const before = this.state.player.location
     const talkBefore = this.state.talk
     // A line in quotes is speech (the conversation window sends them so), but it can still be a quest's own words.
@@ -1231,8 +1239,12 @@ export class Engine {
     outputs.push(...morningHooks(this.world))
     // Two notions of what lies beyond the edge, in think mode (M10.21): the player's choice.
     outputs.push(...expansionChoice(this.world))
-    // A journey in the voice of the world, when a model may help (M10.11); the rules' paragraph otherwise.
-    await this.narrate(outputs)
+    // Into a region or district still being laid out (M10.25): its rounds from the setting off, and the arrival kept
+    // back until they are done. A journey in the voice of the world, when a model may help (M10.11); the rules'
+    // paragraph otherwise.
+    const held = setOff(this.world, before, outputs)
+    await this.narrate(held ?? outputs)
+    outputs.unshift(...came)
     const shown = this.shown(outputs)
     this.keepTalkLines(talkBefore, text, shown)
     return shown
@@ -1748,7 +1760,8 @@ export class Engine {
       passed.push({ kind: 'narration', text: this.world.say('{name} waits a while for an answer, then goes about {their} business.', idle.npc) })
       this.dialogue.end(false)
     }
-    const outputs = [...passed, ...this.questsTick(), ...this.confrontations(), ...this.attacks(), ...this.sought(), ...brawlShown(this.world)]
+    // The arrival in a region laid out while the stranger travelled (M10.25), once it is done.
+    const outputs = [...arrivedAt(this.world), ...passed, ...this.questsTick(), ...this.confrontations(), ...this.attacks(), ...this.sought(), ...brawlShown(this.world)]
     outputs.push(...this.world.notices.splice(0).map((text) => ({ kind: 'system' as const, text })))
     // A tiding that came while time ran (M10.11): something seen, someone who told it.
     outputs.push(...momentsNow(this.world))
@@ -1762,8 +1775,10 @@ export class Engine {
     // Lore of this game goes in the journal once the player heard the news it came from.
     const heard = this.state.news?.heard['player'] ?? {}
     for (const lore of this.state.chronicle?.lore ?? []) if (lore.facts.some((f) => heard[f])) this.dialogue.learn(lore.id)
+    // On the way to a region still being laid out (M10.25), the stranger is not there yet.
+    const underway = this.state.growth?.underway
     return {
-      location: location.name,
+      location: underway?.held ? `On the way to ${underway.name}` : location.name,
       area: this.content.areas.get(location.area)?.name ?? location.area,
       scene: `area_${location.area}`,
       time: this.clock.format(this.world.calendar),
@@ -1781,6 +1796,7 @@ export class Engine {
       hexMap: hexMapData(this.world, { width: 51, height: 35 }),
       ...(this.state.choice && !this.state.talk ? { choice: { question: this.state.choice.question, options: this.state.choice.options.map((o) => o.label) } } : {}),
       ...(regionMap(this.content) ? {} : { mapless: this.content.world.name }),
+      ...(buildingLine(this.world) ? { building: buildingLine(this.world)! } : {}),
       ...this.characterStatus(),
     }
   }

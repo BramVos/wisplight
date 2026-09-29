@@ -7,6 +7,7 @@ import { askAdvice, testCall } from '../node/ai/advisor'
 import { costUsd } from '../node/ai/pricing'
 import { listWorlds, loadContentFromDir, readContentFiles } from '../node/content'
 import { kindSituation } from '../engine/trials'
+import { measuring, playRegion, regionReport, REGION_SETTINGS, type RegionSetting, type RegionTally } from '../node/regionplay'
 import type { BuildStore } from '../node/ai/builds'
 import type { AiService } from '../node/ai/service'
 
@@ -219,9 +220,64 @@ export async function trialRun(ai: AiService, kinds: string, contentRoot: string
       )) && ok
       continue
     }
+    if (kind === 'region_play') {
+      ok = (await regionTrial(ai, contentRoot, appPath, { capUsd: cap, setting: env('SETTING') as RegionSetting | '', record: env('RECORD') === '1' }, say)) && ok
+      continue
+    }
     ok = (await kindTrial(ai, kind, contentRoot, join(appPath, 'tests/fixtures/model', kind), env('RECORD') === '1', say)) && ok
   }
   return ok
+}
+
+/**
+ * The played proof of a new region (M10.25 (4)), with the player's models:
+ * the Holleveen's south edge explored once per setting of the fourth dial,
+ * and Skerrow over the sea at `story`, three game days each (the harness in
+ * src/node/regionplay.ts). Within the cap over all of it. Transcripts and the
+ * comparison go to docs/playtest/region-*; with record, every reply as a
+ * fixture under tests/fixtures/model/<kind>/, read again as its kind's
+ * situation reads it.
+ */
+export async function regionTrial(ai: TrialAi, contentRoot: string, appPath: string, how: { capUsd: number; setting: RegionSetting | ''; record: boolean }, say: (line: string) => void): Promise<boolean> {
+  const dir = join(appPath, 'docs/playtest')
+  mkdirSync(dir, { recursive: true })
+  const base = await loadContentFromDir(contentRoot, 'base')
+  const isle = await readContentFiles(contentRoot, 'isle')
+  let spent = 0
+  let all = true
+  for (const world of ['base', 'isle'] as const) {
+    const content = world === 'base' ? base : await loadContentFromDir(contentRoot, 'isle')
+    const settings = REGION_SETTINGS.filter((s) => (how.setting ? s === how.setting : world === 'base' || s === 'story'))
+    const tallies: RegionTally[] = []
+    for (const setting of settings) {
+      const llm = measuring(ai.gateway, { price: costUsd, capUsd: Math.max(0, how.capUsd - spent) })
+      const started = Date.now()
+      const { transcript, tally } = await playRegion({ content, world, setting, llm, seed: 7 })
+      const cost = llm.calls.reduce((n, c) => n + (c.costUsd ?? 0), 0)
+      spent += cost
+      tallies.push(tally)
+      writeFileSync(join(dir, `region-${world}-${setting}.txt`), `${world === 'base' ? 'The Holleveen, south edge' : 'Skerrow, over the sea'}; the dial at ${setting}; seed 7; ${llm.calls[0]?.model ?? 'no model'}\n${transcript}\n`)
+      say(`${world} ${setting}: ${tally.region?.name ?? 'nothing charted'}, ${tally.places.count} places, ${tally.people.count} people, ${tally.quests.length} quests, ${llm.calls.length} calls, $${cost.toFixed(3)}, ${Math.round((Date.now() - started) / 1000)}s`)
+      if (!tally.region) all = false
+      if (how.record) {
+        for (const [n, call] of llm.calls.entries()) {
+          const situation = await kindSituation(call.kind, { base, isle })
+          const entry = { kind: call.kind, about: `region play: ${world}, the dial at ${setting}, call ${n + 1}`, model: call.model, provider: '', date: today(), usage: { inputTokens: call.inputTokens, cachedTokens: call.cachedTokens, outputTokens: call.outputTokens }, reply: call.reply, problems: situation ? situation.check(call.reply) : [] }
+          const folder = join(appPath, 'tests/fixtures/model', call.kind)
+          mkdirSync(folder, { recursive: true })
+          writeFileSync(join(folder, `${entry.date}-${call.model.replace(/[^a-z0-9.-]/gi, '_')}-region-${world}-${setting}-${String(n + 1).padStart(2, '0')}.json`), `${JSON.stringify(entry, null, 2)}\n`)
+        }
+      }
+      if (spent >= how.capUsd) {
+        say(`the cap of $${how.capUsd} is spent; stopped`)
+        break
+      }
+    }
+    if (!how.setting && tallies.length) writeFileSync(join(dir, `region-${world}.md`), `${regionReport(tallies, { title: world === 'base' ? 'Een nieuwe streek ten zuiden van de Holleveen, per stand' : 'Een nieuwe streek over de zee van Skerrow', model: tallies.flatMap((t) => t.calls)[0]?.model ?? '', date: today(), mock: false })}\n`)
+    if (spent >= how.capUsd) break
+  }
+  say(`total: $${spent.toFixed(3)}`)
+  return all
 }
 
 interface KindRecord {

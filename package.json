@@ -27,6 +27,7 @@
     "trial": "tsx scripts/trial.ts",
     "coverage": "tsx scripts/coverage.ts",
     "playtest": "tsx scripts/playtest.ts",
+    "regionplay": "tsx scripts/regionplay.ts",
     "content:contract": "tsx scripts/contract.ts"
   },
   "dependencies": {
