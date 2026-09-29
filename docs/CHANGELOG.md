@@ -1,5 +1,20 @@
 # Changelog
 
+## M10.23 deel: een ander land, met een grens en een eigen kader, 29 september 2026
+
+- **Een land is een laag in de content.** Naast haar thuisland mag een wereld andere landen hebben, elk in `content/<wereld>/lands/<land>/`. Daarin staat een `land.yaml` met het kader dat elke modelaanroep daar krijgt, en eigen woorden, namen, geloven, munten tegen een koers, wet, stand, schets, beeldstijl en palet. Er kan een eigen `voice.yaml` naast staan, met de gebieden, plaatsen en mensen van het land. Wat een land weglaat, neemt het van de wereld; de kalender en de klok altijd.
+- **Een grens is content, nooit afstand.** Elke weg van het ene land naar het andere, te voet of met een lijn, gaat door een gebied met `border: true`. Anders laadt de wereld niet. Bij de oversteek zie je de eigen regel van het land, je geld wordt gewisseld (de wisselaar houdt 2 procent, knop `lands.exchange_cut`), en de kroniek noteert het. Een gebied met `blend` mengt twee landen: gezegden uit beide kits, en er wordt niets gewisseld.
+- **Wie in een land is, speelt onder zijn kader.** De stem, de kroniekverteller en de verteller krijgen het kader en de stemkit van het land. De bewaker leest de lijst van wat daar niet bestaat. Bedragen staan in de munten van dat land en de wet van dat land geldt, met een eigen dienaar en boetes. Wie thuis gezocht wordt, is dat daar niet, en je stand begint er opnieuw. Mensen die daar ontstaan, krijgen de namen en het geloof van het land, en de kaart van een streek krijgt het palet van zijn land.
+- **Per wereld.** Skerrow heeft de Westelijke Eilanden van de elfen. De witte boot vaart op Restday naar Ynys Wen zodra de Lamp brandt. Daar heet je "child of the short years", betaal je in ringen en kralen, en is Eluned de wet. Deepwell heeft de Kessler Claim, een bedrijfsconcessie achter een luik oostelijk van de Ice Works, met scrip, "contractor" en een boete die zelfs een dode afkoopt. De Nethermarch heeft nog geen tweede land in de content. Het wereldboek in Claude Docs noemt nu wel Rijkland en Flemmark als landen (hoofdstuk 2, Landen).
+
+Testen: `npm run playtest -- crossing` vaart met de witte boot heen en terug; het verslag staat in `docs/playtest/crossing.txt`. In de app op Skerrow: steek de Lamp aan, ga op Restday om negen uur naar de haven en neem `take the white boat`. In Deepwell loop je vanaf het perron van de Ice Works naar het oosten. In de editor staat het tabblad Landen. Tests in `tests/m1023lands.test.ts`, `tests/m1023borders.test.ts` en `tests/m1023frame.test.ts`.
+
+Wat de editor en de kroniekverteller leerden: het tabblad Landen toont per land zijn YAML en een eigen stemkit, en een nieuw land begint met een sjabloon. Een nieuw gebied met `land:` komt in de map van dat land. Check noemt een land waar niemand kan komen of binnengaan. Het contract kent de soort `land` en de velden `land`, `border` en `blend`. Het wereldboek heeft een hoofdstuk Landen met per land de grens, de munten en de koers, de wet, de aanspreekvorm en het kader.
+
+Nog niet af: de wereldbouw per land in de gids, en de kroniekverteller die een land schrijft dat de ontwerper alleen een kader gaf (beide nog in (1)). Het bereik tussen landen en het nieuws dat weken over de zee doet, komen van de andere sessie.
+
+Bewust anders: prijzen blijven overal in de kleinste munt van de wereld. Een land noemt ze in zijn eigen munten tegen een hele koers, zodat elk bedrag precies uitkomt en niets in de content hoeft te worden omgerekend. Onderweg vond ik twee dingen die ook zonder landen fout waren: de vaarprijs werd genoemd in de munt van de aankomst, en de havenklok van Skerrow was de hele overtocht te horen.
+
 ## M10.22 af: de speler weegt mee, en de grote lijnen in zicht, 29 september 2026
 
 - **Je daden duwen een grote lijn.** Dat regelt de content: een drijfveer met `by: player` telt wat jij doet, en je misdaden tellen mee. Per lijn en per dag gaat dat hooguit tien punten omhoog of omlaag, de bestaande regel voor een verschuiving. Wie een reeks misdaden tegen schout Everhard begaat, duwt de onrust van de veensteekers over de drempel, en de Broederschap legt het werk neer (plan `peat_strike`).
