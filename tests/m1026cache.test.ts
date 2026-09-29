@@ -44,15 +44,27 @@ describe('M10.26: the cache mark on every kind of call', () => {
     // The hard limits go in front of every call and move both marks with them.
     const safe = withSafety({ role: 'voice', system: 'RULES\nCARD\nNOW', cacheShared: 6, cacheBreak: 11, prompt: 'p', schemaName: 'x', schema: {}, maxTokens: 10 })
     expect(safe.system.slice(safe.cacheShared, safe.cacheBreak)).toBe('CARD\n')
+    // A kind that marks nothing (M10.27) keeps marking nothing, and the provider sends one unmarked block.
+    const none = withSafety({ role: 'chronicler', system: 'GUIDE', cacheBreak: 0, prompt: 'p', schemaName: 'x', schema: {}, maxTokens: 10 })
+    expect(none.cacheBreak).toBe(0)
+    expect(systemBlocks(none)).toEqual([{ type: 'text', text: none.system }])
   })
 
-  it('every kind of call sets its mark after the part it keeps the same', async () => {
+  it('every kind of call decides its mark: where a second call reads it back, and nowhere else (M10.27)', async () => {
     const worlds = { base: await loadContentFromDir(resolve(root, 'content'), 'base'), isle: await readContentFiles(resolve(root, 'content'), 'isle') }
+    const marks: Record<string, string> = {}
     for (const kind of SITUATION_KINDS) {
-      const situation = (await kindSituation(kind, worlds))!
-      expect(situation.request.cacheBreak, kind).toBeGreaterThan(0)
-      expect(situation.request.cacheBreak!, kind).toBeLessThanOrEqual(situation.request.system.length)
+      const r = (await kindSituation(kind, worlds))!.request
+      expect(r.cacheBreak, kind).toBeDefined()
+      expect(r.cacheBreak!, kind).toBeLessThanOrEqual(r.system.length)
+      marks[kind] = r.cacheBreak === 0 ? 'none' : r.cacheShared !== undefined ? 'both' : 'one'
+      if (r.cacheHour) marks[kind] += ', an hour'
     }
+    // A talk: turns with one person, and someone new reads the rules and the frame. A goal choice: many people, the
+    // shared part only. The world steps and the writing aid: a designer comes back within the hour. The rest is made
+    // once per place, night or line, and nothing reads it back in five minutes.
+    expect(marks).toMatchObject({ npc_reply: 'both', npc_goals: 'one', world_step: 'both, an hour', builder_draft: 'one, an hour', world_enhance: 'one, an hour' })
+    for (const kind of ['party_reply', 'chat_line', 'journey', 'improvise', 'chronicle', 'lore_check', 'legends', 'outline', 'far_place', 'district', 'weave', 'expansion', 'land', 'tides', 'world_polish', 'palette_draft', 'voice_draft', 'region_story']) expect(marks[kind], kind).toBe('none')
   }, 120_000)
 
   it('keeps the part before the mark the same from call to call in a played game', async () => {
@@ -62,35 +74,32 @@ describe('M10.26: the cache mark on every kind of call', () => {
     const llm = { complete: async (r: LlmRequest): Promise<LlmResponse> => (seen.push(r), mock.complete(r)) }
     await playRegion({ content: base, world: 'base', setting: 'full', llm, seed: 7, days: 1 })
     const of = (kind: string) => seen.filter((r) => r.schemaName === kind)
-    // Everyone's goals share the rules, the whole catalogue and the frame; each person's card stays theirs.
+    // Everyone's goals share the rules, the whole catalogue and the frame, and only that is marked.
     const goals = of('npc_goals')
     expect(goals.length).toBeGreaterThan(10)
-    expect(new Set(goals.map(sharedOf)).size).toBe(1)
-    // A card changes only when their standing or their people do (a household grows richer, a bond is woven).
-    const cards = new Map<string, string>()
-    for (const r of goals) {
-      const id = String(r.meta?.['npc'])
-      const card = fixedOf(r).slice(sharedOf(r).length)
-      const before = cards.get(id)
-      if (before !== undefined && before !== card) {
-        const lines = (text: string) => text.split('\n').filter((l) => !/^(STANDING|YOUR PEOPLE):/.test(l)).join('\n')
-        expect(lines(card), id).toBe(lines(before))
-      }
-      cards.set(id, card)
-    }
+    expect(new Set(goals.map(fixedOf)).size).toBe(1)
+    expect(goals.every((r) => r.cacheShared === undefined)).toBe(true)
     // A talk: the same rules and frame for every speaker, the same card for every turn with one.
     const talks = of('npc_reply')
     expect(new Set(talks.map(sharedOf)).size).toBe(1)
-    // The night round, the districts and every step of the full build keep all of their fixed part.
-    for (const kind of ['chronicle', 'district', 'world_step']) expect(new Set(of(kind).map(fixedOf)).size, kind).toBe(1)
+    // Every step of the full build keeps its fixed part; the night round and the districts mark nothing.
+    expect(new Set(of('world_step').map(fixedOf)).size).toBe(1)
+    for (const kind of ['chronicle', 'district']) expect(of(kind).every((r) => r.cacheBreak === 0), kind).toBe(true)
+    // The story of a region built in full reads the part its steps wrote.
+    expect(of('region_story').every((r) => r.cacheBreak! > 20000)).toBe(true)
   }, 120_000)
 
-  it('the story round of a region reads the world\'s fixed part the full build wrote', async () => {
+  it('the story round of a region built in full reads the world\'s fixed part its steps wrote', async () => {
     const engine = new Engine(content, { seed: 3 })
-    const story = storyRequest(engine.world, 'grey_saltings')
     const step = worldStepRequest(contentFilesOf(engine.content), 'places', 'The region.')
-    expect(sharedOf(withSafety(story))).toBe(sharedOf(withSafety(step)))
-    expect(sharedOf(story).length).toBeGreaterThan(20000)
+    // Built in full, its steps wrote the world's fixed part within the hour, and the story marks the same part.
+    ;(engine.state.growth ??= { people: [], projects: {}, hands: {} }).fulls = { grey_saltings: { done: [], entities: {}, t: 0 } }
+    const story = storyRequest(engine.world, 'grey_saltings')
+    expect(fixedOf(withSafety(story))).toBe(sharedOf(withSafety(step)))
+    expect(fixedOf(story).length).toBeGreaterThan(20000)
+    // Not built in full, the story is the only call that reads that part: no mark.
+    delete engine.state.growth!.fulls
+    expect(storyRequest(engine.world, 'grey_saltings').cacheBreak).toBe(0)
   }, 60_000)
 
   it('says in the log why nothing came from the cache, in place of 0%', async () => {

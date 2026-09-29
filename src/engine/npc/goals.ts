@@ -305,9 +305,10 @@ export function goalRequest(world: World, choice: GoalChoice, answers?: string[]
   keys['self'] = npcId
   return {
     role: 'brain',
-    // The rules and the frame of the land they live in (M10.23), cached for everyone of that land; their card, the
-    // same for each of their choices; and what they may choose now (M10.26).
-    ...cachedSystem([SYSTEM, '', 'THE GOALS:', ...catalogueLines(), '', worldText(worldFrame(world.content, landOfNpc(world, npcId)))].join('\n'), worldText(card.join('\n')), choosable.join('\n')),
+    // The rules and the frame of the land they live in (M10.23), cached for everyone of that land; their card; and
+    // what they may choose now (M10.26). Only the shared part is marked (M10.27): the same person rarely chooses twice
+    // in five minutes, so a mark after the card would only pay a write.
+    ...cachedSystem([SYSTEM, '', 'THE GOALS:', ...catalogueLines(), '', worldText(worldFrame(world.content, landOfNpc(world, npcId)))].join('\n'), worldText(card.join('\n')), choosable.join('\n'), 'shared'),
     prompt: lines.join('\n'),
     schemaName: 'npc_goals',
     schema: withLookup(intentions.length ? (withIntention(base, intentions.map((i) => i.id), Object.keys(keys)) as typeof base) : base) as typeof base,

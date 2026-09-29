@@ -630,7 +630,8 @@ function Totals({ label, totals }: { label: string; totals: UsageTotals }) {
     <tr>
       <th scope="row">{label}</th>
       <td>{tn('settings.usage.calls', totals.calls, { calls: totals.calls.toLocaleString('en-GB') })}</td>
-      <td>{t('settings.usage.input', { tokens: tokens(totals.inputTokens), percent: percent(totals.cachedTokens, totals.inputTokens) })}</td>
+      {/* Written to the cache next to what came from it (M10.27): a write costs more than plain input. */}
+      <td>{t('settings.usage.input', { tokens: tokens(totals.inputTokens), percent: percent(totals.cachedTokens, totals.inputTokens), written: tokens(totals.cacheWriteTokens ?? 0) })}</td>
       <td>{t('settings.usage.output', { tokens: tokens(totals.outputTokens) })}</td>
       <td className="num">{usd(totals.costUsd)}</td>
     </tr>
@@ -857,6 +858,7 @@ function UsageTab({ bridge, overview, refresh }: { bridge: AiBridge; overview: A
             <th scope="col">{t('settings.usage.byModel.calls')}</th>
             <th scope="col">{t('settings.usage.byModel.in')}</th>
             <th scope="col">{t('settings.usage.byModel.cached')}</th>
+            <th scope="col">{t('settings.usage.byModel.written')}</th>
             <th scope="col">{t('settings.usage.byModel.out')}</th>
             <th scope="col" className="num">
               {t('settings.usage.byModel.cost')}
@@ -866,7 +868,7 @@ function UsageTab({ bridge, overview, refresh }: { bridge: AiBridge; overview: A
         <tbody>
           {usage.byModel.length === 0 && (
             <tr>
-              <td colSpan={6} className="muted">
+              <td colSpan={7} className="muted">
                 {t('settings.usage.byModel.none')}
               </td>
             </tr>
@@ -879,6 +881,7 @@ function UsageTab({ bridge, overview, refresh }: { bridge: AiBridge; overview: A
               <td>{row.calls.toLocaleString('en-GB')}</td>
               <td>{tokens(row.inputTokens)}</td>
               <td>{percent(row.cachedTokens, row.inputTokens)}</td>
+              <td>{tokens(row.cacheWriteTokens ?? 0)}</td>
               <td>{tokens(row.outputTokens)}</td>
               <td className="num">{row.unpriced && !row.costUsd ? t('settings.priceUnknown') : usd(row.costUsd)}</td>
             </tr>

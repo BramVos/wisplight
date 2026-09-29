@@ -15,7 +15,7 @@ import { worldFixedPart } from '../worldfixed'
 import { districtOf, districtsOf } from './districts'
 import { farPlaceOf } from './far'
 import { outlineOf } from '../outlines'
-import { fullDone } from './fulllayer'
+import { fullDone, fullOf } from './fulllayer'
 import { grownContent, growth } from './growth'
 
 // A new region with a story of its own (M10.25; Bram, 29 September 2026: is
@@ -189,9 +189,11 @@ export function storyRequest(world: World, topic: string): LlmRequest {
   const key = keyed(people, places)
   const text = { type: 'string' }
   const object = (properties: Record<string, unknown>) => ({ type: 'object', additionalProperties: false, required: Object.keys(properties), properties })
-  // The world's fixed part, the same as the world steps of a full build read (M10.26: cached for both), then the rules of the story.
+  // The world's fixed part, the same as the world steps of a full build read (M10.26), then the rules of the story. Marked
+  // only when the region is built in full (M10.27): then its steps wrote that part within the hour; otherwise the story
+  // is the only call that reads it, and a mark would only pay a write.
   const fixed = worldFixedPart(content, content.chronicler ?? '')
-  const system = cachedSystem(fixed, `\n${STORY_RULES}`)
+  const system = cachedSystem(fixed, `\n${STORY_RULES}`, '', fullOf(world, topic) ? 'shared' : 'none')
   const quarters = districtsOf(content, topic)
   const secretsNow = (n: Npc) => (n.secrets.length ? ' (has a secret)' : '')
   const aftermath = standardAftermath(content)

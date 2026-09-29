@@ -60,8 +60,9 @@ async function ask(llm: LlmClient, cards: { id: string; name: string; card: stri
   try {
     const reply = await llm.complete({
       role: 'voice',
-      // The same for every question to the group in this land (M10.26); the companions' cards change with the party.
-      ...cachedSystem(system),
+      // The same for every question to the group in this land (M10.26), but not marked (M10.27): a second question
+      // within five minutes is rare, and a mark would only pay a write.
+      ...cachedSystem(system, '', '', 'none'),
       prompt,
       schemaName: 'party_reply',
       schema: {

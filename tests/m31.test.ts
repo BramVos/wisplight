@@ -295,7 +295,7 @@ describe('M3.1: the AI chooses what NPCs want', () => {
     expect(request.prompt).toMatch(/WHY YOU CHOOSE NOW: You have just got up/)
     // The catalogue is in the cached part (M8.2, after the review), the whole of it for everyone since M10.26, and which
     // goals are open to them now after the mark; places and people have short keys.
-    expect(request.system.slice(0, request.cacheShared)).toMatch(/THE GOALS:\n {2}Work \(target none\)/)
+    expect(request.system.slice(0, request.cacheBreak)).toMatch(/THE GOALS:\n {2}Work \(target none\)/)
     expect(request.system.slice(request.cacheBreak)).toMatch(/GOALS YOU MAY CHOOSE NOW: Work, /)
     expect(request.prompt).toMatch(/PLACES YOU KNOW: l1 /)
     const gerrit = engine.state.npcs['npc_gerrit']!

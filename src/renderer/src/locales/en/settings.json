@@ -158,7 +158,7 @@
       "one": "{calls} call",
       "other": "{calls} calls"
     },
-    "input": "{tokens} in ({percent} cached)",
+    "input": "{tokens} in ({percent} cached, {written} written to the cache)",
     "output": "{tokens} out",
     "byRole": {
       "role": "role",
@@ -194,6 +194,7 @@
       "calls": "calls",
       "in": "in",
       "cached": "cached",
+      "written": "written to the cache",
       "out": "out",
       "cost": "cost",
       "none": "No calls yet this month."

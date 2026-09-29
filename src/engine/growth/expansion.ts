@@ -123,7 +123,7 @@ export function expansionRequest(world: World, ask: ExpansionAsk): LlmRequest {
       'Each outline: id (small letters, digits, _), name (not TAKEN), kind (region: part of the lands known; land: a land with a frame of its own), summary (what people would know, one sentence), details (two or three sentences), story (a tale told of it, or empty), days (on foot from the edge, 1 to 6), districts (two to four quarters, each id, name and a line: the first is where the stranger comes in), land (only for kind land: frame, three to six lines in the frame\'s own form, WORLD left out, with LAND, REGION and PEOPLE; and crossing: one sentence of what the stranger notices coming in), and why: in one sentence, what of the world book it grows from.',
       count > 1 ? `Give ${count} outlines that differ in kind or character, so the stranger has a real choice.` : 'Give one outline.',
       'Plain words, in the tone of the world. JSON only.',
-    ].join('\n')),
+    ].join('\n'), '', '', 'none'),
     prompt: [
       ask.by
         ? `THE HARBOUR: ${content.locations.get(ask.by.from)?.name ?? ask.by.from}, looking out to sea ${ask.wind}, at ${Math.round(ask.from[0])}, ${Math.round(ask.from[1])} km: chart what lies across the water that way.`

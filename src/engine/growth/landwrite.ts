@@ -88,7 +88,7 @@ export function landRequest(world: World, id: string): LlmRequest {
       'LAW: where the law holds ("in X" or "on X") and the title of who keeps it.',
       'VOICE: oaths per faith (by the FAITHS ids only, two each), three sayings, how people call a stranger, someone they know, a friend and someone above them (address: stranger, known, friend, high; one or two forms each), three ways to tell time, two of distance, two measures, and not_here: words of our world or of the home land that do not belong here, each with instead where people here have a word for it.',
       'Plain words, in the tone of the frame. JSON only.',
-    ].join('\n')),
+    ].join('\n'), '', '', 'none'),
     prompt: [
       `LAND: ${land.name} (${id})`,
       ...(areas.length ? [`ITS AREAS: ${areas.map((a) => `${a.name}: ${a.summary}`).join(' ')}`] : []),

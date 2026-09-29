@@ -285,8 +285,9 @@ export function buildRequest(input: ChronicleInput, keys: Keys, limits: Limits, 
   return {
     role: 'chronicler',
     system: systemPrompt(input, limits),
-    // The system part is the same every night of a world: all of it may be cached.
-    cacheBreak: systemPrompt(input, limits).length,
+    // The same every night of a world, but not marked: a mark costs a write, and the next round comes after the five
+    // minutes a mark lasts.
+    cacheBreak: 0,
     prompt: userPrompt(input, keys, lookedUp, lookupsLeft),
     schemaName: 'chronicle',
     schema: replySchema(input, keys, lookupsLeft),

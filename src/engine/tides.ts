@@ -160,7 +160,7 @@ export function tidesRequest(world: World): LlmRequest {
       '',
       'Once a month you judge the great lines of this world: the great dangers that grow in the background, with or without the stranger. For each line choose one thing from what it ALLOWS: nothing, threat (people feel it coming: a mood, news, prices up) or event (it breaks now: the world plays it out). Choose the event only where the line has truly come to it; a world where great things happen every month is a poorer world. Say why in one plain sentence.',
       'JSON only.',
-    ].join('\n')),
+    ].join('\n'), '', '', 'none'),
     prompt: [
       'LINES:',
       ...[...world.content.tides.values()].map((t) => {

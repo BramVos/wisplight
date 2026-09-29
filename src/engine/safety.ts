@@ -45,7 +45,8 @@ export function withSafety(request: LlmRequest): LlmRequest {
   return {
     ...request,
     system: `${front}${request.system}`,
-    ...(request.cacheBreak !== undefined ? { cacheBreak: request.cacheBreak + front.length } : {}),
+    // A kind that marks nothing (M10.27) keeps marking nothing, the limits in front included.
+    ...(request.cacheBreak !== undefined ? { cacheBreak: request.cacheBreak === 0 ? 0 : request.cacheBreak + front.length } : {}),
     ...(request.cacheShared !== undefined ? { cacheShared: request.cacheShared + front.length } : {}),
   }
 }

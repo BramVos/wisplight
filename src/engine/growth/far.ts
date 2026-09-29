@@ -392,7 +392,7 @@ export function farRequest(world: World, topic: string): LlmRequest {
       'Places: gate (where the road comes in, or the quay where the ship comes in when it lies over the sea), market, inn. Each description: three to five sentences, second person, present tense, one sense that is not sight, and a hint at a way out. Plain words, late-medieval, the tone of the world.',
       'People: merchant (sells at the market), innkeeper. A full name that fits the place, she or he, what people see first (one sentence), how they speak (a few words), one thing anyone may know of them.',
       'Never contradict what is KNOWN. Never use a TAKEN name. JSON only.',
-    ].join('\n')),
+    ].join('\n'), '', '', 'none'),
     prompt: [
       `PLACE: ${t.name}. ${t.summary}`,
       'KNOWN:',

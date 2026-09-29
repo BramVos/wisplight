@@ -122,7 +122,7 @@ export function loreProblem(world: World, op: Pick<LoreOp, 'claims' | 'summary' 
 export function judgeRequest(op: Pick<LoreOp, 'name' | 'summary' | 'details' | 'story' | 'far'>, events: ChronicleEvent[]): LlmRequest {
   return {
     role: 'brain',
-    ...cachedSystem('You check a story against the facts it was written from. List every thing the story says happened that the facts do not say: a person who was there, a death, a place, a deed, a cause. Colour and feeling are fine; new events, people or outcomes are not. JSON only.'),
+    ...cachedSystem('You check a story against the facts it was written from. List every thing the story says happened that the facts do not say: a person who was there, a death, a place, a deed, a cause. Colour and feeling are fine; new events, people or outcomes are not. JSON only.', '', '', 'none'),
     prompt: ['FACTS:', ...events.map((e) => `- ${e.text}`), 'STORY:', op.name, op.summary, op.details, op.story, op.far].filter(Boolean).join('\n'),
     schemaName: 'lore_check',
     schema: { type: 'object', additionalProperties: false, required: ['invented'], properties: { invented: { type: 'array', items: { type: 'string' } } } },

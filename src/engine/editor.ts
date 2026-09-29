@@ -600,7 +600,9 @@ export function draftRequest(files: ContentFile[], ask: string, focus?: { kind: 
   return {
     role: 'chronicler',
     // The world and the task first, cached from one request to the next (M10.26); what it has and what the designer
-    // decided change as the world grows, so they come after the mark.
+    // decided change as the world grows, so they come after the mark. Kept an hour (M10.27): a designer asks the writing
+    // aid again after minutes of reading, and the part before the mark is most of the call.
+    cacheHour: true,
     ...cachedSystem(
       [
         instruction,
@@ -968,7 +970,7 @@ export function polishRequest(files: ContentFile[], ids?: string[], light = true
       '',
       instruction,
       'Answer in JSON: say (one or two sentences on what you changed), places (id, day, night: only the places you rewrite).',
-    ].join('\n')),
+    ].join('\n'), '', '', 'none'),
     prompt: ['WHAT CAN BE ASKED ABOUT (for [brackets]):', askable.join(', '), '', 'THE PLACES TO POLISH:', ...lines].join('\n'),
     schemaName: 'world_polish',
     schema: POLISH_SCHEMA,
@@ -1058,7 +1060,9 @@ export function enhanceRequest(files: ContentFile[], stepId: string, said: strin
   }).filter(Boolean)
   return {
     role: 'chronicler',
-    // The task and the world's own guide first, the same for every step (M10.26); the step and what the world has now after the mark.
+    // The task and the world's own guide first, the same for every step (M10.26); the step and what the world has now after
+    // the mark. Kept an hour, like the steps it comes before (M10.27).
+    cacheHour: true,
     ...cachedSystem(
       [
         'YOU HELP THE DESIGNER WRITE THEIR ANSWER FOR ONE STEP OF BUILDING A WORLD. You do not propose content yet: you write out what they said as a fuller brief, so that the proposal after it has enough to go on.',
@@ -1240,7 +1244,7 @@ export function paletteRequest(files: ContentFile[], ask: string): LlmRequest {
       '',
       'YOU ARE IN THE WORLD BUILDER, AT THE MAP PALETTE. Propose colours for the map of this world that fit its frame: muted, in the spirit of Dwarf Fortress and Brogue, three or four close tints for every terrain (the seed of each hex picks one), boggy ground darker, dry ground lighter, water in two tones (open water and channel), ways in warm parchment. One set for the dark style and one for paper; black and white is made from paper. Give the legend names of the terrains as this world would say them, and of the ways under the same names (road, path, and canal, which is a tow path in the Nethermarch and may be a tidal channel or a cable run elsewhere). Colours as #rrggbb. JSON only.',
       `SIGNS ON THE LAND: a world names its own under palette.signs, at most ${MAX_SIGNS}, by an id of its own (a mine shaft is mine_shaft, never the Nethermarch's peat_pit): a name for the legend, a shape (${SIGN_SHAPES.join(', ')}), the land it lies on with its share of those hexes (on: { fen: 0.1 } is one hex in ten; a land is ${LANDS.join(', ')} or a terrain of the palette), the line the stranger reads walking past (text), and means: danger or means: uncertain where a colour alone would not say it (the map adds ! or ? and the legend the word). firm: true for firm ground, wet: true for water in the ground, stops for a line where a walk stops to look. Give every sign a colour under glyph in both styles by its id, and stairs; peat_edge is the rim of a pit-shaped sign. Leave signs out to keep the Nethermarch's pool, peat_pit, willow, ruin and hummock.`,
-    ].join('\n')),
+    ].join('\n'), '', '', 'none'),
     prompt: [`THE PALETTE NOW:`, JSON.stringify(current), '', `TERRAINS: ${terrains.join(', ')}`, `SIGNS NOW: ${signsOf(current).map(([id, sign]) => `${id} (${sign.name}, ${sign.shape}${sign.means ? `, ${sign.means}` : ''})`).join(', ')}`, '', `THE DESIGNER ASKS: ${ask || 'a palette that fits this world'}`].join('\n'),
     schemaName: 'palette_draft',
     schema: PALETTE_SCHEMA,
@@ -1290,7 +1294,7 @@ export function voiceRequest(files: ContentFile[], ask: string, land?: string): 
       'YOU ARE IN THE WORLD BUILDER, AT THE VOICE KIT. Propose how people in this world speak, as YAML with these keys: oaths (per faith id, two or three each), sayings (three or four of the whole region), groups (id, name, areas, professions, two or three sayings each), default_group, address (stranger, known, friend, high; "she/he/they" forms allowed), time, distance, measures, and not_here (word, and instead when people here have a word for it; weekdays and months of our world with this world\'s own). Sayings are rare in play: make them few and good. JSON only, with the YAML as a string: the fields below at its top, with or without voice: above them.',
       // The exact fields (M10.20: the real trial of this call wrote each time phrase as a map where the kit has a line of text).
       stepFields([{ kind: 'voice' }]),
-    ].join('\n')),
+    ].join('\n'), '', '', 'none'),
     prompt: [`FAITHS: ${faiths}`, `AREAS: ${areas}`, `TRADES: ${trades}`, '', 'THE KIT NOW:', now || '(none yet)', '', `THE DESIGNER ASKS: ${ask || 'a voice kit that fits this world'}`].join('\n'),
     schemaName: 'voice_draft',
     schema: VOICE_SCHEMA,

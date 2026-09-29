@@ -57,8 +57,8 @@ export function outlineRequest(input: OutlineInput): ChroniclerRequest {
   return {
     role: 'chronicler',
     system,
-    // The same for every far place of a world: all of it may be cached.
-    cacheBreak: system.length,
+    // The same for every far place of a world, but not marked: a place is worked out once, and a mark only costs a write.
+    cacheBreak: 0,
     prompt: [
       `PLACE: ${input.place.name}, a ${input.place.kind}. ${input.place.where}`,
       'KNOWN:',

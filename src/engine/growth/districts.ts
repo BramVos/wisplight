@@ -419,7 +419,7 @@ export function districtRequest(world: World, key: string): LlmRequest {
       `PEOPLE: up to ${MOST_PEOPLE}, each with a key, a full name that fits the town, she or he, what people see first (one sentence), how they speak (a few words), one thing anyone may know of them, a trade from TRADES, and at: the key of the place they live and work. For about one in three of them, a secret: what they hide (one sentence) and a hint someone watchful might notice (one sentence); for the rest, null.`,
       `SEATS: up to ${MOST_SEATS}, where one of the FACTIONS has a hall, a church or an office at one of your places (by the place's key), with what they want in this town (one sentence). Never a faction that is not listed: a new town brings no new factions.`,
       'JSON only.',
-    ].join('\n')),
+    ].join('\n'), '', '', 'none'),
     prompt: [
       `TOWN: ${t.name}. ${t.summary}`,
       `DISTRICT: ${q.name}. ${q.line}`,

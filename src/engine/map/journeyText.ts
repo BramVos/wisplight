@@ -86,7 +86,7 @@ export function journeyRequest(world: World, paragraph: string, frame: string, k
       : 'You are the narrator of a text game. Reword the journey the player made in the voice of this world: two to five sentences, second person, present tense, plain words. Keep every fact: how long, over what, the weather, what was seen, who was passed, how it ended and where. Add nothing: no people, places, events or numbers that are not in it. JSON only.'
   return {
     role: 'chronicler',
-    ...cachedSystem([frame, '', task].join('\n')),
+    ...cachedSystem([frame, '', task].join('\n'), '', '', 'none'),
     prompt: `${kind === 'return' ? 'WHAT CHANGED' : 'THE JOURNEY'}: ${paragraph}`,
     schemaName: 'journey',
     schema: { type: 'object', additionalProperties: false, required: ['text'], properties: { text: { type: 'string' } } },

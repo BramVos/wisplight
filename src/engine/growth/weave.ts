@@ -91,7 +91,7 @@ export function weaveRequest(world: World, key: string): LlmRequest {
       'THREAD: one at most, or null: a NEW person asks the stranger to go and see a KNOWN person from HOME (to carry word, a letter, a greeting), with a short name for it, what they say when asking (in their voice, one or two sentences), and why it matters. It must reach back to where the stranger came from.',
       'ECHO: one at most, or null: a NEW person who has a part in one of the OPEN STORYLINES (a messenger from it, someone who heard of it and recognises the stranger, someone it touches), by the line\'s id, with what happens, in one sentence the chronicle keeps.',
       'Use only ids given below. JSON only.',
-    ].join('\n')),
+    ].join('\n'), '', '', 'none'),
     prompt: [
       `TOWN: ${town}, ${quarter}.`,
       'NEW (just met):',

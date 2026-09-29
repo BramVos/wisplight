@@ -79,6 +79,9 @@ export interface CacheMeasure {
   /** The model its latest recorded real reply came from, whose minimum counts; none without a recording. */
   model?: string
   input: number
+  /** What it marks (M10.27): nothing, one part, or the shared part and one subject's part; and whether for an hour. */
+  mark: 'none' | 'one' | 'both'
+  hour: boolean
   /** The part before the cache mark: the same for the next call with this subject. */
   fixed: number
   /** The part every call of the kind shares, marked on its own (a new speaker reads it): where there is one. */
@@ -102,6 +105,8 @@ export async function cacheMeasures(worlds: TrialWorlds, rows: CoverageRow[]): P
       kind,
       ...(model ? { model, minimum: cacheMinimum(model) } : {}),
       input: tokensAbout(r.system + r.prompt),
+      mark: r.cacheBreak === 0 ? 'none' : r.cacheShared !== undefined ? 'both' : 'one',
+      hour: Boolean(r.cacheHour),
       fixed: tokensAbout(r.system.slice(0, r.cacheBreak ?? r.system.length)),
       ...(r.cacheShared !== undefined ? { shared: tokensAbout(r.system.slice(0, r.cacheShared)) } : {}),
     })
@@ -111,6 +116,7 @@ export async function cacheMeasures(worlds: TrialWorlds, rows: CoverageRow[]): P
 
 /** What the next call reads from the cache, in words: a share, or why nothing. */
 export function cacheRead(m: CacheMeasure): string {
+  if (m.mark === 'none') return 'not marked: nothing reads it back in time, so a mark would only pay a write'
   if (!m.minimum) return 'no recorded model yet'
   const pct = (n: number) => `${Math.round((100 * n) / m.input)}%`
   if (m.fixed < m.minimum) return 'nothing: the fixed part is under the minimum'
@@ -136,11 +142,11 @@ export function coverageMarkdown(rows: CoverageRow[], cache: CacheMeasure[] = []
       ? [
           '## The cache per kind',
           '',
-          'Every kind puts what stays the same first, with a cache mark after it, and what changes after the mark (M10.26). A kind that has a part every call shares (the rules and the frame, before one speaker\'s card) marks that too, so someone new reads it from the cache. A model caches nothing shorter than its minimum (Haiku 4.5 4,096 tokens, Sonnet 5 1,024, Opus 5.5 512); the game does not pad a part to reach it, and the log says so in place of 0%. Measured on each kind\'s fixed situation as the gateway sends it, in tokens about (four characters a token), against the model of its latest recorded real reply.',
+          'Every kind puts what stays the same first and what changes after it (M10.26). A cache mark costs a write at 1.25 times the input it covers (twice for an hour) and pays only when a second call reads it back within five minutes (or the hour), so a kind marks only where that is likely (M10.27): a talk its shared part and the speaker\'s card, a goal choice the part every person shares, the world steps and the writing aid for an hour, and nothing else. A model caches nothing shorter than its minimum (Haiku 4.5 4,096 tokens, Sonnet 5 1,024, Opus 5.5 512); the game does not pad a part to reach it, and the log says so in place of 0%. Measured on each kind\'s fixed situation as the gateway sends it, in tokens about (four characters a token), against the model of its latest recorded real reply.',
           '',
-          '| Kind | Model | In | Fixed part | Shared by every call | Minimum | Read from the cache |',
-          '|---|---|---|---|---|---|---|',
-          ...cache.map((m) => `| \`${m.kind}\` | ${m.model ?? '-'} | ${m.input.toLocaleString('en-GB')} | ${m.fixed.toLocaleString('en-GB')} | ${m.shared !== undefined ? m.shared.toLocaleString('en-GB') : '-'} | ${m.minimum?.toLocaleString('en-GB') ?? '-'} | ${cacheRead(m)} |`),
+          '| Kind | Model | In | Mark | Fixed part | Shared by every call | Minimum | Read from the cache |',
+          '|---|---|---|---|---|---|---|---|',
+          ...cache.map((m) => `| \`${m.kind}\` | ${m.model ?? '-'} | ${m.input.toLocaleString('en-GB')} | ${m.mark === 'none' ? 'none' : `${m.mark === 'both' ? 'shared and own' : 'one'}${m.hour ? ', an hour' : ''}`} | ${m.mark === 'none' ? '-' : m.fixed.toLocaleString('en-GB')} | ${m.shared !== undefined ? m.shared.toLocaleString('en-GB') : '-'} | ${m.minimum?.toLocaleString('en-GB') ?? '-'} | ${cacheRead(m)} |`),
           '',
         ]
       : []),

@@ -37,7 +37,8 @@ export interface LlmRequest {
    * (M10.20: the world steps, whose guide, contract and working instruction
    * stay the same for twelve steps while the step and the design log change).
    * The providers cache up to here; without it, the whole system part. Every
-   * kind of call sets it (M10.26), after the part it keeps the same.
+   * kind of call sets it (M10.26), after the part it keeps the same, or at 0
+   * where a mark would only pay a write (M10.27).
    */
   cacheBreak?: number
   /**
@@ -128,13 +129,28 @@ export function tokensAbout(text: string): number {
 }
 
 /**
+ * What a kind of call marks for the cache (M10.27): a mark costs a write at
+ * 1.25 times the input it covers, and pays only when a second call reads it
+ * within five minutes. `both`: the shared part and one subject's part (a talk:
+ * several turns with one person, and someone new reads the shared part);
+ * `shared`: only what every call shares (a goal choice: many people, rarely
+ * the same one twice in five minutes); `none`: nothing (a call made once per
+ * place or night, whose system nobody reads again in time).
+ */
+export type CacheMark = 'both' | 'shared' | 'none'
+
+/**
  * A system part built from what stays the same (M10.26; CLAUDE.md: the
  * stable part first, with a cache mark): what every call of the kind shares,
  * then what belongs to one speaker or subject, then what changes from call
- * to call; with the marks where the first two end.
+ * to call; with the marks where the first two end, as the kind chooses
+ * (M10.27: no mark where nothing reads it back).
  */
-export function cachedSystem(shared: string, own = '', changing = ''): Pick<LlmRequest, 'system' | 'cacheBreak' | 'cacheShared'> {
+export function cachedSystem(shared: string, own = '', changing = '', mark: CacheMark = 'both'): Pick<LlmRequest, 'system' | 'cacheBreak' | 'cacheShared'> {
   const mine = own ? `\n${own}` : ''
   const rest = changing ? `\n${changing}` : ''
-  return { system: `${shared}${mine}${rest}`, cacheBreak: shared.length + mine.length, ...(mine ? { cacheShared: shared.length } : {}) }
+  const system = `${shared}${mine}${rest}`
+  if (mark === 'none') return { system, cacheBreak: 0 }
+  if (mark === 'shared') return { system, cacheBreak: shared.length }
+  return { system, cacheBreak: shared.length + mine.length, ...(mine ? { cacheShared: shared.length } : {}) }
 }

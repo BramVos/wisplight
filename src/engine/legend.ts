@@ -81,7 +81,7 @@ export function legendRequest(content: Content, legends: LoreEntry[]): LlmReques
       '',
       'Years have passed. You retell the stories of a game long ago as legends people tell now: of "the stranger" who came, of what happened, as a tale that has been told many times.',
       'Never use the name of a person: speak of "the miller", "a girl from the fen", "the stranger". Place names may stay. Keep what happened; let it grow a little in the telling. Each story: name (a few words), summary (one or two sentences), details (two sentences), story (three to five sentences, as a villager tells it), far (one sentence, as it sounds far away). JSON only.',
-    ].join('\n')),
+    ].join('\n'), '', '', 'none'),
     prompt: legends.map((l) => `${l.id}: ${l.name}. ${l.summary} ${l.details} ${l.story}`).join('\n'),
     schemaName: 'legends',
     schema: object({ legends: { type: 'array', items: object({ id: text, name: text, summary: text, details: text, story: text, far: text }) } }),
