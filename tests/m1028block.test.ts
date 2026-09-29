@@ -14,6 +14,7 @@ import { Gateway, PING_AFTER_MS, PING_ROLE } from '../src/node/ai/gateway'
 import { AiLog } from '../src/node/ai/log'
 import { anthropicProvider, messagesOf, type Provider, type ProviderResponse } from '../src/node/ai/providers'
 import { UsageStore } from '../src/node/ai/usage'
+import { playTwenty } from '../src/node/talktrial'
 import { content, withNpc } from './helpers'
 
 // M10.28 (1) to (3), Bram's ideas of 29 September 2026: one cached block per
@@ -305,4 +306,17 @@ describe('M10.28 (3): the cache kept warm', () => {
     const system = params['system'] as { text: string; cache_control?: unknown }[]
     expect(system.filter((b) => b.cache_control).map((b) => b.text.length)).toEqual([100, block.length - 100])
   })
+})
+
+describe('M10.28: the measure of a talk of twenty lines', () => {
+  it('plays twenty lines with the baker, begun again when a talk ends, and books every call to its line', async () => {
+    const llm = new MockLlm('good')
+    const lines = await playTwenty(content, llm, { model: () => 'claude-haiku-4-5-20251001' })
+    expect(lines).toHaveLength(20)
+    expect(lines.filter((l) => l.calls > 0).length).toBeGreaterThanOrEqual(15)
+    expect(lines.every((l) => l.said.length > 0 || l.calls === 0)).toBe(true)
+    // Every call of the talk behind the same block.
+    const systems = new Set(replies(llm).map((c) => c.system))
+    expect(systems.size).toBe(1)
+  }, 60_000)
 })

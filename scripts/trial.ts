@@ -7,6 +7,8 @@ import { resolve } from 'node:path'
 // npm run trial -- --kind voice_set [--times n]: the talk on the situation set, as the settings try a voice model, with the character score (M10.27)
 // npm run trial -- --kind region_play [--setting outline|story|full] [--world base|isle] [--cap <dollars>] [--record]: a new region played per setting (M10.25)
 // npm run trial -- --kind map_measure [--models a,b] [--times n] [--record]: the map painted as a table with each model (M10.26)
+// npm run trial -- --kind talk_twenty [--model <id>]: a talk of twenty lines with the baker, per line what it read from the cache, wrote and cost (M10.28)
+// npm run trial -- --kind keep_warm: whether a ping keeps the block of a place, a line before and after (about ten minutes, M10.28)
 //
 // Tries a kind of model call for real (M10.20), in the app, with the key and
 // the models the player chose under Settings > AI: never in CI, never with a
@@ -31,7 +33,7 @@ if (!existsSync(resolve(root, 'out/main/index.js'))) {
   process.exit(2)
 }
 const env: Record<string, string> = { ...process.env as Record<string, string>, WISPLIGHT_TRIAL: kind }
-for (const [flag, name] of [['cap', 'CAP'], ['steps', 'STEPS'], ['doc', 'DOC'], ['build', 'BUILD'], ['out', 'OUT'], ['name', 'NAME'], ['setting', 'SETTING'], ['world', 'WORLD'], ['models', 'MODELS'], ['times', 'TIMES'], ['effort', 'EFFORT']] as const) {
+for (const [flag, name] of [['cap', 'CAP'], ['steps', 'STEPS'], ['doc', 'DOC'], ['build', 'BUILD'], ['out', 'OUT'], ['name', 'NAME'], ['setting', 'SETTING'], ['world', 'WORLD'], ['models', 'MODELS'], ['model', 'MODEL'], ['times', 'TIMES'], ['effort', 'EFFORT']] as const) {
   if (value(flag)) env[`WISPLIGHT_TRIAL_${name}`] = flag === 'doc' || flag === 'out' ? resolve(value(flag)) : value(flag)
 }
 if (args.includes('--same-model')) env['WISPLIGHT_TRIAL_SAME_MODEL'] = '1'

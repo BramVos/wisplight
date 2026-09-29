@@ -13,6 +13,8 @@ import { mapTrial } from './maptrial'
 import { keepTally, keptTallies, measuring, playRegion, REGION_KINDS, regionReport, REGION_SETTINGS, type RegionSetting } from '../node/regionplay'
 import type { BuildStore } from '../node/ai/builds'
 import type { AiService } from '../node/ai/service'
+import { PING_AFTER_MS } from '../node/ai/gateway'
+import { pingKeeps, playTwenty } from '../node/talktrial'
 
 /** What a trial needs of the AI service: the gateway and the build budgets (a test gives it the mock). */
 export type TrialAi = { builds: Pick<BuildStore, 'reset' | 'setLimit'>; gateway: { complete(request: LlmRequest): Promise<LlmResponse> } }
@@ -275,6 +277,10 @@ export async function trialRun(ai: AiService, kinds: string, contentRoot: string
       }
       continue
     }
+    if (kind === 'talk_twenty' || kind === 'keep_warm') {
+      ok = (await talkTrial(ai, kind, contentRoot, { model: env('MODEL'), capUsd: cap }, say)) && ok
+      continue
+    }
     if (kind === 'region_play') {
       ok = (await regionTrial(ai, contentRoot, appPath, { capUsd: cap, setting: env('SETTING') as RegionSetting | '', world: env('WORLD'), record: env('RECORD') === '1' }, say)) && ok
       continue
@@ -289,6 +295,50 @@ export async function trialRun(ai: AiService, kinds: string, contentRoot: string
     ok = (await kindTrial(ai, kind, contentRoot, join(appPath, 'tests/fixtures/model', kind), env('RECORD') === '1', say, { ...(effort === 'low' || effort === 'medium' || effort === 'high' ? { effort } : {}), times: Number(env('TIMES')) || 1, capUsd: cap })) && ok
   }
   return ok
+}
+
+/**
+ * The measures of M10.28 on the player's key: a talk of twenty lines with the
+ * baker of Veenhoek on the voice's model (or --model), per line what it read
+ * from the cache, wrote to it and cost; or whether a ping keeps the block of
+ * a place (keep_warm: a line, a ping, a line after the five minutes).
+ */
+export async function talkTrial(ai: AiService, kind: 'talk_twenty' | 'keep_warm', contentRoot: string, how: { model: string; capUsd: number }, say: (line: string) => void): Promise<boolean> {
+  const chosen = ai.overview().settings.roles.voice
+  if (!chosen) {
+    say(`${kind}: no model chosen for the voice under Settings > AI`)
+    return false
+  }
+  const content = await loadContentFromDir(contentRoot, 'base')
+  const model = (response: LlmResponse) => response.model
+  if (kind === 'keep_warm') {
+    const wait = (ms: number) => new Promise<void>((done) => setTimeout(done, ms))
+    const r = await pingKeeps(content, ai.gateway, (key) => ai.gateway.keepWarm(key), { wait, afterMs: PING_AFTER_MS + 5000, model, say })
+    say(`keep_warm: ${chosen.model}, ping ${r.pinged ? 'sent' : 'not sent'}; the line after read ${r.second.cachedTokens} of ${r.second.inputTokens} from the cache and wrote ${r.second.cacheWriteTokens}: ${ai.gateway.pingsWork(chosen.provider, chosen.model) ? 'the ping kept the block' : 'the ping did not keep it; the block is kept an hour from now on'}`)
+    return true
+  }
+  const other = how.model && how.model !== chosen.model ? { provider: /^(gpt|o\d|chatgpt)/.test(how.model) ? ('openai' as const) : ('anthropic' as const), model: how.model } : undefined
+  const llm = other ? { complete: (r: LlmRequest) => ai.gateway.complete(r, other), report: ai.gateway.report.bind(ai.gateway) } : ai.gateway
+  let spent = 0
+  let lines: Awaited<ReturnType<typeof playTwenty>>
+  try {
+    lines = await playTwenty(content, llm, {
+      model,
+      onLine: (m, n) => {
+        spent += m.costUsd
+        say(`line ${n}: ${m.calls} call${m.calls === 1 ? '' : 's'}${m.rejected.length ? ` (asked again: ${m.rejected.join(', ')})` : ''}, in ${m.inputTokens} (read ${m.cachedTokens}, written ${m.cacheWriteTokens}), out ${m.outputTokens}, $${m.costUsd.toFixed(4)}, ${(m.latencyMs / 1000).toFixed(1)}s; "${m.line}" -> ${m.said.slice(0, 120)}`)
+        if (spent > how.capUsd) throw new Error(`the cap of $${how.capUsd.toFixed(2)} is spent`)
+      },
+    })
+  } catch (error) {
+    say(`talk_twenty: stopped: ${error instanceof Error ? error.message : String(error)}`)
+    return false
+  }
+  const asked = lines.filter((l) => l.calls)
+  const rest = asked.slice(1)
+  const each = (f: (l: (typeof asked)[number]) => number) => asked.reduce((n, l) => n + f(l), 0)
+  say(`talk_twenty: ${other?.model ?? chosen.model}, ${asked.length} lines asked, $${spent.toFixed(4)} in all; the first $${(asked[0]?.costUsd ?? 0).toFixed(4)}, the rest $${(rest.reduce((n, l) => n + l.costUsd, 0) / Math.max(1, rest.length)).toFixed(4)} a line on average; read ${each((l) => l.cachedTokens)} of ${each((l) => l.inputTokens)} input tokens from the cache, wrote ${each((l) => l.cacheWriteTokens)}; ${(each((l) => l.latencyMs) / Math.max(1, asked.length) / 1000).toFixed(1)}s a line`)
+  return true
 }
 
 /**

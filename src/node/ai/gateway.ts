@@ -391,15 +391,16 @@ export class Gateway implements LlmClient {
     try {
       const response = await provider.keepWarm(choice.model, request, AbortSignal.timeout(20_000))
       warm.pinged = true
-      const costUsd = this.options.usage.record(choice.provider, choice.model, response.usage, true, undefined, PING_ROLE, 'game')
-      this.costs.add({ usd: costUsd ?? 0, role: request.role, source: 'game' })
-      this.options.log.add({ time: new Date(this.now()).toISOString(), source: 'game', role: PING_ROLE, provider: choice.provider, model: response.model, ok: true, latencyMs: response.latencyMs, ...response.usage, costUsd, prompt: `(keeping ${key} warm)`, response: '' })
+      const source = this.sourceOf(request)
+      const costUsd = this.options.usage.record(choice.provider, choice.model, response.usage, true, undefined, PING_ROLE, source)
+      this.costs.add({ usd: costUsd ?? 0, role: request.role, source })
+      this.options.log.add({ time: new Date(this.now()).toISOString(), source, role: PING_ROLE, provider: choice.provider, model: response.model, ok: true, latencyMs: response.latencyMs, ...response.usage, costUsd, prompt: `(keeping ${key} warm)`, response: '' })
       return true
     } catch (error) {
       const failure = error instanceof LlmError ? error : new LlmError('network', String(error))
       // A ping the provider refuses outright cannot keep anything: the hour instead.
       if (failure.kind === 'invalid') this.pings.set(`${choice.provider}/${choice.model}`, 'misses')
-      this.options.log.add({ time: new Date(this.now()).toISOString(), source: 'game', role: PING_ROLE, provider: choice.provider, model: choice.model, ok: false, error: `${failure.kind}: ${failure.message}`, latencyMs: this.now() - started, inputTokens: 0, outputTokens: 0, cachedTokens: 0, prompt: `(keeping ${key} warm)`, response: '' })
+      this.options.log.add({ time: new Date(this.now()).toISOString(), source: this.sourceOf(request), role: PING_ROLE, provider: choice.provider, model: choice.model, ok: false, error: `${failure.kind}: ${failure.message}`, latencyMs: this.now() - started, inputTokens: 0, outputTokens: 0, cachedTokens: 0, prompt: `(keeping ${key} warm)`, response: '' })
       return false
     }
   }

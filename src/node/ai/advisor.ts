@@ -1,6 +1,6 @@
 import type { Content } from '../../engine/content'
 import { hasAnachronism, outOfCharacter } from '../../engine/dialogue/guard'
-import type { LlmClient, LlmRejection, LlmRequest, LlmResponse } from '../../engine/dialogue/llm'
+import { sentText, type LlmClient, type LlmRejection, type LlmRequest, type LlmResponse } from '../../engine/dialogue/llm'
 import { parseReply } from '../../engine/dialogue/schema'
 import { brainTrial, chroniclerTrial, runSituation, trialSituations } from '../../engine/dialogue/testset'
 import { characterChecks, characterScore } from '../../engine/dialogue/voice'
@@ -249,7 +249,7 @@ class Meter implements LlmClient {
   async complete(request: LlmRequest): Promise<LlmResponse> {
     try {
       const response = await this.gateway.complete(request, { provider: this.provider, model: this.model })
-      this.calls.push({ latencyMs: response.latencyMs, inputTokens: response.usage.inputTokens, outputTokens: response.usage.outputTokens, costUsd: costUsd(this.model, response.usage), answer: this.answer, given: `${request.system}\n${request.prompt}`, text: response.text })
+      this.calls.push({ latencyMs: response.latencyMs, inputTokens: response.usage.inputTokens, outputTokens: response.usage.outputTokens, costUsd: costUsd(this.model, response.usage), answer: this.answer, given: sentText(request), text: response.text })
       return response
     } catch (error) {
       this.calls.push({ latencyMs: 0, inputTokens: 0, outputTokens: 0, costUsd: 0, answer: this.answer, failed: error instanceof Error ? error.message : String(error) })
