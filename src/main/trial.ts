@@ -5,6 +5,7 @@ import { chapterStep, documentChapters, faithfulness, mergeFix, newWorldFiles, p
 import { LlmError, type LlmResponse } from '../engine/dialogue/llm'
 import { askAdvice, testCall, trial } from '../node/ai/advisor'
 import { costUsd } from '../node/ai/pricing'
+import { openAiStrict } from '../node/ai/providers'
 import { listWorlds, loadContentFromDir, readContentFiles } from '../node/content'
 import { MODEL_KINDS } from '../engine/modelkinds'
 import { kindSituation } from '../engine/trials'
@@ -296,7 +297,7 @@ export async function trialRun(ai: AiService, kinds: string, contentRoot: string
       continue
     }
     const effort = env('EFFORT')
-    ok = (await kindTrial(ai, kind, contentRoot, join(appPath, 'tests/fixtures/model', kind), env('RECORD') === '1', say, { ...(effort === 'low' || effort === 'medium' || effort === 'high' ? { effort } : {}), times: Number(env('TIMES')) || 1, capUsd: cap })) && ok
+    ok = (await kindTrial(ai, kind, contentRoot, join(appPath, 'tests/fixtures/model', kind), env('RECORD') === '1', say, { ...(effort === 'low' || effort === 'medium' || effort === 'high' ? { effort } : {}), times: Number(env('TIMES')) || 1, capUsd: cap, ...(env('MODEL') ? { model: env('MODEL') } : {}) })) && ok
   }
   return ok
 }
@@ -437,7 +438,7 @@ interface KindRecord {
  * chose for its role, read as the game reads it. With record, the reply is
  * kept under tests/fixtures/model/<kind>/<date>-<model>.json.
  */
-export async function kindTrial(ai: AiService, kind: string, contentRoot: string, fixtures: string, record: boolean, say: (line: string) => void, how: { effort?: 'low' | 'medium' | 'high'; times?: number; capUsd?: number } = {}): Promise<boolean> {
+export async function kindTrial(ai: AiService, kind: string, contentRoot: string, fixtures: string, record: boolean, say: (line: string) => void, how: { effort?: 'low' | 'medium' | 'high'; times?: number; capUsd?: number; model?: string } = {}): Promise<boolean> {
   const started = Date.now()
   let entry: KindRecord
   // Kept as a fixture: a later trial of the same model on the same day beside the earlier one (M10.27): -r2, -r3.
@@ -490,10 +491,13 @@ export async function kindTrial(ai: AiService, kind: string, contentRoot: string
         break
       }
       try {
-        const response = await ai.gateway.complete(request)
+        // Another model than the role's with --model (M10.28: gpt-5-mini against Haiku for the voice), its provider from its name.
+        const response = await ai.gateway.complete(request, how.model ? { provider: providerOf(how.model), model: how.model } : undefined)
         const usd = costUsd(response.model, response.usage) ?? 0
         const e: KindRecord = { kind, about: situation.about, model: response.model, provider: response.provider, date: today(), ...(effort ? { effort } : {}), usage: { inputTokens: response.usage.inputTokens, cachedTokens: response.usage.cachedTokens, outputTokens: response.usage.outputTokens }, reply: response.text, problems: situation.check(response.text) }
-        say(`${kind}${times > 1 ? ` #${n}` : ''}${how.effort ? ` at ${how.effort}` : ''}: ${response.model}, in ${response.usage.inputTokens}, out ${response.usage.outputTokens}, $${usd.toFixed(4)}; ${e.problems.length ? `the game would not use it: ${e.problems.slice(0, 3).join('; ')}` : 'the game takes it'}`)
+        // On OpenAI a schema goes strict only where every field is required and every object closed (M10.20); else it guides.
+        const strict = response.provider === 'openai' ? `, ${openAiStrict(request.schema) ? 'strict' : 'schema not strict'}` : ''
+        say(`${kind}${times > 1 ? ` #${n}` : ''}${how.effort ? ` at ${how.effort}` : ''}: ${response.model}${strict}, in ${response.usage.inputTokens} (read ${response.usage.cachedTokens}), out ${response.usage.outputTokens}, ${(response.latencyMs / 1000).toFixed(1)}s, $${usd.toFixed(4)}; ${e.problems.length ? `the game would not use it: ${e.problems.slice(0, 3).join('; ')}` : 'the game takes it'}`)
         all = all && e.problems.length === 0
         if (n < times) keep(e)
         entry = e
