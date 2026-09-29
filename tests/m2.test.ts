@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { calendarOf, Engine, MockLlm, parseReply, runSituation, SITUATIONS, soundsLikeSpeech, timeGreeting, unknownNames, vocabularyOf, wordCount, WORLD_FRAME, type LlmClient, type LlmRejection, type MockMode } from '../src/engine'
+import { sentText } from '../src/engine/dialogue/llm'
 import { content, newEngine } from './helpers'
 
 // Milestone M2 (docs/ROADMAP.md): talking with NPCs, with the mock model only.
@@ -28,8 +29,8 @@ describe('M2: the fixed set of 50 conversation situations', () => {
       for (const [index, text] of run.replies.entries()) {
         const reply = parseReply(text)
         expect(reply, `${situation.id}: schema`).toBeDefined()
-        const schema = run.requests[index]!.schema as { properties: { mentioned_topics: { items: { enum: string[] } } } }
-        for (const topic of reply!.mentioned_topics) expect(schema.properties.mentioned_topics.items.enum, `${situation.id}: topic ${topic}`).toContain(topic)
+        // Only topics the speaker was given (M10.28: the schema is the same for every line, the message names them).
+        for (const topic of reply!.mentioned_topics) expect(sentText(run.requests[index]!), `${situation.id}: topic ${topic}`).toContain(topic)
         const limit = run.requests[index]!.meta!['wordLimit'] as number
         expect(wordCount(quoted(reply!.reply)), `${situation.id}: length`).toBeLessThanOrEqual(limit)
       }

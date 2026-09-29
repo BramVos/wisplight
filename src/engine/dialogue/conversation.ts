@@ -18,7 +18,7 @@ import { closingLine, fallbackReply } from './fallback'
 import { deedKinds, fitLength, leakedNames, looksLikeInjection, outOfCharacter, promises, saysNothing, speaksAsOther, swearRight, unknownNames, vocabularyOf } from './guard'
 import { accept, askedFor, askOffer, dayLines, kinOf, offerLine, offerLines, offersFor, proposal, proposalText, spokenMeet, type Offer } from './offers'
 import { accepted, declined, inviteOffer } from '../social/invite'
-import { CLAIM_KEYS, claimValid, claimWords, parseClaim, playerSays } from '../claims'
+import { claimValid, claimWords, parseClaim, playerSays } from '../claims'
 import { afterChoice, doAfter, talkFact } from './aftertalk'
 import { provocation, react, walkAway, type Reaction } from './reactions'
 import { flirt } from '../social/romance'
@@ -33,7 +33,7 @@ import { attitude, applyEffect, moodOf, relation, type Attitude } from './relati
 import { askLine, askNow, knownRequests, requestName, visited } from '../requests'
 import { questsOf } from '../life'
 import { routineNow } from '../npc/brain'
-import { parseReply, replyJsonSchema, type Reply } from './schema'
+import { parseReply, TALK_REPLY_SCHEMA, type Reply } from './schema'
 import type { TopicRegistry } from './topics'
 import { checkSketch, namesSomeone, registerSketch, sketchBonds, sketchOpen, sketchPlaces, sketchRoom, type NamedPerson } from '../sketches'
 import { fixNotHere, flourishes, strangeWords, strayNumbers } from './voice'
@@ -743,7 +743,9 @@ export class Dialogue {
     if (memory.length > 30) memory.splice(0, memory.length - 30)
 
     // One thing the NPC does after the talk, from the voice (M10.3).
-    if (reply && reply.after.kind !== 'none' && !talk.after && doAfter(world, npcId, reply.after, talk.facts ?? [])) talk.after = true
+    // Someone or somewhere they know (M10.28: the schema no longer lists them, so the engine checks).
+    const afterTo = reply && reply.after.kind !== 'none' && (allowed.has(reply.after.target) || this.knowledge.knownTopics(npcId).has(reply.after.target) || world.npcsAt(world.state.player.location).includes(reply.after.target))
+    if (reply && afterTo && !talk.after && doAfter(world, npcId, reply.after, talk.facts ?? [])) talk.after = true
 
     // Family asked about or named: the stranger knows now who belongs to whom (M10.4).
     for (const person of [...topics, ...this.topics.recognise(replyText)]) if (person !== npcId && world.content.npcs.has(person) && tieTo(world, npcId, person)) learnTie(world, npcId, person)
@@ -986,7 +988,8 @@ export class Dialogue {
             cacheTail: true,
             warm: block.key,
             schemaName: 'npc_reply',
-            schema: replyJsonSchema(allowedTopics, offered.map((o) => o.key), offers, !talk?.after, ctx.claimable?.length ? { subjects: ctx.claimable, keys: CLAIM_KEYS } : undefined, sketch),
+            // The same schema for every line (M10.28): it is cached ahead of the area block.
+            schema: TALK_REPLY_SCHEMA,
             maxTokens: TIER_TOKENS[ctx.tier],
             timeoutMs: within - (Date.now() - started),
             meta: {

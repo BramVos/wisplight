@@ -2,8 +2,9 @@ import { z } from 'zod'
 import { ACTS } from './acts'
 import type { JsonSchema } from './llm'
 
-// The reply schema is built per call: mentioned_topics may only hold topics
-// the NPC was allowed to talk about (FO, chapter 10).
+// The reply schema of a talk is the same for every call since M10.28; the
+// engine checks that mentioned_topics holds only topics the NPC was allowed
+// to talk about (FO, chapter 10), and every key against its list.
 
 export const FAR_KINDS = ['city', 'land', 'sea', 'river', 'lake'] as const
 
@@ -36,91 +37,69 @@ export const ReplySchema = z.object({
 })
 export type Reply = z.infer<typeof ReplySchema>
 
-export function replyJsonSchema(allowedTopics: string[], questActions: string[] = [], offers: { key: string; decision: 'yes' | 'no' }[] = [], after = false, claim?: { subjects: string[]; keys: readonly string[] }, sketch?: { bonds: string[]; places: string[] }): JsonSchema {
-  const yes = offers.filter((o) => o.decision === 'yes').map((o) => o.key)
-  return {
-    type: 'object',
-    additionalProperties: false,
-    required: ['reply', 'names', 'mentioned_topics', 'effects', 'memory_note', 'ends_conversation', 'keep_talking', ...(questActions.length ? ['quest_action'] : []), ...(offers.length ? ['action', 'propose'] : []), ...(after ? ['after'] : []), ...(sketch ? ['person'] : [])],
-    properties: {
-      ...(sketch
-        ? {
-            person: {
-              type: 'object',
-              additionalProperties: false,
-              required: ['name', 'pronoun', 'bond', 'place', 'what'],
-              description: 'Someone new you named in reply (see SOMEONE NEW), or name empty and bond none.',
-              properties: {
-                name: { type: 'string', description: 'A first name only, as in reply; empty for nobody.' },
-                pronoun: { type: 'string', enum: ['she', 'he', 'they'] },
-                bond: { type: 'string', enum: ['none', ...sketch.bonds] },
-                place: { type: 'string', enum: ['none', ...sketch.places] },
-                what: { type: 'string', description: 'What they are, in a few words: a bargeman, a weaver.' },
-              },
-            },
-          }
-        : {}),
-      ...(claim
-        ? {
-            claim: {
-              type: 'object',
-              additionalProperties: false,
-              required: ['subject', 'key', 'value'],
-              description: 'Only if the stranger just told you something is so about a person or place named in this talk: who or what (subject), which key, and the value in the words of the world. Otherwise subject none.',
-              properties: { subject: { type: 'string', enum: ['none', ...claim.subjects] }, key: { type: 'string', enum: ['none', ...claim.keys] }, value: { type: 'string' } },
-            },
-          }
-        : {}),
-      ...(after
-        ? {
-            after: {
-              type: 'object',
-              additionalProperties: false,
-              required: ['kind', 'target'],
-              description: 'One thing you will do of your own after this talk, or kind none.',
-              properties: { kind: { type: 'string', enum: ['none', 'tell', 'visit'] }, target: { type: 'string', enum: ['none', ...allowedTopics] } },
-            },
-          }
-        : {}),
-      ...(questActions.length ? { quest_action: { type: 'string', enum: ['none', ...questActions] } } : {}),
-      ...(offers.length
-        ? {
-            action: { type: 'string', enum: ['none', ...offers.map((o) => o.key)], description: 'The offer the player asked for, or none.' },
-            propose: { type: 'string', enum: ['none', ...yes], description: 'An offer with decision yes that you suggest yourself, or none.' },
-          }
-        : {}),
-      // No act (M10.27): the engine classifies what the player said and gives it in the prompt; 27 values on every line
-      // for nothing the game reads.
-      reply: { type: 'string', description: 'As it appears on screen.' },
-      names: {
-        type: 'array',
-        description: 'Every name in reply.',
-        items: {
-          type: 'object',
-          additionalProperties: false,
-          required: ['text', 'new_kind'],
-          properties: { text: { type: 'string' }, new_kind: { type: 'string', enum: ['none', ...FAR_KINDS] } },
-        },
+/**
+ * The reply schema of a talk (M10.28): the same for every line and every
+ * speaker. Anthropic caches the schema ahead of the system part, so a list
+ * that changed from line to line (the topics, the offers, the quest actions)
+ * made a line write the whole area block again: measured on 29 September
+ * 2026, eleven of nineteen lines read nothing from the cache. The keys a line
+ * may use are in its message; the engine checks each against them, as before.
+ */
+export const TALK_REPLY_SCHEMA: JsonSchema = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['reply', 'names', 'mentioned_topics', 'effects', 'memory_note', 'ends_conversation', 'keep_talking'],
+  properties: {
+    // No act (M10.27): the engine classifies what the player said and gives it in the prompt.
+    reply: { type: 'string', description: 'As it appears on screen.' },
+    names: {
+      type: 'array',
+      description: 'Every name in reply.',
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['text', 'new_kind'],
+        properties: { text: { type: 'string' }, new_kind: { type: 'string', enum: ['none', ...FAR_KINDS] } },
       },
-      mentioned_topics: { type: 'array', items: { type: 'string', enum: allowedTopics.length ? allowedTopics : ['none'] } },
-      effects: {
-        type: 'array',
-        items: {
-          type: 'object',
-          additionalProperties: false,
-          required: ['type', 'delta', 'reason'],
-          properties: {
-            type: { type: 'string', enum: ['affinity', 'trust', 'fear'] },
-            delta: { type: 'integer' },
-            reason: { type: 'string' },
-          },
-        },
-      },
-      memory_note: { type: 'string', description: 'One short sentence you will remember, first person: only what was said or done in this talk.' },
-      ends_conversation: { type: 'boolean' },
-      keep_talking: { type: 'string', enum: [...KEEP_TALKING], description: 'What this talk is still about between you, or no.' },
     },
-  }
+    mentioned_topics: { type: 'array', description: 'Ids from KNOWLEDGE or REFERRAL your reply talks about.', items: { type: 'string' } },
+    effects: {
+      type: 'array',
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['type', 'delta', 'reason'],
+        properties: { type: { type: 'string', enum: ['affinity', 'trust', 'fear'] }, delta: { type: 'integer' }, reason: { type: 'string' } },
+      },
+    },
+    memory_note: { type: 'string', description: 'One short sentence you will remember, first person: only what was said or done in this talk.' },
+    ends_conversation: { type: 'boolean' },
+    keep_talking: { type: 'string', enum: [...KEEP_TALKING], description: 'What this talk is still about between you, or no.' },
+    quest_action: { type: 'string', description: 'Only with QUEST ACTIONS: its key, or none.' },
+    action: { type: 'string', description: 'Only with OFFERS: the key of the offer the player asked for, or none.' },
+    propose: { type: 'string', description: 'Only with OFFERS: the key of an offer with decision yes you suggest yourself, or none.' },
+    after: {
+      type: 'object',
+      additionalProperties: false,
+      required: ['kind', 'target'],
+      description: 'Only with AFTER THE TALK: one thing you will do of your own after it, or kind none.',
+      properties: { kind: { type: 'string', enum: ['none', 'tell', 'visit'] }, target: { type: 'string', description: 'An id from KNOWLEDGE, PEOPLE YOU KNOW or who is here, or none.' } },
+    },
+    claim: {
+      type: 'object',
+      additionalProperties: false,
+      required: ['subject', 'key', 'value'],
+      description: 'Only with CLAIM, as it says.',
+      properties: { subject: { type: 'string' }, key: { type: 'string', enum: ['none', 'at', 'alive', 'state', 'working'] }, value: { type: 'string' } },
+    },
+    person: {
+      type: 'object',
+      additionalProperties: false,
+      required: ['name', 'pronoun', 'bond', 'place', 'what'],
+      description: 'Only with SOMEONE NEW, as it says.',
+      properties: { name: { type: 'string' }, pronoun: { type: 'string', enum: ['she', 'he', 'they'] }, bond: { type: 'string' }, place: { type: 'string' }, what: { type: 'string' } },
+    },
+  },
 }
 
 /** Parses a reply, tolerating a code fence around the JSON. */

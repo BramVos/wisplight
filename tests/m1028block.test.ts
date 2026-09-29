@@ -79,6 +79,8 @@ describe('M10.28 (1): one cached block per area', () => {
     expect(calls.length).toBeGreaterThanOrEqual(3)
     for (const call of calls) {
       expect(call.system).toBe(calls[0]!.system)
+      // The schema too: Anthropic caches it ahead of the system part (the measure of 29 September 2026).
+      expect(JSON.stringify(call.schema)).toBe(JSON.stringify(calls[0]!.schema))
       expect(call.cacheBreak).toBe(calls[0]!.system.length)
       expect(call.cacheShared).toBeLessThan(call.cacheBreak!)
       expect(call.warm).toBe(blockKey(engine.world))

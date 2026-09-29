@@ -33,7 +33,8 @@ describe('M10.3 left over: claims the voice reads', () => {
     const calls = llm.calls.length
     await engine.handle('"Harmen is off selling his flour at the Waagdam market this morning.')
     const request = llm.calls.slice(calls).find((c) => c.schemaName === 'npc_reply')!
-    expect(JSON.stringify(request.schema)).toMatch(/"claim"/)
+    // The schema is the same for every line since M10.28; the message asks for the claim.
+    expect(request.prompt).toMatch(/^CLAIM: /m)
     expect(request.prompt).toMatch(/CLAIM: if the stranger's words just said something is so about .*npc_harmen/)
     const fact = world.state.news!.facts.find((f) => f.by === 'player' && f.claim?.subject === 'npc_harmen')!
     expect(fact.claim).toEqual({ subject: 'npc_harmen', key: 'at', value: 'loc_waagdam_market' })
@@ -52,7 +53,7 @@ describe('M10.3 left over: claims the voice reads', () => {
     await engine.handle('talk mirte')
     const calls = llm.calls.length
     await engine.handle('"Is Harmen at the market today?')
-    expect(JSON.stringify(llm.calls.slice(calls).find((c) => c.schemaName === 'npc_reply')!.schema)).not.toMatch(/"claim"/)
+    expect(llm.calls.slice(calls).find((c) => c.schemaName === 'npc_reply')!.prompt).not.toMatch(/^CLAIM: /m)
     llm.claim = { subject: 'npc_harmen', key: 'at', value: 'the moon' }
     await engine.handle('"Harmen is off selling his flour at the Waagdam market this morning.')
     expect(engine.world.state.news!.facts.some((f) => f.by === 'player' && f.claim?.subject === 'npc_harmen')).toBe(false)

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { parseReply, replyJsonSchema } from '../src/engine/dialogue/schema'
+import { parseReply, TALK_REPLY_SCHEMA } from '../src/engine/dialogue/schema'
+import { CLAIM_KEYS } from '../src/engine/claims'
 import { systemParts } from '../src/engine/dialogue/prompt'
 import { Engine } from '../src/engine'
 import { content } from './helpers'
@@ -11,7 +12,7 @@ import { content } from './helpers'
 
 describe('M10.27: a talk line, shorter', () => {
   it('asks no act of the model, and still reads an older reply that has one', () => {
-    const schema = replyJsonSchema(['loc_molenend_mill'])
+    const schema = TALK_REPLY_SCHEMA
     expect(schema['required']).not.toContain('act')
     expect(Object.keys(schema['properties'] as object)).not.toContain('act')
     const reply = { reply: '"Morning."', names: [], mentioned_topics: [], effects: [], memory_note: 'A stranger came by.', ends_conversation: false, keep_talking: 'no' }
@@ -24,9 +25,11 @@ describe('M10.27: a talk line, shorter', () => {
     const { shared } = systemParts(engine.world, 'npc_mirte')
     const rules = shared.slice(shared.indexOf('Rules:'), shared.indexOf('[[WORLD TEXT]]'))
     for (const rule of ['never mention an AI', 'WORD LIMIT', 'double quotes', 'KNOWLEDGE, SCENE and your own card', 'YOU ARE', 'what is new', 'REFERRAL', 'of your own making: only what KNOWLEDGE gives', 'Numbers, ages, prices, dates and distances', '"a few" or "some"', 'Never invent places, people, items, prices or quests', 'PEOPLE YOU KNOW', 'new_kind', 'SOMEONE NEW', 'Never agree to come along', 'DECISION', 'PLAYER SAYS', 'Dutch', 'ATTITUDE', 'No, not today', 'YOUR PEOPLE', 'LISTENER', 'PRIVATE', 'CHECK', 'effects', 'mentioned_topics', 'JSON']) expect(rules, rule).toContain(rule)
-    const schema = JSON.stringify(replyJsonSchema(['loc_molenend_mill', 'npc_harmen', 'npc_mirte'], [], [{ key: 'lead:loc_molenend_mill', decision: 'no' }], true))
-    // A fifth fewer in M10.27; M10.29 gave the memory note back one clause (only what was said or done in this talk), and
-    // M10.28 two (the cards of the area block, and a talk told as messages), now that the rules are read from the cache.
-    expect(rules.length + schema.length).toBeLessThanOrEqual(Math.floor(5016 * 0.84))
+    const schema = JSON.stringify(TALK_REPLY_SCHEMA)
+    // A fifth fewer in M10.27. Since M10.28 the rules and the schema are read from the cache on every line but the first,
+    // and the schema holds every field on every line (one schema, so the cache holds): still under the 5,016 of before.
+    expect(rules.length + schema.length).toBeLessThanOrEqual(5016)
+    const claim = (TALK_REPLY_SCHEMA['properties'] as Record<string, { properties: Record<string, { enum?: string[] }> }>)['claim']!
+    expect(new Set(claim.properties['key']!.enum)).toEqual(new Set(['none', ...CLAIM_KEYS]))
   })
 })
