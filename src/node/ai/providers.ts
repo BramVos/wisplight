@@ -38,6 +38,12 @@ export interface Provider {
   id: ProviderId
   listModels(): Promise<ModelInfo[]>
   complete(model: string, request: LlmRequest, signal?: AbortSignal): Promise<ProviderResponse>
+  /**
+   * Keeps a call's fixed part in the cache (M10.28): the same system part and
+   * settings with an empty answer (max_tokens 0), which costs a read of the
+   * cache and nothing more. Anthropic only; OpenAI caches by itself.
+   */
+  keepWarm?(model: string, request: LlmRequest, signal?: AbortSignal): Promise<ProviderResponse>
   /** Image models, for pictures of places and people (OpenAI only; Claude makes no pictures). */
   listImageModels?(): Promise<ModelInfo[]>
   picture?(model: string, prompt: string, quality: 'low' | 'medium', signal?: AbortSignal): Promise<PictureResponse>
@@ -88,10 +94,8 @@ export function openAiProvider(apiKey: string): Provider {
           .create(
             {
               model,
-              messages: [
-                { role: 'system', content: request.system },
-                { role: 'user', content: request.prompt },
-              ],
+              // The talk so far as turns (M10.28): OpenAI caches the longest prefix it has seen by itself.
+              messages: [{ role: 'system', content: request.system }, ...(request.turns ?? []).map((t) => ({ role: t.role, content: t.text })), { role: 'user', content: request.prompt }],
               // Strict only where OpenAI allows it (M10.20): every field required and every object closed; otherwise the schema guides and the game's readers check.
               response_format: { type: 'json_schema', json_schema: { name: request.schemaName, schema: request.schema, strict: openAiStrict(request.schema) } },
               max_completion_tokens: reasoning ? Math.max(request.maxTokens * 4, 2000) : request.maxTokens,
@@ -136,13 +140,33 @@ export function anthropicProvider(apiKey: string, given?: Pick<Anthropic, 'messa
       }
       return models.sort((a, b) => a.id.localeCompare(b.id))
     },
+    async keepWarm(model, request, signal) {
+      const started = Date.now()
+      const { thinkingByDefault, effort } = settingsOf(model, request)
+      try {
+        // The same system part and settings as the real calls, an empty answer, no stream and no schema: the API
+        // refuses max_tokens 0 with either (Claude API documentation, pre-warming the cache).
+        const response = await client.messages.create(
+          {
+            model,
+            max_tokens: 0,
+            system: systemBlocks(request),
+            messages: [{ role: 'user', content: 'Keep this warm.' }],
+            ...(Object.keys(effort).length ? { output_config: effort } : {}),
+            ...(thinkingByDefault ? { thinking: { type: 'disabled' as const } } : {}),
+          },
+          { signal },
+        )
+        return { text: '', provider: 'anthropic', model: response.model, usage: usageOf(response.usage), latencyMs: Date.now() - started }
+      } catch (error) {
+        throw mapError(error)
+      }
+    },
     async complete(model, request, signal) {
       const started = Date.now()
       // Thinking eats into max_tokens. Turn it off where the model allows it; where it is
       // always on, leave room for it (Claude API documentation, thinking and effort).
-      const alwaysThinks = ALWAYS_THINKS.test(model)
-      const thinkingByDefault = /opus-5|sonnet-5/.test(model) && !alwaysThinks
-      const effort = request.effort && takesEffort(model) ? { effort: request.effort } : {}
+      const { alwaysThinks, thinkingByDefault, effort } = settingsOf(model, request)
       // Streamed (M10.20): the SDK refuses a long answer in one piece, and a world step may write a whole chapter of YAML.
       const ask = async (schema: unknown) => {
         const { data: stream, response: raw } = await client.messages
@@ -151,7 +175,7 @@ export function anthropicProvider(apiKey: string, given?: Pick<Anthropic, 'messa
               model,
               max_tokens: request.maxTokens + (alwaysThinks ? 4000 : 0),
               system: systemBlocks(request, schema === undefined ? looseLine(request.schema) : undefined),
-              messages: [{ role: 'user', content: request.prompt }],
+              messages: messagesOf(request),
               output_config: { ...(schema !== undefined ? { format: { type: 'json_schema' as const, schema: schema as Record<string, unknown> } } : {}), ...effort },
               ...(thinkingByDefault ? { thinking: { type: 'disabled' as const } } : {}),
             },
@@ -174,10 +198,7 @@ export function anthropicProvider(apiKey: string, given?: Pick<Anthropic, 'messa
           asked = await ask(undefined)
         }
         const { response, raw } = asked
-        const cacheWrite = response.usage.cache_creation_input_tokens ?? 0
-        const cacheRead = response.usage.cache_read_input_tokens ?? 0
-        const hour = response.usage.cache_creation?.ephemeral_1h_input_tokens ?? 0
-        const usage = { inputTokens: response.usage.input_tokens + cacheWrite + cacheRead, outputTokens: response.usage.output_tokens, cachedTokens: cacheRead, cacheWriteTokens: cacheWrite, ...(hour ? { cacheWriteHourTokens: hour } : {}) }
+        const usage = usageOf(response.usage)
         if (response.stop_reason === 'refusal') throw new LlmError('refusal', 'the model declined')
         if (response.stop_reason === 'max_tokens') throw new LlmError('invalid', 'reply was cut off', usage)
         const text = response.content.flatMap((block) => (block.type === 'text' ? [block.text] : [])).join('')
@@ -194,6 +215,33 @@ export function anthropicProvider(apiKey: string, given?: Pick<Anthropic, 'messa
       }
     },
   }
+}
+
+/**
+ * The messages of a call as Anthropic takes them (M10.28): the talk so far,
+ * then the prompt; with cacheTail a mark on the prompt as well, so the next
+ * turn reads everything up to here and writes only what it adds.
+ */
+export function messagesOf(request: Pick<LlmRequest, 'prompt' | 'turns' | 'cacheTail'>): { role: 'user' | 'assistant'; content: string | { type: 'text'; text: string; cache_control?: { type: 'ephemeral' } }[] }[] {
+  const text = (t: string) => (t.trim() ? t : '...')
+  return [
+    ...(request.turns ?? []).map((t) => ({ role: t.role, content: text(t.text) })),
+    { role: 'user' as const, content: request.cacheTail ? [{ type: 'text' as const, text: text(request.prompt), cache_control: { type: 'ephemeral' as const } }] : text(request.prompt) },
+  ]
+}
+
+/** How a call to a Claude model is set (M10.28: the keep-alive must match the real calls, or it warms another entry). */
+function settingsOf(model: string, request: Pick<LlmRequest, 'effort'>): { alwaysThinks: boolean; thinkingByDefault: boolean; effort: { effort?: 'low' | 'medium' | 'high' } } {
+  const alwaysThinks = ALWAYS_THINKS.test(model)
+  return { alwaysThinks, thinkingByDefault: /opus-5|sonnet-5/.test(model) && !alwaysThinks, effort: request.effort && takesEffort(model) ? { effort: request.effort } : {} }
+}
+
+/** Anthropic's usage as the game counts it: all input, what was read from the cache and what was written to it. */
+function usageOf(usage: Anthropic.Usage): LlmResponse['usage'] {
+  const cacheWrite = usage.cache_creation_input_tokens ?? 0
+  const cacheRead = usage.cache_read_input_tokens ?? 0
+  const hour = usage.cache_creation?.ephemeral_1h_input_tokens ?? 0
+  return { inputTokens: usage.input_tokens + cacheWrite + cacheRead, outputTokens: usage.output_tokens, cachedTokens: cacheRead, cacheWriteTokens: cacheWrite, ...(hour ? { cacheWriteHourTokens: hour } : {}) }
 }
 
 /** Whether OpenAI's strict structured outputs take a schema: every object closed, with all its fields required. */

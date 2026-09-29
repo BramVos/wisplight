@@ -791,15 +791,17 @@ function UsageTab({ bridge, overview, refresh }: { bridge: AiBridge; overview: A
               <th scope="col">{t('settings.usage.byRole.calls')}</th>
               <th scope="col">{t('settings.usage.byRole.fromCache')}</th>
               <th scope="col">{t('settings.usage.byRole.writtenTo')}</th>
+              <th scope="col">{t('settings.usage.byRole.cost')}</th>
             </tr>
           </thead>
           <tbody>
             {usage.byRole.map((r) => (
               <tr key={r.role}>
-                <td>{r.role}</td>
+                <td>{r.role === 'keep-warm' ? t('settings.usage.byRole.keepWarm') : r.role}</td>
                 <td>{r.calls}</td>
                 <td>{tn('settings.usage.byRole.cachedOf', r.inputTokens, { percent: r.cachedPercent, tokens: r.inputTokens.toLocaleString('en-GB') })}</td>
                 <td>{r.cacheWriteTokens ? r.cacheWriteTokens.toLocaleString('en-GB') : ''}</td>
+                <td>{usd(r.costUsd)}</td>
               </tr>
             ))}
           </tbody>

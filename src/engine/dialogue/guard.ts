@@ -65,6 +65,20 @@ export function saysNothing(text: string, speaker: string[]): boolean {
   return new RegExp(`^\\s*(?:${starts.join('|')})\\b`, 'i').test(text)
 }
 
+/**
+ * Whether a reply is voiced as someone else (M10.28): the area block holds a
+ * card for everyone of these parts, and the action before the first words
+ * has another of them doing it ("Harmen scowls."). Who it was, or undefined.
+ * A name asked back ("Harmen? No.") is not an action.
+ */
+export function speaksAsOther(text: string, speaker: string[], others: string[]): string | undefined {
+  const open = text.search(/["“]/)
+  const lead = (open < 0 ? text : text.slice(0, open)).trim()
+  if (!lead || speaker.some((n) => n && lead.startsWith(n))) return undefined
+  const escape = (w: string) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  return [...others].sort((a, b) => b.length - a.length).find((n) => n && new RegExp(`^${escape(n)}\\s+\\p{Ll}`, 'u').test(lead))
+}
+
 // A deed a memory claims was done (M10.29, Bram's playtest: "I showed the stranger the bunk", never shown): the kinds
 // of agreement that would bear it out.
 const DEEDS: { words: RegExp; kinds: string[] }[] = [

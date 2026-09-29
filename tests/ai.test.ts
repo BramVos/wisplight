@@ -303,7 +303,8 @@ describe('model advice', () => {
 })
 
 describe('AI service', () => {
-  const goodReply = JSON.stringify({ act: 'AskAbout', reply: 'Mirte shrugs. "The storm took the sails."', mentioned_topics: [], effects: [], memory_note: 'A stranger asked.', ends_conversation: false })
+  // Said by whoever is asked (M10.28: "Mirte shrugs" from Gerrit is someone else's line, and asked again).
+  const goodReply = JSON.stringify({ act: 'AskAbout', reply: 'A shrug. "The storm took the sails."', mentioned_topics: [], effects: [], memory_note: 'A stranger asked.', ends_conversation: false })
   const service = (keyWorks = true, cipher = testCipher()) => {
     const dir = temp()
     const ai = new AiService({

@@ -39,7 +39,7 @@ Jan nods. "Evening."
 
 > 2
 You: "What's new around here?"
-Jan nods slowly. "[The Count] wants to drain the Holleveen and make a [polder] of it. A surveyor from Graafhaven has been measuring the fen since spring. The peat-cutters are furious; the miller thinks it will be good for trade."
+Jan nods slowly. "[The Count] wants to drain the Holleveen and make a [polder] of it. A [surveyor] from [Graafhaven] has been measuring the fen since spring. The peat-cutters are furious; the [miller] thinks it will be good for trade."
 Gerrit walks on to the northeast.
 
 > bye
@@ -105,7 +105,7 @@ Kobus nods. "Morning."
 
 > 2
 You: "What's new around here?"
-Kobus thinks a moment. "De Zwaan won't turn again before winter. [Harmen] can't pay for new sailcloth, and nobody will lend it him. (You heard it from Lubbert.)"
+Kobus thinks a moment. "[De Zwaan] won't turn again before winter. [Harmen] can't pay for new sailcloth, and nobody will lend it him. (You heard it from [Lubbert].)"
 
 > bye
 Kobus lifts a hand. "Go on, then."
@@ -133,7 +133,7 @@ Teunis nods. "Morning."
 
 > 2
 You: "What's new around here?"
-Teunis scratches an ear. "Water is seeping through the dyke at Oude Zijl, low down on the land side, and the seep is growing. (You saw it yourself.)"
+Teunis scratches an ear. "Water is seeping through the dyke at [Oude Zijl], low down on the land side, and the seep is growing. (You saw it yourself.)"
 
 > bye
 Teunis lifts a hand. "Go on, then."
@@ -191,7 +191,7 @@ Teunis calls after you: "Not that way! North, this way!"
 The Dyke House
 A square brick house with small windows, built into the side of the dyke so that its back wall is earth. Inside, a long table is covered with rolled plans of dykes and ditches, held flat at the corners with stones. It smells of lamp oil and damp plaster, and somewhere behind the back wall water ticks. The door opens south onto the sluice.
 Exits: south
-Here: Teunis the horse-miller (waiting for you).
+Here: Teunis Ros, Teunis the horse-miller (waiting for you).
 Sijbrand leaves south.
 +10 experience: you found The Dyke House.
 Teunis: "There he goes. Come on."
@@ -201,7 +201,7 @@ The Old Sluice
 Two great sluice gates of tarred oak hold back the Vaart where it meets the dyke. Water leaks through the seams with a steady hiss, and gulls cry from the dyke top. A dyke house stands to one side with its shutters closed. The tow path runs east along the Vaart to Veenhoek.
 Exits: north, up, west
 Across country you can head any way, or follow the tow path to Veenhoek.
-Here: Teunis the horse-miller (on the way to The Old Sluice).
+Here: Teunis Ros, Teunis the horse-miller (on the way to The Old Sluice).
 Sijbrand walks on upstairs.
 Teunis arrives from the north.
 Teunis: "There he goes. Come on."
@@ -210,7 +210,7 @@ Teunis: "There he goes. Come on."
 On the Great Dyke
 From the top of the dyke you see the Holleveen spread out on one side, flat and green and lower than it has any right to be. On the other side grey water runs out to a grey sky, and the wind off it tastes of salt and leans on you without a pause. Sheep have cropped the grass short, and their droppings are everywhere. The sluice lies below you, down the slope.
 Exits: down
-Here: Heemraad Sijbrand (at work), Teunis the horse-miller (on the way to On the Great Dyke).
+Here: Heemraad Sijbrand (at work); Teunis Ros, Teunis the horse-miller (on the way to On the Great Dyke).
 Teunis arrives from below.
 +10 experience: you found On the Great Dyke.
 Teunis brought you to On the Great Dyke, and Sijbrand was there.
@@ -242,7 +242,7 @@ Sijbrand called out Oude Zijl and Veenhoek, and they packed the leak with clay a
 On the Great Dyke
 From the top of the dyke you see the Holleveen spread out on one side, flat and green and lower than it has any right to be. On the other side grey water runs out to a grey sky, and the wind off it tastes of salt and leans on you without a pause. Sheep have cropped the grass short, and their droppings are everywhere. The sluice lies below you, down the slope.
 Exits: down
-Here: Heemraad Sijbrand (at work).
+Here: Sijbrand, Heemraad Sijbrand (at work).
 
 > journal
 People: Fenna Visser, Cornelis, Harmen, Jan Visser, Kobus, Lubbert, Sijbrand, Teunis Ros, Trijntje, the Count.
@@ -365,7 +365,7 @@ Jan nods. "Evening."
 
 > 2
 You: "What's new around here?"
-Jan nods slowly. "[The Count] wants to drain the Holleveen and make a [polder] of it. A surveyor from Graafhaven has been measuring the fen since spring. The peat-cutters are furious; the miller thinks it will be good for trade."
+Jan nods slowly. "[The Count] wants to drain the Holleveen and make a [polder] of it. A [surveyor] from [Graafhaven] has been measuring the fen since spring. The peat-cutters are furious; the [miller] thinks it will be good for trade."
 Gerrit walks on to the northeast.
 
 > bye
@@ -431,7 +431,7 @@ Kobus nods. "Morning."
 
 > 2
 You: "What's new around here?"
-Kobus thinks a moment. "De Zwaan won't turn again before winter. [Harmen] can't pay for new sailcloth, and nobody will lend it him. (You heard it from Lubbert.)"
+Kobus thinks a moment. "[De Zwaan] won't turn again before winter. [Harmen] can't pay for new sailcloth, and nobody will lend it him. (You heard it from [Lubbert].)"
 
 > bye
 Kobus lifts a hand. "Go on, then."
@@ -459,7 +459,7 @@ Teunis nods. "Morning."
 
 > 2
 You: "What's new around here?"
-Teunis scratches an ear. "Water is seeping through the dyke at Oude Zijl, low down on the land side, and the seep is growing. (You saw it yourself.)"
+Teunis scratches an ear. "Water is seeping through the dyke at [Oude Zijl], low down on the land side, and the seep is growing. (You saw it yourself.)"
 
 > bye
 Teunis lifts a hand. "Go on, then."
@@ -486,7 +486,7 @@ The old people say a blow is coming in from the sea, and the eel men have pulled
 The Horse Mill
 Under a thatched roof an old grey horse walks a patient circle, turning a millstone that grumbles like a sleeping dog. The air is warm and smells of horse and flour. Canal Street is west; the East Gate is east.
 Exits: west, east
-Here: Teunis the horse-miller (at work).
+Here: Teunis Ros, Teunis the horse-miller (at work).
 
 > journal
 People: Fenna Visser, Cornelis, Harmen, Jan Visser, Kobus, Lubbert, Teunis Ros, Trijntje, the Count.

@@ -49,10 +49,10 @@ New quest: Flour for Veenhoek. Mirte needs flour for Veenhoek's bread before mar
 
 > 2
 You: "What's new around here?"
-Mirte looks up. "[Fenna Visser], fifteen, the daughter of Jan and Grietje, has been missing for four days. She went out on the evening of 10 Herfstmaand and never came home. Nobody saw where she went. Some say the fen took her."
+Mirte looks up. "[Fenna Visser], fifteen, the daughter of [Jan] and [Grietje], has been missing for four days. She went out on the evening of 10 Herfstmaand and never came home. Nobody saw where she went. Some say the fen took her."
 
 > What happened to the mill?
-Mirte looks up. "[De Zwaan], Harmen Molenaar's [windmill], which grinds grain and pumps the polder dry. The storm of 8 Herfstmaand tore its sails. [The Mill De Zwaan] is about 20 minutes' walk from here: west to [Veenhoek, the Green], then northeast to The Peat Road, then northeast to Molenend, the Lane, and."
+Mirte looks up. "[De Zwaan], [Harmen Molenaar]'s [windmill], which grinds grain and pumps the polder dry. The storm of 8 Herfstmaand tore its sails. [The Mill De Zwaan] is about 20 minutes' walk from here: west to [Veenhoek, the Green], then northeast to [The Peat Road], then northeast to [Molenend, the Lane], and."
 
 > bye
 Mirte lifts a hand. "Go on, then."
@@ -89,6 +89,7 @@ Go on, or turn back?
   1. Go on to Graafhaven on foot, about 2 days west
   2. The barge on the Graafse Vaart from Oude Zijl: next on Donderdag at 07:00, a day and 16 hours, 7 st 4 d
   3. Turn back east
+(a number, the name, or anything else to leave it)
 In the fields, about 5 km west of Oude Zijl
 Drained fields lie in strips between straight ditches. Low grey cloud sits on the land. A south-west wind pushes at you.
 Ways on: north, north-east, south-east, south.
@@ -138,7 +139,7 @@ Hendrikje lifts a hand. "Go on, then."
 The Market of Graafhaven
 You stand in the market of Graafhaven, among stalls of cloth, salt and pots. Traders shout their prices over each other, and you smell pitch and hot fat from the cookshops. Nobody here has heard of the Holleveen or cares what happens there. An inn stands at the corner, and the gate is back out.
 Exits: out, in, west, south, north, east, northeast
-Here: Hendrikje the merchant (at work).
+Here: Hendrikje Hofstede, Hendrikje the merchant (at work).
 
 > north
 The Chandlery
@@ -195,7 +196,7 @@ Joris puts out the lamp and goes to bed.
 The Cooper's Yard
 You stand in a yard stacked with barrels, some new and pale, some black with age. Somewhere a mallet knocks hoops onto a cask, steady as a clock. Rain has left puddles between the staves. The chandlery is back through the gate.
 Exits: south
-Here: Joris the merchant (at work).
+Here: Joris Kuipers, Joris the merchant (at work).
 
 > talk joris the merchant
 You are talking with Joris the merchant. Type what you want to say, pick a number, or BYE to stop.
@@ -266,10 +267,10 @@ New quest: Flour for Veenhoek. Mirte needs flour for Veenhoek's bread before mar
 
 > 2
 You: "What's new around here?"
-Mirte looks up. "[Fenna Visser], fifteen, the daughter of Jan and Grietje, has been missing for four days. She went out on the evening of 10 Herfstmaand and never came home. Nobody saw where she went. Some say the fen took her."
+Mirte looks up. "[Fenna Visser], fifteen, the daughter of [Jan] and [Grietje], has been missing for four days. She went out on the evening of 10 Herfstmaand and never came home. Nobody saw where she went. Some say the fen took her."
 
 > What happened to the mill?
-Mirte looks up. "[De Zwaan], Harmen Molenaar's [windmill], which grinds grain and pumps the polder dry. The storm of 8 Herfstmaand tore its sails. [The Mill De Zwaan] is about 20 minutes' walk from here: west to [Veenhoek, the Green], then northeast to The Peat Road, then northeast to Molenend, the Lane, and."
+Mirte looks up. "[De Zwaan], [Harmen Molenaar]'s [windmill], which grinds grain and pumps the polder dry. The storm of 8 Herfstmaand tore its sails. [The Mill De Zwaan] is about 20 minutes' walk from here: west to [Veenhoek, the Green], then northeast to [The Peat Road], then northeast to [Molenend, the Lane], and."
 
 > bye
 Mirte lifts a hand. "Go on, then."
@@ -292,7 +293,7 @@ The chapel bell rings for six.
 The Bakery
 Warm, low and white with flour. Loaves cool on racks along the wall, and a slate by the counter says RYE 2 D in chalk, underlined twice. Through the back door, east, you can see the glow of the oven in the yard.
 Exits: west, east
-Here: Mirte the baker.
+Here: Mirte Bakker, Mirte the baker.
 
 > talk mirte the baker
 You are talking with Mirte the baker. Type what you want to say, pick a number, or BYE to stop.
@@ -301,7 +302,7 @@ Mirte nods. "Evening."
 
 > 2
 You: "What's new around here?"
-Mirte looks up. "The [mill] at Molenend is finished, they say. (You heard it from Gerrit. You are fairly sure. The way you heard it, it was bigger than this.)"
+Mirte looks up. "The [mill] at [Molenend] is finished, they say. (You heard it from [Gerrit]. You are fairly sure. The way you heard it, it was bigger than this.)"
 
 > bye
 Mirte lifts a hand. "Go on, then."

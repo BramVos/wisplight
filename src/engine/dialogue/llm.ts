@@ -52,6 +52,20 @@ export interface LlmRequest {
   cacheShared?: number
   /** Keep that part an hour rather than five minutes (M10.20: a designer reads a proposal for minutes between two steps). */
   cacheHour?: boolean
+  /**
+   * The talk so far (M10.28): what the game told the voice each turn and what
+   * it answered, as messages before `prompt`, so every earlier line is read
+   * from the cache and a new line pays only for what is new.
+   */
+  turns?: { role: 'user' | 'assistant'; text: string }[]
+  /** Mark the end of `prompt` as well (M10.28): the next turn of the talk reads everything up to here. */
+  cacheTail?: boolean
+  /**
+   * The name of the fixed part this call shares with the calls that follow
+   * (M10.28: the area block): the app keeps it in the cache while the
+   * stranger stays there, with a ping before the five minutes run out.
+   */
+  warm?: string
   /** How hard the model thinks, where the model lets itself be told (M10.20): low for a table, medium for a story. Without it, the provider's default. */
   effort?: 'low' | 'medium' | 'high'
   /** Structured context for the mock model; real providers ignore it. */
@@ -128,6 +142,11 @@ export class LlmError extends Error {
 /** About how many tokens a text is (M10.26: for the cache's minimum and the measure), four characters a token as the mock counts. */
 export function tokensAbout(text: string): number {
   return Math.ceil(text.length / 4)
+}
+
+/** Everything a request sends as text (M10.28): the system part, the talk so far and the prompt. */
+export function sentText(request: Pick<LlmRequest, 'system' | 'prompt' | 'turns'>): string {
+  return [request.system, ...(request.turns ?? []).map((t) => t.text), request.prompt].join('\n')
 }
 
 /**

@@ -1,7 +1,7 @@
 import type { ChronicleMeta } from '../../chronicler/prompt'
 import { askedFor, proposal, type Offer } from './offers'
 import { stringify } from 'yaml'
-import { LlmError, type LlmClient, type LlmRequest, type LlmResponse } from './llm'
+import { LlmError, sentText, type LlmClient, type LlmRequest, type LlmResponse } from './llm'
 
 // A stand-in model for tests and the browser preview. It answers from the
 // knowledge packet in request.meta and can misbehave on purpose, so tests can
@@ -118,7 +118,7 @@ export class MockLlm implements LlmClient {
             ? this.legends((request.meta?.['legends'] as string[] | undefined) ?? [])
             : this.chronicler(request.meta as unknown as ChronicleMeta, request.prompt)
           : this.other(request)
-    return { text, provider: 'mock', model: 'mock-1', usage: { inputTokens: Math.round((request.system.length + request.prompt.length) / 4), outputTokens: Math.round(text.length / 4), cachedTokens: 0 }, latencyMs: 1 }
+    return { text, provider: 'mock', model: 'mock-1', usage: { inputTokens: Math.round(sentText(request).length / 4), outputTokens: Math.round(text.length / 4), cachedTokens: 0 }, latencyMs: 1 }
   }
 
   /**

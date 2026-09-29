@@ -403,6 +403,14 @@ export interface TalkState {
   began?: number
   /** The speaker used a saying or an oath in this talk (M10.10): no more of either. */
   flourished?: boolean
+  /**
+   * The talk as the voice read it (M10.28): per turn what the game told it and
+   * what was said back, only ever added to, so each call reads the ones before
+   * from the cache.
+   */
+  thread?: { role: 'user' | 'assistant'; text: string }[]
+  /** What the voice was told so far in this talk, by part (M10.28): a later turn tells only what is new or changed. */
+  sent?: Record<string, string>
 }
 
 /** A line of a conversation as the engine keeps it (M10.8): what was typed, and what came back. */

@@ -6,7 +6,7 @@ import { Engine, type Output } from '../engine'
 import { recordFact } from '../news'
 import { lineOf, requestRun } from '../storylines'
 import { goalRequest } from '../npc/goals'
-import type { LlmClient, LlmRequest } from './llm'
+import { sentText, type LlmClient, type LlmRequest } from './llm'
 import { parseReply } from './schema'
 import { characterChecks, type CharacterChecks } from './voice'
 
@@ -109,7 +109,7 @@ export function characterOfRun(content: Content, run: SituationRun): CharacterCh
   return run.replies.flatMap((raw, i) => {
     const reply = parseReply(raw)?.reply
     const request = run.requests[i]
-    return reply && request ? [characterChecks(content, reply, `${request.system}\n${request.prompt}`)] : []
+    return reply && request ? [characterChecks(content, reply, sentText(request))] : []
   })
 }
 

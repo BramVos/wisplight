@@ -34,6 +34,8 @@ export interface RoleUsage {
   cacheWriteTokens: number
   /** Percent of the input that was read from the cache. */
   cachedPercent: number
+  /** What the role cost this month (M10.28: the pings that keep a place's cache warm show apart, with their cost). */
+  costUsd: number
 }
 
 interface Credit {
@@ -272,7 +274,7 @@ export class UsageStore {
     }
     return [...sum.entries()]
       .sort((a, b) => a[0].localeCompare(b[0]))
-      .map(([role, t]) => ({ role, calls: t.calls, inputTokens: t.inputTokens, cachedTokens: t.cachedTokens, cacheWriteTokens: t.cacheWriteTokens, cachedPercent: t.inputTokens ? Math.round((1000 * t.cachedTokens) / t.inputTokens) / 10 : 0 }))
+      .map(([role, t]) => ({ role, calls: t.calls, inputTokens: t.inputTokens, cachedTokens: t.cachedTokens, cacheWriteTokens: t.cacheWriteTokens, cachedPercent: t.inputTokens ? Math.round((1000 * t.cachedTokens) / t.inputTokens) / 10 : 0, costUsd: t.costUsd }))
   }
 
   /** CSV of the kept days, one row per day and model. */

@@ -84,7 +84,7 @@ New quest: Flour for Veenhoek. Mirte needs flour for Veenhoek's bread before mar
 
 > 2
 You: "What's new around here?"
-Mirte nods slowly. "[Fenna Visser], fifteen, the daughter of [Jan] and Grietje, has been missing for four days. She went out on the evening of 10 Herfstmaand and never came home. Nobody saw where she went. Some say the fen took her."
+Mirte nods slowly. "[Fenna Visser], fifteen, the daughter of [Jan] and [Grietje], has been missing for four days. She went out on the evening of 10 Herfstmaand and never came home. Nobody saw where she went. Some say the fen took her."
 
 > bye
 Mirte lifts a hand. "Go on, then."
@@ -105,7 +105,7 @@ Mirte nods. "Evening."
 
 > where is aaltje
 You: "Where can I find aaltje?"
-Mirte thinks a moment. "At this hour [Old Aaltje] is usually at [Aaltje]'s Cottage, eating."
+Mirte thinks a moment. "At this hour [Old Aaltje] is usually at [Aaltje's Cottage], eating."
 Mirte offers to take you to Aaltje's Cottage, to Aaltje. YES to agree, NO to decline.
 
 > bye
@@ -201,7 +201,7 @@ Exits: north, south, east, west, northwest
 Aaltje's Cottage
 Bunches of herbs hang from every beam, so you have to stoop. It smells of mint, smoke and something older. On the wall, in a frame of black wood, hangs a yellowed paper with a red seal: a certificate from the Waag of Waagdam, stating that one Aaltje Hendriks weighed as much as an honest woman should. The door opens east onto the lane.
 Exits: east
-Here: Old Aaltje.
+Here: Aaltje Hendriks, Old Aaltje.
 
 > talk aaltje
 You are talking with Old Aaltje. Type what you want to say, pick a number, or BYE to stop.
@@ -210,11 +210,11 @@ Aaltje nods. "Evening."
 
 > where is the kattenbroek
 You: "Where can I find the kattenbroek?"
-Aaltje nods slowly. "[The Kattenbroek] is a fen about three or four hours' walk south-east of [Veenhoek], all reeds and black pools. Nobody goes there if they can help it. The peat-cutters lost a man there in 208, and they say a [widow] lives out in it."
+Aaltje nods slowly. "[The Kattenbroek] is a fen about three or four hours' walk south-east of [Veenhoek], all reeds and [black pools]. Nobody goes there if they can help it. The peat-cutters lost a man there in 208, and they say a [widow] lives out in it."
 
 > where is the widow
 You: "Where can I find the widow?"
-Aaltje thinks a moment. "Folk say a [widow] out in [the Kattenbroek] turns thieves into cats. Her name is [Kaatje]. Her husband was an eel-fisher who drowned, and she keeps the fen as if it were his grave. Take from it without asking and you come home on four legs, if at all."
+Aaltje thinks a moment. "Folk say a [widow] out in [the Kattenbroek] turns thieves into cats. Her name is [Kaatje]. Her husband was an [eel-fisher] who drowned, and she keeps the fen as if it were his grave. Take from it without asking and you come home on four legs, if at all."
 
 > bye
 Aaltje lifts a hand. "Go on, then."
@@ -513,7 +513,7 @@ New quest: Flour for Veenhoek. Mirte needs flour for Veenhoek's bread before mar
 
 > 2
 You: "What's new around here?"
-Mirte nods slowly. "[Fenna Visser], fifteen, the daughter of [Jan] and Grietje, has been missing for four days. She went out on the evening of 10 Herfstmaand and never came home. Nobody saw where she went. Some say the fen took her."
+Mirte nods slowly. "[Fenna Visser], fifteen, the daughter of [Jan] and [Grietje], has been missing for four days. She went out on the evening of 10 Herfstmaand and never came home. Nobody saw where she went. Some say the fen took her."
 
 > bye
 Mirte lifts a hand. "Go on, then."

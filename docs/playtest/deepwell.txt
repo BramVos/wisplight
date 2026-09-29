@@ -55,6 +55,7 @@ There is nobody called "ilse the warden" here. Talk to whom?
   1. Ama
   2. Pell
   3. Teo
+(a number, the name, or anything else to leave it)
 
 > 2
 You are talking with Pell of the canteen. Type what you want to say, pick a number, or BYE to stop.
@@ -108,7 +109,7 @@ You tap your card for 3 ch, and the tram slides off along its rail. After 25 min
 The Works Platform
 The rail ends here against a buffer of packed ice, and the platform opens into a hall full of sleds and hoses. Your breath smokes, and the cold gets in through the seams of your clothes. A board lists the day's cut in tonnes. The cutting face is further in; the service tunnel runs back west to the Domes, and a hatch stencilled KESSLER leads east to the Claim.
 Exits: in, west, east
-Here: Ama the ice cutter (on the way to The Cutting Face).
+Here: Ama Okafor, Ama the ice cutter (on the way to The Cutting Face).
 
 > take the tram
 You tap your card for 3 ch, and the tram slides off along its rail. After 25 minutes it stops at The Dome Platform.
@@ -117,7 +118,7 @@ You tap your card for 3 ch, and the tram slides off along its rail. After 25 min
 The Commons
 The Commons is a wide dome of ice held back by a mesh of steel, lit by grow-lamps that turn everything faintly pink. Long tables fill the floor, and a canteen counter runs along the back, where algae stew steams in a heated trough. It smells of stew, coffee substitute and warm plastic. The airlock is west, the bunks north, the Fab Shop east, the warden's office south, and a stair goes down to the tram.
 Exits: west, north, east, south, down
-Here: Pell of the canteen (at work).
+Here: Pell Ostrander, Pell of the canteen (at work).
 
 ==== AFTER (Quintday 12 Thaw 140 AL, 10:14 (morning))
 
@@ -166,7 +167,7 @@ Teo walks on to the east.
 The Commons
 The Commons is a wide dome of ice held back by a mesh of steel, lit by grow-lamps that turn everything faintly pink. Long tables fill the floor, and a canteen counter runs along the back, where algae stew steams in a heated trough. It smells of stew, coffee substitute and warm plastic. The airlock is west, the bunks north, the Fab Shop east, the warden's office south, and a stair goes down to the tram.
 Exits: west, north, east, south, down
-Here: Pell of the canteen (at work).
+Here: Pell Ostrander, Pell of the canteen (at work).
 
 > talk pell of the canteen
 You are talking with Pell of the canteen. Type what you want to say, pick a number, or BYE to stop.
@@ -241,6 +242,7 @@ There is nobody called "ilse the warden" here. Talk to whom?
   1. Ama
   2. Pell
   3. Teo
+(a number, the name, or anything else to leave it)
 
 > 2
 You are talking with Pell of the canteen. Type what you want to say, pick a number, or BYE to stop.
@@ -316,7 +318,7 @@ Teo walks on to the east.
 The Commons
 The Commons is a wide dome of ice held back by a mesh of steel, lit by grow-lamps that turn everything faintly pink. Long tables fill the floor, and a canteen counter runs along the back, where algae stew steams in a heated trough. It smells of stew, coffee substitute and warm plastic. The airlock is west, the bunks north, the Fab Shop east, the warden's office south, and a stair goes down to the tram.
 Exits: west, north, east, south, down
-Here: Pell of the canteen (at work).
+Here: Pell Ostrander, Pell of the canteen (at work).
 
 > talk pell of the canteen
 You are talking with Pell of the canteen. Type what you want to say, pick a number, or BYE to stop.

@@ -87,6 +87,8 @@ export interface CacheMeasure {
   /** The part every call of the kind shares, marked on its own (a new speaker reads it): where there is one. */
   shared?: number
   minimum?: number
+  /** The fixed part is the block of an area (M10.28): everyone who speaks there reads it, and a talk reads what it said before. */
+  area?: boolean
 }
 
 /**
@@ -109,6 +111,7 @@ export async function cacheMeasures(worlds: TrialWorlds, rows: CoverageRow[]): P
       hour: Boolean(r.cacheHour),
       fixed: tokensAbout(r.system.slice(0, r.cacheBreak ?? r.system.length)),
       ...(r.cacheShared !== undefined ? { shared: tokensAbout(r.system.slice(0, r.cacheShared)) } : {}),
+      ...(r.warm ? { area: true } : {}),
     })
   }
   return out
@@ -120,6 +123,7 @@ export function cacheRead(m: CacheMeasure): string {
   if (!m.minimum) return 'no recorded model yet'
   const pct = (n: number) => `${Math.round((100 * n) / m.input)}%`
   if (m.fixed < m.minimum) return 'nothing: the fixed part is under the minimum'
+  if (m.area) return `the next line in these parts ${pct(m.fixed)}, whoever speaks, and within a talk all that was said before it`
   const next = `the next call ${pct(m.fixed)}`
   return m.shared !== undefined ? `${next}; one about someone or something else ${m.shared >= m.minimum ? pct(m.shared) : 'nothing (the shared part is under the minimum)'}` : next
 }

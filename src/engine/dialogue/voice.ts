@@ -98,21 +98,13 @@ export function addressFor(world: World, npcId: string, seed: number): string | 
  * stranger, how time and distance go here, and what is not here, for when it
  * comes up.
  */
-export function voiceLines(world: World, npcId: string, seed: number, flourished = false): string[] {
+export function voiceLines(world: World, npcId: string, seed: number, flourished = false, part: 'all' | 'talk' = 'all'): string[] {
   const kit = kitOf(world)
   if (!kit) return []
   const group = groupOf(world, npcId)
   const saying = !flourished && seed % 3 === 0 ? pick([...(group?.sayings ?? []), ...kit.sayings], 1, seed)[0] : undefined
   const address = addressFor(world, npcId, seed)
-  // The coins where the stranger is (M10.23).
-  const money = world.coins.map((u) => u.plural ?? `${u.name}s`)
-  const telling = [
-    kit.time.length ? `time ${pick(kit.time, 3, seed + 1).join(', ')}` : '',
-    kit.distance.length ? `distance ${pick(kit.distance, 2, seed + 2).join(', ')}` : '',
-    kit.measures.length ? `measures ${kit.measures.join(', ')}` : '',
-    money.length ? `money in ${money.join(', ')}` : '',
-  ].filter(Boolean)
-  const absent = kit.not_here.filter((n) => !/^\p{Lu}/u.test(n.word) && !/^(okay|ok)$/i.test(n.word)).slice(0, 8)
+  const telling = [kit.time.length ? `time ${pick(kit.time, 3, seed + 1).join(', ')}` : '', kit.distance.length ? `distance ${pick(kit.distance, 2, seed + 2).join(', ')}` : '', ...(part === 'all' ? landTelling(world) : [])].filter(Boolean)
   return [
     flourished
       ? 'VOICE: you used a saying or an oath in this talk already; no more of either.'
@@ -121,8 +113,31 @@ export function voiceLines(world: World, npcId: string, seed: number, flourished
         : '',
     address ? `If you call the stranger anything, it is "${address}", or their name once you know it.` : '',
     telling.length ? `When it comes up: ${telling.join('; ')}.` : '',
-    absent.length ? `Not here: ${absent.map((n) => (n.instead ? `${n.word} (say ${n.instead})` : n.word)).join(', ')}.` : '',
+    ...(part === 'all' ? notHereLine(world) : []),
   ].filter(Boolean)
+}
+
+/** Measures and money the land's way (M10.23: the coins where the stranger is): the same for every speaker there. */
+function landTelling(world: World): string[] {
+  const kit = kitOf(world)
+  if (!kit) return []
+  const money = world.coins.map((u) => u.plural ?? `${u.name}s`)
+  return [kit.measures.length ? `measures ${kit.measures.join(', ')}` : '', money.length ? `money in ${money.join(', ')}` : ''].filter(Boolean)
+}
+
+function notHereLine(world: World): string[] {
+  const absent = (kitOf(world)?.not_here ?? []).filter((n) => !/^\p{Lu}/u.test(n.word) && !/^(okay|ok)$/i.test(n.word)).slice(0, 8)
+  return absent.length ? [`Not here: ${absent.map((n) => (n.instead ? `${n.word} (say ${n.instead})` : n.word)).join(', ')}.`] : []
+}
+
+/**
+ * The voice kit's part that every speaker in the land shares (M10.28), for
+ * the area block: measures, money and what is not here. The saying, the
+ * address and the words for time stay with the talk, chosen per talk.
+ */
+export function landVoiceLines(world: World): string[] {
+  const telling = landTelling(world)
+  return [telling.length ? `HOW PEOPLE HERE SAY THINGS, when it comes up: ${telling.join('; ')}.` : '', ...notHereLine(world)].filter(Boolean)
 }
 
 /** Whether a reply used a saying or an oath of the kit (M10.10): then no more of either in this talk. */

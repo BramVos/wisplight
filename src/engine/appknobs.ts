@@ -21,6 +21,7 @@ export const APP_KNOBS = {
   chronicler_timeout_seconds: { about: 'How long one night run of the chronicler may take.', unit: 'seconds', default: 90, min: 20, max: 600 },
   night_round_minutes: { about: 'The chronicler\'s night round comes at most this often in real play, however fast the game\'s clock runs; the first of a session is never held.', unit: 'minutes', default: 20, min: 1, max: 480 },
   tides_round_minutes: { about: 'The great lines are judged at most this often in real play.', unit: 'minutes', default: 120, min: 10, max: 1440 },
+  cache_keepalive_minutes: { about: 'While you stay in a place with the window open, the app keeps its conversations in the model\'s cache for this long after the last line, with a small ping before the cache runs out; 0 for never.', unit: 'minutes', default: 15, min: 0, max: 60 },
   tides_every_sessions: { about: 'When the months of the game do not come, the great lines are judged at least once in this many sessions.', unit: 'sessions', default: 10, min: 1, max: 100 },
 } as const satisfies Record<string, AppKnobDef>
 

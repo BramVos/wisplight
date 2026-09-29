@@ -45,6 +45,8 @@ numbers:
     POS: 'code: the order of the positions in a fight, not a number to tune'
   src/engine/content.ts:
     PARSED_KEPT: 'code: how many files the loader keeps read, by their text (memory; M10.24)'
+  src/engine/dialogue/block.ts:
+    BLOCK_FLOOR: 'code: the size an area block is filled to, above Haiku''s cache minimum of 4,096 tokens (M10.28, technique)'
   src/engine/dialogue/acts.ts:
     TIER_TOKENS: 'code: the tokens a reply may use follow from its words (technique)'
   src/engine/dialogue/conversation.ts:
@@ -131,6 +133,7 @@ numbers:
     COOLDOWN_MS: 'code: how long the connection cools down (safety)'
     LOW_TOKENS: 'code: below this the next call would hit the rate limit (technique)'
     UNPRICED_CALLS_PER_HOUR: 'code: a model without a known price is called at most this often an hour (safety of cost)'
+    PING_AFTER_MS: 'code: a keep-alive ping goes this long after the fixed part was last read, before the cache''s five minutes run out (M10.28, technique)'
   src/node/ai/log.ts:
     KEEP: 'settings (moved): the app knob ai_log_keep; this is its default'
   src/node/ai/frequency.ts:

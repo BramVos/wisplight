@@ -59,7 +59,7 @@ Maren nods. "Afternoon."
 
 > 2
 You: "What's new around here?"
-Maren nods slowly. "News of the day here: Wenna is dead. She drowned off the harbour wall, they say."
+Maren nods slowly. "News of the day here: [Wenna] is dead. She drowned off [the harbour] wall, they say."
 The death of Wenna Dray
 Wenna is dead. She drowned off the harbour wall, they say.
 (from Maren)
@@ -132,10 +132,10 @@ Pip arrives from the south.
 Pip stops and gives you a nod, curious about the stranger.
 Pip leaves south.
 Pip arrives from the south.
-Tamsin arrives from the north.
-Tamsin stops and gives you a nod, curious about the stranger.
-Pip claps Tamsin on the shoulder.
-Tamsin leaves west.
+Old Tamsin arrives from the north.
+Old Tamsin stops and gives you a nod, curious about the stranger.
+Pip claps Old Tamsin on the shoulder.
+Old Tamsin leaves west.
 The harbour bell rings for six, once for the boats.
 The harbour bell rings for six, once for the boats.
 
@@ -144,7 +144,7 @@ Skerrow Hythe, the Green
 A dozen stone cottages with turf roofs stand round a patch of wind-flattened grass and a squat well. Hens pick about your feet, and somewhere a door bangs in the wind, over and over. The low, lit door of the Salt Kettle is on the east side of the green. Steps lead south to the harbour, a track climbs north to the headland and the beacon, and west the cliff path runs along the sea.
 The harbour is quiet; people speak low, and nobody sings at the nets.
 Exits: south, east, north, west
-Here: Pip, the boatman's boy (playing).
+Here: Pip Reed, Pip, the boatman's boy (playing).
 
 > talk pip, the boatman's boy
 You are talking with Pip, the boatman's boy. Type what you want to say, pick a number, or BYE to stop.
@@ -211,7 +211,7 @@ The Headland
 The island ends here in a blunt headland with the sea on three sides and a squat stone tower on top: the beacon. Its great lamp stands cold behind green glass, and the wind whistles through the empty gallery. Below the tower a lean-to store shed has lost half its roof, and it smells strongly of fish oil. A track runs south to the hamlet and west to the grove; north, a ruined tower stands alone on the last rise.
 On the ground: a cask of lamp oil.
 Exits: south, west, north
-Here: Brannoc the boatman (talking with Maren), Elowen the elf (stopping to look at the stranger), Garrick the lightkeeper (at the burial), Maren of the Salt Kettle (talking with Brannoc).
+Here: Brannoc the boatman (talking with Maren); Elowen the elf (stopping to look at the stranger); Garrick the lightkeeper (at the burial); Maren Holt, Maren of the Salt Kettle (talking with Brannoc).
 Maren and Brannoc stand talking.
 
 # That evening at the Salt Kettle.
@@ -240,7 +240,7 @@ The Salt Kettle
 The inn is one long, smoky room under black beams, with a fire at one end and a barrel of ale at the other. It smells of fish stew, tallow and wet wool drying. A ship's figurehead, a woman with a chipped nose, watches the door from the corner; they say she came off the last ship that broke here before the [Grey Gull]. The door west goes out to the green.
 A stool by the fire stands empty, and nobody sits on it; a cup is turned upside down on it for Wenna. The harbour is quiet; people speak low, and nobody sings at the nets.
 Exits: west
-Here: Maren of the Salt Kettle (on the way to The Salt Kettle).
+Here: Maren Holt, Maren of the Salt Kettle (on the way to The Salt Kettle).
 
 > talk maren of the salt kettle
 You are talking with Maren of the Salt Kettle. Type what you want to say, pick a number, or BYE to stop.
@@ -294,13 +294,13 @@ Exits: south, west, north
 The Salt Kettle
 The inn is one long, smoky room under black beams, with a fire at one end and a barrel of ale at the other. It smells of fish stew, tallow and wet wool drying. A ship's figurehead, a woman with a chipped nose, watches the door from the corner; they say she came off the last ship that broke here before the [Grey Gull]. The door west goes out to the green.
 Exits: west
-Here: Maren of the Salt Kettle (at work).
+Here: Maren Holt, Maren of the Salt Kettle (at work).
 
 > look
 The Salt Kettle
 The inn is one long, smoky room under black beams, with a fire at one end and a barrel of ale at the other. It smells of fish stew, tallow and wet wool drying. A ship's figurehead, a woman with a chipped nose, watches the door from the corner; they say she came off the last ship that broke here before the [Grey Gull]. The door west goes out to the green.
 Exits: west
-Here: Maren of the Salt Kettle (at work).
+Here: Maren Holt, Maren of the Salt Kettle (at work).
 
 > talk maren of the salt kettle
 You are talking with Maren of the Salt Kettle. Type what you want to say, pick a number, or BYE to stop.
@@ -376,7 +376,7 @@ Maren nods. "Afternoon."
 
 > 2
 You: "What's new around here?"
-Maren nods slowly. "News of the day here: Wenna is dead. She drowned off the harbour wall, they say."
+Maren nods slowly. "News of the day here: [Wenna] is dead. She drowned off [the harbour] wall, they say."
 The death of Wenna Dray
 Wenna is dead. She drowned off the harbour wall, they say.
 (from Maren)
@@ -401,7 +401,7 @@ The Salt Kettle
 The inn is one long, smoky room under black beams, with a fire at one end and a barrel of ale at the other. It smells of fish stew, tallow and wet wool drying. A ship's figurehead, a woman with a chipped nose, watches the door from the corner; they say she came off the last ship that broke here before the [Grey Gull]. The door west goes out to the green.
 A stool by the fire stands empty, and nobody sits on it; a cup is turned upside down on it for Wenna. The harbour is quiet; people speak low, and nobody sings at the nets.
 Exits: west
-Here: Maren of the Salt Kettle (at work).
+Here: Maren Holt, Maren of the Salt Kettle (at work).
 
 > talk maren of the salt kettle
 You are talking with Maren of the Salt Kettle. Type what you want to say, pick a number, or BYE to stop.
@@ -474,7 +474,7 @@ The Salt Kettle
 The inn is one long, smoky room under black beams, with a fire at one end and a barrel of ale at the other. It smells of fish stew, tallow and wet wool drying. A ship's figurehead, a woman with a chipped nose, watches the door from the corner; they say she came off the last ship that broke here before the [Grey Gull]. The door west goes out to the green.
 A stool by the fire stands empty, and nobody sits on it; a cup is turned upside down on it for Wenna. The harbour is quiet; people speak low, and nobody sings at the nets.
 Exits: west
-Here: Maren of the Salt Kettle (at work).
+Here: Maren Holt, Maren of the Salt Kettle (at work).
 
 > talk maren of the salt kettle
 You are talking with Maren of the Salt Kettle. Type what you want to say, pick a number, or BYE to stop.
@@ -532,14 +532,14 @@ Exits: south, west, north
 The Salt Kettle
 The inn is one long, smoky room under black beams, with a fire at one end and a barrel of ale at the other. It smells of fish stew, tallow and wet wool drying. A ship's figurehead, a woman with a chipped nose, watches the door from the corner; they say she came off the last ship that broke here before the [Grey Gull]. The door west goes out to the green.
 Exits: west
-Here: Maren of the Salt Kettle (at work).
+Here: Maren Holt, Maren of the Salt Kettle (at work).
 Maren keeps her strongbox at The Salt Kettle under lock, and the key close.
 
 > look
 The Salt Kettle
 The inn is one long, smoky room under black beams, with a fire at one end and a barrel of ale at the other. It smells of fish stew, tallow and wet wool drying. A ship's figurehead, a woman with a chipped nose, watches the door from the corner; they say she came off the last ship that broke here before the [Grey Gull]. The door west goes out to the green.
 Exits: west
-Here: Maren of the Salt Kettle (at work).
+Here: Maren Holt, Maren of the Salt Kettle (at work).
 
 > talk maren of the salt kettle
 You are talking with Maren of the Salt Kettle. Type what you want to say, pick a number, or BYE to stop.

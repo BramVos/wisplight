@@ -68,12 +68,12 @@ export function mostOut(model: string, maxTokens: number): number {
   return maxTokens + (ALWAYS_THINKS.test(model) ? 4000 : 0)
 }
 
-/** The characters a call sends: system, prompt, and the schema of its answer, which is billed as input too (M10.27). */
-function sent(request: { system: string; prompt: string; schema?: unknown }): number {
-  return request.system.length + request.prompt.length + (request.schema ? JSON.stringify(request.schema).length : 0)
+/** The characters a call sends: system, the talk so far (M10.28), prompt, and the schema of its answer, which is billed as input too (M10.27). */
+function sent(request: { system: string; prompt: string; schema?: unknown; turns?: { text: string }[] }): number {
+  return request.system.length + (request.turns ?? []).reduce((n, t) => n + t.text.length, 0) + request.prompt.length + (request.schema ? JSON.stringify(request.schema).length : 0)
 }
 
-export function upperBoundUsd(model: string, request: { system: string; prompt: string; maxTokens: number; schema?: unknown }): number | undefined {
+export function upperBoundUsd(model: string, request: { system: string; prompt: string; maxTokens: number; schema?: unknown; turns?: { text: string }[] }): number | undefined {
   const price = priceOf(model)
   if (!price) return undefined
   const input = Math.ceil(sent(request) / 3.5)
@@ -86,7 +86,7 @@ export function upperBoundUsd(model: string, request: { system: string; prompt: 
  * input at the full price, and half the most it may write, as replies tend
  * to run. Undefined for a model without a known price.
  */
-export function typicalUsd(model: string, request: { system: string; prompt: string; maxTokens: number; schema?: unknown }): number | undefined {
+export function typicalUsd(model: string, request: { system: string; prompt: string; maxTokens: number; schema?: unknown; turns?: { text: string }[] }): number | undefined {
   const price = priceOf(model)
   if (!price) return undefined
   const input = Math.ceil(sent(request) / 3.5)

@@ -125,7 +125,7 @@ The harbour bell rings for six, once for the boats.
 The Salt Kettle
 The inn is one long, smoky room under black beams, with a fire at one end and a barrel of ale at the other. It smells of fish stew, tallow and wet wool drying. A ship's figurehead, a woman with a chipped nose, watches the door from the corner; they say she came off the last ship that broke here before the [Grey Gull]. The door west goes out to the green.
 Exits: west
-Here: Maren of the Salt Kettle (at work).
+Here: Maren Holt, Maren of the Salt Kettle (at work).
 
 > talk maren of the salt kettle
 You are talking with Maren of the Salt Kettle. Type what you want to say, pick a number, or BYE to stop.
@@ -174,7 +174,7 @@ The harbour bell rings for six, once for the boats.
 The Salt Kettle
 The inn is one long, smoky room under black beams, with a fire at one end and a barrel of ale at the other. It smells of fish stew, tallow and wet wool drying. A ship's figurehead, a woman with a chipped nose, watches the door from the corner; they say she came off the last ship that broke here before the [Grey Gull]. The door west goes out to the green.
 Exits: west
-Here: Maren of the Salt Kettle (at work).
+Here: Maren Holt, Maren of the Salt Kettle (at work).
 
 > talk maren of the salt kettle
 You are talking with Maren of the Salt Kettle. Type what you want to say, pick a number, or BYE to stop.
@@ -302,7 +302,7 @@ The harbour bell rings for six, once for the boats.
 The Salt Kettle
 The inn is one long, smoky room under black beams, with a fire at one end and a barrel of ale at the other. It smells of fish stew, tallow and wet wool drying. A ship's figurehead, a woman with a chipped nose, watches the door from the corner; they say she came off the last ship that broke here before the [Grey Gull]. The door west goes out to the green.
 Exits: west
-Here: Maren of the Salt Kettle (at work).
+Here: Maren Holt, Maren of the Salt Kettle (at work).
 
 > talk maren of the salt kettle
 You are talking with Maren of the Salt Kettle. Type what you want to say, pick a number, or BYE to stop.
@@ -351,7 +351,7 @@ The harbour bell rings for six, once for the boats.
 The Salt Kettle
 The inn is one long, smoky room under black beams, with a fire at one end and a barrel of ale at the other. It smells of fish stew, tallow and wet wool drying. A ship's figurehead, a woman with a chipped nose, watches the door from the corner; they say she came off the last ship that broke here before the [Grey Gull]. The door west goes out to the green.
 Exits: west
-Here: Maren of the Salt Kettle (at work).
+Here: Maren Holt, Maren of the Salt Kettle (at work).
 
 > talk maren of the salt kettle
 You are talking with Maren of the Salt Kettle. Type what you want to say, pick a number, or BYE to stop.

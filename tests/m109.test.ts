@@ -158,7 +158,8 @@ describe('M10.9: someone named in a talk', () => {
     mock.someone = undefined
     const answer = said(await engine.handle('ask about aldert'))
     const again = mock.calls.at(-1)!
-    expect(again.system).toMatch(/YOUR PEOPLE: .*Aldert, your kinsman\. Your cousin, a carter in Waagdam; you spoke of him to the stranger/)
+    // Who speaks and their people go with the talk since M10.28, told again once they change.
+    expect(again.prompt).toMatch(/YOUR PEOPLE: .*Aldert, your kinsman\. Your cousin, a carter in Waagdam; you spoke of him to the stranger/)
     expect(again.prompt).toMatch(/Aldert is your cousin, a carter in Waagdam\. What you said of him: "My cousin Aldert is a carter in Waagdam\."/)
     // The name leads to their page (M10.8), as any name.
     expect(answer).toMatch(/\[Aldert\] is your cousin/)

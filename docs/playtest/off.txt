@@ -131,7 +131,7 @@ You buy a cask of lamp oil from Maren for 3 sp.
 The Headland
 The island ends here in a blunt headland with the sea on three sides and a squat stone tower on top: the beacon. Its great lamp stands cold behind green glass, and the wind whistles through the empty gallery. Below the tower a lean-to store shed has lost half its roof, and it smells strongly of fish oil. A track runs south to the hamlet and west to the grove; north, a ruined tower stands alone on the last rise.
 Exits: south, west, north
-Here: Garrick the lightkeeper (eating).
+Here: Garrick Stone, Garrick the lightkeeper (eating).
 
 > fill the beacon
 One cask after another, you pour the oil into the great bronze bowl until it shines black to the brim. The whole gallery stinks of seal.
@@ -174,17 +174,17 @@ Lore: the Grey Gull.
 
 [48 hours pass]
 Off Skerrow: A ship for the light. Two nights after the Lamp of Skerrow was lit again, the Heron out of Havenmoor stands in to the Hythe to see what the light is about. Her master takes you across for the price of your story, and Skerrow has ships again.
-Tamsin comes from the west, on her way to Skerrow Hythe, the Green.
-Tamsin stops and gives you a nod, curious about the stranger.
-Garrick nods to Tamsin.
-Tamsin walks on to the south.
-Tamsin comes from the west, on her way to Skerrow Hythe, the Green.
-Garrick nods to Tamsin.
-Tamsin walks on to the south.
+Old Tamsin comes from the west, on her way to Skerrow Hythe, the Green.
+Old Tamsin stops and gives you a nod, curious about the stranger.
+Garrick nods to Old Tamsin.
+Old Tamsin walks on to the south.
+Old Tamsin comes from the west, on her way to Skerrow Hythe, the Green.
+Garrick nods to Old Tamsin.
+Old Tamsin walks on to the south.
 Garrick leaves south.
-Tamsin comes from the west, on her way to The Salt Kettle.
-Tamsin stops and gives you a nod, curious about the stranger.
-Tamsin walks on to the south.
+Old Tamsin comes from the west, on her way to The Salt Kettle.
+Old Tamsin stops and gives you a nod, curious about the stranger.
+Old Tamsin walks on to the south.
 Garrick arrives from the south.
 Elowen comes from the north, on her way to Skerrow Hythe, the Green.
 Elowen stops and looks you over.
@@ -202,7 +202,7 @@ Down at the Hythe, thin across the water, the harbour bell rings for six.
 The Headland
 Above you the Lamp of Skerrow burns, and its long green beam sweeps out over the sea and back, over and over. The tower hums faintly with the heat. Tracks go south to the hamlet and west to the grove; north, the ruined tower shows in each pass of the light.
 Exits: south, west, north
-Here: Garrick the lightkeeper (staying at The Headland).
+Here: Garrick Stone, Garrick the lightkeeper (staying at The Headland).
 
 > journal
 People: Garrick Stone, Maren.
@@ -210,31 +210,31 @@ Places: Skerrow, the Heights, Skerrow Hythe, the Shore, The Cliff Path, The Head
 Lore: the Grey Gull.
 
 [960 hours pass]
-Tamsin comes from the west, on her way to Skerrow Hythe, the Green.
-Tamsin stops and gives you a nod, curious about the stranger.
-Garrick nods to Tamsin.
-Tamsin walks on to the south.
+Old Tamsin comes from the west, on her way to Skerrow Hythe, the Green.
+Old Tamsin stops and gives you a nod, curious about the stranger.
+Garrick nods to Old Tamsin.
+Old Tamsin walks on to the south.
 Garrick leaves south.
-Tamsin comes from the west, on her way to Skerrow Hythe, the Green.
-Tamsin walks on to the south.
+Old Tamsin comes from the west, on her way to Skerrow Hythe, the Green.
+Old Tamsin walks on to the south.
 Garrick arrives from the south.
 Garrick puts out the lamp and goes to bed.
-Tamsin comes from the west, on her way to Skerrow Hythe, the Green.
-Tamsin stops and gives you a nod, curious about the stranger.
-Garrick nods to Tamsin.
-Tamsin walks on to the south.
+Old Tamsin comes from the west, on her way to Skerrow Hythe, the Green.
+Old Tamsin stops and gives you a nod, curious about the stranger.
+Garrick nods to Old Tamsin.
+Old Tamsin walks on to the south.
 Garrick leaves south.
-Tamsin comes from the west, on her way to Skerrow Hythe, the Green.
-Tamsin walks on to the south.
+Old Tamsin comes from the west, on her way to Skerrow Hythe, the Green.
+Old Tamsin walks on to the south.
 Garrick arrives from the south.
 Garrick puts out the lamp and goes to bed.
-Tamsin comes from the west, on her way to Skerrow Hythe, the Green.
-Tamsin stops and gives you a nod, curious about the stranger.
-Garrick nods to Tamsin.
-Tamsin walks on to the south.
+Old Tamsin comes from the west, on her way to Skerrow Hythe, the Green.
+Old Tamsin stops and gives you a nod, curious about the stranger.
+Garrick nods to Old Tamsin.
+Old Tamsin walks on to the south.
 Garrick leaves south.
-Tamsin comes from the west, on her way to Skerrow Hythe, the Green.
-Tamsin walks on to the south.
+Old Tamsin comes from the west, on her way to Skerrow Hythe, the Green.
+Old Tamsin walks on to the south.
 Garrick arrives from the south.
 Garrick puts out the lamp and goes to bed.
 Down at the Hythe, thin across the water, the harbour bell rings for six.
@@ -322,7 +322,7 @@ Down at the Hythe, thin across the water, the harbour bell rings for six.
 The Headland
 Above you the Lamp of Skerrow burns, and its long green beam sweeps out over the sea and back, over and over. The tower hums faintly with the heat. Tracks go south to the hamlet and west to the grove; north, the ruined tower shows in each pass of the light.
 Exits: south, west, north
-Here: Garrick the lightkeeper (asleep).
+Here: Garrick Stone, Garrick the lightkeeper (asleep).
 
 ==== END (Windsday 15 Mistmoon 412 SF, 23:26 (night))
 Quests: off_skerrow: a_ship_for_the_light
@@ -408,13 +408,13 @@ Lore: the Grey Gull.
 Garrick leaves south.
 Garrick arrives from the south.
 Garrick puts out the lamp and goes to bed.
-Tamsin comes from the west, on her way to Skerrow Hythe, the Green.
-Tamsin stops and gives you a nod, curious about the stranger.
-Garrick nods to Tamsin.
-Tamsin walks on to the south.
+Old Tamsin comes from the west, on her way to Skerrow Hythe, the Green.
+Old Tamsin stops and gives you a nod, curious about the stranger.
+Garrick nods to Old Tamsin.
+Old Tamsin walks on to the south.
 Garrick leaves south.
-Tamsin comes from the west, on her way to Skerrow Hythe, the Green.
-Tamsin walks on to the south.
+Old Tamsin comes from the west, on her way to Skerrow Hythe, the Green.
+Old Tamsin walks on to the south.
 Garrick arrives from the south.
 Garrick puts out the lamp and goes to bed.
 Down at the Hythe, thin across the water, the harbour bell rings for six.
@@ -436,28 +436,28 @@ Lore: the Grey Gull.
 
 [960 hours pass]
 Off Skerrow: Winter closes the sea. The first of the winter gales closes the Glass Sea. No boat will cross now until spring; you winter on Skerrow, among the fishers and the gulls.
-Tamsin walks on to the south.
+Old Tamsin walks on to the south.
 Garrick leaves south.
-Tamsin comes from the west, on her way to Skerrow Hythe, the Green.
-Tamsin walks on to the south.
+Old Tamsin comes from the west, on her way to Skerrow Hythe, the Green.
+Old Tamsin walks on to the south.
 Garrick arrives from the south.
 Garrick puts out the lamp and goes to bed.
-Tamsin comes from the west, on her way to Skerrow Hythe, the Green.
-Tamsin stops and gives you a nod, curious about the stranger.
-Garrick nods to Tamsin.
-Tamsin walks on to the south.
+Old Tamsin comes from the west, on her way to Skerrow Hythe, the Green.
+Old Tamsin stops and gives you a nod, curious about the stranger.
+Garrick nods to Old Tamsin.
+Old Tamsin walks on to the south.
 Garrick leaves south.
-Tamsin comes from the west, on her way to Skerrow Hythe, the Green.
-Tamsin walks on to the south.
+Old Tamsin comes from the west, on her way to Skerrow Hythe, the Green.
+Old Tamsin walks on to the south.
 Garrick arrives from the south.
 Garrick puts out the lamp and goes to bed.
-Tamsin comes from the west, on her way to Skerrow Hythe, the Green.
-Tamsin stops and gives you a nod, curious about the stranger.
-Garrick nods to Tamsin.
-Tamsin walks on to the south.
+Old Tamsin comes from the west, on her way to Skerrow Hythe, the Green.
+Old Tamsin stops and gives you a nod, curious about the stranger.
+Garrick nods to Old Tamsin.
+Old Tamsin walks on to the south.
 Garrick leaves south.
-Tamsin comes from the west, on her way to Skerrow Hythe, the Green.
-Tamsin walks on to the south.
+Old Tamsin comes from the west, on her way to Skerrow Hythe, the Green.
+Old Tamsin walks on to the south.
 Garrick arrives from the south.
 Garrick puts out the lamp and goes to bed.
 Down at the Hythe, thin across the water, the harbour bell rings for six.

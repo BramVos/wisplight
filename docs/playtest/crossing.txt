@@ -350,7 +350,7 @@ Brannoc nods. "Morning."
 
 > 2
 You: "What's new around here?"
-Brannoc scratches an ear. "The long hall of Ynys Wen closed its doors to the east for a season. (It is going round; you heard it from people passing through. You are not sure it is true.)"
+Brannoc scratches an ear. "The [long hall of Ynys Wen closed its doors to the east for a season]. (It is going round; you heard it from people passing through. You are not sure it is true.)"
 +10 experience: you learned of The long hall of Ynys Wen closed its doors to the east for a season.
 
 > bye

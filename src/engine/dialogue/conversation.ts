@@ -15,7 +15,7 @@ import { approve, companionOf, offer, recruit } from '../social/companions'
 import { silenceWitness, witnessed } from '../social/crime'
 import { partyTalk } from './party'
 import { closingLine, fallbackReply } from './fallback'
-import { deedKinds, fitLength, leakedNames, looksLikeInjection, outOfCharacter, promises, saysNothing, swearRight, unknownNames, vocabularyOf } from './guard'
+import { deedKinds, fitLength, leakedNames, looksLikeInjection, outOfCharacter, promises, saysNothing, speaksAsOther, swearRight, unknownNames, vocabularyOf } from './guard'
 import { accept, askedFor, askOffer, dayLines, kinOf, offerLine, offerLines, offersFor, proposal, proposalText, spokenMeet, type Offer } from './offers'
 import { accepted, declined, inviteOffer } from '../social/invite'
 import { CLAIM_KEYS, claimValid, claimWords, parseClaim, playerSays } from '../claims'
@@ -26,8 +26,9 @@ import { tieTo } from '../people'
 import type { Claim } from '../state'
 import type { Knowledge, Packet } from './knowledge'
 import { cachedSystem, LlmError, type LlmClient, type LlmRejection } from './llm'
+import { areaBlock } from './block'
 import { crossesLimits } from '../safety'
-import { oathsOf, peopleIds, systemParts, systemPrompt, turnPrompt, worldFrame } from './prompt'
+import { oathsOf, peopleIds, turnEnd, turnMessage, turnSections, worldFrame, youLines, type TurnSection } from './prompt'
 import { attitude, applyEffect, moodOf, relation, type Attitude } from './relations'
 import { askLine, askNow, knownRequests, requestName, visited } from '../requests'
 import { questsOf } from '../life'
@@ -89,6 +90,8 @@ export class Dialogue {
   private chosen?: string
   /** Why the model gave no usable reply in the last turn, if it was asked. */
   private lastFailure?: { kind: string; message: string }
+  /** What the voice was told this turn (M10.28), for the thread once the turn is done: the first telling, before any NOTE. */
+  private asked?: { text: string; sent: Record<string, string> }
   /** The topics of the last turn (M10.8): asked about, said, or known and told; a waiting quest starts on them. */
   private touched: string[] = []
 
@@ -581,6 +584,7 @@ export class Dialogue {
 
   private async turn(npcId: string, text: string, options: TurnOptions): Promise<Output[]> {
     const world = this.world
+    this.asked = undefined
     const npc = world.npc(npcId)
     if (world.npcState(npcId).location !== world.state.player.location) {
       world.state.talk = undefined
@@ -622,7 +626,8 @@ export class Dialogue {
     if (tier !== 'story') for (const k of packet.known) delete k.story
 
     // 3. The model, or the designer's templates.
-    const memories = (world.npcState(npcId).memory ?? []).slice(-5).map((m) => m.note)
+    // What they remember from before this talk (M10.28: this talk itself is in the thread).
+    const memories = (world.npcState(npcId).memory ?? []).filter((m) => m.t < (talk.began ?? Infinity)).slice(-5).map((m) => m.note)
     // What the player says is a claim, heard from the stranger and judged by the game (M10.3).
     const claim = options.claim ?? (options.check || /\?\s*$/.test(text) ? undefined : parseClaim(world, topics, text))
     // A few claims a talk, no more (M10.3, the limits): after that, words are only words.
@@ -660,6 +665,7 @@ export class Dialogue {
     if (reply?.quest_action && offered.some((o) => o.key === reply.quest_action)) {
       this.chosen = reply.quest_action
       talk.history.push({ speaker: 'player', text })
+      this.heard(talk, text, reply.reply)
       return echo
     }
     // The offer the player asked for: the voice's choice, or by the rules without a model.
@@ -752,6 +758,7 @@ export class Dialogue {
 
     talk.history.push({ speaker: 'player', text }, { speaker: 'npc', text: replyText })
     if (talk.history.length > 12) talk.history.splice(0, talk.history.length - 12)
+    this.heard(talk, text, replyText)
     talk.turnsLeft--
     talk.turns = (talk.turns ?? 0) + 1
     // A talk goes on while it is about something (M10.8): past the turns it starts with, one more each time, up to a
@@ -918,7 +925,7 @@ export class Dialogue {
         ? { bonds: Object.keys(sketchBonds(world)), places: sketchPlaces(world, npcId).map((p) => p.name) }
         : undefined
 
-    let prompt = turnPrompt(world, {
+    const turn = {
       npcId,
       act: ctx.act,
       tier: ctx.tier,
@@ -929,41 +936,55 @@ export class Dialogue {
       secret: ctx.secret,
       decision: ctx.decision,
       memories: ctx.memories,
-      history: talk?.history ?? [],
+      history: [],
       playerText: text,
-    })
+    }
     const offered = ctx.offered ?? []
     const offers = ctx.offers ?? []
+    // What this turn asks besides the words (M10.28: parts like the rest, so a later turn tells only what changed).
+    const extra: TurnSection[] = []
     // Time facts from the schedules (M10.3): their own day, and the day of the people the talk is about.
     const days = dayLines(world, npcId, [...ctx.packet.known.map((k) => k.topic), ...offers.flatMap((o) => (o.person ? [o.person] : []))])
-    if (days.length) prompt += `\n${days.join('\n')}`
-    if (offers.length) prompt += `\n${offerLines(world, npcId, offers).join('\n')}`
-    if (talk && !talk.after) prompt += '\nAFTER THE TALK: one thing of your own you want to do later (tell one of your people, or go somewhere), in after; at most once a talk. Otherwise after.kind none.'
+    if (days.length) extra.push({ key: 'days', text: days.join('\n') })
+    if (offers.length) {
+      // The offers of this turn, and once a talk how to answer them.
+      const lines = offerLines(world, npcId, offers)
+      extra.push({ key: 'offers', text: lines.slice(0, -1).join('\n'), each: true }, { key: 'offers-how', text: lines.at(-1)! })
+    }
+    if (talk && !talk.after) extra.push({ key: 'after', text: 'AFTER THE TALK: one thing of your own you want to do later (tell one of your people, or go somewhere), in after; at most once a talk. Otherwise after.kind none.' })
     if (ctx.claimable?.length) {
       const places = ctx.claimable.filter((id) => world.content.locations.has(id))
-      prompt += `\nCLAIM: if the stranger's words just said something is so about ${ctx.claimable.map((id) => `${id} (${this.topics.name(id)})`).join(', ')}, put it in claim: subject the id; key at (value: the place id where they are${places.length ? `, one of ${places.join(', ')}` : ''}), alive (yes or no), state (of a place: normal, flooded, damaged, occupied, leaking) or working (of a place: yes or no). Otherwise subject none. Only what the stranger said, never what you think.`
+      extra.push({ key: 'claim', each: true, text: `CLAIM: if the stranger's words just said something is so about ${ctx.claimable.map((id) => `${id} (${this.topics.name(id)})`).join(', ')}, put it in claim: subject the id; key at (value: the place id where they are${places.length ? `, one of ${places.join(', ')}` : ''}), alive (yes or no), state (of a place: normal, flooded, damaged, occupied, leaking) or working (of a place: yes or no). Otherwise subject none. Only what the stranger said, never what you think.` })
     }
     if (sketch) {
       const domains = world.frame.sketch?.domains ?? 'your family, your trade or your past'
-      prompt += `\nSOMEONE NEW: this talk touches ${domains}. If it fits, you may name one person of your own who is in none of your lists: your ${sketch.bonds.join(', ')}, living in one of ${sketch.places.join(', ')}. A first name only, in one sentence, and put them in person. Otherwise person.name is empty and bond none.`
+      extra.push({ key: 'sketch', each: true, text: `SOMEONE NEW: this talk touches ${domains}. If it fits, you may name one person of your own who is in none of your lists: your ${sketch.bonds.join(', ')}, living in one of ${sketch.places.join(', ')}. A first name only, in one sentence, and put them in person. Otherwise person.name is empty and bond none.` })
     }
     if (offered.length) {
-      prompt += `\nQUEST ACTIONS: if the player's words clearly mean one of these, put its key in quest_action and the game carries it out; otherwise quest_action is "none".\n${offered.map((o) => `  ${o.key}: the player wants to ${o.intent}`).join('\n')}`
+      extra.push({ key: 'quest', each: true, text: `QUEST ACTIONS: if the player's words clearly mean one of these, put its key in quest_action and the game carries it out; otherwise quest_action is "none".\n${offered.map((o) => `  ${o.key}: the player wants to ${o.intent}`).join('\n')}` })
     }
+    // The area block (M10.28): the rules, the frame and everything the people here all know, the same for every line
+    // spoken here and read from the cache; then who speaks, and what is new since they were last told.
+    const block = areaBlock(world, location.area)
+    const message = turnMessage([{ key: 'you', text: youLines(world, npcId, block.cast) }, ...turnSections(world, turn, 'talk'), ...extra, ...turnEnd(world, turn)], talk?.sent)
+    let prompt = message.text
+    this.asked = { text: message.text, sent: message.sent }
+    const cast = block.cast.filter((id) => id !== npcId && world.content.npcs.has(id)).flatMap((id) => [callName(world.npc(id)), world.npc(id).name])
 
     // A reply comes within its time or not at all, over both tries (FO, chapter 18; ten seconds unless set otherwise, M10.8): then the set line.
     const within = llm.replyWithinMs?.() ?? REPLY_WITHIN_MS
     const started = Date.now()
-    // The rules and the frame first, cached for everyone who speaks here; the character after it (M10.26).
-    const parts = systemParts(world, npcId)
     for (let attempt = 0; attempt < 2; attempt++) {
       let raw: string
       try {
         raw = (
           await llm.complete({
             role: 'voice',
-            ...cachedSystem(parts.shared, parts.own),
+            ...cachedSystem(block.shared, block.block),
+            turns: [...(talk?.thread ?? [])],
             prompt,
+            cacheTail: true,
+            warm: block.key,
             schemaName: 'npc_reply',
             schema: replyJsonSchema(allowedTopics, offered.map((o) => o.key), offers, !talk?.after, ctx.claimable?.length ? { subjects: ctx.claimable, keys: CLAIM_KEYS } : undefined, sketch),
             maxTokens: TIER_TOKENS[ctx.tier],
@@ -1010,6 +1031,13 @@ export class Dialogue {
       if (saysNothing(fitted, [callName(world.npc(npcId)), world.npc(npcId).name, world.npc(npcId).short])) {
         this.refused('schema', llm)
         prompt += '\nNOTE: your last reply said nothing aloud. Answer again with what you say, in double quotes.'
+        continue
+      }
+      // The block holds everyone of these parts (M10.28): the reply is theirs who was asked, never another card's.
+      const other = speaksAsOther(fitted, [callName(world.npc(npcId)), world.npc(npcId).name, world.npc(npcId).short], cast)
+      if (other) {
+        this.refused('character', llm, `voiced as ${other}`)
+        prompt += `\nNOTE: your last reply spoke as ${other}. You are ${callName(world.npc(npcId))}: answer again as ${callName(world.npc(npcId))}.`
         continue
       }
       if (outOfCharacter(fitted)) {
@@ -1065,11 +1093,25 @@ export class Dialogue {
       // Kept (M10.10): what the guard put right in place, and a number nobody gave (noted, not changed), in the AI log.
       if (sworn !== trimmed) this.guarded('oath', llm, 'our oath put right')
       for (const f of fixed) this.guarded('not_here', llm, f)
-      for (const n of strayNumbers(fitted, `${systemPrompt(world, npcId)}\n${prompt}\n${text}`)) this.guarded('number', llm, `${n} was not given`)
+      for (const n of strayNumbers(fitted, `${block.shared}\n${block.block}\n${(talk?.thread ?? []).map((t) => t.text).join('\n')}\n${prompt}\n${text}`)) this.guarded('number', llm, `${n} was not given`)
       return { ...reply, reply: fitted }
     }
     this.lastFailure = { kind: 'checks', message: 'both replies failed the checks' }
     return undefined
+  }
+
+  /**
+   * The turn goes on the thread (M10.28): what the voice was told and what was
+   * said back, so the next call reads the talk so far from the cache. A turn
+   * the voice never saw (the rules answered) goes on as the stranger's words.
+   * Only ever added to: an edit would break what the cache holds.
+   */
+  heard(talk: TalkState, playerText: string, replyText: string): void {
+    const asked = this.asked
+    this.asked = undefined
+    if (!this.llm()) return
+    ;(talk.thread ??= []).push({ role: 'user', text: asked?.text ?? `PLAYER SAYS: <<${playerText.replace(/[<>]/g, '')}>>` }, { role: 'assistant', text: replyText })
+    if (asked) talk.sent = asked.sent
   }
 
   /** A reply thrown away and asked again (M10.19): counted for the dev menu, and the reason in the AI log. */

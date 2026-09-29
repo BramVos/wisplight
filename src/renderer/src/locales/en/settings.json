@@ -167,6 +167,8 @@
       "calls": "calls",
       "fromCache": "from the cache",
       "writtenTo": "written to it",
+      "cost": "cost",
+      "keepWarm": "keeping a place's cache warm",
       "cachedOf": {
         "one": "{percent}% of {tokens} token",
         "other": "{percent}% of {tokens} tokens"

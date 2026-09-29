@@ -8,7 +8,7 @@ Every kind of model call the game makes, whether a test answers it with the mock
 
 | Kind | Role | When | What it is for | Mock test | Recorded real replies | Last real trial |
 |---|---|---|---|---|---|---|
-| `npc_reply` | voice | play | A person answers the stranger in a conversation. | ai.test.ts, m1021guide.test.ts, m1023language.test.ts, m1026cache.test.ts, m1029names.test.ts, m103later.test.ts, redteam.test.ts | claude-haiku-4-5-20251001 (tests/fixtures/model/npc_reply/2026-09-29-claude-haiku-4-5-20251001.json) | 2026-09-29 |
+| `npc_reply` | voice | play | A person answers the stranger in a conversation. | ai.test.ts, m1021guide.test.ts, m1023language.test.ts, m1026cache.test.ts, m1028block.test.ts, m1029names.test.ts, m103later.test.ts, redteam.test.ts | claude-haiku-4-5-20251001 (tests/fixtures/model/npc_reply/2026-09-29-claude-haiku-4-5-20251001.json) | 2026-09-29 |
 | `party_reply` | voice | play | Two or more people answer the stranger together. | m1026cache.test.ts | claude-haiku-4-5-20251001 (tests/fixtures/model/party_reply/2026-09-29-claude-haiku-4-5-20251001.json) | 2026-09-29 |
 | `chat_line` | brain | play | A line between two people the stranger overhears. | m1026cache.test.ts | claude-sonnet-5 (tests/fixtures/model/chat_line/2026-09-29-claude-sonnet-5.json) | 2026-09-29 |
 | `journey` | chronicler | play | The paragraph of a journey on foot or by passage. | m1023build.test.ts, m1026cache.test.ts, worldguide.test.ts | claude-haiku-4-5-20251001 (tests/fixtures/model/journey/2026-09-29-claude-haiku-4-5-20251001-r2.json); claude-haiku-4-5-20251001 (tests/fixtures/model/journey/2026-09-29-claude-haiku-4-5-20251001.json); claude-opus-5-5 (tests/fixtures/model/journey/2026-09-29-claude-opus-5-5.json) | 2026-09-29 |
@@ -42,7 +42,7 @@ Every kind puts what stays the same first and what changes after it (M10.26). A 
 
 | Kind | Model | In | Mark | Fixed part | Shared by every call | Minimum | Read from the cache |
 |---|---|---|---|---|---|---|---|
-| `npc_reply` | claude-haiku-4-5-20251001 | 1,864 | shared and own | 1,328 | 1,016 | 4,096 | nothing: the fixed part is under the minimum |
+| `npc_reply` | claude-haiku-4-5-20251001 | 6,379 | shared and own | 5,807 | 1,051 | 4,096 | the next line in these parts 91%, whoever speaks, and within a talk all that was said before it |
 | `party_reply` | claude-haiku-4-5-20251001 | 714 | none | - | - | 4,096 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `chat_line` | claude-sonnet-5 | 528 | none | - | - | 1,024 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `journey` | claude-haiku-4-5-20251001 | 558 | none | - | - | 4,096 | not marked: nothing reads it back in time, so a mark would only pay a write |

@@ -49,10 +49,10 @@ New quest: Flour for Veenhoek. Mirte needs flour for Veenhoek's bread before mar
 
 > 2
 You: "What's new around here?"
-Mirte nods slowly. "[Fenna Visser], fifteen, the daughter of Jan and Grietje, has been missing for four days. She went out on the evening of 10 Herfstmaand and never came home. Nobody saw where she went. Some say the fen took her."
+Mirte nods slowly. "[Fenna Visser], fifteen, the daughter of [Jan] and [Grietje], has been missing for four days. She went out on the evening of 10 Herfstmaand and never came home. Nobody saw where she went. Some say the fen took her."
 
 > What happened to the mill?
-Mirte thinks a moment. "[De Zwaan], Harmen Molenaar's [windmill], which grinds grain and pumps the polder dry. The storm of 8 Herfstmaand tore its sails. [The Mill De Zwaan] is about 20 minutes' walk from here: west to [Veenhoek, the Green], then northeast to The Peat Road, then northeast to Molenend, the Lane, and on from there."
+Mirte thinks a moment. "[De Zwaan], [Harmen Molenaar]'s [windmill], which grinds grain and pumps the polder dry. The storm of 8 Herfstmaand tore its sails. [The Mill De Zwaan] is about 20 minutes' walk from here: west to [Veenhoek, the Green], then northeast to [The Peat Road], then northeast to [Molenend, the Lane], and on from there."
 
 > bye
 Mirte lifts a hand. "Go on, then."
@@ -169,7 +169,7 @@ You can't strike out across country from in here. Go out to the road or the edge
 Lubbert's Grain Store
 Sacks of grain are stacked to the ceiling, and a fine dust hangs in the air and tickles your nose. A slate by the door lists today's prices; the flour price has been rubbed out and written again, higher. Canal Street is north.
 Exits: north
-Here: Lubbert the grain merchant (at work), Mirte the baker (buying).
+Here: Lubbert the grain merchant (at work); Mirte Bakker, Mirte the baker (buying).
 
 # Shortcut: into the bakery, if the walk ended elsewhere in Veenhoek.
 
@@ -194,7 +194,7 @@ Time passes. It is Woensdag 15 Herfstmaand 211 AW, 09:38 (morning).
 The Bakery
 Warm, low and white with flour. Loaves cool on racks along the wall, and a slate by the counter says RYE 2 D in chalk, underlined twice. Through the back door, east, you can see the glow of the oven in the yard.
 Exits: west, east
-Here: Mirte the baker (on the way to Bakery Yard).
+Here: Mirte Bakker, Mirte the baker (on the way to Bakery Yard).
 
 > give three sacks of rye to mirte
 "Rye! Teunis will grind it at the horse mill for a stuiver a sack." Mirte is already reaching for her shawl. "Bless you."
@@ -298,10 +298,10 @@ New quest: Flour for Veenhoek. Mirte needs flour for Veenhoek's bread before mar
 
 > 2
 You: "What's new around here?"
-Mirte nods slowly. "[Fenna Visser], fifteen, the daughter of Jan and Grietje, has been missing for four days. She went out on the evening of 10 Herfstmaand and never came home. Nobody saw where she went. Some say the fen took her."
+Mirte nods slowly. "[Fenna Visser], fifteen, the daughter of [Jan] and [Grietje], has been missing for four days. She went out on the evening of 10 Herfstmaand and never came home. Nobody saw where she went. Some say the fen took her."
 
 > What happened to the mill?
-Mirte thinks a moment. "[De Zwaan], Harmen Molenaar's [windmill], which grinds grain and pumps the polder dry. The storm of 8 Herfstmaand tore its sails. [The Mill De Zwaan] is about 20 minutes' walk from here: west to [Veenhoek, the Green], then northeast to The Peat Road, then northeast to Molenend, the Lane, and on from there."
+Mirte thinks a moment. "[De Zwaan], [Harmen Molenaar]'s [windmill], which grinds grain and pumps the polder dry. The storm of 8 Herfstmaand tore its sails. [The Mill De Zwaan] is about 20 minutes' walk from here: west to [Veenhoek, the Green], then northeast to [The Peat Road], then northeast to [Molenend, the Lane], and on from there."
 
 > bye
 Mirte lifts a hand. "Go on, then."
@@ -346,7 +346,7 @@ The chapel bell rings for six.
 The Bakery
 Warm, low and white with flour. Loaves cool on racks along the wall, and a slate by the counter says RYE 2 D in chalk, underlined twice. Through the back door, east, you can see the glow of the oven in the yard.
 Exits: west, east
-Here: Mirte the baker.
+Here: Mirte Bakker, Mirte the baker.
 
 ==== END (Maandag 20 Herfstmaand 211 AW, 18:35 (evening))
 Quests: flour_for_veenhoek: market_day_passed

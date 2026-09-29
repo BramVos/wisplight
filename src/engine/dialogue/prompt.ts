@@ -27,14 +27,15 @@ import { worldText } from '../safety'
 const NO_FRAME = `You voice one character in a text role-playing game, in a world of its own.`
 
 const RULES = `Rules:
-- Speak only as the character below; never mention an AI, a model, a game or rules.
+- Speak only as YOU ARE, from your own card (other cards are other people); never mention an AI, a model, a game or
+  rules.
 - At most WORD LIMIT words, plain British English with a little local colour, nothing modern.
 - On screen: at most one short action in the third person, present tense, then the words in double quotes.
-- Only facts from KNOWLEDGE, SCENE and the character card; otherwise say you don't know, guess vaguely, or point to
+- Only facts from KNOWLEDGE, SCENE and your own card; otherwise say you don't know, guess vaguely, or point to
   REFERRAL. No news or tidings of your own making: only what KNOWLEDGE gives.
 - Numbers, ages, prices, dates and distances only as given, said as given; otherwise "a few" or "some".
 - Never invent places, people, items, prices or quests, and never name a place or person that is not in KNOWLEDGE,
-  SCENE, REFERRAL, PEOPLE YOU KNOW (everyone you know by name) or the card. Asked for a name you don't know, say so.
+  SCENE, REFERRAL, PEOPLE YOU KNOW (everyone you know by name) or your card. Asked for a name you don't know, say so.
 - names: every name in your reply as written, new_kind none; except one far-away place beyond this land (a city, land,
   sea, river or lake) with its new_kind, which becomes part of the world. People or places nearby only as SOMEONE NEW
   allows.
@@ -51,6 +52,7 @@ const RULES = `Rules:
 - With CHECK, your reply matches its outcome.
 - effects: at most one change of -3 to +3 in how you feel about the player, only when they gave a reason.
   mentioned_topics: the ids from KNOWLEDGE or REFERRAL your reply talks about.
+- Each game message holds what is new; its CHECK, DECISION, SECRET, NOTE and choices hold for it alone.
 - JSON that matches the schema, and nothing else.`
 
 /** The frame when world.yaml has none (M10.17): neutral; every world writes its own. */
@@ -89,24 +91,40 @@ export function systemPrompt(world: World, npcId: string): string {
   return `${shared}\n${own}`
 }
 
+/** The first lines of every conversation's system part: who the model is, the rules, and the frame of the land. */
+export function sharedPart(world: World): string {
+  // The frame of the land the stranger is in (M10.23), with the rules: the same for everyone who speaks here.
+  return [world.frame.frame ? `You voice one character in a text role-playing game set in ${world.words.land}.` : NO_FRAME, RULES, worldText(worldFrame(world.content, world.land))].join('\n')
+}
+
 /**
- * The conversation's system part in two (M10.26): what every speaker in this
- * land shares (the rules and the frame), cached on its own so someone new
- * reads it from the cache; and the character card of this one, the same for
- * every turn of the talk.
+ * One speaker's system part (M10.26), as it was before the area block: the
+ * shared part, and their whole card with what changes in it (their people,
+ * their standing). The trials and tests of one speaker read it.
  */
 export function systemParts(world: World, npcId: string): { shared: string; own: string } {
+  return { shared: sharedPart(world), own: worldText(['CHARACTER', ...cardLines(world, npcId, false), ...changingCard(world, npcId)].filter(Boolean).join('\n')) }
+}
+
+/**
+ * What of a card does not change while the stranger is about (M10.28): who
+ * they are, how they look, speak and swear. In the area block (forBlock), a
+ * hidden trade shows only as its cover: every speaker there reads the card,
+ * and the true trade goes to its keeper alone, in the talk.
+ */
+export function cardLines(world: World, npcId: string, forBlock: boolean): string[] {
   const npc = world.npc(npcId)
   const profession = world.content.professions.get(npc.profession)?.name ?? npc.profession
+  const hidden = Boolean(npc.hidden && npc.cover)
   const values = Object.entries(npc.values)
     .filter(([, v]) => v >= 2)
     .map(([k]) => k)
+  const oaths = oathsOf(world, npcId)
   // The frame and the character card are world text (M10.19): who this is and how they speak, never a change to the rules.
-  const card = [
-    'CHARACTER',
-    `Name: ${npc.name}, known as ${npc.short}. Age ${npc.age}. ${profession}.`,
+  return [
+    `Name: ${npc.name}, known as ${npc.short}. Age ${npc.age}. ${forBlock && hidden ? npc.cover : profession}.`,
     // A hidden trade (M10.8): the stranger is not told it by its keeper.
-    npc.hidden && npc.cover ? `With strangers you keep your trade to yourself: to them you are ${npc.cover}.` : '',
+    !forBlock && hidden ? `With strangers you keep your trade to yourself: to them you are ${npc.cover}.` : '',
     `Looks: ${npc.appearance}`,
     `Personality: ${describePersonality(npc)}. Cares about: ${values.join(', ') || 'getting by'}.`,
     // Character shows in what they value, avoid and dare to say (M10.10, Bram's note), not in a trick of sayings.
@@ -116,14 +134,32 @@ export function systemParts(world: World, npcId: string): { shared: string; own:
     npc.public_facts.length ? `Facts about you: ${npc.public_facts.join(' ')}` : '',
     npc.examples.length ? `Example lines: ${npc.examples.map((e) => `"${e}"`).join(' ')}` : '',
     // Each faith swears by its own (M10.8).
-    oathsOf(world, npcId).length ? `If you swear at all, and that is rare: You swear only by your own faith: ${oathsOf(world, npcId).map((o) => `"${o}"`).join(', ')}. Never by Christ, God or the Lord, and nobody here says hell.` : '',
-    peopleLine(world, npcId) ?? '',
-    standingLine(world, npcId) ?? '',
-  ]
-    .filter(Boolean)
-    .join('\n')
-  // The frame of the land the stranger is in (M10.23), with the rules: the same for everyone who speaks here.
-  return { shared: [world.frame.frame ? `You voice one character in a text role-playing game set in ${world.words.land}.` : NO_FRAME, RULES, worldText(worldFrame(world.content, world.land))].join('\n'), own: worldText(card) }
+    oaths.length ? `If you swear at all, and that is rare: You swear only by your own faith: ${oaths.map((o) => `"${o}"`).join(', ')}. Never by Christ, God or the Lord, and nobody here says hell.` : '',
+  ].filter(Boolean)
+}
+
+/** What of a card changes as the world goes on (M10.28): their people and their standing, in the talk rather than the block. */
+export function changingCard(world: World, npcId: string): string[] {
+  return [peopleLine(world, npcId) ?? '', standingLine(world, npcId) ?? ''].filter(Boolean)
+}
+
+/**
+ * Who speaks (M10.28): the first thing of a talk, after the area block. Their
+ * card is in the block when they belong to these parts; someone from further
+ * away brings their whole card. Then what of it changes, and a hidden trade
+ * for its keeper alone.
+ */
+export function youLines(world: World, npcId: string, cast: readonly string[]): string {
+  const npc = world.npc(npcId)
+  const inBlock = cast.includes(npcId)
+  const hidden = npc.hidden && npc.cover ? `With strangers you keep your trade to yourself (${world.content.professions.get(npc.profession)?.name ?? npc.profession}): to them you are ${npc.cover}.` : ''
+  return worldText(
+    [
+      `YOU ARE: ${npc.name}${inBlock ? ` (CARD ${npcId} above)` : ''}. Speak only as ${npc.short}; the other cards are other people.`,
+      ...(inBlock ? (hidden ? [hidden] : []) : ['You are not of these parts: of the places and people above you know only what KNOWLEDGE and PEOPLE YOU KNOW give.', 'YOUR CARD', ...cardLines(world, npcId, false)]),
+      ...changingCard(world, npcId),
+    ].join('\n'),
+  )
 }
 
 /**
@@ -213,12 +249,13 @@ function farKnown(world: World, npcId: string): string[] {
   return far.length ? [`FAR PLACES you have spoken of: ${far.map((f) => `${f.name} (${f.kind}): "${f.line}"`).join('; ')}`] : []
 }
 
-/** What the NPC did in the last two hours, so it knows how it came to be here. */
+/** What the NPC did in the last two hours, so it knows how it came to be here: as the talk began (M10.28), the same all through it. */
 function recently(world: World, npcId: string): string[] {
-  const recent = (world.npcState(npcId).recent ?? []).filter((r) => world.now - r.t <= 120).slice(-3)
+  const now = Math.min(world.now, world.state.talk?.npc === npcId ? (world.state.talk.began ?? world.now) : world.now)
+  const recent = (world.npcState(npcId).recent ?? []).filter((r) => r.t <= now && now - r.t <= 120).slice(-3)
   if (recent.length === 0) return []
   const ago = (t: number) => {
-    const minutes = world.now - t
+    const minutes = now - t
     if (minutes < 2) return 'just now'
     if (minutes < 60) return `${minutes} minutes ago`
     return minutes < 90 ? 'an hour ago' : 'two hours ago'
@@ -242,7 +279,25 @@ export interface TurnContext {
   playerText: string
 }
 
-export function turnPrompt(world: World, ctx: TurnContext): string {
+/**
+ * One part of what the game tells the voice in a turn (M10.28): a key that
+ * stays the same from turn to turn, and its text. A part `each` turn has
+ * (the act, the player's words, a check, a decision) goes every time; the
+ * rest goes when it is new or changed, since the talk so far is in the
+ * messages the model reads.
+ */
+export interface TurnSection {
+  key: string
+  text: string
+  each?: boolean
+}
+
+/**
+ * What the game tells the voice in a turn, in parts (M10.28). `voice`: all
+ * of the voice kit (one speaker's prompt, as before), or only what belongs
+ * to this talk, when the land's part is in the area block.
+ */
+export function turnSections(world: World, ctx: TurnContext, voice: 'all' | 'talk' = 'all'): TurnSection[] {
   const npc = world.npc(ctx.npcId)
   const state = world.npcState(ctx.npcId)
   const location = world.location(state.location)
@@ -251,48 +306,93 @@ export function turnPrompt(world: World, ctx: TurnContext): string {
     .npcsAt(state.location)
     .filter((id) => id !== ctx.npcId)
     .map((id) => world.npc(id).short)
-  const lines = [
-    `SCENE: ${location.name}, ${weekdayName(world.now, world.calendar)}, ${clock.parts.dayPart}. ${npc.short} is ${state.activity}. Mood: ${ctx.mood}.`,
-    // The sky, and for who reads it what is coming (M10.8).
-    ...(hasWeather(world) ? [`WEATHER: ${weather(world)}, ${windWords(wind(world))}.${readsTheSky(world, ctx.npcId) && forecastLine(world) ? ` You read the sky: ${forecastLine(world)}` : ''}`] : []),
-    // The mood of the area (M10.11): panic, grief, a feast, a threat; the people here feel it.
-    ...(moodOf(world, location.area) ? [`THE MOOD HERE: ${moodOf(world, location.area)!.prompt ?? moodOf(world, location.area)!.line}`] : []),
-    present.length ? `Also here: ${present.join(', ')}, and the player.` : `Also here: the player, a stranger from ${world.words.from}.`,
-    ...recently(world, ctx.npcId),
-    // Only those who matter to this talk (M9.3): its topics, their own people, who is here.
-    `PEOPLE YOU KNOW: ${peopleKnown(world, ctx.npcId, ctx.packet.known.map((k) => k.topic))}.`,
-    ...peopleNow(world, ctx.npcId),
-    ...onYourMind(world, ctx.npcId),
-    ...requestLines(world, ctx.npcId),
-    // The register first (M10.2): agreements with the player and a few of their own, without a model.
-    ...agreementLines(world, ctx.npcId),
-    ...farKnown(world, ctx.npcId),
-    // How people here speak (M10.10): sayings of their group, how to call the stranger, time and what is not here.
-    ...voiceLines(world, ctx.npcId, talkSeed(ctx.npcId, world.state.talk?.began ?? Math.floor(world.now / (24 * 60))), Boolean(world.state.talk?.flourished)),
-    `ATTITUDE: ${ctx.attitude.band} (${ctx.attitude.score}). LISTENER: ${listener(world, ctx.npcId)}.`,
-    // A friend of the stranger (M10.3, the watcher befriended).
-    ...(tieTo(world, ctx.npcId, 'player')?.role === 'friend' ? ['THE STRANGER is your friend.'] : []),
-    // Sent to you (M10.9): the stranger was told to ask for you, and why they came.
-    ...sentTo(world, ctx.npcId),
-    // The stranger lodges here (M10.13): the people of the place know them by name.
-    ...(lodgerLine(world, ctx.npcId) ? [lodgerLine(world, ctx.npcId)!] : []),
-    // What they use that the stranger made them (M10.14).
-    ...(ownWorkPrompt(world, ctx.npcId) ? [ownWorkPrompt(world, ctx.npcId)!] : []),
-    ...(pupilPrompt(world, ctx.npcId) ? [pupilPrompt(world, ctx.npcId)!] : []),
-    'KNOWLEDGE:',
-    ...(ctx.packet.known.length === 0 ? ['  (nothing relevant beyond your own life)'] : []),
-    ...ctx.packet.known.map((k) => `  ${k.topic} (level ${k.level}): ${k.facts.join(' ')}${k.news ? `\n  NEWS about it: ${k.news.join(' ')}` : ''}${k.story ? `\n  ${k.toldBy ? `STORY as ${k.toldBy} tells it. Retell it in your own words; the people in it are ${k.toldBy}'s family, not yours:` : 'STORY you may tell, in your own words:'}\n  ${k.story}` : ''}`),
-    ...(ctx.packet.unknown.length ? [`UNKNOWN to you: ${ctx.packet.unknown.map((u) => u.name).join(', ')}.`] : []),
-    ...(ctx.packet.referral ? [`REFERRAL: ${ctx.packet.referral.npc} (${ctx.packet.referral.name}) may know more.`] : []),
-    ...(ctx.secret ? [`SECRET you now admit, reluctantly: ${ctx.secret}`] : []),
-    ...(ctx.check ? [`CHECK: the player tried to ${ctx.check.about}. Result: ${ctx.check.degree}.`] : []),
-    ...(ctx.decision ? [`DECISION (made by the game, follow it): ${ctx.decision}`] : []),
-    ...(ctx.memories.length ? [`MEMORIES of the player: ${ctx.memories.join(' ')}`] : []),
-    ...(ctx.history.length ? ['CONVERSATION SO FAR:', ...ctx.history.slice(-4).map((h) => `  ${h.speaker === 'player' ? 'Player' : npc.short}: ${h.text}`)] : []),
-    `ACT: ${ctx.act}. WORD LIMIT: ${knob(world, 'talk.words')[ctx.tier]}.`,
-    `PLAYER SAYS: <<${ctx.playerText.replace(/[<>]/g, '')}>>`,
+  const parts: TurnSection[] = []
+  const add = (key: string, lines: string[] | string | undefined, each = false) => {
+    const text = (Array.isArray(lines) ? lines : lines ? [lines] : []).filter(Boolean).join('\n')
+    if (text) parts.push({ key, text, ...(each ? { each } : {}) })
+  }
+  add('scene', `SCENE: ${location.name}, ${weekdayName(world.now, world.calendar)}, ${clock.parts.dayPart}. ${npc.short} is ${state.activity}. Mood: ${ctx.mood}.`)
+  // The sky, and for who reads it what is coming (M10.8).
+  if (hasWeather(world)) add('weather', `WEATHER: ${weather(world)}, ${windWords(wind(world))}.${readsTheSky(world, ctx.npcId) && forecastLine(world) ? ` You read the sky: ${forecastLine(world)}` : ''}`)
+  // The mood of the area (M10.11): panic, grief, a feast, a threat; the people here feel it.
+  const mood = moodOf(world, location.area)
+  if (mood) add('mood', `THE MOOD HERE: ${mood.prompt ?? mood.line}`)
+  add('present', present.length ? `Also here: ${present.join(', ')}, and the player.` : `Also here: the player, a stranger from ${world.words.from}.`)
+  add('recently', recently(world, ctx.npcId))
+  // Only those who matter to this talk (M9.3): its topics, their own people, who is here.
+  add('people', `PEOPLE YOU KNOW: ${peopleKnown(world, ctx.npcId, ctx.packet.known.map((k) => k.topic))}.`)
+  add('now', peopleNow(world, ctx.npcId))
+  add('mind', onYourMind(world, ctx.npcId))
+  add('requests', requestLines(world, ctx.npcId))
+  // The register first (M10.2): agreements with the player and a few of their own, without a model.
+  add('agreements', agreementLines(world, ctx.npcId))
+  add('far', farKnown(world, ctx.npcId))
+  // How people here speak (M10.10): sayings of their group, how to call the stranger, time and what is not here.
+  add('voice', voiceLines(world, ctx.npcId, talkSeed(ctx.npcId, world.state.talk?.began ?? Math.floor(world.now / (24 * 60))), Boolean(world.state.talk?.flourished), voice))
+  add('attitude', `ATTITUDE: ${ctx.attitude.band} (${ctx.attitude.score}).`)
+  add('listener', `LISTENER: ${listener(world, ctx.npcId)}.`)
+  // A friend of the stranger (M10.3, the watcher befriended).
+  if (tieTo(world, ctx.npcId, 'player')?.role === 'friend') add('friend', 'THE STRANGER is your friend.')
+  // Sent to you (M10.9): the stranger was told to ask for you, and why they came.
+  add('sent', sentTo(world, ctx.npcId))
+  // The stranger lodges here (M10.13): the people of the place know them by name.
+  add('lodger', lodgerLine(world, ctx.npcId))
+  // What they use that the stranger made them (M10.14).
+  add('ownwork', ownWorkPrompt(world, ctx.npcId))
+  add('pupil', pupilPrompt(world, ctx.npcId))
+  if (ctx.packet.known.length === 0) add('k:', '  (nothing relevant beyond your own life)')
+  for (const k of ctx.packet.known) add(`k:${k.topic}`, `  ${k.topic} (level ${k.level}): ${k.facts.join(' ')}${k.news ? `\n  NEWS about it: ${k.news.join(' ')}` : ''}${k.story ? `\n  ${k.toldBy ? `STORY as ${k.toldBy} tells it. Retell it in your own words; the people in it are ${k.toldBy}'s family, not yours:` : 'STORY you may tell, in your own words:'}\n  ${k.story}` : ''}`)
+  if (ctx.packet.unknown.length) add('unknown', `UNKNOWN to you: ${ctx.packet.unknown.map((u) => u.name).join(', ')}.`, true)
+  if (ctx.packet.referral) add('referral', `REFERRAL: ${ctx.packet.referral.npc} (${ctx.packet.referral.name}) may know more.`, true)
+  if (ctx.secret) add('secret', `SECRET you now admit, reluctantly: ${ctx.secret}`, true)
+  if (ctx.check) add('check', `CHECK: the player tried to ${ctx.check.about}. Result: ${ctx.check.degree}.`, true)
+  if (ctx.decision) add('decision', `DECISION (made by the game, follow it): ${ctx.decision}`, true)
+  if (ctx.memories.length) add('memories', `MEMORIES of the player: ${ctx.memories.join(' ')}`)
+  return parts
+}
+
+/** The act, the word limit and the player's words: the end of every turn's message. */
+export function turnEnd(world: World, ctx: Pick<TurnContext, 'act' | 'tier' | 'playerText'>): TurnSection[] {
+  return [
+    { key: 'act', text: `ACT: ${ctx.act}. WORD LIMIT: ${knob(world, 'talk.words')[ctx.tier]}.`, each: true },
+    { key: 'says', text: `PLAYER SAYS: <<${ctx.playerText.replace(/[<>]/g, '')}>>`, each: true },
   ]
-  return lines.join('\n')
+}
+
+/**
+ * The message of a turn (M10.28): the whole of it in the first turn of a
+ * talk; after that only the parts that are new or changed since they were
+ * last told, and those of every turn. KNOWLEDGE under one head. `sent` is
+ * what the voice was told so far in this talk, by key; the new one comes back.
+ */
+export function turnMessage(sections: TurnSection[], sent?: Record<string, string>): { text: string; sent: Record<string, string> } {
+  const told = { ...(sent ?? {}) }
+  const lines: string[] = []
+  let knowledge = false
+  for (const part of sections) {
+    const isKnowledge = part.key.startsWith('k:')
+    const fresh = !sent || part.each || told[part.key] !== part.text
+    if (!part.each) told[part.key] = part.text
+    if (!fresh || (isKnowledge && part.key === 'k:' && sent)) continue
+    if (isKnowledge && !knowledge) {
+      lines.push(sent ? 'KNOWLEDGE, new:' : 'KNOWLEDGE:')
+      knowledge = true
+    }
+    lines.push(part.text)
+  }
+  return { text: lines.join('\n'), sent: told }
+}
+
+/** One speaker's turn as one prompt (before M10.28, and for the trials and tests that read it): every part, and the talk so far. */
+export function turnPrompt(world: World, ctx: TurnContext): string {
+  const npc = world.npc(ctx.npcId)
+  const sections = turnSections(world, ctx)
+  const history = ctx.history.length ? ['CONVERSATION SO FAR:', ...ctx.history.slice(-4).map((h) => `  ${h.speaker === 'player' ? 'Player' : npc.short}: ${h.text}`)] : []
+  const knowledge = sections.filter((p) => p.key.startsWith('k:'))
+  const first = sections.findIndex((p) => p.key.startsWith('k:'))
+  const before = sections.slice(0, first).map((p) => p.text)
+  const after = sections.slice(first + knowledge.length).filter((p) => !p.key.startsWith('k:')).map((p) => p.text)
+  return [...before, 'KNOWLEDGE:', ...knowledge.map((p) => p.text), ...after, ...history, ...turnEnd(world, ctx).map((p) => p.text)].join('\n')
 }
 
 /** The oaths of the speaker's faith (M10.8): what they swear by. */
