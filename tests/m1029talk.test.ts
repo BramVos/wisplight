@@ -80,6 +80,11 @@ describe('M10.29 A: what the speaker knows of the stranger', () => {
     expect(saysNothing('Sana smiles warmly.', ['Sana'])).toBe(true)
     expect(saysNothing('Sana smiles. "Evening."', ['Sana'])).toBe(false)
     expect(saysNothing('Water finds the weakest board, stranger.', ['Sana'])).toBe(false)
+    // Someone else's pronoun, a contraction, or what they say told, is words (M10.29 Q: six of Mara's answers lost).
+    expect(saysNothing("He'll be in the hangar by now, I'd think.", ['Mara'], 'she')).toBe(false)
+    expect(saysNothing('He is in the hangar.', ['Mara'], 'she')).toBe(false)
+    expect(saysNothing('Mara says he is on the ship.', ['Mara'], 'she')).toBe(false)
+    expect(saysNothing('She nods towards the door.', ['Mara'], 'she')).toBe(true)
     const llm = scripted('Mirte smiles warmly.', 'Mirte smiles. "Rye today, and the last of the wheat."')
     const { out } = await talk(llm, 'How is the bread today?')
     expect(llm.reports.map((r) => r.reason)).toContain('schema')

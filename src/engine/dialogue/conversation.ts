@@ -1053,7 +1053,7 @@ export class Dialogue {
         continue
       }
       // A reply is words (M10.29, Bram's playtest: "Sana smiles warmly." and the bunk question never answered).
-      if (saysNothing(fitted, [callName(world.npc(npcId)), world.npc(npcId).name, world.npc(npcId).short])) {
+      if (saysNothing(fitted, [callName(world.npc(npcId)), world.npc(npcId).name, world.npc(npcId).short], world.npc(npcId).pronoun)) {
         this.refused('schema', llm)
         prompt += '\nNOTE: your last reply said nothing aloud. Answer again with what you say, in double quotes.'
         continue

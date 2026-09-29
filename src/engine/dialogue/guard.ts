@@ -58,11 +58,15 @@ export function promises(text: string): boolean {
  * words between quotes, and only an action of the speaker's own ("Sana smiles", "She nods"). Words without their
  * quotes are still speech.
  */
-export function saysNothing(text: string, speaker: string[]): boolean {
+export function saysNothing(text: string, speaker: string[], pronoun?: string): boolean {
   // An opening quote before a word is speech, also when a long reply was cut before its closing quote.
   if (/["“]\s*\p{L}/u.test(text)) return false
-  const starts = [...speaker, 'she', 'he', 'they'].map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
-  return new RegExp(`^\\s*(?:${starts.join('|')})\\b`, 'i').test(text)
+  // Only the speaker doing something: their name or their own pronoun, then a verb ("She nods."). Someone else's pronoun
+  // or a contraction is words ("He'll be in the hangar by now", M10.29 Q: six of Mara's answers were thrown away).
+  const own = [...speaker, ...(pronoun ? [pronoun.charAt(0).toUpperCase() + pronoun.slice(1)] : [])].filter(Boolean).map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+  const acting = new RegExp(`^\\s*(?:${own.join('|')})\\s+(\\p{Ll}+)`, 'u').exec(text)
+  // What they say, told: "Mara says he is on the ship" is speech too.
+  return Boolean(acting) && !/^(?:says|said|tells|told|answers|answered|replies|replied|explains|explained|mutters|muttered|adds|added|asks|asked|whispers|whispered|admits|admitted|calls|called)$/.test(acting![1]!)
 }
 
 /**
