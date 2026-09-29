@@ -36,7 +36,11 @@ export const FIELD_NOTES: Record<string, string[]> = {
     // M10.21: the edge of the map is an edge, with what lies beyond it.
     '`beyond`: per edge (north, east, south or west) the line the stranger reads on reaching it, from the world book, and `toward`: the far places that way (topics), which they may go on to on foot or by a line. An edge without one says that nobody has told them; beyond the last land the world names, nothing is made.',
   ],
-  npcs: ['`secrets`: `about` and `teaches` take ids: a topic, a person (an NPC id), a place (a location id) or an area (`area_<id>`).'],
+  npcs: [
+    '`secrets`: `about` and `teaches` take ids: a topic, a person (an NPC id), a place (a location id) or an area (`area_<id>`).',
+    // M10.29: Dr Ilyan Sorell was "Dr" in every line.
+    '`call`: what people call them in running text when it is not the first word of the name: after a title (Dr Ilyan Sorell, `call: Ilyan`) or a byname (`call: Old Tamsin`); left out, the first word of the name that is no title.',
+  ],
   // M10.22: the great lines.
   tides: ['`drivers`: each pushes the line every day it holds, by its weight (negative calms): `season` (a season of this world), `tension` with `at_least` (two realms), `short` (a settlement short of an item or anything), `flag`, or `fact` (the facts of the day of a kind, a belang, about someone, or by the stranger). The pressure loses a little every day. From `threat` it may threaten, from `threshold` break; the event is `plan`, a plan of the content, with `breaks` as its fact of belang 5; at most one event a season, then `cooldown` days.', '`mediation` (optional, M10.22): `between` two people of the two sides, `eases` (at most 10) and `told` (what the chronicle says): once the line stands at its threat, the stranger with standing (a faction of either side, or the trust of both) may bring the two to one table with MEDIATE BETWEEN; Persuade and Insight decide where the world has those skills, and the outcome shifts the pressure. What the stranger\'s deeds push (drivers `by: player`, their crimes too) moves a line at most ten a day.'],
   // M10.22: factions grow, within bounds.

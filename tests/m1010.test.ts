@@ -123,7 +123,8 @@ describe('M10.10: the guard reads the world', () => {
   it('puts our oaths and words right in place, and says so in the AI log', async () => {
     const llm = scripted('Okay, by Christ, potatoes are dear on Sunday.')
     const { out, engine } = await talkWith(llm)
-    expect(out).toMatch(/Aye, Saint Brand's light, turnips are dear on Rustdag\./)
+    // A name the speaker knows is bracketed the first time it comes up (M10.29).
+    expect(out).toMatch(/Aye, \[?Saint Brand\]?'s light, turnips are dear on \[?Rustdag\]?\./)
     expect(llm.reports).toEqual(
       expect.arrayContaining([
         { reason: 'oath', fixed: 'our oath put right' },

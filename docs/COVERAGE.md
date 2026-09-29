@@ -8,7 +8,7 @@ Every kind of model call the game makes, whether a test answers it with the mock
 
 | Kind | Role | When | What it is for | Mock test | Recorded real replies | Last real trial |
 |---|---|---|---|---|---|---|
-| `npc_reply` | voice | play | A person answers the stranger in a conversation. | ai.test.ts, m1021guide.test.ts, m1023language.test.ts, m1026cache.test.ts, m103later.test.ts, redteam.test.ts | claude-haiku-4-5-20251001 (tests/fixtures/model/npc_reply/2026-09-29-claude-haiku-4-5-20251001.json) | 2026-09-29 |
+| `npc_reply` | voice | play | A person answers the stranger in a conversation. | ai.test.ts, m1021guide.test.ts, m1023language.test.ts, m1026cache.test.ts, m1029names.test.ts, m103later.test.ts, redteam.test.ts | claude-haiku-4-5-20251001 (tests/fixtures/model/npc_reply/2026-09-29-claude-haiku-4-5-20251001.json) | 2026-09-29 |
 | `party_reply` | voice | play | Two or more people answer the stranger together. | m1026cache.test.ts | claude-haiku-4-5-20251001 (tests/fixtures/model/party_reply/2026-09-29-claude-haiku-4-5-20251001.json) | 2026-09-29 |
 | `chat_line` | brain | play | A line between two people the stranger overhears. | m1026cache.test.ts | claude-sonnet-5 (tests/fixtures/model/chat_line/2026-09-29-claude-sonnet-5.json) | 2026-09-29 |
 | `journey` | chronicler | play | The paragraph of a journey on foot or by passage. | m1023build.test.ts, m1026cache.test.ts, worldguide.test.ts | claude-haiku-4-5-20251001 (tests/fixtures/model/journey/2026-09-29-claude-haiku-4-5-20251001-r2.json); claude-haiku-4-5-20251001 (tests/fixtures/model/journey/2026-09-29-claude-haiku-4-5-20251001.json); claude-opus-5-5 (tests/fixtures/model/journey/2026-09-29-claude-opus-5-5.json) | 2026-09-29 |
@@ -55,14 +55,14 @@ Every kind puts what stays the same first and what changes after it (M10.26). A 
 | `outline` | claude-opus-5-5 | 3,450 | none | - | - | 512 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `far_place` | claude-opus-5-5 | 894 | none | - | - | 512 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `district` | claude-opus-5-5 | 1,551 | none | - | - | 512 | not marked: nothing reads it back in time, so a mark would only pay a write |
-| `region_story` | claude-opus-5-5 | 15,015 | none | - | - | 512 | not marked: nothing reads it back in time, so a mark would only pay a write |
+| `region_story` | claude-opus-5-5 | 15,073 | none | - | - | 512 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `weave` | claude-opus-5-5 | 1,010 | none | - | - | 512 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `expansion` | claude-opus-5-5 | 3,344 | none | - | - | 512 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `land` | claude-opus-5-5 | 2,794 | none | - | - | 512 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `tides` | claude-opus-5-5 | 645 | none | - | - | 512 | not marked: nothing reads it back in time, so a mark would only pay a write |
-| `builder_draft` | claude-opus-5-5 | 13,689 | one, an hour | 9,134 | - | 512 | the next call 67% |
-| `world_step` | claude-opus-5-5 | 6,535 | shared and own, an hour | 5,024 | 4,864 | 512 | the next call 77%; one about someone or something else 74% |
-| `world_enhance` | claude-opus-5-5 | 16,335 | one, an hour | 8,881 | - | 512 | the next call 54% |
+| `builder_draft` | claude-opus-5-5 | 13,747 | one, an hour | 9,134 | - | 512 | the next call 66% |
+| `world_step` | claude-opus-5-5 | 6,593 | shared and own, an hour | 5,082 | 4,922 | 512 | the next call 77%; one about someone or something else 75% |
+| `world_enhance` | claude-opus-5-5 | 16,392 | one, an hour | 8,881 | - | 512 | the next call 54% |
 | `world_polish` | claude-sonnet-5 | 11,319 | none | - | - | 1,024 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `map_paint` | claude-haiku-4-5-20251001 | 1,456 | one, an hour | 1,442 | - | 4,096 | nothing: the fixed part is under the minimum |
 | `palette_draft` | claude-opus-5-5 | 10,000 | none | - | - | 512 | not marked: nothing reads it back in time, so a mark would only pay a write |

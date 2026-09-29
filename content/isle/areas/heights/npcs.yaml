@@ -3,6 +3,8 @@
 npcs:
   - id: npc_tamsin
     name: Tamsin Hale
+    # The island calls her by what she is to it, not by her name (M10.29).
+    call: Old Tamsin
     short: Old Tamsin the hedge-witch
     pronoun: she
     age: 74

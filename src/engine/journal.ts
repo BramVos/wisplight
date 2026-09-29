@@ -4,7 +4,7 @@ import { hintHolds } from './props'
 import type { SheetData } from './rules/player'
 import { knownName, knowsWork, personView, publicShort, type PersonView } from './acquaintance'
 import { GameClock, weekdayName } from './clock'
-import { areaTopicId, callName } from './content'
+import { areaTopicId, callName, type Content, type Service } from './content'
 import type { TopicRegistry } from './dialogue/topics'
 import { itemName } from './items'
 import { factById, versionOf } from './news'
@@ -109,9 +109,12 @@ export function journalPage(world: World, topics: TopicRegistry, id: string): Jo
     const location = content.locations.get(entry.ref)!
     page.lines.push(location.summary ?? firstSentence(location.description.day))
     if (seen.has(location.id)) {
-      for (const service of location.services) {
-        const goods = Object.keys(service.sells).map((i) => itemName(content, i, 2).replace(/^2 /, ''))
-        if (goods.length) page.lines.push(`${callName(content.npcs.get(service.provider)!)} sells ${goods.join(' and ')} here.`)
+      // One line a provider (M10.29: the Commons said "Sana sells hot meals here." three times, for three meals).
+      const providers = new Map<string, Service[]>()
+      for (const service of location.services) providers.set(service.provider, [...(providers.get(service.provider) ?? []), service])
+      for (const [provider, services] of providers) {
+        const sells = sellsLine(content, services)
+        if (sells) page.lines.push(`${callName(content.npcs.get(provider)!)} sells ${sells}.`)
       }
     } else {
       page.lines.push("You haven't been there yourself.")
@@ -125,7 +128,10 @@ export function journalPage(world: World, topics: TopicRegistry, id: string): Jo
     page.kind = 'place'
     const area = content.areas.get(entry.ref ?? '')!
     page.lines.push(area.summary)
-    for (const location of [...content.locations.values()].filter((l) => l.area === area.id)) page.links.push(...link(location.id, 'place'))
+    // The places the stranger stood in, then those only heard of (M10.29).
+    const places = [...content.locations.values()].filter((l) => l.area === area.id)
+    for (const location of places.filter((l) => seen.has(l.id))) page.links.push(...link(location.id, 'place'))
+    for (const location of places.filter((l) => !seen.has(l.id))) page.links.push(...link(location.id, 'heard of'))
     for (const other of content.npcs.values()) if (world.location(other.home).area === area.id) page.links.push(...link(other.id, 'lives here'))
   } else if (id.startsWith('fact_')) {
     page.kind = 'event'
@@ -179,12 +185,9 @@ export function journalPage(world: World, topics: TopicRegistry, id: string): Jo
     page.kind = 'thing'
     for (const location of content.locations.values()) {
       if (!seen.has(location.id)) continue
-      for (const service of location.services) {
-        if (entry.ref && entry.ref in service.sells) {
-          page.lines.push(`${callName(content.npcs.get(service.provider)!)} sells it at ${location.name}.`)
-          page.links.push(...link(location.id, 'sold at'))
-        }
-      }
+      const providers = [...new Set(location.services.filter((s) => entry.ref && entry.ref in s.sells).map((s) => s.provider))]
+      for (const provider of providers) page.lines.push(`${callName(content.npcs.get(provider)!)} sells it at ${location.name}.`)
+      if (providers.length) page.links.push(...link(location.id, 'sold at'))
     }
     if (page.lines.length === 0) page.lines.push("You don't know yet where to buy it.")
   } else {
@@ -253,4 +256,30 @@ function day(world: World, t: number): string {
 
 function firstSentence(text: string): string {
   return (text.replace(/\s+/g, ' ').trim().match(/^[^.!?]+[.!?]/)?.[0] ?? text).trim()
+}
+
+/** "a, b and c". */
+const joined = (words: string[]): string => (words.length < 2 ? (words[0] ?? '') : `${words.slice(0, -1).join(', ')} and ${words.at(-1)}`)
+
+/**
+ * What one provider sells at a place, over all their services (M10.29): the
+ * goods once, then the hours when they are not the whole day, those most goods
+ * share first and the others by name: "field rations, herbal tea, coffee and
+ * hot meals here, 07-20; hot meals 07-09, 12-14, 18-20".
+ */
+export function sellsLine(content: Content, services: Service[]): string | undefined {
+  const goodsOf = (s: Service) => Object.keys(s.sells).map((i) => itemName(content, i, 2).replace(/^2 /, ''))
+  const all = [...new Set(services.flatMap(goodsOf))]
+  if (!all.length) return undefined
+  const hoursOf = new Map<string, string[]>()
+  for (const s of services) for (const good of goodsOf(s)) hoursOf.set(good, [...new Set([...(hoursOf.get(good) ?? []), s.hours])])
+  const groups = new Map<string, string[]>()
+  for (const good of all) {
+    const key = hoursOf.get(good)!.sort().join(', ')
+    groups.set(key, [...(groups.get(key) ?? []), good])
+  }
+  const wholeDay = (key: string) => /^(00(:00)?-(24|00)(:00)?)$/.test(key)
+  const [main, ...rest] = [...groups.entries()].sort((a, b) => b[1].length - a[1].length)
+  const parts = [`${joined(all)} here${wholeDay(main![0]) ? '' : `, ${main![0]}`}`, ...rest.map(([key, goods]) => `${joined(goods)} ${wholeDay(key) ? 'all day' : key}`)]
+  return parts.join('; ')
 }

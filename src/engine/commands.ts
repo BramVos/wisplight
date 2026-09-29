@@ -1,7 +1,7 @@
 import { tellChronicler } from './wishes'
 import { framesLines, setFrame } from './frames'
 import { lookSky } from './weather'
-import { publicShort } from './acquaintance'
+import { knownShort, publicShort } from './acquaintance'
 import { inSeason } from './content'
 import { describeSelf, descriptionNow, detailHere, lookThere, lookThing, sceneryHere } from './looking'
 import { choose, MAX_OPTIONS, offer, type ChoiceOption } from './choice'
@@ -19,7 +19,7 @@ import { blessed } from './rules/blessings'
 import { ledgerOf, settlementAt } from './economy/ledger'
 import { gainXp, playerCheck } from './rules/player'
 import { GameClock, isOpenAt, MINUTES_PER_DAY, parseHours, startOfDay } from './clock'
-import { callName, type Affordance, type Direction, type Npc, type ObjectInstance, type ObjectType, type Service } from './content'
+import { callName, firstName as untitledName, type Affordance, type Direction, type Npc, type ObjectInstance, type ObjectType, type Service } from './content'
 import { add, hasAll, itemName, listItems, matchItem, withArticle } from './items'
 import { applyEffect } from './dialogue/relations'
 import { canSetOut, crossCountryLine, describeHex, hexOfId, isHexId, walk, waysLine } from './map/travel'
@@ -341,10 +341,11 @@ export function describeRoom(world: World): Output {
   lines.push(exitLine(world))
   const people = world.npcsAt(location.id).map((id) => {
     const activity = world.npcState(id).activity
-    const short = publicShort(world, id)
+    const short = knownShort(world, id)
     return activity && !['taking it easy', 'at home'].includes(activity) ? `${short} (${activity})` : short
   })
-  if (people.length > 0) lines.push(`Here: ${people.join(', ')}.`)
+  // Someone known by name comes with their role after a comma (M10.29), so the list takes semicolons then.
+  if (people.length > 0) lines.push(`Here: ${people.join(people.some((p) => p.includes(',')) ? '; ' : ', ')}.`)
   // Someone here uses what the stranger made them (M10.14).
   lines.push(...ownWorkLines(world, location.id))
   lines.push(...crowdLines(world, location.id))
@@ -1020,8 +1021,7 @@ export function findNpcHere(world: World, words: string): string | undefined {
 }
 
 export function namesOf(npc: Npc): string[] {
-  const first = npc.name.split(' ')[0] ?? npc.name
-  return [npc.name, first, npc.short, npc.profession.replace(/_/g, ' '), ...npc.aliases].map((n) => n.toLowerCase())
+  return [npc.name, callName(npc), untitledName(npc), npc.short, npc.profession.replace(/_/g, ' '), ...npc.aliases].map((n) => n.toLowerCase())
 }
 
 function findObjectHere(world: World, words: string): { instance: ObjectInstance; type: ObjectType } | undefined {

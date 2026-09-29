@@ -51,6 +51,18 @@ export function publicShort(world: World, npcId: string): string {
   return npc.hidden && !knowsWork(world, npcId) ? (npc.short_public ?? callName(npc)) : npc.short
 }
 
+/**
+ * Who someone is to the stranger in the talk window and the room (M10.29: the
+ * name was never shown there once known): after a talk the name they know
+ * and the role, "Niko Serrin, the signal technician"; before it the role alone.
+ */
+export function knownShort(world: World, npcId: string): string {
+  const short = publicShort(world, npcId)
+  if ((world.state.relations?.[npcId]?.familiarity ?? 0) <= 0) return short
+  const name = knownName(world, npcId)
+  return short === name || short === callName(world.npc(npcId)) ? name : `${name}, ${short}`
+}
+
 /** The player and this person are in the same place (every quarter hour, from the simulation). */
 export function sawPerson(world: World, npcId: string, where: string): void {
   const n = note(world, npcId)

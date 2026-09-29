@@ -179,7 +179,7 @@ describe("M10.6: who knows someone well knows their day", () => {
     stay(engine, 'npc_gerrit', 'loc_veenhoek_green')
     await engine.handle('talk gerrit')
     const out = said(await engine.handle('where is mirte'))
-    expect(out).toMatch(/has gone to Waagdam today; it's Woensdag, market day there/)
+    expect(out).toMatch(/has gone to \[?Waagdam\]? today; it's Woensdag, \[?market\]? day there/)
   }, 60_000)
 })
 

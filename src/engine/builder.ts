@@ -1,4 +1,4 @@
-import type { Content } from './content'
+import { callName, isNameTitle, type Content } from './content'
 import { regionMap } from './map/region'
 import { questWarnings } from './quests/check'
 import { landIdOf } from './reach'
@@ -30,6 +30,11 @@ export function warnings(content: Content): string[] {
     if (!reached.has(location.id)) out.push(`${location.id}: cannot be reached from the start, by exits, lines or across country${onMap ? '' : ' (and it has no place on the map)'}`)
     const sentences = location.description.day.split(/(?<=[.!?])\s+/).filter((s) => s.trim()).length
     if (sentences < 3 || sentences > 5) out.push(`${location.id}: the day description has ${sentences} sentences; three to five read best`)
+  }
+  // A name that starts with a title and says nobody what to call them (M10.29: Dr Ilyan Sorell was "Dr" everywhere).
+  for (const npc of content.npcs.values()) {
+    const first = npc.name.split(' ')[0] ?? ''
+    if (!npc.call && isNameTitle(first)) out.push(`${npc.id}: the name starts with the title ${first}; set call to what people call ${npc.pronoun === 'she' ? 'her' : npc.pronoun === 'he' ? 'him' : 'them'} (now ${callName(npc)})`)
   }
   // A pulse watcher (M10.24) whose signal no aftermath plays: when it fires, nothing reaches the stranger.
   for (const w of content.watchers.values()) {

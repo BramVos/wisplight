@@ -280,7 +280,8 @@ describe('M3: the journal as a reference book', () => {
     expect(mirte.lines[0]).toBe('Mirte the baker.')
     expect(mirte.links).toContainEqual({ id: 'loc_veenhoek_bakery', name: 'The Bakery', label: 'lives at' })
     const bakery = engine.page('loc_veenhoek_bakery')!
-    expect(bakery.lines.join(' ')).toMatch(/Mirte sells .*rye bread.* here\./)
+    // One line a provider, with the hours when not all day (M10.29).
+    expect(bakery.lines.join(' ')).toMatch(/Mirte sells .*rye bread.* here(, [\d:-]+)?(; [^.]*)?\./)
     expect(bakery.links).toContainEqual({ id: 'npc_mirte', name: 'Mirte Bakker', label: 'lives here' })
   })
 

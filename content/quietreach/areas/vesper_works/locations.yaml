@@ -119,7 +119,7 @@ locations:
     name: Peregrine — Common Deck
     area: vesper_works
     tags: [ship, restricted]
-    aliases: [common deck, peregrine deck, briefing room, the ship]
+    aliases: [common deck, peregrine deck, briefing room]
     summary: The first open compartment aboard the Peregrine, with its briefing table and cleared expedition data.
     sound: quiet
     description:

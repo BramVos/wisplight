@@ -53,6 +53,7 @@ npcs:
 
   - id: npc_ilyan_sorell
     name: Dr Ilyan Sorell
+    call: Ilyan
     short: the research lead
     pronoun: he
     age: 52
@@ -180,6 +181,7 @@ npcs:
 
   - id: npc_edda_vale
     name: Dr Edda Vale
+    call: Edda
     short: the medic
     pronoun: she
     age: 44

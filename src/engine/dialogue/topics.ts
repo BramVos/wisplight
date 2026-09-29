@@ -1,4 +1,4 @@
-import type { Content } from '../content'
+import { callName, firstName, type Content } from '../content'
 
 // Everything a player can ask about is a topic: people, places, areas, lore,
 // facts and goods. Each topic has aliases in English and Dutch; free text is
@@ -23,8 +23,7 @@ export class TopicRegistry {
 
   constructor(content: Content) {
     for (const npc of content.npcs.values()) {
-      const first = npc.name.split(' ')[0]!
-      this.add({ id: npc.id, kind: 'person', name: npc.name, ref: npc.id, aliases: [npc.name, first, npc.short, ...npc.aliases] })
+      this.add({ id: npc.id, kind: 'person', name: npc.name, ref: npc.id, aliases: [npc.name, callName(npc), firstName(npc), npc.short, ...npc.aliases] })
     }
     for (const location of content.locations.values()) {
       this.add({ id: location.id, kind: 'place', name: location.name, ref: location.id, aliases: [location.name, ...location.aliases] })

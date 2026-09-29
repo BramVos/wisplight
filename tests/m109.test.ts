@@ -139,7 +139,7 @@ async function named(someone: MockLlm['someone'], ask = 'Do you have family arou
 describe('M10.9: someone named in a talk', () => {
   it('the voice may name one person with a bond and a place, in a talk about family; the journal has them under the speaker', async () => {
     const { engine, mock, out } = await named({ name: 'Aldert', bond: 'cousin', place: 'Waagdam', what: 'a carter' })
-    expect(out).toMatch(/My cousin Aldert is a carter in Waagdam/)
+    expect(out).toMatch(/My cousin Aldert is a carter in \[?Waagdam\]?/)
     // The game offered it: the bonds of the world, the places that exist.
     const request = mock.calls.at(-1)!
     expect(request.prompt).toMatch(/SOMEONE NEW: this talk touches your family, your trade or your past\..*your cousin, aunt, uncle, brother-in-law/)

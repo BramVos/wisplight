@@ -140,6 +140,7 @@ A list; each has:
 | --- | --- | --- | --- |
 | id | text | yes |  |
 | name | text | yes |  |
+| call | text | no |  |
 | short | text | yes |  |
 | pronoun | one of she, he, they | yes |  |
 | age | number | yes |  |
@@ -177,6 +178,8 @@ A list; each has:
 | secrets | list of a map: id, text, hint, admission, dc, teaches, about | no | [] |
 
 `secrets`: `about` and `teaches` take ids: a topic, a person (an NPC id), a place (a location id) or an area (`area_<id>`).
+
+`call`: what people call them in running text when it is not the first word of the name: after a title (Dr Ilyan Sorell, `call: Ilyan`) or a byname (`call: Old Tamsin`); left out, the first word of the name that is no title.
 
 ## items (data/items.yaml)
 

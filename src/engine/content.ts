@@ -611,6 +611,8 @@ export type RelationDef = z.infer<typeof RelationSchema>
 export const NpcSchema = z.object({
   id: Id('npc'),
   name: z.string(),
+  /** The name people use for them in running text (M10.29), where it is not the first word of the name: "Ilyan" for Dr Ilyan Sorell. */
+  call: z.string().optional(),
   short: z.string(),
   pronoun: z.enum(['she', 'he', 'they']),
   age: z.number().int().nonnegative(),
@@ -715,9 +717,23 @@ export const NpcSchema = z.object({
 })
 export type Npc = z.infer<typeof NpcSchema>
 
-/** How others call an NPC in running text: the first name, so "Old Aaltje" becomes "Aaltje". */
-export function callName(npc: Pick<Npc, 'name'>): string {
-  return npc.name.split(' ')[0] ?? npc.name
+/** Titles a name may start with, never what people call someone by (M10.29: Dr Ilyan Sorell was "Dr" everywhere). */
+export const NAME_TITLES: readonly string[] = ['dr', 'mr', 'mrs', 'ms', 'miss', 'prof', 'sir', 'dame', 'fr', 'capt']
+
+/** Whether a word of a name is a title: "Dr", "Dr.", "Prof". */
+export function isNameTitle(word: string): boolean {
+  return NAME_TITLES.includes(word.toLowerCase().replace(/\.$/, ''))
+}
+
+/** The first word of a name that is no title: "Ilyan" of Dr Ilyan Sorell. */
+export function firstName(npc: { name: string }): string {
+  const words = npc.name.split(' ')
+  return words.find((w) => !isNameTitle(w)) ?? words[0] ?? npc.name
+}
+
+/** How others call an NPC in running text: the world's `call` ("Old Tamsin"), else the first word of the name that is no title. */
+export function callName(npc: { name: string; call?: string }): string {
+  return npc.call ?? firstName(npc)
 }
 
 // ---------------------------------------------------------------- topics (lore and facts)

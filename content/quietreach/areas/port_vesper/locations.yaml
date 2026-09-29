@@ -3,7 +3,7 @@ locations:
     name: Arrival Lock
     area: port_vesper
     tags: [public, landmark]
-    aliases: [lock, airlock, arrival airlock, arrivals]
+    aliases: [lock, airlock, arrival airlock, arrivals, landing pad, the pad]
     summary: The arrival airlock of Port Vesper, where newcomers and cargo come in off the landing pad.
     description:
       day: |

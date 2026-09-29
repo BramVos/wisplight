@@ -683,9 +683,11 @@ export class Dialogue {
           : fallbackReply(world, npcId, act, packet, band.band, text)
 
     // The names in the answer the stranger can follow (M10.8): what they were told this turn or know already, never
-    // the speaker's own name nor what the model made up beyond the packet.
+    // the speaker's own name nor what the model made up beyond the packet. A person or place the speaker names and
+    // knows is followable the first time too (M10.29: it goes in the journal below, and was bracketed only the next time).
     const journal = world.state.player.journal ?? {}
-    const followable = new Set([...packet.known.map((k) => k.topic), ...this.topics.recognise(replyText).filter((t) => journal[t] !== undefined)].filter((t) => t !== npcId))
+    const firstNamed = this.topics.recognise(replyText).filter((t) => t !== npcId && ['person', 'place', 'area', 'lore'].includes(this.topics.kind(t) ?? '') && this.knowledge.level(npcId, t) >= 1)
+    const followable = new Set([...packet.known.map((k) => k.topic), ...this.topics.recognise(replyText).filter((t) => journal[t] !== undefined), ...firstNamed].filter((t) => t !== npcId))
     const shown = this.topics.link(replyText, followable)
 
     // What this turn was about (M10.8): a quest waiting in this talk starts when its subject comes up.
@@ -742,7 +744,7 @@ export class Dialogue {
 
     // Names the NPC brought up of its own accord and knows: the journal has them, heard from this NPC (M10.3).
     // People, places and tales only: "I saw him" is no saw.
-    const named = this.topics.recognise(replyText).filter((t) => t !== npcId && !told.includes(t) && ['person', 'place', 'area', 'lore'].includes(this.topics.kind(t) ?? '') && this.knowledge.level(npcId, t) >= 1)
+    const named = firstNamed.filter((t) => !told.includes(t))
     if (named.length) {
       this.noteSources(npcId, named.map((t) => ({ topic: t, level: this.knowledge.level(npcId, t) })))
       this.learn(...named)

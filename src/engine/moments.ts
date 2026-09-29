@@ -1,7 +1,7 @@
 import { knob } from './knobs'
 import { GameClock } from './clock'
 import type { Card, Output } from './commands'
-import type { Location } from './content'
+import { callName, type Location } from './content'
 import { regionMap } from './map/region'
 import { hexOfId, landmarkIn } from './map/travel'
 import { factById, versionOf } from './news'
@@ -88,7 +88,7 @@ export function momentsNow(world: World, fresh = false): Output[] {
     const fact = factById(world, id)
     if (!fact || fact.belang < knob(world, 'moments.tidings_belang')) continue
     m.tidings.push(id)
-    const from = h.from === 'witness' ? 'you saw it yourself' : h.from === 'news' ? 'it is going round' : h.from === 'board' ? 'on the notice board' : world.content.npcs.has(h.from) ? `from ${world.npc(h.from).name.split(' ')[0]}` : undefined
+    const from = h.from === 'witness' ? 'you saw it yourself' : h.from === 'news' ? 'it is going round' : h.from === 'board' ? 'on the notice board' : world.content.npcs.has(h.from) ? `from ${callName(world.npc(h.from))}` : undefined
     out.push(card({ kind: 'tidings', title: cap(fact.title), text: versionOf(fact, h), link: id, ...(from ? { from } : {}) }))
   }
   return out

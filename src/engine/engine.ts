@@ -6,7 +6,7 @@ import { knob } from './knobs'
 import { applyImprovisation, improviseFallback, improviseRequest, readImprovisation, type Improvisable } from './improvise'
 import { soundNow, type SoundNow } from './sound'
 import type { Archived } from './archive'
-import { knownName, knowsOfPerson, publicShort, seeFamily } from './acquaintance'
+import { knownName, knownShort, knowsOfPerson, publicShort, seeFamily } from './acquaintance'
 import { entered } from './social/access'
 import { inscribedHere, readInscription } from './skills'
 import { answerChoice, choose, MAX_OPTIONS, offer } from './choice'
@@ -34,7 +34,7 @@ import { shiftTension, tensionOf } from './social/realms'
 import { grownContent, invest } from './growth/growth'
 import { GameClock, weekdayName } from './clock'
 import { describeRoom, detailVerb, findNpcAnywhere, findNpcHere, runCommand, type CommandHost, type Output } from './commands'
-import { areaTopicId, callName, type Content, type Quest } from './content'
+import { areaTopicId, callName, firstName, type Content, type Quest } from './content'
 import { Dialogue, QUICK_OPTIONS } from './dialogue/conversation'
 import { Knowledge } from './dialogue/knowledge'
 import type { ChronicleOutput, ChroniclerRequest, Outline } from '../chronicler'
@@ -362,7 +362,7 @@ export class Engine {
     this.grownFor = this.world.content
     for (const npc of this.world.content.npcs.values()) {
       if (this.topics.entries.has(npc.id)) continue
-      this.topics.addDuringPlay({ id: npc.id, kind: 'person', name: npc.name, ref: npc.id, aliases: [npc.name, npc.name.split(' ')[0]!, npc.short, ...npc.aliases] })
+      this.topics.addDuringPlay({ id: npc.id, kind: 'person', name: npc.name, ref: npc.id, aliases: [npc.name, callName(npc), firstName(npc), npc.short, ...npc.aliases] })
     }
     for (const location of this.world.content.locations.values()) {
       if (this.topics.entries.has(location.id)) continue
@@ -1873,7 +1873,7 @@ export class Engine {
       paused: false,
       ...(this.builder ? { builder: true } : {}),
       talk: talk
-        ? { npc: talk.npc, name: publicShort(this.world, talk.npc), call: callName(this.world.npc(talk.npc)), attitude: attitude(this.world, talk.npc).band, turnsLeft: talk.turnsLeft, options: QUICK_OPTIONS, ...(talk.proposal ? { proposal: this.dialogue.proposalNow()! } : {}), pronoun: this.world.npc(talk.npc).pronoun, lines: talk.lines ?? [] }
+        ? { npc: talk.npc, name: knownShort(this.world, talk.npc), call: callName(this.world.npc(talk.npc)), attitude: attitude(this.world, talk.npc).band, turnsLeft: talk.turnsLeft, options: QUICK_OPTIONS, ...(talk.proposal ? { proposal: this.dialogue.proposalNow()! } : {}), pronoun: this.world.npc(talk.npc).pronoun, lines: talk.lines ?? [] }
         : undefined,
       ...(!talk && this.lastTalk ? { lastTalk: this.lastTalk } : {}),
       clock: this.clockStatus(),
@@ -1937,9 +1937,12 @@ export class Engine {
         const entry = this.topics.entries.get(id)
         const areaId = kind === 'area' ? entry?.ref : entry?.ref && this.content.locations.has(entry.ref) ? this.content.locations.get(entry.ref)!.area : [...this.content.areas.values()].find((a) => a.topic === id)?.id
         const g = areaId && this.content.areas.has(areaId) ? this.areaGroup(areaId) : { group: 'Further afield', order: '9' }
-        // The village itself first under its own heading, then its places.
+        // The village itself first under its own heading, then its places: those the stranger stood in, then those
+        // only heard of, marked so (M10.29: a sealed hangar named in a talk looked like a place already visited).
         const first = kind === 'area' || (areaId !== undefined && this.content.areas.get(areaId)?.topic === id)
-        places.push({ id, name, ...far, ...also, group: g.group, order: `${g.order}${first ? '0' : '1'}${name.toLowerCase()}` })
+        const heardOnly = kind === 'place' && entry?.ref !== undefined && this.content.locations.has(entry.ref) && !(this.state.player.seen ?? []).includes(entry.ref)
+        const shown = heardOnly ? `${name} (heard of)` : name
+        places.push({ id, name: shown, ...far, ...also, group: g.group, order: `${g.order}${first ? '0' : heardOnly ? '2' : '1'}${name.toLowerCase()}` })
       } else if (kind === 'lore' || kind === 'fact') journal.lore.push({ id, name, ...far, ...also })
       else if (kind === 'item') journal.things.push({ id, name })
     }
