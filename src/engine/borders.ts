@@ -1,4 +1,5 @@
 import type { Output } from './commands'
+import { wantLand } from './growth/landwrite'
 import { formatMoney } from './items'
 import { knob } from './knobs'
 import { frameOf, landOfArea, type Frame } from './lands'
@@ -59,5 +60,6 @@ export function crossBorder(world: World, before: string): Output[] {
     title: `the stranger crossed into ${to.name}`,
     text: { precise: `${upper(to.name)}: the stranger crossed in at ${area?.name ?? player.location}.`, village: `The stranger came into ${to.name}.`, far: `A stranger came into ${to.name}.` },
   })
-  return [{ kind: 'narration', text: lines.join(' ') }]
+  // A land the designer only framed: the chronicler writes the rest, once (M10.23).
+  return [{ kind: 'narration', text: lines.join(' ') }, ...(here ? wantLand(world, here) : [])]
 }

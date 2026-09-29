@@ -1,3 +1,4 @@
+import { withLands } from './landwrite'
 import { frameOf } from '../lands'
 import { withProps } from '../props'
 import { withFarPlaces, type FarPlace } from './far'
@@ -51,6 +52,9 @@ export interface GrowthState {
   districtPending?: string[]
   /** Districts whose new people the chronicler still weaves into the world (M10.22). */
   weavePending?: string[]
+  /** What the chronicler wrote for lands the designer only framed (M10.23), by land, and those waiting for it. */
+  lands?: Record<string, Record<string, unknown>>
+  landPending?: string[]
   /** Factions formed in play (M10.22), as raw content, and when each formed: at most one a season. */
   factions?: Record<string, unknown>[]
   founded?: number[]
@@ -69,6 +73,8 @@ export function grownContent(base: Content, state: GameState): Content {
 function grownOnly(base: Content, state: GameState): Content {
   const g = state.growth
   const built = g ? Object.entries(g.projects).filter(([, p]) => p.done !== undefined).map(([id]) => base.projects.get(id)!).filter(Boolean) : []
+  // The lands the chronicler wrote (M10.23) first: what grows in them speaks by them.
+  if (g?.lands && Object.keys(g.lands).length) base = withLands(base, state)
   if (g?.far && Object.keys(g.far).length) base = withFarPlaces(base, state)
   if (g?.districts && Object.keys(g.districts).length) base = withDistricts(base, state)
   // Factions formed in play (M10.22): content like any.

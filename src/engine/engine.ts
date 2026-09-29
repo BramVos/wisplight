@@ -11,6 +11,7 @@ import { brawlAnswer, brawlShown } from './social/brawl'
 import { CHECKPOINT_ENTRIES, CHECKPOINT_MINUTES, contentVersion, type Checkpoint, type CheckpointedSave } from './checkpoint'
 import { applyFarPlace, farPlaceOf, farRequest, farWords, wantFarPlace, type FarWords, farTopicAt } from './growth/far'
 import { crossBorder } from './borders'
+import { applyLand, landRequest, landWords, wantLand, type LandWords } from './growth/landwrite'
 import { applyDistrict, districtDue, districtRequest, districtsOf, districtWords, wantDistrict, type DistrictWords } from './growth/districts'
 import { applyWeave, weaveReply, weaveRequest, type WeaveReply } from './growth/weave'
 import { applyTides, tidesReply, tidesRequest, tidesState, type TidesReply } from './tides'
@@ -117,6 +118,8 @@ export type LogEntry =
   | { t: number; k: 'far'; topic: string; v: FarWords | null }
   | { t: number; k: 'district'; key: string; v: DistrictWords | null }
   | { t: number; k: 'weave'; key: string; v: WeaveReply | null }
+  // What the chronicler wrote for a land the designer only framed (M10.23), or null.
+  | { t: number; k: 'land'; id: string; v: LandWords | null }
   | { t: number; k: 'tides'; v: TidesReply | null }
   // A question about cost put to the player (M10.21), so a replay puts the same one.
   | { t: number; k: 'ask'; id: string; usd: number }
@@ -578,7 +581,7 @@ export class Engine {
   /** Everything waiting for a model: goal choices and chronicler runs. */
   get modelsWaiting(): number {
     // A far place waiting for its words counts too (M10.21: alone, it never started the models).
-    return (this.state.brain?.pending.length ?? 0) + this.chroniclerWaiting + this.outlinesWaiting + (this.state.growth?.farPending?.length ?? 0) + (this.state.growth?.districtPending?.length ?? 0) + (this.state.growth?.weavePending?.length ?? 0) + (this.state.tides?.pending ? 1 : 0)
+    return (this.state.brain?.pending.length ?? 0) + this.chroniclerWaiting + this.outlinesWaiting + (this.state.growth?.farPending?.length ?? 0) + (this.state.growth?.districtPending?.length ?? 0) + (this.state.growth?.landPending?.length ?? 0) + (this.state.growth?.weavePending?.length ?? 0) + (this.state.tides?.pending ? 1 : 0)
   }
 
   /** Lets the models do their waiting work in the background: goal choices first, they are short. */
@@ -592,6 +595,7 @@ export class Engine {
     const night = (await this.runChronicler(pace)).some((r) => r.reason === 'night')
     await this.runOutlines()
     await this.runFarPlaces()
+    await this.runLands()
     await this.runDistricts()
     await this.runWeaves()
     const tides = pace.tides === false ? false : await this.runTides()
@@ -658,6 +662,32 @@ export class Engine {
         if (!g.weavePending.includes(key)) continue
         this.record({ t: this.world.now, k: 'weave', key, v: reply })
         applyWeave(this.world, key, reply)
+      }
+    } finally {
+      this.outlining = false
+    }
+  }
+
+  /** Lands the designer only framed, waiting for the chronicler to write the rest (M10.23), one at a time. */
+  async runLands(): Promise<void> {
+    if (this.outlining) return
+    this.outlining = true
+    try {
+      const g = this.state.growth
+      while (g?.landPending?.length) {
+        const id = g.landPending[0]!
+        const llm = this.llm
+        let words: LandWords | null = null
+        if (llm) {
+          try {
+            words = landWords((await llm.complete(landRequest(this.world, id))).text)
+          } catch {
+            words = null
+          }
+        }
+        if (!g.landPending.includes(id)) continue
+        this.record({ t: this.world.now, k: 'land', id, v: words })
+        applyLand(this.world, id, words)
       }
     } finally {
       this.outlining = false
@@ -1109,6 +1139,9 @@ export class Engine {
       const [, topic, id] = district as unknown as [string, string, string]
       return farTopicAt(this.world, this.state.player.location) === topic && districtsOf(this.content, topic).some((d) => d.id === id) ? wantDistrict(this.world, topic, id) : [{ kind: 'error', text: 'There is nothing to make here.' }]
     }
+    // LAND <id> (M10.23): what "go on" runs after the question of cost; only in that land.
+    const written = /^land\s+([a-z0-9_]+)$/.exec(text.trim())
+    if (written && !this.state.talk) return this.world.land === written[1] ? wantLand(this.world, written[1]!) : [{ kind: 'error', text: 'There is nothing to write here.' }]
     const peace = /^(?:mediate|make peace)\s+between\s+(.+?)\s+and\s+(.+)$/i.exec(text.trim())
     if (peace && !this.state.talk) return this.makePeace(peace[1]!, peace[2]!)
     const side = /^(?:side|stand)\s+with\s+(.+)$/i.exec(text.trim())
@@ -1853,6 +1886,9 @@ export class Engine {
         } else if (entry.k === 'weave') {
           this.log.push(entry)
           applyWeave(this.world, entry.key, entry.v)
+        } else if (entry.k === 'land') {
+          this.log.push(entry)
+          applyLand(this.world, entry.id, entry.v)
         } else if (entry.k === 'due') {
           this.log.push(entry)
           this.dueTides()

@@ -1926,7 +1926,7 @@ function LandsPanel({ bridge, world, saved }: { bridge: EditorBridge; world: str
     <div className="editor-page lands-panel">
       <h2>Lands</h2>
       <p className="muted small">
-        A land is another part of the same world with a frame of its own: the frame every model call gets there, its voice kit, faiths, coins at a rate to the world's, law, names, standing and palette. Whoever is in it plays under its frame. The stranger crosses into it only at a border: an area with <code>border: true</code> (a bridge, a pass, a harbour). Its areas are made under Edit, with <code>land:</code> on the area. What a land leaves out, it takes from the world; the calendar and the clock are always the world's.
+        A land is another part of the same world with a frame of its own: the frame every model call gets there, its voice kit, faiths, coins at a rate to the world's, law, names, standing and palette. Whoever is in it plays under its frame. The stranger crosses into it only at a border: an area with <code>border: true</code> (a bridge, a pass, a harbour). Its areas are made under Edit, with <code>land:</code> on the area. What a land leaves out, it takes from the world; the calendar and the clock are always the world's. A land with only its frame (no voice kit, no names) is written by the chronicler from that frame, once, the first time the stranger comes in with a model connected.
       </p>
       <div className="row">
         {lands.length ? (

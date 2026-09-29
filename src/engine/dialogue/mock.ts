@@ -106,6 +106,8 @@ export class MockLlm implements LlmClient {
             ? this.weave((request.meta?.['fresh'] as string[] | undefined) ?? [], (request.meta?.['known'] as string[] | undefined) ?? [], (request.meta?.['lines'] as string[] | undefined) ?? [])
             : request.schemaName === 'district'
             ? this.district(String(request.meta?.['town'] ?? 'the town'), String(request.meta?.['name'] ?? 'the district'), (request.meta?.['factions'] as string[] | undefined) ?? [])
+            : request.schemaName === 'land'
+            ? this.land(String(request.meta?.['name'] ?? 'the land'), (request.meta?.['faiths'] as string[] | undefined) ?? [])
             : request.schemaName === 'legends'
             ? this.legends((request.meta?.['legends'] as string[] | undefined) ?? [])
             : this.chronicler(request.meta as unknown as ChronicleMeta, request.prompt)
@@ -116,6 +118,30 @@ export class MockLlm implements LlmClient {
   /** The month's judgement of the great lines (M10.22): the furthest each may go, and one made-up line that must be dropped. */
   tides(allowed: Record<string, string[]>): string {
     return JSON.stringify({ lines: [...Object.entries(allowed).map(([id, may]) => ({ id, judged: may.at(-1) ?? 'nothing', why: 'The signs have been gathering all month.' })), { id: 'made_up', judged: 'event', why: 'Because.' }] })
+  }
+
+  /**
+   * A land the designer only framed (M10.23): how its people speak, their
+   * names, coins at a rate and who keeps the law; an oath by a faith the land
+   * does not hold, which must be dropped. Names that are too few in 'invalid'
+   * mode, which must be dropped too.
+   */
+  land(name: string, faiths: string[] = []): string {
+    return JSON.stringify({
+      crossing: `The people of ${name} bow a little when they greet you, and nobody here takes your old coin without weighing it first.`,
+      names: this.mode === 'invalid' ? { she: ['Aiko'], he: ['Kenji'], family: ['Mori'] } : { she: ['Aiko', 'Hana', 'Yuki', 'Emi', 'Sora', 'Rin'], he: ['Kenji', 'Taro', 'Haru', 'Daichi', 'Ren', 'Sho'], family: ['Mori', 'Ishida', 'Kaneda', 'Ota', 'Sakai', 'Noda'] },
+      money: { units: [{ short: 'ryo', name: 'ryo', value: 100 }, { short: 'mon', name: 'mon', value: 1 }], rate: 3 },
+      law: { where: `in ${name}`, officer: 'magistrate' },
+      voice: {
+        oaths: { ...Object.fromEntries(faiths.map((f) => [f, ['by the old shrines', 'shrines keep us']])), made_up_faith: ['by nothing'] },
+        sayings: ['The nail that stands up is hammered down.', 'Fall seven times, stand up eight.', 'Even monkeys fall from trees.'],
+        address: { stranger: ['traveller'], known: ['neighbour'], friend: ['old friend'], high: ['honoured one'] },
+        time: ['at the hour of the ox', 'by the temple drum', 'at the turning of the tide'],
+        distance: ['a day on the post road', 'a pipe\'s walk'],
+        measures: ['a sack of rice', 'a bolt of silk'],
+        not_here: [{ word: 'guilder', instead: 'ryo' }, { word: 'potato', instead: 'radish' }],
+      },
+    })
   }
 
   /** A weave round (M10.22): the first new person is kin of the first known, hides one thing, and has word for them. */

@@ -1,7 +1,8 @@
 import { outlineRequest, readOutline } from '../chronicler/outline'
 import { readReply } from '../chronicler/reply'
 import { chatLine, chatLineRequest, longListen } from './chatter'
-import type { Content, ContentFile } from './content'
+import { loadContent, type Content, type ContentFile } from './content'
+import { parse, stringify } from 'yaml'
 import { MockLlm } from './dialogue/mock'
 import type { LlmClient, LlmRejection, LlmRequest, LlmResponse } from './dialogue/llm'
 import { worldFrame } from './dialogue/prompt'
@@ -14,6 +15,7 @@ import { GameClock } from './clock'
 import { recordFact } from './news'
 import { districtWords } from './growth/districts'
 import { weaveReply } from './growth/weave'
+import { landWords } from './growth/landwrite'
 import { tideState, tidesReply, tidesRequest } from './tides'
 import { farRequest, farWords } from './growth/far'
 import { improvisable, improviseRequest, readImprovisation } from './improvise'
@@ -52,6 +54,20 @@ export interface TrialWorlds {
 type Build = (worlds: TrialWorlds) => Promise<KindSituation>
 
 /** The first call of one kind in a game played with the mock, and a check that plays the reply as the game would. */
+/**
+ * A land as a designer might leave it (M10.23): its id, name, frame and
+ * faiths, and nothing of its own besides: no voice kit, names, coins or law.
+ */
+export function framedOnly(files: ContentFile[], land: string): ContentFile[] {
+  return files
+    .filter((f) => !f.path.endsWith(`lands/${land}/voice.yaml`))
+    .map((f) => {
+      if (!f.path.endsWith(`lands/${land}/land.yaml`)) return f
+      const l = (parse(f.text) as { land: Record<string, unknown> }).land
+      return { ...f, text: stringify({ land: { id: l['id'], name: l['name'], frame: l['frame'], ...(l['faiths'] ? { faiths: l['faiths'] } : {}) } }) }
+    })
+}
+
 async function captured(kind: string, play: (llm: LlmClient) => Promise<void>): Promise<LlmRequest> {
   const mock = new MockLlm('good')
   let found: LlmRequest | undefined
@@ -262,6 +278,16 @@ const SITUATION_BUILDS: Record<string, Build> = {
       await engine.runModels()
     })
     return { about: 'the new people of Graafhaven\'s gate district woven into the world', request, check: (text) => (weaveReply(text) ? checked(request, text) : ['the weave could not be read']) }
+  },
+  land: async ({ isle }) => {
+    const content = loadContent(framedOnly(isle, 'western_isles'))
+    const request = await captured('land', async (llm) => {
+      const engine = new Engine(content, { seed: 7, builder: true, llm })
+      engine.start()
+      await engine.handle('@goto loc_ynys_wen_landing')
+      await engine.runModels()
+    })
+    return { about: "Skerrow's Western Isles with only their frame, the first time the stranger comes in", request, check: (text) => (landWords(text) ? checked(request, text) : ['the land could not be read']) }
   },
   tides: async ({ base }) => {
     const engine = new Engine(base, { seed: 1 })

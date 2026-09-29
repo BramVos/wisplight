@@ -47,6 +47,7 @@ export const FIELD_NOTES: Record<string, string[]> = {
   land: [
     'A land lives in its own folder, `lands/<land>/`: its `land.yaml` (under `land:`, with the id of its folder), a `voice.yaml` of its own if its people speak otherwise, and its areas, places, people, factions, trades and beasts in files beside them, which play like the world\'s. An area in the folder belongs to the land; elsewhere `land:` on the area says so, and without it an area is of the home land (the world itself). A region (`land:`) is coloured by its land\'s palette, and a far place (a topic of kind place, `land:`) makes what grows there of that land.',
     'What a land leaves out it takes from the world: the calendar and the clock always, and prices, which are in the world\'s smallest coin everywhere. `money.rate` is how many of the land\'s smallest coin one of the world\'s smallest buys (a whole number); the land tells prices in its own coins, and they are changed at the border. A land without `law` has the world\'s kind of officer, without the world\'s officer or office.',
+    'A land with only its frame (no voice kit and no names) plays on the world\'s voice, names, coins and law; with a model connected, the chronicler writes them once, from the frame, when the stranger first comes in, and what the designer writes later wins.',
     'The stranger crosses into a land only at a border: an area with `border: true` (a bridge, a pass, a toll house, a harbour), where `crossing` is told. An area with `blend: <land>` shades into that land (the home land by the world\'s id): sayings of both kits, and both coins good.',
   ],
   // M10.20: the transport step of The Quiet Reach wrote legs as "a-b".
@@ -293,7 +294,7 @@ const show = (value: unknown) => {
 export const GROWTH_RULE = [
   'Nothing in a world makes itself. During play it grows only at three moments, never because the stranger merely walks near:',
   '',
-  '1. The stranger comes to what was only a sketch: a far place the world book names (on foot, from the edge of the map or by its road), or a person named in a talk (M10.9), met where they live.',
+  '1. The stranger comes to what was only a sketch: a far place the world book names (on foot, from the edge of the map or by its road), a person named in a talk (M10.9), met where they live, or a land the designer only framed (M10.23), whose voice, names, coins and law the chronicler then writes once.',
   '2. A line of transport (M10.12) takes them to a place beyond the map.',
   '3. At night the chronicler needs one place or person for a storyline, within its budget.',
   '',
