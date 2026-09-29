@@ -1,0 +1,23 @@
+{
+  "kind": "map_paint",
+  "about": "the map of The Quiet Reach, laid out from its places and painted as a table, a second try with what stood wrong",
+  "model": "claude-sonnet-5",
+  "provider": "anthropic",
+  "date": "2026-09-29",
+  "usage": {
+    "inputTokens": 5576,
+    "cachedTokens": 4263,
+    "outputTokens": 1200
+  },
+  "reply": "{\"say\":\"I laid Port Vesper on the shallows-fringed shore with the Works just inland, ran the sand-path track and coastal walk along the black volcanic coast up to the highland ridge that rises to Orison Ridge itself, with ocean to the east and scrub filling the untouched ground.\",\"lands\":[{\"key\":\"volcanic\",\"name\":\"On the black basalt\",\"char\":\"v\",\"like\":\"heath\",\"dark\":\"#46545C\",\"paper\":\"#46545C\",\"text\":\"The rock is cold and gritty underfoot, and it drinks the wind's noise.\"},{\"key\":\"highland\",\"name\":\"On the high rock\",\"char\":\"r\",\"like\":\"heath\",\"dark\":\"#76838B\",\"paper\":\"#76838B\",\"text\":\"The stone rings hollow under your boots, and the wind climbs sharper here.\"},{\"key\":\"ocean\",\"name\":\"On the open sea\",\"char\":\"o\",\"like\":\"water\",\"dark\":\"#23495E\",\"paper\":\"#23495E\",\"text\":\"The sea breathes in long cold swells against the black shore.\"},{\"key\":\"shallows\",\"name\":\"In the tidal shallows\",\"char\":\"s\",\"like\":\"fen\",\"dark\":\"#477C83\",\"paper\":\"#477C83\",\"text\":\"Water sucks and hisses through the rocks at your ankles.\"},{\"key\":\"scrub\",\"name\":\"In the coastal scrub\",\"char\":\"c\",\"like\":\"woods\",\"dark\":\"#365C56\",\"paper\":\"#365C56\",\"text\":\"Salt-stunted branches scrape at your sleeve as you pass.\"},{\"key\":\"beds\",\"name\":\"Among the growing beds\",\"char\":\"b\",\"like\":\"fields\",\"dark\":\"#7D9274\",\"paper\":\"#7D9274\",\"text\":\"The air smells faintly of turned earth and recycled water.\"}],\"drawing\":[\"cccccccccrrrrrrrrr\",\"cccccccccrrrrrrrrr\",\"ccccccccrrrrrrrrrr\",\"cccccccccrrrrrrrrr\",\"ccccccccvrrrr,rrrr\",\"ccccccccvrrrr,rrrr\",\"cccccccvvrrrrr,rrr\",\"cccccccvvrrrOrison\",\"cccccccvvrrrrrrrrr\",\"ccccccccvvrrrrrrrr\",\"cccccccc,vvrrrrrrr\",\"cccccccc,vvvrrrrrr\",\"ccccccc,,vvvvrrrrr\",\"ccccVesper,vvvvooo\",\"cccccc,vvvvvoooooo\",\"ccPortc,,Coastalooo\",\"ccccccbbb,ssssoooo\",\"cccccbbbbssssssooo\",\"ccccbbbbbssssssooo\",\"cccccbbbsssssssooo\",\"ccccccssssssssssoo\"],\"paths\":[{\"name\":\"the path to the Coastal Traverse\",\"text\":\"You follow the sand-coloured track south from the port, gulls calling somewhere above the mist.\"},{\"name\":\"the path to Ridge Shelter\",\"text\":\"The track narrows and climbs, wind picking at your coat as the basalt gives way to bare rock.\"},{\"name\":\"the path to Orison Ridge\",\"text\":\"The last stretch is steep and exposed, and you can hear, faint and rhythmic, something like static from above.\"}],\"beyond\":[{\"side\":\"north\",\"text\":\"The ridge continues into cloud and rubble; no one has mapped what lies further north.\"},{\"side\":\"east\",\"text\":\"Open sea stretches to the horizon, empty of any known shore.\"},{\"side\":\"south\",\"text\":\"The scrub and shallows fade into unmarked coastline; nobody at Port Vesper has charted it.\"},{\"side\":\"west\",\"text\":\"The land rises into rougher scrub and rock, unrecorded beyond the port's working radius.\"}]}",
+  "problems": [],
+  "wrong": [
+    "Orison Ridge is the high ground: the high rock lies around it, and the land climbs to it from the port, past Ridge Shelter."
+  ],
+  "recordedProblems": [
+    "row 8 of the drawing has O i n, which no land of the table has",
+    "row 14 of the drawing has V e p, which no land of the table has",
+    "row 16 of the drawing has 19 characters; it needs 18",
+    "row 16 of the drawing has P t C a l, which no land of the table has"
+  ]
+}

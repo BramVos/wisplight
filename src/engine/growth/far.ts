@@ -257,7 +257,7 @@ export function makeFarPlace(world: World, topic: string, words: FarWords | null
       money: 60,
       inventory: {},
       knows_areas: [areaId],
-      portrait: 'generic',
+      // A portrait of their own when the player's switch makes pictures of new people (M10.26); a crowd stays plain.
       ...(outland?.faith ? { faith: outland.faith } : {}),
     }
   }

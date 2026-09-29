@@ -76,6 +76,8 @@ export interface AiBridge {
   /** Pictures (after the M7 playtest): the image models of a key, the choice, and a trial picture as a data URL. */
   imageModels(provider: ProviderId): Promise<ModelInfo[]>
   setPictures(provider: ProviderId | null, model?: string, quality?: 'low' | 'medium'): Promise<void>
+  /** Whether the game makes pictures of new places and people, what grows in play included (M10.26). */
+  setPicturesNew(on: boolean): Promise<void>
   tryPicture(provider: ProviderId, model: string): Promise<string>
 }
 
@@ -114,6 +116,8 @@ export interface EditorDraft {
   diffs: ShownChange[]
   /** How the proposal's places read against the place rules, before it is accepted (M10.20). */
   descriptions?: { summary: string; places: string[] }
+  /** The map step's table as the model answered it (M10.26), for a second try that says what stood wrong. */
+  table?: string
 }
 
 /** The editor (M8): the desktop app writes the files; the browser preview keeps them in memory. */
@@ -147,6 +151,26 @@ export interface SavesBridge {
   importSave(): Promise<{ id?: number; problem?: string } | undefined>
 }
 
+/** A world's pictures in the editor (M10.26). */
+export interface PicturesView {
+  /** The world's own choice, pictures.wanted in world.yaml. */
+  wanted: boolean
+  /** The image model chosen under Settings > AI, and what one picture costs with it; none without. */
+  model?: string
+  priceUsd?: number
+  /** Areas and named people without a picture; a generic figure costs nothing and never counts. */
+  missing: { name: string; kind: 'person' | 'place' }[]
+  kept: number
+}
+
+export interface PicturesMade {
+  made: number
+  kept: number
+  failed: number
+  costUsd: number
+  stopped?: string
+}
+
 export interface EditorBridge {
   open?(): Promise<void>
   worlds(): Promise<WorldInfo[]>
@@ -172,6 +196,11 @@ export interface EditorBridge {
   proposeVoice(world: string, ask: string, land?: string): Promise<{ say: string; yaml?: string; problems: string[] }>
   /** The world book (M10.18): written next to the content, and saved as HTML with the pictures there are. */
   worldBook(world: string): Promise<{ markdown: string; saved?: string }>
+  /** A world's pictures (M10.26): whether it wants them, what is missing and what is there, and the image model's price. */
+  pictures(world: string): Promise<PicturesView>
+  /** The missing pictures of a world made, within a cap in euros; a line per picture comes to onPictureLine. */
+  drawPictures(world: string, capEur: number): Promise<PicturesMade>
+  onPictureLine(listener: (line: string) => void): () => void
   /** One step of building a world with the chronicler (M10.17): its proposal, checked, nothing saved. */
   worldStep(world: string, step: string, said: string, land?: string): Promise<EditorDraft>
   /** A proposal that did not load, put right by the chronicler (M10.20): only what it corrects is replaced. */
@@ -184,6 +213,8 @@ export interface EditorBridge {
   mapDraft(world: string): Promise<EditorDraft>
   /** The map after the world steps (M10.25): laid out from the places and painted, one proposal. */
   mapStep(world: string, said: string): Promise<EditorDraft>
+  /** The map painted again (M10.26): the table as it stood and what stood wrong; the cached part is read again. */
+  mapFix(world: string, said: string, table: string, wrong: string[]): Promise<EditorDraft>
   /** The open proposal of a step (M10.20): read it (no third argument), keep it, or forget it (null). */
   openDraft(world: string, step: string, kept?: { draft: EditorDraft; asked: string } | null): Promise<{ draft: EditorDraft; asked: string; at: string } | undefined>
   /** Enhance with AI (after M10.17): the designer's answer to a step written out as a fuller brief, with what only they can decide. */
@@ -445,7 +476,7 @@ function contentFiles(): { path: string; text: string }[] {
  */
 export async function createEditor(): Promise<EditorBridge> {
   if (window.wisplight?.editor) return window.wisplight.editor
-  const { applyEdits, draftRequest, draftResult, editorView, entities, entityYaml, filesOfWorld, lineDiff, loadContent, MockLlm, newWorldFiles, paletteRequest, paletteView, mapDraft, mapStepRequest, readMapStep, readDraft, readPalette, readVoice, savePalette, saveVoice, simulate, voiceRequest, voiceYaml, landsIn, landYaml, saveLand, withReturnExits, worldAtlasHtml, worldBook, worldsIn, worldStepRequest, worldFixRequest, mergeFix, polishRequest, readPolish, recheckDraft, descriptionCheck, enhanceRequest, readEnhance, hourlyBudget } = await import('../../engine')
+  const { applyEdits, draftRequest, draftResult, editorView, entities, entityYaml, filesOfWorld, lineDiff, loadContent, MockLlm, newWorldFiles, paletteRequest, paletteView, mapDraft, mapStepRequest, mapFixRequest, readMapStep, readDraft, readPalette, readVoice, savePalette, saveVoice, simulate, voiceRequest, voiceYaml, landsIn, landYaml, saveLand, withReturnExits, worldAtlasHtml, worldBook, worldsIn, worldStepRequest, worldFixRequest, mergeFix, polishRequest, readPolish, recheckDraft, descriptionCheck, enhanceRequest, readEnhance, hourlyBudget, wantsPictures } = await import('../../engine')
   let all = contentFiles()
   const builds: Record<string, BuildView> = {}
   const openDrafts = new Map<string, { draft: EditorDraft; asked: string; at: string }>()
@@ -490,7 +521,17 @@ export async function createEditor(): Promise<EditorBridge> {
     mapStep: async (world, said) => {
       const files = filesOfWorld(all, world)
       const { layout, request } = mapStepRequest(files, said)
-      return shownDraft(readMapStep(files, layout, (await new MockLlm().complete(request)).text))
+      if (!request) return shownDraft(layout.problems.length ? layout : { ...layout, problems: ['There is no region map to paint: the world has no places with exits to lay out.'] })
+      const table = (await new MockLlm().complete(request)).text
+      return { ...shownDraft(readMapStep(files, layout, table)), table }
+    },
+    mapFix: async (world, said, table, wrong) => {
+      const files = filesOfWorld(all, world)
+      const { layout } = mapStepRequest(files, said)
+      const request = mapFixRequest(files, said, table, wrong)
+      if (!request) return shownDraft({ ...layout, problems: ['There is no region map to paint.'] })
+      const again = (await new MockLlm().complete(request)).text
+      return { ...shownDraft(readMapStep(files, layout, again)), table: again }
     },
     savePalette: async (world, palette) => {
       const files = filesOfWorld(all, world)
@@ -568,6 +609,14 @@ export async function createEditor(): Promise<EditorBridge> {
       if (change) all = [...all.filter((f) => f.path !== next.path), { path: next.path, text: next.text }]
       return next.log
     },
+    // The browser preview has no image model and no pictures on disk (M10.26): it counts what a world would need.
+    pictures: async (world) => {
+      const worldContent = loadContent(filesOfWorld(all, world))
+      const missing = [...[...worldContent.areas.values()].map((a) => ({ name: a.name, kind: 'place' as const })), ...[...worldContent.npcs.values()].filter((n) => n.portrait !== 'generic').map((n) => ({ name: n.name, kind: 'person' as const }))]
+      return { wanted: wantsPictures(worldContent), missing, kept: 0 }
+    },
+    drawPictures: async () => ({ made: 0, kept: 0, failed: 0, costUsd: 0, stopped: 'the browser preview makes no pictures' }),
+    onPictureLine: () => () => undefined,
     worldBook: async (world) => {
       const files = filesOfWorld(all, world)
       const worldContent = loadContent(files)

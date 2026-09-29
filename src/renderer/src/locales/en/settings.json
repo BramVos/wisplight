@@ -134,7 +134,10 @@
     "drawing": "Drawing a trial picture",
     "turningOff": "Turning pictures off",
     "off": "Off",
-    "trialAlt": "A trial picture of the start of the world"
+    "trialAlt": "A trial picture of the start of the world",
+    "new": "Make pictures of new places and people",
+    "newOn": "What grows in play too: a far place, a district, a charted region, the people you meet there, in the style of the world or its land, when you come there or meet them. Counts in the budget.",
+    "newOff": "Only the pictures there are (from the editor or from before); nothing new is drawn."
   },
   "usage": {
     "unpriced": {

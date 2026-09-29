@@ -694,6 +694,15 @@ function Pictures({ bridge, overview, refresh }: { bridge: AiBridge; overview: A
           )}
         </div>
       )}
+      {settings.pictures && (
+        <p>
+          <label>
+            <input type="checkbox" checked={settings.picturesNew} disabled={Boolean(state)} onChange={(event) => void act(t('settings.ai.busyLabels.saving'), async () => (await bridge.setPicturesNew(event.target.checked), await refresh()))} /> {t('settings.pictures.new')}
+          </label>
+          <br />
+          <span className="muted small">{t(settings.picturesNew ? 'settings.pictures.newOn' : 'settings.pictures.newOff')}</span>
+        </p>
+      )}
       {state && <p className="muted">{state}</p>}
       {trial && <img className="trial-picture" src={trial} alt={t('settings.pictures.trialAlt')} />}
     </fieldset>

@@ -1,0 +1,28 @@
+{
+  "kind": "map_paint",
+  "about": "the map of The Quiet Reach, laid out from its places and painted as a table",
+  "model": "claude-haiku-4-5-20251001",
+  "provider": "anthropic",
+  "date": "2026-09-29",
+  "usage": {
+    "inputTokens": 3180,
+    "cachedTokens": 0,
+    "outputTokens": 1769
+  },
+  "reply": "{\"say\":\"The Vesper Coast spreads from volcanic lowlands in the south through shallows and scrub to the black basalt ridge where Orison listens. Port Vesper and its Works sit where the landing pad reaches sheltered ground, with the maintenance track and coastal path threading north to the high listening station.\",\"lands\":[{\"key\":\"ocean\",\"name\":\"Open sea\",\"char\":\"~\",\"like\":\"water\",\"dark\":\"#23495E\",\"paper\":\"#5B8FA3\",\"text\":\"The muted deep blue stretches endlessly, cold and indifferent beneath the overcast sky.\"},{\"key\":\"shallows\",\"name\":\"Tidal shallows\",\"char\":\"≈\",\"like\":\"fen\",\"dark\":\"#477C83\",\"paper\":\"#7FB3BD\",\"text\":\"Greyed water laps the tidal zone; the shallow bottom shifts beneath your boots.\"},{\"key\":\"volcanic\",\"name\":\"Black basalt\",\"char\":\"▓\",\"like\":\"heath\",\"dark\":\"#46545C\",\"paper\":\"#6F7F87\",\"text\":\"The volcanic ground is rough and dark under your feet, cold stone that remembers the forge.\"},{\"key\":\"highland\",\"name\":\"High rock\",\"char\":\"▲\",\"like\":\"heath\",\"dark\":\"#76838B\",\"paper\":\"#9BB0BC\",\"text\":\"Higher ground rises beneath you, cool grey stone worn by wind and time.\"},{\"key\":\"scrub\",\"name\":\"Coastal scrub\",\"char\":\"⚬\",\"like\":\"woods\",\"dark\":\"#365C56\",\"paper\":\"#5A8878\",\"text\":\"Stunted dark vegetation clings to the coastal margin, salt-pruned and tough.\"},{\"key\":\"beds\",\"name\":\"Growing beds\",\"char\":\"░\",\"like\":\"fields\",\"dark\":\"#7D9274\",\"paper\":\"#A8B899\",\"text\":\"The planted rows lie neat and ordered, green-grey against dark soil, a small gesture toward plenty.\"},{\"key\":\"track\",\"name\":\"Maintenance track\",\"char\":\":\",\"like\":\"fields\",\"dark\":\"#B5A58A\",\"paper\":\"#D4C4B0\",\"text\":\"The soft sand-coloured surface of the maintenance track runs firm beneath your boots, swept clear.\"},{\"key\":\"path\",\"name\":\"Coastal path\",\"char\":\",\",\"like\":\"fields\",\"dark\":\"#B5A58A\",\"paper\":\"#D4C4B0\",\"text\":\"The narrow path is worn smooth by footfall, a thin line of passage across the stone.\"},{\"key\":\"port\",\"name\":\"Port Vesper\",\"char\":\"■\",\"like\":\"fields\",\"dark\":\"#DBE2DF\",\"paper\":\"#F0F3F2\",\"text\":\"The compact pressure modules and shared facilities of the port rise before you, off-white and sealed against the cold.\"},{\"key\":\"works\",\"name\":\"Vesper Works\",\"char\":\"◆\",\"like\":\"fields\",\"dark\":\"#DBE2DF\",\"paper\":\"#F0F3F2\",\"text\":\"The workshop and research complex sprawls beside the port, repair benches and the locked hangar of the Peregrine visible through the transparent sections.\"}],\"drawing\":[\"~~~~~~~~~~~~~~~~~\",\"≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈~\",\"≈≈≈⚬⚬⚬⚬⚬⚬▓▓▓▓▓▓≈≈\",\"≈≈⚬⚬⚬⚬⚬⚬⚬▓▓▓▓▓▓▓≈\",\"⚬⚬⚬⚬⚬⚬⚬⚬⚬▓▓▓▓▓▓▓≈\",\"⚬⚬⚬⚬⚬⚬⚬⚬⚬▓▓▓▓▓▓▓:\",\"⚬⚬⚬⚬⚬⚬⚬⚬⚬▓▓▓▓▓▓,:\",\"⚬⚬⚬⚬⚬⚬⚬⚬⚬▓▓▓▓▓:,:\",\"⚬⚬⚬⚬⚬⚬⚬⚬⚬▓▲▲▲▲:,:\",\"⚬⚬⚬⚬⚬⚬⚬⚬⚬▓▓▓▓▓:,:\",\"⚬⚬⚬⚬⚬⚬⚬⚬⚬▓▓▓▓▓,:⚬\",\"⚬⚬⚬⚬⚬⚬⚬⚬⚬▓▓▓▓▓,⚬⚬\",\"⚬⚬⚬⚬⚬⚬◆⚬⚬▓▓▓▓▓⚬⚬⚬\",\"⚬⚬⚬⚬⚬■:⚬⚬▓▓▓▓▓⚬⚬⚬\",\"⚬⚬⚬⚬⚬⚬⚬⚬⚬▓▓▓▓▓⚬⚬⚬\",\"⚬⚬⚬⚬⚬⚬⚬⚬⚬▓▓▓▓░⚬⚬⚬\",\"⚬⚬⚬⚬⚬⚬⚬⚬⚬▓▓▓░░░⚬⚬\",\"⚬⚬⚬⚬⚬⚬⚬⚬⚬▓▓▓░░░░⚬⚬\",\"⚬⚬⚬⚬⚬⚬⚬⚬⚬▓▓▓░░░░░⚬\",\"⚬⚬⚬⚬⚬⚬⚬⚬⚬▓▓░░░░░░░⚬\",\"⚬⚬⚬⚬⚬⚬⚬⚬⚬▓▓░░░░░░░░\"],\"paths\":[{\"name\":\"The path to the Coastal Traverse\",\"text\":\"The narrow coastal path threads between scrub and stone, a worn line of passage where few come and fewer stay.\"},{\"name\":\"The path to Ridge Shelter\",\"text\":\"The path climbs from the coast toward the listening station, switchbacks taking you up the volcanic slopes.\"},{\"name\":\"The path to Orison Ridge\",\"text\":\"The high ridge draws near, the antenna visible above the clouds, and the air grows thin and cold.\"}],\"beyond\":[{\"side\":\"north\",\"text\":\"The open sea extends northward without limit; no land lies that way within months of sailing.\"},{\"side\":\"east\",\"text\":\"The basalt and scrub continue east along the coast, the terrain unbroken for many kilometres.\"},{\"side\":\"south\",\"text\":\"The growing beds and worked ground spread south toward the industrial sections of Vesper colony, out of view.\"},{\"side\":\"west\",\"text\":\"The shallows deepen to open water westward; no shelter or landing lies that way.\"}]}",
+  "problems": [],
+  "recordedProblems": [
+    "land track: : is the way character of a road",
+    "land path: , is the way character of a path",
+    "row 1 of the drawing has 17 characters; it needs 18",
+    "row 2 of the drawing has 17 characters; it needs 18",
+    "row 3 of the drawing has 17 characters; it needs 18",
+    "row 4 of the drawing has 17 characters; it needs 18",
+    "row 5 of the drawing has 17 characters; it needs 18",
+    "row 6 of the drawing has 17 characters; it needs 18",
+    "row 7 of the drawing has 17 characters; it needs 18",
+    "row 8 of the drawing has 17 characters; it needs 18",
+    "row 9 of the drawing has 17 characters; it needs 18",
+    "row 10 of the drawing has 17 characters; it needs 18"
+  ]
+}

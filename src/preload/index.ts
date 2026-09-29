@@ -73,6 +73,7 @@ contextBridge.exposeInMainWorld('wisplight', {
     savePalette: use('editor:save-palette'),
     mapDraft: use('editor:map-draft'),
     mapStep: use('editor:map-step'),
+    mapFix: use('editor:map-fix'),
     proposePalette: use('editor:propose-palette'),
     voice: use('editor:voice'),
     saveVoice: use('editor:save-voice'),
@@ -98,6 +99,14 @@ contextBridge.exposeInMainWorld('wisplight', {
     saveDraft: use('editor:save-draft'),
     // The world book (M10.18): written next to the content and saved as HTML.
     worldBook: use('editor:worldbook'),
+    // A world's pictures (M10.26): what is missing and what one costs, making the missing ones, a line per picture.
+    pictures: use('editor:pictures'),
+    drawPictures: use('editor:draw-pictures'),
+    onPictureLine: (listener: (line: string) => void) => {
+      const handler = (_event: IpcRendererEvent, line: string) => listener(line)
+      ipcRenderer.on('editor:pictures-line', handler)
+      return () => ipcRenderer.removeListener('editor:pictures-line', handler)
+    },
   },
   // Under the bonnet (M10.1): only a development build has the dev menu.
   ...(import.meta.env.DEV ? { dev: { view: use('dev:view') } } : {}),
@@ -140,6 +149,7 @@ contextBridge.exposeInMainWorld('wisplight', {
     billing: use('ai:billing'),
     imageModels: use('ai:image-models'),
     setPictures: use('ai:pictures'),
+    setPicturesNew: use('ai:pictures-new'),
     tryPicture: use('ai:try-picture'),
   },
 })

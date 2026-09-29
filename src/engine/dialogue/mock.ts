@@ -85,6 +85,8 @@ export class MockLlm implements LlmClient {
         ? JSON.stringify({ say: 'Without a model nothing is polished.', places: [] })
         : request.schemaName === 'palette_draft'
         ? this.palette(request.meta ?? {})
+        : request.schemaName === 'map_paint'
+        ? this.mapPaint(request.meta ?? {})
         : request.schemaName === 'voice_draft'
         ? this.voiceKit(request.meta ?? {})
         : request.schemaName === 'journey'
@@ -336,6 +338,27 @@ export class MockLlm implements LlmClient {
    * records, the world keeps the name it has, and each step proposes a small
    * piece that loads, so the whole building of a world plays without a model.
    */
+  /**
+   * The map as a table (M10.26): water along the west edge, then shallows,
+   * and open ground; the rows and width asked, a line per path and per edge.
+   */
+  private mapPaint(meta: Record<string, unknown>): string {
+    const rows = Number(meta['rows'] ?? 1)
+    const cols = Number(meta['cols'] ?? 1)
+    const row = (i: number) => [...Array(cols).keys()].map((c) => (c < Math.max(1, Math.floor(cols / 6)) ? '~' : c < Math.max(2, Math.floor(cols / 4)) || i < 0 ? '*' : '.')).join('')
+    return JSON.stringify({
+      say: 'Open water along the west, a band of shallows, and open ground where the places stand.',
+      lands: [
+        { key: 'open_sea', name: 'open sea', char: '~', like: 'water', dark: '#23495e', paper: '#9fb8c4', text: 'Grey water heaves around you, and the cold of it climbs your legs.' },
+        { key: 'shallows', name: 'shallows', char: '*', like: 'fen', dark: '#477c83', paper: '#b8cfd0', text: 'The shallows suck at your boots, and the water hisses between the stones.' },
+        { key: 'open_ground', name: 'open ground', char: '.', like: 'heath', dark: '#46545c', paper: '#d6d9d2', text: 'Firm, open ground runs on ahead, and the wind has nothing to stop it.' },
+      ],
+      drawing: [...Array(rows).keys()].map(row),
+      paths: ((meta['paths'] as string[] | undefined) ?? []).map((name) => ({ name, text: 'The way is trodden hard, and you can hear your own steps on it.' })),
+      beyond: ['north', 'east', 'south', 'west'].map((side) => ({ side, text: `Nobody here has told you what lies ${side} of here.` })),
+    })
+  }
+
   private worldStep(meta: Record<string, unknown>): string {
     if (this.mode === 'invalid') return 'Here is a lovely world for you.'
     // Putting a proposal right (M10.20) takes a model: the mock corrects nothing, so the proposal stays as it was.

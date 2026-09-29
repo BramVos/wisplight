@@ -1,0 +1,28 @@
+{
+  "kind": "map_paint",
+  "about": "the map of Skerrow, laid out from its places and painted as a table",
+  "model": "claude-sonnet-5",
+  "provider": "anthropic",
+  "date": "2026-09-29",
+  "usage": {
+    "inputTokens": 2834,
+    "cachedTokens": 0,
+    "outputTokens": 1776
+  },
+  "reply": "{\"say\":\"I've painted Skerrow as a heather-topped high ground with grey cliffs ringing it, black shingle strand to the south, a salt marsh cupped behind the harbour, and Ynys Wen as a pale dune isle across the strait, with roads and paths threading between.\",\"lands\":[{\"key\":\"water\",\"name\":\"the Glass Sea\",\"char\":\"~\",\"like\":\"water\",\"dark\":\"#0d1b2a\",\"paper\":\"#aebfd1\",\"text\":\"You hear the slap and hiss of grey water against unseen rock.\"},{\"key\":\"heath\",\"name\":\"the heather heights\",\"char\":\"^\",\"like\":\"heath\",\"dark\":\"#2f3d2a\",\"paper\":\"#c3caa5\",\"text\":\"Heather catches at your ankles, wet and cold underfoot.\"},{\"key\":\"cliff\",\"name\":\"the grey cliffs\",\"char\":\"#\",\"like\":\"heath\",\"dark\":\"#3a3a3a\",\"paper\":\"#9a9a9a\",\"text\":\"The wind booms off bare grey stone and drags at your coat.\"},{\"key\":\"fen\",\"name\":\"the salt marsh\",\"char\":\"%\",\"like\":\"fen\",\"dark\":\"#2a3b2e\",\"paper\":\"#b7c9ab\",\"text\":\"Your boots suck at black mud that smells of rot and salt.\"},{\"key\":\"fields\",\"name\":\"the salt grass\",\"char\":\".\",\"like\":\"fields\",\"dark\":\"#3c4a2e\",\"paper\":\"#cdd9a8\",\"text\":\"Coarse grass hisses in the wind, stiff with dried salt.\"},{\"key\":\"dune\",\"name\":\"the white dunes\",\"char\":\"*\",\"like\":\"heath\",\"dark\":\"#4a4433\",\"paper\":\"#e8e0c8\",\"text\":\"Pale sand shifts underfoot, marram grass whispering close by.\"},{\"key\":\"shingle\",\"name\":\"the black shingle\",\"char\":\"=\",\"like\":\"heath\",\"dark\":\"#1f1f1f\",\"paper\":\"#8c8c8c\",\"text\":\"Black stones clatter and grind beneath every step you take.\"}],\"drawing\":[\"~~~~~~~~~~~~~~~~\",\"~~~~~~~~~~~~~~~~\",\"~~~~~####~~~~~~\",\"~~~~##^^##~~~~~\",\"~~~###^^^##~~~~\",\"~~~##^^^^^#~~~~\",\"~~~##^^^^^#~~~~\",\"~~~~#^^^^^#~~~~\",\"~~~~#^^,^^#~~~~\",\"~~~~#^^,^^#~~~~\",\"~~~~#^^,^#~~~~~\",\"~~~~#^^,^#~~~~~\",\"~~~~#^,,,#~~~~~\",\"~~~~~^^%,#~~~~~\",\"~~~~~^%%,#~~~~~\",\"~~~~#%%%,#~~~~~\",\"~~~:%%%%::~~~~~\",\"~~~~%%%%:~~~~~~\",\"~~~~~%%::~~~~~~\",\"~~~~~~=,=~~~~~~\",\"~~~~~~====~~~~~\",\"~~~~~~====~~~~~\",\"~~~~~~====~~~~~\",\"~~~~~~*=*~~~~~~\",\"~~~~~***~~~~~~~\",\"~~~~~~**~~~~~~~\",\"~~~~~~~~~~~~~~~~\",\"~~~~~~~~~~~~~~~~\",\"~~~~~~~~~~~~~~~~\"],\"paths\":[{\"name\":\"the path to the Cliff Path\",\"text\":\"The path skirts the cliff edge, salt spray stinging your face.\"},{\"name\":\"the path to the Tidepools\",\"text\":\"The path drops toward pools that gurgle and suck with the ebbing tide.\"},{\"name\":\"the path to the Heights\",\"text\":\"The path climbs through heather, the wind rising as you go.\"},{\"name\":\"the path to Skerrow Hythe\",\"text\":\"The path winds down toward woodsmoke and the murmur of the harbour.\"},{\"name\":\"the path from the Shore to Skerrow Hythe\",\"text\":\"The path follows the marsh edge, gulls crying overhead.\"},{\"name\":\"the path to the Wyrm Barrow\",\"text\":\"The path grows quiet here, even the wind seeming to hold its breath.\"},{\"name\":\"the path to the Headland\",\"text\":\"The path narrows along the cliff top, the dead beacon ahead.\"},{\"name\":\"the path from Skerrow Hythe to the Heights\",\"text\":\"The path rises steadily, the sea falling away behind you.\"},{\"name\":\"the road to Skerrow Hythe, the Harbour\",\"text\":\"The road runs firm underfoot, salt-cracked stone leading to the quay.\"},{\"name\":\"the path to the Drowned Mage's Tower\",\"text\":\"The path grows strange here, and the air hums faintly of old magic.\"},{\"name\":\"the road to Ynys Wen, the Landing\",\"text\":\"The stone landing road runs slick with sea-spray toward the white isle.\"}],\"beyond\":[{\"side\":\"north\",\"text\":\"North lies only grey sea, and no one on Skerrow can say what land, if any, lies beyond it.\"},{\"side\":\"east\",\"text\":\"East the Glass Sea stretches unbroken; the old charts show nothing before the mainland, many days off.\"},{\"side\":\"south\",\"text\":\"South across the strait lies Ynys Wen, and beyond it the Western Isles, further than any Skerrow boat now dares.\"},{\"side\":\"west\",\"text\":\"West the sea runs open and empty, and the storms have swallowed whatever lay that way.\"}]}",
+  "problems": [],
+  "recordedProblems": [
+    "row 3 of the drawing has 15 characters; it needs 16",
+    "row 4 of the drawing has 15 characters; it needs 16",
+    "row 5 of the drawing has 15 characters; it needs 16",
+    "row 6 of the drawing has 15 characters; it needs 16",
+    "row 7 of the drawing has 15 characters; it needs 16",
+    "row 8 of the drawing has 15 characters; it needs 16",
+    "row 9 of the drawing has 15 characters; it needs 16",
+    "row 10 of the drawing has 15 characters; it needs 16",
+    "row 11 of the drawing has 15 characters; it needs 16",
+    "row 12 of the drawing has 15 characters; it needs 16",
+    "row 13 of the drawing has 15 characters; it needs 16",
+    "row 14 of the drawing has 15 characters; it needs 16"
+  ]
+}

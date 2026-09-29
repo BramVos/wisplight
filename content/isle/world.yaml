@@ -116,6 +116,8 @@ world:
     - { between: [skerrow, western_isles], reach: trade, why: The white boat runs between the harbour and Ynys Wen. }
   pictures:
     style: A small illustration in the manner of an old high-fantasy book plate, pen and ink with a light watercolour wash, sea greens and storm greys, a lone rocky island under a vast sky.
+    # The editor makes the pictures of what is new after the steps (M10.26); in a game the player's switch decides.
+    wanted: true
   intro: |
     Cold water, then stones. You wake on your face on a strand of black
     shingle, with the sea still pulling at your boots. Of the Grey Gull there

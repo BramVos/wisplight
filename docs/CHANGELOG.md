@@ -1,5 +1,31 @@
 # Changelog
 
+## M10.26 af: afbeeldingen per wereld, en de kaart goedkoper, 29 september 2026
+
+- **Een wereld zegt of ze afbeeldingen wil.** `pictures.wanted` staat naast `pictures.style` in `world.yaml`, en staat standaard uit. De stap Palet vraagt het, met de prijs per plek en per portret bij het beeldmodel uit Instellingen > AI. Staat het aan, dan maakt de editor na de laatste stap, en na elke stap die plekken of mensen toevoegt, de afbeeldingen van wat nieuw is. Per afbeelding zegt hij wat ze kostte. Zonder beeldmodel zegt hij dat en maakt hij niets. Skerrow en The Quiet Reach willen afbeeldingen, en Deepwell laat het weg.
+- **De ontbrekende afbeeldingen van een wereld.** Onder Contract, bij het wereldboek, telt [Make the missing pictures] wat er mist: gebieden en portretten, zonder de egale figuren. Hij zegt wat het ongeveer kost en maakt het binnen een grens in euro die je zelf zet, met een regel per afbeelding. Daarna tonen het wereldboek en de atlas ze. `WISPLIGHT_PICTURES` blijft bestaan.
+- **In het spel beslis jij.** Onder Instellingen > AI staat naast het beeldmodel "Make pictures of new places and people". Die schakelaar staat aan zodra je een beeldmodel kiest. Aan krijgt ook wat in het spel ontstaat een afbeelding: een verre plek, een wijk, een geschetste streek, de mensen van een wijk of een verre plek, en een geschreven land. Dat gebeurt in de stijl van de wereld of van het land, op het moment dat je er komt of iemand ontmoet, binnen het budget. Uit toont het spel alleen de afbeeldingen die er al zijn. De keuze van de wereld telt in het spel niet, want jij betaalt.
+- **De kaart goedkoper.** Na de laatste stap legt de code de streekkaart neer uit de plekken, hun uitgangen en minuten, zoals in M10.25. Het schilderen is nu een eigen, kleine aanroep (`map_paint`): het model vult een tabel met per land een teken, een naam, twee kleuren, hoe het loopt en één regel, de tekening als rijen tekens, en een regel per pad en per rand. De code schrijft daar de streek en het palet van. Het gaat naar het lichtere model dat je koos, bij jou Sonnet 5: ongeveer $0,03 voor een kaart, tegen $0,27 op Opus. Staat er iets verkeerd, dan typ je wat, en [Paint it again with this] leest het vaste deel uit de cache voor ongeveer de helft. Een naam die het model in de tekening schrijft, of een rij die een teken of twee afwijkt, leest de editor zoals de kaart dat altijd deed, en de toelichting noemt het. De meting staat in `docs/worldbuild/cost-measure.md`: Sonnet laadde twee keer op rij op The Quiet Reach en Skerrow, Haiku 4.5 niet.
+- **The Quiet Reach heeft zijn afbeeldingen.** Met de knop in de app en jouw sleutel: 5 ontbraken (de Coastal Traverse, Vesper Coast, Orison Ridge, Niko Serrin en Dr Edda Vale), $0,025.
+
+Kosten per nieuwe soort aanroep: `map_paint` kost op Sonnet 5 (low) ongeveer $0,03 voor een kaart, en een tweede poging uit de cache ongeveer $0,013 tot $0,016. Waarom dat model: het laadde twee keer op rij op beide werelden, Haiku 4.5 niet, en Opus kost tien keer zo veel. De meting kostte $0,157 en een tweede ronde met de verbeterde instructie $0,108 (Sonnet 5 laadde vijf van vijf, met kale namen en zonder correcties); de afbeeldingen van The Quiet Reach $0,025.
+
+Testen:
+- Kies in de editor een wereld en ga naar Contract. Bij het wereldboek staat Pictures: wat mist, wat het kost, en [Make the missing pictures] met een grens in euro.
+- Bouw verder aan een wereld die `pictures.wanted` heeft (Skerrow). Voeg bij een stap een plek toe en neem die aan: de editor maakt dan de afbeelding.
+- In het spel staat onder Instellingen > AI de schakelaar onder het beeldmodel. Reis met de schakelaar aan naar een nieuwe streek en kijk naar de afbeelding boven de kaart en bij een gesprek. Zet hem uit en praat met iemand nieuws.
+- Bij de laatste stap van The Quiet Reach staat "Then: the map" met de tweede poging.
+
+Tests in `tests/m1026pictures.test.ts`, `tests/m1026map.test.ts` en `tests/m1025map.test.ts`.
+
+Nog open: het gespeelde bewijs van M10.25 wacht op de laatste ronde `full`, die zijn uur nodig heeft; de afsluiting van M10.25 komt daarna.
+
+Gevonden en hersteld: de mensen van een wijk en van een verre plek kregen altijd een egale figuur, nooit een portret, en het spel vroeg de afbeelding van een gegroeide plek aan de wereld zoals die geschreven was, waar die plek niet in staat. Een plek of persoon van een land nam de stijl van de wereld in plaats van die van het land.
+
+Wat de editor en de kroniekverteller leerden: het contract noemt `pictures.wanted` (`docs/CONTENT.md`), de stap Palet in de wereldgids vraagt het met de prijs en zegt wat een wereld zonder krijgt, en `docs/NEW-WORLD.md` heeft een alinea over afbeeldingen. De kaartstap is een eigen soort aanroep, `map_paint`, met een rij in de tabel van soorten, een situatie (Skerrow zonder kaart) en het mockmodel.
+
+Ontwerp: FO, de alinea "Afbeeldingen per wereld (M10.26)" onder de alinea over plaatjes (hoofdstuk Instellingen), en in hoofdstuk 4 "De kaart als tabel (M10.26)" onder "De kaart hoort bij de wereldbouw".
+
 ## M10.25 deel: onderweg wordt de wereld gebouwd, 29 september 2026
 
 - **De aanroepen beginnen bij vertrek.** Reis je naar een streek die in het spel ontstond, dan vraagt het spel bij vertrek al wat de stand van de vierde draaiknop wil: de eerste wijk en de verhaalronde. Ook de woorden van een land dat alleen een kader heeft (M10.23) komen dan. Het reisverslag geeft het vertrek en daarna één regel: "While you travel, the chronicler is laying out the Grey Saltings." De statusbalk zegt hetzelfde, en links staat "On the way to ..." tot je er bent. In de terminal staat dezelfde regel in het verslag.

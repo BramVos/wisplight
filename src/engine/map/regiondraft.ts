@@ -329,3 +329,10 @@ export function placesInDrawing(content: Content): string {
     })
   return cells.length ? `WHERE THE PLACES LIE IN THE DRAWING (row from the top, which is the north; column from the left, which is the west; both from 1): ${cells.join('; ')}.` : ''
 }
+
+/** A world's files without its region map (M10.26: to lay one out and paint it again, or to measure the painting), its lock without the map's line. */
+export function withoutMap(files: ContentFile[]): ContentFile[] {
+  return files
+    .filter((f) => !/(^|\/)regions\//.test(f.path))
+    .map((f) => (f.path.endsWith('ids.lock') ? { ...f, text: f.text.replace(/\n\s+\S*\/regions\/\S*:\n\s+region: \[[^\]]*\]/g, '') } : f))
+}

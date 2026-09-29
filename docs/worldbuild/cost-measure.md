@@ -65,3 +65,34 @@ De providers brengen het schema nu terug tot wat ze aankunnen. Voor Anthropic va
 ## Wat de metingen kostten
 
 Eerste run $2,72, vergelijking van de tabelstappen $0,58, laatste run $2,77, Economie opnieuw $0,44, de soorten samen ongeveer $1,40: ongeveer $7,90.
+
+## De kaart goedkoper (M10.26, 29 september 2026)
+
+Bram vroeg na de kaart van The Quiet Reach of die net zo goed met een goedkoper model kan: op Opus kostte de eerste poging $0,27 en stond fout, de tweede $0,12. Toen schilderde de hele stap Palet de kaart en stuurde het hele palet uit `world.yaml` terug, met tekens en stijlen. Daarop faalde Sonnet in M10.20 twee keer.
+
+Nu is de stap gesplitst. Wat code kan, doet code: de plekken neerleggen uit hun uitgangen en minuten (`mapDraft`, gratis), en de streek en het palet schrijven. Het model vult alleen een tabel (`map_paint`, `src/engine/map/paint.ts`):
+
+- per land een teken, een naam, twee kleuren, hoe het loopt en één regel;
+- de tekening als rijen tekens;
+- een regel per pad en per rand.
+
+Het vaste deel is de instructie, de wereld, de woorden van de ontwerper en per plek de rij en kolom in de tekening. Het staat met een cachemarkering vooraan. Een tweede poging stuurt dezelfde tabel mee met wat er fout stond ([Paint it again with this]).
+
+Gemeten met `npm run trial -- --kind map_measure`: The Quiet Reach met Brams hoofdstuk Palet, en Skerrow met een korte beschrijving van het eiland, beide zonder hun kaart. Elk model twee keer, en op The Quiet Reach één tweede poging met "de Orison Ridge ligt op het hoge gesteente".
+
+| Model | The Quiet Reach | Skerrow | Kosten per kaart | Tweede poging |
+|---|---|---|---|---|
+| Sonnet 5, low | laadt 2 van 2 | laadt 2 van 2, eiland met zee rondom | $0,030, uit de cache $0,013 | $0,016, laadt, ridge op hoog gesteente |
+| Haiku 4.5, low | 1 van 2 | 0 van 2 (rijen van 19 en 32 tekens waar 16 moeten) | $0,007 tot $0,012 | $0,014, geen cache (het vaste deel is korter dan de 2.048 tokens die Haiku vraagt) |
+
+Keuze: de kaart gaat naar het lichtere model dat de speler koos (`tier: light`, bij Bram Sonnet 5). Dat kost een tiende van de stap Palet op Opus, en een tweede poging kost ongeveer de helft van de eerste. Haiku is afgevallen: het telt de tekens niet en maakt van plaatsnamen landen.
+
+De eerste antwoorden brachten drie dingen aan het licht, en de lezer doet nu wat de kaart zelf al deed:
+
+- Sonnet schreef de namen van plekken in de tekening. Een teken dat geen land is, neemt het land ernaast, zoals de kaartlezer altijd deed. De instructie verbiedt het nu, en de toelichting bij het voorstel noemt het.
+- Beide modellen tellen een teken of twee per rij mis. Een tekening die hoogstens twee rijen of tekens afwijkt, maakt de code op maat, met het land aan het eind van de rij. Meer is een fout voor de herstelronde.
+- Sonnet noemde de landen "On the black basalt". De code maakt er de kale naam van, en de instructie geeft nu dat voorbeeld.
+
+Een tweede ronde met Sonnet 5 na die drie verbeteringen laadde vijf van vijf: twee kaarten van elke wereld en de tweede poging. De namen waren kaal, er stond geen naam in een tekening en niets hoefde op maat. Een kaart kostte $0,030 tot $0,031, uit de cache $0,014 tot $0,018, en de tweede poging $0,016. Die ronde kostte $0,108. De antwoorden hebben `-r2` in hun naam.
+
+De opgenomen antwoorden staan in `tests/fixtures/model/map_paint/` (Skerrow) en `tests/fixtures/worldbuild/quiet-reach-map/`. `tests/m1026map.test.ts` leest die met de lezer van nu, die milder is dan bij het opnemen. Het oordeel van toen staat erbij als `recordedProblems`. Brams hoofdstuk noemt geen windrichting voor de zee. Oost en west zijn dus allebei trouw aan de tekst, en de overeenkomst met de aangenomen kaart (ongeveer 40%) zegt daarom weinig over fouten. De eerste meting kostte $0,157 en de tweede $0,108.

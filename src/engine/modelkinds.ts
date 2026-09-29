@@ -38,6 +38,7 @@ export const MODEL_KINDS: readonly ModelKind[] = [
   { kind: 'world_enhance', role: 'chronicler', does: 'Enhance with AI: more of what a built world has little of.', when: 'editor' },
   { kind: 'world_polish', role: 'chronicler', does: 'The polish round of place descriptions.', when: 'editor' },
   { kind: 'palette_draft', role: 'chronicler', does: 'The colours of a world\'s map.', when: 'editor' },
+  { kind: 'map_paint', role: 'chronicler', does: 'The map after the world steps painted as a table: per terrain its character, name, colours, walk and line, the drawing, a line per path and edge.', when: 'editor' },
   { kind: 'voice_draft', role: 'chronicler', does: 'The voice kit of a world.', when: 'editor' },
   { kind: 'model_advice', role: 'advisor', does: 'Which models to choose for the roles.', when: 'settings' },
   { kind: 'test_call', role: 'advisor', does: 'A short call to see that a chosen model answers.', when: 'settings' },

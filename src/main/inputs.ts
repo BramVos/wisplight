@@ -52,6 +52,9 @@ export const INPUTS: Record<string, z.ZodType<unknown[]>> = {
   'editor:open': z.tuple([]),
   'editor:worlds': z.tuple([]),
   'editor:worldbook': z.tuple([world]),
+  // A world's pictures (M10.26): what is missing, and making it within a cap in euros.
+  'editor:pictures': z.tuple([world]),
+  'editor:draw-pictures': z.tuple([world, z.number().min(0).max(50)]),
   'editor:view': z.tuple([world]),
   'editor:entity': z.tuple([world, z.enum(ENTITY_KINDS), id]),
   'editor:save': z.tuple([world, z.array(z.unknown()).max(2000), z.boolean().optional()]).refine(([, edits]) => JSON.stringify(edits).length <= 5_000_000, { message: 'edits too large' }),
@@ -71,6 +74,7 @@ export const INPUTS: Record<string, z.ZodType<unknown[]>> = {
   'editor:save-palette': z.tuple([world, data(200_000)]),
   'editor:map-draft': z.tuple([world]),
   'editor:map-step': z.tuple([world, text(100_000)]),
+  'editor:map-fix': z.tuple([world, text(100_000), text(100_000), z.array(text(2000)).max(20)]),
   'editor:propose-palette': z.tuple([world, text(20_000)]),
   // A land's voice kit (M10.23) by the land's id; without one the world's.
   'editor:voice': z.tuple([world, landId.optional()]),
@@ -100,6 +104,7 @@ export const INPUTS: Record<string, z.ZodType<unknown[]>> = {
   'ai:billing': z.tuple([provider]),
   'ai:image-models': z.tuple([provider]),
   'ai:pictures': z.tuple([provider.nullable(), model.optional(), z.enum(['low', 'medium']).optional()]),
+  'ai:pictures-new': z.tuple([z.boolean()]),
   'ai:try-picture': z.tuple([provider, model]),
   // Sent, not asked (ipcMain.on).
   'engine:activity': z.tuple([]),

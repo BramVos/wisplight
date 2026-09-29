@@ -4,7 +4,7 @@ import { appendFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFi
 import { tmpdir } from 'node:os'
 import { basename, dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { ContentError, discoveredAtlasHtml, draftRequest, mapDraft, mapStepRequest, readMapStep, readSaveFile, saveAbout, saveFileName, saveFileText, SAVE_FILE_EXTENSION, type SaveFile, draftResult, Engine, ENTITY_KINDS, lineDiff, MapPaletteSchema, paletteRequest, paletteView, readDraft, readPalette, readVoice, savePalette, saveVoice, voiceRequest, voiceYaml, landsIn, landYaml, saveLand, worldStepRequest, worldFixRequest, mergeFix, polishRequest, readPolish, recheckDraft, descriptionCheck, enhanceRequest, readEnhance, type Content, type Edit, type EntityKind, type FileChange, type CheckpointedSave, type MapPalette, type Output, type SaveData, type PlayMode } from '../engine'
+import { ContentError, wantsPictures, discoveredAtlasHtml, draftRequest, mapDraft, mapStepRequest, mapFixRequest, readMapStep, readSaveFile, saveAbout, saveFileName, saveFileText, SAVE_FILE_EXTENSION, type SaveFile, draftResult, Engine, ENTITY_KINDS, lineDiff, MapPaletteSchema, paletteRequest, paletteView, readDraft, readPalette, readVoice, savePalette, saveVoice, voiceRequest, voiceYaml, landsIn, landYaml, saveLand, worldStepRequest, worldFixRequest, mergeFix, polishRequest, readPolish, recheckDraft, descriptionCheck, enhanceRequest, readEnhance, type Content, type Edit, type EntityKind, type FileChange, type CheckpointedSave, type MapPalette, type Output, type SaveData, type PlayMode } from '../engine'
 import { designUpdate, readDesignChange } from '../engine/designlog'
 import { ContentEditor } from '../node/editor'
 import { AppKnobs, type AppKnobId } from '../node/knobs'
@@ -633,6 +633,24 @@ handle('editor:worldbook', async (_event, world: unknown) => {
   writeFileSync(result.filePath, await worldAtlasFor(contentDir(), folder, app.getPath('userData')), 'utf8')
   return { markdown, saved: result.filePath }
 })
+// A world's pictures in the editor (M10.26): what is missing and what one costs with the image model of the
+// settings, and making the missing ones within the designer's cap, a line per picture as it comes.
+handle('editor:pictures', async (_event, world: unknown) => {
+  devOnly()
+  await setup()
+  const content = await loadContentFromDir(contentDir(), worldOf(world))
+  return { wanted: wantsPictures(content), ...service().pictureView(content) }
+})
+handle('editor:draw-pictures', async (event, world: unknown, cap: unknown) => {
+  devOnly()
+  await setup()
+  const content = await loadContentFromDir(contentDir(), worldOf(world))
+  // The cap in euros, kept in dollars as if a dollar were a euro, which is below it (as WISPLIGHT_PICTURES does).
+  const capUsd = Math.max(0, Math.min(Number(cap) || 0, 50))
+  return service().drawAll([content], capUsd, (line) => {
+    if (!event.sender.isDestroyed()) event.sender.send('editor:pictures-line', line)
+  })
+})
 handle('editor:view', (_event, world: unknown) => devOnly().view(worldOf(world)))
 handle('editor:entity', (_event, world: unknown, kind: unknown, id: unknown) => devOnly().entity(worldOf(world), kindOf(kind), String(id)))
 handle('editor:save', async (_event, world: unknown, edits: unknown, write: unknown) => {
@@ -832,8 +850,27 @@ handle('editor:map-step', async (_event, world: unknown, said: unknown) => {
   if (!llm) return { say: '', questions: [], changes: [], problems: ["The chronicler paints the map with you: connect a model in the game's Settings > AI first."], diffs: [] }
   const files = await readContentFiles(contentDir(), worldOf(world))
   const { layout, request } = mapStepRequest(files, String(said ?? '').slice(0, 20000))
+  if (!request) return shownDraft(layout.problems.length ? layout : { ...layout, problems: ['There is no region map to paint: the world has no places with exits to lay out.'] })
   try {
-    return shownDraft(readMapStep(files, layout, (await llm.complete(request)).text))
+    const table = (await llm.complete(request)).text
+    return { ...shownDraft(readMapStep(files, layout, table)), table }
+  } catch (error) {
+    return { say: '', questions: [], changes: [], problems: [`The chronicler did not answer: ${error instanceof Error ? error.message : String(error)}`], diffs: [] }
+  }
+})
+// The map painted again (M10.26): the table as it stood and what stood wrong, the instruction and the world from the cache.
+handle('editor:map-fix', async (_event, world: unknown, said: unknown, table: unknown, wrong: unknown) => {
+  devOnly()
+  await setup()
+  const llm = smoke ? new MockLlm() : ai?.client()
+  if (!llm) return { say: '', questions: [], changes: [], problems: ["The chronicler paints the map with you: connect a model in the game's Settings > AI first."], diffs: [] }
+  const files = await readContentFiles(contentDir(), worldOf(world))
+  const { layout } = mapStepRequest(files, String(said ?? '').slice(0, 20000))
+  const request = mapFixRequest(files, String(said ?? '').slice(0, 20000), String(table ?? '').slice(0, 60000), (Array.isArray(wrong) ? wrong : []).map((w) => String(w).slice(0, 1000)).slice(0, 12))
+  if (!request) return shownDraft({ ...layout, problems: ['There is no region map to paint.'] })
+  try {
+    const again = (await llm.complete(request)).text
+    return { ...shownDraft(readMapStep(files, layout, again)), table: again }
   } catch (error) {
     return { say: '', questions: [], changes: [], problems: [`The chronicler did not answer: ${error instanceof Error ? error.message : String(error)}`], diffs: [] }
   }
@@ -1065,6 +1102,7 @@ handle('ai:image-models', (_event, id: unknown) => service().imageModels(provide
 handle('ai:pictures', (_event, id: unknown, model: unknown, quality: unknown) =>
   service().choosePictures(id === null ? undefined : { provider: provider(id), model: String(model), quality: quality === 'medium' ? 'medium' : 'low' }),
 )
+handle('ai:pictures-new', (_event, on: unknown) => service().picturesNew(on === true))
 handle('ai:try-picture', async (_event, id: unknown, model: unknown) => {
   await setup()
   return service().tryPicture(content!, provider(id), String(model))
@@ -1072,7 +1110,8 @@ handle('ai:try-picture', async (_event, id: unknown, model: unknown) => {
 handle('engine:picture', async (_event, id: unknown) => {
   await setup()
   if (!content || typeof id !== 'string') return undefined
-  return service().picture(content, id)
+  // The game's own content (M10.26): a far place, a district or a person that grew in play has its picture too.
+  return service().picture(engine?.content ?? content, id)
 })
 
 // The real-time clock.
@@ -1252,7 +1291,7 @@ void app.whenReady().then(async () => {
     const first = await loadContentFromDir(contentDir(), worlds[0]!.folder)
     const service = new AiService({ dir: playerData, cipher, content: first })
     const ok = await trialRun(service, trialing, contentDir(), app.getAppPath(), (line) => console.log(`[trial] ${line}`)).catch((error: unknown) => {
-      console.log(`[trial] stopped: ${error instanceof Error ? error.message : String(error)}`)
+      console.log(`[trial] stopped: ${error instanceof Error ? (error.stack ?? error.message).split('\n').slice(0, 5).join(' | ') : String(error)}`)
       return false
     })
     app.exit(ok ? 0 : 1)

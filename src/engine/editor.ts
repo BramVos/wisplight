@@ -1,4 +1,5 @@
-import { mapDraft, placesInDrawing } from './map/regiondraft'
+import { mapDraft } from './map/regiondraft'
+import { paintFixRequest, paintRequest, readPaint } from './map/paint'
 import { economyOverview, type SettlementView } from './economy/ledger'
 import { parseDocument, stringify } from 'yaml'
 import { DEFAULT_PALETTE, LANDS, MapPaletteSchema, MAX_SIGNS, SIGN_SHAPES, signsOf, SURFACE, TERRAIN_ORDER, type Level, type MapPalette } from './map/palette'
@@ -1305,18 +1306,22 @@ export function readVoice(text: string): { say: string; yaml?: string; problems:
 /**
  * The map belongs to the world build (M10.25; Bram, 29 September 2026): after
  * the last step the editor offers to lay the region map out from the places
- * (mapDraft, without a model) and to have the Palette step paint it, as one
- * proposal with a diff. What the layout proposes, and the Palette step's
- * request over the world with it; a world that has its map is only painted.
+ * (mapDraft, without a model) and to have it painted, as one proposal with a
+ * diff. Since M10.26 the painting is a table the model fills (map/paint.ts),
+ * a cheaper call than the whole Palette step; a world that has its map is
+ * only painted. Without a region to paint there is no request.
  */
-export function mapStepRequest(files: ContentFile[], said: string): { layout: Draft; request: LlmRequest } {
+export function mapStepRequest(files: ContentFile[], said: string): { layout: Draft; request?: LlmRequest } {
   const layout = mapDraft(files)
   const laid = layout.result?.ok ? layout.result.files : files
-  const content = safeLoad(laid)
-  const where = content ? placesInDrawing(content) : ''
-  const brief = [said.trim(), 'Paint the region map just laid out from the places: its zones and drawing, its own lands, paths and what lies beyond each edge, from the words above and the places.', where].filter(Boolean).join('\n\n')
-  const request = worldStepRequest(laid, 'palette', brief)
-  return { layout, request: { ...request, meta: { ...request.meta, map: true } } }
+  const request = paintRequest(laid, said)
+  return { layout, ...(request ? { request } : {}) }
+}
+
+/** A second try after a wrong map (M10.26): the same cached part, the table as it stood, and what stood wrong. */
+export function mapFixRequest(files: ContentFile[], said: string, table: string, wrong: string[]): LlmRequest | undefined {
+  const { request } = mapStepRequest(files, said)
+  return request ? paintFixRequest(request, table, wrong) : undefined
 }
 
 /**
@@ -1326,7 +1331,9 @@ export function mapStepRequest(files: ContentFile[], said: string): { layout: Dr
  */
 export function readMapStep(files: ContentFile[], layout: Draft, text: string): Draft {
   const laid = layout.result?.ok ? layout.result.files : files
-  const painted = readDraft(laid, text)
+  const painted = readPaint(laid, text)
+  // A table that does not fit says why, for the second try; nothing of it is proposed.
+  if (painted.problems.length) return { ...painted, changes: [] }
   const key = (c: DraftChange) => `${c.kind}:${c.id}`
   const byKey = new Map(layout.changes.map((c) => [key(c), c]))
   for (const c of painted.changes) {
@@ -1341,7 +1348,7 @@ export function readMapStep(files: ContentFile[], layout: Draft, text: string): 
   }
   // The layout's own first line sends the designer to the Palette step; here that step is part of it.
   const notes = layout.say.split('\n').slice(1).join('\n').trim()
-  const lead = layout.changes.length ? 'The map, laid out from the places, their exits and minutes, and painted in the Palette step from your words.' : ''
+  const lead = layout.changes.length ? 'The map, laid out from the places, their exits and minutes, and painted from your words.' : ''
   return recheckDraft(files, {
     say: [lead, notes, painted.say].filter(Boolean).join('\n\n'),
     questions: painted.questions,

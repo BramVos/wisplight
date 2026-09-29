@@ -31,7 +31,7 @@ One block with:
 | player | a map: money, inventory | yes |  |
 | knowledge | a map: chance, bands_km, max_level, modifiers | no | {"chance":[[0.1,0,0,0,0],[0.9,0.4,0.0... |
 | frame | text | no |  |
-| pictures | a map: style | no |  |
+| pictures | a map: style, wanted | no |  |
 | map | a map: palette, levels | no |  |
 | words | a map: land, region, from, sleep | no |  |
 | calendar | a map: era, months, weekdays, start_weekday | no |  |

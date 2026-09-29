@@ -7,7 +7,7 @@ import type { DesignLog } from '../../engine/designlog'
 import { NpcInspector } from './Inspector'
 import { HexMap } from './HexMap'
 import type { MapPalette, MapStyle, MapStyleName, PaletteView } from '../../engine'
-import { createEditor, type DiffLine, type Edit, type EditorBridge, type EditorDraft, type EditorSave, type EditorView, type EntityKind, type Raw, type ShownChange, type SimReport, type WorldInfo } from './client'
+import { createEditor, type DiffLine, type Edit, type EditorBridge, type EditorDraft, type EditorSave, type EditorView, type EntityKind, type PicturesMade, type PicturesView, type Raw, type ShownChange, type SimReport, type WorldInfo } from './client'
 
 // The editor (M8, FO chapter 15), in a window of its own: npm run editor, or
 // [Editor] in a development build of the game. Every world in content/ can
@@ -172,6 +172,7 @@ export function EditorApp() {
         <ContractPanel
           view={view}
           book={() => bridge.worldBook(world)}
+          pictures={<PicturesBlock bridge={bridge} world={world} />}
           propose={(ask) => {
             setAsking(ask)
             setPanel('chronicler')
@@ -1400,6 +1401,94 @@ function DraftView({ draft, busy, accept, drop, fix }: { draft: EditorDraft; bus
   )
 }
 
+// ---------------------------------------------------------------- pictures (M10.26)
+
+/**
+ * A world's pictures: what is missing (areas and portraits; a generic figure
+ * costs nothing and never counts), what they cost with the image model of the
+ * settings, and [Make the missing pictures] within a cap in euros, a line per
+ * picture as it comes. After a step (auto) it makes what is missing only when
+ * the world wants pictures (pictures.wanted), and says nothing when it does not.
+ */
+function PicturesBlock({ bridge, world, auto = false }: { bridge: EditorBridge; world: string; auto?: boolean }) {
+  const [view, setView] = useState<PicturesView>()
+  const [cap, setCap] = useState('')
+  const [lines, setLines] = useState<string[]>([])
+  const [busy, setBusy] = useState(false)
+  const [made, setMade] = useState<PicturesMade>()
+  const started = useRef(false)
+  useEffect(() => bridge.onPictureLine((line) => setLines((all) => [...all, line])), [bridge])
+  const make = useCallback(
+    async (capEur: number) => {
+      setBusy(true)
+      setLines([])
+      try {
+        setMade(await bridge.drawPictures(world, capEur))
+        setView(await bridge.pictures(world))
+      } finally {
+        setBusy(false)
+      }
+    },
+    [bridge, world],
+  )
+  useEffect(() => {
+    void bridge.pictures(world).then((v) => {
+      setView(v)
+      const estimate = v.priceUsd !== undefined ? v.priceUsd * v.missing.length : undefined
+      setCap((c) => c || (estimate !== undefined ? String(Math.max(0.5, Math.ceil(estimate * 1.2 * 100) / 100)) : '1'))
+      // After a step: the world said yes at the Palette step with the price, so what is missing is made, at that price.
+      if (auto && !started.current && v.wanted && v.model && estimate !== undefined && v.missing.length) {
+        started.current = true
+        void make(estimate)
+      }
+    })
+  }, [bridge, world, auto, make])
+  if (!view || (auto && !view.wanted)) return null
+  const places = view.missing.filter((m) => m.kind === 'place').length
+  const people = view.missing.length - places
+  const estimate = view.priceUsd !== undefined ? view.priceUsd * view.missing.length : undefined
+  return (
+    <section className="pictures-block small">
+      <h3>Pictures</h3>
+      <p>
+        {view.wanted ? 'This world wants pictures (pictures.wanted): the editor makes the new ones after the steps. ' : auto ? '' : 'This world does not ask for pictures (pictures.wanted is left out), so the steps make none; this button makes them all the same. '}
+        {view.missing.length
+          ? `${view.missing.length} missing (${places} place${places === 1 ? '' : 's'}, ${people} portrait${people === 1 ? '' : 's'}), ${view.kept} there.`
+          : `None missing; ${view.kept} there.`}{' '}
+        {view.model
+          ? estimate !== undefined
+            ? `With ${view.model}, about $${view.priceUsd!.toFixed(3)} each${view.missing.length ? `: about $${estimate.toFixed(2)} for what is missing` : ''}.`
+            : `The price of ${view.model} is not known, so no cap can be kept.`
+          : 'No image model is chosen under Settings > AI: nothing is made.'}
+      </p>
+      {!auto && view.model && view.missing.length > 0 && (
+        <p className="row">
+          <label>
+            At most €{' '}
+            <input className="short" value={cap} onChange={(e) => setCap(e.target.value)} aria-label="The most the missing pictures may cost, in euros" inputMode="decimal" />
+          </label>{' '}
+          <button type="button" className="link" disabled={busy || estimate === undefined || !(Number(cap) > 0)} onClick={() => void make(Number(cap))}>
+            [Make the missing pictures]
+          </button>
+        </p>
+      )}
+      {busy && <p className="muted">Drawing the pictures...</p>}
+      {lines.length > 0 && (
+        <ul className="check-list">
+          {lines.map((line, i) => (
+            <li key={i}>{line}</li>
+          ))}
+        </ul>
+      )}
+      {made && (
+        <p className={made.failed || made.stopped ? '' : 'ok'}>
+          Made {made.made}, already there {made.kept}, failed {made.failed}: ${made.costUsd.toFixed(2)}.{made.stopped ? ` Stopped: ${made.stopped}.` : ''} The world book and its atlas page show them from now on.
+        </p>
+      )}
+    </section>
+  )
+}
+
 // ---------------------------------------------------------------- the contract (M10.17)
 
 /**
@@ -1408,7 +1497,7 @@ function DraftView({ draft, busy, accept, drop, fix }: { draft: EditorDraft; bus
  * what happens without it, and the chronicler to propose it. Below, the keys
  * of world.yaml this world sets, and those that take the neutral default.
  */
-function ContractPanel({ view, propose, book }: { view: EditorView; propose: (ask: string) => void; book: () => Promise<{ markdown: string; saved?: string }> }) {
+function ContractPanel({ view, propose, book, pictures }: { view: EditorView; propose: (ask: string) => void; book: () => Promise<{ markdown: string; saved?: string }>; pictures: ReactNode }) {
   const unset = view.worldKeys.filter((k) => !k.set).map((k) => k.key)
   const [saved, setSaved] = useState<string>()
   return (
@@ -1424,6 +1513,7 @@ function ContractPanel({ view, propose, book }: { view: EditorView; propose: (as
         </button>
         {saved && <span className="muted"> {saved}</span>}
       </p>
+      {pictures}
       <table className="quest-table contract-table">
         <thead>
           <tr>
@@ -1553,6 +1643,8 @@ function WorldSteps({ bridge, world, view, saved, existing = false }: { bridge: 
   const [busy, setBusy] = useState(false)
   const [done, setDone] = useState<Record<string, 'saved' | 'skipped'>>({})
   const [outcome, setOutcome] = useState<EditorSave>()
+  /** Counts the saves that may want pictures (M10.26); each shows the pictures block once. */
+  const [drawing, setDrawing] = useState(0)
   // Enhance with AI (after M10.17): the answer written out by the chronicler, what is still open, and the words before it.
   const [open, setOpen] = useState<string[]>([])
   const [before, setBefore] = useState<string>()
@@ -1694,6 +1786,8 @@ function WorldSteps({ bridge, world, view, saved, existing = false }: { bridge: 
     if (result.ok) {
       setDone((d) => ({ ...d, [kept(step.id)]: 'saved' }))
       await record('accepted', draft)
+      // New places or people, or the last step (M10.26): the pictures of what is new, when the world wants them.
+      if (at === steps.length - 1 || draft.changes.some((c) => !c.merge && ['location', 'area', 'npc'].includes(c.kind))) setDrawing((n) => n + 1)
       keep(undefined)
       await saved()
     }
@@ -1860,6 +1954,7 @@ function WorldSteps({ bridge, world, view, saved, existing = false }: { bridge: 
         </>
       )}
       {outcome && (outcome.ok ? <p className="ok small">Saved. {outcome.changes.length} files changed.</p> : <SaveResult result={outcome} />)}
+      {drawing > 0 && <PicturesBlock key={drawing} bridge={bridge} world={world} auto />}
       {!land && at === steps.length - 1 && <MapStep bridge={bridge} world={world} said={log.answers['Palette'] ?? said} saved={saved} counted={() => void counted()} record={(decision, from) => bridge.design(world, { decision: { step: 'Map', decision, asked: log.answers['Palette'] ?? said, say: from?.say ?? '', questions: from?.questions ?? [], changed: from ? changedBy(from) : [], reason: '' } }).then(setLog)} />}
       <PolishPlaces bridge={bridge} world={world} view={view} saved={saved} counted={() => void counted()} />
       <h3>Notes for this world</h3>
@@ -1920,11 +2015,14 @@ function MapStep({ bridge, world, said, saved, counted, record }: { bridge: Edit
   const [draft, setDraft] = useState<EditorDraft>()
   const [busy, setBusy] = useState(false)
   const [outcome, setOutcome] = useState<EditorSave>()
-  const make = async () => {
+  // What stood wrong with the map, in the designer's words (M10.26): the second try reads the cached part again.
+  const [wrong, setWrong] = useState('')
+  const paint = async (work: () => Promise<EditorDraft>) => {
     setBusy(true)
     setOutcome(undefined)
     try {
-      setDraft(await bridge.mapStep(world, said))
+      setDraft(await work())
+      setWrong('')
       counted()
     } catch (reason) {
       setDraft({ say: '', questions: [], changes: [], problems: [reason instanceof Error ? reason.message : String(reason)], diffs: [] })
@@ -1932,6 +2030,8 @@ function MapStep({ bridge, world, said, saved, counted, record }: { bridge: Edit
       setBusy(false)
     }
   }
+  const make = () => paint(() => bridge.mapStep(world, said))
+  const again = (why: string[]) => (draft?.table ? paint(() => bridge.mapFix(world, said, draft.table!, why)) : make())
   const accept = async () => {
     if (!draft) return
     setBusy(true)
@@ -1952,13 +2052,21 @@ function MapStep({ bridge, world, said, saved, counted, record }: { bridge: Edit
     <section className="map-step">
       <h3>Then: the map</h3>
       <p className="muted small">
-        The chronicler lays the region map out from the places, their exits and minutes, and paints it in the Palette step from your words (the land, the water, what lies beyond each edge). It comes as one proposal: nothing is saved until you accept it.
+        The region map is laid out from the places, their exits and minutes, and the chronicler paints it from your words as a table: per land its sign, name, colours and line, the drawing, a line per path and edge. It comes as one proposal: nothing is saved until you accept it. When something stands wrong, say what, and it is painted again for less.
       </p>
       <button type="button" className="link" disabled={busy} onClick={() => void make()}>
         [Lay out the map and paint it]
       </button>
       {busy && <span className="muted small"> The chronicler is painting...</span>}
-      {draft && <DraftView draft={draft} busy={busy} accept={() => void accept()} drop={() => void drop()} />}
+      {draft && <DraftView draft={draft} busy={busy} accept={() => void accept()} drop={() => void drop()} {...(draft.problems.length && draft.table ? { fix: () => void again(draft.problems) } : {})} />}
+      {draft && !draft.problems.length && draft.table && (
+        <p className="row small">
+          <input value={wrong} onChange={(e) => setWrong(e.target.value)} placeholder="What stands wrong on it? (the ridge on the high rock, the sea to the west)" aria-label="What stands wrong on the map" />{' '}
+          <button type="button" className="link" disabled={busy || !wrong.trim()} onClick={() => void again([wrong.trim()])}>
+            [Paint it again with this]
+          </button>
+        </p>
+      )}
       {outcome && (outcome.ok ? <p className="ok small">Saved. {outcome.changes.length} files changed.</p> : <SaveResult result={outcome} />)}
     </section>
   )

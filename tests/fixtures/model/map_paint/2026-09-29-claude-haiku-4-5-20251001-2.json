@@ -1,0 +1,41 @@
+{
+  "kind": "map_paint",
+  "about": "the map of Skerrow, laid out from its places and painted as a table",
+  "model": "claude-haiku-4-5-20251001",
+  "provider": "anthropic",
+  "date": "2026-09-29",
+  "usage": {
+    "inputTokens": 2247,
+    "cachedTokens": 0,
+    "outputTokens": 1369
+  },
+  "reply": "{\"say\":\"Skerrow painted: a rocky island of stone and heather, salt marsh cradling the hamlet at its heart, cliffs ringing the south shore, and the beacon standing watch on the northern headland.\",\"lands\":[{\"key\":\"water\",\"name\":\"the Glass Sea\",\"char\":\"~\",\"like\":\"water\",\"dark\":\"#1a3a52\",\"paper\":\"#4a7ba7\",\"text\":\"The cold sea stretches away, salt-sharp on your lips.\"},{\"key\":\"cliff\",\"name\":\"the cliffs\",\"char\":\"^\",\"like\":\"heath\",\"dark\":\"#2a2a2a\",\"paper\":\"#6a6a6a\",\"text\":\"Stone drops sheer beneath your feet, the grey rock worn smooth by centuries of salt and storm.\"},{\"key\":\"shingle\",\"name\":\"black shingle\",\"char\":\".\",\"like\":\"heath\",\"dark\":\"#1a1a1a\",\"paper\":\"#4a4a4a\",\"text\":\"The strand crunches under your boots, black and grey stone worn round by the sea.\"},{\"key\":\"dune\",\"name\":\"dune\",\"char\":\"d\",\"like\":\"heath\",\"dark\":\"#5a4a2a\",\"paper\":\"#9a8a5a\",\"text\":\"Sand and salt grass give under your feet, the smell of the sea thick here.\"},{\"key\":\"heath\",\"name\":\"heather\",\"char\":\"h\",\"like\":\"heath\",\"dark\":\"#3a4a2a\",\"paper\":\"#7a8a5a\",\"text\":\"Low heather brushes your shins, tough and springy, the smell sharp and clean.\"},{\"key\":\"stone\",\"name\":\"grey stone\",\"char\":\"s\",\"like\":\"heath\",\"dark\":\"#4a4a4a\",\"paper\":\"#8a8a8a\",\"text\":\"Bare stone grey and lichen-spotted slopes away beneath you, ancient and still.\"},{\"key\":\"marsh\",\"name\":\"salt marsh\",\"char\":\"m\",\"like\":\"fen\",\"dark\":\"#3a4a3a\",\"paper\":\"#7a8a7a\",\"text\":\"Your boots squelch in the soft ground; the smell of salt and rot rises, and the reeds whisper.\"},{\"key\":\"fields\",\"name\":\"salt grass\",\"char\":\"g\",\"like\":\"fields\",\"dark\":\"#3a5a2a\",\"paper\":\"#7a9a5a\",\"text\":\"Tough salt grass ripples under the wind, salt-crusted and worn smooth by the island's breath.\"}],\"drawing\":[\"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\",\"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\",\"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\",\"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\",\"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\",\"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\",\"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\",\"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\",\"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\",\"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\",\"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\",\"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\",\"~~~~~ss^^^ss~~~~~~~~~~~~~~~~~~~\",\"~~~~sshhhhhhs~~~~~~~~~~~~~~~~~~\",\"~~~shhhhhhhhs~~~~~~~~~~~~~~~~~~\",\"~~~shhhggghs~~~~~s~~~~~~~~~~~~~\",\"~~~~mggggggms~~~~s:~~~~~~~~~~~~\",\"~~~~mmggggmm~~~~s:~~~~~~~~~~~~~\",\"~~~sshhhhhhs~~~sss~~~~~~~~~~~~~\",\"~~^shhhhhhs^~~~ss^~~~~~~~~~~~~~~\",\"~^sshhhhhhs^^~~s^^~~~~~~~~~~~~~~\",\"~^s^hhhhh^s^^~^s^^^~~~~~~~~~~~~~\",\"~~~s^hhh^s~~~^s^^^~~~~~~~~~~~~~~\",\"~~~sshhhs~~~~ss^^^^^~s~~~~~~~~~~\",\"~~~~shhs^~~~~s^^^^^sss~~~~~~~~~~\",\"~~~~~sh~~~~~^^s^^^^^s~~~~~~~~~~~\",\"~~~~~~~~~~~~~~~~~~~~~~~s~~~~~~~~\",\"~~~~~~~~~~~~~~~~~~~^^^^^^^^~~~~~\",\"~~~~~~~~~~~~~~~~~~~^^^^^^^^^~~~~\",\"~~~~~~~~~~~~~~~~~~~^^^^^^^^^^~~~\",\"~~~~~~~~~~~~~~~~~~~^^^^^^^^^~~~~\"],\"paths\":[{\"name\":\"the path to the Cliff Path\",\"text\":\"The path winds down toward the cliff edge, where the stone drops away to the grey sea far below.\"},{\"name\":\"the path to the Tidepools\",\"text\":\"You follow the worn track down toward the shore, where pools of salt water gleam between the stones.\"},{\"name\":\"the path to the Heights\",\"text\":\"The path climbs steeply up through heather and stone, the wind growing colder as you rise.\"},{\"name\":\"the path to Skerrow Hythe\",\"text\":\"The path descends through salt grass and marshy ground toward the smoke of the hamlet's chimneys.\"},{\"name\":\"the path from the Shore to Skerrow Hythe\",\"text\":\"The coastal track winds north from the black shingle, salt spray still hanging in the air.\"},{\"name\":\"the path to the Wyrm Barrow\",\"text\":\"You follow the narrow track up into the high stone, where ancient earth rises in a long mound beneath the heather.\"},{\"name\":\"the path to the Headland\",\"text\":\"The path climbs to the northern point where the beacon stands, the sea closing in on three sides.\"},{\"name\":\"the path from Skerrow Hythe to the Heights\",\"text\":\"The steep path climbs away from the harbour through salt grass and sparse heather toward the high ground.\"},{\"name\":\"the Harbour\",\"text\":\"The worn road leads into the hamlet, where stone cottages huddle round the little harbour and the Salt Kettle's smoke rises.\"},{\"name\":\"the path to the Drowned Mage's Tower\",\"text\":\"The path picks its way through stone and heather toward the old ruin that stands alone on the heights, watching the sea.\"},{\"name\":\"the Landing\",\"text\":\"The road runs down to the stone landing on Ynys Wen, where the white island waits across the narrow water.\"}],\"beyond\":[{\"side\":\"north\",\"text\":\"The sea stretches north into grey distance; no land lies that way for many leagues, only deep water and the Old Stars.\"},{\"side\":\"east\",\"text\":\"The Glass Sea runs east without shore until you reach the far islands of the Sundered Isles, two days' sail in fair weather.\"},{\"side\":\"south\",\"text\":\"The cliffs drop sheer to the south, and the sea runs deep and cold; the currents here will take you far from land.\"},{\"side\":\"west\",\"text\":\"The water lies west toward the Western Isles, where the elves dwell; Ynys Wen is the nearest, a short sail away.\"}]}",
+  "problems": [
+    "row 1 of the drawing has 32 characters; it needs 16",
+    "row 2 of the drawing has 32 characters; it needs 16",
+    "row 3 of the drawing has 32 characters; it needs 16",
+    "row 4 of the drawing has 32 characters; it needs 16",
+    "row 5 of the drawing has 32 characters; it needs 16",
+    "row 6 of the drawing has 32 characters; it needs 16",
+    "row 7 of the drawing has 32 characters; it needs 16",
+    "row 8 of the drawing has 32 characters; it needs 16",
+    "row 9 of the drawing has 32 characters; it needs 16",
+    "row 10 of the drawing has 32 characters; it needs 16",
+    "row 11 of the drawing has 32 characters; it needs 16",
+    "row 12 of the drawing has 32 characters; it needs 16"
+  ],
+  "recordedProblems": [
+    "the drawing has 31 rows; it needs 29",
+    "row 1 of the drawing has 32 characters; it needs 16",
+    "row 2 of the drawing has 32 characters; it needs 16",
+    "row 3 of the drawing has 32 characters; it needs 16",
+    "row 4 of the drawing has 32 characters; it needs 16",
+    "row 5 of the drawing has 32 characters; it needs 16",
+    "row 6 of the drawing has 32 characters; it needs 16",
+    "row 7 of the drawing has 32 characters; it needs 16",
+    "row 8 of the drawing has 32 characters; it needs 16",
+    "row 9 of the drawing has 32 characters; it needs 16",
+    "row 10 of the drawing has 32 characters; it needs 16",
+    "row 11 of the drawing has 32 characters; it needs 16"
+  ]
+}

@@ -933,8 +933,12 @@ export const WorldSchema = z.object({
   knowledge: KnowledgeRulesSchema.default(KnowledgeRulesSchema.parse({})),
   /** The fixed block every model call gets about this world (FO, chapter 10); without it, a plain one that names no world (M10.17). */
   frame: z.string().optional(),
-  /** How pictures of places and people look in this world (after the M7 playtest): one style for all of them. */
-  pictures: z.object({ style: z.string() }).strict().optional(),
+  /**
+   * How pictures of places and people look in this world (after the M7 playtest): one style for all of them.
+   * wanted (M10.26): the editor makes the pictures of what is new after the steps; left out, it makes none
+   * unless asked. In a game the player's own switch decides, since the player pays.
+   */
+  pictures: z.object({ style: z.string().optional(), wanted: z.boolean().optional() }).strict().optional(),
   /** The map of this world (M10): its palette, and its levels from below to above. */
   map: WorldMapSchema.optional(),
   /** The names the game's own texts use (M8): the land, the region you play in, where the stranger comes from. */

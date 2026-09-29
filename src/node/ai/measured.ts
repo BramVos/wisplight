@@ -20,6 +20,7 @@ export const MEASURED: Record<string, Measured> = {
   land: { inputTokens: 6579, outputTokens: 1267, model: 'claude-opus-5-5', date: '2026-09-29' },
   legends: { inputTokens: 1310, outputTokens: 439, model: 'claude-opus-5-5', date: '2026-09-29' },
   lore_check: { inputTokens: 727, outputTokens: 40, model: 'claude-sonnet-5', date: '2026-09-29' },
+  map_paint: { inputTokens: 2247, outputTokens: 1378, model: 'claude-haiku-4-5-20251001', date: '2026-09-29' },
   model_advice: { inputTokens: 3389, outputTokens: 584, model: 'claude-sonnet-5', date: '2026-09-29' },
   npc_goals: { inputTokens: 2850, outputTokens: 264, model: 'claude-sonnet-5', date: '2026-09-29' },
   npc_reply: { inputTokens: 3481, outputTokens: 244, model: 'claude-haiku-4-5-20251001', date: '2026-09-29' },

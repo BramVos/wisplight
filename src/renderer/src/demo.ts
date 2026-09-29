@@ -28,6 +28,7 @@ const state = {
   askAbove: 1 as number | null,
   playMode: 'continue' as PlayMode,
   pictures: undefined as { provider: ProviderId; model: string; quality: 'low' | 'medium' } | undefined,
+  picturesNew: true,
   monthBudget: 5 as number | undefined,
   credit: { openai: { amountUsd: 10, enteredAt: '2026-09-02T09:00:00.000Z', spent: 0 } } as Partial<Record<ProviderId, { amountUsd: number; enteredAt: string; spent: number }>>,
   session: empty(),
@@ -153,6 +154,7 @@ export function demoBridge(_content: Content): AiBridge {
         models: Object.fromEntries((['openai', 'anthropic'] as const).filter((p) => state.keys[p]).map((p) => [p, MODELS[p].map((m) => m.id)])),
         missing: [],
         ...(state.pictures ? { pictures: state.pictures } : {}),
+        picturesNew: Boolean(state.pictures) && state.picturesNew,
         replyWithinSeconds: state.replyWithin,
       },
       usage: usage(),
@@ -234,6 +236,9 @@ export function demoBridge(_content: Content): AiBridge {
     // The desktop app opens the provider's billing page here.
     billing: async () => undefined,
     imageModels: async (provider) => (provider === 'openai' && state.keys.openai ? [{ id: 'gpt-image-1-mini' }, { id: 'gpt-image-2' }] : []),
+    setPicturesNew: async (on) => {
+      state.picturesNew = on
+    },
     setPictures: async (provider, model, quality) => {
       state.pictures = provider && model ? { provider, model, quality: quality ?? 'low' } : undefined
     },

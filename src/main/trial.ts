@@ -8,6 +8,7 @@ import { costUsd } from '../node/ai/pricing'
 import { listWorlds, loadContentFromDir, readContentFiles } from '../node/content'
 import { kindSituation } from '../engine/trials'
 import { keepRegion } from '../node/proofworld'
+import { mapTrial } from './maptrial'
 import { keepTally, keptTallies, measuring, playRegion, REGION_KINDS, regionReport, REGION_SETTINGS, type RegionSetting } from '../node/regionplay'
 import type { BuildStore } from '../node/ai/builds'
 import type { AiService } from '../node/ai/service'
@@ -247,6 +248,12 @@ export async function trialRun(ai: AiService, kinds: string, contentRoot: string
         contentRoot,
         say,
       )) && ok
+      continue
+    }
+    if (kind === 'map_measure') {
+      // The map painted as a table with each model asked for (M10.26): --models a,b --times n.
+      const models = env('MODELS').split(',').map((m) => m.trim()).filter(Boolean)
+      ok = (await mapTrial(ai, contentRoot, appPath, { models: models.length ? models : ['claude-sonnet-5', 'claude-haiku-4-5-20251001'], times: Math.max(1, Math.min(Number(env('TIMES')) || 2, 5)), record: env('RECORD') === '1' }, say)) && ok
       continue
     }
     if (kind === 'region_play') {

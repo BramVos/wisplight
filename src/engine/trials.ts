@@ -10,7 +10,8 @@ import { worldFrame } from './dialogue/prompt'
 import { relation } from './dialogue/relations'
 import { parseReply } from './dialogue/schema'
 import { brainTrial, chroniclerTrial, runSituation, SITUATIONS } from './dialogue/testset'
-import { draftRequest, enhanceRequest, newWorldFiles, paletteRequest, polishRequest, readDraft, readEnhance, readPalette, readPolish, readVoice, voiceRequest, worldStepRequest } from './editor'
+import { withoutMap } from './map/regiondraft'
+import { draftRequest, enhanceRequest, mapStepRequest, newWorldFiles, paletteRequest, polishRequest, readDraft, readEnhance, readMapStep, readPalette, readPolish, readVoice, voiceRequest, worldStepRequest } from './editor'
 import { Engine } from './engine'
 import { GameClock } from './clock'
 import { recordFact } from './news'
@@ -128,6 +129,7 @@ function checked(request: LlmRequest, text: string, read: (value: unknown) => st
   const shape = schemaProblems(request.schema, parsed.value)
   return [...shape.slice(0, 5), ...limits(text), ...(shape.length ? [] : read(parsed.value))]
 }
+
 
 const SITUATION_BUILDS: Record<string, Build> = {
   npc_reply: async ({ base }) => {
@@ -331,6 +333,13 @@ const SITUATION_BUILDS: Record<string, Build> = {
   world_polish: async ({ isle }) => {
     const request = polishRequest(isle)
     return { about: 'the polish round of Skerrow\'s places', request, check: (text) => readPolish(isle, text).problems }
+  },
+  map_paint: async ({ isle }) => {
+    // Skerrow without its map, laid out from its places and painted from what its world says of the island.
+    const files = withoutMap(isle)
+    const said = 'A small, rocky island in a grey sea: black shingle on the strand, heather and grey stone on the heights, a salt marsh behind the harbour, and the beacon on the headland.'
+    const { layout, request } = mapStepRequest(files, said)
+    return { about: 'the map of Skerrow, laid out from its places and painted as a table', request: request!, check: (text) => readMapStep(files, layout, text).problems }
   },
   palette_draft: async ({ isle }) => {
     const request = paletteRequest(isle, 'colder, like a winter sea')

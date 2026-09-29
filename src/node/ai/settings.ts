@@ -34,6 +34,11 @@ interface SettingsFile {
   models?: Partial<Record<ProviderId, { ids: string[]; at: string }>>
   /** Pictures of places and people: off unless the player picks an image model. */
   pictures?: PictureChoice
+  /**
+   * Whether the game makes pictures of new places and people (M10.26), what grows in play included: on with an
+   * image model unless the player turns it off; off shows only the pictures there are.
+   */
+  picturesNew?: boolean
   /** How long a spoken reply may take, in seconds (M10.8): ten unless the player sets it at the dialogue model. */
   replyWithinSeconds?: number
   /** From what cost of one call the game asks first (M10.21), in dollars; null after "always". */
@@ -64,6 +69,8 @@ export interface SettingsSummary {
   /** Roles whose chosen model is no longer in its provider's list. */
   missing: ChosenRole[]
   pictures?: PictureChoice
+  /** Whether the game makes pictures of new places and people (M10.26). */
+  picturesNew: boolean
   replyWithinSeconds: number
   /** From what cost of one call the game asks first; null: never. */
   askAboveUsd: number | null
@@ -206,6 +213,18 @@ export class SettingsStore {
     })
   }
 
+  /** Whether new pictures are made (M10.26): only with an image model, and not when the player turned it off. */
+  get picturesNew(): boolean {
+    return Boolean(this.current.pictures) && this.current.picturesNew !== false
+  }
+
+  setPicturesNew(on: boolean): void {
+    this.change((d) => {
+      if (on) delete d.picturesNew
+      else d.picturesNew = false
+    })
+  }
+
   get budgetUsdPerHour(): number {
     return this.current.budgetUsdPerHour
   }
@@ -278,6 +297,7 @@ export class SettingsStore {
       models: Object.fromEntries(Object.entries(this.current.models ?? {}).map(([id, list]) => [id, list?.ids ?? []])),
       missing: this.missing(),
       ...(this.current.pictures ? { pictures: { ...this.current.pictures } } : {}),
+      picturesNew: this.picturesNew,
       replyWithinSeconds: this.replyWithinSeconds,
     }
   }

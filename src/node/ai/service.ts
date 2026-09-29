@@ -205,6 +205,11 @@ export class AiService {
     this.settings.setPictures(choice)
   }
 
+  /** Whether the game makes pictures of new places and people (M10.26). */
+  picturesNew(on: boolean): void {
+    this.settings.setPicturesNew(on)
+  }
+
   /**
    * The picture of a person or a place, as a data URL: from disk when it was
    * made before, otherwise made once by the image model and kept. Undefined
@@ -223,7 +228,8 @@ export class AiService {
     const file = join(this.options.dir, 'pictures', content.world.id.replace(/[^a-z0-9_-]/gi, ''), `${subject.id}-${subject.key}.jpg`)
     if (existsSync(file)) return `data:image/jpeg;base64,${readFileSync(file).toString('base64')}`
     const choice = this.settings.pictures
-    if (!choice) return undefined
+    // The player's switch (M10.26): off, the game shows the pictures there are and makes none.
+    if (!choice || !this.settings.picturesNew) return undefined
     const running = this.drawing.get(file)
     if (running) return running
     const job = this.gateway
@@ -239,6 +245,38 @@ export class AiService {
     return job
   }
 
+  /** The pictures of these worlds not made yet, and how many are (areas and named people; a generic figure costs nothing). */
+  private pictureJobs(contents: Content[]): { jobs: { file: string; prompt: string; name: string; world: string; kind: 'person' | 'place' }[]; kept: number } {
+    const jobs: { file: string; prompt: string; name: string; world: string; kind: 'person' | 'place' }[] = []
+    let kept = 0
+    for (const content of contents) {
+      const ids = [...content.npcs.keys(), ...[...content.areas.keys()].map((a) => `area_${a}`)]
+      for (const id of ids) {
+        const subject = pictureSubject(content, id)
+        if (!subject || subject.plain) continue
+        const file = join(this.options.dir, 'pictures', content.world.id.replace(/[^a-z0-9_-]/gi, ''), `${subject.id}-${subject.key}.jpg`)
+        if (jobs.some((j) => j.file === file)) continue
+        if (existsSync(file)) {
+          kept++
+          continue
+        }
+        jobs.push({ file, prompt: subject.prompt, name: subject.name, world: content.world.name, kind: subject.kind })
+      }
+    }
+    return { jobs, kept }
+  }
+
+  /**
+   * A world's pictures for the editor (M10.26): what is missing and what is there, and with the image model
+   * chosen under Settings > AI what one costs; without one there is no model and no price.
+   */
+  pictureView(content: Content): { model?: string; priceUsd?: number; missing: { name: string; kind: 'person' | 'place' }[]; kept: number } {
+    const { jobs, kept } = this.pictureJobs([content])
+    const choice = this.settings.pictures
+    const price = choice ? picturePrice(choice.model, choice.quality) : undefined
+    return { ...(choice ? { model: choice.model } : {}), ...(price !== undefined ? { priceUsd: price } : {}), missing: jobs.map((j) => ({ name: j.name, kind: j.kind })), kept }
+  }
+
   /**
    * Every picture of these worlds at once, on the player's request (after the
    * M10 playtest): the people and places not made yet, three at a time, with
@@ -251,21 +289,8 @@ export class AiService {
     if (!choice) return { ...result, stopped: 'pictures are off under Settings > AI' }
     const price = picturePrice(choice.model, choice.quality)
     if (price === undefined) return { ...result, stopped: `no known price for ${choice.model} at ${choice.quality} quality, so the cap cannot be kept` }
-    const jobs: { file: string; prompt: string; name: string; world: string }[] = []
-    for (const content of contents) {
-      const ids = [...content.npcs.keys(), ...[...content.areas.keys()].map((a) => `area_${a}`)]
-      for (const id of ids) {
-        const subject = pictureSubject(content, id)
-        if (!subject || subject.plain) continue
-        const file = join(this.options.dir, 'pictures', content.world.id.replace(/[^a-z0-9_-]/gi, ''), `${subject.id}-${subject.key}.jpg`)
-        if (jobs.some((j) => j.file === file)) continue
-        if (existsSync(file)) {
-          result.kept++
-          continue
-        }
-        jobs.push({ file, prompt: subject.prompt, name: subject.name, world: content.world.name })
-      }
-    }
+    const { jobs, kept } = this.pictureJobs(contents)
+    result.kept = kept
     say(`${jobs.length} to make, ${result.kept} made before; ${choice.model} at ${choice.quality} quality, $${price} each, at most $${capUsd.toFixed(2)}`)
     let reserved = 0
     const next = async (): Promise<void> => {
@@ -284,7 +309,7 @@ export class AiService {
           writeFileSync(job.file, Buffer.from(picture.base64, 'base64'))
           result.made++
           result.costUsd += price
-          say(`made ${job.world}: ${job.name}`)
+          say(`made ${job.world}: ${job.name}, $${price}`)
         } catch (error) {
           reserved -= price
           result.failed++

@@ -1,4 +1,5 @@
 import type { Content } from './content'
+import { frameOf, landOfArea, landOfPlace } from './lands'
 
 // Pictures of places and people (after the M7 playtest). The engine only says
 // what a picture shows: the description from the content, in the one style of
@@ -27,10 +28,17 @@ const STYLE = 'A small illustration in pen and ink with a light wash: muted colo
 const RULES = 'No text, no letters, no border, no frame. Nothing gory. Folklore, not photography.'
 const KIND: Record<string, string> = { city: 'a city', town: 'a small town', village: 'a village', hamlet: 'a hamlet', inn: 'an inn by the road', route: 'a road across the land', wilderness: 'wild country' }
 
+/** Whether a world wants pictures made in the editor (M10.26); in a game only the player's switch counts. */
+export function wantsPictures(content: Pick<Content, 'world'>): boolean {
+  return content.world.pictures?.wanted === true
+}
+
 export function pictureSubject(content: Content, id: string): PictureSubject | undefined {
-  const style = content.world.pictures?.style ?? STYLE
+  // In the style of the land a place or a person is of (M10.26: a land written in play has its own), else the world's.
+  const styleOf = (land: ReturnType<typeof landOfArea>) => frameOf(content, land).pictures?.style ?? content.world.pictures?.style ?? STYLE
   const npc = content.npcs.get(id)
   if (npc) {
+    const style = styleOf(landOfPlace(content, npc.home))
     if (npc.portrait === 'generic') return { id, kind: 'person', name: npc.name, prompt: '', key: 'plain', plain: plainFigure(npc.pronoun) }
     const job = content.professions.get(npc.profession)?.name ?? npc.profession
     const prompt = `${style} A portrait, head and shoulders, of ${npc.name}, ${npc.age}, ${job}. ${npc.appearance} ${RULES}`
@@ -40,6 +48,7 @@ export function pictureSubject(content: Content, id: string): PictureSubject | u
   const areaId = content.locations.get(id)?.area ?? (id.startsWith('area_') ? id.slice(5) : [...content.areas.values()].find((a) => a.topic === id)?.id)
   const area = areaId ? content.areas.get(areaId) : undefined
   if (!area) return undefined
+  const style = styleOf(landOfArea(content, area.id))
   const places = [...content.locations.values()].filter((l) => l.area === area.id)
   const first = places.find((l) => l.tags.includes('edge')) ?? places[0]
   const prompt = `${style} A view of ${area.name}, ${KIND[area.kind] ?? 'a place'}: ${clean(area.summary)} ${first ? clean(first.description.day) : ''} ${RULES}`

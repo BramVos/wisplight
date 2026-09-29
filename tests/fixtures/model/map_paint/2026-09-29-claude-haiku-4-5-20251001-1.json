@@ -1,0 +1,41 @@
+{
+  "kind": "map_paint",
+  "about": "the map of Skerrow, laid out from its places and painted as a table",
+  "model": "claude-haiku-4-5-20251001",
+  "provider": "anthropic",
+  "date": "2026-09-29",
+  "usage": {
+    "inputTokens": 2247,
+    "cachedTokens": 0,
+    "outputTokens": 1378
+  },
+  "reply": "{\"say\":\"I have painted Skerrow, a small rocky island in grey waters: black shingle shores to the south, high heather-clad heights to the north with the beacon standing sentinel, salt marshes hemming in the hamlet at Skerrow Hythe, and the distant white shape of Ynys Wen across the sea to the southwest.\",\"lands\":[{\"key\":\"water\",\"name\":\"the Glass Sea\",\"char\":\"~\",\"like\":\"water\",\"dark\":\"#1a3a52\",\"paper\":\"#4a7ba7\",\"text\":\"You taste salt and hear the endless sigh of the deep.\"},{\"key\":\"shingle\",\"name\":\"black shingle\",\"char\":\"•\",\"like\":\"heath\",\"dark\":\"#2a2a2a\",\"paper\":\"#5a5a5a\",\"text\":\"Wet black stones turn under your feet, still warm from the wreck.\"},{\"key\":\"cliff\",\"name\":\"cliffs\",\"char\":\"^\",\"like\":\"heath\",\"dark\":\"#3a4a5a\",\"paper\":\"#6a7a8a\",\"text\":\"Stone rises sheer before you, grey and salt-carved, and the wind comes keen.\"},{\"key\":\"dune\",\"name\":\"dune\",\"char\":\"∿\",\"like\":\"heath\",\"dark\":\"#4a5a6a\",\"paper\":\"#7a8a9a\",\"text\":\"Sand and shale shift beneath you; the salt grass whispers.\"},{\"key\":\"marsh\",\"name\":\"salt marsh\",\"char\":\"≈\",\"like\":\"fen\",\"dark\":\"#3a5a3a\",\"paper\":\"#6a9a6a\",\"text\":\"Brackish water squelches under your boots, thick with brine and the smell of rot.\"},{\"key\":\"heath\",\"name\":\"heather\",\"char\":\"♦\",\"like\":\"heath\",\"dark\":\"#4a3a2a\",\"paper\":\"#8a6a4a\",\"text\":\"Heather brushes your shins, dry and purple-grey, and the wind cuts keen from the open sea.\"},{\"key\":\"stone\",\"name\":\"grey stone\",\"char\":\"■\",\"like\":\"heath\",\"dark\":\"#5a5a6a\",\"paper\":\"#8a8a9a\",\"text\":\"Bare grey stone underfoot, carved by centuries of wind and salt spray.\"},{\"key\":\"grove\",\"name\":\"silver grove\",\"char\":\"Λ\",\"like\":\"woods\",\"dark\":\"#4a5a4a\",\"paper\":\"#7a9a7a\",\"text\":\"Old twisted trees stand silver in the grey light, their leaves thin as coin, and the air feels watched.\"}],\"drawing\":[\"~~~~~~~~~~~~~~~~^~~\",\"~~~~~~~~~~~~~~~~^~~\",\"~~~~~~~~~~~~~~~~^~~\",\"~~~~~~~~~~~~~~~~^~~\",\"~~~~~~~~~~~~~~~~^~~\",\"~~~~~~~~~~~~~~~~^~~\",\"~~~~~~~~~~~~~~~~^~~\",\"~~~~~~~~~~~~~~~~^~~\",\"~~~~~~~Λ~~~~Λ~~~~^\",\"~~~~~~~■~~~~■~~~~^~\",\"~~~~~~~■~~~~■~~~~^~\",\"~~~~~~~■♦♦♦■~~~~^~\",\"~~~~~~~Λ♦♦♦Λ~~~~^~\",\"~~~~~~~~~~~~~~~~~~~\",\"~~~,♦♦♦♦♦♦♦,~~~~,~\",\"~~~~■~^^^^~■~~~~~~~~\",\"~~~≈≈■~^^^^~■~~~~:~~\",\"~~~≈≈■~^^^^~:~~~~:~~\",\"~~~~:~^^^^~,~~~~~~^~\",\"~~~~~^^^^^~~~~~~~~~\",\"~~~~~^^^^^~~~~~~~~~\",\"~~~~~^^^^^~~~~~~~~~\",\"~~~~~^^^^^~~~:~~~~~\",\"~~~~~~~:~~~:~~~~~~~\",\"~~~~~~~•~~~:~~~~~~~\",\"~~~~~~~•~~~~~~~~~~~\",\"~~~~~~~•~~~:~~~~~~~\",\"~~~~~~~•~~~~~~~~~~~\",\"~~~~~~~~~~~~~~~~~~~\"],\"paths\":[{\"name\":\"the path to the Cliff Path\",\"text\":\"You climb toward the sheer grey walls of the island's edge, where the wind bites and the sea sounds like rage.\"},{\"name\":\"the path to the Tidepools\",\"text\":\"You pick your way down to the rocks and pools where the tide has left its gifts and its ghosts.\"},{\"name\":\"the path to the Heights\",\"text\":\"You climb from the marsh toward the high stone and the heather, where the beacon watches over the grey waters.\"},{\"name\":\"the path to Skerrow Hythe\",\"text\":\"You follow the worn stones down toward the harbour and the smell of fish smoke.\"},{\"name\":\"the path from the Shore to Skerrow Hythe\",\"text\":\"You climb from the black shingle toward the pale stone of the hamlet, leaving the sea's noise behind.\"},{\"name\":\"the path to the Wyrm Barrow\",\"text\":\"You walk among the standing stones toward the high barrow where something old sleeps on.\"},{\"name\":\"the path to the Headland\",\"text\":\"You follow the ridge toward the beacon's dark tower, and the wind grows colder and stranger.\"},{\"name\":\"the path from Skerrow Hythe to the Heights\",\"text\":\"You climb away from the hamlet toward the stone and the open sky, where nothing hides.\"},{\"name\":\"the Harbour\",\"text\":\"You walk the stone jetty of Skerrow Hythe, where fishing boats rot on their moorings and the salt reek fills your throat.\"},{\"name\":\"the path to the Drowned Mage's Tower\",\"text\":\"You make for the old tower where Aldmar's power sleeps, and the air grows cold and slow around you.\"},{\"name\":\"the Landing\",\"text\":\"You walk the white stone platform of Ynys Wen, where the long hall of the elves stands grey and ageless.\"}],\"beyond\":[{\"side\":\"north\",\"text\":\"The Glass Sea stretches north to the open deep, and no land breaks the grey for seven days' sail.\"},{\"side\":\"east\",\"text\":\"The sea runs east toward the drowned cities of Aldmar's empire, though no ship has found them in living memory.\"},{\"side\":\"south\",\"text\":\"The sea runs south toward the Shattered Shelf and the reefs where the wreck of the Grey Gull now lies broken.\"},{\"side\":\"west\",\"text\":\"Ynys Wen lies west across the narrows, and beyond it the other Western Isles fade into grey mist and rumour.\"}]}",
+  "problems": [
+    "row 1 of the drawing has 19 characters; it needs 16",
+    "row 2 of the drawing has 19 characters; it needs 16",
+    "row 3 of the drawing has 19 characters; it needs 16",
+    "row 4 of the drawing has 19 characters; it needs 16",
+    "row 5 of the drawing has 19 characters; it needs 16",
+    "row 6 of the drawing has 19 characters; it needs 16",
+    "row 7 of the drawing has 19 characters; it needs 16",
+    "row 8 of the drawing has 19 characters; it needs 16",
+    "row 10 of the drawing has 19 characters; it needs 16",
+    "row 11 of the drawing has 19 characters; it needs 16",
+    "row 14 of the drawing has 19 characters; it needs 16",
+    "row 16 of the drawing has 20 characters; it needs 16"
+  ],
+  "recordedProblems": [
+    "row 1 of the drawing has 19 characters; it needs 16",
+    "row 2 of the drawing has 19 characters; it needs 16",
+    "row 3 of the drawing has 19 characters; it needs 16",
+    "row 4 of the drawing has 19 characters; it needs 16",
+    "row 5 of the drawing has 19 characters; it needs 16",
+    "row 6 of the drawing has 19 characters; it needs 16",
+    "row 7 of the drawing has 19 characters; it needs 16",
+    "row 8 of the drawing has 19 characters; it needs 16",
+    "row 9 of the drawing has 18 characters; it needs 16",
+    "row 10 of the drawing has 19 characters; it needs 16",
+    "row 11 of the drawing has 19 characters; it needs 16",
+    "row 12 of the drawing has 18 characters; it needs 16"
+  ]
+}
