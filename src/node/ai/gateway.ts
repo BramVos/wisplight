@@ -1,10 +1,10 @@
 import type { PlayMode } from '../../engine/modes'
-import { LlmError, tokensAbout, type LlmClient, type LlmRejection, type LlmRequest, type LlmResponse, type LlmRole } from '../../engine/dialogue/llm'
+import { LlmError, type LlmClient, type LlmRejection, type LlmRequest, type LlmResponse, type LlmRole } from '../../engine/dialogue/llm'
 import { withSafety } from '../../engine/safety'
 import { MODEL_KINDS } from '../../engine/modelkinds'
 import type { AiLog } from './log'
 import { CostRegister, type SpendBySource, type SpendSource } from './costs'
-import { cacheMinimum, cacheNote, picturePrice, priceOf, typicalUsd, upperBoundUsd } from './pricing'
+import { cacheNote, picturePrice, priceOf, typicalUsd, upperBoundUsd } from './pricing'
 import { BusyError, type PictureResponse, type Provider, type ProviderId, type RateLimit } from './providers'
 import type { PictureChoice, RoleChoice } from './settings'
 import type { UsageStore } from './usage'
@@ -62,27 +62,7 @@ export interface GatewayOptions {
    * editor's drafts are the editor's.
    */
   source?: () => SpendSource
-  /** How long after the last line the cache of a place is kept warm (M10.28: the app knob cache_keepalive_minutes); 0: never. */
-  keepAliveMinutes?: () => number
 }
-
-/**
- * A fixed part kept in the cache (M10.28): the last real call that named it,
- * on which model, when it was last called for real and last read (a call or
- * a ping), and whether a ping came since.
- */
-interface Warm {
-  request: LlmRequest
-  choice: RoleChoice
-  real: number
-  touched: number
-  pinged: boolean
-}
-
-/** A ping goes this long after the fixed part was last read: before the five minutes of the cache run out. */
-export const PING_AFTER_MS = 270_000
-/** The role pings count under in the usage and the log (M10.28): apart from the voice's own calls. */
-export const PING_ROLE = 'keep-warm'
 
 /** The roles shown as lights (M10.4): the editor's drafts are the builder's. */
 export const LIGHT_ROLES = ['voice', 'brain', 'chronicler', 'illustrator', 'builder'] as const
@@ -122,9 +102,6 @@ export class Gateway implements LlmClient {
   private readonly costs: CostRegister
   private readonly inFlight = new Map<LightRole, number>()
   private readonly lastCall = new Map<LightRole, NonNullable<RoleActivity['last']>>()
-  // The fixed parts kept warm (M10.28), by name; and per model whether a ping was read back by the next real call.
-  private readonly warmth = new Map<string, Warm>()
-  private readonly pings = new Map<string, 'reads' | 'misses'>()
 
   constructor(private readonly options: GatewayOptions) {
     this.costs = options.costs ?? new CostRegister(undefined, () => this.now())
@@ -210,12 +187,10 @@ export class Gateway implements LlmClient {
     // Every call carries the hard limits and the rule that world text is description, never instruction (M10.19).
     // The effort of its kind when the request sets none (M10.27): a table at low, not the model's default medium.
     const effort = asked.effort ?? MODEL_KINDS.find((k) => k.kind === asked.schemaName)?.effort
-    const safe = withSafety(effort && !asked.effort ? { ...asked, effort } : asked)
+    const request = withSafety(effort && !asked.effort ? { ...asked, effort } : asked)
     // A light task (M10.20) goes to the model the player chose for the brain, when there is one.
-    const choice = override ?? this.tiered(safe) ?? this.options.role(safe.role)
-    if (!choice) throw new LlmError('config', `no model chosen for ${safe.role}`)
-    // A fixed part a ping could not keep (M10.28): it is kept an hour instead, and nothing is pinged.
-    const request = safe.warm && !override && this.pings.get(`${choice.provider}/${choice.model}`) === 'misses' ? { ...safe, cacheHour: true } : safe
+    const choice = override ?? this.tiered(request) ?? this.options.role(request.role)
+    if (!choice) throw new LlmError('config', `no model chosen for ${request.role}`)
     const knobs = this.options.knobs?.()
     const roleTimeoutMs = this.options.timeoutMs?.[request.role] ?? knobs?.timeoutMs?.[request.role] ?? TIMEOUT_MS[request.role]
     const timeoutMs = EDITOR_SCHEMAS.has(request.schemaName) && request.timeoutMs ? Math.min(request.timeoutMs, knobs?.editorTimeoutMs ?? EDITOR_TIMEOUT_MS) : Math.min(request.timeoutMs ?? Infinity, roleTimeoutMs)
@@ -293,8 +268,6 @@ export class Gateway implements LlmClient {
         prompt: request.prompt,
         response: response.text,
       })
-      // A trial with a model of its own (M10.28: keep_warm) keeps its block warm on that model.
-      if (request.warm) this.warmed(request, choice, response.usage)
       const { rateLimit: _, ...reply } = response
       return reply
     } catch (error) {
@@ -338,71 +311,6 @@ export class Gateway implements LlmClient {
       if (reservation !== undefined) this.costs.release(reservation)
       if (buildHold !== undefined) this.options.builds!.release(buildHold)
       if (light) this.end(light, { at: this.now(), ms: this.now() - started, ...outcome })
-    }
-  }
-
-  /**
-   * A real call on a fixed part the app keeps warm (M10.28). After a ping,
-   * this is the measure: did it read the fixed part from the cache? If not,
-   * a ping cannot keep it on this model (the empty call without a schema may
-   * warm another entry than the real one), and from then on the fixed part
-   * is kept an hour instead, without pings.
-   */
-  private warmed(request: LlmRequest, choice: RoleChoice, usage: LlmResponse['usage']): void {
-    const key = request.warm!
-    const model = `${choice.provider}/${choice.model}`
-    const was = this.warmth.get(key)
-    if (was?.pinged && was.choice.model === choice.model && this.pings.get(model) === undefined) {
-      const fixed = tokensAbout(request.system.slice(0, request.cacheBreak ?? request.system.length))
-      this.pings.set(model, usage.cachedTokens >= fixed / 2 ? 'reads' : 'misses')
-    }
-    const now = this.now()
-    this.warmth.set(key, { request, choice, real: now, touched: now, pinged: false })
-  }
-
-  /** Whether pings keep the fixed part on this model (M10.28): measured on the first real call after a ping. */
-  pingsWork(provider: ProviderId, model: string): boolean | undefined {
-    const seen = this.pings.get(`${provider}/${model}`)
-    return seen === undefined ? undefined : seen === 'reads'
-  }
-
-  /**
-   * Keeps the fixed part named `key` in the cache (M10.28), called by the app
-   * every little while as long as the window is open, with the name of the
-   * place the stranger is in (undefined when there is none). A ping goes
-   * shortly before the five minutes run out, until the app knob's minutes
-   * after the last real call; never when pings did not keep it on this model,
-   * the provider cannot ping, or the budget is spent. It costs a cache read and
-   * counts in the budgets and the log as its own role.
-   */
-  async keepWarm(key: string | undefined): Promise<boolean> {
-    const warm = key ? this.warmth.get(key) : undefined
-    if (!warm) return false
-    const now = this.now()
-    const minutes = this.options.keepAliveMinutes?.() ?? 15
-    const { choice, request } = warm
-    const provider = this.options.provider(choice.provider)
-    if (!provider?.keepWarm || minutes <= 0 || now - warm.real > minutes * 60_000 || now - warm.touched < PING_AFTER_MS) return false
-    // A fixed part under what the model caches is never in the cache: a ping would only pay it again in full.
-    if (tokensAbout(request.system.slice(0, request.cacheBreak ?? request.system.length)) < cacheMinimum(choice.model)) return false
-    if (this.pings.get(`${choice.provider}/${choice.model}`) === 'misses' || now < this.healthOf(choice.provider).busyUntil) return false
-    if (this.options.usage.monthBudgetSpent() || this.costs.spentLastHour() + this.costs.reservedUsd() >= this.options.budgetUsdPerHour()) return false
-    warm.touched = now
-    const started = now
-    try {
-      const response = await provider.keepWarm(choice.model, request, AbortSignal.timeout(20_000))
-      warm.pinged = true
-      const source = this.sourceOf(request)
-      const costUsd = this.options.usage.record(choice.provider, choice.model, response.usage, true, undefined, PING_ROLE, source)
-      this.costs.add({ usd: costUsd ?? 0, role: request.role, source })
-      this.options.log.add({ time: new Date(this.now()).toISOString(), source, role: PING_ROLE, provider: choice.provider, model: response.model, ok: true, latencyMs: response.latencyMs, ...response.usage, costUsd, prompt: `(keeping ${key} warm)`, response: '' })
-      return true
-    } catch (error) {
-      const failure = error instanceof LlmError ? error : new LlmError('network', String(error))
-      // A ping the provider refuses outright cannot keep anything: the hour instead.
-      if (failure.kind === 'invalid') this.pings.set(`${choice.provider}/${choice.model}`, 'misses')
-      this.options.log.add({ time: new Date(this.now()).toISOString(), source: this.sourceOf(request), role: PING_ROLE, provider: choice.provider, model: choice.model, ok: false, error: `${failure.kind}: ${failure.message}`, latencyMs: this.now() - started, inputTokens: 0, outputTokens: 0, cachedTokens: 0, prompt: `(keeping ${key} warm)`, response: '' })
-      return false
     }
   }
 

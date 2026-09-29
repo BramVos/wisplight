@@ -82,7 +82,6 @@ export class AiService {
               editorTimeoutMs: options.knobs!.get('editor_timeout_seconds') * 1000,
               conversationShare: options.knobs!.get('conversation_share'),
             }),
-            keepAliveMinutes: () => options.knobs!.get('cache_keepalive_minutes'),
           }
         : {}),
     })

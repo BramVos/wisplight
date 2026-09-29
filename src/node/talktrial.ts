@@ -1,13 +1,12 @@
 import { Engine, GameClock, type Content, type LlmClient, type LlmRejection, type LlmRequest, type LlmResponse } from '../engine'
-import { blockKey } from '../engine/dialogue/block'
 import { callName } from '../engine/content'
 import { costUsd } from './ai/pricing'
 
 // The measure of M10.28 (Bram, 29 September 2026: "a real talk of twenty
 // lines"): one talk with one person, played through the game with a real
 // model, and per line what it read from the cache, wrote to it, and cost.
-// And whether a ping keeps the block of a place: a line, a ping before the
-// five minutes run out, and a line after them.
+// And whether the block of a place is still in the cache after five minutes:
+// a line, a wait past them, and a line with someone else of these parts.
 
 /** Twenty lines a stranger might say to the baker of Veenhoek, from a greeting to goodbye. */
 export const TWENTY_LINES = [
@@ -121,19 +120,17 @@ export async function playTwenty(content: Content, llm: LlmClient, how: { npc?: 
 }
 
 /**
- * Whether a ping keeps the block of a place (M10.28 (3)): one line, a ping
- * shortly before the five minutes run out, a wait past them, and a second
- * line with someone else of these parts. What the second line read from the
- * cache says it: the block, or nothing.
+ * Whether the block of a place stays in the cache past five minutes (M10.28
+ * (3)): one line, a wait past them, and a line with someone else of these
+ * parts. What the second line read from the cache says it. A ping with an
+ * empty answer could not keep it (measured on 29 September 2026: the schema
+ * goes ahead of the block, and an empty call may carry none), so the block
+ * is kept an hour.
  */
-export async function pingKeeps(content: Content, llm: LlmClient, ping: (key: string) => Promise<boolean>, how: { wait: (ms: number) => Promise<void>; afterMs: number; model: (response: LlmResponse) => string; say: (line: string) => void }): Promise<{ pinged: boolean; first: LineMeasure; second: LineMeasure }> {
+export async function blockKept(content: Content, llm: LlmClient, how: { wait: (ms: number) => Promise<void>; afterMs: number; model: (response: LlmResponse) => string; say: (line: string) => void }): Promise<{ first: LineMeasure; second: LineMeasure }> {
   const first = (await playTwenty(content, llm, { lines: ['Good morning.'], model: how.model }))[0]!
-  how.say(`first line: in ${first.inputTokens}, read ${first.cachedTokens}, written ${first.cacheWriteTokens}; waiting ${Math.round(how.afterMs / 1000)}s for the ping`)
-  await how.wait(how.afterMs)
-  const engine = begin(content, llm, 'npc_mirte', 7)
-  const pinged = await ping(blockKey(engine.world))
-  how.say(`ping ${pinged ? 'sent' : 'not sent'}; waiting ${Math.round(how.afterMs / 1000)}s more, past the five minutes of the first line`)
+  how.say(`first line: in ${first.inputTokens}, read ${first.cachedTokens}, written ${first.cacheWriteTokens}; waiting ${Math.round(how.afterMs / 1000)}s`)
   await how.wait(how.afterMs)
   const second = (await playTwenty(content, llm, { npc: 'npc_harmen', lines: ['Good morning.'], model: how.model }))[0]!
-  return { pinged, first, second }
+  return { first, second }
 }

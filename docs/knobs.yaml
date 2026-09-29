@@ -133,7 +133,6 @@ numbers:
     COOLDOWN_MS: 'code: how long the connection cools down (safety)'
     LOW_TOKENS: 'code: below this the next call would hit the rate limit (technique)'
     UNPRICED_CALLS_PER_HOUR: 'code: a model without a known price is called at most this often an hour (safety of cost)'
-    PING_AFTER_MS: 'code: a keep-alive ping goes this long after the fixed part was last read, before the cache''s five minutes run out (M10.28, technique)'
   src/node/ai/log.ts:
     KEEP: 'settings (moved): the app knob ai_log_keep; this is its default'
   src/node/ai/frequency.ts:

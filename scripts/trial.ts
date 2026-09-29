@@ -8,7 +8,7 @@ import { resolve } from 'node:path'
 // npm run trial -- --kind region_play [--setting outline|story|full] [--world base|isle] [--cap <dollars>] [--record]: a new region played per setting (M10.25)
 // npm run trial -- --kind map_measure [--models a,b] [--times n] [--record]: the map painted as a table with each model (M10.26)
 // npm run trial -- --kind talk_twenty [--model <id>]: a talk of twenty lines with the baker, per line what it read from the cache, wrote and cost (M10.28)
-// npm run trial -- --kind keep_warm [--model <id>]: whether a ping keeps the block of a place, a line before and after (about ten minutes, M10.28)
+// npm run trial -- --kind keep_warm [--model <id>]: whether the block of a place is still in the cache after six minutes, kept an hour (M10.28)
 //
 // Tries a kind of model call for real (M10.20), in the app, with the key and
 // the models the player chose under Settings > AI: never in CI, never with a

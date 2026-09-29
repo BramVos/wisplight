@@ -60,12 +60,6 @@ export interface LlmRequest {
   turns?: { role: 'user' | 'assistant'; text: string }[]
   /** Mark the end of `prompt` as well (M10.28): the next turn of the talk reads everything up to here. */
   cacheTail?: boolean
-  /**
-   * The name of the fixed part this call shares with the calls that follow
-   * (M10.28: the area block): the app keeps it in the cache while the
-   * stranger stays there, with a ping before the five minutes run out.
-   */
-  warm?: string
   /** How hard the model thinks, where the model lets itself be told (M10.20): low for a table, medium for a story. Without it, the provider's default. */
   effort?: 'low' | 'medium' | 'high'
   /** Structured context for the mock model; real providers ignore it. */

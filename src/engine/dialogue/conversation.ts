@@ -986,7 +986,8 @@ export class Dialogue {
             turns: [...(talk?.thread ?? [])],
             prompt,
             cacheTail: true,
-            warm: block.key,
+            // Kept an hour (M10.28): a ping cannot keep it, since the schema goes ahead of it and an empty call may carry none.
+            cacheHour: true,
             schemaName: 'npc_reply',
             // The same schema for every line (M10.28): it is cached ahead of the area block.
             schema: TALK_REPLY_SCHEMA,

@@ -14,8 +14,7 @@ import { mapTrial } from './maptrial'
 import { keepTally, keptTallies, measuring, playRegion, REGION_KINDS, regionReport, REGION_SETTINGS, type RegionSetting } from '../node/regionplay'
 import type { BuildStore } from '../node/ai/builds'
 import type { AiService } from '../node/ai/service'
-import { PING_AFTER_MS } from '../node/ai/gateway'
-import { pingKeeps, playTwenty } from '../node/talktrial'
+import { blockKept, playTwenty } from '../node/talktrial'
 
 /** What a trial needs of the AI service: the gateway and the build budgets (a test gives it the mock). */
 export type TrialAi = { builds: Pick<BuildStore, 'reset' | 'setLimit'>; gateway: { complete(request: LlmRequest): Promise<LlmResponse> } }
@@ -311,7 +310,7 @@ function providerOf(model: string): 'openai' | 'anthropic' {
  * The measures of M10.28 on the player's key: a talk of twenty lines with the
  * baker of Veenhoek on the voice's model (or --model), per line what it read
  * from the cache, wrote to it and cost; or whether a ping keeps the block of
- * a place (keep_warm: a line, a ping, a line after the five minutes).
+ * a place stays in the cache (keep_warm: a line, and one after six minutes).
  */
 export async function talkTrial(ai: AiService, kind: 'talk_twenty' | 'keep_warm', contentRoot: string, how: { model: string; capUsd: number }, say: (line: string) => void): Promise<boolean> {
   const chosen = ai.overview().settings.roles.voice
@@ -325,10 +324,8 @@ export async function talkTrial(ai: AiService, kind: 'talk_twenty' | 'keep_warm'
   const llm = other ? { complete: (r: LlmRequest) => ai.gateway.complete(r, other), report: ai.gateway.report.bind(ai.gateway) } : ai.gateway
   if (kind === 'keep_warm') {
     const wait = (ms: number) => new Promise<void>((done) => setTimeout(done, ms))
-    const on = other ?? chosen
-    const r = await pingKeeps(content, llm, (key) => ai.gateway.keepWarm(key), { wait, afterMs: PING_AFTER_MS + 5000, model, say })
-    const kept = ai.gateway.pingsWork(on.provider, on.model)
-    say(`keep_warm: ${on.model}, ping ${r.pinged ? 'sent' : 'not sent'}; the line after read ${r.second.cachedTokens} of ${r.second.inputTokens} from the cache and wrote ${r.second.cacheWriteTokens}: ${kept === undefined ? 'not measured' : kept ? 'the ping kept the block' : 'the ping did not keep it; the block is kept an hour from now on'}`)
+    const r = await blockKept(content, llm, { wait, afterMs: 360_000, model, say })
+    say(`keep_warm: ${other?.model ?? chosen.model}, the line six minutes later read ${r.second.cachedTokens} of ${r.second.inputTokens} from the cache and wrote ${r.second.cacheWriteTokens}: ${r.second.cachedTokens > r.second.inputTokens / 2 ? 'the block was still there' : 'the block was gone'}`)
     return true
   }
   let spent = 0

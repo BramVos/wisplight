@@ -1,30 +1,18 @@
-import { mkdtempSync, rmSync } from 'node:fs'
-import { tmpdir } from 'node:os'
-import { join } from 'node:path'
-import type Anthropic from '@anthropic-ai/sdk'
-import { afterAll, describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { Engine, loadContent, MockLlm, type Content, type LlmClient, type LlmRequest } from '../src/engine'
-import { areaBlock, BLOCK_FLOOR, blockGroups, blockKey } from '../src/engine/dialogue/block'
+import { areaBlock, BLOCK_FLOOR, blockGroups } from '../src/engine/dialogue/block'
 import { speaksAsOther } from '../src/engine/dialogue/guard'
 import { tokensAbout } from '../src/engine/dialogue/llm'
 import { turnMessage, youLines } from '../src/engine/dialogue/prompt'
 import { callName } from '../src/engine/content'
 import { readContentFiles } from '../src/node/content'
-import { Gateway, PING_AFTER_MS, PING_ROLE } from '../src/node/ai/gateway'
-import { AiLog } from '../src/node/ai/log'
-import { anthropicProvider, messagesOf, type Provider, type ProviderResponse } from '../src/node/ai/providers'
-import { UsageStore } from '../src/node/ai/usage'
+import { messagesOf, systemBlocks } from '../src/node/ai/providers'
 import { playTwenty } from '../src/node/talktrial'
 import { content, withNpc } from './helpers'
 
 // M10.28 (1) to (3), Bram's ideas of 29 September 2026: one cached block per
 // area for the conversations, the talk as messages so a new line pays only
-// for what is new, and the block kept warm while the stranger stays.
-
-const folders: string[] = []
-afterAll(() => {
-  for (const dir of folders) rmSync(dir, { recursive: true, force: true })
-})
+// for what is new, and the block kept an hour (a ping could not keep it).
 
 /** A talk with Mirte where she stands about, with the model given. */
 async function talkWith(llm: LlmClient, world: Content = content, npc = 'npc_mirte', name = 'mirte') {
@@ -83,7 +71,7 @@ describe('M10.28 (1): one cached block per area', () => {
       expect(JSON.stringify(call.schema)).toBe(JSON.stringify(calls[0]!.schema))
       expect(call.cacheBreak).toBe(calls[0]!.system.length)
       expect(call.cacheShared).toBeLessThan(call.cacheBreak!)
-      expect(call.warm).toBe(blockKey(engine.world))
+      expect(call.cacheHour).toBe(true)
       expect(call.cacheTail).toBe(true)
     }
     // Who speaks is in the talk, not the block.
@@ -197,116 +185,16 @@ describe('M10.28 (2): the talk as messages', () => {
   })
 })
 
-describe('M10.28 (3): the cache kept warm', () => {
-  const block = 'b'.repeat(4 * 5000)
-  const request = (warm = 'nethermarch:veenhoek'): LlmRequest => ({ role: 'voice', system: `${block}rest`, cacheBreak: block.length, prompt: 'PLAYER SAYS: <<Morning.>>', schemaName: 'npc_reply', schema: {}, maxTokens: 50, warm, cacheTail: true })
-
-  function setup(model = 'claude-haiku-4-5-20251001', read = true) {
-    const dir = mkdtempSync(join(tmpdir(), 'wisplight-warm-'))
-    folders.push(dir)
-    let t = 1_000_000
-    const pings: LlmRequest[] = []
-    const calls: LlmRequest[] = []
-    let pinged = false
-    const provider: Provider = {
-      id: 'anthropic',
-      listModels: async () => [{ id: model }],
-      complete: async (m, r): Promise<ProviderResponse> => {
-        calls.push(r)
-        // After a ping, the real call reads the block from the cache, or (a ping that warmed another entry) writes it again.
-        const cached = pinged && read ? 5000 : 0
-        pinged = false
-        return { text: '{}', provider: 'anthropic', model: m, usage: { inputTokens: 5100, outputTokens: 40, cachedTokens: cached, cacheWriteTokens: cached ? 0 : 5000 }, latencyMs: 1 }
-      },
-      keepWarm: async (m, r): Promise<ProviderResponse> => {
-        pings.push(r)
-        pinged = true
-        return { text: '', provider: 'anthropic', model: m, usage: { inputTokens: 5000, outputTokens: 0, cachedTokens: 5000 }, latencyMs: 1 }
-      },
-    }
-    const usage = new UsageStore(join(dir, 'usage.json'))
-    const log = new AiLog()
-    const gateway = new Gateway({ role: () => ({ provider: 'anthropic', model }), provider: () => provider, budgetUsdPerHour: () => 5, log, usage, now: () => t, keepAliveMinutes: () => 15 })
-    return { gateway, pings, calls, usage, log, later: (ms: number) => (t += ms) }
-  }
-
-  it('pings the block shortly before the five minutes run out, only while the stranger stays, until the knob\'s minutes', async () => {
-    const { gateway, pings, usage, later } = setup()
-    expect(await gateway.keepWarm('nethermarch:veenhoek')).toBe(false)
-    await gateway.complete(request())
-    later(PING_AFTER_MS - 1000)
-    expect(await gateway.keepWarm('nethermarch:veenhoek')).toBe(false)
-    later(2000)
-    // Somewhere else: nothing.
-    expect(await gateway.keepWarm('nethermarch:waagdam')).toBe(false)
-    expect(await gateway.keepWarm('nethermarch:veenhoek')).toBe(true)
-    // The same fixed part as the real call, the hard limits in front included.
-    expect(pings[0]!.system.endsWith(request().system)).toBe(true)
-    expect(pings[0]!.cacheBreak).toBe(request().cacheBreak! + (pings[0]!.system.length - request().system.length))
-    // Not again until the next five minutes are nearly out; and never past fifteen minutes after the last line.
-    expect(await gateway.keepWarm('nethermarch:veenhoek')).toBe(false)
-    later(PING_AFTER_MS + 1000)
-    expect(await gateway.keepWarm('nethermarch:veenhoek')).toBe(true)
-    later(PING_AFTER_MS + 1000)
-    expect(await gateway.keepWarm('nethermarch:veenhoek')).toBe(true)
-    later(PING_AFTER_MS + 1000)
-    expect(await gateway.keepWarm('nethermarch:veenhoek')).toBe(false)
-    // The pings count apart, in the usage per role.
-    const row = usage.summary().byRole.find((r) => r.role === PING_ROLE)
-    expect(row?.calls).toBe(3)
-    expect(row?.costUsd).toBeGreaterThan(0)
-  })
-
-  it('measures on the next line whether a ping kept the block; if not, the block is kept an hour and nothing is pinged', async () => {
-    const works = setup()
-    await works.gateway.complete(request())
-    works.later(PING_AFTER_MS + 1000)
-    await works.gateway.keepWarm('nethermarch:veenhoek')
-    await works.gateway.complete(request())
-    expect(works.gateway.pingsWork('anthropic', 'claude-haiku-4-5-20251001')).toBe(true)
-    expect(works.calls.at(-1)!.cacheHour).toBeUndefined()
-
-    const fails = setup('claude-haiku-4-5-20251001', false)
-    await fails.gateway.complete(request())
-    fails.later(PING_AFTER_MS + 1000)
-    await fails.gateway.keepWarm('nethermarch:veenhoek')
-    await fails.gateway.complete(request())
-    expect(fails.gateway.pingsWork('anthropic', 'claude-haiku-4-5-20251001')).toBe(false)
-    await fails.gateway.complete(request())
-    expect(fails.calls.at(-1)!.cacheHour).toBe(true)
-    fails.later(PING_AFTER_MS + 1000)
-    expect(await fails.gateway.keepWarm('nethermarch:veenhoek')).toBe(false)
-  })
-
-  it('never pings a block under what the model caches', async () => {
-    const { gateway, later } = setup()
-    const small = { ...request(), system: 'short', cacheBreak: 5 }
-    await gateway.complete(small)
-    later(PING_AFTER_MS + 1000)
-    expect(await gateway.keepWarm('nethermarch:veenhoek')).toBe(false)
-  })
-
-  it('asks Anthropic with an empty answer, the same system part and settings, no schema and no stream', async () => {
-    const sent: Record<string, unknown>[] = []
-    const client = {
-      models: { list: () => [] },
-      messages: {
-        create: async (params: Record<string, unknown>) => {
-          sent.push(params)
-          return { model: 'claude-sonnet-5', stop_reason: 'max_tokens', content: [], usage: { input_tokens: 3, output_tokens: 0, cache_creation_input_tokens: 0, cache_read_input_tokens: 5000 } }
-        },
-      },
-    } as unknown as Pick<Anthropic, 'messages' | 'models'>
-    const ping = await anthropicProvider('test', client).keepWarm!('claude-sonnet-5', { ...request(), cacheShared: 100 })
-    expect(ping.usage.cachedTokens).toBe(5000)
-    const params = sent[0]!
-    expect(params['max_tokens']).toBe(0)
-    expect(params['output_config']).toBeUndefined()
-    expect(params['stream']).toBeUndefined()
-    // Sonnet 5 thinks unless told not to; the real calls tell it, so the ping does too.
-    expect(params['thinking']).toEqual({ type: 'disabled' })
-    const system = params['system'] as { text: string; cache_control?: unknown }[]
-    expect(system.filter((b) => b.cache_control).map((b) => b.text.length)).toEqual([100, block.length - 100])
+describe('M10.28 (3): the block kept an hour', () => {
+  // Measured on 29 September 2026: a ping with an empty answer (max_tokens 0) may carry no schema, and Anthropic caches
+  // the schema ahead of the system part, so the ping wrote an entry of its own and the next line read nothing. The
+  // roadmap's fall-back: the block is kept an hour, no pings. The end of the talk is marked for five minutes, after it.
+  it('marks the rules and the block for an hour, and the end of the talk for five minutes', () => {
+    const request: LlmRequest = { role: 'voice', system: 's'.repeat(300) + 'b'.repeat(900), cacheShared: 300, cacheBreak: 1200, prompt: 'PLAYER SAYS: <<Morning.>>', schemaName: 'npc_reply', schema: {}, maxTokens: 50, cacheHour: true, cacheTail: true }
+    const blocks = systemBlocks(request)
+    expect(blocks.map((b) => b.cache_control)).toEqual([{ type: 'ephemeral', ttl: '1h' }, { type: 'ephemeral', ttl: '1h' }])
+    const messages = messagesOf(request)
+    expect(messages.at(-1)!.content).toEqual([{ type: 'text', text: 'PLAYER SAYS: <<Morning.>>', cache_control: { type: 'ephemeral' } }])
   })
 })
 

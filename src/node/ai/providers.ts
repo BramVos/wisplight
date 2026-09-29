@@ -38,12 +38,6 @@ export interface Provider {
   id: ProviderId
   listModels(): Promise<ModelInfo[]>
   complete(model: string, request: LlmRequest, signal?: AbortSignal): Promise<ProviderResponse>
-  /**
-   * Keeps a call's fixed part in the cache (M10.28): the same system part and
-   * settings with an empty answer (max_tokens 0), which costs a read of the
-   * cache and nothing more. Anthropic only; OpenAI caches by itself.
-   */
-  keepWarm?(model: string, request: LlmRequest, signal?: AbortSignal): Promise<ProviderResponse>
   /** Image models, for pictures of places and people (OpenAI only; Claude makes no pictures). */
   listImageModels?(): Promise<ModelInfo[]>
   picture?(model: string, prompt: string, quality: 'low' | 'medium', signal?: AbortSignal): Promise<PictureResponse>
@@ -140,28 +134,6 @@ export function anthropicProvider(apiKey: string, given?: Pick<Anthropic, 'messa
       }
       return models.sort((a, b) => a.id.localeCompare(b.id))
     },
-    async keepWarm(model, request, signal) {
-      const started = Date.now()
-      const { thinkingByDefault, effort } = settingsOf(model, request)
-      try {
-        // The same system part and settings as the real calls, an empty answer, no stream and no schema: the API
-        // refuses max_tokens 0 with either (Claude API documentation, pre-warming the cache).
-        const response = await client.messages.create(
-          {
-            model,
-            max_tokens: 0,
-            system: systemBlocks(request),
-            messages: [{ role: 'user', content: 'Keep this warm.' }],
-            ...(Object.keys(effort).length ? { output_config: effort } : {}),
-            ...(thinkingByDefault ? { thinking: { type: 'disabled' as const } } : {}),
-          },
-          { signal },
-        )
-        return { text: '', provider: 'anthropic', model: response.model, usage: usageOf(response.usage), latencyMs: Date.now() - started }
-      } catch (error) {
-        throw mapError(error)
-      }
-    },
     async complete(model, request, signal) {
       const started = Date.now()
       // Thinking eats into max_tokens. Turn it off where the model allows it; where it is
@@ -230,7 +202,7 @@ export function messagesOf(request: Pick<LlmRequest, 'prompt' | 'turns' | 'cache
   ]
 }
 
-/** How a call to a Claude model is set (M10.28: the keep-alive must match the real calls, or it warms another entry). */
+/** How a call to a Claude model is set: thinking off where the model allows it, and the effort where it takes one. */
 function settingsOf(model: string, request: Pick<LlmRequest, 'effort'>): { alwaysThinks: boolean; thinkingByDefault: boolean; effort: { effort?: 'low' | 'medium' | 'high' } } {
   const alwaysThinks = ALWAYS_THINKS.test(model)
   return { alwaysThinks, thinkingByDefault: /opus-5|sonnet-5/.test(model) && !alwaysThinks, effort: request.effort && takesEffort(model) ? { effort: request.effort } : {} }

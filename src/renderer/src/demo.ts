@@ -134,7 +134,6 @@ function usage(): UsageSummary {
     byRole: [
       { role: 'voice', calls: 1340, inputTokens: 2_680_000, cachedTokens: 1_610_000, cacheWriteTokens: 0, cachedPercent: 60.1, costUsd: 3.21 },
       { role: 'brain', calls: 730, inputTokens: 1_460_000, cachedTokens: 1_020_000, cacheWriteTokens: 0, cachedPercent: 69.9, costUsd: 1.94 },
-      { role: 'keep-warm', calls: 42, inputTokens: 231_000, cachedTokens: 231_000, cacheWriteTokens: 0, cachedPercent: 100, costUsd: 0.02 },
     ],
   }
 }

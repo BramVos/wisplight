@@ -34,7 +34,7 @@ export interface RoleUsage {
   cacheWriteTokens: number
   /** Percent of the input that was read from the cache. */
   cachedPercent: number
-  /** What the role cost this month (M10.28: the pings that keep a place's cache warm show apart, with their cost). */
+  /** What the role cost this month (M10.28). */
   costUsd: number
 }
 

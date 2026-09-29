@@ -22,7 +22,6 @@ import { aiCheck, BUILDER_CHECK_SCRIPT, keyCheck, LOG_CHECK_SCRIPT, picturesRun,
 import { trialRun } from './trial'
 import { Pacer } from '../node/pacer'
 import { MockLlm } from '../engine/dialogue/mock'
-import { blockKey } from '../engine/dialogue/block'
 
 // The engine runs in the main process for now; the design moves it to a
 // utility process once the simulation grows (FO, chapter 3).
@@ -140,13 +139,6 @@ function setup(): Promise<void> {
   })()
   return ready
 }
-
-// The cache of the place the stranger is in (M10.28): while the game window is open, the gateway pings its conversations'
-// fixed part shortly before its five minutes run out, until the knob's minutes after the last line was spoken there.
-setInterval(() => {
-  if (!ai || !engine || !window || window.isDestroyed() || smoke) return
-  void ai.gateway.keepWarm(blockKey(engine.world)).catch(() => undefined)
-}, 20_000)
 
 // The clock stands still in conversations and menus, and after a minute without input.
 function paused(): boolean {

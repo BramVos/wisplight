@@ -146,10 +146,9 @@ export function blockGroups(world: World): Map<string, string[]> {
 /**
  * The block of the area the stranger is in (M10.28): the shared part (the
  * rules and the frame, marked on its own as before), and the block of the
- * area's group, with who has a card in it. `key` names the block, for the
- * app that keeps it warm.
+ * area's group, with who has a card in it.
  */
-export function areaBlock(world: World, area: string): { shared: string; block: string; cast: string[]; key: string } {
+export function areaBlock(world: World, area: string): { shared: string; block: string; cast: string[] } {
   const group = blockGroups(world).get(area) ?? [area]
   const parts = group.map((a) => areaPart(world, a))
   const voice = landVoiceLines(world)
@@ -158,15 +157,5 @@ export function areaBlock(world: World, area: string): { shared: string; block: 
     THESE_PARTS,
     ...parts.map((p) => p.text),
   ].join('\n')
-  return { shared: sharedPart(world), block: worldText(block), cast: parts.flatMap((p) => p.cast), key: keyOf(world, group) }
-}
-
-function keyOf(world: World, group: string[]): string {
-  return `${world.land ?? ''}:${group.join('+')}`
-}
-
-/** The name of the block of the place the stranger is in (M10.28), for the app that keeps it warm. */
-export function blockKey(world: World): string {
-  const area = world.content.locations.get(world.state.player.location)?.area ?? ''
-  return keyOf(world, blockGroups(world).get(area) ?? [area])
+  return { shared: sharedPart(world), block: worldText(block), cast: parts.flatMap((p) => p.cast) }
 }
