@@ -105,7 +105,7 @@ const HELP = [
   'Time: time, wait [minutes], wait for <person>, sleep. At night: knock (on a door), wake <person>.',
   'Pace: tempo calm, tempo normal or tempo dramatic (how much happens in the world). The frames of this game: frames (the world, its lands and great lines, and three dials to set). A word to the chronicler: chronicler <one line> (more of the sea, no war this season).',
   'What waits (by the play mode in the settings): hooks (what a night brought, to take up or let lie), proposals, accept, reject.',
-  "Talking: talk <person>, ask <person> about <topic>, say <text> or 'text.",
+  "Talking: talk <person>, ask <person> about <topic>, say <text> or 'text. Two people talking: listen (to catch what they say; stay, and you hear more).",
   'You: sheet, create (make your character), level up, train <skill>, wield <weapon>, wear <armour>, devote to <patron>, pray, rite. Your word and theirs: promises.',
   'Fights: strike, advance, step back, raise shield, use herbs, recall, talk, flee, surrender, end. HELP in a fight says more.',
   'Game: save, load, continue (exactly where you stopped), new stranger (the same world, a new character), years later (a new game with the old one as legend), log [lines], log export, help.',

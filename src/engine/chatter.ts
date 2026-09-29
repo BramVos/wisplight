@@ -142,13 +142,21 @@ function startChat(world: World, a: string, b: string, place: string): boolean {
     s.busyUntil = world.now
   }
   chatter(world).chats.push({ teller: news.teller, listener: news.listener, place, fact: news.fact.id, started: world.now, until: world.now + minutes })
-  world.emit('chat', place, `${callName(world.npc(a))} and ${callName(world.npc(b))} stand talking in ${world.location(place).name}.`, a)
+  world.emit('chat', place, `${callName(world.npc(a))} and ${callName(world.npc(b))} stand talking in ${world.location(place).name}.${place === world.state.player.location ? listenHint(world) : ''}`, a)
   return true
+}
+
+/** The first time two people talk where the stranger is (M10.29; Bram did not know LISTEN): how to catch it, once a game. */
+function listenHint(world: World): string {
+  const state = chatter(world)
+  if (state.hinted) return ''
+  state.hinted = true
+  return ' (LISTEN to catch it.)'
 }
 
 /** The chats at a place, for the description of the room. */
 export function chatsAt(world: World, place: string): string[] {
-  return (world.state.chatter?.chats ?? []).filter((c) => c.place === place && world.now < c.until).map((c) => `${callName(world.npc(c.teller))} and ${callName(world.npc(c.listener))} stand talking.`)
+  return (world.state.chatter?.chats ?? []).filter((c) => c.place === place && world.now < c.until).map((c) => `${callName(world.npc(c.teller))} and ${callName(world.npc(c.listener))} stand talking.${place === world.state.player.location ? listenHint(world) : ''}`)
 }
 
 /** About the player, or something kept quiet: not for the player's ears. */
@@ -188,7 +196,8 @@ export function listen(world: World): Output[] {
   const noticed = attitude(world, chat.teller).band === 'Hostile' || attitude(world, chat.teller).band === 'Unfriendly' ? ` ${teller} gives you a look.` : ''
   chat.heard = (chat.heard ?? 0) + 1
   chat.said = said
-  if (chat.heard > 1) return [{ kind: 'narration', text: `You stay where you are. ${teller} is still going on about it to ${listener}: "${said}"${noticed}` }]
+  // Whoever stays hears more (M10.29): what the other says back, the next time.
+  if (chat.heard > 1) return [{ kind: 'narration', text: `You stay where you are. ${teller} is still going on about it to ${listener}: "${said}"${noticed}${chat.heard === 2 ? ` Stay a while, and you may hear what ${listener} says back.` : ''}` }]
   return [{ kind: 'narration', text: `You stand close enough to hear ${teller} telling ${listener}: "${said}"${noticed}` }]
 }
 

@@ -38,6 +38,21 @@ export interface Packet {
   referral?: { npc: string; name: string; call: string; topic: string }
 }
 
+/** How long a walk is, in words: a few steps, about twenty minutes' walk, about an hour's walk. */
+export function walkWords(minutes: number): string {
+  return minutes < 5 ? 'a few steps' : minutes < 60 ? `about ${roundTo(minutes, 5)} minutes' walk` : `about ${hours(minutes)} walk`
+}
+
+/** The main heading of a route: the direction you walk longest in, not the first step out of the door. */
+export function headingOf(world: World, route: { nodes: string[]; directions: string[] }): string | undefined {
+  const perDirection = new Map<string, number>()
+  route.directions.forEach((direction, i) => {
+    const exit = world.location(route.nodes[i]!).exits[direction as keyof ReturnType<World['location']>['exits']]
+    perDirection.set(direction, (perDirection.get(direction) ?? 0) + (exit?.minutes ?? 1))
+  })
+  return [...perDirection.entries()].sort((a, b) => b[1] - a[1])[0]?.[0]
+}
+
 export class Knowledge {
   private readonly allKnown = new Map<string, Set<string>>()
 
@@ -404,14 +419,8 @@ export class Knowledge {
     const route = this.world.route(from, to)
     const name = label ?? this.world.location(to).name
     if (!route || route.minutes === 0) return `${name} is right here.`
-    const time = route.minutes < 5 ? 'a few steps' : route.minutes < 60 ? `about ${roundTo(route.minutes, 5)} minutes' walk` : `about ${hours(route.minutes)} walk`
-    // The main heading is the direction you walk longest in, not the first step out of the door.
-    const perDirection = new Map<string, number>()
-    route.directions.forEach((direction, i) => {
-      const exit = this.world.location(route.nodes[i]!).exits[direction]
-      perDirection.set(direction, (perDirection.get(direction) ?? 0) + (exit?.minutes ?? 1))
-    })
-    const heading = [...perDirection.entries()].sort((a, b) => b[1] - a[1])[0]?.[0]
+    const time = walkWords(route.minutes)
+    const heading = headingOf(this.world, route)
     if (level < 3) return `${name} is ${time} from here, ${heading}.`
     const legs = route.nodes.slice(1, 4).map((node, i) => `${route.directions[i]} to ${this.world.location(node).name}`)
     return `${name} is ${time} from here: ${legs.join(', then ')}${route.nodes.length > 4 ? ', and on from there' : ''}.`

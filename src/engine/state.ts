@@ -846,7 +846,8 @@ export interface GameState {
   /** The number of plans of the aftermath started, for their ids. */
   planSeq?: number
   /** Greetings and chats where the player is (M8.2): when each pair last greeted, and the chats going on. */
-  chatter?: { greeted: Record<string, number>; chats: import('./chatter').Chat[] }
+  /** hinted (M10.29): the stranger was told once that LISTEN catches what two people say. */
+  chatter?: { greeted: Record<string, number>; chats: import('./chatter').Chat[]; hinted?: boolean }
   /** People who band together for or against newcomers (M8.3). */
   groups?: Group[]
   /** The ledgers of the settlements, the routes and goods sent for (M8.4). */

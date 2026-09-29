@@ -239,7 +239,7 @@ npcs:
       - She defends Niko when people grumble about him.
     examples:
       - You'll be the specialist. Sit, you look frozen. That's Mara's chair, that's Tessa's, and Niko's is the empty one. He's still up the ridge.
-      - Edda's in the Medical Bay till supper. Sorell's on the ship, you'll hear him before you see him.
+      - Edda's in the Medical Bay till supper. Sorell keeps his own hours; you'll hear him before you see him.
       - That's his to tell, love, not mine.
     money: 8000
     knows_areas: [port_vesper, vesper_works, coastal_traverse]
