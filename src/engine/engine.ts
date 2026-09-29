@@ -12,7 +12,7 @@ import { CHECKPOINT_ENTRIES, CHECKPOINT_MINUTES, contentVersion, type Checkpoint
 import { applyFarPlace, farPlaceOf, farRequest, farWords, wantFarPlace, type FarWords, farTopicAt } from './growth/far'
 import { applyDistrict, districtDue, districtRequest, districtsOf, districtWords, wantDistrict, type DistrictWords } from './growth/districts'
 import { applyWeave, weaveReply, weaveRequest, type WeaveReply } from './growth/weave'
-import { applyTides, tidesReply, tidesRequest, type TidesReply } from './tides'
+import { applyTides, tidesReply, tidesRequest, tidesState, type TidesReply } from './tides'
 import { crowdHere, nameOne } from './growth/crowds'
 import { applyLegendWords, legendRequest, legendsOf } from './legend'
 import { answerLookup, parseLookup } from './lookups'
@@ -53,7 +53,7 @@ import { knownRequests, requestName } from './requests'
 import { recordFact, seedNews } from './news'
 import { parseCommand, parseDirection } from './parser'
 import { advance } from './simulation'
-import { createInitialState, fitStateToContent, type GameState, type LoreEntry, type Offered, type TalkLine, type TalkState, type WorldEvent } from './state'
+import { createInitialState, fitStateToContent, type ChronicleRun, type GameState, type LoreEntry, type Offered, type TalkLine, type TalkState, type WorldEvent } from './state'
 import { hasWeather, weather, wind, windWords, type WeatherKind } from './weather'
 export type { TalkLine } from './state'
 import { chronicleState } from './storylines'
@@ -117,10 +117,21 @@ export type LogEntry =
   | { t: number; k: 'tides'; v: TidesReply | null }
   // A question about cost put to the player (M10.21), so a replay puts the same one.
   | { t: number; k: 'ask'; id: string; usd: number }
+  // The great lines judged although no month began (M10.22, the host's pace).
+  | { t: number; k: 'due'; v: 'tides' }
   // The legends of an old game this one began with (M9.1).
   | { t: number; k: 'legends'; v: LoreEntry[] }
   // The names the game began with (M9.1): playing the log back uses them, so a name changed later changes nothing.
   | { t: number; k: 'names'; v: NameBook }
+
+/**
+ * What the host allows now (M10.22, a brake in real time): the night round
+ * and the month's judgement of the great lines wait while it says false.
+ */
+export interface Pace {
+  night?: boolean
+  tides?: boolean
+}
 
 export interface SaveData {
   /** 1: the state and the whole log at the save. 2 (M9.3): the state and the log at a checkpoint, and the tail since. */
@@ -566,19 +577,42 @@ export class Engine {
   }
 
   /** Lets the models do their waiting work in the background: goal choices first, they are short. */
-  async runModels(): Promise<void> {
+  /**
+   * Runs what waits for a model. The host's pace (M10.22, a brake in real
+   * time) says whether the night round and the month's judgement may run now;
+   * without it they run. Says whether they ran.
+   */
+  async runModels(pace: Pace = {}): Promise<{ night: boolean; tides: boolean }> {
     await this.runBrain()
-    await this.runChronicler()
+    const night = (await this.runChronicler(pace)).some((r) => r.reason === 'night')
     await this.runOutlines()
     await this.runFarPlaces()
     await this.runDistricts()
     await this.runWeaves()
-    await this.runTides()
+    const tides = pace.tides === false ? false : await this.runTides()
+    return { night, tides }
   }
 
-  /** The month's judgement of the great lines (M10.22), one call for all of them. */
-  async runTides(): Promise<void> {
-    if (this.outlining || !this.state.tides?.pending) return
+  /**
+   * The great lines judged now although no month began (M10.22: when the
+   * months of the game do not come, at least once in so many sessions; the
+   * host counts them). Kept in the log, so a replay judges at the same point.
+   */
+  judgeTidesNow(): boolean {
+    if (!this.content.tides.size || this.state.tides?.pending) return false
+    this.record({ t: this.world.now, k: 'due', v: 'tides' })
+    this.dueTides()
+    return true
+  }
+
+  private dueTides(): void {
+    if (this.world.aiLive) tidesState(this.world).pending = true
+    else applyTides(this.world, null)
+  }
+
+  /** The month's judgement of the great lines (M10.22), one call for all of them. Says whether it ran. */
+  async runTides(): Promise<boolean> {
+    if (this.outlining || !this.state.tides?.pending) return false
     this.outlining = true
     try {
       const llm = this.llm
@@ -590,9 +624,10 @@ export class Engine {
           reply = null
         }
       }
-      if (!this.state.tides?.pending) return
+      if (!this.state.tides?.pending) return false
       this.record({ t: this.world.now, k: 'tides', v: reply })
       applyTides(this.world, reply)
+      return true
     } finally {
       this.outlining = false
     }
@@ -763,13 +798,14 @@ export class Engine {
    * The result is recorded where it lands in the log, so a replay applies the
    * same at the same moment without calling the model again.
    */
-  async runChronicler(): Promise<{ run: string; problems: string[] }[]> {
+  async runChronicler(pace: Pace = {}): Promise<{ run: string; reason: ChronicleRun['reason']; problems: string[] }[]> {
     if (this.chronicling) return []
     this.chronicling = true
-    const done: { run: string; problems: string[] }[] = []
+    const done: { run: string; reason: ChronicleRun['reason']; problems: string[] }[] = []
+    // The night run waits while the host's pace holds it back (M10.22); a run that cannot wait does not.
+    const next = () => this.state.chronicle?.pending.find((r) => r.reason !== 'night' || pace.night !== false)
     try {
-      while (this.state.chronicle?.pending.length) {
-        const run = this.state.chronicle.pending[0]!
+      for (let run = next(); run; run = next()) {
         let output: ChronicleOutput | null = null
         let problems: string[] = []
         let offered: Offered | undefined
@@ -783,14 +819,14 @@ export class Engine {
           }
         }
         // The run may have been settled meanwhile (the model was switched off).
-        if (!this.state.chronicle.pending.some((r) => r.id === run.id)) continue
+        if (!this.state.chronicle?.pending.some((r) => r.id === run.id)) continue
         this.record({ t: this.world.now, k: 'chron', run: run.id, v: output, ...(offered ? { offered } : {}) })
         problems.push(...applyRun(this.world, run.id, output, undefined, offered))
         // For the dev menu (M10.1): what the run got, gave and had refused. Not saved.
         this.devRuns.push({ run: run.id, t: this.world.now, lines: run.lines, offered: offered ?? { facts: [], allowed: [] }, output, problems: [...problems] })
         if (this.devRuns.length > 20) this.devRuns.shift()
         this.dialogue.syncNews()
-        done.push({ run: run.id, problems })
+        done.push({ run: run.id, reason: run.reason, problems })
       }
     } finally {
       this.chronicling = false
@@ -1810,6 +1846,9 @@ export class Engine {
         } else if (entry.k === 'weave') {
           this.log.push(entry)
           applyWeave(this.world, entry.key, entry.v)
+        } else if (entry.k === 'due') {
+          this.log.push(entry)
+          this.dueTides()
         } else if (entry.k === 'tides') {
           this.log.push(entry)
           applyTides(this.world, entry.v)

@@ -1,3 +1,4 @@
+import { trimNightSignals } from './planning'
 import { knob } from './knobs'
 import { invitesHour } from './social/invite'
 import { motorChance, propsHour } from './props'
@@ -84,7 +85,10 @@ function hourly(world: World): void {
   supply(world)
   demand(world)
   storyHour(world)
+  // One queue (M10.22): the night run takes the most important signals; the rest wait a night.
+  const later = trimNightSignals(world)
   nightly(world)
+  if (later.length) world.state.chronicle!.signals = [...(world.state.chronicle!.signals ?? []), ...later]
   weatherHour(world)
   companionsHour(world)
   // Whoever holds a claim of the stranger and can see the truth, sees it (M10.3).

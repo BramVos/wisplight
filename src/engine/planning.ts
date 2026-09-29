@@ -8,8 +8,10 @@ import { StepSchema, type Plan, type Step } from './quests/planschema'
 import { permitted } from './quests/verbs'
 import { questsOf } from './life'
 import type { Signal } from './state'
-import { chronicleState, requestRun } from './storylines'
+import { chronicleState, urgentRun } from './storylines'
 import type { World } from './world'
+import { minuteOfDay } from './clock'
+import { knob } from './knobs'
 
 // The chronicler plans (M8.3; design: signalen en nasleep, "Brein of
 // kroniekschrijver"). What touches many households, matters a lot, touches a
@@ -60,13 +62,13 @@ export function escalates(world: World, signal: Signal): boolean {
   return world.content.intentions.size > 0 && ![...world.content.intentions.values()].some((i) => i.signal === signal.kind)
 }
 
-/** A signal waits for the chronicler: at once for big news, else in the night run. */
+/** A signal waits for the chronicler: in the night run, or at once for big news, once a game day at most (M10.22). */
 export function toChronicler(world: World, signal: Signal): void {
   const state = chronicleState(world)
   const waiting = (state.signals ??= [])
   if (!waiting.includes(signal.id)) waiting.push(signal.id)
   signal.handled = 'chronicler'
-  if (signal.belang >= 4) requestRun(world, 'urgent', [], waiting.splice(0))
+  if (signal.belang >= 4) urgentRun(world, signal.belang, [], waiting.splice(0))
 }
 
 /** The signals of a run as the chronicler sees them, with the people and places they bring. */
@@ -246,4 +248,29 @@ export function startChroniclePlan(world: World, op: PlanOp, runNo: number, prob
 /** After a run: signals it did not plan for go to the standard aftermath. */
 export function unplanned(world: World, signals: string[], planned: Set<string>): void {
   for (const id of signals) if (!planned.has(id)) backToRules(world, id, true)
+}
+
+/**
+ * The signals the night run takes (M10.22, one queue): the most important
+ * first, as many as the world's knob `story.signals_per_night`; they stay in
+ * the queue for the run. The rest wait for the next night, once, and are
+ * returned to be put back after the run took its share; a signal that already
+ * waited a night goes back to the rules, so nothing waits for ever. At 04:00,
+ * before the night run is asked for.
+ */
+export function trimNightSignals(world: World): string[] {
+  if (minuteOfDay(world.now) !== 4 * 60) return []
+  const state = world.state.chronicle
+  if (!state?.signals?.length) return []
+  const ranked = state.signals
+    .map((id) => signalOf(world, id))
+    .filter((s): s is Signal => Boolean(s))
+    .sort((a, b) => b.belang - a.belang || a.t - b.t)
+  const take = ranked.slice(0, knob(world, 'story.signals_per_night'))
+  const left = ranked.slice(take.length)
+  for (const s of left.filter((s) => s.waited)) backToRules(world, s.id, true)
+  const waiting = left.filter((s) => !s.waited)
+  for (const s of waiting) s.waited = true
+  state.signals = take.map((s) => s.id)
+  return waiting.map((s) => s.id)
 }

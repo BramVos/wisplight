@@ -19,6 +19,9 @@ export const APP_KNOBS = {
   editor_timeout_seconds: { about: 'How long a long answer in the editor (a world step) may take.', unit: 'seconds', default: 600, min: 60, max: 1800 },
   brain_timeout_seconds: { about: 'How long a person\'s choice of what to do may take the model.', unit: 'seconds', default: 10, min: 3, max: 120 },
   chronicler_timeout_seconds: { about: 'How long one night run of the chronicler may take.', unit: 'seconds', default: 90, min: 20, max: 600 },
+  night_round_minutes: { about: 'The chronicler\'s night round comes at most this often in real play, however fast the game\'s clock runs; the first of a session is never held.', unit: 'minutes', default: 20, min: 1, max: 480 },
+  tides_round_minutes: { about: 'The great lines are judged at most this often in real play.', unit: 'minutes', default: 120, min: 10, max: 1440 },
+  tides_every_sessions: { about: 'When the months of the game do not come, the great lines are judged at least once in this many sessions.', unit: 'sessions', default: 10, min: 1, max: 100 },
 } as const satisfies Record<string, AppKnobDef>
 
 export type AppKnobId = keyof typeof APP_KNOBS

@@ -157,7 +157,26 @@ export function onFact(world: World, fact: Fact): void {
   }
   // The death of someone with a quest role ends or changes that quest: the chronicler writes now.
   const questDeath = fact.kind === 'death' && people.some((p) => questsOf(world, p).length > 0)
-  if (fact.belang >= 4 || questDeath) requestRun(world, 'urgent', [target.id])
+  if (fact.belang >= 4 || questDeath) urgentRun(world, questDeath ? Math.max(fact.belang, knob(world, 'story.urgent_belang')) : fact.belang, [target.id])
+}
+
+/**
+ * A run that cannot wait for the night (M10.22, one cadence and one queue;
+ * Bram: not ten times in quick succession): news from the world's knob
+ * `story.urgent_belang` up (4 unless it says otherwise, a death in the
+ * village), and at most one such run a game day. Anything else waits for the
+ * night run, which takes every line with unseen news of belang 3 or more and
+ * every waiting signal.
+ */
+export function urgentRun(world: World, belang: number, lines: string[], signals: string[] = []): ChronicleRun | undefined {
+  const state = chronicleState(world)
+  const day = Math.floor(world.now / (24 * 60))
+  if (belang < knob(world, 'story.urgent_belang') || state.urgentDay === day) {
+    if (signals.length) state.signals = [...new Set([...(state.signals ?? []), ...signals])]
+    return undefined
+  }
+  state.urgentDay = day
+  return requestRun(world, 'urgent', lines, signals)
 }
 
 /** Asks the chronicler to write about these lines, unless a waiting run already covers them. */
@@ -166,6 +185,13 @@ export function requestRun(world: World, reason: ChronicleRun['reason'], lines: 
   const waiting = new Set(state.pending.flatMap((r) => r.lines))
   const fresh = lines.filter((l) => !waiting.has(l))
   if (fresh.length === 0 && signals.length === 0) return undefined
+  // One night run waits at a time (M10.22): a later night adds to it, so a round the host held back handles it all at once.
+  const night = reason === 'night' ? state.pending.find((r) => r.reason === 'night') : undefined
+  if (night) {
+    night.lines.push(...fresh)
+    if (signals.length) night.signals = [...new Set([...(night.signals ?? []), ...signals])]
+    return night
+  }
   const run: ChronicleRun = { id: `run_${++state.seq}`, t: world.now, reason, lines: fresh, ...(signals.length ? { signals } : {}) }
   state.pending.push(run)
   return run

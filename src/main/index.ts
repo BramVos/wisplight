@@ -20,6 +20,7 @@ import { SaveStore } from '../node/savegame'
 import { Transcript, type TranscriptSettings } from '../node/transcript'
 import { aiCheck, BUILDER_CHECK_SCRIPT, keyCheck, LOG_CHECK_SCRIPT, picturesRun, prepareBuilderCheck, prepareKeyCheck, prepareLogCheck } from './checks'
 import { trialRun } from './trial'
+import { Pacer } from '../node/pacer'
 import { MockLlm } from '../engine/dialogue/mock'
 
 // The engine runs in the main process for now; the design moves it to a
@@ -216,6 +217,7 @@ function journal(): GameLog {
 function follow(next: Engine, where: Session): void {
   unfollow?.()
   engine = next
+  paceSession(next)
   // The world builder's @ commands are for playtesting in a development build.
   next.builder = !app.isPackaged
   session = where
@@ -317,6 +319,7 @@ handle('engine:start', async (_event, world: unknown) => {
   unfollow?.()
   session = undefined
   engine = new Engine(content!, { seed: Math.floor(Math.random() * 2 ** 31), llm: ai!.client(), builder: !app.isPackaged })
+  paceSession(engine)
   // The clock starts with the player's first keystroke, not while the opening is being read.
   lastInput = -Infinity
   const outputs = engine.start()
@@ -512,7 +515,7 @@ if (import.meta.env.DEV) {
   handle('dev:view', async (_event, section: unknown, focus: unknown) => {
     if (!engine || app.isPackaged) return undefined
     const { devView } = await import('../engine/dev')
-    return devView(engine, String(section) as 'people' | 'background' | 'chronicler', typeof focus === 'string' ? focus : undefined)
+    return devView(engine, String(section) as 'people' | 'background' | 'chronicler', typeof focus === 'string' ? focus : undefined, pacer().view())
   })
 }
 handle('engine:creation', () => engine?.creationData())
@@ -1029,8 +1032,26 @@ handle('engine:picture', async (_event, id: unknown) => {
 // The real-time clock.
 /** The chronicler writes in the background; the game never waits for it (design, "Wanneer hij schrijft"). */
 function chronicler(): void {
-  // Goal choices and chronicler runs: the game never waits for them.
-  if (engine && engine.modelsWaiting > 0) void engine.runModels().catch(() => undefined)
+  // Goal choices and chronicler runs: the game never waits for them. The night round and the month's
+  // judgement keep a pace in real time, whatever the game's clock does (M10.22).
+  if (!engine || engine.modelsWaiting === 0) return
+  void engine
+    .runModels(pacer().pace())
+    .then((ran) => pacer().ran(ran))
+    .catch(() => undefined)
+}
+
+let pacing: Pacer | undefined
+let paced = false
+/** The pace of the model rounds (M10.22): pace.json in the app's folder, with the app's knobs for its brakes. */
+function pacer(): Pacer {
+  return (pacing ??= new Pacer(smoke ? undefined : join(app.getPath('userData'), 'pace.json'), () => ({ nightMinutes: appKnobs().get('night_round_minutes'), tidesMinutes: appKnobs().get('tides_round_minutes'), tidesEverySessions: appKnobs().get('tides_every_sessions') })))
+}
+/** The first game of a session counts the session; when the months have not come for so many, the great lines are judged. */
+function paceSession(next: Engine): void {
+  if (paced) return
+  paced = true
+  if (pacer().startSession().tidesDue) next.judgeTidesNow()
 }
 
 setInterval(() => {

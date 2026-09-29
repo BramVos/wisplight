@@ -206,6 +206,8 @@ function Chronicler({ view }: { view: DevView }) {
   const c = view.chronicler!
   return (
     <div className="small">
+      <h3>Cadence</h3>
+      <ul className="check-list">{c.cadence.map((p, i) => <li key={i}>{p}</li>)}</ul>
       <h3>Waiting</h3>
       <ul className="check-list">{c.pending.length ? c.pending.map((p, i) => <li key={i}>{p}</li>) : <li className="muted">nothing</li>}</ul>
       <h3>Runs</h3>

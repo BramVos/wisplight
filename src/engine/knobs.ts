@@ -75,6 +75,8 @@ export const KNOBS = {
   'stories.per_day': t('Small stories expected per day, by the tempo of the game.', 'stories', { calm: 0.4, normal: 0.8, dramatic: 1.6 }, 0, 10, 'stories.ts'),
   'stories.rising_weight': n('Fewer small stories a day for every storyline rising or in crisis.', 'share', 0.2, 0, 1, 'stories.ts'),
   'storylines.open_days': n('A storyline that takes nothing new for this long goes dormant.', 'days', 14, 1, 365, 'storylines.ts'),
+  'story.signals_per_night': n('How many signals the chronicler takes in one night run, the most important first; the rest wait a night.', 'signals', 12, 1, 50, 'planning.ts'),
+  'story.urgent_belang': n('From what belang news calls the chronicler by day instead of in the night run; at most once a game day.', 'belang', 4, 3, 6, 'storylines.ts'),
   'story.climaxes': n('How many storylines may be in crisis at once.', 'storylines', 2, 1, 10, 'chronicler.ts'),
   'sketches.per_day': n('How many people named in passing may come to be in a day.', 'people', 2, 0, 20, 'sketches.ts'),
   'sketches.per_speaker': n('How many people one speaker may name in passing.', 'people', 3, 0, 20, 'sketches.ts'),

@@ -273,6 +273,8 @@ export interface ChronicleState {
   runs: number
   /** Signals waiting for the night run (M8.3). */
   signals?: string[]
+  /** The game day of the last run that could not wait for the night (M10.22): one a day at most. */
+  urgentDay?: number
 }
 
 export interface NpcState {
@@ -878,6 +880,8 @@ export interface Signal {
   handled?: string
   /** Only the standard aftermath: the brain had its turn (M8.2). */
   rules?: boolean
+  /** It waited a night for the chronicler already, as the night run was full (M10.22). */
+  waited?: boolean
   /** Back from the chronicler without a plan: all of the standard aftermath runs, not only the brain's part (M8.3). */
   whole?: boolean
 }

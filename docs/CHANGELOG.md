@@ -1,5 +1,16 @@
 # Changelog
 
+## M10.22 deel: één cadans, één wachtrij, met een rem in echte tijd, 29 september 2026
+
+- **Eén nachtronde wacht tegelijk.** Wat later op de nacht binnenkomt, gaat in dezelfde ronde. Een nachtronde neemt de twaalf belangrijkste signalen (de wereldknop `story.signals_per_night`). De rest wacht één nacht en gaat daarna terug naar de regels, zodat niets eeuwig wacht.
+- **Overdag hooguit één ronde per speldag.** Dat gebeurt alleen bij nieuws vanaf de wereldknop `story.urgent_belang`, standaard 4: een dood in het dorp. De rest wacht tot de nacht.
+- **Een rem in echte tijd, hoe snel de klok ook loopt.** De nachtronde komt hooguit elke 20 minuten echte speeltijd. De eerste van een sessie wordt nooit tegengehouden. De grote lijnen worden hooguit elke 2 uur beoordeeld, en als de maanden van het spel uitblijven minstens eens per 10 sessies. Die drie getallen zijn knoppen onder Instellingen > Advanced. De app houdt in `pace.json` bij wanneer ze liepen. Het dev-menu (Chronicler) toont onder Cadence de wachtrij, of de ronde van vandaag al gebruikt is, en wanneer de volgende nachtronde en beoordeling mogen.
+- **Een replay doet hetzelfde.** Een beoordeling die de app afdwingt, staat in het logboek.
+
+Testen: speel met een snelle klok (`TEMPO`, of lang `wait`) en kijk in het dev-menu onder Chronicler, Cadence. Tests in `tests/m1022queue.test.ts` en `tests/m1022pace.test.ts`.
+
+Bewust anders: de roadmap zegt "een signaal van belang 5" voor overdag. Ik hield 4 als standaard, als knop, omdat een dood in het dorp quests en mensen dezelfde dag verandert en 22 scenario's daarop rusten. De grens van één per dag geeft de rem die Bram vroeg, en een wereld mag 5 zetten. De weefronde blijft één aanroep per wijk, van ongeveer 2 cent. Twee wijken op één dag zijn zeldzaam, want een wijk komt pas als je er iets doet. De maandbeoordeling is een eigen aanroep op het moment van de nachtronde, onder dezelfde rem.
+
 ## M10.21 deel: een richtprijs per uur, 29 september 2026
 
 - **Onder Instellingen > AI staat nu wat een uur spelen ongeveer kost met jouw modellen.** Het gaat om 40 regels gesprek, 25 keuzes van doelen en de ronde van één nacht. Een nieuwe plek in een verre stad staat er apart bij: de omtrek, de eerste wijk en de weefronde. De cijfers komen uit de tokens van de echte proeven van vandaag (`src/node/ai/measured.ts`, geschreven door `npm run coverage`) en de prijzen van de modellen die je koos. Met Haiku, Sonnet en Opus 5.5 is dat ongeveer $0,49 per uur, en $0,16 voor een nieuwe plek. Van een model zonder bekende prijs zegt de regel dat.

@@ -1,3 +1,4 @@
+import { knob } from './knobs'
 import { callName } from './content'
 import { attitude, relation, situation } from './dialogue/relations'
 import type { Engine } from './engine'
@@ -71,6 +72,8 @@ export interface DevView {
     ledgers: { id: string; name: string; purse: number; short: string[]; surplus: string[]; stock: string[] }[]
   }
   chronicler?: {
+    /** The queue and the pace (M10.22): what waits for the night, the day's run that cannot wait, and the host's brakes. */
+    cadence: string[]
     pending: string[]
     runs: { run: string; when: string; lines: string[]; offered: string[]; names: number; lore: string[]; notes: string[]; plans: string[]; problems: string[] }[]
     lines: string[]
@@ -120,7 +123,7 @@ function person(engine: Engine, id: string): DevPerson {
 }
 
 /** What the dev menu shows of a section of the running game, and of one person when asked. Reads only. */
-export function devView(engine: Engine, section: DevSection, focus?: string): DevView {
+export function devView(engine: Engine, section: DevSection, focus?: string, pace: string[] = []): DevView {
   const world = engine.world
   const date = (t: number) => world.date(t).split(',').slice(0, 2).join(',')
   const view: DevView = {
@@ -190,7 +193,15 @@ export function devView(engine: Engine, section: DevSection, focus?: string): De
     const state = world.state.chronicle
     const title = (id: string) => world.state.news?.facts.find((f) => f.id === id)?.title ?? id
     const lineTitle = (id: string) => state?.lines.find((l) => l.id === id)?.title ?? id
+    const waiting = (state?.signals ?? []).map((id) => world.state.signals?.log.find((x) => x.id === id) ?? world.state.signals?.queue.find((x) => x.id === id)).filter((x): x is NonNullable<typeof x> => Boolean(x))
+    const byBelang = [5, 4, 3, 2, 1, 0].map((b) => [b, waiting.filter((x) => x.belang === b).length] as const).filter(([, n]) => n)
+    const today = Math.floor(world.now / (24 * 60))
     view.chronicler = {
+      cadence: [
+        `Signals waiting for the night: ${waiting.length}${byBelang.length ? ` (${byBelang.map(([b, n]) => `belang ${b}: ${n}`).join(', ')})` : ''}; a night run takes ${knob(world, 'story.signals_per_night')}, the most important first.`,
+        `A run that cannot wait (belang ${knob(world, 'story.urgent_belang')} and up): ${state?.urgentDay === today ? 'taken today; the rest waits for the night' : 'free today'}.`,
+        ...pace,
+      ],
       pending: (state?.pending ?? []).map((r) => `${r.id} (${r.reason}): ${r.lines.map(lineTitle).join('; ')}${r.signals?.length ? `, ${r.signals.length} signals` : ''}`),
       runs: [...engine.devRuns].reverse().map((r) => ({
         run: r.run,

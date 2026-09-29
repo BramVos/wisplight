@@ -56,7 +56,14 @@ describe('M8.3: one plan for the refugees', () => {
     for (let i = 0; i < 3; i++) shiftTension(engine.world, 'nethermarch', 'rijkland', -10, 'a treaty')
     engine.tick(1)
     await engine.runChronicler()
-    expect(asked?.group.length).toBe(fled.length)
+    // The war took today's run that cannot wait (M10.22: one a game day); the peace goes in the night run.
+    if (!asked) {
+      engine.tick(((28 * 60 - (engine.world.now % (24 * 60))) % (24 * 60)) || 24 * 60)
+      await engine.runChronicler()
+    }
+    // By the night some have heard of the peace and gone home on their own; the call is about the rest.
+    expect(asked?.group.length).toBeGreaterThan(0)
+    expect(asked!.group.length).toBeLessThanOrEqual(fled.length)
     engine.tick(12 * 60)
     const settled = fled.filter((id) => content.locations.get(engine.world.npc(id).home)!.area === 'waagdam')
     const home = fled.filter((id) => !settled.includes(id) && !engine.state.npcs[id]!.stayAt)

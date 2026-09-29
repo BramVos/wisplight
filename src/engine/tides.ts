@@ -49,7 +49,7 @@ export interface TidesReply {
   lines: { id: string; judged: string; why: string }[]
 }
 
-function tidesState(world: World): TidesState {
+export function tidesState(world: World): TidesState {
   return (world.state.tides ??= { lines: {} })
 }
 
