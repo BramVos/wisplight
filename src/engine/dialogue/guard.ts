@@ -76,8 +76,11 @@ export function saysNothing(text: string, speaker: string[], pronoun?: string): 
  * A name asked back ("Harmen? No.") is not an action.
  */
 export function speaksAsOther(text: string, speaker: string[], others: string[]): string | undefined {
+  // Without quotes the reply is all words (Haiku often answers so): "Brannoc the boatman and his boy live by the slip"
+  // is Maren speaking, never Brannoc acting (the measure on Skerrow, 29 September 2026).
   const open = text.search(/["“]/)
-  const lead = (open < 0 ? text : text.slice(0, open)).trim()
+  if (open < 0) return undefined
+  const lead = text.slice(0, open).trim()
   if (!lead || speaker.some((n) => n && lead.startsWith(n))) return undefined
   const escape = (w: string) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
   return [...others].sort((a, b) => b.length - a.length).find((n) => n && new RegExp(`^${escape(n)}\\s+\\p{Ll}`, 'u').test(lead))

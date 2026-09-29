@@ -111,6 +111,9 @@ describe('M10.28 (1): one cached block per area', () => {
     expect(speaksAsOther('Harmen? She shakes her head. "No."', ['Mirte'], ['Harmen'])).toBeUndefined()
     expect(speaksAsOther('Mirte glances at Harmen. "No."', ['Mirte'], ['Harmen'])).toBeUndefined()
     expect(speaksAsOther('"Harmen went north."', ['Mirte'], ['Harmen'])).toBeUndefined()
+    // Words without quotes are speech, whoever they begin with.
+    expect(speaksAsOther('Brannoc the boatman and his boy live by the slip.', ['Maren'], ['Brannoc'])).toBeUndefined()
+    expect(speaksAsOther('Tessa said that? I—', ['Niko'], ['Tessa'])).toBeUndefined()
     let i = 0
     const said = ['Harmen scowls. "Ask Mirte."', 'Mirte wipes her hands. "Rye today."']
     const reports: string[] = []
