@@ -67,6 +67,8 @@ export interface TrialResult {
   averageLatencyMs: number
   maxLatencyMs: number
   inputTokens: number
+  /** Of the input, read from the cache (M10.28). */
+  cachedTokens?: number
   outputTokens: number
   costUsd?: number
   /** What one usable answer cost, retries and failed answers included (M9.3). */
@@ -221,6 +223,8 @@ export async function testCall(gateway: Gateway, provider: ProviderId, model: st
 interface Call {
   latencyMs: number
   inputTokens: number
+  /** Of those, read from the cache (M10.28). */
+  cachedTokens?: number
   outputTokens: number
   costUsd?: number
   /** Which answer it belongs to. */
@@ -249,7 +253,7 @@ class Meter implements LlmClient {
   async complete(request: LlmRequest): Promise<LlmResponse> {
     try {
       const response = await this.gateway.complete(request, { provider: this.provider, model: this.model })
-      this.calls.push({ latencyMs: response.latencyMs, inputTokens: response.usage.inputTokens, outputTokens: response.usage.outputTokens, costUsd: costUsd(this.model, response.usage), answer: this.answer, given: sentText(request), text: response.text })
+      this.calls.push({ latencyMs: response.latencyMs, inputTokens: response.usage.inputTokens, cachedTokens: response.usage.cachedTokens, outputTokens: response.usage.outputTokens, costUsd: costUsd(this.model, response.usage), answer: this.answer, given: sentText(request), text: response.text })
       return response
     } catch (error) {
       this.calls.push({ latencyMs: 0, inputTokens: 0, outputTokens: 0, costUsd: 0, answer: this.answer, failed: error instanceof Error ? error.message : String(error) })
@@ -373,6 +377,7 @@ export async function trial(gateway: Gateway, content: Content, provider: Provid
   result.averageLatencyMs = answered.length ? Math.round(answered.reduce((sum, c) => sum + c.latencyMs, 0) / answered.length) : 0
   result.maxLatencyMs = Math.max(0, ...answered.map((c) => c.latencyMs))
   result.inputTokens = meter.calls.reduce((sum, c) => sum + c.inputTokens, 0)
+  result.cachedTokens = meter.calls.reduce((sum, c) => sum + (c.cachedTokens ?? 0), 0)
   result.outputTokens = meter.calls.reduce((sum, c) => sum + c.outputTokens, 0)
   if (answered.every((c) => c.costUsd !== undefined)) {
     result.costUsd = meter.calls.reduce((sum, c) => sum + (c.costUsd ?? 0), 0)

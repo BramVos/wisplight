@@ -293,7 +293,8 @@ export class Gateway implements LlmClient {
         prompt: request.prompt,
         response: response.text,
       })
-      if (request.warm && !override) this.warmed(request, choice, response.usage)
+      // A trial with a model of its own (M10.28: keep_warm) keeps its block warm on that model.
+      if (request.warm) this.warmed(request, choice, response.usage)
       const { rateLimit: _, ...reply } = response
       return reply
     } catch (error) {

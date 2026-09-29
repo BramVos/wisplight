@@ -270,10 +270,14 @@ export async function trialRun(ai: AiService, kinds: string, contentRoot: string
         continue
       }
       const content = await loadContentFromDir(contentRoot, 'base')
+      // Another model than the voice's with --model (M10.28): its provider from its name.
+      const model = env('MODEL') || chosen.model
+      const provider = model === chosen.model ? chosen.provider : providerOf(model)
       for (let n = 1; n <= Math.max(1, Math.min(Number(env('TIMES')) || 1, 10)); n++) {
-        const r = await trial(ai.gateway, content, chosen.provider, chosen.model, 'voice')
-        const usd = costUsd(r.model, { inputTokens: r.inputTokens, outputTokens: r.outputTokens, cachedTokens: 0 }) ?? 0
-        say(`voice_set #${n}: ${r.model}, ${r.answers} answers, ${r.valid} valid, ${r.retries} retries, ${r.fallbacks} set lines, character ${r.characterScore?.toFixed(3) ?? '-'}, leaks ${r.leaks}, invented ${r.factualErrors}, breaks ${r.characterBreaks}, in ${r.inputTokens}, out ${r.outputTokens}, $${usd.toFixed(4)}${r.errors.length ? `; ${r.errors.join('; ')}` : ''}`)
+        const r = await trial(ai.gateway, content, provider, model, 'voice')
+        // What it cost as billed, the cache read and written included (M10.28); without a price, at the full input price.
+        const usd = r.costUsd ?? costUsd(r.model, { inputTokens: r.inputTokens, outputTokens: r.outputTokens, cachedTokens: 0 }) ?? 0
+        say(`voice_set #${n}: ${r.model}, ${r.answers} answers, ${r.valid} valid, ${r.retries} retries, ${r.fallbacks} set lines, character ${r.characterScore?.toFixed(3) ?? '-'}, leaks ${r.leaks}, invented ${r.factualErrors}, breaks ${r.characterBreaks}, in ${r.inputTokens} (read ${r.cachedTokens ?? 0}), out ${r.outputTokens}, $${usd.toFixed(4)}${r.errors.length ? `; ${r.errors.join('; ')}` : ''}`)
       }
       continue
     }
@@ -297,6 +301,11 @@ export async function trialRun(ai: AiService, kinds: string, contentRoot: string
   return ok
 }
 
+/** The provider of a model by its name (M10.28: a trial with --model). */
+function providerOf(model: string): 'openai' | 'anthropic' {
+  return /^(gpt|o\d|chatgpt)/.test(model) ? 'openai' : 'anthropic'
+}
+
 /**
  * The measures of M10.28 on the player's key: a talk of twenty lines with the
  * baker of Veenhoek on the voice's model (or --model), per line what it read
@@ -311,14 +320,16 @@ export async function talkTrial(ai: AiService, kind: 'talk_twenty' | 'keep_warm'
   }
   const content = await loadContentFromDir(contentRoot, 'base')
   const model = (response: LlmResponse) => response.model
+  const other = how.model && how.model !== chosen.model ? { provider: providerOf(how.model), model: how.model } : undefined
+  const llm = other ? { complete: (r: LlmRequest) => ai.gateway.complete(r, other), report: ai.gateway.report.bind(ai.gateway) } : ai.gateway
   if (kind === 'keep_warm') {
     const wait = (ms: number) => new Promise<void>((done) => setTimeout(done, ms))
-    const r = await pingKeeps(content, ai.gateway, (key) => ai.gateway.keepWarm(key), { wait, afterMs: PING_AFTER_MS + 5000, model, say })
-    say(`keep_warm: ${chosen.model}, ping ${r.pinged ? 'sent' : 'not sent'}; the line after read ${r.second.cachedTokens} of ${r.second.inputTokens} from the cache and wrote ${r.second.cacheWriteTokens}: ${ai.gateway.pingsWork(chosen.provider, chosen.model) ? 'the ping kept the block' : 'the ping did not keep it; the block is kept an hour from now on'}`)
+    const on = other ?? chosen
+    const r = await pingKeeps(content, llm, (key) => ai.gateway.keepWarm(key), { wait, afterMs: PING_AFTER_MS + 5000, model, say })
+    const kept = ai.gateway.pingsWork(on.provider, on.model)
+    say(`keep_warm: ${on.model}, ping ${r.pinged ? 'sent' : 'not sent'}; the line after read ${r.second.cachedTokens} of ${r.second.inputTokens} from the cache and wrote ${r.second.cacheWriteTokens}: ${kept === undefined ? 'not measured' : kept ? 'the ping kept the block' : 'the ping did not keep it; the block is kept an hour from now on'}`)
     return true
   }
-  const other = how.model && how.model !== chosen.model ? { provider: /^(gpt|o\d|chatgpt)/.test(how.model) ? ('openai' as const) : ('anthropic' as const), model: how.model } : undefined
-  const llm = other ? { complete: (r: LlmRequest) => ai.gateway.complete(r, other), report: ai.gateway.report.bind(ai.gateway) } : ai.gateway
   let spent = 0
   let lines: Awaited<ReturnType<typeof playTwenty>>
   try {
