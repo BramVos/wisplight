@@ -86,3 +86,4 @@ locations:
           repair: This needs parts and a steadier hand than a gloved one in a draughty hut, and perhaps a closer look first.
       - words: [route, climb, maintenance route]
         look: Steps and a chain rail cut into the rock, climbing steeply out of sight towards the station.
+    pos: [2.87, 2.52]

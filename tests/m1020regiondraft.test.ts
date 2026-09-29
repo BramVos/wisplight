@@ -13,8 +13,15 @@ import { readContentFiles } from '../src/node/content'
 // places are laid out from their exits and minutes; a region's own terrains
 // (black basalt, open sea) walk like one of the engine's lands.
 
+/** A world as it was before its map (M10.25: The Quiet Reach has its own now, laid and painted in the map step). */
+async function unmapped(root: string, world: string): Promise<ContentFile[]> {
+  return (await readContentFiles(root, world))
+    .filter((f) => !/(^|\/)regions\//.test(f.path))
+    .map((f) => (f.path.endsWith('ids.lock') ? { ...f, text: f.text.replace(/\n\s+\S*\/regions\/\S*:\n\s+region: \[[^\]]*\]/g, '') } : f))
+}
+
 async function withDraft(root: string, world: string): Promise<{ files: ContentFile[]; content: Content; notes: string[] }> {
-  const files = await readContentFiles(root, world)
+  const files = await unmapped(root, world)
   const draft = draftRegion(loadContent(files))
   const result = draftResult(files, { changes: draft.changes, world: '', files: [] })
   expect(result.problems).toEqual([])

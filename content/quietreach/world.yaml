@@ -130,6 +130,8 @@ world:
         scrub: coastal scrub
         beds: growing beds
         canal: tidal channel
+        road: maintenance track
+        path: walking path
       # The signs on the coast (M10.20), as the palette step named them: the
       # shaft in coral for danger, the abandoned structure in greyed violet for
       # what nobody is sure of. Each also gets a mark on the map (! and ?).
@@ -181,7 +183,6 @@ world:
         glyph:
           tide_pool: "#5e93a0"
           mine_shaft: "#cd786c"
-          peat_edge: "#a8665c"
           growth: "#4d7a72"
           structure: "#9d92b3"
           knoll: "#8c989f"
@@ -204,7 +205,6 @@ world:
         glyph:
           tide_pool: "#3f6e7f"
           mine_shaft: "#a8544a"
-          peat_edge: "#8a4a42"
           growth: "#2f5049"
           structure: "#6e6388"
           knoll: "#5a666d"

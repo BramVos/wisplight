@@ -2,6 +2,10 @@
 
 ## Notes
 
+## Answers
+### Palette
+  The map is laid and painted; paint it once more, with the places where they now lie. Orison Ridge is the high ground: the high rock lies around it, and the land climbs to it from the port, past Ridge Shelter. Port Vesper and its growing beds stay on the black basalt by the coast. Keep the open sea along the west, the band of tidal shallows and the coastal scrub behind it, the paths, the lines of each land and what lies beyond each edge as they are. The palette and the picture style stay as they were accepted.
+
 ## Decisions
 
 ### 2026-09-28 19:33 · Frame · accepted
@@ -1339,3 +1343,79 @@
   patron the_witness
   world.yaml: faiths
   data/voice.yaml
+
+### 2026-09-29 14:40 · Map · accepted
+- Asked: Map the Vesper Coast
+  Yes. The first map shows Port Vesper, the maintenance track and coastal walking path, Ridge Shelter and Orison Ridge. It is a compact regional map. Interiors are shown as connected locations; they do not receive separate terrain hexes.
+  The map feels like a practical expedition map on a ship terminal: calm, sharply legible and slightly worn. No neon, holograms or constantly flashing elements.
+  Colours
+  | Element | Colour | Reference value |
+  | Background | Deep blue-black | #111D26 |
+  | Volcanic ground | Dark slate grey | #46545C |
+  | Rocks and higher terrain | Cool grey | #76838B |
+  | Ocean | Muted deep blue | #23495E |
+  | Shallow water and tidal zone | Greyed blue-green | #477C83 |
+  | Native vegetation | Dark petrol green | #365C56 |
+  | Controlled growing beds | Muted grey-green | #7D9274 |
+  | Paths and maintenance track | Soft sand colour | #B5A58A |
+  | Buildings and known locations | Off-white | #DBE2DF |
+  | Player and selected route | Warm amber | #E4B66B |
+  | Danger or closed route | Muted coral red | #CD786C |
+  | Uncertain information | Greyed violet | #9D92B3 |
+  
+  Use variations in tone to make terrain legible, not to give every cell a decoratively different colour. A light display can use a pale blue-grey background with dark markings.
+  What the map may reveal
+  Visited: a clear location marker.
+  Seen: terrain and recognisable outlines, without unknown details.
+  Heard of: a dotted zone or question mark.
+  Unknown: empty or covered, not already fully drawn in.
+  Closed or dangerous: a symbol and a text label; colour alone is insufficient.
+  The basic map on the pocket terminal contains official locations and registered routes. Hidden passages, current damage and personal discoveries appear only once the player knows about them. An official map is not automatically up to date either.
+  On the local environment map, night, fog and rain may limit visibility. The overview map remains legible as stored map knowledge.
+  Visual style for people and places
+  Choose painted science-fiction concept art with a documentary feel: matte surfaces, fine brush texture, believable materials and restrained colours. Technology looks as though people maintain it, repair it and sometimes use it for too long.
+  Visual coherence comes from three elements:
+  Cool outdoor light: overcast skies, wet rock and sea mist.
+  Warm indoor light: workbenches, dining hall and inhabited cabins.
+  Signs of use: repaired seams, faded labels, scratches and personal belongings.
+  Characters
+  Portraits show the head and upper body, with natural light and a quiet background. People vary in age, build, skin colour and appearance. Cultural origins are mainly visible through clothing, habits and personal objects; they do not prescribe a fixed appearance.
+  Clothing suits the work: a repaired raincoat, practical workwear, a medical wrap coat or a safety vest. No universal tight-fitting space uniform.
+  Give each important character a few consistent identifying features that persist between images. For example, Tessa's rolled-up sleeves and tool belt, or Mara's weathered harbour coat. A mood changes posture or expression, not the face every time.
+  Locations
+  Show places at a human scale, from a position where the player can actually stand:
+  Commons: warm light, mismatched chairs, steaming bowls and a roster board.
+  Workshop: orderly work areas beside half-repaired equipment.
+  Orison Listening Room: screen light, cables, condensation along the window and the antenna in the clouds.
+  Peregrine: compact, functional and clearly experimental; maintenance panels and temporarily mounted measuring equipment.
+  Vesper Coast: low buildings against a vast, cold landscape. The settlement feels vulnerable but inhabited.
+  Echo Nine
+  Reserve a different visual language for the later destination. Use shapes and colours there only when they follow from the established reality. Do not show alien structures or beings the player has not yet discovered in early images.
+  For the Chronicler and illustrator
+  Images support the same state as the text. A damaged antenna is not intact in the picture; an abandoned room does not contain incidental residents. Do not add doors, objects, weapons or clues unsupported by the world.
+  The intended impression is: a cold, distant place where people have struggled to create something warm and habitable.
+- Chronicler: The map, laid out from the places, their exits and minutes, and painted in the Palette step from your words.
+  
+  - These are reached by a way without a wind (in, out, up or down), and lie where there was room: loc_coastal_service_path (out from loc_commons), loc_orison_listening_room (up from loc_ridge_shelter).
+  - One character of the drawing is a hex, 250 m each way, the top row the north. All the open land is black basalt now: paint the drawing with the other lands (% high rock, & open sea, * tidal shallows, + coastal scrub, - growing beds).
+  - From their names: volcanic walks like heath, highland walks like heath, ocean walks like water, shallows walks like fen, scrub walks like woods, beds walks like fields. Give each the line the stranger reads there (text).
+  
+  I have painted the Vesper Coast from your words and the places. The open sea lies along the west edge, with a band of tidal shallows and coastal scrub behind it. Port Vesper's growing beds sit on black basalt around the port. The ground climbs to the south-east into high rock, where Ridge Shelter and Orison Ridge stand. The drawing keeps its 18 columns by 21 rows at a quarter of a kilometre each, and the places, size and origin stay as they were. Each land has a line, each path has a walking line, and each edge says what lies beyond it. I have left `toward` out, because I cannot see the ids of the far-place topics. Name them and I will add them. The palette and picture style were accepted earlier, so `world` is unchanged. One small note: the glyph tables still hold `peat_edge`, a colour with no sign. It is harmless, but you may want it removed.
+- Questions back: Which far-place topics, if any, should the edges point toward (Harrow Station by the supply run, for example)?
+  Shall I drop the stray `peat_edge` glyph colour from both styles?
+- Changed: region vesper_coast
+  area vesper_coast
+  area coastal_traverse
+  area orison_ridge
+  area port_vesper
+  area vesper_works
+  location loc_ridge_shelter
+
+### 2026-09-29 14:45 · Map · accepted
+- Asked: The map is laid and painted; paint it once more, with the places where they now lie. Orison Ridge is the high ground: the high rock lies around it, and the land climbs to it from the port, past Ridge Shelter. Port Vesper and its growing beds stay on the black basalt by the coast. Keep the open sea along the west, the band of tidal shallows and the coastal scrub behind it, the paths, the lines of each land and what lies beyond each edge as they are. The palette and the picture style stay as they were accepted.
+- Chronicler: The palette already follows your table, so I have kept its colours and made three repairs. First, I removed a stray `peat_edge` glyph colour, because this world has no such sign. Second, danger (the mine shaft, in muted coral) and uncertain information (the abandoned structure, in greyed violet) now carry a `means`, so each shows a symbol and a word as well as a colour. Third, the visited marker and the trail are set to off-white and amber in the dark style, and to dark ink and deep amber in the paper style. The paper style is the pale blue-grey version with dark markings that you described. The picture style stays as you wrote it.
+  
+  For the region, I repainted only the drawing. Port Vesper and the Traverse were standing in tidal shallows, so the port now sits on black basalt, Vesper Works has growing beds beside it, the Traverse is coastal scrub, and Orison Ridge sits on high rock. The rows, columns, places, size, origin, lands, paths and edge lines are unchanged. No edge has `toward` yet, because there are no far-place topics to point to.
+- Questions back: Should any edge lead somewhere named, for example east toward the mining ground or the port toward Harrow Station by ship? If so, I would add a far-place topic for it and link it under `toward`.
+- Changed: region vesper_coast
+  world.yaml: map

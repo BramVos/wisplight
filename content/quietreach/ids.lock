@@ -16,7 +16,7 @@ ids:
   quietreach/data/aftermath.yaml:
     aftermath: [am_holding_the_name, am_return_check, am_retrieval, am_count_first, am_open_stores, am_handover, am_released_for_use, am_safe_return, am_word_kept, am_passing_on, am_second_observation]
   quietreach/data/areas.yaml:
-    area: [port_vesper, vesper_works, coastal_traverse, orison_ridge]
+    area: [port_vesper, vesper_works, coastal_traverse, orison_ridge, vesper_coast]
   quietreach/data/crafts.yaml:
     craft: [field_electronics]
   quietreach/data/creatures.yaml:
@@ -41,6 +41,8 @@ ids:
     topic: [night_of_the_open_door, winter_supplies, answer_before_the_question, vesper_settlement_compact, harbour_record, beltborn, nacreans, transit_families, kestrel_landing, meridian_anchorage, harrow_station, echo_nine, return_check, open_stores, safe_return, passing_on, second_observation, sailbacks, maintenance_drones]
   quietreach/data/watchers.yaml:
     watcher: [w_death, w_missing, w_injury, w_theft, w_shortage, w_departure, w_repair_electronics, w_repair_fabrication, w_repair_water, w_danger_past, w_signal_anomaly]
+  quietreach/regions/vesper_coast/region.yaml:
+    region: [vesper_coast]
   quietreach/rules/rules.yaml:
     patron: [the_remembered, the_witness]
 tombstones:

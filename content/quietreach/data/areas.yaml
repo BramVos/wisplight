@@ -2,10 +2,11 @@ areas:
   - id: port_vesper
     name: Port Vesper
     kind: village
-    aliases: [ Vesper, the port, the settlement ]
+    aliases: [Vesper, the port, the settlement]
     summary: "A compact colony of connected pressure modules with shared facilities: the landing pad, the Commons, the guest quarters and the medical bay."
     fame: 2
     sound: { kind: hum, level: 0.4 }
+    pos: [1.63, 1.73]
 
   - id: vesper_works
     name: Vesper Works
@@ -14,6 +15,7 @@ areas:
     summary: The workshop and research complex beside the port, with repairs, scarce parts and the locked hangar of the Peregrine.
     fame: 1
     sound: { kind: workshop, level: 0.5, night: hum }
+    pos: [1.81, 1.9]
 
   - id: coastal_traverse
     name: The Coastal Traverse
@@ -22,6 +24,7 @@ areas:
     summary: An exposed maintenance route along the black coast between Port Vesper and Orison Ridge.
     fame: 1
     sound: { kind: wind, level: 0.7 }
+    pos: [2.07, 1.73]
 
   - id: orison_ridge
     name: Orison Ridge
@@ -34,3 +37,10 @@ areas:
       - when:
           - { weather: storm }
         text: The wind on the climb tears at you hard enough to pull you off the rock, and the steps are running with water. This is not a climb to make in a storm. The Ridge Shelter is the place to wait it out, or the path back to Port Vesper.
+    pos: [2.87, 3.27]
+
+  - id: vesper_coast
+    name: Vesper Coast
+    kind: wilderness
+    summary: The open land between the places of Vesper Coast.
+    pos: [2.25, 2.5]

@@ -1,4 +1,4 @@
-import { mapDraft } from './map/regiondraft'
+import { mapDraft, placesInDrawing } from './map/regiondraft'
 import { economyOverview, type SettlementView } from './economy/ledger'
 import { parseDocument, stringify } from 'yaml'
 import { DEFAULT_PALETTE, LANDS, MapPaletteSchema, MAX_SIGNS, SIGN_SHAPES, signsOf, SURFACE, TERRAIN_ORDER, type Level, type MapPalette } from './map/palette'
@@ -1312,7 +1312,9 @@ export function readVoice(text: string): { say: string; yaml?: string; problems:
 export function mapStepRequest(files: ContentFile[], said: string): { layout: Draft; request: LlmRequest } {
   const layout = mapDraft(files)
   const laid = layout.result?.ok ? layout.result.files : files
-  const brief = [said.trim(), 'Paint the region map just laid out from the places: its zones and drawing, its own lands, paths and what lies beyond each edge, from the words above and the places.'].filter(Boolean).join('\n\n')
+  const content = safeLoad(laid)
+  const where = content ? placesInDrawing(content) : ''
+  const brief = [said.trim(), 'Paint the region map just laid out from the places: its zones and drawing, its own lands, paths and what lies beyond each edge, from the words above and the places.', where].filter(Boolean).join('\n\n')
   const request = worldStepRequest(laid, 'palette', brief)
   return { layout, request: { ...request, meta: { ...request.meta, map: true } } }
 }

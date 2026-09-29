@@ -1,0 +1,73 @@
+regions:
+  - id: vesper_coast
+    name: Vesper Coast
+    area: vesper_coast
+    origin: [0, 0]
+    size: [4.5, 5]
+    hex: 0.25
+    seed: 8216
+    legend: { "#": volcanic, "%": highland, "&": ocean, "*": shallows, +: scrub, "-": beds, ":": road, ",": path }
+    lands:
+      volcanic: { like: heath, text: "Black basalt runs underfoot, wet and ridged, with nothing to break the wind." }
+      highland: { like: heath, text: "The high rock is bare and cold, and the cloud sits low enough to touch." }
+      ocean: { like: water, text: "Grey swell rolls in from the open sea, and the cold comes off it in waves." }
+      shallows:
+        like: fen
+        text: The tidal shallows suck at your boots, and the water hisses as it moves between the rocks.
+      scrub:
+        like: woods
+        text: Low, dark coastal scrub clings to the rock, wet and springy, and it hides the ground.
+      beds:
+        like: fields
+        text: Controlled growing beds lie in tidy rows under patched covers, and the soil smells of salt.
+    zone: [0.25, 0.25]
+    zones: |
+      &&&&***++#########
+      &&&&***++####%####
+      &&&&***+++###%%###
+      &&&***+++####%%%##
+      &&&***++###%%%%%##
+      &&&***+++##%%%%%##
+      &&&***++##%%%%%%%%
+      &&&***++###%%%%%%%
+      &&&&***+++#%%%%%%#
+      &&&&**++++####%%%#
+      &&&&**++--#####%%%
+      &&&&**+---######%%
+      &&&&*+#---#####%%%
+      &&&&**#-++####%%%%
+      &&&&&*##++#####%%%
+      &&&&&***++###%%%%%
+      &&&&&&***+###%%%%%
+      &&&&&&&***++####%%
+      &&&&&&&***+#######
+      &&&&&&&&***++#####
+      &&&&&&&&&***++####
+    paths:
+      - kind: path
+        name: the path to the Coastal Traverse
+        via:
+          - [1.63, 1.73]
+          - [2.07, 1.73]
+        text: The maintenance track leaves the port between marker posts, and their reflectors are faded and scratched.
+      - kind: path
+        name: the path to Ridge Shelter
+        via:
+          - [2.07, 1.73]
+          - [2.87, 2.52]
+        text: The coastal path climbs over wet basalt, and the sea mutters somewhere below you in the mist.
+      - kind: path
+        name: the path to Orison Ridge
+        via:
+          - [2.87, 2.52]
+          - [2.87, 3.27]
+        text: The last stretch to the ridge is steep and bare, and the antenna shows and vanishes in the cloud.
+    beyond:
+      - side: west
+        text: The open sea runs west to the horizon, grey and empty, and no boat of the coast goes out that far.
+      - side: north
+        text: North, the coast goes on as black rock and swell, and the official map marks nothing there but old survey lines.
+      - side: east
+        text: East lies the abandoned mining ground, broken and unfenced, and the map there is years out of date.
+      - side: south
+        text: South, the high rock falls away into cloud, and nobody at Port Vesper has walked beyond it lately.

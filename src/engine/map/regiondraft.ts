@@ -2,6 +2,7 @@ import { Document, isSeq, visit } from 'yaml'
 import { DIRECTIONS, loadContent, type Content, type ContentFile, type Direction } from '../content'
 import { draftResult, type Draft } from '../editor'
 import { DEFAULT_PALETTE, LANDS } from './palette'
+import { regionMap } from './region'
 
 // A first map of a world from its places (M10.20; found building The Quiet
 // Reach: no step made a region with its hexes, so the world played without a
@@ -307,4 +308,24 @@ export function mapDraft(files: ContentFile[]): Draft {
     ...draft.notes.map((n) => `- ${n}`),
   ].join('\n')
   return { say, questions: [], changes: draft.changes, result, problems: result.problems }
+}
+
+/**
+ * Where the places lie in the zone drawing of the world's first region, by
+ * row from the top and column from the left, counted from 1 (M10.25: the
+ * painter of The Quiet Reach had only their km, took the top row for the
+ * south, and put the high rock of Orison Ridge on the wrong side). The hex a
+ * place stands on reads the character under its centre, so that is the one named.
+ */
+export function placesInDrawing(content: Content): string {
+  const map = regionMap(content)
+  if (!map) return ''
+  const [across, down] = map.region.zone ?? [0.5, 1]
+  const cells = [...map.places.entries()]
+    .filter(([area]) => area !== map.region.area)
+    .map(([area, hex]) => {
+      const [x, y] = map.local(map.posOf(hex))
+      return `${content.areas.get(area)?.name ?? area} row ${Math.round((map.region.size[1] - y) / down) + 1}, column ${Math.floor(x / across) + 1}`
+    })
+  return cells.length ? `WHERE THE PLACES LIE IN THE DRAWING (row from the top, which is the north; column from the left, which is the west; both from 1): ${cells.join('; ')}.` : ''
 }
