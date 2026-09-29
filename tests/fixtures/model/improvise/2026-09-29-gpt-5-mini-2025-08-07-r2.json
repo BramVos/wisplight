@@ -1,0 +1,14 @@
+{
+  "kind": "improvise",
+  "about": "an offering the rules have no way for",
+  "model": "gpt-5-mini-2025-08-07",
+  "provider": "openai",
+  "date": "2026-09-29",
+  "usage": {
+    "inputTokens": 987,
+    "cachedTokens": 0,
+    "outputTokens": 381
+  },
+  "reply": "{\"narration\":\"You kneel at the hollow and tip the jug; milk runs white over root and pale sand, smelling faint of barn. The air stays still, as if the wind goes round, and from the dark cup of the oak the milk slips and wets the lichen. To the north-east Veenhoek lies low beyond the fields under the overcast light as the last of the milk pours out.\",\"spent\":true,\"effect\":{\"kind\":\"standing\",\"id\":\"kabouters\",\"delta\":1,\"title\":\"offering accepted\"}}",
+  "problems": []
+}

@@ -1,0 +1,14 @@
+{
+  "kind": "party_reply",
+  "about": "two companions answer together about the Haakman",
+  "model": "claude-haiku-4-5-20251001",
+  "provider": "anthropic",
+  "date": "2026-09-29",
+  "usage": {
+    "inputTokens": 1071,
+    "cachedTokens": 0,
+    "outputTokens": 85
+  },
+  "reply": "{\"lines\": [{\"speaker\": \"npc_wouter\", \"text\": \"A thing of the water that takes those who show it disrespect—best left alone, friend.\"}, {\"speaker\": \"npc_gerrit\", \"text\": \"Grey as a heron with weed-teeth and a hook; the fen folk fear him, and rightly so.\"}]}",
+  "problems": []
+}

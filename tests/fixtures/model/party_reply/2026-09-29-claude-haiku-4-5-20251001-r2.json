@@ -1,0 +1,14 @@
+{
+  "kind": "party_reply",
+  "about": "two companions answer together about the Haakman",
+  "model": "claude-haiku-4-5-20251001",
+  "provider": "anthropic",
+  "date": "2026-09-29",
+  "usage": {
+    "inputTokens": 1071,
+    "cachedTokens": 0,
+    "outputTokens": 79
+  },
+  "reply": "{\"lines\": [{\"speaker\": \"npc_wouter\", \"text\": \"The water keeps its own. Respect it, and the Haakman leaves you be.\"}, {\"speaker\": \"npc_gerrit\", \"text\": \"Grey thing, grey teeth—but I've not seen him myself, only heard the fearful talk.\"}]}",
+  "problems": []
+}

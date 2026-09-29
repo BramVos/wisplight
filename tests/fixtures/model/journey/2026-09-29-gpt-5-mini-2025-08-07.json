@@ -1,0 +1,14 @@
+{
+  "kind": "journey",
+  "about": "an hour on foot along the dyke",
+  "model": "gpt-5-mini-2025-08-07",
+  "provider": "openai",
+  "date": "2026-09-29",
+  "usage": {
+    "inputTokens": 582,
+    "cachedTokens": 0,
+    "outputTokens": 241
+  },
+  "reply": "{\"text\":\"You follow the dyke path west for an hour. The wind comes off the water and the reeds lean with it. By noon you reach the sluice.\"}",
+  "problems": []
+}

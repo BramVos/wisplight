@@ -173,15 +173,15 @@ Het gedeelde deel van de doelkeuzes staat sinds M10.28 een uur in de cache. Bij 
 
 | Soort | 1 seconde | 4 seconden | 8 seconden |
 |---|---|---|---|
-| `npc_reply` (40 per uur) | $0,171 | $0,171 | $0,171 |
+| `npc_reply` (40 per uur, $0,0022 per regel met het blok per gebied) | $0,088 | $0,088 | $0,088 |
 | `npc_goals` | 31 per uur, $0,203 | 8 per uur, $0,055 | 4 per uur, $0,030 |
 | `chronicle` en `lore_check` | 1,5 per uur, $0,111 | 0,38 per uur, $0,028 | 0,19 per uur, $0,014 |
 | De rest (reizen, improviseren, groepen, flarden) | $0,014 | $0,014 | $0,014 |
-| **Een uur** | **ongeveer $0,50** | **ongeveer $0,27** | **ongeveer $0,23** |
+| **Een uur** | **ongeveer $0,42** | **ongeveer $0,19** | **ongeveer $0,15** |
 
-Bij 4 en 8 seconden is het gesprek meer dan de helft van het uur. De rij voor het gesprek staat hier nog zoals in M10.27. De andere sessie meet in M10.28 wat het gecachete blok per gebied en het gesprek als berichten eraan doen.
+Het gesprek in deze tabel is dat van na M10.28: het blok per gebied en het gesprek als berichten, gemeten op Haiku 4.5 op $0,0022 per regel (zie hieronder). De eerste regel in een groep gebieden schrijft het blok, dat daarna een uur in de cache blijft; dat is ongeveer $0,018 per groep per uur. In M10.27 kostte een regel nog $0,0043. Het doel van M10.27, $0,44 per uur, is hiermee bij elke stand gehaald.
 
-De richtprijs in de app rekent zonder cache. Onder Instellingen > AI noemt hij bij Brams modellen ongeveer $0,30 bij 4 seconden, met $0,57 bij 1 en $0,25 bij 8 erachter. Op het kaderscherm staat onder de schuif wat een uur bij de gekozen stand ongeveer kost.
+De richtprijs in de app rekent sinds M10.28 ook wat een aanroep uit de cache leest. Onder Instellingen > AI noemt hij bij Brams modellen ongeveer $0,20 bij 4 seconden, $0,48 bij 1 en $0,15 bij 8. Op het kaderscherm staat onder de schuif wat een uur bij de gekozen stand ongeveer kost.
 
 ## Het gesprek per gebied, als berichten, een uur in de cache (M10.28, 29 september 2026)
 
@@ -213,3 +213,43 @@ Gemeten op Brams sleutel met Haiku 4.5 (`npm run trial -- --kind talk_twenty|voi
 **De cache warm houden.** De ping van de roadmap (een leeg verzoek met `max_tokens: 0`, vlak voor de vijf minuten) werkt niet voor gesprekken. Een leeg verzoek mag geen schema dragen, en het schema staat vóór het blok in de cache. De ping schreef daarom een eigen ingang van 7.025 tokens, het blok zonder de ongeveer 1.900 tokens van het schema, voor $0,0088. De zin erna las niets. Zoals de roadmap voor dat geval zegt, staat het blok nu een uur in de cache, en er gaan geen pings. Gemeten: een zin met Harmen zes minuten na een zin met Mirte las 8.367 van de 8.989 tokens uit de cache. De eerste zin in een streek betaalt de schrijfbeurt voor een uur (ongeveer 8.900 tokens tegen twee keer de invoerprijs, $0,018). Daarna leest elke zin daar het blok, zolang er binnen het uur gesproken wordt, met of zonder open venster. Het einde van het gesprek blijft vijf minuten in de cache, want de zinnen van één gesprek volgen elkaar sneller op.
 
 **Het uur.** Met 40 gesprekszinnen per uur kost het gesprek nu ongeveer 40 × $0,0021 plus één of twee blokken voor een uur, samen ongeveer $0,10 tot $0,12 in plaats van $0,17. Bij de standaardklok (4 seconden) komt een uur spelen daarmee op ongeveer $0,20 in plaats van $0,27.
+## gpt-5-mini tegen Haiku 4.5 voor de stem (M10.28, 29 september 2026)
+
+Bram vroeg een uitgebreide vergelijking van gpt-5-mini met Haiku 4.5 voor de stem, op zijn eigen sleutels.
+
+- **Wat gemeten is:** de situatieset (drie reeksen van acht antwoorden per model), het gesprek van twintig regels met Mirte, en de vijf soorten van de stem elk twee keer.
+- **Op welke code:** het nieuwe gesprek, met het blok per gebied en één vast schema voor een gespreksregel.
+- **Waar de antwoorden staan:** elk antwoord, met de zin van de speler ervoor, in `docs/playtest/voice/2026-09-29-gpt-5-mini.md` en `docs/playtest/voice/2026-09-29-claude-haiku-4-5-20251001.md`. Zo zijn ze naast elkaar te lezen.
+- **De leesscore:** de karakterscore telt woorden en feiten, niet hoe een regel leest. Daarom leest Sonnet 5 (low) elke reeks en elk gesprek. Het geeft per antwoord 0 tot 3 punten op vier vragen: klinkt als deze persoon, natuurlijk Engels zonder tic, beantwoordt en voegt iets toe, houdt het gesprek gaande. Daarbij noemt het de drie zwakste antwoorden.
+
+De raming vooraf was ongeveer $0,45 met een grens van $1,00. Het kostte ongeveer $0,28: gpt-5-mini $0,11, Haiku $0,15, en $0,015 voor een eerste proef die de antwoorden nog niet bewaarde.
+
+| | Haiku 4.5 | gpt-5-mini |
+|---|---|---|
+| Situatieset, bruikbaar | 24 van 24, geen tweede poging, geen vaste regel | 11 van 24; 9 tweede pogingen en 13 vaste regels (7 keer iets verzonnen; verder het schema en te laat) |
+| Karakterscore (regels) | 1,000, 1,000, 1,000 | 0,875, 0,813, 0,875 |
+| Leesscore situatieset | 0,81, 0,83, 0,72 (24 antwoorden) | 0,92, 0,83, 0,75 (alleen de 11 die doorkwamen) |
+| Seconden per antwoord | 3,5 (hooguit 5,0) | 6,6 (hooguit 9,9) |
+| Een reeks van acht | $0,017 tot $0,022 | $0,010 tot $0,013 |
+| Gesprek van twintig regels | $0,041; na de eerste $0,0022 per regel; 2,4 s per regel; 1 tweede poging | $0,041; na de eerste $0,0020 per regel; 8,4 s per regel (vier keer boven de 10 s); 4 tweede pogingen |
+| Leesscore gesprek | 0,76 (deze persoon 2,9, natuurlijk 2,8, beantwoordt 2,6, gaat door 0,7) | 0,71 (2,5, 2,3, 2,7, 0,9) |
+| `npc_reply` los | 2 van 2, $0,0015 tot $0,0024, 2,5 tot 2,9 s | 1 van 2 (de tweede te laat), $0,0021, 9,1 s |
+| `chat_line` | 2 van 2, $0,0009, 1 tot 2 s | 2 van 2, $0,0007 tot $0,0012, 3 tot 5 s |
+| `party_reply` | 2 van 2, $0,0015, 2 s | 2 van 2, $0,0009, 3 s |
+| `improvise` | 2 van 2, $0,0019 tot $0,0021, 3 s | 2 van 2, $0,0010, 3 s |
+| `journey` | 2 van 2, $0,0010, 2 tot 3 s | 2 van 2, $0,0006, 2 s |
+
+Wat opvalt:
+
+- **Snelheid.** gpt-5-mini denkt eerst, ook op low: 500 tot 1.000 tokens per regel, waar Haiku er 100 tot 200 schrijft. Een regel duurt daardoor 6 tot 9 seconden. Het spel geeft een antwoord 10 seconden (in te stellen bij het model). Moet de bewaker een antwoord opnieuw vragen, dan past de tweede poging niet meer en komt er een vaste regel. De meeste vaste regels van gpt-5-mini komen daarvandaan.
+- **Verzinnen en het schema.** gpt-5-mini noemde zeven keer iets wat niet in de invoer stond, zoals namen of een plaats. Voor een gespreksregel legt OpenAI het schema niet strikt op, omdat niet elk veld altijd verplicht is; het schema stuurt dan alleen. In de situatieset en in het gesprek (regel 3 en regel 11) klopte een antwoord daardoor een paar keer niet. Bij de vier kleine soorten was het schema wel strikt, en daar ging niets mis.
+- **Hoe het leest.** Waar gpt-5-mini wel doorkwam, lezen de antwoorden goed: in de situatieset gemiddeld 0,83 tegen 0,79 voor Haiku. Over een heel gesprek scoort Haiku hoger (0,76 tegen 0,71). gpt-5-mini herhaalt zich dan: "Mirte wipes/brushes flour from her hands" in bijna elke regel, en "neighbour". Twee regels waren een opsomming zonder haar stem. Haiku's zwakke plek is vragen terugstellen (0,7 op 3). Dat geldt voor beide modellen en is iets voor de regels van het gesprek, niet voor de keuze van het model.
+- **Kosten.** Per gespreksregel zijn ze gelijk: $0,0020 tegen $0,0022. Alleen de eerste regel in een gebied is op Haiku duurder: koud ongeveer $0,018 voor het blok, dat daarna een uur in de cache blijft, tegen $0,004 op gpt-5-mini, dat vanzelf cachet. De vier kleine soorten kosten op gpt-5-mini ongeveer de helft, maar samen gaat het om minder dan een cent per uur.
+
+Aanbeveling per soort:
+
+- **`npc_reply`, het gesprek:** Haiku 4.5. gpt-5-mini haalt de drempel van het modeladvies niet (80% bruikbaar en 4 seconden per antwoord), is op de leesscore van een heel gesprek lager, en een gesprek met gpt-5-mini kost per regel niet minder.
+- **`chat_line`, `party_reply`, `improvise` en `journey`:** beide modellen voldoen. De stem is één model voor al deze soorten, en de besparing is een fractie van een cent per uur, dus ze blijven bij het stemmodel.
+- **Advies:** de stem op Haiku 4.5. gpt-5-mini is pas een kandidaat als hij sneller antwoordt dan de tijd voor een antwoord. Denkinspanning `minimal` bij OpenAI zou dat kunnen doen, maar is niet gemeten.
+
+Het modeladvies onder Instellingen > AI toont deze vergelijking bij de stem. De keuze blijft bij Bram. Op het moment van meten stond zijn stem op gpt-5-mini.

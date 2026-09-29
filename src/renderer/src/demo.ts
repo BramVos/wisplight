@@ -7,6 +7,7 @@ import { cacheMinimum, cacheNote, costUsd } from '../../node/ai/pricing'
 import type { UsageSummary, UsageTotals } from '../../node/ai/usage'
 import type { AiBridge, AiLogEntry, AiStatus, ChosenRole, ModelInfo, ProviderId, RoleLight, TrialResult } from './client'
 import { guidePrice } from '../../node/ai/guideprice'
+import { COMPARISONS } from '../../node/ai/compared'
 
 // Browser preview only (npm run web, then open /?mock=1). Made-up data behind
 // the same bridge the desktop app uses, so the settings screen can be checked
@@ -146,6 +147,7 @@ export function demoBridge(_content: Content): AiBridge {
     },
     overview: async () => ({
       guide: guidePrice((role) => (role === 'advisor' ? undefined : state.roles[role])),
+      compared: COMPARISONS,
       settings: {
         providers: {
           openai: { configured: Boolean(state.keys.openai), masked: state.keys.openai },

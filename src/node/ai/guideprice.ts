@@ -46,7 +46,9 @@ function callUsd(kind: string, model: string | undefined, measured: Record<strin
   const m = measured[kind]
   const price = model ? priceOf(model) : undefined
   if (!m || !price) return undefined
-  return (m.inputTokens * price.input + m.outputTokens * price.output) / 1_000_000
+  // What it read from the cache at the cache price (M10.28: a talk reads most of its area block).
+  const cached = m.cachedTokens ?? 0
+  return ((m.inputTokens - cached) * price.input + cached * price.cachedInput + m.outputTokens * price.output) / 1_000_000
 }
 
 export function guidePrice(role: (role: LlmRole) => RoleChoice | undefined, measured: Record<string, Measured> = MEASURED): GuidePrice {

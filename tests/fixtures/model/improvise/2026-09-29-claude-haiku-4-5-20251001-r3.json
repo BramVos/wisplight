@@ -1,0 +1,14 @@
+{
+  "kind": "improvise",
+  "about": "an offering the rules have no way for",
+  "model": "claude-haiku-4-5-20251001",
+  "provider": "anthropic",
+  "date": "2026-09-29",
+  "usage": {
+    "inputTokens": 1338,
+    "cachedTokens": 0,
+    "outputTokens": 120
+  },
+  "reply": "{\"narration\": \"You pour the milk from your jug over the gnarled bark of the oak, watching it darken the ancient wood and soak into the earth between the roots. The wind that has been circling the hill stills for a moment, and in that silence you hear—or feel—something like attention turning toward you. The bowl at the hollow's mouth remains empty and waiting.\", \"spent\": true, \"effect\": {\"kind\": \"standing\", \"id\": \"kabouters\", \"delta\": 1, \"title\": \"\"}}",
+  "problems": []
+}

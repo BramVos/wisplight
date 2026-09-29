@@ -1,0 +1,14 @@
+{
+  "kind": "party_reply",
+  "about": "two companions answer together about the Haakman",
+  "model": "gpt-5-mini-2025-08-07",
+  "provider": "openai",
+  "date": "2026-09-29",
+  "usage": {
+    "inputTokens": 794,
+    "cachedTokens": 0,
+    "outputTokens": 360
+  },
+  "reply": "{\"lines\":[{\"speaker\":\"npc_wouter\",\"text\":\"The Haakman dwells in the Blackmere and drags down anyone who insults the water; grey as a heron, teeth like water-weed, long hook.\"},{\"speaker\":\"npc_gerrit\",\"text\":\"Aye, the Haakman lurks in the Blackmere to seize folk who mock the water; old women nail iron to their doorsteps against him.\"}]}",
+  "problems": []
+}

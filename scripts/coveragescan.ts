@@ -170,10 +170,11 @@ export function measuredModule(root: string): string {
     for (const kind of readdirSync(dir).sort()) {
       const latest = readdirSync(join(dir, kind))
         .filter((f) => f.endsWith('.json'))
-        .map((f) => JSON.parse(readFileSync(join(dir, kind, f), 'utf8')) as { date: string; model: string; usage?: { inputTokens: number; outputTokens: number } })
+        .map((f) => JSON.parse(readFileSync(join(dir, kind, f), 'utf8')) as { date: string; model: string; usage?: { inputTokens: number; outputTokens: number; cachedTokens?: number } })
         .filter((r) => r.usage && r.usage.inputTokens > 0)
         .sort((a, b) => b.date.localeCompare(a.date))[0]
-      if (latest?.usage) rows.push(`  ${kind}: { inputTokens: ${latest.usage.inputTokens}, outputTokens: ${latest.usage.outputTokens}, model: '${latest.model}', date: '${latest.date}' },`)
+      // What it read from the cache (M10.28: a talk reads most of its area block), so the guide counts it at the cache price.
+      if (latest?.usage) rows.push(`  ${kind}: { inputTokens: ${latest.usage.inputTokens}, ${latest.usage.cachedTokens ? `cachedTokens: ${latest.usage.cachedTokens}, ` : ''}outputTokens: ${latest.usage.outputTokens}, model: '${latest.model}', date: '${latest.date}' },`)
     }
   }
   return [
@@ -182,6 +183,8 @@ export function measuredModule(root: string): string {
     '',
     'export interface Measured {',
     '  inputTokens: number',
+    '  /** Of the input, read from the cache (M10.28). */',
+    '  cachedTokens?: number',
     '  outputTokens: number',
     '  model: string',
     '  date: string',

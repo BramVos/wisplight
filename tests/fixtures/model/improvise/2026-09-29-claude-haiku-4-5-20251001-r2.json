@@ -1,0 +1,14 @@
+{
+  "kind": "improvise",
+  "about": "an offering the rules have no way for",
+  "model": "claude-haiku-4-5-20251001",
+  "provider": "anthropic",
+  "date": "2026-09-29",
+  "usage": {
+    "inputTokens": 1338,
+    "cachedTokens": 0,
+    "outputTokens": 155
+  },
+  "reply": "{\"narration\": \"You uncork the jug and pour the milk over the oak's weathered bark. It streams down the trunk and soaks into the earth around the roots, disappearing into that dark hollow. The air grows even stiller. For a moment you hear nothing at all—no bird, no rustle, no breath of wind—and the overcast sky seems to press down closer. Then, as if released, a small sound comes from somewhere in the fields: a child's laugh, bright and brief, before the evening settles again into its quiet.\", \"spent\": true, \"effect\": {\"kind\": \"standing\", \"id\": \"kabouters\", \"delta\": 2, \"title\": \"\"}}",
+  "problems": []
+}

@@ -1,0 +1,14 @@
+{
+  "kind": "improvise",
+  "about": "an offering the rules have no way for",
+  "model": "gpt-5-mini-2025-08-07",
+  "provider": "openai",
+  "date": "2026-09-29",
+  "usage": {
+    "inputTokens": 987,
+    "cachedTokens": 0,
+    "outputTokens": 364
+  },
+  "reply": "{\"narration\":\"You lift the jug and pour the milk into the hollow between the roots. The white trickle beads on pale sand and drinks into the oak's old throat; even the wind seems to go round instead of through. Something in the air smells of sour milk and wet earth, and for a moment the world holds its breath.\",\"spent\":true,\"effect\":{\"kind\":\"standing\",\"id\":\"kabouters\",\"delta\":2,\"title\":\"\"}}",
+  "problems": []
+}

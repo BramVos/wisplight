@@ -1,0 +1,14 @@
+{
+  "kind": "chat_line",
+  "about": "Mirte and Grietje talk about the mill while the stranger listens",
+  "model": "gpt-5-mini-2025-08-07",
+  "provider": "openai",
+  "date": "2026-09-29",
+  "usage": {
+    "inputTokens": 564,
+    "cachedTokens": 0,
+    "outputTokens": 292
+  },
+  "reply": "{\"line\":\"Sold the mill? Who'll feed their children now—and what does this mean for Fenna?\"}",
+  "problems": []
+}

@@ -3,6 +3,8 @@
 
 export interface Measured {
   inputTokens: number
+  /** Of the input, read from the cache (M10.28). */
+  cachedTokens?: number
   outputTokens: number
   model: string
   date: string
@@ -10,12 +12,12 @@ export interface Measured {
 
 export const MEASURED: Record<string, Measured> = {
   builder_draft: { inputTokens: 19676, outputTokens: 2288, model: 'claude-opus-5-5', date: '2026-09-29' },
-  chat_line: { inputTokens: 977, outputTokens: 35, model: 'claude-sonnet-5', date: '2026-09-29' },
+  chat_line: { inputTokens: 744, outputTokens: 28, model: 'claude-haiku-4-5-20251001', date: '2026-09-29' },
   chronicle: { inputTokens: 10082, outputTokens: 1706, model: 'claude-opus-5-5', date: '2026-09-29' },
   district: { inputTokens: 3321, outputTokens: 1518, model: 'claude-opus-5-5', date: '2026-09-29' },
   expansion: { inputTokens: 7490, outputTokens: 607, model: 'claude-opus-5-5', date: '2026-09-29' },
   far_place: { inputTokens: 1956, outputTokens: 736, model: 'claude-opus-5-5', date: '2026-09-29' },
-  improvise: { inputTokens: 1338, outputTokens: 121, model: 'claude-haiku-4-5-20251001', date: '2026-09-29' },
+  improvise: { inputTokens: 1338, outputTokens: 155, model: 'claude-haiku-4-5-20251001', date: '2026-09-29' },
   journey: { inputTokens: 751, outputTokens: 47, model: 'claude-haiku-4-5-20251001', date: '2026-09-29' },
   land: { inputTokens: 6579, outputTokens: 900, model: 'claude-opus-5-5', date: '2026-09-29' },
   legends: { inputTokens: 1310, outputTokens: 434, model: 'claude-opus-5-5', date: '2026-09-29' },
@@ -23,10 +25,10 @@ export const MEASURED: Record<string, Measured> = {
   map_paint: { inputTokens: 2247, outputTokens: 1378, model: 'claude-haiku-4-5-20251001', date: '2026-09-29' },
   model_advice: { inputTokens: 3389, outputTokens: 584, model: 'claude-sonnet-5', date: '2026-09-29' },
   npc_goals: { inputTokens: 2850, outputTokens: 264, model: 'claude-sonnet-5', date: '2026-09-29' },
-  npc_reply: { inputTokens: 3481, outputTokens: 244, model: 'claude-haiku-4-5-20251001', date: '2026-09-29' },
+  npc_reply: { inputTokens: 9067, cachedTokens: 8367, outputTokens: 143, model: 'claude-haiku-4-5-20251001', date: '2026-09-29' },
   outline: { inputTokens: 8056, outputTokens: 1385, model: 'claude-opus-5-5', date: '2026-09-29' },
   palette_draft: { inputTokens: 16971, outputTokens: 1847, model: 'claude-opus-5-5', date: '2026-09-29' },
-  party_reply: { inputTokens: 1071, outputTokens: 84, model: 'claude-haiku-4-5-20251001', date: '2026-09-29' },
+  party_reply: { inputTokens: 1071, outputTokens: 79, model: 'claude-haiku-4-5-20251001', date: '2026-09-29' },
   region_story: { inputTokens: 24451, outputTokens: 2017, model: 'claude-opus-5-5', date: '2026-09-29' },
   spark: { inputTokens: 1893, outputTokens: 73, model: 'claude-sonnet-5', date: '2026-09-29' },
   test_call: { inputTokens: 540, outputTokens: 9, model: 'claude-opus-5-5', date: '2026-09-29' },
@@ -35,5 +37,5 @@ export const MEASURED: Record<string, Measured> = {
   weave: { inputTokens: 2404, outputTokens: 622, model: 'claude-opus-5-5', date: '2026-09-29' },
   world_enhance: { inputTokens: 23333, outputTokens: 933, model: 'claude-opus-5-5', date: '2026-09-29' },
   world_polish: { inputTokens: 16610, outputTokens: 542, model: 'claude-sonnet-5', date: '2026-09-29' },
-  world_step: { inputTokens: 32397, outputTokens: 21234, model: 'claude-opus-5-5', date: '2026-09-29' },
+  world_step: { inputTokens: 32397, cachedTokens: 20335, outputTokens: 21234, model: 'claude-opus-5-5', date: '2026-09-29' },
 }

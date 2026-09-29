@@ -422,6 +422,20 @@ function AiTab({ bridge, overview, refresh, onFrames, region }: { bridge: AiBrid
                   </button>
                 </div>
                 {trialText(trials[`${role}:${key}`]) && <p className="trial">{trialText(trials[`${role}:${key}`])}</p>}
+                {/* What was measured on the player's key (M10.28): the models side by side, and the advice. */}
+                {(overview?.compared ?? [])
+                  .filter((c) => c.role === role)
+                  .map((c) => (
+                    <div key={c.date} className="compared small">
+                      <p className="muted">{t('settings.ai.compared.head', { date: c.date })}</p>
+                      {c.rows.map((row) => (
+                        <p key={row.model} className="mono">
+                          {t('settings.ai.compared.row', { model: row.model, usable: row.usable, character: row.character.toFixed(2), read: row.read.toFixed(2), seconds: row.seconds.toFixed(1), usd: row.usdPerLine.toFixed(4) })}
+                        </p>
+                      ))}
+                      <p>{c.advice}</p>
+                    </div>
+                  ))}
                 {unique.map((c) => {
                   const k = choiceKey(c.provider, c.model)
                   const verdict = verdicts[role]

@@ -1,5 +1,38 @@
 # Changelog
 
+## M10.28 deel: hoe snel de dag gaat, en gpt-5-mini tegen Haiku, 29 september 2026
+
+- **Hoe snel de dag gaat.** Een spelminuut duurt nu 1 tot 8 echte seconden, en standaard 4, een dag van anderhalf uur. Voorheen was het 1 seconde, een dag van 24 minuten. Een wereld zet haar eigen snelheid bij de stap Kalender: The Quiet Reach 4, Skerrow 5. Op het kaderscherm staat een schuif "How fast the day goes" met de daglengte, wat een uur ongeveer kost, en een knop terug naar de snelheid van de wereld. In de terminal is het `FRAMES CLOCK 8`. Slapen, wachten en reizen springen zoals altijd.
+- **Wat een uur kost, per stand.** Met jouw modellen en het nieuwe gesprek: ongeveer $0,42 bij 1 seconde, $0,19 bij 4 en $0,15 bij 8. De doelkeuzes en de nachtronde lopen mee met de klok, het praten niet. De richtprijs in de instellingen rekent nu ook wat uit de cache komt.
+- **Doelkeuzes uit de cache.** Anthropic zet het antwoordschema in de cache vóór de rest van het verzoek. Omdat het schema van elke persoon anders was, las geen enkele doelkeuze iets terug. Nu delen alle personen één schema en blijft het gedeelde deel een uur in de cache. De motor controleert het doel, het doelwit en de poort zoals altijd.
+- **gpt-5-mini tegen Haiku 4.5 voor de stem.** Gemeten op het nieuwe gesprek, voor ongeveer $0,28 (de raming was $0,45):
+  - Haiku: alle 24 antwoorden van de situatieset bruikbaar, karakterscore 1,000, 2 à 4 seconden per regel.
+  - gpt-5-mini: 11 van de 24 bruikbaar, karakterscore 0,85. Het denkt eerst na en doet 6 tot 9 seconden over een regel, soms meer dan de 10 seconden die een antwoord krijgt. Als de bewaker opnieuw moet vragen, past dat niet meer en komt er een vaste regel.
+  - Per gespreksregel kosten ze bijna hetzelfde: $0,0022 tegen $0,0020.
+  - De vier kleine soorten (flarden, groepen, improviseren, reizen) werken op allebei.
+- **Een leesscore naast de karakterscore.** Sonnet leest elke reeks antwoorden. Het geeft per antwoord 0 tot 3 punten op vier vragen en noemt de drie zwakste. Over een heel gesprek scoort Haiku 0,76 en gpt-5-mini 0,71; gpt-5-mini begint bijna elke regel met "Mirte wipes her hands". Beide stellen weinig vragen terug.
+- **Alle antwoorden bewaard.** Elk antwoord staat met jouw vraag ervoor in `docs/playtest/voice/2026-09-29-claude-haiku-4-5-20251001.md` en `docs/playtest/voice/2026-09-29-gpt-5-mini.md`, om naast elkaar te lezen. Het modeladvies onder Instellingen > AI toont de vergelijking bij de stem.
+
+Je stem staat op Haiku 4.5. Toen de meting klaar was stond hij al zo, omgezet in de app om 21:41, en je zei ja op Haiku. Het advies is Haiku. De uiteindelijke keuze blijft open tot de ontwerpsessie de bewaarde antwoorden gelezen heeft.
+
+Kosten per nieuwe soort aanroep: de leesscore (`read_score`) kost op Sonnet 5 (low) $0,004 tot $0,013 per reeks, afhankelijk van hoeveel antwoorden ze leest. Ze gaat naar het brein, omdat het een begrensd oordeel is; ze komt alleen in een meting voor, niet in het spel.
+
+Testen:
+- Open het kaderscherm (Instellingen > [The frames of this game]) en schuif "How fast the day goes". Kijk hoe snel de klok rechtsboven loopt.
+- Open Instellingen > AI. Onder VOICE staat wat er gemeten is.
+- Lees de twee bestanden in `docs/playtest/voice/` naast elkaar.
+- Tests staan in `tests/m1028clock.test.ts` en `tests/m1028read.test.ts`.
+
+Bekende gaten: gpt-5-mini is gemeten op denkinspanning low. De stand minimal zou sneller kunnen zijn, maar is niet gemeten. De leesscore van de situatieset rust bij gpt-5-mini alleen op de antwoorden die doorkwamen.
+
+Wat de editor en de kroniekverteller leerden:
+- De klok is een wereldknop, `clock.seconds_per_minute`. De stap Kalender vraagt ernaar en mag hem zetten, en een wereldpatch voegt knoppen nu samen in plaats van ze te vervangen.
+- De stap Signalen zegt dat termijnen in speldagen staan en hoe lang een dag in echte tijd duurt. `docs/NEW-WORLD.md` en `docs/KNOBS.md` zeggen hetzelfde.
+- Skerrow staat op 5, The Quiet Reach op 4. Deepwell laat de knop weg en speelt de standaard, en een test speelt dat.
+- De leesscore is een soort in de tabel van soorten, met een situatie en een mockantwoord.
+
+Ontwerp: functioneel ontwerp, hoofdstuk 16, alinea "Stand na M10.28: hoe snel de dag gaat, de doelkeuzes in de cache, en de stem vergeleken".
+
 ## M10.28 deel: gesprekken per gebied, als berichten, een uur in de cache, 29 september 2026
 
 - **Eén blok per gebied.** Het vaste deel van een gesprek zijn nu de regels, het kader, de stemkit van het land, het gebied met zijn plekken (wat elke plek is en wie er wat verkoopt) en de kaarten van iedereen die er woont, met huis en werk. Dat weet elke bewoner zeker. Kleine gebieden delen een blok met hun buren: het Nethermarch heeft er twee, The Quiet Reach één. Wie spreekt en zijn eigen mensen staan in het gesprek zelf. Iemand van verder weg brengt zijn kaart mee en weet van hier alleen wat hem verteld is. Spreekt een antwoord als iemand anders uit het blok ("Harmen scowls."), dan vraagt de bewaker opnieuw.

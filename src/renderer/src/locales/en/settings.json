@@ -131,6 +131,10 @@
     },
     "playMode": {
       "label": "Play mode"
+    },
+    "compared": {
+      "head": "Measured on your key on {date}: the situation set and a talk of twenty lines.",
+      "row": "{model}: {usable} usable, character {character}, reads {read}, {seconds} s a line, ${usd} a line"
     }
   },
   "pictures": {

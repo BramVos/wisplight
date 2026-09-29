@@ -1,0 +1,14 @@
+{
+  "kind": "party_reply",
+  "about": "two companions answer together about the Haakman",
+  "model": "gpt-5-mini-2025-08-07",
+  "provider": "openai",
+  "date": "2026-09-29",
+  "usage": {
+    "inputTokens": 794,
+    "cachedTokens": 0,
+    "outputTokens": 352
+  },
+  "reply": "{\"lines\":[{\"speaker\":\"npc_wouter\",\"text\":\"The Haakman is a Blackmere thing; grey as a heron, teeth like water-weed, long hook—best to leave the water be, old nails help.\"},{\"speaker\":\"npc_gerrit\",\"text\":\"Haakman drags down those who mock the water; I'd sooner nail my doorstep myself than meet his hook.\"}]}",
+  "problems": []
+}

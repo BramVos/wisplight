@@ -3,6 +3,7 @@ import { join } from 'node:path'
 import { pictureSubject } from '../../engine/pictures'
 import type { Content } from '../../engine/content'
 import type { LlmClient } from '../../engine/dialogue/llm'
+import { COMPARISONS, type Comparison } from './compared'
 import { askAdvice, judgeTrials, testCall, trial, type Advice, type TrialResult, type TrialVerdict } from './advisor'
 import { CostRegister, type SpendSource } from './costs'
 import { BuildStore } from './builds'
@@ -38,6 +39,8 @@ export interface AiOverview {
   status: GatewayStatus
   /** What an hour of play costs about with the chosen models (M10.21), from the recorded trials. */
   guide?: GuidePrice
+  /** What models did against each other when measured on the player's key (M10.28), per role. */
+  compared?: Comparison[]
 }
 
 export class AiService {
@@ -103,7 +106,7 @@ export class AiService {
   }
 
   overview(): AiOverview {
-    return { settings: this.settings.summary(), usage: this.usage.summary(), status: this.gateway.status(), guide: guidePrice((role) => this.settings.role(role)) }
+    return { settings: this.settings.summary(), usage: this.usage.summary(), status: this.gateway.status(), guide: guidePrice((role) => this.settings.role(role)), compared: COMPARISONS }
   }
 
   /** Saves a key only after the provider accepted it by listing its models. */

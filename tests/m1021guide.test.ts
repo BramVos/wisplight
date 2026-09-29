@@ -16,8 +16,9 @@ describe('M10.21: what an hour of play costs about', () => {
   it('prices an hour from the measured tokens and the chosen models', () => {
     const guide = guidePrice((role) => (models[role] ? { provider: 'anthropic', model: models[role]! } : undefined))
     const r = MEASURED['npc_reply']!
-    // Haiku 4.5: $1 in and $5 out a million tokens, forty lines an hour.
-    expect(guide.conversations).toBeCloseTo(((r.inputTokens * 1 + r.outputTokens * 5) / 1e6) * 40, 6)
+    // Haiku 4.5: $1 in, $0.10 read from the cache and $5 out a million tokens, forty lines an hour (M10.28: the cache counts).
+    const cached = r.cachedTokens ?? 0
+    expect(guide.conversations).toBeCloseTo((((r.inputTokens - cached) * 1 + cached * 0.1 + r.outputTokens * 5) / 1e6) * 40, 6)
     expect(guide.goals).toBeGreaterThan(0)
     expect(guide.night).toBeGreaterThan(0)
     expect(guide.hour).toBeCloseTo(guide.conversations! + guide.goals! + guide.night!, 9)
