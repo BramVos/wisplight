@@ -237,6 +237,9 @@ function catalogueLines(): string[] {
   return Object.entries(GOAL_CATALOGUE).map(([type, e]) => `  ${type} (${e.target === 'none' ? 'target none' : `target: ${e.target === 'place' ? 'a place key' : e.target === 'person' ? 'a person key' : e.target}`}): ${e.text}`)
 }
 
+/** The goal schema every person shares (M10.28): the whole catalogue and a plain key, checked by validateGoals. */
+const GOAL_SCHEMA = goalJsonSchema(Object.keys(GOAL_CATALOGUE))
+
 /** The goals of the catalogue this NPC could choose at all: those whose gate is shut are not offered (M8.2). */
 function openGoals(world: World, npcId: string, people: string[]): string[] {
   return Object.entries(GOAL_CATALOGUE)
@@ -314,10 +317,10 @@ export function goalRequest(world: World, choice: GoalChoice, answers?: string[]
     ...(answers?.length ? ['LOOKED UP:', ...answers.map((a) => `  ${a}`)] : []),
     ...(intentions.length && !answers ? ['If you need to know more before you choose, ask at most two questions in lookup and leave goals empty: "knows <your own key> <topic>", "bond <person key> <person key>" (your own bonds only), "near <place key>". Otherwise leave lookup empty.'] : []),
   ]
-  const targets = [...new Set([...Object.keys(keys), ...ids.items, ...ids.objects, ...ids.mine, ...ids.things, 'none'])]
   // Goal choices of people with a part in a quest keep their place when the budget runs low (FO, chapter 16).
   const priority = questsOf(world, npcId).length ? 'normal' : 'low'
-  const base = goalJsonSchema(goals, targets)
+  // The same schema for everyone (M10.28), so the shared part reads back from the cache; the validator holds the rest.
+  const base = GOAL_SCHEMA
   // Before a choice about a signal, one round of questions (M9.3).
   const asking = intentions.length > 0 && !answers
   const withLookup = (s: Record<string, unknown>) =>

@@ -98,4 +98,20 @@ describe('M10.28: how fast the day goes', () => {
     }
     expect(seen.find((r) => r.schemaName === 'npc_goals')!.cacheHour).toBe(true)
   })
+
+  it('gives every person the same goal schema, since Anthropic caches the schema ahead of the shared part', async () => {
+    const mock = new MockLlm('good')
+    const seen: LlmRequest[] = []
+    const engine = new Engine(content, { seed: 1, llm: { complete: async (r: LlmRequest) => (seen.push(r), mock.complete(r)) } })
+    engine.setPlayMode('continue')
+    engine.start()
+    for (let hour = 0; hour < 24; hour++) {
+      engine.tick(60)
+      await engine.runModels()
+    }
+    const plain = seen.filter((r) => r.schemaName === 'npc_goals' && !JSON.stringify(r.schema).includes('intention'))
+    const people = new Set(plain.map((r) => (r.meta as { npc: string }).npc))
+    expect(people.size).toBeGreaterThan(2)
+    expect(new Set(plain.map((r) => JSON.stringify(r.schema))).size).toBe(1)
+  })
 })

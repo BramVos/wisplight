@@ -114,8 +114,13 @@ export function parseReply(text: string): Reply | undefined {
 }
 
 // The brain role picks goals (used from M3). Defined now so the model advice
-// can test it.
-export function goalJsonSchema(goalTypes: string[], ids: string[]): JsonSchema {
+// can test it. One schema for every person (M10.28): Anthropic caches the
+// output schema ahead of the system part, so a schema with each person's own
+// goals and keys was a new prefix every time and the shared part was never
+// read back. The goal types are the whole catalogue and the target a plain
+// key; what this person may choose and whom they know is in the prompt, and
+// validateGoals checks both as it always did.
+export function goalJsonSchema(goalTypes: string[], ids: string[] = []): JsonSchema {
   return {
     type: 'object',
     additionalProperties: false,
@@ -129,7 +134,7 @@ export function goalJsonSchema(goalTypes: string[], ids: string[]): JsonSchema {
           required: ['type', 'target', 'priority', 'why'],
           properties: {
             type: { type: 'string', enum: goalTypes },
-            target: { type: 'string', enum: ids.length ? ids : ['none'] },
+            target: ids.length ? { type: 'string', enum: ids } : { type: 'string' },
             priority: { type: 'number' },
             why: { type: 'string' },
           },
