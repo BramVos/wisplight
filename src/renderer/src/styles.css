@@ -876,6 +876,13 @@ body {
   padding: 4px 6px;
 }
 
+/* A checkbox with its words beside it (M10.29 P: everyone in this world knows it). */
+.builder-fields .check {
+  align-items: start;
+  grid-template-columns: auto 1fr;
+  gap: 8px;
+}
+
 .builder-fields .slider {
   align-items: center;
   grid-template-columns: 9ch 1fr 3ch;

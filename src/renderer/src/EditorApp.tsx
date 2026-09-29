@@ -556,7 +556,7 @@ function TopicFields({ raw, isNew, onChange }: { raw: Raw; isNew: boolean; onCha
       </label>
       <Field label="What most people know" value={String(raw['summary'] ?? '')} onChange={(v) => set('summary', v)} />
       <Field label="What those who know it well can add" value={String(raw['details'] ?? '')} onChange={(v) => set('details', v || undefined)} />
-      <label className="row">
+      <label className="check">
         <input type="checkbox" checked={Boolean(raw['common'])} onChange={(e) => set('common', e.target.checked || undefined)} /> Everyone in this world knows it (a people, the money, the law, a faith, a great place): in the stranger&apos;s journal from the start
       </label>
       <p className="muted small">A story, where it is told, its place on the map and districts: in YAML.</p>
