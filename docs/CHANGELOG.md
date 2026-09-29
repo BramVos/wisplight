@@ -1,5 +1,26 @@
 # Changelog
 
+## M10.29 deel: een storing één keer, gaan met jouw woorden, en een overhandigd ding, 30 september 2026
+
+- **Een storing één keer (V a).** Toen de provider van 16:14 tot 16:36 elke aanroep weigerde, kreeg je vier keer dezelfde vaste regel met de technische reden erbij. Nu zegt het gesprek één keer: "The link to the model is down. Until it is back, people answer from what the game knows of them." Daarna antwoorden de regels dertig seconden lang zonder het model te vragen, en dan probeert het gesprek het stil opnieuw. Werkt het weer, dan staat er één keer "The link to the model is back." De gateway koelt nu dertig seconden af in plaats van twee minuten. In de terminal gaat het net zo.
+- **Gaan met jouw woorden (V b).** `go outside` neemt de uitgang naar buiten, ook als die niet `out` heet. `go common room` en `walk to common room` vinden de Commons, op de woorden van de naam, de andere namen en de samenvatting. `walk to workshop` vanuit de Commons gaat door de deur en niet over land eromheen. Van binnen loopt WALK eerst naar buiten: `walk to 5,6` in de Workshop werkt, en in de speeltest loopt `walk to veenhoek` nu uit Lubberts winkel over het jaagpad naar huis. `sit` en `fly` zeggen wat hier wel kan: de uitgangen, wie er is en wat de dingen doen.
+- **De dokters (V c).** F had dit al opgelost: ze heten Ilyan en Edda, en `talk dr` vraagt welke je bedoelt.
+- **Een ding over de tafel (V d).** "Niko slides his notebook across" is nu een daad, net als "hands you". Zonder aanbod vraagt de bewaker opnieuw. Een uitgestoken hand blijft gewoon een groet.
+- **Waarom het brein 's middags stil was (V e).** Het stond niet uit en de rem greep niet in. In The Quiet Reach vraagt niemand het brein iets zolang er niets nieuws is om over te kiezen: nieuws over hen, een gedachte, een open verzoek, een lopend plan, een lage behoefte of een signaal. De wereld begint zonder nieuws en je gaf 's middags geen WAIT. 's Avonds kwamen de eerste keuzes op een ochtend nadat je gepraat van de middag was rondgegaan. Zo is het bedoeld (M8.2, zuinig). Met de verhalen van M10.30 krijgen de mensen wel iets om over te kiezen. De 242 hersenaanroepen tussen 16 en 18 uur in het kostenregister waren de proefritten van de andere sessie in de Nethermarch en op Skerrow, van vóór de kolom die zegt waar een aanroep vandaan komt.
+
+Testen:
+- Zet je internet even uit tijdens een gesprek, praat verder, en zet het na een halve minuut weer aan.
+- In Port Vesper: `go outside` in de Commons, `go common room` in de Workshop, `walk to 5,6` in de Workshop, en `sit`.
+- Test in `tests/m1029v.test.ts`.
+
+Kosten: geen nieuwe soort aanroep. Een storing kost minder: na de eerste mislukte aanroep volgen er dertig seconden geen.
+
+Bekende gaten: een plek in dezelfde nederzetting die je nooit zag, kun je met WALK TO nog niet vinden; GO met de richting werkt wel.
+
+Wat de editor en de kroniekverteller leerden: niets, want een wereld kan niets nieuws bevatten.
+
+Ontwerp: functioneel ontwerp, bij het dagboek, alinea "Stand na M10.29: een storing één keer, en gaan met de woorden van de speler".
+
 ## M10.28 af: wat een uur en een zin kosten, 30 september 2026
 
 Alle tien punten van M10.28 zijn af. De delen staan hieronder in drie stukken "M10.28 deel"; dit is de optelsom.
