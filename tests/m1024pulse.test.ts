@@ -80,4 +80,19 @@ describe('M10.24: the pulse', () => {
     waiting.tick(21 * DAY)
     expect(waiting.state.pulse?.fired ?? []).toEqual([])
   }, 120_000)
+
+  it("with the frames' lines on often, a small world brings a hook every two days or so, and takes its watchers in turn", async () => {
+    const isle = loadContent(await readContentFiles('content', 'isle'))
+    const engine = new Engine(isle, { seed: 9 })
+    engine.start()
+    await engine.handle('frames lines often')
+    const begin = engine.world.now
+    await stayPut(engine)
+    const times = [begin, ...hooksSince(engine.world, begin).map((h) => h.t), engine.world.now]
+    for (let i = 1; i < times.length; i++) expect(times[i]! - times[i - 1]!).toBeLessThanOrEqual(2.5 * DAY)
+    const turns = engine.state.pulse!.fired.map((f) => f.watcher)
+    expect(turns.length).toBeGreaterThanOrEqual(6)
+    for (let i = 1; i < turns.length; i++) expect(turns[i]).not.toBe(turns[i - 1])
+    expect(new Set(turns.slice(0, 3)).size).toBe(3)
+  }, 120_000)
 })

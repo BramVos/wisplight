@@ -25,8 +25,8 @@ const DAY = 24 * 60
 export interface PulseState {
   /** Since when the pulse counts: the first night it looked. */
   since: number
-  /** Hooks the pulse itself brought, and how. */
-  fired: { t: number; kind: HookKind; how: 'chronicler' | 'rule' }[]
+  /** Hooks the pulse itself brought, and how; for the rule's, by which watcher. */
+  fired: { t: number; kind: HookKind; how: 'chronicler' | 'rule'; watcher?: string }[]
   /** When it asked the night round for a hook, until one came or the rule did it. */
   asked?: number
   /** When the stranger last did something: someone waiting out a month is not playing, and is not looked up. */
@@ -132,7 +132,12 @@ export function rulePulse(world: World, avoid?: HookKind): boolean {
   const kindOf = (w: (typeof watchers)[number]) => (w.probe as { pulse: HookKind }).pulse
   const others = watchers.filter((w) => kindOf(w) !== avoid)
   const list = others.length ? others : watchers
-  const watcher = list.length ? list[world.rng.int('pulse', 0, list.length - 1)] : undefined
+  // The one whose turn it has longest not been, so a small world does not bring the same visitor twice running
+  // (found with the frames' "often" on Skerrow: ten pulses in three weeks from three watchers).
+  const last = (id: string) => Math.max(-1, ...(world.state.pulse?.fired ?? []).filter((f) => f.watcher === id).map((f) => f.t))
+  const oldest = Math.min(...list.map((w) => last(w.id)))
+  const due = list.filter((w) => last(w.id) === oldest)
+  const watcher = due.length ? due[world.rng.int('pulse', 0, due.length - 1)] : undefined
   if (!watcher) return false
   const here = world.state.player.location
   const area = areaHere(world)
@@ -148,7 +153,7 @@ export function rulePulse(world: World, avoid?: HookKind): boolean {
   const pool = atHand.length ? atHand : people
   const who = pool.length ? pool[world.rng.int('pulse', 0, pool.length - 1)]! : undefined
   queueSignal(world, { kind: watcher.signal, ...(watcher.event ? { event: watcher.event } : {}), who: who ? [who] : [], place: here, cause: [], belang: watcher.belang ?? 1, watcher: watcher.id })
-  pulseState(world).fired.push({ t: world.now, kind: kindOf(watcher), how: 'rule' })
+  pulseState(world).fired.push({ t: world.now, kind: kindOf(watcher), how: 'rule', watcher: watcher.id })
   if (pulseState(world).fired.length > 20) pulseState(world).fired.splice(0, pulseState(world).fired.length - 20)
   return true
 }
