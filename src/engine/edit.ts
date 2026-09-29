@@ -537,9 +537,10 @@ export function withLock(files: ContentFile[], lock: IdsLock): ContentFile[] {
 export function adoptPlaceEdits(project: Raw, from?: Raw): Edit[] {
   const place = project['place'] as Raw | undefined
   if (!place) return []
-  const link = project['link'] as { from: string; direction: string } | undefined
+  const link = project['link'] as { from: string; direction: string; minutes?: number } | undefined
   const edits: Edit[] = [{ kind: 'location', id: String(place['id']), data: place, create: true }]
-  if (link && from) edits.push({ kind: 'location', id: link.from, data: { ...from, exits: { ...((from['exits'] as Raw | undefined) ?? {}), [link.direction]: { to: place['id'] } } } })
+  // With its minutes (M10.28): the project's own, or three as in a district, never the one minute of an exit left bare.
+  if (link && from) edits.push({ kind: 'location', id: link.from, data: { ...from, exits: { ...((from['exits'] as Raw | undefined) ?? {}), [link.direction]: { to: place['id'], minutes: link.minutes ?? 3 } } } })
   const rest = Object.fromEntries(Object.entries(project).filter(([k]) => k !== 'place' && k !== 'link'))
   edits.push({ kind: 'project', id: String(project['id']), data: rest })
   return edits

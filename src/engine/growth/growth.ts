@@ -35,6 +35,8 @@ export interface ProjectState {
   /** Money put in by others: the player, by who. */
   invested: Record<string, number>
   done?: number
+  /** Minutes on foot of the way in, as they stood when it was finished (M10.28; a save from before keeps one). */
+  minutes?: number
 }
 
 export interface GrowthState {
@@ -124,7 +126,9 @@ function grownOnly(base: Content, state: GameState): Content {
       locations.set(place.id, place)
       if (p.link) {
         const from = locations.get(p.link.from)!
-        locations.set(from.id, { ...from, exits: { ...from.exits, [p.link.direction]: { to: place.id, minutes: 1 } } })
+        // The minutes the project gives (M10.28), else those it was finished with; a save from before had one.
+        const minutes = p.link.minutes ?? g!.projects[p.id]?.minutes ?? 1
+        locations.set(from.id, { ...from, exits: { ...from.exits, [p.link.direction]: { to: place.id, minutes } } })
       }
     }
     if (p.workshops.length) {
@@ -332,6 +336,8 @@ export function projectsDay(world: World): void {
     state.days++
     if (state.days < p.days) continue
     state.done = world.now
+    // The way in as it stands now (M10.28): the project's own minutes, or three as in a district.
+    if (p.link) state.minutes = p.link.minutes ?? 3
     endCrowd(world, `crowd_${id}`)
     for (const flag of p.sets) (world.state.flags ??= {})[flag] = true
     world.regrow()

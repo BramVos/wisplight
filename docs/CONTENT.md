@@ -890,10 +890,12 @@ A list; each has:
 | days | number | yes |  |
 | cost | number | no | 0 |
 | place | a map of names to unknown | no |  |
-| link | a map: from, direction | no |  |
+| link | a map: from, direction, minutes | no |  |
 | workshops | list of a map: id, name, at, makes, uses, from, requires, workers, named | no | [] |
 | sets | list of text | no | [] |
 | crowd | a map: name, one, count, at, from, profession, looks | no |  |
+
+`link.minutes`: the minutes on foot from the place it links from, as far as it really lies (a yard next door two or three, a works down the road ten); left out, three.
 
 ## crafts (data/crafts.yaml)
 

@@ -65,7 +65,11 @@ export const ProjectSchema = z
     days: z.number().int().positive().describe('Workdays; a rest day does not count.'),
     cost: z.number().int().min(0).default(0).describe('The money it costs, from the purse of the settlement and what others put in.'),
     place: z.record(z.string(), z.unknown()).optional().describe('A new place when it is finished, written as a location.'),
-    link: z.object({ from: z.string(), direction: z.string() }).strict().optional().describe('The way into the new place from a place that is there.'),
+    link: z
+      .object({ from: z.string(), direction: z.string(), minutes: z.number().int().positive().optional().describe('Minutes on foot from there (M10.28); three when left out, as in a district.') })
+      .strict()
+      .optional()
+      .describe('The way into the new place from a place that is there.'),
     workshops: z.array(WorkshopSchema).default([]).describe('Workshops the settlement has once it is finished.'),
     sets: z.array(z.string()).default([]).describe('Flags set when it is finished: descriptions that change with it.'),
     crowd: CrowdSchema.optional().describe('Nameless workers at the site while it is built (M9.1).'),

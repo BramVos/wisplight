@@ -19,6 +19,7 @@
   - wie iemand is of wat hij doet.
 
   Zo'n regel staat in het AI-logboek als "by rule" en kost niets. In de twintig vaste regels met Mirte zijn het er drie; de verwachte een op de vier haal je alleen in een gesprek met meer groeten en ja-nee.
+- **Minuten op de weg naar iets wat gebouwd is.** Een plek die een project bouwt, kreeg altijd een weg van één minuut. Nu zegt het project hoe ver het is, en anders is het drie minuten, zoals bij een wijk. De steenbakkerij van Waagdam ligt zes minuten van de haven. Een save waarin iets al gebouwd was, houdt zijn ene minuut.
 - **Alle antwoorden bewaard.** Elk antwoord staat met jouw vraag ervoor in `docs/playtest/voice/2026-09-29-claude-haiku-4-5-20251001.md` en `docs/playtest/voice/2026-09-29-gpt-5-mini.md`, om naast elkaar te lezen. Het modeladvies onder Instellingen > AI toont de vergelijking bij de stem.
 
 Je stem staat op Haiku 4.5. Toen de meting klaar was stond hij al zo, omgezet in de app om 21:41, en je zei ja op Haiku. Het advies is Haiku. De uiteindelijke keuze blijft open tot de ontwerpsessie de bewaarde antwoorden gelezen heeft.

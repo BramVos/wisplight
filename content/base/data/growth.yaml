@@ -39,7 +39,7 @@ projects:
     needs: { peat: 40 }
     days: 8
     cost: 320
-    link: { from: loc_waagdam_harbour, direction: south }
+    link: { from: loc_waagdam_harbour, direction: south, minutes: 6 }
     place:
       id: loc_waagdam_brickworks
       name: The Brickworks

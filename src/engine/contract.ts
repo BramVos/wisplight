@@ -36,6 +36,8 @@ export const FIELD_NOTES: Record<string, string[]> = {
     // M10.21: the edge of the map is an edge, with what lies beyond it.
     '`beyond`: per edge (north, east, south or west) the line the stranger reads on reaching it, from the world book, and `toward`: the far places that way (topics), which they may go on to on foot or by a line. An edge without one says that nobody has told them; beyond the last land the world names, nothing is made.',
   ],
+  // M10.28: an adopted place had a way in of one minute, whatever the world said about it.
+  projects: ['`link.minutes`: the minutes on foot from the place it links from, as far as it really lies (a yard next door two or three, a works down the road ten); left out, three.'],
   npcs: [
     '`secrets`: `about` and `teaches` take ids: a topic, a person (an NPC id), a place (a location id) or an area (`area_<id>`).',
     // M10.29: Dr Ilyan Sorell was "Dr" in every line.
