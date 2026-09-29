@@ -771,6 +771,8 @@ export interface GameState {
   pulse?: import('./pulse').PulseState
   /** How the chronicler, the weave and the great lines go on (M10.24): without it, continue. */
   playMode?: import('./modes').PlayMode
+  /** The player's own words to the chronicler (M10.24): the design log of this game, and what came of each. */
+  wishes?: import('./wishes').WishesState
   /** Knobs of this game over the world's own (M10.24: the dials of the frames screen), by knob id. */
   knobs?: Record<string, number>
   /** What the player chose on the frames screen (M10.24), where a dial is more than one knob. */

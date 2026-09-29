@@ -520,6 +520,8 @@ export class MockLlm implements LlmClient {
     }
     const area = meta.cards.find((c) => c.kind === 'area')
     if (area && meta.lines[0]) reply.news.push({ area: area.key, text: meta.lines[0].text })
+    // The player's words (M10.24): the mock keeps them in mind, and says so.
+    if (meta.wishes?.length) Object.assign(reply, { heard: meta.wishes.map((w) => ({ note: w.id, did: `Kept in mind this round: ${w.text.replace(/[.!?]+$/, '')}.` })) })
     if (this.chronicle) {
       const planned = meta.lines.find((l) => new RegExp(`${l.key} ".*" ?.*PLAN`).test(prompt))?.key
       return JSON.stringify({ ...reply, ...this.chronicle(meta, planned) })

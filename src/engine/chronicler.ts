@@ -1,3 +1,4 @@
+import { activeWishes, applyHeard } from './wishes'
 import { knob } from './knobs'
 import { pulseText } from './pulse'
 import { chronicle, emptyOutput, type Card, type ChronicleEvent, type ChronicleInput, type ChronicleLine, type ChronicleOutput, type ChroniclerModel, type ChroniclerRequest, type PlanOp, type QuestTemplate } from '../chronicler'
@@ -193,6 +194,9 @@ export function buildInput(world: World, run: ChronicleRun): ChronicleInput {
   if (named.length) input.named = named.map((sk) => ({ id: sk.id, kind: 'named' as const, name: sk.name, text: `${sketchPhrase(world, sk)}. "${sk.line}"` }))
   // Asked by the pulse (M10.24): one hook near the stranger.
   if (run.pulse) input.pulse = pulseText(world, run.pulse)
+  // The player's own words (M10.24), read at every round.
+  const wished = activeWishes(world)
+  if (wished.length) input.wishes = wished.map((w) => ({ id: w.id, text: w.text }))
   const chancePeople = chances.map((c) => c.who).filter((w): w is string => Boolean(w))
   extraCards(world, input, [...planning.people, ...chancePeople], [...planning.places, ...chances.map((c) => c.place)], (id) => personCard(world, id, new Set([...cast, ...planning.people])), (id) => placeCard(world, id))
   return input
@@ -590,6 +594,8 @@ export function applyOutput(world: World, run: ChronicleRun, output: ChronicleOu
     // Without a model, the rules may place a thing for a storyline where no chance is left (M10.5).
     if (by === 'template') motorProp(world, line)
   }
+  // What it did with the player's words (M10.24), for the journal and the chronicle.
+  if (out.heard?.length) applyHeard(world, out.heard)
   state.runs++
   return problems
 }

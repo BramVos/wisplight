@@ -33,7 +33,8 @@
     "land": "The land map",
     "lodging": "Your lodging",
     "tides": "The great lines",
-    "waiting": "What waits for you"
+    "waiting": "What waits for you",
+    "wishes": "A word to the chronicler"
   },
   "index": {
     "within": "What lies within {km} km. ",
@@ -54,5 +55,10 @@
     "heardFrom": "Heard from: {sources}",
     "ask": "Ask {name} about this",
     "asText": "The map as text"
+  },
+  "wishes": {
+    "placeholder": "more mysteries, no war this season",
+    "aria": "One line to the chronicler: what you would like more or less of",
+    "tell": "Tell the chronicler"
   }
 }

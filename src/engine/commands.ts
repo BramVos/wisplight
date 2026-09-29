@@ -1,3 +1,4 @@
+import { tellChronicler } from './wishes'
 import { framesLines, setFrame } from './frames'
 import { lookSky } from './weather'
 import { publicShort } from './acquaintance'
@@ -101,7 +102,7 @@ const HELP = [
   'Trade: list (what is for sale here), buy <thing> [amount], sell <thing> [amount], rent a room (a night), rent the room for a week (yours, with a chest: put <thing> in the chest, take <thing> from the chest).',
   'Work: work (for a day\'s pay), invest <amount>, loads (what there is to carry from here), haul <goods> to <place>, deliver.',
   'Time: time, wait [minutes], wait for <person>, sleep. At night: knock (on a door), wake <person>.',
-  'Pace: tempo calm, tempo normal or tempo dramatic (how much happens in the world). The frames of this game: frames (the world, its lands and great lines, and three dials to set).',
+  'Pace: tempo calm, tempo normal or tempo dramatic (how much happens in the world). The frames of this game: frames (the world, its lands and great lines, and three dials to set). A word to the chronicler: chronicler <one line> (more of the sea, no war this season).',
   'What waits (by the play mode in the settings): hooks (what a night brought, to take up or let lie), proposals, accept, reject.',
   "Talking: talk <person>, ask <person> about <topic>, say <text> or 'text.",
   'You: sheet, create (make your character), level up, train <skill>, wield <weapon>, wear <armour>, devote to <patron>, pray, rite. Your word and theirs: promises.',
@@ -248,6 +249,11 @@ export function runCommand(host: CommandHost, command: Command): Output[] {
       return [text(`It is ${clockText(world)}.`)]
     case 'tempo':
       return tempo(world, command.args[0])
+    // A word to the chronicler (M10.24): one line into the design log of this game.
+    case 'chronicler': {
+      const told = tellChronicler(world, command.args.join(' '))
+      return [told.ok ? { kind: 'system', text: told.text } : error(told.text)]
+    }
     // The frames of this game (M10.24): what it is played under, and its three dials.
     case 'frames': {
       if (!command.args.length) return [text(framesLines(world).join('\n'))]

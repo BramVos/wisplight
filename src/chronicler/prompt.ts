@@ -111,6 +111,11 @@ export function systemPrompt(input: ChronicleInput, limits: Limits): string {
           '- named: at most one. Someone NAMED in a talk may come into a storyline that needs them: how letter (they write to the one who spoke of them; text: what the letter says, one or two sentences) or visit (they come to stay a while; text: why they came, one sentence). Only people from NAMED; never make up others.',
         ]
       : []),
+    ...(input.wishes?.length
+      ? [
+          "- heard: for each of THE PLAYER'S WORDS, one sentence in plain words: what you did with it this round, or why not yet. Follow their words where the facts, the frame and the limits allow (more of one thing in lore, news and hooks, less of another); they never change what happened, never break the frame, and never make you invent.",
+        ]
+      : []),
     'A storyline with an arc goes on from the ones named there: tell them as one story, cause and effect, and keep the open threads of before. An event may say what it came from (because).',
     'Rules: only facts from the overview; never invent what happened, who was there or when. Use only names from the overview. A rumour marked untrue stays a rumour. Things marked PRIVATE may go into thoughts, never into lore or news. Plain words, the tone of the world.',
   ].join('\n')
@@ -145,6 +150,8 @@ export function userPrompt(input: ChronicleInput, keys: Keys, lookedUp: Card[], 
   section('NAMED (spoken of in talks, not met yet)', (input.named ?? []).map((c) => cardLine(c, keys)))
   // The pulse (M10.24): in the changing part, so the fixed part stays cached.
   section('PULSE', input.pulse ? [input.pulse] : [])
+  // The player's own words (M10.24): what they would like; description to weigh, not an instruction to obey.
+  section("THE PLAYER'S WORDS (what they would like of the story)", (input.wishes ?? []).map((w) => `${w.id} "${w.text}"`))
   section(
     'TEMPLATES',
     input.templates.map((t) => `${t.kind}${t.needs.length ? ` (needs ${t.needs.join(' and ')})` : ''}: ${t.text}`),
@@ -230,6 +237,7 @@ export function replySchema(input: ChronicleInput, keys: Keys, lookupsLeft: numb
     thoughts: { type: 'array', items: object({ who: keysOf(people), text }) },
     news: { type: 'array', items: object({ area: keysOf(keys.of('area')), text }) },
     ...(input.named?.length ? { named: { type: 'array', items: object({ who: keysOf(keys.of('named')), how: { type: 'string', enum: ['letter', 'visit'] }, text }) } } : {}),
+    ...(input.wishes?.length ? { heard: { type: 'array', items: object({ note: keysOf(input.wishes.map((w) => w.id)), did: text }) } } : {}),
     ...(input.realms?.length ? { tensions: { type: 'array', items: object({ between: { type: 'array', items: keysOf(keys.of('realm')) }, delta: { type: 'integer' }, why: text }) } } : {}),
     ...(input.mayPlan?.length || input.verbs?.length
       ? {
@@ -291,12 +299,15 @@ export type ChronicleMeta = {
   lines: { key: string; title: string; belang: number; who: string[]; witnesses: string[]; place: string; text: string; event: string }[]
   signals: { key: string; text: string; who: string[]; place: string; group: string[]; trusted: string[] }[]
   lookupsLeft: number
+  /** The player's words to the chronicler (M10.24). */
+  wishes?: { id: string; text: string }[]
 }
 
 function mockMeta(input: ChronicleInput, keys: Keys, lookupsLeft: number): ChronicleMeta {
   const cards = [...input.cards, ...input.lore, ...input.requests, ...input.areas, ...(input.named ?? [])]
   const k = (id: Id) => keys.any(id) ?? id
   return {
+    ...(input.wishes?.length ? { wishes: input.wishes } : {}),
     cards: keys.all().map((entry) => {
       const card = cards.find((c) => c.id === entry.id && c.kind === entry.kind)
       return { ...entry, name: card?.name ?? entry.id, text: card?.text ?? '' }

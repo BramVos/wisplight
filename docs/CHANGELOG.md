@@ -1,5 +1,18 @@
 # Changelog
 
+## M10.24 deel: een woord aan de kroniekverteller, 29 september 2026
+
+- **Eén regel in gewone taal.** In het dagboek staat onder You de pagina "A word to the chronicler". Daar schrijf je één regel, zoals "meer over het veen, geen oorlog dit seizoen". In de terminal is het `CHRONICLER <regel>`. Er is geen menu en er zijn geen schuifjes.
+- **Het ontwerplogboek van dit spel.** De regel komt in de save (`state.wishes`). De kroniekverteller leest bij elke ronde de nieuwste drie, in elke speelstand, als THE PLAYER'S WORDS. Hij volgt ze waar de feiten, het kader en de grenzen dat toelaten, maar ze veranderen nooit wat er gebeurde. Per regel zegt hij in één zin wat hij ermee deed. Dat staat op de pagina en in de kroniek van het spel (THE PLAYER'S WORDS TO THE CHRONICLER).
+- **Grenzen.** Een regel mag hoogstens 200 tekens hebben. Een regel die op een instructie aan een model lijkt, of die de grenzen van het spel raakt, weigert het spel. `CHRONICLER FORGET` zet alle regels opzij. Zonder model leest niemand ze, en dat staat op de pagina.
+- **Zonder woorden verandert er niets.** De vraag aan de kroniekverteller krijgt het deel en het veld `heard` alleen als er een regel is. De opgenomen antwoorden en de kosten blijven dus hetzelfde.
+
+Testen: open het dagboek, kies onder You "A word to the chronicler" en schrijf een regel. Laat de nacht voorbijgaan of doe iets groots (in een ontwikkelversie `@fact 4 ...`). Lees de pagina daarna nog eens, en de kroniek van het spel. Tests in `tests/m1024words.test.ts`.
+
+Wat de editor en de kroniekverteller leerden: de kroniekverteller kent de regels van de speler en het veld `heard`. Het mockmodel antwoordt erop. Een wereld kan er niets nieuws door bevatten, dus het contract en de editor veranderden niet.
+
+Bewust anders: het ontwerplogboek van een spel staat in de save en niet in een bestand naast het `DESIGN.md` van de wereld, want het hoort bij dat ene spel.
+
 ## M10.21 af: het wereldboek groeit aan de rand, 29 september 2026
 
 - **Verder het onbekende in.** Aan een kaartrand waar niemand je iets heeft verteld, biedt het spel met een model naast "terug" ook "Go on into the unknown" (`EXPLORE <kant>`). Eén aanroep van de nieuwe soort `expansion` schetst dan één nieuwe streek of één nieuw land die kant op. Dat komt uit wat het wereldboek al suggereert en blijft binnen het kader: een naam, wat men weet, een verhaal, twee tot vier wijken, hoeveel dagen lopen, en bij een land het eigen kader (met de WORLD-regels van de wereld ervoor) en wat je bij de grens merkt. Wat klopt, komt als laag in de save: je kent het meteen, en het is canon voor elke volgende ronde. Ga je erheen, dan maken de lagen van M10.21 het speelbaar, en een geschetst land krijgt zijn stem van de landschrijver (M10.23) zodra je binnenkomt.

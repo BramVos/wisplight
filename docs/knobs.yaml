@@ -106,6 +106,10 @@ numbers:
     MAX_FACTS: 'code: the facts one storyline takes, so a prompt stays small (cost)'
   src/engine/weather.ts:
     STAY: 'world (moved): world.yaml weather.stay; this is the default'
+  src/engine/wishes.ts:
+    WISH_CHARS: 'code: the length of one line to the chronicler (M10.24): one sentence or two, so the prompt stays small'
+    READ: 'code: how many of the player''s newest lines the chronicler reads at a round (prompt size)'
+    KEPT: 'code: how many answers of the chronicler a line keeps (save size)'
   src/engine/world.ts:
     MAX_EVENTS: 'code: the events kept in the save (save size)'
   src/main/index.ts:

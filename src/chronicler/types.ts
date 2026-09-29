@@ -163,6 +163,8 @@ export interface ChronicleInput {
   named?: Card[]
   /** The pulse (M10.24): the stranger has had nothing new near them for days; bring one hook, as it says. */
   pulse?: string
+  /** The player's own words to the chronicler (M10.24), the newest few: what they would like more or less of. */
+  wishes?: { id: Id; text: string }[]
 }
 
 // ---------------------------------------------------------------- what comes back, in the caller's ids
@@ -284,6 +286,8 @@ export interface ChronicleOutput {
   tensions?: TensionOp[]
   plans?: PlanOp[]
   named?: NamedOp[]
+  /** What the chronicler did with each of the player's words this round (M10.24), one sentence each. */
+  heard?: { note: Id; did: string }[]
 }
 
 // ---------------------------------------------------------------- the model

@@ -31,6 +31,7 @@ const yours = () => [
   { id: 'land', name: t('journal.you.land') },
   { id: 'tides', name: t('journal.you.tides') },
   { id: 'waiting', name: t('journal.you.waiting') },
+  { id: 'wishes', name: t('journal.you.wishes') },
   { id: 'lodging', name: t('journal.you.lodging') },
   { id: 'party', name: t('journal.you.party') },
   { id: 'promises', name: t('journal.you.promises') },
@@ -256,6 +257,7 @@ export function JournalView({
                 ) : (
                   page.lines.map((line, index) => <p key={index}>{line}</p>)
                 )}
+                {page.id === 'wishes' && <WordToChronicler client={client} reopen={() => void open('wishes')} />}
                 {page.sources.length > 0 && <p className="muted small">{t('journal.page.heardFrom', { sources: page.sources.join('; ') })}</p>}
                 {page.links.length > 0 && (
                   <ul className="journal-links">
@@ -279,6 +281,32 @@ export function JournalView({
           </article>
         </div>
       </div>
+    </div>
+  )
+}
+
+/**
+ * A word to the chronicler (M10.24): one line in plain words, no menu, no
+ * sliders. It goes in as the command CHRONICLER, so the log keeps it, and the
+ * page shows it with what the chronicler did with it.
+ */
+function WordToChronicler({ client, reopen }: { client: EngineClient; reopen: () => void }) {
+  const [text, setText] = useState('')
+  const [said, setSaid] = useState<{ text: string; error: boolean }>()
+  const tell = async () => {
+    const reply = await client.command(`chronicler ${text.trim()}`)
+    const out = reply.outputs[0]
+    setSaid(out ? { text: out.text, error: out.kind === 'error' } : undefined)
+    if (out?.kind !== 'error') setText('')
+    reopen()
+  }
+  return (
+    <div className="row small">
+      <input value={text} maxLength={200} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && text.trim() && void tell()} placeholder={t('journal.wishes.placeholder')} aria-label={t('journal.wishes.aria')} />
+      <button type="button" className="link" disabled={!text.trim()} onClick={() => void tell()}>
+        [{t('journal.wishes.tell')}]
+      </button>
+      {said && <span className={said.error ? 'warn' : 'muted'}>{said.text}</span>}
     </div>
   )
 }

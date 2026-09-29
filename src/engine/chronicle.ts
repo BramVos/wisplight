@@ -1,3 +1,4 @@
+import { wishesChronicle } from './wishes'
 import { GameClock } from './clock'
 import { callName } from './content'
 import { requestName } from './requests'
@@ -54,6 +55,9 @@ export function chronicleText(world: World, start: number): string {
   // Every judgement of the great lines (M10.22), also the months nothing came of it.
   const tides = tidesChronicle(world)
   if (tides.length) lines.push('THE GREAT LINES', ...tides, '')
+  // The player's words to the chronicler (M10.24), and what it did with each.
+  const wished = wishesChronicle(world)
+  if (wished.length) lines.push("THE PLAYER'S WORDS TO THE CHRONICLER", ...wished, '')
   const asked = world.state.requests.filter((r) => r.asked !== undefined || r.source === 'chronicler')
   if (asked.length) {
     lines.push('WHAT PEOPLE ASKED OF YOU')

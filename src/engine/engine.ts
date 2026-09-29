@@ -1,3 +1,4 @@
+import { wishLines } from './wishes'
 import { framesLines, framesView } from './frames'
 import { knob } from './knobs'
 import { applyImprovisation, improviseFallback, improviseRequest, readImprovisation, type Improvisable } from './improvise'
@@ -449,6 +450,8 @@ export class Engine {
     if (id === 'tides') return { id, kind: 'lore', name: 'The great lines', lines: tidesPage(this.world), sources: [], links: [] }
     // What waits for the player by the play mode (M10.24): hooks of a night, proposals.
     if (id === 'waiting') return { id, kind: 'lore', name: 'What waits for you', lines: waitingLines(this.world), sources: [], links: [] }
+    // A word to the chronicler (M10.24): the player's lines and what came of each.
+    if (id === 'wishes') return { id, kind: 'lore', name: 'A word to the chronicler', lines: wishLines(this.world, Boolean(this.llm)), sources: [], links: [] }
     // The frames of this game (M10.24): for the screen at the start, and Settings after.
     if (id === 'frames') return { id, kind: 'lore', name: 'The frames of this game', lines: framesLines(this.world), sources: [], links: [], frames: framesView(this.world) }
     if (id === 'factions') return { id, kind: 'lore', name: 'Factions', lines: factionLines(this.world).length ? factionLines(this.world) : ['No faction knows you yet.'], sources: [], links: [] }

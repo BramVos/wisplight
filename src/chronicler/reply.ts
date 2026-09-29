@@ -47,6 +47,7 @@ const ReplySchema = z.object({
   news: z.array(z.object({ area: z.string(), text: z.string() })).default([]),
   tensions: z.array(z.object({ between: z.array(z.string()), delta: z.number(), why: z.string() })).default([]),
   named: z.array(z.object({ who: z.string(), how: z.string(), text: z.string() })).default([]),
+  heard: z.array(z.object({ note: z.string(), did: z.string() })).default([]),
   plans: z
     .array(
       z.object({
@@ -215,6 +216,13 @@ export function readReply(text: string, keys: Keys, input: ChronicleInput, limit
     else if (!output.named?.length) (output.named ??= []).push({ who, how: n.how, text: said } satisfies NamedOp)
   }
   if (reply.named.length > 1) problems.push('named: one per run')
+
+  // What it did with the player's words (M10.24): only for words it was given, one sentence each.
+  for (const h of reply.heard) {
+    const did = within(h.did, limits.textWords)
+    if (!input.wishes?.some((w) => w.id === h.note) || !did) problems.push(`heard: unknown ${h.note} or nothing said`)
+    else if (!output.heard?.some((x) => x.note === h.note)) (output.heard ??= []).push({ note: h.note, did })
+  }
 
   // Realms: one small shift at most, only when realms were given.
   for (const t of reply.tensions.slice(0, 1)) {
