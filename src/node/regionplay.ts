@@ -109,7 +109,7 @@ const say = (outputs: Output[]) => outputs.map((o) => o.text).join('\n')
 const DAY = 24 * 60
 
 /** Plays one region at one setting; the transcript as the player saw it, and the tally. */
-export async function playRegion(play: RegionPlay): Promise<{ transcript: string; tally: RegionTally }> {
+export async function playRegion(play: RegionPlay): Promise<{ transcript: string; tally: RegionTally; content: Content }> {
   const measured = 'calls' in play.llm ? (play.llm as LlmClient & { calls: RegionCall[] }) : measuring(play.llm)
   const engine = new Engine(play.content, { seed: play.seed ?? 7, builder: true, llm: measured })
   const out: string[] = [say(engine.start())]
@@ -160,7 +160,7 @@ export async function playRegion(play: RegionPlay): Promise<{ transcript: string
   const charted = Object.entries(engine.state.growth?.expansions?.made ?? {}).find(([id]) => !before.has(id))
   if (!charted) {
     out.push('\n==== NOTHING CHARTED')
-    return { transcript: out.join('\n'), tally: tallyOf(engine, play, undefined, measured.calls, 0) }
+    return { transcript: out.join('\n'), tally: tallyOf(engine, play, undefined, measured.calls, 0), content: engine.content }
   }
   const [topic, made] = charted
   out.push(`\n==== SET OFF FOR ${made.outline.name} (${engine.world.date()})`)
@@ -178,7 +178,7 @@ export async function playRegion(play: RegionPlay): Promise<{ transcript: string
   const waitedSecs = Math.round(waited * 10) / 10
   if (farTopicAt(engine.world, engine.state.player.location) !== topic) {
     out.push(`\n==== NEVER GOT THERE (${engine.state.player.location})`)
-    return { transcript: out.join('\n'), tally: tallyOf(engine, play, topic, measured.calls, waitedSecs) }
+    return { transcript: out.join('\n'), tally: tallyOf(engine, play, topic, measured.calls, waitedSecs), content: engine.content }
   }
 
   const days = play.days ?? 3
@@ -209,7 +209,8 @@ export async function playRegion(play: RegionPlay): Promise<{ transcript: string
   await type('journal')
   const tally = tallyOf(engine, play, topic, measured.calls, waitedSecs, hinted)
   out.push(`\n==== END (${engine.world.date()})`)
-  return { transcript: out.join('\n'), tally }
+  // What the game grew, with the world (M10.25: kept in a copy of the world, src/node/proofworld.ts).
+  return { transcript: out.join('\n'), tally, content: engine.content }
 }
 
 /**

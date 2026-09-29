@@ -71,3 +71,19 @@ export function contentFilesOf(content: Content, prefix = 'game/'): ContentFile[
   }
   return files
 }
+
+/** What a game grew that its world does not have, by the key its file uses (M10.25: a copy of the world with what grew). */
+export function grownLists(base: Content, grown: Content): [string, { id: string }[]][] {
+  const lists: [string, { id: string }[]][] = []
+  for (const [key, name] of CONTENT_LISTS) {
+    const had = base[name] as Map<string, unknown>
+    const fresh = [...(grown[name] as Map<string, { id: string }>).values()].filter((e) => !had.has(e.id))
+    if (fresh.length) lists.push([key, fresh])
+  }
+  return lists
+}
+
+/** A thing of the content as its file holds it. */
+export function plainEntity(value: unknown): Record<string, unknown> {
+  return plain(value) as Record<string, unknown>
+}

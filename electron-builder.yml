@@ -17,6 +17,8 @@ directories:
 files:
   - out/**
   - content/**
+  # Copies of a world with the regions the played proof grew (M10.25) are for the designer, not the players.
+  - '!content/*_proofs/**'
   - package.json
   - '!out/**/*.map'
 asar: true

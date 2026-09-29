@@ -13,3 +13,5 @@ saves/
 .scratch/
 # A designer's own document, kept next to the repo but never in it (M10.25); the trial reads it with --doc.
 docs/worldbuild/private/
+# Copies of a world with the regions the played proof grew (M10.25), to look at in the editor: never in git.
+content/*_proofs/

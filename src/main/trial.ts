@@ -7,6 +7,7 @@ import { askAdvice, testCall } from '../node/ai/advisor'
 import { costUsd } from '../node/ai/pricing'
 import { listWorlds, loadContentFromDir, readContentFiles } from '../node/content'
 import { kindSituation } from '../engine/trials'
+import { keepRegion } from '../node/proofworld'
 import { keepTally, keptTallies, measuring, playRegion, REGION_KINDS, regionReport, REGION_SETTINGS, type RegionSetting } from '../node/regionplay'
 import type { BuildStore } from '../node/ai/builds'
 import type { AiService } from '../node/ai/service'
@@ -281,12 +282,21 @@ export async function regionTrial(ai: TrialAi, contentRoot: string, appPath: str
     for (const setting of settings) {
       const llm = measuring(ai.gateway, { price: costUsd, capUsd: Math.max(0, how.capUsd - spent) })
       const started = Date.now()
-      const { transcript, tally } = await playRegion({ content, world, setting, llm, seed: 7 })
+      const { transcript, tally, content: grown } = await playRegion({ content, world, setting, llm, seed: 7 })
       const cost = llm.calls.reduce((n, c) => n + (c.costUsd ?? 0), 0)
       spent += cost
       keepTally(dir, 'region', tally)
-      writeFileSync(join(dir, `region-${world}-${setting}.txt`), `${world === 'base' ? 'The Holleveen, south edge' : 'Skerrow, over the sea'}; the dial at ${setting}; seed 7; ${llm.calls[0]?.model ?? 'no model'}\n${transcript}\n`)
+      const where = world === 'base' ? 'The Holleveen, south edge' : 'Skerrow, over the sea'
+      writeFileSync(join(dir, `region-${world}-${setting}.txt`), `${where}; the dial at ${setting}; seed 7; ${llm.calls[0]?.model ?? 'no model'}\n${transcript}\n`)
       say(`${world} ${setting}: ${tally.region?.name ?? 'nothing charted'}, ${tally.places.count} places, ${tally.people.count} people, ${tally.quests.length} quests, ${llm.calls.length} calls, $${cost.toFixed(3)}, ${Math.round((Date.now() - started) / 1000)}s`)
+      // What it grew, as the next numbered region in a copy of the world, to look at in the editor (Bram's question).
+      if (tally.region) {
+        const kept = await keepRegion(contentRoot, world, content, grown, {
+          name: tally.region.name,
+          lines: [`${where}, the dial at \`${setting}\`, ${today()}, ${llm.calls[0]?.model ?? 'no model'}, ${llm.calls.length} calls, $${cost.toFixed(2)}. The game as it was played: \`docs/playtest/region-${world}-${setting}.txt\`.`, '', tally.region.summary],
+        })
+        say(`kept as region ${kept.n} in content/${kept.folder}${kept.problems.length ? `, aside: ${kept.problems[0]}` : ''}`)
+      }
       if (!tally.region) all = false
       if (how.record) {
         for (const [n, call] of llm.calls.entries()) {
