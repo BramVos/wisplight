@@ -70,6 +70,17 @@ body {
   grid-template-columns: minmax(0, 1fr) 280px;
   grid-template-rows: minmax(0, 1fr) auto;
   height: 100%;
+  position: relative;
+}
+
+/* The plan as a window (M10.31 A): top right of the game, left of the picture and the date. */
+.link.plan-button {
+  background: var(--bg);
+  padding: 0 4px;
+  position: absolute;
+  right: calc(280px + 14px);
+  top: 8px;
+  z-index: 1;
 }
 
 .log {
@@ -818,6 +829,9 @@ body {
 @media (max-width: 760px) {
   .shell {
     grid-template-columns: 1fr;
+  }
+  .link.plan-button {
+    right: 14px;
   }
   .panel.journal,
   .panel.talk {
@@ -1897,6 +1911,28 @@ pre.sheet {
   max-width: 100%;
   height: auto;
   font-family: var(--font);
+}
+/* The window of the plan (M10.31 A): about twice the size, with the whole area where it fits. */
+.panel.plan-panel {
+  width: auto;
+}
+.plan.plan-large svg {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  width: min(640px, calc(100vw - 80px));
+}
+.plan:not(.plan-large) svg {
+  cursor: zoom-in;
+}
+.plan.plan-moves svg {
+  cursor: grab;
+  touch-action: none;
+}
+.plan.plan-moves svg:active {
+  cursor: grabbing;
+}
+.plan-caption {
+  margin-top: 4px;
 }
 .plan-way {
   stroke: var(--muted);

@@ -161,6 +161,13 @@
     "known": {
       "one": "{count} place known",
       "other": "{count} places known"
-    }
+    },
+    "open": "Plan",
+    "openTitle": "The plan of here, large; the clock stands still while it is open",
+    "window": "The plan of {name}",
+    "close": "Close",
+    "moves": "Move it with the wheel or by dragging.",
+    "centre": "Where you are",
+    "centreTitle": "Put where you are back in the middle (Home)"
   }
 }

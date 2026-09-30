@@ -115,6 +115,12 @@ export function App() {
   const [dev, setDev] = useState(false)
   // The journal window, open at a page or at its index (FO, chapter 2); near things first in a conversation.
   const [journal, setJournal] = useState<{ start?: string; nearby?: boolean }>()
+  // The plan of here as a window (M10.31 A): about twice the size, the whole area; the clock stands still while it is open.
+  const [planOpen, setPlanOpen] = useState(false)
+  const hasPlan = Boolean(status?.plan)
+  useEffect(() => {
+    if (!hasPlan) setPlanOpen(false)
+  }, [hasPlan])
   // The talk that just ended (M10.4): its window stays until closed, with the last answer in view; its lines are the
   // engine's (M10.8), so every line shows, also when the window had no focus when the answer came.
   const [ended, setEnded] = useState<{ talk: NonNullable<Status['talk']>; lines: TalkLine[] }>()
@@ -221,8 +227,8 @@ export function App() {
   // the window of a talk that ended, while it stays open (M10.29: the clock ran on for two hours behind it).
   const endedOpen = Boolean(ended) && !status?.talk
   useEffect(() => {
-    client?.hold(Boolean(settings) || ending || exporting || typing || Boolean(creation) || Boolean(journal) || Boolean(worlds) || Boolean(loading) || dev || moments.length > 0 || endedOpen)
-  }, [client, settings, ending, exporting, typing, creation, journal, worlds, loading, dev, moments.length, endedOpen])
+    client?.hold(Boolean(settings) || ending || exporting || typing || Boolean(creation) || Boolean(journal) || Boolean(worlds) || Boolean(loading) || dev || moments.length > 0 || endedOpen || planOpen)
+  }, [client, settings, ending, exporting, typing, creation, journal, worlds, loading, dev, moments.length, endedOpen, planOpen])
 
   // Sound (M10.15): what the engine says is to be heard here; silent in menus and while the game waits, and a bell
   // only when it rings after the game has loaded. The browser lets it start at the first key or click.
@@ -238,8 +244,8 @@ export function App() {
     }
   }, [])
   useEffect(() => {
-    sound.hold(Boolean(settings) || ending || exporting || Boolean(creation) || Boolean(journal) || Boolean(worlds) || dev || Boolean(status?.paused && !status.talk))
-  }, [settings, ending, exporting, creation, journal, worlds, dev, status?.paused, status?.talk])
+    sound.hold(Boolean(settings) || ending || exporting || Boolean(creation) || Boolean(journal) || Boolean(worlds) || dev || planOpen || Boolean(status?.paused && !status.talk))
+  }, [settings, ending, exporting, creation, journal, worlds, dev, planOpen, status?.paused, status?.talk])
   const heardSound = status?.sound
   useEffect(() => {
     if (heardSound) sound.ambient(heardSound.kind, heardSound.level, heardSound.indoors)
@@ -450,6 +456,12 @@ export function App() {
 
   return (
     <div className="shell">
+      {/* The plan as a window (M10.31 A), top right of the game, left of the picture and the date; a second click closes it. */}
+      {status?.plan && (
+        <button type="button" className="link plan-button" aria-pressed={planOpen} onClick={() => setPlanOpen((open) => !open)} title={t('app.plan.openTitle')}>
+          [{t('app.plan.open')}]
+        </button>
+      )}
       <main className="log" ref={logRef} aria-live="polite">
         <StaleBanner />
         {error && <p className="line error">{error}</p>}
@@ -507,7 +519,7 @@ export function App() {
         {status?.plan && (
           <section>
             <h2>{t('app.plan.title')}</h2>
-            <PlanView plan={status.plan} onWalk={waiting ? undefined : (command) => void send(command)} />
+            <PlanView plan={status.plan} onWalk={waiting ? undefined : (command) => void send(command)} onOpen={() => setPlanOpen(true)} />
           </section>
         )}
         <section>
@@ -850,6 +862,20 @@ export function App() {
           onClose={closeEnded}
           covered={Boolean(journal)}
         />
+      )}
+      {planOpen && status?.plan && (
+        <div className="overlay plan-overlay" role="dialog" aria-modal="true" aria-label={t('app.plan.window', { name: status.plan.area })} onClick={() => setPlanOpen(false)}>
+          <div className="panel plan-panel" onClick={(event) => event.stopPropagation()}>
+            <header className="panel-head">
+              <h2>{t('app.plan.window', { name: status.plan.area })}</h2>
+              <span className="spacer" />
+              <button type="button" className="link" onClick={() => setPlanOpen(false)}>
+                [{t('app.plan.close')}]
+              </button>
+            </header>
+            <PlanView plan={status.plan} large onWalk={waiting ? undefined : (command) => void send(command)} onClose={() => setPlanOpen(false)} />
+          </div>
+        </div>
       )}
       {menu && (
         <div className="overlay topic-menu-backdrop" onClick={() => setMenu(undefined)} onContextMenu={(event) => (event.preventDefault(), setMenu(undefined))}>

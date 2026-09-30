@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
 import type { PlanData } from '../../engine/plan'
 import { t, tn } from './i18n'
 
@@ -6,13 +7,18 @@ import { t, tn } from './i18n'
 // the stranger knows, from the engine's data. Where you are is filled, a place
 // only heard of is grey with a question mark, a way not taken is a dashed
 // stub; people you know are dots in their own colour. A click on a place you
-// have seen walks there.
+// have seen walks there. Since M10.31 (Bram: the plan does not scroll and is
+// hard to see) it also opens as a window about twice the size, with the whole
+// area in it; where the area does not fit, the plan moves with the wheel and
+// by dragging, and Home or the button puts where you are back in the middle.
 
-const WIDTH = 300
-const HEIGHT = 220
-/** Up to this many places the plan fits the panel; beyond, it moves with where you are. */
+const SMALL = { w: 300, h: 220 }
+const LARGE = { w: 640, h: 460 }
+/** Up to this many places the small plan fits the panel; beyond, it moves with where you are. */
 const FITS = 9
 const CELL = { w: 100, h: 73 }
+/** How far the area may be moved past the edge of the view. */
+const SLACK = 24
 
 const STUB: Record<string, [number, number]> = {
   north: [0, -1],
@@ -46,20 +52,117 @@ function lines(name: string, perLine: number): { rows: string[]; small: boolean 
   return { rows: [first, rest.length > width ? `${rest.slice(0, width - 3)}...` : rest], small: true }
 }
 
-export function PlanView({ plan, onWalk }: { plan: PlanData; onWalk?: (command: string) => void }) {
+/**
+ * Where the plan lies in its view (M10.31 A): the size of a place, whether
+ * the whole area fits, and how far it is moved. The small plan fits up to
+ * nine places; the window fits the whole area while the places stay readable.
+ * An area that does not fit starts with where you are in the middle, and is
+ * moved by `pan`, never further than a little past its edge.
+ */
+export function planLayout(plan: PlanData, large: boolean, pan: { x: number; y: number }): { view: { w: number; h: number }; cell: { w: number; h: number }; fits: boolean; shift: { x: number; y: number } } {
+  const view = large ? LARGE : SMALL
   const cols = Math.max(...plan.boxes.map((b) => b.col)) + 1
   const rows = Math.max(...plan.boxes.map((b) => b.row)) + 1
   const here = plan.boxes.find((b) => b.kind === 'here')
-  // Up to nine places fit the panel; more, and the plan keeps where you are in the middle.
-  const moving = plan.boxes.length > FITS
-  const cell = moving ? CELL : { w: Math.min(CELL.w, WIDTH / cols), h: Math.min(CELL.h, HEIGHT / rows) }
-  const shift = moving && here ? { x: WIDTH / 2 - (here.col + 0.5) * cell.w, y: HEIGHT / 2 - (here.row + 0.5) * cell.h } : { x: (WIDTH - cols * cell.w) / 2, y: (HEIGHT - rows * cell.h) / 2 }
+  const fitted = { w: Math.min(CELL.w * (large ? 1.2 : 1), view.w / cols), h: Math.min(CELL.h * (large ? 1.2 : 1), view.h / rows) }
+  const fits = large ? fitted.w >= CELL.w * 0.75 && fitted.h >= CELL.h * 0.75 : plan.boxes.length <= FITS
+  const cell = fits ? fitted : CELL
+  const area = { w: cols * cell.w, h: rows * cell.h }
+  const base = !fits && here ? { x: view.w / 2 - (here.col + 0.5) * cell.w, y: view.h / 2 - (here.row + 0.5) * cell.h } : { x: (view.w - area.w) / 2, y: (view.h - area.h) / 2 }
+  const clamp = (v: number, size: number, room: number) => Math.min(SLACK, Math.max(Math.min(0, room - size) - SLACK, v))
+  const shift = fits ? base : { x: clamp(base.x + pan.x, area.w, view.w), y: clamp(base.y + pan.y, area.h, view.h) }
+  return { view, cell, fits, shift }
+}
+
+/**
+ * The plan, small in the side panel or large in its window. onOpen: a click
+ * on the small plan outside a place opens the window; onClose: Esc closes it.
+ */
+export function PlanView({ plan, onWalk, large = false, onOpen, onClose }: { plan: PlanData; onWalk?: (command: string) => void; large?: boolean; onOpen?: () => void; onClose?: () => void }) {
+  const here = plan.boxes.find((b) => b.kind === 'here')
+  // Moved by the wheel or by dragging, from where you are in the middle; back when you move or ask.
+  const [pan, setPan] = useState({ x: 0, y: 0 })
+  useEffect(() => setPan({ x: 0, y: 0 }), [here?.id, large])
+  const { view, cell, fits, shift } = planLayout(plan, large, pan)
   const box = { w: cell.w - 18, h: Math.max(26, cell.h - 30) }
   const centre = (b: { col: number; row: number }) => ({ x: shift.x + (b.col + 0.5) * cell.w, y: shift.y + (b.row + 0.5) * cell.h })
   const at = new Map(plan.boxes.map((b) => [b.id, b]))
+
+  // The wheel moves an area that does not fit (a native listener: React's wheel handler cannot stop the page scrolling).
+  const svg = useRef<SVGSVGElement>(null)
+  const moveBy = useRef((dx: number, dy: number) => setPan((p) => ({ x: p.x - dx, y: p.y - dy })))
+  useEffect(() => {
+    const el = svg.current
+    if (!el || fits) return
+    const onWheel = (event: WheelEvent) => {
+      event.preventDefault()
+      const scale = view.w / el.getBoundingClientRect().width
+      moveBy.current((event.shiftKey ? event.deltaY : event.deltaX) * scale, (event.shiftKey ? 0 : event.deltaY) * scale)
+    }
+    el.addEventListener('wheel', onWheel, { passive: false })
+    return () => el.removeEventListener('wheel', onWheel)
+  }, [fits, view.w])
+
+  // Dragging moves it too; a drag is no click on a place.
+  const drag = useRef<{ x: number; y: number; moved: boolean } | undefined>(undefined)
+  const dragged = useRef(false)
+  const onDown = (event: ReactPointerEvent<SVGSVGElement>) => {
+    if (fits || event.button !== 0) return
+    drag.current = { x: event.clientX, y: event.clientY, moved: false }
+    dragged.current = false
+  }
+  const onMove = (event: ReactPointerEvent<SVGSVGElement>) => {
+    const d = drag.current
+    if (!d) return
+    const dx = event.clientX - d.x
+    const dy = event.clientY - d.y
+    if (!d.moved && Math.hypot(dx, dy) < 4) return
+    if (!d.moved) event.currentTarget.setPointerCapture(event.pointerId)
+    d.moved = true
+    dragged.current = true
+    const scale = view.w / event.currentTarget.getBoundingClientRect().width
+    moveBy.current(-dx * scale, -dy * scale)
+    d.x = event.clientX
+    d.y = event.clientY
+  }
+  const onUp = () => {
+    drag.current = undefined
+  }
+
+  // In the window: Home puts where you are back in the middle, Esc closes it.
+  useEffect(() => {
+    if (!large) return
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Home') {
+        event.preventDefault()
+        setPan({ x: 0, y: 0 })
+      } else if (event.key === 'Escape' && onClose) {
+        event.stopPropagation()
+        onClose()
+      }
+    }
+    window.addEventListener('keydown', onKey, true)
+    return () => window.removeEventListener('keydown', onKey, true)
+  }, [large, onClose])
+
+  const perLine = Math.max(6, Math.floor(box.w / 6.2))
   return (
-    <figure className="plan" aria-label={t('app.plan.label', { name: plan.area })}>
-      <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} width={WIDTH} height={HEIGHT} role="img">
+    <figure className={`plan${large ? ' plan-large' : ''}${fits ? '' : ' plan-moves'}`} aria-label={t('app.plan.label', { name: plan.area })}>
+      <svg
+        ref={svg}
+        viewBox={`0 0 ${view.w} ${view.h}`}
+        width={view.w}
+        height={view.h}
+        role="img"
+        onPointerDown={onDown}
+        onPointerMove={onMove}
+        onPointerUp={onUp}
+        onPointerCancel={onUp}
+        onClick={(event) => {
+          // A click on the small plan outside a place opens the window (M10.31).
+          if (!large && onOpen && !dragged.current && !(event.target as Element).closest('.plan-place.walkable')) onOpen()
+        }}
+      >
         {plan.links.map((link) => {
           const a = centre(at.get(link.from)!)
           const b = centre(at.get(link.to)!)
@@ -73,8 +176,8 @@ export function PlanView({ plan, onWalk }: { plan: PlanData; onWalk?: (command: 
         })}
         {plan.boxes.map((b) => {
           const c = centre(b)
-          const name = lines(b.name, Math.max(6, Math.floor(box.w / 6.2)))
-          const walk = b.kind === 'seen' && onWalk ? () => onWalk(`walk to ${b.name}`) : undefined
+          const name = lines(b.name, perLine)
+          const walk = b.kind === 'seen' && onWalk ? () => !dragged.current && onWalk(`walk to ${b.name}`) : undefined
           return (
             <g key={b.id} className={`plan-place ${b.kind}${walk ? ' walkable' : ''}`} onClick={walk} role={walk ? 'button' : undefined} aria-label={walk ? t('app.plan.walk', { name: b.name }) : b.name}>
               <title>{b.kind === 'heard' ? t('app.plan.heard', { name: b.name }) : b.name}</title>
@@ -98,7 +201,20 @@ export function PlanView({ plan, onWalk }: { plan: PlanData; onWalk?: (command: 
           )
         })}
       </svg>
-      {moving && <figcaption className="muted small">{tn('app.plan.known', plan.known)}</figcaption>}
+      {(large || !fits) && (
+        <figcaption className="muted small plan-caption">
+          {tn('app.plan.known', plan.known)}
+          {!fits && (
+            <>
+              {' '}
+              {t('app.plan.moves')}{' '}
+              <button type="button" className="link" onClick={() => setPan({ x: 0, y: 0 })} title={t('app.plan.centreTitle')}>
+                [{t('app.plan.centre')}]
+              </button>
+            </>
+          )}
+        </figcaption>
+      )}
     </figure>
   )
 }

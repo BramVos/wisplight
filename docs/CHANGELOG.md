@@ -1,5 +1,19 @@
 # Changelog
 
+## M10.31 deel: de plattegrond als venster (A), 30 september 2026
+
+- **Groot en schuifbaar.** Klik op de kleine plattegrond (naast een vakje) of op [Plan] rechtsboven in het spelvenster. De plattegrond opent dan als venster van ongeveer twee keer zo groot, met het hele gebied erin. Past het gebied er niet in, dan schuif je met het wiel of door te slepen, en zet Home of [Where you are] je weer in het midden.
+- **Alles werkt zoals in de kleine.** Namen, stippen, stippellijnen en klikken om te lopen werken ook in het venster. Na slepen loop je niet per ongeluk ergens heen.
+- **Dicht en stil.** Esc, een klik naast het venster of een tweede klik op [Plan] sluit het. Zolang het open is, staat de klok stil ("time paused").
+- **De kleine plattegrond** schuift boven de negen plekken nu ook met het wiel en met slepen.
+
+Testen: loop in Port Vesper rond en klik op [Plan]. Ga in de Nethermarch naar Waagdam, bezoek er een stuk of tien plekken, en probeer het wiel op de kleine plattegrond en het venster. Nagekeken in de browser op allebei, ook op een telefoonscherm. Test in `tests/m1031plan.test.ts`.
+
+Kosten: geen aanroep.
+
+Wat de editor en de kroniekverteller leerden: niets; een wereld kan hierdoor niets nieuws bevatten.
+
+Ontwerp: functioneel ontwerp, bij de plattegrond van hier, alinea "Stand na M10.31: de plattegrond als venster".
 ## M10.31 deel: een geheime uitgang (B), lopen naar wat je hoorde (D) en wat iedereen weet (F), 30 september 2026
 
 - **Een geheime uitgang.** Een uitgang kan geheim zijn. Dan staat hij niet bij de uitgangen, niet op de plattegrond en niet bij Tab, en je kunt hem niet nemen tot je hem gevonden hebt: met SEARCH (een worp), met SEARCH en de plek (`search behind the consoles`, zonder worp), of doordat een daad hem opent. Mensen gebruiken hem nooit.
