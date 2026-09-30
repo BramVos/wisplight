@@ -1,5 +1,18 @@
 # Changelog
 
+## M10.33 deel: HELP van deze wereld (H), 30 september 2026
+
+- **Oorzaak:** HELP was één vaste tekst voor elke wereld, met PRAY waar geen geloof is, USE OVEN BAKE waar niets gebakken wordt, en "Dutch works too" in een Engelse wereld.
+- **Nu:** HELP begint met vijf dingen om mee te beginnen en noemt dan HELP MOVING, HELP TALK, HELP JOURNAL, HELP THINGS, HELP YOU, HELP FIGHTS en HELP GAME. Elke regel staat er alleen als de wereld het heeft, in de eigen woorden van de wereld: in The Quiet Reach staat er "hack <door or chest>" en geen gevecht.
+
+Testen: typ `help`, daarna `help things` en `help you`, in The Quiet Reach en in de Nethermarch. Test in `tests/m1033ways.test.ts`.
+
+Kosten: geen aanroep.
+
+Wat de editor en de kroniekverteller leerden: niets; HELP leest wat de wereld al heeft.
+
+Ontwerp: geen wijziging.
+
 ## M10.33 deel: de gever zegt zelf wat hij wil (E), 30 september 2026
 
 - **De gever opent (E).** Oorzaak: niemand opende een gesprek met wat hij wilde, en een stadium had daar geen zin voor. Een stadium kan nu `asks` hebben, in de stem van de gever. Wie een lopende quest gaf, zegt die zin één keer per stadium, direct na de groet. Ilyan begint zo met "Start with Niko Serrin", Maren op Skerrow met de boot van Brannoc.
@@ -14,6 +27,7 @@ Kosten: geen nieuwe aanroep. De stap Verhalen, de streekronde en `night_quest` v
 Wat de editor en de kroniekverteller leerden: het veld `asks` op een stadium (zod-beschrijving, `docs/CONTENT.md`, het korte contract, het sjabloon van een nieuwe quest in de editor); een regel onder Check voor een stadium met een `goal` zonder `asks`, en de controle op waarheden leest `asks` mee; de stap Verhalen van de wereldgids en `docs/NEW-WORLD.md`; de prompts van de stap Verhalen, de streekronde en `night_quest`, en de mock die een schets schrijft. Deepwell heeft geen quests; een test speelt de standaard zonder `asks`.
 
 Ontwerp: functioneel ontwerp, hoofdstuk 14, alinea "Stand na M10.33: de gever zegt zelf wat hij wil".
+
 
 ## M10.33 deel: één stapel vensters en het begin in één keer (A, B), 30 september 2026
 

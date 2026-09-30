@@ -34,7 +34,7 @@ describe('M10.29 L: listening is to be found', () => {
     expect(`${seen}\n${look}`).toMatch(/stand talking[^\n]*\(LISTEN to catch it\.\)/)
     expect(`${seen}\n${look}`.match(/LISTEN to catch it/g)).toHaveLength(1)
     expect(said(await engine.handle('look'))).not.toMatch(/LISTEN to catch it/)
-    expect(said(await engine.handle('help'))).toMatch(/Two people talking: listen/)
+    expect(said(await engine.handle('help talk'))).toMatch(/Two people talking: listen/)
     expect(said(await engine.handle('listen'))).toMatch(/You stand close enough to hear/)
     expect(said(await engine.handle('listen'))).toMatch(/Stay a while, and you may hear what \w+ says back\./)
     expect(said(await engine.handle('listen'))).not.toMatch(/Stay a while/)

@@ -41,7 +41,7 @@ async function play(world: Content, commands: string[]) {
   return { engine: loaded, out, text, prompts, runs, mock }
 }
 
-const COMMANDS = ['look', 'help', 'wait', 'sleep', 'journal', 'time', 'inventory', 'map', 'pray', 'look sky', 'rent a room', 'hire punt', 'wait 60']
+const COMMANDS = ['look', 'help', 'help moving', 'wait', 'sleep', 'journal', 'time', 'inventory', 'map', 'pray', 'look sky', 'rent a room', 'hire punt', 'wait 60']
 
 describe('M10.17: the contract', () => {
   it('docs/CONTENT.md is what the schemas say (npm run content:contract)', () => {

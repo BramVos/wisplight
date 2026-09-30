@@ -46,6 +46,7 @@ import { lodgingLines } from './lodgings'
 import { engageFarPlace } from './outlines'
 import { exitsByWords, exitShown, shownExits } from './exits'
 import { wornNow } from './carried'
+import { helpText } from './help'
 
 // Player commands that need no AI. Each returns lines of output; commands that
 // take time call `pass(minutes)`, which runs the world and returns what the
@@ -107,23 +108,6 @@ export interface CommandHost {
   passUntil?(minutes: number, stop: () => string | undefined): Output[]
 }
 
-const HELP = [
-  'Moving: north, south, east, west, up, down, in, out (n, s, e, w, ...). Also: go <place>, exits, walk to <a place of here you have seen>, plan (the plan of this settlement as you know it).',
-  'Across country: head <direction>, walk to <place>, follow <a road or path>. Map: map. Further: travel to <place> (on foot, or by a line that runs there), take <the line> to <place>, wait for <the line>, hire <what someone hires out>.',
-  'Looking: look (l), examine <thing or person> (x). What you know of something: recall <topic> (what everyone here knows is in your journal from the start). Your journal: journal, journal <name> (a page), journal <person> history (every talk with them), quests (what you took up, and what to do now).',
-  'Things: inventory (i), take, drop, give <thing> to <person>, use <object>, eat <food>, open <chest>, take <thing> from <chest>, pick <door or chest> (the lock), force <door or chest>. In a talk: ask <person> for <thing>.',
-  'Crafts and skills: use <workplace> [what to make] (USE OVEN BAKE), treat <person or me>, gather [what], track <person>, search (here), read <inscription>. In a talk with a craftsman: teach me.',
-  'Trade: list (what is for sale here), buy <thing> [amount], sell <thing> [amount], rent a room (a night), rent the room for a week (yours, with a chest: put <thing> in the chest, take <thing> from the chest).',
-  'Work: work (for a day\'s pay), invest <amount>, loads (what there is to carry from here), haul <goods> to <place>, deliver.',
-  'Time: time, wait [minutes], wait for <person>, sleep. At night: knock (on a door), wake <person>.',
-  'Pace: tempo calm, tempo normal or tempo dramatic (how much happens in the world). The frames of this game: frames (the world, its lands and great lines, and three dials to set). A word to the chronicler: chronicler <one line> (more of the sea, no war this season).',
-  'What waits (by the play mode in the settings): hooks (what a night brought, to take up or let lie), proposals, accept, reject.',
-  "Talking: talk <person>, ask <person> about <topic>, say <text> or 'text. Two people talking: listen (to catch what they say; stay, and you hear more).",
-  'You: sheet, create (make your character), level up, train <skill>, wield <weapon>, wear <armour>, devote to <patron>, pray, rite. Your word and theirs: promises.',
-  'Fights: strike, advance, step back, raise shield, use herbs, recall, talk, flee, surrender, end. HELP in a fight says more.',
-  'Game: save, load, continue (exactly where you stopped), new stranger (the same world, a new character), years later (a new game with the old one as legend), log [lines], log export, help.',
-  'Dutch works too: kijk, pak, koop, praat met, vraag ... over ...',
-].join('\n')
 
 const text = (value: string): Output => ({ kind: 'text', text: value })
 const error = (value: string): Output => ({ kind: 'error', text: value })
@@ -305,12 +289,9 @@ export function runCommand(host: CommandHost, command: Command): Output[] {
       const plan = planHere(world)
       return [{ kind: 'system', text: plan ? planText(plan).join('\n') : 'There is no plan of here: a plan is drawn in a settlement of more than one place. The map shows the land.' }]
     }
-    case 'help': {
-      // The lines of this world by name (M10.17), so the help speaks of the barge where there is one, and the tram in Deepwell.
-      const lines = [...world.content.passages.values()].map((p) => p.name)
-      return [{ kind: 'system', text: lines.length ? `${HELP}
-Lines here: ${lines.join(', ')}.` : HELP }]
-    }
+    case 'help':
+      // HELP of this world (M10.33 H): five things, then HELP <subject>, each line only where the world has it.
+      return [{ kind: 'system', text: helpText(world, command.args.join(' ')) }]
     default: {
       // A verb an object here offers (DRINK FROM THE TAP, M10.17): as USE with that verb.
       const said = command.raw.trim().split(/\s+/)[0]!.toLowerCase()

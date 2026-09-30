@@ -171,3 +171,29 @@ describe('M10.33 L: directions and areas fit', () => {
     expect(directionProblems(isle)).toEqual([])
   })
 })
+
+describe('M10.33 H: HELP of this world', () => {
+  // Cause: HELP was one fixed text for every world (PRAY in a world without faith, USE OVEN BAKE where nothing is
+  // baked, "Dutch works too" in an English world). Fixed in the engine: HELP is built from what the world has.
+  it('begins with five things, and speaks of what this world has, in its own words', async () => {
+    const engine = game()
+    const help = said(await engine.handle('help'))
+    expect(help).toMatch(/^Five things to start with:\n {2}LOOK \(L\)/)
+    expect(help).toMatch(/More: HELP MOVING, HELP TALK, HELP JOURNAL, HELP THINGS, HELP YOU, HELP GAME\.$/)
+    expect(help).not.toMatch(/Dutch works too|HELP FIGHTS/)
+    const things = said(await engine.handle('help things'))
+    // The Quiet Reach says HACK for PICK, and has clothes.
+    expect(things).toMatch(/hack <door or chest> \(the lock\)/)
+    expect(things).toMatch(/wear <clothes>/)
+    expect(said(await engine.handle('help moving'))).toMatch(/Lines here: Ridge Crawler, up to Orison/)
+    // No rules for characters: no SHEET or LEVEL UP; faith without patrons: PRAY only.
+    const you = said(await engine.handle('help you'))
+    expect(you).not.toMatch(/level up|devote/)
+    expect(you).toMatch(/Faith: pray\./)
+    const { content } = await import('./helpers')
+    const nether = new Engine(content, { seed: 1 })
+    nether.start()
+    expect(said(await nether.handle('help'))).toMatch(/HELP FIGHTS/)
+    expect(said(await nether.handle('help you'))).toMatch(/level up.*\nFaith: pray, devote to <patron>, rite\./)
+  })
+})

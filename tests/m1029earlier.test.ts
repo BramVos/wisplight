@@ -52,7 +52,7 @@ describe('M10.29 J: earlier talks', () => {
     expect(text).toMatch(/every talk:\n\w+ \d+:/)
     expect(text).toMatch(/ {2}You: "What bread do you have today\?"/)
     expect((await engine.handle('journal mirte')).map((o) => o.text).join('\n')).toMatch(/JOURNAL mirte HISTORY/)
-    expect((await engine.handle('help')).map((o) => o.text).join('\n')).toMatch(/journal <person> history/)
+    expect((await engine.handle('help journal')).map((o) => o.text).join('\n')).toMatch(/journal <person> history/)
   }, 60_000)
 
   it('lets an older talk leave the ring whole', async () => {
