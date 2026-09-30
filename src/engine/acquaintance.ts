@@ -142,7 +142,8 @@ export function personView(world: World, npcId: string): PersonView {
     else if (met || n?.seen) view.age = { text: guess(npcId, age), known: false }
   }
   // What they do, as far as the stranger knows (M10.8): the trade once known, a cover for a hidden one, else unknown.
-  if (met || n?.seen) view.work = knowsWork(world, npcId) ? (world.content.professions.get(npc.profession)?.name ?? npc.profession) : npc.hidden && npc.cover ? npc.cover : '?'
+  // A trade nobody hides is known as soon as the head of the talk says it (M10.33 F: "the medic" above, "Work ?" beside it).
+  if (met || n?.seen) view.work = knowsWork(world, npcId) || !npc.hidden ? (world.content.professions.get(npc.profession)?.name ?? npc.profession) : npc.hidden && npc.cover ? npc.cover : '?'
   if (met) view.appearance = npc.appearance
   if (n?.seen) view.lastSeen = { where: world.location(n.seen.where).name, ago: ago(world.now - n.seen.t) }
   if (n?.places) {

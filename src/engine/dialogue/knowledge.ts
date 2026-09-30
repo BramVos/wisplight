@@ -1,7 +1,7 @@
 import { knob } from '../knobs'
 import { callName } from '../content'
 import { itemName } from '../items'
-import { factById, newsAbout, versionOf } from '../news'
+import { factById, newsAbout, strangersOwn, versionOf } from '../news'
 import type { Heard } from '../state'
 import type { World } from '../world'
 import type { TopicRegistry } from './topics'
@@ -248,7 +248,8 @@ export class Knowledge {
       const name = this.topics.name(topic)
       if (level === 0) packet.unknown.push({ topic, name })
       else {
-        const news = topic.startsWith('fact_') ? [] : newsAbout(this.world, npcId, [topic]).map(({ fact, heard }) => `${versionOf(fact, heard)} ${this.source(heard)}`)
+        // What the stranger did is no news to tell the stranger (M10.33 F).
+        const news = topic.startsWith('fact_') ? [] : newsAbout(this.world, npcId, [topic], 4).filter(({ fact }) => !strangersOwn(fact)).slice(0, 2).map(({ fact, heard }) => `${versionOf(fact, heard)} ${this.source(heard)}`)
         packet.known.push({ topic, name, level, ...this.facts(npcId, topic, level, wantsStory), ...(news.length ? { news } : {}) })
       }
     }

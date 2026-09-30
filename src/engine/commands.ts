@@ -1041,6 +1041,11 @@ function openServices(world: World): { service: Service; location: string }[] {
   return result
 }
 
+/** Whether someone keeps a trade here (M10.33 F): the talk window offers Trade only then. */
+export function tradesHere(world: World, npcId: string): boolean {
+  return openServices(world).some(({ service }) => (service.provider === npcId || service.staff.includes(npcId)) && (Object.keys(service.sells).length > 0 || service.buys.length > 0 || service.lodging !== undefined))
+}
+
 function list(world: World): Output[] {
   const refused = refusedTrade(world, world.state.player.location)
   if (refused) return [error(refused)]

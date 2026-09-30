@@ -4,7 +4,7 @@ import { asksAge, knownName, knowsOfPerson, learnTie, learnWork, publicShort, sa
 import type { Output } from '../commands'
 
 import { areaTopicId, callName } from '../content'
-import { factById, heardBy, newsAbout, playerTells } from '../news'
+import { factById, heardBy, newsAbout, playerTells, strangersOwn } from '../news'
 import type { Fact, FarName, TalkState } from '../state'
 import { backers, backing, witnessSays } from '../belief'
 import type { World } from '../world'
@@ -15,7 +15,7 @@ import { approve, companionOf, offer, recruit } from '../social/companions'
 import { silenceWitness, witnessed } from '../social/crime'
 import { partyTalk } from './party'
 import { closingLine, fallbackReply } from './fallback'
-import { deedKinds, fitLength, leakedNames, looksLikeInjection, outOfCharacter, promises, recites, saysNothing, speaksAsOther, swearRight, talksOfSelf, unknownNames, vocabularyOf } from './guard'
+import { deedKinds, fitLength, leakedNames, looksLikeInjection, outOfCharacter, promised, promises, recites, saysNothing, speaksAsOther, swearRight, talksOfSelf, unknownNames, vocabularyOf } from './guard'
 import { byRule } from './byrule'
 import { accept, askedFor, askOffer, dayLines, kinOf, offerLine, offerLines, offersFor, proposal, proposalText, spokenMeet, type Offer } from './offers'
 import { accepted, declined, inviteOffer } from '../social/invite'
@@ -60,6 +60,9 @@ export const QUICK_OPTIONS = [
   'Will you come with me?',
 ]
 
+
+/** Asked for the whole of it, not one fact (M10.33 F): Bram's "you are going a bit fast ... What are we looking at?". */
+const WHOLE = /\b(what happened|what(?: i|')s going on|what is (?:all )?this|what are we|from the (?:start|beginning)|the whole (?:thing|story)|explain|tell me (?:more|everything)|slow down|going (?:a bit )?(?:too )?fast|(?:i )?don'?t (?:understand|follow))\b/i
 
 interface TurnOptions {
   act?: Act
@@ -525,8 +528,9 @@ export class Dialogue {
     // Not the stranger's own coming, told to the stranger (found in the M9.4 playtest: at the inn, everyone's
     // news was the stranger who came in that evening, and the leak in the dyke went untold). A theft the
     // stranger did is still news to complain of, to the thief's face.
+    // Nor anything else the stranger did (M10.33 F: their own question came back as news).
     const fresh = newsAbout(this.world, npcId, [], 8)
-      .filter(({ fact }) => fact.kind !== 'stranger')
+      .filter(({ fact }) => !strangersOwn(fact))
       .slice(0, 2)
       .map(({ fact }) => fact.id)
     const standing = [...this.world.content.topics.values()].filter((t) => t.standing_talk).map((t) => t.id).sort().filter((t) => this.knowledge.level(npcId, t) >= 2)
@@ -642,6 +646,9 @@ export class Dialogue {
     const packet = this.knowledge.packet(npcId, topics.filter((t) => t !== npcId), act === 'AskStory' || act === 'AskAbout')
     let tier: Tier = tierFor(act)
     if ((act === 'AskStory' || /\b(story|legend|tale|verhaal)\b/i.test(text)) && packet.known.some((k) => k.story)) tier = 'story'
+    // A quest takes more than fifty words (M10.33 F; Bram: "when it is about the story and a quest, it may and sometimes must be much longer"):
+    // with its giver or someone in it, a question is explained, and asked for the whole of it, told.
+    if ((tier === 'normal' || tier === 'explain') && this.inQuest(npcId)) tier = WHOLE.test(text) ? 'story' : 'explain'
     if (tier !== 'story') for (const k of packet.known) delete k.story
 
     // 3. The model, or the designer's templates.
@@ -756,7 +763,7 @@ export class Dialogue {
     const allowed = new Set([...packet.known.map((k) => k.topic), ...(packet.referral ? [packet.referral.npc] : [])])
     const mentioned = (reply?.mentioned_topics ?? []).filter((t) => allowed.has(t))
     this.noteSources(npcId, packet.known.map((k) => ({ topic: k.topic, level: k.level })))
-    const told = packet.known.flatMap((k) => [k.topic, ...(k.news ? newsAbout(world, npcId, [k.topic]).map(({ fact }) => fact.id) : [])]).filter((id) => id.startsWith('fact_'))
+    const told = packet.known.flatMap((k) => [k.topic, ...(k.news ? newsAbout(world, npcId, [k.topic], 4).filter(({ fact }) => !strangersOwn(fact)).slice(0, 2).map(({ fact }) => fact.id) : [])]).filter((id) => id.startsWith('fact_'))
     this.hearFrom(npcId, told)
     this.learn(...told, ...packet.known.map((k) => k.topic), ...mentioned, ...(packet.referral && replyText.includes(packet.referral.call) ? [packet.referral.npc] : []))
     const memory = (world.npcState(npcId).memory ??= [])
@@ -819,7 +826,7 @@ export class Dialogue {
       offerEnds = done.ends
     } else if (!asked && !reaction) {
       // What they propose: an offer they chose, or a meeting they named in their own words (M10.29).
-      const proposed = reply ? (offers.find((o) => o.key === reply.propose && o.decision === 'yes') ?? (promises(replyText) ? spokenMeet(world, npcId, replyText, this.topics.recognise(replyText)) : undefined)) : proposal(offers, act)
+      const proposed = reply ? (offers.find((o) => o.key === reply.propose && o.decision === 'yes') ?? (promises(replyText) ? spokenMeet(world, npcId, promised(replyText), this.topics.recognise(promised(replyText))) : undefined)) : proposal(offers, act)
       if (proposed) {
         talk.proposal = proposed
         offerOut.push({ kind: 'system', text: proposalText(world, npcId, proposed) })
@@ -877,6 +884,13 @@ export class Dialogue {
       world.state.talk = undefined
     }
     return [{ kind: 'speech', text: offerLine(world, talk.npc, offer) }, ...done.outputs]
+  }
+
+  /** Whether this person gives or is in a quest that runs, or has one to offer now (M10.33 F). */
+  private inQuest(npcId: string): boolean {
+    const log = this.world.state.questlog ?? {}
+    if (questsOf(this.world, npcId).some((q) => log[q.id] && !log[q.id]!.ended)) return true
+    return (this.questOptions?.(npcId) ?? []).length > 0
   }
 
   /** The proposal waiting for the player's answer, in words, for the conversation bar. */
@@ -1129,7 +1143,7 @@ export class Dialogue {
       // A promise the game did not offer never stands in the text (M10.3): the deed hangs on a chosen yes.
       const doing = offers.find((o) => o.key === reply.action && o.decision === 'yes') ?? offers.find((o) => o.key === reply.propose && o.decision === 'yes')
       // A time the speaker keeps in their own words is a meeting they propose (M10.29), when they are willing.
-      const spoken = promises(fitted) && !doing ? spokenMeet(world, npcId, fitted, this.topics.recognise(fitted)) : undefined
+      const spoken = promises(fitted) && !doing ? spokenMeet(world, npcId, promised(fitted), this.topics.recognise(promised(fitted))) : undefined
       if (promises(fitted) && !doing && !spoken && !ctx.decision && reply.quest_action === 'none') {
         this.refused('promise', llm)
         prompt += '\nNOTE: your last reply promised to do something the game did not offer. Answer again without promising it: choose an OFFER with decision yes, or say what you can and cannot do.'

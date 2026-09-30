@@ -18,14 +18,37 @@
     "help": "Can you help me?",
     "follow": "Come with me?",
     "trade": "Trade",
-    "orTry": "or try:",
+    "ask": "Ask:",
+    "askHelp": "A question in so many words: they answer in their own.",
+    "titles": {
+      "who": "Ask who they are.",
+      "news": "Ask what goes on around here.",
+      "work": "Ask what they do here.",
+      "help": "Ask whether they can help you, or what they need.",
+      "trade": "See what they sell and buy here.",
+      "follow": "Ask them to travel with you, for a wage."
+    },
+    "orTry": "Try:",
+    "tryHelp": "A move with a roll: type what you are after it, your skill and the die decide.",
     "acts": {
       "persuade": "persuade",
       "deceive": "deceive",
       "intimidate": "intimidate",
       "bribe": "bribe",
       "insight": "insight"
+    },
+    "actTitles": {
+      "persuade": "Talk them round: type what they should believe or do after the word.",
+      "deceive": "Make them believe something untrue: type it after the word.",
+      "intimidate": "Press them with a threat. It may cost you their goodwill.",
+      "bribe": "Offer money for what you want: type the sum and what for.",
+      "insight": "Read whether they are telling you the truth."
     }
+  },
+  "offer": {
+    "label": "What {name} offers",
+    "yes": "Yes",
+    "no": "No"
   },
   "input": {
     "placeholder": "Say something to {name}. Enter sends, Shift+Enter for a new line.",

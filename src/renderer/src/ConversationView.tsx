@@ -157,21 +157,17 @@ export function ConversationView({
     return { shown: shown.sort((a, b) => (a.km ?? 99) - (b.km ?? 99) || a.name.localeCompare(b.name)), hidden: found.length - shown.length }
   }, [journal, query, everything, talk.npc])
 
-  const quick: [number, string][] = [
-    [1, t('conversation.quick.who')],
-    [2, t('conversation.quick.news')],
-    [3, t('conversation.quick.work')],
-    [6, t('conversation.quick.help')],
-    [8, t('conversation.quick.follow')],
+  // Two rows (M10.33 F): questions, and moves with a roll. Trade only with someone who keeps a trade here, Come with me only with someone who can come.
+  const questions: { send: string; key: string }[] = [
+    { send: '1', key: 'who' },
+    { send: '2', key: 'news' },
+    { send: '3', key: 'work' },
+    { send: '6', key: 'help' },
+    ...(talk.trades ? [{ send: 'list', key: 'trade' }] : []),
+    ...(talk.joins ? [{ send: '8', key: 'follow' }] : []),
   ]
 
-  const acts: [string, string][] = [
-    ['persuade', t('conversation.quick.acts.persuade')],
-    ['deceive', t('conversation.quick.acts.deceive')],
-    ['intimidate', t('conversation.quick.acts.intimidate')],
-    ['bribe', t('conversation.quick.acts.bribe')],
-    ['insight', t('conversation.quick.acts.insight')],
-  ]
+  const acts = ['persuade', 'deceive', 'intimidate', 'bribe', 'insight']
 
   return (
     <div className="overlay talk-overlay" role="dialog" aria-modal="true" aria-label={t('conversation.dialog', { name: talk.name })}>
@@ -225,19 +221,35 @@ export function ConversationView({
             </div>
             {!ended && (
               <>
+                {/* What they offer waits for a yes or a no (M10.33 F): YES here, or typed, closes it. */}
+                {talk.proposal && (
+                  <div className="talk-offer" role="group" aria-label={t('conversation.offer.label', { name: talk.call })}>
+                    <span>{talk.proposal.replace(/ YES to agree, NO to decline\.$/, '')}</span>
+                    <button type="button" className="link" disabled={busy} onClick={() => onSend('yes')}>
+                      [{t('conversation.offer.yes')}]
+                    </button>
+                    <button type="button" className="link" disabled={busy} onClick={() => onSend('no')}>
+                      [{t('conversation.offer.no')}]
+                    </button>
+                  </div>
+                )}
                 <div className="talk-quick">
-                  {quick.map(([n, label]) => (
-                    <button key={n} type="button" className="link" disabled={busy} onClick={() => onSend(String(n))}>
-                      {label}
+                  <span className="muted small" title={t('conversation.quick.askHelp')}>
+                    {t('conversation.quick.ask')}
+                  </span>
+                  {questions.map((q) => (
+                    <button key={q.key} type="button" className="link" disabled={busy} onClick={() => onSend(q.send)} title={t(`conversation.quick.titles.${q.key}`)}>
+                      {t(`conversation.quick.${q.key}`)}
                     </button>
                   ))}
-                  <button type="button" className="link" disabled={busy} onClick={() => onSend('list')}>
-                    {t('conversation.quick.trade')}
-                  </button>
-                  <span className="muted small">{t('conversation.quick.orTry')}</span>
-                  {acts.map(([act, label]) => (
-                    <button key={act} type="button" className="link" disabled={busy} onClick={() => prefill(`${act} `)}>
-                      {label}
+                </div>
+                <div className="talk-quick">
+                  <span className="muted small" title={t('conversation.quick.tryHelp')}>
+                    {t('conversation.quick.orTry')}
+                  </span>
+                  {acts.map((act) => (
+                    <button key={act} type="button" className="link" disabled={busy} onClick={() => prefill(`${act} `)} title={t(`conversation.quick.actTitles.${act}`)}>
+                      {t(`conversation.quick.acts.${act}`)}
                     </button>
                   ))}
                 </div>

@@ -49,6 +49,16 @@ const PROMISE =
 // was a promise (found in M10.29).
 const TELL_NAME = /\b(?:I'?ll|I will|I can|[Ll]et me|I'?m going to|I shall)\s+(?:\w+\s+)?tell \p{Lu}/u
 
+/**
+ * The part of a reply that promises (M10.33 F): each sentence with a promise and the one after it. A time or a place
+ * elsewhere is no meeting: Pip's "Come on, I'll take you there" and, three sentences on, the wyrm that "sleeps
+ * soundest at noon" made a meeting at noon.
+ */
+export function promised(text: string): string {
+  const sentences = text.split(/(?<=[.!?]["']?)\s+/)
+  return sentences.filter((s, i) => promises(s) || (i > 0 && promises(sentences[i - 1]!))).join(' ')
+}
+
 /** Whether a reply promises to do something for the player. */
 export function promises(text: string): boolean {
   return PROMISE.test(text) || TELL_NAME.test(text)

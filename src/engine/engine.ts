@@ -36,7 +36,7 @@ import { followTombstones, followTombstonesInLog, nameBook, withNames, type Name
 import { shiftTension, tensionOf } from './social/realms'
 import { grownContent, invest } from './growth/growth'
 import { GameClock, weekdayName } from './clock'
-import { completionsHere, couldInstead, describeRoom, detailDeed, detailVerb, findNpcAnywhere, findNpcHere, runCommand, walkByExits, walkOut, walkToward, walkWithin, whichOfThem, type CommandHost, type Output } from './commands'
+import { completionsHere, couldInstead, describeRoom, detailDeed, detailVerb, findNpcAnywhere, findNpcHere, runCommand, tradesHere, walkByExits, walkOut, walkToward, walkWithin, whichOfThem, type CommandHost, type Output } from './commands'
 import { areaTopicId, callName, firstName, type Content, type Direction, type Quest } from './content'
 import { Dialogue, QUICK_OPTIONS } from './dialogue/conversation'
 import { Knowledge } from './dialogue/knowledge'
@@ -213,7 +213,7 @@ export interface Status {
   paused: boolean
   /** A development build: the @ commands work and the editor can be opened. */
   builder?: boolean
-  talk?: { npc: string; name: string; call: string; colour?: string; attitude: string; turnsLeft: number; options: string[]; proposal?: string; pronoun: 'she' | 'he' | 'they'; lines: TalkLine[]; earlier?: EarlierTalk }
+  talk?: { npc: string; name: string; call: string; colour?: string; attitude: string; turnsLeft: number; options: string[]; proposal?: string; trades: boolean; joins: boolean; pronoun: 'she' | 'he' | 'they'; lines: TalkLine[]; earlier?: EarlierTalk }
   /** The talk that just ended (M10.8): its lines, for the window that stays until closed. */
   lastTalk?: { npc: string; lines: TalkLine[] }
   /** The clock and the sky for the top right (M10.8): weekday, date, hour, sun, dusk or moon, and the weather. */
@@ -1653,10 +1653,11 @@ export class Engine {
     if (talking && !/^(?:bye|goodbye|farewell|\d+)[.!]*$/i.test(text.trim())) noteSaid(this.world, text.replace(/^["']|["']$/g, ''), talk.npc)
 
     if (talking) {
-      if (text.startsWith('"')) return this.inConversation(() => this.dialogue.say(talk.npc, text.replace(/^"|"$/g, '').trim()))
-      // What the NPC proposed happens only on the player's yes (M10.3).
-      if (talk.proposal && /^(yes|yeah|yep|aye|all right|alright|ok|okay|sure|please|please do|ja|goed|graag)\b[.!]*$/i.test(text.trim())) return this.inConversation(async () => this.dialogue.answer(true))
-      if (talk.proposal && /^(no|nope|no thanks|not now|nee|liever niet)\b[.!]*$/i.test(text.trim())) return this.inConversation(async () => this.dialogue.answer(false))
+      // What the NPC proposed happens only on the player's yes (M10.3), typed or said (M10.33 F: the talk window sends a yes as speech).
+      const answer = text.replace(/^"|"$/g, '').trim()
+      if (talk.proposal && /^(yes|yeah|yep|aye|all right|alright|ok|okay|sure|please|please do|ja|goed|graag)\b[.!]*$/i.test(answer)) return this.inConversation(async () => this.dialogue.answer(true))
+      if (talk.proposal && /^(no|nope|no thanks|not now|nee|liever niet)\b[.!]*$/i.test(answer)) return this.inConversation(async () => this.dialogue.answer(false))
+      if (text.startsWith('"')) return this.inConversation(() => this.dialogue.say(talk.npc, answer))
       if (/^[1-8]$/.test(text)) return this.inConversation(() => this.dialogue.quick(Number(text)))
       if (/^(bye|goodbye|farewell|dag|doei|tot ziens)\b/i.test(text)) return this.dialogue.end()
       const direction = parseDirection(command.args[0])
@@ -2132,7 +2133,7 @@ export class Engine {
       paused: false,
       ...(this.builder ? { builder: true } : {}),
       talk: talk
-        ? { npc: talk.npc, name: knownShort(this.world, talk.npc), call: callName(this.world.npc(talk.npc)), colour: personColour(this.world, talk.npc), attitude: attitude(this.world, talk.npc).band, turnsLeft: talk.turnsLeft, options: QUICK_OPTIONS, ...(talk.proposal ? { proposal: this.dialogue.proposalNow()! } : {}), pronoun: this.world.npc(talk.npc).pronoun, lines: talk.lines ?? [], ...(earlierTalk(this.world, talk.npc, talk.began) ? { earlier: earlierTalk(this.world, talk.npc, talk.began)! } : {}) }
+        ? { npc: talk.npc, name: knownShort(this.world, talk.npc), call: callName(this.world.npc(talk.npc)), colour: personColour(this.world, talk.npc), attitude: attitude(this.world, talk.npc).band, turnsLeft: talk.turnsLeft, options: QUICK_OPTIONS, trades: tradesHere(this.world, talk.npc), joins: Boolean(this.world.npc(talk.npc).companion), ...(talk.proposal ? { proposal: this.dialogue.proposalNow()! } : {}), pronoun: this.world.npc(talk.npc).pronoun, lines: talk.lines ?? [], ...(earlierTalk(this.world, talk.npc, talk.began) ? { earlier: earlierTalk(this.world, talk.npc, talk.began)! } : {}) }
         : undefined,
       ...(!talk && this.lastTalk ? { lastTalk: this.lastTalk } : {}),
       clock: this.clockStatus(),

@@ -1,5 +1,22 @@
 # Changelog
 
+## M10.33 deel: het gesprek doet wat het zegt (F), 30 september 2026
+
+- **Twee rijen (F).** Onder het gesprek staan nu vragen ("Ask:") en zetten met een worp ("Try:") apart, elk met een uitleg als je de muis erop houdt. "Trade" staat er alleen bij iemand die hier iets verkoopt of koopt, "Come with me?" alleen bij iemand die mee kan reizen. Oorzaak: de rij was vast, voor iedereen gelijk.
+- **Ja is ja (F).** Oorzaak: het gespreksvenster stuurt wat je typt als gesproken tekst, en de motor keek pas daarna of er een aanbod openstond, zodat "yes" bij Sana een gewoon antwoord kreeg en het aanbod bleef staan. Opgelost in de motor: een ja of nee op een aanbod telt, getypt of gezegd. Het venster toont het aanbod nu zelf, met [Yes] en [No].
+- **Het beroep volgt de kop (F).** Het paneel naast het gesprek zei "Work ?" terwijl de kop al "the medic" zei. Een beroep dat niemand verbergt, staat er nu meteen; een verborgen beroep toont zoals eerder alleen de dekmantel.
+- **Nieuws is niet je eigen daad (F).** "What's new?" vertelde de vreemdeling soms dat de vreemdeling iets gevraagd had. Wat de speler zelf deed, telt niet meer als nieuws, ook niet in wat de stem over een onderwerp weet.
+- **Een quest krijgt ruimte (F).** Wie een lopende quest gaf of erin zit, of er een aanbiedt, antwoordt op een vraag in de laag uitleg (90 woorden), en wie om het geheel vraagt ("what are we looking at?", "you are going a bit fast", "from the start") in de laag verhaal (180). Bij de rest blijft het vijftig.
+- **Een tijd in een verhaal is geen afspraak.** Met die extra ruimte kwam een oude fout boven: Pip beloofde "I'll take you there", en drie zinnen later sliep de draak "soundest at noon", wat een afspraak om twaalf uur werd. Oorzaak in de motor: tijd en plek werden in het hele antwoord gezocht. Nu alleen in de zin die iets belooft en de zin erna.
+
+Testen, in The Quiet Reach: praat met Sana in de Commons en met Ilyan (geen Trade bij Ilyan), vraag Sana `where is the guest quarters` en typ `yes`. Vraag Ilyan "What are we looking at?". In de browser nagekeken. Tests in `tests/m1033f.test.ts`.
+
+Kosten: geen nieuwe aanroep. Een antwoord van een quest-persoon mag langer zijn: in de laag uitleg zo'n 55 uitvoertokens meer, in de laag verhaal zo'n 175, met Haiku 4.5 hooguit een tiende cent per antwoord.
+
+Wat de editor en de kroniekverteller leerden: niets; een wereld kan hierdoor niets nieuws bevatten.
+
+Ontwerp: geen wijziging; geen nieuw mechanisme (geen nieuwe staat, scherm, ronde of aanroep), alleen bestaande lagen en knoppen op de juiste plek.
+
 ## M10.33 deel: zoeken zonder dobbelsteen, en een weg bij zijn naam (Z), 30 september 2026
 
 - **Zoeken zonder worp.** Oorzaak: SEARCH gooide een dobbelsteen op iets dat gratis is en eindeloos herhaald kan worden, dus je zocht tot het getal goed was. Nu vind je meteen wat je oog haalt (waarneming plus tien), en zoeken geeft telkens hetzelfde antwoord. Mis je iets, dan zegt het spel waar je moet kijken ("The tideline is worth a closer look."), en `search the tideline` vindt het meteen. Ligt er niets, dan zegt het spel dat eerlijk.

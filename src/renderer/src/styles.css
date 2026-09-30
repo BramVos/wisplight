@@ -522,6 +522,17 @@ body {
   gap: 4px 14px;
 }
 
+/* What they offer, with Yes and No (M10.33 F). */
+.talk-offer {
+  align-items: baseline;
+  border-left: 3px solid var(--warn);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: calc(13px * var(--text-scale));
+  gap: 4px 10px;
+  padding-left: 8px;
+}
+
 .talk-input {
   background: var(--bg);
   border: 1px solid var(--line);

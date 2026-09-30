@@ -117,13 +117,11 @@ describe('M10.8: what the stranger knows of people', () => {
     expect(personView(engine.world, 'npc_tamsin').work).toBe('hedge-witch')
   })
 
-  it("a plain trade is '?' at first sight, and known once they say it", async () => {
+  // Since M10.33 F a plain trade is known at first sight, as the head of the talk and the line Here: say it; only a hidden one waits.
+  it('a plain trade is known at first sight, as the head of the talk says it', async () => {
     const engine = new Engine(content, { seed: 4, builder: true })
     stay(engine, 'npc_gerrit', engine.state.player.location)
     engine.tick(15)
-    expect(personView(engine.world, 'npc_gerrit').work).toBe('?')
-    await engine.handle('talk gerrit')
-    await engine.handle('3')
     expect(personView(engine.world, 'npc_gerrit').work).not.toBe('?')
   })
 

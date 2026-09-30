@@ -480,6 +480,16 @@ function forget(world: World): void {
 }
 
 /** Facts an NPC has heard about any of these topics, juiciest first. */
+/**
+ * Whether news is the stranger's own doing (M10.33 F: "What's new?" gave "The
+ * stranger asked Sana about Ilyan", to the stranger): their coming, what they
+ * said, asked or did, which the facts of the game title "the stranger ...".
+ * Told to the stranger it is no news; to anyone else it is.
+ */
+export function strangersOwn(fact: Fact): boolean {
+  return fact.kind === 'stranger' || fact.by === 'player' || /^the stranger\b/i.test(fact.title)
+}
+
 export function newsAbout(world: World, npcId: string, topics: string[], max = 2): { fact: Fact; heard: Heard }[] {
   const heard = world.state.news?.heard[npcId] ?? {}
   return Object.entries(heard)
