@@ -96,7 +96,13 @@ describe('M10.30 (6): solvable, and three endings for what a model writes', () =
 
   it('names what a line lacks in endings, and sends such a scope back to the model once with the check\'s lines', async () => {
     const one: QuestSketch = { name: 'One Way', kind: 'request', summary: 'A matter.', giver: 'p1', ask: 'Would you?', stages: [{ text: 'It must be done.', say: 'do the thing', at: 'l1', with: '', skill: '', done: 'It is done.' }], outcome: { name: 'Done', text: 'It came right.' } }
-    expect(endingProblems(one)).toEqual(['One Way: 0 ways to end, at least three are needed (the lapse counts)', 'One Way: 0 solutions, at least 2 are needed', 'One Way: no ending where it goes wrong or runs out (an ending that is no solution, or a lapse)'])
+    expect(endingProblems(one)).toEqual(['One Way: 0 ways to end, at least two for a line of one stage are needed (the lapse counts)', 'One Way: 0 solutions, at least one is needed', 'One Way: no ending where it goes wrong or runs out (an ending that is no solution, or a lapse)'])
+    // A line of one stage is enough with a solution and one where it runs out (Bram, 30 September 2026); a line of two stages is not.
+    const asked = { name: 'Asked nicely', text: 'Words did it.', solution: true, way: 'talk', say: 'ask nicely', at: 'l1', with: '', skill: '' }
+    const gone = { name: 'Walked away', text: 'Nobody did it.', solution: false, way: 'fail', say: 'walk away from it', at: 'l1', with: '', skill: '' }
+    expect(endingProblems({ ...one, endings: [asked, gone] })).toEqual([])
+    const two = { ...one, stages: [one.stages[0]!, { ...one.stages[0]!, say: 'do the other thing' }], endings: [asked, { ...asked, name: 'Asked again', say: 'ask again' }, gone] }
+    expect(endingProblems(two)).toEqual(['One Way: every solution goes the same way (talk); two ways at least: talking, giving or paying, doing something with the world'])
     const scope = storyScopes(quiet, 'story')[0]!
     const text = JSON.stringify({ why: 'x', quest: null, quests: [one], watchers: [], lore: null, secrets: [] })
     const checks = storyChecks(files, [{ scope, text }])

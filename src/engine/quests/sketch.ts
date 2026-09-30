@@ -262,7 +262,9 @@ export function questFromSketch(world: Pick<World, 'content'>, sketch: QuestSket
  * What a made line lacks in ways to end (M10.30, the design's chapter 14: at
  * least three real endings per quest): at least three, the lapse counted; at
  * least two solutions by different ways (three for the main line); and at
- * least one where it goes wrong or runs out. None: it is enough.
+ * least one where it goes wrong or runs out. A line of one stage, a small
+ * request, is enough with two: a solution and one where it goes wrong or runs
+ * out (Bram, 30 September 2026). None: it is enough.
  */
 export function endingProblems(sketch: QuestSketch): string[] {
   const endings = (sketch.endings ?? []).filter((e) => fit(e.name, 80) && fit(e.text, 400) && sayPattern(e.say))
@@ -270,11 +272,15 @@ export function endingProblems(sketch: QuestSketch): string[] {
   const ways = new Set(solutions.map((e) => e.way))
   const fails = endings.filter((e) => !e.solution).length + (sketch.lapses ? 1 : 0)
   const main = sketch.kind === 'main'
-  const most = main ? 3 : 2
+  const small = !main && (Array.isArray(sketch.stages) ? sketch.stages.length : 0) <= 1
+  const least = small ? 2 : 3
+  const most = main ? 3 : small ? 1 : 2
+  const count = endings.length + (sketch.lapses ? 1 : 0)
   const problems: string[] = []
-  if (endings.length + (sketch.lapses ? 1 : 0) < 3) problems.push(`${sketch.name}: ${endings.length + (sketch.lapses ? 1 : 0)} ways to end, at least three are needed (the lapse counts)`)
-  if (solutions.length < most) problems.push(`${sketch.name}: ${solutions.length} solutions, at least ${most} are needed${main ? ' for the main line' : ''}`)
-  else if (ways.size < 2) problems.push(`${sketch.name}: every solution goes the same way (${[...ways].join('')}); two ways at least: talking, giving or paying, doing something with the world`)
+  if (count < least) problems.push(`${sketch.name}: ${count} ways to end, at least ${small ? 'two for a line of one stage' : 'three'} are needed (the lapse counts)`)
+  if (solutions.length < most) problems.push(`${sketch.name}: ${solutions.length} solutions, at least ${most === 1 ? 'one is' : `${most} are`} needed${main ? ' for the main line' : ''}`)
+  // Two solutions count as two only by different ways (talking, giving or paying, a deed), never as two versions of one talk.
+  else if (!small && ways.size < 2) problems.push(`${sketch.name}: every solution goes the same way (${[...ways].join('')}); two ways at least: talking, giving or paying, doing something with the world`)
   if (!fails) problems.push(`${sketch.name}: no ending where it goes wrong or runs out (an ending that is no solution, or a lapse)`)
   return problems
 }
