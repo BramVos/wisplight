@@ -1,5 +1,18 @@
 # Changelog
 
+## M10.31 deel: afgekorte namen van mensen (E), 30 september 2026
+
+- **Een naam half getypt.** `talk ma`, `ask tes about the drive` en `give lamp to ni` vonden de persoon al op het begin van een naam. Nieuw is dat `ask`, `tell`, `give` en `look` nu ook vragen wie je bedoelt als er twee passen, net als `talk` al deed. Je kiest met een nummer, en het spel doet dan het hele commando met de volle naam.
+- **Niet meer op "the".** Een korte naam als "the port coordinator" past niet meer op een t. `talk t` in de Commons bood iedereen aan, en noemt nu alleen Tessa en Niko (de signal technician).
+
+Testen: breng in The Quiet Reach Mara, Tessa en Niko naar de Commons (of zoek ze samen op), en typ `talk t`, `ask t about the drive` en `give lamp to t`. Test in `tests/m1031names.test.ts`.
+
+Kosten: geen aanroep.
+
+Wat de editor en de kroniekverteller leerden: niets; een wereld kan hierdoor niets nieuws bevatten.
+
+Ontwerp: geen wijziging.
+
 ## M10.30 af: een wereld krijgt zijn verhalen, 30 september 2026
 
 Alle elf punten van M10.30 zijn af. De delen staan hieronder in acht stukken "M10.30 deel"; dit is het overzicht.

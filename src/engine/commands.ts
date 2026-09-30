@@ -1302,29 +1302,60 @@ export function findNpcHere(world: World, words: string): string | undefined {
   return npcsFitting(world, words)[0]
 }
 
-/** Everyone here the words fit equally well: by a whole name first, else by the start of one. */
+/**
+ * Everyone here the words fit equally well: by a whole name first, else by
+ * the start of a word of one (M10.31 E: TALK MA, ASK TES, GIVE LAMP TO NI, as
+ * OPEN CAB finds the cabinet), never by the article a name begins with (TALK T
+ * offered everyone: "the port coordinator").
+ */
 function npcsFitting(world: World, words: string): string[] {
   const wanted = words.trim().toLowerCase().replace(/^(the|de|het)\s+/, '')
   if (!wanted) return []
   const here = world.npcsAt(world.state.player.location)
   const whole = here.filter((id) => namesOf(world.npc(id)).some((name) => name === wanted))
-  return whole.length ? whole : here.filter((id) => namesOf(world.npc(id)).some((name) => name.startsWith(wanted) || name.includes(` ${wanted}`)))
+  const bare = (name: string) => name.replace(/^(the|de|het)\s+/, '')
+  return whole.length ? whole : here.filter((id) => namesOf(world.npc(id)).some((name) => bare(name).startsWith(wanted) || bare(name).includes(` ${wanted}`)))
 }
 
-/** Commands aimed at one person here. */
-const AT_ONE = new Set(['talk', 'examine', 'follow', 'attack'])
+/** Where a command names one person here, and the command again with a whole name in its place (M10.31 E: ASK, TELL and GIVE too). */
+function personIn(command: Command): { who: string; again: (name: string) => string } | undefined {
+  const words = command.args.join(' ').trim()
+  const split = (at: RegExp) => at.exec(words) ?? undefined
+  switch (command.verb) {
+    case 'talk': {
+      const [who = '', about] = words.split(/\s+(?:about|over|naar)\s+/i)
+      return { who, again: (name) => `talk ${name}${about ? ` about ${about}` : ''}` }
+    }
+    case 'examine':
+      return { who: words, again: (name) => `look ${name}` }
+    case 'follow':
+    case 'attack':
+      return { who: words, again: (name) => `${command.verb} ${name}` }
+    case 'ask':
+    case 'tell': {
+      const m = split(command.verb === 'tell' ? /^(.*?)\s+(about|over|naar|that|dat)\s+(.+)$/i : /^(.*?)\s+(about|over|naar)\s+(.+)$/i)
+      return m ? { who: m[1]!, again: (name) => `${command.verb} ${name} ${m[2]} ${m[3]}` } : { who: words, again: (name) => `${command.verb} ${name}` }
+    }
+    case 'give': {
+      const m = split(/^(.*?)\s+(?:to|aan)\s+(.+)$/i)
+      return m ? { who: m[2]!, again: (name) => `give ${m[1]} to ${name}` } : undefined
+    }
+    default:
+      return undefined
+  }
+}
 
 /**
  * Which of them (M10.29: "talk dr" with both doctors in the room took the
- * first): when the words fit several people here alike, the game asks.
+ * first): when the words fit several people here alike, the game asks; since
+ * M10.31 for ASK, TELL and GIVE as well.
  */
 export function whichOfThem(world: World, command: Command): Output[] | undefined {
-  if (!AT_ONE.has(command.verb)) return undefined
-  const words = command.verb === 'talk' ? command.args.join(' ').split(/\s+(?:about|over|naar)\s+/i)[0]! : command.args.join(' ')
-  const fitting = npcsFitting(world, words)
+  const person = personIn(command)
+  if (!person) return undefined
+  const fitting = npcsFitting(world, person.who)
   if (fitting.length < 2) return undefined
-  const verb = command.verb === 'examine' ? 'look' : command.verb
-  return offer(world, 'Which of them do you mean?', fitting.map((id) => ({ label: world.npc(id).name, command: `${verb} ${world.npc(id).name}` })))
+  return offer(world, 'Which of them do you mean?', fitting.map((id) => ({ label: world.npc(id).name, command: person.again(world.npc(id).name) })))
 }
 
 export function namesOf(npc: Npc): string[] {
