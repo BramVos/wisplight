@@ -1,5 +1,21 @@
 # Changelog
 
+## M10.30 deel: de hoofdlijn van The Quiet Reach gespeeld, en drie aflopen voor een quest uit een verzoek, 30 september 2026
+
+- **The Orison Recordings van begin tot eind (5).** De speeltest heeft een lijn `orison`. Die speelt de hoofdlijn met het mockmodel: Niko in de luisterpost, de opnamen kopiëren, de fout in de antenne vinden, Tessa over de aandrijftest, met haar code de hangar in, en Sorell de volgende ochtend op de Peregrine ter verantwoording roepen. Dat is end1, een echte oplossing. `docs/playtest/orison.txt` heeft het transcript.
+- **JOURNAL met een questnaam.** `journal the orison recordings` opent de quest, en niet meer de pagina van Orison Ridge.
+- **Drie aflopen voor een quest uit een verzoek.** De quest die de kroniekverteller na de nacht maakt, moet nu minstens drie aflopen hebben: twee oplossingen langs verschillende wegen, en één waarin het misloopt. Een antwoord met minder wordt geen quest. De drie antwoorden die ik eerder op je sleutel mat, hadden er nog geen; die zou het spel nu dus weigeren.
+
+Testen: `npm run playtest -- orison`, en `tests/m1030orison.test.ts`.
+
+Kosten: niets nieuws. De aanroep `night_quest` wordt ongeveer 100 tokens langer door de regel over de aflopen.
+
+Bekende gaten: of Opus 5.5 zich aan de nieuwe regel houdt, is nog niet gemeten. Ook de proef waarin Niko en Tessa over de opnamen vertellen (`story_twenty`) wacht nog op je akkoord.
+
+Wat de editor en de kroniekverteller leerden: niets nieuws voor de wereld.
+
+Ontwerp: geen wijziging; de alinea's "Stand na M10.30" over quests beschrijven dit al.
+
 ## M10.30 deel: drie aflopen, en een controle of een quest op te lossen is, 30 september 2026
 
 - **Drie aflopen.** Een quest die de kroniekverteller schrijft, eindigt nu op minstens drie manieren: twee oplossingen langs verschillende wegen (praten, geven of betalen, iets doen met de wereld), bij de hoofdlijn drie, en één waarin het misloopt. De aflopen zijn de daden van het laatste stadium. Na één afloop gaan de andere dicht. De stap Verhalen en de streekronde in het spel vragen erom.
