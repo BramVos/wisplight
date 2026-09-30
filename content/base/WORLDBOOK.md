@@ -111,6 +111,7 @@ Levels: under the ground, ground level, the crowns.
 
 | Topic | What people know |
 | --- | --- |
+| changelings | A changeling was swapped by the fair folk at birth and raised by people. Changelings see spirits and the fair folk, and those who keep the old customs keep them at arm's length. |
 | Lord Halewijn's song | Lord Halewijn sang a song that drew girls into the Grey Wold, and none came back, until a king's daughter took his head with his own sword. |
 | milk for the kabouters | The kabouters of the Kabouterberg will do your work at night, in the house and on the land, if you leave them a bowl of milk. Spy on them and they turn nasty. |
 | Mother Holle's featherbed | When it snows, Mother Holle is shaking out her featherbed. She rewards hard work and punishes idleness, and people still drop a pin in the well for her. |
@@ -120,9 +121,12 @@ Levels: under the ground, ground level, the crowns.
 | the Cat-Widow of the Kattenbroek | Folk say a widow out in the Kattenbroek turns thieves into cats. |
 | the drowned bells of Saeftinge | Saeftinge was the richest city of the delta until the Night of the Water Wolf drowned it. At low tide the stumps of its towers still stand out of the mud, and people hear its bells ringing under the water. |
 | the dyke law | Who will not dyke, must yield. Everyone who lives behind a dyke owes dyke work, and whoever won't do his share loses his land to someone who will. It has been the law since the Water Wolf. |
+| the dykelanders | Dykelanders are the people of the polders and the coast, who live behind the dykes. They feel the weather and the water coming, and they are good with boats and tools. |
 | the Fen Charter | There is said to be an old charter that gives the peat of the Holleveen to the people who cut it, for ever. Hardly anyone has seen it, and most have never heard of it. |
+| the fenfolk | The fenfolk are the people of the high fen. They never catch fen fever, they see will-o'-the-wisps for what they are, and they want the fen left alone. |
 | the Goat-Riders | The Goat-Riders are robbers in goat-skins who say they ride through the air with the devil. They take a toll on the tow path and hide in the Rietdoolhof. |
 | the Haakman | The Haakman lives in the Blackmere and drags down anyone who insults the water. |
+| the heathborn | The heathborn are a tall folk of the heath, with giant's blood in them, people say. They carry twice what others can, and are clumsy in tight places. |
 | the Lady of Stavermouth | The Lady of Stavermouth, a rich widow, had a whole ship of grain thrown into the sea out of pride. The sea threw back a sandbank, the harbour silted up, and the town has been dying ever since. |
 | the last sheaf | At harvest you leave the last sheaf standing for the Grey Rider's horse, or he takes something else. |
 | the lights over Harmen's field | On foggy autumn nights two small lights drift over Harmen's field at Molenend, low over the stubble. Nobody with any sense goes after them. |

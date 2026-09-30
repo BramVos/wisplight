@@ -402,3 +402,78 @@ topics:
     story: |
       Long before there was a Count, the free folk of the terps swore by Baduhenna in her wood. They drove an iron ring into the oldest oak there, and the tree has grown round it since, so that only half the ring still shows. When a Terpwold man makes a promise that matters, he goes to the wood, puts his hand through the ring and says it out loud. The oak hears it. Break that oath, and the oak knows, and so does Baduhenna, and sooner or later the debt is called in. There was a man who swore at the ring to marry a girl and then took a richer one. They found him under that same oak in the spring, without a mark on him, and nobody in Terpwold would say more than that.
 
+
+  # What everyone in the Nethermarch knows (M10.31 F, from the world book, chapters 4 and 13, and the peoples of the
+  # rules): the peoples, the money, the Count's men, the town and the priory. RECALL knows them from the start.
+  - id: the_fenfolk
+    name: the fenfolk
+    kind: lore
+    common: true
+    everywhere: true
+    aliases: [fenfolk, fen folk, veenvolk, the veenvolk, people of the fen]
+    summary: The fenfolk are the people of the high fen. They never catch fen fever, they see will-o'-the-wisps for what they are, and they want the fen left alone.
+    details: The fenfolk of the Kattenbroek live in a hut on piles and look to the widow Kaatje; they will stand against the draining to the last. The Fen Charter gave the peat of the Holleveen "to the fen folk and whoever cuts peat there, for ever".
+    fame: 3
+  - id: the_dykelanders
+    name: the dykelanders
+    kind: lore
+    common: true
+    everywhere: true
+    aliases: [dykelander, dykelanders, dijklander, dijklanders, polder folk]
+    summary: Dykelanders are the people of the polders and the coast, who live behind the dykes. They feel the weather and the water coming, and they are good with boats and tools.
+    details: Dykes, sluices and mills keep the water out, and dykelanders say that is the whole of what keeps them alive.
+    fame: 3
+  - id: the_heathborn
+    name: the heathborn
+    kind: lore
+    common: true
+    everywhere: true
+    aliases: [heathborn, heideborene, heideboren, heath folk]
+    summary: The heathborn are a tall folk of the heath, with giant's blood in them, people say. They carry twice what others can, and are clumsy in tight places.
+    details: People who tell of the giants of the heath point to the barrows by Reuzenrust.
+    fame: 3
+  - id: the_changelings
+    name: changelings
+    kind: lore
+    common: true
+    everywhere: true
+    aliases: [changeling, changelings, wisselkind, wisselkinderen]
+    summary: A changeling was swapped by the fair folk at birth and raised by people. Changelings see spirits and the fair folk, and those who keep the old customs keep them at arm's length.
+    details: Most changelings never know what they are until something only they can see looks back at them.
+    fame: 3
+  - id: guilders_and_stuivers
+    name: guilders, stuivers and duiten
+    kind: fact
+    common: true
+    everywhere: true
+    aliases: [guilder, guilders, gulden, stuiver, stuivers, duit, duiten, money, coin, coins]
+    summary: A guilder is twenty stuivers, and a stuiver is eight duiten. Most people in the Holleveen seldom see a guilder; wages and errands go in stuivers and duiten.
+    details: A rye loaf is 2 duiten and a mug of beer 1 duit; a night at the inn is 1 stuiver in the common room or 3 in a room of your own, and a peat cutter earns 3 stuivers a day.
+    fame: 3
+  - id: the_counts_men
+    name: the Count's men
+    kind: fact
+    common: true
+    everywhere: true
+    aliases: [count's men, the counts men, mannen van de graaf, the schout's men]
+    summary: The Count's men keep order and raise taxes for Count Aelbrecht III, and they want a new polder where the fen now lies.
+    details: In Veenhoek the schout Everhard van Lienden speaks for them from the schout's house, and the surveyor Cornelis measures the fen. They have the law, soldiers, and money borrowed from the Coggenbond.
+    fame: 3
+  - id: the_burghers_of_waagdam
+    name: the burghers of Waagdam
+    kind: fact
+    common: true
+    everywhere: true
+    aliases: [burghers, burghers of waagdam, burgers, the town, the town council]
+    summary: Waagdam is a town with its own town rights; its burghers want a good market, trade and peace, and they are of two minds about the draining.
+    details: The mayor Aleid Vos and the weighmaster Dirck Schaal speak for the town from the town hall and the Waag. More grain would suit the market; less peat would not.
+    fame: 3
+  - id: the_priory
+    name: the priory of Kloosterveen
+    kind: fact
+    common: true
+    everywhere: true
+    aliases: [priory, the priory, kloosterveen priory, the monastery, klooster]
+    summary: The Church of the Lantern keeps a priory at Kloosterveen, beside its chapel in Veenhoek and the great light at Graafhaven.
+    details: Prior Ansfried keeps the priory and its library, where the Fen Charter lies almost forgotten. The Church wants souls, charity, and an end to witchcraft and the old rites; on the draining it is divided.
+    fame: 3

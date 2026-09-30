@@ -474,9 +474,9 @@ No fine buys off a death or a beating: the stranger is held 48 hours and heard. 
 
 | Quest | What it is about | Given by | Ways it ends |
 | --- | --- | --- | --- |
-| Short on the Count | Mara Venn's count of the emergency heating and water spares comes up short, and the stranger follows the paperwork to where they went. | Mara Venn | Back on the count |
-| A Second Opinion | Tessa Rook doubts the Peregrine's drive, and she wants someone from outside the settlement to read her test notes before she decides whether to say so on the record. | Tessa Rook | Not alone with it |
-| The Orison Recordings | Recover the original recordings from Orison Ridge, find out why the listening station is failing, and learn whether anyone has touched the data. | Dr Ilyan Sorell | The report is made |
+| Short on the Count | Mara Venn's count of the emergency heating and water spares comes up short, and the stranger follows the paperwork to where they went. | Mara Venn | Back on the count; Back on the shelf; Left short |
+| A Second Opinion | Tessa Rook doubts the Peregrine's drive, and she wants someone from outside the settlement to read her test notes before she decides whether to say so on the record. | Tessa Rook | Not alone with it; Two names on the record; Signed off |
+| The Orison Recordings | Recover the original recordings from Orison Ridge, find out why the listening station is failing, and learn whether anyone has touched the data. | Dr Ilyan Sorell | The report is made; Before the whole port; Kept safe on the ridge; The edited copies |
 
 ## 14. Names and speech
 

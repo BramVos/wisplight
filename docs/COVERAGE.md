@@ -50,18 +50,18 @@ Every kind puts what stays the same first and what changes after it (M10.26). A 
 | `journey` | claude-haiku-4-5-20251001 | 558 | none | - | - | 4,096 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `improvise` | claude-haiku-4-5-20251001 | 935 | none | - | - | 4,096 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `npc_goals` | claude-sonnet-5 | 1,460 | one, an hour | 1,072 | - | 1,024 | the next call 73% |
-| `chronicle` | claude-opus-5-5 | 5,518 | none | - | - | 512 | not marked: nothing reads it back in time, so a mark would only pay a write |
+| `chronicle` | claude-opus-5-5 | 5,585 | none | - | - | 512 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `spark` | claude-sonnet-5 | 853 | none | - | - | 1,024 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `read_score` | - | 557 | none | - | - | - | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `lore_check` | claude-sonnet-5 | 386 | none | - | - | 1,024 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `legends` | claude-opus-5-5 | 652 | none | - | - | 512 | not marked: nothing reads it back in time, so a mark would only pay a write |
-| `outline` | claude-opus-5-5 | 3,450 | none | - | - | 512 | not marked: nothing reads it back in time, so a mark would only pay a write |
+| `outline` | claude-opus-5-5 | 3,489 | none | - | - | 512 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `far_place` | claude-opus-5-5 | 894 | none | - | - | 512 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `district` | claude-opus-5-5 | 1,551 | none | - | - | 512 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `night_quest` | claude-opus-5-5 | 1,674 | none | - | - | 512 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `region_story` | claude-opus-5-5 | 16,231 | none | - | - | 512 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `weave` | claude-opus-5-5 | 1,010 | none | - | - | 512 | not marked: nothing reads it back in time, so a mark would only pay a write |
-| `expansion` | claude-opus-5-5 | 3,344 | none | - | - | 512 | not marked: nothing reads it back in time, so a mark would only pay a write |
+| `expansion` | claude-opus-5-5 | 3,383 | none | - | - | 512 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `land` | claude-opus-5-5 | 2,794 | none | - | - | 512 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `tides` | claude-opus-5-5 | 645 | none | - | - | 512 | not marked: nothing reads it back in time, so a mark would only pay a write |
 | `builder_draft` | claude-opus-5-5 | 14,846 | one, an hour | 9,259 | - | 512 | the next call 62% |

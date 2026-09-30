@@ -46,7 +46,7 @@ ids:
   base/data/tides.yaml:
     tide: [great_flood, peat_unrest]
   base/data/topics.yaml:
-    topic: [the_storm, fenna, grey_cat, kattenbroek, cat_widow, haakman, water_wolf, saint_brand, last_sheaf, witches_scale, drainage, surveyor, graafhaven, zwolderkamp, the_count, stavermouth, weeping_stone, hunnenloo, the_dry_ridge, goat_riders, who_will_not_dyke, mother_holles_featherbed, reynard_the_fox, drowned_bells_of_saeftinge, lord_halewijn, the_waylost, tall_pier, lady_of_stavermouth, white_women, surveyors_lights, lights_over_harmens_field, kabouter_milk, fen_charter, ringed_oak]
+    topic: [the_storm, fenna, grey_cat, kattenbroek, cat_widow, haakman, water_wolf, saint_brand, last_sheaf, witches_scale, drainage, surveyor, graafhaven, zwolderkamp, the_count, stavermouth, weeping_stone, hunnenloo, the_dry_ridge, goat_riders, who_will_not_dyke, mother_holles_featherbed, reynard_the_fox, drowned_bells_of_saeftinge, lord_halewijn, the_waylost, tall_pier, lady_of_stavermouth, white_women, surveyors_lights, lights_over_harmens_field, kabouter_milk, fen_charter, ringed_oak, the_fenfolk, the_dykelanders, the_heathborn, the_changelings, guilders_and_stuivers, the_counts_men, the_burghers_of_waagdam, the_priory]
   base/data/watchers.yaml:
     watcher: [betrothal, wedding, eloped, vacancy, house_empty, peace, place_restored, place_destroyed, rose_in_standing, quarrel, feud, warned, asked_about, heard_working, strangers_stay, friction, shortage, long_shortage, surplus, price_doubled, missing_trade, route_closed, threat_from_the_east, project_done, befriended, mill_turning, danger_passed, pulse_pedlar, pulse_weather, pulse_errand]
   base/regions/holleveen/areas/blackmere/locations.yaml:

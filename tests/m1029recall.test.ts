@@ -42,8 +42,11 @@ describe('M10.29 P: what everyone here knows, and RECALL', () => {
     const engine = new Engine(deepwell, { seed: 1 })
     engine.start()
     expect(engine.status().journal.lore.some((l) => l.group === 'What you know of the world')).toBe(false)
-    expect(warnings(content).some((w) => /^ancestry dykelander: no topic tells what Dykelander are/.test(w))).toBe(true)
-    expect(warnings(content).some((w) => /^money: no topic tells of the guilders/.test(w))).toBe(true)
+    // The Nethermarch tells of its peoples and money since M10.31 F; without those topics, Check names them.
+    expect(warnings(content).filter((w) => /^ancestry |^money: /.test(w))).toEqual([])
+    const bare = { ...content, topics: new Map([...content.topics].filter(([, t]) => !t.common)) }
+    expect(warnings(bare).some((w) => /^ancestry dykelander: no topic tells what Dykelander are/.test(w))).toBe(true)
+    expect(warnings(bare).some((w) => /^money: no topic tells of the guilders/.test(w))).toBe(true)
     const reach = await load('content', 'quietreach')
     expect(warnings(reach).some((w) => /^money: /.test(w))).toBe(false)
   })
