@@ -17,6 +17,7 @@ import { atStake } from '../belief'
 import { overland } from '../lod'
 import type { World } from '../world'
 import { attitude, relation } from './relations'
+import { shutAway } from '../exits'
 
 // Offers in a conversation (M10.3; FO, chapter 10, "Gepland (M10.3)"). An NPC
 // never promises anything of its own accord. Before each call the game works
@@ -166,7 +167,7 @@ function placeOf(world: World, topic: string): string | undefined {
   if (world.content.locations.has(topic)) return topic
   const area = [...world.content.areas.values()].find((a) => a.id === topic || areaTopicId(world.content, a.id) === topic)
   if (!area) return undefined
-  const inside = [...world.content.locations.values()].filter((l) => l.area === area.id)
+  const inside = [...world.content.locations.values()].filter((l) => l.area === area.id && !shutAway(world.content, l.id))
   return (inside.find((l) => l.tags.includes('edge')) ?? inside.sort((x, y) => x.id.localeCompare(y.id))[0])?.id
 }
 

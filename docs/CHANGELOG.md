@@ -12,6 +12,8 @@ Alle zeven punten van M10.31 zijn af. De delen staan hieronder; dit is het overz
 - **Wat iedereen in de Nethermarch weet (F).** Acht onderwerpen over de volken, het geld, de graaf, Waagdam en de priorij.
 - **Opus en de drie aflopen (G).** Gemeten: met de aflopen verplicht in het schema gaf Opus bij een quest uit een verzoek steeds drie aflopen, twee oplossingen langs verschillende wegen en één die misloopt.
 
+Na een speeltest van de andere sessie nog gerepareerd: `walk to orison ridge` kon uitkomen in de Cable Gallery, ook als je het luik nooit gevonden had. Een wandeling over de kaart, een gids of een metgezel komt nu nooit binnen in een plek waar alleen geheime of wachtende wegen heen gaan. `walk to` het gebied waar je al bent, zegt dat je er al bent. `walk to` een plek waarvan je hoorde en die naast je ligt, zet die ene stap. En `travel to orison ridge` wijst de Ridge Crawler aan, in plaats van "Walk there first".
+
 Testen, in The Quiet Reach:
 - Klik op [Plan] in Port Vesper, schuif, druk op Home, en sluit met Esc.
 - Typ in de Orison Listening Room `look at consoles` en daarna `search behind the consoles`, en ga `in`.

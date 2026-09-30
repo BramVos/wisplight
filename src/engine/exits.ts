@@ -1,4 +1,4 @@
-import type { Direction } from './content'
+import type { Content, Direction } from './content'
 import { allHold } from './quests/engine'
 import type { World } from './world'
 
@@ -29,17 +29,17 @@ export function shownExits(world: World, location: string): Direction[] {
 /** Per world's places: the ways into each place, as [from, direction]. */
 const into = new WeakMap<object, Map<string, [string, Direction][]>>()
 
-function waysInto(world: World, location: string): [string, Direction][] {
-  let ways = into.get(world.content.locations)
+function waysInto(content: Pick<Content, 'locations'>, location: string): [string, Direction][] {
+  let ways = into.get(content.locations)
   if (!ways) {
     ways = new Map()
-    for (const l of world.content.locations.values()) {
+    for (const l of content.locations.values()) {
       for (const [d, exit] of Object.entries(l.exits) as [Direction, { to: string }][]) {
         if (!ways.has(exit.to)) ways.set(exit.to, [])
         ways.get(exit.to)!.push([l.id, d])
       }
     }
-    into.set(world.content.locations, ways)
+    into.set(content.locations, ways)
   }
   return ways.get(location) ?? []
 }
@@ -50,6 +50,19 @@ function waysInto(world: World, location: string): [string, Direction][] {
  * the stranger in.
  */
 export function behindSecret(world: World, location: string): boolean {
-  const ways = waysInto(world, location)
+  const ways = waysInto(world.content, location)
   return ways.length > 0 && ways.every(([from, d]) => !exitShown(world, from, d))
+}
+
+/**
+ * A place every way into which is secret or waits for something (M10.31, the
+ * playtest of the other session: a walk to Orison Ridge came out in the Cable
+ * Gallery): never where a walk over the land, a guide or a companion comes in.
+ */
+export function shutAway(content: Pick<Content, 'locations'>, location: string): boolean {
+  const ways = waysInto(content, location)
+  return ways.length > 0 && ways.every(([from, d]) => {
+    const exit = content.locations.get(from)!.exits[d]!
+    return Boolean(exit.hidden || exit.when?.length)
+  })
 }

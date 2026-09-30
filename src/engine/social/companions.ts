@@ -10,6 +10,7 @@ import { autoLevelChoice, createCharacter, levelUp, maxHp, skillBonus, suggestCh
 import { gainXp, readyMade } from '../rules/player'
 import type { World } from '../world'
 import { mayJoin } from './gates'
+import { shutAway } from '../exits'
 
 // Companions (FO, chapter 13): up to three NPCs travel with the player. A
 // formula decides whether someone comes, and on what terms; the model only
@@ -627,7 +628,10 @@ function findPlace(world: World, words: string): string | undefined {
   const w = words.toLowerCase().replace(/^the\s+/, '').trim()
   for (const l of world.content.locations.values()) if (l.name.toLowerCase().includes(w) || l.aliases.some((a) => a.toLowerCase() === w)) return l.id
   for (const a of world.content.areas.values()) {
-    if (a.name.toLowerCase().includes(w)) return [...world.content.locations.values()].find((l) => l.area === a.id && l.tags.includes('edge'))?.id ?? [...world.content.locations.values()].find((l) => l.area === a.id)?.id
+    if (!a.name.toLowerCase().includes(w)) continue
+    // The way into the area, never a place behind a secret or waiting way (M10.31).
+    const inside = [...world.content.locations.values()].filter((l) => l.area === a.id && !shutAway(world.content, l.id))
+    return inside.find((l) => l.tags.includes('edge'))?.id ?? inside[0]?.id
   }
   return undefined
 }

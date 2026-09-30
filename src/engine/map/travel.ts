@@ -13,6 +13,7 @@ import { terrainName } from './palette'
 import { offer, type ChoiceOption } from '../choice'
 import { waysTo } from './passages'
 import { farPlaceOf, farTopicAt } from '../growth/far'
+import { shutAway } from '../exits'
 
 // Walking across the region (FO, chapter 4, "Lopen en automatisch doorlopen"):
 // hex by hex until there is something to decide, with one running text in
@@ -537,7 +538,8 @@ export function entranceOn(world: World, map: RegionMap, hex: Hex): string | und
   const here = [...map.locations.entries()]
     .filter(([, h]) => h.col === hex.col && h.row === hex.row)
     .map(([id]) => world.content.locations.get(id)!)
-    .filter((l) => !l.tags.includes('private'))
+    // Nor does anyone come off the land into a place behind a secret or waiting way (M10.31): the Cable Gallery is under a hatch.
+    .filter((l) => !l.tags.includes('private') && !shutAway(world.content, l.id))
   const score = (l: Location) =>
     l.tags.includes('edge') ? 5 : l.tags.includes('route') ? 4 : l.tags.includes('landmark') && l.tags.includes('public') ? 3 : l.tags.includes('public') ? 2 : l.tags.includes('private') ? 0 : 1
   return here.sort((a, b) => score(b) - score(a) || a.id.localeCompare(b.id))[0]?.id

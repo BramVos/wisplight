@@ -535,9 +535,12 @@ export function walkToward(host: CommandHost, words: string): Output[] | undefin
     at = next
     known++
   }
-  const out = known ? goSteps(host, steps.slice(0, known), true) : []
+  // The place itself is the next step (the other session's playtest: the Guest Quarters, north of the Commons): one step
+  // more is what the stranger means, lock and all.
+  const last = world.location(at).exits[steps[known]!]!.to === target.id
+  const out = known || last ? goSteps(host, steps.slice(0, known + (last ? 1 : 0)), true) : []
   // Stopped on the way (a lock, a shut door): that is what it says.
-  if (world.state.player.location !== at) return out
+  if (last || world.state.player.location !== at) return out
   const d = steps[known]!
   const next = world.location(at).exits[d]!.to
   const way = next === target.id ? `${pointed(d)} from here` : heard[next] !== undefined ? `Through ${world.location(next).name}` : `${pointed(d)} from here, and on from there`

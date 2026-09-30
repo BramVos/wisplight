@@ -3,6 +3,9 @@ import { describe, expect, it } from 'vitest'
 import { Engine } from '../src/engine'
 import { completionsHere } from '../src/engine/commands'
 import { checkContent } from '../src/engine/content'
+import { shutAway } from '../src/engine/exits'
+import { regionMap } from '../src/engine/map/region'
+import { entranceOn } from '../src/engine/map/travel'
 import { planHere } from '../src/engine/plan'
 import { loadContentFromDir } from '../src/node/content'
 import { content } from './helpers'
@@ -44,7 +47,23 @@ describe('M10.31 D: walking to a place you only heard of', () => {
     await engine.handle('southwest')
     const walked = said(await engine.handle('walk to the hangar'))
     expect(engine.state.player.location).toBe('loc_workshop')
-    expect(walked).toMatch(/Peregrine Hangar\? In from here, they said\.$/)
+    // The hangar is the next step from there: the walk tries its door (the other session's playtest: one step more is
+    // what the stranger means), and the door wants its code.
+    expect(walked).toMatch(/The door is locked\. It wants a code\./)
+  })
+
+  it('takes the one step into a heard-of place next door, and TRAVEL TO a heard-of place takes the line that goes there', async () => {
+    const engine = new Engine(quietReach, { seed: 7 })
+    engine.start()
+    await engine.handle('walk to the commons')
+    const heard = (id: string) => ((engine.state.player.journal ??= {})[id] = engine.world.now)
+    heard('loc_guest_quarters')
+    expect(said(await engine.handle('walk to guest quarters'))).toMatch(/^Guest Quarters\n/)
+    expect(engine.state.player.location).toBe('loc_guest_quarters')
+    await engine.handle('south')
+    // Orison Ridge only heard of: not "walk there first" while the Ridge Crawler goes there.
+    const travel = said(await engine.handle('travel to orison ridge'))
+    expect(travel).toMatch(/^You have only heard of Orison Ridge, and do not know the way on foot\.\nThe Crawler waits on its apron outside the Arrival Lock/)
   })
 })
 
@@ -104,6 +123,22 @@ describe('M10.31 B: a secret way', () => {
     expect(said(await engine.handle('pull weed'))).toMatch(/The weed hangs aside where you parted it/)
     expect(exitsLine(await engine.handle('look'))).toBe('Exits: west, east, up, in')
     expect(said(await engine.handle('in'))).toMatch(/^The Sea Cave\n/)
+  })
+
+  it('a walk over the land never comes out behind a secret way, and a walk to the ridge you are on stays put', async () => {
+    // The other session's playtest: WALK TO ORISON RIDGE twice from the Commons came out in the Cable Gallery.
+    expect(shutAway(quietReach, 'loc_orison_cable_gallery')).toBe(true)
+    expect(shutAway(isle, 'loc_skerrow_sea_cave')).toBe(true)
+    expect(shutAway(quietReach, room)).toBe(false)
+    const engine = new Engine(quietReach, { seed: 7 })
+    engine.start()
+    const map = regionMap(quietReach)!
+    expect(entranceOn(engine.world, map, map.locations.get('loc_orison_cable_gallery')!)).toBe(room)
+    await engine.handle('walk to the commons')
+    await engine.handle('walk to orison ridge')
+    expect(engine.state.player.location).toBe(room)
+    expect(said(await engine.handle('walk to orison ridge'))).toBe('You are already at Orison Ridge.')
+    expect(engine.state.player.location).toBe(room)
   })
 
   it('Check: a secret way nothing reveals, and a hidden thing that reveals a way the place lacks', () => {

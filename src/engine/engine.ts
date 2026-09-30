@@ -60,7 +60,7 @@ import { hexOfTopic, knownEntrance, knownPlace, knownPlaces, landLines, landMapD
 import { hexMapData, type HexMapData } from './map/view'
 import { distance as hexDistance } from './map/hexgrid'
 import { travelTo } from './map/journey'
-import { journeyOfDays, journeyLines, passagesNamed, takePassage, waitForPassage, waysTo } from './map/passages'
+import { journeyOfDays, journeyLines, lineTo, passagesNamed, takePassage, waitForPassage, waysTo } from './map/passages'
 import { duration } from './map/journeyText'
 import { mapText, mapView, type MapView } from './map/view'
 import { regionMap } from './map/region'
@@ -1788,6 +1788,9 @@ export class Engine {
           return this.setOffBeyond(topic)
         }
         const place = topic ? knownPlace(this.world, topic) : undefined
+        // Only heard of, and a line of the region goes there (M10.31): that line, as TAKE THE CRAWLER TO ... would.
+        const line = place && !place.hex && !walking ? lineTo(this.world, topic!) : undefined
+        if (line) return [{ kind: 'text', text: `You have only heard of ${place!.name}, and do not know the way on foot.` }, ...takePassage(this.world, { pass: (minutes) => this.pass(minutes) }, line.word, line.stop)]
         if (!place?.hex) return [{ kind: 'error', text: place ? `You have only heard of ${place.name}. Walk there first.` : `You don't know a place called "${to[1]}".` }]
         return [...travelTo(this.world, place.hex, place.name, (minutes) => this.pass(minutes)), describeRoom(this.world)]
       }
@@ -2541,6 +2544,10 @@ export class Engine {
   }
 
   private walkPlan(plan: WalkPlan, place?: KnownPlace): Output[] {
+    // WALK TO the area you are in (M10.31, the other session's playtest: out of the Listening Room and back in 40 minutes).
+    const t = place?.topic
+    const areaId = t === undefined ? undefined : this.content.areas.has(t) ? t : t.startsWith('area_') ? t.slice(5) : [...this.content.areas.values()].find((a) => a.topic === t)?.id
+    if (areaId && this.content.locations.get(this.state.player.location)?.area === areaId) return [{ kind: 'text', text: `You are already at ${place!.name}.` }]
     // A place a few doors away is reached by its doors (M10.29 V), not round the outside.
     const byExits = place && this.content.locations.has(place.topic) ? walkByExits(this.host, place.topic) : undefined
     if (byExits) return byExits

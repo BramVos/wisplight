@@ -311,6 +311,20 @@ function journeyByPassage(world: World, host: PassageHost, p: Passage, from: str
 }
 
 /**
+ * A line of this region with a stop at a place, or in an area (M10.31, the
+ * other session's playtest: TRAVEL TO ORISON RIDGE, only heard of, said to
+ * walk there first while the Ridge Crawler goes): its word and the stop.
+ */
+export function lineTo(world: World, topic: string): { word: string; stop: string } | undefined {
+  const area = world.content.areas.has(topic) ? topic : topic.startsWith('area_') ? topic.slice(5) : [...world.content.areas.values()].find((a) => a.topic === topic)?.id
+  for (const p of passages(world)) {
+    const stop = p.stops.find((s) => !isFar(world, s) && (s === topic || (area !== undefined && world.content.locations.get(s)?.area === area)))
+    if (stop) return { word: p.aliases[0] ?? p.kind, stop: stopName(world, stop) }
+  }
+  return undefined
+}
+
+/**
  * The ways to a place beyond the region (M10.12), for TRAVEL TO and the land
  * map: on foot along its road, and every passage that goes there, with its
  * next departure, how long and what it costs.
