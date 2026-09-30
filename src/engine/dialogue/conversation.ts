@@ -33,7 +33,7 @@ import { oathsOf, peopleIds, turnEnd, turnMessage, turnSections, worldFrame, you
 import { attitude, applyEffect, moodOf, relation, type Attitude } from './relations'
 import { askLine, askNow, knownRequests, requestName, visited } from '../requests'
 import { questsOf } from '../life'
-import { hiddenNamed } from '../quests/knows'
+import { hiddenNamed, wantsNow } from '../quests/knows'
 import { routineNow } from '../npc/brain'
 import { parseReply, TALK_REPLY_SCHEMA, type Reply } from './schema'
 import type { TopicRegistry } from './topics'
@@ -58,8 +58,12 @@ export const QUICK_OPTIONS = [
   'Can you help me with ...',
   'Trade',
   'Will you come with me?',
+  'What do you need of me?',
 ]
 
+
+/** Asked what they want of the stranger (M10.33 E): without a model, the answer is what they ask and what to do now. */
+const WANTS = /\b(what (?:do|should|can|must) i do|what (?:do|did) you (?:need|want)|what now|how can i help|what can i do for you|tell me more|what(?:'s| is) (?:the|my) (?:job|task))\b/i
 
 /** Asked for the whole of it, not one fact (M10.33 F): Bram's "you are going a bit fast ... What are we looking at?". */
 const WHOLE = /\b(what happened|what(?: i|')s going on|what is (?:all )?this|what are we|from the (?:start|beginning)|the whole (?:thing|story)|explain|tell me (?:more|everything)|slow down|going (?:a bit )?(?:too )?fast|(?:i )?don'?t (?:understand|follow))\b/i
@@ -154,11 +158,16 @@ export class Dialogue {
     // Or they came to ask the stranger along (M10.3, left over: invite): their own offer to lead the way.
     const ask = (request ? askOffer(world, npcId, request) : undefined) ?? (opened ? inviteOffer(world, npcId) : undefined)
     if (ask) this.talk!.proposal = ask
+    // The giver says what they want (M10.33 E: nobody ever opened with it), once a stage, when nothing else was asked.
+    const wants = request || opened || tongue ? undefined : wantsNow(world, npcId)
+    const opens = wants?.asks && !(wants.state.asked ?? []).includes(wants.stage.id) ? wants.asks : undefined
+    if (opens) (wants!.state.asked ??= []).push(wants!.stage.id)
     return [
       { kind: 'system', text: `You are talking with ${publicShort(world, npcId)}. Type what you want to say, pick a number, or BYE to stop.` },
       ...(greeting ? [{ kind: 'speech' as const, text: greeting }] : []),
       ...visits,
       ...(request ? [{ kind: 'speech' as const, text: `"${askLine(world, request)}"` }, { kind: 'system' as const, text: `New in your journal: ${requestName(world, request)}.` }] : []),
+      ...(opens ? [{ kind: 'speech' as const, text: `"${opens}"` }] : []),
       ...(ask ? [{ kind: 'system' as const, text: proposalText(world, npcId, ask) }] : []),
       this.options(),
     ]
@@ -241,6 +250,8 @@ export class Dialogue {
         return [{ kind: 'system', text: 'Type LIST to see what is for sale here, then BUY or SELL.' }]
       case 8:
         return this.turn(talk.npc, 'Will you come with me?', { act: 'Recruit', echo: true })
+      case 9:
+        return this.turn(talk.npc, 'What do you need of me?', { act: 'Request', echo: true })
       default:
         return [this.options()]
     }
@@ -700,6 +711,8 @@ export class Dialogue {
     }
     // The offer the player asked for: the voice's choice, or by the rules without a model.
     const asked = reply ? offers.find((o) => o.key === reply.action) : askedFor(offers, text)
+    // Asked what they want, without a model (M10.33 E: a stock line on "what should I do?"): what they ask, and what to do now.
+    const matter = !reply && !rule && !asked && !options.check && (act === 'Request' || WANTS.test(text)) ? this.matter(npcId) : undefined
     const replyText = rule?.line
       ? rule.line
       : reply
@@ -712,6 +725,8 @@ export class Dialogue {
           ? amended.line
           : asked
           ? offerLine(world, npcId, asked)
+          : matter
+          ? matter.line
           : said
             ? claimLine(world, npcId, said.stance)
             : options.secret
@@ -818,7 +833,7 @@ export class Dialogue {
       }
     }
     // An offer that goes through becomes an agreement and starts; one the NPC proposes waits for the player's yes.
-    const offerOut: Output[] = []
+    const offerOut: Output[] = matter?.now ? [{ kind: 'system', text: `Now: ${matter.now}` }] : []
     let offerEnds = false
     if (asked?.decision === 'yes' && !reaction) {
       const done = accept(world, npcId, asked)
@@ -884,6 +899,27 @@ export class Dialogue {
       world.state.talk = undefined
     }
     return [{ kind: 'speech', text: offerLine(world, talk.npc, offer) }, ...done.outputs]
+  }
+
+  /**
+   * What someone wants of the stranger, in their words, without a model (M10.33 E): the asks line of a quest they gave
+   * that runs, with its goal; else an open request of theirs; else nothing.
+   */
+  private matter(npcId: string): { line: string; now?: string } | undefined {
+    const world = this.world
+    const wants = wantsNow(world, npcId)
+    if (wants) {
+      const now = wants.stage.goal?.trim()
+      const said = wants.asks ?? (now ? `${now.replace(/[.!]$/, '')}. That is what I need from you now.` : undefined)
+      return said ? { line: world.say(`{name} nods. "${said}"`, npcId), ...(now ? { now } : {}) } : undefined
+    }
+    const request = knownRequests(world).find((r) => r.npc === npcId && r.status === 'open')
+    return request ? { line: world.say(`{name} nods. "${askLine(world, request)}"`, npcId) } : undefined
+  }
+
+  /** Whether someone has a matter with the stranger to tell of (M10.33 E): the chip Tell me more. */
+  hasMatter(npcId: string): boolean {
+    return Boolean(wantsNow(this.world, npcId)) || knownRequests(this.world).some((r) => r.npc === npcId && r.status === 'open')
   }
 
   /** Whether this person gives or is in a quest that runs, or has one to offer now (M10.33 F). */

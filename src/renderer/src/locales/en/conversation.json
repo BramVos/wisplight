@@ -17,6 +17,7 @@
     "work": "Your work?",
     "help": "Can you help me?",
     "follow": "Come with me?",
+    "matter": "Tell me more",
     "trade": "Trade",
     "ask": "Ask:",
     "askHelp": "A question in so many words: they answer in their own.",
@@ -26,7 +27,8 @@
       "work": "Ask what they do here.",
       "help": "Ask whether they can help you, or what they need.",
       "trade": "See what they sell and buy here.",
-      "follow": "Ask them to travel with you, for a wage."
+      "follow": "Ask them to travel with you, for a wage.",
+      "matter": "Ask what they want of you now."
     },
     "orTry": "Try:",
     "tryHelp": "A move with a roll: type what you are after it, your skill and the die decide.",

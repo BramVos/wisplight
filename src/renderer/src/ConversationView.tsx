@@ -29,7 +29,7 @@ function sideOf(line: TalkLine): 'me' | 'them' | 'aside' {
 }
 
 /** What the window sends as it is; everything else is speech. */
-const COMMAND = /^(ask|tell|where|persuade|deceive|intimidate|bribe|insight|buy|sell|list|give|trade|recruit|order|bye|goodbye|[1-8])(\s|$)/i
+const COMMAND = /^(ask|tell|where|persuade|deceive|intimidate|bribe|insight|buy|sell|list|give|trade|recruit|order|bye|goodbye|[1-9])(\s|$)/i
 const NEAR_KM = 15
 /** The numbered options line: the window has them as buttons. */
 const OPTIONS = /^1 Who are you\?/
@@ -150,6 +150,8 @@ export function ConversationView({
 
   // Two rows (M10.33 F): questions, and moves with a roll. Trade only with someone who keeps a trade here, Come with me only with someone who can come.
   const questions: { send: string; key: string }[] = [
+    // Someone with a matter with the stranger (M10.33 E): a quest of theirs that runs, or a request.
+    ...(talk.matter ? [{ send: '9', key: 'matter' }] : []),
     { send: '1', key: 'who' },
     { send: '2', key: 'news' },
     { send: '3', key: 'work' },

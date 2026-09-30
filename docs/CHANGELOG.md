@@ -1,5 +1,20 @@
 # Changelog
 
+## M10.33 deel: de gever zegt zelf wat hij wil (E), 30 september 2026
+
+- **De gever opent (E).** Oorzaak: niemand opende een gesprek met wat hij wilde, en een stadium had daar geen zin voor. Een stadium kan nu `asks` hebben, in de stem van de gever. Wie een lopende quest gaf, zegt die zin één keer per stadium, direct na de groet. Ilyan begint zo met "Start with Niko Serrin", Maren op Skerrow met de boot van Brannoc.
+- **Tell me more (E).** Bij iemand met een lopende quest of een open verzoek staat een chip "Tell me more"; in de terminal is dat 9, "What do you need of me?". Zonder model is het antwoord de zin van het stadium en de regel "Now:" met wat je nu kunt doen, ook op "What should I do?". Voorheen kwam daar een stoplap.
+- **Wat de stem weet (E).** Met een model krijgt de stem van de gever de zin mee bij wat ze van het verhaal weet.
+- **Inhoud.** Alle tien stadia van The Quiet Reach, de drie van de grijze kat en die van Off Skerrow hebben hun zin.
+
+Testen, in The Quiet Reach: praat met Ilyan (hij opent), zeg bye en praat weer (niet nog eens), en klik "Tell me more". Tests in `tests/m1033e.test.ts`.
+
+Kosten: geen nieuwe aanroep. De stap Verhalen, de streekronde en `night_quest` vragen per stadium één zin meer: hun vaste deel wordt één keer opnieuw in de cache geschreven, en een antwoord wordt per stadium zo'n dertig uitvoertokens langer.
+
+Wat de editor en de kroniekverteller leerden: het veld `asks` op een stadium (zod-beschrijving, `docs/CONTENT.md`, het korte contract, het sjabloon van een nieuwe quest in de editor); een regel onder Check voor een stadium met een `goal` zonder `asks`, en de controle op waarheden leest `asks` mee; de stap Verhalen van de wereldgids en `docs/NEW-WORLD.md`; de prompts van de stap Verhalen, de streekronde en `night_quest`, en de mock die een schets schrijft. Deepwell heeft geen quests; een test speelt de standaard zonder `asks`.
+
+Ontwerp: functioneel ontwerp, hoofdstuk 14, alinea "Stand na M10.33: de gever zegt zelf wat hij wil".
+
 ## M10.33 deel: één stapel vensters en het begin in één keer (A, B), 30 september 2026
 
 - **Eén stapel vensters (A).** Oorzaak: elk venster had zijn eigen Esc, dus één toets sloot ze allemaal, en de commandobalk werkte gewoon door onder een venster. Nu sluit Esc alleen het bovenste venster. Zolang er iets open is, staat de commandobalk uit: "close the window first (Esc)". Een gesprek dat voorbij is, sluit zichzelf; wat er gezegd is, staat in het log. Een kaartje wacht tot een gesprek dicht is.

@@ -332,7 +332,7 @@ A list; each has:
 | opponents | People who stand against the stranger in it; their death changes the quest. | list of text | no | [] |
 | starts | How it begins: talking to one of these, a place, or conditions. | a map: talk, at, when, at_start | no | {"talk":[],"at":[],"when":[],"at_star... |
 | ask | What the giver says when it begins. | text | no |  |
-| stages | The stages in order: what the journal says at each, and when it is reached. | list of a map: id, text, goal, knows, on_enter, next | no | [] |
+| stages | The stages in order: what the journal says at each, and when it is reached. | list of a map: id, text, goal, asks, knows, on_enter, next | no | [] |
 | actions | What the stranger can do in it besides talking (give, show, use), and what that does. | list of a map: id, say, intent, at, with, when, not_yet, check, effects, fail, ... | no | [] |
 | outcomes | The ways it can end: when, what the journal says, and what follows. | list of a map: id, name, text, solution, when, effects | no | [] |
 | truths | What the story keeps hidden (M10.30): the guard refuses a reply or an improvisation that names one before its stage, so people do not each tell their own plot. | list of a map: text, words, from, when | no | [] |
@@ -342,6 +342,8 @@ A list; each has:
 | lapses | Without the player (M10.6): so many days after it began (or after the game began, when the player never took it up), and only while the player is far from its people and places, the world settles it itself: the effects, and the quest is over (lapsed). Near, it waits for the player. | a map: after_days, when_far, text, effects | no |  |
 
 A stage may have `goal`, what the stranger can do now in one line for the journal and QUESTS ("Recover the recordings from the Listening Room"), and `knows`, per person with a part (npc id) what they know of the story at this stage and may say, a sentence with their name ("Tessa knows the coupling was never synced; she does not know who took the pages."). That goes to their voice as all they know of it, and to an improvisation at a place of the story; a person without a line talks as before.
+
+A stage may have `asks`, what the giver wants of the stranger at this stage, one or two sentences in their own voice without quotation marks ("Start with Niko Serrin. Ask him what he has seen up there."). The giver opens a talk with it once a stage, after the greeting, and without a model it is their answer to "what do you need?", with the goal. Without it the giver does not open; Check names a stage with a `goal` and no `asks`. Keep a truth out of it before its stage.
 
 A condition `talked`: the stranger talked with someone (npc id), and with `about`, about one of these words from either side, in the talks the game keeps: `{ talked: npc_niko_serrin, about: [signal, station] }`. A stage the stranger lived in a game from before the story was written passes by it (with `effects` setting the flag its deed would set); the step Stories writes it when it is shown that game, and loading a save from before a quest that begins with the game begins it where the stranger stands.
 

@@ -224,7 +224,7 @@ export function questWarnings(c: Refs): string[] {
     // A hidden truth (M10.30) the giver's words or a journal line before its stage already say.
     for (const [i, truth] of (q.truths ?? []).entries()) {
       const until = truth.from ? q.stages.findIndex((s) => s.id === truth.from) : q.stages.length
-      const early = [q.ask ?? '', ...q.stages.slice(0, Math.max(0, until)).map((s) => s.text)]
+      const early = [q.ask ?? '', ...q.stages.slice(0, Math.max(0, until)).flatMap((s) => [s.text, s.asks ?? ''])]
       const says = (text: string) => truth.words.some((w) => {
         try {
           return new RegExp(w, 'i').test(text)
@@ -234,6 +234,8 @@ export function questWarnings(c: Refs): string[] {
       })
       if (early.some(says)) warnings.push(`quest ${q.id}: truth ${i + 1} ("${truth.text}") is in the ask or a journal line before its stage, so the stranger reads it before anyone may say it`)
     }
+    // What the giver wants at a stage (M10.33 E): a stage with something to do and nobody to say it opens no talk.
+    if (q.givers.length) for (const s of q.stages) if (s.goal && !s.asks?.trim()) warnings.push(`quest ${q.id}, stage ${s.id}: the giver never says what they want here (asks), so they will not open a talk with it; write it in their voice`)
   }
   return warnings
 }

@@ -33,6 +33,8 @@ export interface SketchStage {
   done: string
   /** What the stranger can do now, one line, for the journal's "Now: ...". */
   goal?: string
+  /** What the giver wants of the stranger at this stage, in their voice (M10.33 E): they open a talk with it. */
+  asks?: string
   /** What each person knows at this stage and may say, by key. */
   knows?: { who: string; line: string }[]
   /**
@@ -117,8 +119,8 @@ export function sketchSchema(): Record<string, unknown> {
       stages: {
         type: 'array',
         items: object(
-          { text, say: text, at: text, with: text, skill: text, done: text, goal: text, knows: { type: 'array', items: object({ who: text, line: text }) }, lived: object({ who: text, words: { type: 'array', items: text } }), word: text },
-          ['goal', 'knows', 'lived', 'word'],
+          { text, say: text, at: text, with: text, skill: text, done: text, goal: text, asks: text, knows: { type: 'array', items: object({ who: text, line: text }) }, lived: object({ who: text, words: { type: 'array', items: text } }), word: text },
+          ['goal', 'asks', 'knows', 'lived', 'word'],
         ),
       },
       outcome: object({ name: text, text }),
@@ -237,7 +239,8 @@ export function questFromSketch(world: Pick<World, 'content'>, sketch: QuestSket
     // What each person knows at this stage and may say (M10.30), by id.
     const knows = Object.fromEntries((s.knows ?? []).flatMap((k) => (scope.person(k.who) && fit(k.line, 300) ? [[scope.person(k.who)!, fit(k.line, 300)!]] : [])))
     const goal = fit(s.goal, 160)
-    stages.push({ id: `s${i + 1}`, text: fit(s.text, 240)!, ...(goal ? { goal } : {}), ...(Object.keys(knows).length ? { knows } : {}), next })
+    const asks = fit(s.asks?.replace(/^["“]|["”]$/g, ''), 240)
+    stages.push({ id: `s${i + 1}`, text: fit(s.text, 240)!, ...(goal ? { goal } : {}), ...(asks ? { asks } : {}), ...(Object.keys(knows).length ? { knows } : {}), next })
     if ((last && endings.length) || word) return
     actions.push(deed(`a${i + 1}`, s, fit(s.done, 400)!, [...(i > 0 ? [{ flag: `${id}_${i}` }] : []), { not_flag: flag }], [{ set: flag }]))
   })

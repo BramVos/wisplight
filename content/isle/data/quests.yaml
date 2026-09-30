@@ -15,6 +15,8 @@ quests:
       - id: stranded
         text: The Grey Gull broke on the rocks of Skerrow, and you alone came ashore. No ship calls since the beacon on the headland went out, and the winter storms will soon close the sea. Find a way off the island.
         goal: Find a way off Skerrow before the winter storms close the sea.
+        # What Maren asks of the stranger (M10.33 E): she opens a talk with it, once.
+        asks: "No ship will call while the beacon is dark, and the storms are close. Ask around the island for a way off. Brannoc has the only boat that could cross."
         # What people know of it and may say (M10.30): each their own piece, so nobody makes up a way off.
         knows:
           npc_maren: Maren knows no ship has called since the beacon on the headland went dark, and that Brannoc's Kittiwake is the only boat on Skerrow that could make the crossing. She does not know what the tower or the barrow hold.

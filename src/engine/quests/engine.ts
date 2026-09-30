@@ -35,6 +35,8 @@ export interface QuestState {
   done: string[]
   outcome?: string
   ended?: number
+  /** The stages whose asks line the giver has said to open a talk (M10.33 E): once a stage. */
+  asked?: string[]
 }
 
 /** What the quest engine needs from the engine: time, effect plans and encounters. */

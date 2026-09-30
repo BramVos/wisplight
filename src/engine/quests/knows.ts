@@ -20,6 +20,20 @@ export function stageNow(world: World, quest: Quest): Stage | undefined {
   return q ? stages.find((s) => s.id === q.stage) : stages[0]
 }
 
+/**
+ * What a giver wants of the stranger now (M10.33 E): of the quests they gave that run, the oldest, its stage, and the
+ * stage's asks line in their voice when it has one; none when they give none that runs.
+ */
+export function wantsNow(world: World, npcId: string): { quest: Quest; state: QuestState; stage: Stage; asks?: string } | undefined {
+  const log = (world.state.questlog ?? {}) as Record<string, QuestState>
+  const running = [...world.content.quests.values()].filter((q) => q.givers.includes(npcId) && log[q.id] && !log[q.id]!.ended).sort((a, b) => log[a.id]!.started - log[b.id]!.started)
+  for (const quest of running) {
+    const stage = stageNow(world, quest)
+    if (stage) return { quest, state: log[quest.id]!, stage, ...(stage.asks?.trim() ? { asks: stage.asks.trim() } : {}) }
+  }
+  return undefined
+}
+
 /** What the speaker knows of the stories now, for their voice: nothing when no stage names them. */
 export function storyLines(world: World, npcId: string): string[] {
   const lines: string[] = []
@@ -27,6 +41,9 @@ export function storyLines(world: World, npcId: string): string[] {
     const line = stageNow(world, quest)?.knows?.[npcId]
     if (line) lines.push(`  ${quest.name}: ${line.trim()}`)
   }
+  // What they want of the stranger now, as the giver (M10.33 E): the voice says it as they would.
+  const wants = wantsNow(world, npcId)
+  if (wants?.asks) lines.push(`  ${wants.quest.name}, what you want of the stranger now: ${wants.asks}`)
   return lines.length ? ['THE STORY AS YOU KNOW IT: this is all you know of it. Say no more of it than this; never make up what happened, who did it or why, and what you do not know, say you do not know.', ...lines] : []
 }
 

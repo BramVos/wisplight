@@ -214,7 +214,7 @@ export interface Status {
   paused: boolean
   /** A development build: the @ commands work and the editor can be opened. */
   builder?: boolean
-  talk?: { npc: string; name: string; call: string; colour?: string; attitude: string; turnsLeft: number; options: string[]; proposal?: string; trades: boolean; joins: boolean; pronoun: 'she' | 'he' | 'they'; lines: TalkLine[]; earlier?: EarlierTalk }
+  talk?: { npc: string; name: string; call: string; colour?: string; attitude: string; turnsLeft: number; options: string[]; proposal?: string; trades: boolean; joins: boolean; matter: boolean; pronoun: 'she' | 'he' | 'they'; lines: TalkLine[]; earlier?: EarlierTalk }
   /** The talk that just ended (M10.8): its lines, for the window that stays until closed. */
   lastTalk?: { npc: string; lines: TalkLine[] }
   /** The clock and the sky for the top right (M10.8): weekday, date, hour, sun, dusk or moon, and the weather. */
@@ -1668,7 +1668,7 @@ export class Engine {
       if (talk.proposal && /^(yes|yeah|yep|aye|all right|alright|ok|okay|sure|please|please do|ja|goed|graag)\b[.!]*$/i.test(answer)) return this.inConversation(async () => this.dialogue.answer(true))
       if (talk.proposal && /^(no|nope|no thanks|not now|nee|liever niet)\b[.!]*$/i.test(answer)) return this.inConversation(async () => this.dialogue.answer(false))
       if (text.startsWith('"')) return this.inConversation(() => this.dialogue.say(talk.npc, answer))
-      if (/^[1-8]$/.test(text)) return this.inConversation(() => this.dialogue.quick(Number(text)))
+      if (/^[1-9]$/.test(text)) return this.inConversation(() => this.dialogue.quick(Number(text)))
       if (/^(bye|goodbye|farewell|dag|doei|tot ziens)\b/i.test(text)) return this.dialogue.end()
       const direction = parseDirection(command.args[0])
       const isCommand = TALK_COMMANDS.has(command.verb) && !(command.verb === 'go' && !direction) && !soundsLikeSpeech(command.verb, text)
@@ -2143,7 +2143,7 @@ export class Engine {
       paused: false,
       ...(this.builder ? { builder: true } : {}),
       talk: talk
-        ? { npc: talk.npc, name: knownShort(this.world, talk.npc), call: callName(this.world.npc(talk.npc)), colour: personColour(this.world, talk.npc), attitude: attitude(this.world, talk.npc).band, turnsLeft: talk.turnsLeft, options: QUICK_OPTIONS, trades: tradesHere(this.world, talk.npc), joins: Boolean(this.world.npc(talk.npc).companion), ...(talk.proposal ? { proposal: this.dialogue.proposalNow()! } : {}), pronoun: this.world.npc(talk.npc).pronoun, lines: talk.lines ?? [], ...(earlierTalk(this.world, talk.npc, talk.began) ? { earlier: earlierTalk(this.world, talk.npc, talk.began)! } : {}) }
+        ? { npc: talk.npc, name: knownShort(this.world, talk.npc), call: callName(this.world.npc(talk.npc)), colour: personColour(this.world, talk.npc), attitude: attitude(this.world, talk.npc).band, turnsLeft: talk.turnsLeft, options: QUICK_OPTIONS, trades: tradesHere(this.world, talk.npc), joins: Boolean(this.world.npc(talk.npc).companion), matter: this.dialogue.hasMatter(talk.npc), ...(talk.proposal ? { proposal: this.dialogue.proposalNow()! } : {}), pronoun: this.world.npc(talk.npc).pronoun, lines: talk.lines ?? [], ...(earlierTalk(this.world, talk.npc, talk.began) ? { earlier: earlierTalk(this.world, talk.npc, talk.began)! } : {}) }
         : undefined,
       ...(!talk && this.lastTalk ? { lastTalk: this.lastTalk } : {}),
       clock: this.clockStatus(),

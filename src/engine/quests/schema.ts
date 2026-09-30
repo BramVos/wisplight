@@ -260,6 +260,10 @@ export const StageSchema = z
     id: Id,
     text: z.string().describe('The journal line for this stage.'),
     goal: z.string().optional().describe('What the stranger can do now, one line for the journal and QUESTS ("Recover the recordings from the Listening Room"). Without it the journal shows only what happened.'),
+    asks: z
+      .string()
+      .optional()
+      .describe('What the giver wants of the stranger at this stage, one or two sentences in their own voice, without quotation marks ("Niko keeps the station running. Ask him what he has seen up there."). The giver opens a talk with it once a stage, after the greeting, and without a model it is their answer to "what do you need?" (M10.33 E). Without it the giver does not open, and the answer is the goal.'),
     knows: z
       .record(z.string(), z.string())
       .optional()

@@ -392,7 +392,7 @@ export const WORLD_STEPS: readonly WorldStep[] = [
     checks: [
       'The main line comes from the stranger\'s task, begins at the start, and keeps its truths hidden until their stage.',
       'Each settlement has two or three small lines of different kinds, each the matter of one of its people.',
-      'Every stage says what the stranger can do now (goal) and what each person of the line knows and may say (knows).',
+      'Every stage says what the stranger can do now (goal), what the giver wants of the stranger then in their own voice (asks: they open a talk with it once, and without a model it is their answer to "what do you need?"), and what each person of the line knows and may say (knows).',
       'Every deed can be done with what is there: the place exists, the person lives or works there, the skill is one of the rules\'.',
       'Every line has at least three endings: two solutions by different ways (talk, give, a deed), three for the main line, and one where it goes wrong or runs out; a line of one stage two, a solution and one where it runs out. A line with fewer goes back to the chronicler once with what Check says.',
       'Check finds no quest without a way on: a flag waited for is set somewhere, a thing asked for can be had, and there is a way to end.',

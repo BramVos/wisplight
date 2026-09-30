@@ -1963,10 +1963,10 @@ export function lockedIds(c: Pick<Content, 'lock'>): Set<string> {
 }
 
 /** The fields whose words the player reads (M10.29 M): names, descriptions, lines, texts of every kind. */
-const PLAYER_TEXT = new Set(['name', 'plural', 'maker', 'summary', 'description', 'day', 'night', 'look', 'take', 'text', 'line', 'lines', 'player_text', 'narrate_start', 'narrate_end', 'broken_text', 'cooldown_text', 'short', 'short_public', 'cover', 'appearance', 'speech', 'examples', 'public_facts', 'precise', 'village', 'far', 'story', 'details', 'title', 'label', 'intro', 'frame', 'used', 'why', 'news', 'arrival', 'masterwork', 'verbs', 'said', 'greeting', 'farewell'])
+const PLAYER_TEXT = new Set(['name', 'plural', 'maker', 'summary', 'description', 'day', 'night', 'look', 'take', 'text', 'line', 'lines', 'player_text', 'narrate_start', 'narrate_end', 'broken_text', 'cooldown_text', 'short', 'short_public', 'cover', 'appearance', 'speech', 'examples', 'public_facts', 'precise', 'village', 'far', 'story', 'details', 'title', 'label', 'intro', 'frame', 'used', 'why', 'news', 'arrival', 'masterwork', 'verbs', 'said', 'greeting', 'farewell', 'asks'])
 
 /** Fields that hold words in one kind and an id in another: checked only where they are words. */
-const EITHER = new Set(['take', 'short', 'text', 'line', 'lines', 'news', 'far', 'said'])
+const EITHER = new Set(['take', 'short', 'text', 'line', 'lines', 'news', 'far', 'said', 'asks'])
 
 /**
  * Never an id in a text the player sees (M10.29 M): every field of every kind

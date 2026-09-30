@@ -10,6 +10,7 @@ quests:
       - id: s1
         text: Mara Venn says three crates of emergency heating and water spares are missing from her count. Cargo comes in through the Arrival Lock, and the manifests are logged there.
         goal: Compare the cargo manifests at the Arrival Lock
+        asks: "Three crates of heating and water spares are gone from my count. Every crate comes in through the Arrival Lock, and the manifests are logged there. Start with those."
         knows:
           npc_mara_venn: Mara knows three crates of heating and water spares are missing from her count; she does not know where they went or who moved them.
           npc_ilyan_sorell: Dr Sorell knows he relisted the spares as research stock for a Peregrine test; he will not say so unless he is shown the manifest.
@@ -21,6 +22,7 @@ quests:
       - id: s2
         text: The manifest shows that Dr Sorell relisted the emergency spares as research stock. He is the one who can say why.
         goal: Ask Dr Sorell about the relisted spares
+        asks: "I'm still three crates short. If the manifests told you something, follow it, and come back to me when you have a name."
         knows:
           npc_mara_venn: Mara knows the spares are still missing from her count; she does not yet know the stranger has traced them to Sorell's entry.
           npc_ilyan_sorell: Dr Sorell knows the stranger has seen the manifest; he admits relisting the spares for a Peregrine test and says he meant to return them.
@@ -31,6 +33,7 @@ quests:
       - id: s3
         text: Dr Sorell has admitted he moved the spares and agreed to return them. Mara Venn should hear it from you before she hears it from anyone else.
         goal: Tell Mara what you found
+        asks: "You have news about my crates, I can see it. Tell me what you found."
         knows:
           npc_mara_venn: Mara knows Sorell relisted the emergency spares for a Peregrine test and has agreed to return them; she is angry, but she keeps it to the count.
           npc_ilyan_sorell: Dr Sorell knows the stranger has told Mara; he is returning the spares and expects her to hold it against him.
@@ -130,6 +133,7 @@ quests:
       - id: s1
         text: Tessa Rook has doubts about the Peregrine's drive that she has kept mostly to herself. She wants to talk first, somewhere ordinary.
         goal: Hear Tessa out in the Commons
+        asks: "Not here by the hangar logs. Come and sit with me in the Commons, and let me tell it my own way."
         knows:
           npc_tessa_rook: Tessa knows the drive readings drift during tests in a way she cannot explain; she does not know why, and she will not guess past her own numbers.
           npc_ilyan_sorell: Dr Sorell knows Tessa has doubts about the drive; he believes the drift is instrument noise and says so.
@@ -140,6 +144,7 @@ quests:
       - id: s2
         text: Tessa keeps her test notes in the Guest Quarters, away from the hangar logs. She has asked you to read them without her looking over your shoulder.
         goal: Read Tessa's test notes in the Guest Quarters
+        asks: "My test notes are in the Guest Quarters. Read them on your own, and then tell me honestly whether I'm seeing things."
         knows:
           npc_tessa_rook: Tessa knows the stranger has read her notes; she wants an honest answer, not comfort, and she means to decide whether to raise her doubt openly.
           npc_ilyan_sorell: Dr Sorell knows only that Tessa has been talking to the stranger; he does not know what she showed them.
@@ -228,6 +233,7 @@ quests:
       - id: s1
         text: Dr Sorell wants the original recordings from Orison Ridge. Niko Serrin found the anomalous transmission, and he knows the station better than anyone.
         goal: Ask Niko Serrin about the listening station
+        asks: "Start with Niko Serrin. He found the signal, and he knows that station better than anyone. Ask him what he has seen up there."
         knows:
           npc_ilyan_sorell: Ilyan Sorell knows he wants the recordings secured and a report on the fault; he speaks of the signal as the most important thing ever received on Nacre and says nothing of the archive's history.
           npc_niko_serrin: Niko Serrin knows the station's failures and the access sequence; he does not mention anything he fitted to the antenna.
@@ -248,6 +254,7 @@ quests:
       - id: s2
         text: The originals are in the archive of the Orison Listening Room, and every day the station fails a little more.
         goal: Copy the original recordings in the Orison Listening Room
+        asks: "The originals are in the archive of the Orison Listening Room. Copy all of them, before the station fails any further."
         knows:
           npc_ilyan_sorell: Ilyan Sorell knows the stranger has been to the ridge; he asks for the copies and wants to know whether they are complete, and he does not explain the gaps.
           npc_niko_serrin: Niko Serrin knows the archive was never meant to have gaps; he is shaken to hear of them and swears he never cut a recording.
@@ -260,6 +267,7 @@ quests:
       - id: s3
         text: Someone cut the recordings, but that does not explain why the station itself is failing. The fault lies somewhere in the antenna system.
         goal: Trace the fault in the station's antenna system
+        asks: "The copies are one thing, but the station is still failing. Find out why. I would look at the antenna system first."
         knows:
           npc_niko_serrin: Niko Serrin knows he fitted the antenna bypass himself to keep the measurements running and never reported it; once the stranger has found it, he admits it and asks them to let him put it right.
           npc_ilyan_sorell: Ilyan Sorell knows nothing of the bypass and is relieved the fault has an ordinary cause; he still says nothing about the cut segments.
@@ -272,6 +280,7 @@ quests:
       - id: s4
         text: "The cut segments and the missing parts point to the same place: the Peregrine and the tests nobody talks about."
         goal: Ask Tessa Rook about the Peregrine's drive tests
+        asks: "When you have something for me, bring it to me aboard the Peregrine. I'll be there."
         knows:
           npc_tessa_rook: Tessa Rook knows the drive test ran in secret on Nacre, powered with diverted heating and water parts, and she has now seen its pulse pattern in the signal; she does not know what that means and distrusts anyone who claims to.
           npc_mara_venn: Mara Venn knows the missing parts went into the Peregrine, and she wants the one who diverted them to answer for it in front of the port.
@@ -284,6 +293,7 @@ quests:
       - id: s5
         text: Dr Sorell hired you to say whether anyone had touched the data. Now you know who did, and you have to tell him.
         goal: Put the evidence to Dr Sorell aboard the Peregrine
+        asks: "You have been talking to Tessa, I hear. Then say what you came to say. I would rather hear it from you than from the whole port."
         knows:
           npc_ilyan_sorell: Ilyan Sorell knows he ran the drive test in secret with diverted heating and water parts, then cut the matching segments and rewrote their timestamps; he admits it, but he does not know what sent the signal and says so.
           npc_tessa_rook: Tessa Rook knows everything the telemetry shows, and she says any journey the Peregrine makes now would be on a drive nobody understands.

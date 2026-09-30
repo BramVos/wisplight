@@ -743,7 +743,7 @@ function templateFor(kind: EntityKind, view: EditorView): Raw {
         givers: [],
         starts: { talk: [] },
         ask: 'What the giver says when it begins.',
-        stages: [{ id: 'begun', text: 'The journal line while it runs.', goal: 'What the stranger can do now.', knows: { [person]: 'What this person knows of it now and may say, with their name.' } }],
+        stages: [{ id: 'begun', text: 'The journal line while it runs.', goal: 'What the stranger can do now.', asks: 'What the giver wants of the stranger now, in their own voice.', knows: { [person]: 'What this person knows of it now and may say, with their name.' } }],
         truths: [{ text: 'What the story keeps hidden until it ends, for you and the chronicler.', words: ['how a reply would name it'] }],
         actions: [{ id: 'first_way', say: ['do the first thing'], text: 'What happens.', effects: [{ set: 'first_way_done' }] }],
         outcomes: [
