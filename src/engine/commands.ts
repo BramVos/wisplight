@@ -503,6 +503,46 @@ export function walkOut(host: CommandHost): Output[] | undefined {
   return steps ? goSteps(host, steps, false) : undefined
 }
 
+/** How a direction is said when someone points the way: "In", "North". */
+const pointed = (d: Direction) => d.charAt(0).toUpperCase() + d.slice(1)
+
+/**
+ * WALK TO a place you heard of but never saw (M10.31 D): along the exits as far
+ * as the places you know, and then the way you were pointed ("The Hangar?
+ * Through the Workshop, they said."). Nothing when you never heard of such a
+ * place within a few exits, so WALK TO goes on as it did.
+ */
+export function walkToward(host: CommandHost, words: string): Output[] | undefined {
+  const { world } = host
+  const here = world.state.player.location
+  const seen = new Set([...(world.state.player.seen ?? []), here])
+  const heard = world.state.player.journal ?? {}
+  const wanted = words.toLowerCase().replace(/^(the|a|an)\s+/, '').trim()
+  const target = [...world.content.locations.values()].find(
+    (l) => !seen.has(l.id) && heard[l.id] !== undefined && ([l.name, ...l.aliases].some((n) => n.toLowerCase().replace(/^the\s+/, '') === wanted) || placeWords(wanted, [l.name, ...l.aliases])),
+  )
+  if (!target) return undefined
+  const steps = exitsTo(world, (id) => id === target.id, 8)
+  if (!steps) return undefined
+  // As far as the places you have seen.
+  let at = here
+  let known = 0
+  for (const d of steps) {
+    const next = world.location(at).exits[d]!.to
+    if (!seen.has(next)) break
+    at = next
+    known++
+  }
+  const out = known ? goSteps(host, steps.slice(0, known), true) : []
+  // Stopped on the way (a lock, a shut door): that is what it says.
+  if (world.state.player.location !== at) return out
+  const d = steps[known]!
+  const next = world.location(at).exits[d]!.to
+  const way = next === target.id ? `${pointed(d)} from here` : heard[next] !== undefined ? `Through ${world.location(next).name}` : `${pointed(d)} from here, and on from there`
+  out.push(text(`${target.name}? ${way}, they said.`))
+  return out
+}
+
 /** WALK TO a place a few exits away (M10.29 V: the Workshop is a door east of the Commons, not a walk round outside): by the exits. */
 export function walkByExits(host: CommandHost, target: string, most = 6): Output[] | undefined {
   const steps = exitsTo(host.world, (id) => id === target, most)

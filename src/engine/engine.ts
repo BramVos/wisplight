@@ -36,7 +36,7 @@ import { followTombstones, followTombstonesInLog, nameBook, withNames, type Name
 import { shiftTension, tensionOf } from './social/realms'
 import { grownContent, invest } from './growth/growth'
 import { GameClock, weekdayName } from './clock'
-import { completionsHere, couldInstead, describeRoom, detailDeed, detailVerb, findNpcAnywhere, findNpcHere, runCommand, walkByExits, walkOut, walkWithin, whichOfThem, type CommandHost, type Output } from './commands'
+import { completionsHere, couldInstead, describeRoom, detailDeed, detailVerb, findNpcAnywhere, findNpcHere, runCommand, walkByExits, walkOut, walkToward, walkWithin, whichOfThem, type CommandHost, type Output } from './commands'
 import { areaTopicId, callName, firstName, type Content, type Quest } from './content'
 import { Dialogue, QUICK_OPTIONS } from './dialogue/conversation'
 import { Knowledge } from './dialogue/knowledge'
@@ -1742,6 +1742,9 @@ export class Engine {
         // WALK TO a place of this settlement you have seen (M10.29 I: a click on the plan of here), by its exits.
         const within = walkWithin(this.host, to[1]!)
         if (within) return within
+        // WALK TO a place you heard of but never saw (M10.31 D): as far as you know the way, then where you were pointed.
+        const toward = walkToward(this.host, to[1]!)
+        if (toward) return toward
         // WALK TO 42,17 (after the M10 playtest): a hex you have seen, as a click on the minimap sends it.
         const spot = /^(\d+)\s*,\s*(\d+)$/.exec(to[1]!.trim())
         if (spot) return this.walkToHex({ col: Number(spot[1]), row: Number(spot[2]) })
@@ -1749,7 +1752,9 @@ export class Engine {
         const topic = this.topics.find(to[1]!.replace(/\s+(?:on\s+foot|te\s+voet)$/i, ''))
         if (topic && this.beyond(topic)) return this.setOffBeyond(topic)
         const place = topic ? knownPlace(this.world, topic) : undefined
-        if (topic && !place) return [{ kind: 'error', text: `You don't know where ${this.topics.name(topic)} is. Ask someone, or look for it.` }]
+        // A place you never heard of stays unknown, its name unsaid (M10.31 D).
+        const unheard = topic && (this.content.locations.has(topic) || this.content.areas.has(topic)) && (this.state.player.journal ?? {})[topic] === undefined && !(this.state.player.seen ?? []).includes(topic)
+        if (topic && !place) return [{ kind: 'error', text: unheard ? 'You know no such place.' : `You don't know where ${this.topics.name(topic)} is. Ask someone, or look for it.` }]
         // A name you don't know (after the M10 playtest): the places you do, that fit the words or are nearest.
         if (!place) return this.walkWhere(to[1]!)
         const target = walkTarget(this.world, place)
@@ -2520,7 +2525,8 @@ export class Engine {
       .filter((p) => !(here && p.hex && p.hex.col === here.col && p.hex.row === here.row))
       // Nearest first; what you have only heard of comes after.
       .sort((a, b) => far(a) - far(b) || a.name.localeCompare(b.name))
-    const missing = `You don't know a place called "${words}".`
+    // A place you never heard of stays unknown (M10.31 D), its name unsaid.
+    const missing = 'You know no such place.'
     const picked = choose(this.world, words, 'Walk where?', places.map((p) => ({ label: p.name, command: `walk to ${p.name}` })), missing)
     if ('run' in picked) {
       const place = places.find((p) => `walk to ${p.name}` === picked.run)!

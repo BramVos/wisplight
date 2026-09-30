@@ -86,7 +86,8 @@ Maren lifts a hand. "Mind how you go."
 > journal
 People: Maren Holt.
 Places: Skerrow, Skerrow Hythe, the Shore, The Headland, The Salt Kettle, The Tidepools, The Wreck Strand.
-Lore: the coin of the isles, the stranger in Skerrow Hythe, the theft at The Salt Kettle, the headwoman found nothing, the Grey Gull, the folk of the isles, the tide, the Tidemother.
+Lore: the stranger in Skerrow Hythe, the theft at The Salt Kettle, the headwoman found nothing, the Grey Gull.
+What everyone knows: the coin of the isles, the folk of the isles, the tide, the Tidemother.
 
 ==== INFLUENCE (Thornsday 4 Leaffall 412 SF, 08:02 (morning))
 
@@ -193,7 +194,8 @@ Maren lifts a hand. "Mind how you go."
 > journal
 People: Maren Holt.
 Places: Skerrow, Skerrow Hythe, the Shore, The Headland, The Salt Kettle, The Tidepools, The Wreck Strand.
-Lore: the coin of the isles, the stranger in Skerrow Hythe, the theft at The Salt Kettle, the headwoman found nothing, the stranger bringing back Maren's pot of pitch, the Grey Gull, the folk of the isles, the tide, the Tidemother.
+Lore: the stranger in Skerrow Hythe, the theft at The Salt Kettle, the headwoman found nothing, the stranger bringing back Maren's pot of pitch, the Grey Gull.
+What everyone knows: the coin of the isles, the folk of the isles, the tide, the Tidemother.
 
 ==== END (Moonday 8 Leaffall 412 SF, 08:08 (morning))
 Quests: off_skerrow: open, stage stranded
@@ -284,7 +286,8 @@ Maren lifts a hand. "Mind how you go."
 > journal
 People: Maren Holt.
 Places: Skerrow, Skerrow Hythe, the Shore, The Headland, The Salt Kettle, The Tidepools, The Wreck Strand.
-Lore: the coin of the isles, the stranger in Skerrow Hythe, the theft at The Salt Kettle, the headwoman found nothing, the Grey Gull, the folk of the isles, the tide, the Tidemother.
+Lore: the stranger in Skerrow Hythe, the theft at The Salt Kettle, the headwoman found nothing, the Grey Gull.
+What everyone knows: the coin of the isles, the folk of the isles, the tide, the Tidemother.
 
 ==== AFTER (Thornsday 4 Leaffall 412 SF, 08:02 (morning))
 
@@ -372,7 +375,8 @@ Maren lifts a hand. "Go on, then."
 > journal
 People: Maren Holt.
 Places: Skerrow, Skerrow Hythe, the Shore, The Headland, The Salt Kettle, The Tidepools, The Wreck Strand.
-Lore: the coin of the isles, the stranger in Skerrow Hythe, the theft at The Salt Kettle, the headwoman found nothing, the Grey Gull, the folk of the isles, the tide, the Tidemother.
+Lore: the stranger in Skerrow Hythe, the theft at The Salt Kettle, the headwoman found nothing, the Grey Gull.
+What everyone knows: the coin of the isles, the folk of the isles, the tide, the Tidemother.
 
 ==== END (Moonday 8 Leaffall 412 SF, 08:06 (morning))
 Quests: off_skerrow: open, stage stranded

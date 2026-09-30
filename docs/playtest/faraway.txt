@@ -63,6 +63,7 @@ Mirte lifts a hand. "Go on, then."
 People: Fenna Visser, Grietje, Harmen, Jan, Lubbert, Mirte Bakker, Trijntje Kroes, the Count.
 Places: Veenhoek, Waagdam, the Kattenbroek, Molenend, the Lane, The Mill De Zwaan, The Peat Road, The Bakery, Veenhoek, the Green, Canal Quay, The Market Square, Waagdam, the West Gate.
 Lore: the stranger in Veenhoek.
+What everyone knows: guilders, stuivers and duiten, the burghers of Waagdam, changelings, the Count's men, the dykelanders, the fenfolk, the heathborn, the priory of Kloosterveen.
 
 ==== INFLUENCE (Dinsdag 14 Herfstmaand 211 AW, 18:35 (evening))
 
@@ -188,6 +189,7 @@ Joris lifts a hand. "Go on, then."
 People: Fenna Visser, Grietje, Harmen, Hendrikje Hofstede, Hester Vlieland, Jan, Joris Kuipers, Lubbert, Mirte Bakker, Trijntje Kroes, the Count.
 Places: the Holleveen, Oude Zijl, Veenhoek, Waagdam, Graafhaven, the Kattenbroek, The Gate of Graafhaven, The Chandlery, The Cooper's Yard, The Market of Graafhaven, Molenend, the Lane, The Mill De Zwaan, The Old Sluice, The Peat Road, The Bakery, Veenhoek, the Green, Canal Quay, The Market Square, Waagdam, the West Gate.
 Lore: the stranger in Veenhoek, Hester Vlieland and Grietje Visser, Word for a cousin, Harmen needing bolts of sailcloth, the stranger in Oude Zijl, the stranger in Graafhaven.
+What everyone knows: guilders, stuivers and duiten, the burghers of Waagdam, changelings, the Count's men, the dykelanders, the fenfolk, the heathborn, the priory of Kloosterveen.
 
 ==== AFTER (Vrijdag 17 Herfstmaand 211 AW, 11:12 (morning))
 
@@ -216,6 +218,7 @@ Joris lifts a hand. "Go on, then."
 People: Fenna Visser, Grietje, Harmen, Hendrikje Hofstede, Hester Vlieland, Jan, Joris Kuipers, Lubbert, Mirte Bakker, Trijntje Kroes, the Count.
 Places: the Holleveen, Oude Zijl, Veenhoek, Waagdam, Graafhaven, the Kattenbroek, The Gate of Graafhaven, The Chandlery, The Cooper's Yard, The Market of Graafhaven, Molenend, the Lane, The Mill De Zwaan, The Old Sluice, The Peat Road, The Bakery, Veenhoek, the Green, Canal Quay, The Market Square, Waagdam, the West Gate.
 Lore: the stranger in Veenhoek, Hester Vlieland and Grietje Visser, Word for a cousin, Harmen needing bolts of sailcloth, the stranger in Oude Zijl, the stranger in Graafhaven.
+What everyone knows: guilders, stuivers and duiten, the burghers of Waagdam, changelings, the Count's men, the dykelanders, the fenfolk, the heathborn, the priory of Kloosterveen.
 
 ==== END (Zaterdag 18 Herfstmaand 211 AW, 11:14 (morning))
 Quests: flour_for_veenhoek: open, stage no_flour
@@ -283,6 +286,7 @@ Mirte lifts a hand. "Go on, then."
 People: Fenna Visser, Grietje, Harmen, Jan, Lubbert, Mirte Bakker, Trijntje Kroes, the Count.
 Places: Veenhoek, Waagdam, the Kattenbroek, Molenend, the Lane, The Mill De Zwaan, The Peat Road, The Bakery, Veenhoek, the Green, Canal Quay, The Market Square, Waagdam, the West Gate.
 Lore: the stranger in Veenhoek.
+What everyone knows: guilders, stuivers and duiten, the burghers of Waagdam, changelings, the Count's men, the dykelanders, the fenfolk, the heathborn, the priory of Kloosterveen.
 
 ==== AFTER (Dinsdag 14 Herfstmaand 211 AW, 18:35 (evening))
 
@@ -315,6 +319,7 @@ Mirte lifts a hand. "Go on, then."
 People: Fenna Visser, Gerrit, Grietje, Harmen, Jan, Lubbert, Mirte Bakker, Trijntje Kroes, the Count.
 Places: Molenend, Veenhoek, Waagdam, the Kattenbroek, Molenend, the Lane, The Mill De Zwaan, The Peat Road, The Bakery, Veenhoek, the Green, Canal Quay, The Market Square, Waagdam, the West Gate.
 Lore: the stranger in Veenhoek, the mill not turning before winter.
+What everyone knows: guilders, stuivers and duiten, the burghers of Waagdam, changelings, the Count's men, the dykelanders, the fenfolk, the heathborn, the priory of Kloosterveen.
 
 ==== END (Woensdag 15 Herfstmaand 211 AW, 18:37 (evening))
 Quests: flour_for_veenhoek: open, stage no_flour

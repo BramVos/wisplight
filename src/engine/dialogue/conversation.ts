@@ -493,7 +493,8 @@ export class Dialogue {
 
   journal(): Output {
     const journal = this.world.state.player.journal ?? {}
-    const groups: Record<string, string[]> = { People: [], Places: [], Lore: [], Things: [] }
+    // What everyone here knows on a line of its own, last (M10.31 F: the peoples and the money are not news).
+    const groups: Record<string, string[]> = { People: [], Places: [], Lore: [], Things: [], 'What everyone knows': [] }
     for (const id of Object.keys(journal).sort()) {
       const kind = this.topics.kind(id)
       const name = this.topics.name(id)
@@ -502,6 +503,7 @@ export class Dialogue {
         if (knowsOfPerson(this.world, id)) groups['People']!.push(knownName(this.world, id))
       } else if (kind === 'person') groups['People']!.push(name)
       else if (kind === 'place' || kind === 'area') groups['Places']!.push(name)
+      else if ((kind === 'lore' || kind === 'fact') && this.world.content.topics.get(id)?.common) groups['What everyone knows']!.push(name)
       else if (kind === 'lore' || kind === 'fact') groups['Lore']!.push(name)
       else if (kind === 'item') groups['Things']!.push(name)
     }

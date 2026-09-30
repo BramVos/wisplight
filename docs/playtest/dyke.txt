@@ -144,6 +144,7 @@ Teunis lifts a hand. "Go on, then."
 People: Fenna Visser, Cornelis, Harmen, Jan Visser, Kobus, Lubbert, Teunis Ros, Trijntje Kroes, the Count.
 Places: Oude Zijl, Veenhoek, Waagdam, Graafhaven, The Mill De Zwaan, On the Great Dyke, Veenhoek, the Green, Canal Quay, The Horse Mill, The Market Square.
 Lore: the drainage of the Holleveen, the stranger in Veenhoek, the dyke at Oude Zijl leaks, the stranger in Waagdam, the mill not turning before winter.
+What everyone knows: guilders, stuivers and duiten, the burghers of Waagdam, changelings, the Count's men, the dykelanders, the fenfolk, the heathborn, the priory of Kloosterveen.
 
 ==== INFLUENCE (Woensdag 15 Herfstmaand 211 AW, 09:37 (morning))
 
@@ -233,6 +234,7 @@ Time passes. It is Woensdag 15 Herfstmaand 211 AW, 14:04 (afternoon).
 People: Fenna Visser, Cornelis, Harmen, Jan Visser, Kobus, Lubbert, Sijbrand, Teunis Ros, Trijntje Kroes, the Count.
 Places: Oude Zijl, Veenhoek, Waagdam, Graafhaven, The Mill De Zwaan, On the Great Dyke, The Dyke House, The Old Sluice, Veenhoek, the Green, Canal Quay, The East Gate, The Horse Mill, The Market Square.
 Lore: the drainage of the Holleveen, the stranger in Veenhoek, the dyke at Oude Zijl leaks, the stranger in Waagdam, the mill not turning before winter.
+What everyone knows: guilders, stuivers and duiten, the burghers of Waagdam, changelings, the Count's men, the dykelanders, the fenfolk, the heathborn, the priory of Kloosterveen.
 
 ==== AFTER (Woensdag 15 Herfstmaand 211 AW, 14:04 (afternoon))
 
@@ -250,6 +252,7 @@ Here: Sijbrand, Heemraad Sijbrand (at work).
 People: Fenna Visser, Cornelis, Harmen, Jan Visser, Kobus, Lubbert, Sijbrand, Teunis Ros, Trijntje Kroes, the Count.
 Places: Oude Zijl, Veenhoek, Waagdam, Graafhaven, The Mill De Zwaan, On the Great Dyke, The Dyke House, The Old Sluice, Veenhoek, the Green, Canal Quay, The East Gate, The Horse Mill, The Market Square.
 Lore: the drainage of the Holleveen, the stranger in Veenhoek, the dyke at Oude Zijl leaks, the stranger in Waagdam, the mill not turning before winter.
+What everyone knows: guilders, stuivers and duiten, the burghers of Waagdam, changelings, the Count's men, the dykelanders, the fenfolk, the heathborn, the priory of Kloosterveen.
 
 [48 hours pass]
 
@@ -324,6 +327,7 @@ Here: Prior Ansfried (stopping to look at the stranger), Wouter the eel-fisher (
 People: Fenna Visser, Cornelis, Harmen, Jan Visser, Kobus, Lubbert, Sijbrand, Teunis Ros, Trijntje Kroes, the Count.
 Places: Oude Zijl, Veenhoek, Waagdam, Graafhaven, The Mill De Zwaan, On the Great Dyke, The Dyke House, The Old Sluice, Veenhoek, the Green, Canal Quay, The East Gate, The Horse Mill, The Market Square.
 Lore: the drainage of the Holleveen, the stranger in Veenhoek, the dyke at Oude Zijl leaks, the stranger in Waagdam, the mill not turning before winter.
+What everyone knows: guilders, stuivers and duiten, the burghers of Waagdam, changelings, the Count's men, the dykelanders, the fenfolk, the heathborn, the priory of Kloosterveen.
 
 ==== END (Zaterdag 18 Herfstmaand 211 AW, 20:04 (evening))
 Quests: none
@@ -472,6 +476,7 @@ Teunis lifts a hand. "Go on, then."
 People: Fenna Visser, Cornelis, Harmen, Jan Visser, Kobus, Lubbert, Teunis Ros, Trijntje Kroes, the Count.
 Places: Oude Zijl, Veenhoek, Waagdam, Graafhaven, The Mill De Zwaan, On the Great Dyke, Veenhoek, the Green, Canal Quay, The Horse Mill, The Market Square.
 Lore: the drainage of the Holleveen, the stranger in Veenhoek, the dyke at Oude Zijl leaks, the stranger in Waagdam, the mill not turning before winter.
+What everyone knows: guilders, stuivers and duiten, the burghers of Waagdam, changelings, the Count's men, the dykelanders, the fenfolk, the heathborn, the priory of Kloosterveen.
 
 ==== AFTER (Woensdag 15 Herfstmaand 211 AW, 09:37 (morning))
 
@@ -496,6 +501,7 @@ Here: Teunis Ros, Teunis the horse-miller (at work).
 People: Fenna Visser, Cornelis, Harmen, Jan Visser, Kobus, Lubbert, Teunis Ros, Trijntje Kroes, the Count.
 Places: Oude Zijl, Veenhoek, Waagdam, Graafhaven, The Mill De Zwaan, On the Great Dyke, Veenhoek, the Green, Canal Quay, The Horse Mill, The Market Square.
 Lore: the drainage of the Holleveen, the stranger in Veenhoek, the dyke at Oude Zijl leaks, the stranger in Waagdam, the mill not turning before winter.
+What everyone knows: guilders, stuivers and duiten, the burghers of Waagdam, changelings, the Count's men, the dykelanders, the fenfolk, the heathborn, the priory of Kloosterveen.
 
 [48 hours pass]
 Lubbert is asking twice the worth for sacks of rye, and people say so.
@@ -554,6 +560,7 @@ Across country you can head any way, or follow the tow path west to Oude Zijl, t
 People: Fenna Visser, Cornelis, Harmen, Jan Visser, Kobus, Lubbert, Teunis Ros, Trijntje Kroes, the Count.
 Places: Oude Zijl, Veenhoek, Waagdam, Graafhaven, The Mill De Zwaan, On the Great Dyke, Veenhoek, the Green, Canal Quay, The Horse Mill, The Market Square.
 Lore: the drainage of the Holleveen, the stranger in Veenhoek, the dyke at Oude Zijl leaks, the stranger in Waagdam, the mill not turning before winter.
+What everyone knows: guilders, stuivers and duiten, the burghers of Waagdam, changelings, the Count's men, the dykelanders, the fenfolk, the heathborn, the priory of Kloosterveen.
 
 ==== END (Zaterdag 18 Herfstmaand 211 AW, 15:37 (afternoon))
 Quests: none

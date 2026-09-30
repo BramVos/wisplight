@@ -95,6 +95,7 @@ Mirte lifts a hand. "Go on, then."
 People: Fenna Visser, Grietje, Jan, Lubbert, Mirte Bakker, Trijntje Kroes, the Count.
 Places: Veenhoek, Waagdam, the Kattenbroek, The Mill De Zwaan, The Bakery, Veenhoek, the Green, Canal Quay, Visser House, the doorstep, The Market Square, Waagdam, the West Gate.
 Lore: the stranger in Veenhoek.
+What everyone knows: guilders, stuivers and duiten, the burghers of Waagdam, changelings, the Count's men, the dykelanders, the fenfolk, the heathborn, the priory of Kloosterveen.
 
 ==== INFLUENCE (Dinsdag 14 Herfstmaand 211 AW, 18:41 (evening))
 
@@ -331,6 +332,7 @@ The Grey Cat on the Doorstep: Honest. Fenna is home, and one day a week all wint
 People: Fenna Visser, Aaltje Hendriks, Grietje, Jan, Lubbert, Mirte Bakker, Trijntje Kroes, Wouter, the Count.
 Places: the Holleveen, Veenhoek, Waagdam, the Kattenbroek, Aaltje's Cottage, Chapel Lane, The Edge of the Kattenbroek, Below the Hut on Stilts, The Black Pools, The Mill De Zwaan, The Bakery, Veenhoek, the Green, Canal Quay, Visser House, the doorstep, The Market Square, Waagdam, the West Gate.
 Lore: the Cat-Widow of the Kattenbroek, the stranger in Veenhoek, the grey cat.
+What everyone knows: guilders, stuivers and duiten, the burghers of Waagdam, changelings, the Count's men, the dykelanders, the fenfolk, the heathborn, the priory of Kloosterveen.
 
 ==== AFTER (Woensdag 15 Herfstmaand 211 AW, 12:06 (midday))
 
@@ -427,6 +429,7 @@ Here: Fenna Visser (eating), Grietje Visser (eating), Pim (eating).
 People: Fenna Visser, Aaltje Hendriks, Grietje, Jan, Lubbert, Mirte Bakker, Trijntje Kroes, Wouter, the Count.
 Places: the Holleveen, Reuzenrust, Veenhoek, Waagdam, the Kattenbroek, Aaltje's Cottage, Chapel Lane, The Edge of the Kattenbroek, Below the Hut on Stilts, The Black Pools, The Mill De Zwaan, The Road to Hunnenloo, The Bakery, Veenhoek, the Green, Canal Quay, Visser House, the doorstep, The Market Square, Waagdam, the West Gate.
 Lore: the Cat-Widow of the Kattenbroek, the stranger in Veenhoek, the grey cat.
+What everyone knows: guilders, stuivers and duiten, the burghers of Waagdam, changelings, the Count's men, the dykelanders, the fenfolk, the heathborn, the priory of Kloosterveen.
 
 ==== END (Zaterdag 23 Wijnmaand 211 AW, 12:06 (midday))
 Quests: grey_cat_on_the_doorstep: honest; flour_for_veenhoek: market_day_passed; the_white_womens_riddle: open, stage the_riddle
@@ -526,6 +529,7 @@ Mirte lifts a hand. "Go on, then."
 People: Fenna Visser, Grietje, Jan, Lubbert, Mirte Bakker, Trijntje Kroes, the Count.
 Places: Veenhoek, Waagdam, the Kattenbroek, The Mill De Zwaan, The Bakery, Veenhoek, the Green, Canal Quay, Visser House, the doorstep, The Market Square, Waagdam, the West Gate.
 Lore: the stranger in Veenhoek.
+What everyone knows: guilders, stuivers and duiten, the burghers of Waagdam, changelings, the Count's men, the dykelanders, the fenfolk, the heathborn, the priory of Kloosterveen.
 
 ==== AFTER (Dinsdag 14 Herfstmaand 211 AW, 18:41 (evening))
 
@@ -617,6 +621,7 @@ Here: Pim (playing).
 People: Fenna Visser, Grietje, Jan, Lubbert, Mirte Bakker, Trijntje Kroes, the Count.
 Places: Reuzenrust, Veenhoek, Waagdam, the Kattenbroek, The Mill De Zwaan, The Road to Hunnenloo, The Bakery, Veenhoek, the Green, Canal Quay, Visser House, the doorstep, The Market Square, Waagdam, the West Gate.
 Lore: the stranger in Veenhoek.
+What everyone knows: guilders, stuivers and duiten, the burghers of Waagdam, changelings, the Count's men, the dykelanders, the fenfolk, the heathborn, the priory of Kloosterveen.
 
 ==== END (Vrijdag 22 Wijnmaand 211 AW, 18:41 (evening))
 Quests: grey_cat_on_the_doorstep: lapsed; flour_for_veenhoek: market_day_passed; the_white_womens_riddle: open, stage the_riddle

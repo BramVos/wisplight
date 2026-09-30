@@ -79,7 +79,8 @@ describe('choices', () => {
     expect(said(await engine.handle('1'))).toMatch(/A worn stone, waist-high/)
     expect(said(await engine.handle('take'))).toBe('There is nothing here to take.')
     expect(said(await engine.handle('drop xyz'))).toMatch(/You don't have "xyz"\.\nDrop what\?\n {2}1\. /)
-    expect(said(await engine.handle('walk to qqq'))).toBe('You don\'t know a place called "qqq".')
+    // Since M10.31 D a place never heard of is simply unknown.
+    expect(said(await engine.handle('walk to qqq'))).toBe('You know no such place.')
   })
 
   it('walks to a hex you have seen, as a click on the minimap sends it, and not to one you have not', async () => {
