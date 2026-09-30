@@ -112,7 +112,8 @@ quests:
       - id: enter_barrow_with_gift
         say: ['(?:enter|search|explore|go into|creep into|sneak into|go down into) (?:the )?(?:barrow|mound|tomb|gap)(?: .*)?', '(?:take|get|find|fetch) (?:the )?(?:rune |stone |black )?key(?: .*)?']
         at: [loc_skerrow_wyrm_barrow]
-        when: [{ flag: tamsin_counsel }, { has: salt_fish }, { night: false }, { not_flag: has_key }]
+        # Her counsel asked for, or heard from her in a talk about the barrow (M10.30): either will do.
+        when: [{ any: [{ flag: tamsin_counsel }, { talked: npc_tamsin, about: [barrow, skarth, "old gentleman"] }] }, { has: salt_fish }, { night: false }, { not_flag: has_key }]
         minutes: 60
         text: You leave a salt fish by the standing stones and go down barefoot into the warm dark. Old Skarth fills the barrow like a hill inside a hill, scales dull as slate, each breath a long, hot tide. On a stone shelf by the tip of his tail lies a key of black stone. You take it and nothing else, and come up into the daylight shaking.
         effects: [{ take: salt_fish }, { give: rune_key }, { set: has_key }, { learn: old_skarth }]

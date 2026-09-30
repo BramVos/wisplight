@@ -88,7 +88,7 @@ import { deed, noticeCarried, seedBonds } from './social/deeds'
 import { factionLines, factionPage, join, rankOf, repute } from './social/factions'
 import { fightsBack, mayAttackFirst, mayLend } from './social/gates'
 import { flirt, marry } from './social/romance'
-import { conversationActions, doDeed, evaluate, expireConditions, questAction, questLines, questlog, questPage, questsOnDeath, runQuestAction, setPlaceState, startQuest, talkStarts, triggers, type QuestHost } from './quests/engine'
+import { conversationActions, doDeed, evaluate, expireConditions, questAction, questLines, questlog, questPage, questsOnDeath, runQuestAction, setPlaceState, startQuest, talkStarts, triggers, unbegun, type QuestHost } from './quests/engine'
 import { PlaceState } from './quests/schema'
 import { plansDue, startPlan, startWorldPlans, tellAreaNews } from './quests/plans'
 import { primeWatchers, processSignals, queueSignal } from './signals'
@@ -143,6 +143,8 @@ export type LogEntry =
   // The player's play mode, when it changed (M10.24).
   | { t: number; k: 'mode'; v: PlayMode }
   | { t: number; k: 'tides'; v: TidesReply | null }
+  // Quests that begin with the game, begun when a save from before they were written was loaded (M10.30).
+  | { t: number; k: 'begun'; v: string[] }
   // A question about cost put to the player (M10.21), so a replay puts the same one.
   | { t: number; k: 'ask'; id: string; usd: number }
   // The great lines judged although no month began (M10.22, the host's pace).
@@ -676,6 +678,26 @@ export class Engine {
   private dueTides(): void {
     if (this.world.aiLive) tidesState(this.world).pending = true
     else applyTides(this.world, null)
+  }
+
+  /**
+   * Stories written after the game began (M10.30): a quest that begins with the
+   * game and this game does not have begins now, where the stranger stands; the
+   * host calls it when a save is loaded. In the log, so a replay begins it at
+   * the same point. What it says goes to the player.
+   */
+  beginWritten(): Output[] {
+    const ids = unbegun(this.world)
+    if (!ids.length) return []
+    this.record({ t: this.world.now, k: 'begun', v: ids })
+    return this.shown(this.begin(ids))
+  }
+
+  /** Begins quests written after the game began, and lets a stage the game has lived pass at once: the quest stands where the stranger is. */
+  private begin(ids: string[]): Output[] {
+    const out = ids.flatMap((id) => startQuest(this.world, this.questHost, id))
+    out.push(...evaluate(this.world, this.questHost))
+    return out
   }
 
   /** The play mode (M10.24): set by the host or a test; kept in the log, so a replay goes on the same way. */
@@ -2397,6 +2419,9 @@ export class Engine {
           this.log.push(entry)
           const ask = this.state.growth?.expansions?.pending.find((p) => p.key === entry.key)
           if (ask) this.settleExpansionRun(ask, entry.v)
+        } else if (entry.k === 'begun') {
+          this.log.push(entry)
+          this.begin(entry.v)
         } else if (entry.k === 'due') {
           this.log.push(entry)
           this.dueTides()

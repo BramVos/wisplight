@@ -85,7 +85,7 @@ for await (const line of rl) {
     else if (read.file.world !== content.world.id) print([{ kind: 'error', text: `This save belongs to ${read.file.worldName}; start with WISPLIGHT_WORLD set to that world.` }])
     else {
       follow(await Engine.restore(content, read.file.save), log.start(randomUUID()))
-      print([{ kind: 'system', text: 'Game loaded.' }, ...(await engine.handle('look'))])
+      print([{ kind: 'system', text: 'Game loaded.' }, ...(await engine.handle('look')), ...engine.beginWritten()])
     }
   } else if (verb === 'load' || verb === 'laad') {
     const data = saves.load('cli')
@@ -95,7 +95,7 @@ for await (const line of rl) {
       follow(await Engine.restore(content, data), from ? (log.position(from) > data.session!.logId ? log.fork(from, data.session!.logId) : from) : log.start(randomUUID()))
       if (from) printEarlier(log.earlier(where, APP_KNOBS.recall_lines.default, engine.world.calendar))
     }
-    print(data ? [{ kind: 'system', text: 'Game loaded.' }, ...(await engine.handle('look'))] : [{ kind: 'error', text: 'There is no saved game yet.' }])
+    print(data ? [{ kind: 'system', text: 'Game loaded.' }, ...(await engine.handle('look')), ...engine.beginWritten()] : [{ kind: 'error', text: 'There is no saved game yet.' }])
   } else {
     print(await engine.handle(line))
   }

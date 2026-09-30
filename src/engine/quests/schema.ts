@@ -32,6 +32,7 @@ export interface KnowsClaim {
 
 type Cond =
   | { said: string; to?: string; at?: string; hours?: number }
+  | { talked: string; about?: string[] }
   | { flag: string; is?: string | number | boolean }
   | { not_flag: string }
   | { knows: string | KnowsClaim }
@@ -157,6 +158,13 @@ export const ConditionSchema: z.ZodType<Cond> = z.lazy(() =>
       })
       .strict()
       .describe('The stranger said a word: a password, a code, an answer to a question.'),
+    z
+      .object({
+        talked: z.string().describe('The person (npc id) the stranger talked with (M10.30), in the talks the game keeps (talk.kept_lines).'),
+        about: z.array(z.string()).optional().describe('Words of which at least one came up in those talks, from either side: whole words, case aside ("signal", "the recordings"). Without, any talk with them.'),
+      })
+      .strict()
+      .describe('The stranger talked with someone, perhaps about something: a stage already lived in a game that began before the story was written (M10.30), or a matter that moves on by talking.'),
     z.object({ any: z.array(ConditionSchema) }).strict().describe('At least one of these holds.'),
     z.object({ all: z.array(ConditionSchema) }).strict().describe('All of these hold.'),
     z.object({ not: ConditionSchema }).strict().describe('This does not hold.'),

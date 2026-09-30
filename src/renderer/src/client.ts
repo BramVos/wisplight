@@ -215,8 +215,10 @@ export interface EditorBridge {
   mapDraft(world: string): Promise<EditorDraft>
   /** The map after the world steps (M10.25): laid out from the places and painted, one proposal. */
   mapStep(world: string, said: string): Promise<EditorDraft>
-  /** The step Stories (M10.30): the story round per settlement and the main line, as one proposal. */
-  storyStep(world: string, said: string, fullness: 'outline' | 'story' | 'full'): Promise<EditorDraft>
+  /** The step Stories (M10.30): the story round per settlement and the main line, as one proposal; played: from where the latest game of the world stands. */
+  storyStep(world: string, said: string, fullness: 'outline' | 'story' | 'full', played?: boolean): Promise<EditorDraft>
+  /** Where the latest game of a world stands, when it has lived something the step Stories could begin from (M10.30). */
+  playedGame(world: string): Promise<{ about: string; people: number } | undefined>
   /** The map painted again (M10.26): the table as it stood and what stood wrong; the cached part is read again. */
   mapFix(world: string, said: string, table: string, wrong: string[]): Promise<EditorDraft>
   /** The open proposal of a step (M10.20): read it (no third argument), keep it, or forget it (null). */
@@ -361,7 +363,7 @@ export async function createClient(): Promise<EngineClient> {
     }
     engine = await Engine.restore(content, data, llm)
     engine.builder = true
-    return { outputs: [{ kind: 'system', text: 'Game loaded.' }, ...(await engine.handle('look'))], status: status(), ...(earlier ? { earlier } : {}) }
+    return { outputs: [{ kind: 'system', text: 'Game loaded.' }, ...(await engine.handle('look')), ...engine.beginWritten()], status: status(), ...(earlier ? { earlier } : {}) }
   }
   const memorySaves: SavesBridge = {
     list: async () => kept.map(({ data: _, ...entry }) => entry),
@@ -551,6 +553,8 @@ export async function createEditor(): Promise<EditorBridge> {
       }
       return shownDraft(readStories(files, said, parts))
     },
+    // The browser keeps no game of the editor's worlds: the step begins at the beginning (the app reads its latest save).
+    playedGame: async () => undefined,
     mapFix: async (world, said, table, wrong) => {
       const files = filesOfWorld(all, world)
       const { layout } = mapStepRequest(files, said)

@@ -28,6 +28,8 @@ export function EditorApp() {
   const [world, setWorld] = useState(() => new URLSearchParams(window.location.search).get('world') ?? 'base')
   const [view, setView] = useState<EditorView>()
   const [panel, setPanel] = useState<Panel>('edit')
+  // A step of the world build that Check opened (M10.30: the step Stories from "This world has no stories").
+  const [stepFor, setStepFor] = useState<string>()
   const [kind, setKind] = useState<EntityKind>('location')
   const [selected, setSelected] = useState<string>()
   const [creating, setCreating] = useState(false)
@@ -115,7 +117,15 @@ export function EditorApp() {
               ['world', 'New world'],
             ] as [Panel, string][]
           ).map(([id, label]) => (
-            <button key={id} type="button" className={panel === id ? 'active' : ''} onClick={() => setPanel(id)}>
+            <button
+              key={id}
+              type="button"
+              className={panel === id ? 'active' : ''}
+              onClick={() => {
+                setStepFor(undefined)
+                setPanel(id)
+              }}
+            >
               {label}
             </button>
           ))}
@@ -165,7 +175,16 @@ export function EditorApp() {
       {panel === 'voice' && <VoicePanel bridge={bridge} world={world} saved={refresh} />}
       {panel === 'lands' && <LandsPanel bridge={bridge} world={world} saved={refresh} />}
       {panel === 'knobs' && <KnobsPanel bridge={bridge} world={world} view={view} saved={refresh} />}
-      {panel === 'check' && <CheckPanel view={view} open={open} />}
+      {panel === 'check' && (
+        <CheckPanel
+          view={view}
+          open={open}
+          stories={() => {
+            setStepFor('stories')
+            setPanel('world')
+          }}
+        />
+      )}
       {panel === 'playtest' && <PlaytestPanel bridge={bridge} world={world} />}
       {panel === 'reference' && <ReferencePanel />}
       {panel === 'contract' && (
@@ -186,6 +205,7 @@ export function EditorApp() {
           bridge={bridge}
           world={world}
           view={view}
+          step={stepFor}
           fresh={fresh.includes(world)}
           saved={refresh}
           made={async (folder) => {
@@ -725,7 +745,8 @@ function templateFor(kind: EntityKind, view: EditorView): Raw {
         actions: [{ id: 'first_way', say: ['do the first thing'], text: 'What happens.', effects: [{ set: 'first_way_done' }] }],
         outcomes: [
           { id: 'first', name: 'The first way', text: 'How it ends this way.', when: [{ flag: 'first_way_done' }] },
-          { id: 'second', name: 'The second way', text: 'How it ends that way.', when: [{ flag: 'second_way_done' }] },
+          // Talked through with someone (M10.30): in a talk of the stranger's own, or in a game from before the quest.
+          { id: 'second', name: 'The second way', text: 'How it ends that way.', when: [{ any: [{ flag: 'second_way_done' }, { talked: person, about: ['a word from the talk'] }] }] },
           { id: 'third', name: 'The third way', text: 'And the third.', when: [{ flag: 'third_way_done' }] },
         ],
       }
@@ -907,7 +928,7 @@ function ReferencePanel() {
 
 // ---------------------------------------------------------------- the checks
 
-function CheckPanel({ view, open }: { view: EditorView; open: (kind: EntityKind, id?: string) => void }) {
+function CheckPanel({ view, open, stories }: { view: EditorView; open: (kind: EntityKind, id?: string) => void; stories?: () => void }) {
   const target = (line: string): { kind: EntityKind; id: string } | undefined => {
     const id = /(?:^|quest |topic )((?:loc|npc)_[a-z0-9_]+|[a-z0-9_]+)(?=[:. ])/.exec(line)?.[1]
     if (!id) return undefined
@@ -916,6 +937,16 @@ function CheckPanel({ view, open }: { view: EditorView; open: (kind: EntityKind,
   }
   const row = (line: string) => {
     const t = target(line)
+    // A world without stories (M10.30): the line opens the step Stories, which begins where a game of the world stands.
+    if (stories && line.startsWith('This world has no stories'))
+      return (
+        <li key={line}>
+          {line}{' '}
+          <button type="button" className="link" onClick={stories}>
+            [Write the stories]
+          </button>
+        </li>
+      )
     return (
       <li key={line}>
         {t ? (
@@ -1605,12 +1636,12 @@ function ContractPanel({ view, propose, book, pictures }: { view: EditorView; pr
 
 // ---------------------------------------------------------------- a new world
 
-function NewWorldPanel({ bridge, world, view, fresh, saved, made }: { bridge: EditorBridge; world: string; view: EditorView; fresh: boolean; saved: () => Promise<void>; made: (folder: string) => Promise<void> }) {
+function NewWorldPanel({ bridge, world, view, fresh, saved, made, step }: { bridge: EditorBridge; world: string; view: EditorView; fresh: boolean; saved: () => Promise<void>; made: (folder: string) => Promise<void>; step?: string }) {
   const [folder, setFolder] = useState('')
   const [name, setName] = useState('')
   const [problems, setProblems] = useState<string[]>([])
-  // An existing world is built further only when asked, with a warning: the proposals change its own files.
-  const [further, setFurther] = useState(false)
+  // An existing world is built further only when asked, with a warning: the proposals change its own files. Check asking for a step asks it.
+  const [further, setFurther] = useState(Boolean(step))
   const named = view.world.name || world
   return (
     <div className="settings-body editor-page builder-fields">
@@ -1641,7 +1672,7 @@ function NewWorldPanel({ bridge, world, view, fresh, saved, made }: { bridge: Ed
           {problems.length > 0 && <p className="warn small">{problems.join(' ')}</p>}
           <h2>Or build further on {named}</h2>
           {further ? (
-            <WorldSteps bridge={bridge} world={world} view={view} saved={saved} existing />
+            <WorldSteps bridge={bridge} world={world} view={view} saved={saved} existing step={step} />
           ) : (
             <p className="small">
               <span className="muted">
@@ -1665,8 +1696,8 @@ function NewWorldPanel({ bridge, world, view, fresh, saved, made }: { bridge: Ed
  * the chronicler proposes, the editor shows it as a diff and saves only what
  * is accepted. A step skipped stays empty and works with its neutral default.
  */
-function WorldSteps({ bridge, world, view, saved, existing = false }: { bridge: EditorBridge; world: string; view: EditorView; saved: () => Promise<void>; existing?: boolean }) {
-  const [at, setAt] = useState(0)
+function WorldSteps({ bridge, world, view, saved, existing = false, step: first }: { bridge: EditorBridge; world: string; view: EditorView; saved: () => Promise<void>; existing?: boolean; step?: string }) {
+  const [at, setAt] = useState(() => Math.max(0, WORLD_STEPS.findIndex((s) => s.id === first)))
   // Whose build it is (M10.23): the world's, or one of its lands', with the same steps but the calendar and the lands.
   const [land, setLand] = useState('')
   const [lands, setLands] = useState<{ id: string; name: string }[]>([])
@@ -1684,6 +1715,15 @@ function WorldSteps({ bridge, world, view, saved, existing = false }: { bridge: 
   const [said, setSaid] = useState('')
   // How full the step Stories writes (M10.30): the region dial's three settings, the same words as in play.
   const [fullness, setFullness] = useState<'outline' | 'story' | 'full'>('story')
+  // Stories with hindsight (M10.30): where the latest game of the world stands, and whether the main line begins there.
+  const [game, setGame] = useState<{ about: string; people: number }>()
+  const [fromGame, setFromGame] = useState(true)
+  useEffect(() => {
+    void bridge
+      .playedGame(world)
+      .then(setGame)
+      .catch(() => setGame(undefined))
+  }, [bridge, world])
   const [draft, setDraft] = useState<EditorDraft>()
   const [busy, setBusy] = useState(false)
   const [done, setDone] = useState<Record<string, 'saved' | 'skipped'>>({})
@@ -1801,7 +1841,7 @@ function WorldSteps({ bridge, world, view, saved, existing = false }: { bridge: 
     setAskedFor(said.trim())
     setWhy('')
     try {
-      keep(step.id === 'stories' ? await bridge.storyStep(world, said.trim(), fullness) : await bridge.worldStep(world, step.id, said.trim(), land || undefined), said.trim())
+      keep(step.id === 'stories' ? await bridge.storyStep(world, said.trim(), fullness, Boolean(game) && fromGame) : await bridge.worldStep(world, step.id, said.trim(), land || undefined), said.trim())
       void counted()
     } catch (reason) {
       setDraft({ say: '', questions: [], changes: [], problems: [reason instanceof Error ? reason.message : String(reason)], diffs: [] })
@@ -1939,6 +1979,15 @@ function WorldSteps({ bridge, world, view, saved, existing = false }: { bridge: 
           </label>{' '}
           <span className="muted">A call of the chronicler for each settlement, one for the land between, and one for the main line.</span>
         </p>
+      )}
+      {step.id === 'stories' && game && (
+        <div className="small">
+          <label className="check">
+            <input type="checkbox" checked={fromGame} onChange={(e) => setFromGame(e.target.checked)} /> Begin the main line where the latest game stands: {game.about}, talks with{' '}
+            {game.people === 1 ? 'one person' : `${game.people} people`}.
+          </label>
+          <p className="muted">The chronicler reads those talks; a stage lived there counts as done when the game is loaded.</p>
+        </div>
       )}
       {open.length > 0 && (
         <div className="small">

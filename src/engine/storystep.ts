@@ -8,6 +8,7 @@ import { worldPrefix } from './edit'
 import { storyReply, storySchema } from './growth/regionstory'
 import { endingProblems, questFromSketch, readSketch, SKETCH_KINDS, type QuestSketch } from './quests/sketch'
 import { solvableProblems } from './quests/solvable'
+import { hasPlayed, type PlayedGame } from './played'
 import { worldText } from './safety'
 import { worldFixedPart } from './worldfixed'
 
@@ -91,7 +92,7 @@ function asked(scope: StoryScope, fullness: StoryFullness): string {
 }
 
 /** The call of the step for one scope: the world build's fixed part first (cached), the rules, then the scope. */
-export function storiesRequest(files: ContentFile[], scope: StoryScope, fullness: StoryFullness, said: string): LlmRequest {
+export function storiesRequest(files: ContentFile[], scope: StoryScope, fullness: StoryFullness, said: string, played?: PlayedGame): LlmRequest {
   const content = loadContent(files)
   const instruction = files.filter((f) => /(^|\/)CHRONICLER\.md$/.test(f.path)).map((f) => f.text).join('\n\n')
   const cast = scopeCast(content, scope)
@@ -131,6 +132,7 @@ export function storiesRequest(files: ContentFile[], scope: StoryScope, fullness
       'PEOPLE:',
       ...cast.people.map(person),
       `SKILLS: ${skills.length ? skills.join(', ') : 'none'}`,
+      ...(scope.kind === 'main' && hasPlayed(played) ? ['', ...playedLines(content, played, key)] : []),
       '',
       asked(scope, fullness),
     ].join('\n'),
@@ -139,8 +141,34 @@ export function storiesRequest(files: ContentFile[], scope: StoryScope, fullness
     maxTokens: scope.kind === 'main' ? 5000 : fullness === 'full' ? 6000 : fullness === 'story' ? 4000 : 2500,
     effort: 'medium',
     // The world's prefix: the gateway counts the call as the editor's (M10.26), not the game's.
-    meta: { stories: scope.kind, fullness, prefix: worldPrefix(files) || 'world', name: scope.name, people: cast.people.map((n) => ({ key: key.person.get(n.id), name: n.name, secret: n.secrets.length > 0 })), places: cast.places.map((l) => key.place.get(l.id)), skills, aftermath: [] },
+    meta: { stories: scope.kind, fullness, prefix: worldPrefix(files) || 'world', name: scope.name, ...(scope.kind === 'main' && hasPlayed(played) ? { played: playedWords(played, key) } : {}), people: cast.people.map((n) => ({ key: key.person.get(n.id), name: n.name, secret: n.secrets.length > 0 })), places: cast.places.map((l) => key.place.get(l.id)), skills, aftermath: [] },
   }
+}
+
+/**
+ * What a game of the world has lived, for the main line (M10.30, stories with
+ * hindsight): the talks by the people's keys, the deeds by the places', and
+ * how to mark a stage the stranger has lived already. In the changing part:
+ * only a step with a game reads it.
+ */
+function playedLines(content: Content, played: PlayedGame, key: ReturnType<typeof keysOf>): string[] {
+  const who = (npc: string) => key.person.get(npc) ?? content.npcs.get(npc)?.name ?? npc
+  const quests = played.quests.map((id) => content.quests.get(id)?.name).filter(Boolean)
+  return [
+    `WHAT HAS BEEN PLAYED: a game of this world is under way (${played.about}). Begin the main line where the stranger already is: what they learnt and did stays learnt and done, and no deed asks for it again. For each stage the stranger has already lived in these talks, lived: the key of the person it was talked through with, and two to four words that came up in that talk, as they stand in the lines below. A stage not lived has no lived; the last stage never has it.`,
+    ...played.talks.flatMap((t) => [`TALKS WITH ${who(t.npc)} ${content.npcs.get(t.npc)?.name ?? ''}:`, ...t.lines.map((l) => `  ${l.you ? 'stranger' : who(t.npc)}: ${l.text}`)]),
+    ...(played.deeds.length ? [`DEEDS: ${played.deeds.map((d) => `at ${key.place.get(d.at) ?? content.locations.get(d.at)?.name ?? d.at}: ${d.act}`).join('; ')}`] : []),
+    ...(quests.length ? [`QUESTS ON THE GO OR DONE: ${quests.join('; ')}`] : []),
+  ]
+}
+
+/** For the mock (and the log): per person with a key, a few longer words the stranger said to them. */
+function playedWords(played: PlayedGame, key: ReturnType<typeof keysOf>): { key: string; words: string[] }[] {
+  return played.talks.flatMap((t) => {
+    const k = key.person.get(t.npc)
+    const words = [...new Set(t.lines.filter((l) => l.you).flatMap((l) => l.text.toLowerCase().match(/[a-z]{6,}/g) ?? []))].slice(0, 3)
+    return k && words.length ? [{ key: k, words }] : []
+  })
 }
 
 /**
@@ -177,8 +205,8 @@ export function storyChecks(files: ContentFile[], parts: { scope: StoryScope; te
 }
 
 /** The same call again for a scope the check sent back: the answer before, and what the check says of it. */
-export function storiesFixRequest(files: ContentFile[], scope: StoryScope, fullness: StoryFullness, said: string, before: string, problems: string[]): LlmRequest {
-  const request = storiesRequest(files, scope, fullness, said)
+export function storiesFixRequest(files: ContentFile[], scope: StoryScope, fullness: StoryFullness, said: string, before: string, problems: string[], played?: PlayedGame): LlmRequest {
+  const request = storiesRequest(files, scope, fullness, said, played)
   return {
     ...request,
     prompt: [request.prompt, '', 'YOUR ANSWER BEFORE:', before.trim(), '', 'WHAT THE CHECK SAYS OF IT:', ...problems.map((p) => `- ${p}`), '', 'Write all the lines of this scope again, whole, so that every check holds. JSON only.'].join('\n'),

@@ -42,7 +42,8 @@ export function checkQuests(c: Refs): string[] {
       // A word said (M10.30): to someone who exists, at a place that does.
       if (x.to) npc(x.to, where)
       if (x.at) place(x.at, where)
-    } else if ('at' in x) place(x.at, where)
+    } else if ('talked' in x) npc(x.talked, where)
+    else if ('at' in x) place(x.at, where)
     else if ('npc_at' in x) {
       npc(x.npc_at, where)
       place(x.place, where)

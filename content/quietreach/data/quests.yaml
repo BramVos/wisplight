@@ -239,6 +239,12 @@ quests:
           - when:
               - { flag: story_the_orison_recordings_1 }
             to: s2
+          # Talked through with Niko already (M10.30): in a game from before this story was written, or in a talk of your own.
+          - when:
+              - { talked: npc_niko_serrin, about: [signal, station, recordings] }
+            to: s2
+            effects:
+              - { set: story_the_orison_recordings_1 }
       - id: s2
         text: The originals are in the archive of the Orison Listening Room, and every day the station fails a little more.
         goal: Copy the original recordings in the Orison Listening Room

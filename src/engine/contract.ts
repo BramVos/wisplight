@@ -25,6 +25,8 @@ export const FIELD_NOTES: Record<string, string[]> = {
   // M10.30: people told their own plot of the recordings in The Quiet Reach; a stage says what each knows.
   quests: [
     'A stage may have `goal`, what the stranger can do now in one line for the journal and QUESTS ("Recover the recordings from the Listening Room"), and `knows`, per person with a part (npc id) what they know of the story at this stage and may say, a sentence with their name ("Tessa knows the coupling was never synced; she does not know who took the pages."). That goes to their voice as all they know of it, and to an improvisation at a place of the story; a person without a line talks as before.',
+    // M10.30, stories with hindsight.
+    'A condition `talked`: the stranger talked with someone (npc id), and with `about`, about one of these words from either side, in the talks the game keeps: `{ talked: npc_niko_serrin, about: [signal, station] }`. A stage the stranger lived in a game from before the story was written passes by it (with `effects` setting the flag its deed would set); the step Stories writes it when it is shown that game, and loading a save from before a quest that begins with the game begins it where the stranger stands.',
     'A quest may have `truths`: what the story keeps hidden (`text`), how a reply would name it (`words`, patterns as in an action\'s say) and when people may say it (`from` a stage, or `when` conditions hold; without either, once it has ended). Before that the guard refuses a reply or an improvisation that names it, unless the game gave it to the speaker: their knows line, or a secret they told. Keep a truth out of the ask and out of the journal lines before its stage.',
   ],
   world: [

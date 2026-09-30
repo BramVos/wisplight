@@ -4,7 +4,7 @@ import { appendFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFi
 import { tmpdir } from 'node:os'
 import { basename, dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { ContentError, loadContent, wantsPictures, discoveredAtlasHtml, draftRequest, mapDraft, mapStepRequest, mapFixRequest, readMapStep, readSaveFile, saveAbout, saveFileName, saveFileText, SAVE_FILE_EXTENSION, type SaveFile, type EarlierLines, draftResult, Engine, ENTITY_KINDS, lineDiff, MapPaletteSchema, paletteRequest, paletteView, readDraft, readPalette, readVoice, savePalette, saveVoice, voiceRequest, voiceYaml, landsIn, landYaml, saveLand, worldStepRequest, worldFixRequest, mergeFix, polishRequest, readPolish, recheckDraft, descriptionCheck, enhanceRequest, readEnhance, type Content, type Edit, type EntityKind, type FileChange, type CheckpointedSave, type MapPalette, type Output, type SaveData, type PlayMode } from '../engine'
+import { ContentError, loadContent, wantsPictures, discoveredAtlasHtml, draftRequest, mapDraft, mapStepRequest, mapFixRequest, readMapStep, readSaveFile, saveAbout, saveFileName, saveFileText, SAVE_FILE_EXTENSION, type SaveFile, type EarlierLines, draftResult, Engine, ENTITY_KINDS, lineDiff, MapPaletteSchema, paletteRequest, paletteView, readDraft, readPalette, readVoice, savePalette, saveVoice, voiceRequest, voiceYaml, landsIn, landYaml, saveLand, worldStepRequest, worldFixRequest, mergeFix, polishRequest, readPolish, recheckDraft, descriptionCheck, enhanceRequest, readEnhance, type Content, type Edit, type EntityKind, type FileChange, type CheckpointedSave, type ContentFile, type MapPalette, type Output, type SaveData, type PlayMode } from '../engine'
 import { designUpdate, readDesignChange } from '../engine/designlog'
 import { ContentEditor } from '../node/editor'
 import { AppKnobs, type AppKnobId } from '../node/knobs'
@@ -15,6 +15,7 @@ import type { ProviderId } from '../node/ai/providers'
 import { AiService } from '../node/ai/service'
 import type { ChosenRole, Cipher } from '../node/ai/settings'
 import { readStories, storiesFixRequest, storiesRequest, storyChecks, storyScopes, type StoryScope } from '../engine/storystep'
+import { hasPlayed, playedOf, type PlayedGame } from '../engine/played'
 import { DEFAULT_WORLD, listWorlds, loadContentFromDir, readContentFiles } from '../node/content'
 import { format, GameLog, PART_BYTES, type LogScope, type Session } from '../node/gamelog'
 import { SaveStore } from '../node/savegame'
@@ -349,7 +350,8 @@ async function continueFrom(data: SaveData | undefined) {
   }
   // The game before, faded above (M10.29 S): the window was empty on "You pick up where you left off."
   const earlier = data.session ? journal().earlier({ game: data.session.game, branch: data.session.branch }, appKnobs().get('recall_lines'), engine!.world.calendar) : undefined
-  return reply([system('You pick up where you left off.'), ...(await engine!.handle('look'))], earlier)
+  // A story written after the game began starts where the stranger is (M10.30).
+  return reply([system('You pick up where you left off.'), ...(await engine!.handle('look')), ...engine!.beginWritten()], earlier)
 }
 
 /** Loads a save as it was saved; what happened after it stays in the game log, on a branch of its own. */
@@ -370,7 +372,7 @@ async function loadFrom(data: (SaveData & { createdAt?: string }) | undefined) {
     if (where !== from) keep('auto')
     earlier = journal().earlier(where, appKnobs().get('recall_lines'), loaded.world.calendar)
   }
-  return reply([system('Game loaded.'), ...(await engine!.handle('look'))], earlier)
+  return reply([system('Game loaded.'), ...(await engine!.handle('look')), ...engine!.beginWritten()], earlier)
 }
 
 // Everything the player has found out (M10.20), as an atlas page with the pictures there are: never the whole world book.
@@ -874,7 +876,26 @@ handle('editor:map-step', async (_event, world: unknown, said: unknown) => {
   }
 })
 // The step Stories (M10.30): the story round for each settlement, the land between and the main line, as one proposal.
-handle('editor:story-step', async (_event, world: unknown, said: unknown, fullness: unknown) => {
+/** What the latest game of a world has lived (M10.30): its save restored, read, and let go; none without one. */
+async function playedGameOf(files: ContentFile[]): Promise<PlayedGame | undefined> {
+  const content = loadContent(files)
+  const data = store().latest(content.world.id)
+  if (!data) return undefined
+  try {
+    const played = playedOf((await Engine.restore(content, data)).world)
+    return hasPlayed(played) ? played : undefined
+  } catch {
+    // A save the world can no longer play (a world changed past it): the step begins at the beginning.
+    return undefined
+  }
+}
+handle('editor:played-game', async (_event, world: unknown) => {
+  devOnly()
+  await setup()
+  const played = await playedGameOf(await readContentFiles(contentDir(), worldOf(world)))
+  return played ? { about: played.about, people: played.talks.length } : undefined
+})
+handle('editor:story-step', async (_event, world: unknown, said: unknown, fullness: unknown, fromGame: unknown) => {
   devOnly()
   await setup()
   const llm = smoke ? new MockLlm() : ai?.client()
@@ -882,16 +903,18 @@ handle('editor:story-step', async (_event, world: unknown, said: unknown, fullne
   const files = await readContentFiles(contentDir(), worldOf(world))
   const how = fullness === 'outline' || fullness === 'full' ? fullness : 'story'
   const words = String(said ?? '').slice(0, 20000)
+  // Stories with hindsight (M10.30): the main line begins where the latest game of the world stands.
+  const played = fromGame === true ? await playedGameOf(files) : undefined
   const parts: { scope: StoryScope; text: string }[] = []
   for (const scope of storyScopes(loadContent(files), how)) {
     // A scope whose call fails is named in the proposal; the others still come.
-    const text = await llm.complete(storiesRequest(files, scope, how, words)).then((r) => r.text, () => '')
+    const text = await llm.complete(storiesRequest(files, scope, how, words, played)).then((r) => r.text, () => '')
     parts.push({ scope, text })
   }
   // What the check sends back goes to the model once more, with its lines (M10.30 (6)): too few endings, no way on.
   for (const { scope, problems } of storyChecks(files, parts)) {
     const part = parts.find((p) => p.scope.id === scope.id)!
-    const again = await llm.complete(storiesFixRequest(files, scope, how, words, part.text, problems)).then((r) => r.text, () => '')
+    const again = await llm.complete(storiesFixRequest(files, scope, how, words, part.text, problems, played)).then((r) => r.text, () => '')
     if (again) part.text = again
   }
   return shownDraft(readStories(files, words, parts))

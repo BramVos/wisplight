@@ -19,7 +19,7 @@ import { repute } from '../social/factions'
 import { mayLieAbout } from '../social/gates'
 import type { World } from '../world'
 import type { Condition, KnowsClaim, PlaceStateName, QuestAction, QuestEffect } from './schema'
-import { saidHolds } from '../said'
+import { saidHolds, talkedHolds } from '../said'
 
 // The quest engine (FO, chapter 14): a quest gives NPCs a part and goals and
 // lets the systems do the rest. Stages move on when their conditions hold,
@@ -119,6 +119,7 @@ export function holds(world: World, c: Condition, questId?: string): boolean {
   if ('count' in c) return Number(f[c.count] ?? 0) >= c.at_least
   if ('weekday' in c) return weekdayName(world.now, world.calendar) === c.weekday
   if ('said' in c) return saidHolds(world, c)
+  if ('talked' in c) return talkedHolds(world, c)
   if ('night' in c) return new GameClock(world.now).isNight === c.night
   if ('wields' in c) {
     const weapon = player.character?.gear.weapon
@@ -545,6 +546,18 @@ export function talkStarts(world: World, npcId: string): Quest[] {
   return [...world.content.quests.values()]
     .sort((a, b) => a.id.localeCompare(b.id))
     .filter((q) => !questlog(world)[q.id] && q.stages?.length && q.starts?.talk.includes(npcId) && flags(world)[`lapsed:${q.id}`] === undefined && (!q.starts.when.length || allHold(world, q.starts.when)))
+}
+
+/**
+ * Quests that begin with the game but a game does not have (M10.30, stories
+ * with hindsight): written after the game began. Loading its save begins them;
+ * a stage whose conditions the game already meets passes at the next turn.
+ */
+export function unbegun(world: World): string[] {
+  return [...world.content.quests.values()]
+    .filter((q) => q.starts?.at_start && q.stages?.length && !questlog(world)[q.id] && flags(world)[`lapsed:${q.id}`] === undefined && (!q.starts.when.length || allHold(world, q.starts.when)))
+    .map((q) => q.id)
+    .sort()
 }
 
 /** Quests that begin when the player talks to someone, or comes somewhere. */

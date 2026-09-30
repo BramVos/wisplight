@@ -1,5 +1,34 @@
 # Changelog
 
+## M10.30 deel: verhalen met terugwerkende kracht, 30 september 2026
+
+- **Je spel loopt door met de nieuwe verhalen.** Laad je een save van The Quiet Reach van voor de verhalen, dan begint de hoofdlijn bij het laden. Heb je Niko al naar het signaal, het station of de opnamen gevraagd, dan staat hij meteen op stadium 2: de opnamen kopiëren in de Listening Room. Met jouw laatste save (Restday 22 Rainfall, in de Listening Room) heb ik dat nagespeeld: hij begint op stadium 2. Dat gebeurde lokaal op een kopie, zonder aanroep.
+- **Een stadium dat je al beleefde.** Een nieuwe voorwaarde `talked` kijkt of je met iemand over iets gepraat hebt, in de gesprekken die het spel bewaart. Ook in een nieuw spel gaat het eerste stadium door als je met Niko over het signaal praat, niet alleen als je het commando typt.
+- **De stap Verhalen leest je spel.** Een wereld zonder verhalen heeft onder Check nu een link [Write the stories] naar de stap. Is er een save, dan staat daar een vinkje: "Begin the main line where the latest game stands". De kroniekverteller leest dan de gesprekken en daden van dat spel, en zet bij een stadium dat je al beleefde met wie en waarover (`lived`).
+- **Skerrow:** wat Tamsin je in een gesprek over de grafheuvel vertelde, geldt nu als haar raad. Met de gezouten vis mag je dan veilig naar binnen.
+
+Testen:
+- Ga verder met je spel in The Quiet Reach en typ `quests`: The Orison Recordings staat op "Copy the original recordings".
+- In de editor zie je het vinkje bij de stap Stories (New world, [Build further on The Quiet Reach], 13. Stories), met waar je spel staat. Klik daar niet op Propose als je geen kosten wilt: dat roept de kroniekverteller aan.
+- Tests in `tests/m1030hindsight.test.ts`.
+
+Kosten: geen nieuwe soort aanroep. Met een spel erbij leest de aanroep van de hoofdlijn ongeveer 1.300 tokens meer (bij jouw spel), dus ongeveer een halve dollarcent extra met Opus 5.5. De aanroepen per nederzetting lezen het spel niet. Het schema van de schets kreeg het veld `lived` erbij. Dat schrijft de cache van `region_story` en `night_quest` één keer opnieuw.
+
+Bekende gaten:
+- De stap leest de gesprekken zelf, niet de feiten en herinneringen van de mensen; in de gesprekken staat wat Ilyan vroeg en wat Niko en Tessa zeiden.
+- The Quiet Reach had zijn verhalen al, dus de proef liep niet via een nieuwe run van de stap. De hoofdlijn kreeg met de hand de `talked` bij het eerste stadium, zoals de stap die zou schrijven.
+- Alleen een quest die met het spel begint, begint bij het laden. De kleine lijnen wachten op hun gever, zoals altijd.
+
+Wat de editor en de kroniekverteller leerden:
+- Het contract, `docs/CONTENT.md` en het naslagdeel van `CHRONICLER.md` beschrijven `talked`.
+- Het questsjabloon van de editor toont het bij de tweede afloop.
+- Check weigert een `talked` met een onbekende persoon, en de oplosbaarheidscontrole kent het.
+- De stap Stories van de wereldgids en `docs/NEW-WORLD.md` zeggen wat er gebeurt met een spel dat al loopt.
+- De knop `talk.kept_lines` zegt nu dat de stap die gesprekken leest.
+- Deepwell laat het weg: die wereld heeft geen quests.
+
+Ontwerp: functioneel ontwerp, bij het dagboek (na de stap Verhalen), alinea "Stand na M10.30: verhalen met terugwerkende kracht".
+
 ## M10.30 deel: de hoofdlijn van The Quiet Reach gespeeld, en drie aflopen voor een quest uit een verzoek, 30 september 2026
 
 - **The Orison Recordings van begin tot eind (5).** De speeltest heeft een lijn `orison`. Die speelt de hoofdlijn met het mockmodel: Niko in de luisterpost, de opnamen kopiëren, de fout in de antenne vinden, Tessa over de aandrijftest, met haar code de hangar in, en Sorell de volgende ochtend op de Peregrine ter verantwoording roepen. Dat is end1, een echte oplossing. `docs/playtest/orison.txt` heeft het transcript.

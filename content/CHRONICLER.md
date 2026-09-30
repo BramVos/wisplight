@@ -283,6 +283,7 @@ Watchers, the standard aftermath, intentions, fixed plans, quests and your own p
 - `same` `{ same: [text, text] }`: Two bindings are the same one: the one who heard it is the one it is about (M10.3).
 - `did` `{ did: text, who: text, to: text }`: A fact of this kind about the first and the second, in that order: who chased whom off.
 - `said` `{ said: text, to?: text, at?: text, hours?: number }`: The stranger said a word: a password, a code, an answer to a question.
+- `talked` `{ talked: text, about?: list of text }`: The stranger talked with someone, perhaps about something: a stage already lived in a game that began before the story was written (M10.30), or a matter that moves on by talking.
 - `any` `{ any: list of condition }`: At least one of these holds.
 - `all` `{ all: list of condition }`: All of these hold.
 - `not` `{ not: condition }`: This does not hold.

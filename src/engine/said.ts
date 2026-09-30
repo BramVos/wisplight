@@ -42,6 +42,21 @@ export function saidHolds(world: World, c: { said: string; to?: string; at?: str
   )
 }
 
+/**
+ * Whether the stranger talked with someone (M10.30, retroactive stories): in
+ * the talks the game keeps of that person, and with words, about one of them,
+ * from either side, as whole words.
+ */
+export function talkedHolds(world: World, c: { talked: string; about?: string[] }): boolean {
+  const lines = world.state.pastTalks?.[c.talked] ?? []
+  const words = (c.about ?? []).map(wordsOf).filter(Boolean)
+  if (!words.length) return lines.length > 0
+  return lines.some((l) => {
+    const text = ` ${wordsOf(l.text)} `
+    return words.some((w) => text.includes(` ${w} `))
+  })
+}
+
 /** The locks here that take a word: the doors of this place and the things in it. */
 function wordLocks(world: World): { id: string; word: string; text?: string }[] {
   const here = world.state.player.location

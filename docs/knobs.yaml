@@ -54,6 +54,12 @@ numbers:
     MADE_DC: 'code: how hard a deed of a quest made in play is, when it asks for a skill (M10.30, like a region''s story)'
   src/engine/said.ts:
     KEPT: 'code: how many lines of what the stranger said the game keeps, for the condition said (M10.30; memory)'
+  src/engine/played.ts:
+    MOST_PEOPLE: 'code: how many people of a game the step Stories reads the talks of, the most talked with first (M10.30; tokens of the main line''s call)'
+    FIRST_LINES: 'code: how many first lines of a person''s talks the step Stories reads, where they asked the stranger something (M10.30; tokens)'
+    LAST_LINES: 'code: how many last lines of a person''s talks the step Stories reads, where it stands (M10.30; tokens)'
+    MOST_DEEDS: 'code: how many improvised deeds of a game the step Stories reads (M10.30; tokens)'
+    LONGEST_LINE: 'code: how long a line of a talk may be as the step Stories reads it, in characters (M10.30; tokens)'
   src/engine/pasttalks.ts:
     EARLIER_LINES: 'code: how many lines of the talk before the talk window shows, faded (M10.29 J, the window)'
     OLD_TALK_GAP: 'code: the minutes between two lines of an old save that still make one talk (M10.29 R, saves from before)'

@@ -34,6 +34,12 @@ export interface SketchStage {
   goal?: string
   /** What each person knows at this stage and may say, by key. */
   knows?: { who: string; line: string }[]
+  /**
+   * A stage the stranger has already lived in the game the step was shown
+   * (M10.30, retroactive stories): the key of the person it was talked through
+   * with, and words from that talk. The stage then also passes by that talk.
+   */
+  lived?: { who: string; words: string[] }
 }
 
 /**
@@ -100,7 +106,10 @@ export function sketchSchema(): Record<string, unknown> {
       ask: text,
       stages: {
         type: 'array',
-        items: object({ text, say: text, at: text, with: text, skill: text, done: text, goal: text, knows: { type: 'array', items: object({ who: text, line: text }) } }, ['goal', 'knows']),
+        items: object(
+          { text, say: text, at: text, with: text, skill: text, done: text, goal: text, knows: { type: 'array', items: object({ who: text, line: text }) }, lived: object({ who: text, words: { type: 'array', items: text } }) },
+          ['goal', 'knows', 'lived'],
+        ),
       },
       outcome: object({ name: text, text }),
       endings: { type: 'array', items: object({ name: text, text, solution: { type: 'boolean' }, way: { type: 'string', enum: [...ENDING_WAYS] }, say: text, at: text, with: text, skill: text }) },
@@ -195,7 +204,11 @@ export function questFromSketch(world: Pick<World, 'content'>, sketch: QuestSket
   good.forEach((s, i) => {
     const flag = `${id}_${i + 1}`
     const last = i === good.length - 1
-    const next = !last ? [{ when: [{ flag }], to: `s${i + 2}` }] : []
+    // A stage lived in a game from before the story (M10.30): it passes by that talk too, and sets its flag, so the next deed opens.
+    const livedWith = typeof s.lived?.who === 'string' ? scope.person(s.lived.who) : undefined
+    const livedWords = (Array.isArray(s.lived?.words) ? s.lived.words : []).map((w) => fit(w, 40)).filter((w): w is string => Boolean(w) && w!.length >= 3).slice(0, 4)
+    const lived = livedWith && livedWords.length ? [{ when: [{ talked: livedWith, about: livedWords }], to: `s${i + 2}`, effects: [{ set: flag }] }] : []
+    const next = !last ? [{ when: [{ flag }], to: `s${i + 2}` }, ...lived] : []
     // What each person knows at this stage and may say (M10.30), by id.
     const knows = Object.fromEntries((s.knows ?? []).flatMap((k) => (scope.person(k.who) && fit(k.line, 300) ? [[scope.person(k.who)!, fit(k.line, 300)!]] : [])))
     const goal = fit(s.goal, 160)

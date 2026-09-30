@@ -67,6 +67,7 @@ function neverOne(content: Content, means: Means, c: Raw): string | undefined {
   if (typeof c['at'] === 'string' && !content.locations.has(c['at']) && !content.areas.has(c['at'])) return `there is no place ${c['at']}`
   if (typeof c['alive'] === 'string' && !content.npcs.has(c['alive'])) return `there is nobody ${c['alive']}`
   if (typeof c['here'] === 'string' && !content.npcs.has(c['here'])) return `there is nobody ${c['here']}`
+  if (typeof c['talked'] === 'string' && !content.npcs.has(c['talked'])) return `there is nobody ${c['talked']}`
   for (const key of ['stage', 'outcome'] as const) {
     if (typeof c[key] !== 'string') continue
     const [quest, part] = (c[key] as string).split(':')

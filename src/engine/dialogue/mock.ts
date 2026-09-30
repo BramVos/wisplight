@@ -173,7 +173,7 @@ export class MockLlm implements LlmClient {
     const c = people.slice(2).find((p) => !p.secret) ?? people.slice(1).find((p) => !p.secret)
     const [here, there] = [places[0] ?? '', places[1] ?? places[0] ?? '']
     // The step Stories of the world build (M10.30): lines in `quests`, with goals, who knows what, and for the main line a truth.
-    if (meta['stories']) return this.storyStep(String(meta['stories']), String(meta['fullness'] ?? 'story'), people, places, name)
+    if (meta['stories']) return this.storyStep(String(meta['stories']), String(meta['fullness'] ?? 'story'), people, places, name, (meta['played'] as { key: string; words: string[] }[] | undefined)?.[0])
     return JSON.stringify({
       why: `${name} lives by what comes in on its road, and not all of it is honest.`,
       quest: a
@@ -206,7 +206,7 @@ export class MockLlm implements LlmClient {
   }
 
   /** The lines of the step Stories (M10.30) for one scope: the main line, or small and personal lines of one place. */
-  private storyStep(scope: string, fullness: string, people: { key: string; name: string }[], places: string[], name: string): string {
+  private storyStep(scope: string, fullness: string, people: { key: string; name: string }[], places: string[], name: string, played?: { key: string; words: string[] }): string {
     const [a, b, c] = [people[0], people[1] ?? people[0], people[2] ?? people[1] ?? people[0]]
     const at = (i: number) => places[i % Math.max(1, places.length)] ?? ''
     const first = (p?: { name: string }) => (p?.name ?? 'someone').split(' ')[0]!
@@ -243,7 +243,8 @@ export class MockLlm implements LlmClient {
       : scope === 'main'
         ? [
             line('main', a, 'The Long Silence', [
-              stage('Something went quiet that should not have.', 'ask about the silence', at(0), a, 'You learn when it began.', `Ask ${first(a)} when it began.`, [a]),
+              // With a game under way (M10.30), the first stage is lived already: the stranger talked it through.
+              { ...stage('Something went quiet that should not have.', 'ask about the silence', at(0), a, 'You learn when it began.', `Ask ${first(a)} when it began.`, [a]), ...(played ? { lived: { who: played.key, words: played.words } } : {}) },
               stage('Someone kept a record of it.', 'look for the ledger', at(1), undefined, 'A ledger, with a page cut out.', 'Find the ledger.', [a, b!]),
               stage('The cut page says who.', `ask ${first(b).toLowerCase()} about the page`, at(2), b, 'The page is found, and with it the name.', `Ask ${first(b)} about the missing page.`, [b!]),
             ], { begins: 'start', lapses: { days: 30, text: 'The silence settles, and nobody asks about it any more.' }, truths: [{ text: `${first(b)} cut the page from the ledger.`, words: ['cut the page', 'took the page'], from: 3 }] }),
