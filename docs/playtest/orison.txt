@@ -1,0 +1,214 @@
+The Orison Recordings, de hoofdlijn van The Quiet Reach (quietreach), seed 7
+
+######## THE PLAYER ACTS
+The Quiet Reach
+The supply ship settles onto the pad with a long shudder, and the engines die into the sound of rain on the hull. Through the port you see low cloud, black rock and a grey sea that never seems to end. This is Nacre, at the far edge of the Lantern Belt, months from Harrow Station, where you signed the contract.
+
+Your assignment sounds modest. Up on Orison Ridge an abandoned listening station has been catching a repeating signal from somewhere no human has ever been, and now the station is failing. Someone in Port Vesper wants the recordings recovered, the fault found and the data checked for tampering. Not everyone here, you suspect, wants the same answer.
+
+The outer door of the Arrival Lock seals behind you. Pumps thud, the air turns cold and smells of salt and machine oil, and the inner door begins to open.
+
+Type LOOK to look around. Type HELP if you are lost.
+You keep old machines alive for a living, and the listening station on Orison Ridge is failing for reasons nobody here can name. Dr Sorell sent for you to find out why before the original recordings are lost.
+You were told to ask for the research lead in Port Vesper. The name is in your journal.
+Why you are here is in your journal.
+Arrival Lock
+Steel walls drip from the pumps, and seawater pools in the grooves of the floor grating. Crates from the supply ship line one wall, each label stamped Harrow Station. The cold tastes of salt and oil; a pressure pump thuds behind the panels. By the inner door, a desk scanner reads assignments and your terminal chirps, taking the local map. A corridor leads east, a cargo passage northeast.
+Exits: east, northeast
+Arrival Lock
+The inner door of the lock opens on steel, seawater and the thud of pumps, and for the first time in months the floor under you does not move. Every crate against the wall came the same long way you did, from Harrow Station.
+The pace of events is normal. Type TEMPO CALM or TEMPO DRAMATIC for less or more happening in the world.
+New quest: The Orison Recordings. Dr Sorell wants the original recordings from Orison Ridge. Niko Serrin found the anomalous transmission, and he knows the station better than anyone.
+
+==== RECOGNISE (Primeday 18 Rainfall 186 CR, 08:00 (morning))
+
+> look
+Arrival Lock
+Steel walls drip from the pumps, and seawater pools in the grooves of the floor grating. Crates from the supply ship line one wall, each label stamped Harrow Station. The cold tastes of salt and oil; a pressure pump thuds behind the panels. By the inner door, a desk scanner reads assignments and your terminal chirps, taking the local map. A corridor leads east, a cargo passage northeast.
+Exits: east, northeast
+
+> quests
+Open:
+  The Orison Recordings: Dr Sorell wants the original recordings from Orison Ridge. Niko Serrin found the anomalous transmission, and he knows the station better than anyone. Now: Ask Niko Serrin about the listening station
+
+> journal the orison recordings
+The Orison Recordings
+- Dr Sorell wants the original recordings from Orison Ridge. Niko Serrin found the anomalous transmission, and he knows the station better than anyone.
+Now: Ask Niko Serrin about the listening station
+
+# Nobody here to ask.
+
+==== INFLUENCE (Primeday 18 Rainfall 186 CR, 08:00 (morning))
+
+# Shortcut: up to the Listening Room on the ridge, where Niko works.
+
+> @goto loc_orison_listening_room   [build command: a shortcut]
+[build] You are at Orison Listening Room.
+Orison Listening Room
+Cramped and lined with receiving consoles, half dark and the rest flickering fault codes, this room hums with a rack of recording drives beside a desk where the maintenance logs lie in a damp-swollen binder. Through the wide window the antenna rises into cloud, cables groaning. A speaker gives the same short pattern of tones, then silence. Stairs lead down the steep route to [Ridge Shelter].
+Exits: down
+Orison Listening Room
+Half the consoles are dark and the rest flicker fault codes, and through the window the antenna climbs into cloud. Then the speaker gives its short pattern of tones, and the silence after it, and you understand why nobody here sleeps well.
+
+> wait for niko
+Niko is here.
+Niko arrives from below.
+Niko stops and gives you a nod, curious about the stranger.
+It is Primeday 18 Rainfall 186 CR, 08:25 (morning).
+
+> ask niko about the station
+Niko gives you the access sequence for the Listening Room and a rough account of the failures: power drops, receiver drift, the archive filling with noise. He watches you closely while he talks about the antenna.
+The Orison Recordings: The originals are in the archive of the Orison Listening Room, and every day the station fails a little more.
+
+> copy the original recordings
+The raw buffer copies across in fits and starts. When you compare it with the archive index, you find that several segments of the repeating transmission were removed at this console, and their timestamps were rewritten to close the gaps.
+The Orison Recordings: Someone cut the recordings, but that does not explain why the station itself is failing. The fault lies somewhere in the antenna system.
+
+> trace the antenna fault
+Behind a service panel you find an unofficial bypass wired into the antenna feed. It was fitted to keep the measurements running, and it has been overloading the receiver ever since. That bypass is why the station is failing. It has nothing to do with the cut segments.
+The Orison Recordings: The cut segments and the missing parts point to the same place: the Peregrine and the tests nobody talks about.
+
+> quests
+Open:
+  The Orison Recordings: The cut segments and the missing parts point to the same place: the Peregrine and the tests nobody talks about. Now: Ask Tessa Rook about the Peregrine's drive tests
+
+# Shortcut: back down to the Workshop, to Tessa.
+
+> @goto loc_workshop   [build command: a shortcut]
+[build] You are at Workshop.
+Workshop
+Workbenches, tool racks and crates of salvaged parts crowd this high room under hard white lamps. Solder, cold metal and Nacre's damp hang in the air. At the counter by the door a clipboard lists what may be signed out and what is reserved for the [Peregrine]. The sealed hangar door at the back is stencilled RESTRICTED. Passages run west to Commons and southwest to Arrival Lock.
+Exits: in, southwest, west
+Here: the chief engineer (at work).
+
+> wait for tessa
+Tessa is here.
+
+> ask tessa about the drive test
+Tessa tells you, reluctantly, that a secret drive test ran on Nacre shortly before the transmission was first caught. It was powered with emergency heating and water parts that were entered as research stock. She gives you the test telemetry, and the hangar code, 7411, so you can take it to Sorell yourself. Set beside your raw copies, the removed segments carry the same pulse pattern as the test.
+The Orison Recordings: Dr Sorell hired you to say whether anyone had touched the data. Now you know who did, and you have to tell him.
+
+# Tessa gave the hangar code. Through the hangar to the Peregrine, where Sorell works.
+
+> in
+The door is locked. It wants a code. (TYPE the code or SAY the word, HACK IN to get past the lock, FORCE IN to break it open.)
+
+> type 7411
+The keypad blinks green, and the heavy door slides back on its rail with a hiss of air.
+
+> in
+Peregrine Hangar
+Cold and cavernous, this hangar is filled almost entirely by the ship, its scarred hull resting on landing struts with maintenance panels hanging open. Cables snake to diagnostic carts, and the air hums deep enough to feel in your teeth. A yellow barrier marks off the drive section towards the stern. A boarding ramp climbs to the airlock; the door out leads back to the Workshop.
+Exits: up, out
+Peregrine Hangar
+The Peregrine fills the hangar almost wall to wall, her scarred hull on its struts and her panels hanging open. The hum of her diagnostics goes into your teeth, and a yellow barrier keeps everyone away from the drive.
+
+> up
+Peregrine — Common Deck
+Tight and curved, built for six, this deck holds a briefing table bolted down with six strapped chairs around it. A terminal in the table glows with expedition data cleared for the crew. The air is dry and recycled, tasting faintly of new plastic, and the hull ticks now and then as it settles. The airlock leads back down the ramp to the Hangar.
+Exits: down
+
+> wait for sorell
+Ilyan has not come. It is Primeday 18 Rainfall 186 CR, 18:50 (evening).
+
+# On Primeday he is up at the Listening Room; on other days he is on the deck in the morning.
+
+> wait 14 hours
+Time passes. It is Span 19 Rainfall 186 CR, 04:50 (night).
+
+> wait for sorell
+Ilyan is here.
+Ilyan arrives from below.
+Ilyan stops and gives you a nod, curious about the stranger.
+It is Span 19 Rainfall 186 CR, 09:10 (morning).
+
+> confront sorell about the recordings
+Sorell admits it. He cut the segments that matched the drive test and rewrote their timestamps, so that nobody would learn of the secret test or the stock he diverted, and so that the port would not ground the Peregrine. What made the signal, and why it carries the test's pattern, he cannot say. Neither can you.
+The Orison Recordings: The report is made. The stranger delivers an investigation report built on the evidence: the complete recordings, the bypass, the edits and the match with the drive test. What the signal is remains unknown. What Port Vesper does about Sorell and the Peregrine is now the port's own argument.
+
+> quests
+Over:
+  The Orison Recordings: The report is made.
+
+==== AFTER (Span 19 Rainfall 186 CR, 09:15 (morning))
+
+[24 hours pass]
+Ilyan goes downstairs.
+Ilyan arrives from below.
+Ilyan goes downstairs.
+
+> look
+Peregrine — Common Deck
+Tight and curved, built for six, this deck holds a briefing table bolted down with six strapped chairs around it. A terminal in the table glows with expedition data cleared for the crew. The air is dry and recycled, tasting faintly of new plastic, and the hull ticks now and then as it settles. The airlock leads back down the ramp to the Hangar.
+Exits: down
+
+> journal the orison recordings
+The Orison Recordings
+- Dr Sorell wants the original recordings from Orison Ridge. Niko Serrin found the anomalous transmission, and he knows the station better than anyone.
+- The originals are in the archive of the Orison Listening Room, and every day the station fails a little more.
+- Someone cut the recordings, but that does not explain why the station itself is failing. The fault lies somewhere in the antenna system.
+- The cut segments and the missing parts point to the same place: the Peregrine and the tests nobody talks about.
+- Dr Sorell hired you to say whether anyone had touched the data. Now you know who did, and you have to tell him.
+The report is made. The stranger delivers an investigation report built on the evidence: the complete recordings, the bypass, the edits and the match with the drive test. What the signal is remains unknown. What Port Vesper does about Sorell and the Peregrine is now the port's own argument.
+
+==== END (Relay 20 Rainfall 186 CR, 09:15 (morning))
+Quests: story_the_orison_recordings: end1
+
+######## CONTROL: THE PLAYER DOES NOTHING
+The Quiet Reach
+The supply ship settles onto the pad with a long shudder, and the engines die into the sound of rain on the hull. Through the port you see low cloud, black rock and a grey sea that never seems to end. This is Nacre, at the far edge of the Lantern Belt, months from Harrow Station, where you signed the contract.
+
+Your assignment sounds modest. Up on Orison Ridge an abandoned listening station has been catching a repeating signal from somewhere no human has ever been, and now the station is failing. Someone in Port Vesper wants the recordings recovered, the fault found and the data checked for tampering. Not everyone here, you suspect, wants the same answer.
+
+The outer door of the Arrival Lock seals behind you. Pumps thud, the air turns cold and smells of salt and machine oil, and the inner door begins to open.
+
+Type LOOK to look around. Type HELP if you are lost.
+You keep old machines alive for a living, and the listening station on Orison Ridge is failing for reasons nobody here can name. Dr Sorell sent for you to find out why before the original recordings are lost.
+You were told to ask for the research lead in Port Vesper. The name is in your journal.
+Why you are here is in your journal.
+Arrival Lock
+Steel walls drip from the pumps, and seawater pools in the grooves of the floor grating. Crates from the supply ship line one wall, each label stamped Harrow Station. The cold tastes of salt and oil; a pressure pump thuds behind the panels. By the inner door, a desk scanner reads assignments and your terminal chirps, taking the local map. A corridor leads east, a cargo passage northeast.
+Exits: east, northeast
+Arrival Lock
+The inner door of the lock opens on steel, seawater and the thud of pumps, and for the first time in months the floor under you does not move. Every crate against the wall came the same long way you did, from Harrow Station.
+The pace of events is normal. Type TEMPO CALM or TEMPO DRAMATIC for less or more happening in the world.
+New quest: The Orison Recordings. Dr Sorell wants the original recordings from Orison Ridge. Niko Serrin found the anomalous transmission, and he knows the station better than anyone.
+
+==== RECOGNISE (Primeday 18 Rainfall 186 CR, 08:00 (morning))
+
+> look
+Arrival Lock
+Steel walls drip from the pumps, and seawater pools in the grooves of the floor grating. Crates from the supply ship line one wall, each label stamped Harrow Station. The cold tastes of salt and oil; a pressure pump thuds behind the panels. By the inner door, a desk scanner reads assignments and your terminal chirps, taking the local map. A corridor leads east, a cargo passage northeast.
+Exits: east, northeast
+
+> quests
+Open:
+  The Orison Recordings: Dr Sorell wants the original recordings from Orison Ridge. Niko Serrin found the anomalous transmission, and he knows the station better than anyone. Now: Ask Niko Serrin about the listening station
+
+> journal the orison recordings
+The Orison Recordings
+- Dr Sorell wants the original recordings from Orison Ridge. Niko Serrin found the anomalous transmission, and he knows the station better than anyone.
+Now: Ask Niko Serrin about the listening station
+
+# Nobody here to ask.
+
+==== AFTER (Primeday 18 Rainfall 186 CR, 08:00 (morning))
+
+[24 hours pass]
+Mara arrives from the east.
+Mara leaves east.
+Mara arrives from the east.
+
+> look
+Arrival Lock
+Steel walls drip from the pumps, and seawater pools in the grooves of the floor grating. Crates from the supply ship line one wall, each label stamped Harrow Station. The cold tastes of salt and oil; a pressure pump thuds behind the panels. By the inner door, a desk scanner reads assignments and your terminal chirps, taking the local map. A corridor leads east, a cargo passage northeast.
+Exits: east, northeast
+Here: the port coordinator (at work).
+
+> journal the orison recordings
+The Orison Recordings
+- Dr Sorell wants the original recordings from Orison Ridge. Niko Serrin found the anomalous transmission, and he knows the station better than anyone.
+Now: Ask Niko Serrin about the listening station
+
+==== END (Span 19 Rainfall 186 CR, 08:00 (morning))
+Quests: story_the_orison_recordings: open, stage s1

@@ -64,6 +64,8 @@ describe('M10.30 (7): a quest made in play', () => {
     expect(quest).toMatchObject({ name: 'What Harmen Asked', givers: ['npc_harmen'], starts: { talk: ['npc_harmen'] } })
     expect(quest.stages![0]).toMatchObject({ goal: 'Look round where it happened.', knows: { npc_harmen: 'Harmen knows what they asked, and no more.' } })
     expect(quest.truths?.[0]?.from).toBe('s2')
+    // Three ways it may end (M10.30): two solutions and one where it goes wrong.
+    expect(quest.outcomes!.map((o) => o.solution)).toEqual([true, true, false])
     // Harmen asks it the next time the stranger speaks to him.
     Object.assign(engine.state.npcs['npc_harmen']!, { location: engine.state.player.location, activity: 'standing about', busyUntil: engine.world.now + 600, plan: [] })
     // Harmen counts every stuiver: he asks once he is not wary of the stranger.

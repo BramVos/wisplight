@@ -151,6 +151,12 @@ export class MockLlm implements LlmClient {
           { text: 'There were signs; someone else knows more.', goal: `Tell ${first} what you found.`, say: `tell ${first.toLowerCase()} what you found`, at: places[1] ?? places[0]!, with: asker.key, skill: '', done: `${first} listens, and nods slowly.`, knows: other ? [{ who: other.key, line: `${other.name.split(' ')[0]} saw someone there, late.` }] : [] },
         ],
         outcome: { name: 'Looked into', text: `${first} knows now, and is easier for it.` },
+        // Three ways it may end (M10.30): told, set right, or let go.
+        endings: [
+          { name: 'Told', text: `${first} knows now, and is easier for it.`, solution: true, way: 'talk', say: `tell ${first.toLowerCase()} what you found`, at: places[1] ?? places[0]!, with: asker.key, skill: '' },
+          { name: 'Set right', text: 'You put right what you found, and nobody need hear of it.', solution: true, way: 'deed', say: 'put the place right', at: places[0]!, with: '', skill: '' },
+          { name: 'Let go', text: `You let it lie, and ${first} stops asking.`, solution: false, way: 'fail', say: 'let the matter lie', at: places[1] ?? places[0]!, with: '', skill: '' },
+        ],
         truths: other ? [{ text: `${other.name.split(' ')[0]} was there that night.`, words: [`${other.name.split(' ')[0]!.toLowerCase()} was there`], from: 2 }] : [],
       },
     })

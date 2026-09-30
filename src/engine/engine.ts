@@ -1452,9 +1452,12 @@ export class Engine {
   private journalText(args: string[]): Output[] {
     const history = /^history$/i.test(args.at(-1) ?? '')
     const words = (history ? args.slice(0, -1) : args).join(' ')
-    const id = /^why( you are here)?$/i.test(words) ? 'why' : this.topics.find(words)
-    // A quest by its name (M10.30): JOURNAL THE GREY CAT, when no page of the journal goes by those words.
-    const quest = () => Object.keys(questlog(this.world)).find((q) => words && this.content.quests.get(q)?.name.toLowerCase().includes(words.toLowerCase()))
+    // A quest by its whole name first (M10.30: THE ORISON RECORDINGS is no page of Orison Ridge), then a page, then part of a name.
+    const plain = (s: string) => s.toLowerCase().replace(/^the\s+/, '').trim()
+    const taken = Object.keys(questlog(this.world))
+    const named = taken.find((q) => words && plain(this.content.quests.get(q)?.name ?? '') === plain(words))
+    const id = named ? undefined : /^why( you are here)?$/i.test(words) ? 'why' : this.topics.find(words)
+    const quest = () => named ?? taken.find((q) => words && this.content.quests.get(q)?.name.toLowerCase().includes(words.toLowerCase()))
     const found = id ? this.page(id) : undefined
     const questId = found ? undefined : quest()
     const page = found ?? (questId ? this.page(`quest_${questId}`) : undefined)
