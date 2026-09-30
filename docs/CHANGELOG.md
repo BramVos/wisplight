@@ -8,7 +8,7 @@
 
 Testen: praat in The Quiet Reach met Ilyan tot hij je vraagt de opnamen op te halen, slaap een nacht, en praat dan weer met hem. Met het mockmodel gaat het net zo met Harmen in de Nethermarch. Tests in `tests/m1030night.test.ts` en `tests/m1030made.test.ts`.
 
-Kosten: één nieuwe soort aanroep, `night_quest`, voor de kroniekverteller. Die leest alleen het eigen deel van `CHRONICLER.md`, niet de werkinstructie die elke wereld deelt: ongeveer 1.500 tokens in de Nethermarch en 3.300 in The Quiet Reach. Met Opus 5.5 schat ik 3 à 4 cent per quest, hooguit één per speelnacht. De nachtronde zelf wordt 69 tokens langer. Een echte meting van model en inspanning (drie antwoorden, ongeveer $0,12 op je sleutel) wacht op je akkoord.
+Kosten: één nieuwe soort aanroep, `night_quest`, voor de kroniekverteller. Die leest alleen het eigen deel van `CHRONICLER.md`, niet de werkinstructie die elke wereld deelt. Gemeten op je sleutel met Opus 5.5 ($0,104 voor drie antwoorden, met je akkoord): 3.571 tokens invoer in de Nethermarch, $0,035 per quest. Op low gaven beide antwoorden een quest van drie stadia die het spel bouwt; het ene antwoord op medium had maar één stadium zonder commando, dus de inspanning is low. Hooguit één per speelnacht, dus bij de standaardklok hooguit 2,4 cent per uur, en alleen in een nacht waarin iemand je iets vroeg. De nachtronde zelf wordt 69 tokens langer.
 
 Bekende gaten: een verzoek herkent het spel aan de woorden ("could you", "I need you to") of aan de notitie van de spreker, niet aan betekenis. De Quiet Reach heeft nog geen geschreven verhalen, dus daar is dit voorlopig de enige manier waarop Ilyans opdracht een quest wordt.
 

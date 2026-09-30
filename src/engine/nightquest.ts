@@ -157,7 +157,7 @@ export function nightQuestRequest(world: World, want: NightQuestWant): LlmReques
       properties: { make: { type: 'boolean' }, why: { type: 'string' }, quest: sketchSchema() },
     },
     maxTokens: 2000,
-    meta: { line: want.line, asked: want.asked, asker: key[fact?.about[0] ?? ''] ?? '', people: people.map(([k, n]) => ({ key: k, name: n.name })), places: places.map(([k]) => k), skills },
+    meta: { line: want.line, asked: want.asked, keys: want.keys, asker: key[fact?.about[0] ?? ''] ?? '', people: people.map(([k, n]) => ({ key: k, name: n.name })), places: places.map(([k]) => k), skills },
   }
 }
 

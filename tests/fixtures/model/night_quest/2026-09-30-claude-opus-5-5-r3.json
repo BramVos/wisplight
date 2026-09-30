@@ -1,0 +1,17 @@
+{
+  "kind": "night_quest",
+  "about": "Harmen asked the stranger to look at his torn sails, and after the night round a quest is made of it",
+  "model": "claude-opus-5-5",
+  "provider": "anthropic",
+  "date": "2026-09-30",
+  "effort": "medium",
+  "usage": {
+    "inputTokens": 3571,
+    "cachedTokens": 0,
+    "outputTokens": 934
+  },
+  "reply": "{\"make\":true,\"why\":\"Harmen asks the stranger to look at De Zwaan's torn sails. He can't pay for new cloth, so finding out what can be saved and mending it with what is at hand is a real task.\",\"quest\":{\"name\":\"The Sails of De Zwaan\",\"kind\":\"request\",\"summary\":\"Harmen Molenaar asks the stranger to look at the storm-torn sails of his mill, De Zwaan, and see whether they can be saved without new sailcloth he cannot pay for.\",\"giver\":\"p1\",\"ask\":\"The storm of Herfstmaand tore De Zwaan's sails, and nobody will lend me a duit for new cloth. Could you go and look at them for me, and tell me whether anything can be saved before winter?\",\"stages\":[{\"text\":\"Harmen asked me to look over the torn sails of De Zwaan and judge what can be saved.\",\"say\":\"\",\"at\":\"l2\",\"with\":\"\",\"skill\":\"perception\",\"done\":\"Two sails are torn past saving, but the other two hang by rents that could be patched, if there were cloth to patch them with.\",\"goal\":\"Inspect the torn sails at the mill De Zwaan\",\"knows\":[{\"who\":\"p1\",\"line\":\"Harmen Molenaar says he has not had the heart to climb up and look since the storm.\"},{\"who\":\"p2\",\"line\":\"Klaas says the sails flapped like wet washing all night of the storm, and he heard the cloth go.\"}]}],\"outcome\":{\"name\":\"De Zwaan Turns Again\",\"text\":\"Patched with cloth cut from her own ruined sails, De Zwaan turns before winter, slow but steady. Harmen can grind and pump the polder again without owing anyone for it.\"}}}",
+  "problems": [
+    "no quest the game can carry could be built of it"
+  ]
+}

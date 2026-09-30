@@ -34,7 +34,7 @@ import { readScoreReply, readScoreRequest } from './dialogue/readscore'
 import { buildInput } from './chronicler'
 import { assignKeys, buildRequest, DEFAULT_LIMITS } from '../chronicler'
 import { askedOfStranger } from './dialogue/aftertalk'
-import { nightQuestReply } from './nightquest'
+import { makeNightQuest, nightQuestReply, type NightQuestReply } from './nightquest'
 
 // A fixed situation for every kind of model call (M10.20; Bram, 28 September
 // 2026: every kind of call really tried, and that written down). The same
@@ -306,8 +306,9 @@ const SITUATION_BUILDS: Record<string, Build> = {
     return { about: 'the gate district of Graafhaven, the first time the stranger does something there', request, check: (text) => (districtWords(text) ? checked(request, text) : ['the names and lines could not be read']) }
   },
   night_quest: async ({ base }, variant) => {
+    let played: Engine | undefined
     const request = await captured('night_quest', async (llm) => {
-      const engine = new Engine(base, { seed: 3 + variant, builder: true, llm })
+      const engine = (played = new Engine(base, { seed: 3 + variant, builder: true, llm }))
       const world = engine.world
       // Harmen in the Nethermarch; elsewhere the first person with no quest of their own. A second situation asks another thing.
       const asker = world.content.npcs.has('npc_harmen') ? 'npc_harmen' : [...world.content.npcs.values()].find((n) => world.alive(n.id) && ![...world.content.quests.values()].some((q) => q.givers.includes(n.id)))?.id
@@ -316,7 +317,14 @@ const SITUATION_BUILDS: Record<string, Build> = {
       engine.tick(((4 * 60 - (world.now % (24 * 60))) + 24 * 60) % (24 * 60) || 24 * 60)
       await engine.runModels()
     })
-    return { about: 'Harmen asked the stranger to look at his torn sails, and after the night round a quest is made of it', request, check: (text) => (nightQuestReply(text) ? checked(request, text) : ['the reply could not be read']) }
+    // The game takes it only when a quest can be built of it (two stages at least, each with a deed), as applyNightQuest does.
+    const want = { line: String(request.meta?.['line']), asked: String(request.meta?.['asked']), keys: (request.meta?.['keys'] as Record<string, string> | undefined) ?? {} }
+    const built = (value: unknown): string[] => {
+      const reply = value as NightQuestReply
+      if (!reply.make) return []
+      return played && makeNightQuest(played.world, want, reply) ? [] : ['no quest the game can carry could be built of it']
+    }
+    return { about: 'Harmen asked the stranger to look at his torn sails, and after the night round a quest is made of it', request, check: (text) => (nightQuestReply(text) ? checked(request, text, built) : ['the reply could not be read']) }
   },
   region_story: async ({ base }, variant) => {
     const request = await captured('region_story', async (llm) => {

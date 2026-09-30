@@ -315,3 +315,19 @@ Het gesprek van twintig zinnen met Mirte kostte $0,034 (17 zinnen met het model,
 - **Het verhaal van de Haakman** vertelt ze kort, met het ene beeld uit de lore en daarna iets van haarzelf ("I keep to the bakery and away from deep water").
 
 Niets is verzonnen: haar man Joris, het jaagpad en de weekdagen Maandag en Vrijdag staan in de content. De trouw blijft dus gelijk en de leesscore gaat omhoog; de regels blijven.
+
+## Een quest uit een verzoek, na de nachtronde (M10.30, 30 september 2026)
+
+Gemeten op Brams sleutel met Opus 5.5, zijn model voor de kroniekverteller (`npm run trial -- --kind night_quest --effort low|medium --record`), voor $0,104 samen, met zijn akkoord. De situatie: Harmen vraagt de vreemdeling naar zijn door de storm gescheurde zeilen te kijken, en na de nachtronde wordt daar een quest van gemaakt.
+
+| | Low (2×) | Medium (1×) |
+|---|---|---|
+| Invoer | 3.571 tokens | 3.571 tokens |
+| Uitvoer | 1.074 en 1.044 | 934 |
+| Kosten | $0,036 en $0,035 | $0,033 |
+| Tijd | 22 s en 16 s | 15 s |
+| Wat het spel ervan bouwt | beide een quest van drie stadia | niets: één stadium zonder commando |
+
+De twee antwoorden op low zijn trouw aan de wereld en aan wat Harmen vroeg: De Zwaan, Klaas die het oude zeildoek op zolder bewaarde, geen geld voor nieuw doek. Ze hebben drie stadia, elk met een daad, een doel en per persoon wat die weet. Geen van de drie noemde een verborgen waarheid; het verzoek had er ook geen. Het antwoord op medium stopte na één stadium met een leeg commando. De proefrit controleerde toen alleen de vorm en zei dat het spel het nam; de controle bouwt nu de quest zoals het spel doet, en keurt het af.
+
+**Keuze.** Low, op Opus 5.5 zoals de speler de kroniekverteller kiest. De invoer is 3.571 tokens in plaats van de geschatte 1.500: het antwoordschema en de vaste regels tellen mee. Een quest kost dus ongeveer 3,5 cent, hooguit één per speelnacht. Bij de standaardklok (anderhalf uur per speldag) is dat hooguit 2,4 cent per uur spelen, en alleen in een nacht waarin iemand de vreemdeling iets vroeg.
