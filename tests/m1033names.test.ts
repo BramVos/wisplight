@@ -51,6 +51,13 @@ describe('M10.33 S: one naming rule', () => {
     expect(w.knowsName('npc_edda_vale')).toBe(true)
     expect(text(await engine.handle('look'))).toMatch(/Here: (?:Dr )?Edda(?: Vale)?, the medic/)
   })
+
+  it('never says a name twice: a short that begins with it gives only the role after it', async () => {
+    const engine = new Engine(await loadContentFromDir(root, 'base'), { seed: 9, builder: true })
+    engine.start()
+    for (const c of ['@goto loc_veenhoek_bakery', '@bring mirte', 'talk mirte']) await engine.handle(c)
+    expect(engine.status().talk!.name).toBe('Mirte Bakker, the baker')
+  })
 })
 
 describe('M10.33 C: the goal in view', () => {

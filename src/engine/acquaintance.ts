@@ -67,7 +67,11 @@ export function knownShort(world: World, npcId: string): string {
   // The name first once it is known, by a talk or by hearing it (M10.33 S).
   if (!world.knowsName(npcId)) return short
   const name = knownName(world, npcId)
-  return short === name || short === callName(world.npc(npcId)) ? name : `${name}, ${short}`
+  const call = callName(world.npc(npcId))
+  if (short === name || short === call) return name
+  // A short that begins with the name gives only its role after it (M10.33: "Mirte Bakker, Mirte the baker").
+  const role = short.startsWith(`${call} `) ? short.slice(call.length + 1).replace(/^,\s*/, '') : short
+  return `${name}, ${role}`
 }
 
 /** The player and this person are in the same place (every quarter hour, from the simulation). */

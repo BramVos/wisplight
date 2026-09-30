@@ -19,6 +19,7 @@ Ontwerp: geen wijziging.
 - **Tell me more (E).** Bij iemand met een lopende quest of een open verzoek staat een chip "Tell me more"; in de terminal is dat 9, "What do you need of me?". Zonder model is het antwoord de zin van het stadium en de regel "Now:" met wat je nu kunt doen, ook op "What should I do?". Voorheen kwam daar een stoplap.
 - **Wat de stem weet (E).** Met een model krijgt de stem van de gever de zin mee bij wat ze van het verhaal weet.
 - **Inhoud.** Alle tien stadia van The Quiet Reach, de drie van de grijze kat en die van Off Skerrow hebben hun zin.
+- **Een naam niet twee keer (S, nagekomen).** De kop van een gesprek zei "Mirte Bakker, Mirte the baker": een korte naam die met de naam begint, geeft nu alleen de rol erna ("Mirte Bakker, the baker").
 
 Testen, in The Quiet Reach: praat met Ilyan (hij opent), zeg bye en praat weer (niet nog eens), en klik "Tell me more". Tests in `tests/m1033e.test.ts`.
 
