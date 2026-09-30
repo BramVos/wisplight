@@ -64,6 +64,36 @@ export function storyHere(world: World, locationId: string): string[] {
   return lines.length ? ['THE STORY HERE, all that is known of it now: name no other fact of it.', ...lines] : []
 }
 
+/**
+ * What a story keeps hidden at this place, for an improvisation (M10.33 J: CHECK ANTENNA said "the recordings are
+ * complete" against the story): the truths not yet given out, to be neither said nor denied. The guard keeps their
+ * words out of the narration.
+ */
+export function truthsHere(world: World, locationId: string): string[] {
+  const area = world.content.locations.get(locationId)?.area
+  const lines: string[] = []
+  for (const quest of world.content.quests.values()) {
+    if (!quest.truths?.length || !placesOf(quest).some((p) => p === locationId || p === area)) continue
+    const q = (world.state.questlog ?? {})[quest.id] as QuestState | undefined
+    if (q?.ended) continue
+    for (const truth of quest.truths) if (!((truth.from && q?.path.includes(truth.from)) || (truth.when.length && allHold(world, truth.when, quest.id)))) lines.push(`  ${truth.text.trim()}`)
+  }
+  return lines.length ? ['KEPT HIDDEN HERE (never say it, never say otherwise; tell only what is seen):', ...lines] : []
+}
+
+/**
+ * A conclusion about a thing (M10.33 J): whole, complete, tampered with, nothing missing. Only THE THING may say so;
+ * an improvisation tells what is seen.
+ */
+const CONCLUDES = /\b(?:is|are|looks?|seems?|appears?)\s+(?:\w+\s+)?(complete|intact|untouched|unaltered|undamaged|whole|in order|tampered with|altered|damaged|faulty)\b|\b(nothing (?:is )?(?:missing|wrong|amiss))\b|\b(all there)\b|\b(no sign of (?:tampering|damage|interference))\b/i
+
+/** The conclusion a narration draws that the thing's own words do not, or none. */
+export function concludes(narration: string, thing: string): string | undefined {
+  const m = CONCLUDES.exec(narration)
+  const said = m?.slice(1).find(Boolean)
+  return said && !thing.toLowerCase().includes(said.toLowerCase()) ? said.toLowerCase() : undefined
+}
+
 const patterns = new Map<string, RegExp | null>()
 
 /** A truth's words as a pattern; one that does not compile (the check refuses it) never matches. */

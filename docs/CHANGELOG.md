@@ -1,5 +1,18 @@
 # Changelog
 
+## M10.33 deel: de vrije vertelling houdt zich aan het verhaal (J), 30 september 2026
+
+- **Niet zeggen en niet tegenspreken (J).** Oorzaak: een improvisatie op een plek van een verhaal kreeg wel wat mensen weten, maar niet wat het verhaal verborgen houdt. Zo zei `check antenna` "the recordings are complete", terwijl het verhaal zegt dat er stukken uit zijn geknipt. Een improvisatie krijgt nu KEPT HIDDEN HERE: de waarheden van die plek die nog niet vrij zijn, om niet te zeggen en niet te ontkennen. De bewaker op verborgen waarheden houdt hun woorden buiten de vertelling, zoals voorheen.
+- **Geen conclusie (J).** De bewaker weigert nu een vertelling die een conclusie trekt die het ding zelf niet trekt: heel, compleet, niet aangeraakt, er ontbreekt niets. De vaste regel vroeg dat al; nu wordt het gecontroleerd. Opgelost in de motor, voor elke wereld.
+
+Testen, in The Quiet Reach: ga met een model naar de Listening Room en typ `check the antenna`. Tests in `tests/m1033story.test.ts`.
+
+Kosten: geen nieuwe aanroep. Een improvisatie op een plek van een verhaal krijgt de waarheden van die plek mee, zo'n 30 tot 80 tokens invoer. Gemeten op de vijf opgenomen improvisaties: geen enkele trekt een conclusie, dus geen tweede poging.
+
+Wat de editor en de kroniekverteller leerden: niets; een wereld kan hierdoor niets nieuws bevatten.
+
+Ontwerp: geen wijziging; de regel stond al in het ontwerp, nu houdt de bewaker hem.
+
 ## M10.33 deel: wat hier kan (D, AB), 30 september 2026
 
 - **Drie dingen om te proberen (D).** Oorzaak: de speler zag niet wat hij kon typen. Onder de commandobalk staan na elk antwoord drie chips uit de motor: de volgende daad van een open quest als die hier kan, iemand om mee te praten, een ding met een eigen werkwoord of iets te koop, een uitgang. Een klik zet het in de balk en Enter doet het. In de terminal staat dezelfde regel als "You could: ...". Iemand wiens naam je nog niet kent, heet er naar wat hij doet ("talk port coordinator"). De chips verdwijnen zolang er een venster open is.

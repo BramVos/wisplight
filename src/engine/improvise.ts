@@ -14,7 +14,7 @@ import { recordFact } from './news'
 import { queueSignal } from './signals'
 import { repute } from './social/factions'
 import { hasWeather, weather } from './weather'
-import { hiddenNamed, storyHere } from './quests/knows'
+import { concludes, hiddenNamed, storyHere, truthsHere } from './quests/knows'
 import type { World } from './world'
 
 // Improvisation (M10.16; Bram, 28 September 2026). Some acts the engine does
@@ -196,6 +196,8 @@ export function improviseRequest(world: World, imp: Improvisable): LlmRequest {
       ...(lore.length ? [`WHAT THE STRANGER KNOWS OF IT: ${lore.map((t) => t.summary ?? t.name).join(' ')}`] : []),
       // A place of a story (M10.30): what is known of it now, and no other fact of it.
       ...storyHere(world, world.state.player.location),
+      // And what it keeps hidden (M10.33 J): never said, never denied.
+      ...truthsHere(world, world.state.player.location),
       ...(earlier.length ? ['BEFORE, HERE (go on from this, do not repeat it):', ...earlier.map((e) => `- ${e.act}: ${e.narration} (${e.effect})`)] : []),
       `MAY (at most one): ${mayLines(world, imp.def).join('; ') || 'nothing'}.`,
       ...(imp.item && imp.def.takes ? [`What the stranger offers may be spent (left, poured out, taken): say so in spent.`] : []),
@@ -240,6 +242,8 @@ export function readImprovisation(world: World, imp: Improvisable, text: string)
   if (!narration || sentences > 5 || narration.split(/\s+/).length > 110 || strangeWords(world, narration).length || outOfCharacter(narration) || hasOurOaths(narration)) return { problem: 'invented' }
   // Nor a hidden truth of a story before its stage (M10.30): the recordings are not "complete" because a model says so.
   if (hiddenNamed(world, narration)) return { problem: 'invented' }
+  // Nor a conclusion the thing does not draw itself (M10.33 J): whole, complete, tampered with, nothing missing.
+  if (concludes(narration, imp.target.description)) return { problem: 'invented' }
   const raw = parsed.effect ?? {}
   const effect: ImprovisedEffect = {
     kind: (['item', 'state', 'condition', 'standing', 'fact', 'nothing'] as const).find((k) => k === raw.kind) ?? 'nothing',
