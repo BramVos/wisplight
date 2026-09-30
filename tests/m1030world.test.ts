@@ -4,6 +4,7 @@ import { Engine, type Content } from '../src/engine'
 import { checkContent } from '../src/engine/content'
 import { checkQuests } from '../src/engine/quests/check'
 import { saidHolds, verbWord } from '../src/engine/said'
+import { holds } from '../src/engine/quests/engine'
 import { loadContentFromDir } from '../src/node/content'
 import { content } from './helpers'
 
@@ -38,6 +39,18 @@ describe('M10.30: a word as a key', () => {
     expect(saidHolds(engine.world, { said: 'brand', to: 'npc_mirte' })).toBe(false)
     engine.tick(3 * 60)
     expect(saidHolds(engine.world, { said: 'brand', hours: 2 })).toBe(false)
+  })
+
+  it('Skerrow: her name said to Brannoc in a talk opens the talk about Ysolde, as his secret does', async () => {
+    const engine = await at(isle, 'loc_skerrow_harbour')
+    const talkOfYsolde = isle.quests.get('off_skerrow')!.actions!.find((a) => a.id === 'talk_of_ysolde')!
+    engine.state.flags = { ...engine.state.flags, kittiwake_mended: true }
+    const open = () => talkOfYsolde.when.every((c) => holds(engine.world, c))
+    expect(open()).toBe(false)
+    await engine.handle('@bring brannoc')
+    await engine.handle('talk brannoc')
+    await engine.handle('Was her name Ysolde?')
+    expect(open()).toBe(true)
   })
 
   it('opens the hangar of The Quiet Reach to its code, and hacks where the Nethermarch picks', async () => {

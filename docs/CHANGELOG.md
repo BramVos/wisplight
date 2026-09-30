@@ -1,5 +1,27 @@
 # Changelog
 
+## M10.30 deel: een woord als sleutel, en dingen doen met de wereld, 30 september 2026
+
+- **Codes en wachtwoorden.** Een slot opent met een sleutel, met een woord of met allebei. Bij de hangardeur in The Quiet Reach typ je `type 7411` of `enter the code 7411`; Tessa geeft je de code als ze je genoeg vertrouwt. Het spel onthoudt wat je laatst zei, in een gesprek, met `say` of met `type`. Een quest kan daarop wachten met de voorwaarde `said`: op Skerrow opent Brannoc zich ook als je de naam van Ysolde tegen hem zegt.
+- **Je eigen woord voor een slot.** In The Quiet Reach hack je (`hack in`), in de Nethermarch peuter je (`pick`). Een wereld zet dat in zijn stemkit, en het spel gebruikt het woord ook in zijn hints.
+- **Iets doen met een ding.** Een werkwoord op een detail kan nu iets doen. Het kan een voorwaarde hebben (een zaag bij je, een vlag), een proef, gevolgen (een vlag, iets krijgen of kwijtraken, een feit) en tijd. Op Skerrow knoop je touw aan de ijzeren paal op het klifpad (`tie rope to stake`), en dan kun je naar beneden, naar de getijdenpoelen, en weer terug.
+- **Een weg die wacht.** Een uitgang kan wachten tot iets waar is, met een regel voor als het nog niet kan. Mensen nemen zo'n weg zelf niet.
+- **Wat je alleen vindt als je ervan hoorde.** Onder de steenhoop bij de antenne op Orison Ridge ligt het noodvoorraadje van de eerste landmeters. Een gewone `search` vindt het nooit. Heb je ervan gehoord (Niko en Tessa kennen het verhaal), dan vind je het met `lift the stone` of `search cairn`, zonder worp.
+
+Testen:
+- In The Quiet Reach: ga naar de Workshop, typ `in`, dan `type 1234`, `hack in` en `type 7411`.
+- Vraag Niko naar de steenhoop, ga naar de luisterpost en typ `lift the stone`.
+- Op Skerrow: pak het touw op het strand, ga naar het klifpad, typ `down`, dan `tie rope to stake` en weer `down`.
+- Test in `tests/m1030world.test.ts`.
+
+Kosten: geen aanroep; alles gebeurt in de regels.
+
+Bekende gaten: een uitgang die wacht, staat al in de lijst met uitgangen. Wie hem probeert, krijgt de regel die zegt wat ontbreekt. Een geheime deur die je niet mag zien, kan dus nog niet. De vorm waarin een model een quest schrijft (de stap Verhalen en de nachtronde), kent nog geen code als daad; het contract noemt het wel.
+
+Wat de editor en de kroniekverteller leerden: het contract beschrijft `said`, `lock.word`, daden, uitgangen met `when`, verborgen dingen met `when`, `words` en `verbs`, en `verb_words`. Het locatiesjabloon heeft een daad en een uitgang die wacht. De stap Plekken en de stap Stem van de wereldgids vragen ernaar, en `docs/NEW-WORLD.md` noemt ze. Onder Check staan een slot zonder sleutel of woord, iets verborgens zonder woorden, en een daad met een stadium of een onbekende vaardigheid.
+
+Ontwerp: functioneel ontwerp, bij de wereld, alinea "Stand na M10.30: een woord als sleutel, en dingen doen met de wereld".
+
 ## M10.30 deel: The Quiet Reach krijgt zijn verhalen, 30 september 2026
 
 - **Drie verhaallijnen.** De hoofdlijn "The Orison Recordings" begint bij de start, bij Sorell. Ze heeft vijf stadia: Niko en het station, de opnamen kopiëren, de fout in de antenne, Tessa en de drive-proef, en Sorell confronteren. Daarnaast zijn er twee kleine lijnen in Port Vesper: "Short on the Count" (Mara mist kratten met nood-onderdelen) en "A Second Opinion" (Tessa vertrouwt de drive niet).

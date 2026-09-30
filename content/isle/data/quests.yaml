@@ -38,7 +38,8 @@ quests:
         say: ['(?:talk to|tell|comfort|reassure) brannoc about (?:ysolde|his wife|the crossing|the sea)(?: .*)?', 'talk (?:to brannoc )?about ysolde']
         intent: talk with Brannoc about his dead wife and his fear of the crossing
         with: npc_brannoc
-        when: [{ flag: kittiwake_mended }, { flag: "secret:npc_brannoc:afraid_to_sail" }]
+        # His fear told as a secret, or her name said to him in a talk (M10.30, a word as a key): either opens it.
+        when: [{ flag: kittiwake_mended }, { any: [{ flag: "secret:npc_brannoc:afraid_to_sail" }, { said: ysolde, to: npc_brannoc }] }]
         text: 'You talk about Ysolde, and the crossing, and how the sea is only the sea. Brannoc listens with his hands between his knees. At last he says, "She''d have wanted the boy to see the mainland one day. I''ll take you. First light."'
         effects: [{ set: brannoc_sails }, { relation: npc_brannoc, trust: 15 }]
       - id: ask_brannoc_to_sail
