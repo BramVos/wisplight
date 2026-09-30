@@ -1,5 +1,18 @@
 # Changelog
 
+## M10.33 deel: het verhaal tot nu toe en wat je nu kunt doen (AF), 30 september 2026
+
+- **De questpagina in drie delen (AF).** Oorzaak: de pagina toonde alleen de stadia en het huidige doel. Wat je vond, kwam in losse stukjes, en de aflopen van het laatste stadium waren onzichtbaar. Nu staat er "So far": de stadia met na elk wat de daad opleverde die het afsloot, in volgorde. Dan "Now", met wie het gaf en waar of met wie. Dan "You could", elke daad die nu kan zoals je hem typt, en in het laatste stadium "Ways it could end": de aflopen in je eigen woorden, zonder wat eruit komt.
+- **QUESTS (AF).** Per open quest staat ook wat nu kan, zoals je het typt.
+
+Testen, in The Quiet Reach: `journal the orison recordings` na een paar stappen, en `quests`. Tests in `tests/m1033page.test.ts`.
+
+Kosten: geen aanroep.
+
+Wat de editor en de kroniekverteller leerden: niets; een wereld kan hierdoor niets nieuws bevatten.
+
+Ontwerp: functioneel ontwerp, hoofdstuk 14, alinea "Stand na M10.33: het verhaal tot nu toe en wat je nu kunt doen".
+
 ## M10.33 deel: waar een weg heen gaat (I), 30 september 2026
 
 - **Over de rand van een gebied (I).** Oorzaak: de plattegrond was er per gebied, dus de Workshop (Vesper Works) stond nooit op die van Port Vesper. Nu volgt de plattegrond de begaanbare uitgangen naar een aangrenzend bewoond gebied. De plekken van het gebied zelf liggen zoals altijd, wat erbij komt in de vakjes die over zijn, naast waar het aansluit, zodat geen lijn door een andere plek loopt. De naam van het andere gebied staat erboven. Opgelost in de motor, voor elke wereld.

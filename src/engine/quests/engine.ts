@@ -749,12 +749,24 @@ export function questPage(world: World, questId: string): { name: string; lines:
   const quest = world.content.quests.get(questId)
   const q = questlog(world)[questId]
   if (!quest || !q) return undefined
-  // Only what the player has found out: the stages reached, never the summary (which gives the secret away).
-  const lines: string[] = []
+  // Only what the player has found out: the stages reached, never the summary (which gives the secret away). Since
+  // M10.33 AF (Bram: "ik begrijp nog steeds niet het hele verhaal") in three parts: the story so far, with what each
+  // deed brought after the stage it closed; what to do now; and what could be done, the ways it may end among them.
+  const lines: string[] = ['So far:']
+  const actions = quest.actions ?? []
+  const sets = (a: QuestAction) => a.effects.flatMap((e) => ('set' in e ? [e.set] : []))
+  const told = new Set<string>()
   for (const id of q.path) {
     const s = quest.stages?.find((x) => x.id === id)
-    if (s) lines.push(`- ${s.text}`)
+    if (!s) continue
+    lines.push(`- ${s.text}`)
+    const closes = new Set(s.next.flatMap((n) => n.when.flatMap((c) => ('flag' in c ? [c.flag] : []))))
+    for (const a of actions.filter((x) => q.done.includes(x.id) && !told.has(x.id) && sets(x).some((f) => closes.has(f)))) {
+      told.add(a.id)
+      lines.push(`  ${a.text.trim()}`)
+    }
   }
+  for (const a of actions.filter((x) => q.done.includes(x.id) && !told.has(x.id))) lines.push(`  ${a.text.trim()}`)
   // What the stranger can do now (M10.30), while it is open.
   const goal = q.ended ? undefined : quest.stages?.find((s) => s.id === q.stage)?.goal
   if (goal) lines.push(`Now: ${goal}`)
@@ -772,6 +784,13 @@ export function questPage(world: World, questId: string): { name: string; lines:
     // A deed with someone is done where they are (M10.33 AA): with whom.
     const people = [...new Set(open.filter((a) => a.with && !a.at.length).map((a) => a.with!))].filter((n) => world.content.npcs.has(n))
     if (people.length) lines.push(`With: ${people.map((n) => `[${world.knowsName(n) ? world.npc(n).name : world.seenName(n)}]`).join(', ')}.`)
+    // What could be done, as the player types it; the ways it may end in the player's own words, never their outcome.
+    const ending = new Set((quest.outcomes ?? []).flatMap((o) => o.when.flatMap((c) => ('flag' in c ? [c.flag] : []))))
+    const typed = (a: QuestAction) => `- ${plainWords(a.say[0] ?? a.intent ?? '').toUpperCase()}`
+    const ways = open.filter((a) => !sets(a).some((f) => ending.has(f)))
+    const ends = open.filter((a) => sets(a).some((f) => ending.has(f)))
+    if (ways.length) lines.push('You could:', ...ways.map(typed))
+    if (ends.length) lines.push('Ways it could end:', ...ends.map(typed))
   }
   const clock = Object.values(world.state.clocks ?? {}).find((c) => (c as Clock).id.startsWith(questId) || (quest.stages ?? []).some((s) => s.on_enter.some((e) => 'clock' in e && e.clock.id === (c as Clock).id))) as Clock | undefined
   if (clock && !q.ended) lines.push(`${clock.name}: ${clock.filled}/${clock.size}.`)
@@ -795,7 +814,9 @@ export function questLines(world: World): { open: string[]; over: string[] } {
       continue
     }
     const stage = quest.stages?.find((s) => s.id === q.stage)
-    open.push(`  ${quest.name}: ${stage?.text.trim() ?? ''}${stage?.goal ? ` Now: ${stage.goal}` : ''}`)
+    // What could be done now, as typed (M10.33 AF): the page of the quest has the whole of it.
+    const could = (quest.actions ?? []).filter((a) => !(a.once && q.done.includes(a.id)) && allHold(world, a.when, id)).map((a) => plainWords(a.say[0] ?? a.intent ?? '').toUpperCase())
+    open.push(`  ${quest.name}: ${stage?.text.trim() ?? ''}${stage?.goal ? ` Now: ${stage.goal}` : ''}${could.length ? ` You could: ${could.slice(0, 4).join('; ')}.` : ''}`)
   }
   return { open, over }
 }

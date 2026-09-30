@@ -141,7 +141,7 @@ describe('M10.30 (3): a quest shows where it stands and what to do now', () => {
     expect(engine.page('quest_grey_cat_on_the_doorstep')!.lines).toContain('Now: Find out what happened to Fenna Visser.')
     const list = said(await engine.handle('quests'))
     expect(list).toMatch(/^Open:\n {2}The Grey Cat on the Doorstep: Fenna Visser is missing\.[^\n]* Now: Find out what happened to Fenna Visser\./)
-    expect(said(await engine.handle('journal grey cat'))).toMatch(/^The Grey Cat on the Doorstep\n- Fenna Visser is missing/)
+    expect(said(await engine.handle('journal grey cat'))).toMatch(/^The Grey Cat on the Doorstep\nSo far:\n- Fenna Visser is missing/)
     expect(said(await engine.handle('help journal'))).toMatch(/quests \(what you took up/)
   }, 30_000)
 })
