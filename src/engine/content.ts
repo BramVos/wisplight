@@ -8,7 +8,7 @@ import { DEFAULT_PALETTE, MapPaletteSchema, WorldMapSchema } from './map/palette
 import { BellSchema, SoundSchema } from './sound'
 import { ImproviseSchema } from './improvise'
 import { CreatureSchema, EncounterSchema, knownPeople, RulesSchema, type Creature, type Effect, type Encounter, type Rules, type Talent } from './rules/schema'
-import { ConditionSchema, QuestBodySchema } from './quests/schema'
+import { ConditionSchema, QuestBodySchema, QuestEffectSchema } from './quests/schema'
 import { checkQuests } from './quests/check'
 import { AftermathSchema, IntentionSchema, PlanSchema, VerbTextSchema, WatcherSchema, type Aftermath, type Intention, type Plan, type VerbText, type Watcher } from './quests/planschema'
 import { TideSchema, type Tide } from './tideschema'
@@ -182,7 +182,9 @@ export function inSeason(affordance: Pick<Affordance, 'months'>, month: number):
  */
 export const LockSchema = z
   .object({
-    key: z.string(),
+    key: z.string().optional().describe('The item that opens it. A lock has a key, a word, or both.'),
+    word: z.string().optional().describe('A word or code that opens it (M10.30): the stranger types or says it here (TYPE 4471, SAY ORISON), case and spaces aside.'),
+    word_text: z.string().optional().describe('What happens when the word is given: "The panel blinks green and the bolts draw back." Without it, a plain line.'),
     dc: z.number().int().min(5).max(30).optional(),
     quality: z.enum(['crude', 'common', 'good', 'fine', 'masterwork']).default('common'),
     material: z.enum(['wood', 'iron', 'brass']).default('iron'),
@@ -225,12 +227,37 @@ export type PropTemplate = z.infer<typeof PropTemplateSchema>
  * touch) have their own line; what a verb has no line for, it answers in a
  * way that leaves the thing be.
  */
+/**
+ * A deed on a thing of the world (M10.30, Bram: saw down a tree to reach a
+ * roof, press the stone): a verb on a detail that does something, in the form
+ * a quest's action has. What must hold (a saw carried, a flag), a check, what
+ * it does (a flag, a place's state, a thing given or taken, a fact), and its
+ * line; once, unless said otherwise.
+ */
+export const DeedSchema = z
+  .object({
+    text: z.string().describe('What happens when it works.'),
+    when: z.array(ConditionSchema).default([]).describe('What must hold first, as in a quest: a thing carried ({ has: saw }), a flag, something known.'),
+    not_yet: z.string().optional().describe('Said when it does not hold: "You would need a saw for that."'),
+    check: z.object({ skill: z.string(), dc: z.number().int().min(5).max(30) }).strict().optional().describe('A check it takes, with its skill.'),
+    fail_text: z.string().optional().describe('Said when the check fails; it may be tried again.'),
+    effects: z.array(QuestEffectSchema).default([]).describe('What it does, as a quest effect: set a flag (an exit or a variant may wait for it), a place\'s state, give or take a thing, a fact.'),
+    minutes: z.number().int().min(0).default(5).describe('How long it takes.'),
+    once: z.boolean().default(true).describe('Done once; after that `done` is said.'),
+    done: z.string().optional().describe('Said when it was done already.'),
+  })
+  .strict()
+export type Deed = z.infer<typeof DeedSchema>
+
 export const DetailSchema = z
   .object({
     words: z.array(z.string()).min(1),
     look: z.string(),
     take: z.string().optional(),
-    verbs: z.record(z.string(), z.string()).optional().describe('Lines for other verbs: { drink: "...", climb: "..." }.'),
+    verbs: z
+      .record(z.string(), z.union([z.string(), DeedSchema]))
+      .optional()
+      .describe('Other verbs: a line ({ drink: "...", climb: "..." }), or a deed that does something (M10.30: { saw: { when: [{ has: saw }], text, effects: [{ set: tree_down }] } }).'),
   })
   .strict()
 export type Detail = z.infer<typeof DetailSchema>
@@ -254,8 +281,15 @@ export const HiddenSchema = z
     item: z.string().optional().describe('A thing that lies there, found: it is on the ground.'),
     qty: z.number().int().positive().default(1),
     topic: z.string().optional().describe('A topic learnt by finding it.'),
+    when: z
+      .array(ConditionSchema)
+      .optional()
+      .describe('Found only by someone who knows of it (M10.30: a stone you heard of): with these conditions it is never found by a roll, only by SEARCH <words> or one of its verbs, once they hold ({ knows: <topic> }).'),
+    words: z.array(z.string()).optional().describe('What the stranger names to find it: "loose stone", "stone". Needed with `when`.'),
+    verbs: z.array(z.string()).optional().describe('Verbs besides SEARCH that find it: [press, push].'),
   })
   .strict()
+export type Hidden = z.infer<typeof HiddenSchema>
 
 export const ObjectTypeSchema = z.object({
   id: z.string().regex(/^[a-z0-9_]+$/).describe('The object type\'s id: a key, never changed once committed, and never shown to the player.'),
@@ -336,6 +370,8 @@ const Exit = z.object({
   to: z.string(),
   minutes: z.number().int().positive().default(1),
   lock: LockSchema.optional(),
+  when: z.array(ConditionSchema).optional().describe('What must hold to go this way (M10.30), as in a quest: the roof, once the tree is down ({ flag: tree_down }).'),
+  not_yet: z.string().optional().describe('Said when it does not hold: "The roof is out of reach."'),
 })
 
 export const LocationSchema = z.object({
@@ -1470,11 +1506,18 @@ function checkReferences(world: WorldDef | undefined, c: Omit<Content, 'world'>)
       for (const id of [...Object.keys(aff.consumes), ...Object.keys(aff.produces)]) item(id, `object type ${type.id}.${aff.id}`)
     }
   }
+  // A lock opens with a key that exists, a word, or both (M10.30).
+  const lock = (l: { key?: string; word?: string } | undefined, where: string) => {
+    if (!l) return
+    if (!l.key && !l.word?.trim()) problems.push(`${where}.lock: neither a key nor a word opens it`)
+    if (l.key) item(l.key, `${where}.lock`)
+  }
   for (const loc of c.locations.values()) {
     if (!c.areas.has(loc.area)) problems.push(`${loc.id}: unknown area ${loc.area}`)
     for (const [direction, exit] of Object.entries(loc.exits)) {
       if (!exit) continue
       location(exit.to, `${loc.id}.exits.${direction}`)
+      lock(exit.lock, `${loc.id}.exits.${direction}`)
       const back = c.locations.get(exit.to)
       if (back && !Object.values(back.exits).some((e) => e?.to === loc.id) && !loc.tags.includes('one_way')) {
         problems.push(`${loc.id}: exit ${direction} to ${exit.to} has no way back`)
@@ -1482,6 +1525,7 @@ function checkReferences(world: WorldDef | undefined, c: Omit<Content, 'world'>)
     }
     for (const obj of loc.objects) {
       if (!c.objectTypes.has(obj.type)) problems.push(`${loc.id}.${obj.id}: unknown object type ${obj.type}`)
+      lock(obj.lock, `${loc.id}.${obj.id}`)
       npc(obj.owner, `${loc.id}.${obj.id}.owner`)
       npc(obj.provider, `${loc.id}.${obj.id}.provider`)
       for (const s of obj.staff) npc(s, `${loc.id}.${obj.id}.staff`)

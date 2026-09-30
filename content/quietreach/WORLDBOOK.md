@@ -162,6 +162,7 @@ What the main line keeps hidden until its stage (a fixed truth of this world):
 | The Night of the Open Door | Seventeen years ago a maintenance team was stranded in a winter storm, and a steward kept the outer reception module open until the last three came home. |
 | The Return Check | Anyone going to Orison alone reports a destination and a time to check in. If that time passes, the watch tries the radio first. |
 | The second observation | Whenever the Orison signal seems to change, the raw recording is kept and the instruments are checked before anyone believes it. |
+| The survey cairn | The first survey crew on Nacre built a cairn of flat stones by the antenna footing on Orison Ridge, and left an emergency cache under the top stone. |
 | The Transit Families | Families who have moved between settlements for generations, hauling cargo, making repairs and trading. |
 
 ## 4. Powers
@@ -386,6 +387,7 @@ When a drone goes wrong, the first question in the Workshop is never sabotage. I
 | --- | --- |
 | Dr Ilyan Sorell | He listed emergency heating and water parts as ordinary research stock so that he could use them in a Peregrine test. |
 | Niko Serrin | He fitted an unofficial bypass in the antenna system at Orison Ridge to keep the measurements running, and he never reported it. |
+| Tessa Rook | Tessa keeps the hangar code, 7411, and changes it only after a ship goes out. |
 
 ## 11. Bestiary
 

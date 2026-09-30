@@ -35,7 +35,8 @@ describe('M10.20: the real run of a world', () => {
     const files = newWorldFiles('quietreach', 'The Quiet Reach')
     const places = worldStepRequest(files, 'places', 'A port.').system
     // Details were written with "id" and "names" when only the kind was named.
-    expect(places).toContain('details?: list of { words: list of text; look: text; take?: text; verbs?: a map of names to text }')
+    // A verb is a line, or since M10.30 a deed that does something.
+    expect(places).toMatch(/details\?: list of \{ words: list of text; look: text; take\?: text; verbs\?: a map of names to \(text or SHAPE \d+\) \}/)
     expect(places).toMatch(/SHAPE \d+: \(\{ flag: text/)
     const calendar = worldStepRequest(files, 'calendar', 'Thirteen months.').system
     expect(calendar).toContain('stay?: number from 0 to 1')

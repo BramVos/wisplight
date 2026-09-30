@@ -31,6 +31,7 @@ export interface KnowsClaim {
 }
 
 type Cond =
+  | { said: string; to?: string; at?: string; hours?: number }
   | { flag: string; is?: string | number | boolean }
   | { not_flag: string }
   | { knows: string | KnowsClaim }
@@ -147,6 +148,15 @@ export const ConditionSchema: z.ZodType<Cond> = z.lazy(() =>
     z.object({ needs_from: z.tuple([z.string(), z.string()]) }).strict().describe("Someone's work takes in what a place makes: the baker's oven the mill's flour (M10.3)."),
     z.object({ same: z.tuple([z.string(), z.string()]) }).strict().describe('Two bindings are the same one: the one who heard it is the one it is about (M10.3).'),
     z.object({ did: z.string(), who: z.string(), to: z.string() }).strict().describe('A fact of this kind about the first and the second, in that order: who chased whom off.'),
+    z
+      .object({
+        said: z.string().describe('A word or words the stranger said (M10.30): to someone in a talk, with SAY, or typed with TYPE; case and spaces aside, as whole words.'),
+        to: z.string().optional().describe('Said to this person.'),
+        at: z.string().optional().describe('Said at this place or in this area.'),
+        hours: z.number().positive().optional().describe('Within so many hours; without, any time the game still remembers (its last forty lines).'),
+      })
+      .strict()
+      .describe('The stranger said a word: a password, a code, an answer to a question.'),
     z.object({ any: z.array(ConditionSchema) }).strict().describe('At least one of these holds.'),
     z.object({ all: z.array(ConditionSchema) }).strict().describe('All of these hold.'),
     z.object({ not: ConditionSchema }).strict().describe('This does not hold.'),

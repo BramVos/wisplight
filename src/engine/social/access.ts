@@ -12,6 +12,7 @@ import { propById } from '../props'
 import type { World } from '../world'
 import { crime, whoNoticed } from './crime'
 import { householdOf, isSomeonesHome, ownerOf } from './ownership'
+import { verbWord } from '../said'
 
 // Access as a right (M10.3, "Eigendom en betrapt worden"). A door or a chest
 // can have a lock with a key id: it opens with the key, by force (Athletics,
@@ -48,16 +49,22 @@ export function lockDc(world: World, lock: Pick<Lock, 'dc' | 'quality' | 'materi
 export const exitLockId = (from: string, direction: string) => `exit:${from}:${direction}`
 export const objectLockId = (location: string, object: string) => `object:${location}/${object}`
 
-/** Through a locked door: with the key it opens; without, it does not. */
-export function passLock(world: World, from: string, direction: string, lock: Pick<Lock, 'key'> | undefined): { ok: boolean; text?: string } {
+/** How a lock may be got past, as the stranger reads it (M10.30: a code to type, and the world's own word for picking). */
+function lockWays(world: World, lock: Pick<Lock, 'key' | 'word'>, what: string): string {
+  const pick = verbWord(world, 'pick').toUpperCase()
+  return `(${lock.word ? 'TYPE the code or SAY the word, ' : ''}${pick} ${what} to ${pick === 'PICK' ? 'pick the lock' : 'get past the lock'}, FORCE ${what} to break it open.)`
+}
+
+/** Through a locked door: with the key it opens; without, it does not. A word given here opened it already (said.ts). */
+export function passLock(world: World, from: string, direction: string, lock: Pick<Lock, 'key' | 'word'> | undefined): { ok: boolean; text?: string } {
   if (!lock) return { ok: true }
   const id = exitLockId(from, direction)
   if (lockOpen(world, id)) return { ok: true }
-  if ((world.state.player.inventory[lock.key] ?? 0) > 0) {
+  if (lock.key && (world.state.player.inventory[lock.key] ?? 0) > 0) {
     ;(world.state.locks ??= {})[id] = 'open'
     return { ok: true, text: `You unlock the door with the ${itemName(world.content, lock.key, 1)}.` }
   }
-  return { ok: false, text: `The door is locked. You have no key to it. (PICK ${direction.toUpperCase()} to pick the lock, FORCE ${direction.toUpperCase()} to break it open.)` }
+  return { ok: false, text: `The door is locked.${lock.key ? ' You have no key to it.' : ' It wants a code.'} ${lockWays(world, lock, direction.toUpperCase())}` }
 }
 
 /** An object here by its name: a chest, a strongbox. */
@@ -86,7 +93,7 @@ export function openObject(world: World, words: string): Output[] {
   if (object.lock) {
     const id = objectLockId(here, object.id)
     if (!lockOpen(world, id)) {
-      if ((world.state.player.inventory[object.lock.key] ?? 0) <= 0) return [{ kind: 'error', text: `${cap(theName(name))} is locked. (PICK ${name.toUpperCase()} to pick the lock, FORCE ${name.toUpperCase()} to break it open.)` }]
+      if (!object.lock.key || (world.state.player.inventory[object.lock.key] ?? 0) <= 0) return [{ kind: 'error', text: `${cap(theName(name))} is locked. ${lockWays(world, object.lock, name.toUpperCase())}` }]
       ;(world.state.locks ??= {})[id] = 'open'
     }
   }

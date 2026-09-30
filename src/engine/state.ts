@@ -809,6 +809,8 @@ export interface GameState {
   /** Locks opened with their key, picked or broken (M10.3), or jammed by a bad pick (M10.5), by exit:<from>:<direction> or object:<location>/<object>. */
   locks?: Record<string, 'open' | 'broken' | 'jammed'>
   /** Conversation facts of today (M10.3): how many, and about whom. */
+  /** What the stranger said lately (M10.30, a word as a key): to whom, where and when; the last forty lines. */
+  said?: { t: number; text: string; to?: string; at: string }[]
   /** Quests that would have begun while their region had its fill (M10.30), and do not wake again by themselves. */
   questsWaiting?: string[]
   /** Quests the night round made in play (M10.30 (7)), the night it last made or tried one, and the ask it is working on. */

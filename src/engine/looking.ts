@@ -8,6 +8,7 @@ import { GameClock } from './clock'
 import { allHold } from './quests/engine'
 import type { Location } from './content'
 import type { World } from './world'
+import type { Deed } from './content'
 
 // Looking (M10.4): at yourself, a way out, a place you can see, and a thing,
 // with where it is. What lights up in a description can always be looked at.
@@ -125,7 +126,9 @@ export interface DetailFound {
   name: string
   look: string
   take?: string
-  verbs?: Record<string, string>
+  verbs?: Record<string, string | Deed>
+  /** Its first word, for the deed it may do (M10.30). */
+  key: string
 }
 
 /**
@@ -145,7 +148,7 @@ export function detailHere(world: World, words: string): DetailFound | undefined
   const someone = [...world.content.npcs.values()].some((n) => n.name.toLowerCase().split(/\s+/).includes(last))
   const cutShort = (w: string) => last.length >= 3 && !someone && w.toLowerCase().split(/\s+/).some((x) => x.startsWith(last))
   const found = all.find((d) => d.words.some((w) => w.toLowerCase() === wanted)) ?? all.find((d) => d.words.some((w) => w.toLowerCase() === last)) ?? all.find((d) => d.words.some(anyWord)) ?? all.find((d) => d.words.some(cutShort))
-  return found ? { name: `the ${found.words[0]}`, look: found.look, take: found.take, verbs: found.verbs } : undefined
+  return found ? { name: `the ${found.words[0]}`, look: found.look, take: found.take, verbs: found.verbs, key: found.words[0]! } : undefined
 }
 
 /** Small words that name no thing on their own: "of" does not find the bowl of milk. */

@@ -102,17 +102,19 @@ A list; each has:
 | improvise | An act the rules do not know, done here, may be improvised (M10.16): what it can mean and what may happen. | a map: domain, may, fallback, takes | no |  |
 | description | What the stranger sees: three to five sentences, second person, present tense, one sense other than sight, a hint at an exit; by day, and at night when it reads otherwise. | a map: day, night | yes |  |
 | variants | Other descriptions once a flag is set (the doorstep without the cat, once Fenna is home), or while conditions hold (M10.6: the mill turning again once De Zwaan is mended). The last that fits is shown. | list of a map: flag, when, day, night | no | [] |
-| exits | The ways out, per direction: the location it leads to, the minutes on foot, and a lock if there is one. | a map of names to a map: to, minutes, lock | no | {} |
+| exits | The ways out, per direction: the location it leads to, the minutes on foot, and a lock if there is one. | a map of names to a map: to, minutes, lock, when, not_yet | no | {} |
 | objects | The objects that stand here, each of an object type, with their own state and owner. | list of a map: id, type, name, description, owner, household, staff, provider, hours, days, ... | no | [] |
 | services | What can be bought, sold, hired or rented here, from whom, and when. | list of a map: id, sells, buys, lodging, provider, staff, premises, hours, days, supply, ... | no | [] |
 | items | Things lying here at the start, by item id and count. | a map of names to number | no | {} |
 | pos | Where on the map of the land it lies, in km, when not at its area's position (a tow path, a weir). | 2 values | no |  |
 | forage | Grounds of the zone that can be gathered from here (M10.5): the fen's herbs, the shore's kelp. | list of text | no | [] |
-| hidden | What lies hidden here (M10.5): SEARCH finds it. | list of a map: id, dc, text, item, qty, topic | no | [] |
+| hidden | What lies hidden here (M10.5): SEARCH finds it. | list of a map: id, dc, text, item, qty, topic, when, words, verbs | no | [] |
 | details | Things the description names that you can look at and handle (after the M10 playtest): the hollow, the bowl of milk. | list of a map: words, look, take, verbs | no | [] |
 | arrival | A place worth a moment (M10.11): two or three sentences for the first time you reach it, in mist, at night or in a storm if it reads otherwise then, and how it looks when it comes into view from afar (a landmark). | a map: text, mist, night, storm, far | no |  |
 
 `arrival`: two or three sentences for the first time the stranger reaches it (with `night`, `mist` or `storm` where it reads otherwise then, and `far` for how a landmark looks from afar): on the start place, and on every gate or landmark. Left out, a place gets no card.
+
+Doing things with the world (M10.30): a verb of a detail may be a deed instead of a line: `when` (conditions, such as `{ has: saw }`), `not_yet`, `check`, `effects` (as in a quest: `set` a flag, `take` or `give` a thing, a fact), `text`, `once` and `done`. An exit may have `when` and `not_yet`: the way opens when they hold (the roof once `tree_down` is set), and people keep to the other ways. Something `hidden` may have `when` (`{ knows: <topic> }`), `words` and `verbs`: then only someone who knows of it finds it, with SEARCH <words> or one of its verbs, never by a roll. A `lock` opens with `key`, `word` (a code the stranger types or says; `word_text` for what happens) or both.
 
 ## professions (data/professions.yaml)
 
@@ -412,7 +414,10 @@ One block with:
 | time | How people here tell the time: "at the third bell". Money comes from world.yaml. | list of text | no | [] |
 | distance | How people here tell distance: "an hour's walk", "two locks on". | list of text | no | [] |
 | measures | The measures people here use for weight, length and volume. | list of text | no | [] |
+| verb_words | The world's own words for a verb of the game (M10.30): { pick: [hack, bypass] }. The stranger may type them, and the game names the verb by the first. | a map of names to list of text | no | {} |
 | not_here | What does not exist here, and what people say instead. A word with a capital (a month, a weekday) is only that word with its capital; one without an alternative makes the game ask the reply again. | list of a map: word, instead | no | [] |
+
+`verb_words`: the world's own words for a verb of the game, `{ pick: [hack, bypass] }`: the stranger may type them, and the game names the verb by the first (M10.30).
 
 ## land (lands/<land>/land.yaml)
 
@@ -494,7 +499,7 @@ A list; each has:
 | closed | When it does not go now, in words (its days and hours). | text | no |  |
 | off | When it does not run at all while its conditions fail (the Lamp out), in words. | text | no |  |
 | where | Where it stops, in words, for someone who asks. | text | no |  |
-| when | Only while these hold (the Lamp lit, the road open). | list of one of: a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map | no | [] |
+| when | Only while these hold (the Lamp lit, the road open). | list of one of: a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map | no | [] |
 | sights | What you may see on a journey of days. | list of text | no | [] |
 
 `legs`: minutes between two of its stops that the map cannot measure, keyed `<stop>><stop>` with a `>` between the ids (`loc_quay>kestrel_landing: 90`).
@@ -636,7 +641,7 @@ A list; each has:
 | event | A name for what happened, for an aftermath that answers only this event of the signal. | text | no |  |
 | fact | A new fact with a claim of this key, and of this value or kind if given. Its people: $subject, $value, $about. | a map: key, value, not, kind | no |  |
 | belief | Someone comes to believe a claim of this key (and value or kind): $a who believes it, $b who told them (M8.2). | a map: key, value, kind | no |  |
-| when | Conditions that come true: a signal each time they do. | list of one of: a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map | no |  |
+| when | Conditions that come true: a signal each time they do. | list of one of: a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map | no |  |
 | probe | A state the system works out: a house nobody has lived in for so many days ($place), a household that rose so many standings ($a and the rest of it). | one of: a map: house_empty \| a map: standing_rise \| a map: grudge \| a map: strangers_stay \| a map: friction \| a map: shortage \| a map: surplus \| a map: price_doubled \| a map: missing_trade \| a map: befriended \| a map: pulse | no |  |
 | who | Who it is about; for a fact, by default the subject and the value of its claim. | list of text | no |  |
 | place | Where it happens, when the conditions do not say. | text | no |  |
@@ -684,7 +689,7 @@ A list; each has:
 | id | The aftermath's id: a key, never changed once committed, and never shown to the player. | text | yes |  |
 | signal | The signal it follows. | text | yes |  |
 | event | Only for this event of the signal; left out, for every event. | text | no |  |
-| when | Only when these hold, with the bindings of the signal. | list of one of: a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map | no | [] |
+| when | Only when these hold, with the bindings of the signal. | list of one of: a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map | no | [] |
 | topic | One plan per person per topic: a second signal about the same does not start a second plan. | text | yes |  |
 | expires | Days after which what is left of it lapses. | number | no | 30 |
 | groups | The groups it moves, by area: everyone who lives there, alive and not travelling with the stranger. | a map of names to a map: areas, npcs, except | no | {} |
@@ -705,7 +710,7 @@ A list; each has:
 | id | The intention's id: a key, never changed once committed, and never shown to the player. | text | yes |  |
 | signal | The signal it answers. | text | yes |  |
 | event | Only for this event of the signal; left out, for every event. | text | no |  |
-| when | Who may choose it: conditions with $a the one who chooses. | list of one of: a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map | no | [] |
+| when | Who may choose it: conditions with $a the one who chooses. | list of one of: a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map \| a map | no | [] |
 | topic | What it is about: one plan per person per topic. | text | yes |  |
 | expires | Days after which what is left of it lapses. | number | no | 14 |
 | groups | The groups it moves, by area: everyone who lives there, alive and not travelling with the stranger. | a map of names to a map: areas, npcs, except | no | {} |

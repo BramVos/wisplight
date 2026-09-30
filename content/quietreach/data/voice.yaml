@@ -95,3 +95,6 @@ voice:
       instead: "a bad connection"
     - word: "outsider"
       instead: "visitor, the specialist; outsider only when someone means to sound distant or accusing"
+  # What people here call getting past a lock without its code (M10.30): HACK THE DOOR is PICK THE DOOR.
+  verb_words:
+    pick: [hack, bypass]

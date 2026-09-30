@@ -3,7 +3,7 @@ import { tellChronicler } from './wishes'
 import { framesLines, setFrame } from './frames'
 import { lookSky } from './weather'
 import { knownName, knownShort, knowsOfPerson, publicShort } from './acquaintance'
-import { inSeason } from './content'
+import { type Deed, inSeason } from './content'
 import { describeSelf, descriptionNow, detailHere, lookThere, lookThing, sceneryHere } from './looking'
 import { choose, MAX_OPTIONS, offer, type ChoiceOption } from './choice'
 import { force, objectHere, openObject, passLock, pick, takeFrom } from './social/access'
@@ -12,7 +12,7 @@ import { damagedBlock, failedMake, gaveOwnWork, helpedRepair, isOwnWork, ownWork
 import { giftMakesGood } from './amends'
 import { improvisable, type Improvisable } from './improvise'
 import { keptByGift } from './agreements'
-import { gather, searchHere, track, treat } from './skills'
+import { gather, searchFor, searchHere, track, treat } from './skills'
 import { ownerOf, ownersHere } from './social/ownership'
 import { returnLent } from './agreements'
 import { crowdLines } from './growth/crowds'
@@ -38,7 +38,7 @@ import { nightOut, rest } from './rules/player'
 import { barredWay } from './quests/antagonists'
 import { ONCE, useBlessing } from './rules/blessings'
 import { closedBetween, placeStateLine } from './quests/plans'
-import { active } from './quests/engine'
+import { allHold, active } from './quests/engine'
 import { approve, restParty } from './social/companions'
 import { deed } from './social/deeds'
 import { recognisedSale, refusedTrade, returnStolen } from './social/crime'
@@ -188,7 +188,8 @@ export function runCommand(host: CommandHost, command: Command): Output[] {
       return track(host, words, words ? findNpcAnywhere(world, words) : undefined)
     }
     case 'search':
-      return searchHere(host)
+      // SEARCH <words> for what you heard of (M10.30), else the roll as ever.
+      return (command.args.length ? searchFor(host, 'search', command.args.join(' ')) : undefined) ?? searchHere(host)
     case 'force': {
       const direction = parseDirection(command.args[0])
       const out = force(world, command.args.join(' '), direction)
@@ -313,6 +314,9 @@ Lines here: ${lines.join(', ')}.` : HELP }]
       if (imp) return [{ kind: 'text', text: imp.def.fallback, improvise: imp }]
       // Any other verb on someone or something here, or in the pack: what can be done instead (M10.29 T and N: "poke
       // edda", "operate scanner").
+      // PRESS THE STONE (M10.30): a verb that finds what lies hidden for someone who knows of it.
+      const pressed = command.args.length ? searchFor(host, said, command.args.join(' ')) : undefined
+      if (pressed) return pressed
       const could = couldInstead(world, said, command.args.join(' '))
       if (could) return [text(could)]
       // Any other verb on a thing the description names: it stays as it is (after the M10 playtest).
@@ -324,13 +328,28 @@ Lines here: ${lines.join(', ')}.` : HELP }]
   }
 }
 
+/** What a thing of this place has for this verb (DRINK MILK): its line, or (M10.30) a deed that does something. */
+function detailOwn(world: World, command: Command): { line?: string; deed?: Deed; key: string } | undefined {
+  if (!command.args.length || ['look', 'examine', 'take', 'go'].includes(command.verb)) return undefined
+  const detail = detailHere(world, command.args.join(' '))
+  if (!detail?.verbs) return undefined
+  const said = command.raw.trim().split(/\s+/)[0]!.toLowerCase()
+  const verb = detail.verbs[command.verb] !== undefined ? command.verb : said
+  const own = detail.verbs[verb]
+  if (own === undefined) return undefined
+  const key = `${world.state.player.location}:${detail.key}:${verb}`
+  return typeof own === 'string' ? { line: own, key } : { deed: own, key }
+}
+
 /** The line a thing of this place has for this verb (DRINK MILK), if it has one. */
 export function detailVerb(world: World, command: Command): string | undefined {
-  if (!command.args.length || ['look', 'examine', 'take', 'go'].includes(command.verb)) return undefined
-  const verbs = detailHere(world, command.args.join(' '))?.verbs
-  if (!verbs) return undefined
-  const said = command.raw.trim().split(/\s+/)[0]!.toLowerCase()
-  return verbs[command.verb] ?? verbs[said]
+  return detailOwn(world, command)?.line
+}
+
+/** The deed a thing of this place does for this verb (SAW TREE, M10.30), with the key it is done under. */
+export function detailDeed(world: World, command: Command): { deed: Deed; key: string } | undefined {
+  const own = detailOwn(world, command)
+  return own?.deed ? { deed: own.deed, key: own.key } : undefined
 }
 
 /** Nested runs of a picked option: one is enough, so a choice never loops. */
@@ -650,6 +669,8 @@ function go(host: CommandHost, args: string[]): Output[] {
     return [...result.outputs.slice(1), describeRoom(world)]
   }
   if (!exit) return [error(`You can't go ${direction} from here.`)]
+  // A way that opens when something holds (M10.30: the roof, once the tree is down), as in a quest.
+  if (exit.when?.length && !allHold(world, exit.when)) return [text(exit.not_yet ?? `You can't go ${direction} from here, not yet.`)]
   const closed = closedBetween(world, player.location, exit.to)
   if (closed) return [error(`You can't go that way: ${closed}`)]
   // A locked door opens with its key (M10.3).

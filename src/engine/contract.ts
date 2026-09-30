@@ -44,7 +44,12 @@ export const FIELD_NOTES: Record<string, string[]> = {
   // M10.28: an adopted place had a way in of one minute, whatever the world said about it.
   projects: ['`link.minutes`: the minutes on foot from the place it links from, as far as it really lies (a yard next door two or three, a works down the road ten); left out, three.'],
   // M10.29 C: the moment a place is worth.
-  locations: ['`arrival`: two or three sentences for the first time the stranger reaches it (with `night`, `mist` or `storm` where it reads otherwise then, and `far` for how a landmark looks from afar): on the start place, and on every gate or landmark. Left out, a place gets no card.'],
+  locations: [
+    '`arrival`: two or three sentences for the first time the stranger reaches it (with `night`, `mist` or `storm` where it reads otherwise then, and `far` for how a landmark looks from afar): on the start place, and on every gate or landmark. Left out, a place gets no card.',
+    // M10.30: doing things with the world, and a word as a key.
+    'Doing things with the world (M10.30): a verb of a detail may be a deed instead of a line: `when` (conditions, such as `{ has: saw }`), `not_yet`, `check`, `effects` (as in a quest: `set` a flag, `take` or `give` a thing, a fact), `text`, `once` and `done`. An exit may have `when` and `not_yet`: the way opens when they hold (the roof once `tree_down` is set), and people keep to the other ways. Something `hidden` may have `when` (`{ knows: <topic> }`), `words` and `verbs`: then only someone who knows of it finds it, with SEARCH <words> or one of its verbs, never by a roll. A `lock` opens with `key`, `word` (a code the stranger types or says; `word_text` for what happens) or both.',
+  ],
+  voice: ['`verb_words`: the world\'s own words for a verb of the game, `{ pick: [hack, bypass] }`: the stranger may type them, and the game names the verb by the first (M10.30).'],
   // M10.29 C: who knows the stranger from before, and a world without classes.
   rules: ['`backgrounds`: who the stranger may have come as (two to five): `reason` (two sentences in the second person, with this world\'s names), `contact` (whom they were told to ask for), `heard` (a topic in the journal from the start), `topics`, and `knows`: people who know them from before, each an NPC id or `{ who, how }` with how, as the stranger would say it ("your shipmate on the Harrow crossing"). `skills` (two) and `talent` only where the world has classes; a world without them leaves both out, and the stranger comes as the first background until they choose another with BACKGROUND. Left out altogether, the stranger has no reason to be here and knows nobody.'],
   npcs: [

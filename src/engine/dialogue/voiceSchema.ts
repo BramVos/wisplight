@@ -34,6 +34,10 @@ export const VoiceSchema = z
     time: z.array(z.string()).default([]).describe('How people here tell the time: "at the third bell". Money comes from world.yaml.'),
     distance: z.array(z.string()).default([]).describe('How people here tell distance: "an hour\'s walk", "two locks on".'),
     measures: z.array(z.string()).default([]).describe('The measures people here use for weight, length and volume.'),
+    verb_words: z
+      .record(z.string(), z.array(z.string().min(1)))
+      .default({})
+      .describe('The world\'s own words for a verb of the game (M10.30): { pick: [hack, bypass] }. The stranger may type them, and the game names the verb by the first.'),
     not_here: z.array(z.object({ word: z.string().min(1), instead: z.string().optional() }).strict()).default([]).describe('What does not exist here, and what people say instead. A word with a capital (a month, a weekday) is only that word with its capital; one without an alternative makes the game ask the reply again.'),
   })
   .strict()

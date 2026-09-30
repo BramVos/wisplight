@@ -22,6 +22,14 @@ locations:
       far: "High on Orison Ridge the antenna of the listening station stands against the cloud, its cables groaning in the wind."
     exits:
       down: { to: loc_ridge_shelter, minutes: 12 }
+    # Found only by someone who heard of the cairn (M10.30), never by a plain search.
+    hidden:
+      - id: survey_cache
+        text: By the antenna footing a low cairn of flat stones stands where you were told it would. Under the top stone, the one with the pale painted arrow, a sealed tin holds a field lamp, still dry, and a card with the first survey crew's names in faded pencil.
+        item: field_lamp
+        when: [{ knows: the_survey_cairn }]
+        words: [cairn, survey cairn, stone, top stone, cache]
+        verbs: [lift, move]
     details:
       - words: [consoles, receiving consoles, console, fault codes]
         look: Old receiving consoles with worn keys and cracked screens. The live ones scroll fault codes that repeat, stop and begin again.

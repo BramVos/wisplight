@@ -35,7 +35,7 @@ You pick up a cask of lamp oil, a coil of rope and a bolt of sailcloth.
 > north
 The Cliff Path
 A sheep track runs along the top of the cliff between thrift and sea campion. The wind comes straight off the Glass Sea and leans on you like a hand, and far below the waves boom in the caves. South, it drops to the [Wreck Strand]. Inland it climbs north towards a stand of pale trees, and east it runs down to the hamlet.
-Exits: south, north, east
+Exits: south, north, east, down
 +10 experience: you found The Cliff Path.
 
 > north
@@ -364,7 +364,7 @@ You pick up a cask of lamp oil, a coil of rope and a bolt of sailcloth.
 > north
 The Cliff Path
 A sheep track runs along the top of the cliff between thrift and sea campion. The wind comes straight off the Glass Sea and leans on you like a hand, and far below the waves boom in the caves. South, it drops to the [Wreck Strand]. Inland it climbs north towards a stand of pale trees, and east it runs down to the hamlet.
-Exits: south, north, east
+Exits: south, north, east, down
 +10 experience: you found The Cliff Path.
 
 > north

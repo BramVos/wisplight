@@ -4,7 +4,7 @@ import { built } from '../growth/growth'
 import { tensionOf } from '../social/realms'
 import { GameClock, weekdayName } from '../clock'
 import type { Output } from '../commands'
-import { callName, type Quest } from '../content'
+import { callName, type Deed, type Quest } from '../content'
 import { applyEffect, attitude, type Attitude } from '../dialogue/relations'
 import { add } from '../items'
 import { die } from '../life'
@@ -19,6 +19,7 @@ import { repute } from '../social/factions'
 import { mayLieAbout } from '../social/gates'
 import type { World } from '../world'
 import type { Condition, KnowsClaim, PlaceStateName, QuestAction, QuestEffect } from './schema'
+import { saidHolds } from '../said'
 
 // The quest engine (FO, chapter 14): a quest gives NPCs a part and goals and
 // lets the systems do the rest. Stages move on when their conditions hold,
@@ -117,6 +118,7 @@ export function holds(world: World, c: Condition, questId?: string): boolean {
   if ('since' in c) return f[c.since] === undefined || world.now - Number(f[c.since]) >= c.hours * 60
   if ('count' in c) return Number(f[c.count] ?? 0) >= c.at_least
   if ('weekday' in c) return weekdayName(world.now, world.calendar) === c.weekday
+  if ('said' in c) return saidHolds(world, c)
   if ('night' in c) return new GameClock(world.now).isNight === c.night
   if ('wields' in c) {
     const weapon = player.character?.gear.weapon
@@ -602,6 +604,33 @@ function perform(world: World, host: QuestHost, questId: string, q: QuestState, 
     applyEffects(world, host, questId, action.fail, out)
   }
   if (action.minutes) out.push(...host.pass(action.minutes))
+  out.push(...evaluate(world, host))
+  return out
+}
+
+/**
+ * A deed on a thing of the world (M10.30, Bram: saw down a tree, press a
+ * stone): what must hold, a check, what it does and its line, as a quest's
+ * action; once under its key unless it says otherwise. Time passes, and the
+ * quests look again at what changed.
+ */
+export function doDeed(world: World, host: QuestHost, key: string, deed: Deed): Output[] {
+  const done = `deed:${key}`
+  if (deed.once && flags(world)[done] !== undefined) return [{ kind: 'text', text: deed.done ?? 'That is done already.' }]
+  if (!allHold(world, deed.when)) return [{ kind: 'text', text: deed.not_yet ?? 'Not like this: something is missing.' }]
+  const out: Output[] = []
+  let success = true
+  if (deed.check) {
+    const result = playerCheck(world, deed.check.skill, deed.check.dc)
+    out.push({ kind: 'check', text: `(${cap(deed.check.skill)} ${result.total} vs DC ${deed.check.dc}: ${result.degree})` })
+    success = result.degree === 'success' || result.degree === 'critical success'
+  }
+  if (success) {
+    if (deed.once) flags(world)[done] = true
+    out.push({ kind: 'narration', text: deed.text })
+    applyEffects(world, host, undefined, deed.effects, out)
+  } else out.push({ kind: 'narration', text: deed.fail_text ?? 'It does not work. You may try again.' })
+  if (deed.minutes) out.push(...host.pass(deed.minutes))
   out.push(...evaluate(world, host))
   return out
 }

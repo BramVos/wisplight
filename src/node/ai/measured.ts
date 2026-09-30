@@ -24,6 +24,7 @@ export const MEASURED: Record<string, Measured> = {
   lore_check: { inputTokens: 727, outputTokens: 40, model: 'claude-sonnet-5', date: '2026-09-29' },
   map_paint: { inputTokens: 2247, outputTokens: 1378, model: 'claude-haiku-4-5-20251001', date: '2026-09-29' },
   model_advice: { inputTokens: 3389, outputTokens: 584, model: 'claude-sonnet-5', date: '2026-09-29' },
+  night_quest: { inputTokens: 3571, outputTokens: 1044, model: 'claude-opus-5-5', date: '2026-09-30' },
   npc_goals: { inputTokens: 2850, outputTokens: 264, model: 'claude-sonnet-5', date: '2026-09-29' },
   npc_reply: { inputTokens: 9067, cachedTokens: 8367, outputTokens: 143, model: 'claude-haiku-4-5-20251001', date: '2026-09-29' },
   outline: { inputTokens: 8056, outputTokens: 1385, model: 'claude-opus-5-5', date: '2026-09-29' },

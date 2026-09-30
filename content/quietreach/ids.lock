@@ -40,7 +40,7 @@ ids:
   quietreach/data/settlements.yaml:
     settlement: [port_vesper, vesper_works, coastal_traverse]
   quietreach/data/topics.yaml:
-    topic: [night_of_the_open_door, winter_supplies, answer_before_the_question, vesper_settlement_compact, harbour_record, beltborn, nacreans, transit_families, kestrel_landing, meridian_anchorage, harrow_station, echo_nine, return_check, open_stores, safe_return, passing_on, second_observation, sailbacks, maintenance_drones, belt_credits]
+    topic: [night_of_the_open_door, winter_supplies, answer_before_the_question, vesper_settlement_compact, harbour_record, beltborn, nacreans, transit_families, kestrel_landing, meridian_anchorage, harrow_station, echo_nine, return_check, open_stores, safe_return, passing_on, second_observation, sailbacks, maintenance_drones, belt_credits, the_survey_cairn]
   quietreach/data/watchers.yaml:
     watcher: [w_death, w_missing, w_injury, w_theft, w_shortage, w_departure, w_repair_electronics, w_repair_fabrication, w_repair_water, w_danger_past, w_signal_anomaly]
   quietreach/regions/vesper_coast/region.yaml:

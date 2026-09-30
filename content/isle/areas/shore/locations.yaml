@@ -62,6 +62,12 @@ locations:
     exits:
       west: { to: loc_skerrow_wreck_strand, minutes: 8 }
       east: { to: loc_skerrow_harbour, minutes: 6 }
+      # Back up the rope to the cliff path (M10.30).
+      up:
+        to: loc_skerrow_cliff_path
+        minutes: 8
+        when: [{ flag: rope_on_the_cliff }]
+        not_yet: The cliff above the pools is sheer and wet. Without a rope from the top there is no way up.
     forage: [kelp]
     details:
       - words: [wall, harbour wall]
@@ -92,7 +98,23 @@ locations:
       south: { to: loc_skerrow_wreck_strand, minutes: 10 }
       north: { to: loc_skerrow_silver_grove, minutes: 15 }
       east: { to: loc_skerrow_green, minutes: 12 }
+      # Straight down to the tidepools, once a rope hangs from the stake (M10.30).
+      down:
+        to: loc_skerrow_tidepools
+        minutes: 6
+        when: [{ flag: rope_on_the_cliff }]
+        not_yet: The cliff drops sheer to the tidepools. A rope tied to the old stake would take you down.
     details:
+      - words: [stake, iron stake, edge, cliff edge]
+        look: An old iron stake is driven into the turf at the very edge, rusted but firm. Far below, the tidepools shine between the rocks.
+        take: It has been in the rock longer than anyone on Skerrow has been alive.
+        verbs:
+          tie:
+            when: [{ has: rope }]
+            not_yet: You have nothing to tie to the stake.
+            text: You knot the rope round the iron stake and pay it out over the edge. It hangs to the rocks by the tidepools, swaying in the wind.
+            effects: [{ take: rope }, { set: rope_on_the_cliff }]
+            done: Your rope is tied fast already, and hangs to the pools.
       - words: [stand, trees, pale trees]
         look: A stand of pale trees on the rise to the north, bent by the wind.
       - words: [thrift, campion, sea campion]

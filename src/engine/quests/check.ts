@@ -38,7 +38,11 @@ export function checkQuests(c: Refs): string[] {
     }
     else if ('has' in x) item(x.has, where)
     else if ('attitude' in x) npc(x.attitude, where)
-    else if ('at' in x) place(x.at, where)
+    else if ('said' in x) {
+      // A word said (M10.30): to someone who exists, at a place that does.
+      if (x.to) npc(x.to, where)
+      if (x.at) place(x.at, where)
+    } else if ('at' in x) place(x.at, where)
     else if ('npc_at' in x) {
       npc(x.npc_at, where)
       place(x.place, where)
@@ -170,6 +174,30 @@ export function checkQuests(c: Refs): string[] {
       target(to, `${w}.on_place`)
     }
   }
+  // What the things of the world may wait for and do (M10.30): a way, something hidden, a deed on a detail.
+  const skillKnown = (skill: string) => (c.rules ? c.rules.skills.some((s) => s.id === skill) : (STANDARD_SKILLS as readonly string[]).includes(skill))
+  const deeds = (details: readonly { words: string[]; verbs?: Record<string, unknown> }[], at: string) => {
+    for (const d of details) {
+      for (const [verb, v] of Object.entries(d.verbs ?? {})) {
+        if (typeof v === 'string') continue
+        const deed = v as { when: Condition[]; effects: QuestEffect[]; check?: { skill: string } }
+        const where = `${at}.details.${d.words[0]}.${verb}`
+        for (const x of deed.when) condition(x, where)
+        // No quest of its own: a stage or an ending of one is not the deed's to set.
+        for (const e of deed.effects) effect(e, where, new Set(), new Set())
+        if (deed.check && !skillKnown(deed.check.skill)) problems.push(`${where}: unknown skill ${deed.check.skill}`)
+      }
+    }
+  }
+  for (const loc of c.locations.values()) {
+    for (const [dir, exit] of Object.entries(loc.exits)) for (const x of exit?.when ?? []) condition(x, `${loc.id}.exits.${dir}`)
+    for (const h of loc.hidden) {
+      for (const x of h.when ?? []) condition(x, `${loc.id}.hidden.${h.id}`)
+      if (h.when && !h.words?.length) problems.push(`${loc.id}.hidden.${h.id}: only its words find it, and it has none`)
+    }
+    deeds(loc.details ?? [], loc.id)
+  }
+  for (const t of c.objectTypes.values()) deeds(t.details ?? [], `object type ${t.id}`)
   for (const p of c.plans.values()) {
     for (const [name, g] of Object.entries(p.groups)) {
       for (const a of g.areas) if (!c.areas.has(a)) problems.push(`plan ${p.id}.groups.${name}: unknown area ${a}`)

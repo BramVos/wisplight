@@ -1,7 +1,9 @@
 import { knob } from './knobs'
 import { GameClock, minuteOfDay } from './clock'
 import type { CommandHost, Output } from './commands'
-import { callName, type ObjectInstance } from './content'
+import { callName, type Hidden, type ObjectInstance } from './content'
+import { placeWords } from './commands'
+import { allHold } from './quests/engine'
 import { itemName, withArticle } from './items'
 import { recordFact } from './news'
 import { maxHp } from './rules/character'
@@ -170,23 +172,47 @@ export function searchHere(host: CommandHost): Output[] {
   const { world } = host
   const here = world.state.player.location
   const found = (world.state.player.found ??= [])
-  const hidden = world.location(here).hidden.filter((h) => !found.includes(`${here}/${h.id}`))
+  // What only someone who knows of it finds (M10.30) is never found by a roll.
+  const hidden = world.location(here).hidden.filter((h) => !found.includes(`${here}/${h.id}`) && !h.when)
   const result = playerCheck(world, 'perception', hidden.length ? Math.min(...hidden.map((h) => h.dc)) : 15)
   const seen = host.pass(15)
   const out: Output[] = [checkLine(result)]
   const now = hidden.filter((h) => result.total >= h.dc || result.degree === 'critical success')
   if (!now.length) return [...out, text(hidden.length || !world.location(here).hidden.length ? 'You look high and low, and find nothing out of the ordinary.' : 'You search again, but there is nothing more to find here.'), ...seen]
-  for (const h of now) {
-    found.push(`${here}/${h.id}`)
-    out.push(text(h.text))
-    if (h.item) {
-      const ground = (world.state.ground[here] ??= {})
-      ground[h.item] = (ground[h.item] ?? 0) + h.qty
-    }
-    if (h.topic) learnTopic(world, h.topic)
-    gainXp(world, 20, 'finding what was hidden')
-  }
+  for (const h of now) out.push(...foundIt(world, h))
   return [...out, ...seen]
+}
+
+/** What is found, once: its line, the thing on the ground, the topic known. */
+function foundIt(world: World, h: Hidden): Output[] {
+  const here = world.state.player.location
+  ;(world.state.player.found ??= []).push(`${here}/${h.id}`)
+  if (h.item) {
+    const ground = (world.state.ground[here] ??= {})
+    ground[h.item] = (ground[h.item] ?? 0) + h.qty
+  }
+  if (h.topic) learnTopic(world, h.topic)
+  gainXp(world, 20, 'finding what was hidden')
+  return [text(h.text)]
+}
+
+/**
+ * SEARCH <words>, PRESS <stone> (M10.30, Bram: a stone you only find because
+ * you heard you must look there): what lies hidden for someone who knows of
+ * it, by its words and one of its verbs, once its conditions hold; no roll.
+ * Nothing when nothing here answers to the words, so SEARCH goes on as ever.
+ */
+export function searchFor(host: CommandHost, verb: string, words: string): Output[] | undefined {
+  const { world } = host
+  const here = world.state.player.location
+  const found = world.state.player.found ?? []
+  const wanted = words.toLowerCase().replace(/^(?:for|the|a|an)\s+/g, '').trim()
+  if (!wanted) return undefined
+  const h = world.location(here).hidden.find(
+    (x) => x.when && !found.includes(`${here}/${x.id}`) && ['search', ...(x.verbs ?? [])].includes(verb) && (x.words ?? []).some((w) => placeWords(wanted, [w]) || w.toLowerCase() === wanted),
+  )
+  if (!h || !allHold(world, h.when!)) return undefined
+  return [...foundIt(world, h), ...host.pass(10)]
 }
 
 // ---------------------------------------------------------------- lore

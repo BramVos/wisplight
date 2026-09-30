@@ -18,7 +18,11 @@ locations:
       night: |
         A single strip lamp burns over the counter, and the racks throw long shadows across the benches. A soldering iron ticks as it cools, its smell still lingering. The clipboard hangs on its hook, untouched. At the back the hangar door stays sealed, its RESTRICTED stencil catching the light. Passages run west to Commons and southwest to Arrival Lock.
     exits:
-      in: { to: loc_peregrine_hangar, minutes: 3 }
+      # The keypad (M10.30): the code, or a hack, or force; Tessa knows the code.
+      in:
+        to: loc_peregrine_hangar
+        minutes: 3
+        lock: { word: "7411", word_text: "The keypad blinks green, and the heavy door slides back on its rail with a hiss of air.", quality: good }
       southwest: { to: loc_arrival_lock, minutes: 4 }
       west: { to: loc_commons, minutes: 5 }
     details:

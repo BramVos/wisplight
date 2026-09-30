@@ -133,6 +133,14 @@ npcs:
         bond: 1
         note: Thinks him careful and does not know why he avoids her.
       - { to: npc_mara_venn, role: acquaintance, bond: 1 }
+    # The hangar code (M10.30): what she says, warm, when the hangar comes up; the keypad takes it (TYPE 7411).
+    secrets:
+      - id: hangar_code
+        text: Tessa keeps the hangar code, 7411, and changes it only after a ship goes out.
+        hint: Her eyes go to the keypad by the hangar door whenever the Peregrine comes up.
+        admission: "Seven four one one. It opens the hangar. If anyone asks, you worked it out yourself."
+        dc: 15
+        about: [loc_peregrine_hangar]
 
   - id: npc_niko_serrin
     name: Niko Serrin

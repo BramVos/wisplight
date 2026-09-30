@@ -36,7 +36,7 @@ import { followTombstones, followTombstonesInLog, nameBook, withNames, type Name
 import { shiftTension, tensionOf } from './social/realms'
 import { grownContent, invest } from './growth/growth'
 import { GameClock, weekdayName } from './clock'
-import { completionsHere, couldInstead, describeRoom, detailVerb, findNpcAnywhere, findNpcHere, runCommand, walkByExits, walkOut, walkWithin, whichOfThem, type CommandHost, type Output } from './commands'
+import { completionsHere, couldInstead, describeRoom, detailDeed, detailVerb, findNpcAnywhere, findNpcHere, runCommand, walkByExits, walkOut, walkWithin, whichOfThem, type CommandHost, type Output } from './commands'
 import { areaTopicId, callName, firstName, type Content, type Quest } from './content'
 import { Dialogue, QUICK_OPTIONS } from './dialogue/conversation'
 import { Knowledge } from './dialogue/knowledge'
@@ -88,7 +88,7 @@ import { deed, noticeCarried, seedBonds } from './social/deeds'
 import { factionLines, factionPage, join, rankOf, repute } from './social/factions'
 import { fightsBack, mayAttackFirst, mayLend } from './social/gates'
 import { flirt, marry } from './social/romance'
-import { conversationActions, evaluate, expireConditions, questAction, questLines, questlog, questPage, questsOnDeath, runQuestAction, setPlaceState, startQuest, talkStarts, triggers, type QuestHost } from './quests/engine'
+import { conversationActions, doDeed, evaluate, expireConditions, questAction, questLines, questlog, questPage, questsOnDeath, runQuestAction, setPlaceState, startQuest, talkStarts, triggers, type QuestHost } from './quests/engine'
 import { PlaceState } from './quests/schema'
 import { plansDue, startPlan, startWorldPlans, tellAreaNews } from './quests/plans'
 import { primeWatchers, processSignals, queueSignal } from './signals'
@@ -109,6 +109,7 @@ import { noteVisit, returningOutput } from './returning'
 import { gestures } from './gestures'
 import { lodgingPage, putInChest, rentLodging, takeFromChest } from './lodgings'
 import { applyNightQuest, nightQuestReply, nightQuestRequest, questWanted, type NightQuestReply } from './nightquest'
+import { gameVerb, giveWord, noteSaid, takesWord } from './said'
 
 export type { Output, OutputKind } from './commands'
 
@@ -1592,8 +1593,16 @@ export class Engine {
     // GIVE YOURSELF UP (M10.20): to the law, where no fine buys the matter off; in a talk with the officer too.
     if (!this.state.combat && /^(?:give (?:yourself|myself) up|turn (?:yourself|myself) in|surrender)[.!]*$/i.test(text.trim())) return this.giveUp()
     const talk = this.state.talk
-    const command = parseCommand(text.replace(/^\//, ''))
+    // TYPE 4471, ENTER THE CODE 4471 (M10.30, a word as a key): at a panel or a door that takes one.
+    const typed = /^(?:type|input|key in|punch in|dial)\s+(?:in\s+)?(?:the\s+)?(?:code|password|pin|word|combination)?\s*[:"']?\s*(.+?)["']?$/i.exec(text.trim()) ?? /^enter\s+(?:the\s+)?(?:code|password|pin|combination)\s*[:"']?\s*(.+?)["']?$/i.exec(text.trim())
+    if (typed && !talk) return giveWord(this.world, typed[1]!, true)!
+    // The world's own word for a verb (M10.30): HACK THE DOOR is PICK THE DOOR in The Quiet Reach.
+    const first = /^\/?(\S+)/.exec(text.trim())?.[1] ?? ''
+    const worldVerb = !talk ? gameVerb(this.world, first) : undefined
+    const command = parseCommand((worldVerb ? text.trim().replace(first, worldVerb) : text).replace(/^\//, ''))
     const talking = talk && !text.startsWith('/')
+    // What the stranger says in a talk is kept a while (M10.30): a password, the answer to a question.
+    if (talking && !/^(?:bye|goodbye|farewell|\d+)[.!]*$/i.test(text.trim())) noteSaid(this.world, text.replace(/^["']|["']$/g, ''), talk.npc)
 
     if (talking) {
       if (text.startsWith('"')) return this.inConversation(() => this.dialogue.say(talk.npc, text.replace(/^"|"$/g, '').trim()))
@@ -1607,7 +1616,10 @@ export class Engine {
       if (!isCommand) return this.inConversation(() => this.dialogue.say(talk.npc, text))
     }
 
-    // A thing of this place with its own line for the verb (READ SIGN, after the M10 playtest), before what the verb does elsewhere.
+    // A thing of this place with its own line for the verb (READ SIGN, after the M10 playtest), before what the verb does elsewhere;
+    // or a deed it does (M10.30: SAW TREE).
+    const deed = detailDeed(this.world, command)
+    if (deed) return doDeed(this.world, this.questHost, deed.key, deed.deed)
     const own = detailVerb(this.world, command)
     if (own) return [{ kind: 'text', text: own }]
     const which = whichOfThem(this.world, command)
@@ -1661,6 +1673,9 @@ export class Engine {
       case 'say': {
         const words = command.args.join(' ').trim()
         if (!words) return [{ kind: 'error', text: 'Say what?' }]
+        // Out loud at a door that takes a word (M10.30), or to nobody in particular: kept as said.
+        if (!talk && takesWord(this.world)) return giveWord(this.world, words, false)!
+        if (!talk) noteSaid(this.world, words)
         const npc = talk?.npc ?? this.onlyNpcHere()
         if (!npc) return [{ kind: 'text', text: `You say: "${words}"` }, { kind: 'narration', text: 'Nobody answers you directly. Try TALK <name>.' }]
         return this.inConversation(() => this.dialogue.say(npc, words))

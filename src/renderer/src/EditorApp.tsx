@@ -678,7 +678,16 @@ function templateFor(kind: EntityKind, view: EditorView): Raw {
   const person = view.lists.npc[0]?.id ?? 'npc_first_person'
   switch (kind) {
     case 'location':
-      return { id: 'loc_new_place', name: 'A New Place', area, tags: ['public'], description: { day: 'Three to five sentences, in the second person. Something you hear or smell. A hint at an exit.\n' }, exits: { north: { to: place } } }
+      return {
+        id: 'loc_new_place',
+        name: 'A New Place',
+        area,
+        tags: ['public'],
+        description: { day: 'Three to five sentences, in the second person. Something you hear or smell. A hint at an exit.\n' },
+        // A way that opens when something holds, and a deed that opens it (M10.30); leave them out where nothing waits.
+        exits: { north: { to: place }, up: { to: place, when: [{ flag: 'way_up_open' }], not_yet: 'Said while it is shut.' } },
+        details: [{ words: ['thing to handle'], look: 'What it looks like.', verbs: { move: { when: [], text: 'What happens.', effects: [{ set: 'way_up_open' }] } } }],
+      }
     case 'area':
       return { id: 'new_area', name: 'A new area', kind: 'hamlet', summary: 'What it is, in one sentence.' }
     case 'watcher':

@@ -211,3 +211,13 @@ topics:
     summary: People in the Lantern Belt pay in Belt credits, a hundred bits to the credit, with no larger coin; a personal credit chip holds the balance and signs payments.
     details: When the power or the network is down, shops and stations take standardised physical value tokens instead. Air in a settlement is a shared provision, and nobody charges for it.
     fame: 3
+  # Only someone who heard of it finds the cache (M10.30): SEARCH CAIRN or LIFT THE STONE on the ridge.
+  - id: the_survey_cairn
+    name: The survey cairn
+    kind: lore
+    aliases: [survey cairn, the cairn, benchmark cairn, the first survey]
+    summary: The first survey crew on Nacre built a cairn of flat stones by the antenna footing on Orison Ridge, and left an emergency cache under the top stone.
+    details: Nobody has needed the cache in years, and most people have forgotten it is there. The top stone is flat and marked with a painted survey arrow, gone pale.
+    origin: orison_ridge
+    fame: 1
+    known_by: [npc_niko_serrin, npc_tessa_rook]

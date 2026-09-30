@@ -294,13 +294,13 @@ Ways: south to The Silver Grove.
 
 A sheep track runs along the top of the cliff between thrift and sea campion. The wind comes straight off the Glass Sea and leans on you like a hand, and far below the waves boom in the caves. South, it drops to the [Wreck Strand]. Inland it climbs north towards a stand of pale trees, and east it runs down to the hamlet.
 
-Ways: south to The Wreck Strand; north to The Silver Grove; east to Skerrow Hythe, the Green.
+Ways: south to The Wreck Strand; north to The Silver Grove; east to Skerrow Hythe, the Green; down to The Tidepools.
 
 **The Tidepools** (public)
 
 Flat shelves of rock run out into the sea here, pocked with pools as clear as window glass. Crabs sidle away from your shadow, and anemones close like fists when you lean over them. The weed is slick and cold under your hand. West lies the [Wreck Strand]; east, the roofs of the Hythe show above a harbour wall.
 
-Ways: west to The Wreck Strand; east to Skerrow Hythe, the Harbour.
+Ways: west to The Wreck Strand; east to Skerrow Hythe, the Harbour; up to The Cliff Path.
 
 **The Wreck Strand** (public, landmark)
 
