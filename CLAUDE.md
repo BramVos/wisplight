@@ -45,6 +45,12 @@ npm run stutter    # the longest waits of the interface as the app plays (-- --e
 - A new kind of event is content, not code: a watcher and, if needed, a standard aftermath in the world's content. Write code only for a new verb or a new kind of state, and make it usable for every event. When you do write code for one kind of event, say in the milestone report why a verb or state did not suffice.
 - Extend, don't replace: existing plans, goals, quest conditions and saves stay valid. Every milestone keeps the whole test suite, the 30-day simulation, the quest scripts of both worlds and loading an old save green.
 
+## Causes, not symptoms
+
+- A finding is fixed where it arises. First name the cause: the content of one world, a rule the world maker lacks (the world guide, the chronicler's contract, Check), or the engine. Then fix the cause. A fix that hides the symptom (a special case, a guard around one place or person, a fixed hour, a re-phrased line) is not done.
+- When the cause is content, the same session adds the rule that would have prevented it: the world guide's step, the writing aid's contract and a line under Check, so the next world does not repeat it. When the cause is the engine, the fix is generic: it works for every world and every person.
+- The milestone report names the cause of every finding and where it was fixed.
+
 ## Content rules
 
 - Names and facts of the Nethermarch come from the world book. Another world keeps its names and lore in its own folder (`world.yaml` frame and `CHRONICLER.md`). The water spirit is called the Haakman; never use the old name.
