@@ -1,0 +1,17 @@
+{
+  "kind": "night_quest",
+  "about": "Harmen asked the stranger to look at his torn sails, and after the night round a quest is made of it",
+  "model": "claude-opus-5-5",
+  "provider": "anthropic",
+  "date": "2026-09-30",
+  "effort": "low",
+  "usage": {
+    "inputTokens": 4110,
+    "cachedTokens": 0,
+    "outputTokens": 311
+  },
+  "reply": "{\"make\":true,\"why\":\"Harmen asks the stranger to look at the torn sails of De Zwaan. The mill can't turn before winter and he can't pay for new sailcloth, so there is a real problem here to see through.\",\"quest\":{\"name\":\"The Torn Sails of De Zwaan\",\"kind\":\"request\",\"summary\":\"Harmen Molenaar asks the stranger to look over the storm-torn sails of De Zwaan and find some way to make the mill turn before winter without new sailcloth.\",\"giver\":\"p1\",\"ask\":\"The storm of Herfstmaand tore De Zwaan's sails, and I've no guilders for new cloth, nor anyone to lend them. Could you go and look at them for me?\",\"stages\":[{\"text\":\"Harmen asked me to look at the torn sails of his mill, De Zwaan.\",\"say\":\"\",\"at\":\"\",\"with\":\"\",\"skill\":\"\",\"done\":\"\"}],\"outcome\":{\"name\":\"\",\"text\":\"\"}}}",
+  "problems": [
+    "reply.quest.endings is missing"
+  ]
+}

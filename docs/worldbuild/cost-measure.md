@@ -346,3 +346,17 @@ Het gedeelde deel (het vaste deel van de wereldbouw, de regels van de stap, de w
 
 Waarom Opus 5.5 op medium: het is de rol van de kroniekverteller, dezelfde als voor de streekronde in het spel. De lijnen moeten één waarheid over het hele verhaal volhouden, per stadium en per persoon. Het voorstel laadde in één keer, en de kleine lijn over de voorraden en de hoofdlijn vertellen hetzelfde spoor. Een lichtere stand is niet gemeten.
 
+
+## Niko en Tessa over de opnamen, en de quest uit een verzoek opnieuw (M10.30, 30 september 2026)
+
+Gemeten op Brams sleutel met zijn akkoord, voor $0,172 samen: $0,047 voor het gesprek op Haiku en $0,125 voor vier antwoorden van `night_quest` op Opus 5.5. Dat is ruim twee cent meer dan de $0,15 die ik vooraf noemde, omdat na de eerste twee antwoorden een tweede ronde nodig was.
+
+**Vertellen Niko en Tessa hetzelfde verhaal?** In grote lijnen wel (`npm run trial -- --kind story_twenty`, tien regels aan elk, aan het begin van The Orison Recordings, 19 met het model).
+- Ze vertellen hetzelfde over het signaal: het herhaalt zich al weken, Niko vond het, het komt van ver, en een deel lijkt op een testpatroon van de Peregrine.
+- Ze houden de verborgen waarheid binnen: Niko noemt de bypass niet en zegt dat de bedrading oud maar in orde is, en Tessa praat niet over de aandrijftest ("That's not your concern right now") en zegt dat de aandrijving niet klaar is.
+- De bewaker hoefde niets opnieuw te vragen.
+- Het model koppelde "What is wrong with the listening station?" aan de eerste daad van de quest. Daarna antwoordde Niko uit het tweede stadium: "I never cut anything from the archive". Dat staat letterlijk in wat hij in dat stadium weet.
+
+Wat ze wel verzinnen, zijn kleine bijzonderheden: dat het signaal elke drieënveertig seconden terugkomt, dat de verwarming drie weken geleden uitviel, en dat Sorell meer toegang heeft dan Niko. Tessa zegt dat het station zelf goed loopt, terwijl Niko het "tired" noemt. Dat is geen tegenstrijdig plot, maar wel een klein verschil in beeld.
+
+**De quest uit een verzoek, met afloopopties.** Met de regel voor afloopopties, maar met afloopopties als optioneel veld in het schema, schreef Opus 5.5 op low twee keer een quest van één stadium zonder commando en zonder afloop ($0,025 en $0,023). Het spel nam die niet. Nu staan de afloopopties verplicht in het schema van `night_quest`, en zegt de regel dat alleen het laatste stadium zijn daad aan de afloopopties overlaat. Twee nieuwe antwoorden op low ($0,039 per stuk, 4.142 tokens in, ongeveer 1.130 uit) neemt het spel allebei aan. Elk heeft twee of drie stadia en drie afloopopties: zelf de zeilen repareren met Klaas, Lubbert overhalen om doek te lenen, of een overhaaste reparatie die scheurt. Een quest kost dus ongeveer 4 cent, hooguit één per speelnacht.

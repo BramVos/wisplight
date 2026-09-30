@@ -1,0 +1,17 @@
+{
+  "kind": "night_quest",
+  "about": "Harmen asked the stranger to look at his torn sails, and after the night round a quest is made of it",
+  "model": "claude-opus-5-5",
+  "provider": "anthropic",
+  "date": "2026-09-30",
+  "effort": "low",
+  "usage": {
+    "inputTokens": 4110,
+    "cachedTokens": 0,
+    "outputTokens": 403
+  },
+  "reply": "{\"make\":true,\"why\":\"Harmen asks the stranger to look at the torn sails of De Zwaan. He cannot pay for new sailcloth and nobody will lend it him, so this is a real errand with room for several endings.\",\"quest\":{\"name\":\"The Torn Sails of De Zwaan\",\"kind\":\"request\",\"summary\":\"Harmen Molenaar asks the stranger to inspect the storm-torn sails of De Zwaan and find some way to make the mill turn again before winter.\",\"giver\":\"p1\",\"ask\":\"The storm of the eighth tore De Zwaan's sails, and I can't pay for new cloth. Could you go and look at them for me, and tell me if there's anything left worth saving?\",\"stages\":[{\"text\":\"Harmen asked me to look over the torn sails of his mill, De Zwaan.\",\"say\":\"\",\"at\": \"l2\",\"with\": \"\",\"skill\":\"perception\",\"done\":\"Two sails are ruined past saving. The other two are torn but sound at the frames, and could be patched with good canvas.\"}],\"outcome\":{\"name\":\"De Zwaan Turns Again\",\"text\":\"The mill's sails were mended enough to turn, and Molenend's polder was pumped dry before the winter rains.\"}}}",
+  "problems": [
+    "reply.quest.endings is missing"
+  ]
+}

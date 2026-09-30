@@ -44,8 +44,8 @@ export interface NightQuestReply {
 
 const RULES = [
   'IN PLAY: A QUEST IN THE MAKING. Someone asked the stranger to do something, and no quest of the game holds it yet. Make it one quest the game can carry, or none (make false) when the ask is too small to be one (a loaf fetched, a word passed on) or already done. There is no designer to ask: you write, the game checks, and what does not fit is left out.',
-  'QUEST: a matter of THE ASKER (giver, by key), of kind request, mystery, bargain, discovery, social, trial or conflict; a name; a summary (one sentence, for the designer); what the giver says when asking (ask: one or two sentences in their voice, true to what they said); two to four stages; and an outcome (a name, and one or two sentences of what came of it). Each stage has its journal line (text), what the stranger can do now (goal: one line, "Recover the recordings from the Listening Room"), and the one deed that completes it: say (the command the player types, three to six plain words, a verb first), at (the key of one of the PLACES), with (the key of a person who must be there, or empty), skill (one of SKILLS where the deed asks for it, or empty) and done (one or two sentences of what the deed brings). knows: for each of the PEOPLE with a part, what they know of it at that stage and may say, a sentence with their name.',
-  'ENDINGS: at least three ways the quest may end, each a deed (say, at, with, skill as a stage has) with a name and what came of it (text): at least two solutions by different ways (way: talk, give for giving or paying, deed for doing something with the world), and at least one where it goes wrong (solution false, way fail). The endings are the deeds of the last stage: its own say, at and done may stay empty.',
+  'QUEST: a matter of THE ASKER (giver, by key), of kind request, mystery, bargain, discovery, social, trial or conflict; a name; a summary (one sentence, for the designer); what the giver says when asking (ask: one or two sentences in their voice, true to what they said); two to four stages; and an outcome (a name, and one or two sentences of what came of it). Each stage has its journal line (text), what the stranger can do now (goal: one line, "Recover the recordings from the Listening Room"), and, every stage but the last, the one deed that completes it: say (the command the player types, three to six plain words, a verb first), at (the key of one of the PLACES), with (the key of a person who must be there, or empty), skill (one of SKILLS where the deed asks for it, or empty) and done (one or two sentences of what the deed brings). knows: for each of the PEOPLE with a part, what they know of it at that stage and may say, a sentence with their name.',
+  'ENDINGS (always): at least three ways the quest may end, each a deed (say, at, with, skill as a stage has) with a name and what came of it (text): at least two solutions by different ways (way: talk, give for giving or paying, deed for doing something with the world), and at least one where it goes wrong (solution false, way fail). The endings are the deeds of the last stage, so only the last stage may leave its own say, at and done empty; every stage before it has its deed.',
   'TRUTHS: what the story keeps hidden, if anything: text, the plain words that would give it away (words), and the stage from which people may say it (from, counted from 1). What the world keeps true stands in THE WORLD\'S OWN TRUTH: never against it.',
   'Keep to what was said: the ask, the talks and the storyline. No death, no fight, no money out of nothing; it can be done with what is there. Use only keys given. JSON only.',
 ].join('\n')
@@ -151,16 +151,26 @@ export function nightQuestRequest(world: World, want: NightQuestWant): LlmReques
       `QUESTS RUNNING HERE: ${running.length ? running.join('; ') : 'none'}`,
     ].join('\n'),
     schemaName: 'night_quest',
-    schema: {
-      type: 'object',
-      additionalProperties: false,
-      required: ['make', 'why'],
-      properties: { make: { type: 'boolean' }, why: { type: 'string' }, quest: sketchSchema() },
-    },
+    schema: NIGHT_QUEST_SCHEMA,
     maxTokens: 2000,
     meta: { line: want.line, asked: want.asked, keys: want.keys, asker: key[fact?.about[0] ?? ''] ?? '', people: people.map(([k, n]) => ({ key: k, name: n.name })), places: places.map(([k]) => k), skills },
   }
 }
+
+/**
+ * The schema of the call, the same every night: the shared sketch, with its
+ * endings required here (M10.30: at low, with endings optional, Opus 5.5 left
+ * them out and wrote one stage without a deed).
+ */
+const NIGHT_QUEST_SCHEMA = (() => {
+  const sketch = sketchSchema() as { required: string[] }
+  return {
+    type: 'object',
+    additionalProperties: false,
+    required: ['make', 'why'],
+    properties: { make: { type: 'boolean' }, why: { type: 'string' }, quest: { ...sketch, required: [...sketch.required, 'endings'] } },
+  }
+})()
 
 /** The reply, or null when it cannot be read. */
 export function nightQuestReply(text: string): NightQuestReply | null {

@@ -39,7 +39,11 @@ Testen: `npm run playtest -- orison`, en `tests/m1030orison.test.ts`.
 
 Kosten: niets nieuws. De aanroep `night_quest` wordt ongeveer 100 tokens langer door de regel over de aflopen.
 
-Bekende gaten: of Opus 5.5 zich aan de nieuwe regel houdt, is nog niet gemeten. Ook de proef waarin Niko en Tessa over de opnamen vertellen (`story_twenty`) wacht nog op je akkoord.
+Gemeten op je sleutel, met je akkoord, voor $0,172 (ruim twee cent meer dan de $0,15 die ik noemde, omdat een tweede ronde nodig was):
+- **Niko en Tessa (Haiku, $0,047).** Ze vertellen hetzelfde over het signaal en houden de verborgen waarheid binnen; de bewaker hoefde niets opnieuw te vragen. Wel verzinnen ze kleine bijzonderheden, zoals "elke drieënveertig seconden".
+- **Afloopopties van Opus 5.5 ($0,125).** Met de afloopopties als optioneel veld schreef het model één stadium zonder commando, en dat nam het spel niet. Nu zijn ze verplicht in het schema van deze aanroep. Daarna gaven twee antwoorden elk drie afloopopties: zelf repareren, Lubbert overhalen, of een reparatie die scheurt. Een quest kost ongeveer 4 cent.
+
+Bekende gaten: de kleine verzonnen bijzonderheden van de stemmen (getallen, wie toegang heeft) houdt de bewaker niet tegen, zolang ze geen verborgen waarheid noemen.
 
 Wat de editor en de kroniekverteller leerden: niets nieuws voor de wereld.
 
