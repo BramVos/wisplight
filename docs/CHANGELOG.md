@@ -1,5 +1,20 @@
 # Changelog
 
+## M10.33 deel: een geheim met een recht (U), 30 september 2026
+
+- **Een code krijg je als het ertoe doet (U).** Oorzaak: een geheim kende alleen een worp en vertrouwen, en de worp was onzichtbaar, zodat een eerlijke vraag om de hangarcode niets deed. Een geheim kan nu `given_when` hebben: geldt dat, dan geeft de persoon het aan wie ernaar vraagt, zonder worp. In The Quiet Reach geeft Tessa de hangarcode zodra de fout in de antenne gevonden is. Op Skerrow vertelt Maren een schipbreukeling dat ze olie voor het baken heeft.
+- **Geen verborgen worp (U).** Een vraag die een geheim raakt zonder recht, krijgt een regel in beeld: "Tessa keeps that close. PERSUADE her, or ask again when it matters to what you are doing." De stem houdt het voor zich en verzint niets in de plaats, en het AI-log noteert waarom. PERSUADE blijft de weg met een worp.
+- **Check (U).** Een woord dat een quest nodig heeft en dat alleen in een geheim zonder recht staat, staat onder Check. De stap Verhalen vraagt dat een code gegeven wordt waar het verhaal hem nodig heeft.
+- **Klein.** Een geheim houden zette de bewakers voor beloften en opdrachten uit (die wijken voor een besluit). Nu wijken ze alleen voor een besluit dat een daad toestaat.
+
+Testen, in The Quiet Reach: vraag Tessa naar de hangar (`ask tessa about the peregrine hangar`) voor en na de antenne. Tests in `tests/m1033secret.test.ts`.
+
+Kosten: geen nieuwe aanroep en geen groter schema. Een gehouden geheim geeft de stem één regel besluit mee.
+
+Wat de editor en de kroniekverteller leerden: het veld `given_when` op een geheim (zod-beschrijving, `docs/CONTENT.md`, het korte contract); een regel onder Check voor een code achter een worp; de stappen Mensen en Verhalen van de wereldgids, de regel over een woord als daad in de stap Verhalen, en `docs/NEW-WORLD.md`. The Quiet Reach en Skerrow hebben elk een geheim met een recht; Deepwell heeft geen geheimen en speelt de standaard.
+
+Ontwerp: functioneel ontwerp, hoofdstuk 15, alinea "Stand na M10.33: een geheim met een recht", met de afwijking: geen `reveal` in het schema, de motor beslist en de stem verwoordt.
+
 ## M10.33 deel: geen verzonnen plekken en afstanden (O), 30 september 2026
 
 - **Wat een wereld niet heeft (O).** Oorzaak: de stemkit kon woorden buiten houden (`not_here`), maar de stap Stem vroeg nooit welke soorten plekken en dingen een wereld niet heeft. Nu vraagt de stap het ("a dock, a road, a horse"), stelt de schrijfhulp ze voor bij het kader, en zegt de gedeelde instructie van de kroniekverteller: geen plekken die de wereld niet heeft, en geen afstand die niet gegeven is.

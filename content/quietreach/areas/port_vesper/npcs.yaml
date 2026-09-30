@@ -141,6 +141,8 @@ npcs:
         admission: "Seven four one one. It opens the hangar. If anyone asks, you worked it out yourself."
         dc: 15
         about: [loc_peregrine_hangar]
+        # By right (M10.33 U): once the antenna fault is traced, the hangar matters, and she gives it to whoever asks.
+        given_when: [{ flag: story_the_orison_recordings_3 }]
 
   - id: npc_niko_serrin
     name: Niko Serrin

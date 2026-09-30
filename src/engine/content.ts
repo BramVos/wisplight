@@ -623,6 +623,10 @@ export const NpcSchema = z.object({
         dc: z.number().int().default(18),
         teaches: z.string().optional().describe('What the player learns when the secret is told (the dry ridge): a topic, person, place or area_<id> (M10.20).'),
         about: z.array(z.string()).default([]).describe('Asked about one of these by someone it holds dear (Warm or better), the NPC tells it freely (FO, chapter 8): topics, people, places or area_<id> (M10.20).'),
+        given_when: z
+          .array(ConditionSchema)
+          .default([])
+          .describe('When they give it to whoever asks about it (about), without a roll (M10.33 U): conditions as in a quest, such as the stage that needs it ({ stage: quest_id:stage_id }), a flag or an attitude. Without it only trust (Warm or better) or a won PERSUADE gets it, and a code a quest needs should have it.'),
       }),
     )
     .default([]).describe('What they keep to themselves: the secret, a hint at it, what they say when it comes out, how hard it is to get out of them, and what it teaches.'),

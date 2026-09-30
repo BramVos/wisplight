@@ -70,6 +70,8 @@ export const FIELD_NOTES: Record<string, string[]> = {
   rules: ['`backgrounds`: who the stranger may have come as (two to five): `reason` (two sentences in the second person, with this world\'s names), `contact` (whom they were told to ask for), `heard` (a topic in the journal from the start), `topics`, and `knows`: people who know them from before, each an NPC id or `{ who, how }` with how, as the stranger would say it ("your shipmate on the Harrow crossing"). `skills` (two) and `talent` only where the world has classes; a world without them leaves both out, and the stranger comes as the first background until they choose another with BACKGROUND. Left out altogether, the stranger has no reason to be here and knows nobody.'],
   npcs: [
     '`secrets`: `about` and `teaches` take ids: a topic, a person (an NPC id), a place (a location id) or an area (`area_<id>`).',
+    // M10.33 U: Tessa's hangar code took a hidden roll, whatever the reason.
+    '`secrets[].given_when`: conditions as in a quest (the stage that needs it, `{ stage: quest_id:stage_id }`, a flag, an attitude) under which they give the secret to whoever asks about it (`about`), without a roll; without it only trust (Warm or better) or a won PERSUADE gets it, and a question that touches it gets the line "keeps that close". A code or password a quest needs has a way without a roll: Check names one told only in a secret without `given_when` or `about`.',
     // M10.29: Dr Ilyan Sorell was "Dr" in every line.
     '`call`: what people call them in running text when it is not the first word of the name: after a title (Dr Ilyan Sorell, `call: Ilyan`) or a byname (`call: Old Tamsin`); left out, the first word of the name that is no title.',
   ],

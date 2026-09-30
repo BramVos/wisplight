@@ -30,6 +30,8 @@ npcs:
         admission: "Two casks. I pulled them out of the surf myself, and the sea doesn't pay for lamp light in winter. Buy them, if you want the light back."
         dc: 15
         about: [the_beacon]
+        # By right (M10.33 U): to a castaway who needs a way off, she owns up to the oil when the beacon comes up.
+        given_when: [{ stage: "off_skerrow:stranded" }]
     money: 600
     inventory: { marens_key: 1, salt_fish: 2 }
     knows_areas: [skerrow_hythe, skerrow_shore, skerrow_heights]

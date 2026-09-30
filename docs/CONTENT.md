@@ -188,9 +188,11 @@ A list; each has:
 | romance | Open to romance (FO, chapter 8; Wereldboek, "Romance"): with whom, from which attitude. | a map: open_to, from, note | no |  |
 | hires | What this person hires out (M10.17, before M7.2's punt of Wouter in code): a punt, a horse, a skiff, a sled. HIRE <name> with the owner there; for the hours given it lets the stranger cross what it crosses. A friend pays nothing. | list of a map: id, name, aliases, price, hours, crosses, where, line, free_for_friends | no | [] |
 | relations | Who they are bound to and how: kin, friends, rivals, masters, with how close they are. | list of a map: to, name, pronoun, role, bond, status, private, owes, note | no | [] |
-| secrets | What they keep to themselves: the secret, a hint at it, what they say when it comes out, how hard it is to get out of them, and what it teaches. | list of a map: id, text, hint, admission, dc, teaches, about | no | [] |
+| secrets | What they keep to themselves: the secret, a hint at it, what they say when it comes out, how hard it is to get out of them, and what it teaches. | list of a map: id, text, hint, admission, dc, teaches, about, given_when | no | [] |
 
 `secrets`: `about` and `teaches` take ids: a topic, a person (an NPC id), a place (a location id) or an area (`area_<id>`).
+
+`secrets[].given_when`: conditions as in a quest (the stage that needs it, `{ stage: quest_id:stage_id }`, a flag, an attitude) under which they give the secret to whoever asks about it (`about`), without a roll; without it only trust (Warm or better) or a won PERSUADE gets it, and a question that touches it gets the line "keeps that close". A code or password a quest needs has a way without a roll: Check names one told only in a secret without `given_when` or `about`.
 
 `call`: what people call them in running text when it is not the first word of the name: after a title (Dr Ilyan Sorell, `call: Ilyan`) or a byname (`call: Old Tamsin`); left out, the first word of the name that is no title.
 

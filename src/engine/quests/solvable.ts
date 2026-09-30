@@ -17,6 +17,8 @@ interface Means {
   things: Set<string>
   /** Every word the world tells a player somewhere, spaced: for a word a quest waits to hear (M10.31 C). */
   told: string
+  /** What only a secret tells that needs a roll to get out (M10.33 U): no given_when, no trust. */
+  rolled: string
   /** The places behind secret or waiting ways that never open (M10.32), with why. */
   shut: Map<string, string>
 }
@@ -58,8 +60,12 @@ function meansOf(content: Content): Means {
   for (const n of content.npcs.values()) for (const id of Object.keys(n.inventory)) things.add(id)
   for (const c of content.crafts.values()) for (const t of Object.values(c as unknown as Raw)) for (const id of valuesOf(t, 'produces')) things.add(id)
   // What a player can be told: what people know, hide and say, what places, things and topics say, what deeds bring.
-  const told = ` ${wordsOf(toldIn([...all, ...content.npcs.values(), ...content.topics.values(), ...content.items.values()]).join(' '))} `
-  const means = { flags, things, told, shut: new Map<string, string>() }
+  // A secret without a right (given_when) or trust (about) is got only by a roll (M10.33 U): no way of its own.
+  const rollOnly = (s: { given_when?: unknown[]; about?: string[] }) => !(s.given_when?.length || s.about?.length)
+  const people = [...content.npcs.values()].map((n) => ({ ...n, secrets: n.secrets.filter((s) => !rollOnly(s)) }))
+  const told = ` ${wordsOf(toldIn([...all, ...people, ...content.topics.values(), ...content.items.values()]).join(' '))} `
+  const rolled = ` ${wordsOf(toldIn([...content.npcs.values()].flatMap((n) => n.secrets.filter(rollOnly))).join(' '))} `
+  const means = { flags, things, told, rolled, shut: new Map<string, string>() }
   means.shut = shutPlaces(content, means)
   return means
 }
@@ -132,7 +138,7 @@ function neverOne(content: Content, means: Means, c: Raw): string | undefined {
   if (typeof c['here'] === 'string' && !content.npcs.has(c['here'])) return `there is nobody ${c['here']}`
   if (typeof c['talked'] === 'string' && !content.npcs.has(c['talked'])) return `there is nobody ${c['talked']}`
   // A word waited for (M10.31 C): the stranger must be able to learn it somewhere.
-  if (typeof c['said'] === 'string' && !means.told.includes(` ${wordsOf(c['said'])} `)) return `the word "${c['said']}" is told nowhere a player could learn it`
+  if (typeof c['said'] === 'string' && !means.told.includes(` ${wordsOf(c['said'])} `)) return means.rolled.includes(` ${wordsOf(c['said'])} `) ? `the word "${c['said']}" is told only in a secret that takes a roll: give that secret given_when, so someone gives it when it matters` : `the word "${c['said']}" is told nowhere a player could learn it`
   if (typeof c['said'] === 'string' && typeof c['to'] === 'string' && !content.npcs.has(c['to'])) return `there is nobody ${c['to']}`
   for (const key of ['stage', 'outcome'] as const) {
     if (typeof c[key] !== 'string') continue

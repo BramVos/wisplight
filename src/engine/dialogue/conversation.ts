@@ -35,6 +35,8 @@ import { askLine, askNow, knownRequests, requestName, visited } from '../request
 import { questsOf } from '../life'
 import { hiddenNamed, wantsNow } from '../quests/knows'
 import { doableHere } from '../doable'
+import type { Npc } from '../content'
+import { allHold } from '../quests/engine'
 import { isGameVerb } from '../parser'
 import { routineNow } from '../npc/brain'
 import { parseReply, TALK_REPLY_SCHEMA, type Reply } from './schema'
@@ -293,6 +295,11 @@ export class Dialogue {
     if (!this.talk || this.talk.npc !== npcId) this.start(npcId, true)
     const secret = this.world.npc(npcId).secrets.find((s) => s.about.includes(topic) && !this.talk!.revealed.includes(s.id))
     if (!secret) return {}
+    return this.reveal(npcId, secret)
+  }
+
+  /** A secret told (FO, chapter 8; M10.33 U: by trust or by right): the player learns it, and so does the night round. */
+  private reveal(npcId: string, secret: Npc['secrets'][number]): { secret: string; admission?: string } {
     this.talk!.revealed.push(secret.id)
     ;(this.world.state.flags ??= {})[`secret:${npcId}:${secret.id}`] = true
     // A secret found out: what they are is no cover any more (M10.8).
@@ -301,7 +308,7 @@ export class Dialogue {
     if (secret.teaches) this.teach(npcId, secret.teaches)
     // Heard by nobody else, and never carried home after the talk, but the night round sees it (M10.30).
     confided(this.world, npcId, secret)
-    return { secret: secret.text, admission: secret.admission }
+    return { secret: secret.text, ...(secret.admission ? { admission: secret.admission } : {}) }
   }
 
   /** A secret that shows the way: the player now knows it, from this NPC, at the full level. */
@@ -656,6 +663,23 @@ export class Dialogue {
     }
     const act = options.act ?? classify(text, topics.length)
     if (act === 'AskRumors' && topics.length === 0) topics = this.rumours(npcId)
+    // A secret the question touches (M10.33 U; Bram: "iets simpels als een code krijgen is een crime"): given by
+    // right (its given_when, or trust), kept in view without it, never a hidden roll.
+    let secret = options.secret
+    let admission = options.admission
+    let kept: string | undefined
+    let keptLine: Output | undefined
+    if (!secret && !options.check) {
+      const touched = npc.secrets.find((s) => s.about.some((t) => topics.includes(t)) && !talk.revealed.includes(s.id))
+      const right = touched && ((touched.given_when.length > 0 && allHold(world, touched.given_when)) || band.band === 'Warm' || band.band === 'Devoted')
+      if (touched && right) ({ secret, admission } = this.reveal(npcId, touched))
+      else if (touched && !talk.revealed.includes(`kept:${touched.id}`)) {
+        talk.revealed.push(`kept:${touched.id}`)
+        keptLine = { kind: 'system', text: world.say(`{name} keeps that close. PERSUADE {them}${touched.given_when.length ? ', or ask again when it matters to what you are doing' : ', or earn {their} trust'}.`, npcId) }
+        kept = 'The stranger asked about something you keep to yourself. You do not tell it now: say so in your own way, and make nothing up in its place.'
+        this.llm()?.byRule?.({ role: 'voice', why: `secret kept (${touched.id}): ${touched.given_when.length ? 'its time has not come' : 'no right to it yet'}`, said: text })
+      }
+    }
     // The speaker is never a topic of their own knowledge (M10.33 T: Niko said "Niko didn't mention it"): what is about them is theirs to say as I.
     const packet = this.knowledge.packet(npcId, topics.filter((t) => t !== npcId), act === 'AskStory' || act === 'AskAbout')
     let tier: Tier = tierFor(act)
@@ -687,18 +711,18 @@ export class Dialogue {
     // "Come with me to the dyke" (M10.6): somewhere or to someone is a lead on offer, not joining the stranger's travels.
     const leads = act === 'Recruit' && !options.check ? offersFor(world, npcId, topics, text).filter((o) => o.kind === 'lead') : []
     const recruiting = act === 'Recruit' && leads.length === 0
-    const decision = [recruiting ? recruitDecision(world, npcId, band.band) : undefined, believed, reaction?.decision, flirted?.decision, amended?.decision].filter(Boolean).join(' ') || undefined
+    const decision = [recruiting ? recruitDecision(world, npcId, band.band) : undefined, believed, reaction?.decision, flirted?.decision, amended?.decision, kept].filter(Boolean).join(' ') || undefined
     const offered = options.echo || options.check ? [] : (this.questOptions?.(npcId) ?? [])
     // What this person can do for the player now (M10.3): the game decides, the voice chooses and words it.
-    const offers = options.check || options.secret || recruiting ? [] : leads.length ? leads : offersFor(world, npcId, topics, text)
+    const offers = options.check || secret || recruiting ? [] : leads.length ? leads : offersFor(world, npcId, topics, text)
     // Asked about someone who matters: news with witnesses, before anyone answers (M10.3).
     const made = talkFact(world, npcId, topics, act)
     if (made) (talk.facts ??= []).push(made.id)
     // No model for what the rules can do (M10.28): a greeting, a yes or no, a trade, the same question again, the card.
-    const busy = Boolean(options.check || options.secret || said || decision || reaction || flirted || amended || offered.length || claimable.length)
+    const busy = Boolean(options.check || secret || said || decision || reaction || flirted || amended || offered.length || claimable.length)
     const rule = this.llm() ? byRule(world, npcId, { act, text, topics, history: talk.history, offers, busy }) : undefined
     if (rule) this.llm()?.byRule?.({ role: 'voice', why: rule.why, said: text })
-    const reply = rule ? undefined : await this.callModel(npcId, text, { act, tier, packet, band, memories, check: options.check, secret: options.secret, decision, spokenTopics: this.topics.recognise(text), offered, offers, claimable })
+    const reply = rule ? undefined : await this.callModel(npcId, text, { act, tier, packet, band, memories, check: options.check, secret, decision, allows: Boolean(recruiting || reaction || flirted || amended || believed), spokenTopics: this.topics.recognise(text), offered, offers, claimable })
     // A claim the voice read: the engine judges it and books it as heard from the stranger; the stance sounds next turn.
     const read = reply?.claim && reply.claim.subject !== 'none' && claimable.includes(reply.claim.subject) ? { subject: reply.claim.subject, key: reply.claim.key, value: reply.claim.value } : undefined
     if (read && claimValid(world, read) && (talk.claims = (talk.claims ?? 0) + 1) <= knob(this.world, 'talk.max_claims')) {
@@ -736,8 +760,8 @@ export class Dialogue {
           ? matter.line
           : said
             ? claimLine(world, npcId, said.stance)
-            : options.secret
-        ? world.say(`{name} glances at the door and lowers {their} voice. "${options.admission ?? 'All right. But it stays between us.'}"`, npcId)
+            : secret
+        ? world.say(`{name} glances at the door and lowers {their} voice. "${admission ?? 'All right. But it stays between us.'}"`, npcId)
         : options.check && !succeeded(options.check)
           ? world.say(`{name} shakes {their} head. "I don't think so."`, npcId)
           : fallbackReply(world, npcId, act, packet, band.band, text)
@@ -840,7 +864,7 @@ export class Dialogue {
       }
     }
     // An offer that goes through becomes an agreement and starts; one the NPC proposes waits for the player's yes.
-    const offerOut: Output[] = matter?.now ? [{ kind: 'system', text: `Now: ${matter.now}` }] : []
+    const offerOut: Output[] = [...(keptLine ? [keptLine] : []), ...(matter?.now ? [{ kind: 'system' as const, text: `Now: ${matter.now}` }] : [])]
     let offerEnds = false
     if (asked?.decision === 'yes' && !reaction) {
       const done = accept(world, npcId, asked)
@@ -1010,6 +1034,8 @@ export class Dialogue {
       check?: CheckResult & { about: string }
       secret?: string
       decision?: string
+      /** The decision lets the voice say a deed (joining, a reaction, a flirt, amends); a secret kept does not (M10.33 U). */
+      allows?: boolean
       spokenTopics: string[]
       offered?: { key: string; intent: string }[]
       offers?: Offer[]
@@ -1196,21 +1222,21 @@ export class Dialogue {
       const doing = offers.find((o) => o.key === reply.action && o.decision === 'yes') ?? offers.find((o) => o.key === reply.propose && o.decision === 'yes')
       // A task or a meeting for the stranger that nothing gives (M10.33 V): a meeting only as an offer of the game, a task
       // only from their story or a request of theirs; directions asked for are no task.
-      const sets = !ctx.decision && reply.quest_action === 'none' && ctx.act !== 'AskDirections' ? setsTask(fitted) : undefined
+      const sets = !ctx.allows && reply.quest_action === 'none' && ctx.act !== 'AskDirections' ? setsTask(fitted) : undefined
       if (sets && !(sets === 'meeting' ? doing?.kind === 'meet' : doing || this.hasMatter(npcId))) {
         this.refused('invented', llm, `a ${sets} nothing gives`)
         prompt += `\nNOTE: your last reply set the stranger a ${sets} that no STORY, REQUEST or OFFER gives. Answer again without it.`
         continue
       }
       // An act the stranger cannot do here (M10.33 AB: a multimeter under the bench, "photograph it"): asked again.
-      const act = ctx.decision ? undefined : actsAsked(fitted).find((v) => !isGameVerb(v) && !this.doableWords(npcId).has(v))
+      const act = ctx.allows ? undefined : actsAsked(fitted).find((v) => !isGameVerb(v) && !this.doableWords(npcId).has(v))
       if (act) {
         this.refused('invented', llm, `an act not here: ${act}`)
         prompt += `\nNOTE: your last reply asked the stranger to ${act}, which cannot be done here. Ask only for what DOABLE HERE, THE STORY or a REQUEST gives, or for nothing.`
         continue
       }
       // A time they keep in their own words is no meeting (M10.33 AG): a meeting is an offer of the game they propose.
-      if (promises(fitted) && !doing && !ctx.decision && reply.quest_action === 'none') {
+      if (promises(fitted) && !doing && !ctx.allows && reply.quest_action === 'none') {
         this.refused('promise', llm)
         prompt += '\nNOTE: your last reply promised to do something the game did not offer. Answer again without promising it: choose an OFFER with decision yes, or say what you can and cannot do.'
         continue
