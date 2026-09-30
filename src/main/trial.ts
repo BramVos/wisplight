@@ -1,7 +1,7 @@
 import { appendFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { basename, join, relative } from 'node:path'
-import { chapterStep, documentChapters, faithfulness, mergeFix, newWorldFiles, playWorldStep, readDraft, worldFixRequest, worldStepRequest, WORLD_STEPS, DOCUMENT_STEPS, type Content, type ContentFile, type LlmRequest, type WorldStep } from '../engine'
+import { callName, chapterStep, documentChapters, faithfulness, mergeFix, newWorldFiles, playWorldStep, readDraft, worldFixRequest, worldStepRequest, WORLD_STEPS, DOCUMENT_STEPS, type Content, type ContentFile, type LlmRequest, type WorldStep } from '../engine'
 import { LlmError, type LlmResponse } from '../engine/dialogue/llm'
 import { askAdvice, readScore, testCall, trial, type KeptAnswer } from '../node/ai/advisor'
 import { costUsd } from '../node/ai/pricing'
@@ -14,7 +14,7 @@ import { mapTrial } from './maptrial'
 import { keepTally, keptTallies, measuring, playRegion, REGION_KINDS, regionReport, REGION_SETTINGS, type RegionSetting } from '../node/regionplay'
 import type { BuildStore } from '../node/ai/builds'
 import type { AiService } from '../node/ai/service'
-import { blockKept, playTwenty, TWENTY_ANYWHERE, TWENTY_LINES } from '../node/talktrial'
+import { STORY_TALKS, blockKept, playTwenty, TWENTY_ANYWHERE, TWENTY_LINES } from '../node/talktrial'
 
 /** What a trial needs of the AI service: the gateway and the build budgets (a test gives it the mock). */
 export type TrialAi = { builds: Pick<BuildStore, 'reset' | 'setLimit'>; gateway: { complete(request: LlmRequest): Promise<LlmResponse> } }
@@ -285,6 +285,10 @@ export async function trialRun(ai: AiService, kinds: string, contentRoot: string
       }
       continue
     }
+    if (kind === 'story_twenty') {
+      ok = (await storyTrial(ai, contentRoot, { model: env('MODEL'), capUsd: cap, appPath }, say)) && ok
+      continue
+    }
     if (kind === 'talk_twenty' || kind === 'keep_warm') {
       ok = (await talkTrial(ai, kind, contentRoot, { model: env('MODEL'), capUsd: cap, appPath, read: env('READ') !== '0', world: env('WORLD'), npc: env('NPC') }, say)) && ok
       continue
@@ -316,6 +320,47 @@ function providerOf(model: string): 'openai' | 'anthropic' {
  * from the cache, wrote to it and cost; or whether a ping keeps the block of
  * a place stays in the cache (keep_warm: a line, and one after six minutes).
  */
+/**
+ * Niko and Tessa on the recordings (M10.30 (5)): ten lines to each in The
+ * Quiet Reach, on the player's voice model, every answer kept for reading side
+ * by side, with the guard's reasons where it asked again (a hidden truth named
+ * too early is a leak).
+ */
+export async function storyTrial(ai: AiService, contentRoot: string, how: { model: string; capUsd: number; appPath?: string }, say: (line: string) => void): Promise<boolean> {
+  const chosen = ai.overview().settings.roles.voice
+  if (!chosen) {
+    say('story_twenty: no model chosen for the voice under Settings > AI')
+    return false
+  }
+  const content = await loadContentFromDir(contentRoot, 'quietreach')
+  const model = (response: LlmResponse) => response.model
+  const other = how.model && how.model !== chosen.model ? { provider: providerOf(how.model), model: how.model } : undefined
+  const llm = other ? { complete: (r: LlmRequest) => ai.gateway.complete(r, other), report: ai.gateway.report.bind(ai.gateway) } : ai.gateway
+  let spent = 0
+  const kept: KeptAnswer[] = []
+  try {
+    for (const talk of STORY_TALKS) {
+      const lines = await playTwenty(content, llm, {
+        model,
+        npc: talk.npc,
+        lines: talk.lines,
+        onLine: (m, n) => {
+          spent += m.costUsd
+          say(`${callName(content.npcs.get(talk.npc)!)} ${n}: ${m.calls} call${m.calls === 1 ? '' : 's'}${m.rejected.length ? ` (asked again: ${m.rejected.join(', ')})` : ''}, $${m.costUsd.toFixed(4)}; "${m.line}" -> ${m.said}`)
+          if (spent > how.capUsd) throw new Error(`the cap of $${how.capUsd.toFixed(2)} is spent`)
+        },
+      })
+      kept.push(...lines.map((l) => ({ npc: talk.npc, said: l.line, answer: l.said, byModel: l.calls > 0 })))
+    }
+  } catch (error) {
+    say(`story_twenty: stopped: ${error instanceof Error ? error.message : String(error)}`)
+    return false
+  }
+  say(`story_twenty: ${other?.model ?? chosen.model}, ${kept.filter((k) => k.byModel).length} lines asked, $${spent.toFixed(4)} in all`)
+  if (how.appPath) keepAnswers(how.appPath, content, other?.model ?? chosen.model, 'Niko and Tessa on the recordings (M10.30)', kept, `$${spent.toFixed(4)}`, undefined)
+  return true
+}
+
 export async function talkTrial(ai: AiService, kind: 'talk_twenty' | 'keep_warm', contentRoot: string, how: { model: string; capUsd: number; appPath?: string; read?: boolean; world?: string; npc?: string }, say: (line: string) => void): Promise<boolean> {
   const chosen = ai.overview().settings.roles.voice
   if (!chosen) {

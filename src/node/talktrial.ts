@@ -57,6 +57,45 @@ export const TWENTY_ANYWHERE = [
 ]
 
 /** What one line of the talk cost: every call it took, the tries the guard asked for included. */
+/**
+ * The story told by two people (M10.30 (5): do Niko and Tessa tell the same
+ * story of the recordings?): ten lines to each about the station, the signal
+ * and the data, early in The Quiet Reach, when the main line is at its first
+ * stage and each has their own line of what they know.
+ */
+export const STORY_TALKS: { npc: string; lines: string[] }[] = [
+  {
+    npc: 'npc_niko_serrin',
+    lines: [
+      'Good morning.',
+      'What is wrong with the listening station?',
+      'Tell me about the signal.',
+      'Has anyone touched the recordings?',
+      'Could the data have been changed?',
+      'When did the station start failing?',
+      'Is the antenna damaged?',
+      'Who else goes up to the ridge?',
+      'What does Tessa think of it all?',
+      'What would you do in my place?',
+    ],
+  },
+  {
+    npc: 'npc_tessa_rook',
+    lines: [
+      'Good morning.',
+      'What is wrong with the listening station?',
+      'Tell me about the signal.',
+      'Has anyone touched the recordings?',
+      'Could the data have been changed?',
+      'What do you know about the Peregrine\'s tests?',
+      'Is the drive ready?',
+      'What did Niko find?',
+      'Who goes up to the ridge?',
+      'What would you do in my place?',
+    ],
+  },
+]
+
 export interface LineMeasure {
   line: string
   said: string
