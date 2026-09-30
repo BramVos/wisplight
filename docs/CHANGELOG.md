@@ -1,5 +1,19 @@
 # Changelog
 
+## M10.33 deel: niets kwijt bij herladen (K), 30 september 2026
+
+- **Oorzaak:** de ontwikkelversie herlaadt bij elke commit van een andere sessie, en een antwoord dat onderweg is, gaat verloren.
+- **Een eigen kopie om in te spelen.** `npm run play:copy` bouwt origin/main in de map `../Wisplight-play`, los van de werkmap waar de bouwers in werken. Start het spel daar met `npx electron .`. Het deelt de saves met de ontwikkelversie, dus CONTINUE gaat verder met hetzelfde spel.
+- **Hersteld.** Het spellog krijgt elk antwoord al voordat het scherm het toont. Een spel dat netjes sluit, schrijft dat op. Na een onverwachte herstart zegt CONTINUE bovenaan: "The game was restored to <dag>, <tijd>: everything up to then is kept."
+
+Testen: `npm run play:copy`, en speel in de map die het noemt. Die map verandert pas bij de volgende `npm run play:copy`.
+
+Kosten: geen aanroep.
+
+Wat de editor en de kroniekverteller leerden: niets.
+
+Ontwerp: geen wijziging.
+
 ## M10.33 deel: de ruwe randen (R), 30 september 2026
 
 - "Where can I find can I find" is weg: de woorden van de vraag horen niet bij de plek.

@@ -29,6 +29,7 @@ WISPLIGHT_SMOKE=1 npx electron .   # after build: hidden end-to-end check (WISPL
 WISPLIGHT_PICTURES=5 npx electron .   # after build, only when Bram asks: every picture of every world at once with his key and image model, capped in euros
 npm run dist:mac   # installers in dist/ (unsigned); npm run dist:win for Windows; the Installers workflow on GitHub tries both on clean machines
 npm run playtest   # the storylines played as a new player, with and without acting; transcripts in docs/playtest/ (protocol: docs/PLAYTEST.md)
+npm run play:copy  # a built copy of origin/main in ../Wisplight-play to play in, untouched by the builders' commits (M10.33 K)
 npm run stutter    # the longest waits of the interface as the app plays (-- --extra 100, -- --model, -- --world isle)
 ```
 

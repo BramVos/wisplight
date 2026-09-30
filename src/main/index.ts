@@ -345,6 +345,8 @@ async function continueFrom(data: SaveData | undefined) {
   if (!data) return reply([{ kind: 'error', text: 'There is no saved game yet.' }])
   const gone = await useWorldOf(data)
   if (gone) return reply([{ kind: 'error', text: gone }])
+  // How the game before ended (M10.33 K): closed as it should, or not.
+  const ended = data.session ? journal().recent({ game: data.session.game, branch: data.session.branch }, 1, ['note'])[0]?.text : 'Closed'
   if (!data.session) {
     follow(await Engine.restore(content!, data, ai?.client()), journal().start(randomUUID()))
   } else {
@@ -356,8 +358,11 @@ async function continueFrom(data: SaveData | undefined) {
   }
   // The game before, faded above (M10.29 S): the window was empty on "You pick up where you left off."
   const earlier = data.session ? journal().earlier({ game: data.session.game, branch: data.session.branch }, appKnobs().get('recall_lines'), engine!.world.calendar) : undefined
+  // After an unexpected restart (M10.33 K: the development build reloads on every commit of another session), one line
+  // says to when the game was restored; the log keeps every answer before the screen shows it.
+  const back = ended && ended !== 'Closed' ? `The game was restored to ${engine!.status().time}: everything up to then is kept.` : 'You pick up where you left off.'
   // A story written after the game began starts where the stranger is (M10.30).
-  return reply([system('You pick up where you left off.'), ...(await engine!.handle('look')), ...engine!.beginWritten()], earlier)
+  return reply([system(back), ...(await engine!.handle('look')), ...engine!.beginWritten()], earlier)
 }
 
 /** Loads a save as it was saved; what happened after it stays in the game log, on a branch of its own. */
@@ -1413,5 +1418,7 @@ void app.whenReady().then(async () => {
 
 app.on('window-all-closed', () => {
   if (engine && session && !smoke) keep('auto')
+  // A game closed as it should (M10.33 K): CONTINUE after anything else says the game was restored.
+  if (engine && session && !smoke) journal().append(session, engine.world.now, 'note', 'Closed')
   if (process.platform !== 'darwin') app.quit()
 })
