@@ -379,7 +379,36 @@ export class World {
     return event
   }
 
-  /** Fills {name}, {short}, {they}, {their} and {them} for an NPC. */
+  /**
+   * Whether the stranger knows someone's name (M10.33 S: one rule for every
+   * place a person is named): after a talk, or once they heard or read it (the
+   * intro, someone else, the journal, the person themself).
+   */
+  knowsName(npcId: string): boolean {
+    if ((this.state.relations?.[npcId]?.familiarity ?? 0) > 0) return true
+    if (this.state.player.journal?.[npcId] !== undefined) return true
+    return (this.state.player.sources?.[npcId]?.length ?? 0) > 0
+  }
+
+  /** The short name the stranger may see (M10.8): a hidden trade stays out of it until it is known. */
+  private shortOf(npcId: string): string {
+    const npc = this.npc(npcId)
+    return npc.hidden && this.state.player.people?.[npcId]?.work === undefined ? (npc.short_public ?? callName(npc)) : npc.short
+  }
+
+  /**
+   * How the stranger calls someone in the game's own lines (M10.33 S): the name
+   * they know, else what they see: "the steward". A short name that names them
+   * ("Mirte the baker") shows the name to everyone.
+   */
+  seenName(npcId: string): string {
+    const call = callName(this.npc(npcId))
+    const short = this.shortOf(npcId)
+    const named = new RegExp(`(^|[^\\p{L}])${call.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}($|[^\\p{L}])`, 'u').test(short)
+    return this.knowsName(npcId) || named ? call : short
+  }
+
+  /** Fills {name}, {short}, {they}, {their} and {them} for an NPC; {name} as the stranger knows them (M10.33 S). */
   say(template: string, npcId: string): string {
     const npc = this.npc(npcId)
     const forms = {
@@ -387,13 +416,23 @@ export class World {
       he: { they: 'he', their: 'his', them: 'him' },
       they: { they: 'they', their: 'their', them: 'them' },
     }[npc.pronoun]
-    const first = callName(npc)
+    const seen = this.seenName(npcId)
     return template
-      .replaceAll('{name}', first)
+      .replace(/\{name\}/g, (_, at: number) => (startsSentence(template.slice(0, at)) ? upperFirst(seen) : seen))
       // A hidden trade stays out of the short name until the stranger knows it (M10.8).
-      .replaceAll('{short}', npc.hidden && this.state.player.people?.[npcId]?.work === undefined ? (npc.short_public ?? first) : npc.short)
+      .replaceAll('{short}', this.shortOf(npcId))
       .replaceAll('{they}', forms.they)
       .replaceAll('{their}', forms.their)
       .replaceAll('{them}', forms.them)
   }
+}
+
+/** Whether text that comes before a word leaves it at the start of a sentence or of something said. */
+export function startsSentence(before: string): boolean {
+  return /(^|[.!?]["'\u201d)]?\s+|["\u201c]\s*)$/.test(before) || before.trim() === ''
+}
+
+/** A word with its first letter as a capital: "The steward". */
+export function upperFirst(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1)
 }

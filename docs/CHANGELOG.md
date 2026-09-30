@@ -1,5 +1,22 @@
 # Changelog
 
+## M10.33 deel: namen, het doel in beeld en een zin die past (S, C, G), 30 september 2026
+
+- **Eén naamregel (S).** Je kent iemands naam na een gesprek, of zodra je hem hoorde of las: in het intro of de quest, van iemand anders, in je dagboek. Tot dan heet hij in elke regel naar wat je ziet: "The medic comes from the north", "Here: the medic". Zo staan "Here: the medic" en "Edda comes from inside" niet meer samen op het scherm. In de Nethermarch verandert er niets: daar heeft de korte naam de naam al in zich ("Mirte the baker").
+- **Het doel in beeld (C).** Wie de quest van de start noemt, ken je vanaf het begin bij naam: in The Quiet Reach Dr Sorell en Niko. Onder de quest in de zijbalk staat wat je nu kunt doen. De questpagina zegt wie hem gaf en waar de volgende daad is, allebei als link. Wat het intro en de reden van je achtergrond noemen, staat vanaf de eerste minuut in je dagboek (als palingvisser kent RECALL de Haakman).
+- **Een zin die past (G).** Een vraag met "Sorry", "Excuse me" of "Good morning" ervoor is gewoon een vraag, en krijgt de ruimte van een vraag. Tessa kreeg er gisteren maar vijftien woorden voor. Een te lang antwoord wordt geknipt op een hele zin met een gesloten aanhalingsteken en met iets gezegds erin, en anders helemaal niet.
+- **Een storing één keer.** Geeft het model geen antwoord, dan zegt het spel dat één keer ("The AI gave no answer"), zonder foutcode. De foutcode zie je als je over het AI-lampje in de statusbalk zweeft, en hij staat in het AI-log.
+
+Testen: begin een nieuw spel in The Quiet Reach en loop naar de Commons: de mensen heten naar hun werk, Niko bij naam. Kijk in de zijbalk onder The Orison Recordings, en open de questpagina. Vraag iemand "Sorry, where is the Workshop?". Tests in `tests/m1033names.test.ts` en `tests/m1033talk.test.ts`.
+
+Kosten: geen aanroep.
+
+Bekende gaten: het model kan in zijn eigen vertelling nog een naam gebruiken die je niet kent ("Sana nods"); dat hoort bij T.
+
+Wat de editor en de kroniekverteller leerden: de stap Kader zegt dat iedereen en alles wat het intro en de redenen van de achtergronden noemen moet bestaan, zodat de vreemdeling hen vanaf de eerste minuut kent.
+
+Ontwerp: geen wijziging; de regels van namen en het dagboek staan al in het functioneel ontwerp, dit maakt ze waar.
+
 ## M10.32 af: geheime en wachtende wegen in wat de kroniekverteller schrijft en controleert, 30 september 2026
 
 Op je vraag of het lek van de Cable Gallery ook in de bron is opgelost. De motor was al gerepareerd: over de kaart kom je nooit meer binnen in een plek achter een geheime of wachtende weg. Nu ook de quests.

@@ -58,6 +58,8 @@ describe('M10.21: the edge of the region', () => {
     const bare: Content = { ...content, regions: new Map([...content.regions].map(([id, r]) => [id, { ...r, beyond: [] }])) }
     const engine = new Engine(bare, { seed: 3, builder: true })
     engine.start()
+    // The intro names Graafhaven, where the barge came from (M10.33 C: known from the first minute); here nobody has.
+    delete engine.state.player.journal!['graafhaven']
     engine.state.player.location = hexId({ col: 0, row: 60 })
     const unknown = said(await engine.handle('head west'))
     expect(unknown).toContain('Beyond it the land runs on west, and nobody has told you yet what lies that way.')
@@ -88,9 +90,10 @@ describe('M10.21: the edge of the region', () => {
     engine.start()
     const data = hexMapData(engine.world, { whole: true })!
     const map = regionMap(content)!
-    expect(data.edge).toMatchObject({ cols: map.cols, rows: map.rows, beyond: [] })
+    // Graafhaven, where the barge came from, is known from the intro (M10.33 C).
+    expect(data.edge).toMatchObject({ cols: map.cols, rows: map.rows, beyond: [{ side: 'west', names: ['Graafhaven'] }] })
     ;(engine.state.player.journal ??= {})['zwolderkamp'] = engine.world.now
-    expect(hexMapData(engine.world, { whole: true })!.edge!.beyond).toEqual([{ side: 'east', names: ['Zwolderkamp'] }])
+    expect(hexMapData(engine.world, { whole: true })!.edge!.beyond).toEqual([{ side: 'west', names: ['Graafhaven'] }, { side: 'east', names: ['Zwolderkamp'] }])
     // The designer's map shows every one.
     expect(previewMapData(content, content.world.map?.palette ?? DEFAULT_PALETTE, true).edge!.beyond.map((b) => b.side)).toEqual(['west', 'north', 'east'])
   })

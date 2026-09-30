@@ -30,7 +30,7 @@ export interface AiStatus {
 export interface RoleLight {
   role: 'voice' | 'brain' | 'chronicler' | 'illustrator' | 'builder'
   busy: boolean
-  last?: { at: number; costUsd?: number; ms: number; ok: boolean }
+  last?: { at: number; costUsd?: number; ms: number; ok: boolean; error?: string }
 }
 
 export interface Reply {

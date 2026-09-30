@@ -7,7 +7,7 @@ import { factById, heardBy, juiceNow, passOn, versionOf } from './news'
 import { tieTo } from './people'
 import { mayLie } from './social/gates'
 import type { Fact } from './state'
-import type { World } from './world'
+import { upperFirst, type World } from './world'
 import { swearRight } from './dialogue/guard'
 import { fixNotHere, oathsFor, strangeWords } from './dialogue/voice'
 
@@ -79,7 +79,8 @@ function justCame(world: World, id: string, place: string, minutes: number): boo
 
 /** One line by their bond: warm, a nod, nothing, or out of each other's way. */
 function greeting(world: World, a: string, b: string): string {
-  const [na, nb] = [callName(world.npc(a)), callName(world.npc(b))]
+  // As the stranger knows them (M10.33 S): "The steward nods to Mara."
+  const [na, nb] = [upperFirst(world.seenName(a)), world.seenName(b)]
   const bond = world.state.bonds?.[a]?.[b]
   const tie = tieTo(world, a, b)
   if (tie?.role === 'rival' || bond?.grudge !== undefined || (bond?.fear ?? 0) >= 40) return `${na} and ${nb} keep out of each other's way.`

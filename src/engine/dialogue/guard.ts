@@ -140,18 +140,40 @@ export function wordCount(text: string): number {
   return text.trim().split(/\s+/).filter(Boolean).length
 }
 
-/** Cuts a reply that runs too long at the last full sentence within the limit. */
+/** Whether a piece of a reply closes every quotation it opens: straight quotes in pairs, curly ones balanced. */
+function quotesClosed(text: string): boolean {
+  return (text.match(/"/g) ?? []).length % 2 === 0 && (text.match(/\u201c/g) ?? []).length === (text.match(/\u201d/g) ?? []).length
+}
+
+/** A piece of a reply with the quotation it leaves open closed after its last sentence. */
+function closeQuotes(text: string): string {
+  const t = text.trimEnd()
+  if ((t.match(/"/g) ?? []).length % 2 === 1) return `${t}"`
+  if ((t.match(/\u201c/g) ?? []).length > (t.match(/\u201d/g) ?? []).length) return `${t}\u201d`
+  return t
+}
+
+/**
+ * Cuts a reply that runs too long at the last full sentence within the limit,
+ * with every quotation closed and something said kept (M10.33 G: Tessa's answer
+ * was cut after `"Right.` with its quotation open, and a cut before her first
+ * words would leave only her hands); a reply with no such place stays whole.
+ */
 export function fitLength(text: string, limit: number): string {
   const clean = text.replace(/\s+/g, ' ').trim()
   if (wordCount(clean) <= Math.round(limit * 1.2)) return clean
-  const sentences = clean.match(/[^.!?]+[.!?]+["')\]]?\s*/g) ?? [clean]
+  const speaks = /["\u201c]/.test(clean)
+  const said = (part: string) => /"[^"]+"|\u201c[^\u201d]+\u201d/.test(part)
+  const sentences = clean.match(/[^.!?]+[.!?]+["')\]\u201d]?\s*/g) ?? [clean]
   let result = ''
+  let cut = ''
   for (const sentence of sentences) {
     if (wordCount(result + sentence) > limit) break
     result += sentence
+    const closed = quotesClosed(result) ? result.trimEnd() : closeQuotes(result)
+    if (!speaks || said(closed)) cut = closed
   }
-  if (!result) result = `${clean.split(/\s+/).slice(0, limit).join(' ').replace(/[,;:]$/, '')}.`
-  return result.trim()
+  return cut.trim() || clean
 }
 
 /** Names in a reply that the speaker has no business knowing. */

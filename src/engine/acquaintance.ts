@@ -29,10 +29,15 @@ export function knowsOfPerson(world: World, npcId: string): boolean {
   return (world.state.player.sources?.[npcId]?.length ?? 0) > 0
 }
 
-/** The name the player knows someone by (M10.8): the whole name once they talked, else as they heard it: "Geesje". */
+/**
+ * The name the player knows someone by (M10.8): the whole name once they
+ * talked, as they heard it once they heard it ("Geesje"), else who they are to
+ * see, "the steward" (M10.33 S: a name the stranger does not know stands nowhere).
+ */
 export function knownName(world: World, npcId: string): string {
   const npc = world.npc(npcId)
-  return (world.state.relations?.[npcId]?.familiarity ?? 0) > 0 ? npc.name : callName(npc)
+  if ((world.state.relations?.[npcId]?.familiarity ?? 0) > 0) return npc.name
+  return world.knowsName(npcId) ? callName(npc) : publicShort(world, npcId)
 }
 
 /** The stranger knows what someone does now (M10.8): they said it, someone told, or the stranger saw them at it. */
@@ -59,7 +64,8 @@ export function publicShort(world: World, npcId: string): string {
  */
 export function knownShort(world: World, npcId: string): string {
   const short = publicShort(world, npcId)
-  if ((world.state.relations?.[npcId]?.familiarity ?? 0) <= 0) return short
+  // The name first once it is known, by a talk or by hearing it (M10.33 S).
+  if (!world.knowsName(npcId)) return short
   const name = knownName(world, npcId)
   return short === name || short === callName(world.npc(npcId)) ? name : `${name}, ${short}`
 }

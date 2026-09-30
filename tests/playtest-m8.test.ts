@@ -29,7 +29,7 @@ describe('after the M8 playtest', () => {
     await engine.handle('north')
     await engine.handle('east')
     await engine.handle('talk mirte')
-    expect(texts(await engine.handle('"What happened to the mill?'))).not.toMatch(/The AI took too long|No answer from the AI/)
+    expect(texts(await engine.handle('"What happened to the mill?'))).not.toMatch(/The AI took too long|No answer from the AI|The AI gave no answer/)
   })
 
   it('remembers where the player saw someone, guesses their age, and knows it once told', async () => {

@@ -92,6 +92,8 @@ export class Dialogue {
   private chosen?: string
   /** Why the model gave no usable reply in the last turn, if it was asked. */
   private lastFailure?: { kind: string; message: string }
+  /** The kind of failure the stranger was told of (M10.33 G): said once, until a reply comes again. */
+  private stockTold?: string
   /** The link to the model is down (M10.29 V, a provider outage in Bram's log): when to try again, and whether the stranger was told. */
   private link?: { retryAt: number; told: boolean }
   /** The link came back since the last reply: said once. */
@@ -825,8 +827,11 @@ export class Dialogue {
     // When the model was asked and gave nothing usable, say so, so a stock line is not mistaken for an answer.
     // An outage is said once, as a line of the game (M10.29 V): the next lines of the rules say nothing more, and its end is said too.
     const outage = this.lastFailure && (this.lastFailure.kind === 'network' || this.lastFailure.kind === 'busy' || this.lastFailure.kind === 'down')
-    const notice = !reply && this.lastFailure ? (outage ? (this.link && !this.link.told ? LINK_DOWN : undefined) : stockNotice(this.lastFailure, callName(npc))) : undefined
+    // Any other failure is said once too (M10.33 G), without its technical reason: that is in the AI log and on the light.
+    const notice = !reply && this.lastFailure ? (outage ? (this.link && !this.link.told ? LINK_DOWN : undefined) : this.stockTold === this.lastFailure.kind ? undefined : stockNotice(this.lastFailure, callName(npc))) : undefined
     if (outage && this.link) this.link.told = true
+    if (!reply && this.lastFailure && !outage) this.stockTold = this.lastFailure.kind
+    if (reply) this.stockTold = undefined
     const failure: Output[] = notice ? [{ kind: 'system', text: notice }] : reply && this.linkBack ? [{ kind: 'system', text: LINK_BACK }] : []
     if (reply) this.linkBack = false
     if (!reply && this.lastFailure) {
@@ -1269,7 +1274,8 @@ export function stockNotice(failure: { kind: string; message: string }, name: st
   if (failure.kind === 'checks') return `(The AI's answers did not pass the checks; ${own}.)`
   if (failure.kind === 'config') return `(No AI: ${failure.message}; ${own}.)`
   if (failure.kind === 'budget') return `(The AI budget is used up: ${failure.message}; ${own}.)`
-  return `(No answer from the AI: ${failure.message}; ${own}.)`
+  // The technical reason is in the AI log and on the light in the status bar (M10.33 G), not in the game.
+  return `(The AI gave no answer; ${own}.)`
 }
 
 

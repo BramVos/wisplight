@@ -19,7 +19,8 @@
     "lightBusy": "{role}: working now",
     "lightNone": "{role}: no call yet",
     "lightLast": "{role}: last call {cost}, {seconds} s, {ago} min ago{ok}",
-    "lightFailed": " (failed)"
+    "lightFailed": " (failed)",
+    "lightFailedWhy": " (failed: {error})"
   },
   "editor": {
     "changedOnDisk": "{file} changed on disk. The world is loaded again."
@@ -112,7 +113,8 @@
       "other": "{count} entries"
     },
     "openQuests": "Open quests",
-    "empty": "Topics you learn appear here."
+    "empty": "Topics you learn appear here.",
+    "now": "Now: {now}"
   },
   "menu": {
     "settings": "Settings",

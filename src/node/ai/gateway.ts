@@ -74,7 +74,8 @@ export type LightRole = (typeof LIGHT_ROLES)[number]
 export interface RoleActivity {
   role: LightRole
   busy: boolean
-  last?: { at: number; costUsd?: number; ms: number; ok: boolean }
+  /** The last call; a failed one with its reason (M10.33 G: the light shows it on hovering, the game does not). */
+  last?: { at: number; costUsd?: number; ms: number; ok: boolean; error?: string }
 }
 
 export interface GatewayStatus {
@@ -242,7 +243,7 @@ export class Gateway implements LlmClient {
     const started = this.now()
     // The light of this role (M10.4): the editor's drafts are the builder's, advice is nobody's.
     const light: LightRole | undefined = request.schemaName === 'builder_draft' || request.schemaName === 'palette_draft' ? 'builder' : request.role === 'advisor' ? undefined : request.role
-    let outcome: { costUsd?: number; ok: boolean } = { ok: false }
+    let outcome: { costUsd?: number; ok: boolean; error?: string } = { ok: false }
     if (light) this.begin(light)
     try {
       const response = await provider.complete(choice.model, request, controller.signal)
@@ -289,8 +290,9 @@ export class Gateway implements LlmClient {
       }
       // A reply cut off at its limit (M10.20) was paid for: it counts in the budgets and the log like any other.
       const costUsd = this.options.usage.record(choice.provider, choice.model, failure.usage, false, undefined, request.role, source)
+      outcome = { ok: false, error: `${failure.kind}: ${failure.message}` }
       if (failure.usage) {
-        outcome = { ok: false, ...(costUsd !== undefined ? { costUsd } : {}) }
+        outcome = { ok: false, error: `${failure.kind}: ${failure.message}`, ...(costUsd !== undefined ? { costUsd } : {}) }
         if (build && buildHold !== undefined) this.options.builds!.add(build, buildStep, costUsd ?? 0)
         this.costs.add({ usd: costUsd ?? 0, role: request.role, source, ...(costUsd === undefined ? { unpriced: true } : {}) })
       }

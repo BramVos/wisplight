@@ -1,7 +1,7 @@
 import { minuteOfDay } from '../clock'
 import { isNight } from '../npc/execute'
 import { callName } from '../content'
-import type { World } from '../world'
+import { upperFirst, type World } from '../world'
 import type { Act } from './acts'
 import type { Packet } from './knowledge'
 import { isNear, noun, ownWords, tieTo } from '../people'
@@ -23,7 +23,8 @@ const ASKING = new Set<Act>(['AskAbout', 'AskDirections', 'AskOpinion', 'AskStor
 
 export function fallbackReply(world: World, npcId: string, act: Act, packet: Packet, attitude: Attitude, text = ''): string {
   const npc = world.npc(npcId)
-  const name = callName(npc)
+  // As the stranger knows them (M10.33 S): "The steward smiles." until a talk or a word gave the name.
+  const name = upperFirst(world.seenName(npcId))
   const warm = WARM.includes(attitude)
   const cold = COLD.includes(attitude)
   const quote = (text: string) => `"${text}"`
@@ -53,7 +54,7 @@ export function fallbackReply(world: World, npcId: string, act: Act, packet: Pac
       return `${name} frowns at you. ${quote("You've a strange way of talking, stranger.")}`
     case 'AskAboutSelf':
       // A hidden trade stays hidden (M10.8): the cover, not the facts.
-      if (npc.hidden && npc.cover) return `${name} straightens a little. ${quote(`I'm ${name}. Just ${npc.cover}.`)}`
+      if (npc.hidden && npc.cover) return `${name} straightens a little. ${quote(`I'm ${callName(npc)}. Just ${npc.cover}.`)}`
       return `${name} straightens a little. ${quote(`I'm ${npc.name}. ${npc.public_facts[0] ? firstPerson(npc.public_facts[0], npc.name) : ''}`.trim())}`
     case 'AskWork': {
       if (npc.hidden && npc.cover) return `${name} shrugs. ${quote(`Me? ${npc.cover.charAt(0).toUpperCase()}${npc.cover.slice(1)}. That's all there is to it.`)}`

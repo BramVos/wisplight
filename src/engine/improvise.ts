@@ -314,6 +314,6 @@ export function applyImprovisation(world: World, imp: Improvisable, narration: s
 /** Without a model, or when the call failed: the thing's own line, and no effect (M10.16). */
 export function improviseFallback(world: World, imp: Improvisable, why?: { kind: string; message: string }): Output[] {
   const own = `this is the game's own line for ${imp.target.name}`
-  const note = !why ? undefined : why.kind === 'budget' ? `(The AI budget is used up: ${why.message}; ${own}.)` : why.kind === 'timeout' ? `(The AI took too long; ${own}.)` : why.kind === 'checks' ? `(The AI's answer did not pass the checks; ${own}.)` : `(No answer from the AI: ${why.message}; ${own}.)`
+  const note = !why ? undefined : why.kind === 'budget' ? `(The AI budget is used up: ${why.message}; ${own}.)` : why.kind === 'timeout' ? `(The AI took too long; ${own}.)` : why.kind === 'checks' ? `(The AI's answer did not pass the checks; ${own}.)` : `(The AI gave no answer; ${own}.)`
   return [{ kind: 'text', text: imp.def.fallback }, ...(note ? [{ kind: 'system' as const, text: note }] : [])]
 }

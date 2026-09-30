@@ -199,6 +199,8 @@ export interface JournalEntry {
   km?: number
   /** Other names it goes by (M10.8): a highlighted "Count Aelbrecht" finds the page of the Count. */
   aliases?: string[]
+  /** An open quest's "Now" (M10.33 C): what the stranger can do next, shown under its name in the side panel. */
+  now?: string
 }
 
 export interface Status {
@@ -1233,6 +1235,9 @@ export class Engine {
     const journal = (this.state.player.journal ??= {})
     for (const topic of this.content.topics.values()) if (topic.common) journal[topic.id] ??= this.world.now
     const intro = this.content.world.intro?.trim()
+    const why = arrival(this.world)
+    // What the intro and why you are here name is known from the first minute (M10.33 C): people by name, places, lore.
+    this.introduced([intro ?? '', ...why.map((o) => o.text)].join('\n'))
     // The world's intro as a moment (M10.29 C), with the picture of where it begins and a way to "Why you are here".
     // The card without the hint to type LOOK, which the log keeps below it.
     const told = intro?.replace(/\n*\s*Type LOOK\b[^\n]*$/i, '').trim()
@@ -1240,7 +1245,7 @@ export class Engine {
     const outputs: Output[] = [
       ...(card ? [{ kind: 'card' as const, text: `${card.title}\n${intro}`, card }] : []),
       // Why you are here (M10.9), after the world's own opening.
-      ...arrival(this.world),
+      ...why,
       describeRoom(this.world),
       // Where the game begins may be worth a moment (M10.11): the wreck on Skerrow.
       ...momentsNow(this.world, true),
@@ -1286,6 +1291,17 @@ export class Engine {
       encounter: (id) => (this.content.encounters.has(id) ? this.startEncounter(id) : []),
       heard: (text, from) => this.heardOf(text, from),
     }
+  }
+
+  /**
+   * What the intro and the reason the stranger is here name (M10.33 C): the
+   * people and places as heard of, so the stranger knows them by name, and
+   * the lore in the journal from the first minute (RECALL knows it).
+   */
+  private introduced(text: string): void {
+    this.heardOf(text)
+    const journal = (this.state.player.journal ??= {})
+    for (const id of this.topics.recognise(text)) if (this.topics.kind(id) === 'lore') journal[id] ??= this.world.now
   }
 
   /** The people and places a text names go in the journal as heard of (M9.4); with a teller, the map guesses from what they said. */
@@ -1799,7 +1815,12 @@ export class Engine {
       case 'sheet':
         return [{ kind: 'system', text: sheetLines(this.world).join('\n') }]
       case 'create':
-        return createCommand(this.world, command.args)
+        {
+          // What the new background's reason names is known from now on (M10.33 C), as with the intro.
+          const made = createCommand(this.world, command.args)
+          this.introduced(made.map((o) => o.text).join('\n'))
+          return made
+        }
       case 'level':
         return levelCommand(this.world, command.args)
       case 'train':
@@ -2118,7 +2139,8 @@ export class Engine {
     const over: JournalEntry[] = []
     for (const [id, q] of Object.entries(questlog(this.world)).sort((a, b) => a[1].started - b[1].started)) {
       const quest = this.content.quests.get(id)
-      if (quest) (q.ended ? over : open).push({ id: `quest_${id}`, name: quest.name })
+      const now = q.ended ? undefined : quest?.stages?.find((st) => st.id === q.stage)?.goal
+      if (quest) (q.ended ? over : open).push({ id: `quest_${id}`, name: quest.name, ...(now ? { now } : {}) })
     }
     for (const request of knownRequests(this.world)) {
       const state = request.status === 'done' ? ' (done)' : request.status === 'failed' ? ' (too late)' : ''

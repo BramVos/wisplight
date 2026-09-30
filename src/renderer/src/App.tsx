@@ -84,7 +84,7 @@ function lightTitle(light: RoleLight): string {
   if (light.busy) return t('app.ai.lightBusy', { role })
   if (!light.last) return t('app.ai.lightNone', { role })
   const ago = Math.max(0, Math.round((Date.now() - light.last.at) / 60000))
-  return t('app.ai.lightLast', { role, cost: light.last.costUsd !== undefined ? usd(light.last.costUsd) : '?', seconds: (light.last.ms / 1000).toFixed(1), ago, ok: light.last.ok ? '' : t('app.ai.lightFailed') })
+  return t('app.ai.lightLast', { role, cost: light.last.costUsd !== undefined ? usd(light.last.costUsd) : '?', seconds: (light.last.ms / 1000).toFixed(1), ago, ok: light.last.ok ? '' : light.last.error ? t('app.ai.lightFailedWhy', { error: light.last.error }) : t('app.ai.lightFailed') })
 }
 
 const JOURNAL_KEYS: (keyof Status['journal'])[] = ['quests', 'people', 'places', 'lands', 'factions', 'events', 'lore', 'things']
@@ -618,6 +618,8 @@ export function App() {
                     <button type="button" className="topic" onClick={() => openPage(q.id)}>
                       {q.name}
                     </button>
+                    {/* What to do now (M10.33 C), under the name. */}
+                    {q.now && <div className="muted small">{t('app.journal.now', { now: q.now })}</div>}
                   </li>
                 ))}
               </ul>

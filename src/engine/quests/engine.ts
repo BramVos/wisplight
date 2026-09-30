@@ -728,6 +728,15 @@ export function questPage(world: World, questId: string): { name: string; lines:
   // What the stranger can do now (M10.30), while it is open.
   const goal = q.ended ? undefined : quest.stages?.find((s) => s.id === q.stage)?.goal
   if (goal) lines.push(`Now: ${goal}`)
+  if (!q.ended) {
+    // Who gave it and where its next deed is (M10.33 C), each a link to its page: the page says the way.
+    const givers = quest.givers.filter((g) => world.content.npcs.has(g) && world.state.npcs[g] && !world.state.npcs[g]!.dead).map((g) => `[${world.knowsName(g) ? world.npc(g).name : world.seenName(g)}]`)
+    const now = lines.findIndex((l) => l.startsWith('Now: '))
+    if (givers.length) lines.splice(now >= 0 ? now : lines.length, 0, `Given by ${givers.join(' and ')}.`)
+    const places = [...new Set((quest.actions ?? []).filter((a) => !(a.once && q.done.includes(a.id)) && allHold(world, a.when, quest.id)).flatMap((a) => a.at))]
+    const named = places.flatMap((p) => (world.content.locations.get(p)?.name ? [`[${world.content.locations.get(p)!.name}]`] : []))
+    if (named.length) lines.push(`Where: ${named.join(', ')}.`)
+  }
   const clock = Object.values(world.state.clocks ?? {}).find((c) => (c as Clock).id.startsWith(questId) || (quest.stages ?? []).some((s) => s.on_enter.some((e) => 'clock' in e && e.clock.id === (c as Clock).id))) as Clock | undefined
   if (clock && !q.ended) lines.push(`${clock.name}: ${clock.filled}/${clock.size}.`)
   if (q.ended) {

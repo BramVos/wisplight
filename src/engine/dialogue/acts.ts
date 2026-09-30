@@ -64,9 +64,24 @@ const RULES: { act: Act; pattern: RegExp }[] = [
   { act: 'Greet', pattern: /^(hello|hi|hey|good (morning|evening|afternoon|day)|greetings|hallo|hoi|goedemorgen|goedenavond|goedemiddag|dag)\b/i },
 ]
 
+/**
+ * A courtesy before what is asked (M10.33 G): "Sorry, ...", "Excuse me, ...",
+ * "Good morning. ...". Bram's "Sorry you are going a bit fast, which notes ...?"
+ * was taken for an apology and got fifteen words.
+ */
+const COURTESY = /^(?:(?:so\s+)?sorry|excuse me|pardon(?: me)?|my apologies|forgive me|thanks?(?: you)?|hello|hi|hey|good\s?(?:morning|evening|afternoon|day)|morning|evening|goedemorgen|goedemiddag|goedenavond|hallo|hoi|het spijt me|sorry hoor|pardon hoor)\b[\s,.!;:-]*/i
+
+/** Whether words ask something: a question mark, or a question word first. */
+function asks(text: string): boolean {
+  return /\?/.test(text) || /^(what|who|why|how|when|where|which|can|could|would|will|do|does|did|is|are|wat|wie|waarom|hoe|wanneer|waar|welke|kun|kunt|wil|weet|ken)\b/i.test(text.trim())
+}
+
 /** Classifies what the player says. Topics decide AskAbout when no rule fits. */
 export function classify(text: string, topicCount: number): Act {
   const trimmed = text.trim()
+  // A question with a courtesy before it is the question after it (M10.33 G): the courtesy never sets how long the answer is.
+  const rest = trimmed.replace(COURTESY, '')
+  if (rest && rest !== trimmed && asks(rest)) return classify(rest, topicCount)
   for (const { act, pattern } of RULES) if (pattern.test(trimmed)) return act
   if (topicCount > 0) return /\?\s*$/.test(trimmed) || /^(what|who|why|how|when|do|did|is|are|wat|wie|waarom|hoe|wanneer|ken|weet)\b/i.test(trimmed) ? 'AskAbout' : 'Tell'
   if (/\?\s*$/.test(trimmed)) return 'SmallTalk'

@@ -89,6 +89,7 @@ export const WORLD_STEPS: readonly WorldStep[] = [
     skipped: 'A world always has a frame; left as the builder made it, every model call gets only the world\'s name and writes a generic world.',
     checks: [
       'The frame has a WORLD, a REGION and a PEOPLE part, and says what money, faith and technology there are.',
+      'Everyone and everything the intro and the reasons of the backgrounds name exists as a person, a place or a topic: the stranger knows them by name from the first minute (M10.33).',
       'words.land, words.region and words.from are set and fit the frame; words.sleep, if given, has one sentence each for a rented room, a bed at home and sleeping rough.',
       'CHRONICLER.md names what must be kept (names, tone) and what must not be invented.',
       'Nothing breaks the hard limits.',
