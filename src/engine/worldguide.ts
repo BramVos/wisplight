@@ -103,18 +103,18 @@ export const WORLD_STEPS: readonly WorldStep[] = [
     ask: [
       'How do people speak: their oaths, a saying or two, how they call a stranger?',
       'How do they tell time and measure distance?',
-      'What words must never come up, because the thing does not exist here, and is there a word of this world for getting past a lock (hack, bypass) instead of pick?',
+      'What words must never come up, because the thing does not exist here (also kinds of places and things: a dock, a road, a horse), and is there a word of this world for getting past a lock (hack, bypass) instead of pick?',
     ],
     fills: [{ kind: 'voice' }],
     optional: true,
     skipped: 'Only the fixed core is kept out (a model speaking of models); nothing else counts as out of place, so in a science-fiction world a computer is fine.',
     checks: [
       'Oaths are keyed by a faith that exists; before the faith step there is none, so a group\'s own exclamations go on the group and the faith step adds the faiths\' oaths.',
-      'What does not exist fits the frame (no magic in science fiction, no guns in a world without them).',
+      'What does not exist fits the frame (no magic in science fiction, no guns in a world without them), and names the kinds of places and things the world has none of (M10.33 O), where no far land has them either.',
       'Sayings are rare and short.',
     ],
     prompt:
-      'STEP: THE VOICE. Agree how people speak with the designer. Propose data/voice.yaml in `files`, in the shape the builder shows for voice, with the oaths (keyed by faith id only), sayings, groups (by the areas people live in or their professions, each with its own sayings and oaths: what technicians or coast folk exclaim goes on their group), forms of address, time and measures, and the words that do not exist here. This step comes right after the frame (M10.20), so every place and person after it is written in this voice: faiths, places and professions do not exist yet, so oaths keyed by faith wait for the faith step, and a group names its areas and professions once the places and professions steps have made them (until then a group has only its name, sayings and oaths).',
+      'STEP: THE VOICE. Agree how people speak with the designer. Propose data/voice.yaml in `files`, in the shape the builder shows for voice, with the oaths (keyed by faith id only), sayings, groups (by the areas people live in or their professions, each with its own sayings and oaths: what technicians or coast folk exclaim goes on their group), forms of address, time and measures, and the words that do not exist here, among them the kinds of places and things this world has none of (a dock, a road, a horse: suggest them from the frame), so a voice never makes one up. This step comes right after the frame (M10.20), so every place and person after it is written in this voice: faiths, places and professions do not exist yet, so oaths keyed by faith wait for the faith step, and a group names its areas and professions once the places and professions steps have made them (until then a group has only its name, sayings and oaths).',
   },
   {
     id: 'lands',

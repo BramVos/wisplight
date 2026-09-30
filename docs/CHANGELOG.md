@@ -1,5 +1,19 @@
 # Changelog
 
+## M10.33 deel: geen verzonnen plekken en afstanden (O), 30 september 2026
+
+- **Wat een wereld niet heeft (O).** Oorzaak: de stemkit kon woorden buiten houden (`not_here`), maar de stap Stem vroeg nooit welke soorten plekken en dingen een wereld niet heeft. Nu vraagt de stap het ("a dock, a road, a horse"), stelt de schrijfhulp ze voor bij het kader, en zegt de gedeelde instructie van de kroniekverteller: geen plekken die de wereld niet heeft, en geen afstand die niet gegeven is.
+- **De looptijd erbij (O).** Elke plek die de stem mag noemen, krijgt de looptijd van waar de spreker staat, zoals het paneel die toont, tenzij die er al bij staat.
+- **Inhoud.** The Quiet Reach houdt nu tavern, inn, pub, temple, church, horse, carriage en castle buiten, Skerrow carriage, coach, river en windmill. Een stem die er een noemt, wordt opnieuw gevraagd. Deepwell heeft geen stemkit en speelt de standaard: niets telt als misplaatst.
+
+Testen: vraag in The Quiet Reach naar een plek en kijk in het AI-logboek naar KNOWLEDGE. Tests in `tests/m1033places.test.ts`.
+
+Kosten: geen nieuwe aanroep; een paar tokens per plek in KNOWLEDGE.
+
+Wat de editor en de kroniekverteller leerden: de stap Stem van de wereldgids vraagt het en controleert het, de gedeelde `CHRONICLER.md` heeft de regel, en `docs/NEW-WORLD.md` zegt het.
+
+Ontwerp: geen wijziging.
+
 ## M10.33 deel: de vrije vertelling houdt zich aan het verhaal (J), 30 september 2026
 
 - **Niet zeggen en niet tegenspreken (J).** Oorzaak: een improvisatie op een plek van een verhaal kreeg wel wat mensen weten, maar niet wat het verhaal verborgen houdt. Zo zei `check antenna` "the recordings are complete", terwijl het verhaal zegt dat er stukken uit zijn geknipt. Een improvisatie krijgt nu KEPT HIDDEN HERE: de waarheden van die plek die nog niet vrij zijn, om niet te zeggen en niet te ontkennen. De bewaker op verborgen waarheden houdt hun woorden buiten de vertelling, zoals voorheen.

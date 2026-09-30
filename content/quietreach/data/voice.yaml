@@ -95,6 +95,15 @@ voice:
       instead: "a bad connection"
     - word: "outsider"
       instead: "visitor, the specialist; outsider only when someone means to sound distant or accusing"
+    # Kinds of places and things Nacre has none of (M10.33 O): a voice that names one is asked again.
+    - { word: tavern }
+    - { word: inn }
+    - { word: pub }
+    - { word: temple }
+    - { word: church }
+    - { word: horse }
+    - { word: carriage }
+    - { word: castle }
   # What people here call getting past a lock without its code (M10.30): HACK THE DOOR is PICK THE DOOR.
   verb_words:
     pick: [hack, bypass]

@@ -349,7 +349,12 @@ export function turnSections(world: World, ctx: TurnContext, voice: 'all' | 'tal
   add('ownwork', ownWorkPrompt(world, ctx.npcId))
   add('pupil', pupilPrompt(world, ctx.npcId))
   if (ctx.packet.known.length === 0) add('k:', '  (nothing relevant beyond your own life)')
-  for (const k of ctx.packet.known) add(`k:${k.topic}`, `  ${k.topic} (level ${k.level}): ${k.facts.join(' ')}${k.news ? `\n  NEWS about it: ${k.news.join(' ')}` : ''}${k.story ? `\n  ${k.toldBy ? `STORY as ${k.toldBy} tells it; the people in it are ${k.toldBy}'s family, not yours. ${TELL_IT}` : `STORY you know. ${TELL_IT}`}\n  ${k.story}` : ''}`)
+  // A place with its walking time from the speaker (M10.33 O), as the panel shows it: no distance of their own making.
+  const walk = (topic: string, facts: string) => {
+    const route = world.content.locations.has(topic) && !/ from here\b/.test(facts) ? world.route(world.npcState(ctx.npcId).location, topic) : undefined
+    return route ? ` ${world.location(topic).name} is ${route.minutes === 0 ? 'right here' : `${walkWords(route.minutes)} from here`}.` : ''
+  }
+  for (const k of ctx.packet.known) add(`k:${k.topic}`, `  ${k.topic} (level ${k.level}): ${k.facts.join(' ')}${walk(k.topic, k.facts.join(' '))}${k.news ? `\n  NEWS about it: ${k.news.join(' ')}` : ''}${k.story ? `\n  ${k.toldBy ? `STORY as ${k.toldBy} tells it; the people in it are ${k.toldBy}'s family, not yours. ${TELL_IT}` : `STORY you know. ${TELL_IT}`}\n  ${k.story}` : ''}`)
   // The way, and where people are now, when the stranger asks after them (M10.29 H): all the speaker knows of it.
   add('way', wayLines(world, ctx), true)
   if (ctx.packet.unknown.length) add('unknown', `UNKNOWN to you: ${ctx.packet.unknown.map((u) => u.name).join(', ')}.`, true)

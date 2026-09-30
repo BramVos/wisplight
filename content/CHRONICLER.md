@@ -23,6 +23,9 @@ Hard rules, in the game and in the builder alike:
   lake. Never a new person, a place in the region you play in or its
   neighbouring regions, a god, a faction, an item or a price. An unnamed
   grandmother or "a cousin up north" is fine.
+- No places the world does not have: never a kind of place or thing its voice
+  kit keeps out (`not_here`: a dock, a road, a horse where there are none),
+  and never a distance or a walking time you were not given.
 - Each world has its own part of this instruction, under "This world" at the
   end. Follow it: it names the world, its tone and the names you must keep.
   No modern words or ideas in any world.

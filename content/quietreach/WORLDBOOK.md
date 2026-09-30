@@ -500,7 +500,7 @@ No fine buys off a death or a beating: the stranger is held 48 hours and heard. 
 
 ### Words that are not of this world
 
-magic, spells, mana, divine healing, telepathy, antigravity, gravity plates, inertial dampers, warp speed, hyperspace lanes, an everyday jumpgate, instant interstellar conversation, a live database reachable everywhere, alien empire, known alien races, universal translator, resurrection, respawning, an immortal cloned copy, quest giver, NPC, skill check, level up, inventory slots, catastrophic communications anomaly, outsider.
+magic, spells, mana, divine healing, telepathy, antigravity, gravity plates, inertial dampers, warp speed, hyperspace lanes, an everyday jumpgate, instant interstellar conversation, a live database reachable everywhere, alien empire, known alien races, universal translator, resurrection, respawning, an immortal cloned copy, quest giver, NPC, skill check, level up, inventory slots, catastrophic communications anomaly, outsider, tavern, inn, pub, temple, church, horse, carriage, castle.
 
 ## 15. Trades and crafts
 

@@ -54,6 +54,11 @@ voice:
     - { word: musket }
     - { word: gunpowder }
     - { word: pocket watch }
+    # Kinds of places and things the island has none of (M10.33 O): no roads for wheels, no river, no mill.
+    - { word: carriage }
+    - { word: coach }
+    - { word: river }
+    - { word: windmill }
     - { word: okay, instead: aye }
     - { word: ok, instead: aye }
     - { word: photograph, instead: likeness }

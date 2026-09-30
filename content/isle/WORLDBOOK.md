@@ -507,7 +507,7 @@ No fine buys off a death: the stranger is held 24 hours and heard. In the mornin
 
 ### Words that are not of this world
 
-o'clock, potatoes, potato, tobacco, coffee, chocolate, gun, guns, pistol, musket, gunpowder, pocket watch, okay, ok, photograph, percent, awesome, dude, police, weekend, dollars, dollar, pennies, penny, cents, internet, online, website, email, phone, computer, robot, television, electricity, plastic, hashtag, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday, January, February, April, June, July, August, September, October, November, December.
+o'clock, potatoes, potato, tobacco, coffee, chocolate, gun, guns, pistol, musket, gunpowder, pocket watch, carriage, coach, river, windmill, okay, ok, photograph, percent, awesome, dude, police, weekend, dollars, dollar, pennies, penny, cents, internet, online, website, email, phone, computer, robot, television, electricity, plastic, hashtag, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday, January, February, April, June, July, August, September, October, November, December.
 
 ## 16. Trades and crafts
 
