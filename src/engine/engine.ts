@@ -91,6 +91,7 @@ import { factionLines, factionPage, join, rankOf, repute } from './social/factio
 import { fightsBack, mayAttackFirst, mayLend } from './social/gates'
 import { flirt, marry } from './social/romance'
 import { conversationActions, doDeed, evaluate, expireConditions, questAction, questLines, questlog, questPage, questsOnDeath, runQuestAction, setPlaceState, startQuest, talkStarts, triggers, unbegun, type QuestHost } from './quests/engine'
+import { wantsNow } from './quests/knows'
 import { PlaceState } from './quests/schema'
 import { plansDue, startPlan, startWorldPlans, tellAreaNews } from './quests/plans'
 import { primeWatchers, processSignals, queueSignal } from './signals'
@@ -216,7 +217,7 @@ export interface Status {
   pausedWhy?: 'fight' | 'window' | 'talk' | 'idle'
   /** A development build: the @ commands work and the editor can be opened. */
   builder?: boolean
-  talk?: { npc: string; name: string; call: string; colour?: string; attitude: string; turnsLeft: number; options: string[]; proposal?: string; trades: boolean; joins: boolean; matter: boolean; pronoun: 'she' | 'he' | 'they'; lines: TalkLine[]; earlier?: EarlierTalk }
+  talk?: { npc: string; name: string; call: string; colour?: string; attitude: string; turnsLeft: number; options: string[]; proposal?: string; trades: boolean; joins: boolean; matter: boolean; now?: string; pronoun: 'she' | 'he' | 'they'; lines: TalkLine[]; earlier?: EarlierTalk }
   /** The talk that just ended (M10.8): its lines, for the window that stays until closed. */
   lastTalk?: { npc: string; lines: TalkLine[] }
   /** The clock and the sky for the top right (M10.8): weekday, date, hour, sun, dusk or moon, and the weather. */
@@ -2145,7 +2146,7 @@ export class Engine {
       paused: false,
       ...(this.builder ? { builder: true } : {}),
       talk: talk
-        ? { npc: talk.npc, name: knownShort(this.world, talk.npc), call: callName(this.world.npc(talk.npc)), colour: personColour(this.world, talk.npc), attitude: attitude(this.world, talk.npc).band, turnsLeft: talk.turnsLeft, options: QUICK_OPTIONS, trades: tradesHere(this.world, talk.npc), joins: Boolean(this.world.npc(talk.npc).companion), matter: this.dialogue.hasMatter(talk.npc), ...(talk.proposal ? { proposal: this.dialogue.proposalNow()! } : {}), pronoun: this.world.npc(talk.npc).pronoun, lines: talk.lines ?? [], ...(earlierTalk(this.world, talk.npc, talk.began) ? { earlier: earlierTalk(this.world, talk.npc, talk.began)! } : {}) }
+        ? { npc: talk.npc, name: knownShort(this.world, talk.npc), call: callName(this.world.npc(talk.npc)), colour: personColour(this.world, talk.npc), attitude: attitude(this.world, talk.npc).band, turnsLeft: talk.turnsLeft, options: QUICK_OPTIONS, trades: tradesHere(this.world, talk.npc), joins: Boolean(this.world.npc(talk.npc).companion), matter: this.dialogue.hasMatter(talk.npc), ...(wantsNow(this.world, talk.npc)?.stage.goal ? { now: wantsNow(this.world, talk.npc)!.stage.goal! } : {}), ...(talk.proposal ? { proposal: this.dialogue.proposalNow()! } : {}), pronoun: this.world.npc(talk.npc).pronoun, lines: talk.lines ?? [], ...(earlierTalk(this.world, talk.npc, talk.began) ? { earlier: earlierTalk(this.world, talk.npc, talk.began)! } : {}) }
         : undefined,
       ...(!talk && this.lastTalk ? { lastTalk: this.lastTalk } : {}),
       clock: this.clockStatus(),

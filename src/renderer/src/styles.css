@@ -554,6 +554,11 @@ button.primary:focus-visible {
   gap: 4px 14px;
 }
 
+/* What this person's quest asks now (M10.33 V). */
+.talk-now {
+  margin: 0;
+}
+
 /* What they offer, with Yes and No (M10.33 F). */
 .talk-offer {
   align-items: baseline;

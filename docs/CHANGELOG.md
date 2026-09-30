@@ -1,5 +1,18 @@
 # Changelog
 
+## M10.33 deel: wat iemand van je vraagt komt uit het spel (V), 30 september 2026
+
+- **Geen opdracht of afspraak uit het niets (V).** Oorzaak: de regels verboden de stem om zelf mee te gaan of later iets te doen, maar niet om de speler een opdracht of een afspraak te geven. Ilyan zei zo "Meet me at the Peregrine Hangar in ten minutes" zonder dat iets in het spel het vroeg. De vaste regel zegt het nu ook voor de speler. De bewaker vraagt een antwoord opnieuw dat een afspraak geeft die geen aanbod van het spel is, of een opdracht die geen verhaal of verzoek van de spreker dekt. De weg wijzen als je erom vraagt is geen opdracht.
+- **Now in het gesprek (V).** Bij de gever van een lopende quest staat boven de chips wat het dagboek nu zegt ("Now: Ask Niko Serrin about the listening station"), zodat je ziet wat quest is en wat een gewone zin.
+
+Testen, in The Quiet Reach: praat met Ilyan en kijk boven de chips. Tests in `tests/m1033task.test.ts`.
+
+Kosten: geen nieuwe aanroep. De vaste regels bleven binnen 5.016 tekens met het schema (5.016 precies), doordat vijf regels korter werden gezegd; het vaste deel wordt één keer opnieuw in de cache geschreven. Een weggestuurd antwoord kost een tweede poging.
+
+Wat de editor en de kroniekverteller leerden: niets; een wereld kan hierdoor niets nieuws bevatten.
+
+Ontwerp: geen wijziging; een regel en een bewaker binnen de guardrails van hoofdstuk 10, en de afspraak als aanbod van het spel staat in de alinea over AG en AC.
+
 ## M10.33 deel: dingen uit een beschrijving zijn er, en overal iets te doen (N), 30 september 2026
 
 - **Oorzaak:** de stap Plekken en het contract vroegen niet om een detail voor elk ding waar een speler aan kan zitten. Geen controle telde of een plek waar een verhaal speelt iets te doen heeft.

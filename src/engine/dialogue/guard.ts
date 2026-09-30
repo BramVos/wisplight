@@ -49,6 +49,18 @@ const PROMISE =
 // was a promise (found in M10.29).
 const TELL_NAME = /\b(?:I'?ll|I will|I can|[Ll]et me|I'?m going to|I shall)\s+(?:\w+\s+)?tell \p{Lu}/u
 
+// A task or a meeting set for the stranger (M10.33 V: Ilyan's "Meet me at the Peregrine Hangar in ten minutes, bring
+// what you need for the ridge", which nothing in the game asked). A meeting is only ever an offer of the game; a task
+// only what the speaker's story or request gives.
+const MEETING = /\b(?:meet me|find me (?:at|in|by)|come (?:and )?(?:find|see) me|see you (?:at|in|there|tonight|tomorrow))\b/i
+const TASK = /\b(?:bring (?:me|it|them|back|what|the)|i need you to|i want you to|you(?:'ll| will)? (?:need|have|must) to|go (?:and|to) (?:the|find|fetch|get|see|ask)|fetch (?:me|the)|report (?:back )?to me)\b/i
+
+/** What a reply sets the stranger (M10.33 V): a meeting, a task, or nothing. */
+export function setsTask(text: string): 'meeting' | 'task' | undefined {
+  const said = (text.match(/"[^"]*"?/g) ?? [text]).join(' ')
+  return MEETING.test(said) ? 'meeting' : TASK.test(said) ? 'task' : undefined
+}
+
 /** Whether a reply promises to do something for the player. */
 export function promises(text: string): boolean {
   return PROMISE.test(text) || TELL_NAME.test(text)

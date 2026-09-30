@@ -229,6 +229,12 @@ export function ConversationView({
                     </button>
                   </div>
                 )}
+                {/* What this person's quest asks now (M10.33 V): what the journal says, so no line of theirs reads as a task. */}
+                {talk.now && (
+                  <p className="talk-now muted small" title={t('conversation.nowTitle')}>
+                    {t('conversation.now', { now: talk.now })}
+                  </p>
+                )}
                 <div className="talk-quick">
                   <span className="muted small" title={t('conversation.quick.askHelp')}>
                     {t('conversation.quick.ask')}

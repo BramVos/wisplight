@@ -15,7 +15,7 @@ import { approve, companionOf, offer, recruit } from '../social/companions'
 import { silenceWitness, witnessed } from '../social/crime'
 import { partyTalk } from './party'
 import { closingLine, fallbackReply } from './fallback'
-import { deedKinds, fitLength, leakedNames, looksLikeInjection, outOfCharacter, promises, recites, saysNothing, speaksAsOther, swearRight, talksOfSelf, unknownNames, vocabularyOf } from './guard'
+import { deedKinds, fitLength, leakedNames, looksLikeInjection, outOfCharacter, promises, recites, setsTask, saysNothing, speaksAsOther, swearRight, talksOfSelf, unknownNames, vocabularyOf } from './guard'
 import { byRule } from './byrule'
 import { accept, askedFor, askOffer, dayLines, kinOf, offerLine, offerLines, offersFor, proposal, proposalText, type Offer } from './offers'
 import { accepted, declined, inviteOffer } from '../social/invite'
@@ -1184,6 +1184,14 @@ export class Dialogue {
       }
       // A promise the game did not offer never stands in the text (M10.3): the deed hangs on a chosen yes.
       const doing = offers.find((o) => o.key === reply.action && o.decision === 'yes') ?? offers.find((o) => o.key === reply.propose && o.decision === 'yes')
+      // A task or a meeting for the stranger that nothing gives (M10.33 V): a meeting only as an offer of the game, a task
+      // only from their story or a request of theirs; directions asked for are no task.
+      const sets = !ctx.decision && reply.quest_action === 'none' && ctx.act !== 'AskDirections' ? setsTask(fitted) : undefined
+      if (sets && !(sets === 'meeting' ? doing?.kind === 'meet' : doing || this.hasMatter(npcId))) {
+        this.refused('invented', llm, `a ${sets} nothing gives`)
+        prompt += `\nNOTE: your last reply set the stranger a ${sets} that no STORY, REQUEST or OFFER gives. Answer again without it.`
+        continue
+      }
       // A time they keep in their own words is no meeting (M10.33 AG): a meeting is an offer of the game they propose.
       if (promises(fitted) && !doing && !ctx.decision && reply.quest_action === 'none') {
         this.refused('promise', llm)

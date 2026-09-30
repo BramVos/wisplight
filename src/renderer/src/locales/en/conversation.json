@@ -47,6 +47,8 @@
       "insight": "Read whether they are telling you the truth."
     }
   },
+  "now": "Now: {now}",
+  "nowTitle": "What your journal says to do now for this person's matter",
   "offer": {
     "label": "What {name} offers",
     "yes": "Yes",
