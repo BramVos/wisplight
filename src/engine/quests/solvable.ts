@@ -1,4 +1,4 @@
-import type { Content, Quest } from '../content'
+import type { Content, Direction, Location, Quest } from '../content'
 import { wordsOf } from '../said'
 
 // Can a quest be solved? (M10.30 (6); Bram, 29 September 2026: is there a
@@ -9,6 +9,7 @@ import { wordsOf } from '../said'
 // world as it stands, not a game: whether a person will live is not known.
 
 type Raw = Record<string, unknown>
+type Exit = NonNullable<Location['exits'][Direction]>
 
 /** What the world can make true: the flags set anywhere, and the things that can be had. */
 interface Means {
@@ -16,6 +17,8 @@ interface Means {
   things: Set<string>
   /** Every word the world tells a player somewhere, spaced: for a word a quest waits to hear (M10.31 C). */
   told: string
+  /** The places behind secret or waiting ways that never open (M10.32), with why. */
+  shut: Map<string, string>
 }
 
 /** Keys whose text nobody is told: what the player types, what a condition asks, a lock's own word, patterns. */
@@ -56,7 +59,49 @@ function meansOf(content: Content): Means {
   for (const c of content.crafts.values()) for (const t of Object.values(c as unknown as Raw)) for (const id of valuesOf(t, 'produces')) things.add(id)
   // What a player can be told: what people know, hide and say, what places, things and topics say, what deeds bring.
   const told = ` ${wordsOf(toldIn([...all, ...content.npcs.values(), ...content.topics.values(), ...content.items.values()]).join(' '))} `
-  return { flags, things, told }
+  const means = { flags, things, told, shut: new Map<string, string>() }
+  means.shut = shutPlaces(content, means)
+  return means
+}
+
+/**
+ * The places no way ever opens into (M10.32; the gap of M10.30: the check did
+ * not look at exits). A place reached only by secret or waiting ways opens
+ * when one of them can, from a place that is open itself: a secret way that
+ * something hidden of that place reveals, or whose `when` can hold; a waiting
+ * way whose `when` can hold. A lock shuts nothing: it can be picked or forced.
+ */
+function shutPlaces(content: Content, means: Means): Map<string, string> {
+  const into = new Map<string, [string, Direction, Exit][]>()
+  for (const l of content.locations.values()) {
+    for (const [d, e] of Object.entries(l.exits) as [Direction, Exit][]) {
+      if (!into.has(e.to)) into.set(e.to, [])
+      into.get(e.to)!.push([l.id, d, e])
+    }
+  }
+  /** Why a way never opens, or nothing when it can. */
+  const closed = ([from, d, e]: [string, Direction, Exit]): string | undefined => {
+    const waits = e.when?.length ? never(content, means, e.when) : undefined
+    if (waits) return `the way from ${from} waits for what never comes: ${waits}`
+    if (!e.hidden || e.when?.length) return undefined
+    const finds = content.locations.get(from)!.hidden.filter((h) => h.exit === d)
+    if (!finds.length) return `the secret way from ${from} is revealed by nothing`
+    return finds.every((h) => h.when && never(content, means, h.when)) ? `the secret way from ${from} is found by nothing that can be found: ${never(content, means, finds[0]!.when!)}` : undefined
+  }
+  const shut = new Map<string, string>()
+  for (const [id, ways] of into) if (ways.every(([, , e]) => e.hidden || e.when?.length)) shut.set(id, '')
+  // Open what an open place's way can open, until nothing more opens.
+  for (let opened = true; opened; ) {
+    opened = false
+    for (const id of shut.keys()) {
+      if (into.get(id)!.some((w) => !shut.has(w[0]) && !closed(w))) {
+        shut.delete(id)
+        opened = true
+      }
+    }
+  }
+  for (const id of shut.keys()) shut.set(id, into.get(id)!.map(closed).find(Boolean) ?? `every way into it comes from a place that never opens`)
+  return shut
 }
 
 /** Why a list of conditions could never all hold, or nothing when it could. */
@@ -81,6 +126,8 @@ function neverOne(content: Content, means: Means, c: Raw): string | undefined {
     if (!means.things.has(c['has'])) return `${c['has']} cannot be had anywhere: nobody sells, carries, gives or makes it, and it lies nowhere`
   }
   if (typeof c['at'] === 'string' && !content.locations.has(c['at']) && !content.areas.has(c['at'])) return `there is no place ${c['at']}`
+  // A place no way ever opens into (M10.32).
+  if (typeof c['at'] === 'string' && means.shut.has(c['at'])) return `${c['at']} never opens: ${means.shut.get(c['at'])}`
   if (typeof c['alive'] === 'string' && !content.npcs.has(c['alive'])) return `there is nobody ${c['alive']}`
   if (typeof c['here'] === 'string' && !content.npcs.has(c['here'])) return `there is nobody ${c['here']}`
   if (typeof c['talked'] === 'string' && !content.npcs.has(c['talked'])) return `there is nobody ${c['talked']}`
@@ -116,6 +163,8 @@ export function solvableProblems(content: Content, quest: Quest, means: Means = 
   }
   for (const action of quest.actions ?? []) {
     for (const place of action.at) if (!content.locations.has(place) && !content.areas.has(place)) problems.push(at(`deed ${action.id}: there is no place ${place}`))
+    // Done where nobody can come (M10.32): behind a secret or waiting way that never opens.
+    for (const place of action.at) if (means.shut.has(place)) problems.push(at(`deed ${action.id}: ${place} never opens: ${means.shut.get(place)}`))
     if (action.with && !content.npcs.has(action.with)) problems.push(at(`deed ${action.id}: there is nobody ${action.with}`))
   }
   return problems

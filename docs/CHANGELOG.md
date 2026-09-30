@@ -1,5 +1,22 @@
 # Changelog
 
+## M10.32 af: geheime en wachtende wegen in wat de kroniekverteller schrijft en controleert, 30 september 2026
+
+Op je vraag of het lek van de Cable Gallery ook in de bron is opgelost. De motor was al gerepareerd: over de kaart kom je nooit meer binnen in een plek achter een geheime of wachtende weg. Nu ook de quests.
+
+- **Check kent de wegen.** Een daad of een stadium in een plek waar geen weg ooit heen opengaat, staat onder Check, met de reden: "the secret way from ... is revealed by nothing", of "waits for what never comes: the flag ... is set nowhere". Een slot telt niet als dicht, want je kunt het altijd kraken of forceren. De stap Verhalen stuurt zo'n voorstel terug naar de kroniekverteller, zoals elk ander probleem van de controle.
+- **De kroniekverteller ziet welke plekken geheim zijn.** In de stap Verhalen, de streekronde en de nachtronde staat bij zo'n plek "secret: found by searching in Orison Listening Room". De regel erbij: niemand noemt de plek voordat een stadium de vreemdeling ernaar laat zoeken, en een daad daar komt pas daarna.
+
+Testen: niets om te spelen; de werelden zijn onder Check leeg zoals ze waren. Tests in `tests/m1032.test.ts`: een daad in de Cable Gallery zonder het luik, een zeegrot die op een vlag wacht die niemand zet, en de markering in de prompt van de stap Verhalen.
+
+Kosten: geen nieuwe aanroep. De vaste regels van `region_story` en `night_quest` worden ongeveer 90 tokens langer; bij `night_quest` op Opus is dat minder dan een tiende cent per aanroep.
+
+Bekende gaten: of het model een geheime plek toch te vroeg noemt, bewaakt de motor niet; alleen als de lijn de plek als verborgen waarheid (`truths`) opschrijft, houdt de wachter het tegen. Het gat uit M10.31 dat WALK TO over de kaart niet op een wachtende weg lette, is sinds 8fe5ad7 dicht voor een plek waar alleen zulke wegen heen gaan.
+
+Wat de editor en de kroniekverteller leerden: de stap Verhalen van de wereldgids heeft een controleregel over geheime en dichte plekken, en `docs/NEW-WORLD.md` noemt het. Een wereld kan hierdoor niets nieuws bevatten.
+
+Ontwerp: functioneel ontwerp, na de stap Verhalen, alinea "Stand na M10.32: geheime en wachtende wegen in wat quests schrijft en controleert".
+
 ## M10.31 af: de plattegrond groot, en de kleine gaten na M10.30, 30 september 2026
 
 Alle zeven punten van M10.31 zijn af. De delen staan hieronder; dit is het overzicht.

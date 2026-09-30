@@ -18,6 +18,7 @@ import { farPlaceOf } from './far'
 import { outlineOf } from '../outlines'
 import { fullDone, fullOf } from './fulllayer'
 import { grownContent, growth } from './growth'
+import { SECRET_PLACES_RULE, secretNote } from '../exits'
 
 // A new region with a story of its own (M10.25; Bram, 29 September 2026: is
 // a region that grows in play filled well enough without a world builder?).
@@ -166,6 +167,8 @@ const STORY_RULES = [
   'IN PLAY: THE STORY OF A NEW REGION. A region came into being in a game: the stranger has come there, and its places and people are made. There is no designer to ask now: you write, the game checks, and what does not fit is left out. Write what there is to live through here, from what the region is and the world book says of it, in the frame and tone of the world.',
   `QUEST: one, or null: a matter of one of the PEOPLE (the giver, by key) that the stranger can take up, of kind ${QUEST_KINDS.join(', ')}; a name, a summary (one sentence), what the giver says when asking (one or two sentences in their voice), two or three stages, an outcome (a name, and one or two sentences of what came of it), and endings. Each stage has its journal line (text) and the one deed that completes it: say (the command the player types, three to six plain words, a verb first: "search the reed beds", "ask ansel about the bell"), at (the key of one of the PLACES), with (the key of a person who must be there, or empty), skill (one of SKILLS where the deed asks for it, or empty) and done (one or two sentences of what the deed brings). No death, no fight, no money out of nothing; small and believable, and it can be done with what is there.`,
   'A DEED MAY BE A WORD (word): a code or a password said to the person (with) in a talk, or said or typed at the place (at), in place of a command; give the word first in a deed\'s done or in what someone knows.',
+  // Secret and shut places (M10.32): marked in PLACES.
+  SECRET_PLACES_RULE,
   'ENDINGS: at least three ways the quest may end, each a deed (say, at, with, skill as a stage has) with a name and what came of it (text): at least two solutions by different ways (way: talk, give for giving or paying, deed for doing something with the world, word for a code or a password), and at least one where it goes wrong (solution false, way fail). The endings are the deeds of the last stage: only the last stage may leave its own say, at and done empty; every stage before it has its deed.',
   `WATCHERS: up to ${MOST_WATCHERS}, each setting off one signal of the STANDARD AFTERMATH (by its name) when the quest is taken up (on: taken) or done (on: done), about one or two of the PEOPLE (who, by key; the first is the one it happens to), with why in one sentence. Without a quest, none.`,
   'LORE: one, or null: a piece of lore about the place that its people tell: a name, a summary (one sentence), details (two or three sentences), a story (a short paragraph as someone tells it), and teller (the key of one of the PEOPLE who tells it, or empty).',
@@ -205,7 +208,7 @@ export function storyRequest(world: World, topic: string): LlmRequest {
       ...(t?.story ? [`What they tell of it: ${t.story}`] : []),
       ...(quarters.length ? [`QUARTERS: ${quarters.map((q) => `${q.name}: ${q.line}`).join('; ')}`] : []),
       'PLACES:',
-      ...places.map((l) => `  ${key.place.get(l.id)} ${l.name}: ${l.summary ?? l.description.day.split(/(?<=[.!?])\s/)[0]}`),
+      ...places.map((l) => `  ${key.place.get(l.id)} ${l.name}: ${l.summary ?? l.description.day.split(/(?<=[.!?])\s/)[0]}${secretNote(content, l.id)}`),
       'PEOPLE:',
       ...people.map((n) => `  ${key.person.get(n.id)} ${n.name}, ${content.professions.get(n.profession)?.name ?? n.profession}, at ${key.place.get(n.home) ?? n.home}. ${n.public_facts[0] ?? ''}${secretsNow(n)}`),
       `STANDARD AFTERMATH: ${aftermath.length ? aftermath.map((a) => `${a.signal} (${a.what})`).join('; ') : 'none'}`,

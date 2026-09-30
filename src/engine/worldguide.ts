@@ -392,6 +392,7 @@ export const WORLD_STEPS: readonly WorldStep[] = [
       'Every deed can be done with what is there: the place exists, the person lives or works there, the skill is one of the rules\'.',
       'Every line has at least three endings: two solutions by different ways (talk, give, a deed), three for the main line, and one where it goes wrong or runs out; a line of one stage two, a solution and one where it runs out. A line with fewer goes back to the chronicler once with what Check says.',
       'Check finds no quest without a way on: a flag waited for is set somewhere, a thing asked for can be had, and there is a way to end.',
+      'A place behind a secret or waiting way (M10.32) is nobody\'s to name before a stage sends the stranger to look for it, and a deed in it is one Check can reach: the secret way is found by something hidden, the waiting way opens by a flag set somewhere.',
       'A deed may be a word (a code or a password said to someone or typed at a place, M10.31): the line tells the word first, in a deed, what someone knows or a secret, and a lock that takes a code opens with its own.',
       'With a game of the world under way, the main line begins where the stranger stands: a stage lived in its talks passes by that talk (talked), and loading the save begins the main line.',
     ],

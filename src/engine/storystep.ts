@@ -11,6 +11,7 @@ import { solvableProblems } from './quests/solvable'
 import { hasPlayed, type PlayedGame } from './played'
 import { worldText } from './safety'
 import { worldFixedPart } from './worldfixed'
+import { SECRET_PLACES_RULE, secretNote } from './exits'
 
 // The step Stories of the world build (M10.30; the form set out with Bram on
 // 29 September 2026, after the Nethermarch: a main line from the stranger's
@@ -75,6 +76,8 @@ export const STORY_STEP_RULES = [
   'THE STEP STORIES OF THE WORLD BUILD. You write the storylines of this world, as quests that lie ready until the stranger meets them: by talking to someone, by coming somewhere, or from the start. Take them from the world itself: the frame, the stranger\'s task, what the people want, hide and are bound by, the places and their things. The designer has given only the hidden truth, what they do not want, and perhaps a line of their own: keep to it, and never let a line say the hidden truth before its stage.',
   `A LINE (put every line in QUESTS, leave QUEST null): a name, a kind (${SKETCH_KINDS.join(', ')}), a summary (one sentence), the giver (by key: the one who asks, or whose matter it is), what they say when asking (one or two sentences in their voice), the stages, and an outcome (a name, and one or two sentences of what came of it). Each stage has its journal line (text), what the stranger can do now (goal, one line: "Ask Tessa about the coupling"), the one deed that completes it (say: the command the player types, three to six plain words, a verb first; at: the key of a place; with: the key of a person who must be there, or empty; skill: one of SKILLS where the deed asks for it, or empty; done: one or two sentences of what the deed brings), and knows: for each person of the line, one sentence with their name of what they know at this stage and may say ("Tessa knows the coupling was never synced; she does not know who took the pages"). What a person does not know, they do not say.`,
   'A DEED MAY BE A WORD (word): a code or a password the stranger says to the person (with) in a talk, or says or types at the place (at), in place of a command (say stays empty). Give the word first where the stranger can learn it: a deed\'s done, what someone knows at a stage, or a secret. A lock that takes a code (see PLACES) opens with its own code. An ending may go by a word too (way word).',
+  // Secret and shut places (M10.32): marked in PLACES.
+  SECRET_PLACES_RULE,
   'ENDINGS (every line): at least three ways it may end, each a deed (say, at, with, skill as a stage has) with a name and what came of it (text): at least two solutions by different ways (way: talk, give for giving or paying, deed for doing something with the world, word for a code or a password), three for the main line; and at least one where it goes wrong (solution false, way fail) or the lapse. A line of one stage (a small request) needs only two: a solution, and one where it goes wrong or runs out; a second solution only by another way. Two solutions are two only by different ways, never two versions of one talk. The endings are the deeds of the last stage: only the last stage may leave its own say, at and done empty; every stage before it has its deed.',
   'SIZES: small (one person and one place, one or two stages), middle (two or three people, two places or a thing, two stages), large (the main line: three to five stages, across the settlements, with more people). Choose the size by what the matter is.',
   'THE MAIN LINE (kind main, begins start): from the stranger\'s task, three to five stages across the world; its truths: what the story keeps hidden, each with the words a reply would give it away by (plain phrases, three letters or more: "cut the recordings") and the stage from which it may be said (a number; leave the last stage for the whole truth); and lapses: what the world does if the stranger does nothing (after how many game days, and the line that says what came of it: the recordings are wiped, the supply ship leaves without them).',
@@ -135,7 +138,7 @@ export function storiesRequest(files: ContentFile[], scope: StoryScope, fullness
     prompt: [
       `${scope.kind === 'main' ? 'THE WHOLE WORLD' : scope.kind === 'land' ? 'THE LAND BETWEEN' : 'THE SETTLEMENT'}: ${scope.name}. ${scope.areas.map((a) => content.areas.get(a)?.summary ?? '').filter(Boolean).join(' ')}`,
       'PLACES:',
-      ...cast.places.map((l) => `  ${key.place.get(l.id)} ${l.name}: ${l.summary ?? l.description.day.split(/(?<=[.!?])\s/)[0]}${codeHere(l)}`),
+      ...cast.places.map((l) => `  ${key.place.get(l.id)} ${l.name}: ${l.summary ?? l.description.day.split(/(?<=[.!?])\s/)[0]}${codeHere(l)}${secretNote(content, l.id)}`),
       'PEOPLE:',
       ...cast.people.map(person),
       `SKILLS: ${skills.length ? skills.join(', ') : 'none'}`,

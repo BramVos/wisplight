@@ -66,3 +66,19 @@ export function shutAway(content: Pick<Content, 'locations'>, location: string):
     return Boolean(exit.hidden || exit.when?.length)
   })
 }
+
+/**
+ * How a place behind a secret or waiting way reads where the chronicler is
+ * shown the places (M10.32): secret, and where it is found from; or shut
+ * until a way there opens. Nothing for any other place.
+ */
+export function secretNote(content: Pick<Content, 'locations'>, location: string): string {
+  if (!shutAway(content, location)) return ''
+  const ways = waysInto(content, location)
+  const from = [...new Set(ways.map(([f]) => content.locations.get(f)?.name ?? f))].join(' or ')
+  return ways.some(([f, d]) => content.locations.get(f)!.exits[d]!.hidden) ? ` (secret: found by searching in ${from})` : ` (shut: reached from ${from} once something opens the way)`
+}
+
+/** The rule that goes with the notes, for every call that writes quests (M10.32). */
+export const SECRET_PLACES_RULE =
+  'A PLACE MARKED secret is found in play, by searching where it is found from; nobody names it (in knows, the ask or a journal line) before a stage sends the stranger to look there, and a deed in it comes only after that stage. A place marked shut opens only once something happens there first: a deed in it needs a stage before it that opens the way.'
