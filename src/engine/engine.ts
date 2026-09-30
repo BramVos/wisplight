@@ -92,6 +92,7 @@ import { fightsBack, mayAttackFirst, mayLend } from './social/gates'
 import { flirt, marry } from './social/romance'
 import { conversationActions, doDeed, evaluate, expireConditions, questAction, questLines, questlog, questPage, questsOnDeath, runQuestAction, setPlaceState, startQuest, talkStarts, triggers, unbegun, type QuestHost } from './quests/engine'
 import { wantsNow } from './quests/knows'
+import { nextSteps } from './doable'
 import { PlaceState } from './quests/schema'
 import { plansDue, startPlan, startWorldPlans, tellAreaNews } from './quests/plans'
 import { primeWatchers, processSignals, queueSignal } from './signals'
@@ -217,6 +218,8 @@ export interface Status {
   pausedWhy?: 'fight' | 'window' | 'talk' | 'idle'
   /** A development build: the @ commands work and the editor can be opened. */
   builder?: boolean
+  /** Three things to try next (M10.33 D), from what the place offers, never from a model. */
+  next?: { label: string; command: string }[]
   talk?: { npc: string; name: string; call: string; colour?: string; attitude: string; turnsLeft: number; options: string[]; proposal?: string; trades: boolean; joins: boolean; matter: boolean; now?: string; pronoun: 'she' | 'he' | 'they'; lines: TalkLine[]; earlier?: EarlierTalk }
   /** The talk that just ended (M10.8): its lines, for the window that stays until closed. */
   lastTalk?: { npc: string; lines: TalkLine[] }
@@ -2145,6 +2148,7 @@ export class Engine {
       money: this.world.money(this.state.player.money),
       paused: false,
       ...(this.builder ? { builder: true } : {}),
+      next: nextSteps(this.world).map(({ label, command }) => ({ label, command })),
       talk: talk
         ? { npc: talk.npc, name: knownShort(this.world, talk.npc), call: callName(this.world.npc(talk.npc)), colour: personColour(this.world, talk.npc), attitude: attitude(this.world, talk.npc).band, turnsLeft: talk.turnsLeft, options: QUICK_OPTIONS, trades: tradesHere(this.world, talk.npc), joins: Boolean(this.world.npc(talk.npc).companion), matter: this.dialogue.hasMatter(talk.npc), ...(wantsNow(this.world, talk.npc)?.stage.goal ? { now: wantsNow(this.world, talk.npc)!.stage.goal! } : {}), ...(talk.proposal ? { proposal: this.dialogue.proposalNow()! } : {}), pronoun: this.world.npc(talk.npc).pronoun, lines: talk.lines ?? [], ...(earlierTalk(this.world, talk.npc, talk.began) ? { earlier: earlierTalk(this.world, talk.npc, talk.began)! } : {}) }
         : undefined,

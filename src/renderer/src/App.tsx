@@ -803,6 +803,27 @@ export function App() {
             spellCheck={false}
           />
         </label>
+        {/* Three things to try next (M10.33 D), from what the place offers: a click puts it in the bar, Enter does it. */}
+        {!covered && !talk && status?.next && status.next.length > 0 && (
+          <div className="next-steps" aria-label={t('app.next.label')}>
+            <span className="muted small">{t('app.next.could')}</span>
+            {status.next.map((step) => (
+              <button
+                key={step.command}
+                type="button"
+                className="link"
+                disabled={waiting}
+                title={step.command}
+                onClick={() => {
+                  setInput(step.command)
+                  inputRef.current?.focus()
+                }}
+              >
+                {step.label}
+              </button>
+            ))}
+          </div>
+        )}
       </footer>
 
       {worlds && client && !loading && (

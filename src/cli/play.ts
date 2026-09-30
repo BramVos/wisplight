@@ -99,6 +99,9 @@ for await (const line of rl) {
   } else {
     print(await engine.handle(line))
   }
+  // Three things to try next (M10.33 D), as the window's chips; not in a talk.
+  const next = engine.status().talk ? [] : (engine.status().next ?? [])
+  if (next.length) print([{ kind: 'system', text: `You could: ${next.map((n) => n.command.toUpperCase()).join(', ')}.` }])
   rl.prompt()
 }
 rl.close()

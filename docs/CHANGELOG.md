@@ -1,5 +1,20 @@
 # Changelog
 
+## M10.33 deel: wat hier kan (D, AB), 30 september 2026
+
+- **Drie dingen om te proberen (D).** Oorzaak: de speler zag niet wat hij kon typen. Onder de commandobalk staan na elk antwoord drie chips uit de motor: de volgende daad van een open quest als die hier kan, iemand om mee te praten, een ding met een eigen werkwoord of iets te koop, een uitgang. Een klik zet het in de balk en Enter doet het. In de terminal staat dezelfde regel als "You could: ...". Iemand wiens naam je nog niet kent, heet er naar wat hij doet ("talk port coordinator"). De chips verdwijnen zolang er een venster open is.
+- **De stem weet wat hier kan (AB).** Oorzaak: de stem kende de werkwoorden van de dingen hier niet, en vroeg om een multimeter onder de werkbank of "check the connector readings". De stem krijgt nu DOABLE HERE: de daden van de open quests hier, de dingen met hun werkwoord en wat de vreemdeling draagt. De vaste regel zegt dat ze alleen daarom vraagt. De bewaker vraagt een antwoord opnieuw dat de vreemdeling om een handeling vraagt die hier niet kan en geen verhaal of verzoek dekt.
+- **Gemeten.** Op de 140 bewaarde echte antwoorden van de stem (`docs/playtest/voice`, Haiku 4.5 en GPT-5 mini) stuurt geen van beide bewakers iets terug. De bewaker voor opdrachten uit V ving er eerst twee ("you'll need to ask them", "all you need to know"); die is nu fijner: na "need to" telt een alledaags werkwoord niet.
+- **Klein.** `plainWords` liet bij een keuze binnen een optioneel deel "the" staan ("ask the niko the about the station").
+
+Testen: begin in The Quiet Reach en kijk onder de commandobalk; klik een chip en druk Enter. In de Listening Room met Niko staat de vraag aan Niko vooraan. Tests in `tests/m1033next.test.ts`.
+
+Kosten: geen nieuwe aanroep. De stem krijgt per regel een regel DOABLE HERE, zo'n 20 tot 60 tokens invoer, in het wisselende deel. De vaste regels blijven binnen 5.016 tekens met het schema; "(everyone you know by name)" is eruit.
+
+Wat de editor en de kroniekverteller leerden: niets; een wereld kan hierdoor niets nieuws bevatten. Wat een wereld aan werkwoorden heeft, gebruikt het zoals het is.
+
+Ontwerp: geen wijziging; geen nieuwe staat, scherm, ronde of aanroep.
+
 ## M10.33 deel: een daad is zichtbaar, en een daad op de wereld doe je zelf (AA), 30 september 2026
 
 - **In een gesprek alleen een daad met die persoon (AA).** Oorzaak: `conversationActions` gaf de stem alle daden van de plek, ook die zonder persoon, zodat een gesprek met Niko de opnamen kopieerde en de fout opspoorde. Nu biedt een gesprek alleen daden met die persoon (`with`). Opgelost in de motor, voor elke wereld.

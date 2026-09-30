@@ -707,8 +707,13 @@ export function runQuestAction(world: World, host: QuestHost, key: string): Outp
 /** A pattern read as words: optional parts left out, the first of each choice kept. */
 export function plainWords(pattern: string): string {
   let text = pattern
-  for (let i = 0; i < 5; i++) text = text.replace(/\(\?:[^()]*\)\?/g, '')
-  for (let i = 0; i < 5; i++) text = text.replace(/\(\?:([^|()]*)(?:\|[^()]*)?\)/g, '$1')
+  // Optional parts out, then the first of each choice, in turns until nothing changes (M10.33 D: a choice inside an
+  // optional part, "(?:(?:the|a|an) )?", left "the" behind).
+  for (let i = 0, before = ''; i < 10 && before !== text; i++) {
+    before = text
+    text = text.replace(/\(\?:[^()]*\)\?/g, '')
+    text = text.replace(/\(\?:([^|()]*)(?:\|[^()]*)?\)(?!\?)/g, '$1')
+  }
   return text.replace(/ \?/g, ' ').replace(/\.\?|\.\*|\\s|\\b|[\\^$?]/g, '').replace(/\s+/g, ' ').trim()
 }
 

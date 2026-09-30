@@ -15,7 +15,7 @@ import { approve, companionOf, offer, recruit } from '../social/companions'
 import { silenceWitness, witnessed } from '../social/crime'
 import { partyTalk } from './party'
 import { closingLine, fallbackReply } from './fallback'
-import { deedKinds, fitLength, leakedNames, looksLikeInjection, outOfCharacter, promises, recites, setsTask, saysNothing, speaksAsOther, swearRight, talksOfSelf, unknownNames, vocabularyOf } from './guard'
+import { actsAsked, deedKinds, fitLength, leakedNames, looksLikeInjection, outOfCharacter, promises, recites, setsTask, saysNothing, speaksAsOther, swearRight, talksOfSelf, unknownNames, vocabularyOf } from './guard'
 import { byRule } from './byrule'
 import { accept, askedFor, askOffer, dayLines, kinOf, offerLine, offerLines, offersFor, proposal, proposalText, type Offer } from './offers'
 import { accepted, declined, inviteOffer } from '../social/invite'
@@ -34,6 +34,8 @@ import { attitude, applyEffect, moodOf, relation, type Attitude } from './relati
 import { askLine, askNow, knownRequests, requestName, visited } from '../requests'
 import { questsOf } from '../life'
 import { hiddenNamed, wantsNow } from '../quests/knows'
+import { doableHere } from '../doable'
+import { isGameVerb } from '../parser'
 import { routineNow } from '../npc/brain'
 import { parseReply, TALK_REPLY_SCHEMA, type Reply } from './schema'
 import type { TopicRegistry } from './topics'
@@ -923,6 +925,14 @@ export class Dialogue {
     return request ? { line: world.say(`{name} nods. "${askLine(world, request)}"`, npcId) } : undefined
   }
 
+  /** The words of what can be done here, and of what this person's story and requests ask (M10.33 AB). */
+  private doableWords(npcId: string): Set<string> {
+    const world = this.world
+    const wants = wantsNow(world, npcId)
+    const texts = [...doableHere(world).map((d) => d.command), wants?.stage.goal ?? '', wants?.asks ?? '', ...knownRequests(world).filter((r) => r.npc === npcId && r.status === 'open').map((r) => askLine(world, r))]
+    return new Set(texts.join(' ').toLowerCase().match(/[a-z]+/g) ?? [])
+  }
+
   /** Whether someone has a matter with the stranger to tell of (M10.33 E): the chip Tell me more. */
   hasMatter(npcId: string): boolean {
     return Boolean(wantsNow(this.world, npcId)) || knownRequests(this.world).some((r) => r.npc === npcId && r.status === 'open')
@@ -1190,6 +1200,13 @@ export class Dialogue {
       if (sets && !(sets === 'meeting' ? doing?.kind === 'meet' : doing || this.hasMatter(npcId))) {
         this.refused('invented', llm, `a ${sets} nothing gives`)
         prompt += `\nNOTE: your last reply set the stranger a ${sets} that no STORY, REQUEST or OFFER gives. Answer again without it.`
+        continue
+      }
+      // An act the stranger cannot do here (M10.33 AB: a multimeter under the bench, "photograph it"): asked again.
+      const act = ctx.decision ? undefined : actsAsked(fitted).find((v) => !isGameVerb(v) && !this.doableWords(npcId).has(v))
+      if (act) {
+        this.refused('invented', llm, `an act not here: ${act}`)
+        prompt += `\nNOTE: your last reply asked the stranger to ${act}, which cannot be done here. Ask only for what DOABLE HERE, THE STORY or a REQUEST gives, or for nothing.`
         continue
       }
       // A time they keep in their own words is no meeting (M10.33 AG): a meeting is an offer of the game they propose.

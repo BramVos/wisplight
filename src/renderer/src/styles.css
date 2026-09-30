@@ -207,6 +207,15 @@ body {
   gap: 10px;
 }
 
+/* Three things to try next (M10.33 D). */
+.next-steps {
+  display: flex;
+  flex-wrap: wrap;
+  font-size: calc(13px * var(--text-scale));
+  gap: 4px 14px;
+  padding: 2px 0 0 20px;
+}
+
 .prompt input {
   background: transparent;
   border: 0;

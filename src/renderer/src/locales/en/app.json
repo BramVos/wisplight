@@ -184,5 +184,9 @@
     "moves": "Move it with the wheel or by dragging.",
     "centre": "Where you are",
     "centreTitle": "Put where you are back in the middle (Home)"
+  },
+  "next": {
+    "label": "Things to try next",
+    "could": "You could:"
   }
 }

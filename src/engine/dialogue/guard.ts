@@ -53,12 +53,27 @@ const TELL_NAME = /\b(?:I'?ll|I will|I can|[Ll]et me|I'?m going to|I shall)\s+(?
 // what you need for the ridge", which nothing in the game asked). A meeting is only ever an offer of the game; a task
 // only what the speaker's story or request gives.
 const MEETING = /\b(?:meet me|find me (?:at|in|by)|come (?:and )?(?:find|see) me|see you (?:at|in|there|tonight|tomorrow))\b/i
-const TASK = /\b(?:bring (?:me|it|them|back|what|the)|i need you to|i want you to|you(?:'ll| will)? (?:need|have|must) to|go (?:and|to) (?:the|find|fetch|get|see|ask)|fetch (?:me|the)|report (?:back )?to me)\b/i
+// A thing to bring or fetch is always a task; "you need to" or "I need you to" only with a verb that is no everyday one
+// (measured on the kept answers of M10.28: "you'll need to ask them" and "all you need to know" are no tasks).
+const TASK = /\b(?:bring (?:me|it|them|back|what|the)|fetch (?:me|the)|report (?:back )?to me|go and (?:find|fetch|get))\b/i
+const TASK_VERB = /\b(?:i need you to|i want you to|you(?:'ll| will)? (?:need|have|must) to)\s+([a-z]+)/gi
+
+// An act asked of the stranger (M10.33 AB: "check the connector readings", "photograph it", "the multimeter under the
+// bench"): the verb after a request. Talk and the ordinary things people ask of each other are always fine.
+const ASKS_ACT = /\b(?:could you|can you|would you|will you|i need you to|you could|you should|you need to|you(?:'ll| will) need to|try to|go and|please)\s+([a-z]+)/gi
+const EVERYDAY = new Set(['be', 'do', 'have', 'let', 'come', 'stay', 'wait', 'sit', 'rest', 'stand', 'listen', 'keep', 'think', 'remember', 'forget', 'leave', 'stop', 'trust', 'believe', 'see', 'know', 'find', 'meet', 'hear', 'tell', 'ask', 'talk', 'speak', 'say', 'help', 'go', 'follow', 'take', 'give', 'look', 'bring', 'get', 'try', 'not', 'just', 'also', 'still', 'call', 'mind', 'watch', 'understand', 'excuse', 'forgive', 'hold', 'sleep', 'eat', 'drink', 'answer', 'explain', 'show', 'make', 'put', 'use', 'read'])
+
+/** The acts a reply asks of the stranger that are no talk and nothing everyday (M10.33 AB), as their verbs. */
+export function actsAsked(text: string): string[] {
+  const said = (text.match(/"[^"]*"?/g) ?? [text]).join(' ')
+  return [...said.matchAll(ASKS_ACT)].map((m) => m[1]!.toLowerCase()).filter((v) => !EVERYDAY.has(v))
+}
 
 /** What a reply sets the stranger (M10.33 V): a meeting, a task, or nothing. */
 export function setsTask(text: string): 'meeting' | 'task' | undefined {
   const said = (text.match(/"[^"]*"?/g) ?? [text]).join(' ')
-  return MEETING.test(said) ? 'meeting' : TASK.test(said) ? 'task' : undefined
+  if (MEETING.test(said)) return 'meeting'
+  return TASK.test(said) || [...said.matchAll(TASK_VERB)].some((m) => !EVERYDAY.has(m[1]!.toLowerCase())) ? 'task' : undefined
 }
 
 /** Whether a reply promises to do something for the player. */
