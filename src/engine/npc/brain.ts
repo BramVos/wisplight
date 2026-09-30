@@ -238,7 +238,8 @@ function pursueOwnGoal(world: World, npcId: string, goal: Goal): boolean {
         npc.goals = npc.goals.filter((g) => g !== goal)
         return false
       }
-      return start([...goTo(world, npcId, goal.target), { kind: 'spend', minutes: 45, activity: world.location(goal.target).tags.includes('social') ? 'socialize' : 'idle', label: `visiting ${world.location(goal.target).name}` }])
+      // At one's own workplace or home out of hours one is not visiting it (M10.33 AD).
+      return start([...goTo(world, npcId, goal.target), { kind: 'spend', minutes: 45, activity: world.location(goal.target).tags.includes('social') ? 'socialize' : 'idle', label: goal.target === world.npc(npcId).work ? 'off duty' : goal.target === world.npc(npcId).home ? 'at home' : `visiting ${world.location(goal.target).name}` }])
     case 'Talk': {
       const other = world.state.npcs[goal.target!]
       if (!other || other.dead) return start([])

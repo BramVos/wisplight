@@ -305,6 +305,7 @@ export const WORLD_STEPS: readonly WorldStep[] = [
       'Prices are in the smallest coin; a craft\'s object names the craft and the technique.',
       'A craft\'s maker is the word for who does it (baker, smith, field technician), never an id: the stranger reads "You are a journeyman baker now".',
       'A lamp, torch or anything else that lights the way at night has the tag light.',
+      'Clothes the stranger can put on have the tag clothing, and a coat or cape that keeps the rain out also rainproof (M10.33); without them, WEAR is for armour only and rain soaks everyone.',
       'A failure at a craft or a bench says what it leaves (poor: a poorer item; damaged: the object needs mending; leftover: a share of the material back; lost) and what a master would say (why); left out, the material is lost. Damaged needs repair on the object type (what mending takes; the owner mends it at dawn and minds who did it).',
       'A poorer item names the good thing it is a poorer version of (quality poor, of); a thing the stranger can make and give away may say how someone uses it (used, with {name} and {their}).',
       'A bench affordance that names a person (a lesson with its master) has with: that person, who must be there and awake, or access: staff.',

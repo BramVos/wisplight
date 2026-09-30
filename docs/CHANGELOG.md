@@ -1,5 +1,21 @@
 # Changelog
 
+## M10.33 deel: aangekomen, paden bij hun naam, een jas en iemand volgen (X, Y, AD), 30 september 2026
+
+- **Aangekomen is aangekomen (X).** Oorzaak: de laatste etappe van een wandeling zette "on the way to" de plek zelf, en pas de volgende stap van het plan wiste dat. Opgelost in de motor: wie aankomt, doet meteen wat daarna komt ("at work").
+- **Een pad heet naar waar het heen gaat (Y).** Oorzaak: de paden van The Quiet Reach lopen langs punten en niet langs plekken, dus het verre einde had geen naam en het pad hield zijn eigen naam, "the path to the Coastal Traverse", ook voor wie in de Coastal Traverse stond. Opgelost in de motor: een eindpunt op een plek is die plek, en waar je staat is nooit waar een pad heen gaat. Een wandeling die in een ander gebied uitkomt, zegt dat: "You come to Arrival Lock, in Port Vesper."
+- **Een jas aan (AD).** Oorzaak: WEAR hoorde bij de regels voor personages, en de regen maakte iedereen doornat, wat je ook droeg. Nu werkt WEAR, PUT ON en TAKE OFF voor kleren (tag `clothing`) in elke wereld, en wat `rainproof` is houdt je droog. De jas van The Quiet Reach en het jak van zeehondenleer op Skerrow zijn dat.
+- **Iemand volgen (AD).** FOLLOW NIKO neemt de uitgang die Niko nam, ook naar boven of naar binnen, tot een half uur nadat je hem zag gaan. Anders zegt het spel dat je het niet zag, en dat TRACK sporen kan vinden.
+- **Klein (AD).** `t mara` is `talk mara`. Wie op zijn eigen werk of thuis is buiten zijn dienst, is "off duty" of "at home", niet "visiting".
+
+Testen, in The Quiet Reach: loop naar buiten in de regen en typ `look me`, `wear coat`, `look me` en `i`. Typ `follow` op het kustpad. Wacht in de Ridge Shelter tot Niko naar boven gaat en typ `follow niko`. Tests in `tests/m1033ways.test.ts`.
+
+Kosten: geen aanroep.
+
+Wat de editor en de kroniekverteller leerden: de tags `clothing` en `rainproof` (sjabloon van een ding, contract, stap Economie van de wereldgids, `docs/NEW-WORLD.md`, een regel onder Check); de knop `people.follow_minutes`.
+
+Ontwerp: functioneel ontwerp, hoofdstuk 4, alinea "Stand na M10.33: kleren, regen en iemand volgen".
+
 ## M10.33 deel: namen, het doel in beeld en een zin die past (S, C, G), 30 september 2026
 
 - **Eén naamregel (S).** Je kent iemands naam na een gesprek, of zodra je hem hoorde of las: in het intro of de quest, van iemand anders, in je dagboek. Tot dan heet hij in elke regel naar wat je ziet: "The medic comes from the north", "Here: the medic". Zo staan "Here: the medic" en "Edda comes from inside" niet meer samen op het scherm. In de Nethermarch verandert er niets: daar heeft de korte naam de naam al in zich ("Mirte the baker").

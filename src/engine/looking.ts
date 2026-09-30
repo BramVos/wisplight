@@ -10,6 +10,7 @@ import type { Direction, Location } from './content'
 import type { World } from './world'
 import type { Deed } from './content'
 import { exitShown } from './exits'
+import { keptDry } from './carried'
 
 // Looking (M10.4): at yourself, a way out, a place you can see, and a thing,
 // with where it is. What lights up in a description can always be looked at.
@@ -61,7 +62,8 @@ export function selfState(world: World): string {
   const place = world.content.locations.get(player.location)
   const outside = !place || !place.tags.some((t) => t === 'indoors' || t === 'private' || t === 'shop' || t === 'social')
   const w = weather(world)
-  if (outside && (w === 'rain' || w === 'storm')) states.push('soaked to the skin')
+  // A coat that keeps the rain out keeps the stranger dry (M10.33 AD).
+  if (outside && (w === 'rain' || w === 'storm')) states.push(keptDry(world) ? `dry under your ${keptDry(world)}` : 'soaked to the skin')
   return states.length ? `You are ${list(states)}.` : 'You are well enough.'
 }
 

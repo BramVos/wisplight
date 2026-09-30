@@ -773,11 +773,23 @@ export function walk(world: World, plan: WalkPlan, pass: (minutes: number) => Ou
       const hex = parseHexKey(key)
       return hex ? [hexId(hex)] : []
     }))
-    const text = journeyParagraph(world, { how, minutes, terrains, ...(seen ? { seen: { text: seen.text, wind: seen.wind } } : {}), met, ...(reason ? { reason } : {}), ...(arrived ? { arrived: world.location(arrived).name } : {}) })
+    const text = journeyParagraph(world, { how, minutes, terrains, ...(seen ? { seen: { text: seen.text, wind: seen.wind } } : {}), met, ...(reason ? { reason } : {}), ...(arrived ? { arrived: arrivedAt(world, arrived, startId) } : {}) })
     return { outputs: [{ kind: 'narration', text, journey: true }, ...(edge ? beyondEdge(world, map, edge) : [])], minutes, at: world.state.player.location }
   }
-  const summary = `${how} for ${duration(minutes)}${over.length ? `, over ${list(over)}` : ''}.${reason ? ` ${reason}` : ''}${arrived ? ` You come to ${world.location(arrived).name}.` : ''}`
+  const summary = `${how} for ${duration(minutes)}${over.length ? `, over ${list(over)}` : ''}.${reason ? ` ${reason}` : ''}${arrived ? ` You come to ${arrivedAt(world, arrived, startId)}.` : ''}`
   return { outputs: [{ kind: 'narration', text: summary }, ...(forked ?? []), ...(edge ? beyondEdge(world, map, edge) : [])], minutes, at: world.state.player.location }
+}
+
+/**
+ * Where a walk comes out, with the place it lies in when that is another than
+ * where the walk began (M10.33 Y: following the path west, the stranger came
+ * to the Arrival Lock without being told it was Port Vesper).
+ */
+function arrivedAt(world: World, arrived: string, from: string): string {
+  const area = world.content.locations.get(arrived)?.area
+  const was = world.content.locations.get(from)?.area
+  const name = area && area !== was ? world.content.areas.get(area)?.name : undefined
+  return name ? `${world.location(arrived).name}, in ${name}` : world.location(arrived).name
 }
 
 // ---------------------------------------------------------------- the edge of the map (M10.21)
@@ -948,17 +960,24 @@ export function waysFrom(world: World, at: Hex): { label: string; way: string; w
       const line = wayHexes(map, path.name)
       // Where you are along it, and where each of its stops is.
       const k = w.at
-      const stops = path.via.map((v) => {
+      // An end given as a point that lies on a place is that place (M10.33 Y: the Quiet Reach's paths run by points, so
+      // "the path to the Coastal Traverse" was offered by that name to someone standing in the Coastal Traverse). A point
+      // along the way is only a bend.
+      const stops = path.via.map((v, i) => {
         const hex = typeof v === 'string' ? map.places.get(v) : hexAt(v[0], v[1], map.size)
         const index = hex ? nearestIndex(line, hex) : -1
-        return { area: typeof v === 'string' ? v : undefined, index }
+        const end = i === 0 || i === path.via.length - 1
+        return { area: typeof v === 'string' ? v : hex && end ? map.placeOn(hex) : undefined, index }
       })
       const kind = path.kind === 'canal' ? 'tow path' : path.kind
       const generic = /^the (path|road|tow path) to /i.test(path.name)
       // A way named for the place you stand in goes by where it runs (M10.29 T: "the path to Ridge Shelter", at Ridge Shelter).
       const standing = world.location(world.state.player.location).name.toLowerCase()
       const toHere = generic && path.name.toLowerCase().endsWith(` to ${standing}`)
-      const sides = [stops.filter((st) => st.index >= 0 && st.index < k && st.area !== here).reverse(), stops.filter((st) => st.index > k && st.area !== here)]
+      // Never the place you stand in, by the hex or by the place's own area.
+      const mine = world.content.locations.get(world.state.player.location)?.area
+      const elsewhere = (st: { area?: string }) => st.area !== here && st.area !== mine
+      const sides = [stops.filter((st) => st.index >= 0 && st.index < k && elsewhere(st)).reverse(), stops.filter((st) => st.index > k && elsewhere(st))]
       const ends = [k > 0 ? { stops: sides[0]!, hex: line[Math.max(0, k - 3)] } : undefined, k < line.length - 1 ? { stops: sides[1]!, hex: line[Math.min(line.length - 1, k + 3)] } : undefined].filter((e): e is { stops: typeof stops; hex: Hex | undefined } => Boolean(e))
       for (const end of ends) {
         const area = end.stops.find((st) => st.area)?.area

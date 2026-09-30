@@ -1,5 +1,5 @@
 import { GameClock } from './clock'
-import { NEEDS, type Content, type Need, type Npc } from './content'
+import { NEEDS, type Content, type Direction, type Need, type Npc } from './content'
 import type { StoriesState } from './stories'
 import type { EconomyState } from './economy/ledger'
 import type { GrowthState } from './growth/growth'
@@ -333,7 +333,8 @@ export interface NpcState {
   /** Hit points lost in a fight, healing a little every hour. */
   wounds?: number
   /** Where the NPC was before and when it left, for coincidences. */
-  left?: { location: string; t: number }
+  /** Where they last left from, when, and by which way (M10.33 AD: FOLLOW <person> takes it). */
+  left?: { location: string; t: number; direction?: Direction }
   /** Travelling with the player as a companion: the simulation leaves it be. */
   following?: boolean
   /** Not in the world (yet): under a curse, or gone for good until a quest brings them back. */
@@ -558,6 +559,8 @@ export interface PlayerState {
   crafts?: Record<string, CraftProgress>
   /** Hidden things found, `location/id`, and inscriptions read, `location/object` (M10.5). */
   found?: string[]
+  /** What the stranger wears of the clothes they carry (M10.33 AD): item ids tagged clothing. */
+  worn?: string[]
   /** Where the stranger last gathered from a ground, `location/ground`, by game day (M10.5). */
   gathered?: Record<string, number>
   /** Time the stranger spends on what was just agreed in a talk (M10.5: a lesson), passed after the turn. */

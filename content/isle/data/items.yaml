@@ -192,7 +192,8 @@ items:
     plural: sealskin jerkins
     description: A jerkin of oiled sealskin, stiff at the shoulders and smelling of the sea.
     aliases: [jerkin, sealskin]
-    tags: [armour]
+    # Oiled sealskin keeps the sea and the rain out (M10.33), worn as armour.
+    tags: [armour, rainproof]
     value: 20
     armour: { kind: light, defence: 2, cap: 3 }
 

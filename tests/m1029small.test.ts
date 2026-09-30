@@ -43,7 +43,8 @@ describe('M10.29 T: small things of the commands', () => {
     const follow = await said(engine, 'follow')
     expect(follow).toMatch(/^Which way\? From in here you go out first:/)
     expect(follow).toMatch(/the path south-west: southwest from here/)
-    expect(follow).toMatch(/the path to Orison Ridge north: up from here/)
+    // Named by the place it reaches (M10.33 Y), as every way to a place is.
+    expect(follow).toMatch(/the path to Orison Ridge: up from here/)
     expect(follow).not.toMatch(/path to Ridge Shelter/)
     expect(await said(engine, '1')).toMatch(/^Coastal Service Path/)
   })

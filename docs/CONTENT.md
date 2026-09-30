@@ -203,7 +203,7 @@ A list; each has:
 | plural | Its name for more than one, when adding an s is wrong: "loaves of bread". | text | no |  |
 | description | What the stranger sees when they look at it, in a sentence or two. | text | yes |  |
 | aliases | Other words the player may use for it. | list of text | no | [] |
-| tags | What kind of thing it is, for rules and conditions: food, tool, light (a lamp or torch that lights the way at night). | list of text | no | [] |
+| tags | What kind of thing it is, for rules and conditions: food, tool, light (a lamp or torch that lights the way at night), clothing (WEAR and TAKE OFF, M10.33), rainproof (worn, it keeps the stranger dry in rain). | list of text | no | [] |
 | value | What it is worth, in the smallest coin: shops buy and sell from it. | number | yes |  |
 | used | How someone uses it when the stranger made it and gave it to them (M10.14): "{name} cuts bread with the knife you made." | text | no |  |
 | verbs | What using, reading or opening it says when the stranger carries it (M10.29), as a detail's verbs: { use: "...", read: "..." }. | a map of names to text | no |  |
@@ -213,6 +213,8 @@ A list; each has:
 | weapon | A weapon (FO, chapter 12): its damage die, and what a critical hit does. | a map: damage, kind, light, two_hands, crit, range, iron | no |  |
 | armour | Armour or a shield: the defence it gives, and how much Grace still counts in it. | a map: kind, defence, cap | no |  |
 | remedy | A remedy: what using it heals or cures (FO, chapter 11, "Aandoeningen"). | a map: heal, cures | no |  |
+
+`tags`: `clothing` for what the stranger can WEAR and TAKE OFF in any world (a coat, boots), `rainproof` for what keeps the rain out when worn (a coat, oiled sealskin): without it, rain soaks the stranger to the skin.
 
 ## object_types (data/objects.yaml)
 

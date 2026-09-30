@@ -63,7 +63,7 @@ export const ItemSchema = z.object({
   plural: z.string().optional().describe('Its name for more than one, when adding an s is wrong: "loaves of bread".'),
   description: z.string().describe('What the stranger sees when they look at it, in a sentence or two.'),
   aliases: z.array(z.string()).default([]).describe('Other words the player may use for it.'),
-  tags: z.array(z.string()).default([]).describe('What kind of thing it is, for rules and conditions: food, tool, light (a lamp or torch that lights the way at night).'),
+  tags: z.array(z.string()).default([]).describe('What kind of thing it is, for rules and conditions: food, tool, light (a lamp or torch that lights the way at night), clothing (WEAR and TAKE OFF, M10.33), rainproof (worn, it keeps the stranger dry in rain).'),
   value: z.number().int().nonnegative().describe('What it is worth, in the smallest coin: shops buy and sell from it.'),
   used: z.string().optional().describe('How someone uses it when the stranger made it and gave it to them (M10.14): "{name} cuts bread with the knife you made."'),
   verbs: z.record(z.string(), z.string()).optional().describe('What using, reading or opening it says when the stranger carries it (M10.29), as a detail\'s verbs: { use: "...", read: "..." }.'),
@@ -1517,6 +1517,8 @@ function checkReferences(world: WorldDef | undefined, c: Omit<Content, 'world'>)
     if (!l.key && !l.word?.trim()) problems.push(`${where}.lock: neither a key nor a word opens it`)
     if (l.key) item(l.key, `${where}.lock`)
   }
+  // What keeps the rain out must be worn to do it (M10.33 AD).
+  for (const item of c.items.values()) if (item.tags.includes('rainproof') && !item.tags.includes('clothing') && !item.armour) problems.push(`item ${item.id}: rainproof, but nobody can wear it (tag clothing, or armour)`)
   for (const loc of c.locations.values()) {
     if (!c.areas.has(loc.area)) problems.push(`${loc.id}: unknown area ${loc.area}`)
     for (const [direction, exit] of Object.entries(loc.exits)) {

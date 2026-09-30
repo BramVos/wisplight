@@ -126,6 +126,8 @@ const VERB_ALIASES: Record<string, string> = {
   say: 'say',
   zeg: 'say',
   talk: 'talk',
+  // T MARA (M10.33 AD), as X is examine.
+  t: 'talk',
   praat: 'talk',
   ask: 'ask',
   vraag: 'ask',

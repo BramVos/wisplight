@@ -22,6 +22,8 @@ interface KindText {
  * contract, the fields of a world step and the writing aid's short contract.
  */
 export const FIELD_NOTES: Record<string, string[]> = {
+  // M10.33 AD: "wear coat" in the rain said the world had no rules for characters.
+  items: ['`tags`: `clothing` for what the stranger can WEAR and TAKE OFF in any world (a coat, boots), `rainproof` for what keeps the rain out when worn (a coat, oiled sealskin): without it, rain soaks the stranger to the skin.'],
   // M10.30: people told their own plot of the recordings in The Quiet Reach; a stage says what each knows.
   quests: [
     'A stage may have `goal`, what the stranger can do now in one line for the journal and QUESTS ("Recover the recordings from the Listening Room"), and `knows`, per person with a part (npc id) what they know of the story at this stage and may say, a sentence with their name ("Tessa knows the coupling was never synced; she does not know who took the pages."). That goes to their voice as all they know of it, and to an improvisation at a place of the story; a person without a line talks as before.',

@@ -753,7 +753,8 @@ function templateFor(kind: EntityKind, view: EditorView): Raw {
         ],
       }
     case 'item':
-      return { id: 'new_thing', name: 'new thing', description: 'What it looks like.', value: 1 }
+      // Tags a thing may have: food, light, clothing (worn with WEAR), rainproof (M10.33).
+      return { id: 'new_thing', name: 'new thing', description: 'What it looks like.', value: 1, tags: [] }
     case 'object_type':
       return { id: 'new_object', name: 'new object', description: 'What it looks like.', affordances: [] }
     case 'profession':

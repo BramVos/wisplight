@@ -45,6 +45,7 @@ import { recognisedSale, refusedTrade, returnStolen } from './social/crime'
 import { lodgingLines } from './lodgings'
 import { engageFarPlace } from './outlines'
 import { exitShown, shownExits } from './exits'
+import { wornNow } from './carried'
 
 // Player commands that need no AI. Each returns lines of output; commands that
 // take time call `pass(minutes)`, which runs the world and returns what the
@@ -146,8 +147,11 @@ export function runCommand(host: CommandHost, command: Command): Output[] {
       const map = regionMap(world.content)
       return [text(hex && map ? waysLine(world, map, hex) : exitLine(world))]
     }
-    case 'inventory':
-      return [text(`You carry ${listItems(world.content, world.state.player.inventory)}, and ${world.money(world.state.player.money)}.`)]
+    case 'inventory': {
+      // What you wear is said as worn (M10.33 AD).
+      const worn = wornNow(world)
+      return [text(`You carry ${listItems(world.content, world.state.player.inventory)}, and ${world.money(world.state.player.money)}.${worn.length ? ` You wear ${worn.map((id) => `the ${itemName(world.content, id)}`).join(' and ')}.` : ''}`)]
+    }
     case 'take': {
       // TAKE <thing> FROM <chest> (M10.3): from an open chest; someone else's is theirs.
       const from = /^(.+?)\s+(?:from|out of|uit)\s+(.+)$/i.exec(command.args.join(' '))

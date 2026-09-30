@@ -42,6 +42,7 @@ export const KNOBS = {
   'people.memory_below': n('Below this familiarity, someone is only a memory.', 'familiarity', 10, 0, 100, 'forgetting.ts'),
   'people.long_absence_days': n('Apart this long, meeting again is a meeting after a long absence.', 'days', 60, 1, 1000, 'forgetting.ts'),
   'people.wait_hours': n('How long someone waits for a thing before giving up.', 'hours', 3, 0.5, 48, 'npc/execute.ts'),
+  'people.follow_minutes': n('How long after someone left the stranger can still FOLLOW them by the way they took (M10.33).', 'minutes', 30, 1, 240, 'engine.ts'),
   'people.goals_per_day': n('How many times a day a person may take up something new of their own.', 'goals', 6, 0, 50, 'npc/goals.ts'),
   'people.goals_at_once': n('How many goals of their own a person pursues at once.', 'goals', 3, 1, 10, 'npc/goals.ts'),
   'people.goal_rest_hours': n('How long a person rests before choosing a goal of their own again.', 'hours', 5, 0, 48, 'npc/goals.ts'),

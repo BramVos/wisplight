@@ -18,7 +18,7 @@ export function thingVerbs(world: World, item: string): string[] {
   const def = world.content.items.get(item)
   if (!def) return []
   const own = Object.keys(def.verbs ?? {})
-  const standard = [...(def.remedy || def.tags.includes('light') ? ['use'] : []), ...(def.food !== undefined ? ['eat'] : []), ...(def.weapon ? ['wield'] : []), ...(def.armour ? ['wear'] : []), 'give']
+  const standard = [...(def.remedy || def.tags.includes('light') ? ['use'] : []), ...(def.food !== undefined ? ['eat'] : []), ...(def.weapon ? ['wield'] : []), ...(def.armour || def.tags.includes('clothing') ? ['wear'] : []), 'give']
   return [...new Set([...own, ...standard])]
 }
 
@@ -40,3 +40,40 @@ export function doWithCarried(world: World, item: string, verb: string): string 
   if (verbs.length) return `You can't ${verb} the ${name}. ${couldLine([...verbs, 'give'])}`
   return verb === 'read' ? `There is nothing to read on the ${name}.` : `You turn the ${name} over in your hands; there is nothing to do with it here.`
 }
+
+/** The clothes the stranger wears and still carries (M10.33 AD): a thing given or dropped is no longer worn. */
+export function wornNow(world: World): string[] {
+  const inventory = world.state.player.inventory
+  return (world.state.player.worn ?? []).filter((id) => (inventory[id] ?? 0) > 0)
+}
+
+/**
+ * WEAR <clothes> and TAKE OFF <clothes> (M10.33 AD, Bram's log: "wear coat"
+ * against "soaked to the skin" said the world had no rules for characters):
+ * a thing tagged clothing is put on or taken off, in every world, rules or
+ * none. Nothing when the words name no clothing carried, so WEAR goes on to
+ * armour as ever.
+ */
+export function wearClothes(world: World, words: string, off = false): string | undefined {
+  const item = carried(world, words)
+  const def = item ? world.content.items.get(item) : undefined
+  if (!item || !def?.tags.includes('clothing')) return undefined
+  const worn = wornNow(world)
+  const name = itemName(world.content, item)
+  if (off) {
+    if (!worn.includes(item)) return `You are not wearing the ${name}.`
+    world.state.player.worn = worn.filter((id) => id !== item)
+    return `You take off the ${name}.`
+  }
+  if (worn.includes(item)) return `You are wearing the ${name} already.`
+  world.state.player.worn = [...worn, item]
+  return `You put on the ${name}.${def.tags.includes('rainproof') ? ' The rain will not get through it.' : ''}`
+}
+
+/** What the stranger wears that keeps the rain out, if anything: clothes or armour tagged rainproof (M10.33 AD). */
+export function keptDry(world: World): string | undefined {
+  const armour = world.state.player.character?.gear.armour
+  const dry = [...wornNow(world), ...(armour ? [armour] : [])].find((id) => world.content.items.get(id)?.tags.includes('rainproof'))
+  return dry && itemName(world.content, dry)
+}
+

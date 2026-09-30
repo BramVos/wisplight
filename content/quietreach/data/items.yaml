@@ -300,7 +300,8 @@ items:
     plural: weatherproof coats
     description: A long grey coat of coated fabric with a deep hood and taped seams, repaired once at the elbow. It keeps out Nacre's rain, if not its cold.
     aliases: [coat, raincoat]
-    tags: [personal, clothing]
+    # Worn, it keeps Nacre's rain out (M10.33: WEAR COAT).
+    tags: [personal, clothing, rainproof]
     value: 3000
 
   - id: sturdy_boots

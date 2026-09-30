@@ -35,6 +35,11 @@ const FROM: Record<Direction, string> = {
 }
 
 
+/** What someone is doing while they spend time: the step's own words, or the kind of time it is. */
+function spendActivity(step: Extract<Step, { kind: 'spend' }>): string {
+  return step.label ?? { work: 'at work', socialize: 'chatting', play: 'playing', pray: 'praying', idle: 'taking it easy' }[step.activity]
+}
+
 export function executeStep(world: World, npcId: string, step: Step): StepResult {
   const npc = world.npcState(npcId)
   const now = world.now
@@ -56,13 +61,16 @@ export function executeStep(world: World, npcId: string, step: Step): StepResult
       npc.travelFrom ??= npc.location
       // Someone only passing through gets one line on the way in and a short one on the way out.
       world.emit('depart', npc.location, world.say(npc.passing ? `{name} walks on ${onward(direction)}.` : `{name} ${leaving(direction)}.`, npcId), npcId)
-      npc.left = { location: npc.location, t: now }
+      npc.left = { location: npc.location, t: now, direction }
       npc.location = exit.to
       npc.passing = exit.to !== step.to
       const destination = world.location(step.to).name
       world.emit('arrive', exit.to, world.say(npc.passing ? `{name} comes from ${FROM[direction]}, on {their} way to ${destination}.` : `{name} arrives from ${FROM[direction]}.`, npcId), npcId)
       npc.busyUntil = now + exit.minutes
-      npc.activity = `on the way to ${destination}`
+      // Arrived is arrived (M10.33 X, a log of 30 September 2026: "Here: Niko (on the way to Orison Listening Room)" in the
+      // Listening Room): on the last stretch the activity is already what comes next, for every step after a walk.
+      const next = npc.plan[0] === step ? npc.plan[1] : undefined
+      npc.activity = npc.passing ? `on the way to ${destination}` : next?.kind === 'spend' ? spendActivity(next) : 'just arrived'
       const linger = exit.to === world.state.player.location && !world.state.talk ? attention(world, npcId) : 0
       if (linger > 0) {
         npc.noticedPlayerAt = now
@@ -227,7 +235,7 @@ export function executeStep(world: World, npcId: string, step: Step): StepResult
       }
       npc.pending = { satisfies: gain }
       npc.busyUntil = now + step.minutes
-      npc.activity = step.label ?? { work: 'at work', socialize: 'chatting', play: 'playing', pray: 'praying', idle: 'taking it easy' }[step.activity]
+      npc.activity = spendActivity(step)
       return 'done'
     }
 

@@ -3,7 +3,7 @@ import { planHere } from './plan'
 import { applyFull, fullDue, fullFixRequest, fullLayer, fullRequest, mergeFull, readFull, wantFull, type FullRound } from './growth/regionfull'
 import { applyStory, storyDue, storyReady, storyReply, storyRequest, wantStory, type StoryReply } from './growth/regionstory'
 import { wishLines } from './wishes'
-import { carried, doWithCarried } from './carried'
+import { carried, doWithCarried, wearClothes } from './carried'
 import { framesLines, framesView, secondsPerGameMinute } from './frames'
 import { knob } from './knobs'
 import { applyImprovisation, improviseFallback, improviseRequest, readImprovisation, type Improvisable } from './improvise'
@@ -1625,6 +1625,10 @@ export class Engine {
     }
     // A place to belong (M10.13): RENT THE ROOM FOR A WEEK, PUT <thing> IN THE CHEST, TAKE <thing> FROM THE CHEST.
     if (!this.state.talk && /^(?:rent|take)\s+(?:the\s+|a\s+)?room\s+(?:for|by)\s+(?:a|the)\s+week$|^take\s+lodgings?$|^lodge\s+here$/i.test(text.trim())) return rentLodging(this.world)
+    // PUT ON <clothes>, TAKE OFF <clothes> (M10.33 AD): only when the words name clothing carried.
+    const dress = /^(?:put on|take off|remove)\s+(?:the\s+|my\s+)?(.+)$/i.exec(text.trim())
+    const dressed = dress && !this.state.talk ? wearClothes(this.world, dress[1]!, !/^put/i.test(text.trim())) : undefined
+    if (dressed) return [{ kind: 'text', text: dressed }]
     const stow = /^(?:put|store|keep)\s+(?:the\s+|my\s+)?(.+?)\s+in\s+(?:the\s+|my\s+)?chest$/i.exec(text.trim())
     if (stow && !this.state.talk && this.state.player.lodgingId) return putInChest(this.world, stow[1]!.toLowerCase())
     const unstow = /^take\s+(?:the\s+|my\s+)?(.+?)\s+(?:from|out\s+of)\s+(?:the\s+|my\s+)?chest$/i.exec(text.trim())
@@ -1670,6 +1674,9 @@ export class Engine {
     if (which) return which
     // A verb of the rules for characters in a world without them (M10.29 T: HOLD said "This world has no rules for
     // characters"): as any verb the world does not know.
+    // WEAR <clothes> (M10.33 AD): in every world, with rules for characters or none, before armour.
+    const clothes = command.verb === 'wield' && /^(?:wear|draag)\b/i.test(command.raw.trim()) ? wearClothes(this.world, command.args.join(' ').replace(/^(the|a|an|my)\s+/i, '')) : undefined
+    if (clothes) return [{ kind: 'text', text: clothes }]
     if (CHARACTER_VERBS.has(command.verb) && !hasCharacters(this.content)) return [{ kind: 'error', text: `You can't "${command.raw}" here. Type HELP for a list of commands.` }]
     switch (command.verb) {
       case 'talk': {
@@ -1922,6 +1929,10 @@ export class Engine {
         const wind = windOf(windWord)
         const name = (wind ? command.args.slice(0, -1).join(' ') : words).toLowerCase().replace(/^(the|de|het)\s+/, '').trim()
         const way = followWay(this.content, name)
+        // FOLLOW <person> (M10.33 AD, Bram's log: FOLLOW NIKO outside offered the paths over land while Niko went up the
+        // ridge): the way they were seen to take from here, by the exits, IN and UP too.
+        const who = name && !way && !wind ? findNpcAnywhere(this.world, name) : undefined
+        if (who) return this.followPerson(who)
         if (way === 'ridge' && (this.state.player.journal ?? {})['the_dry_ridge'] === undefined) return [{ kind: 'error', text: "You don't know of any ridge here." }]
         // A way named exactly, with its wind or the ridge: off you go, by the name it has from here.
         if (way && (wind || way === 'ridge')) {
@@ -1979,6 +1990,17 @@ export class Engine {
         return outputs
       }
     }
+  }
+
+  /** FOLLOW <person> (M10.33 AD): through the way they took from here, lately and in sight; else where to look. */
+  private async followPerson(npcId: string): Promise<Output[]> {
+    const here = this.state.player.location
+    const state = this.world.npcState(npcId)
+    if (state.location === here) return [{ kind: 'text', text: this.world.say('{name} is right here.', npcId) }]
+    const left = state.left
+    const seen = left && left.location === here && left.direction && this.world.now - left.t <= knob(this.world, 'people.follow_minutes') && exitShown(this.world, here, left.direction)
+    if (!seen) return [{ kind: 'text', text: this.world.say('You did not see which way {name} went from here. TRACK may find the signs.', npcId) }]
+    return this.route(left!.direction!)
   }
 
   /** A turn in conversation costs one game minute (FO, chapter 3). */
