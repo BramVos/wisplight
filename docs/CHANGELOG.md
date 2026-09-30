@@ -1,5 +1,32 @@
 # Changelog
 
+## M10.31 af: de plattegrond groot, en de kleine gaten na M10.30, 30 september 2026
+
+Alle zeven punten van M10.31 zijn af. De delen staan hieronder; dit is het overzicht.
+
+- **De plattegrond als venster (A).** [Plan] rechtsboven, of een klik op de kleine plattegrond, opent het hele gebied in een groot venster. Je schuift met het wiel of door te slepen, Home zet je terug in het midden, en de klok staat stil zolang het open is.
+- **Een geheime uitgang (B).** Het luik achter de consoles in The Quiet Reach en de zeegrot achter het wier op Skerrow staan pas bij de uitgangen en op de plattegrond als je ze gevonden hebt.
+- **Een code in wat de kroniekverteller schrijft (C).** Een stadium of een afloop kan een code of wachtwoord zijn in plaats van een commando.
+- **Lopen naar wat je hoorde (D).** `walk to` een plek die je niet zag, loopt zo ver als je de weg kent en zegt dan welke kant men je wees.
+- **Afgekorte namen van mensen (E).** `ask`, `tell`, `give` en `look` vragen wie je bedoelt als er twee passen.
+- **Wat iedereen in de Nethermarch weet (F).** Acht onderwerpen over de volken, het geld, de graaf, Waagdam en de priorij.
+- **Opus en de drie aflopen (G).** Gemeten: met de aflopen verplicht in het schema gaf Opus bij een quest uit een verzoek steeds drie aflopen, twee oplossingen langs verschillende wegen en één die misloopt.
+
+Testen, in The Quiet Reach:
+- Klik op [Plan] in Port Vesper, schuif, druk op Home, en sluit met Esc.
+- Typ in de Orison Listening Room `look at consoles` en daarna `search behind the consoles`, en ga `in`.
+- Typ in de Arrival Lock `walk to the hangar` als je alleen van de hangar gehoord hebt: het spel zegt welke kant men je wees.
+- Typ in de Commons `talk t` en `ask t about the drive`.
+- Op Skerrow: `part weed` bij de Tidepools. In de Nethermarch: `recall stuivers`, en [Plan] in Waagdam.
+
+Kosten: geen nieuwe soort aanroep en geen nieuwe run op je sleutel. De meting van G ($0,125) viel binnen je akkoord van M10.30 en zit al in het totaal daar. De vaste delen van de schrijfhulp, de wereldstappen, de streekronde en `night_quest` werden een paar zinnen langer (C en B); dat schrijft hun cache één keer opnieuw.
+
+Bekende gaten: de regels van `night_quest` noemen de code als daad niet. Dat blijft zo, want die aanroep ziet de sloten van de wereld niet. Een uitgang met `when` die niet geheim is, staat nog in de lijst, zoals bedoeld, en WALK TO over de kaart let niet op die `when`.
+
+Wat de editor en de kroniekverteller leerden: `hidden` op een uitgang en `exit` op iets verborgens (sjabloon, contract, stap Plekken, Check), en de daad met een woord in de regels van de stap Verhalen en de streekronde (zie de delen).
+
+Ontwerp: functioneel ontwerp, de alinea's "Stand na M10.31" bij de plattegrond van hier, bij de wereld (de geheime uitgang) en na de stap Verhalen (de code als daad).
+
 ## M10.31 deel: de plattegrond als venster (A), 30 september 2026
 
 - **Groot en schuifbaar.** Klik op de kleine plattegrond (naast een vakje) of op [Plan] rechtsboven in het spelvenster. De plattegrond opent dan als venster van ongeveer twee keer zo groot, met het hele gebied erin. Past het gebied er niet in, dan schuif je met het wiel of door te slepen, en zet Home of [Where you are] je weer in het midden.
@@ -14,6 +41,7 @@ Kosten: geen aanroep.
 Wat de editor en de kroniekverteller leerden: niets; een wereld kan hierdoor niets nieuws bevatten.
 
 Ontwerp: functioneel ontwerp, bij de plattegrond van hier, alinea "Stand na M10.31: de plattegrond als venster".
+
 ## M10.31 deel: een geheime uitgang (B), lopen naar wat je hoorde (D) en wat iedereen weet (F), 30 september 2026
 
 - **Een geheime uitgang.** Een uitgang kan geheim zijn. Dan staat hij niet bij de uitgangen, niet op de plattegrond en niet bij Tab, en je kunt hem niet nemen tot je hem gevonden hebt: met SEARCH (een worp), met SEARCH en de plek (`search behind the consoles`, zonder worp), of doordat een daad hem opent. Mensen gebruiken hem nooit.
