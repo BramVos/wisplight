@@ -11,6 +11,7 @@ import { gainXp, playerCheck } from './rules/player'
 import { deed } from './social/deeds'
 import { weather } from './weather'
 import type { World } from './world'
+import { exitFound } from './exits'
 
 // What the other skills do (M10.5): Medicine treats, Survival gathers and
 // reads tracks, Lore reads an old inscription, Perception finds what lies
@@ -187,6 +188,8 @@ export function searchHere(host: CommandHost): Output[] {
 function foundIt(world: World, h: Hidden): Output[] {
   const here = world.state.player.location
   ;(world.state.player.found ??= []).push(`${here}/${h.id}`)
+  // A secret way it reveals (M10.31): found, it shows and can be taken.
+  if (h.exit) world.state.player.found!.push(exitFound(here, h.exit))
   if (h.item) {
     const ground = (world.state.ground[here] ??= {})
     ground[h.item] = (ground[h.item] ?? 0) + h.qty
@@ -200,6 +203,8 @@ function foundIt(world: World, h: Hidden): Output[] {
  * SEARCH <words>, PRESS <stone> (M10.30, Bram: a stone you only find because
  * you heard you must look there): what lies hidden for someone who knows of
  * it, by its words and one of its verbs, once its conditions hold; no roll.
+ * What has words and no conditions (M10.31: the hatch behind the consoles) is
+ * found the same way by whoever names the spot, and by a roll on a plain SEARCH.
  * Nothing when nothing here answers to the words, so SEARCH goes on as ever.
  */
 export function searchFor(host: CommandHost, verb: string, words: string): Output[] | undefined {
@@ -209,9 +214,9 @@ export function searchFor(host: CommandHost, verb: string, words: string): Outpu
   const wanted = words.toLowerCase().replace(/^(?:for|the|a|an)\s+/g, '').trim()
   if (!wanted) return undefined
   const h = world.location(here).hidden.find(
-    (x) => x.when && !found.includes(`${here}/${x.id}`) && ['search', ...(x.verbs ?? [])].includes(verb) && (x.words ?? []).some((w) => placeWords(wanted, [w]) || w.toLowerCase() === wanted),
+    (x) => (x.when || x.words?.length) && !found.includes(`${here}/${x.id}`) && ['search', ...(x.verbs ?? [])].includes(verb) && (x.words ?? []).some((w) => placeWords(wanted, [w]) || w.toLowerCase() === wanted),
   )
-  if (!h || !allHold(world, h.when!)) return undefined
+  if (!h || !allHold(world, h.when ?? [])) return undefined
   return [...foundIt(world, h), ...host.pass(10)]
 }
 

@@ -43,7 +43,7 @@ describe('M10.20: the world steps are cached and measured', () => {
     // A world with one more place reads the same cached part; its counts go with the step.
     const more = [...files, { path: 'quietreach/areas/extra.yaml', text: 'locations:\n  - id: loc_extra\n    name: Extra\n    area: nacre\n    description: { day: A room. }\n' }]
     expect(fixed(worldStepRequest(more, 'people', 'x'))).toBe(first)
-    expect(worldStepRequest(files, 'people', 'x').prompt).toMatch(/THIS WORLD HAS NOW: .*locations 10/)
+    expect(worldStepRequest(files, 'people', 'x').prompt).toMatch(/THIS WORLD HAS NOW: .*locations 11/)
     // The hard limits come in front for every call, and the mark moves with them.
     const safe = withSafety(requests[0]!)
     expect(safe.system.slice(safe.cacheBreak).startsWith('THE STEPS:')).toBe(true)

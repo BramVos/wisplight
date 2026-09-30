@@ -37,7 +37,7 @@ import { shiftTension, tensionOf } from './social/realms'
 import { grownContent, invest } from './growth/growth'
 import { GameClock, weekdayName } from './clock'
 import { completionsHere, couldInstead, describeRoom, detailDeed, detailVerb, findNpcAnywhere, findNpcHere, runCommand, walkByExits, walkOut, walkToward, walkWithin, whichOfThem, type CommandHost, type Output } from './commands'
-import { areaTopicId, callName, firstName, type Content, type Quest } from './content'
+import { areaTopicId, callName, firstName, type Content, type Direction, type Quest } from './content'
 import { Dialogue, QUICK_OPTIONS } from './dialogue/conversation'
 import { Knowledge } from './dialogue/knowledge'
 import type { ChronicleOutput, ChroniclerRequest, Outline } from '../chronicler'
@@ -78,6 +78,7 @@ import { upper, World } from './world'
 import { beginFight, fightView, playerCommand } from './combat/flow'
 import { foeXp } from './combat/balance'
 import type { Arena } from './combat/combat'
+import { exitShown } from './exits'
 import type { Combat, Fighter } from './combat/types'
 import { hasCharacters, maxHp, type CreationData } from './rules/character'
 import { npcFighter } from './combat/npc'
@@ -594,7 +595,9 @@ export class Engine {
     if (id && (this.state.player.journal ?? {})[id] !== undefined) return true
     if (findNpcHere(this.world, w)) return true
     const here = this.world.location(this.state.player.location)
-    for (const exit of Object.values(here.exits)) {
+    for (const [dir, exit] of Object.entries(here.exits) as [Direction, { to: string }][]) {
+      // A secret way not yet found gives nothing away (M10.31).
+      if (!exitShown(this.world, here.id, dir)) continue
       const name = this.world.location(exit.to).name.toLowerCase().replace(/^the\s+/, '')
       if (name.includes(w) || w.includes(name)) return true
     }
@@ -1918,7 +1921,7 @@ export class Engine {
         // the exit that leads to each way.
         const here = this.state.player.location
         if (hex && !canSetOut(this.world, here)) {
-          const exits = Object.entries(this.world.location(here).exits) as [string, { to: string }][]
+          const exits = (Object.entries(this.world.location(here).exits) as [Direction, { to: string }][]).filter(([d]) => exitShown(this.world, here, d))
           const out = waysFrom(this.world, hex).flatMap((o) => {
             const wind = o.wind?.replace('-', '')
             // Where it leads: by its end, or the place a way "to" names; else by its wind.

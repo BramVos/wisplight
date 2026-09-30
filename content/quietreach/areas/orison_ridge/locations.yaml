@@ -22,8 +22,17 @@ locations:
       far: "High on Orison Ridge the antenna of the listening station stands against the cloud, its cables groaning in the wind."
     exits:
       down: { to: loc_ridge_shelter, minutes: 12 }
-    # Found only by someone who heard of the cairn (M10.30), never by a plain search.
+      # A secret way (M10.31): not in the exits or on the plan until the hatch is found.
+      in: { to: loc_orison_cable_gallery, minutes: 2, hidden: true }
     hidden:
+      # SEARCH may find it by a roll; SEARCH BEHIND THE CONSOLES finds it at once.
+      - id: console_hatch
+        dc: 12
+        text: Behind the last console, where the bundled cables drop through the floor, a square hatch lies flush with the plating, its handle folded flat. It lifts on a stiff hinge, and a ladder goes down into warm, humming dark.
+        exit: in
+        words: [hatch, behind the consoles, behind the console, behind consoles, where the cables go, floor]
+        verbs: [lift]
+      # Found only by someone who heard of the cairn (M10.30), never by a plain search.
       - id: survey_cache
         text: By the antenna footing a low cairn of flat stones stands where you were told it would. Under the top stone, the one with the pale painted arrow, a sealed tin holds a field lamp, still dry, and a card with the first survey crew's names in faded pencil.
         item: field_lamp
@@ -32,7 +41,7 @@ locations:
         verbs: [lift, move]
     details:
       - words: [consoles, receiving consoles, console, fault codes]
-        look: Old receiving consoles with worn keys and cracked screens. The live ones scroll fault codes that repeat, stop and begin again.
+        look: Old receiving consoles with worn keys and cracked screens. The live ones scroll fault codes that repeat, stop and begin again. Behind the last one, a thick bundle of cables drops out of sight through the floor.
         take: The consoles are built into the room.
         verbs:
           read: The fault codes point to power drops and missing frames in the recording. Most seem to start on the same day, some weeks ago.
@@ -56,3 +65,32 @@ locations:
           listen: You wait, and the tones come again, just as before. Hearing them once more tells you nothing new, but it is hard not to listen.
       - words: [stairs]
         look: Steel stairs leading down through a hatch to the steep route to the Ridge Shelter.
+
+  # Under the listening room (M10.31): reached only by the hatch behind the consoles, once found.
+  - id: loc_orison_cable_gallery
+    name: Cable Gallery
+    area: orison_ridge
+    tags: [research]
+    aliases: [cable gallery, gallery, cable run, crawlspace, under the floor]
+    summary: A low service gallery under the listening room, where the antenna feed comes down into the station.
+    sound: { kind: hum, level: 0.5 }
+    description:
+      day: |
+        You crouch in a low gallery under the station floor, where bundled cables run in trays along both walls. The air is warm and dry and smells of hot dust. Junction boxes stand open along the run, lights ticking green and amber, and a feed line as thick as your wrist comes down from the antenna through a collar overhead. The ladder climbs back to the [Orison Listening Room].
+    arrival:
+      text: "The ladder brings you down into warm, humming dark under the floor. Cables run away from you in their trays, and somewhere along them a relay clicks, waits, and clicks again."
+    exits:
+      out: { to: loc_orison_listening_room, minutes: 2 }
+    details:
+      - words: [cables, trays, cable trays, bundles]
+        look: Cables of every thickness, tied into bundles and laid in steel trays, some labelled with tags gone brown with age.
+        take: They are live, tied down, and part of the station.
+      - words: [junction boxes, junction box, boxes, lights]
+        look: "Grey junction boxes with their lids hanging open, each marked in pen: RX 1, RX 2, ARCHIVE, FEED. Their small lights tick green, then amber, then green again."
+      - words: [feed, feed line, collar, splice, tape, newer cable]
+        look: The antenna feed drops through its sealed collar and runs along the tray towards the consoles above. Just below the collar a short length of newer cable has been spliced into it, wrapped in bright tape, and it runs up out of sight towards a service panel behind the consoles.
+        take: Cutting into a live feed would be the quickest way to lose what you came for.
+        verbs:
+          touch: The newer cable is warm, much warmer than the old feed beside it.
+      - words: [ladder, hatch]
+        look: A steel ladder up to the square hatch behind the consoles, and the flicker of the fault codes above it.

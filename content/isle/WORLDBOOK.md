@@ -296,11 +296,17 @@ A sheep track runs along the top of the cliff between thrift and sea campion. Th
 
 Ways: south to The Wreck Strand; north to The Silver Grove; east to Skerrow Hythe, the Green; down to The Tidepools.
 
+**The Sea Cave**
+
+Green light leaks in past the weed behind you and fades a few steps on, where the cave runs back into the cliff. Every wave fills the dark with a slow boom and a long suck of water, and the cold air tastes of salt and iron. Grey driftwood lies wedged on a ledge above your head, far above where any tide should reach. The way out is back through the weed to the [Tidepools].
+
+Ways: out to The Tidepools.
+
 **The Tidepools** (public)
 
 Flat shelves of rock run out into the sea here, pocked with pools as clear as window glass. Crabs sidle away from your shadow, and anemones close like fists when you lean over them. The weed is slick and cold under your hand. West lies the [Wreck Strand]; east, the roofs of the Hythe show above a harbour wall.
 
-Ways: west to The Wreck Strand; east to Skerrow Hythe, the Harbour; up to The Cliff Path.
+Ways: west to The Wreck Strand; east to Skerrow Hythe, the Harbour; up to The Cliff Path; in to The Sea Cave (secret).
 
 **The Wreck Strand** (public, landmark)
 

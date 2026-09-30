@@ -334,8 +334,9 @@ export class World {
       if (current === to) break
       for (const [direction, exit] of Object.entries(this.location(current).exits)) {
         if (!exit) continue
-        // A way that waits for something (M10.30: a rope down the cliff) is the stranger's: people keep to the ordinary ways.
-        if (exit.when?.length) continue
+        // A way that waits for something (M10.30: a rope down the cliff) or a secret one (M10.31) is the stranger's: people
+        // keep to the ordinary ways.
+        if (exit.when?.length || exit.hidden) continue
         // A route closed by a flood or a war (design: effect plans) is no way through.
         if (this.state.closed?.[[current, exit.to].sort().join('|')]) continue
         const next = best + exit.minutes

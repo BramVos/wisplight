@@ -6,6 +6,7 @@ import { noise, regionMap, type RegionMap } from './region'
 import { DEFAULT_PALETTE, type MapPalette } from './palette'
 import { journeyLines, waysTo } from './passages'
 import { farPlaceOf } from '../growth/far'
+import { behindSecret } from '../exits'
 
 // What the map shows (FO, chapter 4, "Wat de kaart laat zien"): places you
 // have been to or seen, exactly; places you have only heard of, as a zone.
@@ -46,6 +47,8 @@ export function knownPlace(world: World, topic: string): KnownPlace | undefined 
   const where = hexOfTopic(world, map, topic)
   if (!where) return undefined
   const player = world.state.player
+  // A place behind a secret way not yet found (M10.31) is not known by having been in its area.
+  if (where.location && !player.seen?.includes(where.location) && behindSecret(world, where.location)) return undefined
   const name = world.content.locations.get(topic)?.name ?? (where.area ? world.content.areas.get(where.area)?.name : undefined) ?? world.content.topics.get(topic)?.name ?? topic
   const visited = (where.area && player.visited?.includes(where.area)) || (where.location && player.seen?.includes(where.location))
   if (visited) return { topic, name, status: 'visited', hex: where.hex }

@@ -130,7 +130,8 @@ export function placeMeasures(content: Content): PlaceMeasure[] {
   return [...content.locations.values()].map((location) => {
     const day = location.description.day
     const text = `${day} ${location.description.night ?? ''}`.toLowerCase()
-    const exits = Object.entries(location.exits).filter(([, e]) => e)
+    // A secret way (M10.31) is one the description must not give away: it does not count.
+    const exits = Object.entries(location.exits).filter(([, e]) => e && !e.hidden)
     const named = exits.filter(([dir, exit]) => {
       const to = content.locations.get(exit!.to)
       // In, out, up and down are everyday words ("in the air"): those ways count only by the place they lead to.

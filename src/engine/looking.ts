@@ -6,9 +6,10 @@ import { maxHp } from './rules/character'
 import { weather } from './weather'
 import { GameClock } from './clock'
 import { allHold } from './quests/engine'
-import type { Location } from './content'
+import type { Direction, Location } from './content'
 import type { World } from './world'
 import type { Deed } from './content'
+import { exitShown } from './exits'
 
 // Looking (M10.4): at yourself, a way out, a place you can see, and a thing,
 // with where it is. What lights up in a description can always be looked at.
@@ -77,7 +78,8 @@ export function lookThere(world: World, words: string): Output | undefined {
   if (!here) return undefined
   const direction = parseDirection(words.split(/\s+/)[0])
   const wanted = words.toLowerCase().replace(/^(the|to)\s+/, '').trim()
-  const exits = Object.entries(here.exits) as [string, { to: string; minutes: number }][]
+  // A secret way not yet found is not there to look through (M10.31).
+  const exits = (Object.entries(here.exits) as [Direction, { to: string; minutes: number }][]).filter(([d]) => exitShown(world, here.id, d))
   const found = direction ? exits.find(([dir]) => dir === direction) : exits.find(([, exit]) => {
     const target = world.location(exit.to)
     return [target.name, ...target.aliases].some((n) => n.toLowerCase() === wanted || n.toLowerCase().replace(/^the\s+/, '') === wanted)

@@ -40,7 +40,7 @@ describe('M10.20: places that read by the rules', () => {
     const base = descriptionCheck(await loadContentFromDir(root, 'base'))
     expect(base.summary).toMatch(/^87 places: 56 words on average .* 18 with a topic in \[brackets\]/)
     const reach = descriptionCheck(await loadContentFromDir(root, 'quietreach'))
-    expect(reach.summary).toMatch(/^10 places: \d+ words on average/)
+    expect(reach.summary).toMatch(/^11 places: \d+ words on average/)
     // A proposal's own places only, compared with the whole world for openings.
     const isle = await loadContentFromDir(root, 'isle')
     const one = descriptionCheck(isle, new Set(['loc_skerrow_headland']))

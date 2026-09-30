@@ -25,7 +25,7 @@ describe('The Quiet Reach, as Bram built it in the app', () => {
     expect(reach.world.calendar).toMatchObject({ era: 'CR', weekdays: ['Primeday', 'Span', 'Relay', 'Anchor', 'Restday'] })
     expect(reach.world.money?.units.map((u) => [u.name, u.value])).toEqual([['credit', 100], ['bit', 1]])
     expect(reach.world.faiths.map((f) => f.id)).toEqual(['keeping', 'open_sky'])
-    expect(reach.locations.size).toBe(10)
+    expect(reach.locations.size).toBe(11) // with the cable gallery behind the hatch (M10.31)
     expect([...reach.npcs.keys()]).toEqual(['npc_mara_venn', 'npc_ilyan_sorell', 'npc_tessa_rook', 'npc_niko_serrin', 'npc_edda_vale', 'npc_sana_holt'])
     expect(reach.passages.size).toBe(3)
     expect(reach.world.law).toMatchObject({ npc: 'npc_mara_venn' })

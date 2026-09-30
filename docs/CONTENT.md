@@ -102,19 +102,21 @@ A list; each has:
 | improvise | An act the rules do not know, done here, may be improvised (M10.16): what it can mean and what may happen. | a map: domain, may, fallback, takes | no |  |
 | description | What the stranger sees: three to five sentences, second person, present tense, one sense other than sight, a hint at an exit; by day, and at night when it reads otherwise. | a map: day, night | yes |  |
 | variants | Other descriptions once a flag is set (the doorstep without the cat, once Fenna is home), or while conditions hold (M10.6: the mill turning again once De Zwaan is mended). The last that fits is shown. | list of a map: flag, when, day, night | no | [] |
-| exits | The ways out, per direction: the location it leads to, the minutes on foot, and a lock if there is one. | a map of names to a map: to, minutes, lock, when, not_yet | no | {} |
+| exits | The ways out, per direction: the location it leads to, the minutes on foot, and a lock if there is one. | a map of names to a map: to, minutes, lock, when, not_yet, hidden | no | {} |
 | objects | The objects that stand here, each of an object type, with their own state and owner. | list of a map: id, type, name, description, owner, household, staff, provider, hours, days, ... | no | [] |
 | services | What can be bought, sold, hired or rented here, from whom, and when. | list of a map: id, sells, buys, lodging, provider, staff, premises, hours, days, supply, ... | no | [] |
 | items | Things lying here at the start, by item id and count. | a map of names to number | no | {} |
 | pos | Where on the map of the land it lies, in km, when not at its area's position (a tow path, a weir). | 2 values | no |  |
 | forage | Grounds of the zone that can be gathered from here (M10.5): the fen's herbs, the shore's kelp. | list of text | no | [] |
-| hidden | What lies hidden here (M10.5): SEARCH finds it. | list of a map: id, dc, text, item, qty, topic, when, words, verbs | no | [] |
+| hidden | What lies hidden here (M10.5): SEARCH finds it. | list of a map: id, dc, text, item, qty, topic, when, words, verbs, exit | no | [] |
 | details | Things the description names that you can look at and handle (after the M10 playtest): the hollow, the bowl of milk. | list of a map: words, look, take, verbs | no | [] |
 | arrival | A place worth a moment (M10.11): two or three sentences for the first time you reach it, in mist, at night or in a storm if it reads otherwise then, and how it looks when it comes into view from afar (a landmark). | a map: text, mist, night, storm, far | no |  |
 
 `arrival`: two or three sentences for the first time the stranger reaches it (with `night`, `mist` or `storm` where it reads otherwise then, and `far` for how a landmark looks from afar): on the start place, and on every gate or landmark. Left out, a place gets no card.
 
 Doing things with the world (M10.30): a verb of a detail may be a deed instead of a line: `when` (conditions, such as `{ has: saw }`), `not_yet`, `check`, `effects` (as in a quest: `set` a flag, `take` or `give` a thing, a fact), `text`, `once` and `done`. An exit may have `when` and `not_yet`: the way opens when they hold (the roof once `tree_down` is set), and people keep to the other ways. Something `hidden` may have `when` (`{ knows: <topic> }`), `words` and `verbs`: then only someone who knows of it finds it, with SEARCH <words> or one of its verbs, never by a roll. A `lock` opens with `key`, `word` (a code the stranger types or says; `word_text` for what happens) or both.
+
+A secret way (M10.31): an exit with `hidden: true` is not in the exits, on the plan or taken until it is found, by something `hidden` of the place with `exit: <direction>` (SEARCH, or SEARCH <words>) or once its `when` holds (a deed that sets a flag); give it one of the two, and never name it in the description. People keep to the other ways.
 
 ## professions (data/professions.yaml)
 

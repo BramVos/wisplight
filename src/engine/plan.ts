@@ -2,6 +2,7 @@ import { knownName } from './acquaintance'
 import { personColour } from './colour'
 import type { Direction } from './content'
 import type { World } from './world'
+import { exitShown, shownExits } from './exits'
 
 // A plan of here (M10.29 I; set out with Bram on 29 September 2026, the board
 // "Wisplight plattegrond van hier"): the places of this settlement the
@@ -129,7 +130,7 @@ export function planOf(world: World, areaId: string): PlanData | undefined {
   const boxes: PlanBox[] = shown.map((l) => {
     const [col, row] = cells.get(l.id)!
     const kind = kindOf(l.id)!
-    const words = kind === 'heard' ? [] : (Object.keys(l.exits) as Direction[]).filter((d) => !STEP[d])
+    const words = kind === 'heard' ? [] : shownExits(world, l.id).filter((d) => !STEP[d])
     const met = Object.entries(people)
       .filter(([id, p]) => p.seen?.where === l.id && world.content.npcs.has(id) && (world.state.relations?.[id]?.familiarity ?? 0) > 0 && world.alive(id))
       .map(([id]) => ({ id, name: knownName(world, id), colour: personColour(world, id) }))
@@ -142,6 +143,8 @@ export function planOf(world: World, areaId: string): PlanData | undefined {
     // What you only heard of has no ways you know.
     if (box.kind === 'heard') continue
     for (const [dir, exit] of Object.entries(world.content.locations.get(box.id)!.exits) as [Direction, { to: string }][]) {
+      // A secret way not yet found is not on the plan (M10.31); the places keep their cells all the same.
+      if (!exitShown(world, box.id, dir)) continue
       // The way to a place only heard of is not known: it stays a way not taken.
       if (on.has(exit.to) && kindOf(exit.to) !== 'heard') {
         if (!links.some((k) => (k.from === exit.to && k.to === box.id) || (k.from === box.id && k.to === exit.to))) links.push({ from: box.id, to: exit.to })

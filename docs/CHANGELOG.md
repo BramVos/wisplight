@@ -1,5 +1,21 @@
 # Changelog
 
+## M10.31 deel: een geheime uitgang (B), lopen naar wat je hoorde (D) en wat iedereen weet (F), 30 september 2026
+
+- **Een geheime uitgang.** Een uitgang kan geheim zijn. Dan staat hij niet bij de uitgangen, niet op de plattegrond en niet bij Tab, en je kunt hem niet nemen tot je hem gevonden hebt: met SEARCH (een worp), met SEARCH en de plek (`search behind the consoles`, zonder worp), of doordat een daad hem opent. Mensen gebruiken hem nooit.
+- **Lopen naar wat je hoorde.** `walk to` een plek waarvan je hoorde maar die je niet zag, loopt tot de laatste plek die je kent en zegt dan welke kant men je wees. Een plek waarvan je nooit hoorde, blijft "You know no such place."
+- **Wat iedereen in de Nethermarch weet.** Acht onderwerpen over de volken, het geld, de mannen van de graaf, de burgers van Waagdam en de priorij, die RECALL vanaf het begin kent.
+
+Testen: ga in The Quiet Reach naar de Orison Listening Room. De uitgangen zijn alleen `down`. Kijk naar de consoles, typ `search behind the consoles` en daarna `in`: je komt in de Cable Gallery. Op Skerrow, bij de Tidepools: `look at weed`, `part weed`, `in`. In de Nethermarch: `recall stuivers`. Tests in `tests/m1031.test.ts`.
+
+Kosten: geen nieuwe aanroep. Het vaste deel van de schrijfhulp, de wereldstappen en de streekronde wordt ongeveer 90 tokens langer door de regel over geheime uitgangen in het contract en de stap Plekken; dat staat in de cache.
+
+Wat de editor en de kroniekverteller leerden: het sjabloon van een plek heeft een geheime uitgang en iets verborgens dat hem onthult; het contract, de stap Plekken van de wereldgids en `docs/NEW-WORLD.md` noemen `hidden` op een uitgang en `exit` op iets verborgens; Check noemt een geheime uitgang die niets onthult. De plekkenmaat telt een geheime uitgang niet mee.
+
+Bekende gaten: een uitgang met `when` die niet geheim is, staat nog steeds in de lijst; zo is hij bedoeld, als een weg die wacht. Loop je met WALK TO over de kaart naar een plek achter zo'n wachtende weg, dan let de kaart niet op de `when`.
+
+Ontwerp: functioneel ontwerp, hoofdstuk 4, alinea "Stand na M10.31: een geheime uitgang".
+
 ## M10.31 deel: een code als daad in wat het model schrijft (C), 30 september 2026
 
 - **Een woord als daad.** Een stadium of een afloop in een verhaal van de kroniekverteller kan nu een woord zijn in plaats van een commando: een code die je op een plek intypt (`type 4471`), of een wachtwoord dat je in een gesprek tegen iemand zegt. Het spel wacht dan op dat woord (de voorwaarde `said`) en toont daarna wat de daad oplevert. Een afloop via een woord telt als een eigen weg, naast praten, geven en iets doen.

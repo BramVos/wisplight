@@ -44,6 +44,7 @@ import { deed } from './social/deeds'
 import { recognisedSale, refusedTrade, returnStolen } from './social/crime'
 import { lodgingLines } from './lodgings'
 import { engageFarPlace } from './outlines'
+import { exitShown, shownExits } from './exits'
 
 // Player commands that need no AI. Each returns lines of output; commands that
 // take time call `pass(minutes)`, which runs the world and returns what the
@@ -410,7 +411,8 @@ export function describeRoom(world: World): Output {
 }
 
 export function exitLine(world: World): string {
-  const exits = Object.keys(world.location(world.state.player.location).exits) as Direction[]
+  // A secret way not yet found is no exit to see (M10.31).
+  const exits = shownExits(world, world.state.player.location)
   const across = crossCountryLine(world, world.state.player.location)
   if (exits.length === 0) return across ?? 'There is no obvious way out.'
   return `Exits: ${exits.join(', ')}${across ? `\n${across}` : ''}`
@@ -471,7 +473,7 @@ export function walkWithin(host: CommandHost, words: string): Output[] | undefin
   while (queue.length && !from.has(target.id)) {
     const at = queue.shift()!
     for (const [dir, exit] of Object.entries(world.location(at).exits) as [Direction, { to: string }][]) {
-      if (from.has(exit.to) || exit.to === here || !seen.has(exit.to)) continue
+      if (from.has(exit.to) || exit.to === here || !seen.has(exit.to) || !exitShown(world, at, dir)) continue
       from.set(exit.to, [at, dir])
       queue.push(exit.to)
     }
@@ -560,7 +562,7 @@ function exitsTo(world: World, fits: (id: string) => boolean, most = 12): Direct
     const at = queue.shift()!
     if (depth.get(at)! >= most || isHexId(at)) continue
     for (const [dir, exit] of Object.entries(world.location(at).exits) as [Direction, { to: string }][]) {
-      if (from.has(exit.to) || exit.to === here) continue
+      if (from.has(exit.to) || exit.to === here || !exitShown(world, at, dir)) continue
       from.set(exit.to, [at, dir])
       depth.set(exit.to, depth.get(at)! + 1)
       if (fits(exit.to)) {
@@ -630,7 +632,7 @@ export function completionsHere(world: World, journal: string[]): string[] {
   const things = lookOptions(world).map((o) => o.label).filter((name) => !world.npcsAt(here).some((id) => callName(world.npc(id)) === name))
   const pack = Object.entries(world.state.player.inventory).filter(([, n]) => n > 0).map(([id]) => itemName(world.content, id, 1))
   const seen = new Set<string>()
-  return [...journal, ...people, ...Object.keys(world.location(here).exits), ...things, ...pack].filter((word) => word && !seen.has(word.toLowerCase()) && seen.add(word.toLowerCase()))
+  return [...journal, ...people, ...shownExits(world, here), ...things, ...pack].filter((word) => word && !seen.has(word.toLowerCase()) && seen.add(word.toLowerCase()))
 }
 
 function examineHere(world: World, target: string): Output | undefined {
@@ -685,7 +687,7 @@ function go(host: CommandHost, args: string[]): Output[] {
   let direction = parseDirection(args[0])
   if (!direction && args.length > 0) {
     const wanted = args.join(' ').toLowerCase().replace(/^(the|to)\s+/, '')
-    const exits = Object.entries(location.exits) as [Direction, { to: string }][]
+    const exits = (Object.entries(location.exits) as [Direction, { to: string }][]).filter(([d]) => exitShown(world, player.location, d))
     direction = exits.find(([, exit]) => {
       const target = world.location(exit.to)
       return [target.name, ...target.aliases].some((name) => name.toLowerCase().includes(wanted))
@@ -698,7 +700,7 @@ function go(host: CommandHost, args: string[]): Output[] {
   if (!direction) return [error('Go where? Try a direction such as north, or the name of a place you can see.')]
   // Out where there is no door called out (M10.29 V): the way that leads out onto the land.
   if (direction === 'out' && !location.exits.out) {
-    const open = (Object.entries(location.exits) as [Direction, { to: string }][]).find(([, exit]) => isHexId(exit.to) || canSetOut(world, exit.to) || (world.content.locations.get(exit.to)?.tags ?? []).includes('outdoor'))
+    const open = (Object.entries(location.exits) as [Direction, { to: string }][]).find(([d, exit]) => exitShown(world, player.location, d) && isHexId(exit.to) || canSetOut(world, exit.to) || (world.content.locations.get(exit.to)?.tags ?? []).includes('outdoor'))
     if (open) direction = open[0]
   }
   const exit = location.exits[direction]
@@ -708,7 +710,8 @@ function go(host: CommandHost, args: string[]): Output[] {
     if (Array.isArray(result)) return result
     return [...result.outputs.slice(1), describeRoom(world)]
   }
-  if (!exit) return [error(`You can't go ${direction} from here.`)]
+  // A secret way not yet found is as good as none (M10.31).
+  if (!exit || !exitShown(world, player.location, direction)) return [error(`You can't go ${direction} from here.`)]
   // A way that opens when something holds (M10.30: the roof, once the tree is down), as in a quest.
   if (exit.when?.length && !allHold(world, exit.when)) return [text(exit.not_yet ?? `You can't go ${direction} from here, not yet.`)]
   const closed = closedBetween(world, player.location, exit.to)
@@ -730,7 +733,7 @@ function go(host: CommandHost, args: string[]): Output[] {
  */
 function whatHere(world: World): string {
   const here = world.state.player.location
-  const ways = Object.keys(world.location(here).exits)
+  const ways = shownExits(world, here)
   const people = world.npcsAt(here).map((id) => (knowsOfPerson(world, id) ? callName(world.npc(id)) : publicShort(world, id)))
   const uses = world
     .location(here)
@@ -789,7 +792,7 @@ function wake(host: CommandHost, args: string[]): Output[] {
 function knock(host: CommandHost, args: string[]): Output[] {
   const { world } = host
   const here = world.location(world.state.player.location)
-  const doors = (Object.entries(here.exits) as [Direction, { to: string }][]).filter(([, exit]) => world.location(exit.to).tags.includes('private') && owners(world, exit.to).length > 0)
+  const doors = (Object.entries(here.exits) as [Direction, { to: string }][]).filter(([d, exit]) => exitShown(world, here.id, d) && world.location(exit.to).tags.includes('private') && owners(world, exit.to).length > 0)
   const wanted = args.join(' ').toLowerCase().replace(/^(on|at|the|door|of)\s+/g, '')
   const door = wanted ? doors.find(([dir, exit]) => dir === parseDirection(wanted) || world.location(exit.to).name.toLowerCase().includes(wanted)) : doors.length === 1 ? doors[0] : undefined
   if (!door) return [error(doors.length === 0 ? "There's no door to knock on here." : `Knock on which door? ${doors.map(([dir, exit]) => `${world.location(exit.to).name} (${dir})`).join(', ')}.`)]

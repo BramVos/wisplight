@@ -285,8 +285,9 @@ export const HiddenSchema = z
       .array(ConditionSchema)
       .optional()
       .describe('Found only by someone who knows of it (M10.30: a stone you heard of): with these conditions it is never found by a roll, only by SEARCH <words> or one of its verbs, once they hold ({ knows: <topic> }).'),
-    words: z.array(z.string()).optional().describe('What the stranger names to find it: "loose stone", "stone". Needed with `when`.'),
+    words: z.array(z.string()).optional().describe('What the stranger names to find it: "loose stone", "stone". Needed with `when`; without `when` (M10.31), SEARCH <words> finds it at once and a plain SEARCH by a roll.'),
     verbs: z.array(z.string()).optional().describe('Verbs besides SEARCH that find it: [press, push].'),
+    exit: z.enum(DIRECTIONS).optional().describe('A hidden exit of this place it reveals (M10.31), by its direction: once found, the way shows and can be taken.'),
   })
   .strict()
 export type Hidden = z.infer<typeof HiddenSchema>
@@ -372,6 +373,10 @@ const Exit = z.object({
   lock: LockSchema.optional(),
   when: z.array(ConditionSchema).optional().describe('What must hold to go this way (M10.30), as in a quest: the roof, once the tree is down ({ flag: tree_down }).'),
   not_yet: z.string().optional().describe('Said when it does not hold: "The roof is out of reach."'),
+  hidden: z
+    .boolean()
+    .optional()
+    .describe('A secret way (M10.31): not in the exits, on the plan or taken until it is found, by something hidden of this place that names it (hidden.exit) or once its `when` holds; people keep to the other ways.'),
 })
 
 export const LocationSchema = z.object({
@@ -1518,11 +1523,16 @@ function checkReferences(world: WorldDef | undefined, c: Omit<Content, 'world'>)
       if (!exit) continue
       location(exit.to, `${loc.id}.exits.${direction}`)
       lock(exit.lock, `${loc.id}.exits.${direction}`)
+      // A secret way nothing reveals is a way nobody takes (M10.31).
+      if (exit.hidden && !exit.when?.length && !loc.hidden.some((h) => h.exit === direction)) {
+        problems.push(`${loc.id}.exits.${direction}: a hidden way that nothing reveals (a hidden entry with exit: ${direction}, or a when)`)
+      }
       const back = c.locations.get(exit.to)
       if (back && !Object.values(back.exits).some((e) => e?.to === loc.id) && !loc.tags.includes('one_way')) {
         problems.push(`${loc.id}: exit ${direction} to ${exit.to} has no way back`)
       }
     }
+    for (const h of loc.hidden) if (h.exit && !loc.exits[h.exit]) problems.push(`${loc.id}.hidden.${h.id}: it reveals the way ${h.exit}, which the place does not have`)
     for (const obj of loc.objects) {
       if (!c.objectTypes.has(obj.type)) problems.push(`${loc.id}.${obj.id}: unknown object type ${obj.type}`)
       lock(obj.lock, `${loc.id}.${obj.id}`)

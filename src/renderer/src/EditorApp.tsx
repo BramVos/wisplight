@@ -704,9 +704,11 @@ function templateFor(kind: EntityKind, view: EditorView): Raw {
         area,
         tags: ['public'],
         description: { day: 'Three to five sentences, in the second person. Something you hear or smell. A hint at an exit.\n' },
-        // A way that opens when something holds, and a deed that opens it (M10.30); leave them out where nothing waits.
-        exits: { north: { to: place }, up: { to: place, when: [{ flag: 'way_up_open' }], not_yet: 'Said while it is shut.' } },
+        // A way that opens when something holds, and a deed that opens it (M10.30); a secret way, and what finds it
+        // (M10.31); leave them out where nothing waits.
+        exits: { north: { to: place }, up: { to: place, when: [{ flag: 'way_up_open' }], not_yet: 'Said while it is shut.' }, in: { to: place, hidden: true } },
         details: [{ words: ['thing to handle'], look: 'What it looks like.', verbs: { move: { when: [], text: 'What happens.', effects: [{ set: 'way_up_open' }] } } }],
+        hidden: [{ id: 'secret_way', dc: 12, text: 'What the stranger finds: the way in.', exit: 'in', words: ['where to look'] }],
       }
     case 'area':
       return { id: 'new_area', name: 'A new area', kind: 'hamlet', summary: 'What it is, in one sentence.' }

@@ -201,7 +201,7 @@ export function worldBook(content: Content, input: WorldBookInput = {}): string 
     places.push(`### ${a.name}`, '', `<!-- picture:area_${a.id} -->`, '')
     for (const l of here) {
       places.push(`**${l.name}**${l.tags.length ? ` (${l.tags.join(', ')})` : ''}`, '', l.description.day.trim().replace(/\s*\n\s*/g, ' '), '')
-      const exits = Object.entries(l.exits).map(([dir, e]) => `${dir} to ${place(e.to)}`)
+      const exits = Object.entries(l.exits).map(([dir, e]) => `${dir} to ${place(e.to)}${e.hidden ? ' (secret)' : ''}`)
       const things = l.objects.map((o) => o.name ?? content.objectTypes.get(o.type)?.name ?? o.type)
       if (exits.length || things.length) places.push([exits.length ? `Ways: ${exits.join('; ')}.` : '', things.length ? `Here: ${things.join(', ')}.` : ''].filter(Boolean).join(' '), '')
     }

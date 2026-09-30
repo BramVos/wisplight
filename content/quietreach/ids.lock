@@ -6,7 +6,7 @@ ids:
   quietreach/areas/coastal_traverse/locations.yaml:
     location: [loc_coastal_service_path, loc_ridge_shelter]
   quietreach/areas/orison_ridge/locations.yaml:
-    location: [loc_orison_listening_room]
+    location: [loc_orison_listening_room, loc_orison_cable_gallery]
   quietreach/areas/port_vesper/locations.yaml:
     location: [loc_arrival_lock, loc_commons, loc_guest_quarters, loc_medical_bay]
   quietreach/areas/port_vesper/npcs.yaml:

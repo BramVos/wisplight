@@ -68,8 +68,28 @@ locations:
         minutes: 8
         when: [{ flag: rope_on_the_cliff }]
         not_yet: The cliff above the pools is sheer and wet. Without a rope from the top there is no way up.
+      # A secret way (M10.31): the cave behind the weed shows once the weed is parted.
+      in:
+        to: loc_skerrow_sea_cave
+        minutes: 3
+        hidden: true
+        when: [{ flag: sea_cave_found }]
     forage: [kelp]
     details:
+      - words: [weed, curtain of weed, weed curtain, back of the pools, rock face]
+        look: At the back of the pools long brown weed hangs down the rock face like a heavy curtain. When a wave comes in it stirs inward, as if something behind it breathes.
+        verbs:
+          part:
+            text: You drag the cold weed aside in armfuls. Behind it the rock opens into a low cave mouth, black and booming, and the air that comes out of it is colder than the sea wind.
+            effects: [{ set: sea_cave_found }]
+            minutes: 2
+            done: The weed hangs aside where you parted it, and the cave mouth stands open behind it.
+          pull:
+            text: You drag the cold weed aside in armfuls. Behind it the rock opens into a low cave mouth, black and booming, and the air that comes out of it is colder than the sea wind.
+            when: [{ not_flag: sea_cave_found }]
+            not_yet: The weed hangs aside where you parted it, and the cave mouth stands open behind it.
+            effects: [{ set: sea_cave_found }]
+            minutes: 2
       - words: [wall, harbour wall]
         look: East, above the rocks, the harbour wall of the Hythe.
       - words: [pools, crabs, anemones]
@@ -120,3 +140,27 @@ locations:
       - words: [thrift, campion, sea campion]
         look: Thrift and sea campion grow along the cliff top, pink and white.
     pos: [1.56, 2.22]
+
+  # Behind the weed at the back of the Tidepools (M10.31): a secret way, found by parting the weed.
+  - id: loc_skerrow_sea_cave
+    name: The Sea Cave
+    area: skerrow_shore
+    aliases: [sea cave, cave, the cave]
+    summary: A low cave behind the weed at the back of the Tidepools, where the sea booms in the dark.
+    sound: { kind: surf, level: 0.8 }
+    description:
+      day: |
+        Green light leaks in past the weed behind you and fades a few steps on, where the cave runs back into the cliff. Every wave fills the dark with a slow boom and a long suck of water, and the cold air tastes of salt and iron. Grey driftwood lies wedged on a ledge above your head, far above where any tide should reach. The way out is back through the weed to the [Tidepools].
+      night: |
+        It is black as pitch in here, and you find the walls by touch, wet and ridged under your fingers. The sea booms and sucks somewhere ahead of you, closer than you like. Behind you a paler dark shows where the weed hangs across the mouth, the way back out to the pools.
+    exits:
+      out: { to: loc_skerrow_tidepools, minutes: 3 }
+    details:
+      - words: [driftwood, ledge, wood]
+        look: Grey driftwood, bleached and dry, wedged on a ledge far above the tide line. Only a great storm throws the sea this high.
+      - words: [walls, rock, cliff]
+        look: Black rock, ridged and wet, running back into a dark you cannot see the end of.
+      - words: [sea, wave, waves, boom, water]
+        look: Somewhere deeper in, the sea comes and goes through a gap you cannot see, with a slow boom and a long suck of water.
+      - words: [weed, mouth, cave mouth]
+        look: The weed hangs across the mouth behind you, lit green by the day outside.

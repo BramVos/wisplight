@@ -220,11 +220,17 @@ What the main line keeps hidden until its stage (a fixed truth of this world):
 
 <!-- picture:area_orison_ridge -->
 
+**Cable Gallery** (research)
+
+You crouch in a low gallery under the station floor, where bundled cables run in trays along both walls. The air is warm and dry and smells of hot dust. Junction boxes stand open along the run, lights ticking green and amber, and a feed line as thick as your wrist comes down from the antenna through a collar overhead. The ladder climbs back to the [Orison Listening Room].
+
+Ways: out to Orison Listening Room.
+
 **Orison Listening Room** (landmark, research)
 
 Cramped and lined with receiving consoles, half dark and the rest flickering fault codes, this room hums with a rack of recording drives beside a desk where the maintenance logs lie in a damp-swollen binder. Through the wide window the antenna rises into cloud, cables groaning. A speaker gives the same short pattern of tones, then silence. Stairs lead down the steep route to [Ridge Shelter].
 
-Ways: down to Ridge Shelter.
+Ways: down to Ridge Shelter; in to Cable Gallery (secret).
 
 ### Port Vesper
 

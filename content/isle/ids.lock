@@ -12,7 +12,7 @@ ids:
   isle/areas/hythe/npcs.yaml:
     npc: [npc_maren, npc_brannoc, npc_pip, npc_wenna]
   isle/areas/shore/locations.yaml:
-    location: [loc_skerrow_wreck_strand, loc_skerrow_tidepools, loc_skerrow_cliff_path]
+    location: [loc_skerrow_wreck_strand, loc_skerrow_tidepools, loc_skerrow_cliff_path, loc_skerrow_sea_cave]
   isle/data/aftermath.yaml:
     aftermath: [asked_about, request_open, befriended, theft_mended_own, theft_mended_caught, broken_promise, promise_kept, made_good, craft_rank, death, lost, departure, lamp_lit, pupil_learnt, grove_answers, pulse_tamsin, pulse_sail, pulse_errand]
   isle/data/areas.yaml:
