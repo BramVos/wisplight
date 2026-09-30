@@ -17,7 +17,7 @@ const reach = await loadContentFromDir(resolve(import.meta.dirname, '../content'
 const said = (out: { text: string }[]) => out.map((o) => o.text).join('\n')
 
 // Names and words of the Nethermarch that another world never uses (as in m1017.test.ts).
-const NETHERMARCH = /\b(Nethermarch|Holleveen|Graafhaven|schout|guilders?|gulden|stuivers?|Waag(?:dam)?|Veenhoek|Molenend|the Count|Lantern Chapel|Grey Rider|Wild Hunt|Haakman|Aaltje|Wouter|Mirte|Maandag|Rustdag|Blackmere|polder)\b/
+const NETHERMARCH = /\b(Nethermarch|Holleveen|Graafhaven|schout|guilders?|gulden|stuivers?|Waag(?:dam)?|Veenhoek|Molenend|Count Aelbrecht|the Count's|Lantern Chapel|Grey Rider|Wild Hunt|Haakman|Aaltje|Wouter|Mirte|Maandag|Rustdag|Blackmere|polder)\b/
 
 describe('The Quiet Reach, as Bram built it in the app', () => {
   it('loads with its twelve chapters in place, and warns only of what is still to come', () => {
@@ -29,8 +29,9 @@ describe('The Quiet Reach, as Bram built it in the app', () => {
     expect([...reach.npcs.keys()]).toEqual(['npc_mara_venn', 'npc_ilyan_sorell', 'npc_tessa_rook', 'npc_niko_serrin', 'npc_edda_vale', 'npc_sana_holt'])
     expect(reach.passages.size).toBe(3)
     expect(reach.world.law).toMatchObject({ npc: 'npc_mara_venn' })
-    // The imports wait for the supply ship, the far places have no origin yet, and it has no stories yet (M10.30): nothing else.
-    expect(warnings(reach).filter((w) => !/made nowhere and brought by no route|no origin, so nobody knows where it belongs|has no stories/.test(w))).toEqual([])
+    // The imports wait for the supply ship, the far places have no origin yet, and its storylines (M10.30) have one ending
+    // each until item 6: nothing else.
+    expect(warnings(reach).filter((w) => !/made nowhere and brought by no route|no origin, so nobody knows where it belongs|1 solution, the design asks/.test(w))).toEqual([])
   })
 
   it('keeps its contract: every kind is filled or takes its neutral default', () => {

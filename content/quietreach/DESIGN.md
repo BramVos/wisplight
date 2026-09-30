@@ -1419,3 +1419,13 @@
 - Questions back: Should any edge lead somewhere named, for example east toward the mining ground or the port toward Harrow Station by ship? If so, I would add a far-place topic for it and link it under `toward`.
 - Changed: region vesper_coast
   world.yaml: map
+
+### 2026-09-30 09:29 · Stories · accepted
+- Asked: Bram leaves the hidden truth to you: choose it now, within the frame and CHRONICLER.md; it becomes a fixed truth of this world. It may settle who changed the recordings and why, and how the signal comes to match the secret drive test on Nacre; keep the origin of the signal itself (what made it, and whether it is an invitation, a warning or a beacon) open, as CHRONICLER.md says. No deaths. Two small lines he would like at Port Vesper: Tessa's doubt about the drive, and Mara's worry about the supplies.
+- Chronicler: 3 storylines: Short on the Count (Port Vesper); A Second Opinion (Port Vesper); The Orison Recordings (The Quiet Reach).
+- Questions back: none
+- Changed: quest story_short_on_the_count
+  quest story_a_second_opinion
+  quest story_the_orison_recordings
+  CHRONICLER.md
+- Reason: Bram, 30 September 2026: keep it as it is; more ways to end a line come with item 6.

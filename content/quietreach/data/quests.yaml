@@ -1,0 +1,301 @@
+quests:
+  - id: story_short_on_the_count
+    name: Short on the Count
+    kind: mystery
+    summary: Mara Venn's count of the emergency heating and water spares comes up short, and the stranger follows the paperwork to where they went.
+    givers: [npc_mara_venn]
+    starts: { talk: [npc_mara_venn] }
+    ask: Three crates of heating and water spares aren't where my count says they should be. I don't have time to chase paper, and nobody here will tell me no to my face. You're new, so you owe nobody a favour. Would you look?
+    stages:
+      - id: s1
+        text: Mara Venn says three crates of emergency heating and water spares are missing from her count. Cargo comes in through the Arrival Lock, and the manifests are logged there.
+        goal: Compare the cargo manifests at the Arrival Lock
+        knows:
+          npc_mara_venn: Mara knows three crates of heating and water spares are missing from her count; she does not know where they went or who moved them.
+          npc_ilyan_sorell: Dr Sorell knows he relisted the spares as research stock for a Peregrine test; he will not say so unless he is shown the manifest.
+          npc_sana_holt: Sana knows Mara has been recounting the stores at night; she knows nothing of where the spares went.
+        next:
+          - when:
+              - { flag: story_short_on_the_count_1 }
+            to: s2
+      - id: s2
+        text: The manifest shows that Dr Sorell relisted the emergency spares as research stock. He is the one who can say why.
+        goal: Ask Dr Sorell about the relisted spares
+        knows:
+          npc_mara_venn: Mara knows the spares are still missing from her count; she does not yet know the stranger has traced them to Sorell's entry.
+          npc_ilyan_sorell: Dr Sorell knows the stranger has seen the manifest; he admits relisting the spares for a Peregrine test and says he meant to return them.
+        next:
+          - when:
+              - { flag: story_short_on_the_count_2 }
+            to: s3
+      - id: s3
+        text: Dr Sorell has admitted he moved the spares and agreed to return them. Mara Venn should hear it from you before she hears it from anyone else.
+        goal: Tell Mara what you found
+        knows:
+          npc_mara_venn: Mara knows Sorell relisted the emergency spares for a Peregrine test and has agreed to return them; she is angry, but she keeps it to the count.
+          npc_ilyan_sorell: Dr Sorell knows the stranger has told Mara; he is returning the spares and expects her to hold it against him.
+        next: []
+    actions:
+      - id: a1
+        say: [compare (?:(?:the|a|an) )?cargo (?:(?:the|a|an) )?manifests]
+        intent: compare the cargo manifests
+        at: [loc_arrival_lock]
+        when:
+          - { not_flag: story_short_on_the_count_1 }
+        effects:
+          - { set: story_short_on_the_count_1 }
+        text: The crates arrived on the last supply run. They were logged as emergency stock, then entered again the next day as research stock under Dr Sorell's authority, and after that they drop off the settlement's count.
+        once: false
+      - id: a2
+        say: [ask (?:(?:the|a|an) )?sorell (?:(?:the|a|an) )?about (?:(?:the|a|an) )?spares]
+        intent: ask Sorell about the spares
+        at: [loc_guest_quarters]
+        with: npc_ilyan_sorell
+        when:
+          - { flag: story_short_on_the_count_1 }
+          - { not_flag: story_short_on_the_count_2 }
+        effects:
+          - { set: story_short_on_the_count_2 }
+        text: Sorell looks at the entry for a long moment. Then he admits he moved the spares for a Peregrine test and meant to put them back before anyone needed them. He agrees they should go back to the emergency stores.
+        once: false
+      - id: a3
+        say: [tell (?:(?:the|a|an) )?mara (?:(?:the|a|an) )?about (?:(?:the|a|an) )?spares]
+        intent: tell Mara about the spares
+        at: [loc_arrival_lock]
+        with: npc_mara_venn
+        when:
+          - { flag: story_short_on_the_count_2 }
+          - { not_flag: story_short_on_the_count_3 }
+        effects:
+          - { set: story_short_on_the_count_3 }
+        text: Mara listens without interrupting, then writes the crates back into her count. She says nothing kind about Sorell, but she thanks you plainly and asks you to tell her if you ever see it happen again.
+        once: false
+    outcomes:
+      - id: done
+        name: Back on the count
+        text: The heating and water spares go back to the emergency stores, and Mara's count matches her shelves again. From now on she reads every research requisition twice, and she remembers who told her the truth.
+        when:
+          - { flag: story_short_on_the_count_3 }
+
+  - id: story_a_second_opinion
+    name: A Second Opinion
+    kind: personal
+    summary: Tessa Rook doubts the Peregrine's drive, and she wants someone from outside the settlement to read her test notes before she decides whether to say so on the record.
+    givers: [npc_tessa_rook]
+    starts: { talk: [npc_tessa_rook] }
+    ask: Everyone here tells me the readings are fine because the board shows green. A green light isn't a second opinion. You don't work for the programme. Will you look at my notes and tell me if I'm seeing things?
+    stages:
+      - id: s1
+        text: Tessa Rook has doubts about the Peregrine's drive that she has kept mostly to herself. She wants to talk first, somewhere ordinary.
+        goal: Hear Tessa out in the Commons
+        knows:
+          npc_tessa_rook: Tessa knows the drive readings drift during tests in a way she cannot explain; she does not know why, and she will not guess past her own numbers.
+          npc_ilyan_sorell: Dr Sorell knows Tessa has doubts about the drive; he believes the drift is instrument noise and says so.
+        next:
+          - when:
+              - { flag: story_a_second_opinion_1 }
+            to: s2
+      - id: s2
+        text: Tessa keeps her test notes in the Guest Quarters, away from the hangar logs. She has asked you to read them without her looking over your shoulder.
+        goal: Read Tessa's test notes in the Guest Quarters
+        knows:
+          npc_tessa_rook: Tessa knows the stranger has read her notes; she wants an honest answer, not comfort, and she means to decide whether to raise her doubt openly.
+          npc_ilyan_sorell: Dr Sorell knows only that Tessa has been talking to the stranger; he does not know what she showed them.
+        next: []
+    actions:
+      - id: a1
+        say: [hear (?:(?:the|a|an) )?tessa (?:(?:the|a|an) )?out]
+        intent: hear Tessa out
+        at: [loc_guest_quarters]
+        with: npc_tessa_rook
+        when:
+          - { not_flag: story_a_second_opinion_1 }
+        effects:
+          - { set: story_a_second_opinion_1 }
+        text: Over a cold cup, Tessa tells you about drift in the drive readings during test runs, which the research lead calls instrument noise. She doesn't claim to know what it means. She only knows she can't explain it, and she hates signing off on what she can't explain.
+        once: false
+      - id: a2
+        say: [read (?:(?:the|a|an) )?tessa's (?:(?:the|a|an) )?test (?:(?:the|a|an) )?notes]
+        intent: read Tessa's test notes
+        at: [loc_guest_quarters]
+        when:
+          - { flag: story_a_second_opinion_1 }
+          - { not_flag: story_a_second_opinion_2 }
+        effects:
+          - { set: story_a_second_opinion_2 }
+        text: Her notes are careful and dated, with every run logged. The drift is there, run after run, and it does not look like ordinary noise. You can't say what it is either, but she was not imagining it.
+        once: false
+    outcomes:
+      - id: done
+        name: Not alone with it
+        text: Tessa has someone who has read her numbers and did not wave them away. She decides to put her doubt on record at the next meeting instead of carrying it alone, whatever the research lead says.
+        when:
+          - { flag: story_a_second_opinion_2 }
+
+  - id: story_the_orison_recordings
+    name: The Orison Recordings
+    kind: main
+    summary: Recover the original recordings from Orison Ridge, find out why the listening station is failing, and learn whether anyone has touched the data.
+    givers: [npc_ilyan_sorell]
+    starts: { at_start: true }
+    ask: The station on the ridge is dying, and the originals die with it. Bring me clean copies, tell me what's wrong up there, and tell me honestly whether anyone has been at the data.
+    stages:
+      - id: s1
+        text: Dr Sorell wants the original recordings from Orison Ridge. Niko Serrin found the anomalous transmission, and he knows the station better than anyone.
+        goal: Ask Niko Serrin about the listening station
+        knows:
+          npc_ilyan_sorell: Ilyan Sorell knows he wants the recordings secured and a report on the fault; he speaks of the signal as the most important thing ever received on Nacre and says nothing of the archive's history.
+          npc_niko_serrin: Niko Serrin knows the station's failures and the access sequence; he does not mention anything he fitted to the antenna.
+          npc_mara_venn: Mara Venn knows emergency heating and water parts are missing from the port's stores, and she does not know where they went.
+          npc_tessa_rook: Tessa Rook knows the Peregrine's drive is not ready for a crewed journey; she will not discuss its tests with a newcomer.
+          npc_edda_vale: Edda Vale knows the coastal path is dangerous in bad weather, and she reminds the stranger where the recovery cradle is.
+          npc_sana_holt: Sana Holt knows Niko has been sleeping badly and going up the ridge alone more often than his roster says.
+        next:
+          - when:
+              - { flag: story_the_orison_recordings_1 }
+            to: s2
+      - id: s2
+        text: The originals are in the archive of the Orison Listening Room, and every day the station fails a little more.
+        goal: Copy the original recordings in the Orison Listening Room
+        knows:
+          npc_ilyan_sorell: Ilyan Sorell knows the stranger has been to the ridge; he asks for the copies and wants to know whether they are complete, and he does not explain the gaps.
+          npc_niko_serrin: Niko Serrin knows the archive was never meant to have gaps; he is shaken to hear of them and swears he never cut a recording.
+          npc_mara_venn: Mara Venn knows the parts are still missing, and she wonders aloud whether anyone at the port is keeping two sets of books.
+          npc_tessa_rook: Tessa Rook knows only that the stranger came back from the ridge; she still keeps the drive to herself.
+        next:
+          - when:
+              - { flag: story_the_orison_recordings_2 }
+            to: s3
+      - id: s3
+        text: Someone cut the recordings, but that does not explain why the station itself is failing. The fault lies somewhere in the antenna system.
+        goal: Trace the fault in the station's antenna system
+        knows:
+          npc_niko_serrin: Niko Serrin knows he fitted the antenna bypass himself to keep the measurements running and never reported it; once the stranger has found it, he admits it and asks them to let him put it right.
+          npc_ilyan_sorell: Ilyan Sorell knows nothing of the bypass and is relieved the fault has an ordinary cause; he still says nothing about the cut segments.
+          npc_mara_venn: Mara Venn knows the missing parts are heating and water stock, entered as research stock under the research programme's code.
+          npc_tessa_rook: Tessa Rook knows the Peregrine's last test drew on parts that never came through her own requisitions.
+        next:
+          - when:
+              - { flag: story_the_orison_recordings_3 }
+            to: s4
+      - id: s4
+        text: "The cut segments and the missing parts point to the same place: the Peregrine and the tests nobody talks about."
+        goal: Ask Tessa Rook about the Peregrine's drive tests
+        knows:
+          npc_tessa_rook: Tessa Rook knows the drive test ran in secret on Nacre, powered with diverted heating and water parts, and she has now seen its pulse pattern in the signal; she does not know what that means and distrusts anyone who claims to.
+          npc_mara_venn: Mara Venn knows the missing parts went into the Peregrine, and she wants the one who diverted them to answer for it in front of the port.
+          npc_niko_serrin: Niko Serrin knows the cut segments were the ones that repeated most regularly; he has theories about the match but no proof of any of them.
+          npc_ilyan_sorell: Ilyan Sorell knows the stranger has spoken with Tessa; he waits aboard the Peregrine for them to come to him.
+        next:
+          - when:
+              - { flag: story_the_orison_recordings_4 }
+            to: s5
+      - id: s5
+        text: Dr Sorell hired you to say whether anyone had touched the data. Now you know who did, and you have to tell him.
+        goal: Put the evidence to Dr Sorell aboard the Peregrine
+        knows:
+          npc_ilyan_sorell: Ilyan Sorell knows he ran the drive test in secret with diverted heating and water parts, then cut the matching segments and rewrote their timestamps; he admits it, but he does not know what sent the signal and says so.
+          npc_tessa_rook: Tessa Rook knows everything the telemetry shows, and she says any journey the Peregrine makes now would be on a drive nobody understands.
+          npc_mara_venn: Mara Venn knows the whole of the diversion, and she will not let the Peregrine take anything more from the port's stores without an open vote.
+          npc_niko_serrin: Niko Serrin knows his bypass caused the failure, and that the edits were Sorell's; he wants the complete recordings kept safe.
+          npc_edda_vale: Edda Vale knows only what the port now says in the Commons, and she asks the stranger what they intend to put in their report.
+          npc_sana_holt: Sana Holt knows the Commons is divided over the news, and she keeps the evening meal going regardless.
+        next: []
+    actions:
+      - id: a1
+        say: [ask (?:(?:the|a|an) )?niko (?:(?:the|a|an) )?about (?:(?:the|a|an) )?station]
+        intent: ask niko about the station
+        at: [loc_orison_listening_room]
+        with: npc_niko_serrin
+        when:
+          - { not_flag: story_the_orison_recordings_1 }
+        effects:
+          - { set: story_the_orison_recordings_1 }
+        text: "Niko gives you the access sequence for the Listening Room and a rough account of the failures: power drops, receiver drift, the archive filling with noise. He watches you closely while he talks about the antenna."
+        once: false
+      - id: a2
+        say: [copy (?:(?:the|a|an) )?original (?:(?:the|a|an) )?recordings]
+        intent: copy the original recordings
+        at: [loc_orison_listening_room]
+        when:
+          - { flag: story_the_orison_recordings_1 }
+          - { not_flag: story_the_orison_recordings_2 }
+        effects:
+          - { set: story_the_orison_recordings_2 }
+        text: The raw buffer copies across in fits and starts. When you compare it with the archive index, you find that several segments of the repeating transmission were removed at this console, and their timestamps were rewritten to close the gaps.
+        once: false
+      - id: a3
+        say: [trace (?:(?:the|a|an) )?antenna (?:(?:the|a|an) )?fault]
+        intent: trace the antenna fault
+        at: [loc_orison_listening_room]
+        when:
+          - { flag: story_the_orison_recordings_2 }
+          - { not_flag: story_the_orison_recordings_3 }
+        effects:
+          - { set: story_the_orison_recordings_3 }
+        text: Behind a service panel you find an unofficial bypass wired into the antenna feed. It was fitted to keep the measurements running, and it has been overloading the receiver ever since. That bypass is why the station is failing. It has nothing to do with the cut segments.
+        once: false
+      - id: a4
+        say:
+          - ask (?:(?:the|a|an) )?tessa (?:(?:the|a|an) )?about (?:(?:the|a|an) )?drive (?:(?:the|a|an) )?test
+        intent: ask tessa about the drive test
+        at: [loc_workshop]
+        with: npc_tessa_rook
+        when:
+          - { flag: story_the_orison_recordings_3 }
+          - { not_flag: story_the_orison_recordings_4 }
+        effects:
+          - { set: story_the_orison_recordings_4 }
+        text: Tessa tells you, reluctantly, that a secret drive test ran on Nacre shortly before the transmission was first caught. It was powered with emergency heating and water parts that were entered as research stock. She gives you the test telemetry. Set beside your raw copies, the removed segments carry the same pulse pattern as the test.
+        once: false
+      - id: a5
+        say: [confront (?:(?:the|a|an) )?sorell (?:(?:the|a|an) )?about (?:(?:the|a|an) )?recordings]
+        intent: confront sorell about the recordings
+        at: [loc_peregrine_common_deck]
+        with: npc_ilyan_sorell
+        when:
+          - { flag: story_the_orison_recordings_4 }
+          - { not_flag: story_the_orison_recordings_5 }
+        effects:
+          - { set: story_the_orison_recordings_5 }
+        text: Sorell admits it. He cut the segments that matched the drive test and rewrote their timestamps, so that nobody would learn of the secret test or the stock he diverted, and so that the port would not ground the Peregrine. What made the signal, and why it carries the test's pattern, he cannot say. Neither can you.
+        once: false
+    outcomes:
+      - id: done
+        name: The report is made
+        text: "The stranger delivers an investigation report built on the evidence: the complete recordings, the bypass, the edits and the match with the drive test. What the signal is remains unknown. What Port Vesper does about Sorell and the Peregrine is now the port's own argument."
+        when:
+          - { flag: story_the_orison_recordings_5 }
+    truths:
+      - text: Segments of the repeating transmission were removed from the archive, and their timestamps were rewritten to hide the gaps.
+        words:
+          - cut\s+the\s+recordings
+          - segments\s+were\s+removed
+          - timestamps\s+were\s+rewritten
+          - edited\s+the\s+recordings
+          - recordings\s+were\s+cut
+        from: s3
+      - text: Niko Serrin fitted an unofficial bypass in the antenna system, and it is overloading the receiver; that is why the station is failing.
+        words: [unofficial\s+bypass, antenna\s+bypass, niko's\s+bypass, bypass\s+is\s+overloading]
+        from: s4
+      - text: A secret drive test ran on Nacre before the transmission was first caught, powered with emergency heating and water parts entered as research stock.
+        words:
+          - secret\s+drive\s+test
+          - drive\s+test\s+on\s+nacre
+          - diverted\s+parts
+          - heating\s+and\s+water\s+parts
+          - listed\s+as\s+research\s+stock
+        from: s5
+      - text: The removed segments carry the same pulse pattern as the Peregrine's drive test, and Dr Ilyan Sorell cut them to hide the test and the diverted stock and to keep the Peregrine from being grounded.
+        words:
+          - sorell\s+cut
+          - sorell\s+edited
+          - matches\s+the\s+drive\s+test
+          - same\s+pattern\s+as\s+the\s+test
+          - drive\s+pulse\s+in\s+the\s+signal
+          - pattern\s+of\s+the\s+drive\s+test
+        from: s5
+    lapses:
+      after_days: 21
+      when_far: true
+      text: The overloaded receiver burns out and the raw buffer on Orison Ridge is lost. Only Sorell's edited copies remain, and nobody can prove what was cut from them.

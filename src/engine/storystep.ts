@@ -136,7 +136,8 @@ export function storiesRequest(files: ContentFile[], scope: StoryScope, fullness
     schema: storySchema(),
     maxTokens: scope.kind === 'main' ? 5000 : fullness === 'full' ? 6000 : fullness === 'story' ? 4000 : 2500,
     effort: 'medium',
-    meta: { stories: scope.kind, fullness, name: scope.name, people: cast.people.map((n) => ({ key: key.person.get(n.id), name: n.name, secret: n.secrets.length > 0 })), places: cast.places.map((l) => key.place.get(l.id)), skills, aftermath: [] },
+    // The world's prefix: the gateway counts the call as the editor's (M10.26), not the game's.
+    meta: { stories: scope.kind, fullness, prefix: worldPrefix(files) || 'world', name: scope.name, people: cast.people.map((n) => ({ key: key.person.get(n.id), name: n.name, secret: n.secrets.length > 0 })), places: cast.places.map((l) => key.place.get(l.id)), skills, aftermath: [] },
   }
 }
 

@@ -30,7 +30,9 @@ describe('M10.30 (1): the step Stories', () => {
     expect(WORLD_STEPS.map((s) => s.id)).toEqual(expect.arrayContaining(['watcher', 'stories']))
     expect(WORLD_STEPS.findIndex((s) => s.id === 'stories')).toBe(WORLD_STEPS.findIndex((s) => s.id === 'watcher') + 1)
     expect(LAND_STEPS.some((s) => s.id === 'stories')).toBe(false)
-    expect(warnings(quiet)).toContain('This world has no stories: people make the plot up as they talk, and nothing can be solved. The step Stories of the world build writes them.')
+    expect(warnings({ ...quiet, quests: new Map() })).toContain('This world has no stories: people make the plot up as they talk, and nothing can be solved. The step Stories of the world build writes them.')
+    // The Quiet Reach has its storylines since M10.30 (4): no such line.
+    expect(warnings(quiet).some((w) => w.startsWith('This world has no stories'))).toBe(false)
     // Deepwell leaves stories out on purpose: the warning is its neutral default.
     expect(warnings(deepwell).some((w) => w.startsWith('This world has no stories'))).toBe(true)
   })
@@ -60,12 +62,12 @@ describe('M10.30 (1): the step Stories', () => {
     // The truth the main line keeps is written down too: a fixed truth of the world from then on.
     expect(draft.files![0]!.text).toMatch(/What the main line keeps hidden until its stage \(a fixed truth of this world\):\n- \w+ cut the page from the ledger\./)
     const grown = loadContent(draft.result!.ok ? draft.result!.files : files)
-    const main = [...grown.quests.values()].find((q) => q.kind === 'main')!
+    const made = new Set(draft.changes.map((c) => c.id))
+    const main = [...grown.quests.values()].find((q) => q.kind === 'main' && made.has(q.id))!
     expect(main.starts).toMatchObject({ at_start: true })
     expect(main.lapses).toMatchObject({ after_days: 30 })
     expect(main.stages?.[0]?.goal).toBeTruthy()
     expect(main.truths?.[0]).toMatchObject({ from: 's3' })
-    expect(warnings(grown).some((w) => w.startsWith('This world has no stories'))).toBe(false)
     // The world plays with them: the main line is there from the start.
     const engine = new Engine(grown, { seed: 1 })
     engine.start()

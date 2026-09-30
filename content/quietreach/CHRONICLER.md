@@ -50,3 +50,13 @@ Do not invent:
 - Anything from another world (no Nethermarch names, saints, barges, guilders or law).
 
 Pacing: play starts small, on Nacre, among the colonists, their everyday problems and the tensions between them. The Peregrine's expedition and what lies beyond are a later phase. Do not hurry the story there.
+
+## The hidden truth of the stories
+
+The designer: Bram leaves the hidden truth to you: choose it now, within the frame and CHRONICLER.md; it becomes a fixed truth of this world. It may settle who changed the recordings and why, and how the signal comes to match the secret drive test on Nacre; keep the origin of the signal itself (what made it, and whether it is an invitation, a warning or a beacon) open, as CHRONICLER.md says. No deaths. Two small lines he would like at Port Vesper: Tessa's doubt about the drive, and Mara's worry about the supplies.
+
+What the main line keeps hidden until its stage (a fixed truth of this world):
+- Segments of the repeating transmission were removed from the archive, and their timestamps were rewritten to hide the gaps.
+- Niko Serrin fitted an unofficial bypass in the antenna system, and it is overloading the receiver; that is why the station is failing.
+- A secret drive test ran on Nacre before the transmission was first caught, powered with emergency heating and water parts entered as research stock.
+- The removed segments carry the same pulse pattern as the Peregrine's drive test, and Dr Ilyan Sorell cut them to hide the test and the diverted stock and to keep the Peregrine from being grounded.

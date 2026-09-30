@@ -1,5 +1,19 @@
 # Changelog
 
+## M10.30 deel: The Quiet Reach krijgt zijn verhalen, 30 september 2026
+
+- **Drie verhaallijnen.** De hoofdlijn "The Orison Recordings" begint bij de start, bij Sorell. Ze heeft vijf stadia: Niko en het station, de opnamen kopiëren, de fout in de antenne, Tessa en de drive-proef, en Sorell confronteren. Daarnaast zijn er twee kleine lijnen in Port Vesper: "Short on the Count" (Mara mist kratten met nood-onderdelen) en "A Second Opinion" (Tessa vertrouwt de drive niet).
+- **De waarheid** koos de kroniekverteller, zoals je vroeg. Die staat nu in `CHRONICLER.md`: Sorell knipte stukken met het patroon van een geheime proef met de drive, die op omgeleide nood-onderdelen draaide, en Niko's omleiding in de antenne laat het station falen. De herkomst van het signaal blijft open. Elke betrokkene weet per stadium alleen zijn eigen deel.
+- **Wat het kostte:** $0,33 (geraamd $0,30). De tweede aanroep las het gedeelde deel uit de cache en kostte de helft van de eerste.
+
+Testen: begin een nieuw spel in The Quiet Reach. Typ `quests`: de hoofdlijn staat er meteen, met wat je nu kunt doen. Praat met Mara en met Tessa. Vraag Niko, Tessa en Sorell naar de opnamen: ze horen nu hetzelfde verhaal te vertellen, elk alleen wat ze weten.
+
+Bekende gaten: elke lijn heeft één afloop; de meerdere afloopmogelijkheden komen met punt 6. De aanroepen stonden in het AI-log als bron "game" in plaats van "editor"; dat is hersteld voor de volgende keer.
+
+Wat de editor en de kroniekverteller leerden: niets nieuws. Dit is de eerste echte run van de stap Stories, en het voorstel laadde in één keer.
+
+Ontwerp: geen wijziging.
+
 ## M10.30 deel: de kroniekverteller maakt een quest in het spel, 30 september 2026
 
 - **Een verzoek wordt een quest (7).** Vraagt iemand je in een gesprek iets te doen ("Could you go and look at them for me?"), dan is dat een feit van gewicht 3, en dat wekt de nachtronde. Heeft die persoon geen eigen quest of verzoek lopen en is er plek in de streek, dan schrijft de kroniekverteller na de nachtronde één quest: stadia, wat je per stadium moet doen, wat ieder weet en wat het verhaal verborgen houdt. Dat gebeurt hooguit één keer per nacht en nooit twee keer voor hetzelfde verzoek. Bij Doorspelen staat de quest meteen in de wereld en vraagt de persoon het je de volgende keer dat je praat. Bij Meedenken komt hij als haak in de ochtend, bij Regisseur als voorstel. Zo pakt het spel een opdracht als die van Ilyan op, ook in een wereld die zijn verhalen al heeft.

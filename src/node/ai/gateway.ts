@@ -20,7 +20,8 @@ import type { BuildStore } from './builds'
 const TIMEOUT_MS: Record<LlmRole, number> = { voice: 60000, brain: 10000, chronicler: 90000, advisor: 90000 }
 // The editor's own long answers (a world step with a chapter of YAML, M10.20) may ask for more time than their role, up to ten
 // minutes: Bram's Places chapter of The Quiet Reach ran past 16,000 tokens.
-const EDITOR_SCHEMAS = new Set(['world_step', 'world_enhance', 'builder_draft', 'world_polish', 'map_paint'])
+// The story round is the editor's too when it carries a world's prefix: the step Stories (M10.30); in play it has none.
+const EDITOR_SCHEMAS = new Set(['world_step', 'world_enhance', 'builder_draft', 'world_polish', 'map_paint', 'region_story'])
 const EDITOR_TIMEOUT_MS = 600_000
 // From this share of the hourly budget on, calls of low priority wait: the chronicler, and goal choices of NPCs without a quest role (FO, chapter 16).
 const LOW_PRIORITY_SHARE = 0.8

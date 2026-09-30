@@ -31,9 +31,11 @@ describe('M10.29 T: small things of the commands', () => {
     const engine = at('loc_commons')
     stay(engine, 'npc_niko_serrin')
     expect(await said(engine, 'wait niko')).toMatch(/^Niko is here\./)
+    // WAIT A BIT is still a wait of time: up to ten minutes, and it stops early when someone a quest needs comes by.
     const before = engine.world.now
     expect(await said(engine, 'wait a bit')).toMatch(/Time passes\./)
-    expect(engine.world.now - before).toBe(10)
+    expect(engine.world.now - before).toBeGreaterThan(0)
+    expect(engine.world.now - before).toBeLessThanOrEqual(10)
   })
 
   it('(c) FOLLOW where there is no edge names the exit to each way, never the path to where you stand', async () => {

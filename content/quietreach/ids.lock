@@ -33,6 +33,8 @@ ids:
     passage: [ridge_crawler_up, ridge_crawler_down, coast_runner]
   quietreach/data/professions.yaml:
     profession: [villager, port_coordinator, research_lead, chief_engineer, signal_technician, pilot_navigator, field_mechanic, medic, steward, watch_first, watch_second, watch_night]
+  quietreach/data/quests.yaml:
+    quest: [story_short_on_the_count, story_a_second_opinion, story_the_orison_recordings]
   quietreach/data/resources.yaml:
     resource: [coastal_beds, wrack_line, tide_pools, basalt_outcrop]
   quietreach/data/settlements.yaml:

@@ -331,3 +331,18 @@ Gemeten op Brams sleutel met Opus 5.5, zijn model voor de kroniekverteller (`npm
 De twee antwoorden op low zijn trouw aan de wereld en aan wat Harmen vroeg: De Zwaan, Klaas die het oude zeildoek op zolder bewaarde, geen geld voor nieuw doek. Ze hebben drie stadia, elk met een daad, een doel en per persoon wat die weet. Geen van de drie noemde een verborgen waarheid; het verzoek had er ook geen. Het antwoord op medium stopte na één stadium met een leeg commando. De proefrit controleerde toen alleen de vorm en zei dat het spel het nam; de controle bouwt nu de quest zoals het spel doet, en keurt het af.
 
 **Keuze.** Low, op Opus 5.5 zoals de speler de kroniekverteller kiest. De invoer is 3.571 tokens in plaats van de geschatte 1.500: het antwoordschema en de vaste regels tellen mee. Een quest kost dus ongeveer 3,5 cent, hooguit één per speelnacht. Bij de standaardklok (anderhalf uur per speldag) is dat hooguit 2,4 cent per uur spelen, en alleen in een nacht waarin iemand de vreemdeling iets vroeg.
+
+## De stap Verhalen voor The Quiet Reach (M10.30, 30 september 2026)
+
+Op Brams sleutel, met zijn akkoord tot $1,00 (raming $0,30). De stap gebruikt de streekronde (`region_story`) op de kroniekverteller (Opus 5.5, medium), in de stand "verhaal": één aanroep voor Port Vesper en één voor de hoofdlijn. Vesper Works en het land ertussen hebben geen bewoners en kregen geen eigen aanroep.
+
+| Aanroep | In, waarvan uit de cache | Uit | Seconden | Kosten |
+|---|---|---|---|---|
+| Port Vesper (twee kleine lijnen) | 28.281, niets (geschreven voor de volgende) | 3.325 | 38 | $0,205 |
+| De hoofdlijn (vijf stadia, vier waarheden) | 28.667, waarvan 25.831 | 5.265 | 64 | $0,122 |
+| **Samen** | | | | **$0,327** |
+
+Het gedeelde deel (het vaste deel van de wereldbouw, de regels van de stap, de wereld, de opdracht en de woorden van de ontwerper) staat in de cache. De tweede aanroep las het terug en kostte daarom de helft. Een wereld met meer nederzettingen betaalt dat deel één keer en daarna per nederzetting ongeveer $0,10 tot $0,15, afhankelijk van hoeveel er geschreven wordt.
+
+Waarom Opus 5.5 op medium: het is de rol van de kroniekverteller, dezelfde als voor de streekronde in het spel. De lijnen moeten één waarheid over het hele verhaal volhouden, per stadium en per persoon. Het voorstel laadde in één keer, en de kleine lijn over de voorraden en de hoofdlijn vertellen hetzelfde spoor. Een lichtere stand is niet gemeten.
+

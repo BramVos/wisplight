@@ -79,6 +79,16 @@ Do not invent:
 
 Pacing: play starts small, on Nacre, among the colonists, their everyday problems and the tensions between them. The Peregrine's expedition and what lies beyond are a later phase. Do not hurry the story there.
 
+##### The hidden truth of the stories
+
+The designer: Bram leaves the hidden truth to you: choose it now, within the frame and CHRONICLER.md; it becomes a fixed truth of this world. It may settle who changed the recordings and why, and how the signal comes to match the secret drive test on Nacre; keep the origin of the signal itself (what made it, and whether it is an invitation, a warning or a beacon) open, as CHRONICLER.md says. No deaths. Two small lines he would like at Port Vesper: Tessa's doubt about the drive, and Mara's worry about the supplies.
+
+What the main line keeps hidden until its stage (a fixed truth of this world):
+- Segments of the repeating transmission were removed from the archive, and their timestamps were rewritten to hide the gaps.
+- Niko Serrin fitted an unofficial bypass in the antenna system, and it is overloading the receiver; that is why the station is failing.
+- A secret drive test ran on Nacre before the transmission was first caught, powered with emergency heating and water parts entered as research stock.
+- The removed segments carry the same pulse pattern as the Peregrine's drive test, and Dr Ilyan Sorell cut them to hide the test and the diverted stock and to keep the Peregrine from being grounded.
+
 ## 2. The map of the land
 
 <!-- picture:map -->
@@ -458,7 +468,15 @@ The law in Port Vesper is kept by the Settlement Marshal (Mara Venn).
 
 No fine buys off a death or a beating: the stranger is held 48 hours and heard. Three residents who had nothing to do with it hear the case at a formal hearing, and nobody who was part of it takes part. What they decide goes into the Compact's record, and you are let out under watch, until a ship can take the matter to a Charter port.
 
-## 13. Names and speech
+## 13. Quests
+
+| Quest | What it is about | Given by | Ways it ends |
+| --- | --- | --- | --- |
+| Short on the Count | Mara Venn's count of the emergency heating and water spares comes up short, and the stranger follows the paperwork to where they went. | Mara Venn | Back on the count |
+| A Second Opinion | Tessa Rook doubts the Peregrine's drive, and she wants someone from outside the settlement to read her test notes before she decides whether to say so on the record. | Tessa Rook | Not alone with it |
+| The Orison Recordings | Recover the original recordings from Orison Ridge, find out why the listening station is failing, and learn whether anyone has touched the data. | Dr Ilyan Sorell | The report is made |
+
+## 14. Names and speech
 
 ### Sayings
 
@@ -476,7 +494,7 @@ No fine buys off a death or a beating: the stranger is held 48 hours and heard. 
 
 magic, spells, mana, divine healing, telepathy, antigravity, gravity plates, inertial dampers, warp speed, hyperspace lanes, an everyday jumpgate, instant interstellar conversation, a live database reachable everywhere, alien empire, known alien races, universal translator, resurrection, respawning, an immortal cloned copy, quest giver, NPC, skill check, level up, inventory slots, catastrophic communications anomaly, outsider.
 
-## 14. Trades and crafts
+## 15. Trades and crafts
 
 | Trade | Works |
 | --- | --- |
@@ -499,7 +517,7 @@ magic, spells, mana, divine healing, telepathy, antigravity, gravity plates, ine
 | --- | --- | --- | --- |
 | Field Electronics | field technician | Diagnosis: recognising damage, cleaning contacts, checking connections, Cable and connector repair, Fault finding in linked systems, Designing, testing and documenting a difficult repair | lost |
 
-## 15. Transport
+## 16. Transport
 
 | Line | Kind | Stops | Days | Fare |
 | --- | --- | --- | --- | --- |
@@ -507,7 +525,7 @@ magic, spells, mana, divine healing, telepathy, antigravity, gravity plates, ine
 | Ridge Crawler, down to the port | crawler | Orison Listening Room, Ridge Shelter, Workshop, Arrival Lock | Primeday, Span, Relay, Anchor | 3 cr |
 | Coast Runner | aircraft | Arrival Lock, kestrel_landing | Primeday, Anchor | 25 cr |
 
-## 16. What happens when
+## 17. What happens when
 
 - When death: word goes round: "A death in Port Vesper"; Port Vesper takes a mood of grief for 3 days; a burial at Commons; a mark at Commons: "On the memorial wall a new plaque has been fixed beside the others, the name cut clean into the metal."; Sana Holt thinks: "A name and a message are waiting to go into the Harbour Record, and you promised to write them in carefully."; the family of each of them thinks: "Someone you loved is gone, and the empty chair at supper is still there each time you look.".
 - When missing: word goes round: "A check-in overdue"; goal Visit; seek player Mara Venn; a mark at Arrival Lock: "A pending-return marker glows amber on the watch board by the inner door, a name and a time beside it."; Port Vesper takes a mood of threat for 1 days; the family of each of them thinks: "They should have called in by now. A delay is not the same as a loss, you keep telling yourself.".
@@ -521,7 +539,7 @@ magic, spells, mana, divine healing, telepathy, antigravity, gravity plates, ine
 - When pupil learnt (a signal of the game itself): word goes round: "A skill passed on"; each of them thinks: "You can do it yourself now, what the stranger showed you, and that is worth more than a spare part.".
 - When signal anomaly: word goes round: "An anomaly in the recordings"; Niko Serrin thinks: "Preserve the raw recording, check the chain of instruments, and find a second observation before you believe any of it."; Dr Ilyan Sorell thinks: "One anomaly is not proof. The preparations wait on a second observation, however much you want to go.".
 
-## 17. The rules in short
+## 18. The rules in short
 
 Ancestries: . Classes: . Backgrounds: systems engineer, signal linguist, navigator, expedition medic, expedition hand.
 
@@ -529,7 +547,7 @@ Conditions: .
 
 Death: You wake in the recovery cradle with a dry mouth and hands that will not quite close. The monitor chirps steadily beside you, and the air smells of antiseptic and warm plastic. Time has passed; the log by the cradle says how much, and who answered your implant's distress signal. You are weak, and you will need rest before you are yourself again.
 
-## 18. The look and sound of the world
+## 19. The look and sound of the world
 
 Pictures: Painted science-fiction concept art with a documentary feel: matte surfaces, fine brush texture, believable materials and restrained colours. Technology looks maintained, repaired and sometimes used for too long, with repaired seams, faded labels, scratches and personal belongings. Outdoors the light is cool: overcast skies, wet black rock, grey swell and sea mist. Indoors the light is warm: workbenches, the dining hall and inhabited cabins. Portraits show head and upper body in natural light against a quiet background. People vary in age, build, skin colour and appearance, and their origins show in clothing, habits and personal objects rather than in a fixed look. They wear practical workwear, repaired raincoats, medical wrap coats and safety vests, never tight uniform space suits. Each important character keeps the same identifying features in every image, and mood changes posture and expression, not the face. Places are shown at human scale from where a person could stand, with low buildings against a vast, cold landscape, vulnerable but inhabited. No neon, no holograms, no glowing interfaces beyond plain screen light. The picture shows exactly the state the text describes: damage stays damaged, empty rooms stay empty, and no doors, objects, weapons or clues are added that the world does not hold. Nothing alien, and nothing of Echo Nine, is shown unless the player has discovered it. The impression is of a cold, distant place where people have struggled to make something warm and habitable.
 
@@ -539,7 +557,7 @@ The map calls its land black basalt (volcanic), high rock (highland), open sea (
 
 Where an act the rules do not know may be improvised: Orison Listening Room (lore), Workshop (craft).
 
-## 19. How this world was made
+## 20. How this world was made
 
 ### The steps of the guide
 
@@ -2612,3 +2630,17 @@ What it asked back:
 - Should any edge lead somewhere named, for example east toward the mining ground or the port toward Harrow Station by ship? If so, I would add a far-place topic for it and link it under `toward`.
 
 Changed: region vesper_coast; world.yaml: map.
+
+#### Stories: accepted, 2026-09-30 09:29
+
+What the designer wrote:
+
+> Bram leaves the hidden truth to you: choose it now, within the frame and CHRONICLER.md; it becomes a fixed truth of this world. It may settle who changed the recordings and why, and how the signal comes to match the secret drive test on Nacre; keep the origin of the signal itself (what made it, and whether it is an invitation, a warning or a beacon) open, as CHRONICLER.md says. No deaths. Two small lines he would like at Port Vesper: Tessa's doubt about the drive, and Mara's worry about the supplies.
+
+What the chronicler said:
+
+> 3 storylines: Short on the Count (Port Vesper); A Second Opinion (Port Vesper); The Orison Recordings (The Quiet Reach).
+
+Changed: quest story_short_on_the_count; quest story_a_second_opinion; quest story_the_orison_recordings; CHRONICLER.md.
+
+Why: Bram, 30 September 2026: keep it as it is; more ways to end a line come with item 6.
