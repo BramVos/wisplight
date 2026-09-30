@@ -594,7 +594,7 @@ function keepAnswers(appPath: string, content: Content, model: string, title: st
   const name = (npc: string) => content.npcs.get(npc)?.name ?? npc
   const lines = answers.map((a) => (a.byModel ? `${++n}. ${name(a.npc)}. The player: "${a.said}"\n   ${a.answer}` : `- ${name(a.npc)}. The player: "${a.said}"\n   ${a.answer} (rules)`))
   const scored = read
-    ? [`Read score ${read.score.toFixed(2)} (0 to 1; per question 0 to 3: this person ${read.byQuestion.person.toFixed(1)}, natural ${read.byQuestion.natural.toFixed(1)}, answers and adds ${read.byQuestion.answers.toFixed(1)}, keeps it going ${read.byQuestion.onward.toFixed(1)}), read by ${read.model}.`, ...read.weakest.map((w) => `Weakest: ${w.n}, ${w.why}`)]
+    ? [`Read score ${read.score.toFixed(2)} (0 to 1; per question 0 to 3: this person ${read.byQuestion.person.toFixed(1)}, natural ${read.byQuestion.natural.toFixed(1)}, answers and adds ${read.byQuestion.answers.toFixed(1)}, keeps it going ${read.byQuestion.onward.toFixed(1)})${read.invented !== undefined ? `; made-up facts per answer ${read.invented.toFixed(2)}` : ''}, read by ${read.model}.`, ...read.weakest.map((w) => `Weakest: ${w.n}, ${w.why}`)]
     : []
   appendFileSync(file, `${head}\n## ${title}\n\n${counts}.\n${scored.length ? `\n${scored.join('\n')}\n` : ''}\n${lines.join('\n')}\n`)
 }

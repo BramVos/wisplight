@@ -15,6 +15,8 @@ export interface ReadItem {
   card: string
   said: string
   answer: string
+  /** What the speaker was given for this answer (M10.33 W): the facts an answer may hold; the rest is made up. */
+  given?: string
 }
 
 export interface ReadScore {
@@ -24,6 +26,11 @@ export interface ReadScore {
   byQuestion: { person: number; natural: number; answers: number; onward: number }
   /** The three weakest answers, by their number from 1, with why. */
   weakest: { n: number; why: string }[]
+  /**
+   * Made-up facts per answer (M10.33 W; Bram: "de NPC's verzinnen er op los"): events, decisions, plans, times and
+   * reasons that neither what the speaker was given nor the card holds, on average. Only answers read with GIVEN count.
+   */
+  invented?: number
 }
 
 export const READ_QUESTIONS = {
@@ -42,7 +49,7 @@ export const READ_SCORE_SCHEMA = {
   properties: {
     answers: {
       type: 'array',
-      items: { type: 'object', additionalProperties: false, required: ['n', 'person', 'natural', 'answers', 'onward'], properties: { n: { type: 'integer' }, person: points, natural: points, answers: points, onward: points } },
+      items: { type: 'object', additionalProperties: false, required: ['n', 'person', 'natural', 'answers', 'onward', 'invented'], properties: { n: { type: 'integer' }, person: points, natural: points, answers: points, onward: points, invented: { type: 'integer', minimum: 0, maximum: 9 } } },
     },
     weakest: { type: 'array', items: { type: 'object', additionalProperties: false, required: ['n', 'why'], properties: { n: { type: 'integer' }, why: { type: 'string' } } } },
   },
@@ -51,7 +58,8 @@ export const READ_SCORE_SCHEMA = {
 const SYSTEM = [
   'You read the answers a character in a text game gave to the player, as an editor who cares how dialogue reads. For each numbered answer give 0 to 3 points on four questions:',
   ...Object.entries(READ_QUESTIONS).map(([key, question]) => `  ${key}: ${question}.`),
-  '0 is not at all, 1 barely, 2 mostly, 3 fully. A short answer can score 3 when it fits. Judge the words only, not whether the facts are right; the game checks those itself.',
+  '0 is not at all, 1 barely, 2 mostly, 3 fully. A short answer can score 3 when it fits. Judge these four by the words only.',
+  'invented: how many facts the answer states that its GIVEN and the card do not hold: an event, a decision, a plan, a time, a reason. Colour of the speaker\'s own work and of this place does not count. Without GIVEN, 0.',
   'Then name the three weakest answers by number, each with why in one plain sentence.',
   'JSON only.',
 ].join('\n')
@@ -69,18 +77,18 @@ export function readScoreRequest(items: ReadItem[]): LlmRequest {
       ...cards.map((c, i) => `  [${i + 1}] ${c}`),
       '',
       'THE ANSWERS:',
-      ...items.map((item, n) => `${n + 1}. [${cards.indexOf(item.card) + 1}] The player: "${item.said}"\n   Answer: ${item.answer}`),
+      ...items.map((item, n) => `${n + 1}. [${cards.indexOf(item.card) + 1}] The player: "${item.said}"\n   Answer: ${item.answer}${item.given ? `\n   GIVEN: ${item.given}` : ''}`),
     ].join('\n'),
     schemaName: 'read_score',
     schema: READ_SCORE_SCHEMA,
-    maxTokens: 400 + 40 * items.length,
+    maxTokens: 400 + 48 * items.length,
     effort: 'low',
     meta: { count: items.length },
   }
 }
 
 /** Reads the reply: the score, or undefined when it cannot be read or skips answers. */
-export function readScoreReply(text: string, count: number): ReadScore | undefined {
+export function readScoreReply(text: string, count: number, given?: boolean[]): ReadScore | undefined {
   let raw: unknown
   try {
     raw = JSON.parse(text)
@@ -96,7 +104,10 @@ export function readScoreReply(text: string, count: number): ReadScore | undefin
   const byQuestion = { person: mean('person'), natural: mean('natural'), answers: mean('answers'), onward: mean('onward') }
   const score = (byQuestion.person + byQuestion.natural + byQuestion.answers + byQuestion.onward) / 12
   const weakest = (r.weakest ?? []).filter((w) => typeof w.n === 'number' && typeof w.why === 'string').slice(0, 3).map((w) => ({ n: w.n as number, why: w.why as string }))
-  return { score, byQuestion, weakest }
+  // Made up (M10.33 W): the mean over the answers that were read with what they were given.
+  const counted = valid.filter((a) => typeof (a as { invented?: unknown }).invented === 'number' && (given?.[(a.n as number) - 1] ?? false))
+  const invented = counted.length ? counted.reduce((s, a) => s + ((a as { invented: number }).invented), 0) / counted.length : undefined
+  return { score, byQuestion, weakest, ...(invented !== undefined ? { invented } : {}) }
 }
 
 /** Who speaks, in a few lines for the reader: name, who they are, how they speak. */

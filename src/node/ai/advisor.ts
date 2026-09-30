@@ -88,6 +88,8 @@ export interface KeptAnswer {
   answer: string
   /** False when the rules answered (a greeting, a set line after a failed reply). */
   byModel: boolean
+  /** What the model was given for it, its changing part (M10.33 W), for counting what it made up. */
+  given?: string
 }
 
 /** How a model came out of its trial, and why (M9.3). */
@@ -295,8 +297,13 @@ export async function trial(gateway: Gateway, content: Content, provider: Provid
     // Every line the player says is an answer the game wants; a line without a call (a greeting from the rules) is not counted.
     const kept: KeptAnswer[] = (result.kept = [])
     for (const situation of trialSituations(content, count)) {
+      const first = meter.answer
       const run = await runSituation(content, situation, meter, 7, () => meter.answer++)
-      for (const turn of run.turns) kept.push({ npc: situation.npc, said: turn.said, ...answerOf(turn.outputs) })
+      // What each answer was given (M10.33 W): the end of what its last call sent, where the changing part is.
+      for (const [i, turn] of run.turns.entries()) {
+        const given = [...meter.calls].reverse().find((c) => c.answer === first + i + 1)?.given
+        kept.push({ npc: situation.npc, said: turn.said, ...answerOf(turn.outputs), ...(given ? { given: given.slice(-2400) } : {}) })
+      }
     }
     const byAnswer = new Map<number, Call[]>()
     for (const call of meter.calls) byAnswer.set(call.answer, [...(byAnswer.get(call.answer) ?? []), call])
@@ -439,9 +446,9 @@ export function judgeTrials(results: TrialResult[]): { choice?: TrialResult; ver
  * at low effort; undefined when it could not be read.
  */
 export async function readScore(gateway: Pick<Gateway, 'complete'>, content: Content, answers: KeptAnswer[]): Promise<(ReadScore & { model: string; costUsd: number }) | undefined> {
-  const items = answers.filter((a) => a.byModel).map((a) => ({ card: readCard(content, a.npc), said: a.said, answer: a.answer }))
+  const items = answers.filter((a) => a.byModel).map((a) => ({ card: readCard(content, a.npc), said: a.said, answer: a.answer, ...(a.given ? { given: a.given } : {}) }))
   if (!items.length) return undefined
   const response = await gateway.complete(readScoreRequest(items))
-  const read = readScoreReply(response.text, items.length)
+  const read = readScoreReply(response.text, items.length, items.map((i) => Boolean(i.given)))
   return read ? { ...read, model: response.model, costUsd: costUsd(response.model, response.usage) ?? 0 } : undefined
 }

@@ -1,5 +1,19 @@
 # Changelog
 
+## M10.33 deel: verzonnen feiten meetbaar (W, zonder de meting), 30 september 2026
+
+- **De leesscore telt verzonnen feiten (W).** Oorzaak: de regel "only facts from KNOWLEDGE, SCENE and your own card" werd nooit gemeten, dus de keuze van model en inspanning voor de stem was een gok. De leesscore krijgt nu per antwoord mee wat de spreker gegeven werd (GIVEN, het wisselende deel van de aanroep). Hij telt per antwoord de feiten die GIVEN en de kaart niet dragen: een gebeurtenis, een besluit, een plan, een tijd, een reden. Kleur over het eigen werk en de plek telt niet. Het verslag van een proef noemt het gemiddelde per antwoord.
+- **SCENE (W).** De scène zegt nu: kleur van je eigen werk en deze plek is van jou, gebeurtenissen, besluiten en plannen niet.
+- **Nog niet: de meting.** De telling per model en inspanning op echte antwoorden is een run op jouw sleutel, en de keuze voor de stem volgt daaruit, samen met Q. Die wacht op je akkoord.
+
+Testen: `tests/m1033made.test.ts`.
+
+Kosten: geen nieuwe soort aanroep. De leesscore (alleen in een proef) leest per antwoord hooguit 2.400 tekens GIVEN meer. De stem krijgt per regel zo'n twintig tokens scène meer.
+
+Wat de editor en de kroniekverteller leerden: niets; een wereld kan hierdoor niets nieuws bevatten.
+
+Ontwerp: geen wijziging.
+
 ## M10.33 deel: het verhaal tot nu toe en wat je nu kunt doen (AF), 30 september 2026
 
 - **De questpagina in drie delen (AF).** Oorzaak: de pagina toonde alleen de stadia en het huidige doel. Wat je vond, kwam in losse stukjes, en de aflopen van het laatste stadium waren onzichtbaar. Nu staat er "So far": de stadia met na elk wat de daad opleverde die het afsloot, in volgorde. Dan "Now", met wie het gaf en waar of met wie. Dan "You could", elke daad die nu kan zoals je hem typt, en in het laatste stadium "Ways it could end": de aflopen in je eigen woorden, zonder wat eruit komt.

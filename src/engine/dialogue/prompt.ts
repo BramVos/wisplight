@@ -315,7 +315,8 @@ export function turnSections(world: World, ctx: TurnContext, voice: 'all' | 'tal
     const text = (Array.isArray(lines) ? lines : lines ? [lines] : []).filter(Boolean).join('\n')
     if (text) parts.push({ key, text, ...(each ? { each } : {}) })
   }
-  add('scene', `SCENE: ${location.name}, ${weekdayName(world.now, world.calendar)}, ${clock.parts.dayPart}. ${npc.short} is ${state.activity}. Mood: ${ctx.mood}.`)
+  // Colour, not events (M10.33 W): the scene may be told in the speaker's own words, but nothing happens in it that is not given.
+  add('scene', `SCENE: ${location.name}, ${weekdayName(world.now, world.calendar)}, ${clock.parts.dayPart}. ${npc.short} is ${state.activity}. Mood: ${ctx.mood}. Colour of your own work and this place is yours; events, decisions and plans are not.`)
   // The sky, and for who reads it what is coming (M10.8).
   if (hasWeather(world)) add('weather', `WEATHER: ${weather(world)}, ${windWords(wind(world))}.${readsTheSky(world, ctx.npcId) && forecastLine(world) ? ` You read the sky: ${forecastLine(world)}` : ''}`)
   // The mood of the area (M10.11): panic, grief, a feast, a threat; the people here feel it.
