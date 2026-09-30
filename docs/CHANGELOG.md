@@ -1,5 +1,21 @@
 # Changelog
 
+## M10.31 deel: een code als daad in wat het model schrijft (C), 30 september 2026
+
+- **Een woord als daad.** Een stadium of een afloop in een verhaal van de kroniekverteller kan nu een woord zijn in plaats van een commando: een code die je op een plek intypt (`type 4471`), of een wachtwoord dat je in een gesprek tegen iemand zegt. Het spel wacht dan op dat woord (de voorwaarde `said`) en toont daarna wat de daad oplevert. Een afloop via een woord telt als een eigen weg, naast praten, geven en iets doen.
+- **De stap Verhalen weet waar een slot een code aanneemt.** Bij de plekken staat nu bijvoorbeeld "Workshop: ... (a lock here takes the code 7411)", zodat een verhaal de hangardeur kan laten openen met Tessas code.
+- **Check telt het mee, maar alleen als het woord ergens verteld wordt**: in wat een daad oplevert, wat iemand weet, een geheim of een beschrijving. Is een woord de enige weg verder en staat het nergens, dan noemt Check dat stadium.
+
+Testen: tests in `tests/m1031code.test.ts`. Het mockmodel geeft de hoofdlijn nu een code in stadium 2, die in stadium 1 verteld wordt; de tests spelen die en een wachtwoord tegen Niko. In het spel zie je het pas bij een nieuw verhaal van de kroniekverteller.
+
+Kosten: geen nieuwe aanroep. De schets kreeg twee optionele velden (`word` bij een stadium en bij een afloop) en de weg `word`, en de regels voor het model zijn een paar zinnen langer. Dat schrijft de cache van `region_story` en `night_quest` één keer opnieuw.
+
+Bekende gaten: de nachtronde (`night_quest`) kent de vorm, maar haar regels noemen het woord als daad nog niet; dat is aan de andere sessie. Een afloop via een woord dat nergens verteld wordt, meldt Check niet als er andere aflopen zijn.
+
+Wat de editor en de kroniekverteller leerden: de regels van de stap Stories en van de streekronde beschrijven de daad met een woord. De wereldgids noemt het bij wat je controleert, en `docs/NEW-WORLD.md` ook. In de wereld zelf komt niets nieuws: het zijn de voorwaarde `said` en het effect `text` die er al waren.
+
+Ontwerp: functioneel ontwerp, bij het dagboek (na de stap Verhalen), alinea "Stand na M10.31: een code als daad in wat het model schrijft".
+
 ## M10.31 deel: afgekorte namen van mensen (E), 30 september 2026
 
 - **Een naam half getypt.** `talk ma`, `ask tes about the drive` en `give lamp to ni` vonden de persoon al op het begin van een naam. Nieuw is dat `ask`, `tell`, `give` en `look` nu ook vragen wie je bedoelt als er twee passen, net als `talk` al deed. Je kiest met een nummer, en het spel doet dan het hele commando met de volle naam.

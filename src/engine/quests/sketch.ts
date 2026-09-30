@@ -1,6 +1,7 @@
 import type { Location } from '../content'
 import { idWordsIn } from '../idwords'
 import { crossesLimits, readsAsInstruction } from '../safety'
+import { wordsOf } from '../said'
 import type { World } from '../world'
 
 // A quest as the chronicler writes it (M10.25, pulled out for M10.30): words
@@ -40,6 +41,13 @@ export interface SketchStage {
    * with, and words from that talk. The stage then also passes by that talk.
    */
   lived?: { who: string; words: string[] }
+  /**
+   * A word as the deed (M10.31 C): a code or a password the stranger says to
+   * the person (with) in a talk, or says or types at the place (at), instead
+   * of a command. The line gives it somewhere first: a deed, what someone
+   * knows, a secret.
+   */
+  word?: string
 }
 
 /**
@@ -57,10 +65,12 @@ export interface SketchEnding {
   at: string
   with: string
   skill: string
+  /** A word as the deed that ends it (M10.31 C), as a stage's word. */
+  word?: string
 }
 
-/** The ways an ending goes. */
-export const ENDING_WAYS = ['talk', 'give', 'deed', 'fail'] as const
+/** The ways an ending goes; `word` since M10.31: a code or a password said or typed. */
+export const ENDING_WAYS = ['talk', 'give', 'deed', 'word', 'fail'] as const
 
 export interface QuestSketch {
   name: string
@@ -107,12 +117,12 @@ export function sketchSchema(): Record<string, unknown> {
       stages: {
         type: 'array',
         items: object(
-          { text, say: text, at: text, with: text, skill: text, done: text, goal: text, knows: { type: 'array', items: object({ who: text, line: text }) }, lived: object({ who: text, words: { type: 'array', items: text } }) },
-          ['goal', 'knows', 'lived'],
+          { text, say: text, at: text, with: text, skill: text, done: text, goal: text, knows: { type: 'array', items: object({ who: text, line: text }) }, lived: object({ who: text, words: { type: 'array', items: text } }), word: text },
+          ['goal', 'knows', 'lived', 'word'],
         ),
       },
       outcome: object({ name: text, text }),
-      endings: { type: 'array', items: object({ name: text, text, solution: { type: 'boolean' }, way: { type: 'string', enum: [...ENDING_WAYS] }, say: text, at: text, with: text, skill: text }) },
+      endings: { type: 'array', items: object({ name: text, text, solution: { type: 'boolean' }, way: { type: 'string', enum: [...ENDING_WAYS] }, say: text, at: text, with: text, skill: text, word: text }, ['word']) },
       begins: { type: 'string', enum: ['talk', 'place', 'start'] },
       lapses: object({ days: { type: 'integer' }, text }),
       truths: { type: 'array', items: object({ text, words: { type: 'array', items: text }, from: { type: 'integer' } }) },
@@ -134,6 +144,12 @@ export function fit(value: unknown, most: number): string | undefined {
   const t = value.trim().replace(/\s+/g, ' ')
   if (!t || t.length > most || crossesLimits(t) || readsAsInstruction(t) || idWordsIn(t).length) return undefined
   return t
+}
+
+/** The word of a deed that is a word (M10.31 C): short, letters or digits, never an id; else none. */
+export function deedWord(d: { word?: string }): string | undefined {
+  const word = fit(d.word, 40)
+  return word && wordsOf(word) ? word : undefined
 }
 
 /** A command as a pattern: the words in order, "the", "a" and "an" optional, and any spacing. */
@@ -172,7 +188,14 @@ export function questFromSketch(world: Pick<World, 'content'>, sketch: QuestSket
   const content = world.content
   const giver = scope.person(sketch.giver)
   if (!giver) return undefined
-  const doable = (d: { say: string; at: string; done?: string; text?: string }) => Boolean(fit(d.done ?? d.text, 400) && sayPattern(d.say) && scope.place(d.at))
+  // A word as the deed (M10.31 C): said to someone in a talk, or said or typed at a place.
+  const spoken = (d: { at: string; with: string; word?: string }): Raw | undefined => {
+    const word = deedWord(d)
+    const to = scope.person(d.with)
+    const at = scope.place(d.at)
+    return word && (to || at) ? { said: word, ...(to ? { to } : { at }) } : undefined
+  }
+  const doable = (d: { say: string; at: string; with: string; word?: string; done?: string; text?: string }) => Boolean(fit(d.done ?? d.text, 400) && (spoken(d) || (sayPattern(d.say) && scope.place(d.at))))
   const endings = (sketch.endings ?? []).filter((e) => fit(e.name, 80) && doable(e)).slice(0, 5)
   const cut = sketch.stages.slice(0, scope.mostStages)
   // The last stage needs no deed of its own when the endings are its deeds.
@@ -208,18 +231,22 @@ export function questFromSketch(world: Pick<World, 'content'>, sketch: QuestSket
     const livedWith = typeof s.lived?.who === 'string' ? scope.person(s.lived.who) : undefined
     const livedWords = (Array.isArray(s.lived?.words) ? s.lived.words : []).map((w) => fit(w, 40)).filter((w): w is string => Boolean(w) && w!.length >= 3).slice(0, 4)
     const lived = livedWith && livedWords.length ? [{ when: [{ talked: livedWith, about: livedWords }], to: `s${i + 2}`, effects: [{ set: flag }] }] : []
-    const next = !last ? [{ when: [{ flag }], to: `s${i + 2}` }, ...lived] : []
+    // A word as the deed: the stage passes when it is said, with what the deed brings.
+    const word = spoken(s)
+    const next = !last ? [word ? { when: [word], to: `s${i + 2}`, effects: [{ set: flag }, { text: fit(s.done, 400)! }] } : { when: [{ flag }], to: `s${i + 2}` }, ...lived] : []
     // What each person knows at this stage and may say (M10.30), by id.
     const knows = Object.fromEntries((s.knows ?? []).flatMap((k) => (scope.person(k.who) && fit(k.line, 300) ? [[scope.person(k.who)!, fit(k.line, 300)!]] : [])))
     const goal = fit(s.goal, 160)
     stages.push({ id: `s${i + 1}`, text: fit(s.text, 240)!, ...(goal ? { goal } : {}), ...(Object.keys(knows).length ? { knows } : {}), next })
-    if (last && endings.length) return
+    if ((last && endings.length) || word) return
     actions.push(deed(`a${i + 1}`, s, fit(s.done, 400)!, [...(i > 0 ? [{ flag: `${id}_${i}` }] : []), { not_flag: flag }], [{ set: flag }]))
   })
   // The ways it ends: a deed each, after the stages before the last, to an outcome of its own; one ending only.
   const before = good.length > 1 ? [{ flag: `${id}_${good.length - 1}` }] : []
   const ended = endings.map((_, k) => ({ not_flag: `${id}_end_${k + 1}` }))
-  endings.forEach((e, k) => actions.push(deed(`e${k + 1}`, e, fit(e.text, 400)!, [...before, ...ended], [{ set: `${id}_end_${k + 1}` }])))
+  endings.forEach((e, k) => {
+    if (!spoken(e)) actions.push(deed(`e${k + 1}`, e, fit(e.text, 400)!, [...before, ...ended], [{ set: `${id}_end_${k + 1}` }]))
+  })
   const name = fit(sketch.name, 80)
   const summary = fit(sketch.summary, 240)
   const ask = fit(sketch.ask, 400)
@@ -227,8 +254,8 @@ export function questFromSketch(world: Pick<World, 'content'>, sketch: QuestSket
   const endText = fit(sketch.outcome?.text, 400)
   if (!name || !summary || !ask || (!endings.length && (!end || !endText))) return undefined
   const outcomes = endings.length
-    ? endings.map((e, k) => ({ id: `end${k + 1}`, name: fit(e.name, 80)!, text: fit(e.text, 400)!, solution: e.solution !== false, when: [{ flag: `${id}_end_${k + 1}` }] }))
-    : [{ id: 'done', name: end, text: endText, when: [{ flag: `${id}_${good.length}` }] }]
+    ? endings.map((e, k) => ({ id: `end${k + 1}`, name: fit(e.name, 80)!, text: fit(e.text, 400)!, solution: e.solution !== false, when: spoken(e) ? [...before, spoken(e)!] : [{ flag: `${id}_end_${k + 1}` }] }))
+    : [{ id: 'done', name: end, text: endText, when: spoken(good.at(-1)!) ? [...(good.length > 1 ? [{ flag: `${id}_${good.length - 1}` }] : []), spoken(good.at(-1)!)!] : [{ flag: `${id}_${good.length}` }] }]
   // What the story keeps hidden (M10.30): the words that give it away, as patterns, from a stage there is.
   const escape = (w: string) => w.trim().toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s+')
   const truths = (sketch.truths ?? []).flatMap((t) => {
@@ -267,7 +294,7 @@ export function questFromSketch(world: Pick<World, 'content'>, sketch: QuestSket
  * out (Bram, 30 September 2026). None: it is enough.
  */
 export function endingProblems(sketch: QuestSketch): string[] {
-  const endings = (sketch.endings ?? []).filter((e) => fit(e.name, 80) && fit(e.text, 400) && sayPattern(e.say))
+  const endings = (sketch.endings ?? []).filter((e) => fit(e.name, 80) && fit(e.text, 400) && (sayPattern(e.say) || deedWord(e)))
   const solutions = endings.filter((e) => e.solution)
   const ways = new Set(solutions.map((e) => e.way))
   const fails = endings.filter((e) => !e.solution).length + (sketch.lapses ? 1 : 0)

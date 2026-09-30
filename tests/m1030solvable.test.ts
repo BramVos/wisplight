@@ -35,6 +35,15 @@ async function playShortest(content: Content, id: string): Promise<string | unde
     const moving = (quest.actions ?? []).filter((a) => open(a) && a.effects.some((e) => 'set' in e && wanted.has(e.set)))
     // A solution before a way it goes wrong.
     const action = moving.find((a) => a.effects.some((e) => 'set' in e && solutions.has(e.set))) ?? moving[0]
+    // A word as the deed (M10.31 C): said to someone in a talk, or typed at the place.
+    const word = !action ? stage.next.flatMap((n) => n.when).find((c): c is { said: string; to?: string; at?: string } => 'said' in c) : undefined
+    if (word) {
+      const npc = word.to ? content.npcs.get(word.to)! : undefined
+      engine.state.player.location = npc ? npc.work ?? npc.home : word.at!
+      if (npc) Object.assign(engine.state.npcs[npc.id]!, { location: engine.state.player.location, activity: 'standing about', busyUntil: engine.world.now + 600, plan: [] })
+      for (const c of npc ? [`talk ${npc.name}`, word.said, 'bye'] : [`type ${word.said}`]) await engine.handle(c)
+      continue
+    }
     if (!action) return undefined
     engine.state.player.location = action.at[0]!
     if (action.with) Object.assign(engine.state.npcs[action.with]!, { location: action.at[0], activity: 'standing about', busyUntil: engine.world.now + 600, plan: [] })

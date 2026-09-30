@@ -1,4 +1,5 @@
 import type { Content, Quest } from '../content'
+import { wordsOf } from '../said'
 
 // Can a quest be solved? (M10.30 (6); Bram, 29 September 2026: is there a
 // check that quests can be done? Until now only that what they name exists.)
@@ -13,6 +14,19 @@ type Raw = Record<string, unknown>
 interface Means {
   flags: Set<string>
   things: Set<string>
+  /** Every word the world tells a player somewhere, spaced: for a word a quest waits to hear (M10.31 C). */
+  told: string
+}
+
+/** Keys whose text nobody is told: what the player types, what a condition asks, a lock's own word, patterns. */
+const UNTOLD = new Set(['said', 'word', 'say', 'words', 'id', 'when', 'unless', 'not_yet'])
+
+/** The words of every text under a tree, but for the keys nobody is told. */
+function toldIn(value: unknown, out: string[] = []): string[] {
+  if (typeof value === 'string') out.push(value)
+  else if (Array.isArray(value)) for (const v of value) toldIn(v, out)
+  else if (value && typeof value === 'object') for (const [k, v] of Object.entries(value as Raw)) if (!UNTOLD.has(k)) toldIn(v, out)
+  return out
 }
 
 /** Every value under a key in a tree, as strings: the flags an effect sets, the things given. */
@@ -40,7 +54,9 @@ function meansOf(content: Content): Means {
   }
   for (const n of content.npcs.values()) for (const id of Object.keys(n.inventory)) things.add(id)
   for (const c of content.crafts.values()) for (const t of Object.values(c as unknown as Raw)) for (const id of valuesOf(t, 'produces')) things.add(id)
-  return { flags, things }
+  // What a player can be told: what people know, hide and say, what places, things and topics say, what deeds bring.
+  const told = ` ${wordsOf(toldIn([...all, ...content.npcs.values(), ...content.topics.values(), ...content.items.values()]).join(' '))} `
+  return { flags, things, told }
 }
 
 /** Why a list of conditions could never all hold, or nothing when it could. */
@@ -68,6 +84,9 @@ function neverOne(content: Content, means: Means, c: Raw): string | undefined {
   if (typeof c['alive'] === 'string' && !content.npcs.has(c['alive'])) return `there is nobody ${c['alive']}`
   if (typeof c['here'] === 'string' && !content.npcs.has(c['here'])) return `there is nobody ${c['here']}`
   if (typeof c['talked'] === 'string' && !content.npcs.has(c['talked'])) return `there is nobody ${c['talked']}`
+  // A word waited for (M10.31 C): the stranger must be able to learn it somewhere.
+  if (typeof c['said'] === 'string' && !means.told.includes(` ${wordsOf(c['said'])} `)) return `the word "${c['said']}" is told nowhere a player could learn it`
+  if (typeof c['said'] === 'string' && typeof c['to'] === 'string' && !content.npcs.has(c['to'])) return `there is nobody ${c['to']}`
   for (const key of ['stage', 'outcome'] as const) {
     if (typeof c[key] !== 'string') continue
     const [quest, part] = (c[key] as string).split(':')
